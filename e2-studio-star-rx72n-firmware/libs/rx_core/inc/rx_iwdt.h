@@ -62,10 +62,10 @@
  * Timeout = (2^(10+CKS)) / IWDTCLK
  *
  * Where CKS (Clock Select) determines divider:
- *   CKS=0: 2^10 = 1024  → ~128ms timeout
- *   CKS=1: 2^12 = 4096  → ~512ms timeout
- *   CKS=2: 2^14 = 16384 → ~2s timeout
- *   CKS=3: 2^16 = 65536 → ~8s timeout
+ *   CKS=0: 2^10 = 1024  -> ~128ms timeout
+ *   CKS=1: 2^12 = 4096  -> ~512ms timeout
+ *   CKS=2: 2^14 = 16384 -> ~2s timeout
+ *   CKS=3: 2^16 = 65536 -> ~8s timeout
  * ```
  *
  * ## Implementation Approach
@@ -183,16 +183,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto/setjmp/recursion, sequential logic |
- * | 2. Fixed loop bounds | ✓ | All loops bounded by k_iwdt_max_tasks (16) |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free, static task array |
- * | 4. Small functions | ✓ | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | ✓ | Minimum 2 checks per function (pre/post) |
- * | 6. Narrow scope | ✓ | File-scope statics, function-local variables |
- * | 7. Check return values | ✓ | All functions return rx_err_t, checked by callers |
- * | 8. Limited preprocessor | ✓ | C23 typed enums only, zero computation macros |
- * | 9. Pointer restrictions | ✓ | Single-level pointers, no pointer arithmetic |
- * | 10. Compiler warnings | ✓ | Compiles with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto/setjmp/recursion, sequential logic |
+ * | 2. Fixed loop bounds | [OK] | All loops bounded by k_iwdt_max_tasks (16) |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free, static task array |
+ * | 4. Small functions | [OK] | All functions < 60 lines |
+ * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
+ * | 6. Narrow scope | [OK] | File-scope statics, function-local variables |
+ * | 7. Check return values | [OK] | All functions return rx_err_t, checked by callers |
+ * | 8. Limited preprocessor | [OK] | C23 typed enums only, zero computation macros |
+ * | 9. Pointer restrictions | [OK] | Single-level pointers, no pointer arithmetic |
+ * | 10. Compiler warnings | [OK] | Compiles with -Wall -Wextra -Werror |
  *
  * **Safety-Critical Design**:
  * - Static allocation prevents fragmentation and allocation failures

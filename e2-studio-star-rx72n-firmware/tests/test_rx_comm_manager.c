@@ -147,14 +147,14 @@
  * - **Decoded Output Optional:** Can be disabled to save bandwidth/CPU
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1 (Control Flow):** ✓ All test functions use simple sequential flow
- * - **Rule 2 (Loop Bounds):** ✓ All loops have compile-time known bounds
- * - **Rule 3 (Dynamic Memory):** ✓ Zero heap allocation (stack-only test data)
- * - **Rule 4 (Function Size):** ✓ Test functions <40 lines, helpers <15 lines
- * - **Rule 5 (Assertions):** ✓ Every test has minimum 1 assertion, most have 3+
- * - **Rule 7 (Return Checking):** ✓ All API returns validated
- * - **Rule 9 (Pointers):** ✓ Single-level dereferencing only
- * - **Rule 10 (Warnings):** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1 (Control Flow):** [OK] All test functions use simple sequential flow
+ * - **Rule 2 (Loop Bounds):** [OK] All loops have compile-time known bounds
+ * - **Rule 3 (Dynamic Memory):** [OK] Zero heap allocation (stack-only test data)
+ * - **Rule 4 (Function Size):** [OK] Test functions <40 lines, helpers <15 lines
+ * - **Rule 5 (Assertions):** [OK] Every test has minimum 1 assertion, most have 3+
+ * - **Rule 7 (Return Checking):** [OK] All API returns validated
+ * - **Rule 9 (Pointers):** [OK] Single-level dereferencing only
+ * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** Each test validates one manager API behavior
@@ -165,17 +165,17 @@
  *
  * @par Limitations of Unit Tests:
  * These tests validate:
- * - ✓ API argument validation (nullptr checks, bounds checking)
- * - ✓ State management (initialized flag, channel selection)
- * - ✓ Error code returns (k_rx_err_invalid_arg, k_rx_err_invalid_state)
- * - ✓ Configuration handling (decoded output flag, callbacks)
+ * - [OK] API argument validation (nullptr checks, bounds checking)
+ * - [OK] State management (initialized flag, channel selection)
+ * - [OK] Error code returns (k_rx_err_invalid_arg, k_rx_err_invalid_state)
+ * - [OK] Configuration handling (decoded output flag, callbacks)
  *
  * These tests do NOT validate (requires integration testing):
- * - ✗ Actual frame transmission over USB/SPI
- * - ✗ CRC validation end-to-end
- * - ✗ Sequence number tracking
- * - ✗ Decoded output formatting
- * - ✗ Callback invocation on real events
+ * - [X] Actual frame transmission over USB/SPI
+ * - [X] CRC validation end-to-end
+ * - [X] Sequence number tracking
+ * - [X] Decoded output formatting
+ * - [X] Callback invocation on real events
  *
  * **Integration testing strategy documented in test plan.**
  *

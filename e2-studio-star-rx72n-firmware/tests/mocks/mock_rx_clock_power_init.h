@@ -15,7 +15,7 @@
  * @par Mock Capabilities: Configurable return value, Call tracking
  * @par Usage: tests/test_main.c, tests/test_system_init.c
  * @see rx_clock_power_init.h Real clock/power initialization
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: S - Single responsibility
  *
  * @author STAR Team

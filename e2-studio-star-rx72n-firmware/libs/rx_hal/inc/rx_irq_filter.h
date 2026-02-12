@@ -137,14 +137,14 @@
  * @endcode
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No goto, setjmp, longjmp, recursion
- * - **Rule 2**: ✓ No loops (simple register operations)
- * - **Rule 3**: ✓ No dynamic memory allocation
- * - **Rule 4**: ✓ All functions < 30 lines
- * - **Rule 5**: ✓ Input validation on all functions
- * - **Rule 7**: ✓ All return values are error codes
- * - **Rule 8**: ✓ C23 typed enums for filter clock options
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, longjmp, recursion
+ * - **Rule 2**: [OK] No loops (simple register operations)
+ * - **Rule 3**: [OK] No dynamic memory allocation
+ * - **Rule 4**: [OK] All functions < 30 lines
+ * - **Rule 5**: [OK] Input validation on all functions
+ * - **Rule 7**: [OK] All return values are error codes
+ * - **Rule 8**: [OK] C23 typed enums for filter clock options
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **Single Responsibility**: Only IRQ filter configuration

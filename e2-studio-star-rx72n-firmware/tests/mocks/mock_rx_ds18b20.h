@@ -20,7 +20,7 @@
  * @par Usage: tests/test_rx_ds18b20.c
  * @see rx_ds18b20.h Real DS18B20 driver
  * @see mock_rx_onewire_hw.h 1-Wire hardware mock
- * @par NASA Power of 10: ✓ Static allocation, bounded loops
+ * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Thermal monitoring depends on DS18B20 interface
  *
  * @author STAR Team

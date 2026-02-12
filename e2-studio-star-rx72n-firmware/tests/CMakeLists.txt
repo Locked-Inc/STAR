@@ -164,6 +164,11 @@ set(MOCK_RSPI_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rspi.c
 )
 
+# Mock SCI SPI source for DRV8243 motor driver SPI testing
+set(MOCK_SCI_SPI_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_sci_spi.c
+)
+
 # rx_spi_comm source
 set(RX_SPI_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/src/rx_spi_comm.c
@@ -577,7 +582,7 @@ target_link_libraries(test_rx_nanopb unity m)
 # Test: DRV8243 SPI Variant
 add_executable(test_rx_drv8243_spi
     test_rx_drv8243_spi.c
-    ${MOCK_RSPI_SRC}
+    ${MOCK_SCI_SPI_SRC}
 )
 apply_strict_warnings(test_rx_drv8243_spi)
 apply_test_includes(test_rx_drv8243_spi)

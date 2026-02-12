@@ -152,10 +152,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_tpu_idx_ch1 = 0, /**< TPU1 → index 0 (rear-left encoder) */
-  k_tpu_idx_ch2 = 1, /**< TPU2 → index 1 (rear-right encoder) */
-  k_tpu_idx_ch4 = 2, /**< TPU4 → index 2 (available) */
-  k_tpu_idx_ch5 = 3, /**< TPU5 → index 3 (available) */
+  k_tpu_idx_ch1 = 0, /**< TPU1 -> index 0 (rear-left encoder) */
+  k_tpu_idx_ch2 = 1, /**< TPU2 -> index 1 (rear-right encoder) */
+  k_tpu_idx_ch4 = 2, /**< TPU4 -> index 2 (available) */
+  k_tpu_idx_ch5 = 3, /**< TPU5 -> index 3 (available) */
 } tpu_channel_index_t;
 
 /**

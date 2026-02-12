@@ -42,7 +42,7 @@
  * @see rx_ds18b20.h DS18B20 sensor driver
  * @see tests/test_rx_ds18b20.c Temperature sensor tests
  *
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion
  *
  * @author STAR Team

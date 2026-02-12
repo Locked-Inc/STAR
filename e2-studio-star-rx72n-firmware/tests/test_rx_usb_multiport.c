@@ -23,18 +23,18 @@
  * ├── Interface 0 - Port 0 Control (CDC ACM)
  * │   └── Endpoint 0x81 - Notification (Interrupt IN)
  * ├── Interface 1 - Port 0 Data (CDC ACM Data)
- * │   ├── Endpoint 0x01 - Bulk OUT (Host → Device)
- * │   └── Endpoint 0x82 - Bulk IN  (Device → Host)
+ * │   ├── Endpoint 0x01 - Bulk OUT (Host -> Device)
+ * │   └── Endpoint 0x82 - Bulk IN  (Device -> Host)
  * ├── Interface 2 - Port 1 Control (CDC ACM)
  * │   └── Endpoint 0x83 - Notification (Interrupt IN)
  * ├── Interface 3 - Port 1 Data (CDC ACM Data)
- * │   ├── Endpoint 0x02 - Bulk OUT (Host → Device)
- * │   └── Endpoint 0x84 - Bulk IN  (Device → Host)
+ * │   ├── Endpoint 0x02 - Bulk OUT (Host -> Device)
+ * │   └── Endpoint 0x84 - Bulk IN  (Device -> Host)
  * ├── Interface 4 - Port 2 Control (CDC ACM)
  * │   └── Endpoint 0x85 - Notification (Interrupt IN)
  * └── Interface 5 - Port 2 Data (CDC ACM Data)
- *     ├── Endpoint 0x03 - Bulk OUT (Host → Device)
- *     └── Endpoint 0x86 - Bulk IN  (Device → Host)
+ *     ├── Endpoint 0x03 - Bulk OUT (Host -> Device)
+ *     └── Endpoint 0x86 - Bulk IN  (Device -> Host)
  * @endcode
  *
  * **Test Categories:**
@@ -78,8 +78,8 @@
  * @code
  * 1. Push "DATA0" to Port 0 RX buffer (simulate USB OUT transfer)
  * 2. Push "DATA1" to Port 1 RX buffer
- * 3. Read from Port 0 → Should return "DATA0"
- * 4. Read from Port 1 → Should return "DATA1"
+ * 3. Read from Port 0 -> Should return "DATA0"
+ * 4. Read from Port 1 -> Should return "DATA1"
  * 5. Assert: Each port reads only its own data
  * @endcode
  *
@@ -94,18 +94,18 @@
  *
  * @par ISR Routing Test:
  * @code
- * 1. Query port ID from Pipe 1 (Port 0 Bulk IN)  → Returns k_usb_port_proto
- * 2. Query port ID from Pipe 4 (Port 1 Bulk IN)  → Returns k_usb_port_decoded
- * 3. Query port ID from Interface 0 (Port 0 Ctrl) → Returns k_usb_port_proto
- * 4. Query port ID from Interface 2 (Port 1 Ctrl) → Returns k_usb_port_decoded
- * 5. Query port ID from invalid pipe 99 → Returns k_usb_port_count (error)
+ * 1. Query port ID from Pipe 1 (Port 0 Bulk IN)  -> Returns k_usb_port_proto
+ * 2. Query port ID from Pipe 4 (Port 1 Bulk IN)  -> Returns k_usb_port_decoded
+ * 3. Query port ID from Interface 0 (Port 0 Ctrl) -> Returns k_usb_port_proto
+ * 4. Query port ID from Interface 2 (Port 1 Ctrl) -> Returns k_usb_port_decoded
+ * 5. Query port ID from invalid pipe 99 -> Returns k_usb_port_count (error)
  * @endcode
  *
  * **Timing Requirements:**
  * - USB interrupt latency: <10µs (USB0 ISR to rx_usb_rx_push)
  * - Buffer full detection: <1µs (software check, no hardware involvement)
  * - Per-port callback invocation: <5µs (function pointer call + context switch)
- * - State transition propagation: <100µs (ATTACHED → CONFIGURED affects all ports)
+ * - State transition propagation: <100µs (ATTACHED -> CONFIGURED affects all ports)
  *
  * **Error Injection Patterns:**
  * - Invalid port ID (>= k_usb_port_count) - Tests bounds checking
@@ -121,14 +121,14 @@
  * - **Call tracking:** Verifies mock function invocation order and arguments
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1 (Control Flow):** ✓ All test functions use simple sequential flow
- * - **Rule 2 (Loop Bounds):** ✓ All loops have compile-time known bounds (array iterations)
- * - **Rule 3 (Dynamic Memory):** ✓ Zero heap allocation (stack buffers only)
- * - **Rule 4 (Function Size):** ✓ Test functions <45 lines, helpers <15 lines
- * - **Rule 5 (Assertions):** ✓ Every test has minimum 1 assertion, most have 3+
- * - **Rule 7 (Return Checking):** ✓ All API returns validated with TEST_ASSERT_EQUAL
- * - **Rule 9 (Pointers):** ✓ Single-level dereferencing only (no **)
- * - **Rule 10 (Warnings):** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1 (Control Flow):** [OK] All test functions use simple sequential flow
+ * - **Rule 2 (Loop Bounds):** [OK] All loops have compile-time known bounds (array iterations)
+ * - **Rule 3 (Dynamic Memory):** [OK] Zero heap allocation (stack buffers only)
+ * - **Rule 4 (Function Size):** [OK] Test functions <45 lines, helpers <15 lines
+ * - **Rule 5 (Assertions):** [OK] Every test has minimum 1 assertion, most have 3+
+ * - **Rule 7 (Return Checking):** [OK] All API returns validated with TEST_ASSERT_EQUAL
+ * - **Rule 9 (Pointers):** [OK] Single-level dereferencing only (no **)
+ * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** Each test validates one specific multi-port behavior
@@ -140,7 +140,7 @@
  * @par Critical Design Decisions:
  * - **3-Port Fixed Configuration:** Not runtime-configurable (compile-time port count)
  * - **No Shared Buffers:** Each port has dedicated RX/TX ring buffers (no mutex needed)
- * - **Atomic State Transitions:** State changes (ATTACHED→CONFIGURED) affect all ports atomically
+ * - **Atomic State Transitions:** State changes (ATTACHED->CONFIGURED) affect all ports atomically
  * - **Per-Port Callbacks:** Each port can have independent callback + context
  * - **Global Events:** Bus reset/suspend increment counters for ALL ports simultaneously
  *

@@ -86,11 +86,11 @@
  * - string.h: memset, memcpy
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No recursion, goto, setjmp/longjmp
- * - **Rule 2**: ✓ Loops bounded by k_harq_soft_buffer_size
- * - **Rule 3**: ✓ Zero dynamic allocation
- * - **Rule 4**: ✓ Functions ≤ 60 lines
- * - **Rule 5**: ✓ Extensive validation checks
+ * - **Rule 1**: [OK] No recursion, goto, setjmp/longjmp
+ * - **Rule 2**: [OK] Loops bounded by k_harq_soft_buffer_size
+ * - **Rule 3**: [OK] Zero dynamic allocation
+ * - **Rule 4**: [OK] Functions ≤ 60 lines
+ * - **Rule 5**: [OK] Extensive validation checks
  *
  * @author STAR Team
  * @date 2026-01-27

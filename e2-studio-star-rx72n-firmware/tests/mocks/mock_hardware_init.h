@@ -17,7 +17,7 @@
  *
  * @par Usage: tests/test_main.c, tests/test_system_init.c
  * @see hardware_init.h Real hardware initialization
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: S - Single responsibility (init only)
  *
  * @author STAR Team

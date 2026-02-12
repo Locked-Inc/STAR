@@ -28,7 +28,7 @@
  *   divider -> counter;
  *   counter -> window;
  *   window -> action [label="timeout\nor early"];
- *   sw -> counter [label="IWDTRR\n0x00→0xFF"];
+ *   sw -> counter [label="IWDTRR\n0x00->0xFF"];
  *   sleep -> counter [label="IWDTCSTPR"];
  * }
  * @enddot
@@ -88,16 +88,16 @@
  * 3. Configurable sleep mode behavior
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 2: ✓ N/A (no loops in register definitions)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 4: ✓ All accessor functions are single-statement
- * - Rule 5: ✓ N/A (hardware layer)
- * - Rule 6: ✓ Minimal scope
- * - Rule 7: ✓ N/A (no return values to check)
- * - Rule 8: ✓ All constants use C23 typed enums
- * - Rule 9: ✓ No function pointers
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 2: [OK] N/A (no loops in register definitions)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 4: [OK] All accessor functions are single-statement
+ * - Rule 5: [OK] N/A (hardware layer)
+ * - Rule 6: [OK] Minimal scope
+ * - Rule 7: [OK] N/A (no return values to check)
+ * - Rule 8: [OK] All constants use C23 typed enums
+ * - Rule 9: [OK] No function pointers
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **S**: Single responsibility - only IWDT register definitions

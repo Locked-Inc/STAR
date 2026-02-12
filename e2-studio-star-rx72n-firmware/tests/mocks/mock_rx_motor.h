@@ -10,7 +10,7 @@
  * H-bridge drivers, or PWM peripherals.
  *
  * Enables testing of:
- * - Motor control integration (obstacle detection → motor commands)
+ * - Motor control integration (obstacle detection -> motor commands)
  * - Velocity command sequences
  * - Emergency stop logic
  * - Multi-motor coordination
@@ -40,7 +40,7 @@
  * @see rx_motor.h Real motor control driver
  * @see tests/test_rx_obstacle_detect.c Obstacle detection tests
  *
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - High-level modules depend on motor interface
  *
  * @author STAR Team

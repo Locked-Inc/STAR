@@ -79,16 +79,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✓ | No code (constants only) |
- * | 2. Fixed loop bounds | ✓ | No loops |
- * | 3. No dynamic memory | ✓ | No allocations |
- * | 4. Function length <60 lines | ✓ | No functions |
- * | 5. Assertions | ✓ | N/A (header only) |
- * | 6. Smallest scope | ✓ | File-scope enums |
- * | 7. Check return values | ✓ | N/A |
- * | 8. Limited preprocessor | ✓ | Include guards only, C23 enums used |
- * | 9. Pointer restrictions | ✓ | No pointers |
- * | 10. Compiler warnings | ✓ | `-Wall -Wextra -Werror` |
+ * | 1. Simple control flow | [OK] | No code (constants only) |
+ * | 2. Fixed loop bounds | [OK] | No loops |
+ * | 3. No dynamic memory | [OK] | No allocations |
+ * | 4. Function length <60 lines | [OK] | No functions |
+ * | 5. Assertions | [OK] | N/A (header only) |
+ * | 6. Smallest scope | [OK] | File-scope enums |
+ * | 7. Check return values | [OK] | N/A |
+ * | 8. Limited preprocessor | [OK] | Include guards only, C23 enums used |
+ * | 9. Pointer restrictions | [OK] | No pointers |
+ * | 10. Compiler warnings | [OK] | `-Wall -Wextra -Werror` |
  *
  * @par SOLID Principles:
  *
@@ -440,7 +440,7 @@ typedef enum : uint16_t {
    * - Sensor stabilization after power glitch: 50-150ms typical
    * - Short enough to maintain 10Hz control loop timing (100ms period)
    * - Avoids starving ThreadX scheduler (10ms time slice)
-   * @note Exponential growth: 100ms → 200ms → 400ms → 800ms (clamped to max)
+   * @note Exponential growth: 100ms -> 200ms -> 400ms -> 800ms (clamped to max)
    */
   k_error_handler_default_initial_backoff_ms = 100,
 
@@ -614,7 +614,7 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 8 (Limited preprocessor): Uses C23 typed enum, not macros ✓
+ * - Rule 8 (Limited preprocessor): Uses C23 typed enum, not macros [OK]
  */
 typedef enum : uint16_t {
   /**

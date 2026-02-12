@@ -16,7 +16,7 @@
  * @par Usage: tests/test_rx_drv8243.c, tests/test_rx_motor.c
  * @see rx_drv8243.h Real DRV8243 driver
  * @see mock_rx_drv8243_hw.h DRV8243 hardware layer mock
- * @par NASA Power of 10: ✓ Static allocation
+ * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Motor control depends on driver interface
  *
  * @author STAR Team

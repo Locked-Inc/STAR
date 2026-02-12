@@ -110,16 +110,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | ✅ Pass | Outer: len, Inner: 8 (compile-time) |
- * | 3. No dynamic memory | ✅ Pass | Stack only |
- * | 4. Short functions | ✅ Pass | Single 20-line function |
- * | 5. Assertions | ✅ Pass | NULL and length validation |
- * | 6. Small scope | ✅ Pass | Variables at minimal scope |
- * | 7. Check returns | ✅ Pass | Return value always meaningful |
- * | 8. Limited preprocessor | ✅ Pass | Only includes, no macros |
- * | 9. Restrict pointers | ✅ Pass | Single const pointer |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | [PASS] Pass | Outer: len, Inner: 8 (compile-time) |
+ * | 3. No dynamic memory | [PASS] Pass | Stack only |
+ * | 4. Short functions | [PASS] Pass | Single 20-line function |
+ * | 5. Assertions | [PASS] Pass | NULL and length validation |
+ * | 6. Small scope | [PASS] Pass | Variables at minimal scope |
+ * | 7. Check returns | [PASS] Pass | Return value always meaningful |
+ * | 8. Limited preprocessor | [PASS] Pass | Only includes, no macros |
+ * | 9. Restrict pointers | [PASS] Pass | Single const pointer |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -170,7 +170,7 @@
  * In binary (MSB-first / normal form):
  * ```
  * x^8  x^7  x^6  x^5  x^4  x^3  x^2  x^1  x^0
- *  1    0    0    1    1    0    0    0    1   = 0x131 (9-bit) → 0x31 (8-bit, implicit x^8)
+ *  1    0    0    1    1    0    0    0    1   = 0x131 (9-bit) -> 0x31 (8-bit, implicit x^8)
  * ```
  *
  * Reflected (LSB-first) for hardware bit-serial processing:
@@ -420,9 +420,9 @@ typedef enum : uint8_t {
  * @endcode
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✅ No goto/setjmp/recursion
- * - Rule 2: ✅ Outer loop bounded by len, inner by k_crc8_bits_per_byte (8)
- * - Rule 5: ✅ 2 preconditions, 2 postconditions documented
+ * - Rule 1: [PASS] No goto/setjmp/recursion
+ * - Rule 2: [PASS] Outer loop bounded by len, inner by k_crc8_bits_per_byte (8)
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
  *
  * @see rx_crc.h API declaration
  * @see rx_crc32_ieee() CRC-32 for larger frame protocols

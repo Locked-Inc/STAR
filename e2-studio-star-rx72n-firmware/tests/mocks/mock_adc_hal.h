@@ -47,7 +47,7 @@
  * @see adc_hal.h Real ADC HAL
  * @see hardware.h Hardware definitions
  *
- * @par NASA Power of 10: ✓ Static allocation, bounded loops
+ * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Dependency Inversion
  *
  * @author STAR Team

@@ -44,10 +44,9 @@
  *                                 │
  *   ┌─────────────────────────────▼──────────────────────────────────────┐
  *   │                      Physical Pins                                 │
- *   │   PE5 (PWM+) ────► GPTW0A     PB7 (TXD9) ────► SCI9-TX            │
- *   │   PE4 (PWM-) ────► GPTW0B     PB6 (RXD9) ────► SCI9-RX            │
- *   │   P24 (ENC-A) ───► MTCLKA     PA0-PA4 ───────► RSPI0              │
- *   │   P25 (ENC-B) ───► MTCLKB     P40-P47 ───────► ADC (AN000-007)    │
+ *   │   Pin (function) ──► Peripheral    Pin (function) ──► Peripheral   │
+ *   │   (Configured via PFS register PSEL field)                        │
+ *   │   @see hardware_config.h for application-level pin assignments    │
  *   └────────────────────────────────────────────────────────────────────┘
  * @endverbatim
  *
@@ -67,20 +66,13 @@
  *   Physical_Pin box Physical_Pin [label="Connected to peripheral"];
  * @endmsc
  *
- * @par STAR Project Pin Assignments (144-pin LFQFP)
- * | Package Pin | Port.Pin | Function | PSEL | Driver Call |
- * |-------------|----------|----------|------|-------------|
- * | 97 | PE5 | GPTW0A (Motor0 PWM+) | 0x07 | rx_mpc_set_peripheral() |
- * | 96 | PE4 | GPTW0B (Motor0 PWM-) | 0x07 | rx_mpc_set_peripheral() |
- * | 60 | P24 | MTCLKA (Encoder0 A) | 0x02 | rx_mpc_set_mtu_encoder() |
- * | 61 | P25 | MTCLKB (Encoder0 B) | 0x02 | rx_mpc_set_mtu_encoder() |
- * | 72 | PB7 | SCI9-TXD (Debug TX) | 0x0A | rx_mpc_set_sci() |
- * | 74 | PB6 | SCI9-RXD (Debug RX) | 0x0A | rx_mpc_set_sci() |
- * | 32 | PA0 | RSPI0-COPI | 0x0D | rx_mpc_set_rspi() |
- * | 33 | PA1 | RSPI0-CIPO | 0x0D | rx_mpc_set_rspi() |
- * | 35 | PA3 | RSPI0-CLK | 0x0D | rx_mpc_set_rspi() |
- * | 34 | PA4 | RSPI0-SSL0 | 0x0D | rx_mpc_set_rspi() |
- * | USB | - | USB D+/D- | - | (Dedicated USB pins) |
+ * @par Pin Assignments
+ * Application-level pin assignments are defined in hardware_config.h.
+ * This driver provides the MPC register interface for any valid pin/PSEL
+ * combination. See the RX72N Hardware Manual pin function tables for
+ * valid (pin, PSEL) pairs.
+ *
+ * @see hardware_config.h Application-level pin assignments
  *
  * @par Hardware Requirements
  * | Resource | Requirement | Notes |
@@ -129,7 +121,7 @@
  *     // Configure motor PWM pins (GPTW channel 0)
  *     const rx_mpc_peripheral_config_t pwm_config = {
  *         .pin  = k_port_e_pin_5,  // PE5 = GPTW0A
- *         .psel = 0x07             // GPTW function
+ *         .psel = k_psel_gptw      // GPTW function (0x14)
  *     };
  *     err = rx_mpc_set_peripheral(&pwm_config);
  *     if (err != k_rx_ok) {
@@ -180,16 +172,16 @@
  * @endcode
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 1**: ✓ No goto, setjmp, longjmp, or recursion
- * - **Rule 2**: ✓ All loops have fixed upper bounds (switch/case only)
- * - **Rule 3**: ✓ No dynamic memory allocation
- * - **Rule 4**: ✓ All functions < 60 lines
- * - **Rule 5**: ✓ Minimum 2 assertions per function (parameter validation)
- * - **Rule 6**: ✓ Variables declared at smallest scope
- * - **Rule 7**: ✓ All return values checked
- * - **Rule 8**: ✓ C23 typed enums for all constants, no magic numbers
- * - **Rule 9**: ⚠️ Function pointers not used (simple direct calls)
- * - **Rule 10**: ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, longjmp, or recursion
+ * - **Rule 2**: [OK] All loops have fixed upper bounds (switch/case only)
+ * - **Rule 3**: [OK] No dynamic memory allocation
+ * - **Rule 4**: [OK] All functions < 60 lines
+ * - **Rule 5**: [OK] Minimum 2 assertions per function (parameter validation)
+ * - **Rule 6**: [OK] Variables declared at smallest scope
+ * - **Rule 7**: [OK] All return values checked
+ * - **Rule 8**: [OK] C23 typed enums for all constants, no magic numbers
+ * - **Rule 9**: [WARN] Function pointers not used (simple direct calls)
+ * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **Single Responsibility**: MPC driver handles only pin mux configuration
@@ -277,7 +269,7 @@ extern "C" {
  * // Configure PE5 for GPTW0A (motor PWM output)
  * rx_mpc_peripheral_config_t pwm_config = {
  *     .pin  = k_port_e_pin_5,  // PE5
- *     .psel = 0x07             // GPTW function select
+ *     .psel = k_psel_gptw      // GPTW function select (0x14)
  * };
  * rx_err_t err = rx_mpc_set_peripheral(&pwm_config);
  * @endcode
@@ -342,7 +334,7 @@ typedef struct {
    * | 0x01 | MTU I/O compare (MTIOC) | P14-P17, P24-P27 |
    * | 0x02 | MTU clock input (MTCLK) | P24, P25, PC0, PC1 |
    * | 0x03 | MTU phase counter | P24, P25 |
-   * | 0x07 | GPTW output (GTIOC) | PE4, PE5 |
+   * | 0x14 | GPTW output (GTIOC) | PE3, PE7, P23, P22, etc. |
    * | 0x0A | SCI (TXD/RXD) | PB6, PB7 |
    * | 0x0D | RSPI (CLK/COPI/CIPO/SSL) | PA0-PA4 |
    * | 0x0F | RIIC (SCL/SDA) | P12, P13 |
@@ -431,7 +423,7 @@ typedef enum : uint8_t {
  * | MTU3a MTIOC | 0x01 | P14-P17, P24-P27 | PWM output |
  * | MTU3a MTCLK | 0x02 | P24, P25, PC0, PC1 | Clock/encoder input |
  * | MTU3a Phase | 0x03 | P24, P25 | Phase counting mode |
- * | GPTW GTIOC | 0x07 | PE4, PE5 | PWM output |
+ * | GPTW GTIOC | 0x14 | PE3, PE7, P23, P22, etc. | PWM output |
  * | SCI TXD/RXD | 0x0A | PB6, PB7 | UART data |
  * | RSPI signals | 0x0D | PA0-PA4 | SPI bus |
  * | RIIC SDA/SCL | 0x0F | P12, P13 | I2C bus |
@@ -564,6 +556,44 @@ typedef enum : uint8_t {
    * @note Use rx_mpc_set_adc() for proper configuration (sets ASEL bit)
    */
   k_psel_adc = 0x00,
+
+  /**
+   * @brief USB VBUS detection input
+   *
+   * @details
+   * Connects pin to USB VBUS detection for 5V presence sensing.
+   * Required for USB enumeration and power monitoring.
+   *
+   * @par Typical Pins: P1.6 (USB0_VBUS on RX72N)
+   * @par Application: USB CDC debug interface, RPi5 communication
+   *
+   * @note Active-high: pin reads 1 when 5V present on USB bus
+   * @note Requires additional USB PHY and controller configuration
+   *
+   * @since Version 1.1.0
+   */
+  k_psel_usb_vbus = 0x11,
+
+  /**
+   * @brief GPTW complementary PWM output (GTIOC)
+   *
+   * @details
+   * Connects pin to GPTW (General PWM Timer) complementary PWM output
+   * with dead-time insertion for motor control. GPTW provides 4 channels
+   * (GPTW0-GPTW3) with phase-staggered PWM outputs.
+   *
+   * @par Typical Pins:
+   * - P2.3, P1.7 (GPTW0 - Motor 0 PH/EN)
+   * - P2.2, PC.3 (GPTW1 - Motor 1 PH/EN)
+   * - PE.3, P8.6 (GPTW2 - Motor 2 PH/EN)
+   * - PE.7, PC.6 (GPTW3 - Motor 3 PH/EN)
+   *
+   * @par Application: Motor control with complementary phase/enable signals
+   * @par Feature: 90-degree phase staggering reduces peak current draw
+   *
+   * @since Version 1.1.0
+   */
+  k_psel_gptw = 0x14,
 } rx_pin_psel_t;
 
 /* =============================================================================
@@ -655,8 +685,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: ✓ 2 preconditions (clock, module stop), 3 postconditions
- * - Rule 7: ✓ All internal function returns checked
+ * - Rule 5: [OK] 2 preconditions (clock, module stop), 3 postconditions
+ * - Rule 7: [OK] All internal function returns checked
  *
  * @callgraph
  * @callergraph
@@ -764,7 +794,7 @@ typedef enum : uint8_t {
  * // Configure PE5 for GPTW0A (Motor 0 PWM Phase+)
  * rx_mpc_peripheral_config_t pwm_config = {
  *     .pin  = k_port_e_pin_5,  // PE5
- *     .psel = 0x07             // GPTW function
+ *     .psel = k_psel_gptw      // GPTW function (0x14)
  * };
  *
  * rx_err_t err = rx_mpc_set_peripheral(&pwm_config);
@@ -780,8 +810,8 @@ typedef enum : uint8_t {
  * @code{.c}
  * // Configure multiple pins in a loop
  * const rx_mpc_peripheral_config_t pins[] = {
- *     { k_port_e_pin_5, 0x07 },  // GPTW0A
- *     { k_port_e_pin_4, 0x07 },  // GPTW0B
+ *     { k_port_e_pin_5, k_psel_gptw },  // GPTW0A (0x14)
+ *     { k_port_e_pin_4, k_psel_gptw },  // GPTW0B (0x14)
  *     { k_port_2_pin_4, 0x02 },  // MTCLKA
  *     { k_port_2_pin_5, 0x02 },  // MTCLKB
  * };
@@ -802,8 +832,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: ✓ 4 preconditions, 3 postconditions
- * - Rule 7: ✓ All return values checked
+ * - Rule 5: [OK] 4 preconditions, 3 postconditions
+ * - Rule 7: [OK] All return values checked
  *
  * @callgraph
  * @callergraph
@@ -845,7 +875,7 @@ typedef enum : uint8_t {
  * @post Pin ready for MTU3a compare match output
  *
  * @note Also requires MTU3a timer configuration and PORT PMR=1
- * @note STAR project typically uses GPTW for PWM (rx_mpc_set_peripheral with 0x07)
+ * @note STAR project typically uses GPTW for PWM (rx_mpc_set_gptw with PSEL 0x14)
  *
  * @par Example
  * @code{.c}
@@ -1159,6 +1189,155 @@ typedef enum : uint8_t {
  * @callgraph
  */
 [[nodiscard]] rx_err_t rx_mpc_set_rspi(rx_port_pin_t pin);
+
+/**
+ * @brief Configure pin for GPTW (General PWM Timer) complementary output
+ *
+ * @details
+ * Configures a pin for GPTW operation by setting PSEL = 0x14.
+ * GPTW provides complementary PWM output with dead-time insertion
+ * for motor control applications.
+ *
+ * GPTW channels support:
+ * - 20 kHz PWM frequency (ultrasonic, inaudible)
+ * - 1 µs dead-time (prevents H-bridge shoot-through)
+ * - 90-degree phase staggering (reduces peak current)
+ * - Complementary mode (PH + EN pins synchronized)
+ *
+ * @par STAR Project GPTW Pin Allocation
+ * | Pin  | GPTW Ch | Signal | Motor | Description          |
+ * |------|---------|--------|-------|----------------------|
+ * | P2.3 | GPTW0   | GTIOC0A | 0    | Motor 0 Phase/Hold   |
+ * | P1.7 | GPTW0   | GTIOC0B | 0    | Motor 0 Enable       |
+ * | P2.2 | GPTW1   | GTIOC1A | 1    | Motor 1 Phase/Hold   |
+ * | PC.3 | GPTW1   | GTIOC1B | 1    | Motor 1 Enable       |
+ * | PE.3 | GPTW2   | GTIOC2A | 2    | Motor 2 Phase/Hold   |
+ * | P8.6 | GPTW2   | GTIOC2B | 2    | Motor 2 Enable       |
+ * | PE.7 | GPTW3   | GTIOC3A | 3    | Motor 3 Phase/Hold   |
+ * | PC.6 | GPTW3   | GTIOC3B | 3    | Motor 3 Enable       |
+ *
+ * @param[in] pin GPIO pin identifier for GPTW function
+ *                Must be a pin that supports GPTW output (see manual)
+ *
+ * @return Error code indicating success or failure
+ * @retval k_rx_ok Pin successfully configured for GPTW
+ * @retval k_rx_err_null_ptr Config pointer is NULL (should never happen)
+ * @retval k_rx_err_invalid_arg Invalid port or pin number (>= 16)
+ * @retval k_rx_err_hw_error PWPR write-protect unlock failed
+ *
+ * @pre Pin must support GPTW function (check RX72N hardware manual)
+ * @pre PCLKB clock must be running (MPC registers require clock)
+ * @pre Must be called during single-threaded initialization
+ *
+ * @post PFS register configured with PSEL = 0x14
+ * @post PMR bit set (peripheral mode, not GPIO)
+ * @post PWPR register locked (write protection re-enabled)
+ * @post Pin ready for GPTW complementary PWM output
+ *
+ * @note Thread Safety: Not thread-safe. Call during initialization only.
+ * @note Configure both phase (A) and enable (B) pins for each motor
+ * @note GPTW channel configuration required for actual PWM operation
+ *
+ * @warning Motor safety: Configure pins before enabling GPTW channels
+ *
+ * @par Example - Configure All Motor PWM Pins
+ * @code{.c}
+ * // Configure 8 GPTW pins (4 motors × 2 pins = PH + EN)
+ * const rx_port_pin_t gptw_pins[] = {
+ *     k_rx_p2_3, k_rx_p1_7,  // Motor 0 PH/EN
+ *     k_rx_p2_2, k_rx_pc_3,  // Motor 1 PH/EN
+ *     k_rx_pe_3, k_rx_p8_6,  // Motor 2 PH/EN
+ *     k_rx_pe_7, k_rx_pc_6   // Motor 3 PH/EN
+ * };
+ *
+ * for (uint8_t i = 0; i < 8; i++) {
+ *     rx_err_t err = rx_mpc_set_gptw(gptw_pins[i]);
+ *     if (err != k_rx_ok) {
+ *         rx_log_error("GPIO", "GPTW pin config failed");
+ *         return err;
+ *     }
+ * }
+ *
+ * // Now safe to initialize GPTW channels
+ * rx_gptw_init_all_staggered(&config);
+ * @endcode
+ *
+ * @see rx_mpc_set_peripheral() Core pin configuration function
+ * @see rx_gptw_init_all_staggered() GPTW timer initialization
+ * @see RX72N Manual Chapter 23 - Multi-Function Pin Controller
+ * @see RX72N Manual Chapter 29 - General PWM Timer
+ *
+ * @since Version 1.1.0
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 1: [OK] No goto, setjmp, recursion (delegates to rx_mpc_set_peripheral)
+ * - Rule 3: [OK] No dynamic allocation (stack-only config struct)
+ * - Rule 4: [OK] Function is 6 lines (well under 60 line limit)
+ * - Rule 7: [OK] Return value from rx_mpc_set_peripheral checked by caller
+ */
+[[nodiscard]] rx_err_t rx_mpc_set_gptw(rx_port_pin_t pin);
+
+/**
+ * @brief Configure pin for USB VBUS detection function
+ *
+ * @details
+ * Configures a pin for USB VBUS detection by setting PSEL = 0x11.
+ * VBUS detection is used for USB enumeration and power presence sensing.
+ *
+ * The VBUS detect pin monitors the 5V power rail on the USB bus:
+ * - Pin reads HIGH (1) when USB cable connected and 5V present
+ * - Pin reads LOW (0) when USB cable disconnected or unpowered
+ *
+ * Required for USB CDC communication with RPi5 host.
+ *
+ * @par STAR Project USB Configuration
+ * | Pin  | Function   | Description                    |
+ * |------|------------|--------------------------------|
+ * | P1.6 | USB0_VBUS  | VBUS detect (5V presence)      |
+ *
+ * @param[in] pin GPIO pin identifier for USB VBUS detect
+ *                Typically P1.6 for USB0_VBUS on RX72N
+ *
+ * @return Error code indicating success or failure
+ * @retval k_rx_ok Pin successfully configured for USB VBUS
+ * @retval k_rx_err_null_ptr Config pointer is NULL (should never happen)
+ * @retval k_rx_err_invalid_arg Invalid port or pin number
+ * @retval k_rx_err_hw_error PWPR write-protect unlock failed
+ *
+ * @pre Pin must support USB VBUS function (P1.6 on RX72N)
+ * @pre PCLKB clock must be running
+ * @pre Must be called during single-threaded initialization
+ *
+ * @post PFS register configured with PSEL = 0x11
+ * @post PMR bit set (peripheral mode)
+ * @post PWPR register locked
+ * @post Pin ready for USB VBUS detection
+ *
+ * @note Thread Safety: Not thread-safe. Call during initialization only.
+ * @note Active-high detection (pin = 1 when 5V present)
+ * @note Also requires USB PHY and USB0 controller configuration
+ *
+ * @par Example - USB VBUS Setup
+ * @code{.c}
+ * // Configure USB VBUS detect pin (P1.6)
+ * rx_err_t err = rx_mpc_set_usb_vbus(k_rx_p1_6);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("USB", "VBUS pin configuration failed");
+ *     return err;
+ * }
+ *
+ * // Now configure USB0 controller
+ * err = usb_init(USB_MODE_CDC);
+ * @endcode
+ *
+ * @see rx_mpc_set_peripheral() Core pin configuration function
+ * @see rx_usb.h USB controller driver
+ * @see RX72N Manual Chapter 23 - Multi-Function Pin Controller
+ * @see RX72N Manual Chapter 31 - USB Controller
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_mpc_set_usb_vbus(rx_port_pin_t pin);
 
 #ifdef __cplusplus
 }

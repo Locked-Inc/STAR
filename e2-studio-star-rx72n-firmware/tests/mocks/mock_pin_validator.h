@@ -21,7 +21,7 @@
  * Release tracking, No ThreadX dependencies
  * @par Usage: All tests requiring pin allocation
  * @see rx_pin_validator.h Real pin validator
- * @par NASA Power of 10: ✓ Static allocation (256 pin limit)
+ * @par NASA Power of 10: [OK] Static allocation (256 pin limit)
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
  * @author STAR Team

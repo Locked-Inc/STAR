@@ -35,20 +35,22 @@
  *   │  │                                                                     ││
  *   │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  ││
  *   │  │  │ Port 0   │ │ Port 1   │ │ Port 2   │ │ Port 3   │ │ Port 4   │  ││
- *   │  │  │ P05,P07  │ │ P12-P17  │ │ P20-P27  │ │ P30-P37  │ │ P40-P47  │  ││
- *   │  │  │ Limited  │ │ Limited  │ │ Full     │ │ Full     │ │ Full     │  ││
+ *   │  │  │ 6 pins   │ │ P12-P17  │ │ P20-P27  │ │ P30-P37  │ │ P40-P47  │  ││
  *   │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
  *   │  │                                                                     ││
  *   │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  ││
- *   │  │  │ Port 5   │ │ Port A   │ │ Port B   │ │ Port C   │ │ Port D   │  ││
- *   │  │  │ P50-P55  │ │ PA0-PA7  │ │ PB0-PB7  │ │ PC0-PC7  │ │ PD0-PD7  │  ││
- *   │  │  │ Limited  │ │ Full     │ │ Full     │ │ Full     │ │ Full     │  ││
+ *   │  │  │ Port 5   │ │ Port 6   │ │ Port 7   │ │ Port 8   │ │ Port 9   │  ││
+ *   │  │  │ P50-P56  │ │ P60-P67  │ │ P70-P77  │ │ 6 pins   │ │ P90-P93  │  ││
  *   │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
  *   │  │                                                                     ││
- *   │  │  ┌──────────┐ ┌──────────┐                                          ││
- *   │  │  │ Port E   │ │ Port J   │  Unavailable on 144-pin:                 ││
- *   │  │  │ PE0-PE7  │ │ PJ3,PJ5  │  Ports G, H, K, L, M, N, Q               ││
- *   │  │  │ Full     │ │ Limited  │                                          ││
+ *   │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  ││
+ *   │  │  │ Port A   │ │ Port B   │ │ Port C   │ │ Port D   │ │ Port E   │  ││
+ *   │  │  │ PA0-PA7  │ │ PB0-PB7  │ │ PC0-PC7  │ │ PD0-PD7  │ │ PE0-PE7  │  ││
+ *   │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
+ *   │  │                                                                     ││
+ *   │  │  ┌──────────┐ ┌──────────┐  Unavailable on 144-pin:                 ││
+ *   │  │  │ Port F   │ │ Port J   │  Ports G, H, K, L, M, N, Q               ││
+ *   │  │  │ PF5 only │ │ PJ3,PJ5  │                                          ││
  *   │  │  └──────────┘ └──────────┘                                          ││
  *   │  └─────────────────────────────────────────────────────────────────────┘│
  *   │                                                                         │
@@ -105,23 +107,23 @@
  * @par Package Support
  * This file supports the 144-pin LFQFP package (R5F572NNHxFB).
  * Available ports and pins:
- * - Port 0: P05, P07 only (limited)
- * - Port 1: P12-P17 only (limited)
- * - Port 2: P20-P27 (full)
- * - Port 3: P30-P37 (full, P35 input-only)
- * - Port 4: P40-P47 (full)
- * - Port 5: P50-P55 only (limited)
- * - Port 6: P60-P67 (partial, P67 available on 144-pin)
- * - Port 7: P71-P77 (partial)
- * - Port 8: P80-P87 (partial, P86/P87 available on 144-pin)
- * - Port 9: P90-P97 (partial)
- * - Port A: PA0-PA7 (full)
- * - Port B: PB0-PB7 (full)
- * - Port C: PC0-PC7 (full)
- * - Port D: PD0-PD7 (full)
- * - Port E: PE0-PE7 (full)
- * - Port F: PF0-PF2, PF5 (partial, PF5 available on 144-pin)
- * - Port J: PJ3, PJ5 (limited, PJ3/PJ5 available on 144-pin)
+ * - Port 0: P00-P03, P05, P07 (6 pins)
+ * - Port 1: P12-P17 (6 pins)
+ * - Port 2: P20-P27 (full 8 pins)
+ * - Port 3: P30-P37 (full 8 pins, P35 input-only)
+ * - Port 4: P40-P47 (full 8 pins)
+ * - Port 5: P50-P56 (7 pins)
+ * - Port 6: P60-P67 (full 8 pins)
+ * - Port 7: P70-P77 (full 8 pins)
+ * - Port 8: P80-P83, P86-P87 (6 pins)
+ * - Port 9: P90-P93 (4 pins)
+ * - Port A: PA0-PA7 (full 8 pins)
+ * - Port B: PB0-PB7 (full 8 pins)
+ * - Port C: PC0-PC7 (full 8 pins)
+ * - Port D: PD0-PD7 (full 8 pins)
+ * - Port E: PE0-PE7 (full 8 pins)
+ * - Port F: PF5 (1 pin)
+ * - Port J: PJ3, PJ5 (2 pins)
  *
  * @par Hardware Reference
  * - RX72N Group User's Manual: Hardware, Chapter 21 (I/O Ports)
@@ -129,11 +131,11 @@
  * - Section 21.3: Pin Functions
  *
  * @par NASA Power of 10 Compliance
- * - Rule 1: ✓ No goto, setjmp, or recursion
- * - Rule 3: ✓ Static allocation only (all definitions compile-time)
- * - Rule 5: ✓ Static assertions verify register layout at compile time
- * - Rule 8: ✓ C23 typed enums eliminate preprocessor constants
- * - Rule 10: ✓ Header compiles cleanly with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, or recursion
+ * - Rule 3: [OK] Static allocation only (all definitions compile-time)
+ * - Rule 5: [OK] Static assertions verify register layout at compile time
+ * - Rule 8: [OK] C23 typed enums eliminate preprocessor constants
+ * - Rule 10: [OK] Header compiles cleanly with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
  * - **Single Responsibility**: GPIO register definitions only, no driver logic
@@ -279,23 +281,23 @@ typedef enum : uint32_t {
  * @par Available Pins by Port (144-pin LFQFP)
  * | Port | Offset | Available Pins | Notes |
  * |------|--------|----------------|-------|
- * | 0    | 0x00   | P05, P07       | Limited - only 2 pins |
- * | 1    | 0x01   | P12-P17        | Limited - no P10, P11 |
+ * | 0    | 0x00   | P00-P03, P05, P07 | 6 pins (no P04, P06) |
+ * | 1    | 0x01   | P12-P17        | 6 pins (no P10, P11) |
  * | 2    | 0x02   | P20-P27        | Full 8 pins |
- * | 3    | 0x03   | P30-P37        | Full, P35 input-only |
+ * | 3    | 0x03   | P30-P37        | Full 8 pins, P35 input-only |
  * | 4    | 0x04   | P40-P47        | Full 8 pins |
- * | 5    | 0x05   | P50-P55        | Limited - no P56, P57 |
- * | 6    | 0x06   | P60-P67        | Partial (P67 on 144-pin) |
- * | 7    | 0x07   | P71-P77        | Partial (P70 N/A) |
- * | 8    | 0x08   | P80-P87        | Partial (P86/P87 on 144-pin) |
- * | 9    | 0x09   | P90-P97        | Partial |
+ * | 5    | 0x05   | P50-P56        | 7 pins (no P57) |
+ * | 6    | 0x06   | P60-P67        | Full 8 pins |
+ * | 7    | 0x07   | P70-P77        | Full 8 pins |
+ * | 8    | 0x08   | P80-P83, P86-P87 | 6 pins (no P84, P85) |
+ * | 9    | 0x09   | P90-P93        | 4 pins (no P94-P97) |
  * | A    | 0x0A   | PA0-PA7        | Full 8 pins |
  * | B    | 0x0B   | PB0-PB7        | Full 8 pins |
  * | C    | 0x0C   | PC0-PC7        | Full 8 pins |
  * | D    | 0x0D   | PD0-PD7        | Full 8 pins |
  * | E    | 0x0E   | PE0-PE7        | Full 8 pins |
- * | F    | 0x0F   | PF0-PF2, PF5   | Partial (PF5 on 144-pin) |
- * | J    | 0x12   | PJ3, PJ5       | Limited (PJ3/PJ5 on 144-pin) |
+ * | F    | 0x0F   | PF5            | 1 pin only |
+ * | J    | 0x12   | PJ3, PJ5       | 2 pins only |
  *
  * @par Usage Example
  * @code
@@ -310,28 +312,37 @@ typedef enum : uint32_t {
  * @see RX72N Hardware Manual Chapter 21.1.1 (Package Pin Availability)
  */
 typedef enum : uint8_t {
-  /** @brief Port 0 offset - Limited: P05, P07 only (2 pins) */
+  /** @brief Port 0 offset - P00-P03, P05, P07 (6 pins) */
   k_port_offset_0 = 0x00,
 
-  /** @brief Port 1 offset - Limited: P12-P17 only (6 pins) */
+  /** @brief Port 1 offset - P12-P17 (6 pins) */
   k_port_offset_1 = 0x01,
 
-  /** @brief Port 2 offset - Full: P20-P27 (8 pins) */
+  /** @brief Port 2 offset - P20-P27 (8 pins) */
   k_port_offset_2 = 0x02,
 
-  /** @brief Port 3 offset - Full: P30-P37 (8 pins, P35 input-only) */
+  /** @brief Port 3 offset - P30-P37 (8 pins, P35 input-only) */
   k_port_offset_3 = 0x03,
 
-  /** @brief Port 4 offset - Full: P40-P47 (8 pins) */
+  /** @brief Port 4 offset - P40-P47 (8 pins) */
   k_port_offset_4 = 0x04,
 
-  /** @brief Port 5 offset - Limited: P50-P55 only (6 pins) */
+  /** @brief Port 5 offset - P50-P56 (7 pins) */
   k_port_offset_5 = 0x05,
 
-  /** @brief Port 6 offset - Partial: P67 only on 144-pin */
+  /** @brief Port 6 offset - P60-P67 (8 pins) */
   k_port_offset_6 = 0x06,
 
-  /** @brief Port A offset - Full: PA0-PA7 (8 pins) */
+  /** @brief Port 7 offset - P70-P77 (8 pins) */
+  k_port_offset_7 = 0x07,
+
+  /** @brief Port 8 offset - P80-P83, P86-P87 (6 pins) */
+  k_port_offset_8 = 0x08,
+
+  /** @brief Port 9 offset - P90-P93 (4 pins) */
+  k_port_offset_9 = 0x09,
+
+  /** @brief Port A offset - PA0-PA7 (8 pins) */
   k_port_offset_a = 0x0A,
 
   /** @brief Port B offset - Full: PB0-PB7 (8 pins) */
@@ -343,10 +354,13 @@ typedef enum : uint8_t {
   /** @brief Port D offset - Full: PD0-PD7 (8 pins) */
   k_port_offset_d = 0x0D,
 
-  /** @brief Port E offset - Full: PE0-PE7 (8 pins) */
+  /** @brief Port E offset - PE0-PE7 (8 pins) */
   k_port_offset_e = 0x0E,
 
-  /** @brief Port J offset - Limited: PJ3, PJ5 only (2 pins) */
+  /** @brief Port F offset - PF5 (1 pin) */
+  k_port_offset_f = 0x0F,
+
+  /** @brief Port J offset - PJ3, PJ5 (2 pins) */
   k_port_offset_j = 0x12,
 } rx_port_offsets_t;
 
@@ -582,8 +596,8 @@ static_assert((uint32_t)k_port_dscr2_base == 0x0008C128,
  * @brief Get pointer to PORT0 registers
  *
  * @details
- * Returns a volatile pointer to PORT0's register structure. PORT0 is limited
- * on the 144-pin LFQFP package - only P05 and P07 are available.
+ * Returns a volatile pointer to PORT0's register structure. PORT0 has
+ * P00-P03, P05, P07 available on the 144-pin LFQFP package (6 pins).
  *
  * @return Volatile pointer to PORT0 register structure
  *
@@ -594,7 +608,7 @@ static_assert((uint32_t)k_port_dscr2_base == 0x0008C128,
  * - PMR:  0x0008C060
  *
  * @par Available Pins (144-pin)
- * P05, P07 only (2 pins total)
+ * P00-P03, P05, P07 (6 pins)
  *
  * @note Thread-safe: returns constant hardware address
  * @see rx_port_regs_t for register layout
@@ -652,7 +666,7 @@ static inline volatile rx_port_regs_t* port4(void)
  * @brief Get pointer to PORT5 registers
  * @return Volatile pointer to PORT5 register structure
  * @note PORT5 PDR = 0x0008C005, PODR = 0x0008C025, PIDR = 0x0008C045
- * @note 144-pin: Only P50-P55 available
+ * @note 144-pin: P50-P56 available (7 pins)
  */
 static inline volatile rx_port_regs_t* port5(void)
 {
@@ -663,11 +677,44 @@ static inline volatile rx_port_regs_t* port5(void)
  * @brief Get pointer to PORT6 registers
  * @return Volatile pointer to PORT6 register structure
  * @note PORT6 PDR = 0x0008C006, PODR = 0x0008C026, PIDR = 0x0008C046
- * @note 144-pin: Only P67 available (HOST_IRQ)
+ * @note 144-pin: P60-P67 available (8 pins)
  */
 static inline volatile rx_port_regs_t* port6(void)
 {
   return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_6);
+}
+
+/**
+ * @brief Get pointer to PORT7 registers
+ * @return Volatile pointer to PORT7 register structure
+ * @note PORT7 PDR = 0x0008C007, PODR = 0x0008C027, PIDR = 0x0008C047
+ * @note 144-pin: P70-P77 available (8 pins)
+ */
+static inline volatile rx_port_regs_t* port7(void)
+{
+  return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_7);
+}
+
+/**
+ * @brief Get pointer to PORT8 registers
+ * @return Volatile pointer to PORT8 register structure
+ * @note PORT8 PDR = 0x0008C008, PODR = 0x0008C028, PIDR = 0x0008C048
+ * @note 144-pin: P80-P83, P86-P87 available (6 pins)
+ */
+static inline volatile rx_port_regs_t* port8(void)
+{
+  return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_8);
+}
+
+/**
+ * @brief Get pointer to PORT9 registers
+ * @return Volatile pointer to PORT9 register structure
+ * @note PORT9 PDR = 0x0008C009, PODR = 0x0008C029, PIDR = 0x0008C049
+ * @note 144-pin: P90-P93 available (4 pins)
+ */
+static inline volatile rx_port_regs_t* port9(void)
+{
+  return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_9);
 }
 
 /**
@@ -726,10 +773,21 @@ static inline volatile rx_port_regs_t* porte(void)
 }
 
 /**
+ * @brief Get pointer to PORTF registers
+ * @return Volatile pointer to PORTF register structure
+ * @note PORTF PDR = 0x0008C00F, PODR = 0x0008C02F, PIDR = 0x0008C04F
+ * @note 144-pin: PF5 available (1 pin)
+ */
+static inline volatile rx_port_regs_t* portf(void)
+{
+  return (volatile rx_port_regs_t*)(k_port_pdr_base + k_port_offset_f);
+}
+
+/**
  * @brief Get pointer to PORTJ registers
  * @return Volatile pointer to PORTJ register structure
  * @note PORTJ PDR = 0x0008C012, PODR = 0x0008C032, PIDR = 0x0008C052
- * @note 144-pin: Only PJ3, PJ5 available
+ * @note 144-pin: PJ3, PJ5 available (2 pins)
  */
 static inline volatile rx_port_regs_t* portj(void)
 {
@@ -813,6 +871,46 @@ static inline volatile uint16_t* port5_odr(void)
 }
 
 /**
+ * @brief Get pointer to PORT6 ODR register
+ * @return Volatile pointer to 16-bit ODR register
+ * @note PORT6.ODR = 0x0008C08C (offset 0x06 * 2)
+ */
+static inline volatile uint16_t* port6_odr(void)
+{
+  return (volatile uint16_t*)(k_port_odr0_base + (k_port_offset_6 * 2));
+}
+
+/**
+ * @brief Get pointer to PORT7 ODR register
+ * @return Volatile pointer to 16-bit ODR register
+ * @note PORT7.ODR = 0x0008C08E (offset 0x07 * 2)
+ */
+static inline volatile uint16_t* port7_odr(void)
+{
+  return (volatile uint16_t*)(k_port_odr0_base + (k_port_offset_7 * 2));
+}
+
+/**
+ * @brief Get pointer to PORT8 ODR register
+ * @return Volatile pointer to 16-bit ODR register
+ * @note PORT8.ODR = 0x0008C090 (offset 0x08 * 2)
+ */
+static inline volatile uint16_t* port8_odr(void)
+{
+  return (volatile uint16_t*)(k_port_odr0_base + (k_port_offset_8 * 2));
+}
+
+/**
+ * @brief Get pointer to PORT9 ODR register
+ * @return Volatile pointer to 16-bit ODR register
+ * @note PORT9.ODR = 0x0008C092 (offset 0x09 * 2)
+ */
+static inline volatile uint16_t* port9_odr(void)
+{
+  return (volatile uint16_t*)(k_port_odr0_base + (k_port_offset_9 * 2));
+}
+
+/**
  * @brief Get pointer to PORTA ODR register
  * @return Volatile pointer to 16-bit ODR register
  * @note PORTA.ODR = 0x0008C094 (offset 0x0A * 2)
@@ -860,6 +958,16 @@ static inline volatile uint16_t* portd_odr(void)
 static inline volatile uint16_t* porte_odr(void)
 {
   return (volatile uint16_t*)(k_port_odr0_base + (k_port_offset_e * 2));
+}
+
+/**
+ * @brief Get pointer to PORTF ODR register
+ * @return Volatile pointer to 16-bit ODR register
+ * @note PORTF.ODR = 0x0008C09E (offset 0x0F * 2)
+ */
+static inline volatile uint16_t* portf_odr(void)
+{
+  return (volatile uint16_t*)(k_port_odr0_base + (k_port_offset_f * 2));
 }
 
 /**

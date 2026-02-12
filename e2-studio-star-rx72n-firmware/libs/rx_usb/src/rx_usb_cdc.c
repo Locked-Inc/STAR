@@ -110,36 +110,36 @@
  * **Host discovers and configures the composite device in 8 steps:**
  *
  * ```
- * 1. RESET        → USB bus reset, device enters Default state
+ * 1. RESET        -> USB bus reset, device enters Default state
  *                   (handled by rx_usb.c)
  *
- * 2. GET_DESCRIPTOR(Device) → Host requests device descriptor
+ * 2. GET_DESCRIPTOR(Device) -> Host requests device descriptor
  *                             ← s_device_desc (18 bytes)
  *                             Device class: 0xEF (Miscellaneous with IAD)
  *
- * 3. SET_ADDRESS(7) → Host assigns address 7
+ * 3. SET_ADDRESS(7) -> Host assigns address 7
  *                     Device enters Addressed state
  *
- * 4. GET_DESCRIPTOR(Configuration) → Host requests full config
+ * 4. GET_DESCRIPTOR(Configuration) -> Host requests full config
  *                                    ← s_config_desc (207 bytes)
  *                                    3 IADs + 6 interfaces + 9 endpoints
  *
- * 5. GET_DESCRIPTOR(String 0) → Language ID
+ * 5. GET_DESCRIPTOR(String 0) -> Language ID
  *                               ← 0x0409 (English US)
  *
- * 6. GET_DESCRIPTOR(String 1,2,3) → Manufacturer, Product, Serial
+ * 6. GET_DESCRIPTOR(String 1,2,3) -> Manufacturer, Product, Serial
  *                                   ← "Renesas", "STAR RX72N CDC", "00000001"
  *
- * 7. SET_CONFIGURATION(1) → Host selects configuration 1
+ * 7. SET_CONFIGURATION(1) -> Host selects configuration 1
  *                           Configure 9 pipes (3 ports × 3 pipes each)
  *                           Enable BRDY/BEMP interrupts
  *                           Device enters Configured state
- *                           → Invoke configured callbacks for all 3 ports
+ *                           -> Invoke configured callbacks for all 3 ports
  *
- * 8. Class Requests → Per-port CDC configuration
- *    SET_LINE_CODING(port) → Set baud rate, parity, stop bits
- *    SET_CONTROL_LINE_STATE(port) → Set DTR/RTS
- *    GET_LINE_CODING(port) → Read current settings
+ * 8. Class Requests -> Per-port CDC configuration
+ *    SET_LINE_CODING(port) -> Set baud rate, parity, stop bits
+ *    SET_CONTROL_LINE_STATE(port) -> Set DTR/RTS
+ *    GET_LINE_CODING(port) -> Read current settings
  * ```
  *
  * **Total enumeration time:** ~200-500ms (depends on host)
@@ -268,14 +268,14 @@
  * USB ISR: BEMP interrupt (buffer empty)
  *            ↓
  * rx_usb_cdc_handle_bulk_in(port)
- *   1. rx_usb_tx_pop(port, data, 64) → Read from ring buffer
- *   2. rx_usb_hw_fifo_write(pipe, data, len) → Write to USB FIFO
+ *   1. rx_usb_tx_pop(port, data, 64) -> Read from ring buffer
+ *   2. rx_usb_hw_fifo_write(pipe, data, len) -> Write to USB FIFO
  *   3. Hardware sends packet to host
  *   4. If more data, repeat on next BEMP
  *   5. If TX buffer empty, invoke TX_COMPLETE callback
  * ```
  *
- * **Reception (Host → RX72N):**
+ * **Reception (Host -> RX72N):**
  *
  * ```
  * USB Hardware: Packet received in FIFO
@@ -283,10 +283,10 @@
  * USB ISR: BRDY interrupt (buffer ready)
  *            ↓
  * rx_usb_cdc_handle_bulk_out(port)
- *   1. rx_usb_hw_fifo_read(pipe, data, 64) → Read from USB FIFO
- *   2. rx_usb_rx_push(port, data, len) → Write to RX ring buffer
+ *   1. rx_usb_hw_fifo_read(pipe, data, 64) -> Read from USB FIFO
+ *   2. rx_usb_rx_push(port, data, len) -> Write to RX ring buffer
  *   3. If RX_AVAILABLE callback registered, invoke callback
- *   4. Application: rx_usb_read(port, data, len) → Read from ring buffer
+ *   4. Application: rx_usb_read(port, data, len) -> Read from ring buffer
  * ```
  *
  * **Bulk transfer performance:**
@@ -328,14 +328,14 @@
  * ```
  * SET_CONFIGURATION(1) received
  *   ↓
- * Configure Pipe 1 (Port 0 Bulk IN) → Success
- * Configure Pipe 2 (Port 0 Bulk OUT) → Success
- * Configure Pipe 3 (Port 0 Interrupt IN) → Success
- * Configure Pipe 4 (Port 1 Bulk IN) → Success
- * Configure Pipe 5 (Port 1 Bulk OUT) → FAILURE ❌
+ * Configure Pipe 1 (Port 0 Bulk IN) -> Success
+ * Configure Pipe 2 (Port 0 Bulk OUT) -> Success
+ * Configure Pipe 3 (Port 0 Interrupt IN) -> Success
+ * Configure Pipe 4 (Port 1 Bulk IN) -> Success
+ * Configure Pipe 5 (Port 1 Bulk OUT) -> FAILURE [FAIL]
  *   ↓
  * internal_rollback_pipes(5)
- *   → Disable pipes 1, 2, 3, 4 (set PID to NAK)
+ *   -> Disable pipes 1, 2, 3, 4 (set PID to NAK)
  *   ↓
  * Send STALL to host
  * Device remains in Addressed state (not Configured)
@@ -348,9 +348,9 @@
  * - Host confusion from mixed success/failure
  *
  * **Alternative (NOT used):** Continue with partial configuration
- * - ❌ Would require complex per-port state tracking
- * - ❌ Host sees partial success, doesn't retry
- * - ❌ Debugging harder (which pipes failed?)
+ * - [FAIL] Would require complex per-port state tracking
+ * - [FAIL] Host sees partial success, doesn't retry
+ * - [FAIL] Debugging harder (which pipes failed?)
  *
  * ---
  *
@@ -408,11 +408,11 @@
  * ```
  *
  * **ISR safety requirements:**
- * - ✓ No blocking operations (no tx_sleep(), no polling loops)
- * - ✓ Minimal execution time (<100 µs per interrupt)
- * - ✓ No dynamic memory allocation
- * - ✓ Re-entrant code (no shared mutable state without protection)
- * - ✓ Callback invocation safe (callbacks must also be ISR-safe)
+ * - [OK] No blocking operations (no tx_sleep(), no polling loops)
+ * - [OK] Minimal execution time (<100 µs per interrupt)
+ * - [OK] No dynamic memory allocation
+ * - [OK] Re-entrant code (no shared mutable state without protection)
+ * - [OK] Callback invocation safe (callbacks must also be ISR-safe)
  *
  * **Current ISR priority:** 5 (configurable via rx_usb_init())
  *
@@ -421,16 +421,16 @@
  * ## Error Handling Strategy
  *
  * **Control transfer errors:**
- * - Unsupported standard requests → STALL (host retries or gives up)
- * - Unsupported class requests → STALL (host may continue with defaults)
- * - Unknown descriptor types → STALL (host uses cached descriptors)
- * - Pipe configuration failure → Rollback + STALL (host retries SET_CONFIGURATION)
+ * - Unsupported standard requests -> STALL (host retries or gives up)
+ * - Unsupported class requests -> STALL (host may continue with defaults)
+ * - Unknown descriptor types -> STALL (host uses cached descriptors)
+ * - Pipe configuration failure -> Rollback + STALL (host retries SET_CONFIGURATION)
  *
  * **Bulk transfer errors:**
- * - FIFO read/write incomplete → Log error, continue (data loss, but no crash)
- * - Invalid port ID → Silent ignore (defensive check, should never happen)
- * - Ring buffer full (RX) → Data lost, logged by rx_usb_rx_push()
- * - Ring buffer empty (TX) → Zero-length transfer (host sees end of data)
+ * - FIFO read/write incomplete -> Log error, continue (data loss, but no crash)
+ * - Invalid port ID -> Silent ignore (defensive check, should never happen)
+ * - Ring buffer full (RX) -> Data lost, logged by rx_usb_rx_push()
+ * - Ring buffer empty (TX) -> Zero-length transfer (host sees end of data)
  *
  * **Error recovery:** Most errors self-correct on next transfer or host retry. No persistent
  * error state that requires manual reset.
@@ -440,12 +440,12 @@
  * ## Thread Safety and Concurrency
  *
  * **Not thread-safe.** All public functions must be called from single execution context:
- * - `rx_usb_cdc_init()` → Main thread before USB enabled
- * - `rx_usb_cdc_handle_*()` → USB ISR only
+ * - `rx_usb_cdc_init()` -> Main thread before USB enabled
+ * - `rx_usb_cdc_handle_*()` -> USB ISR only
  *
  * **Concurrent access to shared state:**
- * - `s_line_coding[]` → Written by ISR (SET_LINE_CODING), read by ISR (GET_LINE_CODING)
- * - `s_control_line_state[]` → Written by ISR only
+ * - `s_line_coding[]` -> Written by ISR (SET_LINE_CODING), read by ISR (GET_LINE_CODING)
+ * - `s_control_line_state[]` -> Written by ISR only
  * - No mutex/semaphore needed (single ISR priority level)
  *
  * **Application interaction:**
@@ -459,19 +459,19 @@
  *
  * | Rule | Status | Evidence |
  * |------|--------|----------|
- * | **1. Simple control flow** | ✅ | No goto, setjmp/longjmp, or recursion |
- * | **2. Fixed loop bounds** | ✅ | All loops bounded by port count (3) or pipe count (9) |
- * | **3. No dynamic memory** | ✅ | Zero malloc/free, all data static/stack allocated |
- * | **4. Short functions** | ✅ | All functions <100 lines (avg ~30 lines) |
- * | **5. Assertions** | ✅ | 2+ checks per function (nullptr, bounds, state) |
- * | **6. Narrow scope** | ✅ | Variables declared at first use, minimal lifetime |
- * | **7. Check return values** | ✅ | All rx_err_t returns checked or cast (void) |
- * | **8. Limit preprocessor** | ✅ | C23 typed enums, no macro constants |
- * | **9. Restrict pointers** | ⚠️ | Uses function pointers for DIP (intentional deviation) |
- * | **10. Compiler warnings** | ✅ | -Wall -Wextra -Werror, zero warnings |
+ * | **1. Simple control flow** | [PASS] | No goto, setjmp/longjmp, or recursion |
+ * | **2. Fixed loop bounds** | [PASS] | All loops bounded by port count (3) or pipe count (9) |
+ * | **3. No dynamic memory** | [PASS] | Zero malloc/free, all data static/stack allocated |
+ * | **4. Short functions** | [PASS] | All functions <100 lines (avg ~30 lines) |
+ * | **5. Assertions** | [PASS] | 2+ checks per function (nullptr, bounds, state) |
+ * | **6. Narrow scope** | [PASS] | Variables declared at first use, minimal lifetime |
+ * | **7. Check return values** | [PASS] | All rx_err_t returns checked or cast (void) |
+ * | **8. Limit preprocessor** | [PASS] | C23 typed enums, no macro constants |
+ * | **9. Restrict pointers** | [WARN] | Uses function pointers for DIP (intentional deviation) |
+ * | **10. Compiler warnings** | [PASS] | -Wall -Wextra -Werror, zero warnings |
  *
  * **Rule 9 Deviation Rationale:**
- * - `rx_usb_hw_fifo_read()`, `rx_usb_hw_fifo_write()` → Function pointers for HAL abstraction
+ * - `rx_usb_hw_fifo_read()`, `rx_usb_hw_fifo_write()` -> Function pointers for HAL abstraction
  * - Enables unit testing with mock USB hardware
  * - Essential for Dependency Inversion Principle (SOLID)
  *
@@ -1937,10 +1937,10 @@ static void internal_handle_set_control_line_state(const rx_usb_port_id_t port,
  * @since Version 1.5.0 (added 3rd port support)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 2: ✓ Fixed loop bound (k_usb_port_count = 3)
- * - Rule 3: ✓ No dynamic memory allocation
- * - Rule 5: ✓ 2 preconditions, 3 postconditions
- * - Rule 6: ✓ Variables declared at minimal scope
+ * - Rule 2: [OK] Fixed loop bound (k_usb_port_count = 3)
+ * - Rule 3: [OK] No dynamic memory allocation
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions
+ * - Rule 6: [OK] Variables declared at minimal scope
  *
  * @par SOLID Principles:
  * - **S**: Single responsibility (initialize CDC class state only)
@@ -2058,9 +2058,9 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * 1. Read SETUP packet from USB registers (USBREQ, USBVAL, USBINDX, USBLENG)
  * 2. Extract request type from bmRequestType bits [6:5]
  * 3. Route to appropriate handler:
- *    - Standard requests (0b00) → internal_handle_standard_request()
- *    - Class requests (0b01) → internal_handle_class_request()
- *    - Vendor requests (0b10) → STALL (not supported)
+ *    - Standard requests (0b00) -> internal_handle_standard_request()
+ *    - Class requests (0b01) -> internal_handle_class_request()
+ *    - Vendor requests (0b10) -> STALL (not supported)
  * 4. Handler sends data/status or STALL
  *
  * **Standard Requests Supported:**
@@ -2074,8 +2074,8 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * **Class Requests Supported (CDC-ACM per port):**
  * | Request | Code | Description | Data Stage |
  * |---------|------|-------------|------------|
- * | SET_LINE_CODING | 0x20 | Set baud/parity/stop/data | 7 bytes OUT (host → device) |
- * | GET_LINE_CODING | 0x21 | Get current settings | 7 bytes IN (device → host) |
+ * | SET_LINE_CODING | 0x20 | Set baud/parity/stop/data | 7 bytes OUT (host -> device) |
+ * | GET_LINE_CODING | 0x21 | Get current settings | 7 bytes IN (device -> host) |
  * | SET_CONTROL_LINE_STATE | 0x22 | Set DTR/RTS | No data (status only) |
  *
  * **SETUP Packet Examples:**
@@ -2087,7 +2087,7 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * wValue        = 0x0100 [Type=Device(01), Index=0]
  * wIndex        = 0x0000
  * wLength       = 0x0012 [18 bytes requested]
- * → Response: Send s_device_desc (18 bytes)
+ * -> Response: Send s_device_desc (18 bytes)
  * ```
  *
  * *Example 2: SET_CONFIGURATION(1)*
@@ -2097,8 +2097,8 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * wValue        = 0x0001 [Configuration 1]
  * wIndex        = 0x0000
  * wLength       = 0x0000 [No data stage]
- * → Action: Configure 9 pipes, enable BRDY/BEMP interrupts
- * → Response: Send zero-length status packet (CCPL)
+ * -> Action: Configure 9 pipes, enable BRDY/BEMP interrupts
+ * -> Response: Send zero-length status packet (CCPL)
  * ```
  *
  * *Example 3: SET_LINE_CODING (Port 0)*
@@ -2111,15 +2111,15 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * Data: [00 C2 01 00] [00] [00] [08]
  *       ↑ 115200 bps   ↑    ↑    ↑ 8 data bits
  *                    1 stop  No parity
- * → Action: Update s_line_coding[0]
- * → Response: Send zero-length status packet (CCPL)
+ * -> Action: Update s_line_coding[0]
+ * -> Response: Send zero-length status packet (CCPL)
  * ```
  *
  * **Error Handling:**
- * - Unsupported request type → Send STALL (DCPCTR.PID = STALL)
- * - Unknown descriptor → Send STALL
- * - Invalid interface number → Send STALL
- * - Pipe configuration failure → Rollback + STALL
+ * - Unsupported request type -> Send STALL (DCPCTR.PID = STALL)
+ * - Unknown descriptor -> Send STALL
+ * - Invalid interface number -> Send STALL
+ * - Pipe configuration failure -> Rollback + STALL
  *
  * STALL response tells host "request not supported" - host may retry or continue with defaults.
  *
@@ -2133,9 +2133,9 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * | SET_LINE_CODING | 15 µs | 30 µs |
  *
  * **Execution Context:** USB ISR (interrupt priority 5)
- * - ✓ No blocking operations
- * - ✓ Minimal execution time (<500 µs worst-case)
- * - ✓ Re-entrant safe (no shared mutable state between SETUP packets)
+ * - [OK] No blocking operations
+ * - [OK] Minimal execution time (<500 µs worst-case)
+ * - [OK] Re-entrant safe (no shared mutable state between SETUP packets)
  *
  * @param None (reads SETUP packet from USB registers)
  *
@@ -2145,7 +2145,7 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * @pre CTRT interrupt flag set in INTSTS0
  * @pre USB in Default, Addressed, or Configured state
  * @post SETUP packet processed (data sent, status sent, or STALL sent)
- * @post USB state may transition (Default→Addressed→Configured)
+ * @post USB state may transition (Default->Addressed->Configured)
  * @post Pipes may be configured (if SET_CONFIGURATION)
  *
  * @note NOT thread-safe - must only be called from USB ISR
@@ -2161,10 +2161,10 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * - Frequency: ~10 Hz during enumeration, <1 Hz after configured
  *
  * @par State Machine Impact:
- * - GET_DESCRIPTOR → No state change
- * - SET_ADDRESS → Default → Addressed
- * - SET_CONFIGURATION → Addressed → Configured
- * - Class requests → No state change
+ * - GET_DESCRIPTOR -> No state change
+ * - SET_ADDRESS -> Default -> Addressed
+ * - SET_CONFIGURATION -> Addressed -> Configured
+ * - Class requests -> No state change
  *
  * @par Example Usage (from ISR):
  * @code
@@ -2204,10 +2204,10 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * @since Version 1.5.0 (added 3rd port support)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ Simple control flow (if/switch, no goto)
- * - Rule 4: ✓ Short function (~25 lines)
- * - Rule 5: ✓ 3 preconditions, 3 postconditions
- * - Rule 7: ✓ All return values checked or explicitly ignored
+ * - Rule 1: [OK] Simple control flow (if/switch, no goto)
+ * - Rule 4: [OK] Short function (~25 lines)
+ * - Rule 5: [OK] 3 preconditions, 3 postconditions
+ * - Rule 7: [OK] All return values checked or explicitly ignored
  *
  * @par SOLID Principles:
  * - **S**: Single responsibility (route SETUP packets only)
@@ -2241,14 +2241,14 @@ void rx_usb_cdc_handle_setup(void)
 }
 
 /**
- * @brief Handle USB bulk OUT transfer (data received from host → device)
+ * @brief Handle USB bulk OUT transfer (data received from host -> device)
  *
  * @details
  * Processes bulk OUT transfers for a specific CDC port when data arrives from the
  * host computer. Called from USB ISR when BRDY (Buffer Ready) interrupt fires for
  * a bulk OUT pipe. This is the **reception path** for all serial data sent by the host.
  *
- * **Reception Flow (Host → RX72N):**
+ * **Reception Flow (Host -> RX72N):**
  * ```
  * 1. Host sends bulk OUT packet (up to 64 bytes)
  *    ↓
@@ -2294,10 +2294,10 @@ void rx_usb_cdc_handle_setup(void)
  * - This is normal USB behavior (ZLP for transaction termination)
  *
  * **Error Cases:**
- * - Invalid port ID → Silent return (defensive check)
- * - NULL config pointer → Silent return (should never happen)
- * - FIFO read incomplete → Logged by rx_usb_hw_fifo_read()
- * - Ring buffer full → Logged by rx_usb_rx_push(), data lost
+ * - Invalid port ID -> Silent return (defensive check)
+ * - NULL config pointer -> Silent return (should never happen)
+ * - FIFO read incomplete -> Logged by rx_usb_hw_fifo_read()
+ * - Ring buffer full -> Logged by rx_usb_rx_push(), data lost
  *
  * **Performance Characteristics:**
  * | Packet Size | FIFO Read | Ring Buffer Push | Total Time |
@@ -2313,10 +2313,10 @@ void rx_usb_cdc_handle_setup(void)
  * - CPU load: ~0.1% idle, up to 12% saturated (7 µs × 18 kHz)
  *
  * **Execution Context:** USB ISR (interrupt priority 5)
- * - ✓ No blocking operations
- * - ✓ Fast execution (<10 µs typical)
- * - ✓ Re-entrant safe (per-port state isolation)
- * - ✓ Callback invoked from ISR context (callback must be ISR-safe)
+ * - [OK] No blocking operations
+ * - [OK] Fast execution (<10 µs typical)
+ * - [OK] Re-entrant safe (per-port state isolation)
+ * - [OK] Callback invoked from ISR context (callback must be ISR-safe)
  *
  * @param[in] port Port ID that received data (k_usb_port_proto, k_usb_port_decoded, k_usb_port_log)
  *
@@ -2403,7 +2403,7 @@ void rx_usb_cdc_handle_setup(void)
  * # 6. Application reads via rx_usb_read(0, ...)
  * @endcode
  *
- * @see rx_usb_cdc_handle_bulk_in() Transmission counterpart (device → host)
+ * @see rx_usb_cdc_handle_bulk_in() Transmission counterpart (device -> host)
  * @see rx_usb_read() Application function to consume received data
  * @see rx_usb_rx_push() Internal function that pushes data to ring buffer
  * @see rx_usb_hw_fifo_read() Hardware layer function that reads USB FIFO
@@ -2413,10 +2413,10 @@ void rx_usb_cdc_handle_setup(void)
  * @since Version 1.5.0 (added Port 2 support)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ Simple control flow (no recursion, no goto)
- * - Rule 4: ✓ Short function (~20 lines)
- * - Rule 5: ✓ 4 preconditions, 3 postconditions
- * - Rule 7: ✓ rx_usb_rx_push() return value explicitly ignored (errors logged internally)
+ * - Rule 1: [OK] Simple control flow (no recursion, no goto)
+ * - Rule 4: [OK] Short function (~20 lines)
+ * - Rule 5: [OK] 4 preconditions, 3 postconditions
+ * - Rule 7: [OK] rx_usb_rx_push() return value explicitly ignored (errors logged internally)
  *
  * @par SOLID Principles:
  * - **S**: Single responsibility (read USB FIFO, push to ring buffer)
@@ -2446,7 +2446,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
 }
 
 /**
- * @brief Handle USB bulk IN transfer (data transmitted from device → host)
+ * @brief Handle USB bulk IN transfer (data transmitted from device -> host)
  *
  * @details
  * Processes bulk IN transfers for a specific CDC port when the USB hardware is ready
@@ -2454,7 +2454,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * Empty) interrupt fires for a bulk IN pipe. This is the **transmission path** for
  * all serial data sent to the host.
  *
- * **Transmission Flow (RX72N → Host):**
+ * **Transmission Flow (RX72N -> Host):**
  * ```
  * 1. Application calls rx_usb_write(port, data, len)
  *    ↓
@@ -2517,9 +2517,9 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * ```
  *
  * **Error Cases:**
- * - Invalid port ID → Silent return (defensive check)
- * - NULL config pointer → Silent return (should never happen)
- * - FIFO write incomplete → Logged by rx_usb_hw_fifo_write()
+ * - Invalid port ID -> Silent return (defensive check)
+ * - NULL config pointer -> Silent return (should never happen)
+ * - FIFO write incomplete -> Logged by rx_usb_hw_fifo_write()
  * - No error state persists (next BEMP retry continues transmission)
  *
  * **Performance Characteristics:**
@@ -2545,10 +2545,10 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * ```
  *
  * **Execution Context:** USB ISR (interrupt priority 5)
- * - ✓ No blocking operations
- * - ✓ Fast execution (<10 µs typical)
- * - ✓ Re-entrant safe (per-port state isolation)
- * - ✓ Callback invoked from ISR context (callback must be ISR-safe)
+ * - [OK] No blocking operations
+ * - [OK] Fast execution (<10 µs typical)
+ * - [OK] Re-entrant safe (per-port state isolation)
+ * - [OK] Callback invoked from ISR context (callback must be ISR-safe)
  *
  * @param[in] port Port ID to transmit from (k_usb_port_proto, k_usb_port_decoded, k_usb_port_log)
  *
@@ -2653,7 +2653,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * // Total: 16 bulk IN packets, ~16ms @ 1kHz USB frame rate
  * @endcode
  *
- * @see rx_usb_cdc_handle_bulk_out() Reception counterpart (host → device)
+ * @see rx_usb_cdc_handle_bulk_out() Reception counterpart (host -> device)
  * @see rx_usb_write() Application function to queue data for transmission
  * @see rx_usb_tx_pop() Internal function that pops data from ring buffer
  * @see rx_usb_hw_fifo_write() Hardware layer function that writes USB FIFO
@@ -2663,10 +2663,10 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * @since Version 1.5.0 (added Port 2 support)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ Simple control flow (no recursion, no goto)
- * - Rule 4: ✓ Short function (~18 lines)
- * - Rule 5: ✓ 4 preconditions, 3 postconditions
- * - Rule 7: ✓ rx_usb_hw_fifo_write() return value explicitly ignored (errors logged internally)
+ * - Rule 1: [OK] Simple control flow (no recursion, no goto)
+ * - Rule 4: [OK] Short function (~18 lines)
+ * - Rule 5: [OK] 4 preconditions, 3 postconditions
+ * - Rule 7: [OK] rx_usb_hw_fifo_write() return value explicitly ignored (errors logged internally)
  *
  * @par SOLID Principles:
  * - **S**: Single responsibility (pop from ring buffer, write to USB FIFO)

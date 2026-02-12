@@ -59,7 +59,7 @@
  * @endcode
  *
  * **Test Architecture:**
- * - Uses mock RSPI driver to simulate SPI peripheral without hardware
+ * - Uses mock SCI SPI driver to simulate SPI peripheral without hardware
  * - Mock provides injectable responses, error conditions, and call tracking
  * - Tests duplicate SPI function implementations to enable isolated unit testing
  * - Validates register addresses, bit field operations, and error handling
@@ -73,30 +73,30 @@
  *
  * **Mock State Management:**
  * - Port registers (PDR, PIDR, PCR) - Simulates GPIO configuration
- * - RSPI transfer state - Tracks TX/RX data and return codes
+ * - SCI SPI transfer state - Tracks TX/RX data and return codes
  * - Fault injection state - Allows test-controlled error conditions
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1 (Control Flow):** ✓ All test functions use simple sequential flow
- * - **Rule 2 (Loop Bounds):** ✓ All loops have compile-time known bounds
- * - **Rule 3 (Dynamic Memory):** ✓ Zero heap allocation (stack-only test data)
- * - **Rule 4 (Function Size):** ✓ Test functions <60 lines, helpers <20 lines
- * - **Rule 5 (Assertions):** ✓ Every test has minimum 1 assertion, most have 3+
- * - **Rule 7 (Return Checking):** ✓ All mock function returns validated
- * - **Rule 9 (Pointers):** ✓ Single-level dereferencing only
- * - **Rule 10 (Warnings):** ✓ Compiles with -Wall -Wextra -Werror
+ * - **Rule 1 (Control Flow):** [OK] All test functions use simple sequential flow
+ * - **Rule 2 (Loop Bounds):** [OK] All loops have compile-time known bounds
+ * - **Rule 3 (Dynamic Memory):** [OK] Zero heap allocation (stack-only test data)
+ * - **Rule 4 (Function Size):** [OK] Test functions <60 lines, helpers <20 lines
+ * - **Rule 5 (Assertions):** [OK] Every test has minimum 1 assertion, most have 3+
+ * - **Rule 7 (Return Checking):** [OK] All mock function returns validated
+ * - **Rule 9 (Pointers):** [OK] Single-level dereferencing only
+ * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility:** Each test validates one specific behavior
  * - **Open/Closed:** Mock injection allows extending test scenarios without modifying driver
- * - **Liskov Substitution:** Mock RSPI can replace real HAL without changing tests
+ * - **Liskov Substitution:** Mock SCI SPI can replace real HAL without changing tests
  * - **Interface Segregation:** Tests use minimal mock interface (only needed functions)
- * - **Dependency Inversion:** Tests depend on RSPI abstraction, not concrete implementation
+ * - **Dependency Inversion:** Tests depend on SCI SPI abstraction, not concrete implementation
  *
  * @par Module Dependencies:
  * - rx_drv8243.h - Driver API under test
  * - rx_drv8243_spi_regs.h - Register definitions and SPI frame macros
- * - mock_rspi.h - Mock SPI peripheral driver
+ * - mock_sci_spi.h - Mock SCI SPI controller driver
  * - rx_err.h - Error code definitions
  * - rx_port_constants.h - GPIO port/pin constants
  * - unity.h - Unit testing framework
@@ -118,7 +118,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "mock_rspi.h"
+#include "mock_sci_spi.h"
 #include "rx_drv8243.h"
 #include "rx_drv8243_spi_regs.h"
 #include "rx_err.h"
@@ -142,8 +142,8 @@ typedef enum : uint32_t {
 
 /** @brief Test frame constants */
 typedef enum : uint32_t {
-  k_expected_write_frame    = 0x0E55, /**< Expected SPI write frame (CONFIG3, 0x55) */
-  k_expected_read_frame     = 0x4000, /**< Expected SPI read frame (DEVICE_ID) */
+  k_expected_write_frame    = 0x8E55, /**< Expected SPI write frame (CONFIG3, 0x55) with parity */
+  k_expected_read_frame     = 0xC000, /**< Expected SPI read frame (DEVICE_ID) with parity */
   k_expected_fault_response = 0x80AB, /**< Expected response with fault bit set */
   k_expected_status_byte    = 0x80,   /**< Expected status byte (fault bit) */
   k_expected_data_byte      = 0xAB,   /**< Expected data byte */
@@ -211,10 +211,10 @@ typedef enum : uint32_t {
   k_mock_max_ports          = 32,
   k_mock_default_ki_propi   = 525,
   k_mock_max_pwm_freq_hz    = 25000,
-  k_mock_rspi_channel       = 1,
+  k_mock_sci_channel        = 12,
   k_mock_cs_port            = k_rx_port_4, /**< CS on Port 4 */
   k_mock_cs_pin             = k_rx_pin_5,  /**< CS on Pin 5 */
-  k_mock_device_id_value    = 0x10,
+  k_mock_device_id_value    = 0x32,
   k_mock_no_fault_response  = 0x0000,
   k_mock_with_fault_response = 0x8000,
 } mock_constants_t;
@@ -255,8 +255,8 @@ static void mock_reset_all(void)
   s_fault_port = 0;
   s_fault_pin  = 0;
 
-  /* Reset RSPI mock */
-  mock_rspi_init(nullptr);
+  /* Reset SCI SPI mock */
+  mock_sci_spi_init();
 }
 
 /* mock_set_fault is currently unused but kept for future fault simulation tests */
@@ -380,19 +380,10 @@ static rx_err_t internal_drv8243_spi_read_reg(rx_drv8243_handle_t* h, uint8_t ad
     return k_rx_err_invalid_arg;
   }
 
-  uint16_t tx_frame  = DRV8243_SPI_READ_FRAME(addr);
-  uint16_t rx_frame  = 0;
-  rx_err_t err       = k_rx_fail;
+  uint16_t tx_frame = DRV8243_SPI_READ_FRAME(addr);
+  uint16_t rx_frame = 0;
 
-  err = rspi_controller_set_cs(h->rspi_channel, true);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  err = rspi_controller_transfer_16bit(h->rspi_channel, tx_frame, &rx_frame);
-
-  (void)rspi_controller_set_cs(h->rspi_channel, false);
-
+  rx_err_t err = sci_spi_controller_transfer_16bit(h->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     return err;
   }
@@ -411,19 +402,10 @@ static rx_err_t internal_drv8243_spi_write_reg(rx_drv8243_handle_t* h, uint8_t a
     return k_rx_err_invalid_arg;
   }
 
-  uint16_t tx_frame  = DRV8243_SPI_WRITE_FRAME(addr, data);
-  uint16_t rx_frame  = 0;
-  rx_err_t err       = k_rx_fail;
+  uint16_t tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
+  uint16_t rx_frame = 0;
 
-  err = rspi_controller_set_cs(h->rspi_channel, true);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  err = rspi_controller_transfer_16bit(h->rspi_channel, tx_frame, &rx_frame);
-
-  (void)rspi_controller_set_cs(h->rspi_channel, false);
-
+  rx_err_t err = sci_spi_controller_transfer_16bit(h->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     return err;
   }
@@ -747,16 +729,16 @@ static rx_drv8243_handle_t create_initialized_spi_handle(void)
   rx_drv8243_handle_t handle = {0};
   handle.initialized         = true;
   handle.spi_enabled         = true;
-  handle.rspi_channel        = k_mock_rspi_channel;
+  handle.sci_channel         = k_mock_sci_channel;
   handle.config_locked       = false;
 
-  /* Initialize the mock RSPI controller so transfers work */
-  rspi_controller_config_t ctrl_config = {
-      .spi_mode = (rspi_mode_t)k_mock_spi_mode,
+  /* Initialize the mock SCI SPI controller so transfers work */
+  sci_spi_controller_config_t ctrl_config = {
+      .spi_mode = k_mock_spi_mode,
       .freq_hz  = k_mock_spi_freq_hz,
       .cs       = (rx_port_pin_t)((k_mock_cs_port << k_port_shift) | k_mock_cs_pin),
   };
-  rx_err_t err = rspi_init_controller(k_mock_rspi_channel, &ctrl_config);
+  rx_err_t err = sci_spi_init_controller(k_mock_sci_channel, &ctrl_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   return handle;
@@ -808,13 +790,13 @@ static void test_clear_fault_success(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
   /* Set up mock to return no fault */
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, k_mock_no_fault_response);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, k_mock_no_fault_response);
 
   rx_err_t err = rx_drv8243_spi_clear_fault(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify CLR_FLT command was sent */
-  uint16_t last_tx = mock_rspi_get_controller_last_tx(nullptr, k_mock_rspi_channel);
+  uint16_t last_tx = mock_sci_spi_get_last_tx(k_mock_sci_channel);
   uint8_t  tx_data = last_tx & 0xFF;
   TEST_ASSERT_EQUAL(k_drv8243_cmd_clr_flt_mask, tx_data);
 }
@@ -858,7 +840,7 @@ static void test_read_device_id_success(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
   /* Set up mock to return device ID */
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, k_mock_device_id_value);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, k_mock_device_id_value);
 
   uint8_t  device_id = 0;
   rx_err_t err       = rx_drv8243_spi_read_device_id(&handle, &device_id);
@@ -894,7 +876,7 @@ static void test_set_slew_rate_success(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00); /* Initial CONFIG3 value */
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00); /* Initial CONFIG3 value */
 
   rx_err_t err = rx_drv8243_spi_set_slew_rate(&handle, k_drv8243_slew_20v_us);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -929,7 +911,7 @@ static void test_set_itrip_success(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_set_itrip(&handle, k_drv8243_itrip_1v65, k_drv8243_toff_30us);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -940,7 +922,7 @@ static void test_set_itrip_disabled(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_set_itrip(&handle, k_drv8243_itrip_disabled, k_drv8243_toff_20us);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -966,7 +948,7 @@ static void test_set_ocp_success(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, k_drv8243_ocp_filter_2us);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -992,7 +974,7 @@ static void test_set_mode_success(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_set_mode(&handle, k_drv8243_mode_pwm_2);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1018,7 +1000,7 @@ static void test_enable_ssc_success(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_enable_ssc(&handle, true);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1030,7 +1012,7 @@ static void test_disable_ssc_success(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
   /* Current config has SSC enabled (SSC_DIS bit = 0) */
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_enable_ssc(&handle, false);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1046,7 +1028,7 @@ static void test_lock_config_success(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_lock_config(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1059,7 +1041,7 @@ static void test_unlock_config_success(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
   handle.config_locked       = true;
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_err_t err = rx_drv8243_spi_unlock_config(&handle);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1077,7 +1059,7 @@ static void test_get_detailed_fault_no_faults(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
   /* FAULT_SUMMARY = 0x00, STATUS1 = 0x00 */
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   rx_drv8243_detailed_fault_t fault;
   rx_err_t err = rx_drv8243_spi_get_detailed_fault(&handle, &fault);
@@ -1107,7 +1089,7 @@ static void test_get_detailed_fault_overcurrent(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
   /* First read returns STATUS1 with OCP_H1 set (bit 3) */
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, k_drv8243_status1_ocp_h1_mask);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, k_drv8243_status1_ocp_h1_mask);
 
   rx_drv8243_detailed_fault_t fault;
   rx_err_t err = rx_drv8243_spi_get_detailed_fault(&handle, &fault);
@@ -1144,19 +1126,19 @@ static void test_spi_transfer_error(void)
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
   /* Simulate SPI transfer error */
-  mock_rspi_set_controller_transfer_return(nullptr, k_rx_err_timeout);
+  mock_sci_spi_set_transfer_return(k_rx_err_timeout);
 
   rx_err_t err = rx_drv8243_spi_clear_fault(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
-static void test_spi_cs_error(void)
+static void test_spi_hw_error(void)
 {
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  /* Simulate CS control error */
-  mock_rspi_set_controller_cs_return(nullptr, k_rx_err_hw_init_failed);
+  /* Simulate SPI hardware error */
+  mock_sci_spi_set_transfer_return(k_rx_err_hw_init_failed);
 
   rx_err_t err = rx_drv8243_spi_clear_fault(&handle);
   TEST_ASSERT_EQUAL(k_rx_err_hw_init_failed, err);
@@ -1172,7 +1154,7 @@ static void test_set_ocp_invalid_thresh(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   /* Test with out-of-range threshold (valid range: 0-2) */
   rx_err_t err = rx_drv8243_spi_set_ocp(&handle, (drv8243_ocp_thresh_t)3, k_drv8243_ocp_filter_2us);
@@ -1184,7 +1166,7 @@ static void test_set_ocp_invalid_filter(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   /* Test with out-of-range filter (valid range: 0-3) */
   rx_err_t err = rx_drv8243_spi_set_ocp(&handle, k_drv8243_ocp_thresh_medium, (drv8243_ocp_filter_t)4);
@@ -1196,7 +1178,7 @@ static void test_set_mode_invalid_value(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   /* Test with out-of-range mode (valid range: 0-3) */
   rx_err_t err = rx_drv8243_spi_set_mode(&handle, (drv8243_control_mode_t)4);
@@ -1208,7 +1190,7 @@ static void test_lock_config_when_already_locked(void)
   test_setup();
   rx_drv8243_handle_t handle = create_initialized_spi_handle();
 
-  mock_rspi_set_controller_rx_data(nullptr, k_mock_rspi_channel, 0x00);
+  mock_sci_spi_set_rx_data(k_mock_sci_channel, 0x00);
 
   /* First lock should succeed */
   rx_err_t err = rx_drv8243_spi_lock_config(&handle);
@@ -1280,7 +1262,7 @@ int main(void)
 
   /* SPI error tests */
   RUN_TEST(test_spi_transfer_error);
-  RUN_TEST(test_spi_cs_error);
+  RUN_TEST(test_spi_hw_error);
 
   /* Negative path and idempotency tests */
   RUN_TEST(test_set_ocp_invalid_thresh);

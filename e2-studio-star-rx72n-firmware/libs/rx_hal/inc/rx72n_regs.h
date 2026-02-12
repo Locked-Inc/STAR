@@ -217,27 +217,27 @@
  * @par Module Dependencies:
  * ```
  * rx72n_regs.h (this file)
- *   ├─→ rx72n_system_regs.h
- *   ├─→ rx72n_port_regs.h
- *   ├─→ rx72n_adc_regs.h
- *   ├─→ rx72n_sci_regs.h
- *   ├─→ rx72n_riic_regs.h
- *   ├─→ rx72n_rspi_regs.h
- *   ├─→ rx72n_cmt_regs.h
- *   ├─→ rx72n_icu_regs.h
- *   ├─→ rx72n_iwdt_regs.h
- *   ├─→ rx72n_wdt_regs.h
- *   ├─→ rx72n_crc_regs.h
- *   ├─→ rx72n_usb_regs.h
- *   ├─→ rx72n_mtu_regs.h
- *   ├─→ rx72n_gptw_regs.h
- *   ├─→ rx72n_mpc_regs.h
- *   ├─→ rx72n_flash_regs.h
- *   ├─→ rx72n_ram_regs.h
- *   └─→ rx72n_clock.h
+ *   ├─-> rx72n_system_regs.h
+ *   ├─-> rx72n_port_regs.h
+ *   ├─-> rx72n_adc_regs.h
+ *   ├─-> rx72n_sci_regs.h
+ *   ├─-> rx72n_riic_regs.h
+ *   ├─-> rx72n_rspi_regs.h
+ *   ├─-> rx72n_cmt_regs.h
+ *   ├─-> rx72n_icu_regs.h
+ *   ├─-> rx72n_iwdt_regs.h
+ *   ├─-> rx72n_wdt_regs.h
+ *   ├─-> rx72n_crc_regs.h
+ *   ├─-> rx72n_usb_regs.h
+ *   ├─-> rx72n_mtu_regs.h
+ *   ├─-> rx72n_gptw_regs.h
+ *   ├─-> rx72n_mpc_regs.h
+ *   ├─-> rx72n_flash_regs.h
+ *   ├─-> rx72n_ram_regs.h
+ *   └─-> rx72n_clock.h
  *
  * Used by:
- *   └─→ hardware.h (HAL API implementation)
+ *   └─-> hardware.h (HAL API implementation)
  * ```
  *
  * @author STAR Team

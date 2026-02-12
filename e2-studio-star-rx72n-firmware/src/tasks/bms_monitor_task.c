@@ -268,16 +268,16 @@
  *
  * | Rule | Status | Implementation Details |
  * |------|--------|------------------------|
- * | **Rule 1: Control Flow** | ✅ | No goto, setjmp, longjmp, or recursion. All control flow uses if/while only. |
- * | **Rule 2: Loop Bounds** | ✅ | Single while(true) loop with fixed 1s sleep period. Provably bounded iteration. |
- * | **Rule 3: No Heap** | ✅ | Zero dynamic allocation. Stack (1024 bytes) and TCB (140 bytes) statically allocated. |
- * | **Rule 4: Function Length** | ✅ | bms_monitor_task_create(): 30 lines, internal_bms_task_entry(): 66 lines (both < 60 LOC target). |
- * | **Rule 5: Assertions** | ✅ | 6 assertions: RX_ASSERT(!s_bms_created), 4 preconditions, 2 postconditions. |
- * | **Rule 6: Data Scope** | ✅ | All file-scope variables use static (s_bms_thread, s_bms_stack, s_bms_created, s_tag). |
- * | **Rule 7: Return Checks** | ✅ | All rx_bq4050, shared_data, tx_* returns validated or explicitly cast to (void). |
- * | **Rule 8: Preprocessor** | ✅ | C23 typed enums for all constants (k_bms_task_*, k_bms_*_soc_percent). Zero macros. |
- * | **Rule 9: Pointers** | ✅ | Single-level pointers only (bms_state_t*, rx_bq4050_config_t*). |
- * | **Rule 10: Warnings** | ✅ | Compiles with -Wall -Wextra -Werror. Zero warnings. |
+ * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion. All control flow uses if/while only. |
+ * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 1s sleep period. Provably bounded iteration. |
+ * | **Rule 3: No Heap** | [PASS] | Zero dynamic allocation. Stack (1024 bytes) and TCB (140 bytes) statically allocated. |
+ * | **Rule 4: Function Length** | [PASS] | bms_monitor_task_create(): 30 lines, internal_bms_task_entry(): 66 lines (both < 60 LOC target). |
+ * | **Rule 5: Assertions** | [PASS] | 6 assertions: RX_ASSERT(!s_bms_created), 4 preconditions, 2 postconditions. |
+ * | **Rule 6: Data Scope** | [PASS] | All file-scope variables use static (s_bms_thread, s_bms_stack, s_bms_created, s_tag). |
+ * | **Rule 7: Return Checks** | [PASS] | All rx_bq4050, shared_data, tx_* returns validated or explicitly cast to (void). |
+ * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums for all constants (k_bms_task_*, k_bms_*_soc_percent). Zero macros. |
+ * | **Rule 9: Pointers** | [PASS] | Single-level pointers only (bms_state_t*, rx_bq4050_config_t*). |
+ * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror. Zero warnings. |
  *
  * ## SOLID Principles
  *
@@ -572,7 +572,7 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  * @post internal_bms_task_entry() scheduled for execution (auto-start)
  * @post Task will begin polling BQ4050 at 1 Hz after I2C initialization
  *
- * @invariant s_bms_created transitions false → true exactly once (never resets)
+ * @invariant s_bms_created transitions false -> true exactly once (never resets)
  * @invariant Task priority remains at k_bms_priority (15) throughout lifetime
  * @invariant Stack size remains at k_bms_task_stack_size (1024 bytes)
  *
@@ -1038,7 +1038,7 @@ rx_err_t bms_monitor_task_create(void)
  * bms.valid = true;
  *
  * // Step 3: Check thresholds
- * if (12 < k_bms_low_soc_percent) {  // 12 < 15 → TRUE
+ * if (12 < k_bms_low_soc_percent) {  // 12 < 15 -> TRUE
  *   rx_log_warn_val("BMS", "Low battery SoC", 12);
  *   // UART output: "[BMS] WARNING: Low battery SoC: 12"
  *
@@ -1063,7 +1063,7 @@ rx_err_t bms_monitor_task_create(void)
  * bms.valid = true;
  *
  * // Step 3: Check thresholds
- * if (3 < k_bms_critical_soc_percent) {  // 3 < 5 → TRUE
+ * if (3 < k_bms_critical_soc_percent) {  // 3 < 5 -> TRUE
  *   rx_log_error_val("BMS", "Critical battery SoC", 3);
  *   // UART output: "[BMS] ERROR: Critical battery SoC: 3"
  *
@@ -1124,13 +1124,13 @@ rx_err_t bms_monitor_task_create(void)
  * @test test_bms_monitor_task.c - Verify BQ4050 init failure recovery
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1:** ✅ No goto, setjmp, recursion (only if/while control flow)
- * - **Rule 2:** ✅ Single while(true) loop with fixed 1000ms period
- * - **Rule 3:** ✅ Zero dynamic allocation (all stack-based locals)
- * - **Rule 4:** ✅ Function is 66 lines (under 100 LOC guideline)
- * - **Rule 5:** ✅ 5 preconditions, 5 postconditions documented
- * - **Rule 7:** ✅ All function returns checked or cast to (void)
- * - **Rule 8:** ✅ All constants use C23 typed enums (no macros)
+ * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/while control flow)
+ * - **Rule 2:** [PASS] Single while(true) loop with fixed 1000ms period
+ * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based locals)
+ * - **Rule 4:** [PASS] Function is 66 lines (under 100 LOC guideline)
+ * - **Rule 5:** [PASS] 5 preconditions, 5 postconditions documented
+ * - **Rule 7:** [PASS] All function returns checked or cast to (void)
+ * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
  *
  * @callgraph
  * @callergraph

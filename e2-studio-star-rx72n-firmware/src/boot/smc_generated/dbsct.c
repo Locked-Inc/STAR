@@ -52,9 +52,9 @@
  *
  * **Startup Sequence:**
  * 1. PowerON_Reset_PC() calls _INITSCT()
- * 2. _INITSCT() iterates through _DTBL[], copies ROM → RAM
+ * 2. _INITSCT() iterates through _DTBL[], copies ROM -> RAM
  * 3. _INITSCT() iterates through _BTBL[], zeros BSS
- * 4. Control returns to PowerON_Reset_PC() → jumps to main()
+ * 4. Control returns to PowerON_Reset_PC() -> jumps to main()
  *
  * **Expansion RAM Support:**
  * If BSP_CFG_EXPANSION_RAM_ENABLE=1, additional sections are defined:
@@ -135,7 +135,7 @@ Macro definitions
  * For a global variable `uint32_t g_count = 42;`:
  * - Compiler places initial value (42) in ROM D section
  * - Linker creates entry: { &D_start, &D_end, &R_start }
- * - _INITSCT() copies ROM → RAM at startup
+ * - _INITSCT() copies ROM -> RAM at startup
  * - Program accesses variable from RAM
  *
  * @see _DTBL[] Array of all data section copy descriptors

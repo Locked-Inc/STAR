@@ -13,7 +13,7 @@
  *
  * **Boot sequence context:**
  * ```
- * Reset → main() → rx_clock_power_init() → hardware_init() → tx_kernel_enter()
+ * Reset -> main() -> rx_clock_power_init() -> hardware_init() -> tx_kernel_enter()
  *                  ↑ This file          ↑ Peripherals    ↑ Start RTOS
  * ```
  *
@@ -103,7 +103,7 @@
  * **Why these loops fail in simulator**:
  * - Simulator doesn't model external 24 MHz crystal oscillation
  * - Simulator doesn't model PLL/PPLL hardware circuits
- * - OSCOVFSR register bits never set → polling loops timeout with 0x203 error
+ * - OSCOVFSR register bits never set -> polling loops timeout with 0x203 error
  *
  * **What works in simulator**:
  * - Register configuration (PLLCR, SCKCR, MEMWAIT, etc.)
@@ -184,16 +184,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|----------------------|
- * | **Rule 1: Control flow** | ✅ PASS | No goto, setjmp, or recursion |
- * | **Rule 2: Loop bounds** | ✅ PASS | All loops have explicit upper bounds (k_pll_stabilization_timeout, etc.) |
- * | **Rule 3: Heap allocation** | ✅ PASS | Zero dynamic allocation (all constants, local variables) |
- * | **Rule 4: Function length** | ✅ PASS | Longest function: internal_clock_init() = 114 lines |
- * | **Rule 5: Assertions** | ✅ PASS | 9 precondition/postcondition checks across all functions |
- * | **Rule 6: Data scope** | ✅ PASS | All variables at smallest scope (function-local) |
- * | **Rule 7: Return checks** | ✅ PASS | All rx_err_t returns checked |
- * | **Rule 8: Preprocessor** | ✅ PASS | Zero macros (uses C23 typed enums for all constants) |
- * | **Rule 9: Pointers** | ✅ PASS | Single-level dereferencing only |
- * | **Rule 10: Warnings** | ✅ PASS | Compiles with -Wall -Wextra -Werror |
+ * | **Rule 1: Control flow** | [PASS] | No goto, setjmp, or recursion |
+ * | **Rule 2: Loop bounds** | [PASS] | All loops have explicit upper bounds (k_pll_stabilization_timeout, etc.) |
+ * | **Rule 3: Heap allocation** | [PASS] | Zero dynamic allocation (all constants, local variables) |
+ * | **Rule 4: Function length** | [PASS] | Longest function: internal_clock_init() = 114 lines |
+ * | **Rule 5: Assertions** | [PASS] | 9 precondition/postcondition checks across all functions |
+ * | **Rule 6: Data scope** | [PASS] | All variables at smallest scope (function-local) |
+ * | **Rule 7: Return checks** | [PASS] | All rx_err_t returns checked |
+ * | **Rule 8: Preprocessor** | [PASS] | Zero macros (uses C23 typed enums for all constants) |
+ * | **Rule 9: Pointers** | [PASS] | Single-level dereferencing only |
+ * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -620,7 +620,7 @@ static rx_err_t internal_verify_system_state(void)
  * This is the **FIRST initialization function** called from main() after reset, before any
  * peripheral setup or RTOS startup.
  *
- * **Call sequence:** Reset → main() → rx_clock_power_init() → hardware_init() → tx_kernel_enter()
+ * **Call sequence:** Reset -> main() -> rx_clock_power_init() -> hardware_init() -> tx_kernel_enter()
  *
  * ## Three-Phase Initialization
  *
@@ -675,7 +675,7 @@ static rx_err_t internal_verify_system_state(void)
  * | **Verification** | ~2 µs | No | Register reads only |
  * | **Total** | **~10.5 ms** | Yes | **Not on critical boot path** |
  *
- * **Boot time context:** Total boot time (reset → ThreadX) is ~51 ms, dominated by USB
+ * **Boot time context:** Total boot time (reset -> ThreadX) is ~51 ms, dominated by USB
  * enumeration (~50 ms) which happens later in app_main_task. Clock init is only ~20% of boot.
  *
  * ## Error Scenarios and Recovery

@@ -14,7 +14,7 @@
  * **Device**: Texas Instruments DRV8243S Dual H-Bridge Motor Driver
  * **Platform**: Renesas RX72N @ 240 MHz
  * **Control Interface**: Hardware PWM (GPTW peripheral) + GPIO + Optional SPI
- * **Current Sensing**: Analog IPROPI output → 12-bit ADC → Software current limiting
+ * **Current Sensing**: Analog IPROPI output -> 12-bit ADC -> Software current limiting
  * **Fault Detection**: Active-low nFAULT GPIO pin with interrupt capability
  *
  * **Key Features:**
@@ -45,17 +45,17 @@
  *   drv8243 [label="rx_drv8243\n(This Module)", fillcolor=lightgreen, style=filled];
  *   rx_motor [label="rx_motor\n(GPTW PWM)", fillcolor=lightyellow, style=filled];
  *   bus_mgr [label="Bus Manager\n(ADC + GPIO)", fillcolor=lightyellow, style=filled];
- *   rspi [label="RSPI Controller\n(Optional SPI)", fillcolor=lightyellow, style=filled];
+ *   sci_spi [label="SCI SPI Controller\n(Optional SPI)", fillcolor=lightyellow, style=filled];
  *   hardware [label="DRV8243 IC\n(H-Bridge Driver)", fillcolor=lightgray, style=filled];
  *   motor [label="Brushed DC Motor", shape=component];
  *
  *   app -> drv8243 [label="set_speed()\nread_current()"];
  *   drv8243 -> rx_motor [label="PWM duty\ncycle"];
  *   drv8243 -> bus_mgr [label="ADC read\nGPIO read"];
- *   drv8243 -> rspi [label="SPI config\n(optional)"];
+ *   drv8243 -> sci_spi [label="SPI config\n(optional)"];
  *   rx_motor -> hardware [label="PH/EN signals\n(GPTW outputs)"];
  *   bus_mgr -> hardware [label="ADC sample\nGPIO monitor"];
- *   rspi -> hardware [label="SPI commands\n(optional)"];
+ *   sci_spi -> hardware [label="SPI commands\n(optional)"];
  *   hardware -> motor [label="H-bridge\noutputs"];
  *   hardware -> bus_mgr [label="IPROPI (analog)\nnFAULT (digital)", dir=back];
  * }
@@ -101,10 +101,10 @@
  * - **Faulted**: Hardware fault detected (nFAULT=LOW) or current limit violated
  *
  * @par State Transition Guards:
- * - init() → Initialized: All resources acquired successfully
- * - set_speed() → Running: No fault active, speed within [-100, +100]
- * - Fault detection → Faulted: nFAULT pin LOW or current > limit_ma
- * - clear_fault() → Initialized: SPI variant only, fault condition resolved
+ * - init() -> Initialized: All resources acquired successfully
+ * - set_speed() -> Running: No fault active, speed within [-100, +100]
+ * - Fault detection -> Faulted: nFAULT pin LOW or current > limit_ma
+ * - clear_fault() -> Initialized: SPI variant only, fault condition resolved
  *
  * ## Hardware Requirements
  *
@@ -114,7 +114,7 @@
  * | **GPIO Outputs** | 2 pins (PH, EN) | H-bridge phase and enable signals |
  * | **GPIO Input** | 1 pin (nFAULT) | Fault detection (active low, pull-up) |
  * | **ADC Channel** | 1 channel | IPROPI current sensing (0-3.3V analog) |
- * | **RSPI Channel** | 1 channel (optional) | SPI configuration interface |
+ * | **SCI Channel** | 1 channel (optional, SCI12) | SPI configuration interface |
  * | **Bus Manager** | 1 instance | ADC and GPIO abstraction layer |
  * | **RAM** | ~120 bytes | Handle structure (rx_drv8243_handle_t) |
  * | **Flash** | ~6 KB | Code + constants |
@@ -270,7 +270,7 @@
  * @code{.c}
  * // Enable SPI variant for advanced configuration
  * config.use_spi_variant    = true;
- * config.rspi_channel       = 0;               // RSPI0
+ * config.sci_channel        = 12;              // SCI12
  * config.spi_cs_port        = 3;               // PORT3
  * config.spi_cs_pin         = 2;               // Pin 2
  * config.initial_slew_rate  = k_drv8243_slew_15v_us;  // 15 V/µs (lower EMI)
@@ -301,7 +301,7 @@
  * @par Module Dependencies:
  * - rx_motor: Hardware PWM generation via GPTW peripheral
  * - rx_bus_manager: Abstraction for ADC (current sensing) and GPIO (fault detection)
- * - rspi: SPI controller driver (optional, for SPI variant only)
+ * - rx_sci_spi: SCI SPI controller driver (optional, for SPI variant only)
  * - rx_err: Standardized error code system
  * - rx_check: Parameter validation macros (RX_CHECK_NULL_PTR)
  * - rx_log: Logging infrastructure
@@ -315,19 +315,19 @@
  * @see docs/datasheets/drv8243.pdf DRV8243 datasheet (hardware reference)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp/longjmp, or recursion used
- * - Rule 2: ✓ All loops have compile-time bounded iterations
- * - Rule 3: ✓ Zero dynamic memory allocation (all buffers static)
- * - Rule 4: ✓ All functions < 60 lines (longest: init ~58 lines)
- * - Rule 5: ✓ Minimum 2 assertions per function via RX_CHECK_NULL_PTR + state validation
- * - Rule 6: ✓ Variables declared at smallest scope (function-local)
- * - Rule 7: ✓ All return values checked (rx_err_t propagated or logged)
- * - Rule 8: ✓ Uses C23 typed enums exclusively (no magic numbers)
- * - Rule 9: ⚠️ INTENTIONAL DEVIATION: Uses function pointers via bus_manager interface (DIP pattern for testability)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror (zero warnings)
+ * - Rule 1: [OK] No goto, setjmp/longjmp, or recursion used
+ * - Rule 2: [OK] All loops have compile-time bounded iterations
+ * - Rule 3: [OK] Zero dynamic memory allocation (all buffers static)
+ * - Rule 4: [OK] All functions < 60 lines (longest: init ~58 lines)
+ * - Rule 5: [OK] Minimum 2 assertions per function via RX_CHECK_NULL_PTR + state validation
+ * - Rule 6: [OK] Variables declared at smallest scope (function-local)
+ * - Rule 7: [OK] All return values checked (rx_err_t propagated or logged)
+ * - Rule 8: [OK] Uses C23 typed enums exclusively (no magic numbers)
+ * - Rule 9: [WARN] INTENTIONAL DEVIATION: Uses function pointers via bus_manager interface (DIP pattern for testability)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror (zero warnings)
  *
  * @par SOLID Principles:
- * - **S (Single Responsibility):** Only DRV8243-specific integration logic. PWM handled by rx_motor, ADC/GPIO by bus_manager, SPI by rspi.
+ * - **S (Single Responsibility):** Only DRV8243-specific integration logic. PWM handled by rx_motor, ADC/GPIO by bus_manager, SPI by rx_sci_spi.
  * - **O (Open/Closed):** Extensible via configuration structure. New features (e.g., enhanced fault handling) can be added without modifying existing code.
  * - **L (Liskov Substitution):** Can substitute any conforming bus_manager implementation (real hardware or mock for testing).
  * - **I (Interface Segregation):** Clean separation: non-SPI variant doesn't depend on SPI functions. Optional features (SPI, current limiting) independently configurable.
@@ -338,7 +338,7 @@
  * - All bus_manager calls (ADC read, GPIO access) go through bus manager's thread-safe interface
  * - Internal state (current_speed, fault_active, config_locked) not protected - caller must synchronize
  * - Recommendation: Protect driver handle with application-level mutex if accessed from multiple threads
- * - RSPI controller functions are NOT thread-safe - serialize SPI calls externally if needed
+ * - SCI SPI controller functions are NOT thread-safe - serialize SPI calls externally if needed
  *
  * @warning Do NOT call set_speed() from ISR context (calls bus_manager which may use mutex/ADC)
  * @warning SPI variant configuration changes require unlock/modify/lock sequence to prevent corruption
@@ -366,6 +366,7 @@
 #include "rx_gpio_constants.h"
 #include "rx_log.h"
 #include "rx_port_utils.h"
+#include "rx_sci_spi.h"
 
 static const char* s_tag = "DRV8243";
 
@@ -461,7 +462,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *   init_motor [label="Initialize Motor Controller\n(rx_motor_init)"];
  *   cfg_fault [label="Configure nFAULT Pin\n(GPIO input + pull-up)"];
  *   spi_check [label="SPI Variant?", shape=diamond];
- *   init_spi [label="Initialize RSPI\n(rspi_controller_init)"];
+ *   init_spi [label="Initialize SCI SPI\n(sci_spi_init_controller)"];
  *   apply_spi [label="Apply SPI Config\n(slew, ITRIP, mode)"];
  *   set_state [label="Set Initial State\n(speed=0, initialized=true)"];
  *   post_check [label="Post-Condition Check\n(NASA Rule 5)"];
@@ -520,7 +521,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *    - Pin can be monitored via get_fault_status() or interrupt
  *
  * 5. **SPI variant initialization** (if config->use_spi_variant = true):
- *    - Initialize RSPI controller with Mode 1 (CPOL=0, CPHA=1)
+ *    - Initialize SCI SPI controller with Mode 1 (CPOL=0, CPHA=1)
  *    - SPI clock: 5 MHz (conservative, datasheet allows up to 10 MHz)
  *    - Apply initial configuration:
  *      - Unlock configuration registers (REG_LOCK = 10b)
@@ -565,7 +566,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *     - ki_propi: [0-1000] A/V (0 = use default 525, typical: 525)
  *   - **Lifetime**: Only read during init, can be stack-allocated
  *   - **SPI variant fields** (if use_spi_variant = true):
- *     - rspi_channel: [0-2] (valid RSPI channel on RX72N)
+ *     - sci_channel: 12 (SCI12 for motor driver SPI bus)
  *     - spi_cs_port: [0-10] (GPIO port for chip select)
  *     - spi_cs_pin: [0-7] (GPIO pin for chip select)
  *     - initial_slew_rate: Valid drv8243_slew_rate_t enumeration
@@ -588,12 +589,12 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @pre config must point to valid configuration with all required fields populated
  * @pre config->bus_manager must be initialized and ready for ADC/GPIO operations
  * @pre config->pwm_freq_hz must be within [1000, 25000] Hz range
- * @pre If config->use_spi_variant = true, RSPI peripheral must be available
+ * @pre If config->use_spi_variant = true, SCI12 peripheral must be available
  *
  * @post handle->initialized = true if function returns k_rx_ok
  * @post Motor controller initialized with PWM outputs stopped (duty = 0%)
  * @post nFAULT pin configured as input with pull-up enabled
- * @post If SPI variant: RSPI initialized and initial configuration applied
+ * @post If SPI variant: SCI SPI initialized and initial configuration applied
  * @post handle->current_speed = 0.0f (motor stopped)
  * @post handle->fault_active = false (no fault detected)
  *
@@ -605,8 +606,8 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @note To reinitialize: Must call rx_drv8243_deinit() first, then can call init() again
  * @note SPI variant adds ~200 µs init time + increases code size by ~2 KB
  *
- * @warning Do NOT call from interrupt context (uses GPTW/RSPI which may disable interrupts)
- * @warning Ensure GPTW channel and RSPI channel are not in use by other modules
+ * @warning Do NOT call from interrupt context (uses GPTW/SCI SPI which may disable interrupts)
+ * @warning Ensure GPTW channel and SCI channel are not in use by other modules
  * @warning PWM outputs will be enabled but at 0% duty after init (motor stopped but driver active)
  *
  * @attention Always check return value - partial initialization is NOT recoverable (must deinit)
@@ -646,7 +647,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * rx_drv8243_config_t config = {
  *     // ... (same as above) ...
  *     .use_spi_variant    = true,
- *     .rspi_channel       = 0,                       // RSPI0
+ *     .sci_channel        = 12,                      // SCI12
  *     .spi_cs_port        = 3,                       // PORT3
  *     .spi_cs_pin         = 2,                       // P32
  *     .initial_slew_rate  = k_drv8243_slew_15v_us,   // 15 V/µs (lower EMI)
@@ -691,7 +692,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *         break;
  *
  *     case k_rx_err_spi_error:
- *         rx_log_error("APP", "RSPI%u initialization failed", config.rspi_channel);
+ *         rx_log_error("APP", "SCI%u SPI initialization failed", config.sci_channel);
  *         break;
  *
  *     default:
@@ -716,19 +717,19 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @see rx_drv8243_get_fault_status() Check nFAULT pin status
  * @see rx_motor_init() Underlying PWM controller initialization
  * @see rx_bus_manager.h Bus manager interface for ADC/GPIO
- * @see rspi_init_controller() RSPI initialization (SPI variant only)
+ * @see sci_spi_init_controller() SCI SPI initialization (SPI variant only)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops (sequential initialization)
- * - Rule 3: ✓ Zero dynamic allocation (all static/stack)
- * - Rule 4: ✓ Function length: 58 lines (within 60-line limit)
- * - Rule 5: ✓ 7 preconditions (NULL checks + range checks), 6 postconditions
- * - Rule 6: ✓ Variables at minimal scope (function-local)
- * - Rule 7: ✓ All return values checked (rx_motor_init, internal helpers)
- * - Rule 8: ✓ Uses typed enums exclusively (no magic numbers)
- * - Rule 9: ⚠️ Calls through bus_manager function pointers (DIP pattern)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops (sequential initialization)
+ * - Rule 3: [OK] Zero dynamic allocation (all static/stack)
+ * - Rule 4: [OK] Function length: 58 lines (within 60-line limit)
+ * - Rule 5: [OK] 7 preconditions (NULL checks + range checks), 6 postconditions
+ * - Rule 6: [OK] Variables at minimal scope (function-local)
+ * - Rule 7: [OK] All return values checked (rx_motor_init, internal helpers)
+ * - Rule 8: [OK] Uses typed enums exclusively (no magic numbers)
+ * - Rule 9: [WARN] Calls through bus_manager function pointers (DIP pattern)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @since Version 1.0.0
  * @version 1.1.0 Added SPI variant support
@@ -771,7 +772,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
 
   /* Store SPI variant configuration */
   handle->spi_enabled   = config->use_spi_variant;
-  handle->rspi_channel  = config->rspi_channel;
+  handle->sci_channel   = config->sci_channel;
   handle->config_locked = false;
 
   /* Initialize motor control (GPTW for H-bridge) */
@@ -811,7 +812,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     err = internal_drv8243_spi_apply_config(handle, config);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to apply initial SPI configuration");
-      (void)rspi_controller_deinit(handle->rspi_channel);  /* Cleanup, ignore errors */
+      (void)sci_spi_controller_deinit(handle->sci_channel);  /* Cleanup, ignore errors */
       (void)rx_motor_deinit(&handle->motor);  /* Cleanup, ignore errors */
       return err;
     }
@@ -859,7 +860,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
 
   /* Deinitialize SPI if it was enabled */
   if (handle->spi_enabled) {
-    err = rspi_controller_deinit(handle->rspi_channel);
+    err = sci_spi_controller_deinit(handle->sci_channel);
     RX_ERROR_CHECK_WITHOUT_ABORT(err);
   }
 
@@ -902,7 +903,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * 4. **PWM duty cycle update**:
  *    - Call rx_motor_set_duty() with speed percentage
  *    - rx_motor translates to GPTW PWM duty cycle
- *    - Sign-magnitude control: speed > 0 → forward, speed < 0 → reverse
+ *    - Sign-magnitude control: speed > 0 -> forward, speed < 0 -> reverse
  *
  * 5. **State update**:
  *    - Store speed in handle->current_speed
@@ -1097,16 +1098,16 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * @see rx_motor_set_duty() Underlying PWM duty cycle control
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 1: ✓ No goto, setjmp, recursion
- * - Rule 2: ✓ No loops
- * - Rule 3: ✓ Zero dynamic allocation
- * - Rule 4: ✓ Function length: 42 lines
- * - Rule 5: ✓ 3 preconditions, 3 postconditions, 2 invariants
- * - Rule 6: ✓ Variables at minimal scope
- * - Rule 7: ✓ All return values checked
- * - Rule 8: ✓ Uses typed enum constants
- * - Rule 9: ⚠️ Calls through bus_manager function pointers (DIP)
- * - Rule 10: ✓ Compiles with -Wall -Wextra -Werror
+ * - Rule 1: [OK] No goto, setjmp, recursion
+ * - Rule 2: [OK] No loops
+ * - Rule 3: [OK] Zero dynamic allocation
+ * - Rule 4: [OK] Function length: 42 lines
+ * - Rule 5: [OK] 3 preconditions, 3 postconditions, 2 invariants
+ * - Rule 6: [OK] Variables at minimal scope
+ * - Rule 7: [OK] All return values checked
+ * - Rule 8: [OK] Uses typed enum constants
+ * - Rule 9: [WARN] Calls through bus_manager function pointers (DIP)
+ * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @since Version 1.0.0
  */
@@ -1431,7 +1432,7 @@ internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, u
 
   tx_frame = DRV8243_SPI_READ_FRAME(addr);
 
-  err = rspi_controller_transfer_16bit(handle->rspi_channel, tx_frame, &rx_frame);
+  err = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI read failed");
     return err;
@@ -1469,7 +1470,7 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
 
   tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
 
-  err = rspi_controller_transfer_16bit(handle->rspi_channel, tx_frame, &rx_frame);
+  err = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI write failed");
     return err;
@@ -1491,25 +1492,25 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
 static rx_err_t internal_drv8243_spi_init(rx_drv8243_handle_t*       handle,
                                           const rx_drv8243_config_t* config)
 {
-  rspi_controller_config_t spi_config;
-  rx_err_t                 err;
+  sci_spi_controller_config_t spi_config;
+  rx_err_t                    err;
 
   /* Rule 5: Pre-condition validation */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
-  spi_config.spi_mode = k_rspi_mode_1; /* DRV8243 uses SPI mode 1 (CPOL=0, CPHA=1) */
+  spi_config.spi_mode = k_sci_spi_mode_1; /* DRV8243 uses SPI mode 1 (CPOL=0, CPHA=1) */
   spi_config.freq_hz  = s_drv8243_spi_freq_hz;
   /* Construct rx_port_pin_t from separate port and pin values */
   spi_config.cs = (rx_port_pin_t)((config->spi_cs_port << k_port_shift) | config->spi_cs_pin);
 
-  err = rspi_init_controller(config->rspi_channel, &spi_config);
+  err = sci_spi_init_controller(config->sci_channel, &spi_config);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to initialize RSPI controller");
+    rx_log_error(s_tag, "Failed to initialize SCI SPI controller");
     return err;
   }
 
-  handle->rspi_channel = config->rspi_channel;
+  handle->sci_channel = config->sci_channel;
   handle->spi_enabled  = true;
 
   return k_rx_ok;

@@ -84,23 +84,23 @@
  *           fillcolor=lightgray, style=filled];
  *   }
  *
- *   // Data flow: Sources → Telemetry Task
+ *   // Data flow: Sources -> Telemetry Task
  *   motor_task -> telemetry_task [label="shared_data_get_motor_state()"];
  *   bms_task -> telemetry_task [label="shared_data_get_bms()"];
  *   temp_task -> telemetry_task [label="shared_data_get_temp()"];
  *   obstacle_task -> telemetry_task [label="shared_data_get_obstacle()"];
  *
- *   // Telemetry Task → Encoding
+ *   // Telemetry Task -> Encoding
  *   telemetry_task -> build_send [label="Call every 50ms"];
  *   build_send -> nanopb [label="rx_nanopb_encode_telemetry()"];
  *   build_send -> proto [label="TelemetryData message"];
  *
- *   // Encoding → Communication
+ *   // Encoding -> Communication
  *   nanopb -> comm_manager [label="Encoded protobuf bytes"];
  *   comm_manager -> usb_cdc [label="Primary channel"];
  *   comm_manager -> spi [label="Fallback channel"];
  *
- *   // Communication → Host
+ *   // Communication -> Host
  *   usb_cdc -> gateway [label="USB frames"];
  *   spi -> gateway [label="SPI frames"];
  *   gateway -> ros2 [label="Decoded telemetry"];
@@ -157,7 +157,7 @@
  *
  *       if (Motor data valid?) then (yes)
  *         :Populate emergency_stop (bool);
- *         :Pack fault_flags (4 bytes → uint32_t);
+ *         :Pack fault_flags (4 bytes -> uint32_t);
  *         :Populate encoder_front_left;
  *         :Populate encoder_front_right;
  *         :Populate encoder_back_left;
@@ -165,14 +165,14 @@
  *       endif
  *
  *       if (BMS data valid?) then (yes)
- *         :Convert voltage (mV → V);
+ *         :Convert voltage (mV -> V);
  *         :Populate battery_voltage_v;
  *         :Populate battery_soc_percent;
  *         :Populate battery_percent (duplicate);
  *       endif
  *
  *       if (Temperature data valid?) then (yes)
- *         :Convert temperature (cdegC → °C);
+ *         :Convert temperature (cdegC -> °C);
  *         :Populate temperature_celsius;
  *       endif
  *     }
@@ -226,7 +226,7 @@
  * | **timestamp_us** | int64 | tx_time_get() | µs | ThreadX ticks × 10000 | System uptime in microseconds |
  * | **frame_sequence** | uint32 | s_sequence++ | - | Auto-increment | Message sequence counter |
  * | **emergency_stop** | bool | motor_state.estop_active | - | Direct copy | E-stop active flag |
- * | **fault_flags** | uint32 | motor_state.fault_flags[4] | - | Bitfield pack | 4 motor fault bytes → uint32 |
+ * | **fault_flags** | uint32 | motor_state.fault_flags[4] | - | Bitfield pack | 4 motor fault bytes -> uint32 |
  * | **encoder_front_left** | EncoderData | motor_state.encoder_counts[0] | ticks | Direct copy | Motor 0 encoder state |
  * | **encoder_front_right** | EncoderData | motor_state.encoder_counts[1] | ticks | Direct copy | Motor 1 encoder state |
  * | **encoder_back_left** | EncoderData | motor_state.encoder_counts[2] | ticks | Direct copy | Motor 2 encoder state |
@@ -244,7 +244,7 @@
  * |----------------|------|--------|-------|-------------|
  * | **motor_id** | uint32 | 0-3 | - | Motor index (FL=0, FR=1, BL=2, BR=3) |
  * | **ticks** | int64 | encoder_counts[i] | ticks | Cumulative quadrature encoder count |
- * | **velocity_mps** | double | current_velocity_mps[i] | m/s | Instantaneous velocity (float → double) |
+ * | **velocity_mps** | double | current_velocity_mps[i] | m/s | Instantaneous velocity (float -> double) |
  * | **timestamp_us** | int64 | telemetry.timestamp_us | µs | Copy of parent message timestamp |
  *
  * ### Fault Flags Bitfield Packing
@@ -315,13 +315,13 @@
  *
  * @startuml
  * state "USB CDC Available" as usb_active {
- *   state "Telemetry → USB" as usb_send
+ *   state "Telemetry -> USB" as usb_send
  *   usb_send : channel = k_comm_channel_usb
  *   usb_send : Host receives via USB CDC
  * }
  *
  * state "USB CDC Unavailable" as usb_failed {
- *   state "Telemetry → SPI" as spi_send
+ *   state "Telemetry -> SPI" as spi_send
  *   spi_send : channel = k_comm_channel_spi
  *   spi_send : RPi5 receives via SPI
  * }
@@ -554,7 +554,7 @@
  *
  *   --- [label="Phase 2: Protobuf Population (Build TelemetryData Message)"];
  *   TelemetryTask box TelemetryTask [label="Initialize TelemetryData protobuf\nSet timestamp_us = tx_time_get() * 10000\nSet frame_sequence = s_sequence++"];
- *   TelemetryTask box TelemetryTask [label="Populate motor fields:\n- emergency_stop\n- fault_flags (4 bytes → uint32)\n- encoder_front_left (ticks, velocity_mps)\n- encoder_front_right\n- encoder_back_left\n- encoder_back_right"];
+ *   TelemetryTask box TelemetryTask [label="Populate motor fields:\n- emergency_stop\n- fault_flags (4 bytes -> uint32)\n- encoder_front_left (ticks, velocity_mps)\n- encoder_front_right\n- encoder_back_left\n- encoder_back_right"];
  *   TelemetryTask box TelemetryTask [label="Convert BMS units:\n- battery_voltage_v = voltage_mv / 1000.0\n- battery_soc_percent = soc_percent"];
  *   TelemetryTask box TelemetryTask [label="Convert temp units:\n- temperature_celsius = temperature_cdegc / 100.0"];
  *
@@ -620,16 +620,16 @@
  *
  * | Rule | Compliance | Evidence |
  * |------|------------|----------|
- * | **Rule 1: Simplify Control Flow** | ✓ COMPLIANT | No `goto`, `setjmp`/`longjmp`, or recursion. All control flow uses `if`/`while` only. `internal_telem_task_entry()` uses `while(true)` for infinite loop (RTOS pattern). |
- * | **Rule 2: Fixed Loop Upper-Bounds** | ✓ COMPLIANT | Main loop is `while(true)` (RTOS task pattern with watchdog). No variable-bound loops. Protobuf population iterates exactly 4 times (motors 0-3, compile-time constant). |
- * | **Rule 3: No Dynamic Memory After Init** | ✓ COMPLIANT | ZERO `malloc`/`free`. All buffers statically allocated: `s_telem_stack[2048]`, `s_telem_buffer[512]`. ThreadX stack is static array. Protobuf uses nanopb (no dynamic allocation). |
- * | **Rule 4: Keep Functions Short (~60 lines)** | ✓ COMPLIANT | `telemetry_task_create()`: 31 lines. `internal_telem_task_entry()`: 18 lines. `internal_build_and_send_telemetry()`: 95 lines (complex but single responsibility - data aggregation). |
- * | **Rule 5: Use Assertions/Validation** | ✓ COMPLIANT | **4 validation checks:** (1) `RX_ASSERT(!s_telem_created)` prevents double-create. (2) `tx_thread_create()` return check. (3) `rx_nanopb_encode_telemetry()` return check. (4) `rx_comm_manager_send()` return check. Each `shared_data_get_*()` call validates return. |
- * | **Rule 6: Declare Data at Smallest Scope** | ✓ COMPLIANT | All variables declared at function start. Loop counters would be in `for()` if used (none in this task). File-scope statics use `s_` prefix. |
- * | **Rule 7: Check All Return Values** | ✓ COMPLIANT | ALL function returns validated: `tx_thread_create()`, `shared_data_get_*()`, `rx_nanopb_encode_telemetry()`, `rx_comm_manager_send()`. Encoding/send errors logged, graceful degradation. |
- * | **Rule 8: Limit Preprocessor Use** | ✓ COMPLIANT | No macros for constants. ALL integer constants use C23 typed enums with explicit underlying type: `typedef enum : uint16_t { k_telem_task_stack_size = 2048, ... }`. No function-like macros. |
- * | **Rule 9: Restrict Pointer Use** | ⚠️ INTENTIONAL DEVIATION | Uses function pointers for comm_manager send abstraction (Dependency Inversion Principle). Enables USB/SPI channel failover without telemetry task changes. |
- * | **Rule 10: Compile with Max Warnings** | ✓ COMPLIANT | Compiled with `-Wall -Wextra -Werror`. Build fails on ANY warning. CI/CD enforces zero-warning builds. |
+ * | **Rule 1: Simplify Control Flow** | [OK] COMPLIANT | No `goto`, `setjmp`/`longjmp`, or recursion. All control flow uses `if`/`while` only. `internal_telem_task_entry()` uses `while(true)` for infinite loop (RTOS pattern). |
+ * | **Rule 2: Fixed Loop Upper-Bounds** | [OK] COMPLIANT | Main loop is `while(true)` (RTOS task pattern with watchdog). No variable-bound loops. Protobuf population iterates exactly 4 times (motors 0-3, compile-time constant). |
+ * | **Rule 3: No Dynamic Memory After Init** | [OK] COMPLIANT | ZERO `malloc`/`free`. All buffers statically allocated: `s_telem_stack[2048]`, `s_telem_buffer[512]`. ThreadX stack is static array. Protobuf uses nanopb (no dynamic allocation). |
+ * | **Rule 4: Keep Functions Short (~60 lines)** | [OK] COMPLIANT | `telemetry_task_create()`: 31 lines. `internal_telem_task_entry()`: 18 lines. `internal_build_and_send_telemetry()`: 95 lines (complex but single responsibility - data aggregation). |
+ * | **Rule 5: Use Assertions/Validation** | [OK] COMPLIANT | **4 validation checks:** (1) `RX_ASSERT(!s_telem_created)` prevents double-create. (2) `tx_thread_create()` return check. (3) `rx_nanopb_encode_telemetry()` return check. (4) `rx_comm_manager_send()` return check. Each `shared_data_get_*()` call validates return. |
+ * | **Rule 6: Declare Data at Smallest Scope** | [OK] COMPLIANT | All variables declared at function start. Loop counters would be in `for()` if used (none in this task). File-scope statics use `s_` prefix. |
+ * | **Rule 7: Check All Return Values** | [OK] COMPLIANT | ALL function returns validated: `tx_thread_create()`, `shared_data_get_*()`, `rx_nanopb_encode_telemetry()`, `rx_comm_manager_send()`. Encoding/send errors logged, graceful degradation. |
+ * | **Rule 8: Limit Preprocessor Use** | [OK] COMPLIANT | No macros for constants. ALL integer constants use C23 typed enums with explicit underlying type: `typedef enum : uint16_t { k_telem_task_stack_size = 2048, ... }`. No function-like macros. |
+ * | **Rule 9: Restrict Pointer Use** | [WARN] INTENTIONAL DEVIATION | Uses function pointers for comm_manager send abstraction (Dependency Inversion Principle). Enables USB/SPI channel failover without telemetry task changes. |
+ * | **Rule 10: Compile with Max Warnings** | [OK] COMPLIANT | Compiled with `-Wall -Wextra -Werror`. Build fails on ANY warning. CI/CD enforces zero-warning builds. |
  *
  * ### Rule 5 Detailed Validation Checklist
  *
@@ -645,11 +645,11 @@
  *
  * | Principle | Compliance | Evidence |
  * |-----------|------------|----------|
- * | **Single Responsibility (S)** | ✓ COMPLIANT | This task has ONE job: aggregate telemetry data and broadcast it. Does NOT handle communication protocol (rx_comm_manager), encoding (rx_nanopb), or data collection (shared_data). |
- * | **Open/Closed (O)** | ✓ COMPLIANT | Adding new telemetry fields requires NO changes to this task - only shared_data + protobuf schema update. New data sources (e.g., IMU, GPS) can be added via `shared_data_get_imu()` pattern. |
- * | **Liskov Substitution (L)** | ✓ COMPLIANT | Comm manager channel abstraction allows USB CDC and SPI to be used interchangeably. Telemetry task is agnostic to transport layer. |
- * | **Interface Segregation (I)** | ✓ COMPLIANT | Task uses only needed shared_data functions: `shared_data_get_motor_state()`, `shared_data_get_bms()`, `shared_data_get_temp()`. Does NOT depend on `shared_data_set_*()` (motor control's responsibility). |
- * | **Dependency Inversion (D)** | ✓ COMPLIANT | Depends on abstract `rx_comm_manager` interface (not concrete USB CDC implementation). Depends on abstract `shared_data` interface (not concrete motor/BMS tasks). Uses `rx_nanopb` encoding abstraction (not raw protobuf API). |
+ * | **Single Responsibility (S)** | [OK] COMPLIANT | This task has ONE job: aggregate telemetry data and broadcast it. Does NOT handle communication protocol (rx_comm_manager), encoding (rx_nanopb), or data collection (shared_data). |
+ * | **Open/Closed (O)** | [OK] COMPLIANT | Adding new telemetry fields requires NO changes to this task - only shared_data + protobuf schema update. New data sources (e.g., IMU, GPS) can be added via `shared_data_get_imu()` pattern. |
+ * | **Liskov Substitution (L)** | [OK] COMPLIANT | Comm manager channel abstraction allows USB CDC and SPI to be used interchangeably. Telemetry task is agnostic to transport layer. |
+ * | **Interface Segregation (I)** | [OK] COMPLIANT | Task uses only needed shared_data functions: `shared_data_get_motor_state()`, `shared_data_get_bms()`, `shared_data_get_temp()`. Does NOT depend on `shared_data_set_*()` (motor control's responsibility). |
+ * | **Dependency Inversion (D)** | [OK] COMPLIANT | Depends on abstract `rx_comm_manager` interface (not concrete USB CDC implementation). Depends on abstract `shared_data` interface (not concrete motor/BMS tasks). Uses `rx_nanopb` encoding abstraction (not raw protobuf API). |
  *
  * ### Dependency Inversion Details
  *
@@ -722,7 +722,7 @@
  * - `test_telemetry_task_create()` - Creation validation
  * - `test_telemetry_build_full_message()` - All fields populated
  * - `test_telemetry_partial_message()` - Graceful degradation (BMS fail)
- * - `test_telemetry_unit_conversions()` - mV→V, cdegC→°C accuracy
+ * - `test_telemetry_unit_conversions()` - mV->V, cdegC->°C accuracy
  * - `test_telemetry_fault_flags_packing()` - Bitfield correctness
  * - `test_telemetry_sequence_counter()` - Monotonic increment
  * - `test_telemetry_send_failure()` - Non-critical error handling
@@ -802,7 +802,7 @@ typedef enum : uint16_t {
    * @brief Sleep period in ThreadX ticks (5 ticks = 50ms @ 100 Hz)
    *
    * @details
-   * 5 ticks × 10ms/tick = 50ms period → 20 Hz telemetry rate.
+   * 5 ticks × 10ms/tick = 50ms period -> 20 Hz telemetry rate.
    *
    * Rationale for 20 Hz:
    * - Sufficient for ROS2 navigation (typically 10 Hz path planning)
@@ -1076,7 +1076,7 @@ static const char* const s_tag = "TELEM";
  * Sequence counter behavior:
  * - **Initial value:** 0 (BSS zero-initialized at boot)
  * - **Increment:** Post-increment (`s_sequence++`) every cycle
- * - **Wraparound:** Wraps from 2^32-1 → 0 after ~24.8 days @ 20 Hz
+ * - **Wraparound:** Wraps from 2^32-1 -> 0 after ~24.8 days @ 20 Hz
  * - **Monotonic:** Always increases (never resets during runtime)
  *
  * Dropped message detection (host-side):
@@ -1089,7 +1089,7 @@ static const char* const s_tag = "TELEM";
  *
  * @note Single writer (telemetry task only), no mutex needed
  * @note Wraps around every ~49.7 days (2^32 / 20 Hz / 86400 s/day)
- * @note Host must handle wraparound: `(current_seq < last_seq) → wraparound detected`
+ * @note Host must handle wraparound: `(current_seq < last_seq) -> wraparound detected`
  *
  * @invariant Increments by exactly 1 every cycle (never skips, never resets)
  *
@@ -1482,13 +1482,13 @@ static void internal_telem_task_entry(ULONG input)
  * ## Phase 2: Protobuf Population (Build TelemetryData Message)
  *
  * Populate `star_v1_TelemetryData` protobuf message with collected data:
- * 1. **Timestamp:** ThreadX ticks → microseconds conversion
+ * 1. **Timestamp:** ThreadX ticks -> microseconds conversion
  * 2. **Sequence:** Auto-increment message counter
  * 3. **Motor fields:** E-stop, fault flags bitfield, 4 encoder submessages
- * 4. **BMS fields:** Battery voltage (mV→V), SoC (%), duplicate `battery_percent`
- * 5. **Temperature fields:** Ambient temp (cdegC→°C)
+ * 4. **BMS fields:** Battery voltage (mV->V), SoC (%), duplicate `battery_percent`
+ * 5. **Temperature fields:** Ambient temp (cdegC->°C)
  *
- * All unit conversions happen here (internal fixed-point → protobuf SI units).
+ * All unit conversions happen here (internal fixed-point -> protobuf SI units).
  *
  * ## Phase 3: Nanopb Encoding (Binary Protobuf Serialization)
  *
@@ -1502,7 +1502,7 @@ static void internal_telem_task_entry(ULONG input)
  *
  * Send encoded protobuf bytes via `rx_comm_manager`:
  * - **Channel:** USB CDC (primary) or SPI (fallback) - auto-selected by comm_manager
- * - **Frame type:** `k_frame_type_response` (data from RX72N → host)
+ * - **Frame type:** `k_frame_type_response` (data from RX72N -> host)
  * - **CRC:** Added by comm_manager (not included in encoded_len)
  * - **Result:** Message queued for transmission (non-blocking send)
  *
@@ -1530,7 +1530,7 @@ static void internal_telem_task_entry(ULONG input)
  *     style=filled;
  *     color=lightgreen;
  *
- *     populate [label="Populate TelemetryData struct\n- Timestamp (ThreadX ticks → µs)\n- Sequence (s_sequence++)\n- Motor fields (4 encoders)\n- BMS fields (mV → V)\n- Temp fields (cdegC → °C)"];
+ *     populate [label="Populate TelemetryData struct\n- Timestamp (ThreadX ticks -> µs)\n- Sequence (s_sequence++)\n- Motor fields (4 encoders)\n- BMS fields (mV -> V)\n- Temp fields (cdegC -> °C)"];
  *   }
  *
  *   // Phase 3: Nanopb Encoding
@@ -1539,7 +1539,7 @@ static void internal_telem_task_entry(ULONG input)
  *     style=filled;
  *     color=lightyellow;
  *
- *     encode [label="rx_nanopb_encode_telemetry()\nTelemetryData struct → binary protobuf\n(s_telem_buffer, ~250 bytes)"];
+ *     encode [label="rx_nanopb_encode_telemetry()\nTelemetryData struct -> binary protobuf\n(s_telem_buffer, ~250 bytes)"];
  *   }
  *
  *   // Phase 4: Transmission
@@ -1600,10 +1600,10 @@ static void internal_telem_task_entry(ULONG input)
  * Result: fault_flags = 0x78563412
  *
  * Unpacking (host-side):
- *   motor_0_fault = (fault_flags >> 0)  & 0xFF;  // Extract bits [0:7]   → 0x12
- *   motor_1_fault = (fault_flags >> 8)  & 0xFF;  // Extract bits [8:15]  → 0x34
- *   motor_2_fault = (fault_flags >> 16) & 0xFF;  // Extract bits [16:23] → 0x56
- *   motor_3_fault = (fault_flags >> 24) & 0xFF;  // Extract bits [24:31] → 0x78
+ *   motor_0_fault = (fault_flags >> 0)  & 0xFF;  // Extract bits [0:7]   -> 0x12
+ *   motor_1_fault = (fault_flags >> 8)  & 0xFF;  // Extract bits [8:15]  -> 0x34
+ *   motor_2_fault = (fault_flags >> 16) & 0xFF;  // Extract bits [16:23] -> 0x56
+ *   motor_3_fault = (fault_flags >> 24) & 0xFF;  // Extract bits [24:31] -> 0x78
  * ```
  *
  * **Rationale for packing:**
@@ -1624,9 +1624,9 @@ static void internal_telem_task_entry(ULONG input)
  * | **Transmission** | `rx_comm_manager_send() != k_rx_ok` | Log error, return error | Message lost (host detects via sequence) |
  *
  * **Partial message example:**
- * - Motor task running ✓ → Encoders populated
- * - BMS sensor failed ✗ → Battery fields omitted
- * - Temp sensor working ✓ → Temperature populated
+ * - Motor task running [OK] -> Encoders populated
+ * - BMS sensor failed [X] -> Battery fields omitted
+ * - Temp sensor working [OK] -> Temperature populated
  * - Result: Host receives motor + temp data (better than nothing)
  *
  * @return rx_err_t Operation status
@@ -1644,8 +1644,8 @@ static void internal_telem_task_entry(ULONG input)
  * @post Telemetry message sent via USB CDC or SPI (if successful)
  * @post Sequence counter incremented (`s_sequence++`)
  * @post ThreadX timestamp captured (microsecond-precision uptime)
- * @post Unit conversions applied (mV→V, cdegC→°C)
- * @post Fault flags bitfield packed (4 bytes → uint32)
+ * @post Unit conversions applied (mV->V, cdegC->°C)
+ * @post Fault flags bitfield packed (4 bytes -> uint32)
  *
  * @note Called every 50ms by `internal_telem_task_entry()` (20 Hz)
  * @note Execution time: ~120 µs (all phases)
@@ -1658,7 +1658,7 @@ static void internal_telem_task_entry(ULONG input)
  * @par Performance Breakdown (per 50ms cycle):
  * - **Phase 1 (Data Collection):** ~23 µs (3 mutex-protected reads)
  * - **Phase 2 (Protobuf Population):** ~20 µs (struct field assignment + unit conversions)
- * - **Phase 3 (Nanopb Encoding):** ~40 µs (TelemetryData → binary protobuf)
+ * - **Phase 3 (Nanopb Encoding):** ~40 µs (TelemetryData -> binary protobuf)
  * - **Phase 4 (Transmission):** ~60 µs (USB CDC transfer initiation)
  * - **Total:** ~143 µs (with overhead)
  *

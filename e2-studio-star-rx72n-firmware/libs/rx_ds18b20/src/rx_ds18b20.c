@@ -18,7 +18,7 @@
  *
  * **Communication Flow:**
  * ```
- * [rx_ds18b20] → [rx_bus_manager] → [rx_bus_onewire] → [GPIO HAL]
+ * [rx_ds18b20] -> [rx_bus_manager] -> [rx_bus_onewire] -> [GPIO HAL]
  * ```
  *
  * **Thread Safety:**
@@ -30,16 +30,16 @@
  *
  * | Rule | Status | Implementation |
  * |------|--------|----------------|
- * | 1. Simple control flow | ✓ | No goto, no recursion |
- * | 2. Fixed loop bounds | ✓ | All loops bounded by enum constants |
- * | 3. No dynamic allocation | ✓ | Zero malloc/free |
- * | 4. Short functions | ✓ | Max 60 lines per function |
- * | 5. Assertions | ✓ | Min 2 checks per function (nullptr, state) |
- * | 6. Data scope | ✓ | Variables declared at smallest scope |
- * | 7. Check returns | ✓ | All function returns validated |
- * | 8. Limit preprocessor | ✓ | Typed enums only, no magic numbers |
- * | 9. Pointer restrictions | ✓ | Single-level dereferencing |
- * | 10. Compile warnings | ✓ | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [OK] | No goto, no recursion |
+ * | 2. Fixed loop bounds | [OK] | All loops bounded by enum constants |
+ * | 3. No dynamic allocation | [OK] | Zero malloc/free |
+ * | 4. Short functions | [OK] | Max 60 lines per function |
+ * | 5. Assertions | [OK] | Min 2 checks per function (nullptr, state) |
+ * | 6. Data scope | [OK] | Variables declared at smallest scope |
+ * | 7. Check returns | [OK] | All function returns validated |
+ * | 8. Limit preprocessor | [OK] | Typed enums only, no magic numbers |
+ * | 9. Pointer restrictions | [OK] | Single-level dereferencing |
+ * | 10. Compile warnings | [OK] | -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -114,14 +114,14 @@
  *
  * **Error Propagation Strategy:**
  * ```c
- * // Check bus errors → return immediately
+ * // Check bus errors -> return immediately
  * err = rx_bus_onewire_reset(...);
  * if (err != k_rx_ok) return err;
  *
- * // Check CRC → return k_rx_err_crc_mismatch
+ * // Check CRC -> return k_rx_err_crc_mismatch
  * if (crc_calc != crc_device) return k_rx_err_crc_mismatch;
  *
- * // Check range → return k_rx_err_out_of_range
+ * // Check range -> return k_rx_err_out_of_range
  * if (temp < MIN || temp > MAX) return k_rx_err_out_of_range;
  * ```
  *

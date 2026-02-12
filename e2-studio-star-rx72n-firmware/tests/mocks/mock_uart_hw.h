@@ -29,7 +29,7 @@
  * @par Usage: tests/test_rx_bus_uart.c
  * @see uart_hal.h Real UART HAL
  * @see mock_sci_regs.h SCI register mock
- * @par NASA Power of 10: ✓ Static FIFO buffers
+ * @par NASA Power of 10: [OK] Static FIFO buffers
  * @par SOLID: D - UART bus depends on hardware interface
  *
  * @copyright Copyright (c) 2026 STAR Project. MIT License.

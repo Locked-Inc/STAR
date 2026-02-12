@@ -399,16 +399,16 @@
  * @see docs/sections/03_hardware_pinout.tex - GPIO pin assignments
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1** (No goto): ✓ All control flow uses structured statements
- * - **Rule 2** (Bounded loops): ✓ All loops have compile-time or runtime bounds
- * - **Rule 3** (No heap): ✓ Zero dynamic allocation (static handles only)
- * - **Rule 4** (Functions ≤60 lines): ✓ All public functions <60 lines
- * - **Rule 5** (Assertions): ✓ 2+ preconditions per function (NULL checks, state)
- * - **Rule 6** (Data scope): ✓ Variables declared at smallest scope
- * - **Rule 7** (Return checking): ✓ All HAL returns validated
- * - **Rule 8** (Preprocessor limits): ✓ C23 typed enums only, minimal macros
- * - **Rule 9** (Pointer restrictions): ⚠️ Intentional deviation for DIP (bus_manager)
- * - **Rule 10** (Compiler warnings): ✓ -Wall -Wextra -Werror, zero warnings
+ * - **Rule 1** (No goto): [OK] All control flow uses structured statements
+ * - **Rule 2** (Bounded loops): [OK] All loops have compile-time or runtime bounds
+ * - **Rule 3** (No heap): [OK] Zero dynamic allocation (static handles only)
+ * - **Rule 4** (Functions ≤60 lines): [OK] All public functions <60 lines
+ * - **Rule 5** (Assertions): [OK] 2+ preconditions per function (NULL checks, state)
+ * - **Rule 6** (Data scope): [OK] Variables declared at smallest scope
+ * - **Rule 7** (Return checking): [OK] All HAL returns validated
+ * - **Rule 8** (Preprocessor limits): [OK] C23 typed enums only, minimal macros
+ * - **Rule 9** (Pointer restrictions): [WARN] Intentional deviation for DIP (bus_manager)
+ * - **Rule 10** (Compiler warnings): [OK] -Wall -Wextra -Werror, zero warnings
  *
  * @par SOLID Principles:
  * - **S (Single Responsibility)**: Module handles ONLY DS18B20 sensor operations

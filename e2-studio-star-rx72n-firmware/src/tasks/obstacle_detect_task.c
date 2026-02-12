@@ -118,7 +118,7 @@
  * - @f$ d @f$ = distance in meters
  * - @f$ t_{\text{echo}} @f$ = echo pulse width in seconds (measured by GPT capture)
  * - @f$ v_{\text{sound}}(T) @f$ = temperature-compensated sound speed (m/s)
- * - Factor of 2: accounts for round-trip travel (sensor → obstacle → sensor)
+ * - Factor of 2: accounts for round-trip travel (sensor -> obstacle -> sensor)
  *
  * **Temperature Impact on Distance Accuracy:**
  *
@@ -241,7 +241,7 @@
  * - **3 consecutive samples** required to trigger or clear obstacle state
  * - Eliminates false positives from transient echoes (acoustic glitches)
  * - 3 samples @ 50 Hz = 60 ms confirmation latency
- * - Total obstacle → brake latency: ~100 ms (acceptable for 0.5 m/s max speed)
+ * - Total obstacle -> brake latency: ~100 ms (acceptable for 0.5 m/s max speed)
  *
  * ## Obstacle Detection State Machine
  *
@@ -420,7 +420,7 @@
  * | **Distance Resolution** | 3 mm | Limited by 1 µs timing precision |
  * | **Temperature Compensation** | ±0.5°C | From DS18B20 (temp_sensor_task) |
  *
- * **Latency Budget Breakdown (Obstacle → E-stop):**
+ * **Latency Budget Breakdown (Obstacle -> E-stop):**
  * 1. First detection: 20 ms (one poll cycle)
  * 2. Debounce confirmation: 40 ms (2 more samples @ 20 ms)
  * 3. Callback execution: 5 µs (shared_data access)
@@ -481,16 +481,16 @@
  *
  * | Rule | Status | Implementation Details |
  * |------|--------|------------------------|
- * | **Rule 1: Simplify Control Flow** | ✅ PASS | No goto, setjmp/longjmp, or recursion. Only if/while/for. |
- * | **Rule 2: Loop Bounds** | ✅ PASS | Single infinite loop with fixed sleep period (100 ticks). |
- * | **Rule 3: No Dynamic Memory** | ✅ PASS | Zero malloc/free. All allocations static (stack, .bss). |
- * | **Rule 4: Function Length** | ✅ PASS | Longest: internal_obstacle_task_entry() = 52 lines. |
- * | **Rule 5: Assertions** | ✅ PASS | Every function: 2+ checks (nullptr, created flag, init state). |
- * | **Rule 6: Smallest Scope** | ✅ PASS | Variables declared close to first use, file-scope static. |
- * | **Rule 7: Check Returns** | ✅ PASS | All rx_obstacle_detect_*() returns validated or cast (void). |
- * | **Rule 8: Preprocessor Limit** | ✅ PASS | C23 typed enums for all constants. No #define constants. |
- * | **Rule 9: Pointer Restrictions** | ⚠️ DEVIATION | Function pointers used (rx_obstacle callback - DIP). |
- * | **Rule 10: Compiler Warnings** | ✅ PASS | -Wall -Wextra -Werror clean. Zero warnings. |
+ * | **Rule 1: Simplify Control Flow** | [PASS] | No goto, setjmp/longjmp, or recursion. Only if/while/for. |
+ * | **Rule 2: Loop Bounds** | [PASS] | Single infinite loop with fixed sleep period (100 ticks). |
+ * | **Rule 3: No Dynamic Memory** | [PASS] | Zero malloc/free. All allocations static (stack, .bss). |
+ * | **Rule 4: Function Length** | [PASS] | Longest: internal_obstacle_task_entry() = 52 lines. |
+ * | **Rule 5: Assertions** | [PASS] | Every function: 2+ checks (nullptr, created flag, init state). |
+ * | **Rule 6: Smallest Scope** | [PASS] | Variables declared close to first use, file-scope static. |
+ * | **Rule 7: Check Returns** | [PASS] | All rx_obstacle_detect_*() returns validated or cast (void). |
+ * | **Rule 8: Preprocessor Limit** | [PASS] | C23 typed enums for all constants. No #define constants. |
+ * | **Rule 9: Pointer Restrictions** | [WARN] DEVIATION | Function pointers used (rx_obstacle callback - DIP). |
+ * | **Rule 10: Compiler Warnings** | [PASS] | -Wall -Wextra -Werror clean. Zero warnings. |
  *
  * ### Rule 9 Justification - Dependency Inversion Principle (DIP)
  *
@@ -604,14 +604,14 @@
  *
  * // WRONG: Multiple responsibilities
  * static void internal_obstacle_callback(...) {
- *     // ❌ Don't implement motor braking here
+ *     // [FAIL] Don't implement motor braking here
  *     motor_set_pwm(0);
  *     motor_apply_brake();
  *
- *     // ❌ Don't implement data storage here
+ *     // [FAIL] Don't implement data storage here
  *     g_obstacle_state.distance[idx] = dist;
  *
- *     // ❌ Don't implement distance calculation here
+ *     // [FAIL] Don't implement distance calculation here
  *     float distance = (echo_time_us * 343.0f) / 20000.0f;
  * }
  * @endcode
@@ -701,7 +701,7 @@
  * - This module depends on **abstract interfaces** (`rx_obstacle_detect.h`, `shared_data.h`)
  * - Does NOT depend on concrete implementations (HC-SR04 GPIO timing, mutex internals)
  * - rx_obstacle_detect library can swap HC-SR04 for different sensor without changing this code
- * - shared_data can change storage mechanism (mutex → lockless queue) without changes here
+ * - shared_data can change storage mechanism (mutex -> lockless queue) without changes here
  *
  * **Code Example:**
  * @code{.c}
@@ -731,9 +731,9 @@
  *
  * | Function | Context | Thread-Safe? | Synchronization |
  * |----------|---------|--------------|-----------------|
- * | **obstacle_detect_task_create()** | tx_application_define() | ✅ Yes | Single-threaded boot |
- * | **internal_obstacle_task_entry()** | Obstacle Task (Priority 12) | ✅ Yes | No shared state |
- * | **internal_obstacle_callback()** | rx_obstacle Task (Priority 10) | ✅ Yes | shared_data mutexes |
+ * | **obstacle_detect_task_create()** | tx_application_define() | [PASS] Yes | Single-threaded boot |
+ * | **internal_obstacle_task_entry()** | Obstacle Task (Priority 12) | [PASS] Yes | No shared state |
+ * | **internal_obstacle_callback()** | rx_obstacle Task (Priority 10) | [PASS] Yes | shared_data mutexes |
  *
  * **Concurrency Considerations:**
  * 1. **Task creation:** Single-threaded during boot (no race conditions)
@@ -752,12 +752,12 @@
  *     (void)shared_data_trigger_estop(...);
  *
  *     // Unsafe: Direct access to this module's static variables
- *     // s_obstacle_handle.state = ...; // ❌ Race condition!
+ *     // s_obstacle_handle.state = ...; // [FAIL] Race condition!
  * }
  * @endcode
  *
  * **No Deadlock Conditions:**
- * - Callback acquires mutexes in fixed order (estop_mutex → obstacle_mutex)
+ * - Callback acquires mutexes in fixed order (estop_mutex -> obstacle_mutex)
  * - No circular dependencies between tasks
  * - No blocking operations while holding mutexes
  * - All mutex acquisitions use TX_WAIT_FOREVER (eventual consistency)
@@ -821,11 +821,11 @@
  *    - Verify no data races in shared_data access
  *
  * **Integration Test Scenarios:**
- * 1. Place obstacle at 25 cm → verify e-stop within 120 ms
- * 2. Remove obstacle → verify k_event_obstacle_cleared set
- * 3. Place obstacle at 35 cm → verify no e-stop (above threshold)
- * 4. Rapid obstacle insertion/removal → verify debouncing (no false triggers)
- * 5. All 4 sensors simultaneously → verify independent e-stop triggers
+ * 1. Place obstacle at 25 cm -> verify e-stop within 120 ms
+ * 2. Remove obstacle -> verify k_event_obstacle_cleared set
+ * 3. Place obstacle at 35 cm -> verify no e-stop (above threshold)
+ * 4. Rapid obstacle insertion/removal -> verify debouncing (no false triggers)
+ * 5. All 4 sensors simultaneously -> verify independent e-stop triggers
  *
  * **Hardware Test Fixtures:**
  * - Movable cardboard/foam obstacles on linear rail (distance control)
@@ -1143,7 +1143,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
  * @post All 4 HC-SR04 sensors polling at 50 Hz (if initialization succeeded)
  * @post Callback registered (obstacle events will trigger e-stop)
  *
- * @invariant s_obstacle_created transitions false → true exactly once
+ * @invariant s_obstacle_created transitions false -> true exactly once
  * @invariant Task priority remains at k_obstacle_task_priority (12) for lifetime
  * @invariant Task name "ObstacleTask" immutable after creation
  * @invariant Stack size k_obstacle_task_stack_size (1024 bytes) fixed at compile-time
@@ -1817,8 +1817,8 @@ static void internal_obstacle_task_entry(ULONG input)
  * // 6. Update shared_data: shared_data_update_obstacle(&state)
  * // 7. Return to library
  *
- * // Motor task wakes on k_event_estop_triggered → emergency brake
- * // Telemetry task polls obstacle state → reports to gateway
+ * // Motor task wakes on k_event_estop_triggered -> emergency brake
+ * // Telemetry task polls obstacle state -> reports to gateway
  * @endcode
  *
  * @par Example - Clearance Callback Flow:

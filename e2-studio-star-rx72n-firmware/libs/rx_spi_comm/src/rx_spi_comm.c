@@ -139,7 +139,7 @@
  * | **internal_wait_for_data()** | 10 | timeout_ms*1000 | Polls every 10ms until timeout |
  *
  * **Throughput Analysis** (10 MHz SPI, no FEC):
- * - **Max payload**: 255 bytes → 275 bytes on wire → 220 µs SPI time
+ * - **Max payload**: 255 bytes -> 275 bytes on wire -> 220 µs SPI time
  * - **Frame overhead**: ~100 µs encode + ~150 µs decode + ~250 µs CRC
  * - **Total latency**: ~720 µs per 255-byte frame = ~354 KB/s effective
  * - **Theoretical max**: 10 MHz / 8 = 1.25 MB/s (raw SPI)
@@ -159,15 +159,15 @@
  *
  * | Function | Thread Safe? | Notes |
  * |----------|--------------|-------|
- * | `rx_spi_comm_init()` | ❌ No | Call once during init, not from multiple threads |
- * | `rx_spi_comm_send()` | ❌ No | Use external mutex if multiple threads send |
- * | `rx_spi_comm_receive()` | ❌ No | Use external mutex if multiple threads receive |
- * | `rx_spi_comm_send_ack()` | ❌ No | Same as send (shares TX sequence) |
- * | `rx_spi_comm_send_nack()` | ❌ No | Same as send (shares TX sequence) |
- * | `rx_spi_comm_data_available()` | ✅ Yes | Read-only hardware poll (safe if HAL is safe) |
- * | `rx_spi_comm_reset_sequence()` | ❌ No | Use external mutex (modifies TX/RX counters) |
- * | `rx_spi_comm_get_tx_sequence()` | ✅ Yes* | Safe if no concurrent sends |
- * | `rx_spi_comm_get_rx_sequence()` | ✅ Yes* | Safe if no concurrent receives |
+ * | `rx_spi_comm_init()` | [FAIL] No | Call once during init, not from multiple threads |
+ * | `rx_spi_comm_send()` | [FAIL] No | Use external mutex if multiple threads send |
+ * | `rx_spi_comm_receive()` | [FAIL] No | Use external mutex if multiple threads receive |
+ * | `rx_spi_comm_send_ack()` | [FAIL] No | Same as send (shares TX sequence) |
+ * | `rx_spi_comm_send_nack()` | [FAIL] No | Same as send (shares TX sequence) |
+ * | `rx_spi_comm_data_available()` | [PASS] Yes | Read-only hardware poll (safe if HAL is safe) |
+ * | `rx_spi_comm_reset_sequence()` | [FAIL] No | Use external mutex (modifies TX/RX counters) |
+ * | `rx_spi_comm_get_tx_sequence()` | [PASS] Yes* | Safe if no concurrent sends |
+ * | `rx_spi_comm_get_rx_sequence()` | [PASS] Yes* | Safe if no concurrent receives |
  *
  * **Typical pattern**: Dedicate one ThreadX task to SPI communication, no locking needed.
  *
@@ -185,8 +185,8 @@
  * **Pin Connections** (RSPI0 example):
  * - **CS**: PD0 (chip select, active low)
  * - **CLK**: PD1 (clock from RPi5)
- * - **CIPO**: PD2 (Controller In Peripheral Out, RX72N → RPi5)
- * - **COPI**: PD3 (Controller Out Peripheral In, RPi5 → RX72N)
+ * - **CIPO**: PD2 (Controller In Peripheral Out, RX72N -> RPi5)
+ * - **COPI**: PD3 (Controller Out Peripheral In, RPi5 -> RX72N)
  *
  * ## Error Handling Strategy
  *
@@ -201,7 +201,7 @@
  * - `k_rx_err_invalid_size`: Payload > 255 bytes, violates protocol spec
  *
  * **Hardware Errors** (propagated from RSPI HAL):
- * - Overrun, underrun, mode fault → logged and returned to caller
+ * - Overrun, underrun, mode fault -> logged and returned to caller
  *
  * ## Integration Example
  *
@@ -269,16 +269,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|---------------------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion, structured if/while/for only |
- * | 2. Fixed loop bounds | ✅ Pass | All loops bounded by enum constants (k_max_poll_iterations) |
- * | 3. No dynamic memory | ✅ Pass | Zero malloc/free, all buffers in handle (stack/static) |
- * | 4. Short functions | ✅ Pass | All <60 lines, single responsibility |
- * | 5. Assertions | ✅ Pass | Minimum 2 checks per function (RX_CHECK_NULL_PTR + state) |
- * | 6. Small scope | ✅ Pass | Variables declared near use, file-static for module data |
- * | 7. Check returns | ✅ Pass | All rx_err_t checked via RX_RETURN_ON_ERROR or explicit if |
- * | 8. Limited preprocessor | ✅ Pass | C23 typed enums for constants, macros only for conditionals |
- * | 9. Restrict pointers | ⚠️ Deviation | Function pointers in HAL interface (DIP, testability) |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror, zero warnings |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion, structured if/while/for only |
+ * | 2. Fixed loop bounds | [PASS] Pass | All loops bounded by enum constants (k_max_poll_iterations) |
+ * | 3. No dynamic memory | [PASS] Pass | Zero malloc/free, all buffers in handle (stack/static) |
+ * | 4. Short functions | [PASS] Pass | All <60 lines, single responsibility |
+ * | 5. Assertions | [PASS] Pass | Minimum 2 checks per function (RX_CHECK_NULL_PTR + state) |
+ * | 6. Small scope | [PASS] Pass | Variables declared near use, file-static for module data |
+ * | 7. Check returns | [PASS] Pass | All rx_err_t checked via RX_RETURN_ON_ERROR or explicit if |
+ * | 8. Limited preprocessor | [PASS] Pass | C23 typed enums for constants, macros only for conditionals |
+ * | 9. Restrict pointers | [WARN] Deviation | Function pointers in HAL interface (DIP, testability) |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *

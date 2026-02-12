@@ -136,16 +136,16 @@
  * - `<string.h>` - memcpy, memset for config handling
  *
  * @par NASA Power of 10 Compliance:
- * - **Rule 1**: ✓ No goto, setjmp, recursion
- * - **Rule 2**: ✓ No loops in implementation
- * - **Rule 3**: ✓ Zero dynamic allocation (static state)
- * - **Rule 4**: ✓ All functions <60 lines
- * - **Rule 5**: ✓ Minimum 2 checks per function
- * - **Rule 6**: ✓ Data declared at smallest scope
- * - **Rule 7**: ✓ All return values checked or propagated
- * - **Rule 8**: ✓ C23 typed enums for constants
- * - **Rule 9**: ✓ No function pointers (simple register access)
- * - **Rule 10**: ✓ Compiled with -Wall -Wextra -Werror
+ * - **Rule 1**: [OK] No goto, setjmp, recursion
+ * - **Rule 2**: [OK] No loops in implementation
+ * - **Rule 3**: [OK] Zero dynamic allocation (static state)
+ * - **Rule 4**: [OK] All functions <60 lines
+ * - **Rule 5**: [OK] Minimum 2 checks per function
+ * - **Rule 6**: [OK] Data declared at smallest scope
+ * - **Rule 7**: [OK] All return values checked or propagated
+ * - **Rule 8**: [OK] C23 typed enums for constants
+ * - **Rule 9**: [OK] No function pointers (simple register access)
+ * - **Rule 10**: [OK] Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles:
  * - **Single Responsibility**: Only WDT management, no other concerns
@@ -197,9 +197,9 @@
  * | **Total** | **8 bytes** | | | |
  *
  * @par State Transitions:
- * - initialized: false → true on rx_wdt_init() success
- * - running: false → true on rx_wdt_start() success
- * - running: true → false on rx_wdt_stop() success
+ * - initialized: false -> true on rx_wdt_init() success
+ * - running: false -> true on rx_wdt_start() success
+ * - running: true -> false on rx_wdt_stop() success
  *
  * @invariant initialized implies config contains valid settings
  * @invariant running implies initialized
