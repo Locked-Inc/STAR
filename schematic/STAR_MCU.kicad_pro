@@ -239,7 +239,40 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "pin_to_pin|4292600|685800|6ed92bfe-ffc5-4a7f-8910-8482075f94fb|a46542b4-1b60-4c97-90bf-335b74a7f2e4|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ],
+      [
+        "pin_to_pin|5892800|2984500|9eb49190-7e0b-4de5-8df0-e8c51ca5458e|146c13de-784f-4a76-ac64-dceed3c7d0b1|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ],
+      [
+        "pin_to_pin|5892800|3606800|146c13de-784f-4a76-ac64-dceed3c7d0b1|99c1e9de-1a47-48ee-829f-edc0e0e41408|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ],
+      [
+        "pin_to_pin|5905500|4292600|99c1e9de-1a47-48ee-829f-edc0e0e41408|d091e0c4-987f-4829-a9e4-a3debc6c3692|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ],
+      [
+        "pin_to_pin|5918200|4914900|d091e0c4-987f-4829-a9e4-a3debc6c3692|0482eeb0-cad0-4b3e-8d74-6d2b8da4f0c3|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ],
+      [
+        "pin_to_pin|6896100|2984500|e0a2c068-186c-4446-8b18-8bb62dbc2433|8f2bbb23-9a1b-440d-a035-3e35ed640419|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ],
+      [
+        "pin_to_pin|6896100|3606800|8f2bbb23-9a1b-440d-a035-3e35ed640419|a4f3ee3e-8e51-4d70-a853-1165701bbba9|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ],
+      [
+        "pin_to_pin|6908800|4292600|a4f3ee3e-8e51-4d70-a853-1165701bbba9|0482eeb0-cad0-4b3e-8d74-6d2b8da4f0c3|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
+        ""
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -491,9 +524,9 @@
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "3V3 Buck Converter",
+        "name": "3V3 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 34,
+        "priority": 15,
         "schematic_color": "rgb(148, 0, 211)",
         "wire_width": 6
       },
@@ -502,26 +535,8 @@
         "line_style": 0,
         "name": "3V3 Main Rail",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 30,
+        "priority": 16,
         "schematic_color": "rgb(255, 106, 137)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "3V3 Motor Driver",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 37,
-        "schematic_color": "rgb(255, 69, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "5V Buck Converter",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 42,
-        "schematic_color": "rgb(0, 128, 128)",
         "wire_width": 6
       },
       {
@@ -529,7 +544,7 @@
         "line_style": 0,
         "name": "5V0 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 46,
+        "priority": 14,
         "schematic_color": "rgb(255, 117, 130)",
         "wire_width": 6
       },
@@ -538,134 +553,8 @@
         "line_style": 0,
         "name": "6V0 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 43,
+        "priority": 13,
         "schematic_color": "rgb(255, 83, 64)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "6V0 HDRV",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 41,
-        "schematic_color": "rgb(41, 205, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "6V0 LDRV",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 40,
-        "schematic_color": "rgb(39, 165, 187)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BARREL_IN",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
-        "schematic_color": "rgb(255, 39, 91)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BB_BTST1",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 28,
-        "schematic_color": "rgb(127, 216, 143)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BB_BTST2",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 27,
-        "schematic_color": "rgb(59, 142, 175)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BB_SDRV",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 31,
-        "schematic_color": "rgb(177, 91, 183)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BB_STAT",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 32,
-        "schematic_color": "rgb(55, 140, 183)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BB_SW1",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 23,
-        "schematic_color": "rgb(154, 131, 206)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BB_SW2",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 22,
-        "schematic_color": "rgb(153, 196, 195)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BB_TS",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 26,
-        "schematic_color": "rgb(208, 143, 111)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "BST",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 52,
-        "schematic_color": "rgb(58, 197, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "CHG_OUT",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
-        "schematic_color": "rgb(116, 69, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "C_CC1",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 11,
-        "schematic_color": "rgb(92, 98, 169)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "C_CC2",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 9,
-        "schematic_color": "rgb(196, 60, 177)",
         "wire_width": 6
       },
       {
@@ -673,7 +562,7 @@
         "line_style": 0,
         "name": "Debug/Programming",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
+        "priority": 2,
         "schematic_color": "rgb(218, 165, 32)",
         "wire_width": 6
       },
@@ -682,26 +571,8 @@
         "line_style": 0,
         "name": "Encoders",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 15,
+        "priority": 7,
         "schematic_color": "rgb(34, 139, 34)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "FB",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 47,
-        "schematic_color": "rgb(176, 168, 59)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Fuel Gauge SMBus",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 50,
-        "schematic_color": "rgb(0, 221, 110)",
         "wire_width": 6
       },
       {
@@ -709,17 +580,17 @@
         "line_style": 0,
         "name": "Ground",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 55,
+        "priority": 23,
         "schematic_color": "rgb(61, 4, 86)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "I2C Charger",
+        "name": "Host SPI",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 18,
-        "schematic_color": "rgb(0, 139, 139)",
+        "priority": 17,
+        "schematic_color": "rgb(255, 140, 0)",
         "wire_width": 6
       },
       {
@@ -727,7 +598,7 @@
         "line_style": 0,
         "name": "IMU Control",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 51,
+        "priority": 18,
         "schematic_color": "rgb(255, 99, 71)",
         "wire_width": 6
       },
@@ -736,7 +607,7 @@
         "line_style": 0,
         "name": "LED",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 36,
+        "priority": 11,
         "schematic_color": "rgb(0, 128, 128)",
         "wire_width": 6
       },
@@ -745,7 +616,7 @@
         "line_style": 0,
         "name": "LiDAR UART",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 48,
+        "priority": 19,
         "schematic_color": "rgb(255, 105, 180)",
         "wire_width": 6
       },
@@ -754,7 +625,7 @@
         "line_style": 0,
         "name": "Motor Current Sensing",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 13,
+        "priority": 5,
         "schematic_color": "rgb(220, 20, 60)",
         "wire_width": 6
       },
@@ -763,7 +634,7 @@
         "line_style": 0,
         "name": "Motor Driver SPI Config",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 17,
+        "priority": 6,
         "schematic_color": "rgb(138, 43, 226)",
         "wire_width": 6
       },
@@ -772,7 +643,7 @@
         "line_style": 0,
         "name": "Motor Fault Signals",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 10,
+        "priority": 4,
         "schematic_color": "rgb(131, 166, 189)",
         "wire_width": 6
       },
@@ -781,7 +652,7 @@
         "line_style": 0,
         "name": "Motor PWM Control",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 8,
+        "priority": 3,
         "schematic_color": "rgb(30, 144, 255)",
         "wire_width": 6
       },
@@ -806,27 +677,9 @@
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "P3V3 Buck",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 54,
-        "schematic_color": "rgb(255, 124, 37)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PACK+",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 7,
-        "schematic_color": "rgb(255, 91, 166)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
         "name": "Power/Ground",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
+        "priority": 24,
         "schematic_color": "rgb(105, 105, 105)",
         "wire_width": 6
       },
@@ -835,17 +688,8 @@
         "line_style": 0,
         "name": "RPi5 I2C",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 45,
+        "priority": 20,
         "schematic_color": "rgb(50, 205, 50)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "RPi5 SPI",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
-        "schematic_color": "rgb(255, 140, 0)",
         "wire_width": 6
       },
       {
@@ -853,7 +697,7 @@
         "line_style": 0,
         "name": "SMBus BMS",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 21,
+        "priority": 8,
         "schematic_color": "rgb(186, 85, 211)",
         "wire_width": 6
       },
@@ -862,7 +706,7 @@
         "line_style": 0,
         "name": "SONAR ECHO",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 25,
+        "priority": 10,
         "schematic_color": "rgb(107, 142, 35)",
         "wire_width": 6
       },
@@ -871,26 +715,8 @@
         "line_style": 0,
         "name": "SONAR TRIG",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 24,
+        "priority": 9,
         "schematic_color": "rgb(255, 165, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "SW",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 49,
-        "schematic_color": "rgb(73, 128, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Status LEDs",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 29,
-        "schematic_color": "rgb(255, 20, 147)",
         "wire_width": 6
       },
       {
@@ -898,17 +724,8 @@
         "line_style": 0,
         "name": "System Config",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 53,
+        "priority": 21,
         "schematic_color": "rgb(135, 206, 250)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "System Voltage",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 56,
-        "schematic_color": "rgb(255, 32, 80)",
         "wire_width": 6
       },
       {
@@ -916,7 +733,7 @@
         "line_style": 0,
         "name": "Temperature Sensor",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 39,
+        "priority": 12,
         "schematic_color": "rgb(202, 128, 142)",
         "wire_width": 6
       },
@@ -925,80 +742,8 @@
         "line_style": 0,
         "name": "USB SCI Data",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 44,
+        "priority": 22,
         "schematic_color": "rgb(255, 215, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC Drain",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 38,
-        "schematic_color": "rgb(115, 84, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC LDO",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 35,
-        "schematic_color": "rgb(255, 63, 144)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC PPHV",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 33,
-        "schematic_color": "rgb(255, 0, 90)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC_N",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 14,
-        "schematic_color": "rgb(141, 174, 113)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC_P",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 12,
-        "schematic_color": "rgb(78, 172, 216)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC_SCL",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 20,
-        "schematic_color": "rgb(68, 150, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC_SDA",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 19,
-        "schematic_color": "rgb(213, 124, 162)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "USBC_VBUS",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 16,
-        "schematic_color": "rgb(255, 56, 60)",
         "wire_width": 6
       }
     ],
@@ -1009,7 +754,7 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "3V3 Buck Converter",
+        "netclass": "3V3 Buck",
         "pattern": "/P3V3_BUCK"
       },
       {
@@ -1021,16 +766,8 @@
         "pattern": "/BUS_3V3"
       },
       {
-        "netclass": "3V3 Motor Driver",
-        "pattern": "/P3V3_MOTOR_DRIVER"
-      },
-      {
-        "netclass": "5V Buck Converter",
-        "pattern": "/P5V0_BUCK"
-      },
-      {
-        "netclass": "5V0 Buck",
-        "pattern": "/INTERNAL_P5V0_BUCK"
+        "netclass": "3V3 Main Rail",
+        "pattern": "/AVC*"
       },
       {
         "netclass": "5V0 Buck",
@@ -1041,128 +778,28 @@
         "pattern": "/P6V0_BUCK"
       },
       {
-        "netclass": "6V0 HDRV",
-        "pattern": "/6V0_HDRV"
-      },
-      {
-        "netclass": "6V0 LDRV",
-        "pattern": "/6V0_LDRV"
-      },
-      {
-        "netclass": "BARREL_IN",
-        "pattern": "/BARREL_IN"
-      },
-      {
-        "netclass": "BB_BTST1",
-        "pattern": "/BB_BTST1"
-      },
-      {
-        "netclass": "BB_BTST2",
-        "pattern": "/BB_BTST2"
-      },
-      {
-        "netclass": "BB_SDRV",
-        "pattern": "/BB_SDRV"
-      },
-      {
-        "netclass": "BB_STAT",
-        "pattern": "/BB_STAT"
-      },
-      {
-        "netclass": "BB_SW1",
-        "pattern": "/BB_SW1"
-      },
-      {
-        "netclass": "BB_SW2",
-        "pattern": "/BB_SW2"
-      },
-      {
-        "netclass": "BB_TS",
-        "pattern": "/BB_TS"
-      },
-      {
-        "netclass": "BST",
-        "pattern": "/*BST"
-      },
-      {
-        "netclass": "CHG_OUT",
-        "pattern": "/CHG_OUT"
-      },
-      {
-        "netclass": "C_CC1",
-        "pattern": "/C_CC1"
-      },
-      {
-        "netclass": "C_CC2",
-        "pattern": "/C_CC2"
-      },
-      {
         "netclass": "Debug/Programming",
         "pattern": "/EMU_*"
-      },
-      {
-        "netclass": "Debug/Programming",
-        "pattern": "/SCI9_*"
       },
       {
         "netclass": "Debug/Programming",
         "pattern": "/USB0_*"
       },
       {
-        "netclass": "Encoders",
-        "pattern": "/ENCODER0_PHASE_A"
+        "netclass": "Debug/Programming",
+        "pattern": "/DEBUG*"
       },
       {
         "netclass": "Encoders",
-        "pattern": "/ENCODER0_PHASE_B"
-      },
-      {
-        "netclass": "Encoders",
-        "pattern": "/ENCODER1_PHASE_A"
-      },
-      {
-        "netclass": "Encoders",
-        "pattern": "/ENCODER1_PHASE_B"
-      },
-      {
-        "netclass": "Encoders",
-        "pattern": "/ENCODER2_PHASE_A"
-      },
-      {
-        "netclass": "Encoders",
-        "pattern": "/ENCODER2_PHASE_B"
-      },
-      {
-        "netclass": "Encoders",
-        "pattern": "/ENCODER3_PHASE_A"
-      },
-      {
-        "netclass": "Encoders",
-        "pattern": "/ENCODER3_PHASE_B"
-      },
-      {
-        "netclass": "FB",
-        "pattern": "/*FB"
-      },
-      {
-        "netclass": "Fuel Gauge SMBus",
-        "pattern": "/FUEL_GUAGE_SMBC_SCL"
-      },
-      {
-        "netclass": "Fuel Gauge SMBus",
-        "pattern": "/FUEL_GUAGE_SMBD_SDA"
+        "pattern": "/ENC*"
       },
       {
         "netclass": "Ground",
         "pattern": "*GND*"
       },
       {
-        "netclass": "I2C Charger",
-        "pattern": "/CHARGER_I2C_CLOCK"
-      },
-      {
-        "netclass": "I2C Charger",
-        "pattern": "/CHARGER_I2C_DATA"
+        "netclass": "Host SPI",
+        "pattern": "/HOST*"
       },
       {
         "netclass": "IMU Control",
@@ -1171,6 +808,10 @@
       {
         "netclass": "IMU Control",
         "pattern": "/IMU_RST"
+      },
+      {
+        "netclass": "LED",
+        "pattern": "/LED_*"
       },
       {
         "netclass": "LiDAR UART",
@@ -1182,163 +823,47 @@
       },
       {
         "netclass": "Motor Current Sensing",
-        "pattern": "/MOTOR0_IPROPI"
-      },
-      {
-        "netclass": "Motor Current Sensing",
-        "pattern": "/MOTOR1_IPROPI"
-      },
-      {
-        "netclass": "Motor Current Sensing",
-        "pattern": "/MOTOR2_IPROPI"
-      },
-      {
-        "netclass": "Motor Current Sensing",
-        "pattern": "/MOTOR3_IPROPI"
+        "pattern": "/MOTOR*_ISENSE"
       },
       {
         "netclass": "Motor Driver SPI Config",
-        "pattern": "/RSPIC_CIPO"
-      },
-      {
-        "netclass": "Motor Driver SPI Config",
-        "pattern": "/RSPIC_COPI"
-      },
-      {
-        "netclass": "Motor Driver SPI Config",
-        "pattern": "/RSPIC_MOTOR0_nCS"
-      },
-      {
-        "netclass": "Motor Driver SPI Config",
-        "pattern": "/RSPIC_MOTOR1_nCS"
-      },
-      {
-        "netclass": "Motor Driver SPI Config",
-        "pattern": "/RSPIC_MOTOR2_nCS"
-      },
-      {
-        "netclass": "Motor Driver SPI Config",
-        "pattern": "/RSPIC_MOTOR3_nCS"
-      },
-      {
-        "netclass": "Motor Driver SPI Config",
-        "pattern": "/RSPIC_SCLK"
+        "pattern": "/DRV*"
       },
       {
         "netclass": "Motor Fault Signals",
-        "pattern": "/MOTOR0_nFAULT"
-      },
-      {
-        "netclass": "Motor Fault Signals",
-        "pattern": "/MOTOR1_nFAULT"
-      },
-      {
-        "netclass": "Motor Fault Signals",
-        "pattern": "/MOTOR2_nFAULT"
-      },
-      {
-        "netclass": "Motor Fault Signals",
-        "pattern": "/MOTOR3_nFAULT"
+        "pattern": "/GPTW*"
       },
       {
         "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR0_EN"
+        "pattern": "/MOTOR*_EN"
       },
       {
         "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR0_PH"
+        "pattern": "/MOTOR*_PH"
       },
       {
-        "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR1_EN"
+        "netclass": "Motor VCC",
+        "pattern": "/MOTOR*_VCC"
       },
       {
-        "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR1_PH"
-      },
-      {
-        "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR2_EN"
-      },
-      {
-        "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR2_PH"
-      },
-      {
-        "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR3_EN"
-      },
-      {
-        "netclass": "Motor PWM Control",
-        "pattern": "/MOTOR3_PH"
-      },
-      {
-        "netclass": "P3V3 Buck",
-        "pattern": "/INTERNAL_P3V3_LDO"
-      },
-      {
-        "netclass": "P3V3 Buck",
-        "pattern": "/P3V3_BUCK"
-      },
-      {
-        "netclass": "PACK+",
-        "pattern": "/PACK+"
-      },
-      {
-        "netclass": "SONAR TRIG",
-        "pattern": "/SONAR_TRIG_*"
-      },
-      {
-        "netclass": "SONAR ECHO",
-        "pattern": "/SONAR_ECHO_*"
-      },
-      {
-        "netclass": "LED",
-        "pattern": "/LED_*"
-      },
-      {
-        "netclass": "Power/Ground",
-        "pattern": "/+3V3"
-      },
-      {
-        "netclass": "Power/Ground",
-        "pattern": "/+5V"
+        "netclass": "Motor VEE",
+        "pattern": "/MOTOR*_VEE"
       },
       {
         "netclass": "Power/Ground",
         "pattern": "GND"
       },
       {
-        "netclass": "Power/Ground",
-        "pattern": "VCC"
-      },
-      {
-        "netclass": "RPi5 I2C",
-        "pattern": "/PI_SCL"
-      },
-      {
-        "netclass": "RPi5 I2C",
-        "pattern": "/PI_SDA"
-      },
-      {
-        "netclass": "RPi5 SPI",
-        "pattern": "/RPI5_RSPIA_*"
-      },
-      {
         "netclass": "SMBus BMS",
-        "pattern": "/BMS_SMBUS_CLK"
+        "pattern": "/BMS*"
       },
       {
-        "netclass": "SMBus BMS",
-        "pattern": "/BMS_SMBUS_DATA"
+        "netclass": "SONAR ECHO",
+        "pattern": "/SONAR_ECHO_*"
       },
       {
-        "netclass": "SW",
-        "pattern": "/*SW"
-      },
-      {
-        "netclass": "System Config",
-        "pattern": "/RES#"
+        "netclass": "SONAR TRIG",
+        "pattern": "/SONAR_TRIG_*"
       },
       {
         "netclass": "System Config",
@@ -1358,15 +883,11 @@
       },
       {
         "netclass": "System Config",
-        "pattern": "/SW_RESn"
-      },
-      {
-        "netclass": "System Voltage",
-        "pattern": "/SYS_VOLTAGE"
+        "pattern": "/RES#"
       },
       {
         "netclass": "Temperature Sensor",
-        "pattern": "/DS18B20_DQ"
+        "pattern": "/TEMP*"
       },
       {
         "netclass": "USB SCI Data",
@@ -1375,86 +896,6 @@
       {
         "netclass": "USB SCI Data",
         "pattern": "/SCI_USBC_USBDP"
-      },
-      {
-        "netclass": "USB SCI Data",
-        "pattern": "/USB0_USBC_USBDN"
-      },
-      {
-        "netclass": "USB SCI Data",
-        "pattern": "/USB0_USBC_USBDP"
-      },
-      {
-        "netclass": "USBC Drain",
-        "pattern": "/USBC_DRAIN"
-      },
-      {
-        "netclass": "USBC LDO",
-        "pattern": "/USBC_LDO_3V3"
-      },
-      {
-        "netclass": "USBC PPHV",
-        "pattern": "/USBC_PPHV"
-      },
-      {
-        "netclass": "USBC_N",
-        "pattern": "/USBC_N"
-      },
-      {
-        "netclass": "USBC_P",
-        "pattern": "/USBC_P"
-      },
-      {
-        "netclass": "USBC_SCL",
-        "pattern": "/USBC_SCL"
-      },
-      {
-        "netclass": "USBC_SDA",
-        "pattern": "/USBC_SDA"
-      },
-      {
-        "netclass": "USBC_VBUS",
-        "pattern": "/USBC_VBUS"
-      },
-      {
-        "netclass": "Motor VEE",
-        "pattern": "/MOTOR*_VEE"
-      },
-      {
-        "netclass": "Motor VCC",
-        "pattern": "/MOTOR*_VCC"
-      },
-      {
-        "netclass": "Motor Driver SPI Config",
-        "pattern": "/DRV*"
-      },
-      {
-        "netclass": "Encoders",
-        "pattern": "/ENC*"
-      },
-      {
-        "netclass": "Motor Fault Signals",
-        "pattern": "/GPTW*"
-      },
-      {
-        "netclass": "Motor Current Sensing",
-        "pattern": "/MOTOR*_ISENSE"
-      },
-      {
-        "netclass": "RPi5 SPI",
-        "pattern": "/HOST*"
-      },
-      {
-        "netclass": "SMBus BMS",
-        "pattern": "/BMS*"
-      },
-      {
-        "netclass": "Debug/Programming",
-        "pattern": "/DEBUG*"
-      },
-      {
-        "netclass": "3V3 Main Rail",
-        "pattern": "/AVC*"
       }
     ]
   },
