@@ -30498,7 +30498,7 @@
 		)
 		(uuid "0218df4b-a8db-4d00-a00b-fc33fc582fe0")
 	)
-	(label "TMS"
+	(label "EMU_TMS"
 		(at 905.51 82.55 0)
 		(effects
 			(font
@@ -30629,7 +30629,7 @@
 		)
 		(uuid "0ba738da-3e3d-4805-ae8e-e7d0d0b22212")
 	)
-	(label "EMU_EMLE"
+	(label "EMLE"
 		(at 485.14 196.85 180)
 		(effects
 			(font
@@ -31650,7 +31650,7 @@
 		)
 		(uuid "5b0fe941-3608-461f-9f91-71dc922a0ccc")
 	)
-	(label "TCK"
+	(label "EMU_TCK"
 		(at 905.51 87.63 0)
 		(effects
 			(font
@@ -31660,7 +31660,7 @@
 		)
 		(uuid "5b285013-f9aa-485e-a52f-c3017f8ba513")
 	)
-	(label "TDO"
+	(label "EMU_TDO"
 		(at 905.51 90.17 0)
 		(effects
 			(font
@@ -32693,7 +32693,7 @@
 		)
 		(uuid "a91b8787-feab-4ecd-ba05-832dc90d6016")
 	)
-	(label "TDI"
+	(label "EMU_TDI"
 		(at 905.51 85.09 0)
 		(effects
 			(font
@@ -33766,7 +33766,7 @@
 		)
 		(uuid "fbf4c256-f48b-4568-bc3b-593441b64f87")
 	)
-	(label "TRST#"
+	(label "EMU_TRST#"
 		(at 905.51 74.93 0)
 		(effects
 			(font
