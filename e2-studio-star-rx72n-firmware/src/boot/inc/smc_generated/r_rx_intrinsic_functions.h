@@ -17,10 +17,80 @@
 * Copyright (C) 2019 Renesas Electronics Corporation. All rights reserved.
 ***********************************************************************************************************************/
 /***********************************************************************************************************************
-* File Name    : r_rx_intrinsic_functions.h
-* Description  : This is a file for integrating the definitions of built-in functions that differ for each compilers.
-*                Replace different functions for each compiler.
+* MODIFICATION NOTICE
+* This file has been modified by the STAR project for use in the STAR robotics platform.
+* Modifications include: Documentation additions, C23 typed enum conversions, and style guide compliance.
+* Modified files are maintained by Locked, Inc. as part of the STAR project.
+* Original Renesas code remains under Renesas copyright as stated above.
 ***********************************************************************************************************************/
+/**
+ * @file r_rx_intrinsic_functions.h
+ * @brief Cross-compiler intrinsic function abstraction layer for RX architecture
+ *
+ * @details
+ * Provides portable access to RX CPU architecture-specific intrinsic functions
+ * and compiler built-ins across three supported toolchains: Renesas CC-RX, GNU RX, and IAR ICCRX.
+ *
+ * **Purpose:**
+ * RX processors have specialized instructions for operations like byte swapping,
+ * bit manipulation, register access, and mathematical functions. Each compiler
+ * exposes these through different intrinsic function names. This header provides
+ * a unified R_BSP_* macro interface that maps to the correct compiler intrinsic,
+ * enabling portable BSP code.
+ *
+ * **Macro Categories:**
+ * - **Arithmetic:** Max/min, multiply-accumulate, fixed-point math
+ * - **Bit Operations:** Byte swap, rotation, bit set/clear/reverse
+ * - **CPU Control:** IPL (interrupt priority), PSW (processor status), mode switching
+ * - **Stack Pointers:** USP (user), ISP (interrupt)
+ * - **Special Registers:** INTB, EXTB, FINTV, ACC, FPSW, DPSW
+ * - **Trigonometry:** TFU (Trigonometric Function Unit) - sine, cosine, atan2, hypot
+ * - **Special Instructions:** BRK, INT, WAIT, NOP
+ *
+ * **Compiler Support:**
+ * - **CC-RX (Renesas):** Native intrinsics (max, min, revl, etc.)
+ * - **GCC (GNURX):** __builtin_* intrinsics or R_BSP_* API functions
+ * - **IAR ICCRX:** __* intrinsics (__MAX, __MIN, __REVL, etc.)
+ *
+ * **Usage Pattern:**
+ * Application code uses R_BSP_* macros regardless of compiler:
+ * @code
+ * uint32_t swapped = R_BSP_REVL(value);        // Byte swap
+ * R_BSP_SET_IPL(5);                             // Set interrupt priority
+ * uint32_t result = R_BSP_MAX(a, b);            // Get maximum value
+ * @endcode
+ *
+ * The preprocessor selects the correct intrinsic based on compiler:
+ * - CC-RX:  R_BSP_REVL(x) → revl(x)
+ * - GCC:    R_BSP_REVL(x) → __builtin_bswap32(x)
+ * - ICCRX:  R_BSP_REVL(x) → __REVL(x)
+ *
+ * **GNUC Implementation Notes:**
+ * GCC lacks some RX-specific intrinsics, so certain macros call R_BSP_* functions
+ * implemented in r_rx_intrinsic_functions.c using inline assembly.
+ *
+ * **Macro Usage Justification (CLAUDE.md Compliance):**
+ * Macros in this file are **justified** per CLAUDE.md policy:
+ * - **Conditional compilation:** Compiler-specific code selection
+ * - **Reducing duplicated code:** Single interface for 3 compilers
+ * - **NOT integer constants:** Not used for numeric values
+ *
+ * @par Hardware Dependencies
+ * - RX72N microcontroller (RXv3 core)
+ * - TFU (Trigonometric Function Unit) for trig macros (if BSP_MCU_TRIGONOMETRIC defined)
+ * - DPFPU (Double-Precision FPU) for double-precision macros (if __DPFPU defined)
+ *
+ * @par References
+ * - RX72N User's Manual (r01uh0805ej0140-rx72n.pdf) - RXv3 instruction set
+ * - Renesas RX Family C/C++ Compiler Package User's Manual - CC-RX intrinsics
+ * - GNU Toolchain for Renesas RX User Manual - GCC intrinsics
+ * - IAR C/C++ Compiler for Renesas RX User Guide - ICCRX intrinsics
+ *
+ * @note Ported from Renesas Smart Configurator (SMC) generated code
+ * @warning Some macros have compiler-specific performance characteristics
+ * @warning TFU macros require TFU initialization (R_BSP_INIT_TFU) before use
+ * @since Version 1.0.0
+ */
 /**********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
 *         : 28.02.2019 1.00     First Release
@@ -54,6 +124,8 @@
 *                               - R_BSP_CalcSquareRoot_Fpn
 ***********************************************************************************************************************/
 
+#pragma once
+
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
@@ -62,9 +134,6 @@ Includes   <System Includes> , "Project Includes"
 /***********************************************************************************************************************
 Macro definitions
 ***********************************************************************************************************************/
-/* Multiple inclusion prevention macro */
-#ifndef R_RX_INTRINSIC_FUNCTIONS_H
-#define R_RX_INTRINSIC_FUNCTIONS_H
 
 /* ---------- Maximum value and minimum value ---------- */
 #if defined(__CCRX__)
@@ -145,21 +214,24 @@ Macro definitions
 
 #elif defined(__GNUC__)
 
-/* long long R_BSP_MulAndAccOperation_B(long long init, unsigned long count, signed char *addr1, signed char *addr2)
+/* long long R_BSP_MulAndAccOperation_B(long long init, unsigned long count, const signed char *addr1, const signed char *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAB(w, x, y, z)                                                                    \
   R_BSP_MulAndAccOperation_B((long long)(w),                                                       \
                              (unsigned long)(x),                                                   \
-                             (signed char*)(y),                                                    \
-                             (signed char*)(z))
-/* long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short *addr1, short *addr2)
+                             (const signed char*)(y),                                              \
+                             (const signed char*)(z))
+/* long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short *addr1, const short *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAW(w, x, y, z)                                                                    \
-  R_BSP_MulAndAccOperation_W((long long)(w), (unsigned long)(x), (short*)(y), (short*)(z))
-/* long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long *addr1, long *addr2)
+  R_BSP_MulAndAccOperation_W((long long)(w),                                                       \
+                             (unsigned long)(x),                                                   \
+                             (const short*)(y),                                                    \
+                             (const short*)(z))
+/* long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, const long *addr1, const long *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAL(w, x, y, z)                                                                    \
-  R_BSP_MulAndAccOperation_L((long long)(w), (unsigned long)(x), (long*)(y), (long*)(z))
+  R_BSP_MulAndAccOperation_L((long long)(w), (unsigned long)(x), (const long*)(y), (const long*)(z))
 
 #elif defined(__ICCRX__)
 
@@ -569,18 +641,18 @@ Macro definitions
 
 #elif defined(__GNUC__)
 
-/* long R_BSP_MulAndAccOperation_2byte(short *data1, short *data2, unsigned long count)
+/* long R_BSP_MulAndAccOperation_2byte(const short *data1, const short *data2, unsigned long count)
    (This macro uses API function of BSP.) */
 #define R_BSP_MACL(x, y, z)                                                                        \
-  R_BSP_MulAndAccOperation_2byte((short*)(x), (short*)(y), (unsigned long)(z))
-/* short R_BSP_MulAndAccOperation_FixedPoint1(short *data1, short *data2, unsigned long count)
+  R_BSP_MulAndAccOperation_2byte((const short*)(x), (const short*)(y), (unsigned long)(z))
+/* short R_BSP_MulAndAccOperation_FixedPoint1(const short *data1, const short *data2, unsigned long count)
    (This macro uses API function of BSP.) */
 #define R_BSP_MACW1(x, y, z)                                                                       \
-  R_BSP_MulAndAccOperation_FixedPoint1((short*)(x), (short*)(y), (unsigned long)(z))
-/* short R_BSP_MulAndAccOperation_FixedPoint2(short *data1, short *data2, unsigned long count)
+  R_BSP_MulAndAccOperation_FixedPoint1((const short*)(x), (const short*)(y), (unsigned long)(z))
+/* short R_BSP_MulAndAccOperation_FixedPoint2(const short *data1, const short *data2, unsigned long count)
    (This macro uses API function of BSP.) */
 #define R_BSP_MACW2(x, y, z)                                                                       \
-  R_BSP_MulAndAccOperation_FixedPoint2((short*)(x), (short*)(y), (unsigned long)(z))
+  R_BSP_MulAndAccOperation_FixedPoint2((const short*)(x), (const short*)(y), (unsigned long)(z))
 
 #elif defined(__ICCRX__)
 
@@ -938,78 +1010,487 @@ Exported global variables
 /***********************************************************************************************************************
 Exported global functions (to be accessed by other files)
 ***********************************************************************************************************************/
+
+/* ==== GNUC-specific function implementations ==== */
 #if defined(__GNUC__)
+
+/**
+ * @brief Get maximum of two signed long values
+ * @param[in] data1 First value
+ * @param[in] data2 Second value
+ * @return signed long Maximum value (data1 or data2)
+ * @note GNUC implementation - CC-RX and ICCRX use intrinsic
+ * @since Version 1.0.0
+ */
 signed long R_BSP_Max(signed long data1, signed long data2);
+
+/**
+ * @brief Get minimum of two signed long values
+ * @param[in] data1 First value
+ * @param[in] data2 Second value
+ * @return signed long Minimum value (data1 or data2)
+ * @note GNUC implementation - CC-RX and ICCRX use intrinsic
+ * @since Version 1.0.0
+ */
 signed long R_BSP_Min(signed long data1, signed long data2);
-long long   R_BSP_MulAndAccOperation_B(long long     init,
-                                       unsigned long count,
-                                       signed char*  addr1,
-                                       signed char*  addr2);
-long long
-R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short* addr1, short* addr2);
-long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long* addr1, long* addr2);
+
+/**
+ * @brief Multiply-and-accumulate operation on byte arrays
+ * @param[in] init Initial accumulator value
+ * @param[in] count Number of elements to process
+ * @param[in] addr1 First array (signed char)
+ * @param[in] addr2 Second array (signed char)
+ * @return long long Accumulated result: init + sum(addr1[i] * addr2[i])
+ * @note GNUC implementation using inline assembly
+ * @since Version 1.0.0
+ */
+long long R_BSP_MulAndAccOperation_B(long long          init,
+                                     unsigned long      count,
+                                     const signed char* addr1,
+                                     const signed char* addr2);
+
+/**
+ * @brief Multiply-and-accumulate operation on word arrays
+ * @param[in] init Initial accumulator value
+ * @param[in] count Number of elements to process
+ * @param[in] addr1 First array (short)
+ * @param[in] addr2 Second array (short)
+ * @return long long Accumulated result: init + sum(addr1[i] * addr2[i])
+ * @note GNUC implementation using inline assembly
+ * @since Version 1.0.0
+ */
+long long R_BSP_MulAndAccOperation_W(long long     init,
+                                     unsigned long count,
+                                     const short*  addr1,
+                                     const short*  addr2);
+
+/**
+ * @brief Multiply-and-accumulate operation on long arrays
+ * @param[in] init Initial accumulator value
+ * @param[in] count Number of elements to process
+ * @param[in] addr1 First array (long)
+ * @param[in] addr2 Second array (long)
+ * @return long long Accumulated result: init + sum(addr1[i] * addr2[i])
+ * @note GNUC implementation using inline assembly
+ * @since Version 1.0.0
+ */
+long long R_BSP_MulAndAccOperation_L(long long     init,
+                                     unsigned long count,
+                                     const long*   addr1,
+                                     const long*   addr2);
+
+/**
+ * @brief Rotate left with carry flag
+ * @param[in] data Value to rotate
+ * @return unsigned long Rotated value (includes carry flag)
+ * @note GNUC implementation - CC-RX/ICCRX use intrinsic
+ * @since Version 1.0.0
+ */
 unsigned long R_BSP_RotateLeftWithCarry(unsigned long data);
+
+/**
+ * @brief Rotate right with carry flag
+ * @param[in] data Value to rotate
+ * @return unsigned long Rotated value (includes carry flag)
+ * @note GNUC implementation - CC-RX/ICCRX use intrinsic
+ * @since Version 1.0.0
+ */
 unsigned long R_BSP_RotateRightWithCarry(unsigned long data);
+
+/**
+ * @brief Rotate left by specified number of bits
+ * @param[in] data Value to rotate
+ * @param[in] num Number of bits to rotate (0-31)
+ * @return unsigned long Rotated value
+ * @note GNUC implementation - CC-RX/ICCRX use intrinsic
+ * @since Version 1.0.0
+ */
 unsigned long R_BSP_RotateLeft(unsigned long data, unsigned long num);
+
+/**
+ * @brief Rotate right by specified number of bits
+ * @param[in] data Value to rotate
+ * @param[in] num Number of bits to rotate (0-31)
+ * @return unsigned long Rotated value
+ * @note GNUC implementation - CC-RX/ICCRX use intrinsic
+ * @since Version 1.0.0
+ */
 unsigned long R_BSP_RotateRight(unsigned long data, unsigned long num);
-long          R_BSP_MulAndAccOperation_2byte(short* data1, short* data2, unsigned long count);
-short         R_BSP_MulAndAccOperation_FixedPoint1(short* data1, short* data2, unsigned long count);
-short         R_BSP_MulAndAccOperation_FixedPoint2(short* data1, short* data2, unsigned long count);
+
+/**
+ * @brief Multiply-and-accumulate with 2-byte operands
+ * @param[in] data1 First array
+ * @param[in] data2 Second array
+ * @param[in] count Number of elements
+ * @return long Accumulated product sum
+ * @note GNUC implementation using inline assembly
+ * @since Version 1.01
+ */
+long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsigned long count);
+
+/**
+ * @brief Multiply-and-accumulate with fixed-point format 1
+ * @param[in] data1 First array
+ * @param[in] data2 Second array
+ * @param[in] count Number of elements
+ * @return short Fixed-point result
+ * @note GNUC implementation using inline assembly
+ * @since Version 1.01
+ */
+short R_BSP_MulAndAccOperation_FixedPoint1(const short*  data1,
+                                           const short*  data2,
+                                           unsigned long count);
+
+/**
+ * @brief Multiply-and-accumulate with fixed-point format 2
+ * @param[in] data1 First array
+ * @param[in] data2 Second array
+ * @param[in] count Number of elements
+ * @return short Fixed-point result
+ * @note GNUC implementation using inline assembly
+ * @since Version 1.01
+ */
+short R_BSP_MulAndAccOperation_FixedPoint2(const short*  data1,
+                                           const short*  data2,
+                                           unsigned long count);
+
 #endif /* defined(__GNUC__) */
 
+/* ==== GNUC and ICCRX shared function implementations ==== */
 #if defined(__GNUC__) || defined(__ICCRX__)
-signed long long   R_BSP_SignedMultiplication(signed long data1, signed long data2);
+
+/**
+ * @brief 64-bit signed multiplication (EMUL instruction)
+ * @param[in] data1 First operand
+ * @param[in] data2 Second operand
+ * @return signed long long 64-bit product
+ * @note GNUC/ICCRX implementation - CC-RX uses intrinsic
+ * @since Version 1.0.0
+ */
+signed long long R_BSP_SignedMultiplication(signed long data1, signed long data2);
+
+/**
+ * @brief 64-bit unsigned multiplication (EMULU instruction)
+ * @param[in] data1 First operand
+ * @param[in] data2 Second operand
+ * @return unsigned long long 64-bit product
+ * @note GNUC/ICCRX implementation - CC-RX uses intrinsic
+ * @since Version 1.0.0
+ */
 unsigned long long R_BSP_UnsignedMultiplication(unsigned long data1, unsigned long data2);
-void               R_BSP_SetACC(signed long long data);
-signed long long   R_BSP_GetACC(void);
+
+/**
+ * @brief Set accumulator register (ACC)
+ * @param[in] data 64-bit value to write to ACC
+ * @return void
+ * @note GNUC/ICCRX implementation using inline assembly
+ * @since Version 1.0.0
+ */
+void R_BSP_SetACC(signed long long data);
+
+/**
+ * @brief Get accumulator register (ACC)
+ * @return signed long long Current ACC value
+ * @note GNUC/ICCRX implementation using inline assembly
+ * @since Version 1.0.0
+ */
+signed long long R_BSP_GetACC(void);
+
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
 
+/* ==== Common function implementations (all compilers) ==== */
+
+/**
+ * @brief Change processor mode from supervisor to user
+ * @return void
+ * @pre Processor in supervisor mode
+ * @post Processor in user mode
+ * @note Implemented with inline assembly
+ * @warning Cannot return to supervisor mode without exception
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_ChangeToUserMode(void);
+
+/**
+ * @brief Set backup processor status word (BPSW)
+ * @param[in] data BPSW value to set
+ * @return void
+ * @note Implemented with inline assembly
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_SetBPSW(uint32_t data);
-uint32_t                     R_BSP_GetBPSW(void);
+
+/**
+ * @brief Get backup processor status word (BPSW)
+ * @return uint32_t Current BPSW value
+ * @note Implemented with inline assembly (ICCRX) or C wrapper (GNUC/CCRX)
+ * @since Version 1.0.0
+ */
+uint32_t R_BSP_GetBPSW(void);
+
+/**
+ * @brief Set backup program counter (BPC)
+ * @param[in] data BPC address to set
+ * @return void
+ * @note Implemented with inline assembly
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_SetBPC(void* data);
-void*                        R_BSP_GetBPC(void);
+
+/**
+ * @brief Get backup program counter (BPC)
+ * @return void* Current BPC address
+ * @note Implemented with inline assembly (ICCRX) or C wrapper (GNUC/CCRX)
+ * @since Version 1.0.0
+ */
+void* R_BSP_GetBPC(void);
+
 #ifdef BSP_MCU_EXCEPTION_TABLE
+/**
+ * @brief Set exception table base register (EXTB)
+ * @param[in] data Exception table base address
+ * @return void
+ * @pre Address must be aligned to exception table requirements
+ * @note Only available if BSP_MCU_EXCEPTION_TABLE defined
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_SetEXTB(void* data);
-void*                        R_BSP_GetEXTB(void);
+
+/**
+ * @brief Get exception table base register (EXTB)
+ * @return void* Current EXTB address
+ * @note Only available if BSP_MCU_EXCEPTION_TABLE defined
+ * @since Version 1.0.0
+ */
+void* R_BSP_GetEXTB(void);
 #endif /* BSP_MCU_EXCEPTION_TABLE */
+
+/**
+ * @brief Set bit in byte (atomic operation)
+ * @param[in,out] data Pointer to byte
+ * @param[in] bit Bit position (0-7)
+ * @return void
+ * @post Bit at position is set to 1
+ * @note Implemented with inline assembly (BSET instruction)
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_BitSet(uint8_t* data, uint32_t bit);
+
+/**
+ * @brief Clear bit in byte (atomic operation)
+ * @param[in,out] data Pointer to byte
+ * @param[in] bit Bit position (0-7)
+ * @return void
+ * @post Bit at position is cleared to 0
+ * @note Implemented with inline assembly (BCLR instruction)
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_BitClear(uint8_t* data, uint32_t bit);
+
+/**
+ * @brief Reverse (toggle) bit in byte (atomic operation)
+ * @param[in,out] data Pointer to byte
+ * @param[in] bit Bit position (0-7)
+ * @return void
+ * @post Bit at position is inverted
+ * @note Implemented with inline assembly (BNOT instruction)
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_BitReverse(uint8_t* data, uint32_t bit);
+
+/**
+ * @brief Move value to accumulator high 32 bits
+ * @param[in] data Value to write to ACC[63:32]
+ * @return void
+ * @note Implemented with inline assembly (MVTACHI instruction)
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_MoveToAccHiLong(int32_t data);
+
+/**
+ * @brief Move value to accumulator low 32 bits
+ * @param[in] data Value to write to ACC[31:0]
+ * @return void
+ * @note Implemented with inline assembly (MVTACLO instruction)
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_MoveToAccLoLong(int32_t data);
-int32_t                      R_BSP_MoveFromAccHiLong(void);
-int32_t                      R_BSP_MoveFromAccMiLong(void);
+
+/**
+ * @brief Move accumulator high 32 bits to register
+ * @return int32_t ACC[63:32] value
+ * @note Implemented with inline assembly (MVFACHI instruction)
+ * @since Version 1.0.0
+ */
+int32_t R_BSP_MoveFromAccHiLong(void);
+
+/**
+ * @brief Move accumulator middle 32 bits to register
+ * @return int32_t ACC[47:16] value (middle portion)
+ * @note Implemented with inline assembly (MVFACMI instruction)
+ * @since Version 1.0.0
+ */
+int32_t R_BSP_MoveFromAccMiLong(void);
+
+/* ==== Double-precision floating-point support ==== */
 #ifdef BSP_MCU_DOUBLE_PRECISION_FLOATING_POINT
 #ifdef __DPFPU
+
+/**
+ * @brief Set double-precision floating-point status word (DPSW)
+ * @param[in] data DPSW value to set
+ * @return void
+ * @note Only available if DPFPU hardware present
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_SetDPSW(uint32_t data);
-uint32_t                     R_BSP_GetDPSW(void);
+
+/**
+ * @brief Get double-precision floating-point status word (DPSW)
+ * @return uint32_t Current DPSW value
+ * @note Only available if DPFPU hardware present
+ * @since Version 1.0.0
+ */
+uint32_t R_BSP_GetDPSW(void);
+
+/**
+ * @brief Set double-precision exception control register (DECNT)
+ * @param[in] data DECNT value to set
+ * @return void
+ * @note Only available if DPFPU hardware present
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_SetDECNT(uint32_t data);
-uint32_t                     R_BSP_GetDECNT(void);
-void*                        R_BSP_GetDEPC(void);
-#endif
-#endif
+
+/**
+ * @brief Get double-precision exception control register (DECNT)
+ * @return uint32_t Current DECNT value
+ * @note Only available if DPFPU hardware present
+ * @since Version 1.0.0
+ */
+uint32_t R_BSP_GetDECNT(void);
+
+/**
+ * @brief Get double-precision exception program counter (DEPC)
+ * @return void* Address where double-precision exception occurred
+ * @note Only available if DPFPU hardware present
+ * @since Version 1.0.0
+ */
+void* R_BSP_GetDEPC(void);
+
+#endif /* __DPFPU */
+#endif /* BSP_MCU_DOUBLE_PRECISION_FLOATING_POINT */
+
+/* ==== Trigonometric Function Unit (TFU) support ==== */
 #ifdef BSP_MCU_TRIGONOMETRIC
 #ifdef __TFU
+
 #if BSP_MCU_TFU_VERSION == 1
+/**
+ * @brief Initialize Trigonometric Function Unit (TFU)
+ * @return void
+ * @pre Called before using any TFU functions
+ * @post TFU hardware initialized and ready for use
+ * @note Only for TFU version 1 (RX64M, RX71M, RX65N, RX66N, RX72M, RX72N)
+ * @warning Must call before R_BSP_SINCOSF or R_BSP_ATAN2HYPOTF
+ * @since Version 1.0.0
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_InitTFU(void);
 #endif /* BSP_MCU_TFU_VERSION == 1 */
+
 #ifdef __FPU
+/**
+ * @brief Calculate sine and cosine simultaneously (single-precision)
+ * @param[in] f Angle in radians (float)
+ * @param[out] sin Pointer to store sine result
+ * @param[out] cos Pointer to store cosine result
+ * @return void
+ * @pre TFU initialized (R_BSP_INIT_TFU called if TFU_VERSION == 1)
+ * @post sin and cos contain computed values
+ * @note Uses TFU hardware for fast computation
+ * @since Version 1.10
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine(float f, float* sin, float* cos);
+
+/**
+ * @brief Calculate atan2 and hypot simultaneously (single-precision)
+ * @param[in] y Y coordinate
+ * @param[in] x X coordinate
+ * @param[out] atan2 Pointer to store atan2(y,x) result (angle in radians)
+ * @param[out] hypot Pointer to store sqrt(x²+y²) result (magnitude)
+ * @return void
+ * @pre TFU initialized (R_BSP_INIT_TFU called if TFU_VERSION == 1)
+ * @post atan2 and hypot contain computed values
+ * @note Uses TFU hardware for fast computation
+ * @since Version 1.10
+ */
 R_BSP_ATTRIB_INLINE_ASM void
 R_BSP_CalcAtan_SquareRoot(float y, float x, float* atan2, float* hypot);
 #endif /* __FPU */
+
 #if BSP_MCU_TFU_VERSION == 2
+/**
+ * @brief Calculate sine and cosine simultaneously (fixed-point)
+ * @param[in] f Angle in fixed-point format
+ * @param[out] sin Pointer to store sine result
+ * @param[out] cos Pointer to store cosine result
+ * @return void
+ * @note Only for TFU version 2 (newer MCUs)
+ * @since Version 1.14
+ */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine_Fpn(int32_t f, int32_t* sin, int32_t* cos);
-int32_t                      R_BSP_CalcSine_Fpn(int32_t fx);
-int32_t                      R_BSP_CalcCosine_Fpn(int32_t fx);
+
+/**
+ * @brief Calculate sine (fixed-point)
+ * @param[in] fx Angle in fixed-point format
+ * @return int32_t Sine result in fixed-point
+ * @note Only for TFU version 2
+ * @since Version 1.14
+ */
+int32_t R_BSP_CalcSine_Fpn(int32_t fx);
+
+/**
+ * @brief Calculate cosine (fixed-point)
+ * @param[in] fx Angle in fixed-point format
+ * @return int32_t Cosine result in fixed-point
+ * @note Only for TFU version 2
+ * @since Version 1.14
+ */
+int32_t R_BSP_CalcCosine_Fpn(int32_t fx);
+
+/**
+ * @brief Calculate atan2 and hypot simultaneously (fixed-point)
+ * @param[in] y Y coordinate (fixed-point)
+ * @param[in] x X coordinate (fixed-point)
+ * @param[out] atan2 Pointer to store atan2 result
+ * @param[out] hypot Pointer to store hypot result
+ * @return void
+ * @note Only for TFU version 2
+ * @since Version 1.14
+ */
 R_BSP_ATTRIB_INLINE_ASM void
-        R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t* hypot);
+R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t* hypot);
+
+/**
+ * @brief Calculate atan2 (fixed-point)
+ * @param[in] y Y coordinate
+ * @param[in] x X coordinate
+ * @return int32_t atan2(y,x) result in fixed-point
+ * @note Only for TFU version 2
+ * @since Version 1.14
+ */
 int32_t R_BSP_CalcAtan_Fpn(int32_t y, int32_t x);
+
+/**
+ * @brief Calculate square root of sum of squares (fixed-point)
+ * @param[in] y First value
+ * @param[in] x Second value
+ * @return int32_t sqrt(x²+y²) result in fixed-point
+ * @note Only for TFU version 2
+ * @since Version 1.14
+ */
 int32_t R_BSP_CalcSquareRoot_Fpn(int32_t y, int32_t x);
+
 #endif /* BSP_MCU_TFU_VERSION == 2 */
 #endif /* __TFU */
-#endif
-
-/* End of multiple inclusion prevention macro */
-#endif /* R_RX_INTRINSIC_FUNCTIONS_H */
+#endif /* BSP_MCU_TRIGONOMETRIC */

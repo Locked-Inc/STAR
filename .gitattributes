@@ -1,5 +1,4 @@
 * text=auto eol=lf
-
 # Exclude from language statistics
 *.html linguist-vendored
 *.css linguist-vendored
@@ -9,7 +8,8 @@
 *.tex linguist-vendored
 *.sty linguist-vendored
 *.cls linguist-vendored
-
 # Exclude AGS Script and ASL
 *.asc linguist-vendored
 *.dsl linguist-vendored
+# Track large binary files with Git LFS
+*.run filter=lfs diff=lfs merge=lfs -text

@@ -21,7 +21,12 @@ RUN apt-get update && apt-get install -y \
     protobuf-compiler-grpc \
     libgrpc-dev \
     curl \
+    wget \
     clangd \
+    clang-format \
+    clang \
+    vim \
+    cmake \
     && rm -rf /var/lib/apt/lists/*
 
 # Install Doxygen documentation toolchain
@@ -52,6 +57,25 @@ RUN python3 -m pip show nanopb > /dev/null || (echo "ERROR: nanopb installation 
 ARG BUF_VERSION=1.28.1
 RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" -o /usr/local/bin/buf \
     && chmod +x /usr/local/bin/buf
+
+# Install GNURX toolchain for RX72N firmware development
+# Copy local installer and install the toolchain to /opt/gnurx
+COPY gcc-14.2.0.202511-GNURX-ELF.run /tmp/gnurx-installer.run
+RUN mkdir -p /opt/gnurx && \
+    chmod +x /tmp/gnurx-installer.run && \
+    /tmp/gnurx-installer.run -p /opt/gnurx -y && \
+    rm /tmp/gnurx-installer.run && \
+    echo "GNURX toolchain installed successfully"
+
+# Verify GNURX installation
+RUN if [ ! -f /opt/gnurx/bin/rx-elf-gcc ]; then \
+        echo "ERROR: GNURX installation failed - rx-elf-gcc not found" && exit 1; \
+    fi && \
+    /opt/gnurx/bin/rx-elf-gcc --version && \
+    echo "GNURX toolchain verification successful"
+
+# Add GNURX toolchain to PATH
+ENV PATH="/opt/gnurx/bin:${PATH}"
 
 # Set up user
 ARG USERNAME=star
@@ -85,7 +109,8 @@ RUN groupadd -f spi && groupadd -f i2c \
 # Set up workspace
 WORKDIR /workspaces/STAR
 
-# Source ROS2 setup in bashrc
-RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc
+# Source ROS2 setup and add GNURX to PATH in bashrc
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
+    echo 'export PATH="/opt/gnurx/bin:$PATH"' >> /home/$USERNAME/.bashrc
 
 USER $USERNAME

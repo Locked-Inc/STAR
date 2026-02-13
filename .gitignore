@@ -60,8 +60,6 @@ Testing/
 !schematic/output/**/*.gbr
 !schematic/output/**/*.pdf
 
-.cproject
-.project
 .clangd
 
 backup_*
