@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"io"
-	"log/slog"
 	"net/http"
 	"strings"
 	"testing"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"nhooyr.io/websocket" //nolint:staticcheck
@@ -209,35 +209,25 @@ func TestServiceSet_TypeCompatibility(t *testing.T) {
 func TestServiceSet_AllFieldsPopulated(t *testing.T) {
 	services := newTestServiceSet(t)
 
-	// This list must match the serviceSet struct definition.
-	// If you add a new service, add it here to ensure it's initialized.
-	expectedServices := map[string]interface{}{
-		"motorControl":  services.motorControl,
-		"telemetry":     services.telemetry,
-		"battery":       services.battery,
-		"configuration": services.configuration,
-		"firmware":      services.firmware,
-		"gateway":       services.gateway,
-	}
-
-	for name, svc := range expectedServices {
-		if svc == nil {
-			t.Errorf("Service %s is nil - ensure it's initialized in initServices()", name)
+	// Reuse the shared serviceGetters table for nil checks.
+	for _, tc := range serviceGetters {
+		if tc.getter(services) == nil {
+			t.Errorf("Service %s is nil - ensure it's initialized in initServices()", tc.name)
 		}
 	}
 
 	// Expected count of services (update this when adding new services)
 	const expectedServiceCount = 6
-	if len(expectedServices) != expectedServiceCount {
-		t.Errorf("Expected %d services, got %d. Did you add a new service without updating this test?",
-			expectedServiceCount, len(expectedServices))
+	if len(serviceGetters) != expectedServiceCount {
+		t.Errorf("Expected %d services, got %d. Did you add a new service without updating serviceGetters?",
+			expectedServiceCount, len(serviceGetters))
 	}
 }
 
 // TestInitServices verifies that initServices creates all services correctly.
 func TestInitServices(t *testing.T) {
 	ctx := context.Background()
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	mockDisp := &mockDispatcher{}
 	mockHarq := &mockHARQ{}
 
@@ -267,7 +257,7 @@ func TestStartGRPCServerWithAddr_RegistersAllServices(t *testing.T) {
 
 	servers := &Servers{}
 	services := newTestServiceSet(t)
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 
 	if err := startGRPCServerWithAddr(ctx, servers, services, "127.0.0.1:0", logger); err != nil {
 		t.Fatalf("startGRPCServerWithAddr failed: %v", err)
@@ -300,7 +290,7 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 
 	servers := &Servers{}
 	services := newTestServiceSet(t)
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 
 	if err := startHTTPServerWithAddr(ctx, servers, services, "127.0.0.1:0", logger); err != nil {
 		t.Fatalf("startHTTPServerWithAddr failed: %v", err)
@@ -341,16 +331,11 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 	_ = conn.Close(websocket.StatusNormalClosure, "") //nolint:staticcheck
 }
 
-// newDiscardLogger creates a logger that discards all output (for testing).
-func newDiscardLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(io.Discard, nil))
-}
-
 func newTestServiceSet(t *testing.T) *serviceSet {
 	t.Helper()
 
 	ctx := context.Background()
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	mockDisp := &mockDispatcher{}
 	mockHarq := &mockHARQ{}
 

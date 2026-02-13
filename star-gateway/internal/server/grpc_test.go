@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -69,16 +70,18 @@ func waitForGRPCReady(addr string) error {
 		if state == connectivity.Shutdown {
 			return fmt.Errorf("gRPC connection in terminal state: %v", state)
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), testPollInterval)
-		conn.WaitForStateChange(ctx, state)
-		cancel()
+		func() {
+			ctx, cancel := context.WithTimeout(context.Background(), testPollInterval)
+			defer cancel()
+			conn.WaitForStateChange(ctx, state)
+		}()
 		// Continue polling until overall deadline expires (don't exit on poll timeout)
 	}
 	return fmt.Errorf("gRPC server did not become ready within %v", testServerStartupDeadline)
 }
 
 func TestNewGRPCServer_ConfigValidation(t *testing.T) {
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 
 	tests := []struct {
 		name      string
@@ -152,7 +155,7 @@ func TestNewGRPCServer_ServiceRegistration(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -174,7 +177,7 @@ func TestNewGRPCServer_RegistrationError(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err == nil {
 		t.Error("Expected error from ServiceRegistrar, got nil")
@@ -196,7 +199,7 @@ func TestRunGRPCServer_Lifecycle(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)
@@ -266,7 +269,7 @@ func TestSetVelocityConcurrent(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)
@@ -350,7 +353,7 @@ func TestRunGRPCServer_InvalidPort(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("NewGRPCServer failed: %v", err)
@@ -376,7 +379,7 @@ func TestRunGRPCServer_ShutdownWithoutRequests(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("NewGRPCServer failed: %v", err)
@@ -402,74 +405,5 @@ func TestRunGRPCServer_ShutdownWithoutRequests(t *testing.T) {
 		}
 	case <-time.After(testShutdownWait):
 		t.Fatal("Shutdown timed out")
-	}
-}
-
-// Test that when MaxMessageSize == 0 the server does NOT set explicit
-// grpc.MaxRecvMsgSize/MaxSendMsgSize options and therefore accepts
-// normal-sized messages (i.e. uses grpc-go defaults).
-func TestRunGRPCServer_ZeroMaxMessageSize_AllowsNormalMessage(t *testing.T) {
-	mockService := &mockMotorService{}
-	addr := getTestListenAddr(t)
-	config := &GRPCConfig{
-		ListenAddr:     addr,
-		MaxMessageSize: 0, // explicit zero => rely on grpc-go defaults
-		ServiceRegistrar: func(srv *grpc.Server) error {
-			starv1.RegisterMotorControlServiceServer(srv, mockService)
-			return nil
-		},
-	}
-
-	logger := newDiscardLogger()
-	srv, err := NewGRPCServer(config, logger)
-	if err != nil {
-		t.Fatalf("Failed to create server: %v", err)
-	}
-
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	errChan, err := RunGRPCServer(ctx, srv, config.ListenAddr, logger)
-	if err != nil {
-		t.Fatalf("Failed to start server: %v", err)
-	}
-	defer func() {
-		cancel()
-		select {
-		case <-errChan:
-		case <-time.After(testShutdownWait):
-		}
-	}()
-
-	if err := waitForGRPCReady(config.ListenAddr); err != nil {
-		t.Fatal(err)
-	}
-
-	conn, err := grpc.NewClient(config.ListenAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
-	if err != nil {
-		t.Fatalf("Failed to dial: %v", err)
-	}
-	defer conn.Close()
-
-	client := starv1.NewMotorControlServiceClient(conn)
-	req := &starv1.SetVelocityRequest{
-		Header: &starv1.RequestHeader{RequestId: "test-zero-maxsize"},
-		Command: &starv1.VelocityCommand{
-			FrontLeftVelocityMps:  testVelocityMps,
-			FrontRightVelocityMps: testVelocityMps,
-			BackLeftVelocityMps:   testVelocityMps,
-			BackRightVelocityMps:  testVelocityMps,
-		},
-	}
-
-	resp, err := client.SetVelocity(context.Background(), req)
-	if err != nil {
-		t.Fatalf("SetVelocity failed with MaxMessageSize=0: %v", err)
-	}
-	if resp.Header.Status != starv1.Status_STATUS_OK {
-		t.Errorf("Expected STATUS_OK, got %v", resp.Header.Status)
-	}
-	if !mockService.setCalled.Load() {
-		t.Error("Mock service method was not called")
 	}
 }

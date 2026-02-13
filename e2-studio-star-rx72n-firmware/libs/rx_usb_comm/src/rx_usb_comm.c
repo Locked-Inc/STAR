@@ -94,9 +94,9 @@ typedef enum : uint8_t {
  * @par Algorithm:
  * 1. Validate input pointers (RX_ASSERT + runtime check)
  * 2. Verify minimum data length for header
- * 3. Read and validate sync word (0x55AA big-endian)
- * 4. Extract sequence number (BE16)
- * 5. Extract and validate payload length (BE16)
+ * 3. Read and validate sync word (0x55AA little-endian)
+ * 4. Extract sequence number (LE16)
+ * 5. Extract and validate payload length (LE16)
  * 6. Extract frame type and flags
  * 7. Return offset past header for payload access
  *
@@ -142,16 +142,16 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 
   offset = 0;
 
-  sync_word = rx_frame_read_be16(&data[offset]);
+  sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
-  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_le16(&data[offset]);
   offset += k_frame_seq_size;
 
-  frame->header.length = rx_frame_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_le16(&data[offset]);
   offset += k_frame_len_size;
 
   if (frame->header.length > k_frame_max_payload) {
@@ -254,6 +254,13 @@ typedef enum : uint8_t {
 typedef enum : uint16_t {
   k_initial_sequence = 0, /**< Initial TX/RX sequence number */
 } rx_usb_comm_sequence_constants_t;
+
+/**
+ * @brief Sync search constants
+ */
+typedef enum : uint8_t {
+  k_sync_second_byte_offset = 1, /**< Offset from current byte to second sync byte */
+} rx_usb_comm_sync_constants_t;
 
 /**
  * @brief Receive loop bounds for NASA Power of 10 Rule 2 compliance
@@ -426,20 +433,20 @@ static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
  *
  * @details
  * Scans the receive buffer starting from rx_buffer_pos for the frame sync
- * word (0x55AA) stored in big-endian format. Returns the position of the
+ * word (0x55AA) stored in little-endian format. Returns the position of the
  * first occurrence found.
  *
  * @par Algorithm:
  * 1. Validate handle and output pointers
  * 2. Validate buffer position <= length
- * 3. Extract sync word bytes (0x55, 0xAA)
+ * 3. Extract sync word bytes (0xAA low, 0x55 high)
  * 4. Linear scan from rx_buffer_pos to end-1
  * 5. Return position if found, k_sync_not_found otherwise
  *
  * @par Sync Word Format:
- * The sync word 0x55AA is stored big-endian in the frame:
- * - Byte 0: 0x55 (high byte)
- * - Byte 1: 0xAA (low byte)
+ * The sync word 0x55AA is stored little-endian in the frame:
+ * - Byte 0: 0xAA (low byte, LSB first)
+ * - Byte 1: 0x55 (high byte, MSB second)
  *
  * @param[in] handle USB communication handle with rx_buffer
  * @param[out] sync_pos Output position of sync word (k_sync_not_found if not found)
@@ -479,11 +486,13 @@ static rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* 
   }
 
   /* Extract sync word bytes using shared constants from rx_frame.h */
-  const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_be16_high_shift);
   const uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_rx_byte_mask);
+  const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_le16_high_shift);
 
-  for (uint32_t i = handle->rx_buffer_pos; i + 1 < handle->rx_buffer_len; i++) {
-    if (handle->rx_buffer[i] == sync_high && handle->rx_buffer[i + 1] == sync_low) {
+  for (uint32_t i = handle->rx_buffer_pos; i + k_sync_second_byte_offset < handle->rx_buffer_len;
+       i++) {
+    if (handle->rx_buffer[i] == sync_low &&
+        handle->rx_buffer[i + k_sync_second_byte_offset] == sync_high) {
       *sync_pos = (int32_t)i;
       return k_rx_ok;
     }
@@ -634,9 +643,6 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uin
     return err;
   }
 
-  /* Update expected RX sequence */
-  handle->rx_sequence = frame->header.sequence + 1;
-
   return k_rx_ok;
 }
 
@@ -674,7 +680,7 @@ static bool
 internal_parse_header(rx_usb_comm_handle_t* handle, uint16_t* payload_len, uint32_t* total_size)
 {
   const uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
-  *payload_len       = rx_frame_read_be16(&hdr[k_hdr_len_offset]);
+  *payload_len       = rx_frame_read_le16(&hdr[k_hdr_len_offset]);
 
   if (*payload_len > k_frame_max_payload) {
     rx_log_warn(s_tag, "Invalid payload length, skipping");
@@ -824,8 +830,8 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  * 10. Validate post-conditions
  *
  * @param[out] handle USB communication handle to initialize
- * @param[in] config Configuration parameters (nullptr for defaults)
- *   - fec_enabled: Enable forward error correction flag
+ * @param[in] config Configuration parameters (must not be NULL)
+ *   - session: Required shared session state pointer
  *   - time_iface: Time interface for sleep operations (nullptr = no sleep)
  *
  * @return rx_err_t Error code
@@ -838,8 +844,7 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  * @pre handle memory writable (sizeof(rx_usb_comm_handle_t) bytes)
  * @post handle->initialized == true on success
  * @post handle->mode == k_usb_comm_mode_binary on success
- * @post handle->tx_sequence == 0
- * @post handle->rx_sequence == 0
+ * @post handle->session points to shared session state
  *
  * @note Not thread-safe during initialization
  * @note USB hardware must be initialized separately via rx_usb_init()
@@ -848,7 +853,7 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  * @code
  * rx_usb_comm_handle_t handle;
  * rx_usb_comm_config_t config = {
- *     .fec_enabled = false,
+ *     .session    = &g_session,
  *     .time_iface = &time_interface
  * };
  * rx_err_t err = rx_usb_comm_init(&handle, &config);
@@ -869,14 +874,12 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   /* Clear handle */
   memset(handle, 0, sizeof(rx_usb_comm_handle_t));
 
-  /* Apply configuration */
-  if (config != nullptr) {
-    handle->fec_enabled = config->fec_enabled;
-    handle->time_iface  = config->time_iface;
-  } else {
-    handle->fec_enabled = 0;
-    handle->time_iface  = nullptr;
+  /* Apply configuration - config is required for session pointer */
+  if (config == nullptr || config->session == nullptr) {
+    return k_rx_err_invalid_arg;
   }
+  handle->session    = config->session;
+  handle->time_iface = config->time_iface;
 
   /* Initialize frame encoder */
   rx_err_t err = rx_frame_encoder_init(&handle->encoder);
@@ -899,9 +902,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
     return err;
   }
 
-  /* Initialize sequence counters */
-  handle->tx_sequence = k_initial_sequence;
-  handle->rx_sequence = k_initial_sequence;
+  /* Session state is managed externally - pointer already set above */
 
   /* Initialize buffer state */
   handle->rx_buffer_len = 0;
@@ -1000,15 +1001,13 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
  *
  * @details
  * Constructs an rx_frame_t structure by populating header fields and copying
- * payload data. Optionally sets FEC flag if enabled. Does not compute CRC -
- * that is done during encoding.
+ * payload data. Does not compute CRC - that is done during encoding.
  *
  * @par Algorithm:
  * 1. Validate frame pointer (RX_ASSERT + runtime check)
  * 2. Validate payload pointer if length > 0
  * 3. Populate header fields (sequence, length, type, flags)
  * 4. Copy payload data if present
- * 5. Set FEC flag if enabled
  *
  * @param[out] frame Output frame structure to populate
  * @param[in] sequence Sequence number for frame (0-65535)
@@ -1016,7 +1015,6 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
  * @param[in] flags Frame flags bitmap
  * @param[in] payload Payload data (can be nullptr if payload_len is 0)
  * @param[in] payload_len Payload length in bytes (0 to k_frame_max_payload)
- * @param[in] fec_enabled Whether to set FEC enabled flag
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, frame populated
@@ -1037,8 +1035,7 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
                                      const rx_frame_type_t type,
                                      const uint8_t         flags,
                                      const uint8_t*        payload,
-                                     const uint32_t        payload_len,
-                                     const bool            fec_enabled)
+                                     const uint32_t        payload_len)
 {
   /* Pre-condition 1: Frame pointer must be valid */
   RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
@@ -1052,6 +1049,11 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
     return k_rx_err_invalid_arg;
   }
 
+  /* Pre-condition 3: Payload length must fit in frame */
+  if (payload_len > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = (uint8_t)type;
@@ -1059,10 +1061,6 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
 
   if (payload != nullptr && payload_len > 0) {
     memcpy(frame->payload, payload, payload_len);
-  }
-
-  if (fec_enabled) {
-    frame->header.flags |= k_frame_flag_fec_enabled;
   }
 
   return k_rx_ok;
@@ -1104,15 +1102,17 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
     return k_rx_err_invalid_size;
   }
 
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = k_initial_sequence;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Session next_tx failed");
+    return err;
+  }
+
   /* Build frame */
   rx_frame_t frame = {0};
-  rx_err_t   err   = internal_build_frame(&frame,
-                                      handle->tx_sequence,
-                                      type,
-                                      flags,
-                                      payload,
-                                      payload_len,
-                                      handle->fec_enabled);
+  err              = internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame build failed");
     return err;
@@ -1134,94 +1134,7 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
     return err;
   }
 
-  /* Increment TX sequence */
-  handle->tx_sequence++;
-
   return k_rx_ok;
-}
-
-/**
- * @brief Send ACK frame for specified sequence number
- * @param[in,out] handle USB communication handle
- * @param[in] sequence Sequence number to acknowledge
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized or USB not configured or in debug mode
- * @return Error code from frame encoding or USB write on failure
- */
-rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, const uint16_t sequence)
-{
-  if (handle == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (!rx_usb_is_configured(k_usb_port_proto)) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (handle->mode == k_usb_comm_mode_debug) {
-    rx_log_warn(s_tag, "ACK send blocked in debug mode");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Create ACK frame */
-  rx_frame_t ack_frame;
-  rx_err_t   err = rx_frame_create_ack(&ack_frame, sequence);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Encode and send (Port 0 = protocol) */
-  uint32_t wire_len = 0;
-
-  err = rx_frame_encode(&handle->encoder, &ack_frame, handle->tx_buffer, &wire_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
-}
-
-rx_err_t
-rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, const uint16_t sequence, const uint8_t flags)
-{
-  if (handle == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (!rx_usb_is_configured(k_usb_port_proto)) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (handle->mode == k_usb_comm_mode_debug) {
-    rx_log_warn(s_tag, "NACK send blocked in debug mode");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Create NACK frame */
-  rx_frame_t nack_frame;
-  rx_err_t   err = rx_frame_create_nack(&nack_frame, sequence, flags);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Encode and send (Port 0 = protocol) */
-  uint32_t wire_len = 0;
-
-  err = rx_frame_encode(&handle->encoder, &nack_frame, handle->tx_buffer, &wire_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
 }
 
 /* =============================================================================
@@ -1257,18 +1170,79 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
   rx_err_t            err        = k_rx_ok;
   rx_receive_result_t result     = k_receive_continue;
 
-  /* Try to receive a complete frame with bounded iterations */
+  /* Try to receive a complete frame with bounded iterations.
+   * Control frames (PING, PONG, RESET, RESET_ACK) are handled internally
+   * and the loop continues to receive the next data frame. */
   while (iterations < k_max_receive_iterations) {
     iterations++;
 
     result = internal_receive_iteration(handle, frame, timeout_ms, &elapsed_ms, &err);
-    if (result == k_receive_done) {
-      return k_rx_ok;
-    }
     if (result == k_receive_error) {
       return err;
     }
-    /* k_receive_continue: loop continues */
+    if (result != k_receive_done) {
+      continue; /* k_receive_continue: loop continues */
+    }
+
+    /* Frame decoded - check for control frames */
+
+    /* PING: auto-send PONG, invoke callback, loop for next frame */
+    if (frame->header.type == k_frame_type_ping) {
+      rx_err_t pong_err = rx_usb_comm_send_pong(handle, frame->payload, frame->header.length);
+      if (pong_err != k_rx_ok) {
+        rx_log_error(s_tag, "Failed to send PONG response");
+        return pong_err;
+      }
+      rx_log_debug(s_tag, "Auto-responded with PONG");
+
+      if (handle->on_ping_cb != nullptr) {
+        handle->on_ping_cb(frame, handle->cb_ctx);
+      }
+
+      continue;
+    }
+
+    /* RESET: send RESET_ACK first, then reset session, invoke callback, loop */
+    if (frame->header.type == k_frame_type_reset) {
+      rx_err_t ack_err = rx_usb_comm_send_reset_ack(handle);
+      if (ack_err != k_rx_ok) {
+        rx_log_error(s_tag, "Failed to send RESET_ACK");
+        return ack_err;
+      }
+      rx_log_debug(s_tag, "Auto-responded with RESET_ACK");
+
+      rx_err_t reset_err = rx_session_reset(handle->session);
+      if (reset_err != k_rx_ok) {
+        rx_log_error(s_tag, "Session reset failed after RESET_ACK");
+        return reset_err;
+      }
+
+      if (handle->on_reset_cb != nullptr) {
+        handle->on_reset_cb(frame, handle->cb_ctx);
+      }
+
+      continue;
+    }
+
+    /* PONG / RESET_ACK: consume silently, loop for next frame */
+    if (frame->header.type == k_frame_type_pong || frame->header.type == k_frame_type_reset_ack) {
+      continue;
+    }
+
+    /* Data frame (COMMAND, RESPONSE): validate sequence via session, return to caller */
+    rx_session_validate_result_t validate_result = k_session_validate_fail;
+    rx_err_t                     validate_err =
+      rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+    if (validate_err != k_rx_ok) {
+      rx_log_error(s_tag, "Session validate_rx returned error");
+      return validate_err;
+    }
+    if (validate_result == k_session_validate_fail) {
+      rx_log_warn(s_tag, "Sequence validation failed, dropping frame");
+      continue;
+    }
+
+    return k_rx_ok;
   }
 
   /* Exceeded maximum iterations */
@@ -1337,46 +1311,26 @@ rx_err_t rx_usb_comm_is_ready(const rx_usb_comm_handle_t* handle, bool* ready)
  */
 
 /**
- * @brief Reset TX and RX sequence numbers to initial values
- * @param[in,out] handle USB communication handle (nullptr-safe)
- */
-void rx_usb_comm_reset_sequence(rx_usb_comm_handle_t* handle)
-{
-  if (handle != nullptr) {
-    handle->tx_sequence = k_initial_sequence;
-    handle->rx_sequence = k_initial_sequence;
-  }
-}
-
-/**
- * @brief Get current TX sequence number
- * @param[in] handle USB communication handle
- * @return Current TX sequence number (0 if handle is nullptr)
- */
-uint16_t rx_usb_comm_get_tx_sequence(const rx_usb_comm_handle_t* handle)
-{
-  if (handle == nullptr) {
-    return 0;
-  }
-  return handle->tx_sequence;
-}
-
-/**
- * @brief Get current RX sequence number
- * @param[in] handle USB communication handle
- * @return Current RX sequence number (0 if handle is nullptr)
- */
-uint16_t rx_usb_comm_get_rx_sequence(const rx_usb_comm_handle_t* handle)
-{
-  if (handle == nullptr) {
-    return 0;
-  }
-  return handle->rx_sequence;
-}
-
-/**
- * @brief Flush receive buffer (discard all pending data)
- * @param[in,out] handle USB communication handle (nullptr-safe)
+ * @brief Flush the USB receive buffer, discarding all pending data
+ *
+ * @details
+ * Resets the internal RX buffer position and length to zero, effectively
+ * discarding any partially received or buffered data. This is useful after
+ * error recovery or mode switching to ensure a clean receive state.
+ *
+ * @param[in,out] handle USB communication handle (nullptr-safe: no-op if NULL)
+ *
+ * @return void
+ *
+ * @pre handle should be initialized, but nullptr is safely handled
+ * @post handle->rx_buffer_len == 0
+ * @post handle->rx_buffer_pos == 0
+ *
+ * @note Not thread-safe: caller must serialize access to handle
+ * @warning Any partially received frame data will be lost
+ *
+ * @see rx_usb_comm_receive() Receive path that populates the buffer
+ * @since Version 1.0.0
  */
 void rx_usb_comm_flush_rx(rx_usb_comm_handle_t* handle)
 {
@@ -1384,6 +1338,186 @@ void rx_usb_comm_flush_rx(rx_usb_comm_handle_t* handle)
     handle->rx_buffer_len = 0;
     handle->rx_buffer_pos = 0;
   }
+}
+
+/* =============================================================================
+ * Control Frame API
+ * =============================================================================
+ */
+
+/**
+ * @brief Register callbacks for PING and RESET control frames
+ *
+ * @details
+ * Sets application-level callbacks invoked after control frame auto-response.
+ * PING callback fires after PONG is sent; RESET callback fires after
+ * RESET_ACK is sent and session is reset. Either callback may be NULL to
+ * disable notification for that frame type.
+ *
+ * @param[in,out] handle USB communication handle (must be initialized)
+ * @param[in] on_ping_cb Callback for PING frames (NULL to disable)
+ * @param[in] on_reset_cb Callback for RESET frames (NULL to disable)
+ * @param[in] cb_ctx Opaque context pointer forwarded to callbacks
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Callbacks registered successfully
+ * @retval k_rx_err_invalid_arg handle is NULL
+ * @retval k_rx_err_invalid_state handle is not initialized
+ *
+ * @pre handle must be initialized via rx_usb_comm_init()
+ * @post handle->on_ping_cb, on_reset_cb, cb_ctx updated
+ *
+ * @note Not thread-safe: call during initialization or from single thread
+ * @note Callback ownership: caller retains ownership of cb_ctx
+ *
+ * @see rx_usb_comm_send_pong() Auto-response before PING callback
+ * @see rx_usb_comm_send_reset_ack() Auto-response before RESET callback
+ * @since Version 1.0.0
+ */
+rx_err_t rx_usb_comm_set_control_callbacks(rx_usb_comm_handle_t* handle,
+                                           void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+                                           void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+                                           void* cb_ctx)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  handle->on_ping_cb  = on_ping_cb;
+  handle->on_reset_cb = on_reset_cb;
+  handle->cb_ctx      = cb_ctx;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Send a PONG frame in response to a received PING
+ *
+ * @details
+ * Constructs and sends a PONG frame echoing the PING payload (typically a
+ * 4-byte counter). Uses the shared session for TX sequence assignment.
+ *
+ * @param[in,out] handle USB communication handle (must be initialized)
+ * @param[in] payload PING payload to echo (may be NULL if payload_len == 0)
+ * @param[in] payload_len Length of payload in bytes
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok PONG sent successfully
+ * @retval k_rx_err_invalid_arg handle is NULL
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized
+ * @post TX sequence incremented by 1
+ *
+ * @note Called automatically by rx_usb_comm_receive() on PING frames
+ *
+ * @see rx_frame_create_pong() Frame construction
+ * @see rx_session_next_tx() Sequence assignment
+ * @since Version 1.0.0
+ */
+rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
+                               const uint8_t*        payload,
+                               const uint16_t        payload_len)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = k_initial_sequence;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Build PONG frame echoing payload */
+  rx_frame_t pong_frame = {0};
+  err                   = rx_frame_create_pong(&pong_frame, sequence, payload, payload_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint32_t wire_len = 0;
+  err               = rx_frame_encode(&handle->encoder, &pong_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
+}
+
+/**
+ * @brief Send a RESET_ACK frame in response to a received RESET
+ *
+ * @details
+ * Constructs and sends a RESET_ACK frame (no payload) to acknowledge a
+ * session reset request. Uses the shared session for TX sequence assignment.
+ *
+ * @param[in,out] handle USB communication handle (must be initialized)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok RESET_ACK sent successfully
+ * @retval k_rx_err_invalid_arg handle is NULL
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized
+ * @post TX sequence incremented by 1
+ *
+ * @note Called automatically by rx_usb_comm_receive() on RESET frames
+ *
+ * @see rx_frame_create_reset_ack() Frame construction
+ * @see rx_session_reset() Session reset after ACK
+ * @since Version 1.0.0
+ */
+rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = k_initial_sequence;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Build RESET_ACK frame (no payload) */
+  rx_frame_t reset_ack_frame = {0};
+  err                        = rx_frame_create_reset_ack(&reset_ack_frame, sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint32_t wire_len = 0;
+  err = rx_frame_encode(&handle->encoder, &reset_ack_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
 }
 
 /* =============================================================================

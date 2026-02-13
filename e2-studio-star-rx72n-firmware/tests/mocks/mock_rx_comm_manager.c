@@ -93,7 +93,7 @@ static uint32_t s_queue_count = 0;
 static rx_comm_channel_t s_last_send_channel = k_comm_channel_usb;
 
 /** @brief Last frame type sent */
-static rx_frame_type_t s_last_send_type = k_frame_type_unknown;
+static rx_frame_type_t s_last_send_type = k_frame_type_ping;
 
 /** @brief Last payload sent */
 static uint8_t s_last_send_payload[k_mock_comm_max_payload_size];
@@ -148,7 +148,7 @@ void mock_comm_manager_reset(void)
 
   /* Reset send tracking */
   s_last_send_channel     = k_comm_channel_usb;
-  s_last_send_type        = k_frame_type_unknown;
+  s_last_send_type        = k_frame_type_ping;
   s_last_send_payload_len = 0;
   (void)memset(s_last_send_payload, 0, sizeof(s_last_send_payload));
 

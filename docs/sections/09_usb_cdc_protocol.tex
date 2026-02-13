@@ -46,7 +46,7 @@ The RX72N firmware implements a USB CDC-ACM (Communications Device Class - Abstr
   .bDeviceProtocol = 0x01,       // Interface Association
   .bMaxPacketSize0 = 64,
   .idVendor = 0x045B,            // Renesas
-  .idProduct = 0x024F,           // RX72N CDC
+  .idProduct = 0x0235,           // RX72N CDC
   .bcdDevice = 0x0100,           // Device v1.0
   .iManufacturer = 1,            // "STAR Project"
   .iProduct = 2,                 // "RX72N CDC Composite"
@@ -228,6 +228,198 @@ for (uint32_t i = 0; i < len; i += 2) {
 
 \textbf{Impact}: Missing BCLR sequence caused first packet corruption with stale data.
 
+\subsection{Frame Protocol}
+
+All frames use the same wire format regardless of transport (USB CDC or SPI):
+
+\begin{table}[h]
+\centering
+\begin{tabular}{ccccccc}
+\toprule
+\textbf{SYNC} & \textbf{SEQ} & \textbf{LEN} & \textbf{TYPE} & \textbf{FLAGS} & \textbf{PAYLOAD} & \textbf{CRC-32} \\
+(LE) & (LE) & (LE) & & & & (LE) \\
+\midrule
+2B & 2B & 2B & 1B & 1B & 0-1024B & 4B \\
+\bottomrule
+\end{tabular}
+\caption{Frame Wire Format}
+\label{tab:frame_format}
+\end{table}
+
+\textbf{Header Fields (little-endian):}
+\begin{itemize}
+\item \textbf{SYNC}: Magic number \texttt{0x55AA} for frame synchronization
+\item \textbf{SEQ}: Sequence number (0-65535, wraps around)
+\item \textbf{LEN}: Payload length in bytes
+\item \textbf{TYPE}: Frame type (see Table~\ref{tab:frame_types})
+\item \textbf{FLAGS}: Control flags (RequiresAck, HasFEC, etc.)
+\item \textbf{PAYLOAD}: Variable-length data (Protocol Buffer message)
+\end{itemize}
+
+\textbf{Checksum (little-endian, IEEE 802.3 LSB-first):}
+CRC-32 computed over SYNC + header + payload, stored in little-endian byte order.
+
+\subsubsection{Frame Types}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{cl p{7cm}}
+\toprule
+\textbf{Value} & \textbf{Name} & \textbf{Description} \\
+\midrule
+0x00 & PING & Heartbeat request -- sent when link idle for >1s \\
+0x01 & PONG & Heartbeat response -- echoes PING counter \\
+0x10 & COMMAND & Command frame carrying protobuf messages \\
+0x11 & RESPONSE & Response frame carrying protobuf messages \\
+0x12 & ACK & Acknowledgment (SPI only, HARQ protocol) \\
+0x13 & NACK & Negative acknowledgment (SPI only, HARQ protocol) \\
+0xFE & RESET\_ACK & Acknowledgment of session reset \\
+0xFF & RESET & Request to reset session (synchronize sequences) \\
+\bottomrule
+\end{tabular}
+\caption{Frame Type Definitions}
+\label{tab:frame_types}
+\end{table}
+
+\subsubsection{Control Frame Details}
+
+\textbf{PING Frame:} TYPE \texttt{0x00}, payload is a 4-byte counter (little-endian uint32). Sent as an explicit idle-link probe when no frames have been exchanged for >1s. Both firmware and gateway auto-respond with PONG on PING receipt.
+
+\textbf{PONG Frame:} TYPE \texttt{0x01}, payload echoes the PING counter. Confirms link health and validates round-trip latency.
+
+\textbf{RESET Frame:} TYPE \texttt{0xFF}, no payload. Requests session reset to synchronize sequence counters.
+
+\textbf{RESET\_ACK Frame:} TYPE \texttt{0xFE}, no payload. Acknowledges session reset and confirms synchronization.
+
+\subsubsection{Cross-Compatibility Test Vectors}
+
+Both Go (gateway) and C (firmware) encode/decode frames identically. This is verified by 8 byte-exact test vectors with hardcoded expected wire bytes including CRC-32:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lccl c}
+\toprule
+\textbf{Vector} & \textbf{TYPE} & \textbf{SEQ} & \textbf{Payload} & \textbf{CRC-32} \\
+\midrule
+PING & 0x00 & 0 & (empty) & 0x9B3FAEEB \\
+PONG & 0x01 & 0 & counter=42 & 0x287737DF \\
+COMMAND & 0x10 & 1 & ``TEST'' + ACK flag & 0xDEF35E60 \\
+RESPONSE & 0x11 & 1 & ``OK'' & 0x6FC08EF4 \\
+ACK & 0x12 & 1 & (empty) & 0xDEABF788 \\
+NACK & 0x13 & 1 & (empty) & 0xC7B0C6C9 \\
+RESET & 0xFF & 0 & (empty) & 0x081B5399 \\
+RESET\_ACK & 0xFE & 0 & (empty) & 0x110062D8 \\
+\bottomrule
+\end{tabular}
+\caption{Cross-Compatibility Test Vectors}
+\label{tab:cross_compat_vectors}
+\end{table}
+
+\textbf{Test locations:}
+\begin{itemize}
+\item Go: \texttt{star-gateway/internal/frame/frame\_test.go}
+\item C: \texttt{e2-studio-star-rx72n-firmware/tests/test\_rx\_frame.c}
+\end{itemize}
+
+\subsection{USB CDC Lightweight Protocol}
+
+The USB CDC protocol is designed for minimal overhead, relying on USB hardware for reliability. Unlike the SPI path which uses full HARQ with FEC and retransmission, the CDC path omits these as redundant with USB's built-in CRC and retry mechanisms.
+
+\subsubsection{Send Path}
+
+\begin{enumerate}
+\item Acquire send mutex (serialize concurrent sends)
+\item Get next TX sequence from shared SessionState
+\item Create frame with sequence, CRC32
+\item Encode to wire format
+\item Write to \texttt{/dev/ttyACM0} with 50ms deadline
+\item Release mutex (no wait for ACK)
+\end{enumerate}
+
+\subsubsection{Receive Path}
+
+\begin{enumerate}
+\item Read from \texttt{/dev/ttyACM0}
+\item Decode frame, validate CRC32
+\item Check sequence via SessionState:
+  \begin{itemize}
+  \item Accept exact match (expected sequence)
+  \item Accept small gaps (<10 frames, log warning)
+  \item Reject duplicates or large gaps
+  \end{itemize}
+\item Return payload to caller
+\end{enumerate}
+
+\subsubsection{Key Design Decisions}
+
+\begin{itemize}
+\item \checkmark{} Sequence tracking via shared SessionState
+\item \checkmark{} CRC32 validation
+\item $\times$ No application-level retries (USB hardware handles retries)
+\item $\times$ No FEC encoding (redundant with USB reliability)
+\item $\times$ No ACK/NACK frames (USB provides implicit ACK)
+\end{itemize}
+
+\subsection{Transport Comparison (USB CDC vs SPI)}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll p{3.5cm}}
+\toprule
+\textbf{Feature} & \textbf{USB CDC} & \textbf{SPI} & \textbf{Rationale} \\
+\midrule
+Physical Layer & Half-duplex, async & Full-duplex, sync & Hardware characteristic \\
+Error Detection & CRC32 only & CRC32 + FEC & USB has built-in CRC \\
+Retransmission & Hardware-level only & Application-level (HARQ) & USB bulk handles retries \\
+FEC & Disabled & Viterbi + Chase Combining & Redundant with USB \\
+ACK/NACK & Not sent & Required & USB provides implicit ACK \\
+Sequence Tracking & Shared SessionState & Shared SessionState & Continuity across transports \\
+Priority & 10 (preferred) & 5 (backup) & Prefer simpler USB \\
+Typical Latency & 0.5-1ms & 1-2ms & USB has lower overhead \\
+Reliability & Higher (hardware CRC) & High (with retry mechanisms) & USB generally more reliable due to hardware CRC \\
+\bottomrule
+\end{tabular}
+\caption{USB CDC vs SPI Transport Comparison}
+\label{tab:transport_comparison}
+\end{table}
+
+\subsection{Heartbeat Mechanism}
+
+The heartbeat system uses two complementary detection mechanisms to monitor link health:
+
+\subsubsection{Implicit Timeout (Primary) -- 200ms}
+
+Update \texttt{LastSeen} timestamp when ANY valid frame arrives (COMMAND, RESPONSE, PING, etc.). If no frames for 200ms, declare link dead and trigger failover. Zero overhead when link is active --- data frames implicitly serve as heartbeats.
+
+\subsubsection{Explicit PING (Secondary) -- 1s Idle-Link Probe}
+
+Send PING with 4-byte counter if link idle for >1s. Wait for PONG echo; validate counter matches. 1 consecutive miss triggers failover. Rarely fires under normal traffic; only needed when link is genuinely idle.
+
+\textbf{Interaction between Implicit Timeout and Explicit PING:} The 200ms implicit timeout is the primary dead-link detection mechanism. On an active link, data frames arrive faster than 200ms and continuously reset \texttt{LastSeen}, so the implicit timeout never fires. The 1s PING probe is a secondary mechanism: on a link that has occasional traffic (keeping the implicit timer alive) but where the application wants to verify bidirectional health, the PING/PONG exchange confirms round-trip connectivity. Note that on a truly idle link with zero traffic from either side, the 200ms implicit timeout fires before the 1s PING interval elapses---this is by design, as an idle link with no frames in 200ms is considered dead and triggers failover.
+
+\subsubsection{Timing Budget}
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lc p{6cm}}
+\toprule
+\textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
+\midrule
+Implicit timeout & 200ms & Primary detection, any frame resets \\
+Check interval & 50ms & failureTimeout / 4, worst-case detection \textasciitilde{}250ms \\
+PING interval & 1000ms & Secondary, idle-link probe \\
+WDT timeout & 1000ms & RX72N hardware watchdog \\
+Safety margin & 4x & 250ms worst-case $\ll$ 1000ms WDT \\
+\bottomrule
+\end{tabular}
+\caption{Heartbeat Timing Budget}
+\label{tab:heartbeat_timing}
+\end{table}
+
+\subsubsection{Control Frame Dispatching}
+
+Both firmware (C) and gateway (Go) auto-respond PONG to PING and RESET\_ACK to RESET. Control frames (PING, PONG, ACK, NACK, RESET\_ACK) are consumed internally. Only data frames (COMMAND, RESPONSE) are returned to callers.
+
 \subsection{Debug Logging Over USB CDC Port 2}
 
 \subsubsection{Architecture}
@@ -246,13 +438,13 @@ The logging system supports dual output to both UART and USB CDC Port 2:
 
 \begin{figure}[h]
 \centering
-\begin{tikzpicture}[node distance=2.5cm, auto]
+\begin{tikzpicture}[node distance=2.5cm, auto, every node/.style={align=center}]
   \node[rectangle, draw] (power) {Power On};
   \node[rectangle, draw, right of=power] (usb_init) {USB Init};
-  \node[rectangle, draw, right of=usb_init] (enum) {Enumeration\\(0-200ms)};
+  \node[rectangle, draw, right of=usb_init, text width=2cm] (enum) {Enumeration\\(0-200ms)};
   \node[rectangle, draw, below of=enum] (configured) {Configured};
   \node[rectangle, draw, left of=configured] (flush) {Flush Buffer};
-  \node[rectangle, draw, left of=flush] (normal) {Normal\\Logging};
+  \node[rectangle, draw, left of=flush, text width=1.8cm] (normal) {Normal\\Logging};
 
   \draw[->] (power) -- node[above] {Logs start} (usb_init);
   \draw[->] (usb_init) -- node[above] {Buffer} (enum);
@@ -260,8 +452,8 @@ The logging system supports dual output to both UART and USB CDC Port 2:
   \draw[->] (configured) -- node[above] {512B buffer} (flush);
   \draw[->] (flush) -- node[above] {To USB} (normal);
 
-  \node[below of=usb_init, text width=2cm, align=center] {Boot buffer\\(512B RAM)};
-  \node[below of=normal, text width=2cm, align=center] {Direct to\\USB CDC};
+  \node[below of=usb_init, text width=2cm] {Boot buffer\\(512B RAM)};
+  \node[below of=normal, text width=2cm] {Direct to\\USB CDC};
 \end{tikzpicture}
 \caption{Boot Log Buffering Sequence}
 \label{fig:boot_log_sequence}
@@ -386,11 +578,11 @@ rx_log_info("USB_LOG", "Dropped: %u bytes (%.1f%%)",
 \textbf{Metric} & \textbf{Value} & \textbf{Notes} \\
 \hline
 USB Speed & 12 Mbps & Full-Speed (USB 2.0) \\
-Effective Throughput & ~1.2 MB/s & 80\% efficiency (protocol overhead) \\
-Per-Port Max & ~400 KB/s & Limited by ring buffer fill rate \\
+Practical Max & 10 Mbps & Protocol overhead reduces from 12 Mbps theoretical \\
+Typical Throughput & 5-8 Mbps & Under normal application load \\
 Packet Size & 64 bytes & Full-Speed bulk endpoint limit \\
-Latency (write) & 1-2 ms & rx\_usb\_write() to host receive \\
-Latency (read) & 1-5 ms & Depends on host poll rate \\
+Latency (send 1KB) & 0.5-1 ms & rx\_usb\_write() to host receive \\
+Latency (receive 1KB) & 0.5-1 ms & Host write to rx\_usb\_read() \\
 \hline
 \end{tabular}
 \caption{USB CDC Performance Metrics}
@@ -490,6 +682,8 @@ State Structures & ~128 & 3 ports × ~42 bytes per port \\
 \item \textbf{RX72N User's Manual}: Chapter 40 - USB 2.0 Full-Speed Module
 \item \textbf{USB 2.0 Specification}: Chapter 9 - Device Framework
 \item \textbf{USB CDC-ACM Specification}: Class Definitions for Communications Devices v1.2
+\item \textbf{Transport Architecture}: \texttt{star-gateway/TRANSPORT\_ARCHITECTURE.md}
 \item \textbf{Implementation}: \texttt{libs/rx\_usb/inc/rx\_usb.h}, \texttt{libs/rx\_core/src/rx\_log\_usb.c}
+\item \textbf{Cross-Compatibility Tests}: \texttt{star-gateway/internal/frame/frame\_test.go}, \texttt{e2-studio-star-rx72n-firmware/tests/test\_rx\_frame.c}
 \item \textbf{Testing Guide}: \texttt{e2-studio-star-rx72n-firmware/USB\_CDC\_PHASE2\_TESTING\_GUIDE.md}
 \end{itemize}

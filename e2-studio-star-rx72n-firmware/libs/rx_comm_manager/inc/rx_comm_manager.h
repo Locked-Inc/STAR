@@ -171,29 +171,35 @@
  *
  * | Allocation | Size | Lifetime |
  * |------------|------|----------|
- * | **rx_comm_manager_t** | ~2.5 KB | Application-managed (typically static/global) |
- * | - Pointers + state | ~32 bytes | Handle metadata |
+ * | **rx_comm_manager_t** | ~12 KB | Application-managed (typically static/global) |
+ * | - Pointers + state | ~80 bytes | Handle metadata, heartbeat, queue indices |
  * | - ASCII buffer | 2048 bytes | Decoded output formatting (if enabled) |
+ * | - Event queue | 8 x ~1028 bytes | Static FIFO (k_comm_event_queue_depth entries) |
+ * | - Heartbeat state | ~20 bytes | Per-transport heartbeat tracking |
  * | **Stack (poll)** | ~120 bytes | Function call duration only |
  * | **Stack (send)** | ~80 bytes | Function call duration only |
  * | **Static data (.rodata)** | ~400 bytes | Channel names, format strings |
- * | **Code (.text)** | ~4 KB | All functions |
+ * | **Code (.text)** | ~6 KB | All functions |
  *
- * Total RAM: ~2.5 KB per manager instance (zero dynamic allocation).
+ * Total RAM: ~12 KB per manager instance (zero dynamic allocation).
+ * The event queue dominates memory: 8 entries x (k_frame_max_payload + metadata).
  *
  * **Memory Layout** (rx_comm_manager_t structure):
  *
- * | Offset | Size | Field | Alignment | Notes |
- * |--------|------|-------|-----------|-------|
- * | 0x00 | 8 | usb_handle | 8 bytes | Pointer to USB transport |
- * | 0x08 | 8 | spi_handle | 8 bytes | Pointer to SPI transport |
- * | 0x10 | 8 | callback | 8 bytes | Function pointer |
- * | 0x18 | 8 | callback_ctx | 8 bytes | User context pointer |
- * | 0x20 | 2048 | ascii_buffer | 1 byte | ASCII formatting buffer |
- * | 0x820 | 1 | enable_decoded_output | 1 byte | Boolean flag |
- * | 0x821 | 1 | initialized | 1 byte | Boolean flag |
- * | 0x822 | 6 | (padding) | - | Align to 8-byte boundary |
- * | **Total** | **2088 bytes** | | | (actual size may vary by compiler) |
+ * | Offset | Size | Field | Notes |
+ * |--------|------|-------|-------|
+ * | 0x00 | 8 | usb_handle | Pointer to USB transport |
+ * | 0x08 | 8 | spi_handle | Pointer to SPI transport |
+ * | 0x10 | 8 | callback | Function pointer |
+ * | 0x18 | 8 | callback_ctx | User context pointer |
+ * | 0x20 | 2048 | ascii_buffer | ASCII formatting buffer |
+ * | - | 1 | enable_decoded_output | Boolean flag |
+ * | - | 1 | initialized | Boolean flag |
+ * | - | ~20 | heartbeat[2] | Per-transport heartbeat state |
+ * | - | ~16 | link_status_cb/ctx | Callback + context |
+ * | - | ~8224 | event_queue[8] | 8 x rx_comm_event_entry_t |
+ * | - | 3 | queue head/tail/count | Queue management |
+ * | **Total** | **~10.5 KB** | | (actual size may vary by compiler) |
  *
  * ## Thread Safety Analysis
  *
@@ -433,7 +439,56 @@ typedef enum : uint16_t {
    * @par Rationale: Balance between functionality and memory usage
    */
   k_comm_manager_ascii_buf_size = 2048,
+
+  /**
+   * @brief Maximum number of entries in the event FIFO queue
+   * @details
+   * Static FIFO queue depth for event (command) frames that require reliable
+   * delivery. Events are queued and sent with SPI-only retry + exponential
+   * backoff. Queue is statically allocated (zero dynamic memory).
+   *
+   * @par Value: 8 entries
+   * @par Rationale: Small queue prevents unbounded memory, sufficient for
+   *   typical command burst scenarios
+   */
+  k_comm_event_queue_depth = 8,
 } rx_comm_manager_constants_t;
+
+/**
+ * @enum rx_comm_heartbeat_constants_t
+ * @brief Heartbeat timing constants
+ *
+ * @details
+ * Dual-detection heartbeat model:
+ * - **Implicit timeout (200ms)**: Any valid frame resets the timer. If no
+ *   frames arrive within 200ms, the link is declared dead.
+ * - **Explicit PING (1000ms)**: Sent when link is idle for >1s as a probe.
+ *   Firmware primarily receives PINGs from the gateway.
+ * - **Check interval (50ms)**: How often to evaluate heartbeat status.
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint32_t {
+  k_heartbeat_implicit_timeout_ms = 200,  /**< Declare link dead if no frame for 200ms */
+  k_heartbeat_ping_interval_ms    = 1000, /**< Send PING probe when idle for 1s */
+  k_heartbeat_check_interval_ms   = 50,   /**< Heartbeat evaluation interval (200ms / 4) */
+} rx_comm_heartbeat_constants_t;
+
+/**
+ * @enum rx_comm_event_retry_constants_t
+ * @brief Event queue retry constants for SPI HARQ
+ *
+ * @details
+ * Events (commands) sent via SPI use retry with exponential backoff.
+ * USB sends are fire-and-forget (no retries).
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint16_t {
+  k_event_max_retries        = 3,   /**< Maximum SPI retry attempts */
+  k_event_initial_backoff_ms = 10,  /**< Initial backoff delay (ms) */
+  k_event_max_backoff_ms     = 100, /**< Maximum backoff delay (ms) */
+} rx_comm_event_retry_constants_t;
 
 /* =============================================================================
  * Types
@@ -641,6 +696,75 @@ typedef void (*rx_comm_frame_callback_t)(rx_comm_channel_t channel,
                                          void*             ctx);
 
 /**
+ * @enum rx_comm_link_status_t
+ * @brief Link health status from heartbeat monitoring
+ *
+ * @details
+ * Reported per-transport link health. Determined by the dual-detection
+ * heartbeat model (implicit 200ms timeout + explicit 1s PING).
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint8_t {
+  k_link_status_unknown = 0, /**< No frames received yet */
+  k_link_status_healthy = 1, /**< Frames received within implicit timeout */
+  k_link_status_dead    = 2, /**< No frames within implicit timeout (200ms) */
+} rx_comm_link_status_t;
+
+/**
+ * @struct rx_comm_event_entry_t
+ * @brief Single entry in the static event FIFO queue
+ *
+ * @details
+ * Events (commands) that require reliable delivery are queued here.
+ * Each entry contains a copy of the payload and metadata needed for
+ * retry logic. SPI entries retry with exponential backoff; USB entries
+ * are fire-and-forget.
+ *
+ * @since Version 1.1.0
+ */
+typedef struct {
+  rx_comm_channel_t channel;                      /**< Target transport */
+  rx_frame_type_t   type;                         /**< Frame type */
+  uint8_t           flags;                        /**< Frame flags */
+  uint8_t           payload[k_frame_max_payload]; /**< Payload copy */
+  uint32_t          payload_len;                  /**< Payload length (bytes) */
+  uint8_t           retries;                      /**< Retry attempts so far */
+  uint32_t          next_retry_time_ms;           /**< Earliest time (ms) for next retry */
+  bool              occupied;                     /**< Slot in use */
+} rx_comm_event_entry_t;
+
+/**
+ * @struct rx_comm_heartbeat_state_t
+ * @brief Per-transport heartbeat tracking state
+ *
+ * @details
+ * Tracks the last time a valid frame was received on each transport.
+ * Used by the poll loop to evaluate link health per the dual-detection
+ * heartbeat model.
+ *
+ * @since Version 1.1.0
+ */
+typedef struct {
+  uint32_t              last_rx_ms; /**< Timestamp (ms) of last valid frame */
+  rx_comm_link_status_t status;     /**< Current link health */
+} rx_comm_heartbeat_state_t;
+
+/**
+ * @typedef rx_comm_link_status_callback_t
+ * @brief Callback invoked when a link status changes
+ *
+ * @param[in] channel    Which transport changed status
+ * @param[in] new_status New link status
+ * @param[in] ctx        User context pointer
+ *
+ * @since Version 1.1.0
+ */
+typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t     channel,
+                                               rx_comm_link_status_t new_status,
+                                               void*                 ctx);
+
+/**
  * @struct rx_comm_manager_config_t
  * @brief Communication manager configuration
  *
@@ -780,6 +904,19 @@ typedef struct {
    * @par Default: Recommend true for development, false for production
    */
   bool enable_decoded_output;
+
+  /**
+   * @brief Callback invoked when a transport link status changes
+   * @details
+   * Optional. Called when heartbeat monitoring detects a link transition
+   * (e.g., healthy → dead). NULL to disable link status notifications.
+   */
+  rx_comm_link_status_callback_t link_status_cb;
+
+  /**
+   * @brief User context for link_status_cb
+   */
+  void* link_status_ctx;
 } rx_comm_manager_config_t;
 
 /**
@@ -817,6 +954,27 @@ typedef struct {
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */
   bool                     enable_decoded_output;                       /**< Enable ASCII output */
   bool                     initialized;                                 /**< Initialization flag */
+
+  /** @brief Per-transport heartbeat tracking (indexed by rx_comm_channel_t) */
+  rx_comm_heartbeat_state_t heartbeat[k_comm_channel_count];
+
+  /** @brief Link status change callback (optional) */
+  rx_comm_link_status_callback_t link_status_cb;
+
+  /** @brief Link status callback context */
+  void* link_status_ctx;
+
+  /** @brief Static event FIFO queue for reliable command delivery */
+  rx_comm_event_entry_t event_queue[k_comm_event_queue_depth];
+
+  /** @brief Event queue write index (next slot to write) */
+  uint8_t event_queue_head;
+
+  /** @brief Event queue read index (next slot to process) */
+  uint8_t event_queue_tail;
+
+  /** @brief Number of occupied event queue slots */
+  uint8_t event_queue_count;
 } rx_comm_manager_t;
 
 /**
@@ -956,6 +1114,102 @@ typedef struct {
                                                rx_comm_channel_t  channel,
                                                const uint8_t*     payload,
                                                uint32_t           payload_len);
+
+/* =============================================================================
+ * Stream / Event Send API
+ * =============================================================================
+ */
+
+/**
+ * @brief Send data on the stream path (fire-and-forget)
+ *
+ * @details
+ * Stream path is for time-sensitive data like telemetry where stale data
+ * has no value. Sends immediately with NO retries on any transport.
+ * If the send fails, the data is simply dropped.
+ *
+ * - USB CDC: Direct send, no retries (USB HW provides reliability)
+ * - SPI: Direct send, no retries (stale telemetry is worthless)
+ *
+ * @param[in,out] mgr     Pointer to initialized manager
+ * @param[in]     params  Send parameters (channel, type, flags, payload, payload_len)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if mgr or params is nullptr
+ * @return k_rx_err_invalid_state if not initialized or channel not enabled
+ *
+ * @pre mgr must be initialized
+ * @pre params must be valid
+ * @post Data sent or silently dropped on failure
+ *
+ * @note This is a thin wrapper over rx_comm_manager_send() for semantic clarity
+ *
+ * @see rx_comm_manager_event_send() For reliable command delivery
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t*           mgr,
+                                                   const rx_comm_send_params_t* params);
+
+/**
+ * @brief Queue data on the event path (reliable, SPI retry)
+ *
+ * @details
+ * Event path is for commands and other data requiring reliable delivery.
+ * The payload is copied into a static FIFO queue and processed by the
+ * poll loop. Retry behavior depends on transport:
+ *
+ * - **SPI**: Up to 3 retries with exponential backoff (10ms, 20ms, 40ms)
+ * - **USB**: Fire-and-forget (USB HW reliability is sufficient)
+ *
+ * Queue is processed in FIFO order by rx_comm_manager_poll().
+ *
+ * @param[in,out] mgr     Pointer to initialized manager
+ * @param[in]     params  Send parameters (channel, type, flags, payload, payload_len)
+ *
+ * @return k_rx_ok on success (queued)
+ * @return k_rx_err_invalid_arg if mgr or params is nullptr
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_no_mem if event queue is full
+ *
+ * @pre mgr must be initialized
+ * @pre params must be valid
+ * @pre params->payload_len <= k_frame_max_payload
+ * @post Payload copied to queue, will be sent by next poll()
+ *
+ * @note Payload is COPIED into queue - caller can reuse buffer immediately
+ * @warning Queue depth is k_comm_event_queue_depth (8). If full, returns error.
+ *
+ * @see rx_comm_manager_stream_send() For fire-and-forget telemetry
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
+                                                  const rx_comm_send_params_t* params);
+
+/* =============================================================================
+ * Heartbeat API
+ * =============================================================================
+ */
+
+/**
+ * @brief Query link health status for a transport channel
+ *
+ * @details
+ * Returns the current heartbeat-derived link status for the given channel.
+ * Status is updated by rx_comm_manager_poll() based on the dual-detection
+ * heartbeat model (200ms implicit timeout).
+ *
+ * @param[in]  mgr     Pointer to initialized manager
+ * @param[in]  channel Channel to query
+ * @param[out] status  Receives current link status
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if mgr or status is nullptr
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
+                                                   rx_comm_channel_t        channel,
+                                                   rx_comm_link_status_t*   status);
 
 /* =============================================================================
  * Status API

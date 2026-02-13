@@ -117,15 +117,11 @@ func TestGateway_UsesTransportDeviceInterface(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			mockTransport := &mockTransportDevice{}
-			var _ transport.Device = mockTransport
-
 			session := manager.NewSessionState()
-			h, err := tc.constructor(mockTransport, session)
+			_, err := tc.constructor(mockTransport, session)
 			if err != nil {
 				t.Fatalf("constructor failed: %v", err)
 			}
-
-			var _ = h
 		})
 	}
 }

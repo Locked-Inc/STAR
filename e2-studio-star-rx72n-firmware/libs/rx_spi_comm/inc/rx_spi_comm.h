@@ -105,7 +105,7 @@
  * - **SPI Mode**: Mode 0 (CPOL=0, CPHA=0) default
  * - **Clock Speed**: Up to 10 MHz (limited by RPi5 spidev)
  * - **Data Width**: 8-bit transfers
- * - **Endianness**: Big-endian (network byte order)
+ * - **Endianness**: Little-endian (all multi-byte fields)
  *
  * **Frame Format** (rx_frame protocol):
  * ```
@@ -117,11 +117,11 @@
  * +--------+----------+--------+-------+----------------+----------+
  * ```
  *
- * **Sequence Number Management:**
- * - TX sequence: Increments with each sent frame (wraps at 65535)
- * - RX sequence: Expected sequence for next received frame
- * - Out-of-order detection: Reject frames with unexpected sequence
- * - Sequence reset: Manual reset via rx_spi_comm_reset_sequence()
+ * **Sequence Number Management (shared session):**
+ * - TX/RX sequences managed by shared rx_session_state_t
+ * - Cross-transport continuity: USB and SPI share the same sequence counters
+ * - Gap tolerance: Accepts gaps up to 10 frames (matching Go gateway)
+ * - Sequence reset: Via rx_session_reset() on the shared session
  *
  * **Error Detection and Correction:**
  * - **CRC-32**: Mandatory for all frames (polynomial 0x04C11DB7)
@@ -167,8 +167,7 @@
  * 0x08   | 8    | decoder             | Frame decoder state
  * 0x10   | 2048 | rx_buffer           | RX staging buffer
  * 0x810  | 2048 | tx_buffer           | TX staging buffer
- * 0x1010 | 2    | tx_sequence         | TX sequence counter (wraps)
- * 0x1012 | 2    | rx_sequence         | Expected RX sequence
+ * 0x1010 | 4/8  | session             | Pointer to shared session state
  * 0x1014 | 1    | channel             | RSPI channel (0-2)
  * 0x1015 | 1    | fec_enabled         | FEC enable flag
  * 0x1016 | 1    | initialized         | Initialization flag
@@ -183,13 +182,13 @@
  *
  * | Scenario | Thread Safety | Mitigation Required |
  * |----------|---------------|---------------------|
- * | **Single-threaded** | [OK] Safe | None |
- * | **Multi-threaded (same handle)** | [X] Unsafe | External mutex required |
- * | **Multi-threaded (different handles)** | [OK] Safe | None (independent state) |
- * | **Send from multiple threads** | [X] Unsafe | Mutex around send operations |
- * | **Receive from multiple threads** | [X] Unsafe | Dedicate one thread to polling |
- * | **Send from ISR** | [WARN] Conditional | OK if SPI HAL is ISR-safe |
- * | **Receive from ISR** | [WARN] Conditional | OK if SPI HAL is ISR-safe |
+ * | **Single-threaded** | ✓ Safe | None |
+ * | **Multi-threaded (same handle)** | ✗ Unsafe | External mutex required |
+ * | **Multi-threaded (different handles)** | ✓ Safe | None (independent state) |
+ * | **Send from multiple threads** | ✗ Unsafe | Mutex around send operations |
+ * | **Receive from multiple threads** | ✗ Unsafe | Dedicate one thread to polling |
+ * | **Send from ISR** | ⚠️ Conditional | OK if SPI HAL is ISR-safe |
+ * | **Receive from ISR** | ⚠️ Conditional | OK if SPI HAL is ISR-safe |
  *
  * **Recommended Architecture**:
  * - Dedicate one thread to SPI communication (poll + send)
@@ -238,8 +237,16 @@
  *     return err;
  *   }
  *
- *   // Step 2: Initialize SPI communication layer
+ *   // Step 2: Initialize shared session state
+ *   static rx_session_state_t g_session;
+ *   err = rx_session_init(&g_session);
+ *   if (err != k_rx_ok) {
+ *     return err;
+ *   }
+ *
+ *   // Step 3: Initialize SPI communication layer
  *   rx_spi_comm_config_t comm_cfg = {
+ *     .session = &g_session,
  *     .channel = 0,              // RSPI0
  *     .spi_mode = 0,             // SPI mode 0
  *     .fec_enabled = false,      // Disable FEC for now
@@ -322,16 +329,16 @@
  *
  * | Rule | Compliance | Implementation Notes |
  * |------|------------|---------------------|
- * | **Rule 1: Control Flow** | [OK] | No goto, setjmp, longjmp, or recursion |
- * | **Rule 2: Loop Bounds** | [OK] | All loops have statically provable bounds |
- * | **Rule 3: No Dynamic Allocation** | [OK] | Zero malloc/free - all static buffers |
- * | **Rule 4: Function Size** | [OK] | All functions < 60 lines |
- * | **Rule 5: Assertions** | [OK] | Minimum 2 checks per function (nullptr, initialized) |
- * | **Rule 6: Data Scope** | [OK] | Variables declared at smallest scope |
- * | **Rule 7: Check Returns** | [OK] | All return values validated |
- * | **Rule 8: Preprocessor** | [OK] | Typed enums for constants, minimal macros |
- * | **Rule 9: Pointers** | [OK] | Single-level dereferencing only |
- * | **Rule 10: Compiler Warnings** | [OK] | -Wall -Wextra -Werror enabled |
+ * | **Rule 1: Control Flow** | ✓ | No goto, setjmp, longjmp, or recursion |
+ * | **Rule 2: Loop Bounds** | ✓ | All loops have statically provable bounds |
+ * | **Rule 3: No Dynamic Allocation** | ✓ | Zero malloc/free - all static buffers |
+ * | **Rule 4: Function Size** | ✓ | All functions < 60 lines |
+ * | **Rule 5: Assertions** | ✓ | Minimum 2 checks per function (nullptr, initialized) |
+ * | **Rule 6: Data Scope** | ✓ | Variables declared at smallest scope |
+ * | **Rule 7: Check Returns** | ✓ | All return values validated |
+ * | **Rule 8: Preprocessor** | ✓ | Typed enums for constants, minimal macros |
+ * | **Rule 9: Pointers** | ✓ | Single-level dereferencing only |
+ * | **Rule 10: Compiler Warnings** | ✓ | -Wall -Wextra -Werror enabled |
  *
  * ## SOLID Principles
  *
@@ -380,6 +387,7 @@
 
 #include "rx_err.h"
 #include "rx_frame.h"
+#include "rx_session.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -552,10 +560,13 @@ typedef struct {
  *
  * @par Usage Example:
  * @code{.c}
- * static rx_spi_comm_handle_t g_spi_handle;  // Global handle (4120 bytes)
+ * static rx_spi_comm_handle_t g_spi_handle;
+ * static rx_session_state_t   g_session;
  *
  * void init(void) {
+ *   rx_session_init(&g_session);
  *   rx_spi_comm_config_t cfg = {
+ *     .session = &g_session,
  *     .channel = 0,
  *     .spi_mode = 0,
  *     .fec_enabled = false
@@ -609,26 +620,18 @@ typedef struct {
   uint8_t tx_buffer[k_spi_comm_tx_buffer_size];
 
   /**
-   * @brief TX sequence counter (increments with each sent frame)
+   * @brief Pointer to shared session state (cross-transport sequence continuity)
    * @details
-   * Automatically assigned to outgoing frames. Wraps at 65535.
-   * **Range**: [0, 65535]
-   * **Wrapping**: Automatic (modulo 65536)
-   * **Reset**: Via rx_spi_comm_reset_sequence()
-   * @see rx_spi_comm_get_tx_sequence() Query current value
+   * Points to a single rx_session_state_t owned by rx_comm_manager_t, shared
+   * with the USB CDC transport. When the active transport switches (e.g., USB
+   * at seq=105 to SPI), SPI continues at seq=106 because both reference the
+   * same session state.
+   * **Lifetime**: Must remain valid for the lifetime of this handle.
+   * **Thread Safety**: Session functions are thread-safe (internal mutex).
+   * @see rx_session.h Shared session API
+   * @see rx_comm_manager.h Owns the session instance
    */
-  uint16_t tx_sequence;
-
-  /**
-   * @brief Expected RX sequence number for next received frame
-   * @details
-   * Used for out-of-order detection. Increments with each received frame.
-   * **Range**: [0, 65535]
-   * **Wrapping**: Automatic (modulo 65536)
-   * **Validation**: Rejects frames with unexpected sequence
-   * @see rx_spi_comm_get_rx_sequence() Query current value
-   */
-  uint16_t rx_sequence;
+  rx_session_state_t* session;
 
   /**
    * @brief RSPI channel number (0-2)
@@ -672,9 +675,9 @@ typedef struct {
   void (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
 
   /**
-   * @brief User context pointer passed to control frame callbacks
+   * @brief User context pointer passed to control frame callbacks (PING, RESET)
    */
-  void* cb_ctx;
+  void* control_cb_ctx;
 
   /* ---- Retransmission state (only active when auto_retransmit enabled) ---- */
 
@@ -729,6 +732,11 @@ typedef struct {
    * @brief Optional callback invoked when NACK received for a pending frame
    */
   void (*on_nack_cb)(uint16_t sequence, void* ctx);
+
+  /**
+   * @brief User context pointer passed to retransmit callbacks (ACK, NACK)
+   */
+  void* retransmit_cb_ctx;
 } rx_spi_comm_handle_t;
 
 /**
@@ -739,41 +747,28 @@ typedef struct {
  * Specifies SPI hardware parameters and optional FEC enable. Used during
  * rx_spi_comm_init() to configure the communication layer.
  *
- * **Default Configuration** (if nullptr passed to init):
- * - channel = 0 (RSPI0)
- * - spi_mode = 0 (CPOL=0, CPHA=0)
- * - fec_enabled = false
+ * **IMPORTANT**: config is REQUIRED (must not be NULL). The session pointer
+ * in the config is mandatory for shared sequence state.
  *
  * @par Field Constraints:
  * | Field | Min | Max | Default | Notes |
  * |-------|-----|-----|---------|-------|
+ * | session | non-NULL | - | - | Required: shared session state |
  * | channel | 0 | 2 | 0 | RX72N has 3 RSPI channels |
  * | spi_mode | 0 | 3 | 0 | Mode 0 recommended for RPi5 |
  * | fec_enabled | false | true | false | Enable for noisy environments |
  *
- * @par Usage Example - Default Configuration:
+ * @par Usage Example:
  * @code{.c}
  * rx_spi_comm_handle_t handle;
+ * rx_session_state_t session;
+ * rx_session_init(&session);
  *
- * // Option 1: Use NULL for defaults
- * rx_err_t err = rx_spi_comm_init(&handle, nullptr);
- *
- * // Option 2: Explicit defaults
  * rx_spi_comm_config_t cfg = {
+ *   .session = &session,
  *   .channel = k_spi_comm_default_channel,
  *   .spi_mode = k_spi_comm_default_mode,
  *   .fec_enabled = false
- * };
- * err = rx_spi_comm_init(&handle, &cfg);
- * @endcode
- *
- * @par Usage Example - Custom Configuration:
- * @code{.c}
- * // Use RSPI1 with FEC enabled
- * rx_spi_comm_config_t cfg = {
- *   .channel = 1,              // RSPI1
- *   .spi_mode = 0,             // SPI mode 0
- *   .fec_enabled = true        // Enable FEC for reliability
  * };
  * rx_err_t err = rx_spi_comm_init(&handle, &cfg);
  * @endcode
@@ -783,6 +778,16 @@ typedef struct {
  * @see rx_spi_comm_constants_t Default values
  */
 typedef struct {
+  /**
+   * @brief Shared session state (REQUIRED, must not be NULL)
+   * @details
+   * Pointer to shared session state for cross-transport sequence continuity.
+   * Owned by rx_comm_manager_t, shared with USB CDC transport.
+   * **Lifetime**: Must remain valid for the lifetime of the SPI comm handle.
+   * @see rx_session.h Shared session API
+   */
+  rx_session_state_t* session;
+
   /**
    * @brief RSPI channel (0-2)
    * @details
@@ -808,7 +813,7 @@ typedef struct {
    * If true, applies FEC encoding to outgoing frames and FEC decoding
    * to incoming frames. Improves reliability at cost of throughput.
    * **Default**: false
-   * **Overhead**: ~50% (e.g., 100 bytes -> 150 bytes with FEC)
+   * **Overhead**: ~50% (e.g., 100 bytes → 150 bytes with FEC)
    */
   bool fec_enabled;
 
@@ -853,8 +858,8 @@ typedef struct {
  * 6. **Initialize sequences**: Set tx_sequence = 0, rx_sequence = 0
  * 7. **Mark initialized**: Set handle->initialized = true
  *
- * **Configuration Options**:
- * - **config = NULL**: Use all defaults (RSPI0, mode 0, FEC disabled)
+ * **Configuration Options** (config is REQUIRED, not optional):
+ * - **session**: REQUIRED, pointer to initialized rx_session_state_t
  * - **channel**: 0-2 (RSPI0/1/2), default 0
  * - **spi_mode**: 0-3 (SPI modes), default 0
  * - **fec_enabled**: true/false, default false
@@ -865,22 +870,23 @@ typedef struct {
  *   - **Side effects**: Entire structure zero-filled, then populated from config
  *   - **Lifetime**: Must remain valid until rx_spi_comm_deinit() called
  *
- * @param[in] config Optional configuration structure
- *   - **Valid range**: NULL or pointer to valid rx_spi_comm_config_t
- *   - **NULL behavior**: Use default configuration (RSPI0, mode 0, no FEC)
- *   - **Lifetime**: Not stored - values copied into handle
- *   - **Constraints**: If non-NULL, channel must be 0-2, spi_mode must be 0-3
+ * @param[in] config Required configuration structure (must not be NULL)
+ *   - **Valid range**: Non-NULL pointer to valid rx_spi_comm_config_t
+ *   - **Constraints**: session must be non-NULL, channel must be 0-2, spi_mode must be 0-3
+ *   - **Lifetime**: Not stored - values copied into handle (except session ptr)
  *
  * @return rx_err_t Error code indicating initialization success or failure
  * @retval k_rx_ok Success - handle fully initialized and ready for operation
  * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_arg config is nullptr
+ * @retval k_rx_err_invalid_arg config->session is nullptr
  * @retval k_rx_err_invalid_arg config->channel > 2 (invalid RSPI channel)
  * @retval k_rx_err_invalid_arg config->spi_mode > 3 (invalid SPI mode)
  *
  * @pre handle must point to allocated memory (uninitialized content OK)
  * @pre RSPI hardware must already be initialized via rspi_init_peripheral()
  * @post handle->initialized = true on success
- * @post handle->tx_sequence = 0, handle->rx_sequence = 0
+ * @post handle->session points to config->session
  * @post All buffers zero-filled (rx_buffer, tx_buffer)
  *
  * @note This function does NOT initialize SPI hardware - caller responsible
@@ -893,36 +899,21 @@ typedef struct {
  * - Execution time: ~10 µs @ 240 MHz
  * - Dominated by memset (4120 bytes)
  *
- * @par Example - Default Configuration:
+ * @par Example:
  * @code{.c}
  * static rx_spi_comm_handle_t g_spi_handle;
+ * static rx_session_state_t   g_session;
  *
- * // Initialize with defaults (RSPI0, mode 0, no FEC)
- * rx_err_t err = rx_spi_comm_init(&g_spi_handle, nullptr);
- * if (err != k_rx_ok) {
- *   log_error("SPI comm init failed: %d", err);
- *   return err;
- * }
- * @endcode
- *
- * @par Example - Custom Configuration:
- * @code{.c}
- * // Step 1: Initialize RSPI hardware first
- * rspi_config_t rspi_cfg = {
- *   .channel = 1,              // RSPI1
- *   .mode = 0,
- *   .bit_rate = 10000000,      // 10 MHz
- *   .peripheral_mode = true    // RX72N is peripheral
- * };
- * rx_err_t err = rspi_init_peripheral(&rspi_cfg);
+ * // Step 1: Initialize shared session
+ * rx_err_t err = rx_session_init(&g_session);
  * if (err != k_rx_ok) return err;
  *
  * // Step 2: Initialize SPI communication layer
- * static rx_spi_comm_handle_t g_spi_handle;
  * rx_spi_comm_config_t comm_cfg = {
- *   .channel = 1,              // Must match RSPI channel
+ *   .session = &g_session,
+ *   .channel = 0,
  *   .spi_mode = 0,
- *   .fec_enabled = true        // Enable FEC for noisy environment
+ *   .fec_enabled = false
  * };
  * err = rx_spi_comm_init(&g_spi_handle, &comm_cfg);
  * if (err != k_rx_ok) {
@@ -1011,12 +1002,12 @@ typedef struct {
  *
  * **Algorithm:**
  * 1. **Validate parameters**: Check handle, payload, payload_len (NASA Rule 5)
- * 2. **Assign sequence**: Use and increment handle->tx_sequence
+ * 2. **Assign sequence**: Get next TX sequence from shared rx_session_state_t
  * 3. **Build frame**: Create frame header (type, flags, length, sequence)
  * 4. **Encode frame**: Call frame encoder to add CRC-32
  * 5. **Optional FEC**: If enabled, apply FEC encoding
  * 6. **SPI transfer**: Transmit encoded frame via RSPI peripheral
- * 7. **Update state**: Increment tx_sequence (with wrap at 65535)
+ * 7. **Update state**: TX sequence already incremented by rx_session_next_tx()
  *
  * **Performance**:
  * - Small payload (16 bytes): ~150 µs
@@ -1027,7 +1018,7 @@ typedef struct {
  * @param[in,out] handle Initialized SPI communication handle
  *   - **Valid range**: Non-NULL pointer to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
- *   - **Side effects**: Increments handle->tx_sequence
+ *   - **Side effects**: Increments shared session TX sequence via rx_session_next_tx()
  *
  * @param[in] type Frame type (command, request, response, etc.)
  *   - **Valid range**: Any rx_frame_type_t value
@@ -1062,7 +1053,7 @@ typedef struct {
  * @pre handle must be non-NULL and initialized
  * @pre If payload_len > 0, payload must point to valid data
  * @pre RSPI hardware must be initialized and ready
- * @post handle->tx_sequence incremented (wraps at 65535)
+ * @post Shared session TX sequence incremented (wraps at 65535)
  * @post Frame transmitted to RPi5 if successful
  *
  * @note Sequence number managed automatically - caller does not specify
@@ -1122,7 +1113,7 @@ typedef struct {
  *
  * **Algorithm:**
  * 1. Build ACK frame with type=response, flags=ack
- * 2. Include sequence number in payload (2 bytes, big-endian)
+ * 2. Include sequence number in payload (2 bytes, little-endian)
  * 3. Call rx_spi_comm_send() with constructed frame
  *
  * **Performance**: ~50 µs (minimal frame with 2-byte payload)
@@ -1184,7 +1175,7 @@ typedef struct {
  *
  * **Algorithm:**
  * 1. Build NACK frame with type=response, flags=nack | additional_flags
- * 2. Include sequence number in payload (2 bytes, big-endian)
+ * 2. Include sequence number in payload (2 bytes, little-endian)
  * 3. Call rx_spi_comm_send() with constructed frame
  *
  * **Performance**: ~50 µs (minimal frame with 2-byte payload)
@@ -1283,7 +1274,7 @@ rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t f
  * @param[in,out] handle Initialized SPI communication handle
  *   - **Valid range**: Non-NULL pointer to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
- *   - **Side effects**: Increments handle->rx_sequence on success
+ *   - **Side effects**: Updates shared session RX sequence via rx_session_validate_rx()
  *
  * @param[out] frame Pointer to frame structure to receive decoded frame
  *   - **Valid range**: Non-NULL pointer to allocated rx_frame_t
@@ -1433,163 +1424,11 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t ti
 [[nodiscard]] rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle,
                                                   bool*                       available);
 
-/* =============================================================================
- * Utility Functions
- * =============================================================================
+/* Sequence management is now handled by the shared rx_session_state_t.
+ * Use rx_session_next_tx(), rx_session_validate_rx(), rx_session_reset()
+ * via the session pointer in the handle or config.
+ * @see rx_session.h
  */
-
-/**
- * @brief Reset TX and RX sequence counters to zero
- *
- * @details
- * Resets both tx_sequence and rx_sequence to zero. Used after connection
- * reset, protocol resynchronization, or when starting a new communication session.
- *
- * **Use Cases**:
- * - After SPI communication error recovery
- * - When RPi5 resets its sequence counters
- * - During system initialization
- * - Manual protocol resynchronization
- *
- * **Algorithm:**
- * 1. Validate handle pointer
- * 2. Set handle->tx_sequence = 0
- * 3. Set handle->rx_sequence = 0
- *
- * **Performance**: ~1 µs (two memory writes)
- *
- * @param[in,out] handle Pointer to SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
- *   - **Constraints**: Typically initialized, but function works even if not
- *   - **Side effects**: Resets tx_sequence and rx_sequence to 0
- *
- * @return void (no return value)
- *
- * @pre handle should be non-NULL (unchecked - caller responsible)
- * @post handle->tx_sequence = 0
- * @post handle->rx_sequence = 0
- *
- * @note No validation performed - caller must ensure handle is valid
- * @note Call this when both sides (RX72N + RPi5) agree to reset sequences
- * @warning Do NOT call mid-communication - causes sequence mismatch errors
- *
- * @par Example - Reset After Error:
- * @code{.c}
- * // Detect communication error
- * if (multiple_sequence_errors_detected) {
- *   log_warn("Sequence errors detected - resetting protocol");
- *
- *   // Reset local sequence counters
- *   rx_spi_comm_reset_sequence(&g_spi_handle);
- *
- *   // Notify RPi5 to reset its sequences (application-specific)
- *   send_reset_command_to_rpi5();
- * }
- * @endcode
- *
- * @see rx_spi_comm_get_tx_sequence() Query TX sequence
- * @see rx_spi_comm_get_rx_sequence() Query RX sequence
- *
- * @since Version 1.0.0
- */
-void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle);
-
-/**
- * @brief Get current TX sequence number (next frame to send)
- *
- * @details
- * Queries the current TX sequence counter value. This is the sequence number
- * that will be assigned to the next transmitted frame.
- *
- * **Use Case**: Debugging, monitoring, logging sequence progression.
- *
- * @param[in] handle Pointer to SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
- *   - **Constraints**: Must be initialized via rx_spi_comm_init()
- *
- * @param[out] sequence Pointer to receive TX sequence number
- *   - **Valid range**: Non-NULL pointer to uint16_t
- *   - **Output range**: [0, 65535]
- *   - **On error**: Set to 0
- *
- * @return rx_err_t Error code
- * @retval k_rx_ok Query successful, sequence updated
- * @retval k_rx_err_invalid_arg handle or sequence is nullptr
- * @retval k_rx_err_invalid_state handle not initialized
- *
- * @pre handle must be non-NULL and initialized
- * @pre sequence must be non-NULL
- * @post *sequence set to current TX sequence counter
- * @post On error, *sequence set to 0
- *
- * @note Sequence increments with each sent frame (wraps at 65535)
- * @note Thread-safe to query (read-only operation)
- *
- * @par Example:
- * @code{.c}
- * uint16_t tx_seq;
- * rx_err_t err = rx_spi_comm_get_tx_sequence(&g_spi_handle, &tx_seq);
- * if (err == k_rx_ok) {
- *   log_info("Next TX sequence: %u", tx_seq);
- * }
- * @endcode
- *
- * @see rx_spi_comm_get_rx_sequence() Query RX sequence
- * @see rx_spi_comm_reset_sequence() Reset sequences
- *
- * @since Version 1.0.0
- */
-[[nodiscard]] rx_err_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t* handle,
-                                                   uint16_t*                   sequence);
-
-/**
- * @brief Get expected RX sequence number (next frame to receive)
- *
- * @details
- * Queries the expected RX sequence counter value. This is the sequence number
- * expected for the next received frame. Frames with mismatched sequence are rejected.
- *
- * **Use Case**: Debugging, monitoring, detecting sequence errors.
- *
- * @param[in] handle Pointer to SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
- *   - **Constraints**: Must be initialized via rx_spi_comm_init()
- *
- * @param[out] sequence Pointer to receive RX sequence number
- *   - **Valid range**: Non-NULL pointer to uint16_t
- *   - **Output range**: [0, 65535]
- *   - **On error**: Set to 0
- *
- * @return rx_err_t Error code
- * @retval k_rx_ok Query successful, sequence updated
- * @retval k_rx_err_invalid_arg handle or sequence is nullptr
- * @retval k_rx_err_invalid_state handle not initialized
- *
- * @pre handle must be non-NULL and initialized
- * @pre sequence must be non-NULL
- * @post *sequence set to expected RX sequence counter
- * @post On error, *sequence set to 0
- *
- * @note Sequence increments with each successfully received frame (wraps at 65535)
- * @note Sequence mismatch causes k_rx_err_sequence_error
- * @note Thread-safe to query (read-only operation)
- *
- * @par Example:
- * @code{.c}
- * uint16_t rx_seq;
- * rx_err_t err = rx_spi_comm_get_rx_sequence(&g_spi_handle, &rx_seq);
- * if (err == k_rx_ok) {
- *   log_info("Expected RX sequence: %u", rx_seq);
- * }
- * @endcode
- *
- * @see rx_spi_comm_get_tx_sequence() Query TX sequence
- * @see rx_spi_comm_reset_sequence() Reset sequences
- *
- * @since Version 1.0.0
- */
-[[nodiscard]] rx_err_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle,
-                                                   uint16_t*                   sequence);
 
 /* =============================================================================
  * Control Frame API
@@ -1615,7 +1454,7 @@ void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle);
  * @retval k_rx_err_invalid_arg handle is nullptr
  *
  * @pre handle must be non-NULL
- * @post on_ping_cb, on_reset_cb, cb_ctx stored in handle
+ * @post on_ping_cb, on_reset_cb, control_cb_ctx stored in handle
  *
  * @note Callbacks are invoked from within rx_spi_comm_receive() context
  * @note Not thread-safe, set callbacks before starting receive loop
@@ -1651,7 +1490,7 @@ rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
  * @pre handle must be non-NULL and initialized
  * @post PONG frame transmitted with echoed payload
  *
- * @note Uses current tx_sequence for the PONG frame
+ * @note Gets next TX sequence from shared session state for the PONG frame
  *
  * @see rx_frame_create_pong() Frame creation for PONG
  * @see rx_spi_comm_receive() Auto-sends PONG on PING reception
@@ -1689,33 +1528,21 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
  */
 [[nodiscard]] rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle);
 
-/* =============================================================================
- * Retransmission API
- * =============================================================================
- */
-
 /**
- * @brief Process pending retransmissions based on timeout
+ * @brief Check and process automatic retransmissions
  *
  * @details
- * Checks if a buffered frame has exceeded its ACK timeout and retransmits
- * it with exponential backoff. Call this from the communication polling loop.
- *
- * **Algorithm:**
- * 1. If auto_retransmit disabled or no frame pending, return immediately
- * 2. Compute backoff: ack_timeout_ms * 2^retry_count, capped at max_backoff_ms
- * 3. If elapsed time < backoff, return (not yet time to retry)
- * 4. If retry_count >= max_retries, clear pending and return k_rx_err_retry_limit
- * 5. Retransmit buffered frame via SPI, increment retry_count
+ * Checks whether an ACK timeout has elapsed for the most recent sent frame.
+ * If auto_retransmit is enabled and a retransmit is pending, resends the
+ * buffered frame (up to max_retries with exponential backoff).
  *
  * @param[in,out] handle Initialized SPI communication handle
  * @param[in] current_time_ms Current system time in milliseconds
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok No action needed or retransmit successful
+ * @retval k_rx_ok No action needed or retransmit sent
  * @retval k_rx_err_invalid_arg handle is nullptr
  * @retval k_rx_err_invalid_state handle not initialized
- * @retval k_rx_err_retry_limit Max retries exceeded, frame dropped
  *
  * @pre handle must be non-NULL and initialized
  * @post retry_count incremented on retransmit, pending cleared on limit
