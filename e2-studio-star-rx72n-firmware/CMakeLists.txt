@@ -62,6 +62,63 @@ set_source_files_properties(${BSP_INTRINSIC_SOURCES} PROPERTIES
     COMPILE_FLAGS "-Wno-unused-parameter -Wno-error"
 )
 
+#------------------------------------------------------------------------------
+# Include directories (global)
+#------------------------------------------------------------------------------
+
+include_directories(
+    # Main source includes
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/shared
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/boot/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/boot/inc/custom
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/boot/inc/smc_generated
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/tasks/inc
+
+    # SMC Generated code
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/smc_gen
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/smc_gen/r_bsp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/smc_gen/r_bsp/mcu/all
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/smc_gen/r_bsp/mcu/rx72n
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/smc_gen/r_config
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/smc_gen/r_pincfg
+
+    # ThreadX
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/threadx
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/threadx/common/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/threadx/ports/rxv3/gnu/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/threadx/utility/low_power
+
+    # nanopb
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_nanopb/nanopb
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_nanopb/inc/gen
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_nanopb/inc
+
+    # Custom libraries
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_bq4050/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_bus/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_comm_manager/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_core/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_crc/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_drv8243/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_ds18b20/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_encoder/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_fec/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_frame/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_frame_ascii/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_hal/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_harq/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_hcsr04/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_motor/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_obstacle_detect/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_pid/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_session/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_comm/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb_comm/inc
+)
+
 # Combine app sources (custom boot + intrinsic functions)
 set(APP_SOURCES
     ${APP_SOURCES_ROOT}
@@ -95,6 +152,7 @@ file(GLOB_RECURSE LIB_RX_BQ4050_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/li
 file(GLOB_RECURSE LIB_RX_DS18B20_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_ds18b20/src/*.c)
 file(GLOB_RECURSE LIB_RX_HCSR04_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_hcsr04/src/*.c)
 file(GLOB_RECURSE LIB_RX_OBSTACLE_DETECT_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_obstacle_detect/src/*.c)
+file(GLOB_RECURSE LIB_RX_SESSION_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_session/src/*.c)
 file(GLOB_RECURSE LIB_RX_SPI_COMM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_spi_comm/src/*.c)
 file(GLOB_RECURSE LIB_RX_USB_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_usb/src/*.c)
 file(GLOB_RECURSE LIB_RX_USB_COMM_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_usb_comm/src/*.c)
@@ -139,6 +197,7 @@ set(ALL_SOURCES
     ${LIB_RX_DS18B20_SOURCES}
     ${LIB_RX_HCSR04_SOURCES}
     ${LIB_RX_OBSTACLE_DETECT_SOURCES}
+    ${LIB_RX_SESSION_SOURCES}
     ${LIB_RX_SPI_COMM_SOURCES}
     ${LIB_RX_USB_SOURCES}
     ${LIB_RX_USB_COMM_SOURCES}

@@ -44,6 +44,7 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_bus/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_motor/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_pid/inc
+        ${CMAKE_SOURCE_DIR}/../libs/rx_session/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_encoder/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_bq4050/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc
@@ -177,6 +178,11 @@ set(RX_SPI_COMM_SRC
 # rx_frame_ascii source
 set(RX_FRAME_ASCII_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/src/rx_frame_ascii.c
+)
+
+# rx_session source
+set(RX_SESSION_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_session/src/rx_session.c
 )
 
 # rx_comm_manager source
@@ -592,6 +598,16 @@ target_include_directories(test_rx_drv8243_spi PRIVATE
 )
 target_link_libraries(test_rx_drv8243_spi unity)
 
+# Test: Session State (shared across transports)
+add_executable(test_rx_session
+    test_rx_session.c
+    ${RX_SESSION_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_session)
+apply_test_includes(test_rx_session)
+target_link_libraries(test_rx_session unity)
+
 # Test: Frame ASCII Formatter
 add_executable(test_rx_frame_ascii
     test_rx_frame_ascii.c
@@ -945,6 +961,7 @@ set(ALL_TEST_TARGETS
     test_rx_gptw_staggered
     test_rx_drv8243_spi
     test_rx_frame_ascii
+    test_rx_session
     test_rx_comm_manager
     test_rx_drv8243
     test_rx_iwdt
@@ -994,6 +1011,7 @@ add_test(NAME test_rx_nanopb COMMAND test_rx_nanopb)
 add_test(NAME test_rx_gptw_staggered COMMAND test_rx_gptw_staggered)
 add_test(NAME test_rx_drv8243_spi COMMAND test_rx_drv8243_spi)
 add_test(NAME test_rx_frame_ascii COMMAND test_rx_frame_ascii)
+add_test(NAME test_rx_session COMMAND test_rx_session)
 add_test(NAME test_rx_comm_manager COMMAND test_rx_comm_manager)
 add_test(NAME test_rx_drv8243 COMMAND test_rx_drv8243)
 add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)

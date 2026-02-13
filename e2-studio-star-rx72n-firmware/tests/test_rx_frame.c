@@ -1167,20 +1167,20 @@ void test_encoded_size_calculation(void)
 
 void test_frame_type_valid(void)
 {
-  enum : uint8_t { k_invalid_type_zero = 0, k_invalid_type_above = 9, k_invalid_type_high = 0x80 };
-  /* All valid frame types (1-8, contiguous range) */
+  enum : uint8_t { k_invalid_type_02 = 0x02, k_invalid_type_50 = 0x50, k_invalid_type_80 = 0x80 };
+  /* All valid frame types (non-contiguous hex values) */
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ping));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_pong));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_command));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_response));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ack));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_nack));
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ping));
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_pong));
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset_ack));
-  /* Invalid types: below range, above range, far above range */
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_zero));
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_above));
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_high));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset));
+  /* Invalid types: gaps in the enum value space */
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_02));
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_50));
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_80));
 }
 
 /* =============================================================================
