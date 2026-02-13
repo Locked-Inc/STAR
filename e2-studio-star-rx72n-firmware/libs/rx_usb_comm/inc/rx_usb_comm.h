@@ -306,9 +306,8 @@ typedef enum : uint8_t {
  * | 4200   | 4 B      | rx_buffer_pos  | Current read position          |
  * | 4204   | 2 B      | tx_sequence    | TX sequence counter            |
  * | 4206   | 2 B      | rx_sequence    | Expected RX sequence           |
- * | 4208   | 1 B      | fec_enabled    | FEC flag                       |
- * | 4209   | 1 B      | initialized    | Init flag                      |
- * | 4210   | 1 B      | mode           | Operating mode                 |
+ * | 4208   | 1 B      | initialized    | Init flag                      |
+ * | 4209   | 1 B      | mode           | Operating mode                 |
  * | 4211   | 4-8 B    | time_iface     | Time interface pointer         |
  * | **Total** | **~4.2 KB** |         |                                |
  *
@@ -360,7 +359,6 @@ typedef enum : uint8_t {
  * void usb_comm_setup(void) {
  *     // Optional: Configure with time interface for accurate timeouts
  *     rx_usb_comm_config_t config = {
- *         .fec_enabled = 0,           // No FEC (CRC-32 only)
  *         .time_iface = &g_time_iface // Or NULL for default
  *     };
  *
@@ -451,15 +449,6 @@ typedef struct {
   uint16_t rx_sequence;
 
   /**
-   * @brief Forward Error Correction enabled flag
-   * @details
-   * When non-zero, FEC encoding is applied to frames.
-   * Currently reserved for future use (set to 0).
-   * @par Values: 0 = disabled, 1 = enabled
-   */
-  uint8_t fec_enabled;
-
-  /**
    * @brief Initialization status flag
    * @details
    * Set to 1 after successful rx_usb_comm_init(), 0 otherwise.
@@ -491,12 +480,11 @@ typedef struct {
  *
  * @details
  * Optional configuration passed to rx_usb_comm_init(). If NULL is passed,
- * default values are used (no FEC, no time interface).
+ * default values are used (no time interface).
  *
  * @par Default Values
  * | Field       | Default | Description                          |
  * |-------------|---------|--------------------------------------|
- * | fec_enabled | 0       | FEC disabled, CRC-32 only            |
  * | time_iface  | NULL    | Use internal timing                  |
  *
  * @par Usage Example
@@ -506,8 +494,7 @@ typedef struct {
  *
  * // Custom configuration with time interface
  * rx_usb_comm_config_t config = {
- *     .fec_enabled = 0,
- *     .time_iface  = &my_time_interface
+ *     .time_iface = &my_time_interface
  * };
  * rx_usb_comm_init(&handle, &config);
  * @endcode
@@ -517,16 +504,6 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  /**
-   * @brief Enable Forward Error Correction encoding
-   * @details
-   * When enabled, applies FEC to transmitted frames for error recovery.
-   * Currently reserved for future implementation.
-   * @par Values: 0 = disabled (default), non-zero = enabled
-   * @par Recommended: 0 (FEC adds overhead, CRC-32 sufficient for USB)
-   */
-  uint8_t fec_enabled;
-
   /**
    * @brief Time interface for timeout handling
    * @details
@@ -564,7 +541,7 @@ typedef struct {
  *   - All fields will be overwritten
  *   - Caller maintains ownership
  * @param[in] config Configuration options (NULL for defaults)
- *   - If NULL, uses fec_enabled=0, time_iface=NULL
+ *   - If NULL, uses time_iface=NULL
  *   - Structure is copied, need not persist
  *
  * @return rx_err_t Error code
@@ -712,7 +689,6 @@ typedef struct {
  * ~10-50 µs (encoding + USB queue)
  *
  * @see rx_usb_comm_receive() Receive frames from peer
- * @see rx_usb_comm_send_ack() Send ACK frame
  * @see rx_frame_type_t Frame type definitions
  *
  * @since Version 1.0.0
@@ -722,28 +698,6 @@ typedef struct {
                                         uint8_t               flags,
                                         const uint8_t*        payload,
                                         uint32_t              payload_len);
-
-/**
- * @brief Send ACK for received frame
- *
- * @param[in,out] handle Initialized handle
- * @param[in]     sequence Sequence number to acknowledge
- *
- * @return k_rx_ok on success
- */
-[[nodiscard]] rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, uint16_t sequence);
-
-/**
- * @brief Send NACK for received frame
- *
- * @param[in,out] handle Initialized handle
- * @param[in]     sequence Sequence number
- * @param[in]     flags Additional flags (e.g., k_frame_flag_soft_nack)
- *
- * @return k_rx_ok on success
- */
-[[nodiscard]] rx_err_t
-rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
 
 /* =============================================================================
  * Receive API
@@ -841,17 +795,15 @@ rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t f
  *
  * switch (err) {
  *     case k_rx_ok:
- *         // Process frame
+ *         // Process frame (USB CDC: no ACK needed)
  *         process_frame(&frame);
- *         // Send ACK
- *         rx_usb_comm_send_ack(&handle, frame.header.sequence);
  *         break;
  *     case k_rx_err_timeout:
  *         // No frame received, normal in polling scenarios
  *         break;
  *     case k_rx_err_crc_mismatch:
- *         // Corrupted frame, request retransmission
- *         rx_usb_comm_send_nack(&handle, 0, k_frame_flag_soft_nack);
+ *         // Corrupted frame, discard (USB hardware handles retries)
+ *         rx_log_warn("USB", "CRC mismatch");
  *         break;
  *     default:
  *         // Other error

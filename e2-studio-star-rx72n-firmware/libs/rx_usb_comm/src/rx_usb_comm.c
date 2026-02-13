@@ -825,7 +825,6 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  *
  * @param[out] handle USB communication handle to initialize
  * @param[in] config Configuration parameters (nullptr for defaults)
- *   - fec_enabled: Enable forward error correction flag
  *   - time_iface: Time interface for sleep operations (nullptr = no sleep)
  *
  * @return rx_err_t Error code
@@ -848,7 +847,6 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  * @code
  * rx_usb_comm_handle_t handle;
  * rx_usb_comm_config_t config = {
- *     .fec_enabled = false,
  *     .time_iface = &time_interface
  * };
  * rx_err_t err = rx_usb_comm_init(&handle, &config);
@@ -871,11 +869,9 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
 
   /* Apply configuration */
   if (config != nullptr) {
-    handle->fec_enabled = config->fec_enabled;
-    handle->time_iface  = config->time_iface;
+    handle->time_iface = config->time_iface;
   } else {
-    handle->fec_enabled = 0;
-    handle->time_iface  = nullptr;
+    handle->time_iface = nullptr;
   }
 
   /* Initialize frame encoder */
@@ -1000,15 +996,13 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
  *
  * @details
  * Constructs an rx_frame_t structure by populating header fields and copying
- * payload data. Optionally sets FEC flag if enabled. Does not compute CRC -
- * that is done during encoding.
+ * payload data. Does not compute CRC - that is done during encoding.
  *
  * @par Algorithm:
  * 1. Validate frame pointer (RX_ASSERT + runtime check)
  * 2. Validate payload pointer if length > 0
  * 3. Populate header fields (sequence, length, type, flags)
  * 4. Copy payload data if present
- * 5. Set FEC flag if enabled
  *
  * @param[out] frame Output frame structure to populate
  * @param[in] sequence Sequence number for frame (0-65535)
@@ -1016,7 +1010,6 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
  * @param[in] flags Frame flags bitmap
  * @param[in] payload Payload data (can be nullptr if payload_len is 0)
  * @param[in] payload_len Payload length in bytes (0 to k_frame_max_payload)
- * @param[in] fec_enabled Whether to set FEC enabled flag
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, frame populated
@@ -1033,12 +1026,11 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
  * @see rx_usb_comm_send() Uses this to build frames for transmission
  */
 static rx_err_t internal_build_frame(rx_frame_t*           frame,
-                                     const uint16_t        sequence,
-                                     const rx_frame_type_t type,
-                                     const uint8_t         flags,
-                                     const uint8_t*        payload,
-                                     const uint32_t        payload_len,
-                                     const bool            fec_enabled)
+                                      const uint16_t        sequence,
+                                      const rx_frame_type_t type,
+                                      const uint8_t         flags,
+                                      const uint8_t*        payload,
+                                      const uint32_t        payload_len)
 {
   /* Pre-condition 1: Frame pointer must be valid */
   RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
@@ -1059,10 +1051,6 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
 
   if (payload != nullptr && payload_len > 0) {
     memcpy(frame->payload, payload, payload_len);
-  }
-
-  if (fec_enabled) {
-    frame->header.flags |= k_frame_flag_fec_enabled;
   }
 
   return k_rx_ok;
@@ -1106,13 +1094,8 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
 
   /* Build frame */
   rx_frame_t frame = {0};
-  rx_err_t   err   = internal_build_frame(&frame,
-                                      handle->tx_sequence,
-                                      type,
-                                      flags,
-                                      payload,
-                                      payload_len,
-                                      handle->fec_enabled);
+  rx_err_t   err   = internal_build_frame(&frame, handle->tx_sequence, type, flags, payload,
+                                          payload_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame build failed");
     return err;
@@ -1138,90 +1121,6 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   handle->tx_sequence++;
 
   return k_rx_ok;
-}
-
-/**
- * @brief Send ACK frame for specified sequence number
- * @param[in,out] handle USB communication handle
- * @param[in] sequence Sequence number to acknowledge
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized or USB not configured or in debug mode
- * @return Error code from frame encoding or USB write on failure
- */
-rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, const uint16_t sequence)
-{
-  if (handle == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (!rx_usb_is_configured(k_usb_port_proto)) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (handle->mode == k_usb_comm_mode_debug) {
-    rx_log_warn(s_tag, "ACK send blocked in debug mode");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Create ACK frame */
-  rx_frame_t ack_frame;
-  rx_err_t   err = rx_frame_create_ack(&ack_frame, sequence);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Encode and send (Port 0 = protocol) */
-  uint32_t wire_len = 0;
-
-  err = rx_frame_encode(&handle->encoder, &ack_frame, handle->tx_buffer, &wire_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
-}
-
-rx_err_t
-rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, const uint16_t sequence, const uint8_t flags)
-{
-  if (handle == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (!rx_usb_is_configured(k_usb_port_proto)) {
-    return k_rx_err_invalid_state;
-  }
-
-  if (handle->mode == k_usb_comm_mode_debug) {
-    rx_log_warn(s_tag, "NACK send blocked in debug mode");
-    return k_rx_err_invalid_state;
-  }
-
-  /* Create NACK frame */
-  rx_frame_t nack_frame;
-  rx_err_t   err = rx_frame_create_nack(&nack_frame, sequence, flags);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Encode and send (Port 0 = protocol) */
-  uint32_t wire_len = 0;
-
-  err = rx_frame_encode(&handle->encoder, &nack_frame, handle->tx_buffer, &wire_len);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
 }
 
 /* =============================================================================
