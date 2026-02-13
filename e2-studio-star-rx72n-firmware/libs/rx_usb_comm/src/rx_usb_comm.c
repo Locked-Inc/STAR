@@ -634,10 +634,6 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uin
     return err;
   }
 
-  /* Validate RX sequence via shared session (accepts gaps up to 10) */
-  rx_session_validate_result_t validate_result = k_session_validate_fail;
-  (void)rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
-
   return k_rx_ok;
 }
 
@@ -1160,18 +1156,55 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
   rx_err_t            err        = k_rx_ok;
   rx_receive_result_t result     = k_receive_continue;
 
-  /* Try to receive a complete frame with bounded iterations */
+  /* Try to receive a complete frame with bounded iterations.
+   * Control frames (PING, PONG, RESET, RESET_ACK) are handled internally
+   * and the loop continues to receive the next data frame. */
   while (iterations < k_max_receive_iterations) {
     iterations++;
 
     result = internal_receive_iteration(handle, frame, timeout_ms, &elapsed_ms, &err);
-    if (result == k_receive_done) {
-      return k_rx_ok;
-    }
     if (result == k_receive_error) {
       return err;
     }
-    /* k_receive_continue: loop continues */
+    if (result != k_receive_done) {
+      continue; /* k_receive_continue: loop continues */
+    }
+
+    /* Frame decoded - check for control frames */
+
+    /* PING: auto-send PONG, invoke callback, loop for next frame */
+    if (frame->header.type == k_frame_type_ping) {
+      (void)rx_usb_comm_send_pong(handle, frame->payload, frame->header.length);
+
+      if (handle->on_ping_cb != nullptr) {
+        handle->on_ping_cb(frame, handle->cb_ctx);
+      }
+
+      continue;
+    }
+
+    /* RESET: send RESET_ACK first, then reset session, invoke callback, loop */
+    if (frame->header.type == k_frame_type_reset) {
+      (void)rx_usb_comm_send_reset_ack(handle);
+      (void)rx_session_reset(handle->session);
+
+      if (handle->on_reset_cb != nullptr) {
+        handle->on_reset_cb(frame, handle->cb_ctx);
+      }
+
+      continue;
+    }
+
+    /* PONG / RESET_ACK: consume silently, loop for next frame */
+    if (frame->header.type == k_frame_type_pong || frame->header.type == k_frame_type_reset_ack) {
+      continue;
+    }
+
+    /* Data frame (COMMAND, RESPONSE): validate sequence via session, return to caller */
+    rx_session_validate_result_t validate_result = k_session_validate_fail;
+    (void)rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+
+    return k_rx_ok;
   }
 
   /* Exceeded maximum iterations */
@@ -1249,6 +1282,101 @@ void rx_usb_comm_flush_rx(rx_usb_comm_handle_t* handle)
     handle->rx_buffer_len = 0;
     handle->rx_buffer_pos = 0;
   }
+}
+
+/* =============================================================================
+ * Control Frame API
+ * =============================================================================
+ */
+
+rx_err_t rx_usb_comm_set_control_callbacks(rx_usb_comm_handle_t* handle,
+                                            void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+                                            void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+                                            void*                 cb_ctx)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  handle->on_ping_cb  = on_ping_cb;
+  handle->on_reset_cb = on_reset_cb;
+  handle->cb_ctx      = cb_ctx;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
+                                const uint8_t*        payload,
+                                const uint16_t        payload_len)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = 0;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Build PONG frame echoing payload */
+  rx_frame_t pong_frame = {0};
+  err = rx_frame_create_pong(&pong_frame, sequence, payload, payload_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint32_t wire_len = 0;
+  err = rx_frame_encode(&handle->encoder, &pong_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
+}
+
+rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle)
+{
+  if (handle == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = 0;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Build RESET_ACK frame (no payload) */
+  rx_frame_t reset_ack_frame = {0};
+  err = rx_frame_create_reset_ack(&reset_ack_frame, sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Encode and send */
+  uint32_t wire_len = 0;
+  err = rx_frame_encode(&handle->encoder, &reset_ack_frame, handle->tx_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  return rx_usb_write(k_usb_port_proto, handle->tx_buffer, wire_len);
 }
 
 /* =============================================================================

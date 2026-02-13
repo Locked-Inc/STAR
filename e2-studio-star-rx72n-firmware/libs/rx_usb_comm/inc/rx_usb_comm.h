@@ -471,6 +471,34 @@ typedef struct {
    * @see rx_time_interface_t
    */
   const rx_time_interface_t* time_iface;
+
+  /**
+   * @brief PING control frame callback (optional)
+   * @details
+   * Invoked after auto-PONG is sent in response to a received PING frame.
+   * Allows application to track ping activity or update heartbeat state.
+   * Set via rx_usb_comm_set_control_callbacks(). NULL disables callback.
+   * @see rx_usb_comm_set_control_callbacks()
+   */
+  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx);
+
+  /**
+   * @brief RESET control frame callback (optional)
+   * @details
+   * Invoked after session reset and auto-RESET_ACK in response to RESET.
+   * Allows application to perform additional cleanup. Set via
+   * rx_usb_comm_set_control_callbacks(). NULL disables callback.
+   * @see rx_usb_comm_set_control_callbacks()
+   */
+  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
+
+  /**
+   * @brief User context pointer passed to control frame callbacks
+   * @details
+   * Opaque pointer forwarded to on_ping_cb and on_reset_cb. Allows
+   * callbacks to access application state without globals.
+   */
+  void* cb_ctx;
 } rx_usb_comm_handle_t;
 
 /**
@@ -935,6 +963,93 @@ void rx_usb_comm_flush_rx(rx_usb_comm_handle_t* handle);
  * @return Current mode, or k_usb_comm_mode_invalid if handle is nullptr/uninitialized
  */
 rx_usb_comm_mode_t rx_usb_comm_get_mode(const rx_usb_comm_handle_t* handle);
+
+/* =============================================================================
+ * Control Frame API
+ * =============================================================================
+ */
+
+/**
+ * @brief Register callbacks for control frame notifications
+ *
+ * @details
+ * Sets optional callbacks invoked when PING or RESET control frames are
+ * received. The auto-response (PONG or RESET_ACK) is always sent regardless
+ * of whether callbacks are registered.
+ *
+ * @param[in,out] handle Initialized USB communication handle
+ * @param[in] on_ping_cb Callback for PING frames (may be NULL to disable)
+ * @param[in] on_reset_cb Callback for RESET frames (may be NULL to disable)
+ * @param[in] cb_ctx User context pointer passed to callbacks
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, callbacks registered
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized via rx_usb_comm_init()
+ * @post on_ping_cb, on_reset_cb, cb_ctx stored in handle
+ *
+ * @see rx_usb_comm_receive() Control frames handled automatically during receive
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_usb_comm_set_control_callbacks(
+  rx_usb_comm_handle_t* handle,
+  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+  void*                 cb_ctx);
+
+/**
+ * @brief Send a PONG response frame
+ *
+ * @details
+ * Constructs and sends a PONG frame echoing the provided payload.
+ * Called automatically by the receive path when a PING frame is received.
+ * Can also be called manually if needed.
+ *
+ * @param[in,out] handle Initialized USB communication handle
+ * @param[in] payload Payload to echo (from received PING, may be NULL)
+ * @param[in] payload_len Length of payload in bytes
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok PONG sent successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized or USB not ready
+ *
+ * @pre handle must be initialized via rx_usb_comm_init()
+ * @post TX sequence incremented via shared session
+ *
+ * @see rx_usb_comm_receive() Calls this automatically for PING frames
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
+                                              const uint8_t*        payload,
+                                              uint16_t              payload_len);
+
+/**
+ * @brief Send a RESET_ACK response frame
+ *
+ * @details
+ * Constructs and sends a RESET_ACK frame (no payload). Called automatically
+ * by the receive path when a RESET frame is received.
+ *
+ * @param[in,out] handle Initialized USB communication handle
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok RESET_ACK sent successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized or USB not ready
+ *
+ * @pre handle must be initialized via rx_usb_comm_init()
+ * @post TX sequence incremented via shared session
+ *
+ * @see rx_usb_comm_receive() Calls this automatically for RESET frames
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle);
 
 #ifdef __cplusplus
 }
