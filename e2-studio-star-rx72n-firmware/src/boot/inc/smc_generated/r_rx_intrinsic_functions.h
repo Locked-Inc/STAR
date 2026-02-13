@@ -638,18 +638,18 @@ Macro definitions
 
 #elif defined(__GNUC__)
 
-/* long R_BSP_MulAndAccOperation_2byte(short *data1, short *data2, unsigned long count)
+/* long R_BSP_MulAndAccOperation_2byte(const short *data1, const short *data2, unsigned long count)
    (This macro uses API function of BSP.) */
 #define R_BSP_MACL(x, y, z)                                                                        \
-  R_BSP_MulAndAccOperation_2byte((short*)(x), (short*)(y), (unsigned long)(z))
-/* short R_BSP_MulAndAccOperation_FixedPoint1(short *data1, short *data2, unsigned long count)
+  R_BSP_MulAndAccOperation_2byte((const short*)(x), (const short*)(y), (unsigned long)(z))
+/* short R_BSP_MulAndAccOperation_FixedPoint1(const short *data1, const short *data2, unsigned long count)
    (This macro uses API function of BSP.) */
 #define R_BSP_MACW1(x, y, z)                                                                       \
-  R_BSP_MulAndAccOperation_FixedPoint1((short*)(x), (short*)(y), (unsigned long)(z))
-/* short R_BSP_MulAndAccOperation_FixedPoint2(short *data1, short *data2, unsigned long count)
+  R_BSP_MulAndAccOperation_FixedPoint1((const short*)(x), (const short*)(y), (unsigned long)(z))
+/* short R_BSP_MulAndAccOperation_FixedPoint2(const short *data1, const short *data2, unsigned long count)
    (This macro uses API function of BSP.) */
 #define R_BSP_MACW2(x, y, z)                                                                       \
-  R_BSP_MulAndAccOperation_FixedPoint2((short*)(x), (short*)(y), (unsigned long)(z))
+  R_BSP_MulAndAccOperation_FixedPoint2((const short*)(x), (const short*)(y), (unsigned long)(z))
 
 #elif defined(__ICCRX__)
 
