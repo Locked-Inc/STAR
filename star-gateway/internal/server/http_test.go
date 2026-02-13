@@ -208,7 +208,7 @@ func TestRunHTTPServer_Lifecycle(t *testing.T) {
 				requestReceived = true
 				w.WriteHeader(http.StatusOK)
 				if _, err := w.Write([]byte("ok")); err != nil {
-					t.Fatalf("failed to write response: %v", err)
+					t.Errorf("failed to write response: %v", err)
 				}
 			})
 
