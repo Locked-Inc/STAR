@@ -59,7 +59,7 @@ set(BSP_INTRINSIC_SOURCES
 # Suppress specific warnings in BSP intrinsic functions (Renesas-provided code with inline assembly)
 # -Wno-unused-parameter: Inline assembly macros may not use all declared parameters
 set_source_files_properties(${BSP_INTRINSIC_SOURCES} PROPERTIES
-    COMPILE_FLAGS "-Wno-unused-parameter"
+    COMPILE_FLAGS "-Wno-unused-parameter -Wno-error"
 )
 
 # Combine app sources (custom boot + intrinsic functions)
