@@ -56,9 +56,10 @@ set(BSP_INTRINSIC_SOURCES
     ${CMAKE_SOURCE_DIR}/src/boot/r_bsp/r_rx_intrinsic_functions.c
 )
 
-# Suppress warnings in BSP intrinsic functions (Renesas-provided code)
+# Suppress specific warnings in BSP intrinsic functions (Renesas-provided code with inline assembly)
+# -Wno-unused-parameter: Inline assembly macros may not use all declared parameters
 set_source_files_properties(${BSP_INTRINSIC_SOURCES} PROPERTIES
-    COMPILE_FLAGS "-Wno-unused-parameter -Wno-error"
+    COMPILE_FLAGS "-Wno-unused-parameter"
 )
 
 # Combine app sources (custom boot + intrinsic functions)
