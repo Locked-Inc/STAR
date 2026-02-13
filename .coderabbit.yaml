@@ -23,7 +23,7 @@
 # - star-rx72n-firmware/CLAUDE.md - Firmware development guide
 
 # Tone instructions (general guidance, max 250 chars)
-tone_instructions: "Assertive reviews enforcing: C23 standard (typed enums, #pragma once, NO traditional guards), NASA Power of 10, comprehensive Doxygen (ALL tags, diagrams), inclusive terminology (Controller/Peripheral), zero magic numbers, SOLID principles, zero backward compatibility."
+tone_instructions: "Assertive reviews enforcing: C23 (typed enums, #pragma once), NASA Power of 10, comprehensive Doxygen, inclusive terminology (Controller/Peripheral), zero magic numbers, SOLID, no backward compatibility."
 
 reviews:
   profile: assertive
