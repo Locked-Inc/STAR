@@ -600,16 +600,19 @@ enums, variables, typedefs, and macros.
 
 ### Header Guards
 
-**MANDATORY:** Use `#pragma once` for all C/C++ header files (modern C23 standard).
+**MANDATORY:** Use `#pragma once` for all C/C++ header files.
 
 **Rationale:**
 - Simpler syntax (one line vs three)
 - Eliminates naming conflicts and typos
 - Faster compilation (compiler can skip file entirely on second include)
-- Widely supported by all modern compilers (GCC, Clang, MSVC, GNURX, CC-RX, IAR)
-- Standard in C23 and de-facto standard since C11
+- Widely supported compiler extension (GCC, Clang, MSVC, GNURX, CC-RX, IAR)
+- De-facto industry standard and convention
+
+**Note:** While `#pragma once` is not formally part of ISO C23, it is universally supported by all compilers used in this project and provides superior ergonomics and safety compared to traditional include guards.
 
 **Example:**
+
 ```c
 /***********************************************************************************************************************
  * File header comment, copyright, license
@@ -623,6 +626,7 @@ enums, variables, typedefs, and macros.
 ```
 
 **DO NOT use traditional include guards:**
+
 ```c
 // ❌ WRONG - Don't use traditional guards
 #ifndef STAR_RX72N_FILENAME_H
