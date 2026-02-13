@@ -63,7 +63,7 @@ RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}
 COPY gcc-14.2.0.202511-GNURX-ELF.run /tmp/gnurx-installer.run
 RUN mkdir -p /opt/gnurx && \
     chmod +x /tmp/gnurx-installer.run && \
-    /tmp/gnurx-installer.run --prefix=/opt/gnurx --mode unattended && \
+    /tmp/gnurx-installer.run -p /opt/gnurx -y && \
     rm /tmp/gnurx-installer.run && \
     echo "GNURX toolchain installed successfully"
 
