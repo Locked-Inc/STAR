@@ -112,10 +112,17 @@ echo -e "${GREEN}✓ Configuration complete${NC}"
 # Build
 echo -e "${YELLOW}Building firmware...${NC}"
 
+# Portable CPU count (nproc on Linux, sysctl on macOS)
+if command -v nproc &> /dev/null; then
+    JOBS="$(nproc)"
+else
+    JOBS="$(sysctl -n hw.ncpu 2>/dev/null || echo 1)"
+fi
+
 if [ "$VERBOSE" = true ]; then
     cmake --build . --verbose
 else
-    cmake --build . -- -j"$(nproc)"
+    cmake --build . -- -j"${JOBS}"
 fi
 
 echo ""
