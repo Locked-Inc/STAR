@@ -22,6 +22,9 @@ const (
 	// inflightPollInterval is the interval for polling in-flight operations during drain.
 	inflightPollInterval = 10 * time.Millisecond
 
+	// resetDrainBackoff is the backoff duration between receive attempts during reset drain.
+	resetDrainBackoff = 10 * time.Millisecond
+
 	// emaSmoothingDivisor is the divisor for the exponential moving average latency
 	// calculation. With divisor=2, this gives α=0.5: new_avg = (old_avg + sample) / 2.
 	emaSmoothingDivisor = 2
@@ -317,12 +320,23 @@ func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSess
 			if ctx.Err() != nil {
 				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
 			}
-			// Transient receive error, keep trying within timeout
+			// Transient receive error — backoff briefly to avoid tight-loop CPU spin
 			log.Printf("DEBUG: Reset handshake receive error (continuing): %v", err)
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
+			case <-time.After(resetDrainBackoff):
+			}
 			continue
 		}
 
 		if result == nil {
+			// No frame received — backoff to avoid tight-loop
+			select {
+			case <-ctx.Done():
+				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
+			case <-time.After(resetDrainBackoff):
+			}
 			continue
 		}
 
@@ -942,7 +956,7 @@ func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 		}
 		return nil // SPI not available
 
-	default: // ModeAuto, ModePreferUSB
+	default: // ModeAuto
 		return candidates[0] // Highest priority
 	}
 }
