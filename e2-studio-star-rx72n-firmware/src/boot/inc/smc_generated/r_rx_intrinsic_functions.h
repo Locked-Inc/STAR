@@ -214,21 +214,21 @@ Macro definitions
 
 #elif defined(__GNUC__)
 
-/* long long R_BSP_MulAndAccOperation_B(long long init, unsigned long count, signed char *addr1, signed char *addr2)
+/* long long R_BSP_MulAndAccOperation_B(long long init, unsigned long count, const signed char *addr1, const signed char *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAB(w, x, y, z)                                                                    \
   R_BSP_MulAndAccOperation_B((long long)(w),                                                       \
                              (unsigned long)(x),                                                   \
-                             (signed char*)(y),                                                    \
-                             (signed char*)(z))
-/* long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short *addr1, short *addr2)
+                             (const signed char*)(y),                                              \
+                             (const signed char*)(z))
+/* long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short *addr1, const short *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAW(w, x, y, z)                                                                    \
-  R_BSP_MulAndAccOperation_W((long long)(w), (unsigned long)(x), (short*)(y), (short*)(z))
-/* long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long *addr1, long *addr2)
+  R_BSP_MulAndAccOperation_W((long long)(w), (unsigned long)(x), (const short*)(y), (const short*)(z))
+/* long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, const long *addr1, const long *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAL(w, x, y, z)                                                                    \
-  R_BSP_MulAndAccOperation_L((long long)(w), (unsigned long)(x), (long*)(y), (long*)(z))
+  R_BSP_MulAndAccOperation_L((long long)(w), (unsigned long)(x), (const long*)(y), (const long*)(z))
 
 #elif defined(__ICCRX__)
 
