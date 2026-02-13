@@ -310,6 +310,7 @@ void SpiDriver::init_crc32_table()
 
 uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t> & data)
 {
+  std::call_once(crc32_table_init_flag_, init_crc32_table);
   uint32_t crc = 0xFFFFFFFF;
   for (uint8_t byte : data) {
     uint8_t lookup_index = (crc ^ byte) & 0xFF;
