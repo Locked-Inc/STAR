@@ -149,8 +149,8 @@ Includes   <System Includes> , "Project Includes"
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_renesas_rtos_ri600v4 = 0,  /**< RI600V4 kernel (T-Kernel extensions) */
-    k_renesas_rtos_ri600px = 1,  /**< RI600PX kernel (high-performance variant) */
+  k_renesas_rtos_ri600v4 = 0, /**< RI600V4 kernel (T-Kernel extensions) */
+  k_renesas_rtos_ri600px = 1, /**< RI600PX kernel (high-performance variant) */
 } renesas_rtos_variant_t;
 
 /**

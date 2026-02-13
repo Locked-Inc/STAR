@@ -97,8 +97,8 @@ UINT _tx_timer_priority;
    in tx_port.h.  */
 
 ULONG
-  _tx_timer_thread_stack_area[(((UINT)TX_TIMER_THREAD_STACK_SIZE) + ((sizeof(ULONG)) - ((UINT)1))) /
-                              (sizeof(ULONG))];
+_tx_timer_thread_stack_area[(((UINT)TX_TIMER_THREAD_STACK_SIZE) + ((sizeof(ULONG)) - ((UINT)1))) /
+                            (sizeof(ULONG))];
 
 #else
 

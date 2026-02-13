@@ -224,7 +224,10 @@ Macro definitions
 /* long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short *addr1, const short *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAW(w, x, y, z)                                                                    \
-  R_BSP_MulAndAccOperation_W((long long)(w), (unsigned long)(x), (const short*)(y), (const short*)(z))
+  R_BSP_MulAndAccOperation_W((long long)(w),                                                       \
+                             (unsigned long)(x),                                                   \
+                             (const short*)(y),                                                    \
+                             (const short*)(z))
 /* long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, const long *addr1, const long *addr2)
    (This macro uses API function of BSP.) */
 #define R_BSP_RMPAL(w, x, y, z)                                                                    \
@@ -1041,10 +1044,10 @@ signed long R_BSP_Min(signed long data1, signed long data2);
  * @note GNUC implementation using inline assembly
  * @since Version 1.0.0
  */
-long long R_BSP_MulAndAccOperation_B(long long           init,
-                                     unsigned long       count,
-                                     const signed char*  addr1,
-                                     const signed char*  addr2);
+long long R_BSP_MulAndAccOperation_B(long long          init,
+                                     unsigned long      count,
+                                     const signed char* addr1,
+                                     const signed char* addr2);
 
 /**
  * @brief Multiply-and-accumulate operation on word arrays
@@ -1056,7 +1059,10 @@ long long R_BSP_MulAndAccOperation_B(long long           init,
  * @note GNUC implementation using inline assembly
  * @since Version 1.0.0
  */
-long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short* addr1, const short* addr2);
+long long R_BSP_MulAndAccOperation_W(long long     init,
+                                     unsigned long count,
+                                     const short*  addr1,
+                                     const short*  addr2);
 
 /**
  * @brief Multiply-and-accumulate operation on long arrays
@@ -1068,7 +1074,10 @@ long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const 
  * @note GNUC implementation using inline assembly
  * @since Version 1.0.0
  */
-long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, const long* addr1, const long* addr2);
+long long R_BSP_MulAndAccOperation_L(long long     init,
+                                     unsigned long count,
+                                     const long*   addr1,
+                                     const long*   addr2);
 
 /**
  * @brief Rotate left with carry flag
@@ -1128,7 +1137,9 @@ long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsi
  * @note GNUC implementation using inline assembly
  * @since Version 1.01
  */
-short R_BSP_MulAndAccOperation_FixedPoint1(const short* data1, const short* data2, unsigned long count);
+short R_BSP_MulAndAccOperation_FixedPoint1(const short*  data1,
+                                           const short*  data2,
+                                           unsigned long count);
 
 /**
  * @brief Multiply-and-accumulate with fixed-point format 2
@@ -1139,7 +1150,9 @@ short R_BSP_MulAndAccOperation_FixedPoint1(const short* data1, const short* data
  * @note GNUC implementation using inline assembly
  * @since Version 1.01
  */
-short R_BSP_MulAndAccOperation_FixedPoint2(const short* data1, const short* data2, unsigned long count);
+short R_BSP_MulAndAccOperation_FixedPoint2(const short*  data1,
+                                           const short*  data2,
+                                           unsigned long count);
 
 #endif /* defined(__GNUC__) */
 
@@ -1411,7 +1424,8 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine(float f, float* sin, float* c
  * @note Uses TFU hardware for fast computation
  * @since Version 1.10
  */
-R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcAtan_SquareRoot(float y, float x, float* atan2, float* hypot);
+R_BSP_ATTRIB_INLINE_ASM void
+R_BSP_CalcAtan_SquareRoot(float y, float x, float* atan2, float* hypot);
 #endif /* __FPU */
 
 #if BSP_MCU_TFU_VERSION == 2
@@ -1454,7 +1468,8 @@ int32_t R_BSP_CalcCosine_Fpn(int32_t fx);
  * @note Only for TFU version 2
  * @since Version 1.14
  */
-R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t* hypot);
+R_BSP_ATTRIB_INLINE_ASM void
+R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t* hypot);
 
 /**
  * @brief Calculate atan2 (fixed-point)
