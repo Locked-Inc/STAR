@@ -1041,10 +1041,10 @@ signed long R_BSP_Min(signed long data1, signed long data2);
  * @note GNUC implementation using inline assembly
  * @since Version 1.0.0
  */
-long long R_BSP_MulAndAccOperation_B(long long     init,
-                                     unsigned long count,
-                                     signed char*  addr1,
-                                     signed char*  addr2);
+long long R_BSP_MulAndAccOperation_B(long long           init,
+                                     unsigned long       count,
+                                     const signed char*  addr1,
+                                     const signed char*  addr2);
 
 /**
  * @brief Multiply-and-accumulate operation on word arrays
@@ -1056,7 +1056,7 @@ long long R_BSP_MulAndAccOperation_B(long long     init,
  * @note GNUC implementation using inline assembly
  * @since Version 1.0.0
  */
-long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short* addr1, short* addr2);
+long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short* addr1, const short* addr2);
 
 /**
  * @brief Multiply-and-accumulate operation on long arrays
@@ -1068,7 +1068,7 @@ long long R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short*
  * @note GNUC implementation using inline assembly
  * @since Version 1.0.0
  */
-long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long* addr1, long* addr2);
+long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, const long* addr1, const long* addr2);
 
 /**
  * @brief Rotate left with carry flag
