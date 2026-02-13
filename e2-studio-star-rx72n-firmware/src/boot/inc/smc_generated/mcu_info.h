@@ -155,10 +155,15 @@ typedef enum : uint8_t {
  * @invariant Value must match BSP_CFG_MCU_PART_PACKAGE from r_bsp_config.h
  *
  * @code
- *   // Example: Query package type
- *   #if BSP_CFG_MCU_PART_PACKAGE == k_package_type_lfqfp144
- *     // Code for LFQFP-144 package
+ *   // Example: Query package type (use integer literal, not enum in #if)
+ *   #if BSP_CFG_MCU_PART_PACKAGE == 0x3
+ *     // Code for LFQFP-144 package (0x3 = k_package_type_lfqfp144)
  *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_MCU_PART_PACKAGE == (uint8_t)k_package_type_lfqfp144) {
+ *     // Runtime package type check
+ *   }
  * @endcode
  *
  * @see BSP_CFG_MCU_PART_PACKAGE
@@ -184,10 +189,15 @@ typedef enum : uint8_t {
  * @invariant Value must match BSP_CFG_MCU_PART_MEMORY_SIZE from r_bsp_config.h
  *
  * @code
- *   // Example: Check memory configuration
- *   #if BSP_CFG_MCU_PART_MEMORY_SIZE == k_memory_size_4mb
- *     // 4MB ROM available
+ *   // Example: Check memory configuration (use integer literal, not enum in #if)
+ *   #if BSP_CFG_MCU_PART_MEMORY_SIZE == 0x17
+ *     // 4MB ROM available (0x17 = k_memory_size_4mb)
  *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_MCU_PART_MEMORY_SIZE == (uint8_t)k_memory_size_4mb) {
+ *     // Runtime memory size check
+ *   }
  * @endcode
  *
  * @see BSP_CFG_MCU_PART_MEMORY_SIZE
@@ -209,10 +219,15 @@ typedef enum : uint8_t {
  * @invariant Value must be 0, 1, or 2 (hardware limitation)
  *
  * @code
- *   // Example: Configure HOCO frequency
- *   #if BSP_CFG_HOCO_FREQUENCY == k_hoco_freq_20mhz
- *     // HOCO running at 20 MHz
+ *   // Example: Configure HOCO frequency (use integer literal, not enum in #if)
+ *   #if BSP_CFG_HOCO_FREQUENCY == 2
+ *     // HOCO running at 20 MHz (2 = k_hoco_freq_20mhz)
  *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_HOCO_FREQUENCY == (uint8_t)k_hoco_freq_20mhz) {
+ *     // Runtime HOCO frequency check
+ *   }
  * @endcode
  *
  * @see BSP_CFG_HOCO_FREQUENCY
@@ -236,10 +251,15 @@ typedef enum : uint8_t {
  * @invariant Value must be 0-4 (hardware limitation)
  *
  * @code
- *   // Example: Check clock source
- *   #if BSP_CFG_CLOCK_SOURCE == k_clock_src_pll
- *     // Using PLL for system clock
+ *   // Example: Check clock source (use integer literal, not enum in #if)
+ *   #if BSP_CFG_CLOCK_SOURCE == 4
+ *     // Using PLL for system clock (4 = k_clock_src_pll)
  *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_CLOCK_SOURCE == (uint8_t)k_clock_src_pll) {
+ *     // Runtime clock source check
+ *   }
  * @endcode
  *
  * @see BSP_CFG_CLOCK_SOURCE
@@ -265,10 +285,15 @@ typedef enum : uint8_t {
  * @invariant Value must be 0 or 1 (hardware limitation)
  *
  * @code
- *   // Example: Check PLL source
- *   #if BSP_CFG_PLL_SRC == k_pll_src_main
- *     // PLL driven by external crystal
+ *   // Example: Check PLL source (use integer literal, not enum in #if)
+ *   #if BSP_CFG_PLL_SRC == 0
+ *     // PLL driven by external crystal (0 = k_pll_src_main)
  *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_PLL_SRC == (uint8_t)k_pll_src_main) {
+ *     // Runtime PLL source check
+ *   }
  * @endcode
  *
  * @see BSP_CFG_PLL_SRC
