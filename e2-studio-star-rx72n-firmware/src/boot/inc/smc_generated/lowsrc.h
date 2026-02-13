@@ -62,6 +62,19 @@
  * @warning Most functions are NOT thread-safe unless _REENTRANT is defined (CC-RX only)
  * @since Version 2.0.0
  *
+ * @par NASA Power of 10 Compliance
+ * - Rule 1: No goto, setjmp/longjmp, or recursion in function implementations
+ * - Rule 3: No dynamic memory allocation (all buffers statically allocated)
+ * - Rule 5: Pre/post conditions documented for every function
+ * - Rule 8: No magic numbers in interface definitions
+ * - Rule 9: Function pointers not used in this module
+ * - Rule 10: Compiles with -Wall -Wextra -Werror
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: Low-level I/O bridging only
+ * - Interface Segregation: Compiler-specific sections provide minimal required surface
+ * - Dependency Inversion: Higher-level stdio depends on this abstraction layer
+ *
  * @author STAR Project (Locked, Inc.)
  * @date 2013 (original), 2026 (STAR modifications)
  * @version 3.01
@@ -296,7 +309,9 @@ long read(long fileno, unsigned char* buf, long count);
  * @retval -1 Error (seek not supported without filesystem)
  *
  * @pre File descriptor is open
+ * @pre fileno was obtained from a successful open() call
  * @post File position unchanged (seek not implemented)
+ * @post errno may be set to indicate lack of filesystem support
  *
  * @note Not thread-safe unless _REENTRANT is defined
  * @warning Always fails - no filesystem support
@@ -417,7 +432,7 @@ long signal_sem(long semnum);
  * @see _write() Alternative GNUC write implementation
  * @since Version 2.0.0
  */
-int write(int fileno, char* buf, int count);
+int write(int fileno, const char* buf, int count);
 
 /**
  * @brief Read data from file descriptor (GNUC/Newlib)
@@ -465,7 +480,7 @@ int read(int fileno, char* buf, int count);
  * @see write() Standard write implementation
  * @since Version 2.0.0
  */
-int _write(int fileno, char* buf, int count);
+int _write(int fileno, const char* buf, int count);
 
 /**
  * @brief Read data from file descriptor (GNUC/Newlib alternative)
