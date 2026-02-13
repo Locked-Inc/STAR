@@ -1228,11 +1228,14 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
     rx_session_validate_result_t validate_result = k_session_validate_fail;
     rx_err_t                     validate_err =
       rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+    if (validate_err != k_rx_ok) {
+      rx_log_error(s_tag, "Session validate_rx returned error");
+      return validate_err;
+    }
     if (validate_result == k_session_validate_fail) {
       rx_log_warn(s_tag, "Sequence validation failed, dropping frame");
       continue;
     }
-    (void)validate_err; /* Accept both ok and gap results */
 
     return k_rx_ok;
   }

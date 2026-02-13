@@ -2073,11 +2073,14 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
     rx_session_validate_result_t validate_result = k_session_validate_fail;
     rx_err_t                     validate_err =
       rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+    if (validate_err != k_rx_ok) {
+      rx_log_error(s_tag, "Session validate_rx returned error");
+      return validate_err;
+    }
     if (validate_result == k_session_validate_fail) {
       rx_log_warn(s_tag, "Sequence validation failed, dropping frame");
       continue;
     }
-    (void)validate_err; /* Accept both ok and gap results */
 
     /* Non-control frame: return to caller */
     return k_rx_ok;
@@ -2496,6 +2499,10 @@ rx_err_t rx_spi_comm_set_retransmit_callbacks(rx_spi_comm_handle_t* handle,
 {
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
   }
 
   handle->on_ack_cb  = on_ack_cb;

@@ -24,6 +24,9 @@ var errMockSPIOpen = errors.New("mock spi open failure")
 var errMockSPILink = errors.New("mock spi link failure")
 
 // mockSPIDevice is a minimal transport.Device mock for SPI-path unit tests.
+// All operations (Transfer, Send, Receive) succeed unconditionally:
+// Transfer ignores context cancellation, Receive allocates maxLen bytes without
+// bounds checking. Not suitable for testing error paths or realistic behavior.
 type mockSPIDevice struct {
 	open bool
 }
@@ -84,8 +87,8 @@ func TestCreateSPITransport_UsesDefaultConfig(t *testing.T) {
 
 	tests := []struct {
 		name string
-		got  interface{}
-		want interface{}
+		got  any
+		want any
 	}{
 		{name: "Device", got: cfg.Device, want: want.Device},
 		{name: "SpeedHz", got: cfg.SpeedHz, want: want.SpeedHz},

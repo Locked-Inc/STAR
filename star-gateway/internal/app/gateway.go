@@ -53,7 +53,7 @@ const (
 type Config struct {
 	SimulationMode bool
 	SocketPath     string
-	// "auto", "prefer-usb", "force-usb", "force-spi"
+	// "auto", "force-usb", "force-spi"
 	TransportMode manager.TransportMode
 }
 

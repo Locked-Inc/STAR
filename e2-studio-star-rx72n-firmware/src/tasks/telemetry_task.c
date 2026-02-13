@@ -1121,11 +1121,20 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_fault_shift_motor_0 = 0,  /**< Motor 0 fault flags at bits [7:0] */
-  k_fault_shift_motor_1 = 8,  /**< Motor 1 fault flags at bits [15:8] */
-  k_fault_shift_motor_2 = 16, /**< Motor 2 fault flags at bits [23:16] */
-  k_fault_shift_motor_3 = 24, /**< Motor 3 fault flags at bits [31:24] */
+  k_fault_shift_front_left  = 0,  /**< Front left motor fault flags at bits [7:0] */
+  k_fault_shift_front_right = 8,  /**< Front right motor fault flags at bits [15:8] */
+  k_fault_shift_back_left   = 16, /**< Back left motor fault flags at bits [23:16] */
+  k_fault_shift_back_right  = 24, /**< Back right motor fault flags at bits [31:24] */
 } telem_fault_shift_t;
+
+/**
+ * @enum telem_sensor_idx_t
+ * @brief Temperature sensor indices for telemetry
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_telem_sensor_ambient = 0, /**< DS18B20 ambient temperature sensor index */
+} telem_sensor_idx_t;
 
 /* =============================================================================
  * Forward Declarations
@@ -1773,10 +1782,10 @@ static rx_err_t internal_build_and_send_telemetry(void)
     telemetry.emergency_stop = motor_state.estop_active;
     /* Pack 4 motor fault bytes into single uint32_t bitfield */
     telemetry.fault_flags =
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_left] << k_fault_shift_motor_0) |
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_right] << k_fault_shift_motor_1) |
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_left] << k_fault_shift_motor_2) |
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_right] << k_fault_shift_motor_3);
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_left] << k_fault_shift_front_left) |
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_right] << k_fault_shift_front_right) |
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_left] << k_fault_shift_back_left) |
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_right] << k_fault_shift_back_right);
 
     /* Front left encoder */
     telemetry.has_encoder_front_left      = true;
@@ -1822,9 +1831,10 @@ static rx_err_t internal_build_and_send_telemetry(void)
 
   /* Collect temperature state */
   err = shared_data_get_temp(&temp_state);
-  if (err == k_rx_ok && temp_state.sensor_valid[0]) {
+  if (err == k_rx_ok && temp_state.sensor_valid[k_telem_sensor_ambient]) {
     /* Convert from centi-degrees to degrees */
-    telemetry.temperature_celsius = (float)temp_state.temperature_cdegc[0] / s_cdegc_per_degree;
+    telemetry.temperature_celsius =
+      (float)temp_state.temperature_cdegc[k_telem_sensor_ambient] / s_cdegc_per_degree;
   }
 
   /* Encode to protobuf */
@@ -1838,7 +1848,7 @@ static rx_err_t internal_build_and_send_telemetry(void)
   rx_comm_send_params_t params;
   params.channel     = k_comm_channel_usb;
   params.type        = k_frame_type_response;
-  params.flags       = 0;
+  params.flags       = k_frame_flag_none;
   params.payload     = s_telem_buffer;
   params.payload_len = encoded_len;
 
