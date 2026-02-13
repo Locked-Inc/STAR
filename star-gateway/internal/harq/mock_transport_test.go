@@ -13,7 +13,7 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 )
 
-// MockTransport implements transport.Transport for testing.
+// MockTransport implements transport.Device for testing.
 type MockTransport struct {
 	mu           sync.Mutex
 	sendData     [][]byte      // Data sent via Send()
@@ -26,8 +26,8 @@ type MockTransport struct {
 	readDeadline time.Time
 }
 
-// Verify MockTransport implements transport.Transport.
-var _ transport.Transport = (*MockTransport)(nil)
+// Verify MockTransport implements transport.Device.
+var _ transport.Device = (*MockTransport)(nil)
 
 // NewMockTransport creates a new MockTransport for testing.
 func NewMockTransport() *MockTransport {
@@ -203,6 +203,13 @@ func (m *MockTransport) Close() error {
 	defer m.mu.Unlock()
 	m.isOpen = false
 	return nil
+}
+
+// IsOpen returns whether the transport is currently open.
+func (m *MockTransport) IsOpen() bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.isOpen
 }
 
 // SetReadDeadline sets a deadline for Receive in tests.

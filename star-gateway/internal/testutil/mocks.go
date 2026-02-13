@@ -6,7 +6,6 @@ package testutil
 
 import (
 	"context"
-	"errors"
 	"io"
 	"log/slog"
 	"sync"
@@ -39,6 +38,10 @@ type MockHARQ struct {
 	// If set, Receive will pull from this channel instead of calling ReceiveFunc.
 	ReceiveChan chan *harq.ReceiveResult
 }
+
+// Compile-time assertion that MockHARQ implements harq.HARQ.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ harq.HARQ = (*MockHARQ)(nil)
 
 func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
 	m.mu.Lock()
@@ -82,7 +85,10 @@ func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			return nil, harq.ErrTimeout
 		}
 	}
-	return nil, errors.New("receive not implemented")
+	// No func or chan configured — block until context cancels so callers
+	// (e.g. drainUntilResetAck) time out gracefully instead of tight-looping.
+	<-ctx.Done()
+	return nil, ctx.Err()
 }
 
 func (m *MockHARQ) GetState() harq.State {
@@ -138,6 +144,10 @@ type MockDispatcher struct {
 	StopFunc        func() error
 	GetStateFunc    func() dispatcher.State
 }
+
+// Compile-time assertion that MockDispatcher implements dispatcher.Dispatcher.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ dispatcher.Dispatcher = (*MockDispatcher)(nil)
 
 func (m *MockDispatcher) Subscribe(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
 	if m.SubscribeFunc != nil {

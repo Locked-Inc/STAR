@@ -104,7 +104,7 @@ func (c *Config) Validate() error {
 	}
 
 	switch c.Mode {
-	case ModeAuto, ModePreferUSB, ModeForceUSB, ModeForceSPI:
+	case ModeAuto, ModeForceUSB, ModeForceSPI:
 		// Valid modes
 	default:
 		return &ConfigError{Field: "Mode", Reason: "invalid mode: " + string(c.Mode)}

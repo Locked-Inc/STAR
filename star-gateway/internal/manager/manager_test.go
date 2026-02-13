@@ -61,11 +61,6 @@ func TestTransportManager_CheckValidTransportMode(t *testing.T) {
 			wantValid:     true,
 		},
 		{
-			name:          "ModePreferUSB is valid",
-			transportmode: ModePreferUSB,
-			wantValid:     true,
-		},
-		{
 			name:          "ModeForceUSB is valid",
 			transportmode: ModeForceUSB,
 			wantValid:     true,
@@ -115,12 +110,6 @@ func TestTransportManager_ParseTransportMode(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name:     "valid mode prefer-usb",
-			input:    "prefer-usb",
-			wantMode: ModePreferUSB,
-			wantErr:  false,
-		},
-		{
 			name:     "valid mode force-usb",
 			input:    "force-usb",
 			wantMode: ModeForceUSB,
@@ -143,12 +132,6 @@ func TestTransportManager_ParseTransportMode(t *testing.T) {
 			input:    "",
 			wantMode: ModeAuto,
 			wantErr:  true,
-		},
-		{
-			name:     "case-insensitive mode",
-			input:    "PrEfEr-UsB",
-			wantMode: ModePreferUSB,
-			wantErr:  false,
 		},
 		{
 			name:     "numerical string returns error",

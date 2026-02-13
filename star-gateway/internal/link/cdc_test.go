@@ -15,6 +15,7 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 )
 
 // Test constants to avoid magic numbers
@@ -53,6 +54,10 @@ type MockTransport struct {
 	receiveErr  error
 	closed      bool
 }
+
+// Compile-time assertion that MockTransport implements transport.Device.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ transport.Device = (*MockTransport)(nil)
 
 func (m *MockTransport) Send(data []byte) (int, error) {
 	m.mu.Lock()

@@ -40,28 +40,6 @@ const (
 	DefaultTimeout = 100 * time.Millisecond
 )
 
-// Transport defines the interface for low-level communication.
-type Transport interface {
-	// Send transmits data over the transport.
-	// Returns the number of bytes sent and any error.
-	Send(data []byte) (int, error)
-
-	// Receive reads data from the transport.
-	// Returns the received data and any error.
-	Receive(maxLen int) ([]byte, error)
-
-	// Transfer performs a full-duplex transfer with context for cancellation.
-	// Sends txData while simultaneously receiving data.
-	// Returns the received data and any error.
-	Transfer(ctx context.Context, txData []byte) ([]byte, error)
-
-	// Open initializes the transport connection.
-	Open() error
-
-	// Close releases transport resources.
-	Close() error
-}
-
 // SPIConfig holds SPI configuration parameters.
 type SPIConfig struct {
 	// Device is the SPI device path (e.g., "/dev/spidev0.0").
@@ -73,7 +51,7 @@ type SPIConfig struct {
 	// Mode is the SPI mode (0-3).
 	Mode uint8
 
-	// BitsPerWord is the word size in bits.
+	// BitsPerWord is the word size in bits (8 for our protocol).
 	BitsPerWord uint8
 
 	// Timeout is the operation timeout.

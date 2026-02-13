@@ -21,14 +21,8 @@ const MaxGapTolerance uint16 = 10
 const SessionIDPayloadSize = 4
 
 // SessionState holds sequence numbers shared across all transports.
-//
-// CRITICAL FIX #1: This prevents the "Handoff Problem" where switching transports causes
-// sequence resets, leading to duplicate frame rejection by RX72N.
-//
 // When Gateway fails over from USB (seq=105) to SPI, the SPI link MUST continue from seq=106,
 // not reset to 0. SessionState ensures all transports share the same sequence counter.
-//
-// Thread Safety: All methods use mutex protection for concurrent Send/Receive operations.
 type SessionState struct {
 	mu         sync.Mutex
 	txSequence uint16 // Shared TX sequence (incremented on every Send)

@@ -7,21 +7,19 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
-	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/controller"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
-	"github.com/Locked-Inc/STAR/star-gateway/internal/fec"
-	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/link"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/server"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
@@ -29,12 +27,6 @@ import (
 )
 
 const (
-	// httpShutdownTimeout is the maximum time allowed for HTTP server graceful shutdown.
-	httpShutdownTimeout = 5 * time.Second
-
-	// grpcShutdownTimeout is the maximum time allowed for gRPC server graceful shutdown.
-	grpcShutdownTimeout = 5 * time.Second
-
 	// grpcListenPort is the TCP port for gRPC services.
 	grpcListenPort = ":50051"
 
@@ -50,14 +42,12 @@ const (
 	// grpcMaxMsgSize is the maximum message size for gRPC (10 MB).
 	grpcMaxMsgSize = 10 * 1024 * 1024
 
-	// simulationHARQTimeout is the timeout used for HARQ operations in simulation mode.
-	simulationHARQTimeout time.Duration = 500 * time.Millisecond
-)
+	// defaultDispatcherReceiveInterval is the default polling cadence for dispatcher receive loop (100Hz).
+	defaultDispatcherReceiveInterval = 10 * time.Millisecond
 
-// Shutdownable defines the interface for services that require graceful shutdown.
-type Shutdownable interface {
-	Shutdown()
-}
+	// defaultDispatcherShutdownTimeout is the default graceful shutdown timeout for dispatcher stop.
+	defaultDispatcherShutdownTimeout = 5 * time.Second
+)
 
 // Config holds the application configuration.
 type Config struct {
@@ -67,414 +57,595 @@ type Config struct {
 	TransportMode manager.TransportMode
 }
 
-// Run starts the gateway application.
-func Run(ctx context.Context, cfg Config) error {
-	// ========================================
-	// Layer 1: Transport (SPI or Socket for simulation)
-	// ========================================
-	deviceTransport, transportCleanup, err := initTransport(cfg)
-	if err != nil {
-		return err
-	}
-	// NOTE: transportCleanup is deferred later, after dispatcher init, to ensure
-	// transport closes BEFORE dispatcher cleanup (to interrupt pending I/O)
+type Servers struct {
+	HTTPServer *http.Server
+	GRPCServer *grpc.Server
+}
 
-	// ========================================
-	// Layer 2-4: Protocol Stack (HARQ with TransportManager)
-	// ========================================
-	// All transport modes now use TransportManager for reliability features:
-	// - Shared SessionState (prevents sequence resets during transport switching)
-	// - Health monitoring (latency, failures, packet loss tracking)
-	// - Heartbeat detection (PING/PONG for connectivity monitoring)
-	// - Hot-plug support (automatic USB device detection)
-	// - Reset handshake (three-way handshake with barrier for startup sync)
-	// - Automatic failover (switches transports on failure)
-	harqHandler, tmCleanup, err := initTransportManager(ctx, cfg, deviceTransport)
-	if err != nil {
-		return fmt.Errorf("failed to initialize HARQ: %w", err)
-	}
-	// NOTE: tmCleanup is deferred later, after dispatcher init
+// serviceSet holds initialized service instances for use in gRPC server registration.
+// IMPORTANT: Make sure this struct is updated whenever new proto services are added or modified to ensure proper initialization and registration.
+type serviceSet struct {
+	motorControl  *service.MotorControlService
+	telemetry     *service.TelemetryService
+	battery       *service.BatteryService
+	configuration *service.ConfigurationService
+	firmware      *service.FirmwareService
+	gateway       *service.GatewayService
+}
 
-	// ========================================
-	// Structured Logger
-	// ========================================
-	logger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
+// Package-level variables which point to the real constructors. These are
+// intentionally replaceable test hooks used by unit tests to inject mocks or
+// test doubles. IMPORTANT: modifying these globals is NOT safe for tests that
+// run in parallel — any test that overrides them must NOT call t.Parallel()
+// and should restore the original function when finished (or avoid concurrent
+// replacement). The default implementations are `createSPITransport` and
+// `createSPILink` respectively; look up those symbols to find the real logic.
+var (
+	createSPITransportFn = createSPITransport
+	createSPILinkFn      = createSPILink
+)
+
+func (s *serviceSet) count() int {
+	if s == nil {
+		return 0
+	}
+	n := 0
+	if s.motorControl != nil {
+		n++
+	}
+	if s.telemetry != nil {
+		n++
+	}
+	if s.battery != nil {
+		n++
+	}
+	if s.configuration != nil {
+		n++
+	}
+	if s.firmware != nil {
+		n++
+	}
+	if s.gateway != nil {
+		n++
+	}
+	return n
+}
+
+// Run starts the STAR Gateway application with the given configuration.
+//
+// This is the main entry point that orchestrates the complete application lifecycle:
+//  1. Logger initialization
+//  2. Transport layer setup (SPI/USB with automatic failover)
+//  3. Message dispatcher initialization
+//  4. Service layer initialization (gRPC and HTTP/WebSocket)
+//  5. Server startup (background goroutines)
+//  6. Signal handling (graceful shutdown on SIGINT/SIGTERM)
+//
+// The function blocks until a shutdown signal is received or a fatal error occurs.
+func Run(ctx context.Context, config Config) error {
+	// Create structured logger
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
 
-	// ========================================
-	// Layer 4.5: Message Dispatcher
-	// ========================================
-	log.Printf("Initializing message dispatcher...")
-	msgDispatcher, dispatcherCleanup, err := initDispatcher(ctx, harqHandler, logger)
+	logger.Info("Starting STAR Gateway")
+
+	// Create a derived cancellable context for the gateway run lifecycle so
+	// subsystems (HTTP/gRPC servers, dispatcher) can observe cancellation when
+	// we receive an OS signal and perform graceful shutdown.
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	// Initialize transport manager with validation and failover
+	tm, err := initTransportManager(runCtx, config, logger)
 	if err != nil {
-		return err
+		return fmt.Errorf("transport manager initialization failed: %w", err)
 	}
-	defer dispatcherCleanup()
+	defer func() {
+		if err := tm.Stop(); err != nil {
+			logger.Error("failed to stop transport manager", slog.Any("error", err))
+		}
+	}()
 
-	// Defer TransportManager and Transport cleanup AFTER dispatcher cleanup to ensure correct shutdown order:
-	// LIFO execution order (deferred first = executes last):
-	// 1. Transport closes (deferred last, executes first) - socket closes, interrupts any pending I/O
-	// 2. TransportManager stops (deferred second, executes second) - background goroutines exit
-	// 3. Dispatcher stops (deferred first, executes last) - receive loop exits due to context cancel + closed transport
-	if tmCleanup != nil {
-		defer tmCleanup()
-	}
-	defer transportCleanup()
+	// Log initial transport selection for observability
+	logger.Info("transport manager initialized",
+		slog.String("mode", string(config.TransportMode)),
+		slog.String("active_transport", tm.GetActiveTransport()),
+		slog.Int("registered_count", len(tm.GetAvailableTransports())))
 
-	// ========================================
-	// Layer 5: gRPC Services
-	// ========================================
-	log.Printf("Initializing gRPC services...")
-	// Use main context so services are automatically cancelled when main context is cancelled
-	grpcServer, gatewaySvc, shutdownRegistry, err := initServices(ctx, harqHandler, msgDispatcher, logger)
+	// Initialize message dispatcher (starts receive loop, consumes control frames)
+	disp, err := initDispatcher(ctx, tm, logger)
 	if err != nil {
-		return err
+		return fmt.Errorf("dispatcher initialization failed: %w", err)
+	}
+	defer func() {
+		if err := disp.Stop(); err != nil {
+			logger.Error("failed to stop dispatcher", slog.Any("error", err))
+		}
+	}()
+
+	// Initialize service layer
+	services, err := initServices(ctx, tm, disp, logger)
+	if err != nil {
+		return fmt.Errorf("services initialization failed: %w", err)
 	}
 
-	// Error channel for goroutine failures
-	errChan := make(chan error, 1)
+	logger.Info("services initialized with dispatcher",
+		slog.Int("service_count", services.count()))
 
-	// Start gRPC server
-	if err := startGRPCServer(grpcServer, errChan); err != nil {
-		return err
+	// Initialize servers struct
+	servers := &Servers{}
+
+	// Start gRPC server (non-blocking) — use derived runCtx so server goroutines
+	// observe cancellation from the Run() signal handler.
+	if err := startGRPCServer(runCtx, servers, services, logger); err != nil {
+		return fmt.Errorf("gRPC server startup failed: %w", err)
 	}
 
-	// Start HTTP server
-	httpServer := startHTTPServer(gatewaySvc, errChan)
+	// Start HTTP server (non-blocking)
+	if err := startHTTPServer(runCtx, servers, services, logger); err != nil {
+		return fmt.Errorf("HTTP server startup failed: %w", err)
+	}
 
 	// Setup signal handling
 	sigChan := make(chan os.Signal, 1)
-	signal.Notify(sigChan, os.Interrupt)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGTERM)
 
-	// Wait for context cancellation, interrupt, or error
+	// Block until signal received or context cancelled
 	select {
+	case sig := <-sigChan:
+		logger.Info("Received shutdown signal", slog.String("signal", sig.String()))
+		// Notify derived context so background servers/loops can begin graceful shutdown.
+		cancel()
 	case <-ctx.Done():
-		log.Println("Context cancelled, shutting down...")
-	case <-sigChan:
-		log.Println("Interrupt received, shutting down...")
-	case err := <-errChan:
-		log.Printf("Server error: %v, shutting down...", err)
+		logger.Info("Context cancelled, shutting down")
 	}
 
-	// Shutdown servers and services
-	shutdownServers(httpServer, grpcServer, shutdownRegistry)
-
-	// Deferred cleanups will execute in reverse order (LIFO):
-	// 1. Transport closes (interrupts any pending I/O in dispatcher receive loop)
-	// 2. TransportManager stops (background goroutines exit)
-	// 3. Dispatcher stops (receive loop exits due to context cancel + closed transport)
-	log.Println("All servers exited gracefully")
+	// Graceful shutdown is automatic via context cancellation in RunHTTPServer/RunGRPCServer
+	logger.Info("Gateway shutdown complete")
 	return nil
 }
 
-func initTransport(cfg Config) (transport.Device, func(), error) {
-	var deviceTransport transport.Device
-
-	cleanup := func() {
-		log.Println("Transport cleanup starting...")
-		if deviceTransport != nil {
-			log.Printf("Closing transport (isOpen=%v)...", deviceTransport.IsOpen())
-			if err := deviceTransport.Close(); err != nil {
-				log.Printf("Transport close error: %v", err)
-			} else {
-				log.Println("Transport closed successfully")
-			}
-		} else {
-			log.Println("Transport is nil, skipping close")
-		}
+// initTransportManager initializes the TransportManager based on the provided configuration.
+// This function orchestrates the initialization process by validating configuration,
+// creating the transport manager, initializing available transports, and starting the manager.
+//
+// CRITICAL: TransportManager owns the single SessionState instance. All transports must use
+// tm.GetSessionState() to ensure sequence continuity during failover (prevents Handoff Problem).
+func initTransportManager(ctx context.Context, appConfig Config, logger *slog.Logger) (*manager.TransportManager, error) {
+	// Create manager config from app config
+	mgrConfig := &manager.Config{
+		Mode: appConfig.TransportMode,
 	}
 
-	if cfg.SimulationMode {
-		socketPath := cfg.SocketPath
-		if socketPath == "" {
-			socketPath = transport.DefaultSocketPath
-		}
-		log.Println("WARNING: RUNNING IN SIMULATION MODE (Virtual RX72N)")
-		log.Printf("    Connecting to socket: %s", socketPath)
-		socketTransport := transport.NewSocketTransport(socketPath)
-		if err := socketTransport.Open(); err != nil {
-			return nil, nil, fmt.Errorf("failed to open socket transport: %w", err)
-		}
-		deviceTransport = socketTransport
-	} else {
-		log.Println("Initializing SPI Transport")
-		spiTransport := transport.NewSPITransport(transport.DefaultConfig())
-		if err := spiTransport.Open(); err != nil {
-			return nil, nil, fmt.Errorf("failed to open SPI transport: %w", err)
-		}
-		deviceTransport = spiTransport
+	// Validate config or fallback to default
+	mgrConfig = validateOrUseDefault(logger, mgrConfig)
+
+	// Create transport manager (internally creates SessionState)
+	tm := manager.NewTransportManager(mgrConfig)
+
+	// Initialize transports using manager's SessionState (passed via tm)
+	if err := initializeTransports(appConfig, tm, logger); err != nil {
+		return nil, err
 	}
 
-	return deviceTransport, cleanup, nil
+	// Validate required transports based on mode
+	if err := validateTransportsRegistered(tm, appConfig.TransportMode); err != nil {
+		return nil, err
+	}
+
+	// Start manager (selects initial transport, performs reset handshake)
+	if err := tm.Start(ctx); err != nil {
+		return nil, fmt.Errorf("failed to start transport manager: %w", err)
+	}
+
+	return tm, nil
 }
 
-func initTransportManager(ctx context.Context, cfg Config, deviceTransport transport.Device) (harq.HARQ, func(), error) {
-	tmConfig := manager.DefaultConfig()
-	if cfg.TransportMode != "" {
-		// Validate transport mode before using it
-		if !cfg.TransportMode.IsValid() {
-			return nil, nil, fmt.Errorf("invalid transport mode %q (valid: %s, %s, %s, %s)",
-				cfg.TransportMode, manager.ModeAuto, manager.ModePreferUSB, manager.ModeForceUSB, manager.ModeForceSPI)
-		}
-		tmConfig.Mode = cfg.TransportMode
+// validateOrUseDefault validates the configuration and returns it if valid,
+// or returns the default configuration if validation fails.
+func validateOrUseDefault(logger *slog.Logger, config *manager.Config) *manager.Config {
+	if logger == nil {
+		logger = slog.Default()
 	}
 
-	tm := manager.NewTransportManager(tmConfig)
+	// Validate configuration
+	if err := config.Validate(); err != nil {
+		// Log validation failure and use default configuration
+		logger.Error("manager config validation failed, using defaults",
+			slog.Any("error", err),
+			slog.String("requested_mode", string(config.Mode)))
+		return manager.DefaultConfig()
+	}
+	return config
+}
 
-	// Identify the transport type and register it
-	var legacyTransport transport.Transport
-	switch t := deviceTransport.(type) {
-	case *transport.SPITransport:
-		legacyTransport = t
-	case *transport.SocketTransport:
-		legacyTransport = t
-	default:
-		return nil, nil, fmt.Errorf("unknown transport type for TransportManager")
+// initializeTransports initializes all available transports based on configuration.
+// This function attempts to initialize SPI/Socket (for simulation) and USB transports.
+// Transport initialization is non-fatal unless explicitly required by TransportMode.
+//
+// CRITICAL: All transports MUST use the shared SessionState from TransportManager
+// (via tm.GetSessionState()) to ensure sequence continuity during failover.
+func initializeTransports(appConfig Config, tm *manager.TransportManager, logger *slog.Logger) error {
+	if logger == nil {
+		logger = slog.Default()
 	}
 
-	// Get shared session state from TransportManager (CRITICAL FIX #1)
+	// Get shared session state from manager (single source of truth)
 	session := tm.GetSessionState()
 
-	// Wrap SPI transport in a full HARQ/Link layer
-	spiLink := createSPILink(legacyTransport, cfg, session)
-	tm.RegisterTransport("spi", spiLink, manager.PrioritySPI)
-
-	// Register USB CDC (if mode allows and device is available)
-	// CRITICAL FIX #2: Smart drain logic enables fast failover on USB disconnect
-	if tmConfig.Mode != manager.ModeForceSPI {
-		if usbLink, err := createUSBLink(session); err == nil {
-			tm.RegisterTransport("usb", usbLink, manager.PriorityUSB)
-			log.Printf("USB CDC registered successfully")
+	// SPI/Socket initialization (non-fatal unless force-spi mode)
+	if appConfig.SimulationMode {
+		// Simulation mode: use socket transport
+		socketTransport, err := createSocketTransport(appConfig.SocketPath)
+		if err != nil {
+			logger.Error("socket transport initialization failed",
+				slog.Any("error", err),
+				slog.String("socket_path", appConfig.SocketPath))
 		} else {
-			log.Printf("USB CDC not available: %v (will use SPI only)", err)
-
-			// In force-usb mode, return error if USB unavailable
-			if tmConfig.Mode == manager.ModeForceUSB {
-				return nil, nil, fmt.Errorf("USB CDC required by mode %s but unavailable: %w", tmConfig.Mode, err)
+			// Wrap socket in CDC link (socket protocol matches CDC)
+			socketLink, err := link.NewCDCLink(socketTransport, session)
+			if err != nil {
+				if closeErr := socketTransport.Close(); closeErr != nil {
+					logger.Error("failed to close socket transport after link error", slog.Any("error", closeErr))
+				}
+				logger.Error("socket link creation failed", slog.Any("error", err))
+			} else {
+				// Register as SPI transport (simulation mode uses socket instead of SPI)
+				tm.RegisterTransport(manager.TransportNameSPI, socketLink, manager.PrioritySPI)
+				logger.Info("registered socket transport", slog.String("mode", "simulation"))
+			}
+		}
+	} else {
+		// Production mode: use SPI transport
+		spiTransport, err := createSPITransportFn()
+		if err != nil {
+			logger.Error("spi transport initialization failed", slog.Any("error", err))
+		} else {
+			// Wrap in SPI link layer with shared session state
+			spiLink, err := createSPILinkFn(spiTransport, session)
+			if err != nil {
+				if closeErr := spiTransport.Close(); closeErr != nil {
+					logger.Error("failed to close SPI transport after link error", slog.Any("error", closeErr))
+				}
+				logger.Error("spi link creation failed", slog.Any("error", err))
+			} else {
+				tm.RegisterTransport(manager.TransportNameSPI, spiLink, manager.PrioritySPI)
+				logger.Info("registered transport", slog.String("name", manager.TransportNameSPI))
 			}
 		}
 	}
 
-	if err := tm.Start(ctx); err != nil {
-		return nil, nil, err
+	// USB CDC initialization (non-fatal unless force-usb mode)
+	usbLink, err := createUSBLink(session)
+	if err != nil {
+		logger.Error("usb cdc initialization failed", slog.Any("error", err))
+		// If force-usb mode, this is fatal
+		if appConfig.TransportMode == manager.ModeForceUSB {
+			logger.Error("force-usb mode requires usb transport")
+			return fmt.Errorf("force-USB mode requires USB transport: %w", err)
+		}
+	} else {
+		tm.RegisterTransport(manager.TransportNameUSB, usbLink, manager.PriorityUSB)
+		logger.Info("registered transport", slog.String("name", manager.TransportNameUSB))
 	}
 
-	cleanup := func() {
-		if err := tm.Stop(); err != nil {
-			log.Printf("TransportManager shutdown error: %v", err)
+	return nil
+}
+
+// validateTransportsRegistered ensures that we have at least one valid transport
+// registered with the TransportManager and that force-mode requirements are satisfied.
+func validateTransportsRegistered(tm *manager.TransportManager, mode manager.TransportMode) error {
+	// Get list of registered transports from manager
+	available := tm.GetAvailableTransports()
+
+	// Ensure at least one transport is available
+	if len(available) == 0 {
+		return fmt.Errorf("no transports available")
+	}
+
+	// Validate force-mode requirements
+	if mode == manager.ModeForceUSB {
+		if !hasTransport(available, manager.TransportNameUSB) {
+			return fmt.Errorf("force-USB mode enabled but USB transport unavailable")
 		}
 	}
 
-	return tm, cleanup, nil
-}
-
-// createSPILink wraps a transport in SPILink with full HARQ protocol.
-// Phase 2: ACK/NACK handshake, retransmission, and FEC with Chase Combining.
-// Uses shared SessionState to prevent sequence desynchronization during transport switching.
-func createSPILink(t transport.Transport, cfg Config, session *manager.SessionState) harq.HARQ {
-	// Type assert to Device interface (SPITransport implements both Transport and Device)
-	deviceTransport, ok := t.(transport.Device)
-	if !ok {
-		// Fallback to legacy ChaseCombining for non-Device transports
-		log.Printf("WARN: Transport doesn't implement Device interface, using legacy ChaseCombining")
-		return createLegacySPILink(t, cfg)
+	if mode == manager.ModeForceSPI {
+		if !hasTransport(available, manager.TransportNameSPI) {
+			return fmt.Errorf("force-SPI mode enabled but SPI transport unavailable")
+		}
 	}
 
-	// Create SPILink with shared SessionState (CRITICAL for transport switching)
-	// Phase 2: Enable FEC + Chase Combining for ~10x BER improvement
-	spiLink, err := link.NewSPILink(deviceTransport, session, &link.SPILinkConfig{
-		EnableFEC:  true, // Phase 2: Enable FEC + Chase Combining
-		MaxRetries: harq.DefaultMaxRetries,
-		ACKTimeout: harq.DefaultTimeout,
-	})
+	return nil
+}
+
+func hasTransport(available []string, name string) bool {
+	for _, transportName := range available {
+		if transportName == name {
+			return true
+		}
+	}
+	return false
+}
+
+// createSocketTransport creates a SocketTransport for simulation mode.
+// The transport is opened and ready for use upon successful return.
+func createSocketTransport(socketPath string) (transport.Device, error) {
+	// Create SocketTransport with the provided socket path (simulation mode only)
+	socketTransport := transport.NewSocketTransport(socketPath)
+
+	// Open the transport connection
+	if err := socketTransport.Open(); err != nil {
+		return nil, fmt.Errorf("failed to open socket transport: %w", err)
+	}
+
+	return socketTransport, nil
+}
+
+// createSPITransport creates an SPITransport for production mode.
+// The transport is configured with appropriate device parameters and opened.
+func createSPITransport() (transport.Device, error) {
+	// Create SPI transport with default configuration
+	// DefaultConfig uses: /dev/spidev0.0, 10 MHz, Mode 0, 8 bits/word
+	spiTransport := transport.NewSPITransport(transport.DefaultConfig())
+
+	// Open the SPI device
+	if err := spiTransport.Open(); err != nil {
+		return nil, fmt.Errorf("failed to open SPI transport: %w", err)
+	}
+
+	return spiTransport, nil
+}
+
+// createSPILink creates an SPILink using the provided SPI transport and shared session state.
+// This function wraps the SPI transport with HARQ protocol support.
+//
+// Returns the SPI link (harq.HARQ) or an error if link creation fails.
+func createSPILink(spiTransport transport.Device, session *manager.SessionState) (harq.HARQ, error) {
+	// Create SPI link with default config (nil = use defaults)
+	spiLink, err := link.NewSPILink(spiTransport, session, nil)
 	if err != nil {
-		log.Printf("ERROR: Failed to create SPILink: %v, falling back to legacy", err)
-		return createLegacySPILink(t, cfg)
+		return nil, fmt.Errorf("failed to create SPI link: %w", err)
 	}
 
-	log.Printf("SPILink created successfully (Phase 2: ACK/NACK + FEC + Chase Combining)")
-	return spiLink
+	return spiLink, nil
 }
 
-// createLegacySPILink creates the legacy ChaseCombining HARQ for fallback.
-// This is kept for compatibility during migration.
-func createLegacySPILink(t transport.Transport, cfg Config) harq.HARQ {
-	frameEncoder := frame.NewEncoder()
-	frameDecoder := frame.NewDecoder()
-	fecEncoder := fec.NewConvolutionalEncoder()
-	fecDecoder := fec.NewViterbiDecoder()
-
-	harqConfig := harq.DefaultConfig()
-	if cfg.SimulationMode {
-		// Relax timeout for simulation environment
-		harqConfig.Timeout = simulationHARQTimeout
-	}
-
-	log.Printf("WARN: Using legacy ChaseCombining HARQ for SPI")
-	return harq.NewChaseCombining(
-		harqConfig,
-		t,
-		frameEncoder,
-		frameDecoder,
-		fecEncoder,
-		fecDecoder,
-	)
-}
-
-// createUSBLink creates a lightweight CDC link with shared session state.
-// CRITICAL FIX #1: Uses shared SessionState to prevent sequence desynchronization.
-// CRITICAL FIX #7: sendWithTimeout prevents blocked writes on USB disconnect.
+// createUSBLink creates a USB CDC link using the provided session state.
+// Returns the USB link (harq.HARQ) or an error if initialization fails.
+//
+// The CDC transport is opened and wrapped in a CDCLink with the shared session state.
+// This ensures sequence continuity during transport switching (prevents Handoff Problem).
 func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
-	// Create USB CDC transport with default configuration
-	cdcConfig := transport.DefaultCDCConfig()
-	cdcTransport := transport.NewCDCTransport(cdcConfig)
+	// Create CDC transport with default config
+	cdcTransport := transport.NewCDCTransport(transport.DefaultCDCConfig())
 
-	// Open the USB CDC device (/dev/ttyACM0)
+	// Open the CDC device
 	if err := cdcTransport.Open(); err != nil {
-		return nil, fmt.Errorf("failed to open USB CDC: %w", err)
+		return nil, fmt.Errorf("failed to open CDC transport: %w", err)
 	}
 
-	// Wrap in lightweight CDCLink with SHARED session state (critical!)
-	// Both USB and SPI MUST share the same SessionState to prevent
-	// sequence resets during transport switching (Handoff Problem).
+	// Wrap in link layer with shared session state
 	cdcLink, err := link.NewCDCLink(cdcTransport, session)
 	if err != nil {
-		cdcTransport.Close()
+		cdcTransport.Close() // Cleanup on error
 		return nil, fmt.Errorf("failed to create CDC link: %w", err)
 	}
 
 	return cdcLink, nil
 }
 
-func initDispatcher(ctx context.Context, harqHandler harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, func(), error) {
-	msgDispatcher, err := dispatcher.NewDispatcher(harqHandler, logger, nil)
+// initDispatcher creates and starts the message dispatcher.
+// The dispatcher owns the HARQ receive loop and routes messages to services.
+// It consumes control frames (PING, PONG, RESET_ACK) internally per TRANSPORT_ARCHITECTURE.md.
+func initDispatcher(ctx context.Context, tm harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, error) {
+	// Create dispatcher with TransportManager (which implements harq.HARQ interface)
+	config := &dispatcher.Config{
+		ShutdownTimeout: defaultDispatcherShutdownTimeout,
+		ReceiveInterval: defaultDispatcherReceiveInterval, // 100Hz for SPI communication spec
+	}
+
+	disp, err := dispatcher.NewDispatcher(tm, logger, config)
 	if err != nil {
-		return nil, nil, err
+		return nil, fmt.Errorf("failed to create dispatcher: %w", err)
 	}
 
-	dispatcherCtx, dispatcherCancel := context.WithCancel(ctx)
-	if err := msgDispatcher.Start(dispatcherCtx); err != nil {
-		dispatcherCancel()
-		return nil, nil, err
+	// Start dispatcher receive loop (begins consuming messages from TransportManager)
+	if err := disp.Start(ctx); err != nil {
+		return nil, fmt.Errorf("failed to start dispatcher: %w", err)
 	}
 
-	cleanup := func() {
-		dispatcherCancel() // Trigger ctx.Done() in dispatcher's receive loop
-		if err := msgDispatcher.Stop(); err != nil {
-			log.Printf("Dispatcher shutdown error: %v", err)
-		}
-	}
+	logger.Info("dispatcher initialized and started",
+		slog.Duration("receive_interval", config.ReceiveInterval),
+		slog.Duration("shutdown_timeout", config.ShutdownTimeout))
 
-	return msgDispatcher, cleanup, nil
+	return disp, nil
 }
 
-func initServices(ctx context.Context, harqHandler harq.HARQ, msgDispatcher dispatcher.Dispatcher, logger *slog.Logger) (*grpc.Server, *service.GatewayService, []Shutdownable, error) {
-	var shutdownRegistry []Shutdownable
-
-	gatewaySvc := service.NewGatewayService()
-	motorSvc := service.NewMotorControlService(harqHandler, msgDispatcher, logger)
-
-	telemetrySvc := service.NewTelemetryService(ctx, harqHandler, msgDispatcher, logger)
-	shutdownRegistry = append(shutdownRegistry, telemetrySvc)
-
-	configSvc := service.NewConfigurationService(harqHandler, msgDispatcher, logger)
-
-	batterySvc := service.NewBatteryService(ctx, harqHandler, msgDispatcher, logger)
-	shutdownRegistry = append(shutdownRegistry, batterySvc)
-
-	firmwareSvc := service.NewFirmwareService()
-
-	grpcServer := grpc.NewServer(
-		grpc.MaxRecvMsgSize(grpcMaxMsgSize),
-		grpc.MaxSendMsgSize(grpcMaxMsgSize),
-	)
-
-	starv1.RegisterGatewayServiceServer(grpcServer, gatewaySvc)
-	starv1.RegisterMotorControlServiceServer(grpcServer, motorSvc)
-	starv1.RegisterTelemetryServiceServer(grpcServer, telemetrySvc)
-	starv1.RegisterConfigurationServiceServer(grpcServer, configSvc)
-	starv1.RegisterBatteryManagementServiceServer(grpcServer, batterySvc)
-	starv1.RegisterFirmwareUpdateServiceServer(grpcServer, firmwareSvc)
-
-	return grpcServer, gatewaySvc, shutdownRegistry, nil
+// initServices initializes all gRPC service implementations.
+// The tm parameter is the TransportManager (which implements harq.HARQ interface).
+// Returns serviceSet containing initialized services for gRPC server registration.
+func initServices(ctx context.Context, tm harq.HARQ, disp dispatcher.Dispatcher, logger *slog.Logger) (*serviceSet, error) {
+	return &serviceSet{
+		motorControl:  service.NewMotorControlService(tm, disp, logger),
+		telemetry:     service.NewTelemetryService(ctx, tm, disp, logger),
+		battery:       service.NewBatteryService(ctx, tm, disp, logger),
+		configuration: service.NewConfigurationService(tm, disp, logger),
+		firmware:      service.NewFirmwareService(),
+		gateway:       service.NewGatewayService(),
+	}, nil
 }
 
-func startGRPCServer(grpcServer *grpc.Server, errChan chan<- error) error {
-	grpcLis, err := net.Listen("tcp", grpcListenPort)
-	if err != nil {
-		return fmt.Errorf("failed to create gRPC listener: %w", err)
+// startGRPCServer starts the gRPC server on the configured port.
+// The server listens for incoming gRPC connections and serves registered services.
+// registerGRPCServices registers all gRPC service implementations with the server.
+// This function must be updated whenever new services are added to the protobuf definitions.
+func registerGRPCServices(srv *grpc.Server, services *serviceSet) error {
+	if srv == nil {
+		return fmt.Errorf("gRPC server is nil")
+	}
+	if services == nil {
+		return fmt.Errorf("service set is nil")
+	}
+	// Check each service individually to provide specific error messages
+	if services.motorControl == nil {
+		return fmt.Errorf("service set contains nil service: motorControl")
+	}
+	if services.telemetry == nil {
+		return fmt.Errorf("service set contains nil service: telemetry")
+	}
+	if services.battery == nil {
+		return fmt.Errorf("service set contains nil service: battery")
+	}
+	if services.configuration == nil {
+		return fmt.Errorf("service set contains nil service: configuration")
+	}
+	if services.firmware == nil {
+		return fmt.Errorf("service set contains nil service: firmware")
+	}
+	if services.gateway == nil {
+		return fmt.Errorf("service set contains nil service: gateway")
 	}
 
-	go func() {
-		log.Printf("gRPC server listening on %s", grpcListenPort)
-		if err := grpcServer.Serve(grpcLis); err != nil {
-			errChan <- err
-		}
-	}()
+	starv1.RegisterMotorControlServiceServer(srv, services.motorControl)
+	starv1.RegisterTelemetryServiceServer(srv, services.telemetry)
+	starv1.RegisterBatteryManagementServiceServer(srv, services.battery)
+	starv1.RegisterConfigurationServiceServer(srv, services.configuration)
+	starv1.RegisterFirmwareUpdateServiceServer(srv, services.firmware)
+	starv1.RegisterGatewayServiceServer(srv, services.gateway)
 	return nil
 }
 
-func startHTTPServer(gatewaySvc *service.GatewayService, errChan chan<- error) *http.Server {
-	ctrlHandler := controller.NewHandlerWithGateway(gatewaySvc)
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/ws/controller", ctrlHandler.ServeHTTP)
-
-	mux.HandleFunc("/health", func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusOK)
-		if _, err := w.Write([]byte("ok")); err != nil {
-			log.Printf("health check write error: %v", err)
-		}
-	})
-
-	server := &http.Server{
-		Addr:         httpListenPort,
-		Handler:      mux,
-		ReadTimeout:  httpReadTimeout,
-		WriteTimeout: httpWriteTimeout,
-	}
-
-	go func() {
-		log.Printf("HTTP/WebSocket server starting on %s", server.Addr)
-		if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			errChan <- err
-		}
-	}()
-
-	return server
+// startGRPCServer starts the gRPC server on the configured port with registered services.
+func startGRPCServer(ctx context.Context, servers *Servers, services *serviceSet, logger *slog.Logger) error {
+	return startGRPCServerWithAddr(ctx, servers, services, grpcListenPort, logger)
 }
 
-func shutdownServers(httpServer *http.Server, grpcServer *grpc.Server, shutdownRegistry []Shutdownable) {
-	// 1. Shutdown services FIRST (stops new HARQ operations)
-	log.Println("Shutting down services...")
-	for i := len(shutdownRegistry) - 1; i >= 0; i-- {
-		shutdownRegistry[i].Shutdown()
+// startGRPCServerWithAddr starts the gRPC server using the provided listen address.
+//
+// This helper allows deterministic tests by using random ports (":0") while keeping
+// production startup logic in one place.
+func startGRPCServerWithAddr(
+	ctx context.Context,
+	servers *Servers,
+	services *serviceSet,
+	listenAddr string,
+	logger *slog.Logger,
+) error {
+	if servers == nil {
+		return fmt.Errorf("servers container is nil")
 	}
-	log.Println("Services stopped")
-
-	// 2. Then shutdown HTTP server (stops accepting requests)
-	ctx, cancel := context.WithTimeout(context.Background(), httpShutdownTimeout)
-	defer cancel()
-	if err := httpServer.Shutdown(ctx); err != nil {
-		log.Printf("HTTP server shutdown error: %v", err)
-	} else {
-		log.Println("HTTP server stopped")
+	if logger == nil {
+		logger = slog.Default()
 	}
 
-	// 3. Finally shutdown gRPC server
-	log.Printf("Shutting down gRPC server...")
-	stopped := make(chan struct{})
+	// Configure gRPC server with service registration callback
+	config := &server.GRPCConfig{
+		ListenAddr:     listenAddr,
+		MaxMessageSize: grpcMaxMsgSize,
+		ServiceRegistrar: func(srv *grpc.Server) error {
+			return registerGRPCServices(srv, services)
+		},
+	}
+
+	// Create server (registers services)
+	grpcSrv, err := server.NewGRPCServer(config, logger)
+	if err != nil {
+		return fmt.Errorf("failed to create gRPC server: %w", err)
+	}
+	servers.GRPCServer = grpcSrv
+
+	// Start server (non-blocking)
+	errChan, err := server.RunGRPCServer(ctx, grpcSrv, config.ListenAddr, logger)
+	if err != nil {
+		return fmt.Errorf("failed to start gRPC server: %w", err)
+	}
+
+	// Monitor for errors in background
 	go func() {
-		grpcServer.GracefulStop()
-		close(stopped)
+		if err := <-errChan; err != nil {
+			logger.Error("gRPC server error", slog.String("error", err.Error()))
+		}
 	}()
 
-	select {
-	case <-stopped:
-		log.Println("gRPC server stopped gracefully")
-	case <-time.After(grpcShutdownTimeout):
-		log.Println("gRPC server graceful shutdown timed out, forcing stop")
-		grpcServer.Stop()
+	return nil
+}
+
+// startHTTPServer starts the HTTP/WebSocket server on the configured port.
+// The server handles HTTP requests and WebSocket connections for the UI.
+func startHTTPServer(ctx context.Context, servers *Servers, services *serviceSet, logger *slog.Logger) error {
+	return startHTTPServerWithAddr(ctx, servers, services, httpListenPort, logger)
+}
+
+// startHTTPServerWithAddr starts the HTTP server using the provided listen address.
+//
+// The HTTP layer only exposes transport-architecture aligned endpoints:
+//   - /ws/controller for UI teleop command ingestion
+//   - /healthz for liveness checks
+//
+// UI static files are served by the dedicated UI service, not by the gateway.
+func startHTTPServerWithAddr(
+	ctx context.Context,
+	servers *Servers,
+	services *serviceSet,
+	listenAddr string,
+	logger *slog.Logger,
+) error {
+	if servers == nil {
+		return fmt.Errorf("servers container is nil")
 	}
+	if services == nil {
+		return fmt.Errorf("service set is nil")
+	}
+	if services.gateway == nil {
+		return fmt.Errorf("gateway service is nil")
+	}
+	if logger == nil {
+		logger = slog.Default()
+	}
+
+	// Create HTTP router
+	mux := http.NewServeMux()
+
+	// Wire controller WebSocket handler to shared GatewayService.
+	// This keeps UI -> WebSocket and ROS2 -> gRPC paths synchronized via one command cache.
+	controllerHandler := controller.NewHandlerWithGateway(services.gateway)
+	mux.Handle("/ws/controller", controllerHandler)
+
+	// Lightweight liveness endpoint for orchestration and local debugging.
+	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte("ok"))
+	})
+
+	// Configure HTTP server
+	config := &server.HTTPConfig{
+		ListenAddr:   listenAddr,
+		ReadTimeout:  httpReadTimeout,
+		WriteTimeout: httpWriteTimeout,
+		Handler:      mux,
+	}
+
+	// Create server
+	httpSrv, err := server.NewHTTPServer(config, logger)
+	if err != nil {
+		return fmt.Errorf("failed to create HTTP server: %w", err)
+	}
+	servers.HTTPServer = httpSrv
+
+	// Start server (non-blocking)
+	errChan, err := server.RunHTTPServer(ctx, httpSrv, logger)
+	if err != nil {
+		return fmt.Errorf("failed to start HTTP server: %w", err)
+	}
+
+	// Monitor for errors in background
+	go func() {
+		if err := <-errChan; err != nil {
+			logger.Error("HTTP server error", slog.String("error", err.Error()))
+		}
+	}()
+
+	return nil
 }

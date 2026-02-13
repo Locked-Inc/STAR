@@ -18,16 +18,6 @@ import (
 // Test Helpers
 // ============================================================================
 
-// createTestHARQ creates a StopAndWait with mock dependencies for testing.
-// Uses legacy ARQ mode (FEC disabled) for backward compatibility.
-func createTestHARQ(config *Config) (*StopAndWait, *MockTransport) {
-	mock := NewMockTransport()
-	encoder := frame.NewEncoder()
-	decoder := frame.NewDecoder()
-	harq := NewStopAndWait(config, mock, encoder, decoder)
-	return harq, mock
-}
-
 // createAckFrame creates an encoded ACK frame for the given sequence.
 func createAckFrame(seq uint16) []byte {
 	encoder := frame.NewEncoder()
@@ -53,6 +43,25 @@ func createCommandFrame(seq uint16, payload []byte) []byte {
 	f.Header.Sequence = seq
 	encoded, _ := encoder.Encode(f)
 	return encoded
+}
+
+func createTestHARQ(config *Config) (*ChaseCombining, *MockTransport) {
+	mock := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	if config == nil {
+		config = DefaultConfig()
+	}
+
+	var fecEncoder fec.Encoder
+	var fecDecoder fec.Decoder
+	if config.FECEnabled {
+		fecEncoder = fec.NewConvolutionalEncoder()
+		fecDecoder = fec.NewViterbiDecoder()
+	}
+
+	harq := NewChaseCombining(config, mock, encoder, decoder, fecEncoder, fecDecoder)
+	return harq, mock
 }
 
 // ============================================================================
@@ -128,49 +137,70 @@ func TestDefaultConfig(t *testing.T) {
 }
 
 // ============================================================================
-// StopAndWait Constructor Tests
+// ChaseCombining Constructor Tests
 // ============================================================================
 
-func TestNewStopAndWait(t *testing.T) {
+func TestNewChaseCombining(t *testing.T) {
 	mock := NewMockTransport()
 	encoder := frame.NewEncoder()
 	decoder := frame.NewDecoder()
 
+	const (
+		testMaxRetries   = 5
+		testTimeout      = 20 * time.Millisecond
+		testZeroRetries  = 0
+		testShortTimeout = 5 * time.Millisecond
+		testFECEnabled   = true
+	)
+
 	tests := []struct {
-		name            string
-		config          *Config
-		expectedRetries int
-		expectedTimeout time.Duration
+		name               string
+		config             *Config
+		expectedRetries    int
+		expectedTimeout    time.Duration
+		expectedFECEnabled bool
 	}{
 		{
-			name:            "nil_config_uses_defaults",
-			config:          nil,
-			expectedRetries: DefaultMaxRetries,
-			expectedTimeout: DefaultTimeout,
+			name:               "nil_config_uses_defaults",
+			config:             nil,
+			expectedRetries:    DefaultMaxRetries,
+			expectedTimeout:    DefaultTimeout,
+			expectedFECEnabled: true,
 		},
 		{
 			name: "custom_config",
 			config: &Config{
-				MaxRetries: 5,
-				Timeout:    20 * time.Millisecond,
+				MaxRetries: testMaxRetries,
+				Timeout:    testTimeout,
+				FECEnabled: testFECEnabled,
 			},
-			expectedRetries: 5,
-			expectedTimeout: 20 * time.Millisecond,
+			expectedRetries:    testMaxRetries,
+			expectedTimeout:    testTimeout,
+			expectedFECEnabled: testFECEnabled,
 		},
 		{
 			name: "zero_retries",
 			config: &Config{
-				MaxRetries: 0,
-				Timeout:    5 * time.Millisecond,
+				MaxRetries: testZeroRetries,
+				Timeout:    testShortTimeout,
+				FECEnabled: false,
 			},
-			expectedRetries: 0,
-			expectedTimeout: 5 * time.Millisecond,
+			expectedRetries:    testZeroRetries,
+			expectedTimeout:    testShortTimeout,
+			expectedFECEnabled: false,
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			harq := NewStopAndWait(tc.config, mock, encoder, decoder)
+			harq := NewChaseCombining(
+				tc.config,
+				mock,
+				encoder,
+				decoder,
+				fec.NewConvolutionalEncoder(),
+				fec.NewViterbiDecoder(),
+			)
 
 			if harq == nil {
 				t.Fatal("expected HARQ, got nil")
@@ -182,15 +212,14 @@ func TestNewStopAndWait(t *testing.T) {
 			if harq.Config().Timeout != tc.expectedTimeout {
 				t.Errorf("Timeout = %v, want %v", harq.Config().Timeout, tc.expectedTimeout)
 			}
-			// StopAndWait always has FEC disabled
-			if harq.Config().FECEnabled {
-				t.Error("FECEnabled = true, want false for StopAndWait")
+			if harq.Config().FECEnabled != tc.expectedFECEnabled {
+				t.Errorf("FECEnabled = %v, want %v", harq.Config().FECEnabled, tc.expectedFECEnabled)
 			}
 		})
 	}
 }
 
-func TestStopAndWaitInitialState(t *testing.T) {
+func TestChaseCombiningInitialState(t *testing.T) {
 	harq, _ := createTestHARQ(nil)
 
 	t.Run("State", func(t *testing.T) {
@@ -212,7 +241,7 @@ func TestStopAndWaitInitialState(t *testing.T) {
 	})
 }
 
-func TestStopAndWaitReset(t *testing.T) {
+func TestChaseCombiningReset(t *testing.T) {
 	tests := []struct {
 		name       string
 		setupState State
@@ -486,7 +515,14 @@ func TestSend_ErrorStateBlocks(t *testing.T) {
 }
 
 func TestSend_NilTransport(t *testing.T) {
-	harq := NewStopAndWait(nil, nil, frame.NewEncoder(), frame.NewDecoder())
+	harq := NewChaseCombining(
+		nil,
+		nil,
+		frame.NewEncoder(),
+		frame.NewDecoder(),
+		fec.NewConvolutionalEncoder(),
+		fec.NewViterbiDecoder(),
+	)
 
 	err := harq.Send(context.Background(), []byte{0x01})
 
@@ -497,7 +533,14 @@ func TestSend_NilTransport(t *testing.T) {
 
 func TestSend_NilEncoder(t *testing.T) {
 	mock := NewMockTransport()
-	harq := NewStopAndWait(nil, mock, nil, frame.NewDecoder())
+	harq := NewChaseCombining(
+		nil,
+		mock,
+		nil,
+		frame.NewDecoder(),
+		fec.NewConvolutionalEncoder(),
+		fec.NewViterbiDecoder(),
+	)
 
 	err := harq.Send(context.Background(), []byte{0x01})
 
@@ -514,7 +557,14 @@ func TestSend_EncodeError(t *testing.T) {
 		},
 	}
 	decoder := frame.NewDecoder()
-	harq := NewStopAndWait(nil, mock, encoder, decoder)
+	harq := NewChaseCombining(
+		nil,
+		mock,
+		encoder,
+		decoder,
+		fec.NewConvolutionalEncoder(),
+		fec.NewViterbiDecoder(),
+	)
 
 	err := harq.Send(context.Background(), []byte{0x01})
 
@@ -558,7 +608,14 @@ func TestSendControlFrame_Errors(t *testing.T) {
 	mock := NewMockTransport()
 
 	t.Run("TransportNil", func(t *testing.T) {
-		harq := NewStopAndWait(nil, nil, frame.NewEncoder(), frame.NewDecoder())
+		harq := NewChaseCombining(
+			nil,
+			nil,
+			frame.NewEncoder(),
+			frame.NewDecoder(),
+			fec.NewConvolutionalEncoder(),
+			fec.NewViterbiDecoder(),
+		)
 		// sendControlFrame is private, but we can trigger it via Receive()
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
 		_, err := harq.Receive(context.Background())
@@ -568,7 +625,14 @@ func TestSendControlFrame_Errors(t *testing.T) {
 	})
 
 	t.Run("EncoderNil", func(t *testing.T) {
-		harq := NewStopAndWait(nil, mock, nil, frame.NewDecoder())
+		harq := NewChaseCombining(
+			nil,
+			mock,
+			nil,
+			frame.NewDecoder(),
+			fec.NewConvolutionalEncoder(),
+			fec.NewViterbiDecoder(),
+		)
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
 		result, err := harq.Receive(context.Background())
 		// With best-effort ACK, encoder nil errors are ignored.
@@ -593,7 +657,14 @@ func TestSendControlFrame_Errors(t *testing.T) {
 				return nil, errors.New("encode failed")
 			},
 		}
-		harq := NewStopAndWait(nil, mock, encoder, frame.NewDecoder())
+		harq := NewChaseCombining(
+			nil,
+			mock,
+			encoder,
+			frame.NewDecoder(),
+			fec.NewConvolutionalEncoder(),
+			fec.NewViterbiDecoder(),
+		)
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
 		payload, err := harq.Receive(context.Background())
 		// With best-effort ACK, encoding errors are ignored.
@@ -742,7 +813,14 @@ func TestReceive_UnexpectedFrameType(t *testing.T) {
 }
 
 func TestReceive_NilTransport(t *testing.T) {
-	harq := NewStopAndWait(nil, nil, frame.NewEncoder(), frame.NewDecoder())
+	harq := NewChaseCombining(
+		nil,
+		nil,
+		frame.NewEncoder(),
+		frame.NewDecoder(),
+		fec.NewConvolutionalEncoder(),
+		fec.NewViterbiDecoder(),
+	)
 
 	_, err := harq.Receive(context.Background())
 
@@ -753,7 +831,14 @@ func TestReceive_NilTransport(t *testing.T) {
 
 func TestReceive_NilDecoder(t *testing.T) {
 	mock := NewMockTransport()
-	harq := NewStopAndWait(nil, mock, frame.NewEncoder(), nil)
+	harq := NewChaseCombining(
+		nil,
+		mock,
+		frame.NewEncoder(),
+		nil,
+		fec.NewConvolutionalEncoder(),
+		fec.NewViterbiDecoder(),
+	)
 
 	_, err := harq.Receive(context.Background())
 

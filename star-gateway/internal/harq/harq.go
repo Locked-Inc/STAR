@@ -222,7 +222,7 @@ type ChaseCombining struct {
 	retryCount int
 
 	// Dependencies (injected)
-	transport    transport.Transport
+	transport    transport.Device
 	encoder      frame.Encoder
 	decoder      frame.Decoder
 	fecEncoder   fec.Encoder
@@ -246,7 +246,7 @@ type ChaseCombining struct {
 // The transport, frame encoder/decoder, and FEC encoder/decoder are required dependencies.
 func NewChaseCombining(
 	config *Config,
-	t transport.Transport,
+	t transport.Device,
 	encoder frame.Encoder,
 	decoder frame.Decoder,
 	fecEncoder fec.Encoder,
@@ -548,7 +548,7 @@ func (h *ChaseCombining) receiveFrame(ctx context.Context) (*frame.Frame, error)
 		}
 	}
 
-	// ✅ Trust the decoder to validate - it already checks sync word and CRC
+	// Trust the decoder to validate - it already checks sync word and CRC
 	// Decode the frame
 	f, err := h.decoder.Decode(data)
 	if err != nil {
@@ -856,37 +856,4 @@ func bytesToSoftBits(data []byte) []fec.SoftBit {
 	}
 
 	return softBits
-}
-
-// =============================================================================
-// Legacy ARQ Compatibility
-// =============================================================================
-
-// StopAndWait provides backward compatibility with the legacy ARQ interface.
-// It wraps ChaseCombining with FEC disabled.
-type StopAndWait struct {
-	*ChaseCombining
-}
-
-// NewStopAndWait creates a new Stop-and-Wait ARQ handler (legacy compatibility).
-// If config is nil, uses DefaultConfig() with FEC disabled.
-// The transport, encoder, and decoder are required dependencies.
-func NewStopAndWait(
-	config *Config,
-	t transport.Transport,
-	encoder frame.Encoder,
-	decoder frame.Decoder,
-) *StopAndWait {
-	if config == nil {
-		config = &Config{
-			MaxRetries: DefaultMaxRetries,
-			Timeout:    DefaultTimeout,
-			FECEnabled: false, // Legacy ARQ mode
-		}
-	} else {
-		config.FECEnabled = false // Force legacy mode
-	}
-	return &StopAndWait{
-		ChaseCombining: NewChaseCombining(config, t, encoder, decoder, nil, nil),
-	}
 }

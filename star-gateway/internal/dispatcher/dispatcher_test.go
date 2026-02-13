@@ -38,6 +38,10 @@ type MockHARQ struct {
 	LastSentData []byte
 }
 
+// Compile-time assertion that MockHARQ implements harq.HARQ.
+// This ensures the mock stays in sync with the interface and catches regressions.
+var _ harq.HARQ = (*MockHARQ)(nil)
+
 func (m *MockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
 	m.LastSentData = data
 	if m.SendFunc != nil {
@@ -69,7 +73,9 @@ func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			return nil, harq.ErrTimeout
 		}
 	}
-	return nil, errors.New("receive not implemented")
+	// No func or chan configured — block until context cancels.
+	<-ctx.Done()
+	return nil, ctx.Err()
 }
 
 func (m *MockHARQ) GetState() harq.State {
