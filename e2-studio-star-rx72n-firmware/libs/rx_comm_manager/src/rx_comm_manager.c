@@ -394,7 +394,47 @@
 #include <string.h>
 
 #include "rx_frame_ascii.h"
+#include "rx_log.h"
+#include "rx_simulator_config.h"
+#include "rx_time_constants.h"
 #include "rx_usb.h"
+
+#if !RX_IS_SIMULATOR
+#include "tx_api.h"
+#endif
+
+/* =============================================================================
+ * Logging
+ * =============================================================================
+ */
+
+static const char s_tag[] = "COMM_MGR";
+
+/* =============================================================================
+ * Private Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Get current time in milliseconds
+ *
+ * @details
+ * Returns the current system time in milliseconds. On RX72N hardware, this
+ * uses ThreadX tx_time_get() multiplied by tick period. In simulator builds,
+ * returns 0 (timing not available).
+ *
+ * @return Current time in milliseconds
+ *
+ * @since Version 1.1.0
+ */
+static uint32_t internal_get_time_ms(void)
+{
+#if !RX_IS_SIMULATOR
+  return (uint32_t)tx_time_get() * k_threadx_ms_per_tick;
+#else
+  return 0;
+#endif
+}
 
 /* =============================================================================
  * Private Constants
@@ -596,6 +636,26 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
     return;
   }
 
+  /* Update heartbeat: any valid frame resets the implicit timeout timer.
+   * Per TRANSPORT_ARCHITECTURE.md dual-detection model, this is the primary
+   * link health mechanism (200ms implicit timeout). */
+  rx_comm_heartbeat_state_t* hb = &mgr->heartbeat[channel];
+  hb->last_rx_ms = internal_get_time_ms();
+  if (hb->status != k_link_status_healthy) {
+    rx_comm_link_status_t old_status = hb->status;
+    hb->status = k_link_status_healthy;
+    if (old_status == k_link_status_dead) {
+      rx_log_info(s_tag, "Link recovered: frame received");
+    } else {
+      rx_log_info(s_tag, "Link established: first frame received");
+    }
+    if (mgr->link_status_cb != nullptr && old_status != k_link_status_healthy) {
+      mgr->link_status_cb(channel, k_link_status_healthy, mgr->link_status_ctx);
+    }
+  }
+
+  rx_log_debug_val(s_tag, "Frame received, type", (uint8_t)frame->header.type);
+
   /* Output decoded ASCII to Port 1 */
   internal_output_decoded(mgr, frame, false);
 
@@ -751,6 +811,131 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
 }
 
 /* =============================================================================
+ * Event Queue Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Process one event from the FIFO queue
+ *
+ * @details
+ * Dequeues the oldest event and attempts to send it. For SPI events, if the
+ * send fails, the event is re-enqueued with incremented retry count (up to
+ * k_event_max_retries). For USB events, failure is simply dropped (fire-and-forget).
+ *
+ * @param[in,out] mgr Communication manager handle
+ *
+ * @pre mgr must be non-NULL and initialized
+ * @post One event processed (sent or dropped on max retries)
+ *
+ * @since Version 1.1.0
+ */
+static void internal_process_event_queue(rx_comm_manager_t* mgr)
+{
+  if (mgr == nullptr || mgr->event_queue_count == 0) {
+    return;
+  }
+
+  rx_comm_event_entry_t* entry = &mgr->event_queue[mgr->event_queue_tail];
+  if (!entry->occupied) {
+    return;
+  }
+
+  /* Build send params from queued entry */
+  const rx_comm_send_params_t params = {
+    .channel     = entry->channel,
+    .type        = entry->type,
+    .flags       = entry->flags,
+    .payload     = entry->payload,
+    .payload_len = entry->payload_len,
+  };
+
+  rx_err_t err = rx_comm_manager_send(mgr, &params);
+
+  if (err == k_rx_ok || entry->channel == k_comm_channel_usb) {
+    /* Success, or USB fire-and-forget: dequeue */
+    entry->occupied = false;
+    mgr->event_queue_tail =
+      (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
+    mgr->event_queue_count--;
+
+    if (err == k_rx_ok) {
+      rx_log_debug_val(s_tag, "Event sent, queue depth", mgr->event_queue_count);
+    } else {
+      rx_log_warn_val(s_tag, "USB event dropped, queue depth", mgr->event_queue_count);
+    }
+    return;
+  }
+
+  /* SPI send failed: retry with backoff */
+  entry->retries++;
+  if (entry->retries >= k_event_max_retries) {
+    rx_log_error_val(s_tag, "SPI event failed after retries", (uint8_t)entry->retries);
+    entry->occupied = false;
+    mgr->event_queue_tail =
+      (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
+    mgr->event_queue_count--;
+    return;
+  }
+
+  rx_log_warn_val(s_tag, "SPI event retry attempt", (uint8_t)entry->retries);
+  /* Entry stays in queue, will be retried on next poll() */
+}
+
+/* =============================================================================
+ * Heartbeat Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Check heartbeat implicit timeout on all transports
+ *
+ * @details
+ * Evaluates the dual-detection heartbeat model from TRANSPORT_ARCHITECTURE.md.
+ * If no valid frame has been received on a transport within 200ms, the link
+ * is declared dead and the status callback is invoked.
+ *
+ * @param[in,out] mgr Communication manager handle
+ *
+ * @pre mgr must be non-NULL and initialized
+ * @post Link status updated for each transport
+ *
+ * @since Version 1.1.0
+ */
+static void internal_check_heartbeat(rx_comm_manager_t* mgr)
+{
+  if (mgr == nullptr) {
+    return;
+  }
+
+  const uint32_t now = internal_get_time_ms();
+
+  for (uint8_t ch = 0; ch < k_comm_channel_count; ch++) {
+    rx_comm_heartbeat_state_t* hb = &mgr->heartbeat[ch];
+
+    /* Skip channels that haven't received any frame yet */
+    if (hb->status == k_link_status_unknown) {
+      continue;
+    }
+
+    /* Check implicit timeout: 200ms since last valid frame */
+    if (hb->status == k_link_status_healthy) {
+      uint32_t elapsed = now - hb->last_rx_ms;
+      if (elapsed >= k_heartbeat_implicit_timeout_ms) {
+        hb->status = k_link_status_dead;
+        rx_log_warn_val(s_tag, "Link dead: no frame (ms elapsed)", elapsed);
+
+        if (mgr->link_status_cb != nullptr) {
+          mgr->link_status_cb((rx_comm_channel_t)ch,
+                               k_link_status_dead,
+                               mgr->link_status_ctx);
+        }
+      }
+    }
+  }
+}
+
+/* =============================================================================
  * Public Functions
  * =============================================================================
  */
@@ -864,6 +1049,7 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
 {
   /* Rule 5: Pre-condition validation */
   if (mgr == nullptr) {
+    rx_log_error(s_tag, "Init failed: NULL mgr");
     return k_rx_err_invalid_arg;
   }
 
@@ -877,6 +1063,8 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
     mgr->callback              = cfg->callback;
     mgr->callback_ctx          = cfg->callback_ctx;
     mgr->enable_decoded_output = cfg->enable_decoded_output;
+    mgr->link_status_cb        = cfg->link_status_cb;
+    mgr->link_status_ctx       = cfg->link_status_ctx;
   }
 
   mgr->initialized = true;
@@ -885,9 +1073,11 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   if (mgr->ascii_buffer[k_ascii_buffer_first_idx] != '\0') {
     /* Buffer not properly cleared by memset - potential memory corruption */
     mgr->initialized = false;
+    rx_log_error(s_tag, "Init failed: buffer corruption");
     return k_rx_err_invalid_state;
   }
 
+  rx_log_info(s_tag, "Comm manager initialized");
   return k_rx_ok;
 }
 
@@ -950,14 +1140,17 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
 {
   /* Rule 5: Pre-condition validation */
   if (mgr == nullptr) {
+    rx_log_error(s_tag, "Deinit failed: NULL mgr");
     return k_rx_err_invalid_arg;
   }
   if (!mgr->initialized) {
+    rx_log_warn(s_tag, "Deinit called on uninitialized mgr");
     return k_rx_err_invalid_state;
   }
 
   mgr->initialized = false;
 
+  rx_log_info(s_tag, "Comm manager deinitialized");
   return k_rx_ok;
 }
 
@@ -1097,6 +1290,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
     received = true;
   } else if (usb_err != k_rx_err_timeout) {
     /* Propagate non-timeout errors immediately */
+    rx_log_error_val(s_tag, "USB poll error", usb_err);
     return usb_err;
   }
 
@@ -1106,8 +1300,15 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
     received = true;
   } else if (spi_err != k_rx_err_timeout) {
     /* Propagate non-timeout errors immediately */
+    rx_log_error_val(s_tag, "SPI poll error", spi_err);
     return spi_err;
   }
+
+  /* Process event queue: send one queued event per poll cycle */
+  internal_process_event_queue(mgr);
+
+  /* Heartbeat: check implicit timeout on each transport */
+  internal_check_heartbeat(mgr);
 
   return received ? k_rx_ok : k_rx_err_timeout;
 }
@@ -1230,16 +1431,20 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
 {
   /* Rule 5: Pre-condition validation */
   if (mgr == nullptr || params == nullptr) {
+    rx_log_error(s_tag, "Send failed: NULL arg");
     return k_rx_err_invalid_arg;
   }
   if (!mgr->initialized) {
+    rx_log_error(s_tag, "Send failed: not initialized");
     return k_rx_err_invalid_state;
   }
   if (params->payload == nullptr && params->payload_len > 0) {
+    rx_log_error(s_tag, "Send failed: NULL payload with nonzero len");
     return k_rx_err_invalid_arg;
   }
   /* Validate payload length is within frame limits */
   if (params->payload_len > k_frame_max_payload) {
+    rx_log_error_val(s_tag, "Send failed: payload too large", params->payload_len);
     return k_rx_err_invalid_arg;
   }
 
@@ -1249,6 +1454,7 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
   switch (params->channel) {
     case k_comm_channel_usb:
       if (mgr->usb_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: USB handle NULL");
         return k_rx_err_invalid_state;
       }
       err = rx_usb_comm_send(mgr->usb_handle,
@@ -1260,6 +1466,7 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
 
     case k_comm_channel_spi:
       if (mgr->spi_handle == nullptr) {
+        rx_log_error(s_tag, "Send failed: SPI handle NULL");
         return k_rx_err_invalid_state;
       }
       err = rx_spi_comm_send(mgr->spi_handle,
@@ -1270,7 +1477,12 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
       break;
 
     default:
+      rx_log_error(s_tag, "Send failed: invalid channel");
       return k_rx_err_invalid_arg;
+  }
+
+  if (err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Transport send failed", err);
   }
 
   /* Output decoded ASCII on success */
@@ -1400,6 +1612,88 @@ rx_err_t rx_comm_manager_respond(rx_comm_manager_t* mgr,
   return rx_comm_manager_send(mgr, &params);
 }
 
+/* =============================================================================
+ * Stream / Event Send API
+ * =============================================================================
+ */
+
+rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t*           mgr,
+                                      const rx_comm_send_params_t* params)
+{
+  /* Stream path: fire-and-forget, no retries, no queuing.
+   * Telemetry and other time-sensitive data goes here.
+   * Stale data has no value, so failure is silently accepted. */
+  return rx_comm_manager_send(mgr, params);
+}
+
+rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
+                                     const rx_comm_send_params_t* params)
+{
+  if (mgr == nullptr || params == nullptr) {
+    rx_log_error(s_tag, "Event enqueue failed: NULL arg");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!mgr->initialized) {
+    rx_log_error(s_tag, "Event enqueue failed: not initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  if (params->payload_len > k_frame_max_payload) {
+    rx_log_error_val(s_tag, "Event enqueue failed: payload too large", params->payload_len);
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Check queue capacity */
+  if (mgr->event_queue_count >= k_comm_event_queue_depth) {
+    rx_log_error_val(s_tag, "Event queue full, depth", (uint8_t)mgr->event_queue_count);
+    return k_rx_err_no_mem;
+  }
+
+  /* Enqueue: copy payload into static slot */
+  rx_comm_event_entry_t* entry = &mgr->event_queue[mgr->event_queue_head];
+  entry->channel     = params->channel;
+  entry->type        = params->type;
+  entry->flags       = params->flags;
+  entry->payload_len = params->payload_len;
+  entry->retries     = 0;
+  entry->occupied    = true;
+
+  if (params->payload != nullptr && params->payload_len > 0) {
+    (void)memcpy(entry->payload, params->payload, params->payload_len);
+  }
+
+  mgr->event_queue_head =
+    (mgr->event_queue_head + 1) % k_comm_event_queue_depth;
+  mgr->event_queue_count++;
+
+  rx_log_debug_val(s_tag, "Event enqueued, queue depth", mgr->event_queue_count);
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Heartbeat API
+ * =============================================================================
+ */
+
+rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
+                                      rx_comm_channel_t        channel,
+                                      rx_comm_link_status_t*   status)
+{
+  if (mgr == nullptr || status == nullptr) {
+    rx_log_error(s_tag, "Link status query: NULL arg");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (channel >= k_comm_channel_count) {
+    rx_log_error(s_tag, "Link status query: invalid channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  *status = mgr->heartbeat[channel].status;
+  return k_rx_ok;
+}
+
 /**
  * @brief Query if communication channel is ready for send/receive operations
  *
@@ -1521,6 +1815,7 @@ rx_comm_manager_channel_ready(rx_comm_manager_t* mgr, rx_comm_channel_t channel,
 
     default:
       *ready = false;
+      rx_log_error(s_tag, "Channel ready: invalid channel");
       return k_rx_err_invalid_arg;
   }
 
