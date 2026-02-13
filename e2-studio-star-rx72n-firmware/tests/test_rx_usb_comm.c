@@ -175,6 +175,7 @@
 #include "mock_usb0_regs.h"
 #include "mock_usb_hw.h"
 #include "rx_frame.h"
+#include "rx_session.h"
 #include "rx_usb.h"
 #include "rx_usb_comm.h"
 #include "unity.h"
@@ -205,11 +206,42 @@ typedef enum : uint8_t {
  */
 
 static rx_usb_comm_handle_t s_handle;
+static rx_session_state_t   s_session;
 
 /* Extern internal functions from rx_usb.c */
 extern void     rx_usb_set_state(rx_usb_state_t state);
 extern uint32_t rx_usb_tx_pop(rx_usb_port_id_t port, uint8_t* data, uint32_t max_len);
 extern uint32_t rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint32_t len);
+
+/* Helper to create default config with session */
+static rx_usb_comm_config_t helper_default_config(void)
+{
+  rx_usb_comm_config_t config = {.session = &s_session, .time_iface = nullptr};
+  return config;
+}
+
+/* Helper to create config with time interface */
+static rx_usb_comm_config_t helper_config_with_time(const rx_time_interface_t* time_iface)
+{
+  rx_usb_comm_config_t config = {.session = &s_session, .time_iface = time_iface};
+  return config;
+}
+
+/* Helper to get session TX sequence */
+static uint16_t helper_get_tx_seq(void)
+{
+  uint16_t seq = 0;
+  (void)rx_session_get_tx(&s_session, &seq);
+  return seq;
+}
+
+/* Helper to get session RX sequence */
+static uint16_t helper_get_rx_seq(void)
+{
+  uint16_t seq = 0;
+  (void)rx_session_get_rx(&s_session, &seq);
+  return seq;
+}
 
 /* Helper to initialize USB and set configured state */
 static void helper_usb_init_and_configure(void)
@@ -224,14 +256,19 @@ void setUp(void)
   mock_usb_hw_init(nullptr);
   mock_regs_init();
 
-  /* Clear handle */
+  /* Clear handle and session */
   memset(&s_handle, 0, sizeof(s_handle));
+  memset(&s_session, 0, sizeof(s_session));
+  (void)rx_session_init(&s_session);
 }
 
 void tearDown(void)
 {
   /* Deinitialize comm layer if initialized */
   (void)rx_usb_comm_deinit(&s_handle);
+
+  /* Deinitialize session */
+  (void)rx_session_deinit(&s_session);
 
   /* Deinitialize USB */
   (void)rx_usb_deinit();
@@ -248,19 +285,35 @@ void tearDown(void)
 
 void test_usb_comm_init_null_handle_fails(void)
 {
-  rx_err_t err = rx_usb_comm_init(nullptr, nullptr);
+  rx_usb_comm_config_t config = helper_default_config();
+  rx_err_t             err    = rx_usb_comm_init(nullptr, &config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_usb_comm_init_null_config_fails(void)
+{
+  rx_err_t err = rx_usb_comm_init(&s_handle, nullptr);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+void test_usb_comm_init_null_session_fails(void)
+{
+  rx_usb_comm_config_t config = {.session = nullptr, .time_iface = nullptr};
+  rx_err_t             err    = rx_usb_comm_init(&s_handle, &config);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_usb_comm_init_success(void)
 {
-  rx_err_t err = rx_usb_comm_init(&s_handle, nullptr);
+  rx_usb_comm_config_t config = helper_default_config();
+  rx_err_t             err    = rx_usb_comm_init(&s_handle, &config);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handle.initialized);
-  TEST_ASSERT_EQUAL_UINT16(0, s_handle.tx_sequence);
-  TEST_ASSERT_EQUAL_UINT16(0, s_handle.rx_sequence);
+  TEST_ASSERT_EQUAL_PTR(&s_session, s_handle.session);
 }
 
 void test_usb_comm_deinit_null_handle_fails(void)
@@ -272,7 +325,8 @@ void test_usb_comm_deinit_null_handle_fails(void)
 
 void test_usb_comm_deinit_success(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
 
   rx_err_t err = rx_usb_comm_deinit(&s_handle);
 
@@ -313,7 +367,8 @@ void test_usb_comm_send_not_initialized_fails(void)
 
 void test_usb_comm_send_usb_not_configured_fails(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr)); /* USB initialized but not configured */
   uint8_t data[] = "test";
 
@@ -324,7 +379,8 @@ void test_usb_comm_send_usb_not_configured_fails(void)
 
 void test_usb_comm_send_null_payload_with_len_fails(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
 
   rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_response, 0, nullptr, 10);
@@ -334,7 +390,8 @@ void test_usb_comm_send_null_payload_with_len_fails(void)
 
 void test_usb_comm_send_payload_too_large_fails(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   uint8_t data[k_frame_max_payload + 1];
 
@@ -345,30 +402,33 @@ void test_usb_comm_send_payload_too_large_fails(void)
 
 void test_usb_comm_send_empty_payload_succeeds(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
 
   rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_response, 0, nullptr, 0);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(1, s_handle.tx_sequence); /* Sequence should increment */
+  TEST_ASSERT_EQUAL_UINT16(1, helper_get_tx_seq()); /* Sequence should increment */
 }
 
 void test_usb_comm_send_with_payload_succeeds(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   uint8_t data[] = "Hello USB!";
 
   rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_response, 0, data, 10);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(1, s_handle.tx_sequence);
+  TEST_ASSERT_EQUAL_UINT16(1, helper_get_tx_seq());
 }
 
 void test_usb_comm_send_increments_sequence(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   uint8_t data[] = "test";
 
@@ -376,7 +436,7 @@ void test_usb_comm_send_increments_sequence(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
 
-  TEST_ASSERT_EQUAL_UINT16(3, s_handle.tx_sequence);
+  TEST_ASSERT_EQUAL_UINT16(3, helper_get_tx_seq());
 }
 
 /* =============================================================================
@@ -395,7 +455,8 @@ void test_usb_comm_receive_null_handle_fails(void)
 
 void test_usb_comm_receive_null_frame_fails(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
 
   rx_err_t err = rx_usb_comm_receive(&s_handle, nullptr, 0);
 
@@ -413,7 +474,8 @@ void test_usb_comm_receive_not_initialized_fails(void)
 
 void test_usb_comm_receive_usb_not_configured_fails(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   rx_frame_t frame;
 
@@ -424,7 +486,8 @@ void test_usb_comm_receive_usb_not_configured_fails(void)
 
 void test_usb_comm_receive_no_data_timeout(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   rx_frame_t frame;
 
@@ -449,7 +512,8 @@ void test_usb_comm_data_available_null_handle_fails(void)
 
 void test_usb_comm_data_available_null_available_fails(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
 
   rx_err_t err = rx_usb_comm_data_available(&s_handle, nullptr);
 
@@ -467,7 +531,8 @@ void test_usb_comm_data_available_not_initialized_fails(void)
 
 void test_usb_comm_data_available_empty(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   bool available = true;
 
@@ -493,7 +558,8 @@ void test_usb_comm_is_ready_null_handle_fails(void)
 
 void test_usb_comm_is_ready_null_ready_fails(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
 
   rx_err_t err = rx_usb_comm_is_ready(&s_handle, nullptr);
 
@@ -512,7 +578,8 @@ void test_usb_comm_is_ready_not_initialized(void)
 
 void test_usb_comm_is_ready_usb_not_configured(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(nullptr));
   bool ready = true;
 
@@ -524,7 +591,8 @@ void test_usb_comm_is_ready_usb_not_configured(void)
 
 void test_usb_comm_is_ready_configured(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   bool ready = false;
 
@@ -539,61 +607,10 @@ void test_usb_comm_is_ready_configured(void)
  * =============================================================================
  */
 
-void test_usb_comm_reset_sequence(void)
-{
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
-  s_handle.tx_sequence = 100;
-  s_handle.rx_sequence = 200;
-
-  rx_usb_comm_reset_sequence(&s_handle);
-
-  TEST_ASSERT_EQUAL_UINT16(0, s_handle.tx_sequence);
-  TEST_ASSERT_EQUAL_UINT16(0, s_handle.rx_sequence);
-}
-
-void test_usb_comm_reset_sequence_null_handle(void)
-{
-  /* Should not crash on nullptr */
-  rx_usb_comm_reset_sequence(nullptr);
-}
-
-void test_usb_comm_get_tx_sequence(void)
-{
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
-  s_handle.tx_sequence = 0xBEEF;
-
-  uint16_t seq = rx_usb_comm_get_tx_sequence(&s_handle);
-
-  TEST_ASSERT_EQUAL_UINT16(0xBEEF, seq);
-}
-
-void test_usb_comm_get_tx_sequence_null_handle(void)
-{
-  uint16_t seq = rx_usb_comm_get_tx_sequence(nullptr);
-
-  TEST_ASSERT_EQUAL_UINT16(0, seq);
-}
-
-void test_usb_comm_get_rx_sequence(void)
-{
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
-  s_handle.rx_sequence = 0xCAFE;
-
-  uint16_t seq = rx_usb_comm_get_rx_sequence(&s_handle);
-
-  TEST_ASSERT_EQUAL_UINT16(0xCAFE, seq);
-}
-
-void test_usb_comm_get_rx_sequence_null_handle(void)
-{
-  uint16_t seq = rx_usb_comm_get_rx_sequence(nullptr);
-
-  TEST_ASSERT_EQUAL_UINT16(0, seq);
-}
-
 void test_usb_comm_flush_rx(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   s_handle.rx_buffer_len = 100;
   s_handle.rx_buffer_pos = 50;
 
@@ -658,7 +675,7 @@ void test_usb_comm_receive_valid_frame_with_sync(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -705,7 +722,7 @@ void test_usb_comm_receive_empty_payload_frame(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -751,7 +768,7 @@ void test_usb_comm_receive_max_payload_frame(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -811,13 +828,13 @@ void test_usb_comm_receive_increments_rx_sequence(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
 
   /* Initial RX sequence should be 0 */
-  TEST_ASSERT_EQUAL_UINT16(0, rx_usb_comm_get_rx_sequence(&s_handle));
+  TEST_ASSERT_EQUAL_UINT16(0, helper_get_rx_seq());
 
   /* Send first frame with sequence 5 */
   rx_frame_t tx_frame;
@@ -841,7 +858,7 @@ void test_usb_comm_receive_increments_rx_sequence(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* After receiving frame with sequence 5, expected RX sequence should be 6 */
-  TEST_ASSERT_EQUAL_UINT16(6, rx_usb_comm_get_rx_sequence(&s_handle));
+  TEST_ASSERT_EQUAL_UINT16(6, helper_get_rx_seq());
 
   /* Send second frame with sequence 6 */
   err = helper_create_encoded_frame(&tx_frame,
@@ -860,7 +877,7 @@ void test_usb_comm_receive_increments_rx_sequence(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* After receiving frame with sequence 6, expected RX sequence should be 7 */
-  TEST_ASSERT_EQUAL_UINT16(7, rx_usb_comm_get_rx_sequence(&s_handle));
+  TEST_ASSERT_EQUAL_UINT16(7, helper_get_rx_seq());
 
   mock_time_deinit(&mock);
 }
@@ -879,7 +896,7 @@ void test_usb_comm_receive_finds_sync_after_garbage(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -926,7 +943,7 @@ void test_usb_comm_receive_partial_sync_word(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -978,7 +995,7 @@ void test_usb_comm_receive_multiple_false_syncs(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1042,7 +1059,7 @@ void test_usb_comm_receive_invalid_payload_length(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1099,7 +1116,7 @@ void test_usb_comm_receive_header_validation(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1149,7 +1166,7 @@ void test_usb_comm_receive_buffer_compaction(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1204,7 +1221,7 @@ void test_usb_comm_receive_buffer_overflow_protection(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1259,7 +1276,7 @@ void test_usb_comm_receive_fragmented_frame(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1314,7 +1331,7 @@ void test_usb_comm_receive_sequence_wraparound(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1344,7 +1361,7 @@ void test_usb_comm_receive_sequence_wraparound(void)
   TEST_ASSERT_EQUAL_UINT16(0xFFFF, rx_frame.header.sequence);
 
   /* After receiving 65535, expected RX sequence should wrap to 0 */
-  TEST_ASSERT_EQUAL_UINT16(0, rx_usb_comm_get_rx_sequence(&s_handle));
+  TEST_ASSERT_EQUAL_UINT16(0, helper_get_rx_seq());
 
   /* Second frame with sequence 0 (after wraparound) */
   err = helper_create_encoded_frame(&tx_frame,
@@ -1363,7 +1380,7 @@ void test_usb_comm_receive_sequence_wraparound(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0, rx_frame.header.sequence);
-  TEST_ASSERT_EQUAL_UINT16(1, rx_usb_comm_get_rx_sequence(&s_handle));
+  TEST_ASSERT_EQUAL_UINT16(1, helper_get_rx_seq());
 
   mock_time_deinit(&mock);
 }
@@ -1377,7 +1394,7 @@ void test_usb_comm_receive_out_of_order_sequence(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1428,7 +1445,7 @@ void test_usb_comm_receive_crc_mismatch(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1505,7 +1522,7 @@ void test_usb_comm_receive_iteration_limit(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
@@ -1533,7 +1550,8 @@ void test_usb_comm_receive_iteration_limit(void)
 
 void test_usb_comm_init_defaults_to_binary_mode(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
 
   rx_usb_comm_mode_t mode = rx_usb_comm_get_mode(&s_handle);
 
@@ -1556,7 +1574,8 @@ void test_usb_comm_set_mode_not_initialized_fails(void)
 
 void test_usb_comm_set_mode_to_debug(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
 
   rx_err_t err = rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_debug);
 
@@ -1566,7 +1585,8 @@ void test_usb_comm_set_mode_to_debug(void)
 
 void test_usb_comm_set_mode_to_binary(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_debug));
 
   rx_err_t err = rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_binary);
@@ -1593,7 +1613,8 @@ void test_usb_comm_get_mode_not_initialized_returns_invalid(void)
 
 void test_usb_comm_send_fails_in_debug_mode(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_debug));
 
@@ -1606,7 +1627,8 @@ void test_usb_comm_send_fails_in_debug_mode(void)
 
 void test_usb_comm_send_succeeds_after_mode_switch_back_to_binary(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
 
   /* Switch to debug mode */
@@ -1624,12 +1646,14 @@ void test_usb_comm_send_succeeds_after_mode_switch_back_to_binary(void)
 
 void test_usb_comm_mode_preserved_after_deinit_init(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_set_mode(&s_handle, k_usb_comm_mode_debug));
   (void)rx_usb_comm_deinit(&s_handle);
 
   /* Reinitialize */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
 
   /* Mode should be reset to binary after reinit */
   TEST_ASSERT_EQUAL(k_usb_comm_mode_binary, rx_usb_comm_get_mode(&s_handle));
@@ -1649,7 +1673,7 @@ void test_usb_comm_init_with_time_interface(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
 
   rx_err_t err = rx_usb_comm_init(&s_handle, &config);
 
@@ -1662,7 +1686,8 @@ void test_usb_comm_init_with_time_interface(void)
 void test_usb_comm_receive_timeout_without_time_iface(void)
 {
   /* Without time interface, receive should return immediately with timeout */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, nullptr));
+  { rx_usb_comm_config_t cfg_ = helper_default_config();
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &cfg_)); }
   helper_usb_init_and_configure();
   rx_frame_t frame;
 
@@ -1683,7 +1708,7 @@ void test_usb_comm_receive_timeout_with_mock_time(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
   helper_usb_init_and_configure();
 
@@ -1714,7 +1739,7 @@ void test_usb_comm_receive_immediate_timeout_zero(void)
   mock_time_set_auto_advance(&mock, true);
   mock_time_get_interface(&time_iface, &mock);
 
-  rx_usb_comm_config_t config = {.time_iface = &time_iface};
+  rx_usb_comm_config_t config = helper_config_with_time(&time_iface);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_comm_init(&s_handle, &config));
   helper_usb_init_and_configure();
 
@@ -1742,6 +1767,8 @@ int main(void)
 
   /* Initialization tests */
   RUN_TEST(test_usb_comm_init_null_handle_fails);
+  RUN_TEST(test_usb_comm_init_null_config_fails);
+  RUN_TEST(test_usb_comm_init_null_session_fails);
   RUN_TEST(test_usb_comm_init_success);
   RUN_TEST(test_usb_comm_deinit_null_handle_fails);
   RUN_TEST(test_usb_comm_deinit_success);
@@ -1806,12 +1833,6 @@ int main(void)
   RUN_TEST(test_usb_comm_is_ready_configured);
 
   /* Utility function tests */
-  RUN_TEST(test_usb_comm_reset_sequence);
-  RUN_TEST(test_usb_comm_reset_sequence_null_handle);
-  RUN_TEST(test_usb_comm_get_tx_sequence);
-  RUN_TEST(test_usb_comm_get_tx_sequence_null_handle);
-  RUN_TEST(test_usb_comm_get_rx_sequence);
-  RUN_TEST(test_usb_comm_get_rx_sequence_null_handle);
   RUN_TEST(test_usb_comm_flush_rx);
   RUN_TEST(test_usb_comm_flush_rx_null_handle);
 

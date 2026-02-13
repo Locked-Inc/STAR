@@ -634,8 +634,9 @@ internal_decode_frame(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uin
     return err;
   }
 
-  /* Update expected RX sequence */
-  handle->rx_sequence = frame->header.sequence + 1;
+  /* Validate RX sequence via shared session (accepts gaps up to 10) */
+  rx_session_validate_result_t validate_result = k_session_validate_fail;
+  (void)rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
 
   return k_rx_ok;
 }
@@ -824,7 +825,8 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  * 10. Validate post-conditions
  *
  * @param[out] handle USB communication handle to initialize
- * @param[in] config Configuration parameters (nullptr for defaults)
+ * @param[in] config Configuration parameters (must not be NULL)
+ *   - session: Required shared session state pointer
  *   - time_iface: Time interface for sleep operations (nullptr = no sleep)
  *
  * @return rx_err_t Error code
@@ -837,8 +839,7 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  * @pre handle memory writable (sizeof(rx_usb_comm_handle_t) bytes)
  * @post handle->initialized == true on success
  * @post handle->mode == k_usb_comm_mode_binary on success
- * @post handle->tx_sequence == 0
- * @post handle->rx_sequence == 0
+ * @post handle->session points to shared session state
  *
  * @note Not thread-safe during initialization
  * @note USB hardware must be initialized separately via rx_usb_init()
@@ -847,6 +848,7 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
  * @code
  * rx_usb_comm_handle_t handle;
  * rx_usb_comm_config_t config = {
+ *     .session    = &g_session,
  *     .time_iface = &time_interface
  * };
  * rx_err_t err = rx_usb_comm_init(&handle, &config);
@@ -867,12 +869,12 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   /* Clear handle */
   memset(handle, 0, sizeof(rx_usb_comm_handle_t));
 
-  /* Apply configuration */
-  if (config != nullptr) {
-    handle->time_iface = config->time_iface;
-  } else {
-    handle->time_iface = nullptr;
+  /* Apply configuration - config is required for session pointer */
+  if (config == nullptr || config->session == nullptr) {
+    return k_rx_err_invalid_arg;
   }
+  handle->session    = config->session;
+  handle->time_iface = config->time_iface;
 
   /* Initialize frame encoder */
   rx_err_t err = rx_frame_encoder_init(&handle->encoder);
@@ -895,9 +897,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
     return err;
   }
 
-  /* Initialize sequence counters */
-  handle->tx_sequence = k_initial_sequence;
-  handle->rx_sequence = k_initial_sequence;
+  /* Session state is managed externally - pointer already set above */
 
   /* Initialize buffer state */
   handle->rx_buffer_len = 0;
@@ -1092,10 +1092,17 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
     return k_rx_err_invalid_size;
   }
 
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = 0;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Session next_tx failed");
+    return err;
+  }
+
   /* Build frame */
   rx_frame_t frame = {0};
-  rx_err_t   err   = internal_build_frame(&frame, handle->tx_sequence, type, flags, payload,
-                                          payload_len);
+  err = internal_build_frame(&frame, sequence, type, flags, payload, payload_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame build failed");
     return err;
@@ -1116,9 +1123,6 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
     rx_log_error(s_tag, "USB write failed");
     return err;
   }
-
-  /* Increment TX sequence */
-  handle->tx_sequence++;
 
   return k_rx_ok;
 }
@@ -1234,44 +1238,6 @@ rx_err_t rx_usb_comm_is_ready(const rx_usb_comm_handle_t* handle, bool* ready)
  * Utility Functions
  * =============================================================================
  */
-
-/**
- * @brief Reset TX and RX sequence numbers to initial values
- * @param[in,out] handle USB communication handle (nullptr-safe)
- */
-void rx_usb_comm_reset_sequence(rx_usb_comm_handle_t* handle)
-{
-  if (handle != nullptr) {
-    handle->tx_sequence = k_initial_sequence;
-    handle->rx_sequence = k_initial_sequence;
-  }
-}
-
-/**
- * @brief Get current TX sequence number
- * @param[in] handle USB communication handle
- * @return Current TX sequence number (0 if handle is nullptr)
- */
-uint16_t rx_usb_comm_get_tx_sequence(const rx_usb_comm_handle_t* handle)
-{
-  if (handle == nullptr) {
-    return 0;
-  }
-  return handle->tx_sequence;
-}
-
-/**
- * @brief Get current RX sequence number
- * @param[in] handle USB communication handle
- * @return Current RX sequence number (0 if handle is nullptr)
- */
-uint16_t rx_usb_comm_get_rx_sequence(const rx_usb_comm_handle_t* handle)
-{
-  if (handle == nullptr) {
-    return 0;
-  }
-  return handle->rx_sequence;
-}
 
 /**
  * @brief Flush receive buffer (discard all pending data)

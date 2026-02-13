@@ -334,6 +334,7 @@ add_executable(test_rx_usb_comm
     ${RX_USB_COMM_SRC}
     ${RX_USB_SRC}
     ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
     ${MOCK_USB_SRC}
     ${MOCK_LOG_SRC}
     ${MOCK_TIME_SRC}
@@ -487,6 +488,7 @@ add_executable(test_rx_spi_comm
     test_rx_spi_comm.c
     ${RX_SPI_COMM_SRC}
     ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
     ${MOCK_RSPI_SRC}
     ${MOCK_LOG_SRC}
 )
@@ -628,6 +630,7 @@ add_executable(test_rx_comm_manager
     ${RX_COMM_MANAGER_SRC}
     ${RX_FRAME_ASCII_SRC}
     ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
     ${RX_USB_COMM_SRC}
     ${RX_USB_SRC}
     ${RX_SPI_COMM_SRC}
