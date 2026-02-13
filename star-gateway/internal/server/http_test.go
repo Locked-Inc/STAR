@@ -3,12 +3,13 @@ package server
 import (
 	"context"
 	"io"
-	"log/slog"
 	"net/http"
 	"net/http/httptest"
 	"sync/atomic"
 	"testing"
 	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 )
 
 const (
@@ -30,13 +31,8 @@ const (
 	testHTTPRequestTimeout = 100 * time.Millisecond
 )
 
-// newDiscardLogger creates a logger that discards all output (for testing).
-func newDiscardLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(io.Discard, nil))
-}
-
 func TestNewHTTPServer_ConfigValidation(t *testing.T) {
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 
 	tests := []struct {
 		name      string
@@ -140,7 +136,7 @@ func TestNewHTTPServer_HandlerWiring(t *testing.T) {
 				Handler:      mux,
 			}
 
-			logger := newDiscardLogger()
+			logger := testutil.NewDiscardLogger()
 			srv, err := NewHTTPServer(config, logger)
 			if err != nil {
 				t.Fatalf("Failed to create server: %v", err)
@@ -173,7 +169,7 @@ func TestNewHTTPServer_Configuration(t *testing.T) {
 		Handler:      http.NotFoundHandler(),
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewHTTPServer(config, logger)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)
@@ -220,7 +216,7 @@ func TestRunHTTPServer_Lifecycle(t *testing.T) {
 				Handler:      handler,
 			}
 
-			logger := newDiscardLogger()
+			logger := testutil.NewDiscardLogger()
 			srv, err := NewHTTPServer(config, logger)
 			if err != nil {
 				t.Fatalf("Failed to create server: %v", err)
@@ -281,7 +277,7 @@ func TestRunHTTPServer_InvalidPort(t *testing.T) {
 		Handler:    http.NotFoundHandler(),
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewHTTPServer(config, logger)
 	if err != nil {
 		t.Fatalf("NewHTTPServer failed: %v", err)
@@ -302,7 +298,7 @@ func TestRunHTTPServer_ShutdownWithoutRequests(t *testing.T) {
 		Handler:    http.NotFoundHandler(),
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewHTTPServer(config, logger)
 	if err != nil {
 		t.Fatalf("NewHTTPServer failed: %v", err)

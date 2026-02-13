@@ -771,13 +771,18 @@ static uint32_t internal_format_header(char*                    buf,
  *
  * @param[in] type Frame type enum value
  *
- * @return String representation ("COMMAND", "RESPONSE", "ACK", "NACK", or "UNKNOWN")
+ * @return String representation ("PING", "PONG", "COMMAND", "RESPONSE", "ACK", "NACK",
+ *         "RESET_ACK", "RESET", or "UNKNOWN")
  *
  * @see rx_frame_ascii.h for full documentation
  */
 const char* rx_frame_ascii_type_name(rx_frame_type_t type)
 {
   switch (type) {
+    case k_frame_type_ping:
+      return "PING";
+    case k_frame_type_pong:
+      return "PONG";
     case k_frame_type_command:
       return "COMMAND";
     case k_frame_type_response:
@@ -786,7 +791,10 @@ const char* rx_frame_ascii_type_name(rx_frame_type_t type)
       return "ACK";
     case k_frame_type_nack:
       return "NACK";
-    case k_frame_type_unknown:
+    case k_frame_type_reset_ack:
+      return "RESET_ACK";
+    case k_frame_type_reset:
+      return "RESET";
     default:
       return "UNKNOWN";
   }

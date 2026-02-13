@@ -131,7 +131,7 @@ For context, control loop frequencies should match system dynamics:
 
 \subsubsection{Byte Order and Standards Compliance}
 
-The protocol follows established standards for byte ordering to ensure cross-platform compatibility:
+The protocol uses little-endian byte ordering for all multi-byte fields, matching the native byte order of both the RX72N (Renesas RXv3 core, 32-bit CISC, little-endian) and Raspberry Pi 5 (ARM little-endian). This eliminates byte-swapping overhead on both platforms.
 
 \begin{table}[H]
 \centering
@@ -141,9 +141,9 @@ The protocol follows established standards for byte ordering to ensure cross-pla
 \hline
 \textbf{Field} & \textbf{Byte Order} & \textbf{Standard} & \textbf{Rationale} \\
 \hline
-SYNC & Big-endian & RFC 1700 & Network byte order for headers \\
-SEQ & Big-endian & RFC 1700 & Network byte order for headers \\
-LEN & Big-endian & RFC 1700 & Network byte order for headers \\
+SYNC & Little-endian & Project convention & Matches native byte order on both platforms \\
+SEQ & Little-endian & Project convention & No byte-swap needed on RX72N or RPi5 \\
+LEN & Little-endian & Project convention & No byte-swap needed on RX72N or RPi5 \\
 TYPE & N/A (1 byte) & -- & Single byte, no endianness \\
 FLAGS & N/A (1 byte) & -- & Single byte, no endianness \\
 CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
@@ -151,16 +151,16 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
 \end{tabular}
 \end{table}
 
-\textbf{SYNC Magic Word (0x55AA):} The frame synchronization marker uses the distinctive bit pattern 0x55AA (binary: 0101010101010101 in big-endian wire format). This alternating pattern is easily recognizable and unlikely to appear in random data, making it ideal for frame alignment. The value 0x55AA is transmitted as bytes \texttt{[0x55, 0xAA]} on the wire.
+\textbf{SYNC Magic Word (0x55AA):} The frame synchronization marker uses the distinctive bit pattern 0x55AA (binary: 0101010101010101). This alternating pattern is easily recognizable and unlikely to appear in random data, making it ideal for frame alignment. The value 0x55AA is transmitted in little-endian format as bytes \texttt{[0xAA, 0x55]} on the wire.
 
-\textbf{RFC 1700 (Network Byte Order):} All multi-byte header fields (SYNC, SEQ, LEN) use big-endian format following RFC 1700 ``Assigned Numbers'' standard. This ensures compatibility when communicating between different architectures (ARM RPi5 and Renesas RX72N, both little-endian internally).
+\textbf{Little-Endian Convention:} All multi-byte header fields (SYNC, SEQ, LEN) use little-endian format, matching the native byte order of both communicating platforms (ARM RPi5 and Renesas RX72N). This eliminates the need for byte-swapping, reducing latency and code complexity in the real-time motor control path.
 
 \textbf{IEEE 802.3 (CRC-32):} The frame checksum uses IEEE 802.3 polynomial (0x04C11DB7) in little-endian format, compatible with standard Ethernet CRC libraries. This allows zero-copy CRC validation using hardware accelerators where available.
 
 \vspace{0.2cm}
 
 \noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Key Insight:} Mixed byte orders are intentional — headers follow network standards for cross-platform compatibility, while CRC follows IEEE 802.3 for hardware acceleration and library compatibility.
+\textbf{Key Insight:} Uniform little-endian byte order across all fields eliminates byte-swapping overhead on both RX72N and RPi5, which are natively little-endian. CRC-32 follows IEEE 802.3 for hardware acceleration and library compatibility.
 }}
 
 \subsubsection{CRC-32 Implementation}

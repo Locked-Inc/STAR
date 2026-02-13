@@ -129,26 +129,26 @@
  *
  * | Operation | Avg Time (µs) | Worst Case (µs) | Notes |
  * |-----------|---------------|-----------------|-------|
- * | **rx_spi_comm_send()** | 150-500 | 1000 | Depends on payload (0-255 bytes) |
+ * | **rx_spi_comm_send()** | 150-500 | 1000 | Depends on payload (0-1024 bytes) |
  * | **rx_spi_comm_receive()** | 200-600 | 2000 | Includes wait + decode + CRC |
- * | **internal_build_frame()** | 5-20 | 50 | Memcpy payload (0-255 bytes) |
+ * | **internal_build_frame()** | 5-20 | 50 | Memcpy payload (0-1024 bytes) |
  * | **internal_wait_for_ack()** | 10-100 | 50000 | Polls every 10ms, 50ms timeout |
- * | **internal_spi_transfer()** | 80-400 | 800 | SPI @ 10 MHz, 10-275 bytes |
+ * | **internal_spi_transfer()** | 80-900 | 1500 | SPI @ 10 MHz, 10-1038 bytes |
  * | **internal_decode_header()** | 15 | 30 | Byte-level parsing |
- * | **internal_verify_crc()** | 40-250 | 500 | CRC-32 over 10-275 bytes |
+ * | **internal_verify_crc()** | 40-500 | 800 | CRC-32 over 10-1038 bytes |
  * | **internal_wait_for_data()** | 10 | timeout_ms*1000 | Polls every 10ms until timeout |
  *
  * **Throughput Analysis** (10 MHz SPI, no FEC):
- * - **Max payload**: 255 bytes -> 275 bytes on wire -> 220 µs SPI time
+ * - **Max payload**: 1024 bytes → 1038 bytes on wire → 830 µs SPI time
  * - **Frame overhead**: ~100 µs encode + ~150 µs decode + ~250 µs CRC
- * - **Total latency**: ~720 µs per 255-byte frame = ~354 KB/s effective
+ * - **Total latency**: ~1330 µs per 1024-byte frame = ~770 KB/s effective
  * - **Theoretical max**: 10 MHz / 8 = 1.25 MB/s (raw SPI)
- * - **Efficiency**: ~28% (overhead from framing, CRC, ACK waits)
+ * - **Efficiency**: ~62% (overhead from framing, CRC, ACK waits)
  *
  * ## Memory Usage
  *
  * **Stack Usage per Function Call**:
- * - `rx_spi_comm_send()`: ~300 bytes (rx_frame_t + wire_buffer[275])
+ * - `rx_spi_comm_send()`: ~1350 bytes (rx_frame_t + wire_buffer[1038])
  * - `rx_spi_comm_receive()`: ~350 bytes (rx_frame_t + header_buf[10])
  * - `internal_spi_transfer()`: ~20 bytes (local vars, no buffers)
  * - `internal_decode_frame()`: ~10 bytes (offset, err)
@@ -159,15 +159,12 @@
  *
  * | Function | Thread Safe? | Notes |
  * |----------|--------------|-------|
- * | `rx_spi_comm_init()` | [FAIL] No | Call once during init, not from multiple threads |
- * | `rx_spi_comm_send()` | [FAIL] No | Use external mutex if multiple threads send |
- * | `rx_spi_comm_receive()` | [FAIL] No | Use external mutex if multiple threads receive |
- * | `rx_spi_comm_send_ack()` | [FAIL] No | Same as send (shares TX sequence) |
- * | `rx_spi_comm_send_nack()` | [FAIL] No | Same as send (shares TX sequence) |
- * | `rx_spi_comm_data_available()` | [PASS] Yes | Read-only hardware poll (safe if HAL is safe) |
- * | `rx_spi_comm_reset_sequence()` | [FAIL] No | Use external mutex (modifies TX/RX counters) |
- * | `rx_spi_comm_get_tx_sequence()` | [PASS] Yes* | Safe if no concurrent sends |
- * | `rx_spi_comm_get_rx_sequence()` | [PASS] Yes* | Safe if no concurrent receives |
+ * | `rx_spi_comm_init()` | ❌ No | Call once during init, not from multiple threads |
+ * | `rx_spi_comm_send()` | ❌ No | Use external mutex if multiple threads send |
+ * | `rx_spi_comm_receive()` | ❌ No | Use external mutex if multiple threads receive |
+ * | `rx_spi_comm_send_ack()` | ❌ No | Same as send (shares TX sequence) |
+ * | `rx_spi_comm_send_nack()` | ❌ No | Same as send (shares TX sequence) |
+ * | `rx_spi_comm_data_available()` | ✅ Yes | Read-only hardware poll (safe if HAL is safe) |
  *
  * **Typical pattern**: Dedicate one ThreadX task to SPI communication, no locking needed.
  *
@@ -185,8 +182,8 @@
  * **Pin Connections** (RSPI0 example):
  * - **CS**: PD0 (chip select, active low)
  * - **CLK**: PD1 (clock from RPi5)
- * - **CIPO**: PD2 (Controller In Peripheral Out, RX72N -> RPi5)
- * - **COPI**: PD3 (Controller Out Peripheral In, RPi5 -> RX72N)
+ * - **CIPO**: PD2 (Controller In Peripheral Out, RX72N → RPi5)
+ * - **COPI**: PD3 (Controller Out Peripheral In, RPi5 → RX72N)
  *
  * ## Error Handling Strategy
  *
@@ -198,10 +195,10 @@
  * **Fatal Errors** (return error code, caller should reinitialize):
  * - `k_rx_err_invalid_arg`: nullptr pointer, programming error
  * - `k_rx_err_invalid_state`: Not initialized, must call rx_spi_comm_init()
- * - `k_rx_err_invalid_size`: Payload > 255 bytes, violates protocol spec
+ * - `k_rx_err_invalid_size`: Payload > 1024 bytes, violates protocol spec
  *
  * **Hardware Errors** (propagated from RSPI HAL):
- * - Overrun, underrun, mode fault -> logged and returned to caller
+ * - Overrun, underrun, mode fault → logged and returned to caller
  *
  * ## Integration Example
  *
@@ -269,16 +266,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|---------------------|
- * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion, structured if/while/for only |
- * | 2. Fixed loop bounds | [PASS] Pass | All loops bounded by enum constants (k_max_poll_iterations) |
- * | 3. No dynamic memory | [PASS] Pass | Zero malloc/free, all buffers in handle (stack/static) |
- * | 4. Short functions | [PASS] Pass | All <60 lines, single responsibility |
- * | 5. Assertions | [PASS] Pass | Minimum 2 checks per function (RX_CHECK_NULL_PTR + state) |
- * | 6. Small scope | [PASS] Pass | Variables declared near use, file-static for module data |
- * | 7. Check returns | [PASS] Pass | All rx_err_t checked via RX_RETURN_ON_ERROR or explicit if |
- * | 8. Limited preprocessor | [PASS] Pass | C23 typed enums for constants, macros only for conditionals |
- * | 9. Restrict pointers | [WARN] Deviation | Function pointers in HAL interface (DIP, testability) |
- * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror, zero warnings |
+ * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion, structured if/while/for only |
+ * | 2. Fixed loop bounds | ✅ Pass | All loops bounded by enum constants (k_max_poll_iterations) |
+ * | 3. No dynamic memory | ✅ Pass | Zero malloc/free, all buffers in handle (stack/static) |
+ * | 4. Short functions | ✅ Pass | All <60 lines, single responsibility |
+ * | 5. Assertions | ✅ Pass | Minimum 2 checks per function (RX_CHECK_NULL_PTR + state) |
+ * | 6. Small scope | ✅ Pass | Variables declared near use, file-static for module data |
+ * | 7. Check returns | ✅ Pass | All rx_err_t checked via RX_RETURN_ON_ERROR or explicit if |
+ * | 8. Limited preprocessor | ✅ Pass | C23 typed enums for constants, macros only for conditionals |
+ * | 9. Restrict pointers | ⚠️ Deviation | Function pointers in HAL interface (DIP, testability) |
+ * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *
@@ -320,6 +317,11 @@
 
 static const char* s_tag = "rx_spi_comm";
 
+/** @brief Maximum left-shift for exponential backoff (prevents UB on uint32_t) */
+typedef enum : uint8_t {
+  k_max_backoff_shift = 31, /**< Clamp retry_count before shifting to avoid UB */
+} backoff_limit_t;
+
 /* =============================================================================
  * Frame Header Byte Offsets
  *
@@ -330,15 +332,18 @@ static const char* s_tag = "rx_spi_comm";
 
 /** @brief Byte offsets within frame header buffer (SYNC + header fields) */
 typedef enum : uint8_t {
-  k_hdr_sync_high = 0, /**< SYNC word high byte */
-  k_hdr_sync_low  = 1, /**< SYNC word low byte */
-  k_hdr_seq_high  = 2, /**< Sequence number high byte */
-  k_hdr_seq_low   = 3, /**< Sequence number low byte */
-  k_hdr_len_high  = 4, /**< Payload length high byte */
-  k_hdr_len_low   = 5, /**< Payload length low byte */
+  k_hdr_sync_low  = 0, /**< SYNC word low byte (LE: LSB first) */
+  k_hdr_sync_high = 1, /**< SYNC word high byte (LE: MSB second) */
+  k_hdr_seq_low   = 2, /**< Sequence number low byte (LE) */
+  k_hdr_seq_high  = 3, /**< Sequence number high byte (LE) */
+  k_hdr_len_low   = 4, /**< Payload length low byte (LE) */
+  k_hdr_len_high  = 5, /**< Payload length high byte (LE) */
   k_hdr_type      = 6, /**< Frame type */
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
+
+/* Forward declaration: retransmit helper used by rx_spi_comm_receive() */
+static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle);
 
 /**
  * @brief Decode and validate SPI frame header from raw wire buffer
@@ -350,9 +355,9 @@ typedef enum : uint8_t {
  *
  * **Algorithm:**
  * 1. **Validate inputs**: Check data and frame pointers, minimum buffer size
- * 2. **Parse sync word**: Read big-endian 0xAA55, validate against k_frame_sync_word
- * 3. **Parse sequence**: Read big-endian 16-bit sequence number
- * 4. **Parse length**: Read big-endian 16-bit payload length, validate ≤ 255
+ * 2. **Parse sync word**: Read little-endian 0x55AA, validate against k_frame_sync_word
+ * 3. **Parse sequence**: Read little-endian 16-bit sequence number
+ * 4. **Parse length**: Read little-endian 16-bit payload length, validate ≤ 1024
  * 5. **Validate total size**: Check buffer contains header + payload + CRC
  * 6. **Parse type and flags**: Extract frame type and flags bytes
  * 7. **Return payload offset**: Optionally return offset to payload start
@@ -361,9 +366,9 @@ typedef enum : uint8_t {
  * ```
  * Offset | Size | Field    | Format      | Notes
  * -------|------|----------|-------------|---------------------------
- * 0      | 2    | SYNC     | BE uint16   | Always 0xAA55
- * 2      | 2    | Sequence | BE uint16   | 0-65535, wraps
- * 4      | 2    | Length   | BE uint16   | Payload bytes (0-255)
+ * 0      | 2    | SYNC     | LE uint16   | Always 0x55AA (wire: 0xAA, 0x55)
+ * 2      | 2    | Sequence | LE uint16   | 0-65535, wraps
+ * 4      | 2    | Length   | LE uint16   | Payload bytes (0-1024)
  * 6      | 1    | Type     | uint8       | k_frame_type_t enum
  * 7      | 1    | Flags    | uint8       | Bitmask (FEC, ACK, NACK)
  * 8      | N    | Payload  | bytes       | N = Length (parsed above)
@@ -373,11 +378,11 @@ typedef enum : uint8_t {
  * @param[in] data Raw frame data buffer from SPI receive
  *   - **Valid range**: Non-nullptr pointer to buffer of size data_len
  *   - **Constraints**: Must contain at least k_frame_min_size (14) bytes
- *   - **Format**: Big-endian header fields (network byte order)
+ *   - **Format**: Little-endian header fields
  *
  * @param[in] data_len Length of data buffer in bytes
  *   - **Valid range**: ≥ 14 (minimum frame: header + 0 payload + CRC)
- *   - **Typical range**: 14-279 bytes (0-255 payload + overhead)
+ *   - **Typical range**: 14-1038 bytes (0-1024 payload + overhead)
  *
  * @param[out] frame Frame structure to populate with parsed header
  *   - **Valid range**: Non-nullptr pointer to rx_frame_t
@@ -392,9 +397,9 @@ typedef enum : uint8_t {
  * @retval k_rx_ok Header parsed successfully, frame->header populated
  * @retval k_rx_err_invalid_arg data or frame pointer is nullptr
  * @retval k_rx_err_invalid_size data_len < 14 (too small for minimum frame)
- * @retval k_rx_err_invalid_size Payload length > 255 (protocol violation)
+ * @retval k_rx_err_invalid_size Payload length > k_frame_max_payload (protocol violation)
  * @retval k_rx_err_invalid_size Buffer too small for declared payload + CRC
- * @retval k_rx_err_protocol_error Sync word != 0xAA55 (not a valid frame)
+ * @retval k_rx_err_protocol_error Sync word != 0x55AA (not a valid frame)
  *
  * @pre data must point to valid buffer of size data_len
  * @pre frame must point to valid rx_frame_t structure
@@ -427,7 +432,7 @@ typedef enum : uint8_t {
  *
  * @see internal_verify_crc() Validate CRC-32 after header parse
  * @see internal_decode_frame() Higher-level decode (header + payload + CRC)
- * @see rx_frame_read_be16() Big-endian uint16 parser
+ * @see rx_frame_read_le16() Little-endian uint16 parser
  *
  * @since Version 1.0.0
  */
@@ -450,16 +455,16 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 
   offset = 0;
 
-  sync_word = rx_frame_read_be16(&data[offset]);
+  sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
-  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_le16(&data[offset]);
   offset += k_frame_seq_size;
 
-  frame->header.length = rx_frame_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_le16(&data[offset]);
   offset += k_frame_len_size;
 
   if (frame->header.length > k_frame_max_payload) {
@@ -506,12 +511,12 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  *
  * @param[in] data Raw frame data buffer containing header + payload + CRC
  *   - **Valid range**: Non-nullptr pointer to complete frame buffer
- *   - **Layout**: [SYNC(2)][Header(6)][Payload(0-255)][CRC(4)]
+ *   - **Layout**: [SYNC(2)][Header(6)][Payload(0-1024)][CRC(4)]
  *   - **Constraints**: Must contain offset + 4 bytes minimum
  *
  * @param[in] offset Offset to CRC field in data buffer (bytes to hash)
- *   - **Valid range**: 8-263 (header=8, max payload=255, CRC at offset+4)
- *   - **Typical**: 8 (ACK/NACK, no payload) to 263 (255-byte payload)
+ *   - **Valid range**: 8-1032 (header=8, max payload=1024, CRC at offset+4)
+ *   - **Typical**: 8 (ACK/NACK, no payload) to 1032 (1024-byte payload)
  *   - **Usage**: CRC computed over data[0..offset-1], compared with data[offset..offset+3]
  *
  * @param[out] crc_out Optional pointer to receive the received CRC value
@@ -583,14 +588,21 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
 }
 
 #ifdef __RX__
-/** @brief Sleep duration for polling loop (1 tick) */
-static const uint32_t s_poll_sleep_ticks = 1;
+/** @brief Sleep duration for polling loop */
+typedef enum : uint32_t {
+  k_poll_sleep_ticks = 1, /**< 1 ThreadX tick between polls */
+} poll_timing_t;
 #endif
 
 /** @brief ACK/ready wait timing constants */
 typedef enum : uint16_t {
   k_ack_wait_timeout_ms = 50, /**< Abort if host doesn't ACK within 50 ms */
 } ack_wait_t;
+
+/** @brief Receive loop bounds (NASA Power of 10 Rule 2) */
+typedef enum : uint8_t {
+  k_max_control_frames_per_receive = 16, /**< Max control frames before returning error */
+} receive_bounds_t;
 
 /** @brief Polling loop iteration limits */
 typedef enum : uint16_t {
@@ -717,7 +729,7 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
     }
 
     /* Yield to other threads while waiting */
-    tx_thread_sleep(s_poll_sleep_ticks);
+    tx_thread_sleep(k_poll_sleep_ticks);
   }
 #else
   /* Host build (testing): Use iteration counter to simulate time */
@@ -825,7 +837,7 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
  * - **Execution time**: 80-400 µs @ 10 MHz SPI (depends on transfer_len)
  * - **10-byte transfer** (ACK/NACK): ~80 µs (8 µs SPI + 72 µs overhead)
  * - **100-byte transfer**: ~180 µs (80 µs SPI + 100 µs overhead)
- * - **275-byte transfer** (max frame): ~400 µs (220 µs SPI + 180 µs overhead)
+ * - **1038-byte transfer** (max frame): ~1000 µs (830 µs SPI + 170 µs overhead)
  * - **Host ACK wait**: Add 0-50 ms if transmitting (see internal_wait_for_ack)
  *
  * @par Example - Transmit Only:
@@ -924,9 +936,9 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
     return err;
   }
 
-  /* Post-condition: Validate RX buffer populated if requested */
+  /* Post-condition: Copy RX data (memmove: rx_data may alias rx_buffer) */
   if (rx_data != nullptr && rx_len > 0) {
-    memcpy(rx_data, handle->rx_buffer, rx_len);
+    memmove(rx_data, handle->rx_buffer, rx_len);
   }
 
   return k_rx_ok;
@@ -1052,16 +1064,31 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
     return k_rx_err_invalid_arg;
   }
 
+  if (config == nullptr || config->session == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
   /* Clear handle */
   memset(handle, 0, sizeof(rx_spi_comm_handle_t));
 
   /* Apply configuration */
-  if (config != nullptr) {
-    handle->channel     = config->channel;
-    handle->fec_enabled = config->fec_enabled;
-  } else {
-    handle->channel     = k_spi_comm_default_channel;
-    handle->fec_enabled = false;
+  handle->session         = config->session;
+  handle->channel         = config->channel;
+  handle->fec_enabled     = config->fec_enabled;
+  handle->auto_retransmit = config->auto_retransmit;
+  handle->retransmit_cfg  = config->retransmit_config;
+
+  /* Apply retransmit defaults for zero fields */
+  if (handle->auto_retransmit) {
+    if (handle->retransmit_cfg.max_retries == 0) {
+      handle->retransmit_cfg.max_retries = k_retransmit_default_max_retries;
+    }
+    if (handle->retransmit_cfg.ack_timeout_ms == 0) {
+      handle->retransmit_cfg.ack_timeout_ms = k_retransmit_default_ack_timeout_ms;
+    }
+    if (handle->retransmit_cfg.max_backoff_ms == 0) {
+      handle->retransmit_cfg.max_backoff_ms = k_retransmit_default_max_backoff_ms;
+    }
   }
 
   /* Initialize frame encoder */
@@ -1079,26 +1106,7 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
     return err;
   }
 
-  /* Initialize sequence counters */
-  handle->tx_sequence = 0;
-  handle->rx_sequence = 0;
-
-  /* Initialize retransmit configuration */
-  if (config != nullptr && config->auto_retransmit) {
-    handle->auto_retransmit = true;
-    handle->retransmit_cfg  = config->retransmit_config;
-  }
-
-  /* Apply defaults for zero retransmit fields */
-  if (handle->retransmit_cfg.max_retries == 0) {
-    handle->retransmit_cfg.max_retries = k_retransmit_default_max_retries;
-  }
-  if (handle->retransmit_cfg.ack_timeout_ms == 0) {
-    handle->retransmit_cfg.ack_timeout_ms = k_retransmit_default_ack_timeout_ms;
-  }
-  if (handle->retransmit_cfg.max_backoff_ms == 0) {
-    handle->retransmit_cfg.max_backoff_ms = k_retransmit_default_max_backoff_ms;
-  }
+  /* Sequence counters managed by shared session (config->session) */
 
   handle->initialized = true;
 
@@ -1108,9 +1116,26 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
 
 /**
  * @brief Deinitialize SPI communication layer
+ *
+ * @details
+ * Tears down the encoder and decoder, clearing internal state.
+ * Saves the first error encountered from sub-deinit calls and
+ * returns it after completing all teardown steps.
+ *
  * @param[in,out] handle SPI communication handle to deinitialize
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
+ *
+ * @retval k_rx_ok              Deinit completed successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval (other)              First error from encoder or decoder deinit
+ *
+ * @pre handle != nullptr
+ * @pre handle was previously initialized via rx_spi_comm_init()
+ * @post handle->initialized == false
+ * @post Encoder and decoder resources released
+ *
+ * @note Not thread-safe; caller must ensure no concurrent SPI operations.
+ * @see rx_spi_comm_init() Corresponding initialization function
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
 {
@@ -1152,17 +1177,17 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  *
  * **Algorithm:**
  * 1. **Validate inputs**: Check handle, frame, payload pointer consistency
- * 2. **Validate payload size**: Ensure payload_len ≤ 255 bytes (protocol limit)
+ * 2. **Validate payload size**: Ensure payload_len ≤ 1024 bytes (protocol limit)
  * 3. **Zero frame**: Clear rx_frame_t to ensure padding bytes are zero
  * 4. **Set sequence**: Use handle->tx_sequence (auto-incremented by sender)
- * 5. **Set length**: payload_len (0-255)
+ * 5. **Set length**: payload_len (0-1024)
  * 6. **Set type**: Frame type (data, ACK, NACK, telemetry, etc.)
  * 7. **Set flags**: User-provided flags
  * 8. **Copy payload**: memcpy payload_len bytes to frame->payload if present
  * 9. **Apply FEC flag**: Set k_frame_flag_fec_enabled if handle->fec_enabled
  *
  * **Frame Types Supported:**
- * - k_frame_type_data: General data payload (0-255 bytes)
+ * - k_frame_type_data: General data payload (0-1024 bytes)
  * - k_frame_type_ack: Acknowledgment (0 bytes payload, handled separately)
  * - k_frame_type_nack: Negative acknowledgment (0 bytes, handled separately)
  * - k_frame_type_telemetry: Sensor/status data
@@ -1188,9 +1213,9 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  *   - **Constraints**: Must contain payload_len valid bytes if non-nullptr
  *
  * @param[in] payload_len Payload length in bytes
- *   - **Valid range**: 0-255 bytes (k_frame_max_payload = 255)
- *   - **Typical**: 0 (ACK/NACK), 8-64 (telemetry), 100-255 (bulk data)
- *   - **Constraints**: Must be ≤ 255 (protocol specification limit)
+ *   - **Valid range**: 0-1024 bytes (k_frame_max_payload)
+ *   - **Typical**: 0 (ACK/NACK), 8-64 (telemetry), 100-1024 (bulk data)
+ *   - **Constraints**: Must be ≤ 1024 (protocol specification limit)
  *
  * @param[out] frame Frame structure to populate
  *   - **Valid range**: Non-nullptr pointer to rx_frame_t (304 bytes)
@@ -1201,10 +1226,10 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * @retval k_rx_ok Frame built successfully, ready for encoding
  * @retval k_rx_err_invalid_arg handle or frame pointer is nullptr
  * @retval k_rx_err_invalid_arg payload is nullptr but payload_len > 0
- * @retval k_rx_err_invalid_size payload_len > 255 (exceeds protocol limit)
+ * @retval k_rx_err_invalid_size payload_len > 1024 (exceeds protocol limit)
  *
  * @pre handle must be initialized via rx_spi_comm_init()
- * @pre If payload != nullptr, payload_len must be > 0 and ≤ 255
+ * @pre If payload != nullptr, payload_len must be > 0 and ≤ 1024
  * @pre If payload == nullptr, payload_len must be 0
  * @post On success, frame->header populated with sequence, length, type, flags
  * @post On success, frame->payload contains payload_len bytes from payload
@@ -1257,6 +1282,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * @since Version 1.0.0
  */
 static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
+                                     const uint16_t              sequence,
                                      const rx_frame_type_t       type,
                                      const uint8_t               flags,
                                      const uint8_t*              payload,
@@ -1277,7 +1303,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
   }
 
   memset(frame, 0, sizeof(*frame));
-  frame->header.sequence = handle->tx_sequence;
+  frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = (uint8_t)type;
   frame->header.flags    = flags;
@@ -1307,11 +1333,11 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * 2. **Pre-condition 2**: Validate handle initialized
  * 3. **Build frame**: Call internal_build_frame() to populate rx_frame_t
  *    - Sets sequence number from handle->tx_sequence
- *    - Copies payload (0-255 bytes)
+ *    - Copies payload (0-1024 bytes)
  *    - Sets type, flags, applies FEC flag if configured
  * 4. **Encode frame**: Call rx_frame_encode() to create wire buffer
  *    - Adds sync word (0xAA55)
- *    - Encodes header fields (big-endian)
+ *    - Encodes header fields (little-endian)
  *    - Computes CRC-32 over header + payload
  *    - Appends CRC-32 (little-endian)
  * 5. **Post-condition 1**: Validate encoded length in valid range (14-279 bytes)
@@ -1326,8 +1352,8 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * ```
  * +--------+----------+--------+------+-------+---------+----------+
  * | SYNC   | Sequence | Length | Type | Flags | Payload | CRC-32   |
- * | 2B     | 2B       | 2B     | 1B   | 1B    | 0-255B  | 4B       |
- * | 0xAA55 | BE       | BE     |      |       |         | LE       |
+ * | 2B     | 2B       | 2B     | 1B   | 1B    | 0-1024B | 4B       |
+ * | 0x55AA | LE       | LE     |      |       |         | LE       |
  * +--------+----------+--------+------+-------+---------+----------+
  * ```
  *
@@ -1357,7 +1383,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  *   - **Constraints**: Must contain payload_len valid bytes if non-nullptr
  *
  * @param[in] payload_len Payload length in bytes
- *   - **Valid range**: 0-255 bytes (k_frame_max_payload)
+ *   - **Valid range**: 0-1024 bytes (k_frame_max_payload)
  *   - **Typical**: 8-64 (telemetry), 100-200 (bulk data)
  *   - **Zero**: Valid for ping/keepalive frames
  *
@@ -1365,14 +1391,14 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * @retval k_rx_ok Frame sent successfully, TX sequence incremented
  * @retval k_rx_err_invalid_arg handle pointer is nullptr
  * @retval k_rx_err_invalid_state handle not initialized (call rx_spi_comm_init first)
- * @retval k_rx_err_invalid_size payload_len > 255 (protocol violation)
+ * @retval k_rx_err_invalid_size payload_len > 1024 (protocol violation)
  * @retval k_rx_err_invalid_size Encoded frame length invalid (internal error)
  * @retval k_rx_err_timeout RPi5 ready signal timeout (host not responding)
  * @retval (encoder errors) rx_frame_encode() failed (rare, internal error)
  * @retval (HAL errors) RSPI peripheral transfer failure (overrun, mode fault)
  *
  * @pre handle must be initialized via rx_spi_comm_init()
- * @pre If payload != nullptr, payload_len must be > 0 and ≤ 255
+ * @pre If payload != nullptr, payload_len must be > 0 and ≤ 1024
  * @pre If payload == nullptr, payload_len must be 0
  * @pre RSPI peripheral hardware must be initialized and enabled
  * @pre RPi5 controller must be ready to receive (CS asserted, clock provided)
@@ -1390,7 +1416,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * - **Execution time**: 150-500 µs @ 10 MHz SPI + 0-50 ms host ACK wait
  * - **10-byte payload**: ~150 µs (10 µs build + 20 µs encode + 120 µs SPI)
  * - **100-byte payload**: ~300 µs (15 µs build + 100 µs encode + 185 µs SPI)
- * - **255-byte payload**: ~500 µs (20 µs build + 250 µs encode + 230 µs SPI)
+ * - **1024-byte payload**: ~800 µs (20 µs build + 250 µs encode + 530 µs SPI)
  * - **Host ACK wait**: Add 0-50 ms if RPi5 not immediately ready
  *
  * @par Example - Send Telemetry Data:
@@ -1465,7 +1491,6 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   rx_frame_t frame;
   uint8_t    wire_buffer[k_frame_max_size];
   uint32_t   wire_len;
-  uint16_t   expected_sequence;
   rx_err_t   err;
 
   if (handle == nullptr) {
@@ -1477,8 +1502,27 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_state;
   }
 
-  /* Build frame */
-  err = internal_build_frame(handle, type, flags, payload, payload_len, &frame);
+  /* Validate payload before consuming a sequence number (Issue #9).
+   * Sequence numbers are monotonic; wasting one on invalid input
+   * creates a gap the receiver would have to tolerate. */
+  if (payload == nullptr && payload_len > 0) {
+    return k_rx_err_invalid_arg;
+  }
+  if (payload_len > k_frame_max_payload) {
+    rx_log_error(s_tag, "Payload too large");
+    return k_rx_err_invalid_size;
+  }
+
+  /* Get next TX sequence from shared session (atomically increments) */
+  uint16_t sequence = 0;
+  err               = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to get TX sequence");
+    return err;
+  }
+
+  /* Build frame (payload already validated above) */
+  err = internal_build_frame(handle, sequence, type, flags, payload, payload_len, &frame);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1504,26 +1548,18 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     return err;
   }
 
-  /* Buffer frame for retransmission if auto_retransmit enabled and ACK required */
-  if (handle->auto_retransmit && (flags & k_frame_flag_requires_ack) != 0) {
+  /* Buffer frame for retransmission if enabled and requires-ACK flag set */
+  if (handle->auto_retransmit && (flags & k_frame_flag_requires_ack)) {
     memcpy(handle->retry_buffer, wire_buffer, wire_len);
     handle->retry_wire_len = wire_len;
-    handle->retry_sequence = handle->tx_sequence;
+    handle->retry_sequence = sequence;
     handle->retry_count    = 0;
     handle->retry_pending  = true;
 #ifdef __RX__
-    handle->retry_send_time_ms = (uint32_t)(tx_time_get() * k_threadx_ms_per_tick);
+    handle->retry_send_time_ms = (uint32_t)((uint64_t)tx_time_get() * k_threadx_ms_per_tick);
 #else
     handle->retry_send_time_ms = 0;
 #endif
-  }
-
-  /* Post-condition 2: TX sequence incremented correctly */
-  expected_sequence = handle->tx_sequence + 1;
-  handle->tx_sequence++;
-  if (handle->tx_sequence != expected_sequence) {
-    rx_log_error(s_tag, "TX sequence increment failed");
-    return k_rx_err_invalid_state;
   }
 
   return k_rx_ok;
@@ -1658,7 +1694,7 @@ static rx_err_t internal_wait_for_data(const rx_spi_comm_handle_t* handle,
     uint32_t iteration  = 0;
     while (!available && elapsed_ms < timeout_ms && iteration < k_max_poll_iterations) {
       iteration++;
-      tx_thread_sleep(s_poll_sleep_ticks);
+      tx_thread_sleep(k_poll_sleep_ticks);
       elapsed_ms += k_threadx_ms_per_tick;
 
       err = rspi_peripheral_read_available(handle->channel, &available);
@@ -1698,15 +1734,15 @@ internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, ui
     return err;
   }
 
-  /* Validate sync word (big-endian) */
-  const uint16_t sync = rx_frame_read_be16(&header_buf[k_hdr_sync_high]);
+  /* Validate sync word (little-endian) */
+  const uint16_t sync = rx_frame_read_le16(&header_buf[k_hdr_sync_low]);
   if (sync != k_frame_sync_word) {
     rx_log_error(s_tag, "Invalid sync word");
     return k_rx_err_protocol_error;
   }
 
-  /* Extract payload length (big-endian) */
-  *payload_len = rx_frame_read_be16(&header_buf[k_hdr_len_high]);
+  /* Extract payload length (little-endian) */
+  *payload_len = rx_frame_read_le16(&header_buf[k_hdr_len_low]);
   if (*payload_len > k_frame_max_payload) {
     rx_log_error(s_tag, "Payload too large");
     return k_rx_err_invalid_size;
@@ -1761,66 +1797,114 @@ static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
 }
 
 /* =============================================================================
- * Retransmission Internal Helpers
- * =============================================================================
- */
-
-/**
- * @brief Retransmit the buffered frame via SPI
- *
- * @details
- * Sets the retransmit flag in the buffered wire frame, sends it via SPI,
- * increments the retry counter, and updates the send timestamp.
- *
- * @param[in,out] handle SPI communication handle with pending retry
- *
- * @return rx_err_t
- * @retval k_rx_ok Retransmit sent successfully
- * @retval k_rx_err_retry_limit Max retries exceeded
- * @retval (other) SPI transfer error
- *
- * @pre handle->retry_pending must be true
- * @pre handle->retry_wire_len > 0
- * @post handle->retry_count incremented
- * @post handle->retry_send_time_ms updated
- */
-static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle)
-{
-  /* Check retry limit */
-  if (handle->retry_count >= handle->retransmit_cfg.max_retries) {
-    rx_log_error(s_tag, "Retransmit limit exceeded");
-    handle->retry_pending = false;
-    handle->retry_count   = 0;
-    return k_rx_err_retry_limit;
-  }
-
-  /* Set retransmit flag in buffered frame (flags byte is at offset 7) */
-  if (handle->retry_wire_len > k_hdr_flags) {
-    handle->retry_buffer[k_hdr_flags] |= k_frame_flag_retransmit;
-  }
-
-  /* Retransmit via SPI */
-  rx_err_t err =
-    internal_spi_transfer(handle, handle->retry_buffer, handle->retry_wire_len, nullptr, 0);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Retransmit SPI transfer failed");
-    return err;
-  }
-
-  handle->retry_count++;
-#ifdef __RX__
-  handle->retry_send_time_ms = (uint32_t)(tx_time_get() * k_threadx_ms_per_tick);
-#else
-  handle->retry_send_time_ms = 0;
-#endif
-
-  return k_rx_ok;
-}
-
-/* =============================================================================
  * Receive API - Public Functions
  * =============================================================================
  */
+
+/** @brief Result of control-frame dispatch within the receive loop */
+typedef enum : uint8_t {
+  k_ctrl_not_handled = 0, /**< Frame is not a control frame; return to caller */
+  k_ctrl_consumed    = 1, /**< Control frame consumed; continue receive loop */
+  k_ctrl_error       = 2, /**< Error occurred during control-frame handling */
+} ctrl_dispatch_result_t;
+
+/**
+ * @brief Dispatch control frames (PING, RESET, ACK/NACK) during receive
+ *
+ * @details
+ * Handles PING (auto-PONG + callback), RESET (auto-RESET_ACK + session reset
+ * + callback), and ACK/NACK (retransmit subsystem dispatch). Data frames are
+ * not consumed and signal the caller to return to the application.
+ *
+ * @param[in,out] handle SPI communication handle
+ * @param[in]     frame  Decoded frame to inspect
+ * @param[out]    result Set to consumed/not-handled/error
+ *
+ * @return rx_err_t k_rx_ok unless a fatal error occurred
+ *
+ * @pre handle and frame must be non-nullptr and valid
+ * @post Control-frame side effects applied (PONG sent, session reset, etc.)
+ *
+ * @note Called only from rx_spi_comm_receive(); not part of the public API.
+ * @since Version 1.2.0
+ */
+static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
+                                                rx_frame_t*             frame,
+                                                ctrl_dispatch_result_t* result)
+{
+  /* PING → auto-send PONG, invoke callback, consume */
+  if (frame->header.type == k_frame_type_ping) {
+    rx_err_t pong_err = rx_spi_comm_send_pong(handle, frame->payload, frame->header.length);
+    if (pong_err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send PONG response");
+    }
+
+    if (handle->on_ping_cb != nullptr) {
+      handle->on_ping_cb(frame, handle->control_cb_ctx);
+    }
+
+    *result = k_ctrl_consumed;
+    return k_rx_ok;
+  }
+
+  /* RESET → send RESET_ACK, reset session, invoke callback, consume */
+  if (frame->header.type == k_frame_type_reset) {
+    rx_err_t ack_err = rx_spi_comm_send_reset_ack(handle);
+    if (ack_err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send RESET_ACK, session not reset");
+      *result = k_ctrl_consumed;
+      return k_rx_ok; /* Don't reset session if ACK failed */
+    }
+
+    rx_err_t reset_err = rx_session_reset(handle->session);
+    if (reset_err != k_rx_ok) {
+      rx_log_error(s_tag, "Session reset failed after RESET_ACK");
+    }
+
+    if (handle->on_reset_cb != nullptr) {
+      handle->on_reset_cb(frame, handle->control_cb_ctx);
+    }
+
+    *result = k_ctrl_consumed;
+    return k_rx_ok;
+  }
+
+  /* ACK/NACK → retransmit subsystem or pass through */
+  if (frame->header.type == k_frame_type_ack || frame->header.type == k_frame_type_nack) {
+    if (handle->auto_retransmit) {
+      if (frame->header.type == k_frame_type_ack) {
+        if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
+          handle->retry_pending = false;
+          handle->retry_count   = 0;
+          if (handle->on_ack_cb != nullptr) {
+            handle->on_ack_cb(frame->header.sequence, handle->retransmit_cb_ctx);
+          }
+        }
+      } else {
+        /* NACK: trigger immediate retransmit if sequence matches */
+        if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
+          const rx_err_t retx_err = internal_retransmit_frame(handle);
+          if (retx_err != k_rx_ok) {
+            rx_log_error(s_tag, "NACK-triggered retransmit failed");
+          }
+          if (handle->on_nack_cb != nullptr) {
+            handle->on_nack_cb(frame->header.sequence, handle->retransmit_cb_ctx);
+          }
+        }
+      }
+      *result = k_ctrl_consumed;
+      return k_rx_ok;
+    }
+
+    /* auto_retransmit off: not consumed, return to caller as data frame */
+    *result = k_ctrl_not_handled;
+    return k_rx_ok;
+  }
+
+  /* Not a control frame */
+  *result = k_ctrl_not_handled;
+  return k_rx_ok;
+}
 
 /**
  * @brief Receive data frame from RPi5 controller via SPI (blocking with timeout)
@@ -1839,7 +1923,7 @@ static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle)
  * 4. **Read frame header**: Call internal_read_frame_header()
  *    - Reads 10 bytes (SYNC + sequence + length + type + flags)
  *    - Validates sync word (0xAA55)
- *    - Extracts payload length (0-255)
+ *    - Extracts payload length (0-1024)
  * 5. **Read payload + CRC**: Call internal_spi_transfer() for remaining bytes
  *    - Reads payload_len + 4 bytes (CRC-32)
  *    - Stores in handle->rx_buffer
@@ -1882,7 +1966,7 @@ static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle)
  * @retval k_rx_err_invalid_state handle not initialized (call rx_spi_comm_init first)
  * @retval k_rx_err_timeout No data available within timeout_ms (normal in polling)
  * @retval k_rx_err_protocol_error Sync word invalid (not 0xAA55, resync needed)
- * @retval k_rx_err_invalid_size Payload length > 255 (protocol violation)
+ * @retval k_rx_err_invalid_size Payload length > k_frame_max_payload (protocol violation)
  * @retval k_rx_err_crc_mismatch CRC validation failed (corruption, send NACK)
  * @retval (HAL errors) RSPI peripheral read failure
  *
@@ -1983,8 +2067,9 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
     return k_rx_err_invalid_state;
   }
 
-  /* Loop to handle control frames internally before returning data frames */
-  for (;;) {
+  /* Loop to handle control frames internally before returning data frames.
+   * Bounded to k_max_control_frames_per_receive iterations (NASA Rule 2). */
+  for (uint8_t ctrl_count = 0; ctrl_count < k_max_control_frames_per_receive; ctrl_count++) {
     /* Wait for data to be available */
     rx_err_t err = internal_wait_for_data(handle, timeout_ms);
     if (err != k_rx_ok) {
@@ -2024,64 +2109,36 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
       return err;
     }
 
-    /* Update expected RX sequence */
-    handle->rx_sequence = frame->header.sequence + 1;
-
-    /* Handle PING control frame: auto-send PONG, invoke callback, loop */
-    if (frame->header.type == k_frame_type_ping) {
-      (void)rx_spi_comm_send_pong(handle, frame->payload, frame->header.length);
-
-      if (handle->on_ping_cb != nullptr) {
-        handle->on_ping_cb(frame, handle->cb_ctx);
-      }
-
-      continue; /* Loop to receive next frame */
+    /* Dispatch control frames (PING, RESET, ACK/NACK) */
+    ctrl_dispatch_result_t ctrl_result = k_ctrl_not_handled;
+    err = internal_dispatch_control_frame(handle, frame, &ctrl_result);
+    if (err != k_rx_ok) {
+      return err;
+    }
+    if (ctrl_result == k_ctrl_consumed) {
+      continue; /* Control frame handled; loop for next frame */
     }
 
-    /* Handle RESET control frame: reset sequences, auto-send RESET_ACK, invoke callback, loop */
-    if (frame->header.type == k_frame_type_reset) {
-      handle->tx_sequence = 0;
-      handle->rx_sequence = 0;
-
-      (void)rx_spi_comm_send_reset_ack(handle);
-
-      if (handle->on_reset_cb != nullptr) {
-        handle->on_reset_cb(frame, handle->cb_ctx);
-      }
-
-      continue; /* Loop to receive next frame */
+    /* Validate and update RX sequence via shared session (data frames only) */
+    rx_session_validate_result_t validate_result = k_session_validate_fail;
+    rx_err_t                     validate_err =
+      rx_session_validate_rx(handle->session, frame->header.sequence, &validate_result);
+    if (validate_err != k_rx_ok) {
+      rx_log_error(s_tag, "Session validate_rx returned error");
+      return validate_err;
     }
-
-    /* Handle ACK: clear retry state when auto_retransmit enabled */
-    if (frame->header.type == k_frame_type_ack && handle->auto_retransmit) {
-      if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
-        handle->retry_pending = false;
-        handle->retry_count   = 0;
-      }
-
-      if (handle->on_ack_cb != nullptr) {
-        handle->on_ack_cb(frame->header.sequence, handle->cb_ctx);
-      }
-
-      continue; /* Consume ACK, loop for next frame */
-    }
-
-    /* Handle NACK: immediate retransmit when auto_retransmit enabled */
-    if (frame->header.type == k_frame_type_nack && handle->auto_retransmit) {
-      if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
-        (void)internal_retransmit_frame(handle);
-      }
-
-      if (handle->on_nack_cb != nullptr) {
-        handle->on_nack_cb(frame->header.sequence, handle->cb_ctx);
-      }
-
-      continue; /* Consume NACK, loop for next frame */
+    if (validate_result == k_session_validate_fail) {
+      rx_log_warn(s_tag, "Sequence validation failed, dropping frame");
+      continue;
     }
 
     /* Non-control frame: return to caller */
     return k_rx_ok;
   }
+
+  /* Exceeded max control frames without receiving a data frame */
+  rx_log_error(s_tag, "Too many control frames, no data frame received");
+  return k_rx_err_timeout;
 }
 
 /**
@@ -2111,61 +2168,11 @@ rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle, bool* av
  * =============================================================================
  */
 
-/**
- * @brief Reset TX and RX sequence numbers to zero
- * @param[in,out] handle SPI communication handle (nullptr-safe)
+/* Sequence management is now handled by the shared rx_session_state_t.
+ * Use rx_session_next_tx(), rx_session_validate_rx(), rx_session_reset()
+ * via handle->session.
+ * @see rx_session.h
  */
-void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle)
-{
-  if (handle != nullptr) {
-    handle->tx_sequence = 0;
-    handle->rx_sequence = 0;
-  }
-}
-
-/**
- * @brief Get current TX sequence number
- * @param[in] handle SPI communication handle
- * @param[out] sequence Output pointer for TX sequence number
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle or sequence is nullptr
- * @return k_rx_err_invalid_state if handle not initialized
- */
-rx_err_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t* handle, uint16_t* sequence)
-{
-  if (handle == nullptr || sequence == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  *sequence = handle->tx_sequence;
-  return k_rx_ok;
-}
-
-/**
- * @brief Get current RX sequence number
- * @param[in] handle SPI communication handle
- * @param[out] sequence Output pointer for RX sequence number
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle or sequence is nullptr
- * @return k_rx_err_invalid_state if handle not initialized
- */
-rx_err_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle, uint16_t* sequence)
-{
-  if (handle == nullptr || sequence == nullptr) {
-    return k_rx_err_invalid_arg;
-  }
-
-  if (!handle->initialized) {
-    return k_rx_err_invalid_state;
-  }
-
-  *sequence = handle->rx_sequence;
-  return k_rx_ok;
-}
 
 /* =============================================================================
  * Control Frame API
@@ -2174,12 +2181,30 @@ rx_err_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle, uint16_
 
 /**
  * @brief Register callbacks for PING and RESET control frames
- * @param[in,out] handle SPI communication handle
- * @param[in] on_ping_cb Callback for PING frames (NULL to disable)
- * @param[in] on_reset_cb Callback for RESET frames (NULL to disable)
- * @param[in] cb_ctx User context pointer passed to callbacks
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
+ *
+ * @details
+ * Stores function pointers that the receive path invokes when it
+ * decodes a PING or RESET frame. Passing NULL for a callback
+ * disables notification for that frame type while still performing
+ * the automatic PONG / RESET_ACK response.
+ *
+ * @param[in,out] handle     SPI communication handle (must be initialized)
+ * @param[in]     on_ping_cb Callback invoked on PING receipt (NULL to disable)
+ * @param[in]     on_reset_cb Callback invoked on RESET receipt (NULL to disable)
+ * @param[in]     cb_ctx     Opaque context forwarded to control callbacks
+ *
+ * @retval k_rx_ok              Callbacks registered
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ *
+ * @pre handle != nullptr
+ * @pre handle->initialized == true
+ * @post Callbacks stored; invoked on next matching control frame
+ * @post Previous callbacks overwritten
+ *
+ * @note Not thread-safe; register before starting the receive loop.
+ * @see rx_spi_comm_send_pong()      Auto-response sent on PING
+ * @see rx_spi_comm_send_reset_ack() Auto-response sent on RESET
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
                                            void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
@@ -2190,22 +2215,44 @@ rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_arg;
   }
 
-  handle->on_ping_cb  = on_ping_cb;
-  handle->on_reset_cb = on_reset_cb;
-  handle->cb_ctx      = cb_ctx;
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  handle->on_ping_cb     = on_ping_cb;
+  handle->on_reset_cb    = on_reset_cb;
+  handle->control_cb_ctx = cb_ctx;
 
   return k_rx_ok;
 }
 
 /**
  * @brief Send PONG frame with echoed payload
- * @param[in,out] handle SPI communication handle
- * @param[in] payload Payload data to echo (may be NULL if payload_len is 0)
- * @param[in] payload_len Length of payload in bytes
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return Error code from frame creation or SPI transfer on failure
+ *
+ * @details
+ * Constructs a PONG frame echoing the given payload, acquires the
+ * next TX sequence number from the shared session, encodes the
+ * frame, and transfers it over SPI. Typically called automatically
+ * by the receive path in response to a PING.
+ *
+ * @param[in,out] handle      SPI communication handle
+ * @param[in]     payload     Payload to echo (NULL when payload_len is 0)
+ * @param[in]     payload_len Length in bytes [0, k_frame_max_payload]
+ *
+ * @retval k_rx_ok                 PONG transmitted successfully
+ * @retval k_rx_err_invalid_arg    handle is nullptr
+ * @retval k_rx_err_invalid_state  Handle not initialized
+ * @retval k_rx_err_invalid_size   payload_len exceeds k_frame_max_payload
+ * @retval (other)                 Error from session, encode, or SPI transfer
+ *
+ * @pre handle != nullptr && handle->initialized
+ * @pre payload != NULL when payload_len > 0
+ * @post TX sequence incremented on success
+ * @post PONG frame sent over SPI
+ *
+ * @note Not thread-safe; called from the SPI receive context.
+ * @see rx_frame_create_pong() Frame construction helper
+ * @since Version 1.0.0
  */
 rx_err_t
 rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint32_t payload_len)
@@ -2218,9 +2265,16 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
     return k_rx_err_invalid_state;
   }
 
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = 0;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   /* Create PONG frame */
   rx_frame_t pong_frame;
-  rx_err_t   err = rx_frame_create_pong(&pong_frame, handle->tx_sequence, payload, payload_len);
+  err = rx_frame_create_pong(&pong_frame, sequence, payload, payload_len);
   if (err != k_rx_ok) {
     return err;
   }
@@ -2239,12 +2293,31 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
 }
 
 /**
- * @brief Send RESET_ACK frame
+ * @brief Send RESET_ACK frame confirming a reset request
+ *
+ * @details
+ * Constructs a RESET_ACK frame (empty payload), acquires the next
+ * TX sequence number, encodes, and transfers over SPI. Called
+ * automatically by the receive path after processing a RESET frame.
+ * The RESET_ACK itself does NOT reset sequence numbers; that is
+ * handled by the session layer in response to the RESET.
+ *
  * @param[in,out] handle SPI communication handle
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return Error code from frame creation or SPI transfer on failure
+ *
+ * @retval k_rx_ok                 RESET_ACK transmitted successfully
+ * @retval k_rx_err_invalid_arg    handle is nullptr
+ * @retval k_rx_err_invalid_state  Handle not initialized
+ * @retval (other)                 Error from session, encode, or SPI transfer
+ *
+ * @pre handle != nullptr && handle->initialized
+ * @pre A RESET frame was received and session state cleared
+ * @post TX sequence incremented on success
+ * @post RESET_ACK frame sent over SPI
+ *
+ * @note Not thread-safe; called from the SPI receive context.
+ * @see rx_frame_create_reset_ack() Frame construction helper
+ * @see rx_spi_comm_set_control_callbacks() Register RESET notification
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
 {
@@ -2256,9 +2329,16 @@ rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
+  /* Get next TX sequence from shared session */
+  uint16_t sequence = 0;
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   /* Create RESET_ACK frame */
   rx_frame_t reset_ack_frame;
-  rx_err_t   err = rx_frame_create_reset_ack(&reset_ack_frame, handle->tx_sequence);
+  err = rx_frame_create_reset_ack(&reset_ack_frame, sequence);
   if (err != k_rx_ok) {
     return err;
   }
@@ -2283,18 +2363,81 @@ rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
 }
 
 /* =============================================================================
+ * Retransmission - Internal Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Retransmit the buffered frame via SPI
+ *
+ * @param[in,out] handle SPI communication handle with retry_buffer populated
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Retransmit sent successfully
+ * @retval k_rx_err_retry_limit Max retries exceeded
+ *
+ * @pre handle->retry_pending == true
+ * @pre handle->retry_buffer contains valid encoded frame
+ * @post retry_count incremented on success, retry_pending cleared on limit
+ *
+ * @since Version 1.1.0
+ */
+static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle)
+{
+  /* Check retry limit */
+  if (handle->retry_count >= handle->retransmit_cfg.max_retries) {
+    rx_log_error(s_tag, "Retransmit limit exceeded");
+    handle->retry_pending = false;
+    handle->retry_count   = 0;
+    return k_rx_err_retry_limit;
+  }
+
+  /* Set retransmit flag in buffered frame (flags byte is at offset 7) */
+  if (handle->retry_wire_len > k_hdr_flags) {
+    handle->retry_buffer[k_hdr_flags] |= k_frame_flag_retransmit;
+  }
+
+  /* Retransmit via SPI */
+  rx_err_t err =
+    internal_spi_transfer(handle, handle->retry_buffer, handle->retry_wire_len, nullptr, 0);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Retransmit SPI transfer failed");
+    return err;
+  }
+
+  handle->retry_count++;
+#ifdef __RX__
+  handle->retry_send_time_ms = (uint32_t)(tx_time_get() * k_threadx_ms_per_tick);
+#else
+  handle->retry_send_time_ms = 0;
+#endif
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
  * Retransmission API - Public Functions
  * =============================================================================
  */
 
 /**
  * @brief Process pending retransmissions based on timeout
+ *
  * @param[in,out] handle SPI communication handle
  * @param[in] current_time_ms Current system time in milliseconds
- * @return k_rx_ok No action needed or retransmit sent
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return k_rx_err_retry_limit if max retries exceeded
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok No action needed or retransmit sent
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ * @retval k_rx_err_retry_limit Max retries exceeded
+ *
+ * @pre handle must be non-NULL and initialized
+ * @post retry_count incremented on retransmit, pending cleared on limit
+ *
+ * @note Safe to call when auto_retransmit is disabled (no-op)
+ *
+ * @since Version 1.1.0
  */
 rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
                                          const uint32_t        current_time_ms)
@@ -2312,8 +2455,11 @@ rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
     return k_rx_ok;
   }
 
-  /* Compute exponential backoff: ack_timeout_ms * 2^retry_count, capped */
-  uint32_t backoff_ms = (uint32_t)handle->retransmit_cfg.ack_timeout_ms << handle->retry_count;
+  /* Compute exponential backoff: ack_timeout_ms * 2^retry_count, capped.
+   * Clamp shift to 31 to avoid undefined behavior when retry_count >= 32. */
+  const uint8_t shift =
+    (handle->retry_count < k_max_backoff_shift) ? handle->retry_count : k_max_backoff_shift;
+  uint32_t backoff_ms = (uint32_t)handle->retransmit_cfg.ack_timeout_ms << shift;
 
   if (backoff_ms > handle->retransmit_cfg.max_backoff_ms) {
     backoff_ms = handle->retransmit_cfg.max_backoff_ms;
@@ -2335,12 +2481,20 @@ rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
 
 /**
  * @brief Enable or disable automatic retransmission at runtime
+ *
  * @param[in,out] handle SPI communication handle
  * @param[in] enabled true to enable, false to disable
  * @param[in] config Retransmit config (NULL to keep current/defaults)
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Configuration applied successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be non-NULL and initialized
+ * @post auto_retransmit flag and config updated
+ *
+ * @since Version 1.1.0
  */
 rx_err_t rx_spi_comm_set_auto_retransmit(rx_spi_comm_handle_t*                  handle,
                                          const bool                             enabled,
@@ -2383,12 +2537,17 @@ rx_err_t rx_spi_comm_set_auto_retransmit(rx_spi_comm_handle_t*                  
 
 /**
  * @brief Register ACK/NACK notification callbacks
+ *
  * @param[in,out] handle SPI communication handle
  * @param[in] on_ack_cb ACK callback (NULL to disable)
  * @param[in] on_nack_cb NACK callback (NULL to disable)
  * @param[in] ctx User context passed to callbacks
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Callbacks registered
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ *
+ * @since Version 1.1.0
  */
 rx_err_t rx_spi_comm_set_retransmit_callbacks(rx_spi_comm_handle_t* handle,
                                               void (*on_ack_cb)(uint16_t sequence, void* ctx),
@@ -2399,9 +2558,13 @@ rx_err_t rx_spi_comm_set_retransmit_callbacks(rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_arg;
   }
 
-  handle->on_ack_cb  = on_ack_cb;
-  handle->on_nack_cb = on_nack_cb;
-  handle->cb_ctx     = ctx;
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  handle->on_ack_cb         = on_ack_cb;
+  handle->on_nack_cb        = on_nack_cb;
+  handle->retransmit_cb_ctx = ctx;
 
   return k_rx_ok;
 }

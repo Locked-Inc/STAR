@@ -112,8 +112,11 @@ func (m *MockTransport) Send(data []byte) (int, error) {
 
 // Receive returns the next queued response or the configured error.
 func (m *MockTransport) Receive(maxLen int) ([]byte, error) {
-	if m.receiveDelay > 0 {
-		time.Sleep(m.receiveDelay)
+	m.mu.Lock()
+	delay := m.receiveDelay
+	m.mu.Unlock()
+	if delay > 0 {
+		time.Sleep(delay)
 	}
 
 	for {
@@ -191,7 +194,7 @@ func (m *MockTransport) Transfer(ctx context.Context, data []byte) ([]byte, erro
 
 	m.mu.Unlock()
 
-	// Return empty buffer (simulates SPI MISO line with no data)
+	// Return empty buffer (simulates SPI CIPO line with no data)
 	// Real SPI always returns something - zeros if peripheral isn't ready
 	emptyBuffer := make([]byte, len(data))
 	return emptyBuffer, nil

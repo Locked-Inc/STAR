@@ -16,8 +16,8 @@
  * - **Encoder/decoder initialization** - nullptr checks, state validation
  * - **Frame encoding** - SYNC word, sequence numbers, payload, CRC generation
  * - **Frame decoding** - Header parsing, CRC verification, payload extraction
- * - **Round-trip validation** - Encode -> Decode -> Verify identity
- * - **Endianness** - Big-endian multi-byte fields, little-endian CRC-32
+ * - **Round-trip validation** - Encode → Decode → Verify identity
+ * - **Endianness** - Little-endian multi-byte fields, little-endian CRC-32
  * - **Go compatibility** - Bit-exact wire format matching Go test vectors
  * - **Edge cases** - Max payload, sequence rollover, truncated frames
  * - **Error handling** - Invalid arguments, CRC mismatches, invalid sizes
@@ -28,7 +28,7 @@
  * ┌──────────┬──────────┬──────────┬──────────┬──────────┬───────────────┬──────────┐
  * │  SYNC    │   SEQ    │   LEN    │  TYPE    │  FLAGS   │   PAYLOAD     │  CRC-32  │
  * │  2 bytes │  2 bytes │  2 bytes │  1 byte  │  1 byte  │   0-1024 B    │  4 bytes │
- * │  0x55AA  │   (BE)   │   (BE)   │          │          │               │   (LE)   │
+ * │  0x55AA  │   (LE)   │   (LE)   │          │          │               │   (LE)   │
  * └──────────┴──────────┴──────────┴──────────┴──────────┴───────────────┴──────────┘
  * ```
  *
@@ -39,11 +39,11 @@
  * 1. **Initialization Tests** - Encoder/decoder setup and validation
  * 2. **Encode Tests** - Frame construction, header generation, payload handling
  * 3. **Decode Tests** - Wire data parsing, validation, error detection
- * 4. **Round-Trip Tests** - Encode -> Decode identity verification
+ * 4. **Round-Trip Tests** - Encode → Decode identity verification
  * 5. **Utility Function Tests** - Helper APIs (create_ack, create_nack, etc.)
  * 6. **Frame Type Tests** - Command, response, ACK, NACK frame handling
  * 7. **Frame Flag Tests** - All flag combinations (requires_ack, retransmit, etc.)
- * 8. **Endianness Tests** - Big-endian fields, little-endian CRC verification
+ * 8. **Endianness Tests** - Little-endian fields, little-endian CRC verification
  * 9. **Go Compatibility Tests** - Bit-exact wire format validation
  * 10. **Edge Case Tests** - Boundary conditions, sequence rollover, truncation
  *
@@ -102,10 +102,10 @@
  * **Example: Empty ACK Frame**
  * ```
  * Wire format (hex):
- *   55 AA          - SYNC (0x55AA big-endian)
- *   00 01          - SEQ (1 big-endian)
- *   00 00          - LEN (0 big-endian)
- *   03             - TYPE (ACK = 3)
+ *   AA 55          - SYNC (0x55AA little-endian)
+ *   01 00          - SEQ (1 little-endian)
+ *   00 00          - LEN (0 little-endian)
+ *   12             - TYPE (ACK = 0x12)
  *   00             - FLAGS (none = 0)
  *   <CRC-32 LE>    - CRC-32 of above 8 bytes (little-endian)
  * ```
@@ -113,10 +113,10 @@
  * **Example: Command with Payload**
  * ```
  * Wire format (hex):
- *   55 AA          - SYNC
- *   00 2A          - SEQ (42 big-endian)
- *   00 04          - LEN (4 big-endian)
- *   01             - TYPE (COMMAND = 1)
+ *   AA 55          - SYNC (LE)
+ *   2A 00          - SEQ (42 little-endian)
+ *   04 00          - LEN (4 little-endian)
+ *   10             - TYPE (COMMAND = 0x10)
  *   01             - FLAGS (REQUIRES_ACK = 0x01)
  *   54 45 53 54    - PAYLOAD "TEST" (4 bytes)
  *   <CRC-32 LE>    - CRC-32
@@ -144,16 +144,16 @@
  *
  * | Rule | Test Coverage |
  * |------|---------------|
- * | 1. Simple control flow | [PASS] Verified via round-trip tests (no goto) |
- * | 2. Fixed loop bounds | [PASS] Max payload tests verify bounded iteration |
- * | 3. No dynamic memory | [PASS] All buffers stack-allocated |
- * | 4. Short functions | [PASS] N/A (test code exempt) |
- * | 5. Assertions | [PASS] Every test validates preconditions |
- * | 6. Small scope | [PASS] Test fixtures have file scope |
- * | 7. Check returns | [PASS] All rx_frame_* returns verified |
- * | 8. Limited preprocessor | [PASS] Only include guards used |
- * | 9. Restrict pointers | [PASS] No function pointers in frame API |
- * | 10. Compiler warnings | [PASS] Tests build with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | ✅ Verified via round-trip tests (no goto) |
+ * | 2. Fixed loop bounds | ✅ Max payload tests verify bounded iteration |
+ * | 3. No dynamic memory | ✅ All buffers stack-allocated |
+ * | 4. Short functions | ✅ N/A (test code exempt) |
+ * | 5. Assertions | ✅ Every test validates preconditions |
+ * | 6. Small scope | ✅ Test fixtures have file scope |
+ * | 7. Check returns | ✅ All rx_frame_* returns verified |
+ * | 8. Limited preprocessor | ✅ Only include guards used |
+ * | 9. Restrict pointers | ✅ No function pointers in frame API |
+ * | 10. Compiler warnings | ✅ Tests build with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -288,11 +288,11 @@ typedef enum : uint16_t {
   k_test_seq_123      = 123, /**< Sequence value 123 */
   k_test_seq_200      = 200, /**< Sequence value 200 */
   k_test_seq_999      = 999, /**< Sequence value 999 */
-  k_test_seq_1234     = 0x1234,  /**< Sequence value 0x1234 (exercises big-endian encoding) */
+  k_test_seq_1234     = 0x1234,  /**< Sequence value 0x1234 (exercises little-endian encoding) */
   k_test_seq_beef     = 0xBEEF,  /**< Sequence value 0xBEEF (non-ASCII test pattern) */
   k_test_seq_max      = 0xFFFF,  /**< Maximum sequence value (tests 16-bit boundary) */
   k_test_byte_mask    = 0xFF,    /**< Byte mask for payload patterns */
-  k_test_byte_shift_8 = 8,       /**< Byte shift for big-endian fields */
+  k_test_byte_shift_8 = 8,       /**< Byte shift for multi-byte field extraction */
   k_test_small_buffer = 64,      /**< Small buffer for simple frame tests */
   k_test_oversize_buffer = 2048, /**< Buffer for overflow/boundary tests */
   k_short_buffer_size    = 8,    /**< Intentionally too small buffer (error test) */
@@ -366,18 +366,18 @@ static const char     s_test_payload_string[] = "TEST"; /**< Standard test paylo
  *
  * @details
  * Byte offsets for accessing frame fields in the wire format (encoded byte array).
- * All multi-byte fields are big-endian (network byte order).
+ * All multi-byte fields are little-endian (LSB first).
  *
  * **Wire Format Layout:**
  * ```
  * Offset | Field
  * -------|-------
- * 0      | SYNC high byte
- * 1      | SYNC low byte
- * 2      | SEQ high byte
- * 3      | SEQ low byte
- * 4      | LEN high byte
- * 5      | LEN low byte
+ * 0      | SYNC low byte (0xAA for 0x55AA LE)
+ * 1      | SYNC high byte (0x55 for 0x55AA LE)
+ * 2      | SEQ low byte
+ * 3      | SEQ high byte
+ * 4      | LEN low byte
+ * 5      | LEN high byte
  * 6      | TYPE
  * 7      | FLAGS
  * 8      | PAYLOAD[0]
@@ -392,12 +392,12 @@ static const char     s_test_payload_string[] = "TEST"; /**< Standard test paylo
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_frame_offset_sync_high = 0, /**< SYNC word high byte (0x55 for 0x55AA) */
-  k_frame_offset_sync_low  = 1, /**< SYNC word low byte (0xAA for 0x55AA) */
-  k_frame_offset_seq_high  = 2, /**< Sequence number high byte (big-endian) */
-  k_frame_offset_seq_low   = 3, /**< Sequence number low byte (big-endian) */
-  k_frame_offset_len_high  = 4, /**< Length high byte (big-endian) */
-  k_frame_offset_len_low   = 5, /**< Length low byte (big-endian) */
+  k_frame_offset_sync_low  = 0, /**< SYNC word low byte (0xAA for 0x55AA LE) */
+  k_frame_offset_sync_high = 1, /**< SYNC word high byte (0x55 for 0x55AA LE) */
+  k_frame_offset_seq_low   = 2, /**< Sequence number low byte (LE) */
+  k_frame_offset_seq_high  = 3, /**< Sequence number high byte (LE) */
+  k_frame_offset_len_low   = 4, /**< Length low byte (LE) */
+  k_frame_offset_len_high  = 5, /**< Length high byte (LE) */
   k_frame_offset_type      = 6, /**< Frame type byte (k_frame_type_*) */
   k_frame_offset_flags     = 7, /**< Frame flags byte (bitfield) */
   k_frame_offset_payload   = 8, /**< Payload start offset (first payload byte) */
@@ -475,8 +475,8 @@ static rx_frame_decoder_t s_decoder;
  *
  * **Algorithm:**
  * ```
- * 1. Initialize encoder -> Set encoder.initialized = 1
- * 2. Initialize decoder -> Set decoder.initialized = 1
+ * 1. Initialize encoder → Set encoder.initialized = 1
+ * 2. Initialize decoder → Set decoder.initialized = 1
  * ```
  *
  * @pre Unity test framework has called this function
@@ -512,8 +512,8 @@ void setUp(void)
  *
  * **Algorithm:**
  * ```
- * 1. Deinitialize encoder -> Set encoder.initialized = 0
- * 2. Deinitialize decoder -> Set decoder.initialized = 0
+ * 1. Deinitialize encoder → Set encoder.initialized = 0
+ * 2. Deinitialize decoder → Set decoder.initialized = 0
  * ```
  *
  * @pre Test function has completed execution
@@ -688,10 +688,10 @@ void test_decoder_init_success(void)
  * k_rx_err_invalid_arg when any pointer is nullptr.
  *
  * **Test Algorithm:**
- * 1. Test nullptr encoder -> k_rx_err_invalid_arg
- * 2. Test nullptr frame -> k_rx_err_invalid_arg
- * 3. Test nullptr buffer -> k_rx_err_invalid_arg
- * 4. Test nullptr len -> k_rx_err_invalid_arg
+ * 1. Test nullptr encoder → k_rx_err_invalid_arg
+ * 2. Test nullptr frame → k_rx_err_invalid_arg
+ * 3. Test nullptr buffer → k_rx_err_invalid_arg
+ * 4. Test nullptr len → k_rx_err_invalid_arg
  *
  * @pre s_encoder initialized by setUp()
  * @post No state changes (all calls rejected before execution)
@@ -787,18 +787,18 @@ void test_encode_payload_too_large(void)
  * 1. Create frame with sequence=1, length=0, type=COMMAND, flags=NONE
  * 2. Encode the frame
  * 3. Verify encoded size is k_frame_min_size (12 bytes)
- * 4. Verify SYNC word is 0x55AA (big-endian)
- * 5. Verify sequence number is 1 (big-endian)
- * 6. Verify length is 0 (big-endian)
+ * 4. Verify SYNC word is 0x55AA (little-endian: wire 0xAA, 0x55)
+ * 5. Verify sequence number is 1 (little-endian)
+ * 6. Verify length is 0 (little-endian)
  * 7. Verify type is k_frame_type_command
  * 8. Verify flags is k_frame_flag_none
  *
  * **Wire Format (hex):**
  * ```
- * 55 AA          - SYNC (0x55AA)
- * 00 01          - SEQ (1)
- * 00 00          - LEN (0)
- * 01             - TYPE (COMMAND)
+ * AA 55          - SYNC (0x55AA LE)
+ * 01 00          - SEQ (1 LE)
+ * 00 00          - LEN (0 LE)
+ * 10             - TYPE (COMMAND = 0x10)
  * 00             - FLAGS (NONE)
  * <CRC-32 LE>    - CRC-32 of above 8 bytes
  * ```
@@ -839,15 +839,15 @@ void test_encode_empty_frame(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_frame_min_size, len); /* 12 bytes: SYNC + Header + CRC */
 
-  /* Verify SYNC word (big-endian) */
+  /* Verify SYNC word (little-endian) */
   TEST_ASSERT_EQUAL_HEX8(sync_high, buffer[k_frame_offset_sync_high]);
   TEST_ASSERT_EQUAL_HEX8(sync_low, buffer[k_frame_offset_sync_low]);
 
-  /* Verify SEQ (big-endian) */
+  /* Verify SEQ (little-endian) */
   TEST_ASSERT_EQUAL_HEX8(seq_high, buffer[k_frame_offset_seq_high]);
   TEST_ASSERT_EQUAL_HEX8(seq_low, buffer[k_frame_offset_seq_low]);
 
-  /* Verify LEN (big-endian) */
+  /* Verify LEN (little-endian) */
   TEST_ASSERT_EQUAL_HEX8(len_high, buffer[k_frame_offset_len_high]);
   TEST_ASSERT_EQUAL_HEX8(len_low, buffer[k_frame_offset_len_low]);
 
@@ -863,23 +863,23 @@ void test_encode_empty_frame(void)
  *
  * @details
  * Verifies that rx_frame_encode() correctly encodes frames with non-zero payloads,
- * including proper big-endian encoding of multi-byte fields and payload copying.
+ * including proper little-endian encoding of multi-byte fields and payload copying.
  *
  * **Test Algorithm:**
  * 1. Create frame with sequence=0x1234, length=4, type=RESPONSE, flags=REQUIRES_ACK
  * 2. Set payload to "TEST" (4 bytes)
  * 3. Encode the frame
  * 4. Verify encoded size is k_frame_min_size + 4 = 16 bytes
- * 5. Verify sequence number is 0x1234 (big-endian: 0x12, 0x34)
- * 6. Verify length is 4 (big-endian: 0x00, 0x04)
+ * 5. Verify sequence number is 0x1234 (little-endian: 0x34, 0x12)
+ * 6. Verify length is 4 (little-endian: 0x04, 0x00)
  * 7. Verify payload bytes match "TEST"
  *
  * **Wire Format (hex):**
  * ```
- * 55 AA          - SYNC
- * 12 34          - SEQ (0x1234 big-endian)
- * 00 04          - LEN (4 big-endian)
- * 02             - TYPE (RESPONSE)
+ * AA 55          - SYNC (LE)
+ * 34 12          - SEQ (0x1234 little-endian)
+ * 04 00          - LEN (4 little-endian)
+ * 11             - TYPE (RESPONSE = 0x11)
  * 01             - FLAGS (REQUIRES_ACK)
  * 54 45 53 54    - PAYLOAD "TEST"
  * <CRC-32 LE>    - CRC-32
@@ -919,11 +919,11 @@ void test_encode_with_payload(void)
   TEST_ASSERT_EQUAL(k_frame_min_size + s_small_payload_size,
                     len); /* Minimum frame + 4 byte payload */
 
-  /* Verify SEQ (big-endian 0x1234) */
+  /* Verify SEQ (little-endian 0x1234) */
   TEST_ASSERT_EQUAL_HEX8(seq_high, buffer[k_frame_offset_seq_high]);
   TEST_ASSERT_EQUAL_HEX8(seq_low, buffer[k_frame_offset_seq_low]);
 
-  /* Verify LEN (big-endian 4) */
+  /* Verify LEN (little-endian 4) */
   TEST_ASSERT_EQUAL_HEX8(len_high, buffer[k_frame_offset_len_high]);
   TEST_ASSERT_EQUAL_HEX8(len_low, buffer[k_frame_offset_len_low]);
 
@@ -1167,20 +1167,20 @@ void test_encoded_size_calculation(void)
 
 void test_frame_type_valid(void)
 {
-  enum : uint8_t { k_invalid_type_zero = 0, k_invalid_type_above = 9, k_invalid_type_high = 0x80 };
-  /* All valid frame types (1-8, contiguous range) */
+  enum : uint8_t { k_invalid_type_02 = 0x02, k_invalid_type_50 = 0x50, k_invalid_type_80 = 0x80 };
+  /* All valid frame types (non-contiguous hex values) */
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ping));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_pong));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_command));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_response));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ack));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_nack));
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_ping));
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_pong));
-  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset));
   TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset_ack));
-  /* Invalid types: below range, above range, far above range */
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_zero));
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_above));
-  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_high));
+  TEST_ASSERT_TRUE(rx_frame_type_valid(k_frame_type_reset));
+  /* Invalid types: gaps in the enum value space */
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_02));
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_50));
+  TEST_ASSERT_FALSE(rx_frame_type_valid(k_invalid_type_80));
 }
 
 /* =============================================================================
@@ -1402,11 +1402,11 @@ void test_flag_combined(void)
 }
 
 /* =============================================================================
- * Endianness Tests (Explicit Big-Endian Verification)
+ * Endianness Tests (Explicit Little-Endian Verification)
  * =============================================================================
  */
 
-void test_sync_word_big_endian(void)
+void test_sync_word_little_endian(void)
 {
   rx_frame_t frame = {0};
   uint8_t    buffer[k_test_small_buffer];
@@ -1423,12 +1423,12 @@ void test_sync_word_big_endian(void)
   sync_low  = (uint8_t)(k_frame_sync_word & k_test_byte_mask);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
 
-  /* SYNC word 0x55AA must be big-endian: [0x55, 0xAA] */
-  TEST_ASSERT_EQUAL_HEX8(sync_high, buffer[k_frame_offset_sync_high]); /* High byte first */
-  TEST_ASSERT_EQUAL_HEX8(sync_low, buffer[k_frame_offset_sync_low]);   /* Low byte second */
+  /* SYNC word 0x55AA must be little-endian: [0xAA, 0x55] */
+  TEST_ASSERT_EQUAL_HEX8(sync_low, buffer[k_frame_offset_sync_low]);   /* Low byte first */
+  TEST_ASSERT_EQUAL_HEX8(sync_high, buffer[k_frame_offset_sync_high]); /* High byte second */
 }
 
-void test_sequence_big_endian(void)
+void test_sequence_little_endian(void)
 {
   rx_frame_t frame = {0};
   uint8_t    buffer[k_test_small_buffer];
@@ -1445,12 +1445,12 @@ void test_sequence_big_endian(void)
   seq_low  = (uint8_t)(frame.header.sequence & k_test_byte_mask);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
 
-  /* SEQ 0x1234 must be big-endian: [0x12, 0x34] */
-  TEST_ASSERT_EQUAL_HEX8(seq_high, buffer[k_frame_offset_seq_high]); /* High byte at offset 2 */
-  TEST_ASSERT_EQUAL_HEX8(seq_low, buffer[k_frame_offset_seq_low]);   /* Low byte at offset 3 */
+  /* SEQ 0x1234 must be little-endian: [0x34, 0x12] */
+  TEST_ASSERT_EQUAL_HEX8(seq_low, buffer[k_frame_offset_seq_low]);   /* Low byte at offset 2 */
+  TEST_ASSERT_EQUAL_HEX8(seq_high, buffer[k_frame_offset_seq_high]); /* High byte at offset 3 */
 }
 
-void test_length_big_endian(void)
+void test_length_little_endian(void)
 {
   rx_frame_t frame = {0};
   uint8_t    buffer[k_test_buffer_size];
@@ -1472,9 +1472,9 @@ void test_length_big_endian(void)
   len_low  = (uint8_t)(frame.header.length & k_test_byte_mask);
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
 
-  /* LEN 0x0100 must be big-endian: [0x01, 0x00] */
-  TEST_ASSERT_EQUAL_HEX8(len_high, buffer[k_frame_offset_len_high]); /* High byte at offset 4 */
-  TEST_ASSERT_EQUAL_HEX8(len_low, buffer[k_frame_offset_len_low]);   /* Low byte at offset 5 */
+  /* LEN 0x0100 must be little-endian: [0x00, 0x01] */
+  TEST_ASSERT_EQUAL_HEX8(len_low, buffer[k_frame_offset_len_low]);   /* Low byte at offset 4 */
+  TEST_ASSERT_EQUAL_HEX8(len_high, buffer[k_frame_offset_len_high]); /* High byte at offset 5 */
 }
 
 void test_crc_little_endian(void)
@@ -1527,9 +1527,9 @@ void test_go_compatibility_empty_ack(void)
    * Test vector from Go implementation (star-gateway/internal/frame/)
    * Frame: ACK for sequence 1
    * Expected wire format (hex):
-   *   55 AA          - SYNC (0x55AA big-endian)
-   *   00 01          - SEQ (1 big-endian)
-   *   00 00          - LEN (0 big-endian)
+   *   AA 55          - SYNC (0x55AA little-endian)
+   *   01 00          - SEQ (1 little-endian)
+   *   00 00          - LEN (0 little-endian)
    *   12             - TYPE (ACK = 0x12)
    *   00             - FLAGS (none = 0)
    *   <CRC-32 LE>    - CRC-32 of above 8 bytes
@@ -1545,13 +1545,13 @@ void test_go_compatibility_empty_ack(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
   TEST_ASSERT_EQUAL(k_frame_min_size, len);
 
-  /* Verify header bytes match Go encoding */
-  expected_header[k_frame_offset_sync_high] = sync_high;
+  /* Verify header bytes match Go encoding (little-endian) */
   expected_header[k_frame_offset_sync_low]  = sync_low;
-  expected_header[k_frame_offset_seq_high]  = seq_high;
+  expected_header[k_frame_offset_sync_high] = sync_high;
   expected_header[k_frame_offset_seq_low]   = seq_low;
-  expected_header[k_frame_offset_len_high]  = len_high;
+  expected_header[k_frame_offset_seq_high]  = seq_high;
   expected_header[k_frame_offset_len_low]   = len_low;
+  expected_header[k_frame_offset_len_high]  = len_high;
   expected_header[k_frame_offset_type]      = k_frame_type_ack;
   expected_header[k_frame_offset_flags]     = k_frame_flag_none;
   TEST_ASSERT_EQUAL_MEMORY(expected_header, buffer, k_header_wire_size);
@@ -1580,9 +1580,9 @@ void test_go_compatibility_command_with_payload(void)
   /*
    * Test vector: Command with 4-byte payload "TEST"
    * Expected wire format (hex):
-   *   55 AA          - SYNC
-   *   00 2A          - SEQ (42 big-endian)
-   *   00 04          - LEN (4 big-endian)
+   *   AA 55          - SYNC (0x55AA little-endian)
+   *   2A 00          - SEQ (42 little-endian)
+   *   04 00          - LEN (4 little-endian)
    *   10             - TYPE (COMMAND = 0x10)
    *   01             - FLAGS (REQUIRES_ACK = 0x01)
    *   54 45 53 54    - PAYLOAD "TEST"
@@ -1603,13 +1603,13 @@ void test_go_compatibility_command_with_payload(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, buffer, &len));
   TEST_ASSERT_EQUAL(k_frame_min_size + k_go_payload_len, len);
 
-  /* Verify header and payload match Go encoding */
-  expected[k_frame_offset_sync_high] = sync_high;
+  /* Verify header and payload match Go encoding (little-endian) */
   expected[k_frame_offset_sync_low]  = sync_low;
-  expected[k_frame_offset_seq_high]  = seq_high;
+  expected[k_frame_offset_sync_high] = sync_high;
   expected[k_frame_offset_seq_low]   = seq_low;
-  expected[k_frame_offset_len_high]  = len_high;
+  expected[k_frame_offset_seq_high]  = seq_high;
   expected[k_frame_offset_len_low]   = len_low;
+  expected[k_frame_offset_len_high]  = len_high;
   expected[k_frame_offset_type]      = k_frame_type_command;
   expected[k_frame_offset_flags]     = k_frame_flag_requires_ack;
   expected[k_frame_offset_payload + k_payload_index_0] =
@@ -1661,23 +1661,23 @@ typedef enum : uint8_t {
 
 /**
  * Vector 1: PING (seq=0, empty payload)
- * CRC-32 = 0xE6485AAE
+ * CRC-32 = 0x2F42E23D
  */
 void test_cross_compat_ping_seq0_empty(void)
 {
   static const uint8_t expected_wire[k_xc_ping_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
+    0xAA,
+    0x55, /* SYNC (LE) */
     0x00,
-    0x00, /* SEQ=0 */
+    0x00, /* SEQ=0 (LE) */
     0x00,
-    0x00, /* LEN=0 */
-    0x05, /* TYPE=PING (5) */
+    0x00, /* LEN=0 (LE) */
+    0x00, /* TYPE=PING (0x00) */
     0x00, /* FLAGS=none */
-    0xAE,
-    0x5A,
-    0x48,
-    0xE6 /* CRC-32 LE = 0xE6485AAE */
+    0x3D,
+    0xE2,
+    0x42,
+    0x2F /* CRC-32 LE = 0x2F42E23D */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1697,30 +1697,30 @@ void test_cross_compat_ping_seq0_empty(void)
 }
 
 /**
- * Vector 2: PONG (seq=0, 4-byte counter=42 big-endian)
- * CRC-32 = 0x35720767
+ * Vector 2: PONG (seq=0, 4-byte counter=42 little-endian)
+ * CRC-32 = 0x60647975
  */
 void test_cross_compat_pong_seq0_counter42(void)
 {
   static const uint8_t expected_wire[k_xc_pong_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
+    0xAA,
+    0x55, /* SYNC (LE) */
     0x00,
-    0x00, /* SEQ=0 */
-    0x00,
-    0x04, /* LEN=4 */
-    0x06, /* TYPE=PONG (6) */
+    0x00, /* SEQ=0 (LE) */
+    0x04,
+    0x00, /* LEN=4 (LE) */
+    0x01, /* TYPE=PONG (0x01) */
     0x00, /* FLAGS=none */
+    0x2A,
     0x00,
     0x00,
-    0x00,
-    0x2A, /* PAYLOAD: counter=42 BE */
-    0x67,
-    0x07,
-    0x72,
-    0x35 /* CRC-32 LE = 0x35720767 */
+    0x00, /* PAYLOAD: counter=42 LE */
+    0x75,
+    0x79,
+    0x64,
+    0x60 /* CRC-32 LE = 0x60647975 */
   };
-  uint8_t    pong_payload[k_xc_pong_payload_len] = {0x00, 0x00, 0x00, 0x2A};
+  uint8_t    pong_payload[k_xc_pong_payload_len] = {0x2A, 0x00, 0x00, 0x00};
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
   uint32_t   len;
@@ -1742,27 +1742,27 @@ void test_cross_compat_pong_seq0_counter42(void)
 
 /**
  * Vector 3: COMMAND (seq=1, payload="TEST", FLAGS=REQUIRES_ACK)
- * CRC-32 = 0x16798F5E
+ * CRC-32 = 0x7A6DE93B
  */
 void test_cross_compat_command_seq1_test(void)
 {
   static const uint8_t expected_wire[k_xc_command_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
-    0x00,
-    0x01, /* SEQ=1 */
-    0x00,
-    0x04, /* LEN=4 */
-    0x01, /* TYPE=COMMAND (1) */
+    0xAA,
+    0x55, /* SYNC (LE) */
+    0x01,
+    0x00, /* SEQ=1 (LE) */
+    0x04,
+    0x00, /* LEN=4 (LE) */
+    0x10, /* TYPE=COMMAND (0x10) */
     0x01, /* FLAGS=REQUIRES_ACK */
     0x54,
     0x45,
     0x53,
     0x54, /* PAYLOAD="TEST" */
-    0x5E,
-    0x8F,
-    0x79,
-    0x16 /* CRC-32 LE = 0x16798F5E */
+    0x3B,
+    0xE9,
+    0x6D,
+    0x7A /* CRC-32 LE = 0x7A6DE93B */
   };
   rx_frame_t frame = {0};
   uint8_t    buffer[k_test_small_buffer];
@@ -1789,25 +1789,25 @@ void test_cross_compat_command_seq1_test(void)
 
 /**
  * Vector 4: RESPONSE (seq=1, payload="OK")
- * CRC-32 = 0x2D6C7685
+ * CRC-32 = 0x9A1DACEA
  */
 void test_cross_compat_response_seq1_ok(void)
 {
   static const uint8_t expected_wire[k_xc_response_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
-    0x00,
-    0x01, /* SEQ=1 */
-    0x00,
-    0x02, /* LEN=2 */
-    0x02, /* TYPE=RESPONSE (2) */
+    0xAA,
+    0x55, /* SYNC (LE) */
+    0x01,
+    0x00, /* SEQ=1 (LE) */
+    0x02,
+    0x00, /* LEN=2 (LE) */
+    0x11, /* TYPE=RESPONSE (0x11) */
     0x00, /* FLAGS=none */
     0x4F,
     0x4B, /* PAYLOAD="OK" */
-    0x85,
-    0x76,
-    0x6C,
-    0x2D /* CRC-32 LE = 0x2D6C7685 */
+    0xEA,
+    0xAC,
+    0x1D,
+    0x9A /* CRC-32 LE = 0x9A1DACEA */
   };
   rx_frame_t frame = {0};
   uint8_t    buffer[k_test_small_buffer];
@@ -1833,23 +1833,23 @@ void test_cross_compat_response_seq1_ok(void)
 
 /**
  * Vector 5: ACK (seq=1, empty payload)
- * CRC-32 = 0x8D72D498
+ * CRC-32 = 0x9CEA414B
  */
 void test_cross_compat_ack_seq1_empty(void)
 {
   static const uint8_t expected_wire[k_xc_ack_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
-    0x00,
-    0x01, /* SEQ=1 */
+    0xAA,
+    0x55, /* SYNC (LE) */
+    0x01,
+    0x00, /* SEQ=1 (LE) */
     0x00,
     0x00, /* LEN=0 */
-    0x03, /* TYPE=ACK (3) */
+    0x12, /* TYPE=ACK (0x12) */
     0x00, /* FLAGS=none */
-    0x98,
-    0xD4,
-    0x72,
-    0x8D /* CRC-32 LE = 0x8D72D498 */
+    0x4B,
+    0x41,
+    0xEA,
+    0x9C /* CRC-32 LE = 0x9CEA414B */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1870,23 +1870,23 @@ void test_cross_compat_ack_seq1_empty(void)
 
 /**
  * Vector 6: NACK (seq=1, empty payload)
- * CRC-32 = 0xC233425F
+ * CRC-32 = 0x85F1700A
  */
 void test_cross_compat_nack_seq1_empty(void)
 {
   static const uint8_t expected_wire[k_xc_nack_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
-    0x00,
-    0x01, /* SEQ=1 */
+    0xAA,
+    0x55, /* SYNC (LE) */
+    0x01,
+    0x00, /* SEQ=1 (LE) */
     0x00,
     0x00, /* LEN=0 */
-    0x04, /* TYPE=NACK (4) */
+    0x13, /* TYPE=NACK (0x13) */
     0x00, /* FLAGS=none */
-    0x5F,
-    0x42,
-    0x33,
-    0xC2 /* CRC-32 LE = 0xC233425F */
+    0x0A,
+    0x70,
+    0xF1,
+    0x85 /* CRC-32 LE = 0x85F1700A */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1907,23 +1907,23 @@ void test_cross_compat_nack_seq1_empty(void)
 
 /**
  * Vector 7: RESET (seq=0, empty payload)
- * CRC-32 = 0xD47E382C
+ * CRC-32 = 0xBC661F4F
  */
 void test_cross_compat_reset_seq0_empty(void)
 {
   static const uint8_t expected_wire[k_xc_reset_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
+    0xAA,
+    0x55, /* SYNC (LE) */
     0x00,
     0x00, /* SEQ=0 */
     0x00,
     0x00, /* LEN=0 */
-    0x07, /* TYPE=RESET (7) */
+    0xFF, /* TYPE=RESET (0xFF) */
     0x00, /* FLAGS=none */
-    0x2C,
-    0x38,
-    0x7E,
-    0xD4 /* CRC-32 LE = 0xD47E382C */
+    0x4F,
+    0x1F,
+    0x66,
+    0xBC /* CRC-32 LE = 0xBC661F4F */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1944,23 +1944,23 @@ void test_cross_compat_reset_seq0_empty(void)
 
 /**
  * Vector 8: RESET_ACK (seq=0, empty payload)
- * CRC-32 = 0x53E624E3
+ * CRC-32 = 0xA57D2E0E
  */
 void test_cross_compat_reset_ack_seq0_empty(void)
 {
   static const uint8_t expected_wire[k_xc_reset_ack_wire_len] = {
-    0x55,
-    0xAA, /* SYNC */
+    0xAA,
+    0x55, /* SYNC (LE) */
     0x00,
     0x00, /* SEQ=0 */
     0x00,
     0x00, /* LEN=0 */
-    0x08, /* TYPE=RESET_ACK (8) */
+    0xFE, /* TYPE=RESET_ACK (0xFE) */
     0x00, /* FLAGS=none */
-    0xE3,
-    0x24,
-    0xE6,
-    0x53 /* CRC-32 LE = 0x53E624E3 */
+    0x0E,
+    0x2E,
+    0x7D,
+    0xA5 /* CRC-32 LE = 0xA57D2E0E */
   };
   rx_frame_t frame;
   uint8_t    buffer[k_test_small_buffer];
@@ -1985,29 +1985,29 @@ void test_cross_compat_reset_ack_seq0_empty(void)
  */
 void test_cross_compat_decode_go_wire_bytes(void)
 {
-  /* PING wire bytes (type=5) */
+  /* PING wire bytes (type=0x00, LE encoding) */
   static const uint8_t ping_wire[k_xc_ping_wire_len] =
-    {0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x05, 0x00, 0xAE, 0x5A, 0x48, 0xE6};
-  /* COMMAND wire bytes (type=1, flags=REQUIRES_ACK) */
-  static const uint8_t cmd_wire[k_xc_command_wire_len] = {0x55,
-                                                          0xAA,
-                                                          0x00,
+    {0xAA, 0x55, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x3D, 0xE2, 0x42, 0x2F};
+  /* COMMAND wire bytes (type=0x10, flags=REQUIRES_ACK, LE encoding) */
+  static const uint8_t cmd_wire[k_xc_command_wire_len] = {0xAA,
+                                                          0x55,
                                                           0x01,
                                                           0x00,
                                                           0x04,
-                                                          0x01,
+                                                          0x00,
+                                                          0x10,
                                                           0x01,
                                                           0x54,
                                                           0x45,
                                                           0x53,
                                                           0x54,
-                                                          0x5E,
-                                                          0x8F,
-                                                          0x79,
-                                                          0x16};
-  /* RESET wire bytes (type=7) */
+                                                          0x3B,
+                                                          0xE9,
+                                                          0x6D,
+                                                          0x7A};
+  /* RESET wire bytes (type=0xFF, LE encoding) */
   static const uint8_t reset_wire[k_xc_reset_wire_len] =
-    {0x55, 0xAA, 0x00, 0x00, 0x00, 0x00, 0x07, 0x00, 0x2C, 0x38, 0x7E, 0xD4};
+    {0xAA, 0x55, 0x00, 0x00, 0x00, 0x00, 0xFF, 0x00, 0x4F, 0x1F, 0x66, 0xBC};
 
   rx_frame_t decoded;
 
@@ -2348,9 +2348,9 @@ int main(void)
   RUN_TEST(test_flag_combined);
 
   /* Endianness tests */
-  RUN_TEST(test_sync_word_big_endian);
-  RUN_TEST(test_sequence_big_endian);
-  RUN_TEST(test_length_big_endian);
+  RUN_TEST(test_sync_word_little_endian);
+  RUN_TEST(test_sequence_little_endian);
+  RUN_TEST(test_length_little_endian);
   RUN_TEST(test_crc_little_endian);
 
   /* Go compatibility tests (header byte order) */

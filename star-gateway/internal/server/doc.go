@@ -61,7 +61,7 @@
 //
 //	// Phase 1: Construct server with service registration
 //	const bytesPerKiB = 1024
-//	const bytesPerMiB = bytesPerKiB * bytesPerKiB
+//	const bytesPerMiB = bytesPerKiB * 1024
 //	const defaultMaxMessageMultiplier = 10
 //	const defaultMaxMessageSize = defaultMaxMessageMultiplier * bytesPerMiB
 //

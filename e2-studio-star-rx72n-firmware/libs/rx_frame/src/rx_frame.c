@@ -71,8 +71,8 @@
  * The encoder serializes a rx_frame_t structure to wire format:
  *
  * 1. **Validate inputs** - Check pointers, initialization state, payload size
- * 2. **Write SYNC** - 2-byte marker (0x55AA) in big-endian
- * 3. **Write header** - SEQ, LEN in big-endian; TYPE, FLAGS as bytes
+ * 2. **Write SYNC** - 2-byte marker (0x55AA) in little-endian (wire: 0xAA, 0x55)
+ * 3. **Write header** - SEQ, LEN in little-endian; TYPE, FLAGS as bytes
  * 4. **Copy payload** - Direct byte copy (no endian conversion)
  * 5. **Compute CRC** - IEEE 802.3 CRC-32 over SYNC+header+payload
  * 6. **Write CRC** - 4-byte CRC in little-endian format
@@ -84,8 +84,8 @@
  *
  *   input [label="rx_frame_t\n(host format)"];
  *   validate [label="Validate"];
- *   sync [label="Write SYNC\n(BE)"];
- *   header [label="Write Header\n(BE/bytes)"];
+ *   sync [label="Write SYNC\n(LE)"];
+ *   header [label="Write Header\n(LE/bytes)"];
  *   payload [label="Copy Payload"];
  *   crc_calc [label="Calculate CRC"];
  *   crc_write [label="Write CRC\n(LE)"];
@@ -298,16 +298,16 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 
   offset = k_frame_offset_start;
 
-  sync_word = rx_frame_read_be16(&data[offset]);
+  sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
-  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_le16(&data[offset]);
   offset += k_frame_seq_size;
 
-  frame->header.length = rx_frame_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_le16(&data[offset]);
   offset += k_frame_len_size;
 
   if (frame->header.length > k_frame_max_payload) {
@@ -462,16 +462,16 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   frame_size = rx_frame_encoded_size(frame->header.length);
   offset     = k_frame_offset_start;
 
-  /* Write SYNC word (big-endian) */
-  rx_frame_write_be16(&output[offset], k_frame_sync_word);
+  /* Write SYNC word (little-endian: wire bytes 0xAA, 0x55) */
+  rx_frame_write_le16(&output[offset], k_frame_sync_word);
   offset += k_frame_sync_size;
 
-  /* Write SEQ (big-endian, network byte order per RFC 1700) */
-  rx_frame_write_be16(&output[offset], frame->header.sequence);
+  /* Write SEQ (little-endian) */
+  rx_frame_write_le16(&output[offset], frame->header.sequence);
   offset += k_frame_seq_size;
 
-  /* Write LEN (big-endian, network byte order per RFC 1700) */
-  rx_frame_write_be16(&output[offset], frame->header.length);
+  /* Write LEN (little-endian) */
+  rx_frame_write_le16(&output[offset], frame->header.length);
   offset += k_frame_len_size;
 
   /* Write TYPE (1 byte) */
@@ -686,6 +686,33 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a PING keepalive frame
+ *
+ * @details
+ * Initializes frame as a PING request for connection liveness checks.
+ * Receiver should respond with a PONG frame echoing the payload.
+ * Payload is optional; a 4-byte LE counter is typical.
+ *
+ * @param[out] frame       Frame to populate (zeroed then filled)
+ * @param[in]  sequence    Sequence number for this frame
+ * @param[in]  payload     Optional payload (NULL when payload_len is 0)
+ * @param[in]  payload_len Payload length in bytes [0, k_frame_max_payload]
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL, or payload NULL with len > 0
+ * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre payload != NULL when payload_len > 0
+ * @post frame->header.type == k_frame_type_ping
+ * @post frame->header.length == payload_len
+ *
+ * @note Stateless; safe to call from any context.
+ * @see rx_frame_create_pong() Corresponding response creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
                               const uint16_t sequence,
                               const uint8_t* payload,
@@ -720,6 +747,32 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a PONG response frame
+ *
+ * @details
+ * Initializes frame as a PONG response to a received PING.
+ * Echoes the PING payload so the sender can validate round-trip data.
+ *
+ * @param[out] frame       Frame to populate (zeroed then filled)
+ * @param[in]  sequence    Sequence number for this frame
+ * @param[in]  payload     Payload to echo (NULL when payload_len is 0)
+ * @param[in]  payload_len Payload length in bytes [0, k_frame_max_payload]
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL, or payload NULL with len > 0
+ * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre payload != NULL when payload_len > 0
+ * @post frame->header.type == k_frame_type_pong
+ * @post frame->header.length == payload_len
+ *
+ * @note Stateless; safe to call from any context.
+ * @see rx_frame_create_ping() Corresponding request creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
                               const uint16_t sequence,
                               const uint8_t* payload,
@@ -754,6 +807,31 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a RESET request frame
+ *
+ * @details
+ * Initializes frame as a RESET request that asks the peer to reset
+ * communication state (sequence numbers, buffers). The receiver
+ * should respond with a RESET_ACK frame. Payload is always empty.
+ *
+ * @param[out] frame    Frame to populate (zeroed then filled)
+ * @param[in]  sequence Sequence number for this frame
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre Caller has determined that a reset is necessary
+ * @post frame->header.type == k_frame_type_reset
+ * @post frame->header.length == 0
+ *
+ * @note Stateless; safe to call from any context.
+ * @warning Reset clears all sequence number state on both sides.
+ * @see rx_frame_create_reset_ack() Corresponding acknowledgment creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
 {
   if (frame == nullptr) {
@@ -773,6 +851,30 @@ rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a RESET_ACK confirmation frame
+ *
+ * @details
+ * Initializes frame as a RESET_ACK response to a received RESET request.
+ * Confirms that the receiver has completed its reset procedure.
+ * Payload is always empty; sequence matches the RESET request.
+ *
+ * @param[out] frame    Frame to populate (zeroed then filled)
+ * @param[in]  sequence Sequence number (should match received RESET)
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre A RESET frame was received and processed
+ * @post frame->header.type == k_frame_type_reset_ack
+ * @post frame->header.length == 0
+ *
+ * @note Stateless; safe to call from any context.
+ * @see rx_frame_create_reset() Corresponding request creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence)
 {
   if (frame == nullptr) {

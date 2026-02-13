@@ -84,13 +84,8 @@ var (
 	ErrTransferFailed = errors.New("transport: transfer failed")
 )
 
-// SPITransport implements both the Transport and Device interfaces using periph.io
-// for SPI communication. The Raspberry Pi 5 acts as the SPI controller,
-// communicating with the RX72N at 10 MHz.
-//
-// Implements:
-//   - Transport interface (legacy, for backward compatibility)
-//   - Device interface (new, context-aware for HIL simulation)
+// SPITransport implements the Device interface using periph.io for SPI communication.
+// The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N at 10 MHz.
 type SPITransport struct {
 	mu     sync.RWMutex // protects isOpen, conn, port
 	config *SPIConfig

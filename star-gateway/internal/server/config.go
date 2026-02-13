@@ -94,8 +94,8 @@ func (c *GRPCConfig) Validate() error {
 	if c.ServiceRegistrar == nil {
 		return fmt.Errorf("service registrar function is required")
 	}
-	if c.MaxMessageSize < 0 {
-		return fmt.Errorf("max message size must be >= 0")
+	if c.MaxMessageSize <= 0 {
+		return fmt.Errorf("max message size must be > 0")
 	}
 	return nil
 }
