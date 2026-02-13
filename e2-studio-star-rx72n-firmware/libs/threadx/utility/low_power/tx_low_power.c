@@ -86,7 +86,7 @@ VOID tx_low_power_enter(VOID)
 
 #ifdef TX_LOW_POWER_TIMER_SETUP
   ULONG
-    tx_low_power_next_expiration; /* The next timer experation (units of ThreadX timer ticks). */
+  tx_low_power_next_expiration; /* The next timer experation (units of ThreadX timer ticks). */
   ULONG timers_active;
 #endif
 

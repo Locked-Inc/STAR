@@ -620,7 +620,7 @@ typedef struct {
  */
 typedef struct {
   TX_MUTEX
-    mutex; /**< ThreadX mutex for thread-safe access to all fields. Created by error_handler_init(), deleted by error_handler_deinit(). Protects concurrent report_error() and retry check calls from multiple tasks */
+  mutex; /**< ThreadX mutex for thread-safe access to all fields. Created by error_handler_init(), deleted by error_handler_deinit(). Protects concurrent report_error() and retry check calls from multiple tasks */
   uint32_t
     total_error_count; /**< Aggregate error count across ALL components. Incremented on each report_error() call regardless of component. Used for system-wide health monitoring and diagnostics. Range: 0 to 2^32-1 (wraps on overflow) */
   error_component_state_t components

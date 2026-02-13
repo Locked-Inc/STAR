@@ -598,6 +598,45 @@ enums, variables, typedefs, and macros.
 - Static variables: `s_` prefix
 - Global variables: `g_` prefix (avoid)
 
+### Header Guards
+
+**MANDATORY:** Use `#pragma once` for all C/C++ header files.
+
+**Rationale:**
+- Simpler syntax (one line vs three)
+- Eliminates naming conflicts and typos
+- Faster compilation (compiler can skip file entirely on second include)
+- Widely supported compiler extension (GCC, Clang, MSVC, GNURX, CC-RX, IAR)
+- De-facto industry standard and convention
+
+**Note:** While `#pragma once` is not formally part of ISO C23, it is universally supported by all compilers used in this project and provides superior ergonomics and safety compared to traditional include guards.
+
+**Example:**
+
+```c
+/***********************************************************************************************************************
+ * File header comment, copyright, license
+ ***********************************************************************************************************************/
+
+#pragma once
+
+/***********************************************************************************************************************
+ * Includes, types, functions
+ ***********************************************************************************************************************/
+```
+
+**DO NOT use traditional include guards:**
+
+```c
+// ❌ WRONG - Don't use traditional guards
+#ifndef STAR_RX72N_FILENAME_H
+#define STAR_RX72N_FILENAME_H
+// ...
+#endif /* STAR_RX72N_FILENAME_H */
+```
+
+**Placement:** Place `#pragma once` immediately after the file header comment (copyright/license), before any includes or code.
+
 ### Constants and Macros (RX72N C Firmware)
 
 **Strict preference hierarchy:**

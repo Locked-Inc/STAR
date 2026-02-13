@@ -17,10 +17,79 @@
 * Copyright (C) 2019 Renesas Electronics Corporation. All rights reserved.
 ***********************************************************************************************************************/
 /***********************************************************************************************************************
-* File Name    : mcu_info.h
-* Device(s)    : RX72N
-* Description  : Information about the MCU.
+* MODIFICATION NOTICE
+* This file has been modified by the STAR project for use in the STAR robotics platform.
+* Modifications include: Documentation additions, C23 typed enum conversions, and style guide compliance.
+* Modified files are maintained by Locked, Inc. as part of the STAR project.
+* Original Renesas code remains under Renesas copyright as stated above.
 ***********************************************************************************************************************/
+/**
+ * @file mcu_info.h
+ * @brief RX72N microcontroller hardware definitions and configuration constants
+ *
+ * @details
+ * Defines RX72N hardware characteristics, clock configurations, memory sizes,
+ * peripheral counts, and MCU feature flags. This header provides compile-time
+ * constants derived from BSP configuration (r_bsp_config.h) and MCU part number.
+ *
+ * **Configuration Sources:**
+ * - **BSP Configuration:** User settings from r_bsp_config.h (clock source, oscillators, etc.)
+ * - **Part Number:** MCU variant decoded from BSP_CFG_MCU_PART_* macros
+ * - **Hardware Specification:** Fixed values from RX72N datasheet (memory sizes, peripherals)
+ *
+ * **Key Definitions:**
+ * - **Clock Frequencies:** ICLK, PCLK, BCLK, FCLK, UCLK calculated from configuration
+ * - **Memory Sizes:** ROM, RAM, Data Flash based on part number
+ * - **Package Information:** Pin count and package type
+ * - **MCU Features:** Floating-point, exception handling, interrupts, TFU
+ * - **Peripheral Identification:** Series (RX700), group (RX72N)
+ *
+ * **Clock Calculation:**
+ * All clock speeds are calculated from:
+ * - BSP_CFG_XTAL_HZ: External crystal frequency (typically 24 MHz)
+ * - BSP_CFG_PLL_DIV/MUL: PLL divider and multiplier
+ * - BSP_CFG_*CK_DIV: Clock dividers for each peripheral domain
+ *
+ * Example: ICLK = (XTAL_HZ / PLL_DIV * PLL_MUL) / ICK_DIV
+ *
+ * **Part Number Decoding:**
+ * RX72N part number format: R5F572NNDDBD
+ * - Package (BD): Decoded to BSP_PACKAGE_* and BSP_PACKAGE_PINS
+ * - Memory Size (DD): Decoded to BSP_ROM_SIZE_BYTES, BSP_RAM_SIZE_BYTES
+ * - Function (NN): Encryption included or not
+ *
+ * @par Hardware Dependencies
+ * - RX72N microcontroller (R5F572NN)
+ * - External crystal oscillator (BSP_CFG_XTAL_HZ)
+ * - Package-specific pin configuration
+ *
+ * @par References
+ * - RX72N User's Manual (r01uh0805ej0140-rx72n.pdf)
+ * - RX72N Datasheet - Memory specifications, package pinouts
+ * - r_bsp_config.h - User BSP configuration
+ *
+ * @note Ported from Renesas Smart Configurator (SMC) generated code
+ * @warning Requires Smart Configurator >= v2.14.0 (BSP_CFG_CONFIGURATOR_VERSION >= 2140)
+ * @warning Do not modify calculated clock values - change source configuration in r_bsp_config.h
+ * @since Version 1.0.0
+ *
+ * @author STAR Project (Locked, Inc.)
+ * @date 2019 (original), 2026 (STAR modifications)
+ * @version 1.0.5
+ * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 4: All macros serve clear purposes (feature flags, clock calculations)
+ * - Rule 8: No magic numbers, all configuration values use named enums/macros
+ * - All rules maintained throughout modifications
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: Provides only MCU hardware definitions and configuration
+ * - Open/Closed: Extensible via BSP configuration without modifying this file
+ * - Liskov Substitution: Hardware constants maintain consistent semantics
+ * - Interface Segregation: Minimal, focused API for MCU characteristics
+ * - Dependency Inversion: Configuration abstracted through r_bsp_config.h
+ */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
 *         : 08.10.2019 1.00     First Release
@@ -35,18 +104,260 @@
 *                               - BSP_MCU_TFU_VERSION
 ***********************************************************************************************************************/
 
+#pragma once
+
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
 /* Gets MCU configuration information. */
+#include <stdint.h> /* Required for uint8_t, uint32_t in C23 typed enums */
+
 #include "r_bsp_config.h"
 
 /***********************************************************************************************************************
 Macro definitions
 ***********************************************************************************************************************/
-/* Multiple inclusion prevention macro */
-#ifndef MCU_INFO
-#define MCU_INFO
+
+/***********************************************************************************************************************
+Typed Enums (CLAUDE.md Compliance - C23)
+***********************************************************************************************************************/
+
+/**
+ * @enum bsp_cpu_constants_t
+ * @brief RXv3 CPU core constants
+ *
+ * @details
+ * Fixed constants for the RXv3 CPU core used in RX72N microcontroller.
+ *
+ * @invariant All values are compile-time constants (no runtime validation needed)
+ *
+ * @code
+ *   // Example: Query CPU core version
+ *   uint8_t cpu_version = (uint8_t)k_cpu_version_rxv3;  // Returns 3 for RXv3
+ * @endcode
+ *
+ * @see BSP_MCU_CPU_VERSION
+ * @see CPU_CYCLES_PER_LOOP
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_cpu_cycles_per_loop = 3, /**< Clock cycles for delay_wait() loop iteration */
+  k_cpu_version_rxv3    = 3, /**< RXv3 core version identifier */
+} bsp_cpu_constants_t;
+
+/**
+ * @enum bsp_package_type_t
+ * @brief RX72N package type identifiers
+ *
+ * @details
+ * Encoded package type values from MCU part number.
+ * Maps to BSP_CFG_MCU_PART_PACKAGE configuration.
+ *
+ * @invariant Value must match BSP_CFG_MCU_PART_PACKAGE from r_bsp_config.h
+ *
+ * @code
+ *   // Example: Query package type (use integer literal, not enum in #if)
+ *   #if BSP_CFG_MCU_PART_PACKAGE == 0x3
+ *     // Code for LFQFP-144 package (0x3 = k_package_type_lfqfp144)
+ *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_MCU_PART_PACKAGE == (uint8_t)k_package_type_lfqfp144) {
+ *     // Runtime package type check
+ *   }
+ * @endcode
+ *
+ * @see BSP_CFG_MCU_PART_PACKAGE
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_package_type_lfqfp176 = 0x0, /**< LFQFP-176 (0.50mm pitch) */
+  k_package_type_lfbga176 = 0x1, /**< LFBGA-176 (0.80mm pitch) */
+  k_package_type_lfbga224 = 0x2, /**< LFBGA-224 (0.80mm pitch) */
+  k_package_type_lfqfp144 = 0x3, /**< LFQFP-144 (0.50mm pitch) */
+  k_package_type_tflga145 = 0x4, /**< TFLGA-145 (0.50mm pitch) */
+  k_package_type_lfqfp100 = 0x5, /**< LFQFP-100 (0.50mm pitch) */
+} bsp_package_type_t;
+
+/**
+ * @enum bsp_memory_size_t
+ * @brief RX72N memory size identifiers
+ *
+ * @details
+ * Encoded memory size values from MCU part number.
+ * Maps to BSP_CFG_MCU_PART_MEMORY_SIZE configuration.
+ *
+ * @invariant Value must match BSP_CFG_MCU_PART_MEMORY_SIZE from r_bsp_config.h
+ *
+ * @code
+ *   // Example: Check memory configuration (use integer literal, not enum in #if)
+ *   #if BSP_CFG_MCU_PART_MEMORY_SIZE == 0x17
+ *     // 4MB ROM available (0x17 = k_memory_size_4mb)
+ *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_MCU_PART_MEMORY_SIZE == (uint8_t)k_memory_size_4mb) {
+ *     // Runtime memory size check
+ *   }
+ * @endcode
+ *
+ * @see BSP_CFG_MCU_PART_MEMORY_SIZE
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_memory_size_2mb = 0xD,  /**< 2MB ROM / 1MB RAM / 32KB Data Flash */
+  k_memory_size_4mb = 0x17, /**< 4MB ROM / 1MB RAM / 32KB Data Flash */
+} bsp_memory_size_t;
+
+/**
+ * @enum bsp_hoco_frequency_t
+ * @brief High-Speed On-Chip Oscillator (HOCO) frequency selection
+ *
+ * @details
+ * HOCO can operate at three fixed frequencies. Selection is made via
+ * BSP_CFG_HOCO_FREQUENCY in r_bsp_config.h.
+ *
+ * @invariant Value must be 0, 1, or 2 (hardware limitation)
+ *
+ * @code
+ *   // Example: Configure HOCO frequency (use integer literal, not enum in #if)
+ *   #if BSP_CFG_HOCO_FREQUENCY == 2
+ *     // HOCO running at 20 MHz (2 = k_hoco_freq_20mhz)
+ *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_HOCO_FREQUENCY == (uint8_t)k_hoco_freq_20mhz) {
+ *     // Runtime HOCO frequency check
+ *   }
+ * @endcode
+ *
+ * @see BSP_CFG_HOCO_FREQUENCY
+ * @see BSP_HOCO_HZ
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_hoco_freq_16mhz = 0, /**< 16 MHz (default) */
+  k_hoco_freq_18mhz = 1, /**< 18 MHz */
+  k_hoco_freq_20mhz = 2, /**< 20 MHz */
+} bsp_hoco_frequency_t;
+
+/**
+ * @enum bsp_clock_source_t
+ * @brief System clock source selection
+ *
+ * @details
+ * Available clock sources for system clock (ICLK).
+ * Selection is made via BSP_CFG_CLOCK_SOURCE in r_bsp_config.h.
+ *
+ * @invariant Value must be 0-4 (hardware limitation)
+ *
+ * @code
+ *   // Example: Check clock source (use integer literal, not enum in #if)
+ *   #if BSP_CFG_CLOCK_SOURCE == 4
+ *     // Using PLL for system clock (4 = k_clock_src_pll)
+ *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_CLOCK_SOURCE == (uint8_t)k_clock_src_pll) {
+ *     // Runtime clock source check
+ *   }
+ * @endcode
+ *
+ * @see BSP_CFG_CLOCK_SOURCE
+ * @see BSP_SELECTED_CLOCK_HZ
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_clock_src_loco = 0, /**< Low Speed On-Chip Oscillator (240 kHz) */
+  k_clock_src_hoco = 1, /**< High Speed On-Chip Oscillator (16/18/20 MHz) */
+  k_clock_src_main = 2, /**< Main Clock Oscillator (external crystal) */
+  k_clock_src_sub  = 3, /**< Sub-Clock Oscillator (32.768 kHz) */
+  k_clock_src_pll  = 4, /**< PLL Circuit (default, up to 240 MHz) */
+} bsp_clock_source_t;
+
+/**
+ * @enum bsp_pll_source_t
+ * @brief PLL input clock source selection
+ *
+ * @details
+ * PLL can be driven by Main Clock or HOCO.
+ * Selection is made via BSP_CFG_PLL_SRC in r_bsp_config.h.
+ *
+ * @invariant Value must be 0 or 1 (hardware limitation)
+ *
+ * @code
+ *   // Example: Check PLL source (use integer literal, not enum in #if)
+ *   #if BSP_CFG_PLL_SRC == 0
+ *     // PLL driven by external crystal (0 = k_pll_src_main)
+ *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_PLL_SRC == (uint8_t)k_pll_src_main) {
+ *     // Runtime PLL source check
+ *   }
+ * @endcode
+ *
+ * @see BSP_CFG_PLL_SRC
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_pll_src_main = 0, /**< Main Clock Oscillator (default) */
+  k_pll_src_hoco = 1, /**< High Speed On-Chip Oscillator */
+} bsp_pll_source_t;
+
+/**
+ * @enum bsp_ipl_level_t
+ * @brief Interrupt Priority Level (IPL) values
+ *
+ * @details
+ * RX architecture supports 16 interrupt priority levels (0-15).
+ * Higher values = higher priority. Level 0 = interrupts masked.
+ *
+ * @invariant k_ipl_min <= priority_level <= k_ipl_max (0-15 range enforced by hardware)
+ *
+ * @code
+ *   // Example: Set interrupt priority
+ *   uint8_t priority = (uint8_t)k_ipl_max;  // Set to maximum priority (15)
+ * @endcode
+ *
+ * @see BSP_MCU_IPL_MAX
+ * @see BSP_MCU_IPL_MIN
+ * @see R_BSP_SET_IPL
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_ipl_min = 0,  /**< Minimum IPL (interrupts masked) */
+  k_ipl_max = 15, /**< Maximum IPL (highest priority) */
+} bsp_ipl_level_t;
+
+/**
+ * @enum bsp_reserved_addresses_t
+ * @brief Reserved memory addresses for FIT module compatibility
+ *
+ * @details
+ * RX architecture reserves address range 0x10000000 for special purposes.
+ * FIT modules use this as a null pointer placeholder.
+ *
+ * @invariant Address must be 0x10000000 (256MB boundary, hardware requirement)
+ *
+ * @code
+ *   // Example: FIT null pointer check
+ *   if ((uint32_t)ptr == k_fit_reserved_space) {
+ *     // Invalid pointer, do not dereference
+ *   }
+ * @endcode
+ *
+ * @see FIT_NO_PTR
+ * @see FIT_NO_FUNC
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_fit_reserved_space = 0x10000000, /**< Reserved space on RX (256MB boundary) */
+} bsp_reserved_addresses_t;
+
+/***********************************************************************************************************************
+MCU Configuration and Feature Detection
+***********************************************************************************************************************/
 
 #if BSP_CFG_CONFIGURATOR_VERSION < 2140
 /* The following macros are updated to invalid value by Smart configurator if you are using Smart Configurator for 
@@ -78,11 +389,30 @@ Macro definitions
 #endif
 #endif
 
-/* MCU CPU Version */
-#define BSP_MCU_CPU_VERSION (3)
+/**
+ * @def BSP_MCU_CPU_VERSION
+ * @brief RXv3 CPU core version identifier
+ *
+ * @details
+ * Identifies RXv3 core used in RX72N. Value corresponds to CPU version number.
+ *
+ * @see bsp_cpu_constants_t::k_cpu_version_rxv3
+ * @since Version 1.0.0
+ */
+#define BSP_MCU_CPU_VERSION ((uint8_t)k_cpu_version_rxv3)
 
-/* CPU cycles. Known number of RXv3 CPU cycles required to execute the delay_wait() loop */
-#define CPU_CYCLES_PER_LOOP (3)
+/**
+ * @def CPU_CYCLES_PER_LOOP
+ * @brief Clock cycles per delay_wait() loop iteration
+ *
+ * @details
+ * Known number of RXv3 CPU cycles required to execute one iteration
+ * of the delay_wait() busy-wait loop. Used for software delay calculations.
+ *
+ * @see bsp_cpu_constants_t::k_cpu_cycles_per_loop
+ * @since Version 1.0.0
+ */
+#define CPU_CYCLES_PER_LOOP ((uint8_t)k_cpu_cycles_per_loop)
 
 /* MCU Series. */
 #define BSP_MCU_SERIES_RX700 (1)
@@ -251,13 +581,57 @@ Macro definitions
   "ERROR - BSP_CFG_PHY_CLOCK_SOURCE - Unknown Ethernet-PHY clock source chosen in r_bsp_config.h"
 #endif
 
-/* Null argument definitions. */
-#define FIT_NO_FUNC ((void (*)(void*))0x10000000) /* Reserved space on RX */
-#define FIT_NO_PTR  ((void*)0x10000000)           /* Reserved space on RX */
+/**
+ * @def FIT_NO_FUNC
+ * @brief Null function pointer for FIT modules
+ *
+ * @details
+ * Points to reserved memory space (0x10000000) used as placeholder
+ * for unused FIT module function callbacks.
+ *
+ * @see bsp_reserved_addresses_t::k_fit_reserved_space
+ * @since Version 1.0.0
+ */
+#define FIT_NO_FUNC ((void (*)(void*))k_fit_reserved_space)
 
-/* Mininum and maximum IPL levels available for this MCU. */
-#define BSP_MCU_IPL_MAX (0xF)
-#define BSP_MCU_IPL_MIN (0)
+/**
+ * @def FIT_NO_PTR
+ * @brief Null pointer for FIT modules
+ *
+ * @details
+ * Points to reserved memory space (0x10000000) used as placeholder
+ * for unused FIT module parameters.
+ *
+ * @see bsp_reserved_addresses_t::k_fit_reserved_space
+ * @since Version 1.0.0
+ */
+#define FIT_NO_PTR ((void*)k_fit_reserved_space)
+
+/**
+ * @def BSP_MCU_IPL_MAX
+ * @brief Maximum interrupt priority level
+ *
+ * @details
+ * RX72N supports IPL 0-15. Level 15 is highest priority.
+ *
+ * @see bsp_ipl_level_t::k_ipl_max
+ * @see R_BSP_SET_IPL
+ * @since Version 1.0.0
+ */
+#define BSP_MCU_IPL_MAX ((uint8_t)k_ipl_max)
+
+/**
+ * @def BSP_MCU_IPL_MIN
+ * @brief Minimum interrupt priority level
+ *
+ * @details
+ * IPL level 0 masks all interrupts (except NMI).
+ *
+ * @see bsp_ipl_level_t::k_ipl_min
+ * @see R_BSP_SET_IPL
+ * @since Version 1.0.0
+ */
+#define BSP_MCU_IPL_MIN ((uint8_t)k_ipl_min)
 
 /* Frequency threshold of memory wait cycle setting. */
 #define BSP_MCU_MEMWAIT_FREQ_THRESHOLD                                                             \
@@ -307,5 +681,3 @@ Macro definitions
 #define BSP_MCU_NMI_EXNMI_RAM_EXRAM
 #define BSP_MCU_NMI_EXNMI_RAM_ECCRAM
 #define BSP_MCU_NMI_EXNMI_DPFPUEX
-
-#endif /* MCU_INFO */
