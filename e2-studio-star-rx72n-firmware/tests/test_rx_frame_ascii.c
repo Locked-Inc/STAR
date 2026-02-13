@@ -831,8 +831,13 @@ void test_type_name_reset_ack(void)
  */
 void test_type_name_invalid(void)
 {
+  /** @brief Invalid frame type value not matching any defined enum member */
+  enum : uint8_t {
+    k_test_invalid_type = 0x50,
+  };
+
   /* Invalid type value should return UNKNOWN */
-  const char* name = rx_frame_ascii_type_name((rx_frame_type_t)0x50);
+  const char* name = rx_frame_ascii_type_name((rx_frame_type_t)k_test_invalid_type);
   TEST_ASSERT_EQUAL_STRING("UNKNOWN", name);
 }
 

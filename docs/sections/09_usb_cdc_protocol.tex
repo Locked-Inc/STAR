@@ -234,13 +234,13 @@ All frames use the same wire format regardless of transport (USB CDC or SPI):
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|c|c|c|c|c|c|c|}
-\hline
+\begin{tabular}{ccccccc}
+\toprule
 \textbf{SYNC} & \textbf{SEQ} & \textbf{LEN} & \textbf{TYPE} & \textbf{FLAGS} & \textbf{PAYLOAD} & \textbf{CRC-32} \\
 (LE) & (LE) & (LE) & & & & (LE) \\
-\hline
+\midrule
 2B & 2B & 2B & 1B & 1B & 0-1024B & 4B \\
-\hline
+\bottomrule
 \end{tabular}
 \caption{Frame Wire Format}
 \label{tab:frame_format}
@@ -263,10 +263,10 @@ CRC-32 computed over SYNC + header + payload, stored in little-endian byte order
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|c|l|p{7cm}|}
-\hline
+\begin{tabular}{cl p{7cm}}
+\toprule
 \textbf{Value} & \textbf{Name} & \textbf{Description} \\
-\hline
+\midrule
 0x00 & PING & Heartbeat request -- sent when link idle for >1s \\
 0x01 & PONG & Heartbeat response -- echoes PING counter \\
 0x10 & COMMAND & Command frame carrying protobuf messages \\
@@ -275,7 +275,7 @@ CRC-32 computed over SYNC + header + payload, stored in little-endian byte order
 0x13 & NACK & Negative acknowledgment (SPI only, HARQ protocol) \\
 0xFE & RESET\_ACK & Acknowledgment of session reset \\
 0xFF & RESET & Request to reset session (synchronize sequences) \\
-\hline
+\bottomrule
 \end{tabular}
 \caption{Frame Type Definitions}
 \label{tab:frame_types}
@@ -297,10 +297,10 @@ Both Go (gateway) and C (firmware) encode/decode frames identically. This is ver
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|l|c|c|l|c|}
-\hline
+\begin{tabular}{lccl c}
+\toprule
 \textbf{Vector} & \textbf{TYPE} & \textbf{SEQ} & \textbf{Payload} & \textbf{CRC-32} \\
-\hline
+\midrule
 PING & 0x00 & 0 & (empty) & 0x9B3FAEEB \\
 PONG & 0x01 & 0 & counter=42 & 0x287737DF \\
 COMMAND & 0x10 & 1 & ``TEST'' + ACK flag & 0xDEF35E60 \\
@@ -309,7 +309,7 @@ ACK & 0x12 & 1 & (empty) & 0xDEABF788 \\
 NACK & 0x13 & 1 & (empty) & 0xC7B0C6C9 \\
 RESET & 0xFF & 0 & (empty) & 0x081B5399 \\
 RESET\_ACK & 0xFE & 0 & (empty) & 0x110062D8 \\
-\hline
+\bottomrule
 \end{tabular}
 \caption{Cross-Compatibility Test Vectors}
 \label{tab:cross_compat_vectors}
@@ -364,10 +364,10 @@ The USB CDC protocol is designed for minimal overhead, relying on USB hardware f
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|l|l|l|p{3.5cm}|}
-\hline
+\begin{tabular}{lll p{3.5cm}}
+\toprule
 \textbf{Feature} & \textbf{USB CDC} & \textbf{SPI} & \textbf{Rationale} \\
-\hline
+\midrule
 Physical Layer & Half-duplex, async & Full-duplex, sync & Hardware characteristic \\
 Error Detection & CRC32 only & CRC32 + FEC & USB has built-in CRC \\
 Retransmission & Hardware-level only & Application-level (HARQ) & USB bulk handles retries \\
@@ -376,8 +376,8 @@ ACK/NACK & Not sent & Required & USB provides implicit ACK \\
 Sequence Tracking & Shared SessionState & Shared SessionState & Continuity across transports \\
 Priority & 10 (preferred) & 5 (backup) & Prefer simpler USB \\
 Typical Latency & 0.5-1ms & 1-2ms & USB has lower overhead \\
-Reliability & 99.999\% (hardware CRC) & 99.99\% (with retries) & USB more reliable \\
-\hline
+Reliability & Higher (hardware CRC) & High (with retry mechanisms) & USB generally more reliable due to hardware CRC \\
+\bottomrule
 \end{tabular}
 \caption{USB CDC vs SPI Transport Comparison}
 \label{tab:transport_comparison}
@@ -395,20 +395,22 @@ Update \texttt{LastSeen} timestamp when ANY valid frame arrives (COMMAND, RESPON
 
 Send PING with 4-byte counter if link idle for >1s. Wait for PONG echo; validate counter matches. 1 consecutive miss triggers failover. Rarely fires under normal traffic; only needed when link is genuinely idle.
 
+\textbf{Interaction between Implicit Timeout and Explicit PING:} The 200ms implicit timeout is the primary dead-link detection mechanism. On an active link, data frames arrive faster than 200ms and continuously reset \texttt{LastSeen}, so the implicit timeout never fires. The 1s PING probe is a secondary mechanism: on a link that has occasional traffic (keeping the implicit timer alive) but where the application wants to verify bidirectional health, the PING/PONG exchange confirms round-trip connectivity. Note that on a truly idle link with zero traffic from either side, the 200ms implicit timeout fires before the 1s PING interval elapses---this is by design, as an idle link with no frames in 200ms is considered dead and triggers failover.
+
 \subsubsection{Timing Budget}
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|l|c|p{6cm}|}
-\hline
+\begin{tabular}{lc p{6cm}}
+\toprule
 \textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
-\hline
+\midrule
 Implicit timeout & 200ms & Primary detection, any frame resets \\
-Check interval & 50ms & failureTimeout / 4, worst-case detection ~250ms \\
+Check interval & 50ms & failureTimeout / 4, worst-case detection \textasciitilde{}250ms \\
 PING interval & 1000ms & Secondary, idle-link probe \\
 WDT timeout & 1000ms & RX72N hardware watchdog \\
 Safety margin & 4x & 250ms worst-case $\ll$ 1000ms WDT \\
-\hline
+\bottomrule
 \end{tabular}
 \caption{Heartbeat Timing Budget}
 \label{tab:heartbeat_timing}

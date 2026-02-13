@@ -62,8 +62,7 @@
  * @par February 2026
  */
 
-#ifndef RX_SESSION_H
-#define RX_SESSION_H
+#pragma once
 
 /* ============================================================================
  * Includes
@@ -91,6 +90,24 @@
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
+  /**
+   * @brief Initial TX/RX sequence value after init or reset
+   *
+   * @details
+   * Both TX and RX sequence counters start at this value. Used by
+   * rx_session_init() and rx_session_reset().
+   */
+  k_session_initial_sequence = 0,
+
+  /**
+   * @brief Exact-match diff value for sequence validation
+   *
+   * @details
+   * When the difference between received and expected sequence is zero,
+   * the sequence matches exactly (most common case).
+   */
+  k_session_diff_exact_match = 0,
+
   /**
    * @brief Maximum allowable gap between expected and received sequence numbers
    *
@@ -180,9 +197,9 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  uint16_t tx_sequence;  /**< Next TX sequence number to assign (wraps at 65535) */
-  uint16_t rx_sequence;  /**< Next expected RX sequence number (wraps at 65535) */
-  bool     initialized;  /**< True after successful rx_session_init() */
+  uint16_t tx_sequence; /**< Next TX sequence number to assign (wraps at 65535) */
+  uint16_t rx_sequence; /**< Next expected RX sequence number (wraps at 65535) */
+  bool     initialized; /**< True after successful rx_session_init() */
 } rx_session_state_t;
 
 /* ============================================================================
@@ -347,8 +364,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_session_validate_rx(rx_session_state_t*          state,
-                                              uint16_t                     received_seq,
+[[nodiscard]] rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
+                                              uint16_t                      received_seq,
                                               rx_session_validate_result_t* result);
 
 /**
@@ -432,4 +449,4 @@ typedef struct {
  */
 [[nodiscard]] rx_err_t rx_session_get_rx(const rx_session_state_t* state, uint16_t* sequence);
 
-#endif /* RX_SESSION_H */
+/* end of rx_session.h */

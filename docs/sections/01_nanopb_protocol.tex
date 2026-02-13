@@ -131,7 +131,7 @@ For context, control loop frequencies should match system dynamics:
 
 \subsubsection{Byte Order and Standards Compliance}
 
-The protocol uses little-endian byte ordering for all multi-byte fields, matching the native byte order of both the RX72N (little-endian ARM core) and Raspberry Pi 5 (ARM little-endian). This eliminates byte-swapping overhead on both platforms.
+The protocol uses little-endian byte ordering for all multi-byte fields, matching the native byte order of both the RX72N (Renesas RXv3 core, 32-bit CISC, little-endian) and Raspberry Pi 5 (ARM little-endian). This eliminates byte-swapping overhead on both platforms.
 
 \begin{table}[H]
 \centering

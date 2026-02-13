@@ -113,7 +113,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_motor/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_obstacle_detect/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_pid/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_session/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_comm/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb_comm/inc
@@ -278,6 +277,7 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_ds18b20/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_hcsr04/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_obstacle_detect/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_session/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_spi_comm/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_usb/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_usb_comm/inc

@@ -1,12 +1,16 @@
 /**
  * @file rx_session.c
  *
- * @brief Shared session state implementation
+ * @brief Shared session state implementation for cross-transport sequence continuity
  *
  * @details
  * Implements the cross-transport shared session state module. Provides
  * thread-safe TX/RX sequence tracking with gap tolerance, mirroring the
  * Go gateway's `manager/session.go` implementation.
+ *
+ * Both USB CDC and SPI transports share a single session state instance
+ * (owned by rx_comm_manager_t), ensuring sequence continuity when the active
+ * transport switches.
  *
  * ## Thread Safety
  *
@@ -17,13 +21,28 @@
  * In simulator builds (RX_SIMULATOR_MODE), mutex operations are skipped
  * since the ThreadX kernel is not running.
  *
+ * @pre Caller must call rx_session_init() before any other API function.
+ * @post After rx_session_deinit(), no API calls may be made until re-init.
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 1: No goto/setjmp/longjmp/recursion
+ * - Rule 5: RX_CHECK_NULL_PTR / RX_VALIDATE_INIT preconditions on all functions
+ * - Rule 7: All return values checked (RX_RETURN_ON_ERROR)
+ * - Rule 8: Macros only for conditional compilation and validation
+ *
+ * @par SOLID Compliance:
+ * - S: Single responsibility (sequence tracking only)
+ * - D: Depends on rx_err_t abstraction, not concrete transport details
+ *
+ * @author STAR Project Team
+ * @date February 2026
+ * @version 1.0.0
+ * @copyright STAR Project - Texas A&M University
+ *
  * @see rx_session.h  Public API
  * @see star-gateway/internal/manager/session.go  Go reference implementation
  *
  * @since Version 1.0.0
- *
- * @par STAR Project - Texas A&M University
- * @par February 2026
  */
 
 /* ============================================================================
@@ -32,6 +51,7 @@
 
 #include "rx_session.h"
 
+#include "rx_check.h"
 #include "rx_log.h"
 #include "rx_simulator_config.h"
 
@@ -47,6 +67,7 @@
  * @var s_tag
  * @brief Logging tag for session state messages
  * @note Used with rx_log_*() macros for consistent log filtering
+ * @since Version 1.0.0
  */
 static const char s_tag[] = "SESSION";
 
@@ -64,6 +85,7 @@ static const char s_tag[] = "SESSION";
  * rx_session_init() and deleted during rx_session_deinit().
  *
  * @warning Do not access directly. Use internal_lock() / internal_unlock().
+ * @since Version 1.0.0
  */
 static TX_MUTEX s_session_mutex;
 #endif
@@ -87,6 +109,7 @@ static TX_MUTEX s_session_mutex;
  * @post Mutex is held by calling thread
  *
  * @note Thread-safe: This IS the synchronization primitive
+ * @since Version 1.0.0
  */
 static rx_err_t internal_lock(void)
 {
@@ -110,6 +133,7 @@ static rx_err_t internal_lock(void)
  * @post Mutex is released
  *
  * @note Thread-safe: This IS the synchronization primitive
+ * @since Version 1.0.0
  */
 static void internal_unlock(void)
 {
@@ -122,14 +146,41 @@ static void internal_unlock(void)
  * Public Functions
  * ============================================================================ */
 
+/**
+ * @brief Initialize session state with zeroed sequences
+ *
+ * @details
+ * Sets both TX and RX sequences to k_session_initial_sequence and creates
+ * the internal ThreadX mutex for thread-safe access. Must be called before
+ * any other rx_session_*() function.
+ *
+ * In simulator builds (RX_SIMULATOR_MODE), mutex creation is skipped since
+ * the ThreadX kernel is not running.
+ *
+ * @param[in,out] state Session state to initialize (must not be NULL)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, session ready for use
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_rtos_mutex ThreadX mutex creation failed
+ *
+ * @pre state must point to valid, allocated memory
+ * @pre state must not already be initialized (call rx_session_deinit() first)
+ * @post state->tx_sequence == k_session_initial_sequence
+ * @post state->rx_sequence == k_session_initial_sequence
+ * @post state->initialized == true
+ *
+ * @note Thread-safe: No mutex needed during init (single-threaded startup)
+ *
+ * @see rx_session_deinit() Cleanup counterpart
+ * @since Version 1.0.0
+ */
 rx_err_t rx_session_init(rx_session_state_t* state)
 {
-  if (state == NULL) {
-    return k_rx_err_null_ptr;
-  }
+  RX_CHECK_NULL_PTR(state, s_tag, "Init: state is NULL");
 
-  state->tx_sequence = 0;
-  state->rx_sequence = 0;
+  state->tx_sequence = k_session_initial_sequence;
+  state->rx_sequence = k_session_initial_sequence;
   state->initialized = true;
 
 #if !RX_IS_SIMULATOR
@@ -141,21 +192,55 @@ rx_err_t rx_session_init(rx_session_state_t* state)
   }
 #endif
 
+  /* Post-condition: verify initialization succeeded */
+  if (!state->initialized) {
+    rx_log_error(s_tag, "Post-condition failed: not initialized after init");
+    return k_rx_err_invalid_state;
+  }
+
   rx_log_info(s_tag, "Session initialized (tx=0, rx=0)");
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize session state and release resources
+ *
+ * @details
+ * Deletes the internal ThreadX mutex and marks the session as uninitialized.
+ * After this call, no other rx_session_*() function may be called until
+ * rx_session_init() is called again.
+ *
+ * In simulator builds, mutex deletion is skipped since it was never created.
+ *
+ * @param[in,out] state Session state to deinitialize (must not be NULL)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, resources released
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized state was not initialized
+ *
+ * @pre state != NULL
+ * @pre state->initialized == true
+ * @post state->initialized == false
+ * @post Internal mutex deleted (on non-simulator builds)
+ *
+ * @note Thread-safe: Caller must ensure no other threads are using the session
+ *
+ * @see rx_session_init() Initialization counterpart
+ * @since Version 1.0.0
+ */
 rx_err_t rx_session_deinit(rx_session_state_t* state)
 {
-  if (state == NULL) {
-    return k_rx_err_null_ptr;
-  }
-
+  RX_CHECK_NULL_PTR(state, s_tag, "Deinit: state is NULL");
   if (!state->initialized) {
+    rx_log_error(s_tag, "Deinit: session not initialized");
     return k_rx_err_not_initialized;
   }
 
 #if !RX_IS_SIMULATOR
+  /* tx_mutex_delete return value deliberately discarded: mutex deletion errors
+   * are non-fatal during deinit because the mutex may already be uninitialized
+   * or no recovery is possible. The module is being torn down regardless. */
   (void)tx_mutex_delete(&s_session_mutex);
 #endif
 
@@ -165,13 +250,42 @@ rx_err_t rx_session_deinit(rx_session_state_t* state)
   return k_rx_ok;
 }
 
+/**
+ * @brief Get next TX sequence number and increment the counter
+ *
+ * @details
+ * Atomically reads the current TX sequence, increments it (with wraparound
+ * at k_session_seq_wrap_mask), and returns the pre-increment value. This is
+ * used by both USB and SPI transport layers when sending frames.
+ *
+ * Mirrors Go gateway's `SessionState.NextTxSequence()`.
+ *
+ * @param[in,out] state Session state (must be initialized)
+ * @param[out] sequence Pointer to receive the sequence number
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, sequence written
+ * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_not_initialized state not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre state must be initialized via rx_session_init()
+ * @pre sequence must point to valid memory
+ * @post state->tx_sequence incremented by 1 (with wraparound)
+ * @post *sequence contains the pre-increment value
+ * @post *sequence <= k_session_seq_wrap_mask
+ *
+ * @note Thread-safe: Protected by internal mutex
+ *
+ * @see rx_session_get_tx() Read without incrementing
+ * @since Version 1.0.0
+ */
 rx_err_t rx_session_next_tx(rx_session_state_t* state, uint16_t* sequence)
 {
-  if (state == NULL || sequence == NULL) {
-    return k_rx_err_null_ptr;
-  }
-
+  RX_CHECK_NULL_PTR(state, s_tag, "NextTx: state is NULL");
+  RX_CHECK_NULL_PTR(sequence, s_tag, "NextTx: sequence is NULL");
   if (!state->initialized) {
+    rx_log_error(s_tag, "NextTx: session not initialized");
     return k_rx_err_not_initialized;
   }
 
@@ -180,22 +294,60 @@ rx_err_t rx_session_next_tx(rx_session_state_t* state, uint16_t* sequence)
     return err;
   }
 
-  *sequence = state->tx_sequence;
+  *sequence          = state->tx_sequence;
   state->tx_sequence = (state->tx_sequence + 1) & k_session_seq_wrap_mask;
 
   internal_unlock();
+
+  /* Post-condition: output within valid range (checked after unlock to avoid mutex leak) */
+  RX_CHECK_RANGE_TAG(*sequence, 0, k_session_seq_wrap_mask, k_rx_err_invalid_state, s_tag);
+
   return k_rx_ok;
 }
 
+/**
+ * @brief Validate a received sequence number against expected RX sequence
+ *
+ * @details
+ * Checks whether the received sequence number is acceptable based on the
+ * expected RX sequence. Implements gap tolerance matching the Go gateway's
+ * `SessionState.ValidateRxSequence()`.
+ *
+ * ## Validation Logic
+ *
+ * | Condition | Result | RX Sequence Update |
+ * |---|---|---|
+ * | diff == k_session_diff_exact_match | k_session_validate_ok | rx_sequence = received + 1 |
+ * | 0 < diff < k_session_max_gap_tolerance | k_session_validate_gap | rx_sequence = received + 1 |
+ * | diff >= k_session_max_gap_tolerance | k_session_validate_fail | rx_sequence unchanged |
+ *
+ * @param[in,out] state Session state (must be initialized)
+ * @param[in] received_seq The sequence number from the received frame
+ * @param[out] result Validation result code (may be NULL if not needed)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Sequence accepted (exact match or small gap)
+ * @retval k_rx_err_protocol_error Sequence rejected (large gap or duplicate)
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized state not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre state must be initialized via rx_session_init()
+ * @post On accept: state->rx_sequence updated to received_seq + 1
+ * @post On reject: state->rx_sequence unchanged
+ *
+ * @note Thread-safe: Protected by internal mutex
+ *
+ * @see k_session_max_gap_tolerance Maximum acceptable gap
+ * @since Version 1.0.0
+ */
 rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
                                 uint16_t                      received_seq,
                                 rx_session_validate_result_t* result)
 {
-  if (state == NULL) {
-    return k_rx_err_null_ptr;
-  }
-
+  RX_CHECK_NULL_PTR(state, s_tag, "ValidateRx: state is NULL");
   if (!state->initialized) {
+    rx_log_error(s_tag, "ValidateRx: session not initialized");
     return k_rx_err_not_initialized;
   }
 
@@ -208,7 +360,7 @@ rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
   uint16_t diff = received_seq - state->rx_sequence;
 
   /* Exact match - most common case */
-  if (diff == 0) {
+  if (diff == k_session_diff_exact_match) {
     state->rx_sequence = (state->rx_sequence + 1) & k_session_seq_wrap_mask;
     internal_unlock();
 
@@ -219,7 +371,7 @@ rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
   }
 
   /* Small gap (packet loss) - accept and catch up */
-  if (diff > 0 && diff < k_session_max_gap_tolerance) {
+  if (diff > k_session_diff_exact_match && diff < k_session_max_gap_tolerance) {
     rx_log_warn_val(s_tag, "Sequence gap detected, frames lost", diff);
     state->rx_sequence = (received_seq + 1) & k_session_seq_wrap_mask;
     internal_unlock();
@@ -241,13 +393,39 @@ rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
   return k_rx_err_protocol_error;
 }
 
+/**
+ * @brief Reset both TX and RX sequences to initial values
+ *
+ * @details
+ * Called after a RESET/RESET_ACK handshake completes to synchronize sequences
+ * between firmware and gateway. Both counters are atomically set to
+ * k_session_initial_sequence.
+ *
+ * Mirrors Go gateway's `SessionState.Reset()`.
+ *
+ * @param[in,out] state Session state (must be initialized)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, sequences reset
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized state not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre state must be initialized via rx_session_init()
+ * @post state->tx_sequence == k_session_initial_sequence
+ * @post state->rx_sequence == k_session_initial_sequence
+ *
+ * @note Thread-safe: Protected by internal mutex
+ *
+ * @see rx_frame_type_t::k_frame_type_reset RESET frame triggers this
+ * @see rx_frame_type_t::k_frame_type_reset_ack RESET_ACK confirms reset
+ * @since Version 1.0.0
+ */
 rx_err_t rx_session_reset(rx_session_state_t* state)
 {
-  if (state == NULL) {
-    return k_rx_err_null_ptr;
-  }
-
+  RX_CHECK_NULL_PTR(state, s_tag, "Reset: state is NULL");
   if (!state->initialized) {
+    rx_log_error(s_tag, "Reset: session not initialized");
     return k_rx_err_not_initialized;
   }
 
@@ -256,8 +434,8 @@ rx_err_t rx_session_reset(rx_session_state_t* state)
     return err;
   }
 
-  state->tx_sequence = 0;
-  state->rx_sequence = 0;
+  state->tx_sequence = k_session_initial_sequence;
+  state->rx_sequence = k_session_initial_sequence;
 
   internal_unlock();
 
@@ -265,13 +443,38 @@ rx_err_t rx_session_reset(rx_session_state_t* state)
   return k_rx_ok;
 }
 
+/**
+ * @brief Get current TX sequence without incrementing
+ *
+ * @details
+ * Returns the current TX sequence counter value for diagnostic purposes.
+ * Does not modify the counter.
+ *
+ * @param[in] state Session state (must be initialized)
+ * @param[out] sequence Pointer to receive the current TX sequence
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, sequence written
+ * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_not_initialized state not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre state must be initialized via rx_session_init()
+ * @pre sequence must point to valid memory
+ * @post state unchanged
+ * @post *sequence <= k_session_seq_wrap_mask
+ *
+ * @note Thread-safe: Protected by internal mutex
+ *
+ * @see rx_session_next_tx() Read and increment
+ * @since Version 1.0.0
+ */
 rx_err_t rx_session_get_tx(const rx_session_state_t* state, uint16_t* sequence)
 {
-  if (state == NULL || sequence == NULL) {
-    return k_rx_err_null_ptr;
-  }
-
+  RX_CHECK_NULL_PTR(state, s_tag, "GetTx: state is NULL");
+  RX_CHECK_NULL_PTR(sequence, s_tag, "GetTx: sequence is NULL");
   if (!state->initialized) {
+    rx_log_error(s_tag, "GetTx: session not initialized");
     return k_rx_err_not_initialized;
   }
 
@@ -283,16 +486,45 @@ rx_err_t rx_session_get_tx(const rx_session_state_t* state, uint16_t* sequence)
   *sequence = state->tx_sequence;
 
   internal_unlock();
+
+  /* Post-condition: output within valid range (checked after unlock to avoid mutex leak) */
+  RX_CHECK_RANGE_TAG(*sequence, 0, k_session_seq_wrap_mask, k_rx_err_invalid_state, s_tag);
+
   return k_rx_ok;
 }
 
+/**
+ * @brief Get current expected RX sequence without modifying
+ *
+ * @details
+ * Returns the next expected RX sequence counter value for diagnostic purposes.
+ * Does not modify the counter.
+ *
+ * @param[in] state Session state (must be initialized)
+ * @param[out] sequence Pointer to receive the current RX sequence
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, sequence written
+ * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_not_initialized state not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre state must be initialized via rx_session_init()
+ * @pre sequence must point to valid memory
+ * @post state unchanged
+ * @post *sequence <= k_session_seq_wrap_mask
+ *
+ * @note Thread-safe: Protected by internal mutex
+ *
+ * @see rx_session_validate_rx() Validate and update
+ * @since Version 1.0.0
+ */
 rx_err_t rx_session_get_rx(const rx_session_state_t* state, uint16_t* sequence)
 {
-  if (state == NULL || sequence == NULL) {
-    return k_rx_err_null_ptr;
-  }
-
+  RX_CHECK_NULL_PTR(state, s_tag, "GetRx: state is NULL");
+  RX_CHECK_NULL_PTR(sequence, s_tag, "GetRx: sequence is NULL");
   if (!state->initialized) {
+    rx_log_error(s_tag, "GetRx: session not initialized");
     return k_rx_err_not_initialized;
   }
 
@@ -304,5 +536,9 @@ rx_err_t rx_session_get_rx(const rx_session_state_t* state, uint16_t* sequence)
   *sequence = state->rx_sequence;
 
   internal_unlock();
+
+  /* Post-condition: output within valid range (checked after unlock to avoid mutex leak) */
+  RX_CHECK_RANGE_TAG(*sequence, 0, k_session_seq_wrap_mask, k_rx_err_invalid_state, s_tag);
+
   return k_rx_ok;
 }

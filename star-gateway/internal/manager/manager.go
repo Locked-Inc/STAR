@@ -956,8 +956,12 @@ func (tm *TransportManager) selectBestTransportLocked() *TransportWrapper {
 		}
 		return nil // SPI not available
 
-	default: // ModeAuto
+	case ModeAuto:
 		return candidates[0] // Highest priority
+
+	default:
+		// Unknown mode: fall back to highest priority candidate
+		return candidates[0]
 	}
 }
 

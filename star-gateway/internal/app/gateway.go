@@ -429,7 +429,7 @@ func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
 	// Wrap in link layer with shared session state
 	cdcLink, err := link.NewCDCLink(cdcTransport, session)
 	if err != nil {
-		cdcTransport.Close() // Cleanup on error
+		_ = cdcTransport.Close() // Best-effort cleanup; error logged by caller
 		return nil, fmt.Errorf("failed to create CDC link: %w", err)
 	}
 

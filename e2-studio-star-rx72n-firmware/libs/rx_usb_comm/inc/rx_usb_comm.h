@@ -474,29 +474,54 @@ typedef struct {
 
   /**
    * @brief PING control frame callback (optional)
+   *
    * @details
    * Invoked after auto-PONG is sent in response to a received PING frame.
    * Allows application to track ping activity or update heartbeat state.
    * Set via rx_usb_comm_set_control_callbacks(). NULL disables callback.
+   *
+   * @param[in] frame The received PING frame (valid for callback duration only)
+   * @param[in] ctx Opaque user context from cb_ctx field
+   * @return void
+   *
+   * @pre PONG has already been sent before this callback fires
+   * @post No state modification requirements
+   *
    * @see rx_usb_comm_set_control_callbacks()
+   * @since Version 1.0.0
    */
   void (*on_ping_cb)(const rx_frame_t* frame, void* ctx);
 
   /**
    * @brief RESET control frame callback (optional)
+   *
    * @details
-   * Invoked after session reset and auto-RESET_ACK in response to RESET.
-   * Allows application to perform additional cleanup. Set via
-   * rx_usb_comm_set_control_callbacks(). NULL disables callback.
+   * Invoked after RESET_ACK is sent and session is reset in response to
+   * a received RESET frame. Allows application to perform additional cleanup.
+   * Set via rx_usb_comm_set_control_callbacks(). NULL disables callback.
+   *
+   * @param[in] frame The received RESET frame (valid for callback duration only)
+   * @param[in] ctx Opaque user context from cb_ctx field
+   * @return void
+   *
+   * @pre RESET_ACK sent and session reset before this callback fires
+   * @post No state modification requirements
+   *
    * @see rx_usb_comm_set_control_callbacks()
+   * @since Version 1.0.0
    */
   void (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
 
   /**
    * @brief User context pointer passed to control frame callbacks
+   *
    * @details
-   * Opaque pointer forwarded to on_ping_cb and on_reset_cb. Allows
-   * callbacks to access application state without globals.
+   * Opaque pointer forwarded to on_ping_cb and on_reset_cb as the ctx
+   * parameter. Allows callbacks to access application state without globals.
+   * Ownership remains with the caller; this module does not free cb_ctx.
+   *
+   * @see rx_usb_comm_set_control_callbacks()
+   * @since Version 1.0.0
    */
   void* cb_ctx;
 } rx_usb_comm_handle_t;
@@ -994,11 +1019,11 @@ rx_usb_comm_mode_t rx_usb_comm_get_mode(const rx_usb_comm_handle_t* handle);
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_usb_comm_set_control_callbacks(
-  rx_usb_comm_handle_t* handle,
-  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
-  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
-  void*                 cb_ctx);
+[[nodiscard]] rx_err_t
+rx_usb_comm_set_control_callbacks(rx_usb_comm_handle_t* handle,
+                                  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+                                  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+                                  void* cb_ctx);
 
 /**
  * @brief Send a PONG response frame
@@ -1024,9 +1049,8 @@ rx_usb_comm_mode_t rx_usb_comm_get_mode(const rx_usb_comm_handle_t* handle);
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
-                                              const uint8_t*        payload,
-                                              uint16_t              payload_len);
+[[nodiscard]] rx_err_t
+rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle, const uint8_t* payload, uint16_t payload_len);
 
 /**
  * @brief Send a RESET_ACK response frame

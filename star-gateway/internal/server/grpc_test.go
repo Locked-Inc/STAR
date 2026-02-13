@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/connectivity"
@@ -69,16 +70,18 @@ func waitForGRPCReady(addr string) error {
 		if state == connectivity.Shutdown {
 			return fmt.Errorf("gRPC connection in terminal state: %v", state)
 		}
-		ctx, cancel := context.WithTimeout(context.Background(), testPollInterval)
-		conn.WaitForStateChange(ctx, state)
-		cancel()
+		func() {
+			ctx, cancel := context.WithTimeout(context.Background(), testPollInterval)
+			defer cancel()
+			conn.WaitForStateChange(ctx, state)
+		}()
 		// Continue polling until overall deadline expires (don't exit on poll timeout)
 	}
 	return fmt.Errorf("gRPC server did not become ready within %v", testServerStartupDeadline)
 }
 
 func TestNewGRPCServer_ConfigValidation(t *testing.T) {
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 
 	tests := []struct {
 		name      string
@@ -152,7 +155,7 @@ func TestNewGRPCServer_ServiceRegistration(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("Unexpected error: %v", err)
@@ -174,7 +177,7 @@ func TestNewGRPCServer_RegistrationError(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err == nil {
 		t.Error("Expected error from ServiceRegistrar, got nil")
@@ -196,7 +199,7 @@ func TestRunGRPCServer_Lifecycle(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)
@@ -266,7 +269,7 @@ func TestSetVelocityConcurrent(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("Failed to create server: %v", err)
@@ -350,7 +353,7 @@ func TestRunGRPCServer_InvalidPort(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("NewGRPCServer failed: %v", err)
@@ -376,7 +379,7 @@ func TestRunGRPCServer_ShutdownWithoutRequests(t *testing.T) {
 		},
 	}
 
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	srv, err := NewGRPCServer(config, logger)
 	if err != nil {
 		t.Fatalf("NewGRPCServer failed: %v", err)

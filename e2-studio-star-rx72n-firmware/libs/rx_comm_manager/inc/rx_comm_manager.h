@@ -171,29 +171,35 @@
  *
  * | Allocation | Size | Lifetime |
  * |------------|------|----------|
- * | **rx_comm_manager_t** | ~2.5 KB | Application-managed (typically static/global) |
- * | - Pointers + state | ~32 bytes | Handle metadata |
+ * | **rx_comm_manager_t** | ~12 KB | Application-managed (typically static/global) |
+ * | - Pointers + state | ~80 bytes | Handle metadata, heartbeat, queue indices |
  * | - ASCII buffer | 2048 bytes | Decoded output formatting (if enabled) |
+ * | - Event queue | 8 x ~1028 bytes | Static FIFO (k_comm_event_queue_depth entries) |
+ * | - Heartbeat state | ~20 bytes | Per-transport heartbeat tracking |
  * | **Stack (poll)** | ~120 bytes | Function call duration only |
  * | **Stack (send)** | ~80 bytes | Function call duration only |
  * | **Static data (.rodata)** | ~400 bytes | Channel names, format strings |
- * | **Code (.text)** | ~4 KB | All functions |
+ * | **Code (.text)** | ~6 KB | All functions |
  *
- * Total RAM: ~2.5 KB per manager instance (zero dynamic allocation).
+ * Total RAM: ~12 KB per manager instance (zero dynamic allocation).
+ * The event queue dominates memory: 8 entries x (k_frame_max_payload + metadata).
  *
  * **Memory Layout** (rx_comm_manager_t structure):
  *
- * | Offset | Size | Field | Alignment | Notes |
- * |--------|------|-------|-----------|-------|
- * | 0x00 | 8 | usb_handle | 8 bytes | Pointer to USB transport |
- * | 0x08 | 8 | spi_handle | 8 bytes | Pointer to SPI transport |
- * | 0x10 | 8 | callback | 8 bytes | Function pointer |
- * | 0x18 | 8 | callback_ctx | 8 bytes | User context pointer |
- * | 0x20 | 2048 | ascii_buffer | 1 byte | ASCII formatting buffer |
- * | 0x820 | 1 | enable_decoded_output | 1 byte | Boolean flag |
- * | 0x821 | 1 | initialized | 1 byte | Boolean flag |
- * | 0x822 | 6 | (padding) | - | Align to 8-byte boundary |
- * | **Total** | **2088 bytes** | | | (actual size may vary by compiler) |
+ * | Offset | Size | Field | Notes |
+ * |--------|------|-------|-------|
+ * | 0x00 | 8 | usb_handle | Pointer to USB transport |
+ * | 0x08 | 8 | spi_handle | Pointer to SPI transport |
+ * | 0x10 | 8 | callback | Function pointer |
+ * | 0x18 | 8 | callback_ctx | User context pointer |
+ * | 0x20 | 2048 | ascii_buffer | ASCII formatting buffer |
+ * | - | 1 | enable_decoded_output | Boolean flag |
+ * | - | 1 | initialized | Boolean flag |
+ * | - | ~20 | heartbeat[2] | Per-transport heartbeat state |
+ * | - | ~16 | link_status_cb/ctx | Callback + context |
+ * | - | ~8224 | event_queue[8] | 8 x rx_comm_event_entry_t |
+ * | - | 3 | queue head/tail/count | Queue management |
+ * | **Total** | **~10.5 KB** | | (actual size may vary by compiler) |
  *
  * ## Thread Safety Analysis
  *
@@ -479,9 +485,9 @@ typedef enum : uint32_t {
  * @since Version 1.1.0
  */
 typedef enum : uint16_t {
-  k_event_max_retries       = 3,   /**< Maximum SPI retry attempts */
-  k_event_initial_backoff_ms = 10, /**< Initial backoff delay (ms) */
-  k_event_max_backoff_ms    = 100, /**< Maximum backoff delay (ms) */
+  k_event_max_retries        = 3,   /**< Maximum SPI retry attempts */
+  k_event_initial_backoff_ms = 10,  /**< Initial backoff delay (ms) */
+  k_event_max_backoff_ms     = 100, /**< Maximum backoff delay (ms) */
 } rx_comm_event_retry_constants_t;
 
 /* =============================================================================
@@ -724,6 +730,7 @@ typedef struct {
   uint8_t           payload[k_frame_max_payload]; /**< Payload copy */
   uint32_t          payload_len;                  /**< Payload length (bytes) */
   uint8_t           retries;                      /**< Retry attempts so far */
+  uint32_t          next_retry_time_ms;           /**< Earliest time (ms) for next retry */
   bool              occupied;                     /**< Slot in use */
 } rx_comm_event_entry_t;
 
@@ -739,8 +746,8 @@ typedef struct {
  * @since Version 1.1.0
  */
 typedef struct {
-  uint32_t              last_rx_ms;   /**< Timestamp (ms) of last valid frame */
-  rx_comm_link_status_t status;       /**< Current link health */
+  uint32_t              last_rx_ms; /**< Timestamp (ms) of last valid frame */
+  rx_comm_link_status_t status;     /**< Current link health */
 } rx_comm_heartbeat_state_t;
 
 /**
@@ -753,9 +760,9 @@ typedef struct {
  *
  * @since Version 1.1.0
  */
-typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t       channel,
-                                                rx_comm_link_status_t   new_status,
-                                                void*                   ctx);
+typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t     channel,
+                                               rx_comm_link_status_t new_status,
+                                               void*                 ctx);
 
 /**
  * @struct rx_comm_manager_config_t
@@ -896,7 +903,7 @@ typedef struct {
    * @par Value: true = enable ASCII output, false = disable
    * @par Default: Recommend true for development, false for production
    */
-  bool                     enable_decoded_output;
+  bool enable_decoded_output;
 
   /**
    * @brief Callback invoked when a transport link status changes
@@ -909,7 +916,7 @@ typedef struct {
   /**
    * @brief User context for link_status_cb
    */
-  void*                          link_status_ctx;
+  void* link_status_ctx;
 } rx_comm_manager_config_t;
 
 /**
@@ -945,8 +952,8 @@ typedef struct {
   rx_comm_frame_callback_t callback;                                    /**< Frame callback */
   void*                    callback_ctx;                                /**< Callback context */
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */
-  bool                     enable_decoded_output;                   /**< Enable ASCII output */
-  bool                     initialized;                             /**< Initialization flag */
+  bool                     enable_decoded_output;                       /**< Enable ASCII output */
+  bool                     initialized;                                 /**< Initialization flag */
 
   /** @brief Per-transport heartbeat tracking (indexed by rx_comm_channel_t) */
   rx_comm_heartbeat_state_t heartbeat[k_comm_channel_count];
@@ -955,7 +962,7 @@ typedef struct {
   rx_comm_link_status_callback_t link_status_cb;
 
   /** @brief Link status callback context */
-  void*                          link_status_ctx;
+  void* link_status_ctx;
 
   /** @brief Static event FIFO queue for reliable command delivery */
   rx_comm_event_entry_t event_queue[k_comm_event_queue_depth];
@@ -1141,7 +1148,7 @@ typedef struct {
  * @since Version 1.1.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t*           mgr,
-                                                    const rx_comm_send_params_t* params);
+                                                   const rx_comm_send_params_t* params);
 
 /**
  * @brief Queue data on the event path (reliable, SPI retry)
@@ -1176,7 +1183,7 @@ typedef struct {
  * @since Version 1.1.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
-                                                   const rx_comm_send_params_t* params);
+                                                  const rx_comm_send_params_t* params);
 
 /* =============================================================================
  * Heartbeat API
@@ -1201,8 +1208,8 @@ typedef struct {
  * @since Version 1.1.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
-                                                    rx_comm_channel_t        channel,
-                                                    rx_comm_link_status_t*   status);
+                                                   rx_comm_channel_t        channel,
+                                                   rx_comm_link_status_t*   status);
 
 /* =============================================================================
  * Status API

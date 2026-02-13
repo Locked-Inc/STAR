@@ -9,7 +9,7 @@ import "time"
 // Config holds the configuration for the TransportManager.
 type Config struct {
 	// Mode determines the transport selection strategy.
-	// Valid values: "auto", "prefer-usb", "force-usb", "force-spi"
+	// Valid values: "auto", "force-usb", "force-spi"
 	Mode TransportMode
 
 	// HealthCheckInterval is how often to probe inactive transports.

@@ -292,9 +292,18 @@ void test_crc32_single_ff(void)
  */
 void test_crc32_sync_word(void)
 {
-  uint8_t  data[] = {0xAA, 0x55};
-  uint32_t crc    = rx_crc32_ieee(data, 2);
-  TEST_ASSERT_EQUAL_HEX32(0x0E30E3E7, crc);
+  /** @brief Sync word bytes in little-endian wire order and expected CRC */
+  enum : uint8_t {
+    k_sync_lo = 0xAA,
+    k_sync_hi = 0x55,
+  };
+  enum : uint32_t {
+    k_expected_crc_sync = 0x0E30E3E7,
+  };
+
+  uint8_t  data[] = {k_sync_lo, k_sync_hi};
+  uint32_t crc    = rx_crc32_ieee(data, sizeof(data));
+  TEST_ASSERT_EQUAL_HEX32(k_expected_crc_sync, crc);
 }
 
 /**

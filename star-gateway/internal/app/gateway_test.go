@@ -209,28 +209,18 @@ func TestServiceSet_TypeCompatibility(t *testing.T) {
 func TestServiceSet_AllFieldsPopulated(t *testing.T) {
 	services := newTestServiceSet(t)
 
-	// This list must match the serviceSet struct definition.
-	// If you add a new service, add it here to ensure it's initialized.
-	expectedServices := map[string]interface{}{
-		"motorControl":  services.motorControl,
-		"telemetry":     services.telemetry,
-		"battery":       services.battery,
-		"configuration": services.configuration,
-		"firmware":      services.firmware,
-		"gateway":       services.gateway,
-	}
-
-	for name, svc := range expectedServices {
-		if svc == nil {
-			t.Errorf("Service %s is nil - ensure it's initialized in initServices()", name)
+	// Reuse the shared serviceGetters table for nil checks.
+	for _, tc := range serviceGetters {
+		if tc.getter(services) == nil {
+			t.Errorf("Service %s is nil - ensure it's initialized in initServices()", tc.name)
 		}
 	}
 
 	// Expected count of services (update this when adding new services)
 	const expectedServiceCount = 6
-	if len(expectedServices) != expectedServiceCount {
-		t.Errorf("Expected %d services, got %d. Did you add a new service without updating this test?",
-			expectedServiceCount, len(expectedServices))
+	if len(serviceGetters) != expectedServiceCount {
+		t.Errorf("Expected %d services, got %d. Did you add a new service without updating serviceGetters?",
+			expectedServiceCount, len(serviceGetters))
 	}
 }
 

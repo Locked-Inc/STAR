@@ -250,7 +250,7 @@
  * crc = rx_crc32_update(crc, payload, 16);
  *
  * // Append CRC to frame (little-endian)
- * uint8_t frame[22];
+ * uint8_t frame[23];
  * frame[0] = 0x7E;                    // SYNC
  * memcpy(&frame[1], header, 2);       // LEN
  * memcpy(&frame[3], payload, 16);     // PAYLOAD

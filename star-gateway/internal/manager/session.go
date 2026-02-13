@@ -20,6 +20,9 @@ const MaxGapTolerance uint16 = 10
 // The session ID is encoded as a 4-byte little-endian uint32.
 const SessionIDPayloadSize = 4
 
+// seqMask is the bitmask for uint16 sequence number wraparound.
+const seqMask uint16 = 0xFFFF
+
 // SessionState holds sequence numbers shared across all transports.
 // When Gateway fails over from USB (seq=105) to SPI, the SPI link MUST continue from seq=106,
 // not reset to 0. SessionState ensures all transports share the same sequence counter.
@@ -55,7 +58,7 @@ func (s *SessionState) NextTxSequence() uint16 {
 	defer s.mu.Unlock()
 
 	seq := s.txSequence
-	s.txSequence = (s.txSequence + 1) & 0xFFFF // Wraparound at 65535
+	s.txSequence = (s.txSequence + 1) & seqMask // Wraparound at 65535
 	return seq
 }
 
@@ -90,7 +93,7 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 
 	// Exact match - most common case
 	if diff == 0 {
-		s.rxSequence = (s.rxSequence + 1) & 0xFFFF
+		s.rxSequence = (s.rxSequence + 1) & seqMask
 		return true
 	}
 
@@ -98,7 +101,7 @@ func (s *SessionState) ValidateRxSequence(seq uint16) bool {
 	if diff > 0 && diff < MaxGapTolerance {
 		log.Printf("WARN: Skipped %d frames (packet loss), expected %d, got %d",
 			diff, s.rxSequence, seq)
-		s.rxSequence = (seq + 1) & 0xFFFF
+		s.rxSequence = (seq + 1) & seqMask
 		return true
 	}
 

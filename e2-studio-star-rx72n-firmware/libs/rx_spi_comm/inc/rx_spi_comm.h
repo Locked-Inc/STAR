@@ -434,7 +434,7 @@ typedef enum : uint16_t {
    * @par Value: 0
    * @par Modes: 0 (0,0), 1 (0,1), 2 (1,0), 3 (1,1)
    */
-  k_spi_comm_default_mode    = 0,
+  k_spi_comm_default_mode = 0,
 
   /**
    * @brief RX staging buffer size in bytes
@@ -446,7 +446,7 @@ typedef enum : uint16_t {
    * @par Value: 2048 bytes
    * @par Rationale: Power-of-2 for alignment, sufficient for burst tolerance
    */
-  k_spi_comm_rx_buffer_size  = 2048,
+  k_spi_comm_rx_buffer_size = 2048,
 
   /**
    * @brief TX staging buffer size in bytes
@@ -458,7 +458,7 @@ typedef enum : uint16_t {
    * @par Value: 2048 bytes
    * @par Rationale: Symmetric with RX buffer, burst tolerance
    */
-  k_spi_comm_tx_buffer_size  = 2048,
+  k_spi_comm_tx_buffer_size = 2048,
 
   /**
    * @brief Default timeout in milliseconds for blocking operations
@@ -549,7 +549,7 @@ typedef struct {
    * **Capacity**: ~7 maximum-size frames
    * **Access**: Internal only (not exposed to application)
    */
-  uint8_t            rx_buffer[k_spi_comm_rx_buffer_size];
+  uint8_t rx_buffer[k_spi_comm_rx_buffer_size];
 
   /**
    * @brief TX staging buffer for outgoing SPI data
@@ -559,7 +559,7 @@ typedef struct {
    * **Capacity**: ~7 maximum-size frames
    * **Access**: Internal only (not exposed to application)
    */
-  uint8_t            tx_buffer[k_spi_comm_tx_buffer_size];
+  uint8_t tx_buffer[k_spi_comm_tx_buffer_size];
 
   /**
    * @brief Pointer to shared session state (cross-transport sequence continuity)
@@ -583,7 +583,7 @@ typedef struct {
    * **Default**: 0 (RSPI0 on PD0-PD3)
    * @see RX72N_Manual_Chapters/Ch25_SPI.txt for RSPI channels
    */
-  uint8_t            channel;
+  uint8_t channel;
 
   /**
    * @brief FEC (Forward Error Correction) enabled flag
@@ -593,7 +593,7 @@ typedef struct {
    * **Default**: false (FEC disabled for speed)
    * @warning FEC requires both sides (RX72N + RPi5) to agree on encoding
    */
-  bool               fec_enabled;
+  bool fec_enabled;
 
   /**
    * @brief Initialization flag
@@ -602,24 +602,24 @@ typedef struct {
    * **Purpose**: Prevents operations on uninitialized handle.
    * **Validation**: Checked by all public functions.
    */
-  bool               initialized;
+  bool initialized;
 
   /**
    * @brief Callback invoked when PING control frame received
    * @details Called with decoded frame and user context during rx_spi_comm_receive.
    */
-  void               (*on_ping_cb)(const rx_frame_t* frame, void* ctx);
+  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx);
 
   /**
    * @brief Callback invoked when RESET control frame received
    * @details Called with decoded frame and user context during rx_spi_comm_receive.
    */
-  void               (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
+  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
 
   /**
    * @brief User context pointer passed to control frame callbacks
    */
-  void*              cb_ctx;
+  void* cb_ctx;
 } rx_spi_comm_handle_t;
 
 /**
@@ -698,7 +698,7 @@ typedef struct {
    * **Default**: false
    * **Overhead**: ~50% (e.g., 100 bytes → 150 bytes with FEC)
    */
-  bool    fec_enabled;
+  bool fec_enabled;
 } rx_spi_comm_config_t;
 
 /* =============================================================================
@@ -797,7 +797,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config_t* config);
+[[nodiscard]] rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t*       handle,
+                                        const rx_spi_comm_config_t* config);
 
 /**
  * @brief Deinitialize SPI communication handle and release resources
@@ -869,12 +870,12 @@ typedef struct {
  *
  * **Algorithm:**
  * 1. **Validate parameters**: Check handle, payload, payload_len (NASA Rule 5)
- * 2. **Assign sequence**: Use and increment handle->tx_sequence
+ * 2. **Assign sequence**: Get next TX sequence from shared rx_session_state_t
  * 3. **Build frame**: Create frame header (type, flags, length, sequence)
  * 4. **Encode frame**: Call frame encoder to add CRC-32
  * 5. **Optional FEC**: If enabled, apply FEC encoding
  * 6. **SPI transfer**: Transmit encoded frame via RSPI peripheral
- * 7. **Update state**: Increment tx_sequence (with wrap at 65535)
+ * 7. **Update state**: TX sequence already incremented by rx_session_next_tx()
  *
  * **Performance**:
  * - Small payload (16 bytes): ~150 µs
@@ -885,7 +886,7 @@ typedef struct {
  * @param[in,out] handle Initialized SPI communication handle
  *   - **Valid range**: Non-NULL pointer to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
- *   - **Side effects**: Increments handle->tx_sequence
+ *   - **Side effects**: Increments shared session TX sequence via rx_session_next_tx()
  *
  * @param[in] type Frame type (command, request, response, etc.)
  *   - **Valid range**: Any rx_frame_type_t value
@@ -920,7 +921,7 @@ typedef struct {
  * @pre handle must be non-NULL and initialized
  * @pre If payload_len > 0, payload must point to valid data
  * @pre RSPI hardware must be initialized and ready
- * @post handle->tx_sequence incremented (wraps at 65535)
+ * @post Shared session TX sequence incremented (wraps at 65535)
  * @post Frame transmitted to RPi5 if successful
  *
  * @note Sequence number managed automatically - caller does not specify
@@ -963,10 +964,10 @@ typedef struct {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
-                          rx_frame_type_t       type,
-                          uint8_t               flags,
-                          const uint8_t*        payload,
-                          uint32_t              payload_len);
+                                        rx_frame_type_t       type,
+                                        uint8_t               flags,
+                                        const uint8_t*        payload,
+                                        uint32_t              payload_len);
 
 /**
  * @brief Send ACK frame for received frame (convenience wrapper)
@@ -1101,7 +1102,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
+[[nodiscard]] rx_err_t
+rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
 
 /* =============================================================================
  * Receive API
@@ -1140,7 +1142,7 @@ typedef struct {
  * @param[in,out] handle Initialized SPI communication handle
  *   - **Valid range**: Non-NULL pointer to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
- *   - **Side effects**: Increments handle->rx_sequence on success
+ *   - **Side effects**: Updates shared session RX sequence via rx_session_validate_rx()
  *
  * @param[out] frame Pointer to frame structure to receive decoded frame
  *   - **Valid range**: Non-NULL pointer to allocated rx_frame_t
@@ -1221,7 +1223,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms);
+[[nodiscard]] rx_err_t
+rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms);
 
 /**
  * @brief Check if data is available for reading (non-blocking query)
@@ -1286,7 +1289,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle, bool* available);
+[[nodiscard]] rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle,
+                                                  bool*                       available);
 
 /* Sequence management is now handled by the shared rx_session_state_t.
  * Use rx_session_next_tx(), rx_session_validate_rx(), rx_session_reset()
@@ -1327,11 +1331,11 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_spi_comm_set_control_callbacks(
-  rx_spi_comm_handle_t* handle,
-  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
-  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
-  void*                 cb_ctx);
+[[nodiscard]] rx_err_t
+rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
+                                  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+                                  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+                                  void* cb_ctx);
 
 /**
  * @brief Send PONG frame with payload (response to PING)
@@ -1361,9 +1365,8 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle,
-                                              const uint8_t*        payload,
-                                              uint32_t              payload_len);
+[[nodiscard]] rx_err_t
+rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint32_t payload_len);
 
 /**
  * @brief Send RESET_ACK frame (response to RESET)

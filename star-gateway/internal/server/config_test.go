@@ -114,8 +114,8 @@ func TestDefaultHTTPConfig(t *testing.T) {
 
 	tests := []struct {
 		name string
-		got  interface{}
-		want interface{}
+		got  any
+		want any
 	}{
 		{name: "ListenAddr", got: config.ListenAddr, want: DefaultListenAddr},
 		{name: "ReadTimeout", got: config.ReadTimeout, want: DefaultReadTimeout},
@@ -153,13 +153,14 @@ func TestGRPCConfig_Validate(t *testing.T) {
 			expectErr: false,
 		},
 		{
-			name: "ValidConfigWithZeroMaxSize",
+			name: "ZeroMaxMessageSize",
 			config: &GRPCConfig{
 				ListenAddr:       "127.0.0.1:50051",
 				MaxMessageSize:   0,
 				ServiceRegistrar: mockRegistrar,
 			},
-			expectErr: false,
+			expectErr: true,
+			errMsg:    "max message size must be > 0",
 		},
 		{
 			name: "MissingListenAddr",
@@ -187,7 +188,7 @@ func TestGRPCConfig_Validate(t *testing.T) {
 				ServiceRegistrar: mockRegistrar,
 			},
 			expectErr: true,
-			errMsg:    "max message size must be >= 0",
+			errMsg:    "max message size must be > 0",
 		},
 	}
 
@@ -204,8 +205,8 @@ func TestDefaultGRPCConfig(t *testing.T) {
 
 	tests := []struct {
 		name string
-		got  interface{}
-		want interface{}
+		got  any
+		want any
 	}{
 		{name: "ListenAddr", got: config.ListenAddr, want: DefaultGRPCListenAddr},
 		{name: "MaxMessageSize", got: config.MaxMessageSize, want: DefaultGRPCMaxMessageSize},

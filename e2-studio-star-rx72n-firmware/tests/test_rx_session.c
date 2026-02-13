@@ -23,18 +23,55 @@
  * @see star-gateway/internal/manager/session.go  Go reference
  */
 
-#include "rx_session.h"
-
 #include <string.h>
 
+#include "rx_session.h"
 #include "unity.h"
+
+/* ============================================================================
+ * Test Constants
+ * ============================================================================ */
+
+/**
+ * @brief Test sequence number constants for session tests
+ *
+ * @details Named constants replace magic literals throughout the test suite
+ * to improve readability and maintainability per NASA Power of 10 Rule 8.
+ */
+typedef enum : uint16_t {
+  k_test_sentinel_seq     = 0xFFFF, /**< Sentinel value to detect unwritten output */
+  k_test_expected_seq_0   = 0,      /**< Expected initial sequence after init/reset */
+  k_test_advance_count    = 100,    /**< Iterations for TX advance loop test */
+  k_test_validate_count   = 50,     /**< Iterations for RX validate loop test */
+  k_test_reset_advance    = 10,     /**< Iterations to advance before reset test */
+  k_test_transport_switch = 5,      /**< Iterations per transport in switch test */
+  k_test_gap_accept_count = 6,      /**< Accept count for gap boundary test (0-5) */
+} test_session_constants_t;
 
 /* ============================================================================
  * Test Fixtures
  * ============================================================================ */
 
+/**
+ * @var s_session
+ * @brief Shared session state instance for all test functions
+ *
+ * @details Initialized in setUp() via rx_session_init(), torn down in
+ * tearDown() via rx_session_deinit(). Each test starts with a fresh
+ * session (tx=0, rx=0).
+ */
 static rx_session_state_t s_session;
 
+/**
+ * @brief Per-test setup: initialize a fresh session state
+ *
+ * @details Zeroes the session struct and calls rx_session_init() to establish
+ * a clean starting state (tx_sequence=0, rx_sequence=0, initialized=true).
+ * Asserts initialization succeeds.
+ *
+ * @pre s_session memory is valid
+ * @post s_session.initialized == true, sequences at zero
+ */
 void setUp(void)
 {
   memset(&s_session, 0, sizeof(s_session));
@@ -42,6 +79,15 @@ void setUp(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
+/**
+ * @brief Per-test teardown: deinitialize session if still active
+ *
+ * @details Safely deinitializes the session state only if it is still marked
+ * as initialized, allowing tests that explicitly deinit to not double-free.
+ *
+ * @pre s_session may or may not be initialized
+ * @post s_session.initialized == false
+ */
 void tearDown(void)
 {
   if (s_session.initialized) {
@@ -59,16 +105,16 @@ void tearDown(void)
 void test_init_sets_sequences_to_zero(void)
 {
   /* setUp already called init, verify state */
-  uint16_t tx_seq = 0xFFFF;
-  uint16_t rx_seq = 0xFFFF;
+  uint16_t tx_seq = k_test_sentinel_seq;
+  uint16_t rx_seq = k_test_sentinel_seq;
 
   rx_err_t err = rx_session_get_tx(&s_session, &tx_seq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(0, tx_seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_expected_seq_0, tx_seq);
 
   err = rx_session_get_rx(&s_session, &rx_seq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(0, rx_seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_expected_seq_0, rx_seq);
 }
 
 /**
@@ -136,7 +182,7 @@ void test_next_tx_increments(void)
 {
   uint16_t seq;
 
-  for (uint16_t i = 0; i < 100; i++) {
+  for (uint16_t i = 0; i < k_test_advance_count; i++) {
     rx_err_t err = rx_session_next_tx(&s_session, &seq);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_UINT16(i, seq);
@@ -234,7 +280,7 @@ void test_validate_rx_sequential(void)
 {
   rx_session_validate_result_t result;
 
-  for (uint16_t i = 0; i < 50; i++) {
+  for (uint16_t i = 0; i < k_test_validate_count; i++) {
     rx_err_t err = rx_session_validate_rx(&s_session, i, &result);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(k_session_validate_ok, result);
@@ -365,7 +411,7 @@ void test_validate_rx_null_result(void)
 void test_validate_rx_null_state(void)
 {
   rx_session_validate_result_t result;
-  rx_err_t err = rx_session_validate_rx(NULL, 0, &result);
+  rx_err_t                     err = rx_session_validate_rx(NULL, 0, &result);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -409,12 +455,14 @@ void test_reset_clears_sequences(void)
   uint16_t seq;
 
   /* Advance both sequences */
-  for (uint16_t i = 0; i < 10; i++) {
-    (void)rx_session_next_tx(&s_session, &seq);
+  for (uint16_t i = 0; i < k_test_reset_advance; i++) {
+    rx_err_t ret = rx_session_next_tx(&s_session, &seq);
+    TEST_ASSERT_EQUAL(k_rx_ok, ret);
   }
   rx_session_validate_result_t result;
-  for (uint16_t i = 0; i < 10; i++) {
-    (void)rx_session_validate_rx(&s_session, i, &result);
+  for (uint16_t i = 0; i < k_test_reset_advance; i++) {
+    rx_err_t ret = rx_session_validate_rx(&s_session, i, &result);
+    TEST_ASSERT_EQUAL(k_rx_ok, ret);
   }
 
   /* Reset */
@@ -470,17 +518,17 @@ void test_transport_switch_tx_continuity(void)
 {
   uint16_t seq;
 
-  /* USB sends frames with seq 0-4 */
-  for (uint16_t i = 0; i < 5; i++) {
+  /* USB sends frames with seq 0-(N-1) */
+  for (uint16_t i = 0; i < k_test_transport_switch; i++) {
     rx_err_t err = rx_session_next_tx(&s_session, &seq);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_UINT16(i, seq);
   }
 
-  /* "Switch to SPI" - same session state, next seq should be 5 */
+  /* "Switch to SPI" - same session state, next seq should be N */
   rx_err_t err = rx_session_next_tx(&s_session, &seq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT16(5, seq);
+  TEST_ASSERT_EQUAL_UINT16(k_test_transport_switch, seq);
 }
 
 /**
@@ -492,15 +540,15 @@ void test_transport_switch_rx_continuity(void)
 {
   rx_session_validate_result_t result;
 
-  /* USB receives seq 0-4 */
-  for (uint16_t i = 0; i < 5; i++) {
+  /* USB receives seq 0-(N-1) */
+  for (uint16_t i = 0; i < k_test_transport_switch; i++) {
     rx_err_t err = rx_session_validate_rx(&s_session, i, &result);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(k_session_validate_ok, result);
   }
 
-  /* "Switch to SPI" - same session state, receive seq 5 */
-  rx_err_t err = rx_session_validate_rx(&s_session, 5, &result);
+  /* "Switch to SPI" - same session state, receive seq N */
+  rx_err_t err = rx_session_validate_rx(&s_session, k_test_transport_switch, &result);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_session_validate_ok, result);
 }

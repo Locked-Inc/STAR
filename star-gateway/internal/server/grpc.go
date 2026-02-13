@@ -130,7 +130,7 @@ func RunGRPCServer(ctx context.Context, srv *grpc.Server, addr string, logger *s
 		return nil, fmt.Errorf("failed to listen on %s: %w", addr, err)
 	}
 
-	errChan := make(chan error, 1)
+	errChan := make(chan error, errChanBufSize)
 
 	// Start server in background goroutine
 	go func() {

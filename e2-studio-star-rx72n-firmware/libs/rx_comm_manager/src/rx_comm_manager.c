@@ -427,12 +427,17 @@ static const char s_tag[] = "COMM_MGR";
  *
  * @since Version 1.1.0
  */
+/** @brief Simulator time stub value (time is unavailable in simulator) */
+typedef enum : uint32_t {
+  k_sim_time_ms_zero = 0, /**< Simulator returns zero (no real-time clock) */
+} rx_comm_sim_time_t;
+
 static uint32_t internal_get_time_ms(void)
 {
 #if !RX_IS_SIMULATOR
   return (uint32_t)tx_time_get() * k_threadx_ms_per_tick;
 #else
-  return 0;
+  return k_sim_time_ms_zero;
 #endif
 }
 
@@ -640,10 +645,10 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
    * Per the dual-detection model, this is the primary link health
    * mechanism (200ms implicit timeout). */
   rx_comm_heartbeat_state_t* hb = &mgr->heartbeat[channel];
-  hb->last_rx_ms = internal_get_time_ms();
+  hb->last_rx_ms                = internal_get_time_ms();
   if (hb->status != k_link_status_healthy) {
     rx_comm_link_status_t old_status = hb->status;
-    hb->status = k_link_status_healthy;
+    hb->status                       = k_link_status_healthy;
     if (old_status == k_link_status_dead) {
       rx_log_info(s_tag, "Link recovered: frame received");
     } else {
@@ -841,6 +846,12 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
     return;
   }
 
+  /* Check backoff: skip if retry time hasn't been reached yet */
+  const uint32_t now_ms = internal_get_time_ms();
+  if (entry->retries > 0 && now_ms < entry->next_retry_time_ms) {
+    return; /* Backoff period not elapsed, try again later */
+  }
+
   /* Build send params from queued entry */
   const rx_comm_send_params_t params = {
     .channel     = entry->channel,
@@ -854,9 +865,10 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
 
   if (err == k_rx_ok || entry->channel == k_comm_channel_usb) {
     /* Success, or USB fire-and-forget: dequeue */
-    entry->occupied = false;
-    mgr->event_queue_tail =
-      (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
+    entry->occupied           = false;
+    entry->retries            = 0;
+    entry->next_retry_time_ms = 0;
+    mgr->event_queue_tail     = (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
     mgr->event_queue_count--;
 
     if (err == k_rx_ok) {
@@ -867,19 +879,27 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
     return;
   }
 
-  /* SPI send failed: retry with backoff */
+  /* SPI send failed: retry with exponential backoff */
   entry->retries++;
   if (entry->retries >= k_event_max_retries) {
     rx_log_error_val(s_tag, "SPI event failed after retries", (uint8_t)entry->retries);
-    entry->occupied = false;
-    mgr->event_queue_tail =
-      (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
+    entry->occupied           = false;
+    entry->retries            = 0;
+    entry->next_retry_time_ms = 0;
+    mgr->event_queue_tail     = (mgr->event_queue_tail + 1) % k_comm_event_queue_depth;
     mgr->event_queue_count--;
     return;
   }
 
+  /* Compute exponential backoff: initial_ms << (retries - 1), capped at max */
+  uint32_t backoff_ms = (uint32_t)k_event_initial_backoff_ms << (entry->retries - 1);
+  if (backoff_ms > k_event_max_backoff_ms) {
+    backoff_ms = k_event_max_backoff_ms;
+  }
+  entry->next_retry_time_ms = now_ms + backoff_ms;
+
   rx_log_warn_val(s_tag, "SPI event retry attempt", (uint8_t)entry->retries);
-  /* Entry stays in queue, will be retried on next poll() */
+  /* Entry stays in queue, will be retried after backoff period */
 }
 
 /* =============================================================================
@@ -926,9 +946,7 @@ static void internal_check_heartbeat(rx_comm_manager_t* mgr)
         rx_log_warn_val(s_tag, "Link dead: no frame (ms elapsed)", elapsed);
 
         if (mgr->link_status_cb != nullptr) {
-          mgr->link_status_cb((rx_comm_channel_t)ch,
-                               k_link_status_dead,
-                               mgr->link_status_ctx);
+          mgr->link_status_cb((rx_comm_channel_t)ch, k_link_status_dead, mgr->link_status_ctx);
         }
       }
     }
@@ -1617,8 +1635,7 @@ rx_err_t rx_comm_manager_respond(rx_comm_manager_t* mgr,
  * =============================================================================
  */
 
-rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t*           mgr,
-                                      const rx_comm_send_params_t* params)
+rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
 {
   /* Stream path: fire-and-forget, no retries, no queuing.
    * Telemetry and other time-sensitive data goes here.
@@ -1626,8 +1643,7 @@ rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t*           mgr,
   return rx_comm_manager_send(mgr, params);
 }
 
-rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
-                                     const rx_comm_send_params_t* params)
+rx_err_t rx_comm_manager_event_send(rx_comm_manager_t* mgr, const rx_comm_send_params_t* params)
 {
   if (mgr == nullptr || params == nullptr) {
     rx_log_error(s_tag, "Event enqueue failed: NULL arg");
@@ -1644,6 +1660,11 @@ rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
     return k_rx_err_invalid_arg;
   }
 
+  if (params->payload_len > 0 && params->payload == nullptr) {
+    rx_log_error(s_tag, "Event enqueue failed: NULL payload with nonzero len");
+    return k_rx_err_invalid_arg;
+  }
+
   /* Check queue capacity */
   if (mgr->event_queue_count >= k_comm_event_queue_depth) {
     rx_log_error_val(s_tag, "Event queue full, depth", (uint8_t)mgr->event_queue_count);
@@ -1652,19 +1673,18 @@ rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
 
   /* Enqueue: copy payload into static slot */
   rx_comm_event_entry_t* entry = &mgr->event_queue[mgr->event_queue_head];
-  entry->channel     = params->channel;
-  entry->type        = params->type;
-  entry->flags       = params->flags;
-  entry->payload_len = params->payload_len;
-  entry->retries     = 0;
-  entry->occupied    = true;
+  entry->channel               = params->channel;
+  entry->type                  = params->type;
+  entry->flags                 = params->flags;
+  entry->payload_len           = params->payload_len;
+  entry->retries               = 0;
+  entry->occupied              = true;
 
   if (params->payload != nullptr && params->payload_len > 0) {
     (void)memcpy(entry->payload, params->payload, params->payload_len);
   }
 
-  mgr->event_queue_head =
-    (mgr->event_queue_head + 1) % k_comm_event_queue_depth;
+  mgr->event_queue_head = (mgr->event_queue_head + 1) % k_comm_event_queue_depth;
   mgr->event_queue_count++;
 
   rx_log_debug_val(s_tag, "Event enqueued, queue depth", mgr->event_queue_count);
@@ -1677,12 +1697,17 @@ rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
  */
 
 rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
-                                      rx_comm_channel_t        channel,
-                                      rx_comm_link_status_t*   status)
+                                     rx_comm_channel_t        channel,
+                                     rx_comm_link_status_t*   status)
 {
   if (mgr == nullptr || status == nullptr) {
     rx_log_error(s_tag, "Link status query: NULL arg");
     return k_rx_err_invalid_arg;
+  }
+
+  if (!mgr->initialized) {
+    rx_log_error(s_tag, "Link status query: uninitialized manager");
+    return k_rx_err_invalid_state;
   }
 
   if (channel >= k_comm_channel_count) {
