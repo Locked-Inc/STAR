@@ -1,20 +1,29 @@
-/***********************************************************************************************************************
- * STAR Project - Default Exception and Interrupt Handlers
+/**
+ * @file default_interrupt_handlers.c
+ * @brief Default exception and interrupt handlers for RX72N boot sequence
  *
- * Provides weak default implementations of exception handlers referenced by vecttbl.c.
- * These can be overridden by user implementations if needed.
+ * @details
+ * Provides weak default implementations of exception handlers referenced by
+ * vecttbl.c. These can be overridden by user implementations if needed.
  *
- * Default behavior: Infinite loop (halt on exception)
- ***********************************************************************************************************************/
+ * **Default behavior:** Infinite loop (halt on exception). This is the safest
+ * default for unhandled exceptions in safety-critical embedded systems.
+ *
+ * @see vecttbl.c Vector table referencing these handlers
+ * @see r_bsp.h Declarations of these handlers (weak symbols)
+ *
+ * @copyright Copyright (c) 2026 STAR Project
+ * @since Version 1.0.0
+ */
 
 #include "platform.h"
 
-/***********************************************************************************************************************
- * Default Exception Handlers (Weak Symbols)
- *
- * All handlers halt the CPU in an infinite loop. Override these in your application
- * to provide custom exception handling.
- ***********************************************************************************************************************/
+/**
+ * @name Default Exception Handlers (Weak Symbols)
+ * @brief All handlers halt the CPU in an infinite loop.
+ * @details Override these in your application to provide custom exception handling.
+ * @{
+ */
 
 /**
  * @brief Default supervisor instruction exception handler
@@ -99,3 +108,5 @@ __attribute__((weak)) void undefined_interrupt_source_isr(void)
     R_BSP_NOP(); /* Halt on undefined interrupt */
   }
 }
+
+/** @} */
