@@ -298,13 +298,12 @@ func validateTransportsRegistered(tm *manager.TransportManager, mode manager.Tra
 // createSocketTransport creates a SocketTransport for simulation mode.
 // The transport is opened and ready for use upon successful return.
 func createSocketTransport(ctx context.Context, socketPath string) (transport.Device, error) {
-	// TODO: Verify this function is correct and works properly
-	// Create SocketTransport with the provided socket path
+	// Create SocketTransport with the provided socket path (simulation mode only)
 	socketTransport := transport.NewSocketTransport(socketPath)
 
 	// Open the transport connection
 	if err := socketTransport.Open(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to open socket transport: %w", err)
 	}
 
 	return socketTransport, nil
@@ -313,11 +312,16 @@ func createSocketTransport(ctx context.Context, socketPath string) (transport.De
 // createSPITransport creates an SPITransport for production mode.
 // The transport is configured with appropriate device parameters and opened.
 func createSPITransport(ctx context.Context) (transport.Device, error) {
-	// TODO: Create SPITransport with the appropriate device parameters
-	// (SPI bus, chip select, speed, mode)
-	// TODO: Open the transport connection
-	// TODO: Return the opened transport
-	return nil, fmt.Errorf("SPI transport not yet implemented")
+	// Create SPI transport with default configuration
+	// DefaultConfig uses: /dev/spidev0.0, 10 MHz, Mode 0, 8 bits/word
+	spiTransport := transport.NewSPITransport(transport.DefaultConfig())
+
+	// Open the SPI device
+	if err := spiTransport.Open(); err != nil {
+		return nil, fmt.Errorf("failed to open SPI transport: %w", err)
+	}
+
+	return spiTransport, nil
 }
 
 // createSPILink creates an SPILink using the provided SPI transport and shared session state.
