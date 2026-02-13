@@ -115,20 +115,14 @@ echo -e "${YELLOW}Building firmware...${NC}"
 if [ "$VERBOSE" = true ]; then
     cmake --build . --verbose
 else
-    cmake --build . -- -j$(nproc)
+    cmake --build . -- -j"$(nproc)"
 fi
 
-# Check if build succeeded
-if [ $? -eq 0 ]; then
-    echo ""
-    echo -e "${GREEN}✓ Build successful!${NC}"
-    echo ""
-    echo -e "${GREEN}Build artifacts:${NC}"
-    ls -lh *.elf *.mot *.map 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
-    echo ""
-    echo -e "${GREEN}Firmware ready:${NC} star-rx72n-firmware.elf"
-    echo -e "${GREEN}Flash file:${NC} star-rx72n-firmware.mot"
-else
-    echo -e "${RED}✗ Build failed${NC}"
-    exit 1
-fi
+echo ""
+echo -e "${GREEN}✓ Build successful!${NC}"
+echo ""
+echo -e "${GREEN}Build artifacts:${NC}"
+find . -maxdepth 1 \( -name '*.elf' -o -name '*.mot' -o -name '*.map' \) -exec ls -lh {} + 2>/dev/null | awk '{print "  " $9 " (" $5 ")"}'
+echo ""
+echo -e "${GREEN}Firmware ready:${NC} star-rx72n-firmware.elf"
+echo -e "${GREEN}Flash file:${NC} star-rx72n-firmware.mot"
