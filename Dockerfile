@@ -59,14 +59,20 @@ RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}
     && chmod +x /usr/local/bin/buf
 
 # Install GNURX toolchain for RX72N firmware development
-# Download and install the toolchain to /opt/gnurx
+# Copy local installer and install the toolchain to /opt/gnurx
+COPY gcc-14.2.0.202511-GNURX-ELF.run /tmp/gnurx-installer.run
 RUN mkdir -p /opt/gnurx && \
-    cd /tmp && \
-    wget -q --show-progress https://llvm-gcc-renesas.com/downloads/get.php?f=rx/8.3.0.202305/gcc-8.3.0.202305-GNURX-ELF.run -O gnurx-installer.run && \
-    chmod +x gnurx-installer.run && \
-    ./gnurx-installer.run --prefix=/opt/gnurx --mode unattended && \
-    rm gnurx-installer.run && \
+    chmod +x /tmp/gnurx-installer.run && \
+    /tmp/gnurx-installer.run --prefix=/opt/gnurx --mode unattended && \
+    rm /tmp/gnurx-installer.run && \
     echo "GNURX toolchain installed successfully"
+
+# Verify GNURX installation
+RUN if [ ! -f /opt/gnurx/bin/rx-elf-gcc ]; then \
+        echo "ERROR: GNURX installation failed - rx-elf-gcc not found" && exit 1; \
+    fi && \
+    /opt/gnurx/bin/rx-elf-gcc --version && \
+    echo "GNURX toolchain verification successful"
 
 # Add GNURX toolchain to PATH
 ENV PATH="/opt/gnurx/bin:${PATH}"
