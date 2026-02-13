@@ -404,3 +404,72 @@ func TestRunGRPCServer_ShutdownWithoutRequests(t *testing.T) {
 		t.Fatal("Shutdown timed out")
 	}
 }
+
+// Test that when MaxMessageSize == 0 the server does NOT set explicit
+// grpc.MaxRecvMsgSize/MaxSendMsgSize options and therefore accepts
+// normal-sized messages (i.e. uses grpc-go defaults).
+func TestRunGRPCServer_ZeroMaxMessageSize_AllowsNormalMessage(t *testing.T) {
+	mockService := &mockMotorService{}
+	addr := getTestListenAddr(t)
+	config := &GRPCConfig{
+		ListenAddr:     addr,
+		MaxMessageSize: 0, // explicit zero => rely on grpc-go defaults
+		ServiceRegistrar: func(srv *grpc.Server) error {
+			starv1.RegisterMotorControlServiceServer(srv, mockService)
+			return nil
+		},
+	}
+
+	logger := newDiscardLogger()
+	srv, err := NewGRPCServer(config, logger)
+	if err != nil {
+		t.Fatalf("Failed to create server: %v", err)
+	}
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	errChan, err := RunGRPCServer(ctx, srv, config.ListenAddr, logger)
+	if err != nil {
+		t.Fatalf("Failed to start server: %v", err)
+	}
+	defer func() {
+		cancel()
+		select {
+		case <-errChan:
+		case <-time.After(testShutdownWait):
+		}
+	}()
+
+	if err := waitForGRPCReady(config.ListenAddr); err != nil {
+		t.Fatal(err)
+	}
+
+	conn, err := grpc.NewClient(config.ListenAddr, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		t.Fatalf("Failed to dial: %v", err)
+	}
+	defer conn.Close()
+
+	client := starv1.NewMotorControlServiceClient(conn)
+	req := &starv1.SetVelocityRequest{
+		Header: &starv1.RequestHeader{RequestId: "test-zero-maxsize"},
+		Command: &starv1.VelocityCommand{
+			FrontLeftVelocityMps:  testVelocityMps,
+			FrontRightVelocityMps: testVelocityMps,
+			BackLeftVelocityMps:   testVelocityMps,
+			BackRightVelocityMps:  testVelocityMps,
+		},
+	}
+
+	resp, err := client.SetVelocity(context.Background(), req)
+	if err != nil {
+		t.Fatalf("SetVelocity failed with MaxMessageSize=0: %v", err)
+	}
+	if resp.Header.Status != starv1.Status_STATUS_OK {
+		t.Errorf("Expected STATUS_OK, got %v", resp.Header.Status)
+	}
+	if !mockService.setCalled.Load() {
+		t.Error("Mock service method was not called")
+	}
+}

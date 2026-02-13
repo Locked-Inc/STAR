@@ -73,6 +73,13 @@ type serviceSet struct {
 	gateway       *service.GatewayService
 }
 
+// Package-level variables which point to the real constructors. These are
+// intentionally replaceable test hooks used by unit tests to inject mocks or
+// test doubles. IMPORTANT: modifying these globals is NOT safe for tests that
+// run in parallel — any test that overrides them must NOT call t.Parallel()
+// and should restore the original function when finished (or avoid concurrent
+// replacement). The default implementations are `createSPITransport` and
+// `createSPILink` respectively; look up those symbols to find the real logic.
 var (
 	createSPITransportFn = createSPITransport
 	createSPILinkFn      = createSPILink
@@ -123,8 +130,14 @@ func Run(ctx context.Context, config Config) error {
 
 	logger.Info("Starting STAR Gateway")
 
+	// Create a derived cancellable context for the gateway run lifecycle so
+	// subsystems (HTTP/gRPC servers, dispatcher) can observe cancellation when
+	// we receive an OS signal and perform graceful shutdown.
+	runCtx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
 	// Initialize transport manager with validation and failover
-	tm, err := initTransportManager(ctx, config, logger)
+	tm, err := initTransportManager(runCtx, config, logger)
 	if err != nil {
 		return fmt.Errorf("transport manager initialization failed: %w", err)
 	}
@@ -163,13 +176,14 @@ func Run(ctx context.Context, config Config) error {
 	// Initialize servers struct
 	servers := &Servers{}
 
-	// Start gRPC server (non-blocking)
-	if err := startGRPCServer(ctx, servers, services, logger); err != nil {
+	// Start gRPC server (non-blocking) — use derived runCtx so server goroutines
+	// observe cancellation from the Run() signal handler.
+	if err := startGRPCServer(runCtx, servers, services, logger); err != nil {
 		return fmt.Errorf("gRPC server startup failed: %w", err)
 	}
 
 	// Start HTTP server (non-blocking)
-	if err := startHTTPServer(ctx, servers, services, logger); err != nil {
+	if err := startHTTPServer(runCtx, servers, services, logger); err != nil {
 		return fmt.Errorf("HTTP server startup failed: %w", err)
 	}
 
@@ -181,6 +195,8 @@ func Run(ctx context.Context, config Config) error {
 	select {
 	case sig := <-sigChan:
 		logger.Info("Received shutdown signal", slog.String("signal", sig.String()))
+		// Notify derived context so background servers/loops can begin graceful shutdown.
+		cancel()
 	case <-ctx.Done():
 		logger.Info("Context cancelled, shutting down")
 	}
@@ -472,13 +488,24 @@ func registerGRPCServices(srv *grpc.Server, services *serviceSet) error {
 	if services == nil {
 		return fmt.Errorf("service set is nil")
 	}
-	if services.motorControl == nil ||
-		services.telemetry == nil ||
-		services.battery == nil ||
-		services.configuration == nil ||
-		services.firmware == nil ||
-		services.gateway == nil {
-		return fmt.Errorf("service set contains nil service")
+	// Check each service individually to provide specific error messages
+	if services.motorControl == nil {
+		return fmt.Errorf("service set contains nil service: motorControl")
+	}
+	if services.telemetry == nil {
+		return fmt.Errorf("service set contains nil service: telemetry")
+	}
+	if services.battery == nil {
+		return fmt.Errorf("service set contains nil service: battery")
+	}
+	if services.configuration == nil {
+		return fmt.Errorf("service set contains nil service: configuration")
+	}
+	if services.firmware == nil {
+		return fmt.Errorf("service set contains nil service: firmware")
+	}
+	if services.gateway == nil {
+		return fmt.Errorf("service set contains nil service: gateway")
 	}
 
 	starv1.RegisterMotorControlServiceServer(srv, services.motorControl)

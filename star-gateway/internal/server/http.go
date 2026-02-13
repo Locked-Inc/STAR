@@ -133,9 +133,46 @@ func RunHTTPServer(ctx context.Context, srv *http.Server, logger *slog.Logger) (
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), DefaultShutdownTimeout)
 		defer cancel()
 
-		if err := srv.Shutdown(shutdownCtx); err != nil {
-			logger.Error("HTTP server shutdown failed",
-				slog.String("error", err.Error()),
+		shutdownErr := srv.Shutdown(shutdownCtx)
+
+		// If graceful shutdown failed or the parent context deadline was exceeded,
+		// fall back to a forceful Close() to ensure connections are terminated.
+		if shutdownErr != nil || ctx.Err() == context.DeadlineExceeded {
+			closeErr := srv.Close()
+
+			// Include both shutdown and close errors (when present) in logs.
+			if shutdownErr != nil && closeErr != nil {
+				logger.Error("HTTP server shutdown failed and forceful close failed",
+					slog.String("shutdown_error", shutdownErr.Error()),
+					slog.String("close_error", closeErr.Error()),
+					slog.Duration("timeout", DefaultShutdownTimeout))
+				return
+			}
+
+			if shutdownErr != nil {
+				if closeErr != nil {
+					// already handled above, but keep defensive logging
+					logger.Error("HTTP server shutdown failed and forceful close failed",
+						slog.String("shutdown_error", shutdownErr.Error()),
+						slog.String("close_error", closeErr.Error()),
+						slog.Duration("timeout", DefaultShutdownTimeout))
+				} else {
+					logger.Info("HTTP server shutdown failed; forced close succeeded",
+						slog.String("shutdown_error", shutdownErr.Error()),
+						slog.Duration("timeout", DefaultShutdownTimeout))
+				}
+				return
+			}
+
+			// shutdownErr == nil, but parent ctx timed out
+			if closeErr != nil {
+				logger.Error("HTTP server forced close failed after parent context deadline",
+					slog.String("close_error", closeErr.Error()),
+					slog.Duration("timeout", DefaultShutdownTimeout))
+				return
+			}
+
+			logger.Info("HTTP server forced closed after parent context deadline",
 				slog.Duration("timeout", DefaultShutdownTimeout))
 		}
 	}()

@@ -50,9 +50,12 @@ func NewGRPCServer(config *GRPCConfig, logger *slog.Logger) (*grpc.Server, error
 		return nil, fmt.Errorf("invalid gRPC config: %w", err)
 	}
 
-	opts := []grpc.ServerOption{
-		grpc.MaxRecvMsgSize(config.MaxMessageSize),
-		grpc.MaxSendMsgSize(config.MaxMessageSize),
+	var opts []grpc.ServerOption
+	if config.MaxMessageSize > 0 {
+		opts = append(opts,
+			grpc.MaxRecvMsgSize(config.MaxMessageSize),
+			grpc.MaxSendMsgSize(config.MaxMessageSize),
+		)
 	}
 
 	srv := grpc.NewServer(opts...)

@@ -119,9 +119,10 @@ func TestRegisterGRPCServices(t *testing.T) {
 // TestRegisterGRPCServices_NilServices verifies error handling for nil services.
 func TestRegisterGRPCServices_NilServices(t *testing.T) {
 	tests := []struct {
-		name     string
-		services *serviceSet
-		wantErr  bool
+		name            string
+		services        *serviceSet
+		wantErr         bool
+		wantErrContains string // Expected substring in error message
 	}{
 		{
 			name:     "AllServicesPresent",
@@ -129,34 +130,40 @@ func TestRegisterGRPCServices_NilServices(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name:     "NilMotorControlService",
-			services: func() *serviceSet { s := newTestServiceSet(t); s.motorControl = nil; return s }(),
-			wantErr:  true,
+			name:            "NilMotorControlService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.motorControl = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "motorControl",
 		},
 		{
-			name:     "NilTelemetryService",
-			services: func() *serviceSet { s := newTestServiceSet(t); s.telemetry = nil; return s }(),
-			wantErr:  true,
+			name:            "NilTelemetryService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.telemetry = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "telemetry",
 		},
 		{
-			name:     "NilBatteryService",
-			services: func() *serviceSet { s := newTestServiceSet(t); s.battery = nil; return s }(),
-			wantErr:  true,
+			name:            "NilBatteryService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.battery = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "battery",
 		},
 		{
-			name:     "NilConfigurationService",
-			services: func() *serviceSet { s := newTestServiceSet(t); s.configuration = nil; return s }(),
-			wantErr:  true,
+			name:            "NilConfigurationService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.configuration = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "configuration",
 		},
 		{
-			name:     "NilFirmwareService",
-			services: func() *serviceSet { s := newTestServiceSet(t); s.firmware = nil; return s }(),
-			wantErr:  true,
+			name:            "NilFirmwareService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.firmware = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "firmware",
 		},
 		{
-			name:     "NilGatewayService",
-			services: func() *serviceSet { s := newTestServiceSet(t); s.gateway = nil; return s }(),
-			wantErr:  true,
+			name:            "NilGatewayService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.gateway = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "gateway",
 		},
 	}
 
@@ -166,6 +173,14 @@ func TestRegisterGRPCServices_NilServices(t *testing.T) {
 			err := registerGRPCServices(srv, tc.services)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Expected error: %v, got: %v", tc.wantErr, err)
+			}
+			// Verify error message contains the service name
+			if tc.wantErr && tc.wantErrContains != "" {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tc.wantErrContains)
+				} else if !strings.Contains(err.Error(), tc.wantErrContains) {
+					t.Errorf("Expected error containing %q, got: %v", tc.wantErrContains, err)
+				}
 			}
 		})
 	}
@@ -315,7 +330,7 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 		t.Fatalf("expected /healthz body 'ok', got %q", string(body))
 	}
 
-	wsURL := "ws://" + strings.TrimPrefix(servers.HTTPServer.Addr, "http://") + "/ws/controller"
+	wsURL := "ws://" + servers.HTTPServer.Addr + "/ws/controller"
 	wsCtx, wsCancel := context.WithTimeout(context.Background(), websocketDialTimeout)
 	defer wsCancel()
 

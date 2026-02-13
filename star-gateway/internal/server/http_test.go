@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 	"time"
 )
@@ -203,9 +204,9 @@ func TestRunHTTPServer_Lifecycle(t *testing.T) {
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			requestReceived := false
+			var requestReceived atomic.Bool
 			handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				requestReceived = true
+				requestReceived.Store(true)
 				w.WriteHeader(http.StatusOK)
 				if _, err := w.Write([]byte("ok")); err != nil {
 					t.Errorf("failed to write response: %v", err)
@@ -255,7 +256,7 @@ func TestRunHTTPServer_Lifecycle(t *testing.T) {
 					t.Errorf("Expected body %q, got %q", "ok", string(body))
 				}
 
-				if !requestReceived {
+				if !requestReceived.Load() {
 					t.Error("Handler was not called")
 				}
 			}
