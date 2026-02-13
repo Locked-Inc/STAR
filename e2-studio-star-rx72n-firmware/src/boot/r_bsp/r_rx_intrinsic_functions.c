@@ -257,15 +257,15 @@ signed long R_BSP_Min(signed long data1, signed long data2)
  * @since Version 1.0.0
  */
 #if defined(__GNUC__)
-long long R_BSP_MulAndAccOperation_B(long long     init,
-                                     unsigned long count,
-                                     signed char*  addr1,
-                                     signed char*  addr2)
+long long R_BSP_MulAndAccOperation_B(long long           init,
+                                     unsigned long       count,
+                                     const signed char*  addr1,
+                                     const signed char*  addr2)
 {
   long long     result = init;
   unsigned long index;
   for (index = 0; index < count; index++) {
-    result += addr1[index] * addr2[index];
+    result += (long long)addr1[index] * addr2[index];
   }
   return result;
 }
@@ -309,12 +309,12 @@ long long R_BSP_MulAndAccOperation_B(long long     init,
  */
 #if defined(__GNUC__)
 long long
-R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short* addr1, short* addr2)
+R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short* addr1, const short* addr2)
 {
   long long     result = init;
   unsigned long index;
   for (index = 0; index < count; index++) {
-    result += addr1[index] * addr2[index];
+    result += (long long)addr1[index] * addr2[index];
   }
   return result;
 }
@@ -332,12 +332,12 @@ R_BSP_MulAndAccOperation_W(long long init, unsigned long count, short* addr1, sh
 * Return Value : result - Lower 64 bits of the init + S(data1[n] * data2[n]) result. (n=0, 1, ..., const-1)
 ***********************************************************************************************************************/
 #if defined(__GNUC__)
-long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, long* addr1, long* addr2)
+long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, const long* addr1, const long* addr2)
 {
   long long     result = init;
   unsigned long index;
   for (index = 0; index < count; index++) {
-    result += addr1[index] * addr2[index];
+    result += (long long)addr1[index] * addr2[index];
   }
   return result;
 }
@@ -1077,7 +1077,7 @@ R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine_Fpn) void R_BSP_CalcSine_Cosine_Fp
 
     R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R4) R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#81420H, R4)
       R_BSP_ASM(MOV.L R1, 4 [R4]) R_BSP_ASM(MOV.L 4 [R4], R1) R_BSP_ASM(MOV.L[R4], R14)
-        R_BSP_ASM(MOV.L R1, [R2]) R_BSP_ASM(MOV.L R14, [R3]) R_BSP_ASM(POP R4) R_BSP_ASM(POP R14)
+        R_BSP_ASM(MOV.L R1, [R2]) R_BSP_ASM(MOV.L R14, [R3]) R_BSP_ASM(POP R14) R_BSP_ASM(POP R4)
           R_BSP_ASM_END} /* End of function R_BSP_CalcSine_Cosine_Fpn() */
 
 /***********************************************************************************************************************
