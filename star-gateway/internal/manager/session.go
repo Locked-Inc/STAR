@@ -17,7 +17,7 @@ import (
 const MaxGapTolerance uint16 = 10
 
 // SessionIDPayloadSize is the byte size of the session ID in RESET/RESET_ACK payloads.
-// The session ID is encoded as a 4-byte big-endian uint32.
+// The session ID is encoded as a 4-byte little-endian uint32.
 const SessionIDPayloadSize = 4
 
 // SessionState holds sequence numbers shared across all transports.

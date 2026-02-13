@@ -61,11 +61,14 @@ typedef enum : uint16_t {
  * @brief Frame types for communication protocol
  */
 typedef enum : uint8_t {
-  k_frame_type_unknown  = 0, /**< Invalid/unknown frame type */
-  k_frame_type_command  = 1, /**< Command from controller */
-  k_frame_type_response = 2, /**< Response from peripheral */
-  k_frame_type_ack      = 3, /**< Positive acknowledgment */
-  k_frame_type_nack     = 4, /**< Negative acknowledgment */
+  k_frame_type_ping      = 0x00, /**< Link health check request */
+  k_frame_type_pong      = 0x01, /**< Link health check response */
+  k_frame_type_command   = 0x10, /**< Command from controller */
+  k_frame_type_response  = 0x11, /**< Response from peripheral */
+  k_frame_type_ack       = 0x12, /**< Positive acknowledgment (SPI only) */
+  k_frame_type_nack      = 0x13, /**< Negative acknowledgment (SPI only) */
+  k_frame_type_reset_ack = 0xFE, /**< Session reset acknowledgment */
+  k_frame_type_reset     = 0xFF, /**< Session reset request */
 } rx_frame_type_t;
 
 /**

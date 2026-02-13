@@ -373,11 +373,14 @@ typedef enum : uint16_t {
  * @par Type Mapping
  * | Type Value | String Output |
  * |------------|---------------|
- * | k_frame_type_command | "COMMAND" |
- * | k_frame_type_response | "RESPONSE" |
- * | k_frame_type_ack | "ACK" |
- * | k_frame_type_nack | "NACK" |
- * | k_frame_type_unknown | "UNKNOWN" |
+ * | k_frame_type_ping (0x00) | "PING" |
+ * | k_frame_type_pong (0x01) | "PONG" |
+ * | k_frame_type_command (0x10) | "COMMAND" |
+ * | k_frame_type_response (0x11) | "RESPONSE" |
+ * | k_frame_type_ack (0x12) | "ACK" |
+ * | k_frame_type_nack (0x13) | "NACK" |
+ * | k_frame_type_reset_ack (0xFE) | "RESET_ACK" |
+ * | k_frame_type_reset (0xFF) | "RESET" |
  * | (any other value) | "UNKNOWN" |
  *
  * @param[in] type Frame type enumeration value
@@ -385,11 +388,15 @@ typedef enum : uint16_t {
  *   - Unknown values return "UNKNOWN"
  *
  * @return Pointer to static string literal
+ * @retval "PING" For k_frame_type_ping
+ * @retval "PONG" For k_frame_type_pong
  * @retval "COMMAND" For k_frame_type_command
  * @retval "RESPONSE" For k_frame_type_response
  * @retval "ACK" For k_frame_type_ack
  * @retval "NACK" For k_frame_type_nack
- * @retval "UNKNOWN" For k_frame_type_unknown or unrecognized values
+ * @retval "RESET_ACK" For k_frame_type_reset_ack
+ * @retval "RESET" For k_frame_type_reset
+ * @retval "UNKNOWN" For unrecognized values
  *
  * @pre None (pure function, always valid)
  *

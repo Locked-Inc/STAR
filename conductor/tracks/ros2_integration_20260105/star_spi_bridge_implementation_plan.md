@@ -50,9 +50,9 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 ### SPI Frame Format
 
 ```
-[SYNC: 0x55AA (2B, BE)]
-[SEQ: sequence number (2B, BE)]
-[LEN: payload length (2B, BE)]
+[SYNC: 0x55AA (2B, LE) - wire: 0xAA, 0x55]
+[SEQ: sequence number (2B, LE)]
+[LEN: payload length (2B, LE)]
 [TYPE: frame type (1B)]
 [FLAGS: control flags (1B)]
 [PAYLOAD: protobuf message (0-1024B)]

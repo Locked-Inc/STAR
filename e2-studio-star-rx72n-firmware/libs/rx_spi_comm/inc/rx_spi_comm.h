@@ -105,7 +105,7 @@
  * - **SPI Mode**: Mode 0 (CPOL=0, CPHA=0) default
  * - **Clock Speed**: Up to 10 MHz (limited by RPi5 spidev)
  * - **Data Width**: 8-bit transfers
- * - **Endianness**: Big-endian (network byte order)
+ * - **Endianness**: Little-endian (all multi-byte fields)
  *
  * **Frame Format** (rx_frame protocol):
  * ```
@@ -1122,7 +1122,7 @@ typedef struct {
  *
  * **Algorithm:**
  * 1. Build ACK frame with type=response, flags=ack
- * 2. Include sequence number in payload (2 bytes, big-endian)
+ * 2. Include sequence number in payload (2 bytes, little-endian)
  * 3. Call rx_spi_comm_send() with constructed frame
  *
  * **Performance**: ~50 µs (minimal frame with 2-byte payload)
@@ -1184,7 +1184,7 @@ typedef struct {
  *
  * **Algorithm:**
  * 1. Build NACK frame with type=response, flags=nack | additional_flags
- * 2. Include sequence number in payload (2 bytes, big-endian)
+ * 2. Include sequence number in payload (2 bytes, little-endian)
  * 3. Call rx_spi_comm_send() with constructed frame
  *
  * **Performance**: ~50 µs (minimal frame with 2-byte payload)

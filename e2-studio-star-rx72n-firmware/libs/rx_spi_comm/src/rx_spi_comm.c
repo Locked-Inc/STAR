@@ -330,12 +330,12 @@ static const char* s_tag = "rx_spi_comm";
 
 /** @brief Byte offsets within frame header buffer (SYNC + header fields) */
 typedef enum : uint8_t {
-  k_hdr_sync_high = 0, /**< SYNC word high byte */
-  k_hdr_sync_low  = 1, /**< SYNC word low byte */
-  k_hdr_seq_high  = 2, /**< Sequence number high byte */
-  k_hdr_seq_low   = 3, /**< Sequence number low byte */
-  k_hdr_len_high  = 4, /**< Payload length high byte */
-  k_hdr_len_low   = 5, /**< Payload length low byte */
+  k_hdr_sync_low  = 0, /**< SYNC word low byte (LE: LSB first) */
+  k_hdr_sync_high = 1, /**< SYNC word high byte (LE: MSB second) */
+  k_hdr_seq_low   = 2, /**< Sequence number low byte (LE) */
+  k_hdr_seq_high  = 3, /**< Sequence number high byte (LE) */
+  k_hdr_len_low   = 4, /**< Payload length low byte (LE) */
+  k_hdr_len_high  = 5, /**< Payload length high byte (LE) */
   k_hdr_type      = 6, /**< Frame type */
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
@@ -350,9 +350,9 @@ typedef enum : uint8_t {
  *
  * **Algorithm:**
  * 1. **Validate inputs**: Check data and frame pointers, minimum buffer size
- * 2. **Parse sync word**: Read big-endian 0xAA55, validate against k_frame_sync_word
- * 3. **Parse sequence**: Read big-endian 16-bit sequence number
- * 4. **Parse length**: Read big-endian 16-bit payload length, validate ≤ 255
+ * 2. **Parse sync word**: Read little-endian 0x55AA, validate against k_frame_sync_word
+ * 3. **Parse sequence**: Read little-endian 16-bit sequence number
+ * 4. **Parse length**: Read little-endian 16-bit payload length, validate ≤ 1024
  * 5. **Validate total size**: Check buffer contains header + payload + CRC
  * 6. **Parse type and flags**: Extract frame type and flags bytes
  * 7. **Return payload offset**: Optionally return offset to payload start
@@ -373,7 +373,7 @@ typedef enum : uint8_t {
  * @param[in] data Raw frame data buffer from SPI receive
  *   - **Valid range**: Non-nullptr pointer to buffer of size data_len
  *   - **Constraints**: Must contain at least k_frame_min_size (14) bytes
- *   - **Format**: Big-endian header fields (network byte order)
+ *   - **Format**: Little-endian header fields
  *
  * @param[in] data_len Length of data buffer in bytes
  *   - **Valid range**: ≥ 14 (minimum frame: header + 0 payload + CRC)
@@ -427,7 +427,7 @@ typedef enum : uint8_t {
  *
  * @see internal_verify_crc() Validate CRC-32 after header parse
  * @see internal_decode_frame() Higher-level decode (header + payload + CRC)
- * @see rx_frame_read_be16() Big-endian uint16 parser
+ * @see rx_frame_read_le16() Little-endian uint16 parser
  *
  * @since Version 1.0.0
  */
@@ -450,16 +450,16 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 
   offset = 0;
 
-  sync_word = rx_frame_read_be16(&data[offset]);
+  sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
-  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_le16(&data[offset]);
   offset += k_frame_seq_size;
 
-  frame->header.length = rx_frame_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_le16(&data[offset]);
   offset += k_frame_len_size;
 
   if (frame->header.length > k_frame_max_payload) {
@@ -1311,7 +1311,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  *    - Sets type, flags, applies FEC flag if configured
  * 4. **Encode frame**: Call rx_frame_encode() to create wire buffer
  *    - Adds sync word (0xAA55)
- *    - Encodes header fields (big-endian)
+ *    - Encodes header fields (little-endian)
  *    - Computes CRC-32 over header + payload
  *    - Appends CRC-32 (little-endian)
  * 5. **Post-condition 1**: Validate encoded length in valid range (14-279 bytes)
@@ -1698,15 +1698,15 @@ internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, ui
     return err;
   }
 
-  /* Validate sync word (big-endian) */
-  const uint16_t sync = rx_frame_read_be16(&header_buf[k_hdr_sync_high]);
+  /* Validate sync word (little-endian) */
+  const uint16_t sync = rx_frame_read_le16(&header_buf[k_hdr_sync_low]);
   if (sync != k_frame_sync_word) {
     rx_log_error(s_tag, "Invalid sync word");
     return k_rx_err_protocol_error;
   }
 
-  /* Extract payload length (big-endian) */
-  *payload_len = rx_frame_read_be16(&header_buf[k_hdr_len_high]);
+  /* Extract payload length (little-endian) */
+  *payload_len = rx_frame_read_le16(&header_buf[k_hdr_len_low]);
   if (*payload_len > k_frame_max_payload) {
     rx_log_error(s_tag, "Payload too large");
     return k_rx_err_invalid_size;

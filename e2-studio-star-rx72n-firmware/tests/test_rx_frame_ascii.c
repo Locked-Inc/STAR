@@ -602,18 +602,22 @@ void tearDown(void)
  * strings. Tests all valid types plus invalid/unknown values.
  *
  * **Coverage:**
- * - All 5 defined frame types (COMMAND, RESPONSE, ACK, NACK, UNKNOWN)
+ * - All 8 defined frame types (PING, PONG, COMMAND, RESPONSE, ACK, NACK,
+ *   RESET_ACK, RESET)
  * - Out-of-range type value (should return "UNKNOWN")
  *
  * **Expected Mappings:**
  * | Type Value | Expected String |
  * |------------|-----------------|
- * | k_frame_type_command (1) | "COMMAND" |
- * | k_frame_type_response (2) | "RESPONSE" |
- * | k_frame_type_ack (3) | "ACK" |
- * | k_frame_type_nack (4) | "NACK" |
- * | k_frame_type_unknown (0) | "UNKNOWN" |
- * | 0xFF (invalid) | "UNKNOWN" |
+ * | k_frame_type_ping (0x00) | "PING" |
+ * | k_frame_type_pong (0x01) | "PONG" |
+ * | k_frame_type_command (0x10) | "COMMAND" |
+ * | k_frame_type_response (0x11) | "RESPONSE" |
+ * | k_frame_type_ack (0x12) | "ACK" |
+ * | k_frame_type_nack (0x13) | "NACK" |
+ * | k_frame_type_reset_ack (0xFE) | "RESET_ACK" |
+ * | k_frame_type_reset (0xFF) | "RESET" |
+ * | 0x50 (invalid) | "UNKNOWN" |
  *
  * @{
  */
@@ -622,7 +626,7 @@ void tearDown(void)
  * @brief Test type name for COMMAND frame type
  *
  * @details
- * Verifies that k_frame_type_command (value 1) returns "COMMAND".
+ * Verifies that k_frame_type_command (0x10) returns "COMMAND".
  *
  * **Test Steps:**
  * 1. Call rx_frame_ascii_type_name(k_frame_type_command)
@@ -645,7 +649,7 @@ void test_type_name_command(void)
  * @brief Test type name for RESPONSE frame type
  *
  * @details
- * Verifies that k_frame_type_response (value 2) returns "RESPONSE".
+ * Verifies that k_frame_type_response (0x11) returns "RESPONSE".
  *
  * **Test Steps:**
  * 1. Call rx_frame_ascii_type_name(k_frame_type_response)
@@ -668,7 +672,7 @@ void test_type_name_response(void)
  * @brief Test type name for ACK frame type
  *
  * @details
- * Verifies that k_frame_type_ack (value 3) returns "ACK".
+ * Verifies that k_frame_type_ack (0x12) returns "ACK".
  *
  * **Test Steps:**
  * 1. Call rx_frame_ascii_type_name(k_frame_type_ack)
@@ -691,7 +695,7 @@ void test_type_name_ack(void)
  * @brief Test type name for NACK frame type
  *
  * @details
- * Verifies that k_frame_type_nack (value 4) returns "NACK".
+ * Verifies that k_frame_type_nack (0x13) returns "NACK".
  *
  * **Test Steps:**
  * 1. Call rx_frame_ascii_type_name(k_frame_type_nack)
@@ -711,26 +715,95 @@ void test_type_name_nack(void)
 }
 
 /**
- * @brief Test type name for UNKNOWN frame type
+ * @brief Test type name for PING frame type
  *
  * @details
- * Verifies that k_frame_type_unknown (value 0) returns "UNKNOWN".
+ * Verifies that k_frame_type_ping (0x00) returns "PING".
  *
  * **Test Steps:**
- * 1. Call rx_frame_ascii_type_name(k_frame_type_unknown)
- * 2. Assert return value equals "UNKNOWN"
+ * 1. Call rx_frame_ascii_type_name(k_frame_type_ping)
+ * 2. Assert return value equals "PING"
  *
  * @pre None
- * @post Return value is non-nullptr pointer to "UNKNOWN"
+ * @post Return value is non-nullptr pointer to "PING"
  *
  * @note Thread-safe (pure function, no mutable state)
  *
  * @since Version 1.0.0
  */
-void test_type_name_unknown(void)
+void test_type_name_ping(void)
 {
-  const char* name = rx_frame_ascii_type_name(k_frame_type_unknown);
-  TEST_ASSERT_EQUAL_STRING("UNKNOWN", name);
+  const char* name = rx_frame_ascii_type_name(k_frame_type_ping);
+  TEST_ASSERT_EQUAL_STRING("PING", name);
+}
+
+/**
+ * @brief Test type name for PONG frame type
+ *
+ * @details
+ * Verifies that k_frame_type_pong (0x01) returns "PONG".
+ *
+ * **Test Steps:**
+ * 1. Call rx_frame_ascii_type_name(k_frame_type_pong)
+ * 2. Assert return value equals "PONG"
+ *
+ * @pre None
+ * @post Return value is non-nullptr pointer to "PONG"
+ *
+ * @note Thread-safe (pure function, no mutable state)
+ *
+ * @since Version 1.0.0
+ */
+void test_type_name_pong(void)
+{
+  const char* name = rx_frame_ascii_type_name(k_frame_type_pong);
+  TEST_ASSERT_EQUAL_STRING("PONG", name);
+}
+
+/**
+ * @brief Test type name for RESET frame type
+ *
+ * @details
+ * Verifies that k_frame_type_reset (0xFF) returns "RESET".
+ *
+ * **Test Steps:**
+ * 1. Call rx_frame_ascii_type_name(k_frame_type_reset)
+ * 2. Assert return value equals "RESET"
+ *
+ * @pre None
+ * @post Return value is non-nullptr pointer to "RESET"
+ *
+ * @note Thread-safe (pure function, no mutable state)
+ *
+ * @since Version 1.0.0
+ */
+void test_type_name_reset(void)
+{
+  const char* name = rx_frame_ascii_type_name(k_frame_type_reset);
+  TEST_ASSERT_EQUAL_STRING("RESET", name);
+}
+
+/**
+ * @brief Test type name for RESET_ACK frame type
+ *
+ * @details
+ * Verifies that k_frame_type_reset_ack (0xFE) returns "RESET_ACK".
+ *
+ * **Test Steps:**
+ * 1. Call rx_frame_ascii_type_name(k_frame_type_reset_ack)
+ * 2. Assert return value equals "RESET_ACK"
+ *
+ * @pre None
+ * @post Return value is non-nullptr pointer to "RESET_ACK"
+ *
+ * @note Thread-safe (pure function, no mutable state)
+ *
+ * @since Version 1.0.0
+ */
+void test_type_name_reset_ack(void)
+{
+  const char* name = rx_frame_ascii_type_name(k_frame_type_reset_ack);
+  TEST_ASSERT_EQUAL_STRING("RESET_ACK", name);
 }
 
 /**
@@ -741,7 +814,7 @@ void test_type_name_unknown(void)
  * Tests defensive programming (default case in switch statement).
  *
  * **Test Steps:**
- * 1. Cast 0xFF to rx_frame_type_t (invalid value)
+ * 1. Cast 0x50 to rx_frame_type_t (invalid value not in enum)
  * 2. Call rx_frame_ascii_type_name() with invalid value
  * 3. Assert return value equals "UNKNOWN" (default case)
  *
@@ -759,7 +832,7 @@ void test_type_name_unknown(void)
 void test_type_name_invalid(void)
 {
   /* Invalid type value should return UNKNOWN */
-  const char* name = rx_frame_ascii_type_name((rx_frame_type_t)0xFF);
+  const char* name = rx_frame_ascii_type_name((rx_frame_type_t)0x50);
   TEST_ASSERT_EQUAL_STRING("UNKNOWN", name);
 }
 
@@ -1798,11 +1871,14 @@ int main(void)
   UNITY_BEGIN();
 
   /* Type name tests */
+  RUN_TEST(test_type_name_ping);
+  RUN_TEST(test_type_name_pong);
   RUN_TEST(test_type_name_command);
   RUN_TEST(test_type_name_response);
   RUN_TEST(test_type_name_ack);
   RUN_TEST(test_type_name_nack);
-  RUN_TEST(test_type_name_unknown);
+  RUN_TEST(test_type_name_reset);
+  RUN_TEST(test_type_name_reset_ack);
   RUN_TEST(test_type_name_invalid);
 
   /* Flags string tests */

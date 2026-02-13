@@ -35,9 +35,9 @@ TEST_F(SpiDriverTest, FrameEncoding)
   // Header (8) + Payload (3) + CRC (4) = 15 bytes
   EXPECT_EQ(frame.size(), 15);
 
-  // Check SYNC word (Big Endian)
-  EXPECT_EQ(frame[0], 0x55);
-  EXPECT_EQ(frame[1], 0xAA);
+  // Check SYNC word (Little Endian: [0xAA, 0x55] for 0x55AA)
+  EXPECT_EQ(frame[0], 0xAA);  // LSB first
+  EXPECT_EQ(frame[1], 0x55);  // MSB second
 }
 
 TEST_F(SpiDriverTest, FrameDecoding)

@@ -771,11 +771,11 @@ rx_err_t rx_crc_deinit(void)
  * // Calculate CRC over LEN + PAYLOAD (exclude SYNC and CRC32)
  * uint32_t computed_crc = rx_crc32_ieee_impl(&frame[1], 1 + payload_len);
  *
- * // Extract received CRC (big-endian)
- * uint32_t received_crc = ((uint32_t)frame[payload_len + 2] << 24) |
- *                        ((uint32_t)frame[payload_len + 3] << 16) |
- *                        ((uint32_t)frame[payload_len + 4] << 8) |
- *                        ((uint32_t)frame[payload_len + 5] << 0);
+ * // Extract received CRC (little-endian)
+ * uint32_t received_crc = ((uint32_t)frame[payload_len + 2] << 0) |
+ *                        ((uint32_t)frame[payload_len + 3] << 8) |
+ *                        ((uint32_t)frame[payload_len + 4] << 16) |
+ *                        ((uint32_t)frame[payload_len + 5] << 24);
  *
  * if (computed_crc == received_crc) {
  *   rx_log_info("SPI", "Frame CRC valid");

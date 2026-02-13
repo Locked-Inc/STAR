@@ -71,8 +71,8 @@
  * The encoder serializes a rx_frame_t structure to wire format:
  *
  * 1. **Validate inputs** - Check pointers, initialization state, payload size
- * 2. **Write SYNC** - 2-byte marker (0x55AA) in big-endian
- * 3. **Write header** - SEQ, LEN in big-endian; TYPE, FLAGS as bytes
+ * 2. **Write SYNC** - 2-byte marker (0x55AA) in little-endian (wire: 0xAA, 0x55)
+ * 3. **Write header** - SEQ, LEN in little-endian; TYPE, FLAGS as bytes
  * 4. **Copy payload** - Direct byte copy (no endian conversion)
  * 5. **Compute CRC** - IEEE 802.3 CRC-32 over SYNC+header+payload
  * 6. **Write CRC** - 4-byte CRC in little-endian format
@@ -84,8 +84,8 @@
  *
  *   input [label="rx_frame_t\n(host format)"];
  *   validate [label="Validate"];
- *   sync [label="Write SYNC\n(BE)"];
- *   header [label="Write Header\n(BE/bytes)"];
+ *   sync [label="Write SYNC\n(LE)"];
+ *   header [label="Write Header\n(LE/bytes)"];
  *   payload [label="Copy Payload"];
  *   crc_calc [label="Calculate CRC"];
  *   crc_write [label="Write CRC\n(LE)"];
@@ -298,16 +298,16 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 
   offset = k_frame_offset_start;
 
-  sync_word = rx_frame_read_be16(&data[offset]);
+  sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
-  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_le16(&data[offset]);
   offset += k_frame_seq_size;
 
-  frame->header.length = rx_frame_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_le16(&data[offset]);
   offset += k_frame_len_size;
 
   if (frame->header.length > k_frame_max_payload) {
@@ -462,16 +462,16 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   frame_size = rx_frame_encoded_size(frame->header.length);
   offset     = k_frame_offset_start;
 
-  /* Write SYNC word (big-endian) */
-  rx_frame_write_be16(&output[offset], k_frame_sync_word);
+  /* Write SYNC word (little-endian: wire bytes 0xAA, 0x55) */
+  rx_frame_write_le16(&output[offset], k_frame_sync_word);
   offset += k_frame_sync_size;
 
-  /* Write SEQ (big-endian, network byte order per RFC 1700) */
-  rx_frame_write_be16(&output[offset], frame->header.sequence);
+  /* Write SEQ (little-endian per TRANSPORT_ARCHITECTURE.md) */
+  rx_frame_write_le16(&output[offset], frame->header.sequence);
   offset += k_frame_seq_size;
 
-  /* Write LEN (big-endian, network byte order per RFC 1700) */
-  rx_frame_write_be16(&output[offset], frame->header.length);
+  /* Write LEN (little-endian per TRANSPORT_ARCHITECTURE.md) */
+  rx_frame_write_le16(&output[offset], frame->header.length);
   offset += k_frame_len_size;
 
   /* Write TYPE (1 byte) */

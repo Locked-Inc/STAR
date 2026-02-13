@@ -236,7 +236,7 @@ func (tm *TransportManager) Start(ctx context.Context) error {
 //  4. Reset sequence counters only after valid RESET_ACK
 //  5. Deactivate barrier
 //
-// The session ID (4-byte big-endian uint32) in the RESET payload is echoed back
+// The session ID (4-byte little-endian uint32) in the RESET payload is echoed back
 // in the RESET_ACK, allowing the gateway to match ACKs to the correct reset request
 // and reject stale RESET_ACKs from previous resets.
 //

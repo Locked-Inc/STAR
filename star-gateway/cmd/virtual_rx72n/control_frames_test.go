@@ -33,7 +33,7 @@ func newTestPingFrame(t *testing.T, counter uint32, seq uint16) *frame.Frame {
 }
 
 // newTestResetFrame creates a RESET frame for testing.
-// If sessionID > 0, the payload carries the session ID as 4-byte big-endian.
+// If sessionID > 0, the payload carries the session ID as 4-byte little-endian.
 // If sessionID == 0, the payload is empty (backward compatibility).
 func newTestResetFrame(t *testing.T, seq uint16, sessionID ...uint32) *frame.Frame {
 	t.Helper()

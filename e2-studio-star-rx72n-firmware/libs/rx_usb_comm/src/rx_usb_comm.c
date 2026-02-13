@@ -94,9 +94,9 @@ typedef enum : uint8_t {
  * @par Algorithm:
  * 1. Validate input pointers (RX_ASSERT + runtime check)
  * 2. Verify minimum data length for header
- * 3. Read and validate sync word (0x55AA big-endian)
- * 4. Extract sequence number (BE16)
- * 5. Extract and validate payload length (BE16)
+ * 3. Read and validate sync word (0x55AA little-endian)
+ * 4. Extract sequence number (LE16)
+ * 5. Extract and validate payload length (LE16)
  * 6. Extract frame type and flags
  * 7. Return offset past header for payload access
  *
@@ -142,16 +142,16 @@ static rx_err_t internal_decode_header(const uint8_t* data,
 
   offset = 0;
 
-  sync_word = rx_frame_read_be16(&data[offset]);
+  sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
-  frame->header.sequence = rx_frame_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_le16(&data[offset]);
   offset += k_frame_seq_size;
 
-  frame->header.length = rx_frame_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_le16(&data[offset]);
   offset += k_frame_len_size;
 
   if (frame->header.length > k_frame_max_payload) {
@@ -426,20 +426,20 @@ static rx_err_t internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
  *
  * @details
  * Scans the receive buffer starting from rx_buffer_pos for the frame sync
- * word (0x55AA) stored in big-endian format. Returns the position of the
+ * word (0x55AA) stored in little-endian format. Returns the position of the
  * first occurrence found.
  *
  * @par Algorithm:
  * 1. Validate handle and output pointers
  * 2. Validate buffer position <= length
- * 3. Extract sync word bytes (0x55, 0xAA)
+ * 3. Extract sync word bytes (0xAA low, 0x55 high)
  * 4. Linear scan from rx_buffer_pos to end-1
  * 5. Return position if found, k_sync_not_found otherwise
  *
  * @par Sync Word Format:
- * The sync word 0x55AA is stored big-endian in the frame:
- * - Byte 0: 0x55 (high byte)
- * - Byte 1: 0xAA (low byte)
+ * The sync word 0x55AA is stored little-endian in the frame:
+ * - Byte 0: 0xAA (low byte, LSB first)
+ * - Byte 1: 0x55 (high byte, MSB second)
  *
  * @param[in] handle USB communication handle with rx_buffer
  * @param[out] sync_pos Output position of sync word (k_sync_not_found if not found)
@@ -479,11 +479,11 @@ static rx_err_t internal_find_sync(const rx_usb_comm_handle_t* handle, int32_t* 
   }
 
   /* Extract sync word bytes using shared constants from rx_frame.h */
-  const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_be16_high_shift);
   const uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_rx_byte_mask);
+  const uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_le16_high_shift);
 
   for (uint32_t i = handle->rx_buffer_pos; i + 1 < handle->rx_buffer_len; i++) {
-    if (handle->rx_buffer[i] == sync_high && handle->rx_buffer[i + 1] == sync_low) {
+    if (handle->rx_buffer[i] == sync_low && handle->rx_buffer[i + 1] == sync_high) {
       *sync_pos = (int32_t)i;
       return k_rx_ok;
     }
@@ -674,7 +674,7 @@ static bool
 internal_parse_header(rx_usb_comm_handle_t* handle, uint16_t* payload_len, uint32_t* total_size)
 {
   const uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
-  *payload_len       = rx_frame_read_be16(&hdr[k_hdr_len_offset]);
+  *payload_len       = rx_frame_read_le16(&hdr[k_hdr_len_offset]);
 
   if (*payload_len > k_frame_max_payload) {
     rx_log_warn(s_tag, "Invalid payload length, skipping");

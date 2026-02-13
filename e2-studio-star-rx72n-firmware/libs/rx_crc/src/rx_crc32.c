@@ -249,15 +249,15 @@
  * uint32_t crc = rx_crc32_ieee(header, 2);
  * crc = rx_crc32_update(crc, payload, 16);
  *
- * // Append CRC to frame (big-endian)
+ * // Append CRC to frame (little-endian)
  * uint8_t frame[22];
  * frame[0] = 0x7E;                    // SYNC
  * memcpy(&frame[1], header, 2);       // LEN
  * memcpy(&frame[3], payload, 16);     // PAYLOAD
- * frame[19] = (crc >> 24) & 0xFF;     // CRC[31:24]
- * frame[20] = (crc >> 16) & 0xFF;     // CRC[23:16]
- * frame[21] = (crc >> 8) & 0xFF;      // CRC[15:8]
- * frame[22] = (crc >> 0) & 0xFF;      // CRC[7:0]
+ * frame[19] = (crc >> 0) & 0xFF;      // CRC[7:0]
+ * frame[20] = (crc >> 8) & 0xFF;      // CRC[15:8]
+ * frame[21] = (crc >> 16) & 0xFF;     // CRC[23:16]
+ * frame[22] = (crc >> 24) & 0xFF;     // CRC[31:24]
  * @endcode
  *
  * ### Example 3: CRC Verification
@@ -271,11 +271,11 @@
  *     return false;
  *   }
  *
- *   // Extract received CRC (last 4 bytes, big-endian)
- *   uint32_t received_crc = ((uint32_t)frame[len-4] << 24) |
- *                          ((uint32_t)frame[len-3] << 16) |
- *                          ((uint32_t)frame[len-2] << 8) |
- *                          ((uint32_t)frame[len-1] << 0);
+ *   // Extract received CRC (last 4 bytes, little-endian)
+ *   uint32_t received_crc = ((uint32_t)frame[len-4] << 0) |
+ *                          ((uint32_t)frame[len-3] << 8) |
+ *                          ((uint32_t)frame[len-2] << 16) |
+ *                          ((uint32_t)frame[len-1] << 24);
  *
  *   // Calculate CRC over data (exclude CRC field)
  *   uint32_t computed_crc = rx_crc32_ieee(frame, len - 4);
@@ -531,11 +531,11 @@
  * bool validate_spi_frame(const uint8_t* frame, uint32_t total_len) {
  *   if (total_len < 5) return false;  // [SYNC][LEN][CRC32] minimum
  *
- *   // Extract received CRC (last 4 bytes, big-endian)
- *   uint32_t received_crc = ((uint32_t)frame[total_len-4] << 24) |
- *                          ((uint32_t)frame[total_len-3] << 16) |
- *                          ((uint32_t)frame[total_len-2] << 8) |
- *                          ((uint32_t)frame[total_len-1] << 0);
+ *   // Extract received CRC (last 4 bytes, little-endian)
+ *   uint32_t received_crc = ((uint32_t)frame[total_len-4] << 0) |
+ *                          ((uint32_t)frame[total_len-3] << 8) |
+ *                          ((uint32_t)frame[total_len-2] << 16) |
+ *                          ((uint32_t)frame[total_len-1] << 24);
  *
  *   // Calculate CRC over [LEN][PAYLOAD] (exclude SYNC and CRC32)
  *   uint32_t computed_crc = rx_crc32_ieee(&frame[1], total_len - 5);

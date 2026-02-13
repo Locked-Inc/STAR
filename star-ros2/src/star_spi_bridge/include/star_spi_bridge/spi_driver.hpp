@@ -52,9 +52,9 @@ private:
   static const size_t k_header_size =
     8;   // SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1)
   static constexpr uint8_t k_bits_per_word = 8;
-  // [SYNC: 0x55AA (2B, BE)]
-  // [SEQ: sequence number (2B, BE)]
-  // [LEN: payload length (2B, BE)]
+  // [SYNC: 0x55AA (2B, LE) - wire: 0xAA, 0x55]
+  // [SEQ: sequence number (2B, LE)]
+  // [LEN: payload length (2B, LE)]
   // [TYPE: frame type (1B)]
   // [FLAGS: control flags (1B)]
   // Total header = 2+2+2+1+1 = 8 bytes.

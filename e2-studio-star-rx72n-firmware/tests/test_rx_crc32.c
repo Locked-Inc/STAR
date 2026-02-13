@@ -285,15 +285,16 @@ void test_crc32_single_ff(void)
 }
 
 /**
- * @brief Test CRC-32 of frame sync word 0x55AA (big-endian)
+ * @brief Test CRC-32 of frame sync word 0x55AA (little-endian wire order)
  *
- * Verified against IEEE 802.3 CRC-32 implementation
+ * On wire, SYNC 0x55AA is stored as [0xAA, 0x55] in little-endian format.
+ * Verified against IEEE 802.3 CRC-32 implementation.
  */
 void test_crc32_sync_word(void)
 {
-  uint8_t  data[] = {0x55, 0xAA};
+  uint8_t  data[] = {0xAA, 0x55};
   uint32_t crc    = rx_crc32_ieee(data, 2);
-  TEST_ASSERT_EQUAL_HEX32(0xB016F118, crc);
+  TEST_ASSERT_EQUAL_HEX32(0x0E30E3E7, crc);
 }
 
 /**
@@ -324,14 +325,15 @@ void test_crc32_eight_ff(void)
 /**
  * @brief Test CRC-32 of typical frame header (SYNC + SEQ + LEN + TYPE + FLAGS)
  *
- * Frame header bytes: 0x55 0xAA 0x00 0x01 0x00 0x08 0x01 0x00
+ * Little-endian wire format: SYNC=0x55AA as [0xAA,0x55], SEQ=1 as [0x01,0x00],
+ * LEN=8 as [0x08,0x00], TYPE=0x01, FLAGS=0x00
  * Verified against IEEE 802.3 CRC-32 implementation
  */
 void test_crc32_frame_header(void)
 {
-  uint8_t  header[] = {0x55, 0xAA, 0x00, 0x01, 0x00, 0x08, 0x01, 0x00};
+  uint8_t  header[] = {0xAA, 0x55, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00};
   uint32_t crc      = rx_crc32_ieee(header, 8);
-  TEST_ASSERT_EQUAL_HEX32(0xB157E7A2, crc);
+  TEST_ASSERT_EQUAL_HEX32(0x38B12836, crc);
 }
 
 /* =============================================================================

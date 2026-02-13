@@ -1099,14 +1099,14 @@ void test_usb_comm_receive_multiple_false_syncs(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject data with false sync patterns (0x55AA) but invalid following data */
-  /* SYNC word is 0x55AA in big-endian */
+  /* SYNC word is 0x55AA in little-endian wire order: [0xAA, 0x55] */
   uint8_t false_sync_data[] = {
-    0x55,
-    0xAA, /* False sync #1 */
+    0xAA,
+    0x55, /* False sync #1 */
     0xFF,
     0xFF, /* Invalid payload length (0xFFFF > 1024) */
-    0x55,
-    0xAA, /* False sync #2 */
+    0xAA,
+    0x55, /* False sync #2 */
     0x00,
     0x00, /* Seq = 0 */
     0xFF,

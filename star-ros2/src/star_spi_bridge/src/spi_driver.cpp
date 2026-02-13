@@ -198,19 +198,20 @@ void SpiDriver::encode_frame(
   out_frame.clear();
   out_frame.reserve(frame_size);
 
-  // SYNC: 0x55AA (Big Endian)
-  // Note: Header fields (SYNC, SEQ, LEN) are Big Endian per RFC 1700
-  out_frame.push_back((k_sync_word >> 8) & 0xFF);
-  out_frame.push_back(k_sync_word & 0xFF);
+  // SYNC: 0x55AA (Little Endian)
+  // Note: Header fields (SYNC, SEQ, LEN) use little-endian byte order
+  // Wire format: [0xAA, 0x55] for 0x55AA
+  out_frame.push_back(k_sync_word & 0xFF);         // LSB first (0xAA)
+  out_frame.push_back((k_sync_word >> 8) & 0xFF);  // MSB second (0x55)
 
-  // SEQ (Big Endian)
-  out_frame.push_back((seq >> 8) & 0xFF);
-  out_frame.push_back(seq & 0xFF);
+  // SEQ (Little Endian)
+  out_frame.push_back(seq & 0xFF);         // LSB first
+  out_frame.push_back((seq >> 8) & 0xFF);  // MSB second
 
-  // LEN (Big Endian)
+  // LEN (Little Endian)
   uint16_t len = static_cast<uint16_t>(payload.size());
-  out_frame.push_back((len >> 8) & 0xFF);
-  out_frame.push_back(len & 0xFF);
+  out_frame.push_back(len & 0xFF);         // LSB first
+  out_frame.push_back((len >> 8) & 0xFF);  // MSB second
 
   // TYPE
   out_frame.push_back(static_cast<uint8_t>(type));
@@ -242,13 +243,13 @@ bool SpiDriver::decode_frame(
     return false;
   }
 
-  // Check SYNC
-  if (frame[0] != ((k_sync_word >> 8) & 0xFF) || frame[1] != (k_sync_word & 0xFF)) {
+  // Check SYNC (Little Endian: [0xAA, 0x55] for 0x55AA)
+  if (frame[0] != (k_sync_word & 0xFF) || frame[1] != ((k_sync_word >> 8) & 0xFF)) {
     return false;
   }
 
-  // Extract Length
-  uint16_t len = (static_cast<uint16_t>(frame[4]) << 8) | frame[5];
+  // Extract Length (Little Endian: LSB first)
+  uint16_t len = frame[4] | (static_cast<uint16_t>(frame[5]) << 8);
 
   // Validate Frame Size
   // Header(8) + Payload(len) + CRC(4)
@@ -270,8 +271,8 @@ bool SpiDriver::decode_frame(
     return false;
   }
 
-  // Extract fields
-  seq = (static_cast<uint16_t>(frame[2]) << 8) | frame[3];
+  // Extract fields (Little Endian: LSB first)
+  seq = frame[2] | (static_cast<uint16_t>(frame[3]) << 8);
   type = static_cast<FrameType>(frame[6]);
   flags = frame[7];
 
