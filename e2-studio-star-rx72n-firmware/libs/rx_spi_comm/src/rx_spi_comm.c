@@ -1801,6 +1801,111 @@ static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
  * =============================================================================
  */
 
+/** @brief Result of control-frame dispatch within the receive loop */
+typedef enum : uint8_t {
+  k_ctrl_not_handled = 0, /**< Frame is not a control frame; return to caller */
+  k_ctrl_consumed    = 1, /**< Control frame consumed; continue receive loop */
+  k_ctrl_error       = 2, /**< Error occurred during control-frame handling */
+} ctrl_dispatch_result_t;
+
+/**
+ * @brief Dispatch control frames (PING, RESET, ACK/NACK) during receive
+ *
+ * @details
+ * Handles PING (auto-PONG + callback), RESET (auto-RESET_ACK + session reset
+ * + callback), and ACK/NACK (retransmit subsystem dispatch). Data frames are
+ * not consumed and signal the caller to return to the application.
+ *
+ * @param[in,out] handle SPI communication handle
+ * @param[in]     frame  Decoded frame to inspect
+ * @param[out]    result Set to consumed/not-handled/error
+ *
+ * @return rx_err_t k_rx_ok unless a fatal error occurred
+ *
+ * @pre handle and frame must be non-nullptr and valid
+ * @post Control-frame side effects applied (PONG sent, session reset, etc.)
+ *
+ * @note Called only from rx_spi_comm_receive(); not part of the public API.
+ * @since Version 1.2.0
+ */
+static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
+                                                rx_frame_t*             frame,
+                                                ctrl_dispatch_result_t* result)
+{
+  /* PING → auto-send PONG, invoke callback, consume */
+  if (frame->header.type == k_frame_type_ping) {
+    rx_err_t pong_err = rx_spi_comm_send_pong(handle, frame->payload, frame->header.length);
+    if (pong_err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send PONG response");
+    }
+
+    if (handle->on_ping_cb != nullptr) {
+      handle->on_ping_cb(frame, handle->control_cb_ctx);
+    }
+
+    *result = k_ctrl_consumed;
+    return k_rx_ok;
+  }
+
+  /* RESET → send RESET_ACK, reset session, invoke callback, consume */
+  if (frame->header.type == k_frame_type_reset) {
+    rx_err_t ack_err = rx_spi_comm_send_reset_ack(handle);
+    if (ack_err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to send RESET_ACK, session not reset");
+      *result = k_ctrl_consumed;
+      return k_rx_ok; /* Don't reset session if ACK failed */
+    }
+
+    rx_err_t reset_err = rx_session_reset(handle->session);
+    if (reset_err != k_rx_ok) {
+      rx_log_error(s_tag, "Session reset failed after RESET_ACK");
+    }
+
+    if (handle->on_reset_cb != nullptr) {
+      handle->on_reset_cb(frame, handle->control_cb_ctx);
+    }
+
+    *result = k_ctrl_consumed;
+    return k_rx_ok;
+  }
+
+  /* ACK/NACK → retransmit subsystem or pass through */
+  if (frame->header.type == k_frame_type_ack || frame->header.type == k_frame_type_nack) {
+    if (handle->auto_retransmit) {
+      if (frame->header.type == k_frame_type_ack) {
+        if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
+          handle->retry_pending = false;
+          handle->retry_count   = 0;
+          if (handle->on_ack_cb != nullptr) {
+            handle->on_ack_cb(frame->header.sequence, handle->retransmit_cb_ctx);
+          }
+        }
+      } else {
+        /* NACK: trigger immediate retransmit if sequence matches */
+        if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
+          const rx_err_t retx_err = internal_retransmit_frame(handle);
+          if (retx_err != k_rx_ok) {
+            rx_log_error(s_tag, "NACK-triggered retransmit failed");
+          }
+          if (handle->on_nack_cb != nullptr) {
+            handle->on_nack_cb(frame->header.sequence, handle->retransmit_cb_ctx);
+          }
+        }
+      }
+      *result = k_ctrl_consumed;
+      return k_rx_ok;
+    }
+
+    /* auto_retransmit off: not consumed, return to caller as data frame */
+    *result = k_ctrl_not_handled;
+    return k_rx_ok;
+  }
+
+  /* Not a control frame */
+  *result = k_ctrl_not_handled;
+  return k_rx_ok;
+}
+
 /**
  * @brief Receive data frame from RPi5 controller via SPI (blocking with timeout)
  *
@@ -2004,73 +2109,14 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
       return err;
     }
 
-    /* Handle PING control frame: auto-send PONG, invoke callback, loop.
-     * Control frames bypass session sequence validation. */
-    if (frame->header.type == k_frame_type_ping) {
-      rx_err_t pong_err = rx_spi_comm_send_pong(handle, frame->payload, frame->header.length);
-      if (pong_err != k_rx_ok) {
-        rx_log_error(s_tag, "Failed to send PONG response");
-      }
-
-      if (handle->on_ping_cb != nullptr) {
-        handle->on_ping_cb(frame, handle->cb_ctx);
-      }
-
-      continue; /* Loop to receive next frame */
+    /* Dispatch control frames (PING, RESET, ACK/NACK) */
+    ctrl_dispatch_result_t ctrl_result = k_ctrl_not_handled;
+    err = internal_dispatch_control_frame(handle, frame, &ctrl_result);
+    if (err != k_rx_ok) {
+      return err;
     }
-
-    /* Handle RESET control frame: send RESET_ACK, then reset session only if ACK succeeds.
-     * Control frames bypass session sequence validation. */
-    if (frame->header.type == k_frame_type_reset) {
-      rx_err_t ack_err = rx_spi_comm_send_reset_ack(handle);
-      if (ack_err != k_rx_ok) {
-        rx_log_error(s_tag, "Failed to send RESET_ACK, session not reset");
-        continue; /* Don't reset session if ACK failed - stay in sync */
-      }
-
-      rx_err_t reset_err = rx_session_reset(handle->session);
-      if (reset_err != k_rx_ok) {
-        rx_log_error(s_tag, "Session reset failed after RESET_ACK");
-      }
-
-      if (handle->on_reset_cb != nullptr) {
-        handle->on_reset_cb(frame, handle->cb_ctx);
-      }
-
-      continue; /* Loop to receive next frame */
-    }
-
-    /* Handle ACK/NACK control frames for retransmit subsystem.
-     * When auto_retransmit is enabled, ACK/NACK are consumed internally
-     * (clearing retry state or triggering retransmit). When disabled,
-     * ACK/NACK pass through to the caller as regular frames. */
-    if (frame->header.type == k_frame_type_ack || frame->header.type == k_frame_type_nack) {
-      if (handle->auto_retransmit) {
-        if (frame->header.type == k_frame_type_ack) {
-          if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
-            handle->retry_pending = false;
-            handle->retry_count   = 0;
-            if (handle->on_ack_cb != nullptr) {
-              handle->on_ack_cb(frame->header.sequence, handle->cb_ctx);
-            }
-          }
-        } else {
-          /* NACK: trigger immediate retransmit if sequence matches */
-          if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
-            const rx_err_t retx_err = internal_retransmit_frame(handle);
-            if (retx_err != k_rx_ok) {
-              rx_log_error(s_tag, "NACK-triggered retransmit failed");
-            }
-            if (handle->on_nack_cb != nullptr) {
-              handle->on_nack_cb(frame->header.sequence, handle->cb_ctx);
-            }
-          }
-        }
-        continue; /* Consumed by retransmit subsystem */
-      }
-
-      /* auto_retransmit off: return ACK/NACK to caller as regular frame */
-      return k_rx_ok;
+    if (ctrl_result == k_ctrl_consumed) {
+      continue; /* Control frame handled; loop for next frame */
     }
 
     /* Validate and update RX sequence via shared session (data frames only) */
@@ -2145,7 +2191,7 @@ rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle, bool* av
  * @param[in,out] handle     SPI communication handle (must be initialized)
  * @param[in]     on_ping_cb Callback invoked on PING receipt (NULL to disable)
  * @param[in]     on_reset_cb Callback invoked on RESET receipt (NULL to disable)
- * @param[in]     cb_ctx     Opaque context forwarded to callbacks
+ * @param[in]     cb_ctx     Opaque context forwarded to control callbacks
  *
  * @retval k_rx_ok              Callbacks registered
  * @retval k_rx_err_invalid_arg handle is nullptr
@@ -2173,9 +2219,9 @@ rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_state;
   }
 
-  handle->on_ping_cb  = on_ping_cb;
-  handle->on_reset_cb = on_reset_cb;
-  handle->cb_ctx      = cb_ctx;
+  handle->on_ping_cb     = on_ping_cb;
+  handle->on_reset_cb    = on_reset_cb;
+  handle->control_cb_ctx = cb_ctx;
 
   return k_rx_ok;
 }
@@ -2516,9 +2562,9 @@ rx_err_t rx_spi_comm_set_retransmit_callbacks(rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_state;
   }
 
-  handle->on_ack_cb  = on_ack_cb;
-  handle->on_nack_cb = on_nack_cb;
-  handle->cb_ctx     = ctx;
+  handle->on_ack_cb         = on_ack_cb;
+  handle->on_nack_cb        = on_nack_cb;
+  handle->retransmit_cb_ctx = ctx;
 
   return k_rx_ok;
 }

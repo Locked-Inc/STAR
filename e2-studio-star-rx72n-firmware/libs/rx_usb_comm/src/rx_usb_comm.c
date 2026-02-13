@@ -1049,6 +1049,11 @@ static rx_err_t internal_build_frame(rx_frame_t*           frame,
     return k_rx_err_invalid_arg;
   }
 
+  /* Pre-condition 3: Payload length must fit in frame */
+  if (payload_len > k_frame_max_payload) {
+    return k_rx_err_invalid_size;
+  }
+
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = (uint8_t)type;

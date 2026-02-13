@@ -675,9 +675,9 @@ typedef struct {
   void (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
 
   /**
-   * @brief User context pointer passed to control frame callbacks
+   * @brief User context pointer passed to control frame callbacks (PING, RESET)
    */
-  void* cb_ctx;
+  void* control_cb_ctx;
 
   /* ---- Retransmission state (only active when auto_retransmit enabled) ---- */
 
@@ -732,6 +732,11 @@ typedef struct {
    * @brief Optional callback invoked when NACK received for a pending frame
    */
   void (*on_nack_cb)(uint16_t sequence, void* ctx);
+
+  /**
+   * @brief User context pointer passed to retransmit callbacks (ACK, NACK)
+   */
+  void* retransmit_cb_ctx;
 } rx_spi_comm_handle_t;
 
 /**
@@ -1449,7 +1454,7 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t ti
  * @retval k_rx_err_invalid_arg handle is nullptr
  *
  * @pre handle must be non-NULL
- * @post on_ping_cb, on_reset_cb, cb_ctx stored in handle
+ * @post on_ping_cb, on_reset_cb, control_cb_ctx stored in handle
  *
  * @note Callbacks are invoked from within rx_spi_comm_receive() context
  * @note Not thread-safe, set callbacks before starting receive loop

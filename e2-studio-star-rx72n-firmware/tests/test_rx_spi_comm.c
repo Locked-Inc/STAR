@@ -1316,7 +1316,7 @@ void test_spi_comm_set_callbacks_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_PTR(test_ping_callback, s_handle.on_ping_cb);
   TEST_ASSERT_EQUAL_PTR(test_reset_callback, s_handle.on_reset_cb);
-  TEST_ASSERT_EQUAL_PTR(&ctx_val, s_handle.cb_ctx);
+  TEST_ASSERT_EQUAL_PTR(&ctx_val, s_handle.control_cb_ctx);
 }
 
 /* =============================================================================
@@ -1660,7 +1660,7 @@ void test_retransmit_disabled_by_default(void)
 void test_retransmit_enabled_via_config(void)
 {
   rx_spi_comm_config_t config = {
-    .session     = &s_session,
+    .session         = &s_session,
     .channel         = 0,
     .spi_mode        = 0,
     .fec_enabled     = false,
@@ -2084,7 +2084,7 @@ void test_retransmit_process_triggers_after_timeout(void)
 void test_retransmit_process_exponential_backoff(void)
 {
   rx_spi_comm_config_t config = {
-    .session          = &s_session,
+    .session         = &s_session,
     .auto_retransmit = true,
     .retransmit_config =
       {
@@ -2125,7 +2125,7 @@ void test_retransmit_process_exponential_backoff(void)
 void test_retransmit_process_max_backoff_cap(void)
 {
   rx_spi_comm_config_t config = {
-    .session          = &s_session,
+    .session         = &s_session,
     .auto_retransmit = true,
     .retransmit_config =
       {
@@ -2203,7 +2203,7 @@ void test_retransmit_process_noop_when_nothing_pending(void)
 void test_retransmit_retry_limit_returns_error(void)
 {
   rx_spi_comm_config_t config = {
-    .session            = &s_session,
+    .session           = &s_session,
     .auto_retransmit   = true,
     .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
   };
@@ -2232,7 +2232,7 @@ void test_retransmit_retry_limit_returns_error(void)
 void test_retransmit_retry_limit_clears_pending(void)
 {
   rx_spi_comm_config_t config = {
-    .session            = &s_session,
+    .session           = &s_session,
     .auto_retransmit   = true,
     .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
   };
