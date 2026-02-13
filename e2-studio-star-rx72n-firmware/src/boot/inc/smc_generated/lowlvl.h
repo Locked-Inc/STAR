@@ -72,9 +72,7 @@
 *         : 28.02.2019 1.00     First Release
 ***********************************************************************************************************************/
 
-/* Multiple inclusion prevention macro */
-#ifndef LOWLVL_H
-#define LOWLVL_H
+#pragma once
 
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
@@ -159,5 +157,3 @@ void charput(char output_char);
  * @since Version 1.0.0
  */
 char charget(void);
-
-#endif /* End of multiple inclusion prevention macro */

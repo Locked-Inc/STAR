@@ -98,8 +98,8 @@
 *                                - BSP_CFG_EXPANSION_RAM_ENABLE
 *         : 28.02.2023 2.03     Modified comment.
 ***********************************************************************************************************************/
-#ifndef R_BSP_CONFIG_REF_HEADER_FILE
-#define R_BSP_CONFIG_REF_HEADER_FILE
+
+#pragma once
 
 /***********************************************************************************************************************
 Configuration Options
@@ -903,5 +903,3 @@ NOTE: The RAM areas are not contiguous.It is separated by 512 KB each.
    1 = Sections of the expansion RAM area is enabled.
 */
 #define BSP_CFG_EXPANSION_RAM_ENABLE (0)
-
-#endif /* R_BSP_CONFIG_REF_HEADER_FILE */
