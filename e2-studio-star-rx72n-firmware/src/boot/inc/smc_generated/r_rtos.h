@@ -65,6 +65,16 @@
  * @warning Changing BSP_CFG_RTOS_USED requires rebuild of entire project
  * @since Version 1.0.0
  *
+ * @par NASA Power of 10 Compliance
+ * - Rule 1: No goto, setjmp/longjmp, or recursion (header-only, no control flow)
+ * - Rule 8: Named enums used for RTOS variant constants
+ * - Rule 10: Compiles with -Wall -Wextra -Werror
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: RTOS selection and integration only
+ * - Open/Closed: Extensible via new BSP_CFG_RTOS_USED values
+ * - Dependency Inversion: Abstracts RTOS kernel behind compile-time selection
+ *
  * @author STAR Project (Locked, Inc.)
  * @date 2019 (original), 2026 (STAR modifications)
  * @version 1.11
