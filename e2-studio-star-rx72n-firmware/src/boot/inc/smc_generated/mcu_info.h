@@ -104,18 +104,18 @@
 *                               - BSP_MCU_TFU_VERSION
 ***********************************************************************************************************************/
 
+#pragma once
+
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
 /* Gets MCU configuration information. */
 #include "r_bsp_config.h"
+#include <stdint.h>  /* Required for uint8_t, uint32_t in C23 typed enums */
 
 /***********************************************************************************************************************
 Macro definitions
 ***********************************************************************************************************************/
-/* Multiple inclusion prevention macro */
-#ifndef MCU_INFO
-#define MCU_INFO
 
 /***********************************************************************************************************************
 Typed Enums (CLAUDE.md Compliance - C23)
@@ -655,5 +655,3 @@ MCU Configuration and Feature Detection
 #define BSP_MCU_NMI_EXNMI_RAM_EXRAM
 #define BSP_MCU_NMI_EXNMI_RAM_ECCRAM
 #define BSP_MCU_NMI_EXNMI_DPFPUEX
-
-#endif /* MCU_INFO */

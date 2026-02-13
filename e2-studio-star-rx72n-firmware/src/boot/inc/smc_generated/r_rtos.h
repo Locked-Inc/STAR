@@ -23,6 +23,9 @@
 * Modified files are maintained by Locked, Inc. as part of the STAR project.
 * Original Renesas code remains under Renesas copyright as stated above.
 ***********************************************************************************************************************/
+
+#pragma once
+
 /**
  * @file r_rtos.h
  * @brief RTOS integration header for BSP
@@ -68,10 +71,6 @@
 *         : 08.10.2019 1.10     Added include file and macro definitions for Renesas RTOS (RI600V4 or RI600PX).
 *         : 26.02.2021 1.11     Changed BSP_CFG_RTOS_USED for Azure RTOS.
 ***********************************************************************************************************************/
-
-/* Multiple inclusion prevention macro */
-#ifndef R_RTOS_H
-#define R_RTOS_H
 
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
@@ -180,5 +179,3 @@ typedef enum : uint8_t {
 /***********************************************************************************************************************
 Macro definitions
 ***********************************************************************************************************************/
-
-#endif /* R_RTOS_H */
