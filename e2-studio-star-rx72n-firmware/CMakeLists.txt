@@ -161,11 +161,12 @@ endif()
 add_executable(${PROJECT_NAME}.elf ${ALL_SOURCES})
 
 # Target-specific compile options (previously global add_compile_options)
+# Note: -Wpedantic intentionally omitted - firmware uses GNU extensions (__attribute__,
+# __asm__, __builtin_rx_*) required for BSP/boot code and interrupt handlers
 target_compile_options(${PROJECT_NAME}.elf PRIVATE
     -Wall
     -Wextra
     -Werror
-    -Wpedantic
     -fshort-enums
     $<$<COMPILE_LANGUAGE:C>:-Wstack-usage=2200>
     $<$<COMPILE_LANGUAGE:ASM>:-DCPPAPP>
