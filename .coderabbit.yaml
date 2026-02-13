@@ -23,7 +23,7 @@
 # - star-rx72n-firmware/CLAUDE.md - Firmware development guide
 
 # Tone instructions (general guidance, max 250 chars)
-tone_instructions: "Assertive reviews enforcing: NASA Power of 10, C23 typed enums, comprehensive Doxygen (ALL tags, diagrams), inclusive terminology (Controller/Peripheral), zero magic numbers, SOLID principles, zero backward compatibility."
+tone_instructions: "Assertive reviews enforcing: C23 standard (typed enums, #pragma once, NO traditional guards), NASA Power of 10, comprehensive Doxygen (ALL tags, diagrams), inclusive terminology (Controller/Peripheral), zero magic numbers, SOLID principles, zero backward compatibility."
 
 reviews:
   profile: assertive
@@ -61,11 +61,19 @@ reviews:
 
     - path: "{star-rx72n-firmware,e2-studio-star-rx72n-firmware}/**/*.{c,h}"
       instructions: |
-        Review C firmware code with STRICT compliance checking:
-        - Language standard: C23 ONLY (ignore any C11/C89-related warnings or comments)
-        - Enum underlying type syntax like `typedef enum : uint8_t` is valid and REQUIRED
-        - C99-style for-loop declarations are allowed; do not require C89 loop style
-        - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
+        Review C firmware code with STRICT C23 compliance checking:
+
+        C23 Language Standard (MANDATORY):
+        - REQUIRED: C23 standard ONLY - this is NOT a C11/C99/C89 project
+        - REQUIRED: Typed enums with explicit underlying types (C23 feature): `typedef enum : uint8_t { ... } name_t;`
+        - REQUIRED: `#pragma once` for ALL header files (C23 standard, NOT traditional include guards)
+        - ALLOWED: C99-style for-loop variable declarations: `for (uint8_t i = 0; ...)`
+        - ALLOWED: Designated initializers: `struct foo x = { .field = value }`
+        - ALLOWED: Compound literals: `(struct foo){ .field = value }`
+        - FORBIDDEN: Traditional include guards (#ifndef/#define/#endif)
+        - FORBIDDEN: Untyped enums without explicit underlying type
+        - FORBIDDEN: C89 loop style (declaring loop counters before for-statement)
+        - FORBIDDEN: Old-style function declarations (K&R style)
 
         Doxygen Documentation (CRITICAL - MAXIMUM COVERAGE REQUIRED):
         - ZERO TOLERANCE for undocumented code - ALL elements must have comprehensive Doxygen comments
@@ -155,7 +163,7 @@ reviews:
         - const float ONLY for floating-point (enum cannot represent floats)
         - Macros ONLY for: reducing code duplication, conditional compilation, build configuration flags
         - Hardware register access: Use inline accessor functions with enum addresses (NEVER macros)
-        - Include guards: STAR_RX72N_FILENAME_H format
+        - Include guards: MANDATORY use of #pragma once (C23 standard, NOT traditional guards)
         - Doxygen: /** for multi-line blocks, /**< for inline comments
         - Line limit: 100 characters maximum
 
@@ -188,11 +196,19 @@ reviews:
 
     - path: "lib/**/*.{c,h}"
       instructions: |
-        Review C firmware code with STRICT compliance checking:
-        - Language standard: C23 ONLY (ignore any C11/C89-related warnings or comments)
-        - Enum underlying type syntax like `typedef enum : uint8_t` is valid and REQUIRED
-        - C99-style for-loop declarations are allowed; do not require C89 loop style
-        - ALL enums must specify a C23 underlying type (e.g., `typedef enum : uint8_t { ... } name_t;`)
+        Review C firmware code with STRICT C23 compliance checking:
+
+        C23 Language Standard (MANDATORY):
+        - REQUIRED: C23 standard ONLY - this is NOT a C11/C99/C89 project
+        - REQUIRED: Typed enums with explicit underlying types (C23 feature): `typedef enum : uint8_t { ... } name_t;`
+        - REQUIRED: `#pragma once` for ALL header files (C23 standard, NOT traditional include guards)
+        - ALLOWED: C99-style for-loop variable declarations: `for (uint8_t i = 0; ...)`
+        - ALLOWED: Designated initializers: `struct foo x = { .field = value }`
+        - ALLOWED: Compound literals: `(struct foo){ .field = value }`
+        - FORBIDDEN: Traditional include guards (#ifndef/#define/#endif)
+        - FORBIDDEN: Untyped enums without explicit underlying type
+        - FORBIDDEN: C89 loop style (declaring loop counters before for-statement)
+        - FORBIDDEN: Old-style function declarations (K&R style)
 
         Doxygen Documentation (CRITICAL - MAXIMUM COVERAGE REQUIRED):
         - ZERO TOLERANCE for undocumented code - ALL elements must have comprehensive Doxygen comments
@@ -282,7 +298,7 @@ reviews:
         - const float ONLY for floating-point (enum cannot represent floats)
         - Macros ONLY for: reducing code duplication, conditional compilation, build configuration flags
         - Hardware register access: Use inline accessor functions with enum addresses (NEVER macros)
-        - Include guards: STAR_RX72N_FILENAME_H format
+        - Include guards: MANDATORY use of #pragma once (C23 standard, NOT traditional guards)
         - Doxygen: /** for multi-line blocks, /**< for inline comments
         - Line limit: 100 characters maximum
 
@@ -328,7 +344,8 @@ reviews:
         - Headers use .hpp extension (not .h)
         - Source files use .cpp extension
         - Line limit: 120 characters maximum
-        - Include guard format: PACKAGE_FILENAME_HPP_
+        - Include guards: Prefer #pragma once (consistent with C23 firmware), traditional guards acceptable for ROS2 compatibility
+        - Traditional guard format (if used): PACKAGE_FILENAME_HPP_
         - Braces: Functions on new line, control statements cuddled
         - Indentation: 2 spaces (no tabs)
         - Filenames: under_scored (e.g., star_gateway_bridge_node.hpp)
@@ -524,12 +541,13 @@ reviews:
       instructions: |
         Review CMake build configuration:
 
-        Project Standards:
+        Project Standards (MANDATORY):
         - Minimum CMake version: 3.20
-        - C standard: C23 (set(CMAKE_C_STANDARD 23))
+        - C standard: MUST be C23 (set(CMAKE_C_STANDARD 23) set(CMAKE_C_STANDARD_REQUIRED ON))
         - C++ standard: C++17 (set(CMAKE_CXX_STANDARD 17))
         - Position independent code: ON
-        - Enums: Use fixed underlying types (C23 enum : uint8_t/uint16_t) alongside -fshort-enums
+        - C23 typed enums: ALL enums must specify underlying type (typedef enum : uint8_t { ... } name_t;)
+        - Compiler must support C23 features: typed enums, #pragma once, designated initializers
 
         Compiler Flags (MANDATORY):
         - C/C++: -Wall -Wextra -Werror (treat warnings as errors)

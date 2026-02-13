@@ -119,6 +119,15 @@ Exported global functions (to be accessed by other files)
  * @note Function blocks until character is written to output device
  * @warning Do not call from interrupt context if output is buffered
  *
+ * @par Example:
+ * @code
+ * // Output single character (requires BSP_CFG_IO_LIB_ENABLE == 1)
+ * charput('A');  // Writes 'A' to stdout
+ *
+ * // Output newline character
+ * charput('\n');  // Sends newline to console
+ * @endcode
+ *
  * @see charget() Input counterpart function
  * @see r_bsp_config.h BSP I/O configuration
  *
@@ -150,6 +159,18 @@ void charput(char output_char);
  * @note Not thread-safe, caller must provide synchronization
  * @note Function blocks until character is available from input device
  * @warning Do not call from interrupt context
+ *
+ * @par Example:
+ * @code
+ * // Read single character from stdin (requires BSP_CFG_IO_LIB_ENABLE == 1)
+ * char input_char = charget();  // Blocks until character available
+ *
+ * // Use in input loop
+ * while (1) {
+ *     char c = charget();
+ *     if (c == '\n') break;
+ * }
+ * @endcode
  *
  * @see charput() Output counterpart function
  * @see r_bsp_config.h BSP I/O configuration

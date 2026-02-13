@@ -64,6 +64,11 @@
  * @note Ported from Renesas Smart Configurator (SMC) generated code
  * @warning Changing BSP_CFG_RTOS_USED requires rebuild of entire project
  * @since Version 1.0.0
+ *
+ * @author STAR Project (Locked, Inc.)
+ * @date 2019 (original), 2026 (STAR modifications)
+ * @version 1.11
+ * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
  */
 /**********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
@@ -111,14 +116,26 @@ Includes   <System Includes> , "Project Includes"
  * @invariant Value must be 0 or 1 (only two kernel variants supported)
  *
  * @code
- *   // Example: Check RTOS variant
- *   #if BSP_CFG_RENESAS_RTOS_USED == k_renesas_rtos_ri600v4
+ *   // Example: Check RTOS variant (use integer literal, not enum in #if)
+ *   #if BSP_CFG_RENESAS_RTOS_USED == 0
+ *     // Using RI600V4 kernel (0 = k_renesas_rtos_ri600v4)
+ *   #endif
+ *
+ *   // Or use the provided macros (they are integer literals):
+ *   #if BSP_CFG_RENESAS_RTOS_USED == RENESAS_RI600V4
  *     // Using RI600V4 kernel
  *   #endif
+ *
+ *   // Or use runtime C check with enum:
+ *   if (BSP_CFG_RENESAS_RTOS_USED == (uint8_t)k_renesas_rtos_ri600v4) {
+ *     // Runtime RTOS variant check
+ *   }
  * @endcode
  *
  * @see BSP_CFG_RTOS_USED RTOS type selection
  * @see BSP_CFG_RENESAS_RTOS_USED Renesas RTOS variant selection
+ * @see RENESAS_RI600V4 Integer literal for preprocessor use
+ * @see RENESAS_RI600PX Integer literal for preprocessor use
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {

@@ -21,6 +21,7 @@ RUN apt-get update && apt-get install -y \
     protobuf-compiler-grpc \
     libgrpc-dev \
     curl \
+    wget \
     clangd \
     clang-format \
     clang \
@@ -57,6 +58,19 @@ ARG BUF_VERSION=1.28.1
 RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" -o /usr/local/bin/buf \
     && chmod +x /usr/local/bin/buf
 
+# Install GNURX toolchain for RX72N firmware development
+# Download and install the toolchain to /opt/gnurx
+RUN mkdir -p /opt/gnurx && \
+    cd /tmp && \
+    wget -q --show-progress https://llvm-gcc-renesas.com/downloads/get.php?f=rx/8.3.0.202305/gcc-8.3.0.202305-GNURX-ELF.run -O gnurx-installer.run && \
+    chmod +x gnurx-installer.run && \
+    ./gnurx-installer.run --prefix=/opt/gnurx --mode unattended && \
+    rm gnurx-installer.run && \
+    echo "GNURX toolchain installed successfully"
+
+# Add GNURX toolchain to PATH
+ENV PATH="/opt/gnurx/bin:${PATH}"
+
 # Set up user
 ARG USERNAME=star
 ARG USER_UID=1000
@@ -89,7 +103,8 @@ RUN groupadd -f spi && groupadd -f i2c \
 # Set up workspace
 WORKDIR /workspaces/STAR
 
-# Source ROS2 setup in bashrc
-RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc
+# Source ROS2 setup and add GNURX to PATH in bashrc
+RUN echo "source /opt/ros/jazzy/setup.bash" >> /home/$USERNAME/.bashrc && \
+    echo 'export PATH="/opt/gnurx/bin:$PATH"' >> /home/$USERNAME/.bashrc
 
 USER $USERNAME
