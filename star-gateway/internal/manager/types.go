@@ -20,9 +20,6 @@ const (
 	// ModeAuto automatically selects the best available transport, preferring USB over SPI.
 	ModeAuto TransportMode = "auto"
 
-	// ModePreferUSB is an alias for ModeAuto (explicitly prefer USB, fallback to SPI).
-	ModePreferUSB TransportMode = "prefer-usb"
-
 	// ModeForceUSB only uses USB CDC transport. Returns error if USB is unavailable.
 	ModeForceUSB TransportMode = "force-usb"
 
@@ -36,7 +33,7 @@ const (
 // IsValid checks if the TransportMode is one of the defined constants.
 func (tm TransportMode) IsValid() bool {
 	switch tm {
-	case ModeAuto, ModePreferUSB, ModeForceUSB, ModeForceSPI:
+	case ModeAuto, ModeForceUSB, ModeForceSPI:
 		return true
 	default:
 		return false

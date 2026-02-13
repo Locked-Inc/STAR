@@ -61,8 +61,8 @@ jobs:
           go mod init github.com/Locked-Inc/star-proto/gen/go || true
           go mod tidy
 
-      - name: Download dependencies
-        run: go mod download
+      - name: Tidy dependencies (includes transitive deps from replaced modules)
+        run: go mod tidy
 
       - name: Verify dependencies
         run: go mod verify
@@ -310,6 +310,9 @@ jobs:
           go mod init github.com/Locked-Inc/star-proto/gen/go || true
           go mod tidy
 
+      - name: Tidy dependencies (includes transitive deps from replaced modules)
+        run: go mod tidy
+
       - name: Build for ${{ matrix.name }}
         env:
           GOOS: ${{ matrix.goos }}
@@ -383,6 +386,9 @@ jobs:
           go mod init github.com/Locked-Inc/star-proto/gen/go || true
           go mod tidy
 
+      - name: Tidy dependencies (includes transitive deps from replaced modules)
+        run: go mod tidy
+
       - name: Run integration tests
         run: |
           # Run tests tagged with 'integration' if they exist
@@ -421,6 +427,9 @@ jobs:
           cd gen/go
           go mod init github.com/Locked-Inc/star-proto/gen/go || true
           go mod tidy
+
+      - name: Tidy dependencies (includes transitive deps from replaced modules)
+        run: go mod tidy
 
       - name: Run benchmarks
         run: |

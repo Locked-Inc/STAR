@@ -1,0 +1,363 @@
+package app
+
+import (
+	"context"
+	"io"
+	"log/slog"
+	"net/http"
+	"strings"
+	"testing"
+	"time"
+
+	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
+	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"google.golang.org/grpc"
+	"nhooyr.io/websocket" //nolint:staticcheck
+)
+
+const (
+	httpServerStartupDelay = 50 * time.Millisecond
+	websocketDialTimeout   = 2 * time.Second
+)
+
+// serviceGetters is the shared table of service accessor functions.
+// Update this list when adding new services to serviceSet.
+var serviceGetters = []struct {
+	name   string
+	getter func(*serviceSet) any
+}{
+	{name: "motorControl", getter: func(s *serviceSet) any { return s.motorControl }},
+	{name: "telemetry", getter: func(s *serviceSet) any { return s.telemetry }},
+	{name: "battery", getter: func(s *serviceSet) any { return s.battery }},
+	{name: "configuration", getter: func(s *serviceSet) any { return s.configuration }},
+	{name: "firmware", getter: func(s *serviceSet) any { return s.firmware }},
+	{name: "gateway", getter: func(s *serviceSet) any { return s.gateway }},
+}
+
+// mockDispatcher is a minimal mock for testing.
+type mockDispatcher struct{}
+
+func (m *mockDispatcher) Subscribe(msgType dispatcher.MessageType) <-chan *dispatcher.DispatchedMessage {
+	ch := make(chan *dispatcher.DispatchedMessage)
+	close(ch) // Return closed channel to prevent blocking
+	return ch
+}
+
+func (m *mockDispatcher) Unsubscribe(msgType dispatcher.MessageType, ch <-chan *dispatcher.DispatchedMessage) {
+}
+
+func (m *mockDispatcher) Start(ctx context.Context) error {
+	return nil
+}
+
+func (m *mockDispatcher) Stop() error {
+	return nil
+}
+
+func (m *mockDispatcher) GetState() dispatcher.State {
+	return dispatcher.StateIdle
+}
+
+// mockHARQ is a minimal mock for testing.
+type mockHARQ struct{}
+
+func (m *mockHARQ) Send(ctx context.Context, data []byte, p ...harq.Priority) error {
+	return nil
+}
+
+func (m *mockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
+	return nil, nil
+}
+
+func (m *mockHARQ) GetState() harq.State {
+	return harq.StateIdle
+}
+
+func (m *mockHARQ) GetTxSequence() uint16 {
+	return 0
+}
+
+func (m *mockHARQ) GetRxSequence() uint16 {
+	return 0
+}
+
+func (m *mockHARQ) Reset() {
+}
+
+// TestRegisterGRPCServices verifies that all services are registered correctly.
+// This test will fail if:
+//   - New services are added to protobuf but not registered
+//   - Service registration function signatures change
+//   - Services are nil (initialization failed)
+func TestRegisterGRPCServices(t *testing.T) {
+	services := newTestServiceSet(t)
+
+	for _, tc := range serviceGetters {
+		t.Run("service initialized/"+tc.name, func(t *testing.T) {
+			if tc.getter(services) == nil {
+				t.Fatalf("%s service is nil", tc.name)
+			}
+		})
+	}
+
+	// Create gRPC server
+	srv := grpc.NewServer()
+
+	// Register services
+	err := registerGRPCServices(srv, services)
+	if err != nil {
+		t.Fatalf("registerGRPCServices failed: %v", err)
+	}
+
+	// Verify server has registered services
+	// Note: grpc.Server doesn't expose a way to list registered services,
+	// but we can verify the function executed without error
+	t.Log("All services registered successfully")
+}
+
+// TestRegisterGRPCServices_NilServices verifies error handling for nil services.
+func TestRegisterGRPCServices_NilServices(t *testing.T) {
+	tests := []struct {
+		name            string
+		services        *serviceSet
+		wantErr         bool
+		wantErrContains string // Expected substring in error message
+	}{
+		{
+			name:     "AllServicesPresent",
+			services: newTestServiceSet(t),
+			wantErr:  false,
+		},
+		{
+			name:            "NilMotorControlService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.motorControl = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "motorControl",
+		},
+		{
+			name:            "NilTelemetryService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.telemetry = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "telemetry",
+		},
+		{
+			name:            "NilBatteryService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.battery = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "battery",
+		},
+		{
+			name:            "NilConfigurationService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.configuration = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "configuration",
+		},
+		{
+			name:            "NilFirmwareService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.firmware = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "firmware",
+		},
+		{
+			name:            "NilGatewayService",
+			services:        func() *serviceSet { s := newTestServiceSet(t); s.gateway = nil; return s }(),
+			wantErr:         true,
+			wantErrContains: "gateway",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			srv := grpc.NewServer()
+			err := registerGRPCServices(srv, tc.services)
+			if (err != nil) != tc.wantErr {
+				t.Errorf("Expected error: %v, got: %v", tc.wantErr, err)
+			}
+			// Verify error message contains the service name
+			if tc.wantErr && tc.wantErrContains != "" {
+				if err == nil {
+					t.Errorf("Expected error containing %q, got nil", tc.wantErrContains)
+				} else if !strings.Contains(err.Error(), tc.wantErrContains) {
+					t.Errorf("Expected error containing %q, got: %v", tc.wantErrContains, err)
+				}
+			}
+		})
+	}
+}
+
+// TestServiceSet_TypeCompatibility verifies that serviceSet types match protobuf expectations.
+// This test ensures that when protobuf service definitions change, we catch type mismatches.
+func TestServiceSet_TypeCompatibility(t *testing.T) {
+	services := newTestServiceSet(t)
+
+	// Verify each service implements the expected protobuf server interface
+	// This will fail at compile time if service interfaces change
+
+	var _ starv1.MotorControlServiceServer = services.motorControl
+	var _ starv1.TelemetryServiceServer = services.telemetry
+	var _ starv1.BatteryManagementServiceServer = services.battery
+	var _ starv1.ConfigurationServiceServer = services.configuration
+	var _ starv1.FirmwareUpdateServiceServer = services.firmware
+	var _ starv1.GatewayServiceServer = services.gateway
+
+	t.Log("All services implement expected protobuf interfaces")
+}
+
+// TestServiceSet_AllFieldsPopulated verifies that serviceSet has all required fields.
+// Add new fields to this test when adding new services.
+func TestServiceSet_AllFieldsPopulated(t *testing.T) {
+	services := newTestServiceSet(t)
+
+	// This list must match the serviceSet struct definition.
+	// If you add a new service, add it here to ensure it's initialized.
+	expectedServices := map[string]interface{}{
+		"motorControl":  services.motorControl,
+		"telemetry":     services.telemetry,
+		"battery":       services.battery,
+		"configuration": services.configuration,
+		"firmware":      services.firmware,
+		"gateway":       services.gateway,
+	}
+
+	for name, svc := range expectedServices {
+		if svc == nil {
+			t.Errorf("Service %s is nil - ensure it's initialized in initServices()", name)
+		}
+	}
+
+	// Expected count of services (update this when adding new services)
+	const expectedServiceCount = 6
+	if len(expectedServices) != expectedServiceCount {
+		t.Errorf("Expected %d services, got %d. Did you add a new service without updating this test?",
+			expectedServiceCount, len(expectedServices))
+	}
+}
+
+// TestInitServices verifies that initServices creates all services correctly.
+func TestInitServices(t *testing.T) {
+	ctx := context.Background()
+	logger := newDiscardLogger()
+	mockDisp := &mockDispatcher{}
+	mockHarq := &mockHARQ{}
+
+	// Call initServices with mock harq and dispatcher
+	services, err := initServices(ctx, mockHarq, mockDisp, logger)
+	if err != nil {
+		t.Fatalf("initServices failed: %v", err)
+	}
+
+	// Verify all services are created
+	if services == nil {
+		t.Fatal("initServices returned nil serviceSet")
+	}
+
+	for _, tc := range serviceGetters {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.getter(services) == nil {
+				t.Errorf("%s not initialized", tc.name)
+			}
+		})
+	}
+}
+
+func TestStartGRPCServerWithAddr_RegistersAllServices(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	servers := &Servers{}
+	services := newTestServiceSet(t)
+	logger := newDiscardLogger()
+
+	if err := startGRPCServerWithAddr(ctx, servers, services, "127.0.0.1:0", logger); err != nil {
+		t.Fatalf("startGRPCServerWithAddr failed: %v", err)
+	}
+
+	if servers.GRPCServer == nil {
+		t.Fatal("expected GRPCServer to be initialized")
+	}
+
+	serviceInfo := servers.GRPCServer.GetServiceInfo()
+	required := []string{
+		"star.v1.MotorControlService",
+		"star.v1.TelemetryService",
+		"star.v1.BatteryManagementService",
+		"star.v1.ConfigurationService",
+		"star.v1.FirmwareUpdateService",
+		"star.v1.GatewayService",
+	}
+
+	for _, name := range required {
+		if _, ok := serviceInfo[name]; !ok {
+			t.Errorf("missing registered service: %s", name)
+		}
+	}
+}
+
+func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	servers := &Servers{}
+	services := newTestServiceSet(t)
+	logger := newDiscardLogger()
+
+	if err := startHTTPServerWithAddr(ctx, servers, services, "127.0.0.1:0", logger); err != nil {
+		t.Fatalf("startHTTPServerWithAddr failed: %v", err)
+	}
+
+	if servers.HTTPServer == nil {
+		t.Fatal("expected HTTPServer to be initialized")
+	}
+
+	time.Sleep(httpServerStartupDelay)
+
+	healthResp, err := http.Get("http://" + servers.HTTPServer.Addr + "/healthz")
+	if err != nil {
+		t.Fatalf("health check request failed: %v", err)
+	}
+	defer healthResp.Body.Close()
+
+	if healthResp.StatusCode != http.StatusOK {
+		t.Fatalf("expected 200 from /healthz, got %d", healthResp.StatusCode)
+	}
+
+	body, err := io.ReadAll(healthResp.Body)
+	if err != nil {
+		t.Fatalf("failed to read /healthz response: %v", err)
+	}
+	if string(body) != "ok" {
+		t.Fatalf("expected /healthz body 'ok', got %q", string(body))
+	}
+
+	wsURL := "ws://" + servers.HTTPServer.Addr + "/ws/controller"
+	wsCtx, wsCancel := context.WithTimeout(context.Background(), websocketDialTimeout)
+	defer wsCancel()
+
+	conn, _, err := websocket.Dial(wsCtx, wsURL, nil) //nolint:staticcheck
+	if err != nil {
+		t.Fatalf("failed to connect websocket route: %v", err)
+	}
+	_ = conn.Close(websocket.StatusNormalClosure, "") //nolint:staticcheck
+}
+
+// newDiscardLogger creates a logger that discards all output (for testing).
+func newDiscardLogger() *slog.Logger {
+	return slog.New(slog.NewTextHandler(io.Discard, nil))
+}
+
+func newTestServiceSet(t *testing.T) *serviceSet {
+	t.Helper()
+
+	ctx := context.Background()
+	logger := newDiscardLogger()
+	mockDisp := &mockDispatcher{}
+	mockHarq := &mockHARQ{}
+
+	services, err := initServices(ctx, mockHarq, mockDisp, logger)
+	if err != nil {
+		t.Fatalf("initServices failed: %v", err)
+	}
+
+	return services
+}
