@@ -422,6 +422,8 @@ long signal_sem(long semnum);
  * @param[in] count Number of bytes to write
  *
  * @return int Number of bytes written, or -1 on error
+ * @retval >0 Number of bytes successfully written (usually equals count)
+ * @retval -1 Error occurred (errno set)
  *
  * @pre File descriptor is open
  * @pre buf points to valid memory of at least count bytes
@@ -446,6 +448,9 @@ int write(int fileno, const char* buf, int count);
  * @param[in] count Maximum bytes to read
  *
  * @return int Number of bytes read, or -1 on error
+ * @retval >0 Number of bytes successfully read (may be less than count)
+ * @retval 0 End-of-file reached
+ * @retval -1 Error occurred (errno set)
  *
  * @pre File descriptor is open
  * @pre buf points to valid memory of at least count bytes
@@ -470,6 +475,8 @@ int read(int fileno, char* buf, int count);
  * @param[in] count Number of bytes to write
  *
  * @return int Number of bytes written, or -1 on error
+ * @retval >0 Number of bytes successfully written (usually equals count)
+ * @retval -1 Error occurred (errno set)
  *
  * @pre File descriptor is open
  * @pre buf points to valid memory of at least count bytes
@@ -494,6 +501,9 @@ int _write(int fileno, const char* buf, int count);
  * @param[in] count Maximum bytes to read
  *
  * @return int Number of bytes read, or -1 on error
+ * @retval >0 Number of bytes successfully read (may be less than count)
+ * @retval 0 End-of-file reached
+ * @retval -1 Error occurred (errno set)
  *
  * @pre File descriptor is open
  * @pre buf points to valid memory of at least count bytes

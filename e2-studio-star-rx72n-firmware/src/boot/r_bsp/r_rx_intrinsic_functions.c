@@ -70,6 +70,26 @@
  * @note Ported from Renesas Smart Configurator (SMC) generated code
  * @warning All inline assembly functions must preserve registers per ABI
  * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 1: No goto, setjmp/longjmp, or recursion in function implementations
+ * - Rule 3: No dynamic memory allocation (all operations on stack/registers)
+ * - Rule 5: Pre/post conditions documented for all public functions
+ * - Rule 8: Macros used only for TFU constants (inline assembly requirement)
+ * - Rule 9: Function pointers not used in this module
+ * - Rule 10: Compiles with -Wall -Wextra -Werror
+ *
+ * @par SOLID Principles
+ * - Single Responsibility: Compiler abstraction layer only
+ * - Open/Closed: Extensible via conditional compilation for new compilers
+ * - Liskov Substitution: All implementations provide identical semantics
+ * - Interface Segregation: Functions grouped by category (arithmetic, registers, TFU)
+ * - Dependency Inversion: BSP code depends on intrinsic interface, not compiler specifics
+ *
+ * @author Renesas Electronics Corporation (original), STAR Project/Locked, Inc. (modifications)
+ * @date 2019-02-28 (original), 2026-02-13 (STAR modifications)
+ * @version 1.05
+ * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
  */
 /**********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
@@ -519,18 +539,45 @@ signed long long R_BSP_GetACC(void)
 }
 #endif /* defined(__GNUC__) || defined(__ICCRX__)  */
 
-/***********************************************************************************************************************
-* Function Name: R_BSP_MulAndAccOperation_2byte
-* Description  : Performs a multiply-and-accumulate operation between data of two bytes each and returns the result as
-*                four bytes. The multiply-and-accumulate operation is executed with DSP functional instructions (MULLO, 
-*                MACLO, and MACHI). Data in the middle of the multiply-and-accumulate operation is retained in ACC as
-*                48-bit data. After all multiply-and-accumulate operations have finished, the contents of ACC are 
-*                fetched by the MVFACMI instruction and used as the return value of the intrinsic function.
-* Arguments    : data1 - Start address of values 1 to be multiplied.
-*                data2 - Start address of values 2 to be multiplied.
-*                count - Count of multiply-and-accumulate operations.
-* Return Value : S(data1[n] * data2[n]) result.
-***********************************************************************************************************************/
+/**
+ * @brief Multiply-and-accumulate operation on 16-bit arrays with middle accumulator
+ *
+ * @details
+ * Performs multiply-and-accumulate (MAC) operation on 16-bit arrays and returns
+ * the middle 32 bits of the 48-bit accumulator result. Uses DSP instructions
+ * (MULLO, MACLO, MACHI) for hardware acceleration on CC-RX, with C fallback
+ * for GNUC.
+ *
+ * Algorithm:
+ * 1. Clear accumulator (MULLO with 0,0)
+ * 2. Process pairs: ACC += data1[i] * data2[i] + data1[i+1] * data2[i+1]
+ * 3. Process remaining odd element if count is odd
+ * 4. Extract middle 32 bits via MVFACMI
+ *
+ * The function processes 16-bit elements in pairs (as 32-bit longs) for efficiency,
+ * then handles any remaining odd element separately.
+ *
+ * @param[in] data1 Pointer to first 16-bit array (count elements)
+ * @param[in] data2 Pointer to second 16-bit array (count elements)
+ * @param[in] count Number of 16-bit elements to process (must be > 0)
+ *
+ * @return long Middle 32 bits of 48-bit accumulator result
+ *
+ * @pre data1 points to valid array of at least count 16-bit elements
+ * @pre data2 points to valid array of at least count 16-bit elements
+ * @pre count > 0 (loop bounds checked per NASA Rule 2)
+ * @pre Arrays properly aligned for 32-bit access (when processing pairs)
+ * @post ACC contains sum of products
+ * @post Result is middle 32 bits of 48-bit accumulator
+ *
+ * @note GNUC-specific implementation (C fallback with GCC built-ins)
+ * @note Not thread-safe if ACC is shared
+ * @note Used for fixed-point DSP operations
+ *
+ * @see R_BSP_MulAndAccOperation_FixedPoint1() Variant with RACW #1 rounding
+ * @see R_BSP_MulAndAccOperation_FixedPoint2() Variant with RACW #2 rounding
+ * @since Version 1.0.0
+ */
 #if defined(__GNUC__)
 long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsigned long count)
 {
@@ -553,19 +600,45 @@ long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsi
 }
 #endif /* defined(__GNUC__) */
 
-/***********************************************************************************************************************
-* Function Name: R_BSP_MulAndAccOperation_FixedPoint1
-* Description  : Performs a multiply-and-accumulate operation between data of two bytes each and returns the result as
-*                two bytes. The multiply-and-accumulate operation is executed with DSP functional instructions (MULLO, 
-*                MACLO, and MACHI). Data in the middle of the multiply-and-accumulate operation is retained in ACC as
-*                48-bit data. After all multiply-and-accumulate operations have finished, rounding is applied to the 
-*                multiply-and-accumulate operation result of ACC.
-*                The macw1 function performs rounding with the "RACW #1" instruction.
-* Arguments    : data1 - Start address of values 1 to be multiplied.
-*                data2 - Start address of values 2 to be multiplied.
-*                count - Count of multiply-and-accumulate operations.
-* Return Value : Value obtained by rounding the multiply-and-accumulate operation result with the RACW instruction.
-***********************************************************************************************************************/
+/**
+ * @brief Multiply-and-accumulate with RACW #1 rounding
+ *
+ * @details
+ * Performs multiply-and-accumulate (MAC) operation on 16-bit arrays with
+ * RACW #1 rounding applied before extracting high accumulator word. Uses DSP
+ * instructions (MULLO, MACLO, MACHI, RACW, MVFACHI) for hardware acceleration
+ * on CC-RX, with C fallback for GNUC.
+ *
+ * Algorithm:
+ * 1. Clear accumulator (MULLO with 0,0)
+ * 2. Process pairs: ACC += data1[i] * data2[i] + data1[i+1] * data2[i+1]
+ * 3. Process remaining odd element if count is odd
+ * 4. Apply RACW #1 rounding (round to nearest, ties away from zero)
+ * 5. Extract high 16 bits via MVFACHI
+ *
+ * RACW #1 performs: ACC = (ACC + 2^0) >> 1 (round and shift right 1 bit)
+ *
+ * @param[in] data1 Pointer to first 16-bit array (count elements)
+ * @param[in] data2 Pointer to second 16-bit array (count elements)
+ * @param[in] count Number of 16-bit elements to process (must be > 0)
+ *
+ * @return short High 16 bits of accumulator after RACW #1 rounding
+ *
+ * @pre data1 points to valid array of at least count 16-bit elements
+ * @pre data2 points to valid array of at least count 16-bit elements
+ * @pre count > 0 (loop bounds checked per NASA Rule 2)
+ * @pre Arrays properly aligned for 32-bit access (when processing pairs)
+ * @post ACC contains rounded sum of products
+ * @post Result is high 16 bits of rounded accumulator
+ *
+ * @note GNUC-specific implementation (C fallback with GCC built-ins)
+ * @note Not thread-safe if ACC is shared
+ * @note Used for fixed-point DSP with rounding
+ *
+ * @see R_BSP_MulAndAccOperation_2byte() Variant without rounding
+ * @see R_BSP_MulAndAccOperation_FixedPoint2() Variant with RACW #2 rounding
+ * @since Version 1.0.0
+ */
 #if defined(__GNUC__)
 short R_BSP_MulAndAccOperation_FixedPoint1(const short* data1, const short* data2, unsigned long count)
 {
@@ -589,19 +662,45 @@ short R_BSP_MulAndAccOperation_FixedPoint1(const short* data1, const short* data
 }
 #endif /* defined(__GNUC__) */
 
-/***********************************************************************************************************************
-* Function Name: R_BSP_MulAndAccOperation_FixedPoint2
-* Description  : Performs a multiply-and-accumulate operation between data of two bytes each and returns the result as
-*                two bytes. The multiply-and-accumulate operation is executed with DSP functional instructions (MULLO, 
-*                MACLO, and MACHI). Data in the middle of the multiply-and-accumulate operation is retained in ACC as
-*                48-bit data. After all multiply-and-accumulate operations have finished, rounding is applied to the 
-*                multiply-and-accumulate operation result of ACC.
-*                the macw2 function performs rounding with the "RACW #2" instruction.
-* Arguments    : data1 - Start address of values 1 to be multiplied.
-*                data2 - Start address of values 2 to be multiplied.
-*                count - Count of multiply-and-accumulate operations.
-* Return Value : Value obtained by rounding the multiply-and-accumulate operation result with the RACW instruction.
-***********************************************************************************************************************/
+/**
+ * @brief Multiply-and-accumulate with RACW #2 rounding
+ *
+ * @details
+ * Performs multiply-and-accumulate (MAC) operation on 16-bit arrays with
+ * RACW #2 rounding applied before extracting high accumulator word. Uses DSP
+ * instructions (MULLO, MACLO, MACHI, RACW, MVFACHI) for hardware acceleration
+ * on CC-RX, with C fallback for GNUC.
+ *
+ * Algorithm:
+ * 1. Clear accumulator (MULLO with 0,0)
+ * 2. Process pairs: ACC += data1[i] * data2[i] + data1[i+1] * data2[i+1]
+ * 3. Process remaining odd element if count is odd
+ * 4. Apply RACW #2 rounding (round to nearest, ties away from zero)
+ * 5. Extract high 16 bits via MVFACHI
+ *
+ * RACW #2 performs: ACC = (ACC + 2^1) >> 2 (round and shift right 2 bits)
+ *
+ * @param[in] data1 Pointer to first 16-bit array (count elements)
+ * @param[in] data2 Pointer to second 16-bit array (count elements)
+ * @param[in] count Number of 16-bit elements to process (must be > 0)
+ *
+ * @return short High 16 bits of accumulator after RACW #2 rounding
+ *
+ * @pre data1 points to valid array of at least count 16-bit elements
+ * @pre data2 points to valid array of at least count 16-bit elements
+ * @pre count > 0 (loop bounds checked per NASA Rule 2)
+ * @pre Arrays properly aligned for 32-bit access (when processing pairs)
+ * @post ACC contains rounded sum of products
+ * @post Result is high 16 bits of rounded accumulator
+ *
+ * @note GNUC-specific implementation (C fallback with GCC built-ins)
+ * @note Not thread-safe if ACC is shared
+ * @note Used for fixed-point DSP with rounding
+ *
+ * @see R_BSP_MulAndAccOperation_2byte() Variant without rounding
+ * @see R_BSP_MulAndAccOperation_FixedPoint1() Variant with RACW #1 rounding
+ * @since Version 1.0.0
+ */
 #if defined(__GNUC__)
 short R_BSP_MulAndAccOperation_FixedPoint2(const short* data1, const short* data2, unsigned long count)
 {
@@ -1010,7 +1109,6 @@ void* R_BSP_GetDEPC(void)
 
 #ifdef BSP_MCU_TRIGONOMETRIC
 #ifdef __TFU
-#if BSP_MCU_TFU_VERSION == 1
 
 /***********************************************************************************************************************
  * TFU (Trigonometric Function Unit) Register Addresses and Constants
@@ -1048,6 +1146,7 @@ void* R_BSP_GetDEPC(void)
 #define K_TFU_SCALE_INV_2PI_FIXED  9B74EDA8H  /**< Fixed-point 1/(2π) scaling factor for atan2 normalization */
 /** @} */
 
+#if BSP_MCU_TFU_VERSION == 1
 /***********************************************************************************************************************
 * Function Name: R_BSP_InitTFU
 * Description  : Initialize arithmetic unit for trigonometric functions.
