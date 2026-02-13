@@ -76,12 +76,11 @@
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
 
+#pragma once
+
 /***********************************************************************************************************************
 Macro definitions
 ***********************************************************************************************************************/
-/* Multiple inclusion prevention macro */
-#ifndef LOWSRC_H
-#define LOWSRC_H
 
 /***********************************************************************************************************************
 Typedef definitions
@@ -598,5 +597,3 @@ size_t __write(int handle, const unsigned char* buf, size_t bufSize);
  */
 size_t __read(int handle, unsigned char* buf, size_t bufSize);
 #endif /* defined(__ICCRX__) */
-
-#endif /* End of multiple inclusion prevention macro */

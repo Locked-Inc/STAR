@@ -124,6 +124,8 @@
 *                               - R_BSP_CalcSquareRoot_Fpn
 ***********************************************************************************************************************/
 
+#pragma once
+
 /***********************************************************************************************************************
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
@@ -132,9 +134,6 @@ Includes   <System Includes> , "Project Includes"
 /***********************************************************************************************************************
 Macro definitions
 ***********************************************************************************************************************/
-/* Multiple inclusion prevention macro */
-#ifndef R_RX_INTRINSIC_FUNCTIONS_H
-#define R_RX_INTRINSIC_FUNCTIONS_H
 
 /* ---------- Maximum value and minimum value ---------- */
 #if defined(__CCRX__)
@@ -1480,6 +1479,3 @@ int32_t R_BSP_CalcSquareRoot_Fpn(int32_t y, int32_t x);
 #endif /* BSP_MCU_TFU_VERSION == 2 */
 #endif /* __TFU */
 #endif /* BSP_MCU_TRIGONOMETRIC */
-
-/* End of multiple inclusion prevention macro */
-#endif /* R_RX_INTRINSIC_FUNCTIONS_H */
