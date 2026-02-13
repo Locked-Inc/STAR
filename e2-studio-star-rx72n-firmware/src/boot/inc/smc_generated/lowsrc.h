@@ -61,6 +61,11 @@
  * @note Ported from Renesas Smart Configurator (SMC) generated code
  * @warning Most functions are NOT thread-safe unless _REENTRANT is defined (CC-RX only)
  * @since Version 2.0.0
+ *
+ * @author STAR Project (Locked, Inc.)
+ * @date 2013 (original), 2026 (STAR modifications)
+ * @version 3.01
+ * @copyright Copyright (C) 2013 Renesas Electronics Corporation. Modified by Locked, Inc.
  */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description
@@ -165,7 +170,9 @@ void close_all(void);
  * @retval -1 Error (file not found, invalid mode, or no filesystem support)
  *
  * @pre init_iolib() called successfully
+ * @pre name != NULL (pointer must be valid even though filesystem not implemented)
  * @post File descriptor allocated if successful
+ * @post errno may be set on failure
  *
  * @note Not thread-safe unless _REENTRANT is defined
  * @warning Filesystem not implemented - only standard streams work
@@ -191,8 +198,9 @@ long open(const char* name, long mode, long flg);
  * @retval -1 Error (invalid file descriptor)
  *
  * @pre File descriptor was opened via open()
+ * @pre File descriptor is valid (>=0) and not already closed
  * @post File descriptor released
- * @post Output buffer flushed
+ * @post Output buffer flushed and resources freed
  *
  * @note Not thread-safe unless _REENTRANT is defined
  * @warning Do not use file descriptor after closing
@@ -224,6 +232,7 @@ long close(long fileno);
  * @pre File descriptor is open
  * @pre buf points to valid memory of at least count bytes
  * @post count bytes written to file descriptor (if successful)
+ * @post Output device state updated if stdout/stderr
  *
  * @note Not thread-safe unless _REENTRANT is defined
  * @note Function may block until all data is written
@@ -257,6 +266,7 @@ long write(long fileno, const unsigned char* buf, long count);
  * @pre File descriptor is open
  * @pre buf points to valid memory of at least count bytes
  * @post Up to count bytes read into buf (if successful)
+ * @post Input buffer position advanced
  *
  * @note Not thread-safe unless _REENTRANT is defined
  * @note Function may block until data is available
@@ -310,6 +320,7 @@ long lseek(long fileno, long offset, long base);
  * @pre _REENTRANT defined (reentrant mode enabled)
  * @pre RTOS running (for thread-local storage)
  * @post Pointer to valid errno variable returned
+ * @post Returned pointer remains valid for thread lifetime
  *
  * @note Thread-safe by design
  * @see wait_sem() Semaphore wait
@@ -337,6 +348,7 @@ long* errno_addr(void);
  * @pre RTOS running
  * @pre semnum is valid semaphore index
  * @post Semaphore acquired (decremented)
+ * @post Calling thread owns the semaphore
  *
  * @note Thread-safe by design
  * @note Function blocks until semaphore available
@@ -367,6 +379,7 @@ long wait_sem(long semnum);
  * @pre RTOS running
  * @pre semnum is valid semaphore index
  * @post Semaphore released (incremented)
+ * @post Waiting thread may be unblocked
  *
  * @note Thread-safe by design
  * @warning Do not call from interrupt context
@@ -396,7 +409,9 @@ long signal_sem(long semnum);
  * @return int Number of bytes written, or -1 on error
  *
  * @pre File descriptor is open
+ * @pre buf points to valid memory of at least count bytes
  * @post count bytes written to file descriptor
+ * @post errno set on failure
  *
  * @note Not thread-safe
  * @see _write() Alternative GNUC write implementation
@@ -418,7 +433,9 @@ int write(int fileno, char* buf, int count);
  * @return int Number of bytes read, or -1 on error
  *
  * @pre File descriptor is open
+ * @pre buf points to valid memory of at least count bytes
  * @post Up to count bytes read into buf
+ * @post errno set on failure
  *
  * @note Not thread-safe
  * @see _read() Alternative GNUC read implementation
@@ -440,7 +457,9 @@ int read(int fileno, char* buf, int count);
  * @return int Number of bytes written, or -1 on error
  *
  * @pre File descriptor is open
+ * @pre buf points to valid memory of at least count bytes
  * @post count bytes written to file descriptor
+ * @post errno set on failure
  *
  * @note Not thread-safe
  * @see write() Standard write implementation
@@ -462,7 +481,9 @@ int _write(int fileno, char* buf, int count);
  * @return int Number of bytes read, or -1 on error
  *
  * @pre File descriptor is open
+ * @pre buf points to valid memory of at least count bytes
  * @post Up to count bytes read into buf
+ * @post errno set on failure
  *
  * @note Not thread-safe
  * @see read() Standard read implementation
@@ -565,7 +586,9 @@ void lseek(void);
  * @retval <bufSize Partial write or error
  *
  * @pre File handle is valid
+ * @pre buf points to valid memory of at least bufSize bytes
  * @post bufSize bytes written to file handle
+ * @post Buffer contents unchanged beyond returned length
  *
  * @note Not thread-safe
  * @see __read() IAR read implementation
@@ -589,7 +612,9 @@ size_t __write(int handle, const unsigned char* buf, size_t bufSize);
  * @retval 0 End of file or no data available
  *
  * @pre File handle is valid
+ * @pre buf points to valid memory of at least bufSize bytes
  * @post Up to bufSize bytes read into buf
+ * @post Input consumed up to returned length
  *
  * @note Not thread-safe
  * @see __write() IAR write implementation
