@@ -91,7 +91,7 @@ void setUp(void)
 void tearDown(void)
 {
   if (s_session.initialized) {
-    (void)rx_session_deinit(&s_session);
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_session_deinit(&s_session));
   }
 }
 

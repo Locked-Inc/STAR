@@ -80,7 +80,7 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 | **Retransmission** | Application-level (HARQ) | Hardware-level only | USB bulk transfer handles retries |
 | **FEC** | Viterbi + Chase Combining | Disabled | Redundant with USB reliability |
 | **ACK/NACK** | Required | Not sent | USB provides implicit ACK |
-| **Sequence Tracking** | 16-bit counter (independent) | 16-bit counter (shared SessionState) | USB CDC uses shared state; SPI HARQ maintains independent sequences |
+| **Sequence Tracking** | 16-bit counter (shared SessionState) | 16-bit counter (shared SessionState) | Both transports share SessionState for sequence continuity during failover |
 | **Priority** | Priority 5 | Priority 10 | Prefer simpler USB |
 | **Typical Latency** | 1-2ms | <1ms | USB has lower overhead |
 | **Reliability** | 99.99% (with retries) | 99.999% (hardware CRC) | USB more reliable |
@@ -209,7 +209,7 @@ The SPI protocol uses Chase Combining (Type I HARQ) for robustness:
 - ✅ Application-level retries (up to 3x)
 - ✅ Viterbi FEC with soft combining
 - ✅ ACK/NACK handshake
-- ✅ Sequence tracking (independent, future: will be unified with USB)
+- ✅ Sequence tracking (shared SessionState with USB for failover continuity)
 
 ## Heartbeat Mechanism
 

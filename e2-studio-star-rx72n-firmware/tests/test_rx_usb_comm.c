@@ -193,6 +193,13 @@
 /**
  * @brief Test constants for mode switching tests
  */
+/**
+ * @brief Common test timeout for receive operations (milliseconds)
+ */
+typedef enum : uint16_t {
+  k_test_timeout_ms = 1000, /**< Default receive timeout for all tests */
+} test_timeout_t;
+
 typedef enum : uint8_t {
   k_test_seq_num         = 42, /**< Test sequence number */
   k_test_string_len      = 4,  /**< Length of "test" string */
@@ -795,7 +802,7 @@ void test_usb_comm_receive_valid_frame_with_sync(void)
 
   /* Receive */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* Verify */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -842,7 +849,7 @@ void test_usb_comm_receive_empty_payload_frame(void)
 
   /* Receive */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* Verify */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -900,7 +907,7 @@ void test_usb_comm_receive_max_payload_frame(void)
 
   /* Receive */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* Verify */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -948,7 +955,7 @@ void test_usb_comm_receive_increments_rx_sequence(void)
   rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* After receiving frame with sequence 5, expected RX sequence should be 6 */
@@ -967,7 +974,7 @@ void test_usb_comm_receive_increments_rx_sequence(void)
 
   rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* After receiving frame with sequence 6, expected RX sequence should be 7 */
@@ -1018,7 +1025,7 @@ void test_usb_comm_receive_finds_sync_after_garbage(void)
 
   /* Receive - should skip garbage and find the valid frame */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* Verify */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1071,7 +1078,7 @@ void test_usb_comm_receive_partial_sync_word(void)
   rx_usb_rx_push(k_usb_port_proto, encoded + first_half, encoded_len - first_half);
 
   /* Should now receive the complete frame */
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(8, rx_frame.header.sequence);
@@ -1129,7 +1136,7 @@ void test_usb_comm_receive_multiple_false_syncs(void)
 
   /* Receive - should skip false syncs and find the valid frame */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* Verify - the real frame should be received */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1192,7 +1199,7 @@ void test_usb_comm_receive_invalid_payload_length(void)
 
   /* Receive - should skip invalid frame and receive valid one */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0, rx_frame.header.sequence);
@@ -1237,7 +1244,7 @@ void test_usb_comm_receive_header_validation(void)
   rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* Verify all header fields */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1291,7 +1298,7 @@ void test_usb_comm_receive_buffer_compaction(void)
     rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
     rx_frame_t rx_frame;
-    err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+    err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_UINT16(seq, rx_frame.header.sequence);
@@ -1356,7 +1363,7 @@ void test_usb_comm_receive_buffer_overflow_protection(void)
   rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0, rx_frame.header.sequence);
@@ -1404,7 +1411,7 @@ void test_usb_comm_receive_fragmented_frame(void)
 
   /* Receive should reassemble the fragmented frame */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0, rx_frame.header.sequence);
@@ -1454,7 +1461,7 @@ void test_usb_comm_receive_sequence_wraparound(void)
   rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0xFFFF, rx_frame.header.sequence);
@@ -1475,7 +1482,7 @@ void test_usb_comm_receive_sequence_wraparound(void)
 
   rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0, rx_frame.header.sequence);
@@ -1521,7 +1528,7 @@ void test_usb_comm_receive_out_of_order_sequence(void)
     rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
     rx_frame_t rx_frame;
-    err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+    err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
     /* Frame should be accepted (exact match or small gap within tolerance) */
     TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1591,7 +1598,7 @@ void test_usb_comm_receive_crc_mismatch(void)
 
   /* First receive should fail with CRC error or skip to valid frame */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* The implementation should either:
    * 1. Return CRC mismatch error, or
@@ -1600,7 +1607,7 @@ void test_usb_comm_receive_crc_mismatch(void)
   if (err == k_rx_err_crc_mismatch) {
     /* CRC error returned - need another receive for good frame */
     rx_usb_rx_push(k_usb_port_proto, good_encoded, good_encoded_len);
-    err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+    err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_UINT16(0, rx_frame.header.sequence);
   } else if (err == k_rx_ok) {
@@ -2027,7 +2034,7 @@ void test_usb_comm_receive_ping_auto_pong(void)
 
   /* Receive should skip PING (auto-PONG) and return COMMAND */
   rx_frame_t rx_frame;
-  err = rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  err = rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_command, rx_frame.header.type);
   TEST_ASSERT_EQUAL_UINT16(4, rx_frame.header.length);
@@ -2145,7 +2152,7 @@ void test_usb_comm_receive_ping_callback_invoked(void)
   rx_usb_rx_push(k_usb_port_proto, encoded, encoded_len);
 
   rx_frame_t rx_frame;
-  (void)rx_usb_comm_receive(&s_handle, &rx_frame, 1000);
+  (void)rx_usb_comm_receive(&s_handle, &rx_frame, k_test_timeout_ms);
 
   /* Verify ping callback was invoked */
   TEST_ASSERT_EQUAL_UINT32(1, s_ping_cb_count);

@@ -1188,6 +1188,7 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
         rx_log_error(s_tag, "Failed to send PONG response");
         return pong_err;
       }
+      rx_log_debug(s_tag, "Auto-responded with PONG");
 
       if (handle->on_ping_cb != nullptr) {
         handle->on_ping_cb(frame, handle->cb_ctx);
@@ -1203,6 +1204,7 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, const uint3
         rx_log_error(s_tag, "Failed to send RESET_ACK");
         return ack_err;
       }
+      rx_log_debug(s_tag, "Auto-responded with RESET_ACK");
 
       rx_err_t reset_err = rx_session_reset(handle->session);
       if (reset_err != k_rx_ok) {

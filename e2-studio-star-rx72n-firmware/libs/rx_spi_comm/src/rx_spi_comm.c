@@ -1093,9 +1093,26 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
 
 /**
  * @brief Deinitialize SPI communication layer
+ *
+ * @details
+ * Tears down the encoder and decoder, clearing internal state.
+ * Saves the first error encountered from sub-deinit calls and
+ * returns it after completing all teardown steps.
+ *
  * @param[in,out] handle SPI communication handle to deinitialize
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
+ *
+ * @retval k_rx_ok              Deinit completed successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval (other)              First error from encoder or decoder deinit
+ *
+ * @pre handle != nullptr
+ * @pre handle was previously initialized via rx_spi_comm_init()
+ * @post handle->initialized == false
+ * @post Encoder and decoder resources released
+ *
+ * @note Not thread-safe; caller must ensure no concurrent SPI operations.
+ * @see rx_spi_comm_init() Corresponding initialization function
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
 {
@@ -2045,12 +2062,30 @@ rx_err_t rx_spi_comm_data_available(const rx_spi_comm_handle_t* handle, bool* av
 
 /**
  * @brief Register callbacks for PING and RESET control frames
- * @param[in,out] handle SPI communication handle
- * @param[in] on_ping_cb Callback for PING frames (NULL to disable)
- * @param[in] on_reset_cb Callback for RESET frames (NULL to disable)
- * @param[in] cb_ctx User context pointer passed to callbacks
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
+ *
+ * @details
+ * Stores function pointers that the receive path invokes when it
+ * decodes a PING or RESET frame. Passing NULL for a callback
+ * disables notification for that frame type while still performing
+ * the automatic PONG / RESET_ACK response.
+ *
+ * @param[in,out] handle     SPI communication handle (must be initialized)
+ * @param[in]     on_ping_cb Callback invoked on PING receipt (NULL to disable)
+ * @param[in]     on_reset_cb Callback invoked on RESET receipt (NULL to disable)
+ * @param[in]     cb_ctx     Opaque context forwarded to callbacks
+ *
+ * @retval k_rx_ok              Callbacks registered
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ *
+ * @pre handle != nullptr
+ * @pre handle->initialized == true
+ * @post Callbacks stored; invoked on next matching control frame
+ * @post Previous callbacks overwritten
+ *
+ * @note Not thread-safe; register before starting the receive loop.
+ * @see rx_spi_comm_send_pong()      Auto-response sent on PING
+ * @see rx_spi_comm_send_reset_ack() Auto-response sent on RESET
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
                                            void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
@@ -2070,13 +2105,31 @@ rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
 
 /**
  * @brief Send PONG frame with echoed payload
- * @param[in,out] handle SPI communication handle
- * @param[in] payload Payload data to echo (may be NULL if payload_len is 0)
- * @param[in] payload_len Length of payload in bytes
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return Error code from frame creation or SPI transfer on failure
+ *
+ * @details
+ * Constructs a PONG frame echoing the given payload, acquires the
+ * next TX sequence number from the shared session, encodes the
+ * frame, and transfers it over SPI. Typically called automatically
+ * by the receive path in response to a PING.
+ *
+ * @param[in,out] handle      SPI communication handle
+ * @param[in]     payload     Payload to echo (NULL when payload_len is 0)
+ * @param[in]     payload_len Length in bytes [0, k_frame_max_payload]
+ *
+ * @retval k_rx_ok                 PONG transmitted successfully
+ * @retval k_rx_err_invalid_arg    handle is nullptr
+ * @retval k_rx_err_invalid_state  Handle not initialized
+ * @retval k_rx_err_invalid_size   payload_len exceeds k_frame_max_payload
+ * @retval (other)                 Error from session, encode, or SPI transfer
+ *
+ * @pre handle != nullptr && handle->initialized
+ * @pre payload != NULL when payload_len > 0
+ * @post TX sequence incremented on success
+ * @post PONG frame sent over SPI
+ *
+ * @note Not thread-safe; called from the SPI receive context.
+ * @see rx_frame_create_pong() Frame construction helper
+ * @since Version 1.0.0
  */
 rx_err_t
 rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint32_t payload_len)
@@ -2117,12 +2170,31 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
 }
 
 /**
- * @brief Send RESET_ACK frame
+ * @brief Send RESET_ACK frame confirming a reset request
+ *
+ * @details
+ * Constructs a RESET_ACK frame (empty payload), acquires the next
+ * TX sequence number, encodes, and transfers over SPI. Called
+ * automatically by the receive path after processing a RESET frame.
+ * The RESET_ACK itself does NOT reset sequence numbers; that is
+ * handled by the session layer in response to the RESET.
+ *
  * @param[in,out] handle SPI communication handle
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if handle is nullptr
- * @return k_rx_err_invalid_state if not initialized
- * @return Error code from frame creation or SPI transfer on failure
+ *
+ * @retval k_rx_ok                 RESET_ACK transmitted successfully
+ * @retval k_rx_err_invalid_arg    handle is nullptr
+ * @retval k_rx_err_invalid_state  Handle not initialized
+ * @retval (other)                 Error from session, encode, or SPI transfer
+ *
+ * @pre handle != nullptr && handle->initialized
+ * @pre A RESET frame was received and session state cleared
+ * @post TX sequence incremented on success
+ * @post RESET_ACK frame sent over SPI
+ *
+ * @note Not thread-safe; called from the SPI receive context.
+ * @see rx_frame_create_reset_ack() Frame construction helper
+ * @see rx_spi_comm_set_control_callbacks() Register RESET notification
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
 {

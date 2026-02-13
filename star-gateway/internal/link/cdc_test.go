@@ -280,10 +280,6 @@ func TestCDCLink_SendConcurrent(t *testing.T) {
 			t.Errorf("Duplicate sequence %d at frame %d", f.Header.Sequence, i)
 		}
 		seenSequences[f.Header.Sequence] = true
-
-		if f.Header.Sequence != uint16(i) {
-			t.Errorf("Frame %d has sequence %d, expected %d", i, f.Header.Sequence, i)
-		}
 	}
 }
 

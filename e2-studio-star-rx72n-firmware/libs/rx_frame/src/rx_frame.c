@@ -686,6 +686,33 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a PING keepalive frame
+ *
+ * @details
+ * Initializes frame as a PING request for connection liveness checks.
+ * Receiver should respond with a PONG frame echoing the payload.
+ * Payload is optional; a 4-byte LE counter is typical.
+ *
+ * @param[out] frame       Frame to populate (zeroed then filled)
+ * @param[in]  sequence    Sequence number for this frame
+ * @param[in]  payload     Optional payload (NULL when payload_len is 0)
+ * @param[in]  payload_len Payload length in bytes [0, k_frame_max_payload]
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL, or payload NULL with len > 0
+ * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre payload != NULL when payload_len > 0
+ * @post frame->header.type == k_frame_type_ping
+ * @post frame->header.length == payload_len
+ *
+ * @note Stateless; safe to call from any context.
+ * @see rx_frame_create_pong() Corresponding response creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
                               const uint16_t sequence,
                               const uint8_t* payload,
@@ -720,6 +747,32 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a PONG response frame
+ *
+ * @details
+ * Initializes frame as a PONG response to a received PING.
+ * Echoes the PING payload so the sender can validate round-trip data.
+ *
+ * @param[out] frame       Frame to populate (zeroed then filled)
+ * @param[in]  sequence    Sequence number for this frame
+ * @param[in]  payload     Payload to echo (NULL when payload_len is 0)
+ * @param[in]  payload_len Payload length in bytes [0, k_frame_max_payload]
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL, or payload NULL with len > 0
+ * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre payload != NULL when payload_len > 0
+ * @post frame->header.type == k_frame_type_pong
+ * @post frame->header.length == payload_len
+ *
+ * @note Stateless; safe to call from any context.
+ * @see rx_frame_create_ping() Corresponding request creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
                               const uint16_t sequence,
                               const uint8_t* payload,
@@ -754,6 +807,31 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a RESET request frame
+ *
+ * @details
+ * Initializes frame as a RESET request that asks the peer to reset
+ * communication state (sequence numbers, buffers). The receiver
+ * should respond with a RESET_ACK frame. Payload is always empty.
+ *
+ * @param[out] frame    Frame to populate (zeroed then filled)
+ * @param[in]  sequence Sequence number for this frame
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre Caller has determined that a reset is necessary
+ * @post frame->header.type == k_frame_type_reset
+ * @post frame->header.length == 0
+ *
+ * @note Stateless; safe to call from any context.
+ * @warning Reset clears all sequence number state on both sides.
+ * @see rx_frame_create_reset_ack() Corresponding acknowledgment creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
 {
   if (frame == nullptr) {
@@ -773,6 +851,30 @@ rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
   return k_rx_ok;
 }
 
+/**
+ * @brief Create a RESET_ACK confirmation frame
+ *
+ * @details
+ * Initializes frame as a RESET_ACK response to a received RESET request.
+ * Confirms that the receiver has completed its reset procedure.
+ * Payload is always empty; sequence matches the RESET request.
+ *
+ * @param[out] frame    Frame to populate (zeroed then filled)
+ * @param[in]  sequence Sequence number (should match received RESET)
+ *
+ * @retval k_rx_ok                  Frame created successfully
+ * @retval k_rx_err_invalid_arg     frame is NULL
+ * @retval k_rx_err_validation_failed Post-condition type check failed
+ *
+ * @pre frame != NULL
+ * @pre A RESET frame was received and processed
+ * @post frame->header.type == k_frame_type_reset_ack
+ * @post frame->header.length == 0
+ *
+ * @note Stateless; safe to call from any context.
+ * @see rx_frame_create_reset() Corresponding request creator
+ * @since Version 1.0.0
+ */
 rx_err_t rx_frame_create_reset_ack(rx_frame_t* frame, const uint16_t sequence)
 {
   if (frame == nullptr) {

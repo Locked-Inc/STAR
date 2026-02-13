@@ -1103,6 +1103,30 @@ static const float s_mv_per_volt = 1000.0F;
 /** @brief Conversion factor: centi-degrees Celsius per degree Celsius */
 static const float s_cdegc_per_degree = 100.0F;
 
+/**
+ * @enum telem_motor_idx_t
+ * @brief Motor indices for telemetry encoder data
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_telem_motor_front_left  = 0, /**< Front left motor index */
+  k_telem_motor_front_right = 1, /**< Front right motor index */
+  k_telem_motor_back_left   = 2, /**< Back left motor index */
+  k_telem_motor_back_right  = 3, /**< Back right motor index */
+} telem_motor_idx_t;
+
+/**
+ * @enum telem_fault_shift_t
+ * @brief Bit shift offsets for packing per-motor fault flags into uint32_t
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_fault_shift_motor_0 = 0,  /**< Motor 0 fault flags at bits [7:0] */
+  k_fault_shift_motor_1 = 8,  /**< Motor 1 fault flags at bits [15:8] */
+  k_fault_shift_motor_2 = 16, /**< Motor 2 fault flags at bits [23:16] */
+  k_fault_shift_motor_3 = 24, /**< Motor 3 fault flags at bits [31:24] */
+} telem_fault_shift_t;
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
@@ -1749,35 +1773,41 @@ static rx_err_t internal_build_and_send_telemetry(void)
     telemetry.emergency_stop = motor_state.estop_active;
     /* Pack 4 motor fault bytes into single uint32_t bitfield */
     telemetry.fault_flags =
-      ((uint32_t)motor_state.fault_flags[0]) | ((uint32_t)motor_state.fault_flags[1] << 8) |
-      ((uint32_t)motor_state.fault_flags[2] << 16) | ((uint32_t)motor_state.fault_flags[3] << 24);
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_left] << k_fault_shift_motor_0) |
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_right] << k_fault_shift_motor_1) |
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_left] << k_fault_shift_motor_2) |
+      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_right] << k_fault_shift_motor_3);
 
     /* Front left encoder */
-    telemetry.has_encoder_front_left          = true;
-    telemetry.encoder_front_left.motor_id     = 0;
-    telemetry.encoder_front_left.ticks        = motor_state.encoder_counts[0];
-    telemetry.encoder_front_left.velocity_mps = (float)motor_state.current_velocity_mps[0];
+    telemetry.has_encoder_front_left      = true;
+    telemetry.encoder_front_left.motor_id = k_telem_motor_front_left;
+    telemetry.encoder_front_left.ticks    = motor_state.encoder_counts[k_telem_motor_front_left];
+    telemetry.encoder_front_left.velocity_mps =
+      (float)motor_state.current_velocity_mps[k_telem_motor_front_left];
     telemetry.encoder_front_left.timestamp_us = telemetry.timestamp_us;
 
     /* Front right encoder */
-    telemetry.has_encoder_front_right          = true;
-    telemetry.encoder_front_right.motor_id     = 1;
-    telemetry.encoder_front_right.ticks        = motor_state.encoder_counts[1];
-    telemetry.encoder_front_right.velocity_mps = (float)motor_state.current_velocity_mps[1];
+    telemetry.has_encoder_front_right      = true;
+    telemetry.encoder_front_right.motor_id = k_telem_motor_front_right;
+    telemetry.encoder_front_right.ticks    = motor_state.encoder_counts[k_telem_motor_front_right];
+    telemetry.encoder_front_right.velocity_mps =
+      (float)motor_state.current_velocity_mps[k_telem_motor_front_right];
     telemetry.encoder_front_right.timestamp_us = telemetry.timestamp_us;
 
     /* Back left encoder */
-    telemetry.has_encoder_back_left          = true;
-    telemetry.encoder_back_left.motor_id     = 2;
-    telemetry.encoder_back_left.ticks        = motor_state.encoder_counts[2];
-    telemetry.encoder_back_left.velocity_mps = (float)motor_state.current_velocity_mps[2];
+    telemetry.has_encoder_back_left      = true;
+    telemetry.encoder_back_left.motor_id = k_telem_motor_back_left;
+    telemetry.encoder_back_left.ticks    = motor_state.encoder_counts[k_telem_motor_back_left];
+    telemetry.encoder_back_left.velocity_mps =
+      (float)motor_state.current_velocity_mps[k_telem_motor_back_left];
     telemetry.encoder_back_left.timestamp_us = telemetry.timestamp_us;
 
     /* Back right encoder */
-    telemetry.has_encoder_back_right          = true;
-    telemetry.encoder_back_right.motor_id     = 3;
-    telemetry.encoder_back_right.ticks        = motor_state.encoder_counts[3];
-    telemetry.encoder_back_right.velocity_mps = (float)motor_state.current_velocity_mps[3];
+    telemetry.has_encoder_back_right      = true;
+    telemetry.encoder_back_right.motor_id = k_telem_motor_back_right;
+    telemetry.encoder_back_right.ticks    = motor_state.encoder_counts[k_telem_motor_back_right];
+    telemetry.encoder_back_right.velocity_mps =
+      (float)motor_state.current_velocity_mps[k_telem_motor_back_right];
     telemetry.encoder_back_right.timestamp_us = telemetry.timestamp_us;
   }
 

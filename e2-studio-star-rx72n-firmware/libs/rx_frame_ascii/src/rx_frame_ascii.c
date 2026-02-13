@@ -771,7 +771,8 @@ static uint32_t internal_format_header(char*                    buf,
  *
  * @param[in] type Frame type enum value
  *
- * @return String representation ("COMMAND", "RESPONSE", "ACK", "NACK", or "UNKNOWN")
+ * @return String representation ("PING", "PONG", "COMMAND", "RESPONSE", "ACK", "NACK",
+ *         "RESET_ACK", "RESET", or "UNKNOWN")
  *
  * @see rx_frame_ascii.h for full documentation
  */

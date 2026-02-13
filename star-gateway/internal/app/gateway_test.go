@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"io"
-	"log/slog"
 	"net/http"
 	"strings"
 	"testing"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"nhooyr.io/websocket" //nolint:staticcheck
@@ -227,7 +227,7 @@ func TestServiceSet_AllFieldsPopulated(t *testing.T) {
 // TestInitServices verifies that initServices creates all services correctly.
 func TestInitServices(t *testing.T) {
 	ctx := context.Background()
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	mockDisp := &mockDispatcher{}
 	mockHarq := &mockHARQ{}
 
@@ -257,7 +257,7 @@ func TestStartGRPCServerWithAddr_RegistersAllServices(t *testing.T) {
 
 	servers := &Servers{}
 	services := newTestServiceSet(t)
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 
 	if err := startGRPCServerWithAddr(ctx, servers, services, "127.0.0.1:0", logger); err != nil {
 		t.Fatalf("startGRPCServerWithAddr failed: %v", err)
@@ -290,7 +290,7 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 
 	servers := &Servers{}
 	services := newTestServiceSet(t)
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 
 	if err := startHTTPServerWithAddr(ctx, servers, services, "127.0.0.1:0", logger); err != nil {
 		t.Fatalf("startHTTPServerWithAddr failed: %v", err)
@@ -331,16 +331,11 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 	_ = conn.Close(websocket.StatusNormalClosure, "") //nolint:staticcheck
 }
 
-// newDiscardLogger creates a logger that discards all output (for testing).
-func newDiscardLogger() *slog.Logger {
-	return slog.New(slog.NewTextHandler(io.Discard, nil))
-}
-
 func newTestServiceSet(t *testing.T) *serviceSet {
 	t.Helper()
 
 	ctx := context.Background()
-	logger := newDiscardLogger()
+	logger := testutil.NewDiscardLogger()
 	mockDisp := &mockDispatcher{}
 	mockHarq := &mockHARQ{}
 
