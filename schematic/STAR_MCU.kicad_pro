@@ -239,40 +239,7 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [
-      [
-        "pin_to_pin|4292600|685800|6ed92bfe-ffc5-4a7f-8910-8482075f94fb|a46542b4-1b60-4c97-90bf-335b74a7f2e4|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ],
-      [
-        "pin_to_pin|5892800|2984500|9eb49190-7e0b-4de5-8df0-e8c51ca5458e|146c13de-784f-4a76-ac64-dceed3c7d0b1|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ],
-      [
-        "pin_to_pin|5892800|3606800|146c13de-784f-4a76-ac64-dceed3c7d0b1|99c1e9de-1a47-48ee-829f-edc0e0e41408|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ],
-      [
-        "pin_to_pin|5905500|4292600|99c1e9de-1a47-48ee-829f-edc0e0e41408|d091e0c4-987f-4829-a9e4-a3debc6c3692|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ],
-      [
-        "pin_to_pin|5918200|4914900|d091e0c4-987f-4829-a9e4-a3debc6c3692|0482eeb0-cad0-4b3e-8d74-6d2b8da4f0c3|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ],
-      [
-        "pin_to_pin|6896100|2984500|e0a2c068-186c-4446-8b18-8bb62dbc2433|8f2bbb23-9a1b-440d-a035-3e35ed640419|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ],
-      [
-        "pin_to_pin|6896100|3606800|8f2bbb23-9a1b-440d-a035-3e35ed640419|a4f3ee3e-8e51-4d70-a853-1165701bbba9|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ],
-      [
-        "pin_to_pin|6908800|4292600|a4f3ee3e-8e51-4d70-a853-1165701bbba9|0482eeb0-cad0-4b3e-8d74-6d2b8da4f0c3|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e|/ecf7f25e-fb61-4a34-8efe-359ece06c07e",
-        ""
-      ]
-    ],
+    "erc_exclusions": [],
     "meta": {
       "version": 0
     },
@@ -1415,8 +1382,8 @@
       "group_symbols": true,
       "include_excluded_from_bom": true,
       "name": "",
-      "sort_asc": false,
-      "sort_field": "Mouser Price per Unit"
+      "sort_asc": true,
+      "sort_field": "Manufacturer Part Number"
     },
     "connection_grid_size": 50.0,
     "drawing": {
