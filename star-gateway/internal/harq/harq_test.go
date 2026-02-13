@@ -145,6 +145,14 @@ func TestNewChaseCombining(t *testing.T) {
 	encoder := frame.NewEncoder()
 	decoder := frame.NewDecoder()
 
+	const (
+		testMaxRetries   = 5
+		testTimeout      = 20 * time.Millisecond
+		testZeroRetries  = 0
+		testShortTimeout = 5 * time.Millisecond
+		testFECEnabled   = true
+	)
+
 	tests := []struct {
 		name               string
 		config             *Config
@@ -162,23 +170,23 @@ func TestNewChaseCombining(t *testing.T) {
 		{
 			name: "custom_config",
 			config: &Config{
-				MaxRetries: 5,
-				Timeout:    20 * time.Millisecond,
-				FECEnabled: true,
+				MaxRetries: testMaxRetries,
+				Timeout:    testTimeout,
+				FECEnabled: testFECEnabled,
 			},
-			expectedRetries:    5,
-			expectedTimeout:    20 * time.Millisecond,
-			expectedFECEnabled: true,
+			expectedRetries:    testMaxRetries,
+			expectedTimeout:    testTimeout,
+			expectedFECEnabled: testFECEnabled,
 		},
 		{
 			name: "zero_retries",
 			config: &Config{
-				MaxRetries: 0,
-				Timeout:    5 * time.Millisecond,
+				MaxRetries: testZeroRetries,
+				Timeout:    testShortTimeout,
 				FECEnabled: false,
 			},
-			expectedRetries:    0,
-			expectedTimeout:    5 * time.Millisecond,
+			expectedRetries:    testZeroRetries,
+			expectedTimeout:    testShortTimeout,
 			expectedFECEnabled: false,
 		},
 	}

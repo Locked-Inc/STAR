@@ -51,7 +51,7 @@ type SPIConfig struct {
 	// Mode is the SPI mode (0-3).
 	Mode uint8
 
-	// BitsPerWord is the word size in bits.
+	// BitsPerWord is the word size in bits (8 for our protocol).
 	BitsPerWord uint8
 
 	// Timeout is the operation timeout.

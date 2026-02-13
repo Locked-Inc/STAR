@@ -23,10 +23,12 @@
 //	mux := http.NewServeMux()
 //	mux.HandleFunc("/health", healthHandler)
 //
+//	const defaultHTTPPort = ":8080"
+//
 //	config := &server.HTTPConfig{
-//	    ListenAddr:   ":8080",
-//	    ReadTimeout:  10 * time.Second,
-//	    WriteTimeout: 10 * time.Second,
+//	    ListenAddr:   defaultHTTPPort,
+//	    ReadTimeout:  DefaultReadTimeout,
+//	    WriteTimeout: DefaultWriteTimeout,
 //	    Handler:      mux,
 //	}
 //
@@ -58,9 +60,14 @@
 // # gRPC Server Example
 //
 //	// Phase 1: Construct server with service registration
+//	const bytesPerKiB = 1024
+//	const bytesPerMiB = bytesPerKiB * bytesPerKiB
+//	const defaultMaxMessageMultiplier = 10
+//	const defaultMaxMessageSize = defaultMaxMessageMultiplier * bytesPerMiB
+//
 //	config := &server.GRPCConfig{
-//	    ListenAddr:     ":50051",
-//	    MaxMessageSize: 10 * 1024 * 1024,
+//	    ListenAddr:     DefaultGRPCListenAddr,
+//	    MaxMessageSize: defaultMaxMessageSize,
 //	    ServiceRegistrar: func(srv *grpc.Server) error {
 //	        starv1.RegisterMotorControlServiceServer(srv, motorService)
 //	        starv1.RegisterTelemetryServiceServer(srv, telemetryService)
@@ -77,7 +84,7 @@
 //	ctx, cancel := context.WithCancel(context.Background())
 //	defer cancel()
 //
-//	errChan, err := server.RunGRPCServer(ctx, grpcSrv, ":50051", logger)
+//	errChan, err := server.RunGRPCServer(ctx, grpcSrv, logger)
 //	if err != nil {
 //	    return fmt.Errorf("failed to start gRPC server: %w", err)
 //	}
@@ -114,8 +121,8 @@
 //
 // Both RunHTTPServer and RunGRPCServer automatically handle graceful shutdown:
 //
-//   - HTTP: Calls Server.Shutdown() with 5 second timeout
-//   - gRPC: Calls GracefulStop() with 5 second timeout, falls back to Stop()
+//   - HTTP: Calls Server.Shutdown() with DefaultShutdownTimeout
+//   - gRPC: Calls GracefulStop() with DefaultGracefulStopTimeout, falls back to Stop()
 //   - Shutdown is triggered automatically when the context passed to Run is cancelled
 //   - No manual shutdown calls required
 //

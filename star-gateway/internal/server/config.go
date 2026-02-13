@@ -8,6 +8,14 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	DefaultListenAddr         = ":8080"
+	DefaultReadTimeout        = 10 * time.Second
+	DefaultWriteTimeout       = 10 * time.Second
+	DefaultGRPCListenAddr     = ":50051"
+	DefaultGRPCMaxMessageSize = 10 * 1024 * 1024
+)
+
 // HTTPConfig holds the configuration for HTTP server construction.
 type HTTPConfig struct {
 	// ListenAddr is the TCP address to listen on (e.g., ":8080", "127.0.0.1:8080").
@@ -48,9 +56,9 @@ func (c *HTTPConfig) Validate() error {
 // Handler must be set by the caller as it's application-specific.
 func DefaultHTTPConfig() *HTTPConfig {
 	return &HTTPConfig{
-		ListenAddr:   ":8080",
-		ReadTimeout:  10 * time.Second,
-		WriteTimeout: 10 * time.Second,
+		ListenAddr:   DefaultListenAddr,
+		ReadTimeout:  DefaultReadTimeout,
+		WriteTimeout: DefaultWriteTimeout,
 		// Handler must be set by caller
 	}
 }
@@ -96,8 +104,8 @@ func (c *GRPCConfig) Validate() error {
 // ServiceRegistrar must be set by the caller as it's application-specific.
 func DefaultGRPCConfig() *GRPCConfig {
 	return &GRPCConfig{
-		ListenAddr:     ":50051",
-		MaxMessageSize: 10 * 1024 * 1024, // 10 MB
+		ListenAddr:     DefaultGRPCListenAddr,
+		MaxMessageSize: DefaultGRPCMaxMessageSize,
 		// ServiceRegistrar must be set by caller
 	}
 }

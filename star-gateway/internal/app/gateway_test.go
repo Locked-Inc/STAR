@@ -11,11 +11,29 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
-	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 	"nhooyr.io/websocket" //nolint:staticcheck
 )
+
+const (
+	httpServerStartupDelay = 50 * time.Millisecond
+	websocketDialTimeout   = 2 * time.Second
+)
+
+// serviceGetters is the shared table of service accessor functions.
+// Update this list when adding new services to serviceSet.
+var serviceGetters = []struct {
+	name   string
+	getter func(*serviceSet) any
+}{
+	{name: "motorControl", getter: func(s *serviceSet) any { return s.motorControl }},
+	{name: "telemetry", getter: func(s *serviceSet) any { return s.telemetry }},
+	{name: "battery", getter: func(s *serviceSet) any { return s.battery }},
+	{name: "configuration", getter: func(s *serviceSet) any { return s.configuration }},
+	{name: "firmware", getter: func(s *serviceSet) any { return s.firmware }},
+	{name: "gateway", getter: func(s *serviceSet) any { return s.gateway }},
+}
 
 // mockDispatcher is a minimal mock for testing.
 type mockDispatcher struct{}
@@ -75,24 +93,12 @@ func (m *mockHARQ) Reset() {
 func TestRegisterGRPCServices(t *testing.T) {
 	services := newTestServiceSet(t)
 
-	// Verify all services are initialized
-	if services.motorControl == nil {
-		t.Fatal("motorControl service is nil")
-	}
-	if services.telemetry == nil {
-		t.Fatal("telemetry service is nil")
-	}
-	if services.battery == nil {
-		t.Fatal("battery service is nil")
-	}
-	if services.configuration == nil {
-		t.Fatal("configuration service is nil")
-	}
-	if services.firmware == nil {
-		t.Fatal("firmware service is nil")
-	}
-	if services.gateway == nil {
-		t.Fatal("gateway service is nil")
+	for _, tc := range serviceGetters {
+		t.Run("service initialized/"+tc.name, func(t *testing.T) {
+			if tc.getter(services) == nil {
+				t.Fatalf("%s service is nil", tc.name)
+			}
+		})
 	}
 
 	// Create gRPC server
@@ -112,10 +118,6 @@ func TestRegisterGRPCServices(t *testing.T) {
 
 // TestRegisterGRPCServices_NilServices verifies error handling for nil services.
 func TestRegisterGRPCServices_NilServices(t *testing.T) {
-	srv := grpc.NewServer()
-	mockDisp := &mockDispatcher{}
-	mockHarq := &mockHARQ{}
-
 	tests := []struct {
 		name     string
 		services *serviceSet
@@ -127,23 +129,40 @@ func TestRegisterGRPCServices_NilServices(t *testing.T) {
 			wantErr:  false,
 		},
 		{
-			name: "NilGatewayService",
-			services: &serviceSet{
-				motorControl:  service.NewMotorControlService(mockHarq, mockDisp, newDiscardLogger()),
-				telemetry:     service.NewTelemetryService(context.Background(), mockHarq, mockDisp, newDiscardLogger()),
-				battery:       service.NewBatteryService(context.Background(), mockHarq, mockDisp, newDiscardLogger()),
-				configuration: service.NewConfigurationService(mockHarq, mockDisp, newDiscardLogger()),
-				firmware:      service.NewFirmwareService(),
-				gateway:       nil,
-			},
-			wantErr: true,
+			name:     "NilMotorControlService",
+			services: func() *serviceSet { s := newTestServiceSet(t); s.motorControl = nil; return s }(),
+			wantErr:  true,
 		},
-		// Note: gRPC registration doesn't validate nil services at registration time,
-		// so this test documents explicit validation behavior in registerGRPCServices.
+		{
+			name:     "NilTelemetryService",
+			services: func() *serviceSet { s := newTestServiceSet(t); s.telemetry = nil; return s }(),
+			wantErr:  true,
+		},
+		{
+			name:     "NilBatteryService",
+			services: func() *serviceSet { s := newTestServiceSet(t); s.battery = nil; return s }(),
+			wantErr:  true,
+		},
+		{
+			name:     "NilConfigurationService",
+			services: func() *serviceSet { s := newTestServiceSet(t); s.configuration = nil; return s }(),
+			wantErr:  true,
+		},
+		{
+			name:     "NilFirmwareService",
+			services: func() *serviceSet { s := newTestServiceSet(t); s.firmware = nil; return s }(),
+			wantErr:  true,
+		},
+		{
+			name:     "NilGatewayService",
+			services: func() *serviceSet { s := newTestServiceSet(t); s.gateway = nil; return s }(),
+			wantErr:  true,
+		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
+			srv := grpc.NewServer()
 			err := registerGRPCServices(srv, tc.services)
 			if (err != nil) != tc.wantErr {
 				t.Errorf("Expected error: %v, got: %v", tc.wantErr, err)
@@ -218,24 +237,12 @@ func TestInitServices(t *testing.T) {
 		t.Fatal("initServices returned nil serviceSet")
 	}
 
-	// Verify individual services
-	if services.motorControl == nil {
-		t.Error("motorControl not initialized")
-	}
-	if services.telemetry == nil {
-		t.Error("telemetry not initialized")
-	}
-	if services.battery == nil {
-		t.Error("battery not initialized")
-	}
-	if services.configuration == nil {
-		t.Error("configuration not initialized")
-	}
-	if services.firmware == nil {
-		t.Error("firmware not initialized")
-	}
-	if services.gateway == nil {
-		t.Error("gateway not initialized")
+	for _, tc := range serviceGetters {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.getter(services) == nil {
+				t.Errorf("%s not initialized", tc.name)
+			}
+		})
 	}
 }
 
@@ -288,7 +295,7 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 		t.Fatal("expected HTTPServer to be initialized")
 	}
 
-	time.Sleep(50 * time.Millisecond)
+	time.Sleep(httpServerStartupDelay)
 
 	healthResp, err := http.Get("http://" + servers.HTTPServer.Addr + "/healthz")
 	if err != nil {
@@ -309,7 +316,7 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 	}
 
 	wsURL := "ws://" + strings.TrimPrefix(servers.HTTPServer.Addr, "http://") + "/ws/controller"
-	wsCtx, wsCancel := context.WithTimeout(context.Background(), 2*time.Second)
+	wsCtx, wsCancel := context.WithTimeout(context.Background(), websocketDialTimeout)
 	defer wsCancel()
 
 	conn, _, err := websocket.Dial(wsCtx, wsURL, nil) //nolint:staticcheck

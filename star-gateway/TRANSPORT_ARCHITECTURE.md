@@ -371,6 +371,18 @@ The receive sequence validation accepts frames in three cases:
    - Log error with sequence mismatch details
    - Reject frame
 
+**Implementation References (source of truth):**
+- Gap threshold constant: `MaxGapTolerance` in [`internal/manager/session.go`](internal/manager/session.go)
+- Validation function: `(*SessionState).ValidateRxSequence` in [`internal/manager/session.go`](internal/manager/session.go)
+- TX sequence increment under mutex: `(*SessionState).NextTxSequence` in [`internal/manager/session.go`](internal/manager/session.go)
+- RX/TX sequence continuity call sites:
+   - `(*CDCLink).Send` and `(*CDCLink).Receive` in [`internal/link/cdc.go`](internal/link/cdc.go)
+   - `(*SPILink).Send` and `(*SPILink).Receive` in [`internal/link/spi.go`](internal/link/spi.go)
+
+`txSequence`/`rxSequence` comparisons and updates happen under `SessionState.mu` inside
+`NextTxSequence` and `ValidateRxSequence`, so the documented 10-frame behavior is enforced by code,
+not by documentation text.
+
 ## Health Monitoring
 
 ### Health Metrics
@@ -460,7 +472,8 @@ To add a new transport (e.g., Ethernet, CAN):
 
 2. **Create Link Layer:**
 
-   Implement the HARQ interface to provide reliable data transfer:
+    Implement the transport reliability interface (the `harq.HARQ` abstraction) to provide reliable data transfer.
+    This is an abstract API used by multiple backends (SPI, USB CDC, simulation socket):
    - **Components needed**:
      - Reference to underlying transport device
      - Frame encoder for serialization
@@ -468,6 +481,15 @@ To add a new transport (e.g., Ethernet, CAN):
      - Shared SessionState reference (critical for sequence continuity)
    - **Send method**: Encode frames, manage sequences, handle retransmission if needed
    - **Receive method**: Decode frames, validate sequences, process control frames
+
+    **Concrete implementations to follow:**
+    - Session/sequence management: `SessionState` in [`internal/manager/session.go`](internal/manager/session.go)
+    - Reliable transport API implementation:
+       - `CDCLink.Send`/`CDCLink.Receive` in [`internal/link/cdc.go`](internal/link/cdc.go) — CDC implementation
+       - `SPILink.Send`/`SPILink.Receive` in [`internal/link/spi.go`](internal/link/spi.go) — SPI implementation
+    - Frame codec components:
+       - `Encoder` in [`internal/frame/encoder.go`](internal/frame/encoder.go)
+       - `StreamDecoder` in [`internal/frame/stream_decoder.go`](internal/frame/stream_decoder.go)
 
 3. **Register with TransportManager:**
 

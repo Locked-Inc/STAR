@@ -9,13 +9,56 @@ package app
 
 import (
 	"context"
+	"encoding/binary"
+	"sync/atomic"
 	"testing"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/link"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
+)
+
+// firstReceiveTrigger is the receive invocation count that triggers the reset ACK response.
+const firstReceiveTrigger = 1
+
+// newResetCapableAppMock creates a MockHARQ that handles the reset handshake so
+// tm.Start() completes instantly instead of waiting for ACK timeout × retries.
+func newResetCapableAppMock() *testutil.MockHARQ {
+	var capturedSessionID atomic.Uint32
+	var receiveCount atomic.Int32
+
+	m := &testutil.MockHARQ{
+		GetStateFunc: func() harq.State { return harq.StateIdle },
+	}
+	m.SendWithTypeFunc = func(ctx context.Context, data []byte, ft frame.Type) error {
+		if ft == frame.FrameTypeReset && len(data) >= manager.SessionIDPayloadSize {
+			capturedSessionID.Store(binary.LittleEndian.Uint32(data[:manager.SessionIDPayloadSize]))
+		}
+		return nil
+	}
+	m.ReceiveFunc = func(ctx context.Context) (*harq.ReceiveResult, error) {
+		count := receiveCount.Add(1)
+		if count == firstReceiveTrigger {
+			sid := capturedSessionID.Load()
+			p := make([]byte, manager.SessionIDPayloadSize)
+			binary.LittleEndian.PutUint32(p, sid)
+			return &harq.ReceiveResult{
+				Payload:  p,
+				Metadata: harq.FrameMetadata{Type: frame.FrameTypeResetAck},
+			}, nil
+		}
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
+	return m
+}
+
+const (
+	usbPriority = 100
+	spiPriority = 50
 )
 
 // mockTransportDevice is a minimal mock for testing transport.Device interface usage.
@@ -53,30 +96,38 @@ var _ transport.Device = (*mockTransportDevice)(nil)
 // TestGateway_UsesTransportDeviceInterface verifies that the gateway
 // uses the transport.Device interface (not any legacy Transport interface).
 func TestGateway_UsesTransportDeviceInterface(t *testing.T) {
-	// Create a mock transport that implements transport.Device
-	mockTransport := &mockTransportDevice{}
-
-	// Verify it implements the interface
-	var _ transport.Device = mockTransport
-
-	// Create a CDCLink with the transport.Device
-	session := manager.NewSessionState()
-	cdcLink, err := link.NewCDCLink(mockTransport, session)
-	if err != nil {
-		t.Fatalf("NewCDCLink with transport.Device failed: %v", err)
+	testCases := []struct {
+		name        string
+		constructor func(transport.Device, *manager.SessionState) (harq.HARQ, error)
+	}{
+		{
+			name: "CDCLink",
+			constructor: func(device transport.Device, session *manager.SessionState) (harq.HARQ, error) {
+				return link.NewCDCLink(device, session)
+			},
+		},
+		{
+			name: "SPILink",
+			constructor: func(device transport.Device, session *manager.SessionState) (harq.HARQ, error) {
+				return link.NewSPILink(device, session, nil)
+			},
+		},
 	}
 
-	// Verify the link is a harq.HARQ
-	var _ harq.HARQ = cdcLink
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			mockTransport := &mockTransportDevice{}
+			var _ transport.Device = mockTransport
 
-	// Create an SPILink with the transport.Device
-	spiLink, err := link.NewSPILink(mockTransport, session, nil)
-	if err != nil {
-		t.Fatalf("NewSPILink with transport.Device failed: %v", err)
+			session := manager.NewSessionState()
+			h, err := tc.constructor(mockTransport, session)
+			if err != nil {
+				t.Fatalf("constructor failed: %v", err)
+			}
+
+			var _ harq.HARQ = h
+		})
 	}
-
-	// Verify the link is a harq.HARQ
-	var _ harq.HARQ = spiLink
 }
 
 // TestGateway_LinksImplementHARQInterface verifies that both CDCLink and
@@ -97,15 +148,19 @@ func TestGateway_LinksImplementHARQInterface(t *testing.T) {
 
 		// Runtime check of HARQ methods
 		state := cdcLink.GetState()
-		if state == harq.State(0) && state != harq.StateIdle {
-			t.Errorf("GetState() returned zero-value that isn't StateIdle")
+		if state != harq.StateIdle {
+			t.Errorf("GetState() = %v, want %v", state, harq.StateIdle)
 		}
 
 		txSeq := cdcLink.GetTxSequence()
-		_ = txSeq // Should be 0 initially
+		if txSeq != 0 {
+			t.Fatalf("cdcLink.GetTxSequence() = %d, want 0", txSeq)
+		}
 
 		rxSeq := cdcLink.GetRxSequence()
-		_ = rxSeq // Should be 0 initially
+		if rxSeq != 0 {
+			t.Fatalf("cdcLink.GetRxSequence() = %d, want 0", rxSeq)
+		}
 
 		// Verify Send and Receive methods exist (part of harq.HARQ)
 		ctx := context.Background()
@@ -113,11 +168,25 @@ func TestGateway_LinksImplementHARQInterface(t *testing.T) {
 		if err != nil {
 			t.Errorf("Send() on CDCLink failed: %v", err)
 		}
+
+		cancelledCtx, cancel := context.WithCancel(context.Background())
+		cancel()
+		if err := cdcLink.Send(cancelledCtx, []byte("test")); err == nil {
+			t.Error("expected cdcLink.Send with canceled context to fail")
+		}
+	})
+
+	t.Run("CDCLink nil transport returns error", func(t *testing.T) {
+		_, err := link.NewCDCLink(nil, session)
+		if err == nil {
+			t.Fatal("expected error from link.NewCDCLink(nil, session)")
+		}
 	})
 
 	// Test SPILink
 	t.Run("SPILink implements harq.HARQ", func(t *testing.T) {
-		spiLink, err := link.NewSPILink(mockTransport, session, nil)
+		spiSession := manager.NewSessionState()
+		spiLink, err := link.NewSPILink(mockTransport, spiSession, nil)
 		if err != nil {
 			t.Fatalf("NewSPILink failed: %v", err)
 		}
@@ -127,27 +196,36 @@ func TestGateway_LinksImplementHARQInterface(t *testing.T) {
 
 		// Runtime check of HARQ methods
 		state := spiLink.GetState()
-		if state == harq.State(0) && state != harq.StateIdle {
-			t.Errorf("GetState() returned zero-value that isn't StateIdle")
+		if state != harq.StateIdle {
+			t.Errorf("GetState() = %v, want %v", state, harq.StateIdle)
 		}
 
 		txSeq := spiLink.GetTxSequence()
-		_ = txSeq // Should be 0 initially
+		if txSeq != 0 {
+			t.Fatalf("spiLink.GetTxSequence() = %d, want 0", txSeq)
+		}
 
 		rxSeq := spiLink.GetRxSequence()
-		_ = rxSeq // Should be 0 initially
+		if rxSeq != 0 {
+			t.Fatalf("spiLink.GetRxSequence() = %d, want 0", rxSeq)
+		}
+	})
+
+	t.Run("SPILink nil args return errors", func(t *testing.T) {
+		if _, err := link.NewSPILink(nil, session, nil); err == nil {
+			t.Fatal("expected error from link.NewSPILink(nil, session, nil)")
+		}
+		if _, err := link.NewSPILink(mockTransport, nil, nil); err == nil {
+			t.Fatal("expected error from link.NewSPILink(mockTransport, nil, nil)")
+		}
 	})
 }
 
 // TestGateway_TransportManagerUsesHARQInterface verifies that
 // TransportManager uses harq.HARQ interface (not legacy Transport).
 func TestGateway_TransportManagerUsesHARQInterface(t *testing.T) {
-	// Create a mock HARQ
-	mockHARQ := &testutil.MockHARQ{
-		GetStateFunc: func() harq.State {
-			return harq.StateIdle
-		},
-	}
+	// Create a reset-capable mock HARQ
+	mockHARQ := newResetCapableAppMock()
 
 	// Verify mock implements harq.HARQ
 	var _ harq.HARQ = mockHARQ
@@ -158,8 +236,8 @@ func TestGateway_TransportManagerUsesHARQInterface(t *testing.T) {
 	tm := manager.NewTransportManager(config)
 
 	// RegisterTransport should accept harq.HARQ interface
-	tm.RegisterTransport("usb", mockHARQ, 100)
-	tm.RegisterTransport("spi", mockHARQ, 50)
+	tm.RegisterTransport("usb", mockHARQ, usbPriority)
+	tm.RegisterTransport("spi", mockHARQ, spiPriority)
 
 	// Start the manager
 	ctx, cancel := context.WithCancel(context.Background())
@@ -172,13 +250,19 @@ func TestGateway_TransportManagerUsesHARQInterface(t *testing.T) {
 
 	// Verify TransportManager methods return harq package types
 	state := tm.GetState()
-	_ = state // Should be harq.State type
+	if state != harq.StateIdle {
+		t.Errorf("GetState() = %v, want %v", state, harq.StateIdle)
+	}
 
 	txSeq := tm.GetTxSequence()
-	_ = txSeq // Should be uint16
+	if txSeq != 0 {
+		t.Errorf("GetTxSequence() = %d, want 0", txSeq)
+	}
 
 	rxSeq := tm.GetRxSequence()
-	_ = rxSeq // Should be uint16
+	if rxSeq != 0 {
+		t.Errorf("GetRxSequence() = %d, want 0", rxSeq)
+	}
 }
 
 // TestGateway_NoLegacyTransportReferences verifies that the gateway

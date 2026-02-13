@@ -8,6 +8,36 @@ import (
 	"google.golang.org/grpc"
 )
 
+const (
+	defaultListenAddr   = ":8080"
+	loopbackListenAddr  = "127.0.0.1:8080"
+	defaultReadTimeout  = 10 * time.Second
+	defaultWriteTimeout = 10 * time.Second
+	negativeTimeout     = -1 * time.Second
+)
+
+func mockRegistrar(srv *grpc.Server) error {
+	return nil
+}
+
+func checkValidationError(t *testing.T, err error, expectErr bool, expectedMsg string) {
+	t.Helper()
+	if expectErr {
+		if err == nil {
+			t.Errorf("Expected error containing %q, got nil", expectedMsg)
+			return
+		}
+		if err.Error() != expectedMsg {
+			t.Errorf("Expected error %q, got %q", expectedMsg, err.Error())
+		}
+		return
+	}
+
+	if err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+}
+
 func TestHTTPConfig_Validate(t *testing.T) {
 	tests := []struct {
 		name      string
@@ -18,9 +48,9 @@ func TestHTTPConfig_Validate(t *testing.T) {
 		{
 			name: "ValidConfig",
 			config: &HTTPConfig{
-				ListenAddr:   ":8080",
-				ReadTimeout:  10 * time.Second,
-				WriteTimeout: 10 * time.Second,
+				ListenAddr:   defaultListenAddr,
+				ReadTimeout:  defaultReadTimeout,
+				WriteTimeout: defaultWriteTimeout,
 				Handler:      http.NotFoundHandler(),
 			},
 			expectErr: false,
@@ -28,7 +58,7 @@ func TestHTTPConfig_Validate(t *testing.T) {
 		{
 			name: "ValidConfigWithZeroTimeouts",
 			config: &HTTPConfig{
-				ListenAddr: "127.0.0.1:8080",
+				ListenAddr: loopbackListenAddr,
 				Handler:    http.NotFoundHandler(),
 			},
 			expectErr: false,
@@ -44,7 +74,7 @@ func TestHTTPConfig_Validate(t *testing.T) {
 		{
 			name: "MissingHandler",
 			config: &HTTPConfig{
-				ListenAddr: ":8080",
+				ListenAddr: defaultListenAddr,
 			},
 			expectErr: true,
 			errMsg:    "handler is required (typically http.ServeMux)",
@@ -52,8 +82,8 @@ func TestHTTPConfig_Validate(t *testing.T) {
 		{
 			name: "NegativeReadTimeout",
 			config: &HTTPConfig{
-				ListenAddr:  ":8080",
-				ReadTimeout: -1 * time.Second,
+				ListenAddr:  defaultListenAddr,
+				ReadTimeout: negativeTimeout,
 				Handler:     http.NotFoundHandler(),
 			},
 			expectErr: true,
@@ -62,8 +92,8 @@ func TestHTTPConfig_Validate(t *testing.T) {
 		{
 			name: "NegativeWriteTimeout",
 			config: &HTTPConfig{
-				ListenAddr:   ":8080",
-				WriteTimeout: -1 * time.Second,
+				ListenAddr:   defaultListenAddr,
+				WriteTimeout: negativeTimeout,
 				Handler:      http.NotFoundHandler(),
 			},
 			expectErr: true,
@@ -74,20 +104,7 @@ func TestHTTPConfig_Validate(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.config.Validate()
-
-			if tc.expectErr {
-				if err == nil {
-					t.Errorf("Expected error containing %q, got nil", tc.errMsg)
-					return
-				}
-				if err.Error() != tc.errMsg {
-					t.Errorf("Expected error %q, got %q", tc.errMsg, err.Error())
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Expected no error, got: %v", err)
-				}
-			}
+			checkValidationError(t, err, tc.expectErr, tc.errMsg)
 		})
 	}
 }
@@ -95,18 +112,24 @@ func TestHTTPConfig_Validate(t *testing.T) {
 func TestDefaultHTTPConfig(t *testing.T) {
 	config := DefaultHTTPConfig()
 
-	if config.ListenAddr != ":8080" {
-		t.Errorf("Expected default ListenAddr :8080, got %s", config.ListenAddr)
-	}
-	if config.ReadTimeout != 10*time.Second {
-		t.Errorf("Expected default ReadTimeout 10s, got %v", config.ReadTimeout)
-	}
-	if config.WriteTimeout != 10*time.Second {
-		t.Errorf("Expected default WriteTimeout 10s, got %v", config.WriteTimeout)
+	tests := []struct {
+		name string
+		got  interface{}
+		want interface{}
+	}{
+		{name: "ListenAddr", got: config.ListenAddr, want: DefaultListenAddr},
+		{name: "ReadTimeout", got: config.ReadTimeout, want: DefaultReadTimeout},
+		{name: "WriteTimeout", got: config.WriteTimeout, want: DefaultWriteTimeout},
 	}
 
-	// Note: Handler is nil by default (must be set by caller)
-	// Set handler and validate
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.got != tc.want {
+				t.Errorf("%s = %v, want %v", tc.name, tc.got, tc.want)
+			}
+		})
+	}
+
 	config.Handler = http.NotFoundHandler()
 	if err := config.Validate(); err != nil {
 		t.Errorf("Default config should be valid after setting handler: %v", err)
@@ -114,10 +137,6 @@ func TestDefaultHTTPConfig(t *testing.T) {
 }
 
 func TestGRPCConfig_Validate(t *testing.T) {
-	mockRegistrar := func(srv *grpc.Server) error {
-		return nil
-	}
-
 	tests := []struct {
 		name      string
 		config    *GRPCConfig
@@ -127,8 +146,8 @@ func TestGRPCConfig_Validate(t *testing.T) {
 		{
 			name: "ValidConfig",
 			config: &GRPCConfig{
-				ListenAddr:       ":50051",
-				MaxMessageSize:   10 * 1024 * 1024,
+				ListenAddr:       DefaultGRPCListenAddr,
+				MaxMessageSize:   DefaultGRPCMaxMessageSize,
 				ServiceRegistrar: mockRegistrar,
 			},
 			expectErr: false,
@@ -145,7 +164,7 @@ func TestGRPCConfig_Validate(t *testing.T) {
 		{
 			name: "MissingListenAddr",
 			config: &GRPCConfig{
-				MaxMessageSize:   10 * 1024 * 1024,
+				MaxMessageSize:   DefaultGRPCMaxMessageSize,
 				ServiceRegistrar: mockRegistrar,
 			},
 			expectErr: true,
@@ -154,8 +173,8 @@ func TestGRPCConfig_Validate(t *testing.T) {
 		{
 			name: "MissingServiceRegistrar",
 			config: &GRPCConfig{
-				ListenAddr:     ":50051",
-				MaxMessageSize: 10 * 1024 * 1024,
+				ListenAddr:     DefaultGRPCListenAddr,
+				MaxMessageSize: DefaultGRPCMaxMessageSize,
 			},
 			expectErr: true,
 			errMsg:    "service registrar function is required",
@@ -163,7 +182,7 @@ func TestGRPCConfig_Validate(t *testing.T) {
 		{
 			name: "NegativeMaxMessageSize",
 			config: &GRPCConfig{
-				ListenAddr:       ":50051",
+				ListenAddr:       DefaultGRPCListenAddr,
 				MaxMessageSize:   -1,
 				ServiceRegistrar: mockRegistrar,
 			},
@@ -175,20 +194,7 @@ func TestGRPCConfig_Validate(t *testing.T) {
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
 			err := tc.config.Validate()
-
-			if tc.expectErr {
-				if err == nil {
-					t.Errorf("Expected error containing %q, got nil", tc.errMsg)
-					return
-				}
-				if err.Error() != tc.errMsg {
-					t.Errorf("Expected error %q, got %q", tc.errMsg, err.Error())
-				}
-			} else {
-				if err != nil {
-					t.Errorf("Expected no error, got: %v", err)
-				}
-			}
+			checkValidationError(t, err, tc.expectErr, tc.errMsg)
 		})
 	}
 }
@@ -196,16 +202,24 @@ func TestGRPCConfig_Validate(t *testing.T) {
 func TestDefaultGRPCConfig(t *testing.T) {
 	config := DefaultGRPCConfig()
 
-	if config.ListenAddr != ":50051" {
-		t.Errorf("Expected default ListenAddr :50051, got %s", config.ListenAddr)
-	}
-	if config.MaxMessageSize != 10*1024*1024 {
-		t.Errorf("Expected default MaxMessageSize 10MB, got %d", config.MaxMessageSize)
+	tests := []struct {
+		name string
+		got  interface{}
+		want interface{}
+	}{
+		{name: "ListenAddr", got: config.ListenAddr, want: DefaultGRPCListenAddr},
+		{name: "MaxMessageSize", got: config.MaxMessageSize, want: DefaultGRPCMaxMessageSize},
 	}
 
-	// Note: ServiceRegistrar is nil by default (must be set by caller)
-	// Set registrar and validate
-	config.ServiceRegistrar = func(srv *grpc.Server) error { return nil }
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if tc.got != tc.want {
+				t.Errorf("%s = %v, want %v", tc.name, tc.got, tc.want)
+			}
+		})
+	}
+
+	config.ServiceRegistrar = mockRegistrar
 	if err := config.Validate(); err != nil {
 		t.Errorf("Default config should be valid after setting registrar: %v", err)
 	}

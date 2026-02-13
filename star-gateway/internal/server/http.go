@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"net"
@@ -9,8 +10,13 @@ import (
 	"time"
 )
 
-// httpShutdownTimeout is the maximum time allowed for HTTP server graceful shutdown.
-const httpShutdownTimeout = 5 * time.Second
+const (
+	// DefaultShutdownTimeout is the maximum time allowed for HTTP server graceful shutdown.
+	DefaultShutdownTimeout = 5 * time.Second
+
+	// errChanBufSize is a single-slot channel because only one terminal serve result is emitted.
+	errChanBufSize = 1
+)
 
 // NewHTTPServer creates a configured http.Server without starting it.
 // This enables testing handler wiring without opening network ports.
@@ -23,6 +29,13 @@ const httpShutdownTimeout = 5 * time.Second
 //
 // Returns error if config validation fails.
 func NewHTTPServer(config *HTTPConfig, logger *slog.Logger) (*http.Server, error) {
+	if config == nil {
+		return nil, fmt.Errorf("http config cannot be nil")
+	}
+	if logger == nil {
+		return nil, fmt.Errorf("logger cannot be nil")
+	}
+
 	if err := config.Validate(); err != nil {
 		return nil, fmt.Errorf("invalid HTTP config: %w", err)
 	}
@@ -79,6 +92,13 @@ func NewHTTPServer(config *HTTPConfig, logger *slog.Logger) (*http.Server, error
 //	// Trigger graceful shutdown
 //	cancel()
 func RunHTTPServer(ctx context.Context, srv *http.Server, logger *slog.Logger) (<-chan error, error) {
+	if srv == nil {
+		return nil, fmt.Errorf("http server cannot be nil")
+	}
+	if logger == nil {
+		return nil, fmt.Errorf("logger cannot be nil")
+	}
+
 	// Create TCP listener first to catch port binding errors early
 	listener, err := net.Listen("tcp", srv.Addr)
 	if err != nil {
@@ -88,13 +108,13 @@ func RunHTTPServer(ctx context.Context, srv *http.Server, logger *slog.Logger) (
 	// Update srv.Addr to the actual bound address (important for :0 random ports)
 	srv.Addr = listener.Addr().String()
 
-	errChan := make(chan error, 1)
+	errChan := make(chan error, errChanBufSize)
 
 	// Start server in background goroutine
 	go func() {
 		logger.Info("HTTP server starting", slog.String("addr", srv.Addr))
 
-		if err := srv.Serve(listener); err != nil && err != http.ErrServerClosed {
+		if err := srv.Serve(listener); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Error("HTTP server error", slog.String("error", err.Error()))
 			errChan <- err
 			return
@@ -110,13 +130,13 @@ func RunHTTPServer(ctx context.Context, srv *http.Server, logger *slog.Logger) (
 
 		logger.Info("HTTP server shutting down")
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), httpShutdownTimeout)
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), DefaultShutdownTimeout)
 		defer cancel()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			logger.Error("HTTP server shutdown failed",
 				slog.String("error", err.Error()),
-				slog.Duration("timeout", httpShutdownTimeout))
+				slog.Duration("timeout", DefaultShutdownTimeout))
 		}
 	}()
 

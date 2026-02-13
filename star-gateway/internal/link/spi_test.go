@@ -11,6 +11,7 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/manager"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 )
 
 // ============================================================================
@@ -33,14 +34,7 @@ type mockSPITransport struct {
 
 // Compile-time assertion that mockSPITransport implements transport.Device.
 // This ensures the mock stays in sync with the interface and catches regressions.
-var _ interface {
-	Transfer(ctx context.Context, txData []byte) ([]byte, error)
-	Send(data []byte) (int, error)
-	Receive(maxLen int) ([]byte, error)
-	IsOpen() bool
-	Open() error
-	Close() error
-} = (*mockSPITransport)(nil)
+var _ transport.Device = (*mockSPITransport)(nil)
 
 func (m *mockSPITransport) Transfer(ctx context.Context, txData []byte) ([]byte, error) {
 	if m.TransferFunc != nil {

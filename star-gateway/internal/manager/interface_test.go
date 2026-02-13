@@ -8,12 +8,75 @@
 package manager
 
 import (
+	"bytes"
 	"context"
+	"encoding/binary"
+	"sync/atomic"
 	"testing"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 )
+
+const (
+	testPriorityUSB = 100
+	testPrioritySPI = 50
+	testTxSeqValue  = 42
+	testRxSeqValue  = 24
+	testTwoItems    = 2
+	testZeroValue   = 0
+
+	// firstReceiveCall is the receive invocation count that triggers the reset ACK response.
+	firstReceiveCall = 1
+
+	// resetAckSequence is the sequence number used in RESET_ACK frames.
+	resetAckSequence = 0
+)
+
+// newResetCapableMock creates a MockHARQ that handles the reset handshake so
+// tm.Start() completes instantly instead of waiting for ACK timeout × retries.
+// Extra funcs (e.g. GetStateFunc, GetTxSeqFunc) can be set on the returned mock
+// after creation.
+func newResetCapableMock() *testutil.MockHARQ {
+	var capturedSessionID atomic.Uint32
+	var receiveCount atomic.Int32
+
+	m := &testutil.MockHARQ{
+		GetStateFunc: func() harq.State {
+			return harq.StateIdle
+		},
+	}
+
+	m.SendWithTypeFunc = func(ctx context.Context, data []byte, ft frame.Type) error {
+		if ft == frame.FrameTypeReset && len(data) >= SessionIDPayloadSize {
+			capturedSessionID.Store(binary.LittleEndian.Uint32(data[:SessionIDPayloadSize]))
+		}
+		return nil
+	}
+
+	m.ReceiveFunc = func(ctx context.Context) (*harq.ReceiveResult, error) {
+		count := receiveCount.Add(1)
+		if count == firstReceiveCall {
+			// First receive: return RESET_ACK with matching session ID
+			sid := capturedSessionID.Load()
+			payload := make([]byte, SessionIDPayloadSize)
+			binary.LittleEndian.PutUint32(payload, sid)
+			return &harq.ReceiveResult{
+				Payload: payload,
+				Metadata: harq.FrameMetadata{
+					Type:     frame.FrameTypeResetAck,
+					Sequence: resetAckSequence,
+				},
+			}, nil
+		}
+		// Subsequent receives: block until context cancels
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
+
+	return m
+}
 
 // TestTransportManager_RegisterTransport_AcceptsHARQInterface verifies that
 // RegisterTransport accepts the harq.HARQ interface type.
@@ -32,13 +95,13 @@ func TestTransportManager_RegisterTransport_AcceptsHARQInterface(t *testing.T) {
 	var _ harq.HARQ = mockHARQ
 
 	// This should compile and work - verifies RegisterTransport signature accepts harq.HARQ
-	tm.RegisterTransport("usb", mockHARQ, 100)
-	tm.RegisterTransport("spi", mockHARQ, 50)
+	tm.RegisterTransport("usb", mockHARQ, testPriorityUSB)
+	tm.RegisterTransport("spi", mockHARQ, testPrioritySPI)
 
 	// Verify transports were registered
 	transports := tm.GetAvailableTransports()
-	if len(transports) != 2 {
-		t.Errorf("Expected 2 transports registered, got %d", len(transports))
+	if len(transports) != testTwoItems {
+		t.Errorf("Expected %d transports registered, got %d", testTwoItems, len(transports))
 	}
 }
 
@@ -49,20 +112,12 @@ func TestTransportManager_MethodsReturnHARQTypes(t *testing.T) {
 	config.Mode = ModeAuto
 	tm := NewTransportManager(config)
 
-	// Create mock with known return values
-	mockHARQ := &testutil.MockHARQ{
-		GetStateFunc: func() harq.State {
-			return harq.StateIdle
-		},
-		GetTxSeqFunc: func() uint16 {
-			return 42
-		},
-		GetRxSeqFunc: func() uint16 {
-			return 24
-		},
-	}
+	// Create mock with known return values and reset handshake support
+	mockHARQ := newResetCapableMock()
+	mockHARQ.GetTxSeqFunc = func() uint16 { return testTxSeqValue }
+	mockHARQ.GetRxSeqFunc = func() uint16 { return testRxSeqValue }
 
-	tm.RegisterTransport("usb", mockHARQ, 100)
+	tm.RegisterTransport("usb", mockHARQ, testPriorityUSB)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -74,60 +129,68 @@ func TestTransportManager_MethodsReturnHARQTypes(t *testing.T) {
 
 	// Verify GetState returns harq.State type
 	state := tm.GetState()
-	_ = state // Should be harq.State type
+	if state != harq.StateIdle {
+		t.Errorf("GetState() = %v, want %v", state, harq.StateIdle)
+	}
 
 	// Verify GetTxSequence returns uint16 matching harq interface
 	txSeq := tm.GetTxSequence()
-	if txSeq != 42 {
-		t.Errorf("GetTxSequence() = %d, want 42", txSeq)
+	if txSeq != testTxSeqValue {
+		t.Errorf("GetTxSequence() = %d, want %d", txSeq, testTxSeqValue)
 	}
 
 	// Verify GetRxSequence returns uint16 matching harq interface
 	rxSeq := tm.GetRxSequence()
-	if rxSeq != 24 {
-		t.Errorf("GetRxSequence() = %d, want 24", rxSeq)
+	if rxSeq != testRxSeqValue {
+		t.Errorf("GetRxSequence() = %d, want %d", rxSeq, testRxSeqValue)
 	}
 }
 
 // TestTransportManager_SendAcceptsHARQPriority verifies that the Send method
 // accepts harq.Priority parameters from the harq package.
 func TestTransportManager_SendAcceptsHARQPriority(t *testing.T) {
-	config := DefaultConfig()
-	config.Mode = ModeAuto
-	tm := NewTransportManager(config)
+	tests := []struct {
+		name     string
+		priority harq.Priority
+	}{
+		{name: "PriorityHigh", priority: harq.PriorityHigh},
+		{name: "PriorityNormal", priority: harq.PriorityNormal},
+	}
 
-	sendCalled := false
-	mockHARQ := &testutil.MockHARQ{
-		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
-			sendCalled = true
-			// Verify priority parameter type
-			if len(p) > 0 {
-				var _ harq.Priority = p[0]
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			config := DefaultConfig()
+			config.Mode = ModeAuto
+			tm := NewTransportManager(config)
+
+			sendCalled := false
+			mockHARQ := newResetCapableMock()
+			mockHARQ.SendFunc = func(ctx context.Context, data []byte, p ...harq.Priority) error {
+				sendCalled = true
+				if len(p) > testZeroValue {
+					var _ harq.Priority = p[0]
+				}
+				return nil
 			}
-			return nil
-		},
-		GetStateFunc: func() harq.State {
-			return harq.StateIdle
-		},
-	}
 
-	tm.RegisterTransport("usb", mockHARQ, 100)
+			tm.RegisterTransport("usb", mockHARQ, testPriorityUSB)
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 
-	if err := tm.Start(ctx); err != nil {
-		t.Fatalf("Start() failed: %v", err)
-	}
-	defer tm.Stop()
+			if err := tm.Start(ctx); err != nil {
+				t.Fatalf("Start() failed: %v", err)
+			}
+			defer tm.Stop()
 
-	// Send with harq.PriorityHigh (from harq package, not legacy code)
-	if err := tm.Send(ctx, []byte("test"), harq.PriorityHigh); err != nil {
-		t.Fatalf("Send() with harq.PriorityHigh failed: %v", err)
-	}
+			if err := tm.Send(ctx, []byte("test"), tc.priority); err != nil {
+				t.Fatalf("Send() failed for %s: %v", tc.name, err)
+			}
 
-	if !sendCalled {
-		t.Error("Send() did not call underlying HARQ mock")
+			if !sendCalled {
+				t.Errorf("Send() did not call underlying HARQ mock for %s", tc.name)
+			}
+		})
 	}
 }
 
@@ -139,11 +202,32 @@ func TestTransportManager_ReceiveReturnsHARQResult(t *testing.T) {
 	tm := NewTransportManager(config)
 
 	expectedPayload := []byte("test payload")
+	var receiveCount atomic.Int32
+	var capturedSessionID atomic.Uint32
+
 	mockHARQ := &testutil.MockHARQ{
+		SendWithTypeFunc: func(ctx context.Context, data []byte, ft frame.Type) error {
+			if ft == frame.FrameTypeReset && len(data) >= SessionIDPayloadSize {
+				capturedSessionID.Store(binary.LittleEndian.Uint32(data[:SessionIDPayloadSize]))
+			}
+			return nil
+		},
 		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
-			// Return harq.ReceiveResult type
+			count := receiveCount.Add(1)
+			if count == firstReceiveCall {
+				// First receive: RESET_ACK for handshake
+				sid := capturedSessionID.Load()
+				p := make([]byte, SessionIDPayloadSize)
+				binary.LittleEndian.PutUint32(p, sid)
+				return &harq.ReceiveResult{
+					Payload:  p,
+					Metadata: harq.FrameMetadata{Type: frame.FrameTypeResetAck},
+				}, nil
+			}
+			// Second receive: the actual test payload (must be a data frame type)
 			return &harq.ReceiveResult{
-				Payload: expectedPayload,
+				Payload:  expectedPayload,
+				Metadata: harq.FrameMetadata{Type: frame.FrameTypeResponse},
 			}, nil
 		},
 		GetStateFunc: func() harq.State {
@@ -151,7 +235,7 @@ func TestTransportManager_ReceiveReturnsHARQResult(t *testing.T) {
 		},
 	}
 
-	tm.RegisterTransport("usb", mockHARQ, 100)
+	tm.RegisterTransport("usb", mockHARQ, testPriorityUSB)
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -167,11 +251,8 @@ func TestTransportManager_ReceiveReturnsHARQResult(t *testing.T) {
 		t.Fatalf("Receive() failed: %v", err)
 	}
 
-	// Verify result type is *harq.ReceiveResult
-	var _ *harq.ReceiveResult = result
-
 	// Verify payload matches
-	if string(result.Payload) != string(expectedPayload) {
+	if !bytes.Equal(result.Payload, expectedPayload) {
 		t.Errorf("Received payload = %s, want %s", result.Payload, expectedPayload)
 	}
 }
@@ -180,18 +261,10 @@ func TestTransportManager_ReceiveReturnsHARQResult(t *testing.T) {
 // uses the harq.HARQ interface (not the old Transport interface).
 // This test prevents regressions after removing the legacy Transport interface.
 func TestTransportManager_UsesHARQInterface(t *testing.T) {
-	// Create a mock that implements harq.HARQ
-	mockHARQ := &testutil.MockHARQ{
-		GetStateFunc: func() harq.State {
-			return harq.StateIdle
-		},
-		GetTxSeqFunc: func() uint16 {
-			return 0
-		},
-		GetRxSeqFunc: func() uint16 {
-			return 0
-		},
-	}
+	// Create a reset-capable mock that implements harq.HARQ
+	mockHARQ := newResetCapableMock()
+	mockHARQ.GetTxSeqFunc = func() uint16 { return testZeroValue }
+	mockHARQ.GetRxSeqFunc = func() uint16 { return testZeroValue }
 
 	// Verify mock implements harq.HARQ
 	var _ harq.HARQ = mockHARQ
@@ -202,7 +275,7 @@ func TestTransportManager_UsesHARQInterface(t *testing.T) {
 	tm := NewTransportManager(config)
 
 	// Register the transport - this verifies TransportManager accepts harq.HARQ interface
-	tm.RegisterTransport("usb", mockHARQ, 100)
+	tm.RegisterTransport("usb", mockHARQ, testPriorityUSB)
 
 	// Start the manager
 	ctx, cancel := context.WithCancel(context.Background())

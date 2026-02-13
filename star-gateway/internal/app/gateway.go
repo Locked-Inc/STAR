@@ -7,7 +7,6 @@ package app
 import (
 	"context"
 	"fmt"
-	"log"
 	"log/slog"
 	"net/http"
 	"os"
@@ -42,6 +41,12 @@ const (
 
 	// grpcMaxMsgSize is the maximum message size for gRPC (10 MB).
 	grpcMaxMsgSize = 10 * 1024 * 1024
+
+	// defaultDispatcherReceiveInterval is the default polling cadence for dispatcher receive loop (100Hz).
+	defaultDispatcherReceiveInterval = 10 * time.Millisecond
+
+	// defaultDispatcherShutdownTimeout is the default graceful shutdown timeout for dispatcher stop.
+	defaultDispatcherShutdownTimeout = 5 * time.Second
 )
 
 // Config holds the application configuration.
@@ -68,6 +73,37 @@ type serviceSet struct {
 	gateway       *service.GatewayService
 }
 
+var (
+	createSPITransportFn = createSPITransport
+	createSPILinkFn      = createSPILink
+)
+
+func (s *serviceSet) count() int {
+	if s == nil {
+		return 0
+	}
+	n := 0
+	if s.motorControl != nil {
+		n++
+	}
+	if s.telemetry != nil {
+		n++
+	}
+	if s.battery != nil {
+		n++
+	}
+	if s.configuration != nil {
+		n++
+	}
+	if s.firmware != nil {
+		n++
+	}
+	if s.gateway != nil {
+		n++
+	}
+	return n
+}
+
 // Run starts the STAR Gateway application with the given configuration.
 //
 // This is the main entry point that orchestrates the complete application lifecycle:
@@ -88,7 +124,7 @@ func Run(ctx context.Context, config Config) error {
 	logger.Info("Starting STAR Gateway")
 
 	// Initialize transport manager with validation and failover
-	tm, err := initTransportManager(ctx, config)
+	tm, err := initTransportManager(ctx, config, logger)
 	if err != nil {
 		return fmt.Errorf("transport manager initialization failed: %w", err)
 	}
@@ -114,7 +150,7 @@ func Run(ctx context.Context, config Config) error {
 	}
 
 	logger.Info("services initialized with dispatcher",
-		slog.Int("service_count", 5))
+		slog.Int("service_count", services.count()))
 
 	// Initialize servers struct
 	servers := &Servers{}
@@ -152,20 +188,20 @@ func Run(ctx context.Context, config Config) error {
 //
 // CRITICAL: TransportManager owns the single SessionState instance. All transports must use
 // tm.GetSessionState() to ensure sequence continuity during failover (prevents Handoff Problem).
-func initTransportManager(ctx context.Context, appConfig Config) (*manager.TransportManager, error) {
+func initTransportManager(ctx context.Context, appConfig Config, logger *slog.Logger) (*manager.TransportManager, error) {
 	// Create manager config from app config
 	mgrConfig := &manager.Config{
 		Mode: appConfig.TransportMode,
 	}
 
 	// Validate config or fallback to default
-	mgrConfig = validateOrUseDefault(mgrConfig)
+	mgrConfig = validateOrUseDefault(logger, mgrConfig)
 
 	// Create transport manager (internally creates SessionState)
 	tm := manager.NewTransportManager(mgrConfig)
 
 	// Initialize transports using manager's SessionState (passed via tm)
-	if err := initializeTransports(ctx, appConfig, tm); err != nil {
+	if err := initializeTransports(appConfig, tm, logger); err != nil {
 		return nil, err
 	}
 
@@ -184,11 +220,17 @@ func initTransportManager(ctx context.Context, appConfig Config) (*manager.Trans
 
 // validateOrUseDefault validates the configuration and returns it if valid,
 // or returns the default configuration if validation fails.
-func validateOrUseDefault(config *manager.Config) *manager.Config {
+func validateOrUseDefault(logger *slog.Logger, config *manager.Config) *manager.Config {
+	if logger == nil {
+		logger = slog.Default()
+	}
+
 	// Validate configuration
 	if err := config.Validate(); err != nil {
 		// Log validation failure and use default configuration
-		log.Printf("Config validation failed: %v. Using default configuration.", err)
+		logger.Error("manager config validation failed, using defaults",
+			slog.Any("error", err),
+			slog.String("requested_mode", string(config.Mode)))
 		return manager.DefaultConfig()
 	}
 	return config
@@ -200,40 +242,52 @@ func validateOrUseDefault(config *manager.Config) *manager.Config {
 //
 // CRITICAL: All transports MUST use the shared SessionState from TransportManager
 // (via tm.GetSessionState()) to ensure sequence continuity during failover.
-func initializeTransports(ctx context.Context, appConfig Config, tm *manager.TransportManager) error {
+func initializeTransports(appConfig Config, tm *manager.TransportManager, logger *slog.Logger) error {
+	if logger == nil {
+		logger = slog.Default()
+	}
+
 	// Get shared session state from manager (single source of truth)
 	session := tm.GetSessionState()
 
 	// SPI/Socket initialization (non-fatal unless force-spi mode)
 	if appConfig.SimulationMode {
 		// Simulation mode: use socket transport
-		socketTransport, err := createSocketTransport(ctx, appConfig.SocketPath)
+		socketTransport, err := createSocketTransport(appConfig.SocketPath)
 		if err != nil {
-			log.Printf("Socket transport initialization failed: %v", err)
+			logger.Error("socket transport initialization failed",
+				slog.Any("error", err),
+				slog.String("socket_path", appConfig.SocketPath))
 		} else {
 			// Wrap socket in CDC link (socket protocol matches CDC)
 			socketLink, err := link.NewCDCLink(socketTransport, session)
 			if err != nil {
-				log.Printf("Socket link creation failed: %v", err)
+				if closeErr := socketTransport.Close(); closeErr != nil {
+					logger.Error("failed to close socket transport after link error", slog.Any("error", closeErr))
+				}
+				logger.Error("socket link creation failed", slog.Any("error", err))
 			} else {
 				// Register as SPI transport (simulation mode uses socket instead of SPI)
 				tm.RegisterTransport(manager.TransportNameSPI, socketLink, manager.PrioritySPI)
-				log.Printf("Registered socket transport (simulation mode)")
+				logger.Info("registered socket transport", slog.String("mode", "simulation"))
 			}
 		}
 	} else {
 		// Production mode: use SPI transport
-		spiTransport, err := createSPITransport(ctx)
+		spiTransport, err := createSPITransportFn()
 		if err != nil {
-			log.Printf("SPI transport initialization failed: %v", err)
+			logger.Error("spi transport initialization failed", slog.Any("error", err))
 		} else {
 			// Wrap in SPI link layer with shared session state
-			spiLink, err := createSPILink(spiTransport, session)
+			spiLink, err := createSPILinkFn(spiTransport, session)
 			if err != nil {
-				log.Printf("SPI link creation failed: %v", err)
+				if closeErr := spiTransport.Close(); closeErr != nil {
+					logger.Error("failed to close SPI transport after link error", slog.Any("error", closeErr))
+				}
+				logger.Error("spi link creation failed", slog.Any("error", err))
 			} else {
 				tm.RegisterTransport(manager.TransportNameSPI, spiLink, manager.PrioritySPI)
-				log.Printf("Registered SPI transport")
+				logger.Info("registered transport", slog.String("name", manager.TransportNameSPI))
 			}
 		}
 	}
@@ -241,14 +295,15 @@ func initializeTransports(ctx context.Context, appConfig Config, tm *manager.Tra
 	// USB CDC initialization (non-fatal unless force-usb mode)
 	usbLink, err := createUSBLink(session)
 	if err != nil {
-		log.Printf("USB CDC initialization failed: %v", err)
+		logger.Error("usb cdc initialization failed", slog.Any("error", err))
 		// If force-usb mode, this is fatal
 		if appConfig.TransportMode == manager.ModeForceUSB {
+			logger.Error("force-usb mode requires usb transport")
 			return fmt.Errorf("force-USB mode requires USB transport: %w", err)
 		}
 	} else {
 		tm.RegisterTransport(manager.TransportNameUSB, usbLink, manager.PriorityUSB)
-		log.Printf("Registered USB transport")
+		logger.Info("registered transport", slog.String("name", manager.TransportNameUSB))
 	}
 
 	return nil
@@ -267,27 +322,13 @@ func validateTransportsRegistered(tm *manager.TransportManager, mode manager.Tra
 
 	// Validate force-mode requirements
 	if mode == manager.ModeForceUSB {
-		hasUSB := false
-		for _, name := range available {
-			if name == manager.TransportNameUSB {
-				hasUSB = true
-				break
-			}
-		}
-		if !hasUSB {
+		if !hasTransport(available, manager.TransportNameUSB) {
 			return fmt.Errorf("force-USB mode enabled but USB transport unavailable")
 		}
 	}
 
 	if mode == manager.ModeForceSPI {
-		hasSPI := false
-		for _, name := range available {
-			if name == manager.TransportNameSPI {
-				hasSPI = true
-				break
-			}
-		}
-		if !hasSPI {
+		if !hasTransport(available, manager.TransportNameSPI) {
 			return fmt.Errorf("force-SPI mode enabled but SPI transport unavailable")
 		}
 	}
@@ -295,9 +336,18 @@ func validateTransportsRegistered(tm *manager.TransportManager, mode manager.Tra
 	return nil
 }
 
+func hasTransport(available []string, name string) bool {
+	for _, transportName := range available {
+		if transportName == name {
+			return true
+		}
+	}
+	return false
+}
+
 // createSocketTransport creates a SocketTransport for simulation mode.
 // The transport is opened and ready for use upon successful return.
-func createSocketTransport(ctx context.Context, socketPath string) (transport.Device, error) {
+func createSocketTransport(socketPath string) (transport.Device, error) {
 	// Create SocketTransport with the provided socket path (simulation mode only)
 	socketTransport := transport.NewSocketTransport(socketPath)
 
@@ -311,7 +361,7 @@ func createSocketTransport(ctx context.Context, socketPath string) (transport.De
 
 // createSPITransport creates an SPITransport for production mode.
 // The transport is configured with appropriate device parameters and opened.
-func createSPITransport(ctx context.Context) (transport.Device, error) {
+func createSPITransport() (transport.Device, error) {
 	// Create SPI transport with default configuration
 	// DefaultConfig uses: /dev/spidev0.0, 10 MHz, Mode 0, 8 bits/word
 	spiTransport := transport.NewSPITransport(transport.DefaultConfig())
@@ -368,8 +418,8 @@ func createUSBLink(session *manager.SessionState) (harq.HARQ, error) {
 func initDispatcher(ctx context.Context, tm harq.HARQ, logger *slog.Logger) (dispatcher.Dispatcher, error) {
 	// Create dispatcher with TransportManager (which implements harq.HARQ interface)
 	config := &dispatcher.Config{
-		ShutdownTimeout: 5 * time.Second,
-		ReceiveInterval: 10 * time.Millisecond, // 100Hz for SPI communication spec
+		ShutdownTimeout: defaultDispatcherShutdownTimeout,
+		ReceiveInterval: defaultDispatcherReceiveInterval, // 100Hz for SPI communication spec
 	}
 
 	disp, err := dispatcher.NewDispatcher(tm, logger, config)
