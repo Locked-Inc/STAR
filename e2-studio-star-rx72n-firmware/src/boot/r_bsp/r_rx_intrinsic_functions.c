@@ -277,10 +277,10 @@ signed long R_BSP_Min(signed long data1, signed long data2)
  * @since Version 1.0.0
  */
 #if defined(__GNUC__)
-long long R_BSP_MulAndAccOperation_B(long long           init,
-                                     unsigned long       count,
-                                     const signed char*  addr1,
-                                     const signed char*  addr2)
+long long R_BSP_MulAndAccOperation_B(long long          init,
+                                     unsigned long      count,
+                                     const signed char* addr1,
+                                     const signed char* addr2)
 {
   long long     result = init;
   unsigned long index;
@@ -328,8 +328,10 @@ long long R_BSP_MulAndAccOperation_B(long long           init,
  * @since Version 1.0.0
  */
 #if defined(__GNUC__)
-long long
-R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short* addr1, const short* addr2)
+long long R_BSP_MulAndAccOperation_W(long long     init,
+                                     unsigned long count,
+                                     const short*  addr1,
+                                     const short*  addr2)
 {
   long long     result = init;
   unsigned long index;
@@ -352,7 +354,10 @@ R_BSP_MulAndAccOperation_W(long long init, unsigned long count, const short* add
 * Return Value : result - Lower 64 bits of the init + S(data1[n] * data2[n]) result. (n=0, 1, ..., const-1)
 ***********************************************************************************************************************/
 #if defined(__GNUC__)
-long long R_BSP_MulAndAccOperation_L(long long init, unsigned long count, const long* addr1, const long* addr2)
+long long R_BSP_MulAndAccOperation_L(long long     init,
+                                     unsigned long count,
+                                     const long*   addr1,
+                                     const long*   addr2)
 {
   long long     result = init;
   unsigned long index;
@@ -640,7 +645,9 @@ long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsi
  * @since Version 1.0.0
  */
 #if defined(__GNUC__)
-short R_BSP_MulAndAccOperation_FixedPoint1(const short* data1, const short* data2, unsigned long count)
+short R_BSP_MulAndAccOperation_FixedPoint1(const short*  data1,
+                                           const short*  data2,
+                                           unsigned long count)
 {
   register const signed long* ldata1 = (const signed long*)data1;
   register const signed long* ldata2 = (const signed long*)data2;
@@ -702,7 +709,9 @@ short R_BSP_MulAndAccOperation_FixedPoint1(const short* data1, const short* data
  * @since Version 1.0.0
  */
 #if defined(__GNUC__)
-short R_BSP_MulAndAccOperation_FixedPoint2(const short* data1, const short* data2, unsigned long count)
+short R_BSP_MulAndAccOperation_FixedPoint2(const short*  data1,
+                                           const short*  data2,
+                                           unsigned long count)
 {
   register const signed long* ldata1 = (const signed long*)data1;
   register const signed long* ldata2 = (const signed long*)data2;
@@ -1123,27 +1132,29 @@ void* R_BSP_GetDEPC(void)
 
 /** @name TFU Control and Status Registers */
 /** @{ */
-#define K_TFU_CTRL_BASE       81400H  /**< TFU control register base address */
-#define K_TFU_INIT_MASK       7        /**< TFU initialization value (enables sin/cos/atan channels) */
+#define K_TFU_CTRL_BASE 81400H /**< TFU control register base address */
+#define K_TFU_INIT_MASK 7      /**< TFU initialization value (enables sin/cos/atan channels) */
 /** @} */
 
 /** @name TFU Input Registers (Floating-Point) */
 /** @{ */
-#define K_TFU_SINCOS_FLOAT    81410H  /**< TFU sin/cos input register (float, radians) */
-#define K_TFU_ATAN_FLOAT      81418H  /**< TFU atan/hypot input register (float, radians) */
+#define K_TFU_SINCOS_FLOAT 81410H /**< TFU sin/cos input register (float, radians) */
+#define K_TFU_ATAN_FLOAT   81418H /**< TFU atan/hypot input register (float, radians) */
 /** @} */
 
 /** @name TFU Input Registers (Fixed-Point) */
 /** @{ */
-#define K_TFU_SINCOS_FIXED    81420H  /**< TFU sin/cos input register (fixed-point, radians) */
-#define K_TFU_SINE_FIXED      81424H  /**< TFU sine-only input register (fixed-point, radians) */
-#define K_TFU_ATAN_FIXED      81428H  /**< TFU atan/hypot input register (fixed-point, radians) */
+#define K_TFU_SINCOS_FIXED 81420H /**< TFU sin/cos input register (fixed-point, radians) */
+#define K_TFU_SINE_FIXED   81424H /**< TFU sine-only input register (fixed-point, radians) */
+#define K_TFU_ATAN_FIXED   81428H /**< TFU atan/hypot input register (fixed-point, radians) */
 /** @} */
 
 /** @name TFU Scaling Constants */
 /** @{ */
-#define K_TFU_SCALE_INV_2PI_FLOAT  3F1B74EEH  /**< Float 1/(2π) scaling factor for atan2 normalization */
-#define K_TFU_SCALE_INV_2PI_FIXED  9B74EDA8H  /**< Fixed-point 1/(2π) scaling factor for atan2 normalization */
+#define K_TFU_SCALE_INV_2PI_FLOAT                                                                  \
+  3F1B74EEH /**< Float 1/(2π) scaling factor for atan2 normalization */
+#define K_TFU_SCALE_INV_2PI_FIXED                                                                  \
+  9B74EDA8H /**< Fixed-point 1/(2π) scaling factor for atan2 normalization */
 /** @} */
 
 #if BSP_MCU_TFU_VERSION == 1
@@ -1155,8 +1166,9 @@ void* R_BSP_GetDEPC(void)
 ***********************************************************************************************************************/
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_InitTFU)
 void R_BSP_InitTFU(void){R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R1) R_BSP_ASM(MOV.L#K_TFU_CTRL_BASE, R1)
-                           R_BSP_ASM(MOV.B #K_TFU_INIT_MASK, [R1]) R_BSP_ASM(MOV.B #K_TFU_INIT_MASK, 1 [R1]) R_BSP_ASM(POP R1)
-                             R_BSP_ASM_END} /* End of function R_BSP_InitTFU() */
+                           R_BSP_ASM(MOV.B #K_TFU_INIT_MASK, [R1])
+                             R_BSP_ASM(MOV.B #K_TFU_INIT_MASK, 1 [R1]) R_BSP_ASM(POP R1)
+                               R_BSP_ASM_END} /* End of function R_BSP_InitTFU() */
 #endif
 #ifdef __FPU
 /***********************************************************************************************************************
@@ -1171,9 +1183,9 @@ void R_BSP_InitTFU(void){R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R1) R_BSP_ASM(MOV.L#K_
 R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine) void R_BSP_CalcSine_Cosine(float  f,
                                                                           float* sin,
                                                                           float* cos){
-  R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R4) R_BSP_ASM(MOV.L#K_TFU_SINCOS_FLOAT, R4) R_BSP_ASM(MOV.L R1, 4 [R4])
-    R_BSP_ASM(MOV.L 4 [R4], [R2]) R_BSP_ASM(MOV.L[R4], [R3]) R_BSP_ASM(POP R4) R_BSP_ASM_END}
-/* End of function R_BSP_CalcSine_Cosine() */
+  R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R4) R_BSP_ASM(MOV.L#K_TFU_SINCOS_FLOAT, R4)
+    R_BSP_ASM(MOV.L R1, 4 [R4]) R_BSP_ASM(MOV.L 4 [R4], [R2]) R_BSP_ASM(MOV.L[R4], [R3])
+      R_BSP_ASM(POP R4) R_BSP_ASM_END} /* End of function R_BSP_CalcSine_Cosine() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcAtan_SquareRoot
@@ -1192,10 +1204,11 @@ R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcAtan_SquareRoot) void R_BSP_CalcAtan_SquareRoo
   R_BSP_ASM_INTERNAL_USED(y) R_BSP_ASM_INTERNAL_USED(x) R_BSP_ASM_INTERNAL_USED(atan2)
     R_BSP_ASM_INTERNAL_USED(hypot)
 
-      R_BSP_ASM_BEGIN R_BSP_ASM(PUSHM R5 - R6) R_BSP_ASM(MOV.L#K_TFU_ATAN_FLOAT, R5) R_BSP_ASM(MOV.L R2, [R5])
-        R_BSP_ASM(MOV.L R1, 4 [R5]) R_BSP_ASM(MOV.L 4 [R5], [R3]) R_BSP_ASM(MOV.L[R5], R6)
-          R_BSP_ASM(FMUL #K_TFU_SCALE_INV_2PI_FLOAT, R6) R_BSP_ASM(MOV.L R6, [R4]) R_BSP_ASM(POPM R5 - R6)
-            R_BSP_ASM_END} /* End of function R_BSP_CalcAtan_SquareRoot() */
+      R_BSP_ASM_BEGIN R_BSP_ASM(PUSHM R5 - R6) R_BSP_ASM(MOV.L#K_TFU_ATAN_FLOAT, R5)
+        R_BSP_ASM(MOV.L R2, [R5]) R_BSP_ASM(MOV.L R1, 4 [R5]) R_BSP_ASM(MOV.L 4 [R5], [R3])
+          R_BSP_ASM(MOV.L[R5], R6) R_BSP_ASM(FMUL #K_TFU_SCALE_INV_2PI_FLOAT, R6)
+            R_BSP_ASM(MOV.L R6, [R4]) R_BSP_ASM(POPM R5 - R6) R_BSP_ASM_END}
+/* End of function R_BSP_CalcAtan_SquareRoot() */
 #endif /* __FPU */
 
 #if BSP_MCU_TFU_VERSION == 2
@@ -1214,10 +1227,11 @@ R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine_Fpn) void R_BSP_CalcSine_Cosine_Fp
                                                                                   int32_t* cos){
   R_BSP_ASM_INTERNAL_USED(f) R_BSP_ASM_INTERNAL_USED(sin) R_BSP_ASM_INTERNAL_USED(cos)
 
-    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R4) R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#K_TFU_SINCOS_FIXED, R4)
-      R_BSP_ASM(MOV.L R1, 4 [R4]) R_BSP_ASM(MOV.L 4 [R4], R1) R_BSP_ASM(MOV.L[R4], R14)
-        R_BSP_ASM(MOV.L R1, [R2]) R_BSP_ASM(MOV.L R14, [R3]) R_BSP_ASM(POP R14) R_BSP_ASM(POP R4)
-          R_BSP_ASM_END} /* End of function R_BSP_CalcSine_Cosine_Fpn() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R4) R_BSP_ASM(PUSH.L R14)
+      R_BSP_ASM(MOV.L#K_TFU_SINCOS_FIXED, R4) R_BSP_ASM(MOV.L R1, 4 [R4])
+        R_BSP_ASM(MOV.L 4 [R4], R1) R_BSP_ASM(MOV.L[R4], R14) R_BSP_ASM(MOV.L R1, [R2])
+          R_BSP_ASM(MOV.L R14, [R3]) R_BSP_ASM(POP R14) R_BSP_ASM(POP R4) R_BSP_ASM_END}
+/* End of function R_BSP_CalcSine_Cosine_Fpn() */
 
 /***********************************************************************************************************************
 * Function Name: bsp_calc_sine_fsp
@@ -1230,8 +1244,8 @@ R_BSP_PRAGMA_INLINE_ASM(R_BSP_CalcSine_Cosine_Fpn) void R_BSP_CalcSine_Cosine_Fp
 R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_sine_fsp) void bsp_calc_sine_fsp(int32_t* ret, int32_t fx){
   R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(fx)
 
-    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#K_TFU_SINE_FIXED, R14) R_BSP_ASM(MOV.L R2, [R14])
-      R_BSP_ASM(MOV.L[R14], [R1]) R_BSP_ASM(POP R14) R_BSP_ASM_END}
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#K_TFU_SINE_FIXED, R14)
+      R_BSP_ASM(MOV.L R2, [R14]) R_BSP_ASM(MOV.L[R14], [R1]) R_BSP_ASM(POP R14) R_BSP_ASM_END}
 /* End of function bsp_calc_sine_fsp() */
 
 /***********************************************************************************************************************
@@ -1262,8 +1276,8 @@ R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_cosine_fsp)
 void bsp_calc_cosine_fsp(int32_t* ret, int32_t fx){
   R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(fx)
 
-    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R3) R_BSP_ASM(MOV.L#K_TFU_SINCOS_FIXED, R3) R_BSP_ASM(MOV.L R2, 4 [R3])
-      R_BSP_ASM(MOV.L[R3], [R1]) R_BSP_ASM(POP R3) R_BSP_ASM_END}
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R3) R_BSP_ASM(MOV.L#K_TFU_SINCOS_FIXED, R3)
+      R_BSP_ASM(MOV.L R2, 4 [R3]) R_BSP_ASM(MOV.L[R3], [R1]) R_BSP_ASM(POP R3) R_BSP_ASM_END}
 /* End of function bsp_calc_cosine_fsp() */
 
 /***********************************************************************************************************************
@@ -1299,9 +1313,9 @@ void R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t
 
       R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R5) R_BSP_ASM(PUSH.L R14) R_BSP_ASM(PUSH.L R15)
         R_BSP_ASM(MOV.L R4, R14) R_BSP_ASM(MOV.L#K_TFU_ATAN_FIXED, R15) R_BSP_ASM(MOV.L R2, [R15])
-          R_BSP_ASM(MOV.L#K_TFU_SCALE_INV_2PI_FIXED, R4) R_BSP_ASM(MOV.L R1, 4 [R15]) R_BSP_ASM(EMULU[R15].L, R4)
-            R_BSP_ASM(MOV.L 4 [R15], [R3]) R_BSP_ASM(MOV.L R5, [R14]) R_BSP_ASM(POP R15)
-              R_BSP_ASM(POP R14) R_BSP_ASM(POP R5) R_BSP_ASM_END}
+          R_BSP_ASM(MOV.L#K_TFU_SCALE_INV_2PI_FIXED, R4) R_BSP_ASM(MOV.L R1, 4 [R15])
+            R_BSP_ASM(EMULU[R15].L, R4) R_BSP_ASM(MOV.L 4 [R15], [R3]) R_BSP_ASM(MOV.L R5, [R14])
+              R_BSP_ASM(POP R15) R_BSP_ASM(POP R14) R_BSP_ASM(POP R5) R_BSP_ASM_END}
 /* End of function R_BSP_CalcAtan_SquareRoot_Fpn() */
 
 /***********************************************************************************************************************
@@ -1317,9 +1331,9 @@ R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_atan_fsp) void bsp_calc_atan_fsp(int32_t
                                                                          int32_t  x){
   R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(y) R_BSP_ASM_INTERNAL_USED(x)
 
-    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#K_TFU_ATAN_FIXED, R14) R_BSP_ASM(MOV.L R3, [R14 + ])
-      R_BSP_ASM(MOV.L R2, [R14]) R_BSP_ASM(MOV.L[R14], [R1]) R_BSP_ASM(POP R14) R_BSP_ASM_END}
-/* End of function bsp_calc_atan_fsp() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSH.L R14) R_BSP_ASM(MOV.L#K_TFU_ATAN_FIXED, R14)
+      R_BSP_ASM(MOV.L R3, [R14 + ]) R_BSP_ASM(MOV.L R2, [R14]) R_BSP_ASM(MOV.L[R14], [R1])
+        R_BSP_ASM(POP R14) R_BSP_ASM_END} /* End of function bsp_calc_atan_fsp() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcAtan_Fpn
@@ -1350,10 +1364,10 @@ R_BSP_PRAGMA_STATIC_INLINE_ASM(bsp_calc_squareroot_fsp)
 void bsp_calc_squareroot_fsp(int32_t* ret, int32_t y, int32_t x){
   R_BSP_ASM_INTERNAL_USED(ret) R_BSP_ASM_INTERNAL_USED(y) R_BSP_ASM_INTERNAL_USED(x)
 
-    R_BSP_ASM_BEGIN R_BSP_ASM(PUSHM R4 - R5) R_BSP_ASM(MOV.L#K_TFU_ATAN_FIXED, R5) R_BSP_ASM(MOV.L R2, [R5])
-      R_BSP_ASM(MOV.L#K_TFU_SCALE_INV_2PI_FIXED, R4) R_BSP_ASM(MOV.L R3, 4 [R5]) R_BSP_ASM(EMULU[R5].L, R4)
-        R_BSP_ASM(MOV.L R5, [R1]) R_BSP_ASM(POPM R4 - R5) R_BSP_ASM_END}
-/* End of function bsp_calc_squareroot_fsp() */
+    R_BSP_ASM_BEGIN R_BSP_ASM(PUSHM R4 - R5) R_BSP_ASM(MOV.L#K_TFU_ATAN_FIXED, R5)
+      R_BSP_ASM(MOV.L R2, [R5]) R_BSP_ASM(MOV.L#K_TFU_SCALE_INV_2PI_FIXED, R4)
+        R_BSP_ASM(MOV.L R3, 4 [R5]) R_BSP_ASM(EMULU[R5].L, R4) R_BSP_ASM(MOV.L R5, [R1])
+          R_BSP_ASM(POPM R4 - R5) R_BSP_ASM_END} /* End of function bsp_calc_squareroot_fsp() */
 
 /***********************************************************************************************************************
 * Function Name: R_BSP_CalcSquareRoot_fpn

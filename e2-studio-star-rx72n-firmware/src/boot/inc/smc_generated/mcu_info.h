@@ -110,8 +110,9 @@
 Includes   <System Includes> , "Project Includes"
 ***********************************************************************************************************************/
 /* Gets MCU configuration information. */
+#include <stdint.h> /* Required for uint8_t, uint32_t in C23 typed enums */
+
 #include "r_bsp_config.h"
-#include <stdint.h>  /* Required for uint8_t, uint32_t in C23 typed enums */
 
 /***********************************************************************************************************************
 Macro definitions
@@ -140,8 +141,8 @@ Typed Enums (CLAUDE.md Compliance - C23)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_cpu_cycles_per_loop = 3,  /**< Clock cycles for delay_wait() loop iteration */
-    k_cpu_version_rxv3    = 3,  /**< RXv3 core version identifier */
+  k_cpu_cycles_per_loop = 3, /**< Clock cycles for delay_wait() loop iteration */
+  k_cpu_version_rxv3    = 3, /**< RXv3 core version identifier */
 } bsp_cpu_constants_t;
 
 /**
@@ -170,12 +171,12 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_package_type_lfqfp176 = 0x0,  /**< LFQFP-176 (0.50mm pitch) */
-    k_package_type_lfbga176 = 0x1,  /**< LFBGA-176 (0.80mm pitch) */
-    k_package_type_lfbga224 = 0x2,  /**< LFBGA-224 (0.80mm pitch) */
-    k_package_type_lfqfp144 = 0x3,  /**< LFQFP-144 (0.50mm pitch) */
-    k_package_type_tflga145 = 0x4,  /**< TFLGA-145 (0.50mm pitch) */
-    k_package_type_lfqfp100 = 0x5,  /**< LFQFP-100 (0.50mm pitch) */
+  k_package_type_lfqfp176 = 0x0, /**< LFQFP-176 (0.50mm pitch) */
+  k_package_type_lfbga176 = 0x1, /**< LFBGA-176 (0.80mm pitch) */
+  k_package_type_lfbga224 = 0x2, /**< LFBGA-224 (0.80mm pitch) */
+  k_package_type_lfqfp144 = 0x3, /**< LFQFP-144 (0.50mm pitch) */
+  k_package_type_tflga145 = 0x4, /**< TFLGA-145 (0.50mm pitch) */
+  k_package_type_lfqfp100 = 0x5, /**< LFQFP-100 (0.50mm pitch) */
 } bsp_package_type_t;
 
 /**
@@ -204,8 +205,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_memory_size_2mb = 0xD,  /**< 2MB ROM / 1MB RAM / 32KB Data Flash */
-    k_memory_size_4mb = 0x17, /**< 4MB ROM / 1MB RAM / 32KB Data Flash */
+  k_memory_size_2mb = 0xD,  /**< 2MB ROM / 1MB RAM / 32KB Data Flash */
+  k_memory_size_4mb = 0x17, /**< 4MB ROM / 1MB RAM / 32KB Data Flash */
 } bsp_memory_size_t;
 
 /**
@@ -235,9 +236,9 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_hoco_freq_16mhz = 0,  /**< 16 MHz (default) */
-    k_hoco_freq_18mhz = 1,  /**< 18 MHz */
-    k_hoco_freq_20mhz = 2,  /**< 20 MHz */
+  k_hoco_freq_16mhz = 0, /**< 16 MHz (default) */
+  k_hoco_freq_18mhz = 1, /**< 18 MHz */
+  k_hoco_freq_20mhz = 2, /**< 20 MHz */
 } bsp_hoco_frequency_t;
 
 /**
@@ -267,11 +268,11 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_clock_src_loco = 0,  /**< Low Speed On-Chip Oscillator (240 kHz) */
-    k_clock_src_hoco = 1,  /**< High Speed On-Chip Oscillator (16/18/20 MHz) */
-    k_clock_src_main = 2,  /**< Main Clock Oscillator (external crystal) */
-    k_clock_src_sub  = 3,  /**< Sub-Clock Oscillator (32.768 kHz) */
-    k_clock_src_pll  = 4,  /**< PLL Circuit (default, up to 240 MHz) */
+  k_clock_src_loco = 0, /**< Low Speed On-Chip Oscillator (240 kHz) */
+  k_clock_src_hoco = 1, /**< High Speed On-Chip Oscillator (16/18/20 MHz) */
+  k_clock_src_main = 2, /**< Main Clock Oscillator (external crystal) */
+  k_clock_src_sub  = 3, /**< Sub-Clock Oscillator (32.768 kHz) */
+  k_clock_src_pll  = 4, /**< PLL Circuit (default, up to 240 MHz) */
 } bsp_clock_source_t;
 
 /**
@@ -300,8 +301,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_pll_src_main = 0,  /**< Main Clock Oscillator (default) */
-    k_pll_src_hoco = 1,  /**< High Speed On-Chip Oscillator */
+  k_pll_src_main = 0, /**< Main Clock Oscillator (default) */
+  k_pll_src_hoco = 1, /**< High Speed On-Chip Oscillator */
 } bsp_pll_source_t;
 
 /**
@@ -325,8 +326,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_ipl_min = 0,  /**< Minimum IPL (interrupts masked) */
-    k_ipl_max = 15, /**< Maximum IPL (highest priority) */
+  k_ipl_min = 0,  /**< Minimum IPL (interrupts masked) */
+  k_ipl_max = 15, /**< Maximum IPL (highest priority) */
 } bsp_ipl_level_t;
 
 /**
@@ -351,7 +352,7 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-    k_fit_reserved_space = 0x10000000,  /**< Reserved space on RX (256MB boundary) */
+  k_fit_reserved_space = 0x10000000, /**< Reserved space on RX (256MB boundary) */
 } bsp_reserved_addresses_t;
 
 /***********************************************************************************************************************
