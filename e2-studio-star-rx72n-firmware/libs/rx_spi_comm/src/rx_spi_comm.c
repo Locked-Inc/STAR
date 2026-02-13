@@ -1068,11 +1068,11 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
   memset(handle, 0, sizeof(rx_spi_comm_handle_t));
 
   /* Apply configuration */
-  handle->session          = config->session;
-  handle->channel          = config->channel;
-  handle->fec_enabled      = config->fec_enabled;
-  handle->auto_retransmit  = config->auto_retransmit;
-  handle->retransmit_cfg   = config->retransmit_config;
+  handle->session         = config->session;
+  handle->channel         = config->channel;
+  handle->fec_enabled     = config->fec_enabled;
+  handle->auto_retransmit = config->auto_retransmit;
+  handle->retransmit_cfg  = config->retransmit_config;
 
   /* Apply retransmit defaults for zero fields */
   if (handle->auto_retransmit) {
@@ -2040,12 +2040,10 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
      * When auto_retransmit is enabled, ACK/NACK are consumed internally
      * (clearing retry state or triggering retransmit). When disabled,
      * ACK/NACK pass through to the caller as regular frames. */
-    if (frame->header.type == k_frame_type_ack ||
-        frame->header.type == k_frame_type_nack) {
+    if (frame->header.type == k_frame_type_ack || frame->header.type == k_frame_type_nack) {
       if (handle->auto_retransmit) {
         if (frame->header.type == k_frame_type_ack) {
-          if (handle->retry_pending &&
-              frame->header.sequence == handle->retry_sequence) {
+          if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
             handle->retry_pending = false;
             handle->retry_count   = 0;
             if (handle->on_ack_cb != nullptr) {
@@ -2054,8 +2052,7 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
           }
         } else {
           /* NACK: trigger immediate retransmit if sequence matches */
-          if (handle->retry_pending &&
-              frame->header.sequence == handle->retry_sequence) {
+          if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
             (void)internal_retransmit_frame(handle);
             if (handle->on_nack_cb != nullptr) {
               handle->on_nack_cb(frame->header.sequence, handle->cb_ctx);
