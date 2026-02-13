@@ -1117,7 +1117,7 @@ unsigned long R_BSP_RotateRight(unsigned long data, unsigned long num);
  * @note GNUC implementation using inline assembly
  * @since Version 1.01
  */
-long R_BSP_MulAndAccOperation_2byte(short* data1, short* data2, unsigned long count);
+long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsigned long count);
 
 /**
  * @brief Multiply-and-accumulate with fixed-point format 1
@@ -1128,7 +1128,7 @@ long R_BSP_MulAndAccOperation_2byte(short* data1, short* data2, unsigned long co
  * @note GNUC implementation using inline assembly
  * @since Version 1.01
  */
-short R_BSP_MulAndAccOperation_FixedPoint1(short* data1, short* data2, unsigned long count);
+short R_BSP_MulAndAccOperation_FixedPoint1(const short* data1, const short* data2, unsigned long count);
 
 /**
  * @brief Multiply-and-accumulate with fixed-point format 2
@@ -1139,7 +1139,7 @@ short R_BSP_MulAndAccOperation_FixedPoint1(short* data1, short* data2, unsigned 
  * @note GNUC implementation using inline assembly
  * @since Version 1.01
  */
-short R_BSP_MulAndAccOperation_FixedPoint2(short* data1, short* data2, unsigned long count);
+short R_BSP_MulAndAccOperation_FixedPoint2(const short* data1, const short* data2, unsigned long count);
 
 #endif /* defined(__GNUC__) */
 
