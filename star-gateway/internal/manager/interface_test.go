@@ -167,8 +167,10 @@ func TestTransportManager_SendAcceptsHARQPriority(t *testing.T) {
 			mockHARQ := newResetCapableMock()
 			mockHARQ.SendFunc = func(ctx context.Context, data []byte, p ...harq.Priority) error {
 				sendCalled = true
-				if len(p) > testZeroValue {
-					var _ = p[0]
+				if len(p) == 0 {
+					t.Error("expected priority to be forwarded")
+				} else if p[0] != tc.priority {
+					t.Errorf("forwarded priority = %v, want %v", p[0], tc.priority)
 				}
 				return nil
 			}

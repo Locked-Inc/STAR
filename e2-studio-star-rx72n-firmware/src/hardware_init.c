@@ -238,14 +238,14 @@ typedef enum : uint16_t {
 
   /* DRV8243S SPI data (SCI12 alternate function) */
   k_pin_drv_sclk = k_rx_pe_0, /**< PE.0 - SCK12 (pin 111) */
-  k_pin_drv_copi = k_rx_pe_1, /**< PE.1 - SMOSI12 (pin 110) */
-  k_pin_drv_cipo = k_rx_pe_2, /**< PE.2 - SMISO12 (pin 109) */
+  k_pin_drv_copi = k_rx_pe_1, /**< PE.1 - COPI SCI12 (pin 110) */
+  k_pin_drv_cipo = k_rx_pe_2, /**< PE.2 - CIPO SCI12 (pin 109) */
 
   /* Host SPI (RSPI2 channel A on PORTD) */
-  k_pin_host_copi = k_rx_pd_1, /**< PD.1 - MOSIC (RSPI2 COPI) */
-  k_pin_host_cipo = k_rx_pd_2, /**< PD.2 - MISOC (RSPI2 CIPO) */
-  k_pin_host_sclk = k_rx_pd_3, /**< PD.3 - RSPCKC (RSPI2 clock) */
-  k_pin_host_cs0  = k_rx_pd_4, /**< PD.4 - SSLC0 (RSPI2 chip select) */
+  k_pin_host_copi = k_rx_pd_1, /**< PD.1 - COPI (RSPI2 controller out) */
+  k_pin_host_cipo = k_rx_pd_2, /**< PD.2 - CIPO (RSPI2 controller in) */
+  k_pin_host_sclk = k_rx_pd_3, /**< PD.3 - SCLK (RSPI2 clock) */
+  k_pin_host_cs0  = k_rx_pd_4, /**< PD.4 - CS0 (RSPI2 chip select) */
 
   /* MTU Encoder clock inputs (front wheels) */
   k_pin_enc0_pha = k_rx_p2_4, /**< P2.4 - MTCLKA (encoder 0 phase A) */
@@ -297,6 +297,12 @@ typedef enum : uint16_t {
 typedef enum : uint8_t {
   k_host_spi_channel = 2, /**< RSPI2 = host SPI peripheral */
 } spi_channel_t;
+
+/** @brief I2C channel assignments */
+typedef enum : uint8_t {
+  k_i2c_channel_host = 0, /**< RIIC0 = host I2C (RPi5 comms) */
+  k_i2c_channel_bms  = 1, /**< RIIC1 = BMS I2C (BQ4050) */
+} i2c_channel_t;
 
 /** @brief I2C bus frequency constants */
 typedef enum : uint32_t {
@@ -445,16 +451,16 @@ static rx_err_t gpio_init(void)
   RX_RETURN_ON_ERROR(err, s_tag, "SDA1 pin config failed");
 
   /* ---- Host SPI (RSPI2): COPI + CIPO + SCLK + CS0 ---- */
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi); /* PD.1 = MOSIC */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi); /* PD.1 = COPI (RSPI2) */
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 COPI pin config failed");
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cipo); /* PD.2 = MISOC */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cipo); /* PD.2 = CIPO (RSPI2) */
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 CIPO pin config failed");
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_sclk); /* PD.3 = RSPCKC */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_sclk); /* PD.3 = SCLK (RSPI2) */
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 SCLK pin config failed");
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cs0); /* PD.4 = SSLC0 */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cs0); /* PD.4 = CS0 (RSPI2) */
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 CS0 pin config failed");
 
   /* ---- MTU encoder clock inputs (front wheels only) ---- */
@@ -581,10 +587,10 @@ static rx_err_t gpio_init(void)
   err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk); /* PE0 = SCK12 */
   RX_RETURN_ON_ERROR(err, s_tag, "SCI12 SCK pin config failed");
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi); /* PE1 = SMOSI12 */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi); /* PE1 = COPI (SCI12) */
   RX_RETURN_ON_ERROR(err, s_tag, "SCI12 COPI pin config failed");
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo); /* PE2 = SMISO12 */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo); /* PE2 = CIPO (SCI12) */
   RX_RETURN_ON_ERROR(err, s_tag, "SCI12 CIPO pin config failed");
 
   /* ---- GTETRG nFAULT pins (POEG hardware triggers) ----
@@ -709,11 +715,11 @@ static rx_err_t i2c_init(void)
 {
   static const char* s_tag = "I2C";
 
-  riic_channel_t ch0 = {.value = 0};
+  riic_channel_t ch0 = {.value = k_i2c_channel_host};
   rx_err_t       err = riic_init(ch0, k_i2c_host_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC0 init failed");
 
-  riic_channel_t ch1 = {.value = 1};
+  riic_channel_t ch1 = {.value = k_i2c_channel_bms};
   err                = riic_init(ch1, k_i2c_bms_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC1 init failed");
 

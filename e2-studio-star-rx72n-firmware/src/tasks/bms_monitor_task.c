@@ -1139,7 +1139,7 @@ static void internal_bms_task_entry(ULONG input)
 {
   rx_err_t           err;
   rx_bq4050_status_t status;
-  bms_state_t        bms;
+  bms_state_t        bms = {0};
   rx_bq4050_config_t config;
 
   (void)input;

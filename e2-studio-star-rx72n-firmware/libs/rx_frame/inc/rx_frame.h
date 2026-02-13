@@ -14,7 +14,7 @@
  * **Key Features:**
  * - Bit-exact compatible with star-gateway/internal/frame/ (Go implementation)
  * - IEEE 802.3 CRC-32 for data integrity
- * - Big-endian (network byte order) for multi-byte header fields
+ * - Little-endian byte order for ALL multi-byte fields (SYNC, SEQ, LEN, CRC)
  * - Support for ACK/NACK flow control
  * - Optional forward error correction (FEC) flag
  *
@@ -24,7 +24,7 @@
  * ┌──────────┬──────────┬──────────┬──────────┬──────────┬───────────────┬──────────┐
  * │  SYNC    │   SEQ    │   LEN    │  TYPE    │  FLAGS   │   PAYLOAD     │  CRC-32  │
  * │  2 bytes │  2 bytes │  2 bytes │  1 byte  │  1 byte  │   0-1024 B    │  4 bytes │
- * │   (BE)   │   (BE)   │   (BE)   │          │          │               │   (LE)   │
+ * │   (LE)   │   (LE)   │   (LE)   │          │          │               │   (LE)   │
  * └──────────┴──────────┴──────────┴──────────┴──────────┴───────────────┴──────────┘
  * ```
  *
@@ -32,9 +32,9 @@
  *
  * | Field | Size | Byte Order | Description |
  * |-------|------|------------|-------------|
- * | SYNC | 2 | Big-endian | Synchronization marker (0x55AA) |
- * | SEQ | 2 | Big-endian | Sequence number for ordering/retransmit |
- * | LEN | 2 | Big-endian | Payload length in bytes (0-1024) |
+ * | SYNC | 2 | Little-endian | Synchronization marker (0x55AA, wire: 0xAA 0x55) |
+ * | SEQ | 2 | Little-endian | Sequence number for ordering/retransmit |
+ * | LEN | 2 | Little-endian | Payload length in bytes (0-1024) |
  * | TYPE | 1 | N/A | Frame type (command, response, ack, nack) |
  * | FLAGS | 1 | N/A | Control flags (requires_ack, retransmit, etc.) |
  * | PAYLOAD | 0-1024 | N/A | Encoded protobuf message or empty |
@@ -94,9 +94,9 @@
  *
  * | Component | Thread Safe | Notes |
  * |-----------|-------------|-------|
- * | Encoder | [PASS] Yes | Stateless after init |
- * | Decoder | [PASS] Yes | Stateless after init |
- * | Utility functions | [PASS] Yes | Pure functions |
+ * | Encoder | ✅ Yes | Stateless after init |
+ * | Decoder | ✅ Yes | Stateless after init |
+ * | Utility functions | ✅ Yes | Pure functions |
  *
  * ## Memory Usage
  *
@@ -121,16 +121,16 @@
  *
  * | Rule | Status | Notes |
  * |------|--------|-------|
- * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion |
- * | 2. Fixed loop bounds | [PASS] Pass | Bounded by k_frame_max_payload |
- * | 3. No dynamic memory | [PASS] Pass | All buffers caller-provided |
- * | 4. Short functions | [PASS] Pass | All functions < 50 lines |
- * | 5. Assertions | [PASS] Pass | NULL checks, state validation |
- * | 6. Small scope | [PASS] Pass | Variables at minimal scope |
- * | 7. Check returns | [PASS] Pass | All returns propagated |
- * | 8. Limited preprocessor | [PASS] Pass | Only include guards |
- * | 9. Restrict pointers | [PASS] Pass | No function pointers |
- * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror |
+ * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion |
+ * | 2. Fixed loop bounds | ✅ Pass | Bounded by k_frame_max_payload |
+ * | 3. No dynamic memory | ✅ Pass | All buffers caller-provided |
+ * | 4. Short functions | ✅ Pass | All functions < 50 lines |
+ * | 5. Assertions | ✅ Pass | NULL checks, state validation |
+ * | 6. Small scope | ✅ Pass | Variables at minimal scope |
+ * | 7. Check returns | ✅ Pass | All returns propagated |
+ * | 8. Limited preprocessor | ✅ Pass | Only include guards |
+ * | 9. Restrict pointers | ✅ Pass | No function pointers |
+ * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -210,8 +210,6 @@
  * - star-gateway/internal/frame/: Go reference implementation
  * - docs/sections/01_nanopb_protocol.tex: Protocol specification
  * - IEEE 802.3: CRC-32 polynomial definition
- * - RFC 1700: Network byte order (big-endian)
- *
  * @see rx_frame.c Implementation file
  * @see rx_crc.h CRC-32 computation
  * @see rx_spi_comm.h SPI transport layer
@@ -273,13 +271,13 @@ extern "C" {
  * }
  *
  * // Check sync word
- * uint16_t sync = rx_frame_read_be16(wire_data);
+ * uint16_t sync = rx_frame_read_le16(wire_data);
  * if (sync != k_frame_sync_word) {
  *     return k_rx_err_protocol_error;
  * }
  *
  * // Calculate expected size from payload length
- * uint16_t payload_len = rx_frame_read_be16(&wire_data[4]);
+ * uint16_t payload_len = rx_frame_read_le16(&wire_data[4]);
  * uint32_t expected = rx_frame_encoded_size(payload_len);
  * @endcode
  *
@@ -290,7 +288,7 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  /**
+    /**
      * @brief Frame synchronization marker (0x55AA)
      * @details
      * The sync word marks the start of a valid frame. Receivers scan for this
@@ -298,75 +296,75 @@ typedef enum : uint16_t {
      * - Alternating bit pattern aids clock recovery
      * - Unique enough to avoid false positives in random data
      * - Matches common SPI debug patterns
-     * @par Wire Format: Big-endian (0x55 first, then 0xAA)
+     * @par Wire Format: Little-endian (0xAA first, then 0x55)
      */
-  k_frame_sync_word = 0x55AA,
+    k_frame_sync_word = 0x55AA,
 
-  /**
+    /**
      * @brief SYNC field size in bytes (2)
      * @details Two-byte sync marker at frame start.
      */
-  k_frame_sync_size = 2,
+    k_frame_sync_size = 2,
 
-  /**
+    /**
      * @brief SEQ field size in bytes (2)
      * @details 16-bit sequence number for ordering and retransmit tracking.
      */
-  k_frame_seq_size = 2,
+    k_frame_seq_size = 2,
 
-  /**
+    /**
      * @brief LEN field size in bytes (2)
      * @details 16-bit payload length (max 1024).
      */
-  k_frame_len_size = 2,
+    k_frame_len_size = 2,
 
-  /**
+    /**
      * @brief TYPE field size in bytes (1)
      * @details Single byte for frame type (command, response, ack, nack).
      */
-  k_frame_type_size = 1,
+    k_frame_type_size = 1,
 
-  /**
+    /**
      * @brief FLAGS field size in bytes (1)
      * @details Single byte for control flags (requires_ack, retransmit, etc.).
      */
-  k_frame_flags_size = 1,
+    k_frame_flags_size = 1,
 
-  /**
+    /**
      * @brief CRC-32 field size in bytes (4)
      * @details IEEE 802.3 CRC-32 checksum.
      */
-  k_frame_crc_size = 4,
+    k_frame_crc_size = 4,
 
-  /**
+    /**
      * @brief Header size excluding SYNC (6 bytes)
      * @details SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) = 6 bytes.
      */
-  k_frame_header_size = 6,
+    k_frame_header_size = 6,
 
-  /**
+    /**
      * @brief Minimum payload length (0 bytes)
      * @details ACK and NACK frames have empty payloads.
      */
-  k_frame_min_payload = 0,
+    k_frame_min_payload = 0,
 
-  /**
+    /**
      * @brief Maximum payload length (1024 bytes)
      * @details Limited by SPI DMA buffer size and protobuf message limits.
      */
-  k_frame_max_payload = 1024,
+    k_frame_max_payload = 1024,
 
-  /**
+    /**
      * @brief Minimum frame size (12 bytes)
      * @details SYNC(2) + Header(6) + CRC(4) = 12 bytes (no payload).
      */
-  k_frame_min_size = 12,
+    k_frame_min_size = 12,
 
-  /**
+    /**
      * @brief Maximum frame size (1036 bytes)
      * @details SYNC(2) + Header(6) + Payload(1024) + CRC(4) = 1036 bytes.
      */
-  k_frame_max_size = 1036,
+    k_frame_max_size = 1036,
 } rx_frame_constants_t;
 
 /**
@@ -395,8 +393,8 @@ typedef enum : uint16_t {
  *
  * | Type | Direction | Payload | Response |
  * |------|-----------|---------|----------|
- * | COMMAND | RPi5 -> RX72N | Protobuf | ACK, then RESPONSE |
- * | RESPONSE | RX72N -> RPi5 | Protobuf | ACK |
+ * | COMMAND | RPi5 → RX72N | Protobuf | ACK, then RESPONSE |
+ * | RESPONSE | RX72N → RPi5 | Protobuf | ACK |
  * | ACK | Either | None | None |
  * | NACK | Either | None (flags indicate reason) | Retransmit |
  *
@@ -427,86 +425,81 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  /**
-     * @brief Invalid/unknown frame type (0)
+    /**
+     * @brief Ping request (0x00)
      * @details
-     * Used to detect uninitialized frames or protocol errors.
-     * Never transmitted intentionally.
+     * Keepalive/heartbeat message sent to check connection status.
+     * Receiver responds with PONG echoing the payload.
+     * @par Payload: 4-byte counter (little-endian uint32) or empty
      */
-  k_frame_type_unknown = 0,
+    k_frame_type_ping = 0x00,
 
-  /**
-     * @brief Command from controller to peripheral (1)
+    /**
+     * @brief Pong response (0x01)
+     * @details
+     * Response to PING request, confirms connection is alive.
+     * Echoes the PING counter payload for validation.
+     * @par Payload: Echo of PING counter or empty
+     */
+    k_frame_type_pong = 0x01,
+
+    /**
+     * @brief Command from controller to peripheral (0x10)
      * @details
      * Contains a protobuf-encoded command message from RPi5 to RX72N.
-     * Typically requires ACK response and generates a RESPONSE frame.
+     * On SPI: typically requires ACK and generates a RESPONSE frame.
+     * On USB CDC: no ACK expected (hardware reliability).
      * @par Typical Payloads: MotorCommand, TelemetryRequest, ConfigWrite
      */
-  k_frame_type_command = 1,
+    k_frame_type_command = 0x10,
 
-  /**
-     * @brief Response from peripheral to controller (2)
+    /**
+     * @brief Response from peripheral to controller (0x11)
      * @details
      * Contains a protobuf-encoded response message from RX72N to RPi5.
-     * Sent after processing a COMMAND, should receive ACK.
+     * Sent after processing a COMMAND.
      * @par Typical Payloads: MotorStatus, TelemetryData, ConfigAck
      */
-  k_frame_type_response = 2,
+    k_frame_type_response = 0x11,
 
-  /**
-     * @brief Positive acknowledgment (3)
+    /**
+     * @brief Positive acknowledgment (0x12, SPI only)
      * @details
      * Confirms successful reception and CRC validation of a frame.
      * Empty payload; sequence number matches the acknowledged frame.
+     * Used only on SPI transport (USB CDC relies on hardware reliability).
      * @par Payload: None (length = 0)
      */
-  k_frame_type_ack = 3,
+    k_frame_type_ack = 0x12,
 
-  /**
-     * @brief Negative acknowledgment (4)
+    /**
+     * @brief Negative acknowledgment (0x13, SPI only)
      * @details
      * Indicates a problem with received frame (CRC error, decode failure).
      * Empty payload; flags indicate error type. Sender should retransmit.
+     * Used only on SPI transport (USB CDC relies on hardware reliability).
      * @par Payload: None (length = 0)
      * @par Flags: May include k_frame_flag_soft_nack
      */
-  k_frame_type_nack = 4,
+    k_frame_type_nack = 0x13,
 
-  /**
-     * @brief Ping request (5)
-     * @details
-     * Keepalive/heartbeat message sent to check connection status.
-     * Empty payload; receiver responds with PONG.
-     * @par Payload: None (length = 0)
-     */
-  k_frame_type_ping = 5,
-
-  /**
-     * @brief Pong response (6)
-     * @details
-     * Response to PING request, confirms connection is alive.
-     * Empty payload; sequence number matches the ping.
-     * @par Payload: None (length = 0)
-     */
-  k_frame_type_pong = 6,
-
-  /**
-     * @brief Reset request (7)
-     * @details
-     * Request to reset communication state (sequence numbers, buffers, etc.).
-     * Empty payload; receiver responds with RESET_ACK.
-     * @par Payload: None (length = 0)
-     */
-  k_frame_type_reset = 7,
-
-  /**
-     * @brief Reset acknowledgment (8)
+    /**
+     * @brief Reset acknowledgment (0xFE)
      * @details
      * Confirms reset operation completed successfully.
-     * Empty payload; sequence number matches the reset request.
+     * Sequence number matches the reset request.
      * @par Payload: None (length = 0)
      */
-  k_frame_type_reset_ack = 8,
+    k_frame_type_reset_ack = 0xFE,
+
+    /**
+     * @brief Reset request (0xFF)
+     * @details
+     * Request to reset communication state (sequence numbers, buffers, etc.).
+     * Receiver responds with RESET_ACK.
+     * @par Payload: None (length = 0)
+     */
+    k_frame_type_reset = 0xFF,
 } rx_frame_type_t;
 
 /**
@@ -565,52 +558,52 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  /**
+    /**
      * @brief No flags set (0x00)
      * @details Default for frames that don't require special handling.
      */
-  k_frame_flag_none = 0x00,
+    k_frame_flag_none = 0x00,
 
-  /**
+    /**
      * @brief Frame requires acknowledgment (0x01, bit 0)
      * @details
      * Sender expects an ACK or NACK response. If no response within
      * timeout, sender should retransmit with RETRANSMIT flag.
      */
-  k_frame_flag_requires_ack = 0x01,
+    k_frame_flag_requires_ack = 0x01,
 
-  /**
+    /**
      * @brief Retransmission of previous frame (0x02, bit 1)
      * @details
      * Indicates this frame is a retry after timeout or NACK.
      * Receiver should check for duplicate sequence numbers.
      */
-  k_frame_flag_retransmit = 0x02,
+    k_frame_flag_retransmit = 0x02,
 
-  /**
+    /**
      * @brief High-priority frame (0x04, bit 2)
      * @details
      * Process before normal-priority frames in queue.
      * Used for emergency stop and critical motor commands.
      */
-  k_frame_flag_priority = 0x04,
+    k_frame_flag_priority = 0x04,
 
-  /**
+    /**
      * @brief Forward error correction enabled (0x08, bit 3)
      * @details
      * Payload includes FEC redundancy for error recovery.
      * Receiver should decode FEC before processing payload.
      * @note FEC implementation is optional (future feature).
      */
-  k_frame_flag_fec_enabled = 0x08,
+    k_frame_flag_fec_enabled = 0x08,
 
-  /**
+    /**
      * @brief NACK with soft error information (0x10, bit 4)
      * @details
      * Used in NACK frames to indicate recoverable error.
      * May include confidence bits or partial decode info.
      */
-  k_frame_flag_soft_nack = 0x10,
+    k_frame_flag_soft_nack = 0x10,
 } rx_frame_flags_t;
 
 /* =============================================================================
@@ -625,7 +618,7 @@ typedef enum : uint8_t {
  * @details
  * The frame header contains all control information needed to process a frame.
  * All 16-bit fields are stored in host byte order within this structure;
- * conversion to/from big-endian wire format is handled by the encoder/decoder.
+ * conversion to/from little-endian wire format is handled by the encoder/decoder.
  *
  * ## Memory Layout
  *
@@ -639,18 +632,18 @@ typedef enum : uint8_t {
  *
  * ## Wire Format vs In-Memory Format
  *
- * **Wire Format (big-endian):**
- * - sequence: MSB at lower address
- * - length: MSB at lower address
+ * **Wire Format (little-endian):**
+ * - sequence: LSB at lower address
+ * - length: LSB at lower address
  *
  * **In-Memory (this struct):**
- * - sequence: Host byte order (little-endian on RX72N)
+ * - sequence: Host byte order (little-endian on RX72N, matches wire)
  * - length: Host byte order
  *
  * @par Usage Example:
  * @code{.c}
  * rx_frame_header_t header = {
- *     .sequence = 0x1234,            // Will be sent as 0x12, 0x34 on wire
+ *     .sequence = 0x1234,            // Will be sent as 0x34, 0x12 on wire (LE)
  *     .length = 64,                  // 64-byte payload
  *     .type = k_frame_type_command,
  *     .flags = k_frame_flag_requires_ack,
@@ -664,44 +657,44 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  /**
+    /**
      * @brief Frame sequence number
      * @details
      * 16-bit sequence number for ordering, duplicate detection, and
      * ACK/NACK correlation. Wraps around at 65535.
-     * @par Wire Format: Big-endian
+     * @par Wire Format: Little-endian
      * @par Valid Range: 0-65535
      */
-  uint16_t sequence;
+    uint16_t sequence;
 
-  /**
+    /**
      * @brief Payload length in bytes
      * @details
      * Length of the payload field (not including header or CRC).
      * Zero for ACK/NACK frames.
-     * @par Wire Format: Big-endian
+     * @par Wire Format: Little-endian
      * @par Valid Range: 0-1024 (k_frame_max_payload)
      * @invariant length <= k_frame_max_payload
      */
-  uint16_t length;
+    uint16_t length;
 
-  /**
+    /**
      * @brief Frame type identifier
      * @details
      * Identifies the message type (command, response, ack, nack).
      * @par Valid Values: rx_frame_type_t enumeration
      * @see rx_frame_type_valid() Validate type
      */
-  uint8_t type;
+    uint8_t type;
 
-  /**
+    /**
      * @brief Control flags
      * @details
      * Bitfield of rx_frame_flags_t values controlling frame handling.
      * Multiple flags can be combined with bitwise OR.
      * @par Valid Values: Combination of rx_frame_flags_t values
      */
-  uint8_t flags;
+    uint8_t flags;
 } rx_frame_header_t;
 
 /**
@@ -782,29 +775,29 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  /**
+    /**
      * @brief Frame header containing control fields
      * @details Populated by caller (encode) or decoder (decode).
      */
-  rx_frame_header_t header;
+    rx_frame_header_t header;
 
-  /**
+    /**
      * @brief Payload data buffer (maximum 1024 bytes)
      * @details
      * For transmit: Contains data to send (length in header.length).
      * For receive: Contains decoded payload (length in header.length).
      * @note Only payload[0..header.length-1] is valid data.
      */
-  uint8_t payload[k_frame_max_payload];
+    uint8_t payload[k_frame_max_payload];
 
-  /**
+    /**
      * @brief CRC-32 checksum (IEEE 802.3)
      * @details
      * For received frames: Contains the CRC read from wire (verified).
      * For transmitted frames: Not used (computed by encoder).
      * @par Wire Format: Little-endian
      */
-  uint32_t crc;
+    uint32_t crc;
 } rx_frame_t;
 
 /**
@@ -836,12 +829,12 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  /**
+    /**
      * @brief Initialization state flag
      * @details Non-zero (1) if initialized and ready for use.
      * @par Valid Values: 0 (uninitialized), 1 (initialized)
      */
-  uint8_t initialized;
+    uint8_t initialized;
 } rx_frame_encoder_t;
 
 /**
@@ -873,12 +866,12 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  /**
+    /**
      * @brief Initialization state flag
      * @details Non-zero (1) if initialized and ready for use.
      * @par Valid Values: 0 (uninitialized), 1 (initialized)
      */
-  uint8_t initialized;
+    uint8_t initialized;
 } rx_frame_decoder_t;
 
 /* =============================================================================
@@ -906,7 +899,7 @@ typedef struct {
  * @brief Encode frame to wire format
  *
  * Serializes frame to wire format with SYNC, header, payload, and CRC-32.
- * Multi-byte fields are big-endian except CRC-32 which is little-endian.
+ * All multi-byte fields are little-endian (SYNC, SEQ, LEN, CRC-32).
  *
  * @param[in]  enc        Encoder handle
  * @param[in]  frame      Frame to encode
@@ -919,9 +912,9 @@ typedef struct {
  * @return k_rx_err_invalid_size if payload exceeds max
  */
 [[nodiscard]] rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
-                                       const rx_frame_t*         frame,
-                                       uint8_t*                  output,
-                                       uint32_t*                 output_len);
+                         const rx_frame_t*         frame,
+                         uint8_t*                  output,
+                         uint32_t*                 output_len);
 
 /* =============================================================================
  * Utility Functions (Static Inline)
@@ -951,36 +944,36 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
 /* =============================================================================
  * Byte Ordering Utilities (Static Inline)
  *
- * Big-endian read/write for network byte order serialization.
- * Used by both rx_frame and rx_usb_comm modules.
+ * Little-endian read/write for wire format serialization.
+ * Used by rx_frame, rx_usb_comm, and rx_spi_comm modules.
  *
- * Big-endian format stores the most significant byte (MSB) at the lowest
+ * Little-endian format stores the least significant byte (LSB) at the lowest
  * memory address. For a 16-bit value:
- *   - buf[0] = high byte (MSB)
- *   - buf[1] = low byte (LSB)
+ *   - buf[0] = low byte (LSB)
+ *   - buf[1] = high byte (MSB)
  *
- * Example: 0x55AA stored in big-endian:
- *   buf[0] = 0x55 (high byte)
- *   buf[1] = 0xAA (low byte)
+ * Example: 0x55AA stored in little-endian:
+ *   buf[0] = 0xAA (low byte)
+ *   buf[1] = 0x55 (high byte)
  * =============================================================================
  */
 
 /**
- * @brief Byte indices for 16-bit big-endian serialization
+ * @brief Byte indices for 16-bit little-endian serialization
  *
- * In big-endian format, the high byte (MSB) is stored at index 0 and the
- * low byte (LSB) is stored at index 1.
+ * In little-endian format, the low byte (LSB) is stored at index 0 and the
+ * high byte (MSB) is stored at index 1.
  */
 typedef enum : uint8_t {
-  k_be16_byte_high = 0, /**< High byte (MSB) at index 0 */
-  k_be16_byte_low  = 1, /**< Low byte (LSB) at index 1 */
-} rx_be16_byte_idx_t;
+  k_le16_byte_low  = 0, /**< Low byte (LSB) at index 0 */
+  k_le16_byte_high = 1, /**< High byte (MSB) at index 1 */
+} rx_le16_byte_idx_t;
 
 /**
  * @brief Byte manipulation constants for endianness conversions
  */
 typedef enum : uint8_t {
-  k_rx_be16_high_shift = (8),     /**< Bit shift for high byte in 16-bit value */
+  k_rx_le16_high_shift = (8),     /**< Bit shift for high byte in 16-bit value */
   k_rx_byte_mask       = (0xFFU), /**< Mask to extract one byte */
 } rx_byte_order_constants_t;
 
@@ -1005,28 +998,27 @@ typedef enum : uint8_t {
 } rx_le32_shift_t;
 
 /**
- * @brief Read uint16 from big-endian buffer
+ * @brief Read uint16 from little-endian buffer
  *
- * Reads a 16-bit unsigned integer from a buffer in big-endian (network byte
- * order) format. The high byte (MSB) is at index 0, the low byte (LSB) is at
- * index 1.
+ * Reads a 16-bit unsigned integer from a buffer in little-endian format.
+ * The low byte (LSB) is at index 0, the high byte (MSB) is at index 1.
  *
  * @param[in] buf Input buffer (at least 2 bytes)
  * @return Decoded 16-bit value in host byte order
  *
  * @note This is the preferred function for parsing multi-byte protocol fields.
  */
-static inline uint16_t rx_frame_read_be16(const uint8_t* buf)
+static inline uint16_t rx_frame_read_le16(const uint8_t* buf)
 {
-  return ((uint16_t)buf[k_be16_byte_high] << k_rx_be16_high_shift) | (uint16_t)buf[k_be16_byte_low];
+  return (uint16_t)buf[k_le16_byte_low] | ((uint16_t)buf[k_le16_byte_high] << k_rx_le16_high_shift);
 }
 
 /**
- * @brief Write uint16 to big-endian buffer
+ * @brief Write uint16 to little-endian buffer
  *
- * Writes a 16-bit unsigned integer to a buffer in big-endian (network byte
- * order) format. The high byte (MSB) is written at index 0, the low byte (LSB)
- * is written at index 1.
+ * Writes a 16-bit unsigned integer to a buffer in little-endian format.
+ * The low byte (LSB) is written at index 0, the high byte (MSB) is written
+ * at index 1.
  *
  * @param[out] buf Output buffer (at least 2 bytes)
  * @param[in]  val Value to write in host byte order
@@ -1034,10 +1026,10 @@ static inline uint16_t rx_frame_read_be16(const uint8_t* buf)
  * @note This is the preferred function for serializing multi-byte protocol
  * fields.
  */
-static inline void rx_frame_write_be16(uint8_t* buf, uint16_t val)
+static inline void rx_frame_write_le16(uint8_t* buf, uint16_t val)
 {
-  buf[k_be16_byte_high] = (uint8_t)(val >> k_rx_be16_high_shift);
-  buf[k_be16_byte_low]  = (uint8_t)(val & k_rx_byte_mask);
+  buf[k_le16_byte_low]  = (uint8_t)(val & k_rx_byte_mask);
+  buf[k_le16_byte_high] = (uint8_t)(val >> k_rx_le16_high_shift);
 }
 
 /**
@@ -1094,9 +1086,9 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @return k_rx_err_crc_mismatch if CRC validation fails
  */
 [[nodiscard]] rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
-                                       const uint8_t*            data,
-                                       const uint32_t            data_len,
-                                       rx_frame_t*               frame);
+                         const uint8_t*            data,
+                         const uint32_t            data_len,
+                         rx_frame_t*               frame);
 
 /* =============================================================================
  * Frame Helper Functions
@@ -1132,9 +1124,9 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @return k_rx_ok on success
  */
 [[nodiscard]] rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
-                                            const uint16_t sequence,
-                                            const uint8_t* payload,
-                                            const uint32_t payload_len);
+                                             const uint16_t sequence,
+                                             const uint8_t* payload,
+                                             const uint32_t payload_len);
 
 /**
  * @brief Create PONG frame (response to PING)
@@ -1146,9 +1138,9 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @return k_rx_ok on success
  */
 [[nodiscard]] rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
-                                            const uint16_t sequence,
-                                            const uint8_t* payload,
-                                            const uint32_t payload_len);
+                                             const uint16_t sequence,
+                                             const uint8_t* payload,
+                                             const uint32_t payload_len);
 
 /**
  * @brief Create RESET frame to reset communication state
@@ -1178,7 +1170,19 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  */
 static inline bool rx_frame_type_valid(uint8_t type)
 {
-  return (type >= k_frame_type_command && type <= k_frame_type_reset_ack);
+  switch (type) {
+    case k_frame_type_ping:
+    case k_frame_type_pong:
+    case k_frame_type_command:
+    case k_frame_type_response:
+    case k_frame_type_ack:
+    case k_frame_type_nack:
+    case k_frame_type_reset_ack:
+    case k_frame_type_reset:
+      return true;
+    default:
+      return false;
+  }
 }
 
 #ifdef __cplusplus

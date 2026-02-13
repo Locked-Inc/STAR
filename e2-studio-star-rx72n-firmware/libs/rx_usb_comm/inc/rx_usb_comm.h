@@ -140,6 +140,7 @@
 
 #include "rx_err.h"
 #include "rx_frame.h"
+#include "rx_session.h"
 #include "rx_time_interface.h"
 
 #ifdef __cplusplus
@@ -304,11 +305,9 @@ typedef enum : uint8_t {
  * | 2148   | 2048 B   | tx_buffer      | TX staging buffer              |
  * | 4196   | 4 B      | rx_buffer_len  | Valid bytes in RX buffer       |
  * | 4200   | 4 B      | rx_buffer_pos  | Current read position          |
- * | 4204   | 2 B      | tx_sequence    | TX sequence counter            |
- * | 4206   | 2 B      | rx_sequence    | Expected RX sequence           |
- * | 4208   | 1 B      | fec_enabled    | FEC flag                       |
- * | 4209   | 1 B      | initialized    | Init flag                      |
- * | 4210   | 1 B      | mode           | Operating mode                 |
+ * | 4204   | 4-8 B    | session        | Shared session state pointer   |
+ * | 4212   | 1 B      | initialized    | Init flag                      |
+ * | 4209   | 1 B      | mode           | Operating mode                 |
  * | 4211   | 4-8 B    | time_iface     | Time interface pointer         |
  * | **Total** | **~4.2 KB** |         |                                |
  *
@@ -355,12 +354,13 @@ typedef enum : uint8_t {
  * @par Complete Initialization Example
  * @code
  * static rx_usb_comm_handle_t g_usb_comm;
+ * static rx_session_state_t g_session;
  * static rx_time_interface_t g_time_iface;
  *
  * void usb_comm_setup(void) {
- *     // Optional: Configure with time interface for accurate timeouts
+ *     rx_session_init(&g_session);
  *     rx_usb_comm_config_t config = {
- *         .fec_enabled = 0,           // No FEC (CRC-32 only)
+ *         .session    = &g_session,
  *         .time_iface = &g_time_iface // Or NULL for default
  *     };
  *
@@ -436,28 +436,16 @@ typedef struct {
   uint32_t rx_buffer_pos;
 
   /**
-   * @brief TX frame sequence counter
+   * @brief Shared session state for cross-transport sequence continuity
    * @details
-   * Incremented for each transmitted frame. Wraps at 65535.
-   * Used by receiver to detect missing/duplicate frames.
+   * Points to a single rx_session_state_t instance owned by the comm_manager.
+   * Both USB and SPI transports share this state so that sequence numbers
+   * remain continuous across transport switches.
+   * @see rx_session_state_t
+   * @see rx_session_next_tx() Get next TX sequence
+   * @see rx_session_validate_rx() Validate incoming RX sequence
    */
-  uint16_t tx_sequence;
-
-  /**
-   * @brief Expected RX frame sequence number
-   * @details
-   * Next expected sequence from peer. Used to detect gaps.
-   */
-  uint16_t rx_sequence;
-
-  /**
-   * @brief Forward Error Correction enabled flag
-   * @details
-   * When non-zero, FEC encoding is applied to frames.
-   * Currently reserved for future use (set to 0).
-   * @par Values: 0 = disabled, 1 = enabled
-   */
-  uint8_t fec_enabled;
+  rx_session_state_t* session;
 
   /**
    * @brief Initialization status flag
@@ -483,6 +471,59 @@ typedef struct {
    * @see rx_time_interface_t
    */
   const rx_time_interface_t* time_iface;
+
+  /**
+   * @brief PING control frame callback (optional)
+   *
+   * @details
+   * Invoked after auto-PONG is sent in response to a received PING frame.
+   * Allows application to track ping activity or update heartbeat state.
+   * Set via rx_usb_comm_set_control_callbacks(). NULL disables callback.
+   *
+   * @param[in] frame The received PING frame (valid for callback duration only)
+   * @param[in] ctx Opaque user context from cb_ctx field
+   * @return void
+   *
+   * @pre PONG has already been sent before this callback fires
+   * @post No state modification requirements
+   *
+   * @see rx_usb_comm_set_control_callbacks()
+   * @since Version 1.0.0
+   */
+  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx);
+
+  /**
+   * @brief RESET control frame callback (optional)
+   *
+   * @details
+   * Invoked after RESET_ACK is sent and session is reset in response to
+   * a received RESET frame. Allows application to perform additional cleanup.
+   * Set via rx_usb_comm_set_control_callbacks(). NULL disables callback.
+   *
+   * @param[in] frame The received RESET frame (valid for callback duration only)
+   * @param[in] ctx Opaque user context from cb_ctx field
+   * @return void
+   *
+   * @pre RESET_ACK sent and session reset before this callback fires
+   * @post No state modification requirements
+   *
+   * @see rx_usb_comm_set_control_callbacks()
+   * @since Version 1.0.0
+   */
+  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx);
+
+  /**
+   * @brief User context pointer passed to control frame callbacks
+   *
+   * @details
+   * Opaque pointer forwarded to on_ping_cb and on_reset_cb as the ctx
+   * parameter. Allows callbacks to access application state without globals.
+   * Ownership remains with the caller; this module does not free cb_ctx.
+   *
+   * @see rx_usb_comm_set_control_callbacks()
+   * @since Version 1.0.0
+   */
+  void* cb_ctx;
 } rx_usb_comm_handle_t;
 
 /**
@@ -490,24 +531,23 @@ typedef struct {
  * @brief USB communication configuration options
  *
  * @details
- * Optional configuration passed to rx_usb_comm_init(). If NULL is passed,
- * default values are used (no FEC, no time interface).
+ * Configuration passed to rx_usb_comm_init(). The session pointer is
+ * required for sequence tracking; the time interface is optional.
  *
  * @par Default Values
  * | Field       | Default | Description                          |
  * |-------------|---------|--------------------------------------|
- * | fec_enabled | 0       | FEC disabled, CRC-32 only            |
+ * | session     | (req'd) | Shared session state pointer         |
  * | time_iface  | NULL    | Use internal timing                  |
  *
  * @par Usage Example
  * @code
- * // Default configuration (equivalent to passing NULL)
- * rx_usb_comm_init(&handle, NULL);
+ * static rx_session_state_t g_session;
+ * rx_session_init(&g_session);
  *
- * // Custom configuration with time interface
  * rx_usb_comm_config_t config = {
- *     .fec_enabled = 0,
- *     .time_iface  = &my_time_interface
+ *     .session    = &g_session,
+ *     .time_iface = &my_time_interface
  * };
  * rx_usb_comm_init(&handle, &config);
  * @endcode
@@ -518,14 +558,14 @@ typedef struct {
  */
 typedef struct {
   /**
-   * @brief Enable Forward Error Correction encoding
+   * @brief Shared session state for cross-transport sequence tracking
    * @details
-   * When enabled, applies FEC to transmitted frames for error recovery.
-   * Currently reserved for future implementation.
-   * @par Values: 0 = disabled (default), non-zero = enabled
-   * @par Recommended: 0 (FEC adds overhead, CRC-32 sufficient for USB)
+   * Pointer to the session state owned by rx_comm_manager. Must be
+   * initialized via rx_session_init() before passing to rx_usb_comm_init().
+   * Required - must not be NULL.
+   * @see rx_session_state_t
    */
-  uint8_t fec_enabled;
+  rx_session_state_t* session;
 
   /**
    * @brief Time interface for timeout handling
@@ -563,8 +603,9 @@ typedef struct {
  *   - Must be valid non-NULL pointer
  *   - All fields will be overwritten
  *   - Caller maintains ownership
- * @param[in] config Configuration options (NULL for defaults)
- *   - If NULL, uses fec_enabled=0, time_iface=NULL
+ * @param[in] config Configuration options (must not be NULL)
+ *   - session: Required shared session state pointer
+ *   - time_iface: Optional time interface (NULL for defaults)
  *   - Structure is copied, need not persist
  *
  * @return rx_err_t Error code
@@ -652,7 +693,7 @@ typedef struct {
  *
  * @param[in,out] handle Initialized handle
  *   - Must be initialized via rx_usb_comm_init()
- *   - tx_sequence incremented on success
+ *   - Session TX sequence incremented on success
  * @param[in] type Frame type (typically k_frame_type_response)
  *   - See rx_frame_type_t for valid types
  * @param[in] flags Frame flags (ORed together)
@@ -677,7 +718,7 @@ typedef struct {
  * @pre USB driver initialized and configured
  * @pre payload != NULL
  *
- * @post On success: tx_sequence incremented
+ * @post On success: session TX sequence incremented
  * @post On success: frame queued for transmission
  * @post On failure: no state changes
  *
@@ -712,7 +753,6 @@ typedef struct {
  * ~10-50 µs (encoding + USB queue)
  *
  * @see rx_usb_comm_receive() Receive frames from peer
- * @see rx_usb_comm_send_ack() Send ACK frame
  * @see rx_frame_type_t Frame type definitions
  *
  * @since Version 1.0.0
@@ -722,28 +762,6 @@ typedef struct {
                                         uint8_t               flags,
                                         const uint8_t*        payload,
                                         uint32_t              payload_len);
-
-/**
- * @brief Send ACK for received frame
- *
- * @param[in,out] handle Initialized handle
- * @param[in]     sequence Sequence number to acknowledge
- *
- * @return k_rx_ok on success
- */
-[[nodiscard]] rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, uint16_t sequence);
-
-/**
- * @brief Send NACK for received frame
- *
- * @param[in,out] handle Initialized handle
- * @param[in]     sequence Sequence number
- * @param[in]     flags Additional flags (e.g., k_frame_flag_soft_nack)
- *
- * @return k_rx_ok on success
- */
-[[nodiscard]] rx_err_t
-rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
 
 /* =============================================================================
  * Receive API
@@ -825,7 +843,7 @@ rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t f
  * @pre frame points to valid rx_frame_t
  *
  * @post On success: frame contains decoded data
- * @post On success: rx_sequence updated
+ * @post On success: session RX sequence updated
  * @post On CRC error: frame may be partially populated
  *
  * @note Receives from Port 0 (k_usb_port_proto)
@@ -841,17 +859,15 @@ rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t f
  *
  * switch (err) {
  *     case k_rx_ok:
- *         // Process frame
+ *         // Process frame (USB CDC: no ACK needed)
  *         process_frame(&frame);
- *         // Send ACK
- *         rx_usb_comm_send_ack(&handle, frame.header.sequence);
  *         break;
  *     case k_rx_err_timeout:
  *         // No frame received, normal in polling scenarios
  *         break;
  *     case k_rx_err_crc_mismatch:
- *         // Corrupted frame, request retransmission
- *         rx_usb_comm_send_nack(&handle, 0, k_frame_flag_soft_nack);
+ *         // Corrupted frame, discard (USB hardware handles retries)
+ *         rx_log_warn("USB", "CRC mismatch");
  *         break;
  *     default:
  *         // Other error
@@ -900,29 +916,6 @@ rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t ti
  * Utility Functions
  * =============================================================================
  */
-
-/**
- * @brief Reset sequence counters
- *
- * @param[in,out] handle Pointer to handle
- */
-void rx_usb_comm_reset_sequence(rx_usb_comm_handle_t* handle);
-
-/**
- * @brief Get current TX sequence number
- *
- * @param[in] handle Pointer to handle
- * @return Current TX sequence number
- */
-uint16_t rx_usb_comm_get_tx_sequence(const rx_usb_comm_handle_t* handle);
-
-/**
- * @brief Get expected RX sequence number
- *
- * @param[in] handle Pointer to handle
- * @return Expected RX sequence number
- */
-uint16_t rx_usb_comm_get_rx_sequence(const rx_usb_comm_handle_t* handle);
 
 /**
  * @brief Flush internal receive buffer
@@ -995,6 +988,92 @@ void rx_usb_comm_flush_rx(rx_usb_comm_handle_t* handle);
  * @return Current mode, or k_usb_comm_mode_invalid if handle is nullptr/uninitialized
  */
 rx_usb_comm_mode_t rx_usb_comm_get_mode(const rx_usb_comm_handle_t* handle);
+
+/* =============================================================================
+ * Control Frame API
+ * =============================================================================
+ */
+
+/**
+ * @brief Register callbacks for control frame notifications
+ *
+ * @details
+ * Sets optional callbacks invoked when PING or RESET control frames are
+ * received. The auto-response (PONG or RESET_ACK) is always sent regardless
+ * of whether callbacks are registered.
+ *
+ * @param[in,out] handle Initialized USB communication handle
+ * @param[in] on_ping_cb Callback for PING frames (may be NULL to disable)
+ * @param[in] on_reset_cb Callback for RESET frames (may be NULL to disable)
+ * @param[in] cb_ctx User context pointer passed to callbacks
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, callbacks registered
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized via rx_usb_comm_init()
+ * @post on_ping_cb, on_reset_cb, cb_ctx stored in handle
+ *
+ * @see rx_usb_comm_receive() Control frames handled automatically during receive
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t
+rx_usb_comm_set_control_callbacks(rx_usb_comm_handle_t* handle,
+                                  void (*on_ping_cb)(const rx_frame_t* frame, void* ctx),
+                                  void (*on_reset_cb)(const rx_frame_t* frame, void* ctx),
+                                  void* cb_ctx);
+
+/**
+ * @brief Send a PONG response frame
+ *
+ * @details
+ * Constructs and sends a PONG frame echoing the provided payload.
+ * Called automatically by the receive path when a PING frame is received.
+ * Can also be called manually if needed.
+ *
+ * @param[in,out] handle Initialized USB communication handle
+ * @param[in] payload Payload to echo (from received PING, may be NULL)
+ * @param[in] payload_len Length of payload in bytes
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok PONG sent successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized or USB not ready
+ *
+ * @pre handle must be initialized via rx_usb_comm_init()
+ * @post TX sequence incremented via shared session
+ *
+ * @see rx_usb_comm_receive() Calls this automatically for PING frames
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t
+rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle, const uint8_t* payload, uint16_t payload_len);
+
+/**
+ * @brief Send a RESET_ACK response frame
+ *
+ * @details
+ * Constructs and sends a RESET_ACK frame (no payload). Called automatically
+ * by the receive path when a RESET frame is received.
+ *
+ * @param[in,out] handle Initialized USB communication handle
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok RESET_ACK sent successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized or USB not ready
+ *
+ * @pre handle must be initialized via rx_usb_comm_init()
+ * @post TX sequence incremented via shared session
+ *
+ * @see rx_usb_comm_receive() Calls this automatically for RESET frames
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle);
 
 #ifdef __cplusplus
 }
