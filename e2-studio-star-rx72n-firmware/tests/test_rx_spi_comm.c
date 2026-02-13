@@ -1650,7 +1650,8 @@ void test_spi_comm_receive_reset_callback_invoked(void)
 
 void test_retransmit_disabled_by_default(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
 
   TEST_ASSERT_FALSE(s_handle.auto_retransmit);
   TEST_ASSERT_FALSE(s_handle.retry_pending);
@@ -1659,6 +1660,7 @@ void test_retransmit_disabled_by_default(void)
 void test_retransmit_enabled_via_config(void)
 {
   rx_spi_comm_config_t config = {
+    .session     = &s_session,
     .channel         = 0,
     .spi_mode        = 0,
     .fec_enabled     = false,
@@ -1685,6 +1687,7 @@ void test_retransmit_enabled_via_config(void)
 void test_retransmit_defaults_applied_for_zero_values(void)
 {
   rx_spi_comm_config_t config = {
+    .session           = &s_session,
     .channel           = 0,
     .spi_mode          = 0,
     .fec_enabled       = false,
@@ -1709,7 +1712,7 @@ void test_retransmit_defaults_applied_for_zero_values(void)
 
 void test_retransmit_send_buffers_frame(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1729,7 +1732,8 @@ void test_retransmit_send_buffers_frame(void)
 
 void test_retransmit_send_not_buffered_when_off(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
   helper_init_rspi_channel(k_test_channel_default);
 
   uint8_t data[] = "test";
@@ -1746,7 +1750,7 @@ void test_retransmit_send_not_buffered_when_off(void)
 
 void test_retransmit_send_only_requires_ack_buffered(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1763,7 +1767,7 @@ void test_retransmit_send_only_requires_ack_buffered(void)
 
 void test_retransmit_send_overwrites_on_new_send(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1795,7 +1799,7 @@ void test_retransmit_send_overwrites_on_new_send(void)
 
 void test_retransmit_ack_clears_retry(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1825,7 +1829,7 @@ void test_retransmit_ack_clears_retry(void)
 
 void test_retransmit_ack_wrong_seq_ignored(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1852,7 +1856,7 @@ void test_retransmit_ack_wrong_seq_ignored(void)
 
 void test_retransmit_ack_callback_invoked(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1888,7 +1892,8 @@ void test_retransmit_ack_callback_invoked(void)
 void test_retransmit_ack_not_consumed_when_off(void)
 {
   /* Init WITHOUT auto_retransmit */
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
   helper_init_rspi_channel(k_test_channel_default);
 
   /* Inject ACK frame */
@@ -1907,7 +1912,7 @@ void test_retransmit_ack_not_consumed_when_off(void)
 
 void test_retransmit_ack_non_pending_ignored(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1934,7 +1939,7 @@ void test_retransmit_ack_non_pending_ignored(void)
 
 void test_retransmit_nack_triggers_retry(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1963,7 +1968,7 @@ void test_retransmit_nack_triggers_retry(void)
 
 void test_retransmit_nack_retransmit_flag_set(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -1996,7 +2001,7 @@ void test_retransmit_nack_retransmit_flag_set(void)
 
 void test_retransmit_nack_callback_invoked(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -2031,7 +2036,8 @@ void test_retransmit_nack_callback_invoked(void)
 
 void test_retransmit_nack_not_consumed_when_off(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
   helper_init_rspi_channel(k_test_channel_default);
 
   uint8_t  encoded[64];
@@ -2054,7 +2060,7 @@ void test_retransmit_nack_not_consumed_when_off(void)
 
 void test_retransmit_process_triggers_after_timeout(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -2078,6 +2084,7 @@ void test_retransmit_process_triggers_after_timeout(void)
 void test_retransmit_process_exponential_backoff(void)
 {
   rx_spi_comm_config_t config = {
+    .session          = &s_session,
     .auto_retransmit = true,
     .retransmit_config =
       {
@@ -2118,6 +2125,7 @@ void test_retransmit_process_exponential_backoff(void)
 void test_retransmit_process_max_backoff_cap(void)
 {
   rx_spi_comm_config_t config = {
+    .session          = &s_session,
     .auto_retransmit = true,
     .retransmit_config =
       {
@@ -2157,7 +2165,7 @@ void test_retransmit_process_max_backoff_cap(void)
 
 void test_retransmit_process_no_action_before_timeout(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -2179,7 +2187,7 @@ void test_retransmit_process_no_action_before_timeout(void)
 
 void test_retransmit_process_noop_when_nothing_pending(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
 
   rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 1000);
@@ -2195,6 +2203,7 @@ void test_retransmit_process_noop_when_nothing_pending(void)
 void test_retransmit_retry_limit_returns_error(void)
 {
   rx_spi_comm_config_t config = {
+    .session            = &s_session,
     .auto_retransmit   = true,
     .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
   };
@@ -2223,6 +2232,7 @@ void test_retransmit_retry_limit_returns_error(void)
 void test_retransmit_retry_limit_clears_pending(void)
 {
   rx_spi_comm_config_t config = {
+    .session            = &s_session,
     .auto_retransmit   = true,
     .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
   };
@@ -2262,7 +2272,8 @@ void test_retransmit_set_auto_retransmit_null_handle(void)
 
 void test_retransmit_set_auto_retransmit_enables(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
   TEST_ASSERT_FALSE(s_handle.auto_retransmit);
 
   rx_spi_comm_retransmit_config_t cfg = {
@@ -2281,7 +2292,7 @@ void test_retransmit_set_auto_retransmit_enables(void)
 
 void test_retransmit_set_auto_retransmit_disables_clears_pending(void)
 {
-  rx_spi_comm_config_t config = {.auto_retransmit = true};
+  rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
   helper_init_rspi_channel(k_test_channel_default);
 
@@ -2316,7 +2327,8 @@ void test_retransmit_set_callbacks_null_handle(void)
 
 void test_retransmit_set_callbacks_success(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
 
   rx_err_t err =
     rx_spi_comm_set_retransmit_callbacks(&s_handle, test_ack_callback, test_nack_callback, NULL);
@@ -2340,7 +2352,8 @@ void test_retransmit_process_null_handle(void)
 
 void test_retransmit_process_ok_when_disabled(void)
 {
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, nullptr));
+  rx_spi_comm_config_t default_cfg = {.session = &s_session};
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
 
   rx_err_t err = rx_spi_comm_process_retransmits(&s_handle, 1000);
 

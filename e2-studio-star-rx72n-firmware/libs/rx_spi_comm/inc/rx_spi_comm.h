@@ -473,6 +473,64 @@ typedef enum : uint16_t {
 } rx_spi_comm_constants_t;
 
 /* =============================================================================
+ * Retransmit Configuration
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_retransmit_defaults_retries_t
+ * @brief Default retry count for automatic retransmission
+ *
+ * @details
+ * Maximum number of retransmission attempts before giving up.
+ * Applied when auto_retransmit is enabled but max_retries is zero.
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint8_t {
+  k_retransmit_default_max_retries = 3, /**< Default max retransmit attempts */
+} rx_retransmit_defaults_retries_t;
+
+/**
+ * @enum rx_retransmit_defaults_timing_t
+ * @brief Default timing values for automatic retransmission
+ *
+ * @details
+ * Timing parameters for ACK timeout and exponential backoff cap.
+ * Applied when auto_retransmit is enabled but timing values are zero.
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint16_t {
+  k_retransmit_default_ack_timeout_ms = 50,  /**< Initial ACK wait in ms */
+  k_retransmit_default_max_backoff_ms = 400, /**< Max exponential backoff cap in ms */
+} rx_retransmit_defaults_timing_t;
+
+/**
+ * @struct rx_spi_comm_retransmit_config_t
+ * @brief Configuration for automatic retransmission behavior
+ *
+ * @details
+ * Controls retransmission parameters when auto_retransmit is enabled.
+ * Zero values are replaced with defaults during initialization.
+ *
+ * @par Field Constraints:
+ * | Field | Min | Max | Default | Notes |
+ * |-------|-----|-----|---------|-------|
+ * | max_retries | 1 | 10 | 3 | 0 = use default |
+ * | ack_timeout_ms | 10 | 1000 | 50 | 0 = use default |
+ * | max_backoff_ms | 50 | 5000 | 400 | 0 = use default |
+ *
+ * @since Version 1.1.0
+ * @see rx_spi_comm_set_auto_retransmit() Runtime configuration
+ */
+typedef struct {
+  uint8_t  max_retries;    /**< Max retransmit attempts (default 3, 0 = use default) */
+  uint16_t ack_timeout_ms; /**< Initial ACK timeout in ms (default 50, 0 = use default) */
+  uint16_t max_backoff_ms; /**< Max backoff cap in ms (default 400, 0 = use default) */
+} rx_spi_comm_retransmit_config_t;
+
+/* =============================================================================
  * Handle and Configuration
  * =============================================================================
  */
@@ -620,6 +678,60 @@ typedef struct {
    * @brief User context pointer passed to control frame callbacks
    */
   void* cb_ctx;
+
+  /* ---- Retransmission state (only active when auto_retransmit enabled) ---- */
+
+  /**
+   * @brief Enable automatic retransmission of sent frames
+   * @details When true, sent frames are buffered and retransmitted on NACK or timeout.
+   */
+  bool auto_retransmit;
+
+  /**
+   * @brief Active retransmit configuration (copied from config or set at runtime)
+   */
+  rx_spi_comm_retransmit_config_t retransmit_cfg;
+
+  /**
+   * @brief Retry buffer holding last sent encoded wire frame
+   * @details Sized to k_frame_max_size (1036 bytes) for maximum frame.
+   */
+  uint8_t retry_buffer[k_frame_max_size];
+
+  /**
+   * @brief Actual encoded wire length of buffered frame in retry_buffer
+   */
+  uint32_t retry_wire_len;
+
+  /**
+   * @brief Sequence number of the frame in retry_buffer
+   */
+  uint16_t retry_sequence;
+
+  /**
+   * @brief Current retry attempt count (0 = first send, 1+ = retransmissions)
+   */
+  uint8_t retry_count;
+
+  /**
+   * @brief True when a frame is buffered and awaiting ACK
+   */
+  bool retry_pending;
+
+  /**
+   * @brief Timestamp (ms) of last send or retransmit of the buffered frame
+   */
+  uint32_t retry_send_time_ms;
+
+  /**
+   * @brief Optional callback invoked when ACK received for a pending frame
+   */
+  void (*on_ack_cb)(uint16_t sequence, void* ctx);
+
+  /**
+   * @brief Optional callback invoked when NACK received for a pending frame
+   */
+  void (*on_nack_cb)(uint16_t sequence, void* ctx);
 } rx_spi_comm_handle_t;
 
 /**
@@ -699,6 +811,21 @@ typedef struct {
    * **Overhead**: ~50% (e.g., 100 bytes → 150 bytes with FEC)
    */
   bool fec_enabled;
+
+  /**
+   * @brief Enable automatic retransmission (default: false)
+   * @details
+   * When true, sent frames with k_frame_flag_requires_ack are buffered
+   * and automatically retransmitted on NACK or ACK timeout.
+   * **Default**: false (fire-and-forget behavior)
+   */
+  bool auto_retransmit;
+
+  /**
+   * @brief Retransmit configuration (only used if auto_retransmit true)
+   * @details Zero fields use defaults. Ignored when auto_retransmit is false.
+   */
+  rx_spi_comm_retransmit_config_t retransmit_config;
 } rx_spi_comm_config_t;
 
 /* =============================================================================
@@ -1395,6 +1522,90 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle);
+
+/**
+ * @brief Check and process automatic retransmissions
+ *
+ * @details
+ * Checks whether an ACK timeout has elapsed for the most recent sent frame.
+ * If auto_retransmit is enabled and a retransmit is pending, resends the
+ * buffered frame (up to max_retries with exponential backoff).
+ *
+ * @param[in,out] handle Initialized SPI communication handle
+ * @param[in] current_time_ms Current system time in milliseconds
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok No action needed or retransmit sent
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be non-NULL and initialized
+ * @post retry_count incremented on retransmit, pending cleared on limit
+ *
+ * @note Safe to call when auto_retransmit is disabled (no-op)
+ *
+ * @see rx_spi_comm_set_auto_retransmit() Enable/disable retransmission
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
+                                                       uint32_t              current_time_ms);
+
+/**
+ * @brief Enable or disable automatic retransmission at runtime
+ *
+ * @details
+ * Allows the RPi5 to configure retransmission behavior via protobuf command.
+ * When disabling, any pending retry state is cleared.
+ *
+ * @param[in,out] handle Initialized SPI communication handle
+ * @param[in] enabled true to enable, false to disable
+ * @param[in] config Retransmit configuration (may be NULL to keep current or use defaults)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Configuration applied successfully
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be non-NULL and initialized
+ * @post auto_retransmit flag and config updated
+ * @post If disabling, pending retry state cleared
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t
+rx_spi_comm_set_auto_retransmit(rx_spi_comm_handle_t*                  handle,
+                                bool                                   enabled,
+                                const rx_spi_comm_retransmit_config_t* config);
+
+/**
+ * @brief Register ACK/NACK notification callbacks for retransmission
+ *
+ * @details
+ * Sets optional callbacks invoked when ACK or NACK control frames are
+ * consumed during rx_spi_comm_receive(). Useful for telemetry and diagnostics.
+ *
+ * @param[in,out] handle Initialized SPI communication handle
+ * @param[in] on_ack_cb Callback for ACK frames (may be NULL to disable)
+ * @param[in] on_nack_cb Callback for NACK frames (may be NULL to disable)
+ * @param[in] ctx User context pointer passed to callbacks
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Callbacks registered
+ * @retval k_rx_err_invalid_arg handle is nullptr
+ *
+ * @pre handle must be non-NULL
+ * @post Callback pointers stored in handle
+ *
+ * @note Callbacks invoked from within rx_spi_comm_receive() context
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t
+rx_spi_comm_set_retransmit_callbacks(rx_spi_comm_handle_t* handle,
+                                     void (*on_ack_cb)(uint16_t sequence, void* ctx),
+                                     void (*on_nack_cb)(uint16_t sequence, void* ctx),
+                                     void* ctx);
 
 #ifdef __cplusplus
 }
