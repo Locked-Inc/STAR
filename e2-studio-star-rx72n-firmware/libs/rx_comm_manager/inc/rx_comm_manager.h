@@ -450,7 +450,7 @@ typedef enum : uint16_t {
 
 /**
  * @enum rx_comm_heartbeat_constants_t
- * @brief Heartbeat timing constants per TRANSPORT_ARCHITECTURE.md
+ * @brief Heartbeat timing constants
  *
  * @details
  * Dual-detection heartbeat model:
@@ -460,7 +460,6 @@ typedef enum : uint16_t {
  *   Firmware primarily receives PINGs from the gateway.
  * - **Check interval (50ms)**: How often to evaluate heartbeat status.
  *
- * @see TRANSPORT_ARCHITECTURE.md Section "Heartbeat Mechanism"
  * @since Version 1.1.0
  */
 typedef enum : uint32_t {
@@ -475,7 +474,7 @@ typedef enum : uint32_t {
  *
  * @details
  * Events (commands) sent via SPI use retry with exponential backoff.
- * USB sends are fire-and-forget (no retries per TRANSPORT_ARCHITECTURE.md).
+ * USB sends are fire-and-forget (no retries).
  *
  * @since Version 1.1.0
  */
@@ -735,7 +734,7 @@ typedef struct {
  * @details
  * Tracks the last time a valid frame was received on each transport.
  * Used by the poll loop to evaluate link health per the dual-detection
- * heartbeat model from TRANSPORT_ARCHITECTURE.md.
+ * heartbeat model.
  *
  * @since Version 1.1.0
  */
@@ -1122,7 +1121,6 @@ typedef struct {
  * has no value. Sends immediately with NO retries on any transport.
  * If the send fails, the data is simply dropped.
  *
- * Per TRANSPORT_ARCHITECTURE.md:
  * - USB CDC: Direct send, no retries (USB HW provides reliability)
  * - SPI: Direct send, no retries (stale telemetry is worthless)
  *

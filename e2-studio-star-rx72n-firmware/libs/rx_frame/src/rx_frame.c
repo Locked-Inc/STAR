@@ -466,11 +466,11 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   rx_frame_write_le16(&output[offset], k_frame_sync_word);
   offset += k_frame_sync_size;
 
-  /* Write SEQ (little-endian per TRANSPORT_ARCHITECTURE.md) */
+  /* Write SEQ (little-endian) */
   rx_frame_write_le16(&output[offset], frame->header.sequence);
   offset += k_frame_seq_size;
 
-  /* Write LEN (little-endian per TRANSPORT_ARCHITECTURE.md) */
+  /* Write LEN (little-endian) */
   rx_frame_write_le16(&output[offset], frame->header.length);
   offset += k_frame_len_size;
 

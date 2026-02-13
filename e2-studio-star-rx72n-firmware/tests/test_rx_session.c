@@ -464,7 +464,6 @@ void test_reset_not_initialized(void)
  * must continue from seq 5. Both transports use the same session state,
  * so the sequence is continuous.
  *
- * This directly tests the architectural requirement from TRANSPORT_ARCHITECTURE.md:
  * "When Gateway fails over from USB (seq=105) to SPI, SPI MUST continue from seq=106"
  */
 void test_transport_switch_tx_continuity(void)

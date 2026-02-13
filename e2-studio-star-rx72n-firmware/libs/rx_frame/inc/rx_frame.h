@@ -210,8 +210,6 @@
  * - star-gateway/internal/frame/: Go reference implementation
  * - docs/sections/01_nanopb_protocol.tex: Protocol specification
  * - IEEE 802.3: CRC-32 polynomial definition
- * - TRANSPORT_ARCHITECTURE.md: Wire format specification (little-endian)
- *
  * @see rx_frame.c Implementation file
  * @see rx_crc.h CRC-32 computation
  * @see rx_spi_comm.h SPI transport layer

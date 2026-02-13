@@ -637,8 +637,8 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
   }
 
   /* Update heartbeat: any valid frame resets the implicit timeout timer.
-   * Per TRANSPORT_ARCHITECTURE.md dual-detection model, this is the primary
-   * link health mechanism (200ms implicit timeout). */
+   * Per the dual-detection model, this is the primary link health
+   * mechanism (200ms implicit timeout). */
   rx_comm_heartbeat_state_t* hb = &mgr->heartbeat[channel];
   hb->last_rx_ms = internal_get_time_ms();
   if (hb->status != k_link_status_healthy) {
@@ -891,7 +891,7 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
  * @brief Check heartbeat implicit timeout on all transports
  *
  * @details
- * Evaluates the dual-detection heartbeat model from TRANSPORT_ARCHITECTURE.md.
+ * Evaluates the dual-detection heartbeat model.
  * If no valid frame has been received on a transport within 200ms, the link
  * is declared dead and the status callback is invoked.
  *
