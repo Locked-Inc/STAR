@@ -125,7 +125,7 @@ func TestGateway_UsesTransportDeviceInterface(t *testing.T) {
 				t.Fatalf("constructor failed: %v", err)
 			}
 
-			var _ harq.HARQ = h
+			var _ = h
 		})
 	}
 }

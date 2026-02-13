@@ -128,7 +128,11 @@ func Run(ctx context.Context, config Config) error {
 	if err != nil {
 		return fmt.Errorf("transport manager initialization failed: %w", err)
 	}
-	defer tm.Stop()
+	defer func() {
+		if err := tm.Stop(); err != nil {
+			logger.Error("failed to stop transport manager", slog.Any("error", err))
+		}
+	}()
 
 	// Log initial transport selection for observability
 	logger.Info("transport manager initialized",
@@ -141,7 +145,11 @@ func Run(ctx context.Context, config Config) error {
 	if err != nil {
 		return fmt.Errorf("dispatcher initialization failed: %w", err)
 	}
-	defer disp.Stop() // Ensure graceful shutdown on exit
+	defer func() {
+		if err := disp.Stop(); err != nil {
+			logger.Error("failed to stop dispatcher", slog.Any("error", err))
+		}
+	}()
 
 	// Initialize service layer
 	services, err := initServices(ctx, tm, disp, logger)

@@ -168,7 +168,7 @@ func TestTransportManager_SendAcceptsHARQPriority(t *testing.T) {
 			mockHARQ.SendFunc = func(ctx context.Context, data []byte, p ...harq.Priority) error {
 				sendCalled = true
 				if len(p) > testZeroValue {
-					var _ harq.Priority = p[0]
+					var _ = p[0]
 				}
 				return nil
 			}
