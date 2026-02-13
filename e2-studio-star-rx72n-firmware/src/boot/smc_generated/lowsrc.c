@@ -466,7 +466,7 @@ long signal_sem(long semnum) /* Semaphore ID */
 *                count - The number of chacter to write
 * Return Value : Number of write characters (Pass)
 ***********************************************************************************************************************/
-int write(int fileno, char* buf, int count)
+int write(int fileno, const char* buf, int count)
 {
   int  i;
   char c;
@@ -509,7 +509,7 @@ int read(int fileno, char* buf, int count)
 *                count - The number of chacter to write
 * Return Value : Number of write characters (Pass)
 ***********************************************************************************************************************/
-int _write(int fileno, char* buf, int count)
+int _write(int fileno, const char* buf, int count)
 {
   int  i;
   char c;
