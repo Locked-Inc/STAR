@@ -133,22 +133,22 @@
  * | **rx_spi_comm_receive()** | 200-600 | 2000 | Includes wait + decode + CRC |
  * | **internal_build_frame()** | 5-20 | 50 | Memcpy payload (0-1024 bytes) |
  * | **internal_wait_for_ack()** | 10-100 | 50000 | Polls every 10ms, 50ms timeout |
- * | **internal_spi_transfer()** | 80-400 | 800 | SPI @ 10 MHz, 10-275 bytes |
+ * | **internal_spi_transfer()** | 80-900 | 1500 | SPI @ 10 MHz, 10-1038 bytes |
  * | **internal_decode_header()** | 15 | 30 | Byte-level parsing |
- * | **internal_verify_crc()** | 40-250 | 500 | CRC-32 over 10-275 bytes |
+ * | **internal_verify_crc()** | 40-500 | 800 | CRC-32 over 10-1038 bytes |
  * | **internal_wait_for_data()** | 10 | timeout_ms*1000 | Polls every 10ms until timeout |
  *
  * **Throughput Analysis** (10 MHz SPI, no FEC):
- * - **Max payload**: 255 bytes → 275 bytes on wire → 220 µs SPI time
+ * - **Max payload**: 1024 bytes → 1038 bytes on wire → 830 µs SPI time
  * - **Frame overhead**: ~100 µs encode + ~150 µs decode + ~250 µs CRC
- * - **Total latency**: ~720 µs per 255-byte frame = ~354 KB/s effective
+ * - **Total latency**: ~1330 µs per 1024-byte frame = ~770 KB/s effective
  * - **Theoretical max**: 10 MHz / 8 = 1.25 MB/s (raw SPI)
- * - **Efficiency**: ~28% (overhead from framing, CRC, ACK waits)
+ * - **Efficiency**: ~62% (overhead from framing, CRC, ACK waits)
  *
  * ## Memory Usage
  *
  * **Stack Usage per Function Call**:
- * - `rx_spi_comm_send()`: ~300 bytes (rx_frame_t + wire_buffer[275])
+ * - `rx_spi_comm_send()`: ~1350 bytes (rx_frame_t + wire_buffer[1038])
  * - `rx_spi_comm_receive()`: ~350 bytes (rx_frame_t + header_buf[10])
  * - `internal_spi_transfer()`: ~20 bytes (local vars, no buffers)
  * - `internal_decode_frame()`: ~10 bytes (offset, err)
@@ -195,7 +195,7 @@
  * **Fatal Errors** (return error code, caller should reinitialize):
  * - `k_rx_err_invalid_arg`: nullptr pointer, programming error
  * - `k_rx_err_invalid_state`: Not initialized, must call rx_spi_comm_init()
- * - `k_rx_err_invalid_size`: Payload > 255 bytes, violates protocol spec
+ * - `k_rx_err_invalid_size`: Payload > 1024 bytes, violates protocol spec
  *
  * **Hardware Errors** (propagated from RSPI HAL):
  * - Overrun, underrun, mode fault → logged and returned to caller
@@ -317,6 +317,11 @@
 
 static const char* s_tag = "rx_spi_comm";
 
+/** @brief Maximum left-shift for exponential backoff (prevents UB on uint32_t) */
+typedef enum : uint8_t {
+  k_max_backoff_shift = 31, /**< Clamp retry_count before shifting to avoid UB */
+} backoff_limit_t;
+
 /* =============================================================================
  * Frame Header Byte Offsets
  *
@@ -336,6 +341,9 @@ typedef enum : uint8_t {
   k_hdr_type      = 6, /**< Frame type */
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
+
+/* Forward declaration: retransmit helper used by rx_spi_comm_receive() */
+static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle);
 
 /**
  * @brief Decode and validate SPI frame header from raw wire buffer
@@ -428,10 +436,6 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-
-/* Forward declaration: retransmit helper used by rx_spi_comm_receive() */
-static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle);
-
 static rx_err_t internal_decode_header(const uint8_t* data,
                                        const uint32_t data_len,
                                        rx_frame_t*    frame,
@@ -511,8 +515,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  *   - **Constraints**: Must contain offset + 4 bytes minimum
  *
  * @param[in] offset Offset to CRC field in data buffer (bytes to hash)
- *   - **Valid range**: 8-263 (header=8, max payload=255, CRC at offset+4)
- *   - **Typical**: 8 (ACK/NACK, no payload) to 263 (255-byte payload)
+ *   - **Valid range**: 8-1032 (header=8, max payload=1024, CRC at offset+4)
+ *   - **Typical**: 8 (ACK/NACK, no payload) to 1032 (1024-byte payload)
  *   - **Usage**: CRC computed over data[0..offset-1], compared with data[offset..offset+3]
  *
  * @param[out] crc_out Optional pointer to receive the received CRC value
@@ -833,7 +837,7 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
  * - **Execution time**: 80-400 µs @ 10 MHz SPI (depends on transfer_len)
  * - **10-byte transfer** (ACK/NACK): ~80 µs (8 µs SPI + 72 µs overhead)
  * - **100-byte transfer**: ~180 µs (80 µs SPI + 100 µs overhead)
- * - **275-byte transfer** (max frame): ~400 µs (220 µs SPI + 180 µs overhead)
+ * - **1038-byte transfer** (max frame): ~1000 µs (830 µs SPI + 170 µs overhead)
  * - **Host ACK wait**: Add 0-50 ms if transmitting (see internal_wait_for_ack)
  *
  * @par Example - Transmit Only:
@@ -932,9 +936,9 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
     return err;
   }
 
-  /* Post-condition: Validate RX buffer populated if requested */
+  /* Post-condition: Copy RX data (memmove: rx_data may alias rx_buffer) */
   if (rx_data != nullptr && rx_len > 0) {
-    memcpy(rx_data, handle->rx_buffer, rx_len);
+    memmove(rx_data, handle->rx_buffer, rx_len);
   }
 
   return k_rx_ok;
@@ -1173,7 +1177,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  *
  * **Algorithm:**
  * 1. **Validate inputs**: Check handle, frame, payload pointer consistency
- * 2. **Validate payload size**: Ensure payload_len ≤ 255 bytes (protocol limit)
+ * 2. **Validate payload size**: Ensure payload_len ≤ 1024 bytes (protocol limit)
  * 3. **Zero frame**: Clear rx_frame_t to ensure padding bytes are zero
  * 4. **Set sequence**: Use handle->tx_sequence (auto-incremented by sender)
  * 5. **Set length**: payload_len (0-1024)
@@ -1211,7 +1215,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * @param[in] payload_len Payload length in bytes
  *   - **Valid range**: 0-1024 bytes (k_frame_max_payload)
  *   - **Typical**: 0 (ACK/NACK), 8-64 (telemetry), 100-1024 (bulk data)
- *   - **Constraints**: Must be ≤ 255 (protocol specification limit)
+ *   - **Constraints**: Must be ≤ 1024 (protocol specification limit)
  *
  * @param[out] frame Frame structure to populate
  *   - **Valid range**: Non-nullptr pointer to rx_frame_t (304 bytes)
@@ -1222,10 +1226,10 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * @retval k_rx_ok Frame built successfully, ready for encoding
  * @retval k_rx_err_invalid_arg handle or frame pointer is nullptr
  * @retval k_rx_err_invalid_arg payload is nullptr but payload_len > 0
- * @retval k_rx_err_invalid_size payload_len > 255 (exceeds protocol limit)
+ * @retval k_rx_err_invalid_size payload_len > 1024 (exceeds protocol limit)
  *
  * @pre handle must be initialized via rx_spi_comm_init()
- * @pre If payload != nullptr, payload_len must be > 0 and ≤ 255
+ * @pre If payload != nullptr, payload_len must be > 0 and ≤ 1024
  * @pre If payload == nullptr, payload_len must be 0
  * @post On success, frame->header populated with sequence, length, type, flags
  * @post On success, frame->payload contains payload_len bytes from payload
@@ -1387,14 +1391,14 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * @retval k_rx_ok Frame sent successfully, TX sequence incremented
  * @retval k_rx_err_invalid_arg handle pointer is nullptr
  * @retval k_rx_err_invalid_state handle not initialized (call rx_spi_comm_init first)
- * @retval k_rx_err_invalid_size payload_len > 255 (protocol violation)
+ * @retval k_rx_err_invalid_size payload_len > 1024 (protocol violation)
  * @retval k_rx_err_invalid_size Encoded frame length invalid (internal error)
  * @retval k_rx_err_timeout RPi5 ready signal timeout (host not responding)
  * @retval (encoder errors) rx_frame_encode() failed (rare, internal error)
  * @retval (HAL errors) RSPI peripheral transfer failure (overrun, mode fault)
  *
  * @pre handle must be initialized via rx_spi_comm_init()
- * @pre If payload != nullptr, payload_len must be > 0 and ≤ 255
+ * @pre If payload != nullptr, payload_len must be > 0 and ≤ 1024
  * @pre If payload == nullptr, payload_len must be 0
  * @pre RSPI peripheral hardware must be initialized and enabled
  * @pre RPi5 controller must be ready to receive (CS asserted, clock provided)
@@ -1412,7 +1416,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * - **Execution time**: 150-500 µs @ 10 MHz SPI + 0-50 ms host ACK wait
  * - **10-byte payload**: ~150 µs (10 µs build + 20 µs encode + 120 µs SPI)
  * - **100-byte payload**: ~300 µs (15 µs build + 100 µs encode + 185 µs SPI)
- * - **255-byte payload**: ~500 µs (20 µs build + 250 µs encode + 230 µs SPI)
+ * - **1024-byte payload**: ~800 µs (20 µs build + 250 µs encode + 530 µs SPI)
  * - **Host ACK wait**: Add 0-50 ms if RPi5 not immediately ready
  *
  * @par Example - Send Telemetry Data:
@@ -1552,7 +1556,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     handle->retry_count    = 0;
     handle->retry_pending  = true;
 #ifdef __RX__
-    handle->retry_send_time_ms = (uint32_t)(tx_time_get() * k_threadx_ms_per_tick);
+    handle->retry_send_time_ms = (uint32_t)((uint64_t)tx_time_get() * k_threadx_ms_per_tick);
 #else
     handle->retry_send_time_ms = 0;
 #endif
@@ -2053,7 +2057,10 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, const uint3
         } else {
           /* NACK: trigger immediate retransmit if sequence matches */
           if (handle->retry_pending && frame->header.sequence == handle->retry_sequence) {
-            (void)internal_retransmit_frame(handle);
+            const rx_err_t retx_err = internal_retransmit_frame(handle);
+            if (retx_err != k_rx_ok) {
+              rx_log_error(s_tag, "NACK-triggered retransmit failed");
+            }
             if (handle->on_nack_cb != nullptr) {
               handle->on_nack_cb(frame->header.sequence, handle->cb_ctx);
             }
@@ -2160,6 +2167,10 @@ rx_err_t rx_spi_comm_set_control_callbacks(rx_spi_comm_handle_t* handle,
 {
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
+  }
+
+  if (!handle->initialized) {
+    return k_rx_err_invalid_state;
   }
 
   handle->on_ping_cb  = on_ping_cb;
@@ -2398,8 +2409,11 @@ rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
     return k_rx_ok;
   }
 
-  /* Compute exponential backoff: ack_timeout_ms * 2^retry_count, capped */
-  uint32_t backoff_ms = (uint32_t)handle->retransmit_cfg.ack_timeout_ms << handle->retry_count;
+  /* Compute exponential backoff: ack_timeout_ms * 2^retry_count, capped.
+   * Clamp shift to 31 to avoid undefined behavior when retry_count >= 32. */
+  const uint8_t shift =
+    (handle->retry_count < k_max_backoff_shift) ? handle->retry_count : k_max_backoff_shift;
+  uint32_t backoff_ms = (uint32_t)handle->retransmit_cfg.ack_timeout_ms << shift;
 
   if (backoff_ms > handle->retransmit_cfg.max_backoff_ms) {
     backoff_ms = handle->retransmit_cfg.max_backoff_ms;

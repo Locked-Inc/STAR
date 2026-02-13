@@ -1426,6 +1426,10 @@ rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
     return k_rx_err_invalid_state;
   }
 
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
+    return k_rx_err_invalid_state;
+  }
+
   /* Get next TX sequence from shared session */
   uint16_t sequence = k_initial_sequence;
   rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
@@ -1480,6 +1484,10 @@ rx_err_t rx_usb_comm_send_reset_ack(rx_usb_comm_handle_t* handle)
   }
 
   if (!handle->initialized) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (!rx_usb_is_configured(k_usb_port_proto)) {
     return k_rx_err_invalid_state;
   }
 
