@@ -6,7 +6,7 @@ require (
 	github.com/Locked-Inc/star-proto/gen/go v0.0.0
 	github.com/fsnotify/fsnotify v1.7.0
 	go.bug.st/serial v1.6.4
-	google.golang.org/grpc v1.79.0
+	google.golang.org/grpc v1.79.1
 	google.golang.org/protobuf v1.36.11
 	nhooyr.io/websocket v1.8.17
 	periph.io/x/conn/v3 v3.7.2
