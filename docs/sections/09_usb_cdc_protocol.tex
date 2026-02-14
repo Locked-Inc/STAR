@@ -486,17 +486,17 @@ CRC32 validation
 }
 \\
 \midrule Physical Layer &Half - duplex, async &Full - duplex,
-    sync &Hardware characteristic \ Error Detection &CRC32 only &CRC32 +
-            FEC &USB has built - in CRC \ Retransmission &Hardware -
+    sync &Hardware characteristic \\ Error Detection &CRC32 only &CRC32 +
+            FEC &USB has built - in CRC \\ Retransmission &Hardware -
             level only &Application - level(HARQ) &
-        USB bulk handles retries \ FEC &Disabled &Viterbi
-            + Chase Combining &Redundant with USB \ ACK
+        USB bulk handles retries \\ FEC &Disabled &Viterbi
+            + Chase Combining &Redundant with USB \\ ACK
                   / NACK &Not sent &Required &USB provides implicit
-                  ACK \ Sequence Tracking &Shared SessionState &Shared
-                  SessionState &Continuity across transports \ Priority
-        & 10(preferred) & 5(backup)&Prefer simpler USB \ Typical Latency &
+                  ACK \\ Sequence Tracking &Shared SessionState &Shared
+                  SessionState &Continuity across transports \\ Priority
+        & 10(preferred) & 5(backup)&Prefer simpler USB \\ Typical Latency &
         0.5 - 1ms &
-        1 - 2ms & USB has lower overhead \ Reliability &Higher(hardware CRC) &
+        1 - 2ms & USB has lower overhead \\ Reliability &Higher(hardware CRC) &
         High(with retry mechanisms) &
         USB generally more reliable due to hardware CRC \\
 \bottomrule

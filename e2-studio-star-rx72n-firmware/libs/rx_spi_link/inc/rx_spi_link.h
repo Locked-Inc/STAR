@@ -192,9 +192,9 @@ typedef enum : uint16_t {
  * - FEC rate 1/2: Each input byte produces 2 output bytes
  * - k_harq_max_payload = 1024 bytes
  * - FEC encoded size = 2 * k_harq_max_payload = 2 * 1024 = 2048 bytes
- * - k_fec_tail_bits = 16 bits (trellis termination)
- * - Tail bytes = ceiling(k_fec_tail_bits / 8) = ceiling(16 / 8) = 2 bytes
- * - Total = 2048 + 2 = 2050 bytes
+ * - k_fec_tail_bits = 6 bits (trellis termination, K=7 constraint length)
+ * - Tail bytes = ceiling(k_fec_tail_bits / 8) = ceiling(6 / 8) = 1 byte
+ * - Total = 2048 + 1 = 2049 bytes
  *
  * @see rx_harq.h HARQ protocol maximum payload size
  * @see rx_fec.h FEC encoding parameters (rate 1/2, tail bits)
@@ -202,7 +202,7 @@ typedef enum : uint16_t {
  */
 typedef enum : uint16_t {
   k_spi_link_max_encoded_payload =
-    2050, /**< Maximum FEC-encoded payload size in bytes. Formula: bytes = (2 * k_harq_max_payload) + ceiling(k_fec_tail_bits / 8) = (2 * 1024) + ceiling(16 / 8) = 2048 + 2 = 2050. FEC rate 1/2 doubles the payload size, and tail bits (16 bits = 2 bytes) are appended for trellis termination. */
+    2049, /**< Maximum FEC-encoded payload size in bytes. Formula: bytes = (2 * k_harq_max_payload) + ceiling(k_fec_tail_bits / 8) = (2 * 1024) + ceiling(6 / 8) = 2048 + 1 = 2049. FEC rate 1/2 doubles the payload size, and tail bits (6 bits = 1 byte after ceiling) are appended for trellis termination. */
 } rx_spi_link_buffer_t;
 
 /* =============================================================================
@@ -315,10 +315,11 @@ typedef struct {
  * Contains the decoded payload and metadata about the decoding process.
  * Mirrors Go's harq.ReceiveResult.
  *
- * @warning This structure contains a large 1024-byte payload buffer. To avoid
- * stack overflow, allocate statically (global/static variable) or on the heap.
- * DO NOT allocate on the stack when passing to rx_spi_link_receive(). Total
- * struct size is ~1032 bytes.
+ * @warning This structure contains a large 1024-byte payload buffer (total struct
+ * size ~1032 bytes). MUST be statically allocated (global or static variable) only.
+ * DO NOT allocate on the stack (causes stack overflow when passing to rx_spi_link_receive()).
+ * DO NOT use dynamic allocation (malloc/new) - zero heap usage required per NASA Rule 3 and
+ * project coding guidelines. All buffers must use enum-defined sizes for compile-time allocation.
  *
  * @invariant payload_len <= k_harq_max_payload (1024 bytes)
  * @invariant sequence in range [0, 65535] (wraps around)
@@ -333,8 +334,8 @@ typedef struct {
     [k_harq_max_payload]; /**< Decoded payload data (buffer size: k_harq_max_payload = 1024 bytes) */
   uint32_t payload_len;   /**< Decoded payload length in bytes (range: [0, k_harq_max_payload]) */
   uint16_t sequence;      /**< Frame sequence number (range: [0, 65535], wraps around) */
-  uint8_t
-    frame_type; /**< Frame type as rx_frame_type_t (e.g., k_frame_type_command, k_frame_type_telemetry) */
+  rx_frame_type_t
+    frame_type; /**< Frame type (e.g., k_frame_type_command, k_frame_type_telemetry) */
   bool fec_decoded; /**< True if FEC/Viterbi decoding was applied, false if raw passthrough */
   uint8_t
     combining_count; /**< Number of Chase Combining attempts used (1 = first attempt, >1 = retransmissions combined) */
@@ -388,7 +389,7 @@ typedef struct {
     initialized; /**< Initialization flag (true=ready for use, false=must call rx_spi_link_init) */
 
   uint8_t fec_encode_buf
-    [k_spi_link_max_encoded_payload]; /**< Staging buffer for FEC-encoded payloads (size: 2050 bytes = 2*1024+2). Used by rx_spi_link_send() to hold FEC-encoded data before passing to rx_spi_comm_send(). Formula: 2 * k_harq_max_payload + (k_fec_tail_bits / 8). */
+    [k_spi_link_max_encoded_payload]; /**< Staging buffer for FEC-encoded payloads (size: 2049 bytes = 2*1024+1). Used by rx_spi_link_send() to hold FEC-encoded data before passing to rx_spi_comm_send(). Formula: 2 * k_harq_max_payload + ceiling(k_fec_tail_bits / 8), where k_fec_tail_bits = 6. */
 } rx_spi_link_t;
 
 /* =============================================================================

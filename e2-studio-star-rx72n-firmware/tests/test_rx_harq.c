@@ -212,10 +212,10 @@
  *
  * | Test Category                        | Test Count | LOC Coverage | Branch Coverage | Notes                                |
  * |--------------------------------------|------------|--------------|-----------------|--------------------------------------|
- * | **Combiner Initialization**          | 5          | 100%         | 100%            | nullptr, default, custom, deinit        |
+ * | **Combiner Initialization**          | 4          | 100%         | 100%            | nullptr, default, custom, deinit        |
  * | **Combiner Add Validation**          | 8          | 100%         | 100%            | nullptr, uninitialized, length checks   |
  * | **Soft Bit Accumulation**            | 3          | 100%         | 100%            | Basic add, saturation, combined out  |
- * | **Combiner Helper Functions**        | 6          | 100%         | 100%            | can_add, count, reset                |
+ * | **Combiner Helper Functions**        | 7          | 100%         | 100%            | can_add, count, reset                |
  * | **HARQ Initialization**              | 4          | 100%         | 100%            | nullptr, default config, custom config  |
  * | **HARQ State Management**            | 5          | 100%         | 100%            | get_state, reset, state transitions  |
  * | **HARQ Encode Validation**           | 8          | 100%         | 100%            | nullptr, uninitialized, size limits     |
@@ -799,8 +799,8 @@ void test_combiner_deinit_null(void)
  */
 void test_combiner_add_null_combiner(void)
 {
-  rx_soft_bit_t soft[10] = {0};
-  rx_err_t      err      = rx_chase_combiner_add(nullptr, soft, 10);
+  rx_soft_bit_t soft[k_test_array_size_large] = {0};
+  rx_err_t      err = rx_chase_combiner_add(nullptr, soft, k_test_array_size_large);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -815,7 +815,7 @@ void test_combiner_add_null_combiner(void)
  */
 void test_combiner_add_null_soft(void)
 {
-  rx_err_t err = rx_chase_combiner_add(&s_combiner, nullptr, 10);
+  rx_err_t err = rx_chase_combiner_add(&s_combiner, nullptr, k_test_array_size_large);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -965,13 +965,14 @@ void test_combiner_add_length_mismatch(void)
 void test_combiner_add_max_reached(void)
 {
   rx_chase_combiner_t comb;
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_init(&comb, 2)); /* Max 2 combines */
+  TEST_ASSERT_EQUAL(k_rx_ok,
+                    rx_chase_combiner_init(&comb, k_test_max_combines_small)); /* Max 2 combines */
 
-  rx_soft_bit_t soft[] = {10, 20};
+  rx_soft_bit_t soft[] = {k_test_soft_pos_10, k_test_soft_pos_20};
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_add(&comb, soft, 2));
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_add(&comb, soft, 2));
-  TEST_ASSERT_EQUAL(k_rx_err_busy, rx_chase_combiner_add(&comb, soft, 2));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_add(&comb, soft, k_test_array_size_small));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_add(&comb, soft, k_test_array_size_small));
+  TEST_ASSERT_EQUAL(k_rx_err_busy, rx_chase_combiner_add(&comb, soft, k_test_array_size_small));
 }
 
 /** @} */ /* End of harq_combiner_add_tests */
@@ -1026,11 +1027,17 @@ void test_combiner_add_max_reached(void)
  */
 void test_combiner_accumulation(void)
 {
-  rx_soft_bit_t soft1[] = {50, -30, 20, -10};
-  rx_soft_bit_t soft2[] = {30, 10, -5, 60};
+  rx_soft_bit_t soft1[] = {k_test_soft_pos_50,
+                           k_test_soft_neg_30,
+                           k_test_soft_pos_20,
+                           k_test_soft_neg_10};
+  rx_soft_bit_t soft2[] = {k_test_soft_pos_30,
+                           k_test_soft_pos_10,
+                           k_test_soft_neg_5,
+                           k_test_soft_pos_60};
 
-  rx_chase_combiner_add(&s_combiner, soft1, 4);
-  rx_chase_combiner_add(&s_combiner, soft2, 4);
+  rx_chase_combiner_add(&s_combiner, soft1, k_test_array_size_medium);
+  rx_chase_combiner_add(&s_combiner, soft2, k_test_array_size_medium);
 
   /* Verify accumulation: 50+30=80, -30+10=-20, 20+(-5)=15, -10+60=50 */
   TEST_ASSERT_EQUAL_INT16(80, s_combiner.accumulated[0]);
@@ -1058,18 +1065,18 @@ void test_combiner_accumulation(void)
  */
 void test_combiner_combined_output(void)
 {
-  rx_soft_bit_t soft1[] = {100, -100};
-  rx_soft_bit_t soft2[] = {50, -50};
+  rx_soft_bit_t soft1[] = {k_test_soft_pos_100, k_test_soft_neg_100};
+  rx_soft_bit_t soft2[] = {k_test_soft_pos_50, k_test_soft_neg_50};
 
-  rx_chase_combiner_add(&s_combiner, soft1, 2);
-  rx_chase_combiner_add(&s_combiner, soft2, 2);
+  rx_chase_combiner_add(&s_combiner, soft1, k_test_array_size_small);
+  rx_chase_combiner_add(&s_combiner, soft2, k_test_array_size_small);
 
-  rx_soft_bit_t output[2];
+  rx_soft_bit_t output[k_test_array_size_small];
   uint32_t      len;
 
   rx_err_t err = rx_chase_combiner_combined(&s_combiner, output, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(2, len);
+  TEST_ASSERT_EQUAL(k_test_array_size_small, len);
 
   /* 100+50=150, clamped to 127 */
   TEST_ASSERT_EQUAL(k_soft_bit_max, output[0]);
@@ -1092,7 +1099,7 @@ void test_combiner_combined_output(void)
  */
 void test_combiner_combined_no_add(void)
 {
-  rx_soft_bit_t output[10];
+  rx_soft_bit_t output[k_test_array_size_large];
   uint32_t      len;
 
   rx_err_t err = rx_chase_combiner_combined(&s_combiner, output, &len);
@@ -1553,7 +1560,7 @@ void test_harq_encode_null_args(void)
 
   uint8_t  payload[] = {k_test_byte_answer};
   uint8_t  output[k_test_buf_large];
-  uint32_t len;
+  uint32_t len = 0;
 
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
@@ -1618,7 +1625,7 @@ void test_harq_encode_zero_payload(void)
 
   uint8_t  payload[k_test_buf_tiny];
   uint8_t  output[k_test_buf_large];
-  uint32_t len;
+  uint32_t len = 0;
 
   rx_err_t err =
     rx_harq_encode(&s_harq, payload, k_test_count_zero, output, k_test_buf_large, &len);
@@ -1647,7 +1654,7 @@ void test_harq_encode_too_large(void)
 
   uint8_t  payload[k_test_buf_huge];
   uint8_t  output[k_test_buf_max];
-  uint32_t len;
+  uint32_t len = 0;
 
   rx_err_t err = rx_harq_encode(&s_harq,
                                 payload,
@@ -1685,7 +1692,7 @@ void test_harq_encode_with_fec(void)
 
   uint8_t  payload[] = {k_test_byte_answer};
   uint8_t  output[k_test_buf_large];
-  uint32_t len;
+  uint32_t len = 0;
 
   rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_tiny, output, k_test_buf_large, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1720,7 +1727,7 @@ void test_harq_encode_without_fec(void)
 
   uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
   uint8_t  output[k_test_buf_large];
-  uint32_t len;
+  uint32_t len = 0;
 
   rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_small, output, k_test_buf_large, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1752,7 +1759,7 @@ void test_harq_encode_buffer_too_small(void)
 
   uint8_t  payload[] = {k_test_byte_answer};
   uint8_t  output[k_test_buf_small]; /* Too small for FEC output (needs 4 bytes) */
-  uint32_t len;
+  uint32_t len = 0;
 
   rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_tiny, output, k_test_buf_small, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
@@ -1783,7 +1790,7 @@ void test_harq_encode_buffer_too_small_no_fec(void)
 
   uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
   uint8_t  output[k_test_buf_tiny]; /* Too small for 2-byte payload */
-  uint32_t len;
+  uint32_t len = 0;
 
   rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_small, output, k_test_buf_tiny, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
@@ -2094,7 +2101,7 @@ void test_harq_roundtrip_with_fec(void)
   /* Encode */
   uint8_t  payload[] = {k_test_byte_dead_h, k_test_byte_dead_l};
   uint8_t  encoded[k_test_buf_large];
-  uint32_t enc_len;
+  uint32_t enc_len = 0;
   uint8_t  bit;
 
   rx_err_t err =
@@ -2200,7 +2207,7 @@ void test_harq_combining_improves_reception(void)
   /* Encode a payload */
   uint8_t  payload[] = {k_test_byte_answer};
   uint8_t  encoded[k_test_buf_large];
-  uint32_t enc_len;
+  uint32_t enc_len = 0;
   uint8_t  bit;
   (void)rx_harq_encode(&s_harq, payload, k_test_buf_tiny, encoded, k_test_buf_large, &enc_len);
 

@@ -1021,14 +1021,6 @@ typedef struct {
    * - Immutable after init (do not change while manager is active)
    * - Fields inside rx_spi_link_t must remain stable during use
    *
-   * **Thread Safety:**
-   * - Manager is not thread-safe - external mutex required for concurrent access
-   * - Do not modify spi_link pointer or spi_link object fields from multiple threads
-   *
-   * @par Type: rx_spi_link_t* (pointer to SPI link handle)
-   * @par Valid values: Initialized rx_spi_link_t*, or nullptr for raw SPI
-   * @par Lifetime: Must outlive manager instance
-   *
    * @see rx_spi_link.h SPI link layer API
    * @see rx_comm_manager_config_t::spi_link Configuration parameter
    * @since Version 1.1.0

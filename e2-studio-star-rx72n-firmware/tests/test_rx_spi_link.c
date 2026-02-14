@@ -97,6 +97,18 @@ typedef enum : int32_t {
   k_rx_spi_test_zero = 0, /**< Zero value for initialization and memset */
 } rx_spi_test_zero_t;
 
+/**
+ * @enum rx_spi_test_payload_sizes_t
+ * @brief Payload size constants for boundary testing
+ * @since Version 1.1.0
+ */
+typedef enum : uint32_t {
+  k_rx_spi_test_min_buf     = 1,  /**< Minimum buffer size (1 byte) for size validation tests */
+  k_rx_spi_test_nonzero_len = 10, /**< Non-zero payload length for NULL payload validation tests */
+  k_rx_spi_test_max_plus_one =
+    k_harq_max_payload + 1, /**< One byte over maximum (1025 bytes) for overflow tests */
+} rx_spi_test_payload_sizes_t;
+
 /* =============================================================================
  * Test Fixtures
  * ============================================================================= */
@@ -850,7 +862,7 @@ void test_send_null_payload_nonzero_len(void)
 
   TEST_ASSERT_EQUAL(
     k_rx_err_invalid_arg,
-    rx_spi_link_send(&s_link, k_frame_type_command, nullptr, k_rx_spi_test_timeout_short));
+    rx_spi_link_send(&s_link, k_frame_type_command, nullptr, k_rx_spi_test_nonzero_len));
 }
 
 /**
@@ -876,9 +888,10 @@ void test_send_payload_too_large(void)
   rx_err_t err = internal_init_link(false);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  uint8_t data[1];
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_size,
-                    rx_spi_link_send(&s_link, k_frame_type_command, data, k_harq_max_payload + 1));
+  uint8_t data[k_rx_spi_test_min_buf];
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_size,
+    rx_spi_link_send(&s_link, k_frame_type_command, data, k_rx_spi_test_max_plus_one));
 }
 
 /* =============================================================================
@@ -1043,6 +1056,10 @@ void test_fec_enabled_query(void)
   TEST_ASSERT_FALSE(rx_spi_link_fec_enabled(&s_link));
 
   err = rx_spi_link_deinit(&s_link);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Deinitialize session to allow re-initialization */
+  err = rx_session_deinit(&s_session);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Test with FEC enabled */
