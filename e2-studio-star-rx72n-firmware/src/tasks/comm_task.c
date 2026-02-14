@@ -68,7 +68,7 @@
  *
  * **Transport Layer:**
  * - **USB CDC:** Primary protocol channel (lower latency, hardware CRC + bulk retries)
- * - **SPI:** 10 Mbps high-speed backup channel (HARQ + optional FEC for reliability)
+ * - **SPI:** 10 Mbps high-speed backup channel (HARQ + FEC per ADR-001)
  *
  * **Framing Protocol (rx_frame):**
  * - Frame header: 8 bytes (sync, type, length, sequence, flags, reserved)
