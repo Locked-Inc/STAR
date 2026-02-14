@@ -1,0 +1,22 @@
+# CMake build artifacts
+CTestTestfile.cmake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+Testing/
+
+# CMake dependencies
+_deps/
+
+# Test executables (all files starting with test_)
+test_*
+!test_*.c
+!test_*.cpp
+!test_*.h
+
+# Other build artifacts
+*.o
+*.a
+*.so
+*.dylib
