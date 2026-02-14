@@ -1,9 +1,13 @@
-% =============================================================================
-% GATEWAY ARCHITECTURE
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % GATEWAY ARCHITECTURE % == == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
 \newpage
-\section{Gateway Architecture}
+\section {
+  Gateway Architecture
+}
 \label{sec:gateway-architecture}
 
 This section documents the \texttt{star-gateway} Go service that bridges the Raspberry Pi 5 control stack with the RX72N motor controller.
@@ -15,311 +19,417 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{High-level side:} gRPC clients (Nav2/ROS2 for autonomous navigation, UI for manual control)
     \item \textbf{Low-level side:} RX72N motor controller via USB CDC (primary) or SPI (backup)
-\end{itemize}
+\end{
+  itemize
+}
 
-\noindent\makebox[\textwidth]{%
-\begin{tikzpicture}[
-    font=\small,
-    node distance=0.5cm,
-    box/.style={
-        draw,
-        thick,
-        rectangle,
-        minimum width=3.5cm,
-        minimum height=1cm,
-        align=center
-    }
-]
-    % High-level clients
-    \node[box, fill=blue!20] (nav2) at (0,0) {Nav2/ROS2\\(Autonomous)};
-    \node[box, fill=green!20, right=of nav2] (ui) {star-ui\\(Manual Control)};
+\noindent\makebox[\textwidth] {
+  %
+\begin{tikzpicture}[font =\small, node distance = 0.5cm,
+                     box /.style = {draw, thick, rectangle,
+                                    minimum width = 3.5cm, minimum height = 1cm,
+                                    align = center}] %
+          High -
+      level clients
+    \node[box, fill = blue !20](nav2) at(0, 0){Nav2 / ROS2\\(Autonomous)};
+  \node[box, fill = green !20, right = of nav2](ui){star -
+                                                    ui\\(Manual Control)};
 
-    % Gateway
-    \node[box, fill=orange!30, below=1cm of $(nav2)!0.5!(ui)$, minimum width=8cm] (gateway) {\textbf{star-gateway}\\gRPC Server + SPI Controller};
+  % Gateway
+    \node[box, fill = orange !30, below = 1cm of $(nav2) !0.5 !(ui)$,
+           minimum width = 8cm](gateway){\textbf{star - gateway}\\gRPC Server +
+                                         SPI Controller};
 
-    % RX72N
-    \node[box, fill=cyan!20, below=1cm of gateway, minimum width=8cm] (esp32) {\textbf{RX72N}\\Motor Controller + Sensors};
+  % RX72N
+    \node[box, fill = cyan !20, below = 1cm of gateway, minimum width = 8cm](
+        esp32){\textbf{RX72N}\\Motor Controller + Sensors};
 
-    % Arrows
-    \draw[->, thick] (nav2.south) -- ++(0,-0.3) -| (gateway.north west);
-    \draw[->, thick] (ui.south) -- ++(0,-0.3) -| (gateway.north east);
-    \draw[<->, thick] (gateway.south) -- node[right] {USB CDC / SPI} (esp32.north);
+  % Arrows
+    \draw[->, thick](nav2.south)-- ++(0, -0.3) - | (gateway.north west);
+  \draw[->, thick](ui.south)-- ++(0, -0.3) - | (gateway.north east);
+  \draw[ <->, thick](gateway.south)-- node[right]{USB CDC / SPI}(esp32.north);
 
-    % Labels
-    \node[above=0.1cm of nav2, font=\footnotesize\bfseries] {gRPC Clients};
-\end{tikzpicture}%
+  % Labels
+    \node[above = 0.1cm of nav2, font =\footnotesize\bfseries]{gRPC Clients};
+  \end{tikzpicture} %
 }
 
 \subsection{Protocol Stack Implementation}
 
-The gateway implements all layers of the communication protocol (see Section~\ref{sec:protocol-stack}).
+The gateway implements all layers of the communication
+protocol(see Section ~\ref{sec : protocol - stack})
+    .
 
 \begin{table}[H]
 \centering
-\caption{Gateway Protocol Stack Implementation}
-\label{tab:gateway-stack}
-\begin{tabular}{|c|l|l|l|}
+\caption {
+  Gateway Protocol Stack Implementation
+}
+\label {
+tab:
+  gateway - stack
+}
+\begin{tabular} { | c | l | l | l | }
 \hline
-\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{Status} \\
+\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf { Status }
+\\
+\hline 5 & Application & \texttt{internal / service / } & Implemented \ 4 &
+    Serialization & \texttt{star - proto / gen / go / } & Implemented \ 3 &
+    HARQ & \texttt{internal / link /, internal / harq /, internal / fec / } &
+    Implemented \ 2 & Framing & \texttt{internal / frame / } & Implemented \ 1 &
+    Transport & \texttt{internal / transport / } & Implemented \\
 \hline
-5 & Application & \texttt{internal/service/} & Implemented \\
-4 & Serialization & \texttt{star-proto/gen/go/} & Implemented \\
-3 & HARQ & \texttt{internal/link/, internal/harq/, internal/fec/} & Implemented \\
-2 & Framing & \texttt{internal/frame/} & Implemented \\
-1 & Transport & \texttt{internal/transport/} & Implemented \\
-\hline
-\end{tabular}
-\end{table}
+\end {
+  tabular
+}
+\end { table }
 
-\subsection{Directory Structure}
+\subsection { Directory Structure }
 
-\begin{verbatim}
-star-gateway/
-+-- cmd/
-|   +-- star-gateway/
-|   |   +-- main.go              # Entry point
-|   +-- virtual_rx72n/
-|       +-- main.go              # RX72N simulator
-+-- internal/
-|   +-- transport/               # Layer 1: Physical transport
-|   |   +-- spi.go               # SPI transport (periph.io)
-|   |   +-- cdc.go               # USB CDC transport
-|   |   +-- socket.go            # Socket transport (simulation)
-|   +-- frame/                   # Layer 2: Frame protocol
-|   |   +-- frame.go             # Constants and types
-|   |   +-- encoder.go           # Frame encoder
-|   |   +-- decoder.go           # Stream decoder
-|   +-- link/                    # Layer 3: Reliability (HARQ)
-|   |   +-- spi.go               # SPILink (HARQ)
-|   +-- harq/                    # HARQ interface and types
-|   |   +-- harq.go
-|   +-- fec/                     # FEC codec
-|   |   +-- convolutional.go     # Rate 1/2, K=7 encoder
-|   |   +-- viterbi.go           # Viterbi decoder
-|   |   +-- combiner.go          # Chase Combiner
-|   +-- manager/                 # Transport management
-|   |   +-- manager.go           # TransportManager + SessionState
-|   +-- service/                 # Layer 5: gRPC services
-|   |   +-- motor_control.go
-|   |   +-- telemetry.go
-|   |   +-- battery.go
-|   |   +-- configuration.go
-|   |   +-- gateway.go           # UI bridge service
-|   +-- app/                     # Application wiring
-|   |   +-- gateway.go
-|   +-- server/                  # gRPC server
-|       +-- server.go
-+-- go.mod
-+-- CLAUDE.md
-\end{verbatim}
+\begin{verbatim} star - gateway / +--cmd / | +--star - gateway / | |
+    +--main.go #Entry point | +--virtual_rx72n / |
+    +--main.go #RX72N simulator + --internal / |
+    +--transport / #Layer 1 : Physical transport | |
+    +--spi.go #SPI transport(periph.io) | | +--cdc.go #USB CDC transport | |
+    +--socket.go #Socket transport(simulation) |
+    +--frame / #Layer 2 : Frame protocol | | +--frame.go #Constants and types |
+    | +--encoder.go #Frame encoder | | +--decoder.go #Stream decoder |
+    +--link / #Layer 3 : Reliability(HARQ) | | +--spi.go #SPILink(HARQ) |
+    +--harq / #HARQ interface and types | | +--harq.go | +--fec / #FEC codec | |
+    +--convolutional.go #Rate 1 / 2,
+    K = 7 encoder | | +--viterbi.go #Viterbi decoder | |
+        +--combiner.go #Chase Combiner | +--manager / #Transport management | |
+        +--manager.go #TransportManager + SessionState |
+        +--service / #Layer 5 : gRPC services | | +--motor_control.go | |
+        +--telemetry.go | | +--battery.go | | +--configuration.go | |
+        +--gateway.go #UI bridge service | +--app / #Application wiring | |
+        +--gateway.go | +--server / #gRPC server |
+        +--server.go + --go.mod + --CLAUDE.md
+\end {
+  verbatim
+}
 
 \subsection{Frame Package}
 
-The \texttt{internal/frame} package defines the wire protocol constants and types.
+The \texttt{internal /
+            frame} package defines the wire protocol constants and types.
 
-\subsubsection{Frame Constants}
+\subsubsection {
+  Frame Constants
+}
 
 \begin{table}[H]
 \centering
-\caption{Frame Protocol Constants}
-\label{tab:frame-constants}
-\begin{tabular}{|l|c|l|}
+\caption { Frame Protocol Constants }
+\label {
+tab:
+  frame - constants
+}
+\begin{tabular} { | l | c | l | }
 \hline
-\textbf{Constant} & \textbf{Value} & \textbf{Description} \\
+\textbf{Constant} & \textbf{Value} & \textbf { Description }
+\\
 \hline
-\texttt{SyncWord} & \texttt{0x55AA} & Frame sync marker (alternating bits: \texttt{[0x55, 0xAA]}) \\
-\texttt{SyncSize} & 2 bytes & Sync word size \\
-\texttt{HeaderSize} & 6 bytes & SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) \\
-\texttt{CRCSize} & 4 bytes & CRC-32 checksum \\
-\texttt{MaxPayloadSize} & 1024 bytes & Maximum protobuf payload \\
-\texttt{MaxFrameSize} & 1036 bytes & Total frame size \\
-\texttt{MinFrameSize} & 12 bytes & Empty payload frame \\
+\texttt{SyncWord} & \texttt{0x55AA} &
+    Frame sync marker(alternating bits
+                      : \texttt{[0x55, 0xAA]}) \\
+\texttt{SyncSize} &
+    2 bytes &Sync word size \\
+\texttt{HeaderSize} & 6 bytes &SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) \\
+\texttt{CRCSize} & 4 bytes &CRC - 32 checksum \\
+\texttt{MaxPayloadSize} & 1024 bytes &Maximum protobuf payload \\
+\texttt{MaxFrameSize} & 1036 bytes &Total frame size \\
+\texttt{MinFrameSize} & 12 bytes &Empty payload frame \\
 \hline
-\end{tabular}
-\end{table}
+\end {
+  tabular
+}
+\end { table }
 
-\subsubsection{Frame Types}
+\subsubsection { Frame Types }
 
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{FrameTypeCommand} -- Command from controller to peripheral
-    \item \texttt{FrameTypeResponse} -- Response from peripheral to controller
-    \item \texttt{FrameTypeAck} -- Acknowledgment of successful receipt
-    \item \texttt{FrameTypeNack} -- Negative acknowledgment (CRC error, etc.)
-\end{itemize}
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  FrameTypeCommand
+}
+--Command from controller to peripheral
+    \item \texttt { FrameTypeResponse }
+--Response from peripheral to controller
+    \item \texttt { FrameTypeAck }
+--Acknowledgment of successful receipt
+    \item \texttt { FrameTypeNack }
+--Negative acknowledgment(CRC error, etc.)
+\end { itemize }
 
 \subsection{Transport Package}
 
 The \texttt{internal/transport} package provides physical transport implementations for communicating with the RX72N.
 
-\subsubsection{Available Transports}
-
-\begin{table}[H]
-\centering
-\caption{Transport Implementations}
-\label{tab:transport-implementations}
-\begin{tabular}{|l|l|l|l|}
-\hline
-\textbf{Transport} & \textbf{Device} & \textbf{Speed} & \textbf{Usage} \\
-\hline
-SPI & \texttt{/dev/spidev0.0} & 10 MHz & Backup (priority 5) \\
-USB CDC & \texttt{/dev/ttyACM0} & 12 Mbps (Full-Speed) & Primary (priority 10) \\
-Socket & Unix socket & N/A & Simulation mode \\
-\hline
-\end{tabular}
-\end{table}
-
-\subsubsection{SPI Configuration}
-
-\begin{table}[H]
-\centering
-\caption{SPI Configuration Constants}
-\label{tab:spi-config}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
-\hline
-Device & \texttt{/dev/spidev0.0} & SPI device path \\
-Speed & 10 MHz & SPI clock frequency \\
-Mode & 0 & CPOL=0, CPHA=0 \\
-Bits per word & 8 & Word size \\
-Timeout & 100 ms & Default operation timeout \\
-\hline
-\end{tabular}
-\end{table}
-
-\subsubsection{Transport Interface}
-
-\begin{verbatim}
-type Transport interface {
-    Send(data []byte) (int, error)
-    Receive(maxLen int) ([]byte, error)
-    Transfer(txData []byte) ([]byte, error)
-    Close() error
+\subsubsection{
+  Available Transports
 }
-\end{verbatim}
+
+\begin{table}[H]
+\centering
+\caption { Transport Implementations }
+\label {
+tab:
+  transport - implementations
+}
+\begin{tabular} { | l | l | l | l | }
+\hline
+\textbf{Transport} & \textbf{Device} & \textbf{Speed} & \textbf { Usage }
+\\
+\hline SPI & \texttt{ / dev / spidev0 .0} &
+    10 MHz &Backup(priority 5) \ USB CDC & \texttt{ / dev / ttyACM0} &
+    12 Mbps(Full - Speed) &
+    Primary(priority 10) \ Socket &Unix socket &N / A &Simulation mode \\
+\hline
+\end {
+  tabular
+}
+\end { table }
+
+\subsubsection { SPI Configuration }
+
+\begin{table}[H]
+\centering
+\caption { SPI Configuration Constants }
+\label {
+tab:
+  spi - config
+}
+\begin{tabular} { | l | l | l | }
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf { Description }
+\\
+\hline Device & \texttt{
+    / dev / spidev0 .0} &SPI device path \ Speed & 10 MHz &SPI clock
+    frequency \ Mode & 0 &CPOL = 0,
+                         CPHA = 0 \ Bits per word & 8 & Word size \ Timeout &
+                                100 ms & Default operation timeout \\
+\hline
+\end {
+  tabular
+}
+\end { table }
+
+\subsubsection { Transport Interface }
+
+\begin{verbatim} type Transport interface {
+  Send(data[] byte)(int, error) Receive(maxLen int)([] byte, error)
+      Transfer(txData[] byte)([] byte, error) Close() error
+}
+\end { verbatim }
 
 \subsection{Link Layer (HARQ)}
 
 The \texttt{internal/link} package implements the reliability layer with two link types optimized for their respective transports.
 
-\subsubsection{SPILink}
+\subsubsection{
+  SPILink
+}
 
-\texttt{SPILink} provides full Hybrid ARQ (HARQ) with forward error correction for the SPI transport, where the physical channel is more error-prone.
+\texttt{SPILink} provides full Hybrid ARQ(HARQ) with forward error correction for the SPI transport, where the physical channel is more error-prone.
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \textbf{HARQ with ACK/NACK} -- Retransmission on negative acknowledgment or timeout
-    \item \textbf{FEC encoding/decoding} -- Convolutional code (K=7, Rate 1/2) with Viterbi decoding
-    \item \textbf{Chase Combining} -- Soft-combining of retransmitted frames for improved error recovery
-\end{itemize}
+    \item \textbf{
+  HARQ with ACK / NACK
+}
+--Retransmission on negative acknowledgment or timeout
+    \item \textbf {
+  FEC encoding / decoding
+}
+--Convolutional code(K = 7, Rate 1 / 2) with Viterbi decoding
+    \item \textbf {
+  Chase Combining
+} -- Soft-combining of retransmitted frames for improved error recovery
+\end{
+  itemize
+}
 
-\subsubsection{CDCLink}
+\subsubsection { CDCLink }
 
 \texttt{CDCLink} provides a lightweight link layer for USB CDC, since USB handles reliability at the hardware level.
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \textbf{No HARQ} -- USB protocol provides its own error correction and retransmission
-    \item \textbf{Sequence tracking} -- Maintains sequence numbers for ordering
+    \item \textbf{
+  No HARQ
+}
+--USB protocol provides its own error correction and retransmission
+    \item \textbf {
+  Sequence tracking
+} -- Maintains sequence numbers for ordering
 \end{itemize}
 
 \subsubsection{Shared Session State}
 
-Both link types use the shared \texttt{SessionState} from \texttt{internal/manager/} to maintain sequence number continuity across transport failovers.
+Both link types use the shared \texttt{SessionState} from \texttt{
+    internal / manager / } to maintain sequence number continuity across
+    transport failovers.
 
-\subsubsection{HARQ Parameters}
+\subsubsection {
+  HARQ Parameters
+}
 
 \begin{table}[H]
 \centering
-\caption{HARQ Protocol Parameters}
-\label{tab:harq-params}
-\begin{tabular}{|l|l|l|}
+\caption { HARQ Protocol Parameters }
+\label {
+tab:
+  harq - params
+}
+\begin{tabular} { | l | l | l | }
 \hline
-\textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
+\textbf{Parameter} & \textbf{Value} & \textbf { Description }
+\\
+\hline Max Retries & 3 &Maximum transmission attempts \ ACK Timeout & 10 ms
+        &ACK wait timeout \ Sequence Max & 0xFFFF & 16 -
+    bit wraparound \ FEC Codec &Convolutional K = 7,
+                                              Rate 1 / 2 &
+                                                  Forward error correction \\
 \hline
-Max Retries & 3 & Maximum transmission attempts \\
-ACK Timeout & 10 ms & ACK wait timeout \\
-Sequence Max & 0xFFFF & 16-bit wraparound \\
-FEC Codec & Convolutional K=7, Rate 1/2 & Forward error correction \\
-\hline
-\end{tabular}
-\end{table}
+\end {
+  tabular
+}
+\end { table }
 
 \subsection{Transport Manager}
 
-The \texttt{internal/manager} package provides priority-based transport selection and automatic failover.
+    The \texttt{internal / manager} package provides priority -
+    based transport selection and automatic failover.
 
-\subsubsection{Transport Priorities}
+\subsubsection {
+  Transport Priorities
+}
 
 \begin{table}[H]
 \centering
-\caption{Transport Manager Priority Configuration}
-\label{tab:transport-priorities}
-\begin{tabular}{|l|c|l|}
+\caption {
+  Transport Manager Priority Configuration
+}
+\label {
+tab:
+  transport - priorities
+}
+\begin{tabular} { | l | c | l | }
 \hline
-\textbf{Transport} & \textbf{Priority} & \textbf{Role} \\
+\textbf{Transport} & \textbf{Priority} & \textbf { Role }
+\\
+\hline USB CDC & 10 & Primary transport \ SPI & 5 & Backup transport \\
 \hline
-USB CDC & 10 & Primary transport \\
-SPI & 5 & Backup transport \\
-\hline
-\end{tabular}
-\end{table}
+\end {
+  tabular
+}
+\end { table }
 
-\subsubsection{Failover Behavior}
+\subsubsection { Failover Behavior }
 
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \textbf{Shared SessionState} -- Sequence continuity maintained across transports
-    \item \textbf{Automatic failover} -- Health monitoring detects transport failures
-    \item \textbf{Primary timeout} -- 200 ms implicit timeout before failover
-    \item \textbf{Secondary probe} -- 1 s PING probe to detect recovery of higher-priority transport
-\end{itemize}
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \textbf {
+  Shared SessionState
+}
+--Sequence continuity maintained across transports
+    \item \textbf {
+  Automatic failover
+}
+--Health monitoring detects transport failures
+    \item \textbf { Primary timeout }
+--200 ms implicit timeout before failover
+    \item \textbf { Secondary probe }
+--1 s PING probe to detect recovery of higher - priority transport
+\end {
+  itemize
+}
 
 \subsection{gRPC Services}
 
-The gateway exposes five gRPC services (see Section~\ref{sec:service-specifications} for detailed specifications):
+The gateway exposes five gRPC services (see Section~\ref{
+sec:
+  service - specifications} for detailed specifications):
 
 \begin{table}[H]
 \centering
 \caption{Gateway gRPC Services}
-\label{tab:gateway-services}
-\begin{tabular}{|l|l|}
+\label{tab:grpc-services}
+\begin{tabular}{| l | p{10cm} |}
 \hline
-\textbf{Service} & \textbf{Purpose} \\
+\textbf{Service} & \textbf{Description} \\
 \hline
-MotorControlService & Differential drive control, encoder streaming \\
-TelemetryService & IMU, GPS, system status \\
-BatteryManagementService & BQ7850 BMS monitoring \\
-ConfigurationService & Runtime parameters, NVS persistence \\
+MotorControlService & Motor velocity commands, emergency stop, and control loop configuration \\
+TelemetryService & Real-time sensor data streaming (encoders, IMU, battery) \\
+BatteryManagementService & Battery monitoring, state of charge, and safety limits \\
+ConfigurationService & Runtime parameter updates and system configuration \\
+FirmwareUpdateService & Over-the-air firmware update for RX72N controller \\
 \hline
 \end{tabular}
 \end{table}
 
-\subsection{Build and Test}
+\begin{table}[H]
+\centering
+\caption{
+  Gateway gRPC Services
+}
+\label {
+tab:
+  gateway - services
+}
+\begin{tabular} { | l | l | }
+\hline
+\textbf{Service} & \textbf { Purpose }
+\\
+\hline MotorControlService &Differential drive control,
+    encoder streaming \ TelemetryService &IMU, GPS,
+    system status \ BatteryManagementService &BQ7850 BMS
+        monitoring \ ConfigurationService &Runtime parameters,
+    NVS persistence \ FirmwareUpdateService &OTA firmware updates,
+    version management \\
+\hline
+\end {
+  tabular
+}
+\end { table }
+
+\subsection { Build and Test }
 
 \begin{verbatim}
-# Build the gateway binary
-cd star-gateway
-go build ./cmd/star-gateway
+#Build the gateway binary
+    cd star -
+    gateway go build./ cmd / star -
+    gateway
 
-# Run all tests
-go test ./...
+#Run all tests
+            go test./
+        ...
 
-# Run with verbose output
-go test -v ./...
+#Run with verbose output
+        go test -
+    v./
+        ...
 
-# Format code
-go fmt ./...
+#Format code
+        go fmt./
+        ...
 
-# Static analysis
-go vet ./...
-\end{verbatim}
+#Static analysis
+        go vet./
+        ...
+\end {
+  verbatim
+}
 
 \subsection{Dependencies}
 
-The gateway depends on:
+The gateway depends on :
 
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{github.com/Locked-Inc/star-proto/gen/go} -- Generated protobuf and gRPC code
-    \item \texttt{google.golang.org/grpc} -- gRPC framework
-    \item \texttt{google.golang.org/protobuf} -- Protocol Buffers runtime
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  github.com / Locked - Inc / star - proto / gen / go
+}
+--Generated protobuf and gRPC code
+    \item \texttt { google.golang.org / grpc }
+--gRPC framework
+    \item \texttt { google.golang.org / protobuf } -- Protocol Buffers runtime
 \end{itemize}
 
 The \texttt{go.work} file at the repository root enables workspace mode for seamless cross-module development:
@@ -332,6 +442,10 @@ use (
     ./star-proto/tests/go
     ./star-gateway
 )
-\end{verbatim}
+\end{
+  verbatim
+}
 
-\noindent For the complete end-to-end communication path from UI to motor controller, see Section~\ref{sec:communication-stack}.
+\noindent For the complete end - to -
+    end communication path from UI to motor controller,
+    see Section ~\ref{sec : communication - stack}.

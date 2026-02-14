@@ -497,6 +497,15 @@ typedef enum : uint32_t {
    * @par Value: 0
    */
   k_ascii_buffer_first_idx = 0,
+
+  /**
+   * @brief Typed zero constant for uint32_t comparisons
+   * @details
+   * Used for payload length checks and other uint32_t zero comparisons to avoid
+   * magic number 0. Provides type safety and self-documenting code.
+   * @par Value: 0
+   */
+  k_zero_u32 = 0,
 } internal_constants_t;
 
 /* =============================================================================
@@ -814,20 +823,20 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     if (err == k_rx_ok) {
       /* Defensive bounds check: Validate payload length before copy */
       if (s_link_result.payload_len > k_harq_max_payload ||
-          s_link_result.payload_len > sizeof(((rx_frame_t*)0)->payload)) {
+          s_link_result.payload_len > sizeof(((rx_frame_t*)nullptr)->payload)) {
         rx_log_error_val(s_tag, "SPI link receive: payload too large", s_link_result.payload_len);
         return k_rx_err_invalid_size;
       }
 
       /* Convert link result to rx_frame_t for internal_handle_frame() */
       static rx_frame_t s_frame1;
-      (void)memset(&s_frame1, 0, sizeof(s_frame1));
+      (void)memset(&s_frame1, (int)k_zero_u32, sizeof(s_frame1));
       s_frame1.header.sequence = s_link_result.sequence;
       s_frame1.header.length   = (uint16_t)s_link_result.payload_len;
       s_frame1.header.type     = s_link_result.frame_type;
 
       /* Preserve retransmit and FEC flags from link layer result */
-      s_frame1.header.flags = 0;
+      s_frame1.header.flags = k_frame_flag_none;
       if (s_link_result.is_retransmit) {
         s_frame1.header.flags |= k_frame_flag_retransmit;
       }
@@ -835,7 +844,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
         s_frame1.header.flags |= k_frame_flag_fec_enabled;
       }
 
-      if (s_link_result.payload_len > 0) {
+      if (s_link_result.payload_len > k_zero_u32) {
         (void)memcpy(s_frame1.payload, s_link_result.payload, s_link_result.payload_len);
       }
       internal_handle_frame(mgr, k_comm_channel_spi, &s_frame1);

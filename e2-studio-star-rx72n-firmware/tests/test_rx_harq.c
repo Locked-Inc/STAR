@@ -342,6 +342,109 @@ typedef enum : uint8_t {
 } bit_manipulation_t;
 
 /**
+ * @enum test_combiner_config_t
+ * @brief Chase Combiner test configuration constants
+ * @details Maximum combines values for combiner initialization testing
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_max_combines_small  = 2, /**< Small max_combines for limit testing */
+  k_test_max_combines_medium = 3, /**< Medium max_combines for typical tests */
+  k_test_max_combines_large  = 5, /**< Large max_combines for capacity tests */
+} test_combiner_config_t;
+
+/**
+ * @enum test_array_sizes_t
+ * @brief Soft bit array size constants for testing
+ * @details Standard array lengths used across combiner and HARQ tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_array_size_small  = 2,  /**< Small array (2 elements) for mismatch tests */
+  k_test_array_size_medium = 4,  /**< Medium array (4 elements) for basic tests */
+  k_test_array_size_large  = 10, /**< Large array (10 elements) for capacity tests */
+} test_array_sizes_t;
+
+/**
+ * @enum test_soft_bit_values_t
+ * @brief Soft bit test values for accumulation and saturation testing
+ * @details Positive and negative soft bit magnitudes used in test sequences
+ * @since Version 1.0.0
+ */
+typedef enum : int8_t {
+  k_test_soft_neg_100 = -100, /**< Large negative soft bit for saturation test */
+  k_test_soft_neg_50  = -50,  /**< Medium negative soft bit */
+  k_test_soft_neg_30  = -30,  /**< Small negative soft bit */
+  k_test_soft_neg_10  = -10,  /**< Tiny negative soft bit */
+  k_test_soft_neg_5   = -5,   /**< Very small negative soft bit */
+  k_test_soft_pos_10  = 10,   /**< Tiny positive soft bit */
+  k_test_soft_pos_20  = 20,   /**< Small positive soft bit */
+  k_test_soft_pos_30  = 30,   /**< Medium positive soft bit */
+  k_test_soft_pos_40  = 40,   /**< Large positive soft bit */
+  k_test_soft_pos_50  = 50,   /**< Very large positive soft bit */
+  k_test_soft_pos_60  = 60,   /**< Extra large positive soft bit */
+  k_test_soft_pos_100 = 100,  /**< Maximum positive soft bit for saturation test */
+} test_soft_bit_values_t;
+
+/**
+ * @enum test_count_values_t
+ * @brief Counter and index values for test assertions
+ * @details Expected count and index values used in state verification
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_count_zero  = 0, /**< Initial count (empty combiner) */
+  k_test_count_one   = 1, /**< Count after first add operation */
+  k_test_count_two   = 2, /**< Count after second add operation */
+  k_test_count_three = 3, /**< Count for three-element tests */
+  k_test_count_four  = 4, /**< Count/length for medium array tests */
+  k_test_count_five  = 5, /**< Count for five-element configuration tests */
+} test_count_values_t;
+
+/**
+ * @enum test_buffer_sizes_t
+ * @brief Buffer size constants for encode/decode testing
+ * @details Array and buffer sizes used across integration tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_test_buf_tiny   = 1,    /**< Single-byte buffer */
+  k_test_buf_small  = 2,    /**< Two-byte buffer */
+  k_test_buf_medium = 16,   /**< Medium buffer (16 bytes) */
+  k_test_buf_std    = 32,   /**< Standard test buffer (32 bytes) */
+  k_test_buf_large  = 64,   /**< Large buffer (64 bytes) */
+  k_test_buf_xlarge = 128,  /**< Extra-large buffer (128 bytes) */
+  k_test_buf_huge   = 2048, /**< Huge buffer for max size tests */
+  k_test_buf_max    = 4096, /**< Maximum buffer size */
+} test_buffer_sizes_t;
+
+/**
+ * @enum test_payload_bytes_t
+ * @brief Test payload byte values for encode/decode validation
+ * @details Well-known byte patterns used in round-trip tests
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_byte_answer = 0x42, /**< The Answer to Life, Universe, Everything */
+  k_test_byte_next   = 0x43, /**< Sequential test byte (0x42 + 1) */
+  k_test_byte_dead_h = 0xDE, /**< High byte of 0xDEAD (debug pattern) */
+  k_test_byte_dead_l = 0xAD, /**< Low byte of 0xDEAD (debug pattern) */
+} test_payload_bytes_t;
+
+/**
+ * @enum test_expected_lengths_t
+ * @brief Expected FEC-encoded output lengths for specific inputs
+ * @details Pre-computed FEC output lengths (rate 1/2 code with tail bits)
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_fec_len_1_byte =
+    4, /**< FEC output for 1-byte input: 8 bits + 6 tail = 14*2 = 28 bits = 4 bytes */
+  k_test_fec_len_2_byte =
+    6, /**< FEC output for 2-byte input: 16 bits + 6 tail = 22*2 = 44 bits = 6 bytes */
+} test_expected_lengths_t;
+
+/**
  * @brief Create HARQ decode parameters structure with parameter validation
  *
  * @details
@@ -578,7 +681,7 @@ void tearDown(void)
  */
 void test_combiner_init_null(void)
 {
-  rx_err_t err = rx_chase_combiner_init(nullptr, 3);
+  rx_err_t err = rx_chase_combiner_init(nullptr, k_test_max_combines_medium);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -604,11 +707,11 @@ void test_combiner_init_null(void)
 void test_combiner_init_success(void)
 {
   rx_chase_combiner_t comb;
-  rx_err_t            err = rx_chase_combiner_init(&comb, 5);
+  rx_err_t            err = rx_chase_combiner_init(&comb, k_test_max_combines_large);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_NOT_EQUAL(0, comb.initialized);
-  TEST_ASSERT_EQUAL(5, comb.max_combines);
-  TEST_ASSERT_EQUAL(0, comb.count);
+  TEST_ASSERT_NOT_EQUAL(k_test_count_zero, comb.initialized);
+  TEST_ASSERT_EQUAL(k_test_max_combines_large, comb.max_combines);
+  TEST_ASSERT_EQUAL(k_test_count_zero, comb.count);
 }
 
 /**
@@ -716,45 +819,132 @@ void test_combiner_add_null_soft(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+/**
+ * @brief Test rx_chase_combiner_add() with uninitialized combiner
+ *
+ * @details
+ * Verifies that adding soft bits to an uninitialized combiner is rejected.
+ *
+ * @par Test Steps:
+ * 1. Create combiner with zero-initialization (bypassing init)
+ * 2. Call rx_chase_combiner_add() on uninitialized combiner
+ * 3. Verify return value is k_rx_err_invalid_state
+ *
+ * @pre None
+ * @post No state changes (uninitialized combiner detected)
+ *
+ * @test Validates initialization state check before operation
+ */
 void test_combiner_add_uninitialized(void)
 {
-  rx_chase_combiner_t comb     = {0};
-  rx_soft_bit_t       soft[10] = {0};
-  rx_err_t            err      = rx_chase_combiner_add(&comb, soft, 10);
+  rx_chase_combiner_t comb                          = {0};
+  rx_soft_bit_t       soft[k_test_array_size_large] = {0};
+  rx_err_t            err = rx_chase_combiner_add(&comb, soft, k_test_array_size_large);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
+/**
+ * @brief Test rx_chase_combiner_add() with zero-length soft bit array
+ *
+ * @details
+ * Verifies that attempting to add an empty soft bit array is rejected.
+ *
+ * @par Test Steps:
+ * 1. Call rx_chase_combiner_add(&s_combiner, soft, 0) with length=0
+ * 2. Verify return value is k_rx_err_invalid_arg
+ *
+ * @pre s_combiner initialized by setUp()
+ * @post No state changes (zero-length rejected)
+ *
+ * @test Validates length parameter validation
+ */
 void test_combiner_add_zero_length(void)
 {
-  rx_soft_bit_t soft[10] = {0};
-  rx_err_t      err      = rx_chase_combiner_add(&s_combiner, soft, 0);
+  rx_soft_bit_t soft[k_test_array_size_large] = {k_test_count_zero};
+  rx_err_t      err = rx_chase_combiner_add(&s_combiner, soft, k_test_count_zero);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+/**
+ * @brief Test rx_chase_combiner_add() with soft bit array exceeding buffer size
+ *
+ * @details
+ * Verifies that attempting to add soft bits exceeding k_harq_soft_buffer_size is rejected.
+ *
+ * @par Test Steps:
+ * 1. Call rx_chase_combiner_add() with length = k_harq_soft_buffer_size + 1
+ * 2. Verify return value is k_rx_err_invalid_size
+ *
+ * @pre s_combiner initialized by setUp()
+ * @post No state changes (oversized array rejected)
+ *
+ * @test Validates buffer size limit enforcement
+ */
 void test_combiner_add_too_large(void)
 {
-  rx_soft_bit_t soft[10] = {0};
-  rx_err_t      err      = rx_chase_combiner_add(&s_combiner, soft, k_harq_soft_buffer_size + 1);
+  rx_soft_bit_t soft[k_test_array_size_large] = {k_test_count_zero};
+  rx_err_t      err =
+    rx_chase_combiner_add(&s_combiner, soft, k_harq_soft_buffer_size + k_test_count_one);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
+/**
+ * @brief Test successful single soft bit array addition
+ *
+ * @details
+ * Verifies that a valid soft bit array is accepted and stored correctly.
+ *
+ * @par Test Steps:
+ * 1. Add soft bits: [10, 20, -30, 40] (4 elements)
+ * 2. Verify return value is k_rx_ok
+ * 3. Verify combiner.count == 1 (first addition)
+ * 4. Verify combiner.expected_len == 4 (recorded length)
+ *
+ * @pre s_combiner initialized by setUp()
+ * @post Combiner ready for next addition (same length required)
+ *
+ * @test Validates basic soft bit storage and state update
+ */
 void test_combiner_add_single(void)
 {
-  rx_soft_bit_t soft[] = {10, 20, -30, 40};
+  rx_soft_bit_t soft[] = {k_test_soft_pos_10,
+                          k_test_soft_pos_20,
+                          k_test_soft_neg_30,
+                          k_test_soft_pos_40};
 
-  rx_err_t err = rx_chase_combiner_add(&s_combiner, soft, 4);
+  rx_err_t err = rx_chase_combiner_add(&s_combiner, soft, k_test_array_size_medium);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(1, s_combiner.count);
-  TEST_ASSERT_EQUAL(4, s_combiner.expected_len);
+  TEST_ASSERT_EQUAL(k_test_count_one, s_combiner.count);
+  TEST_ASSERT_EQUAL(k_test_array_size_medium, s_combiner.expected_len);
 }
 
+/**
+ * @brief Test rx_chase_combiner_add() with mismatched soft bit array lengths
+ *
+ * @details
+ * Verifies that combiner rejects soft bit arrays with different lengths across additions.
+ * All retransmissions must have the same length to ensure valid element-wise accumulation.
+ *
+ * @par Test Steps:
+ * 1. Add soft bits: [10, 20, 30, 40] (4 elements) -> success
+ * 2. Attempt to add: [50, 60] (2 elements) -> expected to fail
+ * 3. Verify return value is k_rx_err_invalid_size
+ *
+ * @pre s_combiner initialized by setUp()
+ * @post Combiner state unchanged after rejection
+ *
+ * @test Validates length consistency enforcement across combines
+ */
 void test_combiner_add_length_mismatch(void)
 {
-  rx_soft_bit_t soft1[] = {10, 20, 30, 40};
-  rx_soft_bit_t soft2[] = {50, 60}; /* Different length */
+  rx_soft_bit_t soft1[] = {k_test_soft_pos_10,
+                           k_test_soft_pos_20,
+                           k_test_soft_pos_30,
+                           k_test_soft_pos_40};
+  rx_soft_bit_t soft2[] = {k_test_soft_pos_50, k_test_soft_pos_60}; /* Different length */
 
-  rx_chase_combiner_add(&s_combiner, soft1, 4);
-  rx_err_t err = rx_chase_combiner_add(&s_combiner, soft2, 2);
+  (void)rx_chase_combiner_add(&s_combiner, soft1, k_test_array_size_medium);
+  rx_err_t err = rx_chase_combiner_add(&s_combiner, soft2, k_test_array_size_small);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -916,65 +1106,185 @@ void test_combiner_combined_no_add(void)
  * =============================================================================
  */
 
+/**
+ * @brief Test rx_chase_combiner_can_add() state tracking
+ *
+ * @details
+ * Verifies that rx_chase_combiner_can_add() accurately reports whether the combiner
+ * can accept more soft bit arrays based on max_combines limit.
+ *
+ * @par Test Steps:
+ * 1. Initialize combiner with max_combines=2
+ * 2. Verify can_add() returns true (0/2 combines used)
+ * 3. Add soft bits (1st time)
+ * 4. Verify can_add() returns true (1/2 combines used)
+ * 5. Add soft bits (2nd time)
+ * 6. Verify can_add() returns false (2/2 combines used, limit reached)
+ *
+ * @pre None
+ * @post Combiner at max capacity
+ *
+ * @test Validates combiner capacity tracking
+ */
 void test_combiner_can_add(void)
 {
   rx_chase_combiner_t comb;
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_init(&comb, 2));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_init(&comb, k_test_max_combines_small));
 
-  rx_soft_bit_t soft[] = {10, 20};
+  rx_soft_bit_t soft[] = {k_test_soft_pos_10, k_test_soft_pos_20};
 
   TEST_ASSERT_TRUE(rx_chase_combiner_can_add(&comb));
 
-  rx_chase_combiner_add(&comb, soft, 2);
+  (void)rx_chase_combiner_add(&comb, soft, k_test_array_size_small);
   TEST_ASSERT_TRUE(rx_chase_combiner_can_add(&comb));
 
-  rx_chase_combiner_add(&comb, soft, 2);
+  (void)rx_chase_combiner_add(&comb, soft, k_test_array_size_small);
   TEST_ASSERT_FALSE(rx_chase_combiner_can_add(&comb));
 }
 
+/**
+ * @brief Test rx_chase_combiner_can_add() with nullptr combiner
+ *
+ * @details
+ * Verifies that rx_chase_combiner_can_add() returns false for nullptr combiner.
+ *
+ * @par Test Steps:
+ * 1. Call rx_chase_combiner_can_add(nullptr)
+ * 2. Verify return value is false (cannot add to invalid combiner)
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer handling)
+ */
 void test_combiner_can_add_null(void)
 {
   TEST_ASSERT_FALSE(rx_chase_combiner_can_add(nullptr));
 }
 
+/**
+ * @brief Test rx_chase_combiner_count() tracking across additions
+ *
+ * @details
+ * Verifies that rx_chase_combiner_count() accurately reports the number of
+ * soft bit arrays that have been added to the combiner.
+ *
+ * @par Test Steps:
+ * 1. Verify count() returns 0 (freshly initialized)
+ * 2. Add soft bits (1st time)
+ * 3. Verify count() returns 1
+ * 4. Add soft bits (2nd time)
+ * 5. Verify count() returns 2
+ *
+ * @pre s_combiner initialized by setUp()
+ * @post Combiner contains 2 accumulated soft bit arrays
+ *
+ * @test Validates addition counter tracking
+ */
 void test_combiner_count(void)
 {
-  rx_soft_bit_t soft[] = {10, 20, 30};
+  rx_soft_bit_t soft[] = {k_test_soft_pos_10, k_test_soft_pos_20, k_test_soft_pos_30};
 
-  TEST_ASSERT_EQUAL(0, rx_chase_combiner_count(&s_combiner));
+  TEST_ASSERT_EQUAL(k_test_count_zero, rx_chase_combiner_count(&s_combiner));
 
-  rx_chase_combiner_add(&s_combiner, soft, 3);
-  TEST_ASSERT_EQUAL(1, rx_chase_combiner_count(&s_combiner));
+  (void)rx_chase_combiner_add(&s_combiner, soft, k_test_count_three);
+  TEST_ASSERT_EQUAL(k_test_count_one, rx_chase_combiner_count(&s_combiner));
 
-  rx_chase_combiner_add(&s_combiner, soft, 3);
-  TEST_ASSERT_EQUAL(2, rx_chase_combiner_count(&s_combiner));
+  (void)rx_chase_combiner_add(&s_combiner, soft, k_test_count_three);
+  TEST_ASSERT_EQUAL(k_test_count_two, rx_chase_combiner_count(&s_combiner));
 }
 
+/**
+ * @brief Test rx_chase_combiner_count() with nullptr combiner
+ *
+ * @details
+ * Verifies that rx_chase_combiner_count() returns 0 for nullptr combiner.
+ *
+ * @par Test Steps:
+ * 1. Call rx_chase_combiner_count(nullptr)
+ * 2. Verify return value is 0 (safe default for invalid combiner)
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer handling)
+ */
 void test_combiner_count_null(void)
 {
-  TEST_ASSERT_EQUAL(0, rx_chase_combiner_count(nullptr));
+  TEST_ASSERT_EQUAL(k_test_count_zero, rx_chase_combiner_count(nullptr));
 }
 
+/**
+ * @brief Test rx_chase_combiner_reset() clears accumulated state
+ *
+ * @details
+ * Verifies that reset clears combiner state (count, expected_len, accumulated values)
+ * and prepares it for new accumulation sequence.
+ *
+ * @par Test Steps:
+ * 1. Add soft bits twice to combiner
+ * 2. Verify count == 2 (state modified)
+ * 3. Call rx_chase_combiner_reset()
+ * 4. Verify return value is k_rx_ok
+ * 5. Verify count == 0 (state cleared)
+ * 6. Verify expected_len == 0 (ready for new sequence)
+ *
+ * @pre s_combiner initialized by setUp()
+ * @post Combiner reset to post-init state
+ *
+ * @test Validates state reset functionality
+ */
 void test_combiner_reset(void)
 {
-  rx_soft_bit_t soft[] = {10, 20, 30};
+  rx_soft_bit_t soft[] = {k_test_soft_pos_10, k_test_soft_pos_20, k_test_soft_pos_30};
 
-  rx_chase_combiner_add(&s_combiner, soft, 3);
-  rx_chase_combiner_add(&s_combiner, soft, 3);
-  TEST_ASSERT_EQUAL(2, s_combiner.count);
+  (void)rx_chase_combiner_add(&s_combiner, soft, k_test_count_three);
+  (void)rx_chase_combiner_add(&s_combiner, soft, k_test_count_three);
+  TEST_ASSERT_EQUAL(k_test_count_two, s_combiner.count);
 
   rx_err_t err = rx_chase_combiner_reset(&s_combiner);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(0, s_combiner.count);
-  TEST_ASSERT_EQUAL(0, s_combiner.expected_len);
+  TEST_ASSERT_EQUAL(k_test_count_zero, s_combiner.count);
+  TEST_ASSERT_EQUAL(k_test_count_zero, s_combiner.expected_len);
 }
 
+/**
+ * @brief Test rx_chase_combiner_reset() with nullptr combiner
+ *
+ * @details
+ * Verifies that reset rejects nullptr combiner pointer.
+ *
+ * @par Test Steps:
+ * 1. Call rx_chase_combiner_reset(nullptr)
+ * 2. Verify return value is k_rx_err_invalid_arg
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer validation)
+ */
 void test_combiner_reset_null(void)
 {
   rx_err_t err = rx_chase_combiner_reset(nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+/**
+ * @brief Test rx_chase_combiner_reset() with uninitialized combiner
+ *
+ * @details
+ * Verifies that reset detects and rejects uninitialized combiner.
+ *
+ * @par Test Steps:
+ * 1. Create combiner with zero-initialization (bypassing init)
+ * 2. Call rx_chase_combiner_reset() on uninitialized combiner
+ * 3. Verify return value is k_rx_err_invalid_state
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates initialization state check before reset
+ */
 void test_combiner_reset_uninitialized(void)
 {
   rx_chase_combiner_t comb = {0};
@@ -987,36 +1297,103 @@ void test_combiner_reset_uninitialized(void)
  * =============================================================================
  */
 
+/**
+ * @brief Test rx_harq_init() with nullptr HARQ handle
+ *
+ * @details
+ * Verifies that HARQ initialization rejects nullptr handle pointer.
+ *
+ * @par Test Steps:
+ * 1. Call rx_harq_init(nullptr, nullptr)
+ * 2. Verify return value is k_rx_err_invalid_arg
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer validation before dereference)
+ */
 void test_harq_init_null(void)
 {
   rx_err_t err = rx_harq_init(nullptr, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+/**
+ * @brief Test rx_harq_init() with default configuration (config=nullptr)
+ *
+ * @details
+ * Verifies that HARQ initializes with sensible defaults when config pointer is nullptr.
+ *
+ * @par Test Steps:
+ * 1. Call rx_harq_init(&s_harq, nullptr) to use default config
+ * 2. Verify return value is k_rx_ok
+ * 3. Verify harq.initialized flag is set
+ * 4. Verify harq.max_retries == k_harq_default_retries (typically 3)
+ * 5. Verify harq.fec_enabled is true (FEC enabled by default)
+ * 6. Verify harq.state == k_harq_state_idle (ready for operation)
+ *
+ * @pre None
+ * @post s_harq initialized and ready for encode/decode operations
+ *
+ * @test Validates Open/Closed Principle (configurable with sensible defaults)
+ */
 void test_harq_init_default_config(void)
 {
   rx_err_t err = rx_harq_init(&s_harq, nullptr);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_NOT_EQUAL(0, s_harq.initialized);
+  TEST_ASSERT_NOT_EQUAL(k_test_count_zero, s_harq.initialized);
   TEST_ASSERT_EQUAL(k_harq_default_retries, s_harq.max_retries);
-  TEST_ASSERT_NOT_EQUAL(0, s_harq.fec_enabled); /* FEC enabled by default */
+  TEST_ASSERT_NOT_EQUAL(k_test_count_zero, s_harq.fec_enabled); /* FEC enabled by default */
   TEST_ASSERT_EQUAL(k_harq_state_idle, s_harq.state);
 }
 
+/**
+ * @brief Test rx_harq_init() with custom configuration
+ *
+ * @details
+ * Verifies that HARQ can be initialized with user-specified configuration parameters.
+ *
+ * @par Test Steps:
+ * 1. Create config with max_retries=5, fec_enabled=0, max_combines=4
+ * 2. Call rx_harq_init(&s_harq, &config)
+ * 3. Verify return value is k_rx_ok
+ * 4. Verify harq.max_retries == 5 (custom value)
+ * 5. Verify harq.fec_enabled == 0 (FEC disabled)
+ *
+ * @pre None
+ * @post s_harq initialized with custom parameters
+ *
+ * @test Validates Open/Closed Principle (customizable without code changes)
+ */
 void test_harq_init_custom_config(void)
 {
   rx_harq_config_t config = {
-    .max_retries  = 5,
-    .fec_enabled  = 0, /* Disable FEC */
-    .max_combines = 4,
+    .max_retries  = k_test_count_five,
+    .fec_enabled  = k_test_count_zero, /* Disable FEC */
+    .max_combines = k_test_count_four,
   };
 
   rx_err_t err = rx_harq_init(&s_harq, &config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(5, s_harq.max_retries);
-  TEST_ASSERT_EQUAL(0, s_harq.fec_enabled);
+  TEST_ASSERT_EQUAL(k_test_count_five, s_harq.max_retries);
+  TEST_ASSERT_EQUAL(k_test_count_zero, s_harq.fec_enabled);
 }
 
+/**
+ * @brief Test rx_harq_deinit() with nullptr HARQ handle
+ *
+ * @details
+ * Verifies that HARQ deinitialization rejects nullptr handle pointer.
+ *
+ * @par Test Steps:
+ * 1. Call rx_harq_deinit(nullptr)
+ * 2. Verify return value is k_rx_err_invalid_arg
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer validation)
+ */
 void test_harq_deinit_null(void)
 {
   rx_err_t err = rx_harq_deinit(nullptr);
@@ -1028,37 +1405,118 @@ void test_harq_deinit_null(void)
  * =============================================================================
  */
 
+/**
+ * @brief Test rx_harq_get_state() with nullptr HARQ handle
+ *
+ * @details
+ * Verifies that rx_harq_get_state() returns k_harq_state_error for nullptr handle.
+ *
+ * @par Test Steps:
+ * 1. Call rx_harq_get_state(nullptr)
+ * 2. Verify return value is k_harq_state_error (safe error state)
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer handling with safe default)
+ */
 void test_harq_get_state_null(void)
 {
   TEST_ASSERT_EQUAL(k_harq_state_error, rx_harq_get_state(nullptr));
 }
 
+/**
+ * @brief Test rx_harq_get_state() returns idle state after initialization
+ *
+ * @details
+ * Verifies that HARQ handle starts in idle state after successful initialization.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ with default config
+ * 2. Call rx_harq_get_state(&s_harq)
+ * 3. Verify return value is k_harq_state_idle
+ *
+ * @pre None
+ * @post s_harq in idle state, ready for encode/decode
+ *
+ * @test Validates state machine initial state
+ */
 void test_harq_get_state_idle(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
   TEST_ASSERT_EQUAL(k_harq_state_idle, rx_harq_get_state(&s_harq));
 }
 
+/**
+ * @brief Test rx_harq_reset() clears state and retry count
+ *
+ * @details
+ * Verifies that HARQ reset returns handle to idle state and clears retry counter.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle
+ * 2. Manually set state to k_harq_state_combining and retry_count to 2
+ * 3. Call rx_harq_reset(&s_harq)
+ * 4. Verify return value is k_rx_ok
+ * 5. Verify state == k_harq_state_idle (reset to initial state)
+ * 6. Verify retry_count == 0 (retry counter cleared)
+ *
+ * @pre None
+ * @post s_harq reset to post-init state
+ *
+ * @test Validates state machine reset functionality
+ */
 void test_harq_reset(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
   /* Manually change state */
   s_harq.state       = k_harq_state_combining;
-  s_harq.retry_count = 2;
+  s_harq.retry_count = k_test_count_two;
 
   rx_err_t err = rx_harq_reset(&s_harq);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_harq_state_idle, s_harq.state);
-  TEST_ASSERT_EQUAL(0, s_harq.retry_count);
+  TEST_ASSERT_EQUAL(k_test_count_zero, s_harq.retry_count);
 }
 
+/**
+ * @brief Test rx_harq_reset() with nullptr HARQ handle
+ *
+ * @details
+ * Verifies that HARQ reset rejects nullptr handle pointer.
+ *
+ * @par Test Steps:
+ * 1. Call rx_harq_reset(nullptr)
+ * 2. Verify return value is k_rx_err_invalid_arg
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer validation)
+ */
 void test_harq_reset_null(void)
 {
   rx_err_t err = rx_harq_reset(nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
+/**
+ * @brief Test rx_harq_reset() with uninitialized HARQ handle
+ *
+ * @details
+ * Verifies that HARQ reset detects and rejects uninitialized handle.
+ *
+ * @par Test Steps:
+ * 1. Create HARQ handle with zero-initialization (bypassing init)
+ * 2. Call rx_harq_reset() on uninitialized handle
+ * 3. Verify return value is k_rx_err_invalid_state
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates initialization state check before reset
+ */
 void test_harq_reset_uninitialized(void)
 {
   rx_harq_handle_t harq = {0};
@@ -1071,108 +1529,263 @@ void test_harq_reset_uninitialized(void)
  * =============================================================================
  */
 
+/**
+ * @brief Test rx_harq_encode() nullptr pointer argument validation
+ *
+ * @details
+ * Verifies that encode rejects all nullptr pointer arguments.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle
+ * 2. Call rx_harq_encode(nullptr, payload, 1, output, 64, &len) -> k_rx_err_invalid_arg
+ * 3. Call rx_harq_encode(&s_harq, nullptr, 1, output, 64, &len) -> k_rx_err_invalid_arg
+ * 4. Call rx_harq_encode(&s_harq, payload, 1, nullptr, 64, &len) -> k_rx_err_invalid_arg
+ * 5. Call rx_harq_encode(&s_harq, payload, 1, output, 64, nullptr) -> k_rx_err_invalid_arg
+ *
+ * @pre None
+ * @post No encoding performed (all rejected)
+ *
+ * @test Validates NASA Rule 9 (comprehensive nullptr pointer checks)
+ */
 void test_harq_encode_null_args(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
-  uint8_t  payload[] = {0x42};
-  uint8_t  output[64];
+  uint8_t  payload[] = {k_test_byte_answer};
+  uint8_t  output[k_test_buf_large];
   uint32_t len;
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(nullptr, payload, 1, output, 64, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, nullptr, 1, output, 64, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, payload, 1, nullptr, 64, &len));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_encode(&s_harq, payload, 1, output, 64, nullptr));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_harq_encode(nullptr, payload, k_test_buf_tiny, output, k_test_buf_large, &len));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_harq_encode(&s_harq, nullptr, k_test_buf_tiny, output, k_test_buf_large, &len));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_harq_encode(&s_harq, payload, k_test_buf_tiny, nullptr, k_test_buf_large, &len));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_harq_encode(&s_harq, payload, k_test_buf_tiny, output, k_test_buf_large, nullptr));
 }
 
+/**
+ * @brief Test rx_harq_encode() with uninitialized HARQ handle
+ *
+ * @details
+ * Verifies that encode detects and rejects uninitialized HARQ handle.
+ *
+ * @par Test Steps:
+ * 1. Create HARQ handle with zero-initialization (bypassing init)
+ * 2. Call rx_harq_encode() on uninitialized handle
+ * 3. Verify return value is k_rx_err_invalid_state
+ *
+ * @pre None
+ * @post No encoding performed (uninitialized handle detected)
+ *
+ * @test Validates initialization state check before encode
+ */
 void test_harq_encode_uninitialized(void)
 {
   rx_harq_handle_t harq      = {0};
-  uint8_t          payload[] = {0x42};
-  uint8_t          output[64];
+  uint8_t          payload[] = {k_test_byte_answer};
+  uint8_t          output[k_test_buf_large];
   uint32_t         len;
 
-  rx_err_t err = rx_harq_encode(&harq, payload, 1, output, 64, &len);
+  rx_err_t err = rx_harq_encode(&harq, payload, k_test_buf_tiny, output, k_test_buf_large, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
+/**
+ * @brief Test rx_harq_encode() with zero-length payload
+ *
+ * @details
+ * Verifies that encode rejects empty payload (length=0).
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle
+ * 2. Call rx_harq_encode() with payload_len=0
+ * 3. Verify return value is k_rx_err_invalid_size
+ *
+ * @pre s_harq initialized
+ * @post No encoding performed (zero-length rejected)
+ *
+ * @test Validates payload length parameter validation
+ */
 void test_harq_encode_zero_payload(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
-  uint8_t  payload[1];
-  uint8_t  output[64];
+  uint8_t  payload[k_test_buf_tiny];
+  uint8_t  output[k_test_buf_large];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 0, output, 64, &len);
+  rx_err_t err =
+    rx_harq_encode(&s_harq, payload, k_test_count_zero, output, k_test_buf_large, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
+/**
+ * @brief Test rx_harq_encode() with payload exceeding maximum size
+ *
+ * @details
+ * Verifies that encode rejects payloads larger than k_harq_max_payload.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle
+ * 2. Call rx_harq_encode() with payload_len = k_harq_max_payload + 1
+ * 3. Verify return value is k_rx_err_invalid_size
+ *
+ * @pre s_harq initialized
+ * @post No encoding performed (oversized payload rejected)
+ *
+ * @test Validates maximum payload size enforcement
+ */
 void test_harq_encode_too_large(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
-  uint8_t  payload[2048];
-  uint8_t  output[4096];
+  uint8_t  payload[k_test_buf_huge];
+  uint8_t  output[k_test_buf_max];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, k_harq_max_payload + 1, output, 4096, &len);
+  rx_err_t err = rx_harq_encode(&s_harq,
+                                payload,
+                                k_harq_max_payload + k_test_count_one,
+                                output,
+                                k_test_buf_max,
+                                &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
+/**
+ * @brief Test rx_harq_encode() with FEC enabled (default configuration)
+ *
+ * @details
+ * Verifies that encoding with FEC expands payload to expected size based on
+ * convolutional code rate 1/2 and tail bits.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle with default config (FEC enabled)
+ * 2. Encode 1-byte payload (0x42)
+ * 3. Verify return value is k_rx_ok
+ * 4. Verify output length is 4 bytes (FEC overhead)
+ *    - Input: 1 byte = 8 bits
+ *    - Add tail: 8 + 6 = 14 bits
+ *    - Rate 1/2: 14 * 2 = 28 bits = 4 bytes (rounded up)
+ *
+ * @pre None
+ * @post Payload encoded with FEC protection
+ *
+ * @test Validates FEC encoder integration and output size calculation
+ */
 void test_harq_encode_with_fec(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr)); /* FEC enabled by default */
 
-  uint8_t  payload[] = {0x42};
-  uint8_t  output[64];
+  uint8_t  payload[] = {k_test_byte_answer};
+  uint8_t  output[k_test_buf_large];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 1, output, 64, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_tiny, output, k_test_buf_large, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* With FEC, output should be larger than input */
   /* 1 byte = 8 bits + 6 tail = 14 bits * 2 = 28 bits = 4 bytes */
-  TEST_ASSERT_EQUAL(4, len);
+  TEST_ASSERT_EQUAL(k_test_fec_len_1_byte, len);
 }
 
+/**
+ * @brief Test rx_harq_encode() with FEC disabled (passthrough mode)
+ *
+ * @details
+ * Verifies that encoding without FEC performs simple passthrough (no expansion).
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle with fec_enabled=0
+ * 2. Encode 2-byte payload (0x42, 0x43)
+ * 3. Verify return value is k_rx_ok
+ * 4. Verify output length is 2 bytes (no FEC overhead)
+ * 5. Verify output data matches input exactly (passthrough)
+ *
+ * @pre None
+ * @post Payload copied to output without modification
+ *
+ * @test Validates passthrough mode when FEC is disabled
+ */
 void test_harq_encode_without_fec(void)
 {
-  rx_harq_config_t config = {.fec_enabled = 0};
+  rx_harq_config_t config = {.fec_enabled = k_test_count_zero};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
 
-  uint8_t  payload[] = {0x42, 0x43};
-  uint8_t  output[64];
+  uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
+  uint8_t  output[k_test_buf_large];
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, output, 64, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_small, output, k_test_buf_large, &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(2, len); /* No FEC = same size */
-  TEST_ASSERT_EQUAL_MEMORY(payload, output, 2);
+  TEST_ASSERT_EQUAL(k_test_buf_small, len); /* No FEC = same size */
+  TEST_ASSERT_EQUAL_MEMORY(payload, output, k_test_buf_small);
 }
 
+/**
+ * @brief Test rx_harq_encode() with output buffer too small for FEC-encoded data
+ *
+ * @details
+ * Verifies that encode detects insufficient output buffer space when FEC is enabled.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle with FEC enabled (default)
+ * 2. Call rx_harq_encode() with 1-byte payload and 2-byte output buffer
+ *    - FEC requires 4 bytes (1 byte -> 4 bytes with rate 1/2 + tail)
+ *    - Output buffer is only 2 bytes (insufficient)
+ * 3. Verify return value is k_rx_err_invalid_size
+ *
+ * @pre s_harq initialized with FEC enabled
+ * @post No encoding performed (buffer overflow prevented)
+ *
+ * @test Validates buffer overflow protection in FEC mode
+ */
 void test_harq_encode_buffer_too_small(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr)); /* FEC enabled */
 
-  uint8_t  payload[] = {0x42};
-  uint8_t  output[2]; /* Too small for FEC output */
+  uint8_t  payload[] = {k_test_byte_answer};
+  uint8_t  output[k_test_buf_small]; /* Too small for FEC output (needs 4 bytes) */
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 1, output, 2, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_tiny, output, k_test_buf_small, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
+/**
+ * @brief Test rx_harq_encode() with output buffer too small in passthrough mode
+ *
+ * @details
+ * Verifies that encode detects insufficient output buffer space even with FEC disabled.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle with fec_enabled=0 (passthrough mode)
+ * 2. Call rx_harq_encode() with 2-byte payload and 1-byte output buffer
+ *    - Passthrough requires output_buf_len >= payload_len
+ *    - Output buffer is only 1 byte (insufficient for 2-byte payload)
+ * 3. Verify return value is k_rx_err_invalid_size
+ *
+ * @pre s_harq initialized with FEC disabled
+ * @post No encoding performed (buffer overflow prevented)
+ *
+ * @test Validates buffer overflow protection in passthrough mode
+ */
 void test_harq_encode_buffer_too_small_no_fec(void)
 {
-  rx_harq_config_t config = {.fec_enabled = 0};
+  rx_harq_config_t config = {.fec_enabled = k_test_count_zero};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
 
-  uint8_t  payload[] = {0x42, 0x43};
-  uint8_t  output[1]; /* Too small for payload */
+  uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
+  uint8_t  output[k_test_buf_tiny]; /* Too small for 2-byte payload */
   uint32_t len;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, output, 1, &len);
+  rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_small, output, k_test_buf_tiny, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -1181,37 +1794,117 @@ void test_harq_encode_buffer_too_small_no_fec(void)
  * =============================================================================
  */
 
+/**
+ * @brief Test rx_harq_get_retry_count() with nullptr HARQ handle
+ *
+ * @details
+ * Verifies that retry count getter returns 0 for nullptr handle (safe default).
+ *
+ * @par Test Steps:
+ * 1. Call rx_harq_get_retry_count(nullptr)
+ * 2. Verify return value is 0 (safe default)
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer handling with safe default)
+ */
 void test_harq_get_retry_count_null(void)
 {
-  TEST_ASSERT_EQUAL(0, rx_harq_get_retry_count(nullptr));
+  TEST_ASSERT_EQUAL(k_test_count_zero, rx_harq_get_retry_count(nullptr));
 }
 
+/**
+ * @brief Test rx_harq_get_retry_count() returns current retry count
+ *
+ * @details
+ * Verifies that retry count getter accurately reports the current retry counter value.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle
+ * 2. Verify get_retry_count() returns 0 (initial state)
+ * 3. Manually set retry_count to 2
+ * 4. Verify get_retry_count() returns 2
+ *
+ * @pre None
+ * @post s_harq with modified retry_count
+ *
+ * @test Validates retry counter tracking
+ */
 void test_harq_get_retry_count(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
-  TEST_ASSERT_EQUAL(0, rx_harq_get_retry_count(&s_harq));
+  TEST_ASSERT_EQUAL(k_test_count_zero, rx_harq_get_retry_count(&s_harq));
 
-  s_harq.retry_count = 2;
-  TEST_ASSERT_EQUAL(2, rx_harq_get_retry_count(&s_harq));
+  s_harq.retry_count = k_test_count_two;
+  TEST_ASSERT_EQUAL(k_test_count_two, rx_harq_get_retry_count(&s_harq));
 }
 
+/**
+ * @brief Test rx_harq_can_retry() with nullptr HARQ handle
+ *
+ * @details
+ * Verifies that can_retry returns false for nullptr handle (safe default).
+ *
+ * @par Test Steps:
+ * 1. Call rx_harq_can_retry(nullptr)
+ * 2. Verify return value is false (cannot retry on invalid handle)
+ *
+ * @pre None
+ * @post No state changes
+ *
+ * @test Validates NASA Rule 9 (nullptr pointer handling)
+ */
 void test_harq_can_retry_null(void)
 {
   TEST_ASSERT_FALSE(rx_harq_can_retry(nullptr));
 }
 
+/**
+ * @brief Test rx_harq_can_retry() returns true for freshly initialized handle
+ *
+ * @details
+ * Verifies that newly initialized HARQ handle can retry (retry_count=0 < max_retries).
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle with default config
+ * 2. Call rx_harq_can_retry(&s_harq)
+ * 3. Verify return value is true (retries available)
+ *
+ * @pre None
+ * @post s_harq initialized and can retry
+ *
+ * @test Validates retry availability check in initial state
+ */
 void test_harq_can_retry_fresh(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
   TEST_ASSERT_TRUE(rx_harq_can_retry(&s_harq));
 }
 
+/**
+ * @brief Test rx_harq_can_retry() returns false when retries are exhausted
+ *
+ * @details
+ * Verifies that can_retry returns false when retry_count reaches max_retries limit.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle with max_retries=2
+ * 2. Manually set retry_count to 2 (limit reached)
+ * 3. Call rx_harq_can_retry(&s_harq)
+ * 4. Verify return value is false (no more retries available)
+ *
+ * @pre None
+ * @post s_harq at retry limit
+ *
+ * @test Validates retry exhaustion detection
+ */
 void test_harq_can_retry_exhausted(void)
 {
-  rx_harq_config_t config = {.max_retries = 2};
+  rx_harq_config_t config = {.max_retries = k_test_count_two};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
 
-  s_harq.retry_count = 2;
+  s_harq.retry_count = k_test_count_two;
   TEST_ASSERT_FALSE(rx_harq_can_retry(&s_harq));
 }
 
@@ -1220,14 +1913,33 @@ void test_harq_can_retry_exhausted(void)
  * =============================================================================
  */
 
+/**
+ * @brief Test rx_harq_decode() nullptr pointer argument validation
+ *
+ * @details
+ * Verifies that decode rejects all nullptr pointer arguments.
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle
+ * 2. Call rx_harq_decode(nullptr, &params, output, &len) -> k_rx_err_invalid_arg
+ * 3. Call rx_harq_decode(&s_harq, &params_with_null_soft, output, &len) -> k_rx_err_invalid_arg
+ * 4. Call rx_harq_decode(&s_harq, &params, nullptr, &len) -> k_rx_err_invalid_arg
+ * 5. Call rx_harq_decode(&s_harq, &params, output, nullptr) -> k_rx_err_invalid_arg
+ *
+ * @pre s_harq initialized
+ * @post No decoding performed (all rejected)
+ *
+ * @test Validates NASA Rule 9 (comprehensive nullptr pointer checks)
+ */
 void test_harq_decode_null_args(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
-  rx_soft_bit_t           soft[32] = {0};
-  uint8_t                 output[16];
+  rx_soft_bit_t           soft[k_test_buf_std] = {k_test_count_zero};
+  uint8_t                 output[k_test_buf_medium];
   uint32_t                len;
-  rx_harq_decode_params_t params = internal_make_decode_params(soft, 32, 2);
+  rx_harq_decode_params_t params =
+    internal_make_decode_params(soft, k_test_buf_std, k_test_buf_small);
 
   /* nullptr harq */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(nullptr, &params, output, &len));
@@ -1244,29 +1956,63 @@ void test_harq_decode_null_args(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_harq_decode(&s_harq, &params, output, nullptr));
 }
 
+/**
+ * @brief Test rx_harq_decode() with uninitialized HARQ handle
+ *
+ * @details
+ * Verifies that decode detects and rejects uninitialized HARQ handle.
+ *
+ * @par Test Steps:
+ * 1. Create HARQ handle with zero-initialization (bypassing init)
+ * 2. Call rx_harq_decode() on uninitialized handle
+ * 3. Verify return value is k_rx_err_invalid_state
+ *
+ * @pre None
+ * @post No decoding performed (uninitialized handle detected)
+ *
+ * @test Validates initialization state check before decode
+ */
 void test_harq_decode_uninitialized(void)
 {
-  rx_harq_handle_t        harq     = {0};
-  rx_soft_bit_t           soft[32] = {0};
-  uint8_t                 output[16];
+  rx_harq_handle_t        harq                 = {0};
+  rx_soft_bit_t           soft[k_test_buf_std] = {0};
+  uint8_t                 output[k_test_buf_medium];
   uint32_t                len;
-  rx_harq_decode_params_t params = internal_make_decode_params(soft, 32, 2);
+  rx_harq_decode_params_t params =
+    internal_make_decode_params(soft, k_test_buf_std, k_test_buf_small);
 
   rx_err_t err = rx_harq_decode(&harq, &params, output, &len);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
+/**
+ * @brief Test rx_harq_decode() with zero-length soft bit array
+ *
+ * @details
+ * Verifies that decode rejects empty soft bit array (soft_len=0).
+ *
+ * @par Test Steps:
+ * 1. Initialize HARQ handle
+ * 2. Create decode params with soft_len=0
+ * 3. Call rx_harq_decode()
+ * 4. Verify return value is k_rx_err_invalid_arg
+ *
+ * @pre s_harq initialized
+ * @post No decoding performed (zero-length rejected)
+ *
+ * @test Validates soft bit length parameter validation
+ */
 void test_harq_decode_zero_length(void)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
-  rx_soft_bit_t           soft[32] = {0};
-  uint8_t                 output[16];
+  rx_soft_bit_t           soft[k_test_buf_std] = {k_test_count_zero};
+  uint8_t                 output[k_test_buf_medium];
   uint32_t                len;
   rx_harq_decode_params_t params = {
     .soft_bits           = soft,
-    .soft_len            = 0,
-    .expected_output_len = 2,
+    .soft_len            = k_test_count_zero,
+    .expected_output_len = k_test_buf_small,
   };
 
   /* Zero soft_len returns k_rx_err_invalid_arg */
@@ -1346,19 +2092,20 @@ void test_harq_roundtrip_with_fec(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
   /* Encode */
-  uint8_t  payload[] = {0xDE, 0xAD};
-  uint8_t  encoded[64];
+  uint8_t  payload[] = {k_test_byte_dead_h, k_test_byte_dead_l};
+  uint8_t  encoded[k_test_buf_large];
   uint32_t enc_len;
   uint8_t  bit;
 
-  rx_err_t err = rx_harq_encode(&s_harq, payload, 2, encoded, 64, &enc_len);
+  rx_err_t err =
+    rx_harq_encode(&s_harq, payload, k_test_buf_small, encoded, k_test_buf_large, &enc_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Convert encoded hard bits to soft bits */
-  rx_soft_bit_t soft[128];
-  uint32_t      soft_len = enc_len * 8;
+  rx_soft_bit_t soft[k_test_buf_xlarge];
+  uint32_t      soft_len = enc_len * k_bits_per_byte;
 
-  for (uint32_t i = 0; i < enc_len; i++) {
+  for (uint32_t i = k_test_count_zero; i < enc_len; i++) {
     for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
       bit                                             = (encoded[i] >> b) & k_bit_mask;
       soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
@@ -1369,14 +2116,14 @@ void test_harq_roundtrip_with_fec(void)
   (void)rx_harq_reset(&s_harq);
 
   /* Decode */
-  uint8_t                 decoded[64];
+  uint8_t                 decoded[k_test_buf_large];
   uint32_t                dec_len;
-  rx_harq_decode_params_t params = internal_make_decode_params(soft, soft_len, 2);
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, soft_len, k_test_buf_small);
 
   err = rx_harq_decode(&s_harq, &params, decoded, &dec_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(2, dec_len);
-  TEST_ASSERT_EQUAL_MEMORY(payload, decoded, 2);
+  TEST_ASSERT_EQUAL(k_test_buf_small, dec_len);
+  TEST_ASSERT_EQUAL_MEMORY(payload, decoded, k_test_buf_small);
 }
 
 /**
@@ -1451,17 +2198,17 @@ void test_harq_combining_improves_reception(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, nullptr));
 
   /* Encode a payload */
-  uint8_t  payload[] = {0x42};
-  uint8_t  encoded[64];
+  uint8_t  payload[] = {k_test_byte_answer};
+  uint8_t  encoded[k_test_buf_large];
   uint32_t enc_len;
   uint8_t  bit;
-  (void)rx_harq_encode(&s_harq, payload, 1, encoded, 64, &enc_len);
+  (void)rx_harq_encode(&s_harq, payload, k_test_buf_tiny, encoded, k_test_buf_large, &enc_len);
 
   /* Create "perfect" soft bits from encoded data */
-  rx_soft_bit_t soft[128];
-  uint32_t      soft_len = enc_len * 8;
+  rx_soft_bit_t soft[k_test_buf_xlarge];
+  uint32_t      soft_len = enc_len * k_bits_per_byte;
 
-  for (uint32_t i = 0; i < enc_len; i++) {
+  for (uint32_t i = k_test_count_zero; i < enc_len; i++) {
     for (int8_t b = k_bit_idx_msb; b >= k_bit_idx_lsb; b--) {
       bit                                             = (encoded[i] >> b) & k_bit_mask;
       soft[i * k_bits_per_byte + (k_bit_idx_msb - b)] = rx_fec_hard_to_soft(bit);
@@ -1471,13 +2218,13 @@ void test_harq_combining_improves_reception(void)
   /* Reset and decode */
   (void)rx_harq_reset(&s_harq);
 
-  uint8_t                 decoded[64];
+  uint8_t                 decoded[k_test_buf_large];
   uint32_t                dec_len;
-  rx_harq_decode_params_t params = internal_make_decode_params(soft, soft_len, 1);
+  rx_harq_decode_params_t params = internal_make_decode_params(soft, soft_len, k_test_buf_tiny);
 
   rx_err_t err = rx_harq_decode(&s_harq, &params, decoded, &dec_len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
+  TEST_ASSERT_EQUAL_HEX8(k_test_byte_answer, decoded[k_test_count_zero]);
 }
 
 /** @} */ /* End of harq_integration_tests */

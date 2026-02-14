@@ -288,83 +288,59 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  /**
-     * @brief Frame synchronization marker (0x55AA)
-     * @details
-     * The sync word marks the start of a valid frame. Receivers scan for this
-     * pattern to establish frame boundaries. The value 0x55AA was chosen for:
-     * - Alternating bit pattern aids clock recovery
-     * - Unique enough to avoid false positives in random data
-     * - Matches common SPI debug patterns
-     * @par Wire Format: Little-endian (0xAA first, then 0x55)
-     */
-  k_frame_sync_word = 0x55AA,
+  k_frame_sync_word = 0x55AA, /**< @brief Frame synchronization marker (0x55AA)
+                                * @details
+                                * The sync word marks the start of a valid frame. Receivers scan for this
+                                * pattern to establish frame boundaries. The value 0x55AA was chosen for:
+                                * - Alternating bit pattern aids clock recovery
+                                * - Unique enough to avoid false positives in random data
+                                * - Matches common SPI debug patterns
+                                * @par Wire Format: Little-endian (0xAA first, then 0x55)
+                                */
 
-  /**
-     * @brief SYNC field size in bytes (2)
-     * @details Two-byte sync marker at frame start.
-     */
-  k_frame_sync_size = 2,
+  k_frame_sync_size = 2, /**< @brief SYNC field size in bytes (2)
+                           * @details Two-byte sync marker at frame start.
+                           */
 
-  /**
-     * @brief SEQ field size in bytes (2)
-     * @details 16-bit sequence number for ordering and retransmit tracking.
-     */
-  k_frame_seq_size = 2,
+  k_frame_seq_size = 2, /**< @brief SEQ field size in bytes (2)
+                          * @details 16-bit sequence number for ordering and retransmit tracking.
+                          */
 
-  /**
-     * @brief LEN field size in bytes (2)
-     * @details 16-bit payload length (max 1024).
-     */
-  k_frame_len_size = 2,
+  k_frame_len_size = 2, /**< @brief LEN field size in bytes (2)
+                          * @details 16-bit payload length (max 1024).
+                          */
 
-  /**
-     * @brief TYPE field size in bytes (1)
-     * @details Single byte for frame type (command, response, ack, nack).
-     */
-  k_frame_type_size = 1,
+  k_frame_type_size = 1, /**< @brief TYPE field size in bytes (1)
+                           * @details Single byte for frame type (command, response, ack, nack).
+                           */
 
-  /**
-     * @brief FLAGS field size in bytes (1)
-     * @details Single byte for control flags (requires_ack, retransmit, etc.).
-     */
-  k_frame_flags_size = 1,
+  k_frame_flags_size = 1, /**< @brief FLAGS field size in bytes (1)
+                            * @details Single byte for control flags (requires_ack, retransmit, etc.).
+                            */
 
-  /**
-     * @brief CRC-32 field size in bytes (4)
-     * @details IEEE 802.3 CRC-32 checksum.
-     */
-  k_frame_crc_size = 4,
+  k_frame_crc_size = 4, /**< @brief CRC-32 field size in bytes (4)
+                          * @details IEEE 802.3 CRC-32 checksum.
+                          */
 
-  /**
-     * @brief Header size excluding SYNC (6 bytes)
-     * @details SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) = 6 bytes.
-     */
-  k_frame_header_size = 6,
+  k_frame_header_size = 6, /**< @brief Header size excluding SYNC (6 bytes)
+                             * @details SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) = 6 bytes.
+                             */
 
-  /**
-     * @brief Minimum payload length (0 bytes)
-     * @details ACK and NACK frames have empty payloads.
-     */
-  k_frame_min_payload = 0,
+  k_frame_min_payload = 0, /**< @brief Minimum payload length (0 bytes)
+                             * @details ACK and NACK frames have empty payloads.
+                             */
 
-  /**
-     * @brief Maximum payload length (1024 bytes)
-     * @details Limited by SPI DMA buffer size and protobuf message limits.
-     */
-  k_frame_max_payload = 1024,
+  k_frame_max_payload = 1024, /**< @brief Maximum payload length (1024 bytes)
+                                * @details Limited by SPI DMA buffer size and protobuf message limits.
+                                */
 
-  /**
-     * @brief Minimum frame size (12 bytes)
-     * @details SYNC(2) + Header(6) + CRC(4) = 12 bytes (no payload).
-     */
-  k_frame_min_size = 12,
+  k_frame_min_size = 12, /**< @brief Minimum frame size (12 bytes)
+                           * @details SYNC(2) + Header(6) + CRC(4) = 12 bytes (no payload).
+                           */
 
-  /**
-     * @brief Maximum frame size (1036 bytes)
-     * @details SYNC(2) + Header(6) + Payload(1024) + CRC(4) = 1036 bytes.
-     */
-  k_frame_max_size = 1036,
+  k_frame_max_size = 1036, /**< @brief Maximum frame size (1036 bytes)
+                             * @details SYNC(2) + Header(6) + Payload(1024) + CRC(4) = 1036 bytes.
+                             */
 } rx_frame_constants_t;
 
 /**
@@ -558,52 +534,42 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  /**
-     * @brief No flags set (0x00)
-     * @details Default for frames that don't require special handling.
-     */
-  k_frame_flag_none = 0x00,
+  k_frame_flag_none = 0x00, /**< @brief No flags set (0x00)
+                              * @details Default for frames that don't require special handling.
+                              */
 
-  /**
-     * @brief Frame requires acknowledgment (0x01, bit 0)
-     * @details
-     * Sender expects an ACK or NACK response. If no response within
-     * timeout, sender should retransmit with RETRANSMIT flag.
-     */
-  k_frame_flag_requires_ack = 0x01,
+  k_frame_flag_requires_ack = 0x01, /**< @brief Frame requires acknowledgment (0x01, bit 0)
+                                      * @details
+                                      * Sender expects an ACK or NACK response. If no response within
+                                      * timeout, sender should retransmit with RETRANSMIT flag.
+                                      */
 
-  /**
-     * @brief Retransmission of previous frame (0x02, bit 1)
-     * @details
-     * Indicates this frame is a retry after timeout or NACK.
-     * Receiver should check for duplicate sequence numbers.
-     */
-  k_frame_flag_retransmit = 0x02,
+  k_frame_flag_retransmit = 0x02, /**< @brief Retransmission of previous frame (0x02, bit 1)
+                                    * @details
+                                    * Indicates this frame is a retry after timeout or NACK.
+                                    * Receiver should check for duplicate sequence numbers.
+                                    */
 
-  /**
-     * @brief High-priority frame (0x04, bit 2)
-     * @details
-     * Process before normal-priority frames in queue.
-     * Used for emergency stop and critical motor commands.
-     */
-  k_frame_flag_priority = 0x04,
+  k_frame_flag_priority = 0x04, /**< @brief High-priority frame (0x04, bit 2)
+                                  * @details
+                                  * Process before normal-priority frames in queue.
+                                  * Used for emergency stop and critical motor commands.
+                                  */
 
-  /**
-     * @brief Forward error correction enabled (0x08, bit 3)
-     * @details
-     * Payload includes FEC redundancy for error recovery.
-     * Receiver should decode FEC before processing payload.
-     * @note FEC implementation is optional (future feature).
-     */
-  k_frame_flag_fec_enabled = 0x08,
+  k_frame_flag_fec_enabled = 0x08, /**< @brief Forward error correction enabled (0x08, bit 3)
+                                     * @details
+                                     * Payload is FEC-encoded (convolutional rate 1/2). FEC is enabled by default
+                                     * on the HARQ path (e.g., SPI transport with rx_spi_link). This flag indicates
+                                     * FEC encoding is present and receiver should apply Viterbi decoding before
+                                     * processing payload. The flag is ignored for transports that do not use HARQ
+                                     * (e.g., USB CDC, which relies on built-in hardware CRC and retry).
+                                     */
 
-  /**
-     * @brief NACK with soft error information (0x10, bit 4)
-     * @details
-     * Used in NACK frames to indicate recoverable error.
-     * May include confidence bits or partial decode info.
-     */
-  k_frame_flag_soft_nack = 0x10,
+  k_frame_flag_soft_nack = 0x10, /**< @brief NACK with soft error information (0x10, bit 4)
+                                   * @details
+                                   * Used in NACK frames to indicate recoverable error.
+                                   * May include confidence bits or partial decode info.
+                                   */
 } rx_frame_flags_t;
 
 /* =============================================================================

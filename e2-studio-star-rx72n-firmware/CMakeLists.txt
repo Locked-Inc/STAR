@@ -114,7 +114,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_obstacle_detect/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_pid/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_comm/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_spi_link/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_usb_comm/inc
 )
@@ -282,6 +281,7 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_obstacle_detect/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_session/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_spi_comm/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_spi_link/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_usb/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_usb_comm/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_comm_manager/inc

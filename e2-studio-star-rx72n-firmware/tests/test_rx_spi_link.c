@@ -57,8 +57,45 @@ typedef enum : int32_t {
  * @since Version 1.1.0
  */
 typedef enum : int32_t {
-  k_rx_spi_test_max_retries = 3, /**< Maximum 3 retries per HARQ specification */
+  k_rx_spi_test_default_retry = 0, /**< Default retry config (0 = use link layer default) */
+  k_rx_spi_test_single_retry  = 1, /**< Single retry attempt for fast failure tests */
+  k_rx_spi_test_max_retries   = 3, /**< Maximum 3 retries per HARQ specification */
+  k_rx_spi_test_custom_retry  = 5, /**< Custom retry value for configuration tests */
 } rx_spi_test_retries_t;
+
+/**
+ * @enum rx_spi_test_timeout_t
+ * @brief Timeout values for receive operations in milliseconds
+ * @since Version 1.1.0
+ */
+typedef enum : uint32_t {
+  k_rx_spi_test_timeout_short  = 10,  /**< Short 10ms timeout for quick failure tests */
+  k_rx_spi_test_timeout_normal = 100, /**< Normal 100ms timeout for receive operations */
+} rx_spi_test_timeout_t;
+
+/**
+ * @enum rx_spi_test_data_t
+ * @brief Test payload byte values for send/receive validation
+ * @since Version 1.1.0
+ */
+typedef enum : uint8_t {
+  k_rx_spi_test_data_byte1 = 0x01, /**< Test byte 1 */
+  k_rx_spi_test_data_byte2 = 0x02, /**< Test byte 2 */
+  k_rx_spi_test_data_byte3 = 0x12, /**< Test byte 3 */
+  k_rx_spi_test_data_aa    = 0xAA, /**< Test pattern AA */
+  k_rx_spi_test_data_bb    = 0xBB, /**< Test pattern BB */
+  k_rx_spi_test_data_cc    = 0xCC, /**< Test pattern CC */
+  k_rx_spi_test_data_ff    = 0xFF, /**< Test pattern FF */
+} rx_spi_test_data_t;
+
+/**
+ * @enum rx_spi_test_zero_t
+ * @brief Zero constant for memset and initialization
+ * @since Version 1.1.0
+ */
+typedef enum : int32_t {
+  k_rx_spi_test_zero = 0, /**< Zero value for initialization and memset */
+} rx_spi_test_zero_t;
 
 /* =============================================================================
  * Test Fixtures
@@ -104,17 +141,41 @@ static rx_session_state_t s_session;
 
 /**
  * @brief Unity setUp - called before each test
- * @details Zeroes all test fixtures to ensure clean test state
+ *
+ * @details
+ * Zeroes all test fixtures (s_link, s_spi_comm, s_session) to ensure clean
+ * state before each test execution. This prevents test interdependencies
+ * and ensures each test starts with known initial conditions.
+ *
+ * @pre Unity test harness initialized
+ * @pre Global test fixtures may contain state from previous test
+ *
+ * @post s_link zero-initialized (all fields = 0)
+ * @post s_spi_comm zero-initialized (all fields = 0)
+ * @post s_session zero-initialized (all fields = 0)
+ * @post All fixtures ready for test-specific initialization
  */
 void setUp(void)
 {
-  (void)memset(&s_link, 0, sizeof(s_link));
-  (void)memset(&s_spi_comm, 0, sizeof(s_spi_comm));
-  (void)memset(&s_session, 0, sizeof(s_session));
+  (void)memset(&s_link, k_rx_spi_test_zero, sizeof(s_link));
+  (void)memset(&s_spi_comm, k_rx_spi_test_zero, sizeof(s_spi_comm));
+  (void)memset(&s_session, k_rx_spi_test_zero, sizeof(s_session));
 }
 
 /**
  * @brief Unity tearDown - called after each test
+ *
+ * @details
+ * Cleans up resources allocated during test execution. Deinitializes the
+ * SPI link layer if it was initialized during the test. This prevents
+ * resource leaks and ensures proper cleanup between tests.
+ *
+ * @pre Test execution completed
+ * @pre s_link may or may not be initialized
+ *
+ * @post If s_link was initialized: rx_spi_link_deinit() called successfully
+ * @post All dynamically allocated resources released
+ * @post Global test fixtures in clean state for next test
  */
 void tearDown(void)
 {
@@ -299,7 +360,7 @@ void test_init_success_no_fec(void)
 
   const rx_spi_comm_config_t spi_cfg = {
     .session     = &s_session,
-    .channel     = 0,
+    .channel     = k_rx_spi_test_channel,
     .fec_enabled = false,
   };
   err = rx_spi_comm_init(&s_spi_comm, &spi_cfg);
@@ -308,7 +369,7 @@ void test_init_success_no_fec(void)
   const rx_spi_link_config_t link_cfg = {
     .spi_handle  = &s_spi_comm,
     .fec_enabled = false,
-    .max_retries = 0, /* Should default to 3 */
+    .max_retries = k_rx_spi_test_default_retry, /* Should default to 3 */
   };
   err = rx_spi_link_init(&s_link, &link_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -371,7 +432,7 @@ void test_init_custom_retries(void)
 
   const rx_spi_comm_config_t spi_cfg = {
     .session = &s_session,
-    .channel = 0,
+    .channel = k_rx_spi_test_channel,
   };
   err = rx_spi_comm_init(&s_spi_comm, &spi_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -379,11 +440,11 @@ void test_init_custom_retries(void)
   const rx_spi_link_config_t link_cfg = {
     .spi_handle  = &s_spi_comm,
     .fec_enabled = false,
-    .max_retries = 5,
+    .max_retries = k_rx_spi_test_custom_retry,
   };
   err = rx_spi_link_init(&s_link, &link_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(5, s_link.max_retries);
+  TEST_ASSERT_EQUAL(k_rx_spi_test_custom_retry, s_link.max_retries);
 }
 
 /* =============================================================================
@@ -735,7 +796,7 @@ void test_reset_success(void)
  */
 void test_send_null_link(void)
 {
-  uint8_t data[] = {0x01, 0x02};
+  uint8_t data[] = {k_rx_spi_test_data_byte1, k_rx_spi_test_data_byte2};
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                     rx_spi_link_send(nullptr, k_frame_type_command, data, sizeof(data)));
 }
@@ -759,7 +820,7 @@ void test_send_null_link(void)
  */
 void test_send_uninitialized(void)
 {
-  uint8_t data[] = {0x01, 0x02};
+  uint8_t data[] = {k_rx_spi_test_data_byte1, k_rx_spi_test_data_byte2};
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
                     rx_spi_link_send(&s_link, k_frame_type_command, data, sizeof(data)));
 }
@@ -787,8 +848,9 @@ void test_send_null_payload_nonzero_len(void)
   rx_err_t err = internal_init_link(false);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_spi_link_send(&s_link, k_frame_type_command, nullptr, 10));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_spi_link_send(&s_link, k_frame_type_command, nullptr, k_rx_spi_test_timeout_short));
 }
 
 /**
@@ -842,7 +904,8 @@ void test_send_payload_too_large(void)
 void test_receive_null_link(void)
 {
   rx_spi_link_receive_result_t result;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_spi_link_receive(nullptr, &result, 100));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_spi_link_receive(nullptr, &result, k_rx_spi_test_timeout_normal));
 }
 
 /**
@@ -867,7 +930,8 @@ void test_receive_null_result(void)
   rx_err_t err = internal_init_link(false);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_spi_link_receive(&s_link, nullptr, 100));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_spi_link_receive(&s_link, nullptr, k_rx_spi_test_timeout_normal));
 }
 
 /**
@@ -889,7 +953,8 @@ void test_receive_null_result(void)
 void test_receive_uninitialized(void)
 {
   rx_spi_link_receive_result_t result;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_spi_link_receive(&s_link, &result, 100));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
+                    rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal));
 }
 
 /* =============================================================================
@@ -933,7 +998,7 @@ void test_state_transitions_send_retries(void)
   TEST_ASSERT_EQUAL(k_spi_link_state_idle, rx_spi_link_get_state(&s_link));
 
   /* Attempt send - will fail due to no hardware, but state will transition */
-  uint8_t data[] = {0xAA, 0xBB, 0xCC};
+  uint8_t data[] = {k_rx_spi_test_data_aa, k_rx_spi_test_data_bb, k_rx_spi_test_data_cc};
   err            = rx_spi_link_send(&s_link, k_frame_type_command, data, sizeof(data));
 
   /* Send should fail with retry limit (no hardware to ACK) */
@@ -995,16 +1060,16 @@ void test_fec_enabled_query(void)
  * @details
  * Verifies rx_spi_link_get_state() handles edge cases correctly:
  * - NULL pointer returns k_spi_link_state_error (safe degradation)
- * - Uninitialized (zeroed) link returns k_spi_link_state_idle (state=0)
+ * - Uninitialized (zeroed) link returns k_spi_link_state_error
  *
- * This documents intentional behavior: zeroed struct has state field = 0,
- * which maps to IDLE enum value by design.
+ * The function checks the initialized flag before returning state,
+ * ensuring uninitialized handles are detected and reported as errors.
  *
  * @pre Local rx_spi_link_t allocated on stack for uninit test
  * @post No side effects (query-only operations)
  *
  * @note Part of behavioral test suite - validates state query edge cases
- * @note Demonstrates that zeroed memory results in IDLE state (by design)
+ * @note Uninitialized handles return ERROR (initialized flag check)
  * @see rx_spi_link_get_state() State query function
  * @see test_get_state_null() NULL pointer state query test
  * @see test_get_state_uninitialized() Uninitialized handle state query
@@ -1016,11 +1081,11 @@ void test_state_query_null_and_error(void)
   /* NULL link returns error state */
   TEST_ASSERT_EQUAL(k_spi_link_state_error, rx_spi_link_get_state(nullptr));
 
-  /* Uninitialized link (all zeros) */
+  /* Uninitialized link (all zeros) also returns error state */
   rx_spi_link_t uninit_link;
-  memset(&uninit_link, 0, sizeof(uninit_link));
-  /* Should return idle (default state value is 0 = idle) */
-  TEST_ASSERT_EQUAL(k_spi_link_state_idle, rx_spi_link_get_state(&uninit_link));
+  (void)memset(&uninit_link, k_rx_spi_test_zero, sizeof(uninit_link));
+  /* Should return error (initialized flag is false) */
+  TEST_ASSERT_EQUAL(k_spi_link_state_error, rx_spi_link_get_state(&uninit_link));
 }
 
 /**
@@ -1054,11 +1119,11 @@ void test_receive_filters_control_frames(void)
 
   rx_spi_link_receive_result_t result;
 
-  /* Receive will timeout (no hardware) - this is expected */
-  err = rx_spi_link_receive(&s_link, &result, 10); /* Short timeout */
-  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+  /* Receive will fail (no hardware) - expect invalid_state from SPI layer */
+  err = rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_short); /* Short timeout */
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 
-  /* Link state should remain idle after timeout */
+  /* Link state should remain idle after receive failure */
   TEST_ASSERT_EQUAL(k_spi_link_state_idle, rx_spi_link_get_state(&s_link));
 }
 
@@ -1094,7 +1159,7 @@ void test_max_retries_enforcement(void)
 
   const rx_spi_comm_config_t spi_cfg = {
     .session     = &s_session,
-    .channel     = 0,
+    .channel     = k_rx_spi_test_channel,
     .fec_enabled = false,
   };
   err = rx_spi_comm_init(&s_spi_comm, &spi_cfg);
@@ -1103,13 +1168,13 @@ void test_max_retries_enforcement(void)
   const rx_spi_link_config_t link_cfg = {
     .spi_handle  = &s_spi_comm,
     .fec_enabled = false,
-    .max_retries = 1, /* Only 1 attempt */
+    .max_retries = k_rx_spi_test_single_retry, /* Only 1 attempt */
   };
   err = rx_spi_link_init(&s_link, &link_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Send should fail quickly with only 1 attempt */
-  uint8_t data[] = {0x12};
+  uint8_t data[] = {k_rx_spi_test_data_byte3};
   err            = rx_spi_link_send(&s_link, k_frame_type_command, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_err_retry_limit, err);
 
@@ -1153,7 +1218,7 @@ void test_reset_clears_error_state(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Force link into error state by exhausting retries */
-  uint8_t data[] = {0xFF};
+  uint8_t data[] = {k_rx_spi_test_data_ff};
   err            = rx_spi_link_send(&s_link, k_frame_type_command, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_err_retry_limit, err);
   TEST_ASSERT_EQUAL(k_spi_link_state_error, rx_spi_link_get_state(&s_link));

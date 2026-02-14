@@ -178,10 +178,32 @@ typedef enum : uint8_t {
 typedef enum : uint16_t {
   k_spi_link_ack_timeout_ms =
     10, /**< ACK/NACK wait timeout in milliseconds (matches Go ackTimeout=10ms). How long to wait for ACK/NACK after sending a frame. If no response arrives within this window, the frame is retransmitted. */
-
-  k_spi_link_max_encoded_payload =
-    2050, /**< Maximum encoded payload size in bytes: 2 * 1024 + 2 = 2050. FEC rate 1/2 doubles payload size, plus 2 bytes for tail bits. This is the maximum buffer size needed for FEC-encoded payloads. Formula: 2 * k_harq_max_payload + (k_fec_tail_bits / 8). */
 } rx_spi_link_timing_t;
+
+/**
+ * @enum rx_spi_link_buffer_t
+ * @brief Buffer size constants for SPI link layer
+ *
+ * @details
+ * Defines buffer sizes for FEC-encoded payloads. Sized to accommodate the
+ * maximum payload after FEC encoding (rate 1/2) plus tail bits.
+ *
+ * **Formula Derivation:**
+ * - FEC rate 1/2: Each input byte produces 2 output bytes
+ * - k_harq_max_payload = 1024 bytes
+ * - FEC encoded size = 2 * k_harq_max_payload = 2 * 1024 = 2048 bytes
+ * - k_fec_tail_bits = 16 bits (trellis termination)
+ * - Tail bytes = ceiling(k_fec_tail_bits / 8) = ceiling(16 / 8) = 2 bytes
+ * - Total = 2048 + 2 = 2050 bytes
+ *
+ * @see rx_harq.h HARQ protocol maximum payload size
+ * @see rx_fec.h FEC encoding parameters (rate 1/2, tail bits)
+ * @since Version 1.1.0
+ */
+typedef enum : uint16_t {
+  k_spi_link_max_encoded_payload =
+    2050, /**< Maximum FEC-encoded payload size in bytes. Formula: bytes = (2 * k_harq_max_payload) + ceiling(k_fec_tail_bits / 8) = (2 * 1024) + ceiling(16 / 8) = 2048 + 2 = 2050. FEC rate 1/2 doubles the payload size, and tail bits (16 bits = 2 bytes) are appended for trellis termination. */
+} rx_spi_link_buffer_t;
 
 /* =============================================================================
  * State Machine
@@ -293,6 +315,11 @@ typedef struct {
  * Contains the decoded payload and metadata about the decoding process.
  * Mirrors Go's harq.ReceiveResult.
  *
+ * @warning This structure contains a large 1024-byte payload buffer. To avoid
+ * stack overflow, allocate statically (global/static variable) or on the heap.
+ * DO NOT allocate on the stack when passing to rx_spi_link_receive(). Total
+ * struct size is ~1032 bytes.
+ *
  * @invariant payload_len <= k_harq_max_payload (1024 bytes)
  * @invariant sequence in range [0, 65535] (wraps around)
  * @invariant combining_count in range [0, max_retries], typically [1-4]
@@ -354,7 +381,7 @@ typedef struct {
   rx_harq_handle_t
     harq; /**< HARQ handle containing FEC encoder/decoder and Chase Combiner (~82 KB) */
   rx_spi_link_state_t state; /**< Current link state (idle, waiting_ack, retransmitting, error) */
-  bool fec_enabled; /**< FEC enabled flag (true=HARQ+FEC, false=raw frames, immutable after init) */
+  bool fec_enabled; /**< FEC enabled flag (true=HARQ, false=raw frames, immutable after init) */
   uint8_t
     max_retries; /**< Maximum transmission attempts (range [1-255], 0 at init converted to 3) */
   bool

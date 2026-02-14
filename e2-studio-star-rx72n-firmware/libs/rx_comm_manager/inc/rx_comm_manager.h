@@ -974,11 +974,69 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;   /**< USB comm handle */
-  rx_spi_comm_handle_t*    spi_handle;   /**< SPI comm handle */
-  rx_spi_link_t*           spi_link;     /**< Optional SPI link (HARQ) */
-  rx_comm_frame_callback_t callback;     /**< Frame callback */
-  void*                    callback_ctx; /**< Callback context */
+  rx_usb_comm_handle_t* usb_handle; /**< USB comm handle */
+  rx_spi_comm_handle_t* spi_handle; /**< SPI comm handle */
+
+  /**< @brief Optional SPI link layer with HARQ (NULL if disabled)
+   * @details
+   * When non-NULL, points to an rx_spi_link_t handle providing FEC
+   * encoding/decoding, Chase Combining, and ACK/NACK handshake for SPI.
+   * When NULL, SPI operates in raw mode (frame + CRC-32 only, no FEC/HARQ).
+   *
+   * **Ownership and Lifetime:**
+   * - Pointer copied from config during rx_comm_manager_init()
+   * - Manager does NOT own the link object - caller must allocate/deallocate
+   * - Link object must remain valid for entire manager lifetime
+   * - Link object must NOT be freed until after rx_comm_manager_deinit()
+   * - If manager is deinitialized, spi_link remains valid but decoupled
+   *
+   * **Invariants/Constraints:**
+   * - If non-NULL: Must point to initialized rx_spi_link_t (spi_link->initialized == true)
+   * - If non-NULL: spi_link->spi_handle MUST equal manager's spi_handle
+   * - If non-NULL: spi_link must outlive manager instance
+   * - NULL is allowed to indicate no SPI HARQ (raw SPI mode)
+   * - Fields inside spi_link object must remain stable while manager is active
+   *
+   * **Valid Ranges/Usage:**
+   * - Set via config->spi_link during initialization
+   * - NULL = raw SPI mode (valid configuration for testing or simple use cases)
+   * - Non-NULL = HARQ mode (production mode with FEC and retransmission)
+   * - Once set during init, this pointer is immutable (never modified by manager)
+   *
+   * **Thread Safety:**
+   * - Manager does not perform synchronization on spi_link access
+   * - If multiple threads call rx_comm_manager_poll(), caller must serialize
+   * - spi_link internal state is protected by its own mechanisms (see rx_spi_link.h)
+   * - Safe to read this pointer from multiple threads (read-only after init)
+   *
+   * @invariant If spi_link != NULL: spi_link->initialized == true
+   * @invariant If spi_link != NULL: spi_link->spi_handle == this->spi_handle
+   * @invariant If spi_link != NULL: spi_link must outlive this manager instance
+   * @invariant Pointer value never changes after rx_comm_manager_init()
+   *
+   * @par Type: rx_spi_link_t* (pointer to HARQ link layer handle)
+   * @par Valid values: Initialized rx_spi_link_t*, or nullptr for raw SPI mode
+   * @par Lifetime: Must outlive manager instance (caller manages allocation)
+   * @par Modification: Read-only after init (immutable pointer)
+   * - Immutable after init (do not change while manager is active)
+   * - Fields inside rx_spi_link_t must remain stable during use
+   *
+   * **Thread Safety:**
+   * - Manager is not thread-safe - external mutex required for concurrent access
+   * - Do not modify spi_link pointer or spi_link object fields from multiple threads
+   *
+   * @par Type: rx_spi_link_t* (pointer to SPI link handle)
+   * @par Valid values: Initialized rx_spi_link_t*, or nullptr for raw SPI
+   * @par Lifetime: Must outlive manager instance
+   *
+   * @see rx_spi_link.h SPI link layer API
+   * @see rx_comm_manager_config_t::spi_link Configuration parameter
+   * @since Version 1.1.0
+   */
+  rx_spi_link_t* spi_link;
+
+  rx_comm_frame_callback_t callback;                                    /**< Frame callback */
+  void*                    callback_ctx;                                /**< Callback context */
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */
   bool                     enable_decoded_output;                       /**< Enable ASCII output */
   bool                     initialized;                                 /**< Initialization flag */
