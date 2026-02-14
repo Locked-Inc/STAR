@@ -1,0 +1,256 @@
+% =============================================================================
+% END-TO-END COMMUNICATION STACK
+% =============================================================================
+
+\newpage
+\section{End-to-End Communication Stack}
+\label{sec:communication-stack}
+
+\subsection{Overview}
+
+The STAR communication stack connects the user interface through a layered architecture down to the RX72N motor controller. Each layer serves a distinct purpose: the UI provides human interaction, the gateway bridges high-level commands to the robot control framework, ROS2 handles autonomous navigation and sensor fusion, and the frame protocol delivers serialized messages over either USB CDC or SPI to the real-time firmware.
+
+\vspace{0.3cm}
+
+\noindent\makebox[\textwidth]{%
+\begin{tikzpicture}[
+    font=\small,
+    node distance=0.4cm,
+    box/.style={
+        draw,
+        thick,
+        rectangle,
+        minimum height=1.1cm,
+        align=center,
+        rounded corners=2pt
+    },
+    arrow/.style={->, thick, >=stealth}
+]
+    % UI
+    \node[box, fill=blue!15, minimum width=2.4cm] (ui) at (0,0) {UI\\{\tiny TypeScript}};
+
+    % Gateway
+    \node[box, fill=orange!20, minimum width=2.6cm, right=of ui] (gw) {Gateway\\{\tiny Go, :8080}};
+
+    % ROS2 Bridge
+    \node[box, fill=green!15, minimum width=2.6cm, right=of gw] (ros2) {ROS2 Bridge\\{\tiny C++}};
+
+    % Gateway Services
+    \node[box, fill=orange!20, minimum width=2.6cm, right=of ros2] (svc) {Gateway\\Services};
+
+    % Frame Protocol
+    \node[box, fill=yellow!20, minimum width=2.4cm, right=of svc] (frame) {Frame\\Protocol};
+
+    % Transport
+    \node[box, fill=cyan!15, minimum width=2.4cm, below=0.8cm of frame] (transport) {Transport\\{\tiny USB CDC / SPI}};
+
+    % RX72N
+    \node[box, fill=red!15, minimum width=2.6cm, below=0.8cm of transport] (rx72n) {RX72N\\{\tiny C, ThreadX}};
+
+    % Motor Control
+    \node[box, fill=purple!15, minimum width=2.4cm, left=of rx72n] (motor) {Motor\\Control};
+
+    % Arrows with labels
+    \draw[arrow] (ui) -- node[above, font=\tiny] {WebSocket} node[below, font=\tiny] {JSON} (gw);
+    \draw[arrow] (gw) -- node[above, font=\tiny] {gRPC} node[below, font=\tiny] {protobuf} (ros2);
+    \draw[arrow] (ros2) -- node[above, font=\tiny] {gRPC} (svc);
+    \draw[arrow] (svc) -- node[above, font=\tiny] {proto.Marshal} (frame);
+    \draw[arrow] (frame) -- node[right, font=\tiny] {SYNC+CRC} (transport);
+    \draw[arrow] (transport) -- node[right, font=\tiny] {Physical} (rx72n);
+    \draw[arrow] (rx72n) -- node[above, font=\tiny] {PID + PWM} (motor);
+\end{tikzpicture}%
+}
+
+\vspace{0.3cm}
+
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Key Insight:} All control paths (autonomous Nav2 and manual UI) converge at the gateway, ensuring a single serialization and transport layer regardless of command source. The RX72N firmware is transport-agnostic --- it processes identical frames whether they arrive over USB CDC or SPI.
+}}
+
+\subsection{Transport Priority}
+
+USB CDC is the \textbf{primary} transport and SPI is the \textbf{backup}. Priority values are defined in \texttt{star-gateway/internal/manager/types.go}:
+
+\begin{lstlisting}[language=Go, caption={Transport Priority Constants}]
+PriorityUSB = 10  // higher = preferred
+PrioritySPI = 5
+\end{lstlisting}
+
+The \texttt{TransportManager} selects the highest-priority healthy transport at runtime. USB is preferred for three reasons:
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{Lower latency:} 0.5--1\,ms (USB) vs 1--2\,ms (SPI)
+    \item \textbf{Hardware CRC and bulk retries:} Built into the USB protocol, making application-level HARQ/FEC redundant on this path
+    \item \textbf{Simplified software:} No ACK/NACK handshake or FEC codec overhead required
+\end{itemize}
+
+SPI enables full HARQ with FEC (per ADR-001) because it lacks USB's built-in reliability mechanisms. A shared \texttt{SessionState} (TX/RX sequence counters) spans both transports, preventing sequence desynchronization during failover. Both USB and SPI increment the same sequence counter.
+
+\subsection{Protocol Stack (5 Layers)}
+
+\begin{table}[H]
+\centering
+\caption{Communication Protocol Stack}
+\label{tab:comm-protocol-stack}
+\begin{tabular}{c l l l p{4.5cm}}
+\toprule
+\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{C Library} & \textbf{Description} \\
+\midrule
+5 & Application    & \texttt{internal/service/}           & \texttt{src/tasks/}            & gRPC services, motor commands, telemetry \\
+4 & Serialization  & \texttt{google.golang.org/protobuf}  & \texttt{libs/rx\_nanopb/}      & Protocol Buffers (full-size Go, nanopb C) \\
+3 & Reliability    & \texttt{internal/link/}               & \texttt{libs/rx\_harq/}, \texttt{libs/rx\_spi\_comm/} & HARQ with FEC on SPI, lightweight on USB \\
+2 & Framing        & \texttt{internal/frame/}              & \texttt{libs/rx\_frame/}       & SYNC + Header + Payload + CRC-32 \\
+1 & Transport      & \texttt{internal/transport/}          & RSPI0 / USB peripheral         & SPI @ 10\,MHz, USB CDC Full-Speed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Command Flow (Downward: UI to Motor)}
+
+The following steps trace a velocity command from the user interface down to the motor driver:
+
+\begin{enumerate}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item UI sends JSON over WebSocket to Gateway (\texttt{:8080}).
+    \item Gateway \texttt{GatewayService} caches the \texttt{VelocityCommand} (mutex-protected).
+    \item ROS2 bridge polls \texttt{GetTeleopCommand()} at 50\,Hz via gRPC.
+    \item Gateway \texttt{MotorControlService.SetVelocity()} serializes with \texttt{proto.Marshal()}.
+    \item \texttt{SPILink.Send()} (or \texttt{CDCLink.Send()}) wraps in frame: SYNC + header + CRC-32.
+    \item Transmit over active transport (USB CDC or SPI).
+    \item RX72N: \texttt{rx\_comm\_manager} validates CRC, dispatches to callback.
+    \item \texttt{comm\_task} (ThreadX priority 5, 100\,Hz) cascade-decodes: tries \texttt{rx\_nanopb\_decode\_velocity\_request()}, then \texttt{rx\_nanopb\_decode\_estop\_request()}.
+    \item On success: builds \texttt{motor\_command\_t}, writes to \texttt{shared\_data} (mutex + event flag).
+    \item \texttt{motor\_control\_task} (priority 8, 250\,Hz) wakes on event, runs PID, writes PWM to DRV8243S.
+\end{enumerate}
+
+\vspace{0.2cm}
+
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Key Insight:} The inner motor control loop (250\,Hz) runs at 2.5$\times$ the communication rate (100\,Hz), ensuring smooth PID control between incoming commands. ThreadX event flags provide zero-copy, zero-latency signaling between the communication and motor tasks.
+}}
+
+\subsection{Telemetry Flow (Upward: Sensor to UI)}
+
+\begin{enumerate}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item RX72N telemetry task (10\,Hz) gathers encoder, IMU, and battery data.
+    \item \texttt{rx\_nanopb\_encode\_telemetry()} serializes the data; frame + CRC-32 applied.
+    \item Transmit over active transport (best-effort, no \texttt{REQUIRES\_ACK} for telemetry).
+    \item Gateway dispatcher (100\,Hz loop) decodes frame, validates CRC, routes to \texttt{TelemetryService}.
+    \item \texttt{GatewayService} caches data; ROS2 bridge publishes to \texttt{/telemetry/*} topics.
+    \item WebSocket streams to UI clients.
+\end{enumerate}
+
+\subsection{Frame Protocol Summary}
+
+The wire format is shared across both transports. Full specification is in Section~\ref{sec:protocol-stack}.
+
+\begin{table}[H]
+\centering
+\caption{Frame Wire Format}
+\label{tab:comm-frame-format}
+\begin{tabular}{ccccccc}
+\toprule
+\textbf{SYNC} & \textbf{SEQ} & \textbf{LEN} & \textbf{TYPE} & \textbf{FLAGS} & \textbf{PAYLOAD} & \textbf{CRC-32} \\
+\midrule
+2\,B & 2\,B & 2\,B & 1\,B & 1\,B & 0--1024\,B & 4\,B \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Frame Type Definitions}
+\label{tab:comm-frame-types}
+\begin{tabular}{c l p{7cm}}
+\toprule
+\textbf{Value} & \textbf{Name} & \textbf{Description} \\
+\midrule
+0x00 & PING       & Heartbeat request \\
+0x01 & PONG       & Heartbeat response \\
+0x10 & COMMAND    & Command frame carrying protobuf messages \\
+0x11 & RESPONSE   & Response frame carrying protobuf messages \\
+0x12 & ACK        & Acknowledgment (SPI HARQ protocol) \\
+0x13 & NACK       & Negative acknowledgment (SPI HARQ protocol) \\
+0xFE & RESET\_ACK & Acknowledgment of session reset \\
+0xFF & RESET      & Request to reset session (synchronize sequences) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+See Section~\ref{sec:protocol-stack} for the full frame specification including byte ordering, CRC polynomial, and cross-compatibility test vectors.
+
+\subsection{Reliability: HARQ and FEC}
+
+\subsubsection{SPI Path: Full HARQ with FEC}
+
+The SPI transport uses an ACK/NACK handshake with a 10\,ms timeout and a maximum of 3 retries. On retransmission, the \texttt{RETRANSMIT} flag is set in the frame header.
+
+\textbf{Forward Error Correction (FEC)} per ADR-001:
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Convolutional code: constraint length $K=7$, rate $1/2$
+    \item Generator polynomials: NASA standard $G_1 = 171_8$, $G_2 = 133_8$
+    \item Decoding: Viterbi soft-decision with Chase Combining across retransmissions
+    \item Each retry provides an independent noisy observation; soft bits are accumulated and combined before Viterbi decoding, yielding a 4--5\,dB coding gain
+\end{itemize}
+
+\textbf{FEC implementation status:}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{Go side:} Complete --- encoder, decoder, and combiner all implemented and tested
+    \item \textbf{RX72N C side:} Pending (ADR-001 Phases 4--5)
+    \item \textbf{Current default:} Disabled in gateway config (\texttt{EnableFEC: false}) until firmware catches up
+\end{itemize}
+
+\subsubsection{USB CDC Path: No HARQ/FEC}
+
+USB CDC does not require application-level HARQ or FEC. The USB hardware provides CRC-16 on every packet and automatic bulk retry on error, making these mechanisms redundant.
+
+\subsection{Safety Features}
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{Communication watchdog (500\,ms):} The RX72N triggers an emergency stop if no valid frame is received within 500\,ms, ensuring the robot halts on link failure.
+    \item \textbf{Duplicate detection:} Shared \texttt{SessionState} sequence numbers detect and discard duplicate frames across both transports.
+    \item \textbf{CRC-32 (IEEE 802.3):} Every frame is protected by CRC-32, hardware-accelerated on the RX72N CRC Calculator peripheral.
+    \item \textbf{Failover continuity:} Shared \texttt{SessionState} prevents sequence desynchronization during USB$\leftrightarrow$SPI failover.
+    \item \textbf{Atomic sequence assignment:} A \texttt{sendMutex} ensures that sequence number assignment and frame transmission are atomic, preventing out-of-order frames from concurrent goroutines.
+\end{itemize}
+
+\vspace{0.2cm}
+
+\noindent\colorbox{importantcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Important:} The 500\,ms communication watchdog is the last line of defense. If all transports fail and no valid frame arrives within this window, the RX72N immediately disables all motor outputs and enters the emergency stop state. Recovery requires an explicit reset command after communication is restored.
+}}
+
+\subsection{Latency Budget}
+
+\begin{table}[H]
+\centering
+\caption{Latency Budget: Transport to Motor Control}
+\label{tab:latency-budget}
+\begin{tabular}{l r}
+\toprule
+\textbf{Stage} & \textbf{Time} \\
+\midrule
+SPI ISR frame reception               & $\sim$5\,\textmu s \\
+Frame reassembly + CRC validation     & $\sim$50\,\textmu s \\
+Comm manager dispatch                 & $\sim$5\,\textmu s \\
+nanopb protobuf decode                & $\sim$15\,\textmu s \\
+\texttt{shared\_data} mutex update    & $\sim$7\,\textmu s \\
+ThreadX context switch (priority 5$\to$8) & $\sim$50\,\textmu s \\
+PID control update                    & $\sim$20\,\textmu s \\
+\midrule
+\textbf{Total (transport to motor)}   & \textbf{$\sim$320\,\textmu s} \\
+\midrule
+\textbf{End-to-end (WebSocket to motor)} & \textbf{$\sim$10--20\,ms} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent The firmware-side processing ($\sim$320\,\textmu s) is dominated by CRC validation and the ThreadX context switch. The end-to-end latency is governed by network round-trip time and gRPC serialization on the RPi5 side.
+
+\subsection{Cross-References}
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{Section~\ref{sec:protocol-stack}} (01\_nanopb\_protocol.tex): Full frame specification, HARQ protocol details, CRC-32 implementation, and memory budget
+    \item \textbf{Section~\ref{sec:gateway-architecture}} (07\_gateway\_architecture.tex): Gateway service architecture, gRPC service definitions, and directory structure
+    \item \textbf{Section~\ref{sec:usb_cdc_protocol}} (09\_usb\_cdc\_protocol.tex): USB CDC transport details, descriptor hierarchy, bulk transfer protocol, and heartbeat mechanism
+    \item \textbf{ADR-001}: HARQ/FEC architectural decision record --- rationale for convolutional coding, Chase Combining strategy, and phased implementation plan
+\end{itemize}
