@@ -1,6 +1,6 @@
 /**
  * @file rx_spi_link.h
- * @brief SPI Link Layer with HARQ and FEC Integration
+ * @brief SPI Link Layer with HARQ
  *
  * @details
  * Implements a reliability layer between the communication manager and the raw
@@ -20,7 +20,7 @@
  *       |
  *       v
  * +--------------+
- * | rx_spi_link  |  <-- THIS MODULE (HARQ + FEC)
+ * | rx_spi_link  |  <-- THIS MODULE (HARQ)
  * |              |
  * | FEC encode   |  TX: payload -> FEC encode -> frame -> SPI
  * | FEC decode   |  RX: SPI -> frame -> soft bits -> Viterbi -> payload
@@ -84,7 +84,7 @@
  * - Rule 10: Compiled with -Wall -Wextra -Werror
  *
  * @par SOLID Principles
- * - **S**: Only handles HARQ+FEC reliability (not framing, not transport)
+ * - **S**: Only handles HARQ reliability (not framing, not transport)
  * - **O**: Configurable via rx_spi_link_config_t without modifying code
  * - **L**: Substitutable for rx_spi_comm (same send/receive semantics)
  * - **I**: Small focused API (init, deinit, send, receive, reset)
@@ -343,7 +343,7 @@ typedef struct {
  * ============================================================================= */
 
 /**
- * @brief Send payload with HARQ+FEC reliability over SPI
+ * @brief Send payload with HARQ reliability over SPI
  *
  * @details
  * Encodes payload with FEC (if enabled), sends via SPI transport, and
@@ -395,7 +395,7 @@ typedef struct {
  * ============================================================================= */
 
 /**
- * @brief Receive and decode a frame from SPI with HARQ+FEC
+ * @brief Receive and decode a frame from SPI with HARQ
  *
  * @details
  * Receives a frame from the SPI transport, handles ACK/NACK dispatch,

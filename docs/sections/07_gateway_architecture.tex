@@ -64,7 +64,7 @@ The gateway implements all layers of the communication protocol (see Section~\re
 \hline
 5 & Application & \texttt{internal/service/} & Implemented \\
 4 & Serialization & \texttt{star-proto/gen/go/} & Implemented \\
-3 & HARQ + FEC & \texttt{internal/link/, internal/harq/, internal/fec/} & Implemented \\
+3 & HARQ & \texttt{internal/link/, internal/harq/, internal/fec/} & Implemented \\
 2 & Framing & \texttt{internal/frame/} & Implemented \\
 1 & Transport & \texttt{internal/transport/} & Implemented \\
 \hline
@@ -90,7 +90,7 @@ star-gateway/
 |   |   +-- encoder.go           # Frame encoder
 |   |   +-- decoder.go           # Stream decoder
 |   +-- link/                    # Layer 3: Reliability (HARQ)
-|   |   +-- spi.go               # SPILink (HARQ + FEC)
+|   |   +-- spi.go               # SPILink (HARQ)
 |   +-- harq/                    # HARQ interface and types
 |   |   +-- harq.go
 |   +-- fec/                     # FEC codec
@@ -198,7 +198,7 @@ type Transport interface {
 }
 \end{verbatim}
 
-\subsection{Link Layer (HARQ + FEC)}
+\subsection{Link Layer (HARQ)}
 
 The \texttt{internal/link} package implements the reliability layer with two link types optimized for their respective transports.
 

@@ -1,6 +1,6 @@
 /**
  * @file rx_spi_link.c
- * @brief SPI Link Layer with HARQ and FEC Integration Implementation
+ * @brief SPI Link Layer with HARQ Implementation
  *
  * @details
  * Implements the SPI link layer that sits between the communication manager
@@ -335,7 +335,7 @@ rx_err_t rx_spi_link_deinit(rx_spi_link_t* link)
  * ============================================================================= */
 
 /**
- * @brief Send payload with HARQ+FEC reliability over SPI
+ * @brief Send payload with HARQ reliability over SPI
  * @see rx_spi_link.h for full documentation
  */
 rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
@@ -447,7 +447,7 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
  * ============================================================================= */
 
 /**
- * @brief Receive and decode a frame from SPI with HARQ+FEC
+ * @brief Receive and decode a frame from SPI with HARQ
  * @see rx_spi_link.h for full documentation
  */
 rx_err_t rx_spi_link_receive(rx_spi_link_t*                link,

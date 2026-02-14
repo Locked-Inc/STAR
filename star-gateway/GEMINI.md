@@ -18,7 +18,7 @@ The gateway implements Layers 1-4 of the communication protocol:
 |-------|------|----------------------------|
 | 5 | Application | gRPC service handlers (`internal/service/`) |
 | 4 | Serialization | protobuf via generated code (`star-proto/gen/go/`) |
-| 3 | HARQ + FEC | Chase Combining HARQ (`internal/harq/`) + Convolutional FEC (`internal/fec/`) |
+| 3 | HARQ | Chase Combining (`internal/harq/`) + Convolutional FEC (`internal/fec/`) |
 | 2 | Framing | SYNC + Header + CRC-32 (`internal/frame/`) |
 | 1 | Transport | SPI at 10 MHz (`internal/transport/`) |
 
