@@ -733,6 +733,9 @@ reviews:
     - "!**/.cmake/**"
     - "!**/gen/**"
 
+    # Exclude archived directories
+    - "!**/archived/**"
+
     # Exclude generated protobuf code
     - "!**/*.pb.go"
     - "!**/*.pb.h"

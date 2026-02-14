@@ -51,6 +51,13 @@ local.properties
 Testing/
 **/build_tests/
 
+# Test executables (build artifacts, not source files)
+**/tests/test_*
+!**/tests/test_*.c
+!**/tests/test_*.cpp
+!**/tests/test_*.h
+!**/tests/*.cmake
+
 *.zip
 
 # Exception: Track schematic output files for manufacturing
