@@ -392,6 +392,7 @@
 #include "rx_err.h"
 #include "rx_frame.h"
 #include "rx_spi_comm.h"
+#include "rx_spi_link.h"
 #include "rx_usb_comm.h"
 
 #ifdef __cplusplus
@@ -843,6 +844,27 @@ typedef struct {
   rx_spi_comm_handle_t* spi_handle;
 
   /**
+   * @brief Optional SPI link layer with HARQ+FEC (NULL to use raw SPI)
+   * @details
+   * When non-NULL, SPI send/receive operations route through the link
+   * layer, which provides FEC encoding/decoding, Chase Combining, and
+   * ACK/NACK handshake. When NULL, SPI operates in raw mode (frame +
+   * CRC-32 only, no FEC/HARQ).
+   *
+   * **Requirements:**
+   * - Must be initialized via rx_spi_link_init() before passing to manager
+   * - spi_link->spi_handle MUST be the same as config->spi_handle
+   * - Must remain valid for lifetime of manager
+   *
+   * @par Valid values: Initialized rx_spi_link_t*, or nullptr for raw SPI
+   * @par Lifetime: Must outlive manager instance
+   *
+   * @see rx_spi_link.h SPI link layer API
+   * @since Version 1.1.0
+   */
+  rx_spi_link_t* spi_link;
+
+  /**
    * @brief Frame received callback function (NULL for no callback)
    * @details
    * User-defined function invoked when complete frame received on any channel.
@@ -949,6 +971,7 @@ typedef struct {
 typedef struct {
   rx_usb_comm_handle_t*    usb_handle;                                  /**< USB comm handle */
   rx_spi_comm_handle_t*    spi_handle;                                  /**< SPI comm handle */
+  rx_spi_link_t*           spi_link;                                    /**< Optional SPI link (HARQ+FEC) */
   rx_comm_frame_callback_t callback;                                    /**< Frame callback */
   void*                    callback_ctx;                                /**< Callback context */
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */

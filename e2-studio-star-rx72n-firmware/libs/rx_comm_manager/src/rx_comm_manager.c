@@ -804,6 +804,29 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     return k_rx_err_timeout;
   }
 
+  /* If SPI link layer is available, use it for HARQ+FEC decoding */
+  if (mgr->spi_link != nullptr) {
+    rx_spi_link_receive_result_t link_result;
+    rx_err_t err = rx_spi_link_receive(mgr->spi_link, &link_result, k_receive_timeout_ms);
+
+    if (err == k_rx_ok) {
+      /* Convert link result to rx_frame_t for internal_handle_frame() */
+      rx_frame_t frame;
+      (void)memset(&frame, 0, sizeof(frame));
+      frame.header.sequence = link_result.sequence;
+      frame.header.length   = (uint16_t)link_result.payload_len;
+      frame.header.type     = link_result.frame_type;
+      if (link_result.payload_len > 0) {
+        (void)memcpy(frame.payload, link_result.payload, link_result.payload_len);
+      }
+      internal_handle_frame(mgr, k_comm_channel_spi, &frame);
+      return k_rx_ok;
+    }
+
+    return err;
+  }
+
+  /* Fallback: raw SPI without HARQ+FEC */
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(mgr->spi_handle, &frame, k_receive_timeout_ms);
 
@@ -1078,6 +1101,7 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   if (cfg != nullptr) {
     mgr->usb_handle            = cfg->usb_handle;
     mgr->spi_handle            = cfg->spi_handle;
+    mgr->spi_link              = cfg->spi_link;
     mgr->callback              = cfg->callback;
     mgr->callback_ctx          = cfg->callback_ctx;
     mgr->enable_decoded_output = cfg->enable_decoded_output;
@@ -1487,11 +1511,19 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
         rx_log_error(s_tag, "Send failed: SPI handle NULL");
         return k_rx_err_invalid_state;
       }
-      err = rx_spi_comm_send(mgr->spi_handle,
-                             params->type,
-                             params->flags,
-                             params->payload,
-                             params->payload_len);
+      /* Use HARQ+FEC link layer if available, otherwise raw SPI */
+      if (mgr->spi_link != nullptr) {
+        err = rx_spi_link_send(mgr->spi_link,
+                               params->type,
+                               params->payload,
+                               params->payload_len);
+      } else {
+        err = rx_spi_comm_send(mgr->spi_handle,
+                               params->type,
+                               params->flags,
+                               params->payload,
+                               params->payload_len);
+      }
       break;
 
     default:
