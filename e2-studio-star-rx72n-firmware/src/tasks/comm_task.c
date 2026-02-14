@@ -67,8 +67,8 @@
  * ## Protocol Details - nanopb Protobuf over SPI/USB
  *
  * **Transport Layer:**
- * - **USB CDC:** Virtual COM port (debugging, configuration, low-priority commands)
- * - **SPI:** 10 Mbps (primary command channel for motor control)
+ * - **USB CDC:** Primary protocol channel (lower latency, hardware CRC + bulk retries)
+ * - **SPI:** 10 Mbps high-speed backup channel (HARQ + optional FEC for reliability)
  *
  * **Framing Protocol (rx_frame):**
  * - Frame header: 8 bytes (sync, type, length, sequence, flags, reserved)
