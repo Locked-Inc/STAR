@@ -25,22 +25,22 @@ The STAR robot uses the Yocto Project (Scarthgap release) with OpenEmbedded to b
 
 \begin{table}[h]
 \centering
-\begin{tabular} {
-      | l | l |
-   }
-    \hline
-\textbf{Layer} & \textbf{Purpose}
-    \\
-\hline poky / meta &Core OpenEmbedded layer \ poky / meta -
-        poky &Poky reference distribution \ poky / meta - yocto -
-        bsp &Yocto BSP layer \ meta - raspberrypi &Raspberry Pi 5 BSP \ meta -
-        openembedded / meta - oe &OpenEmbedded utilities \ meta -
-        openembedded / meta - python &Python packages \ meta -
-        openembedded / meta - networking &Networking packages \ meta -
-        openembedded / meta - multimedia &Multimedia packages \ meta -
-        ros / meta - ros - common &ROS common components \ meta - ros / meta -
-        ros2 &ROS2 core \ meta - ros / meta - ros2 -
-        jazzy &ROS2 Jazzy distribution \ meta - star &STAR custom recipes \\
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Layer} & \textbf{Purpose} \\
+\hline
+poky/meta & Core OpenEmbedded layer \\
+poky/meta-poky & Poky reference distribution \\
+poky/meta-yocto-bsp & Yocto BSP layer \\
+meta-raspberrypi & Raspberry Pi 5 BSP \\
+meta-openembedded/meta-oe & OpenEmbedded utilities \\
+meta-openembedded/meta-python & Python packages \\
+meta-openembedded/meta-networking & Networking packages \\
+meta-openembedded/meta-multimedia & Multimedia packages \\
+meta-ros/meta-ros-common & ROS common components \\
+meta-ros/meta-ros2 & ROS2 core \\
+meta-ros/meta-ros2-jazzy & ROS2 Jazzy distribution \\
+meta-star & STAR custom recipes \\
 \hline
 \end{tabular}
     \caption { Yocto layers used in the STAR build}

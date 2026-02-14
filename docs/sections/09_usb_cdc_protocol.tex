@@ -19,16 +19,13 @@ sec:
 
 \begin{table}[h]
 \centering
-\begin{tabular} { | c | l | l | c | c | p{4cm} |}
+\begin{tabular}{|c|l|l|c|c|p{4cm}|}
 \hline
-\textbf{Port} & \textbf{Purpose} & \textbf{Linux Device} & \textbf{RX(B)} & \textbf{TX(B)} & \textbf{Usage
-}
-\\
-\hline 0 & Protocol & / dev / ttyACM0 & 1024 & 1024 & nanopb frames,
-    motor commands \ 1 & Decoded & / dev / ttyACM1 & 256 & 512 &
-        ASCII frame dumps,
-    debugging \ 2 & Log & / dev / ttyACM2 & 256 & 1024 & System logging,
-    diagnostics \\
+\textbf{Port} & \textbf{Purpose} & \textbf{Linux Device} & \textbf{RX(B)} & \textbf{TX(B)} & \textbf{Usage} \\
+\hline
+0 & Protocol & /dev/ttyACM0 & 1024 & 1024 & nanopb frames, motor commands \\
+1 & Decoded & /dev/ttyACM1 & 256 & 512 & ASCII frame dumps, debugging \\
+2 & Log & /dev/ttyACM2 & 256 & 1024 & System logging, diagnostics \\
 \hline
 \end{tabular}
 \caption { USB CDC Port Configuration}
@@ -104,17 +101,21 @@ Each CDC port uses an IAD to group its control and data interfaces :
 
 \begin{table}[h]
 \centering
-\begin{tabular} { | c | l | c | c | c | c |}
+\begin{tabular}{|c|l|c|c|c|c|}
 \hline
-\textbf{Port} & \textbf{Type} & \textbf{EP} & \textbf{Dir} & \textbf{Size} & \textbf{Interval
-}
-\\
-\hline 0 & Interrupt & EP1 & IN & 16 & 10 ms \ 0 & Bulk OUT &EP2 & OUT & 64 &
-    - \ 0 & Bulk IN &EP3 & IN & 64 & - \\
-\hline 1 & Interrupt & EP4 & IN & 16 & 10 ms \ 1 & Bulk OUT &EP5 & OUT & 64 &
-    - \ 1 & Bulk IN &EP6 & IN & 64 & - \\
-\hline 2 & Interrupt & EP7 & IN & 16 & 10 ms \ 2 & Bulk OUT &EP8 & OUT & 64 &
-    - \ 2 & Bulk IN &EP9 & IN & 64 & - \\
+\textbf{Port} & \textbf{Type} & \textbf{EP} & \textbf{Dir} & \textbf{Size} & \textbf{Interval} \\
+\hline
+0 & Interrupt & EP1 & IN & 16 & 10ms \\
+0 & Bulk OUT & EP2 & OUT & 64 & - \\
+0 & Bulk IN & EP3 & IN & 64 & - \\
+\hline
+1 & Interrupt & EP4 & IN & 16 & 10ms \\
+1 & Bulk OUT & EP5 & OUT & 64 & - \\
+1 & Bulk IN & EP6 & IN & 64 & - \\
+\hline
+2 & Interrupt & EP7 & IN & 16 & 10ms \\
+2 & Bulk OUT & EP8 & OUT & 64 & - \\
+2 & Bulk IN & EP9 & IN & 64 & - \\
 \hline
 \end{tabular}
 \caption { USB Endpoint Assignments}
@@ -571,7 +572,7 @@ The logging system supports dual output to both UART and USB CDC Port 2 :
 \begin{figure}[h]
 \centering
 \begin{tikzpicture}[node distance = 2.5cm, auto,
-                     every node /.style = {align = center}]
+                     every node/.style = {align = center}]
   \node[rectangle, draw](power){Power On};
 \node[rectangle, draw, right of = power](usb_init){USB Init};
 \node[rectangle, draw, right of = usb_init, text width = 2cm](enum){

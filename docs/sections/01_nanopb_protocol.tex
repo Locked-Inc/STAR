@@ -24,27 +24,27 @@ encapsulated in frames with CRC - 32 and Hybrid Automatic Repeat Request(HARQ) w
   % SYNC(2 bytes = 2 units)
     \draw[thick](0, 0)--(0, 1.2);
   \node[font =\footnotesize, align = center] at(1, 0.6){SYNC\\{\tiny(2B)}};
-  \fill[red !20, opacity = 0.5](0, 0) rectangle(2, 1.2);
+  \fill[red!20, opacity=0.5](0, 0) rectangle(2, 1.2);
 
   % SEQ(2 bytes = 2 units)
     \draw[thick](2, 0)--(2, 1.2);
   \node[font =\footnotesize, align = center] at(3, 0.6){SEQ\\{\tiny(2B)}};
-  \fill[orange !20, opacity = 0.5](2, 0) rectangle(4, 1.2);
+  \fill[orange!20, opacity=0.5](2, 0) rectangle(4, 1.2);
 
   % LEN(2 bytes = 2 units)
     \draw[thick](4, 0)--(4, 1.2);
   \node[font =\footnotesize, align = center] at(5, 0.6){LEN\\{\tiny(2B)}};
-  \fill[yellow !20, opacity = 0.5](4, 0) rectangle(6, 1.2);
+  \fill[yellow!20, opacity=0.5](4, 0) rectangle(6, 1.2);
 
   % TYPE(1 byte = 1 unit)
     \draw[thick](6, 0)--(6, 1.2);
   \node[font =\scriptsize, align = center] at(6.5, 0.6){TYPE\\{\tiny(1B)}};
-  \fill[green !20, opacity = 0.5](6, 0) rectangle(7, 1.2);
+  \fill[green!20, opacity=0.5](6, 0) rectangle(7, 1.2);
 
   % FLAGS(1 byte = 1 unit)
     \draw[thick](7, 0)--(7, 1.2);
   \node[font =\scriptsize, align = center] at(7.5, 0.6){FLAGS\\{\tiny(1B)}};
-  \fill[cyan !20, opacity = 0.5](7, 0) rectangle(8, 1.2);
+  \fill[cyan!20, opacity=0.5](7, 0) rectangle(8, 1.2);
 
     % PAYLOAD (variable, 6 units to show it's typically the largest field)
     \draw[thick] (8,0) -- (8,1.2);
@@ -129,20 +129,18 @@ sec:
 
 \noindent\makebox[\textwidth] {
   %
-\begin{tikzpicture}[font =\small, node distance = 0cm,
-                     layer /.style = {draw, thick, rectangle,
+\begin{tikzpicture}[font =\small, node distance=0cm,
+                     layer/.style={draw, thick, rectangle,
                                       minimum width = 15cm,
                                       minimum height = 1.3cm, align = left,
                                       text width = 14.5cm},
   ]
-    \node[layer, fill = red !20](app)
+    \node[layer, fill=red!20](app)
           at(0, 0){\textbf{Application} \hfill Motor Commands, Telemetry};
-  \node[layer, fill = orange !20, below = of app](serial){\textbf{Serialization} \hfill nanopb(Protocol Buffers) with static allocation};
-  \node[layer, fill = yellow !20, below = of serial](arq){\textbf{HARQ} \hfill Chase Combining with FEC(Rate - 1 / 2 Convolutional, K = 7)};
-  \node[layer, fill = green !20, below = of arq](
-      frame){\textbf{Frame} \hfill SYNC(2B) + Header(6B) + Payload + CRC -
-             32(4B)};
-  \node[layer, fill = blue !20, below = of frame](transport){\textbf{Transport} \hfill SPI peripheral mode with DMA(10 Mbps)};
+  \node[layer, fill=orange!20, below=of app](serial){\textbf{Serialization} \hfill nanopb(Protocol Buffers) with static allocation};
+  \node[layer, fill=yellow!20, below=of serial](arq){\textbf{HARQ} \hfill Chase Combining with FEC(Rate - 1 / 2 Convolutional, K = 7)};
+  \node[layer, fill=green!20, below=of arq](frame){\textbf{Frame} \hfill SYNC(2B) + Header(6B) + Payload + CRC-32(4B)};
+  \node[layer, fill=blue!20, below=of frame](transport){\textbf{Transport} \hfill SPI peripheral mode with DMA(10 Mbps)};
   \draw[->, very thick, gray](-8, 1)--(
       -8, -6)node[midway, left, rotate = 90, xshift = -0.5cm, yshift = 0.5cm]{
       Data Flow};
@@ -217,15 +215,13 @@ CRC - 32 & Little - endian &IEEE 802.3 &
 tab:
   crc32 - selection
 }
-\begin{tabular} { | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
-\textbf{Build Target} & \textbf{Default Implementation} & \textbf{Override
-}
-\\
-\hline RX72N(\texttt{\_\_RX\_\_} defined) & Hardware CRC Calculator & \texttt {
-  -DRX\_CRC32\_USE\_SOFTWARE
-}
-\ Host(testing) & Software lookup table &N / A(automatic) \\
+\textbf{Build Target} & \textbf{Default Implementation} & \textbf{Override} \\
+\hline
+RX72N(\texttt{\_\_RX\_\_} defined) & Hardware CRC Calculator & \texttt{-DRX\_CRC32\_USE\_SOFTWARE} \\
+\hline
+Host(testing) & Software lookup table & N/A(automatic) \\
 \hline
 \end{tabular}
 \end{table}
@@ -838,7 +834,7 @@ tab:
 
 \begin{enumerate}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item \textbf{RPi5 Application :
-} Create \texttt{SetVelocityRequest}(left = 1.0 m / s, right = 1.0 m / s)
+} Create \texttt{SetVelocityRequest}(left=1.0 m / s, right=1.0 m / s)
     \item \textbf{RPi5 Protobuf :} Encode to binary(nanopb)
     \item \textbf{RPi5 HARQ :} FEC encode(rate - 1 / 2, K = 7),
     assign \texttt{seq = 42}, save to retry buffer, start 10ms timeout
@@ -885,10 +881,10 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[node distance = 0.8cm,
-                         entity /.style = {font =\small\bfseries},
-                         success /.style = {->, thick, green !60 !black},
-                         msgtext /.style = {font =\scriptsize, fill = white,
+    \begin{tikzpicture}[node distance=0.8cm,
+                         entity/.style={font =\small\bfseries},
+                         success/.style={->, thick, green!60!black},
+                         msgtext/.style={font =\scriptsize, fill=white,
                                             inner sep = 2pt}] %
     Entities
         \node[entity](rpi) at(0, 0){RPi5};
@@ -911,7 +907,7 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 \draw[success](6, -6)-- node[msgtext, above]{ACK seq = 102}(0, -6.5);
 
 % Success note
-        \node[font =\scriptsize, fill = green !20, draw = green !60 !black,
+        \node[font =\scriptsize, fill=green!20, draw=green!60!black,
                thick, rounded corners, inner sep = 3pt] at(3, -7.5){
       All frames acknowledged on first attempt};
 \end{tikzpicture}
@@ -922,11 +918,11 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[node distance = 0.8cm,
-                         entity /.style = {font =\small\bfseries},
-                         success /.style = {->, thick, green !60 !black},
-                         error /.style = {->, thick, red !60 !black},
-                         msgtext /.style = {font =\scriptsize, fill = white,
+    \begin{tikzpicture}[node distance=0.8cm,
+                         entity/.style={font =\small\bfseries},
+                         success/.style={->, thick, green!60!black},
+                         error/.style={->, thick, red!60!black},
+                         msgtext/.style={font =\scriptsize, fill=white,
                                             inner sep = 2pt}] %
     Entities
         \node[entity](rpi) at(0, 0){RPi5};
@@ -948,12 +944,12 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[node distance = 0.8cm,
-                         entity /.style = {font =\small\bfseries},
-                         msg /.style = {->, thick},
-                         success /.style = {->, thick, green !60 !black},
-                         error /.style = {->, thick, red !60 !black},
-                         msgtext /.style = {font =\scriptsize, fill = white,
+    \begin{tikzpicture}[node distance=0.8cm,
+                         entity/.style={font =\small\bfseries},
+                         msg/.style={->, thick},
+                         success/.style={->, thick, green!60!black},
+                         error/.style={->, thick, red!60!black},
+                         msgtext/.style={font =\scriptsize, fill=white,
                                             inner sep = 2pt}] %
     Entities and timelines
         \node[entity](rpi) at(0, 0){RPi5};
@@ -964,7 +960,7 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 % Diagram
         \draw[success](0, -1)-- node[msgtext, above]{CMD seq = 102}(6, -1.5);
 \draw[error](6, -2)-- node[msgtext, above]{ACK seq = 102}(3, -2.5);
-\node[font =\tiny, red !60 !black] at(3, -2.5){X(lost)};
+\node[font =\tiny, red!60!black] at(3, -2.5){X(lost)};
 \draw[dashed, error](0, -3.5)-- node[msgtext]{Timeout}(0, -3.5);
 \draw[error](0, -4)-- node[msgtext, above]{CMD seq = 102(retry)}(6, -4.5);
 \draw[success](6, -5)-- node[msgtext, above]{ACK seq = 102(re - sent)}(0, -5.5);
@@ -974,12 +970,12 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[node distance = 0.8cm,
-                         entity /.style = {font =\small\bfseries},
-                         msg /.style = {->, thick},
-                         success /.style = {->, thick, green !60 !black},
-                         error /.style = {->, thick, red !60 !black},
-                         msgtext /.style = {font =\scriptsize, fill = white,
+    \begin{tikzpicture}[node distance=0.8cm,
+                         entity/.style={font =\small\bfseries},
+                         msg/.style={->, thick},
+                         success/.style={->, thick, green!60!black},
+                         error/.style={->, thick, red!60!black},
+                         msgtext/.style={font =\scriptsize, fill=white,
                                             inner sep = 2pt}] %
     Entities and timelines
         \node[entity](rpi) at(0, 0){RPi5};
@@ -998,12 +994,12 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 
 \begin{figure}[H]
     \centering
-    \begin{tikzpicture}[node distance = 0.8cm,
-                         entity /.style = {font =\small\bfseries},
-                         msg /.style = {->, thick},
-                         success /.style = {->, thick, green !60 !black},
-                         error /.style = {->, thick, red !60 !black},
-                         msgtext /.style = {font =\scriptsize, fill = white,
+    \begin{tikzpicture}[node distance=0.8cm,
+                         entity/.style={font =\small\bfseries},
+                         msg/.style={->, thick},
+                         success/.style={->, thick, green!60!black},
+                         error/.style={->, thick, red!60!black},
+                         msgtext/.style={font =\scriptsize, fill=white,
                                             inner sep = 2pt}] %
     Entities and timelines
         \node[entity](rpi) at(0, 0){RPi5};
@@ -1013,7 +1009,7 @@ on retry, it combines soft bits from both attempts before Viterbi decoding,
 
 % Diagram
         \draw[error](0, -1)-- node[msgtext, above]{CMD seq = 103}(3, -1.5);
-\node[font =\tiny, red !60 !black] at(3, -1.5){X(lost)};
+\node[font =\tiny, red!60!black] at(3, -1.5){X(lost)};
 \draw[dashed, error](0, -2.5)-- node[msgtext]{Timeout}(0, -2.5);
 \draw[success](0, -3.5)-- node[msgtext, above]{CMD seq = 103(retry)}(6, -4);
 \draw[success](6, -4.5)-- node[msgtext, above]{ACK seq = 103}(0, -5);

@@ -116,29 +116,29 @@ The \texttt{rx\_comm\_manager\_poll()} function processes channels \textbf{seque
 
 \noindent\makebox[\textwidth] {
   %
-\begin{tikzpicture}[font =\small, node distance = 0.3cm,
-                     box /.style = {draw, thick, rectangle, minimum width = 4cm,
+\begin{tikzpicture}[font =\small, node distance=0.3cm,
+                     box/.style={draw, thick, rectangle, minimum width = 4cm,
                                     minimum height = 0.8cm, align = center,
                                     rounded corners = 2pt},
-                     arrow /.style = {->, thick, >= stealth}] %
+                     arrow/.style={->, thick, >= stealth}] %
       USB path
-    \node[box, fill = blue !15](usb_recv)
+    \node[box, fill=blue!15](usb_recv)
           at(0, 0){USB : rx\_usb\_comm\_receive()};
-  \node[box, fill = yellow !15, below = of usb_recv](usb_handle){
+  \node[box, fill=yellow!15, below=of usb_recv](usb_handle){
       internal\_handle\_frame(USB)};
-  \node[box, fill = green !15, below = of usb_handle](usb_cb){
+  \node[box, fill=green!15, below=of usb_handle](usb_cb){
       internal\_frame\_callback()};
-  \node[box, fill = orange !15, below = of usb_cb](usb_cmd){
+  \node[box, fill=orange!15, below=of usb_cb](usb_cmd){
       shared\_data\_set\_motor\_command()};
 
   % SPI path
-    \node[box, fill = red !15](spi_recv)
+    \node[box, fill=red!15](spi_recv)
           at(7, 0){SPI : rx\_spi\_link\_receive()};
-  \node[box, fill = yellow !15, below = of spi_recv](spi_handle){
+  \node[box, fill=yellow!15, below=of spi_recv](spi_handle){
       internal\_handle\_frame(SPI)};
-  \node[box, fill = green !15, below = of spi_handle](spi_cb){
+  \node[box, fill=green!15, below=of spi_handle](spi_cb){
       internal\_frame\_callback()};
-  \node[box, fill = orange !15, below = of spi_cb](spi_cmd){
+  \node[box, fill=orange!15, below=of spi_cb](spi_cmd){
       shared\_data\_set\_motor\_command()};
 
   % Arrows

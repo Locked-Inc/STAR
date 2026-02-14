@@ -17,44 +17,34 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 
 \noindent\makebox[\textwidth]{
   %
-\begin{tikzpicture}[font =\small, node distance = 0.4cm,
-                     service /.style = {draw, thick, rectangle,
+\begin{tikzpicture}[font =\small, node distance=0.4cm,
+                     service/.style={draw, thick, rectangle,
                                         minimum width = 6cm,
                                         minimum height = 1.1cm, align = center},
-                     common /.style = {draw, thick, rectangle,
+                     common/.style={draw, thick, rectangle,
                                        minimum width = 14cm,
                                        minimum height = 1.1cm, align = center,
-                                       fill = cyan !20},
-  ] % Left column -
-      Core Services
-    \node[service, fill = blue !20](motor)
-          at(-4, 0){\textbf{MotorControlService}\\Velocity commands,
-                    encoder streaming};
-  \node[service, fill = green !20, below = of motor](
-      telemetry){\textbf{TelemetryService}\\Sensor data, system status};
+                                       fill=cyan!20},
+  ] % Left column - Core Services
+    \node[service, fill=blue!20](motor) at(-4, 0){\textbf{MotorControlService}\\Velocity commands, encoder streaming};
+  \node[service, fill=green!20, below=of motor](telemetry){\textbf{TelemetryService}\\Sensor data, system status};
 
   % Right column - Support Services
-    \node[service, fill = orange !20](battery)
-                       at(4, 0){\textbf{BatteryManagementService}\\BMS state,
-                                protection, balancing};
-  \node[service, fill = yellow !20, below = of battery](
-      config){\textbf{ConfigurationService}\\PID gains, calibration, NVS};
+    \node[service, fill=orange!20](battery) at(4, 0){\textbf{BatteryManagementService}\\BMS state, protection, balancing};
+  \node[service, fill=yellow!20, below=of battery](config){\textbf{ConfigurationService}\\PID gains, calibration, NVS};
 
   % Common proto spans bottom
-    \node[common, below = 0.8cm of telemetry, xshift = 4cm](
-        common){\textbf{common.proto}\\Headers, status codes, geometry types};
+    \node[common, below=0.8cm of telemetry, xshift=4cm](common){\textbf{common.proto}\\Headers, status codes, geometry types};
 
   % Labels
-    \node[above = 0.3cm of motor, font =\footnotesize\bfseries]{Real -
-                                                                 Time Control};
-  \node[above = 0.3cm of battery, font =\footnotesize\bfseries]{
-      Device Management};
+    \node[above=0.3cm of motor, font=\footnotesize\bfseries]{Real-Time Control};
+  \node[above=0.3cm of battery, font=\footnotesize\bfseries]{Device Management};
 
   % Arrows to common - routed around blocks
-    \draw[->, thick, gray](motor.west)-- ++(-0.5, 0) | -(common.west);
-  \draw[->, thick, gray](telemetry.south)--(telemetry.south | -common.north);
-  \draw[->, thick, gray](battery.east)-- ++(0.5, 0) | -(common.east);
-  \draw[->, thick, gray](config.south)--(config.south | -common.north);
+    \draw[->, thick, gray](motor.west)-- ++(-0.5, 0) |-(common.west);
+  \draw[->, thick, gray](telemetry.south)--(telemetry.south |-common.north);
+  \draw[->, thick, gray](battery.east)-- ++(0.5, 0) |-(common.east);
+  \draw[->, thick, gray](config.south)--(config.south |-common.north);
   \end{tikzpicture} %
 }
 
@@ -73,17 +63,10 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 \end{itemize}
 }
 
-\textbf{Note :} Naming conventions, unit suffixes,
-    and coding standards are consolidated in Section ~\
-        ref{sec : protobuf - style}(Style Guide and Conventions)
-            .
+\textbf{Note:} Naming conventions, unit suffixes, and coding standards are consolidated in Section~\ref{sec:protobuf-style} (Style Guide and Conventions).
 
-\subsection{Service Specifications
-}
-\label {
-sec:
-  service - specifications
-}
+\subsection{Service Specifications}
+\label{sec:service-specifications}
 
 \subsubsection{MotorControlService}
 
@@ -369,15 +352,13 @@ ResponseHeader &request\_id(echo), server\_timestamp, status,
 tab:
   codegen
 }
-\begin{tabular} { | l | l | l | l |}
+\begin{tabular}{|l|l|l|l|}
 \hline
-\textbf{Target} & \textbf{Generator} & \textbf{Output} & \textbf{Usage
-}
-\\
-\hline Go &protoc - gen - go + grpc & \texttt{gen / go /} &
-    star -
-        gateway(RPi5) \ nanopb &nanopb\_generator & \texttt{gen / nanopb /} &
-    RX72N firmware \\
+\textbf{Target} & \textbf{Generator} & \textbf{Output} & \textbf{Usage} \\
+\hline
+Go & protoc-gen-go + grpc & \texttt{gen/go/} & star-gateway(RPi5) \\
+\hline
+nanopb & nanopb\_generator & \texttt{gen/nanopb/} & RX72N firmware \\
 \hline
 \end{tabular}
 \end{table}

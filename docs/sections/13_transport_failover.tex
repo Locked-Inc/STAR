@@ -26,37 +26,37 @@ This section documents how the STAR gateway automatically detects transport
 
 \noindent\makebox[\textwidth] {
   %
-\begin{tikzpicture}[font =\small, node distance = 0.5cm,
-                     box /.style = {draw, thick, rectangle, minimum width = 4cm,
+\begin{tikzpicture}[font =\small, node distance=0.5cm,
+                     box/.style={draw, thick, rectangle, minimum width = 4cm,
                                     minimum height = 1cm, align = center,
                                     rounded corners = 2pt},
-                     smallbox /.style = {draw, thick, rectangle,
+                     smallbox/.style={draw, thick, rectangle,
                                          minimum width = 3cm,
                                          minimum height = 0.8cm, align = center,
                                          rounded corners = 2pt},
-                     arrow /.style = {->, thick, >= stealth},
-                     dasharrow /.style = {->, thick, >= stealth, dashed}] %
+                     arrow/.style={->, thick, >= stealth},
+                     dasharrow/.style={->, thick, >= stealth, dashed}] %
       TransportManager
-    \node[box, fill = orange !20, minimum width = 10cm](tm)
+    \node[box, fill=orange!20, minimum width = 10cm](tm)
           at(0, 0){\textbf{TransportManager}\\{\footnotesize Priority selection,
                                                failover, health monitoring}};
 
   % Active indicator
-    \node[smallbox, fill = green !20](usb)
+    \node[smallbox, fill=green!20](usb)
           at(-3, -2){USB CDC Link\\{\footnotesize Priority 10}};
-  \node[smallbox, fill = yellow !20](spi)
+  \node[smallbox, fill=yellow!20](spi)
       at(3, -2){SPI Link\\{\footnotesize Priority 5}};
 
   % Subsystems
-    \node[smallbox, fill = blue !15](hb)
+    \node[smallbox, fill=blue!15](hb)
           at(-5, 1.5){Heartbeat\\{\footnotesize Dual - detection}};
-  \node[smallbox, fill = red !15](hm)
+  \node[smallbox, fill=red!15](hm)
       at(0, 1.5){Health Monitor\\{\footnotesize Probes inactive}};
-  \node[smallbox, fill = purple !15](hp)
+  \node[smallbox, fill=purple!15](hp)
       at(5, 1.5){Hotplug Detector\\{\footnotesize inotify}};
 
   % Session State
-    \node[box, fill = cyan !15, minimum width = 10cm](ss) at(0, -4){\textbf{Shared SessionState}\\{\footnotesize TX / RX sequence counters,
+    \node[box, fill=cyan!15, minimum width = 10cm](ss) at(0, -4){\textbf{Shared SessionState}\\{\footnotesize TX / RX sequence counters,
                                gap tolerance, validation}};
 
   % Arrows
@@ -271,17 +271,17 @@ Failed & \texttt{StateFailed} &
 
 \noindent\makebox[\textwidth] {
   %
-\begin{tikzpicture}[font =\small, node distance = 2.5cm,
-                     state /.style = {draw, thick, rectangle,
+\begin{tikzpicture}[font =\small, node distance=2.5cm,
+                     state/.style={draw, thick, rectangle,
                                       minimum width = 3cm, minimum height = 1cm,
                                       align = center, rounded corners = 4pt},
-                     arrow /.style = {->, thick, >= stealth}]
-    \node[state, fill = green !20](usb)
+                     arrow/.style={->, thick, >= stealth}]
+    \node[state, fill=green!20](usb)
           at(0, 0){Active USB\\{\footnotesize Priority 10}};
-  \node[state, fill = yellow !20](spi)
+  \node[state, fill=yellow!20](spi)
       at(7, 0){Active SPI\\{\footnotesize Priority 5}};
-  \node[state, fill = orange !20](deg) at(3.5, -3){Degraded};
-  \node[state, fill = red !20](fail) at(3.5, -6){Failed};
+  \node[state, fill=orange!20](deg) at(3.5, -3){Degraded};
+  \node[state, fill=red!20](fail) at(3.5, -6){Failed};
 
   \draw[arrow](usb)-- node[above, font =\footnotesize]{USB fails}(spi);
   \draw[arrow](spi)-- node[above, font =\footnotesize]{

@@ -22,32 +22,28 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
 
 \noindent\makebox[\textwidth] {
   %
-\begin{tikzpicture}[font =\small, node distance = 0.5cm,
-                     box /.style = {draw, thick, rectangle,
+\begin{tikzpicture}[font =\small, node distance=0.5cm,
+                     box/.style={draw, thick, rectangle,
                                     minimum width = 3.5cm, minimum height = 1cm,
                                     align = center}] %
           High -
       level clients
-    \node[box, fill = blue !20](nav2) at(0, 0){Nav2 / ROS2\\(Autonomous)};
-  \node[box, fill = green !20, right = of nav2](ui){star -
-                                                    ui\\(Manual Control)};
+    \node[box, fill=blue!20](nav2) at(0, 0){Nav2 / ROS2\\(Autonomous)};
+  \node[box, fill=green!20, right=of nav2](ui){star-ui\\(Manual Control)};
 
   % Gateway
-    \node[box, fill = orange !30, below = 1cm of $(nav2) !0.5 !(ui)$,
-           minimum width = 8cm](gateway){\textbf{star - gateway}\\gRPC Server +
-                                         SPI Controller};
+    \node[box, fill=orange!30, below=1cm of $(nav2)!0.5!(ui)$, minimum width=8cm](gateway){\textbf{star-gateway}\\gRPC Server + SPI Controller};
 
   % RX72N
-    \node[box, fill = cyan !20, below = 1cm of gateway, minimum width = 8cm](
-        esp32){\textbf{RX72N}\\Motor Controller + Sensors};
+    \node[box, fill=cyan!20, below=1cm of gateway, minimum width=8cm](esp32){\textbf{RX72N}\\Motor Controller + Sensors};
 
   % Arrows
-    \draw[->, thick](nav2.south)-- ++(0, -0.3) - | (gateway.north west);
-  \draw[->, thick](ui.south)-- ++(0, -0.3) - | (gateway.north east);
+    \draw[->, thick](nav2.south)-- ++(0, -0.3)-|(gateway.north west);
+  \draw[->, thick](ui.south)-- ++(0, -0.3)-|(gateway.north east);
   \draw[ <->, thick](gateway.south)-- node[right]{USB CDC / SPI}(esp32.north);
 
   % Labels
-    \node[above = 0.1cm of nav2, font =\footnotesize\bfseries]{gRPC Clients};
+    \node[above=0.1cm of nav2, font =\footnotesize\bfseries]{gRPC Clients};
   \end{tikzpicture} %
 }
 
@@ -66,15 +62,15 @@ protocol(see Section ~\ref{sec : protocol - stack})
 tab:
   gateway - stack
 }
-\begin{tabular} { | c | l | l | l |}
+\begin{tabular}{|c|l|l|l|}
 \hline
-\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{Status}
-\\
-\hline 5 & Application & \texttt{internal / service /} & Implemented \ 4 &
-    Serialization & \texttt{star - proto / gen / go /} & Implemented \ 3 &
-    HARQ + FEC & \texttt{internal / link /, internal / harq /, internal / fec /} &
-    Implemented \ 2 & Framing & \texttt{internal / frame /} & Implemented \ 1 &
-    Transport & \texttt{internal / transport /} & Implemented \\
+\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{Status} \\
+\hline
+5 & Application & \texttt{internal/service/} & Implemented \\
+4 & Serialization & \texttt{star-proto/gen/go/} & Implemented \\
+3 & HARQ + FEC & \texttt{internal/link/, internal/harq/, internal/fec/} & Implemented \\
+2 & Framing & \texttt{internal/frame/} & Implemented \\
+1 & Transport & \texttt{internal/transport/} & Implemented \\
 \hline
 \end{tabular}
 \end{table}

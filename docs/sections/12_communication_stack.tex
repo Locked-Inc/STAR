@@ -29,41 +29,41 @@ The STAR communication stack connects the user interface through a layered
 
 \noindent\makebox[\textwidth] {
   %
-\begin{tikzpicture}[font =\small, node distance = 0.4cm,
-                     box /.style = {draw, thick, rectangle,
+\begin{tikzpicture}[font =\small, node distance=0.4cm,
+                     box/.style={draw, thick, rectangle,
                                     minimum height = 1.1cm, align = center,
                                     rounded corners = 2pt},
-                     arrow /.style = {->, thick, >= stealth}] %
+                     arrow/.style={->, thick, >= stealth}] %
       UI
-    \node[box, fill = blue !15, minimum width = 2.4cm](ui)
+    \node[box, fill=blue!15, minimum width = 2.4cm](ui)
           at(0, 0){UI\\{\tiny TypeScript}};
 
   % Gateway
-    \node[box, fill = orange !20, minimum width = 2.6cm, right = of ui](gw){
+    \node[box, fill=orange!20, minimum width = 2.6cm, right=of ui](gw){
         Gateway\\{\tiny Go, : 8080}};
 
   % ROS2 Bridge
-    \node[box, fill = green !15, minimum width = 2.6cm, right = of gw](ros2){
+    \node[box, fill=green!15, minimum width = 2.6cm, right=of gw](ros2){
         ROS2 Bridge\\{\tiny C++}};
 
   % Gateway Services
-    \node[box, fill = orange !20, minimum width = 2.6cm, right = of ros2](svc){
+    \node[box, fill=orange!20, minimum width = 2.6cm, right=of ros2](svc){
         Gateway\\Services};
 
   % Frame Protocol
-    \node[box, fill = yellow !20, minimum width = 2.4cm, right = of svc](
+    \node[box, fill=yellow!20, minimum width = 2.4cm, right=of svc](
         frame){Frame\\Protocol};
 
   % Transport
-    \node[box, fill = cyan !15, minimum width = 2.4cm, below = 0.8cm of frame](
+    \node[box, fill=cyan!15, minimum width = 2.4cm, below=0.8cm of frame](
         transport){Transport\\{\tiny USB CDC / SPI}};
 
   % RX72N
-    \node[box, fill = red !15, minimum width = 2.6cm,
-           below = 0.8cm of transport](rx72n){RX72N\\{\tiny C, ThreadX}};
+    \node[box, fill=red!15, minimum width = 2.6cm,
+           below=0.8cm of transport](rx72n){RX72N\\{\tiny C, ThreadX}};
 
   % Motor Control
-    \node[box, fill = purple !15, minimum width = 2.4cm, left = of rx72n](
+    \node[box, fill=purple!15, minimum width = 2.4cm, left=of rx72n](
         motor){Motor\\Control};
 
   % Arrows with labels
@@ -387,39 +387,33 @@ HARQ is \textbf{not a separate protocol
 
 \noindent\makebox[\textwidth] {
   %
-\begin{tikzpicture}[font =\small, node distance = 0.6cm,
-                     bigbox /.style = {draw, thick, rectangle,
+\begin{tikzpicture}[font =\small, node distance=0.6cm,
+                     bigbox/.style={draw, thick, rectangle,
                                        minimum width = 12cm,
                                        minimum height = 1.4cm, align = center,
                                        rounded corners = 3pt},
-                     innerbox /.style = {draw, thick, rectangle,
+                     innerbox/.style={draw, thick, rectangle,
                                          minimum width = 5cm,
                                          minimum height = 0.9cm, align = center,
                                          rounded corners = 2pt},
-                     arrow /.style = {->, thick, >= stealth}] %
+                     arrow/.style={->, thick, >= stealth}] %
       HARQ outer box
-    \node[bigbox, fill = red !10](harq) at(0, 0){};
+    \node[bigbox, fill=red!10](harq) at(0, 0){};
   \node[above] at(harq.north){\textbf{HARQ(Hybrid Automatic Repeat Request)}};
 
   % ARQ inner box
-    \node[innerbox, fill = blue !15](arq)
+    \node[innerbox, fill=blue!15](arq)
           at(-3, 0){\textbf{ARQ}\\{\footnotesize ACK / NACK + Retransmit}};
 
   % FEC inner box
-    \node[innerbox, fill = green !15](fec)
+    \node[innerbox, fill=green!15](fec)
           at(3, 0){\textbf{FEC}\\{\footnotesize Convolutional + Viterbi}};
 
   % Chase Combining below
-    \node[innerbox, fill = orange !15, minimum width = 12cm,
-           below = 0.5cm of harq](
-        chase){\textbf{Chase Combining(Type I)}\\{\footnotesize Accumulate soft
-            bits across retransmissions $\rightarrow$ better Viterbi input}};
+    \node[innerbox, fill=orange!15, minimum width=12cm, below=0.5cm of harq](chase){\textbf{Chase Combining(Type I)}\\{\footnotesize Accumulate soft bits across retransmissions $\rightarrow$ better Viterbi input}};
 
   % CRC below everything
-    \node[innerbox, fill = yellow !15, minimum width = 12cm,
-           below = 0.5cm of chase](
-        crc){\textbf{CRC - 32(IEEE 802.3)}\\{\footnotesize Error detection on
-            every frame(both USB and SPI)}};
+    \node[innerbox, fill=yellow!15, minimum width=12cm, below=0.5cm of chase](crc){\textbf{CRC-32(IEEE 802.3)}\\{\footnotesize Error detection on every frame(both USB and SPI)}};
 
   % Labels
     \node[right, font =\footnotesize\itshape] at(5, 0.5){SPI only};

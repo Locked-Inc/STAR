@@ -52,20 +52,17 @@ The STAR project follows Boston Dynamics' Protocol Buffer style guide for all .p
 tab:
   proto - naming - style
 }
-\begin{tabular} { | l | l | l |}
+\begin{tabular}{|l|l|l|}
 \hline
-\textbf{Element} & \textbf{Convention} & \textbf{Example}
-\\
-\hline Package &Versioned namespace & \texttt { star.v1}
-\ Messages &PascalCase & \texttt{VelocityCommand}, \texttt { BatteryState}
-\ Fields &snake\_case + unit suffix & \texttt{velocity\_mps}, \texttt {
-  temperature\_celsius
-}
-\ Enums &SCREAMING\_SNAKE\_CASE & \texttt { MOTOR\_STATE\_RUNNING}
-\ Enum Zero Value & \_UNKNOWN suffix & \texttt { STATUS\_UNKNOWN = 0}
-\ Enum Values &Type name prefix & \texttt { ROBOT\_MODE\_MANUAL}
-\ RPC Pattern & \{Verb\} Request / Response & \texttt { SetVelocityRequest}
-\\
+\textbf{Element} & \textbf{Convention} & \textbf{Example} \\
+\hline
+Package & Versioned namespace & \texttt{star.v1} \\
+Messages & PascalCase & \texttt{VelocityCommand}, \texttt{BatteryState} \\
+Fields & snake\_case + unit suffix & \texttt{velocity\_mps}, \texttt{temperature\_celsius} \\
+Enums & SCREAMING\_SNAKE\_CASE & \texttt{MOTOR\_STATE\_RUNNING} \\
+Enum Zero Value & \_UNKNOWN suffix & \texttt{STATUS\_UNKNOWN = 0} \\
+Enum Values & Type name prefix & \texttt{ROBOT\_MODE\_MANUAL} \\
+RPC Pattern & \{Verb\} Request/Response & \texttt{SetVelocityRequest} \\
 \hline
 \end{tabular}
 \end{table}
