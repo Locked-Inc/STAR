@@ -14,7 +14,7 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{High-level side:} gRPC clients (Nav2/ROS2 for autonomous navigation, UI for manual control)
-    \item \textbf{Low-level side:} RX72N motor controller via SPI at 10 MHz
+    \item \textbf{Low-level side:} RX72N motor controller via USB CDC (primary) or SPI (backup)
 \end{itemize}
 
 \noindent\makebox[\textwidth]{%
@@ -43,7 +43,7 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
     % Arrows
     \draw[->, thick] (nav2.south) -- ++(0,-0.3) -| (gateway.north west);
     \draw[->, thick] (ui.south) -- ++(0,-0.3) -| (gateway.north east);
-    \draw[<->, thick] (gateway.south) -- node[right] {SPI @ 10 MHz} (esp32.north);
+    \draw[<->, thick] (gateway.south) -- node[right] {USB CDC / SPI} (esp32.north);
 
     % Labels
     \node[above=0.1cm of nav2, font=\footnotesize\bfseries] {gRPC Clients};
@@ -52,7 +52,7 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
 
 \subsection{Protocol Stack Implementation}
 
-The gateway implements Layers 1--4 of the communication protocol (see Section~\ref{sec:protocol-stack}).
+The gateway implements all layers of the communication protocol (see Section~\ref{sec:protocol-stack}).
 
 \begin{table}[H]
 \centering
@@ -62,11 +62,11 @@ The gateway implements Layers 1--4 of the communication protocol (see Section~\r
 \hline
 \textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{Status} \\
 \hline
-5 & Application & \texttt{internal/service/} & Placeholder \\
-4 & Serialization & \texttt{star-proto/gen/go/} & Generated \\
-3 & ARQ & \texttt{internal/arq/} & Placeholder \\
+5 & Application & \texttt{internal/service/} & Implemented \\
+4 & Serialization & \texttt{star-proto/gen/go/} & Implemented \\
+3 & HARQ + FEC & \texttt{internal/link/, internal/harq/, internal/fec/} & Implemented \\
 2 & Framing & \texttt{internal/frame/} & Implemented \\
-1 & Transport & \texttt{internal/transport/} & Placeholder \\
+1 & Transport & \texttt{internal/transport/} & Implemented \\
 \hline
 \end{tabular}
 \end{table}
@@ -77,25 +77,38 @@ The gateway implements Layers 1--4 of the communication protocol (see Section~\r
 star-gateway/
 +-- cmd/
 |   +-- star-gateway/
-|       +-- main.go              # Entry point
+|   |   +-- main.go              # Entry point
+|   +-- virtual_rx72n/
+|       +-- main.go              # RX72N simulator
 +-- internal/
-|   +-- transport/               # Layer 1: SPI transport
-|   |   +-- spi.go               # Transport interface
-|   |   +-- spi_test.go
+|   +-- transport/               # Layer 1: Physical transport
+|   |   +-- spi.go               # SPI transport (periph.io)
+|   |   +-- cdc.go               # USB CDC transport
+|   |   +-- socket.go            # Socket transport (simulation)
 |   +-- frame/                   # Layer 2: Frame protocol
 |   |   +-- frame.go             # Constants and types
 |   |   +-- encoder.go           # Frame encoder
-|   |   +-- decoder.go           # Frame decoder
-|   |   +-- frame_test.go
-|   +-- arq/                     # Layer 3: ARQ protocol
-|   |   +-- arq.go               # Stop-and-Wait ARQ
-|   |   +-- arq_test.go
+|   |   +-- decoder.go           # Stream decoder
+|   +-- link/                    # Layer 3: Reliability (HARQ)
+|   |   +-- spi.go               # SPILink (HARQ + FEC)
+|   +-- harq/                    # HARQ interface and types
+|   |   +-- harq.go
+|   +-- fec/                     # FEC codec
+|   |   +-- convolutional.go     # Rate 1/2, K=7 encoder
+|   |   +-- viterbi.go           # Viterbi decoder
+|   |   +-- combiner.go          # Chase Combiner
+|   +-- manager/                 # Transport management
+|   |   +-- manager.go           # TransportManager + SessionState
 |   +-- service/                 # Layer 5: gRPC services
-|       +-- motor_control.go
-|       +-- telemetry.go
-|       +-- battery.go
-|       +-- configuration.go
-|       +-- firmware.go
+|   |   +-- motor_control.go
+|   |   +-- telemetry.go
+|   |   +-- battery.go
+|   |   +-- configuration.go
+|   |   +-- gateway.go           # UI bridge service
+|   +-- app/                     # Application wiring
+|   |   +-- gateway.go
+|   +-- server/                  # gRPC server
+|       +-- server.go
 +-- go.mod
 +-- CLAUDE.md
 \end{verbatim}
@@ -136,7 +149,24 @@ The \texttt{internal/frame} package defines the wire protocol constants and type
 
 \subsection{Transport Package}
 
-The \texttt{internal/transport} package provides the SPI transport layer.
+The \texttt{internal/transport} package provides physical transport implementations for communicating with the RX72N.
+
+\subsubsection{Available Transports}
+
+\begin{table}[H]
+\centering
+\caption{Transport Implementations}
+\label{tab:transport-implementations}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Transport} & \textbf{Device} & \textbf{Speed} & \textbf{Usage} \\
+\hline
+SPI & \texttt{/dev/spidev0.0} & 10 MHz & Backup (priority 5) \\
+USB CDC & \texttt{/dev/ttyACM0} & 12 Mbps (Full-Speed) & Primary (priority 10) \\
+Socket & Unix socket & N/A & Simulation mode \\
+\hline
+\end{tabular}
+\end{table}
 
 \subsubsection{SPI Configuration}
 
@@ -168,34 +198,78 @@ type Transport interface {
 }
 \end{verbatim}
 
-\subsection{ARQ Package}
+\subsection{Link Layer (HARQ + FEC)}
 
-The \texttt{internal/arq} package implements Stop-and-Wait ARQ for reliable delivery.
+The \texttt{internal/link} package implements the reliability layer with two link types optimized for their respective transports.
 
-\subsubsection{ARQ Parameters}
+\subsubsection{SPILink}
+
+\texttt{SPILink} provides full Hybrid ARQ (HARQ) with forward error correction for the SPI transport, where the physical channel is more error-prone.
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{HARQ with ACK/NACK} -- Retransmission on negative acknowledgment or timeout
+    \item \textbf{FEC encoding/decoding} -- Convolutional code (K=7, Rate 1/2) with Viterbi decoding
+    \item \textbf{Chase Combining} -- Soft-combining of retransmitted frames for improved error recovery
+\end{itemize}
+
+\subsubsection{CDCLink}
+
+\texttt{CDCLink} provides a lightweight link layer for USB CDC, since USB handles reliability at the hardware level.
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{No HARQ} -- USB protocol provides its own error correction and retransmission
+    \item \textbf{Sequence tracking} -- Maintains sequence numbers for ordering
+\end{itemize}
+
+\subsubsection{Shared Session State}
+
+Both link types use the shared \texttt{SessionState} from \texttt{internal/manager/} to maintain sequence number continuity across transport failovers.
+
+\subsubsection{HARQ Parameters}
 
 \begin{table}[H]
 \centering
-\caption{ARQ Protocol Parameters}
-\label{tab:arq-params}
+\caption{HARQ Protocol Parameters}
+\label{tab:harq-params}
 \begin{tabular}{|l|l|l|}
 \hline
 \textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
 \hline
 Max Retries & 3 & Maximum transmission attempts \\
-Timeout & 10 ms & ACK wait timeout \\
+ACK Timeout & 10 ms & ACK wait timeout \\
 Sequence Max & 0xFFFF & 16-bit wraparound \\
+FEC Codec & Convolutional K=7, Rate 1/2 & Forward error correction \\
 \hline
 \end{tabular}
 \end{table}
 
-\subsubsection{ARQ State Machine}
+\subsection{Transport Manager}
+
+The \texttt{internal/manager} package provides priority-based transport selection and automatic failover.
+
+\subsubsection{Transport Priorities}
+
+\begin{table}[H]
+\centering
+\caption{Transport Manager Priority Configuration}
+\label{tab:transport-priorities}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Transport} & \textbf{Priority} & \textbf{Role} \\
+\hline
+USB CDC & 10 & Primary transport \\
+SPI & 5 & Backup transport \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Failover Behavior}
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \textbf{IDLE} -- Ready to send or receive
-    \item \textbf{WAITING\_ACK} -- Waiting for acknowledgment
-    \item \textbf{RETRANSMITTING} -- Retransmitting after timeout/NACK
-    \item \textbf{ERROR} -- Max retries exceeded
+    \item \textbf{Shared SessionState} -- Sequence continuity maintained across transports
+    \item \textbf{Automatic failover} -- Health monitoring detects transport failures
+    \item \textbf{Primary timeout} -- 200 ms implicit timeout before failover
+    \item \textbf{Secondary probe} -- 1 s PING probe to detect recovery of higher-priority transport
 \end{itemize}
 
 \subsection{gRPC Services}
@@ -259,3 +333,5 @@ use (
     ./star-gateway
 )
 \end{verbatim}
+
+\noindent For the complete end-to-end communication path from UI to motor controller, see Section~\ref{sec:communication-stack}.
