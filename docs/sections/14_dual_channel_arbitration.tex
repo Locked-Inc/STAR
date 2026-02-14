@@ -47,7 +47,7 @@ Despite the single-active-transport guarantee, brief overlap is possible during 
 
 The \texttt{rx\_comm\_manager\_poll()} function processes channels \textbf{sequentially}, not in parallel. There is no race condition because the entire function runs in a single thread (\texttt{comm\_task}, ThreadX Priority 5, 100\,Hz):
 
-\begin{lstlisting}[language=C, caption={Sequential channel polling (rx\_comm\_manager.c:1317)}]
+\begin{lstlisting}[language=C, caption={Sequential channel polling (rx\_comm\_manager\_poll)}]
 rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
 {
     bool received = false;
@@ -166,7 +166,7 @@ The shared \texttt{rx\_session} module on the RX72N validates every received seq
 
 The \texttt{internal\_handle\_command\_frame()} function receives a \texttt{channel} parameter indicating whether the frame arrived on USB or SPI:
 
-\begin{lstlisting}[language=C, caption={Channel parameter in command handler (comm\_task.c:1782)}]
+\begin{lstlisting}[language=C, caption={Channel parameter in command handler (internal\_handle\_velocity\_request)}]
 static void internal_handle_command_frame(
     rx_comm_channel_t channel,
     const rx_frame_t* frame)
@@ -187,7 +187,7 @@ The channel parameter is currently cast to \texttt{void} (unused). A future enha
 
 The 500\,ms communication watchdog (\texttt{shared\_data\_update\_last\_comm\_tick()}) is updated on \textbf{every valid frame from either channel}:
 
-\begin{lstlisting}[language=C, caption={Watchdog update on any frame (comm\_task.c:1392)}]
+\begin{lstlisting}[language=C, caption={Watchdog update on any frame (internal\_update\_watchdog)}]
 static void internal_frame_callback(
     rx_comm_channel_t channel,
     const rx_frame_t* frame,

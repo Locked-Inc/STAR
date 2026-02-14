@@ -128,19 +128,28 @@ extern "C" {
  * Protocol timing and retry parameters matching the Go gateway's
  * `internal/link/spi.go` constants.
  *
- * @see star-gateway/internal/link/spi.go  Go reference constants
+ * @invariant max_retries must be in range [0, 255], where 0 means use default value of 3
+ * @invariant fec_enabled is boolean (0 or 1)
+ *
+ * @code
+ * // Example: Using default constants
+ * rx_spi_link_config_t config = {
+ *     .spi_handle = &spi_handle,
+ *     .fec_enabled = k_spi_link_default_fec_enabled,  // 1 (enabled)
+ *     .max_retries = k_spi_link_default_max_retries,  // 3 attempts
+ * };
+ * @endcode
+ *
+ * @see star-gateway/internal/link/spi.go Go reference constants (maxRetries=3)
+ * @see rx_spi_link_config_t Configuration structure using these defaults
  * @since Version 1.1.0
  */
 typedef enum : uint8_t {
-    /**< @brief Default maximum transmission attempts (matches Go maxRetries=3)
-     * @details After 3 failed attempts (including Chase Combining), the
-     * link returns an error and the comm_manager may fail over to USB. */
-    k_spi_link_default_max_retries = 3,
+  k_spi_link_default_max_retries =
+    3, /**< Default maximum transmission attempts (matches Go maxRetries=3). After 3 failed attempts (including Chase Combining), the link returns an error and the comm_manager may fail over to USB. */
 
-    /**< @brief Default FEC enabled state (disabled by default)
-     * @details FEC can be enabled at runtime via config. When disabled,
-     * payloads are sent raw (same as old ARQ behavior). */
-    k_spi_link_default_fec_enabled = 0,
+  k_spi_link_default_fec_enabled =
+    1, /**< Default FEC enabled state (enabled by default, aligns with Go HARQ). FEC/HARQ is enabled by default for reliability. Can be disabled at runtime via config or test modes for raw SPI operation. */
 } rx_spi_link_constants_t;
 
 /**
@@ -148,20 +157,30 @@ typedef enum : uint8_t {
  * @brief SPI link layer timing constants
  *
  * @details
- * Timeout values for ACK waiting. Matches Go gateway's ackTimeout = 10ms.
+ * Timeout values for ACK waiting and buffer sizing. Matches Go gateway's
+ * ackTimeout = 10ms and FEC encoding buffer requirements.
  *
+ * @invariant ack_timeout_ms must be > 0 and < 65535 milliseconds
+ * @invariant max_encoded_payload = 2 * k_harq_max_payload + k_fec_tail_bits (2050 bytes for 1024-byte max payload)
+ *
+ * @code
+ * // Example: Using timing constants for ACK wait
+ * rx_err_t err = rx_spi_comm_receive(spi_handle, &ack_frame, k_spi_link_ack_timeout_ms);
+ * if (err == k_rx_err_timeout) {
+ *     // No ACK received within 10ms, retry transmission
+ * }
+ * @endcode
+ *
+ * @see star-gateway/internal/link/spi.go Go ackTimeout constant (10ms)
+ * @see rx_fec.h FEC encoding parameters (rate 1/2, tail bits)
  * @since Version 1.1.0
  */
 typedef enum : uint16_t {
-    /**< @brief ACK/NACK wait timeout in milliseconds (matches Go ackTimeout=10ms)
-     * @details How long to wait for ACK/NACK after sending a frame. If no
-     * response arrives within this window, the frame is retransmitted. */
-    k_spi_link_ack_timeout_ms = 10,
+  k_spi_link_ack_timeout_ms =
+    10, /**< ACK/NACK wait timeout in milliseconds (matches Go ackTimeout=10ms). How long to wait for ACK/NACK after sending a frame. If no response arrives within this window, the frame is retransmitted. */
 
-    /**< @brief Maximum encoded payload size: 2 * 1024 + 2 = 2050 bytes
-     * @details FEC rate 1/2 doubles payload size, plus 2 bytes for tail bits.
-     * This is the maximum buffer size needed for FEC-encoded payloads. */
-    k_spi_link_max_encoded_payload = 2050,
+  k_spi_link_max_encoded_payload =
+    2050, /**< Maximum encoded payload size in bytes: 2 * 1024 + 2 = 2050. FEC rate 1/2 doubles payload size, plus 2 bytes for tail bits. This is the maximum buffer size needed for FEC-encoded payloads. Formula: 2 * k_harq_max_payload + (k_fec_tail_bits / 8). */
 } rx_spi_link_timing_t;
 
 /* =============================================================================
@@ -178,21 +197,55 @@ typedef enum : uint16_t {
  *
  * @startuml
  * [*] --> Idle
- * Idle --> WaitingAck : send()
- * WaitingAck --> Idle : ACK received
- * WaitingAck --> Retransmitting : NACK or timeout
- * Retransmitting --> WaitingAck : retransmit sent
- * Retransmitting --> Error : max retries exceeded
- * Error --> Idle : reset()
+ *
+ * state Idle {
+ *   Idle : entry / clear_retry_count()
+ *   Idle : exit / none
+ * }
+ *
+ * state WaitingAck {
+ *   WaitingAck : entry / start_ack_timer()
+ *   WaitingAck : exit / stop_ack_timer()
+ * }
+ *
+ * state Retransmitting {
+ *   Retransmitting : entry / increment_retry_count()
+ *   Retransmitting : exit / log_retry_attempt()
+ * }
+ *
+ * state Error {
+ *   Error : entry / set_error_flag(), log_failure()
+ *   Error : exit / clear_error_flag()
+ * }
+ *
+ * Idle --> WaitingAck : send() / encode_payload()
+ * WaitingAck --> Idle : ACK received / clear_retry_count()
+ * WaitingAck --> Retransmitting : NACK or timeout / [retry_count < max]
+ * Retransmitting --> WaitingAck : retransmit sent / update_sequence()
+ * Retransmitting --> Error : [retry_count >= max_retries]
+ * Error --> Idle : reset() / clear_state()
  * @enduml
  *
+ * @par State Transition Table
+ *
+ * | From State      | To State        | Event/Condition          | Guard/Action                  | Entry Action              | Exit Action         |
+ * |-----------------|-----------------|--------------------------|-------------------------------|---------------------------|---------------------|
+ * | Idle            | WaitingAck      | send() called            | encode_payload()              | start_ack_timer()         | none                |
+ * | WaitingAck      | Idle            | ACK received             | clear_retry_count()           | clear_retry_count()       | stop_ack_timer()    |
+ * | WaitingAck      | Retransmitting  | NACK or timeout          | retry_count < max_retries     | increment_retry_count()   | stop_ack_timer()    |
+ * | Retransmitting  | WaitingAck      | retransmit sent          | update_sequence()             | start_ack_timer()         | log_retry_attempt() |
+ * | Retransmitting  | Error           | max retries exceeded     | retry_count >= max_retries    | set_error_flag(), log()   | log_retry_attempt() |
+ * | Error           | Idle            | reset() called           | clear_state()                 | clear_retry_count()       | clear_error_flag()  |
+ *
+ * @see rx_spi_link_get_state() Query current state
+ * @see rx_spi_link_reset() Reset to Idle state
  * @since Version 1.1.0
  */
 typedef enum : uint8_t {
-    k_spi_link_state_idle           = 0, /**< Ready for new send/receive */
-    k_spi_link_state_waiting_ack    = 1, /**< Frame sent, waiting for ACK/NACK */
-    k_spi_link_state_retransmitting = 2, /**< Retransmitting after NACK/timeout */
-    k_spi_link_state_error          = 3, /**< Unrecoverable error (max retries) */
+  k_spi_link_state_idle           = 0, /**< Ready for new send/receive */
+  k_spi_link_state_waiting_ack    = 1, /**< Frame sent, waiting for ACK/NACK */
+  k_spi_link_state_retransmitting = 2, /**< Retransmitting after NACK/timeout */
+  k_spi_link_state_error          = 3, /**< Unrecoverable error (max retries) */
 } rx_spi_link_state_t;
 
 /* =============================================================================
@@ -207,6 +260,10 @@ typedef enum : uint8_t {
  * Passed to rx_spi_link_init() to configure the link behavior. All zero
  * values use defaults.
  *
+ * @invariant spi_handle must be non-NULL and initialized via rx_spi_comm_init()
+ * @invariant max_retries in range [0, 255], where 0 means use default (3)
+ * @invariant fec_enabled is boolean (0 or 1)
+ *
  * @par Example
  * @code{.c}
  * rx_spi_link_config_t cfg = {
@@ -216,12 +273,16 @@ typedef enum : uint8_t {
  * };
  * @endcode
  *
+ * @see rx_spi_link_init() Initialization function consuming this config
+ * @see rx_spi_comm_handle_t Underlying SPI transport handle type
  * @since Version 1.1.0
  */
 typedef struct {
-    rx_spi_comm_handle_t* spi_handle;  /**< Underlying SPI transport (REQUIRED) */
-    bool                  fec_enabled; /**< Enable FEC encoding/decoding */
-    uint8_t               max_retries; /**< Max TX attempts (0 = default 3) */
+  rx_spi_comm_handle_t*
+    spi_handle; /**< Underlying SPI transport (REQUIRED, must be non-NULL and initialized via rx_spi_comm_init) */
+  bool
+    fec_enabled; /**< Enable FEC encoding/decoding (true=HARQ with Chase Combining, false=raw frames) */
+  uint8_t max_retries; /**< Maximum transmission attempts (0=use default of 3, range [0-255]) */
 } rx_spi_link_config_t;
 
 /**
@@ -232,16 +293,26 @@ typedef struct {
  * Contains the decoded payload and metadata about the decoding process.
  * Mirrors Go's harq.ReceiveResult.
  *
+ * @invariant payload_len <= k_harq_max_payload (1024 bytes)
+ * @invariant sequence in range [0, 65535] (wraps around)
+ * @invariant combining_count in range [0, max_retries], typically [1-4]
+ *
+ * @see rx_spi_link_receive() Function that populates this result structure
+ * @see star-gateway/internal/harq/harq.go Go equivalent (ReceiveResult)
  * @since Version 1.1.0
  */
 typedef struct {
-    uint8_t  payload[k_harq_max_payload]; /**< Decoded payload data */
-    uint32_t payload_len;                 /**< Decoded payload length */
-    uint16_t sequence;                    /**< Frame sequence number */
-    uint8_t  frame_type;                  /**< Frame type (rx_frame_type_t) */
-    bool     fec_decoded;                 /**< True if FEC was applied */
-    uint8_t  combining_count;             /**< Number of Chase Combining attempts */
-    bool     is_retransmit;               /**< True if frame had retransmit flag */
+  uint8_t payload
+    [k_harq_max_payload]; /**< Decoded payload data (buffer size: k_harq_max_payload = 1024 bytes) */
+  uint32_t payload_len;   /**< Decoded payload length in bytes (range: [0, k_harq_max_payload]) */
+  uint16_t sequence;      /**< Frame sequence number (range: [0, 65535], wraps around) */
+  uint8_t
+    frame_type; /**< Frame type as rx_frame_type_t (e.g., k_frame_type_command, k_frame_type_telemetry) */
+  bool fec_decoded; /**< True if FEC/Viterbi decoding was applied, false if raw passthrough */
+  uint8_t
+    combining_count; /**< Number of Chase Combining attempts used (1 = first attempt, >1 = retransmissions combined) */
+  bool
+    is_retransmit; /**< True if frame had k_frame_flag_retransmit set, false for first transmission */
 } rx_spi_link_receive_result_t;
 
 /**
@@ -265,22 +336,32 @@ typedef struct {
  * | initialized | 1 B     | Initialization flag                 |
  * | fec_buf     | 2050 B  | FEC encode output buffer            |
  *
+ * @invariant When initialized == true, spi_handle must be non-NULL
+ * @invariant state must be one of k_spi_link_state_* values
+ * @invariant max_retries in range [1, 255] when initialized (0 converted to 3 at init)
+ * @invariant fec_encode_buf size == k_spi_link_max_encoded_payload (2050 bytes)
+ *
  * @warning This structure is ~86 KB. Allocate statically, not on the stack.
  *
+ * @see rx_spi_link_init() Initialization function
+ * @see rx_spi_link_config_t Configuration structure
+ * @see rx_harq_handle_t HARQ handle containing FEC encoder/decoder
  * @since Version 1.1.0
  */
 typedef struct {
-    rx_spi_comm_handle_t* spi_handle;  /**< Underlying SPI transport */
-    rx_harq_handle_t      harq;        /**< HARQ handle (FEC + Chase Combiner) */
-    rx_spi_link_state_t   state;       /**< Current link state */
-    bool                  fec_enabled; /**< FEC enabled flag */
-    uint8_t               max_retries; /**< Max transmission attempts */
-    bool                  initialized; /**< Initialization flag */
+  rx_spi_comm_handle_t*
+    spi_handle; /**< Underlying SPI transport (must be non-NULL when initialized, set via config) */
+  rx_harq_handle_t
+    harq; /**< HARQ handle containing FEC encoder/decoder and Chase Combiner (~82 KB) */
+  rx_spi_link_state_t state; /**< Current link state (idle, waiting_ack, retransmitting, error) */
+  bool fec_enabled; /**< FEC enabled flag (true=HARQ+FEC, false=raw frames, immutable after init) */
+  uint8_t
+    max_retries; /**< Maximum transmission attempts (range [1-255], 0 at init converted to 3) */
+  bool
+    initialized; /**< Initialization flag (true=ready for use, false=must call rx_spi_link_init) */
 
-    /**< @brief Staging buffer for FEC-encoded payloads
-     * @details Used by rx_spi_link_send() to hold FEC-encoded data before
-     * passing to rx_spi_comm_send(). Size: 2*1024+2 = 2050 bytes. */
-    uint8_t fec_encode_buf[k_spi_link_max_encoded_payload];
+  uint8_t fec_encode_buf
+    [k_spi_link_max_encoded_payload]; /**< Staging buffer for FEC-encoded payloads (size: 2050 bytes = 2*1024+2). Used by rx_spi_link_send() to hold FEC-encoded data before passing to rx_spi_comm_send(). Formula: 2 * k_harq_max_payload + (k_fec_tail_bits / 8). */
 } rx_spi_link_t;
 
 /* =============================================================================
@@ -313,8 +394,7 @@ typedef struct {
  * @see rx_spi_link_deinit() Cleanup counterpart
  * @since Version 1.1.0
  */
-[[nodiscard]] rx_err_t rx_spi_link_init(rx_spi_link_t*             link,
-                                         const rx_spi_link_config_t* config);
+[[nodiscard]] rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* config);
 
 /**
  * @brief Deinitialize SPI link layer
@@ -330,10 +410,15 @@ typedef struct {
  * @retval k_rx_err_invalid_arg link is NULL
  * @retval k_rx_err_invalid_state link not initialized
  *
- * @pre link must be initialized
+ * @pre link must be non-NULL
+ * @pre link must be initialized (link->initialized == true)
  * @post link->initialized == false
+ * @post link->harq internal state deinitialized (HARQ handle invalid)
+ *
+ * @note Does NOT deinitialize the underlying SPI transport handle
  *
  * @see rx_spi_link_init() Initialization counterpart
+ * @see rx_harq_deinit() Internal HARQ deinitialization
  * @since Version 1.1.0
  */
 [[nodiscard]] rx_err_t rx_spi_link_deinit(rx_spi_link_t* link);
@@ -385,10 +470,10 @@ typedef struct {
  * @see rx_spi_link_receive() Receive path
  * @since Version 1.1.0
  */
-[[nodiscard]] rx_err_t rx_spi_link_send(rx_spi_link_t*    link,
-                                         rx_frame_type_t   type,
-                                         const uint8_t*    payload,
-                                         uint32_t          payload_len);
+[[nodiscard]] rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
+                                        rx_frame_type_t type,
+                                        const uint8_t*  payload,
+                                        uint32_t        payload_len);
 
 /* =============================================================================
  * Receive API
@@ -436,9 +521,8 @@ typedef struct {
  * @see rx_spi_link_send() Send path
  * @since Version 1.1.0
  */
-[[nodiscard]] rx_err_t rx_spi_link_receive(rx_spi_link_t*               link,
-                                            rx_spi_link_receive_result_t* result,
-                                            uint32_t                      timeout_ms);
+[[nodiscard]] rx_err_t
+rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, uint32_t timeout_ms);
 
 /* =============================================================================
  * State Management
@@ -459,11 +543,16 @@ typedef struct {
  * @retval k_rx_err_invalid_arg link is NULL
  * @retval k_rx_err_invalid_state link not initialized
  *
- * @pre link must be initialized
+ * @pre link must be non-NULL
+ * @pre link must be initialized (link->initialized == true)
  * @post link->state == k_spi_link_state_idle
- * @post Chase Combiner cleared
+ * @post Chase Combiner buffers cleared (all soft-decision history discarded)
+ *
+ * @note Does NOT reset TX/RX sequence numbers (managed externally by rx_session)
+ * @note Safe to call after error state to recover link operation
  *
  * @see rx_harq_reset() Internal HARQ reset
+ * @see rx_spi_link_get_state() Query current state
  * @since Version 1.1.0
  */
 [[nodiscard]] rx_err_t rx_spi_link_reset(rx_spi_link_t* link);
@@ -471,8 +560,30 @@ typedef struct {
 /**
  * @brief Get current SPI link state
  *
- * @param[in] link Link handle
- * @return Current state, or k_spi_link_state_error if link is NULL
+ * @details
+ * Returns the current state of the SPI link state machine. Safe to call
+ * with NULL pointer (returns error state). Does not modify link state.
+ *
+ * @param[in] link Link handle (may be NULL)
+ *
+ * @return rx_spi_link_state_t Current link state
+ * @retval k_spi_link_state_idle Link is ready for new send/receive
+ * @retval k_spi_link_state_waiting_ack Waiting for ACK/NACK response
+ * @retval k_spi_link_state_retransmitting Retransmitting after NACK/timeout
+ * @retval k_spi_link_state_error Unrecoverable error (also returned if link is NULL)
+ *
+ * @pre link may be NULL (function handles gracefully)
+ * @pre If link is non-NULL, may be in any state (initialized or not)
+ * @post No state change (pure query function)
+ * @post Return value reflects state at time of call (may change immediately after)
+ *
+ * @note Thread-safe: Read-only operation, no synchronization needed
+ * @note NULL-safe: Returns k_spi_link_state_error when link is NULL
+ * @note Does not distinguish between "link is NULL" vs "link is in error state"
+ *
+ * @see rx_spi_link_t Link handle structure
+ * @see rx_spi_link_state_t State enumeration with all possible values
+ * @see rx_spi_link_reset() Reset link to idle state
  *
  * @since Version 1.1.0
  */
@@ -481,8 +592,30 @@ rx_spi_link_state_t rx_spi_link_get_state(const rx_spi_link_t* link);
 /**
  * @brief Check if FEC is enabled on this link
  *
- * @param[in] link Link handle
- * @return true if FEC is enabled, false otherwise
+ * @details
+ * Queries the FEC/HARQ enabled flag. Returns false if link is NULL.
+ * Does not modify link state. FEC setting is configured at init time
+ * via rx_spi_link_config_t.fec_enabled and cannot be changed at runtime.
+ *
+ * @param[in] link Link handle (may be NULL)
+ *
+ * @return bool FEC enabled status
+ * @retval true FEC encoding/decoding is active (Chase Combining, Viterbi)
+ * @retval false FEC disabled (raw payload transmission) or link is NULL
+ *
+ * @pre link may be NULL (function handles gracefully by returning false)
+ * @pre If link is non-NULL, may be in any state (initialized or not)
+ * @post No state change (pure query function)
+ * @post Return value reflects FEC setting at time of call (constant for link lifetime)
+ *
+ * @note Thread-safe: Read-only operation, no synchronization needed
+ * @note NULL-safe: Returns false when link is NULL
+ * @note FEC setting is immutable after initialization (cannot be changed at runtime)
+ * @note When FEC is enabled, rx_spi_link_send/receive use HARQ with Chase Combining
+ *
+ * @see rx_spi_link_config_t Configuration structure with fec_enabled field
+ * @see rx_spi_link_init() Initialization function that sets FEC mode
+ * @see k_spi_link_default_fec_enabled Default FEC setting (enabled = 1)
  *
  * @since Version 1.1.0
  */

@@ -224,7 +224,13 @@ RX72N firmware crash    & $\sim$1.2\,s (PING timeout)      & $< 1.5$\,s (no drai
 \end{table}
 
 \noindent\colorbox{importantcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Important:} The worst-case failover time (1.5\,s) is well within the RX72N's 500\,ms communication watchdog on the \emph{active} transport, but frames from the \emph{standby} transport would arrive before the watchdog fires. The 500\,ms watchdog applies to total communication silence, not to any individual transport.
+\textbf{Important:} The RX72N's 500\,ms communication watchdog monitors \emph{total} communication silence across all transports, not individual transport health. During failover, the gateway completes the transport switch (pause $\rightarrow$ drain $\rightarrow$ activate standby) and resumes sending on the new transport. Worst-case timing:
+\begin{itemize}[leftmargin=1.5em,topsep=2pt,itemsep=1pt]
+    \item \textbf{Hard failure} (cable pull, IO error): $<$ 300\,ms (no drain, immediate switch)
+    \item \textbf{Graceful/timeout}: $<$ 700\,ms (500\,ms drain + 200\,ms switch overhead)
+    \item \textbf{Silent failure} (PING timeout): Up to 1.5\,s detection + switch time
+\end{itemize}
+For silent failures exceeding 500\,ms, the RX72N watchdog \textbf{will trigger}, initiating safe motor shutdown. The gateway detects this via health monitoring and resumes communication on the new transport. This is the intended fail-safe behavior: motor safety takes precedence over seamless failover.
 }}
 
 \subsection{Shared SessionState (Preventing the Handoff Problem)}

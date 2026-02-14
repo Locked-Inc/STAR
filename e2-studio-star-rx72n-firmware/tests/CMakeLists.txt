@@ -35,6 +35,7 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/inc
+        ${CMAKE_SOURCE_DIR}/../libs/rx_spi_link/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_hcsr04/inc
@@ -173,6 +174,11 @@ set(MOCK_SCI_SPI_SRC
 # rx_spi_comm source
 set(RX_SPI_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/src/rx_spi_comm.c
+)
+
+# rx_spi_link source
+set(RX_SPI_LINK_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_spi_link/src/rx_spi_link.c
 )
 
 # rx_frame_ascii source
@@ -634,6 +640,9 @@ add_executable(test_rx_comm_manager
     ${RX_USB_COMM_SRC}
     ${RX_USB_SRC}
     ${RX_SPI_COMM_SRC}
+    ${RX_SPI_LINK_SRC}
+    ${RX_FEC_SRC}
+    ${RX_HARQ_SRC}
     ${MOCK_USB_SRC}
     ${MOCK_RSPI_SRC}
     ${MOCK_LOG_SRC}

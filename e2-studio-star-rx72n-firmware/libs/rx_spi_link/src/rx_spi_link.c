@@ -98,7 +98,7 @@
  * @var s_tag
  * @brief Log tag for SPI link layer messages
  */
-static const char* s_tag = "SPI_LINK";
+static const char s_tag[] = "SPI_LINK";
 
 /**
  * @enum internal_soft_bit_values_t
@@ -112,8 +112,8 @@ static const char* s_tag = "SPI_LINK";
  * @since Version 1.1.0
  */
 typedef enum : int8_t {
-    k_soft_bit_one  = 127,  /**< Hard bit 1 -> soft confidence +127 */
-    k_soft_bit_zero = -127, /**< Hard bit 0 -> soft confidence -127 */
+  k_internal_soft_bit_one  = 127,  /**< Hard bit 1 -> soft confidence +127 */
+  k_internal_soft_bit_zero = -127, /**< Hard bit 0 -> soft confidence -127 */
 } internal_soft_bit_values_t;
 
 /**
@@ -123,9 +123,9 @@ typedef enum : int8_t {
  * @since Version 1.1.0
  */
 typedef enum : uint8_t {
-    k_bits_per_byte = 8,   /**< Number of bits in a byte */
-    k_msb_shift     = 7,   /**< Shift to extract MSB */
-    k_bit_mask      = 0x01, /**< Mask to extract single bit */
+  k_bits_per_byte = 8,    /**< Number of bits in a byte */
+  k_msb_shift     = 7,    /**< Shift to extract MSB */
+  k_bit_mask      = 0x01, /**< Mask to extract single bit */
 } internal_bit_constants_t;
 
 /* =============================================================================
@@ -154,30 +154,50 @@ typedef enum : uint8_t {
  *
  * @since Version 1.1.0
  */
-static rx_err_t internal_bytes_to_soft_bits(const uint8_t*  data,
-                                             uint32_t        data_len,
-                                             rx_soft_bit_t*  soft,
-                                             uint32_t        soft_size,
-                                             uint32_t*       soft_len)
+static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
+                                            uint32_t       data_len,
+                                            rx_soft_bit_t* soft,
+                                            uint32_t       soft_size,
+                                            uint32_t*      soft_len)
 {
-    const uint32_t required = data_len * (uint32_t)k_bits_per_byte;
-    if (required > soft_size) {
-        return k_rx_err_invalid_size;
+  /* Rule 5: Precondition validation - NULL pointer checks */
+  if (data == nullptr) {
+    if (soft_len != nullptr) {
+      *soft_len = 0;
     }
+    return k_rx_err_invalid_arg;
+  }
 
-    for (uint32_t byte_idx = 0; byte_idx < data_len; byte_idx++) {
-        const uint8_t b = data[byte_idx];
-        for (uint8_t bit_idx = 0; bit_idx < k_bits_per_byte; bit_idx++) {
-            const uint8_t bit = (b >> (k_msb_shift - bit_idx)) & k_bit_mask;
-            const uint32_t idx = byte_idx * (uint32_t)k_bits_per_byte + bit_idx;
-            soft[idx] = (bit == k_bit_mask)
-                            ? (rx_soft_bit_t)k_soft_bit_one
-                            : (rx_soft_bit_t)k_soft_bit_zero;
-        }
+  if (soft == nullptr) {
+    if (soft_len != nullptr) {
+      *soft_len = 0;
     }
+    return k_rx_err_invalid_arg;
+  }
 
-    *soft_len = required;
-    return k_rx_ok;
+  if (soft_len == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Rule 5: Precondition validation - buffer size check */
+  const uint32_t required = data_len * (uint32_t)k_bits_per_byte;
+  if (required > soft_size) {
+    *soft_len = 0;
+    return k_rx_err_invalid_size;
+  }
+
+  for (uint32_t byte_idx = 0; byte_idx < data_len; byte_idx++) {
+    const uint8_t b = data[byte_idx];
+    for (uint8_t bit_idx = 0; bit_idx < k_bits_per_byte; bit_idx++) {
+      const uint8_t  bit = (b >> (k_msb_shift - bit_idx)) & k_bit_mask;
+      const uint32_t idx = byte_idx * (uint32_t)k_bits_per_byte + bit_idx;
+      soft[idx]          = (bit == k_bit_mask) ? (rx_soft_bit_t)k_internal_soft_bit_one
+                                               : (rx_soft_bit_t)k_internal_soft_bit_zero;
+    }
+  }
+
+  *soft_len = required;
+  return k_rx_ok;
 }
 
 /**
@@ -202,40 +222,38 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t*  data,
  */
 static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq)
 {
-    rx_frame_t ack_frame;
-    memset(&ack_frame, 0, sizeof(ack_frame));
+  rx_frame_t ack_frame;
+  (void)memset(&ack_frame, 0, sizeof(ack_frame));
 
-    const rx_err_t err = rx_spi_comm_receive(link->spi_handle,
-                                              &ack_frame,
-                                              k_spi_link_ack_timeout_ms);
-    if (err == k_rx_err_timeout) {
-        return k_rx_err_timeout;
-    }
-    if (err != k_rx_ok) {
-        rx_log_warn(s_tag, "ACK receive error");
-        return err;
-    }
-
-    /* Check frame type */
-    if (ack_frame.header.type == (uint8_t)k_frame_type_ack) {
-        if (ack_frame.header.sequence == expected_seq) {
-            return k_rx_ok;
-        }
-        rx_log_warn(s_tag, "ACK seq mismatch");
-        return k_rx_err_timeout; /* Treat as timeout, will retry */
-    }
-
-    if (ack_frame.header.type == (uint8_t)k_frame_type_nack) {
-        if (ack_frame.header.sequence == expected_seq) {
-            return k_rx_err_protocol_error; /* NACK = decode failure on receiver */
-        }
-        rx_log_warn(s_tag, "NACK seq mismatch");
-        return k_rx_err_timeout;
-    }
-
-    /* Unexpected frame type (data frame while waiting for ACK) - ignore */
-    rx_log_debug(s_tag, "Non-ACK frame during wait");
+  const rx_err_t err = rx_spi_comm_receive(link->spi_handle, &ack_frame, k_spi_link_ack_timeout_ms);
+  if (err == k_rx_err_timeout) {
     return k_rx_err_timeout;
+  }
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "ACK receive error");
+    return err;
+  }
+
+  /* Check frame type */
+  if (ack_frame.header.type == (uint8_t)k_frame_type_ack) {
+    if (ack_frame.header.sequence == expected_seq) {
+      return k_rx_ok;
+    }
+    rx_log_warn(s_tag, "ACK seq mismatch");
+    return k_rx_err_timeout; /* Treat as timeout, will retry */
+  }
+
+  if (ack_frame.header.type == (uint8_t)k_frame_type_nack) {
+    if (ack_frame.header.sequence == expected_seq) {
+      return k_rx_err_protocol_error; /* NACK = decode failure on receiver */
+    }
+    rx_log_warn(s_tag, "NACK seq mismatch");
+    return k_rx_err_timeout;
+  }
+
+  /* Unexpected frame type (data frame while waiting for ACK) - ignore */
+  rx_log_debug(s_tag, "Non-ACK frame during wait");
+  return k_rx_err_timeout;
 }
 
 /* =============================================================================
@@ -246,58 +264,54 @@ static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq
  * @brief Initialize SPI link layer
  * @see rx_spi_link.h for full documentation
  */
-rx_err_t rx_spi_link_init(rx_spi_link_t*              link,
-                           const rx_spi_link_config_t* config)
+rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* config)
 {
-    /* Pre-condition 1: NULL checks */
-    if (link == nullptr || config == nullptr) {
-        return k_rx_err_invalid_arg;
-    }
+  /* Pre-condition 1: NULL checks */
+  if (link == nullptr || config == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
 
-    /* Pre-condition 2: SPI handle required */
-    if (config->spi_handle == nullptr) {
-        rx_log_error(s_tag, "SPI handle is required");
-        return k_rx_err_invalid_arg;
-    }
+  /* Pre-condition 2: SPI handle required */
+  if (config->spi_handle == nullptr) {
+    rx_log_error(s_tag, "SPI handle is required");
+    return k_rx_err_invalid_arg;
+  }
 
-    /* Zero-fill link handle */
-    memset(link, 0, sizeof(*link));
+  /* Zero-fill link handle */
+  (void)memset(link, 0, sizeof(*link));
 
-    /* Store configuration */
-    link->spi_handle  = config->spi_handle;
-    link->fec_enabled = config->fec_enabled;
-    link->max_retries = (config->max_retries > 0)
-                            ? config->max_retries
-                            : (uint8_t)k_spi_link_default_max_retries;
+  /* Store configuration */
+  link->spi_handle  = config->spi_handle;
+  link->fec_enabled = config->fec_enabled;
+  link->max_retries =
+    (config->max_retries > 0) ? config->max_retries : (uint8_t)k_spi_link_default_max_retries;
 
-    /* Initialize HARQ handle (includes FEC encoder/decoder and Chase Combiner) */
-    const rx_harq_config_t harq_cfg = {
-        .max_retries  = link->max_retries,
-        .fec_enabled  = link->fec_enabled ? 1U : 0U,
-        .max_combines = link->max_retries,
-    };
+  /* Initialize HARQ handle (includes FEC encoder/decoder and Chase Combiner) */
+  const rx_harq_config_t harq_cfg = {
+    .max_retries  = link->max_retries,
+    .fec_enabled  = link->fec_enabled ? 1U : 0U,
+    .max_combines = link->max_retries,
+  };
 
-    const rx_err_t err = rx_harq_init(&link->harq, &harq_cfg);
-    if (err != k_rx_ok) {
-        rx_log_error(s_tag, "HARQ init failed");
-        return err;
-    }
+  const rx_err_t err = rx_harq_init(&link->harq, &harq_cfg);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "HARQ init failed");
+    return err;
+  }
 
-    /* Post-condition 1: Mark initialized */
-    link->state       = k_spi_link_state_idle;
-    link->initialized = true;
+  /* Post-condition 1: Mark initialized */
+  link->state       = k_spi_link_state_idle;
+  link->initialized = true;
 
-    /* Post-condition 2: Verify HARQ is ready */
-    if (rx_harq_get_state(&link->harq) != k_harq_state_idle) {
-        link->initialized = false;
-        return k_rx_err_not_initialized;
-    }
+  /* Post-condition 2: Verify HARQ is ready */
+  if (rx_harq_get_state(&link->harq) != k_harq_state_idle) {
+    link->initialized = false;
+    return k_rx_err_not_initialized;
+  }
 
-    rx_log_info(s_tag, "Init OK (FEC=%s, retries=%u)",
-                link->fec_enabled ? "on" : "off",
-                link->max_retries);
+  rx_log_info(s_tag, "Init OK");
 
-    return k_rx_ok;
+  return k_rx_ok;
 }
 
 /**
@@ -306,28 +320,28 @@ rx_err_t rx_spi_link_init(rx_spi_link_t*              link,
  */
 rx_err_t rx_spi_link_deinit(rx_spi_link_t* link)
 {
-    /* Pre-condition 1 */
-    if (link == nullptr) {
-        return k_rx_err_invalid_arg;
-    }
+  /* Pre-condition 1 */
+  if (link == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
 
-    /* Pre-condition 2 */
-    if (!link->initialized) {
-        return k_rx_err_invalid_state;
-    }
+  /* Pre-condition 2 */
+  if (!link->initialized) {
+    return k_rx_err_invalid_state;
+  }
 
-    /* Deinit HARQ subsystem */
-    const rx_err_t err = rx_harq_deinit(&link->harq);
-    if (err != k_rx_ok) {
-        rx_log_warn(s_tag, "HARQ deinit warning");
-    }
+  /* Deinit HARQ subsystem */
+  const rx_err_t err = rx_harq_deinit(&link->harq);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "HARQ deinit warning");
+  }
 
-    /* Post-condition: Mark uninitialized */
-    link->initialized = false;
-    link->state       = k_spi_link_state_idle;
+  /* Post-condition: Mark uninitialized */
+  link->initialized = false;
+  link->state       = k_spi_link_state_idle;
 
-    rx_log_info(s_tag, "Deinitialized");
-    return k_rx_ok;
+  rx_log_info(s_tag, "Deinitialized");
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -335,111 +349,149 @@ rx_err_t rx_spi_link_deinit(rx_spi_link_t* link)
  * ============================================================================= */
 
 /**
+ * @brief Attempt a single transmission with ACK/NACK handling
+ *
+ * @details
+ * Sends frame via SPI transport, waits for ACK/NACK, and handles retransmission
+ * logic. Updates link state for retransmit/waiting_ack. Gets TX sequence BEFORE
+ * sending to avoid race conditions with external sequence management.
+ *
+ * @param[in,out] link       Link handle (must be initialized)
+ * @param[in]     type       Frame type (command, telemetry, etc.)
+ * @param[in]     base_flags Base flags (fec_enabled, requires_ack)
+ * @param[in]     tx_payload Payload to transmit (may be FEC-encoded)
+ * @param[in]     tx_len     Payload length in bytes
+ * @param[in]     attempt    Attempt number (0 = first, >0 = retransmit)
+ *
+ * @return rx_err_t Result of attempt
+ * @retval k_rx_ok ACK received (success)
+ * @retval k_rx_err_protocol_error NACK received (retry needed)
+ * @retval k_rx_err_timeout Timeout (retry needed)
+ * @retval Other SPI send errors
+ */
+static rx_err_t internal_send_attempt(rx_spi_link_t*  link,
+                                      rx_frame_type_t type,
+                                      uint8_t         base_flags,
+                                      const uint8_t*  tx_payload,
+                                      uint32_t        tx_len,
+                                      uint8_t         attempt)
+{
+  uint8_t flags = base_flags;
+
+  /* Mark retransmissions */
+  if (attempt > 0) {
+    flags |= k_frame_flag_retransmit;
+    link->state = k_spi_link_state_retransmitting;
+  } else {
+    link->state = k_spi_link_state_waiting_ack;
+  }
+
+  /* CRITICAL: Get TX sequence BEFORE sending to avoid race.
+     * rx_session_get_tx() returns the NEXT sequence to be used.
+     * rx_spi_comm_send() will use this sequence and then increment.
+     * This approach is safe ONLY if rx_spi_link_send() is not called
+     * concurrently (enforced by caller via external mutex or task priority).
+     *
+     * Alternative solution: Modify rx_spi_comm_send() to return the
+     * sequence actually used, but that requires API change across codebase. */
+  uint16_t next_seq = 0;
+  (void)rx_session_get_tx(link->spi_handle->session, &next_seq);
+  const uint16_t expected_seq = next_seq; /* This will be used by send */
+
+  /* Send frame via SPI transport */
+  const rx_err_t send_err = rx_spi_comm_send(link->spi_handle, type, flags, tx_payload, tx_len);
+  if (send_err != k_rx_ok) {
+    rx_log_warn(s_tag, "SPI send failed");
+    return send_err;
+  }
+
+  /* Wait for ACK/NACK using the sequence we captured */
+  return internal_wait_for_ack(link, expected_seq);
+}
+
+/**
  * @brief Send payload with HARQ reliability over SPI
  * @see rx_spi_link.h for full documentation
  */
 rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
-                           rx_frame_type_t type,
-                           const uint8_t*  payload,
-                           uint32_t        payload_len)
+                          rx_frame_type_t type,
+                          const uint8_t*  payload,
+                          uint32_t        payload_len)
 {
-    /* Pre-condition 1: NULL and state checks */
-    if (link == nullptr) {
-        return k_rx_err_invalid_arg;
-    }
-    if (!link->initialized) {
-        return k_rx_err_invalid_state;
-    }
+  /* Pre-condition 1: NULL and state checks */
+  if (link == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+  if (!link->initialized) {
+    return k_rx_err_invalid_state;
+  }
 
-    /* Pre-condition 2: Payload validation */
-    if (payload == nullptr && payload_len > 0) {
-        return k_rx_err_invalid_arg;
-    }
-    if (payload_len > k_harq_max_payload) {
-        rx_log_error(s_tag, "Payload too large for HARQ");
-        return k_rx_err_invalid_size;
-    }
+  /* Pre-condition 2: Payload validation */
+  if (payload == nullptr && payload_len > 0) {
+    return k_rx_err_invalid_arg;
+  }
+  if (payload_len > k_harq_max_payload) {
+    rx_log_error(s_tag, "Payload too large for HARQ");
+    return k_rx_err_invalid_size;
+  }
 
-    /* Reset HARQ for new transaction */
-    rx_err_t err = rx_harq_reset(&link->harq);
+  /* Reset HARQ for new transaction */
+  rx_err_t err = rx_harq_reset(&link->harq);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "HARQ reset failed");
+    return err;
+  }
+
+  /* Prepare payload: FEC encode if enabled, otherwise passthrough */
+  const uint8_t* tx_payload = payload;
+  uint32_t       tx_len     = payload_len;
+  uint8_t        base_flags = k_frame_flag_requires_ack;
+
+  if (link->fec_enabled && payload != nullptr && payload_len > 0) {
+    uint32_t encoded_len = 0;
+    err                  = rx_harq_encode(&link->harq,
+                         payload,
+                         payload_len,
+                         link->fec_encode_buf,
+                         (uint32_t)k_spi_link_max_encoded_payload,
+                         &encoded_len);
     if (err != k_rx_ok) {
-        rx_log_error(s_tag, "HARQ reset failed");
-        return err;
+      rx_log_error(s_tag, "FEC encode failed");
+      return err;
     }
 
-    /* Prepare payload: FEC encode if enabled, otherwise passthrough */
-    const uint8_t* tx_payload  = payload;
-    uint32_t       tx_len      = payload_len;
-    uint8_t        base_flags  = k_frame_flag_requires_ack;
+    tx_payload = link->fec_encode_buf;
+    tx_len     = encoded_len;
+    base_flags |= k_frame_flag_fec_enabled;
+  }
 
-    if (link->fec_enabled && payload != nullptr && payload_len > 0) {
-        uint32_t encoded_len = 0;
-        err = rx_harq_encode(&link->harq,
-                             payload,
-                             payload_len,
-                             link->fec_encode_buf,
-                             (uint32_t)k_spi_link_max_encoded_payload,
-                             &encoded_len);
-        if (err != k_rx_ok) {
-            rx_log_error(s_tag, "FEC encode failed");
-            return err;
-        }
+  /* Retry loop (bounded by max_retries)
+     * NOTE: This function is NOT thread-safe. Caller must ensure that
+     * rx_spi_link_send() is not called concurrently on the same link handle.
+     * Typical enforcement: Single task owns link, or external mutex protection. */
+  for (uint8_t attempt = 0; attempt < link->max_retries; attempt++) {
+    err = internal_send_attempt(link, type, base_flags, tx_payload, tx_len, attempt);
 
-        tx_payload = link->fec_encode_buf;
-        tx_len     = encoded_len;
-        base_flags |= k_frame_flag_fec_enabled;
+    if (err == k_rx_ok) {
+      /* ACK received - success */
+      link->state = k_spi_link_state_idle;
+      return k_rx_ok;
     }
 
-    /* Retry loop (bounded by max_retries) */
-    for (uint8_t attempt = 0; attempt < link->max_retries; attempt++) {
-        uint8_t flags = base_flags;
-
-        /* Mark retransmissions */
-        if (attempt > 0) {
-            flags |= k_frame_flag_retransmit;
-            link->state = k_spi_link_state_retransmitting;
-        } else {
-            link->state = k_spi_link_state_waiting_ack;
-        }
-
-        /* Send frame via SPI transport */
-        err = rx_spi_comm_send(link->spi_handle, type, flags, tx_payload, tx_len);
-        if (err != k_rx_ok) {
-            rx_log_warn(s_tag, "SPI send failed, attempt %u/%u",
-                        (unsigned)(attempt + 1U), (unsigned)link->max_retries);
-            continue;
-        }
-
-        /* Get the sequence number of the frame we just sent (it was auto-incremented) */
-        uint16_t sent_seq = 0;
-        (void)rx_session_get_tx(link->spi_handle->session, &sent_seq);
-        /* Session returns the NEXT seq, we want the one we just used */
-        sent_seq = (uint16_t)((sent_seq - 1U) & k_session_seq_wrap_mask);
-
-        /* Wait for ACK/NACK */
-        err = internal_wait_for_ack(link, sent_seq);
-        if (err == k_rx_ok) {
-            /* ACK received - success */
-            link->state = k_spi_link_state_idle;
-            return k_rx_ok;
-        }
-
-        if (err == k_rx_err_protocol_error) {
-            /* NACK received - gateway decode failed, retry */
-            rx_log_debug(s_tag, "NACK received, retry %u/%u",
-                         (unsigned)(attempt + 1U), (unsigned)link->max_retries);
-            continue;
-        }
-
-        /* Timeout - no response, retry */
-        rx_log_debug(s_tag, "ACK timeout, retry %u/%u",
-                     (unsigned)(attempt + 1U), (unsigned)link->max_retries);
+    if (err == k_rx_err_protocol_error) {
+      /* NACK received - gateway decode failed, retry */
+      rx_log_debug(s_tag, "NACK received, retrying");
+      continue;
     }
 
-    /* All retries exhausted */
-    link->state = k_spi_link_state_error;
-    rx_log_error(s_tag, "Max retries exceeded");
-    return k_rx_err_retry_limit;
+    /* Timeout or send error - retry */
+    rx_log_debug(s_tag, "Send attempt failed, retrying");
+  }
+
+  /* All retries exhausted */
+  link->state = k_spi_link_state_error;
+  rx_log_error(s_tag, "Max retries exceeded");
+  return k_rx_err_retry_limit;
 }
 
 /* =============================================================================
@@ -447,128 +499,178 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
  * ============================================================================= */
 
 /**
+ * @brief Process received frame with FEC decoding and Chase Combining
+ *
+ * @details
+ * Converts hard bits to soft bits, performs Viterbi decoding via HARQ,
+ * and sends ACK/NACK based on decode success. On success, resets HARQ
+ * combiner. On failure, sends NACK for retransmission.
+ *
+ * @param[in,out] link    Link handle (must be initialized)
+ * @param[in]     frame   Received frame with FEC-encoded payload
+ * @param[out]    result  Decode result (payload, length, metadata)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Decode success, ACK sent
+ * @retval k_rx_err_protocol_error Decode failed, NACK sent
+ */
+static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
+                                            const rx_frame_t*             frame,
+                                            rx_spi_link_receive_result_t* result)
+{
+  /* FEC decode path: convert bytes to soft bits, then Viterbi decode
+   * NOTE: Using static buffer to avoid stack overflow (16,400 bytes).
+   * Safe because this function is called from single-threaded context
+   * (SPI receive path protected by link state machine). */
+  static rx_soft_bit_t s_soft_bits[k_harq_soft_buffer_size];
+  uint32_t             soft_len = 0;
+
+  rx_err_t err = internal_bytes_to_soft_bits(frame->payload,
+                                             frame->header.length,
+                                             s_soft_bits,
+                                             k_harq_soft_buffer_size,
+                                             &soft_len);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Soft bit conversion failed");
+    (void)rx_spi_comm_send_nack(link->spi_handle, frame->header.sequence, 0);
+    return k_rx_err_protocol_error;
+  }
+
+  /* Calculate expected decoded length from FEC parameters.
+     *
+     * IMPORTANT: This formula is correct because rx_fec.c internally accounts
+     * for k_fec_tail_bits when encoding. The frame payload contains the full
+     * FEC-encoded bitstream (data bits + parity bits + tail bits). The formula:
+     *   expected_decoded_len = (soft_len / k_bits_per_byte) / 2
+     * works as follows:
+     *   1. soft_len is the total encoded bit count (includes tail bits)
+     *   2. Divide by k_bits_per_byte (8) to get encoded byte count
+     *   3. Divide by 2 because FEC rate is 1/2 (each input bit → 2 output bits)
+     * The FEC decoder (rx_fec_viterbi_decode) automatically handles tail bit
+     * flushing internally, so we don't subtract them here. */
+  const uint32_t expected_decoded_len = (soft_len / (uint32_t)k_bits_per_byte) / 2U;
+
+  const rx_harq_decode_params_t params = {
+    .soft_bits           = s_soft_bits,
+    .soft_len            = soft_len,
+    .expected_output_len = expected_decoded_len,
+  };
+
+  err = rx_harq_decode(&link->harq, &params, result->payload, &result->payload_len);
+
+  result->fec_decoded     = true;
+  result->combining_count = rx_harq_get_retry_count(&link->harq);
+
+  if (err == k_rx_ok) {
+    /* Decode success - send ACK */
+    const rx_err_t ack_err = rx_spi_comm_send_ack(link->spi_handle, frame->header.sequence);
+    if (ack_err != k_rx_ok) {
+      rx_log_warn(s_tag, "ACK send failed (data decoded OK)");
+    }
+    (void)rx_harq_reset(&link->harq);
+    return k_rx_ok;
+  }
+
+  /* Decode failed - send NACK for retransmission */
+  rx_log_debug(s_tag, "FEC decode failed, sending NACK");
+  (void)rx_spi_comm_send_nack(link->spi_handle, frame->header.sequence, k_frame_flag_soft_nack);
+  return k_rx_err_protocol_error;
+}
+
+/**
+ * @brief Process received frame without FEC (passthrough mode)
+ *
+ * @details
+ * Copies payload directly to result buffer and sends ACK if required
+ * by frame flags. No FEC decoding or Chase Combining applied.
+ *
+ * @param[in,out] link    Link handle (must be initialized)
+ * @param[in]     frame   Received frame with raw payload
+ * @param[out]    result  Receive result (payload, length, metadata)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, payload copied and ACK sent (if required)
+ */
+static rx_err_t internal_receive_passthrough(rx_spi_link_t*                link,
+                                             const rx_frame_t*             frame,
+                                             rx_spi_link_receive_result_t* result)
+{
+  /* No FEC: passthrough (copy payload directly) */
+  if (frame->header.length > 0 && frame->header.length <= k_harq_max_payload) {
+    (void)memcpy(result->payload, frame->payload, frame->header.length);
+  }
+  result->payload_len     = frame->header.length;
+  result->fec_decoded     = false;
+  result->combining_count = 1;
+
+  /* Send ACK if the frame requires it */
+  if ((frame->header.flags & k_frame_flag_requires_ack) != 0) {
+    const rx_err_t ack_err = rx_spi_comm_send_ack(link->spi_handle, frame->header.sequence);
+    if (ack_err != k_rx_ok) {
+      rx_log_warn(s_tag, "ACK send failed (passthrough)");
+    }
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Receive and decode a frame from SPI with HARQ
  * @see rx_spi_link.h for full documentation
  */
-rx_err_t rx_spi_link_receive(rx_spi_link_t*                link,
-                              rx_spi_link_receive_result_t* result,
-                              uint32_t                      timeout_ms)
+rx_err_t
+rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, uint32_t timeout_ms)
 {
-    /* Pre-condition 1: NULL checks */
-    if (link == nullptr || result == nullptr) {
-        return k_rx_err_invalid_arg;
-    }
+  /* Pre-condition 1: NULL checks */
+  if (link == nullptr || result == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
 
-    /* Pre-condition 2: State check */
-    if (!link->initialized) {
-        return k_rx_err_invalid_state;
-    }
+  /* Pre-condition 2: State check */
+  if (!link->initialized) {
+    return k_rx_err_invalid_state;
+  }
 
-    /* Receive raw frame from SPI transport */
-    rx_frame_t frame;
-    memset(&frame, 0, sizeof(frame));
-    memset(result, 0, sizeof(*result));
+  /* Receive raw frame from SPI transport */
+  rx_frame_t frame;
+  (void)memset(&frame, 0, sizeof(frame));
+  (void)memset(result, 0, sizeof(*result));
 
-    const rx_err_t recv_err = rx_spi_comm_receive(link->spi_handle, &frame, timeout_ms);
-    if (recv_err != k_rx_ok) {
-        return recv_err; /* Timeout or error */
-    }
+  const rx_err_t recv_err = rx_spi_comm_receive(link->spi_handle, &frame, timeout_ms);
+  if (recv_err != k_rx_ok) {
+    return recv_err; /* Timeout or error */
+  }
 
-    /* Handle ACK/NACK control frames internally (not data for application) */
-    if (frame.header.type == (uint8_t)k_frame_type_ack ||
-        frame.header.type == (uint8_t)k_frame_type_nack) {
-        /* Control frame - not application data */
-        return k_rx_err_timeout; /* Signal "no data" to caller */
-    }
+  /* Handle ACK/NACK control frames internally (not data for application) */
+  if (frame.header.type == (uint8_t)k_frame_type_ack ||
+      frame.header.type == (uint8_t)k_frame_type_nack) {
+    /* Control frame - not application data */
+    return k_rx_err_timeout; /* Signal "no data" to caller */
+  }
 
-    /* Handle PING/PONG/RESET (already handled by rx_spi_comm internally) */
-    if (frame.header.type == (uint8_t)k_frame_type_ping ||
-        frame.header.type == (uint8_t)k_frame_type_pong ||
-        frame.header.type == (uint8_t)k_frame_type_reset ||
-        frame.header.type == (uint8_t)k_frame_type_reset_ack) {
-        return k_rx_err_timeout; /* Not application data */
-    }
+  /* Handle PING/PONG/RESET (already handled by rx_spi_comm internally) */
+  if (frame.header.type == (uint8_t)k_frame_type_ping ||
+      frame.header.type == (uint8_t)k_frame_type_pong ||
+      frame.header.type == (uint8_t)k_frame_type_reset ||
+      frame.header.type == (uint8_t)k_frame_type_reset_ack) {
+    return k_rx_err_timeout; /* Not application data */
+  }
 
-    /* Data frame received */
-    result->sequence      = frame.header.sequence;
-    result->frame_type    = frame.header.type;
-    result->is_retransmit = (frame.header.flags & k_frame_flag_retransmit) != 0;
+  /* Data frame received - populate common metadata */
+  result->sequence      = frame.header.sequence;
+  result->frame_type    = frame.header.type;
+  result->is_retransmit = (frame.header.flags & k_frame_flag_retransmit) != 0;
 
-    /* Check if FEC decoding is needed */
-    const bool has_fec_flag = (frame.header.flags & k_frame_flag_fec_enabled) != 0;
+  /* Check if FEC decoding is needed */
+  const bool has_fec_flag = (frame.header.flags & k_frame_flag_fec_enabled) != 0;
 
-    if (link->fec_enabled && has_fec_flag && frame.header.length > 0) {
-        /* FEC decode path: convert bytes to soft bits, then Viterbi decode */
-        rx_soft_bit_t soft_bits[k_harq_soft_buffer_size];
-        uint32_t      soft_len = 0;
+  if (link->fec_enabled && has_fec_flag && frame.header.length > 0) {
+    /* FEC decode path: HARQ with Chase Combining */
+    return internal_receive_fec_decode(link, &frame, result);
+  }
 
-        rx_err_t err = internal_bytes_to_soft_bits(frame.payload,
-                                                    frame.header.length,
-                                                    soft_bits,
-                                                    k_harq_soft_buffer_size,
-                                                    &soft_len);
-        if (err != k_rx_ok) {
-            rx_log_error(s_tag, "Soft bit conversion failed");
-            (void)rx_spi_comm_send_nack(link->spi_handle, frame.header.sequence, 0);
-            return k_rx_err_protocol_error;
-        }
-
-        /* Calculate expected decoded length from FEC parameters */
-        const uint32_t expected_decoded_len =
-            (soft_len / (uint32_t)k_bits_per_byte) / 2U; /* rate 1/2 halves, then bits->bytes */
-
-        const rx_harq_decode_params_t params = {
-            .soft_bits           = soft_bits,
-            .soft_len            = soft_len,
-            .expected_output_len = expected_decoded_len,
-        };
-
-        err = rx_harq_decode(&link->harq,
-                             &params,
-                             result->payload,
-                             &result->payload_len);
-
-        result->fec_decoded     = true;
-        result->combining_count = rx_harq_get_retry_count(&link->harq);
-
-        if (err == k_rx_ok) {
-            /* Decode success - send ACK */
-            const rx_err_t ack_err =
-                rx_spi_comm_send_ack(link->spi_handle, frame.header.sequence);
-            if (ack_err != k_rx_ok) {
-                rx_log_warn(s_tag, "ACK send failed (data decoded OK)");
-            }
-            (void)rx_harq_reset(&link->harq);
-            return k_rx_ok;
-        }
-
-        /* Decode failed - send NACK for retransmission */
-        rx_log_debug(s_tag, "FEC decode failed, sending NACK");
-        (void)rx_spi_comm_send_nack(link->spi_handle,
-                                     frame.header.sequence,
-                                     k_frame_flag_soft_nack);
-        return k_rx_err_protocol_error;
-
-    }
-
-    /* No FEC: passthrough (copy payload directly) */
-    if (frame.header.length > 0 && frame.header.length <= k_harq_max_payload) {
-        memcpy(result->payload, frame.payload, frame.header.length);
-    }
-    result->payload_len     = frame.header.length;
-    result->fec_decoded     = false;
-    result->combining_count = 1;
-
-    /* Send ACK if the frame requires it */
-    if ((frame.header.flags & k_frame_flag_requires_ack) != 0) {
-        const rx_err_t ack_err =
-            rx_spi_comm_send_ack(link->spi_handle, frame.header.sequence);
-        if (ack_err != k_rx_ok) {
-            rx_log_warn(s_tag, "ACK send failed (passthrough)");
-        }
-    }
-
-    return k_rx_ok;
+  /* No FEC: passthrough (copy payload directly) */
+  return internal_receive_passthrough(link, &frame, result);
 }
 
 /* =============================================================================
@@ -581,27 +683,27 @@ rx_err_t rx_spi_link_receive(rx_spi_link_t*                link,
  */
 rx_err_t rx_spi_link_reset(rx_spi_link_t* link)
 {
-    /* Pre-condition 1 */
-    if (link == nullptr) {
-        return k_rx_err_invalid_arg;
-    }
+  /* Pre-condition 1 */
+  if (link == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
 
-    /* Pre-condition 2 */
-    if (!link->initialized) {
-        return k_rx_err_invalid_state;
-    }
+  /* Pre-condition 2 */
+  if (!link->initialized) {
+    return k_rx_err_invalid_state;
+  }
 
-    /* Reset HARQ (clears combiner and retry count) */
-    const rx_err_t err = rx_harq_reset(&link->harq);
-    if (err != k_rx_ok) {
-        rx_log_warn(s_tag, "HARQ reset warning during link reset");
-    }
+  /* Reset HARQ (clears combiner and retry count) */
+  const rx_err_t err = rx_harq_reset(&link->harq);
+  if (err != k_rx_ok) {
+    rx_log_warn(s_tag, "HARQ reset warning during link reset");
+  }
 
-    /* Post-condition: return to idle */
-    link->state = k_spi_link_state_idle;
+  /* Post-condition: return to idle */
+  link->state = k_spi_link_state_idle;
 
-    rx_log_debug(s_tag, "Link reset");
-    return k_rx_ok;
+  rx_log_debug(s_tag, "Link reset");
+  return k_rx_ok;
 }
 
 /**
@@ -610,10 +712,10 @@ rx_err_t rx_spi_link_reset(rx_spi_link_t* link)
  */
 rx_spi_link_state_t rx_spi_link_get_state(const rx_spi_link_t* link)
 {
-    if (link == nullptr || !link->initialized) {
-        return k_spi_link_state_error;
-    }
-    return link->state;
+  if (link == nullptr || !link->initialized) {
+    return k_spi_link_state_error;
+  }
+  return link->state;
 }
 
 /**
@@ -622,8 +724,8 @@ rx_spi_link_state_t rx_spi_link_get_state(const rx_spi_link_t* link)
  */
 bool rx_spi_link_fec_enabled(const rx_spi_link_t* link)
 {
-    if (link == nullptr || !link->initialized) {
-        return false;
-    }
-    return link->fec_enabled;
+  if (link == nullptr || !link->initialized) {
+    return false;
+  }
+  return link->fec_enabled;
 }

@@ -98,7 +98,7 @@ SPI enables full HARQ (per ADR-001) because it lacks USB's built-in reliability 
 \midrule
 5 & Application    & \texttt{internal/service/}           & \texttt{src/tasks/}            & gRPC services, motor commands, telemetry \\
 4 & Serialization  & \texttt{google.golang.org/protobuf}  & \texttt{libs/rx\_nanopb/}      & Protocol Buffers (full-size Go, nanopb C) \\
-3 & Reliability    & \texttt{internal/link/}               & \texttt{libs/rx\_harq/}, \texttt{libs/rx\_spi\_link/} & HARQ on SPI, lightweight on USB \\
+3 & HARQ + FEC     & \texttt{internal/link/}               & \texttt{libs/rx\_harq/}, \texttt{libs/rx\_spi\_link/} & HARQ on SPI (with FEC), lightweight/alternative FEC on USB \\
 2 & Framing        & \texttt{internal/frame/}              & \texttt{libs/rx\_frame/}       & SYNC + Header + Payload + CRC-32 \\
 1 & Transport      & \texttt{internal/transport/}          & RSPI0 / USB peripheral         & SPI @ 10\,MHz, USB CDC Full-Speed \\
 \bottomrule
@@ -600,9 +600,12 @@ USB CDC does not require application-level HARQ. The USB hardware provides CRC-1
 SPI ISR frame reception               & $\sim$5\,\textmu s \\
 Frame reassembly + CRC validation     & $\sim$50\,\textmu s \\
 Comm manager dispatch                 & $\sim$5\,\textmu s \\
-nanopb protobuf decode                & $\sim$15\,\textmu s \\
+nanopb protobuf decode\footnotemark[1] & $\sim$15\,\textmu s \\
+Protobuf validation + processing      & $\sim$100\,\textmu s \\
 \texttt{shared\_data} mutex update    & $\sim$7\,\textmu s \\
+ThreadX scheduling overhead           & $\sim$18\,\textmu s \\
 ThreadX context switch (priority 5$\to$8) & $\sim$50\,\textmu s \\
+Motor control task wakeup             & $\sim$50\,\textmu s \\
 PID control update                    & $\sim$20\,\textmu s \\
 \midrule
 \textbf{Total (transport to motor)}   & \textbf{$\sim$320\,\textmu s} \\
@@ -611,6 +614,8 @@ PID control update                    & $\sim$20\,\textmu s \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\footnotetext[1]{This timing represents the pure nanopb decode operation (\texttt{pb\_decode()}). The total \texttt{comm\_task} processing time documented in \texttt{comm\_task.c} ($\sim$200\,\textmu s for \texttt{SetVelocityRequest}) includes additional overhead from cascade decoding (trying multiple message types), protobuf field validation, and motor command structure population. The breakdown shown in this table isolates individual component timings for latency analysis. Measurements obtained at 240 MHz with -O2 optimization using RX72N cycle counter.}
 
 \noindent The firmware-side processing ($\sim$320\,\textmu s) is dominated by CRC validation and the ThreadX context switch. The end-to-end latency is governed by network round-trip time and gRPC serialization on the RPi5 side.
 

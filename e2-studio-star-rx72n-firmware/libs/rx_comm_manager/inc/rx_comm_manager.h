@@ -856,10 +856,15 @@ typedef struct {
    * - spi_link->spi_handle MUST be the same as config->spi_handle
    * - Must remain valid for lifetime of manager
    *
+   * @invariant If spi_link is non-NULL: spi_link->spi_handle == config->spi_handle
+   * @invariant If spi_link is non-NULL: spi_link->initialized == true
+   * @invariant If spi_link is non-NULL: spi_link must outlive manager instance
+   *
    * @par Valid values: Initialized rx_spi_link_t*, or nullptr for raw SPI
    * @par Lifetime: Must outlive manager instance
    *
    * @see rx_spi_link.h SPI link layer API
+   * @see rx_spi_link_init() Must be called before passing spi_link to manager
    * @since Version 1.1.0
    */
   rx_spi_link_t* spi_link;
@@ -969,11 +974,11 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;                                  /**< USB comm handle */
-  rx_spi_comm_handle_t*    spi_handle;                                  /**< SPI comm handle */
-  rx_spi_link_t*           spi_link;                                    /**< Optional SPI link (HARQ) */
-  rx_comm_frame_callback_t callback;                                    /**< Frame callback */
-  void*                    callback_ctx;                                /**< Callback context */
+  rx_usb_comm_handle_t*    usb_handle;   /**< USB comm handle */
+  rx_spi_comm_handle_t*    spi_handle;   /**< SPI comm handle */
+  rx_spi_link_t*           spi_link;     /**< Optional SPI link (HARQ) */
+  rx_comm_frame_callback_t callback;     /**< Frame callback */
+  void*                    callback_ctx; /**< Callback context */
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */
   bool                     enable_decoded_output;                       /**< Enable ASCII output */
   bool                     initialized;                                 /**< Initialization flag */
@@ -1057,11 +1062,36 @@ typedef struct {
 /**
  * @brief Initialize communication manager
  *
+ * @details
+ * Initializes the communication manager with the provided configuration.
+ * Validates configuration parameters and sets up internal state for
+ * USB and/or SPI channel operation.
+ *
  * @param[out] mgr Pointer to manager handle
  * @param[in]  cfg Configuration (NULL for defaults, both channels disabled)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if mgr is nullptr
+ * @return k_rx_err_invalid_arg if spi_link is non-NULL but not initialized
+ * @return k_rx_err_invalid_arg if spi_link->spi_handle != cfg->spi_handle
+ *
+ * @pre mgr must not be nullptr
+ * @pre If cfg->spi_link is non-NULL, spi_link must be initialized via rx_spi_link_init()
+ * @pre If cfg->spi_link is non-NULL, spi_link->spi_handle must equal cfg->spi_handle
+ * @pre cfg may be nullptr (results in default configuration with both channels disabled)
+ *
+ * @post mgr->usb_handle == cfg->usb_handle (or nullptr if cfg is nullptr)
+ * @post mgr->spi_handle == cfg->spi_handle (or nullptr if cfg is nullptr)
+ * @post mgr->spi_link == cfg->spi_link (or nullptr if cfg is nullptr or cfg->spi_link is nullptr)
+ * @post All internal state initialized (event queue empty, heartbeat timers reset)
+ *
+ * @note Thread-safe: May be called from any thread, but concurrent calls with same mgr are prohibited
+ * @warning Must be called before any other manager operations on this handle
+ *
+ * @see rx_spi_link_init() Must call this before passing spi_link to manager
+ * @see rx_comm_manager_deinit() Cleanup function
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_init(rx_comm_manager_t*              mgr,
                                             const rx_comm_manager_config_t* cfg);
