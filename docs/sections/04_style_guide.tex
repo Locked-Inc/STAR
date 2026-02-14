@@ -1,9 +1,12 @@
-% =============================================================================
-% PROTOCOL BUFFER STYLE GUIDE
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % PROTOCOL BUFFER STYLE GUIDE % == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
 \newpage
-\section{Protocol Buffer Style Guide}
+\section{Protocol Buffer Style Guide
+}
 \label{sec:protobuf-style}
 
 This section defines naming standards and conventions for all Protocol Buffer definitions in the STAR project, following Boston Dynamics style guidelines.
@@ -14,68 +17,122 @@ The project uses inclusive terminology following OSHWA (Open Source Hardware Ass
 
 \begin{table}[H]
 \centering
-\caption{Communication Bus Terminology}
-\label{tab:inclusive-terminology}
-\begin{tabular}{|l|l|p{6cm}|}
+\caption{
+  Communication Bus Terminology
+}
+\label {
+tab:
+  inclusive - terminology
+}
+\begin{tabular} { | l | l | p{6cm} |}
 \hline
-\textbf{Use} & \textbf{Avoid} & \textbf{Context} \\
-\hline
-Controller/Peripheral & Master/Slave & I2C, SPI, 1-Wire bus roles \\
-COPI & MOSI & Controller Out, Peripheral In \\
-CIPO & MISO & Controller In, Peripheral Out \\
-Primary/Main & Master & Configuration structures \\
+\textbf{Use} & \textbf{Avoid} & \textbf{Context}
+\\
+\hline Controller / Peripheral &Master / Slave &I2C, SPI,
+    1 - Wire bus roles \\
+COPI &MOSI &Controller Out,
+    Peripheral In \\
+CIPO &MISO &Controller In,
+    Peripheral Out \\
+Primary / Main &Master &Configuration structures \\
 \hline
 \end{tabular}
 \end{table}
 
-\subsection{Protocol Buffer Naming Conventions (Boston Dynamics Style)}
+\subsection{Protocol Buffer Naming Conventions(Boston Dynamics Style)}
 
 The STAR project follows Boston Dynamics' Protocol Buffer style guide for all .proto definitions.
 
 \begin{table}[H]
 \centering
-\caption{Protocol Buffer Naming Conventions}
-\label{tab:proto-naming-style}
-\begin{tabular}{|l|l|l|}
+\caption {
+  Protocol Buffer Naming Conventions
+}
+\label {
+tab:
+  proto - naming - style
+}
+\begin{tabular} { | l | l | l |}
 \hline
-\textbf{Element} & \textbf{Convention} & \textbf{Example} \\
-\hline
-Package & Versioned namespace & \texttt{star.v1} \\
-Messages & PascalCase & \texttt{VelocityCommand}, \texttt{BatteryState} \\
-Fields & snake\_case + unit suffix & \texttt{velocity\_mps}, \texttt{temperature\_celsius} \\
-Enums & SCREAMING\_SNAKE\_CASE & \texttt{MOTOR\_STATE\_RUNNING} \\
-Enum Zero Value & \_UNKNOWN suffix & \texttt{STATUS\_UNKNOWN = 0} \\
-Enum Values & Type name prefix & \texttt{ROBOT\_MODE\_MANUAL} \\
-RPC Pattern & \{Verb\}Request/Response & \texttt{SetVelocityRequest} \\
+\textbf{Element} & \textbf{Convention} & \textbf{Example}
+\\
+\hline Package &Versioned namespace & \texttt { star.v1}
+\ Messages &PascalCase & \texttt{VelocityCommand}, \texttt { BatteryState}
+\ Fields &snake\_case + unit suffix & \texttt{velocity\_mps}, \texttt {
+  temperature\_celsius
+}
+\ Enums &SCREAMING\_SNAKE\_CASE & \texttt { MOTOR\_STATE\_RUNNING}
+\ Enum Zero Value & \_UNKNOWN suffix & \texttt { STATUS\_UNKNOWN = 0}
+\ Enum Values &Type name prefix & \texttt { ROBOT\_MODE\_MANUAL}
+\ RPC Pattern & \{Verb\} Request / Response & \texttt { SetVelocityRequest}
+\\
 \hline
 \end{tabular}
 \end{table}
 
-\subsection{Unit Suffixes (MKS System)}
+\subsection{Unit Suffixes(MKS System)}
 
-All numeric fields use SI units with explicit suffixes. This eliminates unit ambiguity and enables automatic documentation generation.
+All numeric fields use SI units with explicit suffixes
+    .This eliminates unit ambiguity and enables automatic documentation
+        generation.
 
 \begin{table}[H]
 \centering
-\caption{Standard Unit Suffixes}
-\label{tab:unit-suffixes-style}
-\begin{tabular}{|l|l|l|l|}
+\caption {
+  Standard Unit Suffixes
+}
+\label {
+tab:
+  unit - suffixes - style
+}
+\begin{tabular} { | l | l | l | l |}
 \hline
-\textbf{Suffix} & \textbf{Unit} & \textbf{Proto Example} & \textbf{C Example} \\
+\textbf{Suffix} & \textbf{Unit} & \textbf{Proto Example} & \textbf{C Example
+}
+\\
 \hline
-\texttt{\_m} & meters & \texttt{x\_m} & \texttt{distance\_m} \\
-\texttt{\_mps} & meters/second & \texttt{velocity\_mps} & \texttt{speed\_mps} \\
-\texttt{\_mps2} & m/s$^2$ & \texttt{accel\_x\_mps2} & \texttt{acceleration\_mps2} \\
-\texttt{\_rad} & radians & \texttt{angle\_rad} & \texttt{heading\_rad} \\
-\texttt{\_rad\_per\_s} & rad/second & \texttt{omega\_rad\_per\_s} & \texttt{angular\_vel\_rad\_per\_s} \\
-\texttt{\_celsius} & degrees C & \texttt{temperature\_celsius} & \texttt{motor\_temp\_celsius} \\
-\texttt{\_deci\_celsius} & 0.1\textdegree C & \texttt{temp\_deci\_celsius} & (BMS native format) \\
-\texttt{\_us} & microseconds & \texttt{timestamp\_us} & \texttt{elapsed\_us} \\
-\texttt{\_ms} & milliseconds & \texttt{timeout\_ms} & \texttt{period\_ms} \\
-\texttt{\_ma} & milliamps & \texttt{current\_ma} & \texttt{motor\_current\_ma} \\
-\texttt{\_mv} & millivolts & \texttt{cell\_mv} & \texttt{pack\_voltage\_mv} \\
-\texttt{\_mw} & milliwatts & \texttt{power\_mw} & \texttt{consumption\_mw} \\
-\texttt{\_percent} & 0--100\% & \texttt{soc\_percent} & \texttt{duty\_cycle\_percent} \\
+\texttt{\_m} & meters & \texttt{x\_m} & \texttt { distance\_m}
+\\
+\texttt{\_mps} & meters / second & \texttt{velocity\_mps} & \texttt {
+  speed\_mps
+}
+\\
+\texttt{\_mps2} & m / s$ ^ 2 $ & \texttt{accel\_x\_mps2} & \texttt {
+  acceleration\_mps2
+}
+\\
+\texttt{\_rad} & radians & \texttt{angle\_rad} & \texttt { heading\_rad}
+\\
+\texttt{\_rad\_per\_s} & rad / second & \texttt{omega\_rad\_per\_s} & \texttt {
+  angular\_vel\_rad\_per\_s
+}
+\\
+\texttt{\_celsius} & degrees C & \texttt{temperature\_celsius} & \texttt {
+  motor\_temp\_celsius
+}
+\\
+\texttt{\_deci\_celsius} & 0.1\textdegree C & \texttt{temp\_deci\_celsius} &
+    (BMS native format) \\
+\texttt{\_us} & microseconds & \texttt{timestamp\_us} & \texttt {
+  elapsed\_us
+}
+\\
+\texttt{\_ms} & milliseconds & \texttt{timeout\_ms} & \texttt { period\_ms}
+\\
+\texttt{\_ma} & milliamps & \texttt{current\_ma} & \texttt {
+  motor\_current\_ma
+}
+\\
+\texttt{\_mv} & millivolts & \texttt{cell\_mv} & \texttt {
+  pack\_voltage\_mv
+}
+\\
+\texttt{\_mw} & milliwatts & \texttt{power\_mw} & \texttt { consumption\_mw}
+\\
+\texttt{\_percent} & 0 --100\% & \texttt{soc\_percent} & \texttt {
+  duty\_cycle\_percent
+}
+\\
 \hline
 \end{tabular}
 \end{table}
@@ -89,4 +146,3 @@ All numeric fields use SI units with explicit suffixes. This eliminates unit amb
     \item Avoid magic numbers -- use named constants with comments
     \item Version hardware and firmware together using git tags
 \end{itemize}
-

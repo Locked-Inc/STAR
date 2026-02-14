@@ -1,164 +1,216 @@
-% =============================================================================
-% Formal Technical Proposal Template
-% Based on ESET-419 Senior Design Project format (Texas A&M University)
-%
-% INSTRUCTIONS:
-% 1. Update preamble.sty with your project metadata
-% 2. Replace lorem ipsum text in section files with your content
-% 3. Add your figures to the figures/ directory
-% 4. Update references.bib with your sources
-% 5. Compile with: latexmk -pdf main.tex
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Formal Technical Proposal Template % Based on ESET -
+          419 Senior Design Project format(Texas A & M University) % %
+              INSTRUCTIONS
+    : %
+      1. Update preamble.sty with your project metadata %
+      2. Replace lorem ipsum text in section files with your content %
+      3. Add your figures to the figures / directory %
+      4. Update references.bib with your sources % 5. Compile with : latexmk -
+          pdf main.tex %
+      == == == == == == == == == == == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == ==
+    =
 
-% Allow inclusion of PDF 1.7 files (must be before \documentclass)
-\pdfminorversion=7
+        % Allow inclusion of PDF 1.7 files(must be before \documentclass)
+\pdfminorversion = 7
 
-\documentclass[12pt,letterpaper]{article}
+\documentclass[12pt, letterpaper]{article}
 
-% Load all packages and settings from preamble
+                        % Load all packages and
+                    settings from preamble
 \usepackage{preamble}
 
-% Load acronyms definitions
-\input{acronyms}
+                        % Load acronyms definitions
+\input {
+  acronyms
+}
 
 \begin{document}
 
-% =============================================================================
-% FRONT MATTER
-% =============================================================================
+        %
+    == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == == ==
+    = % FRONT MATTER % == == == == == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == ==
+    =
 
-% Cover Page (no page number)
-\input{sections/00_cover}
+        % Cover Page(no page number)
+\input{sections / 00_cover}
 
-% Table of Contents
+        % Table of Contents
 \newpage
-\pagenumbering{roman}
-\pdfbookmark[1]{Contents}{toc}
+\pagenumbering {
+  roman
+}
+\pdfbookmark[1] { Contents }
+{ toc }
 \tableofcontents
 
-% List of Figures
+    % List of Figures
 \newpage
 \phantomsection
-\addcontentsline{toc}{section}{List of Figures}
+\addcontentsline{toc} {
+  section
+}
+{ List of Figures }
 \listoffigures
 
-% List of Tables
+    % List of Tables
 \newpage
 \phantomsection
-\addcontentsline{toc}{section}{List of Tables}
+\addcontentsline{toc} {
+  section
+}
+{ List of Tables }
 \listoftables
 
-% List of Code Snippets
+    % List of Code Snippets
 \newpage
 \phantomsection
-\addcontentsline{toc}{section}{List of Code Snippets}
+\addcontentsline{toc} {
+  section
+}
+{ List of Code Snippets }
 \lstlistoflistings
 
-% =============================================================================
-% BODY - Start Arabic page numbering
-% =============================================================================
+        %
+    == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == == ==
+    = % BODY - Start Arabic page numbering % == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == == == ==
+      ==
+    =
 \newpage
 \pagenumbering{arabic}
 
-% Section 1: Introduction (Team, Project Overview, IP Statement)
-\input{sections/01_introduction}
+        % Section 1 : Introduction(Team, Project Overview, IP Statement)
+\input{sections / 01_introduction}
 
-% Section 2: Problem & Solution Statement
+                      %
+                      Section 2 : Problem &
+    Solution Statement
 \newpage
-\input{sections/02_problem_solution}
+\input{sections / 02_problem_solution}
 
-% Section 3: Conceptual Block Diagram
+        % Section 3 : Conceptual Block Diagram
 \newpage
-\input{sections/03_cbd}
+\input{sections / 03_cbd}
 
-% Section 3b: Functional Block Diagram
+                      %
+                      Section 3b
+    : Functional Block Diagram
 \newpage
-\input{sections/03b_fbd}
+\input{sections / 03b_fbd}
 
-% Section 4: Project Scope (includes Key Deliverables)
+      %
+      Section 4 : Project Scope(includes Key Deliverables)
 \newpage
-\input{sections/04_scope}
+\input{sections / 04_scope}
 
-% Section 5: Assumptions
+                  %
+                  Section 5 : Assumptions
 \newpage
-\input{sections/05_assumptions}
+\input{sections / 05_assumptions}
 
-% Section 6: Work Breakdown Structure
+                              %
+                              Section 6 : Work Breakdown Structure
 \newpage
-\input{sections/06_wbs}
+\input{sections / 06_wbs}
 
-% Section 7: Network Logic Diagram
+                                          %
+                                          Section 7 : Network Logic Diagram
 \newpage
-\input{sections/07_nld}
+\input{sections / 07_nld}
 
-% Section 8: Gantt Chart (Project Timing)
+                                                      %
+                                                      Section 8
+    : Gantt Chart(Project Timing)
 \newpage
-\input{sections/08_gantt}
+\input{sections / 08_gantt}
 
-% Section 9: Milestones
+      %
+      Section 9 : Milestones
 \newpage
-\input{sections/09_milestones}
+\input{sections / 09_milestones}
 
-% Section 10: Critical Path
+                  %
+                  Section 10 : Critical Path
 \newpage
-\input{sections/10_critical_path}
+\input{sections / 10_critical_path}
 
-% Section 11: Resource Planning
+                               %
+                               Section 11 : Resource Planning
 \newpage
-\input{sections/11_resources}
+\input{sections / 11_resources}
 
-% Section 12: Risk Assessment
+                                            %
+                                            Section 12 : Risk Assessment
 \newpage
-\input{sections/12_risks}
+\input{sections / 12_risks}
 
-% Section 13: Budget
+                                                         %
+                                                         Section 13 : Budget
 \newpage
-\input{sections/13_budget}
+\input{sections / 13_budget}
 
-% Section 14: Lessons Learned
+                                                                      %
+                                                                      Section 14
+    : Lessons Learned
 \newpage
-\input{sections/14_lessons_learned}
+\input{sections / 14_lessons_learned}
 
-% Section 15: Preliminary Implementation (includes Test Plan)
+      %
+      Section 15 : Preliminary Implementation(includes Test Plan)
 \newpage
-\input{sections/15_implementation_electrical}
-
-\newpage
-\input{sections/16_implementation_embedded}
-
-\newpage
-\input{sections/17_implementation_software}
-
-\newpage
-\input{sections/18_implementation_mechanical}
+\input {
+  sections / 15_implementation_electrical
+}
 
 \newpage
-\input{sections/19_test_plan}
+\input { sections / 16_implementation_embedded }
 
-% =============================================================================
-% BACK MATTER
-% =============================================================================
-
-% Appendix (full diagrams, supporting materials)
 \newpage
-\section{Appendix}
-\sectionauthors{All}
+\input { sections / 17_implementation_software }
 
-\input{sections/20_appendix_a}  % Acronyms and Definitions
-\input{sections/21_appendix_b}  % Work Breakdown Structure
-\input{sections/22_appendix_c}  % Network Logic Diagram
-\input{sections/23_appendix_d}  % Gantt Chart
-\input{sections/24_appendix_e}  % Resource Allocation Matrix
-\input{sections/25_appendix_f}  % Supporting Documents & Team Contacts
-\input{sections/26_appendix_g}  % Budget and Cost Analysis
-\input{sections/27_appendix_h}  % Risk Assessment
-\input{sections/28_appendix_i}  % Bill of Materials
-\input{sections/29_appendix_j}  % ESP32 Firmware Source Code
-\input{sections/appendix_k_software_process}  % Complete Software Process Map
-\input{sections/30_appendix_l}  % Detailed Test Cases
-
-% Works Cited (MLA 9th Edition format)
 \newpage
-\input{sections/30_references}
+\input { sections / 18_implementation_mechanical }
 
-\end{document}
+\newpage
+\input{sections / 19_test_plan}
+
+        %
+    == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == == ==
+    = % BACK MATTER % == == == == == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == ==
+    =
+
+        % Appendix(full diagrams, supporting materials)
+\newpage
+\section {
+  Appendix
+}
+\sectionauthors { All }
+
+\input{sections / 20_appendix_a} % Acronyms and Definitions
+\input{sections / 21_appendix_b} % Work Breakdown Structure
+\input{sections / 22_appendix_c} % Network Logic Diagram
+\input{sections / 23_appendix_d} % Gantt Chart
+\input{sections / 24_appendix_e} % Resource Allocation Matrix
+\input{sections / 25_appendix_f} % Supporting Documents &Team Contacts
+\input{sections / 26_appendix_g} % Budget and Cost Analysis
+\input{sections / 27_appendix_h} % Risk Assessment
+\input{sections / 28_appendix_i} % Bill of Materials
+\input{sections / 29_appendix_j} % ESP32 Firmware Source Code
+\input{sections / appendix_k_software_process} % Complete Software Process Map
+\input{sections / 30_appendix_l} % Detailed Test Cases
+
+    % Works Cited(MLA 9th Edition format)
+\newpage
+\input {
+  sections / 30_references
+}
+
+\end { document }

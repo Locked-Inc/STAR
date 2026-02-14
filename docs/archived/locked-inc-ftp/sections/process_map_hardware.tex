@@ -1,122 +1,197 @@
-% =============================================================================
-% Software Process Map: Hardware & Sensor Layer
-% Native TikZ implementation (replaces Python/Graphviz generated PDF)
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Software Process Map : Hardware &
+      Sensor Layer %
+              Native TikZ implementation(replaces Python /
+                                         Graphviz generated PDF) %
+          == == == == == == == == == == == == == == == == == == == == == == ==
+          == == == == == == == == == == == == == == ==
+    =
 
 \begin{figure}[H]
 \centering
-\adjustbox{max width=\textwidth, max height=0.8\textheight, keepaspectratio}{%
-\begin{tikzpicture}[
-    node distance=0.8cm and 1cm,
-    % Node styles
-    startstop/.style={ellipse, draw, fill=pmstartend, minimum width=1.8cm, minimum height=0.65cm, align=center, font=\small},
-    process/.style={rectangle, draw, rounded corners=3pt, fill=pmprocess, minimum width=2.4cm, minimum height=0.8cm, align=center, font=\small},
-    init/.style={rectangle, draw, rounded corners=3pt, fill=pminit, minimum width=2.4cm, minimum height=0.8cm, align=center, font=\small},
-    decision/.style={diamond, draw, fill=pmstartend, minimum width=1cm, minimum height=0.6cm, align=center, font=\small, aspect=2},
-    safety/.style={rectangle, draw, rounded corners=3pt, fill=pmsafety, minimum width=2.4cm, minimum height=0.8cm, align=center, font=\small},
-    emergency/.style={rectangle, draw, rounded corners=3pt, fill=pmemergency, minimum width=2.4cm, minimum height=0.8cm, align=center, font=\small},
-    data/.style={signal, signal to=east and west, draw, fill=pmdata, minimum width=2.2cm, minimum height=0.6cm, align=center, font=\small},
-    output/.style={signal, signal to=east and west, draw, fill=pmoutput, minimum width=2.2cm, minimum height=0.6cm, align=center, font=\small},
-    % Arrow styles
-    arrow/.style={->, thick, >=stealth},
-    emergency_arrow/.style={->, very thick, >=stealth, red}
-]
+\adjustbox{max width =\textwidth, max height = 0.8\textheight,
+            keepaspectratio} {
+  %
+\begin{tikzpicture}
+              [node distance = 0.8cm and 1cm,
+               % Node styles startstop /.style =
+                   {ellipse, draw, fill = pmstartend, minimum width = 1.8cm,
+                    minimum height = 0.65cm, align = center, font =\small},
+               process /.style = {rectangle, draw, rounded corners = 3pt,
+                                  fill = pmprocess, minimum width = 2.4cm,
+                                  minimum height = 0.8cm, align = center,
+                                  font =\small},
+               init /.style = {rectangle, draw, rounded corners = 3pt,
+                               fill = pminit, minimum width = 2.4cm,
+                               minimum height = 0.8cm, align = center,
+                               font =\small},
+               decision /.style = {diamond, draw, fill = pmstartend,
+                                   minimum width = 1cm, minimum height = 0.6cm,
+                                   align = center, font =\small, aspect = 2},
+               safety /.style = {rectangle, draw, rounded corners = 3pt,
+                                 fill = pmsafety, minimum width = 2.4cm,
+                                 minimum height = 0.8cm, align = center,
+                                 font =\small},
+               emergency /.style = {rectangle, draw, rounded corners = 3pt,
+                                    fill = pmemergency, minimum width = 2.4cm,
+                                    minimum height = 0.8cm, align = center,
+                                    font =\small},
+               data /.style = {signal, signal to = east and west, draw,
+                               fill = pmdata, minimum width = 2.2cm,
+                               minimum height = 0.6cm, align = center,
+                               font =\small},
+               output /.style = {signal, signal to = east and west, draw,
+                                 fill = pmoutput, minimum width = 2.2cm,
+                                 minimum height = 0.6cm, align = center,
+                                 font =\small},
+               % Arrow styles arrow /.style = {->, thick, >= stealth},
+               emergency_arrow /.style = {->, very thick, >= stealth, red}]
 
-    % === ROW 1: Start ===
-    \node[startstop] (hw_start) {Hardware Start};
+          %
+      ==
+      = ROW 1 : Start == =
+    \node[startstop](hw_start){Hardware Start};
 
-    % === ROW 2: Parallel Initialization (5 nodes) ===
-    \node[init, below left=1.2cm and 6.4cm of hw_start] (init_lidar) {Initialize LiDAR\\{\scriptsize TCP/IP connection}\\{\scriptsize SICK TiM561}};
+  % == = ROW 2 : Parallel Initialization(5 nodes) ==
+      =
+    \node[init, below left = 1.2cm and 6.4cm of hw_start](init_lidar){
+          Initialize LiDAR\\{\scriptsize TCP /
+                             IP connection}\\{\scriptsize SICK TiM561}};
 
-    \node[init, right=0.8cm of init_lidar] (init_motors) {Initialize Motors\\{\scriptsize SPI bus config}\\{\scriptsize Set PID gains}};
+  \node[init, right = 0.8cm of init_lidar](init_motors){
+      Initialize Motors\\{\scriptsize SPI bus config}\\{\scriptsize Set PID
+              gains}};
 
-    \node[init, right=0.8cm of init_motors] (init_sensors) {Initialize Sensors\\{\scriptsize IMU calibration (I2C)}\\{\scriptsize Sonar setup (GPIO)}};
+  \node[init, right = 0.8cm of init_motors](init_sensors){
+      Initialize Sensors\\{\scriptsize IMU calibration(
+          I2C)}\\{\scriptsize Sonar setup(GPIO)}};
 
-    \node[init, right=0.8cm of init_sensors] (init_power) {Initialize Power\\{\scriptsize Fuel gauge (SMBus)}\\{\scriptsize Enable regulators}};
+  \node[init, right = 0.8cm of init_sensors](init_power){
+      Initialize Power\\{\scriptsize Fuel gauge(
+          SMBus)}\\{\scriptsize Enable regulators}};
 
-    \node[init, right=0.8cm of init_power] (init_cameras) {Initialize Cameras\\{\scriptsize USB 3.0 enum}\\{\scriptsize Set parameters}};
+  \node[init, right = 0.8cm of init_power](init_cameras){
+      Initialize Cameras\\{\scriptsize USB 3.0 enum}\\{\scriptsize Set
+              parameters}};
 
-    % === ROW 3: Input from Navigation ===
-    \node[data, below=1.2cm of init_motors] (from_nav) {From Navigation\\(motor\_cmd via SPI)};
+  % == = ROW 3 : Input from Navigation == =
+    \node[data, below = 1.2cm of init_motors](from_nav){From Navigation\\(
+                                              motor\_cmd via SPI)};
 
-    % === ROW 4: Limit Checking ===
-    \node[process, below=of from_nav] (check_limits) {Check Limits\\{\scriptsize Max speed: 0.25 m/s}\\{\scriptsize Thermal limits (ADC)}};
+  % == = ROW 4 : Limit Checking ==
+      =
+    \node[process, below = of from_nav](check_limits){
+          Check Limits\\{\scriptsize Max speed :
+                             0.25 m / s}\\{\scriptsize Thermal limits(ADC)}};
 
-    \node[decision, below=of check_limits] (limit_check) {Within\\Limits?};
+  \node[decision, below = of check_limits](limit_check){Within\\Limits ? };
 
-    \node[safety, left=2cm of limit_check] (clamp) {Clamp Values\\{\scriptsize Limit to safe range}\\{\scriptsize Log warning}};
+  \node[safety, left = 2cm of limit_check](clamp){
+      Clamp Values\\{\scriptsize Limit to safe range}\\{\scriptsize Log
+              warning}};
 
-    % === ROW 5: Motor Control ===
-    \node[process, below=of limit_check] (motor_ctrl) {Execute Motor Control\\{\scriptsize PWM to motors (SPI)}\\{\scriptsize Read encoders}\\{\scriptsize Compute odometry}};
+  % == = ROW 5 : Motor Control ==
+      =
+    \node[process, below = of limit_check](
+          motor_ctrl){Execute Motor Control\\{\scriptsize PWM to motors(
+          SPI)}\\{\scriptsize Read encoders}\\{\scriptsize Compute odometry}};
 
-    % === ROW 6: Sensor Fusion ===
-    \node[process, below=of motor_ctrl] (sensor_fusion) {Sensor Data Fusion\\{\scriptsize IMU: orientation (I2C)}\\{\scriptsize Encoders: odometry}\\{\scriptsize Sonar: rear obstacles}};
+  % == = ROW 6 : Sensor Fusion ==
+      =
+    \node[process, below = of motor_ctrl](sensor_fusion){
+          Sensor Data
+              Fusion\\{\scriptsize IMU : orientation(
+                  I2C)}\\{\scriptsize
+                Encoders : odometry}\\{\scriptsize Sonar : rear obstacles}};
 
-    % === ROW 7: Publish Odometry ===
-    \node[output, below=of sensor_fusion] (pub_odom) {Publish Odometry\\{\scriptsize To /odom topic}\\{\scriptsize To /tf transform}};
+  % == = ROW 7 : Publish Odometry ==
+      =
+    \node[output, below = of sensor_fusion](pub_odom){
+          Publish Odometry\\{\scriptsize To / odom topic}\\{\scriptsize To /
+                                                            tf transform}};
 
-    % === BATTERY MONITORING BRANCH (right side) ===
-    \node[process, below=1.2cm of init_power] (battery_mon) {Monitor Battery\\{\scriptsize Read voltage (SMBus)}\\{\scriptsize Estimate charge \%}};
+  % == = BATTERY MONITORING BRANCH(right side) == =
+    \node[process, below = 1.2cm of init_power](battery_mon) {
+    Monitor Battery\\{\scriptsize Read voltage(
+        SMBus)}\\{\scriptsize Estimate charge \% }
+  };
 
-    \node[decision, below=of battery_mon] (bat_20) {Battery\\$< 20\%$?};
+  \node[decision, below = of battery_mon](bat_20){Battery\\$ < 20\% $ ? };
 
-    \node[safety, right=1.5cm of bat_20] (low_bat_warn) {Low Battery Warning\\{\scriptsize Alert operator}\\{\scriptsize Reduce max speed}};
+  \node[safety, right = 1.5cm of bat_20](low_bat_warn){
+      Low Battery Warning\\{\scriptsize Alert
+          operator}\\{\scriptsize Reduce max speed} };
 
-    \node[decision, below=of low_bat_warn] (bat_10) {Battery\\$< 10\%$?};
+  \node[decision, below = of low_bat_warn](bat_10){Battery\\$ < 10\% $ ? };
 
-    \node[emergency, below=of bat_10] (shutdown) {Safe Shutdown\\{\scriptsize Save state}\\{\scriptsize Power off}};
+  \node[emergency, below = of bat_10](shutdown){
+      Safe Shutdown\\{\scriptsize Save state}\\{\scriptsize Power off}};
 
-    % === TEMPERATURE MONITORING BRANCH ===
-    \node[process, below=1.2cm of bat_20] (temp_mon) {Monitor Temperature\\{\scriptsize Motor temps}\\{\scriptsize PCB temps (ADC)}};
+  % == = TEMPERATURE MONITORING BRANCH ==
+      =
+    \node[process, below = 1.2cm of bat_20](temp_mon){
+          Monitor Temperature\\{\scriptsize Motor temps}\\{\scriptsize PCB
+                  temps(ADC)}};
 
-    \node[decision, below=of temp_mon] (temp_ok) {Temperature\\OK?};
+  \node[decision, below = of temp_mon](temp_ok){Temperature\\OK ? };
 
-    \node[safety, below right=0.5cm and 2cm of temp_ok] (cooling) {Activate Cooling\\{\scriptsize Increase fan speed}\\{\scriptsize Reduce motor load}};
+  \node[safety, below right = 0.5cm and 2cm of temp_ok](cooling){
+      Activate Cooling\\{\scriptsize Increase fan speed}\\{\scriptsize Reduce
+              motor load}};
 
-    % === OUTPUT TO SLAM ===
-    \node[output, below=of temp_ok] (to_slam) {To SLAM Layer\\(LiDAR data)};
+  % == = OUTPUT TO SLAM == =
+    \node[output, below = of temp_ok](to_slam){To SLAM Layer\\(LiDAR data)};
 
-    % === CONNECTIONS ===
-    % Parallel initialization from start
-    \draw[arrow] (hw_start) -| (init_lidar);
-    \draw[arrow] (hw_start) -| (init_motors);
-    \draw[arrow] (hw_start) -- (init_sensors);
-    \draw[arrow] (hw_start) -| (init_power);
-    \draw[arrow] (hw_start) -| (init_cameras);
+  % == = CONNECTIONS == = % Parallel initialization from start
+    \draw[arrow](hw_start) - | (init_lidar);
+  \draw[arrow](hw_start) - | (init_motors);
+  \draw[arrow](hw_start)--(init_sensors);
+  \draw[arrow](hw_start) - | (init_power);
+  \draw[arrow](hw_start) - | (init_cameras);
 
-    % Motor control flow
-    \draw[arrow] (init_motors) -- (from_nav);
-    \draw[arrow] (from_nav) -- (check_limits);
-    \draw[arrow] (check_limits) -- (limit_check);
-    \draw[arrow] (limit_check) -- node[above, font=\scriptsize] {No} (clamp);
-    \draw[arrow, dashed] (clamp.south) -- ++(0,-0.5) -| ([xshift=-0.2cm]motor_ctrl.north);
-    \draw[arrow] (limit_check) -- node[left, font=\scriptsize] {Yes} ([xshift=0.2cm]motor_ctrl.north);
+  % Motor control flow
+    \draw[arrow](init_motors)--(from_nav);
+  \draw[arrow](from_nav)--(check_limits);
+  \draw[arrow](check_limits)--(limit_check);
+  \draw[arrow](limit_check)-- node[above, font =\scriptsize]{No}(clamp);
+  \draw[arrow, dashed](clamp.south)-- ++(0, -0.5) - |
+      ([xshift = -0.2cm] motor_ctrl.north);
+  \draw[arrow](limit_check)-- node[left, font =\scriptsize]{Yes}(
+      [xshift = 0.2cm] motor_ctrl.north);
 
-    % Sensor fusion flow
-    \draw[arrow] (motor_ctrl) -- ([xshift=0.2cm]sensor_fusion.north);
-    \draw[arrow] (init_sensors.south) -- (init_sensors.south |- sensor_fusion.east) -- (sensor_fusion.east);
-    \draw[arrow] (sensor_fusion) -- (pub_odom);
+  % Sensor fusion flow
+    \draw[arrow](motor_ctrl)--([xshift = 0.2cm] sensor_fusion.north);
+  \draw[arrow](init_sensors.south)--(init_sensors.south |
+                                     -sensor_fusion.east)--(sensor_fusion.east);
+  \draw[arrow](sensor_fusion)--(pub_odom);
 
-    % Battery monitoring flow
-    \draw[arrow] (init_power) -- (battery_mon);
-    \draw[arrow] (battery_mon) -- (bat_20);
-    \draw[arrow] (bat_20) -- node[above, font=\scriptsize] {Yes} (low_bat_warn);
-    \draw[arrow] (low_bat_warn) -- (bat_10);
-    \draw[emergency_arrow] (bat_10) -- node[left, font=\scriptsize] {Yes} (shutdown);
-    \draw[arrow, dashed] (bat_10.west) -- ++(-0.5,0) |- node[near start, above, font=\scriptsize] {No} ([yshift=0.2cm]temp_mon.east);
-    \draw[arrow] (bat_20) -- node[left, font=\scriptsize] {No} (temp_mon);
+  % Battery monitoring flow
+    \draw[arrow](init_power)--(battery_mon);
+  \draw[arrow](battery_mon)--(bat_20);
+  \draw[arrow](bat_20)-- node[above, font =\scriptsize]{Yes}(low_bat_warn);
+  \draw[arrow](low_bat_warn)--(bat_10);
+  \draw[emergency_arrow](bat_10)-- node[left, font =\scriptsize]{Yes}(shutdown);
+  \draw[arrow, dashed](bat_10.west)-- ++(-0.5, 0) |
+      -node[near start, above, font =\scriptsize]{No}(
+          [yshift = 0.2cm] temp_mon.east);
+  \draw[arrow](bat_20)-- node[left, font =\scriptsize]{No}(temp_mon);
 
-    % Temperature monitoring flow
-    \draw[arrow] (temp_mon) -- (temp_ok);
-    \draw[arrow] (temp_ok) -- node[above, font=\scriptsize] {No} (cooling);
-    \draw[arrow, dashed] (cooling.south) -- ++(0,-0.5) -| ([yshift=-0.2cm]to_slam.east);
-    \draw[arrow] (temp_ok) -- node[left, font=\scriptsize] {Yes} (to_slam);
+  % Temperature monitoring flow
+    \draw[arrow](temp_mon)--(temp_ok);
+  \draw[arrow](temp_ok)-- node[above, font =\scriptsize]{No}(cooling);
+  \draw[arrow, dashed](cooling.south)-- ++(0, -0.5) - |
+      ([yshift = -0.2cm] to_slam.east);
+  \draw[arrow](temp_ok)-- node[left, font =\scriptsize]{Yes}(to_slam);
 
-    % LiDAR to SLAM (route below all blocks)
-    \draw[arrow] (init_lidar.south) -- ++(0,-17) -| (to_slam.south);
+  % LiDAR to SLAM(route below all blocks)
+    \draw[arrow](init_lidar.south)-- ++(0, -17) - | (to_slam.south);
 
-\end{tikzpicture}%
+  \end{tikzpicture} %
 }
-\caption{Hardware \& Sensor Layer Process Flow}
-\label{fig:process-hw}
-\end{figure}
+\caption { Hardware \&Sensor Layer Process Flow }
+\label {
+fig:
+  process - hw
+}
+\end { figure }

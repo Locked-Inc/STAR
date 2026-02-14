@@ -1,119 +1,182 @@
-% =============================================================================
-% Software Process Map: Navigation & Control Layer
-% Native TikZ implementation (replaces Python/Graphviz generated PDF)
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Software Process Map : Navigation &
+      Control Layer %
+              Native TikZ implementation(replaces Python /
+                                         Graphviz generated PDF) %
+          == == == == == == == == == == == == == == == == == == == == == == ==
+          == == == == == == == == == == == == == == ==
+    =
 
 \begin{figure}[H]
 \centering
-\adjustbox{max width=\textwidth, max height=0.8\textheight, keepaspectratio}{%
-\begin{tikzpicture}[
-    node distance=1cm and 1.2cm,
-    % Node styles
-    startstop/.style={ellipse, draw, fill=pmstartend, minimum width=2cm, minimum height=0.8cm, align=center, font=\small},
-    process/.style={rectangle, draw, rounded corners=3pt, fill=pmprocess, minimum width=2.8cm, minimum height=0.9cm, align=center, font=\small},
-    init/.style={rectangle, draw, rounded corners=3pt, fill=pminit, minimum width=2.8cm, minimum height=0.9cm, align=center, font=\small},
-    decision/.style={diamond, draw, fill=pmstartend, minimum width=1.2cm, minimum height=0.8cm, align=center, font=\small, aspect=2},
-    safety/.style={rectangle, draw, rounded corners=3pt, fill=pmsafety, minimum width=2.8cm, minimum height=0.9cm, align=center, font=\small},
-    emergency/.style={rectangle, draw, rounded corners=3pt, fill=pmemergency, minimum width=2.8cm, minimum height=0.9cm, align=center, font=\small},
-    data/.style={signal, signal to=east and west, draw, fill=pmdata, minimum width=2.5cm, minimum height=0.7cm, align=center, font=\small},
-    output/.style={signal, signal to=east and west, draw, fill=pmoutput, minimum width=2.5cm, minimum height=0.7cm, align=center, font=\small},
-    % Arrow styles
-    arrow/.style={->, thick, >=stealth},
-    emergency_arrow/.style={->, very thick, >=stealth, red}
-]
+\adjustbox{max width =\textwidth, max height = 0.8\textheight,
+            keepaspectratio} {
+  %
+\begin{tikzpicture}[node distance = 1cm and 1.2cm,
+                     % Node styles startstop /.style =
+                         {ellipse, draw, fill = pmstartend, minimum width = 2cm,
+                          minimum height = 0.8cm, align = center, font =\small},
+                     process /.style = {rectangle, draw, rounded corners = 3pt,
+                                        fill = pmprocess, minimum width = 2.8cm,
+                                        minimum height = 0.9cm, align = center,
+                                        font =\small},
+                     init /.style = {rectangle, draw, rounded corners = 3pt,
+                                     fill = pminit, minimum width = 2.8cm,
+                                     minimum height = 0.9cm, align = center,
+                                     font =\small},
+                     decision /.style = {diamond, draw, fill = pmstartend,
+                                         minimum width = 1.2cm,
+                                         minimum height = 0.8cm, align = center,
+                                         font =\small, aspect = 2},
+                     safety /.style = {rectangle, draw, rounded corners = 3pt,
+                                       fill = pmsafety, minimum width = 2.8cm,
+                                       minimum height = 0.9cm, align = center,
+                                       font =\small},
+                     emergency /.style =
+                         {rectangle, draw, rounded corners = 3pt,
+                          fill = pmemergency, minimum width = 2.8cm,
+                          minimum height = 0.9cm, align = center, font =\small},
+                     data /.style = {signal, signal to = east and west, draw,
+                                     fill = pmdata, minimum width = 2.5cm,
+                                     minimum height = 0.7cm, align = center,
+                                     font =\small},
+                     output /.style = {signal, signal to = east and west, draw,
+                                       fill = pmoutput, minimum width = 2.5cm,
+                                       minimum height = 0.7cm, align = center,
+                                       font =\small},
+                     % Arrow styles arrow /.style = {->, thick, >= stealth},
+                     emergency_arrow /.style = {->, very thick, >= stealth,
+                                                red}]
 
-    % === ROW 1: Start ===
-    \node[startstop] (nav_start) {Navigation Start};
+          %
+      ==
+      = ROW 1 : Start == =
+    \node[startstop](nav_start){Navigation Start};
 
-    % === ROW 2: Initialization ===
-    \node[init, below=of nav_start] (init_nav2) {Initialize Nav2 Stack\\{\scriptsize Load costmap params}\\{\scriptsize Configure A* planner}\\{\scriptsize Set footprint}};
+  % == = ROW 2 : Initialization ==
+      =
+    \node[init, below = of nav_start](init_nav2){
+          Initialize Nav2 Stack\\{\scriptsize Load costmap
+                  params}\\{\scriptsize Configure A *
+                            planner}\\{\scriptsize Set footprint}};
 
-    % === ROW 3: Mode Selection ===
-    \node[decision, below=1.2cm of init_nav2] (mode_select) {Select Operating\\Mode};
+  % == = ROW 3 : Mode Selection == =
+    \node[decision, below = 1.2cm of init_nav2](mode_select){
+                                       Select Operating\\Mode};
 
-    % Mode branches
-    \node[process, left=2cm of mode_select] (manual_mode) {Manual Mode\\Active};
-    \node[process, right=2cm of mode_select] (auto_mode) {Autonomous Mode\\Active};
+  % Mode branches
+    \node[process, left = 2cm of mode_select](manual_mode){
+        Manual Mode\\Active};
+  \node[process, right = 2cm of mode_select](auto_mode){
+      Autonomous Mode\\Active};
 
-    % === ROW 4: Data inputs ===
-    \node[data, below=of manual_mode] (from_ui) {From UI Layer\\(cmd\_vel)};
-    \node[data, below=of auto_mode] (from_slam) {From SLAM Layer\\(map, pose)};
+  % == = ROW 4 : Data inputs == =
+    \node[data, below = of manual_mode](from_ui){From UI Layer\\(cmd\_vel)};
+  \node[data, below = of auto_mode](from_slam){From SLAM Layer\\(map, pose)};
 
-    % === ROW 5: Path Planning (autonomous branch) ===
-    \node[process, below=1.5cm of from_slam] (path_plan) {Path Planning\\{\scriptsize A* algorithm}\\{\scriptsize Global costmap}\\{\scriptsize Optimal path}};
+  % == = ROW 5 : Path Planning(autonomous branch) == =
+    \node[process, below = 1.5cm of from_slam](path_plan) {
+    Path Planning\\{\scriptsize A * algorithm}\\{\scriptsize Global
+            costmap}\\{\scriptsize Optimal path}
+  };
 
-    \node[decision, below=of path_plan] (path_check) {Valid Path\\Found?};
+  \node[decision, below = of path_plan](path_check){Valid Path\\Found ? };
 
-    \node[safety, left=2cm of path_check] (replan) {Replan Path\\{\scriptsize Inflate obstacles}\\{\scriptsize Try alternative}};
+  \node[safety, left = 2cm of path_check](replan){
+      Replan Path\\{\scriptsize Inflate obstacles}\\{\scriptsize Try
+              alternative}};
 
-    % === ROW 6: Local Planning ===
-    \node[process, below=1.2cm of path_check] (local_plan) {Local Planning\\{\scriptsize DWA controller}\\{\scriptsize Dynamic obstacles}\\{\scriptsize Velocity commands}};
+  % == = ROW 6 : Local Planning ==
+      =
+    \node[process, below = 1.2cm of path_check](local_plan){
+          Local Planning\\{\scriptsize DWA controller}\\{\scriptsize Dynamic
+                  obstacles}\\{\scriptsize Velocity commands}};
 
-    \node[decision, below=of local_plan] (obstacle_check) {Dynamic Obstacle\\Detected?};
+  \node[decision, below = of local_plan](obstacle_check){
+      Dynamic Obstacle\\Detected ? };
 
-    \node[safety, right=2cm of obstacle_check] (avoid) {Obstacle Avoidance\\{\scriptsize Update costmap}\\{\scriptsize Adjust trajectory}};
+  \node[safety, right = 2cm of obstacle_check](avoid){
+      Obstacle Avoidance\\{\scriptsize Update costmap}\\{\scriptsize Adjust
+              trajectory}};
 
-    % === ROW 7: Safety Check ===
-    \node[decision, below=1.2cm of obstacle_check] (safe_check) {Operation\\Safe?};
+  % == = ROW 7 : Safety Check == =
+    \node[decision, below = 1.2cm of obstacle_check](safe_check){
+                                     Operation\\Safe ? };
 
-    \node[emergency, left=2cm of safe_check, yshift=1.5cm] (halt) {Halt Movement\\{\scriptsize Set velocity to 0}\\{\scriptsize Alert operator}};
+  \node[emergency, left = 2cm of safe_check, yshift = 1.5cm](halt){
+      Halt Movement\\{\scriptsize Set velocity to 0}\\{\scriptsize Alert
+          operator} };
 
-    % === ROW 8: Motion Execution ===
-    \node[process, below=of safe_check] (execute) {Execute Motion\\{\scriptsize Send to motor controller}\\{\scriptsize Monitor execution}\\{\scriptsize Update odometry}};
+  % == = ROW 8 : Motion Execution ==
+      =
+    \node[process, below = of safe_check](execute){
+          Execute Motion\\{\scriptsize Send to motor controller}\\{\scriptsize
+                  Monitor execution}\\{\scriptsize Update odometry}};
 
-    % === ROW 9: Output ===
-    \node[output, below=of execute] (to_hardware) {To Hardware Layer\\(motor\_cmd via SPI)};
+  % == = ROW 9 : Output == =
+    \node[output, below = of execute](to_hardware){
+                               To Hardware Layer\\(motor\_cmd via SPI)};
 
-    \node[decision, below=of to_hardware] (goal_check) {Goal\\Reached?};
+  \node[decision, below = of to_hardware](goal_check){Goal\\Reached ? };
 
-    \node[startstop, below=of goal_check] (nav_complete) {Navigation\\Complete};
+  \node[startstop, below = of goal_check](nav_complete){Navigation\\Complete};
 
-    % === CONNECTIONS ===
-    % Main initialization flow
-    \draw[arrow] (nav_start) -- (init_nav2);
-    \draw[arrow] (init_nav2) -- (mode_select);
+  % == = CONNECTIONS == = % Main initialization flow
+    \draw[arrow](nav_start)--(init_nav2);
+  \draw[arrow](init_nav2)--(mode_select);
 
-    % Mode selection branches
-    \draw[arrow] (mode_select) -- node[above, font=\scriptsize] {Manual} (manual_mode);
-    \draw[arrow] (mode_select) -- node[above, font=\scriptsize] {Autonomous} (auto_mode);
+  % Mode selection branches
+    \draw[arrow](mode_select)-- node[above, font =\scriptsize]{Manual}(
+        manual_mode);
+  \draw[arrow](mode_select)-- node[above, font =\scriptsize]{Autonomous}(
+      auto_mode);
 
-    % Data input flows
-    \draw[arrow] (manual_mode) -- (from_ui);
-    \draw[arrow] (auto_mode) -- (from_slam);
-    \draw[arrow] (from_slam) -- (path_plan);
+  % Data input flows
+    \draw[arrow](manual_mode)--(from_ui);
+  \draw[arrow](auto_mode)--(from_slam);
+  \draw[arrow](from_slam)--(path_plan);
 
-    % Path planning flow
-    \draw[arrow] (path_plan) -- (path_check);
-    \draw[arrow] (path_check) -- node[above, font=\scriptsize] {No} (replan);
-    \draw[arrow, dashed] (replan.west) -- ++(-0.5,0) |- (path_plan.west);
-    \draw[arrow] (path_check) -- node[left, font=\scriptsize] {Yes} (local_plan);
+  % Path planning flow
+    \draw[arrow](path_plan)--(path_check);
+  \draw[arrow](path_check)-- node[above, font =\scriptsize]{No}(replan);
+  \draw[arrow, dashed](replan.west)-- ++(-0.5, 0) | -(path_plan.west);
+  \draw[arrow](path_check)-- node[left, font =\scriptsize]{Yes}(local_plan);
 
-    % Local planning flow
-    \draw[arrow] (local_plan) -- (obstacle_check);
-    \draw[arrow] (obstacle_check) -- node[above, font=\scriptsize] {Yes} (avoid);
-    \draw[arrow, dashed] (avoid.east) -- ++(0.5,0) |- ([yshift=0.2cm]local_plan.east);
-    \draw[arrow] (obstacle_check) -- node[left, font=\scriptsize] {No} (safe_check);
+  % Local planning flow
+    \draw[arrow](local_plan)--(obstacle_check);
+  \draw[arrow](obstacle_check)-- node[above, font =\scriptsize]{Yes}(avoid);
+  \draw[arrow, dashed](avoid.east)-- ++(0.5, 0) |
+      -([yshift = 0.2cm] local_plan.east);
+  \draw[arrow](obstacle_check)-- node[left, font =\scriptsize]{No}(safe_check);
 
-    % Manual mode joins at safety check
-    \draw[arrow] (from_ui) |- (safe_check);
+  % Manual mode joins at safety check
+    \draw[arrow](from_ui) | -(safe_check);
 
-    % Safety check branches
-    \draw[emergency_arrow] (safe_check) -- node[above, font=\scriptsize] {No} (halt);
-    \draw[arrow] (safe_check) -- node[left, font=\scriptsize] {Yes} (execute);
+  % Safety check branches
+    \draw[emergency_arrow](safe_check)-- node[above, font =\scriptsize]{No}(
+        halt);
+  \draw[arrow](safe_check)-- node[left, font =\scriptsize]{Yes}(execute);
 
-    % Halt loops back (route around nodes)
-    \draw[arrow, dashed] (halt.west) -- ++(-0.5,0) |- (local_plan.west);
+  % Halt loops back(route around nodes)
+    \draw[arrow, dashed](halt.west)-- ++(-0.5, 0) | -(local_plan.west);
 
-    % Execution flow
-    \draw[arrow] (execute) -- (to_hardware);
-    \draw[arrow] (to_hardware) -- (goal_check);
+  % Execution flow
+    \draw[arrow](execute)--(to_hardware);
+  \draw[arrow](to_hardware)--(goal_check);
 
-    % Goal check branches
-    \draw[arrow] (goal_check) -- node[left, font=\scriptsize] {Yes} (nav_complete);
-    \draw[arrow, dashed] (goal_check.east) -- ++(1.5,0) |- node[near start, right, font=\scriptsize] {No} ([yshift=-0.2cm]local_plan.east);
+  % Goal check branches
+    \draw[arrow](goal_check)-- node[left, font =\scriptsize]{Yes}(
+        nav_complete);
+  \draw[arrow, dashed](goal_check.east)-- ++(1.5, 0) |
+      -node[near start, right, font =\scriptsize]{No}(
+          [yshift = -0.2cm] local_plan.east);
 
-\end{tikzpicture}%
+  \end{tikzpicture} %
 }
-\caption{Navigation \& Control Layer Process Flow}
-\label{fig:process-nav}
-\end{figure}
+\caption { Navigation \&Control Layer Process Flow }
+\label {
+fig:
+  process - nav
+}
+\end { figure }

@@ -1,4 +1,4 @@
-\section { USB CDC Protocol }
+\section{USB CDC Protocol}
 \label {
 sec:
   usb_cdc_protocol
@@ -14,17 +14,14 @@ sec:
     ASCII debugging,
     and log streaming over a single USB connection.
 
-\subsubsection {
-  Port Assignment
+\subsubsection{Port Assignment
 }
 
 \begin{table}[h]
 \centering
-\begin{tabular} { | c | l | l | c | c | p{4cm} | }
+\begin{tabular} { | c | l | l | c | c | p{4cm} |}
 \hline
-\textbf{Port} & \textbf{Purpose} & \textbf{Linux Device} & \textbf{
-    RX(B)} & \textbf{TX(B)} & \textbf {
-  Usage
+\textbf{Port} & \textbf{Purpose} & \textbf{Linux Device} & \textbf{RX(B)} & \textbf{TX(B)} & \textbf{Usage
 }
 \\
 \hline 0 & Protocol & / dev / ttyACM0 & 1024 & 1024 & nanopb frames,
@@ -33,33 +30,29 @@ sec:
     debugging \ 2 & Log & / dev / ttyACM2 & 256 & 1024 & System logging,
     diagnostics \\
 \hline
-\end {
-  tabular
-}
-\caption { USB CDC Port Configuration }
+\end{tabular}
+\caption { USB CDC Port Configuration}
 \label {
 tab:
   usb_cdc_ports
 }
-\end { table }
+\end{table}
 
-\subsubsection { Hardware Configuration }
+\subsubsection{Hardware Configuration}
 
-\begin { itemize }
+\begin{itemize}
 \item \textbf{USB Speed} : Full - Speed(12 Mbps)
 \item \textbf{Max Packet Size} : 64 bytes(bulk endpoints)
 \item \textbf{Pipes Used} : 9 pipes
-                           total(1 control + 3 CDC × (1 interrupt + 2 bulk))
+                           total(1 control + 3 CDC x (1 interrupt + 2 bulk))
 \item \textbf{Pins} : USB\_DP(PA4),
     USB\_DM(PA5), USB\_VBUS(PA6)
 \item \textbf{Clock} : 48 MHz USB clock from PLL
-\end {
-  itemize
-}
+\end{itemize}
 
-\subsection { USB Descriptor Hierarchy }
+\subsection{USB Descriptor Hierarchy}
 
-\subsubsection { Device Descriptor }
+\subsubsection{Device Descriptor}
 
 \begin{lstlisting}[language = C, caption = {USB Device Descriptor},
                    label = {lst : usb_device_desc}] {
@@ -77,28 +70,24 @@ tab:
       .iSerialNumber = 3,  // "RX72N-00001"
       .bNumConfigurations = 1
 }
-\end { lstlisting }
+\end{lstlisting}
 
 \subsubsection{Configuration Descriptor}
 
 The configuration descriptor contains :
-\begin {
-  itemize
-}
-\item 3 × Interface Association Descriptors (IAD) - Groups each CDC function
-\item 3 × CDC Control Interface (Class 0x02, Subclass 0x02)
-\item 3 × CDC Data Interface (Class 0x0A, Subclass 0x00)
-\item 3 × Interrupt IN endpoints (control)
-\item 6 × Bulk endpoints (3 IN + 3 OUT for data)
-\end{
-  itemize
-}
+\begin{itemize}
+\item 3 x Interface Association Descriptors (IAD) - Groups each CDC function
+\item 3 x CDC Control Interface (Class 0x02, Subclass 0x02)
+\item 3 x CDC Data Interface (Class 0x0A, Subclass 0x00)
+\item 3 x Interrupt IN endpoints (control)
+\item 6 x Bulk endpoints (3 IN + 3 OUT for data)
+\end{itemize}
 
 \subsubsection{Interface Association Descriptor(IAD)}
 
 Each CDC port uses an IAD to group its control and data interfaces :
 
-\begin{lstlisting}[language = C, caption = { IAD for Port 0(Protocol Port) },
+\begin{lstlisting}[language = C, caption = { IAD for Port 0(Protocol Port)},
                     label = {lst : usb_iad}] {
   .bLength = 8,
   .bDescriptorType = 0x0B,       // IAD
@@ -109,17 +98,15 @@ Each CDC port uses an IAD to group its control and data interfaces :
       .bFunctionProtocol = 0x01, // AT Commands
       .iFunction = 4             // "Protocol Port"
 }
-\end { lstlisting }
+\end{lstlisting}
 
-\subsubsection { Endpoint Configuration }
+\subsubsection{Endpoint Configuration}
 
 \begin{table}[h]
 \centering
-\begin{tabular} { | c | l | c | c | c | c | }
+\begin{tabular} { | c | l | c | c | c | c |}
 \hline
-\textbf{Port} & \textbf{Type} & \textbf{EP} & \textbf{Dir} & \textbf{
-    Size} & \textbf {
-  Interval
+\textbf{Port} & \textbf{Type} & \textbf{EP} & \textbf{Dir} & \textbf{Size} & \textbf{Interval
 }
 \\
 \hline 0 & Interrupt & EP1 & IN & 16 & 10 ms \ 0 & Bulk OUT &EP2 & OUT & 64 &
@@ -129,17 +116,15 @@ Each CDC port uses an IAD to group its control and data interfaces :
 \hline 2 & Interrupt & EP7 & IN & 16 & 10 ms \ 2 & Bulk OUT &EP8 & OUT & 64 &
     - \ 2 & Bulk IN &EP9 & IN & 64 & - \\
 \hline
-\end {
-  tabular
-}
-\caption { USB Endpoint Assignments }
+\end{tabular}
+\caption { USB Endpoint Assignments}
 \label {
 tab:
   usb_endpoints
 }
-\end { table }
+\end{table}
 
-\subsection { USB State Machine }
+\subsection{USB State Machine}
 
 \begin{figure}[h]
 \centering
@@ -159,13 +144,13 @@ tab:
     3ms idle}(suspended)(suspended)edge[bend right] node{
     Resume}(configured)(configured)edge[bend right = 60] node[below]{
     VBUS lost}(detached)(default)edge[bend left = 40] node{Bus Reset}(default);
-\end { tikzpicture }
-\caption { USB Device State Machine }
+\end{tikzpicture}
+\caption { USB Device State Machine}
 \label {
 fig:
   usb_state_machine
 }
-\end { figure }
+\end{figure}
 
 \textbf{Critical State} : Only in \texttt{Configured} state can \texttt{
                               rx\_usb\_write / read} transfer data.
@@ -181,60 +166,57 @@ fig:
   | l | c | p{6cm} |
 }
 \hline
-\textbf{Request} & \textbf{Code} & \textbf { Description }
+\textbf{Request} & \textbf{Code} & \textbf{Description}
 \\
 \hline SET\_LINE\_CODING & 0x20 & Host configures baud rate, parity,
-    stop bits \ GET\_LINE\_CODING & 0x21 &
-        Host queries current line coding \ SET\_CONTROL\_LINE\_STATE & 0x22 &
+    stop bits \\
+GET\_LINE\_CODING & 0x21 &
+        Host queries current line coding \\
+SET\_CONTROL\_LINE\_STATE & 0x22 &
         DTR / RTS control signals(ignored) \\
 \hline
-\end {
-  tabular
-}
-\caption { CDC - ACM Class Requests }
+\end{tabular}
+\caption { CDC - ACM Class Requests}
 \label {
 tab:
   cdc_requests
 }
-\end { table }
+\end{table}
 
 \textbf{Note} : Line coding settings(baud rate, parity, etc.) are
                 informational only.USB CDC operates at USB Full
     - Speed(12 Mbps),
     not the configured baud rate.
 
-\subsection {
-  Bulk Transfer Protocol
+\subsection{Bulk Transfer Protocol
 }
 
-\subsubsection { Data Flow }
+\subsubsection{Data Flow}
 
-\paragraph { Bulk OUT(Host → Device) }
+\paragraph { Bulk OUT(Host -> Device)}
 
-\begin { enumerate }
+\begin{enumerate}
 \item Host writes data to / dev / ttyACM *
 \item USB driver sends bulk OUT packet(max 64 bytes)
-\item RX72N receives packet → BRDY interrupt fires
-\item ISR reads FIFO → copies to RX ring buffer
+\item RX72N receives packet -> BRDY interrupt fires
+\item ISR reads FIFO -> copies to RX ring buffer
 \item Application calls \texttt {
   rx\_usb\_read()
 }
-→ retrieves data
-\end { enumerate }
+-> retrieves data
+\end{enumerate}
 
-\paragraph { Bulk IN(Device → Host) }
+\paragraph { Bulk IN(Device -> Host)}
 
-\begin { enumerate }
-\item Application calls \texttt { rx\_usb\_write() }
-→ copies to TX ring buffer
-\item ISR writes FIFO → sends bulk IN packet(max 64 bytes)
+\begin{enumerate}
+\item Application calls \texttt { rx\_usb\_write()}
+-> copies to TX ring buffer
+\item ISR writes FIFO -> sends bulk IN packet(max 64 bytes)
 \item BEMP interrupt fires when packet sent
 \item Host reads data from / dev / ttyACM *
-\end {
-  enumerate
-}
+\end{enumerate}
 
-\subsubsection { FIFO Access Requirements(RX72N - Specific) }
+\subsubsection{FIFO Access Requirements(RX72N - Specific)}
 
 \textbf{CRITICAL} : RX72N USB FIFO registers \textbf{must} be accessed as 16 -
                     bit words,
@@ -250,9 +232,9 @@ tab:
   data[i] = (uint8_t)(word & 0xFF);    // Low byte
   if ((i + 1) < len) {
     data[i + 1] = (uint8_t)((word >> 8) & 0xFF); // High byte
-  }
+ }
 }
-\end { lstlisting }
+\end{lstlisting}
 
 \begin{lstlisting}[language = C,
                    caption = {Incorrect FIFO Read(causes data corruption)},
@@ -261,7 +243,7 @@ tab:
     for (uint32_t i = 0; i < len; i++) {
   data[i] = (uint8_t)(usb0()->cfifo & 0xFF); // BAD!
 }
-\end { lstlisting }
+\end{lstlisting}
 
 \textbf{Impact} : Byte - by -
                   byte access was the root cause of all bulk transfer failures
@@ -288,7 +270,7 @@ while ((usb0()->cfifoctr & k_usb_fifoctr_bclr) && timeout--) {
 for (uint32_t i = 0; i < len; i += 2) {
   // ... 16-bit write ...
 }
-\end { lstlisting }
+\end{lstlisting}
 
 \textbf{Impact}
     : Missing BCLR sequence caused first packet corruption with stale data.
@@ -305,26 +287,22 @@ for (uint32_t i = 0; i < len; i += 2) {
   ccccccc
 }
 \toprule
-\textbf{SYNC} & \textbf{SEQ} & \textbf{LEN} & \textbf{TYPE} & \textbf{
-    FLAGS} & \textbf{PAYLOAD} & \textbf {
-  CRC - 32
+\textbf{SYNC} & \textbf{SEQ} & \textbf{LEN} & \textbf{TYPE} & \textbf{FLAGS} & \textbf{PAYLOAD} & \textbf{CRC - 32
 }
 \ (LE) & (LE) & (LE) & &&&(LE) \\
 \midrule 2B & 2B & 2B & 1B & 1B & 0 - 1024B & 4B \\
 \bottomrule
-\end {
-  tabular
-}
-\caption { Frame Wire Format }
+\end{tabular}
+\caption { Frame Wire Format}
 \label {
 tab:
   frame_format
 }
-\end { table }
+\end{table}
 
-\textbf { Header Fields(little - endian) : }
-\begin { itemize }
-\item \textbf{SYNC} : Magic number \texttt { 0x55AA } for
+\textbf{Header Fields(little - endian) :}
+\begin{itemize}
+\item \textbf{SYNC} : Magic number \texttt { 0x55AA} for
   frame synchronization
 \item \textbf{SEQ} : Sequence number(0 - 65535, wraps around)
 \item \textbf{LEN} : Payload length in bytes
@@ -334,25 +312,22 @@ tab:
 \item \textbf{PAYLOAD} : Variable
                           -
                           length data(Protocol Buffer message)
-\end {
-    itemize
-  }
+\end{itemize}
 
-\textbf{Checksum(little - endian, IEEE 802.3 LSB - first) : } CRC -
+\textbf{Checksum(little - endian, IEEE 802.3 LSB - first) :} CRC -
     32 computed over SYNC + header + payload,
     stored in little - endian byte order.
 
-\subsubsection {
-  Frame Types
+\subsubsection{Frame Types
 }
 
 \begin{table}[h]
 \centering
 \begin{tabular} {
-  cl p { 7cm }
+  cl p { 7cm}
 }
 \toprule
-\textbf{Value} & \textbf{Name} & \textbf { Description } \\
+\textbf{Value} & \textbf{Name} & \textbf{Description} \\
 \midrule
 0x00 & PING & Heartbeat request -- sent when link idle for >1s \\
 0x01 & PONG & Heartbeat response -- echoes PING counter \\
@@ -363,17 +338,15 @@ tab:
 0xFE & RESET\_ACK & Acknowledgment of session reset \\
 0xFF & RESET & Request to reset session (synchronize sequences) \\
 \bottomrule
-\end{
-  tabular
-}
-\caption { Frame Type Definitions }
+\end{tabular}
+\caption { Frame Type Definitions}
 \label {
 tab:
   frame_types
 }
-\end { table }
+\end{table}
 
-\subsubsection { Control Frame Details }
+\subsubsection{Control Frame Details}
 
 \textbf{PING Frame:} TYPE \texttt{0x00}, payload is a 4-byte counter (little-endian uint32). Sent as an explicit idle-link probe when no frames have been exchanged for >1s. Both firmware and gateway auto-respond with PONG on PING receipt.
 
@@ -393,75 +366,72 @@ Both Go (gateway) and C (firmware) encode/decode frames identically. This is ver
   lccl c
 }
 \toprule
-\textbf{Vector} & \textbf{TYPE} & \textbf{SEQ} & \textbf{Payload} & \textbf {
-  CRC - 32
+\textbf{Vector} & \textbf{TYPE} & \textbf{SEQ} & \textbf{Payload} & \textbf{CRC - 32
 }
 \\
-\midrule PING & 0x00 & 0 & (empty) & 0x9B3FAEEB \ PONG & 0x01 & 0 &counter =
-    42 & 0x287737DF \ COMMAND & 0x10 & 1 & ``TEST'' + ACK flag &
-    0xDEF35E60 \ RESPONSE & 0x11 & 1 & ``OK'' & 0x6FC08EF4 \ ACK & 0x12 & 1 &
-    (empty) & 0xDEABF788 \ NACK & 0x13 & 1 & (empty) & 0xC7B0C6C9 \ RESET &
-    0xFF & 0 & (empty) & 0x081B5399 \ RESET\_ACK & 0xFE & 0 & (empty) &
+\midrule PING & 0x00 & 0 & (empty) & 0x9B3FAEEB \\
+PONG & 0x01 & 0 &counter =
+    42 & 0x287737DF \\
+COMMAND & 0x10 & 1 & ``TEST'' + ACK flag &
+    0xDEF35E60 \\
+RESPONSE & 0x11 & 1 & ``OK'' & 0x6FC08EF4 \\
+ACK & 0x12 & 1 &
+    (empty) & 0xDEABF788 \\
+NACK & 0x13 & 1 & (empty) & 0xC7B0C6C9 \\
+RESET &
+    0xFF & 0 & (empty) & 0x081B5399 \\
+RESET\_ACK & 0xFE & 0 & (empty) &
     0x110062D8 \\
 \bottomrule
-\end {
-  tabular
-}
-\caption { Cross - Compatibility Test Vectors }
+\end{tabular}
+\caption { Cross - Compatibility Test Vectors}
 \label {
 tab:
   cross_compat_vectors
 }
-\end { table }
+\end{table}
 
-\textbf { Test locations: }
-\begin { itemize }
-\item Go : \texttt { star - gateway / internal / frame / frame\_test.go }
+\textbf{Test locations:}
+\begin{itemize}
+\item Go : \texttt { star - gateway / internal / frame / frame\_test.go}
 \item C : \texttt {
   e2 - studio - star - rx72n - firmware / tests / test\_rx\_frame.c
 }
-\end { itemize }
+\end{itemize}
 
 \subsection{USB CDC Lightweight Protocol}
 
 The USB CDC protocol is designed for minimal overhead, relying on USB hardware for reliability. Unlike the SPI path which uses HARQ and retransmission, the CDC path omits these as redundant with USB's built-in CRC and retry mechanisms.
 
-\subsubsection{
-  Send Path
+\subsubsection{Send Path
 }
 
-\begin { enumerate }
+\begin{enumerate}
 \item Acquire send mutex (serialize concurrent sends)
 \item Get next TX sequence from shared SessionState
 \item Create frame with sequence, CRC32
 \item Encode to wire format
 \item Write to \texttt{/dev/ttyACM0} with 50ms deadline
 \item Release mutex (no wait for ACK)
-\end{
-  enumerate
-}
+\end{enumerate}
 
-\subsubsection { Receive Path }
+\subsubsection{Receive Path}
 
-\begin { enumerate }
-\item Read from \texttt { / dev / ttyACM0 }
+\begin{enumerate}
+\item Read from \texttt { / dev / ttyACM0}
 \item Decode frame, validate CRC32
 \item Check sequence via SessionState :
-  \begin {
-  itemize
-}
+  \begin{itemize}
 \item Accept exact match(expected sequence)
   \item Accept small gaps(< 10 frames, log warning)
   \item Reject duplicates or large gaps
-  \end {
-  itemize
-}
+  \end{itemize}
 \item Return payload to caller
-\end { enumerate }
+\end{enumerate}
 
-\subsubsection { Key Design Decisions }
+\subsubsection{Key Design Decisions}
 
-\begin { itemize }
+\begin{itemize}
 \item \checkmark {}
 Sequence tracking via shared SessionState
 \item \checkmark {}
@@ -469,20 +439,17 @@ CRC32 validation
 \item $\times$ No application - level retries(USB hardware handles retries)
 \item $\times$ No FEC encoding(redundant with USB reliability)
 \item $\times$ No ACK / NACK frames(USB provides implicit ACK)
-\end {
-  itemize
-}
+\end{itemize}
 
-\subsection { Transport Comparison(USB CDC vs SPI) }
+\subsection{Transport Comparison(USB CDC vs SPI)}
 
 \begin{table}[h]
 \centering
 \begin{tabular} {
-  lll p { 3.5cm }
+  lll p { 3.5cm}
 }
 \toprule
-\textbf{Feature} & \textbf{USB CDC} & \textbf{SPI} & \textbf {
-  Rationale
+\textbf{Feature} & \textbf{USB CDC} & \textbf{SPI} & \textbf{Rationale
 }
 \\
 \midrule Physical Layer &Half - duplex, async &Full - duplex,
@@ -500,15 +467,13 @@ CRC32 validation
         High(with retry mechanisms) &
         USB generally more reliable due to hardware CRC \\
 \bottomrule
-\end {
-  tabular
-}
-\caption { USB CDC vs SPI Transport Comparison }
+\end{tabular}
+\caption { USB CDC vs SPI Transport Comparison}
 \label {
 tab:
   transport_comparison
 }
-\end { table }
+\end{table}
 
 \subsection{Heartbeat Mechanism}
 
@@ -525,8 +490,7 @@ validate counter matches.1 consecutive miss triggers failover.Rarely fires under
     normal traffic;
 only needed when link is genuinely idle.
 
-\textbf{
-  Interaction between Implicit Timeout and Explicit PING :
+\textbf{Interaction between Implicit Timeout and Explicit PING :
 } The 200ms implicit timeout is the primary dead -
     link detection mechanism.On an active link,
     data frames arrive faster than 200ms and
@@ -544,24 +508,27 @@ only needed when link is genuinely idle.
     as an idle link with no frames in
     200ms is considered dead and triggers failover.
 
-\subsubsection {
-  Timing Budget
+\subsubsection{Timing Budget
 }
 
 \begin{table}[h]
 \centering
 \begin{tabular} {
-  lc p { 6cm }
+  lc p { 6cm}
 }
 \toprule
-\textbf{Parameter} & \textbf{Value} & \textbf { Description }
+\textbf{Parameter} & \textbf{Value} & \textbf{Description}
 \\
 \midrule Implicit timeout & 200ms & Primary detection,
-    any frame resets \ Check interval & 50ms & failureTimeout / 4,
-    worst - case detection \textasciitilde{} 250ms \ PING interval & 1000ms &
+    any frame resets \\
+Check interval & 50ms & failureTimeout / 4,
+    worst - case detection \textasciitilde{} 250ms \\
+PING interval & 1000ms &
         Secondary,
-    idle - link probe \ WDT timeout & 1000ms &
-        RX72N hardware watchdog \ Safety margin & 4x &
+    idle - link probe \\
+WDT timeout & 1000ms &
+        RX72N hardware watchdog \\
+Safety margin & 4x &
         250ms worst - case $\ll$ 1000ms WDT \\
 \bottomrule
 \end{tabular}
@@ -569,7 +536,7 @@ only needed when link is genuinely idle.
 \label{tab:
 heartbeat_timing
 }
-\end { table }
+\end{table}
 
 \subsubsection{Control Frame Dispatching}
 
@@ -582,17 +549,14 @@ heartbeat_timing
                        frames(COMMAND, RESPONSE)
 are returned to callers.
 
-\subsection {
-  Debug Logging Over USB CDC Port 2
+\subsection{Debug Logging Over USB CDC Port 2
 }
 
 \subsubsection{Architecture}
 
 The logging system supports dual output to both UART and USB CDC Port 2 :
 
-\begin {
-  itemize
-}
+\begin{itemize}
 \item \textbf{UART(SCI12)} : Always works, independent of USB state
 \item \textbf{USB CDC Port 2} : Enabled when \texttt {
   USB\_LOG\_MIRROR = 1
@@ -600,11 +564,9 @@ The logging system supports dual output to both UART and USB CDC Port 2 :
 \item \textbf{Boot buffering}: 512B ring buffer for logs during USB enumeration (0-200ms)
 \item \textbf{Thread safety}: ThreadX mutex for multi-task logging
 \item \textbf{Non-blocking}: Drops logs on TX full, tracks statistics
-\end{
-  itemize
-}
+\end{itemize}
 
-\subsubsection { Boot Log Sequence }
+\subsubsection{Boot Log Sequence}
 
 \begin{figure}[h]
 \centering
@@ -627,17 +589,17 @@ The logging system supports dual output to both UART and USB CDC Port 2 :
 
 \node[below of = usb_init, text width = 2cm]{Boot buffer\\(512B RAM)};
 \node[below of = normal, text width = 2cm]{Direct to\\USB CDC};
-\end { tikzpicture }
-\caption { Boot Log Buffering Sequence }
+\end{tikzpicture}
+\caption { Boot Log Buffering Sequence}
 \label {
 fig:
   boot_log_sequence
 }
-\end { figure }
+\end{figure}
 
-\subsubsection { Implementation }
+\subsubsection{Implementation}
 
-\paragraph { Boot Buffer Structure }
+\paragraph { Boot Buffer Structure}
 
 \begin{lstlisting}[language = C, caption = {Boot Log Ring Buffer},
                    label = {lst : boot_buffer}] typedef struct {
@@ -649,33 +611,31 @@ fig:
 
 static usb_log_boot_buffer_t s_boot_buffer = {0};
 static volatile bool s_usb_ready = false;
-\end { lstlisting }
+\end{lstlisting}
 
-\paragraph { Log Write Flow }
+\paragraph { Log Write Flow}
 
-\begin { enumerate }
+\begin{enumerate}
 \item Application calls \texttt{rx\_log\_info()}, \texttt{rx\_log\_warn()}, etc.
 \item Macro expands to \texttt{uart\_debug\_puts()} + \texttt {
   rx\_log\_usb\_puts()
 }
 \item \texttt{rx\_log\_usb\_puts()} acquires ThreadX mutex
 \item Check USB state :
-  \begin {
-  itemize
-}
+  \begin{itemize}
 \item \textbf{Not configured} : Buffer to 512B ring buffer
   \item \textbf{Configured} : Write directly to USB CDC Port 2 via \texttt {
   rx\_usb\_write()
 }
-\end { itemize }
+\end{itemize}
 \item If USB TX buffer full(\texttt{k\_rx\_err\_busy})
     : Drop log, increment \texttt {
   dropped\_bytes
 }
 \item Release mutex
-\end { enumerate }
+\end{enumerate}
 
-\paragraph { Automatic Flush }
+\paragraph { Automatic Flush}
 
 \begin{lstlisting}[language = C, caption = {Automatic Boot Buffer Flush},
                    label = {lst : auto_flush}] static void
@@ -685,7 +645,7 @@ internal_check_usb_ready(void) {
 
   if (!rx_usb_is_configured(k_usb_port_log)) {
     return; // Not ready yet, keep buffering
-  }
+ }
 
   // USB ready! Flush boot buffer in 64-byte chunks
   while (s_boot_buffer.count > 0) {
@@ -698,7 +658,7 @@ internal_check_usb_ready(void) {
     // Update indices
     tail = (tail + chunk_len) % 512;
     s_boot_buffer.count -= chunk_len;
-  }
+ }
 
   s_usb_ready = true; // Mark as flushed
 
@@ -706,9 +666,9 @@ internal_check_usb_ready(void) {
   if (s_boot_buffer.overflow) {
     rx_usb_puts(k_usb_port_log,
                 "[WARN] Boot buffer overflow, some logs dropped\r\n");
-  }
+ }
 }
-\end { lstlisting }
+\end{lstlisting}
 
 \subsubsection{Thread Safety}
 
@@ -721,7 +681,7 @@ ThreadX mutex protects all logging operations :
   if (!s_mutex_initialized) {
     tx_mutex_create(&s_log_mutex, "usb_log_mutex", TX_NO_INHERIT);
     s_mutex_initialized = true;
-  }
+ }
 
   // Acquire mutex (blocks until available)
   tx_mutex_get(&s_log_mutex, TX_WAIT_FOREVER);
@@ -732,9 +692,9 @@ ThreadX mutex protects all logging operations :
   // Release mutex
   tx_mutex_put(&s_log_mutex);
 }
-\end { lstlisting }
+\end{lstlisting}
 
-\subsubsection { Statistics Tracking }
+\subsubsection{Statistics Tracking}
 
 \begin{lstlisting}[language = C, caption = {USB CDC Logging Statistics},
                    label = {lst : usb_log_stats}] typedef struct {
@@ -749,94 +709,101 @@ usb_log_stats_t stats;
 rx_log_usb_get_stats(&stats);
 rx_log_info("USB_LOG", "Dropped: %u bytes (%.1f%%)", stats.dropped_bytes,
             100.0f * stats.dropped_bytes / stats.total_bytes);
-\end { lstlisting }
+\end{lstlisting}
 
-\subsection { Performance Characteristics }
+\subsection{Performance Characteristics}
 
-\subsubsection { Throughput }
+\subsubsection{Throughput}
 
 \begin{table}[h]
 \centering
-\begin{tabular} { | l | c | p{6cm} | }
+\begin{tabular} { | l | c | p{6cm} |}
 \hline
-\textbf{Metric} & \textbf{Value} & \textbf { Notes }
+\textbf{Metric} & \textbf{Value} & \textbf{Notes}
 \\
-\hline USB Speed & 12 Mbps &Full - Speed(USB 2.0) \ Practical Max &
+\hline USB Speed & 12 Mbps &Full - Speed(USB 2.0) \\
+Practical Max &
     10 Mbps &Protocol overhead reduces from
-    12 Mbps theoretical \ Typical Throughput
-    & 5 - 8 Mbps &Under normal application load \ Packet Size &
-    64 bytes &Full - Speed bulk endpoint limit \ Latency(send 1KB) &
-    0.5 - 1 ms &rx\_usb\_write() to host receive \ Latency(receive 1KB) &
+    12 Mbps theoretical \\
+Typical Throughput
+    & 5 - 8 Mbps &Under normal application load \\
+Packet Size &
+    64 bytes &Full - Speed bulk endpoint limit \\
+Latency(send 1KB) &
+    0.5 - 1 ms &rx\_usb\_write() to host receive \\
+Latency(receive 1KB) &
     0.5 - 1 ms &Host write to rx\_usb\_read() \\
 \hline
-\end {
-  tabular
-}
-\caption { USB CDC Performance Metrics }
+\end{tabular}
+\caption { USB CDC Performance Metrics}
 \label {
 tab:
   usb_performance
 }
-\end { table }
+\end{table}
 
-\subsubsection { Memory Usage }
+\subsubsection{Memory Usage}
 
 \begin{table}[h]
 \centering
-\begin{tabular} { | l | c | p{6cm} | }
+\begin{tabular} { | l | c | p{6cm} |}
 \hline
-\textbf{Component} & \textbf{Size(bytes)} & \textbf { Description }
+\textbf{Component} & \textbf{Size(bytes)} & \textbf{Description}
 \\
 \hline Port 0 RX Buffer & 1024 &
-    Protocol port receive ring buffer \ Port 0 TX Buffer & 1024 &
-    Protocol port transmit ring buffer \ Port 1 RX Buffer & 256 &
-    Decoded port receive ring buffer \ Port 1 TX Buffer & 512 &
-    Decoded port transmit ring buffer \ Port 2 RX Buffer & 256 &
-    Log port receive ring buffer \ Port 2 TX Buffer & 1024 &
-    Log port transmit ring buffer \ Boot Log Buffer & 512 &
-    Boot log buffering(USB CDC logging) \ USB Descriptors & ~512 & Device,
+    Protocol port receive ring buffer \\
+Port 0 TX Buffer & 1024 &
+    Protocol port transmit ring buffer \\
+Port 1 RX Buffer & 256 &
+    Decoded port receive ring buffer \\
+Port 1 TX Buffer & 512 &
+    Decoded port transmit ring buffer \\
+Port 2 RX Buffer & 256 &
+    Log port receive ring buffer \\
+Port 2 TX Buffer & 1024 &
+    Log port transmit ring buffer \\
+Boot Log Buffer & 512 &
+    Boot log buffering(USB CDC logging) \\
+USB Descriptors & ~512 & Device,
     config, interface,
-    endpoint \ State Structures & ~128 & 3 ports × ~42 bytes per port \\
+    endpoint \\
+State Structures & ~128 & 3 ports x ~42 bytes per port \\
 \hline
 \textbf{Total} & \textbf{~5.3 KB} & Static allocation(no malloc / free) \\
 \hline
-\end {
-  tabular
-}
-\caption { USB CDC Memory Usage }
+\end{tabular}
+\caption { USB CDC Memory Usage}
 \label {
 tab:
   usb_memory
 }
-\end { table }
+\end{table}
 
-\subsection { Error Handling and Recovery }
+\subsection{Error Handling and Recovery}
 
-\subsubsection { USB Not Configured }
+\subsubsection{USB Not Configured}
 
 \textbf{Symptom} : \texttt{rx\_usb\_write / read} returns \texttt {
   k\_rx\_err\_invalid\_state
 }
 
 \textbf{Recovery} :
-\begin { itemize }
+\begin{itemize}
 \item Wait for USB enumeration: \texttt{
   while (!rx\_usb\_is\_configured(port))
 }
 \item For logging : Buffer to boot buffer, flush after USB ready
 \item For protocol / data : Retry after delay, or use alternate channel(UART)
-\end {
-  itemize
-}
+\end{itemize}
 
-\subsubsection { TX Buffer Full }
+\subsubsection{TX Buffer Full}
 
 \textbf{Symptom} : \texttt{rx\_usb\_write} returns \texttt {
   k\_rx\_err\_busy
 }
 
 \textbf{Recovery} :
-\begin { itemize }
+\begin{itemize}
 \item \textbf{Logging} : Drop message,
                          increment
                          statistics(non - blocking policy)
@@ -845,35 +812,29 @@ tab:
       or signal error to application
 \item Poll \texttt{
              rx\_usb\_tx\_available()} before write to avoid full condition
-\end {
-  itemize
-}
+\end{itemize}
 
-\subsubsection { Cable Disconnect }
+\subsubsection{Cable Disconnect}
 
 \textbf{Event} : \texttt{k\_usb\_event\_detached} delivered to callback
 
 \textbf{Recovery} :
-\begin {
-  itemize
-}
+\begin{itemize}
 \item Abort pending transfers
 \item Clear TX / RX ring buffers
 \item Reset state to \texttt {
   Detached
 }
 \item Wait for cable reconnect (\texttt{k\_usb\_event\_attached})
-\end{
-  itemize
-}
+\end{itemize}
 
-\subsection { NASA Power of 10 Compliance }
+\subsection{NASA Power of 10 Compliance}
 
 \begin{table}[h]
 \centering
-\begin{tabular} { | l | c | p{7cm} | }
+\begin{tabular} { | l | c | p{7cm} |}
 \hline
-\textbf{Rule} & \textbf{Status} & \textbf { Implementation } \\
+\textbf{Rule} & \textbf{Status} & \textbf{Implementation} \\
 \hline
 1. Simple control flow & \checkmark & No goto/setjmp/recursion \\
 2. Fixed loop bounds & \checkmark & All loops bounded by constants \\
@@ -886,36 +847,33 @@ tab:
 9. Restrict pointers & Deviation & Function pointers for callbacks (DIP) \\
 10. Compiler warnings & \checkmark & -Wall -Wextra -Werror, zero warnings \\
 \hline
-\end{
-  tabular
-}
-\caption { NASA Power of 10 Compliance Matrix }
+\end{tabular}
+\caption { NASA Power of 10 Compliance Matrix}
 \label {
 tab:
   nasa_compliance
 }
-\end { table }
+\end{table}
 
 \textbf{Intentional Deviation}: Rule 9 (function pointers) violated for Dependency Inversion Principle - enables testability via mock implementations.
 
-\subsection{
-  References
+\subsection{References
 }
 
-\begin { itemize }
-\item \textbf {RX72N User's Manual}: Chapter 40 - USB 2.0 Full-Speed Module
+\begin{itemize}
+\item \textbf{RX72N User's Manual}: Chapter 40 - USB 2.0 Full-Speed Module
 \item \textbf{USB 2.0 Specification}: Chapter 9 - Device Framework
 \item \textbf{USB CDC-ACM Specification}: Class Definitions for Communications Devices v1.2
 \item \textbf{Transport Architecture}: \texttt{
     star - gateway / TRANSPORT\_ARCHITECTURE.md
-  }
+ }
   \item \textbf{Implementation} : \texttt{libs / rx\_usb / inc / rx\_usb.h}, \texttt {
     libs / rx\_core / src / rx\_log\_usb.c
-  }
+ }
   \item \textbf{Cross-Compatibility Tests}: \texttt{star-gateway/internal/frame/frame\_test.go}, \texttt{
     e2 - studio - star - rx72n - firmware / tests / test\_rx\_frame.c
-  }
+ }
   \item \textbf{Testing Guide} : \texttt {
     e2 - studio - star - rx72n - firmware / USB\_CDC\_PHASE2\_TESTING\_GUIDE.md
-  }
-  \end { itemize }
+ }
+  \end{itemize}

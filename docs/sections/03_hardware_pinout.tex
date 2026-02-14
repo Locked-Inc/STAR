@@ -1,378 +1,646 @@
-% =============================================================================
-% HARDWARE PIN CONNECTIONS
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % HARDWARE PIN CONNECTIONS % == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
 \newpage
-\section{Hardware Pin Connections}
+\section{Hardware Pin Connections
+}
 
-\subsection{RX72N Microcontroller Pinout --- 144-Pin LFQFP (R5F572NNHxFB)}
+\subsection{RX72N Microcontroller Pinout-- - 144 - Pin LFQFP(R5F572NNHxFB)}
 
 \textbf{Color Legend:}
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|l|c|}
+\begin{tabular} { | l | c |}
 \hline
-\textbf{Function Category} & \textbf{Color} \\
+\textbf{Function Category} & \textbf{Color}
+\\
 \hline
-\rowcolor{blue!20} PWM Motor Control (GPTW) & Blue \\
+\rowcolor{blue !20} PWM Motor Control(GPTW) & Blue \\
 \hline
-\rowcolor{green!20} Encoder Inputs (MTU/TPU) & Green \\
+\rowcolor{green !20} Encoder Inputs(MTU / TPU) & Green \\
 \hline
-\rowcolor{orange!20} Host SPI/IRQ Communication (RSPI2) & Orange \\
+\rowcolor{orange !20} Host SPI / IRQ Communication(RSPI2) & Orange \\
 \hline
-\rowcolor{violet!15} I2C Communication (RIIC0/RIIC1) & Violet \\
+\rowcolor{violet !15} I2C Communication(RIIC0 / RIIC1) & Violet \\
 \hline
-\rowcolor{red!15} ADC Current Sensing & Red \\
+\rowcolor{red !15} ADC Current Sensing &Red \\
 \hline
-\rowcolor{yellow!15} Debug/JTAG/Boot/USB & Yellow \\
+\rowcolor{yellow !15} Debug / JTAG / Boot / USB &Yellow \\
 \hline
-\rowcolor{gray!15} Power/Ground & Gray \\
+\rowcolor{gray !15} Power / Ground &Gray \\
 \hline
-\rowcolor{lime!10} GTETRG Emergency Stop/Temp/Alert & Lime \\
+\rowcolor{lime !10} GTETRG Emergency Stop / Temp / Alert &Lime \\
 \hline
-\rowcolor{purple!20} Motor Driver SPI (SCI12) & Purple \\
+\rowcolor{purple !20} Motor Driver SPI(SCI12) & Purple \\
 \hline
-\rowcolor{cyan!15} Ultrasonic Sonar (HC-SR04) & Cyan \\
+\rowcolor{cyan !15} Ultrasonic Sonar(HC - SR04) & Cyan \\
 \hline
-\rowcolor{teal!15} Status LEDs & Teal \\
-\hline
-Unused/Available & White \\
+\rowcolor{teal !15} Status LEDs &Teal \\
+\hline Unused / Available &White \\
 \hline
 \end{tabular}
 \end{table}
 
-\begin{longtable}{|c|l|l|p{5cm}|}
+\begin{longtable} { | c | l | l | p{5cm} |}
 \hline
-\textbf{Pin} & \textbf{Pin Name} & \textbf{Connected To} & \textbf{Note/Comment} \\
+\textbf{Pin} & \textbf{Pin Name} & \textbf{Connected To} & \textbf{Note / Comment
+}
+\\
 \hline
 \endfirsthead
 
 \hline
-\textbf{Pin} & \textbf{Pin Name} & \textbf{Connected To} & \textbf{Note/Comment} \\
+\textbf{Pin} & \textbf{Pin Name} & \textbf{Connected To} & \textbf{Note / Comment
+}
+\\
 \hline
 \endhead
 
 \hline
-\multicolumn{4}{r}{\textit{Continued on next page}} \\
+\multicolumn{4} {
+  r
+}
+{
+  \textit { Continued on next page}
+}
+\\
 \endfoot
 
 \hline
 \endlastfoot
 
-\rowcolor{gray!15} 1 & AVSS0 & Ground & Analog ground \\
-\hline
-\rowcolor{lime!10} 2 & P05/IRQ13 & BMS\_ALERT & BMS alert interrupt (active low) \\
-\hline
-\rowcolor{gray!15} 3 & AVCC1 & Bypass caps & Analog power supply (1.8V) \\
-\hline
-\rowcolor{cyan!15} 4 & P03/IRQ11 & Sonar 0 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
-\hline
-\rowcolor{gray!15} 5 & AVSS1 & Ground & Analog ground \\
-\hline
-\rowcolor{cyan!15} 6 & P02/IRQ10 & Sonar 1 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
-\hline
-\rowcolor{cyan!15} 7 & P01/IRQ9 & Sonar 2 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
-\hline
-\rowcolor{cyan!15} 8 & P00/IRQ8 & Sonar 3 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
-\hline
-\rowcolor{cyan!15} 9 & PF5 & Sonar 0 TRIG & HC-SR04 ultrasonic sensor trigger (10\textmu s GPIO pulse) \\
-\hline
-\rowcolor{yellow!15} 10 & EMLE & Emulator Configuration jumper & See Table~\ref{tab:emulator-config} \\
-\hline
-\rowcolor{cyan!15} 11 & PJ5 & Sonar 1 TRIG & HC-SR04 ultrasonic sensor trigger (10\textmu s GPIO pulse) \\
-\hline
-\rowcolor{gray!15} 12 & VSS & Ground & Power supply \\
-\hline
-\rowcolor{cyan!15} 13 & PJ3 & Sonar 2 TRIG & HC-SR04 ultrasonic sensor trigger (10\textmu s GPIO pulse) \\
-\hline
-\rowcolor{gray!15} 14 & VCL & 220nF cap to ground & Voltage regulator \\
-\hline
-\rowcolor{gray!15} 15 & VBATT & Boards 3v3 & Battery backup \\
-\hline
-\rowcolor{yellow!15} 16 & MD/FINED & E1E2-Emulator-Interface, DIP switch & See Table~\ref{tab:op-mode-config}. Default: OFF,OFF \\
-\hline
-\rowcolor{yellow!15} 17 & XCIN & 10k resistor to ground & RTC crystal input (not used) \\
-\hline
-\rowcolor{yellow!15} 18 & XCOUT & Floating & RTC crystal output (not used) \\
-\hline
-\rowcolor{yellow!15} 19 & RES\# & E1E2-Emulator-Interface, Reset button & MCU reset \\
-\hline
-\rowcolor{yellow!15} 20 & P37/XTAL & 24MHz crystal (to pin 22) & System clock crystal \\
-\hline
-\rowcolor{gray!15} 21 & VSS & Ground & Power supply \\
-\hline
-\rowcolor{yellow!15} 22 & P36/EXTAL & 24MHz crystal (to pin 20) & System clock crystal \\
-\hline
-\rowcolor{gray!15} 23 & VCC & Boards 3v3 & Power supply \\
-\hline
-\rowcolor{yellow!15} 24 & P35/NMI/UPSEL & UPSEL configuration jumper & Can be used for NMI (not used). See Table~\ref{tab:upsel-config} \\
-\hline
-\rowcolor{yellow!15} 25 & P34/TRST\# & E1E2-Emulator-Interface & JTAG (TRST\#) \\
-\hline
-\rowcolor{cyan!15} 26 & P33 & Sonar 3 TRIG & HC-SR04 ultrasonic sensor trigger (10\textmu s GPIO pulse) \\
-\hline
-\rowcolor{teal!15} 27 & P32 & LED0 & Status LED (GPIO output) \\
-\hline
-\rowcolor{yellow!15} 28 & P31/TMS & E1E2-Emulator-Interface & JTAG (TMS) \\
-\hline
-\rowcolor{yellow!15} 29 & P30/TDI & E1E2-Emulator-Interface & JTAG (TDI) \\
-\hline
-\rowcolor{yellow!15} 30 & P27/TCK & E1E2-Emulator-Interface & JTAG (TCK) \\
-\hline
-\rowcolor{yellow!15} 31 & P26/TDO & E1E2-Emulator-Interface & JTAG (TDO) \\
-\hline
-\rowcolor{green!20} 32 & P25/MTCLKB & Encoder 0 Phase B & MTU1 encoder (quadrature counting) \\
-\hline
-\rowcolor{green!20} 33 & P24/MTCLKA & Encoder 0 Phase A & MTU1 encoder (quadrature counting) \\
-\hline
-\rowcolor{blue!20} 34 & P23/GTIOC0A & Motor 0 PH (Phase) & GPTW PWM channel 0A (32-bit) \\
-\hline
-\rowcolor{blue!20} 35 & P22/GTIOC1A & Motor 1 PH (Phase) & GPTW PWM channel 1A (32-bit) \\
-\hline
-\rowcolor{violet!15} 36 & P21/SCL1 & BMS I2C Clock & RIIC1 for BMS (dedicated bus) \\
-\hline
-\rowcolor{violet!15} 37 & P20/SDA1 & BMS I2C Data & RIIC1 for BMS (dedicated bus) \\
-\hline
-\rowcolor{blue!20} 38 & P17/GTIOC0B & Motor 0 EN (Enable) & GPTW PWM channel 0B (32-bit) \\
-\hline
-\rowcolor{teal!15} 39 & P87 & LED1 & Status LED (GPIO output) \\
-\hline
-\rowcolor{yellow!15} 40 & P16/USB0\_VBUS & USB0 VBUS detection & USB CDC debug interface \\
-\hline
-\rowcolor{blue!20} 41 & P86/GTIOC2B & Motor 2 EN (Enable) & GPTW PWM channel 2B (32-bit) \\
-\hline
-\rowcolor{lime!10} 42 & P15/GTETRGA & Motor 0 nFAULT & GPTW hardware emergency stop (auto-disables PWM) \\
-\hline
-\rowcolor{lime!10} 43 & P14/GTETRGD & Motor 3 nFAULT & GPTW hardware emergency stop (auto-disables PWM) \\
-\hline
-\rowcolor{violet!15} 44 & P13/SDA0 & Host I2C Data & RIIC0 for RPi5 communication (FM+ capable) \\
-\hline
-\rowcolor{violet!15} 45 & P12/SCL0 & Host I2C Clock & RIIC0 for RPi5 communication (FM+ capable) \\
-\hline
-\rowcolor{gray!15} 46 & VCC\_USB & Boards 3v3 & USB power supply \\
-\hline
-\rowcolor{yellow!15} 47 & USB0\_DM & USB0 DN (27R resistor) & USB data - \\
-\hline
-\rowcolor{yellow!15} 48 & USB0\_DP & USB0 DP (27R resistor) & USB data + \\
-\hline
-\rowcolor{gray!15} 49 & VSS\_USB & Ground & USB ground \\
-\hline
-\rowcolor{teal!15} 50 & P56 & LED2 & Status LED (GPIO output) \\
-\hline
-\rowcolor{teal!15} 51 & P55 & LED3 & Status LED (GPIO output) \\
-\hline
-\rowcolor{teal!15} 52 & P54 & LED4 & Status LED (GPIO output) \\
-\hline
-53 & P53 & Unused & Not available as GPIO when external bus enabled (BCLK) \\
-\hline
-\rowcolor{teal!15} 54 & P52 & LED5 & Status LED (GPIO output) \\
-\hline
-\rowcolor{lime!10} 55 & P51 & DS18B20 DQ & 1-Wire temperature sensor data pin \\
-\hline
-56 & P50 & Unused & Available GPIO (WR0\#/WR\#, SCI2 TX) \\
-\hline
-\rowcolor{gray!15} 57 & VSS & Ground & Power supply \\
-\hline
-58 & P83 & Unused & Available GPIO (TRCLK, GTIOC0A, SCK10, Ethernet) \\
-\hline
-\rowcolor{gray!15} 59 & VCC & Boards 3v3 & Power supply \\
-\hline
-\rowcolor{yellow!15} 60 & PC7/UB & E1E2-Emulator-Interface, DIP switch & Operation mode configuration. See Table~\ref{tab:op-mode-config} \\
-\hline
-\rowcolor{blue!20} 61 & PC6/GTIOC3B & Motor 3 EN (Enable) & GPTW PWM channel 3B (32-bit) \\
-\hline
-\rowcolor{green!20} 62 & PC5/MTCLKD & Encoder 1 Phase B & MTU2 encoder (quadrature counting) \\
-\hline
-63 & P82 & Unused & Available GPIO (GTIOC2A, SCI10, Ethernet) \\
-\hline
-64 & P81 & Unused & Available GPIO (GTIOC0B, SCI10, Ethernet, QSPI) \\
-\hline
-65 & P80 & Unused & Available GPIO (SCK10, Ethernet, QSPI) \\
-\hline
-\rowcolor{lime!10} 66 & PC4/GTETRGC & Motor 2 nFAULT & GPTW hardware emergency stop (auto-disables PWM) \\
-\hline
-\rowcolor{blue!20} 67 & PC3/GTIOC1B & Motor 1 EN (Enable) & GPTW PWM channel 1B (32-bit) \\
-\hline
-68 & P77 & Unused & Available GPIO (SCI11, Ethernet, QSPI, SDHI) \\
-\hline
-69 & P76 & Unused & Available GPIO (SCI11, Ethernet, QSPI, SDHI) \\
-\hline
-\rowcolor{green!20} 70 & PC2/TCLKA & Encoder 2 Phase A & TPU1 encoder (quadrature counting, 16-bit) \\
-\hline
-71 & P75 & Unused & Available GPIO (SCI11, Ethernet, SDHI) \\
-\hline
-\rowcolor{purple!20} 72 & P74/CS4\# & Motor Driver SPI nCS0 & SCI12 chip select for Motor 0 (DRV8243S) \\
-\hline
-\rowcolor{purple!20} 73 & PC1 & Motor Driver SPI nCS1 & SCI12 chip select for Motor 1 (DRV8243S) \\
-\hline
-\rowcolor{gray!15} 74 & VCC & Boards 3v3 & Power supply \\
-\hline
-\rowcolor{green!20} 75 & PC0/TCLKC & Encoder 3 Phase A & TPU2 encoder (quadrature counting, 16-bit) \\
-\hline
-\rowcolor{gray!15} 76 & VSS & Ground & Power supply \\
-\hline
-77 & P73 & Unused & Available GPIO (Ethernet) \\
-\hline
-\rowcolor{yellow!15} 78 & PB7/TXD9 & Debug SCI USB-C RX & UART crossed. See Table~\ref{tab:sci9-config} \\
-\hline
-\rowcolor{yellow!15} 79 & PB6/RXD9 & Debug SCI USB-C TX & UART crossed. See Table~\ref{tab:sci9-config} \\
-\hline
-\rowcolor{purple!20} 80 & PB5 & Motor Driver SPI nCS2 & SCI12 chip select for Motor 2 (DRV8243S) \\
-\hline
-\rowcolor{purple!20} 81 & PB4 & Motor Driver SPI nCS3 & SCI12 chip select for Motor 3 (DRV8243S) \\
-\hline
-\rowcolor{green!20} 82 & PB3/TCLKD & Encoder 3 Phase B & TPU2 encoder (quadrature counting, 16-bit) \\
-\hline
-83 & PB2 & Unused & Available GPIO (TPU, SCI4/SCI6, Ethernet) \\
-\hline
-84 & PB1 & Unused & Available GPIO (SCI4/SCI6, Ethernet, IRQ4) \\
-\hline
-85 & P72 & Unused & Available GPIO (Ethernet PMGI0) \\
-\hline
-86 & P71 & Unused & Available GPIO (Ethernet PMGI0) \\
-\hline
-87 & PB0 & Unused & Available GPIO (SCI4/SCI6, Ethernet, IRQ12) \\
-\hline
-88 & PA7 & Unused & Available GPIO (RSPI\_A CIPO, Ethernet) \\
-\hline
-\rowcolor{lime!10} 89 & PA6/GTETRGB & Motor 1 nFAULT & GPTW hardware emergency stop (auto-disables PWM) \\
-\hline
-90 & PA5 & Unused & Available GPIO (GTIOC0A, RSPI\_A SCLK, Ethernet) \\
-\hline
-\rowcolor{gray!15} 91 & VCC & Boards 3v3 & Power supply \\
-\hline
-92 & PA4 & Unused & Available GPIO (RSPI\_A CS, Ethernet, IRQ5) \\
-\hline
-\rowcolor{gray!15} 93 & VSS & Ground & Power supply \\
-\hline
-\rowcolor{green!20} 94 & PA3/TCLKB & Encoder 2 Phase B & TPU1 encoder (quadrature counting, 16-bit) \\
-\hline
-95 & PA2 & Unused & Available GPIO (GTIOC1A, SCI5 RX) \\
-\hline
-\rowcolor{green!20} 96 & PA1/MTCLKC & Encoder 1 Phase A & MTU2 encoder (quadrature counting) \\
-\hline
-97 & PA0 & Unused & Available GPIO (GTIOC0B, Ethernet) \\
-\hline
-\rowcolor{orange!20} 98 & P67/IRQ15 & HOST\_IRQ & Host interrupt output to RPi5 (active-low, data ready) \\
-\hline
-99 & P66 & Unused & Available GPIO (GTIOC2B, CAN2 TX) \\
-\hline
-100 & P65 & Unused & Available GPIO (external bus CKE) \\
-\hline
-\rowcolor{blue!20} 101 & PE7/GTIOC3A & Motor 3 PH (Phase) & GPTW PWM channel 3A (32-bit) \\
-\hline
-102 & PE6 & Unused & Available GPIO (GTIOC3B, RSPI\_B COPI, SDHI, IRQ6, AN104) \\
-\hline
-\rowcolor{gray!15} 103 & VCC & Boards 3v3 & Power supply \\
-\hline
-104 & P70 & Unused & Available GPIO (SDCLK) \\
-\hline
-\rowcolor{gray!15} 105 & VSS & Ground & Power supply \\
-\hline
-106 & PE5 & Unused & Available GPIO (GTIOC0A, RSPI\_B SCLK, Ethernet, IRQ5, AN103) \\
-\hline
-107 & PE4 & Unused & Available GPIO (GTIOC1A, RSPI\_B CS, Ethernet, AN102) \\
-\hline
-\rowcolor{blue!20} 108 & PE3/GTIOC2A & Motor 2 PH (Phase) & GPTW PWM channel 2A (32-bit) \\
-\hline
-\rowcolor{purple!20} 109 & PE2/SMISO12 & Motor Driver SPI CIPO & SCI12 controller in from DRV8243S \\
-\hline
-\rowcolor{purple!20} 110 & PE1/SMOSI12 & Motor Driver SPI COPI & SCI12 controller out to DRV8243S \\
-\hline
-\rowcolor{purple!20} 111 & PE0/SCK12 & Motor Driver SPI SCLK & SCI12 clock to all 4 DRV8243S drivers \\
-\hline
-112 & P64 & Unused & Available GPIO (external bus, Ethernet) \\
-\hline
-113 & P63 & Unused & Available GPIO (external bus, Ethernet) \\
-\hline
-114 & P62 & Unused & Available GPIO (external bus, Ethernet) \\
-\hline
-115 & P61 & Unused & Available GPIO (external bus, Ethernet) \\
-\hline
-\rowcolor{gray!15} 116 & VSS & Ground & Power supply \\
-\hline
-117 & P60 & Unused & Available GPIO (external bus, Ethernet) \\
-\hline
-\rowcolor{gray!15} 118 & VCC & Boards 3v3 & Power supply \\
-\hline
-119 & PD7 & Unused & Available GPIO (QSPI, SDHI, Ethernet, IRQ7, AN107) \\
-\hline
-120 & PD6 & Unused & Available GPIO (QSPI, SDHI, Ethernet, IRQ6, AN106) \\
-\hline
-121 & PD5 & Unused & Available GPIO (QSPI, SDHI, Ethernet, IRQ5, AN113) \\
-\hline
-\rowcolor{orange!20} 122 & PD4/SSLC0 & RPi5 RSPI2 CS & RSPI2-A chip select \\
-\hline
-\rowcolor{orange!20} 123 & PD3/RSPCKC & RPi5 RSPI2 SCLK & RSPI2-A clock \\
-\hline
-\rowcolor{orange!20} 124 & PD2/MISOC & RPi5 RSPI2 CIPO & RSPI2-A Controller In Peripheral Out \\
-\hline
-\rowcolor{orange!20} 125 & PD1/MOSIC & RPi5 RSPI2 COPI & RSPI2-A Controller Out Peripheral In \\
-\hline
-126 & PD0 & Unused & Available GPIO (GTIOC1B, IRQ0, AN108) \\
-\hline
-127 & P93 & Unused & Available GPIO (SCI7, Ethernet, AN117) \\
-\hline
-128 & P92 & Unused & Available GPIO (SCI7 RX, Ethernet, AN116) \\
-\hline
-129 & P91 & Unused & Available GPIO (SCI7 CLK, AN115) \\
-\hline
-\rowcolor{gray!15} 130 & VSS & Ground & Power supply \\
-\hline
-131 & P90 & Unused & Available GPIO (SCI7 TX, AN114) \\
-\hline
-\rowcolor{gray!15} 132 & VCC & Boards 3v3 & Power supply \\
-\hline
-\rowcolor{red!15} 133 & P47/AN007 & Motor 0 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
-\hline
-\rowcolor{red!15} 134 & P46/AN006 & Motor 1 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
-\hline
-\rowcolor{red!15} 135 & P45/AN005 & Motor 2 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
-\hline
-\rowcolor{red!15} 136 & P44/AN004 & Motor 3 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
-\hline
-137 & P43 & Unused & Available GPIO (IRQ11, AN003) \\
-\hline
-138 & P42 & Unused & Available GPIO (IRQ10, AN002) \\
-\hline
-139 & P41 & Unused & Available GPIO (IRQ9, AN001) \\
-\hline
-\rowcolor{gray!15} 140 & VREFL0 & Ground & ADC reference low \\
-\hline
-141 & P40 & Unused & Available GPIO (IRQ8, AN000) \\
-\hline
-\rowcolor{gray!15} 142 & VREFH0 & 3.3V & ADC reference high \\
-\hline
-\rowcolor{gray!15} 143 & AVCC0 & Boards 3v3 & ADC power supply \\
-\hline
-\rowcolor{yellow!15} 144 & P07 & DBG\_RESETn & Debug reset (active low) \\
+\rowcolor {
+  gray !15
+}
+1 & AVSS0 & Ground &Analog ground \\
+\hline
+\rowcolor { lime !10}
+2 & P05 / IRQ13 &BMS\_ALERT &BMS alert interrupt(active low) \\
+\hline
+\rowcolor {
+  gray !15
+}
+3 & AVCC1 &Bypass caps &Analog power supply(1.8V) \\
+\hline
+\rowcolor {
+  cyan !15
+} 4 & P03/IRQ11 & Sonar 0 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\hline
+\rowcolor{
+  gray !15
+}
+5 & AVSS1 & Ground &Analog ground \\
+\hline
+\rowcolor { cyan !15} 6 & P02/IRQ10 & Sonar 1 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\hline
+\rowcolor{
+  cyan !15
+} 7 & P01/IRQ9 & Sonar 2 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\hline
+\rowcolor{
+  cyan !15
+} 8 & P00/IRQ8 & Sonar 3 ECHO & HC-SR04 ultrasonic sensor (IRQ for microsecond timing) \\
+\hline
+\rowcolor{
+  cyan !15
+}
+9 & PF5 &Sonar 0 TRIG &HC -
+        SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
+\hline
+\rowcolor {
+  yellow !15
+}
+10 & EMLE &Emulator Configuration jumper &See Table ~\ref {
+tab:
+  emulator - config
+}
+\\
+\hline
+\rowcolor { cyan !15}
+11 & PJ5 &Sonar 1 TRIG &HC -
+         SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
+\hline
+\rowcolor {
+  gray !15
+}
+12 & VSS & Ground &Power supply \\
+\hline
+\rowcolor { cyan !15}
+13 & PJ3 &Sonar 2 TRIG &HC -
+         SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
+\hline
+\rowcolor {
+  gray !15
+}
+14 & VCL & 220nF cap to ground &Voltage regulator \\
+\hline
+\rowcolor {
+  gray !15
+}
+15 & VBATT &Boards 3v3 & Battery backup \\
+\hline
+\rowcolor { yellow !15}
+16 & MD / FINED &E1E2 - Emulator - Interface,
+    DIP switch &See Table ~\ref{tab : op - mode - config}.Default : OFF, OFF \\
+\hline
+\rowcolor {
+  yellow !15
+}
+17 & XCIN & 10k resistor to ground &RTC crystal input(not used) \\
+\hline
+\rowcolor {
+  yellow !15
+}
+18 & XCOUT & Floating &RTC crystal output(not used) \\
+\hline
+\rowcolor {
+  yellow !15
+}
+19 & RES\#&E1E2 - Emulator - Interface, Reset button &MCU reset \\
+\hline
+\rowcolor {
+  yellow !15
+}
+20 & P37 / XTAL & 24MHz crystal(to pin 22) & System clock crystal \\
+\hline
+\rowcolor {
+  gray !15
+}
+21 & VSS & Ground &Power supply \\
+\hline
+\rowcolor { yellow !15}
+22 & P36 / EXTAL & 24MHz crystal(to pin 20) & System clock crystal \\
+\hline
+\rowcolor {
+  gray !15
+}
+23 & VCC &Boards 3v3 & Power supply \\
+\hline
+\rowcolor { yellow !15} 24 & P35/NMI/UPSEL & UPSEL configuration jumper & Can be used for NMI (not used). See Table~\ref{
+tab:
+  upsel - config
+}
+\\
+\hline
+\rowcolor { yellow !15}
+25 & P34 / TRST\#&E1E2 - Emulator - Interface &JTAG(TRST\#) \\
+\hline
+\rowcolor {
+  cyan !15
+}
+26 & P33 &Sonar 3 TRIG &HC -
+         SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
+\hline
+\rowcolor {
+  teal !15
+}
+27 & P32 & LED0 &Status LED(GPIO output) \\
+\hline
+\rowcolor { yellow !15}
+28 & P31 / TMS &E1E2 - Emulator - Interface &JTAG(TMS) \\
+\hline
+\rowcolor {
+  yellow !15
+}
+29 & P30 / TDI &E1E2 - Emulator - Interface &JTAG(TDI) \\
+\hline
+\rowcolor {
+  yellow !15
+}
+30 & P27 / TCK &E1E2 - Emulator - Interface &JTAG(TCK) \\
+\hline
+\rowcolor {
+  yellow !15
+}
+31 & P26 / TDO &E1E2 - Emulator - Interface &JTAG(TDO) \\
+\hline
+\rowcolor {
+  green !20
+}
+32 & P25 / MTCLKB &Encoder 0 Phase B &MTU1 encoder(quadrature counting) \\
+\hline
+\rowcolor {
+  green !20
+}
+33 & P24 / MTCLKA &Encoder 0 Phase A &MTU1 encoder(quadrature counting) \\
+\hline
+\rowcolor {
+  blue !20
+}
+34 & P23 / GTIOC0A &Motor 0 PH(Phase) & GPTW PWM channel 0A(32 - bit) \\
+\hline
+\rowcolor {
+  blue !20
+}
+35 & P22 / GTIOC1A &Motor 1 PH(Phase) & GPTW PWM channel 1A(32 - bit) \\
+\hline
+\rowcolor {
+  violet !15
+} 36 & P21/SCL1 & BMS I2C Clock & RIIC1 for BMS (dedicated bus) \\
+\hline
+\rowcolor{
+  violet !15
+} 37 & P20/SDA1 & BMS I2C Data & RIIC1 for BMS (dedicated bus) \\
+\hline
+\rowcolor{
+  blue !20
+}
+38 & P17 / GTIOC0B &Motor 0 EN(Enable) & GPTW PWM channel 0B(32 - bit) \\
+\hline
+\rowcolor {
+  teal !15
+}
+39 & P87 & LED1 &Status LED(GPIO output) \\
+\hline
+\rowcolor { yellow !15}
+40 & P16 / USB0\_VBUS &USB0 VBUS detection &USB CDC debug interface \\
+\hline
+\rowcolor {
+  blue !20
+}
+41 & P86 / GTIOC2B &Motor 2 EN(Enable) & GPTW PWM channel 2B(32 - bit) \\
+\hline
+\rowcolor {
+  lime !10
+}
+42 & P15 / GTETRGA &Motor 0 nFAULT &GPTW hardware emergency stop(auto -
+                                                                 disables PWM) \\
+\hline
+\rowcolor {
+  lime !10
+}
+43 & P14 / GTETRGD &Motor 3 nFAULT &GPTW hardware emergency stop(auto -
+                                                                 disables PWM) \\
+\hline
+\rowcolor {
+  violet !15
+} 44 & P13/SDA0 & Host I2C Data & RIIC0 for RPi5 communication (FM+ capable) \\
+\hline
+\rowcolor{
+  violet !15
+} 45 & P12/SCL0 & Host I2C Clock & RIIC0 for RPi5 communication (FM+ capable) \\
+\hline
+\rowcolor{
+  gray !15
+}
+46 & VCC\_USB &Boards 3v3 & USB power supply \\
+\hline
+\rowcolor { yellow !15}
+47 & USB0\_DM &USB0 DN(27R resistor) & USB data - \\
+\hline
+\rowcolor {
+  yellow !15
+}
+48 & USB0\_DP &USB0 DP(27R resistor) & USB data + \\
+\hline
+\rowcolor {
+  gray !15
+}
+49 & VSS\_USB &Ground &USB ground \\
+\hline
+\rowcolor { teal !15}
+50 & P56 & LED2 &Status LED(GPIO output) \\
+\hline
+\rowcolor { teal !15}
+51 & P55 & LED3 &Status LED(GPIO output) \\
+\hline
+\rowcolor { teal !15}
+52 & P54 & LED4 &Status LED(GPIO output) \\
+\hline 53 & P53 & Unused &Not available as GPIO when external bus enabled(BCLK) \\
+\hline
+\rowcolor {
+  teal !15
+}
+54 & P52 & LED5 &Status LED(GPIO output) \\
+\hline
+\rowcolor { lime !10}
+55 & P51 &DS18B20 DQ & 1 - Wire temperature sensor data pin \\
+\hline 56 & P50 & Unused &Available GPIO(WR0\# / WR\#, SCI2 TX) \\
+\hline
+\rowcolor {
+  gray !15
+}
+57 & VSS & Ground &Power supply \\
+\hline 58 & P83 & Unused &Available GPIO(TRCLK, GTIOC0A, SCK10, Ethernet) \\
+\hline
+\rowcolor {
+  gray !15
+}
+59 & VCC &Boards 3v3 & Power supply \\
+\hline
+\rowcolor { yellow !15}
+60 & PC7 / UB &E1E2 - Emulator - Interface,
+    DIP switch &Operation mode configuration.See Table ~\ref {
+tab:
+  op - mode - config
+}
+\\
+\hline
+\rowcolor { blue !20}
+61 & PC6 / GTIOC3B &Motor 3 EN(Enable) & GPTW PWM channel 3B(32 - bit) \\
+\hline
+\rowcolor {
+  green !20
+}
+62 & PC5 / MTCLKD &Encoder 1 Phase B &MTU2 encoder(quadrature counting) \\
+\hline 63 & P82 & Unused &Available GPIO(GTIOC2A, SCI10, Ethernet) \\
+\hline 64 & P81 & Unused &Available GPIO(GTIOC0B, SCI10, Ethernet, QSPI) \\
+\hline 65 & P80 & Unused &Available GPIO(SCK10, Ethernet, QSPI) \\
+\hline
+\rowcolor {
+  lime !10
+}
+66 & PC4 / GTETRGC &Motor 2 nFAULT &GPTW hardware emergency stop(auto -
+                                                                 disables PWM) \\
+\hline
+\rowcolor {
+  blue !20
+}
+67 & PC3 / GTIOC1B &Motor 1 EN(Enable) & GPTW PWM channel 1B(32 - bit) \\
+\hline 68 & P77 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
+\hline 69 & P76 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
+\hline
+\rowcolor {
+  green !20
+}
+70 & PC2 / TCLKA &Encoder 2 Phase A &TPU1 encoder(quadrature counting, 16 - bit) \\
+\hline 71 & P75 & Unused &Available GPIO(SCI11, Ethernet, SDHI) \\
+\hline
+\rowcolor {
+  purple !20
+} 72 & P74/CS4\# & Motor Driver SPI nCS0 & SCI12 chip select for Motor 0 (DRV8243S) \\
+\hline
+\rowcolor{
+  purple !20
+} 73 & PC1 & Motor Driver SPI nCS1 & SCI12 chip select for Motor 1 (DRV8243S) \\
+\hline
+\rowcolor{
+  gray !15
+}
+74 & VCC &Boards 3v3 & Power supply \\
+\hline
+\rowcolor { green !20}
+75 & PC0 / TCLKC &Encoder 3 Phase A &TPU2 encoder(quadrature counting, 16 - bit) \\
+\hline
+\rowcolor {
+  gray !15
+}
+76 & VSS & Ground &Power supply \\
+\hline 77 & P73 & Unused &Available GPIO(Ethernet) \\
+\hline
+\rowcolor {
+  yellow !15
+}
+78 & PB7 / TXD9 &Debug SCI USB - C RX &UART crossed.See Table ~\ref {
+tab:
+  sci9 - config
+}
+\\
+\hline
+\rowcolor { yellow !15}
+79 & PB6 / RXD9 &Debug SCI USB - C TX &UART crossed.See Table ~\ref {
+tab:
+  sci9 - config
+}
+\\
+\hline
+\rowcolor { purple !20} 80 & PB5 & Motor Driver SPI nCS2 & SCI12 chip select for Motor 2 (DRV8243S) \\
+\hline
+\rowcolor{
+  purple !20
+} 81 & PB4 & Motor Driver SPI nCS3 & SCI12 chip select for Motor 3 (DRV8243S) \\
+\hline
+\rowcolor{
+  green !20
+}
+82 & PB3 / TCLKD &Encoder 3 Phase B &TPU2 encoder(quadrature counting, 16 - bit) \\
+\hline 83 & PB2 & Unused &Available GPIO(TPU, SCI4 / SCI6, Ethernet) \\
+\hline 84 & PB1 & Unused &Available GPIO(SCI4 / SCI6, Ethernet, IRQ4) \\
+\hline 85 & P72 & Unused &Available GPIO(Ethernet PMGI0) \\
+\hline 86 & P71 & Unused &Available GPIO(Ethernet PMGI0) \\
+\hline 87 & PB0 & Unused &Available GPIO(SCI4 / SCI6, Ethernet, IRQ12) \\
+\hline 88 & PA7 & Unused &Available GPIO(RSPI\_A CIPO, Ethernet) \\
+\hline
+\rowcolor {
+  lime !10
+}
+89 &
+    PA6 / GTETRGB &Motor 1 nFAULT &GPTW hardware emergency stop(auto -
+                                                                disables PWM) \\
+\hline 90 &
+    PA5 & Unused &Available GPIO(GTIOC0A, RSPI\_A SCLK, Ethernet) \\
+\hline
+\rowcolor {
+  gray !15
+}
+91 & VCC &Boards 3v3 & Power supply \\
+\hline 92 & PA4 & Unused &Available GPIO(RSPI\_A CS, Ethernet, IRQ5) \\
+\hline
+\rowcolor {
+  gray !15
+}
+93 & VSS & Ground &Power supply \\
+\hline
+\rowcolor { green !20}
+94 & PA3 / TCLKB &Encoder 2 Phase B &TPU1 encoder(quadrature counting, 16 - bit) \\
+\hline 95 & PA2 & Unused &Available GPIO(GTIOC1A, SCI5 RX) \\
+\hline
+\rowcolor {
+  green !20
+}
+96 & PA1 / MTCLKC &Encoder 1 Phase A &MTU2 encoder(quadrature counting) \\
+\hline 97 & PA0 & Unused &Available GPIO(GTIOC0B, Ethernet) \\
+\hline
+\rowcolor {
+  orange !20
+}
+98 &
+    P67 / IRQ15 &HOST\_IRQ &Host interrupt output to RPi5(active - low,
+                                                          data ready) \\
+\hline 99 &
+    P66 & Unused &Available GPIO(GTIOC2B, CAN2 TX) \\
+\hline 100 & P65 & Unused &Available GPIO(external bus CKE) \\
+\hline
+\rowcolor {
+  blue !20
+}
+101 & PE7 / GTIOC3A &Motor 3 PH(Phase) & GPTW PWM channel 3A(32 - bit) \\
+\hline 102 & PE6
+    & Unused &Available GPIO(GTIOC3B, RSPI\_B COPI, SDHI, IRQ6, AN104) \\
+\hline
+\rowcolor {
+  gray !15
+}
+103 & VCC &Boards 3v3 & Power supply \\
+\hline 104 & P70 & Unused &Available GPIO(SDCLK) \\
+\hline
+\rowcolor {
+  gray !15
+}
+105 & VSS & Ground &Power supply \\
+\hline 106 & PE5 &
+    Unused &Available GPIO(GTIOC0A, RSPI\_B SCLK, Ethernet, IRQ5, AN103) \\
+\hline 107 & PE4 & Unused &Available GPIO(GTIOC1A, RSPI\_B CS, Ethernet, AN102) \\
+\hline
+\rowcolor {
+  blue !20
+}
+108 & PE3 / GTIOC2A &Motor 2 PH(Phase) & GPTW PWM channel 2A(32 - bit) \\
+\hline
+\rowcolor {
+  purple !20
+}
+109 & PE2 / SMISO12 &Motor Driver SPI CIPO &SCI12 controller in from DRV8243S \\
+\hline
+\rowcolor {
+  purple !20
+}
+110 & PE1 / SMOSI12 &Motor Driver SPI COPI &SCI12 controller out to DRV8243S \\
+\hline
+\rowcolor {
+  purple !20
+}
+111 & PE0 / SCK12 &Motor Driver SPI SCLK &SCI12 clock to all 4 DRV8243S drivers \\
+\hline 112 & P64 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline 113 & P63 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline 114 & P62 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline 115 & P61 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline
+\rowcolor {
+  gray !15
+}
+116 & VSS & Ground &Power supply \\
+\hline 117 & P60 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline
+\rowcolor {
+  gray !15
+}
+118 & VCC &Boards 3v3 & Power supply \\
+\hline 119 & PD7 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ7, AN107) \\
+\hline 120 & PD6 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ6, AN106) \\
+\hline 121 & PD5 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ5, AN113) \\
+\hline
+\rowcolor {
+  orange !20
+}
+122 & PD4 / SSLC0 &RPi5 RSPI2 CS &RSPI2 - A chip select \\
+\hline
+\rowcolor {
+  orange !20
+}
+123 & PD3 / RSPCKC &RPi5 RSPI2 SCLK &RSPI2 - A clock \\
+\hline
+\rowcolor {
+  orange !20
+}
+124 & PD2 / MISOC &RPi5 RSPI2 CIPO &RSPI2 - A Controller In Peripheral Out \\
+\hline
+\rowcolor {
+  orange !20
+}
+125 & PD1 / MOSIC &RPi5 RSPI2 COPI &RSPI2 - A Controller Out Peripheral In \\
+\hline 126 & PD0 & Unused &Available GPIO(GTIOC1B, IRQ0, AN108) \\
+\hline 127 & P93 & Unused &Available GPIO(SCI7, Ethernet, AN117) \\
+\hline 128 & P92 & Unused &Available GPIO(SCI7 RX, Ethernet, AN116) \\
+\hline 129 & P91 & Unused &Available GPIO(SCI7 CLK, AN115) \\
+\hline
+\rowcolor {
+  gray !15
+}
+130 & VSS & Ground &Power supply \\
+\hline 131 & P90 & Unused &Available GPIO(SCI7 TX, AN114) \\
+\hline
+\rowcolor {
+  gray !15
+}
+132 & VCC &Boards 3v3 & Power supply \\
+\hline
+\rowcolor { red !15}
+133 & P47 / AN007 &Motor 0 Current Sense &ADC Unit 0, 12 - bit,
+    2.0A max(IPROPI from DRV8243S) \\
+\hline
+\rowcolor {
+  red !15
+}
+134 & P46 / AN006 &Motor 1 Current Sense &ADC Unit 0, 12 - bit,
+    2.0A max(IPROPI from DRV8243S) \\
+\hline
+\rowcolor {
+  red !15
+}
+135 & P45 / AN005 &Motor 2 Current Sense &ADC Unit 0, 12 - bit,
+    2.0A max(IPROPI from DRV8243S) \\
+\hline
+\rowcolor {
+  red !15
+}
+136 & P44 / AN004 &Motor 3 Current Sense &ADC Unit 0, 12 - bit,
+    2.0A max(IPROPI from DRV8243S) \\
+\hline 137 & P43 & Unused &Available GPIO(IRQ11, AN003) \\
+\hline 138 & P42 & Unused &Available GPIO(IRQ10, AN002) \\
+\hline 139 & P41 & Unused &Available GPIO(IRQ9, AN001) \\
+\hline
+\rowcolor {
+  gray !15
+}
+140 & VREFL0 & Ground &ADC reference low \\
+\hline 141 & P40 & Unused &Available GPIO(IRQ8, AN000) \\
+\hline
+\rowcolor {
+  gray !15
+}
+142 & VREFH0 & 3.3V & ADC reference high \\
+\hline
+\rowcolor { gray !15}
+143 & AVCC0 &Boards 3v3 & ADC power supply \\
+\hline
+\rowcolor { yellow !15}
+144 & P07 &DBG\_RESETn &Debug reset(active low) \\
 \hline
 \end{longtable}
 
 \subsection{Motor Control Architecture}
 
-\subsubsection{GPTW vs MTU Selection for PWM Generation}
+\subsubsection{GPTW vs MTU Selection for PWM Generation
+}
 
-The RX72N provides two timer peripherals suitable for motor control PWM generation: the General PWM Timer (GPTW) and the Multi-Function Timer Unit (MTU). After detailed analysis, \textbf{GPTW was selected} for the following technical reasons:
+The RX72N provides two timer peripherals suitable for motor control PWM generation: the General PWM Timer (GPTW) and the Multi-Function Timer Unit (MTU). After detailed analysis, \textbf{GPTW was selected
+} for
+  the following technical reasons :
 
-\textbf{Resolution and Performance:}
+\textbf{Resolution and Performance:
+ }
 \begin{itemize}
-    \item \textbf{GPTW:} 32-bit timer resolution enabling precise duty cycle control
-    \item \textbf{MTU:} 16-bit timer resolution (65,536 maximum count)
-    \item At 20 kHz PWM frequency with 120 MHz peripheral clock:
+\item \textbf{GPTW:
+}
+32 - bit timer resolution enabling precise duty cycle control
+    \item \textbf{MTU:
+}
+16 - bit timer resolution(65, 536 maximum count)
+    \item At 20 kHz PWM frequency with 120 MHz peripheral clock :
     \begin{itemize}
-        \item GPTW provides 6,000 discrete duty cycle steps (120 MHz / 20 kHz)
-        \item MTU limited to maximum 3,276 steps before counter overflow
+\item GPTW provides 6, 000 discrete duty cycle steps(120 MHz / 20 kHz)
+        \item MTU limited to maximum 3, 276 steps before counter overflow
     \end{itemize}
 \end{itemize}
 
 \textbf{Channel Architecture:}
 \begin{itemize}
-    \item \textbf{GPTW:} 4 independent channels, each with 2 complementary outputs (GTIOC0A/B through GTIOC3A/B)
-    \item \textbf{Perfect match} for 4 motors in Phase/Enable (PH/EN) control mode
-    \item Each motor driver (DRV8243S) requires exactly 2 PWM signals
+\item \textbf{GPTW:
+}
+4 independent channels,
+    each with 2 complementary outputs(GTIOC0A / B through GTIOC3A / B)
+    \item \textbf{Perfect match
+} for
+4 motors in Phase / Enable(PH / EN) control mode
+    \item Each motor driver(DRV8243S)
+      requires exactly 2
+    PWM signals
 \end{itemize}
 
 \textbf{Peripheral Separation:}
@@ -382,8 +650,8 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \item No resource conflicts between PWM generation and encoder reading
 \end{itemize}
 
-\textbf{Encoder Peripheral Selection:}
-\begin{itemize}
+    \textbf{Encoder Peripheral Selection:}
+    \begin{itemize}
     \item \textbf{Front encoders (0, 1)}: MTU1/MTU2 - 32-bit counters with phase counting support
     \item \textbf{Rear encoders (2, 3)}: TPU1/5, TPU2/4 - 16-bit counters with phase counting support
     \item \textbf{IMPORTANT}: MTU3 and MTU4 do NOT support phase counting mode per RX72N Manual Ch24 \S24.1.2
@@ -392,25 +660,30 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \item Software overflow detection at 100 Hz control loop provides 137$\times$ safety margin
 \end{itemize}
 
-\textbf{Pin Flexibility:}
-\begin{itemize}
-    \item GPTW signals available on multiple pin locations via MPC (Multi-Function Pin Controller)
-    \item Example: GTIOC0A available on pins 34, 90, 106, 123
-    \item Enabled conflict-free allocation by selecting alternate pin groups
+    \textbf{Pin Flexibility:}
+    \begin{itemize}
+    \item GPTW signals available on multiple pin locations via
+    MPC(Multi - Function Pin Controller)
+    \item Example : GTIOC0A available on pins 34,
+                     90,
+                     106,
+                     123
+    \item Enabled conflict - free allocation by selecting alternate pin groups
 \end{itemize}
 
-\subsubsection{Pin Allocation Strategy}
+    \subsubsection{Pin Allocation Strategy}
 
-\textbf{Design Philosophy:}
-\begin{enumerate}
-    \item \textbf{Peripheral Grouping:} Place related functions on contiguous port pins where possible
+    \textbf{Design Philosophy:}
+    \begin{enumerate}
+    \item \textbf{Peripheral Grouping :
+   } Place related functions on contiguous port pins where possible
     \begin{itemize}
-        \item GPTW PWM: Distributed across P23, P22, P17, P86, PC6, PC3, PE7, PE3
-        \item Host SPI to RPi5: PD1-PD4 (RSPI2\_A, pins 122-125)
-        \item Motor Driver SPI: PE0-PE2 (SCI12, pins 109-111) + 4 CS pins
-        \item MTU Encoders: P24/P25 (MTU1), PA1/PC5 (MTU2)
-        \item TPU Encoders: PC2/PA3 (TPU1), PC0/PB3 (TPU2)
-        \item I2C: P12-P13 (RIIC0 Host), P20-P21 (RIIC1 BMS)
+    \item GPTW PWM : Distributed across P23, P22, P17, P86, PC6, PC3, PE7, PE3
+        \item Host SPI to RPi5 : PD1 - PD4(RSPI2\_A, pins 122 - 125)
+        \item Motor Driver SPI : PE0 - PE2(SCI12, pins 109 - 111) + 4 CS pins
+        \item MTU Encoders : P24 / P25(MTU1), PA1 / PC5(MTU2)
+        \item TPU Encoders : PC2 / PA3(TPU1), PC0 / PB3(TPU2)
+        \item I2C : P12 - P13(RIIC0 Host), P20 - P21(RIIC1 BMS)
     \end{itemize}
 
     \item \textbf{Conflict Resolution via Alternate Functions:}
@@ -422,63 +695,78 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
         \item Dedicated RIIC1 for BMS (previously shared RIIC0 with host in 100-pin)
     \end{itemize}
 
-    \item \textbf{PCB Routing Optimization:}
-    \begin{itemize}
+        \item \textbf{PCB Routing Optimization:}
+        \begin{itemize}
         \item Host SPI signals on PD1-PD4 (pins 122-125) for compact layout
         \item Motor driver SPI data on PE0-PE2 (pins 109-111) for short traces
         \item Sonar sensors grouped on pins 4-13 (top of package)
         \item ADC current sense on P44-P47 (pins 133-136) for short analog traces
     \end{itemize}
 
-    \item \textbf{Future Expandability:}
-    \begin{itemize}
+        \item \textbf{Future Expandability:}
+        \begin{itemize}
         \item 43 GPIO pins available after critical allocations (of 144 total)
         \item Unused Port D pins (PD5-PD7) available for additional QSPI/SDHI
         \item Unused Port E pins (PE4-PE6) available for additional GPTW channels
         \item Ethernet pins (Port B/P7x) available for future network connectivity
         \item Additional ADC channels available (AN000-AN003, AN100-AN117)
     \end{itemize}
-\end{enumerate}
+        \end{enumerate}
 
-\subsubsection{Communication Bandwidth Analysis}
+        \subsubsection{Communication Bandwidth Analysis}
 
 \textbf{SPI Configuration: 10 Mbps is Optimal}
 
 Peak bandwidth calculation for RPi5 $\leftrightarrow$ RX72N communication:
 \begin{itemize}
-    \item \textbf{Velocity Commands (100 Hz):}
-    \begin{itemize}
-        \item Message size: 34 bytes (Nanopb encoded MotorVelocityCommand)
-        \item Bandwidth: $34 \text{ bytes} \times 100 \text{ Hz} \times 8 = 27.2 \text{ Kbps}$
+\item \textbf{Velocity Commands(100 Hz) :}
+\begin{itemize}
+\item Message size : 34 bytes(Nanopb encoded MotorVelocityCommand)
+        \item Bandwidth : $34 \text {
+  bytes
+}
+\times 100 \text { Hz}
+\times 8 = 27.2 \text{Kbps} $
     \end{itemize}
 
-    \item \textbf{Encoder Feedback (100 Hz):}
-    \begin{itemize}
-        \item Message size: 18 bytes (4 encoders $\times$ 4 bytes + header)
-        \item Bandwidth: $18 \text{ bytes} \times 100 \text{ Hz} \times 8 = 14.4 \text{ Kbps}$
+\item \textbf{Encoder Feedback(100 Hz) :}
+\begin{itemize}
+\item Message size : 18 bytes(4 encoders $\times$ 4 bytes + header)
+        \item Bandwidth : $18 \text {
+  bytes
+}
+\times 100 \text { Hz}
+\times 8 = 14.4 \text{Kbps} $
     \end{itemize}
 
-    \item \textbf{Telemetry (50 Hz):}
-    \begin{itemize}
-        \item Message size: 64 bytes (battery, motor current, temperature, status)
-        \item Bandwidth: $64 \text{ bytes} \times 50 \text{ Hz} \times 8 = 25.6 \text{ Kbps}$
+\item \textbf{Telemetry(50 Hz) :}
+\begin{itemize}
+\item Message size : 64 bytes(battery, motor current, temperature, status)
+        \item Bandwidth : $64 \text {
+  bytes
+}
+\times 50 \text { Hz}
+\times 8 = 25.6 \text{Kbps} $
     \end{itemize}
 
-    \item \textbf{ARQ Protocol Overhead (estimated 40\%):}
-    \begin{itemize}
-        \item Headers: 8 bytes per frame (sequence, CRC-32, flags)
-        \item Retransmissions: Average 5\% packet loss $\times$ 3 retry attempts
-        \item Total overhead: $(27.2 + 14.4 + 25.6) \times 1.4 = 94.1 \text{ Kbps}$
+\item \textbf{ARQ Protocol Overhead(estimated 40\%) :}
+\begin{itemize}
+\item Headers : 8 bytes per frame(sequence, CRC - 32, flags)
+        \item Retransmissions : Average 5\% packet loss $\times$
+                                 3 retry attempts
+        \item Total overhead : $(27.2 + 14.4 + 25.6) \times
+                                1.4 = 94.1 \text{Kbps} $
     \end{itemize}
 \end{itemize}
 
-\textbf{Total Peak Bandwidth:}
-$$\text{Peak} = 27.2 + 14.4 + 25.6 + 94.1 = \textbf{161.3 Kbps}$$
+\textbf{Total Peak Bandwidth :} $$\text{Peak} = 27.2 + 14.4 + 25.6 +
+                                                 94.1 = \textbf{161.3 Kbps} $$
 
-\textbf{SPI Utilization:}
-$$\frac{161.3 \text{ Kbps}}{10 \text{ Mbps}} = \textbf{1.6\% utilization}$$
+\textbf{SPI Utilization :
+} $$\frac{161.3 \text{Kbps}} {10 \text{Mbps}} = \textbf{1.6\% utilization} $$
 
-\textbf{Margin Analysis:}
+\textbf{Margin Analysis:
+}
 \begin{itemize}
     \item Available headroom: $10,000 / 161.3 = 62\times$ current requirements
     \item No need for Ethernet (would add PHY chip, 9+ pins, PCB complexity)
@@ -532,14 +820,14 @@ The DS18B20+ is a digital 1-Wire temperature sensor connected to P51 (pin 55).
 
 The DRV8243S motor drivers use two separate interfaces:
 
-\textbf{Real-Time Control (PWM):}
+\textbf{Real - Time Control(PWM) :}
 \begin{itemize}
     \item \textbf{Signals:} PH (Phase) and EN (Enable) distributed across GPTW channels 0-3
     \item \textbf{Purpose:} Motor speed/direction control at 20 kHz PWM frequency
     \item \textbf{Update rate:} 100 Hz velocity commands from RPi5
 \end{itemize}
 
-\textbf{Configuration (SPI):}
+\textbf{Configuration(SPI) :}
 \begin{itemize}
     \item \textbf{Peripheral:} SCI12 hardware SPI using dedicated motor driver SPI pins
     \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
@@ -560,9 +848,13 @@ The DRV8243S motor drivers use two separate interfaces:
 
 \begin{table}[H]
 \centering
-\caption{Emulator Configuration Jumper Settings}
-\label{tab:emulator-config}
-\begin{tabular}{|p{6cm}|p{8cm}|}
+\caption{
+  Emulator Configuration Jumper Settings}
+\label{
+tab:
+  emulator - config}
+\begin{tabular}{
+  | p{6cm} | p{8cm} |}
 \hline
 \textbf{Jumper Position} & \textbf{Configuration} \\
 \hline
@@ -577,14 +869,19 @@ All open & DO NOT SET \\
 
 \begin{table}[H]
 \centering
-\caption{Operation Configuration Mode DIP Switch Settings}
-\label{tab:op-mode-config}
+\caption{
+  Operation Configuration Mode DIP Switch Settings}
+\label{
+tab:
+  op - mode - config}
 \small
 \textbf{Note:} There are 2 USB-C ports. To flash we can use the SCI boot mode if we want to flash with the SCI USB-C. To flash we can use the USB0 boot mode if we want to flash with the USB0 USB-C.
 
-\vspace{0.2cm}
+\vspace{
+  0.2cm}
 
-\begin{tabular}{|c|c|c|l|}
+\begin{tabular}{
+  | c | c | c | l |}
 \hline
 \textbf{Pin1} & \textbf{Pin2} & \textbf{UPSEL\_CFG} & \textbf{OP Mode} \\
 \hline
@@ -602,8 +899,11 @@ ON & ON & 2/3 & USB (Self Powered) (USB0) \\
 \begin{table}[H]
 \centering
 \caption{UPSEL Power Configuration for USB Boot Mode}
-\label{tab:upsel-config}
-\begin{tabular}{|l|l|}
+\label{
+tab:
+  upsel - config}
+\begin{tabular}{
+  | l | l |}
 \hline
 \textbf{Jumper Position} & \textbf{Power Configuration for USB Boot Mode} \\
 \hline
@@ -616,14 +916,19 @@ Shorted Pin 2-3 (Battery Pack) & Self Powered \\
 
 \begin{table}[H]
 \centering
-\caption{Required Pin States Upon Reset Release}
-\label{tab:reset-pin-states}
+\caption{
+  Required Pin States Upon Reset Release}
+\label{
+tab:
+  reset - pin - states}
 \small
-To enter a mode capable of flashing firmware, the following pin configurations must be held when the \textbf{RES\# pin} goes from Low to High:
+To enter a mode capable of flashing firmware, the following pin configurations must be held when the \textbf{RES\#pin} goes from Low to High:
 
-\vspace{0.2cm}
+\vspace{
+  0.2cm}
 
-\begin{tabular}{|l|l|l|l|}
+\begin{tabular}{
+  | l | l | l | l |}
 \hline
 \textbf{Desired Flashing Mode} & \textbf{MD Pin Level} & \textbf{UB Pin Level} & \textbf{Interface Used} \\
 \hline
@@ -635,7 +940,8 @@ Boot Mode (FINE) & Low $\rightarrow$ High* & Low & FINE Interface \\
 \hline
 \end{tabular}
 
-\vspace{0.2cm}
+\vspace{
+  0.2cm}
 
 \small
 *For FINE interface, the MD pin must be Low at reset release and then switched to High within 20 to 100 ms.
@@ -643,14 +949,19 @@ Boot Mode (FINE) & Low $\rightarrow$ High* & Low & FINE Interface \\
 
 \begin{table}[H]
 \centering
-\caption{SCI9 Firmware Configuration (MPC Settings)}
-\label{tab:sci9-config}
+\caption{
+  SCI9 Firmware Configuration(MPC Settings)}
+\label{
+tab:
+  sci9 - config}
 \small
 \textbf{Note:} Pins are multiplexed. Firmware must explicitly configure the Multi-Function Pin Controller (MPC) as follows:
 
-\vspace{0.2cm}
+\vspace{
+  0.2cm}
 
-\begin{tabular}{|l|p{11cm}|}
+\begin{tabular}{
+  | l | p{11cm} |}
 \hline
 \textbf{Step} & \textbf{Configuration} \\
 \hline
@@ -662,7 +973,8 @@ Boot Mode (FINE) & Low $\rightarrow$ High* & Low & FINE Interface \\
 \hline
 \end{tabular}
 
-\vspace{0.2cm}
+\vspace{
+  0.2cm}
 
 \small
 \textbf{USB-UART IC Configuration:} Use Cypress configuration utility to enable BUSDETECT.

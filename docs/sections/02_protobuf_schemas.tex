@@ -5,72 +5,85 @@
 \newpage
 \section{Protocol Buffer Schema Architecture}
 
-This section documents the Protocol Buffer schema architecture for RPi5$\leftrightarrow$RX72N communication. All schemas follow the \textbf{Boston Dynamics Protobuf Style Guide} for consistency, maintainability, and industry best practices.
+This section documents the Protocol Buffer schema architecture for RPi5$\leftrightarrow$RX72N communication. All schemas follow the \textbf{Boston Dynamics Protobuf Style Guide
+} for
+  consistency, maintainability,
+      and industry best practices.
 
-\subsection{Architecture Overview}
+\subsection{Architecture Overview
+ }
 
 \textbf{Overview:} Five gRPC services define the complete API surface for robot control, organized by functional domain. Services communicate via the nanopb-serialized frames described in Section 1.
 
-\noindent\makebox[\textwidth]{%
-\begin{tikzpicture}[
-    font=\small,
-    node distance = 0.4cm,
-    service/.style={
-        draw,
-        thick,
-        rectangle,
-        minimum width=6cm,
-        minimum height=1.1cm,
-        align=center
-    },
-    common/.style={
-        draw,
-        thick,
-        rectangle,
-        minimum width=14cm,
-        minimum height=1.1cm,
-        align=center,
-        fill=cyan!20
-    },
-]
-    % Left column - Core Services
-    \node[service, fill=blue!20] (motor) at (-4,0) {\textbf{MotorControlService}\\Velocity commands, encoder streaming};
-    \node[service, fill=green!20, below=of motor] (telemetry) {\textbf{TelemetryService}\\Sensor data, system status};
+\noindent\makebox[\textwidth]{
+  %
+\begin{tikzpicture}[font =\small, node distance = 0.4cm,
+                     service /.style = {draw, thick, rectangle,
+                                        minimum width = 6cm,
+                                        minimum height = 1.1cm, align = center},
+                     common /.style = {draw, thick, rectangle,
+                                       minimum width = 14cm,
+                                       minimum height = 1.1cm, align = center,
+                                       fill = cyan !20},
+  ] % Left column -
+      Core Services
+    \node[service, fill = blue !20](motor)
+          at(-4, 0){\textbf{MotorControlService}\\Velocity commands,
+                    encoder streaming};
+  \node[service, fill = green !20, below = of motor](
+      telemetry){\textbf{TelemetryService}\\Sensor data, system status};
 
-    % Right column - Support Services
-    \node[service, fill=orange!20] (battery) at (4,0) {\textbf{BatteryManagementService}\\BMS state, protection, balancing};
-    \node[service, fill=yellow!20, below=of battery] (config) {\textbf{ConfigurationService}\\PID gains, calibration, NVS};
+  % Right column - Support Services
+    \node[service, fill = orange !20](battery)
+                       at(4, 0){\textbf{BatteryManagementService}\\BMS state,
+                                protection, balancing};
+  \node[service, fill = yellow !20, below = of battery](
+      config){\textbf{ConfigurationService}\\PID gains, calibration, NVS};
 
-    % Common proto spans bottom
-    \node[common, below=0.8cm of telemetry, xshift=4cm] (common) {\textbf{common.proto}\\Headers, status codes, geometry types};
+  % Common proto spans bottom
+    \node[common, below = 0.8cm of telemetry, xshift = 4cm](
+        common){\textbf{common.proto}\\Headers, status codes, geometry types};
 
-    % Labels
-    \node[above=0.3cm of motor, font=\footnotesize\bfseries] {Real-Time Control};
-    \node[above=0.3cm of battery, font=\footnotesize\bfseries] {Device Management};
+  % Labels
+    \node[above = 0.3cm of motor, font =\footnotesize\bfseries]{Real -
+                                                                 Time Control};
+  \node[above = 0.3cm of battery, font =\footnotesize\bfseries]{
+      Device Management};
 
-    % Arrows to common - routed around blocks
-    \draw[->, thick, gray] (motor.west) -- ++(-0.5,0) |- (common.west);
-    \draw[->, thick, gray] (telemetry.south) -- (telemetry.south |- common.north);
-    \draw[->, thick, gray] (battery.east) -- ++(0.5,0) |- (common.east);
-    \draw[->, thick, gray] (config.south) -- (config.south |- common.north);
-\end{tikzpicture}%
+  % Arrows to common - routed around blocks
+    \draw[->, thick, gray](motor.west)-- ++(-0.5, 0) | -(common.west);
+  \draw[->, thick, gray](telemetry.south)--(telemetry.south | -common.north);
+  \draw[->, thick, gray](battery.east)-- ++(0.5, 0) | -(common.east);
+  \draw[->, thick, gray](config.south)--(config.south | -common.north);
+  \end{tikzpicture} %
 }
 
-\vspace{0.3cm}
+\vspace { 0.3cm}
 
-\layerbox{keyinsightcolor}{Key Design Principles}{%
-\begin{itemize}[leftmargin=1.5em,topsep=2pt,itemsep=1pt]
-    \item \textbf{Versioned Package:} All services use \texttt{star.v1} namespace for API evolution
+\layerbox{keyinsightcolor} { Key Design Principles}
+{
+  %
+\begin{itemize}[leftmargin = 1.5em, topsep = 2pt, itemsep = 1pt]
+    \item \textbf{Versioned Package :} All services use \texttt {
+    star.v1
+ } namespace for API evolution
     \item \textbf{Request/Response Headers:} Every RPC includes tracing, timestamps, and status
     \item \textbf{Streaming Support:} Continuous data uses server streaming (up to 100Hz)
     \item \textbf{Static Allocation:} All messages sized for nanopb constraints (no dynamic memory)
 \end{itemize}
 }
 
-\textbf{Note:} Naming conventions, unit suffixes, and coding standards are consolidated in Section~\ref{sec:protobuf-style} (Style Guide and Conventions).
+\textbf{Note :} Naming conventions, unit suffixes,
+    and coding standards are consolidated in Section ~\
+        ref{sec : protobuf - style}(Style Guide and Conventions)
+            .
 
-\subsection{Service Specifications}
-\label{sec:service-specifications}
+\subsection{Service Specifications
+}
+\label {
+sec:
+  service - specifications
+}
 
 \subsubsection{MotorControlService}
 
@@ -80,61 +93,113 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 
 \begin{table}[H]
 \centering
-\caption{MotorControlService RPCs}
-\label{tab:motor-rpcs}
-\begin{tabular}{|l|l|p{6cm}|}
+\caption{
+  MotorControlService RPCs
+}
+\label {
+tab:
+  motor - rpcs
+}
+\begin{tabular} { | l | l | p{6cm} |}
 \hline
-\textbf{RPC} & \textbf{Type} & \textbf{Description} \\
-\hline
-SetVelocity & Unary & Set left/right wheel velocities (m/s) \\
-EmergencyStop & Unary & Immediate stop, priority over all commands \\
-SetMotorPower & Unary & Direct PWM control (bypass PID, testing only) \\
-StreamEncoders & Server stream & Encoder ticks and velocity at 1-100Hz \\
-ControlStream & Bidirectional & Velocity in, encoder feedback out \\
+\textbf{RPC} & \textbf{Type} & \textbf{Description}
+\\
+\hline SetVelocity &Unary &Set left /
+    right wheel velocities(m / s) \\
+EmergencyStop &Unary &Immediate stop,
+    priority over all commands \\
+SetMotorPower &Unary &Direct PWM
+        control(bypass PID, testing only) \\
+StreamEncoders &Server
+        stream &Encoder ticks and velocity at 1 -
+        100Hz \\
+ControlStream &Bidirectional &Velocity in,
+    encoder feedback out \\
 \hline
 \end{tabular}
 \end{table}
 
 \textbf{Key Messages:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{VelocityCommand} -- Left/right velocity (m/s), sequence number, timestamp
-    \item \texttt{EncoderData} -- Motor ID, tick count (341.2 PPR), velocity, timestamp
-    \item \texttt{MotorStatus} -- Duty cycle, velocity, temperature, current, fault flags
-    \item \texttt{PidConfig} -- Kp, Ki, Kd gains with output saturation limits
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  VelocityCommand
+}
+--Left / right velocity(m / s), sequence number, timestamp
+    \item \texttt {
+  EncoderData
+}
+--Motor ID, tick count(341.2 PPR), velocity, timestamp
+    \item \texttt {
+  MotorStatus
+}
+--Duty cycle, velocity, temperature, current, fault flags
+    \item \texttt {
+  PidConfig
+}
+--Kp, Ki, Kd gains with output saturation limits
 \end{itemize}
 
 \subsubsection{TelemetryService}
 
-\textbf{Purpose:} Real-time sensor data aggregation and system health monitoring.
+\textbf{Purpose :} Real -
+    time sensor data aggregation and system health monitoring.
 
 \begin{table}[H]
 \centering
-\caption{TelemetryService RPCs}
-\label{tab:telemetry-rpcs}
-\begin{tabular}{|l|l|p{6cm}|}
+\caption {
+  TelemetryService RPCs
+}
+\label {
+tab:
+  telemetry - rpcs
+}
+\begin{tabular} { | l | l | p{6cm} |}
 \hline
-\textbf{RPC} & \textbf{Type} & \textbf{Description} \\
-\hline
-GetTelemetry & Unary & Snapshot of all sensor data \\
-StreamTelemetry & Server stream & Continuous sensor updates at 1-100Hz \\
-GetSystemStatus & Unary & Firmware version, uptime, connection states \\
+\textbf{RPC} & \textbf{Type} & \textbf{Description}
+\\
+\hline GetTelemetry &Unary &Snapshot of all sensor
+        data \\
+StreamTelemetry &Server stream &Continuous sensor updates at 1 -
+    100Hz \\
+GetSystemStatus &Unary &Firmware version,
+    uptime, connection states \\
 \hline
 \end{tabular}
 \end{table}
 
 \textbf{Key Messages:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{TelemetryData} -- IMU, GPS, battery \%, WiFi signal, CPU usage, temperature
-    \item \texttt{ImuData} -- Pitch/roll/yaw (rad), acceleration (m/s$^2$), angular velocity (rad/s)
-    \item \texttt{GpsData} -- Lat/lon (degrees), altitude (m), accuracy, satellite count, fix type
-    \item \texttt{SystemStatus} -- Connection states, operating mode, free heap, uptime
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  TelemetryData
+}
+--IMU, GPS, battery \%, WiFi signal, CPU usage, temperature
+    \item \texttt {
+  ImuData
+}
+--Pitch / roll / yaw(rad), acceleration(m / s$ ^ 2 $), angular velocity(rad / s)
+    \item \texttt {
+  GpsData
+}
+--Lat / lon(degrees), altitude(m), accuracy, satellite count, fix type
+    \item \texttt {
+  SystemStatus
+}
+--Connection states, operating mode, free heap, uptime
 \end{itemize}
 
-\textbf{Enumerations:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{RobotMode} -- IDLE, MANUAL, AUTONOMOUS, MAPPING, EMERGENCY\_STOP
-    \item \texttt{ConnectionStatus} -- CONNECTED, DISCONNECTED, CONNECTING, ERROR
-    \item \texttt{GpsFix} -- NONE, 2D, 3D, DGPS, RTK\_FLOAT, RTK\_FIXED
+\textbf{Enumerations:
+}
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  RobotMode
+}
+--IDLE, MANUAL, AUTONOMOUS, MAPPING, EMERGENCY\_STOP
+    \item \texttt {
+  ConnectionStatus
+}
+--CONNECTED, DISCONNECTED, CONNECTING, ERROR
+    \item \texttt { GpsFix}
+--NONE, 2D, 3D, DGPS, RTK\_FLOAT, RTK\_FIXED
 \end{itemize}
 
 \subsubsection{BatteryManagementService}
@@ -145,102 +210,174 @@ GetSystemStatus & Unary & Firmware version, uptime, connection states \\
 
 \begin{table}[H]
 \centering
-\caption{BatteryManagementService RPCs}
-\label{tab:battery-rpcs}
-\begin{tabular}{|l|l|p{6cm}|}
+\caption{
+  BatteryManagementService RPCs
+}
+\label {
+tab:
+  battery - rpcs
+}
+\begin{tabular} { | l | l | p{6cm} |}
 \hline
-\textbf{RPC} & \textbf{Type} & \textbf{Description} \\
-\hline
-GetBatteryState & Unary & Complete battery snapshot (cells, temps, SOC) \\
-StreamBatteryState & Server stream & Continuous battery monitoring \\
-Get/SetProtectionThresholds & Unary & OV/UV/OC/OT protection limits \\
-Enable/DisableCellBalancing & Unary & Per-cell passive balancing control \\
-ControlFets & Unary & Charge/discharge FET enable/disable \\
-GetDeviceInfo & Unary & Manufacturer, serial, chemistry, versions \\
+\textbf{RPC} & \textbf{Type} & \textbf{Description}
+\\
+\hline GetBatteryState &Unary &Complete battery snapshot(
+    cells, temps, SOC) \\
+StreamBatteryState &Server stream &Continuous battery
+        monitoring \\
+Get
+        / SetProtectionThresholds &Unary &OV / UV / OC
+        / OT protection limits \\
+Enable / DisableCellBalancing &Unary &Per
+    - cell passive balancing control \\
+ControlFets &Unary &Charge
+          / discharge FET enable / disable \\
+GetDeviceInfo &Unary &Manufacturer,
+    serial, chemistry, versions \\
 \hline
 \end{tabular}
 \end{table}
 
 \textbf{Key Messages:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{BatteryState} -- Composite of all battery data
-    \item \texttt{CellData} -- Individual cell voltages (mV), pack voltage, valid cell count
-    \item \texttt{BatteryTemperatureData} -- Thermistor readings (0.1\textdegree C), average
-    \item \texttt{StateOfChargeData} -- Relative/absolute SOC (\%), capacity (mAh), cycle count
-    \item \texttt{ProtectionThresholds} -- OV/UV voltage limits, OC current limits, OT temperatures
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  BatteryState
+}
+--Composite of all battery data
+    \item \texttt { CellData}
+--Individual cell voltages(mV), pack voltage, valid cell count
+    \item \texttt {
+  BatteryTemperatureData
+}
+--Thermistor readings(0.1\textdegree C), average
+    \item \texttt {
+  StateOfChargeData
+}
+--Relative / absolute SOC(\%), capacity(mAh), cycle count
+    \item \texttt {
+  ProtectionThresholds
+}
+--OV / UV voltage limits, OC current limits, OT temperatures
 \end{itemize}
 
 \subsubsection{ConfigurationService}
 
-\textbf{Purpose:} Runtime parameter management with NVS persistence across power cycles.
+\textbf{Purpose :
+} Runtime parameter management with NVS persistence across power cycles.
 
 \begin{table}[H]
 \centering
-\caption{ConfigurationService RPCs}
-\label{tab:config-rpcs}
-\begin{tabular}{|l|l|p{6cm}|}
+\caption {
+  ConfigurationService RPCs
+}
+\label {
+tab:
+  config - rpcs
+}
+\begin{tabular} { | l | l | p{6cm} |}
 \hline
-\textbf{RPC} & \textbf{Type} & \textbf{Description} \\
-\hline
-GetConfiguration & Unary & Read current system configuration \\
-SetConfiguration & Unary & Apply configuration (optional NVS persist) \\
-ResetToDefaults & Unary & Restore factory defaults \\
-ValidateConfiguration & Unary & Validate without applying \\
-SaveConfiguration & Unary & Persist in-memory config to NVS \\
-Get/SetMotorPidConfig & Unary & Per-motor PID tuning \\
+\textbf{RPC} & \textbf{Type} & \textbf{Description}
+\\
+\hline GetConfiguration &Unary &
+        Read current system configuration \\
+SetConfiguration &Unary &Apply
+        configuration(optional NVS persist) \\
+ResetToDefaults &Unary &Restore
+    factory defaults \\
+ValidateConfiguration &Unary &Validate without
+    applying \\
+SaveConfiguration &Unary &Persist in
+    - memory config to NVS \\
+Get / SetMotorPidConfig &Unary &Per
+    - motor PID tuning \\
 \hline
 \end{tabular}
 \end{table}
 
 \textbf{Key Messages:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{SystemConfiguration} -- Complete config with version and CRC32
-    \item \texttt{MotorPidConfig} -- Per-motor PID gains (4 motors supported)
-    \item \texttt{CurrentSensorCalibration} -- Offset and scale for current sensing
-    \item \texttt{SafetyThresholds} -- Overcurrent, thermal shutdown, cell imbalance limits
-    \item \texttt{TimingConfig} -- Motor period, telemetry period, communication timeout
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  SystemConfiguration
+}
+--Complete config with version and CRC32
+    \item \texttt { MotorPidConfig}
+--Per - motor PID gains(4 motors supported)
+    \item \texttt {
+  CurrentSensorCalibration
+} -- Offset and scale for current sensing
+    \item \texttt{SafetyThresholds}
+--Overcurrent, thermal shutdown, cell imbalance limits
+    \item \texttt {
+  TimingConfig
+}
+--Motor period, telemetry period, communication timeout
 \end{itemize}
 
-\subsection{common.proto -- Shared Types}
+\subsection{common.proto-- Shared Types}
 
-All services import \texttt{common.proto} for standardized request/response handling.
+All services import \texttt {
+  common.proto
+} for
+  standardized request / response handling.
 
 \begin{table}[H]
 \centering
-\caption{Standard Headers}
-\label{tab:headers}
-\begin{tabular}{|l|p{9cm}|}
+\caption {
+    Standard Headers
+ }
+\label {
+tab:
+  headers
+}
+\begin{tabular} { | l | p{9cm} |}
 \hline
-\textbf{Message} & \textbf{Fields} \\
-\hline
-RequestHeader & request\_id (UUID), client\_timestamp, client\_version, timeout \\
-ResponseHeader & request\_id (echo), server\_timestamp, status, error\_message, latency\_us \\
+\textbf{Message} & \textbf{Fields}
+\\
+\hline RequestHeader &request\_id(UUID), client\_timestamp, client\_version,
+    timeout \\
+ResponseHeader &request\_id(echo), server\_timestamp, status,
+    error \_message, latency\_us \\
 \hline
 \end{tabular}
 \end{table}
 
-\textbf{Status Codes:} UNKNOWN, OK, INVALID\_REQUEST, INTERNAL\_ERROR, NOT\_FOUND, TIMEOUT, INVALID\_STATE, ESTOP\_ACTIVE
+\textbf{Status Codes :} UNKNOWN, OK, INVALID\_REQUEST, INTERNAL\_ERROR,
+    NOT\_FOUND, TIMEOUT, INVALID\_STATE,
+    ESTOP\_ACTIVE
 
-\textbf{Geometric Types:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{Vector3} -- Generic 3D vector (x, y, z)
-    \item \texttt{Quaternion} -- Orientation (w, x, y, z)
-    \item \texttt{SE2Pose} -- 2D pose (x\_m, y\_m, angle\_rad)
-    \item \texttt{SE2Velocity} -- 2D velocity (vx\_mps, vy\_mps, omega\_rad\_per\_s)
+\textbf{Geometric Types:
+}
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \texttt {
+  Vector3
+}
+--Generic 3D vector(x, y, z)
+    \item \texttt { Quaternion}
+--Orientation(w, x, y, z)
+    \item \texttt { SE2Pose}
+--2D pose(x\_m, y\_m, angle\_rad)
+    \item \texttt { SE2Velocity}
+--2D velocity(vx\_mps, vy\_mps, omega\_rad\_per\_s)
 \end{itemize}
 
 \subsection{Code Generation and Integration}
 
 \begin{table}[H]
 \centering
-\caption{Code Generation Targets}
-\label{tab:codegen}
-\begin{tabular}{|l|l|l|l|}
+\caption { Code Generation Targets}
+\label {
+tab:
+  codegen
+}
+\begin{tabular} { | l | l | l | l |}
 \hline
-\textbf{Target} & \textbf{Generator} & \textbf{Output} & \textbf{Usage} \\
-\hline
-Go & protoc-gen-go + grpc & \texttt{gen/go/} & star-gateway (RPi5) \\
-nanopb & nanopb\_generator & \texttt{gen/nanopb/} & RX72N firmware \\
+\textbf{Target} & \textbf{Generator} & \textbf{Output} & \textbf{Usage
+}
+\\
+\hline Go &protoc - gen - go + grpc & \texttt{gen / go /} &
+    star -
+        gateway(RPi5) \ nanopb &nanopb\_generator & \texttt{gen / nanopb /} &
+    RX72N firmware \\
 \hline
 \end{tabular}
 \end{table}
@@ -253,9 +390,12 @@ nanopb & nanopb\_generator & \texttt{gen/nanopb/} & RX72N firmware \\
 \end{itemize}
 
 \textbf{Build Integration:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \textbf{Linting:} \texttt{buf lint} enforces style guide compliance
-    \item \textbf{Breaking Changes:} \texttt{buf breaking} detects API incompatibilities
-    \item \textbf{CI Pipeline:} Automatic generation and testing on PR
+\begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
+    \item \textbf{Linting:
+}
+\texttt{buf lint} enforces style guide compliance
+    \item \textbf{Breaking Changes:
+}
+\texttt{buf breaking} detects API incompatibilities
+    \item \textbf{CI Pipeline :} Automatic generation and testing on PR
 \end{itemize}
-

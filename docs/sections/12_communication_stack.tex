@@ -6,8 +6,7 @@
     =
 
 \newpage
-\section {
-  End - to - End Communication Stack
+\section{End - to - End Communication Stack
 }
 \label {
 sec:
@@ -80,12 +79,12 @@ The STAR communication stack connects the user interface through a layered
   \end{tikzpicture} %
 }
 
-\vspace { 0.3cm }
+\vspace { 0.3cm}
 
 \noindent\colorbox{keyinsightcolor} {
   \parbox{\dimexpr\linewidth - 2\fboxsep} {
     %
-\textbf{Key Insight : } All control paths(autonomous Nav2 and manual UI)
+\textbf{Key Insight :} All control paths(autonomous Nav2 and manual UI)
             converge at the gateway,
         ensuring a single serialization and transport layer regardless of
                     command source.The RX72N firmware is transport -
@@ -93,7 +92,7 @@ The STAR communication stack connects the user interface through a layered
                 it processes identical frames whether they arrive over USB
                     CDC or
             SPI.
-  }
+ }
 }
 
 \subsection{Transport Priority}
@@ -108,45 +107,41 @@ PrioritySPI = 5
 The \texttt{TransportManager} selects the highest-priority healthy transport at runtime. USB is preferred for three reasons:
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \textbf{
-  Lower latency:
+    \item \textbf{Lower latency:
 }
 0.5 --1\, ms(USB) vs 1 --2\, ms(SPI)
-    \item \textbf{Hardware CRC and bulk retries : } Built into the USB protocol
+    \item \textbf{Hardware CRC and bulk retries :} Built into the USB protocol
     ,
     making application - level HARQ redundant on this path
-    \item \textbf{Simplified software : } No ACK / NACK handshake
+    \item \textbf{Simplified software :} No ACK / NACK handshake
         or FEC codec overhead required
 \end{itemize}
 
         SPI enables full HARQ(per ADR - 001) because it lacks USB's built-in reliability mechanisms. A shared \texttt{SessionState} (TX/RX sequence counters) spans both transports, preventing sequence desynchronization during failover. Both USB and SPI increment the same sequence counter.
 
-\subsection {
-  Protocol Stack(5 Layers)
+\subsection{Protocol Stack(5 Layers)
 }
 
 \begin{table}[H]
 \centering
-\caption { Communication Protocol Stack }
+\caption { Communication Protocol Stack}
 \label {
 tab:
   comm - protocol - stack
 }
 \begin{tabular} {
-  c l l l p { 4.5cm }
+  c l l l p { 4.5cm}
 }
 \toprule
-\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{
-    C Library} & \textbf {
-  Description
+\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{C Library} & \textbf{Description
 }
 \\
 \midrule 5 &
-    Application & \texttt{internal / service / } & \texttt{src / tasks / } &
+    Application & \texttt{internal / service /} & \texttt{src / tasks /} &
     gRPC services,
     motor commands,
-    telemetry \ 4 & Serialization & \texttt{google.golang.org / protobuf} & \texttt{libs / rx\_nanopb / } & Protocol Buffers(full - size Go, nanopb C) \ 3 & HARQ + FEC & \texttt{internal / link / } & \texttt{libs / rx\_harq / }, \texttt{libs /
-                                                                                                                                                                                                                                             rx\_spi\_link / } &
+    telemetry \ 4 & Serialization & \texttt{google.golang.org / protobuf} & \texttt{libs / rx\_nanopb /} & Protocol Buffers(full - size Go, nanopb C) \ 3 & HARQ + FEC & \texttt{internal / link /} & \texttt{libs / rx\_harq /}, \texttt{libs /
+                                                                                                                                                                                                                                             rx\_spi\_link /} &
                                                                                                                                                                                                                                          HARQ
                                                                                                                                                                                                                                              +
                                                                                                                                                                                                                                              FEC
@@ -154,15 +149,13 @@ tab:
                                                                                                                                                                                                                                              SPI(RSPI0
                                                                                                                                                                                                                                                      only);
 USB CDC / CDCLink : no HARQ / FEC(hardware CRC / retry only) \ 2 &
-    Framing & \texttt{internal / frame / } & \texttt{libs / rx\_frame / } &
+    Framing & \texttt{internal / frame /} & \texttt{libs / rx\_frame /} &
     SYNC + Header + Payload + CRC - 32 \ 1 &
-    Transport & \texttt{internal / transport / } &
+    Transport & \texttt{internal / transport /} &
     RSPI0 / USB peripheral &SPI @10\,
     MHz, USB CDC Full - Speed \\
 \bottomrule
-\end {
-  tabular
-}
+\end{tabular}
 \end{table}
 
         %
@@ -173,8 +166,7 @@ USB CDC / CDCLink : no HARQ / FEC(hardware CRC / retry only) \ 2 &
       == == ==
     =
 
-\subsection {
-  Protocol Primer
+\subsection{Protocol Primer
 }
 \label{subsec:protocol-primer}
 
@@ -187,8 +179,7 @@ the receiver recomputes the CRC over the same data and compares.If even a single
     bit flipped during transmission,
     the CRCs will not match and the receiver knows the frame is corrupt.
 
-\textbf {
-  How it works:
+\textbf{How it works:
 }
 \begin{enumerate}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item Treat the data bytes as a long binary polynomial
@@ -202,12 +193,9 @@ the receiver recomputes the CRC over the same data and compares.If even a single
         .
     \item The receiver performs the same division.If the remainder is zero,
     the frame is intact.
-\end {
-  enumerate
-}
+\end{enumerate}
 
-\textbf {
-Properties:
+\textbf{Properties:
 }
 \begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item \textbf{Detection only, not correction :
@@ -219,24 +207,22 @@ Properties:
                    and odd -
                        bit errors.} Detects all burst errors up to 32 bits.
     \item \textbf{Hardware - accelerated on the RX72N :
-            } The CRC Calculator peripheral computes CRC -
+           } The CRC Calculator peripheral computes CRC -
         32 in hardware,
     avoiding CPU overhead.
-    \item \
-        textbf{Used on every frame : } Both USB CDC and SPI frames include CRC -
+    \item\\
+        textbf{Used on every frame :} Both USB CDC and SPI frames include CRC -
         32,
     regardless of whether HARQ is enabled.
-\end {
-  itemize
-}
+\end{itemize}
 
 \noindent\colorbox{keyinsightcolor} {
   \parbox{\dimexpr\linewidth - 2\fboxsep} {
     %
-\textbf{Analogy : } CRC is like a check digit on a credit card
+\textbf{Analogy :} CRC is like a check digit on a credit card
                 number.It catches typos instantly but cannot fix them-- -
         you have to re - enter the number.
-  }
+ }
 }
 
 \subsubsection{ARQ(Automatic Repeat Request)}
@@ -248,8 +234,7 @@ Properties:
                                                                retransmission},
     not error correction.
 
-\textbf {
-  Protocol flow:
+\textbf{Protocol flow:
 }
 \begin{enumerate}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item Sender transmits frame with \texttt{REQUIRES\_ACK} flag set
@@ -258,19 +243,14 @@ Properties:
     timer(10\, ms timeout in STAR)
     .
     \item Receiver validates CRC :
-    \begin {
-  itemize
-}
+    \begin{itemize}
 \item CRC valid $\rightarrow$ send \textbf{ACK}(positive acknowledgment)
     .
-        \item CRC invalid $\rightarrow$ send \textbf{
-        NACK}(negative acknowledgment)
+        \item CRC invalid $\rightarrow$ send \textbf{NACK}(negative acknowledgment)
     .
-    \end {
-  itemize
-}
+    \end{itemize}
 \item Sender receives response :
-    \begin { itemize }
+    \begin{itemize}
 \item ACK $\rightarrow$ success, move to next frame
                                      .
         \item NACK $\rightarrow$ retransmit the same
@@ -278,11 +258,9 @@ Properties:
                                      .
         \item Timeout $\rightarrow$ retransmit(assume frame was lost)
                                      .
-    \end {
-  itemize
-}
+    \end{itemize}
 \item After 3 failed retries, declare the link failed.
-\end { enumerate }
+\end{enumerate}
 
 \begin{table}[H]
 \centering
@@ -293,13 +271,16 @@ Properties:
 tab:
   arq - params
 }
-\begin{tabular} { l l l }
+\begin{tabular} { l l l}
 \toprule
-\textbf{Parameter} & \textbf{Value} & \textbf { Description }
+\textbf{Parameter} & \textbf{Value} & \textbf{Description}
 \\
-\midrule Max retries & 3 & Attempts before failure \ ACK timeout & 10\,
-    ms &Wait time per attempt \ Worst - case delay & 40\,
-    ms &Initial send + 3 retransmissions \ Sequence range & 0 --65535 &
+\midrule Max retries & 3 & Attempts before failure \\
+ACK timeout & 10\,
+    ms &Wait time per attempt \\
+Worst - case delay & 40\,
+    ms &Initial send + 3 retransmissions \\
+Sequence range & 0 --65535 &
         16 - bit wraparound counter \\
 \bottomrule
 \end{tabular}
@@ -320,57 +301,47 @@ FEC adds \emph{redundant} data to the transmission so the receiver can \textbf{c
     \item \textbf{Constraint length $K=7$:} The encoder has a 6-bit shift register (memory), so each output bit depends on the current input bit and the 6 previous input bits. This creates complex relationships between bits that the decoder can exploit.
     \item \textbf{Rate $1/2$:} For every 1 input bit, the encoder produces 2 output bits. This means the encoded data is exactly 2$\times$ the size of the original, doubling bandwidth usage in exchange for error correction capability.
     \item \textbf{Generator polynomials:} $G_1 = 171_8$ (\texttt{0x79}) and $G_2 = 133_8$ (\texttt{0x5B}). These are NASA standard polynomials used in deep-space communication, chosen for their optimal distance properties.
-\end{
-  itemize
-}
+\end{itemize}
 
-\textbf { Encoding process: }
+\textbf{Encoding process:}
 \begin{enumerate}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item Each input bit shifts into a 6 - stage register.
     \item Two output bits are produced by XOR -
     ing specific register taps(determined by $G_1$ and $G_2$).
     \item A 100 - byte payload becomes a 200 -
     byte encoded payload plus tail bits.
-\end {
-  enumerate
-}
+\end{enumerate}
 
 \subsubsection{Viterbi Decoder (Soft-Decision)}
 
 The Viterbi algorithm is the standard method for decoding convolutional codes. It finds the \emph{most likely} original data sequence given a noisy received signal.
 
-\textbf{
-  Hard bits vs.\ soft bits:
+\textbf{Hard bits vs.\ soft bits:
 }
 \begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
-    \item \textbf{Hard bits : } Binary 0 or
+    \item \textbf{Hard bits :} Binary 0 or
     1. No confidence information. ``The bit is 1.''
-    \item \textbf{Soft bits : } A signed value from $ - 127 $ to $ +
+    \item \textbf{Soft bits :} A signed value from $ - 127 $ to $ +
         127 $(stored as \texttt{int8\_t})
             .The sign indicates the likely bit
         value(negative = likely 0, positive = likely 1),
     and the \emph{magnitude} indicates confidence.For example :
-    \begin {
-  itemize
-}
+    \begin{itemize}
 \item $ + 127 $ = ``very confident this is a 1''
         \item $ + 10 $ = ``probably a 1, but not sure''
         \item $ - 127 $ = ``very confident this is a 0''
         \item $0$ = ``complete erasure, no idea''
-    \end {
-  itemize
-}
-\end { itemize }
+    \end{itemize}
+\end{itemize}
 
-\textbf{Why soft bits matter : } Soft -
+\textbf{Why soft bits matter :} Soft -
     decision decoding provides approximately 2\,
     dB gain over hard -
         decision decoding.This means the decoder can correct more errors because
             it uses \emph{confidence} information,
     not just guesses.
 
-\textbf {
-  Viterbi algorithm overview:
+\textbf{Viterbi algorithm overview:
 }
 \begin{enumerate}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item The encoder can be modeled as a state machine with $2^{
@@ -378,20 +349,18 @@ The Viterbi algorithm is the standard method for decoding convolutional codes. I
     \item At each time step, the decoder computes the ``distance'' (error metric) between the received soft bits and what each possible state transition would have produced.
     \item It keeps only the best path (lowest cumulative error) into each state --- this is the ``survivor path.''
     \item After processing all received bits, the decoder traces back through the survivor paths to find the most likely original bit sequence.
-\end{
-  enumerate
-}
+\end{enumerate}
 
 \begin{table}[H]
 \centering
-\caption { Viterbi Decoder Parameters }
+\caption { Viterbi Decoder Parameters}
 \label {
 tab:
   viterbi - params
 }
-\begin{tabular} { l l l }
+\begin{tabular} { l l l}
 \toprule
-\textbf{Parameter} & \textbf{Value} & \textbf { Description } \\
+\textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
 \midrule
 States               & 64               & $2^{
   K - 1}$ for $K=7$ \\
@@ -400,26 +369,21 @@ Decision type        & Soft (int8)      & $-127$ to $+127$ \\
 Path metric type     & uint32           & Cumulative error metric \\
 Memory (RX72N)       & $\sim$40\,KB     & State arrays + traceback \\
 \bottomrule
-\end{
-  tabular
-}
-\end { table }
+\end{tabular}
+\end{table}
 
 \subsubsection{HARQ(Hybrid Automatic Repeat Request)}
 
-HARQ is \textbf {
-  not a separate protocol
+HARQ is \textbf{not a separate protocol
 } --- it is the \textbf{combination} of ARQ and FEC working together. The key insight is that each mechanism compensates for the other's weakness:
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{ARQ alone:} Discards corrupted frames entirely, wastes bandwidth retransmitting data that was mostly correct.
     \item \textbf{FEC alone:} Can correct limited errors but cannot request retransmission if corruption is too severe.
     \item \textbf{HARQ (both):} FEC corrects minor errors in-place. If corruption exceeds FEC capability, ARQ requests retransmission. On retransmission, Chase Combining accumulates evidence from both attempts for even better decoding.
-\end{
-  itemize
-}
+\end{itemize}
 
-\vspace { 0.3cm }
+\vspace { 0.3cm}
 
 \noindent\makebox[\textwidth] {
   %
@@ -464,7 +428,7 @@ HARQ is \textbf {
   \end{tikzpicture} %
 }
 
-\vspace { 0.3cm }
+\vspace { 0.3cm}
 
 \noindent The formula is : \textbf{HARQ = ARQ + FEC + Chase Combining}.CRC -
     32 is the foundation used by all paths
@@ -478,8 +442,7 @@ HARQ is \textbf {
     Chase Combining \textbf{accumulates soft -
                             bit observations} from every transmission attempt.
 
-\textbf {
-  How it works:
+\textbf{How it works:
 }
 \begin{enumerate}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{First transmission:} Receiver gets soft bits (e.g., $[+80, -30, +5, -120, \ldots]$). CRC fails.
@@ -488,11 +451,9 @@ HARQ is \textbf {
     \item \textbf{Combine:} Add element-wise: $[+80+60, -30+(-90), +5+40, -120+(-100), \ldots] = [+127, -120, +45, -127, \ldots]$.
     \item \textbf{Clamp} combined values to $[-127, +127]$ (int8 range) and feed to Viterbi decoder.
     \item Bits where both transmissions agreed become \emph{more confident} (higher magnitude). Bits where they disagreed partially cancel, correctly reflecting uncertainty.
-\end{
-  enumerate
-}
+\end{enumerate}
 
-\textbf{Gain : } Each additional transmission provides approximately 3\,
+\textbf{Gain :} Each additional transmission provides approximately 3\,
     dB of combining
         gain.Two transmissions combined can correct errors that neither could
             individually.After 3 transmissions with combining,
@@ -508,132 +469,119 @@ HARQ is \textbf {
 tab:
   chase - example
 }
-\begin{tabular} { l r r r r }
-\toprule & \textbf{Bit 0} & \textbf{Bit 1} & \textbf{Bit 2} & \textbf { Bit 3 }
+\begin{tabular} { l r r r r}
+\toprule & \textbf{Bit 0} & \textbf{Bit 1} & \textbf{Bit 2} & \textbf{Bit 3}
 \\
 \midrule TX 1(soft bits)&$ + 80 $ &$ - 30 $ &$ + 5 $ &$ -
-        120 $ \ TX 2(soft bits)&$ + 60 $ &$ - 90 $ &$ + 40 $ &$ -
-        100 $ \ Combined(sum) &
-    $ + 140 $ &$ - 120 $ &$ + 45 $ &$ - 220 $ \ Clamped to int8 &$ + 127 $ &$ -
-        120 $ &$ + 45 $ &$ - 127 $ \ Interpretation &Strong 1 &
+        120 $ \\
+TX 2(soft bits)&$ + 60 $ &$ - 90 $ &$ + 40 $ &$ -
+        100 $ \\
+Combined(sum) &
+    $ + 140 $ &$ - 120 $ &$ + 45 $ &$ - 220 $ \\
+Clamped to int8 &$ + 127 $ &$ -
+        120 $ &$ + 45 $ &$ - 127 $ \\
+Interpretation &Strong 1 &
     Likely 0 & Weak 1 & Strong 0 \\
 \bottomrule
-\end {
-  tabular
-}
-\end { table }
+\end{tabular}
+\end{table}
 
 \noindent\colorbox{keyinsightcolor} {
   \parbox{\dimexpr\linewidth - 2\fboxsep} {
     %
 \textbf{Key Insight :
-    } Chase Combining is why HARQ is strictly better than pure
+   } Chase Combining is why HARQ is strictly better than pure
                  ARQ.A pure ARQ system discards the failed frame and starts
                      fresh.HARQ with Chase Combining treats every transmission
                          as additional evidence,
         making each retry exponentially more likely to succeed.
-  }
+ }
 }
 
 \subsubsection{USB CDC(Communications Device Class)}
 
-USB CDC is a standard USB device class that creates a \textbf{
-    virtual serial port} over USB.When the RX72N is plugged into the Raspberry
+USB CDC is a standard USB device class that creates a \textbf{virtual serial port} over USB.When the RX72N is plugged into the Raspberry
     Pi 5 via USB,
     the Linux kernel automatically creates a \texttt{
         / dev / ttyACM0} device that applications can read /
         write like a regular serial port.
 
-\textbf {
-  Why USB CDC needs no HARQ:
+\textbf{Why USB CDC needs no HARQ:
 }
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{Hardware CRC-16:} Every USB packet (max 64 bytes for Full-Speed) includes a 16-bit CRC computed and verified by the USB hardware controller. Corrupted packets are automatically discarded at the hardware level.
     \item \textbf{Automatic bulk retries:} USB bulk transfers automatically retry failed packets up to 3 times at the hardware level, transparent to software. The application never sees the retransmission.
     \item \textbf{Differential signaling:} USB uses a twisted differential pair (D+/D-), which provides inherent common-mode noise rejection. This makes bit errors extremely rare compared to single-ended SPI.
     \item \textbf{Handshake protocol:} Every bulk transfer includes a three-phase handshake (TOKEN $\rightarrow$ DATA $\rightarrow$ HANDSHAKE), ensuring reliable delivery.
-\end{
-  itemize
-}
+\end{itemize}
 
-\textbf {What STAR's CDCLink does provide:}
+\textbf{What STAR's CDCLink does provide:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item Application-level CRC-32 (end-to-end integrity, covering the full frame including header).
     \item Sequence number tracking via shared \texttt{SessionState}.
     \item Gap tolerance (accepts sequence gaps $< 10$ frames for rare USB packet loss).
     \item Send serialization via \texttt{sendMutex} (prevents out-of-order transmission).
     \item Send timeout protection (50\,ms timeout prevents blocking on USB disconnect).
-\end{
-    itemize
-  }
+\end{itemize}
 
   \subsubsection{SPI(Serial Peripheral Interface)}
 
       SPI is a synchronous 4 -
       wire bus connecting the Raspberry Pi 5(Controller)to the RX72N(Peripheral)
           .Unlike USB,
-      SPI is a raw electrical interface with \textbf{
-          zero built - in error detection or correction}
+      SPI is a raw electrical interface with \textbf{zero built - in error detection or correction}
           .
 
-\textbf {
-    SPI wires:
-  }
+\textbf{SPI wires:
+ }
   \begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
-    \item \textbf{SCLK : } Clock signal(10\, MHz),
+    \item \textbf{SCLK :} Clock signal(10\, MHz),
       driven by the RPi5 Controller.
-    \item \textbf{COPI : } Controller Out,
+    \item \textbf{COPI :} Controller Out,
       Peripheral In(data from RPi5 to RX72N).
-    \item \textbf{CIPO : } Controller In,
+    \item \textbf{CIPO :} Controller In,
       Peripheral Out(data from RX72N to RPi5)
           .
-    \item \textbf{CS : } Chip Select(active low, selects the RX72N)
+    \item \textbf{CS :} Chip Select(active low, selects the RX72N)
           .
-\end {
-    itemize
-  }
+\end{itemize}
 
-  \textbf { Why SPI needs full HARQ: }
+  \textbf{Why SPI needs full HARQ:}
   \begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item \textbf{No hardware CRC :
-  } SPI shifts raw bits.A single bit flip from EMI or
+ } SPI shifts raw bits.A single bit flip from EMI or
       crosstalk passes through silently unless the application checks.
-    \item \textbf{No retransmission : } SPI is fire -
+    \item \textbf{No retransmission :} SPI is fire -
           and-forget.If a byte is corrupted,
       there is no hardware mechanism to request it again.
-    \item \textbf{Single - ended signaling : } SPI lines are not differential,
+    \item \textbf{Single - ended signaling :} SPI lines are not differential,
       making them more susceptible to electromagnetic interference(EMI)
           from nearby motor drivers,
       switched power supplies,
       and PWM signals.
     \item \textbf{Motor environment :
-      } The STAR robot runs 4 brushed DC motors with H -
+     } The STAR robot runs 4 brushed DC motors with H -
           bridge drivers(DRV8243S).PWM switching at 20\,
       kHz generates significant EMI that can couple into SPI traces.
-\end {
-    itemize
-  }
+\end{itemize}
 
-  \textbf {
-    STAR's SPI protection stack:}
+  \textbf{STAR's SPI protection stack:}
 
 \begin{enumerate}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item \textbf{CRC - 32 :
-    } Detects corruption(every frame)
+   } Detects corruption(every frame)
                            .
-    \item \
-    textbf{FEC encoding : } Adds redundancy(rate 1 / 2 convolutional code)
+    \item\\
+    textbf{FEC encoding :} Adds redundancy(rate 1 / 2 convolutional code)
                            .
-    \item \
-    textbf{ACK / NACK : } Requests retransmission if FEC cannot
+    \item\\
+    textbf{ACK / NACK :} Requests retransmission if FEC cannot
         correct.
-    \item \textbf{Chase Combining : } Accumulates soft bits across
+    \item \textbf{Chase Combining :} Accumulates soft bits across
             retransmissions.
     \item \textbf{Viterbi decoding :
-            } Finds most likely original data from combined soft bits.
-\end {
-      enumerate
-    }
+           } Finds most likely original data from combined soft bits.
+\end{enumerate}
 
     \subsubsection{Protocol Composition Hierarchy}
 
@@ -644,38 +592,43 @@ USB CDC is a standard USB device class that creates a \textbf{
 \centering
 \caption {
       Protocol Mechanisms by Transport
-    }
+   }
     \label {
     tab:
       protocol - by - transport
-    }
-    \begin{tabular} { l c c l }
+   }
+    \begin{tabular} { l c c l}
     \toprule
-\textbf{Mechanism} & \textbf{USB CDC} & \textbf{SPI} & \textbf {
-      Rationale
-    }
+\textbf{Mechanism} & \textbf{USB CDC} & \textbf{SPI} & \textbf{Rationale
+   }
     \\
 \midrule CRC -
             32(application) & \checkmark & \checkmark &End - to -
                                   end integrity on both
-                                          paths \ Sequence tracking & \checkmark
+                                          paths \\
+Sequence tracking & \checkmark
                                               & \checkmark &Duplicate /
-                                      ordering detection \ ARQ(ACK / NACK) &
-        & \checkmark &SPI has no built - in retry \ FEC(convolutional) &
+                                      ordering detection \\
+ARQ(ACK / NACK) &
+        & \checkmark &SPI has no built - in retry \\
+FEC(convolutional) &
         & \checkmark &SPI has no built -
-            in error correction \ Viterbi decoding && \checkmark &Decodes FEC -
-            encoded data \ Chase Combining && \checkmark &Improves
-                retransmission success \ Hardware CRC -
-            16 & \checkmark &&USB hardware provides this \ Hardware bulk retry
+            in error correction \\
+Viterbi decoding && \checkmark &Decodes FEC -
+            encoded data \\
+Chase Combining && \checkmark &Improves
+                retransmission success \\
+Hardware CRC -
+            16 & \checkmark &&USB hardware provides this \\
+Hardware bulk retry
             & \checkmark &&USB hardware provides this \\
 \texttt{sendMutex} & \checkmark & \checkmark &Atomic sequence +
-                          send \ Send timeout & \checkmark &&Prevents blocking
+                          send \\
+Send timeout & \checkmark &&Prevents blocking
                               on USB disconnect \\
 \bottomrule
-\end {
-      tabular
-    }
-    \end { table }
+\end{tabular}
+    \end{table}
 
     \subsubsection{Module Map}
 
@@ -687,55 +640,65 @@ USB CDC is a standard USB device class that creates a \textbf{
 \centering
 \caption {
       Protocol Implementation Module Map
-    }
+   }
     \label {
     tab:
       module - map
-    }
-    \begin{tabular} { l l l }
+   }
+    \begin{tabular} { l l l}
     \toprule
-\textbf{Concept} & \textbf{Go(Gateway)} & \textbf { C(RX72N) }
+\textbf{Concept} & \textbf{Go(Gateway)} & \textbf{C(RX72N)}
     \\
 \midrule CRC -
             32 & \texttt{internal /
-                         frame / } & \texttt{libs /
-                                             rx\_crc / }(
-                                         HW - accelerated) \ Frame encode /
+                         frame /} & \texttt{libs /
+                                             rx\_crc /}(
+                                         HW - accelerated) \\
+Frame encode /
                                          decode & \texttt{internal /
-                                                          frame / } & \texttt {
+                                                          frame /} & \texttt {
       libs / rx\_frame /
-    }
-    \ FEC encoder & \texttt{internal / fec / convolutional.go} & \texttt {
+   }
+    \\
+FEC encoder & \texttt{internal / fec / convolutional.go} & \texttt {
       libs / rx\_fec /
-    }
-    \ Viterbi decoder & \texttt{internal / fec / viterbi.go} & \texttt {
+   }
+    \\
+Viterbi decoder & \texttt{internal / fec / viterbi.go} & \texttt {
       libs / rx\_fec /
-    }
-    \ Chase Combiner & \texttt{internal / fec / combiner.go} & \texttt {
+   }
+    \\
+Chase Combiner & \texttt{internal / fec / combiner.go} & \texttt {
       libs / rx\_harq /
-    }
-    \ HARQ state machine & \texttt{internal / link / spi.go} & \texttt {
+   }
+    \\
+HARQ state machine & \texttt{internal / link / spi.go} & \texttt {
       libs / rx\_spi\_link /
-    }
-    \ CDC link(lightweight) & \texttt{internal / link / cdc.go} & \texttt {
+   }
+    \\
+CDC link(lightweight) & \texttt{internal / link / cdc.go} & \texttt {
       libs / rx\_usb\_comm /
-    }
-    \ SPI raw transport & \texttt{internal / transport / spi.go} & \texttt {
+   }
+    \\
+SPI raw transport & \texttt{internal / transport / spi.go} & \texttt {
       libs / rx\_spi\_comm /
-    }
-    \ USB raw transport & \texttt{internal / transport / cdc.go} & \texttt {
+   }
+    \\
+USB raw transport & \texttt{internal / transport / cdc.go} & \texttt {
       libs / rx\_usb\_comm /
-    }
-    \ Session state & \texttt{internal / manager / session.go} & \texttt {
+   }
+    \\
+Session state & \texttt{internal / manager / session.go} & \texttt {
       libs / rx\_session /
-    }
-    \ Transport manager & \texttt{internal / manager / manager.go} & \texttt {
+   }
+    \\
+Transport manager & \texttt{internal / manager / manager.go} & \texttt {
       libs / rx\_comm\_manager /
-    }
+   }
     \\
 \bottomrule
-\end { tabular }
-    \end { table }
+\end{tabular}
+    \end{table}
 
     \subsection{Command Flow(Downward
                              : UI to Motor)}
@@ -770,25 +733,23 @@ USB CDC is a standard USB device class that creates a \textbf{
         writes to \texttt{shared\_data}(mutex + event flag).
     \item \texttt{motor\_control\_task}(priority 8, 250\, Hz)wakes on event,
         runs PID, writes PWM to DRV8243S.
-\end {
-      enumerate
-    }
+\end{enumerate}
 
-    \vspace { 0.2cm }
+    \vspace { 0.2cm}
 
     \noindent\colorbox{keyinsightcolor} {
       \parbox{\dimexpr\linewidth - 2\fboxsep} {
         %
-\textbf{Key Insight : } The inner motor control loop(250\, Hz)
+\textbf{Key Insight :} The inner motor control loop(250\, Hz)
                 runs at 2.5 $\times$ the communication rate(100\, Hz),
             ensuring smooth PID control between incoming commands.ThreadX event
                     flags provide zero -
                 copy,
             zero - latency signaling between the communication and motor tasks.
-      }
-    }
+     }
+   }
 
-    \subsection { Telemetry Flow(Upward : Sensor to UI) }
+    \subsection{Telemetry Flow(Upward : Sensor to UI)}
 
     \begin{enumerate}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
     \item RX72N telemetry task(10\, Hz) gathers encoder, IMU, and battery data.

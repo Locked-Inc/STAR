@@ -1,10 +1,17 @@
-% =============================================================================
-% Section 4: Project Scope
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Section 4 : Project Scope % == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
-\section{Project Scope}
-\label{sec:scope}
-\sectionauthors{CM, BS}
+\section {
+  Project Scope
+}
+\label {
+sec:
+  scope
+}
+\sectionauthors { CM, BS }
 
 \subsection{Scope Overview}
 
@@ -12,33 +19,47 @@
 %REviewed by Jeremie last sentence seems outofplace, I would add more detail if we were to keep this circle back
 This section defines the boundaries of the STAR Robot project, clearly establishing what is included and excluded from the project deliverables. The STAR Robot is a LiDAR SLAM robot with remote control capabilities designed for autonomous indoor mapping.
 
-\subsection{Scope Definition}
+\subsection{
+  Scope Definition
+}
 
 \subsubsection{What IS Included}
 
-The following capabilities and deliverables are within the project scope:
+        The following capabilities and deliverables are within the project scope
+    :
 
-% 5/12 This has been reviewed - Brighton
-\begin{itemize}
-    \item \textbf{Autonomous Navigation System}
-    \begin{itemize}
-        \item Self-directed exploration of indoor environments
-        \item Real-time obstacle detection and avoidance
+    %
+    5 / 12 This has been reviewed -
+    Brighton
+\begin {
+  itemize
+}
+\item \textbf { Autonomous Navigation System }
+\begin { itemize }
+\item Self - directed exploration of indoor environments
+        \item Real - time obstacle detection and avoidance
         \item Path planning and trajectory execution
-    \end{itemize}
+    \end {
+  itemize
+}
 
-    \item \textbf{SLAM-Based Mapping}
-    \begin{itemize}
-        \item 2D occupancy grid map generation
-        \item Real-time localization within generated maps
+\item \textbf { SLAM - Based Mapping }
+\begin { itemize }
+\item 2D occupancy grid map generation
+        \item Real -
+    time localization within generated maps
         \item Map saving and loading capabilities
         \item Integration with ROS 2 navigation stack
     \end{itemize}
 
-    % This section has been manually verified and all information is correct. Excluding TODO/Placeholders.
-% 5/12 This has been reviewed - Brighton
-    \item \textbf{Hardware Platform}
-    \begin{itemize}
+        % This section has been manually verified and all information is
+              correct.Excluding TODO /
+        Placeholders.% 5 / 12 This has been reviewed -
+    Brighton
+    \item \textbf {
+  Hardware Platform
+}
+\begin { itemize }
         \item Custom PETG/aluminum chassis with high-compliance wheel drive
         \item SICK TiM561 2D LiDAR: 270° FoV, 10m range, 15Hz scan rate, $\pm$60mm accuracy (donated, \$3,500 value including cables)
         \item RPLiDAR C1 2D LiDAR (backup/development): 360° FoV, 12m range, 10Hz scan rate, $\pm$30mm accuracy, \$55
@@ -56,8 +77,10 @@ The following capabilities and deliverables are within the project scope:
     \end{itemize}
 
 % 5/12 This has been reviewed - Brighton
-    \item \textbf{Software System}
-    \begin{itemize}
+    \item \textbf{
+          Software System
+        }
+        \begin { itemize }
         \item ROS 2 Humble framework implementation
         \item Nav2 navigation stack integration
         \item SLAM Toolbox for mapping
@@ -66,21 +89,30 @@ The following capabilities and deliverables are within the project scope:
     \end{itemize}
 
 % 5/12 This has been reviewed - Brighton
-    \item \textbf{Documentation}
-    \begin{itemize}
+    \item \textbf{
+          Documentation
+        }
+        \begin { itemize }
         \item Complete assembly instructions
         \item Software installation guide
         \item User operation manual
         \item Technical design documentation
-    \end{itemize}
-\end{itemize}
+    \end {
+          itemize
+        }
+        \end { itemize }
 
-\subsubsection{What is NOT Included}
+        \subsubsection{What is NOT Included}
 
-The following items are explicitly excluded from the project scope:
+                The following items are explicitly excluded from the project
+                    scope :
 
-% 5/12 This has been reviewed - Brighton
-\begin{itemize}
+            %
+            5 / 12 This has been reviewed -
+            Brighton
+\begin {
+          itemize
+        }
     \item \textbf{Outdoor Operation}: The system is designed for indoor, structured environments only. Outdoor terrain, weather resistance, and GPS integration are excluded.
 
     \item \textbf{Manipulation Capabilities}: No robotic arm, gripper, or object manipulation functionality is included.
@@ -94,24 +126,35 @@ The following items are explicitly excluded from the project scope:
     \item \textbf{Machine Learning Training}: Pre-trained models may be used, but custom ML model development is excluded. Locked Inc. will finetune models, but not create any from scratch.
 
     \item \textbf{Return-to-home functionality}: Autonomous return-to-origin requires accurate long-term odometry which is subject to cumulative drift errors. The system relies on manual teleoperation via remote control for return navigation, which provides more reliable control in the prototype stage.
-\end{itemize}
+\end{
+      itemize
+    }
 
-\subsection{Requirements}
+    \subsection { Requirements }
 
-\subsubsection{Functional Requirements}
+    \subsubsection{Functional Requirements}
 
-% 5/12 This has been reviewed - Brighton
-%Reviewed by Jeremie
+            % 5 / 12 This has been reviewed -
+        Brighton % Reviewed by Jeremie
 
-\begin{longtable}{@{}lp{0.60\textwidth}l@{}}
-\caption{Functional Requirements}
-\label{tab:functional_reqs} \\
+\begin{longtable} {
+      @{} lp{0.60\textwidth} l @{}
+    }
+    \caption { Functional Requirements }
+    \label {
+    tab:
+      functional_reqs
+    }
+    \\
 \toprule
-\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\textbf{ID} & \textbf{Requirement} & \textbf { Priority }
+    \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\textbf{ID} & \textbf{Requirement} & \textbf {
+      Priority
+    } \\
 \midrule
 \endhead
 \bottomrule
@@ -125,20 +168,32 @@ FR-006 & System shall export maps in standard ROS 2 format (.pgm and .yaml files
 FR-007 & Motor controllers shall provide encoder feedback at minimum 100Hz for odometry calculations & Medium \\
 FR-008 & Robot shall support manual teleoperation mode via remote control interface & Medium \\
 FR-009 & System shall provide real-time visualization of sensor data and maps through RViz2 & Low \\
-\end{longtable}
+\end{
+      longtable
+    }
 
-\subsubsection{Non-Functional Requirements}
+    \subsubsection{Non - Functional Requirements}
 
-% 5/12 This has been reviewed - Brighton
-\begin{longtable}{@{}lp{0.60\textwidth}l@{}}
-\caption{Non-Functional Requirements}
-\label{tab:nonfunctional_reqs} \\
+            % 5 / 12 This has been reviewed -
+        Brighton
+\begin{longtable} {
+      @{} lp{0.60\textwidth} l @{}
+    }
+    \caption { Non - Functional Requirements }
+    \label {
+    tab:
+      nonfunctional_reqs
+    }
+    \\
 \toprule
-\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\textbf{ID} & \textbf{Requirement} & \textbf { Priority }
+    \\
 \midrule
 \endfirsthead
 \toprule
-\textbf{ID} & \textbf{Requirement} & \textbf{Priority} \\
+\textbf{ID} & \textbf{Requirement} & \textbf {
+      Priority
+    } \\
 \midrule
 \endhead
 \bottomrule
@@ -151,51 +206,104 @@ NFR-005 & Total material cost for reproducible build shall remain under \$1,000 
 NFR-006 & System shall be maintainable by a single technician with standard tools & Medium \\
 NFR-007 & Software shall be fully documented with installation guides and API references & Medium \\
 NFR-008 & Robot weight shall not exceed 10 kg to ensure safe handling and adequate battery runtime & Low \\
-\end{longtable}
+\end{
+      longtable
+    }
 
-\subsection{Key Deliverables}
+    \subsection{Key Deliverables}
 
-The project will produce the following deliverables with associated completion dates. These deliverables align with project milestones shown on  (Table~\ref{tab:milestones}).
+            The project will produce the following deliverables with associated
+                completion dates
+                    .These deliverables align with project milestones shown
+                    on(Table ~\ref{tab : milestones})
+                    .
 
-% 5/12 This has been reviewed - Brighton
+            % 5 / 12 This has been reviewed
+        - Brighton
 \begin{table}[H]
 \centering
-\caption{Project Deliverables and Schedule}
-\label{tab:deliverables}
-\begin{tabular}{@{}clp{0.40\textwidth}l@{}}
-\toprule
-\textbf{ID} & \textbf{Deliverable} & \textbf{Description} & \textbf{Due Date} \\
-\midrule
-D1 & Design Package & Complete mechanical, electrical, and software design documentation & Feb 28, 2026 \\
-\addlinespace
-D2 & Hardware Platform & Assembled robot chassis with all sensors and electronics integrated & Mar 31, 2026 \\
-\addlinespace
-D3 & Software System & Functional ROS 2 software with navigation and mapping capabilities & Apr 15, 2026 \\
-\addlinespace
-D4 & System Integration & Fully integrated robot demonstrating autonomous mapping & May 1, 2026 \\
-\addlinespace
-D5 & Final Prototype & Tested and validated system with complete documentation & May 8, 2026 \\
+\caption {
+      Project Deliverables and Schedule
+    }
+    \label {
+    tab:
+      deliverables
+    }
+    \begin{tabular} {
+      @{} clp{0.40\textwidth} l @{}
+    }
+    \toprule
+\textbf{ID} & \textbf{Deliverable} & \textbf{Description} & \textbf {
+      Due Date
+    }
+    \\
+\midrule D1 &Design Package &Complete mechanical, electrical,
+        and software design documentation &Feb 28,
+        2026 \\
+\addlinespace D2 &Hardware Platform &Assembled robot chassis with
+            all sensors and electronics integrated &Mar 31,
+        2026 \\
+\addlinespace D3 &Software System &Functional
+            ROS 2 software with navigation and mapping capabilities &Apr 15,
+        2026 \\
+\addlinespace D4 &System Integration &Fully integrated robot demonstrating
+            autonomous mapping &May 1,
+        2026 \\
+\addlinespace D5 &Final Prototype &Tested and validated system with
+            complete documentation &May 8,
+        2026 \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end {
+      tabular
+    }
+    \end { table }
 
-\subsection{Test Methods}
+    \subsection{Test Methods}
 
-Each requirement has an associated test method to verify compliance:
+            Each requirement has an associated test method to verify compliance
+        :
 
-% 5/12 This has been reviewed - Brighton
-Detailed test procedures, acceptance criteria, and validation results are documented in the Implementation section (see \Cref{sec:test_plan}) and the Test Plan section (Table~\ref{tab:test_strategy}).
+        %
+        5 / 12 This has been reviewed -
+        Brighton Detailed test procedures,
+        acceptance criteria,
+        and validation results are documented in the Implementation
+            section(see \Cref{sec : test_plan}) and
+            the Test Plan section(Table ~\ref{tab : test_strategy})
+                .
 
-\begin{enumerate}
-    \item \textbf{Navigation Test}: Robot navigates predefined path in lab environment; success measured by completion without human intervention.
+\begin {
+      enumerate
+    }
+    \item \textbf{Navigation Test}
+        : Robot navigates predefined path in lab environment;
+    success measured by completion without human intervention.
 
-    \item \textbf{Obstacle Avoidance Test}: Course with obstacles of various sizes; robot must detect and avoid all obstacles above 10cm threshold.
+    \item \textbf{Obstacle Avoidance Test}
+        : Course with obstacles of various sizes;
+    robot must detect and avoid all obstacles above 10cm threshold.
 
-    \item \textbf{Mapping Accuracy Test}: Map generated room with known dimensions; compare generated map to laser-measured ground truth.
+    \item \textbf{Mapping Accuracy Test}
+        : Map generated room with known dimensions;
+    compare generated map to laser -
+        measured ground truth.
 
-    \item \textbf{Sensor Validation}: Verify LiDAR reports valid data across full 360-degree range with no blind spots.
+    \item \textbf{Sensor Validation}
+        : Verify LiDAR reports valid data across full 360 -
+        degree range with no blind spots.
 
-    \item \textbf{Endurance Test}: Continuous operation under typical navigation workload until battery depletion; measure total runtime.
+    \item \textbf{Endurance Test}
+        : Continuous operation under typical navigation workload until battery
+              depletion;
+    measure total runtime.
 
-    \item \textbf{Performance Monitoring}: Log CPU, memory, and sensor rates during operation using \texttt{ros2 topic hz} for message rates \parencite{ros2_documentation}, \texttt{diagnostic\_common\_diagnostics} for system health \parencite{ros2_diagnostic_common}, and \texttt{htop} for process-level resource usage.
-\end{enumerate}
+    \item \textbf{Performance Monitoring} : Log CPU, memory,
+        and sensor rates during operation using \texttt {
+      ros2 topic hz
+    } for
+      message rates \parencite{ros2_documentation}, \texttt {
+        diagnostic\_common\_diagnostics
+      } for
+      system health \parencite{ros2_diagnostic_common}, and \texttt { htop } for
+      process - level resource usage.
+\end { enumerate }

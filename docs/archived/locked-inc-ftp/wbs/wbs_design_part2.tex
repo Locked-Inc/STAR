@@ -1,37 +1,58 @@
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{forest}
-  for tree={
-    rectangle,
-    draw,
-    rounded corners=2pt,
-    align=center,
-    minimum width=2.2cm,
-    minimum height=0.8cm,
-    inner sep=2pt,
-    s sep=0.3cm,
-    l sep=1cm,
-    anchor=north,
-    edge={->, thick},
-    font=\scriptsize,
-  }
-      [{\textbf{1.2}\\Design}, fill=designyellow, line width=1.5pt, font=\scriptsize\bfseries
-      [{\textbf{1.2.2}\\Develop mechanical\\concept}, fill=designyellow!70
-        [{\textbf{1.2.2.1}\\Create initial\\chassis dims\\{\tiny MN, 5d}}, fill=designyellow!40]
-        [{\textbf{1.2.2.2}\\Design drivetrain\\and motor\\{\tiny MN, 5d}}, fill=designyellow!40]
-        [{\textbf{1.2.2.3}\\Design sensor\\mounting\\{\tiny MN, 5d}}, fill=designyellow!40]
-        [{\textbf{1.2.2.4}\\Complete CAD\\assembly\\{\tiny MN, 5d}}, fill=designyellow!40]
-      ]
-      [{\textbf{1.2.3}\\Design power\\distribution}, fill=designyellow!70
-        [{\textbf{1.2.3.1}\\Define power\\budget\\{\tiny BS, 4d}}, fill=designyellow!40]
-        [{\textbf{1.2.3.2}\\Design PCB\\schematic\\{\tiny BS, 5d}}, fill=designyellow!40]
-        [{\textbf{1.2.3.3}\\Complete PCB\\layout\\{\tiny BS, 4d}}, fill=designyellow!40]
-        [{\textbf{1.2.3.4}\\Generate mfg\\files\\{\tiny BS, 3d}}, fill=designyellow!40]
-      ]
-    ]
-\end{forest}
-}%
-\caption{Design Phase Work Breakdown Structure (Part 2: Mechanical \& Electrical)}
-\label{fig:wbs_design_part2}
-\end{figure}
+\resizebox{\textwidth} { ! }
+{
+  %
+\begin { forest }
+  for
+    tree =
+        {
+            rectangle,
+            draw,
+            rounded corners = 2pt,
+            align = center,
+            minimum width = 2.2cm,
+            minimum height = 0.8cm,
+            inner sep = 2pt,
+            s sep = 0.3cm,
+            l sep = 1cm,
+            anchor = north,
+            edge = {->, thick},
+            font =\scriptsize,
+        }[{\textbf{1.2}\\Design}, fill = designyellow, line width = 1.5pt,
+          font =\scriptsize\bfseries
+              [{\textbf{1.2.2}\\Develop mechanical\\concept},
+               fill = designyellow !70
+                   [{\textbf{1.2.2.1}\\Create initial\\chassis dims\\{\tiny MN,
+                                                                      5d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.2.2}\\Design drivetrain\\and
+                        motor\\{\tiny MN, 5d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.2.3}\\Design sensor\\mounting\\{\tiny MN, 5d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.2.4}\\Complete CAD\\assembly\\{\tiny MN, 5d}},
+                    fill = designyellow !40]]
+              [{\textbf{1.2.3}\\Design power\\distribution},
+               fill = designyellow !70
+                   [{\textbf{1.2.3.1}\\Define power\\budget\\{\tiny BS, 4d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.3.2}\\Design PCB\\schematic\\{\tiny BS, 5d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.3.3}\\Complete PCB\\layout\\{\tiny BS, 4d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.3.4}\\Generate mfg\\files\\{\tiny BS, 3d}},
+                    fill = designyellow !40]]]
+\end {
+      forest
+    }
+}
+%
+\caption {
+  Design Phase Work Breakdown Structure(Part 2 : Mechanical \& Electrical)
+}
+\label {
+fig:
+  wbs_design_part2
+}
+\end { figure }

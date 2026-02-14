@@ -1,103 +1,143 @@
-\subsection{Design Phase Schedule}
+\subsection { Design Phase Schedule }
 
-\noindent\textbf{Phase Duration:} 120 days (Nov 1, 2025 -- Feb 28, 2026)
-\\\textbf{Total Tasks:} 24
-\vspace{0.5em}
+\noindent\textbf { Phase Duration: }
+120 days(Nov 1, 2025 --Feb 28, 2026)
+\\\textbf { Total Tasks: }
+24
+\vspace { 0.5em }
 
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{ganttchart}[
-    x unit=1.2cm,
-    y unit chart=0.4cm,
-    y unit title=0.5cm,
-    title height=1,
-    bar/.style={fill=yellow!40},
-    bar incomplete/.style={fill=yellow!40!50},
-    group/.style={fill=yellow!60, draw=black},
-    group left shift=0,
-    group right shift=0,
-    group peaks height=0.3,
-    milestone/.style={fill=black, shape=diamond, inner sep=2pt},
-    link/.style={->, thick, black!60},
-    vgrid={{*1{draw=gray!30, dashed}}},
-    hgrid,
-    today rule/.style={draw=red!70, ultra thick, dashed},
-    progress label text={},
-    bar label node/.append style={align=left, font=\tiny},
-    group label node/.append style={align=left, font=\tiny\bfseries},
-]{1}{9}
+\resizebox{\textwidth} { ! }
+{ %
+\begin{ganttchart}[x unit = 1.2cm, y unit chart = 0.4cm, y unit title = 0.5cm,
+                    title height = 1, bar /.style = {fill = yellow !40},
+                    bar incomplete /.style = {fill = yellow !40 !50},
+                    group /.style = {fill = yellow !60, draw = black},
+                    group left shift = 0, group right shift = 0,
+                    group peaks height = 0.3,
+                    milestone /.style = {fill = black, shape = diamond,
+                                         inner sep = 2pt},
+                    link /.style = {->, thick, black !60},
+                    vgrid = {{*1 {draw = gray !30, dashed}}}, hgrid,
+                    today rule /.style = {draw = red !70, ultra thick, dashed},
+                    progress label text = {},
+                    bar label node /.append style = {align = left, font =\tiny},
+                    group label node /.append style = {align = left,
+                                                       font =\tiny\bfseries},
+]{1} {9}
 
-    \gantttitle{Design Phase}{9} \\
-    \gantttitle{08/25}{1} \gantttitle{09/08}{1} \gantttitle{09/22}{1} \gantttitle{10/06}{1} \gantttitle{10/20}{1} \gantttitle{11/03}{1} \gantttitle{11/17}{1} \gantttitle{12/01}{1} \gantttitle{12/15}{1} \\
+    \gantttitle{Design Phase} {9} \\
+    \gantttitle{08 / 25} {1} \gantttitle{09 / 08} {1} \gantttitle{09 / 22} {
+      1} \gantttitle{10 / 06} {1} \gantttitle{10 / 20} {1} \gantttitle{
+      11 / 03} {1} \gantttitle{11 / 17} {1} \gantttitle{12 / 01} {
+      1} \gantttitle{12 / 15} {1} \
 
-    % \ganttgroup{1.2: Design}{1}{9} \\
-    \ganttgroup{1.2.1: Define system architecture and i...}{4}{5} \\
-    \ganttbar[name=elem2, bar/.append style={fill=red!50}]{1.2.1.1: Define high-level system archite...}{4}{4} \\
-    \ganttbar[name=elem3, bar/.append style={fill=red!50}]{1.2.1.2: Design subsystem interfaces and ...}{4}{5} \\
-    \ganttbar[name=elem4, bar/.append style={fill=red!50}]{1.2.1.3: Document interface control and d...}{5}{5} \\
-    \ganttgroup{1.2.2: Develop mechanical concept and C...}{5}{7} \\
-    \ganttbar[name=elem6, bar/.append style={fill=red!50}]{1.2.2.1: Create initial chassis dimension...}{5}{5} \\
-    \ganttbar[name=elem7, bar/.append style={fill=red!50}]{1.2.2.2: Design drivetrain and motor moun...}{5}{6} \\
-    \ganttbar[name=elem8, bar/.append style={fill=red!50}]{1.2.2.3: Design sensor mounting and enclo...}{6}{6} \\
-    \ganttbar[name=elem9, bar/.append style={fill=red!50}]{1.2.2.4: Complete CAD assembly and genera...}{6}{7} \\
-    \ganttgroup{1.2.3: Design power distribution and PCB}{5}{6} \\
-    \ganttbar[name=elem11]{1.2.3.1: Define power budget and distribu...}{5}{5} \\
-    \ganttbar[name=elem12]{1.2.3.2: Design PCB schematic and compone...}{5}{6} \\
-    \ganttbar[name=elem13]{1.2.3.3: Complete PCB layout and routing}{6}{6} \\
-    \ganttbar[name=elem14]{1.2.3.4: Generate manufacturing files and...}{6}{6} \\
-    \ganttgroup{1.2.4: Draft ROS 2 software architecture}{5}{6} \\
-    \ganttbar[name=elem16]{1.2.4.1: Define ROS 2 node architecture}{5}{5} \\
-    \ganttbar[name=elem17]{1.2.4.2: Design message types and topic s...}{5}{6} \\
-    \ganttbar[name=elem18]{1.2.4.3: Design navigation and SLAM pipeline}{6}{6} \\
-    \ganttbar[name=elem19]{1.2.4.4: Document software architecture a...}{6}{6} \\
-    \ganttgroup{1.2.5: Plan integration workflow and te...}{5}{6} \\
-    \ganttbar[name=elem21]{1.2.5.1: Define integration sequence and ...}{5}{5} \\
-    \ganttbar[name=elem22]{1.2.5.2: Design hardware integration test...}{5}{6} \\
-    \ganttbar[name=elem23]{1.2.5.3: Design software integration test...}{6}{6} \\
-    \ganttbar[name=elem24]{1.2.5.4: Document test strategy and succe...}{6}{6} \\
-    \ganttgroup{1.2.6: Host design review and decision ...}{7}{7} \\
-    \ganttbar[name=elem26, bar/.append style={fill=red!50}]{1.2.6.1: Prepare design review materials ...}{7}{7} \\
-    \ganttbar[name=elem27, bar/.append style={fill=red!50}]{1.2.6.2: Conduct design review and docume...}{7}{7} \\
-    
-    % --- CORRECTIONS START HERE ---
-    \ganttbar[name=elem28]{1.2.7: Configure Raspberry Pi 5 ROS 2 e...}{7}{7} \\
-    \ganttgroup{1.2.8: Integrate LiDAR sensor with SLAM...}{8}{9} \\
-    \ganttbar[name=elem30]{1.2.8.1: Configure LiDAR driver and ROS i...}{8}{8} \\
-    \ganttbar[name=elem31]{1.2.8.2: Test SLAM algorithm in simulation}{9}{9} \\
-    % --- CORRECTIONS END HERE ---
+      % \ganttgroup{1.2 : Design} {1} {9} \\
+    \ganttgroup{1.2.1 : Define system architecture and i...} {4} {5} \\
+    \ganttbar[name = elem2, bar /.append style = {fill = red !50}]{
+          1.2.1.1 : Define high - level system archite...
+        } {4} {4} \\
+    \ganttbar[name = elem3, bar /.append style = {fill = red !50}]{
+          1.2.1.2 : Design subsystem interfaces and ...
+        } {4} {5} \\
+    \ganttbar[name = elem4, bar /.append style = {fill = red !50}]{
+          1.2.1.3 : Document interface control and d...
+        } {5} {5} \\
+    \ganttgroup{1.2.2 : Develop mechanical concept and C...} {5} {7} \\
+    \ganttbar[name = elem6, bar /.append style = {fill = red !50}]{
+          1.2.2.1 : Create initial chassis dimension...
+        } {5} {5} \\
+    \ganttbar[name = elem7, bar /.append style = {fill = red !50}]{
+          1.2.2.2 : Design drivetrain and motor moun...
+        } {5} {6} \\
+    \ganttbar[name = elem8, bar /.append style = {fill = red !50}]{
+          1.2.2.3 : Design sensor mounting and enclo...
+        } {6} {6} \\
+    \ganttbar[name = elem9, bar /.append style = {fill = red !50}]{
+          1.2.2.4 : Complete CAD assembly and genera...
+        } {6} {7} \\
+    \ganttgroup{1.2.3 : Design power distribution and PCB} {5} {6} \\
+    \ganttbar[name = elem11]{1.2.3.1 :
+                                  Define power budget and distribu...} {5} {5} \\
+    \ganttbar[name = elem12]{1.2.3.2 :
+                                  Design PCB schematic and compone...} {5} {6} \\
+    \ganttbar[name = elem13]{1.2.3.3 : Complete PCB layout and routing} {6} {6} \\
+    \ganttbar[name = elem14]{1.2.3.4 :
+                                  Generate manufacturing files and ...} {6} {6} \\
+    \ganttgroup{1.2.4 : Draft ROS 2 software architecture} {5} {6} \\
+    \ganttbar[name = elem16]{1.2.4.1 : Define ROS 2 node architecture} {5} {5} \\
+    \ganttbar[name = elem17]{1.2.4.2 :
+                                  Design message types and topic s...} {5} {6} \\
+    \ganttbar[name = elem18]{1.2.4.3 :
+                                  Design navigation and SLAM pipeline} {6} {6} \\
+    \ganttbar[name = elem19]{1.2.4.4 :
+                                  Document software architecture a...} {6} {6} \\
+    \ganttgroup{1.2.5 : Plan integration workflow and te...} {5} {6} \\
+    \ganttbar[name = elem21]{1.2.5.1 : Define integration sequence and
+                                  ...} {5} {5} \\
+    \ganttbar[name = elem22]{1.2.5.2 : Design hardware integration test...} {
+                                      5} {6} \\
+    \ganttbar[name = elem23]{1.2.5.3 : Design software integration test...} {
+                                      6} {6} \\
+    \ganttbar[name = elem24]{1.2.5.4 : Document test strategy and
+                                  succe...} {6} {6} \\
+    \ganttgroup{1.2.6 : Host design review and decision...} {7} {7} \\
+    \ganttbar[name = elem26, bar /.append style = {fill = red !50}]{
+          1.2.6.1 : Prepare design review materials...
+        } {7} {7} \\
+    \ganttbar[name = elem27, bar /.append style = {fill = red !50}]{
+          1.2.6.2 : Conduct design review and docume...
+        } {7} {7} \
 
-    % Dependencies
-    \ganttlink{elem19}{elem28}
-    \ganttlink{elem2}{elem3}
-    \ganttlink{elem3}{elem4}
-    \ganttlink{elem4}{elem6}
-    \ganttlink{elem6}{elem7}
-    \ganttlink{elem7}{elem8}
-    \ganttlink{elem8}{elem9}
-    \ganttlink{elem4}{elem11}
-    \ganttlink{elem11}{elem12}
-    \ganttlink{elem12}{elem13}
-    \ganttlink{elem13}{elem14}
-    \ganttlink{elem4}{elem16}
-    \ganttlink{elem16}{elem17}
-    \ganttlink{elem17}{elem18}
-    \ganttlink{elem18}{elem19}
-    \ganttlink{elem4}{elem21}
-    \ganttlink{elem21}{elem22}
-    \ganttlink{elem22}{elem23}
-    \ganttlink{elem23}{elem24}
-    \ganttlink{elem9}{elem26}
-    \ganttlink{elem14}{elem26}
-    \ganttlink{elem19}{elem26}
-    \ganttlink{elem24}{elem26}
-    \ganttlink{elem26}{elem27}
-    \ganttlink{elem28}{elem30}
-    \ganttlink{elem30}{elem31}
+      % -- -CORRECTIONS START HERE-- -
+    \ganttbar[name = elem28]{1.2.7 :
+                                  Configure Raspberry Pi 5 ROS 2 e...} {7} {7} \\
+    \ganttgroup{1.2.8 : Integrate LiDAR sensor with SLAM...} {8} {9} \\
+    \ganttbar[name = elem30]{1.2.8.1 : Configure LiDAR driver and
+                                  ROS i...} {8} {8} \\
+    \ganttbar[name = elem31]{1.2.8.2 : Test SLAM algorithm in simulation} {9} {
+                                      9} \ %
+         -- -CORRECTIONS END HERE-- -
 
-\end{ganttchart}
-}%
-\caption{Design Phase Gantt Chart}
-\label{fig:gantt_design}
-\end{figure}
-\noindent\textit{Note: Tasks highlighted in red are on the critical path (9 tasks in this phase).}
+  % Dependencies
+    \ganttlink{elem19} {elem28}
+    \ganttlink{elem2} {elem3}
+    \ganttlink{elem3} {elem4}
+    \ganttlink{elem4} {elem6}
+    \ganttlink{elem6} {elem7}
+    \ganttlink{elem7} {elem8}
+    \ganttlink{elem8} {elem9}
+    \ganttlink{elem4} {elem11}
+    \ganttlink{elem11} {elem12}
+    \ganttlink{elem12} {elem13}
+    \ganttlink{elem13} {elem14}
+    \ganttlink{elem4} {elem16}
+    \ganttlink{elem16} {elem17}
+    \ganttlink{elem17} {elem18}
+    \ganttlink{elem18} {elem19}
+    \ganttlink{elem4} {elem21}
+    \ganttlink{elem21} {elem22}
+    \ganttlink{elem22} {elem23}
+    \ganttlink{elem23} {elem24}
+    \ganttlink{elem9} {elem26}
+    \ganttlink{elem14} {elem26}
+    \ganttlink{elem19} {elem26}
+    \ganttlink{elem24} {elem26}
+    \ganttlink{elem26} {elem27}
+    \ganttlink{elem28} {elem30}
+    \ganttlink{elem30} {elem31}
+
+\end{ganttchart}} %
+\caption {
+  Design Phase Gantt Chart
+}
+\label {
+fig:
+  gantt_design
+}
+\end { figure }
+\noindent\textit {
+Note:
+  Tasks highlighted in red are on the critical path(9 tasks in this phase).
+}

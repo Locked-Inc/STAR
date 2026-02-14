@@ -1,89 +1,124 @@
-% Test Phase Network Logic Diagram (Split by Critical Path)
-% Generated: 2025-12-06 16:42
-% Total Tasks: 15 (Critical: 11, Supporting: 4)
+% Test Phase Network Logic Diagram(Split by Critical Path) % Generated : 2025 -
+    12 -
+    06 16 : 42 % Total Tasks : 15(Critical : 11, Supporting : 4)
 
 \subsection{Test Phase Network Diagram}
 
-The Test phase contains \textbf{15 tasks} totaling \textbf{62 working days}. 
-Of these, 11 tasks (46 days) are on the critical path, 
-and 4 tasks (16 days) are supporting activities with available float time.
+                 The Test phase contains \textbf{15 tasks} totaling \textbf{
+                     62 working days}
+                     .Of these,
+    11 tasks(46 days) are on the critical path,
+    and4 tasks(16 days) are supporting activities with available float time.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
-\subsubsection{Critical Path Tasks}
+\subsubsection { Critical Path Tasks }
 
-\noindent The following 11 tasks are on the critical path. 
-Any delay in these tasks will directly extend the project completion date. 
-These tasks span 46 working days.
+\noindent The following 11 tasks are on the critical
+    path.Any delay in these tasks will directly extend the project completion
+        date.These tasks span 46 working days.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
 \begin{figure}[H]
 \centering
-\resizebox{0.85\textwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=1.4cm and 1.5cm,
-  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.2cm, minimum height=1.0cm, align=center, font=\tiny, fill=testgreen!30},
-  timing/.style={font=\tiny, inner sep=1pt},
-  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
-  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
-]
+\resizebox{0.85\textwidth} { ! }
+{
+  %
+\begin{tikzpicture}[node distance = 1.4cm and 1.5cm,
+                     task /.style = {rectangle, draw, rounded corners = 3pt,
+                                     minimum width = 2.2cm,
+                                     minimum height = 1.0cm, align = center,
+                                     font =\tiny, fill = testgreen !30},
+                     timing /.style = {font =\tiny, inner sep = 1pt},
+                     regular_arrow /.style = {-{Stealth[length = 5pt]},
+                                              gray !70, thick},
+                     critical_arrow /.style = {-{Stealth[length = 5pt]}, red,
+                                               line width = 1.2pt},
+  ]
 
-  \node[task] (1_4_1_1) {\textbf{1.1}\\Review and fina...\\(4d)};
-  \node[timing, above=2pt of 1_4_1_1] {156 | 160};
-  \node[task] (1_4_1_2) [right=1.5cm of 1_4_1_1] {\textbf{1.2}\\Prepare test en...\\(4d)};
-  \node[timing, above=2pt of 1_4_1_2] {160 | 164};
-  \node[task] (1_4_1_3) [right=1.5cm of 1_4_1_2] {\textbf{1.3}\\Set up data col...\\(4d)};
-  \node[timing, above=2pt of 1_4_1_3] {164 | 168};
-  \node[task] (1_4_2_1) [below=1.4cm of 1_4_1_1] {\textbf{2.1}\\Execute navigat...\\(4d)};
-  \node[timing, above=2pt of 1_4_2_1] {168 | 172};
-  \node[task] (1_4_2_2) [right=1.5cm of 1_4_2_1] {\textbf{2.2}\\Execute sensor ...\\(4d)};
-  \node[timing, above=2pt of 1_4_2_2] {172 | 176};
-  \node[task] (1_4_2_3) [right=1.5cm of 1_4_2_2] {\textbf{2.3}\\Execute power s...\\(4d)};
-  \node[timing, above=2pt of 1_4_2_3] {176 | 180};
-  \node[task] (1_4_2_4) [right=1.5cm of 1_4_2_3] {\textbf{2.4}\\Document test r...\\(4d)};
-  \node[timing, above=2pt of 1_4_2_4] {180 | 184};
-  \node[task] (1_4_4_1) [below=1.4cm of 1_4_2_1] {\textbf{4.1}\\Triage and prio...\\(5d)};
-  \node[timing, above=2pt of 1_4_4_1] {184 | 189};
-  \node[task] (1_4_4_2) [right=1.5cm of 1_4_4_1] {\textbf{4.2}\\Implement fixes...\\(5d)};
-  \node[timing, above=2pt of 1_4_4_2] {189 | 194};
-  \node[task] (1_4_5_1) [below=1.4cm of 1_4_4_1] {\textbf{5.1}\\Prepare accepta...\\(4d)};
-  \node[timing, above=2pt of 1_4_5_1] {194 | 198};
-  \node[task] (1_4_5_2) [right=1.5cm of 1_4_5_1] {\textbf{5.2}\\Deliver demo an...\\(4d)};
-  \node[timing, above=2pt of 1_4_5_2] {198 | 202};
+  \node[task](1_4_1_1){\textbf{1.1}\\Review and fina...\\(4d)};
+  \node[timing, above = 2pt of 1_4_1_1]{156 | 160};
+  \node[task](1_4_1_2)[right = 1.5cm of 1_4_1_1]{\textbf{
+      1.2}\\Prepare test en...\\(4d)};
+  \node[timing, above = 2pt of 1_4_1_2]{160 | 164};
+  \node[task](1_4_1_3)[right = 1.5cm of 1_4_1_2]{\textbf{
+      1.3}\\Set up data col...\\(4d)};
+  \node[timing, above = 2pt of 1_4_1_3]{164 | 168};
+  \node[task](1_4_2_1)[below = 1.4cm of 1_4_1_1]{\textbf{
+      2.1}\\Execute navigat...\\(4d)};
+  \node[timing, above = 2pt of 1_4_2_1]{168 | 172};
+  \node[task](
+      1_4_2_2)[right = 1.5cm of 1_4_2_1]{\textbf{2.2}\\Execute sensor...\\(4d)};
+  \node[timing, above = 2pt of 1_4_2_2]{172 | 176};
+  \node[task](1_4_2_3)[right = 1.5cm of 1_4_2_2]{\textbf{
+      2.3}\\Execute power s...\\(4d)};
+  \node[timing, above = 2pt of 1_4_2_3]{176 | 180};
+  \node[task](1_4_2_4)[right = 1.5cm of 1_4_2_3]{\textbf{
+      2.4}\\Document test r...\\(4d)};
+  \node[timing, above = 2pt of 1_4_2_4]{180 | 184};
+  \node[task](1_4_4_1)[below = 1.4cm of 1_4_2_1]{\textbf{4.1}\\Triage and
+                                                 prio...\\(5d)};
+  \node[timing, above = 2pt of 1_4_4_1]{184 | 189};
+  \node[task](1_4_4_2)[right = 1.5cm of 1_4_4_1]{\textbf{
+      4.2}\\Implement fixes...\\(5d)};
+  \node[timing, above = 2pt of 1_4_4_2]{189 | 194};
+  \node[task](1_4_5_1)[below = 1.4cm of 1_4_4_1]{\textbf{
+      5.1}\\Prepare accepta...\\(4d)};
+  \node[timing, above = 2pt of 1_4_5_1]{194 | 198};
+  \node[task](1_4_5_2)[right = 1.5cm of 1_4_5_1]{\textbf{
+      5.2}\\Deliver demo an...\\(4d)};
+  \node[timing, above = 2pt of 1_4_5_2]{198 | 202};
 
   % Dependencies
-  \draw[critical_arrow] (1_4_1_1) -- (1_4_1_2);
-  \draw[critical_arrow] (1_4_1_2) -- (1_4_1_3);
-  \draw[critical_arrow, rounded corners=3pt] (1_4_1_3.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_4_2_1.west) -- (1_4_2_1.west);
-  \draw[critical_arrow] (1_4_2_1) -- (1_4_2_2);
-  \draw[critical_arrow] (1_4_2_2) -- (1_4_2_3);
-  \draw[critical_arrow] (1_4_2_3) -- (1_4_2_4);
-  \draw[critical_arrow, rounded corners=3pt] (1_4_2_4.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_4_4_1.west) -- (1_4_4_1.west);
-  \draw[critical_arrow] (1_4_4_1) -- (1_4_4_2);
-  \draw[critical_arrow, rounded corners=3pt] (1_4_4_2.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_4_5_1.west) -- (1_4_5_1.west);
-  \draw[critical_arrow] (1_4_5_1) -- (1_4_5_2);
+  \draw[critical_arrow](1_4_1_1)--(1_4_1_2);
+  \draw[critical_arrow](1_4_1_2)--(1_4_1_3);
+  \draw[critical_arrow, rounded corners = 3pt](1_4_1_3.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_4_2_1.west)--(1_4_2_1.west);
+  \draw[critical_arrow](1_4_2_1)--(1_4_2_2);
+  \draw[critical_arrow](1_4_2_2)--(1_4_2_3);
+  \draw[critical_arrow](1_4_2_3)--(1_4_2_4);
+  \draw[critical_arrow, rounded corners = 3pt](1_4_2_4.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_4_4_1.west)--(1_4_4_1.west);
+  \draw[critical_arrow](1_4_4_1)--(1_4_4_2);
+  \draw[critical_arrow, rounded corners = 3pt](1_4_4_2.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_4_5_1.west)--(1_4_5_1.west);
+  \draw[critical_arrow](1_4_5_1)--(1_4_5_2);
 
-\end{tikzpicture}
-}%
-\caption{Test Phase Critical Path Tasks}
-\label{fig:nld_test_critical}
-\end{figure}
+  \end { tikzpicture }
+}
+%
+\caption { Test Phase Critical Path Tasks }
+\label {
+fig:
+  nld_test_critical
+}
+\end { figure }
 
 \begin{table}[H]
 \centering
 \small
-\rowcolors{2}{testgreen!20}{white}
-\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\rowcolors{2} { testgreen !20 }
+{ white }
+\begin{tabular} { | l | p{5cm} | c | c | c | l | }
 \hline
-\rowcolor{testgreen!40}
-\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\rowcolor { testgreen !40 }
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{
+    EF} & \textbf {
+  Owner
+}
+\\
 \hline
 \texttt{1.4.1.1} & Review and finalize test procedures & 4 & 156 & 160 & SC \\
 \hline
 \texttt{1.4.1.2} & Prepare test environment and equipment & 4 & 160 & 164 & SC \\
 \hline
-\texttt{1.4.1.3} & Set up data collection and monitoring systems & 4 & 164 & 168 & SC \\
+\texttt{1.4.1.3} & Set up data collection and monitoring systems & 4 & 164 &
+    168 & SC \\
 \hline
 \texttt{1.4.2.1} & Execute navigation functional tests & 4 & 168 & 172 & JH \\
 \hline
@@ -101,70 +136,105 @@ These tasks span 46 working days.
 \hline
 \texttt{1.4.5.2} & Deliver demo and finalize test report & 4 & 198 & 202 & CM \\
 \hline
-\end{tabular}
-\caption{Test Phase Critical Path Tasks}
-\label{tab:nld_test_critical}
-\end{table}
+\end {
+  tabular
+}
+\caption { Test Phase Critical Path Tasks }
+\label {
+tab:
+  nld_test_critical
+}
+\end { table }
 
-\subsubsection{Supporting Tasks}
+\subsubsection { Supporting Tasks }
 
-\noindent The following 4 supporting tasks have available float time. 
-These tasks can be delayed without impacting the project end date, as long as they complete within their late finish dates. 
-These tasks span 16 working days.
+\noindent The following 4 supporting tasks have available float time.These tasks
+    can be delayed without impacting the project end date,
+    as long as they complete within their late finish
+        dates.These tasks span 16 working days.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
 \begin{figure}[H]
 \centering
-\resizebox{0.5\textwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=1.4cm and 1.5cm,
-  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\tiny, fill=testgreen!30},
-  timing/.style={font=\tiny, inner sep=1pt},
-  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
-  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
-]
+\resizebox{0.5\textwidth} { ! }
+{
+  %
+\begin{tikzpicture}[node distance = 1.4cm and 1.5cm,
+                     task /.style = {rectangle, draw, rounded corners = 3pt,
+                                     minimum width = 2.4cm,
+                                     minimum height = 1.0cm, align = center,
+                                     font =\tiny, fill = testgreen !30},
+                     timing /.style = {font =\tiny, inner sep = 1pt},
+                     regular_arrow /.style = {-{Stealth[length = 5pt]},
+                                              gray !70, thick},
+                     critical_arrow /.style = {-{Stealth[length = 5pt]}, red,
+                                               line width = 1.2pt},
+  ]
 
-  \node[task] (1_4_3_1) {\textbf{3.1}\\Execute indoor navi...\\(4d)};
-  \node[timing, above=2pt of 1_4_3_1] {168 | 172};
-  \node[task] (1_4_3_2) [right=1.5cm of 1_4_3_1] {\textbf{3.2}\\Execute multi-room ...\\(4d)};
-  \node[timing, above=2pt of 1_4_3_2] {172 | 176};
-  \node[task] (1_4_3_3) [right=1.5cm of 1_4_3_2] {\textbf{3.3}\\Execute obstacle av...\\(4d)};
-  \node[timing, above=2pt of 1_4_3_3] {176 | 180};
-  \node[task] (1_4_3_4) [right=1.5cm of 1_4_3_3] {\textbf{3.4}\\Analyze field trial...\\(4d)};
-  \node[timing, above=2pt of 1_4_3_4] {180 | 184};
+  \node[task](1_4_3_1){\textbf{3.1}\\Execute indoor navi...\\(4d)};
+  \node[timing, above = 2pt of 1_4_3_1]{168 | 172};
+  \node[task](1_4_3_2)[right = 1.5cm of 1_4_3_1]{\textbf{3.2}\\Execute multi -
+                                                 room...\\(4d)};
+  \node[timing, above = 2pt of 1_4_3_2]{172 | 176};
+  \node[task](1_4_3_3)[right = 1.5cm of 1_4_3_2]{\textbf{
+      3.3}\\Execute obstacle av...\\(4d)};
+  \node[timing, above = 2pt of 1_4_3_3]{176 | 180};
+  \node[task](1_4_3_4)[right = 1.5cm of 1_4_3_3]{\textbf{
+      3.4}\\Analyze field trial...\\(4d)};
+  \node[timing, above = 2pt of 1_4_3_4]{180 | 184};
 
   % Dependencies
-  \draw[regular_arrow] (1_4_3_1) -- (1_4_3_2);
-  \draw[regular_arrow] (1_4_3_2) -- (1_4_3_3);
-  \draw[regular_arrow] (1_4_3_3) -- (1_4_3_4);
+  \draw[regular_arrow](1_4_3_1)--(1_4_3_2);
+  \draw[regular_arrow](1_4_3_2)--(1_4_3_3);
+  \draw[regular_arrow](1_4_3_3)--(1_4_3_4);
 
-\end{tikzpicture}
-}%
-\caption{Test Phase Supporting Tasks}
-\label{fig:nld_test_supporting}
-\end{figure}
+  \end { tikzpicture }
+}
+%
+\caption { Test Phase Supporting Tasks }
+\label {
+fig:
+  nld_test_supporting
+}
+\end { figure }
 
 \begin{table}[H]
 \centering
 \small
-\rowcolors{2}{testgreen!20}{white}
-\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\rowcolors{2} { testgreen !20 }
+{ white }
+\begin{tabular} { | l | p{5cm} | c | c | c | l | }
 \hline
-\rowcolor{testgreen!40}
-\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\rowcolor { testgreen !40 }
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{
+    EF} & \textbf {
+  Owner
+}
+\\
 \hline
 \texttt{1.4.3.1} & Execute indoor navigation trials & 4 & 168 & 172 & SC \\
 \hline
-\texttt{1.4.3.2} & Execute multi-room mapping trials & 4 & 172 & 176 & SC \\
+\texttt{1.4.3.2} & Execute multi - room mapping trials & 4 & 172 & 176 & SC \\
 \hline
 \texttt{1.4.3.3} & Execute obstacle avoidance trials & 4 & 176 & 180 & SC \\
 \hline
-\texttt{1.4.3.4} & Analyze field trial data and document findings & 4 & 180 & 184 & SC \\
+\texttt{1.4.3.4} & Analyze field trial data and document findings & 4 & 180 &
+    184 & SC \\
 \hline
-\end{tabular}
-\caption{Test Phase Supporting Tasks}
-\label{tab:nld_test_supporting}
-\end{table}
+\end {
+  tabular
+}
+\caption { Test Phase Supporting Tasks }
+\label {
+tab:
+  nld_test_supporting
+}
+\end { table }
 
-\noindent\textit{See \hyperref[app:nld]{Appendix C} for the complete Test phase network logic diagram.}
+\noindent\textit {
+  See \hyperref [app:nld] { Appendix C } for
+    the complete Test phase network logic diagram.
+}
