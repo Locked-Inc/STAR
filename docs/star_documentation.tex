@@ -10,7 +10,9 @@
 \documentclass[11pt,letterpaper]{article}
 
 % Load all packages and settings from preamble
-\usepackage{preamble}
+\usepackage{
+  preamble
+}
 
 \begin{document}
 
@@ -20,24 +22,23 @@
 
 % Title Page
 \begin{titlepage}
-    \centering
-    \vspace*{2cm}
+\centering
+\vspace*{2cm}
 
-    {\Huge\bfseries STAR Robot Control System\par}
-    \vspace{0.5cm}
-    {\LARGE Comprehensive Technical Documentation\par}
-    \vspace{1cm}
-    {\Large Complete Reference for Software Engineers\par}
+{\Huge\bfseries STAR Robot Control System\par}
+\vspace{0.5cm}
+{\LARGE Comprehensive Technical Documentation\par}
+\vspace{1cm}
+{\Large Complete Reference for Software Engineers\par}
 
-    \vfill
+\vfill
 
-    {\large Version 1.0\par}
-    {\large December 2025\par}
+{\large Version 1.0\par}
+{\large December 2025\par}
 
-    \vfill
+\vfill
 
-    {\normalsize STAR Development Team\\
-    Locked Inc.\par}
+{\normalsize STAR Development Team\\ Locked Inc.\par}
 \end{titlepage}
 
 % Table of Contents
@@ -78,7 +79,16 @@
 % Section 10: ROS2 Integration Strategy
 \input{sections/10_ros2_integration}
 
-% Section 10: ROS2 C++ Style Guide
+% Section 11: ROS2 C++ Style Guide
 \input{sections/11_ros2_cpp_style_guide}
+
+% Section 12: End-to-End Communication Stack
+\input{sections/12_communication_stack}
+
+% Section 13: Transport Failover and Hot Switching
+\input{sections/13_transport_failover}
+
+% Section 14: Dual-Channel Arbitration
+\input{sections/14_dual_channel_arbitration}
 
 \end{document}

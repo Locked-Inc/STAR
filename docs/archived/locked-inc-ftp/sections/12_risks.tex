@@ -1,119 +1,247 @@
-% =============================================================================
-% Section 12: Risk Assessment
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Section 12 : Risk Assessment % == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
-\section{Risk Assessment}
-\label{sec:risks}
-\sectionauthors{MN, JH}
+\section {
+  Risk Assessment
+}
+\label {
+sec:
+  risks
+}
+\sectionauthors { MN, JH }
 
 \subsection{Risk Management Overview}
 
 This section identifies the project's technical risks by highest priority, evaluates their probability and impact, and defines mitigation strategies. Risk management follows a systematic approach: each risk is assigned a \textbf{probability} rating (likelihood of occurrence) and an \textbf{impact} rating (severity of consequences if it occurs). These ratings combine to determine overall risk priority, guiding resource allocation for mitigation efforts.
 
-The primary technical risks center on the drivetrain, sensing, computation, and navigation subsystems. The drivetrain utilizes 3D-printed bevel gears, which require precise design due to potential chafing and wear under continuous load. SLAM performance may degrade in environments with limited geometric features, reducing map accuracy. SLAM failure occurs when the algorithm cannot reliably determine the robot's position within its map. This manifests as pose estimate drift, loop closure failures, or complete localization loss. Contributing factors include featureless environments (long corridors, blank walls), repetitive geometry (identical rooms), dynamic obstacles, and sensor noise. LiDAR reliability can be affected by different surface types, particularly reflective (glass, mirrors) or absorptive (dark fabrics) materials, leading to noisy range data. Processing demands may exceed the Raspberry Pi 5's resources since the SLAM algorithm, LiDAR processing, and Nav2 framework run concurrently, potentially causing timing delays.
+    The primary technical risks center on the drivetrain,
+    sensing, computation,
+    and navigation subsystems.The drivetrain utilizes 3D - printed bevel gears,
+    which require precise design due to potential chafing and wear under
+        continuous load.SLAM performance may degrade in environments with
+            limited geometric features,
+    reducing map accuracy.SLAM failure occurs when the algorithm cannot reliably
+        determine the
+            robot 's position within its map. This manifests as pose estimate drift, loop closure failures, or complete localization loss. Contributing factors include featureless environments (long corridors, blank walls), repetitive geometry (identical rooms), dynamic obstacles, and sensor noise. LiDAR reliability can be affected by different surface types, particularly reflective (glass, mirrors) or absorptive (dark fabrics) materials, leading to noisy range data. Processing demands may exceed the Raspberry Pi 5' s
+                resources since the SLAM algorithm,
+    LiDAR processing, and Nav2 framework run concurrently,
+    potentially causing timing delays.
 
-The most relevant risks are presented in detail below; the complete risk assessment is available in \hyperref[app:risks]{Appendix H}.
+    The most relevant risks are presented in detail below;
+the complete risk assessment is available in \hyperref [app:risks]{Appendix H}.
 
 
-\subsection{Risk Matrix}
+\subsection {
+  Risk Matrix
+}
 
 \begin{table}[H]
 \centering
-\caption{Risk Assessment Matrix (Probability $\times$ Impact)}
-\label{tab:risk_matrix}
-\begin{tabular}{@{}l|ccccc@{}}
+\caption {
+  Risk Assessment Matrix(Probability $\times$ Impact)
+}
+\label {
+tab:
+  risk_matrix
+}
+\begin{tabular} {
+  @{} l | ccccc @{}
+}
 \toprule
-\textbf{Probability} & \multicolumn{5}{c}{\textbf{Impact}} \\
-& 1 & 2 & 3 & 4 & 5 \\
-\midrule
-5 & \cellcolor{yellow!60}5 & \cellcolor{orange!60}10 & \cellcolor{orange!60}15 & \cellcolor{red!60}20 & \cellcolor{red!60}25 \\
-4 & \cellcolor{green!40}4 & \cellcolor{yellow!60}8 & \cellcolor{orange!60}12 & \cellcolor{orange!60}16 & \cellcolor{red!60}20 \\
-3 & \cellcolor{green!40}3 & \cellcolor{yellow!60}6 & \cellcolor{yellow!60}9 & \cellcolor{orange!60}12 & \cellcolor{orange!60}15 \\
-2 & \cellcolor{green!20}2 & \cellcolor{green!40}4 & \cellcolor{yellow!60}6 & \cellcolor{yellow!60}8 & \cellcolor{orange!60}10 \\
-1 & \cellcolor{green!20}1 & \cellcolor{green!20}2 & \cellcolor{green!40}3 & \cellcolor{green!40}4 & \cellcolor{yellow!60}5 \\
+\textbf{Probability} & \multicolumn{5} { c }
+{
+  \textbf { Impact }
+}
+\ & 1 & 2 & 3 & 4 & 5 \\
+\midrule 5 & \cellcolor { yellow !60 }
+5 & \cellcolor { orange !60 }
+10 & \cellcolor { orange !60 }
+15 & \cellcolor { red !60 }
+20 & \cellcolor { red !60 }
+25 \ 4 & \cellcolor { green !40 }
+4 & \cellcolor { yellow !60 }
+8 & \cellcolor { orange !60 }
+12 & \cellcolor { orange !60 }
+16 & \cellcolor { red !60 }
+20 \ 3 & \cellcolor { green !40 }
+3 & \cellcolor { yellow !60 }
+6 & \cellcolor { yellow !60 }
+9 & \cellcolor { orange !60 }
+12 & \cellcolor { orange !60 }
+15 \ 2 & \cellcolor { green !20 }
+2 & \cellcolor { green !40 }
+4 & \cellcolor { yellow !60 }
+6 & \cellcolor { yellow !60 }
+8 & \cellcolor { orange !60 }
+10 \ 1 & \cellcolor { green !20 }
+1 & \cellcolor { green !20 }
+2 & \cellcolor { green !40 }
+3 & \cellcolor { green !40 }
+4 & \cellcolor { yellow !60 }
+5 \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end { tabular }
+\end { table }
 
-\noindent\textbf{Risk Level Legend:}
+\noindent\textbf { Risk Level Legend: }
 \begin{itemize}[noitemsep]
-    \item \colorbox{red!60}{Critical}: Immediate action required; may halt project
-    \item \colorbox{orange!60}{High}: Priority mitigation needed; close monitoring
-    \item \colorbox{yellow!60}{Medium}: Mitigation plan required; regular monitoring
-    \item \colorbox{green!40}{Low}: Accept with contingency plan
-    \item \colorbox{green!20}{Minimal}: Accept; no action required
-\end{itemize}
+    \item \colorbox{red !60} {Critical} : Immediate action required;
+may halt project
+    \item \colorbox{orange !60} {High} : Priority mitigation needed;
+close monitoring
+    \item \colorbox{yellow !60} {Medium} : Mitigation plan required;
+regular monitoring
+    \item \colorbox{green !40} {Low} : Accept with contingency plan
+    \item \colorbox{green !20} {Minimal} : Accept;
+no action required
+\end { itemize }
 
-\subsection{Identified Risks}
+\subsection { Identified Risks }
 
 \begin{table}[H]
 \centering
-\caption{Risk Register}
-\label{tab:risk_register}
+\caption { Risk Register }
+\label {
+tab:
+  risk_register
+}
 \small
-\begin{tabular}{@{}p{0.06\textwidth}p{0.20\textwidth}p{0.08\textwidth}p{0.08\textwidth}p{0.08\textwidth}p{0.30\textwidth}@{}}
+\begin{tabular} {
+  @{} p{0.06\textwidth} p{0.20\textwidth} p{0.08\textwidth} p{0.08\textwidth} p{
+      0.08\textwidth} p {
+    0.30\textwidth
+  }
+  @{}
+}
 \toprule
-\textbf{ID} & \textbf{Risk} & \textbf{Prob} & \textbf{Impact} & \textbf{Risk Level} & \textbf{Mitigation} \\
+\textbf{ID} & \textbf{Risk} & \textbf{Prob} & \textbf{Impact} & \textbf{
+    Risk Level} & \textbf {
+  Mitigation
+}
+\\
 \midrule
-\rowcolor{priohigh!50} R-001 & SLAM failure in feature-poor environments & 3 & 4 & 12 & Perform tests in low-feature areas; tune scan matching parameters; integrate IMU fusion for drift reduction \\
+\rowcolor{priohigh !50} R - 001 & SLAM failure in feature - poor environments &
+    3 & 4 & 12 & Perform tests in low - feature areas;
+tune scan matching parameters; integrate IMU fusion for drift reduction \\
 \addlinespace
-\rowcolor{priomedium!50} R-002 & Compute Throughput Saturation on Raspberry Pi 5 & 3 & 3 & 9 & Profile system load; optimize code \& ROS~2 node configurations to reduce CPU / memory usage \\
+\rowcolor{priomedium!50} R-002 & Compute Throughput Saturation on Raspberry Pi 5 & 3 & 3 & 9 & Profile system load;
+optimize code \&ROS ~2 node configurations to reduce CPU / memory usage \\
 \addlinespace
-\rowcolor{priocritical!50} R-003 & 3D-printed gears wearing under continuous load & 4 & 5 & 20 & Apply post-processing and validate durability through torque and runtime testing \\
+\rowcolor{priocritical !50} R - 003 &
+    3D - printed gears wearing under continuous load & 4 & 5 & 20 &
+    Apply post -
+        processing and validate durability through torque and runtime testing \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end {
+  tabular
+}
+\end { table }
 
 \subsection{Risk Response Strategies}
 
-For each risk category, the following response strategies are used:
+For each risk category,
+    the following response strategies are used :
 
-\begin{itemize}
-    \item \textbf{Avoid}: Eliminate the threat by changing project plan
-    \item \textbf{Mitigate}: Reduce probability or impact
-    \item \textbf{Accept}: Acknowledge and prepare contingency
-\end{itemize}
+\begin {
+  itemize
+}
+\item \textbf{Avoid} : Eliminate the threat by changing project plan
+    \item \textbf{Mitigate} : Reduce probability or impact
+    \item \textbf{Accept} : Acknowledge and prepare contingency
+\end {
+  itemize
+}
 
-\subsection{Top Risks Detail}
+\subsection { Top Risks Detail }
 
-\subsubsection{R-001: SLAM failure in feature-poor environments}
+\subsubsection { R - 001 : SLAM failure in feature - poor environments }
 
-\begin{itemize}
-    \item \textbf{Description}: SLAM failure is a significant risk because unstable scan matching can produce incomplete or inaccurate maps, especially in environments without many geometric features or which have repetitive geometry. Under these conditions, the algorithm may accumulate drift or lose its pose estimate, reducing the system's ability to deliver a reliable map. Performance issues can also emerge if the compute pipeline cannot maintain consistent timing, further degrading data alignment and SLAM quality.
-    \item \textbf{Probability}: Medium. SLAM algorithms are mature and the SICK TiM561 provides high-quality scan data, but feature-poor environments (hallways, empty rooms) are common in target use cases.
-    \item \textbf{Impact}: High. SLAM failure directly prevents the robot from completing its primary mission of generating accurate maps; the system cannot recover without operator intervention.
-    \item \textbf{Mitigation}: Mitigation focuses on improving the stability of the sensor data and the reliability of the SLAM algorithm. Tuning the LiDAR's scan-matching and filtering parameters can ensure that the LiDAR is able to return consistent values even in environments with poor geometric features. Integrating IMU data would provide an additional constraint on the pose estimation, limiting drift. SLAM performance is to be validated through the use of several controlled tests to measure map completeness and percentage of error over a full mission. Finally, additional behaviors could be programmed to allow the robot to automatically restore its pose estimate when confidence drops.
-    \item \textbf{Owner}: Jared Bartz
-\end{itemize}
+\begin { itemize }
+\item \textbf{Description} : SLAM failure is a significant risk because unstable
+                                 scan matching can produce incomplete or
+                             inaccurate maps,
+    especially in environments without many geometric features or
+        which have repetitive geometry.Under these conditions,
+    the algorithm may accumulate drift or lose its pose estimate,
+    reducing the system's ability to deliver a reliable map. Performance issues can also emerge if the compute pipeline cannot maintain consistent timing, further degrading data alignment and SLAM quality.
+    \item \textbf{Probability}
+    : Medium.SLAM algorithms are mature and the SICK TiM561 provides high -
+        quality scan data,
+    but feature - poor environments(hallways, empty rooms) are common in target
+                  use cases.
+    \item \textbf{Impact}
+    : High.SLAM failure directly prevents the robot from
+      completing its primary mission of generating accurate maps;
+the system cannot recover without operator intervention
+    .
+    \item \textbf{Mitigation}
+    : Mitigation focuses on improving the stability of the sensor data and
+      the reliability of the SLAM algorithm.Tuning the LiDAR's scan-matching and filtering parameters can ensure that the LiDAR is able to return consistent values even in environments with poor geometric features. Integrating IMU data would provide an additional constraint on the pose estimation, limiting drift. SLAM performance is to be validated through the use of several controlled tests to measure map completeness and percentage of error over a full mission. Finally, additional behaviors could be programmed to allow the robot to automatically restore its pose estimate when confidence drops.
+    \item \textbf{Owner} : Jared Bartz
+\end {
+  itemize
+}
 
-\subsubsection{R-002: Raspberry Pi 5 compute load saturation}
+\subsubsection { R - 002 : Raspberry Pi 5 compute load saturation }
 
-\begin{itemize}
-    \item \textbf{Description}: Since the LiDAR processing, Nav2 planning, SLAM, and communication are all running concurrently on the Raspberry Pi 5, they may exceed the board's available CPU and memory resources. Whenever the processing pipeline becomes overloaded, node update rates and real-time tasks may be delayed in their response, leading to less accuracy, slowed down navigation, or intermittent communication with the motor controllers.
-    \item \textbf{Probability}: Medium. The Raspberry Pi 5 has significant compute capability (4-core Cortex-A76, 8GB RAM), but running SLAM, Nav2, and LiDAR processing concurrently is demanding.
-    \item \textbf{Impact}: Medium. Degraded performance causes slower operation rather than complete failure; timing-critical motor control tasks are offloaded to the ESP32 running FreeRTOS.
+\begin { itemize }
+\item \textbf{Description}
+    : Since the LiDAR processing,
+      Nav2 planning,
+      SLAM,
+      and communication are all running concurrently on the Raspberry Pi 5,
+      they may exceed the board's available CPU and memory resources. Whenever the processing pipeline becomes overloaded, node update rates and real-time tasks may be delayed in their response, leading to less accuracy, slowed down navigation, or intermittent communication with the motor controllers.
+    \item \textbf{Probability}
+    : Medium.The Raspberry Pi 5 has
+          significant compute capability(4 - core Cortex - A76, 8GB RAM),
+      but running SLAM,
+      Nav2,
+      and LiDAR processing
+          concurrently is demanding.
+    \item \textbf{Impact}
+    : Medium.Degraded
+      performance causes slower operation rather than complete failure; timing-critical motor control tasks are offloaded to the ESP32 running FreeRTOS.
 
     \item \textbf{Mitigation}: System resource usage would need to be refined in programming in order to maintain real-time performance. This can start by benchmarking the Raspberry Pi 5 under full operational load in order to identify the specific nodes and processes that are responsible for any CPU or memory spikes. Update frequencies can then be adjusted and parameters tuned so that the CPU utilization can remain within a safer threshold. The Raspberry Pi 5 is a single-board computer without real-time guarantees, so all timing-sensitive tasks (motor control, encoder feedback) run on the ESP32 which executes FreeRTOS for deterministic timing. If ESP32 performance issues arise, Segger Ozone can be used for real-time debugging and profiling. If Pi 5 issues persist, hardware accelerators or a higher-performance compute module are to be evaluated. Other mitigation can include quantization of the model.
     \item \textbf{Owner}: Jeremie Hews
-\end{itemize}
+\end{
+  itemize
+}
 
-\subsubsection{R-003: 3D-printed gears wearing under continuous load}
+\subsubsection { R - 003 : 3D - printed gears wearing under continuous load }
 
-\begin{itemize}
+\begin { itemize }
     \item \textbf{Description}: Due to the extensive price of gears currently and a motor shaft that is an uncommon shape, 3D-printed bevel gears will be used to transfer torque from the motor shafts to the wheel axes. Inherently, any kind of plastic is a mechanical reliability risk at such a critical position in the system. The gears will be made from PETG, which is tougher than other filaments like PLA, but still have much less wear resistance and stiffness compared to more typical engineering-grade polymers. Gradual tooth wear may result under sustained loads, so their design is critical. Over time, these factors may produce increased noise in the system, reduced torque transfer, or even full gear failure, impacting the robot's mobility.
     \item \textbf{Probability}: High. 3D-printed PETG gears inherently have lower wear resistance than machined metal gears, and the drivetrain experiences continuous mechanical stress during operation.
     \item \textbf{Impact}: High. Gear failure immobilizes the robot completely, requiring physical repair and gear replacement before operation can resume.
     \item \textbf{Mitigation}: Mitigation focuses on optimizing the fabrication quality and validating the mechanical performance of the gears through numerous tests. The gears should be printed with a high infill and wall thickness. When printing, the layer lines should run in the same plane as the gears teeth to maximize the gears shear strength. Post-processing, such as smoothing the tooth profiles or applying a lubricant, can reduce the friction the gears face and improve wear-resistance. Still, the gear dimensions need to be near perfect for the most reliable results, so the gears will be evaluated through controlled torque and endurance testing to confirm the PETG gears are able to maintain acceptable performance over the lifespan of the robot.
     \item \textbf{Owner}: Michael Norton
-\end{itemize}
+\end{
+      itemize
+    }
 
-\subsection{Risk Monitoring}
+    \subsection{Risk Monitoring}
 
-Risks are monitored through:
+    Risks are monitored through :
 
-\begin{enumerate}
-    \item During weekly meetings evaluate the current risk status, discuss any emerging issues, and determine any corrective actions.
-    \item Maintaining and updating a risk register to ensure that all risks are being tracked with current ratings and mitigation progress.
-    \item Establishing trigger conditions that prompt changes, or the introduction of new risks into the register.
-    \item Reviewing test results and field data at regular intervals to identify any trends that may indicate increasing or newly developing risks.
-\end{enumerate}
+\begin {
+      enumerate
+    }
+    \item During weekly meetings evaluate the current risk status,
+        discuss any emerging issues,
+        and determine any corrective actions
+                .
+    \item Maintaining and updating a risk register to ensure that all risks are
+                    being tracked with current ratings and mitigation progress.
+    \item Establishing trigger conditions that prompt changes,
+        or
+            the introduction of new risks into the register.
+    \item Reviewing test results and field data at regular intervals to
+                identify any trends that may indicate increasing or
+            newly developing risks.
+\end {
+      enumerate
+    }

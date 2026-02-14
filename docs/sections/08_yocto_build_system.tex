@@ -2,7 +2,8 @@
 % Section 8: Yocto Build System for Raspberry Pi 5
 % =============================================================================
 
-\section{Yocto Build System}
+\section{Yocto Build System
+}
 \label{sec:yocto-build}
 
 This section documents the Yocto-based build system for the STAR robot's Raspberry Pi 5 controller.
@@ -18,9 +19,9 @@ The STAR robot uses the Yocto Project (Scarthgap release) with OpenEmbedded to b
     \item Reproducible builds
 \end{itemize}
 
-\subsection{Layer Structure}
+    \subsection{Layer Structure}
 
-The build uses the following Yocto layers:
+    The build uses the following Yocto layers :
 
 \begin{table}[h]
 \centering
@@ -42,63 +43,84 @@ meta-ros/meta-ros2-jazzy & ROS2 Jazzy distribution \\
 meta-star & STAR custom recipes \\
 \hline
 \end{tabular}
-\caption{Yocto layers used in the STAR build}
-\end{table}
+    \caption { Yocto layers used in the STAR build}
+    \end{table}
 
-\subsection{meta-star Layer}
+    \subsection{meta - star Layer}
 
-The \texttt{meta-star} layer contains STAR-specific recipes:
+        The \texttt{meta - star} layer contains STAR -
+        specific recipes :
 
-\subsubsection{recipes-core}
+\subsubsection{recipes - core
+   }
 
-\begin{itemize}
-    \item \texttt{network-config} -- Static IP configuration for eth0 (192.168.100.2/24)
-    \item \texttt{wifi-setup} -- WiFi configuration script for easy network setup
-    \item \texttt{locale-config} -- UTF-8 locale configuration with automatic generation at boot
-    \item \texttt{modules-autoload} -- Kernel module auto-loading (i2c-dev)
-    \item \texttt{ros2-env} -- ROS2 environment auto-sourcing
+    \begin{itemize}
+    \item \texttt { network - config} -- Static IP configuration for eth0 (192.168.100.2/24)
+    \item \texttt{
+      wifi - setup
+   } -- WiFi configuration script for easy network setup
+    \item \texttt{
+      locale - config
+   }
+    --UTF - 8 locale configuration with automatic generation at boot
+    \item \texttt {
+      modules - autoload
+   }
+    --Kernel module auto - loading(i2c - dev)
+    \item \texttt { ros2 - env}
+    --ROS2 environment auto - sourcing
 \end{itemize}
 
-\subsubsection{recipes-devtools}
+    \subsubsection{recipes - devtools}
 
-\begin{itemize}
-    \item \texttt{temurin-jdk-bin} -- Eclipse Temurin JDK 21 for Java/Kotlin development
+    \begin{itemize}
+    \item \texttt { temurin - jdk - bin} -- Eclipse Temurin JDK 21 for Java/Kotlin development
 \end{itemize}
 
-\subsection{Hardware Configuration}
+    \subsection{Hardware Configuration}
 
-The following hardware interfaces are enabled via \texttt{config.txt}:
+    The following hardware interfaces are enabled via \texttt{config.txt} :
 
 \begin{table}[h]
 \centering
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Interface} & \textbf{Setting} & \textbf{Device} \\
-\hline
-UART & dtoverlay=uart0-pi5 & /dev/ttyAMA0 \\
-I2C & dtparam=i2c\_arm=on, i2c1=on & /dev/i2c-1 \\
-SPI & dtparam=spi=on & /dev/spidev0.0, 0.1 \\
-GPIO & pinctrl-rp1 & gpiochip0 (54 lines) \\
-Camera/Display & camera\_auto\_detect=1, display\_auto\_detect=1 & Auto \\
-USB Power & usb\_max\_current\_enable=1 & 5A mode \\
+\begin{tabular} {
+      | l | l | l |
+   }
+    \hline
+\textbf{Interface} & \textbf{Setting} & \textbf{Device}
+    \\
+\hline UART &dtoverlay = uart0 -
+                          pi5 & / dev / ttyAMA0 \\
+I2C &dtparam = i2c\_arm = on,
+             i2c1 = on & / dev / i2c -
+                    1 \\
+SPI &dtparam = spi = on & / dev / spidev0 .0,
+             0.1 \\
+GPIO &pinctrl - rp1 &gpiochip0(54 lines) \\
+Camera
+                                       / Display &camera\_auto\_detect = 1,
+             display\_auto\_detect =
+                 1 &Auto \\
+USB Power &usb\_max\_current\_enable = 1 & 5A mode \\
 \hline
 \end{tabular}
-\caption{Hardware interface configuration}
-\end{table}
+    \caption { Hardware interface configuration}
+    \end{table}
 
-\subsection{Installed Packages}
+    \subsection{Installed Packages}
 
-The image includes the following key packages:
+    The image includes the following key packages :
 
-\subsubsection{ROS2 Jazzy}
-\begin{itemize}
-    \item ros-core, rclcpp, rclpy
-    \item std-msgs, sensor-msgs, geometry-msgs, nav-msgs
+\subsubsection{ROS2 Jazzy
+   }
+    \begin{itemize}
+    \item ros - core, rclcpp, rclpy
+    \item std - msgs, sensor - msgs, geometry - msgs, nav - msgs
 \end{itemize}
 
-\subsubsection{Developer Tools}
-\begin{itemize}
-    \item vim 9.1 (default editor)
+    \subsubsection{Developer Tools}
+    \begin{itemize}
+    \item vim 9.1(default editor)
     \item git 2.44.4
     \item htop 3.3.0
     \item tmux 3.3a
@@ -106,41 +128,43 @@ The image includes the following key packages:
     \item Eclipse Temurin JDK 21.0.5
 \end{itemize}
 
-\subsubsection{Hardware Tools}
-\begin{itemize}
-    \item i2c-tools (i2cdetect, i2cget, i2cset)
-    \item spitools (spi-pipe, spi-config)
-    \item libgpiod-tools (gpiodetect, gpioinfo, gpioget, gpioset)
+    \subsubsection{Hardware Tools}
+    \begin{itemize}
+    \item i2c - tools(i2cdetect, i2cget, i2cset)
+    \item spitools(spi - pipe, spi - config)
+    \item libgpiod - tools(gpiodetect, gpioinfo, gpioget, gpioset)
 \end{itemize}
 
-\subsubsection{Computer Vision}
-\begin{itemize}
+    \subsubsection{Computer Vision}
+    \begin{itemize}
     \item OpenCV
     \item Python3 with NumPy
-    \item v4l-utils
+    \item v4l - utils
 \end{itemize}
 
-\subsection{Building the Image}
+    \subsection{Building the Image}
 
-\subsubsection{Prerequisites}
+    \subsubsection{Prerequisites}
 
-Install required packages on Ubuntu:
-\begin{verbatim}
-sudo apt install gawk wget git diffstat unzip texinfo gcc \
-    build-essential chrpath socat cpio python3 python3-pip \
-    python3-pexpect xz-utils debianutils iputils-ping \
-    python3-git python3-jinja2 python3-subunit zstd \
-    liblz4-tool file locales libacl1 bmaptool
+        Install required packages on Ubuntu :
+\begin{verbatim} sudo apt install gawk wget git diffstat unzip texinfo gcc
+            build -
+        essential chrpath socat cpio python3 python3 - pip python3 -
+        pexpect xz - utils debianutils iputils - ping python3 - git python3 -
+        jinja2 python3 - subunit zstd liblz4 -
+        tool file locales libacl1 bmaptool
 \end{verbatim}
 
-\subsubsection{Setup and Build}
+    \subsubsection{Setup and Build}
 
-\begin{verbatim}
-cd /path/to/star-yocto
-source poky/oe-init-build-env build-rpi5
+    \begin{verbatim} cd / path / to / star - yocto source poky / oe - init -
+        build - env build -
+        rpi5
 
-# Copy configuration from star-yocto-config
-cp ../star-yocto-config/conf/* conf/
+#Copy configuration from star - yocto - config
+                cp../
+            star -
+        yocto - config / conf/* conf/
 ln -s ../star-yocto-config/meta-star .
 
 bitbake core-image-minimal
@@ -150,8 +174,8 @@ bitbake core-image-minimal
 
 Use bmaptool for fast, verified flashing:
 \begin{verbatim}
-sudo bmaptool copy \
-    tmp/deploy/images/raspberrypi5/core-image-minimal-raspberrypi5.rootfs.wic.gz \
+sudo bmaptool copy\\
+    tmp/deploy/images/raspberrypi5/core-image-minimal-raspberrypi5.rootfs.wic.gz\\
     /dev/sdX
 \end{verbatim}
 

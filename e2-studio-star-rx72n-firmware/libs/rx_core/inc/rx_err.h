@@ -537,19 +537,34 @@ typedef enum : uint16_t {
   k_rx_err_busy = 0x109,
 
   /**
+   * @brief No application data available (control frame received)
+   * @details
+   * Operation succeeded but no application-layer data was returned. Distinct from
+   * k_rx_err_timeout - receive was successful but the frame was a control frame
+   * (ACK/NACK/PING/PONG/RESET) not intended for application consumption.
+   *
+   * @par Value: 0x10A
+   * @par Cause: Received control frame instead of data frame
+   * @par Recovery: This is normal - caller should continue polling
+   * @par Prevention: Not an error condition - expected behavior
+   * @see k_rx_err_timeout No data due to timeout
+   */
+  k_rx_err_no_data = 0x10A,
+
+  /**
    * @brief Non-blocking operation would block
    * @details
    * Non-blocking function called but operation would block waiting for resource.
    * Differs from k_rx_err_busy: this indicates caller requested non-blocking mode
    * but operation requires waiting.
    *
-   * @par Value: 0x10A
+   * @par Value: 0x10B
    * @par Cause: Non-blocking mode requested but data/resource not immediately available
    * @par Recovery: Retry later, use blocking mode, or poll until ready
    * @par Prevention: Check resource availability before calling non-blocking API
    * @see k_rx_err_busy Resource busy in blocking mode
    */
-  k_rx_err_would_block = 0x10A,
+  k_rx_err_would_block = 0x10B,
 
   /**
    * @brief Item already exists - cannot create
@@ -557,12 +572,12 @@ typedef enum : uint16_t {
    * Attempted to create resource that already exists. Examples: thread already
    * created, device already registered, configuration already initialized.
    *
-   * @par Value: 0x10B
+   * @par Value: 0x10C
    * @par Cause: Duplicate creation attempt, resource already allocated
    * @par Recovery: Use existing resource, or delete and recreate
    * @par Prevention: Check existence before creation, track resource state
    */
-  k_rx_err_exists = 0x10B,
+  k_rx_err_exists = 0x10C,
 
   /**
    * @brief Container empty - no data available
@@ -570,13 +585,13 @@ typedef enum : uint16_t {
    * Attempted to retrieve data from empty container. Examples: ring buffer empty,
    * queue empty, receive FIFO empty.
    *
-   * @par Value: 0x10C
+   * @par Value: 0x10D
    * @par Cause: No data available, all items consumed
    * @par Recovery: Wait for data, check count before reading
    * @par Prevention: Check count/size before attempting read
    * @see k_rx_err_would_block Non-blocking read from empty container
    */
-  k_rx_err_empty = 0x10C,
+  k_rx_err_empty = 0x10D,
 
   /**
    * @brief Operation cancelled by request
@@ -584,12 +599,12 @@ typedef enum : uint16_t {
    * Operation was cancelled before completion, either by explicit cancel request
    * or by system shutdown. No side effects occurred (atomic cancellation).
    *
-   * @par Value: 0x10D
+   * @par Value: 0x10E
    * @par Cause: User cancel request, system shutdown, higher priority task
    * @par Recovery: Clean up resources, update state to reflect cancellation
    * @par Prevention: Implement graceful cancellation support
    */
-  k_rx_err_cancelled = 0x10D,
+  k_rx_err_cancelled = 0x10E,
 
   /**
    * @brief Module not initialized
@@ -597,13 +612,13 @@ typedef enum : uint16_t {
    * Function called before module initialization completed. All modules must be
    * initialized via their init() function before use.
    *
-   * @par Value: 0x10E
+   * @par Value: 0x10F
    * @par Cause: init() not called, init() failed, module deinitialized
    * @par Recovery: Call module_init() before using module functions
    * @par Prevention: Document initialization requirements, enforce with state checks
    * @see k_rx_err_invalid_state More general state error
    */
-  k_rx_err_not_initialized = 0x10E,
+  k_rx_err_not_initialized = 0x10F,
 
   /**
    * @brief Emergency stop active - operation forbidden
@@ -611,13 +626,13 @@ typedef enum : uint16_t {
    * Emergency stop triggered, all motor operations halted. System in safe state,
    * requires manual reset before normal operation can resume.
    *
-   * @par Value: 0x10F
+   * @par Value: 0x110
    * @par Cause: Emergency stop button pressed, safety fault detected
    * @par Recovery: Clear fault condition, call reset function, acknowledge e-stop
    * @par Prevention: Implement proper safety interlocks
    * @warning This is a safety-critical error - do not bypass e-stop checks
    */
-  k_rx_err_estop = 0x10F,
+  k_rx_err_estop = 0x110,
 
   /* =========================================================================
    * Hardware Errors (0x200 - 0x2FF)

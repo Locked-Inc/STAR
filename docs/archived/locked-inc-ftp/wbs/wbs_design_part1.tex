@@ -1,36 +1,59 @@
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{forest}
-  for tree={
-    rectangle,
-    draw,
-    rounded corners=2pt,
-    align=center,
-    minimum width=2.2cm,
-    minimum height=0.8cm,
-    inner sep=2pt,
-    s sep=0.3cm,
-    l sep=1cm,
-    anchor=north,
-    edge={->, thick},
-    font=\scriptsize,
-  }
-      [{\textbf{1.2}\\Design}, fill=designyellow, line width=1.5pt, font=\scriptsize\bfseries
-      [{\textbf{1.2.1}\\Define system\\architecture}, fill=designyellow!70
-        [{\textbf{1.2.1.1}\\Define high-level\\system architecture\\{\tiny CM, 4d}}, fill=designyellow!40]
-        [{\textbf{1.2.1.2}\\Design subsystem\\interfaces\\{\tiny CM, 4d}}, fill=designyellow!40]
-        [{\textbf{1.2.1.3}\\Document interface\\control\\{\tiny CM, 4d}}, fill=designyellow!40]
-      ]
-      [{\textbf{1.2.4}\\Draft ROS 2\\software arch}, fill=designyellow!70
-        [{\textbf{1.2.4.1}\\Define ROS 2\\node arch\\{\tiny JB, 4d}}, fill=designyellow!40]
-        [{\textbf{1.2.4.2}\\Design message\\types\\{\tiny JB, 4d}}, fill=designyellow!40]
-        [{\textbf{1.2.4.3}\\Design nav and\\SLAM pipeline\\{\tiny JB, 4d}}, fill=designyellow!40]
-        [{\textbf{1.2.4.4}\\Document software\\architecture\\{\tiny JB, 4d}}, fill=designyellow!40]
-      ]
-    ]
-\end{forest}
-}%
-\caption{Design Phase Work Breakdown Structure (Part 1: System Architecture)}
-\label{fig:wbs_design_part1}
-\end{figure}
+\resizebox{\textwidth} { ! }
+{
+  %
+\begin { forest }
+  for
+    tree =
+        {
+            rectangle,
+            draw,
+            rounded corners = 2pt,
+            align = center,
+            minimum width = 2.2cm,
+            minimum height = 0.8cm,
+            inner sep = 2pt,
+            s sep = 0.3cm,
+            l sep = 1cm,
+            anchor = north,
+            edge = {->, thick},
+            font =\scriptsize,
+        }[{\textbf{1.2}\\Design}, fill = designyellow, line width = 1.5pt,
+          font =\scriptsize\bfseries
+              [{\textbf{1.2.1}\\Define system\\architecture},
+               fill = designyellow !70
+                   [{\textbf{1.2.1.1}\\Define high -
+                        level\\system architecture\\{\tiny CM, 4d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.1.2}\\Design subsystem\\interfaces\\{\tiny CM,
+                                                                      4d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.1.3}\\Document interface\\control\\{\tiny CM,
+                                                                     4d}},
+                    fill = designyellow !40]]
+              [{\textbf{1.2.4}\\Draft ROS 2\\software arch},
+               fill = designyellow !70
+                   [{\textbf{1.2.4.1}\\Define ROS 2\\node arch\\{\tiny JB, 4d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.4.2}\\Design message\\types\\{\tiny JB, 4d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.4.3}\\Design nav and\\SLAM pipeline\\{\tiny JB,
+                                                                       4d}},
+                    fill = designyellow !40]
+                   [{\textbf{1.2.4.4}\\Document
+                            software\\architecture\\{\tiny JB, 4d}},
+                    fill = designyellow !40]]]
+\end {
+      forest
+    }
+}
+%
+\caption {
+  Design Phase Work Breakdown Structure(Part 1 : System Architecture)
+}
+\label {
+fig:
+  wbs_design_part1
+}
+\end { figure }

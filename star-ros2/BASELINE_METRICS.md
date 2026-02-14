@@ -185,7 +185,7 @@ Based on these baselines, integration tests should validate:
    - Verify socket communication is stable
    - Check CPU usage during collection
 
-2. **Check Gateway HARQ/FEC**
+2. **Check Gateway HARQ**
    - Review `gateway.log` for retransmission counts
    - Verify FEC is decoding successfully
    - Check for timeout errors

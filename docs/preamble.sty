@@ -14,7 +14,7 @@
 \usepackage{graphicx}
 \usepackage{hyperref}
 \usepackage{listings}
-\usepackage[table]{xcolor}
+\usepackage[table,dvipsnames,svgnames]{xcolor}
 
 % Define custom colors for protocol layers
 \definecolor{rpi5color}{RGB}{220,255,235}       % Light green for RPi5
@@ -25,6 +25,19 @@
 \definecolor{layer5color}{RGB}{235,255,235}     % Light green for Layer 5 (App)
 \definecolor{keyinsightcolor}{RGB}{255,250,205} % Light yellow for key insights
 \definecolor{importantcolor}{RGB}{255,240,245}  % Light pink for important notes
+
+% Define standard named colors for TikZ diagrams
+\definecolor{orange}{RGB}{255,165,0}
+\definecolor{yellow}{RGB}{255,255,0}
+\definecolor{green}{RGB}{0,128,0}
+\definecolor{blue}{RGB}{0,0,255}
+\definecolor{red}{RGB}{255,0,0}
+\definecolor{purple}{RGB}{128,0,128}
+\definecolor{brown}{RGB}{165,42,42}
+\definecolor{pink}{RGB}{255,192,203}
+\definecolor{gray}{RGB}{128,128,128}
+\definecolor{lightgray}{RGB}{211,211,211}
+\definecolor{darkgray}{RGB}{169,169,169}
 
 % Command for colored layer boxes
 \newcommand{\layerbox}[3]{% #1=color, #2=title, #3=content
@@ -64,7 +77,7 @@
 \usepackage{pdflscape}
 \usepackage{array}
 
-\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, automata}
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds, calc, automata, chains, decorations.pathreplacing, patterns, shadows}
 
 % ============================================================================
 % DOCUMENT CONFIGURATION

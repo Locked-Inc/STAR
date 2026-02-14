@@ -1,69 +1,112 @@
-% =============================================================================
-% Section 18: Mechanical Implementation
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Section 18 : Mechanical Implementation % == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == == == ==
+      == == ==
+    =
 
-\subsection{Mechanical Preliminary Implementation}
+\subsection {
+  Mechanical Preliminary Implementation
+}
 
-\sectionauthors{MN}
+\sectionauthors { MN }
 
 \subsubsection{Chassis Design}
 
-The mechanical design centers on a compact mobile platform capable of operating in confined or partially obstructed environments where first responders require quick mapping before entry. The chassis features a rigid, low-profile frame that houses the LiDAR, electronics, power system, and drivetrain in a protected configuration.
+    The mechanical design centers on a compact mobile platform capable of
+        operating in confined or
+    partially obstructed environments where first responders require quick
+        mapping before entry.The chassis features a rigid,
+    low - profile frame that houses the LiDAR, electronics, power system,
+    and drivetrain in a protected configuration.
 
-\textbf{Design Requirements:}
-\begin{itemize}
-    \item LiDAR mounted with unobstructed 270\textdegree{} field of view
+\textbf {
+  Design Requirements:
+}
+\begin { itemize }
+\item LiDAR mounted with unobstructed 270\textdegree {} field of view
     \item Raspberry Pi and electronics positioned centrally for balance
     \item Low center of gravity for stability during navigation
     \item Modular layout for maintenance and testing
-\end{itemize}
+\end{
+  itemize
+}
 
-\textbf{Materials:}
-\begin{itemize}
+\textbf {
+Materials:
+}
+\begin { itemize }
     \item \textbf{Base structure:} U-channel and sheet aluminum for rigidity
-    \item \textbf{Upper structure:} 3D-printed PETG for lightweight, cost-effective fabrication, and machinability
-\end{itemize}
+    \item \textbf{
+      Upper structure:
+    } 3D-printed PETG for lightweight, cost-effective fabrication, and machinability
+\end{
+      itemize
+    }
 
-\begin{figure}[htbp]
+    \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/CADver1.png}
-    \caption{CAD Main Version 1}
-    \label{fig:cad_main_v1}
-\end{figure}
+    \includegraphics[width = 0.8\textwidth] {
+      figures / CADver1.png
+    }
+    \caption { CAD Main Version 1 }
+    \label {
+    fig:
+      cad_main_v1
+    }
+    \end { figure }
 
 \subsubsection{Drivetrain}
 
 Multiple configurations were evaluated, including tracks, eight wheels, and six wheels with various sizes and placements. The four-wheel differential drive design was selected for its simplicity and adequate performance. Torque and RPM calculations confirmed the design meets requirements with a safety factor of three.
 
-\textbf{Drive System Features:}
-\begin{itemize}
+\textbf{
+  Drive System Features:
+}
+\begin { itemize }
     \item Four-wheel independent drive for differential steering
     \item 3D-printed bevel gears transfer motor torque to wheel axes (cost savings)
     \item Wheel assemblies provide traction on tile, concrete, and other indoor surfaces
     \item Capable of traversing small obstacles
-\end{itemize}
+\end{
+      itemize
+    }
 
-\begin{figure}[htbp]
+    \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/CADdriveEx.png}
-    \caption{Drive System CAD with Custom Bevel Gears}
-    \label{fig:drive_system_cad}
-\end{figure}
+    \includegraphics[width = 0.8\textwidth] {
+      figures / CADdriveEx.png
+    }
+    \caption { Drive System CAD with Custom Bevel Gears }
+    \label {
+    fig:
+      drive_system_cad
+    }
+    \end { figure }
 
 \subsubsection{Component Integration}
 
 The internal layout is designed for easy reconfiguration:
-\begin{itemize}
+\begin{
+  itemize
+}
     \item \textbf{Motor control subsystem:} ESP32 isolated to reduce electrical noise and manage thermal behavior
     \item \textbf{Battery housing:} Positioned at bottom center for low center of gravity; tray design enables easy battery replacement
     \item \textbf{Thermal management:} Ventilation pathways around Raspberry Pi for heat dissipation during sustained workloads
-\end{itemize}
+\end{
+      itemize
+    }
 
-\begin{figure}[htbp]
+    \begin{figure}[htbp]
     \centering
-    \includegraphics[width=0.8\textwidth]{figures/CADver1_S.png}
-    \caption{Initial CAD Skeleton Structure}
-    \label{fig:cad_skeleton}
-\end{figure}
+    \includegraphics[width = 0.8\textwidth] {
+      figures / CADver1_S.png
+    }
+    \caption { Initial CAD Skeleton Structure }
+    \label {
+    fig:
+      cad_skeleton
+    }
+    \end{figure}
 
-The mechanical design supports the system's functional objectives through a stable, maintainable platform optimized for reliable mapping in operational environments.
+    The mechanical design supports the system's functional objectives through a stable, maintainable platform optimized for reliable mapping in operational environments.

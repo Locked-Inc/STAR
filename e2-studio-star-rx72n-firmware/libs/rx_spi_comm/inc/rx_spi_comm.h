@@ -374,7 +374,7 @@
  * @since Version 1.0.0
  *
  * @see rx_frame.h Frame protocol layer
- * @see rx_harq.h HARQ/FEC layer (optional)
+ * @see rx_harq.h HARQ layer (optional)
  * @see hardware.h SPI HAL interface
  * @see rx_comm_manager.h Multi-channel communication coordinator
  * @see docs/sections/01_nanopb_protocol.tex Protocol specification

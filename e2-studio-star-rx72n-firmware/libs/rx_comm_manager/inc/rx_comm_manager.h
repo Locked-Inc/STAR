@@ -392,6 +392,7 @@
 #include "rx_err.h"
 #include "rx_frame.h"
 #include "rx_spi_comm.h"
+#include "rx_spi_link.h"
 #include "rx_usb_comm.h"
 
 #ifdef __cplusplus
@@ -843,6 +844,32 @@ typedef struct {
   rx_spi_comm_handle_t* spi_handle;
 
   /**
+   * @brief Optional SPI link layer with HARQ (NULL to use raw SPI)
+   * @details
+   * When non-NULL, SPI send/receive operations route through the link
+   * layer, which provides FEC encoding/decoding, Chase Combining, and
+   * ACK/NACK handshake. When NULL, SPI operates in raw mode (frame +
+   * CRC-32 only, no FEC/HARQ).
+   *
+   * **Requirements:**
+   * - Must be initialized via rx_spi_link_init() before passing to manager
+   * - spi_link->spi_handle MUST be the same as config->spi_handle
+   * - Must remain valid for lifetime of manager
+   *
+   * @invariant If spi_link is non-NULL: spi_link->spi_handle == config->spi_handle
+   * @invariant If spi_link is non-NULL: spi_link->initialized == true
+   * @invariant If spi_link is non-NULL: spi_link must outlive manager instance
+   *
+   * @par Valid values: Initialized rx_spi_link_t*, or nullptr for raw SPI
+   * @par Lifetime: Must outlive manager instance
+   *
+   * @see rx_spi_link.h SPI link layer API
+   * @see rx_spi_link_init() Must be called before passing spi_link to manager
+   * @since Version 1.1.0
+   */
+  rx_spi_link_t* spi_link;
+
+  /**
    * @brief Frame received callback function (NULL for no callback)
    * @details
    * User-defined function invoked when complete frame received on any channel.
@@ -947,8 +974,59 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_usb_comm_handle_t*    usb_handle;                                  /**< USB comm handle */
-  rx_spi_comm_handle_t*    spi_handle;                                  /**< SPI comm handle */
+  rx_usb_comm_handle_t* usb_handle; /**< USB comm handle */
+  rx_spi_comm_handle_t* spi_handle; /**< SPI comm handle */
+
+  /**< @brief Optional SPI link layer with HARQ (NULL if disabled)
+   * @details
+   * When non-NULL, points to an rx_spi_link_t handle providing FEC
+   * encoding/decoding, Chase Combining, and ACK/NACK handshake for SPI.
+   * When NULL, SPI operates in raw mode (frame + CRC-32 only, no FEC/HARQ).
+   *
+   * **Ownership and Lifetime:**
+   * - Pointer copied from config during rx_comm_manager_init()
+   * - Manager does NOT own the link object - caller must allocate/deallocate
+   * - Link object must remain valid for entire manager lifetime
+   * - Link object must NOT be freed until after rx_comm_manager_deinit()
+   * - If manager is deinitialized, spi_link remains valid but decoupled
+   *
+   * **Invariants/Constraints:**
+   * - If non-NULL: Must point to initialized rx_spi_link_t (spi_link->initialized == true)
+   * - If non-NULL: spi_link->spi_handle MUST equal manager's spi_handle
+   * - If non-NULL: spi_link must outlive manager instance
+   * - NULL is allowed to indicate no SPI HARQ (raw SPI mode)
+   * - Fields inside spi_link object must remain stable while manager is active
+   *
+   * **Valid Ranges/Usage:**
+   * - Set via config->spi_link during initialization
+   * - NULL = raw SPI mode (valid configuration for testing or simple use cases)
+   * - Non-NULL = HARQ mode (production mode with FEC and retransmission)
+   * - Once set during init, this pointer is immutable (never modified by manager)
+   *
+   * **Thread Safety:**
+   * - Manager does not perform synchronization on spi_link access
+   * - If multiple threads call rx_comm_manager_poll(), caller must serialize
+   * - spi_link internal state is protected by its own mechanisms (see rx_spi_link.h)
+   * - Safe to read this pointer from multiple threads (read-only after init)
+   *
+   * @invariant If spi_link != NULL: spi_link->initialized == true
+   * @invariant If spi_link != NULL: spi_link->spi_handle == this->spi_handle
+   * @invariant If spi_link != NULL: spi_link must outlive this manager instance
+   * @invariant Pointer value never changes after rx_comm_manager_init()
+   *
+   * @par Type: rx_spi_link_t* (pointer to HARQ link layer handle)
+   * @par Valid values: Initialized rx_spi_link_t*, or nullptr for raw SPI mode
+   * @par Lifetime: Must outlive manager instance (caller manages allocation)
+   * @par Modification: Read-only after init (immutable pointer)
+   * - Immutable after init (do not change while manager is active)
+   * - Fields inside rx_spi_link_t must remain stable during use
+   *
+   * @see rx_spi_link.h SPI link layer API
+   * @see rx_comm_manager_config_t::spi_link Configuration parameter
+   * @since Version 1.1.0
+   */
+  rx_spi_link_t* spi_link;
+
   rx_comm_frame_callback_t callback;                                    /**< Frame callback */
   void*                    callback_ctx;                                /**< Callback context */
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */
@@ -1034,11 +1112,36 @@ typedef struct {
 /**
  * @brief Initialize communication manager
  *
+ * @details
+ * Initializes the communication manager with the provided configuration.
+ * Validates configuration parameters and sets up internal state for
+ * USB and/or SPI channel operation.
+ *
  * @param[out] mgr Pointer to manager handle
  * @param[in]  cfg Configuration (NULL for defaults, both channels disabled)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if mgr is nullptr
+ * @return k_rx_err_invalid_arg if spi_link is non-NULL but not initialized
+ * @return k_rx_err_invalid_arg if spi_link->spi_handle != cfg->spi_handle
+ *
+ * @pre mgr must not be nullptr
+ * @pre If cfg->spi_link is non-NULL, spi_link must be initialized via rx_spi_link_init()
+ * @pre If cfg->spi_link is non-NULL, spi_link->spi_handle must equal cfg->spi_handle
+ * @pre cfg may be nullptr (results in default configuration with both channels disabled)
+ *
+ * @post mgr->usb_handle == cfg->usb_handle (or nullptr if cfg is nullptr)
+ * @post mgr->spi_handle == cfg->spi_handle (or nullptr if cfg is nullptr)
+ * @post mgr->spi_link == cfg->spi_link (or nullptr if cfg is nullptr or cfg->spi_link is nullptr)
+ * @post All internal state initialized (event queue empty, heartbeat timers reset)
+ *
+ * @note Thread-safe: May be called from any thread, but concurrent calls with same mgr are prohibited
+ * @warning Must be called before any other manager operations on this handle
+ *
+ * @see rx_spi_link_init() Must call this before passing spi_link to manager
+ * @see rx_comm_manager_deinit() Cleanup function
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_init(rx_comm_manager_t*              mgr,
                                             const rx_comm_manager_config_t* cfg);

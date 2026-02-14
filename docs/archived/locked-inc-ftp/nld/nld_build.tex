@@ -1,99 +1,140 @@
-% Build Phase Network Logic Diagram (Split by Critical Path)
-% Generated: 2025-12-06 16:42
-% Total Tasks: 20 (Critical: 16, Supporting: 4)
+% Build Phase Network Logic Diagram(Split by Critical Path) % Generated : 2025 -
+    12 -
+    06 16 : 42 % Total Tasks : 20(Critical : 16, Supporting : 4)
 
 \subsection{Build Phase Network Diagram}
 
-The Build phase contains \textbf{20 tasks} totaling \textbf{94 working days}. 
-Of these, 16 tasks (76 days) are on the critical path, 
-and 4 tasks (18 days) are supporting activities with available float time.
+                 The Build phase contains \textbf{20 tasks} totaling \textbf{
+                     94 working days}
+                     .Of these,
+    16 tasks(76 days) are on the critical path,
+    and4 tasks(18 days) are supporting activities with available float time.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
-\subsubsection{Critical Path Tasks}
+\subsubsection { Critical Path Tasks }
 
-\noindent The following 16 tasks are on the critical path. 
-Any delay in these tasks will directly extend the project completion date. 
-These tasks span 76 working days.
+\noindent The following 16 tasks are on the critical
+    path.Any delay in these tasks will directly extend the project completion
+        date.These tasks span 76 working days.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
 \begin{figure}[H]
 \centering
-\resizebox{\textwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=1.4cm and 1.5cm,
-  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.0cm, minimum height=0.8cm, align=center, font=\tiny, fill=buildorange!30},
-  timing/.style={font=\tiny, inner sep=1pt},
-  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
-  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
-]
+\resizebox{\textwidth} { ! }
+{
+  %
+\begin{tikzpicture}[node distance = 1.4cm and 1.5cm,
+                     task /.style = {rectangle, draw, rounded corners = 3pt,
+                                     minimum width = 2.0cm,
+                                     minimum height = 0.8cm, align = center,
+                                     font =\tiny, fill = buildorange !30},
+                     timing /.style = {font =\tiny, inner sep = 1pt},
+                     regular_arrow /.style = {-{Stealth[length = 5pt]},
+                                              gray !70, thick},
+                     critical_arrow /.style = {-{Stealth[length = 5pt]}, red,
+                                               line width = 1.2pt},
+  ]
 
-  \node[task] (1_3_1_1) {\textbf{1.1}\\Procure chas...\\(5d)};
-  \node[timing, above=2pt of 1_3_1_1] {80 | 85};
-  \node[task] (1_3_1_2) [right=1.5cm of 1_3_1_1] {\textbf{1.2}\\Fabricate pr...\\(5d)};
-  \node[timing, above=2pt of 1_3_1_2] {85 | 90};
-  \node[task] (1_3_1_3) [right=1.5cm of 1_3_1_2] {\textbf{1.3}\\Assemble dri...\\(5d)};
-  \node[timing, above=2pt of 1_3_1_3] {90 | 95};
-  \node[task] (1_3_1_4) [right=1.5cm of 1_3_1_3] {\textbf{1.4}\\Install moun...\\(5d)};
-  \node[timing, above=2pt of 1_3_1_4] {95 | 100};
-  \node[task] (1_3_3_1) [below=1.4cm of 1_3_1_1] {\textbf{3.1}\\Install comp...\\(5d)};
-  \node[timing, above=2pt of 1_3_3_1] {100 | 105};
-  \node[task] (1_3_3_2) [right=1.5cm of 1_3_3_1] {\textbf{3.2}\\Mount and co...\\(5d)};
-  \node[timing, above=2pt of 1_3_3_2] {105 | 110};
-  \node[task] (1_3_3_3) [right=1.5cm of 1_3_3_2] {\textbf{3.3}\\Install addi...\\(5d)};
-  \node[timing, above=2pt of 1_3_3_3] {110 | 115};
-  \node[task] (1_3_3_4) [right=1.5cm of 1_3_3_3] {\textbf{3.4}\\Route and se...\\(5d)};
-  \node[timing, above=2pt of 1_3_3_4] {115 | 120};
-  \node[task] (1_3_3_5) [right=1.5cm of 1_3_3_4] {\textbf{3.5}\\Verify all e...\\(4d)};
-  \node[timing, above=2pt of 1_3_3_5] {120 | 124};
-  \node[task] (1_3_4_1) [below=1.4cm of 1_3_3_1] {\textbf{4.1}\\Deploy ROS 2...\\(5d)};
-  \node[timing, above=2pt of 1_3_4_1] {124 | 129};
-  \node[task] (1_3_4_2) [right=1.5cm of 1_3_4_1] {\textbf{4.2}\\Validate SLA...\\(5d)};
-  \node[timing, above=2pt of 1_3_4_2] {129 | 134};
-  \node[task] (1_3_5_1) [below=1.4cm of 1_3_4_1] {\textbf{5.1}\\Execute mech...\\(4d)};
-  \node[timing, above=2pt of 1_3_5_1] {134 | 138};
-  \node[task] (1_3_5_2) [right=1.5cm of 1_3_5_1] {\textbf{5.2}\\Execute elec...\\(4d)};
-  \node[timing, above=2pt of 1_3_5_2] {138 | 142};
-  \node[task] (1_3_5_3) [right=1.5cm of 1_3_5_2] {\textbf{5.3}\\Execute soft...\\(4d)};
-  \node[timing, above=2pt of 1_3_5_3] {142 | 146};
-  \node[task] (1_3_6_1) [below=1.4cm of 1_3_5_1] {\textbf{6.1}\\Prepare buil...\\(5d)};
-  \node[timing, above=2pt of 1_3_6_1] {146 | 151};
-  \node[task] (1_3_6_2) [right=1.5cm of 1_3_6_1] {\textbf{6.2}\\Conduct buil...\\(5d)};
-  \node[timing, above=2pt of 1_3_6_2] {151 | 156};
+  \node[task](1_3_1_1){\textbf{1.1}\\Procure chas...\\(5d)};
+  \node[timing, above = 2pt of 1_3_1_1]{80 | 85};
+  \node[task](
+      1_3_1_2)[right = 1.5cm of 1_3_1_1]{\textbf{1.2}\\Fabricate pr...\\(5d)};
+  \node[timing, above = 2pt of 1_3_1_2]{85 | 90};
+  \node[task](
+      1_3_1_3)[right = 1.5cm of 1_3_1_2]{\textbf{1.3}\\Assemble dri...\\(5d)};
+  \node[timing, above = 2pt of 1_3_1_3]{90 | 95};
+  \node[task](
+      1_3_1_4)[right = 1.5cm of 1_3_1_3]{\textbf{1.4}\\Install moun...\\(5d)};
+  \node[timing, above = 2pt of 1_3_1_4]{95 | 100};
+  \node[task](
+      1_3_3_1)[below = 1.4cm of 1_3_1_1]{\textbf{3.1}\\Install comp...\\(5d)};
+  \node[timing, above = 2pt of 1_3_3_1]{100 | 105};
+  \node[task](1_3_3_2)[right = 1.5cm of 1_3_3_1]{\textbf{3.2}\\Mount and
+                                                 co...\\(5d)};
+  \node[timing, above = 2pt of 1_3_3_2]{105 | 110};
+  \node[task](
+      1_3_3_3)[right = 1.5cm of 1_3_3_2]{\textbf{3.3}\\Install addi...\\(5d)};
+  \node[timing, above = 2pt of 1_3_3_3]{110 | 115};
+  \node[task](1_3_3_4)[right = 1.5cm of 1_3_3_3]{\textbf{3.4}\\Route and
+                                                 se...\\(5d)};
+  \node[timing, above = 2pt of 1_3_3_4]{115 | 120};
+  \node[task](
+      1_3_3_5)[right = 1.5cm of 1_3_3_4]{\textbf{3.5}\\Verify all e...\\(4d)};
+  \node[timing, above = 2pt of 1_3_3_5]{120 | 124};
+  \node[task](
+      1_3_4_1)[below = 1.4cm of 1_3_3_1]{\textbf{4.1}\\Deploy ROS 2...\\(5d)};
+  \node[timing, above = 2pt of 1_3_4_1]{124 | 129};
+  \node[task](
+      1_3_4_2)[right = 1.5cm of 1_3_4_1]{\textbf{4.2}\\Validate SLA...\\(5d)};
+  \node[timing, above = 2pt of 1_3_4_2]{129 | 134};
+  \node[task](
+      1_3_5_1)[below = 1.4cm of 1_3_4_1]{\textbf{5.1}\\Execute mech...\\(4d)};
+  \node[timing, above = 2pt of 1_3_5_1]{134 | 138};
+  \node[task](
+      1_3_5_2)[right = 1.5cm of 1_3_5_1]{\textbf{5.2}\\Execute elec...\\(4d)};
+  \node[timing, above = 2pt of 1_3_5_2]{138 | 142};
+  \node[task](
+      1_3_5_3)[right = 1.5cm of 1_3_5_2]{\textbf{5.3}\\Execute soft...\\(4d)};
+  \node[timing, above = 2pt of 1_3_5_3]{142 | 146};
+  \node[task](
+      1_3_6_1)[below = 1.4cm of 1_3_5_1]{\textbf{6.1}\\Prepare buil...\\(5d)};
+  \node[timing, above = 2pt of 1_3_6_1]{146 | 151};
+  \node[task](
+      1_3_6_2)[right = 1.5cm of 1_3_6_1]{\textbf{6.2}\\Conduct buil...\\(5d)};
+  \node[timing, above = 2pt of 1_3_6_2]{151 | 156};
 
   % Dependencies
-  \draw[critical_arrow] (1_3_1_1) -- (1_3_1_2);
-  \draw[critical_arrow] (1_3_1_2) -- (1_3_1_3);
-  \draw[critical_arrow] (1_3_1_3) -- (1_3_1_4);
-  \draw[critical_arrow, rounded corners=3pt] (1_3_1_4.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_3_3_1.west) -- (1_3_3_1.west);
-  \draw[critical_arrow] (1_3_3_1) -- (1_3_3_2);
-  \draw[critical_arrow] (1_3_3_2) -- (1_3_3_3);
-  \draw[critical_arrow] (1_3_3_3) -- (1_3_3_4);
-  \draw[critical_arrow] (1_3_3_4) -- (1_3_3_5);
-  \draw[critical_arrow, rounded corners=3pt] (1_3_3_5.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_3_4_1.west) -- (1_3_4_1.west);
-  \draw[critical_arrow] (1_3_4_1) -- (1_3_4_2);
-  \draw[critical_arrow, rounded corners=3pt] (1_3_4_2.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_3_5_1.west) -- (1_3_5_1.west);
-  \draw[critical_arrow] (1_3_5_1) -- (1_3_5_2);
-  \draw[critical_arrow] (1_3_5_2) -- (1_3_5_3);
-  \draw[critical_arrow, rounded corners=3pt] (1_3_3_5.south) -- ++(0,-0.3) -| ([xshift=-0.8cm]1_3_6_1.west) -- (1_3_6_1.west);
-  \draw[critical_arrow, rounded corners=3pt] (1_3_5_3.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_3_6_1.west) -- (1_3_6_1.west);
-  \draw[critical_arrow] (1_3_6_1) -- (1_3_6_2);
+  \draw[critical_arrow](1_3_1_1)--(1_3_1_2);
+  \draw[critical_arrow](1_3_1_2)--(1_3_1_3);
+  \draw[critical_arrow](1_3_1_3)--(1_3_1_4);
+  \draw[critical_arrow, rounded corners = 3pt](1_3_1_4.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_3_3_1.west)--(1_3_3_1.west);
+  \draw[critical_arrow](1_3_3_1)--(1_3_3_2);
+  \draw[critical_arrow](1_3_3_2)--(1_3_3_3);
+  \draw[critical_arrow](1_3_3_3)--(1_3_3_4);
+  \draw[critical_arrow](1_3_3_4)--(1_3_3_5);
+  \draw[critical_arrow, rounded corners = 3pt](1_3_3_5.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_3_4_1.west)--(1_3_4_1.west);
+  \draw[critical_arrow](1_3_4_1)--(1_3_4_2);
+  \draw[critical_arrow, rounded corners = 3pt](1_3_4_2.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_3_5_1.west)--(1_3_5_1.west);
+  \draw[critical_arrow](1_3_5_1)--(1_3_5_2);
+  \draw[critical_arrow](1_3_5_2)--(1_3_5_3);
+  \draw[critical_arrow, rounded corners = 3pt](1_3_3_5.south)-- ++(0, -0.3) - |
+      ([xshift = -0.8cm] 1_3_6_1.west)--(1_3_6_1.west);
+  \draw[critical_arrow, rounded corners = 3pt](1_3_5_3.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_3_6_1.west)--(1_3_6_1.west);
+  \draw[critical_arrow](1_3_6_1)--(1_3_6_2);
 
-\end{tikzpicture}
-}%
-\caption{Build Phase Critical Path Tasks}
-\label{fig:nld_build_critical}
-\end{figure}
+  \end { tikzpicture }
+}
+%
+\caption { Build Phase Critical Path Tasks }
+\label {
+fig:
+  nld_build_critical
+}
+\end { figure }
 
 \begin{table}[H]
 \centering
 \small
-\rowcolors{2}{buildorange!20}{white}
-\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\rowcolors{2} { buildorange !20 }
+{ white }
+\begin{tabular} { | l | p{5cm} | c | c | c | l | }
 \hline
-\rowcolor{buildorange!40}
-\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\rowcolor { buildorange !40 }
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{
+    EF} & \textbf {
+  Owner
+}
+\\
 \hline
 \texttt{1.3.1.1} & Procure chassis materials and components & 5 & 80 & 85 & MN \\
 \hline
@@ -101,21 +142,26 @@ These tasks span 76 working days.
 \hline
 \texttt{1.3.1.3} & Assemble drivetrain and suspension & 5 & 90 & 95 & MN \\
 \hline
-\texttt{1.3.1.4} & Install mounting brackets and verify alignment & 5 & 95 & 100 & MN \\
+\texttt{1.3.1.4} & Install mounting brackets and verify alignment & 5 & 95 &
+    100 & MN \\
 \hline
-\texttt{1.3.3.1} & Install compute platform and configure OS & 5 & 100 & 105 & JH \\
+\texttt{1.3.3.1} & Install compute platform and configure OS & 5 & 100 & 105 &
+    JH \\
 \hline
 \texttt{1.3.3.2} & Mount and connect LiDAR sensor & 5 & 105 & 110 & JH \\
 \hline
-\texttt{1.3.3.3} & Install additional sensors and peripherals & 5 & 110 & 115 & JH \\
+\texttt{1.3.3.3} & Install additional sensors and peripherals & 5 & 110 & 115 &
+    JH \\
 \hline
 \texttt{1.3.3.4} & Route and secure all cabling & 5 & 115 & 120 & JH \\
 \hline
-\texttt{1.3.3.5} & Verify all electrical connections and power-on test & 4 & 120 & 124 & JH \\
+\texttt{1.3.3.5} & Verify all electrical connections and power - on test & 4 &
+    120 & 124 & JH \\
 \hline
 \texttt{1.3.4.1} & Deploy ROS 2 software stack to robot & 5 & 124 & 129 & JB \\
 \hline
-\texttt{1.3.4.2} & Validate SLAM navigation on physical robot & 5 & 129 & 134 & JB \\
+\texttt{1.3.4.2} & Validate SLAM navigation on physical robot & 5 & 129 & 134 &
+    JB \\
 \hline
 \texttt{1.3.5.1} & Execute mechanical integration tests & 4 & 134 & 138 & JH \\
 \hline
@@ -127,58 +173,84 @@ These tasks span 76 working days.
 \hline
 \texttt{1.3.6.2} & Conduct build phase gate review & 5 & 151 & 156 & CM \\
 \hline
-\end{tabular}
-\caption{Build Phase Critical Path Tasks}
-\label{tab:nld_build_critical}
-\end{table}
+\end {
+  tabular
+}
+\caption { Build Phase Critical Path Tasks }
+\label {
+tab:
+  nld_build_critical
+}
+\end { table }
 
-\subsubsection{Supporting Tasks}
+\subsubsection { Supporting Tasks }
 
-\noindent The following 4 supporting tasks have available float time. 
-These tasks can be delayed without impacting the project end date, as long as they complete within their late finish dates. 
-These tasks span 18 working days.
+\noindent The following 4 supporting tasks have available float time.These tasks
+    can be delayed without impacting the project end date,
+    as long as they complete within their late finish
+        dates.These tasks span 18 working days.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
 \begin{figure}[H]
 \centering
-\resizebox{0.5\textwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=1.4cm and 1.5cm,
-  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\tiny, fill=buildorange!30},
-  timing/.style={font=\tiny, inner sep=1pt},
-  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
-  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
-]
+\resizebox{0.5\textwidth} { ! }
+{
+  %
+\begin{tikzpicture}[node distance = 1.4cm and 1.5cm,
+                     task /.style = {rectangle, draw, rounded corners = 3pt,
+                                     minimum width = 2.4cm,
+                                     minimum height = 1.0cm, align = center,
+                                     font =\tiny, fill = buildorange !30},
+                     timing /.style = {font =\tiny, inner sep = 1pt},
+                     regular_arrow /.style = {-{Stealth[length = 5pt]},
+                                              gray !70, thick},
+                     critical_arrow /.style = {-{Stealth[length = 5pt]}, red,
+                                               line width = 1.2pt},
+  ]
 
-  \node[task] (1_3_2_1) {\textbf{2.1}\\Receive and inspect...\\(4d)};
-  \node[timing, above=2pt of 1_3_2_1] {80 | 84};
-  \node[task] (1_3_2_2) [right=1.5cm of 1_3_2_1] {\textbf{2.2}\\Build main power di...\\(5d)};
-  \node[timing, above=2pt of 1_3_2_2] {84 | 89};
-  \node[task] (1_3_2_3) [right=1.5cm of 1_3_2_2] {\textbf{2.3}\\Build signal and da...\\(5d)};
-  \node[timing, above=2pt of 1_3_2_3] {89 | 94};
-  \node[task] (1_3_2_4) [right=1.5cm of 1_3_2_3] {\textbf{2.4}\\Test harness contin...\\(4d)};
-  \node[timing, above=2pt of 1_3_2_4] {94 | 98};
+  \node[task](1_3_2_1){\textbf{2.1}\\Receive and inspect...\\(4d)};
+  \node[timing, above = 2pt of 1_3_2_1]{80 | 84};
+  \node[task](1_3_2_2)[right = 1.5cm of 1_3_2_1]{\textbf{
+      2.2}\\Build main power di...\\(5d)};
+  \node[timing, above = 2pt of 1_3_2_2]{84 | 89};
+  \node[task](1_3_2_3)[right = 1.5cm of 1_3_2_2]{\textbf{2.3}\\Build signal and
+                                                 da...\\(5d)};
+  \node[timing, above = 2pt of 1_3_2_3]{89 | 94};
+  \node[task](1_3_2_4)[right = 1.5cm of 1_3_2_3]{\textbf{
+      2.4}\\Test harness contin...\\(4d)};
+  \node[timing, above = 2pt of 1_3_2_4]{94 | 98};
 
   % Dependencies
-  \draw[regular_arrow] (1_3_2_1) -- (1_3_2_2);
-  \draw[regular_arrow] (1_3_2_2) -- (1_3_2_3);
-  \draw[regular_arrow] (1_3_2_3) -- (1_3_2_4);
+  \draw[regular_arrow](1_3_2_1)--(1_3_2_2);
+  \draw[regular_arrow](1_3_2_2)--(1_3_2_3);
+  \draw[regular_arrow](1_3_2_3)--(1_3_2_4);
 
-\end{tikzpicture}
-}%
-\caption{Build Phase Supporting Tasks}
-\label{fig:nld_build_supporting}
-\end{figure}
+  \end { tikzpicture }
+}
+%
+\caption { Build Phase Supporting Tasks }
+\label {
+fig:
+  nld_build_supporting
+}
+\end { figure }
 
 \begin{table}[H]
 \centering
 \small
-\rowcolors{2}{buildorange!20}{white}
-\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\rowcolors{2} { buildorange !20 }
+{ white }
+\begin{tabular} { | l | p{5cm} | c | c | c | l | }
 \hline
-\rowcolor{buildorange!40}
-\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\rowcolor { buildorange !40 }
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{
+    EF} & \textbf {
+  Owner
+}
+\\
 \hline
 \texttt{1.3.2.1} & Receive and inspect PCB assemblies & 4 & 80 & 84 & BS \\
 \hline
@@ -188,9 +260,17 @@ These tasks span 18 working days.
 \hline
 \texttt{1.3.2.4} & Test harness continuity and isolation & 4 & 94 & 98 & BS \\
 \hline
-\end{tabular}
-\caption{Build Phase Supporting Tasks}
-\label{tab:nld_build_supporting}
-\end{table}
+\end {
+  tabular
+}
+\caption { Build Phase Supporting Tasks }
+\label {
+tab:
+  nld_build_supporting
+}
+\end { table }
 
-\noindent\textit{See \hyperref[app:nld]{Appendix C} for the complete Build phase network logic diagram.}
+\noindent\textit {
+  See \hyperref [app:nld] { Appendix C } for
+    the complete Build phase network logic diagram.
+}
