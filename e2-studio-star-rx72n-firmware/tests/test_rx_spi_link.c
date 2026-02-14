@@ -2,7 +2,7 @@
 
 /**
  * @file test_rx_spi_link.c
- * @brief Unit Tests for SPI Link Layer (HARQ + FEC Integration)
+ * @brief Unit Tests for SPI Link Layer (HARQ)
  *
  * @details
  * Tests the SPI link layer module that integrates HARQ (Chase Combining)

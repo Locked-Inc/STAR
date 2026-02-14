@@ -844,7 +844,7 @@ typedef struct {
   rx_spi_comm_handle_t* spi_handle;
 
   /**
-   * @brief Optional SPI link layer with HARQ+FEC (NULL to use raw SPI)
+   * @brief Optional SPI link layer with HARQ (NULL to use raw SPI)
    * @details
    * When non-NULL, SPI send/receive operations route through the link
    * layer, which provides FEC encoding/decoding, Chase Combining, and
@@ -971,7 +971,7 @@ typedef struct {
 typedef struct {
   rx_usb_comm_handle_t*    usb_handle;                                  /**< USB comm handle */
   rx_spi_comm_handle_t*    spi_handle;                                  /**< SPI comm handle */
-  rx_spi_link_t*           spi_link;                                    /**< Optional SPI link (HARQ+FEC) */
+  rx_spi_link_t*           spi_link;                                    /**< Optional SPI link (HARQ) */
   rx_comm_frame_callback_t callback;                                    /**< Frame callback */
   void*                    callback_ctx;                                /**< Callback context */
   char                     ascii_buffer[k_comm_manager_ascii_buf_size]; /**< ASCII buffer */

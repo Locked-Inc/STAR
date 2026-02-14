@@ -1329,7 +1329,7 @@ void test_harq_decode_zero_length(void)
  * @endmsc
  *
  * @par Test Steps:
- * 1. Initialize HARQ with FEC enabled (default)
+ * 1. Initialize HARQ (FEC enabled by default)
  * 2. Encode payload `[0xDE, 0xAD]` -> expect ~6 bytes FEC-encoded output
  * 3. Convert encoded hard bits to soft bits (perfect confidence: ±127)
  * 4. Reset HARQ state (clear encoder state before decode)
@@ -1418,7 +1418,7 @@ void test_harq_roundtrip_with_fec(void)
  * @endmsc
  *
  * @par Test Steps (Simplified - No Noise Injection):
- * 1. Initialize HARQ with FEC enabled
+ * 1. Initialize HARQ (FEC enabled by default)
  * 2. Encode payload `[0x42]` -> FEC encoded output
  * 3. Convert to perfect soft bits (±127 confidence)
  * 4. Reset HARQ state

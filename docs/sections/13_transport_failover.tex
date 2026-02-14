@@ -68,7 +68,7 @@ Each transport is registered with a numeric priority. Higher values indicate pre
 \textbf{Transport} & \textbf{Priority} & \textbf{Role} & \textbf{Rationale} \\
 \midrule
 USB CDC & 10 & Primary   & Lower latency, hardware CRC, no HARQ overhead \\
-SPI     & 5  & Backup    & Always available, full HARQ+FEC protection \\
+SPI     & 5  & Backup    & Always available, full HARQ protection \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -397,7 +397,7 @@ Worst-case failover (silent)     & $< 1.5$\,s \\
 \subsection{Cross-References}
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \textbf{Section~\ref{sec:communication-stack}}: Protocol stack, HARQ/FEC details, frame format
+    \item \textbf{Section~\ref{sec:communication-stack}}: Protocol stack, HARQ details, frame format
     \item \textbf{Section~\ref{sec:dual-channel-arbitration}}: How the RX72N handles simultaneous data on both channels
     \item \textbf{Section~\ref{sec:gateway-architecture}}: Gateway service architecture and directory structure
     \item \textbf{Section~\ref{sec:usb_cdc_protocol}}: USB CDC transport details

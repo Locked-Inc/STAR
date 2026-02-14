@@ -323,7 +323,7 @@ RESET\_ACK & 0xFE & 0 & (empty) & 0x110062D8 \\
 
 \subsection{USB CDC Lightweight Protocol}
 
-The USB CDC protocol is designed for minimal overhead, relying on USB hardware for reliability. Unlike the SPI path which uses full HARQ with FEC and retransmission, the CDC path omits these as redundant with USB's built-in CRC and retry mechanisms.
+The USB CDC protocol is designed for minimal overhead, relying on USB hardware for reliability. Unlike the SPI path which uses full HARQ (ARQ + FEC) and retransmission, the CDC path omits these as redundant with USB's built-in CRC and retry mechanisms.
 
 \subsubsection{Send Path}
 

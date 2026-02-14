@@ -45,7 +45,7 @@ reviews:
         - Follow standard Go conventions (gofmt, golint)
         - Verify interfaces are well-defined (Transport, HARQ, FEC)
         - Check error handling (all errors must be checked or explicitly ignored)
-        - Verify layer separation: transport (L1), frame (L2), HARQ/FEC (L3), service (L5)
+        - Verify layer separation: transport (L1), frame (L2), HARQ (L3), service (L5)
         - Ensure thread-safe operations for concurrent gRPC handlers
         - No magic numbers - use named constants
         - Follow gateway architecture from docs/sections/07_gateway_architecture.tex

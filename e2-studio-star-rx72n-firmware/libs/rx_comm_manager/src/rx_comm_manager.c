@@ -804,7 +804,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     return k_rx_err_timeout;
   }
 
-  /* If SPI link layer is available, use it for HARQ+FEC decoding */
+  /* If SPI link layer is available, use it for HARQ decoding */
   if (mgr->spi_link != nullptr) {
     rx_spi_link_receive_result_t link_result;
     rx_err_t err = rx_spi_link_receive(mgr->spi_link, &link_result, k_receive_timeout_ms);
@@ -826,7 +826,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     return err;
   }
 
-  /* Fallback: raw SPI without HARQ+FEC */
+  /* Fallback: raw SPI without HARQ */
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(mgr->spi_handle, &frame, k_receive_timeout_ms);
 
@@ -1511,7 +1511,7 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
         rx_log_error(s_tag, "Send failed: SPI handle NULL");
         return k_rx_err_invalid_state;
       }
-      /* Use HARQ+FEC link layer if available, otherwise raw SPI */
+      /* Use HARQ link layer if available, otherwise raw SPI */
       if (mgr->spi_link != nullptr) {
         err = rx_spi_link_send(mgr->spi_link,
                                params->type,

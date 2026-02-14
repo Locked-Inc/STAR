@@ -1,4 +1,4 @@
-# ADR-001: Migration from ARQ to HARQ with FEC
+# ADR-001: Migration from ARQ to HARQ
 
 ## Status
 

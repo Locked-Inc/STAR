@@ -80,11 +80,11 @@ The \texttt{TransportManager} selects the highest-priority healthy transport at 
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{Lower latency:} 0.5--1\,ms (USB) vs 1--2\,ms (SPI)
-    \item \textbf{Hardware CRC and bulk retries:} Built into the USB protocol, making application-level HARQ/FEC redundant on this path
+    \item \textbf{Hardware CRC and bulk retries:} Built into the USB protocol, making application-level HARQ redundant on this path
     \item \textbf{Simplified software:} No ACK/NACK handshake or FEC codec overhead required
 \end{itemize}
 
-SPI enables full HARQ with FEC (per ADR-001) because it lacks USB's built-in reliability mechanisms. A shared \texttt{SessionState} (TX/RX sequence counters) spans both transports, preventing sequence desynchronization during failover. Both USB and SPI increment the same sequence counter.
+SPI enables full HARQ (per ADR-001) because it lacks USB's built-in reliability mechanisms. A shared \texttt{SessionState} (TX/RX sequence counters) spans both transports, preventing sequence desynchronization during failover. Both USB and SPI increment the same sequence counter.
 
 \subsection{Protocol Stack (5 Layers)}
 
@@ -98,7 +98,7 @@ SPI enables full HARQ with FEC (per ADR-001) because it lacks USB's built-in rel
 \midrule
 5 & Application    & \texttt{internal/service/}           & \texttt{src/tasks/}            & gRPC services, motor commands, telemetry \\
 4 & Serialization  & \texttt{google.golang.org/protobuf}  & \texttt{libs/rx\_nanopb/}      & Protocol Buffers (full-size Go, nanopb C) \\
-3 & Reliability    & \texttt{internal/link/}               & \texttt{libs/rx\_harq/}, \texttt{libs/rx\_spi\_link/} & HARQ with FEC on SPI, lightweight on USB \\
+3 & Reliability    & \texttt{internal/link/}               & \texttt{libs/rx\_harq/}, \texttt{libs/rx\_spi\_link/} & HARQ on SPI, lightweight on USB \\
 2 & Framing        & \texttt{internal/frame/}              & \texttt{libs/rx\_frame/}       & SYNC + Header + Payload + CRC-32 \\
 1 & Transport      & \texttt{internal/transport/}          & RSPI0 / USB peripheral         & SPI @ 10\,MHz, USB CDC Full-Speed \\
 \bottomrule
@@ -131,7 +131,7 @@ A CRC-32 is a 4-byte ``fingerprint'' computed over a block of data. The sender c
     \item \textbf{Detection only, not correction:} CRC tells you \emph{something} is wrong, but not \emph{what} or \emph{where}. If a CRC fails, the only option is to discard the frame and request retransmission.
     \item \textbf{Detects all single-bit, double-bit, and odd-bit errors.} Detects all burst errors up to 32 bits.
     \item \textbf{Hardware-accelerated on the RX72N:} The CRC Calculator peripheral computes CRC-32 in hardware, avoiding CPU overhead.
-    \item \textbf{Used on every frame:} Both USB CDC and SPI frames include CRC-32, regardless of whether HARQ/FEC is enabled.
+    \item \textbf{Used on every frame:} Both USB CDC and SPI frames include CRC-32, regardless of whether HARQ is enabled.
 \end{itemize}
 
 \noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
@@ -330,7 +330,7 @@ Interpretation            & Strong 1 & Likely 0 & Weak 1 & Strong 0 \\
 
 USB CDC is a standard USB device class that creates a \textbf{virtual serial port} over USB. When the RX72N is plugged into the Raspberry Pi 5 via USB, the Linux kernel automatically creates a \texttt{/dev/ttyACM0} device that applications can read/write like a regular serial port.
 
-\textbf{Why USB CDC needs no HARQ/FEC:}
+\textbf{Why USB CDC needs no HARQ:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{Hardware CRC-16:} Every USB packet (max 64 bytes for Full-Speed) includes a 16-bit CRC computed and verified by the USB hardware controller. Corrupted packets are automatically discarded at the hardware level.
     \item \textbf{Automatic bulk retries:} USB bulk transfers automatically retry failed packets up to 3 times at the hardware level, transparent to software. The application never sees the retransmission.
@@ -359,7 +359,7 @@ SPI is a synchronous 4-wire bus connecting the Raspberry Pi 5 (Controller) to th
     \item \textbf{CS:} Chip Select (active low, selects the RX72N).
 \end{itemize}
 
-\textbf{Why SPI needs full HARQ+FEC:}
+\textbf{Why SPI needs full HARQ:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{No hardware CRC:} SPI shifts raw bits. A single bit flip from EMI or crosstalk passes through silently unless the application checks.
     \item \textbf{No retransmission:} SPI is fire-and-forget. If a byte is corrupted, there is no hardware mechanism to request it again.
@@ -525,7 +525,7 @@ See Section~\ref{sec:protocol-stack} for the full frame specification including 
 
 \subsection{Reliability: SPI HARQ Send/Receive Paths}
 
-\subsubsection{SPI Send Path (HARQ + FEC)}
+\subsubsection{SPI Send Path (HARQ)}
 
 When the gateway sends a command over SPI, the following pipeline executes:
 
@@ -567,9 +567,9 @@ When the RX72N receives a frame on SPI:
     \item If FEC disabled: standard CRC-32 validation only.
 \end{enumerate}
 
-\subsubsection{USB CDC Path: No HARQ/FEC}
+\subsubsection{USB CDC Path: No HARQ}
 
-USB CDC does not require application-level HARQ or FEC. The USB hardware provides CRC-16 on every packet and automatic bulk retry on error, making these mechanisms redundant. The \texttt{CDCLink} implementation (\texttt{internal/link/cdc.go} and \texttt{libs/rx\_usb\_comm/}) contains \textbf{zero references} to HARQ, FEC, Viterbi, or Chase Combining code.
+USB CDC does not require application-level HARQ. The USB hardware provides CRC-16 on every packet and automatic bulk retry on error, making ARQ and FEC redundant. The \texttt{CDCLink} implementation (\texttt{internal/link/cdc.go} and \texttt{libs/rx\_usb\_comm/}) contains \textbf{zero references} to HARQ, FEC, Viterbi, or Chase Combining code.
 
 \subsection{Safety Features}
 
@@ -622,5 +622,5 @@ PID control update                    & $\sim$20\,\textmu s \\
     \item \textbf{Section~\ref{sec:usb_cdc_protocol}} (09\_usb\_cdc\_protocol.tex): USB CDC transport details, descriptor hierarchy, bulk transfer protocol, and heartbeat mechanism
     \item \textbf{Section~\ref{sec:transport-failover}} (13\_transport\_failover.tex): Auto fallback, hot switching, health monitoring, and failover timing
     \item \textbf{Section~\ref{sec:dual-channel-arbitration}} (14\_dual\_channel\_arbitration.tex): How the RX72N handles simultaneous data on both channels
-    \item \textbf{ADR-001}: HARQ/FEC architectural decision record --- rationale for convolutional coding, Chase Combining strategy, and phased implementation plan
+    \item \textbf{ADR-001}: HARQ architectural decision record --- rationale for convolutional coding, Chase Combining strategy, and phased implementation plan
 \end{itemize}
