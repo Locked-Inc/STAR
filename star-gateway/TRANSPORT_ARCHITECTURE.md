@@ -5,7 +5,7 @@
 The STAR Gateway implements intelligent transport switching between USB CDC (primary) and SPI (backup) for communication with the RX72N motor controller. The system automatically prefers USB for its simplicity but seamlessly fails over to SPI if USB becomes unavailable, with automatic recovery when USB returns.
 
 **Design Philosophy:**
-- **Lightweight CDC Protocol**: No application-level HARQ/FEC (USB hardware provides reliability)
+- **Lightweight CDC Protocol**: No application-level HARQ (USB hardware provides reliability)
 - **Hybrid Heartbeat**: Implicit detection via telemetry + explicit PING/PONG when idle
 - **Circuit Breaker Pattern**: Fast failure detection (~200ms) with automatic failover
 - **Smart Switching**: Skip drain on hard failures, shared sequence state across transports

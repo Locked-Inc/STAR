@@ -1,238 +1,393 @@
-% =============================================================================
-% Section 10: Critical Path
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Section 10 : Critical Path % == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
-\section{Critical Path}
-\sectionauthors{CM, JB}
+\section {
+  Critical Path
+}
+\sectionauthors { CM, JB }
 
 \subsection{Critical Path Definition}
 
-The critical path is the longest sequence of dependent activities that determines the minimum project completion time. Activities on the critical path have zero slack (float), meaning any delay in a critical path activity directly delays the project end date.
+The critical path is the longest sequence of dependent activities that
+    determines the minimum project completion time.Activities
+        on the critical path have zero
+        slack(float),
+    meaning any delay in a critical path activity directly delays the project
+    end date.
 
-For the STAR Robot project, the critical path spans 214 working days and includes 47 activities across all project phases.
+    For the STAR Robot project,
+    the critical path spans 214 working days and includes
+    47 activities across all project phases.
 
-\subsection{Critical Path Summary}
+\subsection {
+  Critical Path Summary
+}
 
 \begin{table}[H]
 \centering
-\caption{Critical Path Statistics}
-\label{tab:critical_path_stats}
-\begin{tabular}{@{}lr@{}}
+\caption { Critical Path Statistics }
+\label {
+tab:
+  critical_path_stats
+}
+\begin{tabular} {
+  @{} lr @{}
+}
 \toprule
-\textbf{Metric} & \textbf{Value} \\
-\midrule
-Total Activities on Critical Path & 47 \\
-Critical Path Duration & 214 days \\
-Total Project Activities & 84 \\
-Percentage on Critical Path & 56\% \\
-Total Float (Non-Critical Activities) & Varies (1-45 days) \\
+\textbf{Metric} & \textbf { Value }
+\\
+\midrule Total Activities on Critical Path & 47 \ Critical Path Duration &
+    214 days \ Total Project Activities & 84 \ Percentage on Critical Path &
+    56\% \ Total Float(Non - Critical Activities) & Varies(1 - 45 days) \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end {
+  tabular
+}
+\end { table }
 
 \subsection{Critical Path Visualization}
 
-The critical path is highlighted in red on the NLD (see Figure \ref{fig:nld_critical_path} in Section \ref{sec:nld_sec}) and the Gantt chart. Full diagrams are available in the Appendix.
+    The critical path is highlighted in red on the
+    NLD(see Figure \ref{fig : nld_critical_path} in Section \
+        ref{sec : nld_sec}) and
+    the Gantt chart.Full diagrams are available in the Appendix.
 
 \subsection{Critical Path Activities}
 
-The following activities comprise the critical path, organized by phase. Row colors match the phase color coding used in the NLD and WBS diagrams.
+    The following activities comprise the critical path,
+    organized by phase
+        .Row colors match the phase color coding used in the NLD and WBS
+    diagrams.
 
-\subsubsection{Research Phase Critical Activities}
-
-\begin{table}[H]
-\centering
-\caption{Research Phase Critical Activities}
-\label{tab:critical_path_research}
-\begin{tabular}{@{}llr@{}}
-\toprule
-\textbf{WBS ID} & \textbf{Activity} & \textbf{Duration} \\
-\midrule
-\rowcolor{researchblue!30} 1.1.1.1 & Gather stakeholder requirements & 5 days \\
-\rowcolor{researchblue!30} 1.1.1.2 & Document functional requirements & 5 days \\
-\rowcolor{researchblue!30} 1.1.2.1 & Research SLAM algorithms & 4 days \\
-\rowcolor{researchblue!30} 1.1.2.2 & Evaluate sensor technologies & 4 days \\
-\rowcolor{researchblue!30} 1.1.3.1 & Select compute platform & 5 days \\
-\rowcolor{researchblue!30} 1.1.3.2 & Select sensors & 4 days \\
-\rowcolor{researchblue!30} 1.1.6.1 & Compile research findings & 5 days \\
-\rowcolor{researchblue!30} 1.1.6.2 & Create research report & 5 days \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\subsubsection{Design Phase Critical Activities}
+\subsubsection {
+  Research Phase Critical Activities
+}
 
 \begin{table}[H]
 \centering
-\caption{Design Phase Critical Activities}
-\label{tab:critical_path_design}
-\begin{tabular}{@{}llr@{}}
+\caption { Research Phase Critical Activities }
+\label {
+tab:
+  critical_path_research
+}
+\begin{tabular} {
+  @{} llr @{}
+}
 \toprule
-\textbf{WBS ID} & \textbf{Activity} & \textbf{Duration} \\
+\textbf{WBS ID} & \textbf{Activity} & \textbf { Duration }
+\\
 \midrule
-\rowcolor{designyellow!30} 1.2.1.1 & Define system architecture & 5 days \\
-\rowcolor{designyellow!30} 1.2.1.2 & Create interface specifications & 5 days \\
-\rowcolor{designyellow!30} 1.2.1.3 & Document design decisions & 5 days \\
-\rowcolor{designyellow!30} 1.2.2.1 & Design chassis frame & 5 days \\
-\rowcolor{designyellow!30} 1.2.2.2 & Design drive system & 5 days \\
-\rowcolor{designyellow!30} 1.2.2.3 & Design sensor mounts & 5 days \\
-\rowcolor{designyellow!30} 1.2.2.4 & Create CAD assembly & 5 days \\
-\rowcolor{designyellow!30} 1.2.6.1 & Prepare design review & 5 days \\
-\rowcolor{designyellow!30} 1.2.6.2 & Conduct design review & 5 days \\
+\rowcolor { researchblue !30 }
+1.1.1.1 & Gather stakeholder requirements & 5 days \\
+\rowcolor {
+  researchblue !30
+}
+1.1.1.2 & Document functional requirements & 5 days \\
+\rowcolor {
+  researchblue !30
+}
+1.1.2.1 & Research SLAM algorithms & 4 days \\
+\rowcolor { researchblue !30 }
+1.1.2.2 & Evaluate sensor technologies & 4 days \\
+\rowcolor { researchblue !30 }
+1.1.3.1 & Select compute platform & 5 days \\
+\rowcolor { researchblue !30 }
+1.1.3.2 & Select sensors & 4 days \\
+\rowcolor { researchblue !30 }
+1.1.6.1 & Compile research findings & 5 days \\
+\rowcolor { researchblue !30 }
+1.1.6.2 & Create research report & 5 days \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end { tabular }
+\end { table }
 
-\subsubsection{Build Phase Critical Activities}
+\subsubsection { Design Phase Critical Activities }
 
 \begin{table}[H]
 \centering
-\caption{Build Phase Critical Activities}
-\label{tab:critical_path_build}
-\begin{tabular}{@{}llr@{}}
+\caption { Design Phase Critical Activities }
+\label {
+tab:
+  critical_path_design
+}
+\begin{tabular} {
+  @{} llr @{}
+}
 \toprule
-\textbf{WBS ID} & \textbf{Activity} & \textbf{Duration} \\
+\textbf{WBS ID} & \textbf{Activity} & \textbf { Duration }
+\\
 \midrule
-\rowcolor{buildorange!30} 1.3.1.1 & Fabricate chassis components & 5 days \\
-\rowcolor{buildorange!30} 1.3.1.2 & Assemble chassis frame & 5 days \\
-\rowcolor{buildorange!30} 1.3.1.3 & Install drive system & 5 days \\
-\rowcolor{buildorange!30} 1.3.1.4 & Verify mechanical assembly & 5 days \\
-\rowcolor{buildorange!30} 1.3.3.1 & Install LiDAR sensor & 5 days \\
-\rowcolor{buildorange!30} 1.3.3.2 & Install depth camera & 5 days \\
-\rowcolor{buildorange!30} 1.3.3.3 & Install compute platform & 5 days \\
-\rowcolor{buildorange!30} 1.3.3.4 & Configure sensor interfaces & 5 days \\
-\rowcolor{buildorange!30} 1.3.3.5 & Verify sensor operation & 5 days \\
-\rowcolor{buildorange!30} 1.3.4.1 & Develop motor control firmware & 5 days \\
-\rowcolor{buildorange!30} 1.3.4.2 & Develop ROS 2 interface & 5 days \\
-\rowcolor{buildorange!30} 1.3.5.1 & Integrate hardware subsystems & 5 days \\
-\rowcolor{buildorange!30} 1.3.5.2 & Integrate software components & 5 days \\
-\rowcolor{buildorange!30} 1.3.5.3 & System bring-up testing & 5 days \\
-\rowcolor{buildorange!30} 1.3.6.1 & Verify build completeness & 5 days \\
-\rowcolor{buildorange!30} 1.3.6.2 & Document build status & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.1.1 & Define system architecture & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.1.2 & Create interface specifications & 5 days \\
+\rowcolor {
+  designyellow !30
+}
+1.2.1.3 & Document design decisions & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.2.1 & Design chassis frame & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.2.2 & Design drive system & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.2.3 & Design sensor mounts & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.2.4 & Create CAD assembly & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.6.1 & Prepare design review & 5 days \\
+\rowcolor { designyellow !30 }
+1.2.6.2 & Conduct design review & 5 days \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end { tabular }
+\end { table }
 
-\subsubsection{Test Phase Critical Activities}
+\subsubsection { Build Phase Critical Activities }
 
 \begin{table}[H]
 \centering
-\caption{Test Phase Critical Activities}
-\label{tab:critical_path_test}
-\begin{tabular}{@{}llr@{}}
+\caption { Build Phase Critical Activities }
+\label {
+tab:
+  critical_path_build
+}
+\begin{tabular} {
+  @{} llr @{}
+}
 \toprule
-\textbf{WBS ID} & \textbf{Activity} & \textbf{Duration} \\
+\textbf{WBS ID} & \textbf{Activity} & \textbf { Duration }
+\\
 \midrule
-\rowcolor{testgreen!30} 1.4.1.1 & Test sensor subsystems & 5 days \\
-\rowcolor{testgreen!30} 1.4.1.2 & Test motor control & 5 days \\
-\rowcolor{testgreen!30} 1.4.1.3 & Test software modules & 5 days \\
-\rowcolor{testgreen!30} 1.4.2.1 & Test SLAM performance & 5 days \\
-\rowcolor{testgreen!30} 1.4.2.2 & Test navigation functions & 5 days \\
-\rowcolor{testgreen!30} 1.4.2.3 & Test obstacle avoidance & 5 days \\
-\rowcolor{testgreen!30} 1.4.2.4 & Document integration results & 5 days \\
-\rowcolor{testgreen!30} 1.4.4.1 & Measure system accuracy & 5 days \\
-\rowcolor{testgreen!30} 1.4.4.2 & Measure system latency & 5 days \\
-\rowcolor{testgreen!30} 1.4.5.1 & Conduct acceptance tests & 5 days \\
-\rowcolor{testgreen!30} 1.4.5.2 & Document test results & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.1.1 & Fabricate chassis components & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.1.2 & Assemble chassis frame & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.1.3 & Install drive system & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.1.4 & Verify mechanical assembly & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.3.1 & Install LiDAR sensor & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.3.2 & Install depth camera & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.3.3 & Install compute platform & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.3.4 & Configure sensor interfaces & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.3.5 & Verify sensor operation & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.4.1 & Develop motor control firmware & 5 days \\
+\rowcolor {
+  buildorange !30
+}
+1.3.4.2 & Develop ROS 2 interface & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.5.1 & Integrate hardware subsystems & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.5.2 & Integrate software components & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.5.3 & System bring - up testing & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.6.1 & Verify build completeness & 5 days \\
+\rowcolor { buildorange !30 }
+1.3.6.2 & Document build status & 5 days \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end { tabular }
+\end { table }
 
-\subsubsection{Close Phase Critical Activities}
+\subsubsection { Test Phase Critical Activities }
 
 \begin{table}[H]
 \centering
-\caption{Close Phase Critical Activities}
-\label{tab:critical_path_close}
-\begin{tabular}{@{}llr@{}}
+\caption { Test Phase Critical Activities }
+\label {
+tab:
+  critical_path_test
+}
+\begin{tabular} {
+  @{} llr @{}
+}
 \toprule
-\textbf{WBS ID} & \textbf{Activity} & \textbf{Duration} \\
+\textbf{WBS ID} & \textbf{Activity} & \textbf { Duration }
+\\
 \midrule
-\rowcolor{closepink!30} 1.5.1.1 & Complete user documentation & 5 days \\
-\rowcolor{closepink!30} 1.5.1.2 & Complete technical documentation & 5 days \\
-\rowcolor{closepink!30} 1.5.3 & Deliver final report & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.1.1 & Test sensor subsystems & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.1.2 & Test motor control & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.1.3 & Test software modules & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.2.1 & Test SLAM performance & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.2.2 & Test navigation functions & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.2.3 & Test obstacle avoidance & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.2.4 & Document integration results & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.4.1 & Measure system accuracy & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.4.2 & Measure system latency & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.5.1 & Conduct acceptance tests & 5 days \\
+\rowcolor { testgreen !30 }
+1.4.5.2 & Document test results & 5 days \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end { tabular }
+\end { table }
 
-\subsection{Critical Path Analysis}
+\subsubsection { Close Phase Critical Activities }
+
+\begin{table}[H]
+\centering
+\caption { Close Phase Critical Activities }
+\label {
+tab:
+  critical_path_close
+}
+\begin{tabular} {
+  @{} llr @{}
+}
+\toprule
+\textbf{WBS ID} & \textbf{Activity} & \textbf { Duration }
+\\
+\midrule
+\rowcolor { closepink !30 }
+1.5.1.1 & Complete user documentation & 5 days \\
+\rowcolor { closepink !30 }
+1.5.1.2 & Complete technical documentation & 5 days \\
+\rowcolor {
+  closepink !30
+}
+1.5.3 & Deliver final report & 5 days \\
+\bottomrule
+\end { tabular }
+\end { table }
+
+\subsection { Critical Path Analysis }
 
 \subsubsection{Why These Activities Are Critical}
 
-The critical path activities share these characteristics:
+The critical path activities share these characteristics :
 
-\begin{itemize}
+\begin {
+  itemize
+}
     \item \textbf{Sequential Dependencies}: Each activity depends on completion of the previous activity
     \item \textbf{No Parallel Alternatives}: Work cannot be redistributed to other paths
     \item \textbf{Resource Constraints}: Key team members are required for specific expertise
     \item \textbf{Technical Dependencies}: Outputs are required inputs for subsequent work
-\end{itemize}
+\end{
+      itemize
+    }
 
-\subsubsection{Critical Path Risk Factors}
+    \subsubsection{Critical Path Risk Factors}
 
-The following factors pose the greatest risk to critical path activities:
+    The following factors pose the greatest risk to critical path activities :
 
-\begin{enumerate}
-    \item \textbf{Component Procurement}: Delays in receiving LiDAR or depth camera affect sensor integration
-    \item \textbf{SLAM Performance}: Algorithm tuning may require iteration if accuracy targets not met
-    \item \textbf{Integration Complexity}: Hardware-software integration often reveals unexpected issues
-    \item \textbf{Testing Failures}: Failed tests require debugging and re-testing cycles
-\end{enumerate}
+\begin {
+      enumerate
+    }
+    \item \textbf{Component Procurement}
+        : Delays in receiving LiDAR or
+          depth camera affect sensor integration
+    \item \textbf{SLAM Performance}
+        : Algorithm tuning may require iteration if accuracy targets not met
+    \item \textbf{Integration Complexity}
+        : Hardware -
+          software integration often reveals unexpected issues
+    \item \textbf{Testing Failures} : Failed tests require debugging and
+              re - testing cycles
+\end {
+      enumerate
+    }
 
-\subsection{Critical Path Management}
+    \subsection { Critical Path Management }
 
-\subsubsection{Monitoring}
+    \subsubsection{Monitoring}
 
-Critical path status is monitored through:
+    Critical path status is monitored through :
 
-\begin{itemize}
+\begin {
+      itemize
+    }
     \item Weekly progress review against baseline schedule
     \item Early warning indicators from in-progress activities
     \item Dependency tracking for predecessor completion
-\end{itemize}
+\end{
+      itemize
+    }
 
-\subsubsection{Mitigation Strategies}
+    \subsubsection{Mitigation Strategies}
 
-To protect the critical path:
+    To protect the critical path :
 
-\begin{itemize}
+\begin {
+      itemize
+    }
     \item \textbf{Buffer Time}: Non-critical activities provide schedule buffer if resources shift
     \item \textbf{Parallel Development}: Software development proceeds parallel to hardware
     \item \textbf{Early Procurement}: Long-lead items ordered during Research phase
     \item \textbf{Resource Flexibility}: Cross-trained team members can support critical activities
     \item \textbf{Risk Reserves}: Schedule contingency available for high-risk activities
-\end{itemize}
+\end{
+      itemize
+    }
 
-\subsubsection{Recovery Options}
+    \subsubsection{Recovery Options}
 
-If critical path delays occur:
+    If critical path delays occur :
 
-\begin{enumerate}
-    \item \textbf{Crashing}: Add resources to critical activities (limited effectiveness)
-    \item \textbf{Fast-Tracking}: Overlap sequential activities where possible
-    \item \textbf{Scope Reduction}: Defer non-essential features to recover schedule
-    \item \textbf{Schedule Compression}: Reduce activity durations through focused effort
-\end{enumerate}
+\begin {
+      enumerate
+    }
+    \item \textbf{Crashing} : Add resources to critical
+                              activities(limited effectiveness)
+    \item \textbf{Fast - Tracking}
+        : Overlap sequential activities where possible
+    \item \textbf{Scope Reduction} : Defer non
+                                      -
+                                      essential features to recover schedule
+    \item \textbf{Schedule Compression}
+        : Reduce activity durations through focused effort
+\end {
+      enumerate
+    }
 
-\subsection{Float Analysis}
+    \subsection{Float Analysis}
 
-Activities not on the critical path have float (slack) time:
+    Activities not on the critical path have float(slack) time :
 
 \begin{table}[H]
 \centering
-\caption{Non-Critical Activities with Highest Float}
-\label{tab:float_analysis}
-\begin{tabular}{@{}llr@{}}
-\toprule
-\textbf{Activity} & \textbf{Phase} & \textbf{Float (Days)} \\
+\caption {
+      Non - Critical Activities with Highest Float
+    }
+    \label {
+    tab:
+      float_analysis
+    }
+    \begin{tabular} {
+      @{} llr @{}
+    }
+    \toprule
+\textbf{Activity} & \textbf{Phase} & \textbf { Float(Days) }
+    \\
 \midrule
-\rowcolor{researchblue!30} Risk Assessment & Research & 15 \\
-\rowcolor{designyellow!30} Software Architecture & Design & 12 \\
-\rowcolor{designyellow!30} Electrical Design & Design & 10 \\
-\rowcolor{gray!30} PM Documentation & PM Overhead & 45 \\
-\rowcolor{closepink!30} Knowledge Transfer & Close & 8 \\
+\rowcolor{researchblue !30} Risk Assessment &Research & 15 \\
+\rowcolor{designyellow !30} Software Architecture &Design & 12 \\
+\rowcolor{designyellow !30} Electrical Design &Design & 10 \\
+\rowcolor{gray !30} PM Documentation &PM Overhead & 45 \\
+\rowcolor{closepink !30} Knowledge Transfer &Close & 8 \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end {
+      tabular
+    }
+    \end{table}
 
-Float provides schedule flexibility and opportunities to redirect resources to critical path activities if needed.
+    Float provides schedule flexibility and opportunities to redirect resources
+        to critical path activities if needed.

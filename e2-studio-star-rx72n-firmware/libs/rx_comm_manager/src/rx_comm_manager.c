@@ -497,6 +497,15 @@ typedef enum : uint32_t {
    * @par Value: 0
    */
   k_ascii_buffer_first_idx = 0,
+
+  /**
+   * @brief Typed zero constant for uint32_t comparisons
+   * @details
+   * Used for payload length checks and other uint32_t zero comparisons to avoid
+   * magic number 0. Provides type safety and self-documenting code.
+   * @par Value: 0
+   */
+  k_zero_u32 = 0,
 } internal_constants_t;
 
 /* =============================================================================
@@ -804,11 +813,53 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
     return k_rx_err_timeout;
   }
 
-  rx_frame_t frame;
-  rx_err_t   err = rx_spi_comm_receive(mgr->spi_handle, &frame, k_receive_timeout_ms);
+  /* If SPI link layer is available, use it for HARQ decoding
+   * NOTE: Using static buffers to avoid stack overflow (~3KB total).
+   * Safe because comm manager poll is single-threaded (called from comm_task). */
+  if (mgr->spi_link != nullptr) {
+    static rx_spi_link_receive_result_t s_link_result;
+    rx_err_t err = rx_spi_link_receive(mgr->spi_link, &s_link_result, k_receive_timeout_ms);
+
+    if (err == k_rx_ok) {
+      /* Defensive bounds check: Validate payload length before copy */
+      if (s_link_result.payload_len > k_harq_max_payload ||
+          s_link_result.payload_len > sizeof(((rx_frame_t*)nullptr)->payload)) {
+        rx_log_error_val(s_tag, "SPI link receive: payload too large", s_link_result.payload_len);
+        return k_rx_err_invalid_size;
+      }
+
+      /* Convert link result to rx_frame_t for internal_handle_frame() */
+      static rx_frame_t s_frame1;
+      (void)memset(&s_frame1, (int)k_zero_u32, sizeof(s_frame1));
+      s_frame1.header.sequence = s_link_result.sequence;
+      s_frame1.header.length   = (uint16_t)s_link_result.payload_len;
+      s_frame1.header.type     = s_link_result.frame_type;
+
+      /* Preserve retransmit and FEC flags from link layer result */
+      s_frame1.header.flags = k_frame_flag_none;
+      if (s_link_result.is_retransmit) {
+        s_frame1.header.flags |= k_frame_flag_retransmit;
+      }
+      if (s_link_result.fec_decoded) {
+        s_frame1.header.flags |= k_frame_flag_fec_enabled;
+      }
+
+      if (s_link_result.payload_len > k_zero_u32) {
+        (void)memcpy(s_frame1.payload, s_link_result.payload, s_link_result.payload_len);
+      }
+      internal_handle_frame(mgr, k_comm_channel_spi, &s_frame1);
+      return k_rx_ok;
+    }
+
+    return err;
+  }
+
+  /* Fallback: raw SPI without HARQ */
+  static rx_frame_t s_frame2;
+  rx_err_t          err = rx_spi_comm_receive(mgr->spi_handle, &s_frame2, k_receive_timeout_ms);
 
   if (err == k_rx_ok) {
-    internal_handle_frame(mgr, k_comm_channel_spi, &frame);
+    internal_handle_frame(mgr, k_comm_channel_spi, &s_frame2);
     return k_rx_ok;
   }
 
@@ -1065,10 +1116,31 @@ static void internal_check_heartbeat(rx_comm_manager_t* mgr)
  */
 rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_config_t* cfg)
 {
-  /* Rule 5: Pre-condition validation */
+  /* Rule 5: Pre-condition validation - NULL pointer check */
   if (mgr == nullptr) {
     rx_log_error(s_tag, "Init failed: NULL mgr");
     return k_rx_err_invalid_arg;
+  }
+
+  /* Rule 5: Pre-condition validation - SPI link consistency checks */
+  if (cfg != nullptr && cfg->spi_link != nullptr) {
+    /* If spi_link is provided, spi_handle must also be provided */
+    if (cfg->spi_handle == nullptr) {
+      rx_log_error(s_tag, "Init failed: spi_link requires non-NULL spi_handle");
+      return k_rx_err_invalid_arg;
+    }
+
+    /* If spi_link is provided, it must be initialized */
+    if (!cfg->spi_link->initialized) {
+      rx_log_error(s_tag, "Init failed: spi_link not initialized (call rx_spi_link_init first)");
+      return k_rx_err_invalid_arg;
+    }
+
+    /* If spi_link is provided, its spi_handle must match config spi_handle */
+    if (cfg->spi_link->spi_handle != cfg->spi_handle) {
+      rx_log_error(s_tag, "Init failed: spi_link->spi_handle != cfg->spi_handle");
+      return k_rx_err_invalid_arg;
+    }
   }
 
   /* Clear handle */
@@ -1078,6 +1150,7 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   if (cfg != nullptr) {
     mgr->usb_handle            = cfg->usb_handle;
     mgr->spi_handle            = cfg->spi_handle;
+    mgr->spi_link              = cfg->spi_link;
     mgr->callback              = cfg->callback;
     mgr->callback_ctx          = cfg->callback_ctx;
     mgr->enable_decoded_output = cfg->enable_decoded_output;
@@ -1092,6 +1165,14 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
     /* Buffer not properly cleared by memset - potential memory corruption */
     mgr->initialized = false;
     rx_log_error(s_tag, "Init failed: buffer corruption");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Rule 5: Post-condition validation - verify handle/link consistency */
+  if (mgr->spi_link != nullptr && mgr->spi_link != cfg->spi_link) {
+    /* Postcondition violation: spi_link not properly assigned */
+    mgr->initialized = false;
+    rx_log_error(s_tag, "Init failed: spi_link assignment mismatch");
     return k_rx_err_invalid_state;
   }
 
@@ -1487,11 +1568,25 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
         rx_log_error(s_tag, "Send failed: SPI handle NULL");
         return k_rx_err_invalid_state;
       }
-      err = rx_spi_comm_send(mgr->spi_handle,
-                             params->type,
-                             params->flags,
-                             params->payload,
-                             params->payload_len);
+      /* Use HARQ link layer if available, otherwise raw SPI */
+      if (mgr->spi_link != nullptr) {
+        /* NOTE: params->flags intentionally NOT forwarded to rx_spi_link_send().
+         * The link layer manages its own flags internally (k_frame_flag_requires_ack,
+         * k_frame_flag_fec_enabled, k_frame_flag_retransmit) based on HARQ state.
+         * Application-level flags in params->flags would be ignored if passed.
+         *
+         * CLANG WARNING: bugprone-branch-clone is a false positive here.
+         * The two branches call different functions with different signatures:
+         * - rx_spi_link_send(link, type, payload, len) - no flags parameter
+         * - rx_spi_comm_send(handle, type, flags, payload, len) - includes flags */
+        err = rx_spi_link_send(mgr->spi_link, params->type, params->payload, params->payload_len);
+      } else {
+        err = rx_spi_comm_send(mgr->spi_handle,
+                               params->type,
+                               params->flags,
+                               params->payload,
+                               params->payload_len);
+      }
       break;
 
     default:

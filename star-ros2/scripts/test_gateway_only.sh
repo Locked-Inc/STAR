@@ -3,7 +3,7 @@
 #
 # This validates:
 # - Virtual RX72N telemetry generation
-# - Gateway HARQ/FEC processing
+# - Gateway HARQ processing
 # - Frame sequence tracking
 #
 # Note: Does not test ROS2 diagnostics (requires devcontainer)

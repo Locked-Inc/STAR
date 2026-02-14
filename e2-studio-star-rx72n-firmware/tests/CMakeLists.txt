@@ -35,6 +35,7 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_usb_comm/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/inc
+        ${CMAKE_SOURCE_DIR}/../libs/rx_spi_link/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_frame_ascii/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_hcsr04/inc
@@ -173,6 +174,11 @@ set(MOCK_SCI_SPI_SRC
 # rx_spi_comm source
 set(RX_SPI_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/src/rx_spi_comm.c
+)
+
+# rx_spi_link source
+set(RX_SPI_LINK_SRC
+    ${CMAKE_SOURCE_DIR}/../libs/rx_spi_link/src/rx_spi_link.c
 )
 
 # rx_frame_ascii source
@@ -496,6 +502,22 @@ apply_strict_warnings(test_rx_spi_comm)
 apply_test_includes(test_rx_spi_comm)
 target_link_libraries(test_rx_spi_comm unity)
 
+# Test: SPI Link Layer (HARQ + FEC)
+add_executable(test_rx_spi_link
+    test_rx_spi_link.c
+    ${RX_SPI_LINK_SRC}
+    ${RX_SPI_COMM_SRC}
+    ${RX_HARQ_SRC}
+    ${RX_FEC_SRC}
+    ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
+    ${MOCK_RSPI_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_spi_link)
+apply_test_includes(test_rx_spi_link)
+target_link_libraries(test_rx_spi_link unity)
+
 # Test: PID Controller
 add_executable(test_rx_pid
     test_rx_pid.c
@@ -634,6 +656,9 @@ add_executable(test_rx_comm_manager
     ${RX_USB_COMM_SRC}
     ${RX_USB_SRC}
     ${RX_SPI_COMM_SRC}
+    ${RX_SPI_LINK_SRC}
+    ${RX_FEC_SRC}
+    ${RX_HARQ_SRC}
     ${MOCK_USB_SRC}
     ${MOCK_RSPI_SRC}
     ${MOCK_LOG_SRC}
@@ -1003,6 +1028,7 @@ add_test(NAME test_rx_motor COMMAND test_rx_motor)
 add_test(NAME test_rx_bus_manager COMMAND test_rx_bus_manager)
 add_test(NAME test_rx_bus_onewire COMMAND test_rx_bus_onewire)
 add_test(NAME test_rx_spi_comm COMMAND test_rx_spi_comm)
+add_test(NAME test_rx_spi_link COMMAND test_rx_spi_link)
 add_test(NAME test_rx_pid COMMAND test_rx_pid)
 add_test(NAME test_rx_encoder COMMAND test_rx_encoder)
 add_test(NAME test_rx_bq4050 COMMAND test_rx_bq4050)

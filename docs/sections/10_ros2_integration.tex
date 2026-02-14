@@ -1,8 +1,11 @@
-% =============================================================================
-% ROS2 INTEGRATION STRATEGY
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % ROS2 INTEGRATION STRATEGY % == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
-\section{ROS2 Integration and Sensor Fusion Architecture}
+\section{ROS2 Integration and Sensor Fusion Architecture
+}
 
 \subsection{Overview}
 
@@ -15,15 +18,20 @@ The platform implements a heterogeneous sensor fusion strategy combining geometr
 \subsubsection{Fusion Architecture}
 The fusion process is divided into two main layers:
 \begin{enumerate}
-    \item \textbf{Local State Estimation (EKF):} The \texttt{robot\_localization} package runs an Extended Kalman Filter (EKF) fusing:
+\item \textbf{Local State Estimation(EKF) :
+} The \texttt{robot\_localization} package runs an Extended Kalman
+                  Filter(EKF) fusing :
     \begin{itemize}
-        \item Wheel Odometry (from RX72N via \texttt{star\_spi\_bridge})
-        \item IMU Linear Acceleration and Angular Velocity (from OAK-D or dedicated IMU)
+\item Wheel Odometry(from RX72N via \texttt{star\_spi\_bridge})
+        \item IMU Linear Acceleration and Angular
+    Velocity(from OAK - D or dedicated IMU)
     \end{itemize}
-    \item \textbf{Global SLAM and Loop Closure (RTAB-Map):} The \texttt{rtabmap\_ros} node consumes:
+\item \textbf{Global SLAM and Loop Closure(RTAB - Map) :
+} The \texttt{rtabmap\_ros} node consumes :
     \begin{itemize}
-        \item Laser Scan data from RPLiDAR C1.
-        \item RGB-D images and PointClouds from the OAK-D camera.
+\item Laser Scan data from RPLiDAR C1.
+        \item RGB - D images and PointClouds from the OAK -
+    D camera.
         \item Filtered Odometry from the EKF.
     \end{itemize}
 \end{enumerate}
@@ -43,31 +51,48 @@ The STAR platform adheres to the \textbf{REP-105} standard for coordinate frames
     \item \textbf{\texttt{camera\_link}:} The reference frame for the OAK-D Depth Camera.
 \end{itemize}
 
-\subsection{Custom ROS2 Nodes and Interfaces}
+    \subsection{Custom ROS2 Nodes and Interfaces}
 
-Three primary custom nodes facilitate the interaction between the STAR hardware and the ROS2 ecosystem.
+    Three primary custom nodes facilitate the interaction between the
+        STAR hardware and the ROS2 ecosystem.
 
-\subsubsection{\texttt{star\_spi\_bridge}}
-Bridges the low-level SPI protocol (RX72N) to ROS2 topics.
+\subsubsection{\texttt { star\_spi\_bridge}
+   }
+    Bridges the low - level SPI protocol(RX72N)
+    to ROS2 topics.
 \begin{itemize}
-    \item \textbf{Subscribed Topics:} \texttt{/cmd\_vel} (geometry\_msgs/Twist)
-    \item \textbf{Published Topics:} \texttt{/odom/unfiltered} (nav\_msgs/Odometry), \texttt{/joint\_states} (sensor\_msgs/JointState)
-    \item \textbf{Parameters:} \texttt{spi\_device}, \texttt{spi\_speed\_hz}, \texttt{gear\_ratio}
-\end{itemize}
+    \item \textbf{Subscribed Topics:}
+    \texttt{ / cmd\_vel}(geometry\_msgs / Twist)
+    \item \textbf{Published Topics:
+   }
+    \texttt{ / odom / unfiltered}(nav\_msgs / Odometry), \texttt{
+        / joint\_states}(sensor\_msgs / JointState)
+    \item \textbf{Parameters:
+   }
+    \texttt{spi\_device}, \texttt{spi\_speed\_hz}, \texttt { gear\_ratio}
+    \end{itemize}
 
-\subsubsection{\texttt{star\_gateway\_bridge}}
-Provides a bridge between the gRPC/WebSocket gateway and the ROS2 computational graph.
+    \subsubsection{\texttt { star\_gateway\_bridge}
+   }
+    Provides a bridge between the gRPC /
+        WebSocket gateway and the ROS2 computational graph.
 \begin{itemize}
-    \item \textbf{Subscribed Topics:} \texttt{/robot\_status}, \texttt{/battery\_state}
+    \item \textbf{Subscribed Topics:}
+    \texttt{ / robot\_status}, \texttt { / battery\_state}
     \item \textbf{Published Topics:} \texttt{/teleop/cmd\_vel} (overrides for manual control)
-    \item \textbf{Services:} \texttt{/set\_pid\_gains}, \texttt{/trigger\_calibration}
-\end{itemize}
+    \item \textbf{Services:
+   }
+    \texttt{ / set\_pid\_gains}, \texttt { / trigger\_calibration}
+    \end{itemize}
 
-\subsubsection{\texttt{star\_safety\_monitor}}
-Ensures platform integrity and manages emergency states.
+    \subsubsection{\texttt { star\_safety\_monitor}
+   }
+    Ensures platform integrity and manages emergency states.
 \begin{itemize}
-    \item \textbf{Logic:} Monitors battery voltage, motor current, and heartbeat from the RPi5 and RX72N.
-    \item \textbf{Actions:} Publishes \texttt{/emergency\_stop} or resets the motor controller if a timeout occurs.
+    \item \textbf{Logic :} Monitors battery voltage, motor current,
+        and heartbeat from the RPi5 and RX72N.
+    \item \textbf{Actions :} Publishes \texttt{ / emergency\_stop} or
+            resets the motor controller if a timeout occurs.
 \end{itemize}
 
 \subsection{Multi-Machine Communication}
@@ -79,17 +104,18 @@ To ensure isolation and prevent interference in multi-robot environments, the \t
 Consistent device naming is critical for reliable startup. The following \texttt{udev} rules are required in \texttt{/etc/udev/rules.d/99-star.rules}:
 
 \begin{verbatim}
-# RPLiDAR C1
+#RPLiDAR C1
 SUBSYSTEM=="tty", ATTRS{idVendor}=="10c4", ATTRS{idProduct}=="ea60", SYMLINK+="ttyLidar"
-# RX72N Motor Controller (via USB-Serial if applicable, or SPI identification)
+#RX72N Motor Controller(via USB - Serial if applicable, or SPI identification)
 SUBSYSTEM=="spidev", KERNEL=="spidev0.0", GROUP=="spi", MODE=="0660"
 \end{verbatim}
 
-\textbf{Note:} The \texttt{spi} group must exist on the system before applying the udev rules.
-The STAR Docker container automatically creates this group via \texttt{groupadd -f spi} during build.
-On bare-metal installations, create the group manually:
+\textbf{Note :} The \texttt{
+    spi} group must exist on the system before applying the udev rules
+        .The STAR Docker container automatically creates this group via \texttt{
+            groupadd - f spi} during build.On bare -
+    metal installations,
+    create the group manually :
 
-\begin{verbatim}
-sudo groupadd spi
-sudo usermod -aG spi $USER
+\begin{verbatim} sudo groupadd spi sudo usermod - aG spi $USER
 \end{verbatim}

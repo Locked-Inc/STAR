@@ -1,11 +1,19 @@
-% =============================================================================
-% Section 1: Introduction
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Section 1 : Introduction % == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == == == == == == == == == == == ==
+    =
 
-\section{Introduction}\label{sec:introduction}
-\sectionauthors{CM, BS, JB, MN, JH, SC}
+\section {
+  Introduction
+}
+\label {
+sec:
+  introduction
+}
+\sectionauthors { CM, BS, JB, MN, JH, SC }
 
-\subsection{Project Overview}\label{sec:project-overview}
+\subsection { Project Overview }\label{sec:project-overview}
 
 This Formal Technical Proposal presents the STAR (Simultaneous Tracking and Autonomous Roaming) Robot, an autonomous indoor mapping platform developed by Locked Inc. for the ESET Senior Design course at Texas A\&M University. The STAR Robot addresses the high cost barrier of commercial SLAM (Simultaneous Localization and Mapping) systems by providing an affordable,  platform using common hardware and open-source software.
 
@@ -15,32 +23,77 @@ The team has secured many critical components from personal collections and indu
 
 \begin{table}[H]
 \centering
-\caption{Team Member Roles and Responsibilities}
-\label{tab:team_roles}
-\begin{tabular}{@{}llp{0.45\textwidth}@{}}
+\caption{
+  Team Member Roles and Responsibilities
+}
+\label {
+tab:
+  team_roles
+}
+\begin{tabular} {
+  @{} llp {
+    0.45\textwidth
+  }
+  @{}
+}
 \toprule
-\textbf{Name} & \textbf{Role} & \textbf{Responsibilities} \\
-\midrule
-Cesar Magana (CM) & Project Manager & Project coordination, documentation, stakeholder communication \\
-Jared Bartz (JB) & Software Lead & ROS 2 development, SLAM implementation, navigation stack \\
-Brighton Sikarskie (BS) & Electrical Lead & PCB design, power systems, sensor interfaces \\
-Michael Norton (MN) & Mechanical Lead & Chassis design, 3D printing, assembly, drivetrain integration, CAD modeling \\
-Jeremie Hews (JH) & Embedded Systems Lead & Component integration, communication protocols, ESP32 Firmware \\
-Shawn Ciaciura (SC) & Testing \& QA & Test planning, validation, risk management \\
+\textbf{Name} & \textbf{Role} & \textbf { Responsibilities }
+\\
+\midrule Cesar Magana(CM) & Project Manager &Project coordination,
+    documentation,
+    stakeholder communication \ Jared Bartz(JB) & Software Lead &ROS
+        2 development,
+    SLAM implementation,
+    navigation stack \ Brighton Sikarskie(BS) & Electrical Lead &PCB design,
+    power systems,
+    sensor interfaces \ Michael Norton(MN) & Mechanical Lead &Chassis design,
+    3D printing, assembly, drivetrain integration,
+    CAD modeling \ Jeremie Hews(JH) & Embedded Systems Lead &Component
+        integration,
+    communication protocols,
+    ESP32 Firmware \ Shawn Ciaciura(SC) & Testing \&QA &Test planning,
+    validation, risk management \\
 \bottomrule
-\end{tabular}
-\end{table}
+\end {
+  tabular
+}
+\end { table }
 
-\noindent Team member GitHub profiles and LinkedIn pages are available in \cref{sec:team-contacts}.
+\noindent Team member GitHub profiles and LinkedIn pages are available in \
+        cref{sec : team - contacts}
+            .
 
-% 12/5 This section has been reviewed - Brighton
-\subsection{Intellectual Property Statement}\label{sec:ip-statement}
+        % 12 / 5 This section has been reviewed -
+    Brighton
+\subsection {
+  Intellectual Property Statement
+}
+\label{sec : ip - statement}
 
-All intellectual property developed during this project remains the property of Locked Inc. team members unless otherwise agreed in writing with the project sponsor. The team has committed to releasing all software as open-source to support the educational robotics community. See \cref{sec:acronyms} for acronyms and definitions referenced throughout this document.
+    All intellectual property developed during this project remains the property
+        of Locked
+            Inc.team members unless otherwise agreed in writing with the project
+                sponsor.The team has committed to releasing all software
+                    as open -
+    source to support the educational robotics community.See \cref {
+sec:
+  acronyms
+} for
+  acronyms and definitions referenced throughout this document.
 
-\begin{itemize}
-    \item While copyright is retained by the team, all source code and hardware assets (including Computer-Aided Design (CAD) files and Printed Circuit Boards (PCB)) are released under the MIT License \parencite{mit_license} on GitHub \parencite{github_platform} (\href{https://github.com/Locked-Inc/STAR}{https://github.com/Locked-Inc/STAR}). The MIT License is a permissive open-source license that allows free use, modification, and distribution with minimal restrictions. GitHub is a web-based platform for version control and collaborative software development where the project source code is publicly accessible and managed.
+\begin {
+    itemize
+  }
+    \item While copyright is retained by the team, all source code and hardware assets (including Computer-Aided Design (CAD) files and Printed Circuit Boards (PCB)) are released under the MIT License \parencite{mit_license} on GitHub \parencite{github_platform} (\href{
+https: // github.com/Locked-Inc/STAR}{https://github.com/Locked-Inc/STAR}). The
+       // MIT License is a permissive open-source license that allows free use,
+       // modification, and distribution with minimal restrictions. GitHub is a
+       // web-based platform for version control and collaborative software
+       // development where the project source code is publicly accessible and
+       // managed.
     \item The team retains intellectual property rights to all design documents and schematics.
     \item The sponsor may use the final deliverables for research, educational, and demonstration purposes within Texas A\&M University.
     \item Publication rights remain with the team with proper attribution.
-\end{itemize}
+\end{
+      itemize
+    }

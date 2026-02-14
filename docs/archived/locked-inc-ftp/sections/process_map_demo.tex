@@ -1,114 +1,195 @@
-% =============================================================================
-% Software Process Map: ESP32-Firmware Demo Layer (STAR Framework)
-% Native TikZ implementation (replaces Python/Graphviz generated PDF)
-% =============================================================================
+% == == == == == == == == == == == == == == == == == == == == == == == == == ==
+    == == == == == == == == == == == ==
+    = % Software Process Map : ESP32 -
+          Firmware Demo Layer(STAR Framework) %
+              Native TikZ implementation(replaces Python /
+                                         Graphviz generated PDF) %
+      == == == == == == == == == == == == == == == == == == == == == == == == ==
+      == == == == == == == == == == == == ==
+    =
 
 \begin{figure}[H]
 \centering
-\adjustbox{max width=\textwidth, max height=0.8\textheight, keepaspectratio}{%
-\begin{tikzpicture}[
-    node distance=0.9cm and 1.2cm,
-    % Node styles
-    startstop/.style={ellipse, draw, fill=pmstartend, minimum width=2cm, minimum height=0.7cm, align=center, font=\small},
-    process/.style={rectangle, draw, rounded corners=3pt, fill=pmprocess, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
-    init/.style={rectangle, draw, rounded corners=3pt, fill=pminit, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
-    framework/.style={rectangle, draw, rounded corners=3pt, fill=pmframework, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
-    demo/.style={rectangle, draw, rounded corners=3pt, fill=pmdemo, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
-    decision/.style={diamond, draw, fill=pmstartend, minimum width=1.2cm, minimum height=0.7cm, align=center, font=\small, aspect=2},
-    safety/.style={rectangle, draw, rounded corners=3pt, fill=pmsafety, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
-    emergency/.style={rectangle, draw, rounded corners=3pt, fill=pmemergency, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
-    output/.style={signal, signal to=east and west, draw, fill=pmoutput, minimum width=2.4cm, minimum height=0.7cm, align=center, font=\small},
-    % Arrow styles
-    arrow/.style={->, thick, >=stealth}
-]
+\adjustbox{max width =\textwidth, max height = 0.8\textheight,
+            keepaspectratio} {
+  %
+\begin{tikzpicture}
+              [node distance = 0.9cm and 1.2cm,
+               % Node styles startstop /.style =
+                   {ellipse, draw, fill = pmstartend, minimum width = 2cm,
+                    minimum height = 0.7cm, align = center, font =\small},
+               process /.style = {rectangle, draw, rounded corners = 3pt,
+                                  fill = pmprocess, minimum width = 2.6cm,
+                                  minimum height = 0.85cm, align = center,
+                                  font =\small},
+               init /.style = {rectangle, draw, rounded corners = 3pt,
+                               fill = pminit, minimum width = 2.6cm,
+                               minimum height = 0.85cm, align = center,
+                               font =\small},
+               framework /.style = {rectangle, draw, rounded corners = 3pt,
+                                    fill = pmframework, minimum width = 2.6cm,
+                                    minimum height = 0.85cm, align = center,
+                                    font =\small},
+               demo /.style = {rectangle, draw, rounded corners = 3pt,
+                               fill = pmdemo, minimum width = 2.6cm,
+                               minimum height = 0.85cm, align = center,
+                               font =\small},
+               decision /.style = {diamond, draw, fill = pmstartend,
+                                   minimum width = 1.2cm,
+                                   minimum height = 0.7cm, align = center,
+                                   font =\small, aspect = 2},
+               safety /.style = {rectangle, draw, rounded corners = 3pt,
+                                 fill = pmsafety, minimum width = 2.6cm,
+                                 minimum height = 0.85cm, align = center,
+                                 font =\small},
+               emergency /.style = {rectangle, draw, rounded corners = 3pt,
+                                    fill = pmemergency, minimum width = 2.6cm,
+                                    minimum height = 0.85cm, align = center,
+                                    font =\small},
+               output /.style = {signal, signal to = east and west, draw,
+                                 fill = pmoutput, minimum width = 2.4cm,
+                                 minimum height = 0.7cm, align = center,
+                                 font =\small},
+               % Arrow styles arrow /.style = {->, thick, >= stealth}]
 
-    % === ROW 1: Start ===
-    \node[startstop] (demo_start) {ESP32 Demo Start};
+          %
+      ==
+      = ROW 1 : Start == =
+    \node[startstop](demo_start){ESP32 Demo Start};
 
-    % === ROW 2: STAR Framework Initialization ===
-    \node[framework, below=of demo_start] (init_framework) {Initialize STAR Framework\\{\scriptsize Error Handler w/ Retry}\\{\scriptsize Pin Validator}\\{\scriptsize Bus Manager (DIP)}};
+  % == = ROW 2 : STAR Framework Initialization ==
+      =
+    \node[framework, below = of demo_start](init_framework){
+          Initialize STAR Framework\\{\scriptsize Error Handler w /
+                                      Retry}\\{\scriptsize Pin
+                  Validator}\\{\scriptsize Bus Manager(DIP)}};
 
-    % === ROW 3: Bus Initialization ===
-    \node[init, below=of init_framework] (init_buses) {Initialize Demo Buses\\{\scriptsize I2C Bus (PCA9685)}\\{\scriptsize GPIO Bus (HC-SR04)}\\{\scriptsize DHT22 Proprietary Bus}};
+  % == = ROW 3 : Bus Initialization ==
+      =
+    \node[init, below = of init_framework](init_buses){
+          Initialize Demo
+              Buses\\{\scriptsize I2C Bus(PCA9685)}\\{\scriptsize GPIO Bus(
+                  HC - SR04)}\\{\scriptsize DHT22 Proprietary Bus}};
 
-    % === ROW 4: Sensor/Actuator Initialization ===
+  % === ROW 4: Sensor/Actuator Initialization ===
     \node[init, below left=0.5cm and 1.5cm of init_buses] (init_sensors) {Initialize Demo Sensors\\{\scriptsize DHT22: Temp/Humidity}\\{\scriptsize HC-SR04 Left: Ultrasonic}\\{\scriptsize HC-SR04 Right: Ultrasonic}};
 
-    \node[init, below right=0.5cm and 1.5cm of init_buses] (init_actuators) {Initialize Demo Actuators\\{\scriptsize PCA9685: 16-ch PWM}\\{\scriptsize LED outputs}\\{\scriptsize Servo outputs}};
+  \node[init, below right = 0.5cm and 1.5cm of init_buses](init_actuators){
+      Initialize Demo
+          Actuators\\{\scriptsize PCA9685 : 16 - ch PWM}\\{\scriptsize LED
+                  outputs}\\{\scriptsize Servo outputs}};
 
-    % === ROW 5: FreeRTOS Tasks ===
-    \node[process, below=2cm of init_buses] (init_tasks) {Initialize FreeRTOS Tasks\\{\scriptsize DHT22 Task}\\{\scriptsize Sensor Task}\\{\scriptsize LED Task}\\{\scriptsize Watchdog Task}};
+  % == = ROW 5 : FreeRTOS Tasks ==
+      =
+    \node[process, below = 2cm of init_buses](init_tasks){
+          Initialize FreeRTOS Tasks\\{\scriptsize DHT22
+                  Task}\\{\scriptsize Sensor Task}\\{\scriptsize LED
+                  Task}\\{\scriptsize Watchdog Task}};
 
-    % === ROW 6: Parallel Tasks ===
-    \node[demo, below left=1.5cm and 3cm of init_tasks] (dht22_task) {DHT22 Task\\{\scriptsize Temperature}\\{\scriptsize Humidity}\\{\scriptsize Rate: 2 Hz}};
+  % == = ROW 6 : Parallel Tasks ==
+      =
+    \node[demo, below left = 1.5cm and 3cm of init_tasks](dht22_task){
+          DHT22 Task\\{\scriptsize Temperature}\\{\scriptsize
+                  Humidity}\\{\scriptsize Rate : 2 Hz}};
 
-    \node[demo, below=1.5cm of init_tasks] (sensor_task) {Sensor Task\\{\scriptsize Left ultrasonic}\\{\scriptsize Right ultrasonic}\\{\scriptsize Rate: 5 Hz}};
+  \node[demo, below = 1.5cm of init_tasks](sensor_task){
+      Sensor Task\\{\scriptsize Left ultrasonic}\\{\scriptsize Right
+              ultrasonic}\\{\scriptsize Rate : 5 Hz}};
 
-    \node[demo, below right=1.5cm and 3cm of init_tasks] (watchdog_task) {Watchdog Task\\{\scriptsize Task health}\\{\scriptsize System resources}\\{\scriptsize Recovery}};
+  \node[demo, below right = 1.5cm and 3cm of init_tasks](watchdog_task){
+      Watchdog Task\\{\scriptsize Task health}\\{\scriptsize System
+              resources}\\{\scriptsize Recovery}};
 
-    % === ROW 7: Data Validation ===
-    \node[decision, below=1.5cm of sensor_task] (data_valid) {Demo Data\\Valid?};
+  % == = ROW 7 : Data Validation == =
+    \node[decision, below = 1.5cm of sensor_task](data_valid){Demo Data\\Valid
+                                                               ? };
 
-    \node[safety, left=2.5cm of data_valid] (error_handler) {STAR Error Handler\\{\scriptsize Exponential backoff}\\{\scriptsize Error logging}\\{\scriptsize Fault isolation}};
+  \node[safety, left = 2.5cm of data_valid](error_handler){
+      STAR Error Handler\\{\scriptsize Exponential backoff}\\{\scriptsize Error
+              logging}\\{\scriptsize Fault isolation}};
 
-    % === ROW 8: LED Task ===
-    \node[demo, below=of data_valid] (led_task) {LED Task\\{\scriptsize Distance-based patterns}\\{\scriptsize Temperature color mapping}\\{\scriptsize PWM brightness}};
+  % == = ROW 8
+      : LED Task == =
+    \node[demo, below = of data_valid](led_task){
+                        LED Task\\{\scriptsize Distance -
+                                   based patterns}\\{\scriptsize Temperature
+                                color mapping}\\{\scriptsize PWM brightness}};
 
-    % === ROW 9: Servo Positioning ===
-    \node[process, below=of led_task] (servo_pos) {Servo Positioning\\{\scriptsize Angle calculations}\\{\scriptsize Smooth movement}\\{\scriptsize Safety limits}};
+  % == = ROW 9 : Servo Positioning ==
+      =
+    \node[process, below = of led_task](servo_pos){
+          Servo Positioning\\{\scriptsize Angle calculations}\\{\scriptsize
+                  Smooth movement}\\{\scriptsize Safety limits}};
 
-    % === ROW 10: Data Logging ===
-    \node[output, below=of servo_pos] (data_log) {Demo Data Logging\\{\scriptsize Environmental data}\\{\scriptsize Distance measurements}\\{\scriptsize Local processing}};
+  % == = ROW 10 : Data Logging ==
+      =
+    \node[output, below = of servo_pos](data_log){
+          Demo Data Logging\\{\scriptsize Environmental data}\\{\scriptsize
+                  Distance measurements}\\{\scriptsize Local processing}};
 
-    % === ROW 11: Health Check ===
-    \node[decision, below=of data_log] (health_check) {Demo System\\Healthy?};
+  % == = ROW 11 : Health Check == =
+    \node[decision, below = of data_log](health_check){Demo System\\Healthy
+                                                        ? };
 
-    \node[emergency, right=2.5cm of health_check] (recovery) {Demo System Recovery\\{\scriptsize Task restart}\\{\scriptsize Bus reset}\\{\scriptsize Sensor recalibration}};
+  \node[emergency, right = 2.5cm of health_check](recovery){
+      Demo System Recovery\\{\scriptsize Task restart}\\{\scriptsize Bus
+              reset}\\{\scriptsize Sensor recalibration}};
 
-    % === ROW 12: Continue ===
-    \node[startstop, below=of health_check] (continue_op) {Continue Operation};
+  % == = ROW 12 : Continue == =
+    \node[startstop, below = of health_check](continue_op){Continue Operation};
 
-    % === CONNECTIONS ===
-    % Initialization flow
-    \draw[arrow] (demo_start) -- (init_framework);
-    \draw[arrow] (init_framework) -- (init_buses);
-    \draw[arrow] (init_buses) -| (init_sensors);
-    \draw[arrow] (init_buses) -| (init_actuators);
-    \draw[arrow] (init_sensors.east) -- ([yshift=0.2cm]init_tasks.west);
-    \draw[arrow] (init_actuators.west) -- ([yshift=0.2cm]init_tasks.east);
+  % == = CONNECTIONS == = % Initialization flow
+    \draw[arrow](demo_start)--(init_framework);
+  \draw[arrow](init_framework)--(init_buses);
+  \draw[arrow](init_buses) - | (init_sensors);
+  \draw[arrow](init_buses) - | (init_actuators);
+  \draw[arrow](init_sensors.east)--([yshift = 0.2cm] init_tasks.west);
+  \draw[arrow](init_actuators.west)--([yshift = 0.2cm] init_tasks.east);
 
-    % Task initialization
-    \draw[arrow] (init_tasks) -| (dht22_task);
-    \draw[arrow] (init_tasks) -- (sensor_task);
-    \draw[arrow] (init_tasks) -| (watchdog_task);
+  % Task initialization
+    \draw[arrow](init_tasks) - | (dht22_task);
+  \draw[arrow](init_tasks)--(sensor_task);
+  \draw[arrow](init_tasks) - | (watchdog_task);
 
-    % Task outputs converge
-    \draw[arrow] (dht22_task.south) -- ++(0,-0.5) -| ([xshift=-0.3cm]data_valid.north);
-    \draw[arrow] (sensor_task) -- (data_valid);
+  % Task outputs converge
+    \draw[arrow](dht22_task.south)-- ++(0, -0.5) - |
+      ([xshift = -0.3cm] data_valid.north);
+  \draw[arrow](sensor_task)--(data_valid);
 
-    % Data validation branches
-    \draw[arrow] (data_valid) -- node[above, font=\scriptsize] {No} (error_handler);
-    \draw[arrow, dashed] (error_handler.west) -- ++(-1,0) |- ([yshift=-0.5cm]dht22_task.west) node[pos=0.7, left, font=\scriptsize] {Retry};
-    \draw[arrow] (data_valid) -- node[left, font=\scriptsize] {Yes} (led_task);
+  % Data validation branches
+    \draw[arrow](data_valid)-- node[above, font =\scriptsize]{No}(
+        error_handler);
+  \draw[arrow, dashed](error_handler.west)-- ++(-1, 0) |
+      -([yshift = -0.5cm] dht22_task.west)
+          node[pos = 0.7, left, font =\scriptsize]{Retry};
+  \draw[arrow](data_valid)-- node[left, font =\scriptsize]{Yes}(led_task);
 
-    % Processing flow
-    \draw[arrow] (led_task) -- (servo_pos);
-    \draw[arrow] (servo_pos) -- (data_log);
+  % Processing flow
+    \draw[arrow](led_task)--(servo_pos);
+  \draw[arrow](servo_pos)--(data_log);
 
-    % Watchdog monitors health
-    \draw[arrow] (watchdog_task.south) -- ++(0,-7) -- ([yshift=0.2cm]health_check.east);
-    \draw[arrow] (data_log) -- (health_check);
+  % Watchdog monitors health
+    \draw[arrow](watchdog_task.south)-- ++(0, -7)--(
+        [yshift = 0.2cm] health_check.east);
+  \draw[arrow](data_log)--(health_check);
 
-    % Health check branches
-    \draw[arrow] (health_check) -- node[above, font=\scriptsize] {No} (recovery);
-    \draw[arrow, dashed] (recovery.east) -- ++(1,0) |- ([yshift=-0.2cm]init_tasks.east) node[pos=0.5, right, font=\scriptsize] {Restart};
-    \draw[arrow] (health_check) -- node[left, font=\scriptsize] {Yes} (continue_op);
+  % Health check branches
+    \draw[arrow](health_check)-- node[above, font =\scriptsize]{No}(recovery);
+  \draw[arrow, dashed](recovery.east)-- ++(1, 0) |
+      -([yshift = -0.2cm] init_tasks.east)
+          node[pos = 0.5, right, font =\scriptsize]{Restart};
+  \draw[arrow](health_check)-- node[left, font =\scriptsize]{Yes}(continue_op);
 
-    % Continue loops back
-    \draw[arrow, dashed] (continue_op.west) -- ++(-7.3,0) |- ([yshift=0.5cm]dht22_task.west) node[pos=0.5, left, font=\scriptsize] {Continue};
+  % Continue loops back
+    \draw[arrow, dashed](continue_op.west)-- ++(-7.3, 0) |
+      -([yshift = 0.5cm] dht22_task.west)
+          node[pos = 0.5, left, font =\scriptsize]{Continue};
 
-\end{tikzpicture}%
+  \end{tikzpicture} %
 }
-\caption{ESP32-Firmware Demo Layer Process Flow (STAR Framework)}
-\label{fig:process-demo}
-\end{figure}
+\caption { ESP32 - Firmware Demo Layer Process Flow(STAR Framework) }
+\label {
+fig:
+  process - demo
+}
+\end { figure }

@@ -1,159 +1,232 @@
-% Research Phase Network Logic Diagram (Split by Critical Path)
-% Generated: 2025-12-06 16:42
-% Total Tasks: 13 (Critical: 9, Supporting: 4)
+% Research Phase Network Logic Diagram(Split by Critical Path) %
+        Generated : 2025 -
+    12 -
+    06 16 : 42 % Total Tasks : 13(Critical : 9, Supporting : 4)
 
 \subsection{Research Phase Network Diagram}
 
-The Research phase contains \textbf{13 tasks} totaling \textbf{56 working days}. 
-Of these, 9 tasks (38 days) are on the critical path, 
-and 4 tasks (18 days) are supporting activities with available float time.
+                 The Research phase contains \textbf{13 tasks} totaling \textbf{
+                     56 working days}
+                     .Of these,
+    9 tasks(38 days) are on the critical path,
+    and4 tasks(18 days) are supporting activities with available float time.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
-\subsubsection{Critical Path Tasks}
+\subsubsection { Critical Path Tasks }
 
-\noindent The following 9 tasks are on the critical path. 
-Any delay in these tasks will directly extend the project completion date. 
-These tasks span 38 working days.
+\noindent The following 9 tasks are on the critical
+    path.Any delay in these tasks will directly extend the project completion
+        date.These tasks span 38 working days.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
 \begin{figure}[H]
 \centering
-\resizebox{0.7\textwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=1.4cm and 1.5cm,
-  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\tiny, fill=researchblue!30},
-  timing/.style={font=\tiny, inner sep=1pt},
-  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
-  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
-]
+\resizebox{0.7\textwidth} { ! }
+{
+  %
+\begin{tikzpicture}[node distance = 1.4cm and 1.5cm,
+                     task /.style = {rectangle, draw, rounded corners = 3pt,
+                                     minimum width = 2.4cm,
+                                     minimum height = 1.0cm, align = center,
+                                     font =\tiny, fill = researchblue !30},
+                     timing /.style = {font =\tiny, inner sep = 1pt},
+                     regular_arrow /.style = {-{Stealth[length = 5pt]},
+                                              gray !70, thick},
+                     critical_arrow /.style = {-{Stealth[length = 5pt]}, red,
+                                               line width = 1.2pt},
+  ]
 
-  \node[task] (1_1_1_1) {\textbf{1.1}\\Schedule and conduc...\\(4d)};
-  \node[timing, above=2pt of 1_1_1_1] {0 | 4};
-  \node[task] (1_1_1_2) [right=1.5cm of 1_1_1_1] {\textbf{1.2}\\Document interview ...\\(4d)};
-  \node[timing, above=2pt of 1_1_1_2] {4 | 8};
-  \node[task] (1_1_2_1) [below=1.4cm of 1_1_1_1] {\textbf{2.1}\\Gather and categori...\\(5d)};
-  \node[timing, above=2pt of 1_1_2_1] {8 | 13};
-  \node[task] (1_1_2_2) [right=1.5cm of 1_1_2_1] {\textbf{2.2}\\Define scope baseli...\\(5d)};
-  \node[timing, above=2pt of 1_1_2_2] {13 | 18};
-  \node[task] (1_1_3_1) [below=1.4cm of 1_1_2_1] {\textbf{3.1}\\Research autonomy f...\\(4d)};
-  \node[timing, above=2pt of 1_1_3_1] {18 | 22};
-  \node[task] (1_1_3_2) [right=1.5cm of 1_1_3_1] {\textbf{3.2}\\Evaluate and score ...\\(4d)};
-  \node[timing, above=2pt of 1_1_3_2] {22 | 26};
-  \node[task] (1_1_3_3) [right=1.5cm of 1_1_3_2] {\textbf{3.3}\\Document trade stud...\\(4d)};
-  \node[timing, above=2pt of 1_1_3_3] {26 | 30};
-  \node[task] (1_1_6_1) [below=1.4cm of 1_1_3_1] {\textbf{6.1}\\Prepare research ph...\\(4d)};
-  \node[timing, above=2pt of 1_1_6_1] {30 | 34};
-  \node[task] (1_1_6_2) [right=1.5cm of 1_1_6_1] {\textbf{6.2}\\Deliver research ph...\\(4d)};
-  \node[timing, above=2pt of 1_1_6_2] {34 | 38};
+  \node[task](1_1_1_1){\textbf{1.1}\\Schedule and conduc...\\(4d)};
+  \node[timing, above = 2pt of 1_1_1_1]{0 | 4};
+  \node[task](1_1_1_2)[right = 1.5cm of 1_1_1_1]{\textbf{
+      1.2}\\Document interview...\\(4d)};
+  \node[timing, above = 2pt of 1_1_1_2]{4 | 8};
+  \node[task](1_1_2_1)[below = 1.4cm of 1_1_1_1]{\textbf{2.1}\\Gather and
+                                                 categori...\\(5d)};
+  \node[timing, above = 2pt of 1_1_2_1]{8 | 13};
+  \node[task](1_1_2_2)[right = 1.5cm of 1_1_2_1]{\textbf{
+      2.2}\\Define scope baseli...\\(5d)};
+  \node[timing, above = 2pt of 1_1_2_2]{13 | 18};
+  \node[task](1_1_3_1)[below = 1.4cm of 1_1_2_1]{\textbf{
+      3.1}\\Research autonomy f...\\(4d)};
+  \node[timing, above = 2pt of 1_1_3_1]{18 | 22};
+  \node[task](1_1_3_2)[right = 1.5cm of 1_1_3_1]{\textbf{3.2}\\Evaluate and
+                                                 score...\\(4d)};
+  \node[timing, above = 2pt of 1_1_3_2]{22 | 26};
+  \node[task](1_1_3_3)[right = 1.5cm of 1_1_3_2]{\textbf{
+      3.3}\\Document trade stud...\\(4d)};
+  \node[timing, above = 2pt of 1_1_3_3]{26 | 30};
+  \node[task](1_1_6_1)[below = 1.4cm of 1_1_3_1]{\textbf{
+      6.1}\\Prepare research ph...\\(4d)};
+  \node[timing, above = 2pt of 1_1_6_1]{30 | 34};
+  \node[task](1_1_6_2)[right = 1.5cm of 1_1_6_1]{\textbf{
+      6.2}\\Deliver research ph...\\(4d)};
+  \node[timing, above = 2pt of 1_1_6_2]{34 | 38};
 
   % Dependencies
-  \draw[critical_arrow] (1_1_1_1) -- (1_1_1_2);
-  \draw[critical_arrow, rounded corners=3pt] (1_1_1_2.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_1_2_1.west) -- (1_1_2_1.west);
-  \draw[critical_arrow] (1_1_2_1) -- (1_1_2_2);
-  \draw[critical_arrow, rounded corners=3pt] (1_1_2_2.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_1_3_1.west) -- (1_1_3_1.west);
-  \draw[critical_arrow] (1_1_3_1) -- (1_1_3_2);
-  \draw[critical_arrow] (1_1_3_2) -- (1_1_3_3);
-  \draw[critical_arrow, rounded corners=3pt] (1_1_3_3.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_1_6_1.west) -- (1_1_6_1.west);
-  \draw[critical_arrow] (1_1_6_1) -- (1_1_6_2);
+  \draw[critical_arrow](1_1_1_1)--(1_1_1_2);
+  \draw[critical_arrow, rounded corners = 3pt](1_1_1_2.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_1_2_1.west)--(1_1_2_1.west);
+  \draw[critical_arrow](1_1_2_1)--(1_1_2_2);
+  \draw[critical_arrow, rounded corners = 3pt](1_1_2_2.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_1_3_1.west)--(1_1_3_1.west);
+  \draw[critical_arrow](1_1_3_1)--(1_1_3_2);
+  \draw[critical_arrow](1_1_3_2)--(1_1_3_3);
+  \draw[critical_arrow, rounded corners = 3pt](1_1_3_3.south)-- ++(0, -0.3) - |
+      ([xshift = -0.6cm] 1_1_6_1.west)--(1_1_6_1.west);
+  \draw[critical_arrow](1_1_6_1)--(1_1_6_2);
 
-\end{tikzpicture}
-}%
-\caption{Research Phase Critical Path Tasks}
-\label{fig:nld_research_critical}
-\end{figure}
+  \end { tikzpicture }
+}
+%
+\caption { Research Phase Critical Path Tasks }
+\label {
+fig:
+  nld_research_critical
+}
+\end { figure }
 
 \begin{table}[H]
 \centering
 \small
-\rowcolors{2}{researchblue!20}{white}
-\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\rowcolors{2} { researchblue !20 }
+{ white }
+\begin{tabular} { | l | p{5cm} | c | c | c | l | }
 \hline
-\rowcolor{researchblue!40}
-\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\rowcolor { researchblue !40 }
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{
+    EF} & \textbf {
+  Owner
+}
+\\
 \hline
 \texttt{1.1.1.1} & Schedule and conduct stakeholder interviews & 4 & 0 & 4 & CM \\
 \hline
-\texttt{1.1.1.2} & Document interview findings and requirements & 4 & 4 & 8 & CM \\
+\texttt{1.1.1.2} & Document interview findings and requirements & 4 & 4 & 8 &
+    CM \\
 \hline
 \texttt{1.1.2.1} & Gather and categorize all requirements & 5 & 8 & 13 & CM \\
 \hline
-\texttt{1.1.2.2} & Define scope baseline and acceptance criteria & 5 & 13 & 18 & CM \\
+\texttt{1.1.2.2} & Define scope baseline and acceptance criteria & 5 & 13 &
+    18 & CM \\
 \hline
 \texttt{1.1.3.1} & Research autonomy framework options & 4 & 18 & 22 & JB \\
 \hline
 \texttt{1.1.3.2} & Evaluate and score framework candidates & 4 & 22 & 26 & JB \\
 \hline
-\texttt{1.1.3.3} & Document trade study findings and recommendation & 4 & 26 & 30 & JB \\
+\texttt{1.1.3.3} & Document trade study findings and recommendation & 4 & 26 &
+    30 & JB \\
 \hline
-\texttt{1.1.6.1} & Prepare research phase presentation materials & 4 & 30 & 34 & CM \\
+\texttt{1.1.6.1} & Prepare research phase presentation materials & 4 & 30 &
+    34 & CM \\
 \hline
 \texttt{1.1.6.2} & Deliver research phase gate review & 4 & 34 & 38 & CM \\
 \hline
-\end{tabular}
-\caption{Research Phase Critical Path Tasks}
-\label{tab:nld_research_critical}
-\end{table}
+\end {
+  tabular
+}
+\caption { Research Phase Critical Path Tasks }
+\label {
+tab:
+  nld_research_critical
+}
+\end { table }
 
-\subsubsection{Supporting Tasks}
+\subsubsection { Supporting Tasks }
 
-\noindent The following 4 supporting tasks have available float time. 
-These tasks can be delayed without impacting the project end date, as long as they complete within their late finish dates. 
-These tasks span 18 working days.
+\noindent The following 4 supporting tasks have available float time.These tasks
+    can be delayed without impacting the project end date,
+    as long as they complete within their late finish
+        dates.These tasks span 18 working days.
 
-\vspace{0.5em}
+\vspace {
+  0.5em
+}
 
 \begin{figure}[H]
 \centering
-\resizebox{0.5\textwidth}{!}{%
-\begin{tikzpicture}[
-  node distance=1.4cm and 1.5cm,
-  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\tiny, fill=researchblue!30},
-  timing/.style={font=\tiny, inner sep=1pt},
-  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
-  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
-]
+\resizebox{0.5\textwidth} { ! }
+{
+  %
+\begin{tikzpicture}[node distance = 1.4cm and 1.5cm,
+                     task /.style = {rectangle, draw, rounded corners = 3pt,
+                                     minimum width = 2.4cm,
+                                     minimum height = 1.0cm, align = center,
+                                     font =\tiny, fill = researchblue !30},
+                     timing /.style = {font =\tiny, inner sep = 1pt},
+                     regular_arrow /.style = {-{Stealth[length = 5pt]},
+                                              gray !70, thick},
+                     critical_arrow /.style = {-{Stealth[length = 5pt]}, red,
+                                               line width = 1.2pt},
+  ]
 
-  \node[task] (1_1_4_1) {\textbf{4.1}\\Research and benchm...\\(5d)};
-  \node[timing, above=2pt of 1_1_4_1] {18 | 23};
-  \node[task] (1_1_4_2) [right=1.5cm of 1_1_4_1] {\textbf{4.2}\\Evaluate compute pl...\\(5d)};
-  \node[timing, above=2pt of 1_1_4_2] {23 | 28};
-  \node[task] (1_1_5_1) [below=1.4cm of 1_1_4_1] {\textbf{5.1}\\Identify and catego...\\(4d)};
-  \node[timing, above=2pt of 1_1_5_1] {18 | 22};
-  \node[task] (1_1_5_2) [right=1.5cm of 1_1_5_1] {\textbf{5.2}\\Develop mitigation ...\\(4d)};
-  \node[timing, above=2pt of 1_1_5_2] {22 | 26};
+  \node[task](1_1_4_1){\textbf{4.1}\\Research and benchm...\\(5d)};
+  \node[timing, above = 2pt of 1_1_4_1]{18 | 23};
+  \node[task](1_1_4_2)[right = 1.5cm of 1_1_4_1]{\textbf{
+      4.2}\\Evaluate compute pl...\\(5d)};
+  \node[timing, above = 2pt of 1_1_4_2]{23 | 28};
+  \node[task](1_1_5_1)[below = 1.4cm of 1_1_4_1]{\textbf{5.1}\\Identify and
+                                                 catego...\\(4d)};
+  \node[timing, above = 2pt of 1_1_5_1]{18 | 22};
+  \node[task](1_1_5_2)[right = 1.5cm of 1_1_5_1]{\textbf{
+      5.2}\\Develop mitigation...\\(4d)};
+  \node[timing, above = 2pt of 1_1_5_2]{22 | 26};
 
   % Dependencies
-  \draw[regular_arrow] (1_1_4_1) -- (1_1_4_2);
-  \draw[regular_arrow] (1_1_5_1) -- (1_1_5_2);
+  \draw[regular_arrow](1_1_4_1)--(1_1_4_2);
+  \draw[regular_arrow](1_1_5_1)--(1_1_5_2);
 
-\end{tikzpicture}
-}%
-\caption{Research Phase Supporting Tasks}
-\label{fig:nld_research_supporting}
-\end{figure}
+  \end { tikzpicture }
+}
+%
+\caption { Research Phase Supporting Tasks }
+\label {
+fig:
+  nld_research_supporting
+}
+\end { figure }
 
 \begin{table}[H]
 \centering
 \small
-\rowcolors{2}{researchblue!20}{white}
-\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\rowcolors{2} { researchblue !20 }
+{ white }
+\begin{tabular} { | l | p{5cm} | c | c | c | l | }
 \hline
-\rowcolor{researchblue!40}
-\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\rowcolor { researchblue !40 }
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{
+    EF} & \textbf {
+  Owner
+}
+\\
 \hline
 \texttt{1.1.4.1} & Research and benchmark sensor options & 5 & 18 & 23 & BS \\
 \hline
-\texttt{1.1.4.2} & Evaluate compute platforms and make selection & 5 & 23 & 28 & BS \\
+\texttt{1.1.4.2} & Evaluate compute platforms and make selection & 5 & 23 &
+    28 & BS \\
 \hline
 \texttt{1.1.5.1} & Identify and categorize project risks & 4 & 18 & 22 & SC \\
 \hline
-\texttt{1.1.5.2} & Develop mitigation strategies and contingency plans & 4 & 22 & 26 & SC \\
+\texttt{1.1.5.2} & Develop mitigation strategies and contingency plans & 4 &
+    22 & 26 & SC \\
 \hline
-\end{tabular}
-\caption{Research Phase Supporting Tasks}
-\label{tab:nld_research_supporting}
-\end{table}
+\end {
+  tabular
+}
+\caption { Research Phase Supporting Tasks }
+\label {
+tab:
+  nld_research_supporting
+}
+\end { table }
 
-\noindent\textit{See \hyperref[app:nld]{Appendix C} for the complete Research phase network logic diagram.}
+\noindent\textit {
+  See \hyperref [app:nld] { Appendix C } for
+    the complete Research phase network logic diagram.
+}
