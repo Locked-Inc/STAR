@@ -179,6 +179,12 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
     return k_rx_err_invalid_arg;
   }
 
+  /* Rule 5: Precondition validation - overflow check before multiplication */
+  if (data_len > 0 && data_len > UINT32_MAX / (uint32_t)k_bits_per_byte) {
+    *soft_len = 0;
+    return k_rx_err_invalid_size; /* Would overflow */
+  }
+
   /* Rule 5: Precondition validation - buffer size check */
   const uint32_t required = data_len * (uint32_t)k_bits_per_byte;
   if (required > soft_size) {
@@ -356,6 +362,11 @@ rx_err_t rx_spi_link_deinit(rx_spi_link_t* link)
  * logic. Updates link state for retransmit/waiting_ack. Gets TX sequence BEFORE
  * sending to avoid race conditions with external sequence management.
  *
+ * @note Parameter ordering convention: type, base_flags, tx_payload, tx_len, attempt.
+ * This ordering groups frame metadata (type, flags) before payload data (payload, len),
+ * then retry state (attempt). While adjacent integer parameters may appear swappable,
+ * the semantic grouping is intentional for code clarity.
+ *
  * @param[in,out] link       Link handle (must be initialized)
  * @param[in]     type       Frame type (command, telemetry, etc.)
  * @param[in]     base_flags Base flags (fec_enabled, requires_ack)
@@ -394,8 +405,12 @@ static rx_err_t internal_send_attempt(rx_spi_link_t*  link,
      *
      * Alternative solution: Modify rx_spi_comm_send() to return the
      * sequence actually used, but that requires API change across codebase. */
-  uint16_t next_seq = 0;
-  (void)rx_session_get_tx(link->spi_handle->session, &next_seq);
+  uint16_t next_seq    = 0;
+  rx_err_t session_err = rx_session_get_tx(link->spi_handle->session, &next_seq);
+  if (session_err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to get TX sequence");
+    return session_err;
+  }
   const uint16_t expected_seq = next_seq; /* This will be used by send */
 
   /* Send frame via SPI transport */
@@ -407,6 +422,63 @@ static rx_err_t internal_send_attempt(rx_spi_link_t*  link,
 
   /* Wait for ACK/NACK using the sequence we captured */
   return internal_wait_for_ack(link, expected_seq);
+}
+
+/**
+ * @brief Prepare payload for transmission (FEC encode or passthrough)
+ *
+ * @details
+ * If FEC is enabled and payload is non-empty, encodes via rx_harq_encode()
+ * and sets FEC flag. Otherwise, passes payload through unchanged. Sets
+ * base_flags to include k_frame_flag_requires_ack and optionally
+ * k_frame_flag_fec_enabled.
+ *
+ * @param[in,out] link        Link handle (must be initialized, fec_enabled checked)
+ * @param[in]     payload     Original payload to send
+ * @param[in]     payload_len Original payload length
+ * @param[out]    out_payload Pointer to prepared payload (original or encoded buffer)
+ * @param[out]    out_len     Prepared payload length
+ * @param[out]    out_flags   Base flags for transmission
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Preparation successful
+ * @retval k_rx_err_* FEC encoding error
+ *
+ * @pre link->fec_enabled indicates whether FEC should be used
+ * @pre link->fec_encode_buf sized for k_spi_link_max_encoded_payload
+ * @post If FEC enabled: out_payload points to link->fec_encode_buf, out_flags has FEC flag
+ * @post If FEC disabled: out_payload == payload, out_len == payload_len
+ */
+static rx_err_t internal_prepare_tx_payload(rx_spi_link_t*  link,
+                                            const uint8_t*  payload,
+                                            uint32_t        payload_len,
+                                            const uint8_t** out_payload,
+                                            uint32_t*       out_len,
+                                            uint8_t*        out_flags)
+{
+  *out_payload = payload;
+  *out_len     = payload_len;
+  *out_flags   = k_frame_flag_requires_ack;
+
+  if (link->fec_enabled && payload != nullptr && payload_len > 0) {
+    uint32_t encoded_len = 0;
+    rx_err_t err         = rx_harq_encode(&link->harq,
+                                  payload,
+                                  payload_len,
+                                  link->fec_encode_buf,
+                                  (uint32_t)k_spi_link_max_encoded_payload,
+                                  &encoded_len);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "FEC encode failed");
+      return err;
+    }
+
+    *out_payload = link->fec_encode_buf;
+    *out_len     = encoded_len;
+    *out_flags |= k_frame_flag_fec_enabled;
+  }
+
+  return k_rx_ok;
 }
 
 /**
@@ -443,26 +515,13 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
   }
 
   /* Prepare payload: FEC encode if enabled, otherwise passthrough */
-  const uint8_t* tx_payload = payload;
-  uint32_t       tx_len     = payload_len;
-  uint8_t        base_flags = k_frame_flag_requires_ack;
+  const uint8_t* tx_payload = nullptr;
+  uint32_t       tx_len     = 0;
+  uint8_t        base_flags = 0;
 
-  if (link->fec_enabled && payload != nullptr && payload_len > 0) {
-    uint32_t encoded_len = 0;
-    err                  = rx_harq_encode(&link->harq,
-                         payload,
-                         payload_len,
-                         link->fec_encode_buf,
-                         (uint32_t)k_spi_link_max_encoded_payload,
-                         &encoded_len);
-    if (err != k_rx_ok) {
-      rx_log_error(s_tag, "FEC encode failed");
-      return err;
-    }
-
-    tx_payload = link->fec_encode_buf;
-    tx_len     = encoded_len;
-    base_flags |= k_frame_flag_fec_enabled;
+  err = internal_prepare_tx_payload(link, payload, payload_len, &tx_payload, &tx_len, &base_flags);
+  if (err != k_rx_ok) {
+    return err;
   }
 
   /* Retry loop (bounded by max_retries)
@@ -506,6 +565,12 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
  * and sends ACK/NACK based on decode success. On success, resets HARQ
  * combiner. On failure, sends NACK for retransmission.
  *
+ * Algorithm:
+ * 1. Convert received bytes to soft bits (hard decision: 1 -> +127, 0 -> -127)
+ * 2. Pass soft bits to HARQ decoder (Chase Combining + Viterbi)
+ * 3. If decode succeeds: send ACK, reset combiner, return payload
+ * 4. If decode fails: send NACK, accumulate soft bits for next retransmit
+ *
  * @param[in,out] link    Link handle (must be initialized)
  * @param[in]     frame   Received frame with FEC-encoded payload
  * @param[out]    result  Decode result (payload, length, metadata)
@@ -513,6 +578,49 @@ rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
  * @return rx_err_t Error code
  * @retval k_rx_ok Decode success, ACK sent
  * @retval k_rx_err_protocol_error Decode failed, NACK sent
+ *
+ * @pre link->initialized == true (link must be initialized)
+ * @pre frame->payload contains FEC-encoded data (FEC flag set)
+ * @pre result->payload buffer >= k_harq_max_payload (1024 bytes minimum)
+ * @pre Single-threaded context (SPI receive path protected by state machine)
+ *
+ * @post On success: result->fec_decoded == true, result->payload filled
+ * @post On success: ACK sent to sender, HARQ combiner reset
+ * @post On failure: NACK sent, soft bits accumulated in combiner
+ * @post result->combining_count reflects number of transmissions combined
+ *
+ * @note Thread safety: This function is NOT thread-safe. Must be called from
+ * single-threaded SPI receive context (enforced by link state machine).
+ *
+ * @par State Machine Invariant:
+ * This function is called only from rx_spi_link_receive(), which serializes
+ * access via the link state machine. Multiple concurrent calls would corrupt
+ * the Chase Combiner state and static soft bit buffer.
+ *
+ * @par Static Buffer Lifetime:
+ * Uses static s_soft_bits[k_harq_soft_buffer_size] (16,400 bytes) to avoid
+ * stack overflow. Safe because function is never called concurrently. Buffer
+ * is overwritten on each call (no persistent state).
+ *
+ * @par Example (FEC Decode Flow):
+ * @code
+ * // Receive FEC-encoded frame (2050 bytes encoded payload)
+ * rx_frame_t frame;
+ * rx_spi_comm_receive(spi, &frame, timeout);
+ *
+ * // Decode with HARQ + Chase Combining
+ * rx_spi_link_receive_result_t result;
+ * rx_err_t err = internal_receive_fec_decode(link, &frame, &result);
+ *
+ * if (err == k_rx_ok) {
+ *     // Decode success - payload in result.payload (1024 bytes)
+ *     // ACK automatically sent, combiner reset
+ *     process_decoded_data(result.payload, result.payload_len);
+ * } else {
+ *     // Decode failed - NACK sent, waiting for retransmit
+ *     // Soft bits accumulated in combiner for next attempt
+ * }
+ * @endcode
  */
 static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
                                             const rx_frame_t*             frame,
@@ -598,8 +706,16 @@ static rx_err_t internal_receive_passthrough(rx_spi_link_t*                link,
   /* No FEC: passthrough (copy payload directly) */
   if (frame->header.length > 0 && frame->header.length <= k_harq_max_payload) {
     (void)memcpy(result->payload, frame->payload, frame->header.length);
+    result->payload_len = frame->header.length;
+  } else if (frame->header.length > k_harq_max_payload) {
+    /* Defensive: bound payload_len to buffer capacity to prevent out-of-bounds reads */
+    rx_log_warn(s_tag, "Passthrough payload too large, truncating");
+    (void)memcpy(result->payload, frame->payload, k_harq_max_payload);
+    result->payload_len = k_harq_max_payload;
+  } else {
+    /* Zero-length payload */
+    result->payload_len = 0;
   }
-  result->payload_len     = frame->header.length;
   result->fec_decoded     = false;
   result->combining_count = 1;
 
@@ -645,7 +761,7 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
   if (frame.header.type == (uint8_t)k_frame_type_ack ||
       frame.header.type == (uint8_t)k_frame_type_nack) {
     /* Control frame - not application data */
-    return k_rx_err_timeout; /* Signal "no data" to caller */
+    return k_rx_err_no_data; /* Signal "no data" to caller */
   }
 
   /* Handle PING/PONG/RESET (already handled by rx_spi_comm internally) */
@@ -653,7 +769,7 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
       frame.header.type == (uint8_t)k_frame_type_pong ||
       frame.header.type == (uint8_t)k_frame_type_reset ||
       frame.header.type == (uint8_t)k_frame_type_reset_ack) {
-    return k_rx_err_timeout; /* Not application data */
+    return k_rx_err_no_data; /* Not application data */
   }
 
   /* Data frame received - populate common metadata */

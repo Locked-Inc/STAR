@@ -335,7 +335,7 @@ typedef struct {
   uint32_t payload_len;   /**< Decoded payload length in bytes (range: [0, k_harq_max_payload]) */
   uint16_t sequence;      /**< Frame sequence number (range: [0, 65535], wraps around) */
   rx_frame_type_t
-    frame_type; /**< Frame type (e.g., k_frame_type_command, k_frame_type_telemetry) */
+       frame_type;  /**< Frame type (e.g., k_frame_type_command, k_frame_type_telemetry) */
   bool fec_decoded; /**< True if FEC/Viterbi decoding was applied, false if raw passthrough */
   uint8_t
     combining_count; /**< Number of Chase Combining attempts used (1 = first attempt, >1 = retransmissions combined) */

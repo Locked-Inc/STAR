@@ -502,6 +502,22 @@ apply_strict_warnings(test_rx_spi_comm)
 apply_test_includes(test_rx_spi_comm)
 target_link_libraries(test_rx_spi_comm unity)
 
+# Test: SPI Link Layer (HARQ + FEC)
+add_executable(test_rx_spi_link
+    test_rx_spi_link.c
+    ${RX_SPI_LINK_SRC}
+    ${RX_SPI_COMM_SRC}
+    ${RX_HARQ_SRC}
+    ${RX_FEC_SRC}
+    ${RX_FRAME_SRC}
+    ${RX_SESSION_SRC}
+    ${MOCK_RSPI_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_spi_link)
+apply_test_includes(test_rx_spi_link)
+target_link_libraries(test_rx_spi_link unity)
+
 # Test: PID Controller
 add_executable(test_rx_pid
     test_rx_pid.c
@@ -1012,6 +1028,7 @@ add_test(NAME test_rx_motor COMMAND test_rx_motor)
 add_test(NAME test_rx_bus_manager COMMAND test_rx_bus_manager)
 add_test(NAME test_rx_bus_onewire COMMAND test_rx_bus_onewire)
 add_test(NAME test_rx_spi_comm COMMAND test_rx_spi_comm)
+add_test(NAME test_rx_spi_link COMMAND test_rx_spi_link)
 add_test(NAME test_rx_pid COMMAND test_rx_pid)
 add_test(NAME test_rx_encoder COMMAND test_rx_encoder)
 add_test(NAME test_rx_bq4050 COMMAND test_rx_bq4050)
