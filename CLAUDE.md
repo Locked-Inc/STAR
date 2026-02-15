@@ -709,7 +709,7 @@ The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded
 
 For motor PID tuning workflow (MATLAB system identification, controller design, firmware integration), use the **`/pid-tune`** skill.
 
-**Motor Model**: G(s) = 3.665 / (0.075s + 1)
+**Motor Model**: G(s) = 3.665 / (0.075s + 1) - DC motor first-order model with gain = 3.665 rad/s/V and time constant τ = 0.075 s (75 ms)
 
 ## CI/CD
 
