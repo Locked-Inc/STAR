@@ -20,7 +20,7 @@ Create pull requests following STAR project conventions with comprehensive descr
 
 When the user asks to create a pull request, follow these steps:
 
-### Step 1: Analyze Branch State (Parallel)
+### Step 1: Analyze Branch State ✅ READ-ONLY (Safe to run immediately)
 
 Run these commands in parallel to understand the full scope of changes:
 
@@ -43,7 +43,7 @@ git diff main...HEAD
 
 **IMPORTANT**: Analyze ALL commits that will be included in the PR, not just the latest commit!
 
-### Step 2: Draft PR Title and Description
+### Step 2: Draft PR Title and Description ✅ READ-ONLY (Safe to draft)
 
 Based on analysis of ALL changes:
 
@@ -72,56 +72,107 @@ Based on analysis of ALL changes:
 
 **IMPORTANT**: Do NOT add AI attribution to PR descriptions. Write natural, professional descriptions as if written by a human developer (per CLAUDE.md policy).
 
-### Step 3: Push and Create PR (Sequential if needed)
+### Step 3: Verify Base Branch ✅ READ-ONLY (Verify before push)
 
 ```bash
-# Create branch if needed (optional)
-git checkout -b feature/my-feature
+# Get current branch name
+git branch --show-current
 
-# Push with upstream tracking if needed
-git push -u origin feature/my-feature
+# Get default remote branch (usually 'main')
+git remote show origin | grep 'HEAD branch'
+```
 
-# Create PR using heredoc for description
-gh pr create --title "Add PID controller implementation" --body "$(cat <<'EOF'
+**Default base branch**: `main` (ask user if targeting a different branch)
+
+---
+
+## ⚠️ CONFIRMATION GATE ⚠️
+
+**Before any `git push` or `gh pr create`, ask user:**
+
+> "Proceed to push commits and open PR?"
+
+**User must approve side-effect steps.** Only continue after receiving explicit confirmation.
+
+---
+
+### Step 4: Push and Create PR ⚠️ SIDE EFFECT (Requires user approval)
+
+After user confirmation, run sequentially:
+
+```bash
+# 1. Push with upstream tracking
+git push -u origin HEAD
+
+# 2. Create PR with proper base and head branches
+gh pr create \
+  --base main \
+  --head $(git branch --show-current) \
+  --title "Your PR title here (max 70 chars)" \
+  --body "$(cat <<'EOF'
 ## Summary
-- Implements discrete-time PID algorithm for motor velocity control
-- Adds anti-windup clamping and derivative low-pass filtering
-- Includes comprehensive unit tests with 95% coverage
+- Bullet point 1
+- Bullet point 2
+- Bullet point 3
 
 ## Test plan
-- [x] Unit tests pass (`cd e2-studio-star-rx72n-firmware/tests && ctest`)
-- [x] Simulator tests pass (no hardware errors)
-- [x] Manual testing: PID tuning with step response verified in MATLAB
+- [x] Unit tests pass
+- [x] Integration tests pass
+- [x] Manual testing: describe what you tested
 - [x] Code review checklist:
   - [x] NASA Power of 10 rules followed
-  - [x] SOLID principles applied (dependency injection for mocking)
-  - [x] Doxygen documentation complete (100% function coverage)
-  - [x] No magic numbers (all constants in typed enums)
+  - [x] SOLID principles applied
+  - [x] Doxygen documentation complete
+  - [x] No magic numbers
   - [x] Inclusive terminology used
 
 EOF
 )"
+
+# 3. View PR checks/CI status (optional)
+gh pr checks
+
+# 4. Get PR URL and open in browser
+gh pr view --web
+# OR get URL only:
+gh pr view -q .url
 ```
 
-### Step 4: Return PR URL
-
-After successful creation, return the PR URL to the user so they can view it.
+**Notes**:
+- Use `--base <branch>` if targeting non-default branch
+- `HEAD` refers to current branch (no need to hardcode branch name)
+- `gh pr view --web` opens browser, `-q .url` prints URL only
+- Check `gh pr status` to verify PR creation success
 
 ## Examples
 
 ### Example 1: Feature Addition
 
 ```bash
-# Step 1: Analyze changes
+# Step 1: Analyze changes (READ-ONLY)
 git status
 git log main..HEAD --oneline
 git diff main...HEAD
 
-# Step 2: Push if needed
-git push -u origin feature/pid-controller
+# Step 2: Draft title and description (READ-ONLY)
+# Title: "Add PID controller for motor velocity control"
+# Description: See below
 
-# Step 3: Create PR
-gh pr create --title "Add PID controller for motor velocity control" --body "$(cat <<'EOF'
+# Step 3: Verify base branch (READ-ONLY)
+git branch --show-current  # Returns: feature/pid-controller
+git remote show origin | grep 'HEAD branch'  # Returns: main
+
+# ⚠️ CONFIRMATION GATE: Ask user "Proceed to push and open PR?"
+# User responds: "Yes"
+
+# Step 4: Push and create PR (SIDE EFFECT - after user approval)
+git push -u origin HEAD
+
+gh pr create \
+  --base main \
+  --head feature/pid-controller \
+  --title "Add PID controller for motor velocity control" \
+  --body "$(cat <<'EOF'
 ## Summary
 - Implements discrete-time PID controller with anti-windup
 - Adds unit tests with 95% code coverage
@@ -136,12 +187,23 @@ gh pr create --title "Add PID controller for motor velocity control" --body "$(c
 
 EOF
 )"
+
+# Return URL
+gh pr view -q .url
 ```
 
 ### Example 2: Bug Fix
 
 ```bash
-gh pr create --title "Fix SPI timeout calculation" --body "$(cat <<'EOF'
+# ⚠️ After user confirms "Proceed to push and open PR?"
+
+git push -u origin HEAD
+
+gh pr create \
+  --base main \
+  --head $(git branch --show-current) \
+  --title "Fix SPI timeout calculation" \
+  --body "$(cat <<'EOF'
 ## Summary
 - Fixes SPI timeout calculation using milliseconds instead of microseconds
 - Prevents premature timeouts during large transfers
@@ -154,12 +216,22 @@ gh pr create --title "Fix SPI timeout calculation" --body "$(cat <<'EOF'
 
 EOF
 )"
+
+gh pr view --web
 ```
 
 ### Example 3: Refactoring
 
 ```bash
-gh pr create --title "Refactor motor control state machine" --body "$(cat <<'EOF'
+# ⚠️ After user confirms "Proceed to push and open PR?"
+
+git push -u origin HEAD
+
+gh pr create \
+  --base main \
+  --head $(git branch --show-current) \
+  --title "Refactor motor control state machine" \
+  --body "$(cat <<'EOF'
 ## Summary
 - Simplifies state machine transitions with lookup table
 - Reduces cyclomatic complexity from 15 to 8
@@ -173,6 +245,8 @@ gh pr create --title "Refactor motor control state machine" --body "$(cat <<'EOF
 
 EOF
 )"
+
+gh pr view -q .url
 ```
 
 ## Important Notes
