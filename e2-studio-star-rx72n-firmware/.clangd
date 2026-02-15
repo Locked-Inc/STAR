@@ -1,0 +1,18 @@
+CompileFlags:
+  CompilationDatabase: build/
+  Add:
+    - -I/opt/gnurx/rx-elf/rx-elf/include
+    - -I../src
+
+Index:
+  Background: Build
+  StandardLibrary: No
+
+Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+
+InlayHints:
+  Enabled: Yes
+  ParameterNames: Yes
+  DeducedTypes: Yes
