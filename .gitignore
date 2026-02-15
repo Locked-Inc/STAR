@@ -172,6 +172,9 @@ log/
 Thumbs.db
 .metadata
 
-# Claude
-.claude/
+# Claude - Allow sharing skills and agents, but keep personal settings private
+.claude/settings.local.json
+.claude/*.local.json
 .claude.json
+# Exception: Allow .claude/skills/build/ (skill directory, not build artifacts)
+!.claude/skills/build/
