@@ -1,4 +1,10 @@
-# Code Review Agent
+---
+name: code-review
+description: Review code for NASA Power of 10, SOLID, and STAR standards compliance
+disable-model-invocation: false
+---
+
+# Code Review Skill
 
 Performs automated code review for compliance with NASA Power of 10 rules, SOLID principles, and STAR coding standards.
 
@@ -18,12 +24,12 @@ Review rx_pid.c for NASA Power of 10 compliance
 
 For complete rule definitions, examples, and rationale, see:
 
-- **NASA Power of 10 Rules**: [CLAUDE.md § NASA Power of 10 Rules](/workspaces/STAR/CLAUDE.md#nasa-power-of-10-rules-star-implementation)
-- **SOLID Principles for C**: [CLAUDE.md § SOLID Principles for C](/workspaces/STAR/CLAUDE.md#solid-principles-for-c-star-implementation)
-- **Code Style - Constants/Macros**: [CLAUDE.md § Code Style](/workspaces/STAR/CLAUDE.md#code-style)
-- **Code Style - Naming**: [CLAUDE.md § Naming Conventions](/workspaces/STAR/CLAUDE.md#naming-conventions)
-- **Doxygen Requirements**: [CLAUDE.md § Doxygen Documentation Requirements](/workspaces/STAR/CLAUDE.md#doxygen-documentation-requirements)
-- **Terminology Standard**: [CLAUDE.md § Terminology Standard](/workspaces/STAR/CLAUDE.md#terminology-standard)
+- **NASA Power of 10 Rules**: [CLAUDE.md](../../../CLAUDE.md#nasa-power-of-10-rules-star-implementation)
+- **SOLID Principles for C**: [CLAUDE.md](../../../CLAUDE.md#solid-principles-for-c-star-implementation)
+- **Code Style**: [CLAUDE.md](../../../CLAUDE.md#code-style)
+- **Naming Conventions**: [CLAUDE.md](../../../CLAUDE.md#naming-conventions)
+- **Doxygen Requirements**: [CLAUDE.md](../../../CLAUDE.md#doxygen-documentation-requirements)
+- **Terminology Standard**: [CLAUDE.md](../../../CLAUDE.md#terminology-standard)
 
 ## Review Process
 

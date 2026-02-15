@@ -2,8 +2,6 @@
 name: simulator-setup
 description: Configure e² Studio simulator for RX72N firmware logic testing without hardware
 disable-model-invocation: false
-allowed-tools: [Read]
-context: main
 ---
 
 # e² Studio Simulator Setup

@@ -2,8 +2,6 @@
 name: ros2-style
 description: ROS2 C++ style guide and formatting reference for star-ros2 packages
 disable-model-invocation: false
-allowed-tools: [Read, Bash]
-context: main
 ---
 
 # ROS2 C++ Style Guide

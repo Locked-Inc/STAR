@@ -2,8 +2,6 @@
 name: pr
 description: Create a pull request with proper title, description, and test plan following STAR conventions
 disable-model-invocation: true
-allowed-tools: [Bash(git *), Bash(gh *), Read, Grep]
-context: main
 ---
 
 # Pull Request Creation Skill
