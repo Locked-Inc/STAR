@@ -2,6 +2,7 @@
 name: pid-tune
 description: Motor PID controller tuning workflow using MATLAB system identification and firmware integration
 disable-model-invocation: false
+argument-hint: "[motor-id] (optional)"
 ---
 
 # PID Tuning Skill

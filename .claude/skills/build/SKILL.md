@@ -2,6 +2,8 @@
 name: build
 description: Build any STAR subsystem (proto, gateway, firmware, ROS2, UI, MATLAB, or generate documentation)
 disable-model-invocation: false
+argument-hint: "[subsystem]"
+user-invokable: true
 ---
 
 # Build Skill

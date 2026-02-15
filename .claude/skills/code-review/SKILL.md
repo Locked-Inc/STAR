@@ -2,6 +2,7 @@
 name: code-review
 description: Review code for NASA Power of 10, SOLID, and STAR standards compliance
 disable-model-invocation: false
+argument-hint: "[directory-or-file]"
 ---
 
 # Code Review Skill

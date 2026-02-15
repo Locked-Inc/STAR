@@ -117,17 +117,24 @@ User → UI (TypeScript)
 
 ## Available Skills
 
-Load workflow-specific instructions on-demand:
+Skills provide workflow-specific instructions that load automatically when relevant. You can also invoke any skill directly with `/skill-name`.
 
-- **`/build`** - Build commands for all STAR subsystems (proto, gateway, firmware, ROS2, UI, MATLAB, documentation)
-- **`/commit`** - Create git commits following STAR conventions and safety protocols
-- **`/pr`** - Create pull requests with proper title, description, and test plan
-- **`/code-review`** - Review code for NASA Power of 10, SOLID, and STAR standards compliance
+**How skills work:**
+- When you request a task (e.g., "commit these changes"), Claude automatically loads the relevant skill
+- Skill descriptions are always available so Claude knows which skill to use
+- You can also invoke skills directly: `/commit`, `/pr`, `/build firmware`, etc.
+
+**Available skills:**
+
+- **`/build [subsystem]`** - Build commands for proto, gateway, firmware, ROS2, UI, MATLAB, docs
+- **`/commit`** - Create git commits with safety gates, proper message formatting, and STAR conventions
+- **`/pr`** - Create pull requests with comprehensive description, test plan, and change analysis
+- **`/code-review [directory]`** - Review code for NASA Power of 10, SOLID, and STAR standards
+- **`/pid-tune [motor-id]`** - Motor PID controller tuning workflow with MATLAB system identification
+- **`/ros2-style`** - ROS2 C++ style guide and formatting reference for star-ros2 packages
 - **`/simulator-setup`** - Configure e² Studio simulator for RX72N firmware logic testing
-- **`/pid-tune`** - Motor PID controller tuning workflow using MATLAB and firmware integration
-- **`/ros2-style`** - ROS2 C++ style guide and formatting reference
 
-These skills provide detailed instructions without cluttering the base context. Use them when you need specific workflow guidance.
+**Note:** Skills replace workflow instructions that were previously embedded in this file, reducing CLAUDE.md size while maintaining full context availability on demand.
 
 ## Protocol Buffers
 

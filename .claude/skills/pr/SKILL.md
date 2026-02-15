@@ -1,7 +1,7 @@
 ---
 name: pr
-description: Create a pull request with proper title, description, and test plan following STAR conventions
-disable-model-invocation: true
+description: Create pull requests with proper title, description, and test plan. Use when user asks to create a PR, open a pull request, or submit changes for review.
+disable-model-invocation: false
 ---
 
 # Pull Request Creation Skill

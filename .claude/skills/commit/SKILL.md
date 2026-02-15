@@ -1,7 +1,7 @@
 ---
 name: commit
-description: Create a git commit following STAR conventions and safety protocols
-disable-model-invocation: true
+description: Create git commits following STAR conventions with safety protocols. Use when user asks to commit changes, create a commit, or save work to git.
+disable-model-invocation: false
 ---
 
 # Git Commit Skill
