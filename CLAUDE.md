@@ -603,7 +603,14 @@ typedef enum {                    // Missing `: uint8_t`
 
 ## ROS2 C++ Style
 
-**Quick reference** (applies to `star-ros2/` packages only): 120-char line limit, 2-space indent, mandatory `clang-format` enforcement. Classes use `CamelCase`, methods/variables use `snake_case`, member variables have trailing underscore (`velocity_mps_`). Headers use `.hpp` extension with include guards `PACKAGE_FILE_HPP_`. Error handling uses exceptions (not return codes), logging via `RCLCPP_INFO/WARN/ERROR` macros (never `printf`/`cout`). Inherit from `rclcpp::Node` for basic nodes, `rclcpp_lifecycle::LifecycleNode` for safety-critical nodes.
+**Quick reference** (applies to `star-ros2/` packages only):
+
+- 120-char line limit, 2-space indent, mandatory `clang-format` enforcement
+- Classes: `CamelCase`; methods/variables: `snake_case`; member vars: trailing underscore (`velocity_mps_`)
+- Headers: `.hpp` extension with `#pragma once` (not traditional include guards)
+- Error handling: exceptions (not return codes)
+- Logging: `RCLCPP_INFO/WARN/ERROR` macros (never `printf`/`cout`)
+- Node types: inherit `rclcpp::Node` or `rclcpp_lifecycle::LifecycleNode` for safety-critical
 
 **For comprehensive guide** (file organization, ROS2 patterns, publishers/subscribers, timers, documentation), use the **`/ros2-style`** skill.
 
