@@ -504,31 +504,31 @@ typedef enum : uint8_t {
  * @details
  * | LED | Pin | Pkg Pin |
  * |-----|-----|---------|
- * | 0 | P32 | 27 |
- * | 1 | P87 | 39 |
- * | 2 | P56 | 50 |
- * | 3 | P55 | 51 |
- * | 4 | P54 | 52 |
- * | 5 | P52 | 54 |
+ * | 0 | PA7 | 88 |
+ * | 1 | PB0 | 87 |
+ * | 2 | P71 | 86 |
+ * | 3 | P72 | 85 |
+ * | 4 | PB1 | 84 |
+ * | 5 | PB2 | 83 |
  * @{
  */
 
 typedef enum : uint8_t {
-  k_led_0_port = 3, /**< LED0 on PORT3 (P32, pin 27) */
-  k_led_1_port = 8, /**< LED1 on PORT8 (P87, pin 39) */
-  k_led_2_port = 5, /**< LED2 on PORT5 (P56, pin 50) */
-  k_led_3_port = 5, /**< LED3 on PORT5 (P55, pin 51) */
-  k_led_4_port = 5, /**< LED4 on PORT5 (P54, pin 52) */
-  k_led_5_port = 5, /**< LED5 on PORT5 (P52, pin 54) */
+  k_led_0_port = 10, /**< LED0 on PORTA (PA7, pin 88) */
+  k_led_1_port = 11, /**< LED1 on PORTB (PB0, pin 87) */
+  k_led_2_port = 7,  /**< LED2 on PORT7 (P71, pin 86) */
+  k_led_3_port = 7,  /**< LED3 on PORT7 (P72, pin 85) */
+  k_led_4_port = 11, /**< LED4 on PORTB (PB1, pin 84) */
+  k_led_5_port = 11, /**< LED5 on PORTB (PB2, pin 83) */
 } led_ports_t;
 
 typedef enum : uint8_t {
-  k_led_0_pin = 2, /**< LED0 pin 2 (P32, pin 27) */
-  k_led_1_pin = 7, /**< LED1 pin 7 (P87, pin 39) */
-  k_led_2_pin = 6, /**< LED2 pin 6 (P56, pin 50) */
-  k_led_3_pin = 5, /**< LED3 pin 5 (P55, pin 51) */
-  k_led_4_pin = 4, /**< LED4 pin 4 (P54, pin 52) */
-  k_led_5_pin = 2, /**< LED5 pin 2 (P52, pin 54) */
+  k_led_0_pin = 7, /**< LED0 pin 7 (PA7, pin 88) */
+  k_led_1_pin = 0, /**< LED1 pin 0 (PB0, pin 87) */
+  k_led_2_pin = 1, /**< LED2 pin 1 (P71, pin 86) */
+  k_led_3_pin = 2, /**< LED3 pin 2 (P72, pin 85) */
+  k_led_4_pin = 1, /**< LED4 pin 1 (PB1, pin 84) */
+  k_led_5_pin = 2, /**< LED5 pin 2 (PB2, pin 83) */
 } led_pins_t;
 
 typedef enum : uint8_t {

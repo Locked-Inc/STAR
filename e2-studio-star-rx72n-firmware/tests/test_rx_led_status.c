@@ -569,7 +569,7 @@ void test_led_gpio_init_preserves_other_bits(void)
  * =============================================================================
  */
 
-/** @brief Verify LED 0 (heartbeat, P32) can be turned on */
+/** @brief Verify LED 0 (heartbeat, PA7) can be turned on */
 void test_led_set_heartbeat_on(void)
 {
   memset(&s_mock_port3, 0, sizeof(s_mock_port3));
@@ -577,7 +577,7 @@ void test_led_set_heartbeat_on(void)
   TEST_ASSERT_BITS(0x04, 0x04, s_mock_port3.podr);
 }
 
-/** @brief Verify LED 0 (heartbeat, P32) can be turned off */
+/** @brief Verify LED 0 (heartbeat, PA7) can be turned off */
 void test_led_set_heartbeat_off(void)
 {
   s_mock_port3.podr = 0xFF;
@@ -585,7 +585,7 @@ void test_led_set_heartbeat_off(void)
   TEST_ASSERT_BITS(0x04, 0x00, s_mock_port3.podr);
 }
 
-/** @brief Verify LED 1 (error, P87) can be toggled */
+/** @brief Verify LED 1 (error, PB0) can be toggled */
 void test_led_set_error_toggle(void)
 {
   memset(&s_mock_port8, 0, sizeof(s_mock_port8));
@@ -596,7 +596,7 @@ void test_led_set_error_toggle(void)
   TEST_ASSERT_BITS(0x80, 0x00, s_mock_port8.podr);
 }
 
-/** @brief Verify LED 5 (estop, P52) can be set */
+/** @brief Verify LED 5 (estop, PB2) can be set */
 void test_led_set_estop_on(void)
 {
   memset(&s_mock_port5, 0, sizeof(s_mock_port5));
@@ -881,28 +881,28 @@ void test_led_heartbeat_timing(void)
 /** @brief Verify LED pin assignment constants match hardware design */
 void test_led_pin_assignments(void)
 {
-  /* LED 0: P32 (Port 3, Pin 2) */
-  TEST_ASSERT_EQUAL(3, k_led_0_port);
-  TEST_ASSERT_EQUAL(2, k_led_0_pin);
+  /* LED 0: PA7 (Port A=10, Pin 7) */
+  TEST_ASSERT_EQUAL(10, k_led_0_port);
+  TEST_ASSERT_EQUAL(7, k_led_0_pin);
 
-  /* LED 1: P87 (Port 8, Pin 7) */
-  TEST_ASSERT_EQUAL(8, k_led_1_port);
-  TEST_ASSERT_EQUAL(7, k_led_1_pin);
+  /* LED 1: PB0 (Port B=11, Pin 0) */
+  TEST_ASSERT_EQUAL(11, k_led_1_port);
+  TEST_ASSERT_EQUAL(0, k_led_1_pin);
 
-  /* LED 2: P56 (Port 5, Pin 6) */
-  TEST_ASSERT_EQUAL(5, k_led_2_port);
-  TEST_ASSERT_EQUAL(6, k_led_2_pin);
+  /* LED 2: P71 (Port 7, Pin 1) */
+  TEST_ASSERT_EQUAL(7, k_led_2_port);
+  TEST_ASSERT_EQUAL(1, k_led_2_pin);
 
-  /* LED 3: P55 (Port 5, Pin 5) */
-  TEST_ASSERT_EQUAL(5, k_led_3_port);
-  TEST_ASSERT_EQUAL(5, k_led_3_pin);
+  /* LED 3: P72 (Port 7, Pin 2) */
+  TEST_ASSERT_EQUAL(7, k_led_3_port);
+  TEST_ASSERT_EQUAL(2, k_led_3_pin);
 
-  /* LED 4: P54 (Port 5, Pin 4) */
-  TEST_ASSERT_EQUAL(5, k_led_4_port);
-  TEST_ASSERT_EQUAL(4, k_led_4_pin);
+  /* LED 4: PB1 (Port B=11, Pin 1) */
+  TEST_ASSERT_EQUAL(11, k_led_4_port);
+  TEST_ASSERT_EQUAL(1, k_led_4_pin);
 
-  /* LED 5: P52 (Port 5, Pin 2) */
-  TEST_ASSERT_EQUAL(5, k_led_5_port);
+  /* LED 5: PB2 (Port B=11, Pin 2) */
+  TEST_ASSERT_EQUAL(11, k_led_5_port);
   TEST_ASSERT_EQUAL(2, k_led_5_pin);
 }
 

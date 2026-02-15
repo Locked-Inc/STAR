@@ -199,7 +199,7 @@ tab:
 \rowcolor {
   teal!15
 }
-27 & P32 & LED0 &Status LED(GPIO output) \\
+27 & P32 & Unused &Available GPIO \\
 \hline
 \rowcolor { yellow!15}
 28 & P31 / TMS &E1E2 - Emulator - Interface &JTAG(TMS) \\
@@ -255,7 +255,7 @@ tab:
 \rowcolor {
   teal!15
 }
-39 & P87 & LED1 &Status LED(GPIO output) \\
+39 & P87 & Unused &Available GPIO \\
 \hline
 \rowcolor { yellow!15}
 40 & P16 / USB0\_VBUS &USB0 VBUS detection &USB CDC debug interface \\
@@ -304,19 +304,19 @@ tab:
 49 & VSS\_USB &Ground &USB ground \\
 \hline
 \rowcolor { teal!15}
-50 & P56 & LED2 &Status LED(GPIO output) \\
+50 & P56 & Unused &Available GPIO \\
 \hline
 \rowcolor { teal!15}
-51 & P55 & LED3 &Status LED(GPIO output) \\
+51 & P55 & Unused &Available GPIO \\
 \hline
 \rowcolor { teal!15}
-52 & P54 & LED4 &Status LED(GPIO output) \\
+52 & P54 & Unused &Available GPIO \\
 \hline 53 & P53 & Unused &Not available as GPIO when external bus enabled(BCLK) \\
 \hline
 \rowcolor {
   teal!15
 }
-54 & P52 & LED5 &Status LED(GPIO output) \\
+54 & P52 & Unused &Available GPIO \\
 \hline
 \rowcolor { lime!10}
 55 & P51 &DS18B20 DQ & 1 - Wire temperature sensor data pin \\
@@ -419,12 +419,36 @@ tab:
   green!20
 }
 82 & PB3 / TCLKD &Encoder 3 Phase B &TPU2 encoder(quadrature counting, 16 - bit) \\
-\hline 83 & PB2 & Unused &Available GPIO(TPU, SCI4 / SCI6, Ethernet) \\
-\hline 84 & PB1 & Unused &Available GPIO(SCI4 / SCI6, Ethernet, IRQ4) \\
-\hline 85 & P72 & Unused &Available GPIO(Ethernet PMGI0) \\
-\hline 86 & P71 & Unused &Available GPIO(Ethernet PMGI0) \\
-\hline 87 & PB0 & Unused &Available GPIO(SCI4 / SCI6, Ethernet, IRQ12) \\
-\hline 88 & PA7 & Unused &Available GPIO(RSPI\_A CIPO, Ethernet) \\
+\hline
+\rowcolor {
+  teal!15
+}
+83 & PB2 & LED5 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+84 & PB1 & LED4 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+85 & P72 & LED3 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+86 & P71 & LED2 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+87 & PB0 & LED1 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+88 & PA7 & LED0 &Status LED(GPIO output) \\
 \hline
 \rowcolor {
   lime!10
