@@ -145,7 +145,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, BOOL, engage_hardware_stop, 2)                                            \
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 3)
 #define star_v1_EmergencyStopCommand_CALLBACK nullptr
-#define star_v1_EmergencyStopCommand_DEFAULT  nullptr
+#define star_v1_EmergencyStopCommand_DEFAULT nullptr
 
 extern const pb_msgdesc_t star_v1_WireMessage_msg;
 extern const pb_msgdesc_t star_v1_EmergencyStopCommand_msg;

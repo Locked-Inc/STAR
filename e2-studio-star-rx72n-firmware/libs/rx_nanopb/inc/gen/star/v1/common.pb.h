@@ -227,7 +227,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, y, 2)                                                             \
   X(a, STATIC, SINGULAR, DOUBLE, z, 3)
 #define star_v1_Vector3_CALLBACK nullptr
-#define star_v1_Vector3_DEFAULT  nullptr
+#define star_v1_Vector3_DEFAULT nullptr
 
 #define star_v1_Quaternion_FIELDLIST(X, a)                                                         \
   X(a, STATIC, SINGULAR, DOUBLE, w, 1)                                                             \
@@ -235,21 +235,21 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, y, 3)                                                             \
   X(a, STATIC, SINGULAR, DOUBLE, z, 4)
 #define star_v1_Quaternion_CALLBACK nullptr
-#define star_v1_Quaternion_DEFAULT  nullptr
+#define star_v1_Quaternion_DEFAULT nullptr
 
 #define star_v1_SE2Pose_FIELDLIST(X, a)                                                            \
   X(a, STATIC, SINGULAR, DOUBLE, x_m, 1)                                                           \
   X(a, STATIC, SINGULAR, DOUBLE, y_m, 2)                                                           \
   X(a, STATIC, SINGULAR, DOUBLE, angle_rad, 3)
 #define star_v1_SE2Pose_CALLBACK nullptr
-#define star_v1_SE2Pose_DEFAULT  nullptr
+#define star_v1_SE2Pose_DEFAULT nullptr
 
 #define star_v1_SE2Velocity_FIELDLIST(X, a)                                                        \
   X(a, STATIC, SINGULAR, DOUBLE, vx_mps, 1)                                                        \
   X(a, STATIC, SINGULAR, DOUBLE, vy_mps, 2)                                                        \
   X(a, STATIC, SINGULAR, DOUBLE, omega_rad_per_s, 3)
 #define star_v1_SE2Velocity_CALLBACK nullptr
-#define star_v1_SE2Velocity_DEFAULT  nullptr
+#define star_v1_SE2Velocity_DEFAULT nullptr
 
 extern const pb_msgdesc_t star_v1_RequestHeader_msg;
 extern const pb_msgdesc_t star_v1_ResponseHeader_msg;
