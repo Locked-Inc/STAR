@@ -18,6 +18,7 @@
  * @since Version 1.0.0
  */
 
+#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -127,6 +128,11 @@ typedef enum : uint8_t {
 
 typedef mock_rx_err_t rx_err_t;
 
+/** @brief Mock ThreadX error codes for testing */
+typedef enum : uint8_t {
+  k_mock_tx_error = 99, /**< Arbitrary ThreadX error code for failure injection */
+} mock_tx_error_codes_t;
+
 /* ---- Mock ThreadX types ---- */
 typedef unsigned long ULONG;
 typedef unsigned int  UINT;
@@ -197,9 +203,14 @@ UINT tx_thread_sleep(ULONG ticks)
   return TX_SUCCESS;
 }
 
+/** @brief Mock ThreadX constants */
+typedef enum : uint32_t {
+  k_mock_tick_value = 12345, /**< Arbitrary tick count for tx_time_get mock */
+} mock_threadx_constants_t;
+
 ULONG tx_time_get(void)
 {
-  return 12345;
+  return k_mock_tick_value;
 }
 
 /* shared_data mocks */
@@ -317,6 +328,30 @@ typedef enum : uint8_t {
   k_poeg_motor_count = 4,
 } mock_poeg_count_t;
 
+/**
+ * @brief Compile-time assertions to verify test LED constants match production
+ * @details
+ * These assertions ensure the test enum values match the production definitions
+ * in hardware_config.h. Any mismatch will cause a build failure, preventing
+ * test/production drift.
+ *
+ * Production source: e2-studio-star-rx72n-firmware/src/inc/hardware_config.h
+ * lines 525-539 (led_ports_t and led_pins_t enums).
+ */
+_Static_assert(k_led_0_port == 10, "LED0 port must match production (PORTA=10)");
+_Static_assert(k_led_1_port == 11, "LED1 port must match production (PORTB=11)");
+_Static_assert(k_led_2_port == 7, "LED2 port must match production (PORT7=7)");
+_Static_assert(k_led_3_port == 7, "LED3 port must match production (PORT7=7)");
+_Static_assert(k_led_4_port == 11, "LED4 port must match production (PORTB=11)");
+_Static_assert(k_led_5_port == 11, "LED5 port must match production (PORTB=11)");
+
+_Static_assert(k_led_0_pin == 7, "LED0 pin must match production (PA7)");
+_Static_assert(k_led_1_pin == 0, "LED1 pin must match production (PB0)");
+_Static_assert(k_led_2_pin == 1, "LED2 pin must match production (P71)");
+_Static_assert(k_led_3_pin == 2, "LED3 pin must match production (P72)");
+_Static_assert(k_led_4_pin == 1, "LED4 pin must match production (PB1)");
+_Static_assert(k_led_5_pin == 2, "LED5 pin must match production (PB2)");
+
 /* =============================================================================
  * Include the source under test AFTER all mocks are defined
  * =============================================================================
@@ -381,7 +416,7 @@ static const uint8_t s_test_led_pins[k_led_count] = {
 };
 
 /** @brief Set an LED on or off (test helper matching task logic) */
-static void test_led_set(uint8_t led_index, bool on)
+static void internal_test_led_set(uint8_t led_index, bool on)
 {
   if (led_index >= k_led_count) {
     return;
@@ -399,7 +434,7 @@ static void test_led_set(uint8_t led_index, bool on)
 }
 
 /** @brief Initialize LED GPIOs (test helper matching task logic) */
-static void test_led_init_gpio(void)
+static void internal_test_led_init_gpio(void)
 {
   for (uint8_t i = 0; i < k_led_count; i++) {
     volatile rx_port_regs_t* port = rx_port_get_base(s_test_led_ports[i]);
@@ -414,7 +449,7 @@ static void test_led_init_gpio(void)
 }
 
 /** @brief Check if LED is on */
-static bool test_led_is_on(uint8_t led_index)
+static bool internal_test_led_is_on(uint8_t led_index)
 {
   if (led_index >= k_led_count) {
     return false;
@@ -517,7 +552,7 @@ void test_led_task_create_double_returns_error(void)
 /** @brief Verify ThreadX create failure is propagated */
 void test_led_task_create_threadx_failure(void)
 {
-  s_mock_tx_create_return = 99; /* Simulate ThreadX error */
+  s_mock_tx_create_return = k_mock_tx_error;
 
   rx_err_t err = test_led_status_task_create();
 
@@ -600,7 +635,7 @@ void test_led_gpio_init_preserves_other_bits(void)
 void test_led_set_heartbeat_on(void)
 {
   memset(&s_mock_porta, 0, sizeof(s_mock_porta));
-  test_led_set(k_led_idx_heartbeat, true);
+  internal_test_led_set(k_led_idx_heartbeat, true);
   TEST_ASSERT_BITS(0x80, 0x80, s_mock_porta.podr); /* LED0 on PORTA pin 7 */
 }
 
@@ -608,7 +643,7 @@ void test_led_set_heartbeat_on(void)
 void test_led_set_heartbeat_off(void)
 {
   s_mock_porta.podr = 0xFF;
-  test_led_set(k_led_idx_heartbeat, false);
+  internal_test_led_set(k_led_idx_heartbeat, false);
   TEST_ASSERT_BITS(0x80, 0x00, s_mock_porta.podr); /* LED0 on PORTA pin 7 */
 }
 
@@ -616,10 +651,10 @@ void test_led_set_heartbeat_off(void)
 void test_led_set_error_toggle(void)
 {
   memset(&s_mock_portb, 0, sizeof(s_mock_portb));
-  test_led_set(k_led_idx_error, true);
+  internal_test_led_set(k_led_idx_error, true);
   TEST_ASSERT_BITS(0x01, 0x01, s_mock_portb.podr); /* LED1 on PB0, bit 0 */
 
-  test_led_set(k_led_idx_error, false);
+  internal_test_led_set(k_led_idx_error, false);
   TEST_ASSERT_BITS(0x01, 0x00, s_mock_portb.podr);
 }
 
@@ -627,7 +662,7 @@ void test_led_set_error_toggle(void)
 void test_led_set_estop_on(void)
 {
   memset(&s_mock_portb, 0, sizeof(s_mock_portb));
-  test_led_set(k_led_idx_estop, true);
+  internal_test_led_set(k_led_idx_estop, true);
   TEST_ASSERT_BITS(0x04, 0x04, s_mock_portb.podr); /* LED5 on PB2, bit 2 */
 }
 
@@ -638,8 +673,8 @@ void test_led_set_invalid_index_no_crash(void)
   memset(&s_mock_porta, 0, sizeof(s_mock_porta));
   memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
-  test_led_set(6, true);   /* Out of range */
-  test_led_set(255, true); /* Way out of range */
+  internal_test_led_set(6, true);   /* Out of range */
+  internal_test_led_set(255, true); /* Way out of range */
 
   /* No port registers should have changed */
   TEST_ASSERT_EQUAL(0, s_mock_port7.podr);
@@ -654,15 +689,15 @@ void test_led_set_does_not_affect_other_pins(void)
   s_mock_port7.podr = 0x00;
 
   /* Turn on LED 2 (motor, pin 1) */
-  test_led_set(k_led_idx_motor, true);
+  internal_test_led_set(k_led_idx_motor, true);
   TEST_ASSERT_EQUAL(0x02, s_mock_port7.podr); /* Only pin 1 set */
 
   /* Turn on LED 3 (comm, pin 2) */
-  test_led_set(k_led_idx_comm, true);
+  internal_test_led_set(k_led_idx_comm, true);
   TEST_ASSERT_EQUAL(0x06, s_mock_port7.podr); /* Pins 1 and 2 set (0x02 | 0x04) */
 
   /* Turn off LED 2 (motor, pin 1) */
-  test_led_set(k_led_idx_motor, false);
+  internal_test_led_set(k_led_idx_motor, false);
   TEST_ASSERT_EQUAL(0x04, s_mock_port7.podr); /* Only pin 2 remains */
 }
 
@@ -677,13 +712,13 @@ void test_led_is_on_returns_correct_state(void)
   memset(&s_mock_port7, 0, sizeof(s_mock_port7));
   memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
-  TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_heartbeat));
+  TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_heartbeat));
 
-  test_led_set(k_led_idx_heartbeat, true);
-  TEST_ASSERT_TRUE(test_led_is_on(k_led_idx_heartbeat));
+  internal_test_led_set(k_led_idx_heartbeat, true);
+  TEST_ASSERT_TRUE(internal_test_led_is_on(k_led_idx_heartbeat));
 
-  test_led_set(k_led_idx_heartbeat, false);
-  TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_heartbeat));
+  internal_test_led_set(k_led_idx_heartbeat, false);
+  TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_heartbeat));
 }
 
 /* =============================================================================
@@ -711,8 +746,8 @@ void test_led_motor_active_when_duty_nonzero(void)
       any_active = true;
     }
   }
-  test_led_set(k_led_idx_motor, any_active);
-  TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_motor));
+  internal_test_led_set(k_led_idx_motor, any_active);
+  TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_motor));
 
   /* Motor 2 running */
   s_mock_motor_state.duty_cycle_percent[2] = 50.0F;
@@ -724,8 +759,8 @@ void test_led_motor_active_when_duty_nonzero(void)
       any_active = true;
     }
   }
-  test_led_set(k_led_idx_motor, any_active);
-  TEST_ASSERT_TRUE(test_led_is_on(k_led_idx_motor));
+  internal_test_led_set(k_led_idx_motor, any_active);
+  TEST_ASSERT_TRUE(internal_test_led_is_on(k_led_idx_motor));
 }
 
 /** @brief Verify obstacle LED reflects shared_data obstacle state */
@@ -737,14 +772,14 @@ void test_led_obstacle_reflects_shared_data(void)
   s_mock_obstacle_state.any_obstacle = false;
   obstacle_state_t obs;
   (void)shared_data_get_obstacle(&obs);
-  test_led_set(k_led_idx_obstacle, obs.any_obstacle);
-  TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_obstacle));
+  internal_test_led_set(k_led_idx_obstacle, obs.any_obstacle);
+  TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_obstacle));
 
   /* Obstacle detected */
   s_mock_obstacle_state.any_obstacle = true;
   (void)shared_data_get_obstacle(&obs);
-  test_led_set(k_led_idx_obstacle, obs.any_obstacle);
-  TEST_ASSERT_TRUE(test_led_is_on(k_led_idx_obstacle));
+  internal_test_led_set(k_led_idx_obstacle, obs.any_obstacle);
+  TEST_ASSERT_TRUE(internal_test_led_is_on(k_led_idx_obstacle));
 }
 
 /** @brief Verify estop LED reflects shared_data estop state */
@@ -754,13 +789,13 @@ void test_led_estop_reflects_shared_data(void)
 
   /* No estop */
   s_mock_estop_active = false;
-  test_led_set(k_led_idx_estop, shared_data_is_estop_active());
-  TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_estop));
+  internal_test_led_set(k_led_idx_estop, shared_data_is_estop_active());
+  TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_estop));
 
   /* Estop active */
   s_mock_estop_active = true;
-  test_led_set(k_led_idx_estop, shared_data_is_estop_active());
-  TEST_ASSERT_TRUE(test_led_is_on(k_led_idx_estop));
+  internal_test_led_set(k_led_idx_estop, shared_data_is_estop_active());
+  TEST_ASSERT_TRUE(internal_test_led_is_on(k_led_idx_estop));
 }
 
 /** @brief Verify error LED activates on motor fault */
@@ -841,25 +876,25 @@ void test_led_comm_pulse_on_new_command(void)
   /* Pulse counts down */
   if (pulse_remaining > 0) {
     pulse_remaining--;
-    test_led_set(k_led_idx_comm, true);
+    internal_test_led_set(k_led_idx_comm, true);
   }
-  TEST_ASSERT_TRUE(test_led_is_on(k_led_idx_comm));
+  TEST_ASSERT_TRUE(internal_test_led_is_on(k_led_idx_comm));
   TEST_ASSERT_EQUAL(1, pulse_remaining);
 
   /* Second tick */
   if (pulse_remaining > 0) {
     pulse_remaining--;
-    test_led_set(k_led_idx_comm, true);
+    internal_test_led_set(k_led_idx_comm, true);
   }
   TEST_ASSERT_EQUAL(0, pulse_remaining);
 
   /* Pulse expired */
   if (pulse_remaining > 0) {
-    test_led_set(k_led_idx_comm, true);
+    internal_test_led_set(k_led_idx_comm, true);
   } else {
-    test_led_set(k_led_idx_comm, false);
+    internal_test_led_set(k_led_idx_comm, false);
   }
-  TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_comm));
+  TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_comm));
 }
 
 /* =============================================================================
@@ -877,16 +912,16 @@ void test_led_heartbeat_timing(void)
   /* First 5 ticks: LED should be on (counter 0-4 < half_period/2 = 5) */
   for (uint8_t tick = 0; tick < 5; tick++) {
     bool on = (counter < (k_led_heartbeat_half_period / 2));
-    test_led_set(k_led_idx_heartbeat, on);
-    TEST_ASSERT_TRUE(test_led_is_on(k_led_idx_heartbeat));
+    internal_test_led_set(k_led_idx_heartbeat, on);
+    TEST_ASSERT_TRUE(internal_test_led_is_on(k_led_idx_heartbeat));
     counter++;
   }
 
   /* Next 5 ticks: LED should be off (counter 5-9 >= 5) */
   for (uint8_t tick = 0; tick < 5; tick++) {
     bool on = (counter < (k_led_heartbeat_half_period / 2));
-    test_led_set(k_led_idx_heartbeat, on);
-    TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_heartbeat));
+    internal_test_led_set(k_led_idx_heartbeat, on);
+    TEST_ASSERT_FALSE(internal_test_led_is_on(k_led_idx_heartbeat));
     counter++;
   }
 
@@ -896,8 +931,8 @@ void test_led_heartbeat_timing(void)
 
   /* Back to on */
   bool on = (counter < (k_led_heartbeat_half_period / 2));
-  test_led_set(k_led_idx_heartbeat, on);
-  TEST_ASSERT_TRUE(test_led_is_on(k_led_idx_heartbeat));
+  internal_test_led_set(k_led_idx_heartbeat, on);
+  TEST_ASSERT_TRUE(internal_test_led_is_on(k_led_idx_heartbeat));
 }
 
 /* =============================================================================

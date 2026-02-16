@@ -424,75 +424,125 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  *
  * @par NASA Power of 10 Compliance
  * - **Rule 1** [OK] No goto, setjmp, recursion (sequential pin configuration)
- * - **Rule 2** [OK] No loops (8 pins configured sequentially, statically known)
+ * - **Rule 2** [OK] No loops in main function (delegated to helper functions)
  * - **Rule 3** [OK] No dynamic allocation (all register I/O)
- * - **Rule 4** [OK] Function is 45 lines (under 60 line limit)
+ * - **Rule 4** [OK] Function is ~30 lines (under 60 line limit, decomposed into helpers)
  * - **Rule 5** [OK] 2 preconditions, 5 postconditions documented
  * - **Rule 6** [OK] Minimal scope (no local variables)
- * - **Rule 7** [OK] All rx_mpc_set_*() return values checked
+ * - **Rule 7** [OK] All internal_gpio_init_*() return values checked
  * - **Rule 8** [OK] Uses C23 typed enums for pin identifiers
  * - **Rule 9** [OK] Single level of function call dereferencing
  * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
+ *
  */
-static rx_err_t gpio_init(void)
+
+/**
+ * @brief Configure I2C bus pins (RIIC0/RIIC1)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_i2c(void)
 {
   rx_err_t           err;
-  static const char* s_tag = "GPIO";
+  static const char* s_tag = "GPIO_I2C";
 
-  /* ---- Host I2C (RIIC0): SCL0 + SDA0 ---- */
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_scl0); /* P1.2 = SCL0 */
+  /* Host I2C (RIIC0): SCL0 + SDA0 */
+  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_scl0);
   RX_RETURN_ON_ERROR(err, s_tag, "SCL0 pin config failed");
 
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_sda0); /* P1.3 = SDA0 */
+  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_sda0);
   RX_RETURN_ON_ERROR(err, s_tag, "SDA0 pin config failed");
 
-  /* ---- BMS I2C (RIIC1): SCL1 + SDA1 ---- */
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_bms_scl1); /* P2.1 = SCL1 */
+  /* BMS I2C (RIIC1): SCL1 + SDA1 */
+  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_bms_scl1);
   RX_RETURN_ON_ERROR(err, s_tag, "SCL1 pin config failed");
 
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_bms_sda1); /* P2.0 = SDA1 */
+  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_bms_sda1);
   RX_RETURN_ON_ERROR(err, s_tag, "SDA1 pin config failed");
 
-  /* ---- Host SPI (RSPI2): COPI + CIPO + SCLK + CS0 ---- */
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi); /* PD.1 = COPI (RSPI2) */
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure host SPI pins (RSPI2)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_host_spi(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_SPI";
+
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 COPI pin config failed");
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cipo); /* PD.2 = CIPO (RSPI2) */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cipo);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 CIPO pin config failed");
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_sclk); /* PD.3 = SCLK (RSPI2) */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_sclk);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 SCLK pin config failed");
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cs0); /* PD.4 = CS0 (RSPI2) */
+  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cs0);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 CS0 pin config failed");
 
-  /* ---- MTU encoder clock inputs (front wheels only) ---- */
-  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_pha); /* P2.4 = MTCLKA */
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure MTU encoder input pins (front wheels)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_mtu_encoders(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_MTU_ENC";
+
+  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKA pin config failed");
 
-  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_phb); /* P2.5 = MTCLKB */
+  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_phb);
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKB pin config failed");
 
-  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc1_pha); /* PA.1 = MTCLKC */
+  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc1_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKC pin config failed");
 
-  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc1_phb); /* PC.5 = MTCLKD */
+  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc1_phb);
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKD pin config failed");
 
-  /* ---- TPU encoder clock inputs (rear wheels) ---- */
-  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha); /* PC.2 = TCLKA */
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure TPU encoder input pins (rear wheels)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_tpu_encoders(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_TPU_ENC";
+
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKA pin config failed");
 
-  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_phb); /* PA.3 = TCLKB */
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_phb);
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKB pin config failed");
 
-  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc3_pha); /* PC.0 = TCLKC */
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc3_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKC pin config failed");
 
-  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc3_phb); /* PB.3 = TCLKD */
+  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc3_phb);
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKD pin config failed");
 
-  /* ---- GPTW PWM outputs (4 motors × PH + EN = 8 pins) ---- */
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure GPTW PWM output pins (4 motors)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_gptw_pwm(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_GPTW";
+
   const rx_port_pin_t gptw_pins[] = {(rx_port_pin_t)k_pin_motor0_ph,
                                      (rx_port_pin_t)k_pin_motor0_en,
                                      (rx_port_pin_t)k_pin_motor1_ph,
@@ -507,30 +557,61 @@ static rx_err_t gpio_init(void)
     RX_RETURN_ON_ERROR(err, s_tag, "GPTW pin config failed");
   }
 
-  /* ---- ADC current sense (AN004-AN007 on P4.4-P4.7) ---- */
-  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an004); /* P4.4 = AN004 */
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure ADC current sense input pins
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_adc(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_ADC";
+
+  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an004);
   RX_RETURN_ON_ERROR(err, s_tag, "AN004 pin config failed");
 
-  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an005); /* P4.5 = AN005 */
+  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an005);
   RX_RETURN_ON_ERROR(err, s_tag, "AN005 pin config failed");
 
-  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an006); /* P4.6 = AN006 */
+  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an006);
   RX_RETURN_ON_ERROR(err, s_tag, "AN006 pin config failed");
 
-  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an007); /* P4.7 = AN007 */
+  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an007);
   RX_RETURN_ON_ERROR(err, s_tag, "AN007 pin config failed");
 
-  /* ---- USB VBUS detect (P1.6 = USB0_VBUS) ---- */
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure USB VBUS detection pin
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_usb(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_USB";
+
   err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
   RX_RETURN_ON_ERROR(err, s_tag, "USB VBUS pin config failed");
 
-  /* ---- HC-SR04 Sonar triggers (GPIO output, initial LOW) ---- */
-  const rx_port_pin_t sonar_trig_pins[k_sonar_count] = {
-    (rx_port_pin_t)k_pin_sonar_trig0, /* PF5 */
-    (rx_port_pin_t)k_pin_sonar_trig1, /* PJ5 */
-    (rx_port_pin_t)k_pin_sonar_trig2, /* PJ3 */
-    (rx_port_pin_t)k_pin_sonar_trig3  /* P33 */
-  };
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure HC-SR04 sonar trigger pins (GPIO outputs)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_sonar_triggers(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_SONAR_TRIG";
+
+  const rx_port_pin_t sonar_trig_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_trig0,
+                                                        (rx_port_pin_t)k_pin_sonar_trig1,
+                                                        (rx_port_pin_t)k_pin_sonar_trig2,
+                                                        (rx_port_pin_t)k_pin_sonar_trig3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
     err = rx_mpc_set_gpio(sonar_trig_pins[i]);
@@ -540,18 +621,27 @@ static rx_err_t gpio_init(void)
     const uint8_t            pin  = rx_pin_from_pin(sonar_trig_pins[i]);
     volatile rx_port_regs_t* regs = rx_port_get_base(port);
     RX_ASSERT(regs != nullptr, "Invalid sonar trigger port");
-    regs->pmr &= ~(uint8_t)(1U << pin);  /* GPIO mode */
-    regs->podr &= ~(uint8_t)(1U << pin); /* Initial LOW */
-    regs->pdr |= (uint8_t)(1U << pin);   /* Output */
+    regs->pmr &= ~(uint8_t)(1U << pin);
+    regs->podr &= ~(uint8_t)(1U << pin);
+    regs->pdr |= (uint8_t)(1U << pin);
   }
 
-  /* ---- HC-SR04 Sonar echoes (GPIO input) ---- */
-  const rx_port_pin_t sonar_echo_pins[k_sonar_count] = {
-    (rx_port_pin_t)k_pin_sonar_echo0, /* P03 / IRQ11 */
-    (rx_port_pin_t)k_pin_sonar_echo1, /* P02 / IRQ10 */
-    (rx_port_pin_t)k_pin_sonar_echo2, /* P01 / IRQ9 */
-    (rx_port_pin_t)k_pin_sonar_echo3  /* P00 / IRQ8 */
-  };
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure HC-SR04 sonar echo pins (GPIO inputs)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_sonar_echoes(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_SONAR_ECHO";
+
+  const rx_port_pin_t sonar_echo_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_echo0,
+                                                        (rx_port_pin_t)k_pin_sonar_echo1,
+                                                        (rx_port_pin_t)k_pin_sonar_echo2,
+                                                        (rx_port_pin_t)k_pin_sonar_echo3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
     err = rx_mpc_set_gpio(sonar_echo_pins[i]);
@@ -561,17 +651,26 @@ static rx_err_t gpio_init(void)
     const uint8_t            pin  = rx_pin_from_pin(sonar_echo_pins[i]);
     volatile rx_port_regs_t* regs = rx_port_get_base(port);
     RX_ASSERT(regs != nullptr, "Invalid sonar echo port");
-    regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
-    regs->pdr &= ~(uint8_t)(1U << pin); /* Input */
+    regs->pmr &= ~(uint8_t)(1U << pin);
+    regs->pdr &= ~(uint8_t)(1U << pin);
   }
 
-  /* ---- DRV8243S SPI chip selects (GPIO output, initial HIGH = deselected) ---- */
-  const rx_port_pin_t drv_cs_pins[k_drv_cs_count] = {
-    (rx_port_pin_t)k_pin_drv_cs0, /* P74 */
-    (rx_port_pin_t)k_pin_drv_cs1, /* PC1 */
-    (rx_port_pin_t)k_pin_drv_cs2, /* PB5 */
-    (rx_port_pin_t)k_pin_drv_cs3  /* PB4 */
-  };
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure DRV8243S chip select pins (GPIO outputs)
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_drv_cs(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_DRV_CS";
+
+  const rx_port_pin_t drv_cs_pins[k_drv_cs_count] = {(rx_port_pin_t)k_pin_drv_cs0,
+                                                     (rx_port_pin_t)k_pin_drv_cs1,
+                                                     (rx_port_pin_t)k_pin_drv_cs2,
+                                                     (rx_port_pin_t)k_pin_drv_cs3};
 
   for (uint8_t i = 0; i < k_drv_cs_count; i++) {
     err = rx_mpc_set_gpio(drv_cs_pins[i]);
@@ -581,28 +680,74 @@ static rx_err_t gpio_init(void)
     const uint8_t            pin  = rx_pin_from_pin(drv_cs_pins[i]);
     volatile rx_port_regs_t* regs = rx_port_get_base(port);
     RX_ASSERT(regs != nullptr, "Invalid DRV CS port");
-    regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
-    regs->podr |= (uint8_t)(1U << pin); /* Initial HIGH (deselected) */
-    regs->pdr |= (uint8_t)(1U << pin);  /* Output */
+    regs->pmr &= ~(uint8_t)(1U << pin);
+    regs->podr |= (uint8_t)(1U << pin);
+    regs->pdr |= (uint8_t)(1U << pin);
   }
 
-  /* ---- DRV8243S SPI data (SCI7 alternate function P90-P92) ---- */
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk); /* P91 = SCK7 */
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure SCI7 SPI pins for motor driver communication
+ * @return k_rx_ok on success, error code otherwise
+ */
+static rx_err_t internal_gpio_init_sci7_spi(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_SCI7";
+
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk);
   RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SCK pin config failed");
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi); /* P90 = COPI (SCI7) */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi);
   RX_RETURN_ON_ERROR(err, s_tag, "SCI7 COPI pin config failed");
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo); /* P92 = CIPO (SCI7) */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo);
   RX_RETURN_ON_ERROR(err, s_tag, "SCI7 CIPO pin config failed");
 
-  /* ---- GTETRG nFAULT pins (POEG hardware triggers) ----
-   * POEG external trigger (GTETRGA-D) reads the physical pin level directly
-   * via the PIDR path, not through MPC peripheral routing. These pins are
-   * configured as GPIO inputs with no MPC PSEL required for POEG to sample
-   * the nFAULT signal at hardware speed. POEG PIDE=1 enables the external
-   * pin input, and the GTETRG logic reads the port pin state continuously.
-   * No MPC config needed -- documented here for traceability. */
+  return k_rx_ok;
+}
+
+static rx_err_t gpio_init(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO";
+
+  err = internal_gpio_init_i2c();
+  RX_RETURN_ON_ERROR(err, s_tag, "I2C pin init failed");
+
+  err = internal_gpio_init_host_spi();
+  RX_RETURN_ON_ERROR(err, s_tag, "Host SPI pin init failed");
+
+  err = internal_gpio_init_mtu_encoders();
+  RX_RETURN_ON_ERROR(err, s_tag, "MTU encoder pin init failed");
+
+  err = internal_gpio_init_tpu_encoders();
+  RX_RETURN_ON_ERROR(err, s_tag, "TPU encoder pin init failed");
+
+  err = internal_gpio_init_gptw_pwm();
+  RX_RETURN_ON_ERROR(err, s_tag, "GPTW PWM pin init failed");
+
+  err = internal_gpio_init_adc();
+  RX_RETURN_ON_ERROR(err, s_tag, "ADC pin init failed");
+
+  err = internal_gpio_init_usb();
+  RX_RETURN_ON_ERROR(err, s_tag, "USB VBUS pin init failed");
+
+  err = internal_gpio_init_sonar_triggers();
+  RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger pin init failed");
+
+  err = internal_gpio_init_sonar_echoes();
+  RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo pin init failed");
+
+  err = internal_gpio_init_drv_cs();
+  RX_RETURN_ON_ERROR(err, s_tag, "DRV CS pin init failed");
+
+  err = internal_gpio_init_sci7_spi();
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SPI pin init failed");
+
+  /* GTETRG nFAULT pins: no MPC config needed (documented in header) */
 
   rx_log_info(s_tag, "GPIO pin muxing complete");
 
