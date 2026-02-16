@@ -501,67 +501,6 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
 static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
 
 /* =============================================================================
- * Internal Helper Functions (Encapsulation)
- * =============================================================================
- */
-
-/**
- * @brief Check if USB communication handle is initialized
- *
- * @details
- * Provides encapsulated access to USB handle initialization status without
- * directly accessing internal .initialized field.
- *
- * @param[in] handle USB communication handle to check
- *   - **Valid range**: Non-NULL pointer to rx_usb_comm_handle_t or nullptr
- *   - **Constraints**: None (nullptr is safe)
- *
- * @return true if handle is initialized, false otherwise
- * @retval true Handle is non-NULL and initialized flag is set
- * @retval false Handle is NULL or initialized flag is clear
- *
- * @pre None (nullptr is safe input)
- * @pre Handle may be in any state (uninitialized content is safe)
- * @post Handle state unchanged
- * @post No side effects
- *
- * @note Encapsulation wrapper to avoid direct field access
- * @since Version 1.0.0
- */
-static inline bool internal_is_usb_initialized(const rx_usb_comm_handle_t* handle)
-{
-  return (handle != nullptr && handle->initialized != 0);
-}
-
-/**
- * @brief Check if SPI communication handle is initialized
- *
- * @details
- * Provides encapsulated access to SPI handle initialization status without
- * directly accessing internal .initialized field.
- *
- * @param[in] handle SPI communication handle to check
- *   - **Valid range**: Non-NULL pointer to rx_spi_comm_handle_t or nullptr
- *   - **Constraints**: None (nullptr is safe)
- *
- * @return true if handle is initialized, false otherwise
- * @retval true Handle is non-NULL and initialized flag is set
- * @retval false Handle is NULL or initialized flag is clear
- *
- * @pre None (nullptr is safe input)
- * @pre Handle may be in any state (uninitialized content is safe)
- * @post Handle state unchanged
- * @post No side effects
- *
- * @note Encapsulation wrapper to avoid direct field access
- * @since Version 1.0.0
- */
-static inline bool internal_is_spi_initialized(const rx_spi_comm_handle_t* handle)
-{
-  return (handle != nullptr && handle->initialized != 0);
-}
-
-/* =============================================================================
  * Public Functions
  * =============================================================================
  */
@@ -916,11 +855,13 @@ rx_err_t comm_task_create(void)
  * @since Version 1.0.0
  * @see rx_usb_comm_init() USB transport layer initialization
  * @see rx_spi_comm_init() SPI transport layer initialization
- * @see internal_is_usb_initialized() Check USB init status
- * @see internal_is_spi_initialized() Check SPI init status
  */
 static void internal_init_transports(rx_comm_manager_config_t* config)
 {
+  /* Precondition checks (NASA Power of 10 Rule 5: minimum 2 checks) */
+  RX_ASSERT(config != nullptr, "Config pointer must not be NULL");
+  RX_ASSERT(s_tag != nullptr, "Log tag must be initialized");
+
   /* Initialize USB communication layer */
   rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
   bool usb_ok                   = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
