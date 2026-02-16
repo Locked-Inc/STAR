@@ -1197,6 +1197,9 @@ static void internal_motor_task_entry(ULONG input)
 
   /* Main control loop */
   while (true) {
+    /* Commit any ISR-triggered e-stop to mutex-protected state */
+    (void)shared_data_commit_isr_estop();
+
     /* Check for e-stop or timeout */
     if (shared_data_is_estop_active()) {
       if (!s_active_brake_in_progress) {

@@ -251,6 +251,53 @@ void shared_data_clear_pid_update_flag(void);
 rx_err_t shared_data_trigger_estop(estop_reason_t reason);
 
 /**
+ * @brief Trigger emergency stop from ISR context (ISR-safe, no blocking)
+ *
+ * @details
+ * ISR-safe version that sets volatile flag and event flag without blocking
+ * on mutex. Motor control task commits pending ISR e-stop via
+ * shared_data_commit_isr_estop() within 4ms.
+ *
+ * @param[in] reason E-stop reason code
+ *
+ * @pre Called from ISR context only
+ * @post Motor task commits e-stop within 4ms
+ *
+ * @note ISR-safe: No blocking, no mutex
+ * @warning ONLY call from ISR (POEG, BMS alert). For tasks use shared_data_trigger_estop()
+ *
+ * @see shared_data_commit_isr_estop() Commit function (motor task)
+ * @see shared_data_trigger_estop() Task-context version
+ *
+ * @since Version 1.1.0
+ */
+void shared_data_trigger_estop_isr_safe(estop_reason_t reason);
+
+/**
+ * @brief Commit ISR-triggered e-stop to mutex-protected state (task context)
+ *
+ * @details
+ * Transfers ISR-triggered e-stop from volatile flag to mutex-protected state.
+ * Called by motor control task at start of each 4ms iteration.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok E-stop committed or no pending e-stop
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Called from task context only (motor control task)
+ * @post If pending ISR e-stop: committed to shared state
+ *
+ * @note Thread-safe: Uses estop_mutex
+ * @warning ONLY call from task context (uses blocking mutex)
+ *
+ * @see shared_data_trigger_estop_isr_safe() ISR-safe trigger
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t shared_data_commit_isr_estop(void);
+
+/**
  * @brief Clear emergency stop
  * @return rx_err_t Error code
  */

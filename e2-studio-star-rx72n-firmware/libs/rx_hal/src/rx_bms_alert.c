@@ -116,8 +116,8 @@ void __attribute__((interrupt)) irq13_bms_alert_isr(void)
   /* Log fault (brief - ISR context) */
   rx_log_error(s_tag, "BQ4050 ALERT - battery fault detected");
 
-  /* Trigger emergency stop */
-  (void)shared_data_trigger_estop(k_estop_reason_battery_fault);
+  /* Trigger emergency stop (ISR-safe, no mutex) */
+  shared_data_trigger_estop_isr_safe(k_estop_reason_battery_fault);
 }
 
 /* =============================================================================

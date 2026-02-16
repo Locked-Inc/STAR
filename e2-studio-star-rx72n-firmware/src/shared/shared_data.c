@@ -406,6 +406,46 @@ typedef enum : uint16_t {
 static const char* const s_tag = "SDATA";
 
 /* =============================================================================
+ * ISR-Safe E-Stop State
+ * =============================================================================
+ */
+
+/**
+ * @var s_estop_pending_from_isr
+ * @brief ISR-safe e-stop trigger flag (set by ISR, cleared by task)
+ *
+ * @details
+ * Volatile flag set by POEG and BMS alert ISRs to signal e-stop without
+ * blocking on mutex. Motor control task commits this to mutex-protected
+ * state via shared_data_commit_isr_estop() at start of each iteration.
+ *
+ * **Access pattern:**
+ * - ISRs: Write-only (set to true)
+ * - Motor task: Read-write (read then clear after commit)
+ *
+ * @note Volatile ensures ISR writes are not optimized away
+ * @since Version 1.1.0
+ */
+static volatile bool s_estop_pending_from_isr = false;
+
+/**
+ * @var s_pending_estop_reason
+ * @brief ISR-triggered e-stop reason code (volatile for ISR access)
+ *
+ * @details
+ * Stores the reason code for ISR-triggered e-stop. Written by ISR,
+ * read by motor task during commit operation.
+ *
+ * **Thread safety:**
+ * - Race condition acceptable: if multiple ISRs fire, last reason wins
+ * - Only committed value (in mutex-protected state) is authoritative
+ *
+ * @note Volatile ensures ISR writes are visible to task
+ * @since Version 1.1.0
+ */
+static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
+
+/* =============================================================================
  * Global Instance
  * =============================================================================
  */
@@ -1506,6 +1546,182 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
 
   /* Signal e-stop event */
   (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_estop_triggered, TX_OR);
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Trigger emergency stop from ISR context (ISR-safe, no blocking)
+ *
+ * @details
+ * **ISR-safe** version of shared_data_trigger_estop() that DOES NOT block on mutex.
+ * Sets a volatile flag and event flag only. Motor control task commits the pending
+ * e-stop to mutex-protected state via shared_data_commit_isr_estop().
+ *
+ * **CRITICAL:** This function is specifically designed for ISR context and MUST be
+ * used instead of shared_data_trigger_estop() when called from interrupt handlers.
+ *
+ * ## Algorithm Steps:
+ *
+ * 1. **Set volatile flag:** s_estop_pending_from_isr = true (atomic write)
+ * 2. **Store reason:** s_pending_estop_reason = reason (atomic write)
+ * 3. **Signal event:** tx_event_flags_set(k_event_estop_triggered, TX_OR)
+ * 4. **Return immediately:** No blocking, no mutex
+ *
+ * **Commit path:** Motor control task calls shared_data_commit_isr_estop() every
+ * 4ms (250 Hz) to transfer ISR-triggered e-stop to mutex-protected shared state.
+ *
+ * @param[in] reason E-stop reason code (driver_fault, battery_fault, etc.)
+ *
+ * @pre Called from ISR context only (POEG, BMS alert ISRs)
+ * @post s_estop_pending_from_isr set to true
+ * @post s_pending_estop_reason set to reason
+ * @post k_event_estop_triggered flag set
+ * @post Motor task will commit on next iteration (<4ms latency)
+ *
+ * @note Thread Safety: Volatile writes are atomic on RX72N
+ * @note Performance: ~1 µs total (no mutex wait)
+ * @note Latency: Committed within 4ms by motor task
+ * @note ISR-safe: No blocking calls, safe for interrupt context
+ *
+ * @warning ONLY call from ISR context. For task context, use shared_data_trigger_estop()
+ * @warning Multiple ISRs may race - last reason wins (acceptable for safety)
+ *
+ * @par Example - POEG Motor Fault ISR:
+ * @code{.c}
+ * void __attribute__((interrupt)) poeg_group_a_isr(void)
+ * {
+ *     icu()->ir[k_poeg_irq_group_a] = 0; // Clear IR flag
+ *     rx_log_error("POEG", "nFAULT motor 0");
+ *
+ *     // ISR-safe e-stop trigger (no mutex)
+ *     shared_data_trigger_estop_isr_safe(k_estop_reason_driver_fault);
+ * }
+ * @endcode
+ *
+ * @par Example - BMS Alert ISR:
+ * @code{.c}
+ * void __attribute__((interrupt)) irq13_bms_alert_isr(void)
+ * {
+ *     icu()->ir[k_bms_alert_vector] = 0;
+ *     rx_log_error("BMS", "BQ4050 ALERT");
+ *
+ *     // ISR-safe e-stop trigger
+ *     shared_data_trigger_estop_isr_safe(k_estop_reason_battery_fault);
+ * }
+ * @endcode
+ *
+ * @see shared_data_commit_isr_estop() Commit pending ISR e-stop (motor task)
+ * @see shared_data_trigger_estop() Task-context version (uses mutex)
+ * @see shared_data_is_estop_active() Check if e-stop active
+ *
+ * @since Version 1.1.0
+ */
+void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
+{
+  /* Set ISR-triggered e-stop pending flag (volatile write) */
+  s_estop_pending_from_isr = true;
+
+  /* Store reason code (volatile write, may be overwritten by another ISR) */
+  s_pending_estop_reason = reason;
+
+  /* Signal e-stop event (ISR-safe, TX_OR is non-blocking) */
+  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_estop_triggered, TX_OR);
+}
+
+/**
+ * @brief Commit ISR-triggered e-stop to mutex-protected state (task context)
+ *
+ * @details
+ * Transfers ISR-triggered e-stop from volatile flags to mutex-protected shared
+ * state. Called by motor control task at start of each 4ms iteration (250 Hz).
+ *
+ * **Why this is needed:** ISRs cannot block on mutexes, so they set a volatile
+ * flag. This function runs in task context where mutex acquisition is safe.
+ *
+ * ## Algorithm Steps:
+ *
+ * 1. **Check pending flag:** Read s_estop_pending_from_isr (volatile read)
+ * 2. **If not set:** Return immediately (nothing to commit)
+ * 3. **If set:**
+ *    - Acquire estop_mutex (blocking, safe in task context)
+ *    - Set g_shared_data.estop_active = true
+ *    - Set g_shared_data.estop_reason = s_pending_estop_reason
+ *    - Release estop_mutex
+ *    - Clear s_estop_pending_from_isr flag (consume pending e-stop)
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok E-stop committed successfully (or no pending e-stop)
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Called from task context only (motor control task)
+ * @pre Module initialized
+ * @post If pending: estop_active set, estop_reason updated, flag cleared
+ * @post If not pending: No state change
+ *
+ * @invariant estop_mutex held for <2 µs
+ *
+ * @note Thread Safety: Protected by estop_mutex
+ * @note Performance: ~2.5 µs when pending, ~0.5 µs when not pending
+ * @note Frequency: Called every 4ms by motor task (250 Hz)
+ * @note Non-blocking: Returns immediately if no pending e-stop
+ *
+ * @warning ONLY call from task context (motor control task)
+ * @warning DO NOT call from ISR context (uses blocking mutex)
+ *
+ * @par Example - Motor Control Task Loop:
+ * @code{.c}
+ * while (true) {
+ *     // Commit any ISR-triggered e-stop first
+ *     (void)shared_data_commit_isr_estop();
+ *
+ *     // Check e-stop status (will see committed ISR e-stop)
+ *     if (shared_data_is_estop_active()) {
+ *         internal_active_brake_sequence();
+ *         tx_thread_sleep(1); // 4ms sleep
+ *         continue;
+ *     }
+ *
+ *     // Normal control loop...
+ * }
+ * @endcode
+ *
+ * @see shared_data_trigger_estop_isr_safe() ISR-safe e-stop trigger
+ * @see shared_data_trigger_estop() Task-context e-stop trigger
+ * @see shared_data_is_estop_active() Check if e-stop active
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t shared_data_commit_isr_estop(void)
+{
+  UINT tx_status;
+
+  /* Check if ISR triggered an e-stop (volatile read) */
+  if (!s_estop_pending_from_isr) {
+    return k_rx_ok; /* Nothing pending */
+  }
+
+  /* Check initialization */
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  /* Acquire estop mutex (safe in task context) */
+  tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  /* Commit ISR-triggered e-stop to shared state */
+  g_shared_data.estop_active = true;
+  g_shared_data.estop_reason = s_pending_estop_reason;
+
+  /* Release mutex */
+  (void)tx_mutex_put(&g_shared_data.estop_mutex);
+
+  /* Clear pending flag (consume the ISR e-stop) */
+  s_estop_pending_from_isr = false;
 
   return k_rx_ok;
 }
