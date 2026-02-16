@@ -301,7 +301,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, buffer contains encoded message
- * @retval k_rx_err_invalid_arg NULL pointer in msg, buffer, or len
+ * @retval k_rx_err_invalid_arg nullptr in msg, buffer, or len
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_invalid_size Buffer too small or encoding failed
  *
@@ -348,7 +348,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, msg contains decoded values
- * @retval k_rx_err_invalid_arg NULL pointer or len == 0
+ * @retval k_rx_err_invalid_arg nullptr or len == 0
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_protocol_error Malformed message, CRC error, or invalid field
  *
@@ -412,7 +412,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, buffer contains encoded message
- * @retval k_rx_err_invalid_arg NULL pointer in parameters
+ * @retval k_rx_err_invalid_arg nullptr in parameters
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_invalid_size Buffer too small
  *
@@ -454,7 +454,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, msg contains decoded values
- * @retval k_rx_err_invalid_arg NULL pointer or len == 0
+ * @retval k_rx_err_invalid_arg nullptr or len == 0
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_protocol_error Malformed message
  *
@@ -486,7 +486,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, buffer contains encoded response
- * @retval k_rx_err_invalid_arg NULL pointer in parameters
+ * @retval k_rx_err_invalid_arg nullptr in parameters
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_invalid_size Buffer too small
  *
@@ -541,7 +541,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, msg contains decoded values
- * @retval k_rx_err_invalid_arg NULL pointer or len == 0
+ * @retval k_rx_err_invalid_arg nullptr or len == 0
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_protocol_error Malformed message or invalid field
  *
@@ -593,19 +593,19 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * Used to process RPi5 commands that configure SPI retransmission parameters.
  *
  * @param[in] buffer Raw protobuf bytes to decode
- *   - **Valid range**: Non-NULL pointer to protobuf-encoded data
+ *   - **Valid range**: Non-nullptr to protobuf-encoded data
  *   - **Max size**: s_nanopb_buffer_size (1024 bytes)
  *
  * @param[in] len Length of buffer in bytes
  *   - **Valid range**: [1, s_nanopb_buffer_size]
  *
  * @param[out] msg Decoded message output
- *   - **Valid range**: Non-NULL pointer to star_v1_SetRetransmitConfigRequest
+ *   - **Valid range**: Non-nullptr to star_v1_SetRetransmitConfigRequest
  *   - **Output**: Zero-initialized then populated from buffer
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Decode successful
- * @retval k_rx_err_invalid_arg NULL pointer or invalid length
+ * @retval k_rx_err_invalid_arg nullptr or invalid length
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_protocol_error Protobuf decode failed
  *
@@ -653,7 +653,7 @@ rx_nanopb_decode_retransmit_config_request(const uint8_t*                      b
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, buffer contains encoded telemetry
- * @retval k_rx_err_invalid_arg NULL pointer in parameters
+ * @retval k_rx_err_invalid_arg nullptr in parameters
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_invalid_size Buffer too small
  *
@@ -772,9 +772,9 @@ typedef struct {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, cmd populated
- * @retval k_rx_err_null_ptr NULL pointer in cmd or params
+ * @retval k_rx_err_null_ptr nullptr in cmd or params
  *
- * @pre cmd and params must not be NULL
+ * @pre cmd and params must not benullptr
  * @post cmd fully populated with velocity values
  *
  * @note Thread-safe (no shared state)
@@ -817,9 +817,9 @@ rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            cmd,
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, cmd populated
- * @retval k_rx_err_null_ptr NULL pointer in cmd or params
+ * @retval k_rx_err_null_ptr nullptr in cmd or params
  *
- * @pre cmd and params must not be NULL
+ * @pre cmd and params must not benullptr
  * @post cmd populated with left/right velocities duplicated
  *
  * @note Thread-safe (no shared state)
@@ -860,7 +860,7 @@ rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand*           
  *   - If NULL, request_id field left empty
  *   - If provided, copied to header.request_id
  *
- * @pre header must not be NULL
+ * @pre header must not benullptr
  * @post header populated with status and request_id (if provided)
  *
  * @note Thread-safe (no shared state)

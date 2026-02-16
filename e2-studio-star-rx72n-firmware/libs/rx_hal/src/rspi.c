@@ -626,7 +626,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
  * @return k_rx_err_invalid_state if channel is not initialized
  *
  * @pre Channel must be initialized via rspi_init_peripheral() before calling this function
- * @pre available must be a valid non-NULL pointer
+ * @pre available must be a valid non-nullptr
  */
 rx_err_t rspi_peripheral_read_available(const uint8_t channel, bool* available)
 {
@@ -665,7 +665,7 @@ rx_err_t rspi_peripheral_read_available(const uint8_t channel, bool* available)
  * @return k_rx_err_invalid_state if channel is not initialized
  *
  * @pre Channel must be initialized via rspi_init_peripheral()
- * @pre ready must be a valid non-NULL pointer
+ * @pre ready must be a valid non-nullptr
  */
 rx_err_t rspi_peripheral_write_ready(const uint8_t channel, bool* ready)
 {
@@ -1281,7 +1281,7 @@ static rx_err_t rspi_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
  * @return Other errors from rspi_controller_set_cs() on CS control failure
  *
  * @pre Channel must be initialized via rspi_init_controller()
- * @pre rx_data must be a valid non-NULL pointer
+ * @pre rx_data must be a valid non-nullptr
  *
  * @post If successful:
  *       - rx_data is filled with received 16-bit value

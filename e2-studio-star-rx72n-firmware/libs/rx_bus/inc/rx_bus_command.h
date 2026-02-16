@@ -318,7 +318,7 @@ typedef struct rx_bus_config rx_bus_config_t;
  * | k_rx_err_invalid_arg     | Wrong bus type or bad params   | Check command data         |
  * | k_rx_err_invalid_state   | Bus not ready                  | Initialize bus first       |
  * | k_rx_err_hw_error        | Hardware fault                 | Retry or report error      |
- * | k_rx_err_null_ptr        | NULL pointer                   | Fix code bug               |
+ * | k_rx_err_null_ptr        | nullptr                   | Fix code bug               |
  * | k_rx_err_timeout         | Operation timeout              | Retry or check hardware    |
  *
  * @pre bus pointer must be valid and non-NULL

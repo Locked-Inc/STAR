@@ -139,7 +139,7 @@
  * ## Error Handling
  *
  * The driver provides comprehensive error detection:
- * - **k_rx_err_null_ptr**: NULL pointer passed to function
+ * - **k_rx_err_null_ptr**: nullptr passed to function
  * - **k_rx_err_invalid_arg**: Invalid channel, address, or frequency
  * - **k_rx_err_invalid_state**: Channel not initialized
  * - **k_rx_err_timeout**: Bus busy or operation timeout
@@ -643,7 +643,7 @@ internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t
  *
  * @par NASA Power of 10 Compliance
  * - Rule 2: [OK] Bounded loop with k_riic_timeout_us maximum iterations
- * - Rule 5: [OK] NULL pointer check via RX_CHECK_NULL_PTR
+ * - Rule 5: [OK] nullptr check via RX_CHECK_NULL_PTR
  */
 static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
 {

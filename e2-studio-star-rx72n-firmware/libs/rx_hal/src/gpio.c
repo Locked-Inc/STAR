@@ -769,7 +769,7 @@ rx_err_t gpio_toggle(const rx_port_pin_t pin)
  * @retval k_rx_err_gpio_invalid_port Port number in pin is invalid
  * @retval k_rx_err_gpio_invalid_pin Pin number exceeds k_rx_pin_max
  *
- * @pre value must be non-NULL pointer
+ * @pre value must be non-nullptr
  * @pre Pin should be configured as input for external signals
  *
  * @post *value contains current pin level (true=high, false=low)

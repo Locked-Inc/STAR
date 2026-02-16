@@ -461,7 +461,7 @@ typedef struct {
  *
  * ## Error Handling
  * Function validates all inputs before computation:
- * - NULL pointer checks (handle, output)
+ * - nullptr checks (handle, output)
  * - Initialization state check
  * - dt > 0 validation (zero or negative dt causes division by zero in derivative)
  *
@@ -574,7 +574,7 @@ typedef struct {
  *     motor_set_duty(duty);
  *     break;
  *   case k_rx_err_null_ptr:
- *     rx_log_error("PID", "NULL pointer passed");
+ *     rx_log_error("PID", "nullptr passed");
  *     break;
  *   case k_rx_err_invalid_state:
  *     rx_log_error("PID", "Not initialized - call rx_pid_init first");

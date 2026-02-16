@@ -500,7 +500,7 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, value read and stored
- * @retval k_rx_err_null_ptr NULL pointer in bus_config, user_ctx, or ctx->value
+ * @retval k_rx_err_null_ptr nullptr in bus_config, user_ctx, or ctx->value
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_hw_error GPIO read failed (hardware fault)
  *
@@ -703,7 +703,7 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, GPIO initialized
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_arg Bus is not GPIO type
  * @retval k_rx_err_timeout Mutex timeout
@@ -779,7 +779,7 @@ rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool 
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, output changed
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout Mutex timeout
@@ -849,7 +849,7 @@ rx_err_t rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, value contains pin state
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout Mutex timeout
@@ -928,7 +928,7 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, pin state inverted
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized or pin is input
  * @retval k_rx_err_timeout Mutex timeout

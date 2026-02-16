@@ -226,7 +226,7 @@ static uint32_t s_gptw_period[k_gptw_max_channels] = {0};
  *
  * @param[in] channel GPTW channel identifier
  *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
- *   - Values outside this range return NULL
+ *   - Values outside this range returnnullptr
  *
  * @return Pointer to GPTW channel register structure
  * @retval Non-NULL Pointer to rx_gptw_channel_regs_t for valid channels
@@ -1005,7 +1005,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] NULL pointer check, channel range check
+ * - Rule 5: [OK] nullptr check, channel range check
  * - Rule 7: [OK] All internal function returns checked
  *
  * @callgraph
@@ -1515,7 +1515,7 @@ typedef enum : uint8_t {
  * @note For sawtooth mode, direction is ignored (always up)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] NULL pointer checks, period validation
+ * - Rule 5: [OK] nullptr checks, period validation
  * - Rule 2: [OK] No loops (direct calculation)
  *
  * @see internal_configure_channel_staggered() Calls this function

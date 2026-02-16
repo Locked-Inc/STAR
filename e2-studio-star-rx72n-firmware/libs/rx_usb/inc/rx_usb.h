@@ -244,7 +244,7 @@
  *   // Configure USB event callback
  *   rx_usb_config_t config = {
  *     .callback = usb_event_callback,
- *     .ctx = NULL
+ *     .ctx =nullptr
  *   };
  *
  *   rx_err_t err = rx_usb_init(&config);

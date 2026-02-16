@@ -267,14 +267,14 @@ typedef enum : uint16_t {
  * @enddot
  *
  * @param[in] frame Frame to format
- *   - Must be valid non-NULL pointer
+ *   - Must be valid non-nullptr
  *   - header.length must be <= k_frame_max_payload
  *   - payload data must be valid for header.length bytes
  * @param[in] is_tx Direction indicator
  *   - true: Prefixes output with "[TX] " (transmit direction)
  *   - false: Prefixes output with "[RX] " (receive direction)
  * @param[out] output Output buffer for ASCII text
- *   - Must be valid non-NULL pointer
+ *   - Must be valid non-nullptr
  *   - Caller maintains ownership
  *   - Will be null-terminated on success
  * @param[in] output_max_len Maximum bytes to write to output buffer
@@ -282,7 +282,7 @@ typedef enum : uint16_t {
  *   - Recommended: k_frame_ascii_max_output (2048)
  *   - Larger payloads require proportionally larger buffers
  * @param[out] output_len Actual bytes written (excluding null terminator)
- *   - Must be valid non-NULL pointer
+ *   - Must be valid non-nullptr
  *   - Set only on success
  *
  * @return rx_err_t Error code
@@ -400,7 +400,7 @@ typedef enum : uint16_t {
  *
  * @pre None (pure function, always valid)
  *
- * @post Return value is non-NULL pointer to null-terminated string
+ * @post Return value is non-nullptr to null-terminated string
  * @post Return value points to static read-only memory
  *
  * @note Thread-safe: returns pointer to static const data
@@ -459,7 +459,7 @@ const char* rx_frame_ascii_type_name(rx_frame_type_t type);
  *   - Value from rx_frame_flags_t or combination thereof
  *   - 0 produces "NONE"
  * @param[out] buffer Output buffer for formatted string
- *   - Must be valid non-NULL pointer
+ *   - Must be valid non-nullptr
  *   - Caller maintains ownership
  *   - Will be null-terminated
  * @param[in] buffer_len Size of output buffer in bytes

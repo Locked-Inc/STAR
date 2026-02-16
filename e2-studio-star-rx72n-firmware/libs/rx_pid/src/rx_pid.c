@@ -438,7 +438,7 @@ static inline float internal_clamp(const float value, const float min, const flo
  *     // Success - proceed with control
  *     break;
  *   case k_rx_err_null_ptr:
- *     rx_log_error("PID", "NULL pointer in init");
+ *     rx_log_error("PID", "nullptr in init");
  *     break;
  *   case k_rx_err_invalid_state:
  *     rx_log_warn("PID", "Already initialized - deinit first");
@@ -580,7 +580,7 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
  * @retval k_rx_err_null_ptr handle pointer is nullptr
  * @retval k_rx_err_invalid_state Controller not initialized (already deinitialized or never initialized)
  *
- * @pre handle must not be NULL
+ * @pre handle must not benullptr
  * @pre handle->initialized must be true (controller must be initialized first)
  * @post handle->initialized == false (on success)
  * @post All handle fields zeroed: gains, limits, integral, prev_error == 0
@@ -630,7 +630,7 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
  *     // Successfully deinitialized
  *     break;
  *   case k_rx_err_null_ptr:
- *     rx_log_error("PID", "Cannot deinit NULL handle");
+ *     rx_log_error("PID", "Cannot deinit nullptr handle");
  *     break;
  *   case k_rx_err_invalid_state:
  *     rx_log_warn("PID", "Already deinitialized or never initialized");
@@ -656,7 +656,7 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 4**: Function is 12 lines (well under 60-line limit)
- * - **Rule 5**: 2 validation checks (NULL pointer, initialization state)
+ * - **Rule 5**: 2 validation checks (nullptr, initialization state)
  */
 rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
 {
@@ -778,7 +778,7 @@ rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
  * @retval k_rx_err_null_ptr handle pointer is nullptr
  * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
  *
- * @pre handle must not be NULL
+ * @pre handle must not benullptr
  * @pre handle->initialized must be true
  * @post handle->integral == 0.0f (on success)
  * @post handle->prev_error == 0.0f (on success)
@@ -898,7 +898,7 @@ rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 4**: Function is 12 lines (well under 60-line limit)
- * - **Rule 5**: 2 validation checks (NULL pointer, initialization state)
+ * - **Rule 5**: 2 validation checks (nullptr, initialization state)
  */
 rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
 {
@@ -928,7 +928,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  * gain scheduling applications.
  *
  * **Validation Steps:**
- * 1. NULL pointer check (handle)
+ * 1. nullptr check (handle)
  * 2. Initialization state check
  * 3. Validate gains are non-negative (kp ≥ 0, ki ≥ 0, kd ≥ 0)
  * 4. Validate gains are finite (not NaN or Inf)
@@ -972,7 +972,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  * @retval k_rx_err_invalid_arg One or more gains are negative or non-finite (NaN/Inf)
  * @retval k_rx_fail Gain storage verification failed (should never happen)
  *
- * @pre handle must not be NULL
+ * @pre handle must not benullptr
  * @pre handle->initialized must be true
  * @pre kp ≥ 0.0 and isfinite(kp)
  * @pre ki ≥ 0.0 and isfinite(ki)
@@ -1080,7 +1080,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  *     rx_log_info("PID", "Gains updated successfully");
  *     break;
  *   case k_rx_err_null_ptr:
- *     rx_log_error("PID", "NULL handle pointer");
+ *     rx_log_error("PID", "nullptr handle pointer");
  *     break;
  *   case k_rx_err_invalid_state:
  *     rx_log_error("PID", "PID not initialized");
@@ -1103,7 +1103,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  * @par Gain Validation Table:
  * | Validation | Condition | Error Code |
  * |------------|-----------|------------|
- * | NULL pointer | handle != nullptr | k_rx_err_null_ptr |
+ * | nullptr | handle != nullptr | k_rx_err_null_ptr |
  * | Initialized | handle->initialized == true | k_rx_err_invalid_state |
  * | Non-negative | kp ≥ 0 && ki ≥ 0 && kd ≥ 0 | k_rx_err_invalid_arg |
  * | Finite | isfinite(kp/ki/kd) | k_rx_err_invalid_arg |
@@ -1130,7 +1130,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  */
 rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float ki, const float kd)
 {
-  /* Pre-condition 1: NULL pointer check */
+  /* Pre-condition 1: nullptr check */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   /* Pre-condition 2: Initialization check */
@@ -1207,7 +1207,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
  * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
  * @retval k_rx_err_invalid_arg output_max ≤ output_min (not strictly greater)
  *
- * @pre handle must not be NULL
+ * @pre handle must not benullptr
  * @pre handle->initialized must be true
  * @pre output_max > output_min (strictly greater, not equal)
  *
@@ -1287,7 +1287,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
  *     rx_log_info("PID", "Output limits updated");
  *     break;
  *   case k_rx_err_null_ptr:
- *     rx_log_error("PID", "NULL handle pointer");
+ *     rx_log_error("PID", "nullptr handle pointer");
  *     break;
  *   case k_rx_err_invalid_state:
  *     rx_log_error("PID", "PID not initialized");
@@ -1307,7 +1307,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
  * @par Limit Validation Table:
  * | Validation | Condition | Error Code |
  * |------------|-----------|------------|
- * | NULL pointer | handle != nullptr | k_rx_err_null_ptr |
+ * | nullptr | handle != nullptr | k_rx_err_null_ptr |
  * | Initialized | handle->initialized == true | k_rx_err_invalid_state |
  * | Strictly greater | output_max > output_min | k_rx_err_invalid_arg |
  *
@@ -1399,7 +1399,7 @@ rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const 
  * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
  * @retval k_rx_err_invalid_arg integral_max ≤ integral_min (not strictly greater)
  *
- * @pre handle must not be NULL
+ * @pre handle must not benullptr
  * @pre handle->initialized must be true
  * @pre integral_max > integral_min (strictly greater, not equal)
  *
@@ -1497,7 +1497,7 @@ rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const 
  *     rx_log_info("PID", "Integral limits updated and current integral clamped");
  *     break;
  *   case k_rx_err_null_ptr:
- *     rx_log_error("PID", "NULL handle pointer");
+ *     rx_log_error("PID", "nullptr handle pointer");
  *     break;
  *   case k_rx_err_invalid_state:
  *     rx_log_error("PID", "PID not initialized");
@@ -1525,7 +1525,7 @@ rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const 
  * @par Limit Validation Table:
  * | Validation | Condition | Error Code |
  * |------------|-----------|------------|
- * | NULL pointer | handle != nullptr | k_rx_err_null_ptr |
+ * | nullptr | handle != nullptr | k_rx_err_null_ptr |
  * | Initialized | handle->initialized == true | k_rx_err_invalid_state |
  * | Strictly greater | integral_max > integral_min | k_rx_err_invalid_arg |
  *

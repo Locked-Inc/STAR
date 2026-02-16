@@ -826,7 +826,7 @@ rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
  *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
  *
  * @param[in] str Pointer to null-terminated string
- *   - **Valid range**: Non-NULL pointer to valid memory
+ *   - **Valid range**: Non-nullptr to valid memory
  *   - **Maximum length**: 256 characters (k_uart_max_str_len)
  *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *   - **Encoding**: ASCII (extended characters passed through)
@@ -976,7 +976,7 @@ rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, u
  *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
  *
  * @param[out] data Pointer to store received character
- *   - **Valid range**: Non-NULL pointer to char
+ *   - **Valid range**: Non-nullptr to char
  *   - **On success**: Contains received byte (0x00-0xFF)
  *   - **On error**: Content undefined
  *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr

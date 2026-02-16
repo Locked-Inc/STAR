@@ -212,7 +212,7 @@ extern "C" {
  * No loops, no recursion, deterministic execution time.
  *
  * **Edge Cases**:
- * - NULL config: Returns k_rx_err_null_ptr immediately
+ * - nullptr config: Returns k_rx_err_null_ptr immediately
  * - NULL name: Returns k_rx_err_null_ptr immediately
  * - Invalid pin: Returns k_rx_err_invalid_arg immediately
  * - Pin out of range: Validated against rx_port_constants.h enum bounds
@@ -362,9 +362,9 @@ extern "C" {
  * @code{.c}
  * static rx_bus_config_t button_config;
  *
- * // Attempt to initialize with NULL config (demonstrates error handling)
+ * // Attempt to initialize with nullptr config (demonstrates error handling)
  * rx_err_t err = rx_bus_config_init_gpio(nullptr, "button", k_rx_p5_1);
- * assert(err == k_rx_err_null_ptr);  // Expect NULL pointer error
+ * assert(err == k_rx_err_null_ptr);  // Expect nullptr error
  *
  * // Correct initialization
  * err = rx_bus_config_init_gpio(&button_config, "button", k_rx_p5_1);
@@ -811,7 +811,7 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] 3 assertions (NULL config, NULL name, pin validation)
+ * - Rule 5: [OK] 3 assertions (nullptr config, NULL name, pin validation)
  */
 [[nodiscard]] rx_err_t
 rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, rx_port_pin_t pin);

@@ -686,7 +686,7 @@ typedef struct {
  *     uart_debug_puts("[INFO] WDT ready\r\n");
  *     break;
  *   case k_rx_err_null_ptr:
- *     uart_debug_puts("[ERROR] NULL config pointer\r\n");
+ *     uart_debug_puts("[ERROR] nullptr config pointer\r\n");
  *     break;
  *   case k_rx_err_invalid_arg:
  *     uart_debug_puts("[ERROR] Invalid timeout period\r\n");

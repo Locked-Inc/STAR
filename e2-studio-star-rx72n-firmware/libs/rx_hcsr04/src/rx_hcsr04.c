@@ -853,7 +853,7 @@ static pending_measurement_t s_pending;
  *
  * **Prevents:**
  * - Double initialization (creating duplicate threads/mutexes)
- * - Use before init (NULL pointer dereferences)
+ * - Use before init (nullptr dereferences)
  * - Resource leaks (forgetting to deinit)
  *
  * **Usage Pattern:**

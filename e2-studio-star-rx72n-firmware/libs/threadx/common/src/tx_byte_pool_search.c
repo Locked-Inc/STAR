@@ -111,7 +111,7 @@ UCHAR* _tx_byte_pool_search(TX_BYTE_POOL* pool_ptr, ULONG memory_size)
     /* Restore interrupts.  */
     TX_RESTORE
 
-    /* Not enough memory, return a NULL pointer.  */
+    /* Not enough memory, return a nullptr.  */
     current_ptr = TX_NULL;
   } else {
 

@@ -221,7 +221,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, session ready for use
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_rtos_mutex ThreadX mutex creation failed
  *
  * @pre state must point to valid, allocated memory
@@ -257,7 +257,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, resources released
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_not_initialized state was not initialized
  *
  * @pre state must be initialized via rx_session_init()
@@ -287,7 +287,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_null_ptr state or sequence isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  *
  * @pre state must be initialized via rx_session_init()
@@ -339,7 +339,7 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok Sequence accepted (exact match or small gap)
  * @retval k_rx_err_protocol_error Sequence rejected (large gap or duplicate)
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  *
  * @pre state must be initialized via rx_session_init()
@@ -381,7 +381,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequences reset
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  *
  * @pre state must be initialized via rx_session_init()
@@ -409,7 +409,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_null_ptr state or sequence isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  *
  * @pre state must be initialized via rx_session_init()
@@ -435,7 +435,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_null_ptr state or sequence isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  *
  * @pre state must be initialized via rx_session_init()

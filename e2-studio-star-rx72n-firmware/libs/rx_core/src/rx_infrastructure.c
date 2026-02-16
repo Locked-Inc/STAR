@@ -434,14 +434,14 @@ rx_err_t rx_infrastructure_init(void)
  * @pre None - safe to call anytime
  *
  * @post s_infrastructure_initialized == false
- * @post Interface accessors return NULL
+ * @post Interface accessors returnnullptr
  * @post All s_global_* structures are in undefined state
  *
  * @note Thread Safety: NOT thread-safe
  * @note Idempotent: Safe to call multiple times
  *
  * @warning Call only after all threads have stopped using infrastructure
- * @warning After deinit, interface accessors return NULL
+ * @warning After deinit, interface accessors returnnullptr
  *
  * @par Example:
  * @code{.c}

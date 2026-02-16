@@ -160,7 +160,7 @@ extern "C" {
  * - PORT0-9: Available (see rx_port_constants.h for per-port pin counts)
  * - PORTA-F: Available (PORTF has PF5 only)
  * - PORTJ: Available (PJ3, PJ5)
- * - Ports G-I, K-Q: Not available on 144-pin, will return NULL
+ * - Ports G-I, K-Q: Not available on 144-pin, will returnnullptr
  *
  * **Control flow**:
  * @dot
@@ -190,7 +190,7 @@ extern "C" {
  *                 - **Valid range**: k_rx_port_0 through k_rx_port_j
  *                 - **Units**: N/A (enumerated constant)
  *                 - **Constraints**: Must use k_rx_port_* constants, not raw integers
- *                 - **Invalid values**: Any value not in [0-5, 0x0A-0x0E, 0x13] returns NULL
+ *                 - **Invalid values**: Any value not in [0-5, 0x0A-0x0E, 0x13] returnsnullptr
  *
  * @return Pointer to PORT register base structure, or nullptr if port invalid
  * @retval Non-NULL Valid port - pointer to volatile rx_port_regs_t structure
@@ -245,7 +245,7 @@ extern "C" {
  *       storage. Entire function optimizes to immediate address load.
  *
  * @warning **NULL validation required**: Caller MUST check return value before
- *          dereferencing. Failing to validate will cause NULL pointer fault if
+ *          dereferencing. Failing to validate will cause nullptr fault if
  *          invalid port number is passed.
  *
  * @attention **Package-specific**: Only supports 144-pin LFQFP. Porting to

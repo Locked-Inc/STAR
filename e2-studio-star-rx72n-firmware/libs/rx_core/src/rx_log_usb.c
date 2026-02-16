@@ -452,7 +452,7 @@ void rx_log_usb_putc(char c)
  * boot, sends to USB after enumeration.
  *
  * ## Algorithm
- * 1. Validate str pointer (NULL check, return if NULL)
+ * 1. Validate str pointer (NULL check, return if nullptr)
  * 2. Calculate length with strlen() (return if zero)
  * 3. Initialize mutex if needed (lazy init)
  * 4. Acquire mutex lock (TX_WAIT_FOREVER)
@@ -461,21 +461,21 @@ void rx_log_usb_putc(char c)
  *
  * @param[in] str String to write (must be null-terminated)
  *                - Can be any length (limited by uint16_t: 65535 bytes max)
- *                - NULL pointer silently ignored (defensive)
+ *                - nullptr silently ignored (defensive)
  *                - Empty string ("") silently ignored
  *
  * @return void (no error indication - errors tracked in statistics)
  *
  * @retval N/A (void function - no return value)
  *
- * @pre str should be null-terminated string or NULL
+ * @pre str should be null-terminated string ornullptr
  * @pre ThreadX kernel running (for mutex operations)
  * @post String sent to USB if ready, buffered if not ready, or dropped if TX full
  * @post s_stats updated (total_bytes += strlen(str))
  *
  * @note **Thread Safety**: Yes (ThreadX mutex protects all state)
  * @note **Blocking**: Blocks on mutex acquisition, never blocks on USB TX
- * @note **NULL Safety**: NULL pointer silently ignored (defensive programming)
+ * @note **NULL Safety**: nullptr silently ignored (defensive programming)
  * @note **Performance**: ~1 µs per character @ 240 MHz (amortized)
  *
  * @warning String must be null-terminated. Non-terminated strings cause undefined behavior.
@@ -730,7 +730,7 @@ void rx_log_usb_puthex(uint32_t value, uint8_t digits)
  * | usb_errors | USB error count (excluding k_rx_err_busy) | 0 (ideal) |
  *
  * ## Algorithm
- * 1. Validate stats pointer (NULL check, return if NULL)
+ * 1. Validate stats pointer (NULL check, return if nullptr)
  * 2. Initialize mutex if needed (lazy init)
  * 3. Acquire mutex lock (TX_WAIT_FOREVER)
  * 4. Copy all 4 statistics fields from s_stats to stats
@@ -739,20 +739,20 @@ void rx_log_usb_puthex(uint32_t value, uint8_t digits)
  * @param[out] stats Statistics structure to fill (usb_log_stats_t*)
  *                   - Must point to valid memory
  *                   - All 4 fields written atomically
- *                   - NULL pointer silently ignored (defensive)
+ *                   - nullptr silently ignored (defensive)
  *
  * @return void (no error indication)
  *
  * @retval N/A (void function - no return value)
  *
- * @pre stats should be valid pointer or NULL
+ * @pre stats should be valid pointer ornullptr
  * @pre ThreadX kernel running (for mutex operations)
  * @post stats structure filled with current statistics (if non-NULL)
  * @post No side effects (read-only operation)
  *
  * @note **Thread Safety**: Yes (ThreadX mutex ensures atomic read)
  * @note **Blocking**: Blocks on mutex acquisition only (quick operation)
- * @note **NULL Safety**: NULL pointer silently ignored (defensive)
+ * @note **NULL Safety**: nullptr silently ignored (defensive)
  * @note **Performance**: ~2-3 µs @ 240 MHz (mutex + 4 field copies)
  *
  * @par Example: Basic Statistics Query

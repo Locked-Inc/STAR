@@ -146,7 +146,7 @@ rx_err_t rx_poeg_init(void);
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Status read successfully
- * @retval k_rx_err_null_ptr fault_active is NULL
+ * @retval k_rx_err_null_ptr fault_active isnullptr
  * @retval k_rx_err_invalid_arg motor_index >= 4
  *
  * @pre POEG initialized via rx_poeg_init()
