@@ -93,11 +93,11 @@
  * | **GPIO init** | ~5 µs | [PENDING] Planned | Pin mode, pull-up/down, output levels |
  * | **Timer init** | ~10 µs | [COMPLETE] | CMT0 setup for ThreadX tick |
  * | **UART debug** | ~50 µs | [COMPLETE] | SCI9 baud rate, FIFO, interrupts |
- * | **SPI init** | ~20 µs | [PENDING] Planned | RSPI0/1 mode, clock, DMA config |
+ * | **SPI init** | ~20 µs | [COMPLETE] | RSPI2 peripheral mode, 8-bit, mode 0 |
  * | **I2C init** | ~15 µs | [PENDING] Planned | RIIC0 speed, addressing, interrupts |
  * | **ADC init** | ~100 µs | [PENDING] Planned | ADC0 calibration, channel config |
  * | **Postcondition check** | ~0.5 µs | [COMPLETE] | SCKCR3 stability verification |
- * | **Total (current)** | **~61 µs** | Timers + UART only | |
+ * | **Total (current)** | **~81 µs** | Timers + UART + SPI | |
  * | **Total (planned)** | **~201 µs** | All peripherals | |
  *
  * ## Memory Usage
