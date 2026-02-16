@@ -126,7 +126,7 @@
  * ```
  *
  * **Common Error Codes:**
- * - `k_rx_err_null_ptr` - NULL handle/config/output pointer
+ * - `k_rx_err_null_ptr` - nullptr handle/config/output pointer
  * - `k_rx_err_invalid_state` - Sensor not initialized or not present
  * - `k_rx_err_invalid_arg` - Invalid resolution or ROM family code
  * - `k_rx_err_crc_mismatch` - Scratchpad CRC validation failed
@@ -250,7 +250,7 @@ static const uint32_t s_ds18b20_conversion_time_invalid_u32 = 0U;
  * @brief Validate DS18B20 handle pointer and initialization state
  *
  * @details
- * Composite validation macro that checks both NULL pointer and initialization.
+ * Composite validation macro that checks both nullptr and initialization.
  * Used at the start of all public API functions to enforce preconditions.
  *
  * **Checks Performed:**

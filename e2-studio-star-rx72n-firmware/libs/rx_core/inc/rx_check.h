@@ -73,7 +73,7 @@
  *
  * **Why separate return-type variants?**
  * - Type safety: prevents returning error from void function
- * - Explicit intent: RX_RETURN_NULL_ON_ERROR clearly returns NULL
+ * - Explicit intent: RX_RETURN_NULL_ON_ERROR clearly returnsnullptr
  * - Compiler optimization: separate code paths for different return types
  *
  * ## Performance Characteristics

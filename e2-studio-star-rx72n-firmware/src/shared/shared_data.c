@@ -764,7 +764,7 @@ rx_err_t shared_data_init(void)
  * @endmsc
  *
  * @param[in] cmd Pointer to motor command structure with target velocities
- *            - Must not be NULL
+ *            - Must not benullptr
  *            - Should have cmd->valid = true if velocities are meaningful
  *            - target_velocity_mps[] in meters/second (range: -2.5 to +2.5)
  *            - sequence number for command ordering
@@ -878,7 +878,7 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
  * 5. **Release motor_mutex:** Allow other tasks to access
  *
  * @param[out] out_cmd Pointer to buffer for command data
- *             - Must not be NULL
+ *             - Must not benullptr
  *             - Receives copy of latest motor_command_t
  *             - Check out_cmd->valid before using velocities
  *             - Check timestamp_ms for staleness detection
@@ -975,7 +975,7 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
  * 5. **Release motor_mutex:** Allow readers to access
  *
  * @param[in] state Pointer to motor state structure
- *            - Must not be NULL
+ *            - Must not benullptr
  *            - current_velocity_mps[] in m/s (measured from encoders)
  *            - duty_cycle_percent[] in range [-100, +100]
  *            - current_ma[] in milliamps (from ADC)
@@ -1062,7 +1062,7 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
  * 5. **Release motor_mutex:** Allow writers to update
  *
  * @param[out] out_state Pointer to buffer for motor state
- *             - Must not be NULL
+ *             - Must not benullptr
  *             - Receives snapshot of current motor_state_t
  *             - Data is consistent (atomic copy via mutex)
  *
@@ -1146,7 +1146,7 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  * 7. **Signal event:** Set k_event_pid_gains_updated flag
  *
  * @param[in] gains Pointer to new PID gains
- *            - Must not be NULL
+ *            - Must not benullptr
  *            - kp, ki, kd in appropriate ranges (typically 0-10)
  *            - output_min/max define PWM duty limits
  *            - integral_min/max for anti-windup
@@ -1243,7 +1243,7 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
  * 5. **Release motor_mutex:** Allow updates
  *
  * @param[out] out_gains Pointer to buffer for PID gains
- *             - Must not be NULL
+ *             - Must not benullptr
  *             - Receives copy of current pid_gains_t
  *             - Check out_gains->update_pending flag
  *
@@ -2023,7 +2023,7 @@ estop_reason_t shared_data_get_estop_reason(void)
  * 6. **Check battery level:** If valid and SoC <15%, set k_event_low_battery
  *
  * @param[in] state Pointer to BMS state structure
- *            - Must not be NULL
+ *            - Must not benullptr
  *            - voltage_mv in millivolts (typical: 11000-12600)
  *            - current_ma in milliamps (negative = charging)
  *            - soc_percent range [0, 100]
@@ -2109,7 +2109,7 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
  * 5. **Release bms_mutex:** Allow writer to update
  *
  * @param[out] out_state Pointer to buffer for BMS state
- *             - Must not be NULL
+ *             - Must not benullptr
  *             - Receives snapshot of bms_state_t
  *             - Check out_state->valid before using
  *
@@ -2188,7 +2188,7 @@ rx_err_t shared_data_get_bms(bms_state_t* out_state)
  * 5. **Release temp_mutex:** Allow readers
  *
  * @param[in] state Pointer to temperature state
- *            - Must not be NULL
+ *            - Must not benullptr
  *            - temperature_cdegc[] in 0.01°C units (e.g., 2500 = 25.00°C)
  *            - sensor_valid[] indicates working sensors
  *            - sensor_count = number of active sensors [0, 4]
@@ -2266,7 +2266,7 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
  * 5. **Release temp_mutex:** Allow writer to update
  *
  * @param[out] out_state Pointer to buffer for temperature state
- *             - Must not be NULL
+ *             - Must not benullptr
  *             - Receives snapshot of temp_sensor_state_t
  *
  * @return rx_err_t Operation status
@@ -2349,7 +2349,7 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  * 6. **Signal events:** Set k_event_obstacle_detected or k_event_obstacle_cleared
  *
  * @param[in] state Pointer to obstacle state
- *            - Must not be NULL
+ *            - Must not benullptr
  *            - distance_cm[] in centimeters (HC-SR04 range: 2-400cm)
  *            - obstacle_detected[] true if distance < safe threshold
  *            - any_obstacle true if ANY sensor detected obstacle
@@ -2448,7 +2448,7 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
  * 5. **Release obstacle_mutex:** Allow writer to update
  *
  * @param[out] out_state Pointer to buffer for obstacle state
- *             - Must not be NULL
+ *             - Must not benullptr
  *             - Receives snapshot of obstacle_state_t
  *
  * @return rx_err_t Operation status

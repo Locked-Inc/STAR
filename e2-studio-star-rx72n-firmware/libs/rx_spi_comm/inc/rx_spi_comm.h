@@ -865,13 +865,13 @@ typedef struct {
  * - **fec_enabled**: true/false, default false
  *
  * @param[out] handle Pointer to SPI communication handle to initialize
- *   - **Valid range**: Non-NULL pointer to allocated rx_spi_comm_handle_t (4120 bytes)
+ *   - **Valid range**: Non-nullptr to allocated rx_spi_comm_handle_t (4120 bytes)
  *   - **Constraints**: Must be allocated by caller (typically static or global)
  *   - **Side effects**: Entire structure zero-filled, then populated from config
  *   - **Lifetime**: Must remain valid until rx_spi_comm_deinit() called
  *
  * @param[in] config Required configuration structure (must not be NULL)
- *   - **Valid range**: Non-NULL pointer to valid rx_spi_comm_config_t
+ *   - **Valid range**: Non-nullptr to valid rx_spi_comm_config_t
  *   - **Constraints**: session must be non-NULL, channel must be 0-2, spi_mode must be 0-3
  *   - **Lifetime**: Not stored - values copied into handle (except session ptr)
  *
@@ -950,7 +950,7 @@ typedef struct {
  * serves as safety guard to prevent use-after-deinit.
  *
  * @param[in,out] handle Pointer to SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must have been initialized via rx_spi_comm_init()
  *   - **Side effects**: Clears handle->initialized flag
  *
@@ -1016,7 +1016,7 @@ typedef struct {
  * - FEC overhead: +50% time
  *
  * @param[in,out] handle Initialized SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
  *   - **Side effects**: Increments shared session TX sequence via rx_session_next_tx()
  *
@@ -1119,7 +1119,7 @@ typedef struct {
  * **Performance**: ~50 µs (minimal frame with 2-byte payload)
  *
  * @param[in,out] handle Initialized SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
  *
  * @param[in] sequence Sequence number to acknowledge
@@ -1181,7 +1181,7 @@ typedef struct {
  * **Performance**: ~50 µs (minimal frame with 2-byte payload)
  *
  * @param[in,out] handle Initialized SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
  *
  * @param[in] sequence Sequence number being NACKed
@@ -1272,12 +1272,12 @@ rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t f
  * - FEC overhead: +100 µs
  *
  * @param[in,out] handle Initialized SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
  *   - **Side effects**: Updates shared session RX sequence via rx_session_validate_rx()
  *
  * @param[out] frame Pointer to frame structure to receive decoded frame
- *   - **Valid range**: Non-NULL pointer to allocated rx_frame_t
+ *   - **Valid range**: Non-nullptr to allocated rx_frame_t
  *   - **Constraints**: Must have sufficient space (263 bytes)
  *   - **Lifetime**: Filled by this function, owned by caller afterward
  *
@@ -1377,11 +1377,11 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t ti
  * **Performance**: ~2 µs (fast hardware register read)
  *
  * @param[in] handle Initialized SPI communication handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_spi_comm_init()
  *
  * @param[out] available Pointer to receive availability status
- *   - **Valid range**: Non-NULL pointer to bool
+ *   - **Valid range**: Non-nullptr to bool
  *   - **Output values**: true (data available), false (no data)
  *   - **On error**: Set to false
  *

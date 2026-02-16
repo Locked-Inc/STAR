@@ -849,7 +849,7 @@ typedef struct {
  *     uart_debug_puts("[INFO] Handler ready\r\n");
  *     break;
  *   case k_rx_err_null_ptr:
- *     uart_debug_puts("[ERROR] NULL pointer\r\n");
+ *     uart_debug_puts("[ERROR] nullptr\r\n");
  *     break;
  *   case k_rx_err_invalid_state:
  *     uart_debug_puts("[WARN] Already initialized\r\n");

@@ -704,7 +704,7 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, const uint16_t sequence, uint8_
  * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
  * @retval k_rx_err_validation_failed Post-condition type check failed
  *
- * @pre frame != NULL
+ * @pre frame !=nullptr
  * @pre payload != NULL when payload_len > 0
  * @post frame->header.type == k_frame_type_ping
  * @post frame->header.length == payload_len
@@ -764,7 +764,7 @@ rx_err_t rx_frame_create_ping(rx_frame_t*    frame,
  * @retval k_rx_err_invalid_size    payload_len exceeds k_frame_max_payload
  * @retval k_rx_err_validation_failed Post-condition type check failed
  *
- * @pre frame != NULL
+ * @pre frame !=nullptr
  * @pre payload != NULL when payload_len > 0
  * @post frame->header.type == k_frame_type_pong
  * @post frame->header.length == payload_len
@@ -819,10 +819,10 @@ rx_err_t rx_frame_create_pong(rx_frame_t*    frame,
  * @param[in]  sequence Sequence number for this frame
  *
  * @retval k_rx_ok                  Frame created successfully
- * @retval k_rx_err_invalid_arg     frame is NULL
+ * @retval k_rx_err_invalid_arg     frame isnullptr
  * @retval k_rx_err_validation_failed Post-condition type check failed
  *
- * @pre frame != NULL
+ * @pre frame !=nullptr
  * @pre Caller has determined that a reset is necessary
  * @post frame->header.type == k_frame_type_reset
  * @post frame->header.length == 0
@@ -863,10 +863,10 @@ rx_err_t rx_frame_create_reset(rx_frame_t* frame, const uint16_t sequence)
  * @param[in]  sequence Sequence number (should match received RESET)
  *
  * @retval k_rx_ok                  Frame created successfully
- * @retval k_rx_err_invalid_arg     frame is NULL
+ * @retval k_rx_err_invalid_arg     frame isnullptr
  * @retval k_rx_err_validation_failed Post-condition type check failed
  *
- * @pre frame != NULL
+ * @pre frame !=nullptr
  * @pre A RESET frame was received and processed
  * @post frame->header.type == k_frame_type_reset_ack
  * @post frame->header.length == 0

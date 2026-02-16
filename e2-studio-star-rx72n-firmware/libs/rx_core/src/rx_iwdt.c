@@ -399,7 +399,7 @@ static rx_iwdt_task_info_t* internal_find_free_slot(void)
  *
  * @details
  * Populates a configuration structure with safe default values suitable
- * for most applications. Called when rx_iwdt_init() receives NULL config.
+ * for most applications. Called when rx_iwdt_init() receives nullptr config.
  *
  * **Default Values:**
  * - default_timeout_ms = k_iwdt_default_timeout_ms (1000 ms)
@@ -482,7 +482,7 @@ static void internal_init_default_config(rx_iwdt_config_t* config)
  * @post Reset status captured
  *
  * @note Hardware timeout set by OFS, not this driver
- * @note NULL config uses safe defaults (1000ms, monitoring enabled)
+ * @note nullptr config uses safe defaults (1000ms, monitoring enabled)
  *
  * @since Version 1.0.0
  */

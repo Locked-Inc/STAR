@@ -794,7 +794,7 @@ typedef struct {
  *     case k_rx_ok:
  *         break;  // Success
  *     case k_rx_err_invalid_arg:
- *         rx_log_error("FEC", "NULL pointer or zero length");
+ *         rx_log_error("FEC", "nullptr or zero length");
  *         return err;
  *     case k_rx_err_invalid_state:
  *         rx_log_error("FEC", "Encoder not initialized");

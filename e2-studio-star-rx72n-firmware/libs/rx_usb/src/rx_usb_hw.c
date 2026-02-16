@@ -343,7 +343,7 @@
  * - Clock/interrupt setup always succeeds (hardware guaranteed)
  *
  * **FIFO operation errors:**
- * - NULL pointer -> Return 0 bytes (defensive check)
+ * - nullptr -> Return 0 bytes (defensive check)
  * - Invalid pipe number -> Log error, return 0 bytes
  * - FIFO timeout -> Log error, return 0 bytes (host will retry)
  * - Read overflow (len > max_len) -> Truncate to max_len, log error

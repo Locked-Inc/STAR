@@ -729,23 +729,23 @@ extern "C" {
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_GetBatteryStateRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetBatteryStateRequest_CALLBACK        NULL
-#define star_v1_GetBatteryStateRequest_DEFAULT         NULL
+#define star_v1_GetBatteryStateRequest_CALLBACK       nullptr
+#define star_v1_GetBatteryStateRequest_DEFAULT        nullptr
 #define star_v1_GetBatteryStateRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetBatteryStateResponse_FIELDLIST(X, a)                                            \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, state, 2)
-#define star_v1_GetBatteryStateResponse_CALLBACK       NULL
-#define star_v1_GetBatteryStateResponse_DEFAULT        NULL
+#define star_v1_GetBatteryStateResponse_CALLBACK      nullptr
+#define star_v1_GetBatteryStateResponse_DEFAULT       nullptr
 #define star_v1_GetBatteryStateResponse_header_MSGTYPE star_v1_ResponseHeader
 #define star_v1_GetBatteryStateResponse_state_MSGTYPE  star_v1_BatteryState
 
 #define star_v1_StreamBatteryStateRequest_FIELDLIST(X, a)                                          \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, INT32, rate_hz, 2)
-#define star_v1_StreamBatteryStateRequest_CALLBACK       NULL
-#define star_v1_StreamBatteryStateRequest_DEFAULT        NULL
+#define star_v1_StreamBatteryStateRequest_CALLBACK      nullptr
+#define star_v1_StreamBatteryStateRequest_DEFAULT       nullptr
 #define star_v1_StreamBatteryStateRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_BatteryState_FIELDLIST(X, a)                                                       \
@@ -755,8 +755,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, soc, 4)                                                          \
   X(a, STATIC, OPTIONAL, MESSAGE, status, 5)                                                       \
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 6)
-#define star_v1_BatteryState_CALLBACK             NULL
-#define star_v1_BatteryState_DEFAULT              NULL
+#define star_v1_BatteryState_CALLBACK            nullptr
+#define star_v1_BatteryState_DEFAULT             nullptr
 #define star_v1_BatteryState_cells_MSGTYPE        star_v1_CellData
 #define star_v1_BatteryState_temperatures_MSGTYPE star_v1_TemperatureData
 #define star_v1_BatteryState_current_MSGTYPE      star_v1_CurrentData
@@ -771,7 +771,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, max_cell_mv, 5)                                                   \
   X(a, STATIC, SINGULAR, UINT32, delta_mv, 6)
 #define star_v1_CellData_CALLBACK pb_default_field_callback
-#define star_v1_CellData_DEFAULT  NULL
+#define star_v1_CellData_DEFAULT nullptr
 
 #define star_v1_TemperatureData_FIELDLIST(X, a)                                                    \
   X(a, CALLBACK, REPEATED, INT32, temp_deci_celsius, 1)                                            \
@@ -780,15 +780,15 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, min_temp_deci_celsius, 4)                                          \
   X(a, STATIC, SINGULAR, INT32, max_temp_deci_celsius, 5)
 #define star_v1_TemperatureData_CALLBACK pb_default_field_callback
-#define star_v1_TemperatureData_DEFAULT  NULL
+#define star_v1_TemperatureData_DEFAULT nullptr
 
 #define star_v1_CurrentData_FIELDLIST(X, a)                                                        \
   X(a, STATIC, SINGULAR, INT32, current_ma, 1)                                                     \
   X(a, STATIC, SINGULAR, INT32, avg_current_ma, 2)                                                 \
   X(a, STATIC, SINGULAR, UINT32, voltage_mv, 3)                                                    \
   X(a, STATIC, SINGULAR, INT32, power_mw, 4)
-#define star_v1_CurrentData_CALLBACK NULL
-#define star_v1_CurrentData_DEFAULT  NULL
+#define star_v1_CurrentData_CALLBACKnullptr
+#define star_v1_CurrentData_DEFAULT nullptr
 
 #define star_v1_StateOfChargeData_FIELDLIST(X, a)                                                  \
   X(a, STATIC, SINGULAR, UINT32, remaining_capacity_mah, 1)                                        \
@@ -797,8 +797,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, relative_soc_percent, 4)                                           \
   X(a, STATIC, SINGULAR, INT32, absolute_soc_percent, 5)                                           \
   X(a, STATIC, SINGULAR, UINT32, cycle_count, 6)
-#define star_v1_StateOfChargeData_CALLBACK NULL
-#define star_v1_StateOfChargeData_DEFAULT  NULL
+#define star_v1_StateOfChargeData_CALLBACKnullptr
+#define star_v1_StateOfChargeData_DEFAULT nullptr
 
 #define star_v1_BatteryStatus_FIELDLIST(X, a)                                                      \
   X(a, STATIC, SINGULAR, UINT32, battery_status_register, 1)                                       \
@@ -812,8 +812,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, BOOL, fault_active, 9)                                                    \
   X(a, STATIC, OPTIONAL, MESSAGE, safety_faults, 10)                                               \
   X(a, STATIC, SINGULAR, UENUM, state, 11)
-#define star_v1_BatteryStatus_CALLBACK              NULL
-#define star_v1_BatteryStatus_DEFAULT               NULL
+#define star_v1_BatteryStatus_CALLBACK             nullptr
+#define star_v1_BatteryStatus_DEFAULT              nullptr
 #define star_v1_BatteryStatus_safety_faults_MSGTYPE star_v1_SafetyFaults
 
 #define star_v1_SafetyFaults_FIELDLIST(X, a)                                                       \
@@ -825,8 +825,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, BOOL, overtemp_discharge, 6)                                              \
   X(a, STATIC, SINGULAR, BOOL, undertemp_charge, 7)                                                \
   X(a, STATIC, SINGULAR, BOOL, undertemp_discharge, 8)
-#define star_v1_SafetyFaults_CALLBACK NULL
-#define star_v1_SafetyFaults_DEFAULT  NULL
+#define star_v1_SafetyFaults_CALLBACKnullptr
+#define star_v1_SafetyFaults_DEFAULT nullptr
 
 #define star_v1_ProtectionThresholds_FIELDLIST(X, a)                                               \
   X(a, STATIC, SINGULAR, UINT32, overvoltage_mv, 1)                                                \
@@ -835,100 +835,100 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, overdischarge_ma, 4)                                              \
   X(a, STATIC, SINGULAR, INT32, overtemp_deci_celsius, 5)                                          \
   X(a, STATIC, SINGULAR, INT32, undertemp_deci_celsius, 6)
-#define star_v1_ProtectionThresholds_CALLBACK NULL
-#define star_v1_ProtectionThresholds_DEFAULT  NULL
+#define star_v1_ProtectionThresholds_CALLBACKnullptr
+#define star_v1_ProtectionThresholds_DEFAULT nullptr
 
 #define star_v1_GetProtectionThresholdsRequest_FIELDLIST(X, a)                                     \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetProtectionThresholdsRequest_CALLBACK       NULL
-#define star_v1_GetProtectionThresholdsRequest_DEFAULT        NULL
+#define star_v1_GetProtectionThresholdsRequest_CALLBACK      nullptr
+#define star_v1_GetProtectionThresholdsRequest_DEFAULT       nullptr
 #define star_v1_GetProtectionThresholdsRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_GetProtectionThresholdsResponse_FIELDLIST(X, a)                                    \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, thresholds, 2)
-#define star_v1_GetProtectionThresholdsResponse_CALLBACK           NULL
-#define star_v1_GetProtectionThresholdsResponse_DEFAULT            NULL
+#define star_v1_GetProtectionThresholdsResponse_CALLBACK          nullptr
+#define star_v1_GetProtectionThresholdsResponse_DEFAULT           nullptr
 #define star_v1_GetProtectionThresholdsResponse_header_MSGTYPE     star_v1_ResponseHeader
 #define star_v1_GetProtectionThresholdsResponse_thresholds_MSGTYPE star_v1_ProtectionThresholds
 
 #define star_v1_SetProtectionThresholdsRequest_FIELDLIST(X, a)                                     \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, thresholds, 2)
-#define star_v1_SetProtectionThresholdsRequest_CALLBACK           NULL
-#define star_v1_SetProtectionThresholdsRequest_DEFAULT            NULL
+#define star_v1_SetProtectionThresholdsRequest_CALLBACK          nullptr
+#define star_v1_SetProtectionThresholdsRequest_DEFAULT           nullptr
 #define star_v1_SetProtectionThresholdsRequest_header_MSGTYPE     star_v1_RequestHeader
 #define star_v1_SetProtectionThresholdsRequest_thresholds_MSGTYPE star_v1_ProtectionThresholds
 
 #define star_v1_SetProtectionThresholdsResponse_FIELDLIST(X, a)                                    \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_SetProtectionThresholdsResponse_CALLBACK       NULL
-#define star_v1_SetProtectionThresholdsResponse_DEFAULT        NULL
+#define star_v1_SetProtectionThresholdsResponse_CALLBACK      nullptr
+#define star_v1_SetProtectionThresholdsResponse_DEFAULT       nullptr
 #define star_v1_SetProtectionThresholdsResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_EnableCellBalancingRequest_FIELDLIST(X, a)                                         \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, UINT32, cell_mask, 2)
-#define star_v1_EnableCellBalancingRequest_CALLBACK       NULL
-#define star_v1_EnableCellBalancingRequest_DEFAULT        NULL
+#define star_v1_EnableCellBalancingRequest_CALLBACK      nullptr
+#define star_v1_EnableCellBalancingRequest_DEFAULT       nullptr
 #define star_v1_EnableCellBalancingRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_EnableCellBalancingResponse_FIELDLIST(X, a)                                        \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_EnableCellBalancingResponse_CALLBACK       NULL
-#define star_v1_EnableCellBalancingResponse_DEFAULT        NULL
+#define star_v1_EnableCellBalancingResponse_CALLBACK      nullptr
+#define star_v1_EnableCellBalancingResponse_DEFAULT       nullptr
 #define star_v1_EnableCellBalancingResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_DisableCellBalancingRequest_FIELDLIST(X, a)                                        \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_DisableCellBalancingRequest_CALLBACK       NULL
-#define star_v1_DisableCellBalancingRequest_DEFAULT        NULL
+#define star_v1_DisableCellBalancingRequest_CALLBACK      nullptr
+#define star_v1_DisableCellBalancingRequest_DEFAULT       nullptr
 #define star_v1_DisableCellBalancingRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_DisableCellBalancingResponse_FIELDLIST(X, a)                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_DisableCellBalancingResponse_CALLBACK       NULL
-#define star_v1_DisableCellBalancingResponse_DEFAULT        NULL
+#define star_v1_DisableCellBalancingResponse_CALLBACK      nullptr
+#define star_v1_DisableCellBalancingResponse_DEFAULT       nullptr
 #define star_v1_DisableCellBalancingResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_GetBalancingStatusRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetBalancingStatusRequest_CALLBACK        NULL
-#define star_v1_GetBalancingStatusRequest_DEFAULT         NULL
+#define star_v1_GetBalancingStatusRequest_CALLBACK       nullptr
+#define star_v1_GetBalancingStatusRequest_DEFAULT        nullptr
 #define star_v1_GetBalancingStatusRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetBalancingStatusResponse_FIELDLIST(X, a)                                         \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, UINT32, active_cell_mask, 2)
-#define star_v1_GetBalancingStatusResponse_CALLBACK       NULL
-#define star_v1_GetBalancingStatusResponse_DEFAULT        NULL
+#define star_v1_GetBalancingStatusResponse_CALLBACK      nullptr
+#define star_v1_GetBalancingStatusResponse_DEFAULT       nullptr
 #define star_v1_GetBalancingStatusResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_ControlFetsRequest_FIELDLIST(X, a)                                                 \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, enable_charge_fet, 2)                                               \
   X(a, STATIC, SINGULAR, BOOL, enable_discharge_fet, 3)
-#define star_v1_ControlFetsRequest_CALLBACK       NULL
-#define star_v1_ControlFetsRequest_DEFAULT        NULL
+#define star_v1_ControlFetsRequest_CALLBACK      nullptr
+#define star_v1_ControlFetsRequest_DEFAULT       nullptr
 #define star_v1_ControlFetsRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_ControlFetsResponse_FIELDLIST(X, a)                                                \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, charge_fet_enabled, 2)                                              \
   X(a, STATIC, SINGULAR, BOOL, discharge_fet_enabled, 3)
-#define star_v1_ControlFetsResponse_CALLBACK       NULL
-#define star_v1_ControlFetsResponse_DEFAULT        NULL
+#define star_v1_ControlFetsResponse_CALLBACK      nullptr
+#define star_v1_ControlFetsResponse_DEFAULT       nullptr
 #define star_v1_ControlFetsResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_GetDeviceInfoRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetDeviceInfoRequest_CALLBACK        NULL
-#define star_v1_GetDeviceInfoRequest_DEFAULT         NULL
+#define star_v1_GetDeviceInfoRequest_CALLBACK       nullptr
+#define star_v1_GetDeviceInfoRequest_DEFAULT        nullptr
 #define star_v1_GetDeviceInfoRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetDeviceInfoResponse_FIELDLIST(X, a)                                              \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, device_info, 2)
-#define star_v1_GetDeviceInfoResponse_CALLBACK            NULL
-#define star_v1_GetDeviceInfoResponse_DEFAULT             NULL
+#define star_v1_GetDeviceInfoResponse_CALLBACK           nullptr
+#define star_v1_GetDeviceInfoResponse_DEFAULT            nullptr
 #define star_v1_GetDeviceInfoResponse_header_MSGTYPE      star_v1_ResponseHeader
 #define star_v1_GetDeviceInfoResponse_device_info_MSGTYPE star_v1_BmsDeviceInfo
 
@@ -941,18 +941,18 @@ extern "C" {
   X(a, CALLBACK, SINGULAR, STRING, device_name, 6)                                                 \
   X(a, CALLBACK, SINGULAR, STRING, chemistry, 7)
 #define star_v1_BmsDeviceInfo_CALLBACK pb_default_field_callback
-#define star_v1_BmsDeviceInfo_DEFAULT  NULL
+#define star_v1_BmsDeviceInfo_DEFAULT nullptr
 
 #define star_v1_ResetDeviceRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_ResetDeviceRequest_CALLBACK        NULL
-#define star_v1_ResetDeviceRequest_DEFAULT         NULL
+#define star_v1_ResetDeviceRequest_CALLBACK       nullptr
+#define star_v1_ResetDeviceRequest_DEFAULT        nullptr
 #define star_v1_ResetDeviceRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_ResetDeviceResponse_FIELDLIST(X, a)                                                \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, reset_initiated, 2)
-#define star_v1_ResetDeviceResponse_CALLBACK       NULL
-#define star_v1_ResetDeviceResponse_DEFAULT        NULL
+#define star_v1_ResetDeviceResponse_CALLBACK      nullptr
+#define star_v1_ResetDeviceResponse_DEFAULT       nullptr
 #define star_v1_ResetDeviceResponse_header_MSGTYPE star_v1_ResponseHeader
 
 extern const pb_msgdesc_t star_v1_GetBatteryStateRequest_msg;

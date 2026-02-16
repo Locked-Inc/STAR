@@ -403,7 +403,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, ADC channel initialized and ready
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found Bus name not found in manager
  * @retval k_rx_err_invalid_arg Bus is not ADC type
  * @retval k_rx_err_timeout Mutex acquisition timeout (default 1000ms)
@@ -501,7 +501,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, value contains raw ADC reading
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout Conversion timeout or mutex timeout
@@ -610,7 +610,7 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, voltage_mv contains reading in millivolts
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout Conversion timeout or mutex timeout

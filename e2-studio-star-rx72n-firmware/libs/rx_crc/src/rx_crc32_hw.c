@@ -716,7 +716,7 @@ rx_err_t rx_crc_deinit(void)
  *                 - Typical: 16-2048 bytes (SPI/USB packet sizes)
  *
  * @return IEEE 802.3 CRC-32 checksum (32-bit unsigned integer)
- * @retval 0x00000000 Error occurred (NULL pointer, invalid len, or init failure)
+ * @retval 0x00000000 Error occurred (nullptr, invalid len, or init failure)
  * @retval 0x???????? Valid CRC-32 value (any non-zero value possible)
  *
  * @pre data must point to readable memory of at least len bytes
@@ -741,7 +741,7 @@ rx_err_t rx_crc_deinit(void)
  *
  * | Parameter | Type | Direction | Range | Units | Constraints |
  * |-----------|------|-----------|-------|-------|-------------|
- * | data | `const uint8_t*` | IN | Non-NULL pointer | - | Readable buffer |
+ * | data | `const uint8_t*` | IN | Non-nullptr | - | Readable buffer |
  * | len | `uint32_t` | IN | [1, 65535] | bytes | k_crc_len_min to k_crc_len_max |
  *
  * @par Return Value Summary:

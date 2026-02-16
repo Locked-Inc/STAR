@@ -696,15 +696,15 @@ extern "C" {
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_GetConfigurationRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetConfigurationRequest_CALLBACK        NULL
-#define star_v1_GetConfigurationRequest_DEFAULT         NULL
+#define star_v1_GetConfigurationRequest_CALLBACK       nullptr
+#define star_v1_GetConfigurationRequest_DEFAULT        nullptr
 #define star_v1_GetConfigurationRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetConfigurationResponse_FIELDLIST(X, a)                                           \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)
-#define star_v1_GetConfigurationResponse_CALLBACK              NULL
-#define star_v1_GetConfigurationResponse_DEFAULT               NULL
+#define star_v1_GetConfigurationResponse_CALLBACK             nullptr
+#define star_v1_GetConfigurationResponse_DEFAULT              nullptr
 #define star_v1_GetConfigurationResponse_header_MSGTYPE        star_v1_ResponseHeader
 #define star_v1_GetConfigurationResponse_configuration_MSGTYPE star_v1_SystemConfiguration
 
@@ -712,77 +712,77 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)                                                \
   X(a, STATIC, SINGULAR, BOOL, persist_to_nvs, 3)
-#define star_v1_SetConfigurationRequest_CALLBACK              NULL
-#define star_v1_SetConfigurationRequest_DEFAULT               NULL
+#define star_v1_SetConfigurationRequest_CALLBACK             nullptr
+#define star_v1_SetConfigurationRequest_DEFAULT              nullptr
 #define star_v1_SetConfigurationRequest_header_MSGTYPE        star_v1_RequestHeader
 #define star_v1_SetConfigurationRequest_configuration_MSGTYPE star_v1_SystemConfiguration
 
 #define star_v1_SetConfigurationResponse_FIELDLIST(X, a)                                           \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, validation_result, 2)
-#define star_v1_SetConfigurationResponse_CALLBACK                  NULL
-#define star_v1_SetConfigurationResponse_DEFAULT                   NULL
+#define star_v1_SetConfigurationResponse_CALLBACK                 nullptr
+#define star_v1_SetConfigurationResponse_DEFAULT                  nullptr
 #define star_v1_SetConfigurationResponse_header_MSGTYPE            star_v1_ResponseHeader
 #define star_v1_SetConfigurationResponse_validation_result_MSGTYPE star_v1_ConfigValidationResult
 
 #define star_v1_ResetToDefaultsRequest_FIELDLIST(X, a)                                             \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, persist_to_nvs, 2)
-#define star_v1_ResetToDefaultsRequest_CALLBACK       NULL
-#define star_v1_ResetToDefaultsRequest_DEFAULT        NULL
+#define star_v1_ResetToDefaultsRequest_CALLBACK      nullptr
+#define star_v1_ResetToDefaultsRequest_DEFAULT       nullptr
 #define star_v1_ResetToDefaultsRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_ResetToDefaultsResponse_FIELDLIST(X, a)                                            \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)
-#define star_v1_ResetToDefaultsResponse_CALLBACK              NULL
-#define star_v1_ResetToDefaultsResponse_DEFAULT               NULL
+#define star_v1_ResetToDefaultsResponse_CALLBACK             nullptr
+#define star_v1_ResetToDefaultsResponse_DEFAULT              nullptr
 #define star_v1_ResetToDefaultsResponse_header_MSGTYPE        star_v1_ResponseHeader
 #define star_v1_ResetToDefaultsResponse_configuration_MSGTYPE star_v1_SystemConfiguration
 
 #define star_v1_ValidateConfigurationRequest_FIELDLIST(X, a)                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)
-#define star_v1_ValidateConfigurationRequest_CALLBACK              NULL
-#define star_v1_ValidateConfigurationRequest_DEFAULT               NULL
+#define star_v1_ValidateConfigurationRequest_CALLBACK             nullptr
+#define star_v1_ValidateConfigurationRequest_DEFAULT              nullptr
 #define star_v1_ValidateConfigurationRequest_header_MSGTYPE        star_v1_RequestHeader
 #define star_v1_ValidateConfigurationRequest_configuration_MSGTYPE star_v1_SystemConfiguration
 
 #define star_v1_ValidateConfigurationResponse_FIELDLIST(X, a)                                      \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, validation_result, 2)
-#define star_v1_ValidateConfigurationResponse_CALLBACK       NULL
-#define star_v1_ValidateConfigurationResponse_DEFAULT        NULL
+#define star_v1_ValidateConfigurationResponse_CALLBACK      nullptr
+#define star_v1_ValidateConfigurationResponse_DEFAULT       nullptr
 #define star_v1_ValidateConfigurationResponse_header_MSGTYPE star_v1_ResponseHeader
 #define star_v1_ValidateConfigurationResponse_validation_result_MSGTYPE                            \
   star_v1_ConfigValidationResult
 
 #define star_v1_SaveConfigurationRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_SaveConfigurationRequest_CALLBACK        NULL
-#define star_v1_SaveConfigurationRequest_DEFAULT         NULL
+#define star_v1_SaveConfigurationRequest_CALLBACK       nullptr
+#define star_v1_SaveConfigurationRequest_DEFAULT        nullptr
 #define star_v1_SaveConfigurationRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_SaveConfigurationResponse_FIELDLIST(X, a)                                          \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, saved, 2)                                                           \
   X(a, STATIC, SINGULAR, UINT32, config_crc, 3)
-#define star_v1_SaveConfigurationResponse_CALLBACK       NULL
-#define star_v1_SaveConfigurationResponse_DEFAULT        NULL
+#define star_v1_SaveConfigurationResponse_CALLBACK      nullptr
+#define star_v1_SaveConfigurationResponse_DEFAULT       nullptr
 #define star_v1_SaveConfigurationResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_GetMotorPidConfigRequest_FIELDLIST(X, a)                                           \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, INT32, motor_id, 2)
-#define star_v1_GetMotorPidConfigRequest_CALLBACK       NULL
-#define star_v1_GetMotorPidConfigRequest_DEFAULT        NULL
+#define star_v1_GetMotorPidConfigRequest_CALLBACK      nullptr
+#define star_v1_GetMotorPidConfigRequest_DEFAULT       nullptr
 #define star_v1_GetMotorPidConfigRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_GetMotorPidConfigResponse_FIELDLIST(X, a)                                          \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, INT32, motor_id, 2)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 3)
-#define star_v1_GetMotorPidConfigResponse_CALLBACK           NULL
-#define star_v1_GetMotorPidConfigResponse_DEFAULT            NULL
+#define star_v1_GetMotorPidConfigResponse_CALLBACK          nullptr
+#define star_v1_GetMotorPidConfigResponse_DEFAULT           nullptr
 #define star_v1_GetMotorPidConfigResponse_header_MSGTYPE     star_v1_ResponseHeader
 #define star_v1_GetMotorPidConfigResponse_pid_config_MSGTYPE star_v1_PidConfig
 
@@ -791,16 +791,16 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, motor_id, 2)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 3)                                                   \
   X(a, STATIC, SINGULAR, BOOL, persist_to_nvs, 4)
-#define star_v1_SetMotorPidConfigRequest_CALLBACK           NULL
-#define star_v1_SetMotorPidConfigRequest_DEFAULT            NULL
+#define star_v1_SetMotorPidConfigRequest_CALLBACK          nullptr
+#define star_v1_SetMotorPidConfigRequest_DEFAULT           nullptr
 #define star_v1_SetMotorPidConfigRequest_header_MSGTYPE     star_v1_RequestHeader
 #define star_v1_SetMotorPidConfigRequest_pid_config_MSGTYPE star_v1_PidConfig
 
 #define star_v1_SetMotorPidConfigResponse_FIELDLIST(X, a)                                          \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, validation_result, 2)
-#define star_v1_SetMotorPidConfigResponse_CALLBACK                  NULL
-#define star_v1_SetMotorPidConfigResponse_DEFAULT                   NULL
+#define star_v1_SetMotorPidConfigResponse_CALLBACK                 nullptr
+#define star_v1_SetMotorPidConfigResponse_DEFAULT                  nullptr
 #define star_v1_SetMotorPidConfigResponse_header_MSGTYPE            star_v1_ResponseHeader
 #define star_v1_SetMotorPidConfigResponse_validation_result_MSGTYPE star_v1_ConfigValidationResult
 
@@ -809,21 +809,21 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, max_retries, 2)                                                   \
   X(a, STATIC, SINGULAR, UINT32, ack_timeout_ms, 3)                                                \
   X(a, STATIC, SINGULAR, UINT32, max_backoff_ms, 4)
-#define star_v1_RetransmitConfig_CALLBACK NULL
-#define star_v1_RetransmitConfig_DEFAULT  NULL
+#define star_v1_RetransmitConfig_CALLBACKnullptr
+#define star_v1_RetransmitConfig_DEFAULT nullptr
 
 #define star_v1_SetRetransmitConfigRequest_FIELDLIST(X, a)                                         \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, retransmit_config, 2)
-#define star_v1_SetRetransmitConfigRequest_CALLBACK                  NULL
-#define star_v1_SetRetransmitConfigRequest_DEFAULT                   NULL
+#define star_v1_SetRetransmitConfigRequest_CALLBACK                 nullptr
+#define star_v1_SetRetransmitConfigRequest_DEFAULT                  nullptr
 #define star_v1_SetRetransmitConfigRequest_header_MSGTYPE            star_v1_RequestHeader
 #define star_v1_SetRetransmitConfigRequest_retransmit_config_MSGTYPE star_v1_RetransmitConfig
 
 #define star_v1_SetRetransmitConfigResponse_FIELDLIST(X, a)                                        \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_SetRetransmitConfigResponse_CALLBACK       NULL
-#define star_v1_SetRetransmitConfigResponse_DEFAULT        NULL
+#define star_v1_SetRetransmitConfigResponse_CALLBACK      nullptr
+#define star_v1_SetRetransmitConfigResponse_DEFAULT       nullptr
 #define star_v1_SetRetransmitConfigResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_SystemConfiguration_FIELDLIST(X, a)                                                \
@@ -835,8 +835,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, timing_config, 6)                                                \
   X(a, STATIC, SINGULAR, UINT32, config_version, 7)                                                \
   X(a, STATIC, SINGULAR, UINT32, config_crc, 8)
-#define star_v1_SystemConfiguration_CALLBACK                        NULL
-#define star_v1_SystemConfiguration_DEFAULT                         NULL
+#define star_v1_SystemConfiguration_CALLBACK                       nullptr
+#define star_v1_SystemConfiguration_DEFAULT                        nullptr
 #define star_v1_SystemConfiguration_motor_configs_MSGTYPE           star_v1_MotorPidConfiguration
 #define star_v1_SystemConfiguration_current_calibration_MSGTYPE     star_v1_CurrentSensorCalibration
 #define star_v1_SystemConfiguration_temperature_calibration_MSGTYPE star_v1_TemperatureCalibration
@@ -847,48 +847,48 @@ extern "C" {
 #define star_v1_MotorPidConfiguration_FIELDLIST(X, a)                                              \
   X(a, STATIC, SINGULAR, INT32, motor_id, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 2)
-#define star_v1_MotorPidConfiguration_CALLBACK           NULL
-#define star_v1_MotorPidConfiguration_DEFAULT            NULL
+#define star_v1_MotorPidConfiguration_CALLBACK          nullptr
+#define star_v1_MotorPidConfiguration_DEFAULT           nullptr
 #define star_v1_MotorPidConfiguration_pid_config_MSGTYPE star_v1_PidConfig
 
 #define star_v1_CurrentSensorCalibration_FIELDLIST(X, a)                                           \
   X(a, CALLBACK, REPEATED, DOUBLE, offset_ma, 1)                                                   \
   X(a, CALLBACK, REPEATED, DOUBLE, scale_factor, 2)
 #define star_v1_CurrentSensorCalibration_CALLBACK pb_default_field_callback
-#define star_v1_CurrentSensorCalibration_DEFAULT  NULL
+#define star_v1_CurrentSensorCalibration_DEFAULT nullptr
 
 #define star_v1_TemperatureCalibration_FIELDLIST(X, a)                                             \
   X(a, STATIC, SINGULAR, DOUBLE, offset_celsius, 1)
-#define star_v1_TemperatureCalibration_CALLBACK NULL
-#define star_v1_TemperatureCalibration_DEFAULT  NULL
+#define star_v1_TemperatureCalibration_CALLBACKnullptr
+#define star_v1_TemperatureCalibration_DEFAULT nullptr
 
 #define star_v1_SafetyThresholds_FIELDLIST(X, a)                                                   \
   X(a, STATIC, SINGULAR, UINT32, overcurrent_threshold_ma, 1)                                      \
   X(a, STATIC, SINGULAR, INT32, thermal_shutdown_deci_celsius, 2)                                  \
   X(a, STATIC, SINGULAR, UINT32, cell_imbalance_threshold_mv, 3)
-#define star_v1_SafetyThresholds_CALLBACK NULL
-#define star_v1_SafetyThresholds_DEFAULT  NULL
+#define star_v1_SafetyThresholds_CALLBACKnullptr
+#define star_v1_SafetyThresholds_DEFAULT nullptr
 
 #define star_v1_EncoderConfiguration_FIELDLIST(X, a)                                               \
   X(a, STATIC, SINGULAR, UINT32, edges_per_revolution, 1)                                          \
   X(a, STATIC, SINGULAR, DOUBLE, wheel_diameter_m, 2)                                              \
   X(a, STATIC, SINGULAR, DOUBLE, gear_ratio, 3)
-#define star_v1_EncoderConfiguration_CALLBACK NULL
-#define star_v1_EncoderConfiguration_DEFAULT  NULL
+#define star_v1_EncoderConfiguration_CALLBACKnullptr
+#define star_v1_EncoderConfiguration_DEFAULT nullptr
 
 #define star_v1_TimingConfiguration_FIELDLIST(X, a)                                                \
   X(a, STATIC, SINGULAR, UINT32, motor_control_period_ms, 1)                                       \
   X(a, STATIC, SINGULAR, UINT32, telemetry_period_ms, 2)                                           \
   X(a, STATIC, SINGULAR, UINT32, communication_timeout_ms, 3)                                      \
   X(a, STATIC, SINGULAR, UINT32, bms_poll_period_ms, 4)
-#define star_v1_TimingConfiguration_CALLBACK NULL
-#define star_v1_TimingConfiguration_DEFAULT  NULL
+#define star_v1_TimingConfiguration_CALLBACKnullptr
+#define star_v1_TimingConfiguration_DEFAULT nullptr
 
 #define star_v1_ConfigValidationResult_FIELDLIST(X, a)                                             \
   X(a, STATIC, SINGULAR, UENUM, status, 1)                                                         \
   X(a, STATIC, REPEATED, MESSAGE, errors, 2)
-#define star_v1_ConfigValidationResult_CALLBACK       NULL
-#define star_v1_ConfigValidationResult_DEFAULT        NULL
+#define star_v1_ConfigValidationResult_CALLBACK      nullptr
+#define star_v1_ConfigValidationResult_DEFAULT       nullptr
 #define star_v1_ConfigValidationResult_errors_MSGTYPE star_v1_ConfigValidationError
 
 #define star_v1_ConfigValidationError_FIELDLIST(X, a)                                              \
@@ -897,8 +897,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, STRING, message, 3)                                                       \
   X(a, STATIC, SINGULAR, STRING, actual_value, 4)                                                  \
   X(a, STATIC, SINGULAR, STRING, expected_constraint, 5)
-#define star_v1_ConfigValidationError_CALLBACK NULL
-#define star_v1_ConfigValidationError_DEFAULT  NULL
+#define star_v1_ConfigValidationError_CALLBACKnullptr
+#define star_v1_ConfigValidationError_DEFAULT nullptr
 
 extern const pb_msgdesc_t star_v1_GetConfigurationRequest_msg;
 extern const pb_msgdesc_t star_v1_GetConfigurationResponse_msg;

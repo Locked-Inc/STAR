@@ -282,7 +282,7 @@ typedef struct rx_time_interface rx_time_interface_t;
  * - 1000ms timeout completes in ~1µs real time
  *
  * **Null Implementation (bare-metal)**:
- * - Function pointer set to NULL
+ * - Function pointer set tonullptr
  * - Caller must check for nullptr before calling
  * - Use for polling-only code that never sleeps
  *
@@ -983,7 +983,7 @@ struct rx_time_interface {
  *
  * void test_validate_allows_null_ctx(void) {
  *     rx_time_interface_t time = {0};
- *     time.ctx = nullptr;  // ctx can be NULL
+ *     time.ctx = nullptr;  // ctx can benullptr
  *     time.sleep_ms = mock_sleep_ms;
  *     time.get_ms = mock_get_ms;
  *

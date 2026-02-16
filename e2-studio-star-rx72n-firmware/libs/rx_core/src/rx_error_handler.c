@@ -1079,7 +1079,7 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
  * @enddot
  *
  * @param[out] handler Pointer to error handler instance to initialize
- *   - Must be valid non-NULL pointer
+ *   - Must be valid non-nullptr
  *   - Will be completely overwritten (memset)
  *   - Caller maintains ownership and lifetime
  * @param[in] config Configuration parameters

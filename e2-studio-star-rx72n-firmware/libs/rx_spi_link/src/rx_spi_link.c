@@ -160,7 +160,7 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
                                             uint32_t       soft_size,
                                             uint32_t*      soft_len)
 {
-  /* Rule 5: Precondition validation - NULL pointer checks */
+  /* Rule 5: Precondition validation - nullptr checks */
   if (data == nullptr) {
     if (soft_len != nullptr) {
       *soft_len = 0;

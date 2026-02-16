@@ -836,7 +836,7 @@ rx_err_t comm_task_create(void)
  * - Comm manager will return k_rx_err_timeout on poll for nullptr handles
  *
  * @param[out] config Comm manager configuration to populate
- *   - **Valid range**: Non-NULL pointer to rx_comm_manager_config_t
+ *   - **Valid range**: Non-nullptr to rx_comm_manager_config_t
  *   - **Constraints**: Must be zeroed before calling this function
  *   - **Side effects**: usb_handle and spi_handle fields populated
  *

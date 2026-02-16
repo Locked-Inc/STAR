@@ -161,7 +161,7 @@ static void internal_unlock(void)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, session ready for use
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_rtos_mutex ThreadX mutex creation failed
  *
  * @pre state must point to valid, allocated memory
@@ -216,10 +216,10 @@ rx_err_t rx_session_init(rx_session_state_t* state)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, resources released
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_not_initialized state was not initialized
  *
- * @pre state != NULL
+ * @pre state !=nullptr
  * @pre state->initialized == true
  * @post state->initialized == false
  * @post Internal mutex deleted (on non-simulator builds)
@@ -265,7 +265,7 @@ rx_err_t rx_session_deinit(rx_session_state_t* state)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_null_ptr state or sequence isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
@@ -328,7 +328,7 @@ rx_err_t rx_session_next_tx(rx_session_state_t* state, uint16_t* sequence)
  * @return rx_err_t Error code
  * @retval k_rx_ok Sequence accepted (exact match or small gap)
  * @retval k_rx_err_protocol_error Sequence rejected (large gap or duplicate)
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
@@ -407,7 +407,7 @@ rx_err_t rx_session_validate_rx(rx_session_state_t*           state,
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequences reset
- * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_null_ptr state isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
@@ -455,7 +455,7 @@ rx_err_t rx_session_reset(rx_session_state_t* state)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_null_ptr state or sequence isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *
@@ -505,7 +505,7 @@ rx_err_t rx_session_get_tx(const rx_session_state_t* state, uint16_t* sequence)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, sequence written
- * @retval k_rx_err_null_ptr state or sequence is NULL
+ * @retval k_rx_err_null_ptr state or sequence isnullptr
  * @retval k_rx_err_not_initialized state not initialized
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed
  *

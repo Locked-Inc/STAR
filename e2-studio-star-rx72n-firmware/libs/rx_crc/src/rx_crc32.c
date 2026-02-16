@@ -872,7 +872,7 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len)
  *   // NULL data with len > 0 is invalid, but rx_crc32_update handles it
  *   // (returns prev_crc unchanged)
  *   if (data == nullptr && len > 0) {
- *     rx_log_error("CRC", "NULL pointer with len=%u", len);
+ *     rx_log_error("CRC", "nullptr with len=%u", len);
  *     return prev_crc;  // No update
  *   }
  *

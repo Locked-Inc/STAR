@@ -249,7 +249,7 @@
  *
  * **Interface Segregation (I)**:
  * - Focused interface: Only error handling operations
- * - Optional operations (retry logic) can be NULL
+ * - Optional operations (retry logic) can benullptr
  * - Clients use only what they need
  *
  * **Dependency Inversion (D)**: [OK][OK][OK] **THIS IS THE PRINCIPLE**
@@ -760,7 +760,7 @@ typedef uint32_t (*rx_error_get_backoff_delay_fn)(void* ctx, const char* compone
  * @endcode
  *
  * @invariant report_error, get_error_count, clear_errors must be non-NULL
- * @invariant Optional function pointers can be NULL
+ * @invariant Optional function pointers can benullptr
  * @invariant ctx pointer is opaque to clients (implementation detail)
  * @invariant Interface lifetime must not exceed concrete implementation lifetime
  *
@@ -832,10 +832,10 @@ struct rx_error_interface {
  * @return rx_err_t Validation result
  * @retval k_rx_ok Interface is valid and ready to use
  * @retval k_rx_err_null_ptr iface parameter is nullptr
- * @retval k_rx_err_invalid_state One or more REQUIRED function pointers are NULL
+ * @retval k_rx_err_invalid_state One or more REQUIRED function pointers arenullptr
  *
  * @note This is a static inline function (no function call overhead)
- * @note Only checks REQUIRED functions, optional functions may be NULL
+ * @note Only checks REQUIRED functions, optional functions may benullptr
  * @note Does not validate function pointer targets (assumes correct binding)
  *
  * @warning Do not use interface if validation fails

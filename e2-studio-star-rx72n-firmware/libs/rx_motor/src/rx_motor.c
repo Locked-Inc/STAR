@@ -105,7 +105,7 @@
  *     ├─-> rx_gptw.h (PWM hardware control)
  *     │       ├─-> rx72n_gptw_regs.h (hardware registers)
  *     │       └─-> rx_check.h (validation)
- *     ├─-> rx_check.h (NULL pointer checks, range validation)
+ *     ├─-> rx_check.h (nullptr checks, range validation)
  *     ├─-> rx_log.h (error/info/warn logging)
  *     └─-> rx_err.h (error code enum)
  * @endcode
@@ -589,7 +589,7 @@ typedef struct {
  *   - Must be different (a ≠ b)
  *
  * @param[in] gptw_config GPTW peripheral configuration parameters
- *   - Must not be NULL
+ *   - Must not benullptr
  *   - frequency_hz: PWM frequency [1 kHz, 50 kHz]
  *   - deadtime_ns: Dead-time insertion [100 ns, 10 µs]
  *   - enable_complementary: Should be false for PH/EN mode
@@ -740,14 +740,14 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * - **invert_pwm:** Polarity inversion (true = inverted, false = normal)
  *
  * @param[out] handle Pointer to motor handle structure to initialize
- *   - Must not be NULL
+ *   - Must not benullptr
  *   - Must not already be initialized (checked via handle->initialized flag)
  *   - Will be populated with configuration on success
  *   - Structure should be allocated by caller (typically stack allocation)
  *   - Contents undefined on error
  *
  * @param[in] config Pointer to motor configuration parameters
- *   - Must not be NULL
+ *   - Must not benullptr
  *   - pwm_freq_hz: [1000, 50000] Hz (validated)
  *   - dead_time_ns: [100, 10000] ns (validated)
  *   - channel: Valid GPTW channel with available outputs

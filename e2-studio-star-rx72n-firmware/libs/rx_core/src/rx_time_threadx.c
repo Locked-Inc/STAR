@@ -351,7 +351,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  * | is_elapsed | impl_is_elapsed  | Wraparound-safe timeout check  |
  *
  * @param[out] iface Pointer to interface structure to populate
- *                   - Must not be NULL
+ *                   - Must not benullptr
  *                   - Caller owns memory
  *                   - Structure is fully initialized on success
  *
@@ -359,9 +359,9 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  * @retval k_rx_ok          Success, interface populated
  * @retval k_rx_err_null_ptr iface is nullptr
  *
- * @pre iface != NULL
+ * @pre iface !=nullptr
  *
- * @post iface->ctx == NULL
+ * @post iface->ctx ==nullptr
  * @post iface->sleep_ms, get_ms, is_elapsed are valid function pointers
  * @post Interface is ready for use
  *
@@ -423,7 +423,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  * - Rule 5: [OK] 1 precondition (NULL check), 3 postconditions
  * - Rule 9: [OK] Function pointers for DIP (intentional deviation)
  *
- * @test Tested in test_rx_time.c with NULL pointer and success cases
+ * @test Tested in test_rx_time.c with nullptr and success cases
  *
  * @since Version 1.0.0
  */

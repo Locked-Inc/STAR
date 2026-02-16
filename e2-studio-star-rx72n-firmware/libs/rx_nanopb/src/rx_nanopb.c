@@ -1073,18 +1073,18 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  * @param[in] buffer Input buffer containing encoded message
  *   - Wire-format Protocol Buffer data
  *   - Received from SPI or USB channel
- *   - Must not be NULL
+ *   - Must not benullptr
  * @param[in] len Buffer length in bytes
  *   - Must be > 0 and <= s_nanopb_buffer_size (512)
  *   - Typically ~30-50 bytes for PID gains message
  * @param[out] msg Decoded message structure
  *   - Fully populated on successful decode
  *   - Initialized to zero before decode
- *   - Must not be NULL
+ *   - Must not benullptr
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, msg contains valid PID configuration
- * @retval k_rx_err_invalid_arg NULL pointer in buffer or msg, or len invalid
+ * @retval k_rx_err_invalid_arg nullptr in buffer or msg, or len invalid
  * @retval k_rx_err_not_initialized rx_nanopb_init() not called
  * @retval k_rx_err_protocol_error Malformed message, CRC error, or decode failure
  *
@@ -1205,7 +1205,7 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
  * @param[in] len Buffer length
  * @param[out] msg Decoded message
  * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if NULL or invalid length
+ * @return k_rx_err_invalid_arg if nullptr or invalid length
  * @return k_rx_err_not_initialized if module not initialized
  * @return k_rx_err_protocol_error if decode fails
  */

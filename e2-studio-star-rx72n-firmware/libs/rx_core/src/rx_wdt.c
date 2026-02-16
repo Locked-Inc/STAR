@@ -314,7 +314,7 @@ static rx_wdt_state_t s_wdt_state = {0};
  * @post s_wdt_state.config contains configuration
  * @post If enable_on_init, WDT counter is running
  *
- * @note NULL config uses safe defaults (recommended for most cases)
+ * @note nullptr config uses safe defaults (recommended for most cases)
  * @note Re-initialization requires system reset (no deinit function)
  *
  * @see rx_wdt_start() Called automatically if enable_on_init=true

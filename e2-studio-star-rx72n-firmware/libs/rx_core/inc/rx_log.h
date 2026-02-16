@@ -210,7 +210,7 @@
  * - **Rule 2 [YES]:** All loops bounded (string logging uses k_log_str_max_len constant)
  * - **Rule 3 [YES]:** No dynamic allocation (all stack-based, inline functions)
  * - **Rule 4 [YES]:** All functions <60 lines (inline helpers are 5-20 lines each)
- * - **Rule 5 [YES]:** Minimum 2 assertions per function (NULL pointer validation in _str functions)
+ * - **Rule 5 [YES]:** Minimum 2 assertions per function (nullptr validation in _str functions)
  * - **Rule 6 [YES]:** Data at smallest scope (loop counters, temporary variables)
  * - **Rule 7 [YES]:** N/A for logging (output functions return void, errors silently dropped)
  * - **Rule 8 [YES]:** C23 typed enums for constants, macros only for type dispatch and filtering
@@ -714,11 +714,11 @@ typedef enum : uint16_t {
  * @param[in] level_str Log level string (e.g., "ERROR", "WARN", "INFO", "DEBUG", "VERBOSE")
  *                      - Must be null-terminated string literal
  *                      - Typically 4-7 characters
- *                      - NULL pointer silently ignored (safety)
+ *                      - nullptr silently ignored (safety)
  * @param[in] tag Component tag identifying log source (e.g., "MOTOR", "SPI", "I2C")
  *                - Must be null-terminated string literal
  *                - Recommended: 3-8 uppercase characters
- *                - NULL pointer silently ignored (safety)
+ *                - nullptr silently ignored (safety)
  *
  * @return void (output-only, no error indication)
  *
@@ -790,11 +790,11 @@ static inline void internal_log_header(const char* level_str, const char* tag)
  * @param[in] tag Component tag identifying error source (e.g., "MOTOR", "SPI")
  *                - Must be null-terminated string literal
  *                - Recommended: 3-8 uppercase characters
- *                - NULL pointer silently ignored
+ *                - nullptr silently ignored
  * @param[in] message Error message describing the failure
  *                    - Must be null-terminated string
  *                    - Should be concise and actionable
- *                    - NULL pointer causes silent return (safety)
+ *                    - nullptr causes silent return (safety)
  *
  * @return void (output-only function)
  *
@@ -951,13 +951,13 @@ internal_rx_log_error_hex(const char* tag, const char* message, uint32_t value, 
  *
  * @param[in] tag Component tag identifying error source (e.g., "MOTOR", "SPI")
  *                - Must be null-terminated string literal
- *                - NULL pointer silently ignored
+ *                - nullptr silently ignored
  * @param[in] message Error message describing the context
  *                    - Must be null-terminated string
- *                    - NULL pointer causes silent return (safety)
+ *                    - nullptr causes silent return (safety)
  * @param[in] str_value String value to log (e.g., parameter name, device ID)
  *                      - Must point to valid memory
- *                      - NULL pointer causes silent return (safety)
+ *                      - nullptr causes silent return (safety)
  *                      - Does not need to be null-terminated if len is exact
  * @param[in] len Maximum number of characters to log from str_value
  *                - Typically obtained via `strlen(str_value)`
@@ -1952,7 +1952,7 @@ static inline void internal_rx_log_verbose_str(const char* tag,
  * @param[in] str String value to log (const char*)
  *                - Must point to valid memory
  *                - Can be null-terminated or explicit length
- *                - NULL pointer silently ignored
+ *                - nullptr silently ignored
  * @param[in] len Maximum number of characters to log
  *                - Typically obtained via strlen(str)
  *                - Values > 256 clamped to 256

@@ -107,7 +107,7 @@
  * - **All functions return `rx_err_t`** for consistent error propagation
  * - **CRC validation on every read** - detect bus noise/corruption
  * - **Range checking** - reject impossible temperatures (-880 to +2000 raw)
- * - **NULL pointer checks** - fail fast on API misuse
+ * - **nullptr checks** - fail fast on API misuse
  * - **State validation** - ensure init before use, prevent double-init
  *
  * # Implementation Approach
@@ -425,7 +425,7 @@
  *   ├── rx_crc (CRC-8 validation)
  *   ├── rx_err (error codes)
  *   ├── rx_log (diagnostic logging)
- *   └── rx_check (NULL pointer validation macros)
+ *   └── rx_check (nullptr validation macros)
  * @endcode
  *
  * @author STAR Team

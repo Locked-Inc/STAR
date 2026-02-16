@@ -203,7 +203,7 @@ static uint16_t s_mtu_period[k_mtu_max_channels]      = {0};
  *
  * @param[in] channel MTU channel identifier
  *   - Valid: k_mtu_channel_0 through k_mtu_channel_7 (excluding 5)
- *   - Invalid values return NULL
+ *   - Invalid values returnnullptr
  *
  * @return Pointer to MTU register base
  * @retval Non-NULL Pointer to register structure for valid channels

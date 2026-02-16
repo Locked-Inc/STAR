@@ -297,7 +297,7 @@ extern "C" {
  *
  * @retval k_rx_err_null_ptr manager or bus_name is nullptr.
  *                           **When**: Input validation at function entry.
- *                           **Cause**: Caller passed NULL pointer.
+ *                           **Cause**: Caller passed nullptr.
  *                           **Action**: Fix calling code - check pointers.
  *
  * @retval k_rx_err_not_found Bus name not found in manager.
@@ -510,7 +510,7 @@ rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, data written to *data
- * @retval k_rx_err_null_ptr NULL pointer
+ * @retval k_rx_err_null_ptr nullptr
  * @retval k_rx_err_not_found Bus not found
  * @retval k_rx_err_invalid_state Not initialized
  * @retval k_rx_err_timeout Timeout
@@ -568,7 +568,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_null_ptr NULL pointer
+ * @retval k_rx_err_null_ptr nullptr
  * @retval k_rx_err_timeout Timeout
  * @retval k_rx_err_nack NACK received
  * @retval k_rx_err_crc_mismatch PEC failed
@@ -628,7 +628,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, *data valid
- * @retval k_rx_err_null_ptr NULL pointer
+ * @retval k_rx_err_null_ptr nullptr
  * @retval k_rx_err_timeout Timeout
  * @retval k_rx_err_crc_mismatch PEC failed
  *
@@ -696,7 +696,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_null_ptr NULL pointer
+ * @retval k_rx_err_null_ptr nullptr
  * @retval k_rx_err_timeout Timeout
  * @retval k_rx_err_nack NACK
  * @retval k_rx_err_crc_mismatch PEC failed
@@ -925,7 +925,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  * @return rx_err_t Error code
  *
  * @retval k_rx_ok Success. *length and *data valid.
- * @retval k_rx_err_null_ptr NULL pointer parameter.
+ * @retval k_rx_err_null_ptr nullptr parameter.
  * @retval k_rx_err_not_found Bus not found.
  * @retval k_rx_err_invalid_state Bus not initialized.
  * @retval k_rx_err_timeout SMBus timeout.
