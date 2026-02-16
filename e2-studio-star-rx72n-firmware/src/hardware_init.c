@@ -197,6 +197,7 @@
 #include "hardware.h"
 #include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
+#include "rx_bms_alert.h"
 #include "rx_check.h"
 #include "rx_err.h"
 #include "rx_gptw.h"
@@ -1395,6 +1396,10 @@ rx_err_t hardware_init(void)
   /* 6. I2C: RIIC0 host + RIIC1 BMS */
   err = i2c_init();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C initialization failed");
+
+  /* 6b. BMS Alert: IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection) */
+  err = rx_bms_alert_init();
+  RX_RETURN_ON_ERROR(err, s_tag, "BMS alert IRQ13 initialization failed");
 
   /* 7. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
   err = adc_init_channels();
