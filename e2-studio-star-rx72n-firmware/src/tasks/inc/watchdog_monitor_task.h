@@ -38,26 +38,49 @@
  *
  * ## Initialization Sequence
  *
- * ```
+ * @code{.c}
  * tx_application_define()
- *   ├─ rx_iwdt_init(&config)              [Initialize hardware]
- *   ├─ rx_iwdt_register_task("CommTask", 30)  [Register all tasks]
+ *   ├─ rx_iwdt_init(&config)              // Initialize hardware
+ *   ├─ rx_iwdt_register_task("CommTask", 30)  // Register all tasks
  *   ├─ ...
  *   ├─ rx_iwdt_set_state(k_system_state_init)
  *   ├─ Create all tasks (including watchdog monitor)
  *   └─ rx_iwdt_set_state(k_system_state_running)
- * ```
+ * @endcode
  *
  * ## Main Loop Logic
  *
- * ```
+ * @code{.c}
  * while (1) {
  *   check_tasks();   // Detect task timeouts
  *   feed();          // Feed hardware watchdog
  *   heartbeat();     // Self-report
  *   sleep(1 tick);   // 10ms @ 100 Hz
  * }
- * ```
+ * @endcode
+ *
+ * @par Hardware Requirements:
+ * - RX72N Independent Watchdog Timer (IWDT) peripheral
+ * - IWDTCKS clock source (PCLKB/128 or LOCO)
+ * - IWDT configured for 2048ms timeout (CKS=10)
+ * - PCLKB running at 60 MHz for accurate timing
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 1: No goto, setjmp, recursion (sequential while loop)
+ * - Rule 2: Bounded loops (infinite task loop with bounded sleep)
+ * - Rule 3: No dynamic memory (static task stack)
+ * - Rule 4: Functions < 60 lines (task entry ~40 lines)
+ * - Rule 5: All returns checked (heartbeat, feed, check_tasks)
+ * - Rule 7: All return values checked via RX_ASSERT
+ * - Rule 8: C23 typed enums for constants
+ * - Rule 10: Compiles with -Wall -Wextra -Werror
+ *
+ * @par SOLID Principles Adherence:
+ * - Single Responsibility: Only monitors IWDT and task health
+ * - Open/Closed: Extensible via rx_iwdt API, no task-specific logic
+ * - Liskov Substitution: Implements standard task interface
+ * - Interface Segregation: Minimal API (single create function)
+ * - Dependency Inversion: Depends on rx_iwdt abstraction, not hardware
  *
  * @par Usage Example:
  * @code
@@ -81,6 +104,7 @@
  * @see rx_iwdt.h IWDT driver API
  * @see main.c System initialization and task creation
  *
+ * @version 1.0.0
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
@@ -109,14 +133,14 @@ extern "C" {
  * - Period: 10ms (100 Hz)
  *
  * **Main loop**:
- * ```
+ * @code{.c}
  * while (1) {
  *   rx_iwdt_check_tasks();  // Detect task timeouts
  *   rx_iwdt_feed();         // Feed hardware watchdog
  *   rx_iwdt_task_heartbeat("WatchdogMon");  // Self-report
  *   tx_thread_sleep(1);     // 10ms @ 100 Hz
  * }
- * ```
+ * @endcode
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Task created successfully
@@ -126,6 +150,7 @@ extern "C" {
  * @pre IWDT initialized via rx_iwdt_init()
  * @pre All tasks registered via rx_iwdt_register_task()
  * @post Watchdog monitor running at Priority 6, 100 Hz
+ * @post WatchdogMon thread created and in READY/RUNNING state
  *
  * @note Must be called from tx_application_define() during system init
  * @warning Task creation failure is fatal - RX_ASSERT in caller

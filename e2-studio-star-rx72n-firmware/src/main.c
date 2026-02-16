@@ -1390,6 +1390,42 @@ static rx_err_t internal_check_startup_flags(void)
  */
 
 /**
+ * @enum iwdt_hardware_timeout_ms_t
+ * @brief IWDT hardware watchdog timeout constants
+ */
+typedef enum : uint32_t {
+  k_iwdt_hw_timeout_ms = 2048, /**< Hardware timeout (CKS=10, ~2048ms) */
+} iwdt_hardware_timeout_ms_t;
+
+/**
+ * @enum iwdt_state_timeout_ms_t
+ * @brief IWDT state-dependent timeout constants
+ */
+typedef enum : uint32_t {
+  k_iwdt_timeout_init_ms         = 5000,  /**< Init state: 5s for slow startup */
+  k_iwdt_timeout_idle_ms         = 5000,  /**< Idle state: 5s (no critical ops) */
+  k_iwdt_timeout_running_ms      = 2000,  /**< Running state: 2s default */
+  k_iwdt_timeout_motor_active_ms = 2000,  /**< Motor active: 2s */
+  k_iwdt_timeout_comm_active_ms  = 2000,  /**< Comm active: 2s */
+  k_iwdt_timeout_error_ms        = 10000, /**< Error state: 10s for recovery */
+} iwdt_state_timeout_ms_t;
+
+/**
+ * @enum iwdt_task_timeout_ms_t
+ * @brief IWDT per-task heartbeat timeout constants
+ */
+typedef enum : uint32_t {
+  k_iwdt_task_timeout_telemetry_ms  = 150,  /**< Telemetry: 3× 50ms period */
+  k_iwdt_task_timeout_ledstatus_ms  = 150,  /**< LED Status: 3× 50ms period */
+  k_iwdt_task_timeout_bmsmonitor_ms = 3000, /**< BMS Monitor: 3× 1000ms period */
+  k_iwdt_task_timeout_tempsensor_ms = 3000, /**< Temp Sensor: 3× 1000ms period */
+  k_iwdt_task_timeout_obstdetect_ms = 60,   /**< Obstacle Detect: 3× 20ms period */
+  k_iwdt_task_timeout_motorctrl_ms  = 30,   /**< Motor Control: 3× 10ms period */
+  k_iwdt_task_timeout_commtask_ms   = 30,   /**< Communication: 3× 10ms period */
+  k_iwdt_task_timeout_watchdog_ms   = 30,   /**< Watchdog Monitor: 3× 10ms period */
+} iwdt_task_timeout_ms_t;
+
+/**
  * @var s_iwdt_config
  * @brief IWDT configuration for system watchdog monitoring
  *
@@ -1402,13 +1438,15 @@ static rx_err_t internal_check_startup_flags(void)
  *
  * **Hardware watchdog**: 2048ms (CKS=10, ~2 seconds)
  * - Fed by watchdog monitor task @ 100 Hz (10ms period)
- * - Safety margin: 2000ms / 10ms = 200× (allows ~200 missed iterations)
+ * - Safety margin: 2048ms / 10ms = 204× (allows ~204 missed iterations)
  *
  * **Task monitoring**: Individual task timeouts
- * - Motor/Comm: 30ms (3× 10ms period)
+ * - Motor/Comm/Watchdog: 30ms (3× 10ms period)
  * - Obstacle: 60ms (3× 20ms period)
  * - LED/Telemetry: 150ms (3× 50ms period)
  * - BMS/Temp: 3000ms (3× 1000ms period)
+ *
+ * @warning Configuration is immutable after rx_iwdt_init()
  *
  * @note Configuration is immutable after rx_iwdt_init()
  * @see rx_iwdt_init() Initialization function using this config
@@ -1417,16 +1455,16 @@ static rx_err_t internal_check_startup_flags(void)
  * @since Version 1.0.0
  */
 static const rx_iwdt_config_t s_iwdt_config = {
-  .default_timeout_ms          = 2000, /**< 2s default hardware timeout */
-  .enable_task_monitoring      = true, /**< Enable task heartbeat tracking */
-  .reset_on_timeout            = true, /**< Reset on timeout (not NMI) */
+  .default_timeout_ms          = k_iwdt_hw_timeout_ms, /**< 2048ms hardware timeout (CKS=10) */
+  .enable_task_monitoring      = true,                 /**< Enable task heartbeat tracking */
+  .reset_on_timeout            = true,                 /**< Reset on timeout (not NMI) */
   .state_timeouts_ms           = {
-    [k_system_state_init]         = 5000,  /**< 5s - slow startup acceptable */
-    [k_system_state_idle]         = 5000,  /**< 5s - no critical operations */
-    [k_system_state_running]      = 2000,  /**< 2s - default operation */
-    [k_system_state_motor_active] = 2000,  /**< 2s - motor control (monitor feeds) */
-    [k_system_state_comm_active]  = 2000,  /**< 2s - communication (monitor feeds) */
-    [k_system_state_error]        = 10000, /**< 10s - recovery/diagnostics time */
+    [k_system_state_init]         = k_iwdt_timeout_init_ms,         /**< 5s - slow startup */
+    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,         /**< 5s - no critical ops */
+    [k_system_state_running]      = k_iwdt_timeout_running_ms,      /**< 2s - default operation */
+    [k_system_state_motor_active] = k_iwdt_timeout_motor_active_ms, /**< 2s - motor control */
+    [k_system_state_comm_active]  = k_iwdt_timeout_comm_active_ms,  /**< 2s - communication */
+    [k_system_state_error]        = k_iwdt_timeout_error_ms,        /**< 10s - recovery/diag */
   }
 };
 
@@ -1663,28 +1701,28 @@ void tx_application_define(void* first_unused_memory)
    * - Watchdog Monitor (10ms period) → 30ms timeout
    */
 
-  err = rx_iwdt_register_task("Telemetry", 150);
+  err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);
   RX_ASSERT(err == k_rx_ok, "Telemetry IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("LEDStatus", 150);
+  err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
   RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("BMSMonitor", 3000);
+  err = rx_iwdt_register_task("BMSMonitor", k_iwdt_task_timeout_bmsmonitor_ms);
   RX_ASSERT(err == k_rx_ok, "BMSMonitor IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("TempSensor", 3000);
+  err = rx_iwdt_register_task("TempSensor", k_iwdt_task_timeout_tempsensor_ms);
   RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("ObstDetect", 60);
+  err = rx_iwdt_register_task("ObstDetect", k_iwdt_task_timeout_obstdetect_ms);
   RX_ASSERT(err == k_rx_ok, "ObstDetect IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("MotorCtrl", 30);
+  err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);
   RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("CommTask", 30);
+  err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);
   RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
 
-  err = rx_iwdt_register_task("WatchdogMon", 30);
+  err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
   RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
 
   /* Step 1f: Set initial IWDT state (init phase) */

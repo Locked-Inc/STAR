@@ -1209,7 +1209,10 @@ static void internal_motor_task_entry(ULONG input)
       }
       /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
       err = rx_iwdt_task_heartbeat("MotorCtrl");
-      RX_ASSERT(err == k_rx_ok, "MotorCtrl heartbeat must succeed");
+      if (err != k_rx_ok) {
+        rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+        /* Continue operation - watchdog monitor will detect timeout */
+      }
 
       /* Skip control loop while e-stop active */
       (void)tx_thread_sleep(k_motor_task_sleep_ticks);
@@ -2318,6 +2321,12 @@ static void internal_active_brake_sequence(void)
 
     if (elapsed_ticks >= brake_ticks) {
       break;
+    }
+
+    /* Report heartbeat during active brake (prevents IWDT timeout) */
+    err = rx_iwdt_task_heartbeat("MotorCtrl");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed during brake", (uint32_t)err);
     }
 
     (void)tx_thread_sleep(1); /* 10ms polling */

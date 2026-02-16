@@ -1493,7 +1493,10 @@ static void internal_telem_task_entry(ULONG input)
 
     /* Report task heartbeat to IWDT (must execute within 150ms timeout) */
     err = rx_iwdt_task_heartbeat("Telemetry");
-    RX_ASSERT(err == k_rx_ok, "Telemetry heartbeat must succeed");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
+    }
 
     /* Sleep until next telemetry cycle */
     (void)tx_thread_sleep(k_telem_task_sleep_ticks);

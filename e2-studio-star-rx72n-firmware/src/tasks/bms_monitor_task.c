@@ -1203,7 +1203,10 @@ static void internal_bms_task_entry(ULONG input)
 
     /* Report task heartbeat to IWDT (must execute within 3000ms timeout) */
     err = rx_iwdt_task_heartbeat("BMSMonitor");
-    RX_ASSERT(err == k_rx_ok, "BMSMonitor heartbeat must succeed");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
+    }
 
     /* Sleep until next poll */
     (void)tx_thread_sleep(k_bms_task_sleep_ticks);

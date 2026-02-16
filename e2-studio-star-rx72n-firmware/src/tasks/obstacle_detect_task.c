@@ -390,7 +390,8 @@
  * | **k_obstacle_threshold_cm** | 30 | cm | Distance threshold for obstacle detection |
  * | **k_obstacle_debounce_samples** | 3 | samples | Consecutive readings to confirm state change |
  * | **k_obstacle_poll_interval_ms** | 20 | ms | Polling rate (50 Hz per sensor) |
- * | **k_obstacle_task_sleep_ticks** | 100 | ticks | Statistics logging interval (1s @ 100Hz) |
+ * | **k_obstacle_heartbeat_ticks** | 5 | ticks | IWDT heartbeat interval (50ms @ 100Hz) |
+ * | **k_obstacle_stats_log_interval** | 20 | heartbeats | Statistics logging interval (1s total) |
  * | **k_obstacle_task_priority** | 12 | - | ThreadX priority (1=highest, 31=lowest) |
  * | **k_obstacle_task_stack_size** | 1024 | bytes | Static stack allocation |
  *
@@ -881,7 +882,8 @@
 typedef enum : uint16_t {
   k_obstacle_task_stack_size  = 1024, /**< Stack size in bytes (static allocation) */
   k_obstacle_task_priority    = 12,   /**< ThreadX priority (1=highest, 31=lowest) */
-  k_obstacle_task_sleep_ticks = 100,  /**< Sleep period: 100 ticks = 1s @ 100 Hz */
+  k_obstacle_heartbeat_ticks  = 5,    /**< IWDT heartbeat interval: 5 ticks = 50ms @ 100 Hz */
+  k_obstacle_stats_log_interval = 20, /**< Log stats every 20 heartbeats (20 × 50ms = 1s) */
   k_obstacle_task_input       = 0,    /**< Thread entry input parameter (unused) */
 } obstacle_task_constants_t;
 
@@ -1583,23 +1585,31 @@ static void internal_obstacle_task_entry(ULONG input)
   rx_log_info(s_tag, "Obstacle detection running");
 
   /* Main monitoring loop - library handles actual polling */
+  uint16_t stats_counter = 0;
   while (true) {
-    /* Periodically log statistics */
-    err = rx_obstacle_detect_get_stats(&s_obstacle_handle,
-                                       &total_polls,
-                                       &obstacle_events,
-                                       &false_positives);
-    if (err == k_rx_ok) {
-      rx_log_debug_val(s_tag, "Total polls", total_polls);
-      rx_log_debug_val(s_tag, "Obstacle events", obstacle_events);
-    }
-
     /* Report task heartbeat to IWDT (must execute within 60ms timeout) */
     err = rx_iwdt_task_heartbeat("ObstDetect");
-    RX_ASSERT(err == k_rx_ok, "ObstDetect heartbeat must succeed");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
+    }
 
-    /* Sleep until next stats check */
-    (void)tx_thread_sleep(k_obstacle_task_sleep_ticks);
+    /* Periodically log statistics (every 1 second) */
+    stats_counter++;
+    if (stats_counter >= k_obstacle_stats_log_interval) {
+      stats_counter = 0;
+      err = rx_obstacle_detect_get_stats(&s_obstacle_handle,
+                                         &total_polls,
+                                         &obstacle_events,
+                                         &false_positives);
+      if (err == k_rx_ok) {
+        rx_log_debug_val(s_tag, "Total polls", total_polls);
+        rx_log_debug_val(s_tag, "Obstacle events", obstacle_events);
+      }
+    }
+
+    /* Sleep until next heartbeat (50ms) */
+    (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
   }
 }
 
