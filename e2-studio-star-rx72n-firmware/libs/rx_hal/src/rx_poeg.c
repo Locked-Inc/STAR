@@ -221,8 +221,8 @@ static void internal_poeg_isr_handler(uint8_t motor_index, uint16_t vector)
     rx_log_error_val(s_tag, "GPTW output err motor", (uint32_t)motor_index);
   }
 
-  /* Trigger system e-stop with driver fault reason */
-  (void)shared_data_trigger_estop(k_estop_reason_driver_fault);
+  /* Trigger system e-stop with driver fault reason (ISR-safe, no mutex) */
+  shared_data_trigger_estop_isr_safe(k_estop_reason_driver_fault);
 }
 
 /* =============================================================================
