@@ -496,6 +496,7 @@ static rx_spi_comm_handle_t s_spi_comm_handle;
  */
 
 static void internal_comm_task_entry(ULONG input);
+static void internal_init_transports(rx_comm_manager_config_t* config);
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx);
 static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
 
@@ -512,7 +513,17 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  * directly accessing internal .initialized field.
  *
  * @param[in] handle USB communication handle to check
+ *   - **Valid range**: Non-NULL pointer to rx_usb_comm_handle_t or nullptr
+ *   - **Constraints**: None (nullptr is safe)
+ *
  * @return true if handle is initialized, false otherwise
+ * @retval true Handle is non-NULL and initialized flag is set
+ * @retval false Handle is NULL or initialized flag is clear
+ *
+ * @pre None (nullptr is safe input)
+ * @pre Handle may be in any state (uninitialized content is safe)
+ * @post Handle state unchanged
+ * @post No side effects
  *
  * @note Encapsulation wrapper to avoid direct field access
  * @since Version 1.0.0
@@ -530,14 +541,24 @@ static inline bool internal_is_usb_initialized(const rx_usb_comm_handle_t* handl
  * directly accessing internal .initialized field.
  *
  * @param[in] handle SPI communication handle to check
+ *   - **Valid range**: Non-NULL pointer to rx_spi_comm_handle_t or nullptr
+ *   - **Constraints**: None (nullptr is safe)
+ *
  * @return true if handle is initialized, false otherwise
+ * @retval true Handle is non-NULL and initialized flag is set
+ * @retval false Handle is NULL or initialized flag is clear
+ *
+ * @pre None (nullptr is safe input)
+ * @pre Handle may be in any state (uninitialized content is safe)
+ * @post Handle state unchanged
+ * @post No side effects
  *
  * @note Encapsulation wrapper to avoid direct field access
  * @since Version 1.0.0
  */
 static inline bool internal_is_spi_initialized(const rx_spi_comm_handle_t* handle)
 {
-  return (handle != nullptr && handle->initialized);
+  return (handle != nullptr && handle->initialized != 0);
 }
 
 /* =============================================================================
@@ -853,6 +874,88 @@ rx_err_t comm_task_create(void)
  */
 
 /**
+ * @brief Initialize USB and SPI transport layers and wire into comm manager config
+ *
+ * @details
+ * Performs complete initialization of USB CDC and SPI communication transport layers,
+ * including handle initialization, error handling, and validation logging. This function
+ * populates the rx_comm_manager_config_t structure with either real transport handles
+ * (on success) or nullptr (on failure) to enable graceful degradation.
+ *
+ * **Algorithm Steps:**
+ * 1. **Initialize USB transport**: Call rx_usb_comm_init() with shared session state
+ * 2. **Handle USB failure**: Log error if init fails, set handle to nullptr
+ * 3. **Initialize SPI transport**: Call rx_spi_comm_init() with shared session state
+ * 4. **Handle SPI failure**: Log error if init fails, set handle to nullptr
+ * 5. **Wire handles**: Assign valid or nullptr handles to config structure
+ * 6. **Validate transports**: Log critical error if both transports failed
+ * 7. **Log success**: Log info for each successfully initialized transport
+ *
+ * **Graceful Degradation:**
+ * - If one transport fails: Other transport continues (logged warning)
+ * - If both transports fail: Config wired with nullptr handles (logged critical error)
+ * - Comm manager will return k_rx_err_timeout on poll for nullptr handles
+ *
+ * @param[out] config Comm manager configuration to populate
+ *   - **Valid range**: Non-NULL pointer to rx_comm_manager_config_t
+ *   - **Constraints**: Must be zeroed before calling this function
+ *   - **Side effects**: usb_handle and spi_handle fields populated
+ *
+ * @pre config must be non-NULL and zero-initialized (memset)
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @post config->usb_handle set to &s_usb_comm_handle or nullptr
+ * @post config->spi_handle set to &s_spi_comm_handle or nullptr
+ * @post At least one transport handle set on success (best effort)
+ * @post All init failures logged via rx_log_error
+ *
+ * @note This function does NOT initialize RSPI hardware - caller must ensure
+ *       RSPI peripheral is initialized before calling
+ * @warning Function has no return value - check config->usb_handle and
+ *          config->spi_handle for nullptr to detect complete failure
+ *
+ * @since Version 1.0.0
+ * @see rx_usb_comm_init() USB transport layer initialization
+ * @see rx_spi_comm_init() SPI transport layer initialization
+ * @see internal_is_usb_initialized() Check USB init status
+ * @see internal_is_spi_initialized() Check SPI init status
+ */
+static void internal_init_transports(rx_comm_manager_config_t* config)
+{
+  /* Initialize USB communication layer */
+  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
+  bool usb_ok                   = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+  if (!usb_ok) {
+    rx_log_error(s_tag, "USB comm init failed");
+  }
+
+  /* Initialize SPI communication layer (RSPI2, channel 0) */
+  rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
+                                   .channel     = k_spi_comm_default_channel,
+                                   .spi_mode    = k_spi_comm_default_mode,
+                                   .fec_enabled = false};
+  bool spi_ok                   = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
+  if (!spi_ok) {
+    rx_log_error(s_tag, "SPI comm init failed");
+  }
+
+  /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
+  config->usb_handle = usb_ok ? &s_usb_comm_handle : nullptr;
+  config->spi_handle = spi_ok ? &s_spi_comm_handle : nullptr;
+
+  /* Validation logging */
+  if (!usb_ok && !spi_ok) {
+    rx_log_error(s_tag, "CRITICAL: Both USB and SPI transports failed to initialize");
+  } else {
+    if (usb_ok) {
+      rx_log_info(s_tag, "USB transport initialized");
+    }
+    if (spi_ok) {
+      rx_log_info(s_tag, "SPI transport initialized");
+    }
+  }
+}
+
+/**
  * @brief Communication task entry point - infinite loop polling rx_comm_manager at 100 Hz
  *
  * @details
@@ -1159,59 +1262,18 @@ static void internal_comm_task_entry(ULONG input)
 
   rx_log_info(s_tag, "Communication task starting");
 
-  /* Initialize USB communication layer */
-  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr /* Optional */
-  };
-
-  err = rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "USB comm init failed");
-    /* Continue - SPI may still work */
-  }
-
-  /* Initialize SPI communication layer (RSPI2, channel 0) */
-  rx_spi_comm_config_t spi_cfg = {
-      .session     = &s_session_state,               /* Share session with USB */
-      .channel     = k_spi_comm_default_channel,     /* RSPI2 channel 0 */
-      .spi_mode    = k_spi_comm_default_mode,        /* SPI mode 0 (CPOL=0, CPHA=0) */
-      .fec_enabled = false                           /* No FEC for now */
-  };
-
-  err = rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "SPI comm init failed");
-    /* Continue - USB may still work */
-  }
-
-  /* Initialize communication manager with real handles */
+  /* Initialize transport layers and wire into comm manager config */
   (void)memset(&config, 0, sizeof(config));
-  config.usb_handle            = &s_usb_comm_handle; /* Real USB handle */
-  config.spi_handle            = &s_spi_comm_handle; /* Real SPI handle */
+  internal_init_transports(&config);
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
   config.enable_decoded_output = true;
 
+  /* Initialize communication manager */
   err = rx_comm_manager_init(&g_comm_manager, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Comm manager init failed", (uint32_t)err);
     /* Continue - task will poll but won't receive frames */
-  }
-
-  /* Verify at least one transport is functional */
-  bool usb_ok = internal_is_usb_initialized(&s_usb_comm_handle);
-  bool spi_ok = internal_is_spi_initialized(&s_spi_comm_handle);
-
-  if (!usb_ok && !spi_ok) {
-    rx_log_error(s_tag, "CRITICAL: Both USB and SPI transports failed to initialize");
-    /* System can't communicate - this is a critical failure */
-    /* For now, continue and rely on timeout behavior */
-  } else {
-    if (usb_ok) {
-      rx_log_info(s_tag, "USB transport initialized");
-    }
-    if (spi_ok) {
-      rx_log_info(s_tag, "SPI transport initialized");
-    }
   }
 
   rx_log_info(s_tag, "Communication running @ 100 Hz");
