@@ -309,6 +309,7 @@
 #include "rx_bq4050.h"
 #include "rx_bq4050_constants.h"
 #include "rx_check.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "shared_data.h"
 #include "tx_api.h"
@@ -1199,6 +1200,10 @@ static void internal_bms_task_entry(ULONG input)
 
     /* Update shared data */
     (void)shared_data_update_bms(&bms);
+
+    /* Report task heartbeat to IWDT (must execute within 3000ms timeout) */
+    err = rx_iwdt_task_heartbeat("BMSMonitor");
+    RX_ASSERT(err == k_rx_ok, "BMSMonitor heartbeat must succeed");
 
     /* Sleep until next poll */
     (void)tx_thread_sleep(k_bms_task_sleep_ticks);

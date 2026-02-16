@@ -395,6 +395,7 @@
 #include "rx_check.h"
 #include "rx_drv8243.h"
 #include "rx_encoder_tpu.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_motor.h"
 #include "rx_mtu_encoder.h"
@@ -1206,6 +1207,10 @@ static void internal_motor_task_entry(ULONG input)
         rx_log_warn(s_tag, "E-stop active, executing active brake");
         internal_active_brake_sequence();
       }
+      /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
+      err = rx_iwdt_task_heartbeat("MotorCtrl");
+      RX_ASSERT(err == k_rx_ok, "MotorCtrl heartbeat must succeed");
+
       /* Skip control loop while e-stop active */
       (void)tx_thread_sleep(k_motor_task_sleep_ticks);
       continue;
@@ -1222,6 +1227,10 @@ static void internal_motor_task_entry(ULONG input)
 
     /* Update motor state in shared data for telemetry */
     internal_update_motor_state();
+
+    /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
+    err = rx_iwdt_task_heartbeat("MotorCtrl");
+    RX_ASSERT(err == k_rx_ok, "MotorCtrl heartbeat must succeed");
 
     /* Sleep until next control cycle */
     (void)tx_thread_sleep(k_motor_task_sleep_ticks);

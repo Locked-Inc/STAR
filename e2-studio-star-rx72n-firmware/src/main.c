@@ -196,6 +196,10 @@
 #include "shared_data.h"
 #include "telemetry_task.h"
 #include "temp_sensor_task.h"
+#include "watchdog_monitor_task.h"
+
+/* Watchdog driver */
+#include "rx_iwdt.h"
 
 /* =============================================================================
  * Main Return Codes
@@ -1380,6 +1384,52 @@ static rx_err_t internal_check_startup_flags(void)
   return k_rx_ok;
 }
 
+/* =============================================================================
+ * IWDT Configuration
+ * =============================================================================
+ */
+
+/**
+ * @var s_iwdt_config
+ * @brief IWDT configuration for system watchdog monitoring
+ *
+ * @details
+ * Configures Independent Watchdog Timer with:
+ * - Hardware timeout: 2048ms (triggers reset if not fed)
+ * - Task monitoring: Enabled (tracks heartbeats)
+ * - Reset on timeout: Enabled (automatic system reset)
+ * - State-dependent timeouts: 2s default, 5s init/idle, 10s error
+ *
+ * **Hardware watchdog**: 2048ms (CKS=10, ~2 seconds)
+ * - Fed by watchdog monitor task @ 100 Hz (10ms period)
+ * - Safety margin: 2000ms / 10ms = 200× (allows ~200 missed iterations)
+ *
+ * **Task monitoring**: Individual task timeouts
+ * - Motor/Comm: 30ms (3× 10ms period)
+ * - Obstacle: 60ms (3× 20ms period)
+ * - LED/Telemetry: 150ms (3× 50ms period)
+ * - BMS/Temp: 3000ms (3× 1000ms period)
+ *
+ * @note Configuration is immutable after rx_iwdt_init()
+ * @see rx_iwdt_init() Initialization function using this config
+ * @see system_state_t State definitions for state_timeouts_ms array
+ *
+ * @since Version 1.0.0
+ */
+static const rx_iwdt_config_t s_iwdt_config = {
+  .default_timeout_ms          = 2000, /**< 2s default hardware timeout */
+  .enable_task_monitoring      = true, /**< Enable task heartbeat tracking */
+  .reset_on_timeout            = true, /**< Reset on timeout (not NMI) */
+  .state_timeouts_ms           = {
+    [k_system_state_init]         = 5000,  /**< 5s - slow startup acceptable */
+    [k_system_state_idle]         = 5000,  /**< 5s - no critical operations */
+    [k_system_state_running]      = 2000,  /**< 2s - default operation */
+    [k_system_state_motor_active] = 2000,  /**< 2s - motor control (monitor feeds) */
+    [k_system_state_comm_active]  = 2000,  /**< 2s - communication (monitor feeds) */
+    [k_system_state_error]        = 10000, /**< 10s - recovery/diagnostics time */
+  }
+};
+
 /**
  * @brief ThreadX application definition callback - Create application threads and kernel objects
  *
@@ -1596,6 +1646,51 @@ void tx_application_define(void* first_unused_memory)
   err = shared_data_init();
   RX_ASSERT(err == k_rx_ok, "shared_data_init must succeed");
 
+  /* Step 1d: Initialize IWDT (hardware watchdog + task monitoring) */
+  err = rx_iwdt_init(&s_iwdt_config);
+  RX_ASSERT(err == k_rx_ok, "rx_iwdt_init must succeed");
+
+  /* Step 1e: Register all tasks for heartbeat monitoring
+   *
+   * Task timeout = 3× normal period (allows 2 missed heartbeats):
+   * - Telemetry (50ms period) → 150ms timeout
+   * - LED Status (50ms period) → 150ms timeout
+   * - BMS Monitor (1000ms period) → 3000ms timeout
+   * - Temp Sensor (1000ms period) → 3000ms timeout
+   * - Obstacle Detect (20ms period) → 60ms timeout
+   * - Motor Control (10ms period) → 30ms timeout
+   * - Communication (10ms period) → 30ms timeout
+   * - Watchdog Monitor (10ms period) → 30ms timeout
+   */
+
+  err = rx_iwdt_register_task("Telemetry", 150);
+  RX_ASSERT(err == k_rx_ok, "Telemetry IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("LEDStatus", 150);
+  RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("BMSMonitor", 3000);
+  RX_ASSERT(err == k_rx_ok, "BMSMonitor IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("TempSensor", 3000);
+  RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("ObstDetect", 60);
+  RX_ASSERT(err == k_rx_ok, "ObstDetect IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("MotorCtrl", 30);
+  RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("CommTask", 30);
+  RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("WatchdogMon", 30);
+  RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
+
+  /* Step 1f: Set initial IWDT state (init phase) */
+  err = rx_iwdt_set_state(k_system_state_init);
+  RX_ASSERT(err == k_rx_ok, "IWDT set init state must succeed");
+
   /* Step 2: Create tasks (lowest priority first) */
 
   /* Telemetry Task - Priority 18 (lowest) */
@@ -1625,6 +1720,14 @@ void tx_application_define(void* first_unused_memory)
   /* Communication Task - Priority 5 (highest) */
   err = comm_task_create();
   RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
+
+  /* Watchdog Monitor Task - Priority 6 */
+  err = watchdog_monitor_task_create();
+  RX_ASSERT(err == k_rx_ok, "watchdog_monitor_task_create must succeed");
+
+  /* Step 3: Transition to running state (all tasks created) */
+  err = rx_iwdt_set_state(k_system_state_running);
+  RX_ASSERT(err == k_rx_ok, "IWDT set running state must succeed");
 
   /* Postcondition: All tasks created successfully */
   RX_ASSERT(err == k_rx_ok, "Postcondition: All tasks must be created successfully");

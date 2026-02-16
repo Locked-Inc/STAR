@@ -850,6 +850,7 @@
 #include <string.h>
 
 #include "rx_check.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_obstacle_detect.h"
 #include "shared_data.h"
@@ -1592,6 +1593,10 @@ static void internal_obstacle_task_entry(ULONG input)
       rx_log_debug_val(s_tag, "Total polls", total_polls);
       rx_log_debug_val(s_tag, "Obstacle events", obstacle_events);
     }
+
+    /* Report task heartbeat to IWDT (must execute within 60ms timeout) */
+    err = rx_iwdt_task_heartbeat("ObstDetect");
+    RX_ASSERT(err == k_rx_ok, "ObstDetect heartbeat must succeed");
 
     /* Sleep until next stats check */
     (void)tx_thread_sleep(k_obstacle_task_sleep_ticks);
