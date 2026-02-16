@@ -1089,3 +1089,16 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
 
   return rx_mpc_set_peripheral(&config);
 }
+
+rx_err_t rx_mpc_set_irq(const rx_port_pin_t pin)
+{
+  /* IRQ function uses PSEL = 0x40
+   * Typical pins: P00-P07 for IRQ8-IRQ15 on RX72N
+   * Used by HC-SR04 ultrasonic sensors for echo pulse measurement */
+  const rx_mpc_peripheral_config_t config = {
+    .pin  = pin,
+    .psel = k_psel_irq /* 0x40 - IRQ function select */
+  };
+
+  return rx_mpc_set_peripheral(&config);
+}

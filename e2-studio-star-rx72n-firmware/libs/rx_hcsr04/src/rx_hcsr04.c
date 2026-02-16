@@ -522,6 +522,9 @@
 
 #include "rx_check.h"
 #include "rx_hcsr04_hal.h"
+#include "rx_hcsr04_icu.h"
+#include "rx_hcsr04_isr.h"
+#include "rx_mpc.h"
 #include "tx_api.h"
 
 /* =============================================================================
@@ -1217,6 +1220,49 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
   return k_rx_ok;
 }
 
+/**
+ * @brief Measure echo pulse duration using IRQ mode
+ *
+ * @details
+ * Uses hardware edge detection via ICU to capture rising and falling
+ * edge timestamps with microsecond precision. ISR captures timestamps
+ * automatically; this function waits for completion.
+ *
+ * @param[in] handle Sensor handle (must be configured for IRQ mode)
+ * @param[out] duration_us Pointer to store pulse duration in microseconds
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Measurement successful
+ * @retval k_rx_err_timeout No echo pulse within timeout period
+ */
+static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* duration_us)
+{
+  /* Start measurement (clears ISR state) */
+  rx_hcsr04_isr_start(handle->echo_irq);
+
+  /* Wait for ISR to capture both edges (with timeout) */
+  const uint32_t start_time = hcsr04_hal_get_time_us();
+  rx_err_t       err;
+
+  while (true) {
+    err = rx_hcsr04_isr_get_duration(handle->echo_irq, duration_us);
+    if (err == k_rx_ok) {
+      break; /* Measurement complete */
+    }
+
+    /* Check timeout */
+    const uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
+    if (elapsed > handle->timeout_us) {
+      return k_rx_err_timeout;
+    }
+
+    /* Yield CPU briefly to reduce busy-wait overhead */
+    /* Note: Could use tx_thread_sleep(1) if in ThreadX context */
+  }
+
+  return k_rx_ok;
+}
+
 /* =============================================================================
  * Worker Thread Implementation
  * =============================================================================
@@ -1564,22 +1610,60 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
     return err;
   }
 
-  /* Configure echo pin as input */
-  err = hcsr04_hal_gpio_set_input(config->echo_pin);
-  if (err != k_rx_ok) {
-    /* Cleanup trigger pin */
-    (void)hcsr04_hal_gpio_deinit(config->trigger_pin); /* Cleanup, ignore errors */
-    return err;
+  /* Configure echo pin based on mode */
+  if (config->echo_mode == k_hcsr04_echo_irq) {
+    /* IRQ mode: Configure pin for IRQ function and set up ICU */
+
+    /* Validate IRQ number (8-15 for P00-P07) */
+    if (config->echo_irq < 8 || config->echo_irq > 15) {
+      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
+      return k_rx_err_invalid_arg;
+    }
+
+    /* Configure pin for IRQ function via MPC */
+    err = rx_mpc_set_irq(config->echo_pin);
+    if (err != k_rx_ok) {
+      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
+      return err;
+    }
+
+    /* Configure ICU for edge detection (priority 10) */
+    err = rx_hcsr04_icu_configure(config->echo_irq, 10);
+    if (err != k_rx_ok) {
+      /* Cleanup: reconfigure pin back to GPIO */
+      (void)rx_mpc_set_gpio(config->echo_pin);
+      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
+      return err;
+    }
+
+    /* Register sensor with ISR handler (sensor index TBD - use 0 for now) */
+    err = rx_hcsr04_isr_register(config->echo_irq, 0);
+    if (err != k_rx_ok) {
+      (void)rx_hcsr04_icu_disable(config->echo_irq);
+      (void)rx_mpc_set_gpio(config->echo_pin);
+      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
+      return err;
+    }
+  } else {
+    /* Polling mode: Configure echo pin as GPIO input */
+    err = hcsr04_hal_gpio_set_input(config->echo_pin);
+    if (err != k_rx_ok) {
+      /* Cleanup trigger pin */
+      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
+      return err;
+    }
   }
 
   /* Initialize handle */
-  handle->trigger_pin               = config->trigger_pin;
-  handle->echo_pin                  = config->echo_pin;
-  handle->timeout_us                = config->timeout_us;
-  handle->initialized               = true;
-  handle->measurement_active        = false;
-  handle->cancel_requested          = false;
-  handle->temperature_celsius       = s_default_temperature_celsius;
+  handle->trigger_pin         = config->trigger_pin;
+  handle->echo_pin            = config->echo_pin;
+  handle->timeout_us          = config->timeout_us;
+  handle->echo_mode           = config->echo_mode;
+  handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : 0;
+  handle->initialized         = true;
+  handle->measurement_active  = false;
+  handle->cancel_requested    = false;
+  handle->temperature_celsius = s_default_temperature_celsius;
   handle->temp_compensation_enabled = false;
 
   /* Reset statistics */
@@ -1617,12 +1701,29 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
     return k_rx_err_invalid_state;
   }
 
+  /* Clean up based on mode */
+  rx_err_t err = k_rx_ok;
+
+  if (handle->echo_mode == k_hcsr04_echo_irq) {
+    /* IRQ mode: Disable ICU and reconfigure pin to GPIO */
+    rx_err_t irq_err = rx_hcsr04_icu_disable(handle->echo_irq);
+    if (irq_err != k_rx_ok) {
+      err = irq_err; /* Save first error */
+    }
+
+    /* Reconfigure pin back to GPIO */
+    rx_err_t mpc_err = rx_mpc_set_gpio(handle->echo_pin);
+    if (mpc_err != k_rx_ok && err == k_rx_ok) {
+      err = mpc_err; /* Save first error */
+    }
+  }
+
   /* Release GPIO pins */
-  rx_err_t err         = k_rx_ok;
   rx_err_t trigger_err = hcsr04_hal_gpio_deinit(handle->trigger_pin);
-  if (trigger_err != k_rx_ok) {
+  if (trigger_err != k_rx_ok && err == k_rx_ok) {
     err = trigger_err; /* Save first error */
   }
+
   rx_err_t echo_err = hcsr04_hal_gpio_deinit(handle->echo_pin);
   if (echo_err != k_rx_ok && err == k_rx_ok) {
     err = echo_err; /* Save first error */
@@ -1747,8 +1848,12 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
     return err;
   }
 
-  /* Measure echo pulse duration */
-  err = internal_measure_echo_pulse(handle, &result->echo_time_us);
+  /* Measure echo pulse duration (dispatch based on mode) */
+  if (handle->echo_mode == k_hcsr04_echo_irq) {
+    err = internal_measure_echo_pulse_irq(handle, &result->echo_time_us);
+  } else {
+    err = internal_measure_echo_pulse(handle, &result->echo_time_us);
+  }
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;

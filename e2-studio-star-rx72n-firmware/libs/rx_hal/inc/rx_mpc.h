@@ -594,6 +594,30 @@ typedef enum : uint8_t {
    * @since Version 1.1.0
    */
   k_psel_gptw = 0x14,
+
+  /**
+   * @brief IRQ (External Interrupt) edge detection input
+   *
+   * @details
+   * Connects pin to ICU external interrupt function for hardware edge
+   * detection. Enables microsecond-precision timing for external signals.
+   *
+   * @par Typical Pins:
+   * - P00-P07: IRQ8-IRQ15
+   * - Other IRQ pins per RX72N Manual Table 20.7
+   *
+   * @par Application: HC-SR04 ultrasonic sensor echo pulse measurement
+   * @par Feature: Hardware edge capture with interrupt-driven timing
+   *
+   * @note Requires ICU configuration after MPC pin setup
+   * @note IRQ number depends on pin (P00=IRQ8, P01=IRQ9, etc.)
+   *
+   * @see rx_hcsr04_icu_configure() Configure ICU for edge detection
+   * @see RX72N Manual Section 20.3 (MPC), Chapter 15 (ICU)
+   *
+   * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+   */
+  k_psel_irq = 0x40,
 } rx_pin_psel_t;
 
 /* =============================================================================
@@ -1403,6 +1427,77 @@ typedef enum : uint8_t {
  * @since Version 1.1.0
  */
 [[nodiscard]] rx_err_t rx_mpc_set_usb_vbus(rx_port_pin_t pin);
+
+/**
+ * @brief Configure pin for IRQ (external interrupt) function
+ *
+ * @details
+ * Sets pin function to IRQ mode via MPC (Multi-Function Pin Controller).
+ * This enables hardware edge detection on IRQ0-IRQ15 pins for use with
+ * the Interrupt Controller Unit (ICU).
+ *
+ * **PSEL Values for IRQ Function:**
+ * - IRQ pins: PSEL = 0x40 (IRQ function select)
+ * - Verify in RX72N Manual Section 20.3 (MPC)
+ *
+ * **Supported Pins:**
+ * - P00-P07: IRQ8-IRQ15
+ * - Other IRQ pins per RX72N Manual Table 20.7
+ *
+ * @par STAR Project IRQ Usage (HC-SR04 Ultrasonic Sensors)
+ * | Pin  | IRQ Number | Sensor   | Location     |
+ * |------|------------|----------|--------------|
+ * | P03  | IRQ11      | Sonar 0  | Front-Left   |
+ * | P02  | IRQ10      | Sonar 1  | Front-Right  |
+ * | P01  | IRQ9       | Sonar 2  | Back-Left    |
+ * | P00  | IRQ8       | Sonar 3  | Back-Right   |
+ *
+ * @param[in] pin GPIO pin identifier (must support IRQ function)
+ *                Use k_rx_p0_X constants for IRQ8-15
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Pin configured for IRQ function
+ * @retval k_rx_err_null_ptr Config pointer is NULL (should never happen)
+ * @retval k_rx_err_invalid_arg Pin does not support IRQ function
+ * @retval k_rx_err_hw_error PWPR write-protect unlock failed
+ *
+ * @pre Pin must have IRQ multiplexing capability
+ * @pre PCLKB running (MPC requires clock)
+ * @pre Must be called during single-threaded initialization
+ *
+ * @post Pin PSEL set to IRQ function (0x40)
+ * @post PMR bit set (peripheral mode)
+ * @post PWPR register locked
+ * @post Pin ready for ICU edge detection configuration
+ *
+ * @note Thread Safety: Not thread-safe. Call during initialization only.
+ * @note Call this BEFORE enabling ICU interrupt
+ *
+ * @warning Does NOT configure ICU registers (edge detect, priority, etc.)
+ * @warning Configure ICU separately via rx_hcsr04_icu_configure()
+ *
+ * @par Example - HC-SR04 Echo Pin Setup
+ * @code{.c}
+ * // Configure P03 for IRQ11 (HC-SR04 echo measurement)
+ * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("SONAR", "IRQ pin configuration failed");
+ *     return err;
+ * }
+ *
+ * // Now configure ICU for edge detection
+ * err = rx_hcsr04_icu_configure(11, 10);  // IRQ11, priority 10
+ * @endcode
+ *
+ * @see rx_mpc_set_gpio() Set pin back to GPIO mode
+ * @see rx_mpc_set_peripheral() Core pin configuration function
+ * @see rx_hcsr04_icu_configure() Configure ICU for IRQ edge detection
+ * @see RX72N Manual Section 20.3 (MPC), Table 20.7 (PSEL values)
+ * @see RX72N Manual Chapter 15 (ICU - Interrupt Controller Unit)
+ *
+ * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ */
+[[nodiscard]] rx_err_t rx_mpc_set_irq(rx_port_pin_t pin);
 
 #ifdef __cplusplus
 }

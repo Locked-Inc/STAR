@@ -370,72 +370,135 @@ typedef enum : uint16_t {
  */
 
 /**
+ * @enum rx_hcsr04_echo_mode_t
+ * @brief Echo pulse measurement mode selection
+ *
+ * @details
+ * Determines how the HC-SR04 echo pulse is measured:
+ * - **Polling**: Software reads GPIO pin state in a loop (simple, portable)
+ * - **IRQ**: Hardware captures edges via ICU interrupt (precise, low CPU overhead)
+ *
+ * **Mode Comparison:**
+ * | Feature | Polling | IRQ |
+ * |---------|---------|-----|
+ * | Precision | ±5µs | ±1µs |
+ * | CPU Usage | High (busy-wait) | Low (interrupt-driven) |
+ * | Complexity | Simple | Requires ICU config |
+ * | Timing Jitter | Variable | Minimal |
+ * | Concurrent Sensors | Limited | Supports all 4 |
+ *
+ * **Recommended Usage:**
+ * - Use **polling** for: debugging, single sensor, simple applications
+ * - Use **IRQ** for: production code, multiple sensors, CPU efficiency
+ *
+ * @see rx_hcsr04_config_t Configuration structure using this enum
+ * @see rx_hcsr04_icu_configure() ICU setup required for IRQ mode
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint8_t {
+  /**
+   * @brief Software polling mode (default)
+   * @details
+   * Echo pin configured as GPIO input. Software polls pin state in a loop.
+   * Simple and works everywhere, but consumes CPU during measurement.
+   */
+  k_hcsr04_echo_polling = 0,
+
+  /**
+   * @brief Hardware IRQ edge capture mode
+   * @details
+   * Echo pin configured for IRQ function via MPC. ICU captures rising and
+   * falling edges automatically with interrupt-driven timing.
+   * Requires ICU configuration via rx_hcsr04_icu_configure().
+   */
+  k_hcsr04_echo_irq = 1,
+} rx_hcsr04_echo_mode_t;
+
+/**
  * @struct rx_hcsr04_config_t
  * @brief HC-SR04 sensor initialization configuration
  *
  * @details
  * Configuration structure for initializing HC-SR04 sensor handle.
- * Specifies GPIO pin assignments and measurement timeout.
+ * Specifies GPIO pin assignments, measurement timeout, and echo measurement mode.
  *
  * **Memory Layout (12 bytes on RX72N):**
  * ```
- * Offset | Field       | Type          | Size | Alignment
- * -------|-------------|---------------|------|----------
- * 0      | trigger_pin | rx_port_pin_t | 2    | 2
- * 2      | echo_pin    | rx_port_pin_t | 2    | 2
- * 4      | timeout_us  | uint32_t      | 4    | 4
- * Total: 8 bytes (with padding)
+ * Offset | Field       | Type                  | Size | Alignment
+ * -------|-------------|-----------------------|------|----------
+ * 0      | trigger_pin | rx_port_pin_t         | 2    | 2
+ * 2      | echo_pin    | rx_port_pin_t         | 2    | 2
+ * 4      | timeout_us  | uint32_t              | 4    | 4
+ * 8      | echo_mode   | rx_hcsr04_echo_mode_t | 1    | 1
+ * 9      | echo_irq    | uint8_t               | 1    | 1
+ * Total: 12 bytes (with padding)
  * ```
  *
  * **Field Descriptions:**
  * - `trigger_pin`: GPIO output pin for 10µs trigger pulse
- * - `echo_pin`: GPIO input pin for measuring echo pulse width
+ * - `echo_pin`: GPIO input pin (or IRQ pin) for measuring echo pulse width
  * - `timeout_us`: Maximum wait time for echo (default: 30000µs = 30ms)
+ * - `echo_mode`: Measurement mode (polling or IRQ, default: polling)
+ * - `echo_irq`: IRQ number (8-15) if echo_mode == IRQ, otherwise ignored
  *
  * **GPIO Pin Selection:**
  * - Use type-safe `rx_port_pin_t` enum from rx_port_constants.h
  * - Trigger and echo must be different pins
  * - Both pins must support digital I/O
- * - No PWM or special function required
+ * - For IRQ mode: echo_pin must support IRQ function (P00-P07 for IRQ8-15)
  *
  * **Timeout Recommendations:**
  * - Default (30ms): Covers full 400cm range + margin
  * - Short range (10ms): Objects < 170cm only, faster response
  * - Long range (50ms): Extra margin for difficult environments
  *
- * @par Example: Configuration for STAR Robot
+ * @par Example: Polling Mode (Default)
  * @code
  * rx_hcsr04_config_t config = {
- *     .trigger_pin = k_gpio_pb2,  // Port B, Pin 2
- *     .echo_pin = k_gpio_pb3,     // Port B, Pin 3
- *     .timeout_us = k_hcsr04_echo_timeout_us  // 30ms default
+ *     .trigger_pin = k_rx_pf_5,            // Trigger on PF5
+ *     .echo_pin    = k_rx_p0_3,            // Echo on P03
+ *     .timeout_us  = 30000,                // 30ms timeout
+ *     .echo_mode   = k_hcsr04_echo_polling // Software polling (default)
+ *     // echo_irq field not used in polling mode
  * };
  *
  * rx_hcsr04_t sensor;
  * rx_err_t err = rx_hcsr04_init(&sensor, &config);
  * @endcode
  *
- * @par Example: Short-Range Configuration (Fast Response)
+ * @par Example: IRQ Mode (High Precision)
  * @code
  * rx_hcsr04_config_t config = {
- *     .trigger_pin = k_gpio_pe5,
- *     .echo_pin = k_gpio_pe6,
- *     .timeout_us = 10000  // 10ms timeout (covers 0-170cm)
+ *     .trigger_pin = k_rx_pf_5,        // Trigger on PF5
+ *     .echo_pin    = k_rx_p0_3,        // Echo on P03 (IRQ11)
+ *     .timeout_us  = 30000,            // 30ms timeout
+ *     .echo_mode   = k_hcsr04_echo_irq,// Hardware edge capture
+ *     .echo_irq    = 11                // IRQ11 for P03
  * };
- * // Faster response, but cannot detect objects > 170cm
+ *
+ * rx_hcsr04_t sensor;
+ * rx_err_t err = rx_hcsr04_init(&sensor, &config);
+ * // Note: ICU configuration done automatically in init
  * @endcode
  *
  * @note This structure is passed by pointer to rx_hcsr04_init()
  * @warning Do not modify fields after initialization - call deinit/init instead
+ * @warning For IRQ mode: ensure echo_irq matches echo_pin (P00=IRQ8, P01=IRQ9, etc.)
  *
  * @see rx_hcsr04_init()
+ * @see rx_hcsr04_echo_mode_t Echo measurement mode enum
  * @see rx_port_constants.h Type-safe GPIO pin definitions
  * @see rx_hcsr04_timing_t Timeout constants
+ *
+ * @since Version 1.2.0 (Issue #296 - IRQ mode added)
  */
 typedef struct {
-  rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO, output) */
-  rx_port_pin_t echo_pin;    /**< Echo pin (type-safe GPIO, input) */
-  uint32_t      timeout_us;  /**< Echo timeout in microseconds (default: 30000) */
+  rx_port_pin_t         trigger_pin; /**< Trigger pin (type-safe GPIO, output) */
+  rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ, input) */
+  uint32_t              timeout_us;  /**< Echo timeout in microseconds (default: 30000) */
+  rx_hcsr04_echo_mode_t echo_mode;   /**< Polling or IRQ mode (default: polling) */
+  uint8_t               echo_irq;    /**< IRQ number (0-15), used only if echo_mode==IRQ */
 } rx_hcsr04_config_t;
 
 /**
@@ -446,9 +509,11 @@ typedef struct {
  */
 typedef struct {
   /* Configuration (set during init) */
-  rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
-  rx_port_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
-  uint32_t      timeout_us;  /**< Measurement timeout in microseconds */
+  rx_port_pin_t         trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
+  rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ enum) */
+  uint32_t              timeout_us;  /**< Measurement timeout in microseconds */
+  rx_hcsr04_echo_mode_t echo_mode;   /**< Echo measurement mode (polling or IRQ) */
+  uint8_t               echo_irq;    /**< IRQ number (8-15) if IRQ mode, else 0 */
 
   /* State */
   bool  initialized;               /**< True if handle is initialized */

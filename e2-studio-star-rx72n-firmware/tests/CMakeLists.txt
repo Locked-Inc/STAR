@@ -140,10 +140,11 @@ set(RX_HCSR04_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_hcsr04/src/rx_hcsr04.c
 )
 
-# HC-SR04 mock source
+# HC-SR04 mock source (includes IRQ mode mocks)
 set(MOCK_HCSR04_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_hcsr04_hw.c
     ${CMAKE_SOURCE_DIR}/mocks/rx_hcsr04_hal_mock.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_hcsr04_irq.c
 )
 
 # rx_obstacle_detect source
