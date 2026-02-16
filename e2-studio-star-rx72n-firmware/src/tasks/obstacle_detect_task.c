@@ -390,8 +390,8 @@
  * | **k_obstacle_threshold_cm** | 30 | cm | Distance threshold for obstacle detection |
  * | **k_obstacle_debounce_samples** | 3 | samples | Consecutive readings to confirm state change |
  * | **k_obstacle_poll_interval_ms** | 20 | ms | Polling rate (50 Hz per sensor) |
- * | **k_obstacle_heartbeat_ticks** | 5 | ticks | IWDT heartbeat interval (50ms @ 100Hz) |
- * | **k_obstacle_stats_log_interval** | 20 | heartbeats | Statistics logging interval (1s total) |
+ * | **k_obstacle_heartbeat_ticks** | 2 | ticks | IWDT heartbeat interval (20ms @ 100Hz) |
+ * | **k_obstacle_stats_log_interval** | 50 | heartbeats | Statistics logging interval (1s total) |
  * | **k_obstacle_task_priority** | 12 | - | ThreadX priority (1=highest, 31=lowest) |
  * | **k_obstacle_task_stack_size** | 1024 | bytes | Static stack allocation |
  *
@@ -882,8 +882,8 @@
 typedef enum : uint16_t {
   k_obstacle_task_stack_size  = 1024, /**< Stack size in bytes (static allocation) */
   k_obstacle_task_priority    = 12,   /**< ThreadX priority (1=highest, 31=lowest) */
-  k_obstacle_heartbeat_ticks  = 5,    /**< IWDT heartbeat interval: 5 ticks = 50ms @ 100 Hz */
-  k_obstacle_stats_log_interval = 20, /**< Log stats every 20 heartbeats (20 × 50ms = 1s) */
+  k_obstacle_heartbeat_ticks  = 2,    /**< IWDT heartbeat interval: 2 ticks = 20ms @ 100 Hz (3× safety margin for 60ms timeout) */
+  k_obstacle_stats_log_interval = 50, /**< Log stats every 50 heartbeats (50 × 20ms = 1s) */
   k_obstacle_task_input       = 0,    /**< Thread entry input parameter (unused) */
 } obstacle_task_constants_t;
 

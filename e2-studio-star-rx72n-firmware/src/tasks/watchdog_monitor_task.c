@@ -111,14 +111,36 @@
 /**
  * @enum watchdog_task_constants_t
  * @brief Watchdog monitor task configuration constants
+ *
+ * @details
+ * Defines ThreadX task parameters for the watchdog monitor task, which supervises
+ * all registered tasks by checking heartbeats and feeding the hardware Independent
+ * Watchdog Timer (IWDT) at 100 Hz. The task runs at high priority (6) between
+ * Communication (5) and Motor Control (8) to ensure timely watchdog feeding.
+ *
+ * **Task Characteristics:**
+ * - **Stack**: 512 bytes (minimal - no complex logic, just checks and feeds)
+ * - **Priority**: 6 (high - ensures IWDT fed even under heavy load)
+ * - **Period**: 10ms (100 Hz - provides 200× safety margin for 2048ms IWDT timeout)
+ * - **CPU Utilization**: < 0.01% (extremely lightweight)
+ *
+ * **Design Rationale:**
+ * - Small stack sufficient for heartbeat checks and IWDT feed operations
+ * - High priority prevents preemption during safety-critical watchdog operations
+ * - 100 Hz rate ensures hardware watchdog fed with 200× margin (2048ms / 10ms)
+ *
+ * @note All size values in bytes, periods in ThreadX ticks (10ms @ 100 Hz)
+ * @see watchdog_monitor_task_create() Task creation using these constants
+ * @see internal_watchdog_monitor_task_entry() Main loop running at configured period
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_watchdog_task_stack_size = 512, /**< Stack size in bytes (minimal logic) */
-  k_watchdog_task_priority   = 6,   /**< ThreadX priority (high - safety critical) */
-  k_watchdog_task_input      = 0,   /**< Thread entry input parameter */
+  k_watchdog_task_stack_size = 512, /**< Stack size (512 bytes). Minimal allocation for lightweight supervision loop. No recursion, no large locals. Valid range: 256-1024 bytes. */
+  k_watchdog_task_priority   = 6,   /**< ThreadX priority (6). High priority ensures timely IWDT feeding. Between Communication (5) and Motor Control (8). Valid range: 1-15 (1=highest). */
+  k_watchdog_task_input      = 0,   /**< Thread entry input parameter (0). Unused by watchdog monitor task. ThreadX convention for parameterless tasks. */
   k_watchdog_task_period_ticks =
-    1, /**< 10ms period = 100 Hz (1 tick @ 100 Hz tick rate) */
+    1, /**< Task period (1 tick = 10ms @ 100 Hz). Watchdog check and feed rate. Provides 200× safety margin for 2048ms hardware IWDT timeout. Valid range: 1-10 ticks (10-100ms). */
 } watchdog_task_constants_t;
 
 /* =============================================================================
@@ -126,16 +148,82 @@ typedef enum : uint16_t {
  * =============================================================================
  */
 
-/** @brief ThreadX thread control block */
+/**
+ * @var s_watchdog_thread
+ * @brief ThreadX thread control block for watchdog monitor task
+ *
+ * @details
+ * Holds ThreadX RTOS state for the watchdog monitor task: stack pointer,
+ * priority, sleep state, event flags, etc. Initialized by tx_thread_create()
+ * in watchdog_monitor_task_create(). Persistent for entire system lifetime.
+ *
+ * @note Internal ThreadX structure - do not modify directly
+ * @warning Must remain in scope for task lifetime (static storage)
+ * @see watchdog_monitor_task_create() Initializes this control block
+ *
+ * @since Version 1.0.0
+ */
 static TX_THREAD s_watchdog_thread;
 
-/** @brief Static thread stack (no dynamic allocation) */
+/**
+ * @var s_watchdog_stack
+ * @brief Static thread stack for watchdog monitor task (512 bytes)
+ *
+ * @details
+ * Statically allocated stack memory for the watchdog monitor task. Uses
+ * k_watchdog_task_stack_size (512 bytes) which is sufficient for the minimal
+ * logic in the supervision loop (heartbeat checks, IWDT feed, sleep).
+ *
+ * **Stack Usage Breakdown:**
+ * - Function call overhead: ~32 bytes (call stack, return addresses)
+ * - Local variables: ~16 bytes (err code, minimal state)
+ * - ThreadX context: ~64 bytes (registers, RTOS state)
+ * - Safety margin: ~400 bytes (unused, guards against stack overflow)
+ *
+ * @note NASA Power of 10 Rule 3: No dynamic memory allocation (static array)
+ * @warning Stack overflow triggers undefined behavior - monitor in debug builds
+ * @post Initialized to zero by C runtime before main() (BSS section)
+ *
+ * @since Version 1.0.0
+ */
 static uint8_t s_watchdog_stack[k_watchdog_task_stack_size];
 
-/** @brief Task creation guard flag */
+/**
+ * @var s_watchdog_created
+ * @brief Task creation guard flag - prevents duplicate task creation
+ *
+ * @details
+ * Boolean flag that prevents watchdog_monitor_task_create() from being called
+ * multiple times. Set to false at startup (BSS zero-init), set to true after
+ * successful tx_thread_create() call.
+ *
+ * **State Transitions:**
+ * - false → true: First successful call to watchdog_monitor_task_create()
+ * - Never resets (watchdog task runs for entire system lifetime)
+ *
+ * @note Not thread-safe - watchdog_monitor_task_create() must only be called
+ *       from tx_application_define() (single-threaded initialization context)
+ * @pre Initialized to false by C runtime (BSS section)
+ * @post Set to true after successful task creation, never reset
+ *
+ * @since Version 1.0.0
+ */
 static bool s_watchdog_created = false;
 
-/** @brief Log tag for this module */
+/**
+ * @var s_tag
+ * @brief Log tag for watchdog monitor module ("IWDT_MON")
+ *
+ * @details
+ * String literal used as the module identifier in all rx_log_*() calls.
+ * Appears in UART debug output to identify log messages from this module.
+ *
+ * @note Stored in .rodata section (const string literal)
+ * @see rx_log_info() Log informational messages with this tag
+ * @see rx_log_error() Log error messages with this tag
+ *
+ * @since Version 1.0.0
+ */
 static const char* const s_tag = "IWDT_MON";
 
 /* =============================================================================

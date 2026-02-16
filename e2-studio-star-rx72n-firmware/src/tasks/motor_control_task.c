@@ -526,6 +526,9 @@ static bool s_active_brake_in_progress = false;
 /** @brief Log tag for this module */
 static const char* const s_tag = "MOTOR";
 
+/** @brief IWDT task name for heartbeat registration and reporting */
+static const char* const s_task_name = "MotorCtrl";
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
@@ -1208,7 +1211,7 @@ static void internal_motor_task_entry(ULONG input)
         internal_active_brake_sequence();
       }
       /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
-      err = rx_iwdt_task_heartbeat("MotorCtrl");
+      err = rx_iwdt_task_heartbeat(s_task_name);
       if (err != k_rx_ok) {
         rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
         /* Continue operation - watchdog monitor will detect timeout */
@@ -1232,7 +1235,7 @@ static void internal_motor_task_entry(ULONG input)
     internal_update_motor_state();
 
     /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
-    err = rx_iwdt_task_heartbeat("MotorCtrl");
+    err = rx_iwdt_task_heartbeat(s_task_name);
     RX_ASSERT(err == k_rx_ok, "MotorCtrl heartbeat must succeed");
 
     /* Sleep until next control cycle */
@@ -2324,7 +2327,7 @@ static void internal_active_brake_sequence(void)
     }
 
     /* Report heartbeat during active brake (prevents IWDT timeout) */
-    err = rx_iwdt_task_heartbeat("MotorCtrl");
+    err = rx_iwdt_task_heartbeat(s_task_name);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "IWDT heartbeat failed during brake", (uint32_t)err);
     }
