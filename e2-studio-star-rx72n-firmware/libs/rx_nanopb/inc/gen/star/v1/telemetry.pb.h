@@ -395,15 +395,15 @@ extern "C" {
 
 /* Struct field encoding specification for nanopb */
 #define star_v1_GetTelemetryRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetTelemetryRequest_CALLBACK       nullptr
-#define star_v1_GetTelemetryRequest_DEFAULT        nullptr
+#define star_v1_GetTelemetryRequest_CALLBACK        nullptr
+#define star_v1_GetTelemetryRequest_DEFAULT         nullptr
 #define star_v1_GetTelemetryRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetTelemetryResponse_FIELDLIST(X, a)                                               \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, telemetry, 2)
-#define star_v1_GetTelemetryResponse_CALLBACK         nullptr
-#define star_v1_GetTelemetryResponse_DEFAULT          nullptr
+#define star_v1_GetTelemetryResponse_CALLBACK          nullptr
+#define star_v1_GetTelemetryResponse_DEFAULT           nullptr
 #define star_v1_GetTelemetryResponse_header_MSGTYPE    star_v1_ResponseHeader
 #define star_v1_GetTelemetryResponse_telemetry_MSGTYPE star_v1_TelemetryData
 
@@ -411,20 +411,20 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, INT32, rate_hz, 2)                                                        \
   X(a, STATIC, REPEATED, STRING, fields, 3)
-#define star_v1_StreamTelemetryRequest_CALLBACK      nullptr
-#define star_v1_StreamTelemetryRequest_DEFAULT       nullptr
+#define star_v1_StreamTelemetryRequest_CALLBACK       nullptr
+#define star_v1_StreamTelemetryRequest_DEFAULT        nullptr
 #define star_v1_StreamTelemetryRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_GetSystemStatusRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetSystemStatusRequest_CALLBACK       nullptr
-#define star_v1_GetSystemStatusRequest_DEFAULT        nullptr
+#define star_v1_GetSystemStatusRequest_CALLBACK        nullptr
+#define star_v1_GetSystemStatusRequest_DEFAULT         nullptr
 #define star_v1_GetSystemStatusRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetSystemStatusResponse_FIELDLIST(X, a)                                            \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, status, 2)
-#define star_v1_GetSystemStatusResponse_CALLBACK      nullptr
-#define star_v1_GetSystemStatusResponse_DEFAULT       nullptr
+#define star_v1_GetSystemStatusResponse_CALLBACK       nullptr
+#define star_v1_GetSystemStatusResponse_DEFAULT        nullptr
 #define star_v1_GetSystemStatusResponse_header_MSGTYPE star_v1_ResponseHeader
 #define star_v1_GetSystemStatusResponse_status_MSGTYPE star_v1_SystemStatus
 
@@ -447,8 +447,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, encoder_back_left, 17)                                           \
   X(a, STATIC, OPTIONAL, MESSAGE, encoder_back_right, 18)                                          \
   X(a, STATIC, SINGULAR, UINT32, frame_sequence, 19)
-#define star_v1_TelemetryData_CALLBACK                   nullptr
-#define star_v1_TelemetryData_DEFAULT                    nullptr
+#define star_v1_TelemetryData_CALLBACK                    nullptr
+#define star_v1_TelemetryData_DEFAULT                     nullptr
 #define star_v1_TelemetryData_imu_MSGTYPE                 star_v1_ImuData
 #define star_v1_TelemetryData_gps_MSGTYPE                 star_v1_GpsData
 #define star_v1_TelemetryData_timestamp_MSGTYPE           google_protobuf_Timestamp
@@ -467,8 +467,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, gyro_x_rad_per_s, 7)                                              \
   X(a, STATIC, SINGULAR, DOUBLE, gyro_y_rad_per_s, 8)                                              \
   X(a, STATIC, SINGULAR, DOUBLE, gyro_z_rad_per_s, 9)
-#define star_v1_ImuData_CALLBACKnullptr
-#define star_v1_ImuData_DEFAULT nullptr
+#define star_v1_ImuData_CALLBACK nullptr
+#define star_v1_ImuData_DEFAULT  nullptr
 
 #define star_v1_GpsData_FIELDLIST(X, a)                                                            \
   X(a, STATIC, SINGULAR, DOUBLE, latitude_deg, 1)                                                  \
@@ -477,8 +477,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, accuracy_m, 4)                                                    \
   X(a, STATIC, SINGULAR, INT32, satellites, 5)                                                     \
   X(a, STATIC, SINGULAR, UENUM, fix_type, 6)
-#define star_v1_GpsData_CALLBACKnullptr
-#define star_v1_GpsData_DEFAULT nullptr
+#define star_v1_GpsData_CALLBACK nullptr
+#define star_v1_GpsData_DEFAULT  nullptr
 
 #define star_v1_SystemStatus_FIELDLIST(X, a)                                                       \
   X(a, STATIC, SINGULAR, UENUM, connection_status, 1)                                              \
@@ -489,8 +489,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, STRING, firmware_version, 6)                                              \
   X(a, STATIC, SINGULAR, UINT64, uptime_s, 7)                                                      \
   X(a, STATIC, SINGULAR, UINT32, free_heap_bytes, 8)
-#define star_v1_SystemStatus_CALLBACKnullptr
-#define star_v1_SystemStatus_DEFAULT nullptr
+#define star_v1_SystemStatus_CALLBACK nullptr
+#define star_v1_SystemStatus_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_GetTelemetryRequest_msg;
 extern const pb_msgdesc_t star_v1_GetTelemetryResponse_msg;
