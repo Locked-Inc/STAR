@@ -17,11 +17,16 @@
  * idle) which is generally tolerated by SPI peripherals.
  *
  * @par Example Hardware Pin Mapping (STAR Project - SCI7)
- * | SCI7 Pin | RX72N Pin | Signal     | Direction |
- * |----------|-----------|------------|-----------|
- * | SCK7     | P91       | SPI Clock  | Output    |
- * | SMOSI7   | P90       | COPI       | Output    |
- * | SMISO7   | P92       | CIPO       | Input     |
+ *
+ * **Pin Naming Convention:** Hardware signal names (SMOSI7/SMISO7) are from
+ * the RX72N datasheet. This project uses COPI/CIPO terminology per OSHWA
+ * inclusive naming standards.
+ *
+ * | SCI7 Pin (Hardware) | RX72N Pin | Project Name | Direction |
+ * |---------------------|-----------|--------------|-----------|
+ * | SCK7                | P91       | SPI Clock    | Output    |
+ * | SMOSI7              | P90       | COPI         | Output    |
+ * | SMISO7              | P92       | CIPO         | Input     |
  *
  * @par Baud Rate Calculation (Sync Mode)
  * bit_rate = PCLKB / (4 * (BRR + 1)) for CKS=0
