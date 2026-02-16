@@ -32,7 +32,7 @@
  *
  * 3. **Timers** (~10 µs) **IMPLEMENTED**
  *    - CMT0 for ThreadX tick (1 kHz)
- *    - MTU for PWM generation (motor control)
+ *    - GPTW for PWM generation (motor control)
  *
  * 4. **UART debug** - MOVED TO MAIN()
  *    - SCI9 initialized in main() before hardware_init() is called
@@ -382,7 +382,7 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  *          Ensure pin allocations match hardware schematic.
  *
  * @warning **Motor safety**: Motor control pins must be configured before enabling
- *          MTU channels. Unconfigured PWM pins can cause undefined motor behavior.
+ *          GPTW channels. Unconfigured PWM pins can cause undefined motor behavior.
  *
  * @par Example - Normal Initialization:
  * @code
@@ -438,7 +438,25 @@ static const uint8_t s_sckcr3_reset_state = 0U;
 
 /**
  * @brief Configure I2C bus pins (RIIC0/RIIC1)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for Host I2C (RIIC0) on P1.2/P1.3 and
+ * BMS I2C (RIIC1) on P2.0/P2.1. Sets PSEL registers to enable I2C peripheral
+ * function for SCL and SDA pins.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post P1.2 configured as SCL0, P1.3 configured as SDA0
+ * @post P2.1 configured as SCL1, P2.0 configured as SDA1
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_i2c(void)
 {
@@ -464,7 +482,25 @@ static rx_err_t internal_gpio_init_i2c(void)
 
 /**
  * @brief Configure host SPI pins (RSPI2)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for RSPI2 host SPI interface on PD.1-PD.4.
+ * Sets PSEL registers to enable RSPI2 peripheral function for COPI, CIPO,
+ * SCLK, and CS0 pins used for RPi5 communication.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post PD.1-PD.4 configured as RSPI2 COPI/CIPO/SCLK/CS0
+ * @post RSPI2 pins ready for host communication
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_host_spi(void)
 {
@@ -488,7 +524,25 @@ static rx_err_t internal_gpio_init_host_spi(void)
 
 /**
  * @brief Configure MTU encoder input pins (front wheels)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for MTU external clock inputs MTCLKA-MTCLKD
+ * on P2.4/P2.5/PA.1/PC.5. Enables pulse counter mode for quadrature encoder
+ * inputs from front wheel motors.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post P2.4/P2.5 configured as MTCLKA/MTCLKB
+ * @post PA.1/PC.5 configured as MTCLKC/MTCLKD
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_mtu_encoders(void)
 {
@@ -512,7 +566,25 @@ static rx_err_t internal_gpio_init_mtu_encoders(void)
 
 /**
  * @brief Configure TPU encoder input pins (rear wheels)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for TPU external clock inputs TCLKA-TCLKD
+ * on PC.2/PA.3/PC.0/PB.3. Enables pulse counter mode for quadrature encoder
+ * inputs from rear wheel motors.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post PC.2/PA.3 configured as TCLKA/TCLKB
+ * @post PC.0/PB.3 configured as TCLKC/TCLKD
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_tpu_encoders(void)
 {
@@ -536,7 +608,25 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
 
 /**
  * @brief Configure GPTW PWM output pins (4 motors)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for GPTW0-GPTW3 PWM outputs on PORT E
+ * (PE0-PE7). Sets PSEL=0x1E for all 8 pins (4 motors × PH+EN per motor).
+ * Enables complementary PWM mode for motor phase and enable control.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post PE5/PE2, PE4/PE1, PE3/PE0, PE7/PE6 configured as GPTW outputs
+ * @post All 8 GPTW PWM pins ready for motor control
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_gptw_pwm(void)
 {
@@ -562,7 +652,25 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
 
 /**
  * @brief Configure ADC current sense input pins
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for S12AD0 analog inputs AN004-AN007 on
+ * P4.4-P4.7. Disables digital input buffers and sets pins to analog mode for
+ * motor current sensing.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post P4.4-P4.7 configured as AN004-AN007 analog inputs
+ * @post ADC pins ready for current sensing
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_adc(void)
 {
@@ -586,7 +694,24 @@ static rx_err_t internal_gpio_init_adc(void)
 
 /**
  * @brief Configure USB VBUS detection pin
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for USB0_VBUS detection on P1.6.
+ * Enables USB peripheral to detect host connection via VBUS voltage level.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post P1.6 configured as USB0_VBUS input
+ * @post USB VBUS detection enabled
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_usb(void)
 {
@@ -601,7 +726,25 @@ static rx_err_t internal_gpio_init_usb(void)
 
 /**
  * @brief Configure HC-SR04 sonar trigger pins (GPIO outputs)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures 4 sonar trigger pins as GPIO outputs with initial LOW state.
+ * Pins: PF5, PJ5, PJ3, P33. Used to trigger ultrasonic pulse transmission
+ * on HC-SR04 distance sensors.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post All 4 sonar trigger pins configured as GPIO outputs
+ * @post Trigger pins initialized to LOW (idle state)
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_sonar_triggers(void)
 {
@@ -631,7 +774,25 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
 
 /**
  * @brief Configure HC-SR04 sonar echo pins (GPIO inputs)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures 4 sonar echo pins as GPIO inputs for pulse width measurement.
+ * Pins: P0.3, P0.2, P0.1, P0.0 (also IRQ11-IRQ8). Echo pulse duration
+ * measured by IRQ timing to determine distance.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post All 4 sonar echo pins configured as GPIO inputs
+ * @post Echo pins ready for IRQ-based pulse measurement
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_sonar_echoes(void)
 {
@@ -660,7 +821,25 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
 
 /**
  * @brief Configure DRV8243S chip select pins (GPIO outputs)
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures 4 motor driver CS pins as GPIO outputs with initial HIGH state
+ * (deselected). Pins: P74, PC1, PB5, PB4. Used for SPI communication with
+ * DRV8243S motor driver chips.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post All 4 DRV CS pins configured as GPIO outputs
+ * @post CS pins initialized to HIGH (deselected state)
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_drv_cs(void)
 {
@@ -690,7 +869,25 @@ static rx_err_t internal_gpio_init_drv_cs(void)
 
 /**
  * @brief Configure SCI7 SPI pins for motor driver communication
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Configures MPC pin multiplexing for SCI7 in clock-synchronous mode on
+ * P90-P92. Sets PSEL to enable SCI7 SCK/COPI/CIPO functions for SPI
+ * communication with DRV8243S motor drivers.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post P90-P92 configured as SCI7 COPI/SCK/CIPO
+ * @post SCI7 SPI pins ready for motor driver communication
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_sci7_spi(void)
 {
@@ -1141,6 +1338,8 @@ static void validate_peripherals(void)
  */
 rx_err_t hardware_init(void)
 {
+  static const char* s_tag = "HW_INIT";
+
   /* =========================================================================
    * PRECONDITION: Verify system initialization
    * =========================================================================
@@ -1162,15 +1361,15 @@ rx_err_t hardware_init(void)
 #if !RX_IS_SIMULATOR
   /* 1. GPIO: Configure MPC pin multiplexing for all peripherals */
   rx_err_t err = gpio_init();
-  RX_RETURN_ON_ERROR(err, "HW_INIT", "GPIO initialization failed");
+  RX_RETURN_ON_ERROR(err, s_tag, "GPIO initialization failed");
 
   /* 2. GPTW: 4-channel motor PWM with phase staggering */
   err = gptw_pwm_init();
-  RX_RETURN_ON_ERROR(err, "HW_INIT", "GPTW PWM initialization failed");
+  RX_RETURN_ON_ERROR(err, s_tag, "GPTW PWM initialization failed");
 
   /* 2b. POEG: Motor fault protection (links GTETRG->POEG->GPTW) */
   err = rx_poeg_init();
-  RX_RETURN_ON_ERROR(err, "HW_INIT", "POEG fault protection init failed");
+  RX_RETURN_ON_ERROR(err, s_tag, "POEG fault protection init failed");
 
   /* 3. Timer: CMT0 for ThreadX tick (1 kHz) */
   err = timer_init();
@@ -1184,15 +1383,15 @@ rx_err_t hardware_init(void)
 
   /* 5a. SPI: RSPI2 host peripheral for RPi5 communication */
   err = spi_init();
-  RX_RETURN_ON_ERROR(err, "HW_INIT", "SPI initialization failed");
+  RX_RETURN_ON_ERROR(err, s_tag, "SPI initialization failed");
 
   /* 6. I2C: RIIC0 host + RIIC1 BMS */
   err = i2c_init();
-  RX_RETURN_ON_ERROR(err, "HW_INIT", "I2C initialization failed");
+  RX_RETURN_ON_ERROR(err, s_tag, "I2C initialization failed");
 
   /* 7. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
   err = adc_init_channels();
-  RX_RETURN_ON_ERROR(err, "HW_INIT", "ADC initialization failed");
+  RX_RETURN_ON_ERROR(err, s_tag, "ADC initialization failed");
 
   /* 8. Validate: Non-fatal peripheral checks (log warnings, never halt) */
   validate_peripherals();

@@ -97,6 +97,7 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
  * @retval k_rx_err_invalid_arg Channel out of range or idx is NULL
  *
  * @pre idx != NULL
+ * @pre channel < k_sci_spi_max_channels
  * @post On k_rx_ok, *idx < k_sci_spi_max_channels
  * @post On error, *idx is unchanged
  *

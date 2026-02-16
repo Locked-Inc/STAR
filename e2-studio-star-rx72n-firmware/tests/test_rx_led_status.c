@@ -18,7 +18,6 @@
  * @since Version 1.0.0
  */
 
-#include <assert.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <string.h>
@@ -581,7 +580,7 @@ void test_led_gpio_init_sets_output_direction(void)
   memset(&s_mock_porta, 0, sizeof(s_mock_porta));
   memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
-  test_led_init_gpio();
+  internal_test_led_init_gpio();
 
   /* PORT7: pins 1,2 should be outputs (LED2, LED3) */
   TEST_ASSERT_BITS(0x06, 0x06, s_mock_port7.pdr);  /* PDR bits 1,2 set (0x02|0x04=0x06) */
@@ -607,7 +606,7 @@ void test_led_gpio_init_preserves_other_bits(void)
   memset(&s_mock_porta, 0xFF, sizeof(s_mock_porta));
   memset(&s_mock_portb, 0xFF, sizeof(s_mock_portb));
 
-  test_led_init_gpio();
+  internal_test_led_init_gpio();
 
   /* Non-LED bits in PORT7 should remain set */
   TEST_ASSERT_BITS(0xF9,
