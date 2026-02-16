@@ -117,21 +117,21 @@ void mock_sci_spi_set_deinit_return(rx_err_t ret);
 
 /**
  * @brief Set the data that will be returned by the next transfer
- * @param[in] channel SCI channel number (12)
+ * @param[in] channel SCI channel number (0-12)
  * @param[in] rx_data 16-bit data to return
  */
 void mock_sci_spi_set_rx_data(uint8_t channel, uint16_t rx_data);
 
 /**
  * @brief Get the last 16-bit data transmitted
- * @param[in] channel SCI channel number (12)
+ * @param[in] channel SCI channel number (0-12)
  * @return Last transmitted 16-bit data
  */
 uint16_t mock_sci_spi_get_last_tx(uint8_t channel);
 
 /**
  * @brief Clear channel state
- * @param[in] channel SCI channel number (12)
+ * @param[in] channel SCI channel number (0-12)
  */
 void mock_sci_spi_clear_channel(uint8_t channel);
 

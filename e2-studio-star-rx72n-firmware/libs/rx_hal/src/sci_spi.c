@@ -91,8 +91,8 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
  */
 static rx_err_t internal_channel_to_index(uint8_t channel, uint8_t* idx)
 {
-  if (channel <= 12) { /* SCI0 through SCI12 */
-    *idx = channel;    /* Direct mapping: channel number = array index */
+  if (channel < k_sci_spi_max_channels) { /* SCI0 through SCI12 */
+    *idx = channel;                       /* Direct mapping: channel number = array index */
     return k_rx_ok;
   }
   return k_rx_err_invalid_arg;

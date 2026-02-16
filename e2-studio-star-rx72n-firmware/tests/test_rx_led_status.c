@@ -46,10 +46,10 @@ typedef struct {
   uint8_t dscr2; /**< Drive Strength Control 2 */
 } mock_port_regs_t;
 
-/** @brief Mock port registers for PORT3, PORT5, PORT8 */
-static mock_port_regs_t s_mock_port3;
-static mock_port_regs_t s_mock_port5;
-static mock_port_regs_t s_mock_port8;
+/** @brief Mock port registers for PORT7, PORTA, PORTB */
+static mock_port_regs_t s_mock_port7;
+static mock_port_regs_t s_mock_porta; /* Port 10 */
+static mock_port_regs_t s_mock_portb; /* Port 11 */
 
 /* ---- Mock rx_port_regs_t type alias ---- */
 typedef mock_port_regs_t rx_port_regs_t;
@@ -236,12 +236,12 @@ bool shared_data_is_estop_active(void)
 static volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
 {
   switch (port) {
-    case 3:
-      return (volatile rx_port_regs_t*)&s_mock_port3;
-    case 5:
-      return (volatile rx_port_regs_t*)&s_mock_port5;
-    case 8:
-      return (volatile rx_port_regs_t*)&s_mock_port8;
+    case 7:
+      return (volatile rx_port_regs_t*)&s_mock_port7;
+    case 10:
+      return (volatile rx_port_regs_t*)&s_mock_porta;
+    case 11:
+      return (volatile rx_port_regs_t*)&s_mock_portb;
     default:
       return (volatile rx_port_regs_t*)0;
   }
@@ -449,9 +449,9 @@ static rx_err_t test_led_status_task_create(void)
 void setUp(void)
 {
   /* Clear all mock state */
-  memset(&s_mock_port3, 0xFF, sizeof(s_mock_port3)); /* Start with all bits set */
-  memset(&s_mock_port5, 0xFF, sizeof(s_mock_port5));
-  memset(&s_mock_port8, 0xFF, sizeof(s_mock_port8));
+  memset(&s_mock_port7, 0xFF, sizeof(s_mock_port7)); /* Start with all bits set */
+  memset(&s_mock_porta, 0xFF, sizeof(s_mock_porta));
+  memset(&s_mock_portb, 0xFF, sizeof(s_mock_portb));
   memset(&s_mock_motor_state, 0, sizeof(s_mock_motor_state));
   memset(&s_mock_motor_command, 0, sizeof(s_mock_motor_command));
   memset(&s_mock_bms_state, 0, sizeof(s_mock_bms_state));
@@ -524,44 +524,53 @@ void test_led_task_config_constants(void)
 void test_led_gpio_init_sets_output_direction(void)
 {
   /* Clear ports to known state */
-  memset(&s_mock_port3, 0, sizeof(s_mock_port3));
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
-  memset(&s_mock_port8, 0, sizeof(s_mock_port8));
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   test_led_init_gpio();
 
-  /* PORT3: pin 2 should be output */
-  TEST_ASSERT_BITS(0x04, 0x04, s_mock_port3.pdr);  /* PDR bit 2 set */
-  TEST_ASSERT_BITS(0x04, 0x00, s_mock_port3.pmr);  /* PMR bit 2 cleared */
-  TEST_ASSERT_BITS(0x04, 0x00, s_mock_port3.podr); /* PODR bit 2 cleared (off) */
+  /* PORT7: pins 1,2 should be outputs (LED2, LED3) */
+  TEST_ASSERT_BITS(0x06, 0x06, s_mock_port7.pdr);  /* PDR bits 1,2 set (0x02|0x04=0x06) */
+  TEST_ASSERT_BITS(0x06, 0x00, s_mock_port7.pmr);  /* PMR bits 1,2 cleared */
+  TEST_ASSERT_BITS(0x06, 0x00, s_mock_port7.podr); /* PODR bits 1,2 cleared (off) */
 
-  /* PORT8: pin 7 should be output */
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_port8.pdr);
-  TEST_ASSERT_BITS(0x80, 0x00, s_mock_port8.pmr);
-  TEST_ASSERT_BITS(0x80, 0x00, s_mock_port8.podr);
+  /* PORTA: pin 7 should be output (LED0/heartbeat) */
+  TEST_ASSERT_BITS(0x80, 0x80, s_mock_porta.pdr); /* PDR bit 7 set */
+  TEST_ASSERT_BITS(0x80, 0x00, s_mock_porta.pmr);
+  TEST_ASSERT_BITS(0x80, 0x00, s_mock_porta.podr);
 
-  /* PORT5: pins 2, 4, 5, 6 should be outputs */
-  TEST_ASSERT_BITS(0x74, 0x74, s_mock_port5.pdr); /* Pins 2,4,5,6 = 0x04|0x10|0x20|0x40 = 0x74 */
-  TEST_ASSERT_BITS(0x74, 0x00, s_mock_port5.pmr);
-  TEST_ASSERT_BITS(0x74, 0x00, s_mock_port5.podr);
+  /* PORTB: pins 0,1,2 should be outputs (LED1, LED4, LED5) */
+  TEST_ASSERT_BITS(0x07, 0x07, s_mock_portb.pdr); /* Pins 0,1,2 = 0x01|0x02|0x04 = 0x07 */
+  TEST_ASSERT_BITS(0x07, 0x00, s_mock_portb.pmr);
+  TEST_ASSERT_BITS(0x07, 0x00, s_mock_portb.podr);
 }
 
 /** @brief Verify GPIO init does not disturb other port bits */
 void test_led_gpio_init_preserves_other_bits(void)
 {
   /* Set all bits to 1 initially */
-  memset(&s_mock_port3, 0xFF, sizeof(s_mock_port3));
-  memset(&s_mock_port5, 0xFF, sizeof(s_mock_port5));
-  memset(&s_mock_port8, 0xFF, sizeof(s_mock_port8));
+  memset(&s_mock_port7, 0xFF, sizeof(s_mock_port7));
+  memset(&s_mock_porta, 0xFF, sizeof(s_mock_porta));
+  memset(&s_mock_portb, 0xFF, sizeof(s_mock_portb));
 
   test_led_init_gpio();
 
-  /* Non-LED bits in PORT3 should remain set */
-  TEST_ASSERT_BITS(0xFB, 0xFB, s_mock_port3.pdr); /* All except bit 2 unchanged */
-  TEST_ASSERT_BITS(0xFB, 0xFB, s_mock_port3.pmr); /* PMR: only bit 2 cleared */
+  /* Non-LED bits in PORT7 should remain set */
+  TEST_ASSERT_BITS(0xF9,
+                   0xF9,
+                   s_mock_port7.pdr); /* All except bits 1,2 unchanged (0xFF & ~0x06 = 0xF9) */
+  TEST_ASSERT_BITS(0xF9, 0xF9, s_mock_port7.pmr); /* PMR: only bits 1,2 cleared */
 
-  /* Non-LED bits in PORT5 should remain set */
-  TEST_ASSERT_BITS(0x8B, 0x8B, s_mock_port5.pdr); /* Bits 0,1,3,7 unchanged */
+  /* Non-LED bits in PORTA should remain set */
+  TEST_ASSERT_BITS(0x7F,
+                   0x7F,
+                   s_mock_porta.pdr); /* All except bit 7 unchanged (0xFF & ~0x80 = 0x7F) */
+
+  /* Non-LED bits in PORTB should remain set */
+  TEST_ASSERT_BITS(0xF8,
+                   0xF8,
+                   s_mock_portb.pdr); /* All except bits 0,1,2 unchanged (0xFF & ~0x07 = 0xF8) */
 }
 
 /* =============================================================================
@@ -572,71 +581,71 @@ void test_led_gpio_init_preserves_other_bits(void)
 /** @brief Verify LED 0 (heartbeat, PA7) can be turned on */
 void test_led_set_heartbeat_on(void)
 {
-  memset(&s_mock_port3, 0, sizeof(s_mock_port3));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
   test_led_set(k_led_idx_heartbeat, true);
-  TEST_ASSERT_BITS(0x04, 0x04, s_mock_port3.podr);
+  TEST_ASSERT_BITS(0x80, 0x80, s_mock_porta.podr); /* LED0 on PORTA pin 7 */
 }
 
 /** @brief Verify LED 0 (heartbeat, PA7) can be turned off */
 void test_led_set_heartbeat_off(void)
 {
-  s_mock_port3.podr = 0xFF;
+  s_mock_port7.podr = 0xFF;
   test_led_set(k_led_idx_heartbeat, false);
-  TEST_ASSERT_BITS(0x04, 0x00, s_mock_port3.podr);
+  TEST_ASSERT_BITS(0x04, 0x00, s_mock_port7.podr);
 }
 
 /** @brief Verify LED 1 (error, PB0) can be toggled */
 void test_led_set_error_toggle(void)
 {
-  memset(&s_mock_port8, 0, sizeof(s_mock_port8));
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
   test_led_set(k_led_idx_error, true);
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_port8.podr);
+  TEST_ASSERT_BITS(0x80, 0x80, s_mock_portb.podr);
 
   test_led_set(k_led_idx_error, false);
-  TEST_ASSERT_BITS(0x80, 0x00, s_mock_port8.podr);
+  TEST_ASSERT_BITS(0x80, 0x00, s_mock_portb.podr);
 }
 
 /** @brief Verify LED 5 (estop, PB2) can be set */
 void test_led_set_estop_on(void)
 {
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
   test_led_set(k_led_idx_estop, true);
-  TEST_ASSERT_BITS(0x04, 0x04, s_mock_port5.podr); /* Pin 2 */
+  TEST_ASSERT_BITS(0x04, 0x04, s_mock_porta.podr); /* Pin 2 */
 }
 
 /** @brief Verify out-of-range LED index is safely ignored */
 void test_led_set_invalid_index_no_crash(void)
 {
-  memset(&s_mock_port3, 0, sizeof(s_mock_port3));
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
-  memset(&s_mock_port8, 0, sizeof(s_mock_port8));
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   test_led_set(6, true);   /* Out of range */
   test_led_set(255, true); /* Way out of range */
 
   /* No port registers should have changed */
-  TEST_ASSERT_EQUAL(0, s_mock_port3.podr);
-  TEST_ASSERT_EQUAL(0, s_mock_port5.podr);
-  TEST_ASSERT_EQUAL(0, s_mock_port8.podr);
+  TEST_ASSERT_EQUAL(0, s_mock_port7.podr);
+  TEST_ASSERT_EQUAL(0, s_mock_porta.podr);
+  TEST_ASSERT_EQUAL(0, s_mock_portb.podr);
 }
 
 /** @brief Verify setting one LED does not affect others on same port */
 void test_led_set_does_not_affect_other_pins(void)
 {
   /* PORT5 has LEDs on pins 2, 4, 5, 6 */
-  s_mock_port5.podr = 0x00;
+  s_mock_porta.podr = 0x00;
 
   /* Turn on LED 2 (pin 6) */
   test_led_set(k_led_idx_motor, true);
-  TEST_ASSERT_EQUAL(0x40, s_mock_port5.podr); /* Only pin 6 set */
+  TEST_ASSERT_EQUAL(0x40, s_mock_porta.podr); /* Only pin 6 set */
 
   /* Turn on LED 3 (pin 5) */
   test_led_set(k_led_idx_comm, true);
-  TEST_ASSERT_EQUAL(0x60, s_mock_port5.podr); /* Pins 5 and 6 set */
+  TEST_ASSERT_EQUAL(0x60, s_mock_porta.podr); /* Pins 5 and 6 set */
 
   /* Turn off LED 2 (pin 6) */
   test_led_set(k_led_idx_motor, false);
-  TEST_ASSERT_EQUAL(0x20, s_mock_port5.podr); /* Only pin 5 remains */
+  TEST_ASSERT_EQUAL(0x20, s_mock_porta.podr); /* Only pin 5 remains */
 }
 
 /* =============================================================================
@@ -647,8 +656,8 @@ void test_led_set_does_not_affect_other_pins(void)
 /** @brief Verify is_on helper reads correct state */
 void test_led_is_on_returns_correct_state(void)
 {
-  memset(&s_mock_port3, 0, sizeof(s_mock_port3));
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   TEST_ASSERT_FALSE(test_led_is_on(k_led_idx_heartbeat));
 
@@ -667,7 +676,7 @@ void test_led_is_on_returns_correct_state(void)
 /** @brief Verify motor active LED reflects duty cycle */
 void test_led_motor_active_when_duty_nonzero(void)
 {
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   /* No motors running */
   s_mock_motor_state.duty_cycle_percent[0] = 0.0F;
@@ -704,7 +713,7 @@ void test_led_motor_active_when_duty_nonzero(void)
 /** @brief Verify obstacle LED reflects shared_data obstacle state */
 void test_led_obstacle_reflects_shared_data(void)
 {
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   /* No obstacle */
   s_mock_obstacle_state.any_obstacle = false;
@@ -723,7 +732,7 @@ void test_led_obstacle_reflects_shared_data(void)
 /** @brief Verify estop LED reflects shared_data estop state */
 void test_led_estop_reflects_shared_data(void)
 {
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   /* No estop */
   s_mock_estop_active = false;
@@ -739,7 +748,7 @@ void test_led_estop_reflects_shared_data(void)
 /** @brief Verify error LED activates on motor fault */
 void test_led_error_on_motor_fault(void)
 {
-  memset(&s_mock_port8, 0, sizeof(s_mock_port8));
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   /* No faults */
   bool any_fault = false;
@@ -782,7 +791,7 @@ void test_led_error_on_bms_fault(void)
 /** @brief Verify comm LED pulse on new command sequence */
 void test_led_comm_pulse_on_new_command(void)
 {
-  memset(&s_mock_port5, 0, sizeof(s_mock_port5));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   /* Simulate comm pulse logic */
   uint32_t last_seq        = 0;
@@ -843,7 +852,7 @@ void test_led_comm_pulse_on_new_command(void)
 /** @brief Verify heartbeat toggles at 1 Hz (10 ticks on, 10 ticks off) */
 void test_led_heartbeat_timing(void)
 {
-  memset(&s_mock_port3, 0, sizeof(s_mock_port3));
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
 
   uint8_t counter = 0;
 

@@ -270,7 +270,7 @@
  * @code{.c}
  * // Enable SPI variant for advanced configuration
  * config.use_spi_variant    = true;
- * config.sci_channel        = 12;              // SCI7
+ * config.sci_channel        = 7;               // SCI7
  * config.spi_cs_port        = 3;               // PORT3
  * config.spi_cs_pin         = 2;               // Pin 2
  * config.initial_slew_rate  = k_drv8243_slew_15v_us;  // 15 V/µs (lower EMI)

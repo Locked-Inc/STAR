@@ -36,7 +36,7 @@
 \hline
 \rowcolor{lime!10} GTETRG Emergency Stop / Temp / Alert &Lime \\
 \hline
-\rowcolor{purple!20} Motor Driver SPI(SCI12) & Purple \\
+\rowcolor{purple!20} Motor Driver SPI(SCI7) & Purple \\
 \hline
 \rowcolor{cyan!15} Ultrasonic Sonar(HC - SR04) & Cyan \\
 \hline
@@ -373,11 +373,11 @@ tab:
 \hline
 \rowcolor {
   purple!20
-} 72 & P74/CS4\# & Motor Driver SPI nCS0 & SCI12 chip select for Motor 0 (DRV8243S) \\
+} 72 & P74/CS4\# & Motor Driver SPI nCS0 & SCI7 chip select for Motor 0 (DRV8243S) \\
 \hline
 \rowcolor{
   purple!20
-} 73 & PC1 & Motor Driver SPI nCS1 & SCI12 chip select for Motor 1 (DRV8243S) \\
+} 73 & PC1 & Motor Driver SPI nCS1 & SCI7 chip select for Motor 1 (DRV8243S) \\
 \hline
 \rowcolor{
   gray!15
@@ -409,11 +409,11 @@ tab:
 }
 \\
 \hline
-\rowcolor { purple!20} 80 & PB5 & Motor Driver SPI nCS2 & SCI12 chip select for Motor 2 (DRV8243S) \\
+\rowcolor { purple!20} 80 & PB5 & Motor Driver SPI nCS2 & SCI7 chip select for Motor 2 (DRV8243S) \\
 \hline
 \rowcolor{
   purple!20
-} 81 & PB4 & Motor Driver SPI nCS3 & SCI12 chip select for Motor 3 (DRV8243S) \\
+} 81 & PB4 & Motor Driver SPI nCS3 & SCI7 chip select for Motor 3 (DRV8243S) \\
 \hline
 \rowcolor{
   green!20
@@ -855,11 +855,11 @@ The DRV8243S motor drivers use two separate interfaces:
 
 \textbf{Configuration(SPI) :}
 \begin{itemize}
-    \item \textbf{Peripheral:} SCI12 hardware SPI using dedicated motor driver SPI pins
+    \item \textbf{Peripheral:} SCI7 hardware SPI using dedicated motor driver SPI pins
     \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
     \item \textbf{Update rate:} Startup only, or when changing operating parameters
     \item \textbf{Speed:} 1 MHz SPI clock (configuration is not time-critical)
-    \item \textbf{Signals:} SCLK (PE0), COPI (PE1), CIPO (PE2), nCS0 (P74), nCS1 (PC1), nCS2 (PB5), nCS3 (PB4)
+    \item \textbf{Signals:} SCLK (P91), COPI (P90), CIPO (P92), nCS0 (P74), nCS1 (PC1), nCS2 (PB5), nCS3 (PB4)
 \end{itemize}
 
 \textbf{Design Rationale:}
@@ -867,7 +867,7 @@ The DRV8243S motor drivers use two separate interfaces:
     \item PWM provides low-latency real-time control for motor speed/direction
     \item SPI allows runtime configuration of driver protection features
     \item Separation of concerns: high-frequency control vs.\ low-frequency configuration
-    \item Uses SCI12 to keep RSPI2 available for RPi5 communication
+    \item Uses SCI7 to keep RSPI2 available for RPi5 communication
 \end{itemize}
 
 \subsection{RX72N Configuration Tables}

@@ -236,10 +236,10 @@ typedef enum : uint16_t {
   k_pin_drv_cs2 = k_rx_pb_5, /**< PB.5 - DRV_CS2 motor 2 (pin 80) */
   k_pin_drv_cs3 = k_rx_pb_4, /**< PB.4 - DRV_CS3 motor 3 (pin 81) */
 
-  /* DRV8243S SPI data (SCI12 alternate function) */
-  k_pin_drv_sclk = k_rx_pe_0, /**< PE.0 - SCK12 (pin 111) */
-  k_pin_drv_copi = k_rx_pe_1, /**< PE.1 - COPI SCI12 (pin 110) */
-  k_pin_drv_cipo = k_rx_pe_2, /**< PE.2 - CIPO SCI12 (pin 109) */
+  /* DRV8243S SPI data (SCI7 alternate function P90-P92) */
+  k_pin_drv_sclk = k_rx_p9_1, /**< P9.1 - SCK7 (pin 129) */
+  k_pin_drv_copi = k_rx_p9_0, /**< P9.0 - COPI SCI7 (pin 131) */
+  k_pin_drv_cipo = k_rx_p9_2, /**< P9.2 - CIPO SCI7 (pin 128) */
 
   /* Host SPI (RSPI2 channel A on PORTD) */
   k_pin_host_copi = k_rx_pd_1, /**< PD.1 - COPI (RSPI2 controller out) */
