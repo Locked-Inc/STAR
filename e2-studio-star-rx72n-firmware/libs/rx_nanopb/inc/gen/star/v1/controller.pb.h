@@ -50,7 +50,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT64, timestamp, 3)                                                      \
   X(a, STATIC, SINGULAR, BOOL, debug, 4)
 #define star_v1_ControllerState_CALLBACK nullptr
-#define star_v1_ControllerState_DEFAULT nullptr
+#define star_v1_ControllerState_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_ControllerState_msg;
 

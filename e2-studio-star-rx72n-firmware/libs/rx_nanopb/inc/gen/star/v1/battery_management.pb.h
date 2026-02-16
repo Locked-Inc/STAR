@@ -788,7 +788,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, voltage_mv, 3)                                                    \
   X(a, STATIC, SINGULAR, INT32, power_mw, 4)
 #define star_v1_CurrentData_CALLBACK nullptr
-#define star_v1_CurrentData_DEFAULT nullptr
+#define star_v1_CurrentData_DEFAULT  nullptr
 
 #define star_v1_StateOfChargeData_FIELDLIST(X, a)                                                  \
   X(a, STATIC, SINGULAR, UINT32, remaining_capacity_mah, 1)                                        \
@@ -798,7 +798,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, absolute_soc_percent, 5)                                           \
   X(a, STATIC, SINGULAR, UINT32, cycle_count, 6)
 #define star_v1_StateOfChargeData_CALLBACK nullptr
-#define star_v1_StateOfChargeData_DEFAULT nullptr
+#define star_v1_StateOfChargeData_DEFAULT  nullptr
 
 #define star_v1_BatteryStatus_FIELDLIST(X, a)                                                      \
   X(a, STATIC, SINGULAR, UINT32, battery_status_register, 1)                                       \
@@ -826,7 +826,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, BOOL, undertemp_charge, 7)                                                \
   X(a, STATIC, SINGULAR, BOOL, undertemp_discharge, 8)
 #define star_v1_SafetyFaults_CALLBACK nullptr
-#define star_v1_SafetyFaults_DEFAULT nullptr
+#define star_v1_SafetyFaults_DEFAULT  nullptr
 
 #define star_v1_ProtectionThresholds_FIELDLIST(X, a)                                               \
   X(a, STATIC, SINGULAR, UINT32, overvoltage_mv, 1)                                                \
@@ -836,7 +836,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, overtemp_deci_celsius, 5)                                          \
   X(a, STATIC, SINGULAR, INT32, undertemp_deci_celsius, 6)
 #define star_v1_ProtectionThresholds_CALLBACK nullptr
-#define star_v1_ProtectionThresholds_DEFAULT nullptr
+#define star_v1_ProtectionThresholds_DEFAULT  nullptr
 
 #define star_v1_GetProtectionThresholdsRequest_FIELDLIST(X, a)                                     \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
