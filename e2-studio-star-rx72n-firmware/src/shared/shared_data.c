@@ -656,32 +656,32 @@ rx_err_t shared_data_init(void)
     return k_rx_err_invalid_state;
   }
 
-  /* Create motor_mutex */
-  tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", TX_NO_INHERIT);
+  /* Create motor_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", TX_INHERIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
-  /* Create bms_mutex */
-  tx_status = tx_mutex_create(&g_shared_data.bms_mutex, "BMSMutex", TX_NO_INHERIT);
+  /* Create bms_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.bms_mutex, "BMSMutex", TX_INHERIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
-  /* Create temp_mutex */
-  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", TX_NO_INHERIT);
+  /* Create temp_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", TX_INHERIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
-  /* Create obstacle_mutex */
-  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", TX_NO_INHERIT);
+  /* Create obstacle_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", TX_INHERIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
-  /* Create estop_mutex */
-  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", TX_NO_INHERIT);
+  /* Create estop_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", TX_INHERIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }

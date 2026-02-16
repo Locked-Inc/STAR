@@ -105,7 +105,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT64, seconds, 1)                                                        \
   X(a, STATIC, SINGULAR, INT32, nanos, 2)
 #define google_protobuf_Duration_CALLBACK nullptr
-#define google_protobuf_Duration_DEFAULT  nullptr
+#define google_protobuf_Duration_DEFAULT nullptr
 
 extern const pb_msgdesc_t google_protobuf_Duration_msg;
 
