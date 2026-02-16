@@ -176,6 +176,7 @@
 #include "hardware.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
+#include "rx_bq4050.h"
 #include "rx_bus_config.h"
 #include "rx_bus_manager.h"
 #include "rx_bus_types.h"
@@ -212,26 +213,192 @@ typedef enum : uint8_t {
 } main_ret_t;
 
 /* =============================================================================
+ * Hardware Configuration Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief RIIC (I2C) channel number constants for RX72N
+ * @details
+ * RX72N has 3 RIIC channels (0-2). These constants are used with uint8_t
+ * parameters in bus configuration functions.
+ *
+ * @note hardware.h defines riic_channel_t as a struct wrapper, but bus
+ *       configuration functions use raw uint8_t for channel numbers.
+ *
+ * @see rx_bus_config_init_smbus() Uses uint8_t channel parameter
+ * @see rx_bus_config_init_i2c() Uses uint8_t channel parameter
+ */
+typedef enum : uint8_t {
+  k_riic_channel_0 = 0, /**< RIIC channel 0 */
+  k_riic_channel_1 = 1, /**< RIIC channel 1 (used for BQ4050 BMS) */
+  k_riic_channel_2 = 2, /**< RIIC channel 2 */
+} riic_channel_num_t;
+
+/**
+ * @brief Standard I2C bus frequencies for RIIC/SMBus configuration
+ * @details
+ * Standard I2C frequency constants for bus configuration.
+ * Values in Hz for clarity and type safety.
+ *
+ * @see rx_bus_config_init_smbus() Uses frequency_hz parameter
+ * @see rx_bus_config_init_i2c() Uses frequency_hz parameter
+ */
+typedef enum : uint32_t {
+  k_i2c_frequency_100khz = 100000, /**< Standard mode: 100 kHz (default) */
+  k_i2c_frequency_400khz = 400000, /**< Fast mode: 400 kHz */
+} i2c_frequency_t;
+
+/* =============================================================================
  * Static Bus Configurations
  * =============================================================================
  */
 
 /**
- * @brief Static bus configurations for system-wide communication
- * @details
- * Pre-allocated bus configurations registered with bus manager during
- * tx_application_define(). Static allocation follows NASA Rule 3.
+ * @var s_i2c0_config
+ * @brief SMBus configuration for BQ4050 battery management system
  *
- * | Bus Name | Type | Hardware | Purpose |
- * |----------|------|----------|---------|
- * | i2c0 | SMBus | RIIC1 | BQ4050 BMS communication |
- * | onewire0 | 1-Wire | P51 | DS18B20 temperature sensor |
- * | gpio | GPIO | Generic | Motor driver control pins |
- * | adc0 | ADC | S12AD0 | Motor current sensing |
+ * @details
+ * Configures RIIC1 channel as SMBus interface for BQ4050 fuel gauge IC.
+ * Uses P20 (SDA) and P21 (SCL) at 100 kHz with Packet Error Checking (PEC).
+ *
+ * **Hardware Configuration:**
+ * - Bus type: SMBus (I2C with PEC)
+ * - Channel: RIIC1
+ * - Device: BQ4050 @ 0x0B (7-bit address)
+ * - Pins: P20 (SDA), P21 (SCL)
+ * - Frequency: 100 kHz (standard mode)
+ * - Features: PEC enabled for error detection
+ *
+ * **Device Details:**
+ * The BQ4050 is a fully integrated battery management IC that provides:
+ * - State of charge (SoC) estimation
+ * - Cell voltage monitoring (up to 4 cells)
+ * - Current monitoring with coulomb counting
+ * - Temperature sensing
+ * - Safety protection (overcurrent, overvoltage, undertemperature)
+ *
+ * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
+ * @note Registered with bus manager in tx_application_define() before task creation.
+ * @note SMBus protocol requires PEC for CRC-8 error checking on all transactions.
+ *
+ * @see rx_bus_config_init_smbus() Bus configuration function
+ * @see bms_monitor_task.c Task that uses this bus for battery monitoring
+ *
+ * @since Version 1.0.0
  */
 static rx_bus_config_t s_i2c0_config;
+
+/**
+ * @var s_onewire0_config
+ * @brief 1-Wire configuration for DS18B20 temperature sensor
+ *
+ * @details
+ * Configures GPIO P51 as 1-Wire interface for DS18B20 digital temperature sensor.
+ * Uses bit-banging protocol with precise timing requirements.
+ *
+ * **Hardware Configuration:**
+ * - Bus type: 1-Wire (Dallas/Maxim protocol)
+ * - Pin: P51 (bidirectional data line)
+ * - Pullup: 4.7 kΩ resistor required (external)
+ * - Protocol: Bit-banging with microsecond timing
+ *
+ * **Device Details:**
+ * The DS18B20 is a digital temperature sensor providing:
+ * - Temperature range: -55°C to +125°C
+ * - Accuracy: ±0.5°C (-10°C to +85°C)
+ * - Resolution: 9 to 12 bits (configurable)
+ * - Conversion time: 750 ms max (12-bit resolution)
+ * - Unique 64-bit serial number per device
+ *
+ * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
+ * @note Registered with bus manager in tx_application_define() before task creation.
+ * @note Requires 4.7 kΩ pullup resistor on P51 (see schematic).
+ * @note 1-Wire protocol timing is critical - interrupts may cause timing violations.
+ *
+ * @see rx_bus_config_init_onewire() Bus configuration function
+ * @see temp_sensor_task.c Task that uses this bus for temperature monitoring
+ *
+ * @since Version 1.0.0
+ */
 static rx_bus_config_t s_onewire0_config;
+
+/**
+ * @var s_gpio_config
+ * @brief Generic GPIO bus configuration for motor driver control
+ *
+ * @details
+ * Configures a generic GPIO bus abstraction that provides access to all GPIO pins.
+ * The initial pin (P00) is required by the API but not significant - motor control
+ * task specifies actual pins (nFAULT, chip selects, etc.) at runtime.
+ *
+ * **Hardware Configuration:**
+ * - Bus type: GPIO (generic abstraction)
+ * - Initial pin: P00 (API requirement, not actually used)
+ * - Actual pins: Specified by motor_control_task at runtime
+ *
+ * **Usage Pattern:**
+ * Motor control task uses this generic GPIO bus to access:
+ * - DRV8243 nFAULT pins (fault detection)
+ * - DRV8243 chip select pins (SPI communication)
+ * - Motor enable/disable control pins
+ * - LED status indicators
+ *
+ * The pin validator ensures no physical pins are double-allocated.
+ *
+ * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
+ * @note Registered with bus manager in tx_application_define() before task creation.
+ * @note This is a generic bus abstraction - one "gpio" bus serves all 4 motor drivers.
+ * @note Each driver operation specifies the actual pin to access.
+ *
+ * @see rx_bus_config_init_gpio() Bus configuration function
+ * @see motor_control_task.c Task that uses this bus for motor control
+ * @see rx_bus_gpio_write() Runtime GPIO write with pin specification
+ * @see rx_bus_gpio_read() Runtime GPIO read with pin specification
+ *
+ * @since Version 1.0.0
+ */
 static rx_bus_config_t s_gpio_config;
+
+/**
+ * @var s_adc0_config
+ * @brief ADC configuration for motor current sensing
+ *
+ * @details
+ * Configures ADC Unit 0 (S12AD0) as generic ADC bus for motor current monitoring.
+ * The initial channel (0) is required by the API but not significant - motor control
+ * task specifies actual channels (AN004-AN007) at runtime for each motor.
+ *
+ * **Hardware Configuration:**
+ * - Bus type: ADC (generic abstraction)
+ * - Unit: ADC Unit 0 (S12AD0)
+ * - Initial channel: 0 (API requirement, not actually used)
+ * - Resolution: 12-bit (0-4095 counts)
+ * - Actual channels: Specified by motor_control_task at runtime
+ *
+ * **Motor Current Sensing Channels:**
+ * | Motor | ADC Channel | Pin    | DRV8243 Output |
+ * |-------|-------------|--------|----------------|
+ * | Motor 0 | AN007 (ch 7) | P40.7  | IPROPI output  |
+ * | Motor 1 | AN006 (ch 6) | P40.6  | IPROPI output  |
+ * | Motor 2 | AN005 (ch 5) | P40.5  | IPROPI output  |
+ * | Motor 3 | AN004 (ch 4) | P40.4  | IPROPI output  |
+ *
+ * Each DRV8243 motor driver outputs an analog current signal (IPROPI) proportional
+ * to motor current: 500 µA per 1 A of motor current (500:1 ratio).
+ *
+ * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
+ * @note Registered with bus manager in tx_application_define() before task creation.
+ * @note This is a generic bus abstraction - one "adc0" bus serves all 4 motor drivers.
+ * @note Each current reading specifies the actual ADC channel to sample.
+ * @note 12-bit resolution provides 1 mV per count with 3.3V reference.
+ *
+ * @see rx_bus_config_init_adc() Bus configuration function
+ * @see motor_control_task.c Task that uses this bus for current monitoring
+ * @see rx_bus_adc_read_voltage_mv() Runtime ADC read with channel specification
+ *
+ * @since Version 1.0.0
+ */
 static rx_bus_config_t s_adc0_config;
 
 /* =============================================================================
@@ -1387,13 +1554,13 @@ void tx_application_define(void* first_unused_memory)
 
     /* Register i2c0 (SMBus) - BQ4050 Battery Management System */
     err = rx_bus_config_init_smbus(&s_i2c0_config,
-                                   "i2c0",    /* name */
-                                   1,         /* channel = RIIC1 */
-                                   0x0B,      /* device_addr = BQ4050 */
-                                   k_rx_p2_0, /* sda_pin = P20 */
-                                   k_rx_p2_1, /* scl_pin = P21 */
-                                   100000,    /* frequency_hz = 100 kHz */
-                                   true);     /* use_pec = true */
+                                   "i2c0",                 /* name */
+                                   k_riic_channel_1,       /* channel = RIIC1 */
+                                   k_bq4050_i2c_addr,      /* device_addr = BQ4050 @ 0x0B */
+                                   k_rx_p2_0,              /* sda_pin = P20 */
+                                   k_rx_p2_1,              /* scl_pin = P21 */
+                                   k_i2c_frequency_100khz, /* frequency_hz = 100 kHz */
+                                   true);                  /* use_pec = true */
     RX_ASSERT(err == k_rx_ok, "i2c0 config init must succeed");
     err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c0_config);
     RX_ASSERT(err == k_rx_ok, "i2c0 registration must succeed");
@@ -1416,10 +1583,10 @@ void tx_application_define(void* first_unused_memory)
 
     /* Register adc0 - Motor Current Sensing (ADC Unit 0) */
     err = rx_bus_config_init_adc(&s_adc0_config,
-                                 "adc0", /* name */
-                                 0,      /* unit = ADC0 */
-                                 0,      /* channel = 0 (generic bus) */
-                                 12);    /* bits = 12-bit */
+                                 "adc0",                  /* name */
+                                 k_adc_unit_0,            /* unit = ADC0 (S12AD0) */
+                                 k_adc_channel_0,         /* channel = 0 (generic bus) */
+                                 k_adc_resolution_12bit); /* bits = 12-bit resolution */
     RX_ASSERT(err == k_rx_ok, "adc0 config init must succeed");
     err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
     RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
