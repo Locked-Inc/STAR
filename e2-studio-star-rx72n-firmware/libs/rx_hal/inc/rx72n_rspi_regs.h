@@ -154,6 +154,11 @@ extern "C" {
  * has a 64-byte register space (0x00-0x3F), though only 33 bytes are used.
  * Addresses verified against RX72N Hardware Manual Ch44, Table 44.1.
  *
+ * @par Pin Naming Convention
+ * **Hardware signal names** (MOSIA/MISOA/MOSIB/MISOB/RSPCKA/RSPCKB) are from the
+ * RX72N datasheet. This project uses **COPI/CIPO terminology** per OSHWA inclusive
+ * naming standards. Pin descriptions below show: Hardware Name (Project Name).
+ *
  * @par Channel Spacing
  * - RSPI0 -> RSPI1: 0x40 bytes (contiguous)
  * - RSPI1 -> RSPI2: 0x1C0 bytes (gap for other peripherals)
@@ -180,8 +185,8 @@ typedef enum : uint32_t {
    * Used for RPi5 communication in peripheral mode at 10 Mbps.
    * @par Pin Assignments:
    * - RSPCKA: P27/RSPCKA (clock input from RPi5)
-   * - MOSIA: P26/MOSIA (COPI - data from RPi5)
-   * - MISOA: P30/MISOA (CIPO - data to RPi5)
+   * - MOSIA: P26/MOSIA (RX72N hardware name) → COPI (project name) - data from RPi5
+   * - MISOA: P30/MISOA (RX72N hardware name) → CIPO (project name) - data to RPi5
    * - SSLA0: P54/SSLA0 (chip select from RPi5)
    */
   k_rspi0_base_addr = 0x000D0100,
@@ -193,8 +198,8 @@ typedef enum : uint32_t {
    * Directly follows RSPI0 in memory (0x40 byte offset).
    * @par Pin Assignments:
    * - RSPCKB: PE5/RSPCKB (clock output to drivers)
-   * - MOSIB: PE6/MOSIB (COPI - data to drivers)
-   * - MISOB: PE7/MISOB (CIPO - data from drivers)
+   * - MOSIB: PE6/MOSIB (RX72N hardware name) → COPI (project name) - data to drivers
+   * - MISOB: PE7/MISOB (RX72N hardware name) → CIPO (project name) - data from drivers
    * - SSLB0-3: Individual chip selects for 4 motor drivers
    */
   k_rspi1_base_addr = 0x000D0140,
