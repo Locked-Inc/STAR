@@ -530,7 +530,7 @@ typedef enum : uint8_t {
    * @brief RSPI Controller Out Peripheral In (COPI, formerly MOSI)
    * @details
    * Connects pin to RSPI data output line in controller mode.
-   * @par Typical Pins: PA0 (RSPI0-MOSIA)
+   * @par Typical Pins: PA0 (RSPI0-MOSIA - RX72N hardware name / COPI - project name)
    * @par Application: SPI transmit data to peripherals
    * @note Uses OSHWA-approved inclusive terminology
    */
@@ -540,7 +540,7 @@ typedef enum : uint8_t {
    * @brief RSPI Controller In Peripheral Out (CIPO, formerly MISO)
    * @details
    * Connects pin to RSPI data input line in controller mode.
-   * @par Typical Pins: PA1 (RSPI0-MISOA)
+   * @par Typical Pins: PA1 (RSPI0-MISOA - RX72N hardware name / CIPO - project name)
    * @par Application: SPI receive data from peripherals
    * @note Uses OSHWA-approved inclusive terminology
    */
@@ -1195,6 +1195,9 @@ typedef enum : uint8_t {
  * CIPO (data in), and SSLn (chip select).
  *
  * @par STAR Project SPI Configuration (RPi5 Communication)
+ * **Note:** RSPI0 Signal names (MOSIA/MISOA) are RX72N datasheet hardware names.
+ * Function names (COPI/CIPO) are project terminology per OSHWA standards.
+ *
  * | Pin | RSPI0 Signal | Function | Description |
  * |-----|--------------|----------|-------------|
  * | PA0 | MOSIA | COPI | Controller Out, Peripheral In |
