@@ -364,7 +364,7 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  *
  * @post All 8 pins configured for peripheral mode (PMR = 1)
  * @post PWPR register locked (B0WI = 1, write protection active)
- * @post Motor control pins ready for MTU PWM output
+ * @post Motor control pins ready for GPTW PWM output
  * @post I2C pins ready for RIIC communication
  * @post USB pin ready for VBUS detection
  *
@@ -415,7 +415,7 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  * }
  * @endcode
  *
- * @see rx_mpc_set_mtu_pwm() Configure pin for MTU PWM output
+ * @see rx_mpc_set_gptw() Configure pin for GPTW PWM output
  * @see rx_mpc_set_riic() Configure pin for I2C bus function
  * @see rx_mpc_set_peripheral() Generic pin configuration
  * @see RX72N Manual Chapter 23 - Multi-Function Pin Controller
@@ -621,7 +621,7 @@ static rx_err_t gpio_init(void)
  * @retval k_rx_ok All 4 GPTW channels initialized successfully
  * @retval k_rx_err_hw_init_failed GPTW staggered init failed
  *
- * @pre GPIO pins for GPTW configured via gpio_init() (PSEL = 0x14)
+ * @pre GPIO pins for GPTW configured via gpio_init() (PSEL = 0x1E)
  * @pre PCLKA clock running at 120 MHz
  *
  * @post 4 GPTW channels configured for 20 kHz complementary PWM

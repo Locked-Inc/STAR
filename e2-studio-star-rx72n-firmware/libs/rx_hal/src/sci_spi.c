@@ -103,6 +103,10 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
  *
  * @note Thread-safe. Pure function with no shared state access.
  *
+ * @see sci_spi_init_controller() Uses this for channel validation
+ * @see sci_spi_controller_transfer_16bit() Uses this for channel validation
+ * @see sci_spi_controller_deinit() Uses this for channel validation
+ *
  * @since 1.1.0
  */
 static rx_err_t internal_channel_to_index(uint8_t channel, uint8_t* idx)
