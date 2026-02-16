@@ -666,7 +666,7 @@ extern "C" {
   X(a, CALLBACK, SINGULAR, STRING, expected_version, 3)                                            \
   X(a, STATIC, SINGULAR, UINT32, expected_crc32, 4)
 #define star_v1_BeginUpdateRequest_CALLBACK       pb_default_field_callback
-#define star_v1_BeginUpdateRequest_DEFAULT       nullptr
+#define star_v1_BeginUpdateRequest_DEFAULT        nullptr
 #define star_v1_BeginUpdateRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_BeginUpdateResponse_FIELDLIST(X, a)                                                \
@@ -676,15 +676,15 @@ extern "C" {
   X(a, CALLBACK, SINGULAR, STRING, session_id, 4)                                                  \
   X(a, STATIC, OPTIONAL, MESSAGE, error, 5)
 #define star_v1_BeginUpdateResponse_CALLBACK       pb_default_field_callback
-#define star_v1_BeginUpdateResponse_DEFAULT       nullptr
+#define star_v1_BeginUpdateResponse_DEFAULT        nullptr
 #define star_v1_BeginUpdateResponse_header_MSGTYPE star_v1_ResponseHeader
 #define star_v1_BeginUpdateResponse_error_MSGTYPE  star_v1_FirmwareUpdateError
 
 #define star_v1_WriteChunkRequest_FIELDLIST(X, a)                                                  \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, chunk, 2)
-#define star_v1_WriteChunkRequest_CALLBACK      nullptr
-#define star_v1_WriteChunkRequest_DEFAULT       nullptr
+#define star_v1_WriteChunkRequest_CALLBACK       nullptr
+#define star_v1_WriteChunkRequest_DEFAULT        nullptr
 #define star_v1_WriteChunkRequest_header_MSGTYPE star_v1_RequestHeader
 #define star_v1_WriteChunkRequest_chunk_MSGTYPE  star_v1_FirmwareChunk
 
@@ -692,8 +692,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, success, 2)                                                         \
   X(a, STATIC, OPTIONAL, MESSAGE, progress, 3)
-#define star_v1_WriteChunkResponse_CALLBACK        nullptr
-#define star_v1_WriteChunkResponse_DEFAULT         nullptr
+#define star_v1_WriteChunkResponse_CALLBACK         nullptr
+#define star_v1_WriteChunkResponse_DEFAULT          nullptr
 #define star_v1_WriteChunkResponse_header_MSGTYPE   star_v1_ResponseHeader
 #define star_v1_WriteChunkResponse_progress_MSGTYPE star_v1_FirmwareUpdateProgress
 
@@ -703,22 +703,22 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, offset, 3)                                                        \
   X(a, STATIC, SINGULAR, UINT32, chunk_crc32, 4)
 #define star_v1_FirmwareChunk_CALLBACK pb_default_field_callback
-#define star_v1_FirmwareChunk_DEFAULT nullptr
+#define star_v1_FirmwareChunk_DEFAULT  nullptr
 
 #define star_v1_StreamChunksResponse_FIELDLIST(X, a)                                               \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, UINT32, chunks_received, 2)                                               \
   X(a, STATIC, OPTIONAL, MESSAGE, progress, 3)                                                     \
   X(a, STATIC, OPTIONAL, MESSAGE, error, 4)
-#define star_v1_StreamChunksResponse_CALLBACK        nullptr
-#define star_v1_StreamChunksResponse_DEFAULT         nullptr
+#define star_v1_StreamChunksResponse_CALLBACK         nullptr
+#define star_v1_StreamChunksResponse_DEFAULT          nullptr
 #define star_v1_StreamChunksResponse_header_MSGTYPE   star_v1_ResponseHeader
 #define star_v1_StreamChunksResponse_progress_MSGTYPE star_v1_FirmwareUpdateProgress
 #define star_v1_StreamChunksResponse_error_MSGTYPE    star_v1_FirmwareUpdateError
 
 #define star_v1_FinalizeUpdateRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_FinalizeUpdateRequest_CALLBACK       nullptr
-#define star_v1_FinalizeUpdateRequest_DEFAULT        nullptr
+#define star_v1_FinalizeUpdateRequest_CALLBACK        nullptr
+#define star_v1_FinalizeUpdateRequest_DEFAULT         nullptr
 #define star_v1_FinalizeUpdateRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_FinalizeUpdateResponse_FIELDLIST(X, a)                                             \
@@ -726,8 +726,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, BOOL, validated, 2)                                                       \
   X(a, STATIC, SINGULAR, BOOL, ready_to_reboot, 3)                                                 \
   X(a, STATIC, OPTIONAL, MESSAGE, error, 4)
-#define star_v1_FinalizeUpdateResponse_CALLBACK      nullptr
-#define star_v1_FinalizeUpdateResponse_DEFAULT       nullptr
+#define star_v1_FinalizeUpdateResponse_CALLBACK       nullptr
+#define star_v1_FinalizeUpdateResponse_DEFAULT        nullptr
 #define star_v1_FinalizeUpdateResponse_header_MSGTYPE star_v1_ResponseHeader
 #define star_v1_FinalizeUpdateResponse_error_MSGTYPE  star_v1_FirmwareUpdateError
 
@@ -735,34 +735,34 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, CALLBACK, SINGULAR, STRING, reason, 2)
 #define star_v1_AbortUpdateRequest_CALLBACK       pb_default_field_callback
-#define star_v1_AbortUpdateRequest_DEFAULT       nullptr
+#define star_v1_AbortUpdateRequest_DEFAULT        nullptr
 #define star_v1_AbortUpdateRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_AbortUpdateResponse_FIELDLIST(X, a)                                                \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, aborted, 2)
-#define star_v1_AbortUpdateResponse_CALLBACK      nullptr
-#define star_v1_AbortUpdateResponse_DEFAULT       nullptr
+#define star_v1_AbortUpdateResponse_CALLBACK       nullptr
+#define star_v1_AbortUpdateResponse_DEFAULT        nullptr
 #define star_v1_AbortUpdateResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_GetUpdateProgressRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetUpdateProgressRequest_CALLBACK       nullptr
-#define star_v1_GetUpdateProgressRequest_DEFAULT        nullptr
+#define star_v1_GetUpdateProgressRequest_CALLBACK        nullptr
+#define star_v1_GetUpdateProgressRequest_DEFAULT         nullptr
 #define star_v1_GetUpdateProgressRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetUpdateProgressResponse_FIELDLIST(X, a)                                          \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, progress, 2)
-#define star_v1_GetUpdateProgressResponse_CALLBACK        nullptr
-#define star_v1_GetUpdateProgressResponse_DEFAULT         nullptr
+#define star_v1_GetUpdateProgressResponse_CALLBACK         nullptr
+#define star_v1_GetUpdateProgressResponse_DEFAULT          nullptr
 #define star_v1_GetUpdateProgressResponse_header_MSGTYPE   star_v1_ResponseHeader
 #define star_v1_GetUpdateProgressResponse_progress_MSGTYPE star_v1_FirmwareUpdateProgress
 
 #define star_v1_StreamUpdateProgressRequest_FIELDLIST(X, a)                                        \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, UINT32, update_interval_ms, 2)
-#define star_v1_StreamUpdateProgressRequest_CALLBACK      nullptr
-#define star_v1_StreamUpdateProgressRequest_DEFAULT       nullptr
+#define star_v1_StreamUpdateProgressRequest_CALLBACK       nullptr
+#define star_v1_StreamUpdateProgressRequest_DEFAULT        nullptr
 #define star_v1_StreamUpdateProgressRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_FirmwareUpdateProgress_FIELDLIST(X, a)                                             \
@@ -774,27 +774,27 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, estimated_seconds_remaining, 6)                                    \
   X(a, STATIC, SINGULAR, UINT32, transfer_speed_bps, 7)                                            \
   X(a, STATIC, SINGULAR, UINT32, last_sequence, 8)
-#define star_v1_FirmwareUpdateProgress_CALLBACKnullptr
-#define star_v1_FirmwareUpdateProgress_DEFAULT nullptr
+#define star_v1_FirmwareUpdateProgress_CALLBACK nullptr
+#define star_v1_FirmwareUpdateProgress_DEFAULT  nullptr
 
 #define star_v1_RebootRequest_FIELDLIST(X, a)                                                      \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, UINT32, delay_ms, 2)
-#define star_v1_RebootRequest_CALLBACK      nullptr
-#define star_v1_RebootRequest_DEFAULT       nullptr
+#define star_v1_RebootRequest_CALLBACK       nullptr
+#define star_v1_RebootRequest_DEFAULT        nullptr
 #define star_v1_RebootRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_RebootResponse_FIELDLIST(X, a)                                                     \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, rebooting, 2)                                                       \
   X(a, STATIC, SINGULAR, UINT32, reboot_delay_ms, 3)
-#define star_v1_RebootResponse_CALLBACK      nullptr
-#define star_v1_RebootResponse_DEFAULT       nullptr
+#define star_v1_RebootResponse_CALLBACK       nullptr
+#define star_v1_RebootResponse_DEFAULT        nullptr
 #define star_v1_RebootResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_RollbackRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_RollbackRequest_CALLBACK       nullptr
-#define star_v1_RollbackRequest_DEFAULT        nullptr
+#define star_v1_RollbackRequest_CALLBACK        nullptr
+#define star_v1_RollbackRequest_DEFAULT         nullptr
 #define star_v1_RollbackRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_RollbackResponse_FIELDLIST(X, a)                                                   \
@@ -802,24 +802,24 @@ extern "C" {
   X(a, STATIC, SINGULAR, BOOL, rolling_back, 2)                                                    \
   X(a, CALLBACK, SINGULAR, STRING, previous_version, 3)
 #define star_v1_RollbackResponse_CALLBACK       pb_default_field_callback
-#define star_v1_RollbackResponse_DEFAULT       nullptr
+#define star_v1_RollbackResponse_DEFAULT        nullptr
 #define star_v1_RollbackResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_MarkValidRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_MarkValidRequest_CALLBACK       nullptr
-#define star_v1_MarkValidRequest_DEFAULT        nullptr
+#define star_v1_MarkValidRequest_CALLBACK        nullptr
+#define star_v1_MarkValidRequest_DEFAULT         nullptr
 #define star_v1_MarkValidRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_MarkValidResponse_FIELDLIST(X, a)                                                  \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, marked_valid, 2)
-#define star_v1_MarkValidResponse_CALLBACK      nullptr
-#define star_v1_MarkValidResponse_DEFAULT       nullptr
+#define star_v1_MarkValidResponse_CALLBACK       nullptr
+#define star_v1_MarkValidResponse_DEFAULT        nullptr
 #define star_v1_MarkValidResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_GetFirmwareInfoRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetFirmwareInfoRequest_CALLBACK       nullptr
-#define star_v1_GetFirmwareInfoRequest_DEFAULT        nullptr
+#define star_v1_GetFirmwareInfoRequest_CALLBACK        nullptr
+#define star_v1_GetFirmwareInfoRequest_DEFAULT         nullptr
 #define star_v1_GetFirmwareInfoRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetFirmwareInfoResponse_FIELDLIST(X, a)                                            \
@@ -828,8 +828,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, previous_firmware, 3)                                            \
   X(a, STATIC, SINGULAR, BOOL, is_ota_boot, 4)                                                     \
   X(a, STATIC, SINGULAR, BOOL, is_valid, 5)
-#define star_v1_GetFirmwareInfoResponse_CALLBACK                 nullptr
-#define star_v1_GetFirmwareInfoResponse_DEFAULT                  nullptr
+#define star_v1_GetFirmwareInfoResponse_CALLBACK                  nullptr
+#define star_v1_GetFirmwareInfoResponse_DEFAULT                   nullptr
 #define star_v1_GetFirmwareInfoResponse_header_MSGTYPE            star_v1_ResponseHeader
 #define star_v1_GetFirmwareInfoResponse_current_firmware_MSGTYPE  star_v1_FirmwareInfo
 #define star_v1_GetFirmwareInfoResponse_previous_firmware_MSGTYPE star_v1_FirmwareInfo
@@ -843,7 +843,7 @@ extern "C" {
   X(a, CALLBACK, SINGULAR, STRING, idf_version, 6)                                                 \
   X(a, CALLBACK, SINGULAR, STRING, chip_target, 7)
 #define star_v1_FirmwareInfo_CALLBACK pb_default_field_callback
-#define star_v1_FirmwareInfo_DEFAULT nullptr
+#define star_v1_FirmwareInfo_DEFAULT  nullptr
 
 #define star_v1_FirmwareUpdateError_FIELDLIST(X, a)                                                \
   X(a, STATIC, SINGULAR, UENUM, code, 1)                                                           \
@@ -852,7 +852,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, error_at_sequence, 4)                                             \
   X(a, STATIC, SINGULAR, UINT32, error_at_offset, 5)
 #define star_v1_FirmwareUpdateError_CALLBACK pb_default_field_callback
-#define star_v1_FirmwareUpdateError_DEFAULT nullptr
+#define star_v1_FirmwareUpdateError_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_BeginUpdateRequest_msg;
 extern const pb_msgdesc_t star_v1_BeginUpdateResponse_msg;

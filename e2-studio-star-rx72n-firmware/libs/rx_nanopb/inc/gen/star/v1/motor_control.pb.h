@@ -359,16 +359,16 @@ extern "C" {
 #define star_v1_SetVelocityRequest_FIELDLIST(X, a)                                                 \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, command, 2)
-#define star_v1_SetVelocityRequest_CALLBACK       nullptr
-#define star_v1_SetVelocityRequest_DEFAULT        nullptr
+#define star_v1_SetVelocityRequest_CALLBACK        nullptr
+#define star_v1_SetVelocityRequest_DEFAULT         nullptr
 #define star_v1_SetVelocityRequest_header_MSGTYPE  star_v1_RequestHeader
 #define star_v1_SetVelocityRequest_command_MSGTYPE star_v1_VelocityCommand
 
 #define star_v1_SetVelocityResponse_FIELDLIST(X, a)                                                \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, REPEATED, MESSAGE, motor_status, 2)
-#define star_v1_SetVelocityResponse_CALLBACK            nullptr
-#define star_v1_SetVelocityResponse_DEFAULT             nullptr
+#define star_v1_SetVelocityResponse_CALLBACK             nullptr
+#define star_v1_SetVelocityResponse_DEFAULT              nullptr
 #define star_v1_SetVelocityResponse_header_MSGTYPE       star_v1_ResponseHeader
 #define star_v1_SetVelocityResponse_motor_status_MSGTYPE star_v1_MotorStatus
 
@@ -379,47 +379,47 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 4)                                                   \
   X(a, STATIC, SINGULAR, DOUBLE, back_left_velocity_mps, 5)                                        \
   X(a, STATIC, SINGULAR, DOUBLE, back_right_velocity_mps, 6)
-#define star_v1_VelocityCommand_CALLBACKnullptr
-#define star_v1_VelocityCommand_DEFAULT nullptr
+#define star_v1_VelocityCommand_CALLBACK nullptr
+#define star_v1_VelocityCommand_DEFAULT  nullptr
 
 #define star_v1_EmergencyStopRequest_FIELDLIST(X, a)                                               \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, STRING, reason, 2)
-#define star_v1_EmergencyStopRequest_CALLBACK      nullptr
-#define star_v1_EmergencyStopRequest_DEFAULT       nullptr
+#define star_v1_EmergencyStopRequest_CALLBACK       nullptr
+#define star_v1_EmergencyStopRequest_DEFAULT        nullptr
 #define star_v1_EmergencyStopRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_EmergencyStopResponse_FIELDLIST(X, a)                                              \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, estop_engaged, 2)
-#define star_v1_EmergencyStopResponse_CALLBACK      nullptr
-#define star_v1_EmergencyStopResponse_DEFAULT       nullptr
+#define star_v1_EmergencyStopResponse_CALLBACK       nullptr
+#define star_v1_EmergencyStopResponse_DEFAULT        nullptr
 #define star_v1_EmergencyStopResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_SetMotorPowerRequest_FIELDLIST(X, a)                                               \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, command, 2)
-#define star_v1_SetMotorPowerRequest_CALLBACK       nullptr
-#define star_v1_SetMotorPowerRequest_DEFAULT        nullptr
+#define star_v1_SetMotorPowerRequest_CALLBACK        nullptr
+#define star_v1_SetMotorPowerRequest_DEFAULT         nullptr
 #define star_v1_SetMotorPowerRequest_header_MSGTYPE  star_v1_RequestHeader
 #define star_v1_SetMotorPowerRequest_command_MSGTYPE star_v1_MotorPowerCommand
 
 #define star_v1_SetMotorPowerResponse_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_SetMotorPowerResponse_CALLBACK       nullptr
-#define star_v1_SetMotorPowerResponse_DEFAULT        nullptr
+#define star_v1_SetMotorPowerResponse_CALLBACK        nullptr
+#define star_v1_SetMotorPowerResponse_DEFAULT         nullptr
 #define star_v1_SetMotorPowerResponse_header_MSGTYPE  star_v1_ResponseHeader
 
 #define star_v1_MotorPowerCommand_FIELDLIST(X, a)                                                  \
   X(a, STATIC, SINGULAR, INT32, motor_id, 1)                                                       \
   X(a, STATIC, SINGULAR, DOUBLE, duty_cycle_percent, 2)
-#define star_v1_MotorPowerCommand_CALLBACKnullptr
-#define star_v1_MotorPowerCommand_DEFAULT nullptr
+#define star_v1_MotorPowerCommand_CALLBACK nullptr
+#define star_v1_MotorPowerCommand_DEFAULT  nullptr
 
 #define star_v1_StreamEncodersRequest_FIELDLIST(X, a)                                              \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, INT32, rate_hz, 2)
-#define star_v1_StreamEncodersRequest_CALLBACK      nullptr
-#define star_v1_StreamEncodersRequest_DEFAULT       nullptr
+#define star_v1_StreamEncodersRequest_CALLBACK       nullptr
+#define star_v1_StreamEncodersRequest_DEFAULT        nullptr
 #define star_v1_StreamEncodersRequest_header_MSGTYPE star_v1_RequestHeader
 
 #define star_v1_EncoderData_FIELDLIST(X, a)                                                        \
@@ -427,8 +427,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT64, ticks, 2)                                                          \
   X(a, STATIC, SINGULAR, DOUBLE, velocity_mps, 3)                                                  \
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 4)
-#define star_v1_EncoderData_CALLBACKnullptr
-#define star_v1_EncoderData_DEFAULT nullptr
+#define star_v1_EncoderData_CALLBACK nullptr
+#define star_v1_EncoderData_DEFAULT  nullptr
 
 #define star_v1_MotorStatus_FIELDLIST(X, a)                                                        \
   X(a, STATIC, SINGULAR, INT32, motor_id, 1)                                                       \
@@ -439,8 +439,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, current_ma, 6)                                                    \
   X(a, STATIC, SINGULAR, UINT32, fault_flags, 7)                                                   \
   X(a, STATIC, SINGULAR, UENUM, state, 8)
-#define star_v1_MotorStatus_CALLBACKnullptr
-#define star_v1_MotorStatus_DEFAULT nullptr
+#define star_v1_MotorStatus_CALLBACK nullptr
+#define star_v1_MotorStatus_DEFAULT  nullptr
 
 #define star_v1_PidConfig_FIELDLIST(X, a)                                                          \
   X(a, STATIC, SINGULAR, DOUBLE, kp, 1)                                                            \
@@ -450,8 +450,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, output_max_percent, 5)                                            \
   X(a, STATIC, SINGULAR, DOUBLE, integral_min, 6)                                                  \
   X(a, STATIC, SINGULAR, DOUBLE, integral_max, 7)
-#define star_v1_PidConfig_CALLBACKnullptr
-#define star_v1_PidConfig_DEFAULT nullptr
+#define star_v1_PidConfig_CALLBACK nullptr
+#define star_v1_PidConfig_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_SetVelocityRequest_msg;
 extern const pb_msgdesc_t star_v1_SetVelocityResponse_msg;

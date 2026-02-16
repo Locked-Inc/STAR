@@ -874,17 +874,17 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
 
   /* Initialize USB communication layer */
   rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
-  bool usb_ok                   = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+  bool                 usb_ok  = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
   if (!usb_ok) {
     rx_log_error(s_tag, "USB comm init failed");
   }
 
   /* Initialize SPI communication layer (RSPI2, channel 0) */
   rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
-                                   .channel     = k_spi_comm_default_channel,
-                                   .spi_mode    = k_spi_comm_default_mode,
-                                   .fec_enabled = false};
-  bool spi_ok                   = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
+                                  .channel     = k_spi_comm_default_channel,
+                                  .spi_mode    = k_spi_comm_default_mode,
+                                  .fec_enabled = false};
+  bool                 spi_ok  = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
   if (!spi_ok) {
     rx_log_error(s_tag, "SPI comm init failed");
   }
