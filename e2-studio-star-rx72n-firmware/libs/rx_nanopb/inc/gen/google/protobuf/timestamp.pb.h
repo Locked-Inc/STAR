@@ -135,7 +135,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT64, seconds, 1)                                                        \
   X(a, STATIC, SINGULAR, INT32, nanos, 2)
 #define google_protobuf_Timestamp_CALLBACK nullptr
-#define google_protobuf_Timestamp_DEFAULT  nullptr
+#define google_protobuf_Timestamp_DEFAULT nullptr
 
 extern const pb_msgdesc_t google_protobuf_Timestamp_msg;
 
