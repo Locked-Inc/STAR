@@ -319,124 +319,6 @@ typedef enum : uint8_t {
 static const uint8_t s_sckcr3_reset_state = 0U;
 
 /**
- * @brief Initialize GPIO pins for motor control, I2C, and USB communication
- *
- * @details
- * Configures Multi-Function Pin Controller (MPC) for 8 critical pins used in STAR
- * robot application. All pins are configured for peripheral mode (not GPIO), with
- * specific PSEL values determined by hardware function.
- *
- * **Pin configuration:**
- * - **8× GPTW PWM pins** - Motor control via DRV8243 H-bridge drivers (PORT E)
- * - **2× I2C pins** - Sensor communication bus (SCL/SDA)
- * - **1× USB pin** - USB VBUS detection for CDC debug interface
- *
- * **Algorithm steps:**
- * 1. Validate all pin identifiers are within valid range
- * 2. Configure GPTW PWM pins (PSEL = 0x1E) for 4-motor control on PORT E
- * 3. Configure I2C pins (PSEL = 0x0F) for sensor bus
- * 4. Configure USB pin (PSEL = 0x11) for USB VBUS detect
- * 5. All operations use rx_mpc API with write-protect handling
- *
- * ## Pin Allocation Table
- *
- * | Pin | Port.Bit | Function | PSEL | Usage |
- * |-----|----------|----------|------|-------|
- * | PE5 | PORTE.5 | GTIOC0A | 0x1E | Motor 0 phase (pkg pin 106) |
- * | PE2 | PORTE.2 | GTIOC0B | 0x1E | Motor 0 enable (pkg pin 109) |
- * | PE4 | PORTE.4 | GTIOC1A | 0x1E | Motor 1 phase (pkg pin 107) |
- * | PE1 | PORTE.1 | GTIOC1B | 0x1E | Motor 1 enable (pkg pin 110) |
- * | PE3 | PORTE.3 | GTIOC2A | 0x1E | Motor 2 phase (pkg pin 108) |
- * | PE0 | PORTE.0 | GTIOC2B | 0x1E | Motor 2 enable (pkg pin 111) |
- * | PE7 | PORTE.7 | GTIOC3A | 0x1E | Motor 3 phase (pkg pin 101) |
- * | PE6 | PORTE.6 | GTIOC3B | 0x1E | Motor 3 enable (pkg pin 102) |
- * | P1.2 | PORT1.2 | SCL0 | 0x0F | I2C clock line |
- * | P1.3 | PORT1.3 | SDA0 | 0x0F | I2C data line |
- * | P1.6 | PORT1.6 | USB0_VBUS | 0x11 | USB VBUS detect input |
- *
- * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok All 8 pins configured successfully
- * @retval k_rx_err_invalid_arg Pin identifier out of range (programming error)
- * @retval k_rx_err_hw_error MPC write-protect unlock failed (hardware fault)
- *
- * @pre PCLKB clock must be running (MPC registers require active clock)
- * @pre Must be called during single-threaded initialization (before RTOS starts)
- *
- * @post All 8 pins configured for peripheral mode (PMR = 1)
- * @post PWPR register locked (B0WI = 1, write protection active)
- * @post Motor control pins ready for GPTW PWM output
- * @post I2C pins ready for RIIC communication
- * @post USB pin ready for VBUS detection
- *
- * @note **Thread Safety**: Not thread-safe. Must be called during initialization
- *       before ThreadX kernel starts. Do not call from running RTOS tasks.
- *
- * @note **Re-entrancy**: Not reentrant. Calling multiple times is safe (idempotent)
- *       but wastes CPU cycles re-writing same register values.
- *
- * @note **Performance**: Execution time ~15 µs @ 240 MHz (8 pins × 2 µs/pin).
- *       One-time initialization cost, not runtime overhead.
- *
- * @warning **Pin conflicts**: If pins are already in use by another peripheral,
- *          reconfiguring them here will break that peripheral's functionality.
- *          Ensure pin allocations match hardware schematic.
- *
- * @warning **Motor safety**: Motor control pins must be configured before enabling
- *          GPTW channels. Unconfigured PWM pins can cause undefined motor behavior.
- *
- * @par Example - Normal Initialization:
- * @code
- * // Called from hardware_init() during boot
- * rx_err_t err = gpio_init();
- * if (err != k_rx_ok) {
- *     rx_log_error("HWINT", "GPIO init failed: %d", err);
- *     return err;
- * }
- *
- * // Now safe to initialize motor drivers
- * err = motor_init();
- * @endcode
- *
- * @par Example - Error Handling:
- * @code
- * rx_err_t err = gpio_init();
- * switch (err) {
- *     case k_rx_ok:
- *         rx_log_info("GPIO", "8 pins configured successfully");
- *         break;
- *     case k_rx_err_invalid_arg:
- *         // Programming error - invalid pin constant used
- *         rx_log_error("GPIO", "Invalid pin identifier");
- *         return err;
- *     case k_rx_err_hw_error:
- *         // Hardware fault - MPC registers not accessible
- *         rx_log_error("GPIO", "MPC hardware fault");
- *         return err;
- * }
- * @endcode
- *
- * @see rx_mpc_set_gptw() Configure pin for GPTW PWM output
- * @see rx_mpc_set_riic() Configure pin for I2C bus function
- * @see rx_mpc_set_peripheral() Generic pin configuration
- * @see RX72N Manual Chapter 23 - Multi-Function Pin Controller
- *
- * @since Version 1.0.0
- *
- * @par NASA Power of 10 Compliance
- * - **Rule 1** [OK] No goto, setjmp, recursion (sequential pin configuration)
- * - **Rule 2** [OK] No loops in main function (delegated to helper functions)
- * - **Rule 3** [OK] No dynamic allocation (all register I/O)
- * - **Rule 4** [OK] Function is ~30 lines (under 60 line limit, decomposed into helpers)
- * - **Rule 5** [OK] 2 preconditions, 5 postconditions documented
- * - **Rule 6** [OK] Minimal scope (no local variables)
- * - **Rule 7** [OK] All internal_gpio_init_*() return values checked
- * - **Rule 8** [OK] Uses C23 typed enums for pin identifiers
- * - **Rule 9** [OK] Single level of function call dereferencing
- * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
- *
- */
-
-/**
  * @brief Configure I2C bus pins (RIIC0/RIIC1)
  *
  * @details
@@ -906,6 +788,123 @@ static rx_err_t internal_gpio_init_sci7_spi(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Initialize GPIO pins for motor control, I2C, and USB communication
+ *
+ * @details
+ * Configures Multi-Function Pin Controller (MPC) for 8 critical pins used in STAR
+ * robot application. All pins are configured for peripheral mode (not GPIO), with
+ * specific PSEL values determined by hardware function.
+ *
+ * **Pin configuration:**
+ * - **8× GPTW PWM pins** - Motor control via DRV8243 H-bridge drivers (PORT E)
+ * - **2× I2C pins** - Sensor communication bus (SCL/SDA)
+ * - **1× USB pin** - USB VBUS detection for CDC debug interface
+ *
+ * **Algorithm steps:**
+ * 1. Validate all pin identifiers are within valid range
+ * 2. Configure GPTW PWM pins (PSEL = 0x1E) for 4-motor control on PORT E
+ * 3. Configure I2C pins (PSEL = 0x0F) for sensor bus
+ * 4. Configure USB pin (PSEL = 0x11) for USB VBUS detect
+ * 5. All operations use rx_mpc API with write-protect handling
+ *
+ * ## Pin Allocation Table
+ *
+ * | Pin | Port.Bit | Function | PSEL | Usage |
+ * |-----|----------|----------|------|-------|
+ * | PE5 | PORTE.5 | GTIOC0A | 0x1E | Motor 0 phase (pkg pin 106) |
+ * | PE2 | PORTE.2 | GTIOC0B | 0x1E | Motor 0 enable (pkg pin 109) |
+ * | PE4 | PORTE.4 | GTIOC1A | 0x1E | Motor 1 phase (pkg pin 107) |
+ * | PE1 | PORTE.1 | GTIOC1B | 0x1E | Motor 1 enable (pkg pin 110) |
+ * | PE3 | PORTE.3 | GTIOC2A | 0x1E | Motor 2 phase (pkg pin 108) |
+ * | PE0 | PORTE.0 | GTIOC2B | 0x1E | Motor 2 enable (pkg pin 111) |
+ * | PE7 | PORTE.7 | GTIOC3A | 0x1E | Motor 3 phase (pkg pin 101) |
+ * | PE6 | PORTE.6 | GTIOC3B | 0x1E | Motor 3 enable (pkg pin 102) |
+ * | P1.2 | PORT1.2 | SCL0 | 0x0F | I2C clock line |
+ * | P1.3 | PORT1.3 | SDA0 | 0x0F | I2C data line |
+ * | P1.6 | PORT1.6 | USB0_VBUS | 0x11 | USB VBUS detect input |
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok All 8 pins configured successfully
+ * @retval k_rx_err_invalid_arg Pin identifier out of range (programming error)
+ * @retval k_rx_err_hw_error MPC write-protect unlock failed (hardware fault)
+ *
+ * @pre PCLKB clock must be running (MPC registers require active clock)
+ * @pre Must be called during single-threaded initialization (before RTOS starts)
+ *
+ * @post All 8 pins configured for peripheral mode (PMR = 1)
+ * @post PWPR register locked (B0WI = 1, write protection active)
+ * @post Motor control pins ready for GPTW PWM output
+ * @post I2C pins ready for RIIC communication
+ * @post USB pin ready for VBUS detection
+ *
+ * @note **Thread Safety**: Not thread-safe. Must be called during initialization
+ *       before ThreadX kernel starts. Do not call from running RTOS tasks.
+ *
+ * @note **Re-entrancy**: Not reentrant. Calling multiple times is safe (idempotent)
+ *       but wastes CPU cycles re-writing same register values.
+ *
+ * @note **Performance**: Execution time ~15 µs @ 240 MHz (8 pins × 2 µs/pin).
+ *       One-time initialization cost, not runtime overhead.
+ *
+ * @warning **Pin conflicts**: If pins are already in use by another peripheral,
+ *          reconfiguring them here will break that peripheral's functionality.
+ *          Ensure pin allocations match hardware schematic.
+ *
+ * @warning **Motor safety**: Motor control pins must be configured before enabling
+ *          GPTW channels. Unconfigured PWM pins can cause undefined motor behavior.
+ *
+ * @par Example - Normal Initialization:
+ * @code
+ * // Called from hardware_init() during boot
+ * rx_err_t err = gpio_init();
+ * if (err != k_rx_ok) {
+ *     rx_log_error("HWINT", "GPIO init failed: %d", err);
+ *     return err;
+ * }
+ *
+ * // Now safe to initialize motor drivers
+ * err = motor_init();
+ * @endcode
+ *
+ * @par Example - Error Handling:
+ * @code
+ * rx_err_t err = gpio_init();
+ * switch (err) {
+ *     case k_rx_ok:
+ *         rx_log_info("GPIO", "8 pins configured successfully");
+ *         break;
+ *     case k_rx_err_invalid_arg:
+ *         // Programming error - invalid pin constant used
+ *         rx_log_error("GPIO", "Invalid pin identifier");
+ *         return err;
+ *     case k_rx_err_hw_error:
+ *         // Hardware fault - MPC registers not accessible
+ *         rx_log_error("GPIO", "MPC hardware fault");
+ *         return err;
+ * }
+ * @endcode
+ *
+ * @see rx_mpc_set_gptw() Configure pin for GPTW PWM output
+ * @see rx_mpc_set_riic() Configure pin for I2C bus function
+ * @see rx_mpc_set_peripheral() Generic pin configuration
+ * @see RX72N Manual Chapter 23 - Multi-Function Pin Controller
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance
+ * - **Rule 1** [OK] No goto, setjmp, recursion (sequential pin configuration)
+ * - **Rule 2** [OK] No loops in main function (delegated to helper functions)
+ * - **Rule 3** [OK] No dynamic allocation (all register I/O)
+ * - **Rule 4** [OK] Function is ~30 lines (under 60 line limit, decomposed into helpers)
+ * - **Rule 5** [OK] 2 preconditions, 5 postconditions documented
+ * - **Rule 6** [OK] Minimal scope (no local variables)
+ * - **Rule 7** [OK] All internal_gpio_init_*() return values checked
+ * - **Rule 8** [OK] Uses C23 typed enums for pin identifiers
+ * - **Rule 9** [OK] Single level of function call dereferencing
+ * - **Rule 10** [OK] Compiles with -Wall -Wextra -Werror
+ *
+ */
 static rx_err_t gpio_init(void)
 {
   rx_err_t           err;
