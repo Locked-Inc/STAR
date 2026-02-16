@@ -36,6 +36,7 @@
 #pragma once
 
 #include "rx_err.h"
+#include "rx_motor.h"
 
 /**
  * @brief Create and start the motor control task
@@ -73,3 +74,49 @@
  * @since STAR v1.0.0
  */
 rx_err_t motor_control_task_create(void);
+
+/**
+ * @brief Get motor handle array for obstacle detection emergency stop
+ *
+ * @details
+ * Returns pointers to the 4 initialized motor handles for use by the
+ * obstacle detection system. These handles allow the obstacle detection
+ * task to execute emergency motor stops when obstacles are detected.
+ *
+ * **Usage Pattern:**
+ * ```c
+ * uint8_t motor_count = 0;
+ * rx_motor_handle_t** motors = motor_control_task_get_motors(&motor_count);
+ * config.motors = motors;
+ * config.motor_count = motor_count;
+ * ```
+ *
+ * **Motor Array:**
+ * - Index 0: Front-left motor
+ * - Index 1: Front-right motor
+ * - Index 2: Rear-left motor
+ * - Index 3: Rear-right motor
+ *
+ * @param[out] out_count Pointer to receive motor count (will be set to 4)
+ *                       Must be non-NULL
+ *
+ * @return rx_motor_handle_t** Pointer to array of 4 motor handle pointers
+ *                              Valid for lifetime of motor_control_task
+ *                              Returns nullptr if out_count is nullptr
+ *
+ * @pre motor_control_task_create() called successfully
+ * @pre Motor handles initialized via internal_init_motor_stack()
+ * @post out_count set to 4
+ * @post Returns valid pointer to motor handle array
+ *
+ * @note Thread-safe: Returns pointer to static memory
+ * @note Lifetime: Motor handles valid until program termination
+ * @warning Do NOT call before motor_control_task initialization
+ * @warning Do NOT modify returned motor handles directly
+ *
+ * @see rx_motor.h Motor handle operations
+ * @see obstacle_detect_task.c Uses these handles for emergency stop
+ *
+ * @since STAR v1.0.0
+ */
+rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count);

@@ -505,6 +505,14 @@ static bool s_motor_created = false;
 /** @brief Motor handles for each motor */
 static rx_motor_handle_t s_motors[k_motor_count];
 
+/** @brief Motor handle pointer array for external access */
+static rx_motor_handle_t* s_motor_ptrs[k_motor_count] = {
+	&s_motors[0],
+	&s_motors[1],
+	&s_motors[2],
+	&s_motors[3],
+};
+
 /** @brief Encoder state for each motor */
 static rx_encoder_state_t s_encoder_state[k_motor_count];
 
@@ -875,6 +883,41 @@ rx_err_t motor_control_task_create(void)
   rx_log_info(s_tag, "Motor control task created");
 
   return k_rx_ok;
+}
+
+/**
+ * @brief Get motor handle array for obstacle detection emergency stop
+ *
+ * @details
+ * Returns pointers to the 4 initialized motor handles. The obstacle detection
+ * system uses these handles to execute emergency motor stops when obstacles
+ * breach the safety perimeter.
+ *
+ * @param[out] out_count Pointer to receive motor count (set to 4)
+ *
+ * @return rx_motor_handle_t** Pointer to array of motor handle pointers
+ * @retval s_motor_ptrs Array of 4 motor handles
+ * @retval nullptr if out_count is nullptr
+ *
+ * @pre motor_control_task_create() called
+ * @pre Motors initialized via internal_init_motor_stack()
+ * @post out_count = 4
+ *
+ * @note Thread-safe: Returns pointer to static memory
+ * @note Lifetime: Valid until program termination
+ *
+ * @since STAR v1.0.0
+ */
+rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
+{
+	/* Validate output parameter */
+	if (out_count == nullptr) {
+		return nullptr;
+	}
+
+	/* Return motor count and handle array */
+	*out_count = k_motor_count;
+	return s_motor_ptrs;
 }
 
 /* =============================================================================

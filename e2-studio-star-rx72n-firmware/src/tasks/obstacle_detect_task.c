@@ -851,11 +851,15 @@
 #include <string.h>
 
 #include "rx_check.h"
+#include "rx_hcsr04.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_obstacle_detect.h"
+#include "rx_port_utils.h"
 #include "shared_data.h"
 #include "tx_api.h"
+
+#include "motor_control_task.h"
 
 /* =============================================================================
  * Constants
@@ -1033,6 +1037,39 @@ static rx_obstacle_detect_t s_obstacle_handle;
  * @since Version 1.0.0
  */
 static const char* const s_tag = "OBSTACLE";
+
+/**
+ * @var s_sensors
+ * @brief HC-SR04 sensor handle array (4 sensors for 360° coverage)
+ *
+ * @details
+ * Array of 4 ultrasonic distance sensors positioned around the robot:
+ * - Index 0: Front-left
+ * - Index 1: Front-right
+ * - Index 2: Back-left
+ * - Index 3: Back-right
+ *
+ * @note Static allocation (no malloc) per NASA Power of 10 Rule 3
+ * @since STAR v1.0.0
+ */
+static rx_hcsr04_t s_sensors[k_obstacle_sensor_count];
+
+/**
+ * @var s_sensor_ptrs
+ * @brief Sensor handle pointers for config
+ *
+ * @details
+ * Array of pointers to sensor handles, used to pass to
+ * rx_obstacle_detect_init() configuration structure.
+ *
+ * @since STAR v1.0.0
+ */
+static rx_hcsr04_t* s_sensor_ptrs[k_obstacle_sensor_count] = {
+	&s_sensors[0],  /* Front-left */
+	&s_sensors[1],  /* Front-right */
+	&s_sensors[2],  /* Back-left */
+	&s_sensors[3],  /* Back-right */
+};
 
 /* =============================================================================
  * Forward Declarations
@@ -1337,6 +1374,93 @@ rx_err_t obstacle_detect_task_create(void)
  */
 
 /**
+ * @brief Initialize HC-SR04 ultrasonic sensors for obstacle detection
+ *
+ * @details
+ * Initializes 4 HC-SR04 sensors positioned around the robot for 360°
+ * obstacle coverage:
+ * - Front-left: TRIG=PF5 (k_rx_pf_5), ECHO=P03 (k_rx_p0_3)
+ * - Front-right: TRIG=PJ5 (k_rx_pj_5), ECHO=P02 (k_rx_p0_2)
+ * - Back-left: TRIG=PJ3 (k_rx_pj_3), ECHO=P01 (k_rx_p0_1)
+ * - Back-right: TRIG=P33 (k_rx_p3_3), ECHO=P00 (k_rx_p0_0)
+ *
+ * Each sensor configured with 30ms timeout (400cm max range).
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All sensors initialized successfully
+ * @retval k_rx_err_* Sensor initialization failed (see rx_hcsr04_init)
+ *
+ * @pre GPIO ports F, J, 0, 3 accessible
+ * @pre Pins not already allocated by pin validator
+ * @post All 4 sensors initialized and ready for polling
+ * @post GPIO pins configured (TRIG as output, ECHO as input)
+ *
+ * @note Each sensor requires ~64 bytes RAM
+ * @note Sensors must be initialized before rx_obstacle_detect_init()
+ * @note Uses software timing for echo pulse measurement (no IRQ)
+ *
+ * @see rx_hcsr04_init() HC-SR04 driver initialization
+ * @see rx_port_constants.h GPIO pin constant definitions
+ *
+ * @since STAR v1.0.0
+ */
+static rx_err_t internal_init_sensors(void)
+{
+	rx_err_t err;
+
+	/* Sensor 0: Front-Left (TRIG=PF5, ECHO=P03) */
+	rx_hcsr04_config_t fl_config = {
+		.trigger_pin = k_rx_pf_5,
+		.echo_pin    = k_rx_p0_3,
+		.timeout_us  = 30000,  /* 30ms = 400cm max range */
+	};
+	err = rx_hcsr04_init(&s_sensors[0], &fl_config);
+	if (err != k_rx_ok) {
+		rx_log_error_val(s_tag, "Front-left sensor init failed", (uint32_t)err);
+		return err;
+	}
+
+	/* Sensor 1: Front-Right (TRIG=PJ5, ECHO=P02) */
+	rx_hcsr04_config_t fr_config = {
+		.trigger_pin = k_rx_pj_5,
+		.echo_pin    = k_rx_p0_2,
+		.timeout_us  = 30000,
+	};
+	err = rx_hcsr04_init(&s_sensors[1], &fr_config);
+	if (err != k_rx_ok) {
+		rx_log_error_val(s_tag, "Front-right sensor init failed", (uint32_t)err);
+		return err;
+	}
+
+	/* Sensor 2: Back-Left (TRIG=PJ3, ECHO=P01) */
+	rx_hcsr04_config_t bl_config = {
+		.trigger_pin = k_rx_pj_3,
+		.echo_pin    = k_rx_p0_1,
+		.timeout_us  = 30000,
+	};
+	err = rx_hcsr04_init(&s_sensors[2], &bl_config);
+	if (err != k_rx_ok) {
+		rx_log_error_val(s_tag, "Back-left sensor init failed", (uint32_t)err);
+		return err;
+	}
+
+	/* Sensor 3: Back-Right (TRIG=P33, ECHO=P00) */
+	rx_hcsr04_config_t br_config = {
+		.trigger_pin = k_rx_p3_3,
+		.echo_pin    = k_rx_p0_0,
+		.timeout_us  = 30000,
+	};
+	err = rx_hcsr04_init(&s_sensors[3], &br_config);
+	if (err != k_rx_ok) {
+		rx_log_error_val(s_tag, "Back-right sensor init failed", (uint32_t)err);
+		return err;
+	}
+
+	rx_log_info(s_tag, "All 4 HC-SR04 sensors initialized");
+	return k_rx_ok;
+}
+
+/**
  * @brief Obstacle detection task entry point
  *
  * @details
@@ -1555,14 +1679,35 @@ static void internal_obstacle_task_entry(ULONG input)
   uint32_t                    total_polls;
   uint32_t                    obstacle_events;
   uint32_t                    false_positives;
+  uint8_t                     motor_count = 0;
+  rx_motor_handle_t**         motors      = nullptr;
 
   (void)input;
 
   rx_log_info(s_tag, "Obstacle detection task starting");
 
+  /* Initialize HC-SR04 sensors */
+  err = internal_init_sensors();
+  if (err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Sensor initialization failed", (uint32_t)err);
+    RX_ASSERT(false, "Sensor init is safety-critical");
+    return;  /* Fatal error */
+  }
+
+  /* Get motor handles from motor control task */
+  motors = motor_control_task_get_motors(&motor_count);
+  if (motors == nullptr || motor_count == 0) {
+    rx_log_error(s_tag, "Motor handles unavailable");
+    RX_ASSERT(false, "Motor handles required for obstacle detection");
+    return;  /* Fatal error */
+  }
+
   /* Configure obstacle detection system */
   (void)memset(&config, 0, sizeof(config));
   config.sensor_count           = k_obstacle_sensor_count;
+  config.sensors                = s_sensor_ptrs;
+  config.motor_count            = motor_count;
+  config.motors                 = motors;
   config.detection_threshold_cm = (float)k_obstacle_threshold_cm;
   config.debounce_samples       = k_obstacle_debounce_samples;
   config.poll_interval_ms       = k_obstacle_poll_interval_ms;
@@ -1573,16 +1718,19 @@ static void internal_obstacle_task_entry(ULONG input)
   err = rx_obstacle_detect_init(&s_obstacle_handle, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Obstacle detect init failed", (uint32_t)err);
-    /* Continue anyway - task will run but detection disabled */
+    RX_ASSERT(false, "Obstacle detection is safety-critical");
+    return;  /* Fatal error - treat as safety-critical per issue #295 */
   }
 
   /* Start obstacle detection */
   err = rx_obstacle_detect_start(&s_obstacle_handle);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Obstacle detect start failed", (uint32_t)err);
+    RX_ASSERT(false, "Cannot start obstacle detection");
+    return;  /* Fatal error */
   }
 
-  rx_log_info(s_tag, "Obstacle detection running");
+  rx_log_info(s_tag, "Obstacle detection running (4 sensors, 4 motors)");
 
   /* Main monitoring loop - library handles actual polling */
   uint16_t stats_counter = 0;
