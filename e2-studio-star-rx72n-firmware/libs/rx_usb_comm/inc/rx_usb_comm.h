@@ -600,7 +600,7 @@ typedef struct {
  * 6. Set initialized flag
  *
  * @param[out] handle Pointer to handle to initialize
- *   - Must be valid non-NULL pointer
+ *   - Must be valid non-nullptr
  *   - All fields will be overwritten
  *   - Caller maintains ownership
  * @param[in] config Configuration options (must not be NULL)
@@ -716,7 +716,7 @@ typedef struct {
  * @pre handle initialized via rx_usb_comm_init()
  * @pre handle->mode == k_usb_comm_mode_binary
  * @pre USB driver initialized and configured
- * @pre payload != NULL
+ * @pre payload !=nullptr
  *
  * @post On success: session TX sequence incremented
  * @post On success: frame queued for transmission
@@ -823,7 +823,7 @@ typedef struct {
  *   - Must be initialized via rx_usb_comm_init()
  *   - Internal buffers and decoder state modified
  * @param[out] frame Pointer to frame structure for output
- *   - Must be valid non-NULL pointer
+ *   - Must be valid non-nullptr
  *   - All fields populated on success
  * @param[in] timeout_ms Timeout in milliseconds
  *   - 0: Poll once, return immediately if no frame

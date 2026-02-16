@@ -46,7 +46,7 @@
  * ### Validation Strategy
  *
  * Each init function performs comprehensive validation:
- * 1. **NULL pointer checks** (manager, name) - RX_CHECK_NULL_PTR
+ * 1. **nullptr checks** (manager, name) - RX_CHECK_NULL_PTR
  * 2. **Range validation** (channels, addresses, pins) - typed enum bounds
  * 3. **Hardware limits** (ADC resolution, baud rate non-zero)
  * 4. **Pin conflicts** (via internal_validate_port_pin helper)

@@ -391,7 +391,7 @@ typedef enum : uint8_t {
  * 1. Validate pin number is in range [0, 7]
  * 2. Get base address of PFS registers from mpc() accessor
  * 3. Look up port offset in switch statement
- * 4. If port invalid, log error and return NULL
+ * 4. If port invalid, log error and returnnullptr
  * 5. Return base + offset + pin
  *
  * @par Address Calculation

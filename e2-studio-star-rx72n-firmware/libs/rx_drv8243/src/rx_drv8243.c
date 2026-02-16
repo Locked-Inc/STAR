@@ -541,7 +541,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *    - Log error and return failure if post-conditions violated
  *
  * @param[in,out] handle Pointer to DRV8243 driver handle
- *   - **Valid range**: Non-NULL pointer to rx_drv8243_handle_t structure
+ *   - **Valid range**: Non-nullptr to rx_drv8243_handle_t structure
  *   - **Constraints**: Must be allocated by caller (typically static or global)
  *   - **Input state**: Can be uninitialized memory (will be zero-filled)
  *   - **Output state**: Fully initialized and ready for operation if k_rx_ok returned
@@ -550,7 +550,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *   - **Thread safety**: Not thread-safe - do not initialize from multiple threads simultaneously
  *
  * @param[in] config Pointer to DRV8243 configuration structure
- *   - **Valid range**: Non-NULL pointer to rx_drv8243_config_t with valid parameters
+ *   - **Valid range**: Non-nullptr to rx_drv8243_config_t with valid parameters
  *   - **Constraints**:
  *     - bus_manager: Non-NULL, initialized via rx_bus_manager_init()
  *     - gpio_bus_name: Non-NULL, registered in bus_manager
@@ -576,7 +576,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *
  * @return rx_err_t Error code indicating initialization success or failure
  * @retval k_rx_ok Success - driver fully initialized and ready for operation
- * @retval k_rx_err_null_ptr NULL pointer detected in handle, config, or required config fields
+ * @retval k_rx_err_null_ptr nullptr detected in handle, config, or required config fields
  * @retval k_rx_err_invalid_state Driver already initialized (call deinit first to reinitialize)
  * @retval k_rx_err_invalid_arg PWM frequency out of valid range [1000-25000] Hz
  * @retval k_rx_err_hw_init_failed Motor controller (GPTW) initialization failed
@@ -956,7 +956,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * @enddot
  *
  * @param[in,out] handle Pointer to DRV8243 driver handle
- *   - **Valid range**: Non-NULL pointer to initialized rx_drv8243_handle_t
+ *   - **Valid range**: Non-nullptr to initialized rx_drv8243_handle_t
  *   - **Constraints**: Must be initialized via rx_drv8243_init()
  *   - **Input state**: handle->initialized must be true
  *   - **Output state**: handle->current_speed updated to requested speed (or reduced if current limited)
@@ -976,7 +976,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  *
  * @return rx_err_t Error code indicating operation success or failure
  * @retval k_rx_ok Success - motor speed set to requested value (or reduced if current limited)
- * @retval k_rx_err_null_ptr NULL pointer in handle parameter
+ * @retval k_rx_err_null_ptr nullptr in handle parameter
  * @retval k_rx_err_invalid_state Driver not initialized OR fault condition active (nFAULT=LOW)
  * @retval k_rx_err_invalid_arg Speed outside valid range [-100.0, +100.0]
  * @retval k_rx_err_hw_error Motor controller (GPTW) PWM update failed

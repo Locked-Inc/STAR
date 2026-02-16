@@ -409,8 +409,8 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg link or config is NULL
- * @retval k_rx_err_invalid_arg config->spi_handle is NULL
+ * @retval k_rx_err_invalid_arg link or config isnullptr
+ * @retval k_rx_err_invalid_arg config->spi_handle isnullptr
  *
  * @pre link must point to valid, allocated memory (~86 KB)
  * @pre config->spi_handle must be initialized via rx_spi_comm_init()
@@ -435,7 +435,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg link is NULL
+ * @retval k_rx_err_invalid_arg link isnullptr
  * @retval k_rx_err_invalid_state link not initialized
  *
  * @pre link must be non-NULL
@@ -533,7 +533,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Frame received and decoded successfully
- * @retval k_rx_err_invalid_arg link or result is NULL
+ * @retval k_rx_err_invalid_arg link or result isnullptr
  * @retval k_rx_err_invalid_state link not initialized
  * @retval k_rx_err_timeout No frame received within timeout
  * @retval k_rx_err_protocol_error FEC decode failed (NACK sent)
@@ -568,7 +568,7 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_invalid_arg link is NULL
+ * @retval k_rx_err_invalid_arg link isnullptr
  * @retval k_rx_err_invalid_state link not initialized
  *
  * @pre link must be non-NULL
@@ -590,7 +590,7 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
  *
  * @details
  * Returns the current state of the SPI link state machine. Safe to call
- * with NULL pointer (returns error state). Does not modify link state.
+ * with nullptr (returns error state). Does not modify link state.
  *
  * @param[in] link Link handle (may be NULL)
  *
@@ -606,7 +606,7 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
  * @post Return value reflects state at time of call (may change immediately after)
  *
  * @note Thread-safe: Read-only operation, no synchronization needed
- * @note NULL-safe: Returns k_spi_link_state_error when link is NULL
+ * @note NULL-safe: Returns k_spi_link_state_error when link isnullptr
  * @note Does not distinguish between "link is NULL" vs "link is in error state"
  *
  * @see rx_spi_link_t Link handle structure
@@ -629,7 +629,7 @@ rx_spi_link_state_t rx_spi_link_get_state(const rx_spi_link_t* link);
  *
  * @return bool FEC enabled status
  * @retval true FEC encoding/decoding is active (Chase Combining, Viterbi)
- * @retval false FEC disabled (raw payload transmission) or link is NULL
+ * @retval false FEC disabled (raw payload transmission) or link isnullptr
  *
  * @pre link may be NULL (function handles gracefully by returning false)
  * @pre If link is non-NULL, may be in any state (initialized or not)
@@ -637,7 +637,7 @@ rx_spi_link_state_t rx_spi_link_get_state(const rx_spi_link_t* link);
  * @post Return value reflects FEC setting at time of call (constant for link lifetime)
  *
  * @note Thread-safe: Read-only operation, no synchronization needed
- * @note NULL-safe: Returns false when link is NULL
+ * @note NULL-safe: Returns false when link isnullptr
  * @note FEC setting is immutable after initialization (cannot be changed at runtime)
  * @note When FEC is enabled, rx_spi_link_send/receive use HARQ with Chase Combining
  *

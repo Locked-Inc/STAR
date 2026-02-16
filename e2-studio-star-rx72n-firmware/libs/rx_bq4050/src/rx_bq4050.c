@@ -411,7 +411,7 @@ typedef enum : uint8_t {
  * @retval k_rx_err_out_of_range Intermediate or final value out of range
  *   (extremely rare - would require corrupted SMBus data or hardware fault)
  *
- * @pre temp_celsius_out must not be NULL
+ * @pre temp_celsius_out must not benullptr
  * @pre temp_0_1k is valid SBS temperature reading (caller validated SMBus transaction)
  *
  * @post temp_celsius_out contains temperature in °C on success
@@ -925,7 +925,7 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, all electrical fields populated
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or status
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or status
  * @retval k_rx_err_invalid_arg num_cells out of range
  * @retval Other rx_err_t values propagated from SMBus reads
  *
@@ -1009,7 +1009,7 @@ static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success
- * @retval k_rx_err_null_ptr NULL pointer
+ * @retval k_rx_err_null_ptr nullptr
  * @retval Other rx_err_t values from SMBus/conversion
  *
  * @see rx_bq4050_read_status() Caller function

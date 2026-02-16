@@ -139,7 +139,7 @@
  *
  * All functions return `rx_err_t`:
  * - `k_rx_ok` - Success
- * - `k_rx_err_null_ptr` - NULL pointer in parameters
+ * - `k_rx_err_null_ptr` - nullptr in parameters
  * - `k_rx_err_not_found` - bus_name not in manager
  * - `k_rx_err_invalid_state` - Bus not initialized
  * - `k_rx_err_invalid_arg` - Invalid channel or parameter

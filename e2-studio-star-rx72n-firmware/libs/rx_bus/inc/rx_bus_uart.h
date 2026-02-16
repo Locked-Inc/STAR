@@ -364,7 +364,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, bus initialized and ready
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found Bus name not found in manager
  * @retval k_rx_err_invalid_arg Bus is not UART type
  * @retval k_rx_err_timeout Mutex acquisition timeout (default 1000ms)
@@ -457,7 +457,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, all bytes transmitted
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or data
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or data
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout TX timeout (FIFO full) or mutex timeout
@@ -563,7 +563,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success (check bytes_read for actual count, may be 0)
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout Mutex acquisition timeout
@@ -664,7 +664,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, character transmitted
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout TX timeout or mutex timeout
@@ -741,7 +741,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, entire string transmitted
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout TX timeout or mutex timeout
@@ -828,7 +828,7 @@ rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const char* st
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, character read into c
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_empty No data available (NOT an error - normal)
@@ -921,7 +921,7 @@ rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const char* st
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, available contains valid result
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found
  * @retval k_rx_err_invalid_state Bus not initialized
  * @retval k_rx_err_timeout Mutex acquisition timeout

@@ -627,9 +627,9 @@ typedef void (*rx_obstacle_detect_callback_t)(bool    obstacle_detected,
  *
  * | Field | Constraint | Validation |
  * |-------|------------|------------|
- * | sensors | Non-NULL pointer | Checked in init |
+ * | sensors | Non-nullptr | Checked in init |
  * | sensor_count | [1, 8] | Checked in init |
- * | motors | Non-NULL pointer | Checked in init |
+ * | motors | Non-nullptr | Checked in init |
  * | motor_count | [1, 4] | Checked in init |
  * | threshold_cm | [2.0, 400.0] | HC-SR04 range |
  * | debounce_samples | [1, 10] | Checked in init |

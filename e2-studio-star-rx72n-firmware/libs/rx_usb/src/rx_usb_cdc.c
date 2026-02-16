@@ -2320,7 +2320,7 @@ void rx_usb_cdc_handle_setup(void)
  *
  * **Error Cases:**
  * - Invalid port ID -> Silent return (defensive check)
- * - NULL config pointer -> Silent return (should never happen)
+ * - nullptr config pointer -> Silent return (should never happen)
  * - FIFO read incomplete -> Logged by rx_usb_hw_fifo_read()
  * - Ring buffer full -> Logged by rx_usb_rx_push(), data lost
  *
@@ -2543,7 +2543,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  *
  * **Error Cases:**
  * - Invalid port ID -> Silent return (defensive check)
- * - NULL config pointer -> Silent return (should never happen)
+ * - nullptr config pointer -> Silent return (should never happen)
  * - FIFO write incomplete -> Logged by rx_usb_hw_fifo_write()
  * - No error state persists (next BEMP retry continues transmission)
  *

@@ -309,7 +309,7 @@
  * | 2. Fixed loop bounds | [PASS] Pass | All loops bounded by data length (caller-controlled) |
  * | 3. No dynamic memory | [PASS] Pass | Lookup tables statically allocated, no malloc |
  * | 4. Short functions | [PASS] Pass | All functions <40 lines, single responsibility |
- * | 5. Assertions | [PASS] Pass | NULL pointer checks, parameter validation |
+ * | 5. Assertions | [PASS] Pass | nullptr checks, parameter validation |
  * | 6. Small scope | [PASS] Pass | Variables declared near use, minimal scope |
  * | 7. Check returns | [PASS] Pass | rx_crc_init() return checked, CRC functions return value directly |
  * | 8. Limited preprocessor | [PASS] Pass | Only compile-time HW/SW selection, no magic numbers |

@@ -1041,7 +1041,7 @@ struct rx_pin_interface {
  *
  * ## Validation Checks Performed
  *
- * 1. **NULL pointer check**: Ensures `iface` parameter is non-NULL
+ * 1. **nullptr check**: Ensures `iface` parameter is non-NULL
  * 2. **Function pointer checks**: Verifies all 6 function pointers are non-NULL:
  *    - `validate_pin`
  *    - `reserve_pin`
@@ -1141,7 +1141,7 @@ struct rx_pin_interface {
  *   .ctx = &validator,
  *   .reserve_pin = pin_validator_reserve,
  *   .release_pin = nullptr,  // Missing!
- *   // ... other fields NULL
+ *   // ... other fieldsnullptr
  * };
  * rx_err_t err = rx_pin_interface_validate(&iface);
  * // Returns: k_rx_err_invalid_state
@@ -1158,7 +1158,7 @@ struct rx_pin_interface {
  * ## Performance Characteristics
  *
  * - **Execution time**: ~20-50 cycles @ 240 MHz (~0.1-0.2 µs)
- * - **Operations**: 7 NULL pointer checks (1 iface + 6 function pointers)
+ * - **Operations**: 7 nullptr checks (1 iface + 6 function pointers)
  * - **Overhead**: Negligible for init paths, skip in tight loops if needed
  * - **Optimization**: Compiler may inline this function (static inline)
  *
@@ -1167,9 +1167,9 @@ struct rx_pin_interface {
  * @return rx_err_t Error code indicating validation result
  * @retval k_rx_ok Interface is valid and ready for use
  * @retval k_rx_err_null_ptr iface parameter is nullptr
- * @retval k_rx_err_invalid_state One or more function pointers are NULL
+ * @retval k_rx_err_invalid_state One or more function pointers arenullptr
  *
- * @pre None (can be called with NULL pointer - returns error safely)
+ * @pre None (can be called with nullptr - returns error safely)
  *
  * @post If k_rx_ok returned, all function pointers are non-NULL
  * @post If error returned, interface should NOT be used

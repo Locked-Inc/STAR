@@ -274,7 +274,7 @@ extern "C" {
  * @details
  * Performs one-time initialization of all global infrastructure services. This function
  * **MUST** be the first thing called in `main()`, before any other module initialization
- * and before starting ThreadX. Failure to initialize infrastructure will cause NULL
+ * and before starting ThreadX. Failure to initialize infrastructure will causenullptr
  * pointer dereferences when other modules attempt to use RX_REPORT_ERROR() or RX_RESERVE_PIN().
  *
  * ## Initialization Algorithm
@@ -410,7 +410,7 @@ extern "C" {
  * @note On failure, infrastructure is left in undefined state - system must halt.
  *
  * @warning **CRITICAL**: This MUST be the first call in main(). Failure to initialize
- *          will cause NULL pointer crashes when other modules use infrastructure macros.
+ *          will cause nullptr crashes when other modules use infrastructure macros.
  * @warning If this function fails, the system CANNOT continue - must halt or reset.
  *
  * @par Thread Safety:
@@ -462,7 +462,7 @@ extern "C" {
  * int main(void)
  * {
  *   rx_err_t err = spi_driver_init(); // SPI tries to use RX_RESERVE_PIN()
- *   // CRASH: rx_infrastructure_get_pin_interface() returns NULL
+ *   // CRASH: rx_infrastructure_get_pin_interface() returnsnullptr
  *   // NULL->reserve_pin() causes segmentation fault
  *
  *   rx_infrastructure_init(); // Too late!
@@ -520,7 +520,7 @@ extern "C" {
  *    - Return error if not initialized (nothing to clean up)
  *
  * 2. **Clear Interface Pointers**:
- *    - Set global interface pointers to NULL
+ *    - Set global interface pointers tonullptr
  *    - Prevents use-after-free if modules still running
  *
  * 3. **Deinitialize Pin Validator**:
@@ -647,8 +647,8 @@ extern "C" {
  * @pre ThreadX threads should be suspended (if ThreadX is running)
  *
  * @post s_initialized flag set to false
- * @post rx_infrastructure_get_error_interface() returns NULL
- * @post rx_infrastructure_get_pin_interface() returns NULL
+ * @post rx_infrastructure_get_error_interface() returnsnullptr
+ * @post rx_infrastructure_get_pin_interface() returnsnullptr
  * @post All error counters cleared
  * @post All pin reservations released
  * @post Infrastructure can be re-initialized via rx_infrastructure_init()

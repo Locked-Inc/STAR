@@ -1318,7 +1318,7 @@ rx_err_t rx_usb_comm_is_ready(const rx_usb_comm_handle_t* handle, bool* ready)
  * discarding any partially received or buffered data. This is useful after
  * error recovery or mode switching to ensure a clean receive state.
  *
- * @param[in,out] handle USB communication handle (nullptr-safe: no-op if NULL)
+ * @param[in,out] handle USB communication handle (nullptr-safe: no-op if nullptr)
  *
  * @return void
  *
@@ -1361,7 +1361,7 @@ void rx_usb_comm_flush_rx(rx_usb_comm_handle_t* handle)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Callbacks registered successfully
- * @retval k_rx_err_invalid_arg handle is NULL
+ * @retval k_rx_err_invalid_arg handle isnullptr
  * @retval k_rx_err_invalid_state handle is not initialized
  *
  * @pre handle must be initialized via rx_usb_comm_init()
@@ -1407,7 +1407,7 @@ rx_err_t rx_usb_comm_set_control_callbacks(rx_usb_comm_handle_t* handle,
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok PONG sent successfully
- * @retval k_rx_err_invalid_arg handle is NULL
+ * @retval k_rx_err_invalid_arg handle isnullptr
  * @retval k_rx_err_invalid_state handle not initialized
  *
  * @pre handle must be initialized
@@ -1470,7 +1470,7 @@ rx_err_t rx_usb_comm_send_pong(rx_usb_comm_handle_t* handle,
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok RESET_ACK sent successfully
- * @retval k_rx_err_invalid_arg handle is NULL
+ * @retval k_rx_err_invalid_arg handle isnullptr
  * @retval k_rx_err_invalid_state handle not initialized
  *
  * @pre handle must be initialized

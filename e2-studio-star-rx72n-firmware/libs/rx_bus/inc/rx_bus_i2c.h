@@ -314,7 +314,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, bus initialized and ready
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found Bus name not found in manager
  * @retval k_rx_err_invalid_arg Bus is not I2C type
  * @retval k_rx_err_timeout Mutex acquisition timeout (default 1000ms)
@@ -386,7 +386,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, all bytes transmitted and ACKed
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or data
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or data
  * @retval k_rx_err_not_found Bus name not found in manager
  * @retval k_rx_err_invalid_state Bus not initialized via rx_bus_i2c_init()
  * @retval k_rx_err_timeout I2C transaction timeout or mutex timeout
@@ -474,7 +474,7 @@ extern "C" {
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, all bytes received
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or data
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or data
  * @retval k_rx_err_not_found Bus name not found in manager
  * @retval k_rx_err_invalid_state Bus not initialized via rx_bus_i2c_init()
  * @retval k_rx_err_timeout I2C transaction timeout or mutex timeout
@@ -568,7 +568,7 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, transaction completed
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found Bus name not found in manager
  * @retval k_rx_err_invalid_state Bus not initialized via rx_bus_i2c_init()
  * @retval k_rx_err_timeout I2C transaction timeout or mutex timeout

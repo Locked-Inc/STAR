@@ -624,7 +624,7 @@ typedef struct {
  * primarily verifies hardware connectivity.
  *
  * **Algorithm Steps:**
- * 1. Validate input parameters (NULL pointer checks)
+ * 1. Validate input parameters (nullptr checks)
  * 2. Call rx_bus_smbus_init() to initialize SMBus peripheral
  * 3. Read voltage register (0x09) as communication test
  * 4. If read succeeds, BQ4050 is confirmed present and operational
@@ -650,7 +650,7 @@ typedef struct {
  *
  * @return rx_err_t Error code indicating initialization result
  * @retval k_rx_ok Success - BQ4050 initialized and responding
- * @retval k_rx_err_null_ptr NULL pointer in manager or bus_name
+ * @retval k_rx_err_null_ptr nullptr in manager or bus_name
  * @retval k_rx_err_not_found SMBus bus not found in bus manager
  * @retval k_rx_err_invalid_state SMBus bus exists but not initialized
  * @retval k_rx_err_timeout SMBus communication timeout (no ACK, bus hung)
@@ -760,7 +760,7 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
  * For a 4S pack: voltage_mv = cell1_mv + cell2_mv + cell3_mv + cell4_mv
  *
  * **Algorithm:**
- * 1. Validate parameters (NULL pointer checks)
+ * 1. Validate parameters (nullptr checks)
  * 2. Execute SMBus Read Word transaction to register 0x09
  * 3. Return 16-bit unsigned voltage value in millivolts
  *
@@ -780,7 +780,7 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, voltage_mv contains valid voltage
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or voltage_mv
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or voltage_mv
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus bus not initialized
  * @retval k_rx_err_timeout SMBus timeout (no response from BQ4050)
@@ -877,7 +877,7 @@ rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, cell_voltages[] populated
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or cell_voltages
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or cell_voltages
  * @retval k_rx_err_invalid_arg num_cells < 1 or > k_bq4050_max_cells
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized
@@ -996,7 +996,7 @@ rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, current_ma contains valid current
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or current_ma
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or current_ma
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized
  * @retval k_rx_err_timeout SMBus timeout
@@ -1078,7 +1078,7 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, avg_current_ma contains valid average
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or avg_current_ma
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or avg_current_ma
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized
  * @retval k_rx_err_timeout SMBus timeout
@@ -1154,7 +1154,7 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, soc_percent contains valid SOC
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or soc_percent
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or soc_percent
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized
  * @retval k_rx_err_timeout SMBus timeout
@@ -1231,7 +1231,7 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, soc_percent contains valid absolute SOC
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or soc_percent
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or soc_percent
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized
  * @retval k_rx_err_timeout SMBus timeout
@@ -1300,7 +1300,7 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  * - Performance optimization (capacity varies with temperature)
  *
  * **Algorithm:**
- * 1. Validate parameters (NULL pointer checks)
+ * 1. Validate parameters (nullptr checks)
  * 2. Read temperature from register 0x08 (uint16_t in 0.1K units)
  * 3. Convert using internal_convert_temperature() with validation:
  *    a. Subtract Kelvin offset (2731 = 273.15K * 10)
@@ -1323,7 +1323,7 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, temperature_c contains valid temperature
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or temperature_c
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or temperature_c
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized
  * @retval k_rx_err_timeout SMBus timeout
@@ -1415,7 +1415,7 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  * - Health = (full_charge_capacity / design_capacity) * 100%
  *
  * **Algorithm:**
- * 1. Validate parameters (NULL pointer checks)
+ * 1. Validate parameters (nullptr checks)
  * 2. Read RemainingCapacity register (0x0F)
  * 3. Read FullChargeCapacity register (0x10)
  * 4. Return both values via output pointers
@@ -1438,7 +1438,7 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, both capacity values populated
- * @retval k_rx_err_null_ptr NULL pointer in any parameter
+ * @retval k_rx_err_null_ptr nullptr in any parameter
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized
  * @retval k_rx_err_timeout SMBus timeout on either read
@@ -1536,7 +1536,7 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, status fully populated
- * @retval k_rx_err_null_ptr NULL pointer in manager, bus_name, or status
+ * @retval k_rx_err_null_ptr nullptr in manager, bus_name, or status
  * @retval k_rx_err_invalid_arg num_cells < 1 or > k_bq4050_max_cells
  * @retval k_rx_err_not_found SMBus bus not found
  * @retval k_rx_err_invalid_state SMBus not initialized

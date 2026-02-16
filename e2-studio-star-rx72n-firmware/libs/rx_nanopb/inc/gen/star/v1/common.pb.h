@@ -207,8 +207,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, client_timestamp, 2)                                             \
   X(a, STATIC, SINGULAR, STRING, client_version, 3)                                                \
   X(a, STATIC, OPTIONAL, MESSAGE, timeout, 4)
-#define star_v1_RequestHeader_CALLBACK                 NULL
-#define star_v1_RequestHeader_DEFAULT                  NULL
+#define star_v1_RequestHeader_CALLBACK                nullptr
+#define star_v1_RequestHeader_DEFAULT                 nullptr
 #define star_v1_RequestHeader_client_timestamp_MSGTYPE google_protobuf_Timestamp
 #define star_v1_RequestHeader_timeout_MSGTYPE          google_protobuf_Duration
 
@@ -218,38 +218,38 @@ extern "C" {
   X(a, STATIC, SINGULAR, UENUM, status, 3)                                                         \
   X(a, STATIC, SINGULAR, STRING, error_message, 4)                                                 \
   X(a, STATIC, SINGULAR, INT64, latency_us, 5)
-#define star_v1_ResponseHeader_CALLBACK                 NULL
-#define star_v1_ResponseHeader_DEFAULT                  NULL
+#define star_v1_ResponseHeader_CALLBACK                nullptr
+#define star_v1_ResponseHeader_DEFAULT                 nullptr
 #define star_v1_ResponseHeader_server_timestamp_MSGTYPE google_protobuf_Timestamp
 
 #define star_v1_Vector3_FIELDLIST(X, a)                                                            \
   X(a, STATIC, SINGULAR, DOUBLE, x, 1)                                                             \
   X(a, STATIC, SINGULAR, DOUBLE, y, 2)                                                             \
   X(a, STATIC, SINGULAR, DOUBLE, z, 3)
-#define star_v1_Vector3_CALLBACK NULL
-#define star_v1_Vector3_DEFAULT  NULL
+#define star_v1_Vector3_CALLBACKnullptr
+#define star_v1_Vector3_DEFAULT nullptr
 
 #define star_v1_Quaternion_FIELDLIST(X, a)                                                         \
   X(a, STATIC, SINGULAR, DOUBLE, w, 1)                                                             \
   X(a, STATIC, SINGULAR, DOUBLE, x, 2)                                                             \
   X(a, STATIC, SINGULAR, DOUBLE, y, 3)                                                             \
   X(a, STATIC, SINGULAR, DOUBLE, z, 4)
-#define star_v1_Quaternion_CALLBACK NULL
-#define star_v1_Quaternion_DEFAULT  NULL
+#define star_v1_Quaternion_CALLBACKnullptr
+#define star_v1_Quaternion_DEFAULT nullptr
 
 #define star_v1_SE2Pose_FIELDLIST(X, a)                                                            \
   X(a, STATIC, SINGULAR, DOUBLE, x_m, 1)                                                           \
   X(a, STATIC, SINGULAR, DOUBLE, y_m, 2)                                                           \
   X(a, STATIC, SINGULAR, DOUBLE, angle_rad, 3)
-#define star_v1_SE2Pose_CALLBACK NULL
-#define star_v1_SE2Pose_DEFAULT  NULL
+#define star_v1_SE2Pose_CALLBACKnullptr
+#define star_v1_SE2Pose_DEFAULT nullptr
 
 #define star_v1_SE2Velocity_FIELDLIST(X, a)                                                        \
   X(a, STATIC, SINGULAR, DOUBLE, vx_mps, 1)                                                        \
   X(a, STATIC, SINGULAR, DOUBLE, vy_mps, 2)                                                        \
   X(a, STATIC, SINGULAR, DOUBLE, omega_rad_per_s, 3)
-#define star_v1_SE2Velocity_CALLBACK NULL
-#define star_v1_SE2Velocity_DEFAULT  NULL
+#define star_v1_SE2Velocity_CALLBACKnullptr
+#define star_v1_SE2Velocity_DEFAULT nullptr
 
 extern const pb_msgdesc_t star_v1_RequestHeader_msg;
 extern const pb_msgdesc_t star_v1_ResponseHeader_msg;

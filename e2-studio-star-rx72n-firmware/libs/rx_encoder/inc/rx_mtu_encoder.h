@@ -710,7 +710,7 @@ typedef struct {
  *         break;
  *
  *     case k_rx_err_null_ptr:
- *         rx_log_error("ENCODER", "NULL config pointer");
+ *         rx_log_error("ENCODER", "nullptr config pointer");
  *         return k_rx_err_invalid_arg;
  *
  *     case k_rx_err_invalid_arg:

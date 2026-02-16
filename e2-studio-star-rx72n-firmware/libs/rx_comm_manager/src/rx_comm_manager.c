@@ -168,7 +168,7 @@
  * **Steps:**
  * 1. **Parameter validation** (NULL check, initialized flag)
  * 2. **Poll USB channel**:
- *    - If NULL handle -> skip (k_rx_err_timeout)
+ *    - If nullptr handle -> skip (k_rx_err_timeout)
  *    - If data available -> handle frame, mark received=true
  *    - If timeout -> continue to next channel
  *    - If error -> return error immediately (critical failure)
@@ -531,12 +531,12 @@ typedef enum : uint32_t {
  * Disable in production for optimal performance.
  *
  * @param[in,out] mgr Communication manager handle (uses ascii_buffer)
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must have valid ascii_buffer (256 bytes)
  *   - **Side effects**: Modifies mgr->ascii_buffer content
  *
  * @param[in] frame Frame to format and output
- *   - **Valid range**: Non-NULL pointer to valid rx_frame_t
+ *   - **Valid range**: Non-nullptr to valid rx_frame_t
  *   - **Constraints**: Header and payload must be valid
  *   - **Units**: Binary frame structure
  *
@@ -602,7 +602,7 @@ static void internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* fr
  * behavior across USB and SPI channels (single point of dispatch).
  *
  * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_comm_manager_init()
  *   - **Side effects**: May modify ascii_buffer if decoded output enabled
  *
@@ -612,7 +612,7 @@ static void internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* fr
  *   - **Purpose**: Passed to user callback for channel identification
  *
  * @param[in] frame Received frame data
- *   - **Valid range**: Non-NULL pointer to valid, CRC-verified frame
+ *   - **Valid range**: Non-nullptr to valid, CRC-verified frame
  *   - **Constraints**: Already validated by transport layer
  *   - **Lifetime**: Valid only for duration of this function call
  *
@@ -700,7 +700,7 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
  * based on aggregate results from all channels.
  *
  * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must have valid usb_handle if USB channel enabled
  *   - **Side effects**: May invoke callback, modify ascii_buffer
  *
@@ -772,7 +772,7 @@ static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
  * Code duplication is intentional (NASA Rule 4: keep functions short and simple).
  *
  * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must have valid spi_handle if SPI channel enabled
  *   - **Side effects**: May invoke callback, modify ascii_buffer
  *
@@ -1037,7 +1037,7 @@ static void internal_check_heartbeat(rx_comm_manager_t* mgr)
  * - **enable_decoded_output = true**: ASCII debugging enabled (Port 1)
  *
  * @param[out] mgr Pointer to communication manager handle to initialize
- *   - **Valid range**: Non-NULL pointer to allocated rx_comm_manager_t (328 bytes)
+ *   - **Valid range**: Non-nullptr to allocated rx_comm_manager_t (328 bytes)
  *   - **Constraints**: Must be allocated by caller (typically static or global)
  *   - **Side effects**: Entire structure zero-filled, then populated from cfg
  *   - **Lifetime**: Must remain valid until rx_comm_manager_deinit() called
@@ -1116,7 +1116,7 @@ static void internal_check_heartbeat(rx_comm_manager_t* mgr)
  */
 rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_config_t* cfg)
 {
-  /* Rule 5: Pre-condition validation - NULL pointer check */
+  /* Rule 5: Pre-condition validation - nullptr check */
   if (mgr == nullptr) {
     rx_log_error(s_tag, "Init failed: NULL mgr");
     return k_rx_err_invalid_arg;
@@ -1198,7 +1198,7 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
  * guard to prevent use-after-deinit.
  *
  * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must have been initialized via rx_comm_manager_init()
  *   - **Side effects**: Clears mgr->initialized flag
  *
@@ -1290,7 +1290,7 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
  * - **Aggregation**: k_rx_ok if ANY channel received data
  *
  * @param[in,out] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_comm_manager_init()
  *   - **Side effects**: Invokes callback, modifies ascii_buffer if frames received
  *
@@ -1441,12 +1441,12 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
  * - ASCII debugging: Add ~50-150 µs if enabled
  *
  * @param[in] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_comm_manager_init()
  *   - **Side effects**: May modify ascii_buffer if decoded output enabled
  *
  * @param[in] params Send parameters structure
- *   - **Valid range**: Non-NULL pointer to valid rx_comm_send_params_t
+ *   - **Valid range**: Non-nullptr to valid rx_comm_send_params_t
  *   - **Constraints**: All fields must be valid:
  *     - channel: k_comm_channel_usb or k_comm_channel_spi
  *     - type: Frame type (command, request, response, etc.)
@@ -1645,7 +1645,7 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
  * - Need custom flags (use rx_comm_manager_send instead)
  *
  * @param[in] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_comm_manager_init()
  *
  * @param[in] channel Channel to send response on
@@ -1832,7 +1832,7 @@ rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
  * - Log channel availability status
  *
  * @param[in] mgr Communication manager handle
- *   - **Valid range**: Non-NULL pointer to initialized handle
+ *   - **Valid range**: Non-nullptr to initialized handle
  *   - **Constraints**: Must be initialized via rx_comm_manager_init()
  *
  * @param[in] channel Channel to query
@@ -1840,7 +1840,7 @@ rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
  *   - **Constraints**: Must be valid channel ID
  *
  * @param[out] ready Pointer to receive ready status
- *   - **Valid range**: Non-NULL pointer to bool
+ *   - **Valid range**: Non-nullptr to bool
  *   - **Output values**: true (ready) or false (not ready)
  *   - **On error**: Set to false
  *

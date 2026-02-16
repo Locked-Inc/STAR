@@ -179,8 +179,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, system_status, 2)                                                \
   X(a, STATIC, OPTIONAL, MESSAGE, battery_state, 3)                                                \
   X(a, STATIC, OPTIONAL, MESSAGE, telemetry, 4)
-#define star_v1_ForwardTelemetryRequest_CALLBACK              NULL
-#define star_v1_ForwardTelemetryRequest_DEFAULT               NULL
+#define star_v1_ForwardTelemetryRequest_CALLBACK             nullptr
+#define star_v1_ForwardTelemetryRequest_DEFAULT              nullptr
 #define star_v1_ForwardTelemetryRequest_header_MSGTYPE        star_v1_RequestHeader
 #define star_v1_ForwardTelemetryRequest_system_status_MSGTYPE star_v1_SystemStatus
 #define star_v1_ForwardTelemetryRequest_battery_state_MSGTYPE star_v1_BatteryState
@@ -190,13 +190,13 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, SINGULAR, BOOL, cached, 2)                                                          \
   X(a, STATIC, SINGULAR, INT32, active_clients, 3)
-#define star_v1_ForwardTelemetryResponse_CALLBACK       NULL
-#define star_v1_ForwardTelemetryResponse_DEFAULT        NULL
+#define star_v1_ForwardTelemetryResponse_CALLBACK      nullptr
+#define star_v1_ForwardTelemetryResponse_DEFAULT       nullptr
 #define star_v1_ForwardTelemetryResponse_header_MSGTYPE star_v1_ResponseHeader
 
 #define star_v1_GetTeleopCommandRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
-#define star_v1_GetTeleopCommandRequest_CALLBACK        NULL
-#define star_v1_GetTeleopCommandRequest_DEFAULT         NULL
+#define star_v1_GetTeleopCommandRequest_CALLBACK       nullptr
+#define star_v1_GetTeleopCommandRequest_DEFAULT        nullptr
 #define star_v1_GetTeleopCommandRequest_header_MSGTYPE  star_v1_RequestHeader
 
 #define star_v1_GetTeleopCommandResponse_FIELDLIST(X, a)                                           \
@@ -204,8 +204,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, command, 2)                                                      \
   X(a, STATIC, SINGULAR, BOOL, command_available, 3)                                               \
   X(a, STATIC, SINGULAR, INT64, command_age_ms, 4)
-#define star_v1_GetTeleopCommandResponse_CALLBACK        NULL
-#define star_v1_GetTeleopCommandResponse_DEFAULT         NULL
+#define star_v1_GetTeleopCommandResponse_CALLBACK       nullptr
+#define star_v1_GetTeleopCommandResponse_DEFAULT        nullptr
 #define star_v1_GetTeleopCommandResponse_header_MSGTYPE  star_v1_ResponseHeader
 #define star_v1_GetTeleopCommandResponse_command_MSGTYPE star_v1_VelocityCommand
 
@@ -213,8 +213,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
   X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 2)                                                   \
   X(a, STATIC, SINGULAR, INT32, motor_id, 3)
-#define star_v1_SetPIDGainsRequest_CALLBACK           NULL
-#define star_v1_SetPIDGainsRequest_DEFAULT            NULL
+#define star_v1_SetPIDGainsRequest_CALLBACK          nullptr
+#define star_v1_SetPIDGainsRequest_DEFAULT           nullptr
 #define star_v1_SetPIDGainsRequest_header_MSGTYPE     star_v1_RequestHeader
 #define star_v1_SetPIDGainsRequest_pid_config_MSGTYPE star_v1_PidConfig
 
@@ -223,7 +223,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, BOOL, success, 2)                                                         \
   X(a, CALLBACK, SINGULAR, STRING, message, 3)
 #define star_v1_SetPIDGainsResponse_CALLBACK       pb_default_field_callback
-#define star_v1_SetPIDGainsResponse_DEFAULT        NULL
+#define star_v1_SetPIDGainsResponse_DEFAULT       nullptr
 #define star_v1_SetPIDGainsResponse_header_MSGTYPE star_v1_ResponseHeader
 
 extern const pb_msgdesc_t star_v1_ForwardTelemetryRequest_msg;

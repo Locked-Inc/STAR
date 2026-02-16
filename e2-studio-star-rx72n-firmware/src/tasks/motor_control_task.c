@@ -1316,7 +1316,7 @@ static void internal_motor_task_entry(ULONG input)
  * @return rx_err_t Initialization status
  *
  * @retval k_rx_ok All 4 PID controllers initialized successfully
- * @retval k_rx_err_null_ptr NULL pointer passed to rx_pid_init (internal error)
+ * @retval k_rx_err_null_ptr nullptr passed to rx_pid_init (internal error)
  * @retval k_rx_err_invalid_arg Invalid PID configuration (gains out of range)
  * @retval k_rx_err_* Other errors from rx_pid_init()
  *
@@ -1471,7 +1471,7 @@ static rx_err_t internal_init_motor_stack(void)
  *
  * @return rx_err_t Initialization status
  * @retval k_rx_ok All 4 PID controllers initialized
- * @retval k_rx_err_null_ptr NULL pointer in rx_pid_init (internal error)
+ * @retval k_rx_err_null_ptr nullptr in rx_pid_init (internal error)
  * @retval k_rx_err_invalid_arg Invalid PID configuration
  *
  * @pre s_pids array allocated (static memory)

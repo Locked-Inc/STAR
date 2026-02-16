@@ -440,7 +440,7 @@ typedef enum : uint16_t {
   /**
    * @brief Invalid function argument
    * @details
-   * Caller provided parameter outside valid range, NULL pointer where non-NULL
+   * Caller provided parameter outside valid range, nullptr where non-NULL
    * required, or logically inconsistent arguments (e.g., buffer_size > max_size).
    *
    * @par Value: 0x103
