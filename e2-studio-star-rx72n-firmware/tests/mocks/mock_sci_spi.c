@@ -31,11 +31,6 @@ typedef enum : uint8_t {
   k_byte_mask_low   = 0xFF /**< Mask to extract low byte */
 } byte_extraction_t;
 
-/** @brief SCI12 channel mapping constant */
-typedef enum : uint8_t {
-  k_sci12_channel = 12, /**< SCI12 channel number */
-} sci_channel_constants_t;
-
 /* =============================================================================
  * Global Mock Instance
  * =============================================================================
@@ -56,8 +51,8 @@ mock_sci_spi_t g_mock_sci_spi;
  */
 static bool internal_channel_to_index(uint8_t channel, uint8_t* idx)
 {
-  if (channel == k_sci12_channel) {
-    *idx = 0;
+  if (channel <= 12) { /* SCI0 through SCI12 */
+    *idx = channel;    /* Direct mapping */
     return true;
   }
   return false;

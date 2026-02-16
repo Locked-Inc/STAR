@@ -36,7 +36,7 @@
 \hline
 \rowcolor{lime!10} GTETRG Emergency Stop / Temp / Alert &Lime \\
 \hline
-\rowcolor{purple!20} Motor Driver SPI(SCI12) & Purple \\
+\rowcolor{purple!20} Motor Driver SPI(SCI7) & Purple \\
 \hline
 \rowcolor{cyan!15} Ultrasonic Sonar(HC - SR04) & Cyan \\
 \hline
@@ -85,7 +85,7 @@
 \rowcolor {
   gray!15
 }
-3 & AVCC1 &Bypass caps &Analog power supply(1.8V) \\
+3 & AVCC1 &Boards 3v3 &Analog power supply(3.3V, connect to VCC via branch with 0.1µF bypass to AVSS1) \\
 \hline
 \rowcolor {
   cyan!15
@@ -199,7 +199,7 @@ tab:
 \rowcolor {
   teal!15
 }
-27 & P32 & LED0 &Status LED(GPIO output) \\
+27 & P32 & Unused &Available GPIO \\
 \hline
 \rowcolor { yellow!15}
 28 & P31 / TMS &E1E2 - Emulator - Interface &JTAG(TMS) \\
@@ -255,7 +255,7 @@ tab:
 \rowcolor {
   teal!15
 }
-39 & P87 & LED1 &Status LED(GPIO output) \\
+39 & P87 & Unused &Available GPIO \\
 \hline
 \rowcolor { yellow!15}
 40 & P16 / USB0\_VBUS &USB0 VBUS detection &USB CDC debug interface \\
@@ -304,19 +304,19 @@ tab:
 49 & VSS\_USB &Ground &USB ground \\
 \hline
 \rowcolor { teal!15}
-50 & P56 & LED2 &Status LED(GPIO output) \\
+50 & P56 & Unused &Available GPIO \\
 \hline
 \rowcolor { teal!15}
-51 & P55 & LED3 &Status LED(GPIO output) \\
+51 & P55 & Unused &Available GPIO \\
 \hline
 \rowcolor { teal!15}
-52 & P54 & LED4 &Status LED(GPIO output) \\
+52 & P54 & Unused &Available GPIO \\
 \hline 53 & P53 & Unused &Not available as GPIO when external bus enabled(BCLK) \\
 \hline
 \rowcolor {
   teal!15
 }
-54 & P52 & LED5 &Status LED(GPIO output) \\
+54 & P52 & Unused &Available GPIO \\
 \hline
 \rowcolor { lime!10}
 55 & P51 &DS18B20 DQ & 1 - Wire temperature sensor data pin \\
@@ -373,11 +373,11 @@ tab:
 \hline
 \rowcolor {
   purple!20
-} 72 & P74/CS4\# & Motor Driver SPI nCS0 & SCI12 chip select for Motor 0 (DRV8243S) \\
+} 72 & P74/CS4\# & Motor Driver SPI nCS0 & SCI7 chip select for Motor 0 (DRV8243S) \\
 \hline
 \rowcolor{
   purple!20
-} 73 & PC1 & Motor Driver SPI nCS1 & SCI12 chip select for Motor 1 (DRV8243S) \\
+} 73 & PC1 & Motor Driver SPI nCS1 & SCI7 chip select for Motor 1 (DRV8243S) \\
 \hline
 \rowcolor{
   gray!15
@@ -409,22 +409,46 @@ tab:
 }
 \\
 \hline
-\rowcolor { purple!20} 80 & PB5 & Motor Driver SPI nCS2 & SCI12 chip select for Motor 2 (DRV8243S) \\
+\rowcolor { purple!20} 80 & PB5 & Motor Driver SPI nCS2 & SCI7 chip select for Motor 2 (DRV8243S) \\
 \hline
 \rowcolor{
   purple!20
-} 81 & PB4 & Motor Driver SPI nCS3 & SCI12 chip select for Motor 3 (DRV8243S) \\
+} 81 & PB4 & Motor Driver SPI nCS3 & SCI7 chip select for Motor 3 (DRV8243S) \\
 \hline
 \rowcolor{
   green!20
 }
 82 & PB3 / TCLKD &Encoder 3 Phase B &TPU2 encoder(quadrature counting, 16 - bit) \\
-\hline 83 & PB2 & Unused &Available GPIO(TPU, SCI4 / SCI6, Ethernet) \\
-\hline 84 & PB1 & Unused &Available GPIO(SCI4 / SCI6, Ethernet, IRQ4) \\
-\hline 85 & P72 & Unused &Available GPIO(Ethernet PMGI0) \\
-\hline 86 & P71 & Unused &Available GPIO(Ethernet PMGI0) \\
-\hline 87 & PB0 & Unused &Available GPIO(SCI4 / SCI6, Ethernet, IRQ12) \\
-\hline 88 & PA7 & Unused &Available GPIO(RSPI\_A CIPO, Ethernet) \\
+\hline
+\rowcolor {
+  teal!15
+}
+83 & PB2 & LED5 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+84 & PB1 & LED4 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+85 & P72 & LED3 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+86 & P71 & LED2 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+87 & PB0 & LED1 &Status LED(GPIO output) \\
+\hline
+\rowcolor {
+  teal!15
+}
+88 & PA7 & LED0 &Status LED(GPIO output) \\
 \hline
 \rowcolor {
   lime!10
@@ -470,8 +494,8 @@ tab:
   blue!20
 }
 101 & PE7 / GTIOC3A &Motor 3 PH(Phase) & GPTW PWM channel 3A(32 - bit) \\
-\hline 102 & PE6
-    & Unused &Available GPIO(GTIOC3B, RSPI\_B COPI, SDHI, IRQ6, AN104) \\
+\hline 102 & PE6 / GTIOC3B
+    &Motor 3 EN(Enable) & GPTW PWM channel 3B(32 - bit) \\
 \hline
 \rowcolor {
   gray!15
@@ -483,29 +507,18 @@ tab:
   gray!15
 }
 105 & VSS & Ground &Power supply \\
-\hline 106 & PE5 &
-    Unused &Available GPIO(GTIOC0A, RSPI\_B SCLK, Ethernet, IRQ5, AN103) \\
-\hline 107 & PE4 & Unused &Available GPIO(GTIOC1A, RSPI\_B CS, Ethernet, AN102) \\
+\hline 106 & PE5 / GTIOC0A
+    &Motor 0 PH(Phase) & GPTW PWM channel 0A(32 - bit) \\
+\hline 107 & PE4 / GTIOC1A &Motor 1 PH(Phase) & GPTW PWM channel 1A(32 - bit) \\
 \hline
 \rowcolor {
   blue!20
 }
 108 & PE3 / GTIOC2A &Motor 2 PH(Phase) & GPTW PWM channel 2A(32 - bit) \\
 \hline
-\rowcolor {
-  purple!20
-}
-109 & PE2 / SMISO12 &Motor Driver SPI CIPO &SCI12 controller in from DRV8243S \\
-\hline
-\rowcolor {
-  purple!20
-}
-110 & PE1 / SMOSI12 &Motor Driver SPI COPI &SCI12 controller out to DRV8243S \\
-\hline
-\rowcolor {
-  purple!20
-}
-111 & PE0 / SCK12 &Motor Driver SPI SCLK &SCI12 clock to all 4 DRV8243S drivers \\
+109 & PE2 / GTIOC0B &Motor 0 EN(Enable) & GPTW PWM channel 0B(32 - bit) \\
+\hline 110 & PE1 / GTIOC1B &Motor 1 EN(Enable) & GPTW PWM channel 1B(32 - bit) \\
+\hline 111 & PE0 / GTIOC2B &Motor 2 EN(Enable) & GPTW PWM channel 2B(32 - bit) \\
 \hline 112 & P64 & Unused &Available GPIO(external bus, Ethernet) \\
 \hline 113 & P63 & Unused &Available GPIO(external bus, Ethernet) \\
 \hline 114 & P62 & Unused &Available GPIO(external bus, Ethernet) \\
@@ -546,14 +559,26 @@ tab:
 125 & PD1 / MOSIC &RPi5 RSPI2 COPI &RSPI2 - A Controller Out Peripheral In \\
 \hline 126 & PD0 & Unused &Available GPIO(GTIOC1B, IRQ0, AN108) \\
 \hline 127 & P93 & Unused &Available GPIO(SCI7, Ethernet, AN117) \\
-\hline 128 & P92 & Unused &Available GPIO(SCI7 RX, Ethernet, AN116) \\
-\hline 129 & P91 & Unused &Available GPIO(SCI7 CLK, AN115) \\
+\hline
+\rowcolor {
+  purple!20
+}
+128 & P92 / SMISO7 &Motor Driver SPI CIPO &SCI7 controller in from DRV8243S \\
+\hline
+\rowcolor {
+  purple!20
+}
+129 & P91 / SCK7 &Motor Driver SPI SCLK &SCI7 clock to all 4 DRV8243S drivers \\
 \hline
 \rowcolor {
   gray!15
 }
 130 & VSS & Ground &Power supply \\
-\hline 131 & P90 & Unused &Available GPIO(SCI7 TX, AN114) \\
+\hline
+\rowcolor {
+  purple!20
+}
+131 & P90 / SMOSI7 &Motor Driver SPI COPI &SCI7 controller out to DRV8243S \\
 \hline
 \rowcolor {
   gray!15
@@ -678,9 +703,9 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \item \textbf{Peripheral Grouping :
    } Place related functions on contiguous port pins where possible
     \begin{itemize}
-    \item GPTW PWM : Distributed across P23, P22, P17, P86, PC6, PC3, PE7, PE3
+    \item GPTW PWM : All motors on PORT E(PE0 - PE7, pins 101 - 102, 106 - 111)
         \item Host SPI to RPi5 : PD1 - PD4(RSPI2\_A, pins 122 - 125)
-        \item Motor Driver SPI : PE0 - PE2(SCI12, pins 109 - 111) + 4 CS pins
+        \item Motor Driver SPI : P90 - P92(SCI7, pins 131 / 129 / 128) + 4 CS pins
         \item MTU Encoders : P24 / P25(MTU1), PA1 / PC5(MTU2)
         \item TPU Encoders : PC2 / PA3(TPU1), PC0 / PB3(TPU2)
         \item I2C : P12 - P13(RIIC0 Host), P20 - P21(RIIC1 BMS)
@@ -690,7 +715,7 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \begin{itemize}
         \item 144-pin package provides more pins, reducing conflicts vs.\ 100-pin
         \item Table 1.9 analysis revealed all peripherals have 2-4 alternate pin locations
-        \item SCI12 used for motor driver SPI, keeping RSPI2 free for host communication
+        \item SCI7 used for motor driver SPI (moved from SCI12 to resolve PE0 / PE1 / PE2 conflict)
         \item GTETRG hardware triggers used for motor nFAULT (replaces software IRQ)
         \item Dedicated RIIC1 for BMS (previously shared RIIC0 with host in 100-pin)
     \end{itemize}
@@ -698,7 +723,8 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
         \item \textbf{PCB Routing Optimization:}
         \begin{itemize}
         \item Host SPI signals on PD1-PD4 (pins 122-125) for compact layout
-        \item Motor driver SPI data on PE0-PE2 (pins 109-111) for short traces
+        \item Motor driver SPI data on P90 / P91 / P92(SCI7, pins 131 / 129 / 128)
+        \item Motor PWM signals grouped on PORT E(PE0 - PE7, pins 101 - 102, 106 - 111)
         \item Sonar sensors grouped on pins 4-13 (top of package)
         \item ADC current sense on P44-P47 (pins 133-136) for short analog traces
     \end{itemize}
@@ -707,7 +733,7 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
         \begin{itemize}
         \item 43 GPIO pins available after critical allocations (of 144 total)
         \item Unused Port D pins (PD5-PD7) available for additional QSPI/SDHI
-        \item Unused Port E pins (PE4-PE6) available for additional GPTW channels
+        \item All Port E GPTW pins (PE0-PE7) allocated to 4-motor PWM control
         \item Ethernet pins (Port B/P7x) available for future network connectivity
         \item Additional ADC channels available (AN000-AN003, AN100-AN117)
     \end{itemize}
@@ -829,11 +855,11 @@ The DRV8243S motor drivers use two separate interfaces:
 
 \textbf{Configuration(SPI) :}
 \begin{itemize}
-    \item \textbf{Peripheral:} SCI12 hardware SPI using dedicated motor driver SPI pins
+    \item \textbf{Peripheral:} SCI7 hardware SPI using dedicated motor driver SPI pins
     \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
     \item \textbf{Update rate:} Startup only, or when changing operating parameters
     \item \textbf{Speed:} 1 MHz SPI clock (configuration is not time-critical)
-    \item \textbf{Signals:} SCLK (PE0), COPI (PE1), CIPO (PE2), nCS0 (P74), nCS1 (PC1), nCS2 (PB5), nCS3 (PB4)
+    \item \textbf{Signals:} SCLK (P91), COPI (P90), CIPO (P92), nCS0 (P74), nCS1 (PC1), nCS2 (PB5), nCS3 (PB4)
 \end{itemize}
 
 \textbf{Design Rationale:}
@@ -841,7 +867,7 @@ The DRV8243S motor drivers use two separate interfaces:
     \item PWM provides low-latency real-time control for motor speed/direction
     \item SPI allows runtime configuration of driver protection features
     \item Separation of concerns: high-frequency control vs.\ low-frequency configuration
-    \item Uses SCI12 to keep RSPI2 available for RPi5 communication
+    \item Uses SCI7 to keep RSPI2 available for RPi5 communication
 \end{itemize}
 
 \subsection{RX72N Configuration Tables}
