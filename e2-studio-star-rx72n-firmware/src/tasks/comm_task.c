@@ -40,7 +40,7 @@
  *     color=lightgreen;
  *
  *     usb_cdc [label="USB CDC VCOM\n(Virtual COM Port)", fillcolor=lightblue, style=filled];
- *     spi_periph [label="RSPI0 Peripheral\n(10 Mbps)", fillcolor=lightblue, style=filled];
+ *     spi_periph [label="RSPI2 Peripheral\n(10 Mbps)", fillcolor=lightblue, style=filled];
  *     comm_mgr [label="rx_comm_manager\n(Frame Protocol)", fillcolor=lightyellow, style=filled];
  *     comm_task [label="Comm Task\n(This Module)\nPriority 5 @ 100 Hz",
  *                fillcolor=lightgreen, style=filled];
@@ -138,7 +138,7 @@
  *
  * --- [label="SetVelocityRequest Reception"];
  * RPi5 => SPI [label="SPI transfer\n(SetVelocityRequest)"];
- * SPI box SPI [label="RSPI0 ISR\nReceive frame bytes"];
+ * SPI box SPI [label="RSPI2 ISR\nReceive frame bytes"];
  * SPI => CommManager [label="Frame complete"];
  * CommManager box CommManager [label="Validate CRC-32\nParse header"];
  * CommManager => CommTask [label="internal_frame_callback()\n(k_frame_type_command)"];
@@ -246,7 +246,7 @@
  * | **Shared Data Update** | ~7 µs | Mutex lock + memcpy + event set + unlock |
  *
  * **Latency Budget (Frame Arrival -> Motor Update):**
- * - SPI ISR receive: ~5 µs (RSPI0 interrupt)
+ * - SPI ISR receive: ~5 µs (RSPI2 interrupt)
  * - rx_comm_manager buffer copy: ~20 µs
  * - CRC-32 validation: ~30 µs (hardware CRC peripheral)
  * - Frame callback dispatch: ~10 µs
@@ -606,7 +606,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  * @pre tx_application_define() callback currently executing
  * @pre shared_data_init() called successfully (required for shared_data_set_motor_command)
  * @pre USB CDC peripheral initialized (for USB command reception)
- * @pre RSPI0 peripheral initialized (for SPI command reception)
+ * @pre RSPI2 peripheral initialized (for SPI command reception)
  * @pre s_comm_created == false (never called before)
  * @pre s_comm_thread uninitialized (first use)
  * @pre s_comm_stack allocated and uninitialized (first use)
@@ -840,17 +840,27 @@ rx_err_t comm_task_create(void)
  *   - **Constraints**: Must be zeroed before calling this function
  *   - **Side effects**: usb_handle and spi_handle fields populated
  *
+ * @return void This function does not return a value
+ *
  * @pre config must be non-NULL and zero-initialized (memset)
  * @pre s_session_state must be zero-initialized (static storage)
+ * @pre RSPI2 peripheral must be initialized before calling this function
  * @post config->usb_handle set to &s_usb_comm_handle or nullptr
  * @post config->spi_handle set to &s_spi_comm_handle or nullptr
  * @post At least one transport handle set on success (best effort)
  * @post All init failures logged via rx_log_error
  *
  * @note This function does NOT initialize RSPI hardware - caller must ensure
- *       RSPI peripheral is initialized before calling
+ *       RSPI2 peripheral is initialized before calling
+ * @note Called once during single-threaded task initialization; not thread-safe
  * @warning Function has no return value - check config->usb_handle and
  *          config->spi_handle for nullptr to detect complete failure
+ *
+ * @par Thread Safety:
+ * This function is **not thread-safe**. It must be called only once during
+ * task initialization in a single-threaded context. The function modifies
+ * file-scoped static variables (s_usb_comm_handle, s_spi_comm_handle) and
+ * should not be called concurrently from multiple threads.
  *
  * @since Version 1.0.0
  * @see rx_usb_comm_init() USB transport layer initialization
@@ -1064,7 +1074,7 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * @pre comm_task_create() called successfully
  * @pre ThreadX scheduler started (task is scheduled)
  * @pre USB CDC peripheral initialized (for USB frame reception)
- * @pre RSPI0 peripheral initialized (for SPI frame reception)
+ * @pre RSPI2 peripheral initialized (for SPI frame reception)
  * @pre shared_data_init() called (for shared_data_set_motor_command)
  *
  * @post rx_comm_manager initialized (if USB/SPI ready)
