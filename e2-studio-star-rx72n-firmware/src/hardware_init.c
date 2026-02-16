@@ -236,16 +236,24 @@ typedef enum : uint16_t {
   k_pin_drv_cs2 = k_rx_pb_5, /**< PB.5 - DRV_CS2 motor 2 (pin 80) */
   k_pin_drv_cs3 = k_rx_pb_4, /**< PB.4 - DRV_CS3 motor 3 (pin 81) */
 
-  /* DRV8243S SPI data (SCI7 alternate function P90-P92) */
+  /**
+   * DRV8243S SPI data (SCI7 alternate function)
+   * - P90 (SMOSI7): COPI - Controller Out, Peripheral In (data to motor drivers)
+   * - P92 (SMISO7): CIPO - Controller In, Peripheral Out (data from motor drivers)
+   */
   k_pin_drv_sclk = k_rx_p9_1, /**< P9.1 - SCK7 (pin 129) */
-  k_pin_drv_copi = k_rx_p9_0, /**< P9.0 - COPI SCI7 (pin 131) */
-  k_pin_drv_cipo = k_rx_p9_2, /**< P9.2 - CIPO SCI7 (pin 128) */
+  k_pin_drv_copi = k_rx_p9_0, /**< P9.0 - COPI/SMOSI7 (pin 131) - data to drivers */
+  k_pin_drv_cipo = k_rx_p9_2, /**< P9.2 - CIPO/SMISO7 (pin 128) - data from drivers */
 
-  /* Host SPI (RSPI2 channel A on PORTD) */
-  k_pin_host_copi = k_rx_pd_1, /**< PD.1 - COPI (RSPI2 controller out) */
-  k_pin_host_cipo = k_rx_pd_2, /**< PD.2 - CIPO (RSPI2 controller in) */
-  k_pin_host_sclk = k_rx_pd_3, /**< PD.3 - SCLK (RSPI2 clock) */
-  k_pin_host_cs0  = k_rx_pd_4, /**< PD.4 - CS0 (RSPI2 chip select) */
+  /**
+   * Host SPI (RSPI2 peripheral mode on PORTD)
+   * - PD1 (MOSIC): COPI - Controller Out, Peripheral In (data from RPi5)
+   * - PD2 (MISOC): CIPO - Controller In, Peripheral Out (data to RPi5)
+   */
+  k_pin_host_copi = k_rx_pd_1, /**< PD.1 - COPI/MOSIC (RPi5 → RX72N) */
+  k_pin_host_cipo = k_rx_pd_2, /**< PD.2 - CIPO/MISOC (RX72N → RPi5) */
+  k_pin_host_sclk = k_rx_pd_3, /**< PD.3 - SCLK (RSPI2 clock from RPi5) */
+  k_pin_host_cs0  = k_rx_pd_4, /**< PD.4 - CS0 (chip select from RPi5) */
 
   /* MTU Encoder clock inputs (front wheels) */
   k_pin_enc0_pha = k_rx_p2_4, /**< P2.4 - MTCLKA (encoder 0 phase A) */
