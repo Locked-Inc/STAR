@@ -272,6 +272,15 @@ void rx_log_error_val(const char* tag, const char* msg, uint32_t val)
  * =============================================================================
  */
 
+/**
+ * @enum led_ports_t
+ * @brief GPIO port assignments for status LEDs
+ *
+ * @details
+ * Maps each LED (0-5) to its corresponding Renesas RX72N port number.
+ * Port numbers follow RX72N hardware definitions: PORT7=7, PORTA=10, PORTB=11.
+ * These values are used with rx_port_get_base() to access GPIO registers.
+ */
 typedef enum : uint8_t {
   k_led_0_port = 10, /**< LED0 on PORTA (PA7, pin 88) */
   k_led_1_port = 11, /**< LED1 on PORTB (PB0, pin 87) */
@@ -281,6 +290,15 @@ typedef enum : uint8_t {
   k_led_5_port = 11, /**< LED5 on PORTB (PB2, pin 83) */
 } led_ports_t;
 
+/**
+ * @enum led_pins_t
+ * @brief GPIO pin offsets within ports for status LEDs
+ *
+ * @details
+ * Specifies the bit offset (0-7) within each port for LED control.
+ * Combined with led_ports_t to form complete pin addresses (e.g., PA7 = port 10, pin 7).
+ * These values are used to set/clear individual bits in PDR and PODR registers.
+ */
 typedef enum : uint8_t {
   k_led_0_pin = 7, /**< LED0 pin 7 (PA7, pin 88) */
   k_led_1_pin = 0, /**< LED1 pin 0 (PB0, pin 87) */
@@ -676,7 +694,7 @@ void test_led_is_on_returns_correct_state(void)
 /** @brief Verify motor active LED reflects duty cycle */
 void test_led_motor_active_when_duty_nonzero(void)
 {
-  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
 
   /* No motors running */
   s_mock_motor_state.duty_cycle_percent[0] = 0.0F;
@@ -713,7 +731,7 @@ void test_led_motor_active_when_duty_nonzero(void)
 /** @brief Verify obstacle LED reflects shared_data obstacle state */
 void test_led_obstacle_reflects_shared_data(void)
 {
-  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   /* No obstacle */
   s_mock_obstacle_state.any_obstacle = false;
@@ -732,7 +750,7 @@ void test_led_obstacle_reflects_shared_data(void)
 /** @brief Verify estop LED reflects shared_data estop state */
 void test_led_estop_reflects_shared_data(void)
 {
-  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
 
   /* No estop */
   s_mock_estop_active = false;
@@ -791,7 +809,7 @@ void test_led_error_on_bms_fault(void)
 /** @brief Verify comm LED pulse on new command sequence */
 void test_led_comm_pulse_on_new_command(void)
 {
-  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
 
   /* Simulate comm pulse logic */
   uint32_t last_seq        = 0;
@@ -852,7 +870,7 @@ void test_led_comm_pulse_on_new_command(void)
 /** @brief Verify heartbeat toggles at 1 Hz (10 ticks on, 10 ticks off) */
 void test_led_heartbeat_timing(void)
 {
-  memset(&s_mock_port7, 0, sizeof(s_mock_port7));
+  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
 
   uint8_t counter = 0;
 
