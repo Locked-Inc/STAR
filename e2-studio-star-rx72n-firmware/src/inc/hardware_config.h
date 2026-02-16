@@ -148,6 +148,10 @@ typedef enum : uint8_t {
  * hardware conflict with GPTW motor PWM outputs. Moved to SCI7 (P90/91/92)
  * to resolve the pin function conflict. See Issue #288.
  *
+ * **Pin Naming Convention:** Hardware signal names (SMOSI7/SMISO7) are from
+ * the RX72N datasheet. This project uses COPI/CIPO terminology per OSHWA
+ * inclusive naming standards.
+ *
  * | Signal | Pin | Pkg Pin | Function | SCI Channel |
  * |--------|-----|---------|----------|-------------|
  * | DRV_SCLK | P91 | 129 | SCK7 | SCI7 |
@@ -202,6 +206,10 @@ typedef enum : uint8_t {
  *
  * @details
  * RSPI2 channel A pins on PORTD. All pins use MPC alternate function "A".
+ *
+ * **Pin Naming Convention:** Hardware signal names (MOSIC/MISOC) are from
+ * the RX72N datasheet. This project uses COPI/CIPO terminology per OSHWA
+ * inclusive naming standards.
  *
  * | Signal | Pin | Pkg Pin | Function |
  * |--------|-----|---------|----------|
