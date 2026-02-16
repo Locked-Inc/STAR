@@ -60,7 +60,7 @@
  *         GPTW [label="GPTW Timer\n(PWM Generation)"];
  *         ADC [label="12-bit ADC\n(Current Sense)"];
  *         GPIO [label="GPIO\n(Fault Detect)"];
- *         SCI12_HW [label="SCI12\n(SPI Interface)", style=dashed];
+ *         SCI7_HW [label="SCI7\n(SPI Interface)", style=dashed];
  *     }
  *
  *     // External IC
@@ -94,13 +94,13 @@
  *     Motor -> GPTW;
  *     BusManager -> ADC;
  *     BusManager -> GPIO;
- *     SPI_Bus -> SCI12_HW [style=dashed];
+ *     SPI_Bus -> SCI7_HW [style=dashed];
  *
  *     GPTW -> PH_Pin [label="GTIOCA"];
  *     GPTW -> EN_Pin [label="GTIOCB"];
  *     ADC -> IPROPI [label="Analog voltage", dir=back];
  *     GPIO -> nFAULT [label="Digital fault", dir=back];
- *     SCI12_HW -> SPI_Regs [style=dashed, label="COPI/CIPO/CLK"];
+ *     SCI7_HW -> SPI_Regs [style=dashed, label="COPI/CIPO/CLK"];
  *
  *     PH_Pin -> HBridge;
  *     EN_Pin -> HBridge;
@@ -148,9 +148,9 @@
  * | AN006 (P46) | ADC | IPROPI | Current sense analog (Motor 1) | 0-3.3V proportional to motor current |
  * | AN005 (P45) | ADC | IPROPI | Current sense analog (Motor 2) | 0-3.3V proportional to motor current |
  * | AN004 (P44) | ADC | IPROPI | Current sense analog (Motor 3) | 0-3.3V proportional to motor current |
- * | SCK12 (PE0) | SPI_CLK | SCLK | SPI clock (all DRV8243) | Shared SCI12 SPI bus |
- * | SMOSI12 (PE1) | SPI_COPI | SDI | SPI data in (all DRV8243) | Shared SCI12 SPI bus |
- * | SMISO12 (PE2) | SPI_CIPO | SDO | SPI data out (all DRV8243) | Shared SCI12 SPI bus |
+ * | SCK7 (P91) | SPI_CLK | SCLK | SPI clock (all DRV8243) | Shared SCI7 SPI bus |
+ * | SMOSI7 (P90) | SPI_COPI | SDI | SPI data in (all DRV8243) | Shared SCI7 SPI bus |
+ * | SMISO7 (P92) | SPI_CIPO | SDO | SPI data out (all DRV8243) | Shared SCI7 SPI bus |
  * | CS4# (P74) | SPI_CS0 | nSCS | SPI chip select (Motor 0) | Active-low, per-motor |
  *
  * ### PH/EN Control Mode
@@ -318,7 +318,7 @@
  * - **GPTW Timer**: One channel with 2 outputs (GTIOCA, GTIOCB)
  * - **ADC**: One channel for IPROPI current sensing (12-bit, 0-3.3V)
  * - **GPIO Input**: One pin for nFAULT signal (with internal pull-up)
- * - **SCI SPI** (optional): One SCI channel for SPI variant configuration (SCI12)
+ * - **SCI SPI** (optional): One SCI channel for SPI variant configuration (SCI7)
  * - **External Hardware**: DRV8243-Q1 IC with appropriate decoupling and thermal management
  *
  * ## NASA Power of 10 Compliance
@@ -492,7 +492,7 @@
  *     rx_drv8243_config_t config = {
  *         // ... (standard fields same as above)
  *         .use_spi_variant = true,              // Enable SPI features
- *         .sci_channel = 12,                    // SCI12
+ *         .sci_channel = 7,                     // SCI7
  *         .spi_cs_port = 2, .spi_cs_pin = 5,    // PORT2.5 for nSCS
  *         .initial_slew_rate = k_drv8243_slew_100_vus,  // 100 V/µs (moderate EMI)
  *         .initial_itrip = k_drv8243_itrip_2_0a,        // 2.0A current regulation
@@ -1153,7 +1153,7 @@ typedef struct {
 
   /* SPI variant configuration (set use_spi_variant=true to enable) */
   bool    use_spi_variant; /**< Enable SPI variant features */
-  uint8_t sci_channel;     /**< SCI channel for SPI communication (12 = SCI12) */
+  uint8_t sci_channel;     /**< SCI channel for SPI communication (7 = SCI7) */
   uint8_t spi_cs_port;     /**< GPIO port for SPI chip select */
   uint8_t spi_cs_pin;      /**< GPIO pin for SPI chip select */
 

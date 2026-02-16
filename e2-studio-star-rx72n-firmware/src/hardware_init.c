@@ -583,15 +583,15 @@ static rx_err_t gpio_init(void)
     regs->pdr |= (uint8_t)(1U << pin);  /* Output */
   }
 
-  /* ---- DRV8243S SPI data (SCI12 alternate function PE0-PE2) ---- */
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk); /* PE0 = SCK12 */
-  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 SCK pin config failed");
+  /* ---- DRV8243S SPI data (SCI7 alternate function P90-P92) ---- */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk); /* P91 = SCK7 */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SCK pin config failed");
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi); /* PE1 = COPI (SCI12) */
-  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 COPI pin config failed");
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi); /* P90 = COPI (SCI7) */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 COPI pin config failed");
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo); /* PE2 = CIPO (SCI12) */
-  RX_RETURN_ON_ERROR(err, s_tag, "SCI12 CIPO pin config failed");
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo); /* P92 = CIPO (SCI7) */
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 CIPO pin config failed");
 
   /* ---- GTETRG nFAULT pins (POEG hardware triggers) ----
    * POEG external trigger (GTETRGA-D) reads the physical pin level directly

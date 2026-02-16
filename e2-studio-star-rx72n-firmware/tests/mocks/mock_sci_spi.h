@@ -38,7 +38,7 @@ extern "C" {
 
 /** @brief Mock SCI SPI constants */
 typedef enum : uint16_t {
-  k_mock_sci_spi_max_channels  = 1,    /**< Only channel 12 (index 0) */
+  k_mock_sci_spi_max_channels  = 13,   /**< Support all channels 0-12 */
   k_mock_sci_spi_tx_history_sz = 2048, /**< TX history buffer size */
 } mock_sci_spi_constants_t;
 

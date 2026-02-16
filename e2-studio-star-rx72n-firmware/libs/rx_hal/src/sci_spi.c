@@ -58,8 +58,7 @@ typedef enum : uint32_t {
   k_sci_spi_timeout_count = 100000,   /**< Polling loop timeout (NASA Rule 2) */
   k_sci_spi_pclkb_hz      = 60000000, /**< PCLKB frequency (60 MHz) */
   k_sci_spi_brr_divisor   = 4,        /**< BRR formula: rate = PCLKB/(4*(BRR+1)) */
-  k_sci_spi_max_channels  = 1,        /**< Only SCI12 supported for now */
-  k_sci_spi_channel_12    = 12,       /**< SCI12 channel number */
+  k_sci_spi_max_channels  = 13,       /**< Support all SCI channels 0-12 */
   k_sci_spi_cs_setup_nops = 10,       /**< NOP count for CS setup delay (~300ns) */
   k_sci_spi_cs_hold_nops  = 10,       /**< NOP count for CS hold delay (~300ns) */
   k_sci_spi_max_spi_mode  = 3,        /**< Maximum valid SPI mode value */
@@ -76,7 +75,7 @@ typedef struct {
   rx_port_pin_t cs_pin;      /**< Chip select GPIO pin */
 } sci_spi_state_t;
 
-/** @brief Channel state (only channel 12 supported, index 0) */
+/** @brief Channel state for all SCI channels (0-12) */
 static sci_spi_state_t s_channels[k_sci_spi_max_channels];
 
 /* =============================================================================
@@ -92,8 +91,8 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
  */
 static rx_err_t internal_channel_to_index(uint8_t channel, uint8_t* idx)
 {
-  if (channel == k_sci_spi_channel_12) {
-    *idx = 0;
+  if (channel <= 12) { /* SCI0 through SCI12 */
+    *idx = channel;    /* Direct mapping: channel number = array index */
     return k_rx_ok;
   }
   return k_rx_err_invalid_arg;
