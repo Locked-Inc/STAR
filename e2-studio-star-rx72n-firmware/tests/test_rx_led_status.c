@@ -273,21 +273,21 @@ void rx_log_error_val(const char* tag, const char* msg, uint32_t val)
  */
 
 typedef enum : uint8_t {
-  k_led_0_port = 3,
-  k_led_1_port = 8,
-  k_led_2_port = 5,
-  k_led_3_port = 5,
-  k_led_4_port = 5,
-  k_led_5_port = 5,
+  k_led_0_port = 10, /**< LED0 on PORTA (PA7, pin 88) */
+  k_led_1_port = 11, /**< LED1 on PORTB (PB0, pin 87) */
+  k_led_2_port = 7,  /**< LED2 on PORT7 (P71, pin 86) */
+  k_led_3_port = 7,  /**< LED3 on PORT7 (P72, pin 85) */
+  k_led_4_port = 11, /**< LED4 on PORTB (PB1, pin 84) */
+  k_led_5_port = 11, /**< LED5 on PORTB (PB2, pin 83) */
 } led_ports_t;
 
 typedef enum : uint8_t {
-  k_led_0_pin = 2,
-  k_led_1_pin = 7,
-  k_led_2_pin = 6,
-  k_led_3_pin = 5,
-  k_led_4_pin = 4,
-  k_led_5_pin = 2,
+  k_led_0_pin = 7, /**< LED0 pin 7 (PA7, pin 88) */
+  k_led_1_pin = 0, /**< LED1 pin 0 (PB0, pin 87) */
+  k_led_2_pin = 1, /**< LED2 pin 1 (P71, pin 86) */
+  k_led_3_pin = 2, /**< LED3 pin 2 (P72, pin 85) */
+  k_led_4_pin = 1, /**< LED4 pin 1 (PB1, pin 84) */
+  k_led_5_pin = 2, /**< LED5 pin 2 (PB2, pin 83) */
 } led_pins_t;
 
 typedef enum : uint8_t {
@@ -589,9 +589,9 @@ void test_led_set_heartbeat_on(void)
 /** @brief Verify LED 0 (heartbeat, PA7) can be turned off */
 void test_led_set_heartbeat_off(void)
 {
-  s_mock_port7.podr = 0xFF;
+  s_mock_porta.podr = 0xFF;
   test_led_set(k_led_idx_heartbeat, false);
-  TEST_ASSERT_BITS(0x04, 0x00, s_mock_port7.podr);
+  TEST_ASSERT_BITS(0x80, 0x00, s_mock_porta.podr); /* LED0 on PORTA pin 7 */
 }
 
 /** @brief Verify LED 1 (error, PB0) can be toggled */

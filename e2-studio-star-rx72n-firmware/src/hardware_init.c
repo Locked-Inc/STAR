@@ -327,13 +327,13 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  * specific PSEL values determined by hardware function.
  *
  * **Pin configuration:**
- * - **5× MTU PWM pins** - Motor control via DRV8243 H-bridge drivers
+ * - **8× GPTW PWM pins** - Motor control via DRV8243 H-bridge drivers (PORT E)
  * - **2× I2C pins** - Sensor communication bus (SCL/SDA)
  * - **1× USB pin** - USB VBUS detection for CDC debug interface
  *
  * **Algorithm steps:**
  * 1. Validate all pin identifiers are within valid range
- * 2. Configure MTU PWM pins (PSEL = 0x01) for motor control
+ * 2. Configure GPTW PWM pins (PSEL = 0x1E) for 4-motor control on PORT E
  * 3. Configure I2C pins (PSEL = 0x0F) for sensor bus
  * 4. Configure USB pin (PSEL = 0x11) for USB VBUS detect
  * 5. All operations use rx_mpc API with write-protect handling
@@ -342,11 +342,14 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  *
  * | Pin | Port.Bit | Function | PSEL | Usage |
  * |-----|----------|----------|------|-------|
- * | P1.5 | PORT1.5 | MTIOC0B | 0x01 | Motor 0 PWM output |
- * | PC.1 | PORTC.1 | MTIOC3A | 0x01 | Motor 3 PWM output A |
- * | P2.2 | PORT2.2 | MTIOC3B | 0x01 | Motor 3 PWM output B |
- * | P2.4 | PORT2.4 | MTIOC4A | 0x01 | Motor 4 PWM output A |
- * | P2.5 | PORT2.5 | MTIOC4C | 0x01 | Motor 4 PWM output C |
+ * | PE5 | PORTE.5 | GTIOC0A | 0x1E | Motor 0 phase (pkg pin 106) |
+ * | PE2 | PORTE.2 | GTIOC0B | 0x1E | Motor 0 enable (pkg pin 109) |
+ * | PE4 | PORTE.4 | GTIOC1A | 0x1E | Motor 1 phase (pkg pin 107) |
+ * | PE1 | PORTE.1 | GTIOC1B | 0x1E | Motor 1 enable (pkg pin 110) |
+ * | PE3 | PORTE.3 | GTIOC2A | 0x1E | Motor 2 phase (pkg pin 108) |
+ * | PE0 | PORTE.0 | GTIOC2B | 0x1E | Motor 2 enable (pkg pin 111) |
+ * | PE7 | PORTE.7 | GTIOC3A | 0x1E | Motor 3 phase (pkg pin 101) |
+ * | PE6 | PORTE.6 | GTIOC3B | 0x1E | Motor 3 enable (pkg pin 102) |
  * | P1.2 | PORT1.2 | SCL0 | 0x0F | I2C clock line |
  * | P1.3 | PORT1.3 | SDA0 | 0x0F | I2C data line |
  * | P1.6 | PORT1.6 | USB0_VBUS | 0x11 | USB VBUS detect input |

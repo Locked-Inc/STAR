@@ -101,6 +101,8 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
  * @post On k_rx_ok, *idx < k_sci_spi_max_channels
  * @post On error, *idx is unchanged
  *
+ * @note Thread-safe. Pure function with no shared state access.
+ *
  * @since 1.1.0
  */
 static rx_err_t internal_channel_to_index(uint8_t channel, uint8_t* idx)
