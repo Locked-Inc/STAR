@@ -599,18 +599,18 @@ void test_led_set_error_toggle(void)
 {
   memset(&s_mock_portb, 0, sizeof(s_mock_portb));
   test_led_set(k_led_idx_error, true);
-  TEST_ASSERT_BITS(0x80, 0x80, s_mock_portb.podr);
+  TEST_ASSERT_BITS(0x01, 0x01, s_mock_portb.podr); /* LED1 on PB0, bit 0 */
 
   test_led_set(k_led_idx_error, false);
-  TEST_ASSERT_BITS(0x80, 0x00, s_mock_portb.podr);
+  TEST_ASSERT_BITS(0x01, 0x00, s_mock_portb.podr);
 }
 
 /** @brief Verify LED 5 (estop, PB2) can be set */
 void test_led_set_estop_on(void)
 {
-  memset(&s_mock_porta, 0, sizeof(s_mock_porta));
+  memset(&s_mock_portb, 0, sizeof(s_mock_portb));
   test_led_set(k_led_idx_estop, true);
-  TEST_ASSERT_BITS(0x04, 0x04, s_mock_porta.podr); /* Pin 2 */
+  TEST_ASSERT_BITS(0x04, 0x04, s_mock_portb.podr); /* LED5 on PB2, bit 2 */
 }
 
 /** @brief Verify out-of-range LED index is safely ignored */
@@ -632,20 +632,20 @@ void test_led_set_invalid_index_no_crash(void)
 /** @brief Verify setting one LED does not affect others on same port */
 void test_led_set_does_not_affect_other_pins(void)
 {
-  /* PORT5 has LEDs on pins 2, 4, 5, 6 */
-  s_mock_porta.podr = 0x00;
+  /* PORT7 has LED2 (motor) on pin 1 and LED3 (comm) on pin 2 */
+  s_mock_port7.podr = 0x00;
 
-  /* Turn on LED 2 (pin 6) */
+  /* Turn on LED 2 (motor, pin 1) */
   test_led_set(k_led_idx_motor, true);
-  TEST_ASSERT_EQUAL(0x40, s_mock_porta.podr); /* Only pin 6 set */
+  TEST_ASSERT_EQUAL(0x02, s_mock_port7.podr); /* Only pin 1 set */
 
-  /* Turn on LED 3 (pin 5) */
+  /* Turn on LED 3 (comm, pin 2) */
   test_led_set(k_led_idx_comm, true);
-  TEST_ASSERT_EQUAL(0x60, s_mock_porta.podr); /* Pins 5 and 6 set */
+  TEST_ASSERT_EQUAL(0x06, s_mock_port7.podr); /* Pins 1 and 2 set (0x02 | 0x04) */
 
-  /* Turn off LED 2 (pin 6) */
+  /* Turn off LED 2 (motor, pin 1) */
   test_led_set(k_led_idx_motor, false);
-  TEST_ASSERT_EQUAL(0x20, s_mock_porta.podr); /* Only pin 5 remains */
+  TEST_ASSERT_EQUAL(0x04, s_mock_port7.podr); /* Only pin 2 remains */
 }
 
 /* =============================================================================
@@ -688,7 +688,7 @@ void test_led_motor_active_when_duty_nonzero(void)
   (void)shared_data_get_motor_state(&ms);
 
   bool any_active = false;
-  for (uint8_t i = 0; i < 4; i++) {
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
     if (ms.duty_cycle_percent[i] > 0.0F) {
       any_active = true;
     }
@@ -701,7 +701,7 @@ void test_led_motor_active_when_duty_nonzero(void)
   (void)shared_data_get_motor_state(&ms);
 
   any_active = false;
-  for (uint8_t i = 0; i < 4; i++) {
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
     if (ms.duty_cycle_percent[i] > 0.0F) {
       any_active = true;
     }
@@ -752,7 +752,7 @@ void test_led_error_on_motor_fault(void)
 
   /* No faults */
   bool any_fault = false;
-  for (uint8_t i = 0; i < 4; i++) {
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
     if (s_mock_motor_state.fault_flags[i] != 0) {
       any_fault = true;
     }
@@ -765,7 +765,7 @@ void test_led_error_on_motor_fault(void)
   motor_state_t ms;
   (void)shared_data_get_motor_state(&ms);
   any_fault = false;
-  for (uint8_t i = 0; i < 4; i++) {
+  for (uint8_t i = 0; i < k_poeg_motor_count; i++) {
     if (ms.fault_flags[i] != 0) {
       any_fault = true;
     }

@@ -259,15 +259,15 @@ typedef enum : uint16_t {
   k_pin_enc3_pha = k_rx_pc_0, /**< PC.0 - TCLKC (encoder 3 phase A) */
   k_pin_enc3_phb = k_rx_pb_3, /**< PB.3 - TCLKD (encoder 3 phase B) */
 
-  /* GPTW PWM outputs (4 motors × 2 pins = PH + EN) */
-  k_pin_motor0_ph = k_rx_p2_3, /**< P2.3 - GTIOC0A (motor 0 phase) */
-  k_pin_motor0_en = k_rx_p1_7, /**< P1.7 - GTIOC0B (motor 0 enable) */
-  k_pin_motor1_ph = k_rx_p2_2, /**< P2.2 - GTIOC1A (motor 1 phase) */
-  k_pin_motor1_en = k_rx_pc_3, /**< PC.3 - GTIOC1B (motor 1 enable) */
-  k_pin_motor2_ph = k_rx_pe_3, /**< PE.3 - GTIOC2A (motor 2 phase) */
-  k_pin_motor2_en = k_rx_p8_6, /**< P8.6 - GTIOC2B (motor 2 enable) */
-  k_pin_motor3_ph = k_rx_pe_7, /**< PE.7 - GTIOC3A (motor 3 phase) */
-  k_pin_motor3_en = k_rx_pc_6, /**< PC.6 - GTIOC3B (motor 3 enable) */
+  /* GPTW PWM outputs (4 motors × 2 pins = PH + EN, all on PORT E) */
+  k_pin_motor0_ph = k_rx_pe_5, /**< PE.5 - GTIOC0A (motor 0 phase, pin 106) */
+  k_pin_motor0_en = k_rx_pe_2, /**< PE.2 - GTIOC0B (motor 0 enable, pin 109) */
+  k_pin_motor1_ph = k_rx_pe_4, /**< PE.4 - GTIOC1A (motor 1 phase, pin 107) */
+  k_pin_motor1_en = k_rx_pe_1, /**< PE.1 - GTIOC1B (motor 1 enable, pin 110) */
+  k_pin_motor2_ph = k_rx_pe_3, /**< PE.3 - GTIOC2A (motor 2 phase, pin 108) */
+  k_pin_motor2_en = k_rx_pe_0, /**< PE.0 - GTIOC2B (motor 2 enable, pin 111) */
+  k_pin_motor3_ph = k_rx_pe_7, /**< PE.7 - GTIOC3A (motor 3 phase, pin 101) */
+  k_pin_motor3_en = k_rx_pe_6, /**< PE.6 - GTIOC3B (motor 3 enable, pin 102) */
 
   /* ADC current sense (S12AD0, AN004-AN007) */
   k_pin_adc_an004 = k_rx_p4_4, /**< P4.4 - AN004 (motor 3 current) */
@@ -655,7 +655,7 @@ static rx_err_t gptw_pwm_init(void)
  * Raspberry Pi 5 host controller. Uses SPI mode 0 (CPOL=0, CPHA=0) with
  * 8-bit transfers.
  *
- * Motor driver SPI uses SCI12 (not RSPI) and is deferred since DRV8243 runs
+ * Motor driver SPI uses SCI7 (not RSPI) and is deferred since DRV8243 runs
  * in PH/EN mode (use_spi_variant = false).
  *
  * @return rx_err_t Error code

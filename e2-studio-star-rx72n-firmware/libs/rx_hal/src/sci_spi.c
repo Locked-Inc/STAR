@@ -85,12 +85,30 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
 
 /**
  * @brief Map external channel number to internal state index
+ * @details
+ * Performs a direct 1:1 mapping from SCI channel number (0–12) to
+ * the corresponding index in the s_channels[] state array.
+ *
  * @param[in]  channel External SCI channel number
  * @param[out] idx     Pointer to store internal index
- * @return k_rx_ok if valid, k_rx_err_invalid_arg otherwise
+ *
+ * @return k_rx_ok on success, error code otherwise
+ * @retval k_rx_ok            Channel mapped successfully
+ * @retval k_rx_err_invalid_arg Channel out of range or idx is NULL
+ *
+ * @pre idx != NULL
+ * @pre channel is a hardware-valid SCI channel number
+ * @post On k_rx_ok, *idx < k_sci_spi_max_channels
+ * @post On error, *idx is unchanged
+ *
+ * @since 1.1.0
  */
 static rx_err_t internal_channel_to_index(uint8_t channel, uint8_t* idx)
 {
+  if (idx == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
   if (channel < k_sci_spi_max_channels) { /* SCI0 through SCI12 */
     *idx = channel;                       /* Direct mapping: channel number = array index */
     return k_rx_ok;
