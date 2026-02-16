@@ -13,12 +13,12 @@
  *
  * | LED | Pin | Port | Function               | Pattern                        |
  * |-----|-----|------|------------------------|--------------------------------|
- * | 0   | P32 | 3    | System Heartbeat       | 1 Hz toggle (500ms on/off)     |
- * | 1   | P87 | 8    | Error Indicator        | Fast blink on any fault        |
- * | 2   | P56 | 5    | Motor Active           | Solid on when motors running   |
- * | 3   | P55 | 5    | Communication Activity | 100ms pulse on command rx      |
- * | 4   | P54 | 5    | Obstacle Detected      | Solid on when obstacle near    |
- * | 5   | P52 | 5    | E-Stop Active          | Solid on during emergency stop |
+ * | 0   | PA7 | A    | System Heartbeat       | 1 Hz toggle (500ms on/off)     |
+ * | 1   | PB0 | B    | Error Indicator        | Fast blink on any fault        |
+ * | 2   | P71 | 7    | Motor Active           | Solid on when motors running   |
+ * | 3   | P72 | 7    | Communication Activity | 100ms pulse on command rx      |
+ * | 4   | PB1 | B    | Obstacle Detected      | Solid on when obstacle near    |
+ * | 5   | PB2 | B    | E-Stop Active          | Solid on during emergency stop |
  *
  * ## Task Characteristics
  *

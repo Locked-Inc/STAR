@@ -58,8 +58,7 @@ typedef enum : uint32_t {
   k_sci_spi_timeout_count = 100000,   /**< Polling loop timeout (NASA Rule 2) */
   k_sci_spi_pclkb_hz      = 60000000, /**< PCLKB frequency (60 MHz) */
   k_sci_spi_brr_divisor   = 4,        /**< BRR formula: rate = PCLKB/(4*(BRR+1)) */
-  k_sci_spi_max_channels  = 1,        /**< Only SCI12 supported for now */
-  k_sci_spi_channel_12    = 12,       /**< SCI12 channel number */
+  k_sci_spi_max_channels  = 13,       /**< Support all SCI channels 0-12 */
   k_sci_spi_cs_setup_nops = 10,       /**< NOP count for CS setup delay (~300ns) */
   k_sci_spi_cs_hold_nops  = 10,       /**< NOP count for CS hold delay (~300ns) */
   k_sci_spi_max_spi_mode  = 3,        /**< Maximum valid SPI mode value */
@@ -76,7 +75,7 @@ typedef struct {
   rx_port_pin_t cs_pin;      /**< Chip select GPIO pin */
 } sci_spi_state_t;
 
-/** @brief Channel state (only channel 12 supported, index 0) */
+/** @brief Channel state for all SCI channels (0-12) */
 static sci_spi_state_t s_channels[k_sci_spi_max_channels];
 
 /* =============================================================================
@@ -86,14 +85,38 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
 
 /**
  * @brief Map external channel number to internal state index
+ * @details
+ * Performs a direct 1:1 mapping from SCI channel number (0–12) to
+ * the corresponding index in the s_channels[] state array.
+ *
  * @param[in]  channel External SCI channel number
  * @param[out] idx     Pointer to store internal index
- * @return k_rx_ok if valid, k_rx_err_invalid_arg otherwise
+ *
+ * @return k_rx_ok on success, error code otherwise
+ * @retval k_rx_ok            Channel mapped successfully
+ * @retval k_rx_err_invalid_arg Channel out of range or idx is NULL
+ *
+ * @pre idx != NULL
+ * @pre channel < k_sci_spi_max_channels
+ * @post On k_rx_ok, *idx < k_sci_spi_max_channels
+ * @post On error, *idx is unchanged
+ *
+ * @note Thread-safe. Pure function with no shared state access.
+ *
+ * @see sci_spi_init_controller() Uses this for channel validation
+ * @see sci_spi_controller_transfer_16bit() Uses this for channel validation
+ * @see sci_spi_controller_deinit() Uses this for channel validation
+ *
+ * @since 1.1.0
  */
 static rx_err_t internal_channel_to_index(uint8_t channel, uint8_t* idx)
 {
-  if (channel == k_sci_spi_channel_12) {
-    *idx = 0;
+  if (idx == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (channel < k_sci_spi_max_channels) { /* SCI0 through SCI12 */
+    *idx = channel;                       /* Direct mapping: channel number = array index */
     return k_rx_ok;
   }
   return k_rx_err_invalid_arg;

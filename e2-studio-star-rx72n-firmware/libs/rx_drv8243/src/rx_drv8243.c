@@ -114,7 +114,7 @@
  * | **GPIO Outputs** | 2 pins (PH, EN) | H-bridge phase and enable signals |
  * | **GPIO Input** | 1 pin (nFAULT) | Fault detection (active low, pull-up) |
  * | **ADC Channel** | 1 channel | IPROPI current sensing (0-3.3V analog) |
- * | **SCI Channel** | 1 channel (optional, SCI12) | SPI configuration interface |
+ * | **SCI Channel** | 1 channel (optional, SCI7) | SPI configuration interface |
  * | **Bus Manager** | 1 instance | ADC and GPIO abstraction layer |
  * | **RAM** | ~120 bytes | Handle structure (rx_drv8243_handle_t) |
  * | **Flash** | ~6 KB | Code + constants |
@@ -270,7 +270,7 @@
  * @code{.c}
  * // Enable SPI variant for advanced configuration
  * config.use_spi_variant    = true;
- * config.sci_channel        = 12;              // SCI12
+ * config.sci_channel        = 7;               // SCI7
  * config.spi_cs_port        = 3;               // PORT3
  * config.spi_cs_pin         = 2;               // Pin 2
  * config.initial_slew_rate  = k_drv8243_slew_15v_us;  // 15 V/µs (lower EMI)
@@ -566,7 +566,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *     - ki_propi: [0-1000] A/V (0 = use default 525, typical: 525)
  *   - **Lifetime**: Only read during init, can be stack-allocated
  *   - **SPI variant fields** (if use_spi_variant = true):
- *     - sci_channel: 12 (SCI12 for motor driver SPI bus)
+ *     - sci_channel: 7 (SCI7 for motor driver SPI bus)
  *     - spi_cs_port: [0-10] (GPIO port for chip select)
  *     - spi_cs_pin: [0-7] (GPIO pin for chip select)
  *     - initial_slew_rate: Valid drv8243_slew_rate_t enumeration
@@ -589,7 +589,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @pre config must point to valid configuration with all required fields populated
  * @pre config->bus_manager must be initialized and ready for ADC/GPIO operations
  * @pre config->pwm_freq_hz must be within [1000, 25000] Hz range
- * @pre If config->use_spi_variant = true, SCI12 peripheral must be available
+ * @pre If config->use_spi_variant = true, SCI7 peripheral must be available
  *
  * @post handle->initialized = true if function returns k_rx_ok
  * @post Motor controller initialized with PWM outputs stopped (duty = 0%)
@@ -647,7 +647,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * rx_drv8243_config_t config = {
  *     // ... (same as above) ...
  *     .use_spi_variant    = true,
- *     .sci_channel        = 12,                      // SCI12
+ *     .sci_channel        = 7,                      // SCI7
  *     .spi_cs_port        = 3,                       // PORT3
  *     .spi_cs_pin         = 2,                       // P32
  *     .initial_slew_rate  = k_drv8243_slew_15v_us,   // 15 V/µs (lower EMI)

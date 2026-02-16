@@ -2,31 +2,33 @@
 
 /**
  * @file rx_sci_spi.h
- * @brief SCI SPI Controller Mode Driver for RX72N Clock-Synchronous Serial
+ * @brief Generic SCI SPI Controller Mode Driver for RX72N
  *
  * @details
- * Provides SPI controller functionality using the RX72N SCI peripheral in
- * clock-synchronous mode. Designed for communicating with DRV8243S motor
- * driver ICs over the SCI12 bus (PE0-PE2 pins).
+ * Provides SPI controller functionality using any RX72N SCI peripheral in
+ * clock-synchronous mode. Supports all 13 SCI channels (SCI0-SCI12).
+ *
+ * **Hardware-agnostic**: Pin assignments are specified via hardware_config.h,
+ * not hardcoded in the HAL. This driver can be used with any SCI channel.
  *
  * SCI "Simple SPI" performs 8-bit transfers via TDR/RDR registers. 16-bit
- * frames (required by DRV8243S) are constructed from two consecutive 8-bit
- * transfers with CS held asserted throughout. There is a clock gap between
- * bytes (SCK returns to idle) which is tolerated by DRV8243S.
+ * frames are constructed from two consecutive 8-bit transfers with CS held
+ * asserted throughout. There is a clock gap between bytes (SCK returns to
+ * idle) which is generally tolerated by SPI peripherals.
  *
- * @par Hardware Pin Mapping (STAR Project)
- * | SCI12 Pin | RX72N Pin | Signal     | Direction |
- * |-----------|-----------|------------|-----------|
- * | SCK12     | PE0       | SPI Clock  | Output    |
- * | SMOSI12   | PE1       | COPI       | Output    |
- * | SMISO12   | PE2       | CIPO       | Input     |
+ * @par Example Hardware Pin Mapping (STAR Project - SCI7)
+ * | SCI7 Pin | RX72N Pin | Signal     | Direction |
+ * |----------|-----------|------------|-----------|
+ * | SCK7     | P91       | SPI Clock  | Output    |
+ * | SMOSI7   | P90       | COPI       | Output    |
+ * | SMISO7   | P92       | CIPO       | Input     |
  *
  * @par Baud Rate Calculation (Sync Mode)
  * bit_rate = PCLKB / (4 * (BRR + 1)) for CKS=0
  * With PCLKB=60 MHz: BRR=1 -> 7.5 MHz, BRR=3 -> 3.75 MHz
  *
  * @see rx72n_sci_regs.h SCI register definitions
- * @see rx_drv8243.h DRV8243 motor driver (primary consumer)
+ * @see rx_drv8243.h DRV8243 motor driver (example consumer)
  *
  * @author STAR Team
  * @date 2026-02-11
@@ -78,12 +80,12 @@ typedef struct {
 /**
  * @brief Initialize SCI channel in SPI controller mode
  *
- * @param[in] channel SCI channel number (currently only 12 supported)
+ * @param[in] channel SCI channel number (0-12, all channels supported)
  * @param[in] config  SPI controller configuration
  *
  * @return k_rx_ok on success
  * @retval k_rx_err_null_ptr if config is nullptr
- * @retval k_rx_err_invalid_arg if channel unsupported or freq_hz is 0
+ * @retval k_rx_err_invalid_arg if channel > 12 or freq_hz is 0
  * @retval k_rx_err_invalid_state if channel already initialized
  *
  * @pre GPIO pins for SCI channel configured via MPC in gpio_init()

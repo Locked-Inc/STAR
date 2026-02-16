@@ -57,39 +57,39 @@
  *
  * | Motor | PH Pin | PH Pkg Pin | EN Pin | EN Pkg Pin | GPTW Ch |
  * |-------|--------|------------|--------|------------|---------|
- * | 0 | P23 | 34 | P17 | 38 | GPTW0 |
- * | 1 | P22 | 35 | PC3 | 67 | GPTW1 |
- * | 2 | PE3 | 108 | P86 | 41 | GPTW2 |
- * | 3 | PE7 | 101 | PC6 | 61 | GPTW3 |
+ * | 0 | PE5 | 106 | PE2 | 109 | GPTW0 |
+ * | 1 | PE4 | 107 | PE1 | 110 | GPTW1 |
+ * | 2 | PE3 | 108 | PE0 | 111 | GPTW2 |
+ * | 3 | PE7 | 101 | PE6 | 102 | GPTW3 |
  * @{
  */
 
 typedef enum : uint8_t {
-  k_motor_0_ph_port = 2,  /**< Motor 0 PH on PORT2 (P23/GTIOC0A, pin 34) */
-  k_motor_1_ph_port = 2,  /**< Motor 1 PH on PORT2 (P22/GTIOC1A, pin 35) */
+  k_motor_0_ph_port = 14, /**< Motor 0 PH on PORTE (PE5/GTIOC0A, pin 106) */
+  k_motor_1_ph_port = 14, /**< Motor 1 PH on PORTE (PE4/GTIOC1A, pin 107) */
   k_motor_2_ph_port = 14, /**< Motor 2 PH on PORTE (PE3/GTIOC2A, pin 108) */
   k_motor_3_ph_port = 14, /**< Motor 3 PH on PORTE (PE7/GTIOC3A, pin 101) */
 } motor_ph_ports_t;
 
 typedef enum : uint8_t {
-  k_motor_0_ph_pin = 3, /**< Motor 0 PH pin 3 (P23, pin 34) */
-  k_motor_1_ph_pin = 2, /**< Motor 1 PH pin 2 (P22, pin 35) */
+  k_motor_0_ph_pin = 5, /**< Motor 0 PH pin 5 (PE5, pin 106) */
+  k_motor_1_ph_pin = 4, /**< Motor 1 PH pin 4 (PE4, pin 107) */
   k_motor_2_ph_pin = 3, /**< Motor 2 PH pin 3 (PE3, pin 108) */
   k_motor_3_ph_pin = 7, /**< Motor 3 PH pin 7 (PE7, pin 101) */
 } motor_ph_pins_t;
 
 typedef enum : uint8_t {
-  k_motor_0_en_port = 1,  /**< Motor 0 EN on PORT1 (P17/GTIOC0B, pin 38) */
-  k_motor_1_en_port = 12, /**< Motor 1 EN on PORTC (PC3/GTIOC1B, pin 67) */
-  k_motor_2_en_port = 8,  /**< Motor 2 EN on PORT8 (P86/GTIOC2B, pin 41) */
-  k_motor_3_en_port = 12, /**< Motor 3 EN on PORTC (PC6/GTIOC3B, pin 61) */
+  k_motor_0_en_port = 14, /**< Motor 0 EN on PORTE (PE2/GTIOC0B, pin 109) */
+  k_motor_1_en_port = 14, /**< Motor 1 EN on PORTE (PE1/GTIOC1B, pin 110) */
+  k_motor_2_en_port = 14, /**< Motor 2 EN on PORTE (PE0/GTIOC2B, pin 111) */
+  k_motor_3_en_port = 14, /**< Motor 3 EN on PORTE (PE6/GTIOC3B, pin 102) */
 } motor_en_ports_t;
 
 typedef enum : uint8_t {
-  k_motor_0_en_pin = 7, /**< Motor 0 EN pin 7 (P17, pin 38) */
-  k_motor_1_en_pin = 3, /**< Motor 1 EN pin 3 (PC3, pin 67) */
-  k_motor_2_en_pin = 6, /**< Motor 2 EN pin 6 (P86, pin 41) */
-  k_motor_3_en_pin = 6, /**< Motor 3 EN pin 6 (PC6, pin 61) */
+  k_motor_0_en_pin = 2, /**< Motor 0 EN pin 2 (PE2, pin 109) */
+  k_motor_1_en_pin = 1, /**< Motor 1 EN pin 1 (PE1, pin 110) */
+  k_motor_2_en_pin = 0, /**< Motor 2 EN pin 0 (PE0, pin 111) */
+  k_motor_3_en_pin = 6, /**< Motor 3 EN pin 6 (PE6, pin 102) */
 } motor_en_pins_t;
 
 /** @} */ /* end of motor_pwm_pins */
@@ -138,35 +138,43 @@ typedef enum : uint8_t {
 
 /**
  * @defgroup motor_spi_pins Motor Driver SPI Pin Assignments
- * @brief SCI12 hardware SPI for DRV8243S motor driver communication
+ * @brief SCI7 hardware SPI for DRV8243S motor driver communication
  *
  * @details
- * SCI12 provides hardware SPI for DRV8243S motor driver communication.
+ * SCI7 provides hardware SPI for DRV8243S motor driver communication.
  * Four chip selects allow independent communication with each DRV8243S.
  *
- * | Signal | Pin | Pkg Pin | Function |
- * |--------|-----|---------|----------|
- * | DRV_SCLK | PE0 | 111 | SCK12 |
- * | DRV_COPI | PE1 | 110 | SMOSI12 |
- * | DRV_CIPO | PE2 | 109 | SMISO12 |
- * | DRV_CS0 | P74 | 72 | GPIO (CS4#) |
- * | DRV_CS1 | PC1 | 73 | GPIO |
- * | DRV_CS2 | PB5 | 80 | GPIO |
- * | DRV_CS3 | PB4 | 81 | GPIO |
+ * **NOTE:** Originally assigned to SCI12 (PE0/1/2), but those pins had a
+ * hardware conflict with GPTW motor PWM outputs. Moved to SCI7 (P90/91/92)
+ * to resolve the pin function conflict. See Issue #288.
+ *
+ * | Signal | Pin | Pkg Pin | Function | SCI Channel |
+ * |--------|-----|---------|----------|-------------|
+ * | DRV_SCLK | P91 | 129 | SCK7 | SCI7 |
+ * | DRV_COPI | P90 | 131 | SMOSI7 | SCI7 |
+ * | DRV_CIPO | P92 | 128 | SMISO7 | SCI7 |
+ * | DRV_CS0 | P74 | 72 | GPIO (CS4#) | N/A |
+ * | DRV_CS1 | PC1 | 73 | GPIO | N/A |
+ * | DRV_CS2 | PB5 | 80 | GPIO | N/A |
+ * | DRV_CS3 | PB4 | 81 | GPIO | N/A |
  * @{
  */
 
 typedef enum : uint8_t {
-  k_drv_sclk_port = 14, /**< DRV_SCLK on PORTE (PE0/SCK12, pin 111) */
-  k_drv_copi_port = 14, /**< DRV_COPI on PORTE (PE1/SMOSI12, pin 110) */
-  k_drv_cipo_port = 14, /**< DRV_CIPO on PORTE (PE2/SMISO12, pin 109) */
+  k_drv_sclk_port = 9, /**< DRV_SCLK on PORT9 (P91/SCK7, pin 129) */
+  k_drv_copi_port = 9, /**< DRV_COPI on PORT9 (P90/SMOSI7, pin 131) */
+  k_drv_cipo_port = 9, /**< DRV_CIPO on PORT9 (P92/SMISO7, pin 128) */
 } drv_spi_ports_t;
 
 typedef enum : uint8_t {
-  k_drv_sclk_pin = 0, /**< DRV_SCLK pin 0 (PE0, pin 111) */
-  k_drv_copi_pin = 1, /**< DRV_COPI pin 1 (PE1, pin 110) */
-  k_drv_cipo_pin = 2, /**< DRV_CIPO pin 2 (PE2, pin 109) */
+  k_drv_sclk_pin = 1, /**< DRV_SCLK pin 1 (P91, pin 129) */
+  k_drv_copi_pin = 0, /**< DRV_COPI pin 0 (P90, pin 131) */
+  k_drv_cipo_pin = 2, /**< DRV_CIPO pin 2 (P92, pin 128) */
 } drv_spi_pins_t;
+
+typedef enum : uint8_t {
+  k_drv_spi_channel = 7, /**< Motor driver SPI uses SCI7 */
+} drv_spi_channel_t;
 
 typedef enum : uint8_t {
   k_drv_cs0_port = 7,  /**< DRV_CS0 on PORT7 (P74/CS4#, pin 72) */
@@ -504,31 +512,31 @@ typedef enum : uint8_t {
  * @details
  * | LED | Pin | Pkg Pin |
  * |-----|-----|---------|
- * | 0 | P32 | 27 |
- * | 1 | P87 | 39 |
- * | 2 | P56 | 50 |
- * | 3 | P55 | 51 |
- * | 4 | P54 | 52 |
- * | 5 | P52 | 54 |
+ * | 0 | PA7 | 88 |
+ * | 1 | PB0 | 87 |
+ * | 2 | P71 | 86 |
+ * | 3 | P72 | 85 |
+ * | 4 | PB1 | 84 |
+ * | 5 | PB2 | 83 |
  * @{
  */
 
 typedef enum : uint8_t {
-  k_led_0_port = 3, /**< LED0 on PORT3 (P32, pin 27) */
-  k_led_1_port = 8, /**< LED1 on PORT8 (P87, pin 39) */
-  k_led_2_port = 5, /**< LED2 on PORT5 (P56, pin 50) */
-  k_led_3_port = 5, /**< LED3 on PORT5 (P55, pin 51) */
-  k_led_4_port = 5, /**< LED4 on PORT5 (P54, pin 52) */
-  k_led_5_port = 5, /**< LED5 on PORT5 (P52, pin 54) */
+  k_led_0_port = 10, /**< LED0 on PORTA (PA7, pin 88) */
+  k_led_1_port = 11, /**< LED1 on PORTB (PB0, pin 87) */
+  k_led_2_port = 7,  /**< LED2 on PORT7 (P71, pin 86) */
+  k_led_3_port = 7,  /**< LED3 on PORT7 (P72, pin 85) */
+  k_led_4_port = 11, /**< LED4 on PORTB (PB1, pin 84) */
+  k_led_5_port = 11, /**< LED5 on PORTB (PB2, pin 83) */
 } led_ports_t;
 
 typedef enum : uint8_t {
-  k_led_0_pin = 2, /**< LED0 pin 2 (P32, pin 27) */
-  k_led_1_pin = 7, /**< LED1 pin 7 (P87, pin 39) */
-  k_led_2_pin = 6, /**< LED2 pin 6 (P56, pin 50) */
-  k_led_3_pin = 5, /**< LED3 pin 5 (P55, pin 51) */
-  k_led_4_pin = 4, /**< LED4 pin 4 (P54, pin 52) */
-  k_led_5_pin = 2, /**< LED5 pin 2 (P52, pin 54) */
+  k_led_0_pin = 7, /**< LED0 pin 7 (PA7, pin 88) */
+  k_led_1_pin = 0, /**< LED1 pin 0 (PB0, pin 87) */
+  k_led_2_pin = 1, /**< LED2 pin 1 (P71, pin 86) */
+  k_led_3_pin = 2, /**< LED3 pin 2 (P72, pin 85) */
+  k_led_4_pin = 1, /**< LED4 pin 1 (PB1, pin 84) */
+  k_led_5_pin = 2, /**< LED5 pin 2 (PB2, pin 83) */
 } led_pins_t;
 
 typedef enum : uint8_t {
