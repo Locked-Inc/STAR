@@ -424,6 +424,13 @@ static const char* const s_tag = "SDATA";
  * - Motor task: Read-write (read then clear after commit)
  *
  * @note Volatile ensures ISR writes are not optimized away
+ *
+ * @warning RESTRICTED ACCESS: ISRs may ONLY SET this variable to true via
+ *          shared_data_trigger_estop_isr_safe(). Motor control task is the
+ *          ONLY context that may READ and CLEAR this variable via
+ *          shared_data_commit_isr_estop(). All other access is FORBIDDEN.
+ *          Non-ISR/non-task access will cause race conditions and undefined behavior.
+ *
  * @since Version 1.1.0
  */
 static volatile bool s_estop_pending_from_isr = false;
@@ -441,6 +448,14 @@ static volatile bool s_estop_pending_from_isr = false;
  * - Only committed value (in mutex-protected state) is authoritative
  *
  * @note Volatile ensures ISR writes are visible to task
+ *
+ * @warning RESTRICTED ACCESS: ISRs may ONLY WRITE this variable via
+ *          shared_data_trigger_estop_isr_safe(). Motor control task is the
+ *          ONLY context that may READ this variable via shared_data_commit_isr_estop().
+ *          RACE CONDITION BEHAVIOR: If multiple ISRs fire simultaneously, last
+ *          writer wins (acceptable for safety - any e-stop reason triggers shutdown).
+ *          All other access is FORBIDDEN.
+ *
  * @since Version 1.1.0
  */
 static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
@@ -1573,10 +1588,14 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  *
  * @param[in] reason E-stop reason code (driver_fault, battery_fault, etc.)
  *
+ * @return void (no return value)
+ * @retval N/A Function always succeeds (void return, no error cases)
+ *
  * @pre Called from ISR context only (POEG, BMS alert ISRs)
- * @post s_estop_pending_from_isr set to true
- * @post s_pending_estop_reason set to reason
- * @post k_event_estop_triggered flag set
+ * @pre shared_data_init() completed and g_shared_data.event_flags initialized
+ * @post s_estop_pending_from_isr == true
+ * @post s_pending_estop_reason == reason
+ * @post k_event_estop_triggered set via tx_event_flags_set(&g_shared_data.event_flags, k_event_estop_triggered, TX_OR)
  * @post Motor task will commit on next iteration (<4ms latency)
  *
  * @note Thread Safety: Volatile writes are atomic on RX72N
@@ -1619,11 +1638,12 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  */
 void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
 {
-  /* Set ISR-triggered e-stop pending flag (volatile write) */
-  s_estop_pending_from_isr = true;
-
-  /* Store reason code (volatile write, may be overwritten by another ISR) */
+  /* Store reason code FIRST (volatile write, may be overwritten by another ISR) */
   s_pending_estop_reason = reason;
+
+  /* Set ISR-triggered e-stop pending flag SECOND (volatile write) */
+  /* This ordering ensures reason is always written before flag is set */
+  s_estop_pending_from_isr = true;
 
   /* Signal e-stop event (ISR-safe, TX_OR is non-blocking) */
   (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_estop_triggered, TX_OR);
@@ -1641,14 +1661,19 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
  *
  * ## Algorithm Steps:
  *
- * 1. **Check pending flag:** Read s_estop_pending_from_isr (volatile read)
- * 2. **If not set:** Return immediately (nothing to commit)
- * 3. **If set:**
+ * 1. **Check initialization:** Return error if not initialized
+ * 2. **Enter critical section:** Disable interrupts via tx_interrupt_control(TX_INT_DISABLE)
+ * 3. **Atomically check-and-clear:**
+ *    - Read s_estop_pending_from_isr (volatile read)
+ *    - If set: Copy s_pending_estop_reason and clear s_estop_pending_from_isr
+ *    - If not set: Prepare to return immediately
+ * 4. **Restore interrupts:** tx_interrupt_control(saved_state)
+ * 5. **If not pending:** Return k_rx_ok (nothing to commit)
+ * 6. **If pending:**
  *    - Acquire estop_mutex (blocking, safe in task context)
  *    - Set g_shared_data.estop_active = true
- *    - Set g_shared_data.estop_reason = s_pending_estop_reason
+ *    - Set g_shared_data.estop_reason = reason (from critical section)
  *    - Release estop_mutex
- *    - Clear s_estop_pending_from_isr flag (consume pending e-stop)
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok E-stop committed successfully (or no pending e-stop)
@@ -1695,16 +1720,32 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
  */
 rx_err_t shared_data_commit_isr_estop(void)
 {
-  UINT tx_status;
-
-  /* Check if ISR triggered an e-stop (volatile read) */
-  if (!s_estop_pending_from_isr) {
-    return k_rx_ok; /* Nothing pending */
-  }
+  UINT            tx_status;
+  UINT            saved_interrupt_state;
+  bool            pending;
+  estop_reason_t  reason;
 
   /* Check initialization */
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
+  }
+
+  /* Enter critical section to atomically check-and-clear pending flag */
+  saved_interrupt_state = tx_interrupt_control(TX_INT_DISABLE);
+
+  /* Atomically read and clear the pending flag */
+  pending = s_estop_pending_from_isr;
+  if (pending) {
+    reason = s_pending_estop_reason;
+    s_estop_pending_from_isr = false; /* Clear flag while interrupts disabled */
+  }
+
+  /* Restore interrupts */
+  (void)tx_interrupt_control(saved_interrupt_state);
+
+  /* If no pending e-stop, return immediately */
+  if (!pending) {
+    return k_rx_ok;
   }
 
   /* Acquire estop mutex (safe in task context) */
@@ -1715,13 +1756,10 @@ rx_err_t shared_data_commit_isr_estop(void)
 
   /* Commit ISR-triggered e-stop to shared state */
   g_shared_data.estop_active = true;
-  g_shared_data.estop_reason = s_pending_estop_reason;
+  g_shared_data.estop_reason = reason;
 
   /* Release mutex */
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
-
-  /* Clear pending flag (consume the ISR e-stop) */
-  s_estop_pending_from_isr = false;
 
   return k_rx_ok;
 }
