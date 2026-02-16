@@ -1722,8 +1722,8 @@ rx_err_t shared_data_commit_isr_estop(void)
 {
   UINT            tx_status;
   UINT            saved_interrupt_state;
-  bool            pending;
-  estop_reason_t  reason;
+  bool            pending = false;
+  estop_reason_t  reason  = k_estop_reason_none;
 
   /* Check initialization */
   if (!g_shared_data.initialized) {
