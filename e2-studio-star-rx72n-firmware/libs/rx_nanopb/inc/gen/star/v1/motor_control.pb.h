@@ -380,7 +380,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, back_left_velocity_mps, 5)                                        \
   X(a, STATIC, SINGULAR, DOUBLE, back_right_velocity_mps, 6)
 #define star_v1_VelocityCommand_CALLBACK nullptr
-#define star_v1_VelocityCommand_DEFAULT nullptr
+#define star_v1_VelocityCommand_DEFAULT  nullptr
 
 #define star_v1_EmergencyStopRequest_FIELDLIST(X, a)                                               \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
@@ -413,7 +413,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, motor_id, 1)                                                       \
   X(a, STATIC, SINGULAR, DOUBLE, duty_cycle_percent, 2)
 #define star_v1_MotorPowerCommand_CALLBACK nullptr
-#define star_v1_MotorPowerCommand_DEFAULT nullptr
+#define star_v1_MotorPowerCommand_DEFAULT  nullptr
 
 #define star_v1_StreamEncodersRequest_FIELDLIST(X, a)                                              \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
@@ -428,7 +428,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, velocity_mps, 3)                                                  \
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 4)
 #define star_v1_EncoderData_CALLBACK nullptr
-#define star_v1_EncoderData_DEFAULT nullptr
+#define star_v1_EncoderData_DEFAULT  nullptr
 
 #define star_v1_MotorStatus_FIELDLIST(X, a)                                                        \
   X(a, STATIC, SINGULAR, INT32, motor_id, 1)                                                       \
@@ -440,7 +440,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, fault_flags, 7)                                                   \
   X(a, STATIC, SINGULAR, UENUM, state, 8)
 #define star_v1_MotorStatus_CALLBACK nullptr
-#define star_v1_MotorStatus_DEFAULT nullptr
+#define star_v1_MotorStatus_DEFAULT  nullptr
 
 #define star_v1_PidConfig_FIELDLIST(X, a)                                                          \
   X(a, STATIC, SINGULAR, DOUBLE, kp, 1)                                                            \
@@ -451,7 +451,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, integral_min, 6)                                                  \
   X(a, STATIC, SINGULAR, DOUBLE, integral_max, 7)
 #define star_v1_PidConfig_CALLBACK nullptr
-#define star_v1_PidConfig_DEFAULT nullptr
+#define star_v1_PidConfig_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_SetVelocityRequest_msg;
 extern const pb_msgdesc_t star_v1_SetVelocityResponse_msg;

@@ -810,7 +810,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, ack_timeout_ms, 3)                                                \
   X(a, STATIC, SINGULAR, UINT32, max_backoff_ms, 4)
 #define star_v1_RetransmitConfig_CALLBACK nullptr
-#define star_v1_RetransmitConfig_DEFAULT nullptr
+#define star_v1_RetransmitConfig_DEFAULT  nullptr
 
 #define star_v1_SetRetransmitConfigRequest_FIELDLIST(X, a)                                         \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
@@ -860,21 +860,21 @@ extern "C" {
 #define star_v1_TemperatureCalibration_FIELDLIST(X, a)                                             \
   X(a, STATIC, SINGULAR, DOUBLE, offset_celsius, 1)
 #define star_v1_TemperatureCalibration_CALLBACK nullptr
-#define star_v1_TemperatureCalibration_DEFAULT nullptr
+#define star_v1_TemperatureCalibration_DEFAULT  nullptr
 
 #define star_v1_SafetyThresholds_FIELDLIST(X, a)                                                   \
   X(a, STATIC, SINGULAR, UINT32, overcurrent_threshold_ma, 1)                                      \
   X(a, STATIC, SINGULAR, INT32, thermal_shutdown_deci_celsius, 2)                                  \
   X(a, STATIC, SINGULAR, UINT32, cell_imbalance_threshold_mv, 3)
 #define star_v1_SafetyThresholds_CALLBACK nullptr
-#define star_v1_SafetyThresholds_DEFAULT nullptr
+#define star_v1_SafetyThresholds_DEFAULT  nullptr
 
 #define star_v1_EncoderConfiguration_FIELDLIST(X, a)                                               \
   X(a, STATIC, SINGULAR, UINT32, edges_per_revolution, 1)                                          \
   X(a, STATIC, SINGULAR, DOUBLE, wheel_diameter_m, 2)                                              \
   X(a, STATIC, SINGULAR, DOUBLE, gear_ratio, 3)
 #define star_v1_EncoderConfiguration_CALLBACK nullptr
-#define star_v1_EncoderConfiguration_DEFAULT nullptr
+#define star_v1_EncoderConfiguration_DEFAULT  nullptr
 
 #define star_v1_TimingConfiguration_FIELDLIST(X, a)                                                \
   X(a, STATIC, SINGULAR, UINT32, motor_control_period_ms, 1)                                       \
@@ -882,7 +882,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, communication_timeout_ms, 3)                                      \
   X(a, STATIC, SINGULAR, UINT32, bms_poll_period_ms, 4)
 #define star_v1_TimingConfiguration_CALLBACK nullptr
-#define star_v1_TimingConfiguration_DEFAULT nullptr
+#define star_v1_TimingConfiguration_DEFAULT  nullptr
 
 #define star_v1_ConfigValidationResult_FIELDLIST(X, a)                                             \
   X(a, STATIC, SINGULAR, UENUM, status, 1)                                                         \
@@ -898,7 +898,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, STRING, actual_value, 4)                                                  \
   X(a, STATIC, SINGULAR, STRING, expected_constraint, 5)
 #define star_v1_ConfigValidationError_CALLBACK nullptr
-#define star_v1_ConfigValidationError_DEFAULT nullptr
+#define star_v1_ConfigValidationError_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_GetConfigurationRequest_msg;
 extern const pb_msgdesc_t star_v1_GetConfigurationResponse_msg;

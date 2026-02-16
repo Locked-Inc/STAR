@@ -2,18 +2,18 @@
 
 /**
  * @file motor_control_task.c
- * @brief Motor Control Task - 4-Motor PID Velocity Control @ 250 Hz
+ * @brief Motor Control Task - 4-Motor PID Velocity Control @ 100 Hz
  *
  * @details
  * # Overview
  *
  * This module implements the Motor Control Task that performs closed-loop PID velocity
- * control for 4 DC gearmotors at 250 Hz (4ms control period). The task executes real-time
+ * control for 4 DC gearmotors at 100 Hz (10ms control period). The task executes real-time
  * control with active braking, communication timeout watchdog, and runtime PID gain updates
  * via shared data structures.
  *
  * This is the **MOST CRITICAL TASK** in the firmware - all robot motion control depends
- * on this 250 Hz control loop executing correctly within its 4ms timing budget.
+ * on this 100 Hz control loop executing correctly within its 10ms timing budget.
  *
  * ## 4-Motor Differential Drive System Architecture
  *
@@ -40,7 +40,7 @@
  *     style=filled;
  *     color=lightgreen;
  *
- *     motor_task [label="Motor Control Task\nPriority 8 @ 250 Hz\n(4ms control period)",
+ *     motor_task [label="Motor Control Task\nPriority 8 @ 100 Hz\n(10ms control period)",
  *                 fillcolor=lightgreen, style=filled];
  *     pid [label="4x PID Controllers\nKp=0.286, Ki=8.01, Kd=0.0\n(MATLAB-tuned)",
  *          fillcolor=lightyellow, style=filled];
@@ -85,7 +85,7 @@
  * }
  * @enddot
  *
- * ## 250 Hz Control Loop Algorithm (4ms Period)
+ * ## 100 Hz Control Loop Algorithm (10ms Period)
  *
  * The task executes this control loop iteration every 4 milliseconds for each of 4 motors:
  *
@@ -93,12 +93,12 @@
  * start
  * :Initialize Motor Stack\n(4 motors, encoders, PIDs, drivers);
  * if (Initialization successful?) then (yes)
- *   :Log "Motor control running @ 250 Hz";
+ *   :Log "Motor control running @ 100 Hz";
  * else (no)
  *   :Log error\n(continue with partial init);
  * endif
  *
- * partition "Infinite Control Loop (250 Hz)" {
+ * partition "Infinite Control Loop (100 Hz)" {
  *   repeat
  *     if (E-stop active?) then (yes)
  *       if (Active brake not in progress?) then (yes)
@@ -123,7 +123,7 @@
  *
  *       :Update Motor State\n(for telemetry);
  *     endif
- *     :Sleep 4ms\n(tx_thread_sleep(1 tick));
+ *     :Sleep 10ms\n(tx_thread_sleep(1 tick));
  *   repeat while (forever)
  * }
  * @enduml
@@ -255,18 +255,18 @@
  *
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | **Control Frequency** | 250 Hz | 4ms period (1 tick @ 100 Hz ThreadX) |
+ * | **Control Frequency** | 100 Hz | 10ms period (1 tick @ 100 Hz ThreadX) |
  * | **PWM Frequency** | 20 kHz | MTU peripheral, high-frequency to reduce audible noise |
  * | **Encoder Resolution** | 1364 counts/rev | 341 PPR Hall × 4 (quadrature) |
  * | **Velocity Range** | ±2.5 m/s | Physical limit based on motor gearing |
  * | **CPU Time per Iteration** | ~320 µs | Active time (4 motors × 80µs each) |
- * | **CPU Idle Time** | ~3680 µs | Sleep time within 4ms period |
- * | **CPU Utilization** | ~8% | (320µs / 4000µs) × 100% |
- * | **Worst Case Latency** | 4ms | Max time to respond to new command |
+ * | **CPU Idle Time** | ~3680 µs | Sleep time within 10ms period |
+ * | **CPU Utilization** | ~8% | (320µs / 10000µs) × 100% |
+ * | **Worst Case Latency** | 10ms | Max time to respond to new command |
  * | **Communication Timeout** | 500ms | Watchdog triggers e-stop |
  * | **Active Brake Duration** | 50ms | Reverse PWM duration |
  *
- * ### Timing Budget Breakdown (per 4ms iteration)
+ * ### Timing Budget Breakdown (per 10ms iteration)
  *
  * | Operation | Time (µs) | % of Budget |
  * |-----------|-----------|-------------|
@@ -347,7 +347,7 @@
  * | Rule | Status | Implementation Details |
  * |------|--------|------------------------|
  * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion. All control flow uses if/while/for only. |
- * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 4ms sleep. All for-loops over k_motor_count (4). |
+ * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 10ms sleep. All for-loops over k_motor_count (4). |
  * | **Rule 3: No Heap** | [PASS] | Zero dynamic allocation. Stack (2048 bytes), TCB (140 bytes), all handles statically allocated. |
  * | **Rule 4: Function Length** | [PASS] | motor_control_task_create(): 31 lines, control functions: 50-90 lines (all < 100 LOC). |
  * | **Rule 5: Assertions** | [PASS] | 8+ assertions: RX_ASSERT(!s_motor_created), preconditions in all functions, postconditions. |
@@ -427,7 +427,7 @@ typedef enum : uint16_t {
  */
 typedef enum : uint16_t {
   k_motor_count            = 4,     /**< Number of motors */
-  k_control_period_us      = 4000,  /**< Control period (4ms = 250 Hz) */
+  k_control_period_us      = 10000, /**< Control period (10ms = 100 Hz) */
   k_active_brake_ms        = 50,    /**< Active brake duration (50ms) */
   k_active_brake_duty      = 30,    /**< Active brake PWM duty (30%) */
   k_pwm_frequency_hz       = 20000, /**< PWM frequency (20 kHz) */
@@ -551,13 +551,13 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  */
 
 /**
- * @brief Create the Motor Control task (4-motor PID velocity control @ 250 Hz)
+ * @brief Create the Motor Control task (4-motor PID velocity control @ 100 Hz)
  *
  * @details
  * Creates and starts the Motor Control ThreadX task with high priority (Priority 8)
- * for real-time 250 Hz PID velocity control of 4 DC gearmotors. This is the most
+ * for real-time 100 Hz PID velocity control of 4 DC gearmotors. This is the most
  * critical task in the firmware - all robot motion control depends on this task
- * executing correctly within its 4ms timing budget.
+ * executing correctly within its 10ms timing budget.
  *
  * ## Algorithm Steps
  *
@@ -590,7 +590,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * | **Auto Start** | TX_AUTO_START | Begin execution immediately after creation |
  *
  * **Priority Justification (Priority 8 - High Priority):**
- * - **Motor control is real-time critical** - 250 Hz control loop must not miss deadlines
+ * - **Motor control is real-time critical** - 100 Hz control loop must not miss deadlines
  * - **Higher than telemetry (18)** - Control loop more important than data reporting
  * - **Lower than system tasks (0-5)** - ThreadX scheduler and system interrupts have priority
  * - **Prevents motor instability** - Missing control cycles causes oscillation/instability
@@ -628,7 +628,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  *
  * @return rx_err_t Task creation status
  *
- * @retval k_rx_ok Task created successfully, thread scheduled and running at 250 Hz
+ * @retval k_rx_ok Task created successfully, thread scheduled and running at 100 Hz
  * @retval k_rx_err_invalid_state Task already created (s_motor_created == true). Second call blocked.
  * @retval k_rx_err_rtos_thread_create ThreadX tx_thread_create() returned error (!= TX_SUCCESS).
  *                                     Possible causes: invalid priority, stack too small, TCB corruption.
@@ -648,7 +648,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * @post Task in READY or RUNNING state (depends on ThreadX scheduler)
  * @post s_motor_created == true (prevents future double-creation)
  * @post internal_motor_task_entry() scheduled for execution (auto-start)
- * @post Task will begin 250 Hz control loop after motor stack initialization
+ * @post Task will begin 100 Hz control loop after motor stack initialization
  * @post PID controllers initialized with MATLAB-tuned gains (Kp=0.286, Ki=8.01, Kd=0.0)
  *
  * @invariant s_motor_created transitions false -> true exactly once (never resets)
@@ -674,14 +674,14 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  *          stack usage (peak 512 bytes). Overflow detection enabled via
  *          TX_ENABLE_STACK_CHECKING.
  * @warning **High priority task.** Priority 8 means this task preempts most other
- *          tasks. Ensure control loop completes within 4ms budget to avoid
+ *          tasks. Ensure control loop completes within 10ms budget to avoid
  *          starving lower-priority tasks.
  *
  * @attention Task starts immediately (TX_AUTO_START). Motors must be physically
  *            connected and encoders functional before calling this function.
- * @attention High priority (8) ensures 250 Hz control loop runs deterministically
+ * @attention High priority (8) ensures 100 Hz control loop runs deterministically
  *            without preemption from telemetry or monitoring tasks.
- * @attention Control loop timing is critical. If loop exceeds 4ms budget, motor
+ * @attention Control loop timing is critical. If loop exceeds 10ms budget, motor
  *            instability and oscillation will occur.
  *
  * @par Thread Safety:
@@ -698,7 +698,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * - **CPU cycles:** ~36,000 cycles
  * - **Stack usage during creation:** ~64 bytes (function call overhead)
  * - **Memory allocation:** 2907 bytes total (2048 stack + 140 TCB + 719 handles/static)
- * - **Control loop CPU utilization:** ~8% (320µs active / 4000µs period)
+ * - **Control loop CPU utilization:** ~8% (320µs active / 10000µs period)
  *
  * @par Re-entrancy:
  * NOT reentrant. Single-shot function. Second call blocked by s_motor_created guard.
@@ -754,7 +754,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  *   ret = motor_control_task_create();
  *   switch (ret) {
  *     case k_rx_ok:
- *       rx_log_info("MOTOR", "Task created, control @ 250 Hz");
+ *       rx_log_info("MOTOR", "Task created, control @ 100 Hz");
  *       break;
  *     case k_rx_err_invalid_state:
  *       rx_log_error("MOTOR", "Double-creation attempt!");
@@ -790,7 +790,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * }
  * @endcode
  *
- * @see internal_motor_task_entry() Task main loop implementation (250 Hz control)
+ * @see internal_motor_task_entry() Task main loop implementation (100 Hz control)
  * @see shared_data_init() Must be called before this function
  * @see comm_task_create() Producer of motor commands (call before this)
  * @see telemetry_task_create() Consumer of motor state (call after this)
@@ -809,7 +809,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * @test test_motor_control_task.c - Verify task scheduled with priority 8
  * @test test_motor_control_task.c - Verify stack size is 2048 bytes
  * @test test_motor_control_task.c - Verify s_motor_created flag set after creation
- * @test test_motor_control_task.c - Verify control loop timing (250 Hz)
+ * @test test_motor_control_task.c - Verify control loop timing (100 Hz)
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 5:** 9 preconditions, 7 postconditions documented
@@ -858,11 +858,11 @@ rx_err_t motor_control_task_create(void)
  */
 
 /**
- * @brief Motor control task entry point - infinite 250 Hz PID control loop
+ * @brief Motor control task entry point - infinite 100 Hz PID control loop
  *
  * @details
  * This is the main task loop that executes after motor_control_task_create() starts
- * the thread. The function never returns and runs continuously at 250 Hz (4ms period)
+ * the thread. The function never returns and runs continuously at 100 Hz (10ms period)
  * controlling 4 DC motors with PID velocity control until power-down or emergency stop.
  *
  * ## Complete Algorithm (18 Steps)
@@ -876,10 +876,10 @@ rx_err_t motor_control_task_create(void)
  *    - 4x PID controllers (rx_pid) with MATLAB-tuned gains
  *    - 4x DRV8243 H-bridge drivers (rx_drv8243)
  * 3. **Check Init Result:**
- *    - If success: Log "Motor control running @ 250 Hz"
+ *    - If success: Log "Motor control running @ 100 Hz"
  *    - If failure: Log error but continue (partial functionality)
  *
- * ### Main Control Loop (Steps 4-18, Infinite @ 250 Hz)
+ * ### Main Control Loop (Steps 4-18, Infinite @ 100 Hz)
  *
  * 4. **Check E-Stop:** Call shared_data_is_estop_active()
  *    - If active: Execute active brake sequence (steps 5-6)
@@ -901,14 +901,14 @@ rx_err_t motor_control_task_create(void)
  *    - If updated: Apply to all 4 PID controllers
  *
  * 9. **Control Loop Iteration:** Call internal_control_loop_iteration()
- *    - Execute one 4ms control cycle for all 4 motors
+ *    - Execute one 10ms control cycle for all 4 motors
  *
  * 10. **Motor State Update:** Call internal_update_motor_state()
  *     - Aggregate motor state for telemetry
  *     - Write to shared_data for telemetry task
  *
- * 11. **Sleep 4ms:** Call tx_thread_sleep(1 tick)
- *     - 1 tick at 100 Hz = 10ms (note: comment says 4ms but actual is 10ms)
+ * 11. **Sleep 10ms:** Call tx_thread_sleep(1 tick)
+ *     - 1 tick at 100 Hz = 10ms (note: comment says 10ms but actual is 10ms)
  *     - Yields CPU to other tasks
  *     - ThreadX scheduler resumes after sleep
  *
@@ -972,7 +972,7 @@ rx_err_t motor_control_task_create(void)
  *   ApplyGains --> ControlLoop : Gains applied
  *   ControlLoop --> UpdateState : 4 motors controlled
  *   UpdateState --> Sleep : State written
- *   Sleep --> [*] : 4ms elapsed
+ *   Sleep --> [*] : 10ms elapsed
  * }
  *
  * state EStop {
@@ -982,7 +982,7 @@ rx_err_t motor_control_task_create(void)
  * }
  * @enduml
  *
- * ## Performance Characteristics (per 4ms iteration)
+ * ## Performance Characteristics (per 10ms iteration)
  *
  * | Operation | Time (µs) | % of Budget | Frequency |
  * |-----------|-----------|-------------|-----------|
@@ -1020,12 +1020,12 @@ rx_err_t motor_control_task_create(void)
  * @pre All 4 motors physically connected and operational
  *
  * @post Motor stack initialized (if successful)
- * @post Infinite loop executing at 250 Hz until power-down
+ * @post Infinite loop executing at 100 Hz until power-down
  * @post shared_data.motor_state updated every iteration with latest motor state
  * @post E-stop triggered on driver faults or communication timeout
  * @post Active brake executed when e-stop triggered
  *
- * @invariant Loop period is exactly 4ms (1 tick at 100 Hz) - NOTE: Actual is 10ms per code
+ * @invariant Loop period is exactly 10ms (1 tick at 100 Hz) - NOTE: Actual is 10ms per code
  * @invariant Function never returns (while(true) infinite loop)
  * @invariant shared_data.motor_state updated every iteration
  * @invariant All 4 motors controlled symmetrically
@@ -1033,15 +1033,15 @@ rx_err_t motor_control_task_create(void)
  * @note **Thread Safety:** This function runs in its own thread context (Priority 8).
  *       All shared data access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. Single instance only (enforced by s_motor_created).
- * @note **Performance:** ~10.5% CPU active time. Control loop is ~420µs out of 4000µs period.
+ * @note **Performance:** ~10.5% CPU active time. Control loop is ~420µs out of 10000µs period.
  * @note **Memory:** Peak stack usage is 512 bytes during control loop iteration.
  * @note **Real-time:** Priority 8 ensures deterministic execution without preemption.
- * @note **Control Rate:** 250 Hz is optimal for motor time constant τ=75ms (bandwidth ~2.1 Hz).
+ * @note **Control Rate:** 100 Hz is optimal for motor time constant τ=75ms (bandwidth ~2.1 Hz).
  *       Faster control (500 Hz) would waste CPU, slower (100 Hz) degrades stability.
  *
  * @warning **Infinite Loop:** This function NEVER returns. Do not call directly from
  *          application code. Only ThreadX should call this via tx_thread_create().
- * @warning **Timing Critical:** Control loop MUST complete within 4ms budget. Exceeding
+ * @warning **Timing Critical:** Control loop MUST complete within 10ms budget. Exceeding
  *          this causes missed control cycles, motor instability, and oscillation.
  * @warning **Stack Overflow:** 2048 byte stack must accommodate 512 byte peak usage.
  *          TX_ENABLE_STACK_CHECKING detects overflow if it occurs.
@@ -1049,7 +1049,7 @@ rx_err_t motor_control_task_create(void)
  *          motors apply reverse PWM and cannot respond to new commands.
  *
  * @attention This function executes in its own thread context, NOT in main() context.
- * @attention Control loop timing is critical - PID stability depends on consistent 4ms period.
+ * @attention Control loop timing is critical - PID stability depends on consistent 10ms period.
  * @attention Active brake is destructive - uses reverse PWM to quickly stop motors.
  * @attention Communication timeout (500ms) is safety-critical - prevents runaway motors.
  *
@@ -1061,7 +1061,7 @@ rx_err_t motor_control_task_create(void)
  * shared_data.motor_command. Both APIs are mutex-protected.
  *
  * @par Performance Analysis:
- * **Execution Time Breakdown (per 4ms iteration):**
+ * **Execution Time Breakdown (per 10ms iteration):**
  * - Check e-stop: ~2 µs
  * - Check timeout: ~5 µs
  * - PID updates (if pending): ~50 µs
@@ -1075,12 +1075,12 @@ rx_err_t motor_control_task_create(void)
  * - State update: ~20 µs
  * - Overhead: ~23 µs
  * - **Total active time:** ~420 µs
- * - **Sleep time:** 4000µs - 420µs = 3580µs (CPU idle)
- * - **CPU utilization:** (420µs / 4000µs) × 100% = 10.5%
+ * - **Sleep time:** 10000µs - 420µs = 3580µs (CPU idle)
+ * - **CPU utilization:** (420µs / 10000µs) × 100% = 10.5%
  *
  * @par Example - Normal Operation (No E-Stop):
  * @code{.c}
- * // Task executes this loop every 4ms:
+ * // Task executes this loop every 10ms:
  *
  * // Step 1: Check e-stop (inactive)
  * if (!shared_data_is_estop_active()) {
@@ -1105,7 +1105,7 @@ rx_err_t motor_control_task_create(void)
  *   internal_update_motor_state();
  * }
  *
- * // Step 6: Sleep 4ms
+ * // Step 6: Sleep 10ms
  * tx_thread_sleep(1);
  * @endcode
  *
@@ -1146,7 +1146,7 @@ rx_err_t motor_control_task_create(void)
  *
  * @see motor_control_task_create() Task creation function
  * @see internal_init_motor_stack() Motor/encoder/PID/driver initialization
- * @see internal_control_loop_iteration() Single 4ms control cycle (4 motors)
+ * @see internal_control_loop_iteration() Single 10ms control cycle (4 motors)
  * @see internal_active_brake_sequence() 50ms active braking algorithm
  * @see internal_apply_pid_updates() Runtime PID gain updates
  * @see internal_check_comm_timeout() 500ms communication watchdog
@@ -1158,17 +1158,17 @@ rx_err_t motor_control_task_create(void)
  *
  * @since Version 1.0.0
  *
- * @test test_motor_control_task.c - Verify 250 Hz control rate timing
+ * @test test_motor_control_task.c - Verify 100 Hz control rate timing
  * @test test_motor_control_task.c - Verify active brake execution on e-stop
  * @test test_motor_control_task.c - Verify communication timeout trigger (500ms)
  * @test test_motor_control_task.c - Verify PID gain updates applied correctly
  * @test test_motor_control_task.c - Verify motor state updated every iteration
  * @test test_motor_control_task.c - Verify driver fault triggers e-stop
- * @test test_motor_control_task.c - Verify control loop timing budget (< 4ms active)
+ * @test test_motor_control_task.c - Verify control loop timing budget (< 10ms active)
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/while control flow)
- * - **Rule 2:** [PASS] Single while(true) loop with fixed 4ms period, for-loops over k_motor_count
+ * - **Rule 2:** [PASS] Single while(true) loop with fixed 10ms period, for-loops over k_motor_count
  * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based locals)
  * - **Rule 4:** [PASS] Function is ~48 lines (under 100 LOC guideline)
  * - **Rule 5:** [PASS] 6 preconditions, 5 postconditions documented
@@ -1193,7 +1193,7 @@ static void internal_motor_task_entry(ULONG input)
     /* Fall through - try to continue with partial init */
   }
 
-  rx_log_info(s_tag, "Motor control running @ 250 Hz");
+  rx_log_info(s_tag, "Motor control running @ 100 Hz");
 
   /* Main control loop */
   while (true) {
@@ -1387,7 +1387,7 @@ static void internal_motor_task_entry(ULONG input)
  * @endcode
  *
  * @see rx_pid_init() PID controller initialization
- * @see rx_pid_compute() PID control algorithm (called at 250 Hz)
+ * @see rx_pid_compute() PID control algorithm (called at 100 Hz)
  * @see shared_data_get_pid_gains() Retrieve gains from shared_data
  * @see internal_apply_pid_updates() Runtime gain updates
  * @see matlab/motor_model_1st_order.m Motor system identification
@@ -1753,7 +1753,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
 }
 
 /**
- * @brief Execute one iteration of the 250 Hz control loop (4ms cycle for 4 motors)
+ * @brief Execute one iteration of the 100 Hz control loop (10ms cycle for 4 motors)
  *
  * @details
  * This is the core motor control function that executes one complete control cycle
@@ -1776,7 +1776,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  *
  * 3. **Read Encoder Velocity:** Call rx_encoder_read_velocity()
  *    - Channel: rx_mtu_channel_t (0-3 for FL, FR, BL, BR)
- *    - dt: 0.004 seconds (4ms control period)
+ *    - dt: 0.004 seconds (10ms control period)
  *    - Output: current_velocity_mps (meters per second)
  *    - If error: Use 0.0 m/s as fallback (prevents runaway)
  *
@@ -1866,13 +1866,13 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * @post Encoder velocities read and PID outputs computed
  *
  * @invariant All 4 motors controlled symmetrically (same algorithm)
- * @invariant Function completes in ~325µs (well under 4ms budget)
+ * @invariant Function completes in ~325µs (well under 10ms budget)
  * @invariant Function never blocks (all operations non-blocking)
  *
  * @note **Thread Safety:** This function runs in motor control task context (Priority 8).
  *       Uses mutex-protected shared_data access. PID controllers are task-local (no sharing).
  * @note **Re-entrancy:** NOT reentrant. Single instance only (one motor control task).
- * @note **Performance:** ~325µs execution time (8% of 4ms budget). Leaves 3675µs for sleep.
+ * @note **Performance:** ~325µs execution time (8% of 10ms budget). Leaves 3675µs for sleep.
  * @note **Memory:** Peak stack usage ~128 bytes (cmd structure + locals).
  * @note **Fallback Behavior:** On any error (encoder, PID, fault read), function continues
  *       with safe fallback values (0.0 velocity, 0.0% duty). Never aborts control loop.
@@ -1885,7 +1885,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  *          just the faulted motor. This is intentional safety behavior.
  *
  * @attention This is the most critical function in the firmware - executed 250 times per second.
- * @attention Timing is critical - function must complete in < 4ms to meet 250 Hz rate.
+ * @attention Timing is critical - function must complete in < 10ms to meet 100 Hz rate.
  * @attention Invalid commands cause all motors to stop (0% duty) - prevents runaway.
  *
  * @par Thread Safety:
@@ -1905,11 +1905,11 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * - PWM applies: 5 µs × 4 = 20 µs
  * - Fault checks: 10 µs × 4 = 40 µs
  * - **Total:** ~325 µs
- * - **Margin:** 4000µs - 325µs = 3675µs (92% idle)
+ * - **Margin:** 10000µs - 325µs = 3675µs (92% idle)
  *
  * @par Example - Normal Operation:
  * @code{.c}
- * // Called every 4ms from internal_motor_task_entry():
+ * // Called every 10ms from internal_motor_task_entry():
  * internal_control_loop_iteration();
  *
  * // Inside function:
@@ -1960,7 +1960,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * }
  * @endcode
  *
- * @see internal_motor_task_entry() Calls this function every 4ms
+ * @see internal_motor_task_entry() Calls this function every 10ms
  * @see internal_get_target_velocity() Extract target from command
  * @see rx_encoder_read_velocity() Read encoder velocity (MTU peripheral)
  * @see rx_pid_compute() PID control algorithm
@@ -1972,7 +1972,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * @since Version 1.0.0
  *
  * @test test_motor_control_task.c - Verify all 4 motors controlled
- * @test test_motor_control_task.c - Verify execution time < 4ms
+ * @test test_motor_control_task.c - Verify execution time < 10ms
  * @test test_motor_control_task.c - Verify invalid command stops motors
  * @test test_motor_control_task.c - Verify driver fault triggers e-stop
  * @test test_motor_control_task.c - Verify encoder error fallback (0.0 m/s)
@@ -2497,7 +2497,7 @@ static void internal_check_comm_timeout(void)
  * @details
  * Collects current state from all 4 motors (velocity, duty, current, encoder counts, faults)
  * and aggregates into a single motor_state_t structure for consumption by the telemetry task.
- * This function is called every control loop iteration (250 Hz) to provide real-time motor
+ * This function is called every control loop iteration (100 Hz) to provide real-time motor
  * state to the Raspberry Pi 5 via SPI.
  *
  * ## Algorithm Steps
