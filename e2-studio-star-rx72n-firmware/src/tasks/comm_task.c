@@ -40,7 +40,7 @@
  *     color=lightgreen;
  *
  *     usb_cdc [label="USB CDC VCOM\n(Virtual COM Port)", fillcolor=lightblue, style=filled];
- *     spi_periph [label="RSPI0 Peripheral\n(10 Mbps)", fillcolor=lightblue, style=filled];
+ *     spi_periph [label="RSPI2 Peripheral\n(10 Mbps)", fillcolor=lightblue, style=filled];
  *     comm_mgr [label="rx_comm_manager\n(Frame Protocol)", fillcolor=lightyellow, style=filled];
  *     comm_task [label="Comm Task\n(This Module)\nPriority 5 @ 100 Hz",
  *                fillcolor=lightgreen, style=filled];
@@ -138,7 +138,7 @@
  *
  * --- [label="SetVelocityRequest Reception"];
  * RPi5 => SPI [label="SPI transfer\n(SetVelocityRequest)"];
- * SPI box SPI [label="RSPI0 ISR\nReceive frame bytes"];
+ * SPI box SPI [label="RSPI2 ISR\nReceive frame bytes"];
  * SPI => CommManager [label="Frame complete"];
  * CommManager box CommManager [label="Validate CRC-32\nParse header"];
  * CommManager => CommTask [label="internal_frame_callback()\n(k_frame_type_command)"];
@@ -246,7 +246,7 @@
  * | **Shared Data Update** | ~7 µs | Mutex lock + memcpy + event set + unlock |
  *
  * **Latency Budget (Frame Arrival -> Motor Update):**
- * - SPI ISR receive: ~5 µs (RSPI0 interrupt)
+ * - SPI ISR receive: ~5 µs (RSPI2 interrupt)
  * - rx_comm_manager buffer copy: ~20 µs
  * - CRC-32 validation: ~30 µs (hardware CRC peripheral)
  * - Frame callback dispatch: ~10 µs
@@ -375,7 +375,9 @@
 #include "rx_frame.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
+#include "rx_spi_comm.h"
 #include "rx_time_constants.h"
+#include "rx_usb_comm.h"
 #include "shared_data.h"
 #include "tx_api.h"
 
@@ -427,11 +429,74 @@ rx_comm_manager_t g_comm_manager;
 static const char* const s_tag = "COMM";
 
 /* =============================================================================
+ * File-Scoped Transport Handles (Static Instances)
+ * =============================================================================
+ */
+
+/**
+ * @var s_session_state
+ * @brief Shared session state for USB and SPI transports
+ *
+ * @details
+ * Maintains sequence number continuity across both USB and SPI communication channels.
+ * Both transport handles reference this shared state to ensure protocol-level sequence
+ * tracking is consistent regardless of which physical channel receives frames.
+ *
+ * **Purpose**: Prevent replay attacks and detect out-of-order frames by maintaining
+ * a single monotonically increasing sequence counter shared between USB CDC and SPI.
+ *
+ * @note File-scoped static - not accessible outside comm_task.c
+ * @warning Do not modify directly - managed by rx_usb_comm and rx_spi_comm layers
+ * @since Version 1.0.0
+ */
+static rx_session_state_t s_session_state;
+
+/**
+ * @var s_usb_comm_handle
+ * @brief USB CDC communication layer handle
+ *
+ * @details
+ * Provides frame-based protocol communication over USB CDC virtual COM port.
+ * Initialized at task startup via rx_usb_comm_init() and remains valid for the
+ * lifetime of the task.
+ *
+ * **Initialization**: rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg)
+ * **Shared state**: References s_session_state for sequence tracking
+ *
+ * @note File-scoped static - not accessible outside comm_task.c
+ * @warning Do not access internal fields directly - use rx_usb_comm API functions
+ * @since Version 1.0.0
+ * @see rx_usb_comm_init() Initialization function
+ */
+static rx_usb_comm_handle_t s_usb_comm_handle;
+
+/**
+ * @var s_spi_comm_handle
+ * @brief SPI communication layer handle (RSPI2 peripheral mode)
+ *
+ * @details
+ * Provides frame-based protocol communication over SPI hardware interface to RPi5.
+ * Initialized at task startup via rx_spi_comm_init() and remains valid for the
+ * lifetime of the task.
+ *
+ * **Initialization**: rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg)
+ * **Shared state**: References s_session_state for sequence tracking
+ * **Hardware**: RSPI2 channel 0, SPI mode 0 (CPOL=0, CPHA=0)
+ *
+ * @note File-scoped static - not accessible outside comm_task.c
+ * @warning Do not access internal fields directly - use rx_spi_comm API functions
+ * @since Version 1.0.0
+ * @see rx_spi_comm_init() Initialization function
+ */
+static rx_spi_comm_handle_t s_spi_comm_handle;
+
+/* =============================================================================
  * Forward Declarations
  * =============================================================================
  */
 
 static void internal_comm_task_entry(ULONG input);
+static void internal_init_transports(rx_comm_manager_config_t* config);
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx);
 static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
 
@@ -541,7 +606,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  * @pre tx_application_define() callback currently executing
  * @pre shared_data_init() called successfully (required for shared_data_set_motor_command)
  * @pre USB CDC peripheral initialized (for USB command reception)
- * @pre RSPI0 peripheral initialized (for SPI command reception)
+ * @pre RSPI2 peripheral initialized (for SPI command reception)
  * @pre s_comm_created == false (never called before)
  * @pre s_comm_thread uninitialized (first use)
  * @pre s_comm_stack allocated and uninitialized (first use)
@@ -748,6 +813,100 @@ rx_err_t comm_task_create(void)
  */
 
 /**
+ * @brief Initialize USB and SPI transport layers and wire into comm manager config
+ *
+ * @details
+ * Performs complete initialization of USB CDC and SPI communication transport layers,
+ * including handle initialization, error handling, and validation logging. This function
+ * populates the rx_comm_manager_config_t structure with either real transport handles
+ * (on success) or nullptr (on failure) to enable graceful degradation.
+ *
+ * **Algorithm Steps:**
+ * 1. **Initialize USB transport**: Call rx_usb_comm_init() with shared session state
+ * 2. **Handle USB failure**: Log error if init fails, set handle to nullptr
+ * 3. **Initialize SPI transport**: Call rx_spi_comm_init() with shared session state
+ * 4. **Handle SPI failure**: Log error if init fails, set handle to nullptr
+ * 5. **Wire handles**: Assign valid or nullptr handles to config structure
+ * 6. **Validate transports**: Log critical error if both transports failed
+ * 7. **Log success**: Log info for each successfully initialized transport
+ *
+ * **Graceful Degradation:**
+ * - If one transport fails: Other transport continues (logged warning)
+ * - If both transports fail: Config wired with nullptr handles (logged critical error)
+ * - Comm manager will return k_rx_err_timeout on poll for nullptr handles
+ *
+ * @param[out] config Comm manager configuration to populate
+ *   - **Valid range**: Non-NULL pointer to rx_comm_manager_config_t
+ *   - **Constraints**: Must be zeroed before calling this function
+ *   - **Side effects**: usb_handle and spi_handle fields populated
+ *
+ * @return void This function does not return a value
+ *
+ * @pre config must be non-NULL and zero-initialized (memset)
+ * @pre s_session_state must be zero-initialized (static storage)
+ * @pre RSPI2 peripheral must be initialized before calling this function
+ * @post config->usb_handle set to &s_usb_comm_handle or nullptr
+ * @post config->spi_handle set to &s_spi_comm_handle or nullptr
+ * @post At least one transport handle set on success (best effort)
+ * @post All init failures logged via rx_log_error
+ *
+ * @note This function does NOT initialize RSPI hardware - caller must ensure
+ *       RSPI2 peripheral is initialized before calling
+ * @note Called once during single-threaded task initialization; not thread-safe
+ * @warning Function has no return value - check config->usb_handle and
+ *          config->spi_handle for nullptr to detect complete failure
+ *
+ * @par Thread Safety:
+ * This function is **not thread-safe**. It must be called only once during
+ * task initialization in a single-threaded context. The function modifies
+ * file-scoped static variables (s_usb_comm_handle, s_spi_comm_handle) and
+ * should not be called concurrently from multiple threads.
+ *
+ * @since Version 1.0.0
+ * @see rx_usb_comm_init() USB transport layer initialization
+ * @see rx_spi_comm_init() SPI transport layer initialization
+ */
+static void internal_init_transports(rx_comm_manager_config_t* config)
+{
+  /* Precondition checks (NASA Power of 10 Rule 5: minimum 2 checks) */
+  RX_ASSERT(config != nullptr, "Config pointer must not be NULL");
+  RX_ASSERT(s_tag != nullptr, "Log tag must be initialized");
+
+  /* Initialize USB communication layer */
+  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr};
+  bool usb_ok                   = (rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg) == k_rx_ok);
+  if (!usb_ok) {
+    rx_log_error(s_tag, "USB comm init failed");
+  }
+
+  /* Initialize SPI communication layer (RSPI2, channel 0) */
+  rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
+                                   .channel     = k_spi_comm_default_channel,
+                                   .spi_mode    = k_spi_comm_default_mode,
+                                   .fec_enabled = false};
+  bool spi_ok                   = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
+  if (!spi_ok) {
+    rx_log_error(s_tag, "SPI comm init failed");
+  }
+
+  /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
+  config->usb_handle = usb_ok ? &s_usb_comm_handle : nullptr;
+  config->spi_handle = spi_ok ? &s_spi_comm_handle : nullptr;
+
+  /* Validation logging */
+  if (!usb_ok && !spi_ok) {
+    rx_log_error(s_tag, "CRITICAL: Both USB and SPI transports failed to initialize");
+  } else {
+    if (usb_ok) {
+      rx_log_info(s_tag, "USB transport initialized");
+    }
+    if (spi_ok) {
+      rx_log_info(s_tag, "SPI transport initialized");
+    }
+  }
+}
+
+/**
  * @brief Communication task entry point - infinite loop polling rx_comm_manager at 100 Hz
  *
  * @details
@@ -758,19 +917,28 @@ rx_err_t comm_task_create(void)
  *
  * ## Complete Algorithm (10 Steps)
  *
- * ### Initialization Phase (Steps 1-4)
+ * ### Initialization Phase (Steps 1-6)
  *
  * 1. **Log Startup:** Print "Communication task starting" via UART
- * 2. **Zero Config Structure:** Clear rx_comm_manager_config_t to ensure all fields initialized
- * 3. **Configure Communication Manager:**
- *    - USB handle: NULL (USB CDC handle set externally via hardware_init)
- *    - SPI handle: NULL (RSPI0 handle set externally via hardware_init)
+ * 2. **Initialize USB Transport Layer:**
+ *    - Call rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg)
+ *    - Configure with shared session state (s_session_state)
+ *    - If init fails: Log error but continue (SPI may still work)
+ * 3. **Initialize SPI Transport Layer:**
+ *    - Call rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg)
+ *    - Configure with shared session state, channel 0, mode 0, no FEC
+ *    - If init fails: Log error but continue (USB may still work)
+ * 4. **Configure Communication Manager:**
+ *    - USB handle: &s_usb_comm_handle (real initialized handle)
+ *    - SPI handle: &s_spi_comm_handle (real initialized handle)
  *    - Callback: internal_frame_callback (invoked when complete frame received)
  *    - Callback context: &g_comm_manager (passed to callback for state access)
  *    - Enable decoded output: true (log frame contents for debugging)
- * 4. **Initialize rx_comm_manager:** Call rx_comm_manager_init()
+ * 5. **Initialize rx_comm_manager:** Call rx_comm_manager_init()
  *    - If init fails: Log error but continue (task will poll but won't receive frames)
- *    - USB/SPI peripherals must be initialized before this call
+ * 6. **Validate Transports:** Check if at least one transport initialized successfully
+ *    - If both fail: Log critical error (system cannot communicate)
+ *    - If one succeeds: Log which transport(s) are operational
  *
  * ### Main Polling Loop (Steps 5-10, Infinite)
  *
@@ -807,23 +975,24 @@ rx_err_t comm_task_create(void)
  * **Configuration structure:**
  * ```c
  * typedef struct {
- *   void* usb_handle;                  // USB CDC VCOM handle (set externally)
- *   void* spi_handle;                  // RSPI0 SPI handle (set externally)
+ *   rx_usb_comm_handle_t* usb_handle;  // Real USB communication layer handle
+ *   rx_spi_comm_handle_t* spi_handle;  // Real SPI communication layer handle
  *   rx_frame_callback_t callback;      // Frame received callback
  *   void* callback_ctx;                // User context for callback
  *   bool enable_decoded_output;        // Log frame contents for debugging
  * } rx_comm_manager_config_t;
  * ```
  *
- * **Why USB/SPI handles are NULL during init?**
- * - USB CDC and RSPI0 peripherals initialized in hardware_init() (before task creation)
- * - rx_comm_manager looks up handles by name ("usb_cdc", "spi0") internally
- * - NULL handles trigger lookup from global peripheral registry
+ * **Transport Layer Initialization:**
+ * - USB and SPI communication layers initialized at task startup
+ * - rx_usb_comm_init() and rx_spi_comm_init() called before comm manager init
+ * - Both transports share session state (s_session_state) for sequence continuity
+ * - Handles are statically allocated (s_usb_comm_handle, s_spi_comm_handle)
  *
- * **If rx_comm_manager_init() fails:**
- * - Task continues running but won't receive frames
- * - Poll will return k_rx_err_timeout every cycle
- * - Allows USB/SPI peripherals to recover (hot-plug, power-cycle)
+ * **Graceful Degradation:**
+ * - If one transport fails init: Other transport continues (logged warning)
+ * - If both transports fail: Task continues but cannot communicate (logged critical error)
+ * - Poll will return k_rx_err_timeout every cycle until transports recover
  * - Error logged once during init, not every poll cycle
  *
  * ## Polling Strategy - Non-Blocking Check
@@ -905,7 +1074,7 @@ rx_err_t comm_task_create(void)
  * @pre comm_task_create() called successfully
  * @pre ThreadX scheduler started (task is scheduled)
  * @pre USB CDC peripheral initialized (for USB frame reception)
- * @pre RSPI0 peripheral initialized (for SPI frame reception)
+ * @pre RSPI2 peripheral initialized (for SPI frame reception)
  * @pre shared_data_init() called (for shared_data_set_motor_command)
  *
  * @post rx_comm_manager initialized (if USB/SPI ready)
@@ -1044,14 +1213,14 @@ static void internal_comm_task_entry(ULONG input)
 
   rx_log_info(s_tag, "Communication task starting");
 
-  /* Initialize communication manager */
+  /* Initialize transport layers and wire into comm manager config */
   (void)memset(&config, 0, sizeof(config));
-  config.usb_handle            = nullptr; /* USB/SPI handles set via hardware_init */
-  config.spi_handle            = nullptr;
+  internal_init_transports(&config);
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
   config.enable_decoded_output = true;
 
+  /* Initialize communication manager */
   err = rx_comm_manager_init(&g_comm_manager, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Comm manager init failed", (uint32_t)err);
