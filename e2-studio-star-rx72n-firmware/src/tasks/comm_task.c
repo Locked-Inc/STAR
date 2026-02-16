@@ -375,7 +375,9 @@
 #include "rx_frame.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
+#include "rx_spi_comm.h"
 #include "rx_time_constants.h"
+#include "rx_usb_comm.h"
 #include "shared_data.h"
 #include "tx_api.h"
 
@@ -425,6 +427,20 @@ rx_comm_manager_t g_comm_manager;
 
 /** @brief Log tag for this module */
 static const char* const s_tag = "COMM";
+
+/* =============================================================================
+ * Global Transport Handles
+ * =============================================================================
+ */
+
+/** @brief Shared session state for USB and SPI transports */
+static rx_session_state_t s_session_state;
+
+/** @brief USB communication handle */
+static rx_usb_comm_handle_t s_usb_comm_handle;
+
+/** @brief SPI communication handle */
+static rx_spi_comm_handle_t s_spi_comm_handle;
 
 /* =============================================================================
  * Forward Declarations
@@ -1044,10 +1060,33 @@ static void internal_comm_task_entry(ULONG input)
 
   rx_log_info(s_tag, "Communication task starting");
 
-  /* Initialize communication manager */
+  /* Initialize USB communication layer */
+  rx_usb_comm_config_t usb_cfg = {.session = &s_session_state, .time_iface = nullptr /* Optional */
+  };
+
+  err = rx_usb_comm_init(&s_usb_comm_handle, &usb_cfg);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "USB comm init failed");
+    /* Continue - SPI may still work */
+  }
+
+  /* Initialize SPI communication layer (RSPI2, channel 0) */
+  rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state, /* Share session with USB */
+                                   .channel     = 0,                /* RSPI2 channel 0 */
+                                   .spi_mode    = 0,                /* SPI mode 0 (CPOL=0, CPHA=0) */
+                                   .fec_enabled = false             /* No FEC for now */
+  };
+
+  err = rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "SPI comm init failed");
+    /* Continue - USB may still work */
+  }
+
+  /* Initialize communication manager with real handles */
   (void)memset(&config, 0, sizeof(config));
-  config.usb_handle            = nullptr; /* USB/SPI handles set via hardware_init */
-  config.spi_handle            = nullptr;
+  config.usb_handle            = &s_usb_comm_handle; /* Real USB handle */
+  config.spi_handle            = &s_spi_comm_handle; /* Real SPI handle */
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
   config.enable_decoded_output = true;
@@ -1056,6 +1095,23 @@ static void internal_comm_task_entry(ULONG input)
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Comm manager init failed", (uint32_t)err);
     /* Continue - task will poll but won't receive frames */
+  }
+
+  /* Verify at least one transport is functional */
+  bool usb_ok = (s_usb_comm_handle.initialized != 0);
+  bool spi_ok = (s_spi_comm_handle.initialized != 0);
+
+  if (!usb_ok && !spi_ok) {
+    rx_log_error(s_tag, "CRITICAL: Both USB and SPI transports failed to initialize");
+    /* System can't communicate - this is a critical failure */
+    /* For now, continue and rely on timeout behavior */
+  } else {
+    if (usb_ok) {
+      rx_log_info(s_tag, "USB transport initialized");
+    }
+    if (spi_ok) {
+      rx_log_info(s_tag, "SPI transport initialized");
+    }
   }
 
   rx_log_info(s_tag, "Communication running @ 100 Hz");
