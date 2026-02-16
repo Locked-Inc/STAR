@@ -1720,10 +1720,10 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
  */
 rx_err_t shared_data_commit_isr_estop(void)
 {
-  UINT            tx_status;
-  UINT            saved_interrupt_state;
-  bool            pending = false;
-  estop_reason_t  reason  = k_estop_reason_none;
+  UINT           tx_status;
+  UINT           saved_interrupt_state;
+  bool           pending = false;
+  estop_reason_t reason  = k_estop_reason_none;
 
   /* Check initialization */
   if (!g_shared_data.initialized) {
@@ -1736,7 +1736,7 @@ rx_err_t shared_data_commit_isr_estop(void)
   /* Atomically read and clear the pending flag */
   pending = s_estop_pending_from_isr;
   if (pending) {
-    reason = s_pending_estop_reason;
+    reason                   = s_pending_estop_reason;
     s_estop_pending_from_isr = false; /* Clear flag while interrupts disabled */
   }
 

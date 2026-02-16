@@ -176,11 +176,14 @@
 #include "hardware.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
+#include "rx_bus_config.h"
 #include "rx_bus_manager.h"
+#include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_clock_power_init.h"
 #include "rx_err.h"
 #include "rx_infrastructure.h"
+#include "rx_port_utils.h"
 #include "tx_api.h"
 
 /* Multi-task architecture includes */
@@ -207,6 +210,29 @@
 typedef enum : uint8_t {
   k_main_ret_success = 0, /**< Successful completion (should never be reached) */
 } main_ret_t;
+
+/* =============================================================================
+ * Static Bus Configurations
+ * =============================================================================
+ */
+
+/**
+ * @brief Static bus configurations for system-wide communication
+ * @details
+ * Pre-allocated bus configurations registered with bus manager during
+ * tx_application_define(). Static allocation follows NASA Rule 3.
+ *
+ * | Bus Name | Type | Hardware | Purpose |
+ * |----------|------|----------|---------|
+ * | i2c0 | SMBus | RIIC1 | BQ4050 BMS communication |
+ * | onewire0 | 1-Wire | P51 | DS18B20 temperature sensor |
+ * | gpio | GPIO | Generic | Motor driver control pins |
+ * | adc0 | ADC | S12AD0 | Motor current sensing |
+ */
+static rx_bus_config_t s_i2c0_config;
+static rx_bus_config_t s_onewire0_config;
+static rx_bus_config_t s_gpio_config;
+static rx_bus_config_t s_adc0_config;
 
 /* =============================================================================
  * Startup Flag Check Helpers
@@ -1355,7 +1381,51 @@ void tx_application_define(void* first_unused_memory)
     RX_ASSERT(err == k_rx_ok, "rx_bus_manager_init must succeed");
   }
 
-  /* Step 1b: Initialize shared data module (mutexes, event flags) */
+  /* Step 1b: Register buses with manager (before tasks need them) */
+  {
+    extern rx_bus_manager_t g_bus_manager;
+
+    /* Register i2c0 (SMBus) - BQ4050 Battery Management System */
+    err = rx_bus_config_init_smbus(&s_i2c0_config,
+                                   "i2c0",    /* name */
+                                   1,         /* channel = RIIC1 */
+                                   0x0B,      /* device_addr = BQ4050 */
+                                   k_rx_p2_0, /* sda_pin = P20 */
+                                   k_rx_p2_1, /* scl_pin = P21 */
+                                   100000,    /* frequency_hz = 100 kHz */
+                                   true);     /* use_pec = true */
+    RX_ASSERT(err == k_rx_ok, "i2c0 config init must succeed");
+    err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c0_config);
+    RX_ASSERT(err == k_rx_ok, "i2c0 registration must succeed");
+
+    /* Register onewire0 - DS18B20 Temperature Sensor */
+    err = rx_bus_config_init_onewire(&s_onewire0_config,
+                                     "onewire0", /* name */
+                                     k_rx_p5_1); /* pin = P51 */
+    RX_ASSERT(err == k_rx_ok, "onewire0 config init must succeed");
+    err = rx_bus_manager_add_bus(&g_bus_manager, &s_onewire0_config);
+    RX_ASSERT(err == k_rx_ok, "onewire0 registration must succeed");
+
+    /* Register gpio - Generic GPIO Access (initial pin P00) */
+    err = rx_bus_config_init_gpio(&s_gpio_config,
+                                  "gpio",     /* name */
+                                  k_rx_p0_0); /* pin = P00 (generic bus) */
+    RX_ASSERT(err == k_rx_ok, "gpio config init must succeed");
+    err = rx_bus_manager_add_bus(&g_bus_manager, &s_gpio_config);
+    RX_ASSERT(err == k_rx_ok, "gpio registration must succeed");
+
+    /* Register adc0 - Motor Current Sensing (ADC Unit 0) */
+    err = rx_bus_config_init_adc(&s_adc0_config,
+                                 "adc0", /* name */
+                                 0,      /* unit = ADC0 */
+                                 0,      /* channel = 0 (generic bus) */
+                                 12);    /* bits = 12-bit */
+    RX_ASSERT(err == k_rx_ok, "adc0 config init must succeed");
+    err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
+    RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
+  }
+
+  /* Step 1c: Initialize shared data module (mutexes, event flags) */
   err = shared_data_init();
   RX_ASSERT(err == k_rx_ok, "shared_data_init must succeed");
 

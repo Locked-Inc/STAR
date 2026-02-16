@@ -129,8 +129,8 @@ extern "C" {
   X(a, STATIC, ONEOF, MESSAGE, (payload, battery_status, payload.battery_status), 20)              \
   X(a, STATIC, ONEOF, MESSAGE, (payload, battery_state, payload.battery_state), 21)                \
   X(a, STATIC, ONEOF, MESSAGE, (payload, pid_config, payload.pid_config), 30)
-#define star_v1_WireMessage_CALLBACK                              nullptr
-#define star_v1_WireMessage_DEFAULT                               nullptr
+#define star_v1_WireMessage_CALLBACK                               nullptr
+#define star_v1_WireMessage_DEFAULT                                nullptr
 #define star_v1_WireMessage_payload_velocity_command_MSGTYPE       star_v1_VelocityCommand
 #define star_v1_WireMessage_payload_emergency_stop_command_MSGTYPE star_v1_EmergencyStopCommand
 #define star_v1_WireMessage_payload_motor_power_command_MSGTYPE    star_v1_MotorPowerCommand
@@ -144,8 +144,8 @@ extern "C" {
   X(a, STATIC, SINGULAR, STRING, reason, 1)                                                        \
   X(a, STATIC, SINGULAR, BOOL, engage_hardware_stop, 2)                                            \
   X(a, STATIC, SINGULAR, INT64, timestamp_us, 3)
-#define star_v1_EmergencyStopCommand_CALLBACKnullptr
-#define star_v1_EmergencyStopCommand_DEFAULT nullptr
+#define star_v1_EmergencyStopCommand_CALLBACK nullptr
+#define star_v1_EmergencyStopCommand_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_WireMessage_msg;
 extern const pb_msgdesc_t star_v1_EmergencyStopCommand_msg;
