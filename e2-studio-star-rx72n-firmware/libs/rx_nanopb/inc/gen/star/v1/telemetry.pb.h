@@ -468,7 +468,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, DOUBLE, gyro_y_rad_per_s, 8)                                              \
   X(a, STATIC, SINGULAR, DOUBLE, gyro_z_rad_per_s, 9)
 #define star_v1_ImuData_CALLBACK nullptr
-#define star_v1_ImuData_DEFAULT nullptr
+#define star_v1_ImuData_DEFAULT  nullptr
 
 #define star_v1_GpsData_FIELDLIST(X, a)                                                            \
   X(a, STATIC, SINGULAR, DOUBLE, latitude_deg, 1)                                                  \
@@ -478,7 +478,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, INT32, satellites, 5)                                                     \
   X(a, STATIC, SINGULAR, UENUM, fix_type, 6)
 #define star_v1_GpsData_CALLBACK nullptr
-#define star_v1_GpsData_DEFAULT nullptr
+#define star_v1_GpsData_DEFAULT  nullptr
 
 #define star_v1_SystemStatus_FIELDLIST(X, a)                                                       \
   X(a, STATIC, SINGULAR, UENUM, connection_status, 1)                                              \
@@ -490,7 +490,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT64, uptime_s, 7)                                                      \
   X(a, STATIC, SINGULAR, UINT32, free_heap_bytes, 8)
 #define star_v1_SystemStatus_CALLBACK nullptr
-#define star_v1_SystemStatus_DEFAULT nullptr
+#define star_v1_SystemStatus_DEFAULT  nullptr
 
 extern const pb_msgdesc_t star_v1_GetTelemetryRequest_msg;
 extern const pb_msgdesc_t star_v1_GetTelemetryResponse_msg;

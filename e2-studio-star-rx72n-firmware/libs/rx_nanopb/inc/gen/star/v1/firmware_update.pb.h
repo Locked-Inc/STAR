@@ -775,7 +775,7 @@ extern "C" {
   X(a, STATIC, SINGULAR, UINT32, transfer_speed_bps, 7)                                            \
   X(a, STATIC, SINGULAR, UINT32, last_sequence, 8)
 #define star_v1_FirmwareUpdateProgress_CALLBACK nullptr
-#define star_v1_FirmwareUpdateProgress_DEFAULT nullptr
+#define star_v1_FirmwareUpdateProgress_DEFAULT  nullptr
 
 #define star_v1_RebootRequest_FIELDLIST(X, a)                                                      \
   X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
