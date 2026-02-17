@@ -126,8 +126,8 @@ func TestNewSPILink_Valid(t *testing.T) {
 		t.Error("Decoder not initialized")
 	}
 
-	if link.config.EnableFEC {
-		t.Error("FEC should be disabled by default")
+	if !link.config.EnableFEC {
+		t.Error("FEC should be enabled by default")
 	}
 }
 
@@ -1084,8 +1084,8 @@ func TestSPILink_ReceiveContextCanceled(t *testing.T) {
 func TestDefaultSPILinkConfig(t *testing.T) {
 	config := DefaultSPILinkConfig()
 
-	if config.EnableFEC {
-		t.Error("Expected FEC disabled by default")
+	if !config.EnableFEC {
+		t.Error("Expected FEC enabled by default")
 	}
 
 	if config.MaxRetries != maxRetries {
@@ -1385,8 +1385,29 @@ func TestSPILink_SendWithType_FrameTypes(t *testing.T) {
 			if f.Type != tc.frameType {
 				t.Errorf("Frame type = %v, want %v", f.Type, tc.frameType)
 			}
-			if string(f.Payload) != string(tc.payload) {
-				t.Errorf("Payload = %q, want %q", f.Payload, tc.payload)
+
+			// For zero-length payloads the encoder must NOT set FlagFECEnabled.
+			// This enforces the "zero-length-skip" contract introduced around sendWithRetry.
+			if len(tc.payload) == 0 {
+				if (f.Header.Flags & frame.FlagFECEnabled) != 0 {
+					t.Fatalf("%s: zero-length payload must NOT set FlagFECEnabled", tc.name)
+				}
+			}
+
+			// If FEC is enabled the wire payload will be FEC-encoded; decode before comparing.
+			if (f.Header.Flags & frame.FlagFECEnabled) != 0 {
+				dec := fec.NewViterbiDecoder()
+				decoded, err := dec.DecodeHard(f.Payload, len(tc.payload))
+				if err != nil {
+					t.Fatalf("FEC decode failed: %v", err)
+				}
+				if string(decoded) != string(tc.payload) {
+					t.Errorf("Decoded payload = %q, want %q", decoded, tc.payload)
+				}
+			} else {
+				if string(f.Payload) != string(tc.payload) {
+					t.Errorf("Payload = %q, want %q", f.Payload, tc.payload)
+				}
 			}
 		})
 	}
