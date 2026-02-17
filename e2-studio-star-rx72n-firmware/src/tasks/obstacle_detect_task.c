@@ -929,64 +929,6 @@ typedef enum : uint8_t {
 } obstacle_sensor_constants_t;
 
 /**
- * @enum hcsr04_timeout_us_t
- * @brief HC-SR04 echo pulse timeout configuration (microseconds)
- *
- * @details
- * Defines the maximum echo pulse width before declaring timeout. This timeout
- * determines the maximum measurable range of the HC-SR04 ultrasonic sensor.
- *
- * **Timeout Calculation:**
- * @f[
- *   \text{Range}_{\text{max}} = \frac{t_{\text{timeout}} \times v_{\text{sound}}}{2}
- * @f]
- *
- * For 30 ms (30000 µs) timeout at 20°C (343.4 m/s):
- * @f[
- *   \text{Range}_{\text{max}} = \frac{30000 \times 10^{-6} \times 343.4}{2} = 5.15 \text{ m} = 515 \text{ cm}
- * @f]
- *
- * **Why 30 ms?**
- * - HC-SR04 max range: 400 cm (theoretical)
- * - Effective range: 300 cm (real-world with temperature compensation)
- * - 30 ms timeout covers 515 cm (71% safety margin)
- * - Prevents indefinite blocking on sensor failure (no echo received)
- *
- * **Echo Pulse Width vs Distance:**
- * | Distance | Echo Width @ 20°C | Echo Width @ 40°C |
- * |----------|-------------------|-------------------|
- * | 10 cm    | 583 µs            | 562 µs            |
- * | 30 cm    | 1747 µs           | 1686 µs           |
- * | 100 cm   | 5825 µs           | 5620 µs           |
- * | 400 cm   | 23300 µs          | 22480 µs          |
- * | Timeout  | **30000 µs**      | **30000 µs**      |
- *
- * @invariant k_hcsr04_echo_timeout_us > 25000 (covers 400 cm + margin)
- * @invariant k_hcsr04_echo_timeout_us < 38000 (HC-SR04 hardware limit)
- *
- * @code
- * // Assign into HC-SR04 config struct passed to rx_hcsr04_init():
- * rx_hcsr04_config_t config = {
- *     .trigger_pin = k_rx_pf_5,
- *     .echo_pin    = k_rx_p0_3,
- *     .timeout_us  = k_hcsr04_echo_timeout_us,  // 30 ms = 515 cm max range
- * };
- * rx_err_t err = rx_hcsr04_init(&handle, &config);
- * @endcode
- *
- * @note Used by ALL 4 sensors (identical hardware specs)
- * @warning Do NOT exceed 38 ms (HC-SR04 will not respond)
- *
- * @see rx_hcsr04_init() Uses this value in config.timeout_us
- * @see rx_hcsr04_measure() Times out after this duration if no echo
- *
- * @since STAR v1.0.0
- */
-typedef enum : uint32_t {
-  k_hcsr04_echo_timeout_us = 30000, /**< 30 ms echo timeout = 515 cm max range @ 20°C */
-} hcsr04_timeout_us_t;
-
-/**
  * @enum obstacle_sensor_idx_t
  * @brief Named indices for the 4 HC-SR04 sensors in s_sensors and s_sensor_ptrs
  *
