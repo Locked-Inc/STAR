@@ -505,12 +505,32 @@ static bool s_motor_created = false;
 /** @brief Motor handles for each motor */
 static rx_motor_handle_t s_motors[k_motor_count];
 
-/** @brief Motor handle pointer array for external access */
+/**
+ * @var s_motor_ptrs
+ * @brief Externally accessible array of rx_motor_handle_t pointers (one per motor)
+ *
+ * @details
+ * Contains pointers to each element of s_motors, in the order defined by motor_index_t.
+ * Returned by motor_control_task_get_motors() to allow other tasks (e.g. obstacle detection)
+ * zero-copy access to motor handles without exposing s_motors directly.
+ *
+ * **Array mapping (motor_index_t order):**
+ * - [k_motor_front_left]  → &s_motors[k_motor_front_left]  (front-left motor)
+ * - [k_motor_front_right] → &s_motors[k_motor_front_right] (front-right motor)
+ * - [k_motor_back_left]   → &s_motors[k_motor_back_left]   (back-left motor)
+ * - [k_motor_back_right]  → &s_motors[k_motor_back_right]  (back-right motor)
+ *
+ * @invariant Array size equals k_motor_count (4)
+ * @invariant Pointers remain valid for program lifetime (static allocation)
+ * @note Read-only for external callers — do NOT modify pointed-to handles
+ * @warning Handles are uninitialized until internal_init_motor_stack() completes
+ * @since STAR v1.0.0
+ */
 static rx_motor_handle_t* s_motor_ptrs[k_motor_count] = {
-  &s_motors[0],
-  &s_motors[1],
-  &s_motors[2],
-  &s_motors[3],
+  &s_motors[k_motor_front_left],
+  &s_motors[k_motor_front_right],
+  &s_motors[k_motor_back_left],
+  &s_motors[k_motor_back_right],
 };
 
 /** @brief Encoder state for each motor */
@@ -918,7 +938,7 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
 
   /* Check if motor task has been created and initialized */
   if (!s_motor_created) {
-    *out_count = 0;
+    *out_count = k_motor_count_none;
     return nullptr;  /* Motors not ready yet */
   }
 

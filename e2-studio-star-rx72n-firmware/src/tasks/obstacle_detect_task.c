@@ -976,6 +976,41 @@ typedef enum : uint32_t {
   k_hcsr04_echo_timeout_us = 30000, /**< 30 ms echo timeout = 515 cm max range @ 20°C */
 } hcsr04_timeout_us_t;
 
+/**
+ * @enum obstacle_sensor_idx_t
+ * @brief Named indices for the 4 HC-SR04 sensors in s_sensors and s_sensor_ptrs
+ *
+ * @details
+ * Provides self-documenting array indices for sensor access, eliminating
+ * magic numbers in initializers and any future direct array access.
+ * Maps to physical sensor positions around the robot perimeter.
+ *
+ * @invariant Exactly k_obstacle_sensor_count (4) values defined
+ * @see s_sensors HC-SR04 handle array indexed by these values
+ * @see s_sensor_ptrs Pointer array indexed by these values
+ * @since STAR v1.0.0
+ */
+typedef enum : uint8_t {
+  k_sensor_front_left  = 0, /**< Front-left sensor (TRIG=PF5, ECHO=P03/IRQ11) */
+  k_sensor_front_right = 1, /**< Front-right sensor (TRIG=PJ5, ECHO=P02/IRQ10) */
+  k_sensor_back_left   = 2, /**< Back-left sensor (TRIG=PJ3, ECHO=P01/IRQ9) */
+  k_sensor_back_right  = 3, /**< Back-right sensor (TRIG=P33, ECHO=P00/IRQ8) */
+} obstacle_sensor_idx_t;
+
+/**
+ * @enum obstacle_motor_count_t
+ * @brief Motor count sentinel for motor handle availability checks
+ *
+ * @details
+ * Named constant to replace magic number 0 when checking whether
+ * motor_control_task_get_motors() returned a valid (non-empty) handle array.
+ *
+ * @since STAR v1.0.0
+ */
+typedef enum : uint8_t {
+  k_obstacle_motor_count_none = 0, /**< Zero motors — motor task not yet initialized */
+} obstacle_motor_count_t;
+
 /* =============================================================================
  * Static Variables
  * =============================================================================
@@ -1112,10 +1147,10 @@ static rx_hcsr04_t s_sensors[k_obstacle_sensor_count];
  * @since STAR v1.0.0
  */
 static rx_hcsr04_t* s_sensor_ptrs[k_obstacle_sensor_count] = {
-  &s_sensors[0],  /* Front-left */
-  &s_sensors[1],  /* Front-right */
-  &s_sensors[2],  /* Back-left */
-  &s_sensors[3],  /* Back-right */
+  &s_sensors[k_sensor_front_left],
+  &s_sensors[k_sensor_front_right],
+  &s_sensors[k_sensor_back_left],
+  &s_sensors[k_sensor_back_right],
 };
 
 /* =============================================================================
@@ -1453,30 +1488,51 @@ rx_err_t obstacle_detect_task_create(void)
  */
 static rx_err_t internal_init_sensors(void)
 {
-  /* Pin configuration arrays (indexed by sensor: 0=FL, 1=FR, 2=BL, 3=BR) */
+  /**
+   * @var trigger_pins
+   * @brief GPIO trigger output pins indexed by obstacle_sensor_idx_t
+   * @details Maps each sensor index to its hardware TRIG pin (10 µs pulse output).
+   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left … k_sensor_back_right).
+   * @since STAR v1.0.0
+   */
   static const rx_port_pin_t trigger_pins[k_obstacle_sensor_count] = {
-    k_rx_pf_5,  /* Sensor 0: Front-Left TRIG */
-    k_rx_pj_5,  /* Sensor 1: Front-Right TRIG */
-    k_rx_pj_3,  /* Sensor 2: Back-Left TRIG */
-    k_rx_p3_3,  /* Sensor 3: Back-Right TRIG */
+    k_rx_pf_5,  /* k_sensor_front_left:  PF5 TRIG */
+    k_rx_pj_5,  /* k_sensor_front_right: PJ5 TRIG */
+    k_rx_pj_3,  /* k_sensor_back_left:   PJ3 TRIG */
+    k_rx_p3_3,  /* k_sensor_back_right:  P33 TRIG */
   };
 
+  /**
+   * @var echo_pins
+   * @brief GPIO echo input pins indexed by obstacle_sensor_idx_t
+   * @details Maps each sensor index to its hardware ECHO pin (pulse-width input).
+   *          Pins P00-P03 also support IRQ8-IRQ11 for future interrupt-driven measurement.
+   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left … k_sensor_back_right).
+   * @since STAR v1.0.0
+   */
   static const rx_port_pin_t echo_pins[k_obstacle_sensor_count] = {
-    k_rx_p0_3,  /* Sensor 0: Front-Left ECHO (IRQ11) */
-    k_rx_p0_2,  /* Sensor 1: Front-Right ECHO (IRQ10) */
-    k_rx_p0_1,  /* Sensor 2: Back-Left ECHO (IRQ9) */
-    k_rx_p0_0,  /* Sensor 3: Back-Right ECHO (IRQ8) */
+    k_rx_p0_3,  /* k_sensor_front_left:  P03 ECHO (IRQ11) */
+    k_rx_p0_2,  /* k_sensor_front_right: P02 ECHO (IRQ10) */
+    k_rx_p0_1,  /* k_sensor_back_left:   P01 ECHO (IRQ9) */
+    k_rx_p0_0,  /* k_sensor_back_right:  P00 ECHO (IRQ8) */
   };
 
+  /**
+   * @var sensor_names
+   * @brief Human-readable sensor names for error log messages
+   * @details Passed to rx_log_error_val() when a sensor fails to initialize.
+   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left … k_sensor_back_right).
+   * @since STAR v1.0.0
+   */
   static const char* const sensor_names[k_obstacle_sensor_count] = {
-    "Front-left",
-    "Front-right",
-    "Back-left",
-    "Back-right",
+    "Front-left sensor init failed",
+    "Front-right sensor init failed",
+    "Back-left sensor init failed",
+    "Back-right sensor init failed",
   };
 
   /* Initialize all sensors in loop (eliminates code duplication) */
-  for (uint8_t i = 0; i < k_obstacle_sensor_count; i++) {
+  for (uint8_t i = k_sensor_front_left; i < k_obstacle_sensor_count; i++) {
     rx_hcsr04_config_t config = {
       .trigger_pin = trigger_pins[i],
       .echo_pin    = echo_pins[i],
@@ -1722,17 +1778,25 @@ static void internal_obstacle_task_entry(ULONG input)
   err = internal_init_sensors();
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Sensor initialization failed", (uint32_t)err);
-    RX_ASSERT(false, "Sensor init is safety-critical");
-    return;  /* Fatal error */
+    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
+    while (true) {
+      rx_log_error(s_tag, "FATAL: sensor init failed, awaiting watchdog reset");
+      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
+    }
   }
 
   /* Get motor handles from motor control task */
-  uint8_t             motor_count = 0;
+  uint8_t             motor_count = k_obstacle_motor_count_none;
   rx_motor_handle_t** motors      = motor_control_task_get_motors(&motor_count);
-  if (motors == nullptr || motor_count == 0) {
+  if (motors == nullptr || motor_count == k_obstacle_motor_count_none) {
     rx_log_error(s_tag, "Motor handles unavailable");
-    RX_ASSERT(false, "Motor handles required for obstacle detection");
-    return;  /* Fatal error */
+    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
+    while (true) {
+      rx_log_error(s_tag, "FATAL: motor handles unavailable, awaiting watchdog reset");
+      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
+    }
   }
 
   /* Configure obstacle detection system */
@@ -1751,16 +1815,24 @@ static void internal_obstacle_task_entry(ULONG input)
   err = rx_obstacle_detect_init(&s_obstacle_handle, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Obstacle detect init failed", (uint32_t)err);
-    RX_ASSERT(false, "Obstacle detection is safety-critical");
-    return;  /* Fatal error - treat as safety-critical per issue #295 */
+    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
+    while (true) {
+      rx_log_error(s_tag, "FATAL: obstacle init failed, awaiting watchdog reset");
+      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
+    }
   }
 
   /* Start obstacle detection */
   err = rx_obstacle_detect_start(&s_obstacle_handle);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Obstacle detect start failed", (uint32_t)err);
-    RX_ASSERT(false, "Cannot start obstacle detection");
-    return;  /* Fatal error */
+    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    (void)shared_data_trigger_estop(k_estop_reason_obstacle);
+    while (true) {
+      rx_log_error(s_tag, "FATAL: obstacle start failed, awaiting watchdog reset");
+      (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
+    }
   }
 
   rx_log_info(s_tag, "Obstacle detection running (4 sensors, 4 motors)");

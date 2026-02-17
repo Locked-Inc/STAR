@@ -39,6 +39,20 @@
 #include "rx_motor.h"
 
 /**
+ * @enum motor_count_t
+ * @brief Motor count sentinels for motor_control_task_get_motors()
+ *
+ * @details
+ * Named constants for motor count return values. Used to avoid magic
+ * number 0 in callers checking whether motors are ready.
+ *
+ * @since STAR v1.0.0
+ */
+typedef enum : uint8_t {
+  k_motor_count_none = 0, /**< No motors available (task not yet initialized) */
+} motor_count_t;
+
+/**
  * @brief Create and start the motor control task
  *
  * @details
@@ -97,17 +111,22 @@ rx_err_t motor_control_task_create(void);
  * - Index 2: Rear-left motor
  * - Index 3: Rear-right motor
  *
- * @param[out] out_count Pointer to receive motor count (will be set to 4)
+ * @param[out] out_count Pointer to receive motor count
+ *                       Set to k_motor_count (4) on success, or k_motor_count_none (0) on failure
  *                       Must be non-NULL
  *
- * @return rx_motor_handle_t** Pointer to array of 4 motor handle pointers
- *                              Valid for lifetime of motor_control_task
- *                              Returns nullptr if out_count is nullptr
+ * @return rx_motor_handle_t** Pointer to array of motor handle pointers
  *
- * @pre motor_control_task_create() called successfully
+ * @retval Non-null pointer to static array of k_motor_count (4) rx_motor_handle_t*,
+ *         with out_count set to k_motor_count — returned when motors are initialized
+ *         and out_count is non-NULL
+ * @retval nullptr with out_count set to k_motor_count_none (0) — returned when
+ *         motor_control_task_create() has not yet been called (motors not ready)
+ * @retval nullptr (out_count unchanged) — returned when out_count argument is nullptr
+ *
  * @pre Motor handles initialized via internal_init_motor_stack()
- * @post out_count set to 4
- * @post Returns valid pointer to motor handle array
+ * @post out_count set to k_motor_count (4) on success
+ * @post Returns valid pointer to motor handle array on success
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 9 Exception**: Returns rx_motor_handle_t** (double indirection)
