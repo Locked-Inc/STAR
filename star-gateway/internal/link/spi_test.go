@@ -1386,6 +1386,14 @@ func TestSPILink_SendWithType_FrameTypes(t *testing.T) {
 				t.Errorf("Frame type = %v, want %v", f.Type, tc.frameType)
 			}
 
+			// For zero-length payloads the encoder must NOT set FlagFECEnabled.
+			// This enforces the "zero-length-skip" contract introduced around sendWithRetry.
+			if len(tc.payload) == 0 {
+				if (f.Header.Flags & frame.FlagFECEnabled) != 0 {
+					t.Fatalf("%s: zero-length payload must NOT set FlagFECEnabled", tc.name)
+				}
+			}
+
 			// If FEC is enabled the wire payload will be FEC-encoded; decode before comparing.
 			if (f.Header.Flags & frame.FlagFECEnabled) != 0 {
 				dec := fec.NewViterbiDecoder()
