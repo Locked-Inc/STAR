@@ -70,6 +70,7 @@
  * @post State unchanged (mock has no GPIO state)
  *
  * @note No-op: does not write any hardware registers
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
  * @code
  * rx_err_t err = rx_mpc_set_gpio(k_rx_p0_3);
  * assert(err == k_rx_ok);
@@ -104,6 +105,7 @@ rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
  * @post State unchanged (mock has no MPC state)
  *
  * @note No-op: does not write any hardware registers
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
  * @code
  * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);
  * assert(err == k_rx_ok);
@@ -145,6 +147,7 @@ rx_err_t rx_mpc_set_irq(const rx_port_pin_t pin)
  * @post State unchanged (mock has no ICU state)
  *
  * @note No-op: does not write any ICU registers
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
  * @code
  * rx_err_t err = rx_hcsr04_icu_configure((uint8_t)k_hcsr04_irq_11,
  *                                         k_hcsr04_irq_priority_default);
@@ -181,6 +184,7 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * @post State unchanged (mock has no ICU state)
  *
  * @note No-op: does not write any ICU registers
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
  * @code
  * rx_err_t err = rx_hcsr04_icu_disable((uint8_t)k_hcsr04_irq_11);
  * assert(err == k_rx_ok);
@@ -222,15 +226,17 @@ rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
  * @post State unchanged (mock has no sensor map)
  *
  * @note No-op: does not update any lookup tables
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
  * @code
- * rx_err_t err = rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, 0);
+ * rx_err_t err = rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11,
+ *                                        k_hcsr04_sensor_front_left);
  * assert(err == k_rx_ok);
  * @endcode
  *
  * @see rx_hcsr04_isr_register() Real implementation in rx_hcsr04_isr.h
  * @since Version 1.2.0 (Issue #296)
  */
-rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const uint8_t sensor_index)
+rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_index_t sensor_index)
 {
   (void)irq_num;
   (void)sensor_index;
@@ -257,6 +263,7 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const uint8_t sensor_inde
  * @post State unchanged (mock has no sensor map)
  *
  * @note No-op: does not modify any lookup tables
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
  * @code
  * rx_err_t err = rx_hcsr04_isr_unregister((uint8_t)k_hcsr04_irq_11);
  * assert(err == k_rx_ok);
@@ -291,6 +298,7 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  * @post State unchanged (mock has no ISR state)
  *
  * @note No-op: does not update any ISR state flags
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
  * @code
  * rx_err_t err = rx_hcsr04_isr_start((uint8_t)k_hcsr04_irq_11);
  * assert(err == k_rx_ok);
@@ -326,6 +334,7 @@ rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
  * @post *duration_us unchanged (mock does not write the output)
  *
  * @note Always returns k_rx_err_timeout; tests must rely on driver timeout logic
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_err_timeout
  * @code
  * uint32_t dur = 0;
  * rx_err_t err = rx_hcsr04_isr_get_duration((uint8_t)k_hcsr04_irq_11, &dur);
@@ -340,4 +349,39 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
   (void)irq_num;
   (void)duration_us;
   return k_rx_err_timeout; /* ISR never fires in unit test environment */
+}
+
+/**
+ * @brief Mock: Disarm ISR state machine (no-op stub)
+ *
+ * @details
+ * No-op stub. Real implementation clears the active flag in the per-IRQ
+ * state structure to cancel an armed measurement. In the test environment
+ * no ISR fires, so this function discards its argument and returns success.
+ *
+ * @param[in] irq_num IRQ number (8-11; any value accepted in mock)
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok always (no hardware to fail)
+ *
+ * @pre rx_hcsr04_isr_start() called (in real hardware; not required for mock)
+ * @pre Running in unit-test mock mode (no real ISR will fire)
+ *
+ * @post No hardware side-effects
+ * @post State unchanged (mock has no ISR state)
+ *
+ * @note No-op: does not update any ISR state flags
+ * @note Thread-safe: no shared state; stub always returns constant k_rx_ok
+ * @code
+ * rx_err_t err = rx_hcsr04_isr_disarm((uint8_t)k_hcsr04_irq_11);
+ * assert(err == k_rx_ok);
+ * @endcode
+ *
+ * @see rx_hcsr04_isr_disarm() Real implementation in rx_hcsr04_isr.h
+ * @since Version 1.2.0 (Issue #296)
+ */
+rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
+{
+  (void)irq_num;
+  return k_rx_ok;
 }

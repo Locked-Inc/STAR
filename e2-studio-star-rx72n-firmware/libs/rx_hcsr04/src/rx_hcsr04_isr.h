@@ -30,7 +30,7 @@
  * @par Example: Typical Usage Flow
  * @code
  * // Step 1: Register sensor with ISR (during init)
- * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, 0);  // IRQ11 → Sensor 0
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, k_hcsr04_sensor_front_left);  // IRQ11 → Sensor 0
  *
  * // Step 2: Arm ISR BEFORE trigger (prevents missing rising edge)
  * rx_hcsr04_isr_start((uint8_t)k_hcsr04_irq_11);
@@ -44,7 +44,7 @@
  * uint32_t duration_us;
  * rx_err_t err = rx_hcsr04_isr_get_duration((uint8_t)k_hcsr04_irq_11, &duration_us);
  * if (err == k_rx_ok) {
- *     float distance_cm = (float)duration_us / k_hcsr04_us_per_cm;
+ *     float distance_cm = (float)duration_us / s_hcsr04_us_per_cm;
  * }
  * @endcode
  *
@@ -60,6 +60,22 @@
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  * @since Version 1.2.0 (Issue #296)
+ * @version 1.2.0
+ *
+ * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
+ * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 2: ISR is O(1); all loops in caller code have statically bounded iterations
+ * - Rule 3: No dynamic memory; all state held in static arrays (s_irq_state, s_sensor_map)
+ * - Rule 5: Minimum 2 preconditions and 2 postconditions per public function
+ * - Rule 7: All return values checked; ISR clears IR flag unconditionally on entry
+ * - Rule 8: All constants are C23 typed enums (isr_constants_t); no magic numbers
+ *
+ * @par SOLID Principles Adherence
+ * - Single Responsibility: ISR edge capture only; ICU configuration in rx_hcsr04_icu.h,
+ *                          driver orchestration in rx_hcsr04.c
+ * - Dependency Inversion: Uses hcsr04_hal_get_time_us_isr() abstraction for timestamp capture
  */
 
 #pragma once
@@ -79,6 +95,7 @@ extern "C" {
  */
 
 /**
+ * @var s_hcsr04_us_per_cm
  * @brief Microseconds per centimeter (roundtrip) for HC-SR04 distance conversion
  *
  * @details
@@ -87,13 +104,18 @@ extern "C" {
  *
  *   2 cm / (343 m/s * 100 cm/m) = 58.31 µs/cm ≈ 58 µs/cm
  *
- * Usage: distance_cm = echo_time_us / k_hcsr04_us_per_cm
+ * This variable is replicated from `rx_hcsr04_timing_t::k_hcsr04_us_per_cm_roundtrip`
+ * as a `static const float` for direct use in floating-point distance calculations
+ * in code examples within this header. It is a translation-unit-local constant and
+ * carries the `s_` prefix per the STAR naming convention for static variables.
  *
- * @note This constant is replicated from rx_hcsr04_timing_t::k_hcsr04_us_per_cm_roundtrip
- *       as a float for direct use in floating-point distance calculations in code examples.
- * @since Version 1.2.0
+ * @note Each translation unit that includes this header gets its own copy (static linkage)
+ * @warning Do not use for production distance calculations in rx_hcsr04.c; use the
+ *          `k_hcsr04_us_per_cm_roundtrip` enum constant from rx_hcsr04.h instead
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
-static const float k_hcsr04_us_per_cm = 58.0F;
+static const float s_hcsr04_us_per_cm = 58.0F;
 
 /* =============================================================================
  * Types
@@ -136,6 +158,8 @@ static const float k_hcsr04_us_per_cm = 58.0F;
  *
  * @note All fields declared volatile: written in ISR, read in task context
  * @note get_duration() clears complete after successful read
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 typedef struct {
   volatile uint32_t start_us; /**< Rising edge timestamp (microseconds) - written in ISR */
@@ -143,6 +167,44 @@ typedef struct {
   volatile bool     complete; /**< True if both edges captured - written in ISR */
   volatile bool     active;   /**< True if measurement in progress - written in ISR */
 } rx_hcsr04_irq_state_t;
+
+/**
+ * @enum rx_hcsr04_sensor_index_t
+ * @brief Sensor array index for ISR sensor registration
+ *
+ * @details
+ * Maps a physical sensor position to a zero-based array index. Used with
+ * rx_hcsr04_isr_register() to bind an IRQ number to a named sensor slot,
+ * enabling the ISR dispatch table to identify which sensor triggered.
+ *
+ * **STAR Hardware Mapping:**
+ * | Index | Position    | IRQ  | Pin |
+ * |-------|-------------|------|-----|
+ * | 0     | Front-Left  | IRQ11| P03 |
+ * | 1     | Front-Right | IRQ10| P02 |
+ * | 2     | Back-Left   | IRQ9 | P01 |
+ * | 3     | Back-Right  | IRQ8 | P00 |
+ *
+ * @invariant Values are zero-based consecutive integers [0, 3]
+ *
+ * @code
+ * // Register all 4 HC-SR04 sensors using named constants
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, k_hcsr04_sensor_front_left);
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_10, k_hcsr04_sensor_front_right);
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_9,  k_hcsr04_sensor_back_left);
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_8,  k_hcsr04_sensor_back_right);
+ * @endcode
+ *
+ * @see rx_hcsr04_isr_register() Uses this type for the sensor_index parameter
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint8_t {
+  k_hcsr04_sensor_front_left  = 0, /**< Sonar 0 Front-Left  (IRQ11, P03) */
+  k_hcsr04_sensor_front_right = 1, /**< Sonar 1 Front-Right (IRQ10, P02) */
+  k_hcsr04_sensor_back_left   = 2, /**< Sonar 2 Back-Left   (IRQ9,  P01) */
+  k_hcsr04_sensor_back_right  = 3, /**< Sonar 3 Back-Right  (IRQ8,  P00) */
+} rx_hcsr04_sensor_index_t;
 
 /* =============================================================================
  * Public Functions
@@ -156,12 +218,12 @@ typedef struct {
  * Maps an IRQ number to a sensor index for future use. This allows
  * the ISR to identify which sensor triggered the interrupt.
  *
- * @param[in] irq_num IRQ number (8-11 for P00-P03)
- * @param[in] sensor_index Sensor array index (0-3)
- *                         - 0: Front-Left (IRQ11)
- *                         - 1: Front-Right (IRQ10)
- *                         - 2: Back-Left (IRQ9)
- *                         - 3: Back-Right (IRQ8)
+ * @param[in] irq_num      IRQ number (8-11 for P00-P03)
+ * @param[in] sensor_index Sensor position index (rx_hcsr04_sensor_index_t)
+ *                         - k_hcsr04_sensor_front_left  (0): IRQ11 / P03
+ *                         - k_hcsr04_sensor_front_right (1): IRQ10 / P02
+ *                         - k_hcsr04_sensor_back_left   (2): IRQ9  / P01
+ *                         - k_hcsr04_sensor_back_right  (3): IRQ8  / P00
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Registration successful
@@ -179,16 +241,16 @@ typedef struct {
  *
  * @par Example
  * @code
- * // Register all 4 sensors using named constants
- * rx_hcsr04_isr_register(k_hcsr04_irq_11, 0);  // Sonar 0 Front-Left
- * rx_hcsr04_isr_register(k_hcsr04_irq_10, 1);  // Sonar 1 Front-Right
- * rx_hcsr04_isr_register(k_hcsr04_irq_9,  2);  // Sonar 2 Back-Left
- * rx_hcsr04_isr_register(k_hcsr04_irq_8,  3);  // Sonar 3 Back-Right
+ * // Register all 4 sensors using named sensor index constants
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, k_hcsr04_sensor_front_left);
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_10, k_hcsr04_sensor_front_right);
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_9,  k_hcsr04_sensor_back_left);
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_8,  k_hcsr04_sensor_back_right);
  * @endcode
  *
  * @since Version 1.2.0
  */
-[[nodiscard]] rx_err_t rx_hcsr04_isr_register(uint8_t irq_num, uint8_t sensor_index);
+[[nodiscard]] rx_err_t rx_hcsr04_isr_register(uint8_t irq_num, rx_hcsr04_sensor_index_t sensor_index);
 
 /**
  * @brief Unregister HC-SR04 sensor from IRQ echo measurement
@@ -264,7 +326,7 @@ typedef struct {
  *     }
  * }
  * if (err == k_rx_ok) {
- *     float distance_cm = (float)duration_us / k_hcsr04_us_per_cm;
+ *     float distance_cm = (float)duration_us / s_hcsr04_us_per_cm;
  * }
  * @endcode
  *
@@ -328,6 +390,49 @@ typedef struct {
  */
 [[nodiscard]] rx_err_t rx_hcsr04_isr_start(uint8_t irq_num);
 
+/**
+ * @brief Disarm ISR state machine (call on trigger failure after arm)
+ *
+ * @details
+ * Clears the active flag in the per-IRQ state structure to cancel a
+ * previously armed measurement. Must be called when rx_hcsr04_isr_start()
+ * has succeeded but the subsequent trigger pulse fails, to prevent the ISR
+ * state machine from remaining armed indefinitely.
+ *
+ * **Use Case:**
+ * @code
+ * err = rx_hcsr04_isr_start((uint8_t)handle->echo_irq);  // Arm ISR
+ * if (err != k_rx_ok) { return err; }
+ *
+ * err = internal_send_trigger_pulse(handle);              // Send trigger
+ * if (err != k_rx_ok) {
+ *     // Trigger failed — disarm ISR to restore consistent state
+ *     (void)rx_hcsr04_isr_disarm((uint8_t)handle->echo_irq);
+ *     return err;
+ * }
+ * @endcode
+ *
+ * @param[in] irq_num IRQ number (8-11) to disarm
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok ISR disarmed successfully
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ *
+ * @pre rx_hcsr04_isr_start() called successfully for this IRQ
+ * @pre irq_num in [k_hcsr04_irq_8, k_hcsr04_irq_11]
+ *
+ * @post s_irq_state[idx].active = false
+ * @post ISR will ignore subsequent interrupts on this IRQ
+ *
+ * @note Call only in the error path, after a successful rx_hcsr04_isr_start()
+ * @note Ignores return value of disarm in error path (best-effort cleanup)
+ *
+ * @see rx_hcsr04_isr_start() Arm ISR state before trigger pulse
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_isr_disarm(uint8_t irq_num);
+
 /* =============================================================================
  * ISR Functions (must match vector table naming)
  * =============================================================================
@@ -336,44 +441,100 @@ typedef struct {
 /**
  * @brief ISR for IRQ8 (P00 - Sonar 3 Back-Right)
  *
+ * @details
+ * Hardware-triggered ISR on both edges of the HC-SR04 echo pulse from P00.
+ * Delegates to internal_irq_handler(8). Clears IR[72], detects rising/falling
+ * edge from PORT0 PIDR bit 0, and captures hcsr04_hal_get_time_us_isr() timestamp.
+ *
+ * @return void (ISR context; no return value)
+ *
  * @pre ICU configured for IRQ8 via rx_hcsr04_icu_configure()
  * @pre PIN P00 configured for IRQ function via rx_mpc_set_irq()
+ *
  * @post IR[72] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[0] if measurement active
- * @note Called by hardware on both rising and falling edges
+ *
+ * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ *
+ * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
+ * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ8(void);
 
 /**
  * @brief ISR for IRQ9 (P01 - Sonar 2 Back-Left)
  *
+ * @details
+ * Hardware-triggered ISR on both edges of the HC-SR04 echo pulse from P01.
+ * Delegates to internal_irq_handler(9). Clears IR[73], detects rising/falling
+ * edge from PORT0 PIDR bit 1, and captures hcsr04_hal_get_time_us_isr() timestamp.
+ *
+ * @return void (ISR context; no return value)
+ *
  * @pre ICU configured for IRQ9 via rx_hcsr04_icu_configure()
  * @pre PIN P01 configured for IRQ function via rx_mpc_set_irq()
+ *
  * @post IR[73] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[1] if measurement active
- * @note Called by hardware on both rising and falling edges
+ *
+ * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ *
+ * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
+ * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ9(void);
 
 /**
  * @brief ISR for IRQ10 (P02 - Sonar 1 Front-Right)
  *
+ * @details
+ * Hardware-triggered ISR on both edges of the HC-SR04 echo pulse from P02.
+ * Delegates to internal_irq_handler(10). Clears IR[74], detects rising/falling
+ * edge from PORT0 PIDR bit 2, and captures hcsr04_hal_get_time_us_isr() timestamp.
+ *
+ * @return void (ISR context; no return value)
+ *
  * @pre ICU configured for IRQ10 via rx_hcsr04_icu_configure()
  * @pre PIN P02 configured for IRQ function via rx_mpc_set_irq()
+ *
  * @post IR[74] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[2] if measurement active
- * @note Called by hardware on both rising and falling edges
+ *
+ * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ *
+ * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
+ * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ10(void);
 
 /**
  * @brief ISR for IRQ11 (P03 - Sonar 0 Front-Left)
  *
+ * @details
+ * Hardware-triggered ISR on both edges of the HC-SR04 echo pulse from P03.
+ * Delegates to internal_irq_handler(11). Clears IR[75], detects rising/falling
+ * edge from PORT0 PIDR bit 3, and captures hcsr04_hal_get_time_us_isr() timestamp.
+ *
+ * @return void (ISR context; no return value)
+ *
  * @pre ICU configured for IRQ11 via rx_hcsr04_icu_configure()
  * @pre PIN P03 configured for IRQ function via rx_mpc_set_irq()
+ *
  * @post IR[75] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[3] if measurement active
- * @note Called by hardware on both rising and falling edges
+ *
+ * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ *
+ * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
+ * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ11(void);
 

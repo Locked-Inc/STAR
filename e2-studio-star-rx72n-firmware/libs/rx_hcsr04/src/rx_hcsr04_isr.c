@@ -69,6 +69,18 @@
  * @invariant k_sensor_map_size > k_irq_max (map covers all valid IRQ indices)
  * @invariant k_irq_count == k_irq_max - k_irq_min + 1 == 4
  *
+ * @code
+ * // Typical ISR handler using these constants:
+ * void INT_IRQ11(void)
+ * {
+ *     internal_irq_handler(k_irq_max);  // IRQ11 = max IRQ
+ * }
+ *
+ * // Validate IRQ number before indexing:
+ * if (irq_num < k_irq_min || irq_num > k_irq_max) { return k_rx_err_invalid_arg; }
+ * const uint8_t idx = irq_num - k_irq_min;  // IRQ8→0, IRQ11→3
+ * @endcode
+ *
  * @see internal_irq_handler() Uses k_vector_base, k_irq_min, k_pin_state_mask
  * @see rx_hcsr04_isr_register() Uses k_sensor_map_size as array bound
  *
@@ -92,25 +104,44 @@ typedef enum : uint8_t {
  */
 
 /**
- * @brief Per-IRQ echo state (IRQ8-15 → array indices 0-7)
+ * @var s_irq_state
+ * @brief Per-IRQ echo measurement state (IRQ8-11 → array indices 0-3)
+ *
  * @details
- * Written by ISR, read by application code. Each element corresponds to
- * one IRQ number (index 0 = IRQ8, index 7 = IRQ15).
- * Declared volatile because fields are written in ISR context and read
- * in task context without explicit synchronization.
+ * Written by ISR (INT_IRQ8-11), read by application code (rx_hcsr04_isr_get_duration).
+ * Each element corresponds to one IRQ number (index 0 = IRQ8, index 3 = IRQ11).
+ * Declared volatile because fields are written in ISR context and read in task
+ * context without explicit synchronization.
+ *
+ * @note Access pattern: ISR writes volatile fields; application reads under timeout loop
+ * @warning Never access outside of rx_hcsr04_isr_start(), internal_irq_handler(),
+ *          and rx_hcsr04_isr_get_duration(); direct access bypasses state validation
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 static volatile rx_hcsr04_irq_state_t s_irq_state[k_irq_count];
 
 /**
- * @brief Sensor index mapping (IRQ number → sensor index)
+ * @var s_sensor_map
+ * @brief Sensor index mapping table (IRQ number → sensor array index)
+ *
  * @details
- * Maps IRQ number to sensor array index for application callback.
- * Initialized to k_sensor_unused to mark all slots as unregistered.
- * Set via rx_hcsr04_isr_register().
+ * Maps each IRQ number (0-15) to a sensor array index (0-3) or k_sensor_unused.
+ * Initialized entirely to k_sensor_unused to mark all slots as unregistered.
+ * Updated by rx_hcsr04_isr_register() and restored by rx_hcsr04_isr_unregister().
+ *
+ * **Layout:** index matches raw IRQ number (s_sensor_map[8] = Sonar 3 Back-Right)
+ *
+ * @note Only indices [k_irq_min..k_irq_max] (8-11) are used by HC-SR04 sensors
+ * @note Indices [0..7] and [12..15] are always k_sensor_unused for HC-SR04 use
+ * @warning Direct modification outside rx_hcsr04_isr_register/unregister is forbidden;
+ *          use the public API to maintain consistent IRQ-to-sensor mappings
  *
  * @todo Issue #296: s_sensor_map is currently written but not read in the ISR.
  * Future work will use this mapping to dispatch per-sensor callbacks from
  * internal_irq_handler() when multi-sensor callback support is implemented.
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 static uint8_t s_sensor_map[k_sensor_map_size] = {
   k_sensor_unused, k_sensor_unused, k_sensor_unused, k_sensor_unused,
@@ -128,7 +159,7 @@ static uint8_t s_sensor_map[k_sensor_map_size] = {
  * @brief Internal IRQ handler (common logic for all IRQs)
  *
  * @details
- * Shared ISR logic called by INT_IRQ8 through INT_IRQ15. Determines edge
+ * Shared ISR logic called by INT_IRQ8 through INT_IRQ11. Determines edge
  * type (rising or falling) by reading GPIO pin state, then captures timestamp.
  *
  * **Algorithm:**
@@ -223,7 +254,7 @@ static void internal_irq_handler(const uint8_t irq_num)
  *
  * @since Version 1.2.0 (Issue #296)
  */
-rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const uint8_t sensor_index)
+rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_index_t sensor_index)
 {
   /* Validate IRQ number */
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
@@ -252,6 +283,7 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const uint8_t sensor_inde
  * @return rx_err_t Error code
  * @retval k_rx_ok Unregistration successful
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_state IRQ slot was not registered (s_sensor_map entry is k_sensor_unused)
  *
  * @pre IRQ was previously registered via rx_hcsr04_isr_register()
  * @pre No measurement currently active on this IRQ
@@ -327,6 +359,43 @@ rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
   /* Clear complete BEFORE setting active to avoid stale-complete race */
   s_irq_state[idx].complete = false;
   s_irq_state[idx].active   = true;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Disarm ISR state machine (cancel armed measurement on trigger failure)
+ *
+ * @details
+ * Clears the active flag so the ISR will ignore subsequent edge interrupts.
+ * Call this in the error path when rx_hcsr04_isr_start() succeeded but the
+ * trigger pulse failed, to prevent the ISR from remaining armed indefinitely.
+ *
+ * @param[in] irq_num IRQ number (8-11) to disarm
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok ISR disarmed successfully
+ * @retval k_rx_err_invalid_arg irq_num not in range [k_irq_min, k_irq_max]
+ *
+ * @pre rx_hcsr04_isr_start() called successfully for this IRQ
+ * @pre irq_num in [k_irq_min, k_irq_max]
+ *
+ * @post s_irq_state[idx].active = false
+ * @post ISR will ignore subsequent interrupts on this IRQ
+ *
+ * @note Best-effort cleanup; always call in error path after successful isr_start
+ *
+ * @see rx_hcsr04_isr_start() Arm ISR state before trigger pulse
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
+{
+  RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
+
+  const uint8_t idx          = irq_num - k_irq_min;
+  s_irq_state[idx].active    = false;
+  s_irq_state[idx].complete  = false;
 
   return k_rx_ok;
 }

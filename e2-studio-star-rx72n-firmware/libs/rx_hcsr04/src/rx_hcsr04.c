@@ -1779,7 +1779,7 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
 
   /* Register sensor with ISR handler
    * @todo Issue #296: Per-sensor index tracking needed for multi-sensor callback support */
-  err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, k_default_sensor_index);
+  err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, k_hcsr04_sensor_front_left);
   if (err != k_rx_ok) {
     (void)rx_hcsr04_icu_disable((uint8_t)config->echo_irq);
     (void)rx_mpc_set_gpio(config->echo_pin);
@@ -1977,6 +1977,10 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   /* Send trigger pulse */
   err = internal_send_trigger_pulse(handle);
   if (err != k_rx_ok) {
+    /* Disarm ISR to prevent stale active=true if trigger fails after arming */
+    if (handle->echo_mode == k_hcsr04_echo_irq) {
+      (void)rx_hcsr04_isr_disarm((uint8_t)handle->echo_irq);
+    }
     return err;
   }
 
@@ -2060,6 +2064,10 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
   /* Send trigger pulse */
   err = internal_send_trigger_pulse(handle);
   if (err != k_rx_ok) {
+    /* Disarm ISR to prevent stale active=true if trigger fails after arming */
+    if (handle->echo_mode == k_hcsr04_echo_irq) {
+      (void)rx_hcsr04_isr_disarm((uint8_t)handle->echo_irq);
+    }
     return err;
   }
 

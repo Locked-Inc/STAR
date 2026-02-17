@@ -31,11 +31,15 @@
  * @code
  * // Step 1: Configure pin for IRQ function
  * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);  // P03 → IRQ11
- * if (err != k_rx_ok) return err;
+ * if (err != k_rx_ok) {
+ *     return err;
+ * }
  *
  * // Step 2: Configure ICU for edge detection
  * err = rx_hcsr04_icu_configure((uint8_t)k_hcsr04_irq_11, k_hcsr04_irq_priority_default);
- * if (err != k_rx_ok) return err;
+ * if (err != k_rx_ok) {
+ *     return err;
+ * }
  *
  * // Now ISR will fire on both rising and falling edges
  * @endcode
@@ -89,7 +93,7 @@ extern "C" {
  * of the echo pulse automatically.
  *
  * **Configuration Applied:**
- * - IRQCR[n] = k_irqcr_both_edges (0x08, both edges trigger interrupt)
+ * - IRQCR[n] = k_irqcr_both_edges (both edges trigger interrupt)
  * - Digital filter enabled (PCLK/8 = 133ns @ 60MHz PCLKB)
  * - Interrupt priority set to specified value (recommend 10)
  * - IR flag cleared (any pending interrupt discarded)

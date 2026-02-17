@@ -536,7 +536,7 @@ typedef enum : uint8_t {
  * - Use type-safe `rx_port_pin_t` enum from rx_port_constants.h
  * - Trigger and echo must be different pins
  * - Both pins must support digital I/O
- * - For IRQ mode: echo_pin must support IRQ function (P00-P07 for IRQ8-15)
+ * - For IRQ mode: echo_pin must support IRQ function (P00-P03 for IRQ8-11)
  *
  * **Timeout Recommendations:**
  * - Default (30ms): Covers full 400cm range + margin
@@ -549,7 +549,7 @@ typedef enum : uint8_t {
  *     .trigger_pin = k_rx_pf_5,                // Trigger on PF5
  *     .echo_pin    = k_rx_p0_3,                // Echo on P03
  *     .timeout_us  = k_hcsr04_echo_timeout_us, // 30ms timeout
- *     .echo_mode   = k_hcsr04_echo_polling     // Software polling (default)
+ *     .echo_mode   = k_hcsr04_echo_polling,    // Software polling (default)
  *     // echo_irq field not used in polling mode
  * };
  *
@@ -587,7 +587,7 @@ typedef enum : uint8_t {
 typedef struct {
   rx_port_pin_t            trigger_pin;  /**< Trigger pin (type-safe GPIO, output) */
   rx_port_pin_t            echo_pin;     /**< Echo pin (type-safe GPIO or IRQ, input) */
-  uint32_t                 timeout_us;   /**< Echo timeout in microseconds (default: 30000) */
+  uint32_t                 timeout_us;   /**< Echo timeout in microseconds (default: k_hcsr04_echo_timeout_us) */
   rx_hcsr04_echo_mode_t    echo_mode;    /**< Polling or IRQ mode (default: polling) */
   rx_hcsr04_irq_t          echo_irq;     /**< IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11), used only if echo_mode==IRQ */
   rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (k_hcsr04_irq_priority_unset = use default), IRQ mode only */
@@ -696,6 +696,7 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @param[out] handle Handle to initialize (caller-allocated)
  * @param[in]  config Configuration with pin assignments and mode
  *
+ * @return rx_err_t Error code
  * @retval k_rx_ok Success
  * @retval k_rx_err_null_ptr handle or config is nullptr
  * @retval k_rx_err_invalid_arg port/pin values are invalid, IRQ number out of

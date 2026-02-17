@@ -1180,14 +1180,27 @@ uint32_t hcsr04_hal_get_time_us(void)
  * within one measurement window is negligible.
  *
  * @return CMT2 counter converted to microseconds (no overflow tracking)
+ * @retval uint32_t Value in range [0, ~8700) µs; wraps every ~8.7 ms with CMT2 period
  *
  * @pre CMT2 timer initialized (call hcsr04_hal_get_time_us() once at startup)
  * @pre Called from interrupt context (no ThreadX blocking calls permitted)
  *
  * @post No side effects (read-only, no mutex acquired)
+ * @post Returned value equals (cmcnt * 1000000) / timer_hz for current CMT2 count
  *
  * @note ISR-safe: does NOT call tx_mutex_get() or any blocking ThreadX API
  * @warning Does not track 16-bit counter overflow; do not use for intervals > 8.7 ms
+ * @warning HC-SR04 IRQ mode limited to ~150 cm (8.7 ms echo) due to CMT2 wrap period
+ *
+ * @par Example: Edge Timestamp in ISR
+ * @code
+ * // Typical ISR usage — capture rising/falling edge timestamp:
+ * uint32_t ts = hcsr04_hal_get_time_us_isr();
+ * s_irq_state[idx].start_us = ts;  // Rising edge
+ * // OR
+ * s_irq_state[idx].end_us = ts;    // Falling edge
+ * // Duration: end_us - start_us (valid only if echo < 8.7 ms / ~150 cm)
+ * @endcode
  *
  * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking for task context
  *
