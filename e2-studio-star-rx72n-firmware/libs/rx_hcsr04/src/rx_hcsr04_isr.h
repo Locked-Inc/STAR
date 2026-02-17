@@ -30,19 +30,19 @@
  * @par Example: Typical Usage Flow
  * @code
  * // Step 1: Register sensor with ISR (during init)
- * rx_hcsr04_isr_register(11, 0);  // IRQ11 → Sensor 0
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, 0);  // IRQ11 → Sensor 0
  *
- * // Step 2: Start measurement
- * rx_hcsr04_isr_start(11);
+ * // Step 2: Arm ISR BEFORE trigger (prevents missing rising edge)
+ * rx_hcsr04_isr_start((uint8_t)k_hcsr04_irq_11);
  *
  * // Step 3: Send trigger pulse
  * gpio_set_high(trigger_pin);
- * delay_us(10);
+ * delay_us(k_hcsr04_trigger_pulse_us);
  * gpio_set_low(trigger_pin);
  *
  * // Step 4: Wait for completion (with timeout)
  * uint32_t duration_us;
- * rx_err_t err = rx_hcsr04_isr_get_duration(11, &duration_us);
+ * rx_err_t err = rx_hcsr04_isr_get_duration((uint8_t)k_hcsr04_irq_11, &duration_us);
  * if (err == k_rx_ok) {
  *     float distance_cm = (float)duration_us / k_hcsr04_us_per_cm;
  * }
@@ -93,7 +93,7 @@ extern "C" {
  *       as a float for direct use in floating-point distance calculations in code examples.
  * @since Version 1.2.0
  */
-static const float k_hcsr04_us_per_cm = 58.0f;
+static const float k_hcsr04_us_per_cm = 58.0F;
 
 /* =============================================================================
  * Types
@@ -156,7 +156,7 @@ typedef struct {
  * Maps an IRQ number to a sensor index for future use. This allows
  * the ISR to identify which sensor triggered the interrupt.
  *
- * @param[in] irq_num IRQ number (8-15)
+ * @param[in] irq_num IRQ number (8-11 for P00-P03)
  * @param[in] sensor_index Sensor array index (0-3)
  *                         - 0: Front-Left (IRQ11)
  *                         - 1: Front-Right (IRQ10)
@@ -169,7 +169,7 @@ typedef struct {
  * @retval k_rx_err_invalid_arg sensor_index >= k_hcsr04_sensor_count (4)
  *
  * @pre IRQ configured via rx_hcsr04_icu_configure()
- * @pre sensor_index must be a valid sensor array index (< 0xFF)
+ * @pre sensor_index must be a valid sensor array index (< k_hcsr04_sensor_count)
  *
  * @post s_sensor_map[irq_num] = sensor_index
  * @post ISR can identify sensor on interrupt
@@ -180,10 +180,10 @@ typedef struct {
  * @par Example
  * @code
  * // Register all 4 sensors using named constants
- * rx_hcsr04_isr_register(k_rx_hcsr04_irq_11, 0);  // Sonar 0 Front-Left
- * rx_hcsr04_isr_register(k_rx_hcsr04_irq_10, 1);  // Sonar 1 Front-Right
- * rx_hcsr04_isr_register(k_rx_hcsr04_irq_9,  2);  // Sonar 2 Back-Left
- * rx_hcsr04_isr_register(k_rx_hcsr04_irq_8,  3);  // Sonar 3 Back-Right
+ * rx_hcsr04_isr_register(k_hcsr04_irq_11, 0);  // Sonar 0 Front-Left
+ * rx_hcsr04_isr_register(k_hcsr04_irq_10, 1);  // Sonar 1 Front-Right
+ * rx_hcsr04_isr_register(k_hcsr04_irq_9,  2);  // Sonar 2 Back-Left
+ * rx_hcsr04_isr_register(k_hcsr04_irq_8,  3);  // Sonar 3 Back-Right
  * @endcode
  *
  * @since Version 1.2.0
@@ -198,7 +198,7 @@ typedef struct {
  * to the k_sensor_unused sentinel. Call during sensor deinitialization
  * after rx_hcsr04_icu_disable() to prevent stale ISR callbacks.
  *
- * @param[in] irq_num IRQ number (8-15) to unregister
+ * @param[in] irq_num IRQ number (8-11) to unregister
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Unregistration successful
@@ -227,7 +227,7 @@ typedef struct {
  * Reads the captured timestamps and calculates pulse duration.
  * Returns error if measurement is not complete yet.
  *
- * @param[in] irq_num IRQ number (8-15)
+ * @param[in] irq_num IRQ number (8-11)
  * @param[out] duration_us Pointer to store pulse duration (microseconds)
  *                         - Valid range: 150µs - 25000µs (2cm - 400cm)
  *                         - Must not be NULL
@@ -255,7 +255,7 @@ typedef struct {
  *
  * // Bounded loop - max k_hcsr04_echo_timeout_us iterations (NASA Rule 2)
  * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {
- *     err = rx_hcsr04_isr_get_duration(k_rx_hcsr04_irq_11, &duration_us);
+ *     err = rx_hcsr04_isr_get_duration(k_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Got result
  *     }
@@ -280,7 +280,7 @@ typedef struct {
  * is registered in the sensor map, then clears the completion flag and sets
  * the active flag. Must be called before sending trigger pulse.
  *
- * @param[in] irq_num IRQ number (k_rx_hcsr04_irq_8 through k_rx_hcsr04_irq_11)
+ * @param[in] irq_num IRQ number (k_hcsr04_irq_8 through k_hcsr04_irq_11)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok ISR armed successfully
@@ -300,7 +300,7 @@ typedef struct {
  * @par Example: Typical Measurement Sequence
  * @code
  * // Step 1: Start measurement
- * rx_err_t err = rx_hcsr04_isr_start(k_rx_hcsr04_irq_11);
+ * rx_err_t err = rx_hcsr04_isr_start(k_hcsr04_irq_11);
  * if (err != k_rx_ok) {
  *     return err;
  * }
@@ -314,7 +314,7 @@ typedef struct {
  * uint32_t duration_us;
  * err = k_rx_err_timeout;
  * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {  // k_hcsr04_echo_timeout_us iter max (~30ms at 1µs/iter)
- *     err = rx_hcsr04_isr_get_duration(k_rx_hcsr04_irq_11, &duration_us);
+ *     err = rx_hcsr04_isr_get_duration(k_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Measurement complete
  *     }

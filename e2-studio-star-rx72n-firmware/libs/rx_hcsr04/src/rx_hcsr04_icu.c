@@ -142,6 +142,15 @@ static const char* const s_tag = "HCSR04_ICU"; /**< Logging tag (pointer and dat
  * @note Not thread-safe. Call during initialization only.
  * @warning Do not call while a measurement is in progress.
  *
+ * @par Example
+ * @code
+ * // Configure P03 (IRQ11) for HC-SR04 echo detection
+ * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);    // Pin → IRQ function first
+ * if (err != k_rx_ok) { return err; }
+ * err = rx_hcsr04_icu_configure((uint8_t)k_hcsr04_irq_11, k_hcsr04_irq_priority_default);
+ * if (err != k_rx_ok) { return err; }
+ * @endcode
+ *
  * @see rx_mpc_set_irq() Configure pin before calling this
  * @see rx_hcsr04_icu_disable() Reverse this configuration
  *
@@ -208,17 +217,23 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
  * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
- * @pre IRQ was previously configured via rx_hcsr04_icu_configure()
  * @pre No measurement in progress on this IRQ
+ * @pre irq_num is in the valid range [k_irq_min, k_irq_max] (i.e. 8–11)
  *
  * @post IER bit cleared (interrupt will not fire)
  * @post IR flag cleared (no stale pending interrupt)
  * @post Digital filter disabled
  * @post ISR will not trigger on pin edges
  *
- * @note Safe to call even if IRQ was not enabled
+ * @note Safe to call even if IRQ was not previously configured via rx_hcsr04_icu_configure()
  * @note Does NOT reconfigure pin back to GPIO (use rx_mpc_set_gpio separately)
  * @warning Do not call while measurement in progress
+ *
+ * @par Example
+ * @code
+ * rx_err_t err = rx_hcsr04_icu_disable((uint8_t)k_hcsr04_irq_11);
+ * if (err != k_rx_ok) { rx_log_warn("SONAR", "Failed to disable IRQ11"); }
+ * @endcode
  *
  * @see rx_hcsr04_icu_configure() Enable IRQ
  * @see rx_mpc_set_gpio() Reconfigure pin back to GPIO mode

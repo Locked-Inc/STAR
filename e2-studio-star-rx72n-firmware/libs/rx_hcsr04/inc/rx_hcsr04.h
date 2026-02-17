@@ -391,6 +391,23 @@ typedef enum : uint16_t {
  * - Use **polling** for: debugging, single sensor, simple applications
  * - Use **IRQ** for: production code, multiple sensors, CPU efficiency
  *
+ * @invariant value is one of k_hcsr04_echo_polling or k_hcsr04_echo_irq
+ *
+ * @code
+ * // Select IRQ mode and configure ICU
+ * rx_hcsr04_config_t cfg = {
+ *     .trigger_pin  = k_rx_pf_5,
+ *     .echo_pin     = k_rx_p0_3,
+ *     .timeout_us   = k_hcsr04_echo_timeout_us,
+ *     .echo_mode    = k_hcsr04_echo_irq,          // Hardware edge capture
+ *     .echo_irq     = k_hcsr04_irq_11,         // P03 → IRQ11
+ *     .irq_priority = k_hcsr04_irq_priority_default,
+ * };
+ * rx_hcsr04_t sensor;
+ * rx_err_t err = rx_hcsr04_init(&sensor, &cfg);
+ * // ICU is configured automatically inside rx_hcsr04_init() for IRQ mode
+ * @endcode
+ *
  * @see rx_hcsr04_config_t Configuration structure using this enum
  * @see rx_hcsr04_icu_configure() ICU setup required for IRQ mode
  *
@@ -425,14 +442,14 @@ typedef enum : uint8_t {
  * `echo_mode == k_hcsr04_echo_irq`. The IRQ number must match the physical
  * echo pin: P00 → IRQ8, P01 → IRQ9, P02 → IRQ10, P03 → IRQ11.
  *
- * @invariant Only values k_rx_hcsr04_irq_8 through k_rx_hcsr04_irq_11 are
+ * @invariant Only values k_hcsr04_irq_8 through k_hcsr04_irq_11 are
  *            currently used in the STAR project (one per sonar sensor)
  *
  * @code
  * rx_hcsr04_config_t config = {
  *     .echo_pin  = k_rx_p0_3,
  *     .echo_mode = k_hcsr04_echo_irq,
- *     .echo_irq  = k_rx_hcsr04_irq_11,  // P03 → IRQ11
+ *     .echo_irq  = k_hcsr04_irq_11,  // P03 → IRQ11
  * };
  * @endcode
  *
@@ -442,15 +459,15 @@ typedef enum : uint8_t {
  * @since Version 1.2.0 (Issue #296 - IRQ mode added)
  */
 typedef enum : uint8_t {
-  k_rx_hcsr04_irq_none = 0,  /**< Sentinel: no IRQ assigned (polling mode); zero so zero-init is safe */
-  k_rx_hcsr04_irq_8    = 8,  /**< IRQ8  - maps to P00 (Sonar 3 Back-Right) */
-  k_rx_hcsr04_irq_9    = 9,  /**< IRQ9  - maps to P01 (Sonar 2 Back-Left) */
-  k_rx_hcsr04_irq_10   = 10, /**< IRQ10 - maps to P02 (Sonar 1 Front-Right) */
-  k_rx_hcsr04_irq_11   = 11, /**< IRQ11 - maps to P03 (Sonar 0 Front-Left) */
-  k_rx_hcsr04_irq_12   = 12, /**< IRQ12 - reserved for future expansion */
-  k_rx_hcsr04_irq_13   = 13, /**< IRQ13 - reserved for future expansion */
-  k_rx_hcsr04_irq_14   = 14, /**< IRQ14 - reserved for future expansion */
-  k_rx_hcsr04_irq_15   = 15, /**< IRQ15 - reserved for future expansion */
+  k_hcsr04_irq_none = 0,  /**< Sentinel: no IRQ assigned (polling mode); zero so zero-init is safe */
+  k_hcsr04_irq_8    = 8,  /**< IRQ8  - maps to P00 (Sonar 3 Back-Right) */
+  k_hcsr04_irq_9    = 9,  /**< IRQ9  - maps to P01 (Sonar 2 Back-Left) */
+  k_hcsr04_irq_10   = 10, /**< IRQ10 - maps to P02 (Sonar 1 Front-Right) */
+  k_hcsr04_irq_11   = 11, /**< IRQ11 - maps to P03 (Sonar 0 Front-Left) */
+  k_hcsr04_irq_12   = 12, /**< IRQ12 - reserved for future expansion */
+  k_hcsr04_irq_13   = 13, /**< IRQ13 - reserved for future expansion */
+  k_hcsr04_irq_14   = 14, /**< IRQ14 - reserved for future expansion */
+  k_hcsr04_irq_15   = 15, /**< IRQ15 - reserved for future expansion */
 } rx_hcsr04_irq_t;
 
 /**
@@ -461,6 +478,23 @@ typedef enum : uint8_t {
  * Provides named values for the `irq_priority` field in `rx_hcsr04_config_t`.
  * Use `k_hcsr04_irq_priority_unset` (0) to let `rx_hcsr04_init()` select
  * the default priority, or provide an explicit value 1-15.
+ *
+ * @invariant k_hcsr04_irq_priority_unset (0) means "not set" (rx_hcsr04_init() selects the default);
+ *            valid explicit priorities are 1–15; any other value is rejected by rx_hcsr04_icu_configure()
+ *
+ * @code
+ * // Use sentinel to let rx_hcsr04_init() pick the default priority
+ * rx_hcsr04_config_t cfg = {
+ *     .trigger_pin  = k_rx_pf_5,
+ *     .echo_pin     = k_rx_p0_3,
+ *     .timeout_us   = k_hcsr04_echo_timeout_us,
+ *     .echo_mode    = k_hcsr04_echo_irq,
+ *     .echo_irq     = k_hcsr04_irq_11,
+ *     .irq_priority = k_hcsr04_irq_priority_unset,  // rx_hcsr04_init() applies k_hcsr04_irq_priority_default
+ * };
+ * rx_hcsr04_t sensor;
+ * rx_err_t err = rx_hcsr04_init(&sensor, &cfg);
+ * @endcode
  *
  * @see rx_hcsr04_config_t.irq_priority Configure sensor priority
  * @since Version 1.2.0 (Issue #296)
@@ -494,9 +528,9 @@ typedef enum : uint8_t {
  * **Field Descriptions:**
  * - `trigger_pin`: GPIO output pin for 10µs trigger pulse
  * - `echo_pin`: GPIO input pin (or IRQ pin) for measuring echo pulse width
- * - `timeout_us`: Maximum wait time for echo (default: 30000µs = 30ms)
+ * - `timeout_us`: Maximum wait time for echo (default: k_hcsr04_echo_timeout_us = 30ms)
  * - `echo_mode`: Measurement mode (polling or IRQ, default: polling)
- * - `echo_irq`: IRQ number (8-15) if echo_mode == IRQ, otherwise ignored
+ * - `echo_irq`: IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11) if echo_mode == IRQ, otherwise ignored
  *
  * **GPIO Pin Selection:**
  * - Use type-safe `rx_port_pin_t` enum from rx_port_constants.h
@@ -530,7 +564,7 @@ typedef enum : uint8_t {
  *     .echo_pin     = k_rx_p0_3,                    // Echo on P03 (IRQ11)
  *     .timeout_us   = k_hcsr04_echo_timeout_us,     // 30ms timeout
  *     .echo_mode    = k_hcsr04_echo_irq,            // Hardware edge capture
- *     .echo_irq     = k_rx_hcsr04_irq_11,           // IRQ11 for P03
+ *     .echo_irq     = k_hcsr04_irq_11,           // IRQ11 for P03
  *     .irq_priority = k_hcsr04_irq_priority_default // Default ICU priority
  * };
  *
@@ -555,7 +589,7 @@ typedef struct {
   rx_port_pin_t            echo_pin;     /**< Echo pin (type-safe GPIO or IRQ, input) */
   uint32_t                 timeout_us;   /**< Echo timeout in microseconds (default: 30000) */
   rx_hcsr04_echo_mode_t    echo_mode;    /**< Polling or IRQ mode (default: polling) */
-  rx_hcsr04_irq_t          echo_irq;     /**< IRQ number (k_rx_hcsr04_irq_8..15), used only if echo_mode==IRQ */
+  rx_hcsr04_irq_t          echo_irq;     /**< IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11), used only if echo_mode==IRQ */
   rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (k_hcsr04_irq_priority_unset = use default), IRQ mode only */
 } rx_hcsr04_config_t;
 
@@ -576,7 +610,7 @@ typedef struct {
  * 4. Call rx_hcsr04_deinit() to release GPIO reservations
  *
  * @invariant initialized == false implies all other fields are undefined
- * @invariant echo_irq == k_rx_hcsr04_irq_none when echo_mode == k_hcsr04_echo_polling
+ * @invariant echo_irq == k_hcsr04_irq_none when echo_mode == k_hcsr04_echo_polling
  * @invariant measurement_count >= timeout_count + range_error_count
  *
  * @code
@@ -586,7 +620,7 @@ typedef struct {
  *     .echo_pin     = k_rx_p0_3,
  *     .timeout_us   = k_hcsr04_echo_timeout_us,     // 30ms default
  *     .echo_mode    = k_hcsr04_echo_polling,
- *     .echo_irq     = k_rx_hcsr04_irq_none,
+ *     .echo_irq     = k_hcsr04_irq_none,
  *     .irq_priority = k_hcsr04_irq_priority_unset, // 0 = not applicable in polling mode
  * };
  * rx_hcsr04_init(&sensor, &cfg);
@@ -604,7 +638,7 @@ typedef struct {
   rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ enum) */
   uint32_t              timeout_us;  /**< Measurement timeout in microseconds */
   rx_hcsr04_echo_mode_t    echo_mode;    /**< Echo measurement mode (polling or IRQ) */
-  rx_hcsr04_irq_t          echo_irq;    /**< IRQ number (k_rx_hcsr04_irq_8..15) if IRQ mode, else k_rx_hcsr04_irq_none */
+  rx_hcsr04_irq_t          echo_irq;    /**< IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11) if IRQ mode, else k_hcsr04_irq_none */
   rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (1-15) stored from init; k_hcsr04_irq_priority_unset = not applicable (polling mode) */
 
   /* State */
@@ -672,7 +706,9 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @pre handle must not be NULL
  * @pre config must not be NULL with valid port/pin values
  * @pre If echo_mode == k_hcsr04_echo_irq: echo_pin and echo_irq must match hardware mapping
- * @pre If echo_mode == k_hcsr04_echo_irq: echo_irq must be in range [k_rx_hcsr04_irq_8..k_rx_hcsr04_irq_15]
+ *          (P00↔IRQ8, P01↔IRQ9, P02↔IRQ10, P03↔IRQ11)
+ * @pre If echo_mode == k_hcsr04_echo_irq: echo_irq must be in range [k_hcsr04_irq_8..k_hcsr04_irq_11]
+ *          (only IRQ8–11 have ISR handlers and ICU support in this firmware)
  *
  * @post handle->initialized == true on success
  * @post Trigger pin configured as GPIO output (low)

@@ -25,13 +25,16 @@
  * @par SOLID Principles
  * - Single Responsibility: ISR state capture only; ICU config in rx_hcsr04_icu,
  *                          driver logic in rx_hcsr04.c
- * - Dependency Inversion: Uses hcsr04_hal_get_time_us() abstraction (ISR-safe)
+ * - Dependency Inversion: Uses hcsr04_hal_get_time_us_isr() abstraction (mutex-free, ISR-safe)
  *
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  * @since Version 1.2.0 (Issue #296)
  * @version 1.2.0
+ *
+ * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
+ * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
  */
 
 #include "rx_hcsr04_isr.h"
@@ -177,10 +180,10 @@ static void internal_irq_handler(const uint8_t irq_num)
   /* Step 5/6: Capture timestamp based on edge type */
   if (pin_state) {
     /* Rising edge - start of echo pulse */
-    s_irq_state[idx].start_us = hcsr04_hal_get_time_us();
+    s_irq_state[idx].start_us = hcsr04_hal_get_time_us_isr();
   } else {
     /* Falling edge - end of echo pulse; mark complete before clearing active */
-    s_irq_state[idx].end_us   = hcsr04_hal_get_time_us();
+    s_irq_state[idx].end_us   = hcsr04_hal_get_time_us_isr();
     s_irq_state[idx].complete = true;
     s_irq_state[idx].active   = false;
   }
@@ -205,7 +208,7 @@ static void internal_irq_handler(const uint8_t irq_num)
  * @return rx_err_t Error code
  * @retval k_rx_ok Registration successful
  * @retval k_rx_err_invalid_arg irq_num not in [k_irq_min, k_irq_max]
- * @retval k_rx_err_invalid_arg sensor_index >= k_sensor_unused
+ * @retval k_rx_err_invalid_arg sensor_index >= k_hcsr04_sensor_count
  *
  * @pre IRQ configured via rx_hcsr04_icu_configure()
  * @pre sensor_index must be a valid sensor array index
@@ -407,8 +410,26 @@ typedef enum : uint8_t {
 /**
  * @brief ISR for IRQ8 (P00 - Sonar 3 Back-Right)
  *
- * @pre ICU configured for IRQ8 via rx_hcsr04_icu_configure()
- * @post IR flag cleared; echo edge timestamp captured if measurement active
+ * @details
+ * Thin wrapper that forwards IRQ number constant k_irq_num_8 to
+ * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
+ * pin state, and captures the rising or falling edge timestamp.
+ *
+ * @return void
+ *
+ * @pre ICU configured for IRQ8 via rx_hcsr04_icu_configure() with k_hcsr04_irq_8
+ * @pre Interrupts globally enabled (PSW.I = 1)
+ *
+ * @post IR[vector 72] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[0] if measurement active
+ *
+ * @note Thin wrapper; all logic is in internal_irq_handler()
+ * @note Keep ISR execution time minimal (< 5 µs)
+ *
+ * @see internal_irq_handler() Core ISR logic
+ * @see k_irq_num_8 IRQ number constant passed to the handler
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ8(void)
 {
@@ -418,8 +439,26 @@ void INT_IRQ8(void)
 /**
  * @brief ISR for IRQ9 (P01 - Sonar 2 Back-Left)
  *
- * @pre ICU configured for IRQ9 via rx_hcsr04_icu_configure()
- * @post IR flag cleared; echo edge timestamp captured if measurement active
+ * @details
+ * Thin wrapper that forwards IRQ number constant k_irq_num_9 to
+ * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
+ * pin state, and captures the rising or falling edge timestamp.
+ *
+ * @return void
+ *
+ * @pre ICU configured for IRQ9 via rx_hcsr04_icu_configure() with k_hcsr04_irq_9
+ * @pre Interrupts globally enabled (PSW.I = 1)
+ *
+ * @post IR[vector 73] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[1] if measurement active
+ *
+ * @note Thin wrapper; all logic is in internal_irq_handler()
+ * @note Keep ISR execution time minimal (< 5 µs)
+ *
+ * @see internal_irq_handler() Core ISR logic
+ * @see k_irq_num_9 IRQ number constant passed to the handler
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ9(void)
 {
@@ -429,8 +468,26 @@ void INT_IRQ9(void)
 /**
  * @brief ISR for IRQ10 (P02 - Sonar 1 Front-Right)
  *
- * @pre ICU configured for IRQ10 via rx_hcsr04_icu_configure()
- * @post IR flag cleared; echo edge timestamp captured if measurement active
+ * @details
+ * Thin wrapper that forwards IRQ number constant k_irq_num_10 to
+ * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
+ * pin state, and captures the rising or falling edge timestamp.
+ *
+ * @return void
+ *
+ * @pre ICU configured for IRQ10 via rx_hcsr04_icu_configure() with k_hcsr04_irq_10
+ * @pre Interrupts globally enabled (PSW.I = 1)
+ *
+ * @post IR[vector 74] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[2] if measurement active
+ *
+ * @note Thin wrapper; all logic is in internal_irq_handler()
+ * @note Keep ISR execution time minimal (< 5 µs)
+ *
+ * @see internal_irq_handler() Core ISR logic
+ * @see k_irq_num_10 IRQ number constant passed to the handler
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ10(void)
 {
@@ -440,8 +497,26 @@ void INT_IRQ10(void)
 /**
  * @brief ISR for IRQ11 (P03 - Sonar 0 Front-Left)
  *
- * @pre ICU configured for IRQ11 via rx_hcsr04_icu_configure()
- * @post IR flag cleared; echo edge timestamp captured if measurement active
+ * @details
+ * Thin wrapper that forwards IRQ number constant k_irq_num_11 to
+ * internal_irq_handler(). The handler clears the IR flag, reads the GPIO
+ * pin state, and captures the rising or falling edge timestamp.
+ *
+ * @return void
+ *
+ * @pre ICU configured for IRQ11 via rx_hcsr04_icu_configure() with k_hcsr04_irq_11
+ * @pre Interrupts globally enabled (PSW.I = 1)
+ *
+ * @post IR[vector 75] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[3] if measurement active
+ *
+ * @note Thin wrapper; all logic is in internal_irq_handler()
+ * @note Keep ISR execution time minimal (< 5 µs)
+ *
+ * @see internal_irq_handler() Core ISR logic
+ * @see k_irq_num_11 IRQ number constant passed to the handler
+ *
+ * @since Version 1.2.0 (Issue #296)
  */
 void INT_IRQ11(void)
 {

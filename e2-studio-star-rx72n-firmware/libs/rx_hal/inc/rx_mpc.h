@@ -1440,8 +1440,10 @@ typedef enum : uint8_t {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Pin configured for IRQ function
- * @retval k_rx_err_invalid_arg Invalid port or pin number
- * @retval k_rx_err_hw_error PWPR write-protect unlock failed
+ * @retval k_rx_err_invalid_arg Invalid port or pin number (propagated from internal_write_pfs())
+ *
+ * @note internal_mpc_unlock() and internal_mpc_lock() do not propagate errors; only
+ *       internal_write_pfs() can return k_rx_err_invalid_arg on invalid port/pin values.
  *
  * @pre Pin must have IRQ multiplexing capability (P00-P07 for IRQ8-15)
  * @pre PCLKB running (MPC requires clock)

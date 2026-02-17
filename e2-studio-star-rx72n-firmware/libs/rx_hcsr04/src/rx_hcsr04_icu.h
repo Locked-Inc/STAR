@@ -34,23 +34,40 @@
  * if (err != k_rx_ok) return err;
  *
  * // Step 2: Configure ICU for edge detection
- * err = rx_hcsr04_icu_configure(11, 10);  // IRQ11, priority 10
+ * err = rx_hcsr04_icu_configure((uint8_t)k_hcsr04_irq_11, k_hcsr04_irq_priority_default);
  * if (err != k_rx_ok) return err;
  *
  * // Now ISR will fire on both rising and falling edges
  * @endcode
  *
  * @note This is an internal header (src/ not inc/)
- * @note Only supports IRQ8-15 (P00-P07 pins)
+ * @note Only supports IRQ8-11 (P00-P03 pins; ISR handlers exist for IRQ8-11 only)
  *
  * @see rx_mpc_set_irq() Configure pin for IRQ function first
  * @see rx_hcsr04_isr.h ISR handler layer
  * @see RX72N Manual Chapter 15 - ICU (Interrupt Controller Unit)
+ * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
+ * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
  *
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @version 1.2.0
  * @since Version 1.2.0 (Issue #296)
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 2: All loops in rx_hcsr04_icu_configure() / rx_hcsr04_icu_disable() have fixed bounds
+ * - Rule 5: Minimum 2 preconditions and 4 postconditions per public function
+ * - Rule 7: All register write results validated; filter enable/disable errors propagated
+ * - Rule 8: All constants are named C23 typed enums (icu_constants_t); no magic numbers
+ *
+ * @par SOLID Principles Adherence
+ * - Single Responsibility: ICU configuration only; MPC pin setup is in rx_mpc.h,
+ *                          ISR state management is in rx_hcsr04_isr.h
+ * - Open/Closed: Behaviour extended via configuration parameters (irq_num, priority)
+ *                without modifying this module
+ * - Dependency Inversion: Depends on rx_err.h abstraction; no direct hardware coupling
+ *                         beyond ICU register access
  */
 
 #pragma once
@@ -118,10 +135,10 @@ extern "C" {
  * @par Example: Configure All 4 HC-SR04 Sensors
  * @code
  * const rx_hcsr04_irq_t irq_nums[] = {
- *     k_rx_hcsr04_irq_11,  // Sonar 0 Front-Left
- *     k_rx_hcsr04_irq_10,  // Sonar 1 Front-Right
- *     k_rx_hcsr04_irq_9,   // Sonar 2 Back-Left
- *     k_rx_hcsr04_irq_8,   // Sonar 3 Back-Right
+ *     k_hcsr04_irq_11,  // Sonar 0 Front-Left
+ *     k_hcsr04_irq_10,  // Sonar 1 Front-Right
+ *     k_hcsr04_irq_9,   // Sonar 2 Back-Left
+ *     k_hcsr04_irq_8,   // Sonar 3 Back-Right
  * };
  * const uint8_t sensor_count = (uint8_t)(sizeof(irq_nums) / sizeof(irq_nums[0]));
  * const uint8_t priority = k_hcsr04_irq_priority_default;  // 10
@@ -171,6 +188,7 @@ extern "C" {
  * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
  * @pre No measurement in progress on this IRQ
+ * @pre irq_num is a valid IRQ identifier in range [8, 11] (k_hcsr04_irq_8..k_hcsr04_irq_11)
  *
  * @post IER bit cleared (interrupt will not fire)
  * @post IR flag cleared (no stale pending interrupt)
@@ -185,7 +203,7 @@ extern "C" {
  * @par Example: Clean Up Sensor
  * @code
  * // Disable IRQ11 (Sonar 0)
- * rx_err_t err = rx_hcsr04_icu_disable(k_rx_hcsr04_irq_11);
+ * rx_err_t err = rx_hcsr04_icu_disable(k_hcsr04_irq_11);
  * if (err != k_rx_ok) {
  *     rx_log_warn("SONAR", "Failed to disable IRQ11");
  * }

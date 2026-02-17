@@ -653,7 +653,7 @@ typedef enum : uint8_t {
  * @details
  * `k_irq_priority_unset` is the zero sentinel — when `config->irq_priority`
  * equals this value, `rx_hcsr04_init()` substitutes `k_default_irq_priority`.
- * Using a dedicated sentinel (distinct from `k_rx_hcsr04_irq_none`) avoids
+ * Using a dedicated sentinel (distinct from `k_hcsr04_irq_none`) avoids
  * semantic overload where a single value means both "no IRQ" and "no priority".
  *
  * @since Version 1.2.0 (Issue #296)
@@ -1337,6 +1337,8 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
  *
  * @pre handle must be initialized with echo_mode == k_hcsr04_echo_irq
  * @pre ICU must be configured (done during rx_hcsr04_init())
+ * @pre rx_hcsr04_isr_start() must have been called by the caller BEFORE sending
+ *      the trigger pulse (arming first prevents missing the rising echo edge)
  *
  * @post *duration_us contains echo pulse width on k_rx_ok
  * @post ISR state machine is idle on return (active=false)
@@ -1344,7 +1346,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
  * @note Must NOT be called from ISR context (uses tx_thread_sleep)
  * @note Bounded loop: max k_irq_poll_max_iterations iterations
  *
- * @see rx_hcsr04_isr_start() Arms ISR state machine
+ * @see rx_hcsr04_isr_start() Must be called by caller before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads ISR-captured timestamps
  *
  * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
@@ -1355,11 +1357,9 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
     return k_rx_err_null_ptr;
   }
 
-  /* Arm the ISR state machine before trigger pulse */
-  const rx_err_t start_err = rx_hcsr04_isr_start((uint8_t)handle->echo_irq);
-  if (start_err != k_rx_ok) {
-    return start_err;
-  }
+  /* NOTE: ISR must be armed by the caller (rx_hcsr04_measure_blocking /
+   * rx_hcsr04_measure) BEFORE the trigger pulse is sent, to avoid missing
+   * the rising echo edge. This function only waits for completion. */
 
   /* Wait for ISR to capture both edges (bounded loop per NASA Rule 2) */
   const uint32_t start_time = hcsr04_hal_get_time_us();
@@ -1806,7 +1806,7 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
 rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 {
   rx_err_t err;
-  uint8_t  effective_priority = 0; /* Effective ICU priority (IRQ mode only) */
+  uint8_t  effective_priority = k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
 
   if (handle == nullptr || config == nullptr) {
     return k_rx_err_null_ptr;
@@ -1845,7 +1845,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   handle->echo_pin            = config->echo_pin;
   handle->timeout_us          = config->timeout_us;
   handle->echo_mode           = config->echo_mode;
-  handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_rx_hcsr04_irq_none;
+  handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
   handle->irq_priority        = (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
   handle->initialized         = true;
   handle->measurement_active  = false;
@@ -1966,6 +1966,14 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   /* Increment measurement count */
   handle->measurement_count++;
 
+  /* In IRQ mode: arm ISR BEFORE trigger pulse to avoid missing rising edge */
+  if (handle->echo_mode == k_hcsr04_echo_irq) {
+    err = rx_hcsr04_isr_start((uint8_t)handle->echo_irq);
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+
   /* Send trigger pulse */
   err = internal_send_trigger_pulse(handle);
   if (err != k_rx_ok) {
@@ -2040,6 +2048,14 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 
   /* Increment measurement count */
   handle->measurement_count++;
+
+  /* In IRQ mode: arm ISR BEFORE trigger pulse to avoid missing rising edge */
+  if (handle->echo_mode == k_hcsr04_echo_irq) {
+    err = rx_hcsr04_isr_start((uint8_t)handle->echo_irq);
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
 
   /* Send trigger pulse */
   err = internal_send_trigger_pulse(handle);

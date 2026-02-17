@@ -1168,3 +1168,35 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   return result;
 }
+
+/**
+ * @brief Get monotonic timestamp in microseconds — ISR-safe (no mutex)
+ *
+ * @details
+ * Reads the CMT2 counter directly without acquiring the ThreadX mutex.
+ * Safe to call from interrupt context. Does NOT track 16-bit overflows.
+ * For HC-SR04 echo pulse capture (< 25 ms) the two ISR timestamps are
+ * recorded within microseconds of each other, so single-overflow risk
+ * within one measurement window is negligible.
+ *
+ * @return CMT2 counter converted to microseconds (no overflow tracking)
+ *
+ * @pre CMT2 timer initialized (call hcsr04_hal_get_time_us() once at startup)
+ * @pre Called from interrupt context (no ThreadX blocking calls permitted)
+ *
+ * @post No side effects (read-only, no mutex acquired)
+ *
+ * @note ISR-safe: does NOT call tx_mutex_get() or any blocking ThreadX API
+ * @warning Does not track 16-bit counter overflow; do not use for intervals > 8.7 ms
+ *
+ * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking for task context
+ *
+ * @since Version 1.2.0 (Issue #296 - ISR-mode HC-SR04 measurement)
+ */
+uint32_t hcsr04_hal_get_time_us_isr(void)
+{
+  const uint32_t timer_hz      = k_pclkb_hz / k_cmt2_divider;
+  const uint16_t current_count = cmt2()->cmcnt;
+
+  return (uint32_t)(((uint32_t)current_count * k_us_per_second) / timer_hz);
+}

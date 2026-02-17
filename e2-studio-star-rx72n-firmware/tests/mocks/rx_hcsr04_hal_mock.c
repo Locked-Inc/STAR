@@ -1234,3 +1234,29 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   return time_us;
 }
+
+/**
+ * @brief Mock: ISR-safe timestamp (delegates to mock_get_time_us, no mutex)
+ *
+ * @details
+ * Mock implementation of the ISR-safe time function. Delegates to
+ * mock_get_time_us() exactly like hcsr04_hal_get_time_us() since there
+ * is no mutex concern in the test environment.
+ *
+ * @return Current mock time in microseconds
+ *
+ * @pre Mock time infrastructure initialised (mock_set_time_us called)
+ * @pre Running in unit-test mock mode (no real hardware)
+ *
+ * @post No hardware side-effects
+ * @post Returned value equals last value set via mock_set_time_us()
+ *
+ * @note ISR-safe: no mutex or blocking call in mock context
+ * @see hcsr04_hal_get_time_us_isr() Real hardware counterpart
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+uint32_t hcsr04_hal_get_time_us_isr(void)
+{
+  return mock_get_time_us();
+}

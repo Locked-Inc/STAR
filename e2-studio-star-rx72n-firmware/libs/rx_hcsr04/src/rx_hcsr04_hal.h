@@ -761,10 +761,44 @@ void hcsr04_hal_delay_us(uint32_t us);
  *
  * @see hcsr04_hal_delay_us Blocking delay function
  * @see internal_measure_echo_pulse Echo timing function
+ * @see hcsr04_hal_get_time_us_isr() ISR-safe variant (no mutex)
  *
  * @since Version 1.0.0
  */
 uint32_t hcsr04_hal_get_time_us(void);
+
+/**
+ * @brief Get monotonic timestamp in microseconds — ISR-safe (no mutex)
+ *
+ * @details
+ * Returns the raw CMT2 counter value converted to microseconds. Unlike
+ * hcsr04_hal_get_time_us(), this function does NOT acquire the ThreadX mutex
+ * and therefore may not track 16-bit counter overflows correctly. It is safe
+ * to call from interrupt context and provides sub-microsecond latency.
+ *
+ * **Limitations vs hcsr04_hal_get_time_us():**
+ * - No overflow tracking (counter resets every ~8.7 ms)
+ * - Suitable only for short duration measurements (< 8 ms)
+ * - HC-SR04 echo pulses are at most 25 ms; for IRQ edge capture the individual
+ *   timestamps are read within microseconds of each other so overflow risk is
+ *   negligible within a single measurement window (echo < 8.7 ms).
+ *
+ * @return Current CMT2 counter value converted to microseconds (no overflow tracking)
+ *
+ * @pre CMT2 timer initialized (automatic on first call via hcsr04_hal_get_time_us)
+ * @pre Called from ISR context (no ThreadX blocking allowed)
+ *
+ * @post No side effects (read-only operation, no mutex acquired)
+ *
+ * @note ISR-safe: does NOT call tx_mutex_get() or any blocking ThreadX API
+ * @note For task context, prefer hcsr04_hal_get_time_us() (overflow tracking)
+ * @warning Does not track 16-bit overflow; do not use for durations > 8.7 ms
+ *
+ * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking
+ *
+ * @since Version 1.2.0 (Issue #296 - ISR-mode HC-SR04 measurement)
+ */
+uint32_t hcsr04_hal_get_time_us_isr(void);
 
 #ifdef __cplusplus
 }
