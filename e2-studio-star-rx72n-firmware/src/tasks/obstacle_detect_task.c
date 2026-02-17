@@ -850,6 +850,7 @@
 
 #include <string.h>
 
+#include "motor_control_task.h"
 #include "rx_check.h"
 #include "rx_hcsr04.h"
 #include "rx_iwdt.h"
@@ -858,7 +859,6 @@
 #include "rx_port_utils.h"
 #include "shared_data.h"
 #include "tx_api.h"
-#include "motor_control_task.h"
 
 /* =============================================================================
  * Constants
@@ -883,11 +883,12 @@
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_obstacle_task_stack_size  = 1024, /**< Stack size in bytes (static allocation) */
-  k_obstacle_task_priority    = 12,   /**< ThreadX priority (1=highest, 31=lowest) */
-  k_obstacle_heartbeat_ticks  = 2,    /**< IWDT heartbeat interval: 2 ticks = 20ms @ 100 Hz (3× safety margin for 60ms timeout) */
+  k_obstacle_task_stack_size = 1024, /**< Stack size in bytes (static allocation) */
+  k_obstacle_task_priority   = 12,   /**< ThreadX priority (1=highest, 31=lowest) */
+  k_obstacle_heartbeat_ticks =
+    2, /**< IWDT heartbeat interval: 2 ticks = 20ms @ 100 Hz (3× safety margin for 60ms timeout) */
   k_obstacle_stats_log_interval = 50, /**< Log stats every 50 heartbeats (50 × 20ms = 1s) */
-  k_obstacle_task_input       = 0,    /**< Thread entry input parameter (unused) */
+  k_obstacle_task_input         = 0,  /**< Thread entry input parameter (unused) */
 } obstacle_task_constants_t;
 
 /**
@@ -957,10 +958,13 @@ typedef enum : uint8_t {
  * @since STAR v1.0.0
  */
 typedef enum : uint8_t {
-  k_sensor_front_left  = 0, /**< Front-left sensor: TRIG=PF5 (k_rx_pf_5), ECHO=P03/IRQ11 (k_rx_p0_3) */
-  k_sensor_front_right = 1, /**< Front-right sensor: TRIG=PJ5 (k_rx_pj_5), ECHO=P02/IRQ10 (k_rx_p0_2) */
-  k_sensor_back_left   = 2, /**< Back-left sensor: TRIG=PJ3 (k_rx_pj_3), ECHO=P01/IRQ9 (k_rx_p0_1) */
-  k_sensor_back_right  = 3, /**< Back-right sensor: TRIG=P33 (k_rx_p3_3), ECHO=P00/IRQ8 (k_rx_p0_0) */
+  k_sensor_front_left =
+    0, /**< Front-left sensor: TRIG=PF5 (k_rx_pf_5), ECHO=P03/IRQ11 (k_rx_p0_3) */
+  k_sensor_front_right =
+    1, /**< Front-right sensor: TRIG=PJ5 (k_rx_pj_5), ECHO=P02/IRQ10 (k_rx_p0_2) */
+  k_sensor_back_left = 2, /**< Back-left sensor: TRIG=PJ3 (k_rx_pj_3), ECHO=P01/IRQ9 (k_rx_p0_1) */
+  k_sensor_back_right =
+    3, /**< Back-right sensor: TRIG=P33 (k_rx_p3_3), ECHO=P00/IRQ8 (k_rx_p0_0) */
 } obstacle_sensor_idx_t;
 
 /**
@@ -988,7 +992,8 @@ typedef enum : uint8_t {
  * @since STAR v1.0.0
  */
 typedef enum : uint8_t {
-  k_obstacle_motor_count_none = 0, /**< Zero motors available — motor_control_task_create() not yet called */
+  k_obstacle_motor_count_none =
+    0, /**< Zero motors available — motor_control_task_create() not yet called */
 } obstacle_motor_count_t;
 
 /* =============================================================================
@@ -1504,10 +1509,10 @@ static rx_err_t internal_init_sensors(void)
    * @since STAR v1.0.0
    */
   static const rx_port_pin_t s_trigger_pins[k_obstacle_sensor_count] = {
-    k_rx_pf_5,  /* k_sensor_front_left:  PF5 TRIG */
-    k_rx_pj_5,  /* k_sensor_front_right: PJ5 TRIG */
-    k_rx_pj_3,  /* k_sensor_back_left:   PJ3 TRIG */
-    k_rx_p3_3,  /* k_sensor_back_right:  P33 TRIG */
+    k_rx_pf_5, /* k_sensor_front_left:  PF5 TRIG */
+    k_rx_pj_5, /* k_sensor_front_right: PJ5 TRIG */
+    k_rx_pj_3, /* k_sensor_back_left:   PJ3 TRIG */
+    k_rx_p3_3, /* k_sensor_back_right:  P33 TRIG */
   };
 
   /**
@@ -1523,10 +1528,10 @@ static rx_err_t internal_init_sensors(void)
    * @since STAR v1.0.0
    */
   static const rx_port_pin_t s_echo_pins[k_obstacle_sensor_count] = {
-    k_rx_p0_3,  /* k_sensor_front_left:  P03 ECHO (IRQ11) */
-    k_rx_p0_2,  /* k_sensor_front_right: P02 ECHO (IRQ10) */
-    k_rx_p0_1,  /* k_sensor_back_left:   P01 ECHO (IRQ9) */
-    k_rx_p0_0,  /* k_sensor_back_right:  P00 ECHO (IRQ8) */
+    k_rx_p0_3, /* k_sensor_front_left:  P03 ECHO (IRQ11) */
+    k_rx_p0_2, /* k_sensor_front_right: P02 ECHO (IRQ10) */
+    k_rx_p0_1, /* k_sensor_back_left:   P01 ECHO (IRQ9) */
+    k_rx_p0_0, /* k_sensor_back_right:  P00 ECHO (IRQ8) */
   };
 
   /**
@@ -1868,7 +1873,7 @@ static void internal_obstacle_task_entry(ULONG input)
     stats_counter++;
     if (stats_counter >= k_obstacle_stats_log_interval) {
       stats_counter = 0;
-      err = rx_obstacle_detect_get_stats(&s_obstacle_handle,
+      err           = rx_obstacle_detect_get_stats(&s_obstacle_handle,
                                          &total_polls,
                                          &obstacle_events,
                                          &false_positives);
@@ -2172,7 +2177,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
   }
 
   /* Update obstacle state in shared data (read-modify-write to preserve other sensors) */
-  (void)memset(&state, 0, sizeof(state));  /* Initialize to zero in case get fails */
+  (void)memset(&state, 0, sizeof(state)); /* Initialize to zero in case get fails */
   rx_err_t err = shared_data_get_obstacle(&state);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Failed to get obstacle state", (uint32_t)err);

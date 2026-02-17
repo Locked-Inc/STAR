@@ -1001,7 +1001,7 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
   /* Check if motor stack initialization completed inside the thread */
   if (!s_motor_stack_initialized) {
     *out_count = k_motor_count_none;
-    return nullptr;  /* Motor stack not yet initialized */
+    return nullptr; /* Motor stack not yet initialized */
   }
 
   /* Return motor count and handle array */

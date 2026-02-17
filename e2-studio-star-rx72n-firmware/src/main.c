@@ -1428,7 +1428,8 @@ static rx_err_t internal_check_startup_flags(void)
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_iwdt_hw_timeout_ms = 2048, /**< Hardware IWDT timeout in milliseconds (CKS=10, ~2048ms ±10%). Must exceed all task timeouts to prevent spurious resets. Valid range: 128-16384ms per hardware limits. */
+  k_iwdt_hw_timeout_ms =
+    2048, /**< Hardware IWDT timeout in milliseconds (CKS=10, ~2048ms ±10%). Must exceed all task timeouts to prevent spurious resets. Valid range: 128-16384ms per hardware limits. */
 } iwdt_hardware_timeout_ms_t;
 
 /**
@@ -1478,12 +1479,18 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_iwdt_timeout_init_ms         = 5000,  /**< Init state timeout (5000ms). Allows slow startup: clock init, peripheral init, task creation. Exceeds hardware timeout (watchdog not yet started). Valid range: 2000-10000ms. */
-  k_iwdt_timeout_idle_ms         = 5000,  /**< Idle state timeout (5000ms). System initialized but no critical operations running. Same as init for consistency. Valid range: 2000-10000ms. */
-  k_iwdt_timeout_running_ms      = 2000,  /**< Running state timeout (2000ms). Default operational state. Matches hardware IWDT timeout. Must be fed at 100 Hz (10ms) to prevent reset. Valid range: 1000-2000ms. */
-  k_iwdt_timeout_motor_active_ms = 2000,  /**< Motor active state timeout (2000ms). Motors running with closed-loop control at 100 Hz. Same as running state (motor control is time-critical). Valid range: 1000-2000ms. */
-  k_iwdt_timeout_comm_active_ms  = 2000,  /**< Communication active state timeout (2000ms). SPI communication in progress. Same as running (comm task runs at 100 Hz). Valid range: 1000-2000ms. */
-  k_iwdt_timeout_error_ms        = 10000, /**< Error state timeout (10000ms). Extended timeout for error logging, diagnostics, and recovery attempts before reset. Allows thorough post-mortem. Valid range: 5000-16000ms. */
+  k_iwdt_timeout_init_ms =
+    5000, /**< Init state timeout (5000ms). Allows slow startup: clock init, peripheral init, task creation. Exceeds hardware timeout (watchdog not yet started). Valid range: 2000-10000ms. */
+  k_iwdt_timeout_idle_ms =
+    5000, /**< Idle state timeout (5000ms). System initialized but no critical operations running. Same as init for consistency. Valid range: 2000-10000ms. */
+  k_iwdt_timeout_running_ms =
+    2000, /**< Running state timeout (2000ms). Default operational state. Matches hardware IWDT timeout. Must be fed at 100 Hz (10ms) to prevent reset. Valid range: 1000-2000ms. */
+  k_iwdt_timeout_motor_active_ms =
+    2000, /**< Motor active state timeout (2000ms). Motors running with closed-loop control at 100 Hz. Same as running state (motor control is time-critical). Valid range: 1000-2000ms. */
+  k_iwdt_timeout_comm_active_ms =
+    2000, /**< Communication active state timeout (2000ms). SPI communication in progress. Same as running (comm task runs at 100 Hz). Valid range: 1000-2000ms. */
+  k_iwdt_timeout_error_ms =
+    10000, /**< Error state timeout (10000ms). Extended timeout for error logging, diagnostics, and recovery attempts before reset. Allows thorough post-mortem. Valid range: 5000-16000ms. */
 } iwdt_state_timeout_ms_t;
 
 /**
@@ -1535,14 +1542,22 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_iwdt_task_timeout_telemetry_ms  = 150,  /**< Telemetry task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: telemetry stops, system reset after 2s. */
-  k_iwdt_task_timeout_ledstatus_ms  = 150,  /**< LED Status task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: LED updates stop, system reset after 2s. */
-  k_iwdt_task_timeout_bmsmonitor_ms = 3000, /**< BMS Monitor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: battery monitoring stops, system reset after 2s. */
-  k_iwdt_task_timeout_tempsensor_ms = 3000, /**< Temperature Sensor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: temp compensation stops, system reset after 2s. */
-  k_iwdt_task_timeout_obstdetect_ms = 60,   /**< Obstacle Detection task timeout (60ms). Task heartbeat: 20ms @ 50 Hz. Timeout = 3× 20ms period. Heartbeat called every 20ms. Valid range: 50-150ms. If exceeded: collision avoidance stops, system reset after 2s. */
-  k_iwdt_task_timeout_motorctrl_ms  = 30,   /**< Motor Control task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: motor control stops, system reset after 2s. CRITICAL TASK. */
-  k_iwdt_task_timeout_commtask_ms   = 30,   /**< Communication task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
-  k_iwdt_task_timeout_watchdog_ms   = 30,   /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
+  k_iwdt_task_timeout_telemetry_ms =
+    150, /**< Telemetry task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: telemetry stops, system reset after 2s. */
+  k_iwdt_task_timeout_ledstatus_ms =
+    150, /**< LED Status task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: LED updates stop, system reset after 2s. */
+  k_iwdt_task_timeout_bmsmonitor_ms =
+    3000, /**< BMS Monitor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: battery monitoring stops, system reset after 2s. */
+  k_iwdt_task_timeout_tempsensor_ms =
+    3000, /**< Temperature Sensor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: temp compensation stops, system reset after 2s. */
+  k_iwdt_task_timeout_obstdetect_ms =
+    60, /**< Obstacle Detection task timeout (60ms). Task heartbeat: 20ms @ 50 Hz. Timeout = 3× 20ms period. Heartbeat called every 20ms. Valid range: 50-150ms. If exceeded: collision avoidance stops, system reset after 2s. */
+  k_iwdt_task_timeout_motorctrl_ms =
+    30, /**< Motor Control task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: motor control stops, system reset after 2s. CRITICAL TASK. */
+  k_iwdt_task_timeout_commtask_ms =
+    30, /**< Communication task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
+  k_iwdt_task_timeout_watchdog_ms =
+    30, /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
 } iwdt_task_timeout_ms_t;
 
 /**
@@ -1575,18 +1590,17 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 static const rx_iwdt_config_t s_iwdt_config = {
-  .default_timeout_ms          = k_iwdt_hw_timeout_ms, /**< 2048ms hardware timeout (CKS=10) */
-  .enable_task_monitoring      = true,                 /**< Enable task heartbeat tracking */
-  .reset_on_timeout            = true,                 /**< Reset on timeout (not NMI) */
-  .state_timeouts_ms           = {
-    [k_system_state_init]         = k_iwdt_timeout_init_ms,         /**< 5s - slow startup */
-    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,         /**< 5s - no critical ops */
-    [k_system_state_running]      = k_iwdt_timeout_running_ms,      /**< 2s - default operation */
+  .default_timeout_ms     = k_iwdt_hw_timeout_ms, /**< 2048ms hardware timeout (CKS=10) */
+  .enable_task_monitoring = true,                 /**< Enable task heartbeat tracking */
+  .reset_on_timeout       = true,                 /**< Reset on timeout (not NMI) */
+  .state_timeouts_ms      = {
+    [k_system_state_init]         = k_iwdt_timeout_init_ms,    /**< 5s - slow startup */
+    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,    /**< 5s - no critical ops */
+    [k_system_state_running]      = k_iwdt_timeout_running_ms, /**< 2s - default operation */
     [k_system_state_motor_active] = k_iwdt_timeout_motor_active_ms, /**< 2s - motor control */
     [k_system_state_comm_active]  = k_iwdt_timeout_comm_active_ms,  /**< 2s - communication */
     [k_system_state_error]        = k_iwdt_timeout_error_ms,        /**< 10s - recovery/diag */
-  }
-};
+  }};
 
 /**
  * @brief ThreadX application definition callback - Create application threads and kernel objects
