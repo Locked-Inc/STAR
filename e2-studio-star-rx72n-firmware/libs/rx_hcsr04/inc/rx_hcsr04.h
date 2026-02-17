@@ -636,7 +636,11 @@ typedef struct {
  *     .echo_irq     = k_hcsr04_irq_none,
  *     .irq_priority = k_hcsr04_irq_priority_unset, // 0 = not applicable in polling mode
  * };
- * rx_hcsr04_init(&sensor, &cfg);
+ * rx_err_t err = rx_hcsr04_init(&sensor, &cfg);
+ * if (err != k_rx_ok) {
+ *     // Handle initialization failure
+ *     return err;
+ * }
  * @endcode
  *
  * @see rx_hcsr04_init() Populates all fields

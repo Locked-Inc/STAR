@@ -115,7 +115,7 @@ extern "C" {
  *
  * @since Version 1.2.0 (Issue #296)
  */
-static const float s_hcsr04_us_per_cm __attribute__((unused)) = 58.0F;
+[[maybe_unused]] static const float s_hcsr04_us_per_cm = 58.0F;
 
 /* =============================================================================
  * Types
