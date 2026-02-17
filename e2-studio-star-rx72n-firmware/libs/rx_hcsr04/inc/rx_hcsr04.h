@@ -551,12 +551,12 @@ typedef enum : uint8_t {
  * @since Version 1.2.0 (Issue #296 - IRQ mode added)
  */
 typedef struct {
-  rx_port_pin_t         trigger_pin; /**< Trigger pin (type-safe GPIO, output) */
-  rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ, input) */
-  uint32_t              timeout_us;  /**< Echo timeout in microseconds (default: 30000) */
-  rx_hcsr04_echo_mode_t     echo_mode;    /**< Polling or IRQ mode (default: polling) */
-  rx_hcsr04_irq_t           echo_irq;    /**< IRQ number (k_rx_hcsr04_irq_8..15), used only if echo_mode==IRQ */
-  rx_hcsr04_irq_priority_t  irq_priority; /**< ICU interrupt priority (k_hcsr04_irq_priority_unset = use default), IRQ mode only */
+  rx_port_pin_t            trigger_pin;  /**< Trigger pin (type-safe GPIO, output) */
+  rx_port_pin_t            echo_pin;     /**< Echo pin (type-safe GPIO or IRQ, input) */
+  uint32_t                 timeout_us;   /**< Echo timeout in microseconds (default: 30000) */
+  rx_hcsr04_echo_mode_t    echo_mode;    /**< Polling or IRQ mode (default: polling) */
+  rx_hcsr04_irq_t          echo_irq;     /**< IRQ number (k_rx_hcsr04_irq_8..15), used only if echo_mode==IRQ */
+  rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (k_hcsr04_irq_priority_unset = use default), IRQ mode only */
 } rx_hcsr04_config_t;
 
 /**
@@ -679,7 +679,8 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @post Echo pin configured as GPIO input (polling) or IRQ input (IRQ mode)
  * @post handle->irq_priority reflects the effective priority used (IRQ mode only)
  *
- * @note For IRQ mode, irq_priority of k_hcsr04_irq_priority_unset (0) selects default (10)
+ * @note Not thread-safe; caller must synchronize if called from multiple threads
+ * @note For IRQ mode, irq_priority of k_hcsr04_irq_priority_unset (0) selects default (k_hcsr04_irq_priority_default)
  * @warning echo_pin and echo_irq MUST match the hardware mapping
  *          (P00↔IRQ8, P01↔IRQ9, P02↔IRQ10, P03↔IRQ11)
  *

@@ -83,7 +83,7 @@ extern "C" {
  * - Falling edge (echo LOW): ISR captures end timestamp
  * - Duration = end - start (microseconds)
  *
- * @param[in] irq_num IRQ number (8-15 for P00-P07)
+ * @param[in] irq_num IRQ number (8-11 for P00-P03; ISR handlers exist for IRQ8-11 only)
  *                    - IRQ8  (P00) - Sonar 3 (Back-Right)
  *                    - IRQ9  (P01) - Sonar 2 (Back-Left)
  *                    - IRQ10 (P02) - Sonar 1 (Front-Right)
@@ -95,8 +95,9 @@ extern "C" {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok ICU configured successfully
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
  * @retval k_rx_err_invalid_arg priority not in range [1, 15]
+ * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_enable())
  *
  * @pre Pin already configured for IRQ function via rx_mpc_set_irq()
  * @pre ICU module not in module stop (MSTPCRA bit cleared)
@@ -162,13 +163,13 @@ extern "C" {
  * - Disable digital filter
  * - IRQCR left unchanged (safe state)
  *
- * @param[in] irq_num IRQ number to disable (8-15)
+ * @param[in] irq_num IRQ number to disable (8-11)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok IRQ and digital filter both disabled successfully
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
- * @pre IRQ was previously configured via rx_hcsr04_icu_configure()
  * @pre No measurement in progress on this IRQ
  *
  * @post IER bit cleared (interrupt will not fire)
@@ -176,7 +177,7 @@ extern "C" {
  * @post Digital filter disabled
  * @post ISR will not trigger on pin edges
  *
- * @note Safe to call even if IRQ was not enabled
+ * @note Recommended to call only after rx_hcsr04_icu_configure(), but safe to call even if IRQ was not previously enabled
  * @note Does NOT reconfigure pin back to GPIO (use rx_mpc_set_gpio separately)
  *
  * @warning Do not call while measurement in progress

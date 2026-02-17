@@ -125,10 +125,12 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  * @brief Mock: Arm ISR state machine before trigger pulse (no-op stub)
  *
  * @param[in] irq_num IRQ number (unused in mock)
+ * @return k_rx_ok always
  */
-void rx_hcsr04_isr_start(const uint8_t irq_num)
+rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
 {
   (void)irq_num;
+  return k_rx_ok;
 }
 
 /**

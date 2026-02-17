@@ -1456,30 +1456,31 @@ typedef enum : uint8_t {
  * @note Call this BEFORE enabling ICU interrupt
  *
  * @warning Does NOT configure ICU registers (edge detect, priority, etc.)
- * @warning Configure ICU separately via rx_hcsr04_icu_configure()
+ * @warning Configure ICU separately for edge detection and priority as required
  *
- * @par Example - HC-SR04 Echo Pin Setup
+ * @par Example - IRQ Pin Setup
  * @code{.c}
- * // Configure P03 for IRQ11 (HC-SR04 echo measurement)
+ * // Configure P03 for IRQ11 (external interrupt input)
  * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);
  * if (err != k_rx_ok) {
- *     rx_log_error("SONAR", "IRQ pin configuration failed");
+ *     rx_log_error("IRQ", "IRQ pin configuration failed");
  *     return err;
  * }
  *
- * // Now configure ICU for edge detection
- * err = rx_hcsr04_icu_configure(11, 10);  // IRQ11, priority 10
+ * // Now configure ICU for edge detection (caller-specific step)
  * @endcode
  *
+ * @invariant MPC base address remains constant throughout operation
+ * @invariant Only target pin's PFS register is modified (other pins' PFS unchanged)
+ *
  * @see rx_mpc_set_gpio() Set pin back to GPIO mode
- * @see rx_hcsr04_icu_configure() Configure ICU for IRQ edge detection
  * @see RX72N Manual Section 20.3 (MPC), PFS register bit definitions
  * @see RX72N Manual Chapter 15 (ICU - Interrupt Controller Unit)
  *
  * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: [OK] 2 preconditions, 4 postconditions
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions
  * - Rule 7: [OK] Caller checks return value ([[nodiscard]])
  * - Rule 8: [OK] k_pfs_isel from pfs_bits_t enum (no magic numbers)
  *

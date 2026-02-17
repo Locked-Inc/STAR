@@ -44,7 +44,7 @@
  * uint32_t duration_us;
  * rx_err_t err = rx_hcsr04_isr_get_duration(11, &duration_us);
  * if (err == k_rx_ok) {
- *     float distance_cm = duration_us / 58.0f;
+ *     float distance_cm = (float)duration_us / k_hcsr04_us_per_cm;
  * }
  * @endcode
  *
@@ -72,6 +72,28 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief Microseconds per centimeter (roundtrip) for HC-SR04 distance conversion
+ *
+ * @details
+ * The HC-SR04 echo pulse width encodes round-trip time-of-flight. At 20°C,
+ * sound travels at 343 m/s. The round-trip conversion factor is:
+ *
+ *   2 cm / (343 m/s * 100 cm/m) = 58.31 µs/cm ≈ 58 µs/cm
+ *
+ * Usage: distance_cm = echo_time_us / k_hcsr04_us_per_cm
+ *
+ * @note This constant is replicated from rx_hcsr04_timing_t::k_hcsr04_us_per_cm_roundtrip
+ *       as a float for direct use in floating-point distance calculations in code examples.
+ * @since Version 1.2.0
+ */
+static const float k_hcsr04_us_per_cm = 58.0f;
 
 /* =============================================================================
  * Types
@@ -143,8 +165,8 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Registration successful
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
- * @retval k_rx_err_invalid_arg sensor_index == k_sensor_unused (0xFF)
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_arg sensor_index >= k_hcsr04_sensor_count (4)
  *
  * @pre IRQ configured via rx_hcsr04_icu_configure()
  * @pre sensor_index must be a valid sensor array index (< 0xFF)
@@ -180,7 +202,7 @@ typedef struct {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Unregistration successful
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
  * @retval k_rx_err_invalid_state IRQ slot was not registered (already unset)
  *
  * @pre IRQ was previously registered via rx_hcsr04_isr_register()
@@ -214,7 +236,7 @@ typedef struct {
  * @retval k_rx_ok Duration available, written to *duration_us
  * @retval k_rx_err_timeout Measurement not complete yet
  * @retval k_rx_err_null_ptr duration_us pointer is NULL
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
  *
  * @pre rx_hcsr04_isr_start() called before trigger pulse
  * @pre Both rising and falling edges captured by ISR
@@ -242,7 +264,7 @@ typedef struct {
  *     }
  * }
  * if (err == k_rx_ok) {
- *     float distance_cm = duration_us / 58.0f;
+ *     float distance_cm = (float)duration_us / k_hcsr04_us_per_cm;
  * }
  * @endcode
  *
@@ -254,17 +276,23 @@ typedef struct {
  * @brief Start new echo measurement (call before trigger pulse)
  *
  * @details
- * Prepares ISR state for a new measurement. Clears completion flag
- * and sets active flag. Must be called before sending trigger pulse.
+ * Prepares ISR state for a new measurement. Validates that the IRQ number
+ * is registered in the sensor map, then clears the completion flag and sets
+ * the active flag. Must be called before sending trigger pulse.
  *
- * @param[in] irq_num IRQ number (8-15)
+ * @param[in] irq_num IRQ number (k_rx_hcsr04_irq_8 through k_rx_hcsr04_irq_11)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok ISR armed successfully
+ * @retval k_rx_err_invalid_arg irq_num not in valid range
+ * @retval k_rx_err_invalid_state irq_num not registered via rx_hcsr04_isr_register()
  *
  * @pre ISR registered via rx_hcsr04_isr_register()
  * @pre No measurement currently active
  *
- * @post State.active = true
- * @post State.complete = false
- * @post Ready to capture rising edge
+ * @post State.active = true (on k_rx_ok)
+ * @post State.complete = false (on k_rx_ok)
+ * @post Ready to capture rising edge (on k_rx_ok)
  *
  * @note Always call before sending trigger pulse
  * @note Do not call while previous measurement active
@@ -272,18 +300,21 @@ typedef struct {
  * @par Example: Typical Measurement Sequence
  * @code
  * // Step 1: Start measurement
- * rx_hcsr04_isr_start(11);
+ * rx_err_t err = rx_hcsr04_isr_start(k_rx_hcsr04_irq_11);
+ * if (err != k_rx_ok) {
+ *     return err;
+ * }
  *
  * // Step 2: Send trigger pulse
  * gpio_set_high(trigger_pin);
- * delay_us(10);
+ * delay_us(k_hcsr04_trigger_pulse_us);  // 10µs pulse
  * gpio_set_low(trigger_pin);
  *
  * // Step 3: Wait for completion (bounded loop - NASA Rule 2)
  * uint32_t duration_us;
- * rx_err_t err = k_rx_err_timeout;
+ * err = k_rx_err_timeout;
  * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {  // k_hcsr04_echo_timeout_us iter max (~30ms at 1µs/iter)
- *     err = rx_hcsr04_isr_get_duration(11, &duration_us);
+ *     err = rx_hcsr04_isr_get_duration(k_rx_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Measurement complete
  *     }
@@ -295,7 +326,7 @@ typedef struct {
  *
  * @since Version 1.2.0
  */
-void rx_hcsr04_isr_start(uint8_t irq_num);
+[[nodiscard]] rx_err_t rx_hcsr04_isr_start(uint8_t irq_num);
 
 /* =============================================================================
  * ISR Functions (must match vector table naming)

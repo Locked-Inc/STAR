@@ -1356,7 +1356,10 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
   }
 
   /* Arm the ISR state machine before trigger pulse */
-  rx_hcsr04_isr_start((uint8_t)handle->echo_irq);
+  const rx_err_t start_err = rx_hcsr04_isr_start((uint8_t)handle->echo_irq);
+  if (start_err != k_rx_ok) {
+    return start_err;
+  }
 
   /* Wait for ISR to capture both edges (bounded loop per NASA Rule 2) */
   const uint32_t start_time = hcsr04_hal_get_time_us();
@@ -1369,6 +1372,7 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
 
     /* Check for cancellation request */
     if (handle->cancel_requested) {
+      handle->cancel_requested = false;
       return k_rx_err_cancelled;
     }
 

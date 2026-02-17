@@ -57,14 +57,14 @@
  * **Sensor Map:**
  * s_sensor_map[] has k_sensor_map_size entries. Entries initialized to
  * k_sensor_unused and set via rx_hcsr04_isr_register(). Only indices
- * [k_irq_min..k_irq_max] (8-15) are valid IRQ numbers.
+ * [k_irq_min..k_irq_max] (8-11) are valid IRQ numbers.
  *
  * **IRQ Handler:**
  * Pin state is read from PORT0->PIDR register; the pin bit is extracted
  * by shifting right by (irq_num - k_irq_min), then masking with k_pin_state_mask.
  *
  * @invariant k_sensor_map_size > k_irq_max (map covers all valid IRQ indices)
- * @invariant k_irq_count == k_irq_max - k_irq_min + 1 == 8
+ * @invariant k_irq_count == k_irq_max - k_irq_min + 1 == 4
  *
  * @see internal_irq_handler() Uses k_vector_base, k_irq_min, k_pin_state_mask
  * @see rx_hcsr04_isr_register() Uses k_sensor_map_size as array bound
@@ -73,8 +73,8 @@
  */
 typedef enum : uint8_t {
   k_irq_min            = 8,                         /**< Minimum IRQ number (IRQ8 = P00) */
-  k_irq_max            = 15,                        /**< Maximum IRQ number (IRQ15 = P07) */
-  k_irq_count          = k_irq_max - k_irq_min + 1, /**< Number of supported IRQs (8) */
+  k_irq_max            = 11,                        /**< Maximum IRQ number (IRQ11 = P03; only ISR handlers IRQ8-11 exist) */
+  k_irq_count          = k_irq_max - k_irq_min + 1, /**< Number of supported IRQs (4: IRQ8-11) */
   k_vector_base        = 64,                        /**< IRQ vector base (IRQ0 = vector 64) */
   k_sensor_unused      = 0xFF,                      /**< Sentinel: sensor slot not assigned */
   k_sensor_map_size    = 16,                        /**< Total entries in s_sensor_map (IRQ0-15) */
@@ -136,7 +136,7 @@ static uint8_t s_sensor_map[k_sensor_map_size] = {
  * 5. Rising edge (HIGH): Capture start_us timestamp
  * 6. Falling edge (LOW): Capture end_us timestamp, set complete=true, active=false
  *
- * @param[in] irq_num IRQ number (8-15)
+ * @param[in] irq_num IRQ number (8-11)
  *
  * @return void (ISR context - no return value)
  *
@@ -199,7 +199,7 @@ static void internal_irq_handler(const uint8_t irq_num)
  * and sensor_index range before storing the mapping. Used to identify
  * which sensor triggered a given interrupt.
  *
- * @param[in] irq_num      IRQ number (8-15 for P00-P07)
+ * @param[in] irq_num      IRQ number (8-11 for P00-P03)
  * @param[in] sensor_index Sensor array index (0-3 for 4 HC-SR04 sensors)
  *
  * @return rx_err_t Error code
@@ -244,11 +244,11 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const uint8_t sensor_inde
  * k_sensor_unused sentinel. Call this during sensor deinitialization to
  * prevent stale ISR callbacks after the sensor handle is invalidated.
  *
- * @param[in] irq_num IRQ number (8-15) to unregister
+ * @param[in] irq_num IRQ number (8-11) to unregister
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Unregistration successful
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
  *
  * @pre IRQ was previously registered via rx_hcsr04_isr_register()
  * @pre No measurement currently active on this IRQ
@@ -282,19 +282,25 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  * @brief Start new echo measurement (arm ISR before sending trigger pulse)
  *
  * @details
- * Prepares ISR state for a new measurement. Sets complete=false first (to
- * prevent a stale complete flag being read), then sets active=true to allow
- * ISR to capture edges. Order matters: complete must be cleared before active
- * is set to prevent a race where ISR fires between the two writes.
+ * Prepares ISR state for a new measurement. Validates that the IRQ is
+ * registered, then sets complete=false first (to prevent a stale complete
+ * flag being read), then sets active=true to allow ISR to capture edges.
+ * Order matters: complete must be cleared before active is set to prevent
+ * a race where ISR fires between the two writes.
  *
- * @param[in] irq_num IRQ number (8-15)
+ * @param[in] irq_num IRQ number (8-11)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok ISR armed successfully
+ * @retval k_rx_err_invalid_arg irq_num not in valid range [k_irq_min, k_irq_max]
+ * @retval k_rx_err_invalid_state irq_num slot not registered (s_sensor_map[irq_num] == k_sensor_unused)
  *
  * @pre rx_hcsr04_isr_register() called for this IRQ number
  * @pre No measurement currently active on this IRQ
  *
- * @post s_irq_state[idx].complete = false
- * @post s_irq_state[idx].active = true
- * @post ISR is armed to capture rising edge
+ * @post s_irq_state[idx].complete = false (on k_rx_ok)
+ * @post s_irq_state[idx].active = true (on k_rx_ok)
+ * @post ISR is armed to capture rising edge (on k_rx_ok)
  *
  * @note Always call BEFORE sending trigger pulse (ordering is critical)
  * @note complete cleared BEFORE active set (avoids race condition)
@@ -303,11 +309,14 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  *
  * @since Version 1.2.0 (Issue #296)
  */
-void rx_hcsr04_isr_start(const uint8_t irq_num)
+rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
 {
-  /* Validate IRQ number (silently ignore in release builds) */
-  if (irq_num < k_irq_min || irq_num > k_irq_max) {
-    return; /* Invalid IRQ - do nothing */
+  /* Validate IRQ number */
+  RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
+
+  /* Verify IRQ is registered (second precondition check per NASA Rule 5) */
+  if (s_sensor_map[irq_num] == k_sensor_unused) {
+    return k_rx_err_invalid_state; /* IRQ not registered via rx_hcsr04_isr_register() */
   }
 
   const uint8_t idx = irq_num - k_irq_min;
@@ -315,6 +324,8 @@ void rx_hcsr04_isr_start(const uint8_t irq_num)
   /* Clear complete BEFORE setting active to avoid stale-complete race */
   s_irq_state[idx].complete = false;
   s_irq_state[idx].active   = true;
+
+  return k_rx_ok;
 }
 
 /**
@@ -326,7 +337,7 @@ void rx_hcsr04_isr_start(const uint8_t irq_num)
  * both edges. On success, clears the complete flag to prepare for the
  * next measurement.
  *
- * @param[in]  irq_num     IRQ number (8-15)
+ * @param[in]  irq_num     IRQ number (8-11)
  * @param[out] duration_us Pointer to store pulse duration in microseconds
  *                         (valid range: 150-25000 µs for 2-400 cm)
  *

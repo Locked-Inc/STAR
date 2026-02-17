@@ -64,11 +64,11 @@
  *
  * @invariant k_irq_min <= all valid IRQ numbers <= k_irq_max
  * @invariant k_priority_min <= all valid priorities <= k_priority_max
- * @invariant k_vector_base + k_irq_max == 79 (last HC-SR04 vector)
+ * @invariant k_vector_base + k_irq_max == 75 (last HC-SR04 vector; IRQ11 = vector 75)
  *
  * @code
  * // Access all constants in this enum via named identifiers:
- * const uint8_t vector    = k_vector_base + irq_num;  // e.g. 72-79
+ * const uint8_t vector    = k_vector_base + irq_num;  // e.g. 72-75 (IRQ8-11)
  * const uint8_t ier_index = vector / k_bits_per_ier;
  * const uint8_t ier_bit   = vector % k_bits_per_ier;
  * icu()->ier[ier_index] |= (k_bit_base << ier_bit);
@@ -82,7 +82,7 @@
  */
 typedef enum : uint8_t {
   k_irq_min          = 8,    /**< Minimum IRQ number (IRQ8 = P00) */
-  k_irq_max          = 15,   /**< Maximum IRQ number (IRQ15 = P07) */
+  k_irq_max          = 11,   /**< Maximum IRQ number (IRQ11 = P03; only ISR handlers IRQ8-11 exist) */
   k_priority_min     = 1,    /**< Minimum interrupt priority */
   k_priority_max     = 15,   /**< Maximum interrupt priority */
   k_irqcr_both_edges = 0x08, /**< Both edges trigger interrupt (IRQCR[n] value) */
@@ -122,12 +122,13 @@ static const char* const s_tag = "HCSR04_ICU"; /**< Logging tag (pointer and dat
  * 7. Write priority to IPR[vector]
  * 8. Set IER[vector/8] bit (vector%8) to enable interrupt
  *
- * @param[in] irq_num  IRQ number (8-15 for P00-P07)
+ * @param[in] irq_num  IRQ number (8-11 for P00-P03; ISR handlers exist for IRQ8-11 only)
  * @param[in] priority Interrupt priority (1-15; recommend 10)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok ICU configured successfully
- * @retval k_rx_err_invalid_arg irq_num not in [8, 15] or priority not in [1, 15]
+ * @retval k_rx_err_invalid_arg irq_num not in [8, 11] or priority not in [1, 15]
+ * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_enable())
  *
  * @pre Pin already configured for IRQ function via rx_mpc_set_irq()
  * @pre ICU module not in module stop (MSTPCRA bit cleared)
@@ -148,7 +149,7 @@ static const char* const s_tag = "HCSR04_ICU"; /**< Logging tag (pointer and dat
  */
 rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
 {
-  /* Validate IRQ number (8-15 for P00-P07) */
+  /* Validate IRQ number (8-11 for P00-P03) */
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
 
   /* Validate priority (1-15) */
@@ -166,7 +167,7 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
   }
 
   /* Step 3: Calculate vector number for this IRQ
-   * IRQ8-15 use vectors 72-79 (base 64 + irq_num) */
+   * IRQ8-11 use vectors 72-75 (base 64 + irq_num) */
   const uint8_t vector = k_vector_base + irq_num;
 
   /* Step 4: Clear any pending interrupt flag */
@@ -200,11 +201,12 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * 4. Write k_ir_flag_clear to IR[vector] to clear any pending flag
  * 5. Disable digital filter via rx_irq_filter_disable() and return its error
  *
- * @param[in] irq_num IRQ number to disable (8-15)
+ * @param[in] irq_num IRQ number to disable (8-11)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok IRQ and digital filter both disabled successfully
- * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
  * @pre IRQ was previously configured via rx_hcsr04_icu_configure()
  * @pre No measurement in progress on this IRQ
@@ -225,7 +227,7 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  */
 rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
 {
-  /* Validate IRQ number (8-15 for P00-P07) */
+  /* Validate IRQ number (8-11 for P00-P03) */
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
 
   /* Calculate vector number */
