@@ -189,20 +189,22 @@ extern "C" {
  * @return rx_err_t Error code
  * @retval k_rx_ok IRQ and digital filter both disabled successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_state IRQ was not enabled in IER (rx_hcsr04_icu_configure() not called first)
  * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
+ * @pre IRQ was previously enabled via rx_hcsr04_icu_configure() (IER bit must be set)
  * @pre No measurement in progress on this IRQ
- * @pre irq_num is a valid IRQ identifier in range [8, 11] (k_hcsr04_irq_8..k_hcsr04_irq_11)
  *
  * @post IER bit cleared (interrupt will not fire)
  * @post IR flag cleared (no stale pending interrupt)
  * @post Digital filter disabled
  * @post ISR will not trigger on pin edges
  *
- * @note Recommended to call only after rx_hcsr04_icu_configure(), but safe to call even if IRQ was not previously enabled
+ * @note Call only after rx_hcsr04_icu_configure() has enabled the IRQ
  * @note Does NOT reconfigure pin back to GPIO (use rx_mpc_set_gpio separately)
  *
  * @warning Do not call while measurement in progress
+ * @warning Returns k_rx_err_invalid_state if the IRQ IER bit is not set; always call configure() first
  *
  * @par Example: Clean Up Sensor
  * @code
@@ -222,8 +224,8 @@ extern "C" {
  * @since Version 1.2.0
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: [OK] 2 preconditions, 4 postconditions
- * - Rule 7: [OK] rx_irq_filter_disable() return value propagated to caller
+ * - Rule 5: [OK] 2 preconditions (IER enabled + no measurement in progress), 4 postconditions
+ * - Rule 7: [OK] IER state validated before clearing; rx_irq_filter_disable() return propagated
  * - Rule 8: [OK] Typed enums for all constants (icu_constants_t)
  */
 [[nodiscard]] rx_err_t rx_hcsr04_icu_disable(uint8_t irq_num);

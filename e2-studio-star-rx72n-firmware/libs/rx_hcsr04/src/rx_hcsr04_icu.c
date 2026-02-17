@@ -215,19 +215,21 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * @return rx_err_t Error code
  * @retval k_rx_ok IRQ and digital filter both disabled successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_state IRQ was not enabled in IER (rx_hcsr04_icu_configure() not called)
  * @retval k_rx_err_invalid_arg irq_num not valid for digital filter (propagated from rx_irq_filter_disable())
  *
+ * @pre IRQ was previously enabled via rx_hcsr04_icu_configure() (IER bit must be set)
  * @pre No measurement in progress on this IRQ
- * @pre irq_num is in the valid range [k_irq_min, k_irq_max] (i.e. 8–11)
  *
  * @post IER bit cleared (interrupt will not fire)
  * @post IR flag cleared (no stale pending interrupt)
  * @post Digital filter disabled
  * @post ISR will not trigger on pin edges
  *
- * @note Safe to call even if IRQ was not previously configured via rx_hcsr04_icu_configure()
+ * @note Only safe to call after rx_hcsr04_icu_configure() has enabled the IRQ
  * @note Does NOT reconfigure pin back to GPIO (use rx_mpc_set_gpio separately)
  * @warning Do not call while measurement in progress
+ * @warning Returns k_rx_err_invalid_state if IRQ was not enabled; call only after configure()
  *
  * @par Example
  * @code
@@ -245,12 +247,17 @@ rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
   /* Validate IRQ number (8-11 for P00-P03) */
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
 
-  /* Calculate vector number */
-  const uint8_t vector = k_vector_base + irq_num;
-
-  /* Disable interrupt in IER register */
+  /* Calculate vector number and IER location */
+  const uint8_t vector    = k_vector_base + irq_num;
   const uint8_t ier_index = vector / k_bits_per_ier;
   const uint8_t ier_bit   = vector % k_bits_per_ier;
+
+  /* Second precondition: verify the IRQ is actually enabled before clearing it */
+  if ((icu()->ier[ier_index] & (uint8_t)(k_bit_base << ier_bit)) == 0) {
+    return k_rx_err_invalid_state; /* IRQ not enabled; rx_hcsr04_icu_configure() not called */
+  }
+
+  /* Disable interrupt in IER register */
   icu()->ier[ier_index] &= (uint8_t)~(k_bit_base << ier_bit);
 
   /* Clear any pending interrupt flag */
