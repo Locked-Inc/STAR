@@ -24,13 +24,18 @@
  *   │                         rx_mpc.h API                               │
  *   │   ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
  *   │   │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │  │
- *   │   │  mtu_pwm()  │ │  sci()      │ │  rspi()     │ │  adc()      │  │
+ *   │   │  mtu_pwm()  │ │  sci()      │ │  rspi()     │ │  gpio()     │  │
  *   │   └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘  │
  *   │          │               │               │               │         │
  *   │   ┌──────▼───────────────▼───────────────▼───────────────▼──────┐  │
  *   │   │              rx_mpc_set_peripheral()                        │  │
- *   │   │           (core configuration function)                     │  │
+ *   │   │     (core PSEL configuration function — peripheral path)    │  │
  *   │   └─────────────────────────┬───────────────────────────────────┘  │
+ *   │                             │                                       │
+ *   │   Note: rx_mpc_set_irq() and rx_mpc_set_adc() bypass               │
+ *   │   rx_mpc_set_peripheral() and write ISEL/ASEL bits directly        │
+ *   │   via internal_write_pfs() (ISEL=0x40, ASEL=0x80 exceed PSEL       │
+ *   │   5-bit field; they are separate bits in the PFS register).        │
  *   └─────────────────────────────┼──────────────────────────────────────┘
  *                                 │
  *   ┌─────────────────────────────▼──────────────────────────────────────┐
@@ -594,6 +599,7 @@ typedef enum : uint8_t {
    * @since Version 1.1.0
    */
   k_psel_gptw = 0x14,
+
 } rx_pin_psel_t;
 
 /* =============================================================================
@@ -1403,6 +1409,87 @@ typedef enum : uint8_t {
  * @since Version 1.1.0
  */
 [[nodiscard]] rx_err_t rx_mpc_set_usb_vbus(rx_port_pin_t pin);
+
+/**
+ * @brief Configure pin for IRQ (external interrupt) function
+ *
+ * @details
+ * Sets pin function to IRQ mode via MPC (Multi-Function Pin Controller).
+ * This enables hardware edge detection on IRQ0-IRQ15 pins for use with
+ * the Interrupt Controller Unit (ICU).
+ *
+ * **PFS Register for IRQ Function:**
+ * - IRQ pins: ISEL bit (bit 6) = 0x40 written directly to PFS register
+ * - This is NOT a PSEL value; rx_mpc_set_peripheral() is NOT used
+ * - Verify in RX72N Manual Section 20.3 (MPC), PFS register layout
+ *
+ * **Supported Pins:**
+ * - P00-P07: IRQ8-IRQ15
+ * - Other IRQ pins per RX72N Manual Table 20.7
+ *
+ * @par STAR Project IRQ Usage (HC-SR04 Ultrasonic Sensors)
+ * | Pin  | IRQ Number | Sensor   | Location     |
+ * |------|------------|----------|--------------|
+ * | P03  | IRQ11      | Sonar 0  | Front-Left   |
+ * | P02  | IRQ10      | Sonar 1  | Front-Right  |
+ * | P01  | IRQ9       | Sonar 2  | Back-Left    |
+ * | P00  | IRQ8       | Sonar 3  | Back-Right   |
+ *
+ * @param[in] pin GPIO pin identifier (must support IRQ function)
+ *                Use k_rx_p0_X constants for IRQ8-15
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Pin configured for IRQ function
+ * @retval k_rx_err_invalid_arg Invalid port or pin number (propagated from internal_write_pfs())
+ *
+ * @note internal_mpc_unlock() and internal_mpc_lock() do not propagate errors; only
+ *       internal_write_pfs() can return k_rx_err_invalid_arg on invalid port/pin values.
+ *
+ * @pre Pin must have IRQ multiplexing capability (P00-P07 for IRQ8-15)
+ * @pre PCLKB running (MPC requires clock)
+ * @pre Must be called during single-threaded initialization
+ *
+ * @post Pin ISEL bit set (0x40) in PFS register (IRQ input mode)
+ * @post PSEL field remains 0 (no conflicting peripheral function)
+ * @post PWPR register locked
+ * @post Pin ready for ICU edge detection configuration
+ *
+ * @note Thread Safety: Not thread-safe. Call during initialization only.
+ * @note Call this BEFORE enabling ICU interrupt
+ *
+ * @warning Does NOT configure ICU registers (edge detect, priority, etc.)
+ * @warning Configure ICU separately for edge detection and priority as required
+ *
+ * @par Example - IRQ Pin Setup
+ * @code{.c}
+ * // Configure P03 for IRQ11 (external interrupt input)
+ * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("IRQ", "IRQ pin configuration failed");
+ *     return err;
+ * }
+ *
+ * // Now configure ICU for edge detection (caller-specific step)
+ * @endcode
+ *
+ * @invariant MPC base address remains constant throughout operation
+ * @invariant Only target pin's PFS register is modified (other pins' PFS unchanged)
+ *
+ * @see rx_mpc_set_gpio() Set pin back to GPIO mode
+ * @see RX72N Manual Section 20.3 (MPC), PFS register bit definitions
+ * @see RX72N Manual Chapter 15 (ICU - Interrupt Controller Unit)
+ *
+ * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions
+ * - Rule 7: [OK] Caller checks return value ([[nodiscard]])
+ * - Rule 8: [OK] k_pfs_isel from pfs_bits_t enum (no magic numbers)
+ *
+ * @callgraph
+ * @callergraph
+ */
+[[nodiscard]] rx_err_t rx_mpc_set_irq(rx_port_pin_t pin);
 
 #ifdef __cplusplus
 }

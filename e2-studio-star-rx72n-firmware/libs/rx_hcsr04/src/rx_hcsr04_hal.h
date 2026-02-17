@@ -761,10 +761,61 @@ void hcsr04_hal_delay_us(uint32_t us);
  *
  * @see hcsr04_hal_delay_us Blocking delay function
  * @see internal_measure_echo_pulse Echo timing function
+ * @see hcsr04_hal_get_time_us_isr() ISR-safe variant (no mutex)
  *
  * @since Version 1.0.0
  */
-uint32_t hcsr04_hal_get_time_us(void);
+[[nodiscard]] uint32_t hcsr04_hal_get_time_us(void);
+
+/**
+ * @brief Get monotonic timestamp in microseconds — ISR-safe (no mutex)
+ *
+ * @details
+ * Returns the raw CMT2 counter value converted to microseconds. Unlike
+ * hcsr04_hal_get_time_us(), this function does NOT acquire the ThreadX mutex
+ * and does NOT track 16-bit counter overflows. It is safe to call from
+ * interrupt context and provides sub-microsecond latency.
+ *
+ * **Hardware Constraint — 8.7 ms Maximum Echo Duration:**
+ * The CMT2 timer is a 16-bit counter clocked at PCLKB/8 = 7.5 MHz, which
+ * wraps every ~8.7 ms. HC-SR04 echo pulses can be up to ~23 ms (400 cm ×
+ * 58 µs/cm). If the echo spans more than one counter period, the naive
+ * `end_us - start_us` subtraction will be incorrect.
+ *
+ * **Supported range in IRQ mode: ≤ 150 cm (~8.7 ms echo pulse)**
+ * For longer ranges, use polling mode with hcsr04_hal_get_time_us() (which
+ * tracks overflows via a software overflow counter protected by a mutex).
+ *
+ * @return Current CMT2 counter value converted to microseconds (no overflow tracking)
+ *
+ * @retval uint32_t Raw CMT2 counter converted to microseconds; wraps at ~8.7 ms
+ *
+ * @pre CMT2 timer initialized (call hcsr04_hal_get_time_us() at least once at startup)
+ * @pre Called from ISR context (no ThreadX blocking calls permitted)
+ *
+ * @post No side effects (read-only, no mutex acquired)
+ * @post Returned value is in range [0, ~8700) µs (wraps with CMT2 period)
+ *
+ * @note ISR-safe: does NOT call tx_mutex_get() or any blocking ThreadX API
+ * @note For task context, prefer hcsr04_hal_get_time_us() (overflow tracking)
+ * @warning Does not track 16-bit overflow; do not use for durations > 8.7 ms
+ * @warning HC-SR04 IRQ mode limited to ~150 cm due to 8.7 ms CMT2 wrap period
+ *
+ * @par Example: Edge Capture in ISR
+ * @code
+ * // Called from INT_IRQn (ISR context):
+ * void INT_IRQ11(void)
+ * {
+ *     internal_irq_handler(k_irq_num_11);  // captures hcsr04_hal_get_time_us_isr()
+ * }
+ * // Duration is valid only if echo < 8.7 ms (≤ 150 cm)
+ * @endcode
+ *
+ * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking for task context
+ *
+ * @since Version 1.2.0 (Issue #296 - ISR-mode HC-SR04 measurement)
+ */
+[[nodiscard]] uint32_t hcsr04_hal_get_time_us_isr(void);
 
 #ifdef __cplusplus
 }
