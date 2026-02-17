@@ -133,7 +133,7 @@ func (d *StreamDecoder) Decode() (*Frame, error) {
 
 		if !verifyCRC32(crcData, receivedCRC) {
 			d.metrics.CRCErrors++
-			continue
+			return nil, &CRCError{Sequence: seq}
 		}
 
 		// 6. Success

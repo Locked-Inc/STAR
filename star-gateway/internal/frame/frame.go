@@ -12,7 +12,10 @@
 // January 2026
 package frame
 
-import "errors"
+import (
+	"errors"
+	"fmt"
+)
 
 // Frame structure constants.
 const (
@@ -135,6 +138,20 @@ type Frame struct {
 	// FECDecoded indicates if the frame was recovered using FEC (metadata).
 	FECDecoded bool
 }
+
+// CRCError is returned by the stream decoder when CRC validation fails.
+// It carries the parsed sequence number so callers can send a NACK.
+type CRCError struct {
+	Sequence uint16
+}
+
+func (e *CRCError) Error() string {
+	return fmt.Sprintf("CRC validation failed for sequence %d", e.Sequence)
+}
+
+// Unwrap returns the underlying sentinel error (ErrInvalidCRC) to support
+// Go 1.13+ error unwrapping with errors.Is and errors.As.
+func (e *CRCError) Unwrap() error { return ErrInvalidCRC }
 
 // Predefined errors.
 var (

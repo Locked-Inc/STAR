@@ -6,6 +6,8 @@ package frame
 
 import (
 	"encoding/binary"
+	"errors"
+	"fmt"
 	"testing"
 )
 
@@ -378,6 +380,46 @@ func TestCrossCompatibility_Decode(t *testing.T) {
 				if frame.Payload[i] != expectedPayload[i] {
 					t.Errorf("Payload[%d] = 0x%02X, want 0x%02X", i, frame.Payload[i], expectedPayload[i])
 				}
+			}
+		})
+	}
+}
+
+func TestCRCError(t *testing.T) {
+	const defaultSeq uint16 = 42
+
+	tests := []struct {
+		name string
+		seq  uint16
+	}{
+		{"zero_sequence", 0},
+		{"mid_sequence", defaultSeq},
+		{"max_sequence", 0xFFFF},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			crcErr := &CRCError{Sequence: tc.seq}
+
+			// Error() must follow the documented format.
+			want := fmt.Sprintf("CRC validation failed for sequence %d", tc.seq)
+			if got := crcErr.Error(); got != want {
+				t.Errorf("Error() = %q, want %q", got, want)
+			}
+
+			// errors.As must extract *CRCError and its Sequence field.
+			wrapped := fmt.Errorf("outer: %w", crcErr)
+			var extracted *CRCError
+			if !errors.As(wrapped, &extracted) {
+				t.Fatal("errors.As(*CRCError) = false, want true")
+			}
+			if extracted.Sequence != tc.seq {
+				t.Errorf("Sequence = %d, want %d", extracted.Sequence, tc.seq)
+			}
+
+			// Unwrap() must link the error chain to ErrInvalidCRC.
+			if !errors.Is(crcErr, ErrInvalidCRC) {
+				t.Error("errors.Is(crcErr, ErrInvalidCRC) = false, want true")
 			}
 		})
 	}
