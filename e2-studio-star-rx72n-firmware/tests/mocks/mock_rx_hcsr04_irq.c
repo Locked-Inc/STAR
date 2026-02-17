@@ -13,8 +13,8 @@
  * @note Signatures must exactly match the real implementations in:
  *       - rx_mpc.h (rx_mpc_set_gpio, rx_mpc_set_irq)
  *       - rx_hcsr04_icu.h (rx_hcsr04_icu_configure, rx_hcsr04_icu_disable)
- *       - rx_hcsr04_isr.h (rx_hcsr04_isr_register, rx_hcsr04_isr_start,
- *                          rx_hcsr04_isr_get_duration)
+ *       - rx_hcsr04_isr.h (rx_hcsr04_isr_register, rx_hcsr04_isr_unregister,
+ *                          rx_hcsr04_isr_start, rx_hcsr04_isr_get_duration)
  *
  * @author STAR Team
  * @date 2026-02-16

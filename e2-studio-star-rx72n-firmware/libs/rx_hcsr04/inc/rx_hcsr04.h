@@ -478,7 +478,7 @@ typedef enum : uint8_t {
  * Configuration structure for initializing HC-SR04 sensor handle.
  * Specifies GPIO pin assignments, measurement timeout, and echo measurement mode.
  *
- * **Memory Layout (13 bytes on RX72N):**
+ * **Memory Layout (12 bytes on RX72N):**
  * ```
  * Offset | Field        | Type                  | Size | Alignment
  * -------|--------------|-----------------------|------|----------
@@ -487,8 +487,8 @@ typedef enum : uint8_t {
  * 4      | timeout_us   | uint32_t              | 4    | 4
  * 8      | echo_mode    | rx_hcsr04_echo_mode_t | 1    | 1
  * 9      | echo_irq     | rx_hcsr04_irq_t       | 1    | 1
- * 10     | irq_priority | uint8_t               | 1    | 1
- * Total: 11 bytes (no padding required; actual struct size compiler-dependent)
+ * 10     | irq_priority | rx_hcsr04_irq_priority_t | 1 | 1
+ * Total: 12 bytes (padded to 4-byte alignment for timeout_us)
  * ```
  *
  * **Field Descriptions:**
@@ -554,9 +554,9 @@ typedef struct {
   rx_port_pin_t         trigger_pin; /**< Trigger pin (type-safe GPIO, output) */
   rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ, input) */
   uint32_t              timeout_us;  /**< Echo timeout in microseconds (default: 30000) */
-  rx_hcsr04_echo_mode_t echo_mode;   /**< Polling or IRQ mode (default: polling) */
-  rx_hcsr04_irq_t       echo_irq;    /**< IRQ number (k_rx_hcsr04_irq_8..15), used only if echo_mode==IRQ */
-  uint8_t               irq_priority; /**< ICU interrupt priority (1-15, default: 10), IRQ mode only */
+  rx_hcsr04_echo_mode_t     echo_mode;    /**< Polling or IRQ mode (default: polling) */
+  rx_hcsr04_irq_t           echo_irq;    /**< IRQ number (k_rx_hcsr04_irq_8..15), used only if echo_mode==IRQ */
+  rx_hcsr04_irq_priority_t  irq_priority; /**< ICU interrupt priority (k_hcsr04_irq_priority_unset = use default), IRQ mode only */
 } rx_hcsr04_config_t;
 
 /**
@@ -587,7 +587,7 @@ typedef struct {
  *     .timeout_us   = k_hcsr04_echo_timeout_us,     // 30ms default
  *     .echo_mode    = k_hcsr04_echo_polling,
  *     .echo_irq     = k_rx_hcsr04_irq_none,
- *     .irq_priority = k_hcsr04_irq_priority_default, // 10 (IRQ mode only)
+ *     .irq_priority = k_hcsr04_irq_priority_unset, // 0 = not applicable in polling mode
  * };
  * rx_hcsr04_init(&sensor, &cfg);
  * @endcode
@@ -603,9 +603,9 @@ typedef struct {
   rx_port_pin_t         trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
   rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ enum) */
   uint32_t              timeout_us;  /**< Measurement timeout in microseconds */
-  rx_hcsr04_echo_mode_t echo_mode;    /**< Echo measurement mode (polling or IRQ) */
-  rx_hcsr04_irq_t       echo_irq;    /**< IRQ number (k_rx_hcsr04_irq_8..15) if IRQ mode, else k_rx_hcsr04_irq_none */
-  uint8_t               irq_priority; /**< ICU interrupt priority (1-15) stored from config; 0 = not applicable (polling mode) */
+  rx_hcsr04_echo_mode_t    echo_mode;    /**< Echo measurement mode (polling or IRQ) */
+  rx_hcsr04_irq_t          echo_irq;    /**< IRQ number (k_rx_hcsr04_irq_8..15) if IRQ mode, else k_rx_hcsr04_irq_none */
+  rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (1-15) stored from init; k_hcsr04_irq_priority_unset = not applicable (polling mode) */
 
   /* State */
   bool  initialized;               /**< True if handle is initialized */
@@ -662,12 +662,12 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @param[out] handle Handle to initialize (caller-allocated)
  * @param[in]  config Configuration with pin assignments and mode
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if handle or config is nullptr
- * @return k_rx_err_invalid_arg if port/pin values are invalid, or IRQ number
- *                              out of range, or echo_pin/echo_irq mismatch
- * @return k_rx_err_gpio_conflict if pins already reserved
- * @return k_rx_err_invalid_state if handle already initialized
+ * @retval k_rx_ok Success
+ * @retval k_rx_err_null_ptr handle or config is nullptr
+ * @retval k_rx_err_invalid_arg port/pin values are invalid, IRQ number out of
+ *                              range, or echo_pin/echo_irq mismatch
+ * @retval k_rx_err_gpio_conflict pins already reserved
+ * @retval k_rx_err_invalid_state handle already initialized
  *
  * @pre handle must not be NULL
  * @pre config must not be NULL with valid port/pin values

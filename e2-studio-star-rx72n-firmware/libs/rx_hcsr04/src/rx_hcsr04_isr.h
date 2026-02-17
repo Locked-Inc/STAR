@@ -88,21 +88,29 @@ extern "C" {
  * because they are written in ISR context and read in task context.
  *
  * **State Machine:**
- * @verbatim
- *   [Idle] --(start())--> [Active, !complete]
- *                              ↓
- *                        Rising edge ISR
- *                         (capture start_us)
- *                              ↓
- *                        Falling edge ISR
- *                         (capture end_us)
- *                              ↓
- *                        [Active, complete]
- *                              ↓
- *                     (get_duration() reads + clears complete)
- *                              ↓
- *                           [Idle]
- * @endverbatim
+ * @startuml
+ * [*] --> Idle
+ * Idle --> Active : rx_hcsr04_isr_start() / active=true, complete=false
+ * Active --> Active : Rising edge ISR / capture start_us
+ * Active --> Complete : Falling edge ISR / capture end_us, complete=true, active=false
+ * Complete --> Idle : rx_hcsr04_isr_get_duration() / returns duration, clears complete
+ * @enduml
+ *
+ * @invariant active==true implies measurement is in progress (edges not yet fully captured)
+ * @invariant complete==true implies both edges captured and duration is valid
+ *
+ * @code
+ * // Typical usage sequence:
+ * rx_hcsr04_isr_start(irq_num);             // Transition: Idle -> Active
+ * // ISR fires on rising edge               // Transition: Active -> Active (start_us captured)
+ * // ISR fires on falling edge              // Transition: Active -> Complete (end_us captured)
+ * uint32_t duration_us;
+ * rx_err_t err = rx_hcsr04_isr_get_duration(irq_num, &duration_us);
+ * // On k_rx_ok: Transition Complete -> Idle
+ * @endcode
+ *
+ * @see rx_hcsr04_isr_start() Transitions Idle -> Active
+ * @see rx_hcsr04_isr_get_duration() Reads duration and transitions Complete -> Idle
  *
  * @note All fields declared volatile: written in ISR, read in task context
  * @note get_duration() clears complete after successful read
@@ -173,6 +181,7 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok Unregistration successful
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_state IRQ slot was not registered (already unset)
  *
  * @pre IRQ was previously registered via rx_hcsr04_isr_register()
  * @pre No measurement currently active on this IRQ
@@ -222,13 +231,13 @@ typedef struct {
  * uint32_t duration_us;
  * rx_err_t err = k_rx_err_timeout;
  *
- * // Bounded loop - max 30000 iterations (NASA Rule 2)
- * for (uint32_t i = 0; i < 30000; i++) {
+ * // Bounded loop - max k_hcsr04_echo_timeout_us iterations (NASA Rule 2)
+ * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {
  *     err = rx_hcsr04_isr_get_duration(k_rx_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Got result
  *     }
- *     if ((get_time_us() - start_time) > 30000) {
+ *     if ((get_time_us() - start_time) > k_hcsr04_echo_timeout_us) {
  *         break;  // 30ms timeout
  *     }
  * }
@@ -273,7 +282,7 @@ typedef struct {
  * // Step 3: Wait for completion (bounded loop - NASA Rule 2)
  * uint32_t duration_us;
  * rx_err_t err = k_rx_err_timeout;
- * for (uint32_t i = 0; i < 30000; i++) {  // 30000 iter max (~30ms at 1µs/iter)
+ * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {  // k_hcsr04_echo_timeout_us iter max (~30ms at 1µs/iter)
  *     err = rx_hcsr04_isr_get_duration(11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Measurement complete

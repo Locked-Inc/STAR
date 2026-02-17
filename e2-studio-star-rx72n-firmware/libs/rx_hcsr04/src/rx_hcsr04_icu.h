@@ -97,7 +97,6 @@ extern "C" {
  * @retval k_rx_ok ICU configured successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
  * @retval k_rx_err_invalid_arg priority not in range [1, 15]
- * @retval k_rx_err_hw_error rx_irq_filter_enable() failed
  *
  * @pre Pin already configured for IRQ function via rx_mpc_set_irq()
  * @pre ICU module not in module stop (MSTPCRA bit cleared)
@@ -168,7 +167,6 @@ extern "C" {
  * @return rx_err_t Error code
  * @retval k_rx_ok IRQ and digital filter both disabled successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
- * @retval k_rx_err_hw_error Digital filter disable failed
  *
  * @pre IRQ was previously configured via rx_hcsr04_icu_configure()
  * @pre No measurement in progress on this IRQ
@@ -199,6 +197,11 @@ extern "C" {
  * @see rx_mpc_set_gpio() Reconfigure pin back to GPIO mode
  *
  * @since Version 1.2.0
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 5: [OK] 2 preconditions, 4 postconditions
+ * - Rule 7: [OK] rx_irq_filter_disable() return value propagated to caller
+ * - Rule 8: [OK] Typed enums for all constants (icu_constants_t)
  */
 [[nodiscard]] rx_err_t rx_hcsr04_icu_disable(uint8_t irq_num);
 

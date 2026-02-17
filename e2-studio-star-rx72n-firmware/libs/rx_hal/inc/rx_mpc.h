@@ -602,36 +602,6 @@ typedef enum : uint8_t {
 
 } rx_pin_psel_t;
 
-/**
- * @enum mpc_isel_constants_t
- * @brief MPC ISEL bit constants for IRQ function selection
- *
- * @details
- * The ISEL bit (bit 6, value 0x40) in the PFS register enables IRQ input
- * mode on a pin. This is separate from the PSEL field (bits 4:0) which
- * selects the peripheral function. When ISEL=1, the pin becomes an external
- * interrupt input for the ICU.
- *
- * This value is NOT a PSEL value and must NOT be passed to
- * rx_mpc_set_peripheral() (which validates PSEL <= 0x1F). Instead,
- * use rx_mpc_set_irq() which writes ISEL directly via internal_write_pfs().
- *
- * @par Application: HC-SR04 ultrasonic sensor echo pulse measurement
- * @par Feature: Hardware edge capture with interrupt-driven timing
- *
- * @note Requires ICU configuration after MPC pin setup
- * @note IRQ number depends on pin (P00=IRQ8, P01=IRQ9, etc.)
- *
- * @see rx_mpc_set_irq() Sets ISEL bit directly (bypasses PSEL validation)
- * @see rx_hcsr04_icu_configure() Configure ICU for edge detection
- * @see RX72N Manual Section 20.3 (MPC), Chapter 15 (ICU)
- *
- * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
- */
-typedef enum : uint8_t {
-  k_pfs_isel_irq = 0x40, /**< ISEL bit in PFS: enables IRQ input function (bit 6) */
-} mpc_isel_constants_t;
-
 /* =============================================================================
  * Public API
  * =============================================================================
@@ -1507,6 +1477,14 @@ typedef enum : uint8_t {
  * @see RX72N Manual Chapter 15 (ICU - Interrupt Controller Unit)
  *
  * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ *
+ * @par NASA Power of 10 Compliance
+ * - Rule 5: [OK] 2 preconditions, 4 postconditions
+ * - Rule 7: [OK] Caller checks return value ([[nodiscard]])
+ * - Rule 8: [OK] k_pfs_isel from pfs_bits_t enum (no magic numbers)
+ *
+ * @callgraph
+ * @callergraph
  */
 [[nodiscard]] rx_err_t rx_mpc_set_irq(rx_port_pin_t pin);
 

@@ -128,7 +128,6 @@ static const char* const s_tag = "HCSR04_ICU"; /**< Logging tag (pointer and dat
  * @return rx_err_t Error code
  * @retval k_rx_ok ICU configured successfully
  * @retval k_rx_err_invalid_arg irq_num not in [8, 15] or priority not in [1, 15]
- * @retval k_rx_err_hw_error rx_irq_filter_enable() failed
  *
  * @pre Pin already configured for IRQ function via rx_mpc_set_irq()
  * @pre ICU module not in module stop (MSTPCRA bit cleared)
@@ -206,7 +205,6 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * @return rx_err_t Error code
  * @retval k_rx_ok IRQ and digital filter both disabled successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
- * @retval k_rx_err_hw_error rx_irq_filter_disable() failed
  *
  * @pre IRQ was previously configured via rx_hcsr04_icu_configure()
  * @pre No measurement in progress on this IRQ

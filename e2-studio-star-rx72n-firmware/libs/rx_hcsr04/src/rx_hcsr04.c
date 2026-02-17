@@ -659,10 +659,24 @@ typedef enum : uint8_t {
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint8_t {
-  k_irq_priority_unset    = 0,  /**< Sentinel: use default priority (field not set by caller) */
-  k_default_irq_priority  = 10, /**< Default ICU interrupt priority when unset */
-  k_default_sensor_index  = 0,  /**< Default sensor array index for isr_register() */
+  k_irq_priority_unset   = 0,  /**< Sentinel: use default priority (field not set by caller) */
+  k_default_irq_priority = 10, /**< Default ICU interrupt priority when unset */
 } rx_hcsr04_irq_priority_defaults_t;
+
+/**
+ * @enum rx_hcsr04_sensor_defaults_t
+ * @brief Default sensor array index for ISR registration
+ *
+ * @details
+ * Provides the default sensor index used when registering a sensor with
+ * the ISR handler. Currently a single default index is used; future
+ * multi-sensor callback support (Issue #296) will derive this from configuration.
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint8_t {
+  k_default_sensor_index = 0, /**< Default sensor array index for isr_register() */
+} rx_hcsr04_sensor_defaults_t;
 
 /**
  * @enum rx_hcsr04_irq_yield_t
@@ -1353,6 +1367,11 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
       return k_rx_ok; /* Measurement complete */
     }
 
+    /* Check for cancellation request */
+    if (handle->cancel_requested) {
+      return k_rx_err_cancelled;
+    }
+
     /* Check timeout before yielding */
     const uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= handle->timeout_us) {
@@ -1716,6 +1735,11 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  */
 static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t* out_priority)
 {
+  /* Validate input pointers */
+  if (config == nullptr || out_priority == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+
   /* Validate IRQ number range (IRQ8-15 for P00-P07) */
   if ((uint8_t)config->echo_irq < (uint8_t)k_irq_range_min ||
       (uint8_t)config->echo_irq > (uint8_t)k_irq_range_max) {
@@ -1732,8 +1756,8 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
   }
 
   /* Determine effective ICU priority */
-  *out_priority = (config->irq_priority != (uint8_t)k_irq_priority_unset)
-                    ? config->irq_priority
+  *out_priority = ((uint8_t)config->irq_priority != (uint8_t)k_irq_priority_unset)
+                    ? (uint8_t)config->irq_priority
                     : (uint8_t)k_default_irq_priority;
 
   /* Configure pin for IRQ function via MPC (sets ISEL bit in PFS) */
@@ -1818,7 +1842,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   handle->timeout_us          = config->timeout_us;
   handle->echo_mode           = config->echo_mode;
   handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_rx_hcsr04_irq_none;
-  handle->irq_priority        = effective_priority; /* Non-zero only in IRQ mode */
+  handle->irq_priority        = (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
   handle->initialized         = true;
   handle->measurement_active  = false;
   handle->cancel_requested    = false;
@@ -1833,6 +1857,8 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   /* Ensure trigger is low */
   err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
   if (err != k_rx_ok) {
+    /* handle->initialized is true; use deinit to cleanly release all resources */
+    (void)rx_hcsr04_deinit(handle);
     return err;
   }
 
@@ -1865,7 +1891,7 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
 
   if (handle->echo_mode == k_hcsr04_echo_irq) {
     /* IRQ mode: Disable ICU, unregister ISR, and reconfigure pin to GPIO */
-    rx_err_t irq_err = rx_hcsr04_icu_disable(handle->echo_irq);
+    rx_err_t irq_err = rx_hcsr04_icu_disable((uint8_t)handle->echo_irq);
     if (irq_err != k_rx_ok) {
       err = irq_err; /* Save first error */
     }

@@ -1121,6 +1121,7 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
  * @post Pin ISEL bit (0x40) set in PFS register
  * @post PSEL field remains 0 (no peripheral function conflict)
  *
+ * @note Thread safety: Not thread-safe
  * @note Typical pins: P00-P07 for IRQ8-IRQ15 on RX72N
  * @note Used by HC-SR04 ultrasonic sensors for echo pulse measurement
  *
