@@ -17,7 +17,7 @@
  *           ↑ System clocks        ↑ This file      ↑ Start RTOS
  * ```
  *
- * ## Peripheral Initialization Order (6 Stages)
+ * ## Peripheral Initialization Order (7 Stages)
  *
  * **Critical ordering** - later stages depend on earlier stages:
  *
@@ -44,7 +44,10 @@
  *    - I2C for IMU, temperature sensors
  *    - USB CDC for ROS2 communication
  *
- * 6. **ADC channels** (planned, not yet implemented)
+ * 6. **BMS Alert** (~5 µs) **IMPLEMENTED**
+ *    - IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection)
+ *
+ * 7. **ADC channels** (planned, not yet implemented)
  *    - Current sensing (motor protection)
  *    - Battery voltage monitoring
  *    - Temperature sensing (thermal management)
@@ -63,6 +66,7 @@
  *   UART [label="UART Debug Init\nSCI9 @ 115200", style=filled, fillcolor=lightgreen];
  *   SPI [label="SPI Init\n(Planned)", style=dashed];
  *   I2C [label="I2C Init\n(Planned)", style=dashed];
+ *   BMSAlert [label="BMS Alert Init\nIRQ13 @ BQ4050", style=filled, fillcolor=lightgreen];
  *   ADC [label="ADC Init\n(Planned)", style=dashed];
  *   Postcond [label="Postcondition Check\nSCKCR3 still valid"];
  *   Exit [label="return k_rx_ok", shape=ellipse];
@@ -73,13 +77,15 @@
  *   Timers -> UART [label="k_rx_ok"];
  *   UART -> SPI [label="k_rx_ok"];
  *   SPI -> I2C;
- *   I2C -> ADC;
+ *   I2C -> BMSAlert;
+ *   BMSAlert -> ADC [label="k_rx_ok"];
  *   ADC -> Postcond;
  *   Postcond -> Exit [label="Assert OK"];
  *
  *   Timers -> Halt [label="Error", color=red];
  *   UART -> Halt [label="Error", color=red];
  *   SPI -> Halt [label="Error", color=red];
+ *   BMSAlert -> Halt [label="Error", color=red];
  *
  *   Halt [label="return error", shape=octagon, color=red];
  * }
@@ -95,10 +101,11 @@
  * | **UART debug** | ~50 µs | [COMPLETE] | SCI9 baud rate, FIFO, interrupts |
  * | **SPI init** | ~20 µs | [COMPLETE] | RSPI2 peripheral mode, 8-bit, mode 0 |
  * | **I2C init** | ~15 µs | [PENDING] Planned | RIIC0 speed, addressing, interrupts |
+ * | **BMS Alert init** | ~5 µs | [COMPLETE] | IRQ13 for BQ4050 ALERT pin |
  * | **ADC init** | ~100 µs | [PENDING] Planned | ADC0 calibration, channel config |
  * | **Postcondition check** | ~0.5 µs | [COMPLETE] | SCKCR3 stability verification |
- * | **Total (current)** | **~81 µs** | Timers + UART + SPI | |
- * | **Total (planned)** | **~201 µs** | All peripherals | |
+ * | **Total (current)** | **~86 µs** | Timers + UART + SPI + BMS Alert | |
+ * | **Total (planned)** | **~206 µs** | All peripherals | |
  *
  * ## Memory Usage
  *
@@ -172,8 +179,8 @@
  * - **Timer HAL:** See [timer.c](../lib/rx_hal/src/timer.c) - CMT0 configuration for ThreadX tick
  * - **UART HAL:** See [uart.c](../lib/rx_hal/src/uart.c) - SCI9 configuration for debug console
  *
- * @note **This file is incomplete.** GPIO, SPI, I2C, and ADC initialization are planned but not yet
- *       implemented. Only timers and UART are functional in current version.
+ * @note **This file is incomplete.** GPIO, I2C, and ADC initialization are planned but not yet
+ *       implemented. Timers, UART, SPI, and BMS Alert are functional in current version.
  *
  * @warning **Never call hardware_init() before rx_clock_power_init().** System clocks must be
  *          configured first. Precondition assertion will halt execution if violated.
@@ -197,6 +204,7 @@
 #include "hardware.h"
 #include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
+#include "rx_bms_alert.h"
 #include "rx_check.h"
 #include "rx_err.h"
 #include "rx_gptw.h"
@@ -1165,23 +1173,24 @@ static void validate_peripherals(void)
  * @brief Initialize all application-specific hardware peripherals for STAR motor controller
  *
  * @details
- * Configures **six categories** of peripherals required by the STAR robot application:
+ * Configures **seven categories** of peripherals required by the STAR robot application:
  *
- * 1. **GPIO** (planned) - Motor control pins, LEDs, sensor chip selects
+ * 1. **GPIO** ([PASS] implemented) - Motor control pins, LEDs, sensor chip selects
  * 2. **Timers** ([PASS] implemented) - CMT0 for ThreadX tick at 1 kHz
  * 3. **UART** ([PASS] implemented) - SCI9 for debug console at 115200 baud
- * 4. **SPI** (planned) - Motor drivers (DRV8243), sensor bus
+ * 4. **SPI** ([PASS] implemented) - Motor drivers (DRV8243), sensor bus
  * 5. **I2C** (planned) - IMU, temperature, pressure sensors
- * 6. **ADC** (planned) - Current sensing, battery voltage monitoring
+ * 6. **BMS Alert** ([PASS] implemented) - IRQ13 for BQ4050 ALERT pin (battery fault detection)
+ * 7. **ADC** (planned) - Current sensing, battery voltage monitoring
  *
- * ## Initialization Sequence (6 Stages)
+ * ## Initialization Sequence (7 Stages)
  *
  * **Stage order is CRITICAL** - violating dependencies causes failures:
  *
  * @msc
  * msc {
  *   width=700;
- *   Caller, HwInit, Timers, UART;
+ *   Caller, HwInit, Timers, UART, SPI, I2C, BMS, ADC;
  *
  *   Caller => HwInit [label="hardware_init()"];
  *   HwInit note HwInit [label="Precondition: Check SCKCR3 != reset_state", textcolor="blue"];
@@ -1192,6 +1201,18 @@ static void validate_peripherals(void)
  *   HwInit => UART [label="uart_debug_init()"];
  *   UART => UART [label="Configure SCI9\n115200 baud"];
  *   UART => HwInit [label="k_rx_ok"];
+ *   HwInit => SPI [label="spi_init()"];
+ *   SPI => SPI [label="Configure RSPI2\nhost peripheral"];
+ *   SPI => HwInit [label="k_rx_ok"];
+ *   HwInit => I2C [label="i2c_init()"];
+ *   I2C => I2C [label="Configure RIIC0+RIIC1"];
+ *   I2C => HwInit [label="k_rx_ok"];
+ *   HwInit => BMS [label="rx_bms_alert_init()"];
+ *   BMS => BMS [label="Configure IRQ13\nBQ4050 ALERT"];
+ *   BMS => HwInit [label="k_rx_ok"];
+ *   HwInit => ADC [label="adc_init_channels()"];
+ *   ADC => ADC [label="Configure S12AD0\nAN004-AN007"];
+ *   ADC => HwInit [label="k_rx_ok"];
  *   HwInit note HwInit [label="Postcondition: Check SCKCR3 still valid", textcolor="green"];
  *   HwInit => HwInit [label="RX_ASSERT(clocks not corrupted)"];
  *   HwInit => Caller [label="k_rx_ok"];
@@ -1205,8 +1226,12 @@ static void validate_peripherals(void)
  * | **Precondition check** | 0.5 µs | ~120 | [COMPLETE] | No |
  * | **Timer init (CMT0)** | 10 µs | ~2,400 | [COMPLETE] | No |
  * | **UART init (SCI9)** | 50 µs | ~12,000 | [COMPLETE] | No |
+ * | **SPI init (RSPI2)** | 20 µs | ~4,800 | [COMPLETE] | No |
+ * | **I2C init (RIIC0+1)** | 15 µs | ~3,600 | [COMPLETE] | No |
+ * | **BMS Alert (IRQ13)** | 5 µs | ~1,200 | [COMPLETE] | No |
+ * | **ADC init (S12AD0)** | 100 µs | ~24,000 | [COMPLETE] | No |
  * | **Postcondition check** | 0.5 µs | ~120 | [COMPLETE] | No |
- * | **Total (current)** | **~61 µs** | **~14,640** | Timers + UART only | **No** |
+ * | **Total (current)** | **~201 µs** | **~48,240** | All peripherals | **No** |
  *
  * **Note:** Not on critical boot path. Total boot time (main to ThreadX) is ~51 ms,
  * dominated by USB enumeration (~50 ms) which happens later in app_main_task.
@@ -1360,7 +1385,7 @@ rx_err_t hardware_init(void)
   /* =========================================================================
    * INITIALIZE PERIPHERALS
    *
-   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> ADC -> Validate
+   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> BMS Alert -> ADC -> Validate
    * Later stages depend on earlier stages (GPIO must precede peripherals).
    * =========================================================================
    */
@@ -1396,11 +1421,15 @@ rx_err_t hardware_init(void)
   err = i2c_init();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C initialization failed");
 
-  /* 7. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
+  /* 7. BMS Alert: IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection) */
+  err = rx_bms_alert_init();
+  RX_RETURN_ON_ERROR(err, s_tag, "BMS alert IRQ13 initialization failed");
+
+  /* 8. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
   err = adc_init_channels();
   RX_RETURN_ON_ERROR(err, s_tag, "ADC initialization failed");
 
-  /* 8. Validate: Non-fatal peripheral checks (log warnings, never halt) */
+  /* 9. Validate: Non-fatal peripheral checks (log warnings, never halt) */
   validate_peripherals();
 
 #else
