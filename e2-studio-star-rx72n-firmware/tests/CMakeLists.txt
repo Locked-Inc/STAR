@@ -979,6 +979,7 @@ set(ALL_TEST_TARGETS
     test_rx_bus_manager
     test_rx_bus_onewire
     test_rx_spi_comm
+    test_rx_spi_link
     test_rx_pid
     test_rx_encoder
     test_rx_bq4050

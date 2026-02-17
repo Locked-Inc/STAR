@@ -1090,15 +1090,62 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
   return rx_mpc_set_peripheral(&config);
 }
 
+/**
+ * @brief Configure pin for IRQ (external interrupt) function
+ *
+ * @details
+ * Sets pin function to IRQ mode by writing the ISEL bit (bit 6, value 0x40)
+ * directly to the PFS register via internal_write_pfs(). This bypasses
+ * rx_mpc_set_peripheral() because ISEL=0x40 exceeds the 5-bit PSEL field
+ * maximum (k_mpc_psel_max = 31).
+ *
+ * Mirrors the approach used by rx_mpc_set_adc() for ASEL (bit 7):
+ * both functions write their respective bit directly rather than going
+ * through the PSEL validation path.
+ *
+ * **Algorithm Steps:**
+ * 1. Extract port number and pin number from encoded pin parameter
+ * 2. Validate port in range [0, J]
+ * 3. Validate pin in range [0, 7]
+ * 4. Write ISEL bit (0x40) to PFS register via internal_write_pfs()
+ *
+ * @param[in] pin GPIO pin identifier (must support IRQ function, P00-P07)
+ *
+ * @return Error code indicating success or failure
+ * @retval k_rx_ok Pin configured for IRQ input mode
+ * @retval k_rx_err_invalid_arg Invalid port or pin number
+ * @retval k_rx_err_hw_error PWPR write-protect unlock failed
+ *
+ * @pre Pin must have IRQ multiplexing capability (P00-P07 for IRQ8-15)
+ * @pre PCLKB clock must be running
+ *
+ * @post Pin ISEL bit (0x40) set in PFS register
+ * @post PSEL field remains 0 (no peripheral function conflict)
+ *
+ * @note Typical pins: P00-P07 for IRQ8-IRQ15 on RX72N
+ * @note Used by HC-SR04 ultrasonic sensors for echo pulse measurement
+ *
+ * @see rx_mpc_set_adc() Same pattern: writes ASEL bit (0x80) directly
+ * @see rx_mpc.h Full API documentation with usage examples
+ * @see rx_hcsr04_icu_configure() Configure ICU after calling this function
+ *
+ * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ */
 rx_err_t rx_mpc_set_irq(const rx_port_pin_t pin)
 {
-  /* IRQ function uses PSEL = 0x40
-   * Typical pins: P00-P07 for IRQ8-IRQ15 on RX72N
-   * Used by HC-SR04 ultrasonic sensors for echo pulse measurement */
-  const rx_mpc_peripheral_config_t config = {
-    .pin  = pin,
-    .psel = k_psel_irq /* 0x40 - IRQ function select */
-  };
+  /* Extract port and pin number from type-safe enum */
+  const uint8_t port    = rx_port_from_pin(pin);
+  const uint8_t pin_num = rx_pin_from_pin(pin);
 
-  return rx_mpc_set_peripheral(&config);
+  /* Validate the decoded port and pin are in valid range */
+  if (port > k_mpc_port_j || pin_num > k_mpc_max_pin) {
+    rx_log_error(s_tag, "Invalid port or pin number for IRQ function");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* IRQ mode: Set ISEL = 1 (bit 6) to enable IRQ input function.
+   * This is NOT a PSEL value; k_pfs_isel is 0x40 which exceeds the 5-bit
+   * PSEL field. Write directly like rx_mpc_set_adc() does for ASEL.
+   * Typical IRQ pins: P00-P07 (IRQ8-IRQ15) for HC-SR04 echo measurement. */
+  return internal_write_pfs(port, pin_num, k_pfs_isel);
 }

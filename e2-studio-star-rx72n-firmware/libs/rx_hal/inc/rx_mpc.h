@@ -595,30 +595,37 @@ typedef enum : uint8_t {
    */
   k_psel_gptw = 0x14,
 
-  /**
-   * @brief IRQ (External Interrupt) edge detection input
-   *
-   * @details
-   * Connects pin to ICU external interrupt function for hardware edge
-   * detection. Enables microsecond-precision timing for external signals.
-   *
-   * @par Typical Pins:
-   * - P00-P07: IRQ8-IRQ15
-   * - Other IRQ pins per RX72N Manual Table 20.7
-   *
-   * @par Application: HC-SR04 ultrasonic sensor echo pulse measurement
-   * @par Feature: Hardware edge capture with interrupt-driven timing
-   *
-   * @note Requires ICU configuration after MPC pin setup
-   * @note IRQ number depends on pin (P00=IRQ8, P01=IRQ9, etc.)
-   *
-   * @see rx_hcsr04_icu_configure() Configure ICU for edge detection
-   * @see RX72N Manual Section 20.3 (MPC), Chapter 15 (ICU)
-   *
-   * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
-   */
-  k_psel_irq = 0x40,
 } rx_pin_psel_t;
+
+/**
+ * @enum mpc_isel_constants_t
+ * @brief MPC ISEL bit constants for IRQ function selection
+ *
+ * @details
+ * The ISEL bit (bit 6, value 0x40) in the PFS register enables IRQ input
+ * mode on a pin. This is separate from the PSEL field (bits 4:0) which
+ * selects the peripheral function. When ISEL=1, the pin becomes an external
+ * interrupt input for the ICU.
+ *
+ * This value is NOT a PSEL value and must NOT be passed to
+ * rx_mpc_set_peripheral() (which validates PSEL <= 0x1F). Instead,
+ * use rx_mpc_set_irq() which writes ISEL directly via internal_write_pfs().
+ *
+ * @par Application: HC-SR04 ultrasonic sensor echo pulse measurement
+ * @par Feature: Hardware edge capture with interrupt-driven timing
+ *
+ * @note Requires ICU configuration after MPC pin setup
+ * @note IRQ number depends on pin (P00=IRQ8, P01=IRQ9, etc.)
+ *
+ * @see rx_mpc_set_irq() Sets ISEL bit directly (bypasses PSEL validation)
+ * @see rx_hcsr04_icu_configure() Configure ICU for edge detection
+ * @see RX72N Manual Section 20.3 (MPC), Chapter 15 (ICU)
+ *
+ * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ */
+typedef enum : uint8_t {
+  k_pfs_isel_irq = 0x40, /**< ISEL bit in PFS: enables IRQ input function (bit 6) */
+} mpc_isel_constants_t;
 
 /* =============================================================================
  * Public API
@@ -1436,9 +1443,10 @@ typedef enum : uint8_t {
  * This enables hardware edge detection on IRQ0-IRQ15 pins for use with
  * the Interrupt Controller Unit (ICU).
  *
- * **PSEL Values for IRQ Function:**
- * - IRQ pins: PSEL = 0x40 (IRQ function select)
- * - Verify in RX72N Manual Section 20.3 (MPC)
+ * **PFS Register for IRQ Function:**
+ * - IRQ pins: ISEL bit (bit 6) = 0x40 written directly to PFS register
+ * - This is NOT a PSEL value; rx_mpc_set_peripheral() is NOT used
+ * - Verify in RX72N Manual Section 20.3 (MPC), PFS register layout
  *
  * **Supported Pins:**
  * - P00-P07: IRQ8-IRQ15
@@ -1457,16 +1465,15 @@ typedef enum : uint8_t {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Pin configured for IRQ function
- * @retval k_rx_err_null_ptr Config pointer is NULL (should never happen)
- * @retval k_rx_err_invalid_arg Pin does not support IRQ function
+ * @retval k_rx_err_invalid_arg Invalid port or pin number
  * @retval k_rx_err_hw_error PWPR write-protect unlock failed
  *
- * @pre Pin must have IRQ multiplexing capability
+ * @pre Pin must have IRQ multiplexing capability (P00-P07 for IRQ8-15)
  * @pre PCLKB running (MPC requires clock)
  * @pre Must be called during single-threaded initialization
  *
- * @post Pin PSEL set to IRQ function (0x40)
- * @post PMR bit set (peripheral mode)
+ * @post Pin ISEL bit set (0x40) in PFS register (IRQ input mode)
+ * @post PSEL field remains 0 (no conflicting peripheral function)
  * @post PWPR register locked
  * @post Pin ready for ICU edge detection configuration
  *
@@ -1490,9 +1497,8 @@ typedef enum : uint8_t {
  * @endcode
  *
  * @see rx_mpc_set_gpio() Set pin back to GPIO mode
- * @see rx_mpc_set_peripheral() Core pin configuration function
  * @see rx_hcsr04_icu_configure() Configure ICU for IRQ edge detection
- * @see RX72N Manual Section 20.3 (MPC), Table 20.7 (PSEL values)
+ * @see RX72N Manual Section 20.3 (MPC), PFS register bit definitions
  * @see RX72N Manual Chapter 15 (ICU - Interrupt Controller Unit)
  *
  * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)

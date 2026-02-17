@@ -84,7 +84,8 @@ extern "C" {
  *
  * @details
  * Per-IRQ state structure holding timestamps and completion flags.
- * Written by ISR, read by application code.
+ * Written by ISR, read by application code. All fields must be volatile
+ * because they are written in ISR context and read in task context.
  *
  * **State Machine:**
  * @verbatim
@@ -98,18 +99,19 @@ extern "C" {
  *                              ↓
  *                        [Active, complete]
  *                              ↓
- *                     (get_duration() reads)
+ *                     (get_duration() reads + clears complete)
  *                              ↓
  *                           [Idle]
  * @endverbatim
  *
- * @note All fields written by ISR, must be volatile or use memory barriers
+ * @note All fields declared volatile: written in ISR, read in task context
+ * @note get_duration() clears complete after successful read
  */
 typedef struct {
-  uint32_t start_us; /**< Rising edge timestamp (microseconds) */
-  uint32_t end_us;   /**< Falling edge timestamp (microseconds) */
-  bool     complete; /**< True if both edges captured */
-  bool     active;   /**< True if measurement in progress */
+  volatile uint32_t start_us; /**< Rising edge timestamp (microseconds) - written in ISR */
+  volatile uint32_t end_us;   /**< Falling edge timestamp (microseconds) - written in ISR */
+  volatile bool     complete; /**< True if both edges captured - written in ISR */
+  volatile bool     active;   /**< True if measurement in progress - written in ISR */
 } rx_hcsr04_irq_state_t;
 
 /* =============================================================================
@@ -134,21 +136,24 @@ typedef struct {
  * @return rx_err_t Error code
  * @retval k_rx_ok Registration successful
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_invalid_arg sensor_index == k_sensor_unused (0xFF)
  *
  * @pre IRQ configured via rx_hcsr04_icu_configure()
+ * @pre sensor_index must be a valid sensor array index (< 0xFF)
  *
- * @post IRQ mapped to sensor index
+ * @post s_sensor_map[irq_num] = sensor_index
  * @post ISR can identify sensor on interrupt
  *
  * @note Call once during sensor initialization
+ * @note Not thread-safe; call during single-threaded initialization only
  *
  * @par Example
  * @code
- * // Register all 4 sensors
- * rx_hcsr04_isr_register(11, 0);  // Front-Left
- * rx_hcsr04_isr_register(10, 1);  // Front-Right
- * rx_hcsr04_isr_register(9, 2);   // Back-Left
- * rx_hcsr04_isr_register(8, 3);   // Back-Right
+ * // Register all 4 sensors using named constants
+ * rx_hcsr04_isr_register(k_rx_hcsr04_irq_11, 0);  // Sonar 0 Front-Left
+ * rx_hcsr04_isr_register(k_rx_hcsr04_irq_10, 1);  // Sonar 1 Front-Right
+ * rx_hcsr04_isr_register(k_rx_hcsr04_irq_9,  2);  // Sonar 2 Back-Left
+ * rx_hcsr04_isr_register(k_rx_hcsr04_irq_8,  3);  // Sonar 3 Back-Right
  * @endcode
  *
  * @since Version 1.2.0
@@ -179,25 +184,28 @@ typedef struct {
  * @post duration_us contains echo pulse width in microseconds
  * @post State remains complete until next start() call
  *
- * @note Blocks waiting for completion (use timeout in caller)
- * @note Call repeatedly until k_rx_ok returned
+ * @note Does NOT block; returns immediately with k_rx_err_timeout if not ready
+ * @note Call repeatedly in a bounded loop (caller must enforce timeout)
  *
- * @par Example: Polling for Completion
+ * @par Example: Bounded Polling for Completion
  * @code
  * uint32_t start_time = get_time_us();
  * uint32_t duration_us;
- * rx_err_t err;
+ * rx_err_t err = k_rx_err_timeout;
  *
- * while (true) {
- *     err = rx_hcsr04_isr_get_duration(11, &duration_us);
+ * // Bounded loop - max 30000 iterations (NASA Rule 2)
+ * for (uint32_t i = 0; i < 30000; i++) {
+ *     err = rx_hcsr04_isr_get_duration(k_rx_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Got result
  *     }
  *     if ((get_time_us() - start_time) > 30000) {
- *         return k_rx_err_timeout;  // 30ms timeout
+ *         break;  // 30ms timeout
  *     }
  * }
- * float distance_cm = duration_us / 58.0f;
+ * if (err == k_rx_ok) {
+ *     float distance_cm = duration_us / 58.0f;
+ * }
  * @endcode
  *
  * @since Version 1.2.0
@@ -251,24 +259,40 @@ void rx_hcsr04_isr_start(uint8_t irq_num);
 
 /**
  * @brief ISR for IRQ8 (P00 - Sonar 3 Back-Right)
+ *
+ * @pre ICU configured for IRQ8 via rx_hcsr04_icu_configure()
+ * @pre PIN P00 configured for IRQ function via rx_mpc_set_irq()
+ * @post IR[72] flag cleared; echo edge timestamp captured if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ8(void);
 
 /**
  * @brief ISR for IRQ9 (P01 - Sonar 2 Back-Left)
+ *
+ * @pre ICU configured for IRQ9 via rx_hcsr04_icu_configure()
+ * @pre PIN P01 configured for IRQ function via rx_mpc_set_irq()
+ * @post IR[73] flag cleared; echo edge timestamp captured if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ9(void);
 
 /**
  * @brief ISR for IRQ10 (P02 - Sonar 1 Front-Right)
+ *
+ * @pre ICU configured for IRQ10 via rx_hcsr04_icu_configure()
+ * @pre PIN P02 configured for IRQ function via rx_mpc_set_irq()
+ * @post IR[74] flag cleared; echo edge timestamp captured if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ10(void);
 
 /**
  * @brief ISR for IRQ11 (P03 - Sonar 0 Front-Left)
+ *
+ * @pre ICU configured for IRQ11 via rx_hcsr04_icu_configure()
+ * @pre PIN P03 configured for IRQ function via rx_mpc_set_irq()
+ * @post IR[75] flag cleared; echo edge timestamp captured if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ11(void);

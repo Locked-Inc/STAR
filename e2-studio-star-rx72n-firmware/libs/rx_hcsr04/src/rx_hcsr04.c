@@ -524,6 +524,7 @@
 #include "rx_hcsr04_hal.h"
 #include "rx_hcsr04_icu.h"
 #include "rx_hcsr04_isr.h"
+#include "rx_log.h"
 #include "rx_mpc.h"
 #include "tx_api.h"
 
@@ -619,6 +620,40 @@ typedef enum : uint8_t {
 typedef enum : uint16_t {
   k_echo_poll_max_iterations = 30000, /**< Max polling iterations */
 } rx_hcsr04_poll_limits_t;
+
+/**
+ * @enum rx_hcsr04_irq_constants_t
+ * @brief IRQ validation and ISR loop constants
+ *
+ * @details
+ * Named constants for IRQ number range validation and bounded ISR wait loop.
+ * Using named enums instead of magic literals per project coding standard.
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint8_t {
+  k_irq_range_min        = 8,   /**< Minimum valid IRQ number (IRQ8 = P00) */
+  k_irq_range_max        = 15,  /**< Maximum valid IRQ number (IRQ15 = P07) */
+  k_echo_irq_none        = 0,   /**< Sentinel: no IRQ assigned (polling mode) */
+  k_default_irq_priority = 10,  /**< Default ICU priority if irq_priority field is 0 */
+  k_irq_p0_port          = 0,   /**< Port 0 for IRQ8-11 (P00-P03) */
+} rx_hcsr04_irq_constants_t;
+
+/**
+ * @enum rx_hcsr04_irq_poll_limits_t
+ * @brief Bounded loop iteration cap for IRQ echo wait
+ *
+ * @details
+ * Maximum iterations for the IRQ measurement polling loop in
+ * internal_measure_echo_pulse_irq(). Prevents unbounded busy-wait
+ * per NASA Power of 10 Rule 2. At ~1µs per iteration and 30ms
+ * timeout, 30000 iterations is the upper bound.
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint32_t {
+  k_irq_poll_max_iterations = 30000, /**< Max iterations (~30ms at 1µs/iter) */
+} rx_hcsr04_irq_poll_limits_t;
 
 /**
  * @brief Speed of sound base constant (m/s at 0°C)
@@ -1221,46 +1256,74 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
 }
 
 /**
- * @brief Measure echo pulse duration using IRQ mode
+ * @brief Measure echo pulse duration using IRQ (hardware edge capture) mode
  *
  * @details
- * Uses hardware edge detection via ICU to capture rising and falling
- * edge timestamps with microsecond precision. ISR captures timestamps
- * automatically; this function waits for completion.
+ * Initiates an IRQ-driven echo pulse measurement. The ISR (INT_IRQ8-11)
+ * captures rising and falling edge timestamps automatically with microsecond
+ * precision via the ICU. This function polls ISR completion state in a
+ * bounded loop, yielding the CPU each iteration to reduce busy-wait overhead.
  *
- * @param[in] handle Sensor handle (must be configured for IRQ mode)
- * @param[out] duration_us Pointer to store pulse duration in microseconds
+ * **Algorithm:**
+ * 1. Call rx_hcsr04_isr_start() to arm the ISR state machine
+ * 2. Record start time for timeout tracking
+ * 3. Poll rx_hcsr04_isr_get_duration() in bounded loop
+ * 4. Each iteration: check timeout, yield CPU via tx_thread_sleep(1)
+ * 5. On success: return duration written by ISR
+ *
+ * @param[in]  handle      Sensor handle configured for IRQ mode (must not be NULL)
+ * @param[out] duration_us Pointer to store echo pulse duration in microseconds
+ *                         (must not be NULL; valid range 150-25000 µs for 2-400 cm)
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Measurement successful
- * @retval k_rx_err_timeout No echo pulse within timeout period
+ * @retval k_rx_ok Measurement complete, duration written to *duration_us
+ * @retval k_rx_err_null_ptr handle or duration_us is NULL
+ * @retval k_rx_err_timeout No echo captured within handle->timeout_us
+ *
+ * @pre handle must be initialized with echo_mode == k_hcsr04_echo_irq
+ * @pre ICU must be configured (done during rx_hcsr04_init())
+ *
+ * @post *duration_us contains echo pulse width on k_rx_ok
+ * @post ISR state machine is idle on return (active=false)
+ *
+ * @note Must NOT be called from ISR context (uses tx_thread_sleep)
+ * @note Bounded loop: max k_irq_poll_max_iterations iterations
+ *
+ * @see rx_hcsr04_isr_start() Arms ISR state machine
+ * @see rx_hcsr04_isr_get_duration() Reads ISR-captured timestamps
+ *
+ * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
  */
 static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* duration_us)
 {
-  /* Start measurement (clears ISR state) */
-  rx_hcsr04_isr_start(handle->echo_irq);
+  if (handle == nullptr || duration_us == nullptr) {
+    return k_rx_err_null_ptr;
+  }
 
-  /* Wait for ISR to capture both edges (with timeout) */
+  /* Arm the ISR state machine before trigger pulse */
+  rx_hcsr04_isr_start((uint8_t)handle->echo_irq);
+
+  /* Wait for ISR to capture both edges (bounded loop per NASA Rule 2) */
   const uint32_t start_time = hcsr04_hal_get_time_us();
-  rx_err_t       err;
 
-  while (true) {
-    err = rx_hcsr04_isr_get_duration(handle->echo_irq, duration_us);
+  for (uint32_t i = 0; i < k_irq_poll_max_iterations; i++) {
+    rx_err_t err = rx_hcsr04_isr_get_duration((uint8_t)handle->echo_irq, duration_us);
     if (err == k_rx_ok) {
-      break; /* Measurement complete */
+      return k_rx_ok; /* Measurement complete */
     }
 
-    /* Check timeout */
+    /* Check timeout before yielding */
     const uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
-    if (elapsed > handle->timeout_us) {
+    if (elapsed >= handle->timeout_us) {
       return k_rx_err_timeout;
     }
 
-    /* Yield CPU briefly to reduce busy-wait overhead */
-    /* Note: Could use tx_thread_sleep(1) if in ThreadX context */
+    /* Yield CPU to allow other threads to run (reduces busy-wait CPU load) */
+    tx_thread_sleep(1);
   }
 
-  return k_rx_ok;
+  /* Loop bound exceeded (should not reach here if timeout_us is sane) */
+  return k_rx_err_timeout;
 }
 
 /* =============================================================================
@@ -1614,21 +1677,40 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   if (config->echo_mode == k_hcsr04_echo_irq) {
     /* IRQ mode: Configure pin for IRQ function and set up ICU */
 
-    /* Validate IRQ number (8-15 for P00-P07) */
-    if (config->echo_irq < 8 || config->echo_irq > 15) {
+    /* Validate IRQ number range (IRQ8-15 for P00-P07) */
+    if ((uint8_t)config->echo_irq < (uint8_t)k_irq_range_min ||
+        (uint8_t)config->echo_irq > (uint8_t)k_irq_range_max) {
       (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
       return k_rx_err_invalid_arg;
     }
 
-    /* Configure pin for IRQ function via MPC */
+    /* Validate that echo_pin matches echo_irq (P00→IRQ8, P01→IRQ9, P02→IRQ10, P03→IRQ11).
+     * The expected pin_num within port 0 = irq_num - k_irq_range_min. */
+    {
+      const uint8_t pin_port = rx_port_from_pin(config->echo_pin);
+      const uint8_t pin_num  = rx_pin_from_pin(config->echo_pin);
+      const uint8_t expected_pin = (uint8_t)config->echo_irq - (uint8_t)k_irq_range_min;
+      if (pin_port != k_irq_p0_port || pin_num != expected_pin) {
+        rx_log_error("HCSR04", "echo_pin/echo_irq mismatch (P0x must match IRQ8+x)");
+        (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
+        return k_rx_err_invalid_arg;
+      }
+    }
+
+    /* Configure pin for IRQ function via MPC (sets ISEL bit in PFS) */
     err = rx_mpc_set_irq(config->echo_pin);
     if (err != k_rx_ok) {
       (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
       return err;
     }
 
-    /* Configure ICU for edge detection (priority 10) */
-    err = rx_hcsr04_icu_configure(config->echo_irq, 10);
+    /* Determine IRQ priority: use configured value or fall back to default */
+    const uint8_t irq_priority = (config->irq_priority != (uint8_t)k_echo_irq_none)
+                                   ? config->irq_priority
+                                   : (uint8_t)k_default_irq_priority;
+
+    /* Configure ICU for edge detection */
+    err = rx_hcsr04_icu_configure((uint8_t)config->echo_irq, irq_priority);
     if (err != k_rx_ok) {
       /* Cleanup: reconfigure pin back to GPIO */
       (void)rx_mpc_set_gpio(config->echo_pin);
@@ -1637,9 +1719,9 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
     }
 
     /* Register sensor with ISR handler (sensor index TBD - use 0 for now) */
-    err = rx_hcsr04_isr_register(config->echo_irq, 0);
+    err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, 0);
     if (err != k_rx_ok) {
-      (void)rx_hcsr04_icu_disable(config->echo_irq);
+      (void)rx_hcsr04_icu_disable((uint8_t)config->echo_irq);
       (void)rx_mpc_set_gpio(config->echo_pin);
       (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
       return err;
@@ -1659,7 +1741,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   handle->echo_pin            = config->echo_pin;
   handle->timeout_us          = config->timeout_us;
   handle->echo_mode           = config->echo_mode;
-  handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : 0;
+  handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_rx_hcsr04_irq_none;
   handle->initialized         = true;
   handle->measurement_active  = false;
   handle->cancel_requested    = false;
@@ -1777,8 +1859,12 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
     return err;
   }
 
-  /* Measure echo pulse duration */
-  err = internal_measure_echo_pulse(handle, &echo_time_us);
+  /* Measure echo pulse duration (dispatch based on mode) */
+  if (handle->echo_mode == k_hcsr04_echo_irq) {
+    err = internal_measure_echo_pulse_irq(handle, &echo_time_us);
+  } else {
+    err = internal_measure_echo_pulse(handle, &echo_time_us);
+  }
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;

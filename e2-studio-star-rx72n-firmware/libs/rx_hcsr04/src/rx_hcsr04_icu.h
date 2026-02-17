@@ -97,7 +97,7 @@ extern "C" {
  * @retval k_rx_ok ICU configured successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
  * @retval k_rx_err_invalid_arg priority not in range [1, 15]
- * @retval k_rx_err_invalid_state Pin not configured for IRQ function (call rx_mpc_set_irq first)
+ * @retval k_rx_err_hw_error rx_irq_filter_enable() failed
  *
  * @pre Pin already configured for IRQ function via rx_mpc_set_irq()
  * @pre ICU module not in module stop (MSTPCRA bit cleared)
@@ -117,13 +117,18 @@ extern "C" {
  *
  * @par Example: Configure All 4 HC-SR04 Sensors
  * @code
- * const uint8_t irq_nums[] = {11, 10, 9, 8};  // Front-Left to Back-Right
+ * const rx_hcsr04_irq_t irq_nums[] = {
+ *     k_rx_hcsr04_irq_11,  // Sonar 0 Front-Left
+ *     k_rx_hcsr04_irq_10,  // Sonar 1 Front-Right
+ *     k_rx_hcsr04_irq_9,   // Sonar 2 Back-Left
+ *     k_rx_hcsr04_irq_8,   // Sonar 3 Back-Right
+ * };
  * const uint8_t priority = 10;
  *
  * for (uint8_t i = 0; i < 4; i++) {
- *     rx_err_t err = rx_hcsr04_icu_configure(irq_nums[i], priority);
+ *     rx_err_t err = rx_hcsr04_icu_configure((uint8_t)irq_nums[i], priority);
  *     if (err != k_rx_ok) {
- *         rx_log_error("SONAR", "ICU config failed for IRQ%d", irq_nums[i]);
+ *         rx_log_error("SONAR", "ICU config failed");
  *         return err;
  *     }
  * }
@@ -160,15 +165,17 @@ extern "C" {
  * @param[in] irq_num IRQ number to disable (8-15)
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok IRQ disabled successfully
+ * @retval k_rx_ok IRQ and digital filter both disabled successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ * @retval k_rx_err_hw_error Digital filter disable failed
  *
  * @pre IRQ was previously configured via rx_hcsr04_icu_configure()
+ * @pre No measurement in progress on this IRQ
  *
- * @post IER bit cleared (interrupt disabled)
- * @post IR flag cleared (no pending interrupt)
+ * @post IER bit cleared (interrupt will not fire)
+ * @post IR flag cleared (no stale pending interrupt)
  * @post Digital filter disabled
- * @post ISR will not fire on pin edges
+ * @post ISR will not trigger on pin edges
  *
  * @note Safe to call even if IRQ was not enabled
  * @note Does NOT reconfigure pin back to GPIO (use rx_mpc_set_gpio separately)
@@ -178,7 +185,7 @@ extern "C" {
  * @par Example: Clean Up Sensor
  * @code
  * // Disable IRQ11 (Sonar 0)
- * rx_err_t err = rx_hcsr04_icu_disable(11);
+ * rx_err_t err = rx_hcsr04_icu_disable(k_rx_hcsr04_irq_11);
  * if (err != k_rx_ok) {
  *     rx_log_warn("SONAR", "Failed to disable IRQ11");
  * }
