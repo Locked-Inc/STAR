@@ -4,7 +4,7 @@
  *
  * @details
  * Provides ICU configuration functions for HC-SR04 ultrasonic sensors
- * operating in IRQ mode. Configures external interrupt pins (IRQ8-15)
+ * operating in IRQ mode. Configures external interrupt pins (IRQ8-11)
  * for hardware edge detection with microsecond-precision timing.
  *
  * **Responsibilities:**
@@ -215,7 +215,7 @@ extern "C" {
  * }
  *
  * // Optionally reconfigure pin back to GPIO
- * rx_mpc_set_gpio(k_rx_p0_3);
+ * (void)rx_mpc_set_gpio(k_rx_p0_3);
  * @endcode
  *
  * @see rx_hcsr04_icu_configure() Enable IRQ

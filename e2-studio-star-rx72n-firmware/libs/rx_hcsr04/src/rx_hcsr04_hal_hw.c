@@ -1175,9 +1175,11 @@ uint32_t hcsr04_hal_get_time_us(void)
  * @details
  * Reads the CMT2 counter directly without acquiring the ThreadX mutex.
  * Safe to call from interrupt context. Does NOT track 16-bit overflows.
- * For HC-SR04 echo pulse capture (< 25 ms) the two ISR timestamps are
- * recorded within microseconds of each other, so single-overflow risk
- * within one measurement window is negligible.
+ * Because the 16-bit CMT2 counter wraps every ~8.7 ms (65536 ticks at
+ * PCLKB/8 = 7.5 MHz), this function is only valid for echo windows
+ * shorter than the CMT2 wrap period. Rising and falling edge timestamps
+ * separated by more than ~8.7 ms produce invalid durations. HC-SR04 IRQ
+ * mode is therefore limited to ~150 cm maximum range.
  *
  * @return CMT2 counter converted to microseconds (no overflow tracking)
  * @retval uint32_t Value in range [0, ~8700) µs; wraps every ~8.7 ms with CMT2 period

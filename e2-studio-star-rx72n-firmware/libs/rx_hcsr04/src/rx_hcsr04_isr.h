@@ -291,7 +291,8 @@ typedef enum : uint8_t {
  *
  * @param[in] irq_num IRQ number (8-11)
  * @param[out] duration_us Pointer to store pulse duration (microseconds)
- *                         - Valid range: 150µs - 25000µs (2cm - 400cm)
+ *                         - Valid range: 150µs - 8700µs (2cm - 150cm in IRQ mode)
+ *                         - CMT2 16-bit wrap handled automatically
  *                         - Must not be NULL
  *
  * @return rx_err_t Error code
@@ -417,11 +418,13 @@ typedef enum : uint8_t {
  * @return rx_err_t Error code
  * @retval k_rx_ok ISR disarmed successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_invalid_state irq_num not registered via rx_hcsr04_isr_register()
  *
  * @pre rx_hcsr04_isr_start() called successfully for this IRQ
- * @pre irq_num in [k_hcsr04_irq_8, k_hcsr04_irq_11]
+ * @pre irq_num registered via rx_hcsr04_isr_register() (sensor map entry != k_sensor_unused)
  *
  * @post s_irq_state[idx].active = false
+ * @post s_irq_state[idx].complete = false
  * @post ISR will ignore subsequent interrupts on this IRQ
  *
  * @note Call only in the error path, after a successful rx_hcsr04_isr_start()

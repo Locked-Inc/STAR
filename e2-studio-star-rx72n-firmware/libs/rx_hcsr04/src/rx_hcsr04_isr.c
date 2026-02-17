@@ -98,6 +98,35 @@ typedef enum : uint8_t {
   k_ir_flag_clear      = 0,                         /**< Write 0 to IR register to clear pending interrupt flag */
 } isr_constants_t;
 
+/**
+ * @enum isr_timer_constants_t
+ * @brief CMT2 timer wrap period for ISR timestamp correction
+ *
+ * @details
+ * The CMT2 16-bit counter wraps every 65536 ticks at PCLKB/8 = 7.5 MHz.
+ * Wrap period = 65536 / 7500000 s = ~8738 µs. hcsr04_hal_get_time_us_isr()
+ * returns values in [0, 8738]. When the falling edge timestamp wraps around
+ * to a value smaller than the rising edge timestamp, this constant is added
+ * to correct the duration calculation.
+ *
+ * @invariant k_cmt2_wrap_us == (65536 * 1000000) / (PCLKB / 8) truncated to uint32_t
+ *
+ * @code
+ * // Wrap correction in get_duration:
+ * if (end_us < start_us) {
+ *     duration = end_us + k_cmt2_wrap_us - start_us;
+ * }
+ * @endcode
+ *
+ * @see hcsr04_hal_get_time_us_isr() Returns values that wrap at this period
+ * @see rx_hcsr04_isr_get_duration() Uses this for wrap correction
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint32_t {
+  k_cmt2_wrap_us = 8738, /**< CMT2 16-bit counter wrap period in µs (65536 / 7.5 MHz) */
+} isr_timer_constants_t;
+
 /* =============================================================================
  * Static Variables
  * =============================================================================
@@ -260,7 +289,7 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_in
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
 
   /* Validate sensor index (must be a valid sensor array index 0..k_hcsr04_sensor_count-1) */
-  if (sensor_index >= k_hcsr04_sensor_count) {
+  if ((uint8_t)sensor_index >= (uint8_t)k_hcsr04_sensor_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -376,11 +405,13 @@ rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
  * @return rx_err_t Error code
  * @retval k_rx_ok ISR disarmed successfully
  * @retval k_rx_err_invalid_arg irq_num not in range [k_irq_min, k_irq_max]
+ * @retval k_rx_err_invalid_state irq_num not registered via rx_hcsr04_isr_register()
  *
  * @pre rx_hcsr04_isr_start() called successfully for this IRQ
- * @pre irq_num in [k_irq_min, k_irq_max]
+ * @pre irq_num registered via rx_hcsr04_isr_register() (s_sensor_map[irq_num] != k_sensor_unused)
  *
  * @post s_irq_state[idx].active = false
+ * @post s_irq_state[idx].complete = false
  * @post ISR will ignore subsequent interrupts on this IRQ
  *
  * @note Best-effort cleanup; always call in error path after successful isr_start
@@ -392,6 +423,11 @@ rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
 rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
 {
   RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
+
+  /* Verify IRQ is registered (mirrors check in isr_start / isr_unregister) */
+  if (s_sensor_map[irq_num] == k_sensor_unused) {
+    return k_rx_err_invalid_state; /* IRQ not registered via rx_hcsr04_isr_register() */
+  }
 
   const uint8_t idx          = irq_num - k_irq_min;
   s_irq_state[idx].active    = false;
@@ -411,7 +447,8 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
  *
  * @param[in]  irq_num     IRQ number (8-11)
  * @param[out] duration_us Pointer to store pulse duration in microseconds
- *                         (valid range: 150-25000 µs for 2-400 cm)
+ *                         (valid range: 150-8700 µs for 2-150 cm in IRQ mode;
+ *                          CMT2 wrap handled automatically for durations < k_cmt2_wrap_us)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Duration available, *duration_us written, complete flag cleared
@@ -444,8 +481,13 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
     return k_rx_err_timeout; /* Both edges not yet captured */
   }
 
-  /* Calculate duration from captured timestamps */
-  *duration_us = s_irq_state[idx].end_us - s_irq_state[idx].start_us;
+  /* Calculate duration from captured timestamps (handle CMT2 16-bit wrap) */
+  if (s_irq_state[idx].end_us >= s_irq_state[idx].start_us) {
+    *duration_us = s_irq_state[idx].end_us - s_irq_state[idx].start_us;
+  } else {
+    /* Timer wrapped: add wrap period to correct the subtraction */
+    *duration_us = s_irq_state[idx].end_us + k_cmt2_wrap_us - s_irq_state[idx].start_us;
+  }
 
   /* Clear complete flag so next rx_hcsr04_isr_start() starts fresh */
   s_irq_state[idx].complete = false;
@@ -466,6 +508,18 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
  * Provides named constants for the literal IRQ numbers passed to
  * internal_irq_handler() from each ISR wrapper. Replaces magic literals
  * 8, 9, 10, 11 per the project "No Magic Numbers" policy.
+ *
+ * @invariant Values are fixed 8..11, matching P00..P03 pin assignments;
+ *            each value must equal k_irq_min + pin_number (P0x → IRQ(8+x))
+ *
+ * @code
+ * // Each ISR wrapper passes its named constant to the common handler:
+ * void INT_IRQ8(void)  { internal_irq_handler(k_irq_num_8);  }
+ * void INT_IRQ11(void) { internal_irq_handler(k_irq_num_11); }
+ * @endcode
+ *
+ * @see isr_constants_t Range bounds (k_irq_min, k_irq_max) and state constants
+ * @see internal_irq_handler() Common ISR logic receiving these constants
  *
  * @since Version 1.2.0 (Issue #296)
  */

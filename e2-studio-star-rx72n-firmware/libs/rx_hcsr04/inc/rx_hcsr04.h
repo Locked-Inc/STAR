@@ -573,11 +573,21 @@ typedef enum : uint8_t {
  * // Note: ICU configuration done automatically in init
  * @endcode
  *
+ * @invariant trigger_pin != echo_pin (trigger and echo must be different physical pins)
+ * @invariant trigger_pin and echo_pin must be valid digital I/O pins (rx_port_pin_t)
+ * @invariant If echo_mode == k_hcsr04_echo_irq: echo_pin must support ICU/IRQ and
+ *            echo_irq must match the echo_pin mapping (P00->k_hcsr04_irq_8,
+ *            P01->k_hcsr04_irq_9, P02->k_hcsr04_irq_10, P03->k_hcsr04_irq_11)
+ * @invariant timeout_us > 0 and within supported range (use k_hcsr04_echo_timeout_us)
+ * @invariant echo_mode defaults to k_hcsr04_echo_polling; irq_priority defaults to
+ *            k_hcsr04_irq_priority_default when set to k_hcsr04_irq_priority_unset
+ *
  * @note This structure is passed by pointer to rx_hcsr04_init()
+ * @note All invariants are validated by rx_hcsr04_init()
  * @warning Do not modify fields after initialization - call deinit/init instead
  * @warning For IRQ mode: ensure echo_irq matches echo_pin (P00=IRQ8, P01=IRQ9, etc.)
  *
- * @see rx_hcsr04_init()
+ * @see rx_hcsr04_init() Validates all invariants during initialization
  * @see rx_hcsr04_echo_mode_t Echo measurement mode enum
  * @see rx_port_constants.h Type-safe GPIO pin definitions
  * @see rx_hcsr04_timing_t Timeout constants
@@ -720,6 +730,40 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @note For IRQ mode, irq_priority of k_hcsr04_irq_priority_unset (0) selects default (k_hcsr04_irq_priority_default)
  * @warning echo_pin and echo_irq MUST match the hardware mapping
  *          (P00↔IRQ8, P01↔IRQ9, P02↔IRQ10, P03↔IRQ11)
+ *
+ * @par Example: Initialize Polling Mode Sensor
+ * @code
+ * rx_hcsr04_t sensor = {0};
+ * rx_hcsr04_config_t cfg = {
+ *     .trigger_pin = k_rx_pf_5,
+ *     .echo_pin    = k_rx_p0_3,
+ *     .timeout_us  = k_hcsr04_echo_timeout_us,
+ *     .echo_mode   = k_hcsr04_echo_polling,
+ * };
+ * rx_err_t err = rx_hcsr04_init(&sensor, &cfg);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("SONAR", "Init failed");
+ *     return err;
+ * }
+ * @endcode
+ *
+ * @par Example: Initialize IRQ Mode Sensor
+ * @code
+ * rx_hcsr04_t sensor = {0};
+ * rx_hcsr04_config_t cfg = {
+ *     .trigger_pin  = k_rx_pf_5,
+ *     .echo_pin     = k_rx_p0_3,
+ *     .timeout_us   = k_hcsr04_echo_timeout_us,
+ *     .echo_mode    = k_hcsr04_echo_irq,
+ *     .echo_irq     = k_hcsr04_irq_11,
+ *     .irq_priority = k_hcsr04_irq_priority_default,
+ * };
+ * rx_err_t err = rx_hcsr04_init(&sensor, &cfg);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("SONAR", "IRQ init failed");
+ *     return err;
+ * }
+ * @endcode
  *
  * @see rx_hcsr04_irq_t Type-safe IRQ number enum
  * @see rx_hcsr04_config_t.irq_priority Configurable interrupt priority

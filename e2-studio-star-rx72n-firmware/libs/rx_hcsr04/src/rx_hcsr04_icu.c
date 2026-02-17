@@ -76,7 +76,7 @@
  * @endcode
  *
  * @see rx_hcsr04_icu_configure() Uses all these constants
- * @see rx_hcsr04_icu_disable() Uses k_vector_base, k_bits_per_ier, k_ir_flag_clear
+ * @see rx_hcsr04_icu_disable() Uses k_vector_base, k_bits_per_ier, k_ir_flag_clear, k_ier_bit_clear
  *
  * @since Version 1.2.0 (Issue #296)
  */
@@ -90,6 +90,7 @@ typedef enum : uint8_t {
   k_bits_per_ier     = 8,    /**< IER register is 8 bits wide */
   k_bit_base         = 1,    /**< Bit value 1 for IER enable mask construction */
   k_ir_flag_clear    = 0,    /**< Write 0 to IR register to clear pending flag */
+  k_ier_bit_clear    = 0,    /**< IER bit value when interrupt is disabled (not enabled) */
 } icu_constants_t;
 
 /* =============================================================================
@@ -253,7 +254,7 @@ rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
   const uint8_t ier_bit   = vector % k_bits_per_ier;
 
   /* Second precondition: verify the IRQ is actually enabled before clearing it */
-  if ((icu()->ier[ier_index] & (uint8_t)(k_bit_base << ier_bit)) == 0) {
+  if ((icu()->ier[ier_index] & (uint8_t)(k_bit_base << ier_bit)) == k_ier_bit_clear) {
     return k_rx_err_invalid_state; /* IRQ not enabled; rx_hcsr04_icu_configure() not called */
   }
 
