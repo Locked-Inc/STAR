@@ -126,8 +126,10 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
 
 rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc);
 
-rx_err_t
-rx_bq4050_read_status(rx_bus_manager_t* manager, const char* bus_name, rx_bq4050_status_t* status);
+rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
+                               const char*         bus_name,
+                               rx_bq4050_status_t* status,
+                               uint8_t             num_cells);
 
 #ifdef __cplusplus
 }

@@ -1874,7 +1874,11 @@ void tx_application_define(void* first_unused_memory)
   RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
 
   /* BMS Monitor Task - Priority 15 */
-  err = bms_monitor_task_create();
+  const bms_monitor_config_t bms_config = {
+    .soc_warning_pct  = k_bms_soc_warning_pct_default,
+    .soc_critical_pct = k_bms_soc_critical_pct_default,
+  };
+  err = bms_monitor_task_create(&bms_config);
   RX_ASSERT(err == k_rx_ok, "bms_monitor_task_create must succeed");
 
   /* Temperature Sensor Task - Priority 15 */

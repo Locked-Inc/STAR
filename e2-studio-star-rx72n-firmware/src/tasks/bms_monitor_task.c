@@ -112,7 +112,7 @@
  *       if (SoC < 5%?) then (yes)
  *         :Log CRITICAL;
  *         :Trigger emergency stop\n(k_estop_reason_low_battery);
- *       else if (SoC < 15%?) then (yes)
+ *       else if (SoC < 25%?) then (yes)
  *         :Log WARNING;
  *         :Set low battery event\n(k_event_low_battery);
  *       endif
@@ -128,17 +128,18 @@
  *
  * ## Low Battery Detection Strategy
  *
- * The task implements a three-tier low battery detection system:
+ * The task implements a three-tier low battery detection system using configurable
+ * thresholds. The defaults (set by bms_monitor_config_t) are:
  *
- * | Threshold | SoC % | Voltage (approx) | Action | Severity |
- * |-----------|-------|------------------|--------|----------|
- * | **Normal** | > 15% | > 14.0V | None | Info |
- * | **Warning** | 15% | ~13.8V | Log warning, set event flag | Warning |
- * | **Critical** | 5% | ~13.2V | Emergency stop trigger | Error |
+ * | Threshold | SoC % (default) | Voltage (approx) | Action | Severity |
+ * |-----------|-----------------|------------------|--------|----------|
+ * | **Normal** | > 25% | > 14.4V | None | Info |
+ * | **Warning** | < 25% | ~14.0V | Log warning, set event flag | Warning |
+ * | **Critical** | < 5% | ~13.2V | Emergency stop trigger | Error |
  *
- * **Rationale for 15% Warning Threshold:**
- * - Provides ~9 minutes of operation at 2A average current (5000mAh × 0.15 / 2A)
- * - Allows time for safe navigation to charging station
+ * **Rationale for 25% Default Warning Threshold:**
+ * - Provides ~22 minutes of operation at 2A average current (5000mAh × 0.25 / 2A)
+ * - Gives operator sufficient margin to navigate to charging station
  * - Prevents deep discharge damage (< 3.0V per cell)
  *
  * **Rationale for 5% Critical Threshold:**
@@ -173,7 +174,7 @@
  *   I2CBus => BQ4050 [label="Read 7 registers\n(~2ms total)"];
  *   BQ4050 >> I2CBus [label="Voltage: 16200mV\nCurrent: 2450mA\nSoC: 85%\nTemp: 25°C"];
  *   I2CBus >> BMSTask [label="k_rx_ok"];
- *   BMSTask box BMSTask [label="Build bms_state_t\nCheck thresholds (85% > 15%)\nNo warnings"];
+ *   BMSTask box BMSTask [label="Build bms_state_t\nCheck thresholds (85% > 25%)\nNo warnings"];
  *   BMSTask => SharedData [label="shared_data_update_bms()"];
  *   SharedData box SharedData [label="Mutex lock\nUpdate bms_state\nMutex unlock"];
  *   SharedData >> BMSTask [label="k_rx_ok"];
@@ -183,12 +184,12 @@
  *   SharedData >> TelemetryTask [label="bms_state copy"];
  *   TelemetryTask box TelemetryTask [label="Forward to RPI5"];
  *
- *   --- [label="Low Battery Warning (SoC < 15%)"];
+ *   --- [label="Low Battery Warning (SoC < 25%)"];
  *   BMSTask => I2CBus [label="rx_bq4050_read_status()"];
  *   I2CBus => BQ4050 [label="Read registers"];
  *   BQ4050 >> I2CBus [label="SoC: 12%"];
  *   I2CBus >> BMSTask [label="k_rx_ok"];
- *   BMSTask box BMSTask [label="12% < 15%\nLog WARNING"];
+ *   BMSTask box BMSTask [label="12% < 25%\nLog WARNING"];
  *   BMSTask => SharedData [label="shared_data_set_event(k_event_low_battery)"];
  *   SharedData box SharedData [label="Set event flag"];
  *
@@ -331,14 +332,12 @@ typedef enum : uint16_t {
 } bms_task_constants_t;
 
 /**
- * @enum bms_threshold_constants_t
- * @brief BMS threshold constants
+ * @enum bms_cell_constants_t
+ * @brief BMS hardware constants
  */
 typedef enum : uint8_t {
-  k_bms_low_soc_percent      = 15, /**< Low battery SoC threshold */
-  k_bms_critical_soc_percent = 5,  /**< Critical battery SoC threshold */
-  k_bms_cell_count           = 4,  /**< Number of cells in pack */
-} bms_threshold_constants_t;
+  k_bms_cell_count = 4, /**< Number of cells in pack (4S LiPo) */
+} bms_cell_constants_t;
 
 /* =============================================================================
  * Static Variables
@@ -353,6 +352,9 @@ static uint8_t s_bms_stack[k_bms_task_stack_size];
 
 /** @brief Task creation guard flag */
 static bool s_bms_created = false;
+
+/** @brief Active monitoring configuration (copied from caller at creation) */
+static bms_monitor_config_t s_bms_config;
 
 /** @brief Log tag for this module */
 static const char* const s_tag = "BMS";
@@ -551,13 +553,22 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  * }
  * @enddot
  *
+ * @param[in] config BMS monitoring configuration with SoC thresholds.
+ *                   Must not be NULL.
+ *                   config->soc_critical_pct must be strictly less than
+ *                   config->soc_warning_pct.
+ *
  * @return rx_err_t Task creation status
  *
  * @retval k_rx_ok Task created successfully, thread scheduled and running
+ * @retval k_rx_err_null_ptr config is NULL
+ * @retval k_rx_err_invalid_arg config->soc_critical_pct >= config->soc_warning_pct
  * @retval k_rx_err_invalid_state Task already created (s_bms_created == true). Second call blocked.
  * @retval k_rx_err_rtos_thread_create ThreadX tx_thread_create() returned error (!= TX_SUCCESS).
  *                                     Possible causes: invalid priority, stack too small, TCB corruption.
  *
+ * @pre config != NULL
+ * @pre config->soc_critical_pct < config->soc_warning_pct
  * @pre ThreadX kernel entered via tx_kernel_enter()
  * @pre tx_application_define() callback currently executing
  * @pre shared_data_init() called successfully (required for shared_data_update_bms)
@@ -631,8 +642,12 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  *     return;
  *   }
  *
- *   // 2. Create BMS monitoring task
- *   ret = bms_monitor_task_create();
+ *   // 2. Create BMS monitoring task with default thresholds (25%/5%)
+ *   const bms_monitor_config_t bms_config = {
+ *     .soc_warning_pct  = k_bms_soc_warning_pct_default,
+ *     .soc_critical_pct = k_bms_soc_critical_pct_default,
+ *   };
+ *   ret = bms_monitor_task_create(&bms_config);
  *   if (ret != k_rx_ok) {
  *     rx_log_error("INIT", "BMS task create failed");
  *     return;  // Fatal error - cannot monitor battery
@@ -658,10 +673,20 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  *   rx_err_t ret = shared_data_init();
  *   if (ret != k_rx_ok) return;
  *
- *   ret = bms_monitor_task_create();
+ *   const bms_monitor_config_t bms_config = {
+ *     .soc_warning_pct  = k_bms_soc_warning_pct_default,
+ *     .soc_critical_pct = k_bms_soc_critical_pct_default,
+ *   };
+ *   ret = bms_monitor_task_create(&bms_config);
  *   switch (ret) {
  *     case k_rx_ok:
  *       rx_log_info("BMS", "Task created, polling at 1 Hz");
+ *       break;
+ *     case k_rx_err_null_ptr:
+ *       rx_log_error("BMS", "NULL config passed!");
+ *       break;
+ *     case k_rx_err_invalid_arg:
+ *       rx_log_error("BMS", "Invalid threshold config - critical must be < warning");
  *       break;
  *     case k_rx_err_invalid_state:
  *       rx_log_error("BMS", "Double-creation attempt!");
@@ -686,7 +711,11 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  *
  *   // shared_data_init() and other task creation...
  *
- *   rx_err_t ret = bms_monitor_task_create();
+ *   const bms_monitor_config_t bms_config = {
+ *     .soc_warning_pct  = k_bms_soc_warning_pct_default,
+ *     .soc_critical_pct = k_bms_soc_critical_pct_default,
+ *   };
+ *   rx_err_t ret = bms_monitor_task_create(&bms_config);
  *   if (ret == k_rx_ok) {
  *     // Task created successfully. If BQ4050 init fails inside the task,
  *     // the task will continue running and report invalid data.
@@ -721,15 +750,28 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  * @callgraph
  * @callergraph
  */
-rx_err_t bms_monitor_task_create(void)
+rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 {
   UINT tx_status;
+
+  /* Validate config pointer */
+  RX_CHECK_NULL_PTR(config, s_tag, "bms_monitor_task_create: config is NULL");
+
+  /* Validate threshold constraints: critical must be strictly below warning */
+  if (config->soc_critical_pct >= config->soc_warning_pct) {
+    rx_log_error(s_tag, "soc_critical_pct must be < soc_warning_pct");
+    return k_rx_err_invalid_arg;
+  }
 
   /* Check if already created */
   RX_ASSERT(!s_bms_created, "BMS task already created");
   if (s_bms_created) {
     return k_rx_err_invalid_state;
   }
+
+  /* Copy thresholds into static config (task will read from s_bms_config) */
+  s_bms_config.soc_warning_pct  = config->soc_warning_pct;
+  s_bms_config.soc_critical_pct = config->soc_critical_pct;
 
   /* Create the thread */
   tx_status = tx_thread_create(&s_bms_thread,
@@ -806,12 +848,12 @@ rx_err_t bms_monitor_task_create(void)
  *    - timestamp_ms ← tx_time_get() (ThreadX tick count in ms)
  *    - valid ← true
  *
- * 7. **Low Battery Warning Check:** If SoC < 15% (k_bms_low_soc_percent):
+ * 7. **Low Battery Warning Check:** If SoC < soc_warning_pct (default 25%):
  *    - Log warning: "Low battery SoC: XX%"
  *    - Set event flag: shared_data_set_event(k_event_low_battery)
  *    - Allows telemetry task to notify gateway
  *
- * 8. **Critical Battery Check:** If SoC < 5% (k_bms_critical_soc_percent):
+ * 8. **Critical Battery Check:** If SoC < soc_critical_pct (default 5%):
  *    - Log error: "Critical battery SoC: XX%"
  *    - Trigger emergency stop: shared_data_trigger_estop(k_estop_reason_low_battery)
  *    - All motors immediately disabled to prevent deep discharge damage
@@ -837,8 +879,8 @@ rx_err_t bms_monitor_task_create(void)
  *
  * The task implements a two-tier low battery warning system:
  *
- * ### Tier 1: Warning (15% SoC)
- * - **Trigger:** State of charge drops below 15%
+ * ### Tier 1: Warning (default 25% SoC, configurable)
+ * - **Trigger:** State of charge drops below soc_warning_pct (default 25%)
  * - **Action:** Log warning, set k_event_low_battery event flag
  * - **Purpose:** Early warning for operator (return to base for charging)
  * - **Time Remaining:** ~9 minutes at 2A average current
@@ -892,10 +934,10 @@ rx_err_t bms_monitor_task_create(void)
  *       if (SoC < 5%?) then (yes)
  *         :Log CRITICAL\n"Critical battery SoC: XX%";
  *         :shared_data_trigger_estop(k_estop_reason_low_battery)\n**EMERGENCY STOP**;
- *       else if (SoC < 15%?) then (yes)
+ *       else if (SoC < 25%?) then (yes)
  *         :Log WARNING\n"Low battery SoC: XX%";
  *         :shared_data_set_event(k_event_low_battery);
- *       else (>= 15%)
+ *       else (>= 25%)
  *         :Normal operation;
  *       endif
  *     else (no)
@@ -950,7 +992,7 @@ rx_err_t bms_monitor_task_create(void)
  * @post BQ4050 initialized (if I2C successful)
  * @post Infinite loop polling at 1 Hz until power-down
  * @post shared_data.bms updated every second with latest battery state
- * @post Low battery events triggered when SoC < 15%
+ * @post Low battery events triggered when SoC < soc_warning_pct (default 25%)
  * @post Emergency stop triggered when SoC < 5%
  *
  * @invariant Loop period is exactly 1000ms (100 ticks at 100 Hz)
@@ -977,7 +1019,7 @@ rx_err_t bms_monitor_task_create(void)
  *
  * @attention This function executes in its own thread context, NOT in main() context.
  * @attention I2C bus is shared with other tasks. rx_bq4050 driver handles mutex locking.
- * @attention Low battery warning (15%) does NOT stop motors. Critical battery (5%) DOES.
+ * @attention Low battery warning (default 25%) does NOT stop motors. Critical battery (default 5%) DOES.
  *
  * @par Thread Safety:
  * This function is the ONLY code that writes to shared_data.bms (via shared_data_update_bms).
@@ -1004,7 +1046,7 @@ rx_err_t bms_monitor_task_create(void)
  * - At 100 kHz I2C: 12500 bytes/second theoretical max
  * - BMS usage: (280 / 12500) × 100% = 2.24% of I2C bus bandwidth
  *
- * @par Example - Normal Operation (SoC > 15%):
+ * @par Example - Normal Operation (SoC > 25%):
  * @code{.c}
  * // Task executes this loop every second:
  *
@@ -1019,7 +1061,7 @@ rx_err_t bms_monitor_task_create(void)
  * bms.timestamp_ms = tx_time_get();  // e.g., 12345678
  * bms.valid = true;
  *
- * // Step 3: Check thresholds (85% > 15%, no warnings)
+ * // Step 3: Check thresholds (85% > 25%, no warnings)
  * // No action taken
  *
  * // Step 4: Update shared data (thread-safe)
@@ -1029,7 +1071,7 @@ rx_err_t bms_monitor_task_create(void)
  * tx_thread_sleep(100);  // 100 ticks at 100 Hz = 1000ms
  * @endcode
  *
- * @par Example - Low Battery Warning (15% > SoC >= 5%):
+ * @par Example - Low Battery Warning (25% > SoC >= 5%):
  * @code{.c}
  * // BQ4050 reports SoC = 12%
  * rx_bq4050_read_status(&g_bus_manager, "i2c0", &status, 4);
@@ -1039,7 +1081,7 @@ rx_err_t bms_monitor_task_create(void)
  * bms.valid = true;
  *
  * // Step 3: Check thresholds
- * if (12 < k_bms_low_soc_percent) {  // 12 < 15 -> TRUE
+ * if (12 < s_bms_config.soc_warning_pct) {  // 12 < 25 -> TRUE
  *   rx_log_warn_val("BMS", "Low battery SoC", 12);
  *   // UART output: "[BMS] WARNING: Low battery SoC: 12"
  *
@@ -1064,7 +1106,7 @@ rx_err_t bms_monitor_task_create(void)
  * bms.valid = true;
  *
  * // Step 3: Check thresholds
- * if (3 < k_bms_critical_soc_percent) {  // 3 < 5 -> TRUE
+ * if (3 < s_bms_config.soc_critical_pct) {  // 3 < 5 -> TRUE
  *   rx_log_error_val("BMS", "Critical battery SoC", 3);
  *   // UART output: "[BMS] ERROR: Critical battery SoC: 3"
  *
@@ -1117,7 +1159,7 @@ rx_err_t bms_monitor_task_create(void)
  * @since Version 1.0.0
  *
  * @test test_bms_monitor_task.c - Verify 1 Hz poll rate timing
- * @test test_bms_monitor_task.c - Verify low battery warning at 15% SoC
+ * @test test_bms_monitor_task.c - Verify low battery warning below 25% SoC (default warning threshold)
  * @test test_bms_monitor_task.c - Verify emergency stop at 5% SoC
  * @test test_bms_monitor_task.c - Verify I2C timeout handling (100ms)
  * @test test_bms_monitor_task.c - Verify invalid data marking on I2C failure
@@ -1179,14 +1221,14 @@ static void internal_bms_task_entry(ULONG input)
       /* Check for critical battery faults (OTA, OCA, TDA) */
       (void)internal_check_critical_faults(status.battery_status);
 
-      /* Check for low battery */
-      if (status.relative_soc < k_bms_low_soc_percent) {
+      /* Check for low battery (warning threshold) */
+      if (status.relative_soc < s_bms_config.soc_warning_pct) {
         rx_log_warn_val(s_tag, "Low battery SoC", (uint8_t)status.relative_soc);
         (void)shared_data_set_event(k_event_low_battery);
       }
 
-      /* Check for critical battery */
-      if (status.relative_soc < k_bms_critical_soc_percent) {
+      /* Check for critical battery (emergency stop threshold) */
+      if (status.relative_soc < s_bms_config.soc_critical_pct) {
         rx_log_error_val(s_tag, "Critical battery SoC", (uint8_t)status.relative_soc);
         (void)shared_data_trigger_estop(k_estop_reason_low_battery);
       }

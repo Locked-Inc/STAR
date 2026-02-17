@@ -155,11 +155,14 @@ rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager, const char* bus_name, uin
   return s_read_return;
 }
 
-rx_err_t
-rx_bq4050_read_status(rx_bus_manager_t* manager, const char* bus_name, rx_bq4050_status_t* status)
+rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
+                               const char*         bus_name,
+                               rx_bq4050_status_t* status,
+                               uint8_t             num_cells)
 {
   (void)manager;
   (void)bus_name;
+  (void)num_cells;
 
   s_status_count++;
 

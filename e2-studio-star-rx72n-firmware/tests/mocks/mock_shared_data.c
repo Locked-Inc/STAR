@@ -28,6 +28,7 @@ static rx_err_t s_init_return = k_rx_ok;
 static uint32_t s_init_count               = 0;
 static uint32_t s_trigger_estop_count      = 0;
 static uint32_t s_motor_state_update_count = 0;
+static uint32_t s_set_event_count          = 0;
 
 /* =============================================================================
  * Static State
@@ -48,7 +49,8 @@ static bms_state_t         s_bms_state      = {0};
 static temp_sensor_state_t s_temp_state     = {0};
 static obstacle_state_t    s_obstacle_state = {0};
 
-static estop_reason_t s_last_triggered_reason = k_estop_reason_none;
+static estop_reason_t    s_last_triggered_reason = k_estop_reason_none;
+static shared_event_flags_t s_last_event_flags   = (shared_event_flags_t)0;
 
 /* =============================================================================
  * Mock Control Functions
@@ -86,6 +88,8 @@ void mock_shared_data_reset(void)
   (void)memset(&s_obstacle_state, 0, sizeof(s_obstacle_state));
 
   s_last_triggered_reason = k_estop_reason_none;
+  s_set_event_count       = 0;
+  s_last_event_flags      = (shared_event_flags_t)0;
 }
 
 void mock_shared_data_set_init_return(rx_err_t err)
@@ -141,6 +145,16 @@ uint32_t mock_shared_data_get_trigger_estop_count(void)
 estop_reason_t mock_shared_data_get_last_estop_reason(void)
 {
   return s_last_triggered_reason;
+}
+
+uint32_t mock_shared_data_get_set_event_count(void)
+{
+  return s_set_event_count;
+}
+
+shared_event_flags_t mock_shared_data_get_last_event_flags(void)
+{
+  return s_last_event_flags;
 }
 
 rx_err_t mock_shared_data_get_last_motor_state(motor_state_t* out_state)
@@ -354,4 +368,12 @@ void shared_data_update_last_comm_tick(void)
 {
   /* In mock, this just clears the timeout flag */
   s_comm_timeout = false;
+}
+
+/* Event Flags */
+rx_err_t shared_data_set_event(shared_event_flags_t flags)
+{
+  s_set_event_count++;
+  s_last_event_flags = flags;
+  return k_rx_ok;
 }

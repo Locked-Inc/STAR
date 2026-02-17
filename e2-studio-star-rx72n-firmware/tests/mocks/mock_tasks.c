@@ -15,6 +15,7 @@
 
 #include <stdbool.h>
 
+#include "bms_monitor_task.h"
 #include "rx_err.h"
 #include "tx_api.h"
 
@@ -151,9 +152,17 @@ rx_err_t obstacle_detect_task_create(void)
 /**
  * @brief Mock BMS monitoring task create
  */
-rx_err_t bms_monitor_task_create(void)
+rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 {
   tx_status status;
+
+  if (config == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (config->soc_critical_pct >= config->soc_warning_pct) {
+    return k_rx_err_invalid_arg;
+  }
 
   if (s_bms_task_created) {
     return k_rx_err_invalid_state;

@@ -50,6 +50,21 @@ typedef enum : uint16_t {
 } mock_shared_data_constants_t;
 
 /**
+ * @enum shared_event_flags_t
+ * @brief Event flags for inter-task signaling (must match shared_data.h)
+ */
+typedef enum : uint32_t {
+  k_event_motor_command_updated = 0x00000001, /**< New motor command available */
+  k_event_estop_triggered       = 0x00000002, /**< E-stop activated */
+  k_event_pid_gains_updated     = 0x00000004, /**< PID gains changed */
+  k_event_low_battery           = 0x00000008, /**< Low battery detected */
+  k_event_obstacle_detected     = 0x00000010, /**< Obstacle detected */
+  k_event_obstacle_cleared      = 0x00000020, /**< Obstacle cleared */
+  k_event_estop_cleared         = 0x00000040, /**< E-stop cleared */
+  k_event_comm_timeout          = 0x00000080, /**< Communication timeout */
+} shared_event_flags_t;
+
+/**
  * @enum motor_control_mode_t
  * @brief Motor control operating modes
  */
@@ -216,6 +231,16 @@ uint32_t mock_shared_data_get_init_count(void);
 uint32_t mock_shared_data_get_trigger_estop_count(void);
 
 /**
+ * @brief Get number of times shared_data_set_event() was called
+ */
+uint32_t mock_shared_data_get_set_event_count(void);
+
+/**
+ * @brief Get the last event flags value passed to shared_data_set_event()
+ */
+shared_event_flags_t mock_shared_data_get_last_event_flags(void);
+
+/**
  * @brief Get the last estop reason that was triggered
  */
 estop_reason_t mock_shared_data_get_last_estop_reason(void);
@@ -277,6 +302,9 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state);
 /* Communication Timeout */
 bool shared_data_is_comm_timeout(void);
 void shared_data_update_last_comm_tick(void);
+
+/* Event Flags */
+rx_err_t shared_data_set_event(shared_event_flags_t flags);
 
 #ifdef __cplusplus
 }
