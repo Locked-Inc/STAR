@@ -460,9 +460,9 @@ typedef enum : uint8_t {
  * @since Version 1.2.0 (Issue #296 - IRQ mode added)
  */
 typedef enum : uint8_t {
-  k_hcsr04_irq_none = 0,  /**< Sentinel: no IRQ assigned (polling mode); zero so zero-init is safe */
-  k_hcsr04_irq_8    = 8,  /**< IRQ8  - maps to P00 (Sonar 3 Back-Right) */
-  k_hcsr04_irq_9    = 9,  /**< IRQ9  - maps to P01 (Sonar 2 Back-Left) */
+  k_hcsr04_irq_none = 0, /**< Sentinel: no IRQ assigned (polling mode); zero so zero-init is safe */
+  k_hcsr04_irq_8    = 8, /**< IRQ8  - maps to P00 (Sonar 3 Back-Right) */
+  k_hcsr04_irq_9    = 9, /**< IRQ9  - maps to P01 (Sonar 2 Back-Left) */
   k_hcsr04_irq_10   = 10, /**< IRQ10 - maps to P02 (Sonar 1 Front-Right) */
   k_hcsr04_irq_11   = 11, /**< IRQ11 - maps to P03 (Sonar 0 Front-Left) */
   k_hcsr04_irq_12   = 12, /**< IRQ12 - reserved; not accepted by rx_hcsr04_init() */
@@ -501,11 +501,67 @@ typedef enum : uint8_t {
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint8_t {
-  k_hcsr04_irq_priority_unset   = 0,  /**< Sentinel: use default priority in rx_hcsr04_init() */
-  k_hcsr04_irq_priority_min     = 1,  /**< Minimum valid ICU interrupt priority */
-  k_hcsr04_irq_priority_default = 10, /**< Default ICU interrupt priority (balances latency and preemption) */
-  k_hcsr04_irq_priority_max     = 15, /**< Maximum valid ICU interrupt priority */
+  k_hcsr04_irq_priority_unset = 0, /**< Sentinel: use default priority in rx_hcsr04_init() */
+  k_hcsr04_irq_priority_min   = 1, /**< Minimum valid ICU interrupt priority */
+  k_hcsr04_irq_priority_default =
+    10, /**< Default ICU interrupt priority (balances latency and preemption) */
+  k_hcsr04_irq_priority_max = 15, /**< Maximum valid ICU interrupt priority */
 } rx_hcsr04_irq_priority_t;
+
+/**
+ * @enum rx_hcsr04_sensor_index_t
+ * @brief Named sensor slot indices for ISR registration and dispatch
+ *
+ * @details
+ * Maps each physical sensor position to a zero-based array index. Use in
+ * the `sensor_index` field of `rx_hcsr04_config_t` when
+ * `echo_mode == k_hcsr04_echo_irq`. The ISR dispatch table uses this index
+ * to route echo timestamps to the correct sensor handle.
+ *
+ * **STAR Hardware Mapping:**
+ * | Index | Position    | IRQ  | Pin |
+ * |-------|-------------|------|-----|
+ * | 0     | Front-Left  | IRQ11| P03 |
+ * | 1     | Front-Right | IRQ10| P02 |
+ * | 2     | Back-Left   | IRQ9 | P01 |
+ * | 3     | Back-Right  | IRQ8 | P00 |
+ *
+ * `k_hcsr04_sensor_count` is the exclusive upper bound used for range
+ * validation inside `rx_hcsr04_init()`: a `sensor_index` value must satisfy
+ * `(uint8_t)sensor_index < (uint8_t)k_hcsr04_sensor_count`.
+ *
+ * @invariant Values are zero-based consecutive integers [0, 3];
+ *            k_hcsr04_sensor_count (4) is the exclusive upper bound
+ *
+ * @code
+ * // Configure front-left sensor in IRQ mode
+ * rx_hcsr04_config_t cfg = {
+ *     .trigger_pin  = k_rx_pf_5,
+ *     .echo_pin     = k_rx_p0_3,              // P03 → IRQ11
+ *     .timeout_us   = k_hcsr04_echo_timeout_us,
+ *     .echo_mode    = k_hcsr04_echo_irq,
+ *     .echo_irq     = k_hcsr04_irq_11,
+ *     .irq_priority = k_hcsr04_irq_priority_default,
+ *     .sensor_index = k_hcsr04_sensor_front_left,  // Slot 0
+ * };
+ * @endcode
+ *
+ * @see rx_hcsr04_config_t.sensor_index Field using this enum
+ * @see rx_hcsr04_isr_register() Receives this value during init
+ *
+ * @note k_hcsr04_sensor_count is used as the exclusive upper-bound for range
+ *       validation; it does not represent a valid sensor slot
+ *
+ * @since Version 1.3.0 (Issue #336 - promoted from internal ISR header)
+ */
+typedef enum : uint8_t {
+  k_hcsr04_sensor_front_left  = 0, /**< Sonar 0 Front-Left  (IRQ11, P03) */
+  k_hcsr04_sensor_front_right = 1, /**< Sonar 1 Front-Right (IRQ10, P02) */
+  k_hcsr04_sensor_back_left   = 2, /**< Sonar 2 Back-Left   (IRQ9,  P01) */
+  k_hcsr04_sensor_back_right  = 3, /**< Sonar 3 Back-Right  (IRQ8,  P00) */
+  k_hcsr04_sensor_count =
+    4, /**< Total number of sensors; used as exclusive upper-bound for range validation */
+} rx_hcsr04_sensor_index_t;
 
 /**
  * @struct rx_hcsr04_config_t
@@ -513,19 +569,21 @@ typedef enum : uint8_t {
  *
  * @details
  * Configuration structure for initializing HC-SR04 sensor handle.
- * Specifies GPIO pin assignments, measurement timeout, and echo measurement mode.
+ * Specifies GPIO pin assignments, measurement timeout, echo measurement mode,
+ * and (for IRQ mode) the sensor slot index.
  *
- * **Memory Layout (12 bytes on RX72N):**
+ * **Memory Layout (13 bytes on RX72N, padded to 16):**
  * ```
- * Offset | Field        | Type                  | Size | Alignment
- * -------|--------------|-----------------------|------|----------
- * 0      | trigger_pin  | rx_port_pin_t         | 2    | 2
- * 2      | echo_pin     | rx_port_pin_t         | 2    | 2
- * 4      | timeout_us   | uint32_t              | 4    | 4
- * 8      | echo_mode    | rx_hcsr04_echo_mode_t | 1    | 1
- * 9      | echo_irq     | rx_hcsr04_irq_t       | 1    | 1
- * 10     | irq_priority | rx_hcsr04_irq_priority_t | 1 | 1
- * Total: 12 bytes (1-byte trailing pad rounds struct size to uint32_t alignment)
+ * Offset | Field        | Type                     | Size | Alignment
+ * -------|--------------|--------------------------|------|----------
+ * 0      | trigger_pin  | rx_port_pin_t            | 2    | 2
+ * 2      | echo_pin     | rx_port_pin_t            | 2    | 2
+ * 4      | timeout_us   | uint32_t                 | 4    | 4
+ * 8      | echo_mode    | rx_hcsr04_echo_mode_t    | 1    | 1
+ * 9      | echo_irq     | rx_hcsr04_irq_t          | 1    | 1
+ * 10     | irq_priority | rx_hcsr04_irq_priority_t | 1    | 1
+ * 11     | sensor_index | rx_hcsr04_sensor_index_t | 1    | 1
+ * Total: 12 bytes (no trailing pad required)
  * ```
  *
  * **Field Descriptions:**
@@ -534,6 +592,7 @@ typedef enum : uint8_t {
  * - `timeout_us`: Maximum wait time for echo (default: k_hcsr04_echo_timeout_us = 30ms)
  * - `echo_mode`: Measurement mode (polling or IRQ, default: polling)
  * - `echo_irq`: IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11) if echo_mode == IRQ, otherwise ignored
+ * - `sensor_index`: Sensor slot index (0-3) for ISR dispatch table; IRQ mode only
  *
  * **GPIO Pin Selection:**
  * - Use type-safe `rx_port_pin_t` enum from rx_port_constants.h
@@ -553,7 +612,7 @@ typedef enum : uint8_t {
  *     .echo_pin    = k_rx_p0_3,                // Echo on P03
  *     .timeout_us  = k_hcsr04_echo_timeout_us, // 30ms timeout
  *     .echo_mode   = k_hcsr04_echo_polling,    // Software polling (default)
- *     // echo_irq field not used in polling mode
+ *     // echo_irq and sensor_index not used in polling mode
  * };
  *
  * rx_hcsr04_t sensor;
@@ -563,17 +622,18 @@ typedef enum : uint8_t {
  * @par Example: IRQ Mode (High Precision)
  * @code
  * rx_hcsr04_config_t config = {
- *     .trigger_pin  = k_rx_pf_5,                    // Trigger on PF5
- *     .echo_pin     = k_rx_p0_3,                    // Echo on P03 (IRQ11)
- *     .timeout_us   = k_hcsr04_echo_timeout_us,     // 30ms timeout
- *     .echo_mode    = k_hcsr04_echo_irq,            // Hardware edge capture
- *     .echo_irq     = k_hcsr04_irq_11,           // IRQ11 for P03
- *     .irq_priority = k_hcsr04_irq_priority_default // Default ICU priority
+ *     .trigger_pin  = k_rx_pf_5,                       // Trigger on PF5
+ *     .echo_pin     = k_rx_p0_3,                       // Echo on P03 (IRQ11)
+ *     .timeout_us   = k_hcsr04_echo_timeout_us,        // 30ms timeout
+ *     .echo_mode    = k_hcsr04_echo_irq,               // Hardware edge capture
+ *     .echo_irq     = k_hcsr04_irq_11,                 // IRQ11 for P03
+ *     .irq_priority = k_hcsr04_irq_priority_default,   // Default ICU priority
+ *     .sensor_index = k_hcsr04_sensor_front_left,      // Slot 0 (P03/IRQ11)
  * };
  *
  * rx_hcsr04_t sensor;
  * rx_err_t err = rx_hcsr04_init(&sensor, &config);
- * // Note: ICU configuration done automatically in init
+ * // Note: ICU configuration and ISR registration done automatically in init
  * @endcode
  *
  * @invariant trigger_pin != echo_pin (trigger and echo must be different physical pins)
@@ -581,6 +641,7 @@ typedef enum : uint8_t {
  * @invariant If echo_mode == k_hcsr04_echo_irq: echo_pin must support ICU/IRQ and
  *            echo_irq must match the echo_pin mapping (P00->k_hcsr04_irq_8,
  *            P01->k_hcsr04_irq_9, P02->k_hcsr04_irq_10, P03->k_hcsr04_irq_11)
+ * @invariant If echo_mode == k_hcsr04_echo_irq: sensor_index < k_hcsr04_sensor_count
  * @invariant timeout_us > 0 and within supported range (use k_hcsr04_echo_timeout_us)
  * @invariant echo_mode defaults to k_hcsr04_echo_polling; irq_priority defaults to
  *            k_hcsr04_irq_priority_default when set to k_hcsr04_irq_priority_unset
@@ -592,18 +653,23 @@ typedef enum : uint8_t {
  *
  * @see rx_hcsr04_init() Validates all invariants during initialization
  * @see rx_hcsr04_echo_mode_t Echo measurement mode enum
+ * @see rx_hcsr04_sensor_index_t Sensor slot index enum
  * @see rx_port_constants.h Type-safe GPIO pin definitions
  * @see rx_hcsr04_timing_t Timeout constants
  *
- * @since Version 1.2.0 (Issue #296 - IRQ mode added)
+ * @since Version 1.3.0 (Issue #336 - per-sensor index added)
  */
 typedef struct {
-  rx_port_pin_t            trigger_pin;  /**< Trigger pin (type-safe GPIO, output) */
-  rx_port_pin_t            echo_pin;     /**< Echo pin (type-safe GPIO or IRQ, input) */
-  uint32_t                 timeout_us;   /**< Echo timeout in microseconds (default: k_hcsr04_echo_timeout_us) */
-  rx_hcsr04_echo_mode_t    echo_mode;    /**< Polling or IRQ mode (default: polling) */
-  rx_hcsr04_irq_t          echo_irq;     /**< IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11), used only if echo_mode==IRQ */
-  rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (k_hcsr04_irq_priority_unset = use default), IRQ mode only */
+  rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO, output) */
+  rx_port_pin_t echo_pin;    /**< Echo pin (type-safe GPIO or IRQ, input) */
+  uint32_t      timeout_us; /**< Echo timeout in microseconds (default: k_hcsr04_echo_timeout_us) */
+  rx_hcsr04_echo_mode_t echo_mode; /**< Polling or IRQ mode (default: polling) */
+  rx_hcsr04_irq_t
+    echo_irq; /**< IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11), used only if echo_mode==IRQ */
+  rx_hcsr04_irq_priority_t
+    irq_priority; /**< ICU interrupt priority (k_hcsr04_irq_priority_unset = use default), IRQ mode only */
+  rx_hcsr04_sensor_index_t
+    sensor_index; /**< Sensor slot index (IRQ mode only; must be < k_hcsr04_sensor_count) */
 } rx_hcsr04_config_t;
 
 /**
@@ -651,24 +717,26 @@ typedef struct {
  */
 typedef struct {
   /* Configuration (set during init) */
-  rx_port_pin_t            trigger_pin;  /**< Trigger pin (type-safe GPIO enum) */
-  rx_port_pin_t            echo_pin;     /**< Echo pin (type-safe GPIO or IRQ enum) */
-  uint32_t                 timeout_us;   /**< Measurement timeout in microseconds */
-  rx_hcsr04_echo_mode_t    echo_mode;    /**< Echo measurement mode (polling or IRQ) */
-  rx_hcsr04_irq_t          echo_irq;     /**< IRQ number (k_hcsr04_irq_8..11) if IRQ mode, else k_hcsr04_irq_none */
-  rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (1-15); k_hcsr04_irq_priority_unset = polling */
+  rx_port_pin_t         trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
+  rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ enum) */
+  uint32_t              timeout_us;  /**< Measurement timeout in microseconds */
+  rx_hcsr04_echo_mode_t echo_mode;   /**< Echo measurement mode (polling or IRQ) */
+  rx_hcsr04_irq_t
+    echo_irq; /**< IRQ number (k_hcsr04_irq_8..11) if IRQ mode, else k_hcsr04_irq_none */
+  rx_hcsr04_irq_priority_t
+    irq_priority; /**< ICU interrupt priority (1-15); k_hcsr04_irq_priority_unset = polling */
 
   /* State */
-  bool                     initialized;               /**< True if handle is initialized */
-  bool                     measurement_active;        /**< True if async measurement in progress */
-  bool                     cancel_requested;          /**< True if async measurement cancellation requested */
-  float                    temperature_celsius;       /**< Ambient temperature for compensation (20.0 if not set) */
-  bool                     temp_compensation_enabled; /**< True if temperature compensation is enabled */
+  bool  initialized;               /**< True if handle is initialized */
+  bool  measurement_active;        /**< True if async measurement in progress */
+  bool  cancel_requested;          /**< True if async measurement cancellation requested */
+  float temperature_celsius;       /**< Ambient temperature for compensation (20.0 if not set) */
+  bool  temp_compensation_enabled; /**< True if temperature compensation is enabled */
 
   /* Statistics */
-  uint32_t                 measurement_count; /**< Total measurements attempted */
-  uint32_t                 timeout_count;     /**< Measurements that timed out */
-  uint32_t                 range_error_count; /**< Out-of-range readings (too close/far) */
+  uint32_t measurement_count; /**< Total measurements attempted */
+  uint32_t timeout_count;     /**< Measurements that timed out */
+  uint32_t range_error_count; /**< Out-of-range readings (too close/far) */
 } rx_hcsr04_t;
 
 /**

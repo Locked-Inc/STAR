@@ -86,6 +86,7 @@
 #include <stdint.h>
 
 #include "rx_err.h"
+#include "rx_hcsr04.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -170,44 +171,6 @@ typedef struct {
   volatile bool     active;   /**< True if measurement in progress - written in ISR */
 } rx_hcsr04_irq_state_t;
 
-/**
- * @enum rx_hcsr04_sensor_index_t
- * @brief Sensor array index for ISR sensor registration
- *
- * @details
- * Maps a physical sensor position to a zero-based array index. Used with
- * rx_hcsr04_isr_register() to bind an IRQ number to a named sensor slot,
- * enabling the ISR dispatch table to identify which sensor triggered.
- *
- * **STAR Hardware Mapping:**
- * | Index | Position    | IRQ  | Pin |
- * |-------|-------------|------|-----|
- * | 0     | Front-Left  | IRQ11| P03 |
- * | 1     | Front-Right | IRQ10| P02 |
- * | 2     | Back-Left   | IRQ9 | P01 |
- * | 3     | Back-Right  | IRQ8 | P00 |
- *
- * @invariant Values are zero-based consecutive integers [0, 3]
- *
- * @code
- * // Register all 4 HC-SR04 sensors using named constants
- * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, k_hcsr04_sensor_front_left);
- * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_10, k_hcsr04_sensor_front_right);
- * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_9,  k_hcsr04_sensor_back_left);
- * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_8,  k_hcsr04_sensor_back_right);
- * @endcode
- *
- * @see rx_hcsr04_isr_register() Uses this type for the sensor_index parameter
- *
- * @since Version 1.2.0 (Issue #296)
- */
-typedef enum : uint8_t {
-  k_hcsr04_sensor_front_left  = 0, /**< Sonar 0 Front-Left  (IRQ11, P03) */
-  k_hcsr04_sensor_front_right = 1, /**< Sonar 1 Front-Right (IRQ10, P02) */
-  k_hcsr04_sensor_back_left   = 2, /**< Sonar 2 Back-Left   (IRQ9,  P01) */
-  k_hcsr04_sensor_back_right  = 3, /**< Sonar 3 Back-Right  (IRQ8,  P00) */
-} rx_hcsr04_sensor_index_t;
-
 /* =============================================================================
  * Public Functions
  * =============================================================================
@@ -254,7 +217,8 @@ typedef enum : uint8_t {
  *
  * @since Version 1.2.0
  */
-[[nodiscard]] rx_err_t rx_hcsr04_isr_register(uint8_t irq_num, rx_hcsr04_sensor_index_t sensor_index);
+[[nodiscard]] rx_err_t rx_hcsr04_isr_register(uint8_t                  irq_num,
+                                              rx_hcsr04_sensor_index_t sensor_index);
 
 /**
  * @brief Unregister HC-SR04 sensor from IRQ echo measurement

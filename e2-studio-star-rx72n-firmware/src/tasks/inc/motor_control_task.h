@@ -63,7 +63,8 @@
  * @since STAR v1.0.0
  */
 typedef enum : uint8_t {
-  k_motor_count_none = 0, /**< Zero motors available — motor_control_task_create() has not yet been called */
+  k_motor_count_none =
+    0, /**< Zero motors available — motor_control_task_create() has not yet been called */
 } motor_count_t;
 
 /**
