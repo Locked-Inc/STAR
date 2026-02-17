@@ -17,7 +17,7 @@
  *           ↑ System clocks        ↑ This file      ↑ Start RTOS
  * ```
  *
- * ## Peripheral Initialization Order (6 Stages)
+ * ## Peripheral Initialization Order (7 Stages)
  *
  * **Critical ordering** - later stages depend on earlier stages:
  *
@@ -44,7 +44,10 @@
  *    - I2C for IMU, temperature sensors
  *    - USB CDC for ROS2 communication
  *
- * 6. **ADC channels** (planned, not yet implemented)
+ * 6. **BMS Alert** (~5 µs) **IMPLEMENTED**
+ *    - IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection)
+ *
+ * 7. **ADC channels** (planned, not yet implemented)
  *    - Current sensing (motor protection)
  *    - Battery voltage monitoring
  *    - Temperature sensing (thermal management)
@@ -63,6 +66,7 @@
  *   UART [label="UART Debug Init\nSCI9 @ 115200", style=filled, fillcolor=lightgreen];
  *   SPI [label="SPI Init\n(Planned)", style=dashed];
  *   I2C [label="I2C Init\n(Planned)", style=dashed];
+ *   BMSAlert [label="BMS Alert Init\nIRQ13 @ BQ4050", style=filled, fillcolor=lightgreen];
  *   ADC [label="ADC Init\n(Planned)", style=dashed];
  *   Postcond [label="Postcondition Check\nSCKCR3 still valid"];
  *   Exit [label="return k_rx_ok", shape=ellipse];
@@ -73,13 +77,15 @@
  *   Timers -> UART [label="k_rx_ok"];
  *   UART -> SPI [label="k_rx_ok"];
  *   SPI -> I2C;
- *   I2C -> ADC;
+ *   I2C -> BMSAlert;
+ *   BMSAlert -> ADC [label="k_rx_ok"];
  *   ADC -> Postcond;
  *   Postcond -> Exit [label="Assert OK"];
  *
  *   Timers -> Halt [label="Error", color=red];
  *   UART -> Halt [label="Error", color=red];
  *   SPI -> Halt [label="Error", color=red];
+ *   BMSAlert -> Halt [label="Error", color=red];
  *
  *   Halt [label="return error", shape=octagon, color=red];
  * }
@@ -95,10 +101,11 @@
  * | **UART debug** | ~50 µs | [COMPLETE] | SCI9 baud rate, FIFO, interrupts |
  * | **SPI init** | ~20 µs | [COMPLETE] | RSPI2 peripheral mode, 8-bit, mode 0 |
  * | **I2C init** | ~15 µs | [PENDING] Planned | RIIC0 speed, addressing, interrupts |
+ * | **BMS Alert init** | ~5 µs | [COMPLETE] | IRQ13 for BQ4050 ALERT pin |
  * | **ADC init** | ~100 µs | [PENDING] Planned | ADC0 calibration, channel config |
  * | **Postcondition check** | ~0.5 µs | [COMPLETE] | SCKCR3 stability verification |
- * | **Total (current)** | **~81 µs** | Timers + UART + SPI | |
- * | **Total (planned)** | **~201 µs** | All peripherals | |
+ * | **Total (current)** | **~86 µs** | Timers + UART + SPI + BMS Alert | |
+ * | **Total (planned)** | **~206 µs** | All peripherals | |
  *
  * ## Memory Usage
  *
@@ -1361,7 +1368,7 @@ rx_err_t hardware_init(void)
   /* =========================================================================
    * INITIALIZE PERIPHERALS
    *
-   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> ADC -> Validate
+   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> BMS Alert -> ADC -> Validate
    * Later stages depend on earlier stages (GPIO must precede peripherals).
    * =========================================================================
    */
