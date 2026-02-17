@@ -3089,7 +3089,7 @@ void test_rx_bus_onewire_timing_constants(void)
   TEST_ASSERT_GREATER_OR_EQUAL(480, k_onewire_reset_pulse_us);
   TEST_ASSERT_TRUE(k_onewire_presence_wait_us >= 60 && k_onewire_presence_wait_us <= 75);
   /* Remaining presence window: reset_pulse + presence_wait + presence_tail must equal 960 µs */
-  TEST_ASSERT_EQUAL(960, k_onewire_reset_pulse_us + k_onewire_presence_wait_us + k_onewire_presence_tail_us);
+  TEST_ASSERT_EQUAL(k_onewire_reset_slot_total_us, k_onewire_reset_pulse_us + k_onewire_presence_wait_us + k_onewire_presence_tail_us);
 
   /* Write-1 timing: LOW pulse 6-15µs */
   TEST_ASSERT_TRUE(k_onewire_write_1_low_us >= 6 && k_onewire_write_1_low_us <= 15);

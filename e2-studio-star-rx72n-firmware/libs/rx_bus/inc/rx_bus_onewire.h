@@ -259,6 +259,12 @@ typedef enum : uint16_t {
                                          @note Device presence pulse is 60-240 µs; this wait covers
                                                the remaining recovery window regardless of pulse width */
 
+  k_onewire_reset_slot_total_us = 960, /**< Total reset slot duration in microseconds.
+                                            Sum of reset pulse, presence wait, and presence tail:
+                                            k_onewire_reset_pulse_us + k_onewire_presence_wait_us +
+                                            k_onewire_presence_tail_us = 480 + 70 + 410 = 960 µs.
+                                            @par Value: 960 µs (per Dallas/Maxim 1-Wire spec) */
+
   /* Write bit timing */
   k_onewire_write_1_low_us = 10, /**< Write-1 LOW pulse duration.
                                       Short pulse for logic 1.

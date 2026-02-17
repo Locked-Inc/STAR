@@ -28,7 +28,7 @@
  * |------------------|--------------------|----------|
  * | Reset pulse      | T_RSTL             | 480 µs   |
  * | Presence wait    | T_PDH              | 70 µs    |
- * | Presence timeout | T_RSTH             | 410 µs   |
+ * | Presence tail    | T_RSTH             | 410 µs   |
  * | Write-1 low      | T_LOW1             | 6 µs     |
  * | Write-1 high     | T_SLOT - T_LOW1    | 64 µs    |
  * | Write-0 low      | T_LOW0             | 60 µs    |
