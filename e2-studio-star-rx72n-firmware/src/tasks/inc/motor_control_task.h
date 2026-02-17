@@ -44,12 +44,26 @@
  *
  * @details
  * Named constants for motor count return values. Used to avoid magic
- * number 0 in callers checking whether motors are ready.
+ * number 0 in callers checking whether motors are ready. Callers should
+ * compare the out_count value returned by motor_control_task_get_motors()
+ * against k_motor_count_none to determine whether motors are available.
+ *
+ * @invariant k_motor_count_none == 0 (sentinel value, never a valid motor count)
+ *
+ * @code
+ * uint8_t motor_count = k_motor_count_none;
+ * rx_motor_handle_t** motors = motor_control_task_get_motors(&motor_count);
+ * if (motors == nullptr || motor_count == k_motor_count_none) {
+ *     // Motor task not yet created — motors not available
+ * }
+ * @endcode
+ *
+ * @see motor_control_task_get_motors() Returns k_motor_count_none when not ready
  *
  * @since STAR v1.0.0
  */
 typedef enum : uint8_t {
-  k_motor_count_none = 0, /**< No motors available (task not yet initialized) */
+  k_motor_count_none = 0, /**< Zero motors available — motor_control_task_create() has not yet been called */
 } motor_count_t;
 
 /**
@@ -124,7 +138,8 @@ rx_err_t motor_control_task_create(void);
  *         motor_control_task_create() has not yet been called (motors not ready)
  * @retval nullptr (out_count unchanged) — returned when out_count argument is nullptr
  *
- * @pre Motor handles initialized via internal_init_motor_stack()
+ * @pre motor_control_task_create() has been called successfully
+ * @pre out_count != nullptr (NULL pointer returns nullptr immediately)
  * @post out_count set to k_motor_count (4) on success
  * @post Returns valid pointer to motor handle array on success
  *

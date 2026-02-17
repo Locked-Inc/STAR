@@ -913,19 +913,31 @@ rx_err_t motor_control_task_create(void)
  * system uses these handles to execute emergency motor stops when obstacles
  * breach the safety perimeter.
  *
- * @param[out] out_count Pointer to receive motor count (set to 4)
+ * **Three possible outcomes:**
+ * 1. Motors ready + out_count non-null → returns s_motor_ptrs, sets *out_count = k_motor_count
+ * 2. Motors not ready (s_motor_created == false) → returns nullptr, sets *out_count = k_motor_count_none
+ * 3. out_count is nullptr → returns nullptr immediately, out_count unchanged
+ *
+ * @param[out] out_count Pointer to receive motor count.
+ *                       Set to k_motor_count (4) when motors are ready;
+ *                       set to k_motor_count_none (0) when task not yet created.
+ *                       Must be non-NULL (nullptr returns nullptr without writing).
  *
  * @return rx_motor_handle_t** Pointer to array of motor handle pointers
- * @retval s_motor_ptrs Array of 4 motor handles
- * @retval nullptr if out_count is nullptr
+ * @retval s_motor_ptrs Valid pointer to static array of k_motor_count (4) rx_motor_handle_t*,
+ *                      *out_count set to k_motor_count — motors are initialized and ready
+ * @retval nullptr with *out_count = k_motor_count_none — motor_control_task_create()
+ *                 has not yet been called; motors not initialized
+ * @retval nullptr (out_count unchanged) — out_count argument was nullptr
  *
- * @pre motor_control_task_create() called
- * @pre Motors initialized via internal_init_motor_stack()
- * @post out_count = 4
- * @post Return value points to array of k_motor_count (4) valid rx_motor_handle_t* entries
+ * @pre motor_control_task_create() called (otherwise returns nullptr)
+ * @pre Motors initialized via internal_init_motor_stack() (otherwise handles are uninitialized)
+ * @post *out_count == k_motor_count when return value is non-null
+ * @post *out_count == k_motor_count_none when motors are not yet ready
  *
- * @note Thread-safe: Returns pointer to static memory
- * @note Lifetime: Valid until program termination
+ * @note Thread-safe: Returns pointer to static memory (no shared mutable state)
+ * @note Lifetime: Returned pointer valid until program termination (static allocation)
+ * @note Returns nullptr gracefully if called before motor task starts (no assert)
  *
  * @since STAR v1.0.0
  */
