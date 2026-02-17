@@ -1769,13 +1769,15 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  * @return rx_err_t Error code
  * @retval k_rx_ok All IRQ configuration applied successfully
  * @retval k_rx_err_null_ptr config or out_priority is NULL
- * @retval k_rx_err_invalid_arg echo_irq out of range, or echo_pin/irq mismatch
+ * @retval k_rx_err_invalid_arg echo_irq out of range, echo_pin/irq mismatch,
+ *                              or sensor_index >= k_hcsr04_sensor_count
  * @retval Error from rx_mpc_set_irq(), rx_hcsr04_icu_configure(), or rx_hcsr04_isr_register()
  *
  * @pre config->echo_mode == k_hcsr04_echo_irq
  * @pre Trigger pin already configured as output by caller
+ * @pre config->sensor_index < k_hcsr04_sensor_count
  *
- * @post On success: echo pin in IRQ mode, ICU armed, ISR registered
+ * @post On success: echo pin in IRQ mode, ICU armed, ISR registered with sensor_index
  * @post On failure: any partial changes reversed (MPC, ICU)
  *
  * @note Not thread-safe; call only during single-threaded initialization.
@@ -1795,7 +1797,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  *
  * @see rx_hcsr04_init() Sole caller — handles trigger pin cleanup on error
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.3.0 (Issue #336 - sensor_index validated and forwarded to ISR)
  */
 static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t* out_priority)
 {
@@ -1807,6 +1809,11 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
   /* Validate IRQ number range (IRQ8-15 for P00-P07) */
   if ((uint8_t)config->echo_irq < (uint8_t)k_irq_range_min ||
       (uint8_t)config->echo_irq > (uint8_t)k_irq_range_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate sensor index (must be < k_hcsr04_sensor_count) */
+  if ((uint8_t)config->sensor_index >= (uint8_t)k_hcsr04_sensor_count) {
     return k_rx_err_invalid_arg;
   }
 
@@ -1837,9 +1844,8 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
     return err;
   }
 
-  /* Register sensor with ISR handler
-   * @todo Per-sensor index tracking needed for multi-sensor callback support (#336) */
-  err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, k_hcsr04_sensor_front_left);
+  /* Register sensor with ISR handler using the per-sensor slot index from config */
+  err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, config->sensor_index);
   if (err != k_rx_ok) {
     (void)rx_hcsr04_icu_disable((uint8_t)config->echo_irq);
     (void)rx_mpc_set_gpio(config->echo_pin);
@@ -1866,7 +1872,8 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
 rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 {
   rx_err_t err;
-  uint8_t  effective_priority = k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
+  uint8_t  effective_priority =
+    k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
 
   if (handle == nullptr || config == nullptr) {
     return k_rx_err_null_ptr;
@@ -1904,16 +1911,18 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Initialize handle */
-  handle->trigger_pin         = config->trigger_pin;
-  handle->echo_pin            = config->echo_pin;
-  handle->timeout_us          = config->timeout_us;
-  handle->echo_mode           = config->echo_mode;
-  handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
-  handle->irq_priority        = (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
-  handle->initialized         = true;
-  handle->measurement_active  = false;
-  handle->cancel_requested    = false;
-  handle->temperature_celsius = s_default_temperature_celsius;
+  handle->trigger_pin = config->trigger_pin;
+  handle->echo_pin    = config->echo_pin;
+  handle->timeout_us  = config->timeout_us;
+  handle->echo_mode   = config->echo_mode;
+  handle->echo_irq =
+    (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_hcsr04_irq_none;
+  handle->irq_priority =
+    (rx_hcsr04_irq_priority_t)effective_priority; /* Non-zero only in IRQ mode */
+  handle->initialized               = true;
+  handle->measurement_active        = false;
+  handle->cancel_requested          = false;
+  handle->temperature_celsius       = s_default_temperature_celsius;
   handle->temp_compensation_enabled = false;
 
   /* Reset statistics */

@@ -136,9 +136,12 @@
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_watchdog_task_stack_size = 512, /**< Stack size (512 bytes). Minimal allocation for lightweight supervision loop. No recursion, no large locals. Valid range: 256-1024 bytes. */
-  k_watchdog_task_priority   = 6,   /**< ThreadX priority (6). High priority ensures timely IWDT feeding. Between Communication (5) and Motor Control (8). Valid range: 1-15 (1=highest). */
-  k_watchdog_task_input      = 0,   /**< Thread entry input parameter (0). Unused by watchdog monitor task. ThreadX convention for parameterless tasks. */
+  k_watchdog_task_stack_size =
+    512, /**< Stack size (512 bytes). Minimal allocation for lightweight supervision loop. No recursion, no large locals. Valid range: 256-1024 bytes. */
+  k_watchdog_task_priority =
+    6, /**< ThreadX priority (6). High priority ensures timely IWDT feeding. Between Communication (5) and Motor Control (8). Valid range: 1-15 (1=highest). */
+  k_watchdog_task_input =
+    0, /**< Thread entry input parameter (0). Unused by watchdog monitor task. ThreadX convention for parameterless tasks. */
   k_watchdog_task_period_ticks =
     1, /**< Task period (1 tick = 10ms @ 100 Hz). Watchdog check and feed rate. Provides 200× safety margin for 2048ms hardware IWDT timeout. Valid range: 1-10 ticks (10-100ms). */
 } watchdog_task_constants_t;
@@ -402,7 +405,7 @@ static void internal_watchdog_monitor_task_entry(ULONG input)
   rx_log_info(s_tag, "Watchdog monitor started @ 100 Hz");
 
   /* Main supervision loop */
-  bool timeout_logged = false;  /* Flag to log timeout message only once */
+  bool timeout_logged = false; /* Flag to log timeout message only once */
 
   while (true) {
     /* Check all registered tasks for heartbeat timeouts */
@@ -417,8 +420,8 @@ static void internal_watchdog_monitor_task_entry(ULONG input)
       /* Don't feed watchdog - allow hardware reset to occur */
     } else if (err == k_rx_ok) {
       /* All tasks healthy - feed hardware watchdog */
-      timeout_logged = false;  /* Clear flag for future timeouts */
-      err = rx_iwdt_feed();
+      timeout_logged = false; /* Clear flag for future timeouts */
+      err            = rx_iwdt_feed();
       RX_ASSERT(err == k_rx_ok, "IWDT feed must succeed");
     } else {
       /* Unexpected error from rx_iwdt_check_tasks() */
