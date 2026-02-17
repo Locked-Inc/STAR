@@ -172,11 +172,11 @@ static volatile rx_hcsr04_irq_state_t s_irq_state[k_irq_count];
  * @warning Direct modification outside rx_hcsr04_isr_register/unregister is forbidden;
  *          use the public API to maintain consistent IRQ-to-sensor mappings
  *
- * @todo Issue #296: s_sensor_map is currently written but not read in the ISR.
+ * @todo Issue #336: s_sensor_map is currently written but not read in the ISR.
  * Future work will use this mapping to dispatch per-sensor callbacks from
  * internal_irq_handler() when multi-sensor callback support is implemented.
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.2.0 (Issue #336)
  */
 static uint8_t s_sensor_map[k_sensor_map_size] = {
   k_sensor_unused, k_sensor_unused, k_sensor_unused, k_sensor_unused,

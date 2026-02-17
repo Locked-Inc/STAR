@@ -28,6 +28,8 @@
  * | INT_IRQ8     | 8   | P00 | Sonar 3  | Back-Right   |
  *
  * @par Example: Typical Usage Flow
+ * @note Constants used below: k_hcsr04_irq_11, k_hcsr04_sensor_front_left,
+ *       k_hcsr04_trigger_pulse_us from rx_hcsr04.h; s_hcsr04_us_per_cm from this header
  * @code
  * // Step 1: Register sensor with ISR (during init)
  * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, k_hcsr04_sensor_front_left);  // IRQ11 → Sensor 0
