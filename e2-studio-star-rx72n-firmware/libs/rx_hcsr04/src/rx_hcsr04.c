@@ -678,31 +678,6 @@ typedef enum : uint8_t {
  * (k_hcsr04_irq_priority_unset, k_hcsr04_irq_priority_default) */
 
 /**
- * @enum rx_hcsr04_sensor_defaults_t
- * @brief Default sensor array index for ISR registration
- *
- * @details
- * Provides the default sensor index used when registering a sensor with
- * the ISR handler. Currently a single default index is used; future
- * multi-sensor callback support (Issue #296) will derive this from configuration.
- *
- * @invariant k_default_sensor_index < k_hcsr04_sensor_count (4) in rx_hcsr04_isr.c
- *
- * @code
- * // Register sensor with ISR handler during init:
- * rx_hcsr04_isr_register((uint8_t)config->echo_irq, k_hcsr04_sensor_front_left);
- * @endcode
- *
- * @see rx_hcsr04_isr_register() Uses this as the sensor_index parameter
- * @see rx_hcsr04_sensor_index_t Named sensor position constants
- *
- * @since Version 1.2.0 (Issue #296)
- */
-typedef enum : uint8_t {
-  k_default_sensor_index = 0, /**< Default sensor array index for isr_register() */
-} rx_hcsr04_sensor_defaults_t;
-
-/**
  * @enum rx_hcsr04_irq_yield_t
  * @brief ThreadX sleep duration for IRQ polling yield
  *

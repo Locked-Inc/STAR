@@ -465,10 +465,10 @@ typedef enum : uint8_t {
   k_hcsr04_irq_9    = 9,  /**< IRQ9  - maps to P01 (Sonar 2 Back-Left) */
   k_hcsr04_irq_10   = 10, /**< IRQ10 - maps to P02 (Sonar 1 Front-Right) */
   k_hcsr04_irq_11   = 11, /**< IRQ11 - maps to P03 (Sonar 0 Front-Left) */
-  k_hcsr04_irq_12   = 12, /**< IRQ12 - reserved for future expansion */
-  k_hcsr04_irq_13   = 13, /**< IRQ13 - reserved for future expansion */
-  k_hcsr04_irq_14   = 14, /**< IRQ14 - reserved for future expansion */
-  k_hcsr04_irq_15   = 15, /**< IRQ15 - reserved for future expansion */
+  k_hcsr04_irq_12   = 12, /**< IRQ12 - reserved; not accepted by rx_hcsr04_init() */
+  k_hcsr04_irq_13   = 13, /**< IRQ13 - reserved; not accepted by rx_hcsr04_init() */
+  k_hcsr04_irq_14   = 14, /**< IRQ14 - reserved; not accepted by rx_hcsr04_init() */
+  k_hcsr04_irq_15   = 15, /**< IRQ15 - reserved; not accepted by rx_hcsr04_init() */
 } rx_hcsr04_irq_t;
 
 /**
@@ -525,7 +525,7 @@ typedef enum : uint8_t {
  * 8      | echo_mode    | rx_hcsr04_echo_mode_t | 1    | 1
  * 9      | echo_irq     | rx_hcsr04_irq_t       | 1    | 1
  * 10     | irq_priority | rx_hcsr04_irq_priority_t | 1 | 1
- * Total: 12 bytes (padded to 4-byte alignment for timeout_us)
+ * Total: 12 bytes (1-byte trailing pad rounds struct size to uint32_t alignment)
  * ```
  *
  * **Field Descriptions:**

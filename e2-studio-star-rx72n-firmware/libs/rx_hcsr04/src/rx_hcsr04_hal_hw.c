@@ -768,6 +768,8 @@ typedef enum : uint32_t {
   k_min_ticks              = 1,                          /**< Minimum delay to prevent zero-wait */
   k_cmstr1_cmt2_enable_bit = k_rx72n_cmstr1_cmt2_enable, /**< CMSTR1.STR2 bit (bit 0) */
   k_counter_reset          = 0,                          /**< Counter initial value */
+  k_isr_us_numerator       = 2,                          /**< ISR timestamp ratio numerator: 1000000 / (60000000/8) = 2/15 */
+  k_isr_us_denominator     = 15,                         /**< ISR timestamp ratio denominator: avoids 64-bit division in ISR */
 } cmt2_timing_constants_t;
 
 /**
@@ -1210,8 +1212,9 @@ uint32_t hcsr04_hal_get_time_us(void)
  */
 uint32_t hcsr04_hal_get_time_us_isr(void)
 {
-  const uint32_t timer_hz      = k_pclkb_hz / k_cmt2_divider;
   const uint16_t current_count = cmt2()->cmcnt;
 
-  return (uint32_t)(((uint64_t)current_count * k_us_per_second) / timer_hz);
+  /* Simplified ratio: 1,000,000 / (60,000,000 / 8) = 2/15.
+   * Max value: 65535 * 2 / 15 = 8738 µs. Fits in uint32_t, no 64-bit math. */
+  return ((uint32_t)current_count * k_isr_us_numerator) / k_isr_us_denominator;
 }

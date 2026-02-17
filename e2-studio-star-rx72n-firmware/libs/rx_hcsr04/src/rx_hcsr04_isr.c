@@ -488,12 +488,16 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
     return k_rx_err_timeout; /* Both edges not yet captured */
   }
 
+  /* Cache volatile ISR state into locals for consistent snapshot */
+  const uint32_t start_us = s_irq_state[idx].start_us;
+  const uint32_t end_us   = s_irq_state[idx].end_us;
+
   /* Calculate duration from captured timestamps (handle CMT2 16-bit wrap) */
-  if (s_irq_state[idx].end_us >= s_irq_state[idx].start_us) {
-    *duration_us = s_irq_state[idx].end_us - s_irq_state[idx].start_us;
+  if (end_us >= start_us) {
+    *duration_us = end_us - start_us;
   } else {
     /* Timer wrapped: add wrap period to correct the subtraction */
-    *duration_us = s_irq_state[idx].end_us + k_cmt2_wrap_us - s_irq_state[idx].start_us;
+    *duration_us = end_us + k_cmt2_wrap_us - start_us;
   }
 
   /* Sanity check: duration must not exceed CMT2 wrap period */

@@ -115,7 +115,7 @@ extern "C" {
  *
  * @since Version 1.2.0 (Issue #296)
  */
-static const float s_hcsr04_us_per_cm = 58.0F;
+static const float s_hcsr04_us_per_cm __attribute__((unused)) = 58.0F;
 
 /* =============================================================================
  * Types
@@ -248,6 +248,8 @@ typedef enum : uint8_t {
  * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_8,  k_hcsr04_sensor_back_right);
  * @endcode
  *
+ * @see rx_hcsr04_isr_unregister() Cleanup counterpart for deinitialization
+ *
  * @since Version 1.2.0
  */
 [[nodiscard]] rx_err_t rx_hcsr04_isr_register(uint8_t irq_num, rx_hcsr04_sensor_index_t sensor_index);
@@ -274,6 +276,17 @@ typedef enum : uint8_t {
  * @post ISR will ignore subsequent interrupts on this IRQ
  *
  * @note Call during sensor deinitialization, after rx_hcsr04_icu_disable()
+ *
+ * @par Example: Sensor Deinitialization
+ * @code
+ * // Step 1: Disable ICU interrupt
+ * rx_err_t err = rx_hcsr04_icu_disable((uint8_t)k_hcsr04_irq_11);
+ * // Step 2: Unregister sensor from ISR handler
+ * err = rx_hcsr04_isr_unregister((uint8_t)k_hcsr04_irq_11);
+ * if (err != k_rx_ok) {
+ *     rx_log_warn("SONAR", "Failed to unregister IRQ11");
+ * }
+ * @endcode
  *
  * @see rx_hcsr04_isr_register() Register sensor mapping
  * @see rx_hcsr04_deinit() Calls this during IRQ-mode cleanup
@@ -331,6 +344,8 @@ typedef enum : uint8_t {
  *     float distance_cm = (float)duration_us / s_hcsr04_us_per_cm;
  * }
  * @endcode
+ *
+ * @see rx_hcsr04_isr_start() Must be called before trigger pulse to arm ISR
  *
  * @since Version 1.2.0
  */
