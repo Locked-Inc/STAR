@@ -123,14 +123,14 @@
  *
  * | Operation | Execution Time | Notes |
  * |-----------|----------------|-------|
- * | **rx_drv8243_init()** | ~500 µs | Includes GPTW init + GPIO config + SPI init |
- * | **rx_drv8243_set_speed()** | ~20 µs | Without current limit check |
- * | **rx_drv8243_set_speed()** | ~200 µs | With ADC current limit check |
- * | **rx_drv8243_read_current()** | ~180 µs | ADC conversion + calculation |
- * | **rx_drv8243_get_fault_status()** | ~5 µs | Simple GPIO read |
- * | **rx_drv8243_stop()** | ~15 µs | Disable PWM outputs |
- * | **SPI register read** | ~25 µs | 16-bit SPI transfer @ 5 MHz |
- * | **SPI register write** | ~25 µs | 16-bit SPI transfer @ 5 MHz |
+ * | **rx_drv8243_init()** | ~500 us | Includes GPTW init + GPIO config + SPI init |
+ * | **rx_drv8243_set_speed()** | ~20 us | Without current limit check |
+ * | **rx_drv8243_set_speed()** | ~200 us | With ADC current limit check |
+ * | **rx_drv8243_read_current()** | ~180 us | ADC conversion + calculation |
+ * | **rx_drv8243_get_fault_status()** | ~5 us | Simple GPIO read |
+ * | **rx_drv8243_stop()** | ~15 us | Disable PWM outputs |
+ * | **SPI register read** | ~25 us | 16-bit SPI transfer @ 5 MHz |
+ * | **SPI register write** | ~25 us | 16-bit SPI transfer @ 5 MHz |
  *
  * All timing measured @ 240 MHz CPU clock, -O2 optimization.
  *
@@ -172,7 +172,7 @@
  * 4. Log warning on current limit violation
  *
  * **Limitations:**
- * - ~200 µs latency (ADC conversion time)
+ * - ~200 us latency (ADC conversion time)
  * - Not a substitute for hardware overcurrent protection (ITRIP)
  * - Use for soft limiting and telemetry, not safety-critical protection
  *
@@ -222,7 +222,7 @@
  *     .output_ph        = k_gptw_out_gtioca,  // Phase output
  *     .output_en        = k_gptw_out_gtiocb,  // Enable output
  *     .pwm_freq_hz      = 20000,       // 20 kHz (inaudible)
- *     .dead_time_ns     = 1000,        // 1 µs dead-time
+ *     .dead_time_ns     = 1000,        // 1 us dead-time
  *     .pin_ipropi       = 2,           // ADC channel 2
  *     .port_nfault      = 0,           // PORT0
  *     .pin_nfault       = 5,           // Pin 5
@@ -273,9 +273,9 @@
  * config.sci_channel        = 7;               // SCI7
  * config.spi_cs_port        = 3;               // PORT3
  * config.spi_cs_pin         = 2;               // Pin 2
- * config.initial_slew_rate  = k_drv8243_slew_15v_us;  // 15 V/µs (lower EMI)
+ * config.initial_slew_rate  = k_drv8243_slew_15v_us;  // 15 V/us (lower EMI)
  * config.initial_itrip      = k_drv8243_itrip_1v65;   // 1.65V trip threshold
- * config.initial_toff       = k_drv8243_toff_16us;    // 16 µs off-time
+ * config.initial_toff       = k_drv8243_toff_16us;    // 16 us off-time
  * config.initial_mode       = k_drv8243_mode_ph_en_1; // PH/EN mode (1x PWM)
  *
  * rx_err_t err = rx_drv8243_init(&motor_driver, &config);
@@ -342,7 +342,7 @@
  *
  * @warning Do NOT call set_speed() from ISR context (calls bus_manager which may use mutex/ADC)
  * @warning SPI variant configuration changes require unlock/modify/lock sequence to prevent corruption
- * @warning Current limiting adds ~200 µs latency to set_speed() - disable for time-critical loops
+ * @warning Current limiting adds ~200 us latency to set_speed() - disable for time-critical loops
  * @attention Always check nFAULT status before operating motor - fault condition prevents speed changes
  *
  * @author STAR Team
@@ -538,7 +538,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * 3. **Motor controller initialization**:
  *    - Configure rx_motor with GPTW channel, outputs, PWM frequency, dead-time
  *    - Uses sign-magnitude PWM mode (PH/EN)
- *    - Typical: 20 kHz PWM, 1 µs dead-time
+ *    - Typical: 20 kHz PWM, 1 us dead-time
  *
  * 4. **Fault pin configuration**:
  *    - Set nFAULT pin as GPIO input
@@ -627,9 +627,9 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @invariant If function returns error, handle is left in uninitialized state (safe to retry)
  *
  * @note Not thread-safe - call from single thread only (typically at system startup)
- * @note Initialization time: ~500 µs without SPI, ~700 µs with SPI (@ 240 MHz)
+ * @note Initialization time: ~500 us without SPI, ~700 us with SPI (@ 240 MHz)
  * @note To reinitialize: Must call rx_drv8243_deinit() first, then can call init() again
- * @note SPI variant adds ~200 µs init time + increases code size by ~2 KB
+ * @note SPI variant adds ~200 us init time + increases code size by ~2 KB
  *
  * @warning Do NOT call from interrupt context (uses GPTW/SCI SPI which may disable interrupts)
  * @warning Ensure GPTW channel and SCI channel are not in use by other modules
@@ -649,7 +649,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *     .output_ph        = k_gptw_out_gtioca,
  *     .output_en        = k_gptw_out_gtiocb,
  *     .pwm_freq_hz      = 20000,       // 20 kHz (inaudible)
- *     .dead_time_ns     = 1000,        // 1 µs dead-time
+ *     .dead_time_ns     = 1000,        // 1 us dead-time
  *     .pin_ipropi       = 2,           // ADC channel 2
  *     .port_nfault      = 0,           // PORT0
  *     .pin_nfault       = 5,           // P05
@@ -675,9 +675,9 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *     .sci_channel        = 7,                      // SCI7
  *     .spi_cs_port        = 3,                       // PORT3
  *     .spi_cs_pin         = 2,                       // P32
- *     .initial_slew_rate  = k_drv8243_slew_15v_us,   // 15 V/µs (lower EMI)
+ *     .initial_slew_rate  = k_drv8243_slew_15v_us,   // 15 V/us (lower EMI)
  *     .initial_itrip      = k_drv8243_itrip_1v65,    // 1.65V trip (~875mA)
- *     .initial_toff       = k_drv8243_toff_16us,     // 16 µs off-time
+ *     .initial_toff       = k_drv8243_toff_16us,     // 16 us off-time
  *     .initial_mode       = k_drv8243_mode_ph_en_1,  // PH/EN mode (1x PWM)
  * };
  *
@@ -727,8 +727,8 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @endcode
  *
  * @par Performance:
- * - Execution time (non-SPI): ~500 µs @ 240 MHz
- * - Execution time (SPI variant): ~700 µs @ 240 MHz
+ * - Execution time (non-SPI): ~500 us @ 240 MHz
+ * - Execution time (SPI variant): ~700 us @ 240 MHz
  * - Stack usage: ~80 bytes
  * - Code size: ~800 bytes (non-SPI), ~1200 bytes (with SPI support)
  *
@@ -1012,9 +1012,9 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * @invariant Motor duty cycle always matches handle->current_speed after successful call
  * @invariant If function returns error, motor duty cycle unchanged from previous state
  *
- * @note Execution time: ~20 µs without current limiting, ~200 µs with current limiting (ADC read)
+ * @note Execution time: ~20 us without current limiting, ~200 us with current limiting (ADC read)
  * @note Not callable from ISR context (may use mutex in bus_manager, ADC conversion takes time)
- * @note Current limiting is software-based with ~200 µs latency - NOT a substitute for hardware ITRIP protection
+ * @note Current limiting is software-based with ~200 us latency - NOT a substitute for hardware ITRIP protection
  * @note Thread safety depends on bus_manager implementation - recommend external mutex if multi-threaded
  *
  * @warning If nFAULT is active LOW, function will fail with k_rx_err_invalid_state
@@ -1105,8 +1105,8 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * @endcode
  *
  * @par Performance:
- * - Execution time (no current limit): ~20 µs @ 240 MHz
- * - Execution time (with current limit): ~200 µs @ 240 MHz (includes ADC read)
+ * - Execution time (no current limit): ~20 us @ 240 MHz
+ * - Execution time (with current limit): ~200 us @ 240 MHz (includes ADC read)
  * - Stack usage: ~40 bytes
  * - Interrupt latency: None (no critical sections)
  *

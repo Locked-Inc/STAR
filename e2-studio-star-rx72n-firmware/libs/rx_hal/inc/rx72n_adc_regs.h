@@ -12,18 +12,18 @@
  *
  * @par System Architecture Context:
  * @verbatim
- * ┌──────────────────────────────────────────────────────────────────────┐
- * │                    STAR Motor Control Current Path                   │
- * ├──────────────────────────────────────────────────────────────────────┤
- * │                                                                      │
- * │   Motor Current ──► Shunt Resistor ──► DRV8243 IPROPI ──► S12AD     │
- * │                         │                  │                │        │
- * │                    10 mΩ shunt         Current amp      12-bit ADC   │
- * │                    (±3A range)         (20 µA/A)        (0-3.3V)     │
- * │                                                                      │
- * │   Conversion: I_motor = (ADC_value × 3.3V / 4096) / (20µA × 10mΩ)   │
- * │                                                                      │
- * └──────────────────────────────────────────────────────────────────────┘
+ * +----------------------------------------------------------------------+
+ * |                    STAR Motor Control Current Path                   |
+ * +----------------------------------------------------------------------+
+ * |                                                                      |
+ * |   Motor Current --> Shunt Resistor --> DRV8243 IPROPI --> S12AD     |
+ * |                         |                  |                |        |
+ * |                    10 mOhm shunt         Current amp      12-bit ADC   |
+ * |                    (+/-3A range)         (20 uA/A)        (0-3.3V)     |
+ * |                                                                      |
+ * |   Conversion: I_motor = (ADC_value x 3.3V / 4096) / (20uA x 10mOhm)   |
+ * |                                                                      |
+ * +----------------------------------------------------------------------+
  * @endverbatim
  *
  * @par S12AD Unit Specifications:
@@ -37,9 +37,9 @@
  *
  * | Mode           | Conversion Time | Throughput Rate |
  * |----------------|-----------------|-----------------|
- * | Single scan    | ~1.0 µs/ch      | ~1 MSPS         |
- * | Group scan     | ~0.9 µs/ch      | ~1.1 MSPS       |
- * | Continuous     | ~0.85 µs/ch     | ~1.2 MSPS       |
+ * | Single scan    | ~1.0 us/ch      | ~1 MSPS         |
+ * | Group scan     | ~0.9 us/ch      | ~1.1 MSPS       |
+ * | Continuous     | ~0.85 us/ch     | ~1.2 MSPS       |
  *
  * @par Motor Current Sensing Pin Mapping (144-pin LFQFP):
  *
@@ -334,14 +334,14 @@ typedef enum : uint8_t {
  *
  * // 5. Wait for conversion complete (ADST clears)
  * while (adc->adcsr & 0x8000) {
- *     // ~1 µs per conversion
+ *     // ~1 us per conversion
  * }
  *
  * // 6. Read 12-bit result
  * uint16_t raw_count = adc->addr7 & 0x0FFF;
  *
  * // 7. Convert to current (using DRV8243 current sensing formula)
- * // I = (V / 3.3) * 4096 * (1 / 20µA/A) = ADC_count * 3.3 / 4096 / 0.00002
+ * // I = (V / 3.3) * 4096 * (1 / 20uA/A) = ADC_count * 3.3 / 4096 / 0.00002
  * float current_amps = (float)raw_count * 3.3f / 4096.0f / 0.00002f;
  * @endcode
  *
@@ -607,7 +607,7 @@ typedef struct {
  *
  * // Perform conversion
  * adc->adcsr |= 0x8000;    // Start
- * while (adc->adcsr & 0x8000) {}  // Wait (~4 µs for 4 channels)
+ * while (adc->adcsr & 0x8000) {}  // Wait (~4 us for 4 channels)
  *
  * // Read currents (M0=AN007, M1=AN006, M2=AN005, M3=AN004)
  * uint16_t motor_currents[4] = {

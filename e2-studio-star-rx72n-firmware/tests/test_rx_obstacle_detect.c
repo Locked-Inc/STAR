@@ -205,7 +205,7 @@
  * | 1. Simple control flow | [OK] | No goto, setjmp, recursion in tests |
  * | 2. Fixed loop bounds | [OK] | All loops bounded by sensor_count (2) |
  * | 3. No dynamic memory | [OK] | All test fixtures statically allocated |
- * | 4. Functions ≤60 lines | [OK] | Longest test: ~30 lines |
+ * | 4. Functions <=60 lines | [OK] | Longest test: ~30 lines |
  * | 5. Min 2 assertions/test | [OK] | All tests validate multiple conditions |
  * | 6. Smallest scope | [OK] | Variables declared at first use |
  * | 7. Check return values | [OK] | All rx_obstacle_detect_* returns checked |
@@ -343,7 +343,7 @@ static rx_obstacle_detect_config_t s_config;
  * - s_sensors[0]: Front sensor (primary obstacle detection)
  * - s_sensors[1]: Side sensor (multi-sensor fusion tests)
  *
- * @par Size: 2 × sizeof(rx_hcsr04_t) (depends on HC-SR04 driver)
+ * @par Size: 2 x sizeof(rx_hcsr04_t) (depends on HC-SR04 driver)
  */
 static rx_hcsr04_t s_sensors[2];
 
@@ -379,7 +379,7 @@ static rx_hcsr04_t* s_sensor_ptrs[2];
  * - s_motors[0]: Left motor (differential drive)
  * - s_motors[1]: Right motor (differential drive)
  *
- * @par Size: 2 × sizeof(rx_motor_handle_t) (depends on motor driver)
+ * @par Size: 2 x sizeof(rx_motor_handle_t) (depends on motor driver)
  */
 static rx_motor_handle_t s_motors[2];
 
@@ -649,7 +649,7 @@ test_callback(bool obstacle_detected, uint8_t sensor_idx, float distance_cm, voi
  * @note Ensures test isolation - no state carries over between tests
  *
  * @par Performance:
- * Execution time: ~10µs (memset + pointer assignments)
+ * Execution time: ~10us (memset + pointer assignments)
  *
  * @see tearDown() Cleanup function called after each test
  * @see s_config Default configuration structure
@@ -744,7 +744,7 @@ void setUp(void)
  * @note Tests that allocate ThreadX resources should clean up explicitly
  *
  * @par Performance:
- * Execution time: ~5µs (mock cleanup only)
+ * Execution time: ~5us (mock cleanup only)
  *
  * @see setUp() Setup function called before each test
  * @see mock_rx_motor_deinit() Mock motor cleanup

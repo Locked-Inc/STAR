@@ -11,7 +11,7 @@
  *
  * ## System Architecture Context
  *
- * The STAR robot uses 4× 341 PPR (Pulses Per Revolution) Hall effect encoders
+ * The STAR robot uses 4x 341 PPR (Pulses Per Revolution) Hall effect encoders
  * for motor velocity feedback in a closed-loop PID control system. The MTU
  * peripheral handles all encoder counting in hardware, freeing the CPU for
  * control algorithm execution.
@@ -19,11 +19,11 @@
  * **Signal Chain:**
  * ```
  * Motor Shaft -> Hall Encoder -> Phase A/B -> MTU (Phase Counting) -> CPU (Read Count)
- *              (341 PPR)      (Digital)    (4× Decode)            (Overflow Handling)
+ *              (341 PPR)      (Digital)    (4x Decode)            (Overflow Handling)
  * ```
  *
  * **MTU Phase Counting Features:**
- * - **4× decoding**: Counts all edges of both Phase A and Phase B signals
+ * - **4x decoding**: Counts all edges of both Phase A and Phase B signals
  * - **16-bit counter**: Range 0-65535, wraps automatically
  * - **Hardware direction sensing**: Increments/decrements based on A/B phase relationship
  * - **Zero CPU overhead**: No interrupts or polling required for counting
@@ -35,24 +35,24 @@
  * - **Performance**: MTU counts at full bus speed (120 MHz), never misses edges
  * - **Reliability**: No software-induced count errors from interrupt latency
  * - **Efficiency**: Zero CPU cycles spent on edge detection
- * - **Precision**: 4× decoding provides 1364 counts/rev resolution
+ * - **Precision**: 4x decoding provides 1364 counts/rev resolution
  *
  * **16-Bit Counter Limitation:**
  * - Hardware constraint: MTU counter is 16-bit (0-65535)
  * - **Solution**: Software overflow detection via periodic polling
- * - **Max speed before overflow**: 48 revolutions (at 341 PPR × 4 = 1364 counts/rev)
+ * - **Max speed before overflow**: 48 revolutions (at 341 PPR x 4 = 1364 counts/rev)
  * - **Required poll rate**: >48 rev before overflow (safe at 250 Hz control loop)
  *
  * **Quadrature Encoding Fundamentals:**
  * ```
- * Phase A: ___╱‾‾‾╲___╱‾‾‾╲___
- * Phase B: _____╱‾‾‾╲___╱‾‾‾╲_
+ * Phase A: ___/---\___/---\___
+ * Phase B: _____/---\___/---\_
  *
  * Forward:  A leads B (count up)
  * Backward: B leads A (count down)
  *
- * 4× Decoding: Count on rising + falling edges of both A and B
- * Result: 4 counts per encoder pulse (341 PPR × 4 = 1364 counts/rev)
+ * 4x Decoding: Count on rising + falling edges of both A and B
+ * Result: 4 counts per encoder pulse (341 PPR x 4 = 1364 counts/rev)
  * ```
  *
  * ## Implementation Approach
@@ -60,7 +60,7 @@
  * **Initialization:**
  * 1. Configure MTU channel pins (MTCLKA, MTCLKB) as inputs
  * 2. Set MTU to phase counting mode (TGRA register)
- * 3. Enable 4× decoding (counts all edges)
+ * 3. Enable 4x decoding (counts all edges)
  * 4. Initialize software state tracking
  * 5. Start counter
  *
@@ -88,17 +88,17 @@
  * **Timing:**
  * - Counter update: Hardware real-time (no software delay)
  * - Read latency: ~500ns (single TCNT register read)
- * - Overflow detection: ~2µs @ 240 MHz
+ * - Overflow detection: ~2us @ 240 MHz
  *
  * **Maximum Speeds:**
  * - **Theoretical**: 120 MHz / 4 edges = 30 MHz edge rate
- * - **Encoder limit**: 341 PPR × 4 × 10,000 RPM = 227 kHz (realistic max)
+ * - **Encoder limit**: 341 PPR x 4 x 10,000 RPM = 227 kHz (realistic max)
  * - **Motor limit**: 210 RPM = 1.2 kHz (actual operating speed)
  *
  * **Overflow Safety:**
  * - 250 Hz polling: Can handle >12,000 RPM before missing overflow
  * - 100 Hz polling: Can handle >5,000 RPM before missing overflow
- * - Actual motor speed: 210 RPM (safe margin: 60×)
+ * - Actual motor speed: 210 RPM (safe margin: 60x)
  *
  * ## Memory Usage
  *
@@ -139,8 +139,8 @@
  * | Output | Open collector (requires pull-up) |
  * | Supply Voltage | 5V |
  * | Output Logic | 3.3V compatible |
- * | Resolution (4× decode) | 1364 counts/revolution |
- * | Angular Resolution | 0.264° per count |
+ * | Resolution (4x decode) | 1364 counts/revolution |
+ * | Angular Resolution | 0.264deg per count |
  * | Max Speed | 10,000 RPM (typical Hall encoder limit) |
  *
  * @par Module Dependencies:
@@ -236,7 +236,7 @@ extern "C" {
  * - Cannot share MTU channels between encoders
  *
  * **Counts Per Revolution:**
- * - Calculate as: `encoder_PPR × 4` (4× decoding)
+ * - Calculate as: `encoder_PPR x 4` (4x decoding)
  * - Example: 341 PPR encoder -> 1364 counts/rev
  * - Used for velocity and position calculations
  * - Must match physical encoder specification
@@ -333,16 +333,16 @@ typedef struct {
   rx_mtu_channel_t channel;
 
   /**
-   * @brief Encoder counts per revolution (after 4× decoding)
+   * @brief Encoder counts per revolution (after 4x decoding)
    * @details
-   * Total number of counts per complete shaft revolution when using 4× decoding.
-   * This is calculated as: `encoder_PPR × 4`
+   * Total number of counts per complete shaft revolution when using 4x decoding.
+   * This is calculated as: `encoder_PPR x 4`
    *
-   * For STAR's 341 PPR Hall encoders: 341 × 4 = 1364 counts/revolution
+   * For STAR's 341 PPR Hall encoders: 341 x 4 = 1364 counts/revolution
    *
    * Used by velocity calculations to convert counts/second to revolutions/second.
    * @par Value: 1364 (for 341 PPR encoders)
-   * @par Rationale: 341 PPR × 4× decoding = 1364 counts/rev
+   * @par Rationale: 341 PPR x 4x decoding = 1364 counts/rev
    * @par Valid Range: 1 to 65535
    * @note Must match physical encoder specification
    * @warning Zero value causes division-by-zero in velocity calculation
@@ -407,7 +407,7 @@ typedef struct {
  * frequently enough to catch overflows before another wrap occurs.
  *
  * **Max Safe Interval:**
- * - Encoder: 341 PPR × 4 = 1364 counts/rev
+ * - Encoder: 341 PPR x 4 = 1364 counts/rev
  * - Counter range: 65536 counts
  * - Safe margin: 32768 counts (half range)
  * - **Max revolutions between reads**: 32768 / 1364 = 24 revolutions
@@ -416,7 +416,7 @@ typedef struct {
  * - Revolution period: 285ms
  * - 24 revolutions: 6.8 seconds (safe time window)
  * - **Required poll rate**: >0.15 Hz (very conservative)
- * - **Actual poll rate**: 250 Hz (safe margin: 1666×)
+ * - **Actual poll rate**: 250 Hz (safe margin: 1666x)
  *
  * @par Memory Layout:
  *
@@ -450,7 +450,7 @@ typedef struct {
  * rx_encoder_state_t state;
  * rx_err_t err = rx_encoder_read_count(k_rx_mtu_channel_1, &state);
  * if (err == k_rx_ok) {
- *     printf("Position: %.2f°, Revolutions: %ld\n",
+ *     printf("Position: %.2fdeg, Revolutions: %ld\n",
  *            state.position_deg, state.revolutions);
  * }
  * @endcode
@@ -518,7 +518,7 @@ typedef struct {
    * for all 16-bit hardware counter overflows/underflows. Positive values
    * indicate forward rotation, negative values indicate reverse rotation.
    *
-   * Range: ±2.1 billion counts = ±1.5 million revolutions (at 1364 counts/rev)
+   * Range: +/-2.1 billion counts = +/-1.5 million revolutions (at 1364 counts/rev)
    *
    * This value is updated by rx_encoder_read_count() which detects and corrects
    * for 16-bit counter wrap-around.
@@ -553,25 +553,25 @@ typedef struct {
    * Positive values = forward revolutions, negative = reverse revolutions.
    * Fractional revolutions are discarded (use position_deg for precision).
    * @par Units: Complete revolutions
-   * @par Range: ±1,575,331 revolutions (int32_t limit / 1364 counts/rev)
+   * @par Range: +/-1,575,331 revolutions (int32_t limit / 1364 counts/rev)
    * @par Typical Values: -100 to +100 (normal operation)
    * @par Calculation: `revolutions = total_count / counts_per_rev`
    */
   int32_t revolutions;
 
   /**
-   * @brief Angular position in degrees (0-360° wrapping)
+   * @brief Angular position in degrees (0-360deg wrapping)
    * @details
    * Current shaft angle in degrees, calculated from total_count and
-   * counts_per_rev. Value wraps at 360° (full revolution).
+   * counts_per_rev. Value wraps at 360deg (full revolution).
    *
    * Formula: `position_deg = (total_count % counts_per_rev) * (360.0 / counts_per_rev)`
    *
-   * Provides high-resolution angular position (0.264° per count at 1364 counts/rev).
+   * Provides high-resolution angular position (0.264deg per count at 1364 counts/rev).
    * @par Units: Degrees
-   * @par Range: 0.0° to 359.999°
-   * @par Resolution: 0.264° per count (360° / 1364 counts)
-   * @par Wrapping: Value resets to 0° after completing 360°
+   * @par Range: 0.0deg to 359.999deg
+   * @par Resolution: 0.264deg per count (360deg / 1364 counts)
+   * @par Wrapping: Value resets to 0deg after completing 360deg
    * @note Use revolutions for multi-turn tracking, position_deg for angle within revolution
    */
   float position_deg;
@@ -591,7 +591,7 @@ typedef struct {
  * hardware-accelerated quadrature encoder decoding. This function:
  * 1. Validates configuration parameters
  * 2. Configures MTU pins (MTCLKA, MTCLKB) as inputs
- * 3. Sets MTU mode to phase counting with 4× decoding
+ * 3. Sets MTU mode to phase counting with 4x decoding
  * 4. Initializes software state tracking (zero position)
  * 5. Starts hardware counter
  *
@@ -609,7 +609,7 @@ typedef struct {
  *
  * 3. **Configure MTU Mode:**
  *    - Set phase counting mode (TGRA control)
- *    - Enable 4× decoding (count all A/B edges)
+ *    - Enable 4x decoding (count all A/B edges)
  *    - Configure counter direction based on phase relationship
  *    - Apply direction inversion if requested
  *
@@ -625,9 +625,9 @@ typedef struct {
  * ## Performance Analysis
  *
  * **Execution Time:**
- * - Best case: ~15µs @ 240 MHz (valid config, hardware ready)
- * - Worst case: ~20µs @ 240 MHz (with error checking)
- * - Average case: ~17µs @ 240 MHz
+ * - Best case: ~15us @ 240 MHz (valid config, hardware ready)
+ * - Worst case: ~20us @ 240 MHz (with error checking)
+ * - Average case: ~17us @ 240 MHz
  *
  * **Memory Usage:**
  * - Stack: ~48 bytes (local variables + function call overhead)
@@ -661,11 +661,11 @@ typedef struct {
  *
  * @invariant Channel remains in phase counting mode until rx_encoder_deinit()
  * @invariant Counter increments on forward rotation, decrements on reverse
- * @invariant 4× decoding active (all A/B edges counted)
+ * @invariant 4x decoding active (all A/B edges counted)
  *
  * @note **Thread Safety:** Not thread-safe. Call from single thread or protect with mutex.
  * @note **Re-entrancy:** Not reentrant. Do not call from interrupt context.
- * @note **Performance:** One-time initialization, ~17µs execution time
+ * @note **Performance:** One-time initialization, ~17us execution time
  * @note **Memory:** Allocates 24 bytes static RAM per encoder
  *
  * @warning Call this function ONCE per encoder during system initialization
@@ -685,7 +685,7 @@ typedef struct {
  * {
  *     rx_encoder_config_t config = {
  *         .channel = k_rx_mtu_channel_1,    // MTU1
- *         .counts_per_rev = 1364,           // 341 PPR × 4
+ *         .counts_per_rev = 1364,           // 341 PPR x 4
  *         .invert_direction = false         // Normal wiring
  *     };
  *
@@ -759,14 +759,14 @@ typedef struct {
  *
  * @par Custom Encoder Configuration Example:
  * @code{.c}
- * // High-resolution encoder: 1024 PPR × 4 = 4096 counts/rev
+ * // High-resolution encoder: 1024 PPR x 4 = 4096 counts/rev
  * rx_encoder_config_t high_res_config = {
  *     .channel = k_rx_mtu_channel_1,
  *     .counts_per_rev = 4096,
  *     .invert_direction = false
  * };
  *
- * // Low-resolution encoder: 64 PPR × 4 = 256 counts/rev
+ * // Low-resolution encoder: 64 PPR x 4 = 256 counts/rev
  * rx_encoder_config_t low_res_config = {
  *     .channel = k_rx_mtu_channel_2,
  *     .counts_per_rev = 256,
@@ -869,14 +869,14 @@ typedef struct {
  * - At 1364 counts/rev: 32768 / 1364 = 24 revolutions
  * - At 210 RPM max speed: 24 rev / 3.5 rev/sec = 6.8 seconds
  * - **Minimum poll rate**: 0.15 Hz (once per 6.8 seconds)
- * - **Recommended poll rate**: 250 Hz (1666× safety margin)
+ * - **Recommended poll rate**: 250 Hz (1666x safety margin)
  *
  * ## Performance Analysis
  *
  * **Execution Time:**
- * - Best case: ~2µs @ 240 MHz (no overflow)
- * - Worst case: ~3µs @ 240 MHz (with overflow correction)
- * - Average case: ~2.5µs @ 240 MHz
+ * - Best case: ~2us @ 240 MHz (no overflow)
+ * - Worst case: ~3us @ 240 MHz (with overflow correction)
+ * - Average case: ~2.5us @ 240 MHz
  *
  * **Memory Usage:**
  * - Stack: ~32 bytes (local variables)
@@ -915,12 +915,12 @@ typedef struct {
  *
  * @note **Thread Safety:** Not thread-safe for same channel. Protect with mutex if needed.
  * @note **Re-entrancy:** Not reentrant for same channel. Safe for different channels.
- * @note **Performance:** ~2.5µs execution, suitable for 250 Hz control loops
+ * @note **Performance:** ~2.5us execution, suitable for 250 Hz control loops
  * @note **Memory:** No dynamic allocation, stack-only
  *
  * @warning Must call frequently (>0.15 Hz) to prevent missed overflows
  * @warning Do not skip reads for extended periods (>6 seconds at max speed)
- * @warning Missed overflow causes ±65536 count error (permanent until reset)
+ * @warning Missed overflow causes +/-65536 count error (permanent until reset)
  *
  * @attention Call at consistent rate (e.g., 250 Hz) for accurate velocity measurement
  *
@@ -935,7 +935,7 @@ typedef struct {
  *     rx_err_t err = rx_encoder_read_count(k_rx_mtu_channel_1, &state);
  *
  *     if (err == k_rx_ok) {
- *         printf("Count: %ld, Position: %.2f°, Revolutions: %ld\n",
+ *         printf("Count: %ld, Position: %.2fdeg, Revolutions: %ld\n",
  *                state.total_count, state.position_deg, state.revolutions);
  *     } else {
  *         rx_log_error("ENCODER", "Read failed: %d", err);

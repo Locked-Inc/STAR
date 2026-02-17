@@ -19,27 +19,27 @@
  * ## HAL Layer Position
  *
  * @code{.unparsed}
- * ┌──────────────────────────────────────────────┐
- * │ HC-SR04 Driver (rx_hcsr04.c)                 │
- * │ - Platform-independent sensor logic          │
- * └──────────────────┬───────────────────────────┘
- *                    │ Calls HAL functions
- * ┌──────────────────▼───────────────────────────┐
- * │ HAL Interface (rx_hcsr04_hal.h)              │
- * │ - Function declarations                      │
- * └──────────────────┬───────────────────────────┘
- *                    │ Implemented by this file
- * ┌──────────────────▼───────────────────────────┐
- * │ Hardware HAL (This File)                     │
- * │ - GPIO: rx_port_* wrappers                   │
- * │ - Timing: CMT2 timer (7.5 MHz)               │
- * └──────────────────┬───────────────────────────┘
- *                    │ Accesses hardware
- * ┌──────────────────▼───────────────────────────┐
- * │ RX72N Hardware                                │
- * │ - GPIO Ports (182 pins via PORT registers)   │
- * │ - CMT2 (16-bit timer, PCLKB/8 clock)         │
- * └───────────────────────────────────────────────┘
+ * +----------------------------------------------+
+ * | HC-SR04 Driver (rx_hcsr04.c)                 |
+ * | - Platform-independent sensor logic          |
+ * +------------------+---------------------------+
+ *                    | Calls HAL functions
+ * +------------------v---------------------------+
+ * | HAL Interface (rx_hcsr04_hal.h)              |
+ * | - Function declarations                      |
+ * +------------------+---------------------------+
+ *                    | Implemented by this file
+ * +------------------v---------------------------+
+ * | Hardware HAL (This File)                     |
+ * | - GPIO: rx_port_* wrappers                   |
+ * | - Timing: CMT2 timer (7.5 MHz)               |
+ * +------------------+---------------------------+
+ *                    | Accesses hardware
+ * +------------------v---------------------------+
+ * | RX72N Hardware                                |
+ * | - GPIO Ports (182 pins via PORT registers)   |
+ * | - CMT2 (16-bit timer, PCLKB/8 clock)         |
+ * +-----------------------------------------------+
  * @endcode
  *
  * # Hardware Resources Used
@@ -72,7 +72,7 @@
  * **Why CMT2?**
  * - CMT0/CMT1 reserved for ThreadX system tick (TX_TIMER)
  * - CMT2/CMT3 available for application use
- * - 7.5 MHz sufficient for µs-precision ultrasonic timing
+ * - 7.5 MHz sufficient for us-precision ultrasonic timing
  * - Free-running mode (no interrupt overhead)
  *
  * **Register Map:**
@@ -117,11 +117,11 @@
  *
  * **Alternative 2: ThreadX Ticks**
  * - Problem: Insufficient resolution (10 ms tick @ 100 Hz)
- * - HC-SR04 needs microsecond precision (10 µs trigger pulse)
+ * - HC-SR04 needs microsecond precision (10 us trigger pulse)
  *
  * **CMT2 Advantages:**
  * - Hardware timer: Accurate, independent of CPU speed
- * - 133 ns resolution: Exceeds HC-SR04 requirements (±5 µs tolerance)
+ * - 133 ns resolution: Exceeds HC-SR04 requirements (+/-5 us tolerance)
  * - Free-running: No interrupt overhead
  * - Dedicated: Doesn't interfere with ThreadX timing
  *
@@ -144,7 +144,7 @@
  * uint32_t time_us = (total_ticks * 1000000) / 7500000;
  * ```
  *
- * **Range:** 0 to 2^32 µs (~71 minutes before uint32_t wraps)
+ * **Range:** 0 to 2^32 us (~71 minutes before uint32_t wraps)
  *
  * **Thread Safety:** Mutex protects `overflow_count` and `last_counter`
  *
@@ -304,8 +304,8 @@
  * **Measured on RX72N @ 240 MHz:**
  * | Operation       | Execution Time | Register Access      |
  * |-----------------|----------------|----------------------|
- * | `set_output`    | ~1 µs          | PDR write            |
- * | `set_input`     | ~1 µs          | PDR write            |
+ * | `set_output`    | ~1 us          | PDR write            |
+ * | `set_input`     | ~1 us          | PDR write            |
  * | `write_high`    | ~200 ns        | PODR bit set         |
  * | `write_low`     | ~200 ns        | PODR bit clear       |
  * | `read`          | ~150 ns        | PIDR read            |
@@ -316,14 +316,14 @@
  * **delay_us() Accuracy:**
  * | Requested | Actual    | Error   | Notes                        |
  * |-----------|-----------|---------|------------------------------|
- * | 1 µs      | 1.2 µs    | +20%    | Function call overhead       |
- * | 10 µs     | 10.1 µs   | +1%     | Good accuracy                |
- * | 100 µs    | 100.05 µs | +0.05%  | Excellent accuracy           |
+ * | 1 us      | 1.2 us    | +20%    | Function call overhead       |
+ * | 10 us     | 10.1 us   | +1%     | Good accuracy                |
+ * | 100 us    | 100.05 us | +0.05%  | Excellent accuracy           |
  * | 1 ms      | 1.000 ms  | <0.01%  | Timer-limited precision      |
  *
  * **get_time_us() Resolution:**
  * - Native: 133 ns per CMT2 tick
- * - Reported: 1 µs (conversion from ticks to µs)
+ * - Reported: 1 us (conversion from ticks to us)
  * - Monotonicity: Guaranteed (overflow-safe)
  *
  * ## Memory Usage
@@ -390,7 +390,7 @@
  *
  * // Send trigger pulse
  * hcsr04_hal_gpio_write_high(trig);
- * hcsr04_hal_delay_us(10);  // 10µs HIGH
+ * hcsr04_hal_delay_us(10);  // 10us HIGH
  * hcsr04_hal_gpio_write_low(trig);
  * @endcode
  *
@@ -415,7 +415,7 @@
  * end = hcsr04_hal_get_time_us();
  *
  * uint32_t pulse_us = end - start;
- * printf("Echo pulse: %lu µs\n", pulse_us);
+ * printf("Echo pulse: %lu us\n", pulse_us);
  * @endcode
  *
  * @see rx_hcsr04_hal.h HAL interface definition
@@ -656,7 +656,7 @@ rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
  * @details
  * Validates the port/pin combination and drives the specified output GPIO pin
  * to a logic high (VDD) level via the gpio_write_high() hardware abstraction
- * layer. In HC-SR04 operation, this is used to begin the 10 µs trigger pulse
+ * layer. In HC-SR04 operation, this is used to begin the 10 us trigger pulse
  * that initiates an ultrasonic ranging measurement.
  *
  * Algorithm steps:
@@ -679,7 +679,7 @@ rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
  *
  * @par Example:
  * @code
- * // Generate 10 µs HC-SR04 trigger pulse
+ * // Generate 10 us HC-SR04 trigger pulse
  * hcsr04_hal_gpio_write_high(config->trigger_pin);
  * hcsr04_hal_delay_us(10);
  * hcsr04_hal_gpio_write_low(config->trigger_pin);
@@ -711,7 +711,7 @@ rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
  * @details
  * Validates the port/pin combination and drives the specified output GPIO pin
  * to a logic low (GND) level via the gpio_write_low() hardware abstraction
- * layer. In HC-SR04 operation, this is used after a 10 µs high pulse to
+ * layer. In HC-SR04 operation, this is used after a 10 us high pulse to
  * complete the trigger signal, after which the sensor emits ultrasonic bursts
  * and the echo pin goes high for a period proportional to measured distance.
  *
@@ -735,7 +735,7 @@ rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
  *
  * @par Example:
  * @code
- * // Complete 10 µs HC-SR04 trigger pulse
+ * // Complete 10 us HC-SR04 trigger pulse
  * hcsr04_hal_gpio_write_high(config->trigger_pin);
  * hcsr04_hal_delay_us(10);
  * hcsr04_hal_gpio_write_low(config->trigger_pin);
@@ -830,7 +830,7 @@ rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
  * **Clock Tree:**
  * ```
  * EXTAL (16 MHz crystal)
- *   -> PLL (×15) = 240 MHz (ICLK)
+ *   -> PLL (x15) = 240 MHz (ICLK)
  *   -> Divider (/4) = 60 MHz (PCLKB)
  *   -> CMT2 divider (/8) = 7.5 MHz (CMT2 clock)
  * ```
@@ -838,20 +838,20 @@ rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
  * **Timing Calculations:**
  * - Timer frequency: 60 MHz / 8 = 7.5 MHz
  * - Timer period: 1 / 7.5 MHz = 133.33 ns per tick
- * - Ticks per microsecond: 7.5 ticks/µs
+ * - Ticks per microsecond: 7.5 ticks/us
  * - Counter overflow: 65536 ticks / 7.5 MHz = 8.738 ms
  *
  * **Divider Selection:**
  * | CKS[1:0] | Divider | Frequency | Period   | Use Case              |
  * |----------|---------|-----------|----------|-----------------------|
- * | 00       | /8      | 7.5 MHz   | 133 ns   | **Used** (µs timing)  |
+ * | 00       | /8      | 7.5 MHz   | 133 ns   | **Used** (us timing)  |
  * | 01       | /32     | 1.875 MHz | 533 ns   | Slower timing         |
- * | 10       | /128    | 469 kHz   | 2.1 µs   | Millisecond timing    |
- * | 11       | /512    | 117 kHz   | 8.5 µs   | Long delays           |
+ * | 10       | /128    | 469 kHz   | 2.1 us   | Millisecond timing    |
+ * | 11       | /512    | 117 kHz   | 8.5 us   | Long delays           |
  *
  * **Why /8 divider?**
- * - Highest resolution (133 ns) for precise µs delays
- * - 7.5 ticks/µs allows sub-microsecond accuracy
+ * - Highest resolution (133 ns) for precise us delays
+ * - 7.5 ticks/us allows sub-microsecond accuracy
  * - Sufficient range (8.7 ms before overflow, extended via software)
  *
  * ## Delay Calculation
@@ -860,12 +860,12 @@ rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
  * ```c
  * ticks = (us * timer_hz + 500000) / 1000000
  *       = (us * 7500000 + 500000) / 1000000
- *       ≈ us * 7.5 (with rounding)
+ *       ~ us * 7.5 (with rounding)
  * ```
  *
  * **Example:**
- * - 10 µs delay: (10 × 7,500,000 + 500,000) / 1,000,000 = 75 ticks
- * - 100 µs delay: (100 × 7,500,000 + 500,000) / 1,000,000 = 750 ticks
+ * - 10 us delay: (10 x 7,500,000 + 500,000) / 1,000,000 = 75 ticks
+ * - 100 us delay: (100 x 7,500,000 + 500,000) / 1,000,000 = 750 ticks
  *
  * **Rounding:** `k_timer_rounding = 500000` adds 0.5 before truncation (round to nearest).
  *
@@ -874,7 +874,7 @@ rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
  * **Maximum delay protection:**
  * - Single iteration: 65,535 ticks (8.7 ms)
  * - Max iterations: 100 (k_max_delay_iterations)
- * - Total max: 65,535 × 100 = 6,553,500 ticks ≈ 873 ms
+ * - Total max: 65,535 x 100 = 6,553,500 ticks ~ 873 ms
  *
  * **Why bounded?**
  * - Prevents infinite loops on calculation errors
@@ -892,7 +892,7 @@ rx_err_t hcsr04_hal_gpio_deinit(const rx_port_pin_t pin)
  * | `k_us_per_second`       | 1,000,000  | Conversion factor                |
  * | `k_timer_rounding`      | 500,000    | Rounding for integer division    |
  * | `k_max_delay_iterations`| 100        | Loop safety bound                |
- * | `k_max_delay_ticks`     | 6,553,500  | Computed max (65535 × 100)       |
+ * | `k_max_delay_ticks`     | 6,553,500  | Computed max (65535 x 100)       |
  * | `k_no_delay`            | 0          | Early-exit sentinel              |
  * | `k_min_ticks`           | 1          | Minimum delay (prevent zero-wait)|
  * | `k_cmstr1_cmt2_enable_bit` | Bit 0   | CMSTR1 start bit                 |
@@ -903,7 +903,7 @@ typedef enum : uint32_t {
   k_cmt2_divider_bits      = 0x0000,  /**< CMCR.CKS[1:0] = 00 for /8 */
   k_timer_counter_max      = 0xFFFF,  /**< 16-bit max value (65535 ticks) */
   k_timer_counter_bits     = 16,      /**< Counter width for overflow tracking */
-  k_us_per_second          = 1000000, /**< µs to seconds conversion */
+  k_us_per_second          = 1000000, /**< us to seconds conversion */
   k_timer_rounding         = 500000,  /**< Add 0.5 for round-to-nearest */
   k_max_delay_iterations   = 100,     /**< NASA Rule 2: Loop bound (max 873 ms) */
   k_max_delay_ticks        = k_timer_counter_max * k_max_delay_iterations, /**< 6.55M ticks */
@@ -974,7 +974,7 @@ static bool s_cmt2_initialized = false;
  * - Created once by `internal_time_mutex_init()`
  *
  * @warning Only access via ThreadX APIs (tx_mutex_get/put)
- * @note Mutex overhead: ~5 µs per get_time_us() call
+ * @note Mutex overhead: ~5 us per get_time_us() call
  */
 static TX_MUTEX s_time_mutex;
 
@@ -1050,7 +1050,7 @@ static bool s_time_mutex_initialized = false;
  * @post s_time_mutex_initialized = true (if k_rx_ok returned)
  *
  * @note Idempotent: Safe to call multiple times
- * @note First call: ~50 µs (mutex creation overhead)
+ * @note First call: ~50 us (mutex creation overhead)
  * @note Subsequent calls: ~100 ns (flag check only)
  *
  * @warning Do NOT call before ThreadX kernel starts
@@ -1158,7 +1158,7 @@ static rx_err_t internal_time_mutex_init(void)
  * @post s_cmt2_initialized = true
  *
  * @note Idempotent: Safe to call multiple times (flag prevents reconfig)
- * @note First call: ~5 µs (register writes + module enable)
+ * @note First call: ~5 us (register writes + module enable)
  * @note Subsequent calls: ~50 ns (flag check only)
  * @note CMT2 runs forever after init (never stopped)
  *
@@ -1249,11 +1249,11 @@ static void internal_cmt2_init(void)
  * @warning Accuracy degrades for large us values due to 16-bit counter overflow splitting
  *
  * @par Performance:
- * Overhead: ~3-5 µs minimum due to init check and loop setup @ 240 MHz
+ * Overhead: ~3-5 us minimum due to init check and loop setup @ 240 MHz
  *
  * @par Example:
  * @code
- * // Generate 10 µs HC-SR04 trigger pulse
+ * // Generate 10 us HC-SR04 trigger pulse
  * hcsr04_hal_gpio_write_high(trigger_pin);
  * hcsr04_hal_delay_us(10);
  * hcsr04_hal_gpio_write_low(trigger_pin);
@@ -1346,7 +1346,7 @@ void hcsr04_hal_delay_us(uint32_t us)
  *          if called less frequently the overflow count may be incorrect
  *
  * @par Performance:
- * Execution time: ~5-10 µs with mutex @ 240 MHz (ThreadX overhead)
+ * Execution time: ~5-10 us with mutex @ 240 MHz (ThreadX overhead)
  *
  * @par Example:
  * @code
@@ -1408,7 +1408,7 @@ uint32_t hcsr04_hal_get_time_us(void)
 }
 
 /**
- * @brief Get monotonic timestamp in microseconds — ISR-safe (no mutex)
+ * @brief Get monotonic timestamp in microseconds -- ISR-safe (no mutex)
  *
  * @details
  * Reads the CMT2 counter directly without acquiring the ThreadX mutex.
@@ -1420,7 +1420,7 @@ uint32_t hcsr04_hal_get_time_us(void)
  * mode is therefore limited to ~150 cm maximum range.
  *
  * @return CMT2 counter converted to microseconds (no overflow tracking)
- * @retval uint32_t Value in range [0, ~8700) µs; wraps every ~8.7 ms with CMT2 period
+ * @retval uint32_t Value in range [0, ~8700) us; wraps every ~8.7 ms with CMT2 period
  *
  * @pre CMT2 timer initialized (call hcsr04_hal_get_time_us() once at startup)
  * @pre Called from interrupt context (no ThreadX blocking calls permitted)
@@ -1434,7 +1434,7 @@ uint32_t hcsr04_hal_get_time_us(void)
  *
  * @par Example: Edge Timestamp in ISR
  * @code
- * // Typical ISR usage — capture rising/falling edge timestamp:
+ * // Typical ISR usage -- capture rising/falling edge timestamp:
  * uint32_t ts = hcsr04_hal_get_time_us_isr();
  * s_irq_state[idx].start_us = ts;  // Rising edge
  * // OR
@@ -1449,7 +1449,7 @@ uint32_t hcsr04_hal_get_time_us(void)
 uint32_t hcsr04_hal_get_time_us_isr(void)
 {
   /* Simplified ratio: 1,000,000 / (60,000,000 / 8) = 2/15.
-   * Max value: 65535 * 2 / 15 = 8738 µs. Fits in uint32_t, no 64-bit math. */
+   * Max value: 65535 * 2 / 15 = 8738 us. Fits in uint32_t, no 64-bit math. */
   const uint16_t current_count = cmt2()->cmcnt;
 
   return ((uint32_t)current_count * k_isr_us_numerator) / k_isr_us_denominator;

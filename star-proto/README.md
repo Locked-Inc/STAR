@@ -41,16 +41,16 @@ go work sync
 
 ```
 star-proto/
-├── proto/              # Protocol Buffer definitions (.proto files)
-│   └── star/v1/        # STAR v1 API
-├── gen/                # Generated code (gitignored)
-│   ├── go/             # Go gRPC/protobuf code
-│   ├── typescript/     # TypeScript code for star-ui
-│   ├── nanopb/         # C code for star-rx72n-firmware
-│   └── cpp/            # C++ code for star-ros2
-├── nanopb/             # nanopb configuration files
-└── tests/              # Protocol buffer tests
-    └── go/             # Go test cases
++-- proto/              # Protocol Buffer definitions (.proto files)
+|   +-- star/v1/        # STAR v1 API
++-- gen/                # Generated code (gitignored)
+|   +-- go/             # Go gRPC/protobuf code
+|   +-- typescript/     # TypeScript code for star-ui
+|   +-- nanopb/         # C code for star-rx72n-firmware
+|   +-- cpp/            # C++ code for star-ros2
++-- nanopb/             # nanopb configuration files
++-- tests/              # Protocol buffer tests
+    +-- go/             # Go test cases
 ```
 
 ## Linting and Formatting

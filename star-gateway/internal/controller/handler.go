@@ -128,10 +128,10 @@ func (h *Handler) GetSafeState() *starv1.ControllerState {
 //
 // Implements differential drive inverse kinematics for a 4-wheel robot:
 //
-//	vL = v - (ω * wheelBase) / 2
-//	vR = v + (ω * wheelBase) / 2
+//	vL = v - (omega * wheelBase) / 2
+//	vR = v + (omega * wheelBase) / 2
 //
-// where v is linear velocity (m/s), ω is angular velocity (rad/s), and wheelBase is track width (m).
+// where v is linear velocity (m/s), omega is angular velocity (rad/s), and wheelBase is track width (m).
 //
 // Motor Layout (top view):
 //

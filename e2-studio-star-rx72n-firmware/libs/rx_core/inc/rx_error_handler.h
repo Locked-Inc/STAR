@@ -37,7 +37,7 @@
  *
  * **Exponential Backoff**:
  * - Initial backoff delay configurable
- * - Exponential growth: delay = initial × 2^retry_count
+ * - Exponential growth: delay = initial x 2^retry_count
  * - Maximum backoff cap to prevent excessive delays
  * - Per-component backoff calculation
  *
@@ -52,9 +52,9 @@
  *
  * ```
  * High-Level Modules (Motor Control, SPI Driver, etc.)
- *           ↓ depends on ↓
+ *           v depends on v
  *    rx_error_interface_t (Abstract Interface)
- *           ↑ implements ↑
+ *           ^ implements ^
  *      error_handler_t (Concrete Implementation - THIS MODULE)
  * ```
  *
@@ -95,33 +95,33 @@
  *
  * **Exponential Backoff Calculation**:
  * ```
- * backoff = initial_backoff_ms × (2 ^ retry_count)
+ * backoff = initial_backoff_ms x (2 ^ retry_count)
  * backoff = min(backoff, max_backoff_ms)  // Cap at maximum
  * ```
  *
  * Example with initial=10ms, max=5000ms:
- * - Retry 0: 10ms × 2^0 = 10ms
- * - Retry 1: 10ms × 2^1 = 20ms
- * - Retry 2: 10ms × 2^2 = 40ms
- * - Retry 3: 10ms × 2^3 = 80ms
- * - Retry 4: 10ms × 2^4 = 160ms
+ * - Retry 0: 10ms x 2^0 = 10ms
+ * - Retry 1: 10ms x 2^1 = 20ms
+ * - Retry 2: 10ms x 2^2 = 40ms
+ * - Retry 3: 10ms x 2^3 = 80ms
+ * - Retry 4: 10ms x 2^4 = 160ms
  * - ...
- * - Retry 9: 10ms × 2^9 = 5120ms -> capped at 5000ms
+ * - Retry 9: 10ms x 2^9 = 5120ms -> capped at 5000ms
  *
  * ## Performance Characteristics
  *
  * | Operation | Execution Time | Memory | Notes |
  * |-----------|---------------|--------|-------|
- * | error_handler_init() | ~50 µs | 0 heap | One-time, mutex creation |
- * | report_error() | ~10 µs × N components | 0 | Linear search (N ≤ 16) |
- * | is_retry_limit_reached() | ~5 µs × N components | 0 | Linear search |
- * | get_backoff_delay() | ~8 µs × N components | 0 | Linear search + calculation |
- * | reset_component_state() | ~5 µs × N components | 0 | Linear search |
+ * | error_handler_init() | ~50 us | 0 heap | One-time, mutex creation |
+ * | report_error() | ~10 us x N components | 0 | Linear search (N <= 16) |
+ * | is_retry_limit_reached() | ~5 us x N components | 0 | Linear search |
+ * | get_backoff_delay() | ~8 us x N components | 0 | Linear search + calculation |
+ * | reset_component_state() | ~5 us x N components | 0 | Linear search |
  *
  * **Memory Footprint (Static Allocation)**:
  * - error_handler_t struct: ~1.3 KB
  *   - TX_MUTEX: ~100 bytes (ThreadX internal)
- *   - components[16]: 16 × 72 bytes = 1152 bytes
+ *   - components[16]: 16 x 72 bytes = 1152 bytes
  *   - Other fields: ~20 bytes
  * - Total: ~1.3 KB RAM (zero heap usage)
  *
@@ -181,7 +181,7 @@
  * | 2. Fixed loop bounds | [OK] | All loops bounded by k_error_handler_max_components (16) |
  * | 3. No dynamic allocation | [OK] | Zero malloc/free, static component array |
  * | 4. Small functions | [OK] | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
+ * | 5. Assertions (>=2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
  * | 6. Narrow scope | [OK] | File-scope statics, function-local variables |
  * | 7. Check return values | [OK] | All functions return rx_err_t, checked by callers |
  * | 8. Limited preprocessor | [OK] | C23 typed enums only, zero computation macros |
@@ -270,8 +270,8 @@ extern "C" {
  *   - Sensors (encoders, ultrasonic, lidar) -> 5 components
  *   - Peripherals (DRV8243, flash, EEPROM) -> 4 components
  * - Total: ~16 unique error sources in typical system
- * - Memory usage: 16 × 72 bytes = 1152 bytes (reasonable for RX72N with 512KB SRAM)
- * - Linear search performance: < 10 µs for 16 components at 240 MHz
+ * - Memory usage: 16 x 72 bytes = 1152 bytes (reasonable for RX72N with 512KB SRAM)
+ * - Linear search performance: < 10 us for 16 components at 240 MHz
  *
  * **k_error_handler_component_name_max = 32**:
  * - Accommodates descriptive component names:
@@ -286,7 +286,7 @@ extern "C" {
  * Component tracking array size:
  * ```
  * sizeof(error_component_state_t) = 32 + 4 + 4 + 1 + (3 padding) = 44 bytes
- * Total array: 44 × 16 = 704 bytes
+ * Total array: 44 x 16 = 704 bytes
  * Plus handler overhead: ~256 bytes
  * Total: ~1 KB RAM for error tracking
  * ```
@@ -296,7 +296,7 @@ extern "C" {
  * **If you need MORE components** (> 16):
  * - Increase k_error_handler_max_components to 32 or 64
  * - Memory cost: +704 bytes per doubling
- * - Search time: +5 µs per doubling (still acceptable)
+ * - Search time: +5 us per doubling (still acceptable)
  * - Recompile required (constant change)
  *
  * **If you need LESS memory**:
@@ -320,7 +320,7 @@ extern "C" {
  * }
  * @endcode
  *
- * @invariant k_error_handler_max_components × sizeof(error_component_state_t) < 2 KB
+ * @invariant k_error_handler_max_components x sizeof(error_component_state_t) < 2 KB
  * @invariant k_error_handler_component_name_max accommodates typical names (< 32 chars)
  * @invariant All values are compile-time constants (no runtime overhead)
  *
@@ -369,13 +369,13 @@ typedef enum : uint8_t {
  * **State Machine per Component**:
  * ```
  * [UNUSED] (in_use=false, error_count=0, retry_count=0)
- *     ↓ report_error(name)
+ *     v report_error(name)
  * [IN_USE] (in_use=true, error_count=1, retry_count=0)
- *     ↓ subsequent errors
+ *     v subsequent errors
  * [RETRYING] (error_count++, retry_count++)
- *     ↓ max retries reached
+ *     v max retries reached
  * [FAILED] (retry_count >= max_retries)
- *     ↓ reset_component_state(name)
+ *     v reset_component_state(name)
  * [UNUSED] (back to initial state)
  * ```
  *
@@ -446,8 +446,8 @@ typedef enum : uint8_t {
  * @endcode
  *
  * @invariant in_use=false -> error_count=0 AND retry_count=0
- * @invariant in_use=true -> name[0]≠'\0' AND error_count≥1
- * @invariant retry_count ≤ error_count (always)
+ * @invariant in_use=true -> name[0]!='\0' AND error_count>=1
+ * @invariant retry_count <= error_count (always)
  * @invariant name is always null-terminated
  *
  * @note Structure size is 44 bytes (32 + 4 + 4 + 1 + 3 padding)
@@ -503,7 +503,7 @@ typedef struct {
  * |--------|------|-------|------|-----------|-------|
  * | 0 | ~100 | mutex | TX_MUTEX | 4 | ThreadX mutex (size varies by config) |
  * | 100 | 4 | total_error_count | uint32_t | 4 | Global error counter |
- * | 104 | 704 | components[16] | array | 4 | 16 × 44 bytes per component |
+ * | 104 | 704 | components[16] | array | 4 | 16 x 44 bytes per component |
  * | 808 | 4 | max_retries | uint32_t | 4 | Retry limit configuration |
  * | 812 | 4 | initial_backoff_ms | uint32_t | 4 | Initial backoff delay |
  * | 816 | 4 | max_backoff_ms | uint32_t | 4 | Maximum backoff cap |
@@ -527,11 +527,11 @@ typedef struct {
  *
  * ```
  * [UNINITIALIZED] (all fields undefined)
- *     ↓ error_handler_init(&handler, &config)
+ *     v error_handler_init(&handler, &config)
  * [INITIALIZED] (mutex created, counters zeroed, initialized=true)
- *     ↓ normal operation (report_error, retry checks)
+ *     v normal operation (report_error, retry checks)
  * [IN_USE] (components registered, counters incrementing)
- *     ↓ error_handler_deinit(&handler)
+ *     v error_handler_deinit(&handler)
  * [DEINITIALIZED] (mutex deleted, initialized=false)
  * ```
  *
@@ -541,10 +541,10 @@ typedef struct {
  * |-------|--------------|-----------|-------|
  * | mutex | Valid TX_MUTEX | Created if initialized=true | ThreadX owned |
  * | total_error_count | 0 to 2^32-1 | Sum of all components[].error_count | Wraps on overflow |
- * | components[] | See error_component_state_t | in_use=true slots ≤ 16 | Static array |
+ * | components[] | See error_component_state_t | in_use=true slots <= 16 | Static array |
  * | max_retries | 0 to 2^32-1 | 0 = unlimited retries | From config |
  * | initial_backoff_ms | 1 to max_backoff_ms | > 0 for meaningful backoff | From config |
- * | max_backoff_ms | ≥ initial_backoff_ms | Caps exponential growth | From config |
+ * | max_backoff_ms | >= initial_backoff_ms | Caps exponential growth | From config |
  * | initialized | true/false | true after init, false after deinit | Lifecycle flag |
  *
  * @par Usage Example (Declaration and Initialization):
@@ -598,9 +598,9 @@ typedef struct {
  * @endcode
  *
  * @invariant initialized=true -> mutex is valid AND total_error_count defined
- * @invariant total_error_count ≥ sum of all components[].error_count (approximately)
- * @invariant max_backoff_ms ≥ initial_backoff_ms (always)
- * @invariant Number of in_use=true components ≤ k_error_handler_max_components
+ * @invariant total_error_count >= sum of all components[].error_count (approximately)
+ * @invariant max_backoff_ms >= initial_backoff_ms (always)
+ * @invariant Number of in_use=true components <= k_error_handler_max_components
  *
  * @note Structure must be statically allocated or have lifetime exceeding all users
  * @note Typical allocation: File-scope static (static error_handler_t s_handler)
@@ -628,9 +628,9 @@ typedef struct {
   uint32_t
     max_retries; /**< Maximum retry attempts before giving up. 0 = unlimited retries (use with caution). Copied from error_handler_config_t during init. Compared against components[].retry_count to determine failure */
   uint32_t
-    initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential backoff calculation: delay = initial × 2^retry_count. Typical values: 10ms to 100ms. Must be > 0 for meaningful backoff */
+    initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential backoff calculation: delay = initial x 2^retry_count. Typical values: 10ms to 100ms. Must be > 0 for meaningful backoff */
   uint32_t
-    max_backoff_ms; /**< Maximum backoff delay cap in milliseconds. Prevents exponential backoff from growing unbounded. Typical values: 5000ms to 60000ms. Must be ≥ initial_backoff_ms. Limits delay = min(initial × 2^retry, max) */
+    max_backoff_ms; /**< Maximum backoff delay cap in milliseconds. Prevents exponential backoff from growing unbounded. Typical values: 5000ms to 60000ms. Must be >= initial_backoff_ms. Limits delay = min(initial x 2^retry, max) */
   bool
     initialized; /**< Initialization flag. true = error_handler_init() succeeded, structure is ready for use. false = Not initialized or deinitialized (error_handler_deinit() called). Check before all operations */
 } error_handler_t;
@@ -660,16 +660,16 @@ typedef struct {
  * ```
  * Config: initial_backoff_ms=10, max_backoff_ms=5000
  *
- * Retry 0: 10ms × 2^0 = 10ms
- * Retry 1: 10ms × 2^1 = 20ms
- * Retry 2: 10ms × 2^2 = 40ms
- * Retry 3: 10ms × 2^3 = 80ms
- * Retry 4: 10ms × 2^4 = 160ms
- * Retry 5: 10ms × 2^5 = 320ms
- * Retry 6: 10ms × 2^6 = 640ms
- * Retry 7: 10ms × 2^7 = 1280ms
- * Retry 8: 10ms × 2^8 = 2560ms
- * Retry 9: 10ms × 2^9 = 5120ms -> capped at 5000ms
+ * Retry 0: 10ms x 2^0 = 10ms
+ * Retry 1: 10ms x 2^1 = 20ms
+ * Retry 2: 10ms x 2^2 = 40ms
+ * Retry 3: 10ms x 2^3 = 80ms
+ * Retry 4: 10ms x 2^4 = 160ms
+ * Retry 5: 10ms x 2^5 = 320ms
+ * Retry 6: 10ms x 2^6 = 640ms
+ * Retry 7: 10ms x 2^7 = 1280ms
+ * Retry 8: 10ms x 2^8 = 2560ms
+ * Retry 9: 10ms x 2^9 = 5120ms -> capped at 5000ms
  * Retry 10+: 5000ms (max)
  * ```
  *
@@ -725,7 +725,7 @@ typedef struct {
  *
  * @note Configuration is copied during error_handler_init(), original can be freed
  * @note Changing configuration requires re-initializing error handler
- * @note Structure size is 12 bytes (3 × uint32_t)
+ * @note Structure size is 12 bytes (3 x uint32_t)
  *
  * @warning max_retries=0 means unlimited retries (can cause infinite loops)
  * @warning Very short backoff (< 1ms) defeats exponential backoff purpose
@@ -741,9 +741,9 @@ typedef struct {
   uint32_t
     max_retries; /**< Maximum number of retry attempts before giving up. 0 = unlimited retries (infinite loop risk). Typical values: 3 to 10. After this many retries, is_retry_limit_reached() returns true. Per-component limit */
   uint32_t
-    initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential calculation: delay = initial × 2^retry_count. Typical values: 10ms to 100ms. Must be > 0. Smaller = faster retries, larger = less aggressive */
+    initial_backoff_ms; /**< Initial backoff delay in milliseconds for first retry. Base value for exponential calculation: delay = initial x 2^retry_count. Typical values: 10ms to 100ms. Must be > 0. Smaller = faster retries, larger = less aggressive */
   uint32_t
-    max_backoff_ms; /**< Maximum backoff delay cap in milliseconds. Limits exponential growth: delay = min(initial × 2^retry, max). Typical values: 1000ms to 60000ms. Must be >= initial_backoff_ms. Prevents unbounded delays */
+    max_backoff_ms; /**< Maximum backoff delay cap in milliseconds. Limits exponential growth: delay = min(initial x 2^retry, max). Typical values: 1000ms to 60000ms. Must be >= initial_backoff_ms. Prevents unbounded delays */
 } error_handler_config_t;
 
 /* =============================================================================
@@ -810,7 +810,7 @@ typedef struct {
  * @attention After init, use error_handler_get_interface() to obtain abstract interface
  *
  * @par Performance:
- * - Execution time: ~50 µs @ 240 MHz (mutex creation dominates)
+ * - Execution time: ~50 us @ 240 MHz (mutex creation dominates)
  * - Memory: No dynamic allocation (mutex uses ThreadX pool)
  * - Stack usage: < 64 bytes
  *
@@ -901,9 +901,9 @@ typedef struct {
  * **Dependency Inversion Pattern**:
  * ```
  * High-Level Module (Motor Controller)
- *        ↓ depends on ↓
- * rx_error_interface_t (Abstract)  ← THIS FUNCTION PRODUCES THIS
- *        ↑ implements ↑
+ *        v depends on v
+ * rx_error_interface_t (Abstract)  <- THIS FUNCTION PRODUCES THIS
+ *        ^ implements ^
  * error_handler_t (Concrete)
  * ```
  *
@@ -943,7 +943,7 @@ typedef struct {
  * @attention Interface must not outlive handler structure
  *
  * @par Performance:
- * - Execution time: ~2 µs @ 240 MHz (simple pointer assignments)
+ * - Execution time: ~2 us @ 240 MHz (simple pointer assignments)
  * - Memory: No allocation, just fills existing structure
  * - Stack usage: < 16 bytes
  *
@@ -1055,7 +1055,7 @@ typedef struct {
  * @attention Always call before destroying handler or on system shutdown
  *
  * @par Performance:
- * - Execution time: ~30 µs @ 240 MHz (mutex deletion dominates)
+ * - Execution time: ~30 us @ 240 MHz (mutex deletion dominates)
  * - Memory: Frees ThreadX mutex resources
  * - Stack usage: < 32 bytes
  *

@@ -10,84 +10,84 @@
  *
  * @par 1-Wire Protocol Architecture
  * @code
- * ┌──────────────────────────────────────────────────────────────┐
- * │                    Application Layer                         │
- * │  (DS18B20 temp sensor, DS2431 EEPROM, etc.)                 │
- * └──────────────────────────────────────────────────────────────┘
- *                              ▲
- *                              │ Device Commands
- *                              ▼
- * ┌──────────────────────────────────────────────────────────────┐
- * │               ROM Command Layer (This Test Suite)            │
- * │  • Read ROM [0x33]      • Skip ROM [0xCC]                   │
- * │  • Match ROM [0x55]     • Search ROM [0xF0]                 │
- * └──────────────────────────────────────────────────────────────┘
- *                              ▲
- *                              │ Byte/Bit Operations
- *                              ▼
- * ┌──────────────────────────────────────────────────────────────┐
- * │         Bit/Byte Transfer Layer (rx_bus_onewire.c)          │
- * │  • write_bit()  • read_bit()                                │
- * │  • write_byte() • read_byte()                               │
- * └──────────────────────────────────────────────────────────────┘
- *                              ▲
- *                              │ Timing Slots
- *                              ▼
- * ┌──────────────────────────────────────────────────────────────┐
- * │           Timing Layer (mock_rx_onewire_hw)                 │
- * │  • Reset/Presence Pulse  • Time Slot Generation             │
- * │  • Microsecond delays    • GPIO control                     │
- * └──────────────────────────────────────────────────────────────┘
- *                              ▲
- *                              │ Physical Layer
- *                              ▼
- * ┌──────────────────────────────────────────────────────────────┐
- * │              Hardware (GPIO + Pull-up Resistor)              │
- * │  Single-wire open-drain: P0.5 + 4.7kΩ pull-up              │
- * └──────────────────────────────────────────────────────────────┘
+ * +--------------------------------------------------------------+
+ * |                    Application Layer                         |
+ * |  (DS18B20 temp sensor, DS2431 EEPROM, etc.)                 |
+ * +--------------------------------------------------------------+
+ *                              ^
+ *                              | Device Commands
+ *                              v
+ * +--------------------------------------------------------------+
+ * |               ROM Command Layer (This Test Suite)            |
+ * |  - Read ROM [0x33]      - Skip ROM [0xCC]                   |
+ * |  - Match ROM [0x55]     - Search ROM [0xF0]                 |
+ * +--------------------------------------------------------------+
+ *                              ^
+ *                              | Byte/Bit Operations
+ *                              v
+ * +--------------------------------------------------------------+
+ * |         Bit/Byte Transfer Layer (rx_bus_onewire.c)          |
+ * |  - write_bit()  - read_bit()                                |
+ * |  - write_byte() - read_byte()                               |
+ * +--------------------------------------------------------------+
+ *                              ^
+ *                              | Timing Slots
+ *                              v
+ * +--------------------------------------------------------------+
+ * |           Timing Layer (mock_rx_onewire_hw)                 |
+ * |  - Reset/Presence Pulse  - Time Slot Generation             |
+ * |  - Microsecond delays    - GPIO control                     |
+ * +--------------------------------------------------------------+
+ *                              ^
+ *                              | Physical Layer
+ *                              v
+ * +--------------------------------------------------------------+
+ * |              Hardware (GPIO + Pull-up Resistor)              |
+ * |  Single-wire open-drain: P0.5 + 4.7kOhm pull-up              |
+ * +--------------------------------------------------------------+
  * @endcode
  *
  * @par 1-Wire Timing Specification (Dallas/Maxim)
  *
  * **Reset and Presence Pulse:**
  * @code
- * Controller:  ──┐                      ┌───────────────────────
- *               └──────────────────────┘
- *                │◄─── 480-960µs ────►│
+ * Controller:  --+                      +-----------------------
+ *               +----------------------+
+ *                |<--- 480-960us ---->|
  *
- * Device:      ─────────────────┐      ┌─────────────────────────
- *                              └──────┘
- *                               │◄ 60-240µs ►│
+ * Device:      -----------------+      +-------------------------
+ *                              +------+
+ *                               |< 60-240us >|
  *                               Presence Pulse
- * Sampling:                         ▲
- *                                 15-60µs after release
+ * Sampling:                         ^
+ *                                 15-60us after release
  * @endcode
  *
- * **Write-0 Time Slot (60-120µs):**
+ * **Write-0 Time Slot (60-120us):**
  * @code
- * Controller:  ──┐                 ┌──────────────────────────
- *               └─────────────────┘
- *                │◄─ 60-120µs ──►│◄─ Recovery >1µs
+ * Controller:  --+                 +--------------------------
+ *               +-----------------+
+ *                |<- 60-120us -->|<- Recovery >1us
  *
- * Device:      Samples at 15-30µs: reads '0'
+ * Device:      Samples at 15-30us: reads '0'
  * @endcode
  *
- * **Write-1 Time Slot (60-120µs):**
+ * **Write-1 Time Slot (60-120us):**
  * @code
- * Controller:  ──┐┌──────────────────────────────────────────
- *               └┘
- *                │◄ 1-15µs ►│◄─────── Release ─────────►│
+ * Controller:  --++------------------------------------------
+ *               ++
+ *                |< 1-15us >|<------- Release --------->|
  *
- * Device:      Samples at 15-30µs: reads '1' (pull-up)
+ * Device:      Samples at 15-30us: reads '1' (pull-up)
  * @endcode
  *
- * **Read Time Slot (60-120µs):**
+ * **Read Time Slot (60-120us):**
  * @code
- * Controller:  ──┐┌──────────────────────────────────────────
- *               └┘
- *                │◄ 1-15µs ►│
- *                           ▲
- *                         Sample at 15µs
+ * Controller:  --++------------------------------------------
+ *               ++
+ *                |< 1-15us >|
+ *                           ^
+ *                         Sample at 15us
  * Device:         Pulls low if sending '0'
  * @endcode
  *
@@ -96,15 +96,15 @@
  * Every 1-Wire device has a unique 64-bit ROM code programmed at factory:
  *
  * @code
- * ┌──────────────────────────────────────────────────────────────┐
- * │  Byte 0  │  Byte 1-6   │  Byte 7   │  Transmission Order   │
- * │  8-bit   │  48-bit     │  8-bit    │  LSB first (bit 0)    │
- * │  Family  │  Serial #   │  CRC-8    │  Then MSB (bit 7)     │
- * │  Code    │  (unique)   │           │                       │
- * └──────────────────────────────────────────────────────────────┘
+ * +--------------------------------------------------------------+
+ * |  Byte 0  |  Byte 1-6   |  Byte 7   |  Transmission Order   |
+ * |  8-bit   |  48-bit     |  8-bit    |  LSB first (bit 0)    |
+ * |  Family  |  Serial #   |  CRC-8    |  Then MSB (bit 7)     |
+ * |  Code    |  (unique)   |           |                       |
+ * +--------------------------------------------------------------+
  *
  * Example DS18B20 ROM: [0x28][0xFF][0x12][0x34][0x56][0x78][0x9A][0xBC]
- *                       ▲                                             ▲
+ *                       ^                                             ^
  *                     Family                                        CRC-8
  *                     0x28 = DS18B20
  *                     0x10 = DS18S20
@@ -119,12 +119,12 @@
  * @par Test Methodology
  *
  * **1. Timing Verification:**
- * - Mock timer captures GPIO pulse widths with 1µs resolution
- * - Validates reset pulse duration (480-960µs)
- * - Validates presence pulse sampling (15-60µs after release)
- * - Validates write-0 slot (60-120µs low)
- * - Validates write-1 slot (1-15µs low)
- * - Validates read slot timing and sampling point (15µs)
+ * - Mock timer captures GPIO pulse widths with 1us resolution
+ * - Validates reset pulse duration (480-960us)
+ * - Validates presence pulse sampling (15-60us after release)
+ * - Validates write-0 slot (60-120us low)
+ * - Validates write-1 slot (1-15us low)
+ * - Validates read slot timing and sampling point (15us)
  *
  * **2. ROM Command Testing:**
  * - **Read ROM [0x33]:** Single device, read 64-bit ROM code
@@ -173,26 +173,26 @@
  * @par Hardware Requirements
  *
  * **Timer Resolution:**
- * - Minimum: 1µs (for 15µs sampling accuracy)
- * - Recommended: 0.5µs or better (±10% timing tolerance)
- * - RX72N CMT provides 0.166µs resolution @ 240 MHz
+ * - Minimum: 1us (for 15us sampling accuracy)
+ * - Recommended: 0.5us or better (+/-10% timing tolerance)
+ * - RX72N CMT provides 0.166us resolution @ 240 MHz
  *
  * **GPIO Capabilities:**
  * - Open-drain output mode (CMOS push-pull NOT compatible)
  * - Schmitt-trigger input for noise immunity
- * - Internal pull-up disabled (external 4.7kΩ required)
- * - Fast slew rate: <1µs rise time with 100pF bus capacitance
+ * - Internal pull-up disabled (external 4.7kOhm required)
+ * - Fast slew rate: <1us rise time with 100pF bus capacitance
  *
  * **Pull-up Resistor Selection:**
  * @code
  * R_pullup = (V_OH - V_OL) / I_sink
  *
  * For 5V bus with 5mA sink:
- * R = (5V - 0.4V) / 5mA = 920Ω minimum
+ * R = (5V - 0.4V) / 5mA = 920Ohm minimum
  *
- * Standard: 4.7kΩ (supports up to 200m cable length)
- * Long cable: 2.2kΩ (supports up to 100m with reduced devices)
- * Short bus: 1.0kΩ (max speed, <10m, few devices)
+ * Standard: 4.7kOhm (supports up to 200m cable length)
+ * Long cable: 2.2kOhm (supports up to 100m with reduced devices)
+ * Short bus: 1.0kOhm (max speed, <10m, few devices)
  * @endcode
  *
  * @par NASA Power of 10 Compliance
@@ -512,7 +512,7 @@ void tearDown(void)
  *
  * **Expected GPIO State:**
  * - Pin configured as input (output disabled)
- * - Internal pull-up disabled (external 4.7kΩ used)
+ * - Internal pull-up disabled (external 4.7kOhm used)
  * - Schmitt-trigger enabled for noise immunity
  *
  * @pre setUp() completed successfully
@@ -691,8 +691,8 @@ void test_rx_bus_onewire_init_gpio_error(void)
  *
  * @details
  * Validates reset pulse and presence detection:
- * - Reset pulse timing (480-960µs)
- * - Presence pulse detection (60-240µs response)
+ * - Reset pulse timing (480-960us)
+ * - Presence pulse detection (60-240us response)
  * - Device present vs. absent detection
  * - nullptr pointer handling
  * - Uninitialized bus handling
@@ -700,10 +700,10 @@ void test_rx_bus_onewire_init_gpio_error(void)
  *
  * **1-Wire Reset Sequence:**
  * @code
- * 1. Controller pulls bus low for 480-960µs
+ * 1. Controller pulls bus low for 480-960us
  * 2. Controller releases bus (returns to high via pull-up)
- * 3. Wait 15-60µs for device to detect rising edge
- * 4. Device pulls bus low for 60-240µs (presence pulse)
+ * 3. Wait 15-60us for device to detect rising edge
+ * 4. Device pulls bus low for 60-240us (presence pulse)
  * 5. Controller samples bus to detect presence
  * 6. Both release bus, idle high
  * @endcode
@@ -729,7 +729,7 @@ void test_rx_bus_onewire_init_gpio_error(void)
  * 4. Verify presence = true
  *
  * **Mock GPIO behavior:**
- * - Returns false (low) when sampled 15-60µs after reset
+ * - Returns false (low) when sampled 15-60us after reset
  * - Simulates DS18B20 presence pulse
  *
  * @pre Bus initialized
@@ -891,16 +891,16 @@ void test_rx_bus_onewire_reset_null_manager(void)
  *
  * @details
  * Validates bit-level 1-Wire operations:
- * - Write-1 time slot (1-15µs low pulse)
- * - Write-0 time slot (60-120µs low pulse)
- * - Read time slot (1-15µs low, sample at 15µs)
+ * - Write-1 time slot (1-15us low pulse)
+ * - Write-0 time slot (60-120us low pulse)
+ * - Read time slot (1-15us low, sample at 15us)
  * - LSB-first bit order
  * - GPIO operation counting
  * - Error handling
  *
  * **Timing Requirements:**
- * All time slots are 60-120µs total. Controller distinguishes write-0 vs
- * write-1 by pulse width. Devices sample at 15-30µs.
+ * All time slots are 60-120us total. Controller distinguishes write-0 vs
+ * write-1 by pulse width. Devices sample at 15-30us.
  *
  * **Coverage:** 8 tests, 100% code paths
  *
@@ -914,12 +914,12 @@ void test_rx_bus_onewire_reset_null_manager(void)
  * Validates write-1 time slot timing and GPIO sequence.
  *
  * **Expected GPIO sequence:**
- * 1. Pull bus low for 1-15µs (write-1 start)
+ * 1. Pull bus low for 1-15us (write-1 start)
  * 2. Release bus immediately (return to high via pull-up)
- * 3. Wait for slot completion (60-120µs total)
+ * 3. Wait for slot completion (60-120us total)
  *
  * **Device behavior:**
- * - Samples bus at ~15µs
+ * - Samples bus at ~15us
  * - Reads '1' (bus is high due to pull-up)
  *
  * @pre Bus initialized
@@ -950,17 +950,17 @@ void test_rx_bus_onewire_write_bit_one(void)
  * Validates write-0 time slot timing and GPIO sequence.
  *
  * **Expected GPIO sequence:**
- * 1. Pull bus low for 60-120µs (write-0 duration)
+ * 1. Pull bus low for 60-120us (write-0 duration)
  * 2. Release bus (return to high via pull-up)
- * 3. Recovery time >1µs before next operation
+ * 3. Recovery time >1us before next operation
  *
  * **Device behavior:**
- * - Samples bus at ~15µs
+ * - Samples bus at ~15us
  * - Reads '0' (bus is still low)
  *
  * @pre Bus initialized
  * @post At least one GPIO low pulse detected
- * @post Pulse width longer than write-1 (60-120µs vs 1-15µs)
+ * @post Pulse width longer than write-1 (60-120us vs 1-15us)
  *
  * @see rx_bus_onewire_write_bit() Function under test
  */
@@ -1021,8 +1021,8 @@ void test_rx_bus_onewire_write_bit_null_manager(void)
  * Validates read time slot when device transmits '1'.
  *
  * **Read sequence:**
- * 1. Controller pulls bus low for 1-15µs
- * 2. Controller releases and samples at ~15µs
+ * 1. Controller pulls bus low for 1-15us
+ * 2. Controller releases and samples at ~15us
  * 3. Device keeps bus high (or doesn't pull low)
  * 4. Controller reads '1'
  *
@@ -1054,8 +1054,8 @@ void test_rx_bus_onewire_read_bit_high(void)
  * Validates read time slot when device transmits '0'.
  *
  * **Read sequence:**
- * 1. Controller pulls bus low for 1-15µs
- * 2. Controller releases and samples at ~15µs
+ * 1. Controller pulls bus low for 1-15us
+ * 2. Controller releases and samples at ~15us
  * 3. Device pulls bus low (transmits '0')
  * 4. Controller reads '0'
  *
@@ -1161,7 +1161,7 @@ void test_rx_bus_onewire_read_bit_not_initialized(void)
  * **Wire order:** 1,1,0,1,0,1,0,1 (bit0 first)
  *
  * **Verification:**
- * - Counts GPIO low pulses (should be ≥8 for 8 bits)
+ * - Counts GPIO low pulses (should be >=8 for 8 bits)
  * - Each bit requires at least one low pulse
  *
  * @pre Bus initialized
@@ -1974,7 +1974,7 @@ void test_rx_bus_onewire_read_rom_null_manager(void)
  * @code
  * Device A: 0x28_01_00_00_00_00_00_CRC
  * Device B: 0x28_02_00_00_00_00_00_CRC
- *           ▲
+ *           ^
  *         Bit 8 differs
  *
  * Iteration 1: Choose '0' at bit 8 -> Find Device A
@@ -2538,7 +2538,7 @@ static const bool s_seq_single_search[k_test_single_search_len] = {
 static const bool s_seq_two_device[k_test_two_device_seq_len] = {
   /* === Iteration 1: finds Device A === */
   false, /* presence */
-  /* byte 0: 0x28 — both devices agree, responses (bit, !bit) */
+  /* byte 0: 0x28 -- both devices agree, responses (bit, !bit) */
   false,
   true,
   false,
@@ -2572,7 +2572,7 @@ static const bool s_seq_two_device[k_test_two_device_seq_len] = {
   true,
   false,
   true,
-  /* bytes 2-6: all 0x00 — only Device A responding */
+  /* bytes 2-6: all 0x00 -- only Device A responding */
   false,
   true,
   false,
@@ -2653,7 +2653,7 @@ static const bool s_seq_two_device[k_test_two_device_seq_len] = {
   true,
   false,
   true,
-  /* byte 7: 0x1E — Device A CRC */
+  /* byte 7: 0x1E -- Device A CRC */
   false,
   true,
   true,
@@ -2672,7 +2672,7 @@ static const bool s_seq_two_device[k_test_two_device_seq_len] = {
   true,
   /* === Iteration 2: finds Device B === */
   false, /* presence */
-  /* byte 0: 0x28 — both devices agree again after reset */
+  /* byte 0: 0x28 -- both devices agree again after reset */
   false,
   true,
   false,
@@ -2706,7 +2706,7 @@ static const bool s_seq_two_device[k_test_two_device_seq_len] = {
   true,
   false,
   true,
-  /* bytes 2-6: all 0x00 — only Device B responding */
+  /* bytes 2-6: all 0x00 -- only Device B responding */
   false,
   true,
   false,
@@ -2787,7 +2787,7 @@ static const bool s_seq_two_device[k_test_two_device_seq_len] = {
   true,
   false,
   true,
-  /* byte 7: 0x29 — Device B CRC */
+  /* byte 7: 0x29 -- Device B CRC */
   true,
   false,
   false,
@@ -3023,7 +3023,7 @@ void test_rx_bus_onewire_search_crc_mismatch(void)
  * Validates the binary tree search algorithm with multiple simulated devices.
  * Uses pre-computed GPIO read sequences that model the wired-AND bus behavior:
  * - When devices agree on a bit: (bit, !bit)
- * - When devices disagree: (0, 0) — discrepancy
+ * - When devices disagree: (0, 0) -- discrepancy
  * - After direction is written, non-matching devices go idle
  *
  * The search algorithm navigates the binary tree by:
@@ -3130,12 +3130,12 @@ void test_rx_bus_onewire_search_two_devices(void)
  * @details
  * Validates all timing parameters against Dallas/Maxim 1-Wire
  * specification (Application Note AN126):
- * - Reset pulse: 480 µs minimum
- * - Presence wait: 60-75 µs (we use 70)
- * - Write-1 LOW: 6-15 µs (we use 10)
- * - Write-0 LOW: 60 µs minimum
- * - Read init LOW: 1-15 µs (we use 6)
- * - Read sample: within 15 µs (we use 9)
+ * - Reset pulse: 480 us minimum
+ * - Presence wait: 60-75 us (we use 70)
+ * - Write-1 LOW: 6-15 us (we use 10)
+ * - Write-0 LOW: 60 us minimum
+ * - Read init LOW: 1-15 us (we use 6)
+ * - Read sample: within 15 us (we use 9)
  *
  * @pre None (tests compile-time constants)
  * @post All timing values verified within specification
@@ -3150,20 +3150,20 @@ void test_rx_bus_onewire_timing_constants(void)
   /* Remaining presence window: reset_pulse + presence_wait + presence_tail must equal 960 µs */
   TEST_ASSERT_EQUAL(k_onewire_reset_slot_total_us, k_onewire_reset_pulse_us + k_onewire_presence_wait_us + k_onewire_presence_tail_us);
 
-  /* Write-1 timing: LOW pulse 6-15µs */
+  /* Write-1 timing: LOW pulse 6-15us */
   TEST_ASSERT_TRUE(k_onewire_write_1_low_us >= 6 && k_onewire_write_1_low_us <= 15);
 
-  /* Write-0 timing: LOW pulse >= 60µs */
+  /* Write-0 timing: LOW pulse >= 60us */
   TEST_ASSERT_GREATER_OR_EQUAL(60, k_onewire_write_0_low_us);
 
-  /* Read timing: init LOW 1-15µs, sample within 15µs of slot start */
+  /* Read timing: init LOW 1-15us, sample within 15us of slot start */
   TEST_ASSERT_TRUE(k_onewire_read_init_us >= 1 && k_onewire_read_init_us <= 15);
   TEST_ASSERT_TRUE(k_onewire_read_sample_us <= 15);
 
-  /* Total slot: init + recovery should be >= 60µs */
+  /* Total slot: init + recovery should be >= 60us */
   TEST_ASSERT_GREATER_OR_EQUAL(60, k_onewire_slot_duration_us);
 
-  /* Recovery time: >= 1µs per spec */
+  /* Recovery time: >= 1us per spec */
   TEST_ASSERT_GREATER_OR_EQUAL(1, k_onewire_recovery_us);
 }
 

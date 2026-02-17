@@ -26,36 +26,36 @@ The gateway implements Layers 1-4 of the communication protocol:
 
 ```
 star-gateway/
-├── cmd/
-│   └── star-gateway/
-│       └── main.go          # Entry point
-├── internal/
-│   ├── transport/           # Layer 1: SPI transport
-│   │   ├── spi.go           # Transport interface and SPITransport
-│   │   └── spi_test.go
-│   ├── frame/               # Layer 2: Frame protocol
-│   │   ├── frame.go         # Frame constants and types
-│   │   ├── encoder.go       # Frame encoder
-│   │   ├── decoder.go       # Frame decoder
-│   │   └── frame_test.go
-│   ├── harq/                # Layer 3: HARQ protocol (Chase Combining)
-│   │   ├── harq.go          # HARQ interface and ChaseCombining
-│   │   └── harq_test.go
-│   ├── fec/                 # Forward Error Correction
-│   │   ├── fec.go           # FEC interfaces and SoftBit type
-│   │   ├── convolutional.go # Rate-1/2, K=7 convolutional encoder
-│   │   ├── viterbi.go       # Soft Viterbi decoder
-│   │   ├── combiner.go      # Chase Combiner for soft bit combining
-│   │   └── fec_test.go
-│   └── service/             # Layer 5: gRPC services
-│       ├── motor_control.go
-│       ├── telemetry.go
-│       ├── battery.go
-│       ├── configuration.go
-│       └── firmware.go
-├── go.mod
-├── go.sum
-└── GEMINI.md
++-- cmd/
+|   +-- star-gateway/
+|       +-- main.go          # Entry point
++-- internal/
+|   +-- transport/           # Layer 1: SPI transport
+|   |   +-- spi.go           # Transport interface and SPITransport
+|   |   +-- spi_test.go
+|   +-- frame/               # Layer 2: Frame protocol
+|   |   +-- frame.go         # Frame constants and types
+|   |   +-- encoder.go       # Frame encoder
+|   |   +-- decoder.go       # Frame decoder
+|   |   +-- frame_test.go
+|   +-- harq/                # Layer 3: HARQ protocol (Chase Combining)
+|   |   +-- harq.go          # HARQ interface and ChaseCombining
+|   |   +-- harq_test.go
+|   +-- fec/                 # Forward Error Correction
+|   |   +-- fec.go           # FEC interfaces and SoftBit type
+|   |   +-- convolutional.go # Rate-1/2, K=7 convolutional encoder
+|   |   +-- viterbi.go       # Soft Viterbi decoder
+|   |   +-- combiner.go      # Chase Combiner for soft bit combining
+|   |   +-- fec_test.go
+|   +-- service/             # Layer 5: gRPC services
+|       +-- motor_control.go
+|       +-- telemetry.go
+|       +-- battery.go
+|       +-- configuration.go
+|       +-- firmware.go
++-- go.mod
++-- go.sum
++-- GEMINI.md
 ```
 
 ## Build Commands

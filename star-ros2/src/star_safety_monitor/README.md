@@ -4,7 +4,7 @@ Safety monitoring and watchdog system for STAR autonomous robot platform.
 
 ## Overview
 
-This package provides platform integrity monitoring and safety watchdog functionality for the STAR robot. It monitors critical system parameters and can trigger emergency stops when safety thresholds are violated. The safety monitor is a **lifecycle node** that operates in UNCONFIGURED → INACTIVE → ACTIVE states.
+This package provides platform integrity monitoring and safety watchdog functionality for the STAR robot. It monitors critical system parameters and can trigger emergency stops when safety thresholds are violated. The safety monitor is a **lifecycle node** that operates in UNCONFIGURED -> INACTIVE -> ACTIVE states.
 
 ## Features
 
@@ -19,10 +19,10 @@ This package provides platform integrity monitoring and safety watchdog function
 
 ## Implementation Status
 
-**Issue #139:** ✅ COMPLETE
+**Issue #139:** [PASS] COMPLETE
 - [x] Monitor battery voltage topic and publish warnings/critical alerts
 - [x] Monitor motor currents and detect stalls
-- [x] Implement heartbeat mechanism (>500ms timeout → emergency stop)
+- [x] Implement heartbeat mechanism (>500ms timeout -> emergency stop)
 - [x] Publish `/emergency_stop` (std_msgs/Bool) to halt all motion
 - [x] Full test coverage with 7 passing tests
 
@@ -56,7 +56,7 @@ This package provides platform integrity monitoring and safety watchdog function
 - `max_angular_velocity` (double, default: 2.0) - Maximum allowed angular velocity (rad/s)
 - `min_battery_voltage` (double, default: 10.5) - Minimum safe battery voltage (V)
 - `max_battery_current` (double, default: 30.0) - Maximum safe battery current (A)
-- `max_battery_temp` (double, default: 60.0) - Maximum safe battery temperature (°C)
+- `max_battery_temp` (double, default: 60.0) - Maximum safe battery temperature (degC)
 - `publish_rate` (double, default: 10.0) - Diagnostic message publish rate (Hz)
 - `enable_auto_estop` (bool, default: true) - Automatically trigger E-Stop on critical violations
 - `estop_recovery_delay` (double, default: 5.0) - Delay before allowing E-Stop recovery (seconds)
@@ -84,7 +84,7 @@ This package provides platform integrity monitoring and safety watchdog function
 **Motor Stall Detection:**
 - Monitors command velocity from `/cmd_vel`
 - Compares with actual velocity from `/odom`
-- Detects stalls when command > threshold but actual velocity ≈ 0
+- Detects stalls when command > threshold but actual velocity ~ 0
 - Uses debouncing (requires `stall_samples_required` consecutive detections)
 - Triggers E-Stop on detected stall if `enable_auto_estop` is true
 
@@ -127,9 +127,9 @@ colcon test-result --verbose
 ```
 
 **Test Results:**
-- ✅ 7 tests passing
-- ⊘ 3 tests skipped (battery safety, E-Stop trigger, diagnostic publishing - placeholders)
-- Build: ✅ Clean
+- [PASS] 7 tests passing
+- / 3 tests skipped (battery safety, E-Stop trigger, diagnostic publishing - placeholders)
+- Build: [PASS] Clean
 - Lint: Some minor style issues in Python/CMake (non-functional)
 
 ## Design Decisions

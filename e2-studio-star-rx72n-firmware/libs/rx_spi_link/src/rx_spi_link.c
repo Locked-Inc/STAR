@@ -652,7 +652,7 @@ static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
      * works as follows:
      *   1. soft_len is the total encoded bit count (includes tail bits)
      *   2. Divide by k_bits_per_byte (8) to get encoded byte count
-     *   3. Divide by 2 because FEC rate is 1/2 (each input bit → 2 output bits)
+     *   3. Divide by 2 because FEC rate is 1/2 (each input bit -> 2 output bits)
      * The FEC decoder (rx_fec_viterbi_decode) automatically handles tail bit
      * flushing internally, so we don't subtract them here. */
   const uint32_t expected_decoded_len = (soft_len / (uint32_t)k_bits_per_byte) / 2U;

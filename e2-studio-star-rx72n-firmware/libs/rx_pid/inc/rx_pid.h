@@ -62,18 +62,18 @@
  * ## STAR Motor Control Configuration
  *
  * ### Velocity Control (100 RPM target, 4ms sample period)
- * Based on MATLAB system identification (τ = 75ms, Kmotor = 3.665):
+ * Based on MATLAB system identification (tau = 75ms, Kmotor = 3.665):
  *
  * | Parameter | Value | Units | Rationale |
  * |-----------|-------|-------|-----------|
  * | Kp | 0.286 | % duty / RPM | Ziegler-Nichols tuning (Ku=0.4, Pu=0.15s) |
- * | Ki | 8.01 | % duty / (RPM·s) | Eliminates 5% steady-state error in 200ms |
+ * | Ki | 8.01 | % duty / (RPM*s) | Eliminates 5% steady-state error in 200ms |
  * | Kd | 0.0 | % duty / (RPM/s) | Disabled (encoder noise amplification) |
  * | output_min | -100.0 | % duty cycle | Full reverse |
  * | output_max | +100.0 | % duty cycle | Full forward |
  * | integral_min | -50.0 | % duty | Prevents excessive windup |
  * | integral_max | +50.0 | % duty | Prevents excessive windup |
- * | Sample Rate | 250 Hz | (4ms period) | Nyquist: 10× motor bandwidth (25 Hz) |
+ * | Sample Rate | 250 Hz | (4ms period) | Nyquist: 10x motor bandwidth (25 Hz) |
  *
  * See `matlab/pid_design_velocity.m` for derivation.
  *
@@ -85,7 +85,7 @@
  *   node [shape=box, style=rounded];
  *
  *   setpoint [label="Setpoint\n(Target RPM)", shape=ellipse];
- *   summer [label="Σ\n-", shape=circle];
+ *   summer [label="Sigma\n-", shape=circle];
  *   pid [label="PID Controller\nrx_pid_compute()", style="filled", fillcolor="lightblue"];
  *   motor [label="Motor +\nDriver", shape=component];
  *   encoder [label="Encoder\nFeedback"];
@@ -93,7 +93,7 @@
  *   setpoint -> summer [label="r[k]"];
  *   summer -> pid [label="e[k] = r[k] - y[k]"];
  *   pid -> motor [label="u[k]\n(PWM duty)"];
- *   motor -> plant [label="ω\n(RPM)"];
+ *   motor -> plant [label="omega\n(RPM)"];
  *   plant -> encoder;
  *   encoder -> summer [label="y[k]\n(measured)", dir=back];
  *
@@ -126,7 +126,7 @@
  * ## Tuning Guidelines
  *
  * ### Ziegler-Nichols Method (Step Response)
- * 1. **Measure step response**: Apply step input, record time constant (τ) and gain (K)
+ * 1. **Measure step response**: Apply step input, record time constant (tau) and gain (K)
  * 2. **Calculate gains**:
  *    - @f$ K_p = 1.2 \frac{\tau}{K L} @f$
  *    - @f$ K_i = \frac{K_p}{2 \tau} @f$
@@ -149,7 +149,7 @@
  * | Overshoot | Output exceeds setpoint by >10% | Decrease Kp, increase Kd |
  * | Oscillation | Sustained ringing around setpoint | Decrease Kp and Kd |
  * | Steady-state error | Doesn't reach setpoint | Increase Ki |
- * | Slow response | Takes >5τ to settle | Increase Kp |
+ * | Slow response | Takes >5tau to settle | Increase Kp |
  * | Integral windup | Large overshoot after saturation | Decrease integral_max |
  * | Noise amplification | Erratic output | Decrease Kd, add filtering |
  *
@@ -254,12 +254,12 @@
  * @par Module Dependencies:
  * ```
  * rx_pid.h
- *   └─-> rx_err.h (error code definitions)
+ *   +--> rx_err.h (error code definitions)
  *
  * Used by:
- *   ├─-> Motor control tasks (velocity/position loops)
- *   ├─-> Temperature control (heating/cooling)
- *   └─-> Any closed-loop control application
+ *   +--> Motor control tasks (velocity/position loops)
+ *   +--> Temperature control (heating/cooling)
+ *   +--> Any closed-loop control application
  * ```
  *
  * @author STAR Team
@@ -299,9 +299,9 @@ extern "C" {
  * ## Field Constraints and Validation
  * | Field | Type | Valid Range | Units | Validation |
  * |-------|------|-------------|-------|------------|
- * | kp | float | ≥ 0, finite | output/error | Must be non-negative, not NaN/Inf |
- * | ki | float | ≥ 0, finite | output/(error·s) | Must be non-negative, not NaN/Inf |
- * | kd | float | ≥ 0, finite | output/(error/s) | Must be non-negative, not NaN/Inf |
+ * | kp | float | >= 0, finite | output/error | Must be non-negative, not NaN/Inf |
+ * | ki | float | >= 0, finite | output/(error*s) | Must be non-negative, not NaN/Inf |
+ * | kd | float | >= 0, finite | output/(error/s) | Must be non-negative, not NaN/Inf |
  * | output_min | float | < output_max | depends on actuator | Must be strictly less than output_max |
  * | output_max | float | > output_min | depends on actuator | Must be strictly greater than output_min |
  * | integral_min | float | < integral_max | same as output | Must be strictly less than integral_max |
@@ -310,13 +310,13 @@ extern "C" {
  * ## Tuning Guidelines by Application
  *
  * ### Motor Velocity Control (100 RPM target)
- * - **kp**: 0.286 (from Ziegler-Nichols method with τ=75ms motor)
+ * - **kp**: 0.286 (from Ziegler-Nichols method with tau=75ms motor)
  * - **ki**: 8.01 (eliminates steady-state error in 200ms)
  * - **kd**: 0.0 (disabled - encoder noise amplification issue)
- * - **output_min/max**: ±100.0 (PWM duty cycle percentage)
- * - **integral_min/max**: ±50.0 (prevents excessive windup during saturation)
+ * - **output_min/max**: +/-100.0 (PWM duty cycle percentage)
+ * - **integral_min/max**: +/-50.0 (prevents excessive windup during saturation)
  *
- * ### Temperature Control (±1°C accuracy)
+ * ### Temperature Control (+/-1degC accuracy)
  * - **kp**: 2.0 (aggressive thermal response)
  * - **ki**: 0.1 (slow integration for thermal lag)
  * - **kd**: 0.5 (damping for overshoot prevention)
@@ -453,11 +453,11 @@ typedef struct {
  * ## Sample Rate Guidelines
  * | Application | Bandwidth | Min Sample Rate | Recommended | dt Value |
  * |-------------|-----------|-----------------|-------------|----------|
- * | Motor velocity | 25 Hz | 250 Hz (10×) | 250-500 Hz | 0.004-0.002 s |
- * | Motor position | 10 Hz | 100 Hz (10×) | 100-200 Hz | 0.010-0.005 s |
- * | Temperature | 0.1 Hz | 1 Hz (10×) | 1-10 Hz | 1.0-0.1 s |
+ * | Motor velocity | 25 Hz | 250 Hz (10x) | 250-500 Hz | 0.004-0.002 s |
+ * | Motor position | 10 Hz | 100 Hz (10x) | 100-200 Hz | 0.010-0.005 s |
+ * | Temperature | 0.1 Hz | 1 Hz (10x) | 1-10 Hz | 1.0-0.1 s |
  *
- * **Nyquist Rule**: Sample rate ≥ 10× plant bandwidth for good control
+ * **Nyquist Rule**: Sample rate >= 10x plant bandwidth for good control
  *
  * ## Error Handling
  * Function validates all inputs before computation:
@@ -470,7 +470,7 @@ typedef struct {
  *                   - Cannot be nullptr
  *                   - Contains gains, limits, and state (integral, prev_error)
  * @param[in] setpoint Desired target value (reference signal)
- *                     - Units depend on application (RPM, °C, position, etc.)
+ *                     - Units depend on application (RPM, degC, position, etc.)
  *                     - Example: 100.0f for 100 RPM motor speed
  *                     - Can be changed between calls for tracking control
  * @param[in] measured Current measured feedback value (process variable)
@@ -478,13 +478,13 @@ typedef struct {
  *                     - Example: 95.0f for current motor speed of 95 RPM
  *                     - Must be obtained from sensor/encoder
  * @param[in] dt Time delta in seconds since last call (sample period)
- *               - Must be > 0 (validated, returns error if ≤ 0)
+ *               - Must be > 0 (validated, returns error if <= 0)
  *               - Should be constant for best performance
  *               - Example: 0.004f for 250 Hz control rate
  *               - Used for integral accumulation and derivative calculation
  * @param[out] output Pointer to store computed control output
  *                    - Cannot be nullptr
- *                    - Units depend on application (% duty cycle, °C, etc.)
+ *                    - Units depend on application (% duty cycle, degC, etc.)
  *                    - Clamped to [output_min, output_max]
  *                    - Example: 75.0f for 75% PWM duty cycle
  *
@@ -492,7 +492,7 @@ typedef struct {
  * @retval k_rx_ok PID output computed successfully, stored in *output
  * @retval k_rx_err_null_ptr handle or output pointer is nullptr
  * @retval k_rx_err_invalid_state PID controller not initialized (call rx_pid_init first)
- * @retval k_rx_err_invalid_arg dt ≤ 0 (invalid sample period)
+ * @retval k_rx_err_invalid_arg dt <= 0 (invalid sample period)
  *
  * @pre handle must be initialized via rx_pid_init()
  * @pre handle->initialized must be true

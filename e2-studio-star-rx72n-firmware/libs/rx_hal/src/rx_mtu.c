@@ -49,8 +49,8 @@
  *
  * | Parameter | Value | Notes |
  * |-----------|-------|-------|
- * | Period | 3000 counts | 120MHz / (2 × 20kHz) |
- * | Resolution | ~11.5 bits | log2(3000) ≈ 11.5 |
+ * | Period | 3000 counts | 120MHz / (2 x 20kHz) |
+ * | Resolution | ~11.5 bits | log2(3000) ~ 11.5 |
  * | Duty range | 0-3000 | 0-100% in integer counts |
  * | Step size | 0.033% | 100% / 3000 |
  *

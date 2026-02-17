@@ -2,9 +2,9 @@
 // Bridges ROS2 ecosystem with Go gateway service via gRPC.
 //
 // This node handles bidirectional communication:
-// - ROS2 → Gateway: Forward telemetry (robot status, battery state) for UI
+// - ROS2 -> Gateway: Forward telemetry (robot status, battery state) for UI
 // display
-// - Gateway → ROS2: Poll teleop commands and PID gain updates from UI
+// - Gateway -> ROS2: Poll teleop commands and PID gain updates from UI
 //
 // STAR Project - Texas A&M University
 // Copyright 2026 STAR Project
@@ -39,7 +39,7 @@ namespace star
  * via gRPC.
  *
  * Architecture:
- *   ROS2 Topics/Services ↔ StarGatewayBridgeNode ↔ gRPC ↔ Go Gateway ↔ UI
+ *   ROS2 Topics/Services <-> StarGatewayBridgeNode <-> gRPC <-> Go Gateway <-> UI
  *
  * Responsibilities:
  * 1. Subscribe to /robot_status and /battery_state ROS2 topics
@@ -49,7 +49,7 @@ namespace star
  * 5. Expose /set_pid_gains ROS2 service for PID tuning from UI
  *
  * Safety Features:
- * - Teleop command staleness check (500ms timeout → zero velocity)
+ * - Teleop command staleness check (500ms timeout -> zero velocity)
  * - Connection watchdog (5s interval, automatic reconnection)
  * - Non-blocking gRPC calls (100ms deadline)
  * - Input validation (NaN, infinity checks via MessageConverter)

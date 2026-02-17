@@ -167,7 +167,7 @@ extern "C" {
  * - Provides headroom for frame header (8 bytes) and CRC (4 bytes)
  *
  * @par Memory Impact
- * Total per-handle: ~4.2 KB (2 × 2048 buffers + encoder/decoder state)
+ * Total per-handle: ~4.2 KB (2 x 2048 buffers + encoder/decoder state)
  *
  * @invariant Buffer sizes must be >= maximum frame size
  * @invariant k_usb_comm_max_receive_iterations bounds all receive loops
@@ -640,7 +640,7 @@ typedef struct {
  * @endcode
  *
  * @par Performance
- * ~50-100 µs (buffer clearing + encoder/decoder init)
+ * ~50-100 us (buffer clearing + encoder/decoder init)
  *
  * @see rx_usb_comm_deinit() Cleanup resources
  * @see rx_usb_init() USB driver initialization (prerequisite)
@@ -750,7 +750,7 @@ typedef struct {
  * @endcode
  *
  * @par Performance
- * ~10-50 µs (encoding + USB queue)
+ * ~10-50 us (encoding + USB queue)
  *
  * @see rx_usb_comm_receive() Receive frames from peer
  * @see rx_frame_type_t Frame type definitions
@@ -877,7 +877,7 @@ typedef struct {
  * @endcode
  *
  * @par Performance
- * - Polling (timeout_ms=0): ~5-20 µs
+ * - Polling (timeout_ms=0): ~5-20 us
  * - With timeout: depends on data availability
  *
  * @see rx_usb_comm_send() Send frames to peer

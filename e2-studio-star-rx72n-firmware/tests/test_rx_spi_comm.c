@@ -2,7 +2,7 @@
 
 /**
  * @file test_rx_spi_comm.c
- * @brief Unit Tests for SPI Frame-Based Communication Protocol (RPi5 ↔ RX72N)
+ * @brief Unit Tests for SPI Frame-Based Communication Protocol (RPi5 <-> RX72N)
  *
  * @details
  * **Comprehensive Test Suite for SPI Frame Protocol with Handshake and CRC Validation**
@@ -18,11 +18,11 @@
  * +----------------------+             +----------------------+
  * | spidev0.0            |   SCLK  ->   | RSPI Channel 0      |
  * | (10 MHz, Mode 1)     |   COPI  ->   | (Peripheral Mode)   |
- * |                      |   CIPO  ←   |                     |
+ * |                      |   CIPO  <-   |                     |
  * |                      |   CS#   ->   | GPIO (software CS)  |
- * | GPIO (READY line) ←  |   RDY   ←   | GPIO out            |
+ * | GPIO (READY line) <-  |   RDY   <-   | GPIO out            |
  * +----------------------+             +----------------------+
- *         ↓ Frame Protocol                     ↓
+ *         v Frame Protocol                     v
  * +----------------------+             +----------------------+
  * | rx_spi_comm (Linux)  |             | rx_spi_comm (RX72N) |
  * | - Frame encode       |             | - Frame decode      |
@@ -72,7 +72,7 @@
  * @code
  * RPi5 (Controller)                RX72N (Peripheral)
  * ==================               ==================
- * 1. Wait for RDY line HIGH    ←   RX buffer empty -> Set RDY=HIGH
+ * 1. Wait for RDY line HIGH    <-   RX buffer empty -> Set RDY=HIGH
  * 2. Assert CS# LOW
  * 3. Transfer frame bytes
  * 4. Deassert CS# HIGH
@@ -152,11 +152,11 @@
  *
  * **Timing Requirements:**
  * - SPI clock frequency: 10 MHz (100ns per bit)
- * - Frame transfer time (1024 bytes): ~820µs (1024 * 8 bits / 10 MHz)
- * - Minimum frame (12 bytes): ~10µs
- * - RDY line poll interval: 10µs (software loop with volatile read)
+ * - Frame transfer time (1024 bytes): ~820us (1024 * 8 bits / 10 MHz)
+ * - Minimum frame (12 bytes): ~10us
+ * - RDY line poll interval: 10us (software loop with volatile read)
  * - RDY line timeout: 100ms default (configurable)
- * - RSPI interrupt latency: <5µs (RX FIFO threshold ISR)
+ * - RSPI interrupt latency: <5us (RX FIFO threshold ISR)
  * - Total frame round-trip (send + ACK): <2ms typical
  *
  * **Error Injection Patterns:**
@@ -1131,7 +1131,7 @@ void test_spi_comm_rx_sequence_wraparound(void)
                                                              .fec_enabled = false}));
   helper_init_rspi_channel(k_test_channel_default);
 
-  /* Pre-advance session RX sequence to test wraparound at 0xFFFF → 0 */
+  /* Pre-advance session RX sequence to test wraparound at 0xFFFF -> 0 */
   s_session.rx_sequence = k_test_sequence_max;
 
   /* Receive a frame with sequence 0xFFFF (exact match with pre-advanced session) */
@@ -2124,7 +2124,7 @@ void test_retransmit_process_exponential_backoff(void)
                                      k_test_payload_small));
   s_handle.retry_send_time_ms = 0;
 
-  /* First timeout: 50ms (50 << 0) — too early at 49 */
+  /* First timeout: 50ms (50 << 0) -- too early at 49 */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 49));
   TEST_ASSERT_EQUAL_UINT8(0, s_handle.retry_count);
 
@@ -2132,7 +2132,7 @@ void test_retransmit_process_exponential_backoff(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 50));
   TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
 
-  /* Second timeout: 100ms (50 << 1), from retry_send_time=50 — too early at 149 */
+  /* Second timeout: 100ms (50 << 1), from retry_send_time=50 -- too early at 149 */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_process_retransmits(&s_handle, 149));
   TEST_ASSERT_EQUAL_UINT8(1, s_handle.retry_count);
 
@@ -2328,7 +2328,7 @@ void test_retransmit_set_auto_retransmit_disables_clears_pending(void)
                                      k_test_payload_small));
   TEST_ASSERT_TRUE(s_handle.retry_pending);
 
-  /* Disable — should clear pending */
+  /* Disable -- should clear pending */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_set_auto_retransmit(&s_handle, false, nullptr));
 
   TEST_ASSERT_FALSE(s_handle.auto_retransmit);

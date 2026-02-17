@@ -216,7 +216,7 @@ typedef enum : uint8_t {
  * - **Interrupt level:** IPL equal to configured priority
  * - **Stack:** Interrupt stack (not task stack)
  * - **Timing:** Called every compare match period
- * - **Duration:** Keep under 10 µs for real-time performance
+ * - **Duration:** Keep under 10 us for real-time performance
  *
  * ## Allowed Operations
  *
@@ -411,7 +411,7 @@ typedef struct {
  * Not thread-safe. Call from single thread only, typically during init.
  *
  * @par Performance:
- * - Execution time: ~50 µs @ 240 MHz
+ * - Execution time: ~50 us @ 240 MHz
  * - Stack usage: ~64 bytes
  *
  * @par Example - Motor Control Timer:

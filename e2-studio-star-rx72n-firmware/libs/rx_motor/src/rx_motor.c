@@ -14,11 +14,11 @@
  *
  * **Application Context:**
  * - **Platform:** STAR autonomous robot with differential drive
- * - **Motors:** 4× 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
+ * - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
  * - **Driver:** DRV8243S dual H-bridge with integrated current sensing and protection
  * - **Control Mode:** PH/EN (Phase/Enable) mode for simplified direction control
  * - **PWM Frequency:** 20 kHz (inaudible, efficient, low EMI)
- * - **Dead-time:** 1 µs (prevents shoot-through during FET transitions)
+ * - **Dead-time:** 1 us (prevents shoot-through during FET transitions)
  *
  * ## Motor Control Modes (PH/EN Configuration)
  *
@@ -61,7 +61,7 @@
  * which would create a short circuit from VCC to GND, destroying the H-bridge.
  *
  * **Implementation:**
- * - Hardware dead-time insertion via GPTW peripheral (configurable, typically 1 µs)
+ * - Hardware dead-time insertion via GPTW peripheral (configurable, typically 1 us)
  * - Automatically inserts delay between complementary FET transitions
  * - Accounts for FET turn-off time (~500-800 ns for typical power MOSFETs)
  * - Safety margin ensures both FETs never conduct simultaneously
@@ -69,16 +69,16 @@
  * **Timing Diagram:**
  * @code{.unparsed}
  * Time ->
- * High-side FET: ████████████░░░░░░░░░░░░░░░░  (turning off, ~500ns tail)
- * Dead-time:     ░░░░░░░░░░░░┊━━━━━━┊░░░░░░░░  (1 µs hardware-enforced gap)
- * Low-side FET:  ░░░░░░░░░░░░░░░░░░░░░░████████  (turning on)
- *                              ↑
- *                         SAFE GAP = 1 µs
+ * High-side FET: ############................  (turning off, ~500ns tail)
+ * Dead-time:     ............|------|........  (1 us hardware-enforced gap)
+ * Low-side FET:  ......................########  (turning on)
+ *                              ^
+ *                         SAFE GAP = 1 us
  * @endcode
  *
- * **Valid Range: 100 ns - 10 µs**
+ * **Valid Range: 100 ns - 10 us**
  * - Below 100 ns: Insufficient protection, shoot-through risk
- * - Above 10 µs: Excessive dead-time reduces effective duty cycle, distorts waveform
+ * - Above 10 us: Excessive dead-time reduces effective duty cycle, distorts waveform
  *
  * ## Hardware Requirements
  *
@@ -101,13 +101,13 @@
  * **Dependency Graph:**
  * @code{.unparsed}
  * rx_motor.c
- *     ├─-> rx_motor.h (API definitions)
- *     ├─-> rx_gptw.h (PWM hardware control)
- *     │       ├─-> rx72n_gptw_regs.h (hardware registers)
- *     │       └─-> rx_check.h (validation)
- *     ├─-> rx_check.h (nullptr checks, range validation)
- *     ├─-> rx_log.h (error/info/warn logging)
- *     └─-> rx_err.h (error code enum)
+ *     +--> rx_motor.h (API definitions)
+ *     +--> rx_gptw.h (PWM hardware control)
+ *     |       +--> rx72n_gptw_regs.h (hardware registers)
+ *     |       +--> rx_check.h (validation)
+ *     +--> rx_check.h (nullptr checks, range validation)
+ *     +--> rx_log.h (error/info/warn logging)
+ *     +--> rx_err.h (error code enum)
  * @endcode
  *
  * @par NASA Power of 10 Compliance:
@@ -178,18 +178,18 @@
  * - rx_motor_handle_t: 20 bytes (client stack allocation)
  *
  * **Total Memory Footprint:** 12 bytes static + 20 bytes per motor instance
- * **4 Motors (STAR platform):** 12 + 4×20 = 92 bytes total
+ * **4 Motors (STAR platform):** 12 + 4x20 = 92 bytes total
  *
  * @par Performance Characteristics:
  *
  * **Execution Time (@ 240 MHz, -O2 optimization):**
- * - rx_motor_init(): ~15 µs (one-time setup, includes GPTW initialization)
- * - rx_motor_set_duty(): ~3 µs (typical case, 2 GPTW register writes)
- * - rx_motor_get_duty(): ~0.5 µs (single memory read)
- * - rx_motor_stop(): ~2 µs (2 GPTW register writes to zero)
- * - rx_motor_emergency_stop(): ~8 µs (multiple safety operations)
+ * - rx_motor_init(): ~15 us (one-time setup, includes GPTW initialization)
+ * - rx_motor_set_duty(): ~3 us (typical case, 2 GPTW register writes)
+ * - rx_motor_get_duty(): ~0.5 us (single memory read)
+ * - rx_motor_stop(): ~2 us (2 GPTW register writes to zero)
+ * - rx_motor_emergency_stop(): ~8 us (multiple safety operations)
  *
- * **Control Loop Frequency:** Tested up to 10 kHz (100 µs period) for set_duty() calls
+ * **Control Loop Frequency:** Tested up to 10 kHz (100 us period) for set_duty() calls
  * **Typical Usage:** 100 Hz (10 ms period) for velocity control loop
  *
  * @par Thread Safety:
@@ -338,7 +338,7 @@ typedef enum : int16_t {
  * - GPTW 32-bit timer @ 240 MHz can generate 488 Hz - 240 MHz PWM
  * - Practical limit: 1 kHz - 50 kHz for brushed DC motor control
  * - FET dead-time: Must exceed FET turn-off time + safety margin
- * - Typical FET turn-off: 500-800 ns -> minimum dead-time: 1 µs
+ * - Typical FET turn-off: 500-800 ns -> minimum dead-time: 1 us
  *
  * @see rx_motor_init() Validates config parameters against these limits
  * @see rx_motor_config_t Configuration structure with these fields
@@ -392,12 +392,12 @@ typedef enum : uint32_t {
    * @par Units: Nanoseconds (ns)
    * @par Rationale: Absolute minimum for ultra-fast FETs (not recommended for DRV8243)
    * @warning Values below 100 ns will be rejected with k_rx_err_invalid_arg
-   * @attention Recommended minimum: 1000 ns (1 µs) for DRV8243 and typical silicon FETs
+   * @attention Recommended minimum: 1000 ns (1 us) for DRV8243 and typical silicon FETs
    */
   k_motor_min_dead_time = 100,
 
   /**
-   * @brief Maximum dead-time (10 µs)
+   * @brief Maximum dead-time (10 us)
    * @details
    * Upper bound for dead-time to prevent excessive distortion. Excessive dead-time causes:
    * - Reduced effective duty cycle (dead-time "eats" into ON time)
@@ -405,14 +405,14 @@ typedef enum : uint32_t {
    * - Increased current ripple (longer diode conduction periods)
    * - Reduced motor efficiency (increased conduction losses)
    *
-   * **Example:** At 20 kHz (50 µs period), 10 µs dead-time = 20% duty cycle loss per transition.
-   * **Above 10 µs:** Significant duty cycle reduction, non-linear motor response.
-   * @par Value: 10000 nanoseconds (10 µs)
+   * **Example:** At 20 kHz (50 us period), 10 us dead-time = 20% duty cycle loss per transition.
+   * **Above 10 us:** Significant duty cycle reduction, non-linear motor response.
+   * @par Value: 10000 nanoseconds (10 us)
    * @par Units: Nanoseconds (ns)
    * @par Rationale: Maximum before significant duty cycle reduction
-   * @par Duty Cycle Impact: At 20 kHz, 10 µs dead-time = 20% loss per transition
-   * @warning Values above 10 µs will be rejected with k_rx_err_invalid_arg
-   * @attention Recommended maximum: 2000 ns (2 µs) for typical applications
+   * @par Duty Cycle Impact: At 20 kHz, 10 us dead-time = 20% loss per transition
+   * @warning Values above 10 us will be rejected with k_rx_err_invalid_arg
+   * @attention Recommended maximum: 2000 ns (2 us) for typical applications
    */
   k_motor_max_dead_time = 10000,
 } motor_validation_limits_t;
@@ -458,14 +458,14 @@ static const float s_duty_zero = 0.0F;
  * @post Return value is always in range [-100.0, +100.0] or exactly 0.0
  * @post Return value is always a valid, finite float (never NaN/Inf)
  *
- * @invariant Return value ∈ [-100.0, +100.0]
+ * @invariant Return value in [-100.0, +100.0]
  *
  * @note Pure function with no side effects (safe to call multiple times)
  * @note Thread-safe (no shared state access)
  * @note Does NOT log clamping events (called frequently in control loop)
  *
  * @par Performance:
- * - Execution time: ~0.2 µs @ 240 MHz with -O2 optimization
+ * - Execution time: ~0.2 us @ 240 MHz with -O2 optimization
  * - Best case: 3 comparisons (normal range)
  * - Worst case: 5 comparisons (NaN/Inf check + clamping)
  * - No branches misprediction overhead (predictable for valid inputs)
@@ -528,7 +528,7 @@ static float internal_clamp_duty(const float duty)
  *
  * @par Validation:
  * - Both outputs must be valid GPTW outputs (k_gptw_output_a or k_gptw_output_b)
- * - Outputs must be different (a ≠ b) to prevent same pin controlling both PH and EN
+ * - Outputs must be different (a != b) to prevent same pin controlling both PH and EN
  * - Validation performed in internal_init_gptw_outputs()
  *
  * @par Usage Example:
@@ -566,7 +566,7 @@ typedef struct {
  * **Algorithm:**
  * 1. Validate gptw_config pointer (NULL check)
  * 2. Validate outputs.a and outputs.b are valid GPTW outputs
- * 3. Validate outputs.a ≠ outputs.b (different pins)
+ * 3. Validate outputs.a != outputs.b (different pins)
  * 4. Initialize GPTW peripheral with frequency, dead-time, polarity settings
  * 5. Set output_a to 0% duty (PH signal starts LOW)
  * 6. Set output_b to 0% duty (EN signal starts LOW)
@@ -586,12 +586,12 @@ typedef struct {
  *   - outputs.a: PH (Phase) signal, direction control
  *   - outputs.b: EN (Enable) signal, speed PWM
  *   - Must be from same GPTW channel
- *   - Must be different (a ≠ b)
+ *   - Must be different (a != b)
  *
  * @param[in] gptw_config GPTW peripheral configuration parameters
  *   - Must not benullptr
  *   - frequency_hz: PWM frequency [1 kHz, 50 kHz]
- *   - deadtime_ns: Dead-time insertion [100 ns, 10 µs]
+ *   - deadtime_ns: Dead-time insertion [100 ns, 10 us]
  *   - enable_complementary: Should be false for PH/EN mode
  *   - invert_polarity: true if H-bridge needs inverted PWM
  *
@@ -605,7 +605,7 @@ typedef struct {
  *
  * @pre channel must be a valid GPTW channel with available outputs
  * @pre outputs.a and outputs.b must be valid GPTW outputs from same channel
- * @pre outputs.a ≠ outputs.b (different physical pins)
+ * @pre outputs.a != outputs.b (different physical pins)
  * @pre gptw_config parameters must be within valid ranges
  *
  * @post On success: GPTW initialized, both outputs at 0% duty, PWM disabled
@@ -622,14 +622,14 @@ typedef struct {
  * @attention On error, GPTW is deinitialized to prevent partial initialization state
  *
  * @par Performance:
- * - Execution time: ~12 µs @ 240 MHz (includes GPTW register writes)
+ * - Execution time: ~12 us @ 240 MHz (includes GPTW register writes)
  * - Called once per motor during initialization (not performance-critical)
  *
  * @par Example (Internal Usage):
  * @code
  * rx_gptw_config_t gptw_config = {
  *     .frequency_hz = 20000,        // 20 kHz PWM
- *     .deadtime_ns = 1000,          // 1 µs dead-time
+ *     .deadtime_ns = 1000,          // 1 us dead-time
  *     .enable_complementary = false, // PH/EN mode (not complementary)
  *     .invert_polarity = false,     // Normal polarity
  * };
@@ -733,7 +733,7 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  *
  * **Configuration Parameters:**
  * - **pwm_freq_hz:** PWM frequency [1 kHz, 50 kHz], typical 20 kHz for inaudible operation
- * - **dead_time_ns:** Dead-time insertion [100 ns, 10 µs], typical 1 µs for shoot-through protection
+ * - **dead_time_ns:** Dead-time insertion [100 ns, 10 us], typical 1 us for shoot-through protection
  * - **channel:** GPTW channel to use (k_gptw_channel_0 through k_gptw_channel_7)
  * - **output_a:** PH (Phase) signal pin for direction control
  * - **output_b:** EN (Enable) signal pin for speed PWM
@@ -760,7 +760,7 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * @retval k_rx_err_null_ptr handle or config pointer is nullptr
  * @retval k_rx_err_invalid_state handle already initialized (must call rx_motor_deinit first)
  * @retval k_rx_err_invalid_arg pwm_freq_hz out of range [1 kHz, 50 kHz]
- * @retval k_rx_err_invalid_arg dead_time_ns out of range [100 ns, 10 µs]
+ * @retval k_rx_err_invalid_arg dead_time_ns out of range [100 ns, 10 us]
  * @retval k_rx_err_invalid_arg output_a or output_b invalid GPTW output
  * @retval k_rx_err_invalid_arg output_a == output_b (same pin used twice)
  * @retval k_rx_err_invalid_state Post-condition check failed (initialization verification)
@@ -796,7 +796,7 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * motor operations or allocate one motor handle per task.
  *
  * @par Performance:
- * - Execution time: ~18 µs @ 240 MHz (includes GPTW initialization)
+ * - Execution time: ~18 us @ 240 MHz (includes GPTW initialization)
  * - One-time overhead, called once per motor at system startup
  * - Not performance-critical (initialization phase)
  *
@@ -808,7 +808,7 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  *     .output_a = k_gptw_output_a,    // PH (Phase) signal
  *     .output_b = k_gptw_output_b,    // EN (Enable) signal
  *     .pwm_freq_hz = 20000,           // 20 kHz (inaudible)
- *     .dead_time_ns = 1000,           // 1 µs (shoot-through protection)
+ *     .dead_time_ns = 1000,           // 1 us (shoot-through protection)
  *     .invert_pwm = false,            // Normal polarity
  * };
  *
@@ -1024,7 +1024,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
  * Not thread-safe. Ensure no other tasks are using motor handle during deinit.
  *
  * @par Performance:
- * - Execution time: ~8 µs @ 240 MHz (includes GPTW peripheral cleanup)
+ * - Execution time: ~8 us @ 240 MHz (includes GPTW peripheral cleanup)
  * - Called once per motor during shutdown (not performance-critical)
  *
  * @par Example - Clean Shutdown:
@@ -1174,13 +1174,13 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * @enddot
  *
  * **Safety Features:**
- * - Duty cycle clamping prevents hardware over-drive (|duty| ≤ 100%)
+ * - Duty cycle clamping prevents hardware over-drive (|duty| <= 100%)
  * - NaN/Inf detection prevents undefined hardware register values
  * - Initialization check prevents operation on uninitialized peripheral
  * - Post-condition verification catches update failures (NASA Rule 5)
  *
  * **Performance:**
- * - Typical case: ~3 µs @ 240 MHz (2 GPTW register writes)
+ * - Typical case: ~3 us @ 240 MHz (2 GPTW register writes)
  * - Suitable for 100 Hz - 10 kHz control loops
  * - STAR platform: Called at 100 Hz from PID velocity controller
  *
@@ -1238,8 +1238,8 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * Not re-entrant on same handle. Safe to call on different handles concurrently.
  *
  * @par Performance:
- * - Execution time: ~3 µs @ 240 MHz with -O2 optimization
- * - Control loop frequency: Tested up to 10 kHz (100 µs period)
+ * - Execution time: ~3 us @ 240 MHz with -O2 optimization
+ * - Control loop frequency: Tested up to 10 kHz (100 us period)
  * - Typical usage: 100 Hz (10 ms period) for velocity control
  * - Memory: ~16 bytes stack (float variables, error codes)
  *
@@ -1486,7 +1486,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * @attention Motor deceleration is passive (friction only, no active braking)
  *
  * @par Performance:
- * - Execution time: ~2 µs @ 240 MHz (2 GPTW register writes to zero)
+ * - Execution time: ~2 us @ 240 MHz (2 GPTW register writes to zero)
  *
  * @par Example - Normal Stop:
  * @code
@@ -1621,10 +1621,10 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
  *
  * @note Thread-safe for read-only access (handle is const)
  * @note Returns commanded duty, not actual motor velocity
- * @note Very fast operation (~0.5 µs) - just a memory read
+ * @note Very fast operation (~0.5 us) - just a memory read
  *
  * @par Performance:
- * - Execution time: ~0.5 µs @ 240 MHz (single memory read)
+ * - Execution time: ~0.5 us @ 240 MHz (single memory read)
  * - Safe to call at high frequency (tested > 10 kHz)
  *
  * @par Example - Query Current State:
@@ -1771,7 +1771,7 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  * Not thread-safe. Ensure no other tasks are accessing motor during emergency stop.
  *
  * @par Performance:
- * - Execution time: ~8 µs @ 240 MHz (multiple hardware operations)
+ * - Execution time: ~8 us @ 240 MHz (multiple hardware operations)
  * - Not performance-critical (emergency/fault scenario)
  *
  * @par Example - Fault Handler:

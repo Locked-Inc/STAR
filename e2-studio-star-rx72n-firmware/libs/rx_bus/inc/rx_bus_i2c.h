@@ -120,9 +120,9 @@
  * @par Speed Modes (RX72N RIIC)
  * | Mode | Bit Rate | SCL High | SCL Low | Notes |
  * |------|----------|----------|---------|-------|
- * | Standard | 100 kHz | 4.0 µs | 4.7 µs | Default |
- * | Fast | 400 kHz | 0.6 µs | 1.3 µs | Most devices |
- * | Fast-Plus | 1 MHz | 0.26 µs | 0.5 µs | Limited support |
+ * | Standard | 100 kHz | 4.0 us | 4.7 us | Default |
+ * | Fast | 400 kHz | 0.6 us | 1.3 us | Most devices |
+ * | Fast-Plus | 1 MHz | 0.26 us | 0.5 us | Limited support |
  *
  * @par Bit Rate Calculation
  * The RIIC bit rate is calculated from PCLKB:
@@ -137,10 +137,10 @@
  * @par Performance Characteristics
  * | Metric | Standard | Fast | Fast-Plus |
  * |--------|----------|------|-----------|
- * | Byte time | 90 µs | 22.5 µs | 9 µs |
- * | 8-byte transfer | ~1 ms | ~250 µs | ~100 µs |
- * | Overhead (START/STOP) | ~20 µs | ~5 µs | ~2 µs |
- * | Typical latency | 100 µs | 30 µs | 15 µs |
+ * | Byte time | 90 us | 22.5 us | 9 us |
+ * | 8-byte transfer | ~1 ms | ~250 us | ~100 us |
+ * | Overhead (START/STOP) | ~20 us | ~5 us | ~2 us |
+ * | Typical latency | 100 us | 30 us | 15 us |
  *
  * @par Memory Usage
  * | Component | Size | Description |
@@ -153,8 +153,8 @@
  * | Requirement | Specification |
  * |-------------|---------------|
  * | GPIO | Open-drain or external pullups |
- * | SCL Pullup | 2.2-10 kΩ to VDD |
- * | SDA Pullup | 2.2-10 kΩ to VDD |
+ * | SCL Pullup | 2.2-10 kOhm to VDD |
+ * | SDA Pullup | 2.2-10 kOhm to VDD |
  * | VDD | 1.8V - 5.5V (level dependent) |
  * | Bus capacitance | < 400 pF (standard mode) |
  *
@@ -330,11 +330,11 @@ extern "C" {
  * @note Thread-safe via bus manager mutex
  * @note Call only once per bus; subsequent calls return k_rx_err_invalid_state
  *
- * @warning External pullup resistors (2.2-10 kΩ) required on SCL/SDA
+ * @warning External pullup resistors (2.2-10 kOhm) required on SCL/SDA
  * @warning Do not call from interrupt context (mutex wait)
  *
  * @par Performance:
- * - Execution time: ~100 µs typical (RIIC initialization)
+ * - Execution time: ~100 us typical (RIIC initialization)
  * - Mutex timeout: 1000 ms (configurable via bus manager)
  *
  * @see rx_bus_manager_init() Initialize bus manager first
@@ -406,9 +406,9 @@ extern "C" {
  * @warning NACK on address byte indicates device not responding
  *
  * @par Performance (100 kHz standard mode):
- * - 1 byte: ~100 µs
- * - 8 bytes: ~800 µs
- * - Overhead: ~20 µs (START/STOP/address)
+ * - 1 byte: ~100 us
+ * - 8 bytes: ~800 us
+ * - Overhead: ~20 us (START/STOP/address)
  *
  * @par Example:
  * @code
@@ -495,9 +495,9 @@ extern "C" {
  * @warning Raw read without prior register address write may return unexpected data
  *
  * @par Performance (100 kHz standard mode):
- * - 1 byte: ~100 µs
- * - 8 bytes: ~800 µs
- * - Overhead: ~20 µs (START/STOP/address)
+ * - 1 byte: ~100 us
+ * - 8 bytes: ~800 us
+ * - Overhead: ~20 us (START/STOP/address)
  *
  * @see rx_bus_i2c_init() Initialize bus first
  * @see rx_bus_i2c_write() Write data to device
@@ -592,9 +592,9 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * @warning Some devices require delays between write and read phases
  *
  * @par Performance (100 kHz standard mode):
- * - 1 write + 1 read: ~200 µs
- * - 1 write + 8 read: ~900 µs
- * - Overhead: ~40 µs (START/RESTART/STOP/addresses)
+ * - 1 write + 1 read: ~200 us
+ * - 1 write + 8 read: ~900 us
+ * - Overhead: ~40 us (START/RESTART/STOP/addresses)
  *
  * @par Example - Reading BQ4050 Voltage:
  * @code

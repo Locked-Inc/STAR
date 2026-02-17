@@ -20,7 +20,7 @@
  * **SBS Register Map Implementation:**
  * This driver accesses the following SBS 1.1 standard registers:
  * - 0x00: ManufacturerAccess (write-then-read, manufacturer commands)
- * - 0x08: Temperature (word, 0.1K units -> converted to °C)
+ * - 0x08: Temperature (word, 0.1K units -> converted to degC)
  * - 0x09: Voltage (word, mV, pack voltage sum)
  * - 0x0A: Current (word, mA signed, instantaneous)
  * - 0x0B: AverageCurrent (word, mA signed, 1-min average)
@@ -38,9 +38,9 @@
  * **Temperature Conversion Details:**
  * SBS specifies temperature in 0.1 Kelvin units (uint16_t). This driver
  * converts to whole degrees Celsius (int16_t) with validation:
- * 1. Read temperature in 0.1K (e.g., 2981 = 298.1K = 25.0°C)
- * 2. Subtract Kelvin offset: 2981 - 2731 = 250 (0.1°C units)
- * 3. Divide by 10: 250 / 10 = 25°C
+ * 1. Read temperature in 0.1K (e.g., 2981 = 298.1K = 25.0degC)
+ * 2. Subtract Kelvin offset: 2981 - 2731 = 250 (0.1degC units)
+ * 3. Divide by 10: 250 / 10 = 25degC
  * 4. Validate intermediate and final results fit in int16_t
  *
  * **Error Handling Strategy:**
@@ -83,7 +83,7 @@
  * @par Performance Characteristics:
  * - Single register read: ~1-5ms @ 100kHz SMBus, ~0.3-1.5ms @ 400kHz
  * - Full status read: ~50-150ms (14 sequential SMBus transactions)
- * - Temperature conversion: <1µs (integer arithmetic only)
+ * - Temperature conversion: <1us (integer arithmetic only)
  *
  * @see rx_bq4050.h Public API declarations
  * @see rx_bq4050_constants.h SBS register addresses and constants
@@ -183,20 +183,20 @@ typedef enum : uint16_t {
  *
  * **SBS Temperature Format:**
  * - Input: uint16_t in 0.1 Kelvin units (0-65535 -> 0K to 6553.5K)
- * - Intermediate: int32_t in 0.1°C units after offset subtraction
+ * - Intermediate: int32_t in 0.1degC units after offset subtraction
  * - Output: int16_t in whole degrees Celsius
  *
  * **Conversion Algorithm:**
- * 1. temp_0_1c = temp_0_1k - k_temp_kelvin_offset (subtract 273.15K × 10)
+ * 1. temp_0_1c = temp_0_1k - k_temp_kelvin_offset (subtract 273.15K x 10)
  * 2. Validate temp_0_1c in [k_temp_min_0_1c, k_temp_max_0_1c]
  * 3. temp_celsius = temp_0_1c / k_temp_decimal_scale (divide by 10)
  * 4. Validate temp_celsius fits in int16_t range
  *
  * **Example Conversion:**
- * - Input: 2981 (0.1K) = 298.1K = 25.0°C
- * - Step 1: 2981 - 2731 = 250 (0.1°C)
+ * - Input: 2981 (0.1K) = 298.1K = 25.0degC
+ * - Step 1: 2981 - 2731 = 250 (0.1degC)
  * - Step 2: Validate 250 in [-2731, 62804] [OK]
- * - Step 3: 250 / 10 = 25°C
+ * - Step 3: 250 / 10 = 25degC
  * - Step 4: Validate 25 in [-32768, 32767] [OK]
  *
  * @par Validation Rationale (NASA Rule 5):
@@ -210,9 +210,9 @@ typedef enum : uint16_t {
  */
 typedef enum : int32_t {
   /**
-   * @brief Kelvin to Celsius offset (273.15K × 10 = 2731)
+   * @brief Kelvin to Celsius offset (273.15K x 10 = 2731)
    * @details
-   * Offset to convert 0.1 Kelvin to 0.1°C units.
+   * Offset to convert 0.1 Kelvin to 0.1degC units.
    * **Value:** 2731 (represents 273.15K in 0.1K units)
    * **Formula:** temp_0_1c = temp_0_1k - k_temp_kelvin_offset
    */
@@ -221,7 +221,7 @@ typedef enum : int32_t {
   /**
    * @brief Decimal scale factor (0.1 units to whole units)
    * @details
-   * Divisor to convert 0.1°C units to whole degrees Celsius.
+   * Divisor to convert 0.1degC units to whole degrees Celsius.
    * **Value:** 10
    * **Formula:** temp_c = temp_0_1c / k_temp_decimal_scale
    */
@@ -231,7 +231,7 @@ typedef enum : int32_t {
    * @brief Minimum valid temperature in 0.1K (absolute zero)
    * @details
    * Lower bound of uint16_t input range for SBS temperature.
-   * **Value:** 0 (0K = -273.15°C)
+   * **Value:** 0 (0K = -273.15degC)
    */
   k_temp_min_valid_0_1k = 0,
 
@@ -239,24 +239,24 @@ typedef enum : int32_t {
    * @brief Maximum valid temperature in 0.1K (uint16_t max)
    * @details
    * Upper bound of uint16_t input range for SBS temperature.
-   * **Value:** 65535 (6553.5K = 6280.35°C)
+   * **Value:** 65535 (6553.5K = 6280.35degC)
    */
   k_temp_max_valid_0_1k = 65535,
 
   /**
-   * @brief Minimum intermediate value in 0.1°C (after offset subtraction)
+   * @brief Minimum intermediate value in 0.1degC (after offset subtraction)
    * @details
    * Lower bound after Kelvin offset subtraction.
-   * **Value:** -2731 (0 - 2731 = -273.1°C in 0.1°C units)
-   * **Represents:** Absolute zero in 0.1°C units
+   * **Value:** -2731 (0 - 2731 = -273.1degC in 0.1degC units)
+   * **Represents:** Absolute zero in 0.1degC units
    */
   k_temp_min_0_1c = -2731,
 
   /**
-   * @brief Maximum intermediate value in 0.1°C (after offset subtraction)
+   * @brief Maximum intermediate value in 0.1degC (after offset subtraction)
    * @details
    * Upper bound after Kelvin offset subtraction.
-   * **Value:** 62804 (65535 - 2731 = 6280.4°C in 0.1°C units)
+   * **Value:** 62804 (65535 - 2731 = 6280.4degC in 0.1degC units)
    */
   k_temp_max_0_1c = 62804,
 
@@ -363,11 +363,11 @@ typedef enum : uint8_t {
  *
  * **Conversion Algorithm (NASA Rule 5: Validation at each step):**
  * 1. **Input:** temp_0_1k (uint16_t, 0-65535, represents 0K to 6553.5K)
- * 2. **Convert to 0.1°C:** temp_0_1c = temp_0_1k - 2731 (subtract 273.15K × 10)
+ * 2. **Convert to 0.1degC:** temp_0_1c = temp_0_1k - 2731 (subtract 273.15K x 10)
  *    - Result is int32_t to handle negative temperatures
  * 3. **Validate intermediate:** Check temp_0_1c in [-2731, 62804]
  *    - Prevents overflow in next division step
- * 4. **Convert to °C:** temp_celsius = temp_0_1c / 10
+ * 4. **Convert to degC:** temp_celsius = temp_0_1c / 10
  * 5. **Validate final:** Check temp_celsius fits in int16_t [-32768, 32767]
  * 6. **Output:** temp_celsius_out (int16_t, whole degrees Celsius)
  *
@@ -375,13 +375,13 @@ typedef enum : uint8_t {
  * Without intermediate validation, malformed input (e.g., corrupted SMBus
  * data) could cause overflow when converting to int16_t, resulting in
  * incorrect temperature readings that could compromise battery safety
- * (e.g., showing 25°C when battery is actually >60°C critical).
+ * (e.g., showing 25degC when battery is actually >60degC critical).
  *
  * **Example Conversions:**
- * - Input: 2731 -> 0°C (freezing point of water)
- * - Input: 2981 -> 25°C (room temperature)
- * - Input: 3731 -> 100°C (boiling point of water)
- * - Input: 0 -> -273°C (absolute zero)
+ * - Input: 2731 -> 0degC (freezing point of water)
+ * - Input: 2981 -> 25degC (room temperature)
+ * - Input: 3731 -> 100degC (boiling point of water)
+ * - Input: 0 -> -273degC (absolute zero)
  *
  * @param[in] temp_0_1k Temperature in 0.1 Kelvin units
  *   - **Type:** uint16_t
@@ -392,8 +392,8 @@ typedef enum : uint8_t {
  * @param[out] temp_celsius_out Pointer to store converted temperature
  *   - **Must not be NULL**
  *   - **Type:** int16_t* (output in whole degrees Celsius)
- *   - **Range:** -273 to +6280°C (full theoretical range)
- *   - **Typical Range:** -20 to +70°C (operational)
+ *   - **Range:** -273 to +6280degC (full theoretical range)
+ *   - **Typical Range:** -20 to +70degC (operational)
  *   - **Modified only on success**
  *
  * @return rx_err_t Error code
@@ -405,21 +405,21 @@ typedef enum : uint8_t {
  * @pre temp_celsius_out must not be nullptr
  * @pre temp_0_1k is valid SBS temperature reading (caller validated SMBus transaction)
  *
- * @post temp_celsius_out contains temperature in °C on success
+ * @post temp_celsius_out contains temperature in degC on success
  * @post temp_celsius_out unchanged on error
  *
  * @invariant Conversion is deterministic (same input always produces same output)
  * @invariant No side effects (pure function)
  *
  * @note Thread Safety: Thread-safe (pure function, no shared state)
- * @note Performance: <1µs (integer arithmetic only, no floating point)
+ * @note Performance: <1us (integer arithmetic only, no floating point)
  * @note Re-entrancy: Fully re-entrant
  *
  * @warning Validation CRITICAL for safety - do not remove checks
  *
  * @par Example - Normal Conversion:
  * @code{.c}
- * // Convert room temperature (25°C)
+ * // Convert room temperature (25degC)
  * uint16_t temp_0_1k = 2981;  // 298.1K from BQ4050
  * int16_t temp_c;
  *
@@ -432,7 +432,7 @@ typedef enum : uint8_t {
  *
  * @par Example - Extreme Temperature:
  * @code{.c}
- * // Convert extreme temperature (100°C)
+ * // Convert extreme temperature (100degC)
  * uint16_t temp_0_1k = 3731;  // 373.1K from BQ4050
  * int16_t temp_c;
  *
@@ -460,7 +460,7 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
    * would trigger -Wtype-limits warnings since comparisons are always true/false for this
    * type. */
 
-  /* Perform intermediate conversion: 0.1K to 0.1°C (NASA Rule 5: Track intermediate) */
+  /* Perform intermediate conversion: 0.1K to 0.1degC (NASA Rule 5: Track intermediate) */
   int32_t temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
 
   /* Post-condition: Verify intermediate result within valid conversion range (NASA Rule 5) */
@@ -469,7 +469,7 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
     return k_rx_err_out_of_range;
   }
 
-  /* Convert from 0.1°C to whole degrees Celsius */
+  /* Convert from 0.1degC to whole degrees Celsius */
   int32_t temp_celsius_unchecked = temp_0_1c / k_temp_decimal_scale;
 
   /* Post-condition: Verify final result fits in int16_t (NASA Rule 5: Bounds check) */
@@ -789,7 +789,7 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  *
  * **Implementation:**
  * 1. Read temperature from SBS register 0x08 (uint16_t in 0.1K)
- * 2. Convert to °C using internal_convert_temperature() with validation
+ * 2. Convert to degC using internal_convert_temperature() with validation
  * 3. Return converted temperature or error
  *
  * @see rx_bq4050.h:rx_bq4050_read_temperature() Complete API documentation
@@ -819,7 +819,7 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
     return err;
   }
 
-  /* Post-condition: temperature_c contains valid temperature in °C */
+  /* Post-condition: temperature_c contains valid temperature in degC */
   return k_rx_ok;
 }
 
@@ -828,7 +828,7 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  *
  * @details
  * See [rx_bq4050.h](rx_bq4050.h) for complete API documentation including
- * capacity relationships (remaining ≤ full ≤ design) and usage examples.
+ * capacity relationships (remaining <= full <= design) and usage examples.
  *
  * @see rx_bq4050.h:rx_bq4050_read_capacity() Complete API documentation
  *
@@ -971,7 +971,7 @@ static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
  * **Reads Performed:**
  * 1. Relative SOC (register 0x0D)
  * 2. Absolute SOC (register 0x0E)
- * 3. Temperature (register 0x08, with conversion to °C)
+ * 3. Temperature (register 0x08, with conversion to degC)
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBus bus name

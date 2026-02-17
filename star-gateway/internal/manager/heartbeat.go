@@ -18,7 +18,7 @@ import (
 const (
 	// DefaultPingInterval is the interval for sending explicit PING when the link is idle.
 	// This is a rare idle-link probe; the implicit timeout (DefaultFailureTimeout)
-	// is the primary detection mechanism — any valid frame resets that timer.
+	// is the primary detection mechanism -- any valid frame resets that timer.
 	DefaultPingInterval = 1 * time.Second
 
 	// DefaultFailureTimeout is the timeout for declaring link dead.
@@ -52,7 +52,7 @@ const (
 //	WDT timeout:       ~1000ms (hardware, configured in RX72N firmware)
 //	Implicit timeout:    200ms (any frame resets timer via OnFrameReceived)
 //	Check interval:       50ms (failureTimeout / 4, for timely detection)
-//	PING interval:      1000ms (1 Hz, idle-link probe — rare when data is flowing)
+//	PING interval:      1000ms (1 Hz, idle-link probe -- rare when data is flowing)
 //	Miss threshold:    1 PING  (single unanswered PING triggers failover)
 //	Worst-case detect:  ~250ms (implicit timeout + one check interval)
 //	Safety margin:        ~4x  (250ms << 1000ms WDT)
@@ -136,7 +136,7 @@ type HeartbeatManager struct {
 //   - onFailure is nil (required for triggering failover)
 //
 // Note: pingInterval may be greater than failureTimeout. In the dual-detection model,
-// the implicit timeout (failureTimeout) is the primary detection mechanism — any valid
+// the implicit timeout (failureTimeout) is the primary detection mechanism -- any valid
 // frame resets the timer. PING is a rare idle-link probe that fires only when the link
 // has been silent for pingInterval.
 func NewHeartbeatManager(pingInterval, failureTimeout time.Duration, onFailure func()) (*HeartbeatManager, error) {

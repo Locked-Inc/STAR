@@ -26,7 +26,7 @@ const (
 	resetDrainBackoff = 10 * time.Millisecond
 
 	// emaSmoothingDivisor is the divisor for the exponential moving average latency
-	// calculation. With divisor=2, this gives α=0.5: new_avg = (old_avg + sample) / 2.
+	// calculation. With divisor=2, this gives alpha=0.5: new_avg = (old_avg + sample) / 2.
 	emaSmoothingDivisor = 2
 
 	// TransportNameUSB is the identifier for USB CDC transport.
@@ -320,7 +320,7 @@ func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSess
 			if ctx.Err() != nil {
 				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
 			}
-			// Transient receive error — backoff briefly to avoid tight-loop CPU spin
+			// Transient receive error -- backoff briefly to avoid tight-loop CPU spin
 			log.Printf("DEBUG: Reset handshake receive error (continuing): %v", err)
 			select {
 			case <-ctx.Done():
@@ -331,7 +331,7 @@ func (tm *TransportManager) drainUntilResetAck(ctx context.Context, expectedSess
 		}
 
 		if result == nil {
-			// No frame received — backoff to avoid tight-loop
+			// No frame received -- backoff to avoid tight-loop
 			select {
 			case <-ctx.Done():
 				return fmt.Errorf("timeout waiting for RESET_ACK: %w", ctx.Err())
@@ -739,7 +739,7 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 // This method bypasses the operations gate (SendWithType) to avoid deadlock.
 // sendPong is called from within the Receive loop, which already holds an inflight slot.
 // If we called SendWithType, it would wait on tm.paused and increment inflightCounter,
-// but drainInflight is waiting for the Receive inflight slot to be released — deadlock.
+// but drainInflight is waiting for the Receive inflight slot to be released -- deadlock.
 //
 // Instead, we send directly on the active transport, which is safe because:
 //   - We're already inside a Receive call, so we know the transport is active
@@ -808,9 +808,9 @@ func (tm *TransportManager) sendResetAck(ctx context.Context) {
 // GetState returns the current harq.State mapped from the internal State.
 //
 // Mapping:
-//   - StateActiveUSB, StateActiveSPI → harq.StateIdle
-//   - StateSwitching* → harq.StateRetransmitting
-//   - StateFailed → harq.StateError
+//   - StateActiveUSB, StateActiveSPI -> harq.StateIdle
+//   - StateSwitching* -> harq.StateRetransmitting
+//   - StateFailed -> harq.StateError
 func (tm *TransportManager) GetState() harq.State {
 	tm.mu.RLock()
 	defer tm.mu.RUnlock()
@@ -1030,7 +1030,7 @@ func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType 
 	tm.state = tm.getSwitchingStateLocked(target.Name)
 	tm.mu.Unlock()
 
-	log.Printf("Starting transport switch: %s → %s (failure type: %v)", oldName, target.Name, failureType)
+	log.Printf("Starting transport switch: %s -> %s (failure type: %v)", oldName, target.Name, failureType)
 
 	// Step 1: Pause new operations
 	tm.pauseOperations()
@@ -1062,7 +1062,7 @@ func (tm *TransportManager) executeSwitch(target *TransportWrapper, failureType 
 	tm.state = tm.getActiveStateLocked(target.Name)
 	tm.mu.Unlock()
 
-	log.Printf("Transport switch completed: %s → %s", oldName, target.Name)
+	log.Printf("Transport switch completed: %s -> %s", oldName, target.Name)
 	return nil
 }
 
@@ -1141,7 +1141,7 @@ func (tm *TransportManager) recordOperation(name string, err error, latency time
 			h.TotalReceived++
 		}
 
-		// Exponential moving average latency (α = 0.5)
+		// Exponential moving average latency (alpha = 0.5)
 		if h.AvgLatency == 0 {
 			h.AvgLatency = latency
 		} else {
@@ -1212,7 +1212,7 @@ func (tm *TransportManager) attemptFailover(failureType FailureType) {
 		return
 	}
 
-	log.Printf("Failover triggered: %s → %s (failure type: %v)", currentName, nextBest.Name, failureType)
+	log.Printf("Failover triggered: %s -> %s (failure type: %v)", currentName, nextBest.Name, failureType)
 	if err := tm.executeSwitch(nextBest, failureType); err != nil {
 		log.Printf("Failover switch failed: %v", err)
 		tm.mu.Lock()

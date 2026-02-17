@@ -9,7 +9,7 @@
  * Enables testing of temperature monitoring, multi-sensor management, and
  * thermal protection without actual DS18B20 hardware.
  *
- * Enables testing of: Temperature readings (-55°C to +125°C), Multi-sensor
+ * Enables testing of: Temperature readings (-55degC to +125degC), Multi-sensor
  * addressing (64-bit ROM codes), Resolution configuration (9-12 bit), CRC
  * validation, 1-Wire error handling
  *

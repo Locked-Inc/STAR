@@ -81,15 +81,15 @@
  *
  * | Operation | Execution Time | Notes |
  * |-----------|----------------|-------|
- * | **uart_init()** | ~50 µs | One-time setup per channel |
- * | **uart_putc()** | ~2 µs + TX time | FIFO write + DMA/interrupt |
- * | **uart_getc()** | ~2 µs (polling) | Returns k_rx_err_empty if no data |
- * | **uart_write()** | ~10 µs + TX time | DMA transfer (background) |
- * | **uart_read()** | ~5 µs + RX time | Reads available bytes (non-blocking) |
- * | **rx_available()** | ~1 µs | Check FIFO status register |
+ * | **uart_init()** | ~50 us | One-time setup per channel |
+ * | **uart_putc()** | ~2 us + TX time | FIFO write + DMA/interrupt |
+ * | **uart_getc()** | ~2 us (polling) | Returns k_rx_err_empty if no data |
+ * | **uart_write()** | ~10 us + TX time | DMA transfer (background) |
+ * | **uart_read()** | ~5 us + RX time | Reads available bytes (non-blocking) |
+ * | **rx_available()** | ~1 us | Check FIFO status register |
  *
  * **TX/RX time** depends on baud rate:
- * - 115200 bps: ~87 µs per byte (11 bits: 1 start + 8 data + 1 stop + 1 stop gap)
+ * - 115200 bps: ~87 us per byte (11 bits: 1 start + 8 data + 1 stop + 1 stop gap)
  * - 9600 bps: ~1.04 ms per byte
  *
  * ## Memory Usage
@@ -98,7 +98,7 @@
  * |-----------|------|----------|
  * | Function code | ~1.5 KB | Flash (.text) |
  * | Context structs | 12-16 bytes | Stack (per operation) |
- * | SCI HAL buffers | 16×2×13 = 416 bytes | SRAM (TX/RX FIFOs, all channels) |
+ * | SCI HAL buffers | 16x2x13 = 416 bytes | SRAM (TX/RX FIFOs, all channels) |
  * | **Total static** | ~2 KB | Flash + fixed SRAM |
  *
  * ## NASA Power of 10 Compliance
@@ -108,7 +108,7 @@
  * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line control flow |
  * | **Rule 2** | [PASS] No unbounded loops (HAL uses timeout counters) |
  * | **Rule 3** | [PASS] No malloc - all buffers stack-allocated or static FIFOs |
- * | **Rule 4** | [PASS] All functions ≤60 lines (longest: init_callback at 44 lines) |
+ * | **Rule 4** | [PASS] All functions <=60 lines (longest: init_callback at 44 lines) |
  * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL + state checks) |
  * | **Rule 6** | [PASS] Variables at smallest scope (contexts in callbacks) |
  * | **Rule 7** | [PASS] All HAL returns checked (uart_init, uart_write, etc.) |
@@ -1027,7 +1027,7 @@ static rx_err_t internal_uart_rx_avail_callback(rx_bus_config_t* bus_config, voi
  * - **Max**: 2,500,000 bps @ f_PCLK = 120 MHz
  * - **Common**: 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
  *
- * **Accuracy**: ±1% or better for standard baud rates
+ * **Accuracy**: +/-1% or better for standard baud rates
  *
  * @param[in] manager Pointer to bus manager instance.
  *                    Must be initialized via rx_bus_manager_init().
@@ -1051,7 +1051,7 @@ static rx_err_t internal_uart_rx_avail_callback(rx_bus_config_t* bus_config, voi
  * @post bus_config->initialized == true
  * @post Ready for UART read/write operations
  *
- * @note Initialization may take ~50 µs (register configuration + pin setup)
+ * @note Initialization may take ~50 us (register configuration + pin setup)
  * @note TX FIFO and RX FIFO are both enabled (16 bytes each)
  * @note Thread-safe (bus manager mutex)
  *
@@ -1195,13 +1195,13 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name)
  * ## Transmission Behavior (HAL-dependent)
  *
  * **Option 1 - Polling Mode:**
- * - Function blocks until all bytes transmitted (~length × 87 µs @ 115200 bps)
+ * - Function blocks until all bytes transmitted (~length x 87 us @ 115200 bps)
  * - Simple but inefficient for large transfers
  *
  * **Option 2 - Interrupt/DMA Mode (preferred):**
  * - Function loads TX FIFO (16 bytes) and returns immediately
  * - Remaining bytes transmitted via interrupt or DMA in background
- * - Much faster return (~10 µs overhead)
+ * - Much faster return (~10 us overhead)
  *
  * **STAR firmware uses**: Interrupt/DMA mode for efficiency
  *
@@ -1209,12 +1209,12 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name)
  *
  * | Length | @ 115200 bps | @ 9600 bps | Notes |
  * |--------|--------------|------------|-------|
- * | **1 byte** | ~90 µs | ~1.1 ms | 1 start + 8 data + 1 stop bit |
+ * | **1 byte** | ~90 us | ~1.1 ms | 1 start + 8 data + 1 stop bit |
  * | **16 bytes** | ~1.4 ms | ~17 ms | Fill TX FIFO once |
  * | **64 bytes** | ~5.6 ms | ~67 ms | Typical packet size |
  * | **256 bytes** | ~22 ms | ~267 ms | Max recommended per call |
  *
- * **Overhead**: ~10 µs (FIFO load + context switch)
+ * **Overhead**: ~10 us (FIFO load + context switch)
  *
  * @param[in] manager Pointer to bus manager instance.
  * @param[in] bus_name Name of UART bus (e.g., "debug", "sensor").
@@ -1331,7 +1331,7 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
  *    b. Call uart_read_channel() HAL function
  *    c. HAL reads available bytes from RX FIFO (up to 'length')
  *    d. HAL updates bytes_read with actual count
- *    e. Validate bytes_read ≤ length (postcondition check)
+ *    e. Validate bytes_read <= length (postcondition check)
  * 5. Copy bytes_read to output parameter
  * 6. Return result
  *
@@ -1365,9 +1365,9 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
  *
  * ## Performance
  *
- * - **Function overhead**: ~5 µs (FIFO read + context switch)
+ * - **Function overhead**: ~5 us (FIFO read + context switch)
  * - **Actual read time**: ~200 ns per byte (memcpy from FIFO to buffer)
- * - **Total**: ~5 µs + (bytes_read × 200 ns)
+ * - **Total**: ~5 us + (bytes_read x 200 ns)
  *
  * ## RX FIFO Overflow Handling
  *
@@ -1377,7 +1377,7 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
  * - **Prevention**: Poll frequently enough to prevent overflow
  *
  * **Rule of thumb**: Read at least every (16 bytes / baud_rate) seconds
- * - @ 115200 bps: ~1.4 ms (16 bytes × 87 µs/byte)
+ * - @ 115200 bps: ~1.4 ms (16 bytes x 87 us/byte)
  * - @ 9600 bps: ~17 ms
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1560,9 +1560,9 @@ rx_err_t rx_bus_uart_read(rx_bus_manager_t* manager,
  *
  * ## Performance
  *
- * - **Function overhead**: ~2 µs (FIFO write + context)
+ * - **Function overhead**: ~2 us (FIFO write + context)
  * - **Transmission time** (baud-dependent):
- *   - @ 115200 bps: ~87 µs per character
+ *   - @ 115200 bps: ~87 us per character
  *   - @ 9600 bps: ~1.04 ms per character
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1667,10 +1667,10 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  *
  * | Method | Function Calls | Mutex Locks | Overhead |
  * |--------|---------------|-------------|----------|
- * | **puts("Hello")** | 1 | 1 | ~10 µs total |
- * | **putc() × 5** | 5 | 5 | ~10 µs × 5 = 50 µs |
+ * | **puts("Hello")** | 1 | 1 | ~10 us total |
+ * | **putc() x 5** | 5 | 5 | ~10 us x 5 = 50 us |
  *
- * **puts() is 5× more efficient** for multi-character strings due to single mutex lock.
+ * **puts() is 5x more efficient** for multi-character strings due to single mutex lock.
  *
  * ## Common Use Cases
  *
@@ -1681,12 +1681,12 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  *
  * ## Performance
  *
- * - **Function overhead**: ~10 µs (strlen + FIFO load)
+ * - **Function overhead**: ~10 us (strlen + FIFO load)
  * - **Transmission time** (baud-dependent):
- *   - @ 115200 bps: ~87 µs × strlen(str)
- *   - @ 9600 bps: ~1.04 ms × strlen(str)
+ *   - @ 115200 bps: ~87 us x strlen(str)
+ *   - @ 9600 bps: ~1.04 ms x strlen(str)
  *
- * **Example**: "Hello\r\n" (7 chars) @ 115200 bps = 10 µs + (7 × 87 µs) = ~620 µs
+ * **Example**: "Hello\r\n" (7 chars) @ 115200 bps = 10 us + (7 x 87 us) = ~620 us
  *
  * @param[in] manager Pointer to bus manager instance.
  * @param[in] bus_name Name of UART bus (e.g., "debug", "console").
@@ -1746,7 +1746,7 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  * @code{.c}
  * // Print formatted telemetry
  * char msg[80];
- * snprintf(msg, sizeof(msg), "Voltage: %.2fV, Current: %.2fA, Temp: %d°C\r\n",
+ * snprintf(msg, sizeof(msg), "Voltage: %.2fV, Current: %.2fA, Temp: %ddegC\r\n",
  *          battery_voltage, battery_current, temperature);
  * rx_bus_uart_puts(&bus_mgr, "debug", msg);
  * @endcode
@@ -1827,7 +1827,7 @@ rx_err_t rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const
  *
  * ## Performance
  *
- * - **Function overhead**: ~2 µs (FIFO read + context)
+ * - **Function overhead**: ~2 us (FIFO read + context)
  * - **Returns immediately** (no blocking wait)
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -2007,7 +2007,7 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  *    a. Validate bus initialized
  *    b. Call uart_rx_available() HAL function
  *    c. HAL checks RX FIFO status register (FRDR bit or count)
- *    d. Set *available = true if FIFO has ≥1 byte, false otherwise
+ *    d. Set *available = true if FIFO has >=1 byte, false otherwise
  *    e. Validate boolean value (postcondition check)
  * 5. Copy availability status to output parameter
  * 6. Return result
@@ -2044,7 +2044,7 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  *
  * ## Performance
  *
- * - **Function overhead**: ~1 µs (register read + context)
+ * - **Function overhead**: ~1 us (register read + context)
  * - **Fastest UART query** (just reads status register, no data movement)
  *
  * ## Use Cases
@@ -2057,7 +2057,7 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  * @param[in] manager Pointer to bus manager instance.
  * @param[in] bus_name Name of UART bus (e.g., "console", "gps").
  * @param[out] available Pointer to store availability status.
- *                       Set to true if ≥1 byte in RX FIFO.
+ *                       Set to true if >=1 byte in RX FIFO.
  *                       Set to false if RX FIFO is empty.
  *                       Must point to valid bool variable.
  *
@@ -2072,13 +2072,13 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  * @pre manager initialized, bus registered and initialized
  * @pre available points to valid bool variable
  *
- * @post *available = true if ≥1 byte available, false if FIFO empty
+ * @post *available = true if >=1 byte available, false if FIFO empty
  * @post RX FIFO unchanged (data not consumed)
  *
  * @note NON-BLOCKING: Returns immediately
  * @note Does NOT remove data from FIFO (use getc/read to consume)
  * @note Thread-safe (bus manager mutex)
- * @note Fastest UART query operation (~1 µs)
+ * @note Fastest UART query operation (~1 us)
  *
  * @par Thread Safety:
  * Thread-safe. Bus manager provides mutex protection.

@@ -40,7 +40,7 @@ This package provides platform integrity monitoring and safety watchdog function
 - `max_angular_velocity` (double, default: 2.0) - Maximum angular velocity (rad/s)
 - `min_battery_voltage` (double, default: 10.5) - Minimum battery voltage (V)
 - `max_battery_current` (double, default: 30.0) - Maximum battery current (A)
-- `max_battery_temp` (double, default: 60.0) - Maximum battery temperature (°C)
+- `max_battery_temp` (double, default: 60.0) - Maximum battery temperature (degC)
 - `publish_rate` (double, default: 10.0) - Diagnostic publish rate (Hz)
 - `enable_auto_estop` (bool, default: true) - Automatically trigger E-Stop on critical violations
 - `estop_recovery_delay` (double, default: 5.0) - Delay before allowing E-Stop recovery (seconds)
@@ -86,7 +86,7 @@ The node calculates the magnitude of linear and angular velocities from odometry
 
 ```
 Linear Speed  = sqrt(vx^2 + vy^2 + vz^2)  (unit: m/s,   frame: base_link)
-Angular Speed = sqrt(ωx^2 + ωy^2 + ωz^2)  (unit: rad/s, frame: base_link)
+Angular Speed = sqrt(omegax^2 + omegay^2 + omegaz^2)  (unit: rad/s, frame: base_link)
 ```
 
 If either exceeds configured limits, the `velocity_exceeded` flag is set and a warning is logged.
@@ -104,10 +104,10 @@ The node publishes diagnostic status messages containing:
 
 The node uses ROS2 lifecycle (rclcpp_lifecycle) for proper state management:
 
-- **UNCONFIGURED** → **INACTIVE**: Load parameters, create publishers/subscribers
-- **INACTIVE** → **ACTIVE**: Start monitoring timers
-- **ACTIVE** → **INACTIVE**: Stop timers, deactivate publishers
-- **INACTIVE** → **FINALIZED**: Clean up resources
+- **UNCONFIGURED** -> **INACTIVE**: Load parameters, create publishers/subscribers
+- **INACTIVE** -> **ACTIVE**: Start monitoring timers
+- **ACTIVE** -> **INACTIVE**: Stop timers, deactivate publishers
+- **INACTIVE** -> **FINALIZED**: Clean up resources
 
 A lifecycle manager is included in the launch file to automatically handle these transitions.
 

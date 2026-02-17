@@ -93,11 +93,11 @@
  *    START  D0  D1  D2  D3  D4  D5  D6  D7  STOP
  *     |     |   |   |   |   |   |   |   |    |
  *     0     LSB                     MSB      1
- *     └─ Synchronization edge (falling edge)
+ *     +- Synchronization edge (falling edge)
  *
  * Bit timing: Each bit = 1 / baud_rate seconds
- * Example: 115200 baud = 8.68 µs per bit
- * Total frame time (8N1): 10 bits = 86.8 µs @ 115200 baud
+ * Example: 115200 baud = 8.68 us per bit
+ * Total frame time (8N1): 10 bits = 86.8 us @ 115200 baud
  * @endverbatim
  *
  * @par Common Frame Configurations
@@ -112,14 +112,14 @@
  * @par Supported Baud Rates (RX72N SCI)
  * | Baud Rate | Byte Time | Error | Use Case |
  * |-----------|-----------|-------|----------|
- * | 9600 | 1041 µs | 0.16% | GPS, legacy devices |
- * | 19200 | 521 µs | 0.16% | Modems |
- * | 38400 | 260 µs | 0.16% | - |
- * | 57600 | 174 µs | 0.16% | - |
- * | 115200 | 86.8 µs | 0.16% | Debug console (default) |
- * | 230400 | 43.4 µs | 0.79% | High-speed serial |
- * | 460800 | 21.7 µs | 0.79% | High-speed serial |
- * | 921600 | 10.9 µs | 0.79% | Maximum supported |
+ * | 9600 | 1041 us | 0.16% | GPS, legacy devices |
+ * | 19200 | 521 us | 0.16% | Modems |
+ * | 38400 | 260 us | 0.16% | - |
+ * | 57600 | 174 us | 0.16% | - |
+ * | 115200 | 86.8 us | 0.16% | Debug console (default) |
+ * | 230400 | 43.4 us | 0.79% | High-speed serial |
+ * | 460800 | 21.7 us | 0.79% | High-speed serial |
+ * | 921600 | 10.9 us | 0.79% | Maximum supported |
  *
  * @par Baud Rate Calculation
  * The SCI baud rate is calculated from PCLKB:
@@ -140,10 +140,10 @@
  * @par Performance Characteristics
  * | Metric | 9600 baud | 115200 baud | 460800 baud |
  * |--------|-----------|-------------|-------------|
- * | Byte time | 1041 µs | 86.8 µs | 21.7 µs |
+ * | Byte time | 1041 us | 86.8 us | 21.7 us |
  * | 64-byte transfer | ~67 ms | ~5.6 ms | ~1.4 ms |
  * | Overhead (start/stop) | 20% | 20% | 20% |
- * | Typical latency | 100 µs | 50 µs | 30 µs |
+ * | Typical latency | 100 us | 50 us | 30 us |
  * | FIFO depth | 16 bytes | 16 bytes | 16 bytes |
  *
  * @par Memory Usage
@@ -386,7 +386,7 @@ extern "C" {
  * @warning Ensure TX and RX pins are not shorted together
  *
  * @par Performance:
- * - Execution time: ~120 µs typical (SCI initialization)
+ * - Execution time: ~120 us typical (SCI initialization)
  * - Mutex timeout: 1000 ms (configurable via bus manager)
  *
  * @par Example - Console Initialization:
@@ -588,7 +588,7 @@ extern "C" {
  * @warning No framing error detection in this function
  *
  * @par Performance:
- * - Execution time: ~10 µs + (bytes_read * 2 µs)
+ * - Execution time: ~10 us + (bytes_read * 2 us)
  * - Non-blocking: Returns immediately regardless of data availability
  *
  * @par Example - Polling Loop:
@@ -680,8 +680,8 @@ extern "C" {
  * @warning Do not call from interrupt context (blocking)
  *
  * @par Performance:
- * - Execution time: byte_time + ~5 µs overhead
- * - Example @ 115200 baud: ~92 µs per character
+ * - Execution time: byte_time + ~5 us overhead
+ * - Example @ 115200 baud: ~92 us per character
  *
  * @par Example:
  * @code
@@ -764,7 +764,7 @@ extern "C" {
  * @par Performance:
  * - Execution time: strlen(str) * byte_time
  * - Example @ 115200 baud: 20 chars = ~1.7 ms
- * - CRLF conversion adds ~87 µs per '\n'
+ * - CRLF conversion adds ~87 us per '\n'
  *
  * @par Example - Debug Output:
  * @code
@@ -850,7 +850,7 @@ rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const char* st
  * @warning RX overrun possible if not called frequently (16 byte FIFO)
  *
  * @par Performance:
- * - Execution time: ~8 µs (data available) or ~5 µs (empty)
+ * - Execution time: ~8 us (data available) or ~5 us (empty)
  * - Non-blocking: Always returns immediately
  *
  * @par Example - Polling Loop:
@@ -938,7 +938,7 @@ rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const char* st
  * @note available = false is normal (no error)
  *
  * @par Performance:
- * - Execution time: ~6 µs
+ * - Execution time: ~6 us
  * - Non-blocking: Always returns immediately
  *
  * @par Example - Efficient Polling:

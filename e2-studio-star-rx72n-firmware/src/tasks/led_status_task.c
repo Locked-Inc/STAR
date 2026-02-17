@@ -69,9 +69,9 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_led_heartbeat_half_period = 10, /**< 10 ticks × 50ms = 500ms half-period (1 Hz) */
-  k_led_error_half_period     = 3,  /**< 3 ticks × 50ms = 150ms half-period (fast blink) */
-  k_led_comm_pulse_duration   = 2,  /**< 2 ticks × 50ms = 100ms comm activity pulse */
+  k_led_heartbeat_half_period = 10, /**< 10 ticks x 50ms = 500ms half-period (1 Hz) */
+  k_led_error_half_period     = 3,  /**< 3 ticks x 50ms = 150ms half-period (fast blink) */
+  k_led_comm_pulse_duration   = 2,  /**< 2 ticks x 50ms = 100ms comm activity pulse */
 } led_timing_constants_t;
 
 /**

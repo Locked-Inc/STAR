@@ -998,10 +998,10 @@ void test_receive_uninitialized(void)
  * @details
  * Verifies that link transitions through correct HARQ state machine states
  * during send operation with retries:
- * 1. IDLE → WAITING_ACK on first transmission attempt
- * 2. WAITING_ACK → RETRANSMITTING on NACK or timeout
- * 3. RETRANSMITTING → ERROR after max_retries exhausted
- * 4. ERROR → IDLE on explicit reset
+ * 1. IDLE -> WAITING_ACK on first transmission attempt
+ * 2. WAITING_ACK -> RETRANSMITTING on NACK or timeout
+ * 3. RETRANSMITTING -> ERROR after max_retries exhausted
+ * 4. ERROR -> IDLE on explicit reset
  *
  * Uses real SPI comm layer (no mocks) to verify state machine behavior.
  * SPI operations timeout due to no hardware, but state transitions still occur.

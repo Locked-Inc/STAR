@@ -69,7 +69,7 @@ func createTestBatteryState() *starv1.BatteryState {
 			ValidCells: 8,
 		},
 		Temperatures: &starv1.TemperatureData{
-			TempDeciCelsius: []int32{285, 290, 288}, // 28.5°C, 29.0°C, 28.8°C
+			TempDeciCelsius: []int32{285, 290, 288}, // 28.5degC, 29.0degC, 28.8degC
 			ValidSensors:    3,
 		},
 		Current: &starv1.CurrentData{
@@ -104,8 +104,8 @@ func createValidProtectionThresholds() *starv1.ProtectionThresholds {
 		UndervoltageMv:       2800,  // 2.8V
 		OverchargeMa:         5000,  // 5A
 		OverdischargeMa:      10000, // 10A
-		OvertempDeciCelsius:  600,   // 60°C
-		UndertempDeciCelsius: -100,  // -10°C
+		OvertempDeciCelsius:  600,   // 60degC
+		UndertempDeciCelsius: -100,  // -10degC
 	}
 }
 

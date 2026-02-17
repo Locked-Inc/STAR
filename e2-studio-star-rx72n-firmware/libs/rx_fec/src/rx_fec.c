@@ -28,7 +28,7 @@
  * | Operation         | Time Complexity | Space Complexity |
  * |-------------------|-----------------|------------------|
  * | Encoding          | O(n)            | O(1)             |
- * | Decoding (Viterbi)| O(n × 64 × 2)   | O(n × 64 bits)   |
+ * | Decoding (Viterbi)| O(n x 64 x 2)   | O(n x 64 bits)   |
  * | Traceback         | O(n)            | O(1)             |
  *
  * where n = number of input bits.
@@ -38,8 +38,8 @@
  * The Viterbi algorithm finds the maximum likelihood path through the trellis
  * of encoder states using dynamic programming:
  *
- * 1. **Initialization**: Set path metric for state 0 to 0, all others to ∞
- * 2. **Forward Pass**: For each received symbol pair (r₀, r₁):
+ * 1. **Initialization**: Set path metric for state 0 to 0, all others to inf
+ * 2. **Forward Pass**: For each received symbol pair (r_0, r_1):
  *    - For each current state with finite metric:
  *      - Compute metrics for both possible transitions (input=0, input=1)
  *      - Update next state metrics (keep minimum)
@@ -56,7 +56,7 @@
  * @f]
  *
  * where:
- * - @f$ r_i @f$ = received soft bit (−127 to +127)
+ * - @f$ r_i @f$ = received soft bit (-127 to +127)
  * - @f$ e_i' = +127 @f$ if expected bit is 1, @f$ -127 @f$ if 0
  * - Lower metric = better match
  *
@@ -79,8 +79,8 @@
  * - **Rule 1**: [OK] No recursion, goto, or setjmp/longjmp
  * - **Rule 2**: [OK] All loops bounded (k_fec_max_symbols, k_fec_num_states)
  * - **Rule 3**: [OK] Zero dynamic allocation
- * - **Rule 4**: [OK] All functions ≤ 60 lines
- * - **Rule 5**: [OK] All functions have ≥2 assertions
+ * - **Rule 4**: [OK] All functions <= 60 lines
+ * - **Rule 5**: [OK] All functions have >=2 assertions
  * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @author STAR Team

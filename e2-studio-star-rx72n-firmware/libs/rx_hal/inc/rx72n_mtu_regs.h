@@ -15,44 +15,44 @@
  *   STAR Robot Motor Control System
  *   ================================
  *
- *   ┌─────────────────────────────────────────────────────────────────────┐
- *   │                       MTU3a Timer Architecture                      │
- *   │                                                                     │
- *   │  ┌─────────┐ ┌─────────┐ ┌─────────┐     ┌─────────┐ ┌─────────┐   │
- *   │  │  MTU0   │ │  MTU1   │ │  MTU2   │ ... │  MTU6   │ │  MTU7   │   │
- *   │  │ 16-bit  │ │ 16-bit  │ │ 16-bit  │     │ 16-bit  │ │ 16-bit  │   │
- *   │  │  PWM    │ │ Encoder │ │ Encoder │     │Compl PWM│ │Compl PWM│   │
- *   │  └────┬────┘ └────┬────┘ └────┬────┘     └────┬────┘ └────┬────┘   │
- *   │       │           │           │               │           │        │
- *   │       │     ┌─────┴───────────┴─────┐         └─────┬─────┘        │
- *   │       │     │  32-bit Cascaded Mode │               │              │
- *   │       │     │  (MTU1+MTU2 for       │               │              │
- *   │       │     │   Hall Encoders)      │               │              │
- *   │       │     └───────────────────────┘               │              │
- *   │       │                                             │              │
- *   │  ┌────┴────┐  ┌─────────────────────────────────────┴────┐         │
- *   │  │ TIOCA0  │  │          Complementary PWM               │         │
- *   │  │ TIOCB0  │  │  (Dead-time insertion for H-bridge)      │         │
- *   │  └────┬────┘  └─────────────────────────────────────────-┘         │
- *   │       │                                                            │
- *   └───────┼────────────────────────────────────────────────────────────┘
- *           │
- *           ▼
- *   ┌───────────────────────────────────────────────────────────────────┐
- *   │                    Motor Control Application                      │
- *   │                                                                   │
- *   │  ┌───────────┐  ┌─────────────────┐  ┌─────────────────────────┐  │
- *   │  │   PWM     │  │ Quadrature      │  │   Position/Velocity     │  │
- *   │  │Generation │  │ Encoder Input   │  │   Feedback Loop         │  │
- *   │  │(MTU0-4)   │  │(MTU1+MTU2 32b)  │  │   (PID Controller)      │  │
- *   │  └─────┬─────┘  └────────┬────────┘  └────────────┬────────────┘  │
- *   │        │                 │                        │               │
- *   │        ▼                 ▼                        ▼               │
- *   │  ┌──────────────────────────────────────────────────────────────┐ │
- *   │  │                     DRV8243 Motor Driver                     │ │
- *   │  │            (4x DC Motors with Hall Encoders)                 │ │
- *   │  └──────────────────────────────────────────────────────────────┘ │
- *   └───────────────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------------------+
+ *   |                       MTU3a Timer Architecture                      |
+ *   |                                                                     |
+ *   |  +---------+ +---------+ +---------+     +---------+ +---------+   |
+ *   |  |  MTU0   | |  MTU1   | |  MTU2   | ... |  MTU6   | |  MTU7   |   |
+ *   |  | 16-bit  | | 16-bit  | | 16-bit  |     | 16-bit  | | 16-bit  |   |
+ *   |  |  PWM    | | Encoder | | Encoder |     |Compl PWM| |Compl PWM|   |
+ *   |  +----+----+ +----+----+ +----+----+     +----+----+ +----+----+   |
+ *   |       |           |           |               |           |        |
+ *   |       |     +-----+-----------+-----+         +-----+-----+        |
+ *   |       |     |  32-bit Cascaded Mode |               |              |
+ *   |       |     |  (MTU1+MTU2 for       |               |              |
+ *   |       |     |   Hall Encoders)      |               |              |
+ *   |       |     +-----------------------+               |              |
+ *   |       |                                             |              |
+ *   |  +----+----+  +-------------------------------------+----+         |
+ *   |  | TIOCA0  |  |          Complementary PWM               |         |
+ *   |  | TIOCB0  |  |  (Dead-time insertion for H-bridge)      |         |
+ *   |  +----+----+  +------------------------------------------+         |
+ *   |       |                                                            |
+ *   +-------+------------------------------------------------------------+
+ *           |
+ *           v
+ *   +-------------------------------------------------------------------+
+ *   |                    Motor Control Application                      |
+ *   |                                                                   |
+ *   |  +-----------+  +-----------------+  +-------------------------+  |
+ *   |  |   PWM     |  | Quadrature      |  |   Position/Velocity     |  |
+ *   |  |Generation |  | Encoder Input   |  |   Feedback Loop         |  |
+ *   |  |(MTU0-4)   |  |(MTU1+MTU2 32b)  |  |   (PID Controller)      |  |
+ *   |  +-----+-----+  +--------+--------+  +------------+------------+  |
+ *   |        |                 |                        |               |
+ *   |        v                 v                        v               |
+ *   |  +--------------------------------------------------------------+ |
+ *   |  |                     DRV8243 Motor Driver                     | |
+ *   |  |            (4x DC Motors with Hall Encoders)                 | |
+ *   |  +--------------------------------------------------------------+ |
+ *   +-------------------------------------------------------------------+
  * @endverbatim
  *
  * @par MTU3a Channel Capabilities
@@ -77,8 +77,8 @@
  * \text{Position (revolutions)} = \frac{\text{TCNTLW}}{341 \times 4}
  * @f]
  *
- * With 32-bit counter at 341 PPR × 4 edges = 1364 counts/rev:
- * - Range: ±3,146,879 revolutions before overflow
+ * With 32-bit counter at 341 PPR x 4 edges = 1364 counts/rev:
+ * - Range: +/-3,146,879 revolutions before overflow
  * - At 210 RPM max: 10.4 days continuous operation without wraparound
  *
  * @par Clock Configuration
@@ -164,7 +164,7 @@ extern "C" {
  * @par Memory Map Overview
  * @verbatim
  *   Address Range        Channel    Notes
- *   ─────────────────────────────────────────────────────────────────
+ *   -----------------------------------------------------------------
  *   0x000C1200-0x000C127F  MTU3/4   Interleaved (complementary PWM pair)
  *   0x000C1280-0x000C12FF  TSTRA    Timer Start Register A (MTU0-4, 8)
  *   0x000C1300-0x000C137F  MTU0     General-purpose timer
@@ -269,7 +269,7 @@ typedef enum : uint8_t {
  * @par Register Memory Layout (18 bytes total)
  * @verbatim
  *   Offset  Size  Register  Description
- *   ──────────────────────────────────────────────────────────────
+ *   --------------------------------------------------------------
  *   0x00    1     TCR       Timer Control (prescaler, edge, clear source)
  *   0x01    1     TMDR      Timer Mode (normal, PWM1, PWM2, phase count)
  *   0x02    1     TIORH     Timer I/O Control H (TIOCA/TIOCB output mode)
@@ -410,19 +410,19 @@ typedef struct {
  * complementary PWM signals with programmable dead-time:
  *
  * @verbatim
- *   MTU3 TIOC3A ────┐    ┌─────────────────────────┐
- *                   ├───>│ High-Side Gate (DRV8243)│───> Motor +
- *   MTU4 TIOC4A ────┘    └─────────────────────────┘
- *                                ↕ Dead-time
- *   MTU3 TIOC3B ────┐    ┌─────────────────────────┐
- *                   ├───>│ Low-Side Gate (DRV8243) │───> Motor -
- *   MTU4 TIOC4B ────┘    └─────────────────────────┘
+ *   MTU3 TIOC3A ----+    +-------------------------+
+ *                   +--->| High-Side Gate (DRV8243)|---> Motor +
+ *   MTU4 TIOC4A ----+    +-------------------------+
+ *                                ^v Dead-time
+ *   MTU3 TIOC3B ----+    +-------------------------+
+ *                   +--->| Low-Side Gate (DRV8243) |---> Motor -
+ *   MTU4 TIOC4B ----+    +-------------------------+
  * @endverbatim
  *
  * @par Register Memory Layout (21 bytes total)
  * @verbatim
  *   Offset  Size  Register  Description
- *   ──────────────────────────────────────────────────────────────
+ *   --------------------------------------------------------------
  *   0x00    1     TCR       Timer Control (prescaler, edge, clear)
  *   0x01    1     TMDR      Timer Mode (complementary PWM mode)
  *   0x02    1     TIORH     Timer I/O Control H (output A/B)
@@ -585,31 +585,31 @@ typedef struct {
  *
  * @verbatim
  *   Encoder Signals              MTU1/MTU2 32-bit Cascaded Mode
- *   ────────────────────────    ─────────────────────────────────
+ *   ------------------------    ---------------------------------
  *
- *   Motor 1 (FL)                 ┌────────────────────────────────┐
- *   ┌─────────────┐              │        32-bit TCNTLW           │
- *   │ Hall A ────>├─> MTCLKA ───>│  [MTU2.TCNT | MTU1.TCNT]      │
- *   │ Hall B ────>├─> MTCLKB ───>│  Upper 16    Lower 16         │
- *   └─────────────┘              │                                │
- *   341 PPR × 4 edges            │  Position = TCNTLW / 1364      │
- *   = 1364 counts/rev            │  Range: ±3.1M revolutions      │
- *                                └────────────────────────────────┘
+ *   Motor 1 (FL)                 +--------------------------------+
+ *   +-------------+              |        32-bit TCNTLW           |
+ *   | Hall A ---->+-> MTCLKA --->|  [MTU2.TCNT | MTU1.TCNT]      |
+ *   | Hall B ---->+-> MTCLKB --->|  Upper 16    Lower 16         |
+ *   +-------------+              |                                |
+ *   341 PPR x 4 edges            |  Position = TCNTLW / 1364      |
+ *   = 1364 counts/rev            |  Range: +/-3.1M revolutions      |
+ *                                +--------------------------------+
  * @endverbatim
  *
  * @par 32-bit Cascaded Mode Benefits
- * - **Extended Range**: 2^32 counts vs 2^16 counts (65536× more range)
+ * - **Extended Range**: 2^32 counts vs 2^16 counts (65536x more range)
  * - **Atomic Access**: TCNTLW, TGRALW, TGRBLW are 32-bit atomic operations
  * - **No Race Conditions**: No need to disable interrupts during read
  * - **Hardware Implementation**: Zero software overhead for overflow tracking
  *
  * @par Position Calculation
- * For STAR robot Hall encoders (341 PPR, 4× quadrature = 1364 counts/rev):
+ * For STAR robot Hall encoders (341 PPR, 4x quadrature = 1364 counts/rev):
  * @f[
  * \text{Position (revolutions)} = \frac{\text{TCNTLW}}{1364}
  * @f]
  * @f[
- * \text{Position (degrees)} = \frac{\text{TCNTLW} \times 360°}{1364}
+ * \text{Position (degrees)} = \frac{\text{TCNTLW} \times 360deg}{1364}
  * @f]
  *
  * @par Overflow Analysis
@@ -621,7 +621,7 @@ typedef struct {
  * @par Register Memory Layout (44 bytes total)
  * @verbatim
  *   Offset  Size  Register   Description
- *   ──────────────────────────────────────────────────────────────
+ *   --------------------------------------------------------------
  *   0x00    1     TCR        Timer Control (prescaler, edge)
  *   0x01    1     TMDR       Timer Mode (phase counting mode)
  *   0x02    1     TIORH      Timer I/O Control H
@@ -676,7 +676,7 @@ typedef struct {
  * @see RX72N Hardware Manual Section 24.3.5 (Phase Counting Mode)
  */
 typedef struct {
-  /* ─────────── Standard 16-bit registers (0x00-0x0F) ─────────── */
+  /* ----------- Standard 16-bit registers (0x00-0x0F) ----------- */
 
   /**
    * @brief Timer Control Register (TCR) - prescaler and edge selection
@@ -727,7 +727,7 @@ typedef struct {
   /** @brief Timer General Register D - 16-bit compare */
   volatile uint16_t tgrd;
 
-  /* ─────────── Extended 32-bit mode registers (0x10-0x2B) ─────────── */
+  /* ----------- Extended 32-bit mode registers (0x10-0x2B) ----------- */
 
   /** @brief Reserved byte at offset 0x10 */
   uint8_t reserved1;
@@ -990,10 +990,10 @@ static inline volatile rx_mtu_tstr_regs_t* mtu_tstrb(void)
  * @par Register Bit Layout
  * @verbatim
  *   Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
- *   ─────────────────────────────────────────────────────────────────
- *   │   CCLR[2:0]   │  CKEG[1:0]  │       TPSC[2:0]            │
- *   │ Counter Clear │ Clock Edge  │ Timer Prescaler            │
- *   ─────────────────────────────────────────────────────────────────
+ *   -----------------------------------------------------------------
+ *   |   CCLR[2:0]   |  CKEG[1:0]  |       TPSC[2:0]            |
+ *   | Counter Clear | Clock Edge  | Timer Prescaler            |
+ *   -----------------------------------------------------------------
  * @endverbatim
  *
  * @par Prescaler Values (TPSC)
@@ -1054,10 +1054,10 @@ typedef enum : uint8_t {
  * @par Register Bit Layout
  * @verbatim
  *   Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
- *   ─────────────────────────────────────────────────────────────────
- *   │   -   │   -   │  BFB  │  BFA  │         MD[3:0]            │
- *   │ Rsrvd │ Rsrvd │BufferB│BufferA│      Mode Select           │
- *   ─────────────────────────────────────────────────────────────────
+ *   -----------------------------------------------------------------
+ *   |   -   |   -   |  BFB  |  BFA  |         MD[3:0]            |
+ *   | Rsrvd | Rsrvd |BufferB|BufferA|      Mode Select           |
+ *   -----------------------------------------------------------------
  * @endverbatim
  *
  * @par Operating Modes (MD[3:0])
@@ -1139,10 +1139,10 @@ typedef enum : uint8_t {
  * @par Register Bit Layout (TIORH)
  * @verbatim
  *   Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
- *   ─────────────────────────────────────────────────────────────────
- *   │       IOB[3:0]           │          IOA[3:0]              │
- *   │   TIOCB Output Mode      │      TIOCA Output Mode         │
- *   ─────────────────────────────────────────────────────────────────
+ *   -----------------------------------------------------------------
+ *   |       IOB[3:0]           |          IOA[3:0]              |
+ *   |   TIOCB Output Mode      |      TIOCA Output Mode         |
+ *   -----------------------------------------------------------------
  * @endverbatim
  *
  * @par Output Modes
@@ -1190,10 +1190,10 @@ typedef enum : uint8_t {
  * @par Register Bit Layout (TSTRA)
  * @verbatim
  *   Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
- *   ─────────────────────────────────────────────────────────────────
- *   │ CST4  │ CST3  │   -   │   -   │ CST8  │ CST2  │ CST1  │ CST0  │
- *   │ MTU4  │ MTU3  │ Rsrvd │ Rsrvd │ MTU8  │ MTU2  │ MTU1  │ MTU0  │
- *   ─────────────────────────────────────────────────────────────────
+ *   -----------------------------------------------------------------
+ *   | CST4  | CST3  |   -   |   -   | CST8  | CST2  | CST1  | CST0  |
+ *   | MTU4  | MTU3  | Rsrvd | Rsrvd | MTU8  | MTU2  | MTU1  | MTU0  |
+ *   -----------------------------------------------------------------
  * @endverbatim
  *
  * @par Synchronized Start Example
@@ -1258,10 +1258,10 @@ typedef enum : uint8_t {
  * @par Register Bit Layout (TSTRB)
  * @verbatim
  *   Bit 7   Bit 6   Bit 5   Bit 4   Bit 3   Bit 2   Bit 1   Bit 0
- *   ─────────────────────────────────────────────────────────────────
- *   │ CST7  │ CST6  │   -   │   -   │   -   │   -   │   -   │   -   │
- *   │ MTU7  │ MTU6  │              Reserved                        │
- *   ─────────────────────────────────────────────────────────────────
+ *   -----------------------------------------------------------------
+ *   | CST7  | CST6  |   -   |   -   |   -   |   -   |   -   |   -   |
+ *   | MTU7  | MTU6  |              Reserved                        |
+ *   -----------------------------------------------------------------
  * @endverbatim
  *
  * @see rx_mtu_tstr_regs_t

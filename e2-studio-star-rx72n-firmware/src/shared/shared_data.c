@@ -89,11 +89,11 @@
  *
  * | Mutex | Protected Data | Producer(s) | Consumer(s) | Lock Duration |
  * |-------|----------------|-------------|-------------|---------------|
- * | **motor_mutex** | motor_command_t, motor_state_t, pid_gains_t, last_comm_tick | Comm, Motor | Motor, Telemetry, Comm | ~5 µs |
- * | **bms_mutex** | bms_state_t | BMS | Telemetry | ~2 µs |
- * | **temp_mutex** | temp_sensor_state_t | Temp | Telemetry | ~2 µs |
- * | **obstacle_mutex** | obstacle_state_t | Obstacle | Telemetry | ~2 µs |
- * | **estop_mutex** | estop_active, estop_reason | Comm, Obstacle, BMS | Motor | ~1 µs |
+ * | **motor_mutex** | motor_command_t, motor_state_t, pid_gains_t, last_comm_tick | Comm, Motor | Motor, Telemetry, Comm | ~5 us |
+ * | **bms_mutex** | bms_state_t | BMS | Telemetry | ~2 us |
+ * | **temp_mutex** | temp_sensor_state_t | Temp | Telemetry | ~2 us |
+ * | **obstacle_mutex** | obstacle_state_t | Obstacle | Telemetry | ~2 us |
+ * | **estop_mutex** | estop_active, estop_reason | Comm, Obstacle, BMS | Motor | ~1 us |
  *
  * **Mutex Acquisition Order (to prevent deadlock):**
  * 1. Never acquire multiple mutexes in same function call
@@ -231,14 +231,14 @@
  *
  * | Operation | Mutex Lock | memcpy | Mutex Unlock | Event Set | Total | Frequency |
  * |-----------|------------|--------|--------------|-----------|-------|-----------|
- * | **set_motor_command** | 1.2 µs | 3.5 µs | 0.8 µs | 1.0 µs | **6.5 µs** | 100 Hz |
- * | **get_motor_command** | 1.2 µs | 3.5 µs | 0.8 µs | - | **5.5 µs** | 250 Hz |
- * | **update_motor_state** | 1.2 µs | 4.2 µs | 0.8 µs | - | **6.2 µs** | 250 Hz |
- * | **get_motor_state** | 1.2 µs | 4.2 µs | 0.8 µs | - | **6.2 µs** | 20 Hz |
- * | **trigger_estop** | 0.9 µs | - | 0.7 µs | 1.0 µs | **2.6 µs** | On event |
- * | **is_comm_timeout** | 1.2 µs | - | 0.8 µs | 1.0 µs | **3.0 µs** | 250 Hz |
+ * | **set_motor_command** | 1.2 us | 3.5 us | 0.8 us | 1.0 us | **6.5 us** | 100 Hz |
+ * | **get_motor_command** | 1.2 us | 3.5 us | 0.8 us | - | **5.5 us** | 250 Hz |
+ * | **update_motor_state** | 1.2 us | 4.2 us | 0.8 us | - | **6.2 us** | 250 Hz |
+ * | **get_motor_state** | 1.2 us | 4.2 us | 0.8 us | - | **6.2 us** | 20 Hz |
+ * | **trigger_estop** | 0.9 us | - | 0.7 us | 1.0 us | **2.6 us** | On event |
+ * | **is_comm_timeout** | 1.2 us | - | 0.8 us | 1.0 us | **3.0 us** | 250 Hz |
  *
- * **Worst-case blocking time:** 6.5 µs (motor_mutex held during set_motor_command)
+ * **Worst-case blocking time:** 6.5 us (motor_mutex held during set_motor_command)
  * - Motor task at 250 Hz = 4ms period
  * - Mutex overhead = 0.16% of control loop time
  * - No impact on real-time performance
@@ -255,13 +255,13 @@
  *
  * **g_shared_data structure breakdown:**
  * - motor_command_t: 24 bytes (4 floats + metadata)
- * - motor_state_t: 128 bytes (4 motors × 8 fields)
+ * - motor_state_t: 128 bytes (4 motors x 8 fields)
  * - pid_gains_t: 32 bytes (7 floats + bool)
  * - bms_state_t: 64 bytes (BQ4050 telemetry)
  * - temp_sensor_state_t: 32 bytes (4 sensors)
  * - obstacle_state_t: 32 bytes (4 HC-SR04 sensors)
  * - estop state: 8 bytes (bool + enum + padding)
- * - Mutexes (5×32): 160 bytes (ThreadX control blocks)
+ * - Mutexes (5x32): 160 bytes (ThreadX control blocks)
  * - Event flags: 32 bytes (ThreadX control block)
  *
  * ## Module Dependencies
@@ -384,11 +384,11 @@ typedef enum : uint8_t {
   k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
 } shared_data_internal_constants_t;
 
-/** @brief Default PID proportional gain — Kp = 0.286 (from MATLAB motor_model_1st_order.m) */
+/** @brief Default PID proportional gain -- Kp = 0.286 (from MATLAB motor_model_1st_order.m) */
 static const float s_default_pid_kp = 0.286f;
-/** @brief Default PID integral gain — Ki = 8.01 (from MATLAB pid_design_velocity.m) */
+/** @brief Default PID integral gain -- Ki = 8.01 (from MATLAB pid_design_velocity.m) */
 static const float s_default_pid_ki = 8.01f;
-/** @brief Default PID derivative gain — Kd = 0.0 (not used) */
+/** @brief Default PID derivative gain -- Kd = 0.0 (not used) */
 static const float s_default_pid_kd = 0.0f;
 /** @brief Default PID output lower limit (% duty cycle) */
 static const float s_default_pid_output_min = -100.0f;
@@ -553,13 +553,13 @@ shared_data_t g_shared_data = {0};
  * ## Default PID Gains Rationale:
  *
  * Values derived from MATLAB tuning scripts in matlab/ directory:
- * - `motor_model_1st_order.m`: Estimate transfer function (τ = 75ms)
+ * - `motor_model_1st_order.m`: Estimate transfer function (tau = 75ms)
  * - `pid_design_velocity.m`: Design PID controller (Ziegler-Nichols)
  * - `pid_discretize.m`: Generate discrete coefficients (250 Hz)
  *
  * **Tuning methodology:**
  * - Step response measured at 6V input
- * - Time constant τ = 75ms (63% of final velocity)
+ * - Time constant tau = 75ms (63% of final velocity)
  * - Gain K = 3.665 (steady-state velocity / voltage)
  * - PI controller designed for 5% overshoot, 200ms settling
  *
@@ -585,8 +585,8 @@ shared_data_t g_shared_data = {0};
  * @invariant All mutexes remain valid until system reset
  *
  * @note Thread Safety: Single-threaded context (tx_application_define), no mutex needed
- * @note Performance: ~500 µs execution time (5 mutex creates + 1 event flag create)
- * @note Memory: Allocates 192 bytes from ThreadX heap (5×32 + 32 for control blocks)
+ * @note Performance: ~500 us execution time (5 mutex creates + 1 event flag create)
+ * @note Memory: Allocates 192 bytes from ThreadX heap (5x32 + 32 for control blocks)
  *
  * @warning Never call this function from a task context! ThreadX creation functions
  *          must be called from tx_application_define() only.
@@ -780,11 +780,11 @@ rx_err_t shared_data_init(void)
  * @post k_event_motor_command_updated flag set
  * @post Motor task wakes up and processes command within ~4ms
  *
- * @invariant motor_mutex held for <6 µs (memcpy + timestamp update)
+ * @invariant motor_mutex held for <6 us (memcpy + timestamp update)
  * @invariant Event flag set AFTER mutex released (no deadlock)
  *
  * @note Thread Safety: Protected by motor_mutex (blocking wait, no timeout)
- * @note Performance: ~6.5 µs total (1.2 µs lock + 3.5 µs memcpy + 0.8 µs unlock + 1.0 µs event)
+ * @note Performance: ~6.5 us total (1.2 us lock + 3.5 us memcpy + 0.8 us unlock + 1.0 us event)
  * @note Memory: sizeof(motor_command_t) = 24 bytes copied
  * @note Frequency: Called at ~100 Hz by Communication Task (10ms period)
  *
@@ -888,10 +888,10 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
  * @post out_cmd contains snapshot of current motor command
  * @post Command data is consistent (atomic copy via mutex)
  *
- * @invariant motor_mutex held for <6 µs (memcpy only)
+ * @invariant motor_mutex held for <6 us (memcpy only)
  *
  * @note Thread Safety: Protected by motor_mutex (blocking wait)
- * @note Performance: ~5.5 µs total (1.2 µs lock + 3.5 µs memcpy + 0.8 µs unlock)
+ * @note Performance: ~5.5 us total (1.2 us lock + 3.5 us memcpy + 0.8 us unlock)
  * @note Memory: sizeof(motor_command_t) = 24 bytes copied
  * @note Frequency: Called at 250 Hz by Motor Task (4ms period)
  *
@@ -986,10 +986,10 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
  * @post motor_state copied to g_shared_data.motor_state
  * @post Telemetry task can read updated state
  *
- * @invariant motor_mutex held for <7 µs (large memcpy)
+ * @invariant motor_mutex held for <7 us (large memcpy)
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~6.2 µs total (128-byte copy)
+ * @note Performance: ~6.2 us total (128-byte copy)
  * @note Frequency: Called at 250 Hz by Motor Task
  *
  * @par Example Usage:
@@ -1066,10 +1066,10 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
  *
  * @post out_state contains snapshot of motor state
  *
- * @invariant motor_mutex held for <7 µs
+ * @invariant motor_mutex held for <7 us
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~6.2 µs total (128-byte copy)
+ * @note Performance: ~6.2 us total (128-byte copy)
  * @note Frequency: Called at 20 Hz by Telemetry Task
  *
  * @par Example Usage:
@@ -1153,10 +1153,10 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  * @post k_event_pid_gains_updated flag set
  * @post Motor task will apply gains within ~4ms (250 Hz loop)
  *
- * @invariant motor_mutex held for <6 µs
+ * @invariant motor_mutex held for <6 us
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~6.5 µs total (memcpy + flag + event)
+ * @note Performance: ~6.5 us total (memcpy + flag + event)
  * @note Frequency: Called rarely (~1 Hz or less, manual tuning)
  *
  * @warning Unsafe PID gains can cause oscillation or instability!
@@ -1243,10 +1243,10 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
  *
  * @post out_gains contains snapshot of PID gains
  *
- * @invariant motor_mutex held for <6 µs
+ * @invariant motor_mutex held for <6 us
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~5.5 µs total
+ * @note Performance: ~5.5 us total
  * @note Frequency: Called on k_event_pid_gains_updated event (~1 Hz)
  *
  * @par Example Usage:
@@ -1317,10 +1317,10 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
  *
  * @post No state change (read-only operation)
  *
- * @invariant motor_mutex held for <2 µs (single bool read)
+ * @invariant motor_mutex held for <2 us (single bool read)
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~2.0 µs total (fast boolean read)
+ * @note Performance: ~2.0 us total (fast boolean read)
  * @note Frequency: Polled at 250 Hz by Motor Task
  *
  * @warning Returns false on error (safe default, but masks errors)
@@ -1379,10 +1379,10 @@ bool shared_data_pid_update_pending(void)
  * @post update_pending = false
  * @post shared_data_pid_update_pending() will return false
  *
- * @invariant motor_mutex held for <2 µs (single bool write)
+ * @invariant motor_mutex held for <2 us (single bool write)
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~2.0 µs total (fast boolean write)
+ * @note Performance: ~2.0 us total (fast boolean write)
  * @note Frequency: Called on k_event_pid_gains_updated (~1 Hz)
  * @note Void return: No error reporting (best-effort clear)
  *
@@ -1484,11 +1484,11 @@ void shared_data_clear_pid_update_flag(void)
  * @post Motor task enters emergency stop mode
  * @post All motor outputs disabled within ~4ms (250 Hz loop)
  *
- * @invariant estop_mutex held for <2 µs (two assignments)
+ * @invariant estop_mutex held for <2 us (two assignments)
  * @invariant Event flag set AFTER mutex released
  *
  * @note Thread Safety: Protected by estop_mutex
- * @note Performance: ~2.6 µs total (0.9 µs lock + 0.7 µs unlock + 1.0 µs event)
+ * @note Performance: ~2.6 us total (0.9 us lock + 0.7 us unlock + 1.0 us event)
  * @note Frequency: Called on fault conditions (rare, <1 Hz normal operation)
  * @note Priority: High-priority operation (motor safety critical)
  *
@@ -1575,7 +1575,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  * @post Motor task will commit on next iteration (<4ms latency)
  *
  * @note Thread Safety: Volatile writes are atomic on RX72N
- * @note Performance: ~1 µs total (no mutex wait)
+ * @note Performance: ~1 us total (no mutex wait)
  * @note Latency: Committed within 4ms by motor task
  * @note ISR-safe: No blocking calls, safe for interrupt context
  *
@@ -1661,10 +1661,10 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
  * @post If pending: estop_active set, estop_reason updated, flag cleared
  * @post If not pending: No state change
  *
- * @invariant estop_mutex held for <2 µs
+ * @invariant estop_mutex held for <2 us
  *
  * @note Thread Safety: Protected by estop_mutex
- * @note Performance: ~2.5 µs when pending, ~0.5 µs when not pending
+ * @note Performance: ~2.5 us when pending, ~0.5 us when not pending
  * @note Frequency: Called every 4ms by motor task (250 Hz)
  * @note Non-blocking: Returns immediately if no pending e-stop
  *
@@ -1772,10 +1772,10 @@ rx_err_t shared_data_commit_isr_estop(void)
  * @post k_event_estop_cleared flag set
  * @post Motor task can accept new commands
  *
- * @invariant estop_mutex held for <2 µs
+ * @invariant estop_mutex held for <2 us
  *
  * @note Thread Safety: Protected by estop_mutex
- * @note Performance: ~2.6 µs total
+ * @note Performance: ~2.6 us total
  * @note Frequency: Called after fault recovery (rare)
  *
  * @warning Only clear after verifying fault is gone! Premature clear
@@ -1843,10 +1843,10 @@ rx_err_t shared_data_clear_estop(void)
  *
  * @post No state change (read-only)
  *
- * @invariant estop_mutex held for <2 µs
+ * @invariant estop_mutex held for <2 us
  *
  * @note Thread Safety: Protected by estop_mutex
- * @note Performance: ~2.0 µs total (fast boolean read)
+ * @note Performance: ~2.0 us total (fast boolean read)
  * @note Frequency: Polled at 250 Hz by Motor Task
  *
  * @warning Returns false on error (safe default, but masks errors)
@@ -1917,10 +1917,10 @@ bool shared_data_is_estop_active(void)
  *
  * @post No state change (read-only)
  *
- * @invariant estop_mutex held for <2 µs
+ * @invariant estop_mutex held for <2 us
  *
  * @note Thread Safety: Protected by estop_mutex
- * @note Performance: ~2.0 µs total (fast enum read)
+ * @note Performance: ~2.0 us total (fast enum read)
  * @note Frequency: Called when e-stop active (for logging/UI)
  *
  * @warning Returns k_estop_reason_none on error (may hide actual reason)
@@ -1992,7 +1992,7 @@ estop_reason_t shared_data_get_estop_reason(void)
  *            - voltage_mv in millivolts (typical: 11000-12600)
  *            - current_ma in milliamps (negative = charging)
  *            - soc_percent range [0, 100]
- *            - temperature_celsius in 0.1°C units
+ *            - temperature_celsius in 0.1degC units
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok State updated, telemetry task can read
@@ -2007,10 +2007,10 @@ estop_reason_t shared_data_get_estop_reason(void)
  * @post bms_state copied to g_shared_data.bms_state
  * @post If SoC <15%, k_event_low_battery flag set
  *
- * @invariant bms_mutex held for <3 µs
+ * @invariant bms_mutex held for <3 us
  *
  * @note Thread Safety: Protected by bms_mutex
- * @note Performance: ~2.5 µs total (64-byte copy)
+ * @note Performance: ~2.5 us total (64-byte copy)
  * @note Frequency: Called at 1 Hz by BMS Task
  *
  * @par Example Usage:
@@ -2087,10 +2087,10 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
  *
  * @post out_state contains snapshot of BMS state
  *
- * @invariant bms_mutex held for <3 µs
+ * @invariant bms_mutex held for <3 us
  *
  * @note Thread Safety: Protected by bms_mutex
- * @note Performance: ~2.5 µs total
+ * @note Performance: ~2.5 us total
  * @note Frequency: Called at 20 Hz by Telemetry Task
  *
  * @par Example Usage:
@@ -2150,7 +2150,7 @@ rx_err_t shared_data_get_bms(bms_state_t* out_state)
  *
  * @param[in] state Pointer to temperature state
  *            - Must not benullptr
- *            - temperature_cdegc[] in 0.01°C units (e.g., 2500 = 25.00°C)
+ *            - temperature_cdegc[] in 0.01degC units (e.g., 2500 = 25.00degC)
  *            - sensor_valid[] indicates working sensors
  *            - sensor_count = number of active sensors [0, 4]
  *
@@ -2165,10 +2165,10 @@ rx_err_t shared_data_get_bms(bms_state_t* out_state)
  *
  * @post temp_state copied to g_shared_data.temp_state
  *
- * @invariant temp_mutex held for <3 µs
+ * @invariant temp_mutex held for <3 us
  *
  * @note Thread Safety: Protected by temp_mutex
- * @note Performance: ~2.5 µs total (32-byte copy)
+ * @note Performance: ~2.5 us total (32-byte copy)
  * @note Frequency: Called at 1 Hz by Temp Task
  *
  * @par Example Usage:
@@ -2239,10 +2239,10 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
  *
  * @post out_state contains snapshot of temperature state
  *
- * @invariant temp_mutex held for <3 µs
+ * @invariant temp_mutex held for <3 us
  *
  * @note Thread Safety: Protected by temp_mutex
- * @note Performance: ~2.5 µs total
+ * @note Performance: ~2.5 us total
  * @note Frequency: Called at 20 Hz by Telemetry Task
  *
  * @par Example Usage:
@@ -2324,10 +2324,10 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  * @post If state->any_obstacle true, k_event_obstacle_detected set
  * @post If state->any_obstacle false, k_event_obstacle_cleared set
  *
- * @invariant obstacle_mutex held for <3 µs
+ * @invariant obstacle_mutex held for <3 us
  *
  * @note Thread Safety: Protected by obstacle_mutex
- * @note Performance: ~3.0 µs total (32-byte copy + event)
+ * @note Performance: ~3.0 us total (32-byte copy + event)
  * @note Frequency: Called at 10-20 Hz by Obstacle Task
  *
  * @par Example Usage:
@@ -2417,10 +2417,10 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
  *
  * @post out_state contains snapshot of obstacle state
  *
- * @invariant obstacle_mutex held for <3 µs
+ * @invariant obstacle_mutex held for <3 us
  *
  * @note Thread Safety: Protected by obstacle_mutex
- * @note Performance: ~2.5 µs total
+ * @note Performance: ~2.5 us total
  * @note Frequency: Called at 20 Hz by Telemetry Task
  *
  * @par Example Usage:
@@ -2509,11 +2509,11 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  * @post If timeout: k_event_comm_timeout flag set
  * @post If timeout: Motor task should trigger e-stop
  *
- * @invariant motor_mutex held for <3 µs (read 2 ticks + calculate)
+ * @invariant motor_mutex held for <3 us (read 2 ticks + calculate)
  * @invariant Never modifies shared state (read-only operation)
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~3.0 µs total (tick reads + math + event)
+ * @note Performance: ~3.0 us total (tick reads + math + event)
  * @note Frequency: Called at 250 Hz by Motor Task (every 4ms)
  * @note Re-entrancy: Not reentrant (mutex-based)
  *
@@ -2610,10 +2610,10 @@ bool shared_data_is_comm_timeout(void)
  * @post last_comm_tick = current tx_time_get() value
  * @post Communication timeout prevented for next 500ms
  *
- * @invariant motor_mutex held for <2 µs (single assignment)
+ * @invariant motor_mutex held for <2 us (single assignment)
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~2.0 µs total (fast write)
+ * @note Performance: ~2.0 us total (fast write)
  * @note Frequency: Rarely called directly (set_motor_command does this)
  * @note Void return: No error reporting (best-effort update)
  *
@@ -2693,7 +2693,7 @@ void shared_data_update_last_comm_tick(void)
  *
  * @note Thread Safety: Lock-free (ThreadX atomic operations)
  * @note ISR Safety: Safe to call from interrupt context
- * @note Performance: ~1.0 µs total (fast atomic operation)
+ * @note Performance: ~1.0 us total (fast atomic operation)
  * @note Frequency: Called on event occurrences (varies by flag)
  *
  * @par Example - Multiple Flags:

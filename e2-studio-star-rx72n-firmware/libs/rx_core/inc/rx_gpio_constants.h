@@ -319,8 +319,8 @@ typedef enum : uint16_t {
  * The error handler implements exponential backoff with these defaults:
  * 1. **Attempt 1**: Immediate retry (no delay)
  * 2. **Attempt 2**: Wait 100ms (initial backoff)
- * 3. **Attempt 3**: Wait 200ms (2× backoff)
- * 4. **Attempt 4**: Wait 400ms (2× backoff, clamped to max)
+ * 3. **Attempt 3**: Wait 200ms (2x backoff)
+ * 4. **Attempt 4**: Wait 400ms (2x backoff, clamped to max)
  *
  * After 3 retries (4 total attempts), operation fails permanently.
  *

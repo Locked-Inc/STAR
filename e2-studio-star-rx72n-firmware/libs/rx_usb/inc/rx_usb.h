@@ -143,7 +143,7 @@
  * **Static Memory (Global):**
  * - **Port buffers**: 4352 bytes (1024+1024 + 256+512 + 256+1024)
  * - **USB descriptors**: ~512 bytes (device, config, interface, endpoint)
- * - **State structures**: ~128 bytes (3 ports × ~42 bytes per port)
+ * - **State structures**: ~128 bytes (3 ports x ~42 bytes per port)
  * - **Total static**: ~5000 bytes (~5 KB)
  *
  * **Stack Usage per Call:**
@@ -161,7 +161,7 @@
  *
  * **External Hardware:**
  * - **VBUS detection**: PA6 (USB_VBUS) with internal comparator
- * - **Pull-up resistor**: Internal 1.5kΩ on USB_DP (D+ line)
+ * - **Pull-up resistor**: Internal 1.5kOhm on USB_DP (D+ line)
  * - **No external PHY required** (internal transceiver)
  *
  * ## Thread Safety
@@ -184,7 +184,7 @@
  * - **Configuration Descriptor**: Contains 3 CDC-ACM functions
  * - **Interface Association Descriptors (IAD)**: Groups each CDC function (2 interfaces each)
  * - **CDC Functional Descriptors**: Header, ACM, Union, Call Management
- * - **Endpoint Descriptors**: Interrupt (control) + 2× Bulk (data) per port
+ * - **Endpoint Descriptors**: Interrupt (control) + 2x Bulk (data) per port
  *
  * **CDC-ACM Class Requests (Handled by Driver):**
  * - `SET_LINE_CODING` (0x20): Host configures baud rate, parity, stop bits
@@ -404,7 +404,7 @@ extern "C" {
  * **Host Device Mapping** (Linux):
  * ```
  * RX72N Port    ->  Host Device      Typical Usage
- * ═══════════════════════════════════════════════════════════════
+ * ===============================================================
  * k_usb_port_proto   ->  /dev/ttyACM0   nanopb protocol, motor commands
  * k_usb_port_decoded ->  /dev/ttyACM1   ASCII frame dumps, debugging
  * k_usb_port_log     ->  /dev/ttyACM2   Log output, diagnostics
@@ -554,7 +554,7 @@ typedef enum : uint8_t {
  * ```
  *
  * **Callback Constraints:**
- * - **ISR context**: Callback runs in USB interrupt, keep fast (<10 µs)
+ * - **ISR context**: Callback runs in USB interrupt, keep fast (<10 us)
  * - **No blocking**: Do not call tx_thread_sleep(), tx_mutex_get(), etc.
  * - **Safe operations**: Set flags, post semaphores, queue messages
  *
@@ -718,11 +718,11 @@ typedef enum : uint8_t {
  * **State Machine** (see file header @startuml diagram for visual):
  * ```
  * Detached -> Attached -> Powered -> Default -> Addressed -> Configured
- *                                     ↑          ↓            ↓
- *                                     ←── Reset ──           ↓
- *                                                             ↓
+ *                                     ^          v            v
+ *                                     <--- Reset --           v
+ *                                                             v
  *                                                        Suspended
- *                                                             ↓
+ *                                                             v
  *                                                        (Resume) -> Configured
  * ```
  *
@@ -783,7 +783,7 @@ typedef enum : uint8_t {
    * @details
    * **Entry condition**: VBUS voltage rises above 4.4V
    * **Characteristics**:
-   * - Pull-up resistor enabled on D+ (1.5kΩ, signals Full-Speed)
+   * - Pull-up resistor enabled on D+ (1.5kOhm, signals Full-Speed)
    * - Host detects device connection
    * - Waiting for host to initiate bus reset
    * **Duration**: Typically 10-50ms

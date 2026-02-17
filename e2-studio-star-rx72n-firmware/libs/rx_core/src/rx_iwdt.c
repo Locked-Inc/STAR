@@ -87,7 +87,7 @@
  * | Clock Source | IWDTCLK (125 kHz independent) | PCLKB (system clock) |
  * | Can be Stopped | [X] No (hardware safety) | [OK] Yes |
  * | Clock Fault Detection | [OK] Yes (independent clock) | [X] No |
- * | Timeout Range | ~8 ms to ~17 seconds | ~4 µs to ~273 µs |
+ * | Timeout Range | ~8 ms to ~17 seconds | ~4 us to ~273 us |
  * | Register Base | 0x00088030 | 0x00088020 |
  * | Task Monitoring | [OK] Software layer | [X] Not implemented |
  * | Primary Use | Production safety | Development/debugging |
@@ -138,11 +138,11 @@
  *
  * | Function | Execution Time | Stack | Notes |
  * |----------|---------------|-------|-------|
- * | rx_iwdt_init() | ~30 µs | 64 B | Memset + config copy |
- * | rx_iwdt_feed() | ~1 µs | 8 B | 2 register writes |
- * | rx_iwdt_register_task() | ~10 µs | 32 B | String copy + slot search |
- * | rx_iwdt_task_heartbeat() | ~5 µs | 16 B | Task lookup + tick update |
- * | rx_iwdt_check_tasks() | ~20 µs | 24 B | Scan all 8 tasks |
+ * | rx_iwdt_init() | ~30 us | 64 B | Memset + config copy |
+ * | rx_iwdt_feed() | ~1 us | 8 B | 2 register writes |
+ * | rx_iwdt_register_task() | ~10 us | 32 B | String copy + slot search |
+ * | rx_iwdt_task_heartbeat() | ~5 us | 16 B | Task lookup + tick update |
+ * | rx_iwdt_check_tasks() | ~20 us | 24 B | Scan all 8 tasks |
  *
  * @par Module Dependencies:
  * - [rx_iwdt.h](../inc/rx_iwdt.h) - Public API declarations

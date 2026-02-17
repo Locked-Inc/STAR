@@ -23,7 +23,7 @@
  * Firmware, TRIG_Pin, ECHO_Pin, HC_SR04, Object;
  *
  * --- [label="Measurement Cycle"];
- * Firmware => TRIG_Pin [label="10µs HIGH pulse"];
+ * Firmware => TRIG_Pin [label="10us HIGH pulse"];
  * TRIG_Pin => HC_SR04 [label="trigger"];
  * HC_SR04 box HC_SR04 [label="Generate 8x 40kHz burst"];
  * HC_SR04 => Object [label="ultrasonic pulse"];
@@ -44,7 +44,7 @@
  *
  * where:
  * - @f$ d @f$ = distance to object (meters)
- * - @f$ c @f$ = speed of sound in air ≈ 343 m/s at 20°C
+ * - @f$ c @f$ = speed of sound in air ~ 343 m/s at 20degC
  * - @f$ t @f$ = echo pulse width (seconds)
  * - Division by 2 accounts for round-trip travel
  *
@@ -60,7 +60,7 @@
  * @f]
  *
  * **Performance Characteristics:**
- * - **Execution time:** Validation ~0.1µs, delegation ~0.5µs per call
+ * - **Execution time:** Validation ~0.1us, delegation ~0.5us per call
  * - **Memory usage:** Zero heap allocation, ~200 bytes stack per call
  * - **Thread safety:** Not thread-safe - caller must provide synchronization
  * - **Re-entrancy:** Not reentrant - uses static mock hardware state
@@ -107,7 +107,7 @@
  * | 1. Simple control flow | [OK] | No goto, setjmp, recursion |
  * | 2. Fixed loop bounds | [OK] | All loops use enum constants for bounds |
  * | 3. No dynamic memory | [OK] | Zero malloc/free, stack-only allocation |
- * | 4. Functions ≤60 lines | [OK] | Longest: `hcsr04_hal_delay_us` (31 lines) |
+ * | 4. Functions <=60 lines | [OK] | Longest: `hcsr04_hal_delay_us` (31 lines) |
  * | 5. Min 2 assertions/func | [OK] | All functions validate inputs |
  * | 6. Smallest scope | [OK] | Variables declared at first use |
  * | 7. Check return values | [OK] | All mock function returns checked |
@@ -185,7 +185,7 @@ typedef enum : uint16_t {
    *
    * @details
    * Maximum delay duration enforced by the mock HAL. Matches the HC-SR04
-   * echo timeout value (38000µs) to ensure tests don't exceed realistic
+   * echo timeout value (38000us) to ensure tests don't exceed realistic
    * measurement times. Delays beyond this threshold trigger a warning.
    *
    * @par Rationale:
@@ -193,7 +193,7 @@ typedef enum : uint16_t {
    * Tests requesting longer delays likely have logic errors.
    *
    * @par Value:
-   * 38000 µs (38 ms) - matches k_hcsr04_echo_timeout_us
+   * 38000 us (38 ms) - matches k_hcsr04_echo_timeout_us
    *
    * @see rx_hcsr04.h for k_hcsr04_echo_timeout_us
    */
@@ -253,8 +253,8 @@ typedef enum : uint16_t {
  * **Algorithm:**
  * 1. Extract pin number from lower bits using k_port_mask
  * 2. Extract port number from upper bits using k_port_shift
- * 3. Assert pin ≤ k_rx_pin_max (7)
- * 4. Assert port ≤ k_rx_port_j (10)
+ * 3. Assert pin <= k_rx_pin_max (7)
+ * 4. Assert port <= k_rx_port_j (10)
  * 5. Compare combined value against k_rx_pj_7 (highest valid pin)
  *
  * **Port/Pin Encoding:**
@@ -303,7 +303,7 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] 2 assertions (pin ≤ max, port ≤ max)
+ * - Rule 5: [OK] 2 assertions (pin <= max, port <= max)
  * - Rule 6: [OK] Variables declared at smallest scope
  */
 static inline bool internal_is_valid_pin(rx_port_pin_t pin)
@@ -373,7 +373,7 @@ static inline bool internal_is_valid_pin(rx_port_pin_t pin)
  * @warning Caller must check return value before using extracted port/pin
  *
  * @par Performance:
- * Execution time: ~0.1µs (bit operations and comparisons)
+ * Execution time: ~0.1us (bit operations and comparisons)
  * Memory: ~32 bytes stack
  *
  * @par Example:
@@ -461,7 +461,7 @@ internal_validate_and_extract_pin(rx_port_pin_t pin, uint8_t* port, uint8_t* pin
  * 3. Return result from mock layer
  *
  * **HC-SR04 TRIG Pin Usage:**
- * The TRIG pin must be configured as output to generate the 10µs trigger pulse
+ * The TRIG pin must be configured as output to generate the 10us trigger pulse
  * that initiates ultrasonic measurement. After this call, use
  * hcsr04_hal_gpio_write_high() and hcsr04_hal_gpio_write_low() to control.
  *
@@ -488,7 +488,7 @@ internal_validate_and_extract_pin(rx_port_pin_t pin, uint8_t* port, uint8_t* pin
  * @warning Reconfiguring an in-use pin may disrupt other modules
  *
  * @par Performance:
- * Execution time: ~0.5µs (validation + mock delegation)
+ * Execution time: ~0.5us (validation + mock delegation)
  * Memory: ~32 bytes stack
  *
  * @par Example:
@@ -572,7 +572,7 @@ rx_err_t hcsr04_hal_gpio_set_output(rx_port_pin_t pin)
  * @warning Must be called before attempting to read from pin
  *
  * @par Performance:
- * Execution time: ~0.5µs (validation + mock delegation)
+ * Execution time: ~0.5us (validation + mock delegation)
  * Memory: ~32 bytes stack
  *
  * @par Example:
@@ -629,7 +629,7 @@ rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
  *
  * @details
  * Drives the specified GPIO pin to logic HIGH (3.3V). Used to generate the
- * 10µs trigger pulse required by the HC-SR04 ultrasonic sensor.
+ * 10us trigger pulse required by the HC-SR04 ultrasonic sensor.
  *
  * **Algorithm:**
  * 1. Validate and extract port/pin numbers
@@ -637,10 +637,10 @@ rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
  * 3. Return result from mock layer
  *
  * **HC-SR04 Trigger Sequence:**
- * To initiate measurement, drive TRIG HIGH for 10µs:
+ * To initiate measurement, drive TRIG HIGH for 10us:
  * ```
  * hcsr04_hal_gpio_write_high(trig_pin);   // Start pulse
- * hcsr04_hal_delay_us(10);                // 10µs pulse width
+ * hcsr04_hal_delay_us(10);                // 10us pulse width
  * hcsr04_hal_gpio_write_low(trig_pin);    // End pulse
  * ```
  *
@@ -664,12 +664,12 @@ rx_err_t hcsr04_hal_gpio_set_input(rx_port_pin_t pin)
  * @warning Pin must be configured as output first
  *
  * @par Performance:
- * Execution time: ~0.5µs (validation + mock delegation)
+ * Execution time: ~0.5us (validation + mock delegation)
  * Memory: ~32 bytes stack
  *
  * @par Example:
  * @code{.c}
- * // Generate 10µs trigger pulse
+ * // Generate 10us trigger pulse
  * rx_err_t ret = hcsr04_hal_gpio_write_high(trig_pin);
  * if (ret != k_rx_ok) return ret;
  *
@@ -713,9 +713,9 @@ rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
  * 3. Return result from mock layer
  *
  * **HC-SR04 Protocol:**
- * After the 10µs HIGH pulse, TRIG must return to LOW to complete the trigger:
+ * After the 10us HIGH pulse, TRIG must return to LOW to complete the trigger:
  * - LOW -> HIGH: Start trigger pulse
- * - Maintain HIGH for 10µs
+ * - Maintain HIGH for 10us
  * - HIGH -> LOW: Complete pulse, HC-SR04 begins measurement
  *
  * @param[in] pin GPIO pin to drive LOW
@@ -738,7 +738,7 @@ rx_err_t hcsr04_hal_gpio_write_high(rx_port_pin_t pin)
  * @warning Pin must be configured as output first
  *
  * @par Performance:
- * Execution time: ~0.5µs (validation + mock delegation)
+ * Execution time: ~0.5us (validation + mock delegation)
  * Memory: ~32 bytes stack
  *
  * @par Example:
@@ -822,7 +822,7 @@ rx_err_t hcsr04_hal_gpio_write_low(rx_port_pin_t pin)
  * @warning Check return value before using *value
  *
  * @par Performance:
- * Execution time: ~0.5µs (validation + mock delegation)
+ * Execution time: ~0.5us (validation + mock delegation)
  * Memory: ~32 bytes stack
  *
  * @par Example - ECHO Pulse Detection:
@@ -919,7 +919,7 @@ rx_err_t hcsr04_hal_gpio_read(rx_port_pin_t pin, bool* value)
  * @warning Do not use pin for HC-SR04 operations after deinit
  *
  * @par Performance:
- * Execution time: ~0.5µs (validation + mock delegation)
+ * Execution time: ~0.5us (validation + mock delegation)
  * Memory: ~32 bytes stack
  *
  * @par Example:
@@ -971,13 +971,13 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  *
  * @details
  * Delays program execution by the specified number of microseconds. Used to
- * generate the precise 10µs trigger pulse required by the HC-SR04 protocol.
+ * generate the precise 10us trigger pulse required by the HC-SR04 protocol.
  * This mock implementation validates delay duration and delegates to the
  * mock timer infrastructure.
  *
  * **Algorithm:**
  * 1. Check for zero delay - return immediately if us == 0
- * 2. Validate delay ≤ k_hcsr04_delay_max_us (38000µs)
+ * 2. Validate delay <= k_hcsr04_delay_max_us (38000us)
  * 3. If exceeded: Format warning message with snprintf
  * 4. Handle snprintf errors gracefully
  * 5. Log warning and return (no delay performed for invalid requests)
@@ -987,7 +987,7 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  *
  * | Signal | Duration | Tolerance | Purpose |
  * |--------|----------|-----------|---------|
- * | TRIG pulse | 10µs | ±1µs | Initiate measurement |
+ * | TRIG pulse | 10us | +/-1us | Initiate measurement |
  * | ECHO timeout | 38ms max | - | Max range (6.5m) |
  * | Measurement cycle | 60ms min | - | Module recovery time |
  *
@@ -998,7 +998,7 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  * --- [label="Trigger Pulse Generation"];
  * Firmware note Firmware [label="hcsr04_hal_gpio_write_high()"];
  * Firmware => TRIG [label="HIGH"];
- * TRIG note TRIG [label="10µs pulse"];
+ * TRIG note TRIG [label="10us pulse"];
  * Firmware note Firmware [label="hcsr04_hal_delay_us(10)"];
  * Firmware => TRIG [label="LOW"];
  * TRIG => HC_SR04 [label="trigger"];
@@ -1025,14 +1025,14 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  *
  * @par Performance:
  * Execution time (valid delay): Mock dependent, typically instant
- * Execution time (invalid delay): ~10µs (snprintf + logging)
+ * Execution time (invalid delay): ~10us (snprintf + logging)
  * Memory: 96 bytes stack (message buffer)
  *
- * @par Example - 10µs Trigger Pulse:
+ * @par Example - 10us Trigger Pulse:
  * @code{.c}
  * // Generate HC-SR04 trigger pulse
  * hcsr04_hal_gpio_write_high(trig_pin);
- * hcsr04_hal_delay_us(10);  // Precise 10µs delay
+ * hcsr04_hal_delay_us(10);  // Precise 10us delay
  * hcsr04_hal_gpio_write_low(trig_pin);
  * // HC-SR04 now begins ultrasonic measurement
  * @endcode
@@ -1046,7 +1046,7 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  * @par Example - Invalid Delay (Warning):
  * @code{.c}
  * // This will trigger a warning - likely test logic error
- * hcsr04_hal_delay_us(50000);  // Exceeds 38000µs maximum
+ * hcsr04_hal_delay_us(50000);  // Exceeds 38000us maximum
  * // Warning logged: "Delay request 50000 exceeds max 38000 us"
  * // No delay performed
  * @endcode
@@ -1107,7 +1107,7 @@ void hcsr04_hal_delay_us(uint32_t us)
  * **Algorithm:**
  * 1. Delegate to mock_get_time_us() to get current mock time
  * 2. Assert time_us != UINT32_MAX (invalid sentinel value)
- * 3. Assert time_us ≤ k_hcsr04_echo_timeout_us (realistic test bounds)
+ * 3. Assert time_us <= k_hcsr04_echo_timeout_us (realistic test bounds)
  * 4. Return validated timestamp
  *
  * **ECHO Pulse Width Measurement:**
@@ -1124,7 +1124,7 @@ void hcsr04_hal_delay_us(uint32_t us)
  *
  * **Pulse Width to Distance Table:**
  *
- * | Distance (cm) | Pulse Width (µs) | Round-trip (mm) |
+ * | Distance (cm) | Pulse Width (us) | Round-trip (mm) |
  * |---------------|------------------|-----------------|
  * | 2 (min) | 116 | 4 mm |
  * | 10 | 580 | 20 mm |
@@ -1135,8 +1135,8 @@ void hcsr04_hal_delay_us(uint32_t us)
  *
  * @return Current microsecond timestamp
  *   - Range: [0, k_hcsr04_echo_timeout_us] in mock tests
- *   - Unit: microseconds (µs)
- *   - Resolution: 1µs (mock simulation)
+ *   - Unit: microseconds (us)
+ *   - Resolution: 1us (mock simulation)
  *   - Monotonic: Always increases in normal operation
  *
  * @pre Mock timer must be initialized
@@ -1153,7 +1153,7 @@ void hcsr04_hal_delay_us(uint32_t us)
  * @note Re-entrant - read-only operation
  *
  * @warning Assertions will fire if mock timer is misconfigured
- * @warning Mock time > 38000µs indicates test logic error
+ * @warning Mock time > 38000us indicates test logic error
  *
  * @attention Test Infrastructure Note:
  * Tests simulating HC-SR04 timeout conditions should call:
@@ -1166,7 +1166,7 @@ void hcsr04_hal_delay_us(uint32_t us)
  * ```
  *
  * @par Performance:
- * Execution time: ~0.1µs (mock timer read + 2 assertions)
+ * Execution time: ~0.1us (mock timer read + 2 assertions)
  * Memory: ~16 bytes stack
  *
  * @par Example - Measure ECHO Pulse Width:
@@ -1259,11 +1259,11 @@ uint32_t hcsr04_hal_get_time_us(void)
  *
  * @par Example: ISR Edge Capture Simulation
  * @code
- * mock_set_time_us(1000);  // Rising edge at 1000 µs
+ * mock_set_time_us(1000);  // Rising edge at 1000 us
  * uint32_t start = hcsr04_hal_get_time_us_isr();
- * mock_set_time_us(3000);  // Falling edge at 3000 µs (2 ms echo = ~34 cm)
+ * mock_set_time_us(3000);  // Falling edge at 3000 us (2 ms echo = ~34 cm)
  * uint32_t end = hcsr04_hal_get_time_us_isr();
- * uint32_t duration_us = end - start;  // = 2000 µs ≈ 34 cm
+ * uint32_t duration_us = end - start;  // = 2000 us ~ 34 cm
  * @endcode
  *
  * @see hcsr04_hal_get_time_us_isr() Real hardware counterpart (reads CMT2 directly)

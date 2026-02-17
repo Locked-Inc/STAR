@@ -120,10 +120,10 @@
  * | GPIO write | ~20 | 83 ns | Direct register access |
  * | GPIO read | ~25 | 104 ns | Includes pin validation |
  * | UART putc | ~150 | 625 ns | Polling TDRE flag |
- * | UART puts (10 chars) | ~1500 | 6.25 µs | 150 cycles/char |
- * | I2C write (1 byte) | ~24000 | 100 µs | 400kHz I2C clock |
- * | SPI transfer (1 byte) | ~480 | 2 µs | 10 MHz SPI clock |
- * | ADC read | ~7200 | 30 µs | 12-bit conversion + validation |
+ * | UART puts (10 chars) | ~1500 | 6.25 us | 150 cycles/char |
+ * | I2C write (1 byte) | ~24000 | 100 us | 400kHz I2C clock |
+ * | SPI transfer (1 byte) | ~480 | 2 us | 10 MHz SPI clock |
+ * | ADC read | ~7200 | 30 us | 12-bit conversion + validation |
  *
  * ### Memory Footprint
  * | Component | Flash | RAM | Stack (max) |
@@ -189,12 +189,12 @@
  * **Critical Signals**:
  * | Signal | Pin | Peripheral | Purpose |
  * |--------|-----|------------|---------|
- * | SPI0_CIPO | P30 | RSPI0 | RPi5 ← RX72N (peripheral mode) |
+ * | SPI0_CIPO | P30 | RSPI0 | RPi5 <- RX72N (peripheral mode) |
  * | SPI0_COPI | P31 | RSPI0 | RPi5 -> RX72N |
  * | SPI0_CLK | P32 | RSPI0 | RPi5 clock |
  * | SPI0_CS | P33 | GPIO | RPi5 chip select |
  * | SPI1_CIPO | PC5 | RSPI1 | DRV8243 -> RX72N (controller mode) |
- * | SPI1_COPI | PC6 | RSPI1 | DRV8243 ← RX72N |
+ * | SPI1_COPI | PC6 | RSPI1 | DRV8243 <- RX72N |
  * | SPI1_CLK | PC7 | RSPI1 | DRV8243 clock |
  * | DRV_CS* | PC4,PC3,PC2,PC1 | GPIO | Motor driver chip selects |
  * | UART_TX | PB7 | SCI9 | Debug output (CY7C65213) |
@@ -230,18 +230,18 @@
  * @par Module Dependencies:
  * ```
  * hardware.h
- *   ├─-> rx_err.h (error codes)
- *   ├─-> rx_check.h (validation macros)
- *   ├─-> rx_log.h (logging)
- *   ├─-> rx_port_constants.h (port/pin enums)
- *   ├─-> rx_bus_types.h (ADC resolution enums)
- *   └─-> [internal] rx72n_regs.h (register definitions)
+ *   +--> rx_err.h (error codes)
+ *   +--> rx_check.h (validation macros)
+ *   +--> rx_log.h (logging)
+ *   +--> rx_port_constants.h (port/pin enums)
+ *   +--> rx_bus_types.h (ADC resolution enums)
+ *   +--> [internal] rx72n_regs.h (register definitions)
  *
  * Used by:
- *   ├─-> Motor control (rx_motor_control.c)
- *   ├─-> USB communication (rx_usb.c)
- *   ├─-> Protocol handling (rx_comm_manager.c)
- *   └─-> Application tasks (app_main_task.c)
+ *   +--> Motor control (rx_motor_control.c)
+ *   +--> USB communication (rx_usb.c)
+ *   +--> Protocol handling (rx_comm_manager.c)
+ *   +--> Application tasks (app_main_task.c)
  * ```
  *
  * @author STAR Team
@@ -649,8 +649,8 @@ typedef enum : uint8_t {
  *
  * ## Input Specifications
  * - **Voltage Range**: 0V to AVCC (3.3V)
- * - **Input Impedance**: 1 MΩ typical
- * - **Max Input Current**: ±10 µA
+ * - **Input Impedance**: 1 MOhm typical
+ * - **Max Input Current**: +/-10 uA
  * - **Protection**: Internal clamping diodes to AVCC/AVSS
  *
  * ## Usage Example
@@ -1052,18 +1052,18 @@ typedef struct {
  *
  * ### Mode 0 (CPOL=0, CPHA=0) - Most Common
  * ```
- * CLK:  ___/‾‾‾\___/‾‾‾\___
+ * CLK:  ___/---\___/---\___
  * COPI: ===[D0]===[D1]===
  * CIPO: ===[D0]===[D1]===
- *        ↑ Sample  ↑ Sample
+ *        ^ Sample  ^ Sample
  * ```
  *
  * ### Mode 3 (CPOL=1, CPHA=1)
  * ```
- * CLK:  ‾‾‾\___/‾‾‾\___/‾‾‾
+ * CLK:  ---\___/---\___/---
  * COPI: ===[D0]===[D1]===
  * CIPO: ===[D0]===[D1]===
- *        ↑ Sample  ↑ Sample
+ *        ^ Sample  ^ Sample
  * ```
  *
  * ## Selection Guidelines

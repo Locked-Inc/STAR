@@ -60,8 +60,8 @@
  * [Reserved (3)] [CRC-8 (1)]
  * ```
  *
- * **Temperature encoding:** 12-bit two's complement, resolution 0.0625°C
- * @f$ T = \frac{\text{Temp}_{raw}}{16} \text{°C} @f$
+ * **Temperature encoding:** 12-bit two's complement, resolution 0.0625degC
+ * @f$ T = \frac{\text{Temp}_{raw}}{16} \text{degC} @f$
  *
  * **CRC calculation:** Over first 8 bytes (all data except CRC byte)
  *
@@ -436,7 +436,7 @@ void test_crc8_full_rom_validation(void)
  */
 
 /**
- * @brief Test CRC-8 for DS18B20 scratchpad at room temperature (+25.0625°C)
+ * @brief Test CRC-8 for DS18B20 scratchpad at room temperature (+25.0625degC)
  *
  * @details
  * Validates CRC-8 calculation for DS18B20 scratchpad memory containing typical
@@ -447,8 +447,8 @@ void test_crc8_full_rom_validation(void)
  * ```
  * Byte 0:   0x91 - Temperature LSB
  * Byte 1:   0x01 - Temperature MSB (0x0191 = 401 decimal)
- * Byte 2:   0x4B - TH alarm register (75°C)
- * Byte 3:   0x46 - TL alarm register (70°C)
+ * Byte 2:   0x4B - TH alarm register (75degC)
+ * Byte 3:   0x46 - TL alarm register (70degC)
  * Byte 4:   0x7F - Configuration (12-bit resolution)
  * Bytes 5-7: FF 0F 10 - Reserved bytes
  * Byte 8:   0x25 - CRC-8 (calculated, not in input)
@@ -456,7 +456,7 @@ void test_crc8_full_rom_validation(void)
  *
  * **Temperature decoding:**
  * @f[
- *   T = \frac{0x0191}{16} = \frac{401}{16} = 25.0625 \text{°C}
+ *   T = \frac{0x0191}{16} = \frac{401}{16} = 25.0625 \text{degC}
  * @f]
  *
  * **Algorithm steps:**
@@ -467,7 +467,7 @@ void test_crc8_full_rom_validation(void)
  * @pre rx_crc8_maxim() configured with Dallas/Maxim polynomial
  * @post CRC validated, scratchpad data integrity confirmed
  *
- * @invariant Temperature value within DS18B20 range (-55°C to +125°C)
+ * @invariant Temperature value within DS18B20 range (-55degC to +125degC)
  *
  * @note Configuration 0x7F = 12-bit resolution, conversion time 750ms
  * @note TH/TL values are power-on defaults (non-volatile EEPROM)
@@ -475,10 +475,10 @@ void test_crc8_full_rom_validation(void)
  * @par Temperature Resolution:
  * | Config | Bits | Resolution | Conversion Time |
  * |--------|------|------------|-----------------|
- * | 0x1F   | 9    | 0.5°C      | 93.75 ms        |
- * | 0x3F   | 10   | 0.25°C     | 187.5 ms        |
- * | 0x5F   | 11   | 0.125°C    | 375 ms          |
- * | 0x7F   | 12   | **0.0625°C** | **750 ms**    |
+ * | 0x1F   | 9    | 0.5degC      | 93.75 ms        |
+ * | 0x3F   | 10   | 0.25degC     | 187.5 ms        |
+ * | 0x5F   | 11   | 0.125degC    | 375 ms          |
+ * | 0x7F   | 12   | **0.0625degC** | **750 ms**    |
  *
  * @par Usage Example:
  * @code
@@ -488,7 +488,7 @@ void test_crc8_full_rom_validation(void)
  * uint8_t computed_crc = rx_crc8_maxim(scratchpad, 8);
  * if (computed_crc == scratchpad[8]) {
  *     int16_t raw = (scratchpad[1] << 8) | scratchpad[0];
- *     float temp_c = (float)raw / 16.0f;  // 25.0625°C
+ *     float temp_c = (float)raw / 16.0f;  // 25.0625degC
  * }
  * @endcode
  *
@@ -652,7 +652,7 @@ void test_crc8_alternating_55(void)
  * @warning Do not call this function multiple times in same process
  *
  * @par Performance:
- * - Single test: ~50 µs average
+ * - Single test: ~50 us average
  * - Full suite: ~1 ms total
  * - Memory: 256 bytes stack (test data buffers)
  *

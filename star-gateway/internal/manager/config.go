@@ -56,7 +56,7 @@ type Config struct {
 	// Default: 200ms
 	HealthLatencyThreshold time.Duration
 
-	// HealthLossThreshold is the maximum packet loss rate (0.0–1.0) before a transport
+	// HealthLossThreshold is the maximum packet loss rate (0.0-1.0) before a transport
 	// is considered unhealthy. Zero disables loss-based health checks.
 	// Default: 0.1 (10%)
 	HealthLossThreshold float64

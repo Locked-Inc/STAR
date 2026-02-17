@@ -105,8 +105,8 @@
  *
  * | Operation | Cycles | Time @ 240 MHz | Notes |
  * |-----------|--------|----------------|-------|
- * | gpio_set_output | ~200-500 | ~1-2 µs | Includes pin reservation |
- * | gpio_set_input | ~200-500 | ~1-2 µs | Includes pin reservation |
+ * | gpio_set_output | ~200-500 | ~1-2 us | Includes pin reservation |
+ * | gpio_set_input | ~200-500 | ~1-2 us | Includes pin reservation |
  * | gpio_write_high | ~20-30 | ~100 ns | Direct register |
  * | gpio_write_low | ~20-30 | ~100 ns | Direct register |
  * | gpio_toggle | ~30-40 | ~150 ns | Read-modify-write |
@@ -352,7 +352,7 @@ static rx_err_t internal_validate_port_pin(const uint8_t port, const uint8_t pin
  * @post Pin is reserved in validator (if available)
  *
  * @note Thread-safe: Pin reservation uses mutex, register writes are not atomic
- * @note Performance: ~1-2 µs @ 240 MHz (includes reservation)
+ * @note Performance: ~1-2 us @ 240 MHz (includes reservation)
  * @note Idempotent: Safe to call multiple times on same pin
  *
  * @warning Output level is undefined after this call - set with gpio_write_*
@@ -466,7 +466,7 @@ rx_err_t gpio_set_output(const rx_port_pin_t pin)
  * @post Pin is reserved in validator (if available)
  *
  * @note Thread-safe: Pin reservation uses mutex
- * @note Performance: ~1-2 µs @ 240 MHz (includes reservation)
+ * @note Performance: ~1-2 us @ 240 MHz (includes reservation)
  * @note Pull-ups: Not enabled by this function (use PCR register)
  *
  * @warning Floating inputs may read unpredictable values - use pull-up/pull-down
@@ -683,7 +683,7 @@ rx_err_t gpio_write_low(const rx_port_pin_t pin)
 }
 
 /**
- * @brief Toggle GPIO output pin state (high↔low)
+ * @brief Toggle GPIO output pin state (high<->low)
  *
  * @details
  * Inverts the current output state of a GPIO pin. If the pin is currently

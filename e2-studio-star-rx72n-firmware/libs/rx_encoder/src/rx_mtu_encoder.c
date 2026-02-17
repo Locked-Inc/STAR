@@ -18,17 +18,17 @@
  *
  * ```
  * Motor Shaft -> Gearbox (Nx:1) -> Encoder Disk (341 PPR Hall sensor)
- *                                          ↓
+ *                                          v
  *                                   Phase A, Phase B signals (differential)
- *                                          ↓
+ *                                          v
  *                           RX72N GPIO pins (MTCLKA/MTCLKB)
- *                                          ↓
+ *                                          v
  *                           MTU Phase Counting Mode (4x decoding)
- *                                          ↓
+ *                                          v
  *                           16-bit hardware counter (TCNT register)
- *                                          ↓
+ *                                          v
  *                    Software wraparound tracking + velocity calculation
- *                                          ↓
+ *                                          v
  *                    Output: Position (degrees), Revolutions, Velocity (RPS)
  * ```
  *
@@ -36,7 +36,7 @@
  *
  * ### Phase Relationship and Direction Detection
  *
- * Quadrature encoders output two square waves (Phase A and Phase B) 90° out of phase:
+ * Quadrature encoders output two square waves (Phase A and Phase B) 90deg out of phase:
  *
  * @startuml
  * @startuml{quadrature_waveforms.png}
@@ -78,15 +78,15 @@
  *
  * **Forward Motion (Phase A leads Phase B):**
  * ```
- * Phase A: ‾‾|__|‾‾|__|‾‾|__|‾‾
- * Phase B: __|‾‾|__|‾‾|__|‾‾|__
+ * Phase A: --|__|--|__|--|__|--
+ * Phase B: __|--|__|--|__|--|__
  * Count:   0 1 2 3 4 5 6 7 8 9 10 (incrementing)
  * ```
  *
  * **Reverse Motion (Phase B leads Phase A):**
  * ```
- * Phase A: __|‾‾|__|‾‾|__|‾‾|__
- * Phase B: ‾‾|__|‾‾|__|‾‾|__|‾‾
+ * Phase A: __|--|__|--|__|--|__
+ * Phase B: --|__|--|__|--|__|--
  * Count:   10 9 8 7 6 5 4 3 2 1 0 (decrementing)
  * ```
  *
@@ -102,8 +102,8 @@
  *
  * **STAR Project Example (341 PPR encoder):**
  * - Encoder resolution: 341 pulses/revolution (manufacturer spec)
- * - 4x decoding: 341 PPR × 4 = 1364 counts/revolution
- * - Angular resolution: 360° / 1364 = 0.264° per count (±0.132° error)
+ * - 4x decoding: 341 PPR x 4 = 1364 counts/revolution
+ * - Angular resolution: 360deg / 1364 = 0.264deg per count (+/-0.132deg error)
  *
  * ## MTU Phase Counting Mode Configuration
  *
@@ -244,11 +244,11 @@
  * **STAR Project Example (100 Hz control loop):**
  * ```
  * Loop period: 10 ms = 0.01 seconds
- * Encoder: 341 PPR × 4 = 1364 counts/rev
+ * Encoder: 341 PPR x 4 = 1364 counts/rev
  * Motor speed: 210 RPM = 3.5 RPS (revolutions per second)
  *
  * Expected count change per loop:
- * counts/loop = 3.5 RPS × 1364 counts/rev × 0.01 s = 47.74 counts
+ * counts/loop = 3.5 RPS x 1364 counts/rev x 0.01 s = 47.74 counts
  *
  * Measured: delta_count = 48 counts
  * delta_revs = 48 / 1364 = 0.0352 revolutions
@@ -260,30 +260,30 @@
  * | Metric | Value | Notes |
  * |--------|-------|-------|
  * | **Max Encoder Frequency** | 250 kHz | MTU input capture limit |
- * | **Max Motor Speed** | 366 RPS | 250 kHz / (341 PPR × 4) |
+ * | **Max Motor Speed** | 366 RPS | 250 kHz / (341 PPR x 4) |
  * | **Typical Motor Speed (STAR)** | 3.5 RPS | 210 RPM nominal |
- * | **Position Resolution** | 0.264° | 1364 counts/rev -> 360° / 1364 |
- * | **Velocity Resolution @ 100 Hz** | 0.073 RPS | 1 count / (1364 counts/rev × 0.01s) |
+ * | **Position Resolution** | 0.264deg | 1364 counts/rev -> 360deg / 1364 |
+ * | **Velocity Resolution @ 100 Hz** | 0.073 RPS | 1 count / (1364 counts/rev x 0.01s) |
  * | **Counter Read Latency** | ~200 ns | Single 16-bit register read @ 240 MHz |
- * | **State Update Time** | ~2 µs | Wraparound detection + position calc |
+ * | **State Update Time** | ~2 us | Wraparound detection + position calc |
  * | **Wraparound Period (341 PPR)** | 48 revolutions | 65536 / 1364 counts/rev |
  * | **Min Read Frequency** | 0.73 Hz | 3.5 RPS / 48 rev = must read every 13.7s |
- * | **Actual Read Frequency (STAR)** | 100 Hz | 10 ms period (137× faster than minimum) |
+ * | **Actual Read Frequency (STAR)** | 100 Hz | 10 ms period (137x faster than minimum) |
  *
  * ## Memory Characteristics
  *
  * | Component | Size (bytes) | Location | Notes |
  * |-----------|--------------|----------|-------|
- * | **Static Arrays** | 80 | .bss | 8 channels × 10 bytes per channel |
- * | `s_encoder_initialized` | 8 | .bss | 8 × 1 byte (bool) |
- * | `s_encoder_state` | 32 | .bss | 8 × 4 bytes (rx_encoder_state_t is 16 bytes? Need to check) |
- * | `s_counts_per_rev` | 16 | .bss | 8 × 2 bytes (uint16_t) |
- * | `s_invert_direction` | 8 | .bss | 8 × 1 byte (bool) |
- * | `s_last_count` | 32 | .bss | 8 × 4 bytes (int32_t) |
+ * | **Static Arrays** | 80 | .bss | 8 channels x 10 bytes per channel |
+ * | `s_encoder_initialized` | 8 | .bss | 8 x 1 byte (bool) |
+ * | `s_encoder_state` | 32 | .bss | 8 x 4 bytes (rx_encoder_state_t is 16 bytes? Need to check) |
+ * | `s_counts_per_rev` | 16 | .bss | 8 x 2 bytes (uint16_t) |
+ * | `s_invert_direction` | 8 | .bss | 8 x 1 byte (bool) |
+ * | `s_last_count` | 32 | .bss | 8 x 4 bytes (int32_t) |
  * | **Code Size** | ~3 KB | .text | Estimated compiled size |
  * | **Stack (worst case)** | 48 bytes | Stack | Deepest call: rx_encoder_read_velocity |
  *
- * **Note:** Actual rx_encoder_state_t size is sizeof(int32_t + uint16_t + int32_t + float) = 4 + 2 (+ 2 padding) + 4 + 4 = 16 bytes per state. So s_encoder_state = 8 × 16 = 128 bytes.
+ * **Note:** Actual rx_encoder_state_t size is sizeof(int32_t + uint16_t + int32_t + float) = 4 + 2 (+ 2 padding) + 4 + 4 = 16 bytes per state. So s_encoder_state = 8 x 16 = 128 bytes.
  *
  * **Corrected Total Static Memory:** 8 + 128 + 16 + 8 + 32 = 192 bytes
  *
@@ -403,7 +403,7 @@ typedef enum : uint32_t {
  * @brief Encoder calculation constants
  */
 typedef enum : uint16_t {
-  k_turns_multiplier       = 2,   /**< Multiplier for turns range validation (±720°) */
+  k_turns_multiplier       = 2,   /**< Multiplier for turns range validation (+/-720deg) */
   k_degrees_per_revolution = 360, /**< Degrees in one full revolution */
 } encoder_calc_constants_t;
 
@@ -522,15 +522,15 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  * **Encoder Resolution Calculation:**
  * For STAR project motors (341 PPR encoder):
  * - Manufacturer PPR: 341 pulses/revolution
- * - 4x decoding: 341 × 4 = 1364 counts/revolution
- * - Angular resolution: 360° / 1364 = 0.264° per count
+ * - 4x decoding: 341 x 4 = 1364 counts/revolution
+ * - Angular resolution: 360deg / 1364 = 0.264deg per count
  *
  * @param[in] config Pointer to encoder configuration structure
  *   - Must not be NULL (validated)
  *   - config->channel: MTU channel to use (k_mtu_channel_0 to k_mtu_channel_7, excluding 5)
  *   - config->counts_per_rev: Encoder resolution after 4x decoding [1, 65535]
- *     - STAR motors: 341 PPR × 4 = 1364 counts/rev
- *     - Must be ≥ 1 to prevent division by zero
+ *     - STAR motors: 341 PPR x 4 = 1364 counts/rev
+ *     - Must be >= 1 to prevent division by zero
  *   - config->invert_direction: true to reverse count direction, false for normal
  *
  * @return rx_err_t Error code indicating success or failure
@@ -549,7 +549,7 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  *
  * @post On success: s_encoder_initialized[channel] = true
  * @post On success: MTU timer counting encoder edges
- * @post On success: Software state initialized (count=0, position=0°, rev=0)
+ * @post On success: Software state initialized (count=0, position=0deg, rev=0)
  * @post On failure: s_encoder_initialized[channel] = false, timer stopped
  *
  * @note Thread-safe only if different channels initialized from different tasks
@@ -562,7 +562,7 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  * @attention Timer mode verification reads back hardware registers (post-condition check)
  *
  * @par Performance:
- * - Execution time: ~25 µs @ 240 MHz (includes module enable and register verification)
+ * - Execution time: ~25 us @ 240 MHz (includes module enable and register verification)
  * - One-time initialization cost, called once per encoder at system startup
  *
  * @par Example - Single Encoder:
@@ -570,7 +570,7 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  * // Configure encoder for motor 0 (front-left wheel)
  * rx_encoder_config_t encoder_config = {
  *     .channel = k_mtu_channel_1,
- *     .counts_per_rev = 1364,      // 341 PPR × 4 (4x decoding)
+ *     .counts_per_rev = 1364,      // 341 PPR x 4 (4x decoding)
  *     .invert_direction = false,   // Normal counting direction
  * };
  *
@@ -729,7 +729,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
  * @note Does NOT handle wraparound - use rx_encoder_read_count() for that
  *
  * @par Performance:
- * - Execution time: ~0.5 µs @ 240 MHz
+ * - Execution time: ~0.5 us @ 240 MHz
  * - Safe to call at very high frequency (> 10 kHz tested)
  *
  * @par Example - Diagnostic Check:
@@ -813,19 +813,19 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  * **STAR Project Example (100 Hz control loop):**
  * ```
  * Motor: 210 RPM nominal = 3.5 RPS
- * Encoder: 1364 counts/rev (341 PPR × 4x decoding)
+ * Encoder: 1364 counts/rev (341 PPR x 4x decoding)
  * Loop period: 10 ms = 0.01 seconds
  *
  * Expected count change per call:
- * delta_count = 3.5 RPS × 1364 counts/rev × 0.01 s = 47.74 counts
+ * delta_count = 3.5 RPS x 1364 counts/rev x 0.01 s = 47.74 counts
  *
  * If measured delta_count = 48:
- * velocity = 48 / (1364 × 0.01) = 3.52 RPS = 211.2 RPM
+ * velocity = 48 / (1364 x 0.01) = 3.52 RPS = 211.2 RPM
  * ```
  *
  * **Resolution and Accuracy:**
- * - Velocity resolution @ 100 Hz: 1 count / (1364 × 0.01s) = 0.073 RPS (4.4 RPM)
- * - Velocity resolution @ 1 kHz: 1 count / (1364 × 0.001s) = 0.733 RPS (44 RPM)
+ * - Velocity resolution @ 100 Hz: 1 count / (1364 x 0.01s) = 0.073 RPS (4.4 RPM)
+ * - Velocity resolution @ 1 kHz: 1 count / (1364 x 0.001s) = 0.733 RPS (44 RPM)
  * - Higher sample rates -> lower resolution but faster response
  * - Lower sample rates -> higher resolution but slower response
  *
@@ -837,11 +837,11 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  *   - Must not be NULL (validated)
  *   - Units: Revolutions per second (RPS)
  *   - Positive: Forward rotation, negative: Reverse rotation
- *   - Range: Typically [-10, +10] RPS for STAR motors (±600 RPM)
+ *   - Range: Typically [-10, +10] RPS for STAR motors (+/-600 RPM)
  *   - Unrealistic values (> 100 RPS = 6000 RPM) trigger warning but succeed
  *
  * @param[in] delta_time_s Time interval since last velocity measurement
- *   - Must be > 0 and ≤ 10 seconds (validated to catch parameter swaps)
+ *   - Must be > 0 and <= 10 seconds (validated to catch parameter swaps)
  *   - Units: Seconds (s)
  *   - Typical: 0.01s (100 Hz control loop) or 0.001s (1 kHz)
  *   - Smaller values -> lower resolution, faster response
@@ -854,7 +854,7 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  * @return rx_err_t Error code indicating success or failure
  * @retval k_rx_ok Success, velocity calculated and written to *velocity_rps
  * @retval k_rx_err_null_ptr velocity_rps pointer is nullptr
- * @retval k_rx_err_invalid_arg delta_time_s ≤ 0 or > 10 (possible parameter swap with channel)
+ * @retval k_rx_err_invalid_arg delta_time_s <= 0 or > 10 (possible parameter swap with channel)
  * @retval k_rx_err_invalid_arg channel invalid (not 0-4, 6-7)
  * @retval k_rx_err_invalid_state Encoder not initialized on this channel
  * @retval k_rx_err_invalid_state counts_per_rev < 1 (state corrupted)
@@ -877,7 +877,7 @@ rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_
  * @attention Velocity resolution inversely proportional to delta_time_s
  *
  * @par Performance:
- * - Execution time: ~3 µs @ 240 MHz
+ * - Execution time: ~3 us @ 240 MHz
  * - Suitable for 100 Hz - 10 kHz control loops
  * - STAR platform: Called at 100 Hz from PID velocity controller
  *
@@ -1022,7 +1022,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
  * 1. Hardware: TCNT register set to 0
  * 2. Software: total_count = 0
  * 3. Software: revolutions = 0
- * 4. Software: position_deg = 0.0°
+ * 4. Software: position_deg = 0.0deg
  * 5. Software: last_raw_count = 0
  * 6. Velocity: s_last_count = 0 (next velocity call measures from this point)
  *
@@ -1045,7 +1045,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
  * @pre No other tasks reading encoder during reset (race condition possible)
  *
  * @post Hardware TCNT = 0
- * @post Software state zeroed (count=0, position=0°, rev=0)
+ * @post Software state zeroed (count=0, position=0deg, rev=0)
  * @post Next velocity measurement starts from zero reference
  *
  * @note Not thread-safe, ensure exclusive access during reset
@@ -1056,7 +1056,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
  * @attention Hardware counter continues incrementing after reset if motor moving
  *
  * @par Performance:
- * - Execution time: ~1 µs @ 240 MHz (single register write + state clear)
+ * - Execution time: ~1 us @ 240 MHz (single register write + state clear)
  *
  * @par Example - Homing Sequence:
  * @code
@@ -1214,7 +1214,7 @@ rx_err_t rx_encoder_set_count(const int32_t count, const rx_mtu_channel_t channe
  * @attention Encoder state preserved but inaccessible until reinitialized
  *
  * @par Performance:
- * - Execution time: ~2 µs @ 240 MHz (timer stop + flag clear)
+ * - Execution time: ~2 us @ 240 MHz (timer stop + flag clear)
  * - Called once per encoder during shutdown (not performance-critical)
  *
  * @par Example - Clean Shutdown:
@@ -1492,10 +1492,10 @@ static rx_err_t internal_update_state_from_count(rx_encoder_state_t*    state,
 
   /* Post-condition: Validate position is within reasonable range
    * Note: Position can be negative for backward counts, so we check absolute value.
-   * Position beyond ±720° would indicate a calculation error. */
+   * Position beyond +/-720deg would indicate a calculation error. */
   if (fabsf(s_encoder_state[channel].position_deg) >
       (k_turns_multiplier * k_degrees_per_revolution)) {
-    rx_log_error(s_tag, "Position calculation overflow - exceeds ±720°");
+    rx_log_error(s_tag, "Position calculation overflow - exceeds +/-720deg");
     return k_rx_err_out_of_range;
   }
 

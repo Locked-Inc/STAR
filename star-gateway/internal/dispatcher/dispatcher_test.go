@@ -73,7 +73,7 @@ func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			return nil, harq.ErrTimeout
 		}
 	}
-	// No func or chan configured — block until context cancels.
+	// No func or chan configured -- block until context cancels.
 	<-ctx.Done()
 	return nil, ctx.Err()
 }

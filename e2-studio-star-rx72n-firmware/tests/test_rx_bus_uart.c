@@ -84,12 +84,12 @@
  *    START  D0  D1  D2  D3  D4  D5  D6  D7  STOP
  *     |     |   |   |   |   |   |   |   |    |
  *     0     LSB                     MSB      1
- *     └─ Synchronization edge (falling edge)
+ *     +- Synchronization edge (falling edge)
  *
  * Bit timing: Each bit = 1 / baud_rate seconds
  * Example @ 115200 baud:
- *   - Bit time: 8.68 µs
- *   - Frame time (10 bits): 86.8 µs
+ *   - Bit time: 8.68 us
+ *   - Frame time (10 bits): 86.8 us
  *   - Throughput: ~11.52 KB/s (with start/stop overhead)
  *
  * Start bit: Logic 0 (falling edge for sync)
@@ -111,7 +111,7 @@
  * @f[
  * BRR = \frac{60000000}{64 \times 1 \times 115200} - 1 = 7.13 \approx 7
  * @f]
- * Actual baud: 116279 baud (0.94% error - within ±1% spec)
+ * Actual baud: 116279 baud (0.94% error - within +/-1% spec)
  *
  * **Test Categories:**
  * 1. **Initialization Tests** - Bus registration, channel validation, hardware setup
@@ -199,8 +199,8 @@
  * @endcode
  *
  * **Timing Requirements:**
- * - UART init time: <120 µs (SCI peripheral configuration)
- * - Single byte TX @ 115200 baud: ~87 µs
+ * - UART init time: <120 us (SCI peripheral configuration)
+ * - Single byte TX @ 115200 baud: ~87 us
  * - Single byte TX @ 9600 baud: ~1.04 ms
  * - 64-byte transfer @ 115200 baud: ~5.6 ms
  * - RX FIFO overflow threshold: 16 bytes (must read within ~1.4 ms @ 115200)
@@ -228,7 +228,7 @@
  * - **Rule 2 (Loop Bounds):** [OK] All loops bounded by buffer size (known at compile time)
  * - **Rule 3 (Dynamic Memory):** [OK] Zero heap allocation (stack buffers only)
  * - **Rule 4 (Function Size):** [OK] Largest test function is 44 lines (well under 60 limit)
- * - **Rule 5 (Assertions):** [OK] Every test has ≥1 assertion, most have 3-5 assertions
+ * - **Rule 5 (Assertions):** [OK] Every test has >=1 assertion, most have 3-5 assertions
  * - **Rule 6 (Scope):** [OK] Variables declared at smallest scope (inside test functions)
  * - **Rule 7 (Return Checking):** [OK] All API returns validated with TEST_ASSERT_EQUAL
  * - **Rule 8 (Preprocessor):** [OK] Minimal macros, C23 typed enums for constants
@@ -510,12 +510,12 @@ void tearDown(void)
  * **Initialization Sequence Tested:**
  * @code
  * rx_bus_uart_init(&manager, "test_uart")
- *   └─> rx_bus_manager_with_bus()  [mutex lock]
- *       └─> internal_uart_init_callback()
- *           ├─> Validate bus type (k_bus_type_uart)
- *           ├─> Validate channel (0-12)
- *           ├─> uart_init_channel() HAL call
- *           └─> bus_config->initialized = true
+ *   +-> rx_bus_manager_with_bus()  [mutex lock]
+ *       +-> internal_uart_init_callback()
+ *           +-> Validate bus type (k_bus_type_uart)
+ *           +-> Validate channel (0-12)
+ *           +-> uart_init_channel() HAL call
+ *           +-> bus_config->initialized = true
  * @endcode
  *
  * @{
@@ -1238,7 +1238,7 @@ void test_rx_bus_uart_getc_null_pointer(void)
  * - RX FIFO unchanged (byte still available for subsequent read)
  * - Non-blocking (immediate return)
  *
- * @pre UART bus initialized, RX FIFO contains ≥1 byte
+ * @pre UART bus initialized, RX FIFO contains >=1 byte
  * @post RX FIFO unchanged (non-destructive query)
  *
  * @test_id UART_RX_AVAIL_001

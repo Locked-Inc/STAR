@@ -10,24 +10,24 @@
  *
  * @par System Architecture
  * @verbatim
- *   ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
- *   │  Application    │    │  rx_time_if     │    │   ThreadX       │
- *   │  (Motor Ctrl)   │───>│  (This Module)  │───>│   Kernel        │
- *   └─────────────────┘    └─────────────────┘    └─────────────────┘
- *                                  │                      │
- *                                  │                      ▼
- *                                  │              ┌─────────────────┐
- *                                  │              │   CMT0 Timer    │
- *                                  │              │   (100 Hz ISR)  │
- *                                  │              └─────────────────┘
- *                                  │
- *         ┌────────────────────────┴────────────────────────┐
- *         │              rx_time_interface_t                │
- *         │  ┌─────────────┬─────────────┬────────────────┐ │
- *         │  │  sleep_ms() │  get_ms()   │  is_elapsed()  │ │
- *         │  │  (blocking) │  (instant)  │  (instant)     │ │
- *         │  └─────────────┴─────────────┴────────────────┘ │
- *         └─────────────────────────────────────────────────┘
+ *   +-----------------+    +-----------------+    +-----------------+
+ *   |  Application    |    |  rx_time_if     |    |   ThreadX       |
+ *   |  (Motor Ctrl)   |--->|  (This Module)  |--->|   Kernel        |
+ *   +-----------------+    +-----------------+    +-----------------+
+ *                                  |                      |
+ *                                  |                      v
+ *                                  |              +-----------------+
+ *                                  |              |   CMT0 Timer    |
+ *                                  |              |   (100 Hz ISR)  |
+ *                                  |              +-----------------+
+ *                                  |
+ *         +------------------------+------------------------+
+ *         |              rx_time_interface_t                |
+ *         |  +-------------+-------------+----------------+ |
+ *         |  |  sleep_ms() |  get_ms()   |  is_elapsed()  | |
+ *         |  |  (blocking) |  (instant)  |  (instant)     | |
+ *         |  +-------------+-------------+----------------+ |
+ *         +-------------------------------------------------+
  * @endverbatim
  *
  * @par Threading Model
@@ -44,7 +44,7 @@
  * @par Performance Characteristics
  * | Operation    | Time       | Notes                          |
  * |--------------|------------|--------------------------------|
- * | sleep_ms()   | ~1 µs      | Context switch to scheduler    |
+ * | sleep_ms()   | ~1 us      | Context switch to scheduler    |
  * | get_ms()     | ~100 ns    | Single register read           |
  * | is_elapsed() | ~150 ns    | Two reads + subtraction        |
  *
@@ -270,7 +270,7 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
  * @note Resolution is 10ms (cannot distinguish times < 10ms apart)
  *
  * @par Wraparound Handling:
- * Time wraps after ~49.7 days: 2^32 ticks × 10ms = 49,710,269,491 ms
+ * Time wraps after ~49.7 days: 2^32 ticks x 10ms = 49,710,269,491 ms
  * Use impl_is_elapsed() for correct timeout handling across wraparound.
  *
  * @par Example:
@@ -303,14 +303,14 @@ static uint32_t impl_get_ms(void* ctx)
  * due to modular arithmetic properties.
  *
  * @par Algorithm Steps:
- * 1. Get current time via tx_time_get() × 10
+ * 1. Get current time via tx_time_get() x 10
  * 2. Calculate elapsed = now - start_ms (unsigned, handles wrap)
  * 3. Return true if elapsed >= timeout_ms
  *
  * @par Wraparound Correctness:
  * Using unsigned 32-bit arithmetic, the subtraction `now - start_ms` yields
  * the correct elapsed time even when `now` has wrapped past zero, as long as
- * the actual elapsed time is less than 2^32 / 100 / 2 ≈ 24.8 days.
+ * the actual elapsed time is less than 2^32 / 100 / 2 ~ 24.8 days.
  *
  * @f[
  *   \text{elapsed} = (\text{now} - \text{start}) \mod 2^{32}
@@ -401,7 +401,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  * |------------|------------------|--------------------------------|
  * | ctx        | NULL             | ThreadX uses global state      |
  * | sleep_ms   | impl_sleep_ms    | tx_thread_sleep() wrapper      |
- * | get_ms     | impl_get_ms      | tx_time_get() × 10 wrapper     |
+ * | get_ms     | impl_get_ms      | tx_time_get() x 10 wrapper     |
  * | is_elapsed | impl_is_elapsed  | Wraparound-safe timeout check  |
  *
  * @param[out] iface Pointer to interface structure to populate

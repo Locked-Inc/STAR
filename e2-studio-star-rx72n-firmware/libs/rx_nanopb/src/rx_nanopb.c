@@ -105,13 +105,13 @@
  * @par Performance Characteristics
  * | Function | Time @ 240 MHz | Stack Usage | Notes |
  * |----------|----------------|-------------|-------|
- * | rx_nanopb_init() | ~1 µs | 8 bytes | One-time setup |
- * | encode_velocity_request | ~20 µs | ~96 bytes | 4 doubles + overhead |
- * | decode_velocity_request | ~15 µs | ~96 bytes | 4 doubles + overhead |
- * | encode_velocity_response | ~15 µs | ~48 bytes | Header only |
- * | encode_telemetry | ~30 µs | ~128 bytes | Full telemetry |
- * | decode_estop_request | ~10 µs | ~32 bytes | Minimal message |
- * | create_velocity_command | ~2 µs | ~16 bytes | Copy operations |
+ * | rx_nanopb_init() | ~1 us | 8 bytes | One-time setup |
+ * | encode_velocity_request | ~20 us | ~96 bytes | 4 doubles + overhead |
+ * | decode_velocity_request | ~15 us | ~96 bytes | 4 doubles + overhead |
+ * | encode_velocity_response | ~15 us | ~48 bytes | Header only |
+ * | encode_telemetry | ~30 us | ~128 bytes | Full telemetry |
+ * | decode_estop_request | ~10 us | ~32 bytes | Minimal message |
+ * | create_velocity_command | ~2 us | ~16 bytes | Copy operations |
  *
  * @par Error Handling Strategy
  * 1. **Parameter Validation**: nullptr checks, size bounds (NASA Rule 5)
@@ -304,7 +304,7 @@ static const double k_velocity_mps_max = 1000.0;
  * @note Not thread-safe - call from main thread during startup
  * @note Idempotent after first call (returns error, no side effects)
  *
- * @par Performance: ~1 µs @ 240 MHz
+ * @par Performance: ~1 us @ 240 MHz
  * @par Stack Usage: 8 bytes
  *
  * @par Example - System Initialization:
@@ -534,7 +534,7 @@ void rx_nanopb_test_reset_state(void)
  * @note Not thread-safe - protect with mutex if called from multiple tasks
  *
  * @par Performance
- * - Execution time: ~20 µs @ 240 MHz
+ * - Execution time: ~20 us @ 240 MHz
  * - Stack usage: ~96 bytes
  *
  * @par Example - Basic Usage:
@@ -681,7 +681,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
  * @note Not thread-safe - protect with mutex if called from multiple tasks
  *
  * @par Performance
- * - Execution time: ~15 µs @ 240 MHz
+ * - Execution time: ~15 us @ 240 MHz
  * - Stack usage: ~96 bytes
  *
  * @par Example - Basic Usage:
@@ -796,7 +796,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
  * @note Not thread-safe - protect with mutex if called from multiple tasks
  *
  * @par Performance
- * - Execution time: ~15 µs @ 240 MHz
+ * - Execution time: ~15 us @ 240 MHz
  * - Stack usage: ~48 bytes
  *
  * @par Example - Responding to Velocity Command:
@@ -907,7 +907,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  * @warning Always stop motors regardless of decode result
  *
  * @par Performance
- * - Execution time: ~10 µs @ 240 MHz
+ * - Execution time: ~10 us @ 240 MHz
  * - Stack usage: ~32 bytes
  *
  * @par Example - E-Stop Handling:
@@ -993,7 +993,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
  * @note Not thread-safe
  *
  * @par Performance
- * - Execution time: ~10 µs @ 240 MHz
+ * - Execution time: ~10 us @ 240 MHz
  * - Stack usage: ~32 bytes
  *
  * @see rx_nanopb_decode_estop_request() Decode incoming E-Stop first
@@ -1099,7 +1099,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  *
  * @note **Thread Safety:** Not thread-safe (uses shared nanopb state)
  * @note **Re-entrancy:** NOT reentrant. Single-threaded decode only.
- * @note **Performance:** ~18 µs @ 240 MHz (lightweight message)
+ * @note **Performance:** ~18 us @ 240 MHz (lightweight message)
  *
  * @warning **Gain Validation:** This function does NOT validate gain ranges.
  *          Caller must validate that Kp, Ki, Kd are non-negative and within
@@ -1256,11 +1256,11 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*              
  * @par Telemetry Contents
  * | Field Category | Fields | Update Rate |
  * |----------------|--------|-------------|
- * | Motor velocities | 4 × double (m/s) | 100 Hz |
- * | Motor currents | 4 × double (A) | 100 Hz |
- * | Encoder positions | 4 × int32 (ticks) | 100 Hz |
+ * | Motor velocities | 4 x double (m/s) | 100 Hz |
+ * | Motor currents | 4 x double (A) | 100 Hz |
+ * | Encoder positions | 4 x int32 (ticks) | 100 Hz |
  * | Battery | voltage, current, SOC | 10 Hz |
- * | Temperature | system temp (°C) | 1 Hz |
+ * | Temperature | system temp (degC) | 1 Hz |
  *
  * @param[in] msg TelemetryData message to encode
  *   - Should be fully populated with current sensor values
@@ -1285,7 +1285,7 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*              
  * @note Not thread-safe - protect with mutex if called from multiple tasks
  *
  * @par Performance
- * - Execution time: ~30 µs @ 240 MHz
+ * - Execution time: ~30 us @ 240 MHz
  * - Stack usage: ~128 bytes
  *
  * @par Example - Periodic Telemetry:
@@ -1400,7 +1400,7 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
  * @note Thread-safe (no shared state)
  *
  * @par Performance
- * - Execution time: ~2 µs @ 240 MHz
+ * - Execution time: ~2 us @ 240 MHz
  * - Stack usage: ~16 bytes
  *
  * @par Example - Basic Usage:
@@ -1502,7 +1502,7 @@ rx_err_t rx_nanopb_create_velocity_command(star_v1_VelocityCommand*            c
  * @note Internally calls rx_nanopb_create_velocity_command()
  *
  * @par Performance
- * - Execution time: ~3 µs @ 240 MHz
+ * - Execution time: ~3 us @ 240 MHz
  * - Stack usage: ~48 bytes
  *
  * @par Example - Turn Left:
@@ -1590,7 +1590,7 @@ rx_err_t rx_nanopb_create_velocity_command_diff_drive(star_v1_VelocityCommand*  
  *          Do not pass stack-allocated strings that may go out of scope.
  *
  * @par Performance
- * - Execution time: ~1 µs @ 240 MHz
+ * - Execution time: ~1 us @ 240 MHz
  * - Stack usage: ~8 bytes
  *
  * @par Example - Success Response:

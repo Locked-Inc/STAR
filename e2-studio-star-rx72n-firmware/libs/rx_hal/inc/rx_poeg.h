@@ -13,12 +13,12 @@
  * @par System Architecture
  * @verbatim
  *  DRV8243 nFAULT (active low)
- *       │
- *       ▼
- *  GTETRG pin ──► POEG (PIDF flag) ──► GPTW output disable (Hi-Z)
- *       │                                      │
- *       ▼                                      ▼
- *  ICU interrupt ──► ISR ──► shared_data fault flags
+ *       |
+ *       v
+ *  GTETRG pin --> POEG (PIDF flag) --> GPTW output disable (Hi-Z)
+ *       |                                      |
+ *       v                                      v
+ *  ICU interrupt --> ISR --> shared_data fault flags
  * @endverbatim
  *
  * @par Motor-to-POEG Group Mapping
@@ -118,7 +118,7 @@ typedef enum : uint8_t {
  * @post Any existing nFAULT assertion will trigger immediately
  *
  * @note Thread Safety: Call once during hardware_init, before motor tasks start
- * @warning PIDE enable bit is write-once after reset — cannot be disabled
+ * @warning PIDE enable bit is write-once after reset -- cannot be disabled
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: No goto, setjmp, recursion

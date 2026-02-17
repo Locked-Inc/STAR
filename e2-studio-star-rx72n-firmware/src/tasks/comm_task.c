@@ -80,9 +80,9 @@
  *
  * | Message Type | Proto Definition | Size | Processing Time | Frequency |
  * |--------------|------------------|------|-----------------|-----------|
- * | **SetVelocityRequest** | star.v1.SetVelocityRequest | ~32 bytes | ~200 µs | 100 Hz (10ms) |
- * | **EmergencyStopRequest** | star.v1.EmergencyStopRequest | ~8 bytes | ~50 µs | On event |
- * | **SetPIDGainsRequest** | star.v1.SetPIDGainsRequest | ~28 bytes | ~180 µs | Rarely (config) |
+ * | **SetVelocityRequest** | star.v1.SetVelocityRequest | ~32 bytes | ~200 us | 100 Hz (10ms) |
+ * | **EmergencyStopRequest** | star.v1.EmergencyStopRequest | ~8 bytes | ~50 us | On event |
+ * | **SetPIDGainsRequest** | star.v1.SetPIDGainsRequest | ~28 bytes | ~180 us | Rarely (config) |
  *
  * **SetVelocityRequest structure (4-motor differential drive):**
  * @code{.proto}
@@ -147,7 +147,7 @@
  * CommTask box CommTask [label="Update last_comm_tick\n(500ms watchdog)"];
  * CommTask => CommTask [label="internal_handle_command_frame()"];
  * CommTask => Nanopb [label="rx_nanopb_decode_velocity_request()"];
- * Nanopb box Nanopb [label="Decode protobuf\n(~200 µs)"];
+ * Nanopb box Nanopb [label="Decode protobuf\n(~200 us)"];
  * Nanopb => CommTask [label="star_v1_SetVelocityRequest"];
  *
  * --- [label="Motor Command Update"];
@@ -257,23 +257,23 @@
  * |--------|-------|-------|
  * | **Poll Rate** | 100 Hz | One poll per 10ms tick |
  * | **Priority** | 5 | HIGHEST application priority (preempts all except system tasks) |
- * | **CPU Time per Poll** | ~220 µs | Includes frame decode + protobuf decode + shared_data update |
- * | **CPU Idle Time** | 9780 µs | 97.8% idle time (yields CPU during sleep) |
- * | **CPU Utilization** | 2.2% | (220 µs / 10ms) × 100% |
+ * | **CPU Time per Poll** | ~220 us | Includes frame decode + protobuf decode + shared_data update |
+ * | **CPU Idle Time** | 9780 us | 97.8% idle time (yields CPU during sleep) |
+ * | **CPU Utilization** | 2.2% | (220 us / 10ms) x 100% |
  * | **Worst Case Latency** | 10ms | Max time from frame arrival to motor task notification |
- * | **Frame Processing** | ~50 µs | CRC validation + header parsing |
- * | **Protobuf Decode** | ~200 µs | nanopb decode (SetVelocityRequest) |
- * | **Shared Data Update** | ~7 µs | Mutex lock + memcpy + event set + unlock |
+ * | **Frame Processing** | ~50 us | CRC validation + header parsing |
+ * | **Protobuf Decode** | ~200 us | nanopb decode (SetVelocityRequest) |
+ * | **Shared Data Update** | ~7 us | Mutex lock + memcpy + event set + unlock |
  *
  * **Latency Budget (Frame Arrival -> Motor Update):**
- * - SPI ISR receive: ~5 µs (RSPI2 interrupt)
- * - rx_comm_manager buffer copy: ~20 µs
- * - CRC-32 validation: ~30 µs (hardware CRC peripheral)
- * - Frame callback dispatch: ~10 µs
- * - Protobuf decode: ~200 µs (nanopb)
- * - Shared data update: ~7 µs
- * - Motor task event wait: ~50 µs (ThreadX context switch)
- * - **Total latency:** ~320 µs (0.32ms)
+ * - SPI ISR receive: ~5 us (RSPI2 interrupt)
+ * - rx_comm_manager buffer copy: ~20 us
+ * - CRC-32 validation: ~30 us (hardware CRC peripheral)
+ * - Frame callback dispatch: ~10 us
+ * - Protobuf decode: ~200 us (nanopb)
+ * - Shared data update: ~7 us
+ * - Motor task event wait: ~50 us (ThreadX context switch)
+ * - **Total latency:** ~320 us (0.32ms)
  *
  * **Why Priority 5?**
  * - Lower number = higher priority in ThreadX
@@ -302,7 +302,7 @@
  * - rx_comm_manager poll requires ~64 bytes for frame buffers
  * - Local variables (velocity_req, estop_req, cmd): ~96 bytes
  * - ThreadX overhead: ~32 bytes
- * - Safety margin: 2× nominal usage = 2048 bytes
+ * - Safety margin: 2x nominal usage = 2048 bytes
  *
  * ## Module Dependencies
  *
@@ -642,20 +642,20 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
  * ## Priority Justification (Why Priority 5?)
  *
  * **Command-to-Motor Latency Budget:**
- * - Frame arrival (SPI ISR): 0 µs
- * - Comm task wake-up: ~50 µs (ThreadX context switch from priority 8 motor task)
- * - Protobuf decode: ~200 µs
- * - Shared data update: ~7 µs
- * - Motor task wake-up: ~50 µs (ThreadX context switch)
- * - **Total latency: ~310 µs**
+ * - Frame arrival (SPI ISR): 0 us
+ * - Comm task wake-up: ~50 us (ThreadX context switch from priority 8 motor task)
+ * - Protobuf decode: ~200 us
+ * - Shared data update: ~7 us
+ * - Motor task wake-up: ~50 us (ThreadX context switch)
+ * - **Total latency: ~310 us**
  *
  * If comm task had LOWER priority (e.g., Priority 10):
  * - Must wait for motor task (Priority 8) to yield
  * - Worst-case motor task execution: 4ms (250 Hz control loop)
- * - **Total latency: 4000 µs + 310 µs = 4.3ms** (14× slower!)
+ * - **Total latency: 4000 us + 310 us = 4.3ms** (14x slower!)
  *
  * **Design decision:** Priority 5 ensures comm task **immediately preempts** motor task
- * when a new command arrives, minimizing latency to ~310 µs.
+ * when a new command arrives, minimizing latency to ~310 us.
  *
  * @return rx_err_t Task creation status
  *
@@ -692,7 +692,7 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
  *       task context or interrupt handlers.
  * @note **Thread safety:** Not thread-safe (assumes single-threaded boot).
  *       No synchronization needed during tx_application_define().
- * @note **Performance:** 2.2% CPU utilization at 100 Hz poll rate (220 µs active per 10ms).
+ * @note **Performance:** 2.2% CPU utilization at 100 Hz poll rate (220 us active per 10ms).
  *
  * @warning **Never call twice.** Assertion will fire in debug builds. Release
  *          builds return k_rx_err_invalid_state on second call.
@@ -717,7 +717,7 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
  * - tx_thread_sleep(): Safe (yields CPU)
  *
  * @par Performance:
- * - **Creation time:** ~120 µs @ 240 MHz (thread control block initialization)
+ * - **Creation time:** ~120 us @ 240 MHz (thread control block initialization)
  * - **CPU cycles:** ~28,800 cycles
  * - **Stack usage during creation:** ~64 bytes (function call overhead)
  * - **Memory allocation:** 2453 bytes total (2048 stack + 140 TCB + 265 static vars)
@@ -1066,7 +1066,7 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  *
  * **Decision:** Non-blocking poll chosen for simplicity and robustness:
  * - rx_comm_manager_poll() returns immediately (no blocking)
- * - 100 Hz poll rate is 10× slower than frame arrival rate (1 kHz max)
+ * - 100 Hz poll rate is 10x slower than frame arrival rate (1 kHz max)
  * - 2.2% CPU overhead acceptable for communication task
  * - No ISR coordination needed (frame buffering handled by rx_comm_manager)
  *
@@ -1104,11 +1104,11 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * | Metric | Value | Measurement Method |
  * |--------|-------|-------------------|
  * | **Poll Rate** | 100 Hz | Fixed 10ms sleep period |
- * | **rx_comm_manager_poll() Time** | ~50 µs | USB + SPI buffer check |
- * | **Frame Processing Time** | ~220 µs | CRC + callback + protobuf decode |
- * | **CPU Active Time** | 220 µs per cycle | Poll + process (when frame present) |
- * | **CPU Idle Time** | 9780 µs per cycle | 97.8% idle (yields CPU during sleep) |
- * | **CPU Utilization** | 2.2% | (220 µs / 10ms) × 100% |
+ * | **rx_comm_manager_poll() Time** | ~50 us | USB + SPI buffer check |
+ * | **Frame Processing Time** | ~220 us | CRC + callback + protobuf decode |
+ * | **CPU Active Time** | 220 us per cycle | Poll + process (when frame present) |
+ * | **CPU Idle Time** | 9780 us per cycle | 97.8% idle (yields CPU during sleep) |
+ * | **CPU Utilization** | 2.2% | (220 us / 10ms) x 100% |
  * | **Worst Case Latency** | 10ms | Max time from frame arrival to callback |
  *
  * ## Memory Usage
@@ -1150,7 +1150,7 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * @note **Thread Safety:** This function runs in its own thread context (Priority 5).
  *       All shared data access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. Single instance only (enforced by s_comm_created).
- * @note **Performance:** 97.8% CPU idle time. Polling is 220 µs out of 10ms period.
+ * @note **Performance:** 97.8% CPU idle time. Polling is 220 us out of 10ms period.
  * @note **Memory:** Peak stack usage is 320 bytes (in callback, not here).
  * @note **Polling Rate:** 100 Hz is sufficient for command processing (10ms latency budget).
  *       Faster polling (1 kHz) would waste CPU cycles (99.98% idle) with no latency benefit.
@@ -1178,12 +1178,12 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown (per 10ms iteration):**
- * - rx_comm_manager_poll(): ~50 µs (buffer check, no frame)
- * - Frame processing (when present): ~220 µs (CRC + callback + protobuf)
- * - tx_thread_sleep(): ~5 µs (ThreadX scheduler overhead)
- * - **Total active time:** ~55 µs (no frame) or ~275 µs (with frame)
- * - **Sleep time:** 10000 µs - 275 µs = 9725 µs (CPU idle)
- * - **CPU utilization:** (275 µs / 10000 µs) × 100% = 2.75% (worst case)
+ * - rx_comm_manager_poll(): ~50 us (buffer check, no frame)
+ * - Frame processing (when present): ~220 us (CRC + callback + protobuf)
+ * - tx_thread_sleep(): ~5 us (ThreadX scheduler overhead)
+ * - **Total active time:** ~55 us (no frame) or ~275 us (with frame)
+ * - **Sleep time:** 10000 us - 275 us = 9725 us (CPU idle)
+ * - **CPU utilization:** (275 us / 10000 us) x 100% = 2.75% (worst case)
  * - **Average utilization:** 2.2% (frames arrive at ~100 Hz, not every poll)
  *
  * @par Example - Normal Operation (Frame Received):
@@ -1432,12 +1432,12 @@ static void internal_comm_task_entry(ULONG input)
  *
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | **Execution Time** | ~20 µs | Logging + watchdog update + dispatch |
- * | **Command Processing** | ~220 µs | If frame type is COMMAND (protobuf decode) |
- * | **ACK Processing** | ~5 µs | Just log debug message |
- * | **NACK Processing** | ~10 µs | Log warning message |
+ * | **Execution Time** | ~20 us | Logging + watchdog update + dispatch |
+ * | **Command Processing** | ~220 us | If frame type is COMMAND (protobuf decode) |
+ * | **ACK Processing** | ~5 us | Just log debug message |
+ * | **NACK Processing** | ~10 us | Log warning message |
  * | **Call Frequency** | ~100 Hz | Average (matches command rate) |
- * | **CPU Utilization** | < 0.5% | (20 µs × 100 Hz) / 10ms = 0.2% |
+ * | **CPU Utilization** | < 0.5% | (20 us x 100 Hz) / 10ms = 0.2% |
  *
  * @param[in] channel Channel the frame was received on
  *                    - Type: rx_comm_channel_t enum
@@ -1479,12 +1479,12 @@ static void internal_comm_task_entry(ULONG input)
  *       data access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. rx_comm_manager guarantees single-threaded
  *       callback invocation (one frame at a time).
- * @note **Performance:** 20 µs overhead (logging + watchdog) + command processing time.
+ * @note **Performance:** 20 us overhead (logging + watchdog) + command processing time.
  * @note **Callback Context:** Runs synchronously during rx_comm_manager_poll(), not
  *       deferred to later time.
  *
  * @warning **Do not block in callback.** This function must complete quickly (<1ms)
- *          to maintain 100 Hz poll rate. Protobuf decode is fast (~200 µs).
+ *          to maintain 100 Hz poll rate. Protobuf decode is fast (~200 us).
  * @warning **Frame lifetime.** Frame pointer is only valid during callback. Handlers
  *          must copy data if needed beyond callback return.
  * @warning **NULL frame check.** Defensive check should never trigger (rx_comm_manager
@@ -1504,13 +1504,13 @@ static void internal_comm_task_entry(ULONG input)
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown:**
- * - NULL check: ~0.5 µs
- * - Debug logging (2 calls): ~8 µs (UART transmit)
- * - shared_data_update_last_comm_tick(): ~3 µs (mutex lock + update + unlock)
- * - Switch dispatch: ~1 µs
- * - Command handler (if COMMAND): ~220 µs (protobuf decode + shared_data update)
- * - ACK/NACK logging: ~5 µs
- * - **Total:** 20 µs (ACK/NACK) or 240 µs (COMMAND)
+ * - NULL check: ~0.5 us
+ * - Debug logging (2 calls): ~8 us (UART transmit)
+ * - shared_data_update_last_comm_tick(): ~3 us (mutex lock + update + unlock)
+ * - Switch dispatch: ~1 us
+ * - Command handler (if COMMAND): ~220 us (protobuf decode + shared_data update)
+ * - ACK/NACK logging: ~5 us
+ * - **Total:** 20 us (ACK/NACK) or 240 us (COMMAND)
  *
  * @par Example - SetVelocityRequest Frame Reception:
  * @code{.c}
@@ -1886,12 +1886,12 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | **SetVelocityRequest Decode** | ~200 µs | nanopb decode (most common) |
- * | **EmergencyStopRequest Decode** | ~50 µs | nanopb decode (rare) |
- * | **motor_command_t Build** | ~5 µs | memset + 4 float copies |
- * | **shared_data Update** | ~7 µs | Mutex lock + memcpy + event set |
- * | **Total (Velocity)** | ~220 µs | Decode + build + update |
- * | **Total (E-Stop)** | ~60 µs | Decode + trigger |
+ * | **SetVelocityRequest Decode** | ~200 us | nanopb decode (most common) |
+ * | **EmergencyStopRequest Decode** | ~50 us | nanopb decode (rare) |
+ * | **motor_command_t Build** | ~5 us | memset + 4 float copies |
+ * | **shared_data Update** | ~7 us | Mutex lock + memcpy + event set |
+ * | **Total (Velocity)** | ~220 us | Decode + build + update |
+ * | **Total (E-Stop)** | ~60 us | Decode + trigger |
  * | **Call Frequency** | ~100 Hz | Matches SetVelocityRequest rate |
  *
  * @param[in] channel Channel the command was received on
@@ -1930,7 +1930,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @note **Thread Safety:** Runs in Communication Task context. All shared data
  *       access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. Single-threaded callback invocation.
- * @note **Performance:** 220 µs for SetVelocityRequest (most common case).
+ * @note **Performance:** 220 us for SetVelocityRequest (most common case).
  * @note **Decode Order:** Try SetVelocityRequest first (100 Hz) before EmergencyStopRequest
  *       (rare) to minimize average decode time.
  *
@@ -1940,7 +1940,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *          decode fails and warning logged. Update firmware to match ROS2 messages.
  * @warning **Double to float conversion.** Protobuf uses double (8 bytes), firmware
  *          uses float (4 bytes). Loss of precision acceptable for motor velocities
- *          (±0.0001 m/s is negligible for 0-2.5 m/s range).
+ *          (+/-0.0001 m/s is negligible for 0-2.5 m/s range).
  *
  * @attention All errors are logged via rx_log_* but NOT returned to caller.
  * @attention SetVelocityRequest is tried FIRST (optimization for common case).
@@ -1954,13 +1954,13 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown (SetVelocityRequest path):**
- * - rx_nanopb_decode_velocity_request(): ~200 µs (nanopb decode)
- * - memset(&cmd): ~2 µs (zero 24-byte structure)
- * - 4× float assignment: ~2 µs (protobuf double -> float conversion)
- * - tx_time_get(): ~1 µs (read ThreadX tick counter)
- * - shared_data_set_motor_command(): ~7 µs (mutex + memcpy + event)
- * - rx_log_debug(): ~5 µs (UART transmit)
- * - **Total:** ~220 µs
+ * - rx_nanopb_decode_velocity_request(): ~200 us (nanopb decode)
+ * - memset(&cmd): ~2 us (zero 24-byte structure)
+ * - 4x float assignment: ~2 us (protobuf double -> float conversion)
+ * - tx_time_get(): ~1 us (read ThreadX tick counter)
+ * - shared_data_set_motor_command(): ~7 us (mutex + memcpy + event)
+ * - rx_log_debug(): ~5 us (UART transmit)
+ * - **Total:** ~220 us
  *
  * **Why decode cascade instead of message type field?**
  * - nanopb does not support "oneof" with runtime type identification

@@ -11,22 +11,22 @@ This document tracks the implementation status and roadmap for the STAR platform
 
 ```
 ROS2 Ecosystem (RPi5)
-├── star_spi_bridge (ROS2 ↔ RX72N via SPI)
-├── star_gateway_bridge (ROS2 ↔ Go Gateway via gRPC)
-├── star_safety_monitor (Platform integrity watchdog)
-├── rtabmap_ros (Visual-LiDAR SLAM)
-└── robot_localization (EKF sensor fusion)
++-- star_spi_bridge (ROS2 <-> RX72N via SPI)
++-- star_gateway_bridge (ROS2 <-> Go Gateway via gRPC)
++-- star_safety_monitor (Platform integrity watchdog)
++-- rtabmap_ros (Visual-LiDAR SLAM)
++-- robot_localization (EKF sensor fusion)
 
 Go Gateway Service (RPi5)
-├── GatewayService ✅
-├── MotorControlService ✅ (with E-Stop priority)
-├── TelemetryService ✅
-├── BatteryManagementService ✅
-├── ConfigurationService ✅
-└── FirmwareUpdateService ❌ (stub only)
++-- GatewayService [PASS]
++-- MotorControlService [PASS] (with E-Stop priority)
++-- TelemetryService [PASS]
++-- BatteryManagementService [PASS]
++-- ConfigurationService [PASS]
++-- FirmwareUpdateService [FAIL] (stub only)
 
 RX72N Motor Controller
-└── ThreadX + nanopb + motor control firmware ✅
++-- ThreadX + nanopb + motor control firmware [PASS]
 ```
 
 ---
@@ -37,28 +37,28 @@ RX72N Motor Controller
 
 | Component | Status | Completion |
 |-----------|--------|------------|
-| **Infrastructure** | ✅ Complete | 100% (8/8 merged PRs) |
-| **Gateway Services** | ✅ Nearly Complete | 83% (5/6 services) |
-| **Transport Layer** | ✅ Complete | 100% (SPI ready) |
-| **ROS2 Nodes** | ✅ Complete | 100% (3/3 nodes) |
-| **Safety Systems** | ✅ Complete | 100% (safety monitor implemented) |
-| **SLAM Configuration** | ❌ Not Started | 0% (hardware-dependent) |
-| **Hardware Testing** | ⚠️ Ready | 0% (pending hardware) |
+| **Infrastructure** | [PASS] Complete | 100% (8/8 merged PRs) |
+| **Gateway Services** | [PASS] Nearly Complete | 83% (5/6 services) |
+| **Transport Layer** | [PASS] Complete | 100% (SPI ready) |
+| **ROS2 Nodes** | [PASS] Complete | 100% (3/3 nodes) |
+| **Safety Systems** | [PASS] Complete | 100% (safety monitor implemented) |
+| **SLAM Configuration** | [FAIL] Not Started | 0% (hardware-dependent) |
+| **Hardware Testing** | [WARN] Ready | 0% (pending hardware) |
 
 **Major Accomplishments (Last 7 Days):**
-- ✅ PR #184: TelemetryService + ConfigurationService (1072 lines)
-- ✅ PR #191: BatteryManagementService (656 lines, 80% test coverage)
-- ✅ PR #192: SPI Transport with periph.io (276 lines, production-ready)
-- ✅ PR #199: star_safety_monitor (1558 lines, 7 passing tests)
-- ✅ PR #200: HIL Simulation (Virtual RX72N, Socket Transport, Service Tests)
-- ✅ PR #202: Virtual RX72N Full Protocol Stack (HARQ + Protobuf, 81.8% coverage)
-- ✅ Issue #176: E-Stop Priority Queue (variadic priority in HARQ.Send)
+- [PASS] PR #184: TelemetryService + ConfigurationService (1072 lines)
+- [PASS] PR #191: BatteryManagementService (656 lines, 80% test coverage)
+- [PASS] PR #192: SPI Transport with periph.io (276 lines, production-ready)
+- [PASS] PR #199: star_safety_monitor (1558 lines, 7 passing tests)
+- [PASS] PR #200: HIL Simulation (Virtual RX72N, Socket Transport, Service Tests)
+- [PASS] PR #202: Virtual RX72N Full Protocol Stack (HARQ + Protobuf, 81.8% coverage)
+- [PASS] Issue #176: E-Stop Priority Queue (variadic priority in HARQ.Send)
 
 **Critical Path to MVP:**
-1. ~~Implement `star_safety_monitor` node (Issue #139)~~ ✅ Complete
-2. ~~Add E-Stop priority queue (Issue #176)~~ ✅ Complete
-3. ~~Virtual RX72N Full Protocol Stack (PR #202)~~ ✅ Complete
-4. **Fix Flaky Battery Test** (TestNewBatteryService race condition) 🔥
+1. ~~Implement `star_safety_monitor` node (Issue #139)~~ [PASS] Complete
+2. ~~Add E-Stop priority queue (Issue #176)~~ [PASS] Complete
+3. ~~Virtual RX72N Full Protocol Stack (PR #202)~~ [PASS] Complete
+4. **Fix Flaky Battery Test** (TestNewBatteryService race condition) 
 5. Simulated Integration Tests (Virtual RX72N + ROS2)
 6. Hardware integration tests on RPi5 (Issue #180)
 
@@ -68,89 +68,89 @@ RX72N Motor Controller
 
 ## Current Status
 
-### ✅ Completed & Merged
+### [PASS] Completed & Merged
 
 | Component | PR | Status | Lines | Merged |
 |-----------|----|----|-------|--------|
-| ROS2 Infrastructure | #141 | ✅ Merged | 6531 | 2026-01-06 |
-| `star_gateway_bridge` | #146 | ✅ Merged | 1425 | 2026-01-07 |
-| Gateway Bridge Tests | #168 | ✅ Merged | - | 2026-01-12 |
-| `star_spi_bridge` | #172 | ✅ Merged | 889 | 2026-01-13 |
-| MotorControlService | #174 | ✅ Merged | 318 | 2026-01-14 |
-| TelemetryService + ConfigurationService | #184 | ✅ Merged | 1072 (258+814) | 2026-01-15 |
-| BatteryManagementService | #191 | ✅ Merged | 656 | 2026-01-16 |
-| SPI Transport Layer | #192 | ✅ Merged | 276 | 2026-01-17 |
-| `star_safety_monitor` | #199 | ✅ Merged | 1558 | 2026-01-19 |
-| HIL Sim + Socket Transport | #200 | ✅ Merged | 1000+ | 2026-01-19 |
-| Virtual RX72N Full Stack | #202 | ✅ Merged | 800+ | 2026-01-22 |
+| ROS2 Infrastructure | #141 | [PASS] Merged | 6531 | 2026-01-06 |
+| `star_gateway_bridge` | #146 | [PASS] Merged | 1425 | 2026-01-07 |
+| Gateway Bridge Tests | #168 | [PASS] Merged | - | 2026-01-12 |
+| `star_spi_bridge` | #172 | [PASS] Merged | 889 | 2026-01-13 |
+| MotorControlService | #174 | [PASS] Merged | 318 | 2026-01-14 |
+| TelemetryService + ConfigurationService | #184 | [PASS] Merged | 1072 (258+814) | 2026-01-15 |
+| BatteryManagementService | #191 | [PASS] Merged | 656 | 2026-01-16 |
+| SPI Transport Layer | #192 | [PASS] Merged | 276 | 2026-01-17 |
+| `star_safety_monitor` | #199 | [PASS] Merged | 1558 | 2026-01-19 |
+| HIL Sim + Socket Transport | #200 | [PASS] Merged | 1000+ | 2026-01-19 |
+| Virtual RX72N Full Stack | #202 | [PASS] Merged | 800+ | 2026-01-22 |
 
 **Infrastructure Complete:**
-- ✅ Dockerfile (ROS2 Jazzy + gRPC + Protobuf)
-- ✅ CI/CD workflow (`.github/workflows/ros2.yml`)
-- ✅ Documentation (`docs/sections/10_ros2_integration.tex`)
-- ✅ HIL Simulation (`virtual_rx72n`, `SocketTransport`)
-- ⚠️ Devcontainer (removed in `c17e0b17f`, can be restored if needed)
+- [PASS] Dockerfile (ROS2 Jazzy + gRPC + Protobuf)
+- [PASS] CI/CD workflow (`.github/workflows/ros2.yml`)
+- [PASS] Documentation (`docs/sections/10_ros2_integration.tex`)
+- [PASS] HIL Simulation (`virtual_rx72n`, `SocketTransport`)
+- [WARN] Devcontainer (removed in `c17e0b17f`, can be restored if needed)
 
 **ROS2 Nodes Complete (3/3):**
-- ✅ `star_spi_bridge` - Full SPI driver with CRC-32, lifecycle management, 100 Hz polling
-- ✅ `star_gateway_bridge` - gRPC client, telemetry forwarding, teleop polling
-- ✅ `star_safety_monitor` - Platform integrity monitoring with battery, heartbeat, and stall detection
+- [PASS] `star_spi_bridge` - Full SPI driver with CRC-32, lifecycle management, 100 Hz polling
+- [PASS] `star_gateway_bridge` - gRPC client, telemetry forwarding, teleop polling
+- [PASS] `star_safety_monitor` - Platform integrity monitoring with battery, heartbeat, and stall detection
 
 **Gateway Services Complete (5/6 services, 83%):**
-- ✅ `GatewayService` (322 lines) - ForwardTelemetry, GetTeleopCommand
-- ✅ `MotorControlService` (318 lines) - SetVelocity, SetMotorPower, SetPIDGains, StreamEncoders, ControlStream, EmergencyStop
-- ✅ `TelemetryService` (258 lines) - GetTelemetry, StreamTelemetry, GetSystemStatus
-- ✅ `ConfigurationService` (814 lines) - Get/Set/Validate/Save configuration, PID tuning, factory reset
-- ✅ `BatteryManagementService` (656 lines) - All 10 methods for BQ7850 battery management
-- ❌ `FirmwareUpdateService` (50 lines stub) - OTA updates (deferred, low priority)
+- [PASS] `GatewayService` (322 lines) - ForwardTelemetry, GetTeleopCommand
+- [PASS] `MotorControlService` (318 lines) - SetVelocity, SetMotorPower, SetPIDGains, StreamEncoders, ControlStream, EmergencyStop
+- [PASS] `TelemetryService` (258 lines) - GetTelemetry, StreamTelemetry, GetSystemStatus
+- [PASS] `ConfigurationService` (814 lines) - Get/Set/Validate/Save configuration, PID tuning, factory reset
+- [PASS] `BatteryManagementService` (656 lines) - All 10 methods for BQ7850 battery management
+- [FAIL] `FirmwareUpdateService` (50 lines stub) - OTA updates (deferred, low priority)
 
 **Transport Layer Complete:**
-- ✅ `SPI Transport` (276 lines) - periph.io driver, 10 MHz, full-duplex, deadline support
+- [PASS] `SPI Transport` (276 lines) - periph.io driver, 10 MHz, full-duplex, deadline support
 
-### 🧹 Cleanup Tasks
+###  Cleanup Tasks
 
 **Obsolete PRs and Issues:**
 - [ ] **Close PR #144** - ROS2 Infrastructure (obsolete, merged in #141)
 - [ ] **Close PR #145** - SPI Bridge Node (obsolete, replaced by #172)
-- [ ] **Close Issue #138** - star_gateway_bridge (✅ complete in PR #146, #168)
-- [ ] **Close Issue #147** - ROS2 Infrastructure (✅ complete in PR #141)
-- [ ] **Close Issue #148** - star_spi_bridge (✅ complete in PR #172)
-- [ ] **Close Issue #149** - Gateway Bridge (✅ complete in PR #146)
+- [ ] **Close Issue #138** - star_gateway_bridge ([PASS] complete in PR #146, #168)
+- [ ] **Close Issue #147** - ROS2 Infrastructure ([PASS] complete in PR #141)
+- [ ] **Close Issue #148** - star_spi_bridge ([PASS] complete in PR #172)
+- [ ] **Close Issue #149** - Gateway Bridge ([PASS] complete in PR #146)
 
 ---
 
-## Phase 1: Clean Up ✅ COMPLETE
+## Phase 1: Clean Up [PASS] COMPLETE
 
 **Goal:** Close obsolete PRs and verify main branch state
 
 ### Completed Tasks
 
-- ✅ **Infrastructure merged** - Dockerfile, CI/CD, documentation (PR #141)
-- ✅ **star_spi_bridge merged** - Complete SPI driver with lifecycle (PR #172)
-- ✅ **star_gateway_bridge merged** - gRPC client with tests (PR #146, #168)
+- [PASS] **Infrastructure merged** - Dockerfile, CI/CD, documentation (PR #141)
+- [PASS] **star_spi_bridge merged** - Complete SPI driver with lifecycle (PR #172)
+- [PASS] **star_gateway_bridge merged** - gRPC client with tests (PR #146, #168)
 
 **Status:** Phase 1 complete. Cleanup PRs/issues pending (non-blocking)
 
 ---
 
-## Phase 2: Complete Gateway gRPC Services ✅ COMPLETE
+## Phase 2: Complete Gateway gRPC Services [PASS] COMPLETE
 
 **Goal:** Implement remaining gRPC service stubs in Go gateway
 
 **Final State:**
-- ✅ `GatewayService` (2 methods: ForwardTelemetry, GetTeleopCommand) - PR #146
-- ✅ `MotorControlService` (6 methods: SetVelocity, SetMotorPower, SetPIDGains, StreamEncoders, ControlStream, EmergencyStop) - PR #174
-- ✅ `TelemetryService` (3 methods: GetTelemetry, StreamTelemetry, GetSystemStatus) - PR #184
-- ✅ `ConfigurationService` (7 methods: Get/Set/Validate/Save config, PID tuning, factory reset) - PR #184
-- ✅ `BatteryManagementService` (10 methods: All BQ7850 battery management operations) - PR #191
-- ⚠️ `FirmwareUpdateService` (5 methods - stub only, deferred to future release)
+- [PASS] `GatewayService` (2 methods: ForwardTelemetry, GetTeleopCommand) - PR #146
+- [PASS] `MotorControlService` (6 methods: SetVelocity, SetMotorPower, SetPIDGains, StreamEncoders, ControlStream, EmergencyStop) - PR #174
+- [PASS] `TelemetryService` (3 methods: GetTelemetry, StreamTelemetry, GetSystemStatus) - PR #184
+- [PASS] `ConfigurationService` (7 methods: Get/Set/Validate/Save config, PID tuning, factory reset) - PR #184
+- [PASS] `BatteryManagementService` (10 methods: All BQ7850 battery management operations) - PR #191
+- [WARN] `FirmwareUpdateService` (5 methods - stub only, deferred to future release)
 
-### Task 2.1: Implement TelemetryService ✅ COMPLETE
+### Task 2.1: Implement TelemetryService [PASS] COMPLETE
 
 **Issue:** #181 (part 1)
 **Files:** `star-gateway/internal/service/telemetry.go` (258 lines)
-**Priority:** 🔥 High
-**Status:** ✅ Merged in PR #184 (2026-01-15)
+**Priority:**  High
+**Status:** [PASS] Merged in PR #184 (2026-01-15)
 
 **Methods to Implement:**
 ```go
@@ -185,12 +185,12 @@ GetSystemStatus(context.Context, *GetSystemStatusRequest) (*GetSystemStatusRespo
 
 ---
 
-### Task 2.2: Implement BatteryManagementService ✅ COMPLETE
+### Task 2.2: Implement BatteryManagementService [PASS] COMPLETE
 
 **Issue:** #181 (part 2)
 **Files:** `star-gateway/internal/service/battery.go` (656 lines)
-**Priority:** 🟡 Medium (hardware dependency)
-**Status:** ✅ Merged in PR #191 (2026-01-16)
+**Priority:** [YELLOW] Medium (hardware dependency)
+**Status:** [PASS] Merged in PR #191 (2026-01-16)
 
 **Methods to Implement:**
 ```go
@@ -242,12 +242,12 @@ GetDeviceInfo(context.Context, *GetDeviceInfoRequest) (*GetDeviceInfoResponse, e
 
 ---
 
-### Task 2.3: Implement ConfigurationService ✅ COMPLETE
+### Task 2.3: Implement ConfigurationService [PASS] COMPLETE
 
 **Issue:** #181 (part 3)
 **Files:** `star-gateway/internal/service/configuration.go` (814 lines)
-**Priority:** 🟡 Medium
-**Status:** ✅ Merged in PR #184 (2026-01-15)
+**Priority:** [YELLOW] Medium
+**Status:** [PASS] Merged in PR #184 (2026-01-15)
 
 **Methods to Implement:**
 ```go
@@ -294,11 +294,11 @@ SetMotorPidConfig(context.Context, *SetMotorPidConfigRequest) (*SetMotorPidConfi
 
 ---
 
-### Task 2.4: Implement FirmwareUpdateService ⚠️ DEFERRED
+### Task 2.4: Implement FirmwareUpdateService [WARN] DEFERRED
 
 **Issue:** #181 (part 4)
 **Files:** `star-gateway/internal/service/firmware.go`
-**Priority:** 🟢 Low (future enhancement)
+**Priority:** [GREEN] Low (future enhancement)
 
 **Methods to Implement:**
 ```go
@@ -338,28 +338,28 @@ RollbackFirmware(context.Context, *RollbackFirmwareRequest) (*RollbackFirmwareRe
 
 ---
 
-## Phase 3: Hardware Integration ✅ COMPLETE
+## Phase 3: Hardware Integration [PASS] COMPLETE
 
 **Goal:** Complete SPI transport and enable hardware testing
 
-### Task 3.1: Implement SPI Transport Layer ✅ COMPLETE
+### Task 3.1: Implement SPI Transport Layer [PASS] COMPLETE
 
 **Issue:** #173 (Closed)
 **Files:** `star-gateway/internal/transport/spi.go` (276 lines), `spi_test.go`
-**Priority:** 🔥 Critical (blocks all hardware testing)
-**Status:** ✅ Merged in PR #192 (2026-01-17)
+**Priority:**  Critical (blocks all hardware testing)
+**Status:** [PASS] Merged in PR #192 (2026-01-17)
 
 **Implementation Summary:**
-- ✅ periph.io library integration for RPi5 SPI
-- ✅ Full-duplex SPI Transfer() with /dev/spidev0.0
-- ✅ Thread-safe with RWMutex protection
-- ✅ Configurable speed (10 MHz), mode (0), timeout (100ms)
-- ✅ Deadline support with SetReadDeadline()
-- ✅ Custom errors (ErrDeviceNotOpen, ErrTimeout, etc.)
-- ✅ Full-duplex Transfer() + half-duplex Send()/Receive()
-- ✅ Comprehensive unit tests (11 tests, 100% coverage on testable paths)
-- ✅ Hardware integration tests (7 tests, skip gracefully without device)
-- ✅ Documentation: `star-gateway/SPI_TRANSPORT_IMPLEMENTATION.md`
+- [PASS] periph.io library integration for RPi5 SPI
+- [PASS] Full-duplex SPI Transfer() with /dev/spidev0.0
+- [PASS] Thread-safe with RWMutex protection
+- [PASS] Configurable speed (10 MHz), mode (0), timeout (100ms)
+- [PASS] Deadline support with SetReadDeadline()
+- [PASS] Custom errors (ErrDeviceNotOpen, ErrTimeout, etc.)
+- [PASS] Full-duplex Transfer() + half-duplex Send()/Receive()
+- [PASS] Comprehensive unit tests (11 tests, 100% coverage on testable paths)
+- [PASS] Hardware integration tests (7 tests, skip gracefully without device)
+- [PASS] Documentation: `star-gateway/SPI_TRANSPORT_IMPLEMENTATION.md`
 
 **Key Features:**
 ```go
@@ -381,10 +381,10 @@ rxData, err := spiTransport.Transfer(txData)
 - Constructors/Config/Deadline: 100% coverage
 
 **Hardware Validation Status:**
-- ⏸️ Loopback test (COPI → CIPO shorted) - deferred until hardware
-- ⏸️ RX72N communication test - deferred until hardware
-- ⏸️ 100 Hz sustained throughput - deferred until hardware
-- ⏸️ Latency <10ms per frame - deferred until hardware
+- [PAUSE] Loopback test (COPI -> CIPO shorted) - deferred until hardware
+- [PAUSE] RX72N communication test - deferred until hardware
+- [PAUSE] 100 Hz sustained throughput - deferred until hardware
+- [PAUSE] Latency <10ms per frame - deferred until hardware
 
 **Dependencies:** periph.io v3.7.0
 **Unblocks:** #176 (Priority Queue), #177 (Dispatcher Metrics), #180 (Hardware Tests)
@@ -395,13 +395,13 @@ rxData, err := spiTransport.Transfer(txData)
 
 **Issue:** #177
 **Files:** `star-gateway/internal/dispatcher/dispatcher.go`
-**Priority:** 🟡 Medium
+**Priority:** [YELLOW] Medium
 
 **Current State:**
-- ✅ Basic routing implemented in PR #174
-- ✅ Subscribe/Unsubscribe for message types
-- ❌ Metrics for dropped frames
-- ❌ Message type statistics
+- [PASS] Basic routing implemented in PR #174
+- [PASS] Subscribe/Unsubscribe for message types
+- [FAIL] Metrics for dropped frames
+- [FAIL] Message type statistics
 
 **Enhancements Needed:**
 ```go
@@ -431,7 +431,7 @@ func (d *Dispatcher) GetStatistics() Statistics
 - Metrics validation (Prometheus endpoint)
 
 **Estimated Effort:** 1 day
-**Dependencies:** PR #174 (✅ merged)
+**Dependencies:** PR #174 ([PASS] merged)
 
 ---
 
@@ -439,7 +439,7 @@ func (d *Dispatcher) GetStatistics() Statistics
 
 **Issue:** #178
 **Files:** `star-proto/proto/star/v1/rx72n_message.proto`
-**Priority:** 🟢 Low (code quality improvement)
+**Priority:** [GREEN] Low (code quality improvement)
 
 **Current State:**
 - Manual type checking in dispatcher with `frame.FrameType`
@@ -479,19 +479,19 @@ message RX72NMessage {
 
 ---
 
-### Task 3.4: Priority Queue for E-Stop ✅ COMPLETE
+### Task 3.4: Priority Queue for E-Stop [PASS] COMPLETE
 
 **Issue:** #176 (Closed)
 **Files:** `star-gateway/internal/harq/harq.go`, `motor_control.go`
-**Priority:** 🔥 High (safety-critical)
-**Status:** ✅ Complete (2026-01-19)
+**Priority:**  High (safety-critical)
+**Status:** [PASS] Complete (2026-01-19)
 
 **Implementation Summary:**
-- ✅ Variadic priority parameter in `Send(ctx, data, priority ...Priority)`
-- ✅ Three priority levels: `PriorityEmergency`, `PriorityHigh`, `PriorityNormal`
-- ✅ `FlagPriority` set in frame header for non-normal priority
-- ✅ `EmergencyStop` uses `harq.PriorityEmergency`
-- ✅ Priority preserved across retransmissions
+- [PASS] Variadic priority parameter in `Send(ctx, data, priority ...Priority)`
+- [PASS] Three priority levels: `PriorityEmergency`, `PriorityHigh`, `PriorityNormal`
+- [PASS] `FlagPriority` set in frame header for non-normal priority
+- [PASS] `EmergencyStop` uses `harq.PriorityEmergency`
+- [PASS] Priority preserved across retransmissions
 
 **Features Implemented:**
 ```go
@@ -510,10 +510,10 @@ s.harqHandler.Send(ctx, payload, harq.PriorityEmergency)
 ```
 
 **Testing:**
-- ✅ TestPriorityConstants (validates protocol values)
-- ✅ TestSend_PriorityEmergencyPreservedOnRetransmit
-- ✅ TestSend_PriorityHighWithFEC
-- ✅ TestSend_VariadicPriorityHandling (defaults to Normal)
+- [PASS] TestPriorityConstants (validates protocol values)
+- [PASS] TestSend_PriorityEmergencyPreservedOnRetransmit
+- [PASS] TestSend_PriorityHighWithFEC
+- [PASS] TestSend_VariadicPriorityHandling (defaults to Normal)
 
 **Safety Compliance:**
 - Priority flag enables RX72N firmware to handle E-Stop with urgency
@@ -522,26 +522,26 @@ s.harqHandler.Send(ctx, payload, harq.PriorityEmergency)
 
 ---
 
-## Phase 4: Safety and Monitoring ✅ COMPLETE
+## Phase 4: Safety and Monitoring [PASS] COMPLETE
 
 **Goal:** Ensure platform integrity and emergency handling
 
-### Task 4.1: Implement star_safety_monitor Node ✅ COMPLETE
+### Task 4.1: Implement star_safety_monitor Node [PASS] COMPLETE
 
 **Issue:** #139 (Closed)
 **Files:** `star-ros2/src/star_safety_monitor/` (1558 lines)
-**Priority:** 🔥 High (safety-critical)
-**Status:** ✅ Merged in PR #199 (2026-01-19)
+**Priority:**  High (safety-critical)
+**Status:** [PASS] Merged in PR #199 (2026-01-19)
 
 **Implementation Summary:**
-- ✅ Lifecycle node with full state management (UNCONFIGURED → INACTIVE → ACTIVE)
-- ✅ Battery voltage/current monitoring with configurable thresholds
-- ✅ Motor stall detection (cmd_vel vs. actual velocity mismatch)
-- ✅ Heartbeat monitoring with >500ms timeout → E-Stop
-- ✅ Emergency stop publishing to `/emergency_stop`
-- ✅ Comprehensive diagnostic message publishing
-- ✅ Configurable parameters (thresholds, timeouts, enable_auto_estop)
-- ✅ Full test coverage (7/10 tests passing, 3 skipped placeholders)
+- [PASS] Lifecycle node with full state management (UNCONFIGURED -> INACTIVE -> ACTIVE)
+- [PASS] Battery voltage/current monitoring with configurable thresholds
+- [PASS] Motor stall detection (cmd_vel vs. actual velocity mismatch)
+- [PASS] Heartbeat monitoring with >500ms timeout -> E-Stop
+- [PASS] Emergency stop publishing to `/emergency_stop`
+- [PASS] Comprehensive diagnostic message publishing
+- [PASS] Configurable parameters (thresholds, timeouts, enable_auto_estop)
+- [PASS] Full test coverage (7/10 tests passing, 3 skipped placeholders)
 
 **Features Implemented:**
 - Battery voltage monitoring (min_battery_voltage: 10.5V)
@@ -570,10 +570,10 @@ s.harqHandler.Send(ctx, payload, harq.PriorityEmergency)
 - `stall_samples_required` (default: 5) - Stall detection debouncing
 
 **Testing:**
-- ✅ 7 tests passing (lifecycle, parameters, subscriptions, diagnostics)
-- ⏸️ 3 tests skipped (battery safety, E-Stop trigger, diagnostic publishing - placeholders)
-- ✅ All formatters and linters passing
-- ✅ CI/CD validation complete
+- [PASS] 7 tests passing (lifecycle, parameters, subscriptions, diagnostics)
+- [PAUSE] 3 tests skipped (battery safety, E-Stop trigger, diagnostic publishing - placeholders)
+- [PASS] All formatters and linters passing
+- [PASS] CI/CD validation complete
 
 **Code Quality:**
 - 1558 lines of production code
@@ -603,7 +603,7 @@ These items are non-blocking for MVP but should be addressed before production d
 
 **Issue:** #166
 **Files:** `star-ros2/src/star_gateway_bridge/`
-**Priority:** 🟡 Medium
+**Priority:** [YELLOW] Medium
 
 **Current State:**
 - No metrics for dropped frames
@@ -655,7 +655,7 @@ private:
 
 **Issue:** #165
 **Files:** `star-ros2/src/star_gateway_bridge/`, `star-proto/proto/star/v1/`
-**Priority:** 🟡 Medium
+**Priority:** [YELLOW] Medium
 
 **Current State:**
 - Placeholder service in gateway_bridge (`std_srvs/SetBool`)
@@ -702,7 +702,7 @@ message SetPIDGainsResponse {
 
 **Issue:** #140
 **Files:** `star-ros2/src/star_bringup/launch/`
-**Priority:** 🟡 Medium (hardware-dependent)
+**Priority:** [YELLOW] Medium (hardware-dependent)
 
 **Current State:**
 - Documentation exists (`docs/sections/10_ros2_integration.tex`)
@@ -833,7 +833,7 @@ Node(
 - TF tree validation (`ros2 run tf2_tools view_frames`)
 
 **Estimated Effort:** 3-4 days
-**Dependencies:** Hardware sensors, star_spi_bridge (✅ merged)
+**Dependencies:** Hardware sensors, star_spi_bridge ([PASS] merged)
 
 ---
 
@@ -845,13 +845,13 @@ Node(
 
 **Issue:** #180
 **Files:** `star-gateway/internal/transport/spi_test.go`, `star-ros2/src/star_spi_bridge/test/`
-**Priority:** 🔥 High
+**Priority:**  High
 
 **Test Scenarios:**
 
 #### 6.1.1: SPI Loopback Test
 ```bash
-# Physical loopback (COPI → CIPO shorted)
+# Physical loopback (COPI -> CIPO shorted)
 go test -v ./internal/transport -run TestSPILoopback
 ```
 
@@ -895,7 +895,7 @@ go test -v ./internal/fec -run TestViterbiDecoding
 
 #### 6.1.5: End-to-End Latency Test
 ```bash
-# ROS2 cmd_vel → SPI → RX72N → telemetry → ROS2 odom
+# ROS2 cmd_vel -> SPI -> RX72N -> telemetry -> ROS2 odom
 ros2 run star_spi_bridge latency_test_node
 ```
 
@@ -924,7 +924,7 @@ ros2 topic pub /emergency_stop std_msgs/Bool "{data: true}" --once
 
 **Issue:** #179
 **Files:** `star-gateway/internal/service/motor_control_test.go`
-**Priority:** 🟡 Medium
+**Priority:** [YELLOW] Medium
 
 **Test Scenarios:**
 
@@ -965,53 +965,53 @@ go tool pprof mem.prof
 
 | Phase | Task | Priority | Effort | Blocks | Status |
 |-------|------|----------|--------|--------|--------|
-| 1 | Close PR #145/#144 | 🟢 Low | 10 min | - | ⚠️ Pending |
-| 3.1 | **SPI Transport** | 🔥 Critical | 1-2 days | All HW testing | ✅ **DONE** |
-| 2.1 | TelemetryService | 🔥 High | 2-3 days | - | ✅ **DONE** |
-| 2.2 | BatteryManagementService | 🟡 Medium | 3-4 days | Issue #158 | ✅ **DONE** |
-| 2.3 | ConfigurationService | 🟡 Medium | 2-3 days | SPI transport | ✅ **DONE** |
-| 4.1 | **Safety Monitor** | 🔥 High | 2-3 days | - | ✅ **DONE** |
-| 3.4 | **E-Stop Priority Queue** | 🔥 High | 1 day | - | ✅ **DONE** |
-| 3.2 | Dispatcher Metrics | 🟡 Medium | 1 day | - | ❌ TODO |
-| 4.2 | Frame Drop Metrics | 🟡 Medium | 1 day | - | ❌ TODO |
-| 4.3 | PID Gains Service | 🟡 Medium | 1 day | Config service | ⚠️ Ready |
-| 5.1 | RTAB-Map + EKF | 🟡 Medium | 3-4 days | Hardware | ❌ TODO |
-| 6.1 | **HW Integration Tests** | 🔥 High | 2-3 days | Hardware | ⚠️ Ready |
-| 3.3 | Type-Safe Wrapper | 🟢 Low | 1 day | - | ❌ TODO |
-| 2.4 | FirmwareUpdateService | 🟢 Low | 4-5 days | Bootloader | ⚠️ Deferred |
-| 5.2 | Multi-Robot Comms | 🟢 Low | 1 day | - | ❌ TODO |
-| 6.2 | Concurrency Tests | 🟡 Medium | 1-2 days | - | ❌ TODO |
+| 1 | Close PR #145/#144 | [GREEN] Low | 10 min | - | [WARN] Pending |
+| 3.1 | **SPI Transport** |  Critical | 1-2 days | All HW testing | [PASS] **DONE** |
+| 2.1 | TelemetryService |  High | 2-3 days | - | [PASS] **DONE** |
+| 2.2 | BatteryManagementService | [YELLOW] Medium | 3-4 days | Issue #158 | [PASS] **DONE** |
+| 2.3 | ConfigurationService | [YELLOW] Medium | 2-3 days | SPI transport | [PASS] **DONE** |
+| 4.1 | **Safety Monitor** |  High | 2-3 days | - | [PASS] **DONE** |
+| 3.4 | **E-Stop Priority Queue** |  High | 1 day | - | [PASS] **DONE** |
+| 3.2 | Dispatcher Metrics | [YELLOW] Medium | 1 day | - | [FAIL] TODO |
+| 4.2 | Frame Drop Metrics | [YELLOW] Medium | 1 day | - | [FAIL] TODO |
+| 4.3 | PID Gains Service | [YELLOW] Medium | 1 day | Config service | [WARN] Ready |
+| 5.1 | RTAB-Map + EKF | [YELLOW] Medium | 3-4 days | Hardware | [FAIL] TODO |
+| 6.1 | **HW Integration Tests** |  High | 2-3 days | Hardware | [WARN] Ready |
+| 3.3 | Type-Safe Wrapper | [GREEN] Low | 1 day | - | [FAIL] TODO |
+| 2.4 | FirmwareUpdateService | [GREEN] Low | 4-5 days | Bootloader | [WARN] Deferred |
+| 5.2 | Multi-Robot Comms | [GREEN] Low | 1 day | - | [FAIL] TODO |
+| 6.2 | Concurrency Tests | [YELLOW] Medium | 1-2 days | - | [FAIL] TODO |
 
 ---
 
 ## Dependency Graph
 
 ```
-Phase 1: Cleanup ──────────────────────────────────────────────── ⚠️ Pending
+Phase 1: Cleanup ------------------------------------------------ [WARN] Pending
 
-Phase 2: Gateway Services ─────────────────────────────────────── ✅ COMPLETE
-├── TelemetryService ────────────────────────────────────────── ✅ DONE
-├── BatteryManagementService ────────────────────────────────── ✅ DONE
-├── ConfigurationService ────────────────────────────────────── ✅ DONE
-└── FirmwareUpdateService ───────────────────────────────────── ⚠️ Deferred
+Phase 2: Gateway Services --------------------------------------- [PASS] COMPLETE
++-- TelemetryService ------------------------------------------ [PASS] DONE
++-- BatteryManagementService ---------------------------------- [PASS] DONE
++-- ConfigurationService -------------------------------------- [PASS] DONE
++-- FirmwareUpdateService ------------------------------------- [WARN] Deferred
 
-Phase 3: Hardware Integration ────────────────────────────────── ✅ COMPLETE
-├── SPI Transport ───────────────────────────────────────────── ✅ DONE
-├── E-Stop Priority Queue ───────────────────────────────────── ✅ DONE
-├── Dispatcher Metrics ──────────────────────────────────────── ❌ TODO
-└── Type-Safe Wrapper ───────────────────────────────────────── ❌ TODO
+Phase 3: Hardware Integration ---------------------------------- [PASS] COMPLETE
++-- SPI Transport --------------------------------------------- [PASS] DONE
++-- E-Stop Priority Queue ------------------------------------- [PASS] DONE
++-- Dispatcher Metrics ---------------------------------------- [FAIL] TODO
++-- Type-Safe Wrapper ----------------------------------------- [FAIL] TODO
 
-Phase 4: Safety & Monitoring ─────────────────────────────────── ✅ COMPLETE
-├── Safety Monitor Node ─────────────────────────────────────── ✅ DONE
-├── Frame Drop Metrics ──────────────────────────────────────── ❌ TODO
-└── PID Gains Service ───────────────────────────────────────── ⚠️ Ready
+Phase 4: Safety & Monitoring ----------------------------------- [PASS] COMPLETE
++-- Safety Monitor Node --------------------------------------- [PASS] DONE
++-- Frame Drop Metrics ---------------------------------------- [FAIL] TODO
++-- PID Gains Service ----------------------------------------- [WARN] Ready
 
-Phase 5: SLAM Configuration ──────────────────────────────────── ❌ Hardware Dependent
-└── RTAB-Map + EKF ──────────────────────────────────────────── ❌ TODO
+Phase 5: SLAM Configuration ------------------------------------ [FAIL] Hardware Dependent
++-- RTAB-Map + EKF -------------------------------------------- [FAIL] TODO
 
-Phase 6: Integration Testing ─────────────────────────────────── ⚠️ Ready when hardware available
-├── Hardware Tests ──────────────────────────────────────────── ⚠️ Ready
-└── Concurrency Tests ───────────────────────────────────────── ❌ TODO
+Phase 6: Integration Testing ----------------------------------- [WARN] Ready when hardware available
++-- Hardware Tests -------------------------------------------- [WARN] Ready
++-- Concurrency Tests ----------------------------------------- [FAIL] TODO
 ```
 
 **Critical Path:** Phase 6.1 (Hardware Integration Tests on RPi5+RX72N)
@@ -1022,14 +1022,14 @@ Phase 6: Integration Testing ─────────────────
 
 ### Immediate Priority (Week of 2026-01-22)
 
-1. **Fix Flaky Battery Test** (TestNewBatteryService) - 0.5 days 🔥 **URGENT**
+1. **Fix Flaky Battery Test** (TestNewBatteryService) - 0.5 days  **URGENT**
    - Race condition: Background goroutine not starting within 500ms timeout
    - Affects CI reliability (intermittent failures on PR #202)
    - Solution: Increase timeout OR add synchronization signal OR refactor test
    - File: `star-gateway/internal/service/battery_test.go:129-158`
    - Issue: Blocking CI merges
 
-2. **Simulated Integration Tests** (Virtual RX72N) - 1-2 days 🔥 **START HERE**
+2. **Simulated Integration Tests** (Virtual RX72N) - 1-2 days  **START HERE**
    - Verify `star_gateway_bridge` connects to Gateway (Sim Mode)
    - Verify Telemetry/Command flow end-to-end (ROS2 <-> Gateway <-> Virtual RX72N)
    - Verify Safety Monitor E-Stop triggering in simulation
@@ -1039,7 +1039,7 @@ Phase 6: Integration Testing ─────────────────
    - Publish diagnostics for monitoring
 
 3. **Hardware Integration Tests** (Issue #180) - 2-3 days (When Hardware Available)
-   - SPI loopback test (COPI → CIPO shorted)
+   - SPI loopback test (COPI -> CIPO shorted)
    - RX72N round-trip communication
    - End-to-end latency validation (<10ms target)
    - Emergency stop response time (<50ms target with priority flag)
@@ -1048,7 +1048,7 @@ Phase 6: Integration Testing ─────────────────
 ### Hardware-Dependent Tasks (When RPi5 + RX72N Available)
 
 4. **Hardware Integration Tests** (Issue #180) - 2-3 days
-   - SPI loopback test (COPI → CIPO shorted)
+   - SPI loopback test (COPI -> CIPO shorted)
    - RX72N round-trip communication
    - End-to-end latency validation (<10ms target)
    - Emergency stop response time (<50ms target)
@@ -1070,15 +1070,15 @@ Phase 6: Integration Testing ─────────────────
 ---
 
 **Status Summary:**
-- ✅ **Phase 1-2 Complete:** Infrastructure + All critical services (5/6 services)
-- ✅ **Phase 3 Complete:** SPI transport + E-Stop priority queue
-- ✅ **Phase 4 Complete:** Safety monitoring with platform integrity checks
-- ⏸️ **Phase 5-6:** Blocked on hardware availability (RPi5 + RX72N)
+- [PASS] **Phase 1-2 Complete:** Infrastructure + All critical services (5/6 services)
+- [PASS] **Phase 3 Complete:** SPI transport + E-Stop priority queue
+- [PASS] **Phase 4 Complete:** Safety monitoring with platform integrity checks
+- [PAUSE] **Phase 5-6:** Blocked on hardware availability (RPi5 + RX72N)
 
 **Total Estimated Effort to Production MVP:** ~3-5 days
-- 🔥 **Immediate:** Fix flaky battery test (0.5 days)
-- ⚠️ **Next:** HIL integration tests with Virtual RX72N (1-2 days)
-- ⏸️ **Blocked:** Hardware integration tests on RPi5+RX72N (2-3 days)
+-  **Immediate:** Fix flaky battery test (0.5 days)
+- [WARN] **Next:** HIL integration tests with Virtual RX72N (1-2 days)
+- [PAUSE] **Blocked:** Hardware integration tests on RPi5+RX72N (2-3 days)
 
 ---
 

@@ -11,24 +11,24 @@
  *
  * @par System Architecture Context:
  * @verbatim
- * ┌──────────────────────────────────────────────────────────────────────┐
- * │                    RX72N Interrupt Controller (ICU)                  │
- * ├──────────────────────────────────────────────────────────────────────┤
- * │                                                                      │
- * │  Peripheral ──► ICU ──► Priority Arbitration ──► CPU Interrupt       │
- * │  (CMT, SCI,     │       (0=disabled, 1-15)       (via vector table)  │
- * │   MTU, GPTW,    │                                                    │
- * │   USB, etc.)    ▼                                                    │
- * │              ┌─────────────────────────────────────────────────┐     │
- * │              │  IR[256]    - Interrupt Request Flags           │     │
- * │              │  IER[32]    - Interrupt Enable Registers        │     │
- * │              │  IPR[256]   - Interrupt Priority Registers      │     │
- * │              │  DTCER[256] - DTC Enable Registers              │     │
- * │              │  IRQCR[16]  - External IRQ Control              │     │
- * │              │  NMI Regs   - Non-Maskable Interrupt Control    │     │
- * │              └─────────────────────────────────────────────────┘     │
- * │                                                                      │
- * └──────────────────────────────────────────────────────────────────────┘
+ * +----------------------------------------------------------------------+
+ * |                    RX72N Interrupt Controller (ICU)                  |
+ * +----------------------------------------------------------------------+
+ * |                                                                      |
+ * |  Peripheral --> ICU --> Priority Arbitration --> CPU Interrupt       |
+ * |  (CMT, SCI,     |       (0=disabled, 1-15)       (via vector table)  |
+ * |   MTU, GPTW,    |                                                    |
+ * |   USB, etc.)    v                                                    |
+ * |              +-------------------------------------------------+     |
+ * |              |  IR[256]    - Interrupt Request Flags           |     |
+ * |              |  IER[32]    - Interrupt Enable Registers        |     |
+ * |              |  IPR[256]   - Interrupt Priority Registers      |     |
+ * |              |  DTCER[256] - DTC Enable Registers              |     |
+ * |              |  IRQCR[16]  - External IRQ Control              |     |
+ * |              |  NMI Regs   - Non-Maskable Interrupt Control    |     |
+ * |              +-------------------------------------------------+     |
+ * |                                                                      |
+ * +----------------------------------------------------------------------+
  * @endverbatim
  *
  * @par ICU Key Features:
@@ -218,7 +218,7 @@ typedef enum : uint16_t {
  * @par Register Array Purpose:
  * - IR[256]: One flag per interrupt vector (vectors 0-255)
  * - DTCER[256]: One enable bit per DTC-capable vector
- * - IER[32]: 8 bits per register, covering 256 vectors (32 × 8 = 256)
+ * - IER[32]: 8 bits per register, covering 256 vectors (32 x 8 = 256)
  * - IPR[256]: One priority level per interrupt vector
  * - DMRSR[8]: DMAC channel 0-7 start source selection (4-byte aligned)
  * - IRQCR[16]: External IRQ0-15 edge/level configuration
@@ -226,7 +226,7 @@ typedef enum : uint16_t {
 typedef enum : uint16_t {
   k_icu_ir_count         = 256, /**< 256 interrupt request flags (one per vector) */
   k_icu_dtcer_count      = 256, /**< 256 DTC enable flags */
-  k_icu_ier_count        = 32,  /**< 32 enable registers × 8 bits = 256 vectors */
+  k_icu_ier_count        = 32,  /**< 32 enable registers x 8 bits = 256 vectors */
   k_icu_ier_bits_per_reg = 8,   /**< Each IER controls 8 interrupt enables */
   k_icu_ipr_count        = 256, /**< 256 priority registers (0-15 each) */
   k_icu_dmrsr_count      = 8,   /**< 8 DMAC channels */

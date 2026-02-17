@@ -67,7 +67,7 @@ typedef struct {
   int16_t  average_current_ma;                   /**< Average current (mA) */
   uint8_t  relative_soc;                         /**< Relative SoC (%) */
   uint8_t  absolute_soc;                         /**< Absolute SoC (%) */
-  int16_t  temperature_c;                        /**< Temperature (°C) */
+  int16_t  temperature_c;                        /**< Temperature (degC) */
   uint16_t remaining_capacity_mah;               /**< Remaining capacity (mAh) */
   uint16_t full_capacity_mah;                    /**< Full charge capacity (mAh) */
   uint16_t design_capacity_mah;                  /**< Design capacity (mAh) */

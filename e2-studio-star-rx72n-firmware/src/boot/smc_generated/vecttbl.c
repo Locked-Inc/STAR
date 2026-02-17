@@ -165,7 +165,7 @@ typedef enum : uint32_t {
  */
 #if BSP_CFG_CODE_FLASH_BANK_MODE == 0
 typedef enum : uint32_t {
-  k_bank_mode_value = 0xFFFFFF8F, /**< Dual-bank mode (2MB × 2 banks) */
+  k_bank_mode_value = 0xFFFFFF8F, /**< Dual-bank mode (2MB x 2 banks) */
 } flash_bank_mode_values_t;
 #else
 typedef enum : uint32_t {

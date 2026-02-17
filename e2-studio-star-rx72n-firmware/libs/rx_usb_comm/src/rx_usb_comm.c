@@ -31,8 +31,8 @@
  * @par Performance:
  * | Operation      | Typical   | Worst Case  |
  * |----------------|-----------|-------------|
- * | Send (64B)     | 80 µs     | 200 µs      |
- * | Receive        | 500 µs    | timeout_ms  |
+ * | Send (64B)     | 80 us     | 200 us      |
+ * | Receive        | 500 us    | timeout_ms  |
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto, setjmp, recursion
@@ -204,7 +204,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @note CRC stored in little-endian format in frame
  *
  * @par Performance:
- * CRC calculation: ~10 µs for 64-byte payload @ 240 MHz
+ * CRC calculation: ~10 us for 64-byte payload @ 240 MHz
  *
  * @see rx_crc32_ieee() CRC calculation function
  * @see internal_decode_header() Called before this to parse header

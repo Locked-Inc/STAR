@@ -70,10 +70,10 @@ func (s *SessionState) NextTxSequence() uint16 {
 // rather than permanently stalling the link.
 //
 // Gap Tolerance:
-//   - diff == 0: Exact match (most common case) → Accept
-//   - 0 < diff < 10: Small gap (packet loss) → Accept and catch up
-//   - diff >= 10: Large gap (transport failure) → Reject
-//   - diff is large positive (near 65535): Likely duplicate from wraparound → Reject
+//   - diff == 0: Exact match (most common case) -> Accept
+//   - 0 < diff < 10: Small gap (packet loss) -> Accept and catch up
+//   - diff >= 10: Large gap (transport failure) -> Reject
+//   - diff is large positive (near 65535): Likely duplicate from wraparound -> Reject
 //
 // Thread Safety: Uses mutex to ensure atomicity across concurrent goroutines.
 func (s *SessionState) ValidateRxSequence(seq uint16) bool {

@@ -61,9 +61,9 @@
  * @endcode
  *
  * The preprocessor selects the correct intrinsic based on compiler:
- * - CC-RX:  R_BSP_REVL(x) → revl(x)
- * - GCC:    R_BSP_REVL(x) → __builtin_bswap32(x)
- * - ICCRX:  R_BSP_REVL(x) → __REVL(x)
+ * - CC-RX:  R_BSP_REVL(x) -> revl(x)
+ * - GCC:    R_BSP_REVL(x) -> __builtin_bswap32(x)
+ * - ICCRX:  R_BSP_REVL(x) -> __REVL(x)
  *
  * **GNUC Implementation Notes:**
  * GCC lacks some RX-specific intrinsics, so certain macros call R_BSP_* functions
@@ -1417,7 +1417,7 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine(float f, float* sin, float* c
  * @param[in] y Y coordinate
  * @param[in] x X coordinate
  * @param[out] atan2 Pointer to store atan2(y,x) result (angle in radians)
- * @param[out] hypot Pointer to store sqrt(x²+y²) result (magnitude)
+ * @param[out] hypot Pointer to store sqrt(x^2+y^2) result (magnitude)
  * @return void
  * @pre TFU initialized (R_BSP_INIT_TFU called if TFU_VERSION == 1)
  * @post atan2 and hypot contain computed values
@@ -1485,7 +1485,7 @@ int32_t R_BSP_CalcAtan_Fpn(int32_t y, int32_t x);
  * @brief Calculate square root of sum of squares (fixed-point)
  * @param[in] y First value
  * @param[in] x Second value
- * @return int32_t sqrt(x²+y²) result in fixed-point
+ * @return int32_t sqrt(x^2+y^2) result in fixed-point
  * @note Only for TFU version 2
  * @since Version 1.14
  */

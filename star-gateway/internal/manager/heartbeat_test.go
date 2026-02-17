@@ -576,10 +576,10 @@ const minWDTSafetyFactor = 3
 //
 // Dual-detection model:
 //
-//	Primary: Implicit timeout (DefaultFailureTimeout = 200ms) — any frame resets timer
+//	Primary: Implicit timeout (DefaultFailureTimeout = 200ms) -- any frame resets timer
 //	Check interval: failureTimeout / checkIntervalDivisor = 50ms
 //	Worst-case detection: failureTimeout + checkInterval = 250ms
-//	Secondary: Explicit PING (DefaultPingInterval = 1s) — rare idle-link probe
+//	Secondary: Explicit PING (DefaultPingInterval = 1s) -- rare idle-link probe
 //	Safety margin = WDT timeout / detection time = 1000ms / 200ms = 5x (best case)
 func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 	// Primary detection time is the implicit failure timeout

@@ -42,8 +42,8 @@
  * | Parameter | Value | Notes |
  * |-----------|-------|-------|
  * | Clock Source | IWDTCLK | Internal RC oscillator |
- * | Clock Frequency | 120 kHz | ±1% accuracy |
- * | Clock Period | 8.33 µs | 1/120kHz |
+ * | Clock Frequency | 120 kHz | +/-1% accuracy |
+ * | Clock Period | 8.33 us | 1/120kHz |
  * | Counter Width | 14-bit | Down-counter |
  * | Min Timeout | 128 ms | 2^14 / (120k / 1) |
  * | Max Timeout | 16,384 ms | 2^14 / (120k / 128) |
@@ -79,10 +79,10 @@
  *
  * | Operation | Execution Time | Notes |
  * |-----------|---------------|-------|
- * | rx_hal_iwdt_init() | ~20 µs | One-time configuration |
- * | rx_hal_iwdt_feed() | ~1 µs | Two register writes |
- * | rx_hal_iwdt_task_heartbeat() | ~3 µs | Timestamp update |
- * | rx_hal_iwdt_check_tasks() | ~5 µs × N tasks | Linear scan |
+ * | rx_hal_iwdt_init() | ~20 us | One-time configuration |
+ * | rx_hal_iwdt_feed() | ~1 us | Two register writes |
+ * | rx_hal_iwdt_task_heartbeat() | ~3 us | Timestamp update |
+ * | rx_hal_iwdt_check_tasks() | ~5 us x N tasks | Linear scan |
  *
  * **Memory Footprint**:
  * - Static variables: ~256 bytes (task tracking)
@@ -204,7 +204,7 @@ extern "C" {
  * @invariant Values correspond to hardware divider settings
  *
  * @note C23 typed enum with uint16_t underlying type
- * @note Actual timeout may vary ±1% due to oscillator tolerance
+ * @note Actual timeout may vary +/-1% due to oscillator tolerance
  *
  * @since Version 1.0.0
  */
@@ -214,7 +214,7 @@ typedef enum : uint16_t {
   k_iwdt_timeout_512ms =
     512, /**< Short timeout (512ms). Use for normal control loops (10-50 Hz). Provides good responsiveness. TOPS=4 divider */
   k_iwdt_timeout_1000ms =
-    1000, /**< Default timeout (1 second). **Recommended** for typical applications. Good balance between detection speed and tolerance. TOPS≈8 */
+    1000, /**< Default timeout (1 second). **Recommended** for typical applications. Good balance between detection speed and tolerance. TOPS~8 */
   k_iwdt_timeout_2048ms =
     2048, /**< Medium timeout (2 seconds). Use for low-frequency tasks that may have variable execution time. TOPS=16 divider */
   k_iwdt_timeout_8192ms =

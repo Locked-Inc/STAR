@@ -38,7 +38,7 @@
  * | Stop in Software  | Yes                      | No (once started)       |
  * | Debug/Sleep Ctrl  | No                       | Yes (IWDTCSTPR)         |
  * | Best For          | Development, debugging   | Production safety       |
- * | Timeout Range     | 4 µs to 2.2 s            | 8.5 ms to 17.5 s        |
+ * | Timeout Range     | 4 us to 2.2 s            | 8.5 ms to 17.5 s        |
  *
  * @par Key Features
  * - 14-bit down counter using PCLKB peripheral clock
@@ -61,10 +61,10 @@
  * @par Timeout Period Table (PCLKB = 60 MHz)
  * | TOPS   | CKS/4    | CKS/64   | CKS/128  | CKS/8192 |
  * |--------|----------|----------|----------|----------|
- * | 1024   | 17 µs    | 1.1 ms   | 2.2 ms   | 140 ms   |
- * | 4096   | 68 µs    | 4.4 ms   | 8.7 ms   | 559 ms   |
- * | 8192   | 137 µs   | 8.7 ms   | 17.5 ms  | 1.12 s   |
- * | 16384  | 273 µs   | 17.5 ms  | 34.9 ms  | 2.24 s   |
+ * | 1024   | 17 us    | 1.1 ms   | 2.2 ms   | 140 ms   |
+ * | 4096   | 68 us    | 4.4 ms   | 8.7 ms   | 559 ms   |
+ * | 8192   | 137 us   | 8.7 ms   | 17.5 ms  | 1.12 s   |
+ * | 16384  | 273 us   | 17.5 ms  | 34.9 ms  | 2.24 s   |
  *
  * @par Window Protection
  * The WDT supports window protection to detect both late refresh (timeout)
@@ -433,7 +433,7 @@ typedef enum : uint8_t {
  * @par Timeout Examples (PCLKB = 60 MHz)
  * | Configuration                          | Timeout  |
  * |----------------------------------------|----------|
- * | TOPS_1024 + CKS_DIV_4                  | 17 µs    |
+ * | TOPS_1024 + CKS_DIV_4                  | 17 us    |
  * | TOPS_16384 + CKS_DIV_8192              | 2.24 s   |
  * | TOPS_4096 + CKS_DIV_2048               | 140 ms   |
  *
@@ -617,7 +617,7 @@ typedef enum : uint8_t {
  * uint16_t counter = wdt()->wdtsr & k_wdt_sr_cntval_mask;
  *
  * // Calculate remaining time (example with CKS_DIV_8192, PCLKB=60MHz)
- * // Time per count = 8192 / 60MHz = 136.5 µs
+ * // Time per count = 8192 / 60MHz = 136.5 us
  * float remaining_ms = counter * 0.1365f;
  * @endcode
  *

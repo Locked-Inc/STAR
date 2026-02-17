@@ -317,7 +317,7 @@ typedef enum : uint16_t {
  *
  * @note RX72N has 10 pipes total: 1 control pipe (DCP) + 9 data pipes
  * @note Each CDC-ACM port uses 3 pipes (2 bulk + 1 interrupt)
- * @note Maximum 3 CDC-ACM ports supported (9 pipes ÷ 3 = 3 ports)
+ * @note Maximum 3 CDC-ACM ports supported (9 pipes / 3 = 3 ports)
  *
  * @see usb_brdyenb_t Buffer ready interrupt enable register
  * @see usb_brdysts_t Buffer ready interrupt status register

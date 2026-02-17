@@ -112,18 +112,18 @@
  * | V_IH (High) | 0.7*VDD | - | VDD | V | Input high threshold |
  * | V_IL (Low) | 0 | - | 0.3*VDD | V | Input low threshold |
  * | I_drive | - | - | 8 | mA | Maximum per pin |
- * | I_pullup | 30 | 50 | 100 | µA | Internal pull-up |
+ * | I_pullup | 30 | 50 | 100 | uA | Internal pull-up |
  * | C_in | - | 10 | - | pF | Input capacitance |
  *
  * @par Performance Characteristics
  * | Operation | Execution Time | Description |
  * |-----------|----------------|-------------|
- * | Init | ~15 µs | Configure direction + pin validator |
- * | Write | ~2 µs | Set output state (with mutex) |
- * | Read | ~2 µs | Read input state (with mutex) |
- * | Toggle | ~3 µs | Read-modify-write (with mutex) |
+ * | Init | ~15 us | Configure direction + pin validator |
+ * | Write | ~2 us | Set output state (with mutex) |
+ * | Read | ~2 us | Read input state (with mutex) |
+ * | Toggle | ~3 us | Read-modify-write (with mutex) |
  * | Propagation | 10-20 ns | Output change to pin edge |
- * | Response | < 1 µs | Input change to software read |
+ * | Response | < 1 us | Input change to software read |
  *
  * @par Memory Usage
  * | Component | Size | Description |
@@ -136,12 +136,12 @@
  * @par Hardware Requirements
  * | Requirement | Specification |
  * |-------------|---------------|
- * | VDD | 3.3V ± 10% |
+ * | VDD | 3.3V +/- 10% |
  * | I/O levels | 3.3V CMOS |
  * | Drive strength | 8 mA maximum per pin |
  * | Total current | 80 mA maximum per port |
  * | Rise/fall time | < 10 ns @ 50 pF load |
- * | Input leakage | ± 1 µA maximum |
+ * | Input leakage | +/- 1 uA maximum |
  *
  * @par Pin Conflict Detection
  * The bus manager uses a pin validator to prevent accidental double allocation:
@@ -394,7 +394,7 @@ extern "C" {
  * @warning Do not call from interrupt context (mutex wait)
  *
  * @par Performance:
- * - Execution time: ~15 µs typical (includes pin validator check)
+ * - Execution time: ~15 us typical (includes pin validator check)
  * - Mutex timeout: 1000 ms (configurable via bus manager)
  *
  * @par Example - Output Initialization:
@@ -485,19 +485,19 @@ rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool output);
  * @pre Pin must be configured as output
  *
  * @post Pin output state changed to value
- * @post Physical pin voltage: high ≈ VDD, low ≈ 0V (within 10-20 ns)
+ * @post Physical pin voltage: high ~ VDD, low ~ 0V (within 10-20 ns)
  *
  * @invariant Bus state remains initialized
  *
  * @note Thread-safe via bus manager mutex
- * @note Fast operation (~2 µs including mutex)
+ * @note Fast operation (~2 us including mutex)
  * @note Output immediately reflects on physical pin
  *
  * @warning Attempting to write to input pin returns k_rx_err_invalid_state
  * @warning Exceeding 8 mA drive current may damage pin
  *
  * @par Performance:
- * - Execution time: ~2 µs (with mutex)
+ * - Execution time: ~2 us (with mutex)
  * - Propagation delay: 10-20 ns to pin edge
  *
  * @par Example - LED Control:
@@ -590,15 +590,15 @@ rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool value);
  *
  * @note Thread-safe via bus manager mutex
  * @note Works for both input and output pins
- * @note Fast operation (~2 µs including mutex)
+ * @note Fast operation (~2 us including mutex)
  * @note For inputs, enable internal pull-up if needed (via PORT PCR register)
  *
  * @warning value undefined if return != k_rx_ok
  * @warning Floating inputs may read unpredictably (use pull-up/down)
  *
  * @par Performance:
- * - Execution time: ~2 µs (with mutex)
- * - Sampling delay: < 1 µs from pin change to software read
+ * - Execution time: ~2 us (with mutex)
+ * - Sampling delay: < 1 us from pin change to software read
  *
  * @par Example - Button Reading:
  * @code
@@ -684,20 +684,20 @@ rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool* value);
  * @pre Bus must be initialized via rx_bus_gpio_init() with output = true
  * @pre Pin must be configured as output
  *
- * @post Pin output state inverted (high ↔ low)
+ * @post Pin output state inverted (high <-> low)
  * @post Physical pin reflects new state within 10-20 ns
  *
  * @invariant Bus state remains initialized
  *
  * @note Thread-safe - atomic read-modify-write via mutex
- * @note Slightly slower than write (~3 µs vs ~2 µs) due to read
+ * @note Slightly slower than write (~3 us vs ~2 us) due to read
  * @note Useful for periodic signals (LED blink, clock generation)
  *
  * @warning Attempting to toggle input pin returns k_rx_err_invalid_state
  * @warning High-frequency toggling (>100 kHz) should use direct register access
  *
  * @par Performance:
- * - Execution time: ~3 µs (read + write with mutex)
+ * - Execution time: ~3 us (read + write with mutex)
  * - Maximum toggle rate: ~330 kHz (not recommended - use PWM instead)
  * - Practical toggle rate: < 10 kHz for bus manager API
  *
@@ -727,7 +727,7 @@ rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool* value);
  * // Generate 1 kHz square wave for testing (GPIO-based, not PWM)
  * for (uint32_t i = 0; i < 1000; i++) {
  *     rx_bus_gpio_toggle(&manager, "test_signal");
- *     tx_thread_sleep(1);  // 500 µs delay = 1 kHz
+ *     tx_thread_sleep(1);  // 500 us delay = 1 kHz
  * }
  * // Note: Use hardware PWM for precise/high-frequency signals
  * @endcode

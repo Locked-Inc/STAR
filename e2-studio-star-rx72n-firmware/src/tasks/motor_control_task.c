@@ -31,7 +31,7 @@
  *             fillcolor=lightyellow, style=filled];
  *     drivers [label="4x DRV8243S H-Bridge Drivers\nCurrent Sensing, Fault Detection\nPWM @ 20 kHz",
  *              fillcolor=lightcoral, style=filled];
- *     encoders [label="4x Hall Effect Encoders\n341 PPR × 4 (quadrature) = 1364 counts/rev\nMTU1-2 (front) + TPU1-2 (rear)",
+ *     encoders [label="4x Hall Effect Encoders\n341 PPR x 4 (quadrature) = 1364 counts/rev\nMTU1-2 (front) + TPU1-2 (rear)",
  *               fillcolor=lightgreen, style=filled];
  *   }
  *
@@ -186,18 +186,18 @@
  *   MotorTask box MotorTask [label="Start active brake sequence"];
  *
  *   --- [label="Step 1: Read Current Velocities"];
- *   MotorTask => Encoders [label="rx_encoder_read_velocity() × 4"];
+ *   MotorTask => Encoders [label="rx_encoder_read_velocity() x 4"];
  *   Encoders >> MotorTask [label="Motor velocities:\nFL: +1.2 m/s\nFR: +1.1 m/s\nBL: +1.3 m/s\nBR: +1.0 m/s"];
  *
  *   --- [label="Step 2: Apply Reverse PWM (50ms @ 30%)"];
  *   MotorTask box MotorTask [label="Calculate reverse duties:\nFL: -30% (moving forward)\nFR: -30%\nBL: -30%\nBR: -30%"];
- *   MotorTask => Drivers [label="rx_motor_set_duty(-30%) × 4"];
+ *   MotorTask => Drivers [label="rx_motor_set_duty(-30%) x 4"];
  *   Drivers => Motors [label="Apply reverse PWM"];
  *   Motors box Motors [label="Motors decelerate\n(electromagnetic braking)"];
  *   MotorTask box MotorTask [label="Wait 50ms\n(5 ticks @ 100 Hz)"];
  *
  *   --- [label="Step 3: Apply Passive Brake"];
- *   MotorTask => Drivers [label="rx_motor_stop(brake=true) × 4"];
+ *   MotorTask => Drivers [label="rx_motor_stop(brake=true) x 4"];
  *   Drivers => Motors [label="Short H-bridge\n(both sides high)"];
  *   Motors box Motors [label="Motors locked\n(regenerative braking)"];
  *
@@ -230,7 +230,7 @@
  * - 30%: Optimal balance - stops motors in ~50ms without mechanical stress
  *
  * **Rationale for 50ms Duration:**
- * - Time constant τ = 75ms, so 50ms ≈ 0.67τ (63% response)
+ * - Time constant tau = 75ms, so 50ms ~ 0.67tau (63% response)
  * - Empirically tested to reduce velocity from max (2.5 m/s) to near-zero
  * - Short enough for emergency response, long enough to be effective
  *
@@ -257,18 +257,18 @@
  * |--------|-------|-------|
  * | **Control Frequency** | 100 Hz | 10ms period (1 tick @ 100 Hz ThreadX) |
  * | **PWM Frequency** | 20 kHz | MTU peripheral, high-frequency to reduce audible noise |
- * | **Encoder Resolution** | 1364 counts/rev | 341 PPR Hall × 4 (quadrature) |
- * | **Velocity Range** | ±2.5 m/s | Physical limit based on motor gearing |
- * | **CPU Time per Iteration** | ~320 µs | Active time (4 motors × 80µs each) |
- * | **CPU Idle Time** | ~3680 µs | Sleep time within 10ms period |
- * | **CPU Utilization** | ~8% | (320µs / 10000µs) × 100% |
+ * | **Encoder Resolution** | 1364 counts/rev | 341 PPR Hall x 4 (quadrature) |
+ * | **Velocity Range** | +/-2.5 m/s | Physical limit based on motor gearing |
+ * | **CPU Time per Iteration** | ~320 us | Active time (4 motors x 80us each) |
+ * | **CPU Idle Time** | ~3680 us | Sleep time within 10ms period |
+ * | **CPU Utilization** | ~8% | (320us / 10000us) x 100% |
  * | **Worst Case Latency** | 10ms | Max time to respond to new command |
  * | **Communication Timeout** | 500ms | Watchdog triggers e-stop |
  * | **Active Brake Duration** | 50ms | Reverse PWM duration |
  *
  * ### Timing Budget Breakdown (per 10ms iteration)
  *
- * | Operation | Time (µs) | % of Budget |
+ * | Operation | Time (us) | % of Budget |
  * |-----------|-----------|-------------|
  * | **Encoder Read** (4 motors) | 40 | 1.0% |
  * | **Get Command** (shared_data) | 5 | 0.1% |
@@ -286,10 +286,10 @@
  * |-----------|--------------|---------|-------------|
  * | `s_motor_thread` | 140 | .bss | TX_THREAD control block |
  * | `s_motor_stack` | 2048 | .bss | Task stack (static allocation) |
- * | `s_motors` (4) | 256 | .bss | rx_motor_handle_t × 4 (64 bytes each) |
- * | `s_encoder_state` (4) | 128 | .bss | rx_encoder_state_t × 4 (32 bytes each) |
- * | `s_pids` (4) | 192 | .bss | rx_pid_handle_t × 4 (48 bytes each) |
- * | `s_drivers` (4) | 128 | .bss | rx_drv8243_handle_t × 4 (32 bytes each) |
+ * | `s_motors` (4) | 256 | .bss | rx_motor_handle_t x 4 (64 bytes each) |
+ * | `s_encoder_state` (4) | 128 | .bss | rx_encoder_state_t x 4 (32 bytes each) |
+ * | `s_pids` (4) | 192 | .bss | rx_pid_handle_t x 4 (48 bytes each) |
+ * | `s_drivers` (4) | 128 | .bss | rx_drv8243_handle_t x 4 (32 bytes each) |
  * | `s_motor_created` | 1 | .bss | Creation guard flag |
  * | `s_timeout_estop_triggered` | 1 | .bss | Timeout flag |
  * | `s_active_brake_in_progress` | 1 | .bss | Brake sequence flag |
@@ -667,7 +667,7 @@ static bool s_motor_created = false;
  *
  * **Why a separate flag from s_motor_created:**
  * s_motor_created is set by motor_control_task_create() immediately after
- * tx_thread_create() succeeds — before the thread has actually run.
+ * tx_thread_create() succeeds -- before the thread has actually run.
  * internal_init_motor_stack() executes later inside the thread body.
  * Using s_motor_created alone would cause motor_control_task_get_motors()
  * to return uninitialized handles in the window between thread creation
@@ -675,7 +675,7 @@ static bool s_motor_created = false;
  *
  * @invariant Once set to true, remains true for application lifetime
  * @note Set inside internal_motor_task_entry() only when internal_init_motor_stack()
- *       returns k_rx_ok — not at thread creation time
+ *       returns k_rx_ok -- not at thread creation time
  * @warning Do NOT use s_motor_created as a proxy for this flag; s_motor_created is set
  *          by motor_control_task_create() immediately after tx_thread_create(), before
  *          the thread has run or initialized any motor hardware
@@ -696,14 +696,14 @@ static rx_motor_handle_t s_motors[k_motor_count];
  * zero-copy access to motor handles without exposing s_motors directly.
  *
  * **Array mapping (motor_index_t order):**
- * - [k_motor_front_left]  → &s_motors[k_motor_front_left]  (front-left motor)
- * - [k_motor_front_right] → &s_motors[k_motor_front_right] (front-right motor)
- * - [k_motor_back_left]   → &s_motors[k_motor_back_left]   (back-left motor)
- * - [k_motor_back_right]  → &s_motors[k_motor_back_right]  (back-right motor)
+ * - [k_motor_front_left]  -> &s_motors[k_motor_front_left]  (front-left motor)
+ * - [k_motor_front_right] -> &s_motors[k_motor_front_right] (front-right motor)
+ * - [k_motor_back_left]   -> &s_motors[k_motor_back_left]   (back-left motor)
+ * - [k_motor_back_right]  -> &s_motors[k_motor_back_right]  (back-right motor)
  *
  * @invariant Array size equals k_motor_count (4)
  * @invariant Pointers remain valid for program lifetime (static allocation)
- * @note Read-only for external callers — do NOT modify pointed-to handles
+ * @note Read-only for external callers -- do NOT modify pointed-to handles
  * @warning Handles are uninitialized until internal_init_motor_stack() completes
  * @since STAR v1.0.0
  */
@@ -928,11 +928,11 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * - tx_thread_sleep(): Safe (yields CPU)
  *
  * @par Performance:
- * - **Creation time:** ~150 µs @ 240 MHz (thread control block initialization)
+ * - **Creation time:** ~150 us @ 240 MHz (thread control block initialization)
  * - **CPU cycles:** ~36,000 cycles
  * - **Stack usage during creation:** ~64 bytes (function call overhead)
  * - **Memory allocation:** 2907 bytes total (2048 stack + 140 TCB + 719 handles/static)
- * - **Control loop CPU utilization:** ~8% (320µs active / 10000µs period)
+ * - **Control loop CPU utilization:** ~8% (320us active / 10000us period)
  *
  * @par Re-entrancy:
  * NOT reentrant. Single-shot function. Second call blocked by s_motor_created guard.
@@ -1093,12 +1093,12 @@ rx_err_t motor_control_task_create(void)
  * breach the safety perimeter.
  *
  * **Three possible outcomes:**
- * 1. Motor stack initialized + out_count non-null → returns s_motor_ptrs, sets *out_count = k_motor_count
- * 2. Motor stack not yet initialized (s_motor_stack_initialized == false) → returns nullptr, sets *out_count = k_motor_count_none
- * 3. out_count is nullptr → returns nullptr immediately, out_count unchanged
+ * 1. Motor stack initialized + out_count non-null -> returns s_motor_ptrs, sets *out_count = k_motor_count
+ * 2. Motor stack not yet initialized (s_motor_stack_initialized == false) -> returns nullptr, sets *out_count = k_motor_count_none
+ * 3. out_count is nullptr -> returns nullptr immediately, out_count unchanged
  *
  * **Guard condition (s_motor_stack_initialized vs s_motor_created):**
- * s_motor_created is set immediately after tx_thread_create() — before the thread
+ * s_motor_created is set immediately after tx_thread_create() -- before the thread
  * has executed. s_motor_stack_initialized is set only when internal_init_motor_stack()
  * returns k_rx_ok inside the thread. This function checks s_motor_stack_initialized
  * to ensure handles are fully initialized before returning them.
@@ -1110,10 +1110,10 @@ rx_err_t motor_control_task_create(void)
  *
  * @return rx_motor_handle_t** Pointer to array of motor handle pointers
  * @retval s_motor_ptrs Valid pointer to static array of k_motor_count (4) rx_motor_handle_t*,
- *                      *out_count set to k_motor_count — motor stack fully initialized
- * @retval nullptr with *out_count = k_motor_count_none — internal_init_motor_stack()
+ *                      *out_count set to k_motor_count -- motor stack fully initialized
+ * @retval nullptr with *out_count = k_motor_count_none -- internal_init_motor_stack()
  *                 has not yet completed successfully
- * @retval nullptr (out_count unchanged) — out_count argument was nullptr
+ * @retval nullptr (out_count unchanged) -- out_count argument was nullptr
  *
  * @pre motor_control_task_create() called (otherwise s_motor_stack_initialized is never set)
  * @pre out_count != nullptr (nullptr out_count causes immediate nullptr return)
@@ -1129,7 +1129,7 @@ rx_err_t motor_control_task_create(void)
  * uint8_t motor_count = k_motor_count_none;
  * rx_motor_handle_t** motors = motor_control_task_get_motors(&motor_count);
  * if (motors == nullptr || motor_count == k_motor_count_none) {
- *     // Motor stack not yet initialized — treat as fatal
+ *     // Motor stack not yet initialized -- treat as fatal
  * }
  * config.motors      = motors;
  * config.motor_count = motor_count;
@@ -1292,7 +1292,7 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  *
  * ## Performance Characteristics (per 10ms iteration)
  *
- * | Operation | Time (µs) | % of Budget | Frequency |
+ * | Operation | Time (us) | % of Budget | Frequency |
  * |-----------|-----------|-------------|-----------|
  * | **Check E-Stop** | 2 | 0.05% | Every iteration |
  * | **Timeout Check** | 5 | 0.13% | Every iteration |
@@ -1341,10 +1341,10 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  * @note **Thread Safety:** This function runs in its own thread context (Priority 8).
  *       All shared data access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. Single instance only (enforced by s_motor_created).
- * @note **Performance:** ~10.5% CPU active time. Control loop is ~420µs out of 10000µs period.
+ * @note **Performance:** ~10.5% CPU active time. Control loop is ~420us out of 10000us period.
  * @note **Memory:** Peak stack usage is 512 bytes during control loop iteration.
  * @note **Real-time:** Priority 8 ensures deterministic execution without preemption.
- * @note **Control Rate:** 100 Hz is optimal for motor time constant τ=75ms (bandwidth ~2.1 Hz).
+ * @note **Control Rate:** 100 Hz is optimal for motor time constant tau=75ms (bandwidth ~2.1 Hz).
  *       Faster control (500 Hz) would waste CPU, slower (100 Hz) degrades stability.
  *
  * @warning **Infinite Loop:** This function NEVER returns. Do not call directly from
@@ -1370,21 +1370,21 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown (per 10ms iteration):**
- * - Check e-stop: ~2 µs
- * - Check timeout: ~5 µs
- * - PID updates (if pending): ~50 µs
- * - Control loop (4 motors): ~320 µs
- *   - Encoder read: 10 µs × 4 = 40 µs
- *   - Get command: 5 µs
- *   - PID compute: 40 µs × 4 = 160 µs
- *   - PWM apply: 5 µs × 4 = 20 µs
- *   - Fault check: 10 µs × 4 = 40 µs
- *   - Loop overhead: 60 µs
- * - State update: ~20 µs
- * - Overhead: ~23 µs
- * - **Total active time:** ~420 µs
- * - **Sleep time:** 10000µs - 420µs = 3580µs (CPU idle)
- * - **CPU utilization:** (420µs / 10000µs) × 100% = 10.5%
+ * - Check e-stop: ~2 us
+ * - Check timeout: ~5 us
+ * - PID updates (if pending): ~50 us
+ * - Control loop (4 motors): ~320 us
+ *   - Encoder read: 10 us x 4 = 40 us
+ *   - Get command: 5 us
+ *   - PID compute: 40 us x 4 = 160 us
+ *   - PWM apply: 5 us x 4 = 20 us
+ *   - Fault check: 10 us x 4 = 40 us
+ *   - Loop overhead: 60 us
+ * - State update: ~20 us
+ * - Overhead: ~23 us
+ * - **Total active time:** ~420 us
+ * - **Sleep time:** 10000us - 420us = 3580us (CPU idle)
+ * - **CPU utilization:** (420us / 10000us) x 100% = 10.5%
  *
  * @par Example - Normal Operation (No E-Stop):
  * @code{.c}
@@ -1584,7 +1584,7 @@ static void internal_motor_task_entry(ULONG input)
  *
  * | Parameter | Value | Units | Rationale |
  * |-----------|-------|-------|-----------|
- * | **Kp** | 0.286 | - | MATLAB `pidtune` for τ=75ms system |
+ * | **Kp** | 0.286 | - | MATLAB `pidtune` for tau=75ms system |
  * | **Ki** | 8.01 | rad/s | Backward Euler integration, eliminates steady-state error |
  * | **Kd** | 0.0 | s | Disabled - 1st order system doesn't need derivative |
  * | **Output Min** | -100.0 | % | Full reverse PWM (20 kHz MTU) |
@@ -1652,7 +1652,7 @@ static void internal_motor_task_entry(ULONG input)
  * @note **Thread Safety:** NOT thread-safe. Only called once from internal_motor_task_entry()
  *       during task startup (single-threaded context).
  * @note **Re-entrancy:** NOT reentrant. Single-shot initialization function.
- * @note **Performance:** ~200 µs total (4 × 50µs per PID init)
+ * @note **Performance:** ~200 us total (4 x 50us per PID init)
  * @note **Memory:** Peak stack usage ~128 bytes (pid_config + locals)
  * @note **Partial Init:** On error, some PIDs may be initialized. Task will continue
  *       running but motors with failed PID init will output 0% duty.
@@ -1673,11 +1673,11 @@ static void internal_motor_task_entry(ULONG input)
  * during task initialization. No mutex protection needed (single-threaded startup).
  *
  * @par Performance:
- * - shared_data_get_pid_gains(): ~10 µs (mutex lock + copy + unlock)
- * - Build pid_config: ~5 µs (struct copy)
- * - rx_pid_init() × 4: ~200 µs (50µs each)
- * - Logging: ~50 µs (UART output)
- * - **Total:** ~265 µs
+ * - shared_data_get_pid_gains(): ~10 us (mutex lock + copy + unlock)
+ * - Build pid_config: ~5 us (struct copy)
+ * - rx_pid_init() x 4: ~200 us (50us each)
+ * - Logging: ~50 us (UART output)
+ * - **Total:** ~265 us
  *
  * @par Example - Successful Initialization:
  * @code{.c}
@@ -2127,7 +2127,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  *
  * ## Control Loop Timing
  *
- * | Operation | Time (µs) per Motor | Total for 4 Motors |
+ * | Operation | Time (us) per Motor | Total for 4 Motors |
  * |-----------|---------------------|---------------------|
  * | **Encoder Read** | 10 | 40 |
  * | **Get Command** | 1 | 5 (shared across motors) |
@@ -2135,7 +2135,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * | **PWM Apply** | 5 | 20 |
  * | **Fault Check** | 10 | 40 |
  * | **Loop Overhead** | 15 | 60 |
- * | **Total** | - | **~325 µs** |
+ * | **Total** | - | **~325 us** |
  *
  * ## Fault Handling Flow
  *
@@ -2178,13 +2178,13 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * @post Encoder velocities read and PID outputs computed
  *
  * @invariant All 4 motors controlled symmetrically (same algorithm)
- * @invariant Function completes in ~325µs (well under 10ms budget)
+ * @invariant Function completes in ~325us (well under 10ms budget)
  * @invariant Function never blocks (all operations non-blocking)
  *
  * @note **Thread Safety:** This function runs in motor control task context (Priority 8).
  *       Uses mutex-protected shared_data access. PID controllers are task-local (no sharing).
  * @note **Re-entrancy:** NOT reentrant. Single instance only (one motor control task).
- * @note **Performance:** ~325µs execution time (8% of 10ms budget). Leaves 3675µs for sleep.
+ * @note **Performance:** ~325us execution time (8% of 10ms budget). Leaves 3675us for sleep.
  * @note **Memory:** Peak stack usage ~128 bytes (cmd structure + locals).
  * @note **Fallback Behavior:** On any error (encoder, PID, fault read), function continues
  *       with safe fallback values (0.0 velocity, 0.0% duty). Never aborts control loop.
@@ -2210,14 +2210,14 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  *
  * @par Performance:
  * **Execution Time Breakdown:**
- * - shared_data_get_motor_command(): ~5 µs
- * - For-loop overhead: ~60 µs (4 iterations, conditionals)
- * - Encoder reads: 10 µs × 4 = 40 µs
- * - PID computes: 40 µs × 4 = 160 µs
- * - PWM applies: 5 µs × 4 = 20 µs
- * - Fault checks: 10 µs × 4 = 40 µs
- * - **Total:** ~325 µs
- * - **Margin:** 10000µs - 325µs = 3675µs (92% idle)
+ * - shared_data_get_motor_command(): ~5 us
+ * - For-loop overhead: ~60 us (4 iterations, conditionals)
+ * - Encoder reads: 10 us x 4 = 40 us
+ * - PID computes: 40 us x 4 = 160 us
+ * - PWM applies: 5 us x 4 = 20 us
+ * - Fault checks: 10 us x 4 = 40 us
+ * - **Total:** ~325 us
+ * - **Margin:** 10000us - 325us = 3675us (92% idle)
  *
  * @par Example - Normal Operation:
  * @code{.c}
@@ -2418,7 +2418,7 @@ static void internal_control_loop_iteration(void)
  * where:
  * - @f$ K_t @f$ = Motor torque constant (~0.05 Nm/A)
  * - @f$ I_{\text{reverse}} @f$ = Reverse current (~1.5A at 30% duty)
- * - @f$ F_{\text{brake}} @f$ ≈ 0.075 Nm (electromagnetic torque)
+ * - @f$ F_{\text{brake}} @f$ ~ 0.075 Nm (electromagnetic torque)
  *
  * ### Regenerative Braking (Passive Brake)
  *
@@ -2436,7 +2436,7 @@ static void internal_control_loop_iteration(void)
  *   node [shape=box, style=rounded];
  *
  *   t0 [label="t=0ms\nE-stop triggered\nVelocity: 2.5 m/s"];
- *   t1 [label="t=0-50ms\nReverse PWM @ 30%\nDeceleration: -5 m/s²"];
+ *   t1 [label="t=0-50ms\nReverse PWM @ 30%\nDeceleration: -5 m/s^2"];
  *   t2 [label="t=50ms\nVelocity: 0.25 m/s\nPassive brake applied"];
  *   t3 [label="t=60ms\nVelocity: 0 m/s\nMotors locked"];
  *
@@ -2451,7 +2451,7 @@ static void internal_control_loop_iteration(void)
  * - After 50ms @ 30% reverse: 0.25 m/s (90% reduction)
  * - After passive brake + 10ms: 0.0 m/s (fully stopped)
  * - Total stop time: ~60ms
- * - Peak deceleration: ~5 m/s² (0.5g)
+ * - Peak deceleration: ~5 m/s^2 (0.5g)
  *
  * @return void Function always completes (no error return)
  *
@@ -2492,12 +2492,12 @@ static void internal_control_loop_iteration(void)
  * access possible (single task).
  *
  * @par Performance:
- * - Encoder reads: 10 µs × 4 = 40 µs
- * - Calculate brake duties: ~20 µs
- * - Apply reverse PWM: 5 µs × 4 = 20 µs
- * - Wait 50ms: 50000 µs (busy-wait with 10ms polling)
- * - Apply passive brake: 5 µs × 4 = 20 µs
- * - **Total:** ~50100 µs (50.1ms)
+ * - Encoder reads: 10 us x 4 = 40 us
+ * - Calculate brake duties: ~20 us
+ * - Apply reverse PWM: 5 us x 4 = 20 us
+ * - Wait 50ms: 50000 us (busy-wait with 10ms polling)
+ * - Apply passive brake: 5 us x 4 = 20 us
+ * - **Total:** ~50100 us (50.1ms)
  *
  * @par Example - Forward Motion Brake:
  * @code{.c}
@@ -2669,7 +2669,7 @@ static void internal_active_brake_sequence(void)
  * @post Update flag cleared (if update was pending)
  *
  * @note **Thread Safety:** Mutex-protected via shared_data APIs
- * @note **Performance:** ~100 µs when update pending, ~5 µs when no update
+ * @note **Performance:** ~100 us when update pending, ~5 us when no update
  * @note **Re-entrancy:** NOT reentrant (single motor control task)
  *
  * @warning **No Validation:** Gains are not range-checked. Invalid gains may cause instability.
@@ -2763,7 +2763,7 @@ static void internal_apply_pid_updates(void)
  * @post s_timeout_estop_triggered flag updated
  *
  * @note **Thread Safety:** Mutex-protected via shared_data APIs
- * @note **Performance:** ~5 µs per call (fast check)
+ * @note **Performance:** ~5 us per call (fast check)
  * @note **One-shot Trigger:** E-stop triggered only once per timeout event
  *
  * @warning **E-Stop Persistent:** Once triggered, e-stop remains active until manual clear
@@ -2834,7 +2834,7 @@ static void internal_check_comm_timeout(void)
  * @post Telemetry task can read updated state
  *
  * @note **Thread Safety:** Mutex-protected via shared_data API
- * @note **Performance:** ~100 µs (reads + mutex write)
+ * @note **Performance:** ~100 us (reads + mutex write)
  * @note **Error Handling:** Read errors result in 0 values (safe fallback)
  *
  * @see shared_data_update_motor_state() Write aggregated state
@@ -2940,7 +2940,7 @@ static void internal_update_motor_state(void)
  * @invariant Return value is always valid float (never NaN or Inf)
  *
  * @note **Thread Safety:** Read-only access to cmd structure (thread-safe)
- * @note **Performance:** ~2 µs (bounds check + array access)
+ * @note **Performance:** ~2 us (bounds check + array access)
  * @note **Re-entrancy:** Reentrant (no shared state)
  * @note **Fallback:** Returns 0.0 on any error (motors stop safely)
  *

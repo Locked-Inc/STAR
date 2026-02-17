@@ -18,38 +18,38 @@
  *
  * **Test Layer Stack:**
  * @code{.unparsed}
- * ┌─────────────────────────────────────────────────────────┐
- * │ Unity Test Framework (This File)                        │
- * │ - Test case orchestration                               │
- * │ - Assert validation                                     │
- * │ - Test fixture management (setUp/tearDown)              │
- * └────────────────┬────────────────────────────────────────┘
- *                  │
- * ┌────────────────▼────────────────────────────────────────┐
- * │ DS18B20 Driver Under Test (rx_ds18b20)                  │
- * │ - Temperature measurement API                           │
- * │ - Resolution configuration                              │
- * │ - Scratchpad read/write                                 │
- * │ - CRC-8 validation                                      │
- * └────────────────┬────────────────────────────────────────┘
- *                  │
- * ┌────────────────▼────────────────────────────────────────┐
- * │ Mock 1-Wire Bus Layer (This File)                       │
- * │ - Simulated device presence                             │
- * │ - Mock scratchpad memory (9 bytes)                      │
- * │ - Mock ROM code (28-xxxxxxxxxxxx-CRC)                   │
- * │ - Simulated power mode (external/parasitic)             │
- * └──────────────────────────────────────────────────────────┘
+ * +---------------------------------------------------------+
+ * | Unity Test Framework (This File)                        |
+ * | - Test case orchestration                               |
+ * | - Assert validation                                     |
+ * | - Test fixture management (setUp/tearDown)              |
+ * +----------------+----------------------------------------+
+ *                  |
+ * +----------------v----------------------------------------+
+ * | DS18B20 Driver Under Test (rx_ds18b20)                  |
+ * | - Temperature measurement API                           |
+ * | - Resolution configuration                              |
+ * | - Scratchpad read/write                                 |
+ * | - CRC-8 validation                                      |
+ * +----------------+----------------------------------------+
+ *                  |
+ * +----------------v----------------------------------------+
+ * | Mock 1-Wire Bus Layer (This File)                       |
+ * | - Simulated device presence                             |
+ * | - Mock scratchpad memory (9 bytes)                      |
+ * | - Mock ROM code (28-xxxxxxxxxxxx-CRC)                   |
+ * | - Simulated power mode (external/parasitic)             |
+ * +----------------------------------------------------------+
  * @endcode
  *
  * **Real Hardware (Not Used in Tests):**
  * @code{.unparsed}
- * ┌─────────────────────────────────────────────────────────┐
- * │ Hardware Layer (Bypassed by Mocks)                      │
- * │ - rx_bus_onewire -> GPIO timing (µs-precision)           │
- * │ - Physical 1-Wire protocol implementation               │
- * │ - Open-drain GPIO control                               │
- * └──────────────────────────────────────────────────────────┘
+ * +---------------------------------------------------------+
+ * | Hardware Layer (Bypassed by Mocks)                      |
+ * | - rx_bus_onewire -> GPIO timing (us-precision)           |
+ * | - Physical 1-Wire protocol implementation               |
+ * | - Open-drain GPIO control                               |
+ * +----------------------------------------------------------+
  * @endcode
  *
  * # DS18B20 Sensor Specifications
@@ -58,36 +58,36 @@
  *
  * | Feature              | Specification                          |
  * |----------------------|----------------------------------------|
- * | **Measurement Range**| -55°C to +125°C                        |
- * | **Accuracy**         | ±0.5°C (-10°C to +85°C)                |
- * | **Output Format**    | 16-bit signed, 1/16°C resolution       |
+ * | **Measurement Range**| -55degC to +125degC                        |
+ * | **Accuracy**         | +/-0.5degC (-10degC to +85degC)                |
+ * | **Output Format**    | 16-bit signed, 1/16degC resolution       |
  * | **Data Encoding**    | Two's complement (negative temps)      |
  *
  * ## Resolution vs Performance Trade-off
  *
  * | Resolution | Precision | Conversion Time | LSBs Masked | Test Coverage |
  * |------------|-----------|-----------------|-------------|---------------|
- * | 9-bit      | 0.5°C     | 93.75ms         | Bits 0-2    | [OK] Tested      |
- * | 10-bit     | 0.25°C    | 187.5ms         | Bits 0-1    | [OK] Tested      |
- * | 11-bit     | 0.125°C   | 375ms           | Bit 0       | [OK] Tested      |
- * | 12-bit     | 0.0625°C  | 750ms           | None        | [OK] Tested      |
+ * | 9-bit      | 0.5degC     | 93.75ms         | Bits 0-2    | [OK] Tested      |
+ * | 10-bit     | 0.25degC    | 187.5ms         | Bits 0-1    | [OK] Tested      |
+ * | 11-bit     | 0.125degC   | 375ms           | Bit 0       | [OK] Tested      |
+ * | 12-bit     | 0.0625degC  | 750ms           | None        | [OK] Tested      |
  *
  * # DS18B20 Scratchpad Memory Layout
  *
  * **9-Byte Scratchpad Structure:**
  *
  * @code{.unparsed}
- * Byte│Field         │ Access │ Description                    │ Test Validation
- * ────┼──────────────┼────────┼────────────────────────────────┼─────────────────
- *  0  │ Temp LSB     │ R      │ Temperature low byte (0-7)     │ [OK] All temp values
- *  1  │ Temp MSB     │ R      │ Temperature high byte (sign)   │ [OK] Positive/negative
- *  2  │ TH Register  │ R/W    │ High alarm threshold           │ [OK] Preserved on write
- *  3  │ TL Register  │ R/W    │ Low alarm threshold            │ [OK] Preserved on write
- *  4  │ Config       │ R/W    │ Resolution bits [6:5]          │ [OK] All resolutions
- *  5  │ Reserved     │ R      │ Always 0xFF                    │ [OK] Validated
- *  6  │ Reserved     │ R      │ Factory-programmed             │ [OK] Ignored
- *  7  │ Reserved     │ R      │ Count remain (legacy)          │ [OK] Ignored
- *  8  │ CRC          │ R      │ CRC-8 of bytes 0-7             │ [OK] Valid/invalid CRC
+ * Byte|Field         | Access | Description                    | Test Validation
+ * ----+--------------+--------+--------------------------------+-----------------
+ *  0  | Temp LSB     | R      | Temperature low byte (0-7)     | [OK] All temp values
+ *  1  | Temp MSB     | R      | Temperature high byte (sign)   | [OK] Positive/negative
+ *  2  | TH Register  | R/W    | High alarm threshold           | [OK] Preserved on write
+ *  3  | TL Register  | R/W    | Low alarm threshold            | [OK] Preserved on write
+ *  4  | Config       | R/W    | Resolution bits [6:5]          | [OK] All resolutions
+ *  5  | Reserved     | R      | Always 0xFF                    | [OK] Validated
+ *  6  | Reserved     | R      | Factory-programmed             | [OK] Ignored
+ *  7  | Reserved     | R      | Count remain (legacy)          | [OK] Ignored
+ *  8  | CRC          | R      | CRC-8 of bytes 0-7             | [OK] Valid/invalid CRC
  * @endcode
  *
  * ## Temperature Data Format (Bytes 0-1)
@@ -97,25 +97,25 @@
  * @code
  * MSB (Byte 1):  S   S   S   S   S  T10  T9  T8
  * LSB (Byte 0):  T7  T6  T5  T4  T3  T2  T1  T0
- *                └────────────────────────────┴─── 12-bit temperature value
- *                │
- *                └─── Sign bits (all 0 for positive, all 1 for negative)
+ *                +----------------------------+--- 12-bit temperature value
+ *                |
+ *                +--- Sign bits (all 0 for positive, all 1 for negative)
  * @endcode
  *
  * **Example Values Tested:**
- * - `0x0190` (400 decimal) = +25.0°C = `400 / 16 = 25.0°C`
- * - `0x0000` (0 decimal) = 0.0°C = `0 / 16 = 0.0°C`
- * - `0xFC90` (-880 decimal) = -55.0°C = `-880 / 16 = -55.0°C` (two's complement)
- * - `0x07D0` (2000 decimal) = +125.0°C = `2000 / 16 = 125.0°C`
+ * - `0x0190` (400 decimal) = +25.0degC = `400 / 16 = 25.0degC`
+ * - `0x0000` (0 decimal) = 0.0degC = `0 / 16 = 0.0degC`
+ * - `0xFC90` (-880 decimal) = -55.0degC = `-880 / 16 = -55.0degC` (two's complement)
+ * - `0x07D0` (2000 decimal) = +125.0degC = `2000 / 16 = 125.0degC`
  *
  * ## Configuration Register Format (Byte 4)
  *
  * @code
  * Bit:  7   6   5   4   3   2   1   0
- *      ┌───┬───┬───┬───┬───┬───┬───┬───┐
- *      │ 0 │R1 │R0 │ 1 │ 1 │ 1 │ 1 │ 1 │
- *      └───┴───┴───┴───┴───┴───┴───┴───┘
- *          └───┴───┘
+ *      +---+---+---+---+---+---+---+---+
+ *      | 0 |R1 |R0 | 1 | 1 | 1 | 1 | 1 |
+ *      +---+---+---+---+---+---+---+---+
+ *          +---+---+
  *        Resolution
  *
  * R1 R0 | Resolution | Config Value | Tested
@@ -162,9 +162,9 @@
  * - Invalid resolution rejection
  *
  * ### 2. Temperature Reading Tests (6 tests)
- * - Positive temperatures (+25°C, +125°C)
- * - Zero temperature (0°C)
- * - Negative temperatures (-55°C via two's complement)
+ * - Positive temperatures (+25degC, +125degC)
+ * - Zero temperature (0degC)
+ * - Negative temperatures (-55degC via two's complement)
  * - Temperature range validation
  * - nullptr output pointer rejection
  * - Read before initialization error
@@ -192,21 +192,21 @@
  * **Two's Complement Decoding Algorithm:**
  *
  * @code
- * // Positive temperature example: +25.0625°C
+ * // Positive temperature example: +25.0625degC
  * raw_value = 0x0191 = 401 decimal
- * celsius = raw_value / 16.0 = 401 / 16.0 = 25.0625°C
+ * celsius = raw_value / 16.0 = 401 / 16.0 = 25.0625degC
  *
- * // Negative temperature example: -10.125°C
+ * // Negative temperature example: -10.125degC
  * raw_value = 0xFF5E = -162 decimal (16-bit signed)
- * celsius = raw_value / 16.0 = -162 / 16.0 = -10.125°C
+ * celsius = raw_value / 16.0 = -162 / 16.0 = -10.125degC
  *
- * // Edge case: -55.0°C (minimum sensor range)
+ * // Edge case: -55.0degC (minimum sensor range)
  * raw_value = 0xFC90 = -880 decimal
- * celsius = -880 / 16.0 = -55.0°C [OK] Valid
+ * celsius = -880 / 16.0 = -55.0degC [OK] Valid
  *
- * // Edge case: +125.0°C (maximum sensor range)
+ * // Edge case: +125.0degC (maximum sensor range)
  * raw_value = 0x07D0 = 2000 decimal
- * celsius = 2000 / 16.0 = 125.0°C [OK] Valid
+ * celsius = 2000 / 16.0 = 125.0degC [OK] Valid
  * @endcode
  *
  * ## Resolution-Dependent LSB Masking
@@ -217,16 +217,16 @@
  * must be masked to prevent garbage values from corrupting temperature readings.
  *
  * @code
- * // 9-bit resolution (0.5°C precision): Mask 0xFFF8
- * raw_12bit = 0x0191 (25.0625°C)
- * raw_9bit  = 0x0191 & 0xFFF8 = 0x0190 (25.0°C) [OK] Correct
+ * // 9-bit resolution (0.5degC precision): Mask 0xFFF8
+ * raw_12bit = 0x0191 (25.0625degC)
+ * raw_9bit  = 0x0191 & 0xFFF8 = 0x0190 (25.0degC) [OK] Correct
  *
- * // 10-bit resolution (0.25°C precision): Mask 0xFFFC
- * raw_12bit = 0x0191 (25.0625°C)
- * raw_10bit = 0x0191 & 0xFFFC = 0x0190 (25.0°C) [OK] Correct
+ * // 10-bit resolution (0.25degC precision): Mask 0xFFFC
+ * raw_12bit = 0x0191 (25.0625degC)
+ * raw_10bit = 0x0191 & 0xFFFC = 0x0190 (25.0degC) [OK] Correct
  *
- * // 12-bit resolution (0.0625°C precision): Mask 0xFFFF (no masking)
- * raw_12bit = 0x0191 (25.0625°C) [OK] All bits valid
+ * // 12-bit resolution (0.0625degC precision): Mask 0xFFFF (no masking)
+ * raw_12bit = 0x0191 (25.0625degC) [OK] All bits valid
  * @endcode
  *
  * # Mock Infrastructure Implementation
@@ -266,7 +266,7 @@
  *   1. Reset mock_state to default values
  *   2. Set presence_response = true (device present)
  *   3. Set power_mode = true (external power)
- *   4. Initialize scratchpad with +25.0°C at 12-bit resolution
+ *   4. Initialize scratchpad with +25.0degC at 12-bit resolution
  *   5. Set ROM code: 28-01-02-03-04-05-06-CRC
  *   6. Clear initialized flag (bus must be re-initialized)
  *
@@ -305,10 +305,10 @@
  *
  * | Boundary                 | Test Value    | Test Case                         |
  * |--------------------------|---------------|-----------------------------------|
- * | Minimum temperature      | -55.0°C       | `test_ds18b20_read_temperature_minus_55c` |
- * | Maximum temperature      | +125.0°C      | `test_ds18b20_read_temperature_125c` |
- * | Zero crossing            | 0.0°C         | `test_ds18b20_read_temperature_0c` |
- * | Typical value            | +25.0°C       | `test_ds18b20_read_temperature_25c` |
+ * | Minimum temperature      | -55.0degC       | `test_ds18b20_read_temperature_minus_55c` |
+ * | Maximum temperature      | +125.0degC      | `test_ds18b20_read_temperature_125c` |
+ * | Zero crossing            | 0.0degC         | `test_ds18b20_read_temperature_0c` |
+ * | Typical value            | +25.0degC       | `test_ds18b20_read_temperature_25c` |
  * | Minimum resolution       | 9-bit         | `test_ds18b20_get_conversion_time_9bit` |
  * | Maximum resolution       | 12-bit        | `test_ds18b20_get_conversion_time_12bit` |
  *
@@ -321,7 +321,7 @@
  * | 1    | Simple control flow          | [OK] No goto, no recursion in test code      |
  * | 2    | Fixed loop bounds            | [OK] All loops use enum constants             |
  * | 3    | No dynamic allocation        | [OK] Zero malloc/free (stack-only)            |
- * | 4    | Functions ≤60 lines          | [OK] All test functions <40 lines             |
+ * | 4    | Functions <=60 lines          | [OK] All test functions <40 lines             |
  * | 5    | Assertions (min 2/function)  | [OK] Unity asserts validate all outputs       |
  * | 6    | Data scope minimization      | [OK] Variables declared at first use          |
  * | 7    | Check all returns            | [OK] All driver returns validated via asserts |
@@ -448,7 +448,7 @@
  *
  * **Default State (After setUp):**
  * - presence_response = true (device present)
- * - scratchpad = +25.0°C at 12-bit resolution with valid CRC
+ * - scratchpad = +25.0degC at 12-bit resolution with valid CRC
  * - power_mode = true (external power)
  * - initialized = false (bus must be initialized)
  * - rom = [0x28, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, CRC]
@@ -526,10 +526,10 @@ typedef enum : uint8_t {
  * and temperature test points.
  *
  * **Temperature Test Values:**
- * - +25.0°C: 0x0190 = 400 / 16 = 25.0°C (typical room temperature)
- * - 0.0°C: 0x0000 = 0 / 16 = 0.0°C (zero crossing)
- * - -55.0°C: 0xFC90 = -880 / 16 = -55.0°C (minimum sensor range)
- * - +125.0°C: 0x07D0 = 2000 / 16 = 125.0°C (maximum sensor range)
+ * - +25.0degC: 0x0190 = 400 / 16 = 25.0degC (typical room temperature)
+ * - 0.0degC: 0x0000 = 0 / 16 = 0.0degC (zero crossing)
+ * - -55.0degC: 0xFC90 = -880 / 16 = -55.0degC (minimum sensor range)
+ * - +125.0degC: 0x07D0 = 2000 / 16 = 125.0degC (maximum sensor range)
  *
  * **Reserved Byte Defaults:**
  * Per DS18B20 datasheet, reserved bytes have factory-programmed values:
@@ -543,14 +543,14 @@ typedef enum : uint8_t {
   k_ds18b20_reserved1_default = 0xFF, /**< Reserved byte 5 (always 0xFF per datasheet) */
   k_ds18b20_reserved2_default = 0x10, /**< Reserved byte 6 (factory-programmed value) */
   k_ds18b20_reserved3_default = 0x00, /**< Reserved byte 7 (count remain, legacy mode) */
-  k_test_temp_25c_lsb         = 0x90, /**< +25.0°C LSB: 0x0190 = 400 decimal */
-  k_test_temp_25c_msb         = 0x01, /**< +25.0°C MSB: 0x0190 = 400 decimal */
-  k_test_temp_0c_lsb          = 0x00, /**< 0.0°C LSB: 0x0000 = 0 decimal */
-  k_test_temp_0c_msb          = 0x00, /**< 0.0°C MSB: 0x0000 = 0 decimal */
-  k_test_temp_minus_55c_lsb   = 0x90, /**< -55.0°C LSB: 0xFC90 = -880 decimal (two's complement) */
-  k_test_temp_minus_55c_msb   = 0xFC, /**< -55.0°C MSB: 0xFC90 = -880 decimal (two's complement) */
-  k_test_temp_125c_lsb        = 0xD0, /**< +125.0°C LSB: 0x07D0 = 2000 decimal */
-  k_test_temp_125c_msb        = 0x07, /**< +125.0°C MSB: 0x07D0 = 2000 decimal */
+  k_test_temp_25c_lsb         = 0x90, /**< +25.0degC LSB: 0x0190 = 400 decimal */
+  k_test_temp_25c_msb         = 0x01, /**< +25.0degC MSB: 0x0190 = 400 decimal */
+  k_test_temp_0c_lsb          = 0x00, /**< 0.0degC LSB: 0x0000 = 0 decimal */
+  k_test_temp_0c_msb          = 0x00, /**< 0.0degC MSB: 0x0000 = 0 decimal */
+  k_test_temp_minus_55c_lsb   = 0x90, /**< -55.0degC LSB: 0xFC90 = -880 decimal (two's complement) */
+  k_test_temp_minus_55c_msb   = 0xFC, /**< -55.0degC MSB: 0xFC90 = -880 decimal (two's complement) */
+  k_test_temp_125c_lsb        = 0xD0, /**< +125.0degC LSB: 0x07D0 = 2000 decimal */
+  k_test_temp_125c_msb        = 0x07, /**< +125.0degC MSB: 0x07D0 = 2000 decimal */
   k_test_config_12bit         = 0x7F, /**< 12-bit resolution config: R1=1, R0=1 -> 0b01111111 */
 } ds18b20_mock_constants_t;
 
@@ -624,7 +624,7 @@ typedef enum : uint8_t {
  * @brief Temperature comparison tolerance for floating-point validation
  * @details
  * Acceptable error margin for temperature comparisons. DS18B20 accuracy
- * is ±0.5°C, but we use tighter tolerance (±0.1°C) to verify correct
+ * is +/-0.5degC, but we use tighter tolerance (+/-0.1degC) to verify correct
  * calculation without excessive floating-point precision requirements.
  */
 static const float s_temp_tolerance_c = 0.1F;
@@ -716,10 +716,10 @@ rx_err_t rx_bus_onewire_init(rx_bus_manager_t* manager, const char* bus_name)
  * **Real 1-Wire Reset Protocol (Not Implemented):**
  * ```
  * Timeline:
- * ────────┐        ┌────────────────────────────
- *         └────────┘
- *         ↑        ↑
- *         480µs    Device pulls low 60-240µs (presence pulse)
+ * --------+        +----------------------------
+ *         +--------+
+ *         ^        ^
+ *         480us    Device pulls low 60-240us (presence pulse)
  *         Master
  *         reset
  * ```
@@ -765,9 +765,9 @@ rx_err_t rx_bus_onewire_reset(rx_bus_manager_t* manager, const char* bus_name, b
  *
  * **Real 1-Wire Write Timing (Not Implemented):**
  * ```
- * Write 0:  Master holds low 60-120µs
- * Write 1:  Master holds low 1-15µs, release to high
- * Recovery: 1µs minimum between bits
+ * Write 0:  Master holds low 60-120us
+ * Write 1:  Master holds low 1-15us, release to high
+ * Recovery: 1us minimum between bits
  * ```
  *
  * @param[in] manager Bus manager instance (validated, not used)
@@ -811,9 +811,9 @@ rx_err_t rx_bus_onewire_write_byte(rx_bus_manager_t* manager, const char* bus_na
  *
  * **Real 1-Wire Read Timing (Not Implemented):**
  * ```
- * Master initiates: Pull low 1-15µs, release
+ * Master initiates: Pull low 1-15us, release
  * Device responds: Holds low (0) or releases high (1)
- * Sample time: 15µs after initiation
+ * Sample time: 15us after initiation
  * ```
  *
  * @param[in] manager Bus manager instance (validated, not used)
@@ -1208,13 +1208,13 @@ rx_err_t rx_bus_onewire_search(rx_bus_manager_t* manager,
  * **Temperature Encoding:**
  * ```
  * 16-bit value = (msb << 8) | lsb
- * Temperature °C = 16-bit signed value / 16.0
+ * Temperature degC = 16-bit signed value / 16.0
  * ```
  *
  * @par Example:
  * @code
- * temp_raw_t temp_25c = {.lsb = 0x90, .msb = 0x01};  // +25.0°C
- * // Decoded: 0x0190 = 400 decimal = 400/16 = 25.0°C
+ * temp_raw_t temp_25c = {.lsb = 0x90, .msb = 0x01};  // +25.0degC
+ * // Decoded: 0x0190 = 400 decimal = 400/16 = 25.0degC
  * @endcode
  */
 typedef struct {
@@ -1257,10 +1257,10 @@ typedef struct {
  * @note Called by setUp() and individual tests to configure mock state
  * @warning Do not modify scratchpad after CRC calculation (invalidates checksum)
  *
- * @par Example: Create +25.0°C at 12-bit resolution
+ * @par Example: Create +25.0degC at 12-bit resolution
  * @code
  * uint8_t scratchpad[9];
- * temp_raw_t temp_25c = {.lsb = 0x90, .msb = 0x01};  // 0x0190 = 400 = 25°C
+ * temp_raw_t temp_25c = {.lsb = 0x90, .msb = 0x01};  // 0x0190 = 400 = 25degC
  * internal_create_valid_scratchpad(scratchpad, temp_25c, k_test_config_12bit);
  * memcpy(s_mock_state.scratchpad, scratchpad, 9);
  * @endcode
@@ -1293,24 +1293,24 @@ static void internal_create_valid_scratchpad(uint8_t    scratchpad[k_ds18b20_scr
  *
  * **Default State After Reset:**
  * ```
- * ┌─────────────────────┬─────────────────────────────────┐
- * │ Field               │ Default Value                   │
- * ├─────────────────────┼─────────────────────────────────┤
- * │ presence_response   │ true (device present)           │
- * │ power_mode          │ true (external VDD)             │
- * │ initialized         │ false (bus needs init)          │
- * │ scratchpad          │ +25.0°C at 12-bit with CRC      │
- * │ rom[0]              │ 0x28 (DS18B20 family code)      │
- * │ rom[1-6]            │ 0x01-0x06 (mock serial)         │
- * │ rom[7]              │ CRC-8 of rom[0-6]               │
- * └─────────────────────┴─────────────────────────────────┘
+ * +---------------------+---------------------------------+
+ * | Field               | Default Value                   |
+ * +---------------------+---------------------------------+
+ * | presence_response   | true (device present)           |
+ * | power_mode          | true (external VDD)             |
+ * | initialized         | false (bus needs init)          |
+ * | scratchpad          | +25.0degC at 12-bit with CRC      |
+ * | rom[0]              | 0x28 (DS18B20 family code)      |
+ * | rom[1-6]            | 0x01-0x06 (mock serial)         |
+ * | rom[7]              | CRC-8 of rom[0-6]               |
+ * +---------------------+---------------------------------+
  * ```
  *
  * **Algorithm:**
  * 1. Clear entire mock_state structure (memset to 0)
  * 2. Set presence_response = true (device present)
  * 3. Set power_mode = true (external power)
- * 4. Generate valid scratchpad (+25.0°C, 12-bit resolution)
+ * 4. Generate valid scratchpad (+25.0degC, 12-bit resolution)
  * 5. Populate ROM code with family code, mock serial, and CRC
  *
  * @pre None
@@ -1341,7 +1341,7 @@ static void internal_reset_mock_state(void)
   s_mock_state.power_mode        = true; /* External power */
   s_mock_state.initialized       = false;
 
-  /* Default scratchpad: +25.0°C at 12-bit resolution */
+  /* Default scratchpad: +25.0degC at 12-bit resolution */
   internal_create_valid_scratchpad(
     s_mock_state.scratchpad,
     (temp_raw_t){.lsb = k_test_temp_25c_lsb, .msb = k_test_temp_25c_msb},
@@ -1589,7 +1589,7 @@ void test_ds18b20_init_null_config(void)
  *
  * **Real-World Scenario:**
  * - DS18B20 not connected to GPIO pin
- * - 4.7kΩ pull-up resistor missing
+ * - 4.7kOhm pull-up resistor missing
  * - Device powered off or damaged
  */
 void test_ds18b20_init_no_device_present(void)
@@ -1706,29 +1706,29 @@ void test_ds18b20_init_invalid_resolution(void)
  * including two's complement decoding for negative temperatures.
  *
  * **Test Coverage:**
- * - [OK] Positive temperatures (+25°C, +125°C)
- * - [OK] Zero crossing (0°C)
- * - [OK] Negative temperatures (-55°C via two's complement)
+ * - [OK] Positive temperatures (+25degC, +125degC)
+ * - [OK] Zero crossing (0degC)
+ * - [OK] Negative temperatures (-55degC via two's complement)
  * - [OK] Error handling (not initialized, nullptr output)
  *
  * @{
  */
 
 /**
- * @brief Test reading +25.0°C (typical room temperature)
+ * @brief Test reading +25.0degC (typical room temperature)
  *
  * @details
  * Verifies correct decoding of positive temperature value.
  *
  * **Temperature Encoding:**
  * - Raw value: 0x0190 = 400 decimal
- * - Calculation: 400 / 16 = 25.0°C
+ * - Calculation: 400 / 16 = 25.0degC
  *
  * **Test Steps:**
- * 1. Configure scratchpad with +25°C (LSB=0x90, MSB=0x01)
+ * 1. Configure scratchpad with +25degC (LSB=0x90, MSB=0x01)
  * 2. Initialize driver
  * 3. Read temperature
- * 4. Verify result within ±0.1°C of 25.0°C
+ * 4. Verify result within +/-0.1degC of 25.0degC
  */
 void test_ds18b20_read_temperature_25c(void)
 {
@@ -1744,7 +1744,7 @@ void test_ds18b20_read_temperature_25c(void)
 
   internal_init_handle(&handle);
 
-  /* Scratchpad for +25.0°C: 0x0190 = 400 decimal = 25.0°C */
+  /* Scratchpad for +25.0degC: 0x0190 = 400 decimal = 25.0degC */
   internal_create_valid_scratchpad(
     s_mock_state.scratchpad,
     (temp_raw_t){.lsb = k_test_temp_25c_lsb, .msb = k_test_temp_25c_msb},
@@ -1758,14 +1758,14 @@ void test_ds18b20_read_temperature_25c(void)
 }
 
 /**
- * @brief Test reading 0.0°C (zero crossing point)
+ * @brief Test reading 0.0degC (zero crossing point)
  *
  * @details
  * Verifies correct handling of zero value (no sign extension needed).
  *
  * **Temperature Encoding:**
  * - Raw value: 0x0000 = 0 decimal
- * - Calculation: 0 / 16 = 0.0°C
+ * - Calculation: 0 / 16 = 0.0degC
  */
 void test_ds18b20_read_temperature_0c(void)
 {
@@ -1781,7 +1781,7 @@ void test_ds18b20_read_temperature_0c(void)
 
   internal_init_handle(&handle);
 
-  /* 0°C: 0x0000 */
+  /* 0degC: 0x0000 */
   internal_create_valid_scratchpad(
     s_mock_state.scratchpad,
     (temp_raw_t){.lsb = k_test_temp_0c_lsb, .msb = k_test_temp_0c_msb},
@@ -1795,14 +1795,14 @@ void test_ds18b20_read_temperature_0c(void)
 }
 
 /**
- * @brief Test reading -55.0°C (minimum sensor range)
+ * @brief Test reading -55.0degC (minimum sensor range)
  *
  * @details
  * Verifies correct two's complement decoding for negative temperatures.
  *
  * **Temperature Encoding (Two's Complement):**
  * - Raw value: 0xFC90 = -880 decimal (signed 16-bit)
- * - Calculation: -880 / 16 = -55.0°C
+ * - Calculation: -880 / 16 = -55.0degC
  *
  * **Two's Complement Explanation:**
  * ```
@@ -1812,7 +1812,7 @@ void test_ds18b20_read_temperature_0c(void)
  *
  * Convert to decimal (signed):
  * 0xFC90 = -880 (16-bit signed interpretation)
- * -880 / 16 = -55.0°C [OK]
+ * -880 / 16 = -55.0degC [OK]
  * ```
  */
 void test_ds18b20_read_temperature_minus_55c(void)
@@ -1829,7 +1829,7 @@ void test_ds18b20_read_temperature_minus_55c(void)
 
   internal_init_handle(&handle);
 
-  /* -55°C: 0xFC90 (two's complement) */
+  /* -55degC: 0xFC90 (two's complement) */
   internal_create_valid_scratchpad(
     s_mock_state.scratchpad,
     (temp_raw_t){.lsb = k_test_temp_minus_55c_lsb, .msb = k_test_temp_minus_55c_msb},
@@ -1843,14 +1843,14 @@ void test_ds18b20_read_temperature_minus_55c(void)
 }
 
 /**
- * @brief Test reading +125.0°C (maximum sensor range)
+ * @brief Test reading +125.0degC (maximum sensor range)
  *
  * @details
  * Verifies correct decoding of maximum temperature value.
  *
  * **Temperature Encoding:**
  * - Raw value: 0x07D0 = 2000 decimal
- * - Calculation: 2000 / 16 = 125.0°C
+ * - Calculation: 2000 / 16 = 125.0degC
  */
 void test_ds18b20_read_temperature_125c(void)
 {
@@ -1866,7 +1866,7 @@ void test_ds18b20_read_temperature_125c(void)
 
   internal_init_handle(&handle);
 
-  /* +125°C: 0x07D0 = 2000 decimal = 125.0°C */
+  /* +125degC: 0x07D0 = 2000 decimal = 125.0degC */
   internal_create_valid_scratchpad(
     s_mock_state.scratchpad,
     (temp_raw_t){.lsb = k_test_temp_125c_lsb, .msb = k_test_temp_125c_msb},
@@ -1948,7 +1948,7 @@ void test_ds18b20_read_temperature_null_output(void)
  * Verifies driver can change resolution to 9-bit mode.
  *
  * **9-bit Specifications:**
- * - Precision: 0.5°C
+ * - Precision: 0.5degC
  * - Conversion time: 93.75ms (rounded to 100ms)
  * - LSBs masked: Bits 0-2 undefined
  */

@@ -706,11 +706,11 @@ func TestReceive_BarrierActive_DiscardsFrames(t *testing.T) {
 	}
 }
 
-// TestTransportManager_FailbackAfterRecovery verifies the complete failover → failback cycle.
+// TestTransportManager_FailbackAfterRecovery verifies the complete failover -> failback cycle.
 //
 // Scenario:
 //  1. Primary transport active (high priority)
-//  2. Primary fails → system switches to backup (low priority)
+//  2. Primary fails -> system switches to backup (low priority)
 //  3. Primary recovers (health monitor detects)
 //  4. System switches back to primary (failback)
 //
@@ -767,7 +767,7 @@ func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 
 	// Poll for failover to backup
 	pollForActiveTransport(t, tm, "backup", transportSwitchTimeout)
-	t.Logf("✓ Failover to backup successful")
+	t.Logf("[PASS] Failover to backup successful")
 
 	// Step 3: Recover primary and wait for health monitor to detect it
 	t.Logf("Step 3: Recovering primary")
@@ -782,7 +782,7 @@ func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 
 	// Poll for failback to primary (failover is now async, no need for extra sleep)
 	pollForActiveTransport(t, tm, "primary", transportSwitchTimeout)
-	t.Logf("✓ Failback to primary successful")
+	t.Logf("[PASS] Failback to primary successful")
 
 	// Verify that primary is now being used for traffic
 	primaryBefore := primarySendCount.Load()
@@ -798,7 +798,7 @@ func TestTransportManager_FailbackAfterRecovery(t *testing.T) {
 // rapid oscillation when a transport recovers.
 //
 // Scenario:
-//  1. Primary fails → switch to backup
+//  1. Primary fails -> switch to backup
 //  2. Primary recovers immediately
 //  3. System should NOT switch back immediately (damping window active)
 //  4. After damping expires, primary becomes eligible again
@@ -852,7 +852,7 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 
 	// Wait for failover to backup
 	pollForActiveTransport(t, tm, "backup", transportSwitchTimeout)
-	t.Logf("✓ Failed over to backup")
+	t.Logf("[PASS] Failed over to backup")
 
 	// Recover primary immediately
 	t.Logf("Recovering primary (damping should prevent immediate failback)")
@@ -872,7 +872,7 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	if tm.GetActiveTransport() != "backup" {
 		t.Errorf("Expected to stay on backup during damping window, got %s", tm.GetActiveTransport())
 	}
-	t.Logf("✓ Stayed on backup during damping window")
+	t.Logf("[PASS] Stayed on backup during damping window")
 
 	// Verify LastRecovery timestamp was set and transport is healthy
 	tm.mu.RLock()
@@ -908,7 +908,7 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	if !dampingExpired {
 		t.Error("Damping window should have expired")
 	}
-	t.Logf("✓ Damping window has expired")
+	t.Logf("[PASS] Damping window has expired")
 
 	// NOTE: With the current implementation, automatic failback after damping expires
 	// requires another trigger (e.g., failover attempt). The health monitor only triggers
@@ -927,7 +927,7 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	} else if bestTransport.Name != "primary" {
 		t.Errorf("After damping expires, primary should be the best transport, got %s", bestTransport.Name)
 	} else {
-		t.Logf("✓ Primary is now eligible for selection (damping expired)")
+		t.Logf("[PASS] Primary is now eligible for selection (damping expired)")
 	}
 
 	// In a real scenario, failback would occur when:

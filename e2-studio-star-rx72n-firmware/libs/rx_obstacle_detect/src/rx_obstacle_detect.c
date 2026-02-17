@@ -135,7 +135,7 @@
  * | 1. Simple control flow | [OK] | No goto, setjmp, recursion |
  * | 2. Fixed loop bounds | [OK] | All loops bounded by sensor_count/motor_count |
  * | 3. No dynamic memory | [OK] | Zero malloc/free - all static allocation |
- * | 4. Functions ≤60 lines | [OK] | Longest: internal_poll_sensors (54 lines) |
+ * | 4. Functions <=60 lines | [OK] | Longest: internal_poll_sensors (54 lines) |
  * | 5. Min 2 assertions/func | [OK] | All public APIs validate handle/parameters |
  * | 6. Smallest scope | [OK] | Variables declared at first use |
  * | 7. Check return values | [OK] | All HC-SR04/motor/ThreadX returns checked |

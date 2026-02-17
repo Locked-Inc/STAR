@@ -124,8 +124,8 @@
  *
  * | Operation | Empty | 64B | 256B | 1KB |
  * |-----------|-------|-----|------|-----|
- * | Encode | 5 µs | 12 µs | 35 µs | 130 µs |
- * | Decode | 5 µs | 12 µs | 35 µs | 130 µs |
+ * | Encode | 5 us | 12 us | 35 us | 130 us |
+ * | Decode | 5 us | 12 us | 35 us | 130 us |
  *
  * **Bottleneck:** CRC calculation dominates for larger payloads.
  * Hardware CRC reduces time by ~4x.

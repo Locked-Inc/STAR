@@ -70,33 +70,33 @@
  * distance measurement from 2 cm to 400 cm with 3 mm resolution.
  *
  * **Operating Principle:**
- * 1. Microcontroller sends 10 µs trigger pulse to TRIG pin
+ * 1. Microcontroller sends 10 us trigger pulse to TRIG pin
  * 2. Sensor transmits eight 40 kHz ultrasonic pulses
  * 3. Sensor raises ECHO pin HIGH when transmission starts
  * 4. Ultrasonic waves travel through air, reflect off obstacle, return to sensor
  * 5. Sensor lowers ECHO pin when echo received
  * 6. ECHO pulse width is proportional to round-trip time
- * 7. Distance calculated: d = (t × v_sound) / 2
+ * 7. Distance calculated: d = (t x v_sound) / 2
  *
  * | Specification | Value | Notes |
  * |---------------|-------|-------|
  * | **Operating Voltage** | 5V DC | Powered from robot 5V rail (not 3.3V!) |
  * | **Current Draw** | 15 mA typical | 50 mA peak during burst |
  * | **Measurement Range** | 2 cm - 400 cm | Effective: 5 cm - 300 cm |
- * | **Accuracy** | ±3 mm | At ideal conditions (flat, perpendicular surface) |
- * | **Resolution** | 0.3 cm | Limited by timing precision (~1 µs) |
+ * | **Accuracy** | +/-3 mm | At ideal conditions (flat, perpendicular surface) |
+ * | **Resolution** | 0.3 cm | Limited by timing precision (~1 us) |
  * | **Ultrasonic Frequency** | 40 kHz | Above human hearing (20 Hz - 20 kHz) |
- * | **Beam Angle** | 15° cone | Narrow beam reduces false detections |
- * | **Trigger Pulse** | 10 µs HIGH pulse | Minimum, can be longer |
- * | **Echo Pulse** | 150 µs - 25 ms | Width encodes distance (timeout at 38 ms) |
+ * | **Beam Angle** | 15deg cone | Narrow beam reduces false detections |
+ * | **Trigger Pulse** | 10 us HIGH pulse | Minimum, can be longer |
+ * | **Echo Pulse** | 150 us - 25 ms | Width encodes distance (timeout at 38 ms) |
  * | **Max Measurement Rate** | ~50 Hz | Limited by max echo time (25 ms) |
- * | **Temperature Range** | 0°C to 70°C | Performance degrades at extremes |
+ * | **Temperature Range** | 0degC to 70degC | Performance degrades at extremes |
  *
  * **Physical Limitations:**
  * - **Soft/angled surfaces:** Ultrasound absorbed or reflected away (false negatives)
  * - **Small objects:** May pass through beam cone undetected
  * - **Acoustic interference:** Crosstalk between sensors (mitigated by staggered polling)
- * - **Temperature sensitivity:** Speed of sound varies ±12% from -10°C to +40°C
+ * - **Temperature sensitivity:** Speed of sound varies +/-12% from -10degC to +40degC
  * - **Humidity effects:** Minimal (<1% error) in typical indoor conditions
  *
  * ## Distance Calculation with Temperature Compensation
@@ -124,19 +124,19 @@
  *
  * | Temperature | Speed of Sound | Error at 1m (uncompensated) | Error % |
  * |-------------|----------------|----------------------------|---------|
- * | **0°C** | 331.3 m/s | Baseline (assume 343.4 m/s) | -3.5% |
- * | **10°C** | 337.4 m/s | -17 mm | -1.7% |
- * | **20°C** | 343.4 m/s | 0 mm (reference) | 0% |
- * | **25°C** | 346.5 m/s | +9 mm | +0.9% |
- * | **30°C** | 349.5 m/s | +18 mm | +1.8% |
- * | **40°C** | 355.5 m/s | +35 mm | +3.5% |
+ * | **0degC** | 331.3 m/s | Baseline (assume 343.4 m/s) | -3.5% |
+ * | **10degC** | 337.4 m/s | -17 mm | -1.7% |
+ * | **20degC** | 343.4 m/s | 0 mm (reference) | 0% |
+ * | **25degC** | 346.5 m/s | +9 mm | +0.9% |
+ * | **30degC** | 349.5 m/s | +18 mm | +1.8% |
+ * | **40degC** | 355.5 m/s | +35 mm | +3.5% |
  *
- * **Without compensation:** 20°C temperature swing causes ±3.5% distance error (35 mm at 1m).
+ * **Without compensation:** 20degC temperature swing causes +/-3.5% distance error (35 mm at 1m).
  * **With compensation:** Error reduced to <1% (limited by sensor accuracy).
  *
- * **Example Calculation at 25°C:**
+ * **Example Calculation at 25degC:**
  * @f[
- *   v(25°C) = 331.3 + 0.606 \times 25 = 346.45 \text{ m/s}
+ *   v(25degC) = 331.3 + 0.606 \times 25 = 346.45 \text{ m/s}
  * @f]
  *
  * For 30 cm obstacle (collision threshold):
@@ -145,7 +145,7 @@
  * @f]
  *
  * The rx_obstacle_detect library automatically compensates using temperature from
- * temp_sensor_task (DS18B20 digital thermometer, ±0.5°C accuracy).
+ * temp_sensor_task (DS18B20 digital thermometer, +/-0.5degC accuracy).
  *
  * ## Collision Avoidance Strategy - Four-Sensor Coverage
  *
@@ -154,29 +154,29 @@
  *   rankdir=TB;
  *   node [shape=box];
  *
- *   Robot [label="Robot Top View\n(30cm × 30cm)", shape=box, width=3, height=3];
+ *   Robot [label="Robot Top View\n(30cm x 30cm)", shape=box, width=3, height=3];
  *
  *   FL [label="Front-Left\n(Sensor 0)\nPF5/P03\n30cm zone", fillcolor=yellow, style=filled, pos="0,2!"];
  *   FR [label="Front-Right\n(Sensor 1)\nPJ5/P02\n30cm zone", fillcolor=yellow, style=filled, pos="3,2!"];
  *   BL [label="Back-Left\n(Sensor 2)\nPJ3/P01\n30cm zone", fillcolor=lightblue, style=filled, pos="0,-1!"];
  *   BR [label="Back-Right\n(Sensor 3)\nP33/P00\n30cm zone", fillcolor=lightblue, style=filled, pos="3,-1!"];
  *
- *   FL -> Robot [label="15° cone", style=dashed];
- *   FR -> Robot [label="15° cone", style=dashed];
- *   BL -> Robot [label="15° cone", style=dashed];
- *   BR -> Robot [label="15° cone", style=dashed];
+ *   FL -> Robot [label="15deg cone", style=dashed];
+ *   FR -> Robot [label="15deg cone", style=dashed];
+ *   BL -> Robot [label="15deg cone", style=dashed];
+ *   BR -> Robot [label="15deg cone", style=dashed];
  * }
  * @enddot
  *
  * **Sensor Positioning Rationale:**
  * - **Front sensors (0, 1):** Forward collision detection during navigation
  * - **Back sensors (2, 3):** Reverse collision detection during backup maneuvers
- * - **Corner mounting:** 15° beams overlap at center, no blind spots in forward/rear arcs
+ * - **Corner mounting:** 15deg beams overlap at center, no blind spots in forward/rear arcs
  * - **30 cm threshold:** Sufficient stopping distance at max robot speed (0.5 m/s)
  *
  * **Coverage Analysis:**
- * - Front coverage: 180° arc, 0° to ±90° from centerline
- * - Rear coverage: 180° arc, 180° ± 90° from centerline
+ * - Front coverage: 180deg arc, 0deg to +/-90deg from centerline
+ * - Rear coverage: 180deg arc, 180deg +/- 90deg from centerline
  * - Side coverage: Weak (only at extreme beam angles), relies on lidar
  * - Minimum detectable object: ~5 cm diameter (beam width at 30 cm)
  *
@@ -197,7 +197,7 @@
  *   ObstacleTask box ObstacleTask [label="Task suspends\n(monitoring loop @ 1 Hz)"];
  *
  *   --- [label="Normal Operation (No Obstacle)"];
- *   RxObstacle => HC_SR04 [label="Trigger pulse 0 (10µs)"];
+ *   RxObstacle => HC_SR04 [label="Trigger pulse 0 (10us)"];
  *   HC_SR04 box HC_SR04 [label="Transmit 40kHz burst"];
  *   HC_SR04 => RxObstacle [label="Echo pulse (8.7ms = 1.5m)"];
  *   RxObstacle box RxObstacle [label="Distance = 150cm > 30cm\n(SAFE)"];
@@ -398,9 +398,9 @@
  * **30 cm Threshold Calculation:**
  * - Max robot speed: 0.5 m/s
  * - Obstacle detection latency: ~100 ms (debounce + callback + e-stop)
- * - Distance traveled during braking: 0.5 m/s × 0.1 s = 5 cm
- * - Motor brake deceleration: ~1 m/s² (measured with encoders)
- * - Braking distance from 0.5 m/s: v²/(2a) = (0.5)²/(2×1) = 12.5 cm
+ * - Distance traveled during braking: 0.5 m/s x 0.1 s = 5 cm
+ * - Motor brake deceleration: ~1 m/s^2 (measured with encoders)
+ * - Braking distance from 0.5 m/s: v^2/(2a) = (0.5)^2/(2x1) = 12.5 cm
  * - Total stopping distance: 5 cm (latency) + 12.5 cm (braking) = **17.5 cm**
  * - Safety margin: 30 cm - 17.5 cm = **12.5 cm** (71% margin)
  *
@@ -408,7 +408,7 @@
  *
  * | Metric | Value | Measurement Method |
  * |--------|-------|-------------------|
- * | **Poll Rate (per sensor)** | 50 Hz | 20 ms interval × 4 sensors = 80 ms cycle |
+ * | **Poll Rate (per sensor)** | 50 Hz | 20 ms interval x 4 sensors = 80 ms cycle |
  * | **Effective System Rate** | 12.5 Hz | All 4 sensors polled sequentially |
  * | **Obstacle Detection Latency** | 60-100 ms | 3 debounce samples + callback latency |
  * | **Emergency Stop Latency** | <120 ms | Detection + shared_data + motor response |
@@ -418,16 +418,16 @@
  * | **CPU Utilization (Library)** | ~2% | 50 Hz polling + GPIO + TMR interrupts |
  * | **Maximum Range** | 400 cm | HC-SR04 spec (practical: 300 cm) |
  * | **Minimum Range** | 2 cm | HC-SR04 spec (practical: 5 cm) |
- * | **Distance Resolution** | 3 mm | Limited by 1 µs timing precision |
- * | **Temperature Compensation** | ±0.5°C | From DS18B20 (temp_sensor_task) |
+ * | **Distance Resolution** | 3 mm | Limited by 1 us timing precision |
+ * | **Temperature Compensation** | +/-0.5degC | From DS18B20 (temp_sensor_task) |
  *
  * **Latency Budget Breakdown (Obstacle -> E-stop):**
  * 1. First detection: 20 ms (one poll cycle)
  * 2. Debounce confirmation: 40 ms (2 more samples @ 20 ms)
- * 3. Callback execution: 5 µs (shared_data access)
- * 4. Event propagation: 10 µs (ThreadX event flags)
+ * 3. Callback execution: 5 us (shared_data access)
+ * 4. Event propagation: 10 us (ThreadX event flags)
  * 5. Motor task wakeup: 4 ms (worst case: motor task at start of sleep)
- * 6. Motor brake command: 50 µs (PWM disable)
+ * 6. Motor brake command: 50 us (PWM disable)
  * 7. **Total: 64.065 ms** (typical), **<120 ms** (worst case)
  *
  * ## Module Dependencies
@@ -884,8 +884,8 @@ typedef enum : uint16_t {
   k_obstacle_task_stack_size = 1024, /**< Stack size in bytes (static allocation) */
   k_obstacle_task_priority   = 12,   /**< ThreadX priority (1=highest, 31=lowest) */
   k_obstacle_heartbeat_ticks =
-    2, /**< IWDT heartbeat interval: 2 ticks = 20ms @ 100 Hz (3× safety margin for 60ms timeout) */
-  k_obstacle_stats_log_interval = 50, /**< Log stats every 50 heartbeats (50 × 20ms = 1s) */
+    2, /**< IWDT heartbeat interval: 2 ticks = 20ms @ 100 Hz (3x safety margin for 60ms timeout) */
+  k_obstacle_stats_log_interval = 50, /**< Log stats every 50 heartbeats (50 x 20ms = 1s) */
   k_obstacle_task_input         = 0,  /**< Thread entry input parameter (unused) */
 } obstacle_task_constants_t;
 
@@ -907,16 +907,16 @@ typedef enum : uint16_t {
  * **Threshold Calculation (30 cm):**
  * - Max robot speed: 0.5 m/s
  * - Detection + brake latency: 100 ms
- * - Distance during latency: 0.5 m/s × 0.1 s = 5 cm
- * - Braking distance at 1 m/s² deceleration: v²/(2a) = 12.5 cm
+ * - Distance during latency: 0.5 m/s x 0.1 s = 5 cm
+ * - Braking distance at 1 m/s^2 deceleration: v^2/(2a) = 12.5 cm
  * - Total stopping distance: 17.5 cm
  * - Safety margin: 30 - 17.5 = **12.5 cm (71%)**
  *
  * **Debounce Rationale (3 samples):**
  * - False positive rate without debounce: ~10% (acoustic glitches)
  * - 3-sample confirmation: <1% false positive rate (measured)
- * - Confirmation latency: 3 × 20 ms = 60 ms (acceptable)
- * - Distance traveled during confirmation: 0.5 m/s × 0.06 s = 3 cm
+ * - Confirmation latency: 3 x 20 ms = 60 ms (acceptable)
+ * - Distance traveled during confirmation: 0.5 m/s x 0.06 s = 3 cm
  *
  * @since Version 1.0.0
  */
@@ -991,7 +991,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_obstacle_motor_count_none =
-    0, /**< Zero motors available — motor_control_task_create() not yet called */
+    0, /**< Zero motors available -- motor_control_task_create() not yet called */
 } obstacle_motor_count_t;
 
 /* =============================================================================
@@ -1105,7 +1105,7 @@ static const char* const s_tag = "OBSTACLE";
 
 /**
  * @var s_sensors
- * @brief HC-SR04 sensor handle array (4 sensors for 360° coverage)
+ * @brief HC-SR04 sensor handle array (4 sensors for 360deg coverage)
  *
  * @details
  * Array of 4 ultrasonic distance sensors positioned around the robot:
@@ -1114,12 +1114,12 @@ static const char* const s_tag = "OBSTACLE";
  * - Index 2 (k_sensor_back_left):   Back-left
  * - Index 3 (k_sensor_back_right):  Back-right
  *
- * Total size: 4 × sizeof(rx_hcsr04_t) bytes, placed in .bss (zero-initialized).
+ * Total size: 4 x sizeof(rx_hcsr04_t) bytes, placed in .bss (zero-initialized).
  * Handles are populated by internal_init_sensors() before use.
  *
  * @note Statically allocated (no malloc) per NASA Power of 10 Rule 3
  * @note Handles uninitialized until internal_init_sensors() completes successfully
- * @warning Do NOT access handles from ISR context — rx_hcsr04_t is not ISR-safe
+ * @warning Do NOT access handles from ISR context -- rx_hcsr04_t is not ISR-safe
  * @warning Do NOT share handles across tasks without external synchronization
  * @since STAR v1.0.0
  */
@@ -1134,7 +1134,7 @@ static rx_hcsr04_t s_sensors[k_obstacle_sensor_count];
  * Passed as config.sensors to rx_obstacle_detect_init() so the library
  * can poll each sensor independently. Pointer values are fixed at link time.
  *
- * @note Pointers reference s_sensors elements — valid for program lifetime
+ * @note Pointers reference s_sensors elements -- valid for program lifetime
  * @note Array size matches k_obstacle_sensor_count (4) exactly
  * @warning Do NOT modify pointer targets after rx_obstacle_detect_init() is called;
  *          the library retains these pointers for the duration of the polling task
@@ -1269,7 +1269,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
  * @invariant Stack size k_obstacle_task_stack_size (1024 bytes) fixed at compile-time
  *
  * @note **Single-shot:** Call exactly once during boot. Second call returns error.
- * @note **Non-blocking:** Returns immediately after tx_thread_create() (~100 µs).
+ * @note **Non-blocking:** Returns immediately after tx_thread_create() (~100 us).
  * @note **Context:** Call from tx_application_define() only (boot phase).
  * @note **Callback context:** Obstacle callback runs in library task (Priority 10).
  * @note **Auto-start:** Task begins executing immediately (TX_AUTO_START flag).
@@ -1290,7 +1290,7 @@ static void internal_obstacle_callback(bool    obstacle_detected,
  * executes in library task context and uses shared_data mutexes for safe access.
  *
  * @par Performance:
- * - Execution time: ~100 µs @ 240 MHz (task creation overhead)
+ * - Execution time: ~100 us @ 240 MHz (task creation overhead)
  * - CPU cycles: ~24,000 cycles (tx_thread_create + initialization)
  * - Stack usage: ~64 bytes during obstacle_detect_task_create() call
  * - Peak stack: ~128 bytes during rx_obstacle_detect_init() (in task context)
@@ -1455,7 +1455,7 @@ rx_err_t obstacle_detect_task_create(void)
  * @brief Initialize HC-SR04 ultrasonic sensors for obstacle detection
  *
  * @details
- * Initializes 4 HC-SR04 sensors positioned around the robot for 360°
+ * Initializes 4 HC-SR04 sensors positioned around the robot for 360deg
  * obstacle coverage:
  * - Front-left: TRIG=PF5 (k_rx_pf_5), ECHO=P03 (k_rx_p0_3)
  * - Front-right: TRIG=PJ5 (k_rx_pj_5), ECHO=P02 (k_rx_p0_2)
@@ -1497,10 +1497,10 @@ static rx_err_t internal_init_sensors(void)
   /**
    * @var s_trigger_pins
    * @brief GPIO trigger output pins indexed by obstacle_sensor_idx_t
-   * @details Maps each sensor index to its hardware TRIG pin (10 µs pulse output).
-   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left … k_sensor_back_right).
-   *          Static function-scope; resides in .rodata (~16 bytes, 4 × uint32_t).
-   * @note Static and const — initialized once at program start, never modified
+   * @details Maps each sensor index to its hardware TRIG pin (10 us pulse output).
+   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left ... k_sensor_back_right).
+   *          Static function-scope; resides in .rodata (~16 bytes, 4 x uint32_t).
+   * @note Static and const -- initialized once at program start, never modified
    * @warning Do not call this function before GPIO ports F, J, 0, 3 are powered and clocked
    * @since STAR v1.0.0
    */
@@ -1516,9 +1516,9 @@ static rx_err_t internal_init_sensors(void)
    * @brief GPIO echo input pins indexed by obstacle_sensor_idx_t
    * @details Maps each sensor index to its hardware ECHO pin (pulse-width input).
    *          Pins P00-P03 also support IRQ8-IRQ11 for future interrupt-driven measurement.
-   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left … k_sensor_back_right).
-   *          Static function-scope; resides in .rodata (~16 bytes, 4 × uint32_t).
-   * @note Static and const — initialized once at program start, never modified
+   *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left ... k_sensor_back_right).
+   *          Static function-scope; resides in .rodata (~16 bytes, 4 x uint32_t).
+   * @note Static and const -- initialized once at program start, never modified
    * @warning Do NOT reconfigure these pins elsewhere in the firmware while sensors are active;
    *          the pin validator enforces single-owner registration to prevent conflicts
    * @since STAR v1.0.0
@@ -1536,8 +1536,8 @@ static rx_err_t internal_init_sensors(void)
    * @details Passed as the message argument to rx_log_error_val() when rx_hcsr04_init()
    *          fails for a given sensor. Includes the failure description so the log line
    *          is self-contained. Static function-scope; resides in .rodata (~128 bytes).
-   * @note Static and const — string literals stored in Flash, pointer array in .rodata
-   * @warning Strings are for logging only — do NOT use as keys or compare by pointer
+   * @note Static and const -- string literals stored in Flash, pointer array in .rodata
+   * @warning Strings are for logging only -- do NOT use as keys or compare by pointer
    * @since STAR v1.0.0
    */
   static const char* const s_sensor_names[k_obstacle_sensor_count] = {
@@ -1681,7 +1681,7 @@ static rx_err_t internal_init_sensors(void)
  * @endcode
  *
  * **Statistics Interpretation:**
- * - **total_polls:** Number of sensor readings (increments at 50 Hz × 4 sensors = 200 Hz)
+ * - **total_polls:** Number of sensor readings (increments at 50 Hz x 4 sensors = 200 Hz)
  * - **obstacle_events:** Count of obstacle detections (after debouncing)
  * - **false_positives:** Detections that cleared within 100 ms (acoustic glitches)
  *
@@ -1692,7 +1692,7 @@ static rx_err_t internal_init_sensors(void)
  *   rx_obstacle_detect_init(), or rx_obstacle_detect_start() is **fatal**
  * - On failure: call shared_data_trigger_estop(k_estop_reason_obstacle) to halt motors
  * - Then enter infinite sleep loop (k_obstacle_heartbeat_ticks per iteration)
- * - Do NOT call rx_iwdt_task_heartbeat() — missing heartbeat triggers watchdog reset
+ * - Do NOT call rx_iwdt_task_heartbeat() -- missing heartbeat triggers watchdog reset
  * - IWDT resets the system within 2 seconds (k_iwdt_hw_timeout_ms)
  *
  * **Statistics Retrieval Failure:**
@@ -1757,9 +1757,9 @@ static rx_err_t internal_init_sensors(void)
  *
  * @par Performance:
  * - Initialization: ~5 ms (rx_obstacle_detect_init + GPIO setup)
- * - Monitoring loop: 1 Hz (100 ticks sleep + ~50 µs stats retrieval)
+ * - Monitoring loop: 1 Hz (100 ticks sleep + ~50 us stats retrieval)
  * - CPU utilization: <0.1% (dominated by sleep time)
- * - Callback overhead: ~5 µs (shared_data mutex acquire + update + release)
+ * - Callback overhead: ~5 us (shared_data mutex acquire + update + release)
  *
  * @par Re-entrancy:
  * Not re-entrant (task singleton). Only one instance executes at a time.
@@ -1790,7 +1790,7 @@ static void internal_obstacle_task_entry(ULONG input)
   rx_err_t err = internal_init_sensors();
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Sensor initialization failed", (uint32_t)err);
-    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
     (void)shared_data_trigger_estop(k_estop_reason_obstacle);
     while (true) {
       rx_log_error(s_tag, "FATAL: sensor init failed, awaiting watchdog reset");
@@ -1803,7 +1803,7 @@ static void internal_obstacle_task_entry(ULONG input)
   rx_motor_handle_t** motors      = motor_control_task_get_motors(&motor_count);
   if (motors == nullptr || motor_count == k_obstacle_motor_count_none) {
     rx_log_error(s_tag, "Motor handles unavailable");
-    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
     (void)shared_data_trigger_estop(k_estop_reason_obstacle);
     while (true) {
       rx_log_error(s_tag, "FATAL: motor handles unavailable, awaiting watchdog reset");
@@ -1827,7 +1827,7 @@ static void internal_obstacle_task_entry(ULONG input)
   err = rx_obstacle_detect_init(&s_obstacle_handle, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Obstacle detect init failed", (uint32_t)err);
-    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
     (void)shared_data_trigger_estop(k_estop_reason_obstacle);
     while (true) {
       rx_log_error(s_tag, "FATAL: obstacle init failed, awaiting watchdog reset");
@@ -1839,7 +1839,7 @@ static void internal_obstacle_task_entry(ULONG input)
   err = rx_obstacle_detect_start(&s_obstacle_handle);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Obstacle detect start failed", (uint32_t)err);
-    /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
+    /* Fatal: trigger e-stop and spin -- do NOT call heartbeat so watchdog resets system */
     (void)shared_data_trigger_estop(k_estop_reason_obstacle);
     while (true) {
       rx_log_error(s_tag, "FATAL: obstacle start failed, awaiting watchdog reset");
@@ -1988,10 +1988,10 @@ static void internal_obstacle_task_entry(ULONG input)
  * - Safe to execute concurrently with motor_control_task, telemetry_task, etc.
  *
  * **Callback Contract:**
- * - Keep execution time short (<50 µs) to avoid blocking library polling
+ * - Keep execution time short (<50 us) to avoid blocking library polling
  * - No blocking operations (no tx_thread_sleep, no long computations)
  * - No dynamic memory allocation (malloc/free)
- * - All shared_data calls return immediately (mutex wait is bounded <10 µs)
+ * - All shared_data calls return immediately (mutex wait is bounded <10 us)
  *
  * ## Emergency Stop Behavior
  *
@@ -2015,12 +2015,12 @@ static void internal_obstacle_task_entry(ULONG input)
  *
  * | Metric | Value | Measurement Method |
  * |--------|-------|-------------------|
- * | **Execution Time (Detection)** | ~15 µs | Oscilloscope on GPIO toggle |
- * | **Execution Time (Clearance)** | ~10 µs | Oscilloscope on GPIO toggle |
- * | **Mutex Acquisition** | <5 µs | ThreadX profiling (uncontended) |
- * | **shared_data_trigger_estop** | ~5 µs | Mutex + memcpy + event set |
- * | **shared_data_update_obstacle** | ~4 µs | Mutex + memcpy (128 bytes) |
- * | **Logging Overhead** | ~2 µs | UART buffering (non-blocking) |
+ * | **Execution Time (Detection)** | ~15 us | Oscilloscope on GPIO toggle |
+ * | **Execution Time (Clearance)** | ~10 us | Oscilloscope on GPIO toggle |
+ * | **Mutex Acquisition** | <5 us | ThreadX profiling (uncontended) |
+ * | **shared_data_trigger_estop** | ~5 us | Mutex + memcpy + event set |
+ * | **shared_data_update_obstacle** | ~4 us | Mutex + memcpy (128 bytes) |
+ * | **Logging Overhead** | ~2 us | UART buffering (non-blocking) |
  * | **Frequency** | On event | Typically <1 Hz (depends on environment) |
  *
  * @param[in] obstacle_detected True if obstacle detected, false if cleared
@@ -2055,7 +2055,7 @@ static void internal_obstacle_task_entry(ULONG input)
  * @note **Execution context:** rx_obstacle internal task (Priority 10), NOT obstacle_detect_task!
  * @note **Thread safety:** All shared_data calls use mutexes (safe concurrent access).
  * @note **E-stop persistence:** Detection triggers e-stop, clearance does NOT reset it.
- * @note **No blocking:** Callback must return quickly (<50 µs) to avoid blocking polling.
+ * @note **No blocking:** Callback must return quickly (<50 us) to avoid blocking polling.
  *
  * @warning **Context switch:** Callback runs at different priority than obstacle_detect_task.
  * @warning **No auto-clear:** E-stop remains active until operator manually resets.
@@ -2072,8 +2072,8 @@ static void internal_obstacle_task_entry(ULONG input)
  * motor_control_task, telemetry_task, and obstacle_detect_task main loop.
  *
  * @par Performance:
- * - Execution time: ~15 µs (detection path with e-stop)
- * - Execution time: ~10 µs (clearance path without e-stop)
+ * - Execution time: ~15 us (detection path with e-stop)
+ * - Execution time: ~10 us (clearance path without e-stop)
  * - CPU cycles: ~3,600 cycles (detection @ 240 MHz)
  * - Mutex contention: <1% (uncontended in typical operation)
  * - No blocking operations (all calls return immediately)

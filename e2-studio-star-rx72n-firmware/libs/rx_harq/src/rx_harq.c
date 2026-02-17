@@ -15,7 +15,7 @@
  *
  * 1. **Chase Combiner** (rx_chase_combiner_t)
  *    - Accumulates soft bits element-wise across transmissions
- *    - Uses int16 accumulators (prevents overflow with ≤255 combines)
+ *    - Uses int16 accumulators (prevents overflow with <=255 combines)
  *    - Clamps output to [-127, +127] range before decoding
  *
  * 2. **FEC Codec** (rx_fec_encoder_t, rx_fec_decoder_t)
@@ -48,10 +48,10 @@
  *
  * ## Overflow Prevention
  *
- * Accumulators use int16 (range ±32768):
+ * Accumulators use int16 (range +/-32768):
  * - Max combines: 255
- * - Max soft bit: ±127
- * - Max accumulator value: ±(255 × 127) = ±32385
+ * - Max soft bit: +/-127
+ * - Max accumulator value: +/-(255 x 127) = +/-32385
  * - **Safe**: 32385 < 32768 (no overflow with default max_combines=3)
  *
  * ## Protocol Flow
@@ -89,7 +89,7 @@
  * - **Rule 1**: [OK] No recursion, goto, setjmp/longjmp
  * - **Rule 2**: [OK] Loops bounded by k_harq_soft_buffer_size
  * - **Rule 3**: [OK] Zero dynamic allocation
- * - **Rule 4**: [OK] Functions ≤ 60 lines
+ * - **Rule 4**: [OK] Functions <= 60 lines
  * - **Rule 5**: [OK] Extensive validation checks
  *
  * @author STAR Team

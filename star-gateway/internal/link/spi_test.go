@@ -811,14 +811,14 @@ func TestSPILink_bytesToSoftBits(t *testing.T) {
 	}
 
 	// Verify conversion
-	// 0xFF = 11111111 → all +127
+	// 0xFF = 11111111 -> all +127
 	for i := 0; i < 8; i++ {
 		if softBits[i] != fec.SoftBitMax {
 			t.Errorf("Bit %d of 0xFF: expected %d, got %d", i, fec.SoftBitMax, softBits[i])
 		}
 	}
 
-	// 0x00 = 00000000 → all -127
+	// 0x00 = 00000000 -> all -127
 	for i := 8; i < 16; i++ {
 		if softBits[i] != fec.SoftBitMin {
 			t.Errorf("Bit %d of 0x00: expected %d, got %d", i, fec.SoftBitMin, softBits[i])

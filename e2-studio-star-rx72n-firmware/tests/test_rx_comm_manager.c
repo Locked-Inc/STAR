@@ -10,12 +10,12 @@
  * This test suite validates the rx_comm_manager layer - a unified abstraction that
  * multiplexes multiple communication channels (USB CDC and SPI) into a single API.
  * The manager enables runtime channel selection, automatic fallback, and consistent
- * error handling across heterogeneous transports for RX72N ↔ RPi5 communication.
+ * error handling across heterogeneous transports for RX72N <-> RPi5 communication.
  *
  * **Communication Manager Architecture:**
  * @code
  * Application Layer (Motor Control, Telemetry, etc.)
- *           ↓ Single unified API
+ *           v Single unified API
  * +------------------------------------------+
  * |     rx_comm_manager (THIS LAYER)        |
  * |  - Channel selection/fallback            |
@@ -23,12 +23,12 @@
  * |  - Unified callback interface            |
  * |  - Error code translation                |
  * +------------------------------------------+
- *      ↓ USB path          ↓ SPI path
+ *      v USB path          v SPI path
  * +------------------+  +------------------+
  * | rx_usb_comm      |  | rx_spi_comm      |
  * | (USB CDC frame)  |  | (SPI frame)      |
  * +------------------+  +------------------+
- *      ↓                     ↓
+ *      v                     v
  * +------------------+  +------------------+
  * | rx_usb (CDC)     |  | RSPI Peripheral  |
  * | (Multi-port)     |  | (Hardware)       |
@@ -51,7 +51,7 @@
  * **Channel Abstraction:**
  * The manager supports multiple physical transports with identical API:
  * - **k_comm_channel_usb:** USB CDC (Port 0 = Protocol, Port 1 = Decoded debug)
- * - **k_comm_channel_spi:** SPI with hardware handshake (RPi5 ↔ RX72N)
+ * - **k_comm_channel_spi:** SPI with hardware handshake (RPi5 <-> RX72N)
  *
  * Applications can switch channels at runtime via `rx_comm_manager_set_channel()`.
  *
@@ -119,11 +119,11 @@
  * @endcode
  *
  * **Timing Requirements:**
- * - Manager overhead (channel routing): <1µs (function pointer dereference)
- * - Channel switch latency: <1µs (atomic variable write)
+ * - Manager overhead (channel routing): <1us (function pointer dereference)
+ * - Channel switch latency: <1us (atomic variable write)
  * - USB path latency: 1-5ms (USB FS bulk transfer)
- * - SPI path latency: 100µs-1ms (frame transfer + handshake)
- * - Decoded output formatting: <100µs per frame (ASCII conversion)
+ * - SPI path latency: 100us-1ms (frame transfer + handshake)
+ * - Decoded output formatting: <100us per frame (ASCII conversion)
  *
  * **Error Injection Patterns:**
  * - **nullptr manager pointer** - Tests input validation (returns k_rx_err_invalid_arg)

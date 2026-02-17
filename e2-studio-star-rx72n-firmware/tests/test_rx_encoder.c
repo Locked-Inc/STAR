@@ -41,7 +41,7 @@
  * | Multiple overflows | [OK] | Sequential wraps |
  * | 32-bit signed accumulation | [OK] | Unlimited range |
  * | Direction inversion | [OK] | Motor wiring flip |
- * | Position in degrees | [OK] | 0-360° calculation |
+ * | Position in degrees | [OK] | 0-360deg calculation |
  * | Revolution counting | [OK] | Integer revolutions |
  *
  * @par Velocity Measurement:
@@ -90,7 +90,7 @@
  * @code
  * // Test: test_encoder_read_velocity_success()
  * // Motor: 210 RPM = 3.5 RPS
- * // Encoder: 341 PPR × 4 = 1364 counts per revolution
+ * // Encoder: 341 PPR x 4 = 1364 counts per revolution
  * // Control loop: 100Hz (dt = 0.01s)
  * //
  * // Expected counts per iteration: 1364 / 100 = 13.64 counts
@@ -144,9 +144,9 @@
  * | Boundary | Min | Max | Tested |
  * |----------|-----|-----|--------|
  * | Hardware Counter | 0 | 65535 | [OK] |
- * | Accumulated Count | -∞ | +∞ | [OK] |
- * | Revolution Count | -∞ | +∞ | [OK] |
- * | Position | 0° | 360° | [OK] |
+ * | Accumulated Count | -inf | +inf | [OK] |
+ * | Revolution Count | -inf | +inf | [OK] |
+ * | Position | 0deg | 360deg | [OK] |
  * | Velocity dt | 0.0001s | 10s | [OK] |
  *
  * ## Hardware Integration
@@ -157,7 +157,7 @@
  * - **Decoding:** 4x quadrature (1364 counts/rev)
  * - **Counter:** 16-bit hardware with software accumulation
  * - **Channels:** MTU1, MTU2 (motors 1-2) / MTU6, MTU7 (motors 3-4)
- * - **Resolution:** 0.264° per count (360° / 1364)
+ * - **Resolution:** 0.264deg per count (360deg / 1364)
  *
  * @par Quadrature Signal Timing:
  * | Motor Direction | Phase A | Phase B | Count |
