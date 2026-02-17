@@ -65,6 +65,20 @@
  * Ensures mocks reject out-of-range arguments with the same error codes as
  * the real API, enabling tests to exercise error paths correctly.
  *
+ * @invariant k_mock_irq_min <= irq_num <= k_mock_irq_max for valid IRQ arguments
+ * @invariant k_mock_priority_min <= priority <= k_mock_priority_max for valid priority
+ * @invariant sensor_index < k_mock_sensor_count for valid sensor indices
+ *
+ * @code
+ * // Validate IRQ number in mock stub:
+ * if (irq_num < k_mock_irq_min || irq_num > k_mock_irq_max) {
+ *     return k_rx_err_invalid_arg;
+ * }
+ * @endcode
+ *
+ * @see rx_hcsr04_icu_configure() Real ICU implementation with matching constraints
+ * @see rx_hcsr04_isr_register() Real ISR implementation with matching constraints
+ *
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint8_t {
@@ -266,6 +280,8 @@ rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
  * @post State unchanged (mock has no sensor map)
  *
  * @note Validates parameters to match real API error paths (Liskov substitution)
+ * @note Stateless: never returns k_rx_err_invalid_state; tests needing that path
+ *       must use a stateful mock with registration tracking
  * @note Thread-safe: no shared state
  * @code
  * rx_err_t err = rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11,
@@ -307,6 +323,8 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_in
  * @post State unchanged (mock has no sensor map)
  *
  * @note Validates irq_num to match real API error paths (Liskov substitution)
+ * @note Stateless: never returns k_rx_err_invalid_state; tests needing that path
+ *       must use a stateful mock with registration tracking
  * @note Thread-safe: no shared state
  * @code
  * rx_err_t err = rx_hcsr04_isr_unregister((uint8_t)k_hcsr04_irq_11);
@@ -344,6 +362,8 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  * @post State unchanged (mock has no ISR state)
  *
  * @note Validates irq_num to match real API error paths (Liskov substitution)
+ * @note Stateless: never returns k_rx_err_invalid_state; tests needing that path
+ *       must use a stateful mock with registration tracking
  * @note Thread-safe: no shared state
  * @code
  * rx_err_t err = rx_hcsr04_isr_start((uint8_t)k_hcsr04_irq_11);
@@ -429,6 +449,8 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
  * @post State unchanged (mock has no ISR state)
  *
  * @note Validates irq_num to match real API error paths (Liskov substitution)
+ * @note Stateless: never returns k_rx_err_invalid_state; tests needing that path
+ *       must use a stateful mock with registration tracking
  * @note Thread-safe: no shared state
  * @code
  * rx_err_t err = rx_hcsr04_isr_disarm((uint8_t)k_hcsr04_irq_11);

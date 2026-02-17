@@ -386,6 +386,7 @@ typedef enum : uint16_t {
  * | Complexity | Simple | Requires ICU config |
  * | Timing Jitter | Variable | Minimal |
  * | Concurrent Sensors | Limited | Supports all 4 |
+ * | Max Range | ~400 cm (32-bit overflow tracking via hcsr04_hal_get_time_us) | ~150 cm (8.7 ms CMT2 wrap; hcsr04_hal_get_time_us_isr has no overflow tracking) |
  *
  * **Recommended Usage:**
  * - Use **polling** for: debugging, single sensor, simple applications
@@ -501,7 +502,9 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_hcsr04_irq_priority_unset   = 0,  /**< Sentinel: use default priority in rx_hcsr04_init() */
+  k_hcsr04_irq_priority_min     = 1,  /**< Minimum valid ICU interrupt priority */
   k_hcsr04_irq_priority_default = 10, /**< Default ICU interrupt priority (balances latency and preemption) */
+  k_hcsr04_irq_priority_max     = 15, /**< Maximum valid ICU interrupt priority */
 } rx_hcsr04_irq_priority_t;
 
 /**
@@ -644,24 +647,24 @@ typedef struct {
  */
 typedef struct {
   /* Configuration (set during init) */
-  rx_port_pin_t         trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
-  rx_port_pin_t         echo_pin;    /**< Echo pin (type-safe GPIO or IRQ enum) */
-  uint32_t              timeout_us;  /**< Measurement timeout in microseconds */
+  rx_port_pin_t            trigger_pin;  /**< Trigger pin (type-safe GPIO enum) */
+  rx_port_pin_t            echo_pin;     /**< Echo pin (type-safe GPIO or IRQ enum) */
+  uint32_t                 timeout_us;   /**< Measurement timeout in microseconds */
   rx_hcsr04_echo_mode_t    echo_mode;    /**< Echo measurement mode (polling or IRQ) */
-  rx_hcsr04_irq_t          echo_irq;    /**< IRQ number (k_hcsr04_irq_8..k_hcsr04_irq_11) if IRQ mode, else k_hcsr04_irq_none */
-  rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (1-15) stored from init; k_hcsr04_irq_priority_unset = not applicable (polling mode) */
+  rx_hcsr04_irq_t          echo_irq;     /**< IRQ number (k_hcsr04_irq_8..11) if IRQ mode, else k_hcsr04_irq_none */
+  rx_hcsr04_irq_priority_t irq_priority; /**< ICU interrupt priority (1-15); k_hcsr04_irq_priority_unset = polling */
 
   /* State */
-  bool  initialized;               /**< True if handle is initialized */
-  bool  measurement_active;        /**< True if async measurement in progress */
-  bool  cancel_requested;          /**< True if async measurement cancellation requested */
-  float temperature_celsius;       /**< Ambient temperature for compensation (20.0 if not set) */
-  bool  temp_compensation_enabled; /**< True if temperature compensation is enabled */
+  bool                     initialized;               /**< True if handle is initialized */
+  bool                     measurement_active;        /**< True if async measurement in progress */
+  bool                     cancel_requested;          /**< True if async measurement cancellation requested */
+  float                    temperature_celsius;       /**< Ambient temperature for compensation (20.0 if not set) */
+  bool                     temp_compensation_enabled; /**< True if temperature compensation is enabled */
 
   /* Statistics */
-  uint32_t measurement_count; /**< Total measurements attempted */
-  uint32_t timeout_count;     /**< Measurements that timed out */
-  uint32_t range_error_count; /**< Out-of-range readings (too close/far) */
+  uint32_t                 measurement_count; /**< Total measurements attempted */
+  uint32_t                 timeout_count;     /**< Measurements that timed out */
+  uint32_t                 range_error_count; /**< Out-of-range readings (too close/far) */
 } rx_hcsr04_t;
 
 /**

@@ -109,7 +109,13 @@ typedef enum : uint8_t {
  * to a value smaller than the rising edge timestamp, this constant is added
  * to correct the duration calculation.
  *
- * @invariant k_cmt2_wrap_us == (65536 * 1000000) / (PCLKB / 8) truncated to uint32_t
+ * **Clock dependency:** This constant assumes PCLKB = 60 MHz (k_pclkb_hz in
+ * rx72n_clock.h) and CMT2 divider = 8 (k_cmt2_divider in rx_hcsr04_hal_hw.c).
+ * If either value changes, k_cmt2_wrap_us MUST be recalculated:
+ *   k_cmt2_wrap_us = (65536 * 1000000) / (PCLKB / divider)
+ *
+ * @invariant k_cmt2_wrap_us == (65536 * 1000000) / (60000000 / 8) == 8738
+ * @invariant Assumes PCLKB = 60 MHz and CMT2 divider = 8; update if clock config changes
  *
  * @code
  * // Wrap correction in get_duration:
@@ -455,6 +461,7 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
  * @retval k_rx_err_timeout Both edges not yet captured
  * @retval k_rx_err_null_ptr duration_us is NULL
  * @retval k_rx_err_invalid_arg irq_num not in [k_irq_min, k_irq_max]
+ * @retval k_rx_err_range_check_failed Computed duration exceeds k_cmt2_wrap_us (invalid measurement)
  *
  * @pre rx_hcsr04_isr_start() called before trigger pulse
  * @pre ISR handlers registered in ICU (INT_IRQ8-11)
@@ -487,6 +494,12 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
   } else {
     /* Timer wrapped: add wrap period to correct the subtraction */
     *duration_us = s_irq_state[idx].end_us + k_cmt2_wrap_us - s_irq_state[idx].start_us;
+  }
+
+  /* Sanity check: duration must not exceed CMT2 wrap period */
+  if (*duration_us > k_cmt2_wrap_us) {
+    s_irq_state[idx].complete = false;
+    return k_rx_err_range_check_failed;
   }
 
   /* Clear complete flag so next rx_hcsr04_isr_start() starts fresh */

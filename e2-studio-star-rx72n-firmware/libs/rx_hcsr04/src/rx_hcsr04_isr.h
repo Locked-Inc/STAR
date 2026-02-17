@@ -300,6 +300,7 @@ typedef enum : uint8_t {
  * @retval k_rx_err_timeout Measurement not complete yet
  * @retval k_rx_err_null_ptr duration_us pointer is NULL
  * @retval k_rx_err_invalid_arg irq_num not in range [8, 11]
+ * @retval k_rx_err_range_check_failed Computed duration exceeds CMT2 wrap period (invalid)
  *
  * @pre rx_hcsr04_isr_start() called before trigger pulse
  * @pre Both rising and falling edges captured by ISR
@@ -318,7 +319,7 @@ typedef enum : uint8_t {
  *
  * // Bounded loop - max k_hcsr04_echo_timeout_us iterations (NASA Rule 2)
  * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {
- *     err = rx_hcsr04_isr_get_duration(k_hcsr04_irq_11, &duration_us);
+ *     err = rx_hcsr04_isr_get_duration((uint8_t)k_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Got result
  *     }
@@ -363,7 +364,7 @@ typedef enum : uint8_t {
  * @par Example: Typical Measurement Sequence
  * @code
  * // Step 1: Start measurement
- * rx_err_t err = rx_hcsr04_isr_start(k_hcsr04_irq_11);
+ * rx_err_t err = rx_hcsr04_isr_start((uint8_t)k_hcsr04_irq_11);
  * if (err != k_rx_ok) {
  *     return err;
  * }
@@ -377,7 +378,7 @@ typedef enum : uint8_t {
  * uint32_t duration_us;
  * err = k_rx_err_timeout;
  * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {  // k_hcsr04_echo_timeout_us iter max (~30ms at 1µs/iter)
- *     err = rx_hcsr04_isr_get_duration(k_hcsr04_irq_11, &duration_us);
+ *     err = rx_hcsr04_isr_get_duration((uint8_t)k_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Measurement complete
  *     }
@@ -386,6 +387,8 @@ typedef enum : uint8_t {
  *     // Handle timeout
  * }
  * @endcode
+ *
+ * @see rx_hcsr04_isr_disarm() Disarm ISR on trigger failure after successful start
  *
  * @since Version 1.2.0
  */

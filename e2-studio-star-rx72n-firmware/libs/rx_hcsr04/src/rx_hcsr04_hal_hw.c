@@ -1135,7 +1135,7 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   if (internal_time_mutex_init() != k_rx_ok) {
     timer_hz = k_pclkb_hz / k_cmt2_divider;
-    return (uint32_t)((cmt2()->cmcnt * k_us_per_second) / timer_hz);
+    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz);
   }
 
   /* Protect static variables from concurrent access */
@@ -1143,7 +1143,7 @@ uint32_t hcsr04_hal_get_time_us(void)
   if (mutex_status != TX_SUCCESS) {
     /* Fallback: return current counter value without overflow tracking */
     timer_hz = k_pclkb_hz / k_cmt2_divider;
-    return (uint32_t)((cmt2()->cmcnt * k_us_per_second) / timer_hz);
+    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz);
   }
 
   current_counter = cmt2()->cmcnt;
@@ -1213,5 +1213,5 @@ uint32_t hcsr04_hal_get_time_us_isr(void)
   const uint32_t timer_hz      = k_pclkb_hz / k_cmt2_divider;
   const uint16_t current_count = cmt2()->cmcnt;
 
-  return (uint32_t)(((uint32_t)current_count * k_us_per_second) / timer_hz);
+  return (uint32_t)(((uint64_t)current_count * k_us_per_second) / timer_hz);
 }
