@@ -507,10 +507,10 @@ static rx_motor_handle_t s_motors[k_motor_count];
 
 /** @brief Motor handle pointer array for external access */
 static rx_motor_handle_t* s_motor_ptrs[k_motor_count] = {
-	&s_motors[0],
-	&s_motors[1],
-	&s_motors[2],
-	&s_motors[3],
+  &s_motors[0],
+  &s_motors[1],
+  &s_motors[2],
+  &s_motors[3],
 };
 
 /** @brief Encoder state for each motor */
@@ -902,6 +902,7 @@ rx_err_t motor_control_task_create(void)
  * @pre motor_control_task_create() called
  * @pre Motors initialized via internal_init_motor_stack()
  * @post out_count = 4
+ * @post Return value points to array of k_motor_count (4) valid rx_motor_handle_t* entries
  *
  * @note Thread-safe: Returns pointer to static memory
  * @note Lifetime: Valid until program termination
@@ -910,14 +911,20 @@ rx_err_t motor_control_task_create(void)
  */
 rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
 {
-	/* Validate output parameter */
-	if (out_count == nullptr) {
-		return nullptr;
-	}
+  /* Validate output parameter */
+  if (out_count == nullptr) {
+    return nullptr;
+  }
 
-	/* Return motor count and handle array */
-	*out_count = k_motor_count;
-	return s_motor_ptrs;
+  /* Check if motor task has been created and initialized */
+  if (!s_motor_created) {
+    *out_count = 0;
+    return nullptr;  /* Motors not ready yet */
+  }
+
+  /* Return motor count and handle array */
+  *out_count = k_motor_count;
+  return s_motor_ptrs;
 }
 
 /* =============================================================================

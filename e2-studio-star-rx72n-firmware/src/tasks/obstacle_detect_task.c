@@ -858,7 +858,6 @@
 #include "rx_port_utils.h"
 #include "shared_data.h"
 #include "tx_api.h"
-
 #include "motor_control_task.h"
 
 /* =============================================================================
@@ -928,6 +927,54 @@ typedef enum : uint8_t {
   k_obstacle_debounce_samples = 3,  /**< Consecutive readings to confirm state change */
   k_obstacle_poll_interval_ms = 20, /**< Polling interval: 20 ms = 50 Hz per sensor */
 } obstacle_sensor_constants_t;
+
+/**
+ * @enum hcsr04_timeout_us_t
+ * @brief HC-SR04 echo pulse timeout configuration (microseconds)
+ *
+ * @details
+ * Defines the maximum echo pulse width before declaring timeout. This timeout
+ * determines the maximum measurable range of the HC-SR04 ultrasonic sensor.
+ *
+ * **Timeout Calculation:**
+ * @f[
+ *   \text{Range}_{\text{max}} = \frac{t_{\text{timeout}} \times v_{\text{sound}}}{2}
+ * @f]
+ *
+ * For 30 ms (30000 µs) timeout at 20°C (343.4 m/s):
+ * @f[
+ *   \text{Range}_{\text{max}} = \frac{30000 \times 10^{-6} \times 343.4}{2} = 5.15 \text{ m} = 515 \text{ cm}
+ * @f]
+ *
+ * **Why 30 ms?**
+ * - HC-SR04 max range: 400 cm (theoretical)
+ * - Effective range: 300 cm (real-world with temperature compensation)
+ * - 30 ms timeout covers 515 cm (71% safety margin)
+ * - Prevents indefinite blocking on sensor failure (no echo received)
+ *
+ * **Echo Pulse Width vs Distance:**
+ * | Distance | Echo Width @ 20°C | Echo Width @ 40°C |
+ * |----------|-------------------|-------------------|
+ * | 10 cm    | 583 µs            | 562 µs            |
+ * | 30 cm    | 1747 µs           | 1686 µs           |
+ * | 100 cm   | 5825 µs           | 5620 µs           |
+ * | 400 cm   | 23300 µs          | 22480 µs          |
+ * | Timeout  | **30000 µs**      | **30000 µs**      |
+ *
+ * @invariant k_hcsr04_echo_timeout_us > 25000 (covers 400 cm + margin)
+ * @invariant k_hcsr04_echo_timeout_us < 38000 (HC-SR04 hardware limit)
+ *
+ * @note Used by ALL 4 sensors (identical hardware specs)
+ * @warning Do NOT exceed 38 ms (HC-SR04 will not respond)
+ *
+ * @see rx_hcsr04_init() Uses this value in config.timeout_us
+ * @see rx_hcsr04_measure() Times out after this duration if no echo
+ *
+ * @since STAR v1.0.0
+ */
+typedef enum : uint32_t {
+  k_hcsr04_echo_timeout_us = 30000, /**< 30 ms echo timeout = 515 cm max range @ 20°C */
+} hcsr04_timeout_us_t;
 
 /* =============================================================================
  * Static Variables
@@ -1065,10 +1112,10 @@ static rx_hcsr04_t s_sensors[k_obstacle_sensor_count];
  * @since STAR v1.0.0
  */
 static rx_hcsr04_t* s_sensor_ptrs[k_obstacle_sensor_count] = {
-	&s_sensors[0],  /* Front-left */
-	&s_sensors[1],  /* Front-right */
-	&s_sensors[2],  /* Back-left */
-	&s_sensors[3],  /* Back-right */
+  &s_sensors[0],  /* Front-left */
+  &s_sensors[1],  /* Front-right */
+  &s_sensors[2],  /* Back-left */
+  &s_sensors[3],  /* Back-right */
 };
 
 /* =============================================================================
@@ -1406,58 +1453,45 @@ rx_err_t obstacle_detect_task_create(void)
  */
 static rx_err_t internal_init_sensors(void)
 {
-	rx_err_t err;
+  /* Pin configuration arrays (indexed by sensor: 0=FL, 1=FR, 2=BL, 3=BR) */
+  static const rx_port_pin_t trigger_pins[k_obstacle_sensor_count] = {
+    k_rx_pf_5,  /* Sensor 0: Front-Left TRIG */
+    k_rx_pj_5,  /* Sensor 1: Front-Right TRIG */
+    k_rx_pj_3,  /* Sensor 2: Back-Left TRIG */
+    k_rx_p3_3,  /* Sensor 3: Back-Right TRIG */
+  };
 
-	/* Sensor 0: Front-Left (TRIG=PF5, ECHO=P03) */
-	rx_hcsr04_config_t fl_config = {
-		.trigger_pin = k_rx_pf_5,
-		.echo_pin    = k_rx_p0_3,
-		.timeout_us  = 30000,  /* 30ms = 400cm max range */
-	};
-	err = rx_hcsr04_init(&s_sensors[0], &fl_config);
-	if (err != k_rx_ok) {
-		rx_log_error_val(s_tag, "Front-left sensor init failed", (uint32_t)err);
-		return err;
-	}
+  static const rx_port_pin_t echo_pins[k_obstacle_sensor_count] = {
+    k_rx_p0_3,  /* Sensor 0: Front-Left ECHO (IRQ11) */
+    k_rx_p0_2,  /* Sensor 1: Front-Right ECHO (IRQ10) */
+    k_rx_p0_1,  /* Sensor 2: Back-Left ECHO (IRQ9) */
+    k_rx_p0_0,  /* Sensor 3: Back-Right ECHO (IRQ8) */
+  };
 
-	/* Sensor 1: Front-Right (TRIG=PJ5, ECHO=P02) */
-	rx_hcsr04_config_t fr_config = {
-		.trigger_pin = k_rx_pj_5,
-		.echo_pin    = k_rx_p0_2,
-		.timeout_us  = 30000,
-	};
-	err = rx_hcsr04_init(&s_sensors[1], &fr_config);
-	if (err != k_rx_ok) {
-		rx_log_error_val(s_tag, "Front-right sensor init failed", (uint32_t)err);
-		return err;
-	}
+  static const char* const sensor_names[k_obstacle_sensor_count] = {
+    "Front-left",
+    "Front-right",
+    "Back-left",
+    "Back-right",
+  };
 
-	/* Sensor 2: Back-Left (TRIG=PJ3, ECHO=P01) */
-	rx_hcsr04_config_t bl_config = {
-		.trigger_pin = k_rx_pj_3,
-		.echo_pin    = k_rx_p0_1,
-		.timeout_us  = 30000,
-	};
-	err = rx_hcsr04_init(&s_sensors[2], &bl_config);
-	if (err != k_rx_ok) {
-		rx_log_error_val(s_tag, "Back-left sensor init failed", (uint32_t)err);
-		return err;
-	}
+  /* Initialize all sensors in loop (eliminates code duplication) */
+  for (uint8_t i = 0; i < k_obstacle_sensor_count; i++) {
+    rx_hcsr04_config_t config = {
+      .trigger_pin = trigger_pins[i],
+      .echo_pin    = echo_pins[i],
+      .timeout_us  = k_hcsr04_echo_timeout_us,
+    };
 
-	/* Sensor 3: Back-Right (TRIG=P33, ECHO=P00) */
-	rx_hcsr04_config_t br_config = {
-		.trigger_pin = k_rx_p3_3,
-		.echo_pin    = k_rx_p0_0,
-		.timeout_us  = 30000,
-	};
-	err = rx_hcsr04_init(&s_sensors[3], &br_config);
-	if (err != k_rx_ok) {
-		rx_log_error_val(s_tag, "Back-right sensor init failed", (uint32_t)err);
-		return err;
-	}
+    rx_err_t err = rx_hcsr04_init(&s_sensors[i], &config);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, sensor_names[i], (uint32_t)err);
+      return err;
+    }
+  }
 
-	rx_log_info(s_tag, "All 4 HC-SR04 sensors initialized");
-	return k_rx_ok;
+  rx_log_info(s_tag, "All 4 HC-SR04 sensors initialized");
+  return k_rx_ok;
 }
 
 /**
@@ -1679,8 +1713,6 @@ static void internal_obstacle_task_entry(ULONG input)
   uint32_t                    total_polls;
   uint32_t                    obstacle_events;
   uint32_t                    false_positives;
-  uint8_t                     motor_count = 0;
-  rx_motor_handle_t**         motors      = nullptr;
 
   (void)input;
 
@@ -1695,7 +1727,8 @@ static void internal_obstacle_task_entry(ULONG input)
   }
 
   /* Get motor handles from motor control task */
-  motors = motor_control_task_get_motors(&motor_count);
+  uint8_t             motor_count = 0;
+  rx_motor_handle_t** motors      = motor_control_task_get_motors(&motor_count);
   if (motors == nullptr || motor_count == 0) {
     rx_log_error(s_tag, "Motor handles unavailable");
     RX_ASSERT(false, "Motor handles required for obstacle detection");
