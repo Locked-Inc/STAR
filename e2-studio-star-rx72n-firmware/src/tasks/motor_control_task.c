@@ -502,6 +502,28 @@ static uint8_t s_motor_stack[k_motor_task_stack_size];
 /** @brief Task creation guard flag */
 static bool s_motor_created = false;
 
+/**
+ * @brief Motor stack initialization complete flag
+ *
+ * @details
+ * Set to true only after internal_init_motor_stack() returns k_rx_ok inside
+ * internal_motor_task_entry(). This flag is checked by
+ * motor_control_task_get_motors() to ensure handles are valid before returning
+ * them to callers.
+ *
+ * **Why a separate flag from s_motor_created:**
+ * s_motor_created is set by motor_control_task_create() immediately after
+ * tx_thread_create() succeeds — before the thread has actually run.
+ * internal_init_motor_stack() executes later inside the thread body.
+ * Using s_motor_created alone would cause motor_control_task_get_motors()
+ * to return uninitialized handles in the window between thread creation
+ * and motor stack initialization completing.
+ *
+ * @invariant Once set to true, remains true for application lifetime
+ * @since STAR v1.0.0
+ */
+static bool s_motor_stack_initialized = false;
+
 /** @brief Motor handles for each motor */
 static rx_motor_handle_t s_motors[k_motor_count];
 
@@ -914,30 +936,36 @@ rx_err_t motor_control_task_create(void)
  * breach the safety perimeter.
  *
  * **Three possible outcomes:**
- * 1. Motors ready + out_count non-null → returns s_motor_ptrs, sets *out_count = k_motor_count
- * 2. Motors not ready (s_motor_created == false) → returns nullptr, sets *out_count = k_motor_count_none
+ * 1. Motor stack initialized + out_count non-null → returns s_motor_ptrs, sets *out_count = k_motor_count
+ * 2. Motor stack not yet initialized (s_motor_stack_initialized == false) → returns nullptr, sets *out_count = k_motor_count_none
  * 3. out_count is nullptr → returns nullptr immediately, out_count unchanged
  *
+ * **Guard condition (s_motor_stack_initialized vs s_motor_created):**
+ * s_motor_created is set immediately after tx_thread_create() — before the thread
+ * has executed. s_motor_stack_initialized is set only when internal_init_motor_stack()
+ * returns k_rx_ok inside the thread. This function checks s_motor_stack_initialized
+ * to ensure handles are fully initialized before returning them.
+ *
  * @param[out] out_count Pointer to receive motor count.
- *                       Set to k_motor_count (4) when motors are ready;
- *                       set to k_motor_count_none (0) when task not yet created.
+ *                       Set to k_motor_count (4) when motor stack is initialized;
+ *                       set to k_motor_count_none (0) when not yet initialized.
  *                       Must be non-NULL (nullptr returns nullptr without writing).
  *
  * @return rx_motor_handle_t** Pointer to array of motor handle pointers
  * @retval s_motor_ptrs Valid pointer to static array of k_motor_count (4) rx_motor_handle_t*,
- *                      *out_count set to k_motor_count — motors are initialized and ready
- * @retval nullptr with *out_count = k_motor_count_none — motor_control_task_create()
- *                 has not yet been called; motors not initialized
+ *                      *out_count set to k_motor_count — motor stack fully initialized
+ * @retval nullptr with *out_count = k_motor_count_none — internal_init_motor_stack()
+ *                 has not yet completed successfully
  * @retval nullptr (out_count unchanged) — out_count argument was nullptr
  *
- * @pre motor_control_task_create() called (otherwise returns nullptr)
- * @pre Motors initialized via internal_init_motor_stack() (otherwise handles are uninitialized)
+ * @pre motor_control_task_create() called (otherwise s_motor_stack_initialized is never set)
+ * @pre out_count != nullptr (nullptr out_count causes immediate nullptr return)
  * @post *out_count == k_motor_count when return value is non-null
- * @post *out_count == k_motor_count_none when motors are not yet ready
+ * @post *out_count == k_motor_count_none when motor stack not yet initialized
  *
  * @note Thread-safe: Returns pointer to static memory (no shared mutable state)
  * @note Lifetime: Returned pointer valid until program termination (static allocation)
- * @note Returns nullptr gracefully if called before motor task starts (no assert)
+ * @note Returns nullptr gracefully if called before motor stack init completes (no assert)
  *
  * @since STAR v1.0.0
  */
@@ -948,10 +976,10 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
     return nullptr;
   }
 
-  /* Check if motor task has been created and initialized */
-  if (!s_motor_created) {
+  /* Check if motor stack initialization completed inside the thread */
+  if (!s_motor_stack_initialized) {
     *out_count = k_motor_count_none;
-    return nullptr;  /* Motors not ready yet */
+    return nullptr;  /* Motor stack not yet initialized */
   }
 
   /* Return motor count and handle array */
@@ -1576,6 +1604,9 @@ static rx_err_t internal_init_motor_stack(void)
 
   rx_log_info(s_tag, "Motor stack initialized (4 motors, encoders, drivers)");
   rx_log_debug(s_tag, "PID gains loaded (defaults or shared_data)");
+
+  /* Signal that handles are safe to return from motor_control_task_get_motors() */
+  s_motor_stack_initialized = true;
 
   return k_rx_ok;
 }

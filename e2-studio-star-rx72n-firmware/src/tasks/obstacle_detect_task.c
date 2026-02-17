@@ -1532,7 +1532,7 @@ rx_err_t obstacle_detect_task_create(void)
 static rx_err_t internal_init_sensors(void)
 {
   /**
-   * @var trigger_pins
+   * @var s_trigger_pins
    * @brief GPIO trigger output pins indexed by obstacle_sensor_idx_t
    * @details Maps each sensor index to its hardware TRIG pin (10 µs pulse output).
    *          Indexed by obstacle_sensor_idx_t (k_sensor_front_left … k_sensor_back_right).
@@ -1541,7 +1541,7 @@ static rx_err_t internal_init_sensors(void)
    * @warning Do not call this function before GPIO ports F, J, 0, 3 are powered and clocked
    * @since STAR v1.0.0
    */
-  static const rx_port_pin_t trigger_pins[k_obstacle_sensor_count] = {
+  static const rx_port_pin_t s_trigger_pins[k_obstacle_sensor_count] = {
     k_rx_pf_5,  /* k_sensor_front_left:  PF5 TRIG */
     k_rx_pj_5,  /* k_sensor_front_right: PJ5 TRIG */
     k_rx_pj_3,  /* k_sensor_back_left:   PJ3 TRIG */
@@ -1549,7 +1549,7 @@ static rx_err_t internal_init_sensors(void)
   };
 
   /**
-   * @var echo_pins
+   * @var s_echo_pins
    * @brief GPIO echo input pins indexed by obstacle_sensor_idx_t
    * @details Maps each sensor index to its hardware ECHO pin (pulse-width input).
    *          Pins P00-P03 also support IRQ8-IRQ11 for future interrupt-driven measurement.
@@ -1560,7 +1560,7 @@ static rx_err_t internal_init_sensors(void)
    *          the pin validator enforces single-owner registration to prevent conflicts
    * @since STAR v1.0.0
    */
-  static const rx_port_pin_t echo_pins[k_obstacle_sensor_count] = {
+  static const rx_port_pin_t s_echo_pins[k_obstacle_sensor_count] = {
     k_rx_p0_3,  /* k_sensor_front_left:  P03 ECHO (IRQ11) */
     k_rx_p0_2,  /* k_sensor_front_right: P02 ECHO (IRQ10) */
     k_rx_p0_1,  /* k_sensor_back_left:   P01 ECHO (IRQ9) */
@@ -1568,7 +1568,7 @@ static rx_err_t internal_init_sensors(void)
   };
 
   /**
-   * @var sensor_names
+   * @var s_sensor_names
    * @brief Human-readable error messages for each sensor, indexed by obstacle_sensor_idx_t
    * @details Passed as the message argument to rx_log_error_val() when rx_hcsr04_init()
    *          fails for a given sensor. Includes the failure description so the log line
@@ -1577,7 +1577,7 @@ static rx_err_t internal_init_sensors(void)
    * @warning Strings are for logging only — do NOT use as keys or compare by pointer
    * @since STAR v1.0.0
    */
-  static const char* const sensor_names[k_obstacle_sensor_count] = {
+  static const char* const s_sensor_names[k_obstacle_sensor_count] = {
     "Front-left sensor init failed",
     "Front-right sensor init failed",
     "Back-left sensor init failed",
@@ -1587,14 +1587,14 @@ static rx_err_t internal_init_sensors(void)
   /* Initialize all sensors in loop (eliminates code duplication) */
   for (uint8_t i = k_sensor_front_left; i < k_obstacle_sensor_count; i++) {
     rx_hcsr04_config_t config = {
-      .trigger_pin = trigger_pins[i],
-      .echo_pin    = echo_pins[i],
+      .trigger_pin = s_trigger_pins[i],
+      .echo_pin    = s_echo_pins[i],
       .timeout_us  = k_hcsr04_echo_timeout_us,
     };
 
     rx_err_t err = rx_hcsr04_init(&s_sensors[i], &config);
     if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, sensor_names[i], (uint32_t)err);
+      rx_log_error_val(s_tag, s_sensor_names[i], (uint32_t)err);
       return err;
     }
   }
