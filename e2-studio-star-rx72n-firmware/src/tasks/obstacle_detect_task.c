@@ -1608,7 +1608,7 @@ static void internal_obstacle_task_entry(ULONG input)
       }
     }
 
-    /* Sleep until next heartbeat (50ms) */
+    /* Sleep until next heartbeat (20ms = 2 ticks @ 100 Hz) */
     (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
   }
 }
@@ -1901,12 +1901,21 @@ static void internal_obstacle_callback(bool    obstacle_detected,
     (void)shared_data_set_event(k_event_obstacle_cleared);
   }
 
-  /* Update obstacle state in shared data */
-  (void)memset(&state, 0, sizeof(state));
+  /* Update obstacle state in shared data (read-modify-write to preserve other sensors) */
+  (void)shared_data_get_obstacle(&state);
   state.distance_cm[sensor_idx]       = (uint16_t)distance_cm;
   state.obstacle_detected[sensor_idx] = obstacle_detected;
-  state.any_obstacle                  = obstacle_detected;
-  state.timestamp_ms                  = tx_time_get();
+
+  /* Recompute any_obstacle by checking all sensors */
+  state.any_obstacle = false;
+  for (uint8_t i = 0; i < k_obstacle_sensor_count; i++) {
+    if (state.obstacle_detected[i]) {
+      state.any_obstacle = true;
+      break;
+    }
+  }
+
+  state.timestamp_ms = tx_time_get();
 
   (void)shared_data_update_obstacle(&state);
 }

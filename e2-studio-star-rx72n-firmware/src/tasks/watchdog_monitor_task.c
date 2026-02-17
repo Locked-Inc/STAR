@@ -226,6 +226,28 @@ static bool s_watchdog_created = false;
  */
 static const char* const s_tag = "IWDT_MON";
 
+/**
+ * @var s_task_name
+ * @brief IWDT task name for thread creation and heartbeat registration
+ *
+ * @details
+ * String literal used to identify the watchdog monitor task in ThreadX thread
+ * creation and IWDT heartbeat calls. Centralizes the task name to prevent typos
+ * and ensure consistency across tx_thread_create() and rx_iwdt_task_heartbeat().
+ *
+ * **Usage:**
+ * - ThreadX thread creation: tx_thread_create(..., s_task_name, ...)
+ * - Heartbeat reporting: rx_iwdt_task_heartbeat(s_task_name)
+ *
+ * @note String must match IWDT registration for heartbeat correlation
+ * @warning Do not modify - IWDT system depends on exact string match
+ * @see watchdog_monitor_task_create() Thread creation using this name
+ * @see internal_watchdog_monitor_task_entry() Heartbeat reporting using this name
+ *
+ * @since Version 1.0.0
+ */
+static const char* const s_task_name = "WatchdogMon";
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
@@ -297,7 +319,7 @@ rx_err_t watchdog_monitor_task_create(void)
 
   /* Create the thread */
   tx_status = tx_thread_create(&s_watchdog_thread,
-                               "WatchdogMon",
+                               (CHAR*)s_task_name,
                                internal_watchdog_monitor_task_entry,
                                k_watchdog_task_input,
                                s_watchdog_stack,
@@ -380,23 +402,32 @@ static void internal_watchdog_monitor_task_entry(ULONG input)
   rx_log_info(s_tag, "Watchdog monitor started @ 100 Hz");
 
   /* Main supervision loop */
+  bool timeout_logged = false;  /* Flag to log timeout message only once */
+
   while (true) {
     /* Check all registered tasks for heartbeat timeouts */
     rx_err_t err = rx_iwdt_check_tasks();
+
     if (err == k_rx_err_timeout) {
       /* Task timeout detected - system will reset in ~2s */
-      rx_log_error(s_tag, "Task timeout detected - system will reset in 2s");
+      if (!timeout_logged) {
+        rx_log_error(s_tag, "Task timeout detected - system will reset in 2s");
+        timeout_logged = true;
+      }
       /* Don't feed watchdog - allow hardware reset to occur */
-    }
-
-    /* Feed hardware watchdog (prevents 2s timeout reset) */
-    if (err != k_rx_err_timeout) {
+    } else if (err == k_rx_ok) {
+      /* All tasks healthy - feed hardware watchdog */
+      timeout_logged = false;  /* Clear flag for future timeouts */
       err = rx_iwdt_feed();
       RX_ASSERT(err == k_rx_ok, "IWDT feed must succeed");
+    } else {
+      /* Unexpected error from rx_iwdt_check_tasks() */
+      rx_log_error_val(s_tag, "Unexpected error from rx_iwdt_check_tasks", (uint32_t)err);
+      /* Don't feed watchdog - prevent masking errors */
     }
 
     /* Report own heartbeat (self-monitoring) */
-    err = rx_iwdt_task_heartbeat("WatchdogMon");
+    err = rx_iwdt_task_heartbeat(s_task_name);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
       /* Continue operation - watchdog monitor will detect timeout */

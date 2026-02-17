@@ -526,7 +526,27 @@ static bool s_active_brake_in_progress = false;
 /** @brief Log tag for this module */
 static const char* const s_tag = "MOTOR";
 
-/** @brief IWDT task name for heartbeat registration and reporting */
+/**
+ * @var s_task_name
+ * @brief IWDT task name for heartbeat registration and reporting
+ *
+ * @details
+ * String literal used to identify this task in IWDT registration and heartbeat calls.
+ * Centralizes the task name to prevent typos and ensure consistency across all
+ * rx_iwdt_register_task() and rx_iwdt_task_heartbeat() calls.
+ *
+ * **Usage:**
+ * - Task registration: rx_iwdt_register_task(s_task_name, timeout_ms)
+ * - Heartbeat reporting: rx_iwdt_task_heartbeat(s_task_name)
+ * - ThreadX thread creation: tx_thread_create(..., "MotorCtrl", ...)
+ *
+ * @note String must match ThreadX thread name for correlation in debug logs
+ * @warning Do not modify - IWDT registration depends on exact string match
+ * @see rx_iwdt_register_task() Task registration using this name
+ * @see rx_iwdt_task_heartbeat() Heartbeat reporting using this name
+ *
+ * @since Version 1.0.0
+ */
 static const char* const s_task_name = "MotorCtrl";
 
 /* =============================================================================

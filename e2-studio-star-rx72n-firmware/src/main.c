@@ -1408,6 +1408,19 @@ static rx_err_t internal_check_startup_flags(void)
  * Set as `default_timeout_ms` in `rx_iwdt_config_t` during initialization.
  * Watchdog monitor task feeds the hardware watchdog at 100 Hz (10ms period).
  *
+ * @invariant All values in milliseconds. Valid range: 128-16384ms per hardware limits.
+ *            Hardware timeout must exceed longest task timeout to prevent spurious resets.
+ *
+ * @code
+ * // Configure IWDT with hardware timeout
+ * static const rx_iwdt_config_t s_iwdt_config = {
+ *   .default_timeout_ms = k_iwdt_hw_timeout_ms,  // 2048ms hardware timeout
+ *   .enable_task_monitoring = true,
+ *   .reset_on_timeout = true,
+ * };
+ * rx_err_t err = rx_iwdt_init(&s_iwdt_config);
+ * @endcode
+ *
  * @note Hardware timeout must be longer than longest task timeout to prevent false resets
  * @see rx_iwdt_config_t Configuration structure using this constant
  * @see watchdog_monitor_task.c Task that feeds the hardware watchdog
@@ -1436,6 +1449,25 @@ typedef enum : uint32_t {
  *
  * **Timeout Hierarchy:**
  * State timeout > Task timeout > Heartbeat interval (prevents false positives)
+ *
+ * @invariant All values in milliseconds. State timeouts < hardware IWDT timeout (2048ms for running states).
+ *            Init/idle/error states may exceed hardware timeout (watchdog not yet started or in recovery).
+ *            Valid ranges per state: init/idle (2000-10000ms), running/motor/comm (1000-2000ms), error (5000-16000ms).
+ *
+ * @code
+ * // Configure state-dependent timeouts
+ * static const rx_iwdt_config_t s_iwdt_config = {
+ *   .default_timeout_ms = k_iwdt_hw_timeout_ms,
+ *   .state_timeouts_ms = {
+ *     [k_system_state_init]         = k_iwdt_timeout_init_ms,         // 5s
+ *     [k_system_state_idle]         = k_iwdt_timeout_idle_ms,         // 5s
+ *     [k_system_state_running]      = k_iwdt_timeout_running_ms,      // 2s
+ *     [k_system_state_motor_active] = k_iwdt_timeout_motor_active_ms, // 2s
+ *     [k_system_state_comm_active]  = k_iwdt_timeout_comm_active_ms,  // 2s
+ *     [k_system_state_error]        = k_iwdt_timeout_error_ms,        // 10s
+ *   }
+ * };
+ * @endcode
  *
  * @note All timeouts are in milliseconds (ms)
  * @note State timeouts must be less than hardware IWDT timeout (2048ms for running states)
@@ -1479,6 +1511,19 @@ typedef enum : uint32_t {
  * 3. Watchdog monitor stops feeding hardware IWDT
  * 4. Hardware IWDT triggers reset after 2048ms
  * 5. System reboots, failed task name preserved in logs
+ *
+ * @invariant All values in milliseconds. Task timeouts < state timeouts < hardware IWDT timeout.
+ *            Heartbeat intervals must be < task timeouts (typically timeout/3 for 2 missed beats margin).
+ *            Valid ranges: fast tasks (20-50ms), medium tasks (100-300ms), slow tasks (2000-5000ms).
+ *
+ * @code
+ * // Register tasks with individual timeouts
+ * rx_err_t err;
+ * err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);  // 30ms
+ * err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);    // 30ms
+ * err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);  // 150ms
+ * err = rx_iwdt_register_task("BMSMonitor", k_iwdt_task_timeout_bmsmonitor_ms); // 3000ms
+ * @endcode
  *
  * @note All timeouts are in milliseconds (ms)
  * @note Task timeouts must be less than state timeout to allow proper detection
