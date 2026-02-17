@@ -6,6 +6,11 @@
  * Declares all shared data types and accessor functions for inter-task
  * communication in the STAR firmware. All access is mutex-protected.
  *
+ * @note Architecture: This module uses a **polling model**. Tasks periodically
+ * call accessor functions (e.g., shared_data_is_comm_timeout(),
+ * shared_data_is_estop_active()) rather than blocking on event notifications.
+ * ThreadX event flags are not used - no shared_data_wait_event() API exists.
+ *
  * @see shared_data.c Implementation
  */
 
@@ -119,20 +124,6 @@ typedef struct {
 } obstacle_state_t;
 
 /**
- * @brief Event flags for inter-task signaling
- */
-typedef enum : uint32_t {
-  k_event_motor_command_updated = 0x00000001, /**< New motor command available */
-  k_event_estop_triggered       = 0x00000002, /**< E-stop activated */
-  k_event_pid_gains_updated     = 0x00000004, /**< PID gains changed */
-  k_event_low_battery           = 0x00000008, /**< Low battery detected */
-  k_event_obstacle_detected     = 0x00000010, /**< Obstacle detected */
-  k_event_obstacle_cleared      = 0x00000020, /**< Obstacle cleared */
-  k_event_estop_cleared         = 0x00000040, /**< E-stop cleared */
-  k_event_comm_timeout          = 0x00000080, /**< Communication timeout */
-} shared_event_flags_t;
-
-/**
  * @brief Shared data module constants
  */
 typedef enum : uint32_t {
@@ -149,12 +140,11 @@ typedef enum : uint32_t {
  */
 typedef struct {
   /* ThreadX synchronization primitives */
-  TX_MUTEX             motor_mutex;    /**< Mutex for motor data */
-  TX_MUTEX             bms_mutex;      /**< Mutex for BMS data */
-  TX_MUTEX             temp_mutex;     /**< Mutex for temperature data */
-  TX_MUTEX             obstacle_mutex; /**< Mutex for obstacle data */
-  TX_MUTEX             estop_mutex;    /**< Mutex for e-stop data */
-  TX_EVENT_FLAGS_GROUP event_flags;    /**< Event flags for inter-task signaling */
+  TX_MUTEX motor_mutex;    /**< Mutex for motor data */
+  TX_MUTEX bms_mutex;      /**< Mutex for BMS data */
+  TX_MUTEX temp_mutex;     /**< Mutex for temperature data */
+  TX_MUTEX obstacle_mutex; /**< Mutex for obstacle data */
+  TX_MUTEX estop_mutex;    /**< Mutex for e-stop data */
 
   /* Shared data structures */
   motor_command_t     motor_command;  /**< Motor velocity command */
@@ -255,16 +245,16 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  *
  * @details
  * ISR-safe version of shared_data_trigger_estop() that DOES NOT block on mutex.
- * Sets volatile flag s_estop_pending_from_isr and s_pending_estop_reason, then
- * sets k_event_estop_triggered event flag. Motor control task commits pending
- * ISR e-stop via shared_data_commit_isr_estop() within 4ms (250 Hz loop).
+ * Sets volatile flags s_estop_pending_from_isr and s_pending_estop_reason only.
+ * Motor control task commits the pending ISR e-stop via
+ * shared_data_commit_isr_estop() within 4ms (250 Hz polling loop).
  *
  * **CRITICAL:** This function MUST be used instead of shared_data_trigger_estop()
  * when called from interrupt handlers (POEG, BMS alert ISRs).
  *
  * **Algorithm:** Write s_pending_estop_reason first, then s_estop_pending_from_isr
- * (ensures reason always valid when flag is set), then set event flag via
- * tx_event_flags_set(&g_shared_data.event_flags, k_event_estop_triggered, TX_OR).
+ * (ensures reason always valid when flag is set). Motor task polls
+ * shared_data_commit_isr_estop() every 4ms to pick up pending ISR e-stops.
  *
  * @param[in] reason E-stop reason code (driver_fault, battery_fault, etc.)
  *
@@ -272,10 +262,9 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  * @retval N/A Always succeeds (void return, no error cases, side-effect only)
  *
  * @pre Called from ISR context only (POEG motor fault ISRs, BMS alert ISR)
- * @pre shared_data_init() completed and g_shared_data.event_flags initialized
+ * @pre shared_data_init() completed
  * @post s_estop_pending_from_isr == true (volatile flag set)
  * @post s_pending_estop_reason == reason (volatile reason stored)
- * @post k_event_estop_triggered set via tx_event_flags_set(&g_shared_data.event_flags, k_event_estop_triggered, TX_OR)
  * @post Motor task will commit within 4ms via shared_data_commit_isr_estop()
  *
  * @note ISR-safe: No blocking calls, no mutex usage (~1 µs execution)
@@ -294,7 +283,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  * @warning ONLY call from ISR context. For task context, use shared_data_trigger_estop()
  * @warning Race condition: If multiple ISRs fire, last reason wins (acceptable)
  *
- * @see shared_data_commit_isr_estop() Commit function (motor task)
+ * @see shared_data_commit_isr_estop() Commit function (motor task, 250 Hz polling)
  * @see shared_data_trigger_estop() Task-context version (uses mutex)
  * @see shared_data_is_estop_active() Check if e-stop active
  *
@@ -434,24 +423,3 @@ bool shared_data_is_comm_timeout(void);
  */
 void shared_data_update_last_comm_tick(void);
 
-/**
- * @brief Set event flags for inter-task signaling
- * @param flags Event flags to set
- * @return rx_err_t Error code
- */
-rx_err_t shared_data_set_event(shared_event_flags_t flags);
-
-/**
- * @brief Wait for event flags with optional timeout
- * @param[in]  flags            Event flags to wait for (OR combination)
- * @param[in]  wait_option      ThreadX wait option (TX_WAIT_FOREVER, tick count, TX_NO_WAIT)
- * @param[out] out_actual_flags Actual flags that were set (may be NULL)
- * @return rx_err_t Error code
- * @retval k_rx_ok             Flags received
- * @retval k_rx_err_timeout    Wait timed out (TX_NO_EVENTS)
- * @retval k_rx_err_not_initialized Shared data not initialized
- * @retval k_rx_err_rtos_error ThreadX error
- */
-rx_err_t shared_data_wait_event(shared_event_flags_t flags,
-                                uint32_t             wait_option,
-                                uint32_t*            out_actual_flags);

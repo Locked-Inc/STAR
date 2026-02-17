@@ -16,7 +16,7 @@
  * - Each shared data structure has dedicated producer and consumer tasks
  * - All access goes through thread-safe accessor functions (no direct access)
  * - ThreadX mutexes prevent data races and ensure consistency
- * - ThreadX event flags provide efficient inter-task signaling
+ * - **Polling model:** Tasks call accessor functions periodically (no event flags)
  *
  * ## System Architecture - Data Flow Diagram
  *
@@ -49,7 +49,6 @@
  *     temp_state [label="temp_sensor_state_t\n(temp_mutex)"];
  *     obstacle_state [label="obstacle_state_t\n(obstacle_mutex)"];
  *     estop [label="estop_active\n(estop_mutex)"];
- *     events [label="event_flags\n(ThreadX)"];
  *   }
  *
  *   subgraph cluster_consumers {
@@ -74,12 +73,6 @@
  *   telem -> bms_state [label="get", color=blue];
  *   telem -> temp_state [label="get", color=blue];
  *   telem -> obstacle_state [label="get", color=blue];
- *
- *   motor_cmd -> events [label="new_cmd", style=dashed];
- *   pid_gains -> events [label="gains_updated", style=dashed];
- *   estop -> events [label="estop_triggered", style=dashed];
- *   obstacle_state -> events [label="obstacle_detected", style=dashed];
- *   bms_state -> events [label="low_battery", style=dashed];
  * }
  * @enddot
  *
@@ -101,10 +94,10 @@
  * 3. Mutexes released immediately after data access
  * 4. No blocking operations while holding mutex
  *
- * **Lock-free event flags** for inter-task signaling (no mutex needed):
- * - `event_flags` group uses ThreadX atomic operations
- * - Safe to set from any task or ISR context
- * - Tasks block on `tx_event_flags_get()` without holding mutexes
+ * **Polling model:** No ThreadX event flags. Tasks call accessor functions on
+ * their fixed schedules (e.g., motor task polls at 250 Hz, telemetry at 20 Hz).
+ * The update_pending flag in pid_gains_t signals PID gain changes within the
+ * motor task's existing polling loop.
  *
  * ## Communication Timeout Detection (500ms Watchdog)
  *
@@ -129,7 +122,6 @@
  *
  * Motor => SharedData [label="is_comm_timeout()"];
  * SharedData box SharedData [label="elapsed > 500ms"];
- * SharedData => SharedData [label="Set k_event_comm_timeout"];
  * SharedData => Motor [label="true (TIMEOUT)"];
  * Motor box Motor [label="Emergency stop"];
  * Motor => SharedData [label="trigger_estop(k_estop_reason_comm_timeout)"];
@@ -139,7 +131,7 @@
  * 1. `shared_data_set_motor_command()` updates `last_comm_tick` to `tx_time_get()`
  * 2. Motor task calls `shared_data_is_comm_timeout()` every 4ms (250 Hz)
  * 3. Timeout check: `(current_tick - last_tick) * 10ms > 500ms`
- * 4. If timeout detected, sets `k_event_comm_timeout` flag and triggers e-stop
+ * 4. If timeout detected, returns true; caller triggers e-stop via shared_data_trigger_estop()
  *
  * ## Emergency Stop State Machine
  *
@@ -194,7 +186,6 @@
  *   CreateTempMutex [label="Create temp_mutex"];
  *   CreateObstacleMutex [label="Create obstacle_mutex"];
  *   CreateEstopMutex [label="Create estop_mutex"];
- *   CreateEventFlags [label="Create event_flags"];
  *   InitDefaults [label="Set default PID gains\nSet motor_cmd invalid\nSet estop inactive"];
  *   SetFlag [label="Set initialized = true"];
  *   End [label="return k_rx_ok", shape=ellipse];
@@ -211,10 +202,8 @@
  *   CreateTempMutex -> Error [label="TX_ERROR", color=red];
  *   CreateObstacleMutex -> CreateEstopMutex [label="TX_SUCCESS"];
  *   CreateObstacleMutex -> Error [label="TX_ERROR", color=red];
- *   CreateEstopMutex -> CreateEventFlags [label="TX_SUCCESS"];
+ *   CreateEstopMutex -> InitDefaults [label="TX_SUCCESS"];
  *   CreateEstopMutex -> Error [label="TX_ERROR", color=red];
- *   CreateEventFlags -> InitDefaults [label="TX_SUCCESS"];
- *   CreateEventFlags -> Error [label="TX_ERROR", color=red];
  *   InitDefaults -> SetFlag;
  *   SetFlag -> End;
  * }
@@ -229,14 +218,14 @@
  *
  * ## Performance Characteristics (RX72N @ 240 MHz)
  *
- * | Operation | Mutex Lock | memcpy | Mutex Unlock | Event Set | Total | Frequency |
- * |-----------|------------|--------|--------------|-----------|-------|-----------|
- * | **set_motor_command** | 1.2 µs | 3.5 µs | 0.8 µs | 1.0 µs | **6.5 µs** | 100 Hz |
- * | **get_motor_command** | 1.2 µs | 3.5 µs | 0.8 µs | - | **5.5 µs** | 250 Hz |
- * | **update_motor_state** | 1.2 µs | 4.2 µs | 0.8 µs | - | **6.2 µs** | 250 Hz |
- * | **get_motor_state** | 1.2 µs | 4.2 µs | 0.8 µs | - | **6.2 µs** | 20 Hz |
- * | **trigger_estop** | 0.9 µs | - | 0.7 µs | 1.0 µs | **2.6 µs** | On event |
- * | **is_comm_timeout** | 1.2 µs | - | 0.8 µs | 1.0 µs | **3.0 µs** | 250 Hz |
+ * | Operation | Mutex Lock | memcpy | Mutex Unlock | Total | Frequency |
+ * |-----------|------------|--------|--------------|-------|-----------|
+ * | **set_motor_command** | 1.2 µs | 3.5 µs | 0.8 µs | **5.5 µs** | 100 Hz |
+ * | **get_motor_command** | 1.2 µs | 3.5 µs | 0.8 µs | **5.5 µs** | 250 Hz |
+ * | **update_motor_state** | 1.2 µs | 4.2 µs | 0.8 µs | **6.2 µs** | 250 Hz |
+ * | **get_motor_state** | 1.2 µs | 4.2 µs | 0.8 µs | **6.2 µs** | 20 Hz |
+ * | **trigger_estop** | 0.9 µs | - | 0.7 µs | **1.6 µs** | On event |
+ * | **is_comm_timeout** | 1.2 µs | - | 0.8 µs | **2.0 µs** | 250 Hz |
  *
  * **Worst-case blocking time:** 6.5 µs (motor_mutex held during set_motor_command)
  * - Motor task at 250 Hz = 4ms period
@@ -319,7 +308,7 @@
  *
  * **Synchronization mechanisms:**
  * - ThreadX mutexes (TX_MUTEX): Protect shared data structures
- * - ThreadX event flags (TX_EVENT_FLAGS_GROUP): Lock-free inter-task signaling
+ * - Polling: Tasks call accessor functions on fixed schedules (no event flags)
  * - Priority inheritance: TX_NO_INHERIT (not needed - no nested locking)
  *
  * **Deadlock prevention:**
@@ -499,7 +488,7 @@ rx_bus_manager_t g_bus_manager = {0};
  *
  * @details
  * **Single global instance** of all inter-task shared state. Zero-initialized at startup
- * by C runtime (.bss section). Mutexes and event flags created by shared_data_init().
+ * by C runtime (.bss section). Mutexes created by shared_data_init().
  *
  * **Memory location:** .bss section (uninitialized data) -> RAM
  * **Size:** ~512 bytes (see memory breakdown in file header)
@@ -517,7 +506,7 @@ rx_bus_manager_t g_bus_manager = {0};
  *
  * @warning Direct access bypasses mutex protection and causes **data races**!
  *
- * @see shared_data_init() Create mutexes and event flags
+ * @see shared_data_init() Create mutexes
  * @see shared_data_t Structure definition (in shared_data.h)
  */
 shared_data_t g_shared_data = {0};
@@ -538,13 +527,12 @@ shared_data_t g_shared_data = {0};
  *
  * 1. **Check re-initialization:** Return error if already initialized
  * 2. **Create 5 mutexes:** motor, bms, temp, obstacle, estop (TX_NO_INHERIT priority)
- * 3. **Create event flags:** Inter-task signaling group (8 flags defined)
- * 4. **Set default PID gains:** Kp=0.286, Ki=8.01, Kd=0.0 (from MATLAB)
- * 5. **Invalidate motor command:** Set valid=false (no command received yet)
- * 6. **Initialize motor state:** mode=IDLE, estop=inactive
- * 7. **Initialize e-stop:** active=false, reason=NONE
- * 8. **Set timestamp:** last_comm_tick = current time
- * 9. **Mark initialized:** Set flag to prevent re-init
+ * 3. **Set default PID gains:** Kp=0.286, Ki=8.01, Kd=0.0 (from MATLAB)
+ * 4. **Invalidate motor command:** Set valid=false (no command received yet)
+ * 5. **Initialize motor state:** mode=IDLE, estop=inactive
+ * 6. **Initialize e-stop:** active=false, reason=NONE
+ * 7. **Set timestamp:** last_comm_tick = current time
+ * 8. **Mark initialized:** Set flag to prevent re-init
  *
  * ## Mutex Configuration:
  *
@@ -570,14 +558,12 @@ shared_data_t g_shared_data = {0};
  * @retval k_rx_ok All mutexes created, defaults set, ready for use
  * @retval k_rx_err_invalid_state Already initialized (called twice)
  * @retval k_rx_err_rtos_mutex Mutex creation failed (check ThreadX heap)
- * @retval k_rx_err_rtos_error Event flag creation failed (check ThreadX heap)
  *
  * @pre ThreadX kernel entered (tx_kernel_enter() called)
  * @pre Called from tx_application_define() context (not from task)
  * @pre No tasks created yet (no concurrent access possible)
  *
  * @post All 5 mutexes created and ready for use
- * @post Event flags group created
  * @post PID gains initialized to MATLAB-tuned defaults
  * @post motor_command.valid = false (no command yet)
  * @post estop_active = false (safe to start)
@@ -588,8 +574,8 @@ shared_data_t g_shared_data = {0};
  * @invariant All mutexes remain valid until system reset
  *
  * @note Thread Safety: Single-threaded context (tx_application_define), no mutex needed
- * @note Performance: ~500 µs execution time (5 mutex creates + 1 event flag create)
- * @note Memory: Allocates 192 bytes from ThreadX heap (5×32 + 32 for control blocks)
+ * @note Performance: ~400 µs execution time (5 mutex creates)
+ * @note Memory: Allocates 160 bytes from ThreadX heap (5×32 for mutex control blocks)
  *
  * @warning Never call this function from a task context! ThreadX creation functions
  *          must be called from tx_application_define() only.
@@ -630,15 +616,11 @@ shared_data_t g_shared_data = {0};
  *     case k_rx_err_rtos_mutex:
  *         rx_log_error("SDATA", "Mutex creation failed - out of memory?");
  *         break;
- *     case k_rx_err_rtos_error:
- *         rx_log_error("SDATA", "Event flag creation failed");
- *         break;
  * }
  * @endcode
  *
  * @see tx_application_define() ThreadX callback where this must be called
  * @see tx_mutex_create() ThreadX mutex creation API
- * @see tx_event_flags_create() ThreadX event flag API
  * @see shared_data_t Structure definition
  *
  * @since Version 1.0.0
@@ -686,12 +668,6 @@ rx_err_t shared_data_init(void)
     return k_rx_err_rtos_mutex;
   }
 
-  /* Create event_flags group */
-  tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
-
   /* Initialize default PID gains (from MATLAB tuning) */
   g_shared_data.pid_gains.kp             = 0.286f;
   g_shared_data.pid_gains.ki             = 8.01f;
@@ -733,8 +709,8 @@ rx_err_t shared_data_init(void)
  *
  * @details
  * Stores a new motor velocity command and updates the communication timestamp for
- * timeout detection. Sets the `k_event_motor_command_updated` event flag to wake the
- * motor control task.
+ * timeout detection. Motor control task picks up the command on its next 250 Hz
+ * polling iteration (within 4ms).
  *
  * ## Algorithm Steps:
  *
@@ -745,7 +721,6 @@ rx_err_t shared_data_init(void)
  * 5. **Update timestamp:** Set timestamp_ms to current tx_time_get()
  * 6. **Update watchdog:** Set last_comm_tick to prevent timeout
  * 7. **Release motor_mutex:** Allow other tasks to access
- * 8. **Signal event:** Set k_event_motor_command_updated flag
  *
  * ## Data Flow:
  *
@@ -757,10 +732,8 @@ rx_err_t shared_data_init(void)
  * SharedData box SharedData [label="memcpy(cmd -> g_shared_data)"];
  * SharedData box SharedData [label="Update timestamp"];
  * SharedData box SharedData [label="Release motor_mutex"];
- * SharedData => SharedData [label="Set NEW_MOTOR_COMMAND"];
  * SharedData => CommTask [label="k_rx_ok"];
- * SharedData => MotorTask [label="Event flag (wake)"];
- * MotorTask box MotorTask [label="Process new command"];
+ * MotorTask box MotorTask [label="Polls get_motor_command() at 250 Hz"];
  * @endmsc
  *
  * @param[in] cmd Pointer to motor command structure with target velocities
@@ -770,7 +743,7 @@ rx_err_t shared_data_init(void)
  *            - sequence number for command ordering
  *
  * @return rx_err_t Operation status
- * @retval k_rx_ok Command stored successfully, event signaled, motor task will respond
+ * @retval k_rx_ok Command stored successfully, motor task will pick up on next poll
  * @retval k_rx_err_null_ptr cmd pointer is nullptr (no operation performed)
  * @retval k_rx_err_not_initialized Module not initialized (call shared_data_init first)
  * @retval k_rx_err_rtos_mutex Mutex acquisition failed (ThreadX internal error)
@@ -782,14 +755,12 @@ rx_err_t shared_data_init(void)
  * @post motor_command copied to g_shared_data.motor_command
  * @post timestamp_ms = current tx_time_get() value
  * @post last_comm_tick updated (prevents timeout for next 500ms)
- * @post k_event_motor_command_updated flag set
- * @post Motor task wakes up and processes command within ~4ms
+ * @post Motor task picks up command within ~4ms (250 Hz polling)
  *
  * @invariant motor_mutex held for <6 µs (memcpy + timestamp update)
- * @invariant Event flag set AFTER mutex released (no deadlock)
  *
  * @note Thread Safety: Protected by motor_mutex (blocking wait, no timeout)
- * @note Performance: ~6.5 µs total (1.2 µs lock + 3.5 µs memcpy + 0.8 µs unlock + 1.0 µs event)
+ * @note Performance: ~5.5 µs total (1.2 µs lock + 3.5 µs memcpy + 0.8 µs unlock)
  * @note Memory: sizeof(motor_command_t) = 24 bytes copied
  * @note Frequency: Called at ~100 Hz by Communication Task (10ms period)
  *
@@ -825,10 +796,9 @@ rx_err_t shared_data_init(void)
  * shared_data_set_motor_command(&stop_cmd);
  * @endcode
  *
- * @see shared_data_get_motor_command() Read command (Motor Task)
+ * @see shared_data_get_motor_command() Read command (Motor Task polls at 250 Hz)
  * @see shared_data_is_comm_timeout() Check command freshness
  * @see motor_command_t Structure definition (in shared_data.h)
- * @see k_event_motor_command_updated Event flag definition
  *
  * @since Version 1.0.0
  */
@@ -855,9 +825,6 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
   g_shared_data.last_comm_tick             = g_shared_data.motor_command.timestamp_ms;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
-
-  /* Signal new command event */
-  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_motor_command_updated, TX_OR);
 
   return k_rx_ok;
 }
@@ -1132,8 +1099,8 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  *
  * @details
  * Updates PID controller gains at runtime for performance tuning. Sets the
- * `update_pending` flag and signals `k_event_pid_gains_updated` event so motor
- * task can apply new gains to all 4 PID controllers.
+ * `update_pending` flag so the motor task can detect and apply new gains to
+ * all 4 PID controllers on its next polling iteration.
  *
  * ## Algorithm Steps:
  *
@@ -1143,7 +1110,6 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  * 4. **Copy gains:** memcpy entire pid_gains_t structure
  * 5. **Set pending flag:** Mark gains as needing application
  * 6. **Release motor_mutex:** Allow motor task to read
- * 7. **Signal event:** Set k_event_pid_gains_updated flag
  *
  * @param[in] gains Pointer to new PID gains
  *            - Must not benullptr
@@ -1162,14 +1128,13 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  * @pre Gains in safe ranges (validate before calling)
  *
  * @post pid_gains copied to g_shared_data.pid_gains
- * @post update_pending = true
- * @post k_event_pid_gains_updated flag set
- * @post Motor task will apply gains within ~4ms (250 Hz loop)
+ * @post update_pending = true (motor task detects via shared_data_pid_update_pending())
+ * @post Motor task will apply gains within ~4ms (250 Hz polling loop)
  *
  * @invariant motor_mutex held for <6 µs
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~6.5 µs total (memcpy + flag + event)
+ * @note Performance: ~5.5 µs total (memcpy + flag set)
  * @note Frequency: Called rarely (~1 Hz or less, manual tuning)
  *
  * @warning Unsafe PID gains can cause oscillation or instability!
@@ -1221,9 +1186,6 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
-  /* Signal PID update event */
-  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_pid_gains_updated, TX_OR);
-
   return k_rx_ok;
 }
 
@@ -1262,12 +1224,12 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
  *
  * @note Thread Safety: Protected by motor_mutex
  * @note Performance: ~5.5 µs total
- * @note Frequency: Called on k_event_pid_gains_updated event (~1 Hz)
+ * @note Frequency: Called when shared_data_pid_update_pending() returns true (~1 Hz)
  *
  * @par Example Usage:
  * @code{.c}
- * // In motor task event handler
- * if (actual_flags & k_event_pid_gains_updated) {
+ * // In motor task polling loop
+ * if (shared_data_pid_update_pending()) {
  *     pid_gains_t gains;
  *     shared_data_get_pid_gains(&gains);
  *
@@ -1403,7 +1365,7 @@ bool shared_data_pid_update_pending(void)
  *
  * @note Thread Safety: Protected by motor_mutex
  * @note Performance: ~2.0 µs total (fast boolean write)
- * @note Frequency: Called on k_event_pid_gains_updated (~1 Hz)
+ * @note Frequency: Called after detecting shared_data_pid_update_pending() (~1 Hz)
  * @note Void return: No error reporting (best-effort clear)
  *
  * @warning No error indication if mutex fails! Assumes this never fails
@@ -1450,8 +1412,9 @@ void shared_data_clear_pid_update_flag(void)
  * @brief Trigger emergency stop
  *
  * @details
- * Activates emergency stop with specified reason code. Sets the `estop_active` flag
- * and signals `k_event_estop_triggered` event to immediately halt all motors.
+ * Activates emergency stop with specified reason code. Sets the `estop_active` flag.
+ * Motor control task detects the active e-stop via shared_data_is_estop_active()
+ * on its next 250 Hz polling iteration (within 4ms).
  *
  * **Can be called from any task** when dangerous condition detected:
  * - Communication Task: timeout, manual request
@@ -1466,7 +1429,6 @@ void shared_data_clear_pid_update_flag(void)
  * 3. **Set active flag:** estop_active = true
  * 4. **Store reason:** Record why e-stop was triggered
  * 5. **Release estop_mutex:** Allow reads
- * 6. **Signal event:** Set k_event_estop_triggered flag
  *
  * ## State Machine Transition:
  *
@@ -1502,15 +1464,13 @@ void shared_data_clear_pid_update_flag(void)
  *
  * @post estop_active = true
  * @post estop_reason = reason parameter
- * @post k_event_estop_triggered flag set
- * @post Motor task enters emergency stop mode
+ * @post Motor task detects via shared_data_is_estop_active() within ~4ms (250 Hz poll)
  * @post All motor outputs disabled within ~4ms (250 Hz loop)
  *
  * @invariant estop_mutex held for <2 µs (two assignments)
- * @invariant Event flag set AFTER mutex released
  *
  * @note Thread Safety: Protected by estop_mutex
- * @note Performance: ~2.6 µs total (0.9 µs lock + 0.7 µs unlock + 1.0 µs event)
+ * @note Performance: ~1.6 µs total (0.9 µs lock + 0.7 µs unlock)
  * @note Frequency: Called on fault conditions (rare, <1 Hz normal operation)
  * @note Priority: High-priority operation (motor safety critical)
  *
@@ -1559,9 +1519,6 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
 
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
 
-  /* Signal e-stop event */
-  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_estop_triggered, TX_OR);
-
   return k_rx_ok;
 }
 
@@ -1570,18 +1527,17 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  *
  * @details
  * **ISR-safe** version of shared_data_trigger_estop() that DOES NOT block on mutex.
- * Sets a volatile flag and event flag only. Motor control task commits the pending
- * e-stop to mutex-protected state via shared_data_commit_isr_estop().
+ * Sets volatile flags only. Motor control task commits the pending e-stop to
+ * mutex-protected state via shared_data_commit_isr_estop() on its next 250 Hz poll.
  *
  * **CRITICAL:** This function is specifically designed for ISR context and MUST be
  * used instead of shared_data_trigger_estop() when called from interrupt handlers.
  *
  * ## Algorithm Steps:
  *
- * 1. **Set volatile flag:** s_estop_pending_from_isr = true (atomic write)
- * 2. **Store reason:** s_pending_estop_reason = reason (atomic write)
- * 3. **Signal event:** tx_event_flags_set(k_event_estop_triggered, TX_OR)
- * 4. **Return immediately:** No blocking, no mutex
+ * 1. **Store reason:** s_pending_estop_reason = reason (atomic volatile write)
+ * 2. **Set volatile flag:** s_estop_pending_from_isr = true (atomic volatile write)
+ * 3. **Return immediately:** No blocking, no mutex, no event flags
  *
  * **Commit path:** Motor control task calls shared_data_commit_isr_estop() every
  * 4ms (250 Hz) to transfer ISR-triggered e-stop to mutex-protected shared state.
@@ -1592,11 +1548,10 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  * @retval N/A Function always succeeds (void return, no error cases)
  *
  * @pre Called from ISR context only (POEG, BMS alert ISRs)
- * @pre shared_data_init() completed and g_shared_data.event_flags initialized
+ * @pre shared_data_init() completed
  * @post s_estop_pending_from_isr == true
  * @post s_pending_estop_reason == reason
- * @post k_event_estop_triggered set via tx_event_flags_set(&g_shared_data.event_flags, k_event_estop_triggered, TX_OR)
- * @post Motor task will commit on next iteration (<4ms latency)
+ * @post Motor task commits on next 250 Hz poll (<4ms latency)
  *
  * @note Thread Safety: Volatile writes are atomic on RX72N
  * @note Performance: ~1 µs total (no mutex wait)
@@ -1644,9 +1599,6 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
   /* Set ISR-triggered e-stop pending flag SECOND (volatile write) */
   /* This ordering ensures reason is always written before flag is set */
   s_estop_pending_from_isr = true;
-
-  /* Signal e-stop event (ISR-safe, TX_OR is non-blocking) */
-  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_estop_triggered, TX_OR);
 }
 
 /**
@@ -1769,7 +1721,8 @@ rx_err_t shared_data_commit_isr_estop(void)
  *
  * @details
  * Clears the emergency stop flag after fault condition has been resolved.
- * Allows system to resume normal operation. Sets `k_event_estop_cleared` event.
+ * Allows system to resume normal operation. Motor task detects the cleared
+ * e-stop via shared_data_is_estop_active() on its next 250 Hz poll.
  *
  * **Should only be called after:**
  * - Fault condition verified resolved
@@ -1783,7 +1736,6 @@ rx_err_t shared_data_commit_isr_estop(void)
  * 3. **Clear flag:** estop_active = false
  * 4. **Reset reason:** estop_reason = k_estop_reason_none
  * 5. **Release estop_mutex:** Allow reads
- * 6. **Signal event:** Set k_event_estop_cleared flag
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok E-stop cleared, system can resume
@@ -1796,13 +1748,13 @@ rx_err_t shared_data_commit_isr_estop(void)
  *
  * @post estop_active = false
  * @post estop_reason = k_estop_reason_none
- * @post k_event_estop_cleared flag set
+ * @post Motor task detects cleared state within ~4ms (250 Hz polling)
  * @post Motor task can accept new commands
  *
  * @invariant estop_mutex held for <2 µs
  *
  * @note Thread Safety: Protected by estop_mutex
- * @note Performance: ~2.6 µs total
+ * @note Performance: ~1.6 µs total
  * @note Frequency: Called after fault recovery (rare)
  *
  * @warning Only clear after verifying fault is gone! Premature clear
@@ -1820,8 +1772,7 @@ rx_err_t shared_data_commit_isr_estop(void)
  * @endcode
  *
  * @see shared_data_trigger_estop() Activate e-stop
- * @see shared_data_is_estop_active() Check status
- * @see k_event_estop_cleared Event flag
+ * @see shared_data_is_estop_active() Check status (polled at 250 Hz)
  *
  * @since Version 1.0.0
  */
@@ -1842,9 +1793,6 @@ rx_err_t shared_data_clear_estop(void)
   g_shared_data.estop_reason = k_estop_reason_none;
 
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
-
-  /* Signal e-stop cleared event */
-  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_estop_cleared, TX_OR);
 
   return k_rx_ok;
 }
@@ -2020,7 +1968,6 @@ estop_reason_t shared_data_get_estop_reason(void)
  * 3. **Acquire bms_mutex:** Block until available
  * 4. **Copy state:** memcpy entire bms_state_t (64 bytes)
  * 5. **Release bms_mutex:** Allow readers
- * 6. **Check battery level:** If valid and SoC <15%, set k_event_low_battery
  *
  * @param[in] state Pointer to BMS state structure
  *            - Must not benullptr
@@ -2040,7 +1987,6 @@ estop_reason_t shared_data_get_estop_reason(void)
  * @pre state->valid = true if data is fresh
  *
  * @post bms_state copied to g_shared_data.bms_state
- * @post If SoC <15%, k_event_low_battery flag set
  *
  * @invariant bms_mutex held for <3 µs
  *
@@ -2062,7 +2008,6 @@ estop_reason_t shared_data_get_estop_reason(void)
  *
  * @see shared_data_get_bms() Read state (Telemetry Task)
  * @see bms_state_t Structure definition
- * @see k_event_low_battery Event flag
  *
  * @since Version 1.0.0
  */
@@ -2084,11 +2029,6 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
   (void)memcpy(&g_shared_data.bms_state, state, sizeof(bms_state_t));
 
   (void)tx_mutex_put(&g_shared_data.bms_mutex);
-
-  /* Check for low battery and signal event */
-  if (state->valid && state->soc_percent < 15) {
-    (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_low_battery, TX_OR);
-  }
 
   return k_rx_ok;
 }
@@ -2336,8 +2276,8 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  *
  * @details
  * Stores distance readings from HC-SR04 ultrasonic sensors. Called when new
- * measurements available (typically 10-20 Hz). Automatically sets obstacle
- * detected/cleared events based on distance thresholds.
+ * measurements available (typically 10-20 Hz). Telemetry task reads the state
+ * via shared_data_get_obstacle() at 20 Hz.
  *
  * ## Algorithm Steps:
  *
@@ -2346,7 +2286,6 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  * 3. **Acquire obstacle_mutex:** Block until available
  * 4. **Copy state:** memcpy entire obstacle_state_t (32 bytes)
  * 5. **Release obstacle_mutex:** Allow readers
- * 6. **Signal events:** Set k_event_obstacle_detected or k_event_obstacle_cleared
  *
  * @param[in] state Pointer to obstacle state
  *            - Must not benullptr
@@ -2355,7 +2294,7 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  *            - any_obstacle true if ANY sensor detected obstacle
  *
  * @return rx_err_t Operation status
- * @retval k_rx_ok State updated, events signaled
+ * @retval k_rx_ok State updated
  * @retval k_rx_err_null_ptr state is nullptr
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_rtos_mutex Mutex failed
@@ -2364,13 +2303,11 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  * @pre state pointer valid
  *
  * @post obstacle_state copied to g_shared_data.obstacle_state
- * @post If state->any_obstacle true, k_event_obstacle_detected set
- * @post If state->any_obstacle false, k_event_obstacle_cleared set
  *
  * @invariant obstacle_mutex held for <3 µs
  *
  * @note Thread Safety: Protected by obstacle_mutex
- * @note Performance: ~3.0 µs total (32-byte copy + event)
+ * @note Performance: ~2.0 µs total (32-byte copy)
  * @note Frequency: Called at 10-20 Hz by Obstacle Task
  *
  * @par Example Usage:
@@ -2398,8 +2335,6 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  *
  * @see shared_data_get_obstacle() Read state (Telemetry Task)
  * @see obstacle_state_t Structure definition
- * @see k_event_obstacle_detected Event flag
- * @see k_event_obstacle_cleared Event flag
  *
  * @since Version 1.0.0
  */
@@ -2421,13 +2356,6 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
   (void)memcpy(&g_shared_data.obstacle_state, state, sizeof(obstacle_state_t));
 
   (void)tx_mutex_put(&g_shared_data.obstacle_mutex);
-
-  /* Signal obstacle event if detected */
-  if (state->any_obstacle) {
-    (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_obstacle_detected, TX_OR);
-  } else {
-    (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_obstacle_cleared, TX_OR);
-  }
 
   return k_rx_ok;
 }
@@ -2532,8 +2460,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  * 5. **Release motor_mutex:** Allow updates
  * 6. **Calculate elapsed:** (current_tick - last_tick) * 10ms
  * 7. **Compare threshold:** timeout = (elapsed_ms > 500ms)
- * 8. **Signal event:** If timeout, set k_event_comm_timeout flag
- * 9. **Return status:** True if timeout, false if OK
+ * 8. **Return status:** True if timeout, false if OK
  *
  * ## Time Calculation:
  *
@@ -2553,14 +2480,13 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  *
  * @pre None (safe to call anytime)
  *
- * @post If timeout: k_event_comm_timeout flag set
- * @post If timeout: Motor task should trigger e-stop
+ * @post If timeout: returns true; caller must trigger e-stop
  *
  * @invariant motor_mutex held for <3 µs (read 2 ticks + calculate)
  * @invariant Never modifies shared state (read-only operation)
  *
  * @note Thread Safety: Protected by motor_mutex
- * @note Performance: ~3.0 µs total (tick reads + math + event)
+ * @note Performance: ~2.0 µs total (tick reads + math)
  * @note Frequency: Called at 250 Hz by Motor Task (every 4ms)
  * @note Re-entrancy: Not reentrant (mutex-based)
  *
@@ -2603,7 +2529,6 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  * @see shared_data_update_last_comm_tick() Manually update timestamp
  * @see shared_data_trigger_estop() Action to take on timeout
  * @see k_shared_comm_timeout_ms Timeout threshold (500ms)
- * @see k_event_comm_timeout Event flag set on timeout
  *
  * @since Version 1.0.0
  */
@@ -2634,11 +2559,6 @@ bool shared_data_is_comm_timeout(void)
   elapsed_ms = (current_tick - last_tick) * 10;
 
   timeout = (elapsed_ms > k_shared_comm_timeout_ms);
-
-  if (timeout) {
-    /* Signal timeout event */
-    (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_comm_timeout, TX_OR);
-  }
 
   return timeout;
 }
@@ -2703,208 +2623,3 @@ void shared_data_update_last_comm_tick(void)
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 }
 
-/* =============================================================================
- * Event Flags
- * =============================================================================
- */
-
-/**
- * @brief Set event flag(s)
- *
- * @details
- * Raises one or more event flags to signal events to other tasks. Used for
- * efficient inter-task communication without polling. Flags can be OR'd together.
- *
- * **Lock-free operation:** Event flags use ThreadX atomic operations, safe to
- * call from any context (tasks or ISRs) without mutex.
- *
- * ## Algorithm Steps:
- *
- * 1. **Check initialization:** Return error if not initialized
- * 2. **Set flags:** Call tx_event_flags_set() with TX_OR option
- * 3. **Wake waiters:** ThreadX wakes tasks blocked on tx_event_flags_get()
- *
- * @param[in] flags Event flag(s) to set (can OR multiple flags)
- *            - k_event_motor_command_updated: New velocity command
- *            - k_event_estop_triggered: E-stop activated
- *            - k_event_estop_cleared: E-stop cleared
- *            - k_event_pid_gains_updated: PID gains changed
- *            - k_event_comm_timeout: Communication timeout
- *            - k_event_obstacle_detected: Obstacle detected
- *            - k_event_obstacle_cleared: Obstacle cleared
- *            - k_event_low_battery: Battery SoC <15%
- *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Flags set, waiting tasks woken
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_error ThreadX internal error
- *
- * @pre Module initialized
- *
- * @post Event flag(s) raised in event_flags group
- * @post Tasks blocked on these flags are woken
- *
- * @invariant No mutex needed (lock-free operation)
- *
- * @note Thread Safety: Lock-free (ThreadX atomic operations)
- * @note ISR Safety: Safe to call from interrupt context
- * @note Performance: ~1.0 µs total (fast atomic operation)
- * @note Frequency: Called on event occurrences (varies by flag)
- *
- * @par Example - Multiple Flags:
- * @code{.c}
- * // Set multiple events at once
- * shared_data_set_event(k_event_estop_triggered | k_event_obstacle_detected);
- * // Tasks waiting on EITHER flag will wake up
- * @endcode
- *
- * @par Example - Single Flag:
- * @code{.c}
- * // After storing new motor command
- * shared_data_set_event(k_event_motor_command_updated);
- * // Motor task wakes and processes command
- * @endcode
- *
- * @see shared_data_wait_event() Wait for flags (blocking)
- * @see shared_event_flags_t Flag definitions
- * @see tx_event_flags_set() ThreadX API
- *
- * @since Version 1.0.0
- */
-rx_err_t shared_data_set_event(shared_event_flags_t flags)
-{
-  UINT tx_status;
-
-  if (!g_shared_data.initialized) {
-    return k_rx_err_not_initialized;
-  }
-
-  tx_status = tx_event_flags_set(&g_shared_data.event_flags, (ULONG)flags, TX_OR);
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
-
-  return k_rx_ok;
-}
-
-/**
- * @brief Wait for event flag(s)
- *
- * @details
- * Blocks until one or more event flags are set. Uses TX_OR_CLEAR mode to
- * automatically clear flags after retrieval (consume events). Efficient
- * alternative to polling.
- *
- * ## Algorithm Steps:
- *
- * 1. **Check initialization:** Return error if not initialized
- * 2. **Wait for flags:** Call tx_event_flags_get() with TX_OR_CLEAR
- * 3. **Block task:** ThreadX suspends task until flags set
- * 4. **Wake on event:** Task resumes when any specified flag raised
- * 5. **Clear flags:** ThreadX automatically clears retrieved flags
- * 6. **Return flags:** Write actual flags to out_actual_flags if not nullptr
- *
- * @param[in] flags Event flag(s) to wait for (can OR multiple)
- *            - Any specified flag will wake the task (TX_OR logic)
- * @param[in] wait_option Timeout behavior
- *            - TX_WAIT_FOREVER: Block indefinitely until flag set
- *            - TX_NO_WAIT: Return immediately (poll mode)
- *            - Tick count: Block for specified ticks (timeout)
- * @param[out] out_actual_flags Pointer to store actual flags that were set
- *             - Can be NULL if not needed
- *             - Use to determine which flag(s) woke the task
- *
- * @return rx_err_t Operation status
- * @retval k_rx_ok Flags received successfully
- * @retval k_rx_err_timeout Wait timed out (if wait_option != TX_WAIT_FOREVER)
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_error ThreadX internal error
- *
- * @pre Module initialized
- *
- * @post Task blocked until event occurs (if wait_option allows)
- * @post Retrieved flags automatically cleared (TX_OR_CLEAR)
- *
- * @invariant No mutex needed (lock-free operation)
- *
- * @note Thread Safety: Lock-free (ThreadX atomic operations)
- * @note Performance: Zero CPU usage while blocked (task suspended)
- * @note Frequency: Called by tasks as needed (blocking wait)
- *
- * @warning Do not call from ISR context! Use TX_NO_WAIT from ISRs only.
- *
- * @par Example - Wait for Command:
- * @code{.c}
- * // In motor task - efficient event-driven loop
- * uint32_t actual_flags;
- * rx_err_t err = shared_data_wait_event(
- *     k_event_motor_command_updated | k_event_estop_triggered,
- *     TX_WAIT_FOREVER,
- *     &actual_flags
- * );
- *
- * if (err == k_rx_ok) {
- *     if (actual_flags & k_event_motor_command_updated) {
- *         // Process new command
- *         motor_command_t cmd;
- *         shared_data_get_motor_command(&cmd);
- *         pid_control(&cmd);
- *     }
- *     if (actual_flags & k_event_estop_triggered) {
- *         // Handle e-stop
- *         motor_emergency_stop();
- *     }
- * }
- * @endcode
- *
- * @par Example - Poll (Non-Blocking):
- * @code{.c}
- * // Check for event without blocking
- * uint32_t flags;
- * rx_err_t err = shared_data_wait_event(
- *     k_event_low_battery,
- *     TX_NO_WAIT,  // Don't block
- *     &flags
- * );
- *
- * if (err == k_rx_ok) {
- *     rx_log_warn("BMS", "Low battery detected");
- * } else if (err == k_rx_err_timeout) {
- *     // No event pending (normal)
- * }
- * @endcode
- *
- * @see shared_data_set_event() Raise flags (wake waiters)
- * @see shared_event_flags_t Flag definitions
- * @see tx_event_flags_get() ThreadX API
- *
- * @since Version 1.0.0
- */
-rx_err_t
-shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_t* out_actual_flags)
-{
-  UINT  tx_status;
-  ULONG actual_flags = 0;
-
-  if (!g_shared_data.initialized) {
-    return k_rx_err_not_initialized;
-  }
-
-  tx_status = tx_event_flags_get(&g_shared_data.event_flags,
-                                 (ULONG)flags,
-                                 TX_OR_CLEAR,
-                                 &actual_flags,
-                                 wait_option);
-  if (tx_status == TX_NO_EVENTS) {
-    return k_rx_err_timeout;
-  }
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_error;
-  }
-
-  if (out_actual_flags != nullptr) {
-    *out_actual_flags = (uint32_t)actual_flags;
-  }
-
-  return k_rx_ok;
-}

@@ -189,8 +189,6 @@
  *   BQ4050 >> I2CBus [label="SoC: 12%"];
  *   I2CBus >> BMSTask [label="k_rx_ok"];
  *   BMSTask box BMSTask [label="12% < 15%\nLog WARNING"];
- *   BMSTask => SharedData [label="shared_data_set_event(k_event_low_battery)"];
- *   SharedData box SharedData [label="Set event flag"];
  *
  *   --- [label="Critical Battery (SoC < 5%)"];
  *   BMSTask => I2CBus [label="rx_bq4050_read_status()"];
@@ -808,8 +806,7 @@ rx_err_t bms_monitor_task_create(void)
  *
  * 7. **Low Battery Warning Check:** If SoC < 15% (k_bms_low_soc_percent):
  *    - Log warning: "Low battery SoC: XX%"
- *    - Set event flag: shared_data_set_event(k_event_low_battery)
- *    - Allows telemetry task to notify gateway
+ *    - BMS state written to shared_data; telemetry task polls and notifies gateway
  *
  * 8. **Critical Battery Check:** If SoC < 5% (k_bms_critical_soc_percent):
  *    - Log error: "Critical battery SoC: XX%"
@@ -894,7 +891,6 @@ rx_err_t bms_monitor_task_create(void)
  *         :shared_data_trigger_estop(k_estop_reason_low_battery)\n**EMERGENCY STOP**;
  *       else if (SoC < 15%?) then (yes)
  *         :Log WARNING\n"Low battery SoC: XX%";
- *         :shared_data_set_event(k_event_low_battery);
  *       else (>= 15%)
  *         :Normal operation;
  *       endif
@@ -1043,8 +1039,7 @@ rx_err_t bms_monitor_task_create(void)
  *   rx_log_warn_val("BMS", "Low battery SoC", 12);
  *   // UART output: "[BMS] WARNING: Low battery SoC: 12"
  *
- *   shared_data_set_event(k_event_low_battery);
- *   // Event flag set, telemetry task will notify gateway
+ *   // BMS state written to shared_data below; telemetry task polls at 20 Hz
  * }
  *
  * // Step 4: Update shared data
@@ -1108,8 +1103,7 @@ rx_err_t bms_monitor_task_create(void)
  * @see bms_monitor_task_create() Task creation function
  * @see rx_bq4050_init() Initialize BQ4050 fuel gauge
  * @see rx_bq4050_read_status() Read all 7 BQ4050 registers
- * @see shared_data_update_bms() Thread-safe battery state update
- * @see shared_data_set_event() Set low battery event flag
+ * @see shared_data_update_bms() Thread-safe battery state update (telemetry polls at 20 Hz)
  * @see shared_data_trigger_estop() Trigger emergency stop
  * @see tx_thread_sleep() ThreadX sleep API (yields CPU)
  * @see tx_time_get() Get current ThreadX tick count
@@ -1182,7 +1176,6 @@ static void internal_bms_task_entry(ULONG input)
       /* Check for low battery */
       if (status.relative_soc < k_bms_low_soc_percent) {
         rx_log_warn_val(s_tag, "Low battery SoC", (uint8_t)status.relative_soc);
-        (void)shared_data_set_event(k_event_low_battery);
       }
 
       /* Check for critical battery */

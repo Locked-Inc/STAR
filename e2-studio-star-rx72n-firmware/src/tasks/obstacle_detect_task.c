@@ -216,12 +216,11 @@
  *   RxObstacle => Callback [label="obstacle_callback(true, idx=1, dist=29.0)"];
  *   Callback box Callback [label="Log warning:\nObstacle by sensor 1"];
  *   Callback => SharedData [label="trigger_estop(k_estop_reason_obstacle)"];
- *   SharedData box SharedData [label="Set estop_active = true\nSet k_event_estop_triggered"];
+ *   SharedData box SharedData [label="Set estop_active = true"];
  *   SharedData >> Callback [label="k_rx_ok"];
- *   Callback => SharedData [label="set_event(k_event_obstacle_detected)"];
  *   Callback => SharedData [label="update_obstacle(state)"];
  *   SharedData box SharedData [label="Store: sensor_idx=1\ndist=29cm, timestamp"];
- *   MotorTask box MotorTask [label="Event detected\nEMERGENCY BRAKE"];
+ *   MotorTask box MotorTask [label="250 Hz poll detects\nestop_active -> EMERGENCY BRAKE"];
  *
  *   --- [label="Obstacle Cleared"];
  *   RxObstacle => HC_SR04 [label="Trigger pulse 1"];
@@ -232,7 +231,6 @@
  *   RxObstacle box RxObstacle [label="Debounce clear = 3\nOBSTACLE CLEARED"];
  *   RxObstacle => Callback [label="obstacle_callback(false, idx=1, dist=150.0)"];
  *   Callback box Callback [label="Log info:\nObstacle cleared"];
- *   Callback => SharedData [label="set_event(k_event_obstacle_cleared)"];
  *   Callback box Callback [label="Note: E-stop NOT auto-cleared\n(requires manual reset)"];
  * }
  * @endmsc
@@ -320,22 +318,14 @@
  *
  *     TriggerEstop : shared_data_trigger_estop()
  *     TriggerEstop : Reason: k_estop_reason_obstacle
- *     TriggerEstop --> SetEvent
- *
- *     SetEvent : shared_data_set_event()
- *     SetEvent : k_event_obstacle_detected
- *     SetEvent --> UpdateState
+ *     TriggerEstop --> UpdateState
  *   }
  *
  *   state ObstacleCleared {
  *     [*] --> LogInfo
  *     LogInfo : rx_log_info_val()
  *     LogInfo : "Obstacle cleared by sensor N"
- *     LogInfo --> SetClearEvent
- *
- *     SetClearEvent : shared_data_set_event()
- *     SetClearEvent : k_event_obstacle_cleared
- *     SetClearEvent --> UpdateState
+ *     LogInfo --> UpdateState
  *   }
  *
  *   UpdateState : Build obstacle_state_t
@@ -599,7 +589,6 @@
  * static void internal_obstacle_callback(bool obstacle_detected, ...) {
  *     if (obstacle_detected) {
  *         (void)shared_data_trigger_estop(k_estop_reason_obstacle);  // Delegate to shared_data
- *         (void)shared_data_set_event(k_event_obstacle_detected);   // Delegate event signaling
  *     }
  * }
  *
@@ -1393,7 +1382,6 @@ static void internal_obstacle_callback(bool    obstacle_detected,
  * @see temp_sensor_task_create() Provides temperature for sound speed compensation
  * @see shared_data_trigger_estop() Activated by callback on obstacle detection
  * @see shared_data_update_obstacle() Stores obstacle state for telemetry
- * @see shared_data_set_event() Sets k_event_obstacle_detected/cleared flags
  * @see rx_obstacle_detect_init() Initializes HC-SR04 sensor library
  * @see rx_obstacle_detect_start() Starts 50 Hz polling loop
  * @see internal_obstacle_callback() Callback function (runs in library context)
@@ -1931,12 +1919,7 @@ static void internal_obstacle_task_entry(ULONG input)
  *   SharedData box SharedData [label="Acquire estop_mutex"];
  *   SharedData box SharedData [label="Set estop_active = true"];
  *   SharedData box SharedData [label="Set estop_reason = OBSTACLE"];
- *   SharedData box SharedData [label="Set k_event_estop_triggered"];
  *   SharedData box SharedData [label="Release estop_mutex"];
- *   SharedData >> Callback [label="k_rx_ok"];
- *
- *   Callback => SharedData [label="set_event(\n  k_event_obstacle_detected\n)"];
- *   SharedData box SharedData [label="tx_event_flags_set()"];
  *   SharedData >> Callback [label="k_rx_ok"];
  *
  *   Callback box Callback [label="Build obstacle_state_t:\n  distance_cm[1] = 29\n  obstacle_detected[1] = true\n  any_obstacle = true\n  timestamp_ms = tx_time_get()"];
@@ -1949,7 +1932,7 @@ static void internal_obstacle_task_entry(ULONG input)
  *
  *   Callback >> RxObstacle [label="Return"];
  *
- *   MotorTask box MotorTask [label="Event wakeup:\nk_event_estop_triggered"];
+ *   MotorTask box MotorTask [label="250 Hz poll:\nshared_data_is_estop_active() = true"];
  *   MotorTask box MotorTask [label="EMERGENCY BRAKE\nDisable PWM"];
  *
  *   Telemetry box Telemetry [label="Poll obstacle state:\nSensor 1 = 29 cm"];
@@ -1967,10 +1950,6 @@ static void internal_obstacle_task_entry(ULONG input)
  *   RxObstacle => Callback [label="internal_obstacle_callback(\n  false, idx=1, dist=150.0\n)"];
  *
  *   Callback box Callback [label="rx_log_info_val(\n  \"Obstacle cleared by sensor\", 1\n)"];
- *
- *   Callback => SharedData [label="set_event(\n  k_event_obstacle_cleared\n)"];
- *   SharedData box SharedData [label="tx_event_flags_set()"];
- *   SharedData >> Callback [label="k_rx_ok"];
  *
  *   Callback box Callback [label="Build obstacle_state_t:\n  distance_cm[1] = 150\n  obstacle_detected[1] = false\n  any_obstacle = false"];
  *
@@ -2004,12 +1983,12 @@ static void internal_obstacle_task_entry(ULONG input)
  *
  * **Detection (obstacle_detected = true):**
  * - Calls shared_data_trigger_estop(k_estop_reason_obstacle)
- * - Motor task receives k_event_estop_triggered event
+ * - Motor task detects e-stop on next 250 Hz poll
  * - Motor task disables all PWM outputs (emergency brake)
  * - E-stop state persists until manual reset (not auto-cleared)
  *
  * **Clearance (obstacle_detected = false):**
- * - Calls shared_data_set_event(k_event_obstacle_cleared)
+ * - Logs obstacle cleared (no auto-clear of e-stop)
  * - **Does NOT call shared_data_clear_estop()** (manual reset required)
  * - Operator must acknowledge clearance before resuming operation
  *
@@ -2091,7 +2070,8 @@ static void internal_obstacle_task_entry(ULONG input)
  *
  * @par ISR Safety:
  * May be called from ISR context if library uses interrupt-driven echo capture.
- * All shared_data_*() functions are ISR-safe (use tx_event_flags_set, not blocking).
+ * shared_data_trigger_estop() is task-safe (uses mutex). shared_data_update_obstacle()
+ * uses mutex and is safe from task context.
  *
  * @par Example - Detection Callback Flow:
  * @code{.c}
@@ -2102,12 +2082,11 @@ static void internal_obstacle_task_entry(ULONG input)
  * // 1. Log warning: "Obstacle detected by sensor 1"
  * // 2. Log distance: "Distance (cm) 29"
  * // 3. Trigger e-stop: shared_data_trigger_estop(k_estop_reason_obstacle)
- * // 4. Set event: shared_data_set_event(k_event_obstacle_detected)
- * // 5. Build obstacle_state_t (distance=29, sensor_idx=1, timestamp=current)
- * // 6. Update shared_data: shared_data_update_obstacle(&state)
- * // 7. Return to library
+ * // 4. Build obstacle_state_t (distance=29, sensor_idx=1, timestamp=current)
+ * // 5. Update shared_data: shared_data_update_obstacle(&state)
+ * // 6. Return to library
  *
- * // Motor task wakes on k_event_estop_triggered -> emergency brake
+ * // Motor task detects e-stop on next 250 Hz poll -> emergency brake
  * // Telemetry task polls obstacle state -> reports to gateway
  * @endcode
  *
@@ -2118,20 +2097,18 @@ static void internal_obstacle_task_entry(ULONG input)
  *
  * // Callback execution:
  * // 1. Log info: "Obstacle cleared by sensor 1"
- * // 2. Set event: shared_data_set_event(k_event_obstacle_cleared)
- * // 3. Build obstacle_state_t (distance=150, obstacle_detected[1]=false)
- * // 4. Update shared_data: shared_data_update_obstacle(&state)
- * // 5. Return to library
+ * // 2. Build obstacle_state_t (distance=150, obstacle_detected[1]=false)
+ * // 3. Update shared_data: shared_data_update_obstacle(&state)
+ * // 4. Return to library
  *
  * // E-stop remains active (requires manual reset)
  * // Telemetry reports clearance but motors stay braked
  * @endcode
  *
  * @see shared_data_trigger_estop() Activates emergency stop
- * @see shared_data_set_event() Sets event flags for inter-task signaling
  * @see shared_data_update_obstacle() Stores obstacle state for telemetry
  * @see rx_obstacle_detect_init() Registers this callback
- * @see motor_control_task.c Responds to k_event_estop_triggered
+ * @see motor_control_task.c Detects e-stop at 250 Hz via shared_data_is_estop_active()
  * @see tx_time_get() Retrieves current system tick for timestamp
  * @see rx_log_warn_val() UART debug logging (warning level)
  * @see rx_log_info_val() UART debug logging (info level)
@@ -2141,7 +2118,6 @@ static void internal_obstacle_task_entry(ULONG input)
  * @test test_obstacle_callback.c - Verify e-stop triggered on detection
  * @test test_obstacle_callback.c - Verify e-stop NOT cleared on clearance
  * @test test_obstacle_callback.c - Verify obstacle_state_t populated correctly
- * @test test_obstacle_callback.c - Verify event flags set (detected/cleared)
  * @test test_obstacle_callback.c - Verify all 4 sensors handled independently
  * @test test_obstacle_callback.c - Verify concurrent callbacks serialized
  * @test test_obstacle_callback.c - Verify distance_cm copied to state correctly
@@ -2166,14 +2142,8 @@ static void internal_obstacle_callback(bool    obstacle_detected,
 
     /* Trigger emergency stop */
     (void)shared_data_trigger_estop(k_estop_reason_obstacle);
-
-    /* Signal obstacle event */
-    (void)shared_data_set_event(k_event_obstacle_detected);
   } else {
     rx_log_info_val(s_tag, "Obstacle cleared by sensor", (uint8_t)sensor_idx);
-
-    /* Signal obstacle cleared (but don't auto-clear e-stop) */
-    (void)shared_data_set_event(k_event_obstacle_cleared);
   }
 
   /* Update obstacle state in shared data (read-modify-write to preserve other sensors) */
