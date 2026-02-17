@@ -2246,17 +2246,39 @@ void test_roundtrip_reset(void)
  */
 
 /**
- * @brief Resync test constants
+ * @enum resync_test_constants_t
+ * @brief Constants for bounded sync-word scan and stream-recovery tests
  *
  * @details
  * Constants for the bounded sync-word scan / stream-recovery tests.
  * k_resync_junk_byte is a byte value that does not appear in the sync word
  * (0x55AA wire: 0xAA 0x55) so it can be used as a reliable "junk" prefix
  * without accidentally creating a false sync pattern.
+ *
+ * @invariant k_resync_junk_byte (0xBB) differs from both sync wire bytes
+ *            (0xAA and 0x55), guaranteeing no accidental sync pattern is formed.
+ *
+ * @par Example:
+ * @code{.c}
+ * uint8_t misaligned[k_frame_max_size + k_resync_prefix_len];
+ * misaligned[0] = k_resync_junk_byte;
+ * memcpy(&misaligned[k_resync_prefix_len], wire, wire_len);
+ * uint32_t discarded = k_resync_sentinel;
+ * rx_frame_decode_with_resync(&dec, misaligned, wire_len + k_resync_prefix_len,
+ *                             &frame, &discarded);
+ * /* discarded == k_resync_prefix_len on success */
+ * @endcode
+ *
+ * @see rx_frame_decode_with_resync() Function under test
+ * @see k_frame_sync_word Sync word value (0x55AA)
+ *
+ * @since Version 1.1.0
  */
 typedef enum : uint8_t {
   k_resync_junk_byte  = 0xBB, /**< Byte that is never part of 0xAA or 0x55 */
   k_resync_prefix_len = 1,    /**< Length of single-byte misalignment prefix */
+  k_resync_sentinel   = 0xFF, /**< Sentinel value written to discarded before the call;
+                                    must be overwritten by rx_frame_decode_with_resync() */
 } resync_test_constants_t;
 
 /**
@@ -2272,6 +2294,17 @@ typedef enum : uint8_t {
  *
  * This exercises the k_rx_err_protocol_error → internal_find_sync_offset() →
  * retry decode path.
+ *
+ * @pre s_encoder must be initialized (via setUp())
+ * @pre s_decoder must be initialized (via setUp())
+ * @post decoded.header.type == k_frame_type_ack
+ * @post bytes_discarded == k_resync_prefix_len (1 byte skipped to reach sync)
+ *
+ * @note Thread-safe; uses only local state and module-level initialized handles
+ *
+ * @see rx_frame_decode_with_resync() Function under test
+ *
+ * @since Version 1.1.0
  */
 void test_resync_dropped_byte_recovery(void)
 {
@@ -2279,7 +2312,7 @@ void test_resync_dropped_byte_recovery(void)
   rx_frame_t decoded;
   uint8_t    wire[k_frame_max_size + k_resync_prefix_len];
   uint8_t    misaligned[k_frame_max_size + k_resync_prefix_len];
-  uint32_t   wire_len;
+  uint32_t   wire_len = 0;
   uint32_t   discarded;
   rx_err_t   err;
 
@@ -2316,13 +2349,25 @@ void test_resync_dropped_byte_recovery(void)
  * - Decoded frame matches the original COMMAND frame
  *
  * This exercises the fast path: aligned decode succeeds immediately.
+ *
+ * @pre s_encoder must be initialized (via setUp())
+ * @pre s_decoder must be initialized (via setUp())
+ * @post bytes_discarded == 0 (fast path taken; no scan performed)
+ * @post decoded.header.type == k_frame_type_command
+ *
+ * @note Thread-safe; uses only local state and module-level initialized handles
+ *
+ * @see rx_frame_decode_with_resync() Function under test
+ * @see test_resync_dropped_byte_recovery() Complementary slow-path test
+ *
+ * @since Version 1.1.0
  */
 void test_resync_aligned_frame_zero_discarded(void)
 {
   rx_frame_t   frame;
   rx_frame_t   decoded;
   uint8_t      wire[k_frame_max_size];
-  uint32_t     wire_len;
+  uint32_t     wire_len = 0;
   uint32_t     discarded;
   rx_err_t     err;
   const uint8_t payload[k_go_payload_len] = {'T', 'E', 'S', 'T'};
@@ -2336,7 +2381,7 @@ void test_resync_aligned_frame_zero_discarded(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, wire, &wire_len));
 
-  discarded = 0xFF; /* Sentinel - must be overwritten to 0 */
+  discarded = k_resync_sentinel; /* Must be overwritten to 0 on aligned fast-path */
   err = rx_frame_decode_with_resync(&s_decoder, wire, wire_len, &decoded, &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -2352,14 +2397,26 @@ void test_resync_aligned_frame_zero_discarded(void)
  *        when no sync word exists anywhere in the buffer
  *
  * @details
- * Fills a buffer with 0xBB bytes (no sync pattern) and calls
- * rx_frame_decode_with_resync(). Verifies:
+ * Fills a buffer with k_resync_junk_byte (0xBB) — a byte that never forms part
+ * of the 0x55AA sync word — and calls rx_frame_decode_with_resync(). Verifies:
  * - Return value is k_rx_err_protocol_error
  * - bytes_discarded is 0 (no partial progress)
  *
  * This exercises the "no sync found within bounded window" path.
  * The buffer length is set to k_frame_min_size to keep the test fast
  * while still being large enough to trigger the scan.
+ *
+ * @pre s_decoder must be initialized (via setUp())
+ * @pre buffer is filled entirely with k_resync_junk_byte (no sync word present)
+ * @post return value is k_rx_err_protocol_error
+ * @post bytes_discarded == 0 (function resets to 0 at entry; no sync = no advance)
+ *
+ * @note Thread-safe; uses only local state and module-level initialized handles
+ *
+ * @see rx_frame_decode_with_resync() Function under test
+ * @see test_resync_dropped_byte_recovery() Complementary recovery-success test
+ *
+ * @since Version 1.1.0
  */
 void test_resync_no_sync_found(void)
 {
@@ -2370,11 +2427,51 @@ void test_resync_no_sync_found(void)
 
   memset(buf, k_resync_junk_byte, sizeof(buf));
 
-  discarded = 0xFF; /* Sentinel */
+  discarded = k_resync_sentinel; /* Must be overwritten (to 0) on no-sync path */
   err = rx_frame_decode_with_resync(&s_decoder, buf, sizeof(buf), &frame, &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
   TEST_ASSERT_EQUAL(0, discarded);
+}
+
+/**
+ * @brief Verify rx_frame_decode_with_resync() returns k_rx_err_invalid_arg
+ *        for each null pointer argument
+ *
+ * @details
+ * Mirrors test_decode_null_args() but targets rx_frame_decode_with_resync().
+ * Passes nullptr for each of the four pointer parameters in turn while keeping
+ * the remaining arguments valid, and asserts k_rx_err_invalid_arg is returned
+ * for every case.
+ *
+ * @pre s_decoder must be initialized (via setUp())
+ * @pre buf is a valid k_frame_min_size-byte local buffer
+ * @post k_rx_err_invalid_arg returned for null dec
+ * @post k_rx_err_invalid_arg returned for null data
+ * @post k_rx_err_invalid_arg returned for null frame
+ * @post k_rx_err_invalid_arg returned for null bytes_discarded_out
+ *
+ * @note Thread-safe; uses only local state and module-level initialized handles
+ *
+ * @see rx_frame_decode_with_resync() Function under test
+ * @see test_decode_null_args() Equivalent test for rx_frame_decode()
+ *
+ * @since Version 1.1.0
+ */
+void test_resync_null_args(void)
+{
+  uint8_t    buf[k_frame_min_size] = {0};
+  rx_frame_t frame                 = {0};
+  uint32_t   discarded             = 0;
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_frame_decode_with_resync(nullptr, buf, k_frame_min_size, &frame, &discarded));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_frame_decode_with_resync(&s_decoder, nullptr, k_frame_min_size, &frame, &discarded));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_frame_decode_with_resync(&s_decoder, buf, k_frame_min_size, nullptr, &discarded));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
+                    rx_frame_decode_with_resync(&s_decoder, buf, k_frame_min_size, &frame, nullptr));
 }
 
 /* =============================================================================
@@ -2402,8 +2499,10 @@ void test_resync_no_sync_found(void)
  * 10. Endianness tests (4 tests)
  * 11. Go compatibility tests (2 tests)
  * 12. Edge case tests (3 tests)
+ * 13. Resynchronization tests (4 tests) - Dropped byte recovery, aligned fast-path,
+ *     no-sync exhaustion, null args
  *
- * **Total Tests:** 45 test cases
+ * **Total Tests:** 70 test cases
  *
  * @return int Unity test result (0 = all passed, non-zero = failures)
  *
@@ -2525,6 +2624,7 @@ int main(void)
   RUN_TEST(test_encode_sequence_rollover);
 
   /* Resynchronization tests */
+  RUN_TEST(test_resync_null_args);
   RUN_TEST(test_resync_dropped_byte_recovery);
   RUN_TEST(test_resync_aligned_frame_zero_discarded);
   RUN_TEST(test_resync_no_sync_found);

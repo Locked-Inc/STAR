@@ -1104,7 +1104,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @retval k_rx_err_invalid_arg  Any pointer parameter is nullptr
  * @retval k_rx_err_invalid_state Decoder not initialized
  * @retval k_rx_err_invalid_size  Data buffer too short to contain a valid frame
- * @retval k_rx_err_protocol_error No sync word found within k_rx_frame_max_scan_bytes
+ * @retval k_rx_err_protocol_error No sync word found within k_frame_max_scan_bytes
  * @retval k_rx_err_crc_mismatch  Sync found but CRC validation failed
  *
  * @pre dec must be initialized via rx_frame_decoder_init()
@@ -1112,8 +1112,9 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * @post On k_rx_ok, frame contains the decoded frame with verified CRC
  * @post bytes_discarded_out contains the number of bytes skipped (>= 0)
  *
- * @note Not thread-safe. Caller must synchronize access to decoder and buffer.
- * @note The scan window is bounded at k_rx_frame_max_scan_bytes (NASA Rule 2).
+ * @note Thread-safe after init; the decoder handle is read-only and the function
+ *       uses no shared mutable state (consistent with the file-level "Stateless after init").
+ * @note The scan window is bounded at k_frame_max_scan_bytes (NASA Rule 2).
  * @note Caller should log bytes_discarded_out > 0 as a diagnostic warning.
  *
  * @warning This function modifies the caller's view of the stream: the caller
@@ -1121,7 +1122,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  *          successful decode to avoid reprocessing discarded bytes.
  *
  * @par Performance:
- * Worst case: scans k_rx_frame_max_scan_bytes (1036) before failing.
+ * Worst case: scans k_frame_max_scan_bytes (1036) before failing.
  * Best case: identical to rx_frame_decode() (0 bytes discarded).
  *
  * @par Example:

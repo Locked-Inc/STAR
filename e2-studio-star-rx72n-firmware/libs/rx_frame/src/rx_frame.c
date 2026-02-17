@@ -208,8 +208,13 @@ typedef enum : uint8_t {
   k_state_initialized   = 1, /**< Object initialized and ready */
 } init_state_t;
 
+/**
+ * @brief Frame byte offsets used during encoding, decoding, and sync scanning
+ */
 typedef enum : uint8_t {
-  k_frame_offset_start = 0, /**< Start offset for frame parsing */
+  k_frame_offset_start      = 0, /**< Start offset for frame parsing */
+  k_frame_scan_start_offset = 1, /**< First offset checked in internal_find_sync_offset();
+                                      offset 0 is presumed already tested by rx_frame_decode() */
 } frame_offset_t;
 /* =============================================================================
  * Private Helper Functions
@@ -431,6 +436,19 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  * O(N) where N <= k_frame_max_scan_bytes. Each iteration performs one 16-bit
  * LE read and one comparison. Worst case: 1036 iterations (no sync found).
  *
+ * @par Example:
+ * @code{.c}
+ * /* Buffer where offset 0 failed sync; sync is at index 1 */
+ * uint8_t data[] = {0x00, 0xAA, 0x55, 0x01, 0x00};
+ * uint32_t offset = 0;
+ * rx_err_t err = internal_find_sync_offset(data, sizeof(data), &offset);
+ * if (err == k_rx_ok) {
+ *     /* offset == 1: decode from data[offset] */
+ * } else {
+ *     /* k_rx_err_protocol_error: no sync found within scan window */
+ * }
+ * @endcode
+ *
  * @see rx_frame_decode_with_resync() Public API that calls this function
  * @see k_frame_sync_word Sync word value (0x55AA)
  * @see k_frame_max_scan_bytes Maximum scan window (1036 bytes)
@@ -459,8 +477,8 @@ static rx_err_t internal_find_sync_offset(const uint8_t* data,
     scan_limit = k_frame_max_scan_bytes;
   }
 
-  /* Scan starting at offset 1; offset 0 already failed sync check */
-  for (i = 1; i <= scan_limit; i++) {
+  /* Scan starting at k_frame_scan_start_offset; offset 0 already failed sync check */
+  for (i = k_frame_scan_start_offset; i <= scan_limit; i++) {
     candidate = rx_frame_read_le16(&data[i]);
     if (candidate == k_frame_sync_word) {
       *offset_out = i;
@@ -786,11 +804,12 @@ rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
     return k_rx_err_protocol_error;
   }
 
+  /* Report discarded bytes now: caller needs this to advance past the sync
+   * even if the subsequent decode fails (e.g. CRC mismatch at new offset) */
+  *bytes_discarded_out = sync_offset;
+
   /* Reattempt decode from the discovered sync offset */
   err = rx_frame_decode(dec, &data[sync_offset], data_len - sync_offset, frame);
-  if (err == k_rx_ok) {
-    *bytes_discarded_out = sync_offset;
-  }
 
   return err;
 }
