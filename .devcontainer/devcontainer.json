@@ -33,7 +33,7 @@
   "containerEnv": {
     "HOME": "/home/star"
   },
-  "onCreateCommand": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
+  "onCreateCommand": "mkdir -p /home/star/.config /home/star/.ssh /home/star/.cache && touch /home/star/.gitconfig && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
   "updateContentCommand": "cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {

@@ -129,6 +129,12 @@ ENV HOME=/home/$USERNAME
 # Ensure /tmp has correct permissions (standard across platforms)
 RUN chmod 1777 /tmp
 
+# Pre-create .cache with correct ownership so devcontainer features
+# (which run as root) don't create it with root:root permissions.
+# Without this, Go build cache and VS Code server fail with EACCES.
+RUN mkdir -p /home/$USERNAME/.cache && \
+    chown -R $USERNAME:$USERNAME /home/$USERNAME/.cache
+
 # Set up workspace
 WORKDIR /workspaces/STAR
 

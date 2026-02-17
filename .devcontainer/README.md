@@ -85,10 +85,22 @@ The devcontainer uses split lifecycle commands for optimal Codespaces prebuild s
 | Command | When | What |
 |---------|------|------|
 | `initializeCommand` | Before container creation | Creates host directories for bind mounts |
-| `onCreateCommand` | After container creation (cached in prebuilds) | Installs golangci-lint, npm tools |
+| `onCreateCommand` | After container creation (cached in prebuilds) | Creates Codespaces fallback dirs, installs golangci-lint, npm tools |
 | `updateContentCommand` | After content update | Runs `buf mod update` |
 
 ## Known Limitations
+
+### Linux Desktop Hosts
+
+On Linux desktops, `~/.config` may contain hundreds of directories (dconf, pulse, glib, etc.) that get mounted into the container. If this causes conflicts, revert to explicit subdirectory mounts in `devcontainer.json`:
+
+```json
+"source=${localEnv:HOME}/.config/gh,target=/home/star/.config/gh,type=bind,consistency=cached"
+```
+
+### Codespaces Bind Mounts
+
+GitHub Codespaces has no host machine, so all bind mounts are silently ignored. The `onCreateCommand` creates fallback directories (`~/.config`, `~/.ssh`, `~/.gitconfig`) to ensure tools work, but credentials won't persist across Codespace rebuilds. Use Codespaces Secrets for sensitive values.
 
 ### Cross-Platform Mounts
 
