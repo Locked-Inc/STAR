@@ -28,12 +28,14 @@
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/star/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/star/.ssh,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config,target=/home/star/.config,type=bind,consistency=cached"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/gh,target=/home/star/.config/gh,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/opencode,target=/home/star/.config/opencode,type=bind,consistency=cached",
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/openai,target=/home/star/.config/openai,type=bind,consistency=cached"
   ],
   "containerEnv": {
     "HOME": "/home/star"
   },
-  "onCreateCommand": "sudo chown -R star:star /home/star && mkdir -p /home/star/.config /home/star/.ssh /home/star/.cache && touch /home/star/.gitconfig && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
+  "onCreateCommand": "sudo chown -R star:star /home/star/.cache /home/star/.local /home/star/.npm 2>/dev/null; mkdir -p /home/star/.config /home/star/.ssh /home/star/.cache && touch /home/star/.gitconfig && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
   "updateContentCommand": "cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {

@@ -66,17 +66,19 @@ This setup avoids the `ms-vscode.cpptools` extension which conflicts with clangd
 
 ## Credential Persistence
 
-CLI tool credentials persist across container rebuilds via bind mounts:
+CLI tool credentials persist across container rebuilds via explicit bind mounts:
 
 ```
-Host: ~/.config/     →  Container: /home/star/.config/
-Host: ~/.ssh/        →  Container: /home/star/.ssh/
-Host: ~/.gitconfig   →  Container: /home/star/.gitconfig
+Host: ~/.config/gh/       →  Container: /home/star/.config/gh/
+Host: ~/.config/opencode/ →  Container: /home/star/.config/opencode/
+Host: ~/.config/openai/   →  Container: /home/star/.config/openai/
+Host: ~/.ssh/             →  Container: /home/star/.ssh/
+Host: ~/.gitconfig        →  Container: /home/star/.gitconfig
 ```
 
-All tool configs (gh, opencode, openai, gemini, claude, etc.) should be placed under `~/.config/` on the host following the XDG Base Directory specification.
+Only the specific subdirectories listed above are mounted. This prevents host-specific files (iTerm2 sockets, dconf databases, PulseAudio configs) from leaking into the container and works identically on macOS, Windows, and Linux.
 
-**Windows users**: Ensure `%USERPROFILE%\.config` exists before rebuilding.
+**Windows users**: The `initializeCommand` (`init.cmd`) creates these directories automatically.
 
 ## Lifecycle Commands
 
@@ -89,14 +91,6 @@ The devcontainer uses split lifecycle commands for optimal Codespaces prebuild s
 | `updateContentCommand` | After content update | Runs `buf mod update` |
 
 ## Known Limitations
-
-### Linux Desktop Hosts
-
-On Linux desktops, `~/.config` may contain hundreds of directories (dconf, pulse, glib, etc.) that get mounted into the container. If this causes conflicts, revert to explicit subdirectory mounts in `devcontainer.json`:
-
-```json
-"source=${localEnv:HOME}/.config/gh,target=/home/star/.config/gh,type=bind,consistency=cached"
-```
 
 ### Codespaces Bind Mounts
 
@@ -177,7 +171,7 @@ Ctrl+Shift+P → "Dev Containers: Rebuild Container"
 The credential directories don't exist on your host. The `initializeCommand` should create them automatically, but you can also create them manually:
 
 ```bash
-mkdir -p ~/.ssh ~/.config
+mkdir -p ~/.ssh ~/.config/gh ~/.config/opencode ~/.config/openai
 touch ~/.gitconfig
 ```
 
