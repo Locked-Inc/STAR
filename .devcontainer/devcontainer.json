@@ -31,8 +31,7 @@
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config,target=/home/star/.config,type=bind,consistency=cached"
   ],
   "containerEnv": {
-    "HOME": "/home/star",
-    "TMPDIR": "/home/star/tmp"
+    "HOME": "/home/star"
   },
   "onCreateCommand": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
   "updateContentCommand": "cd star-proto/proto && buf mod update && cd ../..",

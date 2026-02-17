@@ -121,11 +121,13 @@ RUN echo "$USERNAME ALL=(root) NOPASSWD:ALL" > /etc/sudoers.d/$USERNAME \
 RUN groupadd -f spi && groupadd -f i2c \
     && usermod -aG video,dialout,plugdev,spi,i2c $USERNAME
 
-# Ensure HOME and TMPDIR are set for tools that download large executables
+# Ensure HOME is set for tool configurations
 ENV HOME=/home/$USERNAME
-ENV TMPDIR=/home/$USERNAME/tmp
-RUN mkdir -p /home/$USERNAME/tmp && \
-    chown -R $USERNAME:$USERNAME /home/$USERNAME/tmp
+# Do NOT set TMPDIR - let it default to /tmp for VS Code server,
+# Docker-in-Docker, and Codespaces compatibility
+
+# Ensure /tmp has correct permissions (standard across platforms)
+RUN chmod 1777 /tmp
 
 # Set up workspace
 WORKDIR /workspaces/STAR
