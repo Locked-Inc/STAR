@@ -129,8 +129,7 @@ var (
 // SPILinkConfig holds configuration parameters for SPILink.
 type SPILinkConfig struct {
 	// EnableFEC enables Forward Error Correction (Viterbi K=7, Rate 1/2).
-	// Phase 1: false (disabled)
-	// Phase 2: true (enabled)
+	// Default: Enable FEC by default to improve reliability on noisy SPI links.
 	EnableFEC bool
 
 	// MaxRetries overrides the default maximum retries (default: 3).
@@ -143,7 +142,7 @@ type SPILinkConfig struct {
 // DefaultSPILinkConfig returns the default configuration for SPILink.
 func DefaultSPILinkConfig() *SPILinkConfig {
 	return &SPILinkConfig{
-		EnableFEC:  false, // Phase 1: Disabled
+		EnableFEC:  true, // Enabled by default
 		MaxRetries: maxRetries,
 		ACKTimeout: ackTimeout,
 	}
@@ -336,7 +335,9 @@ func (s *SPILink) sendWithRetry(ctx context.Context, data []byte, seq uint16, fr
 	payload := data
 	flags := frame.FlagRequiresAck
 
-	if s.config.EnableFEC {
+	// Only apply FEC encoding for non-empty payloads. Control frames (empty)
+	// must not be passed to the convolutional encoder (it rejects empty data).
+	if s.config.EnableFEC && len(data) > 0 {
 		encoded, err := s.fecEncoder.Encode(data)
 		if err != nil {
 			return fmt.Errorf("FEC encode failed: %w", err)
