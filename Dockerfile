@@ -60,9 +60,16 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     latexmk
 
 # Install GNURX toolchain for RX72N firmware development
-# Positioned early because the 205 MB installer rarely changes
-COPY gcc-14.2.0.202511-GNURX-ELF.run /tmp/gnurx-installer.run
-RUN mkdir -p /opt/gnurx && \
+# Download directly from GitHub to avoid Git LFS issues in Codespaces
+# GitHub's raw URL automatically resolves LFS files to actual binaries
+ARG GNURX_INSTALLER_URL="https://github.com/Locked-Inc/STAR/raw/main/gcc-14.2.0.202511-GNURX-ELF.run"
+RUN curl -sSL "${GNURX_INSTALLER_URL}" -o /tmp/gnurx-installer.run && \
+    if head -1 /tmp/gnurx-installer.run | grep -q "version https://git-lfs"; then \
+      echo "ERROR: Downloaded file is a Git LFS pointer, not the actual binary." && \
+      echo "Ensure the repository is public or use a GitHub Release asset URL." && \
+      exit 1; \
+    fi && \
+    mkdir -p /opt/gnurx && \
     chmod +x /tmp/gnurx-installer.run && \
     /tmp/gnurx-installer.run -p /opt/gnurx -y && \
     rm /tmp/gnurx-installer.run && \

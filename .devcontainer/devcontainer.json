@@ -1,7 +1,7 @@
 {
   "name": "Existing Dockerfile",
   "remoteUser": "star",
-  "initializeCommand": "cd .devcontainer && bash ./init.sh",
+  "initializeCommand": "cd .devcontainer && (bash ./init.sh || true)",
   "build": {
     "context": "..",
     "dockerfile": "../Dockerfile",
@@ -35,7 +35,7 @@
   "containerEnv": {
     "HOME": "/home/star"
   },
-  "onCreateCommand": "sudo chown -R star:star /home/star/.cache /home/star/.local /home/star/.npm 2>/dev/null; mkdir -p /home/star/.config /home/star/.ssh /home/star/.cache && touch /home/star/.gitconfig && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
+  "onCreateCommand": "git lfs install && git lfs pull && sudo chown -R star:star /home/star/.cache /home/star/.local /home/star/.npm 2>/dev/null; mkdir -p /home/star/.config /home/star/.ssh /home/star/.cache && touch /home/star/.gitconfig && go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
   "updateContentCommand": "cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {
