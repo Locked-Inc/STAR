@@ -196,6 +196,10 @@
 #include "shared_data.h"
 #include "telemetry_task.h"
 #include "temp_sensor_task.h"
+#include "watchdog_monitor_task.h"
+
+/* Watchdog driver */
+#include "rx_iwdt.h"
 
 /* =============================================================================
  * Main Return Codes
@@ -1380,6 +1384,210 @@ static rx_err_t internal_check_startup_flags(void)
   return k_rx_ok;
 }
 
+/* =============================================================================
+ * IWDT Configuration
+ * =============================================================================
+ */
+
+/**
+ * @enum iwdt_hardware_timeout_ms_t
+ * @brief IWDT hardware watchdog timeout constants
+ *
+ * @details
+ * Defines the hardware Independent Watchdog Timer (IWDT) timeout period.
+ * This is the maximum time the system can run without feeding the watchdog
+ * before triggering an automatic hardware reset. The timeout is configured
+ * via the IWDT Clock Select (CKS) register setting.
+ *
+ * **Hardware Configuration:**
+ * - CKS = 10 (PCLKB/8192 divider)
+ * - PCLKB = 60 MHz
+ * - Timeout period = 2048ms (±10% tolerance)
+ *
+ * **Usage:**
+ * Set as `default_timeout_ms` in `rx_iwdt_config_t` during initialization.
+ * Watchdog monitor task feeds the hardware watchdog at 100 Hz (10ms period).
+ *
+ * @invariant All values in milliseconds. Valid range: 128-16384ms per hardware limits.
+ *            Hardware timeout must exceed longest task timeout to prevent spurious resets.
+ *
+ * @code
+ * // Configure IWDT with hardware timeout
+ * static const rx_iwdt_config_t s_iwdt_config = {
+ *   .default_timeout_ms = k_iwdt_hw_timeout_ms,  // 2048ms hardware timeout
+ *   .enable_task_monitoring = true,
+ *   .reset_on_timeout = true,
+ * };
+ * rx_err_t err = rx_iwdt_init(&s_iwdt_config);
+ * @endcode
+ *
+ * @note Hardware timeout must be longer than longest task timeout to prevent false resets
+ * @see rx_iwdt_config_t Configuration structure using this constant
+ * @see watchdog_monitor_task.c Task that feeds the hardware watchdog
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_iwdt_hw_timeout_ms = 2048, /**< Hardware IWDT timeout in milliseconds (CKS=10, ~2048ms ±10%). Must exceed all task timeouts to prevent spurious resets. Valid range: 128-16384ms per hardware limits. */
+} iwdt_hardware_timeout_ms_t;
+
+/**
+ * @enum iwdt_state_timeout_ms_t
+ * @brief IWDT state-dependent timeout constants
+ *
+ * @details
+ * Defines software-level watchdog timeouts for each system state. These timeouts
+ * determine how long the system can remain in a given state without task heartbeats
+ * before the watchdog monitor triggers a reset. State-specific timeouts allow
+ * longer grace periods during initialization and error recovery while maintaining
+ * tight timing during normal operation.
+ *
+ * **State Timeout Strategy:**
+ * - **Init/Idle**: 5s - Accommodates slow peripheral initialization (I2C, USB, flash)
+ * - **Running/Motor/Comm**: 2s - Standard operation with 100 Hz watchdog feeding
+ * - **Error**: 10s - Extended timeout for diagnostics, logging, and recovery attempts
+ *
+ * **Timeout Hierarchy:**
+ * State timeout > Task timeout > Heartbeat interval (prevents false positives)
+ *
+ * @invariant All values in milliseconds. State timeouts < hardware IWDT timeout (2048ms for running states).
+ *            Init/idle/error states may exceed hardware timeout (watchdog not yet started or in recovery).
+ *            Valid ranges per state: init/idle (2000-10000ms), running/motor/comm (1000-2000ms), error (5000-16000ms).
+ *
+ * @code
+ * // Configure state-dependent timeouts
+ * static const rx_iwdt_config_t s_iwdt_config = {
+ *   .default_timeout_ms = k_iwdt_hw_timeout_ms,
+ *   .state_timeouts_ms = {
+ *     [k_system_state_init]         = k_iwdt_timeout_init_ms,         // 5s
+ *     [k_system_state_idle]         = k_iwdt_timeout_idle_ms,         // 5s
+ *     [k_system_state_running]      = k_iwdt_timeout_running_ms,      // 2s
+ *     [k_system_state_motor_active] = k_iwdt_timeout_motor_active_ms, // 2s
+ *     [k_system_state_comm_active]  = k_iwdt_timeout_comm_active_ms,  // 2s
+ *     [k_system_state_error]        = k_iwdt_timeout_error_ms,        // 10s
+ *   }
+ * };
+ * @endcode
+ *
+ * @note All timeouts are in milliseconds (ms)
+ * @note State timeouts must be less than hardware IWDT timeout (2048ms for running states)
+ * @see system_state_t System state enumeration
+ * @see rx_iwdt_config_t.state_timeouts_ms Array indexed by system_state_t
+ * @see rx_iwdt_set_state() Function to transition between states
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_iwdt_timeout_init_ms         = 5000,  /**< Init state timeout (5000ms). Allows slow startup: clock init, peripheral init, task creation. Exceeds hardware timeout (watchdog not yet started). Valid range: 2000-10000ms. */
+  k_iwdt_timeout_idle_ms         = 5000,  /**< Idle state timeout (5000ms). System initialized but no critical operations running. Same as init for consistency. Valid range: 2000-10000ms. */
+  k_iwdt_timeout_running_ms      = 2000,  /**< Running state timeout (2000ms). Default operational state. Matches hardware IWDT timeout. Must be fed at 100 Hz (10ms) to prevent reset. Valid range: 1000-2000ms. */
+  k_iwdt_timeout_motor_active_ms = 2000,  /**< Motor active state timeout (2000ms). Motors running with closed-loop control at 100 Hz. Same as running state (motor control is time-critical). Valid range: 1000-2000ms. */
+  k_iwdt_timeout_comm_active_ms  = 2000,  /**< Communication active state timeout (2000ms). SPI communication in progress. Same as running (comm task runs at 100 Hz). Valid range: 1000-2000ms. */
+  k_iwdt_timeout_error_ms        = 10000, /**< Error state timeout (10000ms). Extended timeout for error logging, diagnostics, and recovery attempts before reset. Allows thorough post-mortem. Valid range: 5000-16000ms. */
+} iwdt_state_timeout_ms_t;
+
+/**
+ * @enum iwdt_task_timeout_ms_t
+ * @brief IWDT per-task heartbeat timeout constants
+ *
+ * @details
+ * Defines individual watchdog timeout periods for each ThreadX task. Each task
+ * must call `rx_iwdt_task_heartbeat()` within its timeout period or the watchdog
+ * monitor will detect the failure and stop feeding the hardware IWDT, triggering
+ * a system reset after 2 seconds.
+ *
+ * **Timeout Calculation Strategy:**
+ * Task timeout = 3× task period (allows 2 missed heartbeats before failure detection)
+ *
+ * **Timeout Categories:**
+ * - **Fast tasks (10ms period)**: 30ms timeout - Motor control, communication, watchdog
+ * - **Medium tasks (50ms period)**: 150ms timeout - Telemetry, LED status
+ * - **Slow tasks (1000ms period)**: 3000ms timeout - BMS monitor, temperature sensor
+ * - **Variable tasks**: Custom timeout based on worst-case execution time
+ *
+ * **Failure Detection Flow:**
+ * 1. Task misses heartbeat deadline
+ * 2. Watchdog monitor detects timeout via `rx_iwdt_check_tasks()`
+ * 3. Watchdog monitor stops feeding hardware IWDT
+ * 4. Hardware IWDT triggers reset after 2048ms
+ * 5. System reboots, failed task name preserved in logs
+ *
+ * @invariant All values in milliseconds. Task timeouts < state timeouts < hardware IWDT timeout.
+ *            Heartbeat intervals must be < task timeouts (typically timeout/3 for 2 missed beats margin).
+ *            Valid ranges: fast tasks (20-50ms), medium tasks (100-300ms), slow tasks (2000-5000ms).
+ *
+ * @code
+ * // Register tasks with individual timeouts
+ * rx_err_t err;
+ * err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);  // 30ms
+ * err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);    // 30ms
+ * err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);  // 150ms
+ * err = rx_iwdt_register_task("BMSMonitor", k_iwdt_task_timeout_bmsmonitor_ms); // 3000ms
+ * @endcode
+ *
+ * @note All timeouts are in milliseconds (ms)
+ * @note Task timeouts must be less than state timeout to allow proper detection
+ * @note Heartbeat interval must be less than timeout (typically timeout/3)
+ * @see rx_iwdt_register_task() Register task with timeout
+ * @see rx_iwdt_task_heartbeat() Report task liveness
+ * @see watchdog_monitor_task.c Monitors all task heartbeats at 100 Hz
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_iwdt_task_timeout_telemetry_ms  = 150,  /**< Telemetry task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: telemetry stops, system reset after 2s. */
+  k_iwdt_task_timeout_ledstatus_ms  = 150,  /**< LED Status task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: LED updates stop, system reset after 2s. */
+  k_iwdt_task_timeout_bmsmonitor_ms = 3000, /**< BMS Monitor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: battery monitoring stops, system reset after 2s. */
+  k_iwdt_task_timeout_tempsensor_ms = 3000, /**< Temperature Sensor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: temp compensation stops, system reset after 2s. */
+  k_iwdt_task_timeout_obstdetect_ms = 60,   /**< Obstacle Detection task timeout (60ms). Task heartbeat: 20ms @ 50 Hz. Timeout = 3× 20ms period. Heartbeat called every 20ms. Valid range: 50-150ms. If exceeded: collision avoidance stops, system reset after 2s. */
+  k_iwdt_task_timeout_motorctrl_ms  = 30,   /**< Motor Control task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: motor control stops, system reset after 2s. CRITICAL TASK. */
+  k_iwdt_task_timeout_commtask_ms   = 30,   /**< Communication task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
+  k_iwdt_task_timeout_watchdog_ms   = 30,   /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
+} iwdt_task_timeout_ms_t;
+
+/**
+ * @var s_iwdt_config
+ * @brief IWDT configuration for system watchdog monitoring
+ *
+ * @details
+ * Configures Independent Watchdog Timer with:
+ * - Hardware timeout: 2048ms (triggers reset if not fed)
+ * - Task monitoring: Enabled (tracks heartbeats)
+ * - Reset on timeout: Enabled (automatic system reset)
+ * - State-dependent timeouts: 2s default, 5s init/idle, 10s error
+ *
+ * **Hardware watchdog**: 2048ms (CKS=10, ~2 seconds)
+ * - Fed by watchdog monitor task @ 100 Hz (10ms period)
+ * - Safety margin: 2048ms / 10ms = 204× (allows ~204 missed iterations)
+ *
+ * **Task monitoring**: Individual task timeouts
+ * - Motor/Comm/Watchdog: 30ms (3× 10ms period)
+ * - Obstacle: 60ms (3× 20ms period)
+ * - LED/Telemetry: 150ms (3× 50ms period)
+ * - BMS/Temp: 3000ms (3× 1000ms period)
+ *
+ * @warning Configuration is immutable after rx_iwdt_init()
+ *
+ * @note Configuration is immutable after rx_iwdt_init()
+ * @see rx_iwdt_init() Initialization function using this config
+ * @see system_state_t State definitions for state_timeouts_ms array
+ *
+ * @since Version 1.0.0
+ */
+static const rx_iwdt_config_t s_iwdt_config = {
+  .default_timeout_ms          = k_iwdt_hw_timeout_ms, /**< 2048ms hardware timeout (CKS=10) */
+  .enable_task_monitoring      = true,                 /**< Enable task heartbeat tracking */
+  .reset_on_timeout            = true,                 /**< Reset on timeout (not NMI) */
+  .state_timeouts_ms           = {
+    [k_system_state_init]         = k_iwdt_timeout_init_ms,         /**< 5s - slow startup */
+    [k_system_state_idle]         = k_iwdt_timeout_idle_ms,         /**< 5s - no critical ops */
+    [k_system_state_running]      = k_iwdt_timeout_running_ms,      /**< 2s - default operation */
+    [k_system_state_motor_active] = k_iwdt_timeout_motor_active_ms, /**< 2s - motor control */
+    [k_system_state_comm_active]  = k_iwdt_timeout_comm_active_ms,  /**< 2s - communication */
+    [k_system_state_error]        = k_iwdt_timeout_error_ms,        /**< 10s - recovery/diag */
+  }
+};
+
 /**
  * @brief ThreadX application definition callback - Create application threads and kernel objects
  *
@@ -1596,6 +1804,51 @@ void tx_application_define(void* first_unused_memory)
   err = shared_data_init();
   RX_ASSERT(err == k_rx_ok, "shared_data_init must succeed");
 
+  /* Step 1d: Initialize IWDT (hardware watchdog + task monitoring) */
+  err = rx_iwdt_init(&s_iwdt_config);
+  RX_ASSERT(err == k_rx_ok, "rx_iwdt_init must succeed");
+
+  /* Step 1e: Register all tasks for heartbeat monitoring
+   *
+   * Task timeout = 3× normal period (allows 2 missed heartbeats):
+   * - Telemetry (50ms period) → 150ms timeout
+   * - LED Status (50ms period) → 150ms timeout
+   * - BMS Monitor (1000ms period) → 3000ms timeout
+   * - Temp Sensor (1000ms period) → 3000ms timeout
+   * - Obstacle Detect (20ms period) → 60ms timeout
+   * - Motor Control (10ms period) → 30ms timeout
+   * - Communication (10ms period) → 30ms timeout
+   * - Watchdog Monitor (10ms period) → 30ms timeout
+   */
+
+  err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);
+  RX_ASSERT(err == k_rx_ok, "Telemetry IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
+  RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("BMSMonitor", k_iwdt_task_timeout_bmsmonitor_ms);
+  RX_ASSERT(err == k_rx_ok, "BMSMonitor IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("TempSensor", k_iwdt_task_timeout_tempsensor_ms);
+  RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("ObstDetect", k_iwdt_task_timeout_obstdetect_ms);
+  RX_ASSERT(err == k_rx_ok, "ObstDetect IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);
+  RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);
+  RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
+  RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
+
+  /* Step 1f: Set initial IWDT state (init phase) */
+  err = rx_iwdt_set_state(k_system_state_init);
+  RX_ASSERT(err == k_rx_ok, "IWDT set init state must succeed");
+
   /* Step 2: Create tasks (lowest priority first) */
 
   /* Telemetry Task - Priority 18 (lowest) */
@@ -1625,6 +1878,14 @@ void tx_application_define(void* first_unused_memory)
   /* Communication Task - Priority 5 (highest) */
   err = comm_task_create();
   RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
+
+  /* Watchdog Monitor Task - Priority 6 */
+  err = watchdog_monitor_task_create();
+  RX_ASSERT(err == k_rx_ok, "watchdog_monitor_task_create must succeed");
+
+  /* Step 3: Transition to running state (all tasks created) */
+  err = rx_iwdt_set_state(k_system_state_running);
+  RX_ASSERT(err == k_rx_ok, "IWDT set running state must succeed");
 
   /* Postcondition: All tasks created successfully */
   RX_ASSERT(err == k_rx_ok, "Postcondition: All tasks must be created successfully");

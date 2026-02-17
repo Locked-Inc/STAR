@@ -390,7 +390,8 @@
  * | **k_obstacle_threshold_cm** | 30 | cm | Distance threshold for obstacle detection |
  * | **k_obstacle_debounce_samples** | 3 | samples | Consecutive readings to confirm state change |
  * | **k_obstacle_poll_interval_ms** | 20 | ms | Polling rate (50 Hz per sensor) |
- * | **k_obstacle_task_sleep_ticks** | 100 | ticks | Statistics logging interval (1s @ 100Hz) |
+ * | **k_obstacle_heartbeat_ticks** | 2 | ticks | IWDT heartbeat interval (20ms @ 100Hz) |
+ * | **k_obstacle_stats_log_interval** | 50 | heartbeats | Statistics logging interval (1s total) |
  * | **k_obstacle_task_priority** | 12 | - | ThreadX priority (1=highest, 31=lowest) |
  * | **k_obstacle_task_stack_size** | 1024 | bytes | Static stack allocation |
  *
@@ -850,6 +851,7 @@
 #include <string.h>
 
 #include "rx_check.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_obstacle_detect.h"
 #include "shared_data.h"
@@ -880,7 +882,8 @@
 typedef enum : uint16_t {
   k_obstacle_task_stack_size  = 1024, /**< Stack size in bytes (static allocation) */
   k_obstacle_task_priority    = 12,   /**< ThreadX priority (1=highest, 31=lowest) */
-  k_obstacle_task_sleep_ticks = 100,  /**< Sleep period: 100 ticks = 1s @ 100 Hz */
+  k_obstacle_heartbeat_ticks  = 2,    /**< IWDT heartbeat interval: 2 ticks = 20ms @ 100 Hz (3× safety margin for 60ms timeout) */
+  k_obstacle_stats_log_interval = 50, /**< Log stats every 50 heartbeats (50 × 20ms = 1s) */
   k_obstacle_task_input       = 0,    /**< Thread entry input parameter (unused) */
 } obstacle_task_constants_t;
 
@@ -1582,19 +1585,31 @@ static void internal_obstacle_task_entry(ULONG input)
   rx_log_info(s_tag, "Obstacle detection running");
 
   /* Main monitoring loop - library handles actual polling */
+  uint16_t stats_counter = 0;
   while (true) {
-    /* Periodically log statistics */
-    err = rx_obstacle_detect_get_stats(&s_obstacle_handle,
-                                       &total_polls,
-                                       &obstacle_events,
-                                       &false_positives);
-    if (err == k_rx_ok) {
-      rx_log_debug_val(s_tag, "Total polls", total_polls);
-      rx_log_debug_val(s_tag, "Obstacle events", obstacle_events);
+    /* Report task heartbeat to IWDT (must execute within 60ms timeout) */
+    err = rx_iwdt_task_heartbeat("ObstDetect");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
     }
 
-    /* Sleep until next stats check */
-    (void)tx_thread_sleep(k_obstacle_task_sleep_ticks);
+    /* Periodically log statistics (every 1 second) */
+    stats_counter++;
+    if (stats_counter >= k_obstacle_stats_log_interval) {
+      stats_counter = 0;
+      err = rx_obstacle_detect_get_stats(&s_obstacle_handle,
+                                         &total_polls,
+                                         &obstacle_events,
+                                         &false_positives);
+      if (err == k_rx_ok) {
+        rx_log_debug_val(s_tag, "Total polls", total_polls);
+        rx_log_debug_val(s_tag, "Obstacle events", obstacle_events);
+      }
+    }
+
+    /* Sleep until next heartbeat (20ms = 2 ticks @ 100 Hz) */
+    (void)tx_thread_sleep(k_obstacle_heartbeat_ticks);
   }
 }
 
@@ -1886,12 +1901,27 @@ static void internal_obstacle_callback(bool    obstacle_detected,
     (void)shared_data_set_event(k_event_obstacle_cleared);
   }
 
-  /* Update obstacle state in shared data */
-  (void)memset(&state, 0, sizeof(state));
+  /* Update obstacle state in shared data (read-modify-write to preserve other sensors) */
+  (void)memset(&state, 0, sizeof(state));  /* Initialize to zero in case get fails */
+  rx_err_t err = shared_data_get_obstacle(&state);
+  if (err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Failed to get obstacle state", (uint32_t)err);
+    /* Continue with zeroed state - will update only current sensor */
+  }
+
   state.distance_cm[sensor_idx]       = (uint16_t)distance_cm;
   state.obstacle_detected[sensor_idx] = obstacle_detected;
-  state.any_obstacle                  = obstacle_detected;
-  state.timestamp_ms                  = tx_time_get();
+
+  /* Recompute any_obstacle by checking all sensors */
+  state.any_obstacle = false;
+  for (uint8_t i = 0; i < k_obstacle_sensor_count; i++) {
+    if (state.obstacle_detected[i]) {
+      state.any_obstacle = true;
+      break;
+    }
+  }
+
+  state.timestamp_ms = tx_time_get();
 
   (void)shared_data_update_obstacle(&state);
 }

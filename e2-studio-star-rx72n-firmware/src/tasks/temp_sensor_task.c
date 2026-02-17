@@ -361,6 +361,7 @@
 
 #include "rx_check.h"
 #include "rx_ds18b20.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "shared_data.h"
 #include "tx_api.h"
@@ -1212,6 +1213,13 @@ static void internal_temp_task_entry(ULONG input)
 
     /* Update shared data */
     (void)shared_data_update_temp(&state);
+
+    /* Report task heartbeat to IWDT (must execute within 3000ms timeout) */
+    err = rx_iwdt_task_heartbeat("TempSensor");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
+    }
 
     /* Step 4: Wait for remaining period (200ms to complete 1s) */
     (void)tx_thread_sleep(k_temp_remaining_ticks);
