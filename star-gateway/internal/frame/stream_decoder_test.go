@@ -137,9 +137,9 @@ func TestStreamDecoder_GarbagePrefix(t *testing.T) {
 
 func TestStreamDecoder_CRCError(t *testing.T) {
 	const (
-		seqCorrupted       uint16 = 0x0003
-		seqValid           uint16 = 0x0004
-		corruptPayloadOffset      = SyncSize + HeaderSize // SYNC(2) + HEADER(6)
+		seqCorrupted         uint16 = 0x0003
+		seqValid             uint16 = 0x0004
+		corruptPayloadOffset        = SyncSize + HeaderSize // SYNC(2) + HEADER(6)
 	)
 
 	// Build a corrupted frame - corrupt first byte of payload
