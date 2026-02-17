@@ -61,19 +61,9 @@ Analyze all changes (both previously staged and newly added) and draft a message
 
 ---
 
-## ⚠️ CONFIRMATION GATE ⚠️
+### Step 3: Stage and Commit
 
-**Before any `git add` or `git commit`, ask user:**
-
-> "Proceed to stage and commit changes?"
-
-**User must approve side-effect steps.** Only continue after receiving explicit confirmation.
-
----
-
-### Step 3: Stage and Commit ⚠️ SIDE EFFECT (Requires user approval)
-
-After user confirmation, run sequentially:
+Run sequentially:
 
 ```bash
 # Add relevant files by name (NOT git add -A or git add .)
@@ -115,10 +105,7 @@ git log --oneline -n 10
 # Message: "Add PID controller implementation"
 # Details: "Implements discrete-time PID algorithm with anti-windup and derivative filtering for motor velocity control."
 
-# ⚠️ CONFIRMATION GATE: Ask user "Proceed to stage and commit changes?"
-# User responds: "Yes"
-
-# Step 3: Stage and commit (SIDE EFFECT - after user approval)
+# Step 3: Stage and commit
 git add src/rx_pid.c src/rx_pid.h
 
 git commit -m "$(cat <<'EOF'
@@ -136,8 +123,6 @@ git status
 ### Example 2: Bug Fix
 
 ```bash
-# ⚠️ After user confirms "Proceed to stage and commit changes?"
-
 git add src/rx_spi.c
 
 git commit -m "$(cat <<'EOF'
