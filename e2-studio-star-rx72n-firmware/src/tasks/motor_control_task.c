@@ -538,9 +538,10 @@ static const char* const s_tag = "MOTOR";
  * **Usage:**
  * - Task registration: rx_iwdt_register_task(s_task_name, timeout_ms)
  * - Heartbeat reporting: rx_iwdt_task_heartbeat(s_task_name)
- * - ThreadX thread creation: tx_thread_create(..., "MotorCtrl", ...)
+ * - ThreadX thread creation: tx_thread_create(..., "MotorTask", ...) (different name)
  *
- * @note String must match ThreadX thread name for correlation in debug logs
+ * @note IWDT task name ("MotorCtrl") intentionally differs from ThreadX thread name ("MotorTask")
+ * @note ThreadX name kept short for thread list display; IWDT name more descriptive
  * @warning Do not modify - IWDT registration depends on exact string match
  * @see rx_iwdt_register_task() Task registration using this name
  * @see rx_iwdt_task_heartbeat() Heartbeat reporting using this name

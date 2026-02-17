@@ -1902,7 +1902,13 @@ static void internal_obstacle_callback(bool    obstacle_detected,
   }
 
   /* Update obstacle state in shared data (read-modify-write to preserve other sensors) */
-  (void)shared_data_get_obstacle(&state);
+  (void)memset(&state, 0, sizeof(state));  /* Initialize to zero in case get fails */
+  rx_err_t err = shared_data_get_obstacle(&state);
+  if (err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Failed to get obstacle state", (uint32_t)err);
+    /* Continue with zeroed state - will update only current sensor */
+  }
+
   state.distance_cm[sensor_idx]       = (uint16_t)distance_cm;
   state.obstacle_detected[sensor_idx] = obstacle_detected;
 
