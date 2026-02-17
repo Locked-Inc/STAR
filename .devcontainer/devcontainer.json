@@ -9,7 +9,9 @@
       "BUILDPLATFORM": "linux/amd64"
     }
   },
-  "runArgs": ["--platform=linux/amd64"],
+  "runArgs": [
+    "--platform=linux/amd64"
+  ],
   "features": {
     "ghcr.io/devcontainers/features/git-lfs:1": {},
     "ghcr.io/devcontainers/features/github-cli:1": {},
@@ -17,32 +19,23 @@
     "ghcr.io/devcontainers/features/node:1": {
       "installYarnUsingApt": false
     },
-    "ghcr.io/devcontainers-extra/features/act:1": {},
-    "ghcr.io/devcontainers-extra/features/actionlint:1": {},
-    "ghcr.io/devcontainers-extra/features/claude-code:1": {},
-    "ghcr.io/siri404/devcontainer-ai-features/gemini-cli:1": {},
     "ghcr.io/devcontainers/features/docker-in-docker:2": {
       "version": "latest",
       "enableNonRootDocker": "true",
       "moby": "true"
-    },
-    "ghcr.io/devcontainers/features/sshd:1": {
-      "version": "latest"
     }
   },
   "mounts": [
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gitconfig,target=/home/star/.gitconfig,type=bind,consistency=cached",
     "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/star/.ssh,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/gh,target=/home/star/.config/gh,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/opencode,target=/home/star/.config/opencode,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config/openai,target=/home/star/.config/openai,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.gemini,target=/home/star/.gemini,type=bind,consistency=cached",
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.claude,target=/home/star/.claude,type=bind,consistency=cached"
+    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.config,target=/home/star/.config,type=bind,consistency=cached"
   ],
   "containerEnv": {
-    "CLAUDE_CONFIG_DIR": "/home/star/.claude"
+    "HOME": "/home/star",
+    "TMPDIR": "/home/star/tmp"
   },
-  "postCreateCommand": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex && cd star-proto/proto && buf mod update && cd ../..",
+  "onCreateCommand": "go install github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 && npm i -g opencode-ai @openai/codex",
+  "updateContentCommand": "cd star-proto/proto && buf mod update && cd ../..",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -50,37 +43,22 @@
         "bufbuild.vscode-buf",
         "dbaeumer.vscode-eslint",
         "esbenp.prettier-vscode",
-        "vitest.explorer",
         "llvm-vs-code-extensions.vscode-clangd",
         "vadimcn.vscode-lldb",
         "ms-vscode.cmake-tools",
-        "ms-iot.vscode-ros",
         "ms-python.python",
         "ms-python.vscode-pylance",
         "eamodio.gitlens",
         "mhutchie.git-graph",
-        "ryanluker.vscode-coverage-gutters",
-        "redhat.vscode-yaml",
-        "yzhang.markdown-all-in-one",
-        "gruntfuggly.todo-tree",
-        "streetsidesoftware.code-spell-checker",
-        "EditorConfig.EditorConfig",
-        "usernamehw.errorlens",
-        "formulahendry.code-runner",
-        "coderabbit.coderabbit-vscode",
-        "ms-vscode.cpptools-extension-pack",
-        "google.gemini-cli-vscode-ide-companion",
-        "openai.chatgpt"
+        "redhat.vscode-yaml"
       ],
       "settings": {
-        "cmake.configureArgs": ["-DCMAKE_EXPORT_COMPILE_COMMANDS=ON"],
+        "C_Cpp.intelliSenseEngine": "disabled",
         "clangd.arguments": [
           "--compile-commands-dir=${workspaceFolder}/star-ros2/build",
-          "--compile-commands-dir=${workspaceFolder}/e2-studio-star-rx72n-firmware/build",
           "--background-index",
           "--clang-tidy"
-        ],
-        "C_Cpp.default.compileCommands": "${workspaceFolder}/e2-studio-star-rx72n-firmware/build/compile_commands.json"
+        ]
       }
     }
   }

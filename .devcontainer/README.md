@@ -18,14 +18,12 @@ Before rebuilding the container, authenticate CLI tools on your **host machine**
 
 ```bash
 # On your host (outside container)
-gemini-cli auth login
-claude-code auth login
 npm i -g opencode-ai @openai/codex  # Install OpenCode AI and OpenAI Codex CLI
 opencode /connect                    # Configure OpenCode AI providers
 codex auth login                     # Authenticate OpenAI Codex CLI
 ```
 
-This creates credential files in `~/.config/gemini/`, `~/.config/claude/`, `~/.config/opencode/`, and `~/.config/openai/` which are bind-mounted into the container.
+This creates credential files in `~/.config/` which are bind-mounted into the container.
 
 ## What's Installed
 
@@ -36,35 +34,27 @@ The base Docker image includes:
 - Python 3 (via apt, not devcontainer feature)
 - nanopb for Protocol Buffer C code generation
 - Buf CLI for Protocol Buffer development
+- Doxygen + minimal LaTeX for PDF documentation
 
-### Official Features
+### DevContainer Features (5)
 
 - Git LFS
 - GitHub CLI
 - Go
 - Node.js
+- Docker-in-Docker
 
-### Community Features
-
-- Act (GitHub Actions runner)
-- Claude Code CLI
-- Gemini CLI
-- OpenCode AI CLI (npm package)
-- OpenAI Codex CLI (npm package)
-- Actionlint
-
-### VS Code Extensions
-
-All extensions listed in `.vscode/extensions.json` are auto-installed, including:
+### VS Code Extensions (12)
 
 - Go (golang.go)
 - C/C++ with clangd LSP (llvm-vs-code-extensions.vscode-clangd)
 - C/C++ debugger CodeLLDB (vadimcn.vscode-lldb)
 - CMake Tools (ms-vscode.cmake-tools)
-- ROS2 (ms-iot.vscode-ros)
 - Python (ms-python.python, ms-python.vscode-pylance)
 - Protocol Buffers (bufbuild.vscode-buf)
-- And 15+ more utilities
+- Git tools (eamodio.gitlens, mhutchie.git-graph)
+- Linting/formatting (dbaeumer.vscode-eslint, esbenp.prettier-vscode)
+- YAML (redhat.vscode-yaml)
 
 **C++ Toolchain Architecture**:
 
@@ -72,21 +62,31 @@ All extensions listed in `.vscode/extensions.json` are auto-installed, including
 - **CodeLLDB**: Provides debugging (F5, breakpoints, stepping)
 - **CMake Tools**: Automatically generates `compile_commands.json` for clangd
 
-This setup avoids the `ms-vscode.cpptools` extension which conflicts with clangd's IntelliSense.
+This setup avoids the `ms-vscode.cpptools` extension which conflicts with clangd's IntelliSense. The `C_Cpp.intelliSenseEngine` setting is explicitly disabled to prevent conflicts.
 
 ## Credential Persistence
 
 CLI tool credentials persist across container rebuilds via bind mounts:
 
 ```
-Host: ~/.config/gemini   →  Container: /home/star/.config/gemini
-Host: ~/.config/claude   →  Container: /home/star/.config/claude
-Host: ~/.config/opencode →  Container: /home/star/.config/opencode
-Host: ~/.config/openai   →  Container: /home/star/.config/openai
-Host: ~/.config/gh       →  Container: /home/star/.config/gh
+Host: ~/.config/     →  Container: /home/star/.config/
+Host: ~/.ssh/        →  Container: /home/star/.ssh/
+Host: ~/.gitconfig   →  Container: /home/star/.gitconfig
 ```
 
-**Windows users**: Ensure these directories exist before rebuilding. The mount syntax `${localEnv:HOME}${localEnv:USERPROFILE}` works on most systems but may fail on mixed environments (Git Bash with both env vars set).
+All tool configs (gh, opencode, openai, gemini, claude, etc.) should be placed under `~/.config/` on the host following the XDG Base Directory specification.
+
+**Windows users**: Ensure `%USERPROFILE%\.config` exists before rebuilding.
+
+## Lifecycle Commands
+
+The devcontainer uses split lifecycle commands for optimal Codespaces prebuild support:
+
+| Command | When | What |
+|---------|------|------|
+| `initializeCommand` | Before container creation | Creates host directories for bind mounts |
+| `onCreateCommand` | After container creation (cached in prebuilds) | Installs golangci-lint, npm tools |
+| `updateContentCommand` | After content update | Runs `buf mod update` |
 
 ## Known Limitations
 
@@ -99,15 +99,16 @@ The mount syntax relies on VS Code resolving undefined variables to empty string
 
 If both are defined (e.g., Cygwin, Git Bash), the path becomes invalid. In that case, edit `devcontainer.json` to use only one variable.
 
-### Extension Installation
+### LaTeX Package Availability
 
-Extensions are installed from the VS Code marketplace during container creation. First build may take 5-10 minutes. Subsequent rebuilds are faster due to Docker layer caching.
+The Dockerfile installs a minimal LaTeX distribution for Doxygen PDF output. If `latexmk -pdf star_documentation.tex` fails with missing package errors, add the required `texlive-*` package. Likely candidates:
 
-If extensions fail to install, check:
+- `texlive-latex-extra` — tikz extras, booktabs, enumitem, etc.
+- `texlive-science` — algorithm packages
 
-1. Network connectivity to marketplace
-2. Disk space (~500MB needed)
-3. Output logs: Command Palette → `Dev Containers: Show All Logs`
+### Codespaces Prebuilds
+
+For instant Codespaces startup, enable prebuilds in your repository settings (Settings → Codespaces) or add a `.github/workflows/codespaces-prebuild.yml`. Without prebuilds, first Codespaces startup still requires `onCreateCommand` to run.
 
 ## Troubleshooting
 
@@ -130,7 +131,7 @@ Command Palette (Ctrl+Shift+P)
 
 **Explanation**: The Yarn repository was present in the base image but lacked proper GPG keys. Since we only need npm (not Yarn), the Yarn repository is now removed before package updates.
 
-**Fix**: The `postCreateCommand` in `devcontainer.json` now removes the Yarn repository list file before running `apt-get update`. Rebuild the container to apply the fix:
+**Fix**: Rebuild the container to apply the fix:
 
 ```
 Command Palette (Ctrl+Shift+P)
@@ -141,11 +142,7 @@ Command Palette (Ctrl+Shift+P)
 
 **Error**: `there is no registered task type 'cppbuild'`
 
-**Explanation**: This is a harmless VS Code glitch. The error appears because:
-
-1. VS Code scans all tasks in `tasks.json` during startup
-2. Some cache or indexing may reference a non-existent `cppbuild` task
-3. Our project uses `shell` tasks, not `cppbuild` tasks
+**Explanation**: This is a harmless VS Code glitch. Our project uses `shell` tasks, not `cppbuild` tasks.
 
 **Fix**: Ignore this error or reload the window:
 
@@ -153,41 +150,23 @@ Command Palette (Ctrl+Shift+P)
 Ctrl+Shift+P → "Developer: Reload Window"
 ```
 
-**Verification**: Run `grep -r "cppbuild" .vscode/` - you'll find no such tasks defined.
-
 ### "clangd not found on PATH"
 
 **Error**: `The 'clangd' language server was not found on your PATH`
 
-**Fix**: The Dockerfile now installs `clangd` via apt. Rebuild the container:
+**Fix**: The Dockerfile installs `clangd` via apt. Rebuild the container:
 
 ```
 Ctrl+Shift+P → "Dev Containers: Rebuild Container"
 ```
 
-If clangd is still not found after rebuild, check version:
-
-```bash
-which clangd
-clangd --version
-```
-
-Ubuntu/Debian's clangd package provides an older but stable version. For the latest clangd (21.x), the extension can download it, but this won't persist across rebuilds.
-
 ### "No such file or directory" on mount
 
-The credential directories don't exist on your host. Create them:
+The credential directories don't exist on your host. The `initializeCommand` should create them automatically, but you can also create them manually:
 
 ```bash
-mkdir -p ~/.config/gemini ~/.config/claude ~/.config/opencode ~/.config/openai ~/.config/gh
-```
-
-### Extensions not activating
-
-After rebuild, reload the window:
-
-```
-Ctrl+Shift+P → "Developer: Reload Window"
+mkdir -p ~/.ssh ~/.config
+touch ~/.gitconfig
 ```
 
 ### C++ IntelliSense conflicts
@@ -197,11 +176,7 @@ If you added `ms-vscode.cpptools` alongside `clangd`, both will try to provide I
 - **clangd** for IntelliSense (faster, more accurate)
 - **CodeLLDB** for debugging (lighter than cpptools)
 
-If you need `cpptools` for specific debugging scenarios, add to settings:
-
-```json
-"C_Cpp.intelliSenseEngine": "disabled"
-```
+The `C_Cpp.intelliSenseEngine` setting is disabled by default. If you need `cpptools` for specific debugging scenarios, uninstall clangd or use the extension's disable command.
 
 ### clangd not finding headers
 
@@ -236,5 +211,6 @@ This configuration prioritizes:
 - **Declarative setup**: All tools/extensions defined in code
 - **Layer caching**: Docker caches extension installations between builds
 - **Team consistency**: Everyone gets the same toolchain
+- **Performance**: BuildKit cache mounts, minimal LaTeX, reduced features
 
 We do **not** use extension volumes or persistent state that would break reproducibility.
