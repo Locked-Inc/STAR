@@ -45,6 +45,9 @@ local.properties
 **/build/
 **/cache/
 **/.vscode/
+# Exception: Allow shared VSCode settings for LSP configuration
+!.vscode/settings.json
+!.vscode/c_cpp_properties.json
 **/compile_commands.json
 
 # CMake/CTest artifacts
@@ -68,6 +71,9 @@ Testing/
 !schematic/output/**/*.pdf
 
 .clangd
+# Exception: Allow LSP configuration for shared development environment
+!e2-studio-star-rx72n-firmware/.clangd
+!star-ros2/.clangd
 
 backup_*
 
@@ -179,6 +185,9 @@ log/
 Thumbs.db
 .metadata
 
-# Claude
-.claude/
+# Claude - Allow sharing skills and agents, but keep personal settings private
+.claude/settings.local.json
+.claude/*.local.json
 .claude.json
+# Exception: Allow .claude/skills/build/ (skill directory, not build artifacts)
+!.claude/skills/build/
