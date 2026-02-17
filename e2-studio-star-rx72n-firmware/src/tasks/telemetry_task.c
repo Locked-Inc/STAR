@@ -1137,13 +1137,74 @@ typedef enum : uint8_t {
   k_telem_sensor_ambient = 0, /**< DS18B20 ambient temperature sensor index */
 } telem_sensor_idx_t;
 
+/**
+ * @enum telemetry_transport_t
+ * @brief Active transport channel for telemetry transmission
+ *
+ * @details
+ * Identifies which physical communication channel is currently selected for
+ * telemetry broadcast. The selection algorithm prefers USB CDC when it is
+ * ready (development convenience and higher bandwidth) and falls back to SPI
+ * when USB is unavailable (production RPi5 connection).
+ *
+ * @par Channel Selection Priority:
+ * 1. k_telemetry_transport_usb  - USB CDC connected and ready (preferred)
+ * 2. k_telemetry_transport_spi  - SPI available as fallback when USB absent
+ * 3. k_telemetry_transport_none - Neither channel ready (message dropped)
+ *
+ * @startuml
+ * [*] --> SELECT
+ * SELECT --> USB : USB CDC ready\n(rx_comm_manager_channel_ready == true)
+ * SELECT --> SPI : USB not ready\nSPI available
+ * SELECT --> NONE : Both unavailable
+ * USB --> SELECT : Next cycle
+ * SPI --> SELECT : Next cycle
+ * NONE --> SELECT : Next cycle
+ * @enduml
+ *
+ * @invariant Exactly one value selected per telemetry cycle
+ *
+ * @see internal_select_transport() Returns this type
+ * @see internal_build_and_send_telemetry() Consumer of this type
+ * @since Version 1.1.0
+ */
+typedef enum : uint8_t {
+  /**
+   * @brief USB CDC channel (primary, preferred for development)
+   * @details
+   * Selected when USB CDC is enumerated and ready for bulk transfers.
+   * Maps to k_comm_channel_usb in the comm manager.
+   * @par Value: 0
+   */
+  k_telemetry_transport_usb = 0,
+
+  /**
+   * @brief SPI channel (fallback for production with RPi5)
+   * @details
+   * Selected when USB CDC is not ready. SPI is the production interface
+   * to Raspberry Pi 5. Maps to k_comm_channel_spi in the comm manager.
+   * @par Value: 1
+   */
+  k_telemetry_transport_spi = 1,
+
+  /**
+   * @brief No transport available (both USB and SPI unavailable)
+   * @details
+   * Selected when neither channel is ready. Telemetry message is dropped
+   * for this cycle. The task continues running and will retry next cycle.
+   * @par Value: 2
+   */
+  k_telemetry_transport_none = 2,
+} telemetry_transport_t;
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
  */
 
-static void     internal_telem_task_entry(ULONG input);
-static rx_err_t internal_build_and_send_telemetry(void);
+static void                 internal_telem_task_entry(ULONG input);
+static rx_err_t             internal_build_and_send_telemetry(void);
+static telemetry_transport_t internal_select_transport(void);
 
 /* =============================================================================
  * Public Functions
@@ -1504,6 +1565,123 @@ static void internal_telem_task_entry(ULONG input)
 }
 
 /**
+ * @brief Select the active transport channel for this telemetry cycle
+ *
+ * @details
+ * Queries the communication manager to determine which physical channel is
+ * ready for transmission. Implements the USB-preferred, SPI-fallback policy:
+ *
+ * 1. Query USB CDC readiness via rx_comm_manager_channel_ready()
+ * 2. If USB is ready, return k_telemetry_transport_usb
+ * 3. Otherwise query SPI readiness
+ * 4. If SPI is ready, return k_telemetry_transport_spi (and log the failover
+ *    once per transition)
+ * 5. If neither is ready, return k_telemetry_transport_none
+ *
+ * The function uses a static flag to detect the USB→SPI transition and emits
+ * a warning log exactly once per failover event (not once per cycle) to avoid
+ * log flooding at 20 Hz.
+ *
+ * @return telemetry_transport_t Selected transport
+ * @retval k_telemetry_transport_usb  USB CDC ready, use as primary
+ * @retval k_telemetry_transport_spi  USB not ready, SPI available as fallback
+ * @retval k_telemetry_transport_none Both channels unavailable, drop message
+ *
+ * @pre g_comm_manager must be initialized via rx_comm_manager_init()
+ * @pre rx_comm_manager_channel_ready() must be callable (non-blocking)
+ * @post Returned transport reflects real-time channel readiness
+ * @post Transition warning logged at most once per USB→SPI failover event
+ *
+ * @note Called every 50 ms from internal_build_and_send_telemetry() (20 Hz)
+ * @note Non-blocking: rx_comm_manager_channel_ready() never blocks
+ * @note Thread-safe: reads only s_usb_was_active (single writer: this task)
+ *
+ * @warning Returns k_telemetry_transport_none if g_comm_manager not initialized
+ *
+ * @par Channel selection state machine:
+ * @startuml
+ * state "USB Active" as usb {
+ *   usb : Entry - Log info on first use
+ *   usb : Do - Send telemetry via k_comm_channel_usb
+ * }
+ * state "SPI Fallback" as spi {
+ *   spi : Entry - Log warning (USB→SPI failover detected)
+ *   spi : Do - Send telemetry via k_comm_channel_spi
+ * }
+ * state "No Transport" as none {
+ *   none : Do - Drop telemetry message, log warning
+ * }
+ * [*] --> usb : USB ready at startup
+ * [*] --> spi : USB not ready at startup
+ * [*] --> none : Both unavailable
+ * usb --> spi : USB not ready\n(disconnect detected)
+ * usb --> none : Both unavailable
+ * spi --> usb : USB reconnected
+ * spi --> none : SPI also lost
+ * none --> usb : USB reconnected
+ * none --> spi : SPI becomes available
+ * @enduml
+ *
+ * @see internal_build_and_send_telemetry() Caller - maps transport to channel
+ * @see rx_comm_manager_channel_ready() Readiness query API
+ * @see rx_comm_manager_channel_name() Human-readable channel name for logs
+ *
+ * @since Version 1.1.0
+ *
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * - Precondition 1: g_comm_manager initialized (checked via channel_ready return)
+ * - Precondition 2: channel argument within valid enum range
+ * - Postcondition 1: Returns a valid telemetry_transport_t value
+ * - Postcondition 2: Transition logged if s_usb_was_active changes
+ */
+static telemetry_transport_t internal_select_transport(void)
+{
+  rx_err_t err;
+  bool     usb_ready = false;
+  bool     spi_ready = false;
+
+  /** @brief Tracks previous USB active state to detect failover transitions */
+  static bool s_usb_was_active = false;
+
+  /* Query USB channel readiness */
+  err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
+  if (err != k_rx_ok) {
+    /* Treat query failure as channel not ready */
+    usb_ready = false;
+  }
+
+  if (usb_ready) {
+    /* USB is ready: use as primary transport */
+    if (!s_usb_was_active) {
+      /* Log USB (re)activation - first cycle or recovery from SPI fallback */
+      rx_log_info(s_tag, "Telemetry transport: USB CDC (primary)");
+      s_usb_was_active = true;
+    }
+    return k_telemetry_transport_usb;
+  }
+
+  /* USB not ready: log failover warning on transition */
+  if (s_usb_was_active) {
+    rx_log_warn(s_tag, "USB CDC not ready - falling back to SPI");
+    s_usb_was_active = false;
+  }
+
+  /* Query SPI channel readiness */
+  err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
+  if (err != k_rx_ok) {
+    spi_ready = false;
+  }
+
+  if (spi_ready) {
+    return k_telemetry_transport_spi;
+  }
+
+  /* Neither channel ready */
+  rx_log_warn(s_tag, "No transport available - dropping telemetry");
+  return k_telemetry_transport_none;
+}
+
+/**
  * @brief Build and send complete telemetry message (4-phase aggregation)
  *
  * @details
@@ -1539,236 +1717,53 @@ static void internal_telem_task_entry(ULONG input)
  * - **Encoder:** nanopb (zero-copy, no dynamic allocation)
  * - **Result:** ~250 bytes encoded protobuf (varint + fixed-width fields)
  *
- * ## Phase 4: Transmission (Send via Communication Manager)
+ * ## Phase 4: Transmission (Send via Communication Manager with Failover)
  *
- * Send encoded protobuf bytes via `rx_comm_manager`:
- * - **Channel:** USB CDC (primary) or SPI (fallback) - auto-selected by comm_manager
+ * Select transport and send encoded protobuf bytes via `rx_comm_manager`:
+ * - **Transport selection:** internal_select_transport() queries channel readiness
+ * - **Primary:** USB CDC (k_comm_channel_usb) when USB is enumerated and ready
+ * - **Fallback:** SPI (k_comm_channel_spi) when USB is unavailable
+ * - **No transport:** Message dropped if both channels unavailable
  * - **Frame type:** `k_frame_type_response` (data from RX72N -> host)
  * - **CRC:** Added by comm_manager (not included in encoded_len)
  * - **Result:** Message queued for transmission (non-blocking send)
  *
- * ## Data Flow Diagram (4 Phases)
- *
- * @dot
- * digraph telemetry_data_flow {
- *   rankdir=TB;
- *   node [shape=box, style=rounded];
- *
- *   // Phase 1: Data Collection
- *   subgraph cluster_phase1 {
- *     label="Phase 1: Data Collection";
- *     style=filled;
- *     color=lightblue;
- *
- *     motor_shared [label="shared_data_get_motor_state()\nMotor encoders, velocities,\ne-stop, fault flags"];
- *     bms_shared [label="shared_data_get_bms()\nBattery voltage (mV),\nSoC (%)"];
- *     temp_shared [label="shared_data_get_temp()\nDS18B20 temp (cdegC)"];
- *   }
- *
- *   // Phase 2: Protobuf Population
- *   subgraph cluster_phase2 {
- *     label="Phase 2: Protobuf Population";
- *     style=filled;
- *     color=lightgreen;
- *
- *     populate [label="Populate TelemetryData struct\n- Timestamp (ThreadX ticks -> µs)\n- Sequence (s_sequence++)\n- Motor fields (4 encoders)\n- BMS fields (mV -> V)\n- Temp fields (cdegC -> °C)"];
- *   }
- *
- *   // Phase 3: Nanopb Encoding
- *   subgraph cluster_phase3 {
- *     label="Phase 3: Nanopb Encoding";
- *     style=filled;
- *     color=lightyellow;
- *
- *     encode [label="rx_nanopb_encode_telemetry()\nTelemetryData struct -> binary protobuf\n(s_telem_buffer, ~250 bytes)"];
- *   }
- *
- *   // Phase 4: Transmission
- *   subgraph cluster_phase4 {
- *     label="Phase 4: Transmission";
- *     style=filled;
- *     color=lightcoral;
- *
- *     send [label="rx_comm_manager_send()\nUSB CDC or SPI\n(frame + CRC-32)"];
- *   }
- *
- *   // Flow
- *   motor_shared -> populate;
- *   bms_shared -> populate;
- *   temp_shared -> populate;
- *   populate -> encode;
- *   encode -> send;
- * }
- * @enddot
- *
- * ## Unit Conversion Details
- *
- * All conversions follow MKS (SI) system requirements per Protocol Buffers style guide:
- *
- * | Internal Type | Internal Units | Conversion | Protobuf Type | Protobuf Units |
- * |---------------|----------------|------------|---------------|----------------|
- * | `uint32_t` | millivolts (mV) | `/ 1000.0` | `double` | volts (V) |
- * | `int16_t` | centi-degrees (cdegC) | `/ 100.0` | `double` | degrees Celsius (°C) |
- * | `float` | meters/second (m/s) | `(double)cast` | `double` | meters/second (m/s) |
- * | `uint32_t` | ThreadX ticks | `× 10000` | `int64` | microseconds (µs) |
- *
- * ### Why Fixed-Point Internally?
- *
- * - **BMS voltage:** ADC reports in mV (12-bit × voltage divider), integer math only
- * - **DS18B20 temp:** Sensor reports in 0.0625°C steps, stored as `temp × 100` (centi-degrees)
- * - **ThreadX ticks:** System timer at 100 Hz, multiplication to µs avoids float division
- *
- * ### Why Floating-Point in Protobuf?
- *
- * - **ROS2 compatibility:** ROS2 `sensor_msgs` use float64 (double) for voltages/temps
- * - **Human readability:** "12.34 V" is clearer than "12340 mV" in UI
- * - **Precision:** `double` has 53-bit mantissa (16 decimal digits), no precision loss
- *
- * ## Fault Flags Bitfield Packing Algorithm
- *
- * The 4 motor fault flag bytes are packed into a single `uint32_t` for efficient transmission:
- *
- * ```
- * Input:  motor_state.fault_flags[4] = {0x12, 0x34, 0x56, 0x78}
- *                                       [FL]  [FR]  [BL]  [BR]
- *
- * Packing:
- *   fault_flags = (0x12 << 0)  |  // Motor 0 (FL) in bits [0:7]
- *                 (0x34 << 8)  |  // Motor 1 (FR) in bits [8:15]
- *                 (0x56 << 16) |  // Motor 2 (BL) in bits [16:23]
- *                 (0x78 << 24);   // Motor 3 (BR) in bits [24:31]
- *
- * Result: fault_flags = 0x78563412
- *
- * Unpacking (host-side):
- *   motor_0_fault = (fault_flags >> 0)  & 0xFF;  // Extract bits [0:7]   -> 0x12
- *   motor_1_fault = (fault_flags >> 8)  & 0xFF;  // Extract bits [8:15]  -> 0x34
- *   motor_2_fault = (fault_flags >> 16) & 0xFF;  // Extract bits [16:23] -> 0x56
- *   motor_3_fault = (fault_flags >> 24) & 0xFF;  // Extract bits [24:31] -> 0x78
- * ```
- *
- * **Rationale for packing:**
- * - Reduces protobuf size (1 uint32 vs 4 uint8 fields = 3 fewer varint tags)
- * - Atomic update (single write, not 4 separate writes)
- * - Efficient transmission (4 bytes instead of ~8 bytes with protobuf overhead)
- *
- * ## Graceful Degradation Strategy
- *
- * This function is designed to continue operating even when individual data sources fail:
- *
- * | Data Source | Failure Detection | Response | Result |
- * |-------------|-------------------|----------|--------|
- * | **Motor state** | `shared_data_get_motor_state() != k_rx_ok` | Skip motor fields | No encoders, e-stop, faults in message |
- * | **BMS state** | `bms_state.valid == false` | Skip BMS fields | No battery voltage/SoC in message |
- * | **Temperature** | `temp_state.sensor_valid[0] == false` | Skip temp fields | No temperature in message |
- * | **Encoding** | `rx_nanopb_encode_telemetry() != k_rx_ok` | Log error, return early | Message not sent (retry next cycle) |
- * | **Transmission** | `rx_comm_manager_send() != k_rx_ok` | Log error, return error | Message lost (host detects via sequence) |
- *
- * **Partial message example:**
- * - Motor task running [OK] -> Encoders populated
- * - BMS sensor failed [X] -> Battery fields omitted
- * - Temp sensor working [OK] -> Temperature populated
- * - Result: Host receives motor + temp data (better than nothing)
- *
  * @return rx_err_t Operation status
  * @retval k_rx_ok Telemetry sent successfully (all phases completed)
  * @retval k_rx_err_encoding_failed nanopb encoding failed (buffer too small, invalid message)
+ * @retval k_rx_err_invalid_state No transport available (both channels unavailable)
  * @retval k_rx_err_usb_tx_fail USB CDC transmission failed (host disconnected)
  * @retval k_rx_err_spi_tx_fail SPI transmission failed (RPi5 not responding)
  * @retval k_rx_err_timeout Communication manager send timeout
  *
- * @pre Shared data initialized (`shared_data_init()` called)
- * @pre Communication manager initialized (`rx_comm_manager_init()` called)
+ * @pre Shared data initialized (shared_data_init() called)
+ * @pre Communication manager initialized (rx_comm_manager_init() called)
  * @pre nanopb initialized (compile-time, no init function)
- * @pre Task created and running (`telemetry_task_create()` called)
+ * @pre Task created and running (telemetry_task_create() called)
  *
- * @post Telemetry message sent via USB CDC or SPI (if successful)
- * @post Sequence counter incremented (`s_sequence++`)
+ * @post Telemetry message sent via USB CDC (primary) or SPI (fallback)
+ * @post Sequence counter incremented (s_sequence++)
  * @post ThreadX timestamp captured (microsecond-precision uptime)
  * @post Unit conversions applied (mV->V, cdegC->°C)
  * @post Fault flags bitfield packed (4 bytes -> uint32)
  *
- * @note Called every 50ms by `internal_telem_task_entry()` (20 Hz)
+ * @note Called every 50ms by internal_telem_task_entry() (20 Hz)
  * @note Execution time: ~120 µs (all phases)
  * @note All data reads are non-blocking (graceful degradation if mutex locked)
+ * @note Transport channel is selected dynamically each cycle (USB preferred)
  *
  * @warning If encoding fails, message is NOT sent (retry next cycle)
  * @warning If transmission fails, message is lost (host detects via sequence gap)
  * @attention Partial messages are acceptable (Protocol Buffers optional fields)
  *
- * @par Performance Breakdown (per 50ms cycle):
- * - **Phase 1 (Data Collection):** ~23 µs (3 mutex-protected reads)
- * - **Phase 2 (Protobuf Population):** ~20 µs (struct field assignment + unit conversions)
- * - **Phase 3 (Nanopb Encoding):** ~40 µs (TelemetryData -> binary protobuf)
- * - **Phase 4 (Transmission):** ~60 µs (USB CDC transfer initiation)
- * - **Total:** ~143 µs (with overhead)
- *
- * @par Example Message (All Fields Populated):
- * @code
- * TelemetryData {
- *   timestamp_us: 123450000              // 123.45 seconds uptime
- *   frame_sequence: 42                   // 42nd message since boot
- *   emergency_stop: false                // E-stop not active
- *   fault_flags: 0x00000000              // No motor faults
- *   encoder_front_left: {
- *     motor_id: 0
- *     ticks: 12345                       // Cumulative encoder count
- *     velocity_mps: 1.234                // 1.234 m/s forward
- *     timestamp_us: 123450000
- *   }
- *   encoder_front_right: { ... }         // Similar for motors 1, 2, 3
- *   encoder_back_left: { ... }
- *   encoder_back_right: { ... }
- *   battery_voltage_v: 12.34             // 12.34 V (converted from 12340 mV)
- *   battery_soc_percent: 87.5            // 87.5% state of charge
- *   battery_percent: 87.5                // Duplicate field (legacy)
- *   temperature_celsius: 23.45           // 23.45°C (converted from 2345 cdegC)
- * }
- * // Encoded size: ~250 bytes (varint + fixed-width fields)
- * @endcode
- *
- * @par Example Partial Message (BMS Failed):
- * @code
- * TelemetryData {
- *   timestamp_us: 123450000
- *   frame_sequence: 42
- *   emergency_stop: false
- *   fault_flags: 0x00000000
- *   encoder_front_left: { ... }          // Motor data present
- *   encoder_front_right: { ... }
- *   encoder_back_left: { ... }
- *   encoder_back_right: { ... }
- *   // BMS fields OMITTED (bms_state.valid == false)
- *   temperature_celsius: 23.45           // Temp data present
- * }
- * // Encoded size: ~210 bytes (smaller without battery fields)
- * @endcode
- *
+ * @see internal_select_transport() Phase 4 - Select active transport channel
  * @see shared_data_get_motor_state() Phase 1 - Read motor state
  * @see shared_data_get_bms() Phase 1 - Read BMS state
  * @see shared_data_get_temp() Phase 1 - Read temperature state
  * @see rx_nanopb_encode_telemetry() Phase 3 - Encode to protobuf
  * @see rx_comm_manager_send() Phase 4 - Transmit via USB/SPI
- * @see star.v1.TelemetryData Protobuf message schema
  *
- * @since Version 1.0.0
- *
- * @par NASA Power of 10 Rule 5 Compliance:
- * - **Precondition 1:** Shared data initialized and valid
- * - **Precondition 2:** Comm manager initialized and ready
- * - **Precondition 3:** `s_telem_buffer` allocated (static, 512 bytes)
- * - **Precondition 4:** nanopb encoder initialized (compile-time)
- * - **Postcondition 1:** Telemetry sent OR error logged (never silent failure)
- * - **Postcondition 2:** Sequence counter incremented (monotonic)
- * - **Postcondition 3:** Buffer contents valid until next cycle (reusable)
- * - **Validation:** 5 return codes checked (motor, BMS, temp, encode, send)
- *
- * @par SOLID Principle: Single Responsibility
- * This function has ONE job: aggregate telemetry data and send it. It does NOT:
- * - Manage communication channels (comm_manager's job)
- * - Encode protobuf details (nanopb's job)
- * - Collect raw sensor data (motor/BMS/temp tasks' job)
- * - Parse received commands (comm_task's job)
+ * @since Version 1.0.0 (transport failover added in v1.1.0)
  */
 static rx_err_t internal_build_and_send_telemetry(void)
 {
@@ -1852,9 +1847,25 @@ static rx_err_t internal_build_and_send_telemetry(void)
     return err;
   }
 
+  /* Select transport: USB preferred, SPI fallback */
+  telemetry_transport_t transport = internal_select_transport();
+
+  if (transport == k_telemetry_transport_none) {
+    /* No transport available; drop message this cycle */
+    return k_rx_err_invalid_state;
+  }
+
+  /* Map transport selection to comm manager channel */
+  rx_comm_channel_t channel;
+  if (transport == k_telemetry_transport_usb) {
+    channel = k_comm_channel_usb;
+  } else {
+    channel = k_comm_channel_spi;
+  }
+
   /* Send via communication manager as RESPONSE type (data from RX72N to host) */
   rx_comm_send_params_t params;
-  params.channel     = k_comm_channel_usb;
+  params.channel     = channel;
   params.type        = k_frame_type_response;
   params.flags       = k_frame_flag_none;
   params.payload     = s_telem_buffer;

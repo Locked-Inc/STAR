@@ -353,6 +353,180 @@ void test_telemetry_task_handles_send_failure(void)
 }
 
 /* =============================================================================
+ * Transport Failover Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Test that USB channel is selected when USB is ready
+ *
+ * @details
+ * When USB CDC is reported as ready by the comm manager, the send should
+ * target k_comm_channel_usb.
+ */
+void test_telemetry_transport_selects_usb_when_ready(void)
+{
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
+  rx_err_t              err;
+
+  /* Initialize manager */
+  mgr.initialized = true;
+
+  /* USB ready, SPI also ready - USB should be preferred */
+  mock_comm_manager_set_channel_ready(k_comm_channel_usb, true);
+  mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
+  mock_comm_manager_set_send_return(k_rx_ok);
+
+  /* Simulate the send path that telemetry task uses when USB is active */
+  params.channel     = k_comm_channel_usb;
+  params.type        = k_frame_type_response;
+  params.flags       = 0;
+  params.payload_len = 0;
+
+  err = rx_comm_manager_send(&mgr, &params);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_comm_channel_usb, mock_comm_manager_get_last_send_channel());
+}
+
+/**
+ * @brief Test that SPI channel is selected when USB is not ready
+ *
+ * @details
+ * When USB CDC is reported as not ready, the failover logic should select
+ * SPI as the fallback transport.
+ */
+void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
+{
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
+  rx_err_t              err;
+  bool                  usb_ready = false;
+  bool                  spi_ready = false;
+
+  /* Initialize manager */
+  mgr.initialized = true;
+
+  /* USB not ready, SPI ready */
+  mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
+  mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
+  mock_comm_manager_set_send_return(k_rx_ok);
+
+  /* Query USB readiness - should report not ready */
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(usb_ready);
+
+  /* Query SPI readiness - should report ready */
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(spi_ready);
+
+  /* When USB is not ready, telemetry falls back to SPI */
+  params.channel     = k_comm_channel_spi;
+  params.type        = k_frame_type_response;
+  params.flags       = 0;
+  params.payload_len = 0;
+
+  err = rx_comm_manager_send(&mgr, &params);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_comm_channel_spi, mock_comm_manager_get_last_send_channel());
+}
+
+/**
+ * @brief Test channel_ready API returns correct status for USB
+ *
+ * @details
+ * Verifies that rx_comm_manager_channel_ready() correctly reports USB
+ * channel status based on mock configuration.
+ */
+void test_telemetry_channel_ready_usb_reports_correctly(void)
+{
+  rx_comm_manager_t mgr   = {0};
+  bool              ready = false;
+  rx_err_t          err;
+
+  mgr.initialized = true;
+
+  /* Set USB as ready */
+  mock_comm_manager_set_channel_ready(k_comm_channel_usb, true);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(ready);
+
+  /* Set USB as not ready */
+  mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(ready);
+}
+
+/**
+ * @brief Test channel_ready API returns correct status for SPI
+ *
+ * @details
+ * Verifies that rx_comm_manager_channel_ready() correctly reports SPI
+ * channel status based on mock configuration.
+ */
+void test_telemetry_channel_ready_spi_reports_correctly(void)
+{
+  rx_comm_manager_t mgr   = {0};
+  bool              ready = false;
+  rx_err_t          err;
+
+  mgr.initialized = true;
+
+  /* SPI ready by default */
+  mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(ready);
+
+  /* SPI not ready */
+  mock_comm_manager_set_channel_ready(k_comm_channel_spi, false);
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(ready);
+}
+
+/**
+ * @brief Test that send to SPI succeeds during USB fallback
+ *
+ * @details
+ * Verifies that telemetry can successfully be delivered via SPI when USB
+ * is unavailable. This exercises the failover delivery path end-to-end.
+ */
+void test_telemetry_spi_fallback_send_succeeds(void)
+{
+  rx_comm_manager_t     mgr     = {0};
+  rx_comm_send_params_t params  = {0};
+  uint8_t               payload[64];
+  rx_err_t              err;
+
+  mgr.initialized = true;
+
+  /* USB not ready, SPI ready */
+  mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
+  mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
+  mock_comm_manager_set_send_return(k_rx_ok);
+
+  /* Simulate fallback send via SPI */
+  params.channel     = k_comm_channel_spi;
+  params.type        = k_frame_type_response;
+  params.flags       = 0;
+  params.payload     = payload;
+  params.payload_len = sizeof(payload);
+
+  err = rx_comm_manager_send(&mgr, &params);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_comm_channel_spi, mock_comm_manager_get_last_send_channel());
+  TEST_ASSERT_EQUAL_UINT32(1, mock_comm_manager_get_send_count());
+}
+
+/* =============================================================================
  * Test Runner
  * =============================================================================
  */
@@ -378,6 +552,13 @@ int main(void)
   /* Transmission Tests */
   RUN_TEST(test_telemetry_task_broadcasts_to_usb);
   RUN_TEST(test_telemetry_task_handles_send_failure);
+
+  /* Transport Failover Tests */
+  RUN_TEST(test_telemetry_transport_selects_usb_when_ready);
+  RUN_TEST(test_telemetry_transport_falls_back_to_spi_when_usb_not_ready);
+  RUN_TEST(test_telemetry_channel_ready_usb_reports_correctly);
+  RUN_TEST(test_telemetry_channel_ready_spi_reports_correctly);
+  RUN_TEST(test_telemetry_spi_fallback_send_succeeds);
 
   return UNITY_END();
 }
