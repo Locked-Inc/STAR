@@ -341,6 +341,19 @@ typedef enum : uint16_t {
   k_frame_max_size = 1036, /**< @brief Maximum frame size (1036 bytes)
                              * @details SYNC(2) + Header(6) + Payload(1024) + CRC(4) = 1036 bytes.
                              */
+
+  k_frame_max_scan_bytes = 1036, /**< @brief Maximum bytes to scan forward during sync recovery (1036)
+                                   * @details
+                                   * When the sync word is not found at offset 0, the decoder scans
+                                   * forward up to this many bytes looking for the sync pattern. The
+                                   * upper bound equals k_frame_max_size so recovery never reads more
+                                   * data than one complete maximum-size frame. This ensures bounded
+                                   * execution time (NASA Rule 2) and prevents unbounded stream
+                                   * consumption on permanently corrupt inputs.
+                                   *
+                                   * The scan discards all bytes before the discovered sync word and
+                                   * reattempts decoding from that position.
+                                   */
 } rx_frame_constants_t;
 
 /**
@@ -1055,6 +1068,88 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
                                        const uint8_t*            data,
                                        const uint32_t            data_len,
                                        rx_frame_t*               frame);
+
+/**
+ * @brief Decode wire format to frame with bounded sync-word resynchronization
+ *
+ * @details
+ * Extends rx_frame_decode() with automatic stream recovery. When the sync word
+ * is not found at offset 0 (i.e., the stream is byte-misaligned due to a
+ * dropped or inserted byte), this function scans forward up to
+ * k_rx_frame_max_scan_bytes positions looking for the next sync word occurrence.
+ * Bytes discarded during the scan are reported via bytes_discarded_out for
+ * diagnostic logging by the caller.
+ *
+ * If the sync word is located within the scan window, decoding proceeds from
+ * that offset as if data had been provided aligned. If no sync word is found
+ * within the bounded window, k_rx_err_protocol_error is returned.
+ *
+ * Algorithm:
+ * 1. Attempt normal decode at offset 0.
+ * 2. On k_rx_err_protocol_error (sync mismatch), invoke
+ *    internal_find_sync_offset() to locate the next sync word.
+ * 3. If found, decode from the discovered offset (trimmed view of data).
+ * 4. Report bytes discarded via bytes_discarded_out.
+ * 5. All other errors (CRC, size) are propagated unchanged.
+ *
+ * @param[in]  dec                  Initialized frame decoder handle
+ * @param[in]  data                 Raw byte buffer (may be misaligned)
+ * @param[in]  data_len             Length of data buffer in bytes
+ * @param[out] frame                Decoded frame (header, payload, CRC)
+ * @param[out] bytes_discarded_out  Number of bytes skipped to reach sync word
+ *                                  (0 when sync was found at offset 0)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok               Frame decoded and CRC verified
+ * @retval k_rx_err_invalid_arg  Any pointer parameter is nullptr
+ * @retval k_rx_err_invalid_state Decoder not initialized
+ * @retval k_rx_err_invalid_size  Data buffer too short to contain a valid frame
+ * @retval k_rx_err_protocol_error No sync word found within k_rx_frame_max_scan_bytes
+ * @retval k_rx_err_crc_mismatch  Sync found but CRC validation failed
+ *
+ * @pre dec must be initialized via rx_frame_decoder_init()
+ * @pre data must point to a buffer of at least data_len bytes
+ * @post On k_rx_ok, frame contains the decoded frame with verified CRC
+ * @post bytes_discarded_out contains the number of bytes skipped (>= 0)
+ *
+ * @note Not thread-safe. Caller must synchronize access to decoder and buffer.
+ * @note The scan window is bounded at k_rx_frame_max_scan_bytes (NASA Rule 2).
+ * @note Caller should log bytes_discarded_out > 0 as a diagnostic warning.
+ *
+ * @warning This function modifies the caller's view of the stream: the caller
+ *          must advance its read pointer by (bytes_discarded_out) after a
+ *          successful decode to avoid reprocessing discarded bytes.
+ *
+ * @par Performance:
+ * Worst case: scans k_rx_frame_max_scan_bytes (1036) before failing.
+ * Best case: identical to rx_frame_decode() (0 bytes discarded).
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_frame_decoder_t dec;
+ * rx_frame_decoder_init(&dec);
+ *
+ * rx_frame_t frame;
+ * uint32_t discarded = 0;
+ * rx_err_t err = rx_frame_decode_with_resync(&dec, wire_buf, wire_len,
+ *                                             &frame, &discarded);
+ * if (discarded > 0) {
+ *     rx_log_warn("FRAME", "Stream resync: discarded %u bytes", discarded);
+ * }
+ * if (err == k_rx_ok) {
+ *     process_frame(&frame);
+ * }
+ * @endcode
+ *
+ * @see rx_frame_decode() Simple decode without resynchronization
+ * @see k_frame_max_scan_bytes Maximum scan window (1036 bytes)
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
+                                                   const uint8_t*            data,
+                                                   const uint32_t            data_len,
+                                                   rx_frame_t*               frame,
+                                                   uint32_t* bytes_discarded_out);
 
 /* =============================================================================
  * Frame Helper Functions

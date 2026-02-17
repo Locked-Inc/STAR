@@ -28,6 +28,7 @@
  *     decoder_init [label="rx_frame_decoder_init()"];
  *     decoder_deinit [label="rx_frame_decoder_deinit()"];
  *     decode [label="rx_frame_decode()"];
+ *     decode_resync [label="rx_frame_decode_with_resync()"];
  *     create_ack [label="rx_frame_create_ack()"];
  *     create_nack [label="rx_frame_create_nack()"];
  *   }
@@ -40,6 +41,7 @@
  *     read_le32 [label="internal_read_le32()"];
  *     decode_header [label="internal_decode_header()"];
  *     verify_crc [label="internal_verify_crc()"];
+ *     find_sync [label="internal_find_sync_offset()"];
  *   }
  *
  *   subgraph cluster_deps {
@@ -56,6 +58,9 @@
  *   encode -> rx_crc;
  *   decode -> decode_header;
  *   decode -> verify_crc;
+ *   decode_resync -> decode;
+ *   decode_resync -> find_sync;
+ *   find_sync -> rx_check;
  *   decode_header -> rx_crc [style=invis];
  *   verify_crc -> read_le32;
  *   verify_crc -> rx_crc;
@@ -380,6 +385,92 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
   return k_rx_ok;
 }
 
+/**
+ * @brief Scan a byte buffer for the frame sync word with a fixed upper bound
+ *
+ * @details
+ * Performs a linear scan of the buffer starting at offset 1 (offset 0 is
+ * presumed to have already failed sync check) looking for the 2-byte sync
+ * pattern k_frame_sync_word in little-endian wire encoding (first byte 0xAA,
+ * second byte 0x55). The scan is bounded at k_frame_max_scan_bytes to satisfy
+ * NASA Rule 2 (fixed loop upper-bounds) and prevent infinite consumption of
+ * a permanently corrupt stream.
+ *
+ * The function stops and reports success at the first occurrence of the sync
+ * pattern. If no pattern is found within the window, k_rx_err_protocol_error
+ * is returned.
+ *
+ * Algorithm:
+ * 1. Validate preconditions (non-null pointers, minimum buffer size).
+ * 2. Compute scan limit = min(data_len - 1, k_frame_max_scan_bytes).
+ * 3. Iterate i from 1 to scan_limit inclusive:
+ *    a. Read 16-bit LE value at data[i].
+ *    b. If it matches k_frame_sync_word, write i to offset_out and return k_rx_ok.
+ * 4. Return k_rx_err_protocol_error if no match found.
+ *
+ * @param[in]  data       Buffer to scan (at least 2 bytes)
+ * @param[in]  data_len   Length of buffer in bytes (must be >= 2)
+ * @param[out] offset_out Byte offset of the first sync word found (>= 1)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok               Sync word found; offset written to offset_out
+ * @retval k_rx_err_invalid_arg  data or offset_out is nullptr
+ * @retval k_rx_err_invalid_size data_len < 2 (cannot contain a sync word)
+ * @retval k_rx_err_protocol_error No sync word found within k_frame_max_scan_bytes
+ *
+ * @pre data must point to a readable buffer of at least data_len bytes
+ * @pre data_len must be >= k_frame_sync_size (2)
+ * @post On k_rx_ok, offset_out is in range [1, min(data_len-1, k_frame_max_scan_bytes)]
+ * @post On error, offset_out is unchanged
+ *
+ * @note Not thread-safe. Caller must ensure exclusive access to data buffer.
+ * @note The loop bound is min(data_len - 1, k_frame_max_scan_bytes), which is
+ *       statically bounded by k_frame_max_scan_bytes = 1036 (NASA Rule 2).
+ *
+ * @par Performance:
+ * O(N) where N <= k_frame_max_scan_bytes. Each iteration performs one 16-bit
+ * LE read and one comparison. Worst case: 1036 iterations (no sync found).
+ *
+ * @see rx_frame_decode_with_resync() Public API that calls this function
+ * @see k_frame_sync_word Sync word value (0x55AA)
+ * @see k_frame_max_scan_bytes Maximum scan window (1036 bytes)
+ *
+ * @since Version 1.1.0
+ */
+static rx_err_t internal_find_sync_offset(const uint8_t* data,
+                                          const uint32_t data_len,
+                                          uint32_t*      offset_out)
+{
+  uint32_t scan_limit;
+  uint32_t i;
+  uint16_t candidate;
+
+  if (data == nullptr || offset_out == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (data_len < k_frame_sync_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  /* Bound scan to at most k_frame_max_scan_bytes positions beyond offset 0 */
+  scan_limit = data_len - k_frame_sync_size;
+  if (scan_limit > k_frame_max_scan_bytes) {
+    scan_limit = k_frame_max_scan_bytes;
+  }
+
+  /* Scan starting at offset 1; offset 0 already failed sync check */
+  for (i = 1; i <= scan_limit; i++) {
+    candidate = rx_frame_read_le16(&data[i]);
+    if (candidate == k_frame_sync_word) {
+      *offset_out = i;
+      return k_rx_ok;
+    }
+  }
+
+  return k_rx_err_protocol_error;
+}
+
 /* =============================================================================
  * Encoder API Implementation
  * =============================================================================
@@ -612,6 +703,96 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
     return err;
   }
   return k_rx_ok;
+}
+
+/**
+ * @brief Decode a frame from raw data with bounded sync-word resynchronization
+ *
+ * @details
+ * Provides stream recovery when the byte stream has become misaligned due to
+ * a dropped or inserted byte. On sync mismatch, scans forward up to
+ * k_frame_max_scan_bytes positions for the next occurrence of the sync word,
+ * discards the leading bytes, and reattempts decoding from that position.
+ *
+ * This function is safe for repeated calls on a stream: the caller must advance
+ * its read pointer by bytes_discarded_out bytes on success to avoid re-processing
+ * discarded bytes in subsequent calls.
+ *
+ * Recovery algorithm:
+ * 1. Attempt rx_frame_decode() on data[0..data_len-1].
+ * 2. If result is not k_rx_err_protocol_error, return immediately.
+ * 3. Call internal_find_sync_offset() to locate next sync word in data[1..].
+ * 4. If not found, return k_rx_err_protocol_error with *bytes_discarded_out = 0.
+ * 5. Decode from data[sync_offset..data_len-1] using the trimmed sub-buffer.
+ * 6. Write sync_offset to *bytes_discarded_out and return result.
+ *
+ * @param[in]  dec                 Initialized frame decoder handle
+ * @param[in]  data                Raw byte buffer (may be stream-misaligned)
+ * @param[in]  data_len            Length of data buffer in bytes
+ * @param[out] frame               Decoded frame (header, payload, CRC)
+ * @param[out] bytes_discarded_out Bytes skipped before sync word (0 = aligned)
+ *
+ * @retval k_rx_ok               Frame decoded and CRC verified
+ * @retval k_rx_err_invalid_arg  Any pointer parameter is nullptr
+ * @retval k_rx_err_invalid_state Decoder not initialized
+ * @retval k_rx_err_invalid_size  Buffer too short to contain a valid frame
+ * @retval k_rx_err_protocol_error No sync word found within scan window
+ * @retval k_rx_err_crc_mismatch  Sync found but CRC verification failed
+ *
+ * @pre dec must be initialized via rx_frame_decoder_init()
+ * @pre data must point to a buffer of at least data_len bytes
+ * @post On k_rx_ok, *bytes_discarded_out == bytes skipped to reach sync word
+ * @post On k_rx_ok, frame contains a fully verified decoded frame
+ *
+ * @note Not thread-safe. Caller must synchronize access.
+ * @note The scan is bounded at k_frame_max_scan_bytes (NASA Rule 2).
+ * @note Log *bytes_discarded_out > 0 as a stream-health diagnostic warning.
+ *
+ * @warning Caller must advance stream read pointer by *bytes_discarded_out
+ *          after a successful decode to avoid reprocessing discarded data.
+ *
+ * @see rx_frame_decode() Simple decode without stream recovery
+ * @see internal_find_sync_offset() Bounded sync word scanner
+ * @see k_frame_max_scan_bytes Scan window upper bound
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
+                                     const uint8_t*            data,
+                                     const uint32_t            data_len,
+                                     rx_frame_t*               frame,
+                                     uint32_t*                 bytes_discarded_out)
+{
+  rx_err_t err;
+  uint32_t sync_offset = 0;
+
+  if (dec == nullptr || data == nullptr || frame == nullptr || bytes_discarded_out == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  *bytes_discarded_out = 0;
+
+  /* Fast path: attempt aligned decode first */
+  err = rx_frame_decode(dec, data, data_len, frame);
+  if (err != k_rx_err_protocol_error) {
+    /* Either success, or an error other than sync mismatch (CRC, size, etc.) */
+    return err;
+  }
+
+  /* Sync word not at offset 0: scan forward for next sync word */
+  err = internal_find_sync_offset(data, data_len, &sync_offset);
+  if (err != k_rx_ok) {
+    /* No sync word found within bounded window */
+    return k_rx_err_protocol_error;
+  }
+
+  /* Reattempt decode from the discovered sync offset */
+  err = rx_frame_decode(dec, &data[sync_offset], data_len - sync_offset, frame);
+  if (err == k_rx_ok) {
+    *bytes_discarded_out = sync_offset;
+  }
+
+  return err;
 }
 
 /* =============================================================================

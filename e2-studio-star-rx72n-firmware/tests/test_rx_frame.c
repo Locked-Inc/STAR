@@ -2241,6 +2241,143 @@ void test_roundtrip_reset(void)
 }
 
 /* =============================================================================
+ * Resynchronization Tests
+ * =============================================================================
+ */
+
+/**
+ * @brief Resync test constants
+ *
+ * @details
+ * Constants for the bounded sync-word scan / stream-recovery tests.
+ * k_resync_junk_byte is a byte value that does not appear in the sync word
+ * (0x55AA wire: 0xAA 0x55) so it can be used as a reliable "junk" prefix
+ * without accidentally creating a false sync pattern.
+ */
+typedef enum : uint8_t {
+  k_resync_junk_byte  = 0xBB, /**< Byte that is never part of 0xAA or 0x55 */
+  k_resync_prefix_len = 1,    /**< Length of single-byte misalignment prefix */
+} resync_test_constants_t;
+
+/**
+ * @brief Verify rx_frame_decode_with_resync() recovers after a single dropped byte
+ *
+ * @details
+ * Constructs a valid ACK frame, encodes it to wire format, then prepends one
+ * junk byte (0xBB) to simulate the stream being one byte ahead of the actual
+ * frame boundary. Calls rx_frame_decode_with_resync() and verifies:
+ * - Return value is k_rx_ok
+ * - bytes_discarded == 1 (the junk byte)
+ * - Decoded frame matches the original ACK frame
+ *
+ * This exercises the k_rx_err_protocol_error → internal_find_sync_offset() →
+ * retry decode path.
+ */
+void test_resync_dropped_byte_recovery(void)
+{
+  rx_frame_t frame;
+  rx_frame_t decoded;
+  uint8_t    wire[k_frame_max_size + k_resync_prefix_len];
+  uint8_t    misaligned[k_frame_max_size + k_resync_prefix_len];
+  uint32_t   wire_len;
+  uint32_t   discarded;
+  rx_err_t   err;
+
+  /* Build a simple ACK frame */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ack(&frame, k_test_seq_one));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, wire, &wire_len));
+
+  /* Prepend one junk byte to simulate a dropped byte desynchronizing the stream */
+  misaligned[0] = k_resync_junk_byte;
+  memcpy(&misaligned[k_resync_prefix_len], wire, wire_len);
+
+  discarded = 0;
+  err = rx_frame_decode_with_resync(&s_decoder,
+                                    misaligned,
+                                    wire_len + k_resync_prefix_len,
+                                    &decoded,
+                                    &discarded);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(k_resync_prefix_len, discarded);
+  TEST_ASSERT_EQUAL(k_frame_type_ack, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_test_seq_one, decoded.header.sequence);
+}
+
+/**
+ * @brief Verify rx_frame_decode_with_resync() succeeds with no bytes discarded
+ *        when the buffer is already aligned
+ *
+ * @details
+ * Encodes a valid COMMAND frame and passes the wire buffer directly to
+ * rx_frame_decode_with_resync() without any prefix corruption. Verifies:
+ * - Return value is k_rx_ok
+ * - bytes_discarded == 0 (no resync scan was needed)
+ * - Decoded frame matches the original COMMAND frame
+ *
+ * This exercises the fast path: aligned decode succeeds immediately.
+ */
+void test_resync_aligned_frame_zero_discarded(void)
+{
+  rx_frame_t   frame;
+  rx_frame_t   decoded;
+  uint8_t      wire[k_frame_max_size];
+  uint32_t     wire_len;
+  uint32_t     discarded;
+  rx_err_t     err;
+  const uint8_t payload[k_go_payload_len] = {'T', 'E', 'S', 'T'};
+
+  memset(&frame, 0, sizeof(frame));
+  frame.header.sequence = k_test_seq_42;
+  frame.header.length   = k_go_payload_len;
+  frame.header.type     = k_frame_type_command;
+  frame.header.flags    = k_frame_flag_requires_ack;
+  memcpy(frame.payload, payload, k_go_payload_len);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, wire, &wire_len));
+
+  discarded = 0xFF; /* Sentinel - must be overwritten to 0 */
+  err = rx_frame_decode_with_resync(&s_decoder, wire, wire_len, &decoded, &discarded);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL(0, discarded);
+  TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
+  TEST_ASSERT_EQUAL(k_test_seq_42, decoded.header.sequence);
+  TEST_ASSERT_EQUAL(k_go_payload_len, decoded.header.length);
+  TEST_ASSERT_EQUAL_MEMORY(payload, decoded.payload, k_go_payload_len);
+}
+
+/**
+ * @brief Verify rx_frame_decode_with_resync() returns k_rx_err_protocol_error
+ *        when no sync word exists anywhere in the buffer
+ *
+ * @details
+ * Fills a buffer with 0xBB bytes (no sync pattern) and calls
+ * rx_frame_decode_with_resync(). Verifies:
+ * - Return value is k_rx_err_protocol_error
+ * - bytes_discarded is 0 (no partial progress)
+ *
+ * This exercises the "no sync found within bounded window" path.
+ * The buffer length is set to k_frame_min_size to keep the test fast
+ * while still being large enough to trigger the scan.
+ */
+void test_resync_no_sync_found(void)
+{
+  uint8_t    buf[k_frame_min_size];
+  rx_frame_t frame;
+  uint32_t   discarded;
+  rx_err_t   err;
+
+  memset(buf, k_resync_junk_byte, sizeof(buf));
+
+  discarded = 0xFF; /* Sentinel */
+  err = rx_frame_decode_with_resync(&s_decoder, buf, sizeof(buf), &frame, &discarded);
+
+  TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
+  TEST_ASSERT_EQUAL(0, discarded);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -2386,6 +2523,11 @@ int main(void)
   RUN_TEST(test_decode_payload_length_mismatch);
   RUN_TEST(test_decode_zero_length_buffer);
   RUN_TEST(test_encode_sequence_rollover);
+
+  /* Resynchronization tests */
+  RUN_TEST(test_resync_dropped_byte_recovery);
+  RUN_TEST(test_resync_aligned_frame_zero_discarded);
+  RUN_TEST(test_resync_no_sync_found);
 
   return UNITY_END();
 }
