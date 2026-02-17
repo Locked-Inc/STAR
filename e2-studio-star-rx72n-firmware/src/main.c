@@ -201,6 +201,9 @@
 /* Watchdog driver */
 #include "rx_iwdt.h"
 
+/* Stack overflow detection */
+#include "rx_stack_monitor.h"
+
 /* =============================================================================
  * Main Return Codes
  * =============================================================================
@@ -1900,6 +1903,10 @@ void tx_application_define(void* first_unused_memory)
   /* Step 3: Transition to running state (all tasks created) */
   err = rx_iwdt_set_state(k_system_state_running);
   RX_ASSERT(err == k_rx_ok, "IWDT set running state must succeed");
+
+  /* Step 4: Register ThreadX stack overflow handler (TX_ENABLE_STACK_CHECKING) */
+  err = rx_stack_monitor_init();
+  RX_ASSERT(err == k_rx_ok, "rx_stack_monitor_init must succeed");
 
   /* Postcondition: All tasks created successfully */
   RX_ASSERT(err == k_rx_ok, "Postcondition: All tasks must be created successfully");

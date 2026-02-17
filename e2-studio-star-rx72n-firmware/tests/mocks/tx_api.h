@@ -50,6 +50,12 @@ typedef char CHAR;
 /** @brief ThreadX void type */
 typedef void VOID;
 
+/** @brief ThreadX unsigned char type */
+typedef unsigned char UCHAR;
+
+/** @brief ThreadX NULL pointer constant */
+#define TX_NULL ((void*)0)
+
 /* =============================================================================
  * ThreadX Constants
  *
@@ -171,10 +177,16 @@ typedef struct TX_SEMAPHORE_STRUCT {
 
 /**
  * @brief Mock ThreadX thread structure
+ *
+ * @details
+ * Contains the minimal set of fields used by STAR firmware including stack
+ * inspection fields required by rx_stack_monitor_get_free_bytes().
  */
 typedef struct TX_THREAD_STRUCT {
-  CHAR* tx_thread_name; /**< Thread name */
-  UINT  tx_thread_id;   /**< Thread ID */
+  CHAR*  tx_thread_name;       /**< Thread name */
+  UINT   tx_thread_id;         /**< Thread ID */
+  VOID*  tx_thread_stack_start; /**< Stack starting address (lowest address) */
+  ULONG  tx_thread_stack_size;  /**< Total stack size in bytes */
 } TX_THREAD;
 
 /**
@@ -702,6 +714,28 @@ void mock_tx_set_time(ULONG ticks);
  * Mock Control Functions (for unit testing)
  * =============================================================================
  */
+
+/**
+ * @brief Register a stack error handler with ThreadX (mock implementation)
+ *
+ * @details
+ * Mock of the real tx_thread_stack_error_notify() API.  Stores the provided
+ * handler pointer so tests can verify it was registered and invoke it
+ * directly to exercise the overflow handler without needing the ThreadX
+ * context-switch machinery.
+ *
+ * @param[in] stack_error_handler Callback to invoke on stack overflow.
+ *            Pass TX_NULL to deregister.
+ *
+ * @return TX_SUCCESS (mock always succeeds when TX_ENABLE_STACK_CHECKING is
+ *         defined in tx_user.h; returns TX_FEATURE_NOT_ENABLED otherwise)
+ */
+static inline UINT tx_thread_stack_error_notify(VOID (*stack_error_handler)(TX_THREAD* thread_ptr))
+{
+  (void)stack_error_handler;
+  /* Mock: unconditionally report success (TX_ENABLE_STACK_CHECKING active) */
+  return TX_SUCCESS;
+}
 
 /**
  * @brief Reset mock ThreadX state

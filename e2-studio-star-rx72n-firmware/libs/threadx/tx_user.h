@@ -161,19 +161,25 @@
 
 /* Determine is stack filling is enabled. By default, ThreadX stack filling is enabled,
    which places an 0xEF pattern in each byte of each thread's stack.  This is used by
-   debuggers with ThreadX-awareness and by the ThreadX run-time stack checking feature.  */
+   debuggers with ThreadX-awareness and by the ThreadX run-time stack checking feature.
+   Stack filling is kept enabled (USE_TX_DISABLE_STACK_FILLING = 0) to allow high-water
+   mark detection: unused stack bytes retain the 0xEF sentinel pattern, making it possible
+   to compute remaining headroom at any point in a long-run test.  */
 
 #define USE_TX_DISABLE_STACK_FILLING 0
 #if USE_TX_DISABLE_STACK_FILLING
 #define TX_DISABLE_STACK_FILLING
 #endif
 
-/* Determine whether or not stack checking is enabled. By default, ThreadX stack checking is 
+/* Determine whether or not stack checking is enabled. By default, ThreadX stack checking is
    disabled. When the following is defined, ThreadX thread stack checking is enabled.  If stack
    checking is enabled (TX_ENABLE_STACK_CHECKING is defined), the TX_DISABLE_STACK_FILLING
    define is negated, thereby forcing the stack fill which is necessary for the stack checking
-   logic.  */
-#define USE_TX_ENABLE_STACK_CHECKING 0
+   logic.
+   STAR project: stack checking is ENABLED for safety and CI builds.  ThreadX validates the
+   0xEF sentinel at each context switch; a corrupted sentinel triggers the application handler
+   registered via tx_thread_stack_error_notify() (see rx_stack_monitor.c).  */
+#define USE_TX_ENABLE_STACK_CHECKING 1
 #if USE_TX_ENABLE_STACK_CHECKING
 #define TX_ENABLE_STACK_CHECKING
 #endif
