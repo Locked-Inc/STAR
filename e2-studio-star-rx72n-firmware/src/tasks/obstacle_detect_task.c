@@ -964,6 +964,16 @@ typedef enum : uint8_t {
  * @invariant k_hcsr04_echo_timeout_us > 25000 (covers 400 cm + margin)
  * @invariant k_hcsr04_echo_timeout_us < 38000 (HC-SR04 hardware limit)
  *
+ * @code
+ * // Assign into HC-SR04 config struct passed to rx_hcsr04_init():
+ * rx_hcsr04_config_t config = {
+ *     .trigger_pin = k_rx_pf_5,
+ *     .echo_pin    = k_rx_p0_3,
+ *     .timeout_us  = k_hcsr04_echo_timeout_us,  // 30 ms = 515 cm max range
+ * };
+ * rx_err_t err = rx_hcsr04_init(&handle, &config);
+ * @endcode
+ *
  * @note Used by ALL 4 sensors (identical hardware specs)
  * @warning Do NOT exceed 38 ms (HC-SR04 will not respond)
  *
@@ -1523,6 +1533,16 @@ rx_err_t obstacle_detect_task_create(void)
  * @note Each sensor requires ~64 bytes RAM
  * @note Sensors must be initialized before rx_obstacle_detect_init()
  * @note Uses software timing for echo pulse measurement (no IRQ)
+ *
+ * @code
+ * // Called once from internal_obstacle_task_entry() at startup:
+ * // Preconditions: GPIO ports F, J, 0, 3 clocked; pins not yet claimed.
+ * rx_err_t err = internal_init_sensors();
+ * if (err != k_rx_ok) {
+ *     // Fatal: e-stop + watchdog reset (see fail-safe section)
+ * }
+ * // All 4 rx_hcsr04_t handles in s_sensors[] are now ready for polling.
+ * @endcode
  *
  * @see rx_hcsr04_init() HC-SR04 driver initialization
  * @see rx_port_constants.h GPIO pin constant definitions

@@ -503,6 +503,7 @@ static uint8_t s_motor_stack[k_motor_task_stack_size];
 static bool s_motor_created = false;
 
 /**
+ * @var s_motor_stack_initialized
  * @brief Motor stack initialization complete flag
  *
  * @details
@@ -520,6 +521,11 @@ static bool s_motor_created = false;
  * and motor stack initialization completing.
  *
  * @invariant Once set to true, remains true for application lifetime
+ * @note Set inside internal_motor_task_entry() only when internal_init_motor_stack()
+ *       returns k_rx_ok — not at thread creation time
+ * @warning Do NOT use s_motor_created as a proxy for this flag; s_motor_created is set
+ *          by motor_control_task_create() immediately after tx_thread_create(), before
+ *          the thread has run or initialized any motor hardware
  * @since STAR v1.0.0
  */
 static bool s_motor_stack_initialized = false;
@@ -966,6 +972,22 @@ rx_err_t motor_control_task_create(void)
  * @note Thread-safe: Returns pointer to static memory (no shared mutable state)
  * @note Lifetime: Returned pointer valid until program termination (static allocation)
  * @note Returns nullptr gracefully if called before motor stack init completes (no assert)
+ *
+ * @code
+ * // Typical usage from obstacle_detect_task (after motor task is running):
+ * uint8_t motor_count = k_motor_count_none;
+ * rx_motor_handle_t** motors = motor_control_task_get_motors(&motor_count);
+ * if (motors == nullptr || motor_count == k_motor_count_none) {
+ *     // Motor stack not yet initialized — treat as fatal
+ * }
+ * config.motors      = motors;
+ * config.motor_count = motor_count;
+ * @endcode
+ *
+ * @see motor_control_task_create() Must be called before this function
+ * @see internal_init_motor_stack() Sets s_motor_stack_initialized on success
+ * @see s_motor_ptrs Underlying static array returned on success
+ * @see s_motor_stack_initialized Guard flag checked before returning handles
  *
  * @since STAR v1.0.0
  */
