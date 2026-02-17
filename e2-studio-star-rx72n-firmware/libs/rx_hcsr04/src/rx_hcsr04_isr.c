@@ -87,15 +87,14 @@
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint8_t {
-  k_irq_min            = 8,                         /**< Minimum IRQ number (IRQ8 = P00) */
-  k_irq_max            = 11,                        /**< Maximum IRQ number (IRQ11 = P03; only ISR handlers IRQ8-11 exist) */
-  k_irq_count          = k_irq_max - k_irq_min + 1, /**< Number of supported IRQs (4: IRQ8-11) */
-  k_vector_base        = 64,                        /**< IRQ vector base (IRQ0 = vector 64) */
-  k_sensor_unused      = 0xFF,                      /**< Sentinel: sensor slot not assigned */
-  k_sensor_map_size    = 16,                        /**< Total entries in s_sensor_map (IRQ0-15) */
-  k_hcsr04_sensor_count = 4,                        /**< Number of HC-SR04 sensors supported (0-3) */
-  k_pin_state_mask     = 0x01,                      /**< Bit mask to extract single pin state */
-  k_ir_flag_clear      = 0,                         /**< Write 0 to IR register to clear pending interrupt flag */
+  k_irq_min         = 8,  /**< Minimum IRQ number (IRQ8 = P00) */
+  k_irq_max         = 11, /**< Maximum IRQ number (IRQ11 = P03; only ISR handlers IRQ8-11 exist) */
+  k_irq_count       = k_irq_max - k_irq_min + 1, /**< Number of supported IRQs (4: IRQ8-11) */
+  k_vector_base     = 64,                        /**< IRQ vector base (IRQ0 = vector 64) */
+  k_sensor_unused   = 0xFF,                      /**< Sentinel: sensor slot not assigned */
+  k_sensor_map_size = 16,                        /**< Total entries in s_sensor_map (IRQ0-15) */
+  k_pin_state_mask  = 0x01,                      /**< Bit mask to extract single pin state */
+  k_ir_flag_clear   = 0, /**< Write 0 to IR register to clear pending interrupt flag */
 } isr_constants_t;
 
 /**
@@ -172,17 +171,31 @@ static volatile rx_hcsr04_irq_state_t s_irq_state[k_irq_count];
  * @warning Direct modification outside rx_hcsr04_isr_register/unregister is forbidden;
  *          use the public API to maintain consistent IRQ-to-sensor mappings
  *
- * @todo Issue #336: s_sensor_map is currently written but not read in the ISR.
- * Future work will use this mapping to dispatch per-sensor callbacks from
+ * @note Issue #336 (resolved): sensor_index is now correctly set per-sensor
+ * via rx_hcsr04_config_t.sensor_index (no longer hardcoded to slot 0).
+ * s_sensor_map is written with the correct index but not yet read in the ISR;
+ * future work will use this mapping to dispatch per-sensor callbacks from
  * internal_irq_handler() when multi-sensor callback support is implemented.
  *
  * @since Version 1.2.0 (Issue #336)
  */
 static uint8_t s_sensor_map[k_sensor_map_size] = {
-  k_sensor_unused, k_sensor_unused, k_sensor_unused, k_sensor_unused,
-  k_sensor_unused, k_sensor_unused, k_sensor_unused, k_sensor_unused,
-  k_sensor_unused, k_sensor_unused, k_sensor_unused, k_sensor_unused,
-  k_sensor_unused, k_sensor_unused, k_sensor_unused, k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
+  k_sensor_unused,
 };
 
 /* =============================================================================
@@ -435,9 +448,9 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
     return k_rx_err_invalid_state; /* IRQ not registered via rx_hcsr04_isr_register() */
   }
 
-  const uint8_t idx          = irq_num - k_irq_min;
-  s_irq_state[idx].active    = false;
-  s_irq_state[idx].complete  = false;
+  const uint8_t idx         = irq_num - k_irq_min;
+  s_irq_state[idx].active   = false;
+  s_irq_state[idx].complete = false;
 
   return k_rx_ok;
 }

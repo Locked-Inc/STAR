@@ -82,11 +82,11 @@
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint8_t {
-  k_mock_irq_min       = 8,  /**< Minimum valid IRQ number (IRQ8 = P00) */
-  k_mock_irq_max       = 11, /**< Maximum valid IRQ number (IRQ11 = P03) */
-  k_mock_priority_min  = 1,  /**< Minimum valid interrupt priority */
-  k_mock_priority_max  = 15, /**< Maximum valid interrupt priority */
-  k_mock_sensor_count  = 4,  /**< Number of valid sensor indices (0-3) */
+  k_mock_irq_min      = 8,  /**< Minimum valid IRQ number (IRQ8 = P00) */
+  k_mock_irq_max      = 11, /**< Maximum valid IRQ number (IRQ11 = P03) */
+  k_mock_priority_min = 1,  /**< Minimum valid interrupt priority */
+  k_mock_priority_max = 15, /**< Maximum valid interrupt priority */
+  k_mock_sensor_count = 4,  /**< Number of valid sensor indices (0-3) */
 } mock_irq_constants_t;
 
 /* =============================================================================

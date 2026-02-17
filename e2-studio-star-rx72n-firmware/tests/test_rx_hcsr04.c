@@ -2019,6 +2019,232 @@ void test_hcsr04_measure_full_result_with_temp_compensation(void)
 /** @} */ /* End of hcsr04_temp_comp_tests */
 
 /* =============================================================================
+ * IRQ Initialization Tests
+ * =============================================================================
+ */
+
+/**
+ * @defgroup hcsr04_irq_init_tests HC-SR04 IRQ Initialization Tests
+ * @brief Tests for rx_hcsr04_init() with IRQ echo mode and per-sensor index
+ *
+ * @details
+ * Verifies that each valid sensor index (0-3) initializes successfully in IRQ
+ * mode, and that an out-of-range sensor index (4) is rejected with
+ * k_rx_err_invalid_arg before the ISR registration call is reached.
+ *
+ * **Test Coverage:**
+ * - All 4 valid sensor indices (k_hcsr04_sensor_front_left through
+ *   k_hcsr04_sensor_back_right) succeed and leave handle in initialized state
+ * - sensor_index == k_hcsr04_sensor_count (4) fails with k_rx_err_invalid_arg
+ *
+ * @{
+ */
+
+/**
+ * @brief Test IRQ init with sensor_index = k_hcsr04_sensor_front_left (0)
+ *
+ * @details
+ * Verifies that rx_hcsr04_init() succeeds when IRQ mode is configured for the
+ * front-left sensor (slot 0, IRQ11, P03). The sensor_index field was previously
+ * hardcoded to 0 for all sensors; this test confirms that slot 0 is still
+ * accepted and that the sensor handle is left in initialized state.
+ *
+ * **Test Steps:**
+ * 1. Override s_config for IRQ mode: P03 / IRQ11 / sensor_index = 0
+ * 2. Call rx_hcsr04_init()
+ * 3. Verify return value is k_rx_ok
+ * 4. Verify handle is initialized
+ *
+ * **Expected Result:**
+ * - Returns k_rx_ok
+ * - s_sensor.initialized == true
+ *
+ * @pre Mock HAL initialized, s_config set to polling defaults by setUp()
+ * @post Sensor handle initialized in IRQ mode for front-left slot
+ *
+ * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_front_left == 0
+ * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
+ *
+ * @since Version 1.3.0 (Issue #336)
+ */
+void test_hcsr04_irq_init_sensor_front_left(void)
+{
+  s_config.echo_pin     = k_rx_p0_3;
+  s_config.echo_mode    = k_hcsr04_echo_irq;
+  s_config.echo_irq     = k_hcsr04_irq_11;
+  s_config.irq_priority = k_hcsr04_irq_priority_default;
+  s_config.sensor_index = k_hcsr04_sensor_front_left;
+
+  rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_sensor.initialized);
+}
+
+/**
+ * @brief Test IRQ init with sensor_index = k_hcsr04_sensor_front_right (1)
+ *
+ * @details
+ * Verifies that rx_hcsr04_init() succeeds for the front-right sensor (slot 1,
+ * IRQ10, P02). Confirms that slot 1 is accepted after the per-sensor index fix,
+ * where previously all sensors were incorrectly registered into slot 0.
+ *
+ * **Test Steps:**
+ * 1. Override s_config for IRQ mode: P02 / IRQ10 / sensor_index = 1
+ * 2. Call rx_hcsr04_init()
+ * 3. Verify return value is k_rx_ok
+ * 4. Verify handle is initialized
+ *
+ * **Expected Result:**
+ * - Returns k_rx_ok
+ * - s_sensor.initialized == true
+ *
+ * @pre Mock HAL initialized, s_config set to polling defaults by setUp()
+ * @post Sensor handle initialized in IRQ mode for front-right slot
+ *
+ * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_front_right == 1
+ * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
+ *
+ * @since Version 1.3.0 (Issue #336)
+ */
+void test_hcsr04_irq_init_sensor_front_right(void)
+{
+  s_config.echo_pin     = k_rx_p0_2;
+  s_config.echo_mode    = k_hcsr04_echo_irq;
+  s_config.echo_irq     = k_hcsr04_irq_10;
+  s_config.irq_priority = k_hcsr04_irq_priority_default;
+  s_config.sensor_index = k_hcsr04_sensor_front_right;
+
+  rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_sensor.initialized);
+}
+
+/**
+ * @brief Test IRQ init with sensor_index = k_hcsr04_sensor_back_left (2)
+ *
+ * @details
+ * Verifies that rx_hcsr04_init() succeeds for the back-left sensor (slot 2,
+ * IRQ9, P01). Confirms that slot 2 is accepted and the ISR registration call
+ * receives the correct per-sensor index.
+ *
+ * **Test Steps:**
+ * 1. Override s_config for IRQ mode: P01 / IRQ9 / sensor_index = 2
+ * 2. Call rx_hcsr04_init()
+ * 3. Verify return value is k_rx_ok
+ * 4. Verify handle is initialized
+ *
+ * **Expected Result:**
+ * - Returns k_rx_ok
+ * - s_sensor.initialized == true
+ *
+ * @pre Mock HAL initialized, s_config set to polling defaults by setUp()
+ * @post Sensor handle initialized in IRQ mode for back-left slot
+ *
+ * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_back_left == 2
+ * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
+ *
+ * @since Version 1.3.0 (Issue #336)
+ */
+void test_hcsr04_irq_init_sensor_back_left(void)
+{
+  s_config.echo_pin     = k_rx_p0_1;
+  s_config.echo_mode    = k_hcsr04_echo_irq;
+  s_config.echo_irq     = k_hcsr04_irq_9;
+  s_config.irq_priority = k_hcsr04_irq_priority_default;
+  s_config.sensor_index = k_hcsr04_sensor_back_left;
+
+  rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_sensor.initialized);
+}
+
+/**
+ * @brief Test IRQ init with sensor_index = k_hcsr04_sensor_back_right (3)
+ *
+ * @details
+ * Verifies that rx_hcsr04_init() succeeds for the back-right sensor (slot 3,
+ * IRQ8, P00). Confirms that the maximum valid sensor index (3) is accepted.
+ *
+ * **Test Steps:**
+ * 1. Override s_config for IRQ mode: P00 / IRQ8 / sensor_index = 3
+ * 2. Call rx_hcsr04_init()
+ * 3. Verify return value is k_rx_ok
+ * 4. Verify handle is initialized
+ *
+ * **Expected Result:**
+ * - Returns k_rx_ok
+ * - s_sensor.initialized == true
+ *
+ * @pre Mock HAL initialized, s_config set to polling defaults by setUp()
+ * @post Sensor handle initialized in IRQ mode for back-right slot
+ *
+ * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_back_right == 3
+ * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
+ *
+ * @since Version 1.3.0 (Issue #336)
+ */
+void test_hcsr04_irq_init_sensor_back_right(void)
+{
+  s_config.echo_pin     = k_rx_p0_0;
+  s_config.echo_mode    = k_hcsr04_echo_irq;
+  s_config.echo_irq     = k_hcsr04_irq_8;
+  s_config.irq_priority = k_hcsr04_irq_priority_default;
+  s_config.sensor_index = k_hcsr04_sensor_back_right;
+
+  rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_sensor.initialized);
+}
+
+/**
+ * @brief Test IRQ init with sensor_index == k_hcsr04_sensor_count (4) fails
+ *
+ * @details
+ * Verifies that rx_hcsr04_init() rejects an out-of-range sensor_index of 4
+ * (== k_hcsr04_sensor_count) with k_rx_err_invalid_arg. The validation in
+ * internal_init_irq_mode() checks `sensor_index >= k_hcsr04_sensor_count`
+ * before calling rx_hcsr04_isr_register(), so the handle must remain
+ * uninitialized on failure.
+ *
+ * **Test Steps:**
+ * 1. Override s_config with sensor_index = 4 (out of range)
+ * 2. Call rx_hcsr04_init()
+ * 3. Verify return value is k_rx_err_invalid_arg
+ * 4. Verify handle is NOT initialized
+ *
+ * **Expected Result:**
+ * - Returns k_rx_err_invalid_arg
+ * - s_sensor.initialized == false
+ *
+ * @pre Mock HAL initialized, s_config set to polling defaults by setUp()
+ * @post Handle left in uninitialized state (no partial init)
+ *
+ * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_count == 4 is the exclusive upper bound
+ * @see internal_init_irq_mode() Validates sensor_index < k_hcsr04_sensor_count
+ *
+ * @since Version 1.3.0 (Issue #336)
+ */
+void test_hcsr04_irq_init_invalid_sensor_index_fails(void)
+{
+  s_config.echo_pin     = k_rx_p0_3;
+  s_config.echo_mode    = k_hcsr04_echo_irq;
+  s_config.echo_irq     = k_hcsr04_irq_11;
+  s_config.irq_priority = k_hcsr04_irq_priority_default;
+  s_config.sensor_index = (rx_hcsr04_sensor_index_t)4; /* Out of range: == k_hcsr04_sensor_count */
+
+  rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
+
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+  TEST_ASSERT_FALSE(s_sensor.initialized);
+}
+
+/** @} */ /* End of hcsr04_irq_init_tests */
+
+/* =============================================================================
  * Main Test Runner
  * =============================================================================
  */
@@ -2039,9 +2265,10 @@ void test_hcsr04_measure_full_result_with_temp_compensation(void)
  * 7. Async API tests (6 tests)
  * 8. Worker thread tests (4 tests)
  * 9. Cancellation tests (3 tests)
- * 10. Temperature compensation tests (13 tests)
+ * 10. Temperature compensation tests (17 tests)
+ * 11. IRQ initialization tests (5 tests)
  *
- * **Total: 52 tests**
+ * **Total: 61 tests**
  *
  * @return 0 if all tests pass, non-zero if any failures
  *
@@ -2126,6 +2353,13 @@ int main(void)
   RUN_TEST(test_hcsr04_measure_with_temp_compensation_30c);
   RUN_TEST(test_hcsr04_measure_without_temp_compensation_uses_20c);
   RUN_TEST(test_hcsr04_measure_full_result_with_temp_compensation);
+
+  /* IRQ initialization tests */
+  RUN_TEST(test_hcsr04_irq_init_sensor_front_left);
+  RUN_TEST(test_hcsr04_irq_init_sensor_front_right);
+  RUN_TEST(test_hcsr04_irq_init_sensor_back_left);
+  RUN_TEST(test_hcsr04_irq_init_sensor_back_right);
+  RUN_TEST(test_hcsr04_irq_init_invalid_sensor_index_fails);
 
   return UNITY_END();
 }

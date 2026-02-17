@@ -81,10 +81,10 @@
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint8_t {
-  k_irq_min          = 8,    /**< Minimum IRQ number (IRQ8 = P00) */
-  k_irq_max          = 11,   /**< Maximum IRQ number (IRQ11 = P03; only ISR handlers IRQ8-11 exist) */
-  k_priority_min     = 1,    /**< Minimum interrupt priority */
-  k_priority_max     = 15,   /**< Maximum interrupt priority */
+  k_irq_min          = 8,  /**< Minimum IRQ number (IRQ8 = P00) */
+  k_irq_max          = 11, /**< Maximum IRQ number (IRQ11 = P03; only ISR handlers IRQ8-11 exist) */
+  k_priority_min     = 1,  /**< Minimum interrupt priority */
+  k_priority_max     = 15, /**< Maximum interrupt priority */
   k_irqcr_both_edges = 0x08, /**< Both edges trigger interrupt (IRQCR[n] value) */
   k_vector_base      = 64,   /**< IRQ vector base (IRQ0 = vector 64) */
   k_bits_per_ier     = 8,    /**< IER register is 8 bits wide */
@@ -259,7 +259,7 @@ rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
   }
 
   /* Disable interrupt in IER register */
-  icu()->ier[ier_index] &= (uint8_t)~(k_bit_base << ier_bit);
+  icu()->ier[ier_index] &= (uint8_t) ~(k_bit_base << ier_bit);
 
   /* Clear any pending interrupt flag */
   icu()->ir[vector] = k_ir_flag_clear;
