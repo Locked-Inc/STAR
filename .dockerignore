@@ -1,0 +1,57 @@
+# =============================================================================
+# .dockerignore - Reduce Docker build context
+#
+# The Dockerfile only COPYs gcc-14.2.0.202511-GNURX-ELF.run.
+# Everything else is unnecessary context that slows builds,
+# especially on macOS/Windows where Docker runs in a VM.
+# =============================================================================
+
+# Build artifacts
+**/build/
+**/bin/
+**/dist/
+**/out/
+**/*.o
+**/*.a
+**/*.so
+compile_commands.json
+
+# Dependencies
+**/node_modules/
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/venv/
+
+# Version control
+.git/
+.gitignore
+.gitattributes
+
+# IDE / Editor
+.vscode/
+.idea/
+**/*.swp
+**/*.swo
+
+# Large documentation folders
+Schematic/
+docs/build/
+**/*.pdf
+
+# Logs
+log/
+**/logs/
+**/*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Temporary
+**/tmp/
+**/.cache/
+
+# Keep the GNURX toolchain installer (the only file COPYd by Dockerfile)
+!gcc-14.2.0.202511-GNURX-ELF.run

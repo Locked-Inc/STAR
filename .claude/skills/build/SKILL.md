@@ -42,6 +42,26 @@ go test ./...
 ./star-gateway
 ```
 
+## Documentation (`docs/`)
+
+```bash
+# Build PDF (latexmk handles all passes automatically)
+cd docs
+make
+
+# Quick single-pass draft preview
+make draft
+
+# Clean build artifacts (keep PDF)
+make clean
+
+# Clean everything including PDF
+make distclean
+
+# Watch for changes and auto-rebuild
+make watch
+```
+
 ## MATLAB (`matlab/`)
 
 ```bash
