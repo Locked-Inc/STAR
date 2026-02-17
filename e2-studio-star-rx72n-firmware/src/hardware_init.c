@@ -179,8 +179,8 @@
  * - **Timer HAL:** See [timer.c](../lib/rx_hal/src/timer.c) - CMT0 configuration for ThreadX tick
  * - **UART HAL:** See [uart.c](../lib/rx_hal/src/uart.c) - SCI9 configuration for debug console
  *
- * @note **This file is incomplete.** GPIO, SPI, I2C, and ADC initialization are planned but not yet
- *       implemented. Only timers and UART are functional in current version.
+ * @note **This file is incomplete.** GPIO, I2C, and ADC initialization are planned but not yet
+ *       implemented. Timers, UART, SPI, and BMS Alert are functional in current version.
  *
  * @warning **Never call hardware_init() before rx_clock_power_init().** System clocks must be
  *          configured first. Precondition assertion will halt execution if violated.
