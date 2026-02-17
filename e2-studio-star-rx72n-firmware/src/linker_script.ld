@@ -1,8 +1,17 @@
+/* RX72N flash layout (4 MB total: 0xFFC00000 - 0xFFFFFFFF)
+ *
+ * Upper 2 MB  0xFFE00000 - 0xFFFFFFFF  Active firmware image  (ROM below)
+ * Lower 2 MB  0xFFC00000 - 0xFFDFFFFF  Reserved for OTA dual-bank loading
+ *
+ * The ROM region deliberately uses only 2 MB so the lower half remains free
+ * for an OTA loader to write a new image without touching the running image.
+ * Do NOT expand ROM to 4 MB - that would destroy the OTA reserved space.
+ */
 MEMORY
 {
 	RAM : ORIGIN = 0x4, LENGTH = 0x7fffc
 	RAM2 : ORIGIN = 0x00800000, LENGTH = 524288
-	ROM : ORIGIN = 0xFFE00000, LENGTH = 2097152
+	ROM : ORIGIN = 0xFFE00000, LENGTH = 2097152  /* 2 MB active image - see layout comment above */
 	OFS : ORIGIN = 0xFE7F5D00, LENGTH = 128
 }
 SECTIONS
