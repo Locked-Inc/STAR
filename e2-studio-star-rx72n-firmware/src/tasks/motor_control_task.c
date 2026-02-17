@@ -502,8 +502,64 @@ static uint8_t s_motor_stack[k_motor_task_stack_size];
 /** @brief Task creation guard flag */
 static bool s_motor_created = false;
 
+/**
+ * @var s_motor_stack_initialized
+ * @brief Motor stack initialization complete flag
+ *
+ * @details
+ * Set to true only after internal_init_motor_stack() returns k_rx_ok inside
+ * internal_motor_task_entry(). This flag is checked by
+ * motor_control_task_get_motors() to ensure handles are valid before returning
+ * them to callers.
+ *
+ * **Why a separate flag from s_motor_created:**
+ * s_motor_created is set by motor_control_task_create() immediately after
+ * tx_thread_create() succeeds — before the thread has actually run.
+ * internal_init_motor_stack() executes later inside the thread body.
+ * Using s_motor_created alone would cause motor_control_task_get_motors()
+ * to return uninitialized handles in the window between thread creation
+ * and motor stack initialization completing.
+ *
+ * @invariant Once set to true, remains true for application lifetime
+ * @note Set inside internal_motor_task_entry() only when internal_init_motor_stack()
+ *       returns k_rx_ok — not at thread creation time
+ * @warning Do NOT use s_motor_created as a proxy for this flag; s_motor_created is set
+ *          by motor_control_task_create() immediately after tx_thread_create(), before
+ *          the thread has run or initialized any motor hardware
+ * @since STAR v1.0.0
+ */
+static bool s_motor_stack_initialized = false;
+
 /** @brief Motor handles for each motor */
 static rx_motor_handle_t s_motors[k_motor_count];
+
+/**
+ * @var s_motor_ptrs
+ * @brief Externally accessible array of rx_motor_handle_t pointers (one per motor)
+ *
+ * @details
+ * Contains pointers to each element of s_motors, in the order defined by motor_index_t.
+ * Returned by motor_control_task_get_motors() to allow other tasks (e.g. obstacle detection)
+ * zero-copy access to motor handles without exposing s_motors directly.
+ *
+ * **Array mapping (motor_index_t order):**
+ * - [k_motor_front_left]  → &s_motors[k_motor_front_left]  (front-left motor)
+ * - [k_motor_front_right] → &s_motors[k_motor_front_right] (front-right motor)
+ * - [k_motor_back_left]   → &s_motors[k_motor_back_left]   (back-left motor)
+ * - [k_motor_back_right]  → &s_motors[k_motor_back_right]  (back-right motor)
+ *
+ * @invariant Array size equals k_motor_count (4)
+ * @invariant Pointers remain valid for program lifetime (static allocation)
+ * @note Read-only for external callers — do NOT modify pointed-to handles
+ * @warning Handles are uninitialized until internal_init_motor_stack() completes
+ * @since STAR v1.0.0
+ */
+static rx_motor_handle_t* s_motor_ptrs[k_motor_count] = {
+  &s_motors[k_motor_front_left],
+  &s_motors[k_motor_front_right],
+  &s_motors[k_motor_back_left],
+  &s_motors[k_motor_back_right],
+};
 
 /** @brief Encoder state for each motor */
 static rx_encoder_state_t s_encoder_state[k_motor_count];
@@ -875,6 +931,82 @@ rx_err_t motor_control_task_create(void)
   rx_log_info(s_tag, "Motor control task created");
 
   return k_rx_ok;
+}
+
+/**
+ * @brief Get motor handle array for obstacle detection emergency stop
+ *
+ * @details
+ * Returns pointers to the 4 initialized motor handles. The obstacle detection
+ * system uses these handles to execute emergency motor stops when obstacles
+ * breach the safety perimeter.
+ *
+ * **Three possible outcomes:**
+ * 1. Motor stack initialized + out_count non-null → returns s_motor_ptrs, sets *out_count = k_motor_count
+ * 2. Motor stack not yet initialized (s_motor_stack_initialized == false) → returns nullptr, sets *out_count = k_motor_count_none
+ * 3. out_count is nullptr → returns nullptr immediately, out_count unchanged
+ *
+ * **Guard condition (s_motor_stack_initialized vs s_motor_created):**
+ * s_motor_created is set immediately after tx_thread_create() — before the thread
+ * has executed. s_motor_stack_initialized is set only when internal_init_motor_stack()
+ * returns k_rx_ok inside the thread. This function checks s_motor_stack_initialized
+ * to ensure handles are fully initialized before returning them.
+ *
+ * @param[out] out_count Pointer to receive motor count.
+ *                       Set to k_motor_count (4) when motor stack is initialized;
+ *                       set to k_motor_count_none (0) when not yet initialized.
+ *                       Must be non-NULL (nullptr returns nullptr without writing).
+ *
+ * @return rx_motor_handle_t** Pointer to array of motor handle pointers
+ * @retval s_motor_ptrs Valid pointer to static array of k_motor_count (4) rx_motor_handle_t*,
+ *                      *out_count set to k_motor_count — motor stack fully initialized
+ * @retval nullptr with *out_count = k_motor_count_none — internal_init_motor_stack()
+ *                 has not yet completed successfully
+ * @retval nullptr (out_count unchanged) — out_count argument was nullptr
+ *
+ * @pre motor_control_task_create() called (otherwise s_motor_stack_initialized is never set)
+ * @pre out_count != nullptr (nullptr out_count causes immediate nullptr return)
+ * @post *out_count == k_motor_count when return value is non-null
+ * @post *out_count == k_motor_count_none when motor stack not yet initialized
+ *
+ * @note Thread-safe: Returns pointer to static memory (no shared mutable state)
+ * @note Lifetime: Returned pointer valid until program termination (static allocation)
+ * @note Returns nullptr gracefully if called before motor stack init completes (no assert)
+ *
+ * @code
+ * // Typical usage from obstacle_detect_task (after motor task is running):
+ * uint8_t motor_count = k_motor_count_none;
+ * rx_motor_handle_t** motors = motor_control_task_get_motors(&motor_count);
+ * if (motors == nullptr || motor_count == k_motor_count_none) {
+ *     // Motor stack not yet initialized — treat as fatal
+ * }
+ * config.motors      = motors;
+ * config.motor_count = motor_count;
+ * @endcode
+ *
+ * @see motor_control_task_create() Must be called before this function
+ * @see internal_init_motor_stack() Sets s_motor_stack_initialized on success
+ * @see s_motor_ptrs Underlying static array returned on success
+ * @see s_motor_stack_initialized Guard flag checked before returning handles
+ *
+ * @since STAR v1.0.0
+ */
+rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
+{
+  /* Validate output parameter */
+  if (out_count == nullptr) {
+    return nullptr;
+  }
+
+  /* Check if motor stack initialization completed inside the thread */
+  if (!s_motor_stack_initialized) {
+    *out_count = k_motor_count_none;
+    return nullptr;  /* Motor stack not yet initialized */
+  }
+
+  /* Return motor count and handle array */
+  *out_count = k_motor_count;
+  return s_motor_ptrs;
 }
 
 /* =============================================================================
@@ -1494,6 +1626,9 @@ static rx_err_t internal_init_motor_stack(void)
 
   rx_log_info(s_tag, "Motor stack initialized (4 motors, encoders, drivers)");
   rx_log_debug(s_tag, "PID gains loaded (defaults or shared_data)");
+
+  /* Signal that handles are safe to return from motor_control_task_get_motors() */
+  s_motor_stack_initialized = true;
 
   return k_rx_ok;
 }
