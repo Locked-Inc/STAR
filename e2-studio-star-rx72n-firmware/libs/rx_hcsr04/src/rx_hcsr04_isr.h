@@ -8,7 +8,7 @@
  * microsecond precision for accurate distance measurement.
  *
  * **Responsibilities:**
- * - ISR functions for IRQ8-15 (INT_IRQ8 through INT_IRQ15)
+ * - ISR functions for IRQ8-11 (INT_IRQ8 through INT_IRQ11, for 4 HC-SR04 sensors)
  * - Per-IRQ state management (start/end timestamps, completion flag)
  * - Edge type detection (rising vs falling)
  * - Timestamp capture via hardware abstraction layer
@@ -161,6 +161,35 @@ typedef struct {
 [[nodiscard]] rx_err_t rx_hcsr04_isr_register(uint8_t irq_num, uint8_t sensor_index);
 
 /**
+ * @brief Unregister HC-SR04 sensor from IRQ echo measurement
+ *
+ * @details
+ * Clears the sensor mapping for the given IRQ number, restoring the slot
+ * to the k_sensor_unused sentinel. Call during sensor deinitialization
+ * after rx_hcsr04_icu_disable() to prevent stale ISR callbacks.
+ *
+ * @param[in] irq_num IRQ number (8-15) to unregister
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Unregistration successful
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ *
+ * @pre IRQ was previously registered via rx_hcsr04_isr_register()
+ * @pre No measurement currently active on this IRQ
+ *
+ * @post s_sensor_map[irq_num] reset to k_sensor_unused
+ * @post ISR will ignore subsequent interrupts on this IRQ
+ *
+ * @note Call during sensor deinitialization, after rx_hcsr04_icu_disable()
+ *
+ * @see rx_hcsr04_isr_register() Register sensor mapping
+ * @see rx_hcsr04_deinit() Calls this during IRQ-mode cleanup
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+[[nodiscard]] rx_err_t rx_hcsr04_isr_unregister(uint8_t irq_num);
+
+/**
  * @brief Get echo pulse duration from ISR state
  *
  * @details
@@ -181,8 +210,8 @@ typedef struct {
  * @pre rx_hcsr04_isr_start() called before trigger pulse
  * @pre Both rising and falling edges captured by ISR
  *
- * @post duration_us contains echo pulse width in microseconds
- * @post State remains complete until next start() call
+ * @post On k_rx_ok: *duration_us contains echo pulse width in microseconds
+ * @post On k_rx_ok: complete flag cleared (ready for next measurement via start())
  *
  * @note Does NOT block; returns immediately with k_rx_err_timeout if not ready
  * @note Call repeatedly in a bounded loop (caller must enforce timeout)
@@ -241,10 +270,17 @@ typedef struct {
  * delay_us(10);
  * gpio_set_low(trigger_pin);
  *
- * // Step 3: Wait for completion
+ * // Step 3: Wait for completion (bounded loop - NASA Rule 2)
  * uint32_t duration_us;
- * while (rx_hcsr04_isr_get_duration(11, &duration_us) != k_rx_ok) {
- *     // Poll or yield
+ * rx_err_t err = k_rx_err_timeout;
+ * for (uint32_t i = 0; i < 30000; i++) {  // 30000 iter max (~30ms at 1µs/iter)
+ *     err = rx_hcsr04_isr_get_duration(11, &duration_us);
+ *     if (err == k_rx_ok) {
+ *         break;  // Measurement complete
+ *     }
+ * }
+ * if (err != k_rx_ok) {
+ *     // Handle timeout
  * }
  * @endcode
  *
@@ -262,7 +298,8 @@ void rx_hcsr04_isr_start(uint8_t irq_num);
  *
  * @pre ICU configured for IRQ8 via rx_hcsr04_icu_configure()
  * @pre PIN P00 configured for IRQ function via rx_mpc_set_irq()
- * @post IR[72] flag cleared; echo edge timestamp captured if measurement active
+ * @post IR[72] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[0] if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ8(void);
@@ -272,7 +309,8 @@ void INT_IRQ8(void);
  *
  * @pre ICU configured for IRQ9 via rx_hcsr04_icu_configure()
  * @pre PIN P01 configured for IRQ function via rx_mpc_set_irq()
- * @post IR[73] flag cleared; echo edge timestamp captured if measurement active
+ * @post IR[73] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[1] if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ9(void);
@@ -282,7 +320,8 @@ void INT_IRQ9(void);
  *
  * @pre ICU configured for IRQ10 via rx_hcsr04_icu_configure()
  * @pre PIN P02 configured for IRQ function via rx_mpc_set_irq()
- * @post IR[74] flag cleared; echo edge timestamp captured if measurement active
+ * @post IR[74] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[2] if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ10(void);
@@ -292,7 +331,8 @@ void INT_IRQ10(void);
  *
  * @pre ICU configured for IRQ11 via rx_hcsr04_icu_configure()
  * @pre PIN P03 configured for IRQ function via rx_mpc_set_irq()
- * @post IR[75] flag cleared; echo edge timestamp captured if measurement active
+ * @post IR[75] flag cleared (interrupt acknowledged)
+ * @post Echo edge timestamp captured in s_irq_state[3] if measurement active
  * @note Called by hardware on both rising and falling edges
  */
 void INT_IRQ11(void);

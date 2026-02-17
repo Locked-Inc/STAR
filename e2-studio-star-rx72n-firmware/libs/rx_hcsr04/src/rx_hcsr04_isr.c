@@ -79,6 +79,7 @@ typedef enum : uint8_t {
   k_sensor_unused   = 0xFF,                      /**< Sentinel: sensor slot not assigned */
   k_sensor_map_size = 16,                        /**< Total entries in s_sensor_map (IRQ0-15) */
   k_pin_state_mask  = 0x01,                      /**< Bit mask to extract single pin state */
+  k_ir_flag_clear   = 0,                         /**< Write 0 to IR register to clear pending interrupt flag */
 } isr_constants_t;
 
 /* =============================================================================
@@ -154,7 +155,7 @@ static void internal_irq_handler(const uint8_t irq_num)
 {
   /* Step 1: Clear interrupt flag first (acknowledge hardware) */
   const uint8_t vector = k_vector_base + irq_num;
-  icu()->ir[vector]    = 0;
+  icu()->ir[vector]    = k_ir_flag_clear;
 
   /* Step 2: Compute state array index (IRQ8→0, IRQ9→1, ...) */
   const uint8_t idx = irq_num - k_irq_min;
@@ -226,6 +227,43 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const uint8_t sensor_inde
 
   /* Store sensor mapping */
   s_sensor_map[irq_num] = sensor_index;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Unregister HC-SR04 sensor from IRQ echo measurement
+ *
+ * @details
+ * Clears the sensor mapping for the given IRQ number, restoring it to the
+ * k_sensor_unused sentinel. Call this during sensor deinitialization to
+ * prevent stale ISR callbacks after the sensor handle is invalidated.
+ *
+ * @param[in] irq_num IRQ number (8-15) to unregister
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Unregistration successful
+ * @retval k_rx_err_invalid_arg irq_num not in range [8, 15]
+ *
+ * @pre IRQ was previously registered via rx_hcsr04_isr_register()
+ * @pre No measurement currently active on this IRQ
+ *
+ * @post s_sensor_map[irq_num] = k_sensor_unused
+ * @post ISR will ignore subsequent interrupts on this IRQ
+ *
+ * @note Call during sensor deinitialization, after rx_hcsr04_icu_disable()
+ * @note Not thread-safe; call during single-threaded cleanup only
+ *
+ * @see rx_hcsr04_isr_register() Register sensor
+ * @see rx_hcsr04_deinit() Calls this during cleanup in IRQ mode
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
+{
+  RX_CHECK_RANGE(irq_num, k_irq_min, k_irq_max, k_rx_err_invalid_arg);
+
+  s_sensor_map[irq_num] = k_sensor_unused;
 
   return k_rx_ok;
 }

@@ -1114,7 +1114,6 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
  * @return Error code indicating success or failure
  * @retval k_rx_ok Pin configured for IRQ input mode
  * @retval k_rx_err_invalid_arg Invalid port or pin number
- * @retval k_rx_err_hw_error PWPR write-protect unlock failed
  *
  * @pre Pin must have IRQ multiplexing capability (P00-P07 for IRQ8-15)
  * @pre PCLKB clock must be running

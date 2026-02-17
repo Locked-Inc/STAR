@@ -622,22 +622,61 @@ typedef enum : uint16_t {
 } rx_hcsr04_poll_limits_t;
 
 /**
- * @enum rx_hcsr04_irq_constants_t
- * @brief IRQ validation and ISR loop constants
+ * @enum rx_hcsr04_irq_range_t
+ * @brief Valid IRQ number range for P00-P07 echo pins
  *
  * @details
- * Named constants for IRQ number range validation and bounded ISR wait loop.
- * Using named enums instead of magic literals per project coding standard.
+ * Named bounds for the IRQ number range accepted by the HC-SR04 IRQ mode.
+ * P00-P07 map to IRQ8-IRQ15 respectively.
  *
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint8_t {
-  k_irq_range_min        = 8,   /**< Minimum valid IRQ number (IRQ8 = P00) */
-  k_irq_range_max        = 15,  /**< Maximum valid IRQ number (IRQ15 = P07) */
-  k_echo_irq_none        = 0,   /**< Sentinel: no IRQ assigned (polling mode) */
-  k_default_irq_priority = 10,  /**< Default ICU priority if irq_priority field is 0 */
-  k_irq_p0_port          = 0,   /**< Port 0 for IRQ8-11 (P00-P03) */
-} rx_hcsr04_irq_constants_t;
+  k_irq_range_min = 8,  /**< Minimum valid IRQ number (IRQ8 = P00) */
+  k_irq_range_max = 15, /**< Maximum valid IRQ number (IRQ15 = P07) */
+} rx_hcsr04_irq_range_t;
+
+/**
+ * @enum rx_hcsr04_irq_port_t
+ * @brief Port number for P00-P07 IRQ echo pins
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint8_t {
+  k_irq_p0_port = 0, /**< Port 0 (P00-P07) maps to IRQ8-IRQ15 */
+} rx_hcsr04_irq_port_t;
+
+/**
+ * @enum rx_hcsr04_irq_priority_defaults_t
+ * @brief Default and sentinel values for IRQ priority configuration
+ *
+ * @details
+ * `k_irq_priority_unset` is the zero sentinel — when `config->irq_priority`
+ * equals this value, `rx_hcsr04_init()` substitutes `k_default_irq_priority`.
+ * Using a dedicated sentinel (distinct from `k_rx_hcsr04_irq_none`) avoids
+ * semantic overload where a single value means both "no IRQ" and "no priority".
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint8_t {
+  k_irq_priority_unset    = 0,  /**< Sentinel: use default priority (field not set by caller) */
+  k_default_irq_priority  = 10, /**< Default ICU interrupt priority when unset */
+  k_default_sensor_index  = 0,  /**< Default sensor array index for isr_register() */
+} rx_hcsr04_irq_priority_defaults_t;
+
+/**
+ * @enum rx_hcsr04_irq_yield_t
+ * @brief ThreadX sleep duration for IRQ polling yield
+ *
+ * @details
+ * Number of ThreadX ticks to sleep per iteration in the IRQ echo wait loop.
+ * At the default 100 Hz tick rate, 1 tick ≈ 10 ms.
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+typedef enum : uint8_t {
+  k_irq_yield_ticks = 1, /**< ThreadX ticks to yield per IRQ poll iteration (~10ms at 100Hz) */
+} rx_hcsr04_irq_yield_t;
 
 /**
  * @enum rx_hcsr04_irq_poll_limits_t
@@ -646,13 +685,15 @@ typedef enum : uint8_t {
  * @details
  * Maximum iterations for the IRQ measurement polling loop in
  * internal_measure_echo_pulse_irq(). Prevents unbounded busy-wait
- * per NASA Power of 10 Rule 2. At ~1µs per iteration and 30ms
- * timeout, 30000 iterations is the upper bound.
+ * per NASA Power of 10 Rule 2. Each iteration calls tx_thread_sleep(1),
+ * which yields for ~10ms at the default 100 Hz ThreadX tick rate.
+ * 100 iterations provides a ~1 second upper bound as a safety net;
+ * the actual timeout is governed by handle->timeout_us checked each iteration.
  *
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint32_t {
-  k_irq_poll_max_iterations = 30000, /**< Max iterations (~30ms at 1µs/iter) */
+  k_irq_poll_max_iterations = 100, /**< Max iterations (~10ms/iter at 100Hz, ~1s safety bound) */
 } rx_hcsr04_irq_poll_limits_t;
 
 /**
@@ -1319,7 +1360,7 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
     }
 
     /* Yield CPU to allow other threads to run (reduces busy-wait CPU load) */
-    tx_thread_sleep(1);
+    tx_thread_sleep(k_irq_yield_ticks);
   }
 
   /* Loop bound exceeded (should not reach here if timeout_us is sane) */
@@ -1642,6 +1683,85 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  */
 
 /**
+ * @brief Configure IRQ mode for echo pin (MPC + ICU + ISR registration)
+ *
+ * @details
+ * Extracted from rx_hcsr04_init() to keep that function under 60 lines
+ * (NASA Power of 10 Rule 4). Performs all IRQ-specific configuration:
+ * validates the IRQ number range, checks the echo_pin/echo_irq hardware
+ * mapping, configures MPC ISEL, sets up ICU edge detection, and registers
+ * the sensor with the ISR handler layer.
+ *
+ * On any failure, this function reverses its own partial changes (MPC reset,
+ * ICU disable) before returning. The caller (rx_hcsr04_init) is responsible
+ * for releasing the trigger pin if this function returns an error.
+ *
+ * @param[in]  config           Sensor configuration (echo_pin, echo_irq, irq_priority)
+ * @param[out] out_priority     Effective ICU priority used (caller stores in handle)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All IRQ configuration applied successfully
+ * @retval k_rx_err_invalid_arg echo_irq out of range, or echo_pin/irq mismatch
+ * @retval Error from rx_mpc_set_irq(), rx_hcsr04_icu_configure(), or rx_hcsr04_isr_register()
+ *
+ * @pre config->echo_mode == k_hcsr04_echo_irq
+ * @pre Trigger pin already configured as output by caller
+ *
+ * @post On success: echo pin in IRQ mode, ICU armed, ISR registered
+ * @post On failure: any partial changes reversed (MPC, ICU)
+ *
+ * @see rx_hcsr04_init() Sole caller — handles trigger pin cleanup on error
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t* out_priority)
+{
+  /* Validate IRQ number range (IRQ8-15 for P00-P07) */
+  if ((uint8_t)config->echo_irq < (uint8_t)k_irq_range_min ||
+      (uint8_t)config->echo_irq > (uint8_t)k_irq_range_max) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate that echo_pin matches echo_irq (P00→IRQ8, P01→IRQ9, P02→IRQ10, P03→IRQ11) */
+  const uint8_t pin_port     = rx_port_from_pin(config->echo_pin);
+  const uint8_t pin_num      = rx_pin_from_pin(config->echo_pin);
+  const uint8_t expected_pin = (uint8_t)config->echo_irq - (uint8_t)k_irq_range_min;
+  if (pin_port != (uint8_t)k_irq_p0_port || pin_num != expected_pin) {
+    rx_log_error("HCSR04", "echo_pin/echo_irq mismatch (P0x must match IRQ8+x)");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Determine effective ICU priority */
+  *out_priority = (config->irq_priority != (uint8_t)k_irq_priority_unset)
+                    ? config->irq_priority
+                    : (uint8_t)k_default_irq_priority;
+
+  /* Configure pin for IRQ function via MPC (sets ISEL bit in PFS) */
+  rx_err_t err = rx_mpc_set_irq(config->echo_pin);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Configure ICU for both-edge detection */
+  err = rx_hcsr04_icu_configure((uint8_t)config->echo_irq, *out_priority);
+  if (err != k_rx_ok) {
+    (void)rx_mpc_set_gpio(config->echo_pin); /* Cleanup: restore pin to GPIO */
+    return err;
+  }
+
+  /* Register sensor with ISR handler
+   * @todo Issue #296: Per-sensor index tracking needed for multi-sensor callback support */
+  err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, k_default_sensor_index);
+  if (err != k_rx_ok) {
+    (void)rx_hcsr04_icu_disable((uint8_t)config->echo_irq);
+    (void)rx_mpc_set_gpio(config->echo_pin);
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Initialize an HC-SR04 sensor handle
  *
  * Configures GPIO pins for trigger and echo, initializes the sensor handle
@@ -1658,6 +1778,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
 rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 {
   rx_err_t err;
+  uint8_t  effective_priority = 0; /* Effective ICU priority (IRQ mode only) */
 
   if (handle == nullptr || config == nullptr) {
     return k_rx_err_null_ptr;
@@ -1675,54 +1796,9 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 
   /* Configure echo pin based on mode */
   if (config->echo_mode == k_hcsr04_echo_irq) {
-    /* IRQ mode: Configure pin for IRQ function and set up ICU */
-
-    /* Validate IRQ number range (IRQ8-15 for P00-P07) */
-    if ((uint8_t)config->echo_irq < (uint8_t)k_irq_range_min ||
-        (uint8_t)config->echo_irq > (uint8_t)k_irq_range_max) {
-      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
-      return k_rx_err_invalid_arg;
-    }
-
-    /* Validate that echo_pin matches echo_irq (P00→IRQ8, P01→IRQ9, P02→IRQ10, P03→IRQ11).
-     * The expected pin_num within port 0 = irq_num - k_irq_range_min. */
-    {
-      const uint8_t pin_port = rx_port_from_pin(config->echo_pin);
-      const uint8_t pin_num  = rx_pin_from_pin(config->echo_pin);
-      const uint8_t expected_pin = (uint8_t)config->echo_irq - (uint8_t)k_irq_range_min;
-      if (pin_port != k_irq_p0_port || pin_num != expected_pin) {
-        rx_log_error("HCSR04", "echo_pin/echo_irq mismatch (P0x must match IRQ8+x)");
-        (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
-        return k_rx_err_invalid_arg;
-      }
-    }
-
-    /* Configure pin for IRQ function via MPC (sets ISEL bit in PFS) */
-    err = rx_mpc_set_irq(config->echo_pin);
+    /* IRQ mode: delegate to helper to keep this function under 60 lines (NASA Rule 4) */
+    err = internal_init_irq_mode(config, &effective_priority);
     if (err != k_rx_ok) {
-      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
-      return err;
-    }
-
-    /* Determine IRQ priority: use configured value or fall back to default */
-    const uint8_t irq_priority = (config->irq_priority != (uint8_t)k_echo_irq_none)
-                                   ? config->irq_priority
-                                   : (uint8_t)k_default_irq_priority;
-
-    /* Configure ICU for edge detection */
-    err = rx_hcsr04_icu_configure((uint8_t)config->echo_irq, irq_priority);
-    if (err != k_rx_ok) {
-      /* Cleanup: reconfigure pin back to GPIO */
-      (void)rx_mpc_set_gpio(config->echo_pin);
-      (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
-      return err;
-    }
-
-    /* Register sensor with ISR handler (sensor index TBD - use 0 for now) */
-    err = rx_hcsr04_isr_register((uint8_t)config->echo_irq, 0);
-    if (err != k_rx_ok) {
-      (void)rx_hcsr04_icu_disable((uint8_t)config->echo_irq);
-      (void)rx_mpc_set_gpio(config->echo_pin);
       (void)hcsr04_hal_gpio_deinit(config->trigger_pin);
       return err;
     }
@@ -1742,6 +1818,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   handle->timeout_us          = config->timeout_us;
   handle->echo_mode           = config->echo_mode;
   handle->echo_irq            = (config->echo_mode == k_hcsr04_echo_irq) ? config->echo_irq : k_rx_hcsr04_irq_none;
+  handle->irq_priority        = effective_priority; /* Non-zero only in IRQ mode */
   handle->initialized         = true;
   handle->measurement_active  = false;
   handle->cancel_requested    = false;
@@ -1787,10 +1864,16 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
   rx_err_t err = k_rx_ok;
 
   if (handle->echo_mode == k_hcsr04_echo_irq) {
-    /* IRQ mode: Disable ICU and reconfigure pin to GPIO */
+    /* IRQ mode: Disable ICU, unregister ISR, and reconfigure pin to GPIO */
     rx_err_t irq_err = rx_hcsr04_icu_disable(handle->echo_irq);
     if (irq_err != k_rx_ok) {
       err = irq_err; /* Save first error */
+    }
+
+    /* Unregister ISR to prevent stale callbacks after handle is invalidated */
+    rx_err_t unreg_err = rx_hcsr04_isr_unregister((uint8_t)handle->echo_irq);
+    if (unreg_err != k_rx_ok && err == k_rx_ok) {
+      err = unreg_err; /* Save first error */
     }
 
     /* Reconfigure pin back to GPIO */

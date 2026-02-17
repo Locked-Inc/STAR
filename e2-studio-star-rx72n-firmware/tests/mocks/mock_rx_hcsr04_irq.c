@@ -27,6 +27,7 @@
 #include "rx_err.h"
 #include "rx_hcsr04_icu.h"
 #include "rx_hcsr04_isr.h"
+#include "rx_mpc.h"
 #include "rx_port_constants.h"
 
 /* =============================================================================
@@ -105,6 +106,18 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const uint8_t sensor_inde
 {
   (void)irq_num;
   (void)sensor_index;
+  return k_rx_ok;
+}
+
+/**
+ * @brief Mock: Unregister sensor from IRQ echo measurement (no-op stub)
+ *
+ * @param[in] irq_num IRQ number (unused in mock)
+ * @return k_rx_ok always
+ */
+rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
+{
+  (void)irq_num;
   return k_rx_ok;
 }
 

@@ -24,13 +24,18 @@
  *   │                         rx_mpc.h API                               │
  *   │   ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
  *   │   │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │  │
- *   │   │  mtu_pwm()  │ │  sci()      │ │  rspi()     │ │  adc()      │  │
+ *   │   │  mtu_pwm()  │ │  sci()      │ │  rspi()     │ │  gpio()     │  │
  *   │   └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘  │
  *   │          │               │               │               │         │
  *   │   ┌──────▼───────────────▼───────────────▼───────────────▼──────┐  │
  *   │   │              rx_mpc_set_peripheral()                        │  │
- *   │   │           (core configuration function)                     │  │
+ *   │   │     (core PSEL configuration function — peripheral path)    │  │
  *   │   └─────────────────────────┬───────────────────────────────────┘  │
+ *   │                             │                                       │
+ *   │   Note: rx_mpc_set_irq() and rx_mpc_set_adc() bypass               │
+ *   │   rx_mpc_set_peripheral() and write ISEL/ASEL bits directly        │
+ *   │   via internal_write_pfs() (ISEL=0x40, ASEL=0x80 exceed PSEL       │
+ *   │   5-bit field; they are separate bits in the PFS register).        │
  *   └─────────────────────────────┼──────────────────────────────────────┘
  *                                 │
  *   ┌─────────────────────────────▼──────────────────────────────────────┐

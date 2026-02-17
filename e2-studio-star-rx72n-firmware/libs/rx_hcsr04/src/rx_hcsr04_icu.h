@@ -72,7 +72,7 @@ extern "C" {
  * of the echo pulse automatically.
  *
  * **Configuration Applied:**
- * - IRQCR[n] = 0x08 (both edges trigger interrupt)
+ * - IRQCR[n] = k_irqcr_both_edges (0x08, both edges trigger interrupt)
  * - Digital filter enabled (PCLK/8 = 133ns @ 60MHz PCLKB)
  * - Interrupt priority set to specified value (recommend 10)
  * - IR flag cleared (any pending interrupt discarded)
@@ -123,9 +123,10 @@ extern "C" {
  *     k_rx_hcsr04_irq_9,   // Sonar 2 Back-Left
  *     k_rx_hcsr04_irq_8,   // Sonar 3 Back-Right
  * };
- * const uint8_t priority = 10;
+ * const uint8_t sensor_count = (uint8_t)(sizeof(irq_nums) / sizeof(irq_nums[0]));
+ * const uint8_t priority = k_hcsr04_irq_priority_default;  // 10
  *
- * for (uint8_t i = 0; i < 4; i++) {
+ * for (uint8_t i = 0; i < sensor_count; i++) {
  *     rx_err_t err = rx_hcsr04_icu_configure((uint8_t)irq_nums[i], priority);
  *     if (err != k_rx_ok) {
  *         rx_log_error("SONAR", "ICU config failed");
@@ -142,7 +143,7 @@ extern "C" {
  * @since Version 1.2.0
  *
  * @par NASA Power of 10 Compliance
- * - Rule 5: [OK] 2 preconditions, 4 postconditions
+ * - Rule 5: [OK] 3 preconditions, 4 postconditions
  * - Rule 7: [OK] All register writes validated
  * - Rule 8: [OK] Typed enums for all constants
  */
