@@ -1234,3 +1234,44 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   return time_us;
 }
+
+/**
+ * @brief Mock: ISR-safe timestamp (delegates to mock_get_time_us, no mutex)
+ *
+ * @details
+ * Mock implementation of the ISR-safe time function. Delegates to
+ * mock_get_time_us() exactly like hcsr04_hal_get_time_us() since there
+ * is no mutex concern in the test environment. In real hardware this would
+ * read the CMT2 counter directly without acquiring the ThreadX mutex.
+ *
+ * @return Current mock time in microseconds
+ * @retval uint32_t Last value set via mock_set_time_us() (validated against
+ *                  UINT32_MAX sentinel and k_hcsr04_echo_timeout_us bound)
+ *
+ * @pre Mock time infrastructure initialized (mock_set_time_us() called before use)
+ * @pre Running in unit-test mock mode (no real CMT2 hardware)
+ *
+ * @post No hardware side-effects (no registers read, no mutex acquired)
+ * @post Returned value equals last value set via mock_set_time_us()
+ *
+ * @note ISR-safe: no mutex or blocking ThreadX call in mock context
+ * @note In real hardware, this function is safe to call from ISR context
+ *
+ * @par Example: ISR Edge Capture Simulation
+ * @code
+ * mock_set_time_us(1000);  // Rising edge at 1000 µs
+ * uint32_t start = hcsr04_hal_get_time_us_isr();
+ * mock_set_time_us(3000);  // Falling edge at 3000 µs (2 ms echo = ~34 cm)
+ * uint32_t end = hcsr04_hal_get_time_us_isr();
+ * uint32_t duration_us = end - start;  // = 2000 µs ≈ 34 cm
+ * @endcode
+ *
+ * @see hcsr04_hal_get_time_us_isr() Real hardware counterpart (reads CMT2 directly)
+ * @see mock_set_time_us() Sets the time value returned by this function
+ *
+ * @since Version 1.2.0 (Issue #296)
+ */
+uint32_t hcsr04_hal_get_time_us_isr(void)
+{
+  return mock_get_time_us();
+}

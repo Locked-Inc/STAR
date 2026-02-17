@@ -768,6 +768,8 @@ typedef enum : uint32_t {
   k_min_ticks              = 1,                          /**< Minimum delay to prevent zero-wait */
   k_cmstr1_cmt2_enable_bit = k_rx72n_cmstr1_cmt2_enable, /**< CMSTR1.STR2 bit (bit 0) */
   k_counter_reset          = 0,                          /**< Counter initial value */
+  k_isr_us_numerator       = 2,                          /**< ISR timestamp ratio numerator: 1000000 / (60000000/8) = 2/15 */
+  k_isr_us_denominator     = 15,                         /**< ISR timestamp ratio denominator: avoids 64-bit division in ISR */
 } cmt2_timing_constants_t;
 
 /**
@@ -1135,7 +1137,7 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   if (internal_time_mutex_init() != k_rx_ok) {
     timer_hz = k_pclkb_hz / k_cmt2_divider;
-    return (uint32_t)((cmt2()->cmcnt * k_us_per_second) / timer_hz);
+    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz);
   }
 
   /* Protect static variables from concurrent access */
@@ -1143,7 +1145,7 @@ uint32_t hcsr04_hal_get_time_us(void)
   if (mutex_status != TX_SUCCESS) {
     /* Fallback: return current counter value without overflow tracking */
     timer_hz = k_pclkb_hz / k_cmt2_divider;
-    return (uint32_t)((cmt2()->cmcnt * k_us_per_second) / timer_hz);
+    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz);
   }
 
   current_counter = cmt2()->cmcnt;
@@ -1167,4 +1169,52 @@ uint32_t hcsr04_hal_get_time_us(void)
   }
 
   return result;
+}
+
+/**
+ * @brief Get monotonic timestamp in microseconds — ISR-safe (no mutex)
+ *
+ * @details
+ * Reads the CMT2 counter directly without acquiring the ThreadX mutex.
+ * Safe to call from interrupt context. Does NOT track 16-bit overflows.
+ * Because the 16-bit CMT2 counter wraps every ~8.7 ms (65536 ticks at
+ * PCLKB/8 = 7.5 MHz), this function is only valid for echo windows
+ * shorter than the CMT2 wrap period. Rising and falling edge timestamps
+ * separated by more than ~8.7 ms produce invalid durations. HC-SR04 IRQ
+ * mode is therefore limited to ~150 cm maximum range.
+ *
+ * @return CMT2 counter converted to microseconds (no overflow tracking)
+ * @retval uint32_t Value in range [0, ~8700) µs; wraps every ~8.7 ms with CMT2 period
+ *
+ * @pre CMT2 timer initialized (call hcsr04_hal_get_time_us() once at startup)
+ * @pre Called from interrupt context (no ThreadX blocking calls permitted)
+ *
+ * @post No side effects (read-only, no mutex acquired)
+ * @post Returned value equals (cmcnt * 1000000) / timer_hz for current CMT2 count
+ *
+ * @note ISR-safe: does NOT call tx_mutex_get() or any blocking ThreadX API
+ * @warning Does not track 16-bit counter overflow; do not use for intervals > 8.7 ms
+ * @warning HC-SR04 IRQ mode limited to ~150 cm (8.7 ms echo) due to CMT2 wrap period
+ *
+ * @par Example: Edge Timestamp in ISR
+ * @code
+ * // Typical ISR usage — capture rising/falling edge timestamp:
+ * uint32_t ts = hcsr04_hal_get_time_us_isr();
+ * s_irq_state[idx].start_us = ts;  // Rising edge
+ * // OR
+ * s_irq_state[idx].end_us = ts;    // Falling edge
+ * // Duration: end_us - start_us (valid only if echo < 8.7 ms / ~150 cm)
+ * @endcode
+ *
+ * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking for task context
+ *
+ * @since Version 1.2.0 (Issue #296 - ISR-mode HC-SR04 measurement)
+ */
+uint32_t hcsr04_hal_get_time_us_isr(void)
+{
+  const uint16_t current_count = cmt2()->cmcnt;
+
+  /* Simplified ratio: 1,000,000 / (60,000,000 / 8) = 2/15.
+   * Max value: 65535 * 2 / 15 = 8738 µs. Fits in uint32_t, no 64-bit math. */
+  return ((uint32_t)current_count * k_isr_us_numerator) / k_isr_us_denominator;
 }
