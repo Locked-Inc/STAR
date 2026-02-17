@@ -39,6 +39,7 @@
 
 #include "hardware_config.h"
 #include "rx_check.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_poeg.h"
 #include "rx_port_utils.h"
@@ -396,6 +397,13 @@ static void internal_led_task_entry(ULONG input)
 
     /* ---- LED 5: E-stop active (solid on) ---- */
     internal_led_set(k_led_idx_estop, shared_data_is_estop_active());
+
+    /* Report task heartbeat to IWDT (must execute within 150ms timeout) */
+    rx_err_t err = rx_iwdt_task_heartbeat("LEDStatus");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
+    }
 
     /* Sleep until next tick */
     (void)tx_thread_sleep(k_led_task_period_ticks);

@@ -395,6 +395,7 @@
 #include "rx_check.h"
 #include "rx_drv8243.h"
 #include "rx_encoder_tpu.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_motor.h"
 #include "rx_mtu_encoder.h"
@@ -524,6 +525,30 @@ static bool s_active_brake_in_progress = false;
 
 /** @brief Log tag for this module */
 static const char* const s_tag = "MOTOR";
+
+/**
+ * @var s_task_name
+ * @brief IWDT task name for heartbeat registration and reporting
+ *
+ * @details
+ * String literal used to identify this task in IWDT registration and heartbeat calls.
+ * Centralizes the task name to prevent typos and ensure consistency across all
+ * rx_iwdt_register_task() and rx_iwdt_task_heartbeat() calls.
+ *
+ * **Usage:**
+ * - Task registration: rx_iwdt_register_task(s_task_name, timeout_ms)
+ * - Heartbeat reporting: rx_iwdt_task_heartbeat(s_task_name)
+ * - ThreadX thread creation: tx_thread_create(..., "MotorTask", ...) (different name)
+ *
+ * @note IWDT task name ("MotorCtrl") intentionally differs from ThreadX thread name ("MotorTask")
+ * @note ThreadX name kept short for thread list display; IWDT name more descriptive
+ * @warning Do not modify - IWDT registration depends on exact string match
+ * @see rx_iwdt_register_task() Task registration using this name
+ * @see rx_iwdt_task_heartbeat() Heartbeat reporting using this name
+ *
+ * @since Version 1.0.0
+ */
+static const char* const s_task_name = "MotorCtrl";
 
 /* =============================================================================
  * Forward Declarations
@@ -1206,6 +1231,13 @@ static void internal_motor_task_entry(ULONG input)
         rx_log_warn(s_tag, "E-stop active, executing active brake");
         internal_active_brake_sequence();
       }
+      /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
+      err = rx_iwdt_task_heartbeat(s_task_name);
+      if (err != k_rx_ok) {
+        rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+        /* Continue operation - watchdog monitor will detect timeout */
+      }
+
       /* Skip control loop while e-stop active */
       (void)tx_thread_sleep(k_motor_task_sleep_ticks);
       continue;
@@ -1222,6 +1254,10 @@ static void internal_motor_task_entry(ULONG input)
 
     /* Update motor state in shared data for telemetry */
     internal_update_motor_state();
+
+    /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
+    err = rx_iwdt_task_heartbeat(s_task_name);
+    RX_ASSERT(err == k_rx_ok, "MotorCtrl heartbeat must succeed");
 
     /* Sleep until next control cycle */
     (void)tx_thread_sleep(k_motor_task_sleep_ticks);
@@ -2309,6 +2345,12 @@ static void internal_active_brake_sequence(void)
 
     if (elapsed_ticks >= brake_ticks) {
       break;
+    }
+
+    /* Report heartbeat during active brake (prevents IWDT timeout) */
+    err = rx_iwdt_task_heartbeat(s_task_name);
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed during brake", (uint32_t)err);
     }
 
     (void)tx_thread_sleep(1); /* 10ms polling */

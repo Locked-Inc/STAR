@@ -373,6 +373,7 @@
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
 #include "rx_spi_comm.h"
@@ -1242,6 +1243,13 @@ static void internal_comm_task_entry(ULONG input)
     /* Process pending SPI retransmissions (no-op when disabled) */
     (void)rx_comm_manager_process_retransmits(&g_comm_manager,
                                               (uint32_t)(tx_time_get() * k_threadx_ms_per_tick));
+
+    /* Report task heartbeat to IWDT (must execute within 30ms timeout) */
+    err = rx_iwdt_task_heartbeat("CommTask");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
+    }
 
     /* Sleep until next poll cycle */
     (void)tx_thread_sleep(k_comm_task_sleep_ticks);

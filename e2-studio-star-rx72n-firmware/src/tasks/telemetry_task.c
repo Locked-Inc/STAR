@@ -735,6 +735,7 @@
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
 #include "rx_nanopb.h"
 #include "shared_data.h"
@@ -1488,6 +1489,13 @@ static void internal_telem_task_entry(ULONG input)
     err = internal_build_and_send_telemetry();
     if (err != k_rx_ok) {
       rx_log_debug_val(s_tag, "Telemetry send failed", (uint32_t)err);
+    }
+
+    /* Report task heartbeat to IWDT (must execute within 150ms timeout) */
+    err = rx_iwdt_task_heartbeat("Telemetry");
+    if (err != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+      /* Continue operation - watchdog monitor will detect timeout */
     }
 
     /* Sleep until next telemetry cycle */
