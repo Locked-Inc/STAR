@@ -129,11 +129,11 @@ ENV HOME=/home/$USERNAME
 # Ensure /tmp has correct permissions (standard across platforms)
 RUN chmod 1777 /tmp
 
-# Pre-create .cache with correct ownership so devcontainer features
-# (which run as root) don't create it with root:root permissions.
-# Without this, Go build cache and VS Code server fail with EACCES.
-RUN mkdir -p /home/$USERNAME/.cache && \
-    chown -R $USERNAME:$USERNAME /home/$USERNAME/.cache
+# Fix ownership of entire home directory.
+# DevContainer features (Go, Node, Docker-in-Docker) run as root and may
+# create subdirectories (.cache, .npm, .config, etc.) owned by root:root.
+# This single chown fixes all current and future permission issues.
+RUN chown -R $USERNAME:$USERNAME /home/$USERNAME
 
 # Set up workspace
 WORKDIR /workspaces/STAR
