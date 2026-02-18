@@ -707,7 +707,7 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		return nil
 
 	case frame.FrameTypeReset:
-		// Auto-reply with RESET_ACK per TRANSPORT_ARCHITECTURE.md §Control Frame Dispatching
+		// Auto-reply with RESET_ACK per TRANSPORT_ARCHITECTURE.md Control Frame Dispatching
 		log.Printf("Received RESET (seq=%d) - sending RESET_ACK", result.Metadata.Sequence)
 		tm.sendResetAck(ctx)
 		return nil
