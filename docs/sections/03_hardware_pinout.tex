@@ -197,9 +197,9 @@ tab:
          SR04 ultrasonic sensor trigger(10\textmu s GPIO pulse) \\
 \hline
 \rowcolor {
-  teal!15
+  orange!15
 }
-27 & P32 & Unused &Available GPIO \\
+27 & P32 & IMU INT & IMU interrupt line (active-low, IRQ input) \\
 \hline
 \rowcolor { yellow!15}
 28 & P31 / TMS &E1E2 - Emulator - Interface &JTAG(TMS) \\
@@ -314,19 +314,25 @@ tab:
 \hline 53 & P53 & Unused &Not available as GPIO when external bus enabled(BCLK) \\
 \hline
 \rowcolor {
-  teal!15
+  orange!15
 }
-54 & P52 & Unused &Available GPIO \\
+54 & P52 & IMU SCL & IMU I2C clock (SCL) \\
 \hline
 \rowcolor { lime!10}
 55 & P51 &DS18B20 DQ & 1 - Wire temperature sensor data pin \\
-\hline 56 & P50 & Unused &Available GPIO(WR0\# / WR\#, SCI2 TX) \\
+\hline \rowcolor {
+  orange!15
+}
+56 & P50 & IMU SDA & IMU I2C data (SDA) \\
 \hline
 \rowcolor {
   gray!15
 }
 57 & VSS & Ground &Power supply \\
-\hline 58 & P83 & Unused &Available GPIO(TRCLK, GTIOC0A, SCK10, Ethernet) \\
+\hline \rowcolor {
+  orange!15
+}
+58 & P83 & IMU RST & IMU reset (active-low, GPIO output) \\
 \hline
 \rowcolor {
   gray!15
@@ -840,6 +846,33 @@ The DS18B20+ is a digital 1-Wire temperature sensor connected to P51 (pin 55).
     \item Motor driver thermal management (supplement DRV8243S internal temp)
     \item Battery temperature monitoring
     \item System enclosure temperature
+\end{itemize}
+
+\subsection{IMU}
+
+The IMU is connected to the RX72N via I2C with a dedicated interrupt and reset line.
+
+\textbf{Pin Connections:}
+\begin{itemize}
+    \item \textbf{SCL (Clock):} P52 (pin 54) --- I2C clock
+    \item \textbf{SDA (Data):} P50 (pin 56) --- I2C data
+    \item \textbf{INT (Interrupt):} P32 (pin 27) --- active-low interrupt output from IMU to RX72N IRQ input
+    \item \textbf{RST (Reset):} P83 (pin 58) --- active-low reset, driven as GPIO output by RX72N
+    \item \textbf{VDD:} 3.3V power supply
+    \item \textbf{GND:} Ground
+\end{itemize}
+
+\textbf{Required External Components:}
+\begin{itemize}
+    \item 4.7k$\Omega$ pull-up resistors on SCL and SDA lines (to 3.3V)
+    \item 100nF decoupling capacitor near VDD pin
+\end{itemize}
+
+\textbf{Firmware Implementation:}
+\begin{itemize}
+    \item Configure INT pin as IRQ input (falling-edge triggered)
+    \item Assert RST low for $\geq$10\,ms at startup to perform a hardware reset before initialisation
+    \item Use I2C to read sensor data registers on each INT assertion
 \end{itemize}
 
 \subsection{Motor Driver Dual-Interface Architecture}
