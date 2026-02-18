@@ -102,34 +102,6 @@ To check a directory without modifying files:
 python3 scripts/fix-encoding.py --check path/to/dir
 ```
 
-### ASCII Replacement Table
-
-| Non-ASCII | ASCII equivalent | Notes |
-|-----------|-----------------|-------|
-| us | us | Microseconds (drop the mu prefix) |
-| degC | degC | Degrees Celsius |
-| degF | degF | Degrees Fahrenheit |
-| Ohm | Ohm | Ohms (resistance) |
-| -> / <- | -> / <- | Arrows (use literal ASCII) |
-| => | => | Double arrow |
-| <= / >= | <= / >= | Comparison operators |
-| +/- | +/- | Tolerance / plus-minus |
-| x | x | Multiplication |
-| ~ | ~ | Approximately equal |
-| != | != | Not equal |
-| [PASS] / [FAIL] | [PASS] / [FAIL] | Status markers |
-| [WARN] | [WARN] | Warning marker |
-| ^2 / ^3 | ^2 / ^3 | Superscripts |
-| _0 / _1 | _0 / _1 | Subscripts |
-| +, -, \| | +, -, \| | Box-drawing characters |
-| = | = | Double horizontal box |
-| -- | -- | Em dash |
-| ... | ... | Ellipsis |
-| alpha/beta/... | alpha/beta/... | Greek letters |
-| Delta/Sigma | Delta/Sigma | Greek capital letters |
-| pi/tau/omega | pi/tau/omega | Common Greek math symbols |
-| inf | inf | Infinity |
-
 ## Project Overview
 
 **STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, Renesas RX72N motor control firmware, Raspberry Pi 5 control system, and Protocol Buffers communication.

@@ -339,6 +339,7 @@ DOT_IMAGE_FORMAT        = svg
 INTERACTIVE_SVG         = YES
 DOT_PATH                =
 DOTFILE_DIRS            =
+MSCGEN_TOOL             = mscgen
 MSCFILE_DIRS            =
 DIAFILE_DIRS            =
 PLANTUML_JAR_PATH       =

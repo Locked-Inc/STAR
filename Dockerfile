@@ -34,14 +34,17 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     cmake
 
 # Install Doxygen documentation toolchain with minimal LaTeX
-# - doxygen: Core documentation generator
 # - graphviz: For @dot, @callgraph, @callergraph diagrams
 # - plantuml: For @startuml state machine diagrams
+# - mscgen: For @msc message sequence chart diagrams
 # - default-jre-headless: Java runtime for PlantUML (headless = no GUI)
 # - texlive (minimal): Only packages needed for Doxygen PDF generation
 #   Replaces texlive-full (~5-7 GB) with targeted packages (~500 MB)
 # - latexmk: Build automation for LaTeX (handles multiple passes)
 #
+# NOTE: doxygen is NOT installed from apt. Ubuntu 24.04 apt only ships 1.9.8
+# which generates LaTeX using the abandoned tabu/longtabu package (broken with
+# TeX Live 2022+). We install from GitHub below to get a working version.
 # NOTE: If LaTeX compilation fails for star_documentation.tex, add packages
 # incrementally. Likely candidates:
 #   texlive-latex-extra  (tikz extras, booktabs, enumitem, etc.)
@@ -49,9 +52,9 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && apt-get install -y \
-    doxygen \
     graphviz \
     plantuml \
+    mscgen \
     default-jre-headless \
     texlive-latex-base \
     texlive-latex-recommended \
@@ -89,6 +92,19 @@ ENV PATH="/opt/gnurx/bin:${PATH}"
 ARG BUF_VERSION=1.28.1
 RUN curl -sSL "https://github.com/bufbuild/buf/releases/download/v${BUF_VERSION}/buf-$(uname -s)-$(uname -m)" -o /usr/local/bin/buf \
     && chmod +x /usr/local/bin/buf
+
+# Install Doxygen 1.16.1 from GitHub releases.
+# Ubuntu 24.04 apt only has 1.9.8 which uses the unmaintained tabu/longtabu
+# LaTeX package that fails with TeX Live 2022+. Doxygen 1.10+ dropped tabu.
+ARG DOXYGEN_VERSION=1.16.1
+RUN set -eux; \
+    DOXYGEN_TAG=$(echo "$DOXYGEN_VERSION" | tr '.' '_'); \
+    curl -fsSL \
+      "https://github.com/doxygen/doxygen/releases/download/Release_${DOXYGEN_TAG}/doxygen-${DOXYGEN_VERSION}.linux.bin.tar.gz" \
+      -o /tmp/doxygen.tar.gz; \
+    tar -xzf /tmp/doxygen.tar.gz -C /usr/local --strip-components=1; \
+    rm /tmp/doxygen.tar.gz; \
+    doxygen --version
 
 # Install nanopb for Protocol Buffer C code generation
 # Required for star-rx72n-firmware embedded target
