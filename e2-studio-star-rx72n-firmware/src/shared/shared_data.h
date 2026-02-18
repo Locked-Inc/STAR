@@ -122,6 +122,7 @@ typedef struct {
  * @brief Event flags for inter-task signaling
  */
 typedef enum : uint32_t {
+  k_event_none                  = 0x00000000, /**< No events pending (cleared state) */
   k_event_motor_command_updated = 0x00000001, /**< New motor command available */
   k_event_estop_triggered       = 0x00000002, /**< E-stop activated */
   k_event_pid_gains_updated     = 0x00000004, /**< PID gains changed */

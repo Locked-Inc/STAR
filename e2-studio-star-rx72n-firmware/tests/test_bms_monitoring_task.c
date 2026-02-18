@@ -71,6 +71,68 @@ typedef enum : uint16_t {
   k_test_low_voltage_mv    = 14400, /**< Low pack voltage (3.6V x 4) */
 } test_voltage_constants_t;
 
+/**
+ * @enum test_bms_read_data_t
+ * @brief Test constants for battery data reading tests (test_bms_task_reads_battery_data)
+ */
+typedef enum : uint16_t {
+  k_test_normal_current_ma  = 500,  /**< Normal discharge current (mA) */
+  k_test_normal_timestamp_ms = 1000, /**< 1-second timestamp for data read test */
+} test_bms_read_data_t;
+
+/**
+ * @enum test_bms_soc_percent_t
+ * @brief SoC percentage constants for battery data reading tests
+ */
+typedef enum : uint8_t {
+  k_test_normal_soc_percent = 85, /**< Normal SoC for battery read tests */
+} test_bms_soc_percent_t;
+
+/**
+ * @enum test_bms_telemetry_data_t
+ * @brief Test constants for BMS telemetry storage tests (test_bms_data_stored_in_telemetry)
+ */
+typedef enum : uint16_t {
+  k_test_telem_current_ma       = 1500, /**< Discharge current for telemetry test (mA) */
+  k_test_telem_capacity_mah     = 3750, /**< Remaining capacity for telemetry test (mAh) */
+  k_test_telem_full_capacity_mah = 5000, /**< Full charge capacity for telemetry test (mAh) */
+  k_test_telem_cycle_count      = 150,  /**< Charge cycle count for telemetry test */
+  k_test_telem_timestamp_ms_lo  = 2000, /**< Timestamp lower 16 bits for telemetry test */
+} test_bms_telemetry_data_t;
+
+/**
+ * @enum test_bms_telemetry_int8_t
+ * @brief Signed 8-bit test constants for BMS telemetry storage tests
+ */
+typedef enum : int8_t {
+  k_test_telem_temperature_celsius = 25, /**< Battery temperature for telemetry test (°C) */
+} test_bms_telemetry_int8_t;
+
+/**
+ * @enum test_bms_telemetry_soc_t
+ * @brief SoC percentage constant for telemetry test
+ */
+typedef enum : uint8_t {
+  k_test_telem_soc_percent  = 75, /**< State of charge for telemetry storage test (%) */
+  k_test_telem_fault_flags  = 0,  /**< No faults for telemetry test */
+} test_bms_telemetry_soc_t;
+
+/**
+ * @enum test_custom_threshold_soc_t
+ * @brief SoC values for exercising custom threshold behavior
+ *
+ * @details
+ * Used with custom thresholds: 30% warning, 10% critical.
+ * - k_test_custom_soc_below_warning: 29% is below 30% warning (triggers warning)
+ * - k_test_custom_soc_below_critical: 9% is below 10% critical (triggers e-stop)
+ */
+typedef enum : uint8_t {
+  k_test_custom_soc_below_warning  = 29, /**< 29% SoC: below 30% warning, above 10% critical */
+  k_test_custom_soc_below_critical = 9,  /**< 9% SoC: below 10% critical threshold */
+  k_test_custom_warning_pct        = 30, /**< Custom warning threshold (%) */
+  k_test_custom_critical_pct       = 10, /**< Custom critical threshold (%) */
+} test_custom_threshold_soc_t;
+
 /* =============================================================================
  * Test Fixture
  * =============================================================================
@@ -151,13 +213,20 @@ void test_bms_task_create_invalid_thresholds(void)
 
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
-  /* critical >= warning is invalid */
-  const bms_monitor_config_t bad_config = {
+  /* critical == warning is invalid (must be strictly less) */
+  const bms_monitor_config_t bad_config_equal = {
     .soc_warning_pct  = 15,
     .soc_critical_pct = 15, /* same as warning - must be strictly less */
   };
-  err = bms_monitor_task_create(&bad_config);
+  err = bms_monitor_task_create(&bad_config_equal);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 
+  /* critical > warning is also invalid */
+  const bms_monitor_config_t bad_config_inverted = {
+    .soc_warning_pct  = 10, /* lower than critical - inverted! */
+    .soc_critical_pct = 50,
+  };
+  err = bms_monitor_task_create(&bad_config_inverted);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -223,7 +292,8 @@ void test_bms_task_reads_battery_data(void)
   rx_err_t           err;
 
   /* Set up battery status */
-  mock_bq4050_set_status(k_test_normal_voltage_mv, 500, 85);
+  mock_bq4050_set_status(k_test_normal_voltage_mv, k_test_normal_current_ma,
+                         k_test_normal_soc_percent);
 
   /* Read status (simulating task behavior) */
   rx_bus_manager_t* manager = nullptr;
@@ -236,7 +306,7 @@ void test_bms_task_reads_battery_data(void)
   bms.voltage_mv   = status.voltage_mv;
   bms.current_ma   = status.current_ma;
   bms.soc_percent  = status.relative_soc;
-  bms.timestamp_ms = 1000;
+  bms.timestamp_ms = k_test_normal_timestamp_ms;
   bms.valid        = true;
 
   err = shared_data_update_bms(&bms);
@@ -247,7 +317,7 @@ void test_bms_task_reads_battery_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(bms_out.valid);
   TEST_ASSERT_EQUAL_UINT16(k_test_normal_voltage_mv, bms_out.voltage_mv);
-  TEST_ASSERT_EQUAL_UINT8(85, bms_out.soc_percent);
+  TEST_ASSERT_EQUAL_UINT8(k_test_normal_soc_percent, bms_out.soc_percent);
 }
 
 /**
@@ -410,11 +480,13 @@ void test_bms_task_warning_only_between_thresholds(void)
 }
 
 /**
- * @brief Test custom thresholds are accepted at task creation
+ * @brief Test custom thresholds are accepted and produce correct comparisons
  *
  * @details
  * Verifies that bms_monitor_task_create() accepts non-default threshold
- * values when they satisfy the constraint soc_critical_pct < soc_warning_pct.
+ * values when they satisfy the constraint soc_critical_pct < soc_warning_pct,
+ * and that the stored thresholds produce the correct boundary comparisons
+ * for a 29% SoC (below 30% warning) and a 9% SoC (below 10% critical).
  */
 void test_bms_task_create_custom_thresholds(void)
 {
@@ -424,12 +496,40 @@ void test_bms_task_create_custom_thresholds(void)
 
   /* Custom thresholds: 30% warning, 10% critical */
   const bms_monitor_config_t custom_config = {
-    .soc_warning_pct  = 30,
-    .soc_critical_pct = 10,
+    .soc_warning_pct  = k_test_custom_warning_pct,
+    .soc_critical_pct = k_test_custom_critical_pct,
   };
   err = bms_monitor_task_create(&custom_config);
-
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* ------------------------------------------------------------------ *
+   * Verify warning branch: 29% SoC is below 30% warning, above 10% critical
+   * ------------------------------------------------------------------ */
+  mock_bq4050_set_status(k_test_normal_voltage_mv, k_test_normal_current_ma,
+                         k_test_custom_soc_below_warning);
+
+  rx_bq4050_status_t status = {0};
+  err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(k_test_custom_soc_below_warning, status.relative_soc);
+
+  bool is_warning  = (status.relative_soc < custom_config.soc_warning_pct);
+  bool is_critical = (status.relative_soc < custom_config.soc_critical_pct);
+  TEST_ASSERT_TRUE(is_warning);   /* 29% < 30% warning → warning fires */
+  TEST_ASSERT_FALSE(is_critical); /* 29% > 10% critical → no e-stop */
+
+  /* ------------------------------------------------------------------ *
+   * Verify critical branch: 9% SoC is below both thresholds; critical wins
+   * ------------------------------------------------------------------ */
+  mock_bq4050_set_status(k_test_low_voltage_mv, k_test_normal_current_ma,
+                         k_test_custom_soc_below_critical);
+
+  err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_UINT8(k_test_custom_soc_below_critical, status.relative_soc);
+
+  is_critical = (status.relative_soc < custom_config.soc_critical_pct);
+  TEST_ASSERT_TRUE(is_critical); /* 9% < 10% critical → e-stop fires */
 }
 
 /**
@@ -446,14 +546,14 @@ void test_bms_data_stored_in_telemetry(void)
 
   /* Set up complete BMS state */
   bms_in.voltage_mv          = k_test_normal_voltage_mv;
-  bms_in.current_ma          = 1500;
-  bms_in.soc_percent         = 75;
-  bms_in.temperature_celsius = 25;
-  bms_in.capacity_mah        = 3750;
-  bms_in.full_capacity_mah   = 5000;
-  bms_in.cycle_count         = 150;
-  bms_in.fault_flags         = 0;
-  bms_in.timestamp_ms        = 2000;
+  bms_in.current_ma          = k_test_telem_current_ma;
+  bms_in.soc_percent         = k_test_telem_soc_percent;
+  bms_in.temperature_celsius = k_test_telem_temperature_celsius;
+  bms_in.capacity_mah        = k_test_telem_capacity_mah;
+  bms_in.full_capacity_mah   = k_test_telem_full_capacity_mah;
+  bms_in.cycle_count         = k_test_telem_cycle_count;
+  bms_in.fault_flags         = k_test_telem_fault_flags;
+  bms_in.timestamp_ms        = k_test_telem_timestamp_ms_lo;
   bms_in.valid               = true;
 
   /* Store */
@@ -467,12 +567,12 @@ void test_bms_data_stored_in_telemetry(void)
   /* Verify all fields */
   TEST_ASSERT_TRUE(bms_out.valid);
   TEST_ASSERT_EQUAL_UINT16(k_test_normal_voltage_mv, bms_out.voltage_mv);
-  TEST_ASSERT_EQUAL_INT16(1500, bms_out.current_ma);
-  TEST_ASSERT_EQUAL_UINT8(75, bms_out.soc_percent);
-  TEST_ASSERT_EQUAL_INT16(25, bms_out.temperature_celsius);
-  TEST_ASSERT_EQUAL_UINT16(3750, bms_out.capacity_mah);
-  TEST_ASSERT_EQUAL_UINT16(5000, bms_out.full_capacity_mah);
-  TEST_ASSERT_EQUAL_UINT16(150, bms_out.cycle_count);
+  TEST_ASSERT_EQUAL_INT16(k_test_telem_current_ma, bms_out.current_ma);
+  TEST_ASSERT_EQUAL_UINT8(k_test_telem_soc_percent, bms_out.soc_percent);
+  TEST_ASSERT_EQUAL_INT16(k_test_telem_temperature_celsius, bms_out.temperature_celsius);
+  TEST_ASSERT_EQUAL_UINT16(k_test_telem_capacity_mah, bms_out.capacity_mah);
+  TEST_ASSERT_EQUAL_UINT16(k_test_telem_full_capacity_mah, bms_out.full_capacity_mah);
+  TEST_ASSERT_EQUAL_UINT16(k_test_telem_cycle_count, bms_out.cycle_count);
 }
 
 /* =============================================================================

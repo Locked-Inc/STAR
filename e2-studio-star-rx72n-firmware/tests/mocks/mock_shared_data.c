@@ -49,8 +49,8 @@ static bms_state_t         s_bms_state      = {0};
 static temp_sensor_state_t s_temp_state     = {0};
 static obstacle_state_t    s_obstacle_state = {0};
 
-static estop_reason_t    s_last_triggered_reason = k_estop_reason_none;
-static shared_event_flags_t s_last_event_flags   = (shared_event_flags_t)0;
+static estop_reason_t       s_last_triggered_reason = k_estop_reason_none;
+static shared_event_flags_t s_last_event_flags      = k_event_none;
 
 /* =============================================================================
  * Mock Control Functions
@@ -89,7 +89,7 @@ void mock_shared_data_reset(void)
 
   s_last_triggered_reason = k_estop_reason_none;
   s_set_event_count       = 0;
-  s_last_event_flags      = (shared_event_flags_t)0;
+  s_last_event_flags      = k_event_none;
 }
 
 void mock_shared_data_set_init_return(rx_err_t err)

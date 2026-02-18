@@ -321,6 +321,30 @@
  */
 
 /**
+ * @enum bms_soc_range_t
+ * @brief Valid input ranges for SoC threshold fields in bms_monitor_config_t
+ *
+ * @details
+ * Defines the legal closed intervals for the configurable SoC thresholds.
+ * These bounds are enforced by bms_monitor_task_create() before the task is
+ * started; a value outside these ranges returns k_rx_err_invalid_arg.
+ *
+ * @invariant k_bms_soc_warning_min < k_bms_soc_warning_max
+ * @invariant k_bms_soc_critical_min < k_bms_soc_critical_max
+ *
+ * @see bms_monitor_task_create() Enforces these ranges on the config argument
+ * @see bms_monitor_config_t Configuration structure using these bounds
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint8_t {
+  k_bms_soc_warning_min  = 1,   /**< Minimum legal soc_warning_pct  (%) */
+  k_bms_soc_warning_max  = 100, /**< Maximum legal soc_warning_pct  (%) */
+  k_bms_soc_critical_min = 1,   /**< Minimum legal soc_critical_pct (%) */
+  k_bms_soc_critical_max = 99,  /**< Maximum legal soc_critical_pct (%) */
+} bms_soc_range_t;
+
+/**
  * @enum bms_task_constants_t
  * @brief BMS monitoring task configuration constants
  */
@@ -333,10 +357,28 @@ typedef enum : uint16_t {
 
 /**
  * @enum bms_cell_constants_t
- * @brief BMS hardware constants
+ * @brief BMS hardware constants describing the physical battery pack topology
+ *
+ * @details
+ * Fixed hardware constants that reflect the physical 4S LiPo pack design.
+ * These values are determined at board bring-up and do not change at runtime.
+ * The BQ4050 must be configured to match the cell count during manufacturing.
+ *
+ * @invariant k_bms_cell_count == 4 (fixed 4S LiPo pack; changing requires
+ *            BQ4050 re-configuration and full recalibration)
+ *
+ * @code
+ * // Pass cell count to driver when reading pack status
+ * rx_err_t err = rx_bq4050_read_status(manager, "i2c0", &status, k_bms_cell_count);
+ * @endcode
+ *
+ * @see rx_bq4050_read_status() Uses k_bms_cell_count for per-cell voltage checks
+ * @see bms_task_constants_t Related task scheduling constants
+ *
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bms_cell_count = 4, /**< Number of cells in pack (4S LiPo) */
+  k_bms_cell_count = 4, /**< Number of series cells in pack (4S LiPo: 4 × 3.7 V nominal) */
 } bms_cell_constants_t;
 
 /* =============================================================================
@@ -353,7 +395,27 @@ static uint8_t s_bms_stack[k_bms_task_stack_size];
 /** @brief Task creation guard flag */
 static bool s_bms_created = false;
 
-/** @brief Active monitoring configuration (copied from caller at creation) */
+/**
+ * @var s_bms_config
+ * @brief Active monitoring configuration (copied from caller at creation)
+ *
+ * @details
+ * Stores the soc_warning_pct and soc_critical_pct thresholds passed to
+ * bms_monitor_task_create(). The entire bms_monitor_config_t struct is
+ * copied by value at task creation time so the caller's pointer need not
+ * remain valid after bms_monitor_task_create() returns. All threshold
+ * comparisons inside internal_bms_task_entry() read from this static copy.
+ *
+ * @note Internal linkage only (static). Must not be accessed from outside
+ *       this translation unit. Valid only after bms_monitor_task_create()
+ *       has been called and has returned k_rx_ok.
+ *
+ * @warning Do not modify this variable directly. The only supported way
+ *          to change thresholds is to stop the task and call
+ *          bms_monitor_task_create() again (single-shot design).
+ *
+ * @since Version 1.1.0
+ */
 static bms_monitor_config_t s_bms_config;
 
 /** @brief Log tag for this module */
@@ -530,24 +592,36 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  *   rankdir=TB;
  *   node [shape=box, style=rounded];
  *
- *   start [label="bms_monitor_task_create()", fillcolor=lightgreen, style=filled];
+ *   start         [label="bms_monitor_task_create()", fillcolor=lightgreen, style=filled];
+ *   null_check    [label="config != NULL?", shape=diamond];
+ *   null_return   [label="Return k_rx_err_null_ptr", fillcolor=red, style=filled];
+ *   range_check   [label="soc_warning_pct in [1,100]\nsoc_critical_pct in [1,99]?",
+ *                  shape=diamond];
+ *   thresh_check  [label="soc_critical_pct < soc_warning_pct?", shape=diamond];
+ *   thresh_return [label="Log error\nReturn k_rx_err_invalid_arg", fillcolor=red, style=filled];
  *   check_created [label="Check s_bms_created", shape=diamond];
  *   already_created [label="Log assertion\nReturn k_rx_err_invalid_state",
  *                    fillcolor=red, style=filled];
  *   create_thread [label="tx_thread_create()\nName: BMSTask\nStack: 1024 bytes\nPriority: 15"];
- *   check_status [label="ThreadX result?", shape=diamond];
+ *   check_status  [label="ThreadX result?", shape=diamond];
  *   create_failed [label="Log error\nReturn k_rx_err_rtos_thread_create",
  *                  fillcolor=red, style=filled];
- *   set_flag [label="s_bms_created = true"];
- *   log_success [label="Log: BMS task created"];
- *   return_ok [label="Return k_rx_ok", fillcolor=lightgreen, style=filled];
+ *   set_flag      [label="s_bms_created = true"];
+ *   log_success   [label="Log: BMS task created"];
+ *   return_ok     [label="Return k_rx_ok", fillcolor=lightgreen, style=filled];
  *
- *   start -> check_created;
+ *   start -> null_check;
+ *   null_check -> null_return   [label="NULL"];
+ *   null_check -> range_check   [label="!= NULL"];
+ *   range_check -> thresh_return [label="out of range"];
+ *   range_check -> thresh_check  [label="in range"];
+ *   thresh_check -> thresh_return [label="violated\n(critical >= warning)"];
+ *   thresh_check -> check_created [label="valid\n(critical < warning)"];
  *   check_created -> already_created [label="true\n(double-create)"];
- *   check_created -> create_thread [label="false\n(first call)"];
+ *   check_created -> create_thread   [label="false\n(first call)"];
  *   create_thread -> check_status;
  *   check_status -> create_failed [label="!= TX_SUCCESS"];
- *   check_status -> set_flag [label="== TX_SUCCESS"];
+ *   check_status -> set_flag      [label="== TX_SUCCESS"];
  *   set_flag -> log_success;
  *   log_success -> return_ok;
  * }
@@ -757,7 +831,21 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
   /* Validate config pointer */
   RX_CHECK_NULL_PTR(config, s_tag, "bms_monitor_task_create: config is NULL");
 
-  /* Validate threshold constraints: critical must be strictly below warning */
+  /* Validate individual field ranges before checking relationship */
+  if ((config->soc_warning_pct < k_bms_soc_warning_min) ||
+      (config->soc_warning_pct > k_bms_soc_warning_max)) {
+    rx_log_error_val(s_tag, "soc_warning_pct out of [1,100]",
+                     (uint32_t)config->soc_warning_pct);
+    return k_rx_err_invalid_arg;
+  }
+  if ((config->soc_critical_pct < k_bms_soc_critical_min) ||
+      (config->soc_critical_pct > k_bms_soc_critical_max)) {
+    rx_log_error_val(s_tag, "soc_critical_pct out of [1,99]",
+                     (uint32_t)config->soc_critical_pct);
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate threshold relationship: critical must be strictly below warning */
   if (config->soc_critical_pct >= config->soc_warning_pct) {
     rx_log_error(s_tag, "soc_critical_pct must be < soc_warning_pct");
     return k_rx_err_invalid_arg;
@@ -883,9 +971,9 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
  * - **Trigger:** State of charge drops below soc_warning_pct (default 25%)
  * - **Action:** Log warning, set k_event_low_battery event flag
  * - **Purpose:** Early warning for operator (return to base for charging)
- * - **Time Remaining:** ~9 minutes at 2A average current
- *   - Calculation: (5000mAh × 0.15) / 2000mA = 0.375h = 22.5 min (conservative)
- *   - Real-world with margin: ~9 minutes safe operation
+ * - **Time Remaining:** ~18 minutes at 2A average current
+ *   - Calculation: (5000mAh × 0.25) / 2000mA = 0.625h = 37.5 min (conservative)
+ *   - Real-world with margin: ~18 minutes safe operation
  *
  * ### Tier 2: Critical (5% SoC)
  * - **Trigger:** State of charge drops below 5%
@@ -1170,7 +1258,9 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
  * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/while control flow)
  * - **Rule 2:** [PASS] Single while(true) loop with fixed 1000ms period
  * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based locals)
- * - **Rule 4:** [PASS] Function is 66 lines (under 100 LOC guideline)
+ * - **Rule 4:** [FAIL] Function is 66 lines (exceeds ~60 LOC guideline). Consider
+ *              extracting the BQ4050-to-bms_state_t field-copy block into a
+ *              private helper to reduce cognitive complexity and satisfy Rule 4.
  * - **Rule 5:** [PASS] 5 preconditions, 5 postconditions documented
  * - **Rule 7:** [PASS] All function returns checked or cast to (void)
  * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
@@ -1221,16 +1311,13 @@ static void internal_bms_task_entry(ULONG input)
       /* Check for critical battery faults (OTA, OCA, TDA) */
       (void)internal_check_critical_faults(status.battery_status);
 
-      /* Check for low battery (warning threshold) */
-      if (status.relative_soc < s_bms_config.soc_warning_pct) {
-        rx_log_warn_val(s_tag, "Low battery SoC", (uint8_t)status.relative_soc);
-        (void)shared_data_set_event(k_event_low_battery);
-      }
-
-      /* Check for critical battery (emergency stop threshold) */
+      /* Check battery SoC thresholds - critical takes priority over warning */
       if (status.relative_soc < s_bms_config.soc_critical_pct) {
         rx_log_error_val(s_tag, "Critical battery SoC", (uint8_t)status.relative_soc);
         (void)shared_data_trigger_estop(k_estop_reason_low_battery);
+      } else if (status.relative_soc < s_bms_config.soc_warning_pct) {
+        rx_log_warn_val(s_tag, "Low battery SoC", (uint8_t)status.relative_soc);
+        (void)shared_data_set_event(k_event_low_battery);
       }
     } else {
       /* Read failed - mark as invalid */
