@@ -594,12 +594,38 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 
 	// Decode next frame from stream
 	// CRITICAL: Only Receive() reads from decoder (Split Reader fix)
-	f, err := s.decoder.Decode()
-	if err != nil {
-		return nil, fmt.Errorf("failed to decode frame: %w", err)
+	// CRC failures trigger NACK + retry (up to MaxRetries). All other errors are fatal.
+	var f *frame.Frame
+	crcRetries := 0 // Per-call retry budget; resets for each Receive() invocation
+	for {
+		var decodeErr error
+		f, decodeErr = s.decoder.Decode()
+		if decodeErr == nil {
+			break
+		}
+		var crcErr *frame.CRCError
+		if errors.As(decodeErr, &crcErr) {
+			crcRetries++
+			// Send NACK so sender retransmits, per HARQ receive path step 5.
+			// Skip NACK send if context is already cancelled.
+			if ctx.Err() == nil {
+				if nackErr := s.sendNack(ctx, crcErr.Sequence); nackErr != nil {
+					log.Printf("WARN: Failed to send NACK for CRC failure seq=%d: %v", crcErr.Sequence, nackErr)
+				}
+			}
+			if crcRetries > s.config.MaxRetries {
+				return nil, fmt.Errorf("exceeded CRC retry limit after %d attempts for seq=%d", crcRetries-1, crcErr.Sequence)
+			}
+			// Check after sendNack in case context was cancelled during the send.
+			if ctxErr := ctx.Err(); ctxErr != nil {
+				return nil, ctxErr
+			}
+			continue
+		}
+		return nil, fmt.Errorf("failed to decode frame: %w", decodeErr)
 	}
 
-	// CRITICAL FIX: Check if this is an ACK/NACK control frame
+	// Check if this is an ACK/NACK control frame
 	// If so, dispatch to waiting Send() goroutine and return
 	if f.Type == frame.FrameTypeAck || f.Type == frame.FrameTypeNack {
 		isAck := (f.Type == frame.FrameTypeAck)
@@ -610,9 +636,9 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 
 	// Validate sequence using SHARED state (detects duplicates across transports)
 	if !s.sessionState.ValidateRxSequence(f.Header.Sequence) {
-		// CRITICAL FIX: Duplicate detected - sender likely missed our previous ACK
+		// Duplicate detected - sender likely missed our previous ACK
 		// Send ACK (not NACK) to stop retransmission loop
-		// SHUTDOWN FIX: Skip ACK resend if context is cancelled (graceful shutdown in progress)
+		// Skip ACK resend if context is cancelled (graceful shutdown in progress)
 		if ctx.Err() == nil {
 			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
 				log.Printf("WARN: Failed to resend ACK for duplicate seq=%d: %v", f.Header.Sequence, err)
@@ -632,7 +658,7 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		decoded, metric, count, err := s.decodeFEC(f)
 		if err != nil {
 			// FEC decode failed - send NACK
-			// SHUTDOWN FIX: Skip NACK send if context is cancelled
+			// Skip NACK send if context is cancelled
 			if ctx.Err() == nil {
 				if nackErr := s.sendNack(ctx, f.Header.Sequence); nackErr != nil {
 					log.Printf("WARN: Failed to send NACK for FEC decode failure seq=%d: %v", f.Header.Sequence, nackErr)
@@ -648,10 +674,10 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 
 	// Success - send ACK if frame requires it
 	if (f.Header.Flags & frame.FlagRequiresAck) != 0 {
-		// SHUTDOWN FIX: Skip ACK send if context is cancelled (graceful shutdown in progress)
+		// Skip ACK send if context is cancelled (graceful shutdown in progress)
 		if ctx.Err() == nil {
 			if err := s.sendAck(ctx, f.Header.Sequence); err != nil {
-				// CRITICAL FIX: Don't fail receive if ACK send fails
+				// Don't fail receive if ACK send fails
 				// We successfully decoded the payload, just log the error
 				// Sender will timeout and retransmit, we'll send ACK again
 				log.Printf("WARN: ACK send failed for seq=%d: %v (payload decoded successfully)", f.Header.Sequence, err)

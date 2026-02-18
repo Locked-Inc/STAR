@@ -3,6 +3,7 @@ package frame
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"io"
 	"testing"
 )
@@ -135,31 +136,43 @@ func TestStreamDecoder_GarbagePrefix(t *testing.T) {
 }
 
 func TestStreamDecoder_CRCError(t *testing.T) {
+	const (
+		seqCorrupted         uint16 = 0x0003
+		seqValid             uint16 = 0x0004
+		corruptPayloadOffset        = SyncSize + HeaderSize // SYNC(2) + HEADER(6)
+	)
+
 	// Build a corrupted frame - corrupt first byte of payload
 	payload1 := []byte("Corrupt")
-	frame1 := buildTestFrame(0x0003, FlagNone, payload1)
-	// Corrupt payload: SYNC(2) + HEADER(6) = offset 8
-	const corruptPayloadOffset = SyncSize + HeaderSize
+	frame1 := buildTestFrame(seqCorrupted, FlagNone, payload1)
 	frame1[corruptPayloadOffset] ^= 0xFF
 
 	// Build a valid frame following it
 	payload2 := []byte("Valid")
-	frame2 := buildTestFrame(0x0004, FlagNone, payload2)
+	frame2 := buildTestFrame(seqValid, FlagNone, payload2)
 
 	// Concatenate corrupted frame + valid frame
 	input := append(frame1, frame2...)
 
 	decoder := NewStreamDecoder(bytes.NewReader(input))
 
-	// Decoder should skip corrupted frame and return the valid one
-	decoded, err := decoder.Decode()
-	if err != nil {
-		t.Fatalf("Decode failed to resync after CRC error: %v", err)
+	// First decode returns CRCError for the corrupted frame (with its sequence number)
+	_, err := decoder.Decode()
+	var crcErr *CRCError
+	if !errors.As(err, &crcErr) {
+		t.Fatalf("Expected *CRCError for corrupted frame, got: %v", err)
+	}
+	if crcErr.Sequence != seqCorrupted {
+		t.Errorf("CRCError sequence: expected 0x%04X, got 0x%04X", seqCorrupted, crcErr.Sequence)
 	}
 
-	// Verify we got the second (valid) frame
-	if decoded.Header.Sequence != 0x0004 {
-		t.Errorf("Expected sequence 0x0004, got 0x%04X", decoded.Header.Sequence)
+	// Second decode returns the valid frame
+	decoded, err := decoder.Decode()
+	if err != nil {
+		t.Fatalf("Decode failed for valid frame: %v", err)
+	}
+	if decoded.Header.Sequence != seqValid {
+		t.Errorf("Expected sequence 0x%04X, got 0x%04X", seqValid, decoded.Header.Sequence)
 	}
 	if !bytes.Equal(decoded.Payload, payload2) {
 		t.Errorf("Payload mismatch: expected %q, got %q", payload2, decoded.Payload)
@@ -266,7 +279,17 @@ func TestStreamDecoder_MetricsAccuracy(t *testing.T) {
 		t.Errorf("Frame 1: expected seq 0x0001, got 0x%04X", decoded1.Header.Sequence)
 	}
 
-	// Decode should skip corrupted frame 2 and return valid frame 3
+	// Second decode returns CRCError for corrupted frame 2
+	_, err = decoder.Decode()
+	var crcErr *CRCError
+	if !errors.As(err, &crcErr) {
+		t.Fatalf("Expected *CRCError for corrupted frame 2, got: %v", err)
+	}
+	if crcErr.Sequence != 0x0002 {
+		t.Errorf("CRCError sequence: expected 0x0002, got 0x%04X", crcErr.Sequence)
+	}
+
+	// Third decode returns valid frame 3
 	decoded3, err := decoder.Decode()
 	if err != nil {
 		t.Fatalf("Frame 3 decode failed: %v", err)
