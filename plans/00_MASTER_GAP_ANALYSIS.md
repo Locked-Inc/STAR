@@ -9,7 +9,7 @@
 
 The STAR (Simultaneous Tracking and Robotics) project has a strong foundation with excellent firmware, communication infrastructure, and Protocol Buffers definitions. However, significant gaps exist in the integration layer — particularly the "glue code" connecting all subsystems together for real robot operation.
 
-**Overall System Completion: ~65%**
+**Overall System Completion: ~75%** *(revised up from 65% — firmware is more complete than initially assessed)*
 
 ---
 
@@ -18,7 +18,7 @@ The STAR (Simultaneous Tracking and Robotics) project has a strong foundation wi
 | Component | Completion | Status | Blockers |
 |-----------|-----------|--------|----------|
 | **RX72N Firmware Core** | 100% | ✅ Production Ready | None |
-| **Firmware WireMessage Dispatch** | 0% | ❌ Not Started | Blocks all RPi5↔RX72N commands |
+| **Firmware WireMessage Dispatch** | 100% | ✅ Complete | SetVelocity, E-Stop, PID, RetransmitConfig |
 | **Firmware OTA Handler** | 0% | ❌ Not Started | Blocks firmware updates |
 | **Firmware NVS Config** | 0% | ❌ Not Started | Blocks PID tuning persistence |
 | **Gateway Transport/HARQ/FEC** | 100% | ✅ Production Ready | None |
@@ -51,14 +51,7 @@ The STAR (Simultaneous Tracking and Robotics) project has a strong foundation wi
 
 ## Critical Blockers (Must Fix Before Robot Moves)
 
-### 1. Firmware WireMessage Dispatcher (Priority: CRITICAL)
-**What:** The `comm_task.c` has no logic to route incoming protobuf messages to the correct handler.
-**Impact:** ALL commands from RPi5 (velocity, E-stop, PID gains, config) are silently dropped.
-**File:** `e2-studio-star-rx72n-firmware/src/tasks/comm_task.c`
-**Effort:** 4-6 hours
-**See:** `plans/01_firmware_gaps.md`
-
-### 2. UI Has No Telemetry Display (Priority: CRITICAL)
+### 1. UI Has No Telemetry Display (Priority: CRITICAL)
 **What:** The UI only has gamepad control. There is no way to see robot state, battery, or sensor data.
 **Impact:** Operator is completely blind to robot status. Cannot safely operate.
 **Root Cause:** No gRPC-Web bridge between browser and Go gateway gRPC services.
