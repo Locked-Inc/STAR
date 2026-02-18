@@ -203,10 +203,12 @@ extern "C" {
  *
  * @par Timing Diagram Reference
  * ```
- * Reset/Presence:
- *   ___      ________
- *      |____|        |_______  <-- presence pulse from device
- *      |<480>|<70>|<240 max>|
+ * Reset/Presence (960 µs total slot):
+ *   ___      ______________________________
+ *      |____|        |_______             |
+ *      |<480>|<70>|<--- 410 remaining --->|
+ *                    Device presence pulse  ^
+ *                    lasts 60-240 µs       Slot complete
  *
  * Write 1:
  *   ___    __________
@@ -250,9 +252,18 @@ typedef enum : uint16_t {
                                         @par Value: 70 µs (within 60-75 µs window)
                                         @note Device pulls low 15-60 µs after reset release */
 
-  k_onewire_presence_timeout_us = 240, /**< Maximum presence pulse duration.
-                                            Presence pulse ends within this time.
-                                            @par Value: 240 µs (maximum per spec) */
+  k_onewire_presence_tail_us = 410, /**< Remaining presence window after sampling.
+                                         Wait after sampling to complete the full 960 µs reset slot.
+                                         @par Value: 410 µs (= 480 µs recovery − 70 µs pre-sample wait)
+                                         @note Total reset slot: 480 + 70 + 410 = 960 µs (per spec)
+                                         @note Device presence pulse is 60-240 µs; this wait covers
+                                               the remaining recovery window regardless of pulse width */
+
+  k_onewire_reset_slot_total_us = 960, /**< Total reset slot duration in microseconds.
+                                            Sum of reset pulse, presence wait, and presence tail:
+                                            k_onewire_reset_pulse_us + k_onewire_presence_wait_us +
+                                            k_onewire_presence_tail_us = 480 + 70 + 410 = 960 µs.
+                                            @par Value: 960 µs (per Dallas/Maxim 1-Wire spec) */
 
   /* Write bit timing */
   k_onewire_write_1_low_us = 10, /**< Write-1 LOW pulse duration.
