@@ -72,15 +72,31 @@ typedef enum : uint16_t {
 } test_voltage_constants_t;
 
 /**
- * @enum test_bms_read_data_t
- * @brief Test constants for battery data reading and threshold tests
+ * @enum test_bms_read_current_t
+ * @brief Discharge current test constants for battery data reading tests
+ *
+ * @details
+ * rx_bq4050_status_t.current_ma is int16_t; int16_t backing avoids a
+ * narrowing conversion when these values are compared against the field.
  */
-typedef enum : uint16_t {
-  k_test_normal_current_ma   = 500,  /**< Normal discharge current (mA) */
-  k_test_low_current_ma      = 100,  /**< Low discharge current, used near warning threshold (mA) */
-  k_test_critical_current_ma = 50,   /**< Near-empty discharge current, used near critical threshold (mA) */
-  k_test_normal_timestamp_ms = 1000, /**< 1-second timestamp for data read test */
-} test_bms_read_data_t;
+typedef enum : int16_t {
+  k_test_normal_current_ma   = 500, /**< Normal discharge current (mA) */
+  k_test_low_current_ma      = 100, /**< Low discharge current, used near warning threshold (mA) */
+  k_test_critical_current_ma = 50,  /**< Near-empty discharge current, used near critical threshold (mA) */
+} test_bms_read_current_t;
+
+/**
+ * @enum test_bms_timestamp_t
+ * @brief Timestamp test constants for BMS data read and telemetry tests
+ *
+ * @details
+ * bms_state_t.timestamp_ms is uint32_t; uint32_t backing avoids a narrowing
+ * conversion in assignments and TEST_ASSERT_EQUAL_UINT32 assertions.
+ */
+typedef enum : uint32_t {
+  k_test_normal_timestamp_ms = 1000U, /**< 1-second timestamp for data read test */
+  k_test_telem_timestamp_ms  = 2000U, /**< Timestamp (ms) for telemetry storage test */
+} test_bms_timestamp_t;
 
 /**
  * @enum test_bms_soc_percent_t
@@ -98,7 +114,6 @@ typedef enum : uint16_t {
   k_test_telem_capacity_mah      = 3750, /**< Remaining capacity for telemetry test (mAh) */
   k_test_telem_full_capacity_mah = 5000, /**< Full charge capacity for telemetry test (mAh) */
   k_test_telem_cycle_count       = 150,  /**< Charge cycle count for telemetry test */
-  k_test_telem_timestamp_ms      = 2000, /**< Timestamp (ms) for telemetry storage test */
 } test_bms_telemetry_data_t;
 
 /**
@@ -106,20 +121,13 @@ typedef enum : uint16_t {
  * @brief Signed 16-bit test constants for BMS telemetry storage tests
  *
  * @details
- * bms_state_t.current_ma is int16_t; a separate enum with the correct backing
- * type avoids a narrowing conversion in TEST_ASSERT_EQUAL_INT16 assertions.
+ * bms_state_t.current_ma and bms_state_t.temperature_celsius are both int16_t;
+ * int16_t backing avoids narrowing conversions in TEST_ASSERT_EQUAL_INT16 assertions.
  */
 typedef enum : int16_t {
-  k_test_telem_current_ma = 1500, /**< Discharge current for telemetry test (mA) */
+  k_test_telem_current_ma          = 1500, /**< Discharge current for telemetry test (mA) */
+  k_test_telem_temperature_celsius = 25,   /**< Battery temperature for telemetry test (°C) */
 } test_bms_telemetry_int16_t;
-
-/**
- * @enum test_bms_telemetry_int8_t
- * @brief Signed 8-bit test constants for BMS telemetry storage tests
- */
-typedef enum : int8_t {
-  k_test_telem_temperature_celsius = 25, /**< Battery temperature for telemetry test (°C) */
-} test_bms_telemetry_int8_t;
 
 /**
  * @enum test_bms_telemetry_soc_t
@@ -167,11 +175,13 @@ typedef enum : uint8_t {
  *
  * | Constant | Value | Violation |
  * |----------|-------|-----------|
+ * | k_test_invalid_soc_zero | 0% | below minimum 1% lower bound |
  * | k_test_invalid_soc_equal | 15% | critical == warning |
  * | k_test_invalid_soc_warning_low | 10% | warning < critical (inverted) |
  * | k_test_invalid_soc_critical_high | 50% | critical > warning (inverted) |
  */
 typedef enum : uint8_t {
+  k_test_invalid_soc_zero          = 0,  /**< Zero SoC (invalid: below minimum 1% lower bound) */
   k_test_invalid_soc_equal         = 15, /**< Equal warning and critical (invalid: must be strictly less) */
   k_test_invalid_soc_warning_low   = 10, /**< Warning below critical (invalid: inverted relationship) */
   k_test_invalid_soc_critical_high = 50, /**< Critical above warning (invalid: inverted relationship) */
@@ -269,6 +279,22 @@ void test_bms_task_create_invalid_thresholds(void)
   rx_err_t err;
 
   mock_tx_set_thread_create_return(TX_SUCCESS);
+
+  /* soc_warning_pct = 0 is below the [1,100] lower bound */
+  const bms_monitor_config_t bad_config_warning_zero = {
+    .soc_warning_pct  = k_test_invalid_soc_zero,
+    .soc_critical_pct = k_test_invalid_soc_equal,
+  };
+  err = bms_monitor_task_create(&bad_config_warning_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+
+  /* soc_critical_pct = 0 is below the [1,99] lower bound */
+  const bms_monitor_config_t bad_config_critical_zero = {
+    .soc_warning_pct  = k_test_invalid_soc_equal,
+    .soc_critical_pct = k_test_invalid_soc_zero,
+  };
+  err = bms_monitor_task_create(&bad_config_critical_zero);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 
   /* critical == warning is invalid (must be strictly less) */
   const bms_monitor_config_t bad_config_equal = {
@@ -401,6 +427,10 @@ void test_bms_task_no_warning_above_threshold(void)
 
   TEST_ASSERT_FALSE(is_warning);
   TEST_ASSERT_FALSE(is_critical);
+
+  /* No mock side-effects should have fired */
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero, mock_shared_data_get_set_event_count());
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero, mock_shared_data_get_trigger_estop_count());
 }
 
 /**
@@ -634,7 +664,7 @@ void test_bms_data_stored_in_telemetry(void)
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_full_capacity_mah, bms_out.full_capacity_mah);
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_cycle_count, bms_out.cycle_count);
   TEST_ASSERT_EQUAL_UINT32(k_test_telem_fault_flags, bms_out.fault_flags);
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_telem_timestamp_ms, bms_out.timestamp_ms);
+  TEST_ASSERT_EQUAL_UINT32(k_test_telem_timestamp_ms, bms_out.timestamp_ms);
 }
 
 /* =============================================================================

@@ -321,38 +321,6 @@
  */
 
 /**
- * @enum bms_soc_range_t
- * @brief Valid input ranges for SoC threshold fields in bms_monitor_config_t
- *
- * @details
- * Defines the legal closed intervals for the configurable SoC thresholds.
- * These bounds are enforced by bms_monitor_task_create() before the task is
- * started; a value outside these ranges returns k_rx_err_invalid_arg.
- *
- * @invariant k_bms_soc_warning_min < k_bms_soc_warning_max
- * @invariant k_bms_soc_critical_min < k_bms_soc_critical_max
- *
- * @code
- * // bms_monitor_task_create() enforces these ranges before creating the task:
- * if (config->soc_warning_pct  < k_bms_soc_warning_min  ||
- *     config->soc_warning_pct  > k_bms_soc_warning_max  ||
- *     config->soc_critical_pct < k_bms_soc_critical_min ||
- *     config->soc_critical_pct > k_bms_soc_critical_max) { return k_rx_err_invalid_arg; }
- * @endcode
- *
- * @see bms_monitor_task_create() Enforces these ranges on the config argument
- * @see bms_monitor_config_t Configuration structure using these bounds
- *
- * @since Version 1.1.0
- */
-typedef enum : uint8_t {
-  k_bms_soc_warning_min  = 1,   /**< Minimum legal soc_warning_pct  (%) */
-  k_bms_soc_warning_max  = 100, /**< Maximum legal soc_warning_pct  (%) */
-  k_bms_soc_critical_min = 1,   /**< Minimum legal soc_critical_pct (%) */
-  k_bms_soc_critical_max = 99,  /**< Maximum legal soc_critical_pct (%) */
-} bms_soc_range_t;
-
-/**
  * @enum bms_task_constants_t
  * @brief BMS monitoring task configuration constants
  */
@@ -933,6 +901,9 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* status,
                                                  bms_state_t*             out)
 {
+  RX_ASSERT(status != NULL, "internal_bms_convert_status_to_state: status is NULL");
+  RX_ASSERT(out != NULL, "internal_bms_convert_status_to_state: out is NULL");
+
   out->voltage_mv          = status->voltage_mv;
   out->current_ma          = status->current_ma;
   out->soc_percent         = status->relative_soc;
@@ -943,6 +914,8 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
   out->fault_flags         = status->battery_status; /* All 10 BatteryStatus flags */
   out->timestamp_ms        = tx_time_get();
   out->valid               = true;
+
+  RX_ASSERT(out->valid, "internal_bms_convert_status_to_state: postcondition failed");
 }
 
 /* -------------------------------------------------------------------------- */

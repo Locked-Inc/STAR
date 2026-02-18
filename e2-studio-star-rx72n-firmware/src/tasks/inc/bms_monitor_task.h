@@ -38,6 +38,38 @@
  */
 
 /**
+ * @enum bms_soc_range_t
+ * @brief Valid input ranges for SoC threshold fields in bms_monitor_config_t
+ *
+ * @details
+ * Defines the legal closed intervals for the configurable SoC thresholds.
+ * bms_monitor_task_create() enforces these bounds before the task is started;
+ * a value outside these ranges returns k_rx_err_invalid_arg.
+ *
+ * @invariant k_bms_soc_warning_min < k_bms_soc_warning_max
+ * @invariant k_bms_soc_critical_min < k_bms_soc_critical_max
+ *
+ * @code
+ * // Range check mirrored in bms_monitor_task_create() and mock_tasks.c:
+ * if (config->soc_warning_pct  < k_bms_soc_warning_min  ||
+ *     config->soc_warning_pct  > k_bms_soc_warning_max  ||
+ *     config->soc_critical_pct < k_bms_soc_critical_min ||
+ *     config->soc_critical_pct > k_bms_soc_critical_max) { return k_rx_err_invalid_arg; }
+ * @endcode
+ *
+ * @see bms_monitor_task_create() Enforces these ranges on the config argument
+ * @see bms_monitor_config_t Configuration structure using these bounds
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint8_t {
+  k_bms_soc_warning_min  = 1,   /**< Minimum legal soc_warning_pct  (%) */
+  k_bms_soc_warning_max  = 100, /**< Maximum legal soc_warning_pct  (%) */
+  k_bms_soc_critical_min = 1,   /**< Minimum legal soc_critical_pct (%) */
+  k_bms_soc_critical_max = 99,  /**< Maximum legal soc_critical_pct (%) */
+} bms_soc_range_t;
+
+/**
  * @enum bms_soc_threshold_defaults_t
  * @brief Default SoC threshold percentages for BMS monitoring
  *
@@ -60,6 +92,7 @@
  * };
  * @endcode
  *
+ * @see bms_soc_range_t Valid input ranges for these threshold fields
  * @see bms_monitor_config_t Configuration structure using these defaults
  * @see bms_monitor_task_create() Task creation consuming this config
  *

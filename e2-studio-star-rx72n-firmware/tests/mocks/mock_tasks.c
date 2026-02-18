@@ -160,6 +160,16 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
     return k_rx_err_null_ptr;
   }
 
+  if ((config->soc_warning_pct < k_bms_soc_warning_min) ||
+      (config->soc_warning_pct > k_bms_soc_warning_max)) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if ((config->soc_critical_pct < k_bms_soc_critical_min) ||
+      (config->soc_critical_pct > k_bms_soc_critical_max)) {
+    return k_rx_err_invalid_arg;
+  }
+
   if (config->soc_critical_pct >= config->soc_warning_pct) {
     return k_rx_err_invalid_arg;
   }
