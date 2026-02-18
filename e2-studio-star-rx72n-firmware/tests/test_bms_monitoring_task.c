@@ -95,12 +95,23 @@ typedef enum : uint8_t {
  * @brief Test constants for BMS telemetry storage tests (test_bms_data_stored_in_telemetry)
  */
 typedef enum : uint16_t {
-  k_test_telem_current_ma       = 1500, /**< Discharge current for telemetry test (mA) */
-  k_test_telem_capacity_mah     = 3750, /**< Remaining capacity for telemetry test (mAh) */
+  k_test_telem_capacity_mah      = 3750, /**< Remaining capacity for telemetry test (mAh) */
   k_test_telem_full_capacity_mah = 5000, /**< Full charge capacity for telemetry test (mAh) */
-  k_test_telem_cycle_count      = 150,  /**< Charge cycle count for telemetry test */
-  k_test_telem_timestamp_ms  = 2000, /**< Timestamp (ms) for telemetry storage test */
+  k_test_telem_cycle_count       = 150,  /**< Charge cycle count for telemetry test */
+  k_test_telem_timestamp_ms      = 2000, /**< Timestamp (ms) for telemetry storage test */
 } test_bms_telemetry_data_t;
+
+/**
+ * @enum test_bms_telemetry_int16_t
+ * @brief Signed 16-bit test constants for BMS telemetry storage tests
+ *
+ * @details
+ * bms_state_t.current_ma is int16_t; a separate enum with the correct backing
+ * type avoids a narrowing conversion in TEST_ASSERT_EQUAL_INT16 assertions.
+ */
+typedef enum : int16_t {
+  k_test_telem_current_ma = 1500, /**< Discharge current for telemetry test (mA) */
+} test_bms_telemetry_int16_t;
 
 /**
  * @enum test_bms_telemetry_int8_t
@@ -115,9 +126,20 @@ typedef enum : int8_t {
  * @brief SoC percentage constant for telemetry test
  */
 typedef enum : uint8_t {
-  k_test_telem_soc_percent  = 75, /**< State of charge for telemetry storage test (%) */
-  k_test_telem_fault_flags  = 0,  /**< No faults for telemetry test */
+  k_test_telem_soc_percent = 75, /**< State of charge for telemetry storage test (%) */
 } test_bms_telemetry_soc_t;
+
+/**
+ * @enum test_bms_telemetry_fault_t
+ * @brief Fault flag constants for BMS telemetry storage tests
+ *
+ * @details
+ * bms_state_t.fault_flags is uint32_t; a separate enum with the correct backing
+ * type avoids a narrowing conversion in TEST_ASSERT_EQUAL_UINT32 assertions.
+ */
+typedef enum : uint32_t {
+  k_test_telem_fault_flags = 0, /**< No faults for telemetry test */
+} test_bms_telemetry_fault_t;
 
 /**
  * @enum test_custom_threshold_soc_t
@@ -154,6 +176,19 @@ typedef enum : uint8_t {
   k_test_invalid_soc_warning_low   = 10, /**< Warning below critical (invalid: inverted relationship) */
   k_test_invalid_soc_critical_high = 50, /**< Critical above warning (invalid: inverted relationship) */
 } test_invalid_threshold_t;
+
+/**
+ * @enum test_bms_call_count_t
+ * @brief Expected mock call-count sentinels for BMS task test assertions
+ *
+ * @details
+ * Named constants for the 0 and 1 call-count checks used by
+ * TEST_ASSERT_EQUAL_UINT32 assertions, eliminating bare numeric literals.
+ */
+typedef enum : uint32_t {
+  k_expect_call_count_zero = 0U, /**< Expect function was not called */
+  k_expect_call_count_one  = 1U, /**< Expect function was called exactly once */
+} test_bms_call_count_t;
 
 /* =============================================================================
  * Test Fixture
@@ -396,7 +431,7 @@ void test_bms_task_low_battery_warning_at_25_pct(void)
   }
 
   /* Verify event was set */
-  TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_set_event_count());
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_one, mock_shared_data_get_set_event_count());
   TEST_ASSERT_EQUAL(k_event_low_battery, mock_shared_data_get_last_event_flags());
 }
 
@@ -451,7 +486,7 @@ void test_bms_task_critical_battery_triggers_estop(void)
   }
 
   /* Verify e-stop was triggered with correct reason */
-  TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_trigger_estop_count());
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_one, mock_shared_data_get_trigger_estop_count());
   TEST_ASSERT_EQUAL(k_estop_reason_low_battery, mock_shared_data_get_last_estop_reason());
 }
 
@@ -478,7 +513,7 @@ void test_bms_task_no_estop_at_exactly_5_pct(void)
   TEST_ASSERT_FALSE(is_critical);
 
   /* No e-stop should have been triggered */
-  TEST_ASSERT_EQUAL_UINT32(0, mock_shared_data_get_trigger_estop_count());
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero, mock_shared_data_get_trigger_estop_count());
 }
 
 /**
@@ -598,7 +633,7 @@ void test_bms_data_stored_in_telemetry(void)
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_capacity_mah, bms_out.capacity_mah);
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_full_capacity_mah, bms_out.full_capacity_mah);
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_cycle_count, bms_out.cycle_count);
-  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_telem_fault_flags, bms_out.fault_flags);
+  TEST_ASSERT_EQUAL_UINT32(k_test_telem_fault_flags, bms_out.fault_flags);
   TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_telem_timestamp_ms, bms_out.timestamp_ms);
 }
 

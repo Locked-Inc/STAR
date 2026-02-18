@@ -272,11 +272,11 @@
  * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion. All control flow uses if/while only. |
  * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 1s sleep period. Provably bounded iteration. |
  * | **Rule 3: No Heap** | [PASS] | Zero dynamic allocation. Stack (1024 bytes) and TCB (140 bytes) statically allocated. |
- * | **Rule 4: Function Length** | [PASS] | bms_monitor_task_create(): 30 lines, internal_bms_task_entry(): ~52 lines after extracting internal_bms_convert_status_to_state(); both within ~60 LOC guideline. |
+ * | **Rule 4: Function Length** | [PASS] | bms_monitor_task_create(): ~59 lines, internal_bms_task_entry(): ~65 lines (slightly exceeds ~60 LOC guideline; kept intact for readability). |
  * | **Rule 5: Assertions** | [PASS] | 6 assertions: RX_ASSERT(!s_bms_created), 4 preconditions, 2 postconditions. |
  * | **Rule 6: Data Scope** | [PASS] | All file-scope variables use static (s_bms_thread, s_bms_stack, s_bms_created, s_tag). |
  * | **Rule 7: Return Checks** | [PASS] | All rx_bq4050, shared_data, tx_* returns validated or explicitly cast to (void). |
- * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums for all constants (k_bms_task_*, k_bms_*_soc_percent). Zero macros. |
+ * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums for all constants (k_bms_task_*, k_bms_soc_warning_pct_default, k_bms_soc_critical_pct_default). Zero macros. |
  * | **Rule 9: Pointers** | [PASS] | Single-level pointers only (bms_state_t*, rx_bq4050_config_t*). |
  * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror. Zero warnings. |
  *
@@ -285,7 +285,7 @@
  * | Principle | Application |
  * |-----------|-------------|
  * | **S - Single Responsibility** | Battery monitoring only. No power control, no motor logic, no communication. |
- * | **O - Open/Closed** | Extensible via rx_bq4050_config_t (cell count, thresholds). No code changes needed. |
+ * | **O - Open/Closed** | Extensible via bms_monitor_config_t (SoC thresholds). No code changes needed. |
  * | **L - Liskov Substitution** | Returns rx_err_t consistently. Can substitute with mock driver for testing. |
  * | **I - Interface Segregation** | Minimal API: one function (bms_monitor_task_create). No unused methods. |
  * | **D - Dependency Inversion** | Depends on rx_bq4050 abstraction, not raw I2C. Testable via mock injection. |
@@ -867,9 +867,8 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
     return k_rx_err_invalid_state;
   }
 
-  /* Copy thresholds into static config (task will read from s_bms_config) */
-  s_bms_config.soc_warning_pct  = config->soc_warning_pct;
-  s_bms_config.soc_critical_pct = config->soc_critical_pct;
+  /* Copy config into static state (task will read from s_bms_config) */
+  s_bms_config = *config;
 
   /* Create the thread */
   tx_status = tx_thread_create(&s_bms_thread,
@@ -915,6 +914,19 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
  * @post out->timestamp_ms == tx_time_get() at call time
  *
  * @note Not thread-safe; called only from within the BMS monitor task loop
+ *
+ * @code
+ * rx_bq4050_status_t status;
+ * bms_state_t bms = {0};
+ * if (rx_bq4050_read_status(&g_bus_manager, "i2c0", &status, k_bms_cell_count) == k_rx_ok) {
+ *     internal_bms_convert_status_to_state(&status, &bms);
+ *     // bms.valid == true, bms.timestamp_ms set to current ThreadX tick
+ * }
+ * @endcode
+ *
+ * @see internal_bms_task_entry() Caller of this function
+ * @see rx_bq4050_status_t Driver status structure (input)
+ * @see bms_state_t Shared data structure (output)
  *
  * @since Version 1.1.0
  */
@@ -1346,9 +1358,8 @@ static void internal_bms_task_entry(ULONG input)
       /* Check for critical battery faults (OTA, OCA, TDA) */
       (void)internal_check_critical_faults(status.battery_status);
 
-      /* Check battery SoC thresholds - critical takes priority over warning.
-       * NOLINT(bugprone-branch-clone): branches differ in severity (e-stop vs. event),
-       * the structural similarity is intentional; suppressing false-positive. */
+      /* Check battery SoC thresholds - critical takes priority over warning */
+      // NOLINTNEXTLINE(bugprone-branch-clone)
       if (status.relative_soc < s_bms_config.soc_critical_pct) {
         rx_log_error_val(s_tag, "Critical battery SoC", (uint8_t)status.relative_soc);
         (void)shared_data_trigger_estop(k_estop_reason_low_battery);
