@@ -606,15 +606,15 @@ func (s *SPILink) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 		var crcErr *frame.CRCError
 		if errors.As(decodeErr, &crcErr) {
 			crcRetries++
-			if crcRetries > s.config.MaxRetries {
-				return nil, fmt.Errorf("exceeded CRC retry limit after %d attempts for seq=%d", crcRetries-1, crcErr.Sequence)
-			}
 			// Send NACK so sender retransmits, per HARQ receive path step 5.
 			// Skip NACK send if context is already cancelled.
 			if ctx.Err() == nil {
 				if nackErr := s.sendNack(ctx, crcErr.Sequence); nackErr != nil {
 					log.Printf("WARN: Failed to send NACK for CRC failure seq=%d: %v", crcErr.Sequence, nackErr)
 				}
+			}
+			if crcRetries > s.config.MaxRetries {
+				return nil, fmt.Errorf("exceeded CRC retry limit after %d attempts for seq=%d", crcRetries-1, crcErr.Sequence)
 			}
 			// Check after sendNack in case context was cancelled during the send.
 			if ctxErr := ctx.Err(); ctxErr != nil {
