@@ -1202,9 +1202,14 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-static void                 internal_telem_task_entry(ULONG input);
-static rx_err_t             internal_build_and_send_telemetry(void);
+static void                  internal_telem_task_entry(ULONG input);
+static rx_err_t              internal_build_and_send_telemetry(void);
 static telemetry_transport_t internal_select_transport(void);
+static rx_err_t              internal_populate_motor_telemetry(star_v1_TelemetryData* telemetry);
+static void                  internal_collect_state(star_v1_TelemetryData* telemetry);
+static rx_err_t              internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
+                                                        uint32_t*                    out_encoded_len);
+static rx_err_t              internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len);
 
 /* =============================================================================
  * Public Functions
@@ -1643,6 +1648,16 @@ static telemetry_transport_t internal_select_transport(void)
   /** @brief Tracks previous USB active state to detect failover transitions */
   static bool s_usb_was_active = false;
 
+  /**
+   * @brief Rate-limits the "no transport" warning to once per transition into no-transport state
+   *
+   * @details
+   * Prevents log flooding at 20 Hz when both channels are unavailable.
+   * Cleared when either USB or SPI becomes ready so the warning fires again
+   * on the next failure.
+   */
+  static bool s_no_transport_logged = false;
+
   /* Query USB channel readiness */
   err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
   if (err != k_rx_ok) {
@@ -1657,6 +1672,8 @@ static telemetry_transport_t internal_select_transport(void)
       rx_log_info(s_tag, "Telemetry transport: USB CDC (primary)");
       s_usb_was_active = true;
     }
+    /* Reset no-transport flag so warning fires again on next failure */
+    s_no_transport_logged = false;
     return k_telemetry_transport_usb;
   }
 
@@ -1673,60 +1690,301 @@ static telemetry_transport_t internal_select_transport(void)
   }
 
   if (spi_ready) {
+    /* Reset no-transport flag so warning fires again on SPI loss */
+    s_no_transport_logged = false;
     return k_telemetry_transport_spi;
   }
 
-  /* Neither channel ready */
-  rx_log_warn(s_tag, "No transport available - dropping telemetry");
+  /* Neither channel ready: log once per transition into no-transport state */
+  if (!s_no_transport_logged) {
+    rx_log_warn(s_tag, "No transport available - dropping telemetry");
+    s_no_transport_logged = true;
+  }
   return k_telemetry_transport_none;
 }
 
 /**
- * @brief Build and send complete telemetry message (4-phase aggregation)
+ * @brief Populate TelemetryData motor fields from shared motor state
  *
  * @details
- * This function implements the complete telemetry aggregation pipeline in 4 phases:
+ * Reads the current motor state from shared_data and populates all motor-related
+ * fields in the telemetry protobuf message. If shared_data is unavailable (mutex
+ * locked), the motor fields are left as their zero-initialized defaults and the
+ * error is propagated to the caller for non-fatal handling.
  *
- * ## Phase 1: Data Collection (Read from Shared Data)
+ * Populated fields:
+ * - `emergency_stop` - E-stop active flag
+ * - `fault_flags` - 4 motor fault bytes packed into uint32_t bitfield
+ * - `has_encoder_*` / `encoder_*` - 4 encoder submessages (motor_id, ticks,
+ *   velocity_mps, timestamp_us) for front_left, front_right, back_left, back_right
  *
- * Collect all robot system state from shared_data module using mutex-protected accessors:
- * 1. **Motor state:** 4 encoder counts, 4 velocities, e-stop flag, 4 fault flags
- * 2. **BMS state:** Battery voltage (mV), state of charge (%)
- * 3. **Temperature state:** DS18B20 ambient temperature (cdegC)
+ * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
- * All reads are **non-blocking** - if a mutex is locked, use stale data from previous
- * cycle (graceful degradation). This ensures telemetry task never blocks waiting for
- * higher-priority tasks.
+ * @return rx_err_t Result from shared_data_get_motor_state()
+ * @retval k_rx_ok Motor state read and fields populated
+ * @retval k_rx_err_timeout Shared data mutex timed out (stale data, partial msg)
+ * @retval k_rx_err_null_ptr NULL pointer passed (programming error)
  *
- * ## Phase 2: Protobuf Population (Build TelemetryData Message)
+ * @pre telemetry must point to a valid star_v1_TelemetryData struct
+ * @pre telemetry->timestamp_us must already be set (used for encoder timestamps)
+ * @post If k_rx_ok: all motor encoder fields populated, has_encoder_* = true
+ * @post If error: motor fields left at zero-init defaults, caller handles non-fatally
  *
- * Populate `star_v1_TelemetryData` protobuf message with collected data:
- * 1. **Timestamp:** ThreadX ticks -> microseconds conversion
- * 2. **Sequence:** Auto-increment message counter
- * 3. **Motor fields:** E-stop, fault flags bitfield, 4 encoder submessages
- * 4. **BMS fields:** Battery voltage (mV->V), SoC (%), duplicate `battery_percent`
- * 5. **Temperature fields:** Ambient temp (cdegC->°C)
+ * @note Non-blocking: shared_data_get_motor_state() uses a non-blocking mutex try
+ * @note Error return is non-fatal for callers - partial telemetry is acceptable
  *
- * All unit conversions happen here (internal fixed-point -> protobuf SI units).
+ * @see internal_collect_state() Caller - treats non-ok return as non-fatal
+ * @see shared_data_get_motor_state() Shared data accessor
  *
- * ## Phase 3: Nanopb Encoding (Binary Protobuf Serialization)
+ * @since Version 1.1.0
  *
- * Encode `TelemetryData` struct to binary protobuf format using nanopb:
- * - **Input:** `star_v1_TelemetryData` struct (stack-allocated, ~300 bytes)
- * - **Output:** `s_telem_buffer` (static buffer, 512 bytes)
- * - **Encoder:** nanopb (zero-copy, no dynamic allocation)
- * - **Result:** ~250 bytes encoded protobuf (varint + fixed-width fields)
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * - Precondition 1: telemetry != NULL
+ * - Precondition 2: timestamp_us already set before call
+ * - Postcondition 1: Returns shared_data_get_motor_state() result directly
+ * - Postcondition 2: On k_rx_ok, has_encoder_* flags are true for all 4 encoders
+ */
+static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemetry)
+{
+  motor_state_t motor_state;
+  rx_err_t      err;
+
+  err = shared_data_get_motor_state(&motor_state);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Emergency stop status */
+  telemetry->emergency_stop = motor_state.estop_active;
+
+  /* Pack 4 motor fault bytes into single uint32_t bitfield */
+  telemetry->fault_flags =
+    ((uint32_t)motor_state.fault_flags[k_telem_motor_front_left] << k_fault_shift_front_left) |
+    ((uint32_t)motor_state.fault_flags[k_telem_motor_front_right] << k_fault_shift_front_right) |
+    ((uint32_t)motor_state.fault_flags[k_telem_motor_back_left] << k_fault_shift_back_left) |
+    ((uint32_t)motor_state.fault_flags[k_telem_motor_back_right] << k_fault_shift_back_right);
+
+  /* Front left encoder */
+  telemetry->has_encoder_front_left      = true;
+  telemetry->encoder_front_left.motor_id = k_telem_motor_front_left;
+  telemetry->encoder_front_left.ticks    = motor_state.encoder_counts[k_telem_motor_front_left];
+  telemetry->encoder_front_left.velocity_mps =
+    (float)motor_state.current_velocity_mps[k_telem_motor_front_left];
+  telemetry->encoder_front_left.timestamp_us = telemetry->timestamp_us;
+
+  /* Front right encoder */
+  telemetry->has_encoder_front_right      = true;
+  telemetry->encoder_front_right.motor_id = k_telem_motor_front_right;
+  telemetry->encoder_front_right.ticks    = motor_state.encoder_counts[k_telem_motor_front_right];
+  telemetry->encoder_front_right.velocity_mps =
+    (float)motor_state.current_velocity_mps[k_telem_motor_front_right];
+  telemetry->encoder_front_right.timestamp_us = telemetry->timestamp_us;
+
+  /* Back left encoder */
+  telemetry->has_encoder_back_left      = true;
+  telemetry->encoder_back_left.motor_id = k_telem_motor_back_left;
+  telemetry->encoder_back_left.ticks    = motor_state.encoder_counts[k_telem_motor_back_left];
+  telemetry->encoder_back_left.velocity_mps =
+    (float)motor_state.current_velocity_mps[k_telem_motor_back_left];
+  telemetry->encoder_back_left.timestamp_us = telemetry->timestamp_us;
+
+  /* Back right encoder */
+  telemetry->has_encoder_back_right      = true;
+  telemetry->encoder_back_right.motor_id = k_telem_motor_back_right;
+  telemetry->encoder_back_right.ticks    = motor_state.encoder_counts[k_telem_motor_back_right];
+  telemetry->encoder_back_right.velocity_mps =
+    (float)motor_state.current_velocity_mps[k_telem_motor_back_right];
+  telemetry->encoder_back_right.timestamp_us = telemetry->timestamp_us;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Collect all robot system state into the telemetry message (Phase 1 + Phase 2)
  *
- * ## Phase 4: Transmission (Send via Communication Manager with Failover)
+ * @details
+ * Reads motor, BMS, and temperature state from shared_data and populates
+ * the corresponding fields in `telemetry`. All reads are **non-blocking**
+ * and non-fatal: if a data source is unavailable, the corresponding fields
+ * are left at zero-init defaults and collection continues for remaining sources.
  *
- * Select transport and send encoded protobuf bytes via `rx_comm_manager`:
- * - **Transport selection:** internal_select_transport() queries channel readiness
- * - **Primary:** USB CDC (k_comm_channel_usb) when USB is enumerated and ready
- * - **Fallback:** SPI (k_comm_channel_spi) when USB is unavailable
- * - **No transport:** Message dropped if both channels unavailable
- * - **Frame type:** `k_frame_type_response` (data from RX72N -> host)
- * - **CRC:** Added by comm_manager (not included in encoded_len)
- * - **Result:** Message queued for transmission (non-blocking send)
+ * Data collected:
+ * 1. **Motor state** (via internal_populate_motor_telemetry()):
+ *    E-stop flag, fault_flags bitfield, 4 encoder submessages
+ * 2. **BMS state:** battery_voltage_v (mV→V), battery_soc_percent, battery_percent
+ * 3. **Temperature state:** temperature_celsius (cdegC→°C)
+ *
+ * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
+ *
+ * @pre telemetry must point to a valid, zero-initialized star_v1_TelemetryData struct
+ * @pre telemetry->timestamp_us must already be set before this call
+ * @post telemetry fields populated for all available data sources
+ * @post Missing data sources leave their fields at zero-init defaults (graceful degradation)
+ *
+ * @note Always returns; partial population is intentional and acceptable
+ * @note Non-blocking: all shared_data accessors use non-blocking mutex try
+ * @note Thread-safe: shared_data accessors are mutex-protected
+ *
+ * @see internal_populate_motor_telemetry() Motor field population helper
+ * @see shared_data_get_bms() BMS state accessor
+ * @see shared_data_get_temp() Temperature state accessor
+ * @see internal_build_and_send_telemetry() Caller - sets timestamp before calling
+ *
+ * @since Version 1.1.0
+ *
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * - Precondition 1: telemetry != NULL
+ * - Precondition 2: timestamp_us set before call (for encoder sub-timestamps)
+ * - Postcondition 1: Motor fields populated if shared_data_get_motor_state() == k_rx_ok
+ * - Postcondition 2: BMS fields populated if shared_data_get_bms() == k_rx_ok && valid
+ * - Postcondition 3: Temp fields populated if shared_data_get_temp() == k_rx_ok && valid
+ */
+static void internal_collect_state(star_v1_TelemetryData* telemetry)
+{
+  bms_state_t         bms_state;
+  temp_sensor_state_t temp_state;
+  rx_err_t            err;
+
+  /* Collect motor state (non-fatal: missing data leaves fields at zero-init) */
+  err = internal_populate_motor_telemetry(telemetry);
+  (void)err; /* Non-fatal: partial telemetry is acceptable per graceful degradation policy */
+
+  /* Collect BMS state */
+  err = shared_data_get_bms(&bms_state);
+  if (err == k_rx_ok && bms_state.valid) {
+    /* Convert millivolts to volts */
+    telemetry->battery_voltage_v   = (float)bms_state.voltage_mv / s_mv_per_volt;
+    telemetry->battery_soc_percent = bms_state.soc_percent;
+    telemetry->battery_percent     = (float)bms_state.soc_percent;
+  }
+
+  /* Collect temperature state */
+  err = shared_data_get_temp(&temp_state);
+  if (err == k_rx_ok && temp_state.sensor_valid[k_telem_sensor_ambient]) {
+    /* Convert from centi-degrees to degrees */
+    telemetry->temperature_celsius =
+      (float)temp_state.temperature_cdegc[k_telem_sensor_ambient] / s_cdegc_per_degree;
+  }
+}
+
+/**
+ * @brief Encode TelemetryData protobuf message into the static transmit buffer (Phase 3)
+ *
+ * @details
+ * Encodes the populated `star_v1_TelemetryData` struct into binary protobuf format
+ * using nanopb and writes to the static `s_telem_buffer`. The encoded length is
+ * returned via `out_encoded_len` for use by the transport layer.
+ *
+ * @param[in]  telemetry      Populated TelemetryData message to encode
+ * @param[out] out_encoded_len Encoded byte count written to s_telem_buffer
+ *
+ * @return rx_err_t Encoding result
+ * @retval k_rx_ok Encoding succeeded; s_telem_buffer contains *out_encoded_len valid bytes
+ * @retval k_rx_err_encoding_failed nanopb encoding failed (buffer too small or invalid msg)
+ *
+ * @pre telemetry must point to a valid, populated star_v1_TelemetryData struct
+ * @pre out_encoded_len must not be NULL
+ * @post On k_rx_ok: s_telem_buffer[0..*out_encoded_len-1] contains encoded protobuf
+ * @post On error: s_telem_buffer contents are undefined, error logged
+ *
+ * @note Zero-copy: passes s_telem_buffer pointer to nanopb (no intermediate copy)
+ * @note Not thread-safe: s_telem_buffer is exclusively owned by telemetry task
+ *
+ * @warning If encoding fails, message is NOT sent (caller returns error, retry next cycle)
+ *
+ * @see rx_nanopb_encode_telemetry() Underlying nanopb encoder
+ * @see internal_build_and_send_telemetry() Orchestrator - calls this after collect_state
+ *
+ * @since Version 1.1.0
+ *
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * - Precondition 1: telemetry != NULL
+ * - Precondition 2: out_encoded_len != NULL
+ * - Postcondition 1: Returns k_rx_err_encoding_failed on failure (error logged)
+ * - Postcondition 2: *out_encoded_len valid only when k_rx_ok returned
+ */
+static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
+                                           uint32_t*                    out_encoded_len)
+{
+  rx_err_t err;
+
+  err =
+    rx_nanopb_encode_telemetry(telemetry, s_telem_buffer, k_telem_buffer_size, out_encoded_len);
+  if (err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Telemetry encode failed", (uint32_t)err);
+  }
+  return err;
+}
+
+/**
+ * @brief Send the encoded telemetry buffer via the specified comm manager channel (Phase 4)
+ *
+ * @details
+ * Builds `rx_comm_send_params_t` with `k_frame_type_response` (RX72N → host data),
+ * `s_telem_buffer` as payload, and calls `rx_comm_manager_send()`. The channel
+ * argument is the caller-selected transport (USB or SPI) returned by
+ * `internal_select_transport()`.
+ *
+ * @param[in] channel     Comm manager channel to send on (k_comm_channel_usb or k_comm_channel_spi)
+ * @param[in] encoded_len Number of bytes in s_telem_buffer to transmit
+ *
+ * @return rx_err_t Send result from rx_comm_manager_send()
+ * @retval k_rx_ok Message queued for transmission
+ * @retval k_rx_err_usb_tx_fail USB CDC transmission failed (host disconnected mid-cycle)
+ * @retval k_rx_err_spi_tx_fail SPI transmission failed (RPi5 not responding)
+ * @retval k_rx_err_timeout Communication manager send queue full
+ *
+ * @pre channel must be k_comm_channel_usb or k_comm_channel_spi
+ * @pre encoded_len must be > 0 and <= k_telem_buffer_size
+ * @pre s_telem_buffer must contain valid encoded protobuf (internal_encode_telemetry() called)
+ * @pre g_comm_manager must be initialized (rx_comm_manager_init() called)
+ * @post On k_rx_ok: bytes queued in comm manager TX queue for DMA/interrupt transfer
+ * @post On error: message lost this cycle (host detects via sequence gap)
+ *
+ * @note Send failure is non-critical: telemetry task logs and continues to next cycle
+ * @note CRC added by comm_manager (not included in encoded_len)
+ * @note Zero-copy: s_telem_buffer passed by pointer, no intermediate memcpy
+ *
+ * @see internal_build_and_send_telemetry() Caller - provides channel from select_transport
+ * @see rx_comm_manager_send() Underlying send implementation
+ * @see internal_select_transport() Channel selection (USB preferred, SPI fallback)
+ *
+ * @since Version 1.1.0
+ *
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * - Precondition 1: channel is a valid rx_comm_channel_t value
+ * - Precondition 2: encoded_len > 0 (caller verified encoding succeeded)
+ * - Postcondition 1: Returns rx_comm_manager_send() result directly
+ * - Postcondition 2: s_telem_buffer remains valid after call (no modification)
+ */
+static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len)
+{
+  rx_comm_send_params_t params;
+
+  params.channel     = channel;
+  params.type        = k_frame_type_response;
+  params.flags       = k_frame_flag_none;
+  params.payload     = s_telem_buffer;
+  params.payload_len = encoded_len;
+
+  return rx_comm_manager_send(&g_comm_manager, &params);
+}
+
+/**
+ * @brief Build and send complete telemetry message (4-phase aggregation orchestrator)
+ *
+ * @details
+ * Orchestrates the complete telemetry aggregation pipeline across 4 focused helpers:
+ *
+ * 1. **Timestamp + sequence** - Set timestamp_us and increment s_sequence
+ * 2. **internal_collect_state()** - Phase 1+2: populate motor, BMS, and temperature fields
+ * 3. **internal_encode_telemetry()** - Phase 3: nanopb encode to s_telem_buffer
+ * 4. **internal_select_transport()** - Phase 4a: USB preferred, SPI fallback
+ * 5. **internal_send_via_channel()** - Phase 4b: transmit via comm manager
+ *
+ * Encoding failure is fatal for this cycle (message not sent, retry next cycle).
+ * Send failure is non-critical (message lost, host detects via sequence gap).
+ * No-transport drops the encoded message silently (both channels unavailable).
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok Telemetry sent successfully (all phases completed)
@@ -1742,138 +2000,67 @@ static telemetry_transport_t internal_select_transport(void)
  * @pre Task created and running (telemetry_task_create() called)
  *
  * @post Telemetry message sent via USB CDC (primary) or SPI (fallback)
- * @post Sequence counter incremented (s_sequence++)
- * @post ThreadX timestamp captured (microsecond-precision uptime)
- * @post Unit conversions applied (mV->V, cdegC->°C)
- * @post Fault flags bitfield packed (4 bytes -> uint32)
+ * @post s_sequence incremented exactly once per call
+ * @post s_telem_buffer overwritten with latest encoded protobuf
  *
  * @note Called every 50ms by internal_telem_task_entry() (20 Hz)
- * @note Execution time: ~120 µs (all phases)
- * @note All data reads are non-blocking (graceful degradation if mutex locked)
- * @note Transport channel is selected dynamically each cycle (USB preferred)
+ * @note Execution time: ~120 µs (all phases combined)
+ * @note Data collection is non-blocking (graceful degradation if mutex locked)
+ * @note Transport channel selected dynamically each cycle (USB preferred)
  *
  * @warning If encoding fails, message is NOT sent (retry next cycle)
  * @warning If transmission fails, message is lost (host detects via sequence gap)
  * @attention Partial messages are acceptable (Protocol Buffers optional fields)
  *
- * @see internal_select_transport() Phase 4 - Select active transport channel
- * @see shared_data_get_motor_state() Phase 1 - Read motor state
- * @see shared_data_get_bms() Phase 1 - Read BMS state
- * @see shared_data_get_temp() Phase 1 - Read temperature state
- * @see rx_nanopb_encode_telemetry() Phase 3 - Encode to protobuf
- * @see rx_comm_manager_send() Phase 4 - Transmit via USB/SPI
+ * @see internal_collect_state() Phase 1+2 - Collect and populate all robot state
+ * @see internal_populate_motor_telemetry() Phase 2 - Motor encoder field population
+ * @see internal_encode_telemetry() Phase 3 - nanopb protobuf encoding
+ * @see internal_select_transport() Phase 4a - Select active transport channel
+ * @see internal_send_via_channel() Phase 4b - Transmit via comm manager
  *
- * @since Version 1.0.0 (transport failover added in v1.1.0)
+ * @since Version 1.0.0 (refactored in v1.1.0 to delegate to focused helpers)
+ *
+ * @par NASA Power of 10 Rule 4 Compliance:
+ * This function is now a ~30-line orchestrator. Each phase delegated to a focused
+ * helper function of ≤60 lines, all individually verifiable.
+ *
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * - Precondition 1: Shared data initialized
+ * - Precondition 2: Comm manager initialized
+ * - Postcondition 1: s_sequence incremented
+ * - Postcondition 2: Returns error code for any fatal phase failure
  */
 static rx_err_t internal_build_and_send_telemetry(void)
 {
   rx_err_t              err;
-  motor_state_t         motor_state;
-  bms_state_t           bms_state;
-  temp_sensor_state_t   temp_state;
   star_v1_TelemetryData telemetry = star_v1_TelemetryData_init_zero;
   uint32_t              encoded_len;
+  telemetry_transport_t transport;
+  rx_comm_channel_t     channel;
 
-  /* Set timestamp */
+  /* Set timestamp and sequence number */
   telemetry.timestamp_us   = (int64_t)tx_time_get() * (int64_t)k_telem_us_per_tick;
   telemetry.frame_sequence = s_sequence++;
 
-  /* Collect motor state */
-  err = shared_data_get_motor_state(&motor_state);
-  if (err == k_rx_ok) {
-    /* Emergency stop status */
-    telemetry.emergency_stop = motor_state.estop_active;
-    /* Pack 4 motor fault bytes into single uint32_t bitfield */
-    telemetry.fault_flags =
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_left] << k_fault_shift_front_left) |
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_front_right] << k_fault_shift_front_right) |
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_left] << k_fault_shift_back_left) |
-      ((uint32_t)motor_state.fault_flags[k_telem_motor_back_right] << k_fault_shift_back_right);
+  /* Phase 1+2: Collect all robot state and populate telemetry fields */
+  internal_collect_state(&telemetry);
 
-    /* Front left encoder */
-    telemetry.has_encoder_front_left      = true;
-    telemetry.encoder_front_left.motor_id = k_telem_motor_front_left;
-    telemetry.encoder_front_left.ticks    = motor_state.encoder_counts[k_telem_motor_front_left];
-    telemetry.encoder_front_left.velocity_mps =
-      (float)motor_state.current_velocity_mps[k_telem_motor_front_left];
-    telemetry.encoder_front_left.timestamp_us = telemetry.timestamp_us;
-
-    /* Front right encoder */
-    telemetry.has_encoder_front_right      = true;
-    telemetry.encoder_front_right.motor_id = k_telem_motor_front_right;
-    telemetry.encoder_front_right.ticks    = motor_state.encoder_counts[k_telem_motor_front_right];
-    telemetry.encoder_front_right.velocity_mps =
-      (float)motor_state.current_velocity_mps[k_telem_motor_front_right];
-    telemetry.encoder_front_right.timestamp_us = telemetry.timestamp_us;
-
-    /* Back left encoder */
-    telemetry.has_encoder_back_left      = true;
-    telemetry.encoder_back_left.motor_id = k_telem_motor_back_left;
-    telemetry.encoder_back_left.ticks    = motor_state.encoder_counts[k_telem_motor_back_left];
-    telemetry.encoder_back_left.velocity_mps =
-      (float)motor_state.current_velocity_mps[k_telem_motor_back_left];
-    telemetry.encoder_back_left.timestamp_us = telemetry.timestamp_us;
-
-    /* Back right encoder */
-    telemetry.has_encoder_back_right      = true;
-    telemetry.encoder_back_right.motor_id = k_telem_motor_back_right;
-    telemetry.encoder_back_right.ticks    = motor_state.encoder_counts[k_telem_motor_back_right];
-    telemetry.encoder_back_right.velocity_mps =
-      (float)motor_state.current_velocity_mps[k_telem_motor_back_right];
-    telemetry.encoder_back_right.timestamp_us = telemetry.timestamp_us;
-  }
-
-  /* Collect BMS state */
-  err = shared_data_get_bms(&bms_state);
-  if (err == k_rx_ok && bms_state.valid) {
-    /* Convert millivolts to volts */
-    telemetry.battery_voltage_v   = (float)bms_state.voltage_mv / s_mv_per_volt;
-    telemetry.battery_soc_percent = bms_state.soc_percent;
-    telemetry.battery_percent     = (float)bms_state.soc_percent;
-  }
-
-  /* Collect temperature state */
-  err = shared_data_get_temp(&temp_state);
-  if (err == k_rx_ok && temp_state.sensor_valid[k_telem_sensor_ambient]) {
-    /* Convert from centi-degrees to degrees */
-    telemetry.temperature_celsius =
-      (float)temp_state.temperature_cdegc[k_telem_sensor_ambient] / s_cdegc_per_degree;
-  }
-
-  /* Encode to protobuf */
-  err = rx_nanopb_encode_telemetry(&telemetry, s_telem_buffer, k_telem_buffer_size, &encoded_len);
+  /* Phase 3: Encode to protobuf binary format */
+  err = internal_encode_telemetry(&telemetry, &encoded_len);
   if (err != k_rx_ok) {
-    rx_log_error_val(s_tag, "Telemetry encode failed", (uint32_t)err);
     return err;
   }
 
-  /* Select transport: USB preferred, SPI fallback */
-  telemetry_transport_t transport = internal_select_transport();
-
+  /* Phase 4a: Select transport (USB preferred, SPI fallback) */
+  transport = internal_select_transport();
   if (transport == k_telemetry_transport_none) {
-    /* No transport available; drop message this cycle */
     return k_rx_err_invalid_state;
   }
 
-  /* Map transport selection to comm manager channel */
-  rx_comm_channel_t channel;
-  if (transport == k_telemetry_transport_usb) {
-    channel = k_comm_channel_usb;
-  } else {
-    channel = k_comm_channel_spi;
-  }
-
-  /* Send via communication manager as RESPONSE type (data from RX72N to host) */
-  rx_comm_send_params_t params;
-  params.channel     = channel;
-  params.type        = k_frame_type_response;
-  params.flags       = k_frame_flag_none;
-  params.payload     = s_telem_buffer;
-  params.payload_len = encoded_len;
-
-  err = rx_comm_manager_send(&g_comm_manager, &params);
+  /* Phase 4b: Map transport to channel and send */
+  channel = (transport == k_telemetry_transport_usb) ? k_comm_channel_usb : k_comm_channel_spi;
+  err     = internal_send_via_channel(channel, encoded_len);
   if (err != k_rx_ok) {
-    /* Send failure is not critical - continue */
     return err;
   }
 

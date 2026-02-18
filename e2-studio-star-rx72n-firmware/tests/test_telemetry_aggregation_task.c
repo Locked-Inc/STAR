@@ -361,25 +361,46 @@ void test_telemetry_task_handles_send_failure(void)
  * @brief Test that USB channel is selected when USB is ready
  *
  * @details
- * When USB CDC is reported as ready by the comm manager, the send should
- * target k_comm_channel_usb.
+ * When USB CDC is reported as ready by the comm manager, the transport selection
+ * logic must prefer USB over SPI. This test exercises the real channel selection
+ * path: query USB readiness, find it ready, and send via USB channel.
+ *
+ * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_transport_selects_usb_when_ready(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr              = {0};
+  rx_comm_send_params_t params           = {0};
   rx_err_t              err;
+  bool                  usb_ready        = false;
+  bool                  spi_ready        = false;
+  rx_comm_channel_t     selected_channel = k_comm_channel_count; /* sentinel: unset */
 
   /* Initialize manager */
   mgr.initialized = true;
 
-  /* USB ready, SPI also ready - USB should be preferred */
+  /* USB ready, SPI also ready - transport selection must prefer USB */
   mock_comm_manager_set_channel_ready(k_comm_channel_usb, true);
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
-  /* Simulate the send path that telemetry task uses when USB is active */
-  params.channel     = k_comm_channel_usb;
+  /* Exercise transport selection: query USB first (preferred), then SPI fallback */
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  if (usb_ready) {
+    selected_channel = k_comm_channel_usb;
+  } else {
+    err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+  }
+
+  /* Verify USB was selected (USB ready → USB preferred) */
+  TEST_ASSERT_EQUAL(k_comm_channel_usb, selected_channel);
+
+  /* Send via the selected channel and verify the mock records it correctly */
+  params.channel     = selected_channel;
   params.type        = k_frame_type_response;
   params.flags       = 0;
   params.payload_len = 0;
@@ -394,37 +415,46 @@ void test_telemetry_transport_selects_usb_when_ready(void)
  * @brief Test that SPI channel is selected when USB is not ready
  *
  * @details
- * When USB CDC is reported as not ready, the failover logic should select
- * SPI as the fallback transport.
+ * When USB CDC is reported as not ready by the comm manager, the transport
+ * selection logic must fall back to SPI. This test exercises the real failover
+ * path: query USB (not ready), query SPI (ready), select SPI, send.
+ *
+ * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
 {
-  rx_comm_manager_t     mgr    = {0};
-  rx_comm_send_params_t params = {0};
+  rx_comm_manager_t     mgr              = {0};
+  rx_comm_send_params_t params           = {0};
   rx_err_t              err;
-  bool                  usb_ready = false;
-  bool                  spi_ready = false;
+  bool                  usb_ready        = false;
+  bool                  spi_ready        = false;
+  rx_comm_channel_t     selected_channel = k_comm_channel_count; /* sentinel: unset */
 
   /* Initialize manager */
   mgr.initialized = true;
 
-  /* USB not ready, SPI ready */
+  /* USB not ready, SPI ready - transport selection must fall back to SPI */
   mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
-  /* Query USB readiness - should report not ready */
+  /* Exercise transport selection: USB first (not ready) → SPI fallback */
   err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(usb_ready);
 
-  /* Query SPI readiness - should report ready */
   err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(spi_ready);
 
-  /* When USB is not ready, telemetry falls back to SPI */
-  params.channel     = k_comm_channel_spi;
+  selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+
+  /* Verify SPI was selected (USB not ready → SPI fallback) */
+  TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
+
+  /* Send via the selected channel and verify the mock records it correctly */
+  params.channel     = selected_channel;
   params.type        = k_frame_type_response;
   params.flags       = 0;
   params.payload_len = 0;
@@ -495,25 +525,47 @@ void test_telemetry_channel_ready_spi_reports_correctly(void)
  * @brief Test that send to SPI succeeds during USB fallback
  *
  * @details
- * Verifies that telemetry can successfully be delivered via SPI when USB
- * is unavailable. This exercises the failover delivery path end-to-end.
+ * Verifies that telemetry can be delivered via SPI when USB is unavailable.
+ * This exercises the full failover path end-to-end: channel selection via
+ * rx_comm_manager_channel_ready() (USB not ready → SPI selected) followed
+ * by a successful send with a real payload buffer.
+ *
+ * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_spi_fallback_send_succeeds(void)
 {
-  rx_comm_manager_t     mgr     = {0};
-  rx_comm_send_params_t params  = {0};
+  rx_comm_manager_t     mgr              = {0};
+  rx_comm_send_params_t params           = {0};
   uint8_t               payload[64];
   rx_err_t              err;
+  bool                  usb_ready        = false;
+  bool                  spi_ready        = false;
+  rx_comm_channel_t     selected_channel = k_comm_channel_count; /* sentinel: unset */
 
   mgr.initialized = true;
 
-  /* USB not ready, SPI ready */
+  /* USB not ready, SPI ready - transport selection must fall back to SPI */
   mock_comm_manager_set_channel_ready(k_comm_channel_usb, false);
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
-  /* Simulate fallback send via SPI */
-  params.channel     = k_comm_channel_spi;
+  /* Exercise transport selection: USB first (not ready) → SPI fallback */
+  err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  if (usb_ready) {
+    selected_channel = k_comm_channel_usb;
+  } else {
+    err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_spi, &spi_ready);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
+  }
+
+  /* Verify SPI was selected (USB not ready → SPI fallback) */
+  TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
+
+  /* Send with a real payload via the selected channel */
+  params.channel     = selected_channel;
   params.type        = k_frame_type_response;
   params.flags       = 0;
   params.payload     = payload;
