@@ -136,24 +136,17 @@ tab:
 \textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{C Library} & \textbf{Description
 }
 \\
-\midrule 5 &
-    Application & \texttt{internal / service /} & \texttt{src / tasks /} &
-    gRPC services,
-    motor commands,
-    telemetry \ 4 & Serialization & \texttt{google.golang.org / protobuf} & \texttt{libs / rx\_nanopb /} & Protocol Buffers(full - size Go, nanopb C) \ 3 & HARQ + FEC & \texttt{internal / link /} & \texttt{libs / rx\_harq /}, \texttt{libs /
-                                                                                                                                                                                                                                             rx\_spi\_link /} &
-                                                                                                                                                                                                                                         HARQ
-                                                                                                                                                                                                                                             +
-                                                                                                                                                                                                                                             FEC
-                                                                                                                                                                                                                                             on
-                                                                                                                                                                                                                                             SPI(RSPI0
-                                                                                                                                                                                                                                                     only);
-USB CDC / CDCLink : no HARQ / FEC(hardware CRC / retry only) \ 2 &
-    Framing & \texttt{internal / frame /} & \texttt{libs / rx\_frame /} &
-    SYNC + Header + Payload + CRC - 32 \ 1 &
-    Transport & \texttt{internal / transport /} &
-    RSPI0 / USB peripheral &SPI @10\,
-    MHz, USB CDC Full - Speed \\
+\midrule
+5 & Application & \texttt{internal / service /} & \texttt{src / tasks /} &
+    gRPC services, motor commands, telemetry \\
+4 & Serialization & \texttt{google.golang.org / protobuf} & \texttt{libs / rx\_nanopb /} &
+    Protocol Buffers (full-size Go, nanopb C) \\
+3 & HARQ + FEC & \texttt{internal / link /} & \texttt{libs / rx\_harq /}, \texttt{libs / rx\_spi\_link /} &
+    HARQ+FEC on SPI (RSPI0 only); USB CDC / CDCLink: no HARQ / FEC (hardware CRC / retry only) \\
+2 & Framing & \texttt{internal / frame /} & \texttt{libs / rx\_frame /} &
+    SYNC + Header + Payload + CRC-32 \\
+1 & Transport & \texttt{internal / transport /} & RSPI0 / USB peripheral &
+    SPI @10\,MHz, USB CDC Full-Speed \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -210,9 +203,7 @@ the receiver recomputes the CRC over the same data and compares.If even a single
            } The CRC Calculator peripheral computes CRC -
         32 in hardware,
     avoiding CPU overhead.
-    \item\\
-        textbf{Used on every frame :} Both USB CDC and SPI frames include CRC -
-        32,
+    \item \textbf{Used on every frame :} Both USB CDC and SPI frames include CRC-32,
     regardless of whether HARQ is enabled.
 \end{itemize}
 
@@ -565,12 +556,8 @@ USB CDC is a standard USB device class that creates a \textbf{virtual serial por
     \item \textbf{CRC - 32 :
    } Detects corruption(every frame)
                            .
-    \item\\
-    textbf{FEC encoding :} Adds redundancy(rate 1 / 2 convolutional code)
-                           .
-    \item\\
-    textbf{ACK / NACK :} Requests retransmission if FEC cannot
-        correct.
+    \item \textbf{FEC encoding :} Adds redundancy (rate 1/2 convolutional code).
+    \item \textbf{ACK / NACK :} Requests retransmission if FEC cannot correct.
     \item \textbf{Chase Combining :} Accumulates soft bits across
             retransmissions.
     \item \textbf{Viterbi decoding :
