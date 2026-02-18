@@ -19,6 +19,9 @@
 \usepackage{parskip}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{ragged2e}
+\usepackage{seqsplit}
+\usepackage{etoolbox}
 
 % Page geometry
 \geometry{
@@ -45,6 +48,7 @@
 \definecolor{starblue}{RGB}{0,70,140}
 \definecolor{tableheadblue}{RGB}{30,80,160}
 \definecolor{dirgreen}{RGB}{10,100,40}
+\definecolor{prpurple}{RGB}{100,0,160}
 
 % Code listing style
 \lstdefinestyle{codestyle}{
@@ -131,6 +135,17 @@
   innerrightmargin=8pt,
 ]{okbox}
 
+\newmdenv[
+  backgroundcolor=prpurple!6,
+  linecolor=prpurple,
+  linewidth=1.5pt,
+  roundcorner=4pt,
+  skipabove=6pt,
+  skipbelow=6pt,
+  innerleftmargin=8pt,
+  innerrightmargin=8pt,
+]{prbox}
+
 % Directory heading style
 \newmdenv[
   backgroundcolor=starblue!8,
@@ -149,7 +164,21 @@
 \newcommand{\done}{\textcolor{okgreen}{\textbf{DONE}}}
 \newcommand{\partialstatus}{\textcolor{warnorange}{\textbf{PARTIAL}}}
 \newcommand{\missing}{\textcolor{criticalred}{\textbf{MISSING}}}
-\newcommand{\filepath}[1]{\texttt{\textcolor{dirgreen}{#1}}}
+\newcommand{\inprogress}[1]{\textcolor{prpurple}{\textbf{PR \##1}}}
+% \filepath: render path in green monospace with seqsplit so long paths
+% can break at any character boundary when needed in narrow columns.
+\newcommand{\filepath}[1]{\textcolor{dirgreen}{\texttt{\seqsplit{#1}}}}
+
+% Table column helpers (p-type with raggedright)
+\newcolumntype{L}[1]{>{\RaggedRight\arraybackslash}p{#1}}
+
+% Allow relaxed line-breaking inside all coloured info boxes so long
+% \texttt{} tokens don't overflow into the margin.
+\AtBeginEnvironment{prbox}{\sloppy\hbadness=10000}
+\AtBeginEnvironment{warnbox}{\sloppy\hbadness=10000}
+\AtBeginEnvironment{okbox}{\sloppy\hbadness=10000}
+\AtBeginEnvironment{criticalbox}{\sloppy\hbadness=10000}
+\AtBeginEnvironment{dirbox}{\sloppy\hbadness=10000}
 
 \begin{document}
 
@@ -167,20 +196,25 @@
       \toprule
       \textbf{Date} & 2026-02-18 \\
       \textbf{Branch} & \texttt{feat/gap-analysis-and-planning} \\
-      \textbf{Overall Completion} & $\sim$75\% (revised from 65\%) \\
-      \textbf{Firmware Assessment} & Production-ready (all tasks complete) \\
-      \textbf{Next Milestone} & First Robot Motion (SPI bridge + UI telemetry) \\
+      \textbf{Overall Completion} & $\sim$75\% \\
+      \textbf{Open PRs} & 9 active (see annotations throughout) \\
+      \textbf{Next Milestone} & First robot motion (SPI bridge + UI real data) \\
       \bottomrule
     \end{tabular}
 
-    \vspace{2cm}
-    \begin{warnbox}
-      \textbf{Note on Accuracy:} Initial analysis was based on an older codebase snapshot.
-      Two items previously marked CRITICAL are confirmed complete:\\
+    \vspace{1.5cm}
+    \begin{okbox}
+      \textbf{Confirmed complete (corrected from initial analysis):}\\
       \vspace{4pt}
-      \textbf{Firmware WireMessage Dispatcher} -- \done\ (comm\_task.c:1959, 2060 lines)\\
-      \textbf{BMS Telemetry Streaming} -- \done\ (telemetry\_task.c:1833, voltage + SOC)
-    \end{warnbox}
+      WireMessage dispatcher: \done\ (\filepath{comm\_task.c:1959} -- SetVelocity, E-Stop, PID, RetransmitConfig)\\
+      BMS telemetry streaming: \done\ (\filepath{telemetry\_task.c:1833} -- voltage\_v, soc\_percent)
+    \end{okbox}
+
+    \vspace{0.6cm}
+    \begin{prbox}
+      \textbf{Notation:} Items marked \inprogress{NNN} have an active pull request.\\
+      \textbf{Scope:} This is a prototype. OTA firmware updates are a future enhancement, not a current requirement.
+    \end{prbox}
 
     \vspace{1cm}
     {\large\textit{STAR (Simultaneous Tracking and Robotics) -- Locked Inc.}}
@@ -203,18 +237,19 @@ STAR is a distributed robotics platform with a custom PCB RX72N motor controller
 \subsection{System Architecture}
 
 \begin{center}
-\begin{tabular}{lll}
+\small
+\begin{tabular}{L{5cm}L{3cm}L{6cm}}
   \toprule
   \textbf{Directory} & \textbf{Language} & \textbf{Role} \\
   \midrule
-  \filepath{e2-studio-star-rx72n-firmware/} & C23 (GNURX + ThreadX) & Motor controller firmware \\
-  \filepath{star-gateway/} & Go & UI/ROS2 bridge, SPI driver \\
-  \filepath{star-ros2/} & C++ (ROS2 Jazzy) & Robot middleware stack \\
-  \filepath{star-ui/} & TypeScript/React & Operator interface \\
-  \filepath{star-proto/} & Protocol Buffers 3 & Message schemas \\
-  \filepath{star-rpi5-buildroot/} & Buildroot & Custom Linux for RPi5 \\
-  \filepath{matlab/} & MATLAB & Motor system ID + PID design \\
-  \filepath{schematic/} & KiCad & PCB designs \\
+  \filepath{e2-studio-star-rx72n-firmware/} & C23, GNURX, ThreadX & Motor controller firmware \\
+  \filepath{star-gateway/} & Go & UI/ROS2 bridge, SPI driver, frame protocol \\
+  \filepath{star-ros2/} & C++17, ROS2 Jazzy & Robot middleware, SPI bridge, safety monitor \\
+  \filepath{star-ui/} & TypeScript, React 19 & Operator interface \\
+  \filepath{star-proto/} & Protocol Buffers 3 & Message schemas (10 files, 72 messages) \\
+  \filepath{star-rpi5-buildroot/} & Buildroot & Custom Linux image for RPi5 \\
+  \filepath{matlab/} & MATLAB & Motor system ID and PID design \\
+  \filepath{schematic/} & KiCad & Custom PCB designs (MCU, Power, BMS) \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -222,78 +257,110 @@ STAR is a distributed robotics platform with a custom PCB RX72N motor controller
 \subsection{Communication Flow}
 
 \begin{center}
-\begin{tabular}{ccccc}
+\small
+\begin{tabular}{L{3cm}@{\hspace{0.4cm}}c@{\hspace{0.4cm}}L{3.5cm}@{\hspace{0.4cm}}c@{\hspace{0.4cm}}L{3.5cm}}
   \toprule
-  UI (TypeScript) & $\rightarrow$ & Gateway (Go) & $\rightarrow$ & ROS2 (C++) \\
-  WebSocket/gRPC  &               & gRPC server  &               & $\downarrow$ \\
-                  &               &              &               & RX72N (C) \\
-                  &               &              &               & 10 Mbps SPI \\
+  \textbf{UI} & $\to$ & \textbf{Gateway (Go)} & $\to$ & \textbf{ROS2 (C++)} \\
+  WebSocket / REST & & gRPC server on RPi5 & & \texttt{/cmd\_vel}, \texttt{/robot\_status} \\[3pt]
+  & & & $\downarrow$ & \\
+  & & & \textbf{SPI bridge} & \\
+  & & & 10~Mbps SPI & \\
+  & & & $\downarrow$ & \\
+  & & & \textbf{RX72N} & \\
+  & & & C23 + ThreadX & \\
   \bottomrule
 \end{tabular}
 \end{center}
 
 \subsection{Overall Completion Matrix}
 
-\begin{longtable}{llll}
+\begin{center}
+\small
+\begin{longtable}{@{}L{5.9cm}L{2.1cm}L{2.1cm}L{3.6cm}@{}}
   \toprule
-  \textbf{Directory / Component} & \textbf{Completion} & \textbf{Status} & \textbf{Blockers} \\
+  \textbf{Component} & \textbf{Complete} & \textbf{Status} & \textbf{Note / PR} \\
   \midrule
   \endhead
 
   \multicolumn{4}{l}{\textbf{e2-studio-star-rx72n-firmware/}} \\
-  \quad Firmware core (9 ThreadX tasks) & 100\% & \done & None \\
-  \quad Communication stack (HARQ/FEC/CRC-32) & 100\% & \done & None \\
-  \quad WireMessage command dispatcher & 100\% & \done & None \\
-  \quad BMS telemetry streaming & 100\% & \done & None \\
-  \quad OTA firmware update handler & 0\% & \missing & Firmware updates in prod \\
-  \quad NVS configuration persistence & 0\% & \missing & PID gains lost on reboot \\
-  \quad RPLiDAR C1 driver & 0\% & \missing & SLAM / mapping \\
+  \quad Firmware core (9 ThreadX tasks) & 100\% & \done & \\
+  \quad Comm stack (HARQ/FEC/CRC-32) & 100\% & \done & \\
+  \quad WireMessage command dispatcher & 100\% & \done & \\
+  \quad BMS telemetry streaming & 100\% & \done & Fix: \inprogress{342} \\
+  \quad Telemetry USB/SPI failover & 95\% & \inprogress{342} & PR open \\
+  \quad ThreadX stack checking & 95\% & \inprogress{343} & PR open \\
+  \quad BMS SoC thresholds & 95\% & \inprogress{344} & PR open \\
+  \quad Event-flag cleanup & 95\% & \inprogress{345} & PR open \\
+  \quad Frame decoder resync & 95\% & \inprogress{341} & PR open \\
+  \quad ASCII source cleanup & 95\% & \inprogress{346} & PR open \\
+  \quad NVS configuration persistence & 0\% & \missing & Not started \\
+  \quad OTA firmware update handler & 0\% & \missing & Future enhancement \\
   \midrule
 
   \multicolumn{4}{l}{\textbf{star-gateway/}} \\
-  \quad Transport layer (SPI/USB CDC) & 100\% & \done & None \\
-  \quad Frame codec (HARQ/FEC/CRC-32) & 100\% & \done & None \\
-  \quad MotorControlService gRPC & 80\% & \partialstatus & E-Stop priority, SetMotorPower dispatch \\
+  \quad Transport layer (SPI/USB CDC) & 100\% & \done & \\
+  \quad Frame codec (HARQ/FEC/CRC-32) & 100\% & \done & \\
+  \quad MotorControlService gRPC & 90\% & \partialstatus & E-Stop priority queue \\
   \quad TelemetryService gRPC & 90\% & \partialstatus & GetSystemStatus stub \\
-  \quad BatteryManagementService gRPC & 100\% & \done & None \\
-  \quad ConfigurationService gRPC & 85\% & \partialstatus & SetRetransmitConfig not dispatching \\
-  \quad FirmwareUpdateService gRPC & 0\% & \missing & All 10 RPC methods are stubs \\
+  \quad BatteryManagementService gRPC & 100\% & \done & \\
+  \quad ConfigurationService gRPC & 85\% & \partialstatus & RetransmitConfig dispatch \\
+  \quad FirmwareUpdateService gRPC & 0\% & \missing & Future enhancement \\
+  \quad RESET\_ACK auto-response & 95\% & \inprogress{349} & PR open \\
   \quad Virtual RX72N simulator & 95\% & \done & No motor dynamics \\
   \midrule
 
   \multicolumn{4}{l}{\textbf{star-ros2/}} \\
-  \quad star\_gateway\_bridge\_node & 100\% & \done & None \\
-  \quad star\_spi\_bridge\_node (code) & 90\% & \partialstatus & Never run on real hardware \\
-  \quad star\_safety\_monitor (tests) & 40\% & \partialstatus & 3 of 10 tests skipped \\
-  \quad star\_bringup launch files & 5\% & \missing & Empty skeleton only \\
+  \quad star\_gateway\_bridge\_node & 100\% & \done & \\
+  \quad star\_spi\_bridge\_node & 85\% & \partialstatus & Never run on hardware \\
+  \quad star\_safety\_monitor & 40\% & \partialstatus & 3 of 10 tests skipped \\
+  \quad star\_bringup launch files & 5\% & \missing & Empty skeleton \\
+  \quad RPLiDAR C1 ROS2 driver & 0\% & \missing & Host-side sensor \\
   \quad SLAM stack (RTAB-Map, EKF) & 0\% & \missing & Requires RPLiDAR + IMU \\
   \midrule
 
   \multicolumn{4}{l}{\textbf{star-ui/}} \\
-  \quad Gamepad control & 100\% & \done & None \\
-  \quad gRPC-Web bridge & 0\% & \missing & Required for all gRPC calls \\
-  \quad Telemetry display (motors, sensors) & 0\% & \missing & Operator blind to robot state \\
-  \quad Battery status panel & 0\% & \missing & None \\
+  \quad App scaffold + 7 pages & 80\% & \inprogress{351} & Mock data only \\
+  \quad Real gRPC / HTTP connection & 0\% & \missing & Mock client only \\
   \quad Emergency Stop button & 0\% & \missing & Safety critical \\
-  \quad Configuration / PID panel & 0\% & \missing & None \\
-  \quad Tests (unit / E2E) & 0\% & \missing & None \\
+  \quad Tests (unit / E2E) & 0\% & \missing & None yet \\
   \midrule
 
   \multicolumn{4}{l}{\textbf{star-proto/}} \\
-  \quad Proto schemas (10 files, 73 messages) & 100\% & \done & None \\
-  \quad Generated code (Go/TypeScript/nanopb/C++) & 100\% & \done & None \\
-  \quad nanopb options (motor\_status count) & 85\% & \partialstatus & max\_count:2 should be 4 \\
+  \quad Proto schemas (72 messages) & 100\% & \done & \\
+  \quad Generated code (Go/TS/nanopb/C++) & 100\% & \done & \\
+  \quad nanopb motor\_status max\_count & 85\% & \partialstatus & Bug: 2 should be 4 \\
   \midrule
 
   \multicolumn{4}{l}{\textbf{CI/CD (.github/workflows/)}} \\
-  \quad proto.yml (buf lint + generate) & 100\% & \done & None \\
-  \quad gateway.yml (Go build + test) & 100\% & \done & None \\
-  \quad ros2.yml (colcon build + test) & 100\% & \done & None \\
-  \quad firmware.yml (CMake build + test) & 0\% & \missing & No firmware CI exists \\
-  \quad ui.yml (npm build + type check) & 0\% & \missing & No UI CI exists \\
-  \quad docs.yml (LaTeX compile) & 0\% & \missing & No docs CI exists \\
+  \quad proto.yml & 100\% & \done & \\
+  \quad gateway.yml & 100\% & \done & \\
+  \quad ros2.yml & 100\% & \done & \\
+  \quad ui.yml (npm build) & 0\% & \missing & Not yet created \\
+  \quad docs.yml (LaTeX compile) & 0\% & \missing & Not yet created \\
   \bottomrule
 \end{longtable}
+\end{center}
+
+\subsection{Active Pull Requests Summary}
+
+\begin{center}
+\small
+\begin{tabular}{L{1.3cm}L{4.8cm}L{5.1cm}L{2.5cm}}
+  \toprule
+  \textbf{PR} & \textbf{Title} & \textbf{What It Fixes} & \textbf{Status} \\
+  \midrule
+  \#341 & Frame decoder resync & Bounded sync-word recovery & Tests passing \\
+  \#342 & USB$\to$SPI telemetry failover & Telemetry was USB-only in prod & Tests passing \\
+  \#343 & ThreadX stack checking & Stack overflow detection + UART log & Tests passing \\
+  \#344 & BMS SoC thresholds & Warning 25\%, critical 5\% + config & Tests passing \\
+  \#345 & Remove event-flag infra & Dead code removal (zero callers) & Tests passing \\
+  \#346 & ASCII source cleanup & Replace non-ASCII in 254 files + Doxyfile & Tests passing \\
+  \#349 & Gateway RESET\_ACK & Missing case in dispatchControlFrame() & Tests passing \\
+  \#350 & Gap analysis docs & This document & Open \\
+  \#351 & UI dashboard & 7 pages with mock data (shadcn/Tailwind) & Manual test \\
+  \bottomrule
+\end{tabular}
+\end{center}
 
 \newpage
 
@@ -304,22 +371,23 @@ STAR is a distributed robotics platform with a custom PCB RX72N motor controller
 
 \begin{dirbox}
   \textbf{Language:} C23 (GNURX toolchain) + ThreadX RTOS\\
-  \textbf{Build:} CMake + Renesas e\textsuperscript{2} Studio\\
+  \textbf{Build:} CMake (portable) + Renesas e\textsuperscript{2} Studio (IDE)\\
   \textbf{Hardware:} Renesas RX72N (240 MHz, 4 MB Flash, 512 KB SRAM)\\
-  \textbf{Overall:} 84\% production-ready. Core motor control, communication, and sensor stack is complete.
+  \textbf{Overall:} Production-ready. All 9 tasks, all drivers, communication stack complete.
 \end{dirbox}
 
 \subsection{What Is Complete}
 
-\subsubsection{ThreadX Tasks (all 9 implemented)}
+\subsubsection{ThreadX Tasks (9 of 9 implemented)}
 
 \begin{center}
-\begin{tabular}{llrl}
+\small
+\begin{tabular}{L{6.5cm}L{4cm}L{1.5cm}L{2cm}}
   \toprule
   \textbf{Task File} & \textbf{Purpose} & \textbf{Lines} & \textbf{Rate} \\
   \midrule
   \filepath{src/tasks/app\_main\_task.c} & RTOS entry, task creation & 538 & startup \\
-  \filepath{src/tasks/comm\_task.c} & SPI/USB frame dispatch & 2060 & interrupt-driven \\
+  \filepath{src/tasks/comm\_task.c} & SPI/USB frame dispatch & 2060 & IRQ-driven \\
   \filepath{src/tasks/motor\_control\_task.c} & 4-motor PID loop & 2870 & 100 Hz \\
   \filepath{src/tasks/telemetry\_task.c} & Sensor aggregation + proto & 1870 & 20 Hz \\
   \filepath{src/tasks/bms\_monitor\_task.c} & Battery fault detection & 1214 & 10 Hz \\
@@ -331,10 +399,11 @@ STAR is a distributed robotics platform with a custom PCB RX72N motor controller
 \end{tabular}
 \end{center}
 
-\subsubsection{Communication Stack (complete)}
+\subsubsection{Communication Stack}
 
 \begin{center}
-\begin{tabular}{lrl}
+\small
+\begin{tabular}{L{4.5cm}L{1.5cm}L{8cm}}
   \toprule
   \textbf{Library} & \textbf{Lines} & \textbf{Capability} \\
   \midrule
@@ -350,155 +419,63 @@ STAR is a distributed robotics platform with a custom PCB RX72N motor controller
 \end{tabular}
 \end{center}
 
-\subsubsection{WireMessage Command Dispatcher (confirmed complete)}
-
-\begin{okbox}
-  \filepath{src/tasks/comm\_task.c:1959} -- \texttt{internal\_handle\_command\_frame()} handles all incoming protobuf commands.
-\end{okbox}
-
-\begin{lstlisting}[language=C, caption={Command dispatcher in comm\_task.c (lines 1959--2060)}]
-static void internal_handle_command_frame(
-    rx_comm_channel_t channel, const rx_frame_t* frame)
-{
-    /* Try SetVelocityRequest (4-motor differential drive) */
-    err = rx_nanopb_decode_velocity_request(..., &velocity_req);
-    if (err == k_rx_ok && velocity_req.has_command) {
-        /* Map proto -> motor_command_t -> shared_data */
-        cmd.target_velocity_mps[k_motor_idx_front_left]  = ...;
-        cmd.target_velocity_mps[k_motor_idx_front_right] = ...;
-        cmd.target_velocity_mps[k_motor_idx_back_left]   = ...;
-        cmd.target_velocity_mps[k_motor_idx_back_right]  = ...;
-        shared_data_set_motor_command(&cmd);   // -> wakes motor_control_task
-        return;
-    }
-
-    /* Try EmergencyStopRequest */
-    err = rx_nanopb_decode_estop_request(..., &estop_req);
-    if (err == k_rx_ok) {
-        shared_data_trigger_estop(k_estop_reason_manual); // -> POEG HW stop
-        return;
-    }
-
-    /* Try SetPIDGainsRequest */
-    err = rx_nanopb_decode_pid_gains_request(..., &pid_req);
-    if (err == k_rx_ok && pid_req.has_pid_config) {
-        gains.kp = (float)pid_req.pid_config.kp;  // Kp, Ki, Kd
-        shared_data_set_pid_gains(&gains);
-        return;
-    }
-
-    /* Try SetRetransmitConfigRequest */
-    err = rx_nanopb_decode_retransmit_config_request(..., &retransmit_req);
-    if (err == k_rx_ok && retransmit_req.has_retransmit_config) {
-        rx_comm_manager_set_auto_retransmit(...);
-        return;
-    }
-
-    rx_log_warn(s_tag, "Could not decode command payload");
-}
-\end{lstlisting}
-
-\subsubsection{BMS Telemetry Streaming (confirmed complete)}
-
-\begin{okbox}
-  \filepath{src/tasks/telemetry\_task.c:1833} -- BMS data is included in every TelemetryData protobuf frame sent to the gateway.
-\end{okbox}
-
-\begin{lstlisting}[language=C, caption={BMS integration in telemetry\_task.c (lines 1833--1838)}]
-if (err == k_rx_ok && bms_state.valid) {
-    /* Convert millivolts to volts for protobuf field */
-    telemetry.battery_voltage_v   = (float)bms_state.voltage_mv
-                                    / s_mv_per_volt;
-    telemetry.battery_soc_percent = bms_state.soc_percent;
-    telemetry.battery_percent     = (float)bms_state.soc_percent;
-}
-\end{lstlisting}
-
-\subsubsection{Hardware Drivers (all complete)}
+\subsubsection{Hardware Drivers}
 
 \begin{center}
-\begin{tabular}{lrl}
+\small
+\begin{tabular}{L{4cm}L{1.5cm}L{8.5cm}}
   \toprule
   \textbf{Driver} & \textbf{Lines} & \textbf{Hardware} \\
   \midrule
-  \filepath{libs/rx\_motor/} & 1936 & DRV8243S H-bridge, PWM dead-time \\
-  \filepath{libs/rx\_pid/} & 1582 & Discrete-time PID, anti-windup \\
-  \filepath{libs/rx\_encoder/} & 1969 & MTU1/2 + TPU quadrature encoders \\
-  \filepath{libs/rx\_drv8243/} & 1983 & DRV8243S SPI config driver \\
+  \filepath{libs/rx\_motor/} & 1936 & DRV8243S H-bridge, PWM dead-time insertion \\
+  \filepath{libs/rx\_pid/} & 1582 & Discrete-time PID with anti-windup \\
+  \filepath{libs/rx\_encoder/} & 1969 & MTU1/2 + TPU quadrature encoder channels \\
+  \filepath{libs/rx\_drv8243/} & 1983 & DRV8243S SPI configuration driver \\
   \filepath{libs/rx\_bq4050/} & 1293 & BQ4050 BMS via SMBus (RIIC1) \\
-  \filepath{libs/rx\_ds18b20/} & 1429 & DS18B20 1-Wire temperature \\
-  \filepath{libs/rx\_hcsr04/} & 4761 & HC-SR04 ultrasonic, IRQ-based \\
-  \filepath{libs/rx\_hal/} & 16043 & Full RX72N HAL (GPIO/SPI/UART/ADC) \\
-  \filepath{libs/rx\_bus/} & 11941 & Bus manager (I2C/SPI/1-Wire/UART) \\
+  \filepath{libs/rx\_ds18b20/} & 1429 & DS18B20 temperature via 1-Wire \\
+  \filepath{libs/rx\_hcsr04/} & 4761 & HC-SR04 ultrasonic, IRQ-based echo \\
+  \filepath{libs/rx\_hal/} & 16043 & Full RX72N HAL (GPIO/SPI/UART/ADC/PWM) \\
+  \filepath{libs/rx\_bus/} & 11941 & Bus manager (I2C/SPI/1-Wire/UART/SMBus) \\
   \bottomrule
 \end{tabular}
 \end{center}
 
+\subsubsection{WireMessage Command Dispatcher -- Confirmed Complete}
+
+\begin{okbox}
+  \filepath{comm\_task.c:1959} -- \texttt{internal\_handle\_command\_frame()} handles all incoming commands.
+\end{okbox}
+
+\begin{lstlisting}[language=C, caption={Command dispatcher -- handles 4 message types}]
+/* SetVelocityRequest -> shared_data_set_motor_command() */
+/* EmergencyStopRequest -> shared_data_trigger_estop()  */
+/* SetPIDGainsRequest -> shared_data_set_pid_gains()    */
+/* SetRetransmitConfigRequest -> rx_comm_manager_set_auto_retransmit() */
+\end{lstlisting}
+
+\subsubsection{Active Firmware PRs}
+
+\begin{prbox}
+  \textbf{\inprogress{341}} -- Frame decoder resync: bounded linear scan (\texttt{k\_frame\_max\_scan\_bytes=1036}), new public \texttt{rx\_frame\_decode\_with\_resync()} API, 3 new Unity tests.\\[4pt]
+  \textbf{\inprogress{342}} -- Telemetry transport failover: telemetry was hardcoded to USB only (\texttt{k\_comm\_channel\_usb}). Adds \texttt{internal\_select\_transport()} with USB-first, SPI-fallback. Critical production fix.\\[4pt]
+  \textbf{\inprogress{343}} -- ThreadX stack checking: enables \texttt{TX\_ENABLE\_STACK\_CHECKING}, adds \texttt{rx\_stack\_monitor} module, overflow handler logs thread name then halts (IWDT resets in 2 s). 7 Unity tests.\\[4pt]
+  \textbf{\inprogress{344}} -- BMS SoC thresholds: adds \texttt{bms\_monitor\_config\_t} with configurable \texttt{soc\_warning\_pct} (25\%) and \texttt{soc\_critical\_pct} (5\%). 14 new unit tests.\\[4pt]
+  \textbf{\inprogress{345}} -- Event-flag cleanup: removes dead \texttt{TX\_EVENT\_FLAGS\_GROUP} infrastructure from \texttt{shared\_data} (\texttt{shared\_data\_wait\_event()} had zero callers). All 48 tests pass.\\[4pt]
+  \textbf{\inprogress{346}} -- ASCII source cleanup: replaces all non-ASCII characters across 254 files. Adds \texttt{Doxyfile} and Makefile targets (\texttt{doxygen}, \texttt{doxygen-pdf}).
+\end{prbox}
+
 \subsection{What Is Missing}
 
-\subsubsection{Gap F-1: OTA Firmware Update Handler (HIGH)}
-
-\begin{criticalbox}
-  \textbf{Impact:} Cannot update firmware in production without re-flashing over JTAG.
-  All 10 \texttt{FirmwareUpdateService} RPCs in the gateway return \texttt{Unimplemented}.
-  Neither the firmware nor the gateway has implemented this.
-\end{criticalbox}
-
-\textbf{Files to create:}
-
-\begin{lstlisting}[caption={New files needed for OTA}]
-e2-studio-star-rx72n-firmware/
-  libs/rx_ota/
-    inc/rx_ota.h      -- State machine + flash write API
-    src/rx_ota.c      -- Implementation
-  tests/
-    test_rx_ota.c     -- Unity tests with mock flash
-\end{lstlisting}
-
-\textbf{OTA state machine:}
-
-\begin{lstlisting}[language=C, caption={OTA state machine types (rx\_ota.h)}]
-typedef enum : uint8_t {
-    k_ota_state_idle        = 0,  /**< No update in progress */
-    k_ota_state_starting    = 1,  /**< BeginUpdate received */
-    k_ota_state_receiving   = 2,  /**< WriteChunk frames arriving */
-    k_ota_state_validating  = 3,  /**< Checking CRC-32 + size */
-    k_ota_state_ready       = 4,  /**< Ready to reboot */
-    k_ota_state_error       = 5,  /**< Error state */
-} ota_state_t;
-
-typedef struct {
-    ota_state_t state;         /**< Current FSM state */
-    uint32_t    total_size;    /**< Expected firmware size (bytes) */
-    uint32_t    bytes_written; /**< Progress counter */
-    uint32_t    expected_crc;  /**< Expected CRC-32 from BeginUpdate */
-    uint32_t    running_crc;   /**< Running CRC accumulator */
-    uint32_t    session_id;    /**< From BeginUpdateRequest.header */
-} ota_context_t;
-
-rx_err_t rx_ota_begin(const star_v1_BeginUpdateRequest* req);
-rx_err_t rx_ota_write_chunk(const star_v1_FirmwareChunk* chunk);
-rx_err_t rx_ota_finalize(void);
-rx_err_t rx_ota_abort(void);
-rx_err_t rx_ota_get_progress(uint8_t* percent_out);
-rx_err_t rx_ota_reboot(void);
-\end{lstlisting}
-
-\textbf{Note:} The wire.proto \texttt{WireMessage} oneof needs a \texttt{FirmwareChunk} field added before OTA transfer can work. Also add the OTA message types to \texttt{internal\_handle\_command\_frame()}.
-
-\textbf{Estimated effort:} 2--3 days (firmware state machine + flash write + gateway integration)
-
-\subsubsection{Gap F-2: NVS Configuration Persistence (HIGH)}
+\subsubsection{Gap F-1: NVS Configuration Persistence (HIGH)}
 
 \begin{warnbox}
-  \textbf{Impact:} PID gains received via \texttt{SetPIDGainsRequest} are applied to the running system via \texttt{shared\_data\_set\_pid\_gains()} but are NOT saved to flash. Every reboot resets to compile-time defaults.
+  \textbf{Impact:} PID gains received via \texttt{SetPIDGainsRequest} are applied in RAM via
+  \texttt{shared\_data\_set\_pid\_gains()} but NOT saved to flash. Every reboot resets to
+  compile-time defaults -- any tuning session must be repeated.\\
+  \textbf{Hardware:} RX72N has 64 KB Data Flash (separate from code flash), ideal for NVS.
 \end{warnbox}
 
-The RX72N has 64 KB Data Flash (separate from code flash) ideal for NVS. No library currently uses it.
-
-\textbf{Files to create:}
-
-\begin{lstlisting}[caption={NVS library structure}]
+\begin{lstlisting}[caption={Files to create for NVS}]
 e2-studio-star-rx72n-firmware/
   libs/rx_nvs/
     inc/rx_nvs.h    -- Key-value store API
@@ -508,81 +485,38 @@ e2-studio-star-rx72n-firmware/
 \end{lstlisting}
 
 \begin{lstlisting}[language=C, caption={NVS API (rx\_nvs.h)}]
-/**
- * @brief Write named config blob to Data Flash.
- * @param[in] key   ASCII key (max 32 chars)
- * @param[in] data  Buffer to save
- * @param[in] len   Length (max 4096 bytes)
- */
+/** @brief Write named config blob to Data Flash (max 4096 bytes). */
 rx_err_t rx_nvs_write(const char* key,
                        const void* data, uint16_t len);
-
-/**
- * @brief Read named config blob from Data Flash.
- */
+/** @brief Read named config blob from Data Flash. */
 rx_err_t rx_nvs_read(const char* key,
                       void* data, uint16_t* len);
-
-/** @brief Factory reset (erase all Data Flash). */
+/** @brief Factory reset: erase all Data Flash. */
 rx_err_t rx_nvs_erase_all(void);
 \end{lstlisting}
 
-\textbf{Integration points after creating NVS:}
-\begin{itemize}
-  \item \filepath{src/tasks/comm\_task.c} -- After \texttt{shared\_data\_set\_pid\_gains()}, call \texttt{rx\_nvs\_write("pid\_config", ...)}
-  \item \filepath{src/main.c} -- On startup, call \texttt{rx\_nvs\_read("pid\_config", ...)} before \texttt{tx\_kernel\_enter()}
-\end{itemize}
+\textbf{Integration points:}
 
-\textbf{Estimated effort:} 4--6 hours
+\begin{lstlisting}
+// On PID update (comm_task.c):
+shared_data_set_pid_gains(...);
+rx_nvs_write("pid", &gains, sizeof(gains));
 
-\subsubsection{Gap F-3: RPLiDAR C1 Integration (LOW)}
+// On boot (main.c, before tx_kernel_enter):
+rx_nvs_read("pid", &gains, &len);
+shared_data_set_pid_gains(&gains);
+\end{lstlisting}
+
+\textbf{Estimated effort:} 4--6 hours.
+
+\subsubsection{Gap F-2: OTA Firmware Update Handler (LOW -- Future Enhancement)}
 
 \begin{warnbox}
-  \textbf{Impact:} SLAM / autonomous navigation is impossible without the lidar sensor.
-  RPLiDAR C1 (12 m range, 360\textdegree{}, IP54) is listed in the hardware design but has no firmware driver.
+  \textbf{Scope note:} OTA is not required for the current prototype phase. Hardware can be
+  reflashed over JTAG/SWD during development. This is a future enhancement for production deployment.\\
+  \textbf{Gateway:} All 10 \texttt{FirmwareUpdateService} RPCs return \texttt{codes.Unimplemented}.\\
+  \textbf{Effort when needed:} 2--3 days (firmware state machine + gateway implementation).
 \end{warnbox}
-
-\textbf{Interface:} UART at 460800 baud. Requires a dedicated SCI channel (SCI1 or SCI2 recommended; SCI9 is the debug console).
-
-\textbf{Files to create:}
-
-\begin{lstlisting}[caption={RPLiDAR library structure}]
-e2-studio-star-rx72n-firmware/
-  libs/rx_rplidar/
-    inc/rx_rplidar.h
-    src/rx_rplidar.c
-  src/tasks/
-    lidar_scan_task.c   -- 10 Hz scan polling
-  tests/
-    test_rx_rplidar.c
-\end{lstlisting}
-
-\textbf{Proto change needed} (add to \texttt{telemetry.proto} or new \texttt{lidar.proto}):
-\begin{lstlisting}[language=C, caption={Required proto additions for LiDAR}]
-message LidarScan {
-    uint64 timestamp_us = 1;
-    repeated LidarPoint points = 2;  // ~360 points per scan
-
-    message LidarPoint {
-        float angle_deg   = 1;   // 0-360 degrees
-        float distance_mm = 2;   // 0 = invalid measurement
-        uint32 quality    = 3;   // Signal quality 0-255
-    }
-}
-\end{lstlisting}
-
-\textbf{Estimated effort:} 2--3 days (driver + task + proto + nanopb options)
-
-\subsection{Test Coverage}
-
-The firmware has 87 test files covering all implemented modules. Test infrastructure uses Unity + CMock with mock hardware injection via function-pointer bus interfaces (SOLID Dependency Inversion).
-
-\begin{lstlisting}[caption={Test files for gap areas (to be created)}]
-tests/
-  test_rx_ota.c        -- OTA state machine + CRC validation
-  test_rx_nvs.c        -- Data Flash read/write/erase
-  test_rx_rplidar.c    -- UART protocol parsing (mock UART)
-\end{lstlisting}
 
 \newpage
 
@@ -592,11 +526,11 @@ tests/
 \section{Directory: \texttt{star-gateway/}}
 
 \begin{dirbox}
-  \textbf{Language:} Go 1.22\\
+  \textbf{Language:} Go 1.22+\\
   \textbf{Build:} \texttt{go build ./cmd/star-gateway}\\
-  \textbf{Role:} Bridges gRPC clients (UI, ROS2) to the RX72N via SPI/USB CDC\\
-  \textbf{Test coverage:} 80.8\% (runs in CI via \texttt{.github/workflows/gateway.yml})\\
-  \textbf{Overall:} Transport, framing, FEC, and HARQ are production-ready. FirmwareUpdateService is 0\%.
+  \textbf{Role:} Bridges gRPC clients (UI, ROS2) to RX72N via SPI/USB CDC\\
+  \textbf{Test coverage:} 80.8\% -- enforced in CI via \texttt{gateway.yml}\\
+  \textbf{Overall:} Transport, framing, FEC, HARQ production-ready. FirmwareUpdateService is a future enhancement.
 \end{dirbox}
 
 \subsection{Directory Structure}
@@ -604,165 +538,109 @@ tests/
 \begin{lstlisting}[caption={star-gateway/ layout}]
 star-gateway/
   cmd/
-    star-gateway/main.go       -- Entry point
-    virtual_rx72n/             -- Simulator (95% complete)
+    star-gateway/main.go         -- Entry point
+    virtual_rx72n/               -- Hardware simulator (95% complete)
   internal/
-    transport/                 -- Layer 1: SPI + USB CDC
-    frame/                     -- Layer 2: SYNC+SEQ+LEN+TYPE+FLAGS+CRC-32
-    fec/                       -- FEC: Viterbi K=7, rate 1/2
-    harq/                      -- HARQ: Chase Combining retransmit
-    service/                   -- gRPC service handlers
-      motor_control.go         -- MotorControlService (80%)
-      telemetry.go             -- TelemetryService (90%)
-      battery.go               -- BatteryManagementService (100%)
-      configuration.go         -- ConfigurationService (85%)
-      firmware.go              -- FirmwareUpdateService (0% - all stubs)
-      gateway_service.go       -- GatewayService for ROS2 bridge (85%)
-    manager/                   -- Transport manager, dispatcher
-    link/                      -- SPI link layer
-    controller/                -- Gamepad state
+    transport/                   -- Layer 1: SPI + USB CDC transports
+    frame/                       -- Layer 2: SYNC+SEQ+LEN+TYPE+FLAGS+CRC-32
+    fec/                         -- FEC: Viterbi K=7, rate 1/2
+    harq/                        -- HARQ: Chase Combining retransmit
+    service/
+      motor_control.go           -- MotorControlService (90%)
+      telemetry.go               -- TelemetryService (90%)
+      battery.go                 -- BatteryManagementService (100%)
+      configuration.go           -- ConfigurationService (85%)
+      firmware.go                -- FirmwareUpdateService (0% -- future)
+      gateway_service.go         -- GatewayService for ROS2 bridge (85%)
+    manager/                     -- Transport manager, RESET_ACK dispatch
+    link/                        -- SPI link layer
 \end{lstlisting}
 
-\subsection{What Is Complete}
+\subsection{Test Coverage by Package}
 
 \begin{center}
-\begin{tabular}{lll}
+\small
+\begin{tabular}{L{5cm}L{2.5cm}L{6cm}}
   \toprule
   \textbf{Package} & \textbf{Coverage} & \textbf{Status} \\
   \midrule
-  \texttt{internal/frame} & 100\% & \done \\
+  \texttt{internal/controller} & 100\% & \done \\
   \texttt{internal/fec} & 100\% & \done \\
-  \texttt{internal/harq} & 87\% & \done \\
+  \texttt{internal/frame} & 100\% & \done \\
   \texttt{internal/transport} & 92.1\% & \done \\
   \texttt{internal/manager} & 97.4\% & \done \\
-  \texttt{internal/service} & 94.4\% & \partialstatus\ (firmware.go is 0\%) \\
-  \texttt{internal/controller} & 100\% & \done \\
+  \texttt{internal/service} & 94.4\% & \partialstatus\ (firmware.go is future) \\
+  \texttt{internal/harq} & 87.0\% & \done \\
   \texttt{internal/link} & 83.3\% & \done \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\subsubsection{Virtual RX72N Simulator (\texttt{cmd/virtual\_rx72n/})}
-
-The simulator is a Go TCP/Unix socket server that replaces real hardware for integration testing.
+\subsection{Virtual RX72N Simulator (\texttt{cmd/virtual\_rx72n/})}
 
 \begin{center}
-\begin{tabular}{ll}
+\small
+\begin{tabular}{L{9cm}L{5cm}}
   \toprule
   \textbf{Feature} & \textbf{Status} \\
   \midrule
-  Full SPI frame protocol (SYNC+SEQ+LEN+TYPE+FLAGS+CRC-32) & \done \\
+  Full SPI frame protocol & \done \\
   PING/PONG heartbeat with counter echo & \done \\
-  RESET/RESET\_ACK session synchronization & \done \\
-  Protobuf VelocityCommand and EmergencyStop handling & \done \\
+  RESET/RESET\_ACK session sync & \done \\
+  VelocityCommand + EmergencyStop handling & \done \\
   Simulated TelemetryData (static values) & \done \\
-  Sequence number tracking with wraparound at 0xFFFF & \done \\
-  ACK frame generation for FlagRequiresAck frames & \done \\
-  Configurable latency injection (SIM\_LATENCY\_MS env var) & \done \\
+  Sequence number tracking with wraparound & \done \\
+  ACK frame generation (FlagRequiresAck) & \done \\
+  Configurable latency (SIM\_LATENCY\_MS env var) & \done \\
   Graceful shutdown with socket cleanup & \done \\
-  Motor dynamics simulation (G(s) = 3.665/(0.075s+1)) & \missing \\
+  Motor dynamics simulation G(s)=3.665/(0.075s+1) & \missing \\
   Fault injection API (CRC errors, packet loss) & \missing \\
-  BMS state of charge simulation & \missing \\
+  BMS state-of-charge discharge simulation & \missing \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{Motor dynamics model} (to implement in \filepath{cmd/virtual\_rx72n/motor\_sim.go}):
+\textbf{To enable integration testing without hardware}, enhance the simulator with motor dynamics:
 
-\begin{lstlisting}[language=Go, caption={Motor dynamics (discrete-time, 100 Hz)}]
-// First-order model: G(s) = K/(tau*s + 1)
-// K = 3.665 rad/s/V, tau = 0.075 s
+\begin{lstlisting}[language=Go, caption={Motor dynamics model for virtual\_rx72n/motor\_sim.go}]
+// First-order: G(s) = K/(tau*s + 1),  K=3.665 rad/s/V, tau=0.075 s
 // Discrete backward Euler at T=0.010 s:
-//   v[k] = (1 - exp(-T/tau)) * K * u[k] + exp(-T/tau) * v[k-1]
-//         = 0.1248 * K * u[k] + 0.8752 * v[k-1]
-alpha := math.Exp(-motorSamplePeriod / motorTimeConstant)  // 0.8752
-m.velocityRadps = (1-alpha)*motorGain*inputVoltage +
-                  alpha*m.velocityRadps
-m.positionRad += m.velocityRadps * motorSamplePeriod
-ticks := int64(m.positionRad / (2*math.Pi) * ticksPerRev)
+//   v[k] = 0.1248*K*u[k] + 0.8752*v[k-1]
+alpha := math.Exp(-motorSamplePeriod / motorTimeConstant)
+m.velocityRadps = (1-alpha)*motorGain*inputVoltage + alpha*m.velocityRadps
+m.positionRad  += m.velocityRadps * motorSamplePeriod
+ticks          := int64(m.positionRad / (2*math.Pi) * ticksPerRev)
 m.encoderTicks.Store(ticks)
 \end{lstlisting}
 
 \subsection{What Is Missing}
 
-\subsubsection{Gap G-1: FirmwareUpdateService -- All 10 RPCs (HIGH)}
+\subsubsection{Gap G-1: RESET\_ACK Auto-Response (IN PROGRESS)}
 
-\begin{criticalbox}
-  \textbf{File:} \filepath{internal/service/firmware.go}\\
-  \textbf{Impact:} Production firmware updates are completely blocked. No OTA capability exists.\\
-  \textbf{Every method returns:} \texttt{status.Error(codes.Unimplemented, "not implemented")}
-\end{criticalbox}
-
-\begin{center}
-\begin{tabular}{ll}
-  \toprule
-  \textbf{RPC Method} & \textbf{Status} \\
-  \midrule
-  \texttt{BeginUpdate} & \missing\ (TODO: Initialize OTA partition, set expected size/CRC) \\
-  \texttt{WriteChunk} & \missing\ (TODO: Write single firmware chunk) \\
-  \texttt{StreamChunks} & \missing\ (TODO: Bulk chunk transfer via client streaming) \\
-  \texttt{FinalizeUpdate} & \missing\ (TODO: Validate firmware, prepare reboot) \\
-  \texttt{AbortUpdate} & \missing\ (TODO: Cancel and cleanup) \\
-  \texttt{GetUpdateProgress} & \missing\ (TODO: Return bytes received / total) \\
-  \texttt{StreamUpdateProgress} & \missing\ (TODO: Server-stream progress events) \\
-  \texttt{Reboot} & \missing\ (TODO: Trigger reboot into new firmware) \\
-  \texttt{Rollback} & \missing\ (TODO: Boot previous firmware) \\
-  \texttt{MarkValid} & \missing\ (TODO: Confirm new firmware stable) \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\textbf{Required implementation:}
-\begin{enumerate}
-  \item OTA session state machine (idle $\to$ starting $\to$ receiving $\to$ validating $\to$ ready)
-  \item Chunk buffer with running CRC-32 verification
-  \item HARQ-reliable chunk transmission (each chunk requires ACK from firmware)
-  \item Firmware image validation (size + CRC match from \texttt{BeginUpdate})
-  \item Partition switching command to firmware
-  \item Reboot sequencing with health check timeout
-  \item Rollback on failed health check
-\end{enumerate}
-
-\textbf{Estimated effort:} 2--3 days (gateway side only; firmware OTA handler also required)
+\begin{prbox}
+  \textbf{\inprogress{349}} -- \texttt{dispatchControlFrame()} was missing \texttt{case frame.FrameTypeReset:}, causing firmware-initiated RESET frames to be silently discarded. Adds \texttt{sendResetAck()} modelled after \texttt{sendPong()} with operations-gate bypass to avoid deadlock. All 13 packages pass.
+\end{prbox}
 
 \subsubsection{Gap G-2: E-Stop Priority Queue (MEDIUM)}
 
 \begin{warnbox}
-  \textbf{File:} \filepath{internal/service/motor\_control.go:90}\\
-  \textbf{TODO comment:} ``Implement priority framing for E-Stop.''\\
-  \textbf{Impact:} Emergency stop goes through normal HARQ queue. During link congestion,
-  the stop command could be delayed behind pending telemetry ACKs.
+  \textbf{File:} \filepath{internal/service/motor\_control.go} -- TODO comment: ``Implement priority framing for E-Stop.''\\
+  \textbf{Impact:} During link congestion, E-Stop may be delayed behind pending ACKs.\\
+  \textbf{Required:} Bypass the normal HARQ queue for emergency stop frames.\\
+  \textbf{Estimated effort:} 2--3 hours.
 \end{warnbox}
 
-\textbf{Required:} A priority transmission path that bypasses the normal frame queue and sends the E-Stop frame immediately, clearing any pending outgoing frames.
+\subsubsection{Gap G-3: SetMotorPower Not Dispatching (MEDIUM)}
 
-\textbf{Estimated effort:} 2--3 hours
+\texttt{SetMotorPower} RPC exists but does not send \texttt{MotorPowerCommand} to the RX72N. The firmware dispatcher also has no handler for it. Requires a coordinated change to \texttt{wire.proto}, firmware dispatcher, and gateway service.
 
-\subsubsection{Gap G-3: SetMotorPower Not Dispatching to Firmware (MEDIUM)}
-
-The \texttt{SetMotorPower} RPC in \texttt{MotorControlService} accepts \texttt{MotorPowerCommand} but does not send it over the wire to the RX72N. The firmware command dispatcher does not handle \texttt{MotorPowerCommand} either (only \texttt{SetVelocityRequest} is handled).
-
-\textbf{Required:}
-\begin{enumerate}
-  \item Add \texttt{MotorPowerCommand} to the \texttt{WireMessage} oneof in \texttt{wire.proto}
-  \item Add handler in \filepath{e2-studio-star-rx72n-firmware/src/tasks/comm\_task.c}
-  \item Dispatch from \texttt{SetMotorPower} RPC handler in gateway
-\end{enumerate}
-
-\textbf{Estimated effort:} 3--4 hours (proto change + firmware + gateway)
+\textbf{Estimated effort:} 3--4 hours (proto + firmware + gateway).
 
 \subsubsection{Gap G-4: Virtual RX72N Motor Dynamics (LOW)}
 
-The simulator returns static telemetry regardless of commanded velocity. Motor dynamics simulation would enable:
-\begin{itemize}
-  \item Testing odometry and dead-reckoning algorithms
-  \item PID controller validation in simulation before hardware
-  \item Realistic encoder tick responses to velocity commands
-\end{itemize}
+Simulator returns static telemetry regardless of velocity commands. Adding motor dynamics (see code above) would enable odometry and PID testing without hardware.
 
-\textbf{File to create:} \filepath{cmd/virtual\_rx72n/motor\_sim.go} (see motor model above)
-
-\textbf{Estimated effort:} 1--2 days (motor dynamics + BMS simulation + fault injection)
+\textbf{Estimated effort:} 1--2 days.
 
 \newpage
 
@@ -772,41 +650,34 @@ The simulator returns static telemetry regardless of commanded velocity. Motor d
 \section{Directory: \texttt{star-ros2/}}
 
 \begin{dirbox}
-  \textbf{Language:} C++ (ROS2 Jazzy, C++17)\\
+  \textbf{Language:} C++17, ROS2 Jazzy\\
   \textbf{Build:} \texttt{colcon build} + \texttt{clang-format} enforcement\\
-  \textbf{Role:} ROS2 middleware -- bridges gateway gRPC to robot topics, manages safety\\
-  \textbf{Overall:} Core bridge nodes are complete. Hardware integration untested. SLAM stack not started.
+  \textbf{Role:} Middleware -- bridges gateway gRPC to robot topics, manages safety, hosts RPLiDAR\\
+  \textbf{Overall:} Core bridge nodes complete. Hardware integration untested. SLAM stack not started.
 \end{dirbox}
 
 \subsection{Package Structure}
 
 \begin{lstlisting}[caption={star-ros2/ package layout}]
 star-ros2/
-  star_gateway_bridge/     -- gRPC client -> ROS2 topics (COMPLETE)
-    src/
-      star_gateway_bridge_node.cpp   -- ForwardTelemetry, GetTeleopCommand, SetPIDGains
-      message_converter.cpp          -- Proto <-> ROS2 message translation
-  star_spi_bridge/         -- SPI driver ROS2 node (code complete, untested)
-    src/
-      star_spi_driver_node.cpp       -- SPI framing + HARQ for ROS2
-  star_safety_monitor/     -- Safety watchdog (40% test coverage)
-    src/
-      safety_monitor_node.cpp        -- Battery/timeout/velocity safety checks
-  star_bringup/            -- Launch files (EMPTY SKELETON)
-    launch/                          -- No launch files exist yet
-  star_nav/                -- Navigation stack (0% - not started)
+  star_gateway_bridge/       -- gRPC client <-> ROS2 topics (COMPLETE)
+  star_spi_bridge/           -- SPI driver ROS2 node (code complete, untested)
+  star_safety_monitor/       -- Safety watchdog (40% test coverage)
+  star_bringup/              -- Launch files (EMPTY SKELETON)
+  star_nav/                  -- Navigation stack (0%)
 \end{lstlisting}
 
 \subsection{What Is Complete}
 
-\subsubsection{\texttt{star\_gateway\_bridge} Package (100\%)}
+\subsubsection{\texttt{star\_gateway\_bridge} (100\%)}
 
 \begin{okbox}
-  Fully implemented. Bridges between gateway gRPC service and ROS2 topics/services.
+  Fully implemented. Bridges gateway gRPC service to ROS2 topics.
 \end{okbox}
 
 \begin{center}
-\begin{tabular}{lll}
+\small
+\begin{tabular}{L{5cm}L{4cm}L{5cm}}
   \toprule
   \textbf{Function} & \textbf{ROS2 Interface} & \textbf{gRPC Call} \\
   \midrule
@@ -817,27 +688,26 @@ star-ros2/
 \end{tabular}
 \end{center}
 
-\subsubsection{\texttt{star\_spi\_bridge} Package (90\% -- code complete)}
+\subsubsection{\texttt{star\_spi\_bridge} (85\% -- code complete, untested)}
 
 \begin{warnbox}
-  All code is written but has \textbf{never been run on real hardware} (RPi5 + RX72N).
+  All source code is written. This package has \textbf{never been run on real hardware} (RPi5 + RX72N).
   This is the final integration point before the robot can physically move.
 \end{warnbox}
 
-\textbf{Known issue in} \filepath{src/star\_spi\_driver\_node.cpp:112}:
+\textbf{Known safety gap in} \filepath{src/star\_spi\_driver\_node.cpp}:
 
-\begin{lstlisting}[language=C++, caption={Safety gap: on\_deactivate() does not send zero velocity}]
-// CURRENT (unsafe):
-CallbackReturn on_deactivate(const State & previous_state) override {
-    transport_->close();   // Closes SPI -- but motors may still be spinning!
+\begin{lstlisting}[language=C++, caption={on\_deactivate() must send zero velocity before closing SPI}]
+// CURRENT (unsafe): closes SPI while motors may still be spinning
+CallbackReturn on_deactivate(const State&) override {
+    transport_->close();
     return CallbackReturn::SUCCESS;
 }
 
 // REQUIRED (safe):
-CallbackReturn on_deactivate(const State & previous_state) override {
-    // Send zero-velocity frame before closing SPI
-    auto zero_cmd = build_velocity_command(0.0f, 0.0f, 0.0f, 0.0f);
-    transport_->send(zero_cmd);
+CallbackReturn on_deactivate(const State&) override {
+    auto zero = build_velocity_command(0.0f, 0.0f, 0.0f, 0.0f);
+    transport_->send(zero);
     std::this_thread::sleep_for(std::chrono::milliseconds(50));
     transport_->close();
     return CallbackReturn::SUCCESS;
@@ -849,69 +719,85 @@ CallbackReturn on_deactivate(const State & previous_state) override {
 \subsubsection{Gap R-1: SPI Bridge Hardware Testing (HIGH)}
 
 \begin{criticalbox}
-  \textbf{Effort:} 4--8 hours on hardware\\
-  \textbf{Required:} RPi5 with \texttt{/dev/spidev0.0} connected to RX72N running firmware.\\
-  \textbf{Validates:} Frame encoding, HARQ retransmit, telemetry reception, encoder feedback.
+  \textbf{Effort:} 4--8 hours on RPi5 + RX72N hardware.\\
+  \textbf{Validates:} Frame encoding, HARQ retransmit, telemetry reception, encoder feedback,
+  100 Hz polling requirement (must not miss cycles to avoid 500 ms RX72N timeout).
 \end{criticalbox}
 
-\textbf{Checklist before hardware test:}
-\begin{itemize}
-  \item Fix \texttt{on\_deactivate()} zero-velocity safety (see above)
-  \item Verify SPI CS polarity matches firmware (active-low)
-  \item Confirm 10 MHz SPI mode 0 configured in RPi5 device tree
-  \item Verify COPI/CIPO pin assignments match firmware pinout
+\textbf{Pre-test checklist:}
+\begin{itemize}[noitemsep]
+  \item Fix \texttt{on\_deactivate()} zero-velocity safety (above)
+  \item Verify SPI CS polarity (active-low) matches firmware
+  \item Confirm SPI Mode 0 @ 10 MHz in RPi5 device tree
+  \item Verify COPI/CIPO pin assignments against hardware pinout
 \end{itemize}
 
 \subsubsection{Gap R-2: \texttt{star\_bringup} Launch Files (HIGH)}
 
 \begin{criticalbox}
-  \textbf{Directory:} \filepath{star\_bringup/launch/} -- \textbf{completely empty}\\
-  \textbf{Impact:} Cannot start the full robot system. Every node must be launched manually.
+  \filepath{star\_bringup/launch/} is completely empty. Cannot start the system without
+  manually launching each node.
 \end{criticalbox}
 
-\textbf{Required launch files:}
-
-\begin{lstlisting}[caption={Required launch files for star\_bringup}]
+\begin{lstlisting}[caption={Required launch files}]
 star_bringup/launch/
-  star_robot.launch.py      -- Full system: bridge + SPI + safety + nav
-  star_simulation.launch.py -- Gazebo + virtual_rx72n simulator
-  star_teleop.launch.py     -- Manual control only (bridge + SPI + safety)
-  star_nav.launch.py        -- Autonomous: adds SLAM + NavStack
+  star_robot.launch.py        -- Full system (bridge + SPI + safety + nav)
+  star_simulation.launch.py   -- Simulator (Gazebo + virtual_rx72n)
+  star_teleop.launch.py       -- Manual control only
+  star_nav.launch.py          -- Autonomous (adds SLAM + NavStack)
 \end{lstlisting}
 
-\textbf{Estimated effort:} 4--6 hours
+\textbf{Estimated effort:} 4--6 hours.
 
 \subsubsection{Gap R-3: Safety Monitor Test Coverage (MEDIUM)}
 
 \begin{warnbox}
-  \filepath{star\_safety\_monitor/} has 40\% test coverage -- 3 of 10 test cases use \texttt{GTEST\_SKIP}.\\
-  Battery safety checks and E-Stop triggering paths are not tested.
+  \filepath{star\_safety\_monitor/} -- 3 of 10 test cases use \texttt{GTEST\_SKIP}.\\
+  Battery critically low, over-temperature, and communication timeout paths are not tested.\\
+  \textbf{Estimated effort:} 4--6 hours.
 \end{warnbox}
 
-\textbf{Tests that need implementation:}
-\begin{itemize}
-  \item Battery critically low $\to$ E-Stop triggers (currently skipped)
-  \item Over-temperature $\to$ velocity limit applied (currently skipped)
-  \item Communication timeout $\to$ E-Stop triggers (currently skipped)
-\end{itemize}
+\subsubsection{Gap R-4: RPLiDAR C1 ROS2 Integration (MEDIUM)}
 
-\subsubsection{Gap R-4: SLAM Stack (LOW -- requires hardware first)}
+\begin{warnbox}
+  \textbf{Location note:} The RPLiDAR C1 sensor connects to the \textbf{Raspberry Pi 5} (not the RX72N).
+  It runs as a ROS2 node on the host, not as firmware. Use the existing
+  \texttt{rplidar\_ros2} community package.
+\end{warnbox}
 
 \begin{center}
-\begin{tabular}{ll}
+\small
+\begin{tabular}{L{4cm}L{10cm}}
+  \toprule
+  \textbf{Item} & \textbf{What Is Needed} \\
+  \midrule
+  ROS2 package & Add \texttt{rplidar\_ros2} to workspace dependencies \\
+  Launch integration & Include lidar node in \texttt{star\_bringup} launch files \\
+  Topic remapping & \texttt{/scan} topic available for SLAM consumption \\
+  Hardware mount & Physical UART/USB connection from RPi5 to RPLiDAR \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\textbf{Estimated effort:} 4--8 hours (driver setup + launch integration + SLAM config).
+
+\subsubsection{Gap R-5: SLAM Stack (LOW -- requires RPLiDAR + IMU first)}
+
+\begin{center}
+\small
+\begin{tabular}{L{5cm}L{9cm}}
   \toprule
   \textbf{Component} & \textbf{Status} \\
   \midrule
   RTAB-Map (mapping + localization) & Not installed or configured \\
   \texttt{robot\_localization} EKF & Not configured \\
-  Nav2 (path planning + obstacle avoid) & Not installed or configured \\
-  RPLiDAR C1 ROS2 driver & Not integrated \\
-  IMU (MPU-6050 or ICM-42688) & Hardware not yet chosen \\
+  Nav2 (path planning) & Not installed or configured \\
+  IMU (MPU-6050 or ICM-42688) & Hardware not yet chosen -- connects to RPi5 \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\textbf{Prerequisite:} RPLiDAR C1 firmware driver (Gap F-3) must be completed first.
+\textbf{Prerequisite:} RPLiDAR C1 ROS2 integration (Gap R-4) must work first.
 
 \newpage
 
@@ -921,114 +807,76 @@ star_bringup/launch/
 \section{Directory: \texttt{star-ui/}}
 
 \begin{dirbox}
-  \textbf{Language:} TypeScript / React\\
-  \textbf{Build:} npm / Vite\\
-  \textbf{Role:} Operator interface -- gamepad control + robot state visualization\\
-  \textbf{Overall:} Gamepad control works. Everything else is missing. 0\% test coverage.
+  \textbf{Language:} TypeScript, React 19, Tailwind v4, shadcn/ui\\
+  \textbf{Build:} \texttt{npm run build} (Vite)\\
+  \textbf{Overall:} All 7 pages scaffolded with mock data in PR \#351. Real data connection is the next step.
 \end{dirbox}
 
-\subsection{What Is Complete}
+\subsection{In Progress -- PR \#351}
 
-\begin{okbox}
-  \textbf{Gamepad control} -- WebSocket connection to gateway, gamepad input captured and forwarded as teleop commands. This is the only working UI feature.
-\end{okbox}
+\begin{prbox}
+  \textbf{\inprogress{351}} -- Complete STAR dashboard frontend. Adds 7 pages with dark-themed
+  shadcn/ui components and a \texttt{MockGatewayClient} that returns realistic simulated data.
+  The UI is fully navigable and interactive without hardware.\\[4pt]
+  \textbf{Pages added:} Dashboard, Controller, Telemetry, Battery, Motors, Configuration, Firmware\\[4pt]
+  \textbf{Architecture:} \texttt{GatewayClient} interface + \texttt{MockGatewayClient} implementation.
+  Switching to real data requires implementing the real \texttt{GatewayClient} class.\\[4pt]
+  \textbf{Status:} Manual test plan only (no automated tests yet).
+\end{prbox}
 
 \subsection{What Is Missing}
 
-\subsubsection{Gap U-1: gRPC-Web Bridge (CRITICAL -- blocks all UI features)}
+\subsubsection{Gap U-1: Real Gateway Connection (HIGH -- replaces MockGatewayClient)}
 
 \begin{criticalbox}
-  \textbf{Impact:} The UI cannot call any gRPC service (telemetry, battery, motor control, config, OTA).
-  A gRPC-Web proxy is required between the browser and the Go gateway gRPC server.
+  \textbf{Impact:} The UI is fully built (PR \#351) but uses mock data. Connecting to the real
+  gateway requires a gRPC-Web or REST bridge between the browser and Go gRPC server.
 \end{criticalbox}
 
 \textbf{Options:}
-\begin{enumerate}
-  \item \textbf{Envoy proxy} (recommended for production): Add \filepath{envoy.yaml} configuration, run as sidecar on RPi5
-  \item \textbf{grpc-gateway} (simpler): Add REST transcoding to gateway, serves HTTP/JSON that browsers can call
-  \item \textbf{connect-go} (modern): Replace grpc-go with connect-go, which speaks HTTP/1.1 natively
+\begin{enumerate}[noitemsep]
+  \item \textbf{grpc-gateway} (recommended, ~4 hrs): REST/JSON transcoding to existing gRPC services. No extra process.
+  \item \textbf{Envoy proxy} (production-grade): HTTP/2 proxy as a sidecar on RPi5. More complex.
+  \item \textbf{connect-go} (modern): Replace grpc-go with connect-go for native HTTP/1.1.
 \end{enumerate}
 
-\textbf{Recommended approach} (grpc-gateway transcoding, \textasciitilde 4 hours):
-\begin{lstlisting}[language=Go, caption={Gateway REST transcoding setup}]
-// In cmd/star-gateway/main.go, add HTTP gateway:
+\begin{lstlisting}[language=Go, caption={grpc-gateway setup in cmd/star-gateway/main.go}]
 mux := runtime.NewServeMux()
 opts := []grpc.DialOption{grpc.WithTransportCredentials(
     insecure.NewCredentials())}
+// Register all 5 services for REST transcoding:
 starv1.RegisterMotorControlServiceHandlerFromEndpoint(
     ctx, mux, "localhost:50051", opts)
 starv1.RegisterTelemetryServiceHandlerFromEndpoint(
     ctx, mux, "localhost:50051", opts)
-// etc. for all 5 services
+// ... repeat for Battery, Configuration, Firmware
 http.ListenAndServe(":8080", mux)
 \end{lstlisting}
 
-\textbf{Estimated effort:} 4--8 hours (bridge setup + proto HTTP option annotations)
+\textbf{Estimated effort:} 4--8 hours (bridge setup + real GatewayClient class in UI).
 
 \subsubsection{Gap U-2: Emergency Stop Button (HIGH -- safety critical)}
 
 \begin{criticalbox}
-  \textbf{Impact:} Operators cannot issue emergency stop from the UI.\\
-  The only E-Stop is via gamepad button -- no visible on-screen control exists.
+  No E-Stop button exists in the UI. Operators can only stop via gamepad button --
+  no visible on-screen control is present. This is a safety gap.
 \end{criticalbox}
 
-\textbf{Required:}
-\begin{itemize}
-  \item Prominent red \texttt{EMERGENCY STOP} button (always visible, not behind navigation)
-  \item Calls \texttt{POST /v1/motor/emergency\_stop} (via gRPC-Web bridge)
-  \item Keyboard shortcut: \texttt{Space} or \texttt{Escape}
-  \item State display: shows ACTIVE / CLEARED status
+\textbf{Required:} Prominent red ``EMERGENCY STOP'' button always visible in the header. Keyboard shortcut (Space or Escape). Calls the E-Stop RPC. Shows ACTIVE/CLEARED state.
+
+\textbf{Estimated effort:} 2--3 hours (after real gateway connection working).
+
+\subsubsection{Gap U-3: Tests (MEDIUM)}
+
+Currently 0\% test coverage. Vitest is configured.
+
+\textbf{Recommended:}
+\begin{itemize}[noitemsep]
+  \item Vitest + React Testing Library for unit tests (component behaviour)
+  \item Playwright for E2E (full page interaction)
 \end{itemize}
 
-\textbf{Estimated effort:} 2--3 hours (after gRPC-Web bridge is working)
-
-\subsubsection{Gap U-3: Telemetry Dashboard (HIGH)}
-
-\begin{warnbox}
-  \textbf{Impact:} Operators are completely blind to robot state.\\
-  Without telemetry display, the robot cannot be safely operated even with gamepad control.
-\end{warnbox}
-
-\textbf{Required components:}
-
-\begin{center}
-\begin{tabular}{lll}
-  \toprule
-  \textbf{UI Component} & \textbf{Data Source} & \textbf{Update Rate} \\
-  \midrule
-  Motor velocity (4x) & \texttt{StreamEncoders} & 100 Hz \\
-  Encoder ticks (4x) & \texttt{StreamEncoders} & 100 Hz \\
-  Battery voltage (V) & \texttt{StreamBatteryState} & 1 Hz \\
-  State of charge (\%) & \texttt{StreamBatteryState} & 1 Hz \\
-  System uptime & \texttt{GetSystemStatus} & 1 Hz \\
-  Transport health & \texttt{TransportDiagnostics} & 1 Hz \\
-  Obstacle distances (4x) & \texttt{StreamTelemetry} & 20 Hz \\
-  Temperature (°C) & \texttt{StreamTelemetry} & 1 Hz \\
-  \bottomrule
-\end{tabular}
-\end{center}
-
-\textbf{Estimated effort:} 12--20 hours (React components + gRPC streaming)
-
-\subsubsection{Gap U-4: PID Configuration Panel (MEDIUM)}
-
-Allows operators to tune PID gains live and apply to the running firmware via \texttt{SetMotorPidConfig} RPC.
-
-\textbf{Required:}
-\begin{itemize}
-  \item Input fields for Kp, Ki, Kd per motor (or global)
-  \item Send via \texttt{POST /v1/config/motor\_pid}
-  \item Display current gains (from \texttt{GET /v1/config/motor\_pid})
-  \item Visual feedback: success/failure confirmation
-\end{itemize}
-
-\textbf{Estimated effort:} 4--6 hours
-
-\subsubsection{Gap U-5: Test Coverage (LOW)}
-
-Currently 0\% test coverage in \filepath{star-ui/}. No unit, integration, or E2E tests exist.
-
-\textbf{Recommended framework:} Vitest + React Testing Library for unit tests; Playwright for E2E.
+\textbf{Estimated effort:} 8--12 hours for basic coverage.
 
 \newpage
 
@@ -1040,71 +888,53 @@ Currently 0\% test coverage in \filepath{star-ui/}. No unit, integration, or E2E
 \begin{dirbox}
   \textbf{Language:} Protocol Buffers 3 (buf toolchain)\\
   \textbf{Targets:} Go, TypeScript, nanopb C, C++ (gRPC)\\
-  \textbf{Overall:} Schema definitions are complete. One known nanopb options bug. Generated code is checked in.
+  \textbf{Overall:} Schemas are complete. One known nanopb options bug. All generated code is checked in.
 \end{dirbox}
 
 \subsection{Schema Inventory}
 
 \begin{center}
-\begin{tabular}{lrrl}
+\small
+\begin{tabular}{L{5.5cm}L{2cm}L{2.5cm}L{4cm}}
   \toprule
-  \textbf{Proto File} & \textbf{Messages} & \textbf{Services} & \textbf{Status} \\
+  \textbf{Proto File} & \textbf{Msgs} & \textbf{Services} & \textbf{Status} \\
   \midrule
-  \filepath{proto/star/v1/common.proto} & 5 & -- & \done \\
-  \filepath{proto/star/v1/motor\_control.proto} & 9 & 1 (5 RPC) & \done \\
-  \filepath{proto/star/v1/telemetry.proto} & 7 & 1 (3 RPC) & \done \\
-  \filepath{proto/star/v1/battery\_management.proto} & 15 & 1 (10 RPC) & \done \\
-  \filepath{proto/star/v1/configuration.proto} & 13 & 1 (7 RPC) & \done \\
-  \filepath{proto/star/v1/firmware\_update.proto} & 12 & 1 (10 RPC) & \done\ (schema only) \\
-  \filepath{proto/star/v1/gateway\_service.proto} & 6 & 1 (3 RPC) & \done \\
-  \filepath{proto/star/v1/diagnostics.proto} & 2 & -- & \done \\
-  \filepath{proto/star/v1/controller.proto} & 1 & -- & \done \\
-  \filepath{proto/star/v1/wire.proto} & 2 & -- & \done \\
+  \filepath{common.proto} & 5 & -- & \done \\
+  \filepath{motor\_control.proto} & 9 & 1 (5 RPC) & \done \\
+  \filepath{telemetry.proto} & 7 & 1 (3 RPC) & \done \\
+  \filepath{battery\_management.proto} & 15 & 1 (10 RPC) & \done \\
+  \filepath{configuration.proto} & 13 & 1 (7 RPC) & \done \\
+  \filepath{firmware\_update.proto} & 12 & 1 (10 RPC) & \done\ (future use) \\
+  \filepath{gateway\_service.proto} & 6 & 1 (3 RPC) & \done \\
+  \filepath{diagnostics.proto} & 2 & -- & \done \\
+  \filepath{controller.proto} & 1 & -- & \done \\
+  \filepath{wire.proto} & 2 & -- & \done \\
   \midrule
-  \textbf{Total} & \textbf{72} & \textbf{5 services / 38 RPC} & \\
+  \textbf{Total} & \textbf{72} & \textbf{5 svcs / 38 RPC} & \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{nanopb Options Bug}
+\subsection{Known Bug: nanopb motor\_status Truncation}
 
 \begin{warnbox}
   \textbf{File:} \filepath{nanopb/star/v1/motor\_control.options}\\
   \textbf{Bug:} \texttt{star.v1.SetVelocityResponse.motor\_status max\_count:2}\\
-  \textbf{Should be:} \texttt{max\_count:4} (the robot has 4 motors: FL, FR, BL, BR)\\
-  \textbf{Impact:} Response messages silently truncate motor 3 and motor 4 status.
-  Only motors 0 and 1 are readable in responses.
+  \textbf{Fix:} Change to \texttt{max\_count:4} (the robot has 4 motors: FL, FR, BL, BR)\\
+  \textbf{Impact:} Response messages silently truncate motors 3 and 4.\\
+  \textbf{Fix effort:} 30 minutes -- edit file, run \texttt{make proto-gen \&\& make proto-gen-firmware}.
 \end{warnbox}
 
-\textbf{Fix (30 minutes):}
-\begin{lstlisting}[caption={motor\_control.options fix}]
-# CURRENT (WRONG):
-star.v1.SetVelocityResponse.motor_status max_count:2
+\subsection{Missing Wire Protocol Messages (for OTA -- future)}
 
-# CORRECT:
-star.v1.SetVelocityResponse.motor_status max_count:4
-\end{lstlisting}
+{\sloppy When OTA is implemented, \filepath{wire.proto} will need new types added
+to the \texttt{WireMessage} oneof (not required for the current prototype):}
 
-After fixing: run \texttt{make proto-gen \&\& make proto-gen-firmware} to regenerate all targets.
-
-\subsection{Missing Wire Protocol Messages}
-
-For OTA firmware updates to work, \filepath{wire.proto} needs additions to the \texttt{WireMessage} oneof:
-
-\begin{lstlisting}[language=C, caption={Required additions to wire.proto WireMessage}]
-// Current WireMessage oneof handles:
-//   VelocityCommand, EmergencyStopCommand, MotorPowerCommand,
-//   TelemetryData, EncoderData, BatteryStatus, PidConfig,
-//   RetransmitConfig, TransportDiagnostics
-
-// MISSING (needed for OTA):
-oneof payload {
-    // ... existing fields ...
-    FirmwareChunk firmware_chunk = 60;  // OTA chunk transfer
-    BeginUpdateRequest begin_update = 61;
-    FinalizeUpdateRequest finalize_update = 62;
-}
-\end{lstlisting}
+\begin{itemize}[noitemsep,topsep=4pt]
+  \item \texttt{FirmwareChunk} -- binary chunk payload
+  \item \texttt{BeginUpdateRequest} -- OTA session initialiser
+  \item \texttt{FinalizeUpdateRequest} -- CRC validation trigger
+\end{itemize}
 
 \newpage
 
@@ -1115,66 +945,55 @@ oneof payload {
 
 \begin{dirbox}
   \textbf{Existing CI:} proto.yml, gateway.yml, ros2.yml (all working)\\
-  \textbf{Missing CI:} firmware build, UI build, documentation compile\\
-  \textbf{Impact:} Firmware and UI regressions can merge undetected.
+  \textbf{Missing CI:} UI build, docs compile\\
+  \textbf{Note:} Firmware CI is \textbf{not planned} -- the GNURX cross-compiler toolchain is too large to install in CI runners.
 \end{dirbox}
 
 \subsection{Existing Workflows}
 
 \begin{center}
-\begin{tabular}{lll}
+\small
+\begin{tabular}{L{3cm}L{4cm}L{7cm}}
   \toprule
   \textbf{Workflow} & \textbf{Triggers} & \textbf{Steps} \\
   \midrule
-  \texttt{proto.yml} & Push to \texttt{star-proto/} & buf lint, breaking check, generate, test \\
-  \texttt{gateway.yml} & Push to \texttt{star-gateway/} & build, test (-race), lint, security, cross-compile \\
-  \texttt{ros2.yml} & Push to \texttt{star-ros2/} & colcon build, ament\_lint, unit tests \\
+  \texttt{proto.yml} & Push to \texttt{star-proto/} & buf lint, breaking check, generate, Go/TS/nanopb tests \\
+  \texttt{gateway.yml} & Push to \texttt{star-gateway/} & build, test (-race), lint, security scan, cross-compile (amd64/arm64) \\
+  \texttt{ros2.yml} & Push to \texttt{star-ros2/} & colcon build, ament\_lint, code review \\
+  \texttt{proto-gen.yml} & Push to \texttt{*.proto} & buf format, generate, check for uncommitted changes \\
   \bottomrule
 \end{tabular}
 \end{center}
 
-\subsection{Missing Workflows}
+\subsection{What Is Missing}
 
-\subsubsection{Gap C-1: Firmware CI (\texttt{firmware.yml}) -- HIGH}
+\subsubsection{Gap C-1: UI Build CI (\texttt{ui.yml}) -- MEDIUM}
 
 \begin{warnbox}
-  No CI exists for the RX72N firmware. Build and test failures only discovered locally.
+  No CI exists for \filepath{star-ui/}. TypeScript errors and broken builds can merge undetected.
 \end{warnbox}
 
-\begin{lstlisting}[language=Python, caption={firmware.yml required steps}]
-# .github/workflows/firmware.yml
-steps:
-  - Install GNURX toolchain (rxelf-unknown-elf-gcc)
-  - cmake -B build -DCMAKE_TOOLCHAIN_FILE=cmake/rx72n.cmake
-  - cmake --build build --target all  # Firmware binary
-  - cmake --build build --target run_tests  # Unity tests via CTest
-  - Upload test results as artifact
-  - Check for Doxygen warnings
-\end{lstlisting}
-
-\subsubsection{Gap C-2: UI CI (\texttt{ui.yml}) -- MEDIUM}
-
-\begin{lstlisting}[language=Python, caption={ui.yml required steps}]
-# .github/workflows/ui.yml
+\begin{lstlisting}[caption={Required steps for ui.yml}]
 steps:
   - npm ci
   - npm run type-check   # TypeScript strict mode
   - npm run lint         # ESLint
   - npm run test         # Vitest unit tests
-  - npm run build        # Production build (catches tree-shaking issues)
+  - npm run build        # Production Vite bundle (catches issues)
 \end{lstlisting}
 
-\subsubsection{Gap C-3: Documentation CI (\texttt{docs.yml}) -- LOW}
+\textbf{Estimated effort:} 2--3 hours.
 
-\begin{lstlisting}[language=Python, caption={docs.yml required steps}]
-# .github/workflows/docs.yml
+\subsubsection{Gap C-2: Documentation Build CI (\texttt{docs.yml}) -- LOW}
+
+\begin{lstlisting}[caption={Required steps for docs.yml}]
 steps:
   - apt-get install texlive-xetex texlive-fonts-extra
-  - cd docs && make         # Compile star_documentation.pdf
-  - cd .worktrees/planning/plans && xelatex STAR_Gap_Analysis.tex
-  - Check for LaTeX errors (exit code)
-  - Upload PDFs as artifacts
+  - cd docs && make        # Compile star_documentation.pdf
+  - Upload PDF as artifact
 \end{lstlisting}
+
+\textbf{Estimated effort:} 1--2 hours.
 
 \newpage
 
@@ -1183,87 +1002,100 @@ steps:
 % ============================================================
 \section{Implementation Roadmap}
 
+\subsection{Phase 0: Merge Open PRs (in flight)}
+
+All 7 open firmware/infra PRs are ready (tests passing). Merge in order to avoid conflicts:
+
+\begin{enumerate}[noitemsep]
+  \item \inprogress{345} -- Remove event-flag infra (no conflicts, merge first)
+  \item \inprogress{342} -- Telemetry USB/SPI failover (critical production fix)
+  \item \inprogress{341} -- Frame decoder resync
+  \item \inprogress{343} -- ThreadX stack checking
+  \item \inprogress{344} -- BMS SoC thresholds (depends on \#345 merged first)
+  \item \inprogress{346} -- ASCII source cleanup (touches many files, merge last)
+  \item \inprogress{349} -- Gateway RESET\_ACK fix
+  \item \inprogress{351} -- UI dashboard (review mock architecture)
+\end{enumerate}
+
 \subsection{Phase 1: Quick Wins (1--2 hours)}
 
-\begin{enumerate}
-  \item \textbf{Fix nanopb motor\_status bug} (\filepath{star-proto/nanopb/star/v1/motor\_control.options})\\
-    Change \texttt{max\_count:2} $\to$ \texttt{max\_count:4}. Run \texttt{make proto-gen}.
-
-  \item \textbf{Fix SPI bridge zero-velocity safety} (\filepath{star-ros2/star\_spi\_bridge/src/star\_spi\_driver\_node.cpp:112})\\
-    Send zero-velocity WireMessage before closing SPI in \texttt{on\_deactivate()}.
+\begin{enumerate}[noitemsep]
+  \item \textbf{Fix nanopb motor\_status bug} (\filepath{star-proto/}): change \texttt{max\_count:2} to \texttt{max\_count:4}
+  \item \textbf{Fix SPI bridge zero-velocity safety} (\filepath{star-ros2/star\_spi\_bridge/}): send zero-vel in \texttt{on\_deactivate()}
 \end{enumerate}
 
-\subsection{Phase 2: Enable First Robot Motion (2--4 days on hardware)}
+\subsection{Phase 2: First Robot Motion (2--4 days on hardware)}
 
-\begin{enumerate}
+\begin{enumerate}[noitemsep]
   \setcounter{enumi}{2}
-  \item \textbf{Hardware bring-up} -- Verify SPI wiring (COPI/CIPO/CS/CLK) matches firmware pinout
-  \item \textbf{Run SPI bridge on hardware} -- Exercise motion path end-to-end with virtual\_rx72n first, then real firmware
-  \item \textbf{Create star\_bringup launch files} -- \texttt{star\_robot.launch.py} for full system startup
-  \item \textbf{Verify teleop path:} UI gamepad $\to$ Gateway $\to$ ROS2 $\to$ SPI bridge $\to$ RX72N motor spin
+  \item \textbf{Hardware bring-up:} verify SPI/COPI/CIPO/CS wiring matches\\firmware pinout
+  \item \textbf{Run SPI bridge on hardware:} test with virtual\_rx72n first, then real firmware
+  \item \textbf{Create star\_bringup launch files:} minimum \texttt{star\_robot.launch.py}
+  \item \textbf{Validate teleop path:} gamepad $\to$ gateway $\to$ ROS2 $\to$ SPI bridge $\to$ motors spin
 \end{enumerate}
 
-\subsection{Phase 3: UI Telemetry (1--2 weeks)}
+\subsection{Phase 3: Real UI Data (1--2 weeks)}
 
-\begin{enumerate}
+\begin{enumerate}[noitemsep]
   \setcounter{enumi}{6}
-  \item \textbf{gRPC-Web bridge} -- grpc-gateway or Envoy for browser access to gateway gRPC services
-  \item \textbf{Emergency Stop button} -- Safety-critical UI component
-  \item \textbf{Telemetry dashboard} -- Motor velocities, encoders, battery, temperature, obstacle distances
-  \item \textbf{PID configuration panel} -- Live gain tuning with NVS persistence
+  \item \textbf{Implement real GatewayClient} in \filepath{star-ui/} (replaces MockGatewayClient)
+  \item \textbf{Add grpc-gateway} or REST bridge to gateway (browser access to gRPC services)
+  \item \textbf{Emergency Stop button} (safety-critical UI component)
+  \item \textbf{UI CI} (\texttt{ui.yml} workflow)
 \end{enumerate}
 
-\subsection{Phase 4: NVS + OTA (1--2 weeks)}
+\subsection{Phase 4: Robustness (1--2 weeks)}
 
-\begin{enumerate}
+\begin{enumerate}[noitemsep]
   \setcounter{enumi}{10}
-  \item \textbf{NVS library} (\filepath{e2-studio-star-rx72n-firmware/libs/rx\_nvs/}) -- Data Flash key-value store
-  \item \textbf{PID persistence} -- Save/restore gains across reboot
-  \item \textbf{OTA firmware handler} (\filepath{libs/rx\_ota/}) -- State machine + Data Flash write
-  \item \textbf{FirmwareUpdateService} (\filepath{star-gateway/internal/service/firmware.go}) -- Implement all 10 stubs
+  \item \textbf{NVS library} (\filepath{libs/rx\_nvs/}): PID gain persistence across reboot
+  \item \textbf{E-Stop priority queue} in gateway: bypass normal HARQ queue
+  \item \textbf{Safety monitor tests}: implement 3 skipped test cases
+  \item \textbf{Virtual RX72N motor dynamics}: enables sim-based PID tuning
 \end{enumerate}
 
-\subsection{Phase 5: SLAM \& Autonomy (months)}
+\subsection{Phase 5: SLAM and Autonomy (future)}
 
-\begin{enumerate}
+\begin{enumerate}[noitemsep]
   \setcounter{enumi}{14}
-  \item RPLiDAR C1 firmware driver (\filepath{libs/rx\_rplidar/})
+  \item RPLiDAR C1 ROS2 integration on RPi5 (\texttt{rplidar\_ros2} package)
   \item RTAB-Map configuration for ROS2 Jazzy
-  \item robot\_localization EKF with encoder odometry
-  \item Nav2 path planner configuration
-  \item System integration testing
+  \item \texttt{robot\_localization} EKF with encoder odometry
+  \item Nav2 path planner
 \end{enumerate}
 
 \subsection{Effort Summary}
 
 \begin{center}
-\begin{tabular}{lll}
+\small
+\begin{longtable}{L{6cm}L{2.5cm}L{2cm}L{3.5cm}}
   \toprule
-  \textbf{Gap} & \textbf{Severity} & \textbf{Effort} \\
+  \textbf{Gap} & \textbf{Severity} & \textbf{Effort} & \textbf{Status} \\
   \midrule
-  Fix nanopb max\_count:4 & Critical bug & 30 min \\
-  Fix SPI on\_deactivate() zero-vel & Safety & 1 hr \\
-  star\_bringup launch files & High & 4--6 hrs \\
-  SPI bridge hardware testing & High & 4--8 hrs \\
-  gRPC-Web bridge & High & 4--8 hrs \\
-  Emergency Stop UI button & High (safety) & 2--3 hrs \\
-  Telemetry dashboard & High & 12--20 hrs \\
-  Safety monitor test coverage & Medium & 4--6 hrs \\
-  NVS library (rx\_nvs) & High & 4--6 hrs \\
-  PID gain persistence & High & 2 hrs \\
-  E-Stop priority queue (gateway) & Medium & 2--3 hrs \\
-  SetMotorPower firmware dispatch & Medium & 3--4 hrs \\
-  Firmware CI (firmware.yml) & Medium & 4--6 hrs \\
-  UI CI (ui.yml) & Medium & 2--3 hrs \\
-  OTA handler (firmware) & High & 2--3 days \\
-  FirmwareUpdateService (gateway) & High & 2--3 days \\
-  PID config UI panel & Medium & 4--6 hrs \\
-  Virtual RX72N motor dynamics & Low & 1--2 days \\
-  Virtual RX72N fault injection & Low & 4--8 hrs \\
-  RPLiDAR C1 driver & Low & 2--3 days \\
-  SLAM stack & Low & weeks \\
+  \endhead
+
+  Fix nanopb max\_count:4 & Critical bug & 30 min & Not started \\
+  SPI on\_deactivate() zero-vel & Safety & 1 hr & Not started \\
+  Merge open PRs (\#341--\#351) & High & -- & \inprogress{341-349} \\
+  star\_bringup launch files & High & 4--6 hrs & Not started \\
+  SPI bridge hardware testing & High & 4--8 hrs & Not started \\
+  Real GatewayClient (UI) & High & 4--8 hrs & \inprogress{351} (mock) \\
+  gRPC-Web / REST bridge & High & 4--8 hrs & Not started \\
+  Emergency Stop UI button & High (safety) & 2--3 hrs & Not started \\
+  Safety monitor test coverage & Medium & 4--6 hrs & Not started \\
+  NVS library (rx\_nvs) & Medium & 4--6 hrs & Not started \\
+  PID gain persistence & Medium & 2 hrs & Needs NVS first \\
+  E-Stop priority queue & Medium & 2--3 hrs & Not started \\
+  UI CI (ui.yml) & Medium & 2--3 hrs & Not started \\
+  SetMotorPower dispatch & Medium & 3--4 hrs & Not started \\
+  Docs CI (docs.yml) & Low & 1--2 hrs & Not started \\
+  Virtual RX72N motor dynamics & Low & 1--2 days & Not started \\
+  Virtual RX72N fault injection & Low & 4--8 hrs & Not started \\
+  RPLiDAR C1 ROS2 (on RPi5) & Low & 4--8 hrs & Not started \\
+  OTA firmware update & Future & 2--3 days & Not required (prototype) \\
+  SLAM stack & Future & weeks & Not started \\
   \bottomrule
-\end{tabular}
+\end{longtable}
 \end{center}
 
 \end{document}
