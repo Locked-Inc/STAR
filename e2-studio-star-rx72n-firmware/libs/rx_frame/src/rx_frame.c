@@ -459,10 +459,6 @@ static rx_err_t internal_find_sync_offset(const uint8_t* data,
                                           const uint32_t data_len,
                                           uint32_t*      offset_out)
 {
-  uint32_t scan_limit;
-  uint32_t i;
-  uint16_t candidate;
-
   if (data == nullptr || offset_out == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -472,14 +468,14 @@ static rx_err_t internal_find_sync_offset(const uint8_t* data,
   }
 
   /* Bound scan to at most k_frame_max_scan_bytes positions beyond offset 0 */
-  scan_limit = data_len - k_frame_sync_size;
+  uint32_t scan_limit = data_len - k_frame_sync_size;
   if (scan_limit > k_frame_max_scan_bytes) {
     scan_limit = k_frame_max_scan_bytes;
   }
 
   /* Scan starting at k_frame_scan_start_offset; offset 0 already failed sync check */
-  for (i = k_frame_scan_start_offset; i <= scan_limit; i++) {
-    candidate = rx_frame_read_le16(&data[i]);
+  for (uint32_t i = k_frame_scan_start_offset; i <= scan_limit; i++) {
+    const uint16_t candidate = rx_frame_read_le16(&data[i]);
     if (candidate == k_frame_sync_word) {
       *offset_out = i;
       return k_rx_ok;
@@ -781,9 +777,6 @@ rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
                                      rx_frame_t*               frame,
                                      uint32_t*                 bytes_discarded_out)
 {
-  rx_err_t err;
-  uint32_t sync_offset = 0;
-
   if (dec == nullptr || data == nullptr || frame == nullptr || bytes_discarded_out == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -791,13 +784,14 @@ rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
   *bytes_discarded_out = 0;
 
   /* Fast path: attempt aligned decode first */
-  err = rx_frame_decode(dec, data, data_len, frame);
+  rx_err_t err = rx_frame_decode(dec, data, data_len, frame);
   if (err != k_rx_err_protocol_error) {
     /* Either success, or an error other than sync mismatch (CRC, size, etc.) */
     return err;
   }
 
   /* Sync word not at offset 0: scan forward for next sync word */
+  uint32_t sync_offset = 0;
   err = internal_find_sync_offset(data, data_len, &sync_offset);
   if (err != k_rx_ok) {
     /* No sync word found within bounded window */
