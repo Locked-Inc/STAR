@@ -28,7 +28,7 @@
  * |------------------|--------------------|----------|
  * | Reset pulse      | T_RSTL             | 480 µs   |
  * | Presence wait    | T_PDH              | 70 µs    |
- * | Presence timeout | T_RSTH             | 410 µs   |
+ * | Presence tail    | T_RSTH             | 410 µs   |
  * | Write-1 low      | T_LOW1             | 6 µs     |
  * | Write-1 high     | T_SLOT - T_LOW1    | 64 µs    |
  * | Write-0 low      | T_LOW0             | 60 µs    |
@@ -482,6 +482,7 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  *
  * @see k_onewire_reset_pulse_us Reset pulse duration (480µs)
  * @see k_onewire_presence_wait_us Presence sample delay (70µs)
+ * @see k_onewire_presence_tail_us Remaining window after sample (410µs)
  */
 static rx_err_t
 internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* presence)
@@ -508,7 +509,7 @@ internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state
 
   *presence = !line_high;
 
-  internal_delay_us(k_onewire_presence_timeout_us);
+  internal_delay_us(k_onewire_presence_tail_us);
 
   return k_rx_ok;
 }
