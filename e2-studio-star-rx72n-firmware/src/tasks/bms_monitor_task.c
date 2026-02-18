@@ -272,7 +272,7 @@
  * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion. All control flow uses if/while only. |
  * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 1s sleep period. Provably bounded iteration. |
  * | **Rule 3: No Heap** | [PASS] | Zero dynamic allocation. Stack (1024 bytes) and TCB (140 bytes) statically allocated. |
- * | **Rule 4: Function Length** | [PASS] | bms_monitor_task_create(): 30 lines, internal_bms_task_entry(): 66 lines (both < 60 LOC target). |
+ * | **Rule 4: Function Length** | [PASS] | bms_monitor_task_create(): 30 lines, internal_bms_task_entry(): ~52 lines after extracting internal_bms_convert_status_to_state(); both within ~60 LOC guideline. |
  * | **Rule 5: Assertions** | [PASS] | 6 assertions: RX_ASSERT(!s_bms_created), 4 preconditions, 2 postconditions. |
  * | **Rule 6: Data Scope** | [PASS] | All file-scope variables use static (s_bms_thread, s_bms_stack, s_bms_created, s_tag). |
  * | **Rule 7: Return Checks** | [PASS] | All rx_bq4050, shared_data, tx_* returns validated or explicitly cast to (void). |
@@ -894,10 +894,46 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
   return k_rx_ok;
 }
 
-/* =============================================================================
- * Private Functions
- * =============================================================================
+/* -------------------------------------------------------------------------- */
+
+/**
+ * @brief Convert a BQ4050 status snapshot into the shared bms_state_t format
+ *
+ * @details
+ * Performs a field-by-field copy from the driver's rx_bq4050_status_t into
+ * the shared bms_state_t, stamps the current ThreadX tick as the timestamp,
+ * and marks the result valid. Extracted to satisfy NASA Power of 10 Rule 4
+ * (~60 line maximum per function) and to give the conversion a single,
+ * testable home.
+ *
+ * @param[in]  status Driver status snapshot read from the BQ4050 IC
+ * @param[out] out    Destination shared-data struct to populate
+ *
+ * @pre  status != NULL
+ * @pre  out != NULL
+ * @post out->valid == true
+ * @post out->timestamp_ms == tx_time_get() at call time
+ *
+ * @note Not thread-safe; called only from within the BMS monitor task loop
+ *
+ * @since Version 1.1.0
  */
+static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* status,
+                                                 bms_state_t*             out)
+{
+  out->voltage_mv          = status->voltage_mv;
+  out->current_ma          = status->current_ma;
+  out->soc_percent         = status->relative_soc;
+  out->temperature_celsius = status->temperature_c;
+  out->capacity_mah        = status->remaining_capacity_mah;
+  out->full_capacity_mah   = status->full_capacity_mah;
+  out->cycle_count         = status->cycle_count;
+  out->fault_flags         = status->battery_status; /* All 10 BatteryStatus flags */
+  out->timestamp_ms        = tx_time_get();
+  out->valid               = true;
+}
+
+/* -------------------------------------------------------------------------- */
 
 /**
  * @brief BMS monitoring task entry point - infinite loop polling BQ4050 at 1 Hz
@@ -1277,49 +1313,6 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
  * @callgraph
  * @callergraph
  */
-static void internal_bms_task_entry(ULONG input);
-
-/* -------------------------------------------------------------------------- */
-
-/**
- * @brief Convert a BQ4050 status snapshot into the shared bms_state_t format
- *
- * @details
- * Performs a field-by-field copy from the driver's rx_bq4050_status_t into
- * the shared bms_state_t, stamps the current ThreadX tick as the timestamp,
- * and marks the result valid. Extracted to satisfy NASA Power of 10 Rule 4
- * (~60 line maximum per function) and to give the conversion a single,
- * testable home.
- *
- * @param[in]  status Driver status snapshot read from the BQ4050 IC
- * @param[out] out    Destination shared-data struct to populate
- *
- * @pre  status != NULL
- * @pre  out != NULL
- * @post out->valid == true
- * @post out->timestamp_ms == tx_time_get() at call time
- *
- * @note Not thread-safe; called only from within the BMS monitor task loop
- *
- * @since Version 1.1.0
- */
-static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* status,
-                                                 bms_state_t*             out)
-{
-  out->voltage_mv          = status->voltage_mv;
-  out->current_ma          = status->current_ma;
-  out->soc_percent         = status->relative_soc;
-  out->temperature_celsius = status->temperature_c;
-  out->capacity_mah        = status->remaining_capacity_mah;
-  out->full_capacity_mah   = status->full_capacity_mah;
-  out->cycle_count         = status->cycle_count;
-  out->fault_flags         = status->battery_status; /* All 10 BatteryStatus flags */
-  out->timestamp_ms        = tx_time_get();
-  out->valid               = true;
-}
-
-/* -------------------------------------------------------------------------- */
-
 static void internal_bms_task_entry(ULONG input)
 {
   rx_err_t           err;

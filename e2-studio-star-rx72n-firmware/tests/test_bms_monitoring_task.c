@@ -598,6 +598,8 @@ void test_bms_data_stored_in_telemetry(void)
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_capacity_mah, bms_out.capacity_mah);
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_full_capacity_mah, bms_out.full_capacity_mah);
   TEST_ASSERT_EQUAL_UINT16(k_test_telem_cycle_count, bms_out.cycle_count);
+  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_telem_fault_flags, bms_out.fault_flags);
+  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_telem_timestamp_ms, bms_out.timestamp_ms);
 }
 
 /* =============================================================================
