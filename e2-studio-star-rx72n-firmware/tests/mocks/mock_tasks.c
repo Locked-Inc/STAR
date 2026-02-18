@@ -154,7 +154,7 @@ rx_err_t obstacle_detect_task_create(void)
  */
 rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 {
-  tx_status status;
+  tx_status status = TX_SUCCESS; /**< ThreadX thread-create return code; initialised to TX_SUCCESS */
 
   if (config == nullptr) {
     return k_rx_err_null_ptr;

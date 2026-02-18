@@ -126,10 +126,40 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
 
 rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc);
 
-rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
-                               const char*         bus_name,
-                               rx_bq4050_status_t* status,
-                               uint8_t             num_cells);
+/**
+ * @brief Read full battery status from mock BQ4050 fuel gauge
+ *
+ * @details
+ * Returns the full battery status struct from the mock's internal state.
+ * Increments the status call counter. If the injected return code is not
+ * k_rx_ok, the status struct is left unmodified.
+ *
+ * @param[in]  manager   Bus manager handle (ignored by mock, may be NULL)
+ * @param[in]  bus_name  SMBus channel name (ignored by mock)
+ * @param[out] status    Pointer to status struct to populate; must not be NULL
+ * @param[in]  num_cells Number of cells to read voltages for (ignored by mock)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok         Status written successfully
+ * @retval k_rx_err_null_ptr status pointer is NULL
+ * @retval (injected)      Any error set via mock_bq4050_set_init_return()
+ *
+ * @pre mock_bq4050_reset() or mock_bq4050_set_full_status() called to
+ *      configure desired return values
+ * @pre status != NULL
+ * @post mock_bq4050_get_status_count() incremented by one
+ * @post *status populated with mock battery state if return is k_rx_ok
+ *
+ * @note Thread-unsafe; single-threaded test use only
+ * @see mock_bq4050_set_full_status() Configure full status response
+ * @see mock_bq4050_get_status_count() Verify call count
+ *
+ * @since Version 1.1.0
+ */
+[[nodiscard]] rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
+                                             const char*         bus_name,
+                                             rx_bq4050_status_t* status,
+                                             uint8_t             num_cells);
 
 #ifdef __cplusplus
 }
