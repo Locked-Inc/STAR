@@ -13,7 +13,9 @@ package manager
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -45,17 +47,29 @@ func TestScenario1_NormalOperationUSB(t *testing.T) {
 	config.Mode = ModeAuto
 	tm := NewTransportManager(config)
 
-	// Create mock transports
+	// Create mock transports.
+	// receiveCount tracks calls: the first call comes from drainUntilResetAck
+	// (inside Start) and must return RESET_ACK so the handshake completes
+	// immediately. Subsequent calls return normal telemetry frames.
+	var receiveCount atomic.Int32
 	mockUSB := &testutil.MockHARQ{
 		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
 			return nil
 		},
 		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
+			if receiveCount.Add(1) == 1 {
+				// First call: return RESET_ACK with session ID 1.
+				// IncrementSessionID() returns 1 on the first call (starts at 0).
+				payload := make([]byte, SessionIDPayloadSize)
+				binary.LittleEndian.PutUint32(payload, 1)
+				return &harq.ReceiveResult{
+					Payload:  payload,
+					Metadata: harq.FrameMetadata{Type: frame.FrameTypeResetAck},
+				}, nil
+			}
 			return &harq.ReceiveResult{
-				Payload: []byte("telemetry"),
-				Metadata: harq.FrameMetadata{
-					Type: frame.FrameTypeResponse,
-				},
+				Payload:  []byte("telemetry"),
+				Metadata: harq.FrameMetadata{Type: frame.FrameTypeResponse},
 			}, nil
 		},
 	}
