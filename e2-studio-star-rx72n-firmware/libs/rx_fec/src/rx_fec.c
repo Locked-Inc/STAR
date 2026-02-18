@@ -155,9 +155,9 @@ static uint8_t internal_parity(uint8_t x)
   x ^= x >> 2; /* XOR bit pairs */
   x ^= x >> 1; /* XOR final pair */
 
+  /* Post-condition: Result must be 0 or 1 */
   const uint8_t result = x & k_fec_bit_mask;
 
-  /* Post-condition: Result must be 0 or 1 */
   RX_ASSERT((result == k_fec_zero) || (result == k_fec_bit_mask), "Parity result must be 0 or 1");
   RX_ASSERT(result <= k_fec_bit_mask, "Parity result must be within bit mask");
 
@@ -662,8 +662,6 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
                                                 const rx_fec_decode_soft_params_t* params,
                                                 uint32_t*                          num_symbols_out)
 {
-  uint32_t num_symbols;
-
   if (dec == nullptr || params == nullptr || num_symbols_out == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -681,7 +679,7 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
     return k_rx_err_invalid_arg;
   }
 
-  num_symbols = (params->expected_output_len > k_fec_zero)
+  uint32_t num_symbols = (params->expected_output_len > k_fec_zero)
                   ? (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits)
                   : k_fec_zero;
 
@@ -784,11 +782,7 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params)
 {
   uint32_t num_symbols;
-  rx_err_t err;
-  uint32_t data_bits;
-  uint32_t output_bytes;
-
-  err = internal_validate_decode_params(dec, params, &num_symbols);
+  rx_err_t err = internal_validate_decode_params(dec, params, &num_symbols);
   if (err != k_rx_ok) {
     return err;
   }
@@ -797,12 +791,12 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
   internal_viterbi_forward_pass(dec, params->soft_bits, num_symbols);
 
   /* Calculate data bits and output size */
-  data_bits = num_symbols - k_fec_tail_bits;
+  uint32_t data_bits = num_symbols - k_fec_tail_bits;
   if (data_bits == k_fec_zero) {
     return k_rx_err_invalid_size;
   }
 
-  output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
+  uint32_t output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 
   /* Traceback: extract decoded bits */
   internal_viterbi_traceback(dec, num_symbols, data_bits, params->output, output_bytes);
@@ -821,9 +815,6 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
  */
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params)
 {
-  uint32_t                    num_bits;
-  rx_fec_decode_soft_params_t soft_params;
-
   if (dec == nullptr || params == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -846,7 +837,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
   }
 
   /* Convert hard bits to soft bits */
-  num_bits = (uint32_t)(params->data_len * k_rx_bits_per_byte);
+  uint32_t num_bits = (uint32_t)(params->data_len * k_rx_bits_per_byte);
 
   /* Ensure soft bits buffer is large enough */
   if (num_bits > params->soft_buffer_len) {
@@ -859,6 +850,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
   }
 
   /* Prepare soft decode parameters */
+  rx_fec_decode_soft_params_t soft_params;
   soft_params.soft_bits           = params->soft_bits_buffer;
   soft_params.soft_len            = num_bits;
   soft_params.expected_output_len = params->expected_output_len;

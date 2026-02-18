@@ -312,8 +312,6 @@ static void internal_watchdog_monitor_task_entry(ULONG input);
  */
 rx_err_t watchdog_monitor_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_watchdog_created, "Watchdog monitor task already created");
   if (s_watchdog_created) {
@@ -321,7 +319,7 @@ rx_err_t watchdog_monitor_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_watchdog_thread,
+  UINT tx_status = tx_thread_create(&s_watchdog_thread,
                                (CHAR*)s_task_name,
                                internal_watchdog_monitor_task_entry,
                                k_watchdog_task_input,

@@ -693,8 +693,6 @@ static void internal_temp_task_entry(ULONG input);
  */
 rx_err_t temp_sensor_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_temp_created, "Temp task already created");
   if (s_temp_created) {
@@ -702,7 +700,7 @@ rx_err_t temp_sensor_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_temp_thread,
+  UINT tx_status = tx_thread_create(&s_temp_thread,
                                "TempTask",
                                internal_temp_task_entry,
                                k_temp_task_input,
@@ -1145,16 +1143,12 @@ rx_err_t temp_sensor_task_create(void)
  */
 static void internal_temp_task_entry(ULONG input)
 {
-  rx_err_t            err;
-  rx_ds18b20_config_t config;
-  temp_sensor_state_t state;
-  float               temp_celsius;
-
   (void)input;
 
   rx_log_info(s_tag, "Temperature sensor task starting");
 
   /* Configure DS18B20 */
+  rx_ds18b20_config_t config;
   (void)memset(&config, 0, sizeof(config));
   config.bus_manager      = &g_bus_manager;
   config.bus_name         = s_onewire_bus_name;
@@ -1162,7 +1156,7 @@ static void internal_temp_task_entry(ULONG input)
   config.use_rom_matching = false; /* Skip ROM - only one sensor */
 
   /* Initialize DS18B20 */
-  err = rx_ds18b20_init(&s_ds18b20, &config);
+  rx_err_t err = rx_ds18b20_init(&s_ds18b20, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "DS18B20 init failed", (uint32_t)err);
     /* Continue anyway - will report invalid data */
@@ -1177,6 +1171,9 @@ static void internal_temp_task_entry(ULONG input)
   rx_log_info(s_tag, "Temperature sensing running @ 1 Hz");
 
   /* Main polling loop */
+  temp_sensor_state_t state;
+  float               temp_celsius;
+
   while (true) {
     /* Step 1: Trigger temperature conversion */
     err = rx_ds18b20_trigger_conversion(&s_ds18b20);

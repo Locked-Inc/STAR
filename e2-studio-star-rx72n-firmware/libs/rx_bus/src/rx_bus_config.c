@@ -250,9 +250,8 @@ typedef uint8_t rx_pin_t;
  */
 static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* context_tag)
 {
-  rx_port_t port    = rx_port_from_pin(pin);
-  rx_pin_t  pin_num = rx_pin_from_pin(pin);
-
+  const rx_port_t port    = rx_port_from_pin(pin);
+  const rx_pin_t  pin_num = rx_pin_from_pin(pin);
   if (port > k_rx_port_j) {
     rx_log_error_str(s_tag, "Invalid port", context_tag, (uint32_t)strlen(context_tag));
     return k_rx_err_invalid_arg;

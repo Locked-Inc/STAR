@@ -777,8 +777,6 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  */
 rx_err_t comm_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_comm_created, "Comm task already created");
   if (s_comm_created) {
@@ -786,7 +784,7 @@ rx_err_t comm_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_comm_thread,
+  UINT tx_status = tx_thread_create(&s_comm_thread,
                                "CommTask",
                                internal_comm_task_entry,
                                k_comm_task_input,
@@ -1207,14 +1205,12 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  */
 static void internal_comm_task_entry(ULONG input)
 {
-  rx_err_t                 err;
-  rx_comm_manager_config_t config;
-
   (void)input;
 
   rx_log_info(s_tag, "Communication task starting");
 
   /* Initialize transport layers and wire into comm manager config */
+  rx_comm_manager_config_t config;
   (void)memset(&config, 0, sizeof(config));
   internal_init_transports(&config);
   config.callback              = internal_frame_callback;
@@ -1222,7 +1218,7 @@ static void internal_comm_task_entry(ULONG input)
   config.enable_decoded_output = true;
 
   /* Initialize communication manager */
-  err = rx_comm_manager_init(&g_comm_manager, &config);
+  rx_err_t err = rx_comm_manager_init(&g_comm_manager, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Comm manager init failed", (uint32_t)err);
     /* Continue - task will poll but won't receive frames */
@@ -1958,17 +1954,14 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  */
 static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
-  rx_err_t                     err;
-  star_v1_SetVelocityRequest   velocity_req;
-  star_v1_EmergencyStopRequest estop_req;
-  motor_command_t              cmd;
-
   (void)channel;
 
   /* Try to decode as SetVelocityRequest */
-  err = rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
+  star_v1_SetVelocityRequest velocity_req;
+  rx_err_t err = rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err == k_rx_ok && velocity_req.has_command) {
     /* Build motor command from protobuf */
+    motor_command_t cmd;
     (void)memset(&cmd, 0, sizeof(cmd));
     cmd.target_velocity_mps[k_motor_idx_front_left] =
       (float)velocity_req.command.front_left_velocity_mps;
@@ -1992,6 +1985,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
   }
 
   /* Try to decode as EmergencyStopRequest */
+  star_v1_EmergencyStopRequest estop_req;
   err = rx_nanopb_decode_estop_request(frame->payload, frame->header.length, &estop_req);
   if (err == k_rx_ok) {
     rx_log_warn(s_tag, "E-Stop request received");

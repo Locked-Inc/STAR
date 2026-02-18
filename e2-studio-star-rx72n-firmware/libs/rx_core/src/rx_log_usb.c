@@ -585,6 +585,7 @@ void rx_log_usb_putint(int32_t value)
 {
   /* Convert to string (max 11 chars: '-' + 10 digits + NUL) */
   char  buf[12];
+
   char* p = &buf[sizeof(buf) - 1];
   *p      = '\0';
 

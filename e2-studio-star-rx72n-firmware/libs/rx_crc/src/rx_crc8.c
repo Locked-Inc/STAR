@@ -433,11 +433,11 @@ typedef enum : uint8_t {
  */
 uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t len)
 {
-  uint8_t crc = k_crc8_initial_value;
-
   if ((data == nullptr) || (len == 0)) {
     return 0;
   }
+
+  uint8_t crc = k_crc8_initial_value;
 
   for (uint32_t i = 0; i < len; ++i) {
     crc ^= data[i];

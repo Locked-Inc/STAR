@@ -519,6 +519,7 @@ void test_hcsr04_init_success(void)
 void test_hcsr04_init_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_init(nullptr, &s_config);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -536,6 +537,7 @@ void test_hcsr04_init_null_handle_fails(void)
 void test_hcsr04_init_null_config_fails(void)
 {
   rx_err_t err = rx_hcsr04_init(&s_sensor, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -713,6 +715,7 @@ void test_hcsr04_deinit_success(void)
 void test_hcsr04_deinit_null_fails(void)
 {
   rx_err_t err = rx_hcsr04_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -730,6 +733,7 @@ void test_hcsr04_deinit_null_fails(void)
 void test_hcsr04_deinit_not_initialized_fails(void)
 {
   rx_err_t err = rx_hcsr04_deinit(&s_sensor);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -898,6 +902,7 @@ void test_hcsr04_measure_null_handle_fails(void)
 {
   float    distance_cm;
   rx_err_t err = rx_hcsr04_measure_blocking(nullptr, &distance_cm);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -935,6 +940,7 @@ void test_hcsr04_measure_not_initialized_fails(void)
 {
   float    distance_cm;
   rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1081,6 +1087,7 @@ void test_hcsr04_measure_full_result(void)
 void test_hcsr04_cm_to_inches(void)
 {
   float inches = rx_hcsr04_cm_to_inches(2.54f);
+
   TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, inches);
 
   inches = rx_hcsr04_cm_to_inches(100.0f);
@@ -1108,6 +1115,7 @@ void test_hcsr04_echo_to_cm(void)
 {
   /* 58us per cm */
   float cm = rx_hcsr04_echo_to_cm(580);
+
   TEST_ASSERT_FLOAT_WITHIN(0.5f, 10.0f, cm);
 
   cm = rx_hcsr04_echo_to_cm(5800);
@@ -1356,6 +1364,7 @@ void test_hcsr04_measure_async_callback_invoked(void)
 void test_hcsr04_measure_async_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_measure_async(nullptr, test_async_callback, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1393,6 +1402,7 @@ void test_hcsr04_measure_async_null_callback_fails(void)
 void test_hcsr04_measure_async_not_initialized_fails(void)
 {
   rx_err_t err = rx_hcsr04_measure_async(&s_sensor, test_async_callback, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1460,6 +1470,7 @@ void test_hcsr04_is_busy_null_returns_false(void)
 void test_hcsr04_worker_init_success(void)
 {
   rx_err_t err = rx_hcsr04_worker_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clean up */
@@ -1525,6 +1536,7 @@ void test_hcsr04_worker_deinit_success(void)
 void test_hcsr04_worker_deinit_not_initialized_fails(void)
 {
   rx_err_t err = rx_hcsr04_worker_deinit();
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1559,6 +1571,7 @@ void test_hcsr04_worker_deinit_not_initialized_fails(void)
 void test_hcsr04_cancel_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_cancel(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1683,6 +1696,7 @@ void test_hcsr04_set_temperature_success(void)
 void test_hcsr04_set_temperature_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_set_temperature(nullptr, 25.0f);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1697,6 +1711,7 @@ void test_hcsr04_set_temperature_null_handle_fails(void)
 void test_hcsr04_set_temperature_not_initialized_fails(void)
 {
   rx_err_t err = rx_hcsr04_set_temperature(&s_sensor, 25.0f);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1788,6 +1803,7 @@ void test_hcsr04_disable_temp_compensation_success(void)
 void test_hcsr04_disable_temp_compensation_null_fails(void)
 {
   rx_err_t err = rx_hcsr04_disable_temp_compensation(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1849,6 +1865,7 @@ void test_hcsr04_get_temperature_null_handle_fails(void)
 {
   float    temp = 0.0f;
   rx_err_t err  = rx_hcsr04_get_temperature(nullptr, &temp);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 

@@ -470,16 +470,13 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
                              rx_error_interface_t* error_iface,
                              rx_pin_interface_t*   pin_iface)
 {
-  rx_err_t err;
-  UINT     status;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
   RX_CHECK_NULL_PTR(tag, s_tag, "Tag pointer is nullptr");
   RX_CHECK_NULL_PTR(error_iface, s_tag, "Error interface is nullptr");
   RX_CHECK_NULL_PTR(pin_iface, s_tag, "Pin interface is nullptr");
 
   /* Validate interfaces */
-  err = rx_error_interface_validate(error_iface);
+  rx_err_t err = rx_error_interface_validate(error_iface);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Error interface validation failed");
     return err;
@@ -495,7 +492,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   memset(manager, 0, sizeof(rx_bus_manager_t));
 
   /* Create ThreadX mutex for thread safety */
-  status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
+  UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex creation failed");
     return k_rx_err_threadx;
@@ -888,6 +885,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
 {
   ULONG                  timeout_ticks = 0;
   UINT                   status        = TX_SUCCESS;
+
   const rx_bus_config_t* current       = nullptr;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
@@ -1145,6 +1143,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
 {
   ULONG                  timeout_ticks = 0;
   UINT                   status        = TX_SUCCESS;
+
   const rx_bus_config_t* to_remove     = nullptr;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
@@ -1194,6 +1193,7 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
 {
   ULONG            timeout_ticks = 0;
   UINT             status        = TX_SUCCESS;
+
   rx_bus_config_t* current       = nullptr;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
@@ -1234,6 +1234,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
 {
   ULONG            timeout_ticks = 0;
   UINT             status        = TX_SUCCESS;
+
   rx_bus_config_t* current       = nullptr;
   rx_err_t         err           = k_rx_err_invalid_state;
 

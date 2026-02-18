@@ -76,9 +76,9 @@ void tearDown(void)
  */
 void test_motor_task_create_success(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task */
@@ -98,9 +98,9 @@ void test_motor_task_create_success(void)
  */
 void test_motor_task_create_thread_failure(void)
 {
+  /* Configure ThreadX to fail */
   rx_err_t err;
 
-  /* Configure ThreadX to fail */
   mock_tx_set_thread_create_return(TX_NO_MEMORY);
 
   /* Create the task */
@@ -119,9 +119,9 @@ void test_motor_task_create_thread_failure(void)
  */
 void test_motor_task_create_already_created(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task first time - should succeed */
@@ -150,9 +150,9 @@ void test_motor_task_create_already_created(void)
  */
 void test_motor_task_initializes_4_pids(void)
 {
+  /* Configure PID mock to succeed */
   uint32_t pid_init_count;
 
-  /* Configure PID mock to succeed */
   mock_pid_set_init_return(k_rx_ok);
 
   /* Simulate what internal_init_motor_stack does */
@@ -192,6 +192,7 @@ void test_motor_task_initializes_4_pids(void)
  */
 void test_motor_task_pid_compute_parameters(void)
 {
+  /* Initialize PID */
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = {0};
   rx_err_t        err;
@@ -200,7 +201,6 @@ void test_motor_task_pid_compute_parameters(void)
   float           measured;
   float           dt;
 
-  /* Initialize PID */
   config.kp           = 1.0f;
   config.ki           = 0.0f;
   config.kd           = 0.0f;
@@ -263,12 +263,12 @@ void test_motor_task_estop_active_skips_control(void)
  */
 void test_motor_task_driver_fault_triggers_estop(void)
 {
-  uint8_t motor_idx;
-  bool    fault;
-
   /* Configure driver to report fault on motor 0
    * Note: Mock uses call count to determine motor index, so first call reads motor 0
    */
+  uint8_t motor_idx;
+  bool    fault;
+
   motor_idx = 0;
   mock_drv8243_set_fault_status(motor_idx, true);
   mock_drv8243_set_fault_status_return(k_rx_ok);
@@ -304,15 +304,15 @@ void test_motor_task_driver_fault_triggers_estop(void)
  */
 void test_motor_task_reads_velocity_commands(void)
 {
-  motor_command_t cmd_in  = {0};
-  motor_command_t cmd_out = {0};
-  rx_err_t        err;
-
   /* Set up velocity command */
   cmd_in.target_velocity_mps[0] = 1.0f;  /* Front left */
   cmd_in.target_velocity_mps[1] = 1.0f;  /* Front right */
   cmd_in.target_velocity_mps[2] = -0.5f; /* Back left (reverse) */
   cmd_in.target_velocity_mps[3] = -0.5f; /* Back right (reverse) */
+  motor_command_t cmd_in  = {0};
+  motor_command_t cmd_out = {0};
+  rx_err_t        err;
+
   cmd_in.sequence               = 42;
   cmd_in.timestamp_ms           = 1000;
   cmd_in.valid                  = true;
@@ -342,10 +342,10 @@ void test_motor_task_reads_velocity_commands(void)
  */
 void test_motor_task_invalid_command_zero_duty(void)
 {
+  /* Set up invalid command */
   motor_command_t cmd = {0};
   rx_err_t        err;
 
-  /* Set up invalid command */
   cmd.valid = false;
 
   /* Store command via mock */
@@ -403,11 +403,11 @@ void test_motor_task_comm_timeout_triggers_estop(void)
  */
 void test_motor_task_reads_pid_gains(void)
 {
+  /* Set up PID gains */
   pid_gains_t gains_in  = {0};
   pid_gains_t gains_out = {0};
   rx_err_t    err;
 
-  /* Set up PID gains */
   gains_in.kp             = 0.5f;
   gains_in.ki             = 10.0f;
   gains_in.kd             = 0.1f;
@@ -470,11 +470,11 @@ void test_motor_task_clears_pid_update_flag(void)
  */
 void test_motor_task_updates_motor_state(void)
 {
+  /* Set up motor state */
   motor_state_t state_in  = {0};
   motor_state_t state_out = {0};
   rx_err_t      err;
 
-  /* Set up motor state */
   state_in.current_velocity_mps[0] = 0.95f;
   state_in.current_velocity_mps[1] = 1.05f;
   state_in.current_velocity_mps[2] = -0.48f;

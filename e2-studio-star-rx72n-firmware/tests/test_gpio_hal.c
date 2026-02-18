@@ -604,6 +604,7 @@ void test_gpio_set_output_error_injection(void)
 void test_gpio_set_output_call_history(void)
 {
   rx_err_t err = gpio_set_output(k_rx_pb_2);
+
   (void)gpio_set_output(k_rx_pa_0);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1126,10 +1127,10 @@ void test_gpio_read_invalid_pin(void)
  */
 void test_gpio_valid_ports(void)
 {
-  rx_err_t err;
-
   /* Test all valid ports (Port 0, 1, 2, 3, 4, 5, A, B, C, D, E, J) */
   err = gpio_set_output(k_rx_p0_5); /* Port 0 */
+  rx_err_t err;
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = gpio_set_output(k_rx_p1_2); /* Port 1 */

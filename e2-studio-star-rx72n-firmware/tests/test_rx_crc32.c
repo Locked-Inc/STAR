@@ -169,6 +169,7 @@ void tearDown(void)
 void test_crc32_empty_data(void)
 {
   uint32_t crc = rx_crc32_ieee(nullptr, 0);
+
   TEST_ASSERT_EQUAL_HEX32(0x00000000, crc);
 }
 
@@ -178,6 +179,7 @@ void test_crc32_empty_data(void)
 void test_crc32_null_pointer(void)
 {
   uint32_t crc = rx_crc32_ieee(nullptr, 10);
+
   TEST_ASSERT_EQUAL_HEX32(0x00000000, crc);
 }
 
@@ -188,6 +190,7 @@ void test_crc32_zero_length(void)
 {
   uint8_t  data[] = {0x01, 0x02, 0x03};
   uint32_t crc    = rx_crc32_ieee(data, 0);
+
   TEST_ASSERT_EQUAL_HEX32(0x00000000, crc);
 }
 
@@ -255,8 +258,9 @@ void test_crc32_zero_length(void)
  */
 void test_crc32_standard_vector(void)
 {
-  const uint8_t data[] = "123456789";
   uint32_t      crc    = rx_crc32_ieee(data, 9); /* "123456789" without null */
+  const uint8_t data[] = "123456789";
+
   TEST_ASSERT_EQUAL_HEX32(0xCBF43926, crc);
 }
 
@@ -269,6 +273,7 @@ void test_crc32_single_zero(void)
 {
   uint8_t  data[] = {0x00};
   uint32_t crc    = rx_crc32_ieee(data, 1);
+
   TEST_ASSERT_EQUAL_HEX32(0xD202EF8D, crc);
 }
 
@@ -281,6 +286,7 @@ void test_crc32_single_ff(void)
 {
   uint8_t  data[] = {0xFF};
   uint32_t crc    = rx_crc32_ieee(data, 1);
+
   TEST_ASSERT_EQUAL_HEX32(0xFF000000, crc);
 }
 
@@ -315,6 +321,7 @@ void test_crc32_eight_zeros(void)
 {
   uint8_t  data[8] = {0};
   uint32_t crc     = rx_crc32_ieee(data, 8);
+
   TEST_ASSERT_EQUAL_HEX32(0x6522DF69, crc);
 }
 
@@ -326,6 +333,7 @@ void test_crc32_eight_zeros(void)
 void test_crc32_eight_ff(void)
 {
   uint8_t data[8];
+
   memset(data, 0xFF, 8);
   uint32_t crc = rx_crc32_ieee(data, 8);
   TEST_ASSERT_EQUAL_HEX32(0x2144DF1C, crc);
@@ -342,6 +350,7 @@ void test_crc32_frame_header(void)
 {
   uint8_t  header[] = {0xAA, 0x55, 0x01, 0x00, 0x08, 0x00, 0x01, 0x00};
   uint32_t crc      = rx_crc32_ieee(header, 8);
+
   TEST_ASSERT_EQUAL_HEX32(0x38B12836, crc);
 }
 
@@ -362,6 +371,7 @@ void test_crc32_incremental_matches_single(void)
 
   /* Incremental CRC (2 + 3 + 3 bytes) */
   uint32_t crc_incr = rx_crc32_ieee(data, 2);
+
   crc_incr          = rx_crc32_update(crc_incr, data + 2, 3);
   crc_incr          = rx_crc32_update(crc_incr, data + 5, 3);
 
@@ -373,6 +383,8 @@ void test_crc32_incremental_matches_single(void)
  */
 void test_crc32_incremental_single_bytes(void)
 {
+  for (uint32_t i = 1; i < 9; i++) {
+    crc_incr = rx_crc32_update(crc_incr, &data[i], 1);
   const uint8_t data[] = "123456789";
 
   /* Single-shot CRC */
@@ -380,8 +392,7 @@ void test_crc32_incremental_single_bytes(void)
 
   /* Incremental CRC byte by byte */
   uint32_t crc_incr = rx_crc32_ieee(&data[0], 1);
-  for (uint32_t i = 1; i < 9; i++) {
-    crc_incr = rx_crc32_update(crc_incr, &data[i], 1);
+
   }
 
   TEST_ASSERT_EQUAL_HEX32(crc_single, crc_incr);
@@ -413,9 +424,9 @@ void test_crc32_init_deinit(void)
  */
 void test_crc32_double_init_safe(void)
 {
+  /* First init */
   rx_err_t err;
 
-  /* First init */
   err = rx_crc_init();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
@@ -440,11 +451,11 @@ void test_crc32_double_init_safe(void)
  */
 void test_crc32_large_buffer_1kb(void)
 {
-  uint8_t data[1024];
-
   /* Fill with repeating pattern 0x00-0xFF */
   for (uint32_t i = 0; i < sizeof(data); i++) {
     data[i] = (uint8_t)(i & 0xFF);
+  uint8_t data[1024];
+
   }
 
   uint32_t crc = rx_crc32_ieee(data, sizeof(data));
@@ -467,6 +478,7 @@ void test_crc32_unaligned_data(void)
 
   /* 1 byte */
   uint32_t crc1 = rx_crc32_ieee(data, 1);
+
   TEST_ASSERT_EQUAL_HEX32(0x21BB9EC5, crc1);
 
   /* 3 bytes - verify incremental calculation matches single-shot */
@@ -495,6 +507,7 @@ void test_crc32_update_null_returns_original(void)
 {
   uint32_t original_crc = 0x12345678;
   uint32_t result       = rx_crc32_update(original_crc, nullptr, 10);
+
   TEST_ASSERT_EQUAL_HEX32(original_crc, result);
 }
 
@@ -506,6 +519,7 @@ void test_crc32_update_zero_len_returns_original(void)
   uint8_t  data[]       = {0x01, 0x02, 0x03};
   uint32_t original_crc = 0xDEADBEEF;
   uint32_t result       = rx_crc32_update(original_crc, data, 0);
+
   TEST_ASSERT_EQUAL_HEX32(original_crc, result);
 }
 

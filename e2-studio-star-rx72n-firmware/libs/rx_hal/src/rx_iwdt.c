@@ -542,8 +542,6 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
  */
 static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
 {
-  uint16_t iwdtcr = 0;
-
   if (config == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -551,6 +549,8 @@ static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entr
   if (iwdt() == nullptr) {
     return k_rx_err_hw_unmapped;
   }
+
+  uint16_t iwdtcr = 0;
   iwdtcr |= config->tops;    /* Timeout period */
   iwdtcr |= config->cks;     /* Clock divisor */
   iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
@@ -843,6 +843,7 @@ void rx_hal_iwdt_feed(void)
 
   /* Disable interrupts during refresh for atomicity */
   uint32_t psw;
+
   __asm__ volatile("mvfc psw, %0" : "=r"(psw));
   __asm__ volatile("clrpsw i");
 
@@ -920,6 +921,7 @@ bool rx_hal_iwdt_was_reset(void)
    *   1 = Refresh error occurred
    */
   uint16_t status = iwdt()->iwdtsr;
+
   return ((status & k_iwdt_sr_undff) != 0) || ((status & k_iwdt_sr_refef) != 0);
 
 #else
@@ -1470,14 +1472,12 @@ rx_err_t rx_hal_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
  */
 void rx_hal_iwdt_task_heartbeat(const char* task_name)
 {
-  int32_t idx = k_task_not_found;
-
   if (task_name == nullptr) {
     rx_log_error(s_tag, "Heartbeat called with nullptr task_name");
     return;
   }
 
-  idx = internal_find_task(task_name);
+  int32_t idx = internal_find_task(task_name);
 
   if (idx == k_task_not_found) {
     /* Task not registered - log warning but don't fail */
@@ -1573,6 +1573,7 @@ rx_err_t rx_hal_iwdt_check_tasks(void)
 {
   uint32_t              current_time_ms;
   rx_err_t              result;
+
   const task_monitor_t* task = nullptr;
   uint32_t              elapsed_ms;
   char                  log_msg[k_log_msg_buffer_size];

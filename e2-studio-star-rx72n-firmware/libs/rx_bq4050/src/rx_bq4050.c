@@ -461,9 +461,6 @@ typedef enum : uint8_t {
  */
 static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* temp_celsius_out)
 {
-  int32_t temp_0_1c;
-  int32_t temp_celsius_unchecked;
-
   /* Pre-condition: Validate output pointer (NASA Rule 5) */
   RX_CHECK_NULL_PTR(temp_celsius_out, s_tag, "temp_celsius_out pointer is nullptr");
 
@@ -473,7 +470,7 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
    * type. */
 
   /* Perform intermediate conversion: 0.1K to 0.1°C (NASA Rule 5: Track intermediate) */
-  temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
+  int32_t temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
 
   /* Post-condition: Verify intermediate result within valid conversion range (NASA Rule 5) */
   if (temp_0_1c < k_temp_min_0_1c || temp_0_1c > k_temp_max_0_1c) {
@@ -482,7 +479,7 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
   }
 
   /* Convert from 0.1°C to whole degrees Celsius */
-  temp_celsius_unchecked = temp_0_1c / k_temp_decimal_scale;
+  int32_t temp_celsius_unchecked = temp_0_1c / k_temp_decimal_scale;
 
   /* Post-condition: Verify final result fits in int16_t (NASA Rule 5: Bounds check) */
   if (temp_celsius_unchecked < k_temp_celsius_min_int16 ||
@@ -520,9 +517,6 @@ static rx_err_t internal_convert_temperature(const uint16_t temp_0_1k, int16_t* 
 rx_err_t
 rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_config_t* config)
 {
-  rx_err_t err;
-  uint16_t voltage_mv;
-
   /* Pre-conditions: Validate required parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
@@ -533,13 +527,14 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
   rx_log_info(s_tag, "Initializing BQ4050 fuel gauge");
 
   /* Initialize SMBus interface */
-  err = rx_bus_smbus_init(manager, bus_name);
+  rx_err_t err = rx_bus_smbus_init(manager, bus_name);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SMBus initialization failed");
     return err;
   }
 
   /* Verify communication by reading voltage (acts as presence detect) */
+  uint16_t voltage_mv;
   err = rx_bq4050_read_voltage(manager, bus_name, &voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error_hex(s_tag,
@@ -596,8 +591,6 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
                                       uint16_t*         cell_voltages,
                                       const uint8_t     num_cells)
 {
-  rx_err_t err = k_rx_ok;
-
   /**
    * @var s_cell_reg_map
    * @brief Cell voltage register address lookup table
@@ -622,6 +615,8 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
     [k_cell_idx_2] = k_sbs_cell_voltage_2, /* Cell 2 at 0x3E */
     [k_cell_idx_3] = k_sbs_cell_voltage_3, /* Cell 3 at 0x3D */
     [k_cell_idx_4] = k_sbs_cell_voltage_4, /* Cell 4 at 0x3C */
+  rx_err_t err = k_rx_ok;
+
   };
 
   /* Pre-conditions: Validate parameters (NASA Rule 5: Min 3 checks) */
@@ -673,16 +668,14 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
 rx_err_t
 rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t* current_ma)
 {
-  uint16_t raw_current;
-  rx_err_t err;
-
   /* Pre-conditions: Validate all parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(current_ma, s_tag, "current_ma pointer is nullptr");
 
   /* Read as unsigned, interpret as signed (SBS current is signed 16-bit) */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_current, &raw_current);
+  uint16_t raw_current;
+  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_current, &raw_current);
 
   /* NASA Rule 7: Check SMBus transaction result */
   if (err == k_rx_ok) {
@@ -708,16 +701,14 @@ rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
                                         const char*       bus_name,
                                         int16_t*          avg_current_ma)
 {
-  uint16_t raw_current;
-  rx_err_t err;
-
   /* Pre-conditions: Validate parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(avg_current_ma, s_tag, "avg_current_ma pointer is nullptr");
 
   /* Read as unsigned, interpret as signed */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_average_current, &raw_current);
+  uint16_t raw_current;
+  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_average_current, &raw_current);
 
   if (err == k_rx_ok) {
     *avg_current_ma = (int16_t)raw_current;
@@ -744,16 +735,14 @@ rx_err_t rx_bq4050_read_average_current(rx_bus_manager_t* manager,
 rx_err_t
 rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent)
 {
-  uint16_t soc_word;
-  rx_err_t err;
-
   /* Pre-conditions: Validate parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(soc_percent, s_tag, "soc_percent pointer is nullptr");
 
   /* Read SOC from SBS register 0x0D */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_relative_state_of_charge, &soc_word);
+  uint16_t soc_word;
+  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_relative_state_of_charge, &soc_word);
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range (SBS allows > 100% in some conditions) */
@@ -781,16 +770,14 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 rx_err_t
 rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent)
 {
-  uint16_t soc_word;
-  rx_err_t err;
-
   /* Pre-conditions: Validate parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(soc_percent, s_tag, "soc_percent pointer is nullptr");
 
   /* Read absolute SOC from SBS register 0x0E */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_absolute_state_of_charge, &soc_word);
+  uint16_t soc_word;
+  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_absolute_state_of_charge, &soc_word);
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range */
@@ -824,16 +811,14 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 rx_err_t
 rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int16_t* temperature_c)
 {
-  rx_err_t err;
-  uint16_t temp_0_1k;
-
   /* Pre-conditions: Validate parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(temperature_c, s_tag, "temperature_c pointer is nullptr");
 
   /* Read temperature from BQ4050 in 0.1K units */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_temperature, &temp_0_1k);
+  uint16_t temp_0_1k;
+  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_temperature, &temp_0_1k);
   if (err != k_rx_ok) {
     return err;
   }
@@ -865,8 +850,6 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
                                  uint16_t*         remaining_mah,
                                  uint16_t*         full_mah)
 {
-  rx_err_t err;
-
   /* Pre-conditions: Validate all parameters (NASA Rule 5: 4 checks) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
@@ -874,7 +857,7 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(full_mah, s_tag, "full_mah pointer is nullptr");
 
   /* Read remaining capacity from SBS register 0x0F */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_remaining_capacity, remaining_mah);
+  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_remaining_capacity, remaining_mah);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read remaining capacity");
     return err;
@@ -947,8 +930,6 @@ static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
                                                 rx_bq4050_status_t* status,
                                                 const uint8_t       num_cells)
 {
-  rx_err_t err;
-
   /* Pre-conditions: Validate parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
@@ -961,7 +942,7 @@ static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
   }
 
   /* Read pack voltage */
-  err = rx_bq4050_read_voltage(manager, bus_name, &status->voltage_mv);
+  rx_err_t err = rx_bq4050_read_voltage(manager, bus_name, &status->voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read voltage");
     return err;
@@ -1020,13 +1001,11 @@ static rx_err_t internal_read_soc_status(rx_bus_manager_t*   manager,
                                          const char*         bus_name,
                                          rx_bq4050_status_t* status)
 {
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is nullptr");
 
-  err = rx_bq4050_read_relative_soc(manager, bus_name, &status->relative_soc);
+  rx_err_t err = rx_bq4050_read_relative_soc(manager, bus_name, &status->relative_soc);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read relative SOC");
     return err;
@@ -1072,13 +1051,11 @@ static rx_err_t internal_read_capacity_status(rx_bus_manager_t*   manager,
                                               const char*         bus_name,
                                               rx_bq4050_status_t* status)
 {
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is nullptr");
 
-  err = rx_bq4050_read_capacity(manager,
+  rx_err_t err = rx_bq4050_read_capacity(manager,
                                 bus_name,
                                 &status->remaining_capacity_mah,
                                 &status->full_capacity_mah);
@@ -1129,13 +1106,11 @@ static rx_err_t internal_read_timing_status(rx_bus_manager_t*   manager,
                                             const char*         bus_name,
                                             rx_bq4050_status_t* status)
 {
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is nullptr");
 
-  err = rx_bus_smbus_read_word_data(manager,
+  rx_err_t err = rx_bus_smbus_read_word_data(manager,
                                     bus_name,
                                     k_sbs_run_time_to_empty,
                                     &status->time_to_empty_min);
@@ -1184,15 +1159,13 @@ static rx_err_t internal_read_status_flags(rx_bus_manager_t*   manager,
                                            const char*         bus_name,
                                            rx_bq4050_status_t* status)
 {
-  uint16_t status_flags;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is nullptr");
 
   /* Read battery status flags from register 0x16 */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
+  uint16_t status_flags;
+  rx_err_t err = rx_bus_smbus_read_word_data(manager, bus_name, k_sbs_battery_status, &status_flags);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read battery status");
     return err;
@@ -1242,9 +1215,9 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                rx_bq4050_status_t* status,
                                const uint8_t       num_cells)
 {
+  /* Pre-conditions: Validate parameters (NASA Rule 5) */
   rx_err_t err = k_rx_ok;
 
-  /* Pre-conditions: Validate parameters (NASA Rule 5) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is nullptr");

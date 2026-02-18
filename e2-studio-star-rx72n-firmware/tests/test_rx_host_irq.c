@@ -342,6 +342,7 @@ void test_reinit_after_deinit_succeeds(void)
 void test_pin_mask_matches_bit_position(void)
 {
   const uint8_t expected_mask = (uint8_t)(1U << k_host_irq_pin_bit);
+
   TEST_ASSERT_EQUAL(k_host_irq_pin_mask, expected_mask);
   TEST_ASSERT_EQUAL(0x80, expected_mask);
 }

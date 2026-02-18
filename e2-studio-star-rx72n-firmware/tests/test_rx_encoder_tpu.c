@@ -203,6 +203,7 @@ void test_read_raw_null(void)
 void test_read_raw_uninit(void)
 {
   uint16_t count = 0;
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_tpu_encoder_read_raw(k_tpu_channel_1, &count));
 }
 
@@ -309,6 +310,7 @@ void test_read_count_null_state(void)
 void test_read_count_uninit(void)
 {
   rx_encoder_state_t state;
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, rx_tpu_encoder_read_count(k_tpu_channel_1, &state));
 }
 
@@ -391,6 +393,7 @@ void test_velocity_negative_dt(void)
 void test_velocity_uninit(void)
 {
   float velocity = 0.0f;
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
                     rx_tpu_encoder_read_velocity(&velocity, 0.01f, k_tpu_channel_1));
 }

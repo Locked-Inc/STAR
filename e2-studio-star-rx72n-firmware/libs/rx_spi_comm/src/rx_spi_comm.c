@@ -441,10 +441,6 @@ static rx_err_t internal_decode_header(const uint8_t* data,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
-  uint32_t offset;
-  uint16_t sync_word;
-  uint32_t expected_size;
-
   if (data == nullptr || frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -453,9 +449,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  offset = 0;
-
-  sync_word = rx_frame_read_le16(&data[offset]);
+  uint32_t offset    = 0;
+  uint16_t sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
@@ -471,7 +466,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  expected_size = rx_frame_encoded_size(frame->header.length);
+  uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
     return k_rx_err_invalid_size;
   }
@@ -714,22 +709,20 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
 {
 #ifdef __RX__
   /* RX72N: Use ThreadX time measurement for precise timeout */
-  ULONG timeout_ticks = (timeout_ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
-  ULONG start_ticks   = tx_time_get();
-
   while ((tx_time_get() - start_ticks) < timeout_ticks) {
     bool           ready = false;
     const rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
     if (err != k_rx_ok) {
       return err;
     }
-
     if (ready) {
       return k_rx_ok;
     }
-
     /* Yield to other threads while waiting */
     tx_thread_sleep(k_poll_sleep_ticks);
+  ULONG timeout_ticks = (timeout_ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
+  ULONG start_ticks   = tx_time_get();
+
   }
 #else
   /* Host build (testing): Use iteration counter to simulate time */
@@ -883,15 +876,11 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       uint8_t*              rx_data,
                                       const uint32_t        rx_len)
 {
-  uint32_t transfer_len;
-  rx_err_t wait_err;
-  rx_err_t err;
-
   /* Pre-condition 1: Handle pointer validation */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   /* Pre-condition 2: Transfer length within buffer capacity */
-  transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
+  uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
   if (transfer_len > k_spi_comm_tx_buffer_size) {
     rx_log_error(s_tag, "Transfer length exceeds buffer capacity");
     return k_rx_err_invalid_size;
@@ -911,7 +900,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
 
   /* Wait for host ready signal before transmit operations */
   if (tx_data != nullptr && tx_len > 0) {
-    wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
+    rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
     RX_RETURN_ON_ERROR(wait_err, s_tag, "Host ACK wait failed");
   }
 
@@ -926,7 +915,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
    * Cast to uint16_t: RSPI HAL uses 16-bit length (max 65535 bytes).
    * Safe because transfer_len is validated <= k_spi_comm_tx_buffer_size above.
    */
-  err = rspi_peripheral_transfer(handle->channel,
+  rx_err_t err = rspi_peripheral_transfer(handle->channel,
                                  handle->tx_buffer,
                                  handle->rx_buffer,
                                  (uint16_t)transfer_len);
@@ -1730,6 +1719,7 @@ internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, ui
 
   /* Read frame header from SPI */
   const rx_err_t err = internal_spi_transfer(handle, nullptr, 0, header_buf, header_len);
+
   if (err != k_rx_ok) {
     return err;
   }
@@ -1770,13 +1760,12 @@ static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
                                       rx_frame_t*                 frame,
                                       const uint32_t              total_size)
 {
-  uint32_t offset = 0;
-
   if (handle == nullptr || frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
-  rx_err_t err = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
+  uint32_t offset  = 0;
+  rx_err_t err     = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame header decode failed");
     return err;

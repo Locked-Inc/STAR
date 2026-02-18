@@ -228,10 +228,9 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
  */
 static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq)
 {
-  rx_frame_t ack_frame;
-  (void)memset(&ack_frame, 0, sizeof(ack_frame));
+  rx_frame_t     ack_frame = {0};
+  const rx_err_t err       = rx_spi_comm_receive(link->spi_handle, &ack_frame, k_spi_link_ack_timeout_ms);
 
-  const rx_err_t err = rx_spi_comm_receive(link->spi_handle, &ack_frame, k_spi_link_ack_timeout_ms);
   if (err == k_rx_err_timeout) {
     return k_rx_err_timeout;
   }

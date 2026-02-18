@@ -1495,12 +1495,13 @@ void tearDown(void)
  */
 void test_ds18b20_init_success(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -1593,12 +1594,13 @@ void test_ds18b20_init_null_config(void)
  */
 void test_ds18b20_init_no_device_present(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -1630,12 +1632,13 @@ void test_ds18b20_init_no_device_present(void)
  */
 void test_ds18b20_init_already_initialized(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -1671,12 +1674,13 @@ void test_ds18b20_init_already_initialized(void)
  */
 void test_ds18b20_init_invalid_resolution(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = (ds18b20_resolution_t)99,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -1728,12 +1732,13 @@ void test_ds18b20_init_invalid_resolution(void)
  */
 void test_ds18b20_read_temperature_25c(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
   float temp_c = 0.0f;
 
@@ -1764,12 +1769,13 @@ void test_ds18b20_read_temperature_25c(void)
  */
 void test_ds18b20_read_temperature_0c(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
   float temp_c = 0.0f;
 
@@ -1811,12 +1817,13 @@ void test_ds18b20_read_temperature_0c(void)
  */
 void test_ds18b20_read_temperature_minus_55c(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
   float temp_c = 0.0f;
 
@@ -1847,12 +1854,13 @@ void test_ds18b20_read_temperature_minus_55c(void)
  */
 void test_ds18b20_read_temperature_125c(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
   float temp_c = 0.0f;
 
@@ -1897,12 +1905,13 @@ void test_ds18b20_read_temperature_not_initialized(void)
  */
 void test_ds18b20_read_temperature_null_output(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -1945,12 +1954,13 @@ void test_ds18b20_read_temperature_null_output(void)
  */
 void test_ds18b20_set_resolution_9bit(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -1970,12 +1980,13 @@ void test_ds18b20_set_resolution_9bit(void)
  */
 void test_ds18b20_get_resolution(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_11bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
   ds18b20_resolution_t resolution;
 
@@ -2000,12 +2011,13 @@ void test_ds18b20_get_resolution(void)
  */
 void test_ds18b20_get_conversion_time_12bit(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -2028,12 +2040,13 @@ void test_ds18b20_get_conversion_time_12bit(void)
  */
 void test_ds18b20_get_conversion_time_9bit(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_9bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -2074,12 +2087,13 @@ void test_ds18b20_get_conversion_time_9bit(void)
  */
 void test_ds18b20_read_power_mode_external(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
   bool external_power = false;
 
@@ -2107,12 +2121,13 @@ void test_ds18b20_read_power_mode_external(void)
  */
 void test_ds18b20_read_power_mode_parasitic(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
   bool external_power = true;
 
@@ -2153,12 +2168,13 @@ void test_ds18b20_read_power_mode_parasitic(void)
  */
 void test_ds18b20_trigger_conversion(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -2178,12 +2194,13 @@ void test_ds18b20_trigger_conversion(void)
  */
 void test_ds18b20_trigger_conversion_no_device(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);
@@ -2222,12 +2239,13 @@ void test_ds18b20_trigger_conversion_no_device(void)
  */
 void test_ds18b20_deinit(void)
 {
-  rx_ds18b20_handle_t handle;
   rx_ds18b20_config_t config = {
     .bus_manager      = &s_mock_bus_manager,
     .bus_name         = s_test_bus_name,
     .resolution       = k_ds18b20_resolution_12bit,
     .use_rom_matching = false,
+  rx_ds18b20_handle_t handle;
+
   };
 
   internal_init_handle(&handle);

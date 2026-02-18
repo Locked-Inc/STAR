@@ -729,10 +729,10 @@ static rx_err_t internal_write_pfs(const uint8_t port, uint8_t pin, uint8_t valu
 rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
+  /* Pre-condition: port and pin must be in valid range */
   const uint8_t port    = rx_port_from_pin(pin);
   const uint8_t pin_num = rx_pin_from_pin(pin);
 
-  /* Pre-condition: port and pin must be in valid range */
   RX_CHECK_RANGE_TAG(port, k_mpc_port_start, k_mpc_port_j, k_rx_err_invalid_arg, s_tag);
   RX_CHECK_RANGE_TAG(pin_num, k_mpc_min_pin, k_mpc_max_pin, k_rx_err_invalid_arg, s_tag);
 
@@ -832,6 +832,7 @@ rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
    * - P24-P27: MTU4 MTIOCA/B/C/D
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_ioc};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -864,6 +865,7 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
    * For phase counting mode, use PSEL = 0x03
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -896,6 +898,7 @@ rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
    * - PC0/PB3: TCLKC/TCLKD (Motor 3, Rear Right)
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -961,6 +964,7 @@ rx_err_t rx_mpc_set_sci(const rx_port_pin_t pin)
    * TX and RX use the same PSEL code
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_sci_tx};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -988,6 +992,7 @@ rx_err_t rx_mpc_set_riic(const rx_port_pin_t pin)
    * SCL and SDA use the same PSEL code
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_riic_scl};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -1018,6 +1023,7 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
    * All RSPI signals (CLK, COPI, CIPO, SSL) use same PSEL
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_rspi_clk};
+
   return rx_mpc_set_peripheral(&config);
 }
 

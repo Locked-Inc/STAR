@@ -829,6 +829,7 @@ rx_err_t rx_crc_deinit(void)
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
   rx_err_t          init_err;
+
   volatile uint8_t* crcdir_byte;
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */

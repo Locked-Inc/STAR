@@ -406,6 +406,7 @@ static int8_t internal_get_mstpb_bit(const uint8_t channel)
 static rx_err_t internal_enable_sci_clock(const uint8_t channel)
 {
   const int8_t mstpb_bit = internal_get_mstpb_bit(channel);
+
   if (mstpb_bit < 0) {
     return k_rx_err_invalid_arg;
   }

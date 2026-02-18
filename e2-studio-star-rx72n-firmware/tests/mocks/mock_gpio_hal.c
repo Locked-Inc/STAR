@@ -128,7 +128,6 @@ static rx_err_t internal_validate_pin(rx_port_pin_t pin, uint8_t* port, uint8_t*
   *pin_num = rx_pin_from_pin(pin);
 
   /* Validate port - check against known valid ports */
-  bool valid_port = false;
   switch (*port) {
     case k_rx_port_0:
     case k_rx_port_1:
@@ -146,6 +145,8 @@ static rx_err_t internal_validate_pin(rx_port_pin_t pin, uint8_t* port, uint8_t*
       break;
     default:
       break;
+  bool valid_port = false;
+
   }
 
   if (!valid_port) {

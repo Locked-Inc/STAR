@@ -266,13 +266,9 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
                              adc_resolution_t bits,
                              uint32_t*        voltage_mv)
 {
-  rx_err_t err;
-  uint16_t raw_value;
-  uint32_t max_value;
-
   internal_record_call(k_mock_adc_call_read_voltage_mv, unit, channel, bits);
 
-  err = internal_check_error();
+  rx_err_t err = internal_check_error();
   if (err != k_rx_ok) {
     return err;
   }
@@ -296,14 +292,15 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
   }
 
   /* Read raw ADC value */
+  uint16_t raw_value;
   err = adc_read(unit, channel, &raw_value);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Calculate voltage */
-  max_value   = ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
-  *voltage_mv = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
+  uint32_t max_value = ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
+  *voltage_mv        = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
 
   return k_rx_ok;
 }

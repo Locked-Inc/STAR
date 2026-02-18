@@ -870,6 +870,7 @@ void test_obstacle_detect_init_success(void)
 void test_obstacle_detect_init_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_init(nullptr, &s_config);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -882,6 +883,7 @@ void test_obstacle_detect_init_null_handle_fails(void)
 void test_obstacle_detect_init_null_config_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_init(&s_handle, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -977,6 +979,7 @@ void test_obstacle_detect_init_invalid_threshold_too_low_fails(void)
 {
   s_config.detection_threshold_cm = 1.0f; /* Below 2cm minimum */
   rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -991,6 +994,7 @@ void test_obstacle_detect_init_invalid_threshold_too_high_fails(void)
 {
   s_config.detection_threshold_cm = 500.0f; /* Above 400cm maximum */
   rx_err_t err                    = rx_obstacle_detect_init(&s_handle, &s_config);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1005,6 +1009,7 @@ void test_obstacle_detect_init_invalid_debounce_fails(void)
 {
   s_config.debounce_samples = 0; /* Below minimum */
   rx_err_t err              = rx_obstacle_detect_init(&s_handle, &s_config);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1074,6 +1079,7 @@ void test_obstacle_detect_deinit_success(void)
 void test_obstacle_detect_deinit_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1086,6 +1092,7 @@ void test_obstacle_detect_deinit_null_handle_fails(void)
 void test_obstacle_detect_deinit_not_initialized_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_deinit(&s_handle);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1141,6 +1148,7 @@ void test_obstacle_detect_start_success(void)
 void test_obstacle_detect_start_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_start(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1151,6 +1159,7 @@ void test_obstacle_detect_start_null_handle_fails(void)
 void test_obstacle_detect_start_not_initialized_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_start(&s_handle);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1178,6 +1187,7 @@ void test_obstacle_detect_stop_success(void)
 void test_obstacle_detect_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_stop(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1229,6 +1239,7 @@ void test_obstacle_detect_get_state_null_handle_fails(void)
 {
   rx_obstacle_detect_state_t state;
   rx_err_t                   err = rx_obstacle_detect_get_state(nullptr, &state);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1263,6 +1274,7 @@ void test_obstacle_detect_is_obstacle_detected_false_initially(void)
 void test_obstacle_detect_is_obstacle_detected_null_handle(void)
 {
   bool detected = rx_obstacle_detect_is_obstacle_detected(nullptr);
+
   TEST_ASSERT_FALSE(detected);
 }
 
@@ -1323,6 +1335,7 @@ void test_obstacle_detect_get_stats_null_handle_fails(void)
 {
   uint32_t stats = 0;
   rx_err_t err   = rx_obstacle_detect_get_stats(nullptr, &stats, &stats, &stats);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1354,6 +1367,7 @@ void test_obstacle_detect_reset_stats_success(void)
 void test_obstacle_detect_reset_stats_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_reset_stats(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -1410,6 +1424,7 @@ void test_obstacle_detect_clear_obstacle_success(void)
 void test_obstacle_detect_clear_obstacle_null_handle_fails(void)
 {
   rx_err_t err = rx_obstacle_detect_clear_obstacle(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 

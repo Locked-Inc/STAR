@@ -559,12 +559,10 @@ rx_err_t rx_crc_deinit(void)
  */
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
-  rx_err_t init_err;
-
   /* Rule 5: Pre-condition validation - module must be initialized */
   /* Auto-initialize if needed (consistent with hardware implementation) */
   if (!s_crc_initialized) {
-    init_err = rx_crc_init();
+    rx_err_t init_err = rx_crc_init();
     if (init_err != k_rx_ok) {
       return 0;
     }
@@ -612,12 +610,10 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
  */
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
 {
-  rx_err_t init_err;
-
   /* Rule 5: Pre-condition validation - module must be initialized */
   /* Auto-initialize if needed (consistent with hardware implementation) */
   if (!s_crc_initialized) {
-    init_err = rx_crc_init();
+    rx_err_t init_err = rx_crc_init();
     if (init_err != k_rx_ok) {
       return crc;
     }

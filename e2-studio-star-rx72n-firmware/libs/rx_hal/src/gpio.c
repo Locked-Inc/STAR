@@ -357,6 +357,7 @@ rx_err_t gpio_set_output(const rx_port_pin_t pin)
   /* Extract port and pin number from rx_port_pin_t */
   const uint8_t             port      = rx_port_from_pin(pin);
   const uint8_t             pin_num   = rx_pin_from_pin(pin);
+
   const rx_pin_interface_t* pin_iface = nullptr;
 
   /* Validate parameters */
@@ -472,6 +473,7 @@ rx_err_t gpio_set_input(const rx_port_pin_t pin)
   /* Extract port and pin number from rx_port_pin_t */
   const uint8_t             port      = rx_port_from_pin(pin);
   const uint8_t             pin_num   = rx_pin_from_pin(pin);
+
   const rx_pin_interface_t* pin_iface = nullptr;
 
   /* Validate parameters */
@@ -566,6 +568,7 @@ rx_err_t gpio_write_high(const rx_port_pin_t pin)
 
   /* Validate parameters */
   const rx_err_t err = internal_validate_port_pin(port, pin_num);
+
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
@@ -641,6 +644,7 @@ rx_err_t gpio_write_low(const rx_port_pin_t pin)
 
   /* Validate parameters */
   const rx_err_t err = internal_validate_port_pin(port, pin_num);
+
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
@@ -719,6 +723,7 @@ rx_err_t gpio_toggle(const rx_port_pin_t pin)
 
   /* Validate parameters */
   const rx_err_t err = internal_validate_port_pin(port, pin_num);
+
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */

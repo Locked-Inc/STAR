@@ -900,8 +900,6 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
                                                volatile rx_gptw_channel_regs_t** gptw_out,
                                                uint32_t*                         period_out)
 {
-  rx_err_t err;
-
   if ((int32_t)channel >= (int32_t)k_gptw_max_channels) {
     rx_log_error(s_tag, "Invalid GPTW channel");
     return k_rx_err_invalid_arg;
@@ -912,7 +910,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
     return k_rx_err_invalid_arg;
   }
 
-  err = internal_calculate_period(config->frequency_hz, config->wave_mode, period_out);
+  rx_err_t err = internal_calculate_period(config->frequency_hz, config->wave_mode, period_out);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1677,8 +1675,6 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
                                                      const uint32_t          period,
                                                      const bool              is_triangle)
 {
-  rx_err_t err;
-
   /* Pre-condition: validate channel range (NASA Power of 10 Rule 5) */
   if ((int32_t)channel >= (int32_t)k_gptw_max_channels) {
     return k_rx_err_invalid_arg;
@@ -1692,7 +1688,7 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
   }
 
   /* Base hardware configuration */
-  err = internal_configure_gptw_hardware(gptw, config, period);
+  rx_err_t err = internal_configure_gptw_hardware(gptw, config, period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1778,9 +1774,6 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
  */
 rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
 {
-  rx_err_t err;
-  uint32_t period;
-
   /* Pre-condition: validate config pointer (NASA Power of 10 Rule 5) */
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
@@ -1813,7 +1806,8 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
   }
 
   /* Calculate period once (assumes same frequency for all) */
-  err = internal_calculate_period(config->frequency_hz, config->wave_mode, &period);
+  uint32_t period;
+  rx_err_t err = internal_calculate_period(config->frequency_hz, config->wave_mode, &period);
   if (err != k_rx_ok) {
     return err;
   }

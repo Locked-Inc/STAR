@@ -176,8 +176,6 @@ static void internal_led_init_gpio(void);
  */
 rx_err_t led_status_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_led_created, "LED task already created");
   if (s_led_created) {
@@ -185,7 +183,7 @@ rx_err_t led_status_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_led_thread,
+  UINT tx_status = tx_thread_create(&s_led_thread,
                                "LEDTask",
                                internal_led_task_entry,
                                k_led_task_input,

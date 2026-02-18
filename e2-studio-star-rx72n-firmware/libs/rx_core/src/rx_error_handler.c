@@ -1136,8 +1136,6 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
  */
 rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config_t* config)
 {
-  UINT status;
-
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is nullptr");
   RX_CHECK_NULL_PTR(config, "ERROR_HANDLER", "Config pointer is nullptr");
   if (config->max_backoff_ms < config->initial_backoff_ms) {
@@ -1158,7 +1156,7 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
   handler->max_backoff_ms     = config->max_backoff_ms;
 
   /* Create mutex */
-  status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
+  UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error("ERROR_HANDLER", "Failed to create mutex");
     return k_rx_err_rtos_mutex;

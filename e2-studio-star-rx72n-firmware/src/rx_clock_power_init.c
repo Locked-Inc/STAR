@@ -323,13 +323,12 @@ typedef enum : uint8_t {
  */
 static rx_err_t internal_clock_init(void)
 {
-  uint32_t timeout = k_pll_stabilization_timeout;
-
   /* Unlock protection for clock registers */
   *prcr_reg() = k_rx_prcr_unlock_all;
-
   /* Precondition: Verify PRCR unlock took effect
    * Note: PRCR key byte (upper 8 bits) reads back as 0x00, so we must mask it */
+  uint32_t timeout = k_pll_stabilization_timeout;
+
   RX_ASSERT((*prcr_reg() & k_rx_prcr_readback_mask) ==
               (k_rx_prcr_unlock_all & k_rx_prcr_readback_mask),
             "Precondition: PRCR unlock failed");
@@ -483,44 +482,36 @@ static rx_err_t internal_clock_init(void)
  */
 static rx_err_t internal_module_stop_init(void)
 {
-  const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
-  const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
-  const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
-
   for (uint8_t attempt = 0; attempt < k_retry_count_module_stop; attempt++) {
     /* Protect off */
     *prcr_reg() = k_rx_prcr_unlock_all;
-
     /* Module Stop Control Register A */
     system_regs()->mstpcra &= ~mstpcra_clear_mask; /* CMT0, CMT1, MTU */
-
     /* Module Stop Control Register B */
     /* Note: SCI modules are enabled per-channel in uart_init_channel() */
     system_regs()->mstpcrb &= ~mstpcrb_clear_mask; /* RSPI0, RSPI1 */
-
     /* Module Stop Control Register C */
     system_regs()->mstpcrc &= ~mstpcrc_clear_mask; /* S12AD */
-
     /* Protect on */
     *prcr_reg() = k_rx_prcr_lock;
-
     /* Post-condition: Verify bits are cleared */
     const uint32_t mstpcra_actual = system_regs()->mstpcra & mstpcra_clear_mask;
     const uint32_t mstpcrb_actual = system_regs()->mstpcrb & mstpcrb_clear_mask;
     const uint32_t mstpcrc_actual = system_regs()->mstpcrc & mstpcrc_clear_mask;
-
     if ((mstpcra_actual == 0) && (mstpcrb_actual == 0) && (mstpcrc_actual == 0)) {
       /* Postcondition: Re-read hardware registers to verify stability */
       const uint32_t verify_a = system_regs()->mstpcra & mstpcra_clear_mask;
       const uint32_t verify_b = system_regs()->mstpcrb & mstpcrb_clear_mask;
       const uint32_t verify_c = system_regs()->mstpcrc & mstpcrc_clear_mask;
-
       RX_ASSERT((verify_a == 0) && (verify_b == 0) && (verify_c == 0),
                 "Postcondition: Module stop bits remain cleared");
       return k_rx_ok;
     }
-
     /* If verification failed and this isn't the last attempt, retry */
+  const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
+  const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
+  const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
+
   }
 
   /* All retries exhausted - return error */
@@ -543,53 +534,44 @@ static rx_err_t internal_module_stop_init(void)
 static rx_err_t internal_verify_system_state(void)
 {
   const volatile rx_system_regs_t* sys = system_regs();
-  uint8_t                          pllcr2;
-  uint32_t                         sckcr;
-  uint16_t                         sckcr3;
-  uint8_t                          ppllcr2;
-  uint8_t                          oscovfsr;
-  uint8_t                          memwait;
 
   /* Verify system register access */
   RX_CHECK_NULL_PTR(sys, s_tag, "system_regs pointer is nullptr");
 
   /* Verify PLL is enabled by checking PLLCR2 register */
-  pllcr2 = sys->pllcr2;
+  uint8_t pllcr2 = sys->pllcr2;
   if (pllcr2 != k_pll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify system clock dividers are configured correctly */
-  sckcr = sys->sckcr;
+  uint32_t sckcr = sys->sckcr;
   if (sckcr != k_system_clock_dividers) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PLL is selected as the system clock source */
-  sckcr3 = sys->sckcr3;
+  uint16_t sckcr3 = sys->sckcr3;
   if (sckcr3 != k_system_clock_source_pll) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PPLL is enabled for USB clock */
-  ppllcr2 = *ppllcr2_reg();
+  uint8_t ppllcr2 = *ppllcr2_reg();
   if (ppllcr2 != k_ppll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
 #if !RX_IS_SIMULATOR
   /* Verify PPLL is stable (hardware only - simulator doesn't model OSCOVFSR flags) */
-  oscovfsr = sys->oscovfsr;
+  uint8_t oscovfsr = sys->oscovfsr;
   if ((oscovfsr & k_ppll_stable_flag) == 0) {
     return k_rx_err_hw_init_failed;
   }
-#else
-  /* Simulator: Skip PPLL stability check (OSCOVFSR flags never set in simulator) */
-  (void)oscovfsr; /* Suppress unused variable warning */
 #endif
 
   /* Verify MEMWAIT is configured for 240 MHz operation */
-  memwait = *memwait_reg();
+  uint8_t memwait = *memwait_reg();
   if (memwait != k_memwait_one_wait) {
     return k_rx_err_hw_init_failed;
   }

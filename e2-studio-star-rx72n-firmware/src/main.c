@@ -1743,8 +1743,6 @@ static const rx_iwdt_config_t s_iwdt_config = {
  */
 void tx_application_define(void* first_unused_memory)
 {
-  rx_err_t err;
-
   /* Precondition: first_unused_memory parameter is provided by ThreadX */
   RX_ASSERT(first_unused_memory != nullptr, "Precondition: first_unused_memory must be valid");
 
@@ -1766,6 +1764,7 @@ void tx_application_define(void* first_unused_memory)
    */
 
   /* Step 1a: Initialize bus manager (requires ThreadX mutex, so must be here) */
+  rx_err_t err;
   {
     extern rx_bus_manager_t g_bus_manager;
     rx_error_interface_t*   error_iface = rx_infrastructure_get_error_interface();
@@ -2113,8 +2112,6 @@ void tx_application_define(void* first_unused_memory)
  */
 int main(void)
 {
-  rx_err_t ret;
-
   /* Check startup flags (via internal_check_startup_flags):
    *  PORF (Power-On Reset Detect Flag) - asserted, halts on failure
    *  IWDTRF (Independent Watchdog Timer Reset Detect Flag) - asserted, halts on failure
@@ -2123,10 +2120,10 @@ int main(void)
    *  LVD0RF (Voltage-Monitoring 0 Reset Detect Flag)
    *  CWSF (Cold/Warm Start Determination Flag)
    */
-  ret = internal_check_startup_flags();
   RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
-
   /* Initialize system clocks and power management */
+  rx_err_t ret = internal_check_startup_flags();
+
   ret = rx_clock_power_init();
   RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
 

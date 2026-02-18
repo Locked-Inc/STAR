@@ -1984,11 +1984,6 @@ rx_err_t rx_usb_puts(const rx_usb_port_id_t port, const char* str)
  */
 rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
 {
-  char     buffer[k_int_buffer_size];
-  uint8_t  pos      = 0;
-  bool     negative = false;
-  uint32_t abs_val;
-
   if (!internal_port_is_valid(port)) {
     return k_rx_err_invalid_arg;
   }
@@ -2002,6 +1997,11 @@ rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
   }
 
   /* Handle negative numbers */
+  char     buffer[k_int_buffer_size];
+  uint8_t  pos      = 0;
+  bool     negative = false;
+  uint32_t abs_val;
+
   if (value < 0) {
     negative = true;
     /* Handle INT32_MIN specially to avoid overflow */
@@ -2052,8 +2052,6 @@ rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
  */
 rx_err_t rx_usb_puthex(const rx_usb_port_id_t port, uint32_t value, uint8_t digits)
 {
-  char buffer[k_hex_buffer_size];
-
   if (!internal_port_is_valid(port)) {
     return k_rx_err_invalid_arg;
   }
@@ -2065,6 +2063,8 @@ rx_err_t rx_usb_puthex(const rx_usb_port_id_t port, uint32_t value, uint8_t digi
   if (s_usb.device_state != k_usb_state_configured) {
     return k_rx_err_invalid_state;
   }
+
+  char buffer[k_hex_buffer_size];
 
   /* Clamp digits to valid range */
   if (digits == 0) {

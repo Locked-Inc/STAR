@@ -73,9 +73,9 @@ void tearDown(void)
  */
 void test_obstacle_task_create_success(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task */
@@ -91,9 +91,9 @@ void test_obstacle_task_create_success(void)
  */
 void test_obstacle_task_create_thread_failure(void)
 {
+  /* Configure ThreadX to fail */
   rx_err_t err;
 
-  /* Configure ThreadX to fail */
   mock_tx_set_thread_create_return(TX_NO_MEMORY);
 
   /* Create the task */
@@ -108,9 +108,9 @@ void test_obstacle_task_create_thread_failure(void)
  */
 void test_obstacle_task_create_already_created(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task first time - should succeed */
@@ -136,11 +136,11 @@ void test_obstacle_task_create_already_created(void)
  */
 void test_obstacle_task_init_and_start(void)
 {
+  /* Configure mocks for success */
   rx_obstacle_detect_t        handle = {0};
   rx_obstacle_detect_config_t config = {0};
   rx_err_t                    err;
 
-  /* Configure mocks for success */
   mock_obstacle_detect_set_init_return(k_rx_ok);
   mock_obstacle_detect_set_start_return(k_rx_ok);
 
@@ -195,12 +195,12 @@ void test_obstacle_callback_sets_emergency_flag(void)
  */
 void test_obstacle_distances_stored_in_shared_data(void)
 {
+  /* Simulate callback storing obstacle state */
+  state_in.distance_cm[k_test_sensor_idx_0]       = 25; /* 25 cm */
   obstacle_state_t state_in  = {0};
   obstacle_state_t state_out = {0};
   rx_err_t         err;
 
-  /* Simulate callback storing obstacle state */
-  state_in.distance_cm[k_test_sensor_idx_0]       = 25; /* 25 cm */
   state_in.obstacle_detected[k_test_sensor_idx_0] = true;
   state_in.distance_cm[k_test_sensor_idx_1]       = 100; /* 100 cm (no obstacle) */
   state_in.obstacle_detected[k_test_sensor_idx_1] = false;
@@ -257,13 +257,13 @@ void test_obstacle_cleared_keeps_estop_active(void)
  */
 void test_obstacle_get_stats(void)
 {
+  /* Configure mock stats */
   rx_obstacle_detect_t handle          = {0};
   uint32_t             total_polls     = 0;
   uint32_t             obstacle_events = 0;
   uint32_t             false_positives = 0;
   rx_err_t             err;
 
-  /* Configure mock stats */
   mock_obstacle_detect_set_stats(1000, 5, 2);
 
   /* Get stats */

@@ -607,11 +607,11 @@ void tearDown(void)
  */
 void test_staggered_init_success(void)
 {
+  /* Initialize config structure */
   rx_gptw_config_t  config;
   rx_err_t          err;
   rx_gptw_channel_t ch;
 
-  /* Initialize config structure */
   config.frequency_hz         = k_staggered_test_freq_hz;
   config.wave_mode            = k_gptw_wave_tri_pwm3;
   config.invert_polarity      = false;
@@ -832,11 +832,11 @@ void test_staggered_init_null_config_fails(void)
  */
 void test_staggered_init_zero_frequency_fails(void)
 {
+  /* Initialize config structure with valid values except frequency */
+  config.frequency_hz         = 0; /* Invalid: zero frequency */
   rx_gptw_config_t config;
   rx_err_t         err;
 
-  /* Initialize config structure with valid values except frequency */
-  config.frequency_hz         = 0; /* Invalid: zero frequency */
   config.wave_mode            = k_gptw_wave_tri_pwm3;
   config.invert_polarity      = false;
   config.deadtime_ns          = 0;

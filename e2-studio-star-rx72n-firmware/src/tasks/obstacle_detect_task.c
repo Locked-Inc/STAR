@@ -1419,8 +1419,6 @@ static void internal_obstacle_callback(bool    obstacle_detected,
  */
 rx_err_t obstacle_detect_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_obstacle_created, "Obstacle task already created");
   if (s_obstacle_created) {
@@ -1428,7 +1426,7 @@ rx_err_t obstacle_detect_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_obstacle_thread,
+  UINT tx_status = tx_thread_create(&s_obstacle_thread,
                                "ObstacleTask",
                                internal_obstacle_task_entry,
                                k_obstacle_task_input,
@@ -1786,18 +1784,12 @@ static rx_err_t internal_init_sensors(void)
  */
 static void internal_obstacle_task_entry(ULONG input)
 {
-  rx_err_t                    err;
-  rx_obstacle_detect_config_t config;
-  uint32_t                    total_polls;
-  uint32_t                    obstacle_events;
-  uint32_t                    false_positives;
-
   (void)input;
 
   rx_log_info(s_tag, "Obstacle detection task starting");
 
   /* Initialize HC-SR04 sensors */
-  err = internal_init_sensors();
+  rx_err_t err = internal_init_sensors();
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Sensor initialization failed", (uint32_t)err);
     /* Fatal: trigger e-stop and spin — do NOT call heartbeat so watchdog resets system */
@@ -1822,6 +1814,7 @@ static void internal_obstacle_task_entry(ULONG input)
   }
 
   /* Configure obstacle detection system */
+  rx_obstacle_detect_config_t config;
   (void)memset(&config, 0, sizeof(config));
   config.sensor_count           = k_obstacle_sensor_count;
   config.sensors                = s_sensor_ptrs;
@@ -1873,6 +1866,9 @@ static void internal_obstacle_task_entry(ULONG input)
     stats_counter++;
     if (stats_counter >= k_obstacle_stats_log_interval) {
       stats_counter = 0;
+      uint32_t total_polls;
+      uint32_t obstacle_events;
+      uint32_t false_positives;
       err           = rx_obstacle_detect_get_stats(&s_obstacle_handle,
                                          &total_polls,
                                          &obstacle_events,

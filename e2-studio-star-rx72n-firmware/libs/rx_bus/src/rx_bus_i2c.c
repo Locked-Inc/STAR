@@ -577,15 +577,11 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
  */
 rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
 {
-  i2c_init_ctx_t ctx;
-  rx_err_t       err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
 
-  ctx.result = k_rx_err_hw_error;
-
-  err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error};
+  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -746,18 +742,12 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
                           const uint8_t*    data,
                           const uint16_t    length)
 {
-  i2c_write_ctx_t ctx;
-  rx_err_t        err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is nullptr");
 
-  ctx.data   = data;
-  ctx.length = length;
-  ctx.result = k_rx_err_hw_error;
-
-  err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_callback, &ctx);
+  i2c_write_ctx_t ctx = {.data = data, .length = length, .result = k_rx_err_hw_error};
+  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -821,18 +811,12 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
 rx_err_t
 rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, uint16_t length)
 {
-  i2c_read_ctx_t ctx;
-  rx_err_t       err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is nullptr");
 
-  ctx.data   = data;
-  ctx.length = length;
-  ctx.result = k_rx_err_hw_error;
-
-  err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_read_callback, &ctx);
+  i2c_read_ctx_t ctx = {.data = data, .length = length, .result = k_rx_err_hw_error};
+  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_read_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -1027,21 +1011,17 @@ rx_err_t rx_bus_i2c_write_read(rx_bus_manager_t* manager,
                                uint8_t*          read_data,
                                const uint16_t    read_length)
 {
-  i2c_write_read_ctx_t ctx;
-  rx_err_t             err;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(write_data, s_tag, "write_data pointer is nullptr");
   RX_CHECK_NULL_PTR(read_data, s_tag, "read_data pointer is nullptr");
 
-  ctx.write_data   = write_data;
-  ctx.write_length = write_length;
-  ctx.read_data    = read_data;
-  ctx.read_length  = read_length;
-  ctx.result       = k_rx_err_hw_error;
-
-  err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_read_callback, &ctx);
+  i2c_write_read_ctx_t ctx = {.write_data   = write_data,
+                               .write_length = write_length,
+                               .read_data    = read_data,
+                               .read_length  = read_length,
+                               .result       = k_rx_err_hw_error};
+  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_read_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;

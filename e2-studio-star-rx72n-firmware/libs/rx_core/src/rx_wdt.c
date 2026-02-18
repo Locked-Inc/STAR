@@ -324,6 +324,7 @@ static rx_wdt_state_t s_wdt_state = {0};
 rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
 {
   rx_wdt_config_t         default_config;
+
   volatile rx_wdt_regs_t* regs;
   uint16_t                wdtcr_val;
 

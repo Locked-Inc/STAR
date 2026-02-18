@@ -744,6 +744,7 @@ void test_uart_deinit_channel_success(void)
 void test_uart_deinit_channel_invalid(void)
 {
   rx_err_t err = uart_deinit_channel(k_test_channel_invalid);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -824,6 +825,7 @@ void test_uart_putc_channel_success(void)
 void test_uart_putc_channel_not_initialized(void)
 {
   rx_err_t err = uart_putc_channel(k_test_channel_sci9, 'A');
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -839,6 +841,7 @@ void test_uart_putc_channel_not_initialized(void)
 void test_uart_putc_channel_invalid_channel(void)
 {
   rx_err_t err = uart_putc_channel(k_test_channel_invalid, 'A');
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -986,6 +989,7 @@ void test_uart_puts_channel_null_string(void)
 void test_uart_puts_channel_not_initialized(void)
 {
   rx_err_t err = uart_puts_channel(k_test_channel_sci9, "Test");
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1161,6 +1165,7 @@ void test_uart_getc_channel_not_initialized(void)
 {
   char     received = '\0';
   rx_err_t err      = uart_getc_channel(k_test_channel_sci9, &received);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1596,6 +1601,7 @@ void test_uart_write_error_injection(void)
 void test_uart_debug_init(void)
 {
   rx_err_t err = uart_debug_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_channel_sci9));
   TEST_ASSERT_EQUAL(k_test_baudrate_115200, mock_uart_hw_get_baudrate(k_test_channel_sci9));

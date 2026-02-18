@@ -1547,9 +1547,8 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
     return k_rx_err_invalid_arg;
   }
 
-  rx_err_t err;
-
   /* Send on appropriate channel */
+  rx_err_t err = k_rx_ok;
   switch (params->channel) {
     case k_comm_channel_usb:
       if (mgr->usb_handle == nullptr) {

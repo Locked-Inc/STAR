@@ -902,8 +902,6 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  */
 rx_err_t motor_control_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_motor_created, "Motor task already created");
   if (s_motor_created) {
@@ -911,7 +909,7 @@ rx_err_t motor_control_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_motor_thread,
+  UINT tx_status = tx_thread_create(&s_motor_thread,
                                "MotorTask",
                                internal_motor_task_entry,
                                k_motor_task_input,
@@ -1337,14 +1335,12 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  */
 static void internal_motor_task_entry(ULONG input)
 {
-  rx_err_t err;
-
   (void)input;
 
   rx_log_info(s_tag, "Motor control task starting");
 
   /* Initialize motor stack (motors, encoders, PIDs, drivers) */
-  err = internal_init_motor_stack();
+  rx_err_t err = internal_init_motor_stack();
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Motor stack init failed", (uint32_t)err);
     /* Fall through - try to continue with partial init */
@@ -1579,10 +1575,8 @@ static void internal_motor_task_entry(ULONG input)
  */
 static rx_err_t internal_init_motor_stack(void)
 {
-  rx_err_t err;
-
   /* Step 1: Initialize PID controllers */
-  err = internal_init_pid_controllers();
+  rx_err_t err = internal_init_pid_controllers();
   if (err != k_rx_ok) {
     return err;
   }
@@ -1656,11 +1650,11 @@ static rx_err_t internal_init_motor_stack(void)
  */
 static rx_err_t internal_init_pid_controllers(void)
 {
+  /* Get PID gains from shared data, fall back to MATLAB-tuned defaults */
   rx_err_t        err;
   pid_gains_t     gains;
   rx_pid_config_t pid_config;
 
-  /* Get PID gains from shared data, fall back to MATLAB-tuned defaults */
   err = shared_data_get_pid_gains(&gains);
   if (err != k_rx_ok) {
     rx_log_warn(s_tag, "Using default PID gains");
@@ -1718,8 +1712,6 @@ static rx_err_t internal_init_pid_controllers(void)
  */
 static rx_err_t internal_init_encoders(void)
 {
-  rx_err_t err;
-
   /* Front encoders: MTU1 (motor 0) and MTU2 (motor 1) */
   const rx_mtu_channel_t front_mtu_channels[k_front_encoder_count] = {
     k_mtu_channel_1, /* Motor 0: Front-left */
@@ -1731,7 +1723,7 @@ static rx_err_t internal_init_encoders(void)
                                           .counts_per_rev   = k_encoder_counts_per_rev,
                                           .invert_direction = false};
 
-    err = rx_encoder_init(&encoder_config);
+    rx_err_t err = rx_encoder_init(&encoder_config);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "MTU encoder init failed for motor", (uint8_t)i);
       return err;
@@ -1754,7 +1746,7 @@ static rx_err_t internal_init_encoders(void)
                                           .counts_per_rev   = k_encoder_counts_per_rev,
                                           .invert_direction = rear_invert[i]};
 
-    err = rx_tpu_encoder_init(&tpu_config);
+    rx_err_t err = rx_tpu_encoder_init(&tpu_config);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag,
                        "TPU encoder init failed for motor",
@@ -1856,8 +1848,6 @@ static rx_err_t internal_read_encoder_count(const uint8_t motor_idx, rx_encoder_
  */
 static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channels)
 {
-  rx_err_t err;
-
   const uint8_t adc_channels[k_motor_count] = {
     k_motor_0_current_adc_ch, /* Motor 0: AN007 */
     k_motor_1_current_adc_ch, /* Motor 1: AN006 */
@@ -1913,7 +1903,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
                                          .spi_cs_port     = cs_ports[i],
                                          .spi_cs_pin      = cs_pins[i]};
 
-    err = rx_drv8243_init(&s_drivers[i], &driver_config);
+    rx_err_t err = rx_drv8243_init(&s_drivers[i], &driver_config);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "Driver init failed for motor", (uint8_t)i);
       return err;
@@ -2160,6 +2150,7 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  */
 static void internal_control_loop_iteration(void)
 {
+  /* Get current motor command */
   rx_err_t        err;
   motor_command_t cmd;
   float           current_velocity_mps;
@@ -2167,7 +2158,6 @@ static void internal_control_loop_iteration(void)
   float           pwm_duty;
   bool            fault;
 
-  /* Get current motor command */
   err = shared_data_get_motor_command(&cmd);
   if (err != k_rx_ok || !cmd.valid) {
     /* No valid command - hold at zero */
@@ -2429,20 +2419,12 @@ static void internal_control_loop_iteration(void)
  */
 static void internal_active_brake_sequence(void)
 {
-  rx_err_t err;
-  float    current_velocity_mps;
-  float    brake_duty;
-  uint32_t brake_start_tick;
-  uint32_t current_tick;
-  uint32_t elapsed_ticks;
-  uint32_t brake_ticks;
-
   s_active_brake_in_progress = true;
 
   rx_log_info(s_tag, "Active brake sequence starting");
 
   /* Calculate brake duration in ticks (1 tick = 10ms at 100 Hz) */
-  brake_ticks = k_active_brake_ms / k_threadx_tick_interval_ms;
+  uint32_t brake_ticks = k_active_brake_ms / k_threadx_tick_interval_ms;
   if (brake_ticks == 0) {
     brake_ticks = 1;
   }
@@ -2450,12 +2432,14 @@ static void internal_active_brake_sequence(void)
   /* Step 1: Read current velocities and apply reverse PWM */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     /* Read current velocity to determine direction */
-    err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
+    float    current_velocity_mps = 0.0f;
+    rx_err_t err                  = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
       current_velocity_mps = 0.0f;
     }
 
     /* Calculate reverse duty (opposite sign of velocity) */
+    float brake_duty;
     if (current_velocity_mps > s_velocity_near_stopped_mps) {
       /* Motor moving forward - brake with negative duty */
       brake_duty = -((float)k_active_brake_duty);
@@ -2472,18 +2456,18 @@ static void internal_active_brake_sequence(void)
   }
 
   /* Step 2: Wait for active brake duration */
-  brake_start_tick = tx_time_get();
+  uint32_t brake_start_tick = tx_time_get();
 
   while (true) {
-    current_tick  = tx_time_get();
-    elapsed_ticks = current_tick - brake_start_tick;
+    uint32_t current_tick  = tx_time_get();
+    uint32_t elapsed_ticks = current_tick - brake_start_tick;
 
     if (elapsed_ticks >= brake_ticks) {
       break;
     }
 
     /* Report heartbeat during active brake (prevents IWDT timeout) */
-    err = rx_iwdt_task_heartbeat(s_task_name);
+    rx_err_t err = rx_iwdt_task_heartbeat(s_task_name);
     if (err != k_rx_ok) {
       rx_log_error_val(s_tag, "IWDT heartbeat failed during brake", (uint32_t)err);
     }
@@ -2560,14 +2544,12 @@ static void internal_active_brake_sequence(void)
  */
 static void internal_apply_pid_updates(void)
 {
-  rx_err_t    err;
-  pid_gains_t gains;
-
   if (!shared_data_pid_update_pending()) {
     return;
   }
 
-  err = shared_data_get_pid_gains(&gains);
+  pid_gains_t gains;
+  rx_err_t    err = shared_data_get_pid_gains(&gains);
   if (err != k_rx_ok) {
     return;
   }
@@ -2654,10 +2636,6 @@ static void internal_apply_pid_updates(void)
  */
 static void internal_check_comm_timeout(void)
 {
-  bool timeout;
-
-  timeout = shared_data_is_comm_timeout();
-
   if (timeout && !s_timeout_estop_triggered) {
     rx_log_warn(s_tag, "Communication timeout - triggering e-stop");
     (void)shared_data_trigger_estop(k_estop_reason_comm_timeout);
@@ -2665,6 +2643,8 @@ static void internal_check_comm_timeout(void)
   } else if (!timeout && s_timeout_estop_triggered) {
     /* Communication restored - clear flag (but e-stop must be cleared manually) */
     s_timeout_estop_triggered = false;
+  bool timeout = shared_data_is_comm_timeout();
+
   }
 }
 
@@ -2858,13 +2838,11 @@ static void internal_update_motor_state(void)
  */
 static float internal_get_target_velocity(const motor_command_t* cmd, uint8_t motor_idx)
 {
-  float target;
-
   if (cmd == nullptr || motor_idx >= k_motor_count) {
     return 0.0f;
   }
 
-  target = cmd->target_velocity_mps[motor_idx];
+  float target = cmd->target_velocity_mps[motor_idx];
 
   return target;
 }

@@ -81,9 +81,10 @@ typedef enum : uint32_t {
 
 static rx_err_t internal_wait_for_tdre(uint8_t channel)
 {
-  uint32_t timeout = k_mock_uart_tdre_timeout;
   while ((g_mock_sci[channel].ssr & k_mock_sci_ssr_tdre) == 0 && timeout > 0) {
     timeout--;
+  uint32_t timeout = k_mock_uart_tdre_timeout;
+
   }
   if (timeout == 0) {
     return k_rx_err_timeout;
@@ -572,6 +573,7 @@ void uart_debug_puts(const char* str)
 void uart_debug_putint(int32_t value)
 {
   char     buffer[12];
+
   char*    p = buffer + sizeof(buffer) - 1;
   uint32_t abs_value;
   bool     is_negative = false;

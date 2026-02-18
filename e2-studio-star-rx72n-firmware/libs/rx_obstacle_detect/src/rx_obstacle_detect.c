@@ -302,9 +302,6 @@ static void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
 rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
                                  const rx_obstacle_detect_config_t* config)
 {
-  UINT     status = 0;
-  rx_err_t ret    = k_rx_ok;
-
   /* Validate inputs */
   if (handle == nullptr || config == nullptr) {
     return k_rx_err_null_ptr;
@@ -314,7 +311,7 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
     return k_rx_err_invalid_state;
   }
 
-  ret = internal_validate_config(config);
+  rx_err_t ret = internal_validate_config(config);
   if (ret != k_rx_ok) {
     return ret;
   }
@@ -346,7 +343,7 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
   handle->stop_requested = false;
 
   /* Create event flags */
-  status = tx_event_flags_create(&handle->event_flags, "ObstacleDetectEvents");
+  UINT status = tx_event_flags_create(&handle->event_flags, "ObstacleDetectEvents");
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -380,9 +377,6 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
  */
 rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 {
-  UINT     status   = 0;
-  rx_err_t stop_ret = k_rx_ok;
-
   /* Validate inputs */
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -394,14 +388,14 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 
   /* Stop detection if running */
   if (handle->state != k_obstacle_detect_state_stopped) {
-    stop_ret = rx_obstacle_detect_stop(handle);
+    rx_err_t stop_ret = rx_obstacle_detect_stop(handle);
     /* Note: Continue with deinit even if stop fails - we're tearing down anyway */
     /* Caller should check return value if stop failure is critical */
     (void)stop_ret;
   }
 
   /* Wait for thread to terminate */
-  status = tx_thread_terminate(&handle->thread);
+  UINT status = tx_thread_terminate(&handle->thread);
   if (status != TX_SUCCESS && status != TX_THREAD_ERROR) {
     return k_rx_err_rtos_error;
   }
@@ -436,8 +430,6 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
  */
 rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
 {
-  UINT status = 0;
-
   /* Validate inputs */
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -448,6 +440,7 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
   }
 
   /* Start thread if not already running */
+  UINT status = 0;
   if (handle->state == k_obstacle_detect_state_stopped) {
     status = tx_thread_resume(&handle->thread);
     if (status != TX_SUCCESS) {
@@ -471,8 +464,6 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
  */
 rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 {
-  UINT status = 0;
-
   /* Validate inputs */
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -484,7 +475,7 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 
   /* Signal stop event */
   handle->stop_requested = true;
-  status                 = tx_event_flags_set(&handle->event_flags, k_event_flag_stop, TX_OR);
+  UINT status            = tx_event_flags_set(&handle->event_flags, k_event_flag_stop, TX_OR);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -774,6 +765,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
   rx_err_t           ret                        = k_rx_ok;
   bool               was_obstacle_active        = false;
   bool               is_obstacle_active         = false;
+
   static const float s_clear_distance_offset_cm = 1.0F;
 
   if (handle == nullptr) {
@@ -867,9 +859,6 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
  */
 static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
 {
-  rx_err_t ret       = k_rx_ok;
-  rx_err_t first_err = k_rx_ok;
-
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -878,8 +867,9 @@ static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
     return k_rx_err_invalid_state;
   }
 
+  rx_err_t first_err = k_rx_ok;
   for (uint8_t i = 0; i < handle->motor_count; i++) {
-    ret = rx_motor_stop(handle->motors[i], true);
+    rx_err_t ret = rx_motor_stop(handle->motors[i], true);
     if (ret != k_rx_ok) {
       /* Record first error but continue stopping other motors */
       if (first_err == k_rx_ok) {

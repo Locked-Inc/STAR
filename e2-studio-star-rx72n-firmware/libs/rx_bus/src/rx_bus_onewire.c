@@ -372,7 +372,6 @@ static rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                         const bool               output)
 {
   rx_err_t err = k_rx_ok;
-
   if (output && !state->line_is_output) {
     err = gpio_set_output(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
@@ -619,11 +618,7 @@ internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
 static rx_err_t
 internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* bit)
 {
-  rx_err_t err;
-  uint32_t sample_delay_us;
-  bool     line_high;
-
-  err = internal_drive_low(bus_config, state);
+  rx_err_t err = internal_drive_low(bus_config, state);
   if (err != k_rx_ok) {
     return err;
   }
@@ -635,13 +630,13 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
     return err;
   }
 
-  sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
-                      ? (k_onewire_read_sample_us - k_onewire_read_init_us)
-                      : k_onewire_read_sample_us;
+  uint32_t sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
+                               ? (k_onewire_read_sample_us - k_onewire_read_init_us)
+                               : k_onewire_read_sample_us;
   internal_delay_us(sample_delay_us);
 
-  line_high = true;
-  err       = internal_read_line(bus_config, &line_high);
+  bool line_high = true;
+  err            = internal_read_line(bus_config, &line_high);
   if (err != k_rx_ok) {
     return err;
   }
@@ -659,15 +654,15 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
 static rx_err_t
 internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, const uint8_t byte)
 {
-  bool     bit = false;
-  rx_err_t err = k_rx_ok;
-
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
     bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
     err = internal_write_bit(bus_config, state, bit);
     if (err != k_rx_ok) {
       return err;
     }
+  bool     bit = false;
+  rx_err_t err = k_rx_ok;
+
   }
 
   return k_rx_ok;
@@ -679,20 +674,19 @@ internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state,
 static rx_err_t
 internal_read_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t* byte)
 {
-  uint8_t  value = 0;
-  bool     bit   = false;
-  rx_err_t err   = k_rx_ok;
-
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
     bit = false;
     err = internal_read_bit(bus_config, state, &bit);
     if (err != k_rx_ok) {
       return err;
     }
-
     if (bit) {
       value |= (uint8_t)(k_onewire_bit_mask_lsb << i);
     }
+  uint8_t  value = 0;
+  bool     bit   = false;
+  rx_err_t err   = k_rx_ok;
+
   }
 
   *byte = value;
@@ -720,18 +714,16 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
                                      uint8_t*                 rom_bit_mask,
                                      uint8_t*                 last_zero)
 {
-  bool     bit      = false;
-  bool     comp_bit = false;
-  bool     search_direction;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
-  err = internal_read_bit(bus_config, state, &bit);
+
+  bool     bit = false;
+  rx_err_t err = internal_read_bit(bus_config, state, &bit);
   if (err != k_rx_ok) {
     return err;
   }
-  err = internal_read_bit(bus_config, state, &comp_bit);
+  bool comp_bit = false;
+  err           = internal_read_bit(bus_config, state, &comp_bit);
   if (err != k_rx_ok) {
     return err;
   }
@@ -739,6 +731,7 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
     return k_rx_err_hw_error;
   }
 
+  bool search_direction;
   if (!bit && !comp_bit) {
     if (bit_number == state->last_discrepancy) {
       search_direction = true;

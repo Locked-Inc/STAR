@@ -333,14 +333,6 @@ static rx_err_t internal_clear_tstr_bit(volatile rx_mtu_tstr_regs_t* tstr, const
  */
 static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint16_t* period)
 {
-  uint32_t period_calc;
-
-  /* For PWM mode 1 (triangle wave):
-   * Period = PCLKA / (2 * frequency)
-   * PCLKA = 120 MHz
-   */
-  const uint32_t pclka = k_pclka_hz;
-
   if (period == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -349,7 +341,12 @@ static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint16_t*
     return k_rx_err_invalid_arg;
   }
 
-  period_calc = pclka / (k_mtu_period_divisor * frequency_hz);
+  /* For PWM mode 1 (triangle wave):
+   * Period = PCLKA / (2 * frequency)
+   * PCLKA = 120 MHz
+   */
+  const uint32_t pclka       = k_pclka_hz;
+  uint32_t       period_calc = pclka / (k_mtu_period_divisor * frequency_hz);
 
   /* Check if period fits in 16-bit register */
   if (period_calc > k_mtu_period_max) {
@@ -824,13 +821,12 @@ rx_err_t rx_mtu_start(const rx_mtu_channel_t channel)
  */
 rx_err_t rx_mtu_stop(const rx_mtu_channel_t channel)
 {
-  rx_err_t err;
-
   if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Clear corresponding bit in TSTR register */
+  rx_err_t err;
   switch (channel) {
     case k_mtu_channel_0:
       err = internal_clear_tstr_bit(mtu_tstra(), k_mtu_tstr_cst0);
@@ -862,14 +858,12 @@ rx_err_t rx_mtu_stop(const rx_mtu_channel_t channel)
 
 rx_err_t rx_mtu_deinit(const rx_mtu_channel_t channel)
 {
-  rx_err_t err;
-
   if (!internal_is_valid_channel(channel)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Stop timer */
-  err = rx_mtu_stop(channel);
+  rx_err_t err = rx_mtu_stop(channel);
   if (err != k_rx_ok) {
     return err;
   }

@@ -358,11 +358,10 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  */
 static rx_err_t internal_gpio_init_i2c(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_I2C";
 
   /* Host I2C (RIIC0): SCL0 + SDA0 */
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_scl0);
+  rx_err_t err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_scl0);
   RX_RETURN_ON_ERROR(err, s_tag, "SCL0 pin config failed");
 
   err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_sda0);
@@ -402,10 +401,9 @@ static rx_err_t internal_gpio_init_i2c(void)
  */
 static rx_err_t internal_gpio_init_host_spi(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SPI";
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi);
+  rx_err_t err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 COPI pin config failed");
 
   err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cipo);
@@ -444,10 +442,9 @@ static rx_err_t internal_gpio_init_host_spi(void)
  */
 static rx_err_t internal_gpio_init_mtu_encoders(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_MTU_ENC";
 
-  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_pha);
+  rx_err_t err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKA pin config failed");
 
   err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_phb);
@@ -486,10 +483,9 @@ static rx_err_t internal_gpio_init_mtu_encoders(void)
  */
 static rx_err_t internal_gpio_init_tpu_encoders(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_TPU_ENC";
 
-  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha);
+  rx_err_t err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKA pin config failed");
 
   err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_phb);
@@ -528,7 +524,6 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
  */
 static rx_err_t internal_gpio_init_gptw_pwm(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_GPTW";
 
   const rx_port_pin_t gptw_pins[] = {(rx_port_pin_t)k_pin_motor0_ph,
@@ -541,7 +536,7 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
                                      (rx_port_pin_t)k_pin_motor3_en};
 
   for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
-    err = rx_mpc_set_gptw(gptw_pins[i]);
+    rx_err_t err = rx_mpc_set_gptw(gptw_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "GPTW pin config failed");
   }
 
@@ -572,10 +567,9 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
  */
 static rx_err_t internal_gpio_init_adc(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_ADC";
 
-  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an004);
+  rx_err_t err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an004);
   RX_RETURN_ON_ERROR(err, s_tag, "AN004 pin config failed");
 
   err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an005);
@@ -613,10 +607,9 @@ static rx_err_t internal_gpio_init_adc(void)
  */
 static rx_err_t internal_gpio_init_usb(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_USB";
 
-  err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
+  rx_err_t err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
   RX_RETURN_ON_ERROR(err, s_tag, "USB VBUS pin config failed");
 
   return k_rx_ok;
@@ -646,7 +639,6 @@ static rx_err_t internal_gpio_init_usb(void)
  */
 static rx_err_t internal_gpio_init_sonar_triggers(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SONAR_TRIG";
 
   const rx_port_pin_t sonar_trig_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_trig0,
@@ -655,7 +647,7 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
                                                         (rx_port_pin_t)k_pin_sonar_trig3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
-    err = rx_mpc_set_gpio(sonar_trig_pins[i]);
+    rx_err_t err = rx_mpc_set_gpio(sonar_trig_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(sonar_trig_pins[i]);
@@ -694,7 +686,6 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
  */
 static rx_err_t internal_gpio_init_sonar_echoes(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SONAR_ECHO";
 
   const rx_port_pin_t sonar_echo_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_echo0,
@@ -703,7 +694,7 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
                                                         (rx_port_pin_t)k_pin_sonar_echo3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
-    err = rx_mpc_set_gpio(sonar_echo_pins[i]);
+    rx_err_t err = rx_mpc_set_gpio(sonar_echo_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(sonar_echo_pins[i]);
@@ -741,7 +732,6 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
  */
 static rx_err_t internal_gpio_init_drv_cs(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_DRV_CS";
 
   const rx_port_pin_t drv_cs_pins[k_drv_cs_count] = {(rx_port_pin_t)k_pin_drv_cs0,
@@ -750,7 +740,7 @@ static rx_err_t internal_gpio_init_drv_cs(void)
                                                      (rx_port_pin_t)k_pin_drv_cs3};
 
   for (uint8_t i = 0; i < k_drv_cs_count; i++) {
-    err = rx_mpc_set_gpio(drv_cs_pins[i]);
+    rx_err_t err = rx_mpc_set_gpio(drv_cs_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "DRV CS MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(drv_cs_pins[i]);
@@ -789,10 +779,9 @@ static rx_err_t internal_gpio_init_drv_cs(void)
  */
 static rx_err_t internal_gpio_init_sci7_spi(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SCI7";
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk);
+  rx_err_t err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk);
   RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SCK pin config failed");
 
   err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi);
@@ -923,10 +912,9 @@ static rx_err_t internal_gpio_init_sci7_spi(void)
  */
 static rx_err_t gpio_init(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO";
 
-  err = internal_gpio_init_i2c();
+  rx_err_t err = internal_gpio_init_i2c();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C pin init failed");
 
   err = internal_gpio_init_host_spi();

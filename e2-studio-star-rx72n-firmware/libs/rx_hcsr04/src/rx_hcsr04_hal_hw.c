@@ -629,13 +629,11 @@ rx_err_t hcsr04_hal_gpio_write_low(const rx_port_pin_t pin)
  */
 rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
 {
-  rx_err_t err;
-
   if (value == nullptr) {
     return k_rx_err_null_ptr;
   }
 
-  err = internal_validate_port_pin(pin, nullptr, nullptr);
+  rx_err_t err = internal_validate_port_pin(pin, nullptr, nullptr);
   if (err != k_rx_ok) {
     return err;
   }
@@ -925,13 +923,11 @@ static bool s_time_mutex_initialized = false;
  */
 static rx_err_t internal_time_mutex_init(void)
 {
-  UINT status = TX_SUCCESS;
-
   if (s_time_mutex_initialized) {
     return k_rx_ok;
   }
 
-  status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
+  UINT status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
   if (status == TX_SUCCESS) {
     s_time_mutex_initialized = true;
     return k_rx_ok;
@@ -1077,20 +1073,14 @@ static void internal_cmt2_init(void)
  */
 void hcsr04_hal_delay_us(uint32_t us)
 {
-  uint32_t timer_hz        = 0;
-  uint64_t ticks           = 0;
-  uint16_t start           = 0;
-  uint32_t wait_ticks      = 0;
-  uint32_t iteration_count = 0;
-
   if (us == k_no_delay) {
     return;
   }
 
   internal_cmt2_init();
 
-  timer_hz = k_pclkb_hz / k_cmt2_divider;
-  ticks    = ((uint64_t)us * (uint64_t)timer_hz + k_timer_rounding) / k_us_per_second;
+  uint32_t timer_hz = k_pclkb_hz / k_cmt2_divider;
+  uint64_t ticks    = ((uint64_t)us * (uint64_t)timer_hz + k_timer_rounding) / k_us_per_second;
   if (ticks < k_min_ticks) {
     ticks = k_min_ticks;
   }
@@ -1103,9 +1093,10 @@ void hcsr04_hal_delay_us(uint32_t us)
     return;
   }
 
+  uint32_t iteration_count = 0;
   while (ticks > 0 && iteration_count < k_max_delay_iterations) {
-    wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
-    start      = cmt2()->cmcnt;
+    uint32_t wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
+    uint16_t start      = cmt2()->cmcnt;
     while ((uint16_t)(cmt2()->cmcnt - start) < wait_ticks) {
       __asm__ volatile("nop");
     }
@@ -1212,9 +1203,9 @@ uint32_t hcsr04_hal_get_time_us(void)
  */
 uint32_t hcsr04_hal_get_time_us_isr(void)
 {
-  const uint16_t current_count = cmt2()->cmcnt;
-
   /* Simplified ratio: 1,000,000 / (60,000,000 / 8) = 2/15.
    * Max value: 65535 * 2 / 15 = 8738 µs. Fits in uint32_t, no 64-bit math. */
+  const uint16_t current_count = cmt2()->cmcnt;
+
   return ((uint32_t)current_count * k_isr_us_numerator) / k_isr_us_denominator;
 }

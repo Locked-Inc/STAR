@@ -335,12 +335,13 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
 static rx_err_t
 internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
-  const uint32_t        pclkb         = k_pclkb_hz;
-  const uint32_t        max_frequency = pclkb / k_cmt_divider_val_8;
-  uint32_t              period_calc;
   static const uint16_t dividers[] = {k_cmt_divider_val_8,
                                       k_cmt_divider_val_32,
                                       k_cmt_divider_val_128,
+  const uint32_t        pclkb         = k_pclkb_hz;
+  const uint32_t        max_frequency = pclkb / k_cmt_divider_val_8;
+  uint32_t              period_calc;
+
                                       k_cmt_divider_val_512};
 
   if (divider == nullptr || cmcor == nullptr) {
@@ -414,10 +415,6 @@ static void internal_configure_cmt_timer_registers(volatile rx_cmt_channel_regs_
  */
 static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t config)
 {
-  uint8_t vector;
-  uint8_t ier_index;
-  uint8_t ier_bit;
-
   /* Note: Lower bound check omitted - config.channel is uint8_t, k_cmt_channel_0 == 0,
    * so config.channel >= k_cmt_channel_0 is always true (-Wtype-limits) */
   if ((uint8_t)config.channel >= (uint8_t)k_cmt_max_channels) {
@@ -427,9 +424,9 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
     return k_rx_err_invalid_arg;
   }
 
-  vector    = k_vect_cmt0_cmi0 + config.channel;
-  ier_index = vector / k_icu_ier_bits_per_reg;
-  ier_bit   = vector % k_icu_ier_bits_per_reg;
+  uint8_t vector    = k_vect_cmt0_cmi0 + config.channel;
+  uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+  uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
 
   icu()->ipr[vector]     = config.priority;
   const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
@@ -602,8 +599,6 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
  */
 rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
 {
-  uint16_t cmstr_value;
-
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
@@ -613,6 +608,7 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
   }
 
   /* Set corresponding bit in CMSTR register */
+  uint16_t cmstr_value;
   switch (channel) {
     case k_cmt_channel_0: {
       const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
@@ -664,13 +660,12 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
  */
 rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
 {
-  uint16_t cmstr_value;
-
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
   /* Clear corresponding bit in CMSTR register */
+  uint16_t cmstr_value;
   switch (channel) {
     case k_cmt_channel_0: {
       const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
@@ -747,25 +742,20 @@ rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
  */
 rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
 {
-  uint8_t  vector;
-  uint8_t  ier_index;
-  uint8_t  ier_bit;
-  rx_err_t err;
-
   if ((int32_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
   /* Stop timer and propagate any errors */
-  err = rx_cmt_stop(channel);
+  rx_err_t err = rx_cmt_stop(channel);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Disable interrupt */
-  vector                 = k_vect_cmt0_cmi0 + channel;
-  ier_index              = vector / k_icu_ier_bits_per_reg;
-  ier_bit                = vector % k_icu_ier_bits_per_reg;
+  uint8_t vector    = k_vect_cmt0_cmi0 + channel;
+  uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+  uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
   const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
   icu()->ier[ier_index] &= (uint8_t)~ier_mask;
 

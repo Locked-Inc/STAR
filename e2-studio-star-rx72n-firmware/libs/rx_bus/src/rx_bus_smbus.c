@@ -445,6 +445,7 @@ typedef struct {
 static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   rx_err_t          err;
+
   smbus_init_ctx_t* ctx;
   riic_channel_t    riic_channel;
 
@@ -1332,12 +1333,11 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
                                       const uint8_t     command,
                                       const uint8_t     data)
 {
-  uint8_t write_buf[k_smbus_byte_buf_size];
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
 
   /* Use I2C write for byte data (command + data) */
+  uint8_t write_buf[k_smbus_byte_buf_size];
   write_buf[k_smbus_byte_data] = command;
   write_buf[k_smbus_byte_pec]  = data;
   return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_byte_buf_size);
@@ -1548,12 +1548,11 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
                                       const uint8_t     command,
                                       const uint16_t    data)
 {
-  uint8_t write_buf[k_smbus_word_buf_size];
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
 
   /* Little-endian */
+  uint8_t write_buf[k_smbus_word_buf_size];
   write_buf[k_smbus_word_cmd] = command;
   write_buf[k_smbus_word_lsb] = (uint8_t)(data & k_byte_mask);
   write_buf[k_smbus_word_msb] = (uint8_t)(data >> k_bits_per_byte);

@@ -478,9 +478,9 @@ void tearDown(void)
  */
 void test_bms_task_create_success_with_default_thresholds(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task with default thresholds */
@@ -601,9 +601,9 @@ void test_bms_task_create_invalid_thresholds(void)
  */
 void test_bms_task_create_thread_failure(void)
 {
+  /* Configure ThreadX to fail */
   rx_err_t err;
 
-  /* Configure ThreadX to fail */
   mock_tx_set_thread_create_return(TX_NO_MEMORY);
 
   const bms_monitor_config_t config = {
@@ -636,6 +636,7 @@ void test_bms_task_create_thread_failure(void)
  */
 void test_bms_task_create_already_created(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
   mock_tx_set_thread_create_return(TX_SUCCESS);
@@ -679,25 +680,21 @@ void test_bms_task_create_already_created(void)
  */
 void test_bms_task_reads_battery_data(void)
 {
-  rx_bq4050_status_t status;
-  bms_state_t        bms_out;
-  (void)memset(&status, 0, sizeof(status));
-  (void)memset(&bms_out, 0, sizeof(bms_out));
-  rx_err_t           err;
-
   /* Set up battery status */
+  rx_bq4050_status_t status  = {0};
+  bms_state_t        bms_out = {0};
+
   mock_bq4050_set_status(k_test_normal_voltage_mv, k_test_normal_current_ma,
                          k_test_normal_soc_percent);
 
   /* Read status (simulating task behavior) */
   rx_bus_manager_t* manager = nullptr;
-  err                       = rx_bq4050_read_status(manager, "i2c0", &status, k_test_cell_count);
+  rx_err_t          err     = rx_bq4050_read_status(manager, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(k_test_normal_voltage_mv, status.voltage_mv);
 
   /* Convert and store in shared data */
-  bms_state_t bms;
-  (void)memset(&bms, 0, sizeof(bms));
+  bms_state_t bms = {0};
   bms.voltage_mv   = status.voltage_mv;
   bms.current_ma   = status.current_ma;
   bms.soc_percent  = status.relative_soc;
@@ -1048,13 +1045,11 @@ void test_bms_task_create_custom_thresholds(void)
  */
 void test_bms_data_stored_in_telemetry(void)
 {
-  bms_state_t bms_in;
-  bms_state_t bms_out;
-  (void)memset(&bms_in, 0, sizeof(bms_in));
-  (void)memset(&bms_out, 0, sizeof(bms_out));
+  /* Set up complete BMS state */
+  bms_state_t bms_in  = {0};
+  bms_state_t bms_out = {0};
   rx_err_t    err;
 
-  /* Set up complete BMS state */
   bms_in.voltage_mv          = k_test_normal_voltage_mv;
   bms_in.current_ma          = k_test_telem_current_ma;
   bms_in.soc_percent         = k_test_telem_soc_percent;

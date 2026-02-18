@@ -1256,8 +1256,6 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator)
 {
-  UINT status;
-
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
 
   if (!validator->initialized) {
@@ -1265,7 +1263,7 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
   }
 
   /* Delete mutex */
-  status = tx_mutex_delete(&validator->mutex);
+  UINT status = tx_mutex_delete(&validator->mutex);
   if (status != TX_SUCCESS) {
     rx_log_warn("PIN_VALIDATOR", "Failed to delete mutex during deinit");
   }

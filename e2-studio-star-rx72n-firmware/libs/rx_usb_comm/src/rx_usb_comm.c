@@ -126,10 +126,6 @@ static rx_err_t internal_decode_header(const uint8_t* data,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
-  uint32_t offset;
-  uint16_t sync_word;
-  uint32_t expected_size;
-
   RX_ASSERT(data != nullptr, "Data pointer is nullptr");
   RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
   if (data == nullptr || frame == nullptr) {
@@ -140,9 +136,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  offset = 0;
-
-  sync_word = rx_frame_read_le16(&data[offset]);
+  uint32_t offset    = 0;
+  uint16_t sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
@@ -158,7 +153,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  expected_size = rx_frame_encoded_size(frame->header.length);
+  uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
     return k_rx_err_invalid_size;
   }
@@ -757,11 +752,6 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
                                                       uint32_t*             elapsed_ms,
                                                       rx_err_t*             err)
 {
-  int32_t  sync_pos    = k_sync_not_found;
-  uint32_t available   = 0;
-  uint32_t total_size  = 0;
-  uint16_t payload_len = 0;
-
   /* Read any available USB data */
   *err = internal_read_usb_data(handle);
   if (*err != k_rx_ok && *err != k_rx_err_timeout) {
@@ -769,6 +759,10 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
   }
 
   /* Search for sync word */
+  int32_t  sync_pos    = k_sync_not_found;
+  uint32_t available   = 0;
+  uint32_t total_size  = 0;
+  uint16_t payload_len = 0;
   *err = internal_find_sync(handle, &sync_pos);
   if (*err == k_rx_err_not_found) {
     *err = internal_handle_no_sync(handle, timeout_ms, elapsed_ms);
@@ -958,8 +952,6 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
  */
 rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
 {
-  rx_err_t result = k_rx_ok;
-
   /* Rule 5: Pre-condition 1 - validate pointer */
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
@@ -967,6 +959,7 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
 
   /* Rule 5: Pre-condition 2 - catch programming error (deinit without init) */
   RX_ASSERT(handle->initialized, "Attempt to deinitialize uninitialized USB comm handle");
+  rx_err_t result = k_rx_ok;
 
   if (handle->initialized) {
     /* Rule 7: Check all return values */

@@ -355,9 +355,9 @@ static float    internal_ds18b20_raw_to_celsius(const int16_t raw_temp);
 
 rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t* config)
 {
+  /* Validate inputs */
   rx_err_t err = k_rx_ok;
 
-  /* Validate inputs */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle is nullptr");
 
   err = internal_ds18b20_validate_config(config, handle);
@@ -923,11 +923,11 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
  */
 static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle)
 {
+  /* Initialize OneWire bus */
   bool     presence = false;
   rx_err_t err      = k_rx_ok;
   uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
 
-  /* Initialize OneWire bus */
   err = rx_bus_onewire_init(handle->bus_manager, handle->bus_name);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize OneWire bus");
@@ -1026,8 +1026,6 @@ static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* han
  */
 static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle)
 {
-  rx_err_t err = k_rx_ok;
-
   if (handle->use_rom_matching) {
     /* Use Match ROM to address specific device */
     err = rx_bus_onewire_match_rom(handle->bus_manager, handle->bus_name, handle->rom);
@@ -1042,6 +1040,8 @@ static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle
       rx_log_error(s_tag, "Failed to send Skip ROM");
       return err;
     }
+  rx_err_t err = k_rx_ok;
+
   }
 
   return k_rx_ok;
@@ -1310,15 +1310,12 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
 static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*        handle,
                                                   const ds18b20_scratchpad_write_t* scratchpad)
 {
-  bool     presence = false;
-  rx_err_t err      = k_rx_ok;
-  uint8_t  write_buf[k_ds18b20_scratchpad_write_bytes];
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle is nullptr");
   RX_CHECK_NULL_PTR(scratchpad, s_tag, "scratchpad is nullptr");
 
   /* Reset and check presence */
-  err = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
+  bool     presence = false;
+  rx_err_t err      = rx_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
   if (err != k_rx_ok || !presence) {
     rx_log_error(s_tag, "Device not present for scratchpad write");
     return k_rx_err_invalid_state;
@@ -1339,6 +1336,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*    
   }
 
   /* Write 3 bytes (TH, TL, Config) */
+  uint8_t write_buf[k_ds18b20_scratchpad_write_bytes];
   write_buf[k_ds18b20_write_idx_th]     = scratchpad->th;
   write_buf[k_ds18b20_write_idx_tl]     = scratchpad->tl;
   write_buf[k_ds18b20_write_idx_config] = scratchpad->config;
@@ -1364,9 +1362,9 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*    
  */
 static uint8_t internal_ds18b20_resolution_to_config(const ds18b20_resolution_t resolution)
 {
+  /* Resolution bits are R1:R0 at bits 6:5 */
   uint8_t config = k_ds18b20_config_register_cleared;
 
-  /* Resolution bits are R1:R0 at bits 6:5 */
   config = (uint8_t)resolution << k_ds18b20_config_r0_bit;
 
   return config;
@@ -1409,15 +1407,13 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
  */
 static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
 {
-  float result = NAN;
-
   if (raw_temp < k_ds18b20_temp_min_raw || raw_temp > k_ds18b20_temp_max_raw) {
     rx_log_error(s_tag, "Raw temperature out of range - returning NaN sentinel");
     return NAN;
   }
 
   /* Convert from 1/16°C to °C */
-  result = (float)raw_temp / s_temp_conversion_divisor;
+  float result = (float)raw_temp / s_temp_conversion_divisor;
 
   /* Post-condition: Validate result is finite (not NaN or Inf) */
   if (!isfinite(result)) {

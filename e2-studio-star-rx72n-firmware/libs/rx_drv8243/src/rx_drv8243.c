@@ -736,9 +736,6 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  */
 rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t* config)
 {
-  rx_motor_config_t motor_config;
-  rx_err_t          err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
   RX_CHECK_NULL_PTR(config->bus_manager, s_tag, "bus_manager pointer is nullptr");
@@ -776,7 +773,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->config_locked = false;
 
   /* Initialize motor control (GPTW for H-bridge) */
-  motor_config = (rx_motor_config_t){
+  rx_motor_config_t motor_config = {
     .channel      = config->gptw_channel,
     .output_a     = config->output_ph,
     .output_b     = config->output_en,
@@ -785,7 +782,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     .invert_pwm   = (bool)k_pwm_not_inverted,
   };
 
-  err = rx_motor_init(&handle->motor, &motor_config);
+  rx_err_t err = rx_motor_init(&handle->motor, &motor_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize motor controller");
     return err;
@@ -1417,10 +1414,6 @@ static const uint32_t s_drv8243_spi_freq_hz = 5000000U; /**< 5 MHz SPI clock (co
 static rx_err_t
 internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, uint8_t* data)
 {
-  uint16_t tx_frame;
-  uint16_t rx_frame = 0;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is nullptr");
 
@@ -1430,9 +1423,9 @@ internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, u
     return k_rx_err_invalid_arg;
   }
 
-  tx_frame = DRV8243_SPI_READ_FRAME(addr);
-
-  err = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
+  uint16_t tx_frame = DRV8243_SPI_READ_FRAME(addr);
+  uint16_t rx_frame = 0;
+  rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI read failed");
     return err;
@@ -1456,10 +1449,6 @@ internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, u
 static rx_err_t
 internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, const uint8_t data)
 {
-  uint16_t tx_frame;
-  uint16_t rx_frame = 0;
-  rx_err_t err;
-
   /* Rule 5: Pre-condition validation */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
@@ -1468,9 +1457,9 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
     return k_rx_err_invalid_arg;
   }
 
-  tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
-
-  err = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
+  uint16_t tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
+  uint16_t rx_frame = 0;
+  rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI write failed");
     return err;
@@ -1492,19 +1481,17 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
 static rx_err_t internal_drv8243_spi_init(rx_drv8243_handle_t*       handle,
                                           const rx_drv8243_config_t* config)
 {
-  sci_spi_controller_config_t spi_config;
-  rx_err_t                    err;
-
   /* Rule 5: Pre-condition validation */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
+  sci_spi_controller_config_t spi_config;
   spi_config.spi_mode = k_sci_spi_mode_1; /* DRV8243 uses SPI mode 1 (CPOL=0, CPHA=1) */
   spi_config.freq_hz  = s_drv8243_spi_freq_hz;
   /* Construct rx_port_pin_t from separate port and pin values */
   spi_config.cs = (rx_port_pin_t)((config->spi_cs_port << k_port_shift) | config->spi_cs_pin);
 
-  err = sci_spi_init_controller(config->sci_channel, &spi_config);
+  rx_err_t err = sci_spi_init_controller(config->sci_channel, &spi_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize SCI SPI controller");
     return err;
@@ -1527,14 +1514,12 @@ static rx_err_t internal_drv8243_spi_init(rx_drv8243_handle_t*       handle,
 static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       handle,
                                                   const rx_drv8243_config_t* config)
 {
-  rx_err_t err;
-
   /* Rule 5: Pre-condition validation - check NULL pointers */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
   /* Unlock configuration registers */
-  err = rx_drv8243_spi_unlock_config(handle);
+  rx_err_t err = rx_drv8243_spi_unlock_config(handle);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1581,9 +1566,6 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  */
 rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
 {
-  uint8_t  cmd_reg;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1592,7 +1574,8 @@ rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
   }
 
   /* Read current COMMAND register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
+  uint8_t  cmd_reg;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1614,10 +1597,6 @@ rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
 rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
                                            rx_drv8243_detailed_fault_t* fault)
 {
-  uint8_t  fault_summary;
-  uint8_t  status1;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(fault, s_tag, "fault pointer is nullptr");
 
@@ -1627,12 +1606,14 @@ rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
   }
 
   /* Read FAULT_SUMMARY register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_fault_summary, &fault_summary);
+  uint8_t  fault_summary;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_fault_summary, &fault_summary);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Read STATUS1 register */
+  uint8_t status1;
   err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_status1, &status1);
   if (err != k_rx_ok) {
     return err;
@@ -1668,9 +1649,6 @@ rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
  */
 rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243_slew_rate_t rate)
 {
-  uint8_t  config3;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1690,7 +1668,8 @@ rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243
   }
 
   /* Read current CONFIG3 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
+  uint8_t  config3;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1712,10 +1691,6 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
                                   const drv8243_itrip_level_t level,
                                   const drv8243_toff_t        toff)
 {
-  uint8_t  config_itrip;
-  uint8_t  config3;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1740,13 +1715,14 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
   }
 
   /* Write ITRIP level to CONFIG_ITRIP */
-  config_itrip = (uint8_t)level & k_config_itrip_mask;
-  err          = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_config_itrip, config_itrip);
+  uint8_t  config_itrip = (uint8_t)level & k_config_itrip_mask;
+  rx_err_t err = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_config_itrip, config_itrip);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Read current CONFIG3 for TOFF */
+  uint8_t config3;
   err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
   if (err != k_rx_ok) {
     return err;
@@ -1773,9 +1749,6 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
  */
 rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_control_mode_t mode)
 {
-  uint8_t  config3;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1795,7 +1768,8 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_cont
   }
 
   /* Read current CONFIG3 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
+  uint8_t  config3;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1817,9 +1791,6 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
                                 const drv8243_ocp_thresh_t thresh,
                                 const drv8243_ocp_filter_t filter)
 {
-  uint8_t  config4;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1845,7 +1816,8 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
   }
 
   /* Read current CONFIG4 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config4, &config4);
+  uint8_t  config4;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config4, &config4);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1866,9 +1838,6 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
 
 rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enable)
 {
-  uint8_t  config1;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1882,7 +1851,8 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
   }
 
   /* Read current CONFIG1 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config1, &config1);
+  uint8_t  config1;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config1, &config1);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1905,9 +1875,6 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
 
 rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
 {
-  uint8_t  cmd_reg;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1916,7 +1883,8 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Read current COMMAND register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
+  uint8_t  cmd_reg;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1938,9 +1906,6 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
 
 rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
 {
-  uint8_t  cmd_reg;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1949,7 +1914,8 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Read current COMMAND register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
+  uint8_t  cmd_reg;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
   if (err != k_rx_ok) {
     return err;
   }

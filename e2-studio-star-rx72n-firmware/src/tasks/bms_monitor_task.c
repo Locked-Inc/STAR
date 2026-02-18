@@ -448,7 +448,6 @@ static bool internal_check_critical_faults(uint16_t status_flags)
    * CRITICAL Alarms (trigger emergency stop)
    * ========================================================================
    */
-
   /* CRITICAL: Over-temperature alarm (>60°C, thermal runaway risk) */
   if ((status_flags & k_bq4050_status_over_temp_alarm) != k_bq4050_status_flag_clear) {
     rx_log_error(s_tag, "CRITICAL: Over-temperature alarm - battery >60C");
@@ -809,8 +808,6 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  */
 rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 {
-  UINT tx_status;
-
   /* Validate config pointer */
   RX_CHECK_NULL_PTR(config, s_tag, "bms_monitor_task_create: config is NULL");
 
@@ -844,7 +841,7 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
   s_bms_config = *config;
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_bms_thread,
+  UINT tx_status = tx_thread_create(&s_bms_thread,
                                "BMSTask",
                                internal_bms_task_entry,
                                k_bms_task_input,
@@ -1348,18 +1345,13 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  */
 static void internal_bms_task_entry(ULONG input)
 {
-  rx_err_t           err;
-  rx_bq4050_status_t status;
-  bms_state_t        bms = {0};
-  rx_bq4050_config_t config;
-
   (void)input;
 
   rx_log_info(s_tag, "BMS monitoring task starting");
 
   /* Initialize BQ4050 */
-  config.num_cells = k_bms_cell_count;
-  err              = rx_bq4050_init(&g_bus_manager, s_i2c_bus_name, &config);
+  rx_bq4050_config_t config    = {.num_cells = k_bms_cell_count};
+  rx_err_t           err       = rx_bq4050_init(&g_bus_manager, s_i2c_bus_name, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "BQ4050 init failed", (uint32_t)err);
     /* Continue anyway - will report invalid data */
@@ -1368,6 +1360,9 @@ static void internal_bms_task_entry(ULONG input)
   rx_log_info(s_tag, "BMS monitoring running @ 1 Hz");
 
   /* Main polling loop */
+  rx_bq4050_status_t status;
+  bms_state_t        bms = {0};
+
   while (true) {
     /* Read battery status */
     err = rx_bq4050_read_status(&g_bus_manager, s_i2c_bus_name, &status, k_bms_cell_count);
