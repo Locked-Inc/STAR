@@ -39,6 +39,10 @@ const (
 	// Failure thresholds
 	immediateFailover = 1
 	failAfterTwo      = 2
+
+	// receiveYieldDelay is the minimum yield in mock ReceiveFuncs to prevent
+	// busy-spinning in background goroutines that loop on Receive.
+	receiveYieldDelay = time.Millisecond
 )
 
 // TestScenario1_NormalOperationUSB simulates normal operation with USB as primary transport.
@@ -84,7 +88,7 @@ func TestScenario1_NormalOperationUSB(t *testing.T) {
 			select {
 			case <-ctx.Done():
 				return nil, ctx.Err()
-			case <-time.After(1 * time.Millisecond):
+			case <-time.After(receiveYieldDelay):
 			}
 			return &harq.ReceiveResult{
 				Payload:  []byte("telemetry"),
