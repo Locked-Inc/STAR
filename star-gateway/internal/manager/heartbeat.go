@@ -58,10 +58,15 @@ const (
 //
 // How it works:
 //
-//	Active link: Data frames flow constantly, resetting the implicit timer.
-//	             PING never fires because the link is never idle for 1s.
-//	Idle link:   After 200ms of silence, implicit timeout triggers failover.
-//	             PING at 1s is a secondary probe for very-slow-data links.
+//	Active link:  Data frames (including ACK/NACK) keep lastSeen fresh.
+//	              PING fires every pingInterval since last valid PONG (independent timer).
+//	              Implicit timeout never fires because lastSeen stays current.
+//	Zombie link:  Stale OS-buffered frames keep lastSeen fresh, but firmware is dead.
+//	              PING fires at pingInterval since last PONG; no PONG arrives;
+//	              counter-based failover triggers. Implicit timeout cannot catch this
+//	              because lastSeen is continuously refreshed by the buffered frames.
+//	Dead link:    No frames of any kind; implicit timeout fires at 200ms (faster than
+//	              PING at 1s, so implicit path is the fast-path for hard failures).
 //
 // WARNING: Do NOT increase DefaultFailureTimeout above 500ms without first
 // verifying the RX72N WDT timeout. The implicit timeout is the critical path.
@@ -274,46 +279,44 @@ func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 
 // check performs the heartbeat check logic.
 //
-// This is called periodically by Run() (every failureTimeout/4) to:
-//  1. Calculate elapsed time since lastSeen
-//  2. Trigger failover if elapsed > failureTimeout (200ms) - ONCE per failure
-//  3. Track consecutive PONG misses and trigger failover at threshold
-//  4. Send PING if elapsed > pingInterval (1s) and not yet failed
+// This is called periodically by Run() (every failureTimeout/4) using two independent
+// elapsed timers so that each detection mechanism has its own reference point:
+//
+//  1. pingElapsed = time.Since(lastValidPong): drives the explicit PING mechanism.
+//     Fires when no valid PONG has arrived for pingInterval (1s). Checked FIRST to
+//     enable counter-based detection even when stale buffered frames (ACK/NACK) keep
+//     lastSeen fresh — the "zombie link" scenario the implicit timeout cannot catch
+//     because lastSeen is continuously refreshed by the buffered frames.
+//
+//  2. implicitElapsed = time.Since(lastSeen): drives the implicit timeout mechanism.
+//     Fires when no frame of any kind has arrived for failureTimeout (200ms). Checked
+//     SECOND as a fast-path for completely dead links. Because failureTimeout (200ms) is
+//     much shorter than pingInterval (1s), the implicit path reaches its threshold first
+//     on a hard dead link, making it the primary detector for that case.
 //
 // Two independent failover triggers exist (defense-in-depth):
-//   - Time-based: No frames at all for failureTimeout (200ms)
-//   - Counter-based: DefaultConsecutiveMissThreshold unanswered PINGs
+//   - Counter-based: DefaultConsecutiveMissThreshold unanswered PINGs (zombie/degraded links)
+//   - Time-based: No frames at all for failureTimeout (200ms) (hard dead links)
 //
 // The failureTriggered flag prevents repeated failover attempts for the same failure.
-// It's cleared when OnFrameReceived() or OnPongReceived() is called (link recovered).
-//
-// The order matters: we check failure first to avoid sending PING on a dead link.
+// It is cleared when OnFrameReceived() or OnPongReceived() is called (link recovered).
 func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 	hm.mu.Lock()
-	elapsed := time.Since(hm.lastSeen)
+	implicitElapsed := time.Since(hm.lastSeen)
+	pingElapsed := time.Since(hm.lastValidPong)
 	alreadyTriggered := hm.failureTriggered
 	pending := hm.pendingPing
 	hm.mu.Unlock()
 
-	// Time-based failure detection (highest priority)
-	// Only trigger once per failure to prevent spamming attemptFailover()
-	if elapsed > hm.failureTimeout && !alreadyTriggered {
-		log.Printf("Heartbeat timeout (%v), triggering failover", elapsed)
-
-		// Set flag BEFORE calling onLinkFailed to prevent race
-		hm.mu.Lock()
-		hm.failureTriggered = true
-		hm.mu.Unlock()
-
-		if hm.onLinkFailed != nil {
-			hm.onLinkFailed()
-		}
-		return
-	}
-
-	// Explicit PING (only if idle but not yet failed)
-	if elapsed > hm.pingInterval && !alreadyTriggered {
-		// Before sending new PING, check if previous PING was answered
+	// Explicit PING — checked first.
+	//
+	// Uses pingElapsed (time since last valid PONG), which is independent of lastSeen.
+	// This allows counter-based detection to fire even when stale buffered frames keep
+	// lastSeen fresh, preventing the implicit timeout from ever triggering. Without this
+	// independence, alreadyTriggered would be set at 200ms by the implicit path, making
+	// the counter-based path permanently unreachable for the zombie-link scenario.
+	if pingElapsed > hm.pingInterval && !alreadyTriggered {
+		// Before sending a new PING, check whether the previous one was answered.
 		if pending {
 			hm.mu.Lock()
 			hm.consecutiveMisses++
@@ -343,6 +346,24 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 		}
 
 		hm.sendPing(ctx, tm)
+	}
+
+	// Implicit timeout — checked second.
+	//
+	// Uses implicitElapsed (time since last ANY frame). Fast-path for completely dead
+	// links where no frames flow at all. Because failureTimeout (200ms) << pingInterval
+	// (1s), this fires first on a hard dead link. Only triggers once per failure.
+	if implicitElapsed > hm.failureTimeout && !alreadyTriggered {
+		log.Printf("Heartbeat timeout (%v), triggering failover", implicitElapsed)
+
+		// Set flag BEFORE calling onLinkFailed to prevent race.
+		hm.mu.Lock()
+		hm.failureTriggered = true
+		hm.mu.Unlock()
+
+		if hm.onLinkFailed != nil {
+			hm.onLinkFailed()
+		}
 	}
 }
 

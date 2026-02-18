@@ -627,3 +627,148 @@ func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 			DefaultConsecutiveMissThreshold)
 	}
 }
+
+// TestHeartbeatManager_PingTimerIndependentOfLastSeen verifies that the PING fires
+// based on lastValidPong even when lastSeen is kept fresh by OnFrameReceived calls.
+//
+// This is the key property that enables zombie-link detection: stale OS-buffered frames
+// (ACK/NACK) keep lastSeen fresh — preventing the implicit 200ms timeout from firing —
+// while lastValidPong ages independently, eventually triggering the PING. Without this
+// independence, the counter-based path is permanently unreachable because lastSeen is
+// always refreshed before implicitElapsed exceeds failureTimeout.
+//
+// Setup: lastSeen = now (fresh, no implicit timeout), lastValidPong = past (old, triggers
+// PING), pendingPing = true (simulates a prior unanswered PING). A single check() call
+// should increment consecutiveMisses and trigger counter-based failover, proving the PING
+// condition used lastValidPong, not lastSeen.
+func TestHeartbeatManager_PingTimerIndependentOfLastSeen(t *testing.T) {
+	failureCalled := false
+	var mu sync.Mutex
+
+	hm, err := NewHeartbeatManager(shortPingInterval, shortFailureTimeout, func() {
+		mu.Lock()
+		failureCalled = true
+		mu.Unlock()
+	})
+	if err != nil {
+		t.Fatalf("NewHeartbeatManager failed: %v", err)
+	}
+
+	// Age lastValidPong well past pingInterval, but keep lastSeen fresh so the
+	// implicit timeout cannot fire. With old code (elapsed = time.Since(lastSeen)),
+	// neither block would trigger here: lastSeen is fresh (< failureTimeout) and
+	// lastSeen is fresh (< pingInterval too). With the new code, pingElapsed is based
+	// on lastValidPong and exceeds pingInterval independently.
+	hm.mu.Lock()
+	hm.lastValidPong = time.Now().Add(-5 * shortPingInterval) // far past pingInterval
+	hm.lastSeen = time.Now()                                  // fresh: implicit timeout won't fire
+	hm.pendingPing = true                                     // simulate prior unanswered PING
+	hm.lastPingSent = testPongCounter
+	hm.consecutiveMisses = DefaultConsecutiveMissThreshold - 1 // one more miss triggers failover
+	hm.mu.Unlock()
+
+	// No transport registered: sendPing will fail (if we reach it). But miss counting
+	// occurs before sendPing, so the counter-based path still fires when pending=true.
+	tm := NewTransportManager(DefaultConfig())
+
+	hm.check(context.Background(), tm)
+
+	// Counter-based failover should have triggered because pingElapsed > pingInterval
+	// and pendingPing was true, incrementing consecutiveMisses to >= threshold.
+	mu.Lock()
+	triggered := failureCalled
+	mu.Unlock()
+
+	if !triggered {
+		t.Error("PING timer (lastValidPong-based) should trigger counter-based failover " +
+			"even when lastSeen is fresh — proves pingElapsed is independent of lastSeen")
+	}
+
+	// consecutiveMisses is reset to 0 after counter-based failover.
+	hm.mu.Lock()
+	misses := hm.consecutiveMisses
+	hm.mu.Unlock()
+
+	if misses != 0 {
+		t.Errorf("consecutiveMisses = %d after counter-based failover, want 0 (reset on trigger)", misses)
+	}
+}
+
+// TestHeartbeatManager_ZombieLinkCounterDetection exercises the full zombie-link scenario
+// end-to-end using the Run goroutine: continuous OnFrameReceived calls keep the implicit
+// timeout from firing, but the PING timer (based on lastValidPong) ages independently,
+// eventually triggering counter-based failover.
+//
+// A mock transport is registered so that PING sends succeed and pendingPing is set.
+// After one PING interval passes without a PONG response, the next check sees
+// pendingPing=true, increments consecutiveMisses to threshold, and calls onLinkFailed.
+func TestHeartbeatManager_ZombieLinkCounterDetection(t *testing.T) {
+	failureCalled := false
+	var mu sync.Mutex
+	var wg sync.WaitGroup
+
+	wg.Add(1)
+	hm, err := NewHeartbeatManager(shortPingInterval, shortFailureTimeout, func() {
+		mu.Lock()
+		defer mu.Unlock()
+		if !failureCalled {
+			failureCalled = true
+			wg.Done()
+		}
+	})
+	if err != nil {
+		t.Fatalf("NewHeartbeatManager failed: %v", err)
+	}
+
+	// Register a mock transport so PING sends succeed (pendingPing gets set).
+	// This is required: failed sends do not set pendingPing, so misses would never
+	// accumulate and counter-based failover would never trigger.
+	tm := NewTransportManager(DefaultConfig())
+	mockTransport := &testutil.MockHARQ{}
+	tm.RegisterTransport("mock", mockTransport, 10)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+
+	go hm.Run(ctx, tm)
+
+	// Continuously refresh lastSeen to prevent the implicit 200ms timeout from firing.
+	// This simulates stale OS-buffered ACK/NACK frames arriving while the firmware is
+	// actually dead. Without this, the implicit timeout would fire first and the test
+	// would not isolate the zombie-link (counter-based) detection path.
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	// Goroutine keeps lastSeen fresh while we wait for counter-based failover.
+	refreshCtx, stopRefresh := context.WithCancel(context.Background())
+	defer stopRefresh()
+	go func() {
+		ticker := time.NewTicker(shortPingInterval / 2)
+		defer ticker.Stop()
+		for {
+			select {
+			case <-refreshCtx.Done():
+				return
+			case <-ticker.C:
+				hm.OnFrameReceived()
+			}
+		}
+	}()
+
+	select {
+	case <-done:
+		// Success: counter-based failover triggered despite continuous implicit-timer resets.
+	case <-time.After(maxWaitForCallback):
+		t.Error("Zombie-link counter-based failover not triggered within expected time; " +
+			"PING timer must fire independently of lastSeen")
+	}
+
+	mu.Lock()
+	if !failureCalled {
+		t.Error("Failure callback should have been called via counter-based PING path")
+	}
+	mu.Unlock()
+}

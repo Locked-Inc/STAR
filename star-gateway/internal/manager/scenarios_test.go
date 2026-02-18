@@ -13,7 +13,9 @@ package manager
 
 import (
 	"context"
+	"encoding/binary"
 	"errors"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -37,6 +39,10 @@ const (
 	// Failure thresholds
 	immediateFailover = 1
 	failAfterTwo      = 2
+
+	// receiveYieldDelay is the minimum yield in mock ReceiveFuncs to prevent
+	// busy-spinning in background goroutines that loop on Receive.
+	receiveYieldDelay = time.Millisecond
 )
 
 // TestScenario1_NormalOperationUSB simulates normal operation with USB as primary transport.
@@ -45,17 +51,48 @@ func TestScenario1_NormalOperationUSB(t *testing.T) {
 	config.Mode = ModeAuto
 	tm := NewTransportManager(config)
 
-	// Create mock transports
+	// Create mock transports.
+	// receiveCount tracks calls: the first call comes from drainUntilResetAck
+	// (inside Start) and must return RESET_ACK so the handshake completes
+	// immediately. Subsequent calls return normal telemetry frames.
+	var receiveCount atomic.Int32
+	// capturedSessionID stores the session ID from the outgoing RESET frame so
+	// the mock can echo it back in the RESET_ACK, avoiding any assumption about
+	// the internal IncrementSessionID counter value.
+	var capturedSessionID atomic.Uint32
 	mockUSB := &testutil.MockHARQ{
 		SendFunc: func(ctx context.Context, data []byte, p ...harq.Priority) error {
 			return nil
 		},
+		SendWithTypeFunc: func(ctx context.Context, data []byte, frameType frame.Type) error {
+			// Capture session ID from outgoing RESET frame so ReceiveFunc can echo it.
+			if frameType == frame.FrameTypeReset && len(data) >= SessionIDPayloadSize {
+				capturedSessionID.Store(binary.LittleEndian.Uint32(data[:SessionIDPayloadSize]))
+			}
+			return nil
+		},
 		ReceiveFunc: func(ctx context.Context) (*harq.ReceiveResult, error) {
+			if receiveCount.Add(1) == 1 {
+				// First call: return RESET_ACK with the actual session ID captured
+				// from the RESET frame, not a hardcoded value.
+				sid := capturedSessionID.Load()
+				payload := make([]byte, SessionIDPayloadSize)
+				binary.LittleEndian.PutUint32(payload, sid)
+				return &harq.ReceiveResult{
+					Payload:  payload,
+					Metadata: harq.FrameMetadata{Type: frame.FrameTypeResetAck},
+				}, nil
+			}
+			// Subsequent calls: yield to prevent busy-spinning in any goroutine
+			// that loops on Receive (e.g. drainUntilResetAck if a retry occurs).
+			select {
+			case <-ctx.Done():
+				return nil, ctx.Err()
+			case <-time.After(receiveYieldDelay):
+			}
 			return &harq.ReceiveResult{
-				Payload: []byte("telemetry"),
-				Metadata: harq.FrameMetadata{
-					Type: frame.FrameTypeResponse,
-				},
+				Payload:  []byte("telemetry"),
+				Metadata: harq.FrameMetadata{Type: frame.FrameTypeResponse},
 			}, nil
 		},
 	}
