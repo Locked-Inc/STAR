@@ -311,7 +311,9 @@ tab:
 \hline
 \rowcolor { teal!15}
 52 & P54 & Unused &Available GPIO \\
-\hline 53 & P53 & Unused &Not available as GPIO when external bus enabled(BCLK) \\
+\hline
+\rowcolor{teal!15}
+53 & P53 & Unused &Not available as GPIO when external bus enabled(BCLK) \\
 \hline
 \rowcolor {
   orange!15
@@ -354,9 +356,15 @@ tab:
   green!20
 }
 62 & PC5 / MTCLKD &Encoder 1 Phase B &MTU2 encoder(quadrature counting) \\
-\hline 63 & P82 & Unused &Available GPIO(GTIOC2A, SCI10, Ethernet) \\
-\hline 64 & P81 & Unused &Available GPIO(GTIOC0B, SCI10, Ethernet, QSPI) \\
-\hline 65 & P80 & Unused &Available GPIO(SCK10, Ethernet, QSPI) \\
+\hline
+\rowcolor{teal!15}
+63 & P82 & Unused &Available GPIO(GTIOC2A, SCI10, Ethernet) \\
+\hline
+\rowcolor{teal!15}
+64 & P81 & Unused &Available GPIO(GTIOC0B, SCI10, Ethernet, QSPI) \\
+\hline
+\rowcolor{teal!15}
+65 & P80 & Unused &Available GPIO(SCK10, Ethernet, QSPI) \\
 \hline
 \rowcolor {
   lime!10
@@ -368,14 +376,20 @@ tab:
   blue!20
 }
 67 & PC3 / GTIOC1B &Motor 1 EN(Enable) & GPTW PWM channel 1B(32 - bit) \\
-\hline 68 & P77 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
-\hline 69 & P76 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
+\hline
+\rowcolor{teal!15}
+68 & P77 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
+\hline
+\rowcolor{teal!15}
+69 & P76 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
 \hline
 \rowcolor {
   green!20
 }
 70 & PC2 / TCLKA &Encoder 2 Phase A &TPU1 encoder(quadrature counting, 16 - bit) \\
-\hline 71 & P75 & Unused &Available GPIO(SCI11, Ethernet, SDHI) \\
+\hline
+\rowcolor{teal!15}
+71 & P75 & Unused &Available GPIO(SCI11, Ethernet, SDHI) \\
 \hline
 \rowcolor {
   purple!20
@@ -397,7 +411,9 @@ tab:
   gray!15
 }
 76 & VSS & Ground &Power supply \\
-\hline 77 & P73 & Unused &Available GPIO(Ethernet) \\
+\hline
+\rowcolor{teal!15}
+77 & P73 & Unused &Available GPIO(Ethernet) \\
 \hline
 \rowcolor {
   yellow!15
@@ -462,14 +478,18 @@ tab:
 89 &
     PA6 / GTETRGB &Motor 1 nFAULT &GPTW hardware emergency stop(auto -
                                                                 disables PWM) \\
-\hline 90 &
+\hline
+\rowcolor{teal!15}
+90 &
     PA5 & Unused &Available GPIO(GTIOC0A, RSPI\_A SCLK, Ethernet) \\
 \hline
 \rowcolor {
   gray!15
 }
 91 & VCC &Boards 3v3 & Power supply \\
-\hline 92 & PA4 & Unused &Available GPIO(RSPI\_A CS, Ethernet, IRQ5) \\
+\hline
+\rowcolor{teal!15}
+92 & PA4 & Unused &Available GPIO(RSPI\_A CS, Ethernet, IRQ5) \\
 \hline
 \rowcolor {
   gray!15
@@ -478,13 +498,17 @@ tab:
 \hline
 \rowcolor { green!20}
 94 & PA3 / TCLKB &Encoder 2 Phase B &TPU1 encoder(quadrature counting, 16 - bit) \\
-\hline 95 & PA2 & Unused &Available GPIO(GTIOC1A, SCI5 RX) \\
+\hline
+\rowcolor{teal!15}
+95 & PA2 & Unused &Available GPIO(GTIOC1A, SCI5 RX) \\
 \hline
 \rowcolor {
   green!20
 }
 96 & PA1 / MTCLKC &Encoder 1 Phase A &MTU2 encoder(quadrature counting) \\
-\hline 97 & PA0 & Unused &Available GPIO(GTIOC0B, Ethernet) \\
+\hline
+\rowcolor{teal!15}
+97 & PA0 & Unused &Available GPIO(GTIOC0B, Ethernet) \\
 \hline
 \rowcolor {
   orange!20
@@ -492,57 +516,90 @@ tab:
 98 &
     P67 / IRQ15 &HOST\_IRQ &Host interrupt output to RPi5(active - low,
                                                           data ready) \\
-\hline 99 &
+\hline
+\rowcolor{teal!15}
+99 &
     P66 & Unused &Available GPIO(GTIOC2B, CAN2 TX) \\
-\hline 100 & P65 & Unused &Available GPIO(external bus CKE) \\
+\hline
+\rowcolor{teal!15}
+100 & P65 & Unused &Available GPIO(external bus CKE) \\
 \hline
 \rowcolor {
   blue!20
 }
 101 & PE7 / GTIOC3A &Motor 3 PH(Phase) & GPTW PWM channel 3A(32 - bit) \\
-\hline 102 & PE6 / GTIOC3B
+\hline
+\rowcolor{blue!20}
+102 & PE6 / GTIOC3B
     &Motor 3 EN(Enable) & GPTW PWM channel 3B(32 - bit) \\
 \hline
 \rowcolor {
   gray!15
 }
 103 & VCC &Boards 3v3 & Power supply \\
-\hline 104 & P70 & Unused &Available GPIO(SDCLK) \\
+\hline
+\rowcolor{teal!15}
+104 & P70 & Unused &Available GPIO(SDCLK) \\
 \hline
 \rowcolor {
   gray!15
 }
 105 & VSS & Ground &Power supply \\
-\hline 106 & PE5 / GTIOC0A
+\hline
+\rowcolor{blue!20}
+106 & PE5 / GTIOC0A
     &Motor 0 PH(Phase) & GPTW PWM channel 0A(32 - bit) \\
-\hline 107 & PE4 / GTIOC1A &Motor 1 PH(Phase) & GPTW PWM channel 1A(32 - bit) \\
+\hline
+\rowcolor{blue!20}
+107 & PE4 / GTIOC1A &Motor 1 PH(Phase) & GPTW PWM channel 1A(32 - bit) \\
 \hline
 \rowcolor {
   blue!20
 }
 108 & PE3 / GTIOC2A &Motor 2 PH(Phase) & GPTW PWM channel 2A(32 - bit) \\
 \hline
+\rowcolor{blue!20}
 109 & PE2 / GTIOC0B &Motor 0 EN(Enable) & GPTW PWM channel 0B(32 - bit) \\
-\hline 110 & PE1 / GTIOC1B &Motor 1 EN(Enable) & GPTW PWM channel 1B(32 - bit) \\
-\hline 111 & PE0 / GTIOC2B &Motor 2 EN(Enable) & GPTW PWM channel 2B(32 - bit) \\
-\hline 112 & P64 & Unused &Available GPIO(external bus, Ethernet) \\
-\hline 113 & P63 & Unused &Available GPIO(external bus, Ethernet) \\
-\hline 114 & P62 & Unused &Available GPIO(external bus, Ethernet) \\
-\hline 115 & P61 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline
+\rowcolor{blue!20}
+110 & PE1 / GTIOC1B &Motor 1 EN(Enable) & GPTW PWM channel 1B(32 - bit) \\
+\hline
+\rowcolor{blue!20}
+111 & PE0 / GTIOC2B &Motor 2 EN(Enable) & GPTW PWM channel 2B(32 - bit) \\
+\hline
+\rowcolor{teal!15}
+112 & P64 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline
+\rowcolor{teal!15}
+113 & P63 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline
+\rowcolor{teal!15}
+114 & P62 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline
+\rowcolor{teal!15}
+115 & P61 & Unused &Available GPIO(external bus, Ethernet) \\
 \hline
 \rowcolor {
   gray!15
 }
 116 & VSS & Ground &Power supply \\
-\hline 117 & P60 & Unused &Available GPIO(external bus, Ethernet) \\
+\hline
+\rowcolor{teal!15}
+117 & P60 & Unused &Available GPIO(external bus, Ethernet) \\
 \hline
 \rowcolor {
   gray!15
 }
 118 & VCC &Boards 3v3 & Power supply \\
-\hline 119 & PD7 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ7, AN107) \\
-\hline 120 & PD6 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ6, AN106) \\
-\hline 121 & PD5 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ5, AN113) \\
+\hline
+\rowcolor{teal!15}
+119 & PD7 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ7, AN107) \\
+\hline
+\rowcolor{teal!15}
+120 & PD6 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ6, AN106) \\
+\hline
+\rowcolor{teal!15}
+121 & PD5 & Unused &Available GPIO(QSPI, SDHI, Ethernet, IRQ5, AN113) \\
 \hline
 \rowcolor {
   orange!20
@@ -563,8 +620,12 @@ tab:
   orange!20
 }
 125 & PD1 / MOSIC &RPi5 RSPI2 COPI &RSPI2 - A Controller Out Peripheral In \\
-\hline 126 & PD0 & Unused &Available GPIO(GTIOC1B, IRQ0, AN108) \\
-\hline 127 & P93 & Unused &Available GPIO(SCI7, Ethernet, AN117) \\
+\hline
+\rowcolor{teal!15}
+126 & PD0 & Unused &Available GPIO(GTIOC1B, IRQ0, AN108) \\
+\hline
+\rowcolor{teal!15}
+127 & P93 & Unused &Available GPIO(SCI7, Ethernet, AN117) \\
 \hline
 \rowcolor {
   purple!20
@@ -612,15 +673,23 @@ tab:
 }
 136 & P44 / AN004 &Motor 3 Current Sense &ADC Unit 0, 12 - bit,
     2.0A max(IPROPI from DRV8243S) \\
-\hline 137 & P43 & Unused &Available GPIO(IRQ11, AN003) \\
-\hline 138 & P42 & Unused &Available GPIO(IRQ10, AN002) \\
-\hline 139 & P41 & Unused &Available GPIO(IRQ9, AN001) \\
+\hline
+\rowcolor{teal!15}
+137 & P43 & Unused &Available GPIO(IRQ11, AN003) \\
+\hline
+\rowcolor{teal!15}
+138 & P42 & Unused &Available GPIO(IRQ10, AN002) \\
+\hline
+\rowcolor{teal!15}
+139 & P41 & Unused &Available GPIO(IRQ9, AN001) \\
 \hline
 \rowcolor {
   gray!15
 }
 140 & VREFL0 & Ground &ADC reference low \\
-\hline 141 & P40 & Unused &Available GPIO(IRQ8, AN000) \\
+\hline
+\rowcolor{teal!15}
+141 & P40 & Unused &Available GPIO(IRQ8, AN000) \\
 \hline
 \rowcolor {
   gray!15
