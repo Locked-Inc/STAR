@@ -25,10 +25,25 @@ static rx_err_t s_init_return = k_rx_ok;
  * =============================================================================
  */
 
-static uint32_t s_init_count               = 0;
-static uint32_t s_trigger_estop_count      = 0;
-static uint32_t s_motor_state_update_count = 0;
-static uint32_t s_set_event_count          = 0;
+/**
+ * @enum mock_count_reset_t
+ * @brief Named zero sentinel used when resetting mock call counters
+ *
+ * @details
+ * Provides a named constant for the initial/reset value of uint32_t call
+ * counters, avoiding bare numeric literal zero per the project's zero-magic-
+ * number policy.
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint32_t {
+  k_mock_count_reset = 0, /**< Counter reset value (no calls recorded) */
+} mock_count_reset_t;
+
+static uint32_t s_init_count               = k_mock_count_reset;
+static uint32_t s_trigger_estop_count      = k_mock_count_reset;
+static uint32_t s_motor_state_update_count = k_mock_count_reset;
+static uint32_t s_set_event_count          = k_mock_count_reset;
 
 /* =============================================================================
  * Static State
@@ -60,9 +75,9 @@ static shared_event_flags_t s_last_event_flags      = k_event_none;
 void mock_shared_data_reset(void)
 {
   s_init_return              = k_rx_ok;
-  s_init_count               = 0;
-  s_trigger_estop_count      = 0;
-  s_motor_state_update_count = 0;
+  s_init_count               = k_mock_count_reset;
+  s_trigger_estop_count      = k_mock_count_reset;
+  s_motor_state_update_count = k_mock_count_reset;
 
   s_initialized  = false;
   s_estop_active = false;
@@ -88,7 +103,7 @@ void mock_shared_data_reset(void)
   (void)memset(&s_obstacle_state, 0, sizeof(s_obstacle_state));
 
   s_last_triggered_reason = k_estop_reason_none;
-  s_set_event_count       = 0;
+  s_set_event_count       = k_mock_count_reset;
   s_last_event_flags      = k_event_none;
 }
 
@@ -147,11 +162,60 @@ estop_reason_t mock_shared_data_get_last_estop_reason(void)
   return s_last_triggered_reason;
 }
 
+/**
+ * @brief Return the number of times shared_data_set_event() has been called
+ *
+ * @details
+ * Provides test code with a way to assert that the BMS task called
+ * shared_data_set_event() exactly the expected number of times within a test.
+ *
+ * @return uint32_t Call count since last mock_shared_data_reset()
+ * @retval 0 shared_data_set_event() has not been called since last reset
+ * @retval n Number of times shared_data_set_event() was called
+ *
+ * @pre mock_shared_data_reset() has been called at least once (setUp)
+ * @pre No concurrent modifications from other threads (single-threaded test context)
+ *
+ * @post s_set_event_count is unchanged (read-only accessor)
+ * @post Return value reflects all calls since last reset
+ *
+ * @note Thread safety: read-only; safe in single-threaded test context
+ *
+ * @see shared_data_set_event() The function whose calls are counted
+ * @see mock_shared_data_reset() Resets the counter to k_mock_count_reset
+ *
+ * @since Version 1.1.0
+ */
 uint32_t mock_shared_data_get_set_event_count(void)
 {
   return s_set_event_count;
 }
 
+/**
+ * @brief Return the accumulated event flags set via shared_data_set_event()
+ *
+ * @details
+ * Returns the bitwise OR of all flag values passed to shared_data_set_event()
+ * since the last mock_shared_data_reset(). Test code uses this to verify that
+ * the expected event bits were raised without caring about call order.
+ *
+ * @return shared_event_flags_t Accumulated (OR'd) event flags
+ * @retval k_event_none No events have been set since last reset
+ * @retval other OR of every flags argument passed to shared_data_set_event()
+ *
+ * @pre mock_shared_data_reset() has been called at least once (setUp)
+ * @pre No concurrent modifications from other threads (single-threaded test context)
+ *
+ * @post s_last_event_flags is unchanged (read-only accessor)
+ * @post Return value is a superset of any single shared_data_set_event() call
+ *
+ * @note Thread safety: read-only; safe in single-threaded test context
+ *
+ * @see shared_data_set_event() The function that accumulates into this value
+ * @see mock_shared_data_reset() Clears accumulated flags to k_event_none
+ *
+ * @since Version 1.1.0
+ */
 shared_event_flags_t mock_shared_data_get_last_event_flags(void)
 {
   return s_last_event_flags;
@@ -371,9 +435,38 @@ void shared_data_update_last_comm_tick(void)
 }
 
 /* Event Flags */
+
+/**
+ * @brief Accumulate event flag bits into the mock's tracking state
+ *
+ * @details
+ * Mirrors the TX_OR semantics of the production shared_data_set_event()
+ * by ORing the supplied flags into s_last_event_flags. This allows test
+ * code to verify that a set of expected bits was raised across one or more
+ * calls, matching real RTOS behavior where flags are sticky until cleared.
+ *
+ * @param[in] flags One or more shared_event_flags_t bits to set
+ *
+ * @return rx_err_t Always returns k_rx_ok in mock
+ * @retval k_rx_ok Flags accumulated successfully
+ *
+ * @pre mock_shared_data_reset() called before the test begins (setUp)
+ * @pre flags is a valid member or OR combination of shared_event_flags_t
+ *
+ * @post s_set_event_count incremented by 1
+ * @post s_last_event_flags has the supplied bits OR'd in
+ *
+ * @note Thread safety: not thread-safe; intended for single-threaded test use only
+ *
+ * @see mock_shared_data_get_set_event_count() Retrieve call count
+ * @see mock_shared_data_get_last_event_flags() Retrieve accumulated flags
+ * @see mock_shared_data_reset() Clear accumulated state between tests
+ *
+ * @since Version 1.1.0
+ */
 rx_err_t shared_data_set_event(shared_event_flags_t flags)
 {
   s_set_event_count++;
-  s_last_event_flags = flags;
+  s_last_event_flags |= flags;
   return k_rx_ok;
 }

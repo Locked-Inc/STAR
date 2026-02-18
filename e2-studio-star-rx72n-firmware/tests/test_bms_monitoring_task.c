@@ -73,10 +73,12 @@ typedef enum : uint16_t {
 
 /**
  * @enum test_bms_read_data_t
- * @brief Test constants for battery data reading tests (test_bms_task_reads_battery_data)
+ * @brief Test constants for battery data reading and threshold tests
  */
 typedef enum : uint16_t {
-  k_test_normal_current_ma  = 500,  /**< Normal discharge current (mA) */
+  k_test_normal_current_ma   = 500,  /**< Normal discharge current (mA) */
+  k_test_low_current_ma      = 100,  /**< Low discharge current, used near warning threshold (mA) */
+  k_test_critical_current_ma = 50,   /**< Near-empty discharge current, used near critical threshold (mA) */
   k_test_normal_timestamp_ms = 1000, /**< 1-second timestamp for data read test */
 } test_bms_read_data_t;
 
@@ -97,7 +99,7 @@ typedef enum : uint16_t {
   k_test_telem_capacity_mah     = 3750, /**< Remaining capacity for telemetry test (mAh) */
   k_test_telem_full_capacity_mah = 5000, /**< Full charge capacity for telemetry test (mAh) */
   k_test_telem_cycle_count      = 150,  /**< Charge cycle count for telemetry test */
-  k_test_telem_timestamp_ms_lo  = 2000, /**< Timestamp lower 16 bits for telemetry test */
+  k_test_telem_timestamp_ms  = 2000, /**< Timestamp (ms) for telemetry storage test */
 } test_bms_telemetry_data_t;
 
 /**
@@ -132,6 +134,26 @@ typedef enum : uint8_t {
   k_test_custom_warning_pct        = 30, /**< Custom warning threshold (%) */
   k_test_custom_critical_pct       = 10, /**< Custom critical threshold (%) */
 } test_custom_threshold_soc_t;
+
+/**
+ * @enum test_invalid_threshold_t
+ * @brief SoC threshold values that violate bms_monitor_config_t invariants
+ *
+ * @details
+ * Used by test_bms_task_create_invalid_thresholds to verify that
+ * bms_monitor_task_create() rejects each violation type.
+ *
+ * | Constant | Value | Violation |
+ * |----------|-------|-----------|
+ * | k_test_invalid_soc_equal | 15% | critical == warning |
+ * | k_test_invalid_soc_warning_low | 10% | warning < critical (inverted) |
+ * | k_test_invalid_soc_critical_high | 50% | critical > warning (inverted) |
+ */
+typedef enum : uint8_t {
+  k_test_invalid_soc_equal         = 15, /**< Equal warning and critical (invalid: must be strictly less) */
+  k_test_invalid_soc_warning_low   = 10, /**< Warning below critical (invalid: inverted relationship) */
+  k_test_invalid_soc_critical_high = 50, /**< Critical above warning (invalid: inverted relationship) */
+} test_invalid_threshold_t;
 
 /* =============================================================================
  * Test Fixture
@@ -215,16 +237,16 @@ void test_bms_task_create_invalid_thresholds(void)
 
   /* critical == warning is invalid (must be strictly less) */
   const bms_monitor_config_t bad_config_equal = {
-    .soc_warning_pct  = 15,
-    .soc_critical_pct = 15, /* same as warning - must be strictly less */
+    .soc_warning_pct  = k_test_invalid_soc_equal,
+    .soc_critical_pct = k_test_invalid_soc_equal, /* same as warning - must be strictly less */
   };
   err = bms_monitor_task_create(&bad_config_equal);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 
   /* critical > warning is also invalid */
   const bms_monitor_config_t bad_config_inverted = {
-    .soc_warning_pct  = 10, /* lower than critical - inverted! */
-    .soc_critical_pct = 50,
+    .soc_warning_pct  = k_test_invalid_soc_warning_low,   /* lower than critical - inverted! */
+    .soc_critical_pct = k_test_invalid_soc_critical_high,
   };
   err = bms_monitor_task_create(&bad_config_inverted);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -330,7 +352,8 @@ void test_bms_task_reads_battery_data(void)
 void test_bms_task_no_warning_above_threshold(void)
 {
   /* SoC is above warning threshold - no action expected */
-  mock_bq4050_set_status(k_test_normal_voltage_mv, 500, k_test_soc_above_warning);
+  mock_bq4050_set_status(k_test_normal_voltage_mv, k_test_normal_current_ma,
+                         k_test_soc_above_warning);
 
   rx_bq4050_status_t status = {0};
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
@@ -355,7 +378,7 @@ void test_bms_task_no_warning_above_threshold(void)
 void test_bms_task_low_battery_warning_at_25_pct(void)
 {
   /* Set battery SoC to 20% (below the 25% default warning threshold) */
-  mock_bq4050_set_status(k_test_low_voltage_mv, 100, k_test_soc_below_warning);
+  mock_bq4050_set_status(k_test_low_voltage_mv, k_test_low_current_ma, k_test_soc_below_warning);
 
   rx_bq4050_status_t status = {0};
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
@@ -387,7 +410,7 @@ void test_bms_task_low_battery_warning_at_25_pct(void)
 void test_bms_task_no_warning_at_exactly_25_pct(void)
 {
   /* Set battery SoC to exactly 25% - at the threshold, not below */
-  mock_bq4050_set_status(k_test_low_voltage_mv, 100, k_test_soc_at_warning);
+  mock_bq4050_set_status(k_test_low_voltage_mv, k_test_low_current_ma, k_test_soc_at_warning);
 
   rx_bq4050_status_t status = {0};
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
@@ -409,7 +432,8 @@ void test_bms_task_no_warning_at_exactly_25_pct(void)
 void test_bms_task_critical_battery_triggers_estop(void)
 {
   /* Set battery SoC to 3% (below the 5% critical threshold) */
-  mock_bq4050_set_status(k_test_low_voltage_mv, 50, k_test_soc_below_critical);
+  mock_bq4050_set_status(k_test_low_voltage_mv, k_test_critical_current_ma,
+                         k_test_soc_below_critical);
 
   rx_bq4050_status_t status = {0};
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
@@ -441,7 +465,8 @@ void test_bms_task_critical_battery_triggers_estop(void)
 void test_bms_task_no_estop_at_exactly_5_pct(void)
 {
   /* Set battery SoC to exactly 5% - at the threshold, not below */
-  mock_bq4050_set_status(k_test_low_voltage_mv, 50, k_test_soc_at_critical);
+  mock_bq4050_set_status(k_test_low_voltage_mv, k_test_critical_current_ma,
+                         k_test_soc_at_critical);
 
   rx_bq4050_status_t status = {0};
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
@@ -466,7 +491,7 @@ void test_bms_task_no_estop_at_exactly_5_pct(void)
 void test_bms_task_warning_only_between_thresholds(void)
 {
   /* 20% - between critical (5%) and warning (25%) */
-  mock_bq4050_set_status(k_test_low_voltage_mv, 100, k_test_soc_below_warning);
+  mock_bq4050_set_status(k_test_low_voltage_mv, k_test_low_current_ma, k_test_soc_below_warning);
 
   rx_bq4050_status_t status = {0};
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
@@ -553,7 +578,7 @@ void test_bms_data_stored_in_telemetry(void)
   bms_in.full_capacity_mah   = k_test_telem_full_capacity_mah;
   bms_in.cycle_count         = k_test_telem_cycle_count;
   bms_in.fault_flags         = k_test_telem_fault_flags;
-  bms_in.timestamp_ms        = k_test_telem_timestamp_ms_lo;
+  bms_in.timestamp_ms        = k_test_telem_timestamp_ms;
   bms_in.valid               = true;
 
   /* Store */
