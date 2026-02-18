@@ -32,9 +32,7 @@ describe('ControllerService', () => {
     service = new ControllerService('ws://localhost:8080/ws/controller');
     service.connect();
 
-    // Access private property via bracket notation to bypass TS check
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-expect-error
+    // Access private property via bracket notation
     const socket = service['socket'];
     
     expect(socket).not.toBeNull();
