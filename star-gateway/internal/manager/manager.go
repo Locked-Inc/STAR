@@ -658,6 +658,7 @@ func (tm *TransportManager) Receive(ctx context.Context) (*harq.ReceiveResult, e
 //   - PING: echoes payload back as PONG, updates implicit heartbeat, returns nil
 //   - PONG: validates counter via OnPongReceived (explicit heartbeat), returns nil
 //   - ACK/NACK: logged for diagnostics, returns nil
+//   - RESET: sends RESET_ACK, returns nil
 //   - RESET_ACK: logged for session tracking, returns nil
 //
 // Data frames are passed through with implicit heartbeat update:
@@ -703,6 +704,12 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		tm.heartbeat.OnFrameReceived()
 		log.Printf("Received %s (seq=%d) - consumed by dispatcher",
 			result.Metadata.Type.String(), result.Metadata.Sequence)
+		return nil
+
+	case frame.FrameTypeReset:
+		// Auto-reply with RESET_ACK per TRANSPORT_ARCHITECTURE.md §Control Frame Dispatching
+		log.Printf("Received RESET (seq=%d) - sending RESET_ACK", result.Metadata.Sequence)
+		tm.sendResetAck(ctx)
 		return nil
 
 	case frame.FrameTypeResetAck:
@@ -757,6 +764,39 @@ func (tm *TransportManager) sendPong(ctx context.Context, payload []byte) {
 
 	if err := sender.SendWithType(pongCtx, payload, frame.FrameTypePong); err != nil {
 		log.Printf("PONG send failed: %v", err)
+	}
+}
+
+// sendResetAck sends a RESET_ACK frame in response to a received RESET.
+//
+// Called from within the Receive loop; bypasses the operations gate to avoid
+// deadlock (same rationale as sendPong). RESET_ACK carries no payload per
+// TRANSPORT_ARCHITECTURE.md §Frame Types.
+func (tm *TransportManager) sendResetAck(ctx context.Context) {
+	tm.mu.RLock()
+	active := tm.activeTransport
+	tm.mu.RUnlock()
+
+	if active == nil {
+		return
+	}
+
+	// Type-assert to check if transport supports SendWithType
+	type frameTypeSender interface {
+		SendWithType(ctx context.Context, data []byte, frameType frame.Type) error
+	}
+
+	ackCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
+	defer cancel()
+
+	sender, ok := active.(frameTypeSender)
+	if !ok {
+		log.Printf("RESET_ACK send skipped: transport does not support SendWithType")
+		return
+	}
+
+	if err := sender.SendWithType(ackCtx, nil, frame.FrameTypeResetAck); err != nil {
+		log.Printf("RESET_ACK send failed: %v", err)
 	}
 }
 
