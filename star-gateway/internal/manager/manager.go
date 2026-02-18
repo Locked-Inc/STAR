@@ -707,9 +707,14 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 		return nil
 
 	case frame.FrameTypeReset:
-		// Auto-reply with RESET_ACK per TRANSPORT_ARCHITECTURE.md Control Frame Dispatching
+		// Auto-reply with RESET_ACK per TRANSPORT_ARCHITECTURE.md Control Frame Dispatching.
+		// Update heartbeat: RESET is valid proof of liveness ("ANY valid frame" policy).
+		// Reset sequences: firmware resets its TX counter to 0 after sending RESET, so the
+		// gateway must mirror that to avoid sequence-mismatch rejection on the next frame.
+		tm.heartbeat.OnFrameReceived()
 		log.Printf("Received RESET (seq=%d) - sending RESET_ACK", result.Metadata.Sequence)
 		tm.sendResetAck(ctx)
+		tm.sessionState.Reset()
 		return nil
 
 	case frame.FrameTypeResetAck:
@@ -753,7 +758,7 @@ func (tm *TransportManager) sendPong(ctx context.Context, payload []byte) {
 		SendWithType(ctx context.Context, data []byte, frameType frame.Type) error
 	}
 
-	pongCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
+	pongCtx, cancel := context.WithTimeout(ctx, controlFrameSendTimeout)
 	defer cancel()
 
 	sender, ok := active.(frameTypeSender)
@@ -786,7 +791,7 @@ func (tm *TransportManager) sendResetAck(ctx context.Context) {
 		SendWithType(ctx context.Context, data []byte, frameType frame.Type) error
 	}
 
-	ackCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
+	ackCtx, cancel := context.WithTimeout(ctx, controlFrameSendTimeout)
 	defer cancel()
 
 	sender, ok := active.(frameTypeSender)
