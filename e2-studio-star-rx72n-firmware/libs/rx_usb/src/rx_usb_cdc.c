@@ -1480,12 +1480,11 @@ static uint16_t s_control_line_state[k_usb_port_count] = {k_usb_control_line_cle
  */
 static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uint16_t requested_len)
 {
-  if (written != len) {
-    rx_log_error(s_tag, "Descriptor write incomplete");
-  const uint16_t len = (desc_len < requested_len) ? desc_len : requested_len;
-
+  const uint16_t len    = (desc_len < requested_len) ? desc_len : requested_len;
   const uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_dcp, desc, len);
 
+  if (written != len) {
+    rx_log_error(s_tag, "Descriptor write incomplete");
   }
 }
 
@@ -1494,6 +1493,9 @@ static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uin
  */
 static void internal_handle_get_descriptor(const uint16_t usb_value, const uint16_t usb_length)
 {
+  const uint8_t desc_type  = (uint8_t)((usb_value >> k_bit_shift_byte_1) & k_byte_mask);
+  const uint8_t desc_index = (uint8_t)(usb_value & k_byte_mask);
+
   switch (desc_type) {
     case k_usb_desc_type_device:
       internal_send_descriptor((const uint8_t*)&s_device_desc, sizeof(s_device_desc), usb_length);
@@ -1533,9 +1535,6 @@ static void internal_handle_get_descriptor(const uint16_t usb_value, const uint1
       /* STALL for unknown descriptor type */
       usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
       break;
-  const uint8_t desc_type  = (uint8_t)((usb_value >> k_bit_shift_byte_1) & k_byte_mask);
-  const uint8_t desc_index = (uint8_t)(usb_value & k_byte_mask);
-
   }
 }
 
@@ -2039,6 +2038,9 @@ static void internal_handle_class_request(const uint8_t  usb_request,
                                           const uint16_t usb_index)
 {
   /* Determine which port this request is for based on interface number */
+  const uint8_t          interface = (uint8_t)(usb_index & k_byte_mask);
+  const rx_usb_port_id_t port      = rx_usb_find_port_by_interface(interface);
+
   switch (usb_request) {
     case k_cdc_set_line_coding:
       internal_handle_set_line_coding(port);
@@ -2053,9 +2055,6 @@ static void internal_handle_class_request(const uint8_t  usb_request,
       /* STALL unknown class requests */
       usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
       break;
-  const uint8_t          interface = (uint8_t)(usb_index & k_byte_mask);
-  const rx_usb_port_id_t port      = rx_usb_find_port_by_interface(interface);
-
   }
 }
 

@@ -1178,16 +1178,16 @@ void test_soft_to_hard(void)
  */
 void test_decode_null_args(void)
 {
+  rx_soft_bit_t               soft[32];
+  uint8_t                     output[16];
+  uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 32,
     .expected_output_len = 2,
     .output              = output,
     .output_len          = &len,
-  rx_soft_bit_t               soft[32];
-  uint8_t                     output[16];
-  uint32_t                    len;
-
   };
 
   /* nullptr decoder */
@@ -1230,17 +1230,17 @@ void test_decode_null_args(void)
  */
 void test_decode_uninitialized(void)
 {
+  rx_fec_decoder_t            dec = {0};
+  rx_soft_bit_t               soft[32];
+  uint8_t                     output[16];
+  uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 32,
     .expected_output_len = 2,
     .output              = output,
     .output_len          = &len,
-  rx_fec_decoder_t            dec = {0};
-  rx_soft_bit_t               soft[32];
-  uint8_t                     output[16];
-  uint32_t                    len;
-
   };
 
   rx_err_t err = rx_fec_decode_soft(&dec, &params);
@@ -1270,16 +1270,16 @@ void test_decode_uninitialized(void)
  */
 void test_decode_odd_soft_length(void)
 {
+  rx_soft_bit_t               soft[33];
+  uint8_t                     output[16];
+  uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 33,
     .expected_output_len = 2,
     .output              = output,
     .output_len          = &len,
-  rx_soft_bit_t               soft[33];
-  uint8_t                     output[16];
-  uint32_t                    len;
-
   };
 
   /* Soft bits must come in pairs */
@@ -1306,16 +1306,16 @@ void test_decode_odd_soft_length(void)
  */
 void test_decode_zero_length(void)
 {
+  rx_soft_bit_t               soft[32];
+  uint8_t                     output[16];
+  uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 0,
     .expected_output_len = 2,
     .output              = output,
     .output_len          = &len,
-  rx_soft_bit_t               soft[32];
-  uint8_t                     output[16];
-  uint32_t                    len;
-
   };
 
   rx_err_t err = rx_fec_decode_soft(&s_decoder, &params);
@@ -1375,6 +1375,10 @@ void test_decode_zero_length(void)
  */
 void test_decode_hard_null_args(void)
 {
+  uint8_t                     hard[16] = {0};
+  uint8_t                     output[16];
+  uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 16,
@@ -1383,10 +1387,6 @@ void test_decode_hard_null_args(void)
     .output_len          = &len,
     .soft_bits_buffer    = s_soft_bits_buffer,
     .soft_buffer_len     = sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]),
-  uint8_t                     hard[16] = {0};
-  uint8_t                     output[16];
-  uint32_t                    len;
-
   };
 
   /* nullptr decoder */
@@ -1434,6 +1434,11 @@ void test_decode_hard_null_args(void)
  */
 void test_decode_hard_uninitialized(void)
 {
+  rx_fec_decoder_t            dec      = {0};
+  uint8_t                     hard[16] = {0};
+  uint8_t                     output[16];
+  uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 16,
@@ -1442,11 +1447,6 @@ void test_decode_hard_uninitialized(void)
     .output_len          = &len,
     .soft_bits_buffer    = s_soft_bits_buffer,
     .soft_buffer_len     = sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]),
-  rx_fec_decoder_t            dec      = {0};
-  uint8_t                     hard[16] = {0};
-  uint8_t                     output[16];
-  uint32_t                    len;
-
   };
 
   rx_err_t err = rx_fec_decode_hard(&dec, &params);
@@ -1472,6 +1472,10 @@ void test_decode_hard_uninitialized(void)
  */
 void test_decode_hard_zero_length(void)
 {
+  uint8_t                     hard[16] = {0};
+  uint8_t                     output[16];
+  uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 0,
@@ -1480,10 +1484,6 @@ void test_decode_hard_zero_length(void)
     .output_len          = &len,
     .soft_bits_buffer    = s_soft_bits_buffer,
     .soft_buffer_len     = sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]),
-  uint8_t                     hard[16] = {0};
-  uint8_t                     output[16];
-  uint32_t                    len;
-
   };
 
   rx_err_t err = rx_fec_decode_hard(&s_decoder, &params);

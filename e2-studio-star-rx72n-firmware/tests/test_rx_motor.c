@@ -894,13 +894,13 @@ void test_motor_multiple_channels_independent(void)
 void test_motor_all_four_channels(void)
 {
   /* Initialize all 4 motors */
+  rx_motor_handle_t motors[4] = {0};
+  rx_motor_config_t configs[4];
+
   for (int32_t i = 0; i < 4; i++) {
     configs[i]         = s_config;
     configs[i].channel = (rx_gptw_channel_t)i;
     TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&motors[i], &configs[i]));
-  rx_motor_handle_t motors[4] = {0};
-  rx_motor_config_t configs[4];
-
   }
 
   /* Verify all channels initialized */

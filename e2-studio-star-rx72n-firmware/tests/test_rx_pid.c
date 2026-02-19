@@ -916,9 +916,9 @@ void test_pid_compute_derivative_constant_error(void)
  */
 void test_pid_compute_output_clamp_upper(void)
 {
-  config.kp              = 10.0f; /* High gain to exceed limits */
-  rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
+  rx_pid_handle_t pid    = {0};
+  config.kp              = 10.0f; /* High gain to exceed limits */
 
   config.output_max      = 50.0f;
   config.output_min      = -50.0f;
@@ -948,9 +948,9 @@ void test_pid_compute_output_clamp_upper(void)
  */
 void test_pid_compute_output_clamp_lower(void)
 {
-  config.kp              = 10.0f; /* High gain to exceed limits */
-  rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
+  rx_pid_handle_t pid    = {0};
+  config.kp              = 10.0f; /* High gain to exceed limits */
 
   config.output_max      = 50.0f;
   config.output_min      = -50.0f;

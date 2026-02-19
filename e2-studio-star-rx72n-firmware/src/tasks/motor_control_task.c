@@ -2636,6 +2636,7 @@ static void internal_apply_pid_updates(void)
  */
 static void internal_check_comm_timeout(void)
 {
+  bool timeout = shared_data_is_comm_timeout();
   if (timeout && !s_timeout_estop_triggered) {
     rx_log_warn(s_tag, "Communication timeout - triggering e-stop");
     (void)shared_data_trigger_estop(k_estop_reason_comm_timeout);
@@ -2643,8 +2644,6 @@ static void internal_check_comm_timeout(void)
   } else if (!timeout && s_timeout_estop_triggered) {
     /* Communication restored - clear flag (but e-stop must be cleared manually) */
     s_timeout_estop_triggered = false;
-  bool timeout = shared_data_is_comm_timeout();
-
   }
 }
 

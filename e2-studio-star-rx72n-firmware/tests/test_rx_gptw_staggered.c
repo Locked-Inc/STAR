@@ -833,9 +833,9 @@ void test_staggered_init_null_config_fails(void)
 void test_staggered_init_zero_frequency_fails(void)
 {
   /* Initialize config structure with valid values except frequency */
-  config.frequency_hz         = 0; /* Invalid: zero frequency */
   rx_gptw_config_t config;
   rx_err_t         err;
+  config.frequency_hz         = 0; /* Invalid: zero frequency */
 
   config.wave_mode            = k_gptw_wave_tri_pwm3;
   config.invert_polarity      = false;

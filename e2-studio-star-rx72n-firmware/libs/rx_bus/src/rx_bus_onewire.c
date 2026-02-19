@@ -655,14 +655,11 @@ static rx_err_t
 internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, const uint8_t byte)
 {
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
-    bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
-    err = internal_write_bit(bus_config, state, bit);
+    const bool     bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
+    const rx_err_t err = internal_write_bit(bus_config, state, bit);
     if (err != k_rx_ok) {
       return err;
     }
-  bool     bit = false;
-  rx_err_t err = k_rx_ok;
-
   }
 
   return k_rx_ok;
@@ -674,19 +671,16 @@ internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state,
 static rx_err_t
 internal_read_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t* byte)
 {
+  uint8_t value = 0;
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
-    bit = false;
-    err = internal_read_bit(bus_config, state, &bit);
+    bool           bit = false;
+    const rx_err_t err = internal_read_bit(bus_config, state, &bit);
     if (err != k_rx_ok) {
       return err;
     }
     if (bit) {
       value |= (uint8_t)(k_onewire_bit_mask_lsb << i);
     }
-  uint8_t  value = 0;
-  bool     bit   = false;
-  rx_err_t err   = k_rx_ok;
-
   }
 
   *byte = value;

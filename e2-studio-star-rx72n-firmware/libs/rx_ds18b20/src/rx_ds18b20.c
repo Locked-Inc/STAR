@@ -1026,6 +1026,8 @@ static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* han
  */
 static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle)
 {
+  rx_err_t err = k_rx_ok;
+
   if (handle->use_rom_matching) {
     /* Use Match ROM to address specific device */
     err = rx_bus_onewire_match_rom(handle->bus_manager, handle->bus_name, handle->rom);
@@ -1040,8 +1042,6 @@ static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle
       rx_log_error(s_tag, "Failed to send Skip ROM");
       return err;
     }
-  rx_err_t err = k_rx_ok;
-
   }
 
   return k_rx_ok;

@@ -186,12 +186,12 @@ void test_next_tx_starts_at_zero(void)
  */
 void test_next_tx_increments(void)
 {
+  uint16_t seq;
+
   for (uint16_t i = 0; i < k_test_advance_count; i++) {
     rx_err_t err = rx_session_next_tx(&s_session, &seq);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_UINT16(i, seq);
-  uint16_t seq;
-
   }
 }
 
@@ -288,12 +288,12 @@ void test_validate_rx_exact_match(void)
  */
 void test_validate_rx_sequential(void)
 {
+  rx_session_validate_result_t result;
+
   for (uint16_t i = 0; i < k_test_validate_count; i++) {
     rx_err_t err = rx_session_validate_rx(&s_session, i, &result);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(k_session_validate_ok, result);
-  rx_session_validate_result_t result;
-
   }
 }
 
@@ -395,12 +395,12 @@ void test_validate_rx_large_gap_rejected(void)
  */
 void test_validate_rx_duplicate_rejected(void)
 {
+  rx_session_validate_result_t result;
+
   /* Accept seq 0-5 */
   for (uint16_t i = 0; i <= 5; i++) {
     rx_err_t err = rx_session_validate_rx(&s_session, i, &result);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
-  rx_session_validate_result_t result;
-
   }
 
   /* Receive seq=3 (already processed) -> reject */
@@ -468,13 +468,14 @@ void test_validate_rx_wraparound(void)
  */
 void test_reset_clears_sequences(void)
 {
+  uint16_t seq;
+
   /* Advance both sequences */
   for (uint16_t i = 0; i < k_test_reset_advance; i++) {
     rx_err_t ret = rx_session_next_tx(&s_session, &seq);
     TEST_ASSERT_EQUAL(k_rx_ok, ret);
-  uint16_t seq;
-
   }
+
   rx_session_validate_result_t result;
   for (uint16_t i = 0; i < k_test_reset_advance; i++) {
     rx_err_t ret = rx_session_validate_rx(&s_session, i, &result);
@@ -534,13 +535,13 @@ void test_reset_not_initialized(void)
  */
 void test_transport_switch_tx_continuity(void)
 {
+  uint16_t seq;
+
   /* USB sends frames with seq 0-(N-1) */
   for (uint16_t i = 0; i < k_test_transport_switch; i++) {
     rx_err_t err = rx_session_next_tx(&s_session, &seq);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_UINT16(i, seq);
-  uint16_t seq;
-
   }
 
   /* "Switch to SPI" - same session state, next seq should be N */
@@ -556,13 +557,13 @@ void test_transport_switch_tx_continuity(void)
  */
 void test_transport_switch_rx_continuity(void)
 {
+  rx_session_validate_result_t result;
+
   /* USB receives seq 0-(N-1) */
   for (uint16_t i = 0; i < k_test_transport_switch; i++) {
     rx_err_t err = rx_session_validate_rx(&s_session, i, &result);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(k_session_validate_ok, result);
-  rx_session_validate_result_t result;
-
   }
 
   /* "Switch to SPI" - same session state, receive seq N */

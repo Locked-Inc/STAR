@@ -195,11 +195,12 @@ void test_obstacle_callback_sets_emergency_flag(void)
  */
 void test_obstacle_distances_stored_in_shared_data(void)
 {
-  /* Simulate callback storing obstacle state */
-  state_in.distance_cm[k_test_sensor_idx_0]       = 25; /* 25 cm */
   obstacle_state_t state_in  = {0};
   obstacle_state_t state_out = {0};
   rx_err_t         err;
+
+  /* Simulate callback storing obstacle state */
+  state_in.distance_cm[k_test_sensor_idx_0]       = 25; /* 25 cm */
 
   state_in.obstacle_detected[k_test_sensor_idx_0] = true;
   state_in.distance_cm[k_test_sensor_idx_1]       = 100; /* 100 cm (no obstacle) */

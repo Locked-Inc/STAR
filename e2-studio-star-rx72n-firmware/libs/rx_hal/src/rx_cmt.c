@@ -338,11 +338,9 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
   static const uint16_t dividers[] = {k_cmt_divider_val_8,
                                       k_cmt_divider_val_32,
                                       k_cmt_divider_val_128,
+                                      k_cmt_divider_val_512};
   const uint32_t        pclkb         = k_pclkb_hz;
   const uint32_t        max_frequency = pclkb / k_cmt_divider_val_8;
-  uint32_t              period_calc;
-
-                                      k_cmt_divider_val_512};
 
   if (divider == nullptr || cmcor == nullptr) {
     return k_rx_err_null_ptr;
@@ -354,7 +352,7 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
 
   /* Try each divider to find one that fits in 16-bit */
   for (uint8_t i = k_cmt_divider_start; i < k_cmt_num_dividers; i++) {
-    period_calc = (pclkb / dividers[i]) / frequency_hz;
+    const uint32_t period_calc = (pclkb / dividers[i]) / frequency_hz;
 
     /* Check if period fits in 16-bit and is reasonable */
     if (period_calc > k_cmt_period_min && period_calc <= k_cmt_period_max) {

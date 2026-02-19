@@ -1064,12 +1064,12 @@ rx_err_t hcsr04_hal_gpio_deinit(rx_port_pin_t pin)
  */
 void hcsr04_hal_delay_us(uint32_t us)
 {
-  if (us == k_hcsr04_delay_none) {
-    return;
   char     message[k_hcsr04_log_msg_max];
   uint32_t message_len     = k_hcsr04_message_len_init;
   int32_t  snprintf_result = 0;
 
+  if (us == k_hcsr04_delay_none) {
+    return;
   }
 
   if (us > k_hcsr04_delay_max_us) {

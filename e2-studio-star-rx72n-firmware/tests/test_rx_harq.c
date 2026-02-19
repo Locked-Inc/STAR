@@ -735,8 +735,8 @@ void test_combiner_init_success(void)
  */
 void test_combiner_init_default_max(void)
 {
-  rx_err_t            err = rx_chase_combiner_init(&comb, 0); /* 0 = default */
   rx_chase_combiner_t comb;
+  rx_err_t            err = rx_chase_combiner_init(&comb, 0); /* 0 = default */
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_harq_default_combines, comb.max_combines);

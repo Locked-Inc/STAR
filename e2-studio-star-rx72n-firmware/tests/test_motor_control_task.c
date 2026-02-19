@@ -304,14 +304,15 @@ void test_motor_task_driver_fault_triggers_estop(void)
  */
 void test_motor_task_reads_velocity_commands(void)
 {
+  motor_command_t cmd_in  = {0};
+  motor_command_t cmd_out = {0};
+  rx_err_t        err;
+
   /* Set up velocity command */
   cmd_in.target_velocity_mps[0] = 1.0f;  /* Front left */
   cmd_in.target_velocity_mps[1] = 1.0f;  /* Front right */
   cmd_in.target_velocity_mps[2] = -0.5f; /* Back left (reverse) */
   cmd_in.target_velocity_mps[3] = -0.5f; /* Back right (reverse) */
-  motor_command_t cmd_in  = {0};
-  motor_command_t cmd_out = {0};
-  rx_err_t        err;
 
   cmd_in.sequence               = 42;
   cmd_in.timestamp_ms           = 1000;

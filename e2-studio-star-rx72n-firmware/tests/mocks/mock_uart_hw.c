@@ -81,10 +81,9 @@ typedef enum : uint32_t {
 
 static rx_err_t internal_wait_for_tdre(uint8_t channel)
 {
+  uint32_t timeout = k_mock_uart_tdre_timeout;
   while ((g_mock_sci[channel].ssr & k_mock_sci_ssr_tdre) == 0 && timeout > 0) {
     timeout--;
-  uint32_t timeout = k_mock_uart_tdre_timeout;
-
   }
   if (timeout == 0) {
     return k_rx_err_timeout;

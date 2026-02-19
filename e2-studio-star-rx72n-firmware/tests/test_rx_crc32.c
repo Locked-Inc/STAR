@@ -258,8 +258,8 @@ void test_crc32_zero_length(void)
  */
 void test_crc32_standard_vector(void)
 {
-  uint32_t      crc    = rx_crc32_ieee(data, 9); /* "123456789" without null */
   const uint8_t data[] = "123456789";
+  uint32_t      crc    = rx_crc32_ieee(data, 9); /* "123456789" without null */
 
   TEST_ASSERT_EQUAL_HEX32(0xCBF43926, crc);
 }
@@ -383,8 +383,6 @@ void test_crc32_incremental_matches_single(void)
  */
 void test_crc32_incremental_single_bytes(void)
 {
-  for (uint32_t i = 1; i < 9; i++) {
-    crc_incr = rx_crc32_update(crc_incr, &data[i], 1);
   const uint8_t data[] = "123456789";
 
   /* Single-shot CRC */
@@ -393,6 +391,8 @@ void test_crc32_incremental_single_bytes(void)
   /* Incremental CRC byte by byte */
   uint32_t crc_incr = rx_crc32_ieee(&data[0], 1);
 
+  for (uint32_t i = 1; i < 9; i++) {
+    crc_incr = rx_crc32_update(crc_incr, &data[i], 1);
   }
 
   TEST_ASSERT_EQUAL_HEX32(crc_single, crc_incr);
@@ -451,11 +451,11 @@ void test_crc32_double_init_safe(void)
  */
 void test_crc32_large_buffer_1kb(void)
 {
+  uint8_t data[1024];
+
   /* Fill with repeating pattern 0x00-0xFF */
   for (uint32_t i = 0; i < sizeof(data); i++) {
     data[i] = (uint8_t)(i & 0xFF);
-  uint8_t data[1024];
-
   }
 
   uint32_t crc = rx_crc32_ieee(data, sizeof(data));

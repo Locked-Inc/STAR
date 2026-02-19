@@ -732,10 +732,9 @@ static void internal_refresh_pdr(void)
 static void internal_refresh_mstpcr(void)
 {
   /* Check if any MSTPCR needs update */
+  bool needs_update = false;
   if (system_regs()->mstpcra != s_state.mstpcr.mstpcra) {
     needs_update = true;
-  bool needs_update = false;
-
   }
   if (system_regs()->mstpcrb != s_state.mstpcr.mstpcrb) {
     needs_update = true;

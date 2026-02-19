@@ -356,6 +356,11 @@ void __attribute__((interrupt)) usb0_usbr_isr(void);
  */
 static void internal_handle_vbus_interrupt(void)
 {
+  const uint16_t syssts = usb0()->syssts0;
+
+  /* Check line state to determine if cable is connected */
+  const uint16_t lnst = syssts & k_usb_syssts0_lnst_mask;
+
   if (lnst == k_usb_syssts0_lnst_se0) {
     /* SE0 = disconnected or reset in progress */
     rx_log_debug(s_tag, "VBUS: SE0 detected");
@@ -367,11 +372,6 @@ static void internal_handle_vbus_interrupt(void)
     for (rx_usb_port_id_t port = k_usb_port_proto; port < k_usb_port_count; port++) {
       rx_usb_invoke_callback(port, k_usb_event_attached);
     }
-  const uint16_t syssts = usb0()->syssts0;
-
-  /* Check line state to determine if cable is connected */
-  const uint16_t lnst = syssts & k_usb_syssts0_lnst_mask;
-
   }
 
   /* Clear VBUS interrupt flag */
@@ -383,6 +383,9 @@ static void internal_handle_vbus_interrupt(void)
  */
 static void internal_handle_dvst_interrupt(void)
 {
+  const uint16_t intsts0 = usb0()->intsts0;
+  const uint16_t dvsq    = intsts0 & k_usb_intsts0_dvsq_mask;
+
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:
       rx_log_debug(s_tag, "DVST: Powered state");
@@ -418,9 +421,6 @@ static void internal_handle_dvst_interrupt(void)
     default:
       rx_log_warn(s_tag, "DVST: Unknown state");
       break;
-  const uint16_t intsts0 = usb0()->intsts0;
-  const uint16_t dvsq    = intsts0 & k_usb_intsts0_dvsq_mask;
-
   }
 
   /* Clear DVST interrupt flag */
@@ -432,6 +432,9 @@ static void internal_handle_dvst_interrupt(void)
  */
 static void internal_handle_ctrt_interrupt(void)
 {
+  const uint16_t intsts0 = usb0()->intsts0;
+  const uint16_t ctsq    = intsts0 & k_usb_intsts0_ctsq_mask;
+
   switch (ctsq) {
     case k_usb_intsts0_ctsq_idle:
       /* Idle or setup stage - check for valid SETUP packet */
@@ -471,9 +474,6 @@ static void internal_handle_ctrt_interrupt(void)
       break;
     default:
       break;
-  const uint16_t intsts0 = usb0()->intsts0;
-  const uint16_t ctsq    = intsts0 & k_usb_intsts0_ctsq_mask;
-
   }
 
   /* Clear CTRT interrupt flag */
@@ -487,6 +487,8 @@ static void internal_handle_ctrt_interrupt(void)
  */
 static void internal_handle_brdy_interrupt(void)
 {
+  const uint16_t brdysts = usb0()->brdysts;
+
   /* Check each pipe for buffer ready */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
     if (brdysts & (1U << pipe)) {
@@ -507,8 +509,6 @@ static void internal_handle_brdy_interrupt(void)
       /* Clear pipe buffer ready flag */
       usb0()->brdysts = (uint16_t) ~(1U << pipe);
     }
-  const uint16_t brdysts = usb0()->brdysts;
-
   }
 }
 
@@ -519,6 +519,8 @@ static void internal_handle_brdy_interrupt(void)
  */
 static void internal_handle_bemp_interrupt(void)
 {
+  const uint16_t bempsts = usb0()->bempsts;
+
   /* Check each pipe for buffer empty */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
     if (bempsts & (1U << pipe)) {
@@ -539,8 +541,6 @@ static void internal_handle_bemp_interrupt(void)
       /* Clear pipe buffer empty flag */
       usb0()->bempsts = (uint16_t) ~(1U << pipe);
     }
-  const uint16_t bempsts = usb0()->bempsts;
-
   }
 }
 
@@ -578,15 +578,15 @@ static void internal_handle_resume_interrupt(void)
  */
 void rx_usb_isr_handler(void)
 {
-  /* VBUS interrupt (cable connect/disconnect) - highest priority */
-  if (active & k_usb_intsts0_vbint) {
-    internal_handle_vbus_interrupt();
   const uint16_t intsts0 = usb0()->intsts0;
   const uint16_t intenb0 = usb0()->intenb0;
 
   /* Only process enabled interrupts */
   const uint16_t active = intsts0 & intenb0;
 
+  /* VBUS interrupt (cable connect/disconnect) - highest priority */
+  if (active & k_usb_intsts0_vbint) {
+    internal_handle_vbus_interrupt();
   }
 
   /* Device state transition interrupt */

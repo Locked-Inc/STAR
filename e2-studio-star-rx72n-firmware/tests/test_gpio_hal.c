@@ -1128,8 +1128,8 @@ void test_gpio_read_invalid_pin(void)
 void test_gpio_valid_ports(void)
 {
   /* Test all valid ports (Port 0, 1, 2, 3, 4, 5, A, B, C, D, E, J) */
-  err = gpio_set_output(k_rx_p0_5); /* Port 0 */
   rx_err_t err;
+  err = gpio_set_output(k_rx_p0_5); /* Port 0 */
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 

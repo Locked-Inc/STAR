@@ -884,10 +884,9 @@ static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
 static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t data)
 {
   /* Wait for transmit data empty */
+  uint32_t timeout = k_riic_timeout_us;
   while (!(riic->icsr2 & k_riic_icsr2_tdre) && timeout > k_riic_timeout_zero) {
     timeout--;
-  uint32_t timeout = k_riic_timeout_us;
-
   }
 
   if (timeout == k_riic_timeout_zero) {

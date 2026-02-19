@@ -482,6 +482,9 @@ static rx_err_t internal_clock_init(void)
  */
 static rx_err_t internal_module_stop_init(void)
 {
+  const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
+  const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
+  const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
   for (uint8_t attempt = 0; attempt < k_retry_count_module_stop; attempt++) {
     /* Protect off */
     *prcr_reg() = k_rx_prcr_unlock_all;
@@ -508,10 +511,6 @@ static rx_err_t internal_module_stop_init(void)
       return k_rx_ok;
     }
     /* If verification failed and this isn't the last attempt, retry */
-  const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
-  const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
-  const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
-
   }
 
   /* All retries exhausted - return error */

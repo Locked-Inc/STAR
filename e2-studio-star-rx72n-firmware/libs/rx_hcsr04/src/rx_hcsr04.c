@@ -1186,13 +1186,15 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 static rx_err_t
 internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t timeout_us)
 {
+  const uint32_t start_time = hcsr04_hal_get_time_us();
   for (uint32_t i = 0; i < k_echo_poll_max_iterations; i++) {
     /* Check for cancellation request */
     if (handle->cancel_requested) {
       handle->cancel_requested = false;
       return k_rx_err_cancelled;
     }
-    read_err = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
+    bool           pin_state = false;
+    const rx_err_t read_err  = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
     if (read_err != k_rx_ok) {
       return read_err;
     }
@@ -1200,15 +1202,10 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
       return k_rx_ok;
     }
     /* Check for timeout */
-    elapsed = hcsr04_hal_get_time_us() - start_time;
+    const uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
-  const uint32_t start_time = hcsr04_hal_get_time_us();
-  uint32_t       elapsed    = 0;
-  bool           pin_state  = false;
-  rx_err_t       read_err   = k_rx_ok;
-
   }
 
   return k_rx_err_timeout;

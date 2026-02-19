@@ -709,6 +709,9 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
 {
 #ifdef __RX__
   /* RX72N: Use ThreadX time measurement for precise timeout */
+  ULONG timeout_ticks = (timeout_ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
+  ULONG start_ticks   = tx_time_get();
+
   while ((tx_time_get() - start_ticks) < timeout_ticks) {
     bool           ready = false;
     const rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
@@ -720,9 +723,6 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
     }
     /* Yield to other threads while waiting */
     tx_thread_sleep(k_poll_sleep_ticks);
-  ULONG timeout_ticks = (timeout_ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
-  ULONG start_ticks   = tx_time_get();
-
   }
 #else
   /* Host build (testing): Use iteration counter to simulate time */

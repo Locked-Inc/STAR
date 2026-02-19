@@ -429,11 +429,10 @@ void test_spi_comm_init_null_handle_fails(void)
 
 void test_spi_comm_init_success_default_config(void)
 {
+  rx_err_t err = rx_spi_comm_init(&s_handle,
                                   &(rx_spi_comm_config_t){.session     = &s_session,
                                                           .channel     = 0,
                                                           .spi_mode    = 0,
-  rx_err_t err = rx_spi_comm_init(&s_handle,
-
                                                           .fec_enabled = false});
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);

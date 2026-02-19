@@ -615,9 +615,8 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
     [k_cell_idx_2] = k_sbs_cell_voltage_2, /* Cell 2 at 0x3E */
     [k_cell_idx_3] = k_sbs_cell_voltage_3, /* Cell 3 at 0x3D */
     [k_cell_idx_4] = k_sbs_cell_voltage_4, /* Cell 4 at 0x3C */
-  rx_err_t err = k_rx_ok;
-
   };
+  rx_err_t err = k_rx_ok;
 
   /* Pre-conditions: Validate parameters (NASA Rule 5: Min 3 checks) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
