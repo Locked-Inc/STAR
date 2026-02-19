@@ -398,8 +398,6 @@ static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
 {
   (void)entry_function;
   (void)entry_input;
-  (void)stack_start;
-  (void)stack_size;
   (void)priority;
   (void)preempt_threshold;
   (void)time_slice;
@@ -411,8 +409,10 @@ static inline tx_status tx_thread_create(TX_THREAD* thread_ptr,
   }
 
   /* Initialize thread structure */
-  thread_ptr->tx_thread_name = name_ptr;
-  thread_ptr->tx_thread_id   = k_tx_thread_magic;
+  thread_ptr->tx_thread_name        = name_ptr;
+  thread_ptr->tx_thread_id          = k_tx_thread_magic;
+  thread_ptr->tx_thread_stack_start = stack_start;
+  thread_ptr->tx_thread_stack_size  = stack_size;
 
   /* Post-condition: Verify initialization succeeded */
   if (thread_ptr->tx_thread_id != k_tx_thread_magic) {
@@ -802,9 +802,9 @@ void mock_tx_set_time(ULONG ticks);
  *
  * @code
  * // Registration (done indirectly via rx_stack_monitor_init()):
- * UINT status = tx_thread_stack_error_notify(my_overflow_handler);
- * // Deregistration:
- * UINT status = tx_thread_stack_error_notify(TX_NULL);
+ * tx_status status = tx_thread_stack_error_notify(my_overflow_handler);
+ * // Deregistration (reuse same variable):
+ * status = tx_thread_stack_error_notify(TX_NULL);
  * @endcode
  *
  * @see rx_stack_monitor_init() STAR wrapper that calls this function

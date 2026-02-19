@@ -190,8 +190,8 @@ extern "C" {
  *       pattern is absent and the function returns k_rx_err_invalid_state.
  *
  * @see rx_stack_monitor_init() Must be called first to enable overflow detection
- * @see TX_THREAD::tx_thread_stack_start ThreadX stack base pointer
- * @see TX_THREAD::tx_thread_stack_size ThreadX total stack size
+ * @see TX_THREAD#tx_thread_stack_start ThreadX stack base pointer
+ * @see TX_THREAD#tx_thread_stack_size ThreadX total stack size
  *
  * @since Version 1.0.0
  */

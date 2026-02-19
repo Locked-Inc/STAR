@@ -74,20 +74,30 @@
  */
 
 /**
- * @brief Stack buffer sizes used in high-water mark tests
+ * @enum test_stack_constants_t
+ * @brief Stack buffer sizes and fill-pattern constants for high-water mark tests
  *
  * @details
  * These sizes are chosen to be large enough to verify scanning correctness
  * while remaining small enough for stack allocation in test functions.
  *
  * @invariant k_test_stack_size > k_test_used_bytes (at least one free byte)
+ *
+ * @code
+ * uint8_t stack_buf[k_test_stack_size];
+ * memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
+ * memset(&stack_buf[k_test_stack_size - k_test_used_bytes],
+ *        (int)k_stack_fill_absent_byte, k_test_used_bytes);
+ * @endcode
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-    k_test_stack_size  = 64,   /**< Total mock stack buffer size in bytes */
-    k_test_used_bytes  = 20,   /**< Bytes "used" (not 0xEF) at high end of stack */
-    k_stack_fill_byte  = 0xEF, /**< ThreadX stack fill sentinel byte */
-    k_zero_u32         = 0U,   /**< Named zero constant (avoids raw 0 literals; NASA Rule 8) */
+    k_test_stack_size       = 64U,   /**< Total mock stack buffer size in bytes */
+    k_test_used_bytes       = 20U,   /**< Bytes "used" (not 0xEF) at high end of stack */
+    k_stack_fill_byte       = 0xEFU, /**< ThreadX stack fill sentinel byte */
+    k_stack_fill_absent_byte = 0x00U, /**< Fill byte used to simulate absent fill pattern */
+    k_zero_u32              = 0U,    /**< Named zero constant (avoids raw 0 literals; NASA Rule 8) */
 } test_stack_constants_t;
 
 /* =============================================================================
@@ -100,6 +110,13 @@ typedef enum : uint32_t {
  *
  * @details No global state to reset in this module.
  *
+ * @pre Unity test framework has been initialised via UNITY_BEGIN()
+ * @pre No test has left residual side-effects (module has no shared state)
+ * @post Test environment is clean; no state carried in from prior tests
+ * @post No dynamic resources have been allocated
+ *
+ * @note Not thread-safe; Unity runs tests single-threaded
+ *
  * @since Version 1.0.0
  */
 void setUp(void)
@@ -111,6 +128,13 @@ void setUp(void)
  * @brief Unity tearDown - called after each test
  *
  * @details No resources to release in this module.
+ *
+ * @pre The preceding test has completed (pass or fail)
+ * @pre No dynamic resources were allocated during the test
+ * @post All stack buffers declared in the test are out of scope
+ * @post No allocated resources remain; heap is unchanged
+ *
+ * @note Not thread-safe; Unity runs tests single-threaded
  *
  * @since Version 1.0.0
  */
@@ -246,7 +270,7 @@ static void test_get_free_bytes_null_output(void)
     TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 
     /* Postcondition (NASA Rule 5): stack buffer must not have been modified */
-    for (uint32_t i = 0; i < k_test_stack_size; i++) {
+    for (uint32_t i = k_zero_u32; i < k_test_stack_size; i++) {
         TEST_ASSERT_EQUAL((uint8_t)k_stack_fill_byte, stack_buf[i]);
     }
 }
@@ -283,12 +307,14 @@ static void test_get_free_bytes_pattern_absent(void)
     };
     uint32_t free_bytes = k_zero_u32;
 
-    /* Fill with zeros - no 0xEF pattern present */
-    memset(stack_buf, 0x00, k_test_stack_size);
+    /* Fill with absent-pattern byte - no 0xEF sentinel present */
+    memset(stack_buf, (int)k_stack_fill_absent_byte, k_test_stack_size);
 
     rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, &free_bytes);
 
     TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
+    /* Postcondition: output parameter must not be modified on error */
+    TEST_ASSERT_EQUAL(k_zero_u32, free_bytes);
 }
 
 /**
@@ -369,7 +395,7 @@ static void test_get_free_bytes_partial_usage(void)
 
     /* Fill entire stack with sentinel, then "use" top k_test_used_bytes */
     memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
-    memset(&stack_buf[k_test_stack_size - k_test_used_bytes], 0x00, k_test_used_bytes);
+    memset(&stack_buf[k_test_stack_size - k_test_used_bytes], (int)k_stack_fill_absent_byte, k_test_used_bytes);
 
     rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, &free_bytes);
 

@@ -88,6 +88,7 @@
 static const char* const s_tag = "STACK_MON";
 
 /**
+ * @enum stack_fill_constants_t
  * @brief Stack fill pattern constants for high-water mark scanning
  *
  * @details
@@ -97,11 +98,20 @@ static const char* const s_tag = "STACK_MON";
  *
  * @invariant k_stack_fill_byte == 0xEF (matches ThreadX fill byte)
  *
+ * @code
+ * // Check whether the first stack byte holds the fill pattern:
+ * if (stack_base[k_stack_index_base] == k_stack_fill_byte) {
+ *     // pattern present — scanning is valid
+ * }
+ * @endcode
+ *
  * @see TX_STACK_FILL definition in tx_api.h
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_stack_fill_byte = 0xEF, /**< Byte value placed in unused stack memory by ThreadX */
+    k_stack_fill_byte     = 0xEF, /**< Byte value placed in unused stack memory by ThreadX */
+    k_stack_index_base    = 0U,   /**< Index of the first (base) byte in the stack buffer */
+    k_stack_count_initial = 0U,   /**< Initial free-byte counter before scanning begins */
 } stack_fill_constants_t;
 
 /* =============================================================================
@@ -289,7 +299,7 @@ rx_err_t rx_stack_monitor_get_free_bytes(const TX_THREAD* thread_ptr, uint32_t* 
     RX_CHECK_NULL_PTR(stack_base, s_tag, "thread stack_start must not be NULL");
 
     /* Verify that the fill pattern is present at all (first byte check) */
-    if (stack_base[0] != k_stack_fill_byte) {
+    if (stack_base[k_stack_index_base] != k_stack_fill_byte) {
         rx_log_warn(s_tag, "Stack fill pattern absent - TX_DISABLE_STACK_FILLING may be set");
         return k_rx_err_invalid_state;
     }
@@ -297,7 +307,7 @@ rx_err_t rx_stack_monitor_get_free_bytes(const TX_THREAD* thread_ptr, uint32_t* 
     /* Scan from stack base upward, counting 0xEF bytes.
      * Loop bound: stack_size is a compile-time-known constant per thread
      * (satisfies NASA Rule 2 - statically provable upper bound). */
-    uint32_t count = 0;
+    uint32_t count = k_stack_count_initial;
     for (uint32_t i = 0; i < stack_size; i++) {
         if (stack_base[i] != k_stack_fill_byte) {
             break;
