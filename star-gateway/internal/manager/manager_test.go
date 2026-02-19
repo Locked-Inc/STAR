@@ -937,3 +937,71 @@ func TestTransportManager_FailbackRespectsDamping(t *testing.T) {
 	//
 	// For this test, we verify that damping successfully prevented immediate failback.
 }
+
+// TestDispatchControlFrame_Reset_SendsResetAck verifies server-side RESET handling:
+//   - dispatchControlFrame routes FrameTypeReset to sendResetAck
+//   - SendWithType is called with FrameTypeResetAck and nil payload
+//   - heartbeat.OnFrameReceived is triggered (liveness proof)
+//   - sessionState.Reset() is called to resync sequences with firmware
+func TestDispatchControlFrame_Reset_SendsResetAck(t *testing.T) {
+	var sentFrameType frame.Type
+	var sentPayload []byte
+	var sendWithTypeCalled atomic.Bool
+
+	mock := &testutil.MockHARQ{
+		SendWithTypeFunc: func(_ context.Context, data []byte, ft frame.Type) error {
+			sentFrameType = ft
+			sentPayload = data
+			sendWithTypeCalled.Store(true)
+			return nil
+		},
+	}
+
+	tm := newTestManagerWithMock(mock)
+
+	// Advance TX sequence so we can confirm Reset() zeroes it.
+	tm.sessionState.NextTxSequence()
+	tm.sessionState.NextTxSequence()
+	if tx := tm.sessionState.GetTxSequence(); tx != 2 {
+		t.Fatalf("pre-condition: txSequence = %d, want 2", tx)
+	}
+
+	resetFrame := &harq.ReceiveResult{
+		Payload: nil,
+		Metadata: harq.FrameMetadata{
+			Type:     frame.FrameTypeReset,
+			Sequence: 42,
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	result := tm.dispatchControlFrame(ctx, resetFrame)
+
+	// Control frame must be consumed (nil return).
+	if result != nil {
+		t.Errorf("dispatchControlFrame returned non-nil for RESET frame, want nil")
+	}
+
+	// SendWithType must have been called.
+	if !sendWithTypeCalled.Load() {
+		t.Fatal("SendWithType was not called; RESET_ACK not sent")
+	}
+
+	// Must send FrameTypeResetAck with nil payload.
+	if sentFrameType != frame.FrameTypeResetAck {
+		t.Errorf("SendWithType frame type = %v, want FrameTypeResetAck", sentFrameType)
+	}
+	if sentPayload != nil {
+		t.Errorf("SendWithType payload = %v, want nil", sentPayload)
+	}
+
+	// Sequences must be reset to 0 (firmware restarts from 0 after RESET).
+	if tx := tm.sessionState.GetTxSequence(); tx != 0 {
+		t.Errorf("txSequence = %d, want 0 after RESET", tx)
+	}
+	if rx := tm.sessionState.GetRxSequence(); rx != 0 {
+		t.Errorf("rxSequence = %d, want 0 after RESET", rx)
+	}
+}

@@ -28,8 +28,9 @@ const (
 	// pingPayloadSize is the size of PING frame payload (4-byte counter).
 	pingPayloadSize = 4
 
-	// pingSendTimeout is the timeout for sending a PING frame.
-	pingSendTimeout = 100 * time.Millisecond
+	// controlFrameSendTimeout is the deadline for sending any control frame reply
+	// (PONG, RESET_ACK, etc.). Short enough to be non-blocking on the receive path.
+	controlFrameSendTimeout = 100 * time.Millisecond
 
 	// checkIntervalDivisor determines how often the heartbeat loop checks for timeouts.
 	// With failureTimeout/4, worst-case detection latency is failureTimeout + one check interval.
@@ -395,7 +396,7 @@ func (hm *HeartbeatManager) sendPing(ctx context.Context, tm *TransportManager) 
 	// Send PING via TransportManager with explicit frame type
 	// Note: We don't wait for PONG here - OnPongReceived() will be called
 	// when the PONG arrives via TransportManager.Receive()
-	pingCtx, cancel := context.WithTimeout(ctx, pingSendTimeout)
+	pingCtx, cancel := context.WithTimeout(ctx, controlFrameSendTimeout)
 	defer cancel()
 
 	if err := tm.SendWithType(pingCtx, payload, frame.FrameTypePing); err != nil {
