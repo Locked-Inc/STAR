@@ -440,7 +440,7 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
   }
 
   /* Start thread if not already running */
-  UINT status = 0;
+  UINT status = TX_SUCCESS;
   if (handle->state == k_obstacle_detect_state_stopped) {
     status = tx_thread_resume(&handle->thread);
     if (status != TX_SUCCESS) {

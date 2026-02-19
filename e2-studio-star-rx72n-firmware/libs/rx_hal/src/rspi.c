@@ -826,8 +826,8 @@ static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
   /* SPBR formula: freq = PCLKB / (2 * (SPBR + 1) * 2^BRDV)
    * With BRDV=0: freq = PCLKB / (2 * (SPBR + 1))
    * Solving for SPBR: SPBR = (PCLKB / (2 * freq)) - 1 */
-  uint32_t divisor  = k_rspi_spbr_divisor * freq_hz;
-  uint32_t spbr_val = (k_rspi_pclkb_hz / divisor) - k_rspi_spbr_offset;
+  const uint32_t divisor  = k_rspi_spbr_divisor * freq_hz;
+  const uint32_t spbr_val = (k_rspi_pclkb_hz / divisor) - k_rspi_spbr_offset;
 
   /* Reject frequencies that are too low (would require SPBR > 255) */
   if (spbr_val > k_rspi_spbr_max) {
@@ -1149,7 +1149,7 @@ static rx_err_t rspi_controller_assert_cs_with_setup(const uint8_t channel)
   RX_ASSERT(s_rspi_controller_initialized[channel], "RSPI controller channel not initialized");
 
   /* Assert CS (active low) */
-  rx_err_t err = rspi_controller_set_cs(channel, true);
+  const rx_err_t err = rspi_controller_set_cs(channel, true);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1293,10 +1293,6 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
                                         const uint16_t  tx_data,
                                         uint16_t* const rx_data)
 {
-  rx_err_t                 err;
-
-  volatile rx_rspi_regs_t* rspi;
-
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
   /* Validate channel */
@@ -1306,13 +1302,13 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
   }
 
   /* Get RSPI base */
-  rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* const rspi = internal_get_rspi_base(channel);
   if (rspi == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   /* Assert CS with setup delay */
-  err = rspi_controller_assert_cs_with_setup(channel);
+  rx_err_t err = rspi_controller_assert_cs_with_setup(channel);
   if (err != k_rx_ok) {
     return err;
   }

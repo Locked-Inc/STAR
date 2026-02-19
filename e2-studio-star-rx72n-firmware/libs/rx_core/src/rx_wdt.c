@@ -323,16 +323,12 @@ static rx_wdt_state_t s_wdt_state = {0};
  */
 rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
 {
-  rx_wdt_config_t         default_config;
-
-  volatile rx_wdt_regs_t* regs;
-  uint16_t                wdtcr_val;
-
   if (s_wdt_state.initialized) {
     return k_rx_err_invalid_state;
   }
 
   /* Use default config if none provided */
+  rx_wdt_config_t default_config;
   if (config == nullptr) {
     memset(&default_config, 0, sizeof(rx_wdt_config_t));
     default_config.timeout_cycles   = k_wdt_timeout_16384_cycles;
@@ -357,7 +353,7 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  regs = wdt();
+  volatile rx_wdt_regs_t* const regs = wdt();
 
   /* Configure WDTCR register (can only be written once before first refresh!)
    * Bits 1:0 (TOPS): Timeout period cycles
@@ -365,7 +361,7 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
    * Bits 9:8 (RPES): Window end position (set to 0% = no window)
    * Bits 13:12 (RPSS): Window start position (set to 100% = no window)
    */
-  wdtcr_val = (uint16_t)config->timeout_cycles;                        /* TOPS[1:0] */
+  uint16_t wdtcr_val = (uint16_t)config->timeout_cycles;               /* TOPS[1:0] */
   wdtcr_val |= ((uint16_t)config->clock_division << k_wdt_cr_cks_pos); /* CKS[7:4] */
   wdtcr_val |= k_wdt_rpes_0;                                           /* No window end */
   wdtcr_val |= k_wdt_rpss_100;                                         /* No window start */
@@ -441,13 +437,11 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
  */
 rx_err_t rx_wdt_start(void)
 {
-  volatile rx_wdt_regs_t* regs;
-
   if (!s_wdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  regs = wdt();
+  volatile rx_wdt_regs_t* const regs = wdt();
 
   /* Start WDT (only works in register-start mode) */
   regs->wdtrr = k_wdt_refresh_start;
@@ -579,8 +573,6 @@ rx_err_t rx_wdt_stop(void)
  */
 rx_err_t rx_wdt_feed(void)
 {
-  volatile rx_wdt_regs_t* regs;
-
   if (!s_wdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
@@ -590,7 +582,7 @@ rx_err_t rx_wdt_feed(void)
   }
 
   /* Refresh watchdog - write 0x00 then 0xFF to WDTRR */
-  regs        = wdt();
+  volatile rx_wdt_regs_t* const regs = wdt();
   regs->wdtrr = k_wdt_refresh_start;
   regs->wdtrr = k_wdt_refresh_end;
 

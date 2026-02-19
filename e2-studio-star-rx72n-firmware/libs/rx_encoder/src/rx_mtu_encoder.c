@@ -622,10 +622,6 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  */
 rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 {
-  rx_err_t                        err = k_rx_ok;
-
-  volatile rx_mtu_channel_regs_t* mtu;
-
   /* Validate inputs */
   RX_VALIDATE_PTR(config, s_tag, "config pointer is nullptr");
 
@@ -638,13 +634,13 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu = internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   /* Enable MTU module */
-  err = internal_enable_mtu_module(channel);
+  rx_err_t err = internal_enable_mtu_module(channel);
   if (err != k_rx_ok) {
     return err;
   }
