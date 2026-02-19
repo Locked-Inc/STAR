@@ -27,6 +27,10 @@
   "[markdown]": {
     "editor.defaultFormatter": "vscode.markdown-language-features"
   },
+  "[proto]": {
+    "editor.defaultFormatter": "bufbuild.vscode-buf",
+    "editor.formatOnSave": true
+  },
   "markdown.validate.enabled": true,
   "markdown.validate.fileLinks.enabled": "ignore",
   "markdown.validate.fragmentLinks.enabled": "warning",

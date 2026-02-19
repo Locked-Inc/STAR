@@ -33,18 +33,18 @@ message STAREnvelope {
   // Exactly one payload field should be set.
   oneof payload {
     // Gateway -> UI telemetry stream.
-    TelemetryData   telemetry = 1;
-    MotorStatusList motor     = 2;
-    BatteryState    battery   = 3;
-    OdometryData    odometry  = 4;
-    LidarScan       lidar     = 5;
-    Alert           alert     = 6;
-    SystemStatus    system    = 7;
+    TelemetryData telemetry = 1;
+    MotorStatusList motor = 2;
+    BatteryState battery = 3;
+    OdometryData odometry = 4;
+    LidarScan lidar = 5;
+    Alert alert = 6;
+    SystemStatus system = 7;
 
     // UI -> Gateway control stream.
     // Inbound operator commands (not telemetry); low latency, estop bypasses throttling.
     ControllerState controller = 8;
-    EStopCommand    estop      = 9;
+    EStopCommand estop = 9;
   }
 }
 
@@ -57,12 +57,12 @@ message MotorStatusList {
 // Robot 2D odometry state.
 message OdometryData {
   // Pose in map/odom frame.
-  double x_m       = 1;
-  double y_m       = 2;
+  double x_m = 1;
+  double y_m = 2;
   double theta_rad = 3;
 
   // Twist in robot frame.
-  double linear_velocity_mps        = 4;
+  double linear_velocity_mps = 4;
   double angular_velocity_rad_per_s = 5;
 
   // Timestamp in microseconds since boot.
@@ -74,7 +74,7 @@ message LidarScan {
   // Structure-of-arrays representation; all arrays must have equal length.
   // Max scan points: 800 per frame for embedded static allocation.
   repeated float angle_rad = 1 [packed = true];
-  repeated float range_m   = 2 [packed = true];
+  repeated float range_m = 2 [packed = true];
   // Device intensity/quality value, unitless (normalized to 0.0-1.0 by gateway).
   repeated float intensity = 3 [packed = true];
 
@@ -84,19 +84,19 @@ message LidarScan {
 
 // UI-visible safety or health alert.
 message Alert {
-  AlertLevel level        = 1;
-  string     code         = 2;
-  string     message      = 3;
-  string     source       = 4;
-  int64      timestamp_us = 5;
+  AlertLevel level = 1;
+  string code = 2;
+  string message = 3;
+  string source = 4;
+  int64 timestamp_us = 5;
 }
 
 // Alert severity level.
 enum AlertLevel {
-  ALERT_LEVEL_UNKNOWN  = 0;
-  ALERT_LEVEL_INFO     = 1;
-  ALERT_LEVEL_WARN     = 2;
-  ALERT_LEVEL_ERROR    = 3;
+  ALERT_LEVEL_UNKNOWN = 0;
+  ALERT_LEVEL_INFO = 1;
+  ALERT_LEVEL_WARN = 2;
+  ALERT_LEVEL_ERROR = 3;
   ALERT_LEVEL_CRITICAL = 4;
 }
 
