@@ -107,7 +107,15 @@ proto-gen-ros2:
 proto-gen-firmware: proto-gen-go
 	@echo "Preparing firmware nanopb headers/sources..."
 	@mkdir -p e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1
-	@cp -v star-proto/gen/nanopb/star/v1/*.pb.h star-proto/gen/nanopb/star/v1/*.pb.c e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1/
+	@set -e; \
+	dst=e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1; \
+	src_proto=star-proto/proto/star/v1; \
+	src_gen=star-proto/gen/nanopb/star/v1; \
+	rm -f "$$dst"/*.pb.h "$$dst"/*.pb.c; \
+	for proto in "$$src_proto"/*.proto; do \
+		base=$$(basename "$$proto" .proto); \
+		cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
+	done
 	@echo "✓ Firmware protos updated: e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1"
 
 # Test RX72N firmware (regenerates protos first)

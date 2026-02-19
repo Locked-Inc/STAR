@@ -1,0 +1,136 @@
+// ui.proto - STAR WebSocket UI Envelope
+// Single multiplexed message for UI <-> gateway communication on /ws.
+//
+// STAR Project - Texas A&M University
+// February 2026
+
+syntax = "proto3";
+
+package star.v1;
+
+import "star/v1/battery_management.proto";
+import "star/v1/controller.proto";
+import "star/v1/motor_control.proto";
+import "star/v1/telemetry.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_outer_classname = "UiProto";
+option java_package = "com.star.proto.v1";
+
+// STAREnvelope is a single multiplexed message type for the /ws WebSocket.
+message STAREnvelope {
+  // STAREnvelope numbering note:
+  // Protobuf field numbers 1-15 encode in a single byte; 16-2047 require two.
+  // Payload variants occupy 1-9 so the most-frequently-set fields stay in the
+  // single-byte range. seq and ts_ms deliberately use 14-15 to leave 1-9 for
+  // payload variants; they are present on every message but are metadata.
+  // Monotonic sequence stamped by gateway on outbound messages.
+  uint64 seq = 14;
+
+  // Gateway wall-clock timestamp in milliseconds at send time.
+  int64 ts_ms = 15;
+
+  // Exactly one payload field should be set.
+  oneof payload {
+    // Gateway -> UI telemetry stream.
+    TelemetryData telemetry = 1;
+    // Per-wheel motor status snapshot.
+    MotorStatusList motors = 2;
+
+    // Battery management state from BMS.
+    BatteryState battery = 3;
+    // 2D robot pose and velocity estimate.
+    OdometryData odometry = 4;
+    // LiDAR scan frame.
+    LidarScan lidar = 5;
+    // Safety or health alert event.
+    Alert alert = 6;
+    // Overall gateway/system status.
+    SystemStatus system = 7;
+
+    // UI -> Gateway control stream.
+    // Inbound operator commands (not telemetry); low latency, estop bypasses throttling.
+    ControllerState controller = 8;
+    // Emergency stop command from operator UI.
+    EStopCommand estop = 9;
+  }
+}
+
+// Per-motor status snapshot for all motors.
+message MotorStatusList {
+  // Max motors: 4 (embedded target uses a fixed 4-motor drivetrain).
+  repeated MotorStatus motors = 1;
+}
+
+// Robot 2D odometry state.
+message OdometryData {
+  // Pose in map/odom frame.
+  double x_m = 1;
+  // Y position in meters in map/odom frame.
+  double y_m = 2;
+  // Heading angle in radians.
+  double theta_rad = 3;
+
+  // Twist in robot frame.
+  double linear_velocity_mps = 4;
+  // Angular velocity around Z in radians per second.
+  double angular_velocity_rad_per_s = 5;
+
+  // Timestamp in microseconds since boot.
+  int64 timestamp_us = 6;
+}
+
+// A single LiDAR scan frame.
+message LidarScan {
+  // Structure-of-arrays representation; all arrays must have equal length.
+  // Max scan points: 800 per frame for embedded static allocation.
+  repeated float angle_rad = 1;
+  // Range for each beam in meters.
+  repeated float range_m = 2;
+  // Device intensity/quality value, unitless (normalized to 0.0-1.0 by gateway).
+  repeated float intensity = 3;
+
+  // Sample timestamp in microseconds since boot.
+  int64 timestamp_us = 4;
+}
+
+// UI-visible safety or health alert.
+message Alert {
+  // Alert severity level.
+  AlertLevel level = 1;
+  // Short machine-readable alert code.
+  string code = 2;
+  // Human-readable alert message.
+  string message = 3;
+  // Source subsystem that raised the alert.
+  string source = 4;
+  // Alert timestamp in microseconds since boot.
+  int64 timestamp_us = 5;
+}
+
+// Alert severity level.
+enum AlertLevel {
+  // Unknown or unset alert level.
+  ALERT_LEVEL_UNKNOWN = 0;
+  // Informational alert.
+  ALERT_LEVEL_INFO = 1;
+  // Warning alert requiring attention.
+  ALERT_LEVEL_WARN = 2;
+  // Error alert indicating degraded operation.
+  ALERT_LEVEL_ERROR = 3;
+  // Critical alert requiring immediate action.
+  ALERT_LEVEL_CRITICAL = 4;
+}
+
+// Emergency-stop command from UI to gateway.
+message EStopCommand {
+  // True to engage E-stop, false to release
+  bool active = 1;
+
+  // Human-readable trigger reason (max 64 bytes for embedded safety bounds).
+  string reason = 2;
+
+  // UI client timestamp in microseconds.
+  int64 timestamp_us = 3;
+}
