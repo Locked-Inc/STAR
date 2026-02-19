@@ -50,7 +50,21 @@ typedef char CHAR;
 /** @brief ThreadX void type */
 typedef void VOID;
 
-/** @brief ThreadX unsigned char type */
+/**
+ * @typedef UCHAR
+ * @brief ThreadX unsigned 8-bit character type
+ *
+ * @details
+ * Portable alias for `unsigned char` used throughout ThreadX APIs for raw
+ * byte buffers and character data.  Range: 0–255.  Prefer this alias over
+ * plain `unsigned char` wherever ThreadX types are expected, to make the
+ * RTOS dependency explicit and improve searchability across the codebase.
+ *
+ * @note Alignment is 1 byte; portability is guaranteed across all compilers
+ *       used in the STAR project (GNURX, GCC, Clang).
+ *
+ * @since Version 1.0.0
+ */
 typedef unsigned char UCHAR;
 
 /**
@@ -190,17 +204,41 @@ typedef struct TX_SEMAPHORE_STRUCT {
 } TX_SEMAPHORE;
 
 /**
- * @brief Mock ThreadX thread structure
+ * @struct TX_THREAD
+ * @brief Mock ThreadX thread control block
  *
  * @details
- * Contains the minimal set of fields used by STAR firmware including stack
- * inspection fields required by rx_stack_monitor_get_free_bytes().
+ * Contains the minimal set of fields used by STAR firmware, including the
+ * stack inspection fields required by rx_stack_monitor_get_free_bytes().
+ * In real ThreadX the control block is much larger; this mock exposes only
+ * the subset accessed by the STAR stack monitor and task-creation code.
+ *
+ * @invariant tx_thread_stack_start is non-NULL when the thread is active
+ * @invariant tx_thread_stack_size > 0 when the thread is active
+ * @invariant tx_thread_id equals k_tx_thread_magic for a valid live thread
+ *
+ * @code
+ * uint8_t stack_buf[256];
+ * TX_THREAD t = {
+ *     .tx_thread_name        = "example",
+ *     .tx_thread_id          = k_tx_thread_magic,
+ *     .tx_thread_stack_start = stack_buf,
+ *     .tx_thread_stack_size  = sizeof(stack_buf),
+ * };
+ * uint32_t free_bytes;
+ * rx_stack_monitor_get_free_bytes(&t, &free_bytes);
+ * @endcode
+ *
+ * @see rx_stack_monitor_get_free_bytes() Uses tx_thread_stack_start and
+ *      tx_thread_stack_size to compute the stack high-water mark
+ *
+ * @since Version 1.0.0
  */
 typedef struct TX_THREAD_STRUCT {
-  CHAR*  tx_thread_name;       /**< Thread name */
-  UINT   tx_thread_id;         /**< Thread ID */
-  VOID*  tx_thread_stack_start; /**< Stack starting address (lowest address) */
-  ULONG  tx_thread_stack_size;  /**< Total stack size in bytes */
+  CHAR*  tx_thread_name;        /**< Thread name string (NULL-terminated, max 64 chars; TX_NULL for unnamed threads) */
+  UINT   tx_thread_id;          /**< Thread magic ID (k_tx_thread_magic = 0x54485244 when valid; k_tx_invalid_id = 0 when deleted) */
+  VOID*  tx_thread_stack_start; /**< Lowest stack address (byte-aligned; must be non-NULL when thread is active) */
+  ULONG  tx_thread_stack_size;  /**< Total stack allocation in bytes (must be > 0 when thread is active) */
 } TX_THREAD;
 
 /**
@@ -733,16 +771,45 @@ void mock_tx_set_time(ULONG ticks);
  * @brief Register a stack error handler with ThreadX (mock implementation)
  *
  * @details
- * Mock of the real tx_thread_stack_error_notify() API.  Stores the provided
- * handler pointer so tests can verify it was registered and invoke it
- * directly to exercise the overflow handler without needing the ThreadX
- * context-switch machinery.
+ * Mock of the real tx_thread_stack_error_notify() API.  In production
+ * ThreadX this stores the handler pointer in a global; the RTOS invokes
+ * it at every context switch when a corrupted stack sentinel is detected.
  *
- * @param[in] stack_error_handler Callback to invoke on stack overflow.
- *            Pass TX_NULL to deregister.
+ * This mock ignores the handler pointer and unconditionally returns
+ * TX_SUCCESS whenever TX_ENABLE_STACK_CHECKING is defined.  If the symbol
+ * is undefined the real ThreadX would return TX_FEATURE_NOT_ENABLED; to
+ * simulate that behaviour compile with TX_ENABLE_STACK_CHECKING undefined.
  *
- * @return TX_SUCCESS (mock always succeeds when TX_ENABLE_STACK_CHECKING is
- *         defined in tx_user.h; returns TX_FEATURE_NOT_ENABLED otherwise)
+ * @param[in] stack_error_handler Callback invoked by ThreadX on stack
+ *            overflow.  Pass TX_NULL to deregister the current handler.
+ *            Must accept a single TX_THREAD* argument.
+ *
+ * @return tx_status Registration result
+ * @retval TX_SUCCESS Handler accepted (TX_ENABLE_STACK_CHECKING is defined);
+ *         this mock always returns TX_SUCCESS
+ * @retval TX_FEATURE_NOT_ENABLED TX_ENABLE_STACK_CHECKING is not defined
+ *         (real ThreadX compile-time behaviour; not returned by this mock)
+ *
+ * @pre ThreadX is initialised (tx_kernel_enter() has been called) or mock
+ *      environment is active (host unit-test build)
+ * @pre stack_error_handler is a valid function pointer or TX_NULL
+ * @post The handler is stored for later invocation (in production ThreadX)
+ * @post Returns TX_SUCCESS, indicating the registration was accepted
+ *
+ * @note This is a mock implementation — it does not store the handler and
+ *       will not call it during tests.  Invoke the handler directly from
+ *       test code if overflow behaviour needs to be exercised.
+ *
+ * @code
+ * // Registration (done indirectly via rx_stack_monitor_init()):
+ * UINT status = tx_thread_stack_error_notify(my_overflow_handler);
+ * // Deregistration:
+ * UINT status = tx_thread_stack_error_notify(TX_NULL);
+ * @endcode
+ *
+ * @see rx_stack_monitor_init() STAR wrapper that calls this function
+ *
+ * @since Version 1.0.0
  */
 static inline tx_status tx_thread_stack_error_notify(VOID (*stack_error_handler)(TX_THREAD* thread_ptr))
 {

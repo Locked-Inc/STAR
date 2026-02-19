@@ -51,6 +51,13 @@
  * @see rx_stack_monitor.h Public API declarations
  * @see tx_user.h USE_TX_ENABLE_STACK_CHECKING / USE_TX_DISABLE_STACK_FILLING
  *
+ * @date 2026-01-11
+ * @version 1.0.0
+ * @par Hardware:
+ * - Target MCU: Renesas RX72N (240 MHz, RXv3 core)
+ * - Toolchain: GNURX 8.3.0 or later; C23 typed enum support required
+ * - RTOS: Azure RTOS ThreadX 6.x; TX_ENABLE_STACK_CHECKING must be defined in tx_user.h
+ *
  * @since Version 1.0.0
  * @author STAR Team
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
@@ -138,6 +145,11 @@ typedef enum : uint8_t {
  * @see internal_rx_fatal_error() Underlying fatal halt mechanism
  *
  * @since Version 1.0.0
+ *
+ * @code
+ * // Registered indirectly via rx_stack_monitor_init() — do not call directly:
+ * tx_thread_stack_error_notify(internal_stack_overflow_handler);
+ * @endcode
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 5: ✓ Precondition: handler only called when stack overflow detected

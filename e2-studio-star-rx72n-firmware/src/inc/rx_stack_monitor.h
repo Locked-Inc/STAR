@@ -63,6 +63,13 @@
  * @see rx_stack_monitor_init() Register the overflow handler
  * @see rx_stack_monitor_get_free_bytes() Query per-thread free stack bytes
  *
+ * @date 2026-01-11
+ * @version 1.0.0
+ * @par Platform:
+ * - Target MCU: Renesas RX72N (240 MHz, RXv3 core)
+ * - Toolchain: GNURX 8.3.0 or later; C23 typed enum support required
+ * - RTOS: Azure RTOS ThreadX 6.x; TX_ENABLE_STACK_CHECKING must be defined in tx_user.h
+ *
  * @since Version 1.0.0
  * @author STAR Team
  * @copyright Copyright (c) 2026 STAR Project. MIT License.

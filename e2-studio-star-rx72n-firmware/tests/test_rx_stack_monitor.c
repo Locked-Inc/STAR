@@ -46,6 +46,15 @@
  * @see rx_stack_monitor.c Implementation
  * @see tests/mocks/tx_api.h Mock ThreadX API
  *
+ * @par SOLID Adherence:
+ * - Single Responsibility: Tests one module (rx_stack_monitor) only
+ * - Dependency Inversion: Firmware coupled to mock ThreadX via include path
+ *
+ * @date 2026-01-11
+ * @version 1.0.0
+ * @par Hardware:
+ * - Runs on host (x86-64/aarch64) under CTest; no RX72N hardware required
+ *
  * @since Version 1.0.0
  * @author STAR Team
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
@@ -75,9 +84,10 @@
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-    k_test_stack_size  = 64,  /**< Total mock stack buffer size in bytes */
-    k_test_used_bytes  = 20,  /**< Bytes "used" (not 0xEF) at high end of stack */
-    k_stack_fill_byte  = 0xEF /**< ThreadX stack fill sentinel byte */
+    k_test_stack_size  = 64,   /**< Total mock stack buffer size in bytes */
+    k_test_used_bytes  = 20,   /**< Bytes "used" (not 0xEF) at high end of stack */
+    k_stack_fill_byte  = 0xEF, /**< ThreadX stack fill sentinel byte */
+    k_zero_u32         = 0U,   /**< Named zero constant (avoids raw 0 literals; NASA Rule 8) */
 } test_stack_constants_t;
 
 /* =============================================================================
@@ -135,9 +145,10 @@ static void test_init_succeeds(void)
 {
     rx_err_t err = rx_stack_monitor_init();
 
-    /* Precondition: mock always returns TX_SUCCESS */
-    /* Postcondition: k_rx_ok returned */
+    /* Postcondition 1: mock TX_SUCCESS maps to k_rx_ok */
     TEST_ASSERT_EQUAL(k_rx_ok, err);
+    /* Postcondition 2: stack checking feature was not reported as absent */
+    TEST_ASSERT_NOT_EQUAL(k_rx_err_not_supported, err);
 }
 
 /**
@@ -191,13 +202,13 @@ static void test_init_idempotent(void)
  */
 static void test_get_free_bytes_null_thread(void)
 {
-    uint32_t free_bytes = 0;
+    uint32_t free_bytes = k_zero_u32;
 
     rx_err_t err = rx_stack_monitor_get_free_bytes(NULL, &free_bytes);
 
     TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
     /* free_bytes must not have been written */
-    TEST_ASSERT_EQUAL(0U, free_bytes);
+    TEST_ASSERT_EQUAL(k_zero_u32, free_bytes);
 }
 
 /**
@@ -223,7 +234,7 @@ static void test_get_free_bytes_null_output(void)
     uint8_t  stack_buf[k_test_stack_size];
     TX_THREAD thread = {
         .tx_thread_name        = "MockThread",
-        .tx_thread_id          = 0,
+        .tx_thread_id          = k_tx_invalid_id,
         .tx_thread_stack_start = stack_buf,
         .tx_thread_stack_size  = k_test_stack_size,
     };
@@ -266,11 +277,11 @@ static void test_get_free_bytes_pattern_absent(void)
     uint8_t   stack_buf[k_test_stack_size];
     TX_THREAD thread = {
         .tx_thread_name        = "MockThread",
-        .tx_thread_id          = 0,
+        .tx_thread_id          = k_tx_invalid_id,
         .tx_thread_stack_start = stack_buf,
         .tx_thread_stack_size  = k_test_stack_size,
     };
-    uint32_t free_bytes = 0;
+    uint32_t free_bytes = k_zero_u32;
 
     /* Fill with zeros - no 0xEF pattern present */
     memset(stack_buf, 0x00, k_test_stack_size);
@@ -305,11 +316,11 @@ static void test_get_free_bytes_all_unused(void)
     uint8_t   stack_buf[k_test_stack_size];
     TX_THREAD thread = {
         .tx_thread_name        = "MockThread",
-        .tx_thread_id          = 0,
+        .tx_thread_id          = k_tx_invalid_id,
         .tx_thread_stack_start = stack_buf,
         .tx_thread_stack_size  = k_test_stack_size,
     };
-    uint32_t free_bytes = 0;
+    uint32_t free_bytes = k_zero_u32;
 
     /* Entire stack is 0xEF - thread never used any stack */
     memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
@@ -350,11 +361,11 @@ static void test_get_free_bytes_partial_usage(void)
     uint8_t   stack_buf[k_test_stack_size];
     TX_THREAD thread = {
         .tx_thread_name        = "MockThread",
-        .tx_thread_id          = 0,
+        .tx_thread_id          = k_tx_invalid_id,
         .tx_thread_stack_start = stack_buf,
         .tx_thread_stack_size  = k_test_stack_size,
     };
-    uint32_t free_bytes = 0;
+    uint32_t free_bytes = k_zero_u32;
 
     /* Fill entire stack with sentinel, then "use" top k_test_used_bytes */
     memset(stack_buf, (int)k_stack_fill_byte, k_test_stack_size);
