@@ -16,3 +16,11 @@ InlayHints:
   Enabled: Yes
   ParameterNames: Yes
   DeducedTypes: Yes
+
+---
+# Generated nanopb code is tool-owned; suppress include-cleaner noise.
+If:
+  PathMatch: libs/rx_nanopb/inc/gen/.*\.(c|h)
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None
