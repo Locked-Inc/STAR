@@ -21,9 +21,10 @@ option java_package = "com.star.proto.v1";
 // STAREnvelope is a single multiplexed message type for the /ws WebSocket.
 message STAREnvelope {
   // STAREnvelope numbering note:
-  // Keep oneof payload variants in low field numbers (1-9) so high-frequency
-  // messages stay in the 1-byte wire-tag range. seq and ts_ms are metadata, so
-  // they intentionally use 14 and 15 to preserve low tags for payload fields.
+  // Protobuf field numbers 1-15 encode in a single byte; 16-2047 require two.
+  // Payload variants occupy 1-9 so the most-frequently-set fields stay in the
+  // single-byte range. seq and ts_ms deliberately use 14-15 to leave 1-9 for
+  // payload variants; they are present on every message but are metadata.
   // Monotonic sequence stamped by gateway on outbound messages.
   uint64 seq = 14;
 
@@ -35,7 +36,7 @@ message STAREnvelope {
     // Gateway -> UI telemetry stream.
     TelemetryData telemetry = 1;
     // Per-wheel motor status snapshot.
-    MotorStatusList motor = 2;
+    MotorStatusList motors = 2;
 
     // Battery management state from BMS.
     BatteryState battery = 3;
@@ -84,11 +85,11 @@ message OdometryData {
 message LidarScan {
   // Structure-of-arrays representation; all arrays must have equal length.
   // Max scan points: 800 per frame for embedded static allocation.
-  repeated float angle_rad = 1 [packed = true];
+  repeated float angle_rad = 1;
   // Range for each beam in meters.
-  repeated float range_m = 2 [packed = true];
+  repeated float range_m = 2;
   // Device intensity/quality value, unitless (normalized to 0.0-1.0 by gateway).
-  repeated float intensity = 3 [packed = true];
+  repeated float intensity = 3;
 
   // Sample timestamp in microseconds since boot.
   int64 timestamp_us = 4;

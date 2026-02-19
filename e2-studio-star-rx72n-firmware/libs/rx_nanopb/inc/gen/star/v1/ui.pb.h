@@ -16,10 +16,15 @@
 /* Enum definitions */
 /* Alert severity level. */
 typedef enum _star_v1_AlertLevel {
+    /* Unknown or unset alert level. */
     star_v1_AlertLevel_ALERT_LEVEL_UNKNOWN = 0,
+    /* Informational alert. */
     star_v1_AlertLevel_ALERT_LEVEL_INFO = 1,
+    /* Warning alert requiring attention. */
     star_v1_AlertLevel_ALERT_LEVEL_WARN = 2,
+    /* Error alert indicating degraded operation. */
     star_v1_AlertLevel_ALERT_LEVEL_ERROR = 3,
+    /* Critical alert requiring immediate action. */
     star_v1_AlertLevel_ALERT_LEVEL_CRITICAL = 4
 } star_v1_AlertLevel;
 
@@ -35,10 +40,13 @@ typedef struct _star_v1_MotorStatusList {
 typedef struct _star_v1_OdometryData {
     /* Pose in map/odom frame. */
     double x_m;
+    /* Y position in meters in map/odom frame. */
     double y_m;
+    /* Heading angle in radians. */
     double theta_rad;
     /* Twist in robot frame. */
     double linear_velocity_mps;
+    /* Angular velocity around Z in radians per second. */
     double angular_velocity_rad_per_s;
     /* Timestamp in microseconds since boot. */
     int64_t timestamp_us;
@@ -50,6 +58,7 @@ typedef struct _star_v1_LidarScan {
  Max scan points: 800 per frame for embedded static allocation. */
     pb_size_t angle_rad_count;
     float angle_rad[800];
+    /* Range for each beam in meters. */
     pb_size_t range_m_count;
     float range_m[800];
     /* Device intensity/quality value, unitless (normalized to 0.0-1.0 by gateway). */
@@ -61,10 +70,15 @@ typedef struct _star_v1_LidarScan {
 
 /* UI-visible safety or health alert. */
 typedef struct _star_v1_Alert {
+    /* Alert severity level. */
     star_v1_AlertLevel level;
+    /* Short machine-readable alert code. */
     char code[16];
+    /* Human-readable alert message. */
     char message[128];
+    /* Source subsystem that raised the alert. */
     char source[32];
+    /* Alert timestamp in microseconds since boot. */
     int64_t timestamp_us;
 } star_v1_Alert;
 
@@ -84,21 +98,29 @@ typedef struct _star_v1_STAREnvelope {
     union {
         /* Gateway -> UI telemetry stream. */
         star_v1_TelemetryData telemetry;
-        star_v1_MotorStatusList motor;
+        /* Per-wheel motor status snapshot. */
+        star_v1_MotorStatusList motors;
+        /* Battery management state from BMS. */
         star_v1_BatteryState battery;
+        /* 2D robot pose and velocity estimate. */
         star_v1_OdometryData odometry;
+        /* LiDAR scan frame. */
         star_v1_LidarScan lidar;
+        /* Safety or health alert event. */
         star_v1_Alert alert;
+        /* Overall gateway/system status. */
         star_v1_SystemStatus system;
         /* UI -> Gateway control stream.
      Inbound operator commands (not telemetry); low latency, estop bypasses throttling. */
         star_v1_ControllerState controller;
+        /* Emergency stop command from operator UI. */
         star_v1_EStopCommand estop;
     } payload;
     /* STAREnvelope numbering note:
- Keep oneof payload variants in low field numbers (1-9) so high-frequency
- messages stay in the 1-byte wire-tag range. seq and ts_ms are metadata, so
- they intentionally use 14 and 15 to preserve low tags for payload fields.
+ Protobuf field numbers 1-15 encode in a single byte; 16-2047 require two.
+ Payload variants occupy 1-9 so the most-frequently-set fields stay in the
+ single-byte range. seq and ts_ms deliberately use 14-15 to leave 1-9 for
+ payload variants; they are present on every message but are metadata.
  Monotonic sequence stamped by gateway on outbound messages. */
     uint64_t seq;
     /* Gateway wall-clock timestamp in milliseconds at send time. */
@@ -158,7 +180,7 @@ extern "C" {
 #define star_v1_EStopCommand_reason_tag          2
 #define star_v1_EStopCommand_timestamp_us_tag    3
 #define star_v1_STAREnvelope_telemetry_tag       1
-#define star_v1_STAREnvelope_motor_tag           2
+#define star_v1_STAREnvelope_motors_tag          2
 #define star_v1_STAREnvelope_battery_tag         3
 #define star_v1_STAREnvelope_odometry_tag        4
 #define star_v1_STAREnvelope_lidar_tag           5
@@ -172,7 +194,7 @@ extern "C" {
 /* Struct field encoding specification for nanopb */
 #define star_v1_STAREnvelope_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,telemetry,payload.telemetry),   1) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,motor,payload.motor),   2) \
+X(a, STATIC,   ONEOF,    MESSAGE,  (payload,motors,payload.motors),   2) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,battery,payload.battery),   3) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,odometry,payload.odometry),   4) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,lidar,payload.lidar),   5) \
@@ -185,7 +207,7 @@ X(a, STATIC,   SINGULAR, INT64,    ts_ms,            15)
 #define star_v1_STAREnvelope_CALLBACK NULL
 #define star_v1_STAREnvelope_DEFAULT NULL
 #define star_v1_STAREnvelope_payload_telemetry_MSGTYPE star_v1_TelemetryData
-#define star_v1_STAREnvelope_payload_motor_MSGTYPE star_v1_MotorStatusList
+#define star_v1_STAREnvelope_payload_motors_MSGTYPE star_v1_MotorStatusList
 #define star_v1_STAREnvelope_payload_battery_MSGTYPE star_v1_BatteryState
 #define star_v1_STAREnvelope_payload_odometry_MSGTYPE star_v1_OdometryData
 #define star_v1_STAREnvelope_payload_lidar_MSGTYPE star_v1_LidarScan
