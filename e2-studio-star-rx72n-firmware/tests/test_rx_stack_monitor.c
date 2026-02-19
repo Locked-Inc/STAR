@@ -17,9 +17,9 @@
  *
  * | Category | Tests | Notes |
  * |----------|-------|-------|
- * | Initialization | 2 | NULL handler, success path |
- * | High-water mark | 5 | NULL args, pattern absent, fully filled, partially filled, null output buf check |
- * | Total | 7 | Complete public API coverage |
+ * | Initialization | 2 | success, idempotent re-registration |
+ * | High-water mark | 6 | NULL args, null stack_start, pattern absent, fully filled, partially filled, null output buf check |
+ * | Total | 8 | Complete public API coverage |
  *
  * ## How Stack Checking Works in Tests
  *
@@ -156,7 +156,11 @@ void tearDown(void)
  * rx_stack_monitor_init() must map that to k_rx_ok.
  *
  * @pre Mock tx_api.h in include path (TX_SUCCESS stub)
+ * @pre UNIT_TEST build context active (mock tx_thread_stack_error_notify present)
  * @post rx_stack_monitor_init() returned k_rx_ok
+ * @post No k_rx_err_not_supported error was logged (stack checking feature present in mock)
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
  *
  * @test
  * 1. Call rx_stack_monitor_init()
@@ -183,8 +187,12 @@ static void test_init_succeeds(void)
  * must not fail.  This guards against accidental double-registration in
  * tx_application_define().
  *
- * @pre rx_stack_monitor_init() succeeds once
- * @post Second call also returns k_rx_ok
+ * @pre rx_stack_monitor_init() succeeds on the first call
+ * @pre Mock tx_thread_stack_error_notify() always returns TX_SUCCESS
+ * @post Second call also returns k_rx_ok (both err_first and err_second are k_rx_ok)
+ * @post No error or not-supported code is returned by either call
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
  *
  * @test
  * 1. Call rx_stack_monitor_init() twice
@@ -214,8 +222,12 @@ static void test_init_idempotent(void)
  * Passes NULL as thread_ptr; expects the function to reject it with
  * k_rx_err_null_ptr before touching free_bytes.
  *
- * @pre Nothing special
+ * @pre free_bytes is initialised to k_zero_u32 before the call
+ * @pre No valid TX_THREAD is required; thread_ptr is intentionally NULL
  * @post Return value is k_rx_err_null_ptr
+ * @post free_bytes remains unchanged at k_zero_u32 (not written on error)
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
  *
  * @test
  * 1. Call rx_stack_monitor_get_free_bytes(NULL, &free_bytes)
@@ -242,8 +254,12 @@ static void test_get_free_bytes_null_thread(void)
  * Passes a valid thread_ptr but NULL for the output pointer; function must
  * not dereference the NULL and must return k_rx_err_null_ptr.
  *
- * @pre Valid TX_THREAD with stack set up
- * @post Return value is k_rx_err_null_ptr
+ * @pre Valid TX_THREAD with stack_buf filled with k_stack_fill_byte (0xEF)
+ * @pre tx_thread_stack_size is set to k_test_stack_size (non-zero)
+ * @post Return value is k_rx_err_null_ptr (not k_rx_ok)
+ * @post stack_buf contents are unchanged (no bytes were written by the function)
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
  *
  * @test
  * 1. Create a mock TX_THREAD with valid stack fields
@@ -284,8 +300,12 @@ static void test_get_free_bytes_null_output(void)
  * than 0xEF, so the function should detect the absent pattern and return
  * k_rx_err_invalid_state.
  *
- * @pre stack_buf[0] != 0xEF
+ * @pre stack_buf[0] != 0xEF (filled with k_stack_fill_absent_byte = 0x00)
+ * @pre free_bytes is initialised to k_zero_u32 before the call
  * @post Return value is k_rx_err_invalid_state
+ * @post free_bytes remains k_zero_u32 (not written on error)
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
  *
  * @test
  * 1. Create stack_buf filled with 0x00
@@ -324,8 +344,12 @@ static void test_get_free_bytes_pattern_absent(void)
  * Fills the entire stack buffer with 0xEF (thread has never executed).
  * Expects free_bytes == k_test_stack_size (all bytes unused).
  *
- * @pre stack_buf completely filled with 0xEF
- * @post free_bytes == k_test_stack_size
+ * @pre stack_buf completely filled with k_stack_fill_byte (0xEF) for all k_test_stack_size bytes
+ * @pre free_bytes is initialised to k_zero_u32 before the call
+ * @post free_bytes == k_test_stack_size (all bytes reported as unused)
+ * @post err == k_rx_ok (scan succeeded without error)
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
  *
  * @test
  * 1. Fill k_test_stack_size bytes with 0xEF
@@ -367,9 +391,12 @@ static void test_get_free_bytes_all_unused(void)
  *
  * Expected free_bytes == k_test_stack_size - k_test_used_bytes.
  *
- * @pre Lower (k_test_stack_size - k_test_used_bytes) bytes are 0xEF
- * @pre Upper k_test_used_bytes are 0x00
+ * @pre Lower (k_test_stack_size - k_test_used_bytes) bytes are k_stack_fill_byte (0xEF)
+ * @pre Upper k_test_used_bytes are k_stack_fill_absent_byte (0x00, simulating written data)
  * @post free_bytes == k_test_stack_size - k_test_used_bytes
+ * @post err == k_rx_ok (scan succeeded; partial fill pattern detected correctly)
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
  *
  * @test
  * 1. Fill entire buffer with 0xEF
@@ -405,6 +432,49 @@ static void test_get_free_bytes_partial_usage(void)
     TEST_ASSERT_EQUAL(expected_free, free_bytes);
 }
 
+/**
+ * @brief Verify that NULL tx_thread_stack_start returns k_rx_err_null_ptr
+ *
+ * @details
+ * Passes a TX_THREAD whose tx_thread_stack_start is TX_NULL but has a valid
+ * non-zero tx_thread_stack_size.  The function must detect the NULL stack
+ * base pointer before attempting to read any stack bytes, and must return
+ * k_rx_err_null_ptr without modifying free_bytes.
+ *
+ * @pre TX_THREAD has tx_thread_stack_start == TX_NULL and tx_thread_stack_size == k_test_stack_size
+ * @pre free_bytes is initialised to k_zero_u32 before the call
+ * @post Return value is k_rx_err_null_ptr
+ * @post free_bytes remains k_zero_u32 (not written on error)
+ *
+ * @note Not thread-safe; Unity executes tests serially in a single-threaded context.
+ *
+ * @test
+ * 1. Construct a mock TX_THREAD with tx_thread_stack_start = TX_NULL
+ * 2. Set tx_thread_stack_size to k_test_stack_size (non-zero)
+ * 3. Call rx_stack_monitor_get_free_bytes(&thread, &free_bytes)
+ * 4. Verify return value is k_rx_err_null_ptr
+ * 5. Verify free_bytes is still k_zero_u32
+ *
+ * @see rx_stack_monitor_get_free_bytes()
+ * @since Version 1.0.0
+ */
+static void test_get_free_bytes_null_stack_start(void)
+{
+    TX_THREAD thread = {
+        .tx_thread_name        = "NullStackThread",
+        .tx_thread_id          = k_tx_invalid_id,
+        .tx_thread_stack_start = TX_NULL,
+        .tx_thread_stack_size  = k_test_stack_size,
+    };
+    uint32_t free_bytes = k_zero_u32;
+
+    rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, &free_bytes);
+
+    TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+    /* Postcondition: free_bytes must not have been written on error */
+    TEST_ASSERT_EQUAL(k_zero_u32, free_bytes);
+}
+
 /* =============================================================================
  * Test Runner
  * =============================================================================
@@ -420,8 +490,12 @@ static void test_get_free_bytes_partial_usage(void)
  * @return int Unity result code (0 on success)
  *
  * @pre Unity test framework available (FetchContent from CMakeLists.txt)
+ * @pre Test environment and hardware mocks initialised (mock tx_api.h in include path)
  * @post Test results printed to stdout
  * @post Non-zero exit code if any test fails
+ *
+ * @note Not thread-safe; the test harness and these tests must be executed serially
+ *       in a single-threaded context.
  *
  * @see UNITY_BEGIN() Start Unity harness
  * @see UNITY_END() Finalize and return exit code
@@ -439,6 +513,7 @@ int main(void)
 
     /* rx_stack_monitor_get_free_bytes() tests */
     RUN_TEST(test_get_free_bytes_null_thread);
+    RUN_TEST(test_get_free_bytes_null_stack_start);
     RUN_TEST(test_get_free_bytes_null_output);
     RUN_TEST(test_get_free_bytes_pattern_absent);
     RUN_TEST(test_get_free_bytes_all_unused);

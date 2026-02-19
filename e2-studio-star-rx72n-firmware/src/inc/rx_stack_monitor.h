@@ -168,7 +168,10 @@ extern "C" {
  * @endcode
  *
  * @param[in]  thread_ptr  Pointer to the ThreadX thread control block.
- *                         Must be a fully initialized, non-suspended thread.
+ *                         The thread control block must be fully initialized
+ *                         and tx_thread_stack_size must be > 0.  Stack
+ *                         sentinel bytes are valid regardless of the thread's
+ *                         suspended or sleeping state.
  * @param[out] free_bytes  Set to the count of 0xEF-filled bytes remaining in
  *                         the stack (i.e. bytes never written by the thread).
  *                         Valid only when k_rx_ok is returned.

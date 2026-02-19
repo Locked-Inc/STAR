@@ -278,6 +278,10 @@ rx_err_t rx_stack_monitor_init(void)
  * @warning TX_DISABLE_STACK_FILLING must not be defined; otherwise the fill
  *          pattern is absent and this function returns k_rx_err_invalid_state.
  *
+ * @code
+ * // See rx_stack_monitor.h for a complete usage example.
+ * @endcode
+ *
  * @see rx_stack_monitor_init() Must be called first to enable overflow detection
  *
  * @since Version 1.0.0
@@ -293,10 +297,22 @@ rx_err_t rx_stack_monitor_get_free_bytes(const TX_THREAD* thread_ptr, uint32_t* 
     RX_CHECK_NULL_PTR(free_bytes, s_tag, "free_bytes must not be NULL");
 
     const uint8_t* const stack_base = (const uint8_t*)thread_ptr->tx_thread_stack_start;
-    const uint32_t       stack_size = (uint32_t)thread_ptr->tx_thread_stack_size;
+    /* Intentional narrowing cast: ULONG is 32-bit on RX72N (ILP32 ABI), so
+     * truncation cannot occur on this platform.  Explicitly cast to uint32_t
+     * to make the assumption auditable for future portability reviews. */
+    const uint32_t stack_size = (uint32_t)thread_ptr->tx_thread_stack_size;
 
     /* Precondition: stack base pointer must be valid */
     RX_CHECK_NULL_PTR(stack_base, s_tag, "thread stack_start must not be NULL");
+
+    /* Guard: a zero-size stack cannot hold any fill bytes; scanning would be
+     * a no-op (or a buffer overread if the loop bound underflows).  Treat a
+     * zero-size stack as invalid state rather than a NULL-pointer error so
+     * callers can distinguish the two failure modes. */
+    if (stack_size == (uint32_t)k_stack_count_initial) {
+        rx_log_warn(s_tag, "thread tx_thread_stack_size is 0 - cannot scan stack");
+        return k_rx_err_invalid_state;
+    }
 
     /* Verify that the fill pattern is present at all (first byte check) */
     if (stack_base[k_stack_index_base] != k_stack_fill_byte) {
