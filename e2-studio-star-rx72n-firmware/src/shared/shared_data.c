@@ -381,7 +381,7 @@
  */
 typedef enum : uint8_t {
   k_mutex_no_inherit = 0, /**< TX_NO_INHERIT for mutex creation (no priority inheritance) */
-  k_ticks_per_ms     = 1, /**< ThreadX ticks per millisecond (100 Hz tick = 10ms/tick) */
+  k_ms_per_tick      = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
 } shared_data_internal_constants_t;
 
 /**
@@ -1356,7 +1356,7 @@ bool shared_data_pid_update_pending(void)
     return false;
   }
 
-  bool pending = g_shared_data.pid_gains.update_pending;
+  const bool pending = g_shared_data.pid_gains.update_pending;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1885,7 +1885,7 @@ bool shared_data_is_estop_active(void)
     return false;
   }
 
-  bool active = g_shared_data.estop_active;
+  const bool active = g_shared_data.estop_active;
 
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
 
@@ -1962,7 +1962,7 @@ estop_reason_t shared_data_get_estop_reason(void)
     return k_estop_reason_none;
   }
 
-  estop_reason_t reason = g_shared_data.estop_reason;
+  const estop_reason_t reason = g_shared_data.estop_reason;
 
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
 
@@ -2574,16 +2574,16 @@ bool shared_data_is_comm_timeout(void)
     return false;
   }
 
-  uint32_t current_tick = tx_time_get();
-  uint32_t last_tick    = g_shared_data.last_comm_tick;
+  const uint32_t current_tick = tx_time_get();
+  const uint32_t last_tick    = g_shared_data.last_comm_tick;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
   /* Calculate elapsed time in milliseconds */
   /* ThreadX tick rate is 100 Hz (10ms per tick) */
-  uint32_t elapsed_ms = (current_tick - last_tick) * 10;
+  const uint32_t elapsed_ms = (current_tick - last_tick) * k_ms_per_tick;
 
-  bool timeout = (elapsed_ms > k_shared_comm_timeout_ms);
+  const bool timeout = (elapsed_ms > k_shared_comm_timeout_ms);
 
   if (timeout) {
     /* Signal timeout event */

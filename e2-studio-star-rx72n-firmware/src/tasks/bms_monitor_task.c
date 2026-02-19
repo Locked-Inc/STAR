@@ -1360,7 +1360,7 @@ static void internal_bms_task_entry(ULONG input)
   rx_log_info(s_tag, "BMS monitoring running @ 1 Hz");
 
   /* Main polling loop */
-  rx_bq4050_status_t status;
+  rx_bq4050_status_t status = {0};
   bms_state_t        bms = {0};
 
   while (true) {

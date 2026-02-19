@@ -137,7 +137,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
   }
 
   uint32_t offset    = 0;
-  uint16_t sync_word = rx_frame_read_le16(&data[offset]);
+  const uint16_t sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
@@ -153,7 +153,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
+  const uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
     return k_rx_err_invalid_size;
   }
@@ -760,9 +760,6 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
 
   /* Search for sync word */
   int32_t  sync_pos    = k_sync_not_found;
-  uint32_t available   = 0;
-  uint32_t total_size  = 0;
-  uint16_t payload_len = 0;
   *err = internal_find_sync(handle, &sync_pos);
   if (*err == k_rx_err_not_found) {
     *err = internal_handle_no_sync(handle, timeout_ms, elapsed_ms);
@@ -776,13 +773,15 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
   internal_align_to_sync(handle, sync_pos);
 
   /* Check if we have enough data for header */
-  available = handle->rx_buffer_len - handle->rx_buffer_pos;
+  const uint32_t available = handle->rx_buffer_len - handle->rx_buffer_pos;
   if (available < k_frame_header_total) {
     *err = internal_wait_for_data(handle, timeout_ms, elapsed_ms);
     return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
   }
 
   /* Parse and validate header */
+  uint32_t total_size  = 0;
+  uint16_t payload_len = 0;
   if (!internal_parse_header(handle, &payload_len, &total_size)) {
     return k_receive_continue;
   }

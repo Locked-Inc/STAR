@@ -536,7 +536,7 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
                                      (rx_port_pin_t)k_pin_motor3_en};
 
   for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
-    rx_err_t err = rx_mpc_set_gptw(gptw_pins[i]);
+    const rx_err_t err = rx_mpc_set_gptw(gptw_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "GPTW pin config failed");
   }
 
@@ -647,7 +647,7 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
                                                         (rx_port_pin_t)k_pin_sonar_trig3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
-    rx_err_t err = rx_mpc_set_gpio(sonar_trig_pins[i]);
+    const rx_err_t err = rx_mpc_set_gpio(sonar_trig_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(sonar_trig_pins[i]);
@@ -694,7 +694,7 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
                                                         (rx_port_pin_t)k_pin_sonar_echo3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
-    rx_err_t err = rx_mpc_set_gpio(sonar_echo_pins[i]);
+    const rx_err_t err = rx_mpc_set_gpio(sonar_echo_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(sonar_echo_pins[i]);
@@ -740,7 +740,7 @@ static rx_err_t internal_gpio_init_drv_cs(void)
                                                      (rx_port_pin_t)k_pin_drv_cs3};
 
   for (uint8_t i = 0; i < k_drv_cs_count; i++) {
-    rx_err_t err = rx_mpc_set_gpio(drv_cs_pins[i]);
+    const rx_err_t err = rx_mpc_set_gpio(drv_cs_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "DRV CS MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(drv_cs_pins[i]);

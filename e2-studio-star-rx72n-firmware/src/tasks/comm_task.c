@@ -1210,8 +1210,7 @@ static void internal_comm_task_entry(ULONG input)
   rx_log_info(s_tag, "Communication task starting");
 
   /* Initialize transport layers and wire into comm manager config */
-  rx_comm_manager_config_t config;
-  (void)memset(&config, 0, sizeof(config));
+  rx_comm_manager_config_t config = {0};
   internal_init_transports(&config);
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
@@ -1961,8 +1960,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
   rx_err_t err = rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err == k_rx_ok && velocity_req.has_command) {
     /* Build motor command from protobuf */
-    motor_command_t cmd;
-    (void)memset(&cmd, 0, sizeof(cmd));
+    motor_command_t cmd = {0};
     cmd.target_velocity_mps[k_motor_idx_front_left] =
       (float)velocity_req.command.front_left_velocity_mps;
     cmd.target_velocity_mps[k_motor_idx_front_right] =
@@ -2005,8 +2003,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
     rx_log_info(s_tag, "PID gains request received");
 
     /* Convert protobuf PID config to firmware structure */
-    pid_gains_t gains;
-    (void)memset(&gains, 0, sizeof(gains));
+    pid_gains_t gains = {0};
     gains.kp             = (float)pid_req.pid_config.kp;
     gains.ki             = (float)pid_req.pid_config.ki;
     gains.kd             = (float)pid_req.pid_config.kd;

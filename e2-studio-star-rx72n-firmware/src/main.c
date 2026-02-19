@@ -2120,10 +2120,10 @@ int main(void)
    *  LVD0RF (Voltage-Monitoring 0 Reset Detect Flag)
    *  CWSF (Cold/Warm Start Determination Flag)
    */
-  /* Initialize system clocks and power management */
   rx_err_t ret = internal_check_startup_flags();
   RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
 
+  /* Initialize system clocks and power management */
   ret = rx_clock_power_init();
   RX_ERROR_CHECK(ret); /* If this fails, errors cant be logged */
 

@@ -292,7 +292,7 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
   }
 
   /* Read raw ADC value */
-  uint16_t raw_value;
+  uint16_t raw_value = 0U;
   err = adc_read(unit, channel, &raw_value);
   if (err != k_rx_ok) {
     return err;

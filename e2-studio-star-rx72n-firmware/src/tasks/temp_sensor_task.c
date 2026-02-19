@@ -700,7 +700,7 @@ rx_err_t temp_sensor_task_create(void)
   }
 
   /* Create the thread */
-  UINT tx_status = tx_thread_create(&s_temp_thread,
+  const UINT tx_status = tx_thread_create(&s_temp_thread,
                                "TempTask",
                                internal_temp_task_entry,
                                k_temp_task_input,
@@ -1171,9 +1171,6 @@ static void internal_temp_task_entry(ULONG input)
   rx_log_info(s_tag, "Temperature sensing running @ 1 Hz");
 
   /* Main polling loop */
-  temp_sensor_state_t state;
-  float               temp_celsius;
-
   while (true) {
     /* Step 1: Trigger temperature conversion */
     err = rx_ds18b20_trigger_conversion(&s_ds18b20);
@@ -1185,10 +1182,11 @@ static void internal_temp_task_entry(ULONG input)
     (void)tx_thread_sleep(k_temp_conversion_ticks);
 
     /* Step 3: Read temperature */
+    float temp_celsius = 0.0F;
     err = rx_ds18b20_read_temperature(&s_ds18b20, &temp_celsius);
 
     /* Build state structure */
-    (void)memset(&state, 0, sizeof(state));
+    temp_sensor_state_t state = {0};
 
     if (err == k_rx_ok) {
       /* Convert to centi-degrees for integer storage */
