@@ -972,7 +972,7 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 
   /* Calculate voltage (using ADC reference voltage) */
-  uint32_t max_value = ((uint32_t)k_adc_bit_one << bits) - k_adc_bit_one;
+  const uint32_t max_value = ((uint32_t)k_adc_bit_one << bits) - k_adc_bit_one;
   *voltage_mv = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
 
   return k_rx_ok;

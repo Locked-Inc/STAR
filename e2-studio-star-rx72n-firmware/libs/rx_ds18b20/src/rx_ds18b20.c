@@ -356,11 +356,9 @@ static float    internal_ds18b20_raw_to_celsius(const int16_t raw_temp);
 rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t* config)
 {
   /* Validate inputs */
-  rx_err_t err = k_rx_ok;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle is nullptr");
 
-  err = internal_ds18b20_validate_config(config, handle);
+  rx_err_t err = internal_ds18b20_validate_config(config, handle);
   if (err != k_rx_ok) {
     return err;
   }
@@ -924,11 +922,10 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
 static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* handle)
 {
   /* Initialize OneWire bus */
-  bool     presence = false;
-  rx_err_t err      = k_rx_ok;
-  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
+  bool    presence = false;
+  uint8_t scratchpad[k_ds18b20_scratchpad_bytes];
 
-  err = rx_bus_onewire_init(handle->bus_manager, handle->bus_name);
+  rx_err_t err = rx_bus_onewire_init(handle->bus_manager, handle->bus_name);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize OneWire bus");
     return err;
@@ -1026,18 +1023,16 @@ static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* han
  */
 static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle)
 {
-  rx_err_t err = k_rx_ok;
-
   if (handle->use_rom_matching) {
     /* Use Match ROM to address specific device */
-    err = rx_bus_onewire_match_rom(handle->bus_manager, handle->bus_name, handle->rom);
+    rx_err_t err = rx_bus_onewire_match_rom(handle->bus_manager, handle->bus_name, handle->rom);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to send Match ROM");
       return err;
     }
   } else {
     /* Use Skip ROM for single device or broadcast */
-    err = rx_bus_onewire_skip_rom(handle->bus_manager, handle->bus_name);
+    rx_err_t err = rx_bus_onewire_skip_rom(handle->bus_manager, handle->bus_name);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to send Skip ROM");
       return err;
@@ -1363,9 +1358,7 @@ static rx_err_t internal_ds18b20_write_scratchpad(const rx_ds18b20_handle_t*    
 static uint8_t internal_ds18b20_resolution_to_config(const ds18b20_resolution_t resolution)
 {
   /* Resolution bits are R1:R0 at bits 6:5 */
-  uint8_t config = k_ds18b20_config_register_cleared;
-
-  config = (uint8_t)resolution << k_ds18b20_config_r0_bit;
+  const uint8_t config = (uint8_t)resolution << k_ds18b20_config_r0_bit;
 
   return config;
 }

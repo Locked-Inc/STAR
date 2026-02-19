@@ -332,14 +332,15 @@ typedef enum : uint8_t {
 
 /** @brief Byte offsets within frame header buffer (SYNC + header fields) */
 typedef enum : uint8_t {
-  k_hdr_sync_low  = 0, /**< SYNC word low byte (LE: LSB first) */
-  k_hdr_sync_high = 1, /**< SYNC word high byte (LE: MSB second) */
-  k_hdr_seq_low   = 2, /**< Sequence number low byte (LE) */
-  k_hdr_seq_high  = 3, /**< Sequence number high byte (LE) */
-  k_hdr_len_low   = 4, /**< Payload length low byte (LE) */
-  k_hdr_len_high  = 5, /**< Payload length high byte (LE) */
-  k_hdr_type      = 6, /**< Frame type */
-  k_hdr_flags     = 7, /**< Frame flags */
+  k_frame_offset_init = 0, /**< Initial frame parse offset (start of buffer) */
+  k_hdr_sync_low      = 0, /**< SYNC word low byte (LE: LSB first) */
+  k_hdr_sync_high     = 1, /**< SYNC word high byte (LE: MSB second) */
+  k_hdr_seq_low       = 2, /**< Sequence number low byte (LE) */
+  k_hdr_seq_high      = 3, /**< Sequence number high byte (LE) */
+  k_hdr_len_low       = 4, /**< Payload length low byte (LE) */
+  k_hdr_len_high      = 5, /**< Payload length high byte (LE) */
+  k_hdr_type          = 6, /**< Frame type */
+  k_hdr_flags         = 7, /**< Frame flags */
 } frame_header_offset_t;
 
 /* Forward declaration: retransmit helper used by rx_spi_comm_receive() */
@@ -449,7 +450,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  uint32_t offset    = 0;
+  uint32_t offset    = k_frame_offset_init;
   uint16_t sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
@@ -1764,7 +1765,7 @@ static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t offset  = 0;
+  uint32_t offset  = k_frame_offset_init;
   rx_err_t err     = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame header decode failed");

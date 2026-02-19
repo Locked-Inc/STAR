@@ -1195,7 +1195,7 @@ rx_err_t rx_gptw_get_duty(const rx_gptw_channel_t channel,
   }
 
   const uint32_t period     = s_gptw_period[channel];
-  uint32_t       duty_count = 0;
+  uint32_t       duty_count = k_gptw_period_zero;
 
   switch (output) {
     case k_gptw_output_a:

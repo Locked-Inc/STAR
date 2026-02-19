@@ -630,7 +630,7 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
     return err;
   }
 
-  uint32_t sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
+  const uint32_t sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
                                ? (k_onewire_read_sample_us - k_onewire_read_init_us)
                                : k_onewire_read_sample_us;
   internal_delay_us(sample_delay_us);
@@ -725,7 +725,7 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
     return k_rx_err_hw_error;
   }
 
-  bool search_direction;
+  bool search_direction = false;
   if (!bit && !comp_bit) {
     if (bit_number == state->last_discrepancy) {
       search_direction = true;
