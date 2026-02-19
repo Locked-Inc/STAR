@@ -360,6 +360,75 @@ func TestGetTelemetryResponse(t *testing.T) {
 	}
 }
 
+// TestTelemetryData_ImuAndBarometerRoundTrip verifies BNO055 IMU and BMP280 barometer data serialization
+func TestTelemetryData_ImuAndBarometerRoundTrip(t *testing.T) {
+	telem := &starv1.TelemetryData{
+		TimestampUs: 1000000,
+		Imu: &starv1.ImuData{
+			PitchRad:     0.1,
+			RollRad:      0.2,
+			YawRad:       0.3,
+			AccelXMps2:   0.5,
+			AccelYMps2:   -0.3,
+			AccelZMps2:   9.81,
+			GyroXRadPerS: 0.01,
+			GyroYRadPerS: 0.02,
+			GyroZRadPerS: 0.03,
+		},
+		BarometerData: &starv1.BarometerData{
+			PressurePa:         101325.0,
+			TemperatureCelsius: 23.5,
+			AltitudeM:          100.0,
+			CalibrationQuality: 1.0,
+		},
+	}
+
+	data, err := proto.Marshal(telem)
+	if err != nil {
+		t.Fatalf("Marshal failed: %v", err)
+	}
+
+	if len(data) > 512 {
+		t.Errorf("Encoded size %d bytes exceeds 512 byte limit", len(data))
+	}
+
+	decoded := &starv1.TelemetryData{}
+	if err := proto.Unmarshal(data, decoded); err != nil {
+		t.Fatalf("Unmarshal failed: %v", err)
+	}
+
+	// Verify IMU fields
+	if decoded.Imu == nil {
+		t.Fatal("Imu should not be nil")
+	}
+	if decoded.Imu.PitchRad != 0.1 {
+		t.Errorf("PitchRad = %f, want 0.1", decoded.Imu.PitchRad)
+	}
+	if decoded.Imu.AccelZMps2 != 9.81 {
+		t.Errorf("AccelZMps2 = %f, want 9.81", decoded.Imu.AccelZMps2)
+	}
+	if decoded.Imu.GyroZRadPerS != 0.03 {
+		t.Errorf("GyroZRadPerS = %f, want 0.03", decoded.Imu.GyroZRadPerS)
+	}
+
+	// Verify barometer fields
+	if decoded.BarometerData == nil {
+		t.Fatal("BarometerData should not be nil")
+	}
+	if decoded.BarometerData.PressurePa != 101325.0 {
+		t.Errorf("PressurePa = %f, want 101325.0", decoded.BarometerData.PressurePa)
+	}
+	if decoded.BarometerData.TemperatureCelsius != 23.5 {
+		t.Errorf("TemperatureCelsius = %f, want 23.5", decoded.BarometerData.TemperatureCelsius)
+	}
+	if decoded.BarometerData.AltitudeM != 100.0 {
+		t.Errorf("AltitudeM = %f, want 100.0", decoded.BarometerData.AltitudeM)
+	}
+	if decoded.BarometerData.CalibrationQuality != 1.0 {
+		t.Errorf("CalibrationQuality = %f, want 1.0", decoded.BarometerData.CalibrationQuality)
+	}
+}
+
 // TestStreamTelemetryRequest verifies streaming request configuration
 func TestStreamTelemetryRequest(t *testing.T) {
 	req := &starv1.StreamTelemetryRequest{

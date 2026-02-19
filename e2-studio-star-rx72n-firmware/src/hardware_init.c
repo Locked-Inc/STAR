@@ -202,6 +202,8 @@
 #include "hardware_init.h"
 
 #include "hardware.h"
+#include "hardware_config.h"
+#include "rx72n_port_regs.h"
 #include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
 #include "rx_bms_alert.h"
@@ -211,6 +213,7 @@
 #include "rx_mpc.h"
 #include "rx_poeg.h"
 #include "rx_port_utils.h"
+#include "rx_sci_iic.h"
 #include "rx_simulator_config.h" /* For RX_IS_SIMULATOR conditional compilation */
 
 /** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */
@@ -290,6 +293,10 @@ typedef enum : uint16_t {
   k_pin_adc_an005 = k_rx_p4_5, /**< P4.5 - AN005 (motor 2 current) */
   k_pin_adc_an006 = k_rx_p4_6, /**< P4.6 - AN006 (motor 1 current) */
   k_pin_adc_an007 = k_rx_p4_7, /**< P4.7 - AN007 (motor 0 current) */
+
+  /* IMU SCI2 Simple IIC (SIIC) — BNO055 + BMP280 on same bus */
+  k_pin_imu_sscl2 = k_rx_p5_2, /**< P5.2 - SSCL2 (IMU I2C clock, pkg pin 54) */
+  k_pin_imu_ssda2 = k_rx_p5_0, /**< P5.0 - SSDA2 (IMU I2C data, pkg pin 56) */
 } rx_mpc_pin_t;
 
 /** @brief Number of GPTW motor control pins */
@@ -325,6 +332,28 @@ typedef enum : uint32_t {
   k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host */
   k_i2c_bms_freq_hz  = 100000, /**< 100 kHz standard mode for BMS */
 } i2c_freq_t;
+
+/** @brief SCI2 SIIC bus frequency for IMU */
+typedef enum : uint32_t {
+  k_sci2_iic_freq_hz = 400000, /**< 400 kHz fast mode for IMU SCI2 SIIC */
+} sci2_iic_freq_t;
+
+/**
+ * @brief PORT5 ODR0 bit masks for SCI2 SIIC open-drain configuration
+ *
+ * @details
+ * RX72N PORT5.ODR0 register layout (8-bit, accessed via 16-bit word):
+ * - Bits [1:0]: P50 output type. Bit 0 = 1 enables NMOS open-drain.
+ * - Bits [3:2]: P51 output type (1-Wire, not changed here).
+ * - Bits [5:4]: P52 output type. Bit 4 = 1 enables NMOS open-drain.
+ *
+ * SIIC requires open-drain mode on P50/P52 because the SCI peripheral does
+ * not configure this automatically (unlike the RIIC peripheral which does).
+ */
+typedef enum : uint16_t {
+  k_port5_p50_odr_nmos = 0x0001, /**< P50 NMOS open-drain enable: ODR0 bit 0 */
+  k_port5_p52_odr_nmos = 0x0010, /**< P52 NMOS open-drain enable: ODR0 bit 4 */
+} port5_sci2_iic_odr_t;
 
 /** @brief Number of motor current ADC channels */
 typedef enum : uint8_t {
@@ -805,6 +834,52 @@ static rx_err_t internal_gpio_init_sci7_spi(void)
 }
 
 /**
+ * @brief Configure SCI2 Simple IIC (SIIC) pins for IMU communication
+ *
+ * @details
+ * Configures MPC pin multiplexing for SCI2 in Simple IIC mode on P5.2 (SSCL2)
+ * and P5.0 (SSDA2). Unlike RIIC which sets open-drain automatically, SIIC requires
+ * explicit open-drain configuration via PORT5.ODR0.
+ *
+ * I2C open-drain mode:
+ * - P50: ODR0 bit 0 = 1 (NMOS open-drain)
+ * - P52: ODR0 bit 4 = 1 (NMOS open-drain)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Both pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals (P51 is 1-Wire, P52/P50 free)
+ * @post P5.2 configured as SSCL2 (SCI2 SIIC clock) with open-drain
+ * @post P5.0 configured as SSDA2 (SCI2 SIIC data) with open-drain
+ *
+ * @note Thread-safe. No shared state modified.
+ * @note Called only during system initialization.
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_gpio_init_sci2_iic(void)
+{
+  rx_err_t           err;
+  static const char* s_tag = "GPIO_SCI2_IIC";
+
+  /* Configure MPC alternate function for SCI2 SIIC pins (same PSEL code as SSPI) */
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_imu_sscl2);
+  RX_RETURN_ON_ERROR(err, s_tag, "SSCL2 (P52) MPC config failed");
+
+  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_imu_ssda2);
+  RX_RETURN_ON_ERROR(err, s_tag, "SSDA2 (P50) MPC config failed");
+
+  /* Enable NMOS open-drain on P50 and P52 for I2C bus compliance.
+   * RIIC handles this automatically; SIIC requires manual ODR configuration.
+   * PORT5.ODR0 bit 0 = P50 open-drain, bit 4 = P52 open-drain. */
+  *port5_odr() |= (uint16_t)(k_port5_p50_odr_nmos | k_port5_p52_odr_nmos);
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Initialize GPIO pins for motor control, I2C, and USB communication
  *
  * @details
@@ -958,6 +1033,9 @@ static rx_err_t gpio_init(void)
 
   err = internal_gpio_init_sci7_spi();
   RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SPI pin init failed");
+
+  err = internal_gpio_init_sci2_iic();
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI2 SIIC pin init failed");
 
   /* GTETRG nFAULT pins: no MPC config needed (documented in header) */
 
@@ -1420,6 +1498,11 @@ rx_err_t hardware_init(void)
   /* 6. I2C: RIIC0 host + RIIC1 BMS */
   err = i2c_init();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C initialization failed");
+
+  /* 6b. SCI2 SIIC: BNO055 IMU + BMP280 barometer at 400 kHz */
+  const sci_iic_config_t siic_config = {.freq_hz = k_sci2_iic_freq_hz};
+  err = sci_iic_init(k_imu_iic_channel, &siic_config);
+  RX_RETURN_ON_ERROR(err, s_tag, "SCI2 SIIC initialization failed");
 
   /* 7. BMS Alert: IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection) */
   err = rx_bms_alert_init();

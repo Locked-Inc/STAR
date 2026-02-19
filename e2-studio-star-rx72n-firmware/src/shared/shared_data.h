@@ -119,6 +119,63 @@ typedef struct {
 } obstacle_state_t;
 
 /**
+ * @brief IMU (BNO055) sensor state
+ *
+ * @details
+ * Euler angles and inertial measurements from the BNO055 in NDOF fusion mode.
+ * BNO055 scale factors: 1 LSB = 1/16 degree for Euler/gyro; 1 LSB = 0.01 m/s² for accel.
+ * All values already converted to SI units (radians, m/s²) by rx_bno055.c.
+ *
+ * @invariant valid == true only when rx_bno055_init() has returned k_rx_ok
+ * @invariant timestamp_ms reflects the ThreadX tick at which data was last read
+ *
+ * @see rx_bno055_data_t Raw BNO055 output (same fields, same units)
+ * @see imu_task.c Producer of this state
+ * @see telemetry_task.c Consumer of this state
+ *
+ * @since 1.0.0
+ */
+typedef struct {
+  float    heading_rad;      /**< Euler heading (yaw) in radians. Range: 0 to 2π */
+  float    roll_rad;         /**< Euler roll in radians. Range: -π to +π */
+  float    pitch_rad;        /**< Euler pitch in radians. Range: -π/2 to +π/2 */
+  float    accel_x_mps2;     /**< Linear acceleration X axis (m/s²) */
+  float    accel_y_mps2;     /**< Linear acceleration Y axis (m/s²) */
+  float    accel_z_mps2;     /**< Linear acceleration Z axis (m/s²) */
+  float    gyro_x_rad_per_s; /**< Gyroscope X axis angular rate (rad/s) */
+  float    gyro_y_rad_per_s; /**< Gyroscope Y axis angular rate (rad/s) */
+  float    gyro_z_rad_per_s; /**< Gyroscope Z axis angular rate (rad/s) */
+  uint8_t  calib_status;     /**< Raw calibration status byte (register 0x35): sys[7:6], gyro[5:4], accel[3:2], mag[1:0] */
+  uint32_t timestamp_ms;     /**< ThreadX tick (ms) when this data was captured */
+  bool     valid;            /**< true after rx_bno055_init() succeeds; false until then */
+} imu_state_t;
+
+/**
+ * @brief Barometer (BMP280) sensor state
+ *
+ * @details
+ * Compensated pressure, temperature, and altitude from the BMP280 using the
+ * Bosch 32-bit integer compensation formulas. Updated at ~4 Hz by imu_task.
+ *
+ * @invariant valid == true only when rx_bmp280_init() has returned k_rx_ok
+ * @invariant timestamp_ms reflects the ThreadX tick at which data was last read
+ * @invariant altitude_m is a linear approximation valid below 1000 m ASL (±10%)
+ *
+ * @see rx_bmp280_data_t Raw BMP280 output (same fields, same units)
+ * @see imu_task.c Producer of this state
+ * @see telemetry_task.c Consumer of this state
+ *
+ * @since 1.0.0
+ */
+typedef struct {
+  uint32_t pressure_pa;       /**< Compensated pressure in Pascals (Pa). Range: ~87000–108000 */
+  int32_t  temperature_cdegc; /**< Compensated temperature in 0.01°C. Range: -4000 to +8500 */
+  int32_t  altitude_m;        /**< Integer altitude estimate in meters. Formula: (101325-P)*84/1000 */
+  uint32_t timestamp_ms;      /**< ThreadX tick (ms) when this data was captured */
+  bool     valid;             /**< true after rx_bmp280_init() succeeds; false until then */
+} barometer_state_t;
+
+/**
  * @brief Event flags for inter-task signaling
  */
 typedef enum : uint32_t {
@@ -130,6 +187,7 @@ typedef enum : uint32_t {
   k_event_obstacle_cleared      = 0x00000020, /**< Obstacle cleared */
   k_event_estop_cleared         = 0x00000040, /**< E-stop cleared */
   k_event_comm_timeout          = 0x00000080, /**< Communication timeout */
+  k_event_imu_data_updated      = 0x00000100, /**< New IMU and/or barometer data available */
 } shared_event_flags_t;
 
 /**
@@ -149,12 +207,14 @@ typedef enum : uint32_t {
  */
 typedef struct {
   /* ThreadX synchronization primitives */
-  TX_MUTEX             motor_mutex;    /**< Mutex for motor data */
-  TX_MUTEX             bms_mutex;      /**< Mutex for BMS data */
-  TX_MUTEX             temp_mutex;     /**< Mutex for temperature data */
-  TX_MUTEX             obstacle_mutex; /**< Mutex for obstacle data */
-  TX_MUTEX             estop_mutex;    /**< Mutex for e-stop data */
-  TX_EVENT_FLAGS_GROUP event_flags;    /**< Event flags for inter-task signaling */
+  TX_MUTEX             motor_mutex;     /**< Mutex for motor data */
+  TX_MUTEX             bms_mutex;       /**< Mutex for BMS data */
+  TX_MUTEX             temp_mutex;      /**< Mutex for temperature data */
+  TX_MUTEX             obstacle_mutex;  /**< Mutex for obstacle data */
+  TX_MUTEX             estop_mutex;     /**< Mutex for e-stop data */
+  TX_MUTEX             imu_mutex;       /**< Mutex for IMU sensor data */
+  TX_MUTEX             barometer_mutex; /**< Mutex for barometer sensor data */
+  TX_EVENT_FLAGS_GROUP event_flags;     /**< Event flags for inter-task signaling */
 
   /* Shared data structures */
   motor_command_t     motor_command;  /**< Motor velocity command */
@@ -163,6 +223,8 @@ typedef struct {
   bms_state_t         bms_state;      /**< BMS state */
   temp_sensor_state_t temp_state;     /**< Temperature sensor state */
   obstacle_state_t    obstacle_state; /**< Obstacle detection state */
+  imu_state_t         imu_state;      /**< BNO055 IMU sensor state */
+  barometer_state_t   barometer_state; /**< BMP280 barometer sensor state */
 
   /* E-stop state */
   bool           estop_active; /**< Emergency stop active flag */
@@ -433,6 +495,34 @@ bool shared_data_is_comm_timeout(void);
  * @brief Update last communication timestamp
  */
 void shared_data_update_last_comm_tick(void);
+
+/**
+ * @brief Update IMU sensor state (called by IMU task)
+ * @param state IMU state from BNO055 read
+ * @return rx_err_t Error code
+ */
+rx_err_t shared_data_update_imu(const imu_state_t* state);
+
+/**
+ * @brief Get IMU sensor state (called by Telemetry task)
+ * @param out_state Output IMU state
+ * @return rx_err_t Error code
+ */
+rx_err_t shared_data_get_imu(imu_state_t* out_state);
+
+/**
+ * @brief Update barometer sensor state (called by IMU task)
+ * @param state Barometer state from BMP280 read
+ * @return rx_err_t Error code
+ */
+rx_err_t shared_data_update_barometer(const barometer_state_t* state);
+
+/**
+ * @brief Get barometer sensor state (called by Telemetry task)
+ * @param out_state Output barometer state
+ * @return rx_err_t Error code
+ */
+rx_err_t shared_data_get_barometer(barometer_state_t* out_state);
 
 /**
  * @brief Set event flags for inter-task signaling

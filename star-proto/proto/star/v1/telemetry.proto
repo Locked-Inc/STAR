@@ -142,6 +142,9 @@ message TelemetryData {
   // Increments with each transmitted frame. Used by diagnostics to detect
   // missing frames in the telemetry stream.
   uint32 frame_sequence = 19;
+
+  // Barometric pressure and temperature data from BMP280.
+  BarometerData barometer_data = 20;
 }
 
 // IMU sensor data (orientation, velocity, acceleration).
@@ -200,6 +203,26 @@ message GpsData {
 
   // GPS fix type.
   GpsFix fix_type = 6;
+}
+
+// Barometric pressure and altitude data from BMP280 sensor.
+message BarometerData {
+  // Barometric pressure in Pascals.
+  // Standard atmosphere: 101325 Pa. Typical range: 95000 to 105000 Pa.
+  double pressure_pa = 1;
+
+  // Temperature in Celsius from BMP280 internal sensor.
+  // Range: -40 to +85 degrees Celsius.
+  double temperature_celsius = 2;
+
+  // Estimated altitude above sea level in meters.
+  // Computed from pressure using barometric formula referenced to sea level.
+  double altitude_m = 3;
+
+  // Sensor calibration quality.
+  // Range: 0.0 (uncalibrated) to 1.0 (fully calibrated).
+  // Mirrors BNO055 calibration status for sensor fusion confidence.
+  double calibration_quality = 4;
 }
 
 // GPS fix type.

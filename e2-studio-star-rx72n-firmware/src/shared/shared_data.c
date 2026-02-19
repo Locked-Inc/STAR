@@ -686,6 +686,18 @@ rx_err_t shared_data_init(void)
     return k_rx_err_rtos_mutex;
   }
 
+  /* Create imu_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", TX_INHERIT);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  /* Create barometer_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.barometer_mutex, "BarometerMutex", TX_INHERIT);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
   /* Create event_flags group */
   tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
   if (tx_status != TX_SUCCESS) {
@@ -2905,6 +2917,224 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
   if (out_actual_flags != nullptr) {
     *out_actual_flags = (uint32_t)actual_flags;
   }
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * IMU State Access
+ * =============================================================================
+ */
+
+/**
+ * @brief Update IMU sensor state (called by IMU Task at 100 Hz)
+ *
+ * @details
+ * Stores BNO055 Euler angles, linear acceleration, and gyroscope readings from
+ * the most recent IMU task iteration. Sets k_event_imu_data_updated after write.
+ *
+ * @param[in] state IMU state to store (Euler, accel, gyro, calib, timestamp)
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is nullptr
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized via shared_data_init()
+ * @pre state != nullptr
+ * @post g_shared_data.imu_state updated under imu_mutex
+ * @post k_event_imu_data_updated set in event_flags
+ *
+ * @note Thread Safety: Protected by imu_mutex
+ *
+ * @see shared_data_get_imu() Consumer (telemetry task)
+ * @see imu_task.c Producer
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ */
+rx_err_t shared_data_update_imu(const imu_state_t* state)
+{
+  UINT tx_status;
+
+  RX_CHECK_NULL_PTR(state, s_tag, "IMU state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(&g_shared_data.imu_state, state, sizeof(imu_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.imu_mutex);
+
+  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_imu_data_updated, TX_OR);
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get IMU sensor state (called by Telemetry Task)
+ *
+ * @details
+ * Retrieves the most recent BNO055 IMU readings for telemetry transmission.
+ *
+ * @param[out] out_state Buffer to receive IMU state
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State retrieved successfully
+ * @retval k_rx_err_null_ptr out_state is nullptr
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized via shared_data_init()
+ * @pre out_state != nullptr
+ * @post out_state contains snapshot of current IMU state
+ * @post out_state->valid indicates whether data is ready
+ *
+ * @note Thread Safety: Protected by imu_mutex
+ *
+ * @see shared_data_update_imu() Producer (IMU task)
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ */
+rx_err_t shared_data_get_imu(imu_state_t* out_state)
+{
+  UINT tx_status;
+
+  RX_CHECK_NULL_PTR(out_state, s_tag, "Output IMU state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(out_state, &g_shared_data.imu_state, sizeof(imu_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.imu_mutex);
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Barometer State Access
+ * =============================================================================
+ */
+
+/**
+ * @brief Update barometer sensor state (called by IMU Task at ~4 Hz)
+ *
+ * @details
+ * Stores BMP280 compensated pressure, temperature, and altitude readings.
+ * Sets k_event_imu_data_updated (shared with IMU — both are IMU-task data).
+ *
+ * @param[in] state Barometer state to store (pressure, temperature, altitude)
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is nullptr
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized via shared_data_init()
+ * @pre state != nullptr
+ * @post g_shared_data.barometer_state updated under barometer_mutex
+ * @post k_event_imu_data_updated set in event_flags
+ *
+ * @note Thread Safety: Protected by barometer_mutex
+ *
+ * @see shared_data_get_barometer() Consumer (telemetry task)
+ * @see imu_task.c Producer
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ */
+rx_err_t shared_data_update_barometer(const barometer_state_t* state)
+{
+  UINT tx_status;
+
+  RX_CHECK_NULL_PTR(state, s_tag, "Barometer state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  tx_status = tx_mutex_get(&g_shared_data.barometer_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(&g_shared_data.barometer_state, state, sizeof(barometer_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.barometer_mutex);
+
+  (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_imu_data_updated, TX_OR);
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get barometer sensor state (called by Telemetry Task)
+ *
+ * @details
+ * Retrieves the most recent BMP280 barometer readings for telemetry transmission.
+ *
+ * @param[out] out_state Buffer to receive barometer state
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State retrieved successfully
+ * @retval k_rx_err_null_ptr out_state is nullptr
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized via shared_data_init()
+ * @pre out_state != nullptr
+ * @post out_state contains snapshot of current barometer state
+ * @post out_state->valid indicates whether data is ready
+ *
+ * @note Thread Safety: Protected by barometer_mutex
+ *
+ * @see shared_data_update_barometer() Producer (IMU task)
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: ✓ 2 preconditions, 2 postconditions
+ */
+rx_err_t shared_data_get_barometer(barometer_state_t* out_state)
+{
+  UINT tx_status;
+
+  RX_CHECK_NULL_PTR(out_state, s_tag, "Output barometer state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  tx_status = tx_mutex_get(&g_shared_data.barometer_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(out_state, &g_shared_data.barometer_state, sizeof(barometer_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.barometer_mutex);
 
   return k_rx_ok;
 }

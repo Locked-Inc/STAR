@@ -194,6 +194,7 @@
 #include "motor_control_task.h"
 #include "obstacle_detect_task.h"
 #include "shared_data.h"
+#include "imu_task.h"
 #include "telemetry_task.h"
 #include "temp_sensor_task.h"
 #include "watchdog_monitor_task.h"
@@ -1880,6 +1881,10 @@ void tx_application_define(void* first_unused_memory)
   /* Temperature Sensor Task - Priority 15 */
   err = temp_sensor_task_create();
   RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
+
+  /* IMU Task - Priority 13 (BNO055 @ 100 Hz, BMP280 @ 4 Hz via SCI2 SIIC) */
+  err = imu_task_create();
+  RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
 
   /* Obstacle Detection Task - Priority 12 */
   err = obstacle_detect_task_create();

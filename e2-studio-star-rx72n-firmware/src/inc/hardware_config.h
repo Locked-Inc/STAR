@@ -678,3 +678,49 @@ typedef enum : uint8_t {
 } usb_pkg_pins_t;
 
 /** @} */ /* end of usb_pins */
+
+/* =========================================================================
+ * IMU SCI2 Simple IIC (SIIC)
+ * ========================================================================= */
+
+/**
+ * @defgroup imu_iic_pins IMU SCI2 SIIC Pin Assignments
+ * @brief SCI2 Simple IIC (SIIC) pins for BNO055 IMU and BMP280 barometer
+ *
+ * @details
+ * The IMU bus uses SCI2 in Simple IIC mode (SIIC) — the hardware analogue of
+ * SCI7 SSPI used for motor drivers. NOT RIIC (RIIC0=host I2C, RIIC1=BMS I2C).
+ *
+ * Open-drain output mode is required by the I2C bus specification and must be
+ * configured manually via PORT5 ODR register (RIIC handles this automatically,
+ * SIIC does not).
+ *
+ * | Signal | Pin | Pkg Pin | SCI2 Function |
+ * |--------|-----|---------|---------------|
+ * | IMU_SSCL2 | P52 | 54 | SSCL2 (SCI2 Simple IIC clock) |
+ * | IMU_SSDA2 | P50 | 56 | SSDA2 (SCI2 Simple IIC data) |
+ *
+ * **Device addresses (7-bit):**
+ * - BNO055: 0x28 (COM3 tied to GND, default)
+ * - BMP280: 0x76 (SDO tied to GND, default)
+ *
+ * @see rx_sci_iic.h SCI SIIC hardware driver
+ * @see imu_task.h IMU task that uses these pins
+ * @{
+ */
+
+typedef enum : uint8_t {
+  k_imu_scl_port = 5, /**< IMU SSCL2 on PORT5 (P52/SSCL2, pin 54) */
+  k_imu_sda_port = 5, /**< IMU SSDA2 on PORT5 (P50/SSDA2, pin 56) */
+} imu_iic_ports_t;
+
+typedef enum : uint8_t {
+  k_imu_scl_pin = 2, /**< IMU SSCL2 pin 2 on PORT5 (P52, pkg pin 54) */
+  k_imu_sda_pin = 0, /**< IMU SSDA2 pin 0 on PORT5 (P50, pkg pin 56) */
+} imu_iic_pins_t;
+
+typedef enum : uint8_t {
+  k_imu_iic_channel = 2, /**< IMU uses SCI channel 2 in SIIC mode */
+} imu_iic_channel_t;
+
+/** @} */ /* end of imu_iic_pins */
