@@ -46,6 +46,16 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
+/**
+ * @brief Reset mocks before each test
+ *
+ * @details
+ * Called automatically by Unity before each test function.
+ * Resets all mocks to their default state to ensure test isolation.
+ *
+ * @note Called automatically by Unity test framework before each test
+ * @since Version 1.0.0
+ */
 void setUp(void)
 {
   /* Reset all mocks before each test */
@@ -54,6 +64,16 @@ void setUp(void)
   mock_tx_reset();
 }
 
+/**
+ * @brief Clean up after each test
+ *
+ * @details
+ * Called automatically by Unity after each test function.
+ * Currently a no-op placeholder for future cleanup logic.
+ *
+ * @note Called automatically by Unity test framework after each test
+ * @since Version 1.0.0
+ */
 void tearDown(void)
 {
   /* Clean up after each test */
@@ -74,12 +94,10 @@ void tearDown(void)
 void test_obstacle_task_create_success(void)
 {
   /* Configure mocks for success */
-  rx_err_t err;
-
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task */
-  err = obstacle_detect_task_create();
+  const rx_err_t err = obstacle_detect_task_create();
 
   /* Verify success */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -88,16 +106,21 @@ void test_obstacle_task_create_success(void)
 
 /**
  * @brief Test obstacle task creation fails when ThreadX fails
+ *
+ * @details
+ * Verifies that obstacle_detect_task_create() returns an RTOS error
+ * when tx_thread_create() reports TX_NO_MEMORY.
+ *
+ * @note Tests negative path: ThreadX thread allocation failure
+ * @since Version 1.0.0
  */
 void test_obstacle_task_create_thread_failure(void)
 {
   /* Configure ThreadX to fail */
-  rx_err_t err;
-
   mock_tx_set_thread_create_return(TX_NO_MEMORY);
 
   /* Create the task */
-  err = obstacle_detect_task_create();
+  const rx_err_t err = obstacle_detect_task_create();
 
   /* Verify failure */
   TEST_ASSERT_EQUAL(k_rx_err_rtos_thread_create, err);
@@ -105,16 +128,21 @@ void test_obstacle_task_create_thread_failure(void)
 
 /**
  * @brief Test obstacle task creation fails when already created
+ *
+ * @details
+ * Verifies that calling obstacle_detect_task_create() a second time
+ * returns k_rx_err_invalid_state, ensuring the task is created only once.
+ *
+ * @note Tests idempotency guard: prevents double initialization
+ * @since Version 1.0.0
  */
 void test_obstacle_task_create_already_created(void)
 {
   /* Configure mocks for success */
-  rx_err_t err;
-
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task first time - should succeed */
-  err = obstacle_detect_task_create();
+  rx_err_t err = obstacle_detect_task_create();
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Create the task second time - should fail */
@@ -139,7 +167,6 @@ void test_obstacle_task_init_and_start(void)
   /* Configure mocks for success */
   rx_obstacle_detect_t        handle = {0};
   rx_obstacle_detect_config_t config = {0};
-  rx_err_t                    err;
 
   mock_obstacle_detect_set_init_return(k_rx_ok);
   mock_obstacle_detect_set_start_return(k_rx_ok);
@@ -153,7 +180,7 @@ void test_obstacle_task_init_and_start(void)
   config.user_data              = nullptr;
 
   /* Initialize (simulating task behavior) */
-  err = rx_obstacle_detect_init(&handle, &config);
+  rx_err_t err = rx_obstacle_detect_init(&handle, &config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(mock_obstacle_detect_was_initialized());
 
@@ -197,7 +224,6 @@ void test_obstacle_distances_stored_in_shared_data(void)
 {
   obstacle_state_t state_in  = {0};
   obstacle_state_t state_out = {0};
-  rx_err_t         err;
 
   /* Simulate callback storing obstacle state */
   state_in.distance_cm[k_test_sensor_idx_0]       = 25; /* 25 cm */
@@ -209,7 +235,7 @@ void test_obstacle_distances_stored_in_shared_data(void)
   state_in.timestamp_ms                           = 1000;
 
   /* Store in shared data */
-  err = shared_data_update_obstacle(&state_in);
+  rx_err_t err = shared_data_update_obstacle(&state_in);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Read back */
@@ -263,12 +289,12 @@ void test_obstacle_get_stats(void)
   uint32_t             total_polls     = 0;
   uint32_t             obstacle_events = 0;
   uint32_t             false_positives = 0;
-  rx_err_t             err;
 
   mock_obstacle_detect_set_stats(1000, 5, 2);
 
   /* Get stats */
-  err = rx_obstacle_detect_get_stats(&handle, &total_polls, &obstacle_events, &false_positives);
+  const rx_err_t err =
+      rx_obstacle_detect_get_stats(&handle, &total_polls, &obstacle_events, &false_positives);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(1000, total_polls);
