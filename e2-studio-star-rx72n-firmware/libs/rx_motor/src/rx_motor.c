@@ -945,7 +945,8 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
     .invert_polarity      = config->invert_pwm,
   };
 
-  rx_gptw_output_pair_t outputs = (rx_gptw_output_pair_t){.a = config->output_a, .b = config->output_b};
+  const rx_gptw_output_pair_t outputs = {.a = config->output_a,
+                                         .b = config->output_b};
   rx_err_t              err    = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
   if (err != k_rx_ok) {
     return err;
@@ -1380,14 +1381,13 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    * Duty sign determines PH (+ = forward/HIGH, - = reverse/LOW).
    * EN always receives positive PWM duty proportional to speed.
    */
-  float    speed_pwm = fabsf(duty);
-  rx_err_t err;
+  const float speed_pwm = fabsf(duty);
 
   if (duty >= (float)k_motor_duty_zero) {
     /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */
-    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                           rx_gptw_output_id(handle->output_a),
-                           (float)k_motor_ph_high);
+    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                                    rx_gptw_output_id(handle->output_a),
+                                    (float)k_motor_ph_high);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set PH output (forward)");
       return err;
@@ -1402,9 +1402,9 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     }
   } else {
     /* Reverse: PH = LOW, EN = PWM - NASA Rule 7 compliance */
-    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                           rx_gptw_output_id(handle->output_a),
-                           (float)k_motor_ph_low);
+    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                                    rx_gptw_output_id(handle->output_a),
+                                    (float)k_motor_ph_low);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set PH output (reverse)");
       return err;

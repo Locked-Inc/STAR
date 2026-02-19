@@ -327,8 +327,6 @@ static rx_err_t internal_clock_init(void)
   *prcr_reg() = k_rx_prcr_unlock_all;
   /* Precondition: Verify PRCR unlock took effect
    * Note: PRCR key byte (upper 8 bits) reads back as 0x00, so we must mask it */
-  uint32_t timeout = k_pll_stabilization_timeout;
-
   RX_ASSERT((*prcr_reg() & k_rx_prcr_readback_mask) ==
               (k_rx_prcr_unlock_all & k_rx_prcr_readback_mask),
             "Precondition: PRCR unlock failed");
@@ -368,6 +366,7 @@ static rx_err_t internal_clock_init(void)
   /* Simulator: PLL stable immediately (no hardware PLL circuit to lock) */
 #else
   /* Hardware: Poll OSCOVFSR until PLL locks (typically ~200 µs) */
+  uint32_t timeout = k_pll_stabilization_timeout;
   while ((system_regs()->oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
     timeout--;
   }
@@ -397,7 +396,7 @@ static rx_err_t internal_clock_init(void)
   /* Simulator: PPLL stable immediately (no hardware PPLL circuit to lock) */
 #else
   /* Hardware: Poll OSCOVFSR until PPLL locks (typically ~200 µs) */
-  timeout = k_pll_stabilization_timeout;
+  uint32_t timeout = k_pll_stabilization_timeout;
   while ((system_regs()->oscovfsr & k_ppll_stable_flag) == 0 && timeout > 0) {
     timeout--;
   }
@@ -538,39 +537,39 @@ static rx_err_t internal_verify_system_state(void)
   RX_CHECK_NULL_PTR(sys, s_tag, "system_regs pointer is nullptr");
 
   /* Verify PLL is enabled by checking PLLCR2 register */
-  uint8_t pllcr2 = sys->pllcr2;
+  const uint8_t pllcr2 = sys->pllcr2;
   if (pllcr2 != k_pll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify system clock dividers are configured correctly */
-  uint32_t sckcr = sys->sckcr;
+  const uint32_t sckcr = sys->sckcr;
   if (sckcr != k_system_clock_dividers) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PLL is selected as the system clock source */
-  uint16_t sckcr3 = sys->sckcr3;
+  const uint16_t sckcr3 = sys->sckcr3;
   if (sckcr3 != k_system_clock_source_pll) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PPLL is enabled for USB clock */
-  uint8_t ppllcr2 = *ppllcr2_reg();
+  const uint8_t ppllcr2 = *ppllcr2_reg();
   if (ppllcr2 != k_ppll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
 #if !RX_IS_SIMULATOR
   /* Verify PPLL is stable (hardware only - simulator doesn't model OSCOVFSR flags) */
-  uint8_t oscovfsr = sys->oscovfsr;
+  const uint8_t oscovfsr = sys->oscovfsr;
   if ((oscovfsr & k_ppll_stable_flag) == 0) {
     return k_rx_err_hw_init_failed;
   }
 #endif
 
   /* Verify MEMWAIT is configured for 240 MHz operation */
-  uint8_t memwait = *memwait_reg();
+  const uint8_t memwait = *memwait_reg();
   if (memwait != k_memwait_one_wait) {
     return k_rx_err_hw_init_failed;
   }

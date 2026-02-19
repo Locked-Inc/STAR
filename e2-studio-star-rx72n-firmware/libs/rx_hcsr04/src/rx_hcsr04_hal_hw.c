@@ -633,7 +633,7 @@ rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
     return k_rx_err_null_ptr;
   }
 
-  rx_err_t err = internal_validate_port_pin(pin, nullptr, nullptr);
+  const rx_err_t err = internal_validate_port_pin(pin, nullptr, nullptr);
   if (err != k_rx_ok) {
     return err;
   }
@@ -927,7 +927,7 @@ static rx_err_t internal_time_mutex_init(void)
     return k_rx_ok;
   }
 
-  UINT status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
+  const UINT status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
   if (status == TX_SUCCESS) {
     s_time_mutex_initialized = true;
     return k_rx_ok;
@@ -1095,8 +1095,8 @@ void hcsr04_hal_delay_us(uint32_t us)
 
   uint32_t iteration_count = 0;
   while (ticks > 0 && iteration_count < k_max_delay_iterations) {
-    uint32_t wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
-    uint16_t start      = cmt2()->cmcnt;
+    const uint32_t wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
+    const uint16_t start      = cmt2()->cmcnt;
     while ((uint16_t)(cmt2()->cmcnt - start) < wait_ticks) {
       __asm__ volatile("nop");
     }

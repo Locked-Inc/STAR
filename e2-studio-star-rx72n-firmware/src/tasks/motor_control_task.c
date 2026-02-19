@@ -1651,11 +1651,8 @@ static rx_err_t internal_init_motor_stack(void)
 static rx_err_t internal_init_pid_controllers(void)
 {
   /* Get PID gains from shared data, fall back to MATLAB-tuned defaults */
-  rx_err_t        err;
-  pid_gains_t     gains;
-  rx_pid_config_t pid_config;
-
-  err = shared_data_get_pid_gains(&gains);
+  pid_gains_t gains;
+  rx_err_t    err = shared_data_get_pid_gains(&gains);
   if (err != k_rx_ok) {
     rx_log_warn(s_tag, "Using default PID gains");
     gains.kp           = s_pid_kp_default;
@@ -1668,6 +1665,7 @@ static rx_err_t internal_init_pid_controllers(void)
   }
 
   /* Build PID config from gains */
+  rx_pid_config_t pid_config;
   pid_config.kp           = gains.kp;
   pid_config.ki           = gains.ki;
   pid_config.kd           = gains.kd;
@@ -2424,10 +2422,7 @@ static void internal_active_brake_sequence(void)
   rx_log_info(s_tag, "Active brake sequence starting");
 
   /* Calculate brake duration in ticks (1 tick = 10ms at 100 Hz) */
-  uint32_t brake_ticks = k_active_brake_ms / k_threadx_tick_interval_ms;
-  if (brake_ticks == 0) {
-    brake_ticks = 1;
-  }
+  const uint32_t brake_ticks = k_active_brake_ms / k_threadx_tick_interval_ms;
 
   /* Step 1: Read current velocities and apply reverse PWM */
   for (uint8_t i = 0; i < k_motor_count; i++) {
@@ -2459,8 +2454,8 @@ static void internal_active_brake_sequence(void)
   uint32_t brake_start_tick = tx_time_get();
 
   while (true) {
-    uint32_t current_tick  = tx_time_get();
-    uint32_t elapsed_ticks = current_tick - brake_start_tick;
+    const uint32_t current_tick  = tx_time_get();
+    const uint32_t elapsed_ticks = current_tick - brake_start_tick;
 
     if (elapsed_ticks >= brake_ticks) {
       break;
@@ -2636,7 +2631,7 @@ static void internal_apply_pid_updates(void)
  */
 static void internal_check_comm_timeout(void)
 {
-  bool timeout = shared_data_is_comm_timeout();
+  const bool timeout = shared_data_is_comm_timeout();
   if (timeout && !s_timeout_estop_triggered) {
     rx_log_warn(s_tag, "Communication timeout - triggering e-stop");
     (void)shared_data_trigger_estop(k_estop_reason_comm_timeout);
@@ -2841,7 +2836,5 @@ static float internal_get_target_velocity(const motor_command_t* cmd, uint8_t mo
     return 0.0f;
   }
 
-  float target = cmd->target_velocity_mps[motor_idx];
-
-  return target;
+  return cmd->target_velocity_mps[motor_idx];
 }

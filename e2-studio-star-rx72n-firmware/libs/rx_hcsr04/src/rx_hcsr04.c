@@ -1305,7 +1305,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  uint32_t pulse_start = hcsr04_hal_get_time_us();
+  const uint32_t pulse_start = hcsr04_hal_get_time_us();
 
   /* Wait for echo to go LOW (pulse end) */
   err = internal_wait_for_echo(handle, false, handle->timeout_us);
@@ -1313,7 +1313,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  uint32_t pulse_end   = hcsr04_hal_get_time_us();
+  const uint32_t pulse_end   = hcsr04_hal_get_time_us();
   *duration_us = pulse_end - pulse_start;
 
   return k_rx_ok;
@@ -2497,9 +2497,9 @@ float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_cel
     return 0.0F;
   }
 
-  float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
-  float speed_cm_us = speed_mps / s_mps_to_cm_per_us;
-  float distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
+  const float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
+  const float speed_cm_us = speed_mps / s_mps_to_cm_per_us;
+  const float distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
 
   /* Post-condition: Ensure non-negative result */
   if (distance_cm < 0.0F) {
