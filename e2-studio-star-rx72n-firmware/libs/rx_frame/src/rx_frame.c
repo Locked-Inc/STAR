@@ -135,7 +135,7 @@
  * | Rule | Status | Notes |
  * |------|--------|-------|
  * | 1. Simple control flow | [PASS] | Sequential processing, no goto |
- * | 2. Fixed loop bounds | [PASS] | Bounded by payload length |
+ * | 2. Fixed loop bounds | [PASS] | Payload loop bounded by payload length; sync scanner bounded by k_frame_max_scan_bytes |
  * | 3. No dynamic memory | [PASS] | All buffers caller-provided |
  * | 4. Short functions | [PASS] | Largest function ~50 lines |
  * | 5. Assertions | [PASS] | All inputs validated, post-conditions checked |
@@ -234,6 +234,8 @@ typedef enum : uint8_t {
  *
  * @see rx_frame_decode() Uses k_frame_offset_start for normal aligned decoding
  * @see internal_find_sync_offset() Begins scan at k_frame_scan_start_offset
+ *
+ * @since Version 1.1.0
  */
 typedef enum : uint8_t {
   k_frame_offset_start      = 0, /**< Start offset for frame parsing */
@@ -449,7 +451,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  *
  * @pre data must point to a readable buffer of at least data_len bytes
  * @pre data_len must be >= k_frame_sync_size (2)
- * @post On k_rx_ok, offset_out is in range [1, min(data_len-1, k_frame_max_scan_bytes)]
+ * @post On k_rx_ok, offset_out is in range [1, min(data_len - k_frame_sync_size, k_frame_max_scan_bytes)]
  * @post On error, offset_out is unchanged
  *
  * @note Not thread-safe. Caller must ensure exclusive access to data buffer.
@@ -784,13 +786,15 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * @pre data must point to a buffer of at least data_len bytes
  * @post On k_rx_ok, *bytes_discarded_out == bytes skipped to reach sync word
  * @post On k_rx_ok, frame contains a fully verified decoded frame
+ * @post On k_rx_err_crc_mismatch, *bytes_discarded_out == bytes skipped; caller must still advance stream pointer
  *
  * @note Not thread-safe. Caller must synchronize access.
  * @note The scan is bounded at k_frame_max_scan_bytes (NASA Rule 2).
  * @note Log *bytes_discarded_out > 0 as a stream-health diagnostic warning.
  *
- * @warning Caller must advance stream read pointer by *bytes_discarded_out
- *          after a successful decode to avoid reprocessing discarded data.
+ * @warning Caller must advance stream read pointer by *bytes_discarded_out after any call
+ *          that returns k_rx_ok or k_rx_err_crc_mismatch to avoid infinite re-scan;
+ *          *bytes_discarded_out is unmodified only when k_rx_err_invalid_arg is returned.
  *
  * @par Example:
  * @code{.c}
@@ -798,9 +802,10 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * rx_err_t err = rx_frame_decode_with_resync(dec, data, data_len, &frame, &discarded);
  * if (err == k_rx_ok) {
  *     // Advance stream read pointer past any discarded bytes
- *     // (internal_find_sync_offset scanned up to k_frame_max_scan_bytes)
  *     stream_read_ptr += discarded;
  * } else if (err == k_rx_err_crc_mismatch) {
+ *     // Sync was found but CRC failed — still advance to avoid infinite re-scan
+ *     stream_read_ptr += discarded;
  *     rx_log_error(TAG, "sync found but CRC failed");
  * } else {
  *     rx_log_error(TAG, "no sync word within scan window");
@@ -833,7 +838,7 @@ rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
   }
 
   /* Sync word not at offset 0: scan forward for next sync word */
-  uint32_t sync_offset = 0;
+  uint32_t sync_offset = (uint32_t)k_frame_offset_start;
   err = internal_find_sync_offset(data, data_len, &sync_offset);
   if (err != k_rx_ok) {
     /* No sync word found within bounded window */

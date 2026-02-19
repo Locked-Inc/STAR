@@ -342,7 +342,7 @@ typedef enum : uint16_t {
                              * @details SYNC(2) + Header(6) + Payload(1024) + CRC(4) = 1036 bytes.
                              */
 
-  k_frame_max_scan_bytes = 1036, /**< @brief Maximum bytes to scan forward during sync recovery (1036)
+  k_frame_max_scan_bytes = k_frame_max_size, /**< @brief Maximum bytes to scan forward during sync recovery (1036)
                                    * @details
                                    * When the sync word is not found at offset 0, the decoder scans
                                    * forward up to this many bytes looking for the sync pattern. The
@@ -1088,8 +1088,10 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * 1. Attempt normal decode at offset 0.
  * 2. On k_rx_err_protocol_error (sync mismatch), invoke
  *    internal_find_sync_offset() to locate the next sync word.
- * 3. If found, decode from the discovered offset (trimmed view of data).
- * 4. Report bytes discarded via bytes_discarded_out.
+ * 3. If found, set *bytes_discarded_out = sync_offset — caller must advance the
+ *    stream read pointer by this value even if the subsequent decode fails
+ *    (e.g., k_rx_err_crc_mismatch), to avoid infinite re-scan.
+ * 4. Decode from the discovered offset (trimmed view of data).
  * 5. All other errors (CRC, size) are propagated unchanged.
  *
  * @param[in]  dec                  Initialized frame decoder handle
@@ -1109,17 +1111,20 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  *
  * @pre dec must be initialized via rx_frame_decoder_init()
  * @pre data must point to a buffer of at least data_len bytes
+ * @pre frame must be a non-null pointer to a writable rx_frame_t
+ * @pre bytes_discarded_out must be a non-null pointer to a writable uint32_t
  * @post On k_rx_ok, frame contains the decoded frame with verified CRC
  * @post bytes_discarded_out contains the number of bytes skipped (>= 0)
+ * @post On k_rx_err_crc_mismatch, *bytes_discarded_out == bytes skipped; caller must still advance stream pointer
  *
  * @note Thread-safe after init; the decoder handle is read-only and the function
  *       uses no shared mutable state (consistent with the file-level "Stateless after init").
  * @note The scan window is bounded at k_frame_max_scan_bytes (NASA Rule 2).
  * @note Caller should log bytes_discarded_out > 0 as a diagnostic warning.
  *
- * @warning This function modifies the caller's view of the stream: the caller
- *          must advance its read pointer by (bytes_discarded_out) after a
- *          successful decode to avoid reprocessing discarded bytes.
+ * @warning Caller must advance its read pointer by *bytes_discarded_out bytes after any
+ *          call that returns k_rx_ok or k_rx_err_crc_mismatch to avoid infinite re-scan;
+ *          *bytes_discarded_out is unmodified only when k_rx_err_invalid_arg is returned.
  *
  * @par Performance:
  * Worst case: scans k_frame_max_scan_bytes (1036) before failing.
