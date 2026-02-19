@@ -177,7 +177,7 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
   /* Convert ms to ticks, rounding up */
   const uint32_t ticks = (ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
   if (ticks > 0) {
-    tx_thread_sleep(ticks);
+    (void)tx_thread_sleep(ticks);
   }
 }
 

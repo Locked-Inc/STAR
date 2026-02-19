@@ -423,7 +423,7 @@ rx_err_t rx_tpu_init_phase_count(const rx_tpu_config_t* config)
 
   /* Pre-condition 2: validate channel is phase-counting capable */
   uint8_t  idx;
-  rx_err_t err = internal_channel_to_index(config->channel, &idx);
+  const rx_err_t err = internal_channel_to_index(config->channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -555,7 +555,7 @@ rx_err_t rx_tpu_read_count(const rx_tpu_channel_t channel, uint16_t* count)
 
   /* Pre-condition 2: validate channel */
   uint8_t  idx;
-  rx_err_t err = internal_channel_to_index(channel, &idx);
+  const rx_err_t err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -592,7 +592,7 @@ rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up
 
   /* Pre-condition 2: validate channel */
   uint8_t  idx;
-  rx_err_t err = internal_channel_to_index(channel, &idx);
+  const rx_err_t err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }

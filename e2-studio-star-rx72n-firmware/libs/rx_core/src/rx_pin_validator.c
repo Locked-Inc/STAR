@@ -1263,7 +1263,7 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
   }
 
   /* Delete mutex */
-  UINT status = tx_mutex_delete(&validator->mutex);
+  const UINT status = tx_mutex_delete(&validator->mutex);
   if (status != TX_SUCCESS) {
     rx_log_warn("PIN_VALIDATOR", "Failed to delete mutex during deinit");
   }

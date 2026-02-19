@@ -346,7 +346,7 @@ static rx_err_t internal_calculate_period(const uint32_t frequency_hz, uint16_t*
    * PCLKA = 120 MHz
    */
   const uint32_t pclka       = k_pclka_hz;
-  uint32_t       period_calc = pclka / (k_mtu_period_divisor * frequency_hz);
+  const uint32_t period_calc = pclka / (k_mtu_period_divisor * frequency_hz);
 
   /* Check if period fits in 16-bit register */
   if (period_calc > k_mtu_period_max) {

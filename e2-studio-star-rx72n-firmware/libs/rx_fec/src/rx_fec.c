@@ -155,9 +155,9 @@ static uint8_t internal_parity(uint8_t x)
   x ^= x >> 2; /* XOR bit pairs */
   x ^= x >> 1; /* XOR final pair */
 
-  /* Post-condition: Result must be 0 or 1 */
   const uint8_t result = x & k_fec_bit_mask;
 
+  /* Post-condition: Result must be 0 or 1 */
   RX_ASSERT((result == k_fec_zero) || (result == k_fec_bit_mask), "Parity result must be 0 or 1");
   RX_ASSERT(result <= k_fec_bit_mask, "Parity result must be within bit mask");
 
@@ -679,7 +679,7 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t num_symbols = (params->expected_output_len > k_fec_zero)
+  const uint32_t num_symbols = (params->expected_output_len > k_fec_zero)
                   ? (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits)
                   : k_fec_zero;
 

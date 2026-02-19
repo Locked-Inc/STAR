@@ -390,6 +390,7 @@ typedef enum : int16_t {
 } drv8243_speed_constants_t;
 
 typedef enum : uint16_t {
+  k_drv8243_u16_zero             = 0,     /**< Zero sentinel for uint16_t initialization */
   k_drv8243_min_current_limit_ma = 0,     /**< 0mA min current limit (0 = no limit) */
   k_drv8243_max_current_limit_ma = 10000, /**< 10A max current limit */
 } drv8243_current_constants_t;
@@ -1424,7 +1425,7 @@ internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, u
   }
 
   uint16_t tx_frame = DRV8243_SPI_READ_FRAME(addr);
-  uint16_t rx_frame = 0;
+  uint16_t rx_frame = k_drv8243_u16_zero;
   rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI read failed");
@@ -1458,7 +1459,7 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
   }
 
   uint16_t tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
-  uint16_t rx_frame = 0;
+  uint16_t rx_frame = k_drv8243_u16_zero;
   rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI write failed");

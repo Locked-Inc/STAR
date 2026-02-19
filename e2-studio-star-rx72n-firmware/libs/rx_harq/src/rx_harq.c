@@ -108,6 +108,7 @@
 
 /** @brief HARQ FEC size constants */
 typedef enum : uint16_t {
+  k_harq_zero_combines       = 0, /**< Sentinel: no max_combines configured */
   k_harq_fec_rate_multiplier = 2, /**< Rate 1/2: encoded length multiplier */
   k_harq_tail_bytes          = 2, /**< Tail overhead in bytes */
 } harq_fec_constants_t;
@@ -313,7 +314,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   }
 
   /* Initialize Chase Combiner */
-  uint8_t  max_combines = (config != nullptr && config->max_combines > 0) ? config->max_combines
+  uint8_t  max_combines = (config != nullptr && config->max_combines > k_harq_zero_combines) ? config->max_combines
                                                                            : k_harq_default_combines;
   rx_err_t err          = rx_chase_combiner_init(&harq->combiner, max_combines);
   if (err != k_rx_ok) {
@@ -594,7 +595,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*              harq,
   }
 
   /* Get combined soft bits into handle's buffer (thread-safe) */
-  uint32_t combined_len;
+  uint32_t combined_len = 0U;
   err = rx_chase_combiner_combined(&harq->combiner, harq->decode_buffer, &combined_len);
   if (err != k_rx_ok) {
     return err;

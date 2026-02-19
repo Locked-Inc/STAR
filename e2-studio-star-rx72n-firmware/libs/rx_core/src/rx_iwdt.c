@@ -794,7 +794,7 @@ rx_err_t rx_iwdt_check_tasks(void)
     return k_rx_ok;
   }
 
-  uint32_t current_tick  = internal_get_tick_count();
+  const uint32_t current_tick  = internal_get_tick_count();
   bool     any_timeout   = false;
 
   /* Check each registered task */
@@ -804,8 +804,8 @@ rx_err_t rx_iwdt_check_tasks(void)
     }
 
     /* Calculate elapsed time */
-    uint32_t elapsed_ticks   = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
-    uint32_t timeout_in_ticks =
+    const uint32_t elapsed_ticks   = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
+    const uint32_t timeout_in_ticks =
       (s_iwdt_state.tasks[i].timeout_ms * TX_TIMER_TICKS_PER_SECOND) / k_ms_per_second;
 
     /* Check for timeout */
