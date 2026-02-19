@@ -1339,7 +1339,7 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
   /* Use I2C write for byte data (command + data) */
   uint8_t write_buf[k_smbus_byte_buf_size];
   write_buf[k_smbus_byte_data] = command;
-  write_buf[k_smbus_byte_pec]  = data;
+  write_buf[k_smbus_byte_val]  = data;
   return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_byte_buf_size);
 }
 

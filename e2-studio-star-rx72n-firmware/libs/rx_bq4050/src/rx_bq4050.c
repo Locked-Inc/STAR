@@ -616,8 +616,6 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
     [k_cell_idx_3] = k_sbs_cell_voltage_3, /* Cell 3 at 0x3D */
     [k_cell_idx_4] = k_sbs_cell_voltage_4, /* Cell 4 at 0x3C */
   };
-  rx_err_t err = k_rx_ok;
-
   /* Pre-conditions: Validate parameters (NASA Rule 5: Min 3 checks) */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
@@ -640,7 +638,8 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
     }
 
     /* Read cell voltage from BQ4050-specific register */
-    err = rx_bus_smbus_read_word_data(manager, bus_name, s_cell_reg_map[i], &cell_voltages[i]);
+    const rx_err_t err =
+      rx_bus_smbus_read_word_data(manager, bus_name, s_cell_reg_map[i], &cell_voltages[i]);
 
     /* NASA Rule 7: Check return value, propagate first error */
     if (err != k_rx_ok) {
@@ -1215,8 +1214,6 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
                                const uint8_t       num_cells)
 {
   /* Pre-conditions: Validate parameters (NASA Rule 5) */
-  rx_err_t err = k_rx_ok;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is nullptr");
@@ -1231,7 +1228,7 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
   }
 
   /* Read electrical status (voltage, current, cells) */
-  err = internal_read_electrical_status(manager, bus_name, status, num_cells);
+  rx_err_t err = internal_read_electrical_status(manager, bus_name, status, num_cells);
   if (err != k_rx_ok) {
     return err;
   }
