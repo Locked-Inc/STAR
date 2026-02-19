@@ -294,12 +294,8 @@ Failed & \texttt{StateFailed} &
  } node[left, font =\footnotesize, xshift = 0.3cm]{no USB}(deg);
   \draw[arrow](deg)-- node[right, font =\footnotesize]{All unhealthy}(fail);
   \draw[arrow](fail)-- node[left, font =\footnotesize]{Any recovers}(deg);
-  \draw[arrow](deg.west)-- ++(-1, 0) |
-      -node[left, font =\footnotesize, near start]{USB recovers}(
-          usb.south west);
-  \draw[arrow](deg.east)-- ++(1, 0) |
-      -node[right, font =\footnotesize, near start]{SPI recovers}(
-          spi.south east);
+  \draw[arrow](deg.west)-- ++(-1, 0) |- node[left, font =\footnotesize, near start]{USB recovers}(usb.south west);
+  \draw[arrow](deg.east)-- ++(1, 0) |- node[right, font =\footnotesize, near start]{SPI recovers}(spi.south east);
   \end{tikzpicture} %
 }
 

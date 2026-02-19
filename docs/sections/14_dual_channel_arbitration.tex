@@ -219,15 +219,12 @@ The shared \texttt{
     rx\_session} module on the RX72N validates every received sequence number :
 
 \begin{itemize}[leftmargin = 1.5em, topsep = 4pt, itemsep = 2pt]
-    \item\\
-    textbf{Duplicate detection :} If the same sequence number is received
-    twice(e.g., frame retransmitted on both channels),
-    the second copy is rejected by \texttt{rx\_session\_validate\_rx()}
-        .
-    \item\\
-    textbf{Gap tolerance :} Sequence gaps of up to 10 frames are accepted(
-            see Section ~\ref{subsec : shared - session})
-        .This handles frames lost during failover.
+    \item \textbf{Duplicate detection :} If the same sequence number is received
+    twice (e.g., frame retransmitted on both channels),
+    the second copy is rejected by \texttt{rx\_session\_validate\_rx()}.
+    \item \textbf{Gap tolerance :} Sequence gaps of up to 10 frames are accepted
+    (see Section ~\ref{subsec : shared - session}).
+    This handles frames lost during failover.
     \item \textbf{Wraparound:
 }
 16 - bit sequence numbers wrap from 65535 to 0. The validation logic
