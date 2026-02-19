@@ -1,0 +1,20 @@
+# ui.options - nanopb field size constraints for ui.proto
+# Static bounds for embedded targets (no dynamic allocation).
+#
+# STAR Project - Texas A&M University
+
+# MotorStatusList (4-wheel platform)
+star.v1.MotorStatusList.motors          max_count:4
+
+# LidarScan (RPLiDAR C1 upper-bound points per frame)
+star.v1.LidarScan.angle_rad             max_count:800
+star.v1.LidarScan.range_m               max_count:800
+star.v1.LidarScan.intensity             max_count:800
+
+# Alert strings
+star.v1.Alert.code                      max_size:16
+star.v1.Alert.message                   max_size:128
+star.v1.Alert.source                    max_size:32
+
+# E-stop reason
+star.v1.EStopCommand.reason             max_size:64
