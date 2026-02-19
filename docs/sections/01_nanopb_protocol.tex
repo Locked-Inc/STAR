@@ -247,9 +247,9 @@ Host(testing) & Software lookup table & N/A(automatic) \\
 
     \textbf{API (identical for both implementations):
    }
-    \begin{lstlisting}[language = C, basicstyle =\ttfamily\scriptsize] uint32_t
-    rx_crc32_ieee(const uint8_t *data, size_t len);
-    uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
+    \begin{lstlisting}[language = C, basicstyle =\ttfamily\scriptsize]
+uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
     \end{lstlisting}
 
     \textbf{Go Compatibility :} Both implementations produce bit -

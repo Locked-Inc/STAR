@@ -111,7 +111,8 @@ const double DEFAULT_TIMEOUT_S = 5.0;
 Package-based namespaces use \texttt{under\_scored} naming:
 
 \begin{lstlisting}[language=C++, caption={Namespace examples},
-label={lst:namespace}] namespace star { namespace spi_bridge {
+label={lst:namespace}]
+namespace star { namespace spi_bridge {
 
 class SpiDriverNode : public rclcpp::Node {
 // ...
@@ -136,9 +137,9 @@ C++ headers use the \texttt{.hpp} extension (not \texttt{.h}):
 Include guards follow the pattern: \texttt{PACKAGE\_FILE\_NAME\_HPP\_}
 
 \begin{lstlisting}[language=C++, caption={Include guard example},
-label={lst:include_guard}] #ifndef
-STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_ #define
-STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+label={lst:include_guard}]
+#ifndef STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
+#define STAR_GATEWAY_BRIDGE_STAR_GATEWAY_BRIDGE_NODE_HPP_
 
 // ... code ...
 
@@ -188,7 +189,8 @@ See CLAUDE.md for complete example.
 All code uses 2-space indentation (same as C firmware):
 
 \begin{lstlisting}[language=C++, caption={Indentation example},
-label={lst:indentation}] class MyNode : public rclcpp::Node { public: MyNode() :
+label={lst:indentation}]
+class MyNode : public rclcpp::Node { public: MyNode() :
 Node("my_node") { timer_ = this->create_wall_timer(
 std::chrono::milliseconds(100),
 std::bind(&MyNode::timerCallback, this));
@@ -278,7 +280,8 @@ CallbackReturn on_cleanup(const rclcpp_lifecycle::State &) override;
 \subsubsection{Publishers and Subscribers}
 
 \begin{lstlisting}[language=C++, caption={Publishers and subscribers},
-label={lst:pub_sub}] class MyNode : public rclcpp::Node { public: MyNode() :
+label={lst:pub_sub}]
+class MyNode : public rclcpp::Node { public: MyNode() :
 Node("my_node") {
 // Publisher: use SharedPtr
 telemetry_pub_ = this->create_publisher<std_msgs::msg::String>(

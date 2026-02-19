@@ -48,7 +48,8 @@ In this project, \textbf{Assembly code} and \textbf{Inline Assembly} should be u
             .This helps isolate potential issues and reduces the risk of bugs.
 \end{itemize}
 
-\begin{lstlisting}[language = C] void set_flag(void) {
+\begin{lstlisting}[language = C]
+void set_flag(void) {
   asm volatile("mov r0, #1" : : : "r0"); /* Set flag in register r0 */
 }
 \end{lstlisting}
@@ -62,7 +63,8 @@ In this project, \textbf{Assembly code} and \textbf{Inline Assembly} should be u
     \item \textbf{Use Constraints Correctly}: When using inline ASM in C, use the appropriate constraints to inform the compiler how the assembly instructions interact with C variables.
 \end{itemize}
 
-\begin{lstlisting}[language = C] int add(int a, int b) {
+\begin{lstlisting}[language = C]
+int add(int a, int b) {
   int result;
   asm volatile("add %[r], %[a], %[b]"
                : [r] "=r"(result)       /* Output */
@@ -1024,7 +1026,8 @@ typedef struct error_handler {
     Comments within function bodies explain non -
     obvious logic.
 
-\begin{lstlisting}[language = C] rx_err_t star_bus_manager_add_bus(
+\begin{lstlisting}[language = C]
+rx_err_t star_bus_manager_add_bus(
         star_bus_manager_t * manager, star_bus_config_t * config) {
   /* Validate inputs using ESP-IDF macro */
   RX_RETURN_ON_FALSE(manager && config, RX_ERR_INVALID_ARG, s_TAG,
@@ -6601,7 +6604,8 @@ RequestHeader.request_id max_size : 64
 \end{lstlisting}
 
 Generated C code :
-\begin{lstlisting}[language = C] typedef struct _RequestHeader {
+\begin{lstlisting}[language = C]
+typedef struct _RequestHeader {
   char request_id[64]; /* Static allocation */
 } RequestHeader;
 
@@ -6619,7 +6623,8 @@ BatteryState.cell_mv max_count : 16
 \end{lstlisting}
 
 Generated C code :
-\begin{lstlisting}[language = C] typedef struct _BatteryState {
+\begin{lstlisting}[language = C]
+typedef struct _BatteryState {
   uint32_t cell_mv[16];    /* Static array */
   pb_size_t cell_mv_count; /* Actual element count */
 } BatteryState;
@@ -6638,7 +6643,8 @@ FirmwareChunk.data max_size : 1024
 \end{lstlisting}
 
 Generated C code :
-\begin{lstlisting}[language = C] typedef struct _FirmwareChunk {
+\begin{lstlisting}[language = C]
+typedef struct _FirmwareChunk {
   pb_bytes_array_t data; /* Contains uint8_t bytes[1024] */
 } FirmwareChunk;
 
