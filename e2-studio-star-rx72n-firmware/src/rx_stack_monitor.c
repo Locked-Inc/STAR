@@ -89,14 +89,12 @@ static const char* const s_tag = "STACK_MON";
  * (TX_STACK_FILL) and is replicated here for byte-level scanning.
  *
  * @invariant k_stack_fill_byte == 0xEF (matches ThreadX fill byte)
- * @invariant k_scan_alignment == 4 (word alignment for RX architecture)
  *
  * @see TX_STACK_FILL definition in tx_api.h
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_stack_fill_byte  = 0xEF, /**< Byte value placed in unused stack memory by ThreadX */
-    k_scan_alignment   = 4,    /**< Scan in 4-byte words (RX architecture word width)   */
+    k_stack_fill_byte = 0xEF, /**< Byte value placed in unused stack memory by ThreadX */
 } stack_fill_constants_t;
 
 /* =============================================================================
@@ -150,6 +148,7 @@ typedef enum : uint8_t {
 #endif
 static void internal_stack_overflow_handler(TX_THREAD* thread_ptr)
 {
+#ifndef UNIT_TEST
     /* Precondition: ThreadX guarantees this is only called on stack corruption */
     uart_debug_puts("\r\n[STACK_MON] FATAL: Stack overflow detected");
 
@@ -168,8 +167,8 @@ static void internal_stack_overflow_handler(TX_THREAD* thread_ptr)
 
     /* Postcondition: halt before stack corruption propagates to other memory */
     internal_rx_fatal_error(s_tag, "Stack overflow - system halted", k_rx_fail);
-
-#ifdef UNIT_TEST
+#else
+    (void)thread_ptr;
     return;
 #endif
 }

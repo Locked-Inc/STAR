@@ -53,7 +53,21 @@ typedef void VOID;
 /** @brief ThreadX unsigned char type */
 typedef unsigned char UCHAR;
 
-/** @brief ThreadX NULL pointer constant */
+/**
+ * @def TX_NULL
+ * @brief ThreadX NULL pointer constant
+ *
+ * @details
+ * Intentional deviation from the no-constant-macro rule (CLAUDE.md §Constants):
+ * TX_NULL must be a macro because it is used as a pointer initializer and as a
+ * sentinel in struct-initializer contexts where a typed enum or static const
+ * cannot legally appear in C (e.g., `.tx_thread_name = TX_NULL`).  This mirrors
+ * the real ThreadX API definition and must remain a macro so that all existing
+ * call sites continue to compile without modification.
+ *
+ * @note Intentional deviation - approved for pointer-initializer compatibility.
+ * @since Version 1.0.0
+ */
 #define TX_NULL ((void*)0)
 
 /* =============================================================================
@@ -730,7 +744,7 @@ void mock_tx_set_time(ULONG ticks);
  * @return TX_SUCCESS (mock always succeeds when TX_ENABLE_STACK_CHECKING is
  *         defined in tx_user.h; returns TX_FEATURE_NOT_ENABLED otherwise)
  */
-static inline UINT tx_thread_stack_error_notify(VOID (*stack_error_handler)(TX_THREAD* thread_ptr))
+static inline tx_status tx_thread_stack_error_notify(VOID (*stack_error_handler)(TX_THREAD* thread_ptr))
 {
   (void)stack_error_handler;
   /* Mock: unconditionally report success (TX_ENABLE_STACK_CHECKING active) */

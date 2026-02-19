@@ -176,7 +176,7 @@
    checking is enabled (TX_ENABLE_STACK_CHECKING is defined), the TX_DISABLE_STACK_FILLING
    define is negated, thereby forcing the stack fill which is necessary for the stack checking
    logic.
-   STAR project: stack checking is ENABLED for safety and CI builds.  ThreadX validates the
+   STAR project: stack checking is ENABLED for all builds.  ThreadX validates the
    0xEF sentinel at each context switch; a corrupted sentinel triggers the application handler
    registered via tx_thread_stack_error_notify() (see rx_stack_monitor.c).  */
 #define USE_TX_ENABLE_STACK_CHECKING 1

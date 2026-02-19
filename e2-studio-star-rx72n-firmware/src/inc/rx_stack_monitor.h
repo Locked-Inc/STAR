@@ -107,7 +107,7 @@ extern "C" {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Handler registered successfully
- * @retval k_rx_err_rtos_not_supported TX_ENABLE_STACK_CHECKING not defined in
+ * @retval k_rx_err_not_supported TX_ENABLE_STACK_CHECKING not defined in
  *         tx_user.h (ThreadX returns TX_FEATURE_NOT_ENABLED)
  *
  * @pre TX_ENABLE_STACK_CHECKING is defined (set via USE_TX_ENABLE_STACK_CHECKING=1)
@@ -117,7 +117,7 @@ extern "C" {
  *
  * @note Thread safety: Must be called before threads are running (single-
  *       threaded context in tx_application_define()).
- * @warning If this function returns k_rx_err_rtos_not_supported the firmware
+ * @warning If this function returns k_rx_err_not_supported the firmware
  *          was built without TX_ENABLE_STACK_CHECKING.  Ensure
  *          USE_TX_ENABLE_STACK_CHECKING=1 in tx_user.h.
  *

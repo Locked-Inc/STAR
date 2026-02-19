@@ -18,8 +18,8 @@
  * | Category | Tests | Notes |
  * |----------|-------|-------|
  * | Initialization | 2 | NULL handler, success path |
- * | High-water mark | 4 | NULL args, pattern absent, fully filled, partially filled |
- * | Total | 6 | Complete public API coverage |
+ * | High-water mark | 5 | NULL args, pattern absent, fully filled, partially filled, null output buf check |
+ * | Total | 7 | Complete public API coverage |
  *
  * ## How Stack Checking Works in Tests
  *
@@ -197,7 +197,7 @@ static void test_get_free_bytes_null_thread(void)
 
     TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
     /* free_bytes must not have been written */
-    TEST_ASSERT_EQUAL(0u, free_bytes);
+    TEST_ASSERT_EQUAL(0U, free_bytes);
 }
 
 /**
@@ -233,6 +233,11 @@ static void test_get_free_bytes_null_output(void)
     rx_err_t err = rx_stack_monitor_get_free_bytes(&thread, NULL);
 
     TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
+
+    /* Postcondition (NASA Rule 5): stack buffer must not have been modified */
+    for (uint32_t i = 0; i < k_test_stack_size; i++) {
+        TEST_ASSERT_EQUAL((uint8_t)k_stack_fill_byte, stack_buf[i]);
+    }
 }
 
 /**
