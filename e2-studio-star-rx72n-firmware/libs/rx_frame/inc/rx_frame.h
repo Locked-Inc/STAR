@@ -1076,7 +1076,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  * Extends rx_frame_decode() with automatic stream recovery. When the sync word
  * is not found at offset 0 (i.e., the stream is byte-misaligned due to a
  * dropped or inserted byte), this function scans forward up to
- * k_rx_frame_max_scan_bytes positions looking for the next sync word occurrence.
+ * k_frame_max_scan_bytes positions looking for the next sync word occurrence.
  * Bytes discarded during the scan are reported via bytes_discarded_out for
  * diagnostic logging by the caller.
  *

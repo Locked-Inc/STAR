@@ -2261,7 +2261,7 @@ void test_roundtrip_reset(void)
  * @par Example:
  * @code{.c}
  * uint8_t misaligned[k_frame_max_size + k_resync_prefix_len];
- * misaligned[0] = k_resync_junk_byte;
+ * misaligned[k_resync_zero] = k_resync_junk_byte;
  * memcpy(&misaligned[k_resync_prefix_len], wire, wire_len);
  * uint32_t discarded = k_resync_sentinel;
  * rx_frame_decode_with_resync(&dec, misaligned, wire_len + k_resync_prefix_len,
@@ -2275,6 +2275,7 @@ void test_roundtrip_reset(void)
  * @since Version 1.1.0
  */
 typedef enum : uint8_t {
+  k_resync_zero       = 0,    /**< Zero constant for index/discarded initializations and assertions */
   k_resync_junk_byte  = 0xBB, /**< Byte that is never part of 0xAA or 0x55 */
   k_resync_prefix_len = 1,    /**< Length of single-byte misalignment prefix */
   k_resync_sentinel   = 0xFF, /**< Sentinel value written to discarded before the call;
@@ -2319,10 +2320,10 @@ void test_resync_dropped_byte_recovery(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, wire, &wire_len));
 
   /* Prepend one junk byte to simulate a dropped byte desynchronizing the stream */
-  misaligned[0] = k_resync_junk_byte;
+  misaligned[k_resync_zero] = k_resync_junk_byte;
   memcpy(&misaligned[k_resync_prefix_len], wire, wire_len);
 
-  uint32_t discarded = 0;
+  uint32_t discarded = k_resync_zero;
   rx_err_t err       = rx_frame_decode_with_resync(&s_decoder,
                                                    misaligned,
                                                    wire_len + k_resync_prefix_len,
@@ -2381,7 +2382,7 @@ void test_resync_aligned_frame_zero_discarded(void)
   rx_err_t err       = rx_frame_decode_with_resync(&s_decoder, wire, wire_len, &decoded, &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL(0, discarded);
+  TEST_ASSERT_EQUAL(k_resync_zero, discarded);
   TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
   TEST_ASSERT_EQUAL(k_test_seq_42, decoded.header.sequence);
   TEST_ASSERT_EQUAL(k_go_payload_len, decoded.header.length);
@@ -2425,7 +2426,7 @@ void test_resync_no_sync_found(void)
   rx_err_t err       = rx_frame_decode_with_resync(&s_decoder, buf, sizeof(buf), &frame, &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
-  TEST_ASSERT_EQUAL(0, discarded);
+  TEST_ASSERT_EQUAL(k_resync_zero, discarded);
 }
 
 /**

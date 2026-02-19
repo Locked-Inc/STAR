@@ -209,7 +209,31 @@ typedef enum : uint8_t {
 } init_state_t;
 
 /**
+ * @enum frame_offset_t
  * @brief Frame byte offsets used during encoding, decoding, and sync scanning
+ *
+ * @details
+ * Defines named byte-offset constants used by the frame encoder, decoder, and
+ * the bounded sync-word scanner. k_frame_offset_start marks the beginning of a
+ * frame buffer for normal aligned decoding. k_frame_scan_start_offset is the
+ * index at which internal_find_sync_offset() begins its forward scan — offset 0
+ * is omitted because rx_frame_decode() has already tested it before invoking
+ * the scanner, so the scan starts at the next candidate position.
+ *
+ * @invariant k_frame_scan_start_offset > k_frame_offset_start, ensuring the
+ *            scanner never re-tests the byte that rx_frame_decode() already checked.
+ *
+ * @code{.c}
+ * // Normal aligned decode starts at k_frame_offset_start (0)
+ * rx_err_t err = rx_frame_decode(dec, data, data_len, frame);
+ *
+ * // On sync mismatch, internal_find_sync_offset() scans from offset 1:
+ * uint8_t sync_off = k_frame_scan_start_offset;
+ * // ... scanner advances sync_off until sync word found or scan limit reached
+ * @endcode
+ *
+ * @see rx_frame_decode() Uses k_frame_offset_start for normal aligned decoding
+ * @see internal_find_sync_offset() Begins scan at k_frame_scan_start_offset
  */
 typedef enum : uint8_t {
   k_frame_offset_start      = 0, /**< Start offset for frame parsing */
@@ -746,6 +770,9 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * @param[out] frame               Decoded frame (header, payload, CRC)
  * @param[out] bytes_discarded_out Bytes skipped before sync word (0 = aligned)
  *
+ * @return rx_err_t k_rx_ok on success, or k_rx_err_invalid_arg,
+ *         k_rx_err_invalid_state, k_rx_err_invalid_size,
+ *         k_rx_err_protocol_error, or k_rx_err_crc_mismatch on failure
  * @retval k_rx_ok               Frame decoded and CRC verified
  * @retval k_rx_err_invalid_arg  Any pointer parameter is nullptr
  * @retval k_rx_err_invalid_state Decoder not initialized
@@ -764,6 +791,21 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  *
  * @warning Caller must advance stream read pointer by *bytes_discarded_out
  *          after a successful decode to avoid reprocessing discarded data.
+ *
+ * @par Example:
+ * @code{.c}
+ * uint32_t discarded = 0;
+ * rx_err_t err = rx_frame_decode_with_resync(dec, data, data_len, &frame, &discarded);
+ * if (err == k_rx_ok) {
+ *     // Advance stream read pointer past any discarded bytes
+ *     // (internal_find_sync_offset scanned up to k_frame_max_scan_bytes)
+ *     stream_read_ptr += discarded;
+ * } else if (err == k_rx_err_crc_mismatch) {
+ *     rx_log_error(TAG, "sync found but CRC failed");
+ * } else {
+ *     rx_log_error(TAG, "no sync word within scan window");
+ * }
+ * @endcode
  *
  * @see rx_frame_decode() Simple decode without stream recovery
  * @see internal_find_sync_offset() Bounded sync word scanner
