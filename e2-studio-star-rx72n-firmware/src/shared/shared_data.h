@@ -119,7 +119,33 @@ typedef struct {
 } obstacle_state_t;
 
 /**
+ * @enum shared_event_flags_t
  * @brief Event flags for inter-task signaling
+ *
+ * @details
+ * One-hot bitmask constants used to signal asynchronous events between RTOS
+ * tasks via a ThreadX TX_EVENT_FLAGS_GROUP. Flags are OR-combined when raised
+ * and remain set (sticky) until explicitly cleared by the consuming task.
+ * Multiple flags may be set simultaneously; consumers should test each bit
+ * independently.
+ *
+ * @invariant k_event_none == 0 (no-op / cleared state; safe as a default value)
+ * @invariant All non-zero members are distinct powers of two (one-hot bit fields)
+ *
+ * @code
+ * // Raise two flags at once:
+ * (void)shared_data_set_event(k_event_low_battery | k_event_comm_timeout);
+ *
+ * // Test for a specific flag in the consumer task:
+ * shared_event_flags_t flags;
+ * (void)tx_event_flags_get(&g_event_flags, k_event_low_battery,
+ *                          TX_OR_CLEAR, (ULONG*)&flags, TX_WAIT_FOREVER);
+ * @endcode
+ *
+ * @see shared_data_set_event() Raises one or more flags
+ * @see shared_data.c ThreadX event-flags group used internally
+ *
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_event_none                  = 0x00000000, /**< No events pending (cleared state) */

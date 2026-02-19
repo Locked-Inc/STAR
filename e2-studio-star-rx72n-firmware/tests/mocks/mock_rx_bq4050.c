@@ -48,6 +48,11 @@ void mock_bq4050_set_init_return(rx_err_t err)
   s_init_return = err;
 }
 
+void mock_bq4050_set_read_return(rx_err_t err)
+{
+  s_read_return = err;
+}
+
 void mock_bq4050_set_status(uint16_t voltage_mv, int16_t current_ma, uint8_t soc)
 {
   s_status.voltage_mv   = voltage_mv;
@@ -171,7 +176,7 @@ rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  * @return rx_err_t Error code
  * @retval k_rx_ok         Status written successfully
  * @retval k_rx_err_null_ptr status pointer is NULL
- * @retval (injected)      Any error set via mock_bq4050_set_init_return()
+ * @retval (injected)      Any error set via mock_bq4050_set_read_return()
  *
  * @pre mock_bq4050_reset() or mock_bq4050_set_full_status() called to
  *      configure desired return values
@@ -180,7 +185,24 @@ rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  * @post *status populated with mock battery state if return is k_rx_ok
  *
  * @note Thread-unsafe; single-threaded test use only
+ *
+ * @code
+ * // Inject a read error and verify the task handles it:
+ * mock_bq4050_set_read_return(k_rx_err_i2c_nack);
+ * rx_bq4050_status_t status;
+ * rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, 4);
+ * TEST_ASSERT_EQUAL(k_rx_err_i2c_nack, err);
+ *
+ * // Normal read with pre-configured status:
+ * mock_bq4050_reset();
+ * mock_bq4050_set_full_status(&expected_status);
+ * err = rx_bq4050_read_status(nullptr, "i2c0", &status, 4);
+ * TEST_ASSERT_EQUAL(k_rx_ok, err);
+ * TEST_ASSERT_EQUAL_UINT32(1, mock_bq4050_get_status_count());
+ * @endcode
+ *
  * @see mock_bq4050_set_full_status() Configure full status response
+ * @see mock_bq4050_set_read_return() Inject read errors
  * @see mock_bq4050_get_status_count() Verify call count
  *
  * @since Version 1.1.0

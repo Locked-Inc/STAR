@@ -34,6 +34,16 @@ static rx_err_t s_init_return = k_rx_ok;
  * counters, avoiding bare numeric literal zero per the project's zero-magic-
  * number policy.
  *
+ * @invariant k_mock_count_reset == 0 always; all counters equal this value
+ *            immediately after mock_shared_data_reset().
+ *
+ * @code
+ * // Reset a counter to the canonical zero value:
+ * s_set_event_count = k_mock_count_reset;
+ * @endcode
+ *
+ * @see mock_shared_data_reset() Function that sets all counters to k_mock_count_reset
+ *
  * @since Version 1.1.0
  */
 typedef enum : uint32_t {
@@ -43,6 +53,22 @@ typedef enum : uint32_t {
 static uint32_t s_init_count               = k_mock_count_reset;
 static uint32_t s_trigger_estop_count      = k_mock_count_reset;
 static uint32_t s_motor_state_update_count = k_mock_count_reset;
+
+/**
+ * @var s_set_event_count
+ * @brief Counts calls to shared_data_set_event() in the mock.
+ *
+ * @details
+ * Incremented on each shared_data_set_event() call and reset to
+ * k_mock_count_reset by mock_shared_data_reset(). Test code queries this
+ * via mock_shared_data_get_set_event_count() to verify that the expected
+ * number of event-flag set operations occurred.
+ *
+ * @note Accessible only through mock query helpers in this translation unit.
+ * @warning Do not modify directly; use mock_shared_data_reset() to clear.
+ *
+ * @since Version 1.1.0
+ */
 static uint32_t s_set_event_count          = k_mock_count_reset;
 
 /* =============================================================================
@@ -65,6 +91,24 @@ static temp_sensor_state_t s_temp_state     = {0};
 static obstacle_state_t    s_obstacle_state = {0};
 
 static estop_reason_t       s_last_triggered_reason = k_estop_reason_none;
+
+/**
+ * @var s_last_event_flags
+ * @brief Accumulated event flags set by shared_data_set_event().
+ *
+ * @details
+ * OR-accumulates all shared_event_flags_t values passed to
+ * shared_data_set_event() since the last mock_shared_data_reset(). Mirrors
+ * the sticky TX_OR semantics of the production ThreadX event-flags group.
+ * Test code retrieves this via mock_shared_data_get_last_event_flags() to
+ * verify which event bits were raised during a test.
+ *
+ * @note Accessible only through mock query helpers in this translation unit.
+ * @warning Do not modify directly; use shared_data_set_event() to set bits
+ *          and mock_shared_data_reset() to clear.
+ *
+ * @since Version 1.1.0
+ */
 static shared_event_flags_t s_last_event_flags      = k_event_none;
 
 /* =============================================================================

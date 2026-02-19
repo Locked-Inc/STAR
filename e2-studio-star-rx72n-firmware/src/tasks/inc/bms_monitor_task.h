@@ -232,3 +232,32 @@ typedef struct {
  * @since Version 1.1.0
  */
 rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config);
+
+#ifdef UNIT_TEST
+/**
+ * @brief Reset the BMS task singleton guard for unit test isolation
+ *
+ * @details
+ * Clears the internal s_bms_created guard so that bms_monitor_task_create()
+ * can be called again in a subsequent test. This function is only available
+ * when UNIT_TEST is defined and must never appear in production builds.
+ *
+ * @return void
+ * @retval None
+ *
+ * @pre Called from tearDown() after each test that invoked
+ *      bms_monitor_task_create().
+ * @pre No real BMS thread is running (test environment uses mocked ThreadX).
+ *
+ * @post bms_monitor_task_create() may be called again
+ * @post Internal config copy is zeroed
+ *
+ * @note NOT thread-safe; intended for single-threaded unit test context only.
+ * @warning Do not call this from production code or interrupt context.
+ *
+ * @see bms_monitor_task_create() The function whose guard this resets
+ *
+ * @since Version 1.1.0
+ */
+void bms_monitor_task_reset(void);
+#endif /* UNIT_TEST */

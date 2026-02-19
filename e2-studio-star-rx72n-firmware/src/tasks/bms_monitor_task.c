@@ -614,12 +614,16 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  *
  * @retval k_rx_ok Task created successfully, thread scheduled and running
  * @retval k_rx_err_null_ptr config is NULL
+ * @retval k_rx_err_invalid_arg config->soc_warning_pct is outside [k_bms_soc_warning_min, k_bms_soc_warning_max]
+ * @retval k_rx_err_invalid_arg config->soc_critical_pct is outside [k_bms_soc_critical_min, k_bms_soc_critical_max]
  * @retval k_rx_err_invalid_arg config->soc_critical_pct >= config->soc_warning_pct
  * @retval k_rx_err_invalid_state Task already created (s_bms_created == true). Second call blocked.
  * @retval k_rx_err_rtos_thread_create ThreadX tx_thread_create() returned error (!= TX_SUCCESS).
  *                                     Possible causes: invalid priority, stack too small, TCB corruption.
  *
  * @pre config != NULL
+ * @pre config->soc_warning_pct in [k_bms_soc_warning_min, k_bms_soc_warning_max]
+ * @pre config->soc_critical_pct in [k_bms_soc_critical_min, k_bms_soc_critical_max]
  * @pre config->soc_critical_pct < config->soc_warning_pct
  * @pre ThreadX kernel entered via tx_kernel_enter()
  * @pre tx_application_define() callback currently executing
@@ -629,12 +633,13 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  * @pre s_bms_thread uninitialized (first use)
  * @pre s_bms_stack allocated and uninitialized (first use)
  *
- * @post s_bms_thread initialized with ThreadX control block
- * @post s_bms_stack assigned to thread and stack pointer initialized
- * @post Task in READY or RUNNING state (depends on ThreadX scheduler)
- * @post s_bms_created == true (prevents future double-creation)
- * @post internal_bms_task_entry() scheduled for execution (auto-start)
- * @post Task will begin polling BQ4050 at 1 Hz after I2C initialization
+ * @post On success: s_bms_thread initialized with ThreadX control block
+ * @post On success: s_bms_stack assigned to thread and stack pointer initialized
+ * @post On success: Task in READY or RUNNING state (depends on ThreadX scheduler)
+ * @post On success: s_bms_created == true (prevents future double-creation)
+ * @post On success: internal_bms_task_entry() scheduled for execution (auto-start)
+ * @post On success: Task will begin polling BQ4050 at 1 Hz after I2C initialization
+ * @post On failure: s_bms_created unchanged (remains false)
  *
  * @invariant s_bms_created transitions false -> true exactly once (never resets)
  * @invariant Task priority remains at k_bms_priority (15) throughout lifetime
@@ -863,6 +868,46 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 
 /* -------------------------------------------------------------------------- */
 
+#ifdef UNIT_TEST
+/**
+ * @brief Reset BMS task singleton guard for unit test isolation
+ *
+ * @details
+ * Clears the s_bms_created static guard so that bms_monitor_task_create()
+ * can be called again in a subsequent test. Also zeroes the internal config
+ * copy so tests start from a clean state.
+ *
+ * **Only compiled when UNIT_TEST is defined.** This function must never
+ * appear in production firmware builds.
+ *
+ * @return void
+ * @retval None
+ *
+ * @pre Called from tearDown() after each test that exercised
+ *      bms_monitor_task_create().
+ * @pre No BMS task thread is actively running (test environment is
+ *      single-threaded; tx_thread_create() is mocked).
+ *
+ * @post s_bms_created == false
+ * @post s_bms_config zeroed
+ *
+ * @note NOT thread-safe; intended for single-threaded unit test context only.
+ * @warning Never call this from production code or interrupt context.
+ *
+ * @see bms_monitor_task_create() The function whose guard this clears
+ * @see tearDown() in test_bms_monitoring_task.c Canonical caller
+ *
+ * @since Version 1.1.0
+ */
+void bms_monitor_task_reset(void)
+{
+  s_bms_created = false;
+  (void)memset(&s_bms_config, 0, sizeof(s_bms_config));
+}
+#endif /* UNIT_TEST */
+
+/* -------------------------------------------------------------------------- */
+
 /**
  * @brief Convert a BQ4050 status snapshot into the shared bms_state_t format
  *
@@ -875,6 +920,9 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
  *
  * @param[in]  status Driver status snapshot read from the BQ4050 IC
  * @param[out] out    Destination shared-data struct to populate
+ *
+ * @return void This function returns no value.
+ * @retval None All output is written through the @p out pointer.
  *
  * @pre  status != NULL
  * @pre  out != NULL

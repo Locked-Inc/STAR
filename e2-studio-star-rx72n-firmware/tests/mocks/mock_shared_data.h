@@ -278,7 +278,7 @@ uint32_t mock_shared_data_get_trigger_estop_count(void);
  *
  * @code
  * shared_data_set_event(k_event_low_battery);
- * TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_set_event_count());
+ * TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_one, mock_shared_data_get_set_event_count());
  * @endcode
  *
  * @see shared_data_set_event() The function whose calls are counted

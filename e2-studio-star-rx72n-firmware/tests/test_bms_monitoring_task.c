@@ -395,7 +395,11 @@ void setUp(void)
 
 void tearDown(void)
 {
-  /* Clean up after each test */
+  /* Reset the production singleton guard so bms_monitor_task_create() may be
+   * called again in the next test.  Without this, tests that invoke
+   * bms_monitor_task_create() would leave s_bms_created == true and cause
+   * subsequent creation tests to return k_rx_err_invalid_state. */
+  bms_monitor_task_reset();
 }
 
 /* =============================================================================
@@ -772,6 +776,12 @@ void test_bms_task_no_warning_at_exactly_25_pct(void)
   /* 25% is NOT strictly less than 25% - no warning */
   bool is_warning = (status.relative_soc < k_bms_soc_warning_pct_default);
   TEST_ASSERT_FALSE(is_warning);
+
+  /* Verify no side-effect calls occurred */
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero,
+                           mock_shared_data_get_set_event_count());
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero,
+                           mock_shared_data_get_trigger_estop_count());
 }
 
 /**
