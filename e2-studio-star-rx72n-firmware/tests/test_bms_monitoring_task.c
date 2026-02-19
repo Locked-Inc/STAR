@@ -385,6 +385,32 @@ typedef enum : uint32_t {
  * =============================================================================
  */
 
+/**
+ * @brief Unity test fixture setup — resets all mocks before each test
+ *
+ * @details
+ * Called automatically by Unity before every test function in this file.
+ * Resets all mock state to a clean baseline to guarantee test isolation:
+ * - mock_shared_data_reset() clears shared data and all call counters
+ * - mock_bq4050_reset() restores default battery readings (12 V, 100% SoC)
+ * - mock_tx_reset() clears ThreadX mock state and task-creation flags
+ *
+ * @return void
+ *
+ * @pre None (called unconditionally by Unity before each test)
+ * @post All mock call counters are zero
+ * @post BQ4050 mock reports 12000 mV, 0 mA, 100% SoC
+ * @post ThreadX mock is ready to accept thread-creation calls
+ *
+ * @note Not thread-safe; single-threaded Unity test framework use only
+ *
+ * @see tearDown()                Complementary teardown after each test
+ * @see mock_shared_data_reset()  Shared-data mock reset
+ * @see mock_bq4050_reset()       BQ4050 mock reset
+ * @see mock_tx_reset()           ThreadX mock reset
+ *
+ * @since Version 1.1.0
+ */
 void setUp(void)
 {
   /* Reset all mocks before each test */
@@ -393,6 +419,31 @@ void setUp(void)
   mock_tx_reset();
 }
 
+/**
+ * @brief Unity test fixture teardown — resets BMS task singleton guard
+ *
+ * @details
+ * Called automatically by Unity after every test function in this file.
+ * Clears the BMS monitor task singleton guard (s_bms_task_created) so that
+ * bms_monitor_task_create() may be called again in subsequent tests.
+ * Without this reset, any test that invokes bms_monitor_task_create() would
+ * leave the guard set and cause the next test to receive
+ * k_rx_err_invalid_state instead of k_rx_ok.
+ *
+ * @return void
+ *
+ * @pre bms_monitor_task_create() may or may not have been called in the test
+ * @post s_bms_task_created == false in mock_tasks.c
+ * @post bms_monitor_task_create() may be called again in the next test
+ *
+ * @note Not thread-safe; single-threaded Unity test framework use only
+ * @warning Do not call from production code or interrupt context
+ *
+ * @see setUp()                  Complementary setup before each test
+ * @see bms_monitor_task_reset() Internal function that clears the guard
+ *
+ * @since Version 1.1.0
+ */
 void tearDown(void)
 {
   /* Reset the production singleton guard so bms_monitor_task_create() may be
@@ -628,8 +679,10 @@ void test_bms_task_create_already_created(void)
  */
 void test_bms_task_reads_battery_data(void)
 {
-  rx_bq4050_status_t status  = {0};
-  bms_state_t        bms_out = {0};
+  rx_bq4050_status_t status;
+  bms_state_t        bms_out;
+  (void)memset(&status, 0, sizeof(status));
+  (void)memset(&bms_out, 0, sizeof(bms_out));
   rx_err_t           err;
 
   /* Set up battery status */
@@ -643,7 +696,8 @@ void test_bms_task_reads_battery_data(void)
   TEST_ASSERT_EQUAL_UINT16(k_test_normal_voltage_mv, status.voltage_mv);
 
   /* Convert and store in shared data */
-  bms_state_t bms  = {0};
+  bms_state_t bms;
+  (void)memset(&bms, 0, sizeof(bms));
   bms.voltage_mv   = status.voltage_mv;
   bms.current_ma   = status.current_ma;
   bms.soc_percent  = status.relative_soc;
@@ -685,7 +739,8 @@ void test_bms_task_no_warning_above_threshold(void)
   mock_bq4050_set_status(k_test_normal_voltage_mv, k_test_normal_current_ma,
                          k_test_soc_above_warning);
 
-  rx_bq4050_status_t status = {0};
+  rx_bq4050_status_t status;
+  (void)memset(&status, 0, sizeof(status));
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(k_test_soc_above_warning, status.relative_soc);
@@ -725,7 +780,8 @@ void test_bms_task_low_battery_warning_at_25_pct(void)
   /* Set battery SoC to 20% (below the 25% default warning threshold) */
   mock_bq4050_set_status(k_test_low_voltage_mv, k_test_low_current_ma, k_test_soc_below_warning);
 
-  rx_bq4050_status_t status = {0};
+  rx_bq4050_status_t status;
+  (void)memset(&status, 0, sizeof(status));
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(k_test_soc_below_warning, status.relative_soc);
@@ -768,7 +824,8 @@ void test_bms_task_no_warning_at_exactly_25_pct(void)
   /* Set battery SoC to exactly 25% - at the threshold, not below */
   mock_bq4050_set_status(k_test_low_voltage_mv, k_test_low_current_ma, k_test_soc_at_warning);
 
-  rx_bq4050_status_t status = {0};
+  rx_bq4050_status_t status;
+  (void)memset(&status, 0, sizeof(status));
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(k_test_soc_at_warning, status.relative_soc);
@@ -808,7 +865,8 @@ void test_bms_task_critical_battery_triggers_estop(void)
   mock_bq4050_set_status(k_test_low_voltage_mv, k_test_critical_current_ma,
                          k_test_soc_below_critical);
 
-  rx_bq4050_status_t status = {0};
+  rx_bq4050_status_t status;
+  (void)memset(&status, 0, sizeof(status));
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(k_test_soc_below_critical, status.relative_soc);
@@ -852,7 +910,8 @@ void test_bms_task_no_estop_at_exactly_5_pct(void)
   mock_bq4050_set_status(k_test_low_voltage_mv, k_test_critical_current_ma,
                          k_test_soc_at_critical);
 
-  rx_bq4050_status_t status = {0};
+  rx_bq4050_status_t status;
+  (void)memset(&status, 0, sizeof(status));
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(k_test_soc_at_critical, status.relative_soc);
@@ -861,7 +920,8 @@ void test_bms_task_no_estop_at_exactly_5_pct(void)
   bool is_critical = (status.relative_soc < k_bms_soc_critical_pct_default);
   TEST_ASSERT_FALSE(is_critical);
 
-  /* No e-stop should have been triggered */
+  /* No mock side-effects should have fired */
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero, mock_shared_data_get_set_event_count());
   TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero, mock_shared_data_get_trigger_estop_count());
 }
 
@@ -888,7 +948,8 @@ void test_bms_task_warning_only_between_thresholds(void)
   /* 20% - between critical (5%) and warning (25%) */
   mock_bq4050_set_status(k_test_low_voltage_mv, k_test_low_current_ma, k_test_soc_below_warning);
 
-  rx_bq4050_status_t status = {0};
+  rx_bq4050_status_t status;
+  (void)memset(&status, 0, sizeof(status));
   rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
@@ -897,6 +958,10 @@ void test_bms_task_warning_only_between_thresholds(void)
 
   TEST_ASSERT_TRUE(is_warning);
   TEST_ASSERT_FALSE(is_critical);
+
+  /* No mock side-effects should have fired (test verifies boolean logic only) */
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero, mock_shared_data_get_set_event_count());
+  TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_zero, mock_shared_data_get_trigger_estop_count());
 }
 
 /**
@@ -939,7 +1004,8 @@ void test_bms_task_create_custom_thresholds(void)
   mock_bq4050_set_status(k_test_normal_voltage_mv, k_test_normal_current_ma,
                          k_test_custom_soc_below_warning);
 
-  rx_bq4050_status_t status = {0};
+  rx_bq4050_status_t status;
+  (void)memset(&status, 0, sizeof(status));
   err = rx_bq4050_read_status(nullptr, "i2c0", &status, k_test_cell_count);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT8(k_test_custom_soc_below_warning, status.relative_soc);
@@ -982,8 +1048,10 @@ void test_bms_task_create_custom_thresholds(void)
  */
 void test_bms_data_stored_in_telemetry(void)
 {
-  bms_state_t bms_in  = {0};
-  bms_state_t bms_out = {0};
+  bms_state_t bms_in;
+  bms_state_t bms_out;
+  (void)memset(&bms_in, 0, sizeof(bms_in));
+  (void)memset(&bms_out, 0, sizeof(bms_out));
   rx_err_t    err;
 
   /* Set up complete BMS state */

@@ -48,6 +48,39 @@ void mock_bq4050_set_init_return(rx_err_t err)
   s_init_return = err;
 }
 
+/**
+ * @brief Inject an error return value for all BQ4050 read operations
+ *
+ * @details
+ * Sets s_read_return to @p err so that all subsequent mock read calls
+ * (rx_bq4050_read_voltage, rx_bq4050_read_current, rx_bq4050_read_soc,
+ * rx_bq4050_read_status) return that error code. Persists until
+ * mock_bq4050_reset() is called.
+ *
+ * @param[in] err Error code to inject
+ *
+ * @pre mock_bq4050_reset() called in setUp to establish baseline
+ * @pre err is a valid rx_err_t value
+ *
+ * @post s_read_return == err
+ * @post All subsequent mock read functions return err
+ *
+ * @note Not thread-safe; single-threaded test use only
+ *
+ * @code
+ * mock_bq4050_set_read_return(k_rx_err_timeout);
+ * rx_bq4050_status_t out;
+ * (void)memset(&out, 0, sizeof(out));
+ * rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &out, 4);
+ * TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+ * @endcode
+ *
+ * @see mock_bq4050_reset()           Restore default (k_rx_ok)
+ * @see s_read_return                  Static variable set by this function
+ * @see mock_bq4050_set_init_return() Inject errors into rx_bq4050_init()
+ *
+ * @since Version 1.0.0
+ */
 void mock_bq4050_set_read_return(rx_err_t err)
 {
   s_read_return = err;
@@ -165,44 +198,50 @@ rx_err_t rx_bq4050_read_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  *
  * @details
  * Returns the full battery status struct from the mock's internal state.
- * Increments the status call counter. If the injected return code is not
- * k_rx_ok, the status struct is left unmodified.
+ * Validates num_cells against [1, k_bq4050_max_cells] to mirror the
+ * production driver's range check. Increments the status call counter only
+ * on a valid num_cells value. If the injected return code is not k_rx_ok,
+ * the status struct is left unmodified.
  *
  * @param[in]  manager   Bus manager handle (ignored by mock, may be NULL)
  * @param[in]  bus_name  SMBus channel name (ignored by mock)
  * @param[out] status    Pointer to status struct to populate; must not be NULL
- * @param[in]  num_cells Number of cells to read voltages for (ignored by mock)
+ * @param[in]  num_cells Number of cells to read voltages for; must be in
+ *                       [1, k_bq4050_max_cells] (same constraint as production driver)
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok         Status written successfully
- * @retval k_rx_err_null_ptr status pointer is NULL
- * @retval (injected)      Any error set via mock_bq4050_set_read_return()
+ * @retval k_rx_ok              Status written successfully
+ * @retval k_rx_err_null_ptr    status pointer is NULL
+ * @retval k_rx_err_invalid_arg num_cells is 0 or greater than k_bq4050_max_cells (4)
+ * @retval (injected)           Any error set via mock_bq4050_set_read_return()
  *
  * @pre mock_bq4050_reset() or mock_bq4050_set_full_status() called to
  *      configure desired return values
  * @pre status != NULL
- * @post mock_bq4050_get_status_count() incremented by one
+ * @pre num_cells in [1, k_bq4050_max_cells]
+ * @post mock_bq4050_get_status_count() incremented by one (only on valid num_cells)
  * @post *status populated with mock battery state if return is k_rx_ok
  *
  * @note Thread-unsafe; single-threaded test use only
  *
  * @code
- * // Inject a read error and verify the task handles it:
- * mock_bq4050_set_read_return(k_rx_err_i2c_nack);
- * rx_bq4050_status_t status;
- * rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &status, 4);
- * TEST_ASSERT_EQUAL(k_rx_err_i2c_nack, err);
- *
- * // Normal read with pre-configured status:
+ * // Configure mock and read status:
  * mock_bq4050_reset();
  * mock_bq4050_set_full_status(&expected_status);
- * err = rx_bq4050_read_status(nullptr, "i2c0", &status, 4);
+ * rx_bq4050_status_t out;
+ * rx_err_t err = rx_bq4050_read_status(nullptr, "i2c0", &out, 4);
  * TEST_ASSERT_EQUAL(k_rx_ok, err);
- * TEST_ASSERT_EQUAL_UINT32(1, mock_bq4050_get_status_count());
+ * TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_one,
+ *                          mock_bq4050_get_status_count());
+ *
+ * // Inject a read error:
+ * mock_bq4050_set_read_return(k_rx_err_i2c_nack);
+ * err = rx_bq4050_read_status(nullptr, "i2c0", &out, 4);
+ * TEST_ASSERT_EQUAL(k_rx_err_i2c_nack, err);
  * @endcode
  *
  * @see mock_bq4050_set_full_status() Configure full status response
- * @see mock_bq4050_set_read_return() Inject read errors
+ * @see mock_bq4050_set_read_return() Inject read errors into this function
  * @see mock_bq4050_get_status_count() Verify call count
  *
  * @since Version 1.1.0
@@ -214,7 +253,10 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
 {
   (void)manager;
   (void)bus_name;
-  (void)num_cells;
+
+  if ((num_cells == 0) || (num_cells > k_bq4050_max_cells)) {
+    return k_rx_err_invalid_arg;
+  }
 
   s_status_count++;
 
