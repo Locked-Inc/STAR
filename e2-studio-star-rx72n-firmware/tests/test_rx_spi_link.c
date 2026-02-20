@@ -246,6 +246,7 @@ static rx_err_t internal_init_link(bool fec_enabled)
 {
   /* Initialize session state */
   rx_err_t err = rx_session_init(&s_session);
+
   if (err != k_rx_ok) {
     return err;
   }
@@ -293,6 +294,7 @@ static rx_err_t internal_init_link(bool fec_enabled)
 void test_init_null_link(void)
 {
   const rx_spi_link_config_t cfg = {.spi_handle = &s_spi_comm};
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_spi_link_init(nullptr, &cfg));
 }
 
@@ -336,6 +338,7 @@ void test_init_null_config(void)
 void test_init_null_spi_handle(void)
 {
   const rx_spi_link_config_t cfg = {.spi_handle = nullptr};
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_spi_link_init(&s_link, &cfg));
 }
 
@@ -368,6 +371,7 @@ void test_init_null_spi_handle(void)
 void test_init_success_no_fec(void)
 {
   rx_err_t err = rx_session_init(&s_session);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   const rx_spi_comm_config_t spi_cfg = {
@@ -414,6 +418,7 @@ void test_init_success_no_fec(void)
 void test_init_success_with_fec(void)
 {
   rx_err_t err = internal_init_link(true);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_link.initialized);
   TEST_ASSERT_TRUE(s_link.fec_enabled);
@@ -440,6 +445,7 @@ void test_init_success_with_fec(void)
 void test_init_custom_retries(void)
 {
   rx_err_t err = rx_session_init(&s_session);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   const rx_spi_comm_config_t spi_cfg = {
@@ -528,6 +534,7 @@ void test_deinit_uninitialized(void)
 void test_deinit_success(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_spi_link_deinit(&s_link);
@@ -601,6 +608,7 @@ void test_get_state_uninitialized(void)
 void test_get_state_after_init(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_spi_link_state_idle, rx_spi_link_get_state(&s_link));
 }
@@ -674,6 +682,7 @@ void test_fec_enabled_uninitialized(void)
 void test_fec_enabled_off(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(rx_spi_link_fec_enabled(&s_link));
 }
@@ -699,6 +708,7 @@ void test_fec_enabled_off(void)
 void test_fec_enabled_on(void)
 {
   rx_err_t err = internal_init_link(true);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(rx_spi_link_fec_enabled(&s_link));
 }
@@ -774,6 +784,7 @@ void test_reset_uninitialized(void)
 void test_reset_success(void)
 {
   rx_err_t err = internal_init_link(true);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Manually set state to error to test reset */
@@ -809,6 +820,7 @@ void test_reset_success(void)
 void test_send_null_link(void)
 {
   uint8_t data[] = {k_rx_spi_test_data_byte1, k_rx_spi_test_data_byte2};
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                     rx_spi_link_send(nullptr, k_frame_type_command, data, sizeof(data)));
 }
@@ -833,6 +845,7 @@ void test_send_null_link(void)
 void test_send_uninitialized(void)
 {
   uint8_t data[] = {k_rx_spi_test_data_byte1, k_rx_spi_test_data_byte2};
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
                     rx_spi_link_send(&s_link, k_frame_type_command, data, sizeof(data)));
 }
@@ -858,6 +871,7 @@ void test_send_uninitialized(void)
 void test_send_null_payload_nonzero_len(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   TEST_ASSERT_EQUAL(
@@ -886,6 +900,7 @@ void test_send_null_payload_nonzero_len(void)
 void test_send_payload_too_large(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   uint8_t data[k_rx_spi_test_min_buf];
@@ -917,6 +932,7 @@ void test_send_payload_too_large(void)
 void test_receive_null_link(void)
 {
   rx_spi_link_receive_result_t result;
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                     rx_spi_link_receive(nullptr, &result, k_rx_spi_test_timeout_normal));
 }
@@ -941,6 +957,7 @@ void test_receive_null_link(void)
 void test_receive_null_result(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
@@ -966,6 +983,7 @@ void test_receive_null_result(void)
 void test_receive_uninitialized(void)
 {
   rx_spi_link_receive_result_t result;
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state,
                     rx_spi_link_receive(&s_link, &result, k_rx_spi_test_timeout_normal));
 }
@@ -1005,6 +1023,7 @@ void test_receive_uninitialized(void)
 void test_state_transitions_send_retries(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Initial state should be idle */
@@ -1052,6 +1071,7 @@ void test_fec_enabled_query(void)
 {
   /* Test with FEC disabled */
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(rx_spi_link_fec_enabled(&s_link));
 
@@ -1132,6 +1152,7 @@ void test_state_query_null_and_error(void)
 void test_receive_filters_control_frames(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_spi_link_receive_result_t result;
@@ -1172,6 +1193,7 @@ void test_max_retries_enforcement(void)
 {
   /* Initialize with custom max_retries=1 */
   rx_err_t err = rx_session_init(&s_session);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   const rx_spi_comm_config_t spi_cfg = {
@@ -1232,6 +1254,7 @@ void test_max_retries_enforcement(void)
 void test_reset_clears_error_state(void)
 {
   rx_err_t err = internal_init_link(false);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Force link into error state by exhausting retries */

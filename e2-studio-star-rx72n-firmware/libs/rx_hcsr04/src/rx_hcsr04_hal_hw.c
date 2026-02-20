@@ -542,12 +542,48 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, uint8_t* por
  */
 
 /**
- * @brief Configure GPIO pin as output
+ * @brief Configure a GPIO pin as a digital output for HC-SR04 trigger control
  *
- * @param[in] pin GPIO pin to configure
+ * @details
+ * Validates the port/pin combination and then configures the specified GPIO
+ * pin as a push-pull digital output via the gpio_set_output() hardware
+ * abstraction layer. Used to configure the HC-SR04 trigger pin before
+ * initiating ultrasonic measurement pulses.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if pin is invalid
+ * Algorithm steps:
+ * 1. Validate the pin via internal_validate_port_pin() (checks port and pin indices)
+ * 2. Call gpio_set_output(pin) to set the data direction register bit
+ *
+ * @param[in] pin GPIO port/pin descriptor specifying the trigger GPIO;
+ *            must be a valid rx_port_pin_t with legal port and pin values
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Pin successfully configured as output
+ * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
+ *
+ * @pre pin must encode a valid port/pin combination supported by the RX72N
+ * @pre GPIO peripheral clock must be enabled before calling
+ * @post The specified GPIO pin direction register bit is set to output mode
+ * @post Pin output level is undefined; call hcsr04_hal_gpio_write_low() to initialize
+ *
+ * @note Not thread-safe; GPIO direction configuration should occur during initialization
+ *
+ * @par Example:
+ * @code
+ * rx_err_t err = hcsr04_hal_gpio_set_output(config->trigger_pin);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("hcsr04", "Failed to configure trigger pin as output");
+ * }
+ * @endcode
+ *
+ * @see hcsr04_hal_gpio_write_high() Drive trigger pin high to start pulse
+ * @see hcsr04_hal_gpio_write_low() Drive trigger pin low
+ * @see hcsr04_hal_gpio_set_input() Configure echo pin as input
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (valid pin, clock enabled), 2 postconditions
  */
 rx_err_t hcsr04_hal_gpio_set_output(const rx_port_pin_t pin)
 {
@@ -561,12 +597,47 @@ rx_err_t hcsr04_hal_gpio_set_output(const rx_port_pin_t pin)
 }
 
 /**
- * @brief Configure GPIO pin as input
+ * @brief Configure a GPIO pin as a digital input for HC-SR04 echo reception
  *
- * @param[in] pin GPIO pin to configure
+ * @details
+ * Validates the port/pin combination and then configures the specified GPIO
+ * pin as a digital input via the gpio_set_input() hardware abstraction layer.
+ * Used to configure the HC-SR04 echo pin so that the rising and falling edges
+ * of the echo pulse can be measured.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if pin is invalid
+ * Algorithm steps:
+ * 1. Validate the pin via internal_validate_port_pin() (checks port and pin indices)
+ * 2. Call gpio_set_input(pin) to clear the data direction register bit
+ *
+ * @param[in] pin GPIO port/pin descriptor specifying the echo GPIO;
+ *            must be a valid rx_port_pin_t with legal port and pin values
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Pin successfully configured as input
+ * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
+ *
+ * @pre pin must encode a valid port/pin combination supported by the RX72N
+ * @pre GPIO peripheral clock must be enabled before calling
+ * @post The specified GPIO pin direction register bit is cleared to input mode
+ * @post Pin can now be read to detect echo pulse edges
+ *
+ * @note Not thread-safe; GPIO direction configuration should occur during initialization
+ *
+ * @par Example:
+ * @code
+ * rx_err_t err = hcsr04_hal_gpio_set_input(config->echo_pin);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("hcsr04", "Failed to configure echo pin as input");
+ * }
+ * @endcode
+ *
+ * @see hcsr04_hal_gpio_set_output() Configure trigger pin as output
+ * @see hcsr04_hal_gpio_write_high() Drive trigger pin high
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (valid pin, clock enabled), 2 postconditions
  */
 rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
 {
@@ -580,12 +651,48 @@ rx_err_t hcsr04_hal_gpio_set_input(const rx_port_pin_t pin)
 }
 
 /**
- * @brief Write high level to GPIO pin
+ * @brief Drive a GPIO output pin to logic high to initiate HC-SR04 trigger pulse
  *
- * @param[in] pin GPIO pin to write
+ * @details
+ * Validates the port/pin combination and drives the specified output GPIO pin
+ * to a logic high (VDD) level via the gpio_write_high() hardware abstraction
+ * layer. In HC-SR04 operation, this is used to begin the 10 µs trigger pulse
+ * that initiates an ultrasonic ranging measurement.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if pin is invalid
+ * Algorithm steps:
+ * 1. Validate the pin via internal_validate_port_pin()
+ * 2. Call gpio_write_high(pin) to set the output data register bit
+ *
+ * @param[in] pin GPIO port/pin descriptor specifying the output pin to drive high;
+ *            must be a valid rx_port_pin_t already configured as output
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Pin output register bit successfully set high
+ * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
+ *
+ * @pre pin must encode a valid port/pin combination supported by the RX72N
+ * @pre Pin must have been configured as output via hcsr04_hal_gpio_set_output()
+ * @post The GPIO pin output data register bit is set; pin drives logic high
+ * @post Follow with hcsr04_hal_delay_us(10) then hcsr04_hal_gpio_write_low() for trigger pulse
+ *
+ * @note Not thread-safe; concurrent GPIO writes to the same pin produce undefined behavior
+ *
+ * @par Example:
+ * @code
+ * // Generate 10 µs HC-SR04 trigger pulse
+ * hcsr04_hal_gpio_write_high(config->trigger_pin);
+ * hcsr04_hal_delay_us(10);
+ * hcsr04_hal_gpio_write_low(config->trigger_pin);
+ * @endcode
+ *
+ * @see hcsr04_hal_gpio_write_low() Drive pin low to end trigger pulse
+ * @see hcsr04_hal_gpio_set_output() Configure pin as output first
+ * @see hcsr04_hal_delay_us() Delay for trigger pulse duration
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (valid pin, configured as output), 2 postconditions
  */
 rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
 {
@@ -599,12 +706,50 @@ rx_err_t hcsr04_hal_gpio_write_high(const rx_port_pin_t pin)
 }
 
 /**
- * @brief Write low level to GPIO pin
+ * @brief Drive a GPIO output pin to logic low to complete HC-SR04 trigger pulse
  *
- * @param[in] pin GPIO pin to write
+ * @details
+ * Validates the port/pin combination and drives the specified output GPIO pin
+ * to a logic low (GND) level via the gpio_write_low() hardware abstraction
+ * layer. In HC-SR04 operation, this is used after a 10 µs high pulse to
+ * complete the trigger signal, after which the sensor emits ultrasonic bursts
+ * and the echo pin goes high for a period proportional to measured distance.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if pin is invalid
+ * Algorithm steps:
+ * 1. Validate the pin via internal_validate_port_pin()
+ * 2. Call gpio_write_low(pin) to clear the output data register bit
+ *
+ * @param[in] pin GPIO port/pin descriptor specifying the output pin to drive low;
+ *            must be a valid rx_port_pin_t already configured as output
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Pin output register bit successfully cleared low
+ * @retval k_rx_err_invalid_arg pin specifies an invalid port or pin number
+ *
+ * @pre pin must encode a valid port/pin combination supported by the RX72N
+ * @pre Pin must have been configured as output via hcsr04_hal_gpio_set_output()
+ * @post The GPIO pin output data register bit is cleared; pin drives logic low
+ * @post HC-SR04 trigger sequence is complete; echo pin will pulse proportional to distance
+ *
+ * @note Not thread-safe; concurrent GPIO writes to the same pin produce undefined behavior
+ *
+ * @par Example:
+ * @code
+ * // Complete 10 µs HC-SR04 trigger pulse
+ * hcsr04_hal_gpio_write_high(config->trigger_pin);
+ * hcsr04_hal_delay_us(10);
+ * hcsr04_hal_gpio_write_low(config->trigger_pin);
+ * uint32_t echo_start = hcsr04_hal_get_time_us();
+ * @endcode
+ *
+ * @see hcsr04_hal_gpio_write_high() Drive pin high to start trigger pulse
+ * @see hcsr04_hal_gpio_set_output() Configure pin as output first
+ * @see hcsr04_hal_get_time_us() Capture echo start timestamp after trigger
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (valid pin, configured as output), 2 postconditions
  */
 rx_err_t hcsr04_hal_gpio_write_low(const rx_port_pin_t pin)
 {
@@ -629,13 +774,11 @@ rx_err_t hcsr04_hal_gpio_write_low(const rx_port_pin_t pin)
  */
 rx_err_t hcsr04_hal_gpio_read(const rx_port_pin_t pin, bool* value)
 {
-  rx_err_t err;
-
   if (value == nullptr) {
     return k_rx_err_null_ptr;
   }
 
-  err = internal_validate_port_pin(pin, nullptr, nullptr);
+  const rx_err_t err = internal_validate_port_pin(pin, nullptr, nullptr);
   if (err != k_rx_ok) {
     return err;
   }
@@ -768,6 +911,7 @@ typedef enum : uint32_t {
   k_min_ticks              = 1,                          /**< Minimum delay to prevent zero-wait */
   k_cmstr1_cmt2_enable_bit = k_rx72n_cmstr1_cmt2_enable, /**< CMSTR1.STR2 bit (bit 0) */
   k_counter_reset          = 0,                          /**< Counter initial value */
+  k_iteration_init         = 0,                          /**< Iteration counter initial value */
   k_isr_us_numerator       = 2, /**< ISR timestamp ratio numerator: 1000000 / (60000000/8) = 2/15 */
   k_isr_us_denominator = 15, /**< ISR timestamp ratio denominator: avoids 64-bit division in ISR */
 } cmt2_timing_constants_t;
@@ -925,13 +1069,11 @@ static bool s_time_mutex_initialized = false;
  */
 static rx_err_t internal_time_mutex_init(void)
 {
-  UINT status = TX_SUCCESS;
-
   if (s_time_mutex_initialized) {
     return k_rx_ok;
   }
 
-  status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
+  const UINT status = tx_mutex_create(&s_time_mutex, "TimeMutex", TX_NO_INHERIT);
   if (status == TX_SUCCESS) {
     s_time_mutex_initialized = true;
     return k_rx_ok;
@@ -1037,8 +1179,6 @@ static rx_err_t internal_time_mutex_init(void)
  */
 static void internal_cmt2_init(void)
 {
-  volatile uint16_t* cmstr1 = nullptr;
-
   if (s_cmt2_initialized) {
     return;
   }
@@ -1047,7 +1187,7 @@ static void internal_cmt2_init(void)
   system_regs()->mstpcra &= ~(1U << k_mstpa_cmt23);
 
   /* Get CMSTR1 register (controls CMT2/CMT3) */
-  cmstr1 = &(cmt_ctrl()->cmstr1);
+  volatile uint16_t* const cmstr1 = &(cmt_ctrl()->cmstr1);
 
   /* Stop CMT2 (bit 0 of CMSTR1) */
   *cmstr1 &= (uint16_t) ~(uint16_t)k_cmstr1_cmt2_enable_bit;
@@ -1068,29 +1208,75 @@ static void internal_cmt2_init(void)
 }
 
 /**
- * @brief Delay execution by specified microseconds using CMT2 timer
+ * @brief Delay execution by a specified number of microseconds using CMT2 hardware timer
  *
- * Uses CMT2 hardware timer for precise microsecond delays. Automatically
- * initializes CMT2 on first call. Maximum delay is bounded for safety.
+ * @details
+ * Produces a blocking busy-wait delay by polling the CMT2 Compare Match Timer
+ * counter. CMT2 is automatically initialized on the first call via
+ * internal_cmt2_init(). For large delays (exceeding k_timer_counter_max ticks per
+ * iteration) the wait is split into multiple smaller segments.
  *
- * @param[in] us Delay duration in microseconds (0 = no delay)
+ * CMT2 is driven from PCLKB / k_cmt2_divider, yielding a tick frequency of
+ * k_pclkb_hz / k_cmt2_divider Hz. The requested microsecond count is converted
+ * to ticks using this frequency before entering the polling loop.
+ *
+ * Safety bounds:
+ * - us == 0: returns immediately (k_no_delay check)
+ * - ticks < k_min_ticks: clamped up to k_min_ticks
+ * - ticks > k_max_delay_ticks: no-op in release; assertion in unit tests
+ * - iteration_count >= k_max_delay_iterations: exits loop (prevents infinite spin)
+ *
+ * Algorithm steps:
+ * 1. Return immediately if us == k_no_delay
+ * 2. Call internal_cmt2_init() to ensure CMT2 is running
+ * 3. Compute ticks from us and timer frequency; clamp to [k_min_ticks, k_max_delay_ticks]
+ * 4. Loop: poll CMT2 counter until wait_ticks have elapsed; decrement remaining ticks
+ * 5. Exit when ticks == 0 or iteration_count reaches k_max_delay_iterations
+ *
+ * @param[in] us Delay duration in microseconds (0 = return immediately;
+ *            values exceeding k_max_delay_ticks converted to ticks are silently no-op)
+ *
+ * @return void
+ *
+ * @pre CMT2 hardware is accessible (initialized automatically on first call)
+ * @pre Must NOT be called from a context requiring very long delays (> k_max_delay_ticks ticks)
+ * @post Approximately us microseconds have elapsed (accuracy depends on PCLKB frequency)
+ * @post CMT2 has been initialized (s_cmt2_initialized == true)
+ *
+ * @note Not thread-safe; CMT2 is a shared hardware resource; concurrent callers
+ *       will both observe the same free-running counter and race on initialization
+ * @warning This is a BLOCKING busy-wait; avoid in latency-sensitive interrupt contexts
+ * @warning Accuracy degrades for large us values due to 16-bit counter overflow splitting
+ *
+ * @par Performance:
+ * Overhead: ~3-5 µs minimum due to init check and loop setup @ 240 MHz
+ *
+ * @par Example:
+ * @code
+ * // Generate 10 µs HC-SR04 trigger pulse
+ * hcsr04_hal_gpio_write_high(trigger_pin);
+ * hcsr04_hal_delay_us(10);
+ * hcsr04_hal_gpio_write_low(trigger_pin);
+ * @endcode
+ *
+ * @see hcsr04_hal_get_time_us() Get current timestamp without blocking
+ * @see hcsr04_hal_gpio_write_high() Drive trigger pin high before delay
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (CMT2 accessible, delay within bounds), 2 postconditions
  */
 void hcsr04_hal_delay_us(uint32_t us)
 {
-  uint32_t timer_hz        = 0;
-  uint64_t ticks           = 0;
-  uint16_t start           = 0;
-  uint32_t wait_ticks      = 0;
-  uint32_t iteration_count = 0;
-
   if (us == k_no_delay) {
     return;
   }
 
   internal_cmt2_init();
 
-  timer_hz = k_pclkb_hz / k_cmt2_divider;
-  ticks    = ((uint64_t)us * (uint64_t)timer_hz + k_timer_rounding) / k_us_per_second;
+  uint32_t timer_hz = k_pclkb_hz / k_cmt2_divider;
+  uint64_t ticks    = ((uint64_t)us * (uint64_t)timer_hz + k_timer_rounding) / k_us_per_second;
   if (ticks < k_min_ticks) {
     ticks = k_min_ticks;
   }
@@ -1103,9 +1289,10 @@ void hcsr04_hal_delay_us(uint32_t us)
     return;
   }
 
+  uint32_t iteration_count = k_iteration_init;
   while (ticks > 0 && iteration_count < k_max_delay_iterations) {
-    wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
-    start      = cmt2()->cmcnt;
+    const uint32_t wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
+    const uint16_t start      = cmt2()->cmcnt;
     while ((uint16_t)(cmt2()->cmcnt - start) < wait_ticks) {
       __asm__ volatile("nop");
     }
@@ -1115,40 +1302,89 @@ void hcsr04_hal_delay_us(uint32_t us)
 }
 
 /**
- * @brief Get current time in microseconds using CMT2 timer
+ * @brief Get current monotonic timestamp in microseconds using CMT2 hardware timer
  *
- * Returns monotonic timestamp with overflow tracking. Protected by mutex
- * for thread-safe access to static overflow counter. Falls back to
- * unprotected mode if mutex initialization fails.
+ * @details
+ * Returns a microsecond-resolution timestamp derived from the CMT2 free-running
+ * 16-bit counter. Tracks 16-bit overflow events using a static overflow counter
+ * so that timestamps remain monotonically increasing beyond the ~8.7 ms CMT2
+ * wrap period (65536 ticks at PCLKB/8 = 7.5 MHz).
  *
- * @return Current time in microseconds
+ * Thread Safety: A ThreadX mutex (s_time_mutex) protects the static overflow_count
+ * and last_counter variables. If mutex initialization fails (internal_time_mutex_init()),
+ * the function falls back to returning the raw CMT2 counter without overflow tracking.
+ * If tx_mutex_get() fails at runtime, the same unprotected fallback is used.
+ *
+ * Overflow detection algorithm:
+ * - If current_counter < last_counter, the 16-bit counter has wrapped; increment overflow_count
+ * - Total ticks = (overflow_count << k_timer_counter_bits) | current_counter
+ * - Microseconds = (total_ticks * k_us_per_second) / timer_hz
+ *
+ * Algorithm steps:
+ * 1. Call internal_cmt2_init() to ensure CMT2 is running
+ * 2. Attempt internal_time_mutex_init(); on failure return raw counter (no overflow tracking)
+ * 3. Acquire s_time_mutex (TX_WAIT_FOREVER); on failure return raw counter
+ * 4. Read current_counter from cmt2()->cmcnt
+ * 5. If current_counter < last_counter: increment overflow_count
+ * 6. Update last_counter = current_counter
+ * 7. Compute total_ticks and convert to microseconds
+ * 8. Release s_time_mutex
+ * 9. Return microsecond result
+ *
+ * @return uint32_t Monotonic timestamp in microseconds
+ * @retval [0, UINT32_MAX] Microseconds since CMT2 was first initialized;
+ *         wraps at UINT32_MAX (~71 minutes); value increases monotonically
+ *         between calls (assuming no >~71 minute gap between calls)
+ *
+ * @pre CMT2 hardware is accessible (initialized automatically on first call)
+ * @pre ThreadX kernel must be running for mutex-protected overflow tracking
+ * @post CMT2 has been initialized (s_cmt2_initialized == true after first call)
+ * @post overflow_count is updated if 16-bit counter wrapped since last call
+ *
+ * @note Thread-safe when mutex acquisition succeeds; falls back to unsafe mode otherwise
+ * @warning Overflow tracking accuracy requires calls more frequent than ~8.7 ms;
+ *          if called less frequently the overflow count may be incorrect
+ *
+ * @par Performance:
+ * Execution time: ~5-10 µs with mutex @ 240 MHz (ThreadX overhead)
+ *
+ * @par Example:
+ * @code
+ * uint32_t start = hcsr04_hal_get_time_us();
+ * // ... wait for echo pin ...
+ * uint32_t end = hcsr04_hal_get_time_us();
+ * uint32_t echo_us = end - start;
+ * float distance_cm = (float)echo_us / 58.0f;
+ * @endcode
+ *
+ * @see hcsr04_hal_delay_us() Blocking microsecond delay using same CMT2 timer
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (CMT2 accessible, ThreadX running for mutex), 2 postconditions
  */
 uint32_t hcsr04_hal_get_time_us(void)
 {
-  static uint32_t overflow_count  = 0;
-  static uint16_t last_counter    = 0;
-  uint16_t        current_counter = 0;
-  uint32_t        timer_hz        = 0;
-  uint64_t        total_ticks     = 0;
-  uint32_t        result          = 0;
-  UINT            mutex_status    = TX_SUCCESS;
+  static uint32_t overflow_count = 0;
+  static uint16_t last_counter   = 0;
 
   internal_cmt2_init();
 
   if (internal_time_mutex_init() != k_rx_ok) {
-    timer_hz = k_pclkb_hz / k_cmt2_divider;
-    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz);
+    const uint32_t timer_hz_fallback = k_pclkb_hz / k_cmt2_divider;
+    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz_fallback);
   }
 
   /* Protect static variables from concurrent access */
-  mutex_status = tx_mutex_get(&s_time_mutex, TX_WAIT_FOREVER);
+  const UINT mutex_status = tx_mutex_get(&s_time_mutex, TX_WAIT_FOREVER);
   if (mutex_status != TX_SUCCESS) {
     /* Fallback: return current counter value without overflow tracking */
-    timer_hz = k_pclkb_hz / k_cmt2_divider;
-    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz);
+    const uint32_t timer_hz_fallback = k_pclkb_hz / k_cmt2_divider;
+    return (uint32_t)(((uint64_t)cmt2()->cmcnt * k_us_per_second) / timer_hz_fallback);
   }
 
-  current_counter = cmt2()->cmcnt;
+  const uint16_t current_counter = cmt2()->cmcnt;
 
   /* Detect overflow (counter wrapped around) */
   if (current_counter < last_counter) {
@@ -1157,15 +1393,15 @@ uint32_t hcsr04_hal_get_time_us(void)
   last_counter = current_counter;
 
   /* Calculate total ticks including overflows */
-  total_ticks = ((uint64_t)overflow_count << k_timer_counter_bits) | current_counter;
+  const uint64_t total_ticks = ((uint64_t)overflow_count << k_timer_counter_bits) | current_counter;
 
   /* Convert ticks to microseconds */
-  timer_hz = k_pclkb_hz / k_cmt2_divider;
-  result   = (uint32_t)((total_ticks * k_us_per_second) / timer_hz);
+  const uint32_t timer_hz = k_pclkb_hz / k_cmt2_divider;
+  const uint32_t result   = (uint32_t)((total_ticks * k_us_per_second) / timer_hz);
 
-  mutex_status = tx_mutex_put(&s_time_mutex);
-  if (mutex_status != TX_SUCCESS) {
-    rx_log_error_val("HCSR04", "Failed to release time mutex", (uint32_t)mutex_status);
+  const UINT put_status = tx_mutex_put(&s_time_mutex);
+  if (put_status != TX_SUCCESS) {
+    rx_log_error_val("HCSR04", "Failed to release time mutex", (uint32_t)put_status);
   }
 
   return result;
@@ -1212,9 +1448,9 @@ uint32_t hcsr04_hal_get_time_us(void)
  */
 uint32_t hcsr04_hal_get_time_us_isr(void)
 {
-  const uint16_t current_count = cmt2()->cmcnt;
-
   /* Simplified ratio: 1,000,000 / (60,000,000 / 8) = 2/15.
    * Max value: 65535 * 2 / 15 = 8738 µs. Fits in uint32_t, no 64-bit math. */
+  const uint16_t current_count = cmt2()->cmcnt;
+
   return ((uint32_t)current_count * k_isr_us_numerator) / k_isr_us_denominator;
 }

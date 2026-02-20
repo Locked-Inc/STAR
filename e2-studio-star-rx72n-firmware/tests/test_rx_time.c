@@ -267,6 +267,7 @@ void tearDown(void)
 void test_mock_time_init_zeros_state(void)
 {
   mock_time_t mock;
+
   mock_time_init(&mock);
 
   TEST_ASSERT_TRUE(mock.initialized);
@@ -279,6 +280,7 @@ void test_mock_time_init_zeros_state(void)
 void test_mock_time_deinit_clears_state(void)
 {
   mock_time_t mock;
+
   mock_time_init(&mock);
   mock_time_advance(&mock, 100);
 
@@ -482,6 +484,7 @@ void test_time_interface_validate_success(void)
 void test_time_interface_validate_missing_sleep_fails(void)
 {
   rx_time_interface_t bad_iface = {0};
+
   bad_iface.get_ms              = s_iface.get_ms;
   bad_iface.is_elapsed          = s_iface.is_elapsed;
   /* sleep_ms is nullptr */
@@ -494,6 +497,7 @@ void test_time_interface_validate_missing_sleep_fails(void)
 void test_time_interface_validate_missing_get_ms_fails(void)
 {
   rx_time_interface_t bad_iface = {0};
+
   bad_iface.sleep_ms            = s_iface.sleep_ms;
   bad_iface.is_elapsed          = s_iface.is_elapsed;
   /* get_ms is nullptr */

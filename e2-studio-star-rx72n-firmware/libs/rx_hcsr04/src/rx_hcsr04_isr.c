@@ -242,6 +242,7 @@ static void internal_irq_handler(const uint8_t irq_num)
 {
   /* Step 1: Clear interrupt flag first (acknowledge hardware) */
   const uint8_t vector = k_vector_base + irq_num;
+
   icu()->ir[vector]    = k_ir_flag_clear;
 
   /* Step 2: Compute state array index (IRQ8→0, IRQ9→1, ...) */

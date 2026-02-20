@@ -555,6 +555,7 @@ void tearDown(void)
 void test_rx_bus_uart_init_success(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify channel was initialized */
@@ -585,6 +586,7 @@ void test_rx_bus_uart_init_success(void)
 void test_rx_bus_uart_init_null_manager(void)
 {
   rx_err_t err = rx_bus_uart_init(nullptr, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -611,6 +613,7 @@ void test_rx_bus_uart_init_null_manager(void)
 void test_rx_bus_uart_init_null_bus_name(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -638,6 +641,7 @@ void test_rx_bus_uart_init_null_bus_name(void)
 void test_rx_bus_uart_init_bus_not_found(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, "nonexistent_bus");
+
   TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
 }
 
@@ -756,6 +760,7 @@ void test_rx_bus_uart_write_success(void)
 {
   /* Initialize bus first */
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
@@ -779,6 +784,7 @@ void test_rx_bus_uart_write_success(void)
 void test_rx_bus_uart_write_null_data(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_write(&s_test_manager, s_test_bus_name, nullptr, 10);
@@ -793,6 +799,7 @@ void test_rx_bus_uart_write_not_initialized(void)
   /* Don't initialize bus - just try to write */
   uint8_t  data[] = {0x01, 0x02};
   rx_err_t err    = rx_bus_uart_write(&s_test_manager, s_test_bus_name, data, sizeof(data));
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -802,6 +809,7 @@ void test_rx_bus_uart_write_not_initialized(void)
 void test_rx_bus_uart_putc_success(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
@@ -823,6 +831,7 @@ void test_rx_bus_uart_putc_success(void)
 void test_rx_bus_uart_puts_success(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
@@ -883,6 +892,7 @@ void test_rx_bus_uart_puts_success(void)
 void test_rx_bus_uart_puts_newline_conversion(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Clear TX FIFO (logging during init pollutes it) */
@@ -909,6 +919,7 @@ void test_rx_bus_uart_puts_newline_conversion(void)
 void test_rx_bus_uart_puts_null_string(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_puts(&s_test_manager, s_test_bus_name, nullptr);
@@ -991,6 +1002,7 @@ void test_rx_bus_uart_puts_null_string(void)
 void test_rx_bus_uart_read_success(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject RX data */
@@ -1049,6 +1061,7 @@ void test_rx_bus_uart_read_success(void)
 void test_rx_bus_uart_read_no_data(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Don't inject any data - just try to read */
@@ -1067,6 +1080,7 @@ void test_rx_bus_uart_read_no_data(void)
 void test_rx_bus_uart_read_partial(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject less data than buffer can hold */
@@ -1087,6 +1101,7 @@ void test_rx_bus_uart_read_partial(void)
 void test_rx_bus_uart_read_null_buffer(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   uint16_t bytes_read;
@@ -1100,6 +1115,7 @@ void test_rx_bus_uart_read_null_buffer(void)
 void test_rx_bus_uart_read_null_bytes_read(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   uint8_t rx_buf[16];
@@ -1115,6 +1131,7 @@ void test_rx_bus_uart_read_not_initialized(void)
   uint8_t  rx_buf[16];
   uint16_t bytes_read;
   rx_err_t err =
+
     rx_bus_uart_read(&s_test_manager, s_test_bus_name, rx_buf, sizeof(rx_buf), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -1125,6 +1142,7 @@ void test_rx_bus_uart_read_not_initialized(void)
 void test_rx_bus_uart_getc_success(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject a character */
@@ -1144,6 +1162,7 @@ void test_rx_bus_uart_getc_success(void)
 void test_rx_bus_uart_getc_no_data(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Don't inject any data */
@@ -1158,6 +1177,7 @@ void test_rx_bus_uart_getc_no_data(void)
 void test_rx_bus_uart_getc_null_pointer(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_getc(&s_test_manager, s_test_bus_name, nullptr);
@@ -1229,6 +1249,7 @@ void test_rx_bus_uart_getc_null_pointer(void)
 void test_rx_bus_uart_rx_available_true(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Inject some data */
@@ -1248,6 +1269,7 @@ void test_rx_bus_uart_rx_available_true(void)
 void test_rx_bus_uart_rx_available_false(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Don't inject any data */
@@ -1263,6 +1285,7 @@ void test_rx_bus_uart_rx_available_false(void)
 void test_rx_bus_uart_rx_available_null_pointer(void)
 {
   rx_err_t err = rx_bus_uart_init(&s_test_manager, s_test_bus_name);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, nullptr);
@@ -1298,6 +1321,7 @@ void test_rx_bus_uart_rx_available_not_initialized(void)
 {
   bool     available;
   rx_err_t err = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, &available);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1490,6 +1514,7 @@ void test_rx_bus_config_init_uart_invalid_channel(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_uart(&config,
+
                                          "bad_uart",
                                          k_test_uart_channel_invalid,
                                          k_rx_pb_7,
@@ -1504,6 +1529,7 @@ void test_rx_bus_config_init_uart_invalid_channel(void)
 void test_rx_bus_config_init_uart_invalid_port(void)
 {
   rx_bus_config_t config;
+
   enum : uint8_t { k_invalid_port = k_rx_port_j + 1 };
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_invalid_port << k_port_shift) | k_rx_pin_0);
   rx_err_t      err         = rx_bus_config_init_uart(&config,
@@ -1521,6 +1547,7 @@ void test_rx_bus_config_init_uart_invalid_port(void)
 void test_rx_bus_config_init_uart_invalid_pin(void)
 {
   rx_bus_config_t config;
+
   enum : uint8_t { k_invalid_pin = k_rx_pin_max + 1 };
   rx_port_pin_t invalid_pin = (rx_port_pin_t)((k_rx_port_0 << k_port_shift) | k_invalid_pin);
   rx_err_t      err         = rx_bus_config_init_uart(&config,
@@ -1539,6 +1566,7 @@ void test_rx_bus_config_init_uart_zero_baudrate(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_uart(&config,
+
                                          "bad_uart",
                                          k_test_uart_channel,
                                          k_rx_pb_7,
@@ -1553,6 +1581,7 @@ void test_rx_bus_config_init_uart_zero_baudrate(void)
 void test_rx_bus_config_init_uart_null_config(void)
 {
   rx_err_t err = rx_bus_config_init_uart(nullptr,
+
                                          "uart",
                                          k_test_uart_channel,
                                          k_rx_pb_7,
@@ -1568,6 +1597,7 @@ void test_rx_bus_config_init_uart_null_name(void)
 {
   rx_bus_config_t config;
   rx_err_t        err = rx_bus_config_init_uart(&config,
+
                                          nullptr,
                                          k_test_uart_channel,
                                          k_rx_pb_7,

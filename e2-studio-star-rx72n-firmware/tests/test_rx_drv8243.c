@@ -850,6 +850,7 @@ static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle
 {
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(handle, &current_ma);
+
   if (err != k_rx_ok) {
     return err;
   }

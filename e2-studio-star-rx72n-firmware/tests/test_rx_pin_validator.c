@@ -295,6 +295,7 @@ void test_pin_validator_init_null_pointer(void)
 void test_pin_validator_init_clears_reservations(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   for (uint32_t port = 0; port < k_pin_validator_max_ports; port++) {
@@ -315,6 +316,7 @@ void test_pin_validator_init_clears_reservations(void)
 void test_pin_validator_deinit_success(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_validator.initialized);
 
@@ -329,6 +331,7 @@ void test_pin_validator_deinit_success(void)
 void test_pin_validator_deinit_null_pointer(void)
 {
   rx_err_t err = pin_validator_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -338,6 +341,7 @@ void test_pin_validator_deinit_null_pointer(void)
 void test_pin_validator_deinit_already_deinitialized(void)
 {
   rx_err_t err = pin_validator_deinit(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -352,6 +356,7 @@ void test_pin_validator_deinit_already_deinitialized(void)
 void test_pin_validator_get_interface_success(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -373,6 +378,7 @@ void test_pin_validator_get_interface_success(void)
 void test_pin_validator_get_interface_null_iface(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = pin_validator_get_interface(nullptr, &s_validator);
@@ -386,6 +392,7 @@ void test_pin_validator_get_interface_null_validator(void)
 {
   rx_pin_interface_t iface;
   rx_err_t           err = pin_validator_get_interface(&iface, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -396,6 +403,7 @@ void test_pin_validator_get_interface_not_initialized(void)
 {
   rx_pin_interface_t iface;
   rx_err_t           err = pin_validator_get_interface(&iface, &s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -410,6 +418,7 @@ void test_pin_validator_get_interface_not_initialized(void)
 void test_pin_validator_validate_decimal_ports(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -428,6 +437,7 @@ void test_pin_validator_validate_decimal_ports(void)
 void test_pin_validator_validate_hex_ports(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -446,6 +456,7 @@ void test_pin_validator_validate_hex_ports(void)
 void test_pin_validator_validate_all_pins(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -464,6 +475,7 @@ void test_pin_validator_validate_all_pins(void)
 void test_pin_validator_validate_invalid_port(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -479,6 +491,7 @@ void test_pin_validator_validate_invalid_port(void)
 void test_pin_validator_validate_invalid_pin(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -499,6 +512,7 @@ void test_pin_validator_validate_invalid_pin(void)
 void test_pin_validator_reserve_success(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -515,6 +529,7 @@ void test_pin_validator_reserve_success(void)
 void test_pin_validator_reserve_null_function(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -530,6 +545,7 @@ void test_pin_validator_reserve_null_function(void)
 void test_pin_validator_reserve_invalid_port(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -545,6 +561,7 @@ void test_pin_validator_reserve_invalid_port(void)
 void test_pin_validator_reserve_invalid_pin(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -560,6 +577,7 @@ void test_pin_validator_reserve_invalid_pin(void)
 void test_pin_validator_reserve_conflict(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -585,6 +603,7 @@ void test_pin_validator_reserve_conflict(void)
 void test_pin_validator_release_success(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -605,6 +624,7 @@ void test_pin_validator_release_success(void)
 void test_pin_validator_release_not_reserved(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -620,6 +640,7 @@ void test_pin_validator_release_not_reserved(void)
 void test_pin_validator_release_invalid_port(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -635,6 +656,7 @@ void test_pin_validator_release_invalid_port(void)
 void test_pin_validator_release_invalid_pin(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -650,6 +672,7 @@ void test_pin_validator_release_invalid_pin(void)
 void test_pin_validator_reserve_after_release(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -675,6 +698,7 @@ void test_pin_validator_reserve_after_release(void)
 void test_pin_validator_get_function_success(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -698,6 +722,7 @@ void test_pin_validator_get_function_success(void)
 void test_pin_validator_get_function_null_output(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -719,6 +744,7 @@ void test_pin_validator_get_function_null_output(void)
 void test_pin_validator_get_function_buffer_too_small(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -745,6 +771,7 @@ void test_pin_validator_get_function_buffer_too_small(void)
 void test_pin_validator_get_function_not_reserved(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -770,6 +797,7 @@ void test_pin_validator_get_function_not_reserved(void)
 void test_pin_validator_clear_all_reservations(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -804,6 +832,7 @@ void test_pin_validator_clear_all_reservations(void)
 void test_pin_validator_all_ports_coverage(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -836,6 +865,7 @@ void test_pin_validator_all_ports_coverage(void)
 void test_pin_validator_all_pins_on_port(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -863,6 +893,7 @@ void test_pin_validator_all_pins_on_port(void)
 void test_pin_interface_validate_success(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -878,6 +909,7 @@ void test_pin_interface_validate_success(void)
 void test_pin_interface_validate_null(void)
 {
   rx_err_t err = rx_pin_interface_validate(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -887,6 +919,7 @@ void test_pin_interface_validate_null(void)
 void test_pin_interface_validate_missing_functions(void)
 {
   rx_pin_interface_t iface;
+
   memset(&iface, 0, sizeof(iface));
 
   rx_err_t err = rx_pin_interface_validate(&iface);
@@ -904,6 +937,7 @@ void test_pin_interface_validate_missing_functions(void)
 void test_pin_validator_is_reserved_invalid_port(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -919,6 +953,7 @@ void test_pin_validator_is_reserved_invalid_port(void)
 void test_pin_validator_is_reserved_invalid_pin(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;
@@ -934,6 +969,7 @@ void test_pin_validator_is_reserved_invalid_pin(void)
 void test_pin_validator_long_function_name(void)
 {
   rx_err_t err = pin_validator_init(&s_validator);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   rx_pin_interface_t iface;

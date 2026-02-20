@@ -109,6 +109,7 @@ void test_init_sets_sequences_to_zero(void)
   uint16_t rx_seq = k_test_sentinel_seq;
 
   rx_err_t err = rx_session_get_tx(&s_session, &tx_seq);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(k_test_expected_seq_0, tx_seq);
 
@@ -123,6 +124,7 @@ void test_init_sets_sequences_to_zero(void)
 void test_init_null_ptr(void)
 {
   rx_err_t err = rx_session_init(NULL);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -132,6 +134,7 @@ void test_init_null_ptr(void)
 void test_deinit_null_ptr(void)
 {
   rx_err_t err = rx_session_deinit(NULL);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -141,6 +144,7 @@ void test_deinit_null_ptr(void)
 void test_deinit_not_initialized(void)
 {
   rx_session_state_t uninit;
+
   memset(&uninit, 0, sizeof(uninit));
 
   rx_err_t err = rx_session_deinit(&uninit);
@@ -153,6 +157,7 @@ void test_deinit_not_initialized(void)
 void test_deinit_clears_initialized(void)
 {
   rx_err_t err = rx_session_deinit(&s_session);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(s_session.initialized);
 }
@@ -171,6 +176,7 @@ void test_next_tx_starts_at_zero(void)
   uint16_t seq;
 
   rx_err_t err = rx_session_next_tx(&s_session, &seq);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT16(0, seq);
 }
@@ -224,6 +230,7 @@ void test_next_tx_null_state(void)
 {
   uint16_t seq;
   rx_err_t err = rx_session_next_tx(NULL, &seq);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -233,6 +240,7 @@ void test_next_tx_null_state(void)
 void test_next_tx_null_sequence(void)
 {
   rx_err_t err = rx_session_next_tx(&s_session, NULL);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -242,6 +250,7 @@ void test_next_tx_null_sequence(void)
 void test_next_tx_not_initialized(void)
 {
   rx_session_state_t uninit;
+
   memset(&uninit, 0, sizeof(uninit));
 
   uint16_t seq;
@@ -264,6 +273,7 @@ void test_validate_rx_exact_match(void)
 
   /* Expect seq=0, receive seq=0 -> accept */
   rx_err_t err = rx_session_validate_rx(&s_session, 0, &result);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_session_validate_ok, result);
 
@@ -298,6 +308,7 @@ void test_validate_rx_gap_one_frame(void)
 
   /* Accept seq=0 */
   rx_err_t err = rx_session_validate_rx(&s_session, 0, &result);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Skip seq=1, receive seq=2 (gap=1) -> accept with gap */
@@ -323,6 +334,7 @@ void test_validate_rx_gap_max_accepted(void)
 
   /* Accept seq=0 */
   rx_err_t err = rx_session_validate_rx(&s_session, 0, &result);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Skip 9 frames, receive seq=10 (diff=9) -> accept with gap */
@@ -342,6 +354,7 @@ void test_validate_rx_gap_at_boundary(void)
 
   /* Accept seq=0 */
   rx_err_t err = rx_session_validate_rx(&s_session, 0, &result);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Skip 10 frames, receive seq=11 (diff=10) -> reject */
@@ -365,6 +378,7 @@ void test_validate_rx_large_gap_rejected(void)
 
   /* Accept seq=0 */
   rx_err_t err = rx_session_validate_rx(&s_session, 0, &result);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Receive seq=100 (diff=99) -> reject */
@@ -402,6 +416,7 @@ void test_validate_rx_null_result(void)
 {
   /* result=NULL should be fine (optional output) */
   rx_err_t err = rx_session_validate_rx(&s_session, 0, NULL);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -412,6 +427,7 @@ void test_validate_rx_null_state(void)
 {
   rx_session_validate_result_t result;
   rx_err_t                     err = rx_session_validate_rx(NULL, 0, &result);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -420,9 +436,9 @@ void test_validate_rx_null_state(void)
  */
 void test_validate_rx_wraparound(void)
 {
+  /* Set rx_sequence near wraparound */
   rx_session_validate_result_t result;
 
-  /* Set rx_sequence near wraparound */
   s_session.rx_sequence = 0xFFFE;
 
   /* Accept seq=0xFFFE */
@@ -459,6 +475,7 @@ void test_reset_clears_sequences(void)
     rx_err_t ret = rx_session_next_tx(&s_session, &seq);
     TEST_ASSERT_EQUAL(k_rx_ok, ret);
   }
+
   rx_session_validate_result_t result;
   for (uint16_t i = 0; i < k_test_reset_advance; i++) {
     rx_err_t ret = rx_session_validate_rx(&s_session, i, &result);
@@ -485,6 +502,7 @@ void test_reset_clears_sequences(void)
 void test_reset_null_ptr(void)
 {
   rx_err_t err = rx_session_reset(NULL);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -494,6 +512,7 @@ void test_reset_null_ptr(void)
 void test_reset_not_initialized(void)
 {
   rx_session_state_t uninit;
+
   memset(&uninit, 0, sizeof(uninit));
 
   rx_err_t err = rx_session_reset(&uninit);
@@ -564,6 +583,7 @@ void test_get_tx_null_state(void)
 {
   uint16_t seq;
   rx_err_t err = rx_session_get_tx(NULL, &seq);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -573,6 +593,7 @@ void test_get_tx_null_state(void)
 void test_get_tx_null_output(void)
 {
   rx_err_t err = rx_session_get_tx(&s_session, NULL);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -583,6 +604,7 @@ void test_get_rx_null_state(void)
 {
   uint16_t seq;
   rx_err_t err = rx_session_get_rx(NULL, &seq);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -592,6 +614,7 @@ void test_get_rx_null_state(void)
 void test_get_rx_null_output(void)
 {
   rx_err_t err = rx_session_get_rx(&s_session, NULL);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 

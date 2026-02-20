@@ -157,8 +157,6 @@
 
 #include "rx_obstacle_detect.h"
 
-#include <string.h>
-
 #include "rx_check.h"
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
@@ -302,9 +300,6 @@ static void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
 rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
                                  const rx_obstacle_detect_config_t* config)
 {
-  UINT     status = 0;
-  rx_err_t ret    = k_rx_ok;
-
   /* Validate inputs */
   if (handle == nullptr || config == nullptr) {
     return k_rx_err_null_ptr;
@@ -314,13 +309,13 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
     return k_rx_err_invalid_state;
   }
 
-  ret = internal_validate_config(config);
+  rx_err_t ret = internal_validate_config(config);
   if (ret != k_rx_ok) {
     return ret;
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_obstacle_detect_t));
+  *handle = (rx_obstacle_detect_t){0};
 
   /* Copy configuration */
   handle->sensor_count           = config->sensor_count;
@@ -346,7 +341,7 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
   handle->stop_requested = false;
 
   /* Create event flags */
-  status = tx_event_flags_create(&handle->event_flags, "ObstacleDetectEvents");
+  UINT status = tx_event_flags_create(&handle->event_flags, "ObstacleDetectEvents");
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -374,15 +369,59 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
 }
 
 /**
- * @brief Deinitialize obstacle detection system
- * @param[in] handle Pointer to obstacle detect handle
- * @return k_rx_ok on success, error code otherwise
+ * @brief Deinitialize obstacle detection system and release all resources
+ *
+ * @details
+ * Tears down a fully initialized obstacle detection handle by stopping active
+ * detection if running, terminating and deleting the ThreadX monitoring thread,
+ * deleting the event flags group, and clearing the initialized flag. After this
+ * call the handle may be reused with rx_obstacle_detect_init().
+ *
+ * Algorithm steps:
+ * 1. Validate handle is non-null and initialized
+ * 2. If detection is not stopped, call rx_obstacle_detect_stop() (errors ignored)
+ * 3. Terminate the ThreadX detection thread (TX_THREAD_ERROR ignored if already done)
+ * 4. Delete the ThreadX detection thread (TX_DELETE_ERROR ignored if already deleted)
+ * 5. Delete the TX event flags group (TX_DELETE_ERROR ignored if already deleted)
+ * 6. Clear handle->initialized
+ *
+ * @param[in,out] handle Pointer to obstacle detection handle (must be initialized)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Resources successfully released
+ * @retval k_rx_err_null_ptr handle is nullptr
+ * @retval k_rx_err_invalid_state handle was not previously initialized
+ * @retval k_rx_err_rtos_error ThreadX thread terminate, delete, or event flags delete failed
+ *
+ * @pre handle must be a valid non-null pointer
+ * @pre handle must have been successfully initialized via rx_obstacle_detect_init()
+ * @post handle->initialized is false
+ * @post ThreadX thread and event flags group are deleted
+ *
+ * @note Not thread-safe; caller must ensure no concurrent access to handle
+ * @note Stop errors during deinit are silently ignored; the teardown continues regardless
+ *
+ * @par Example:
+ * @code
+ * rx_obstacle_detect_t detector;
+ * rx_obstacle_detect_init(&detector, &config);
+ * // ... use detector ...
+ * rx_err_t err = rx_obstacle_detect_deinit(&detector);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("app", "Failed to deinit obstacle detector");
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_init() Initialize the handle before use
+ * @see rx_obstacle_detect_stop() Stop detection before deinit
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null check, initialized check), 2 postconditions
  */
 rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 {
-  UINT     status   = 0;
-  rx_err_t stop_ret = k_rx_ok;
-
   /* Validate inputs */
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -394,14 +433,14 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
 
   /* Stop detection if running */
   if (handle->state != k_obstacle_detect_state_stopped) {
-    stop_ret = rx_obstacle_detect_stop(handle);
+    rx_err_t stop_ret = rx_obstacle_detect_stop(handle);
     /* Note: Continue with deinit even if stop fails - we're tearing down anyway */
     /* Caller should check return value if stop failure is critical */
     (void)stop_ret;
   }
 
   /* Wait for thread to terminate */
-  status = tx_thread_terminate(&handle->thread);
+  UINT status = tx_thread_terminate(&handle->thread);
   if (status != TX_SUCCESS && status != TX_THREAD_ERROR) {
     return k_rx_err_rtos_error;
   }
@@ -430,14 +469,55 @@ rx_err_t rx_obstacle_detect_deinit(rx_obstacle_detect_t* handle)
  */
 
 /**
- * @brief Start obstacle detection
- * @param[in] handle Pointer to obstacle detect handle
- * @return k_rx_ok on success, error code otherwise
+ * @brief Start obstacle detection monitoring
+ *
+ * @details
+ * Transitions the obstacle detection system to the running state by resuming
+ * the ThreadX detection thread (if it was previously suspended) and signaling
+ * the k_event_flag_start event flag to the detection task.
+ *
+ * The detection task waits on this event flag at startup; once received it
+ * enters the polling loop and begins continuous sensor monitoring.
+ *
+ * Algorithm steps:
+ * 1. Validate handle is non-null and initialized
+ * 2. If state is k_obstacle_detect_state_stopped, resume the ThreadX thread
+ * 3. Set k_event_flag_start event flag via tx_event_flags_set()
+ *
+ * @param[in,out] handle Pointer to obstacle detection handle (must be initialized)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Detection started (or already running)
+ * @retval k_rx_err_null_ptr handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ * @retval k_rx_err_rtos_error ThreadX thread resume or event flags set failed
+ *
+ * @pre handle must be initialized via rx_obstacle_detect_init()
+ * @pre System must be in ThreadX running state (tx_kernel_enter() called)
+ * @post Detection thread is executing and polling sensors
+ * @post handle->state transitions to k_obstacle_detect_state_running
+ *
+ * @note Not thread-safe; caller must serialize start/stop calls
+ * @note Calling start when already running is a no-op for thread resume
+ *
+ * @par Example:
+ * @code
+ * rx_err_t err = rx_obstacle_detect_start(&detector);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("app", "Failed to start obstacle detection");
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_stop() Stop detection
+ * @see rx_obstacle_detect_get_state() Query current detection state
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null check, initialized check), 2 postconditions
  */
 rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
 {
-  UINT status = 0;
-
   /* Validate inputs */
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -448,6 +528,7 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
   }
 
   /* Start thread if not already running */
+  UINT status = TX_SUCCESS;
   if (handle->state == k_obstacle_detect_state_stopped) {
     status = tx_thread_resume(&handle->thread);
     if (status != TX_SUCCESS) {
@@ -465,14 +546,57 @@ rx_err_t rx_obstacle_detect_start(rx_obstacle_detect_t* handle)
 }
 
 /**
- * @brief Stop obstacle detection
- * @param[in] handle Pointer to obstacle detect handle
- * @return k_rx_ok on success, error code otherwise
+ * @brief Stop obstacle detection monitoring
+ *
+ * @details
+ * Requests the obstacle detection task to cease polling by setting
+ * handle->stop_requested and signaling the k_event_flag_stop event flag.
+ * The detection task checks this flag at the top of each polling iteration
+ * and transitions to the stopped state upon receipt.
+ *
+ * This function returns immediately after signaling; it does not wait for
+ * the task to actually stop. Use rx_obstacle_detect_get_state() to confirm
+ * the transition to k_obstacle_detect_state_stopped if synchronization is needed.
+ *
+ * Algorithm steps:
+ * 1. Validate handle is non-null and initialized
+ * 2. Set handle->stop_requested to true
+ * 3. Set k_event_flag_stop event flag via tx_event_flags_set()
+ *
+ * @param[in,out] handle Pointer to obstacle detection handle (must be initialized)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Stop request successfully signaled
+ * @retval k_rx_err_null_ptr handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ * @retval k_rx_err_rtos_error ThreadX event flags set failed
+ *
+ * @pre handle must be initialized via rx_obstacle_detect_init()
+ * @pre System must be in ThreadX running state
+ * @post handle->stop_requested is true
+ * @post k_event_flag_stop event flag is set; detection task will stop at next iteration
+ *
+ * @note Not thread-safe; caller must serialize start/stop calls
+ * @warning This function is non-blocking; the task may still be running immediately after return
+ *
+ * @par Example:
+ * @code
+ * rx_err_t err = rx_obstacle_detect_stop(&detector);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("app", "Failed to stop obstacle detection");
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_start() Resume detection
+ * @see rx_obstacle_detect_get_state() Poll state to confirm stop
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null check, initialized check), 2 postconditions
  */
 rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 {
-  UINT status = 0;
-
   /* Validate inputs */
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
@@ -484,7 +608,7 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 
   /* Signal stop event */
   handle->stop_requested = true;
-  status                 = tx_event_flags_set(&handle->event_flags, k_event_flag_stop, TX_OR);
+  UINT status            = tx_event_flags_set(&handle->event_flags, k_event_flag_stop, TX_OR);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -493,9 +617,55 @@ rx_err_t rx_obstacle_detect_stop(rx_obstacle_detect_t* handle)
 }
 
 /**
- * @brief Clear obstacle detection state
- * @param[in] handle Pointer to obstacle detect handle
- * @return k_rx_ok on success, error code otherwise
+ * @brief Clear active obstacle state and reset per-sensor debounce counters
+ *
+ * @details
+ * Clears all debounce counters and obstacle_active flags for every configured
+ * sensor. If the system is currently in k_obstacle_detect_state_obstacle, it
+ * transitions back to k_obstacle_detect_state_running.
+ *
+ * This function is used to acknowledge a detected obstacle and allow normal
+ * operation to resume. It does NOT restart a stopped detection system.
+ *
+ * Algorithm steps:
+ * 1. Validate handle is non-null and initialized
+ * 2. Iterate over all handle->sensor_count sensors
+ * 3. For each sensor: zero debounce_counter[i] and clear obstacle_active[i]
+ * 4. If state is k_obstacle_detect_state_obstacle, set state to
+ *    k_obstacle_detect_state_running
+ *
+ * @param[in,out] handle Pointer to obstacle detection handle (must be initialized)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Obstacle state and debounce counters successfully cleared
+ * @retval k_rx_err_null_ptr handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized via rx_obstacle_detect_init()
+ * @pre Detection system should be running (though clearing while stopped is safe)
+ * @post All per-sensor debounce_counter values are zero
+ * @post All per-sensor obstacle_active flags are false
+ *
+ * @note Not thread-safe; clearing obstacle state while the detection task is
+ *       concurrently updating sensor state may cause a race; caller must synchronize
+ * @warning Does not restart detection if stopped; use rx_obstacle_detect_start()
+ *
+ * @par Example:
+ * @code
+ * // After handling obstacle, clear to allow normal operation
+ * if (rx_obstacle_detect_is_obstacle_detected(&detector)) {
+ *     handle_obstacle_event();
+ *     rx_obstacle_detect_clear_obstacle(&detector);
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_is_obstacle_detected() Check for active obstacle
+ * @see rx_obstacle_detect_get_state() Query current state
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null check, initialized check), 2 postconditions
  */
 rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
 {
@@ -528,10 +698,56 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
  */
 
 /**
- * @brief Get current detection state
- * @param[in] handle Pointer to obstacle detect handle
- * @param[out] out_state Pointer to store current state
- * @return k_rx_ok on success, error code otherwise
+ * @brief Get the current obstacle detection state
+ *
+ * @details
+ * Returns the current operational state of the detection system by copying
+ * handle->state to *out_state. This is a cached read from handle memory;
+ * no bus or sensor transactions are issued.
+ *
+ * Possible states:
+ * - k_obstacle_detect_state_stopped  — task suspended, not polling
+ * - k_obstacle_detect_state_running  — actively polling, no obstacle
+ * - k_obstacle_detect_state_obstacle — obstacle confirmed by debounce
+ *
+ * Algorithm steps:
+ * 1. Validate handle and out_state pointer are non-null
+ * 2. Verify handle is initialized
+ * 3. Copy handle->state to *out_state
+ *
+ * @param[in] handle Pointer to obstacle detection handle (must be initialized)
+ * @param[out] out_state Receives the current rx_obstacle_detect_state_t value;
+ *             undefined on error
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok State successfully returned
+ * @retval k_rx_err_null_ptr handle or out_state is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized via rx_obstacle_detect_init()
+ * @pre out_state must be a valid non-null pointer
+ * @post *out_state contains the current state value on k_rx_ok
+ * @post handle state is unchanged
+ *
+ * @note Not thread-safe; state may change concurrently if detection task is running
+ * @note Returns cached state — does not re-evaluate sensor readings
+ *
+ * @par Example:
+ * @code
+ * rx_obstacle_detect_state_t state;
+ * rx_err_t err = rx_obstacle_detect_get_state(&detector, &state);
+ * if (err == k_rx_ok && state == k_obstacle_detect_state_obstacle) {
+ *     handle_obstacle_event();
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_is_obstacle_detected() Convenience bool check
+ * @see rx_obstacle_detect_clear_obstacle() Clear obstacle state
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null checks, initialized state), 2 postconditions
  */
 rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
                                       rx_obstacle_detect_state_t* out_state)
@@ -551,9 +767,50 @@ rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
 }
 
 /**
- * @brief Check if obstacle is currently detected
- * @param[in] handle Pointer to obstacle detect handle
- * @return true if obstacle detected, false otherwise
+ * @brief Check whether an obstacle is currently detected (boolean convenience)
+ *
+ * @details
+ * Returns true if the obstacle detection system is initialized and its current
+ * state is k_obstacle_detect_state_obstacle. Returns false for all other
+ * conditions including: null handle, uninitialized handle, stopped state,
+ * or running state with no obstacle.
+ *
+ * This is a lightweight wrapper around handle->state that avoids allocating
+ * an output parameter, suitable for use in polling loops and conditional checks.
+ *
+ * Algorithm steps:
+ * 1. Guard against null or uninitialized handle (returns false)
+ * 2. Return (handle->state == k_obstacle_detect_state_obstacle)
+ *
+ * @param[in] handle Pointer to obstacle detection handle (may be null — returns false)
+ *
+ * @return bool Obstacle detection result
+ * @retval true  handle is valid and state is k_obstacle_detect_state_obstacle
+ * @retval false handle is null, uninitialized, stopped, or running without obstacle
+ *
+ * @pre None — safe to call with null handle
+ * @pre For meaningful results, handle should be initialized and detection started
+ * @post handle state is unchanged
+ * @post Return value reflects handle->state at the instant of the call
+ *
+ * @note Not thread-safe; state may change concurrently if detection task is active
+ * @note Returns false for null handle rather than asserting; safe for defensive polling
+ *
+ * @par Example:
+ * @code
+ * if (rx_obstacle_detect_is_obstacle_detected(&detector)) {
+ *     emergency_stop_all_motors();
+ *     rx_obstacle_detect_clear_obstacle(&detector);
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_get_state() Full state query with error code
+ * @see rx_obstacle_detect_clear_obstacle() Acknowledge and clear obstacle
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null-safe guard, initialized check), 2 postconditions
  */
 bool rx_obstacle_detect_is_obstacle_detected(const rx_obstacle_detect_t* handle)
 {
@@ -564,6 +821,62 @@ bool rx_obstacle_detect_is_obstacle_detected(const rx_obstacle_detect_t* handle)
   return handle->state == k_obstacle_detect_state_obstacle;
 }
 
+/**
+ * @brief Retrieve accumulated diagnostic statistics from obstacle detection system
+ *
+ * @details
+ * Returns the three running counters maintained by the detection task:
+ * total sensor poll cycles, confirmed obstacle events, and filtered
+ * false positive readings. All output parameters are optional — passing
+ * nullptr for any counter skips that output without error.
+ *
+ * Counters are incremented by the internal detection task and are NOT
+ * reset by this function. Use rx_obstacle_detect_reset_stats() to clear them.
+ *
+ * Algorithm steps:
+ * 1. Validate handle is non-null and initialized
+ * 2. If out_total_polls != nullptr, copy handle->total_polls
+ * 3. If out_obstacle_events != nullptr, copy handle->obstacle_events
+ * 4. If out_false_positives != nullptr, copy handle->false_positive_count
+ *
+ * @param[in] handle Pointer to obstacle detection handle (must be initialized)
+ * @param[out] out_total_polls Total sensor poll cycles since last reset;
+ *             nullptr to skip; undefined on error
+ * @param[out] out_obstacle_events Number of confirmed obstacle events since last reset;
+ *             nullptr to skip; undefined on error
+ * @param[out] out_false_positives Number of single-sample detections rejected by
+ *             debounce filter since last reset; nullptr to skip; undefined on error
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Statistics successfully copied
+ * @retval k_rx_err_null_ptr handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized via rx_obstacle_detect_init()
+ * @pre All non-null output pointers must be valid writable memory
+ * @post Output values are consistent snapshots at the time of the call
+ * @post Counters in the handle are unchanged
+ *
+ * @note Not thread-safe; counters may be incremented by detection task concurrently
+ * @note All three output pointers are optional; pass nullptr for any to skip that stat
+ *
+ * @par Example:
+ * @code
+ * uint32_t polls = 0, events = 0, false_pos = 0;
+ * rx_err_t err = rx_obstacle_detect_get_stats(&detector, &polls, &events, &false_pos);
+ * if (err == k_rx_ok) {
+ *     rx_log_info("app", "Polls: %u, Obstacles: %u, FP: %u",
+ *                 (unsigned)polls, (unsigned)events, (unsigned)false_pos);
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_reset_stats() Clear all counters to zero
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null check, initialized check), 2 postconditions
+ */
 rx_err_t rx_obstacle_detect_get_stats(const rx_obstacle_detect_t* handle,
                                       uint32_t*                   out_total_polls,
                                       uint32_t*                   out_obstacle_events,
@@ -595,9 +908,49 @@ rx_err_t rx_obstacle_detect_get_stats(const rx_obstacle_detect_t* handle,
 }
 
 /**
- * @brief Reset statistics counters
- * @param[in] handle Pointer to obstacle detect handle
- * @return k_rx_ok on success, error code otherwise
+ * @brief Reset all accumulated diagnostic statistics counters to zero
+ *
+ * @details
+ * Clears the three running diagnostic counters maintained by the detection task:
+ * total_polls, obstacle_events, and false_positive_count. After this call all
+ * counters return to zero and begin accumulating from the next poll cycle.
+ *
+ * Algorithm steps:
+ * 1. Validate handle is non-null and initialized
+ * 2. Set handle->total_polls to zero
+ * 3. Set handle->obstacle_events to zero
+ * 4. Set handle->false_positive_count to zero
+ *
+ * @param[in,out] handle Pointer to obstacle detection handle (must be initialized)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All statistics counters successfully reset to zero
+ * @retval k_rx_err_null_ptr handle is nullptr
+ * @retval k_rx_err_invalid_state handle not initialized
+ *
+ * @pre handle must be initialized via rx_obstacle_detect_init()
+ * @pre Caller should ensure detection task is not mid-cycle to avoid partial counts
+ * @post handle->total_polls is zero
+ * @post handle->obstacle_events is zero
+ *
+ * @note Not thread-safe; calling while detection task is incrementing counters may
+ *       produce slightly inconsistent results; caller must synchronize if exactness required
+ *
+ * @par Example:
+ * @code
+ * // Start a fresh statistics window
+ * rx_err_t err = rx_obstacle_detect_reset_stats(&detector);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("app", "Failed to reset obstacle detector stats");
+ * }
+ * @endcode
+ *
+ * @see rx_obstacle_detect_get_stats() Retrieve current counter values
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null check, initialized check), 2 postconditions
  */
 rx_err_t rx_obstacle_detect_reset_stats(rx_obstacle_detect_t* handle)
 {
@@ -629,52 +982,47 @@ typedef enum : uint8_t {
 
 static void internal_detection_task_entry(const ULONG input)
 {
-  rx_obstacle_detect_t* handle       = nullptr;
-  ULONG                 actual_flags = 0;
-  UINT                  status       = 0;
-  ULONG                 sleep_ticks  = 0;
-  rx_err_t              ret          = k_rx_ok;
-  bool                  running      = false;
-
-  handle = (rx_obstacle_detect_t*)input;
+  rx_obstacle_detect_t* const handle = (rx_obstacle_detect_t*)input;
   RX_ASSERT(handle != nullptr, "Obstacle detect handle is nullptr");
   if (handle == nullptr) {
     return;
   }
 
   /* Convert poll interval to ticks */
-  sleep_ticks = (handle->poll_interval_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  ULONG sleep_ticks = (handle->poll_interval_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
   if (sleep_ticks == 0) {
     sleep_ticks = k_min_sleep_ticks;
   }
 
   while (true) {
     /* Wait for start event */
-    status = tx_event_flags_get(&handle->event_flags,
-                                k_event_flag_start,
-                                TX_OR_CLEAR,
-                                &actual_flags,
-                                TX_WAIT_FOREVER);
+    ULONG      actual_flags = 0;
+    const UINT status_start = tx_event_flags_get(&handle->event_flags,
+                                                 k_event_flag_start,
+                                                 TX_OR_CLEAR,
+                                                 &actual_flags,
+                                                 TX_WAIT_FOREVER);
 
-    if (status != TX_SUCCESS) {
+    if (status_start != TX_SUCCESS) {
       continue;
     }
 
     /* Update state */
     handle->state          = k_obstacle_detect_state_running;
     handle->stop_requested = false;
-    running                = true;
+    bool running           = true;
 
     /* Detection loop */
     while (running) {
       /* Check for stop event (non-blocking) */
-      status = tx_event_flags_get(&handle->event_flags,
-                                  k_event_flag_stop,
-                                  TX_OR_CLEAR,
-                                  &actual_flags,
-                                  TX_NO_WAIT);
+      ULONG      stop_flags   = 0;
+      const UINT status_stop  = tx_event_flags_get(&handle->event_flags,
+                                                   k_event_flag_stop,
+                                                   TX_OR_CLEAR,
+                                                   &stop_flags,
+                                                   TX_NO_WAIT);
 
-      if (status == TX_SUCCESS || handle->stop_requested) {
+      if (status_stop == TX_SUCCESS || handle->stop_requested) {
         running                = false;
         handle->state          = k_obstacle_detect_state_stopped;
         handle->stop_requested = false;
@@ -682,7 +1030,7 @@ static void internal_detection_task_entry(const ULONG input)
       }
 
       /* Poll all sensors */
-      ret = internal_poll_sensors(handle);
+      const rx_err_t ret = internal_poll_sensors(handle);
       if (ret != k_rx_ok) {
         /* Critical error during polling (e.g., motor stop failed) */
         /* Stop detection to prevent unsafe operation */
@@ -774,6 +1122,7 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
   rx_err_t           ret                        = k_rx_ok;
   bool               was_obstacle_active        = false;
   bool               is_obstacle_active         = false;
+
   static const float s_clear_distance_offset_cm = 1.0F;
 
   if (handle == nullptr) {
@@ -867,9 +1216,6 @@ static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
  */
 static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
 {
-  rx_err_t ret       = k_rx_ok;
-  rx_err_t first_err = k_rx_ok;
-
   if (handle == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -878,8 +1224,9 @@ static rx_err_t internal_stop_all_motors(const rx_obstacle_detect_t* handle)
     return k_rx_err_invalid_state;
   }
 
+  rx_err_t first_err = k_rx_ok;
   for (uint8_t i = 0; i < handle->motor_count; i++) {
-    ret = rx_motor_stop(handle->motors[i], true);
+    rx_err_t ret = rx_motor_stop(handle->motors[i], true);
     if (ret != k_rx_ok) {
       /* Record first error but continue stopping other motors */
       if (first_err == k_rx_ok) {

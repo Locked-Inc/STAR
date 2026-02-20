@@ -385,6 +385,7 @@ void tearDown(void) {}
 void test_poeg_init_configures_all_groups(void)
 {
   rx_err_t err = test_poeg_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify all 4 POEG groups have correct config */
@@ -398,6 +399,7 @@ void test_poeg_init_configures_all_groups(void)
 void test_poeg_init_links_gptw_to_poeg_groups(void)
 {
   rx_err_t err = test_poeg_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* GPTW0 -> POEG Group A */
@@ -416,6 +418,7 @@ void test_poeg_init_links_gptw_to_poeg_groups(void)
 void test_poeg_init_enables_icu_interrupts(void)
 {
   rx_err_t err = test_poeg_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Vector 188: IER[23] bit 4 (188/8=23, 188%8=4) */
@@ -454,6 +457,7 @@ void test_poeg_get_fault_status_no_fault(void)
 {
   bool     fault = true;
   rx_err_t err   = test_poeg_get_fault_status(0, &fault);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(fault);
 }
@@ -488,6 +492,7 @@ void test_poeg_get_fault_status_ostpf_set(void)
 void test_poeg_get_fault_status_null_ptr(void)
 {
   rx_err_t err = test_poeg_get_fault_status(0, ((void*)0));
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -495,6 +500,7 @@ void test_poeg_get_fault_status_invalid_motor(void)
 {
   bool     fault;
   rx_err_t err = test_poeg_get_fault_status(4, &fault);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -548,6 +554,7 @@ void test_poeg_clear_fault_busy_when_still_active(void)
   s_mock_poeg[0].poeggn = k_poeg_pidf_detected; /* ST=0 */
 
   rx_err_t err = test_poeg_clear_fault(0);
+
   TEST_ASSERT_EQUAL(k_rx_err_busy, err);
 
   /* PIDF should NOT be cleared */
@@ -557,6 +564,7 @@ void test_poeg_clear_fault_busy_when_still_active(void)
 void test_poeg_clear_fault_invalid_motor(void)
 {
   rx_err_t err = test_poeg_clear_fault(4);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -597,6 +605,7 @@ void test_poeg_clear_fault_no_estop_clear_if_other_reason(void)
 void test_poeg_software_stop_sets_ssf(void)
 {
   rx_err_t err = test_poeg_software_stop(0);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_BITS_HIGH(k_poeg_ssf_stop, s_mock_poeg[0].poeggn);
 }
@@ -604,6 +613,7 @@ void test_poeg_software_stop_sets_ssf(void)
 void test_poeg_software_stop_invalid_motor(void)
 {
   rx_err_t err = test_poeg_software_stop(4);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -632,6 +642,7 @@ void test_poeg_clear_software_stop_clears_ssf(void)
 void test_poeg_clear_software_stop_invalid_motor(void)
 {
   rx_err_t err = test_poeg_clear_software_stop(5);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -709,6 +720,7 @@ void test_poeg_full_fault_lifecycle(void)
 {
   /* 1. Init */
   rx_err_t err = test_poeg_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* 2. Fault occurs: nFAULT goes low -> PIDF set */
@@ -740,6 +752,7 @@ void test_poeg_software_estop_lifecycle(void)
 {
   /* 1. Init */
   rx_err_t err = test_poeg_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* 2. Software stop all motors */

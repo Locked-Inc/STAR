@@ -206,10 +206,39 @@ typedef enum : uint8_t {
   k_cmt_mstpb_cmt = 15, /**< CMT0-CMT3 module stop bit */
 } cmt_module_stop_bits_t;
 
-/** @brief CMT interrupt configuration */
+/**
+ * @struct rx_cmt_interrupt_config_t
+ * @brief CMT interrupt routing and priority configuration
+ *
+ * @details
+ * Bundles the CMT channel identifier with the desired ICU interrupt priority
+ * level. Passed by value to internal_configure_cmt_interrupt() so that the
+ * caller does not need to keep the structure alive after the call returns.
+ *
+ * The channel field selects which ICU interrupt vector to program (CMI0–CMI3),
+ * and the priority field is written directly into the corresponding IPR[]
+ * register.
+ *
+ * @invariant channel must be a valid rx_cmt_channel_t value (0–3)
+ * @invariant priority must be in [k_ipr_level_min, k_ipr_level_max]
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_cmt_interrupt_config_t irq_cfg = {
+ *   .channel  = k_cmt_channel_1,
+ *   .priority = 5,
+ * };
+ * rx_err_t err = internal_configure_cmt_interrupt(irq_cfg);
+ * @endcode
+ *
+ * @see internal_configure_cmt_interrupt() Sole consumer of this struct
+ * @see rx_cmt_init() Constructs this struct inline before calling the above
+ *
+ * @since Version 1.0.0
+ */
 typedef struct {
-  rx_cmt_channel_t channel;  /**< CMT channel */
-  uint8_t          priority; /**< Interrupt priority */
+  rx_cmt_channel_t channel;  /**< CMT channel identifier (k_cmt_channel_0 … k_cmt_channel_3) */
+  uint8_t          priority; /**< ICU interrupt priority level (k_ipr_level_min … k_ipr_level_max) */
 } rx_cmt_interrupt_config_t;
 
 /** @brief CMCR register bit positions */
@@ -301,11 +330,56 @@ static void* s_cmt_user_data[k_cmt_max_channels] = {nullptr};
  */
 
 /**
- * @brief Get CMT channel base address
+ * @brief Map a CMT channel enum to its hardware register base pointer
  *
- * @param[in] channel CMT channel
+ * @details
+ * Uses a switch statement to convert a logical channel identifier into a
+ * pointer to the corresponding volatile rx_cmt_channel_regs_t register block.
+ * The four CMT channels (CMT0–CMT3) each have a distinct base address in the
+ * RX72N memory map; the inline accessor functions cmt0()–cmt3() encode those
+ * addresses in a type-safe manner.
  *
- * @return Pointer to CMT register base, or nullptr if invalid
+ * The default case returns nullptr, which every caller is expected to check
+ * immediately after the call (NASA Rule 7 compliance).
+ *
+ * @param[in] channel CMT channel to resolve
+ *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
+ *   - Any other value results in a nullptr return
+ *
+ * @return Pointer to the volatile CMT channel register block
+ * @retval Non-null Pointer to rx_cmt_channel_regs_t for the requested channel
+ * @retval nullptr   channel is outside the valid range [0, 3]
+ *
+ * @pre channel is a member of rx_cmt_channel_t (0–3)
+ * @pre Hardware register addresses must be accessible (clocks enabled before use)
+ *
+ * @post Return value, if non-null, points to the live hardware register block
+ * @post Caller must validate the return value before dereferencing (Rule 7)
+ *
+ * @note Not thread-safe; the hardware registers are globally shared
+ * @note This function never writes to hardware; it only computes an address
+ *
+ * @par Thread Safety:
+ * Read-only address computation; no shared mutable state is accessed.
+ *
+ * @par Performance:
+ * Execution time: ~1 cycle (single branch/address load with -O2)
+ *
+ * @par Example:
+ * @code{.c}
+ * volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(k_cmt_channel_2);
+ * if (cmt == nullptr) {
+ *   return k_rx_err_invalid_arg;
+ * }
+ * cmt->cmcnt = 0;
+ * @endcode
+ *
+ * @see cmt0() Inline accessor for CMT0 base address
+ * @see cmt1() Inline accessor for CMT1 base address
+ * @see cmt2() Inline accessor for CMT2 base address
+ * @see cmt3() Inline accessor for CMT3 base address
+ *
+ * @since Version 1.0.0
  */
 static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channel_t channel)
 {
@@ -324,24 +398,88 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
 }
 
 /**
- * @brief Calculate CMT divider and compare value from frequency
+ * @brief Calculate the optimal CMT clock divider and compare-match value for a target frequency
  *
- * @param[in] frequency_hz Desired frequency in Hz
- * @param[out] divider Pointer to store divider setting
- * @param[out] cmcor Pointer to store compare match value
+ * @details
+ * Iterates the four available PCLKB clock dividers (/8, /32, /128, /512) in
+ * ascending order and selects the first divider whose resulting 16-bit period
+ * value satisfies:
  *
- * @return k_rx_ok on success, error code on failure
+ * ```
+ * period = (PCLKB / divider) / frequency_hz
+ * 0 < period <= 65535
+ * ```
+ *
+ * The chosen divider index is returned in *divider (corresponding to the CKS
+ * field of CMCR: 0=/8, 1=/32, 2=/128, 3=/512).  The compare-match register
+ * value is returned in *cmcor; the caller must subtract the adjustment constant
+ * k_cmt_period_adj when writing to the hardware register.
+ *
+ * Algorithm steps:
+ * 1. Validate output pointers are non-null
+ * 2. Reject frequency_hz == 0 or frequency_hz > PCLKB/8 (maximum achievable)
+ * 3. Loop i from k_cmt_divider_start to k_cmt_num_dividers - 1
+ * 4.   Compute period_calc = (PCLKB / dividers[i]) / frequency_hz
+ * 5.   If 0 < period_calc <= 65535, store i and period_calc, return k_rx_ok
+ * 6. If no divider fits, return k_rx_err_invalid_arg
+ *
+ * @param[in]  frequency_hz Target interrupt frequency in Hz
+ *   - **Valid range**: 1 to PCLKB/8 (typically 1 to 7,500,000 Hz)
+ *   - **Constraint**: Must produce a period that fits in 16 bits for at least
+ *     one of the four clock dividers
+ * @param[out] divider CKS field value to write into CMCR.CKS (0–3)
+ *   - **On success**: Set to the index of the chosen divider
+ *   - **On failure**: Undefined
+ * @param[out] cmcor  Raw period count before the -1 adjustment
+ *   - **On success**: Set to (PCLKB / divider_value) / frequency_hz
+ *   - **On failure**: Undefined
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok           Divider and compare-match value computed successfully
+ * @retval k_rx_err_null_ptr divider or cmcor is nullptr
+ * @retval k_rx_err_invalid_arg frequency_hz is 0, exceeds PCLKB/8, or no
+ *                               divider produces a period fitting in 16 bits
+ *
+ * @pre divider must point to a valid uint8_t storage location
+ * @pre cmcor must point to a valid uint16_t storage location
+ *
+ * @post On k_rx_ok: *divider holds the CKS value (0–3) for CMCR
+ * @post On k_rx_ok: *cmcor holds the period count; caller subtracts 1 before writing CMCOR
+ *
+ * @note Not thread-safe; pure computation with no shared state modification
+ * @note Uses a bounded loop (k_cmt_num_dividers iterations) — NASA Rule 2 compliant
+ *
+ * @par Thread Safety:
+ * Pure computation with no global or static state; safe to call from any context.
+ *
+ * @par Performance:
+ * Execution time: ~5 cycles (loop unrolled at -O2 for 4 divider steps)
+ *
+ * @par Example:
+ * @code{.c}
+ * uint8_t  divider = 0;
+ * uint16_t cmcor   = 0;
+ * rx_err_t err = internal_calculate_cmt_params(1000U, &divider, &cmcor);
+ * if (err == k_rx_ok) {
+ *   // divider and cmcor are ready for use in CMCR/CMCOR registers
+ * }
+ * @endcode
+ *
+ * @see internal_configure_cmt_timer_registers() Consumes the output of this function
+ * @see cmt_constants_t  Divider index constants (k_cmt_div_8 … k_cmt_div_512)
+ * @see cmt_divider_values_t Actual divisor values (8, 32, 128, 512)
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t
 internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
-  const uint32_t        pclkb         = k_pclkb_hz;
-  const uint32_t        max_frequency = pclkb / k_cmt_divider_val_8;
-  uint32_t              period_calc;
   static const uint16_t dividers[] = {k_cmt_divider_val_8,
                                       k_cmt_divider_val_32,
                                       k_cmt_divider_val_128,
                                       k_cmt_divider_val_512};
+  const uint32_t        pclkb         = k_pclkb_hz;
+  const uint32_t        max_frequency = pclkb / k_cmt_divider_val_8;
 
   if (divider == nullptr || cmcor == nullptr) {
     return k_rx_err_null_ptr;
@@ -353,7 +491,7 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
 
   /* Try each divider to find one that fits in 16-bit */
   for (uint8_t i = k_cmt_divider_start; i < k_cmt_num_dividers; i++) {
-    period_calc = (pclkb / dividers[i]) / frequency_hz;
+    const uint32_t period_calc = (pclkb / dividers[i]) / frequency_hz;
 
     /* Check if period fits in 16-bit and is reasonable */
     if (period_calc > k_cmt_period_min && period_calc <= k_cmt_period_max) {
@@ -368,7 +506,54 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
 }
 
 /**
- * @brief Enable the CMT module clock.
+ * @brief Enable the CMT module clock by clearing the MSTPCRB module-stop bit
+ *
+ * @details
+ * Removes the CMT0–CMT3 peripheral from module-stop state so that the module
+ * clock is supplied and its registers become accessible. The sequence is:
+ *
+ * 1. Unlock the write-protect register (PRCR) for PRC1 and PRC3 bits
+ * 2. Clear bit k_cmt_mstpb_cmt (bit 15) in the MSTPCRB register
+ * 3. Re-lock the PRCR to prevent accidental modification
+ *
+ * This function must be called before any CMT register access; reading or
+ * writing CMT registers while the module clock is stopped produces undefined
+ * hardware behaviour on the RX72N.
+ *
+ * The function is idempotent: calling it when the module is already enabled
+ * simply clears an already-clear bit, which is harmless.
+ *
+ * @return void This function does not return an error code. Hardware register
+ *              access failures are not detectable at this level; the caller
+ *              relies on subsequent register reads for verification.
+ *
+ * @pre The system clock (PCLKB) must be running before calling this function
+ * @pre No other task or ISR must be concurrently modifying MSTPCRB
+ *
+ * @post MSTPCRB bit 15 is cleared; CMT module clock is active
+ * @post PRCR is locked upon return (prevents accidental MSTPCRB changes)
+ *
+ * @note Not thread-safe; PRCR unlock/lock is a non-atomic read-modify-write
+ * @note Called once per system lifetime; subsequent calls are benign
+ *
+ * @par Thread Safety:
+ * Not thread-safe. Call during system initialization before RTOS scheduler
+ * starts, or with interrupts disabled.
+ *
+ * @par Performance:
+ * Execution time: ~4 register writes; negligible overhead
+ *
+ * @par Example:
+ * @code{.c}
+ * // Called internally by rx_cmt_init(); not intended for direct use
+ * internal_enable_cmt_module_clock();
+ * // CMT registers are now accessible
+ * @endcode
+ *
+ * @see rx_register_protection.h  PRCR lock/unlock constants
+ * @see rx_cmt_init()             Sole caller; invoked before register programming
+ *
+ * @since Version 1.0.0
  */
 static void internal_enable_cmt_module_clock(void)
 {
@@ -378,11 +563,65 @@ static void internal_enable_cmt_module_clock(void)
 }
 
 /**
- * @brief Configure CMT timer registers.
+ * @brief Write clock divider, interrupt-enable, compare-match, and counter registers
  *
- * @param[in] cmt CMT channel registers
- * @param[in] divider Clock divider setting
- * @param[in] cmcor Compare match value
+ * @details
+ * Programs the three CMT hardware registers for a single channel in the
+ * following order:
+ *
+ * 1. **CMCR** - Sets the CKS (clock-select) field from divider and enables the
+ *    compare-match interrupt (CMIE bit).
+ * 2. **CMCOR** - Loads the compare-match value after subtracting the adjustment
+ *    constant k_cmt_period_adj (−1) so the hardware fires at the correct period.
+ * 3. **CMCNT** - Clears the counter to 0 so the first interrupt occurs exactly
+ *    one full period after the timer is started.
+ *
+ * The timer must be stopped (CMSTR bit cleared) before calling this function
+ * to avoid race conditions while writing to CMCOR and CMCNT.
+ *
+ * @param[in] cmt     Pointer to the volatile CMT channel register block
+ *   - **Constraint**: Must not be nullptr (asserted)
+ * @param[in] divider CKS clock-select field value (0–3) produced by
+ *                    internal_calculate_cmt_params()
+ *   - 0 = PCLKB/8, 1 = PCLKB/32, 2 = PCLKB/128, 3 = PCLKB/512
+ * @param[in] cmcor   Period count (before adjustment) produced by
+ *                    internal_calculate_cmt_params(); the −1 adjustment is
+ *                    applied internally before writing to hardware
+ *
+ * @return void This function does not return an error code; the assert on cmt
+ *              is the only validation gate.
+ *
+ * @pre cmt must not be nullptr (enforced by RX_ASSERT)
+ * @pre The CMT timer must be stopped before calling this function
+ *
+ * @post cmt->cmcr  = (divider << CKS_SHIFT) | CMIE_BIT
+ * @post cmt->cmcor = cmcor − k_cmt_period_adj
+ * @post cmt->cmcnt = 0
+ *
+ * @note Not thread-safe; caller must ensure the timer is stopped
+ * @note RX_ASSERT fires in debug builds if cmt is nullptr
+ *
+ * @par Thread Safety:
+ * Not thread-safe. Must be called with the timer stopped and no concurrent ISR
+ * activity on this channel.
+ *
+ * @par Performance:
+ * Execution time: ~3 register writes; negligible overhead
+ *
+ * @par Example:
+ * @code{.c}
+ * uint8_t  divider = 0;
+ * uint16_t cmcor   = 0;
+ * (void)internal_calculate_cmt_params(1000U, &divider, &cmcor);
+ * volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(k_cmt_channel_1);
+ * internal_configure_cmt_timer_registers(cmt, divider, cmcor);
+ * @endcode
+ *
+ * @see internal_calculate_cmt_params() Produces the divider and cmcor arguments
+ * @see rx_cmt_stop()                   Must be called before this function
+ * @see cmt_cmcr_bits_t                 CKS shift and CMIE bit position constants
+ *
+ * @since Version 1.0.0
  */
 static void internal_configure_cmt_timer_registers(volatile rx_cmt_channel_regs_t* cmt,
                                                    const uint8_t                   divider,
@@ -406,18 +645,70 @@ static void internal_configure_cmt_timer_registers(volatile rx_cmt_channel_regs_
 }
 
 /**
- * @brief Configure CMT interrupt routing and priority
+ * @brief Configure the ICU interrupt vector priority and enable for a CMT channel
  *
- * @param[in] config Interrupt configuration
+ * @details
+ * Programs the Interrupt Controller Unit (ICU) to route and enable the
+ * compare-match interrupt (CMIn) for the specified CMT channel. The three
+ * ICU registers modified are:
  *
- * @return k_rx_ok on success, error code on failure
+ * 1. **IPR[vector]** - Sets the interrupt priority level for the channel's
+ *    CMIn vector to config.priority.
+ * 2. **IER[index]** - Sets the enable bit for the channel's interrupt vector
+ *    within the IER register array. The bit index and byte index are derived
+ *    from the vector number.
+ * 3. **IR[vector]** - Clears any pending interrupt flag before enabling, so
+ *    a stale flag does not fire immediately after enable.
+ *
+ * The vector number is computed as k_vect_cmt0_cmi0 + config.channel, which
+ * yields CMI0 for channel 0, CMI1 for channel 1, and so on.
+ *
+ * @param[in] config Interrupt routing and priority specification (passed by value)
+ *   - **config.channel**: CMT channel (0–3); mapped to ICU vector
+ *   - **config.priority**: ICU priority (k_ipr_level_min to k_ipr_level_max)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok             ICU programmed successfully
+ * @retval k_rx_err_invalid_arg config.channel >= k_cmt_max_channels, or
+ *                               config.priority outside [k_ipr_level_min, k_ipr_level_max]
+ *
+ * @pre config.channel must be in the range [0, k_cmt_max_channels)
+ * @pre config.priority must be in [k_ipr_level_min, k_ipr_level_max]
+ *
+ * @post ICU IPR register for the channel's vector set to config.priority
+ * @post ICU IER bit for the channel's vector enabled
+ * @post ICU IR flag for the channel's vector cleared
+ *
+ * @note Not thread-safe; concurrent ICU modification from another context is unsafe
+ * @note Clears IR before enabling to prevent a spurious first interrupt
+ *
+ * @par Thread Safety:
+ * Not thread-safe. Must be called during initialization with interrupts disabled
+ * or before the RTOS scheduler starts.
+ *
+ * @par Performance:
+ * Execution time: ~4 register accesses; negligible overhead
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_cmt_interrupt_config_t irq_cfg = {
+ *   .channel  = k_cmt_channel_1,
+ *   .priority = 5,
+ * };
+ * rx_err_t err = internal_configure_cmt_interrupt(irq_cfg);
+ * if (err != k_rx_ok) {
+ *   return err;
+ * }
+ * @endcode
+ *
+ * @see rx_cmt_interrupt_config_t  Configuration structure passed to this function
+ * @see rx_cmt_deinit()            Clears the IER bit to disable the interrupt
+ * @see rx_cmt_init()              Constructs config and calls this function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t config)
 {
-  uint8_t vector;
-  uint8_t ier_index;
-  uint8_t ier_bit;
-
   /* Note: Lower bound check omitted - config.channel is uint8_t, k_cmt_channel_0 == 0,
    * so config.channel >= k_cmt_channel_0 is always true (-Wtype-limits) */
   if ((uint8_t)config.channel >= (uint8_t)k_cmt_max_channels) {
@@ -427,9 +718,9 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
     return k_rx_err_invalid_arg;
   }
 
-  vector    = k_vect_cmt0_cmi0 + config.channel;
-  ier_index = vector / k_icu_ier_bits_per_reg;
-  ier_bit   = vector % k_icu_ier_bits_per_reg;
+  const uint8_t vector    = k_vect_cmt0_cmi0 + config.channel;
+  const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
 
   icu()->ipr[vector]     = config.priority;
   const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
@@ -445,7 +736,30 @@ static rx_err_t internal_configure_cmt_interrupt(const rx_cmt_interrupt_config_t
  */
 
 /**
- * @brief CMT1 interrupt handler
+ * @brief CMT1 (CMT channel 1) compare-match interrupt service routine
+ *
+ * @details
+ * Invoked by the RX72N hardware whenever the CMT1 counter (CMCNT) reaches the
+ * value stored in CMCOR. The ISR checks whether a callback has been registered
+ * in s_cmt_callback[k_cmt_channel_1] and, if so, calls it with the associated
+ * user data pointer from s_cmt_user_data[k_cmt_channel_1].
+ *
+ * The compare-match interrupt flag is automatically cleared by the RX72N
+ * hardware upon entry; no explicit IR register write is needed.
+ *
+ * @note Executes in interrupt context; all code in this ISR and any registered
+ *       callback must be ISR-safe (no blocking, no long operations)
+ * @note Not thread-safe; the callback executes with the CMT1 interrupt masked
+ *
+ * @warning Do not call any ThreadX API that is not interrupt-safe from the
+ *          registered callback (e.g., tx_thread_sleep() is forbidden; use
+ *          ISR-safe variants such as tx_semaphore_put_from_isr())
+ *
+ * @see rx_cmt_init()       Registers the callback invoked by this ISR
+ * @see rx_cmt_deinit()     Clears the callback and disables this interrupt
+ * @see s_cmt_callback      Per-channel callback function pointer array
+ *
+ * @since Version 1.0.0
  */
 void cmt1_isr(void)
 {
@@ -458,7 +772,30 @@ void cmt1_isr(void)
 }
 
 /**
- * @brief CMT2 interrupt handler
+ * @brief CMT2 (CMT channel 2) compare-match interrupt service routine
+ *
+ * @details
+ * Invoked by the RX72N hardware whenever the CMT2 counter (CMCNT) reaches the
+ * value stored in CMCOR. The ISR checks whether a callback has been registered
+ * in s_cmt_callback[k_cmt_channel_2] and, if so, calls it with the associated
+ * user data pointer from s_cmt_user_data[k_cmt_channel_2].
+ *
+ * The compare-match interrupt flag is automatically cleared by the RX72N
+ * hardware upon entry; no explicit IR register write is needed.
+ *
+ * @note Executes in interrupt context; all code in this ISR and any registered
+ *       callback must be ISR-safe (no blocking, no long operations)
+ * @note Not thread-safe; the callback executes with the CMT2 interrupt masked
+ *
+ * @warning Do not call any ThreadX API that is not interrupt-safe from the
+ *          registered callback (e.g., tx_thread_sleep() is forbidden; use
+ *          ISR-safe variants such as tx_semaphore_put_from_isr())
+ *
+ * @see rx_cmt_init()       Registers the callback invoked by this ISR
+ * @see rx_cmt_deinit()     Clears the callback and disables this interrupt
+ * @see s_cmt_callback      Per-channel callback function pointer array
+ *
+ * @since Version 1.0.0
  */
 void cmt2_isr(void)
 {
@@ -468,7 +805,30 @@ void cmt2_isr(void)
 }
 
 /**
- * @brief CMT3 interrupt handler
+ * @brief CMT3 (CMT channel 3) compare-match interrupt service routine
+ *
+ * @details
+ * Invoked by the RX72N hardware whenever the CMT3 counter (CMCNT) reaches the
+ * value stored in CMCOR. The ISR checks whether a callback has been registered
+ * in s_cmt_callback[k_cmt_channel_3] and, if so, calls it with the associated
+ * user data pointer from s_cmt_user_data[k_cmt_channel_3].
+ *
+ * The compare-match interrupt flag is automatically cleared by the RX72N
+ * hardware upon entry; no explicit IR register write is needed.
+ *
+ * @note Executes in interrupt context; all code in this ISR and any registered
+ *       callback must be ISR-safe (no blocking, no long operations)
+ * @note Not thread-safe; the callback executes with the CMT3 interrupt masked
+ *
+ * @warning Do not call any ThreadX API that is not interrupt-safe from the
+ *          registered callback (e.g., tx_thread_sleep() is forbidden; use
+ *          ISR-safe variants such as tx_semaphore_put_from_isr())
+ *
+ * @see rx_cmt_init()       Registers the callback invoked by this ISR
+ * @see rx_cmt_deinit()     Clears the callback and disables this interrupt
+ * @see s_cmt_callback      Per-channel callback function pointer array
+ *
+ * @since Version 1.0.0
  */
 void cmt3_isr(void)
 {
@@ -483,12 +843,66 @@ void cmt3_isr(void)
  */
 
 /**
- * @brief Validate CMT channel and config parameters
+ * @brief Validate channel and configuration pointer before CMT initialisation
  *
- * @param[in] channel CMT channel
- * @param[in] config CMT configuration
+ * @details
+ * Performs all parameter checking required before rx_cmt_init() proceeds to
+ * hardware configuration. Validation is performed in this strict order:
  *
- * @return k_rx_ok on success, error code on failure
+ * 1. Verify config pointer is non-null (k_rx_err_null_ptr)
+ * 2. Verify channel is within [0, k_cmt_max_channels) (k_rx_err_invalid_arg)
+ * 3. Reject channel 0, which is reserved for the ThreadX system-tick timer
+ *    (k_rx_err_conflict)
+ * 4. Verify interrupt priority is within [k_ipr_level_min, k_ipr_level_max]
+ *    (k_rx_err_invalid_arg)
+ *
+ * Centralising these checks in a dedicated helper keeps the main rx_cmt_init()
+ * function concise and ensures that every check is logged before returning.
+ *
+ * @param[in] channel CMT channel to validate
+ *   - **Valid range**: k_cmt_channel_1 through k_cmt_channel_3
+ *   - k_cmt_channel_0 is rejected (reserved for ThreadX)
+ * @param[in] config Pointer to the channel configuration structure
+ *   - **Null handling**: Returns k_rx_err_null_ptr immediately if nullptr
+ *   - **priority field**: Must be in [k_ipr_level_min, k_ipr_level_max]
+ *
+ * @return rx_err_t Error code indicating success or the first validation failure
+ * @retval k_rx_ok             All parameters are valid
+ * @retval k_rx_err_null_ptr   config is nullptr
+ * @retval k_rx_err_invalid_arg channel >= k_cmt_max_channels, or
+ *                               config->priority out of [min, max]
+ * @retval k_rx_err_conflict   channel == k_cmt_channel_0 (ThreadX reserved)
+ *
+ * @pre config must be a pointer to a caller-owned rx_cmt_config_t (may be nullptr)
+ * @pre channel must be a member of rx_cmt_channel_t
+ *
+ * @post On k_rx_ok: channel and *config are safe to use for hardware programming
+ * @post On error: an error message has been emitted via rx_log_error()
+ *
+ * @note Not thread-safe; pure validation with no shared state modification
+ * @note The lower-bound check `channel >= k_cmt_channel_0` is intentionally
+ *       omitted to avoid -Wtype-limits: channel is uint8_t and k_cmt_channel_0 == 0,
+ *       making the comparison always true
+ *
+ * @par Thread Safety:
+ * Pure validation; no shared mutable state is modified. Safe to call from any
+ * context, but the result may be stale if state changes after the call.
+ *
+ * @par Performance:
+ * Execution time: ~4 comparisons; negligible overhead
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_err_t err = internal_validate_cmt_init_params(k_cmt_channel_1, &config);
+ * if (err != k_rx_ok) {
+ *   return err;
+ * }
+ * @endcode
+ *
+ * @see rx_cmt_init()     Sole caller; uses this to guard hardware programming
+ * @see rx_cmt_config_t   Configuration structure whose fields are validated here
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t channel,
                                                   const rx_cmt_config_t* config)
@@ -520,10 +934,63 @@ static rx_err_t internal_validate_cmt_init_params(const rx_cmt_channel_t channel
 }
 
 /**
- * @brief Save callback and mark channel as initialized
+ * @brief Persist the user callback, user-data pointer, and channel initialized flag
  *
- * @param[in] channel CMT channel
- * @param[in] config CMT configuration
+ * @details
+ * Copies the callback function pointer and user-data pointer from the caller's
+ * configuration structure into the module-level static arrays, then marks the
+ * channel as initialized. After this call the ISR for the channel will invoke
+ * the registered callback on every compare-match event.
+ *
+ * This function is the final step in the rx_cmt_init() sequence. It must only
+ * be called after all hardware registers have been programmed and the interrupt
+ * has been configured in the ICU, so that the ISR never encounters a partially
+ * initialised channel state.
+ *
+ * @param[in] channel CMT channel whose callback state is to be saved
+ *   - **Valid range**: k_cmt_channel_1 through k_cmt_channel_3
+ *   - Caller (rx_cmt_init) has already validated the channel
+ * @param[in] config Pointer to the CMT configuration structure
+ *   - **config->callback**: Function pointer (may be nullptr; ISR is a no-op if null)
+ *   - **config->user_data**: Opaque pointer passed verbatim to callback (may be nullptr)
+ *   - **Null handling**: Caller guarantees config is non-null
+ *
+ * @return void This function does not return an error code; all preconditions
+ *              are enforced by the caller before this function is invoked.
+ *
+ * @pre channel must be valid and in range [1, k_cmt_max_channels) (validated by caller)
+ * @pre config must be non-null (validated by internal_validate_cmt_init_params)
+ *
+ * @post s_cmt_callback[channel]    = config->callback
+ * @post s_cmt_user_data[channel]   = config->user_data
+ * @post s_cmt_initialized[channel] = true
+ *
+ * @note Not thread-safe; must be the last step of rx_cmt_init() with interrupts
+ *       either disabled or not yet fired for this channel
+ * @note After this call the channel is considered "live"; the ISR may fire at
+ *       any point
+ *
+ * @par Thread Safety:
+ * Not thread-safe. The three static array writes are not atomic. Call only
+ * during initialization with the channel interrupt not yet active.
+ *
+ * @par Performance:
+ * Execution time: ~3 stores; negligible overhead
+ *
+ * @par Example:
+ * @code{.c}
+ * // Final step inside rx_cmt_init() after all hardware setup is complete
+ * internal_save_cmt_callback(channel, config);
+ * // s_cmt_initialized[channel] is now true; ISR will call config->callback
+ * @endcode
+ *
+ * @see rx_cmt_init()      Sole caller; calls this as the last initialisation step
+ * @see rx_cmt_deinit()    Clears the state written by this function
+ * @see s_cmt_callback     Destination array for config->callback
+ * @see s_cmt_user_data    Destination array for config->user_data
+ * @see s_cmt_initialized  Destination array for the initialized flag
+ *
+ * @since Version 1.0.0
  */
 static void internal_save_cmt_callback(const rx_cmt_channel_t channel,
                                        const rx_cmt_config_t* config)
@@ -538,25 +1005,120 @@ static void internal_save_cmt_callback(const rx_cmt_channel_t channel,
  * =============================================================================
  */
 
+/**
+ * @brief Initialize a CMT channel for periodic interrupt generation
+ *
+ * @details
+ * Configures a CMT (Compare Match Timer) channel to fire a user callback at the
+ * requested frequency. Validates parameters, selects the optimal clock divider,
+ * enables the module clock, stops the timer for safe configuration, programs
+ * timer registers, configures the ICU interrupt routing, saves the callback,
+ * and starts the timer.
+ *
+ * **Algorithm steps:**
+ * 1. Validate channel and config parameters via internal_validate_cmt_init_params()
+ * 2. Obtain CMT channel register base via internal_get_cmt_base()
+ * 3. Calculate optimal divider and CMCOR value via internal_calculate_cmt_params()
+ * 4. Enable CMT module clock (clear MSTPCRB bit) via internal_enable_cmt_module_clock()
+ * 5. Stop the timer to allow safe register writes via rx_cmt_stop()
+ * 6. Program CMCR (divider + CMIE) and CMCOR via internal_configure_cmt_timer_registers()
+ * 7. Configure ICU interrupt vector priority and enable via internal_configure_cmt_interrupt()
+ * 8. Save callback pointer and mark channel initialized via internal_save_cmt_callback()
+ * 9. Start the timer via rx_cmt_start()
+ *
+ * **Clock divider selection:**
+ * The driver iterates dividers /8, /32, /128, /512 and picks the first that
+ * produces a period fitting in 16 bits:
+ * @code
+ * period = (PCLKB / divider) / frequency_hz
+ * if (0 < period <= 65535): use this divider
+ * @endcode
+ *
+ * @param[in] channel CMT channel to initialize
+ *   - **Valid range**: k_cmt_channel_1, k_cmt_channel_2, k_cmt_channel_3
+ *   - **Reserved**: k_cmt_channel_0 is reserved for ThreadX system tick
+ *
+ * @param[in] config Pointer to channel configuration structure
+ *   - **frequency_hz**: Desired interrupt frequency in Hz (> 0, <= PCLKB/8)
+ *   - **priority**: ICU interrupt priority (k_ipr_level_min to k_ipr_level_max)
+ *   - **callback**: Function called from interrupt context on each match
+ *   - **user_data**: Opaque pointer passed to callback (may be nullptr)
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; timer running and callback registered
+ * @retval k_rx_err_null_ptr config is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel, frequency out of range, or invalid priority
+ * @retval k_rx_err_conflict channel is k_cmt_channel_0 (reserved for ThreadX)
+ * @retval k_rx_err_hw_error Timer start verification failed (CMSTR readback mismatch)
+ *
+ * @pre config must point to a valid rx_cmt_config_t structure
+ * @pre config->frequency_hz must be > 0 and <= PCLKB / 8 (7.5 MHz at 60 MHz PCLKB)
+ * @pre channel must not be k_cmt_channel_0
+ * @pre System clocks must be initialized (PCLKB = 60 MHz)
+ *
+ * @post Timer running at requested frequency
+ * @post config->callback registered and called from ISR at each compare match
+ * @post s_cmt_initialized[channel] set to true
+ * @post ICU interrupt for the channel enabled at specified priority
+ *
+ * @note Not thread-safe - call once per channel during system initialization
+ * @note Callback executes in interrupt context; keep it short and non-blocking
+ * @warning CMT0 is reserved for ThreadX; do not use k_cmt_channel_0
+ *
+ * @par Thread Safety:
+ * Not thread-safe. Call once per channel during initialization before starting
+ * the RTOS scheduler or with interrupts disabled.
+ *
+ * @par Performance:
+ * - Execution time: ~5 µs (mostly register writes)
+ * - Stack usage: 48 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * static void my_timer_cb(void* user_data)
+ * {
+ *   // Called at 1 kHz from interrupt context
+ *   (void)user_data;
+ *   toggle_led();
+ * }
+ *
+ * const rx_cmt_config_t cfg = {
+ *   .frequency_hz = 1000,         // 1 kHz
+ *   .priority     = 5,
+ *   .callback     = my_timer_cb,
+ *   .user_data    = nullptr,
+ * };
+ *
+ * rx_err_t err = rx_cmt_init(k_cmt_channel_1, &cfg);
+ * if (err != k_rx_ok) {
+ *   rx_log_error("APP", "CMT init failed");
+ * }
+ * @endcode
+ *
+ * @see rx_cmt_deinit() Stop and release channel
+ * @see rx_cmt_start() Start a previously stopped channel
+ * @see rx_cmt_stop() Stop the timer without deinitializing
+ * @see rx_cmt_config_t Configuration structure definition
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* config)
 {
-  volatile rx_cmt_channel_regs_t* cmt;
-  uint8_t                         divider;
-  uint16_t                        cmcor;
-  rx_err_t                        err;
-
   /* Validate parameters */
-  err = internal_validate_cmt_init_params(channel, config);
+  rx_err_t err = internal_validate_cmt_init_params(channel, config);
   if (err != k_rx_ok) {
     return err;
   }
 
-  cmt = internal_get_cmt_base(channel);
+  volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(channel);
   if (cmt == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   /* Calculate divider and compare value */
+  uint8_t  divider;
+  uint16_t cmcor;
   err = internal_calculate_cmt_params(config->frequency_hz, &divider, &cmcor);
   if (err != k_rx_ok) {
     return err;
@@ -596,15 +1158,53 @@ rx_err_t rx_cmt_init(const rx_cmt_channel_t channel, const rx_cmt_config_t* conf
 }
 
 /**
- * @brief Start CMT counter
+ * @brief Start CMT counter for a previously initialized channel
+ *
+ * @details
+ * Sets the appropriate bit in the CMSTR0 or CMSTR1 register to start the
+ * CMT counter running. After setting the bit the register is read back to
+ * verify the hardware accepted the write. Channels 0/1 share CMSTR0;
+ * channels 2/3 share CMSTR1. Channels 0 and 1 use STR0/STR1 bits respectively,
+ * as do channels 2 and 3.
+ *
  * @param[in] channel CMT channel to start
- * @return k_rx_ok on success, error code otherwise
+ *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
+ *   - **Note**: Usually called internally by rx_cmt_init()
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; counter is running
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_invalid_state Channel not initialized
+ * @retval k_rx_err_hw_error CMSTR readback did not show bit set
+ *
+ * @pre channel must be initialized via rx_cmt_init()
+ * @pre channel must be in range [0, 3]
+ *
+ * @post CMSTR bit for channel is set
+ * @post Counter begins incrementing from its current value
+ *
+ * @note Usually called automatically by rx_cmt_init(); call explicitly only after rx_cmt_stop()
+ * @note Performs a readback check to verify the hardware write succeeded
+ *
+ * @par Thread Safety:
+ * Not thread-safe; do not call concurrently with stop/deinit on the same channel.
+ *
+ * @par Example:
+ * @code{.c}
+ * // Pause then resume timer
+ * rx_cmt_stop(k_cmt_channel_1);
+ * // ... do critical work ...
+ * rx_cmt_start(k_cmt_channel_1);
+ * @endcode
+ *
+ * @see rx_cmt_stop() Stop the counter
+ * @see rx_cmt_init() Initialize channel (calls start internally)
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
 {
-  uint16_t cmstr_value;
-
-  if ((int32_t)channel >= k_cmt_max_channels) {
+  if ((uint8_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -615,36 +1215,36 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
   /* Set corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr0 |= bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr0;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     }
     case k_cmt_channel_1: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr0 |= bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr0;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     }
     case k_cmt_channel_2: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr1 |= bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr1;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     }
     case k_cmt_channel_3: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr1 |= bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr1;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
@@ -658,51 +1258,90 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
 }
 
 /**
- * @brief Stop CMT counter
+ * @brief Stop CMT counter without deinitializing the channel
+ *
+ * @details
+ * Clears the appropriate bit in CMSTR0 or CMSTR1 to halt the CMT counter.
+ * After clearing the bit the register is read back to verify the hardware
+ * accepted the write. The channel remains initialized; call rx_cmt_start()
+ * to resume counting.
+ *
+ * Note that rx_cmt_stop() does NOT require the channel to be initialized
+ * (s_cmt_initialized check is omitted intentionally so that rx_cmt_init()
+ * can call it safely before marking the channel as initialized).
+ *
  * @param[in] channel CMT channel to stop
- * @return k_rx_ok on success, error code otherwise
+ *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; counter halted
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_hw_error CMSTR readback showed bit still set
+ *
+ * @pre channel must be in range [0, 3]
+ * @pre Interrupts may still fire if one is already pending when stop is called
+ *
+ * @post CMSTR bit for channel is cleared
+ * @post Counter stops incrementing (current CMCNT value preserved)
+ *
+ * @note Does not clear the initialized flag - channel can be restarted
+ * @note Called by rx_cmt_init() before programming registers (safe on uninitialized channel)
+ *
+ * @par Thread Safety:
+ * Not thread-safe; do not call concurrently with start/init/deinit on the same channel.
+ *
+ * @par Example:
+ * @code{.c}
+ * // Temporarily suspend timer
+ * rx_cmt_stop(k_cmt_channel_2);
+ * reconfigure_something();
+ * rx_cmt_start(k_cmt_channel_2);
+ * @endcode
+ *
+ * @see rx_cmt_start() Resume counting
+ * @see rx_cmt_deinit() Stop and release channel resources
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
 {
-  uint16_t cmstr_value;
-
-  if ((int32_t)channel >= k_cmt_max_channels) {
+  if ((uint8_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
   /* Clear corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr0 &= (uint16_t)~bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr0;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     }
     case k_cmt_channel_1: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr0 &= (uint16_t)~bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr0;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     }
     case k_cmt_channel_2: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr1;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
       break;
     }
     case k_cmt_channel_3: {
-      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
-      cmstr_value = cmt_ctrl()->cmstr1;
+      const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
         return k_rx_err_hw_error;
       }
@@ -716,10 +1355,53 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
 }
 
 /**
- * @brief Get current CMT counter value
- * @param[in] channel CMT channel
- * @param[out] count Pointer to store counter value
- * @return k_rx_ok on success, error code otherwise
+ * @brief Read current CMT counter (CMCNT) value
+ *
+ * @details
+ * Returns the instantaneous value of the 16-bit CMCNT register for the
+ * specified channel. The counter increments at PCLKB divided by the
+ * configured divider (/8, /32, /128, or /512) and resets to 0 on compare
+ * match. Useful for measuring elapsed time within a period.
+ *
+ * @param[in] channel CMT channel to read (0-3)
+ *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
+ *
+ * @param[out] count Pointer to store the 16-bit counter value
+ *   - **Valid range**: Non-nullptr to uint16_t
+ *   - **On success**: Contains CMCNT value (0 to CMCOR)
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; *count contains current CMCNT value
+ * @retval k_rx_err_null_ptr count is nullptr
+ * @retval k_rx_err_invalid_state Channel not initialized or invalid channel
+ * @retval k_rx_err_invalid_arg Could not obtain register base pointer
+ *
+ * @pre Channel must be initialized via rx_cmt_init()
+ * @pre count must point to valid uint16_t storage
+ *
+ * @post *count set to CMCNT register value at time of read
+ * @post Counter continues running (read is non-destructive)
+ *
+ * @note Value may change between consecutive reads if counter is running
+ * @note For precise time measurements disable interrupts around consecutive reads
+ *
+ * @par Thread Safety:
+ * Read-only; safe to call from multiple contexts, but value may be stale.
+ *
+ * @par Example:
+ * @code{.c}
+ * uint16_t ticks = 0;
+ * rx_err_t err   = rx_cmt_get_count(k_cmt_channel_1, &ticks);
+ * if (err == k_rx_ok) {
+ *   // ticks = current counter position within the period
+ * }
+ * @endcode
+ *
+ * @see rx_cmt_init() Initialize channel and set frequency
+ * @see rx_cmt_start() Start the counter
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
 {
@@ -727,7 +1409,7 @@ rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
 
   RX_CHECK_NULL_PTR(count, s_tag, "count pointer is nullptr");
 
-  if ((int32_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
+  if ((uint8_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
     return k_rx_err_invalid_state;
   }
 
@@ -741,31 +1423,72 @@ rx_err_t rx_cmt_get_count(const rx_cmt_channel_t channel, uint16_t* count)
 }
 
 /**
- * @brief Deinitialize CMT channel
- * @param[in] channel CMT channel to deinitialize
- * @return k_rx_ok on success, error code otherwise
+ * @brief Deinitialize CMT channel and release all resources
+ *
+ * @details
+ * Stops the CMT counter, disables the ICU interrupt for the channel,
+ * clears the stored callback and user data, and marks the channel as
+ * uninitialized. After this call the channel may be re-initialized with
+ * rx_cmt_init().
+ *
+ * **Algorithm steps:**
+ * 1. Validate channel range
+ * 2. Stop timer via rx_cmt_stop() and propagate any error
+ * 3. Compute ICU vector, IER index, and IER bit for the channel
+ * 4. Clear the IER bit to disable the interrupt
+ * 5. Clear callback, user_data, and initialized flag
+ *
+ * @param[in] channel CMT channel to deinitialize (0-3)
+ *   - **Valid range**: k_cmt_channel_0 through k_cmt_channel_3
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; channel fully deinitialized
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_hw_error Timer stop verification failed
+ *
+ * @pre channel must be in range [0, 3]
+ * @pre Caller should ensure no other task is using the channel callback
+ *
+ * @post Counter halted (CMSTR bit cleared)
+ * @post ICU interrupt disabled for channel
+ * @post s_cmt_initialized[channel] set to false
+ * @post s_cmt_callback[channel] and s_cmt_user_data[channel] set to nullptr
+ *
+ * @note Safe to call on an uninitialized channel (rx_cmt_stop tolerates it)
+ * @note Module clock is NOT re-asserted - hardware remains clocked for re-use
+ *
+ * @par Thread Safety:
+ * Not thread-safe. Ensure no ISR or other thread is using the channel.
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_err_t err = rx_cmt_deinit(k_cmt_channel_1);
+ * if (err != k_rx_ok) {
+ *   rx_log_error("APP", "CMT deinit failed");
+ * }
+ * @endcode
+ *
+ * @see rx_cmt_init() Re-initialize after deinit
+ * @see rx_cmt_stop() Stop without full deinit
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
 {
-  uint8_t  vector;
-  uint8_t  ier_index;
-  uint8_t  ier_bit;
-  rx_err_t err;
-
-  if ((int32_t)channel >= k_cmt_max_channels) {
+  if ((uint8_t)channel >= k_cmt_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
   /* Stop timer and propagate any errors */
-  err = rx_cmt_stop(channel);
+  rx_err_t err = rx_cmt_stop(channel);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Disable interrupt */
-  vector                 = k_vect_cmt0_cmi0 + channel;
-  ier_index              = vector / k_icu_ier_bits_per_reg;
-  ier_bit                = vector % k_icu_ier_bits_per_reg;
+  const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
+  const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
+  const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
   const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
   icu()->ier[ier_index] &= (uint8_t)~ier_mask;
 

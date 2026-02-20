@@ -1329,8 +1329,6 @@ static rx_err_t              internal_send_via_channel(rx_comm_channel_t channel
  */
 rx_err_t telemetry_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_telem_created, "Telemetry task already created");
   if (s_telem_created) {
@@ -1338,7 +1336,7 @@ rx_err_t telemetry_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_telem_thread,
+  UINT tx_status = tx_thread_create(&s_telem_thread,
                                "TelemTask",
                                internal_telem_task_entry,
                                k_telem_task_input,
@@ -1542,8 +1540,6 @@ rx_err_t telemetry_task_create(void)
  */
 static void internal_telem_task_entry(ULONG input)
 {
-  rx_err_t err;
-
   (void)input;
 
   rx_log_info(s_tag, "Telemetry task starting");
@@ -1552,7 +1548,7 @@ static void internal_telem_task_entry(ULONG input)
   /* Main telemetry loop */
   while (true) {
     /* Build and send telemetry */
-    err = internal_build_and_send_telemetry();
+    rx_err_t err = internal_build_and_send_telemetry();
     if (err != k_rx_ok) {
       rx_log_debug_val(s_tag, "Telemetry send failed", (uint32_t)err);
     }
@@ -1641,10 +1637,6 @@ static void internal_telem_task_entry(ULONG input)
  */
 static telemetry_transport_t internal_select_transport(void)
 {
-  rx_err_t err;
-  bool     usb_ready = false;
-  bool     spi_ready = false;
-
   /** @brief Tracks previous USB active state to detect failover transitions */
   static bool s_usb_was_active = false;
 
@@ -1659,7 +1651,8 @@ static telemetry_transport_t internal_select_transport(void)
   static bool s_no_transport_logged = false;
 
   /* Query USB channel readiness */
-  err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
+  bool     usb_ready = false;
+  rx_err_t err       = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
   if (err != k_rx_ok) {
     /* Treat query failure as channel not ready */
     usb_ready = false;
@@ -1684,6 +1677,7 @@ static telemetry_transport_t internal_select_transport(void)
   }
 
   /* Query SPI channel readiness */
+  bool spi_ready = false;
   err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
   if (err != k_rx_ok) {
     spi_ready = false;

@@ -561,6 +561,7 @@ void tearDown(void)
 void test_encoder_init_null(void)
 {
   rx_err_t err = rx_frame_encoder_init(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -589,6 +590,7 @@ void test_encoder_init_success(void)
 {
   rx_frame_encoder_t enc;
   rx_err_t           err = rx_frame_encoder_init(&enc);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, enc.initialized);
 }
@@ -614,6 +616,7 @@ void test_encoder_init_success(void)
 void test_encoder_deinit_null(void)
 {
   rx_err_t err = rx_frame_encoder_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -643,6 +646,7 @@ void test_encoder_deinit_null(void)
 void test_decoder_init_null(void)
 {
   rx_err_t err = rx_frame_decoder_init(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -671,6 +675,7 @@ void test_decoder_init_success(void)
 {
   rx_frame_decoder_t dec;
   rx_err_t           err = rx_frame_decoder_init(&dec);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, dec.initialized);
 }
@@ -740,6 +745,7 @@ void test_encode_uninitialized(void)
   uint32_t           len;
 
   rx_err_t err = rx_frame_encode(&enc, &frame, buffer, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -773,6 +779,7 @@ void test_encode_payload_too_large(void)
   frame.header.length = k_frame_max_payload + 1; /* 1025 bytes (exceeds max) */
 
   rx_err_t err = rx_frame_encode(&s_encoder, &frame, buffer, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -960,6 +967,7 @@ void test_decode_uninitialized(void)
   rx_frame_t         frame    = {0};
 
   rx_err_t err = rx_frame_decode(&dec, data, 64, &frame);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -969,6 +977,7 @@ void test_decode_too_short(void)
   rx_frame_t frame;
 
   rx_err_t err = rx_frame_decode(&s_decoder, data, k_short_buffer_size, &frame);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -978,6 +987,7 @@ void test_decode_invalid_sync(void)
   rx_frame_t frame;
 
   rx_err_t err = rx_frame_decode(&s_decoder, data, k_frame_min_size, &frame);
+
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
 }
 
@@ -1123,6 +1133,7 @@ void test_roundtrip_large_payload(void)
 void test_create_ack_null(void)
 {
   rx_err_t err = rx_frame_create_ack(nullptr, k_test_seq_zero);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1141,6 +1152,7 @@ void test_create_ack_success(void)
 void test_create_nack_null(void)
 {
   rx_err_t err = rx_frame_create_nack(nullptr, k_test_seq_zero, 0);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1513,16 +1525,6 @@ void test_crc_little_endian(void)
 
 void test_go_compatibility_empty_ack(void)
 {
-  rx_frame_t frame;
-  uint8_t    buffer[k_test_small_buffer];
-  uint32_t   len;
-  uint8_t    expected_header[k_header_wire_size];
-  uint8_t    sync_high = 0;
-  uint8_t    sync_low  = 0;
-  uint8_t    seq_high  = 0;
-  uint8_t    seq_low   = 0;
-  uint8_t    len_high  = 0;
-  uint8_t    len_low   = 0;
   /*
    * Test vector from Go implementation (star-gateway/internal/frame/)
    * Frame: ACK for sequence 1
@@ -1534,6 +1536,17 @@ void test_go_compatibility_empty_ack(void)
    *   00             - FLAGS (none = 0)
    *   <CRC-32 LE>    - CRC-32 of above 8 bytes
    */
+  rx_frame_t frame;
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+  uint8_t    expected_header[k_header_wire_size];
+  uint8_t    sync_high = 0;
+  uint8_t    sync_low  = 0;
+  uint8_t    seq_high  = 0;
+  uint8_t    seq_low   = 0;
+  uint8_t    len_high  = 0;
+  uint8_t    len_low   = 0;
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ack(&frame, k_test_seq_one));
 
   sync_high = (uint8_t)(k_frame_sync_word >> k_test_byte_shift_8);
@@ -1567,16 +1580,6 @@ void test_go_compatibility_empty_ack(void)
 
 void test_go_compatibility_command_with_payload(void)
 {
-  rx_frame_t frame = {0};
-  uint8_t    buffer[k_test_small_buffer];
-  uint32_t   len;
-  uint8_t    expected[k_frame_sync_size + k_frame_header_size + k_go_payload_len];
-  uint8_t    sync_high = 0;
-  uint8_t    sync_low  = 0;
-  uint8_t    seq_high  = 0;
-  uint8_t    seq_low   = 0;
-  uint8_t    len_high  = 0;
-  uint8_t    len_low   = 0;
   /*
    * Test vector: Command with 4-byte payload "TEST"
    * Expected wire format (hex):
@@ -1588,6 +1591,17 @@ void test_go_compatibility_command_with_payload(void)
    *   54 45 53 54    - PAYLOAD "TEST"
    *   <CRC-32 LE>    - CRC-32
    */
+  rx_frame_t frame = {0};
+  uint8_t    buffer[k_test_small_buffer];
+  uint32_t   len;
+  uint8_t    expected[k_frame_sync_size + k_frame_header_size + k_go_payload_len];
+  uint8_t    sync_high = 0;
+  uint8_t    sync_low  = 0;
+  uint8_t    seq_high  = 0;
+  uint8_t    seq_low   = 0;
+  uint8_t    len_high  = 0;
+  uint8_t    len_low   = 0;
+
   frame.header.sequence = k_test_seq_42;
   frame.header.length   = k_go_payload_len;
   frame.header.type     = k_frame_type_command;
@@ -2072,6 +2086,7 @@ void test_decode_zero_length_buffer(void)
 {
   rx_frame_t frame;
   rx_err_t   err = rx_frame_decode(&s_decoder, (uint8_t*)"", 0, &frame);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -2118,6 +2133,7 @@ void test_create_ping_null(void)
 void test_create_ping_empty(void)
 {
   rx_frame_t frame;
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ping(&frame, k_test_seq_one, NULL, 0));
   TEST_ASSERT_EQUAL(k_test_seq_one, frame.header.sequence);
   TEST_ASSERT_EQUAL(0, frame.header.length);
@@ -2141,6 +2157,7 @@ void test_create_ping_with_counter(void)
 void test_create_ping_null_payload_with_len(void)
 {
   rx_frame_t frame;
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_frame_create_ping(&frame, k_test_seq_zero, NULL, 1));
 }
 
@@ -2171,6 +2188,7 @@ void test_create_reset_null(void)
 void test_create_reset_success(void)
 {
   rx_frame_t frame;
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset(&frame, k_test_seq_one));
   TEST_ASSERT_EQUAL(k_test_seq_one, frame.header.sequence);
   TEST_ASSERT_EQUAL(0, frame.header.length);
@@ -2186,6 +2204,7 @@ void test_create_reset_ack_null(void)
 void test_create_reset_ack_success(void)
 {
   rx_frame_t frame;
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_reset_ack(&frame, k_test_seq_one));
   TEST_ASSERT_EQUAL(k_test_seq_one, frame.header.sequence);
   TEST_ASSERT_EQUAL(0, frame.header.length);

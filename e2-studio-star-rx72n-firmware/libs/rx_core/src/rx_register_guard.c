@@ -344,29 +344,32 @@ typedef struct {
 } register_guard_state_t;
 
 /**
- * @var k_corrections_default
- * @brief Default/reset value for the correction counter
+ * @enum register_guard_defaults_t
+ * @brief Default values for register guard counters and sentinel flags
  *
  * @details
- * Defines the initial/reset value for the corrections counter. Using a
- * named constant instead of literal 0 improves code clarity and allows
- * for easy modification if non-zero initialization is ever needed.
+ * Provides named sentinel values used during register guard initialization
+ * and state reset operations. Using typed enums instead of const variables
+ * ensures predictable size (uint32_t), ABI stability, and debugger
+ * visibility per project C23 style requirements.
  *
- * **Value:** 0
+ * @invariant k_corrections_default must remain zero to correctly reset counters
+ * @invariant k_guard_initialized must remain 1 to match the initialized flag type
  *
- * @par Rationale:
- * Counter starts at zero because no corrections have been made at
- * initialization. This constant is used in both rx_register_guard_init()
- * and rx_register_guard_reset_count() for consistency.
+ * @code
+ * s_state.corrections = k_corrections_default;
+ * s_state.initialized = k_guard_initialized;
+ * @endcode
  *
- * @par NASA Power of 10 Compliance:
- * Rule 8: Named constant instead of magic number
- *
- * @see rx_register_guard_reset_count() Uses this for counter reset
+ * @see rx_register_guard_init()
+ * @see rx_register_guard_reset_count()
  *
  * @since Version 1.0.0
  */
-static const uint32_t k_corrections_default = 0;
+typedef enum : uint32_t {
+  k_corrections_default = 0, /**< Default correction counter value (zero, no corrections applied) */
+  k_guard_initialized   = 1, /**< Sentinel: register guard has been initialized */
+} register_guard_defaults_t;
 
 /* =============================================================================
  * Module State
@@ -731,9 +734,8 @@ static void internal_refresh_pdr(void)
  */
 static void internal_refresh_mstpcr(void)
 {
-  bool needs_update = false;
-
   /* Check if any MSTPCR needs update */
+  bool needs_update = false;
   if (system_regs()->mstpcra != s_state.mstpcr.mstpcra) {
     needs_update = true;
   }
@@ -874,8 +876,8 @@ rx_err_t rx_register_guard_init(void)
   internal_capture_mstpcr();
 #endif
 
-  s_state.corrections = 0;
-  s_state.initialized = 1;
+  s_state.corrections = k_corrections_default;
+  s_state.initialized = k_guard_initialized;
 
   return k_rx_ok;
 }

@@ -315,7 +315,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "rx_spi_comm";
+static const char s_tag[] = "rx_spi_comm";
 
 /** @brief Maximum left-shift for exponential backoff (prevents UB on uint32_t) */
 typedef enum : uint8_t {
@@ -332,14 +332,15 @@ typedef enum : uint8_t {
 
 /** @brief Byte offsets within frame header buffer (SYNC + header fields) */
 typedef enum : uint8_t {
-  k_hdr_sync_low  = 0, /**< SYNC word low byte (LE: LSB first) */
-  k_hdr_sync_high = 1, /**< SYNC word high byte (LE: MSB second) */
-  k_hdr_seq_low   = 2, /**< Sequence number low byte (LE) */
-  k_hdr_seq_high  = 3, /**< Sequence number high byte (LE) */
-  k_hdr_len_low   = 4, /**< Payload length low byte (LE) */
-  k_hdr_len_high  = 5, /**< Payload length high byte (LE) */
-  k_hdr_type      = 6, /**< Frame type */
-  k_hdr_flags     = 7, /**< Frame flags */
+  k_frame_offset_init = 0, /**< Initial frame parse offset (start of buffer) */
+  k_hdr_sync_low      = 0, /**< SYNC word low byte (LE: LSB first) */
+  k_hdr_sync_high     = 1, /**< SYNC word high byte (LE: MSB second) */
+  k_hdr_seq_low       = 2, /**< Sequence number low byte (LE) */
+  k_hdr_seq_high      = 3, /**< Sequence number high byte (LE) */
+  k_hdr_len_low       = 4, /**< Payload length low byte (LE) */
+  k_hdr_len_high      = 5, /**< Payload length high byte (LE) */
+  k_hdr_type          = 6, /**< Frame type */
+  k_hdr_flags         = 7, /**< Frame flags */
 } frame_header_offset_t;
 
 /* Forward declaration: retransmit helper used by rx_spi_comm_receive() */
@@ -441,10 +442,6 @@ static rx_err_t internal_decode_header(const uint8_t* data,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
-  uint32_t offset;
-  uint16_t sync_word;
-  uint32_t expected_size;
-
   if (data == nullptr || frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -453,9 +450,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  offset = 0;
-
-  sync_word = rx_frame_read_le16(&data[offset]);
+  uint32_t offset    = k_frame_offset_init;
+  uint16_t sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
@@ -471,7 +467,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  expected_size = rx_frame_encoded_size(frame->header.length);
+  uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
     return k_rx_err_invalid_size;
   }
@@ -723,11 +719,9 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
     if (err != k_rx_ok) {
       return err;
     }
-
     if (ready) {
       return k_rx_ok;
     }
-
     /* Yield to other threads while waiting */
     tx_thread_sleep(k_poll_sleep_ticks);
   }
@@ -883,15 +877,11 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       uint8_t*              rx_data,
                                       const uint32_t        rx_len)
 {
-  uint32_t transfer_len;
-  rx_err_t wait_err;
-  rx_err_t err;
-
   /* Pre-condition 1: Handle pointer validation */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   /* Pre-condition 2: Transfer length within buffer capacity */
-  transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
+  uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
   if (transfer_len > k_spi_comm_tx_buffer_size) {
     rx_log_error(s_tag, "Transfer length exceeds buffer capacity");
     return k_rx_err_invalid_size;
@@ -911,7 +901,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
 
   /* Wait for host ready signal before transmit operations */
   if (tx_data != nullptr && tx_len > 0) {
-    wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
+    rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
     RX_RETURN_ON_ERROR(wait_err, s_tag, "Host ACK wait failed");
   }
 
@@ -926,7 +916,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
    * Cast to uint16_t: RSPI HAL uses 16-bit length (max 65535 bytes).
    * Safe because transfer_len is validated <= k_spi_comm_tx_buffer_size above.
    */
-  err = rspi_peripheral_transfer(handle->channel,
+  rx_err_t err = rspi_peripheral_transfer(handle->channel,
                                  handle->tx_buffer,
                                  handle->rx_buffer,
                                  (uint16_t)transfer_len);
@@ -1069,7 +1059,7 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_spi_comm_handle_t));
+  *handle = (rx_spi_comm_handle_t){0};
 
   /* Apply configuration */
   handle->session         = config->session;
@@ -1302,7 +1292,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_size;
   }
 
-  memset(frame, 0, sizeof(*frame));
+  *frame = (rx_frame_t){0};
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = (uint8_t)type;
@@ -1488,11 +1478,6 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           const uint8_t*        payload,
                           const uint32_t        payload_len)
 {
-  rx_frame_t frame;
-  uint8_t    wire_buffer[k_frame_max_size];
-  uint32_t   wire_len;
-  rx_err_t   err;
-
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -1515,21 +1500,23 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
 
   /* Get next TX sequence from shared session (atomically increments) */
   uint16_t sequence = 0;
-  err               = rx_session_next_tx(handle->session, &sequence);
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to get TX sequence");
     return err;
   }
 
   /* Build frame (payload already validated above) */
+  rx_frame_t frame;
   err = internal_build_frame(handle, sequence, type, flags, payload, payload_len, &frame);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Encode frame to wire format */
-  wire_len = 0;
-  err      = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
+  uint8_t  wire_buffer[k_frame_max_size];
+  uint32_t wire_len = 0;
+  err               = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame encode failed");
     return err;
@@ -1730,6 +1717,7 @@ internal_read_frame_header(rx_spi_comm_handle_t* handle, uint8_t* header_buf, ui
 
   /* Read frame header from SPI */
   const rx_err_t err = internal_spi_transfer(handle, nullptr, 0, header_buf, header_len);
+
   if (err != k_rx_ok) {
     return err;
   }
@@ -1770,13 +1758,12 @@ static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
                                       rx_frame_t*                 frame,
                                       const uint32_t              total_size)
 {
-  uint32_t offset = 0;
-
   if (handle == nullptr || frame == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
-  rx_err_t err = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
+  uint32_t offset  = k_frame_offset_init;
+  rx_err_t err     = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame header decode failed");
     return err;

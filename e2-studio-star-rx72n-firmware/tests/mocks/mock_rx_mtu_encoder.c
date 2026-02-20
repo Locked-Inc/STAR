@@ -109,6 +109,7 @@ void mock_encoder_reset(void)
 void mock_encoder_set_counter(rx_mtu_channel_t channel, uint16_t count)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     g_mock_mtu_regs[idx].tcnt               = count;
     g_mock_encoder_state.channels[idx].tcnt = count;
@@ -118,6 +119,7 @@ void mock_encoder_set_counter(rx_mtu_channel_t channel, uint16_t count)
 uint16_t mock_encoder_get_counter(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     return g_mock_mtu_regs[idx].tcnt;
   }
@@ -127,14 +129,13 @@ uint16_t mock_encoder_get_counter(rx_mtu_channel_t channel)
 void mock_encoder_advance_counter(rx_mtu_channel_t channel, int32_t delta)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     int32_t       current = (int32_t)g_mock_mtu_regs[idx].tcnt;
     int32_t       new_val = current + delta;
     const int32_t max     = (int32_t)k_counter_max;
-
     /* Handle 16-bit wraparound with bounded modulo arithmetic */
     new_val = ((new_val % max) + max) % max;
-
     g_mock_mtu_regs[idx].tcnt               = (uint16_t)new_val;
     g_mock_encoder_state.channels[idx].tcnt = (uint16_t)new_val;
   }
@@ -148,6 +149,7 @@ void mock_encoder_advance_counter(rx_mtu_channel_t channel, int32_t delta)
 bool mock_encoder_is_initialized(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     return g_mock_encoder_state.channels[idx].initialized;
   }
@@ -157,6 +159,7 @@ bool mock_encoder_is_initialized(rx_mtu_channel_t channel)
 bool mock_encoder_is_running(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     return g_mock_encoder_state.channels[idx].running;
   }
@@ -166,6 +169,7 @@ bool mock_encoder_is_running(rx_mtu_channel_t channel)
 uint8_t mock_encoder_get_tmdr(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     return g_mock_mtu_regs[idx].tmdr;
   }
@@ -175,6 +179,7 @@ uint8_t mock_encoder_get_tmdr(rx_mtu_channel_t channel)
 uint32_t mock_encoder_get_start_count(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     return g_mock_encoder_state.channels[idx].start_count;
   }
@@ -184,6 +189,7 @@ uint32_t mock_encoder_get_start_count(rx_mtu_channel_t channel)
 uint32_t mock_encoder_get_stop_count(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx >= 0) {
     return g_mock_encoder_state.channels[idx].stop_count;
   }
@@ -208,6 +214,7 @@ void mock_encoder_set_init_error(bool inject_error)
 rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx < 0) {
     return k_rx_err_invalid_arg;
   }
@@ -220,6 +227,7 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
 rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
 {
   int32_t idx = internal_channel_to_index(channel);
+
   if (idx < 0) {
     return k_rx_err_invalid_arg;
   }

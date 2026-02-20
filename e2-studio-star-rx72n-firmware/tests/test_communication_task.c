@@ -72,9 +72,9 @@ void tearDown(void)
  */
 void test_comm_task_create_success(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task */
@@ -94,9 +94,9 @@ void test_comm_task_create_success(void)
  */
 void test_comm_task_create_thread_failure(void)
 {
+  /* Configure ThreadX to fail */
   rx_err_t err;
 
-  /* Configure ThreadX to fail */
   mock_tx_set_thread_create_return(TX_NO_MEMORY);
 
   /* Create the task */
@@ -115,9 +115,9 @@ void test_comm_task_create_thread_failure(void)
  */
 void test_comm_task_create_already_created(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task first time - should succeed */
@@ -142,11 +142,11 @@ void test_comm_task_create_already_created(void)
  */
 void test_comm_task_initializes_comm_manager(void)
 {
+  /* Configure mock */
   rx_comm_manager_t        mgr    = {0};
   rx_comm_manager_config_t config = {0};
   rx_err_t                 err;
 
-  /* Configure mock */
   mock_comm_manager_set_init_return(k_rx_ok);
 
   /* Initialize manager (simulating task startup) */
@@ -165,10 +165,10 @@ void test_comm_task_initializes_comm_manager(void)
  */
 void test_comm_task_polls_comm_manager(void)
 {
+  /* Initialize manager (required for poll to work) */
   rx_comm_manager_t mgr = {0};
   rx_err_t          err;
 
-  /* Initialize manager (required for poll to work) */
   mgr.initialized = true;
 
   /* Configure mock for timeout (no frame) */
@@ -254,6 +254,7 @@ void test_comm_task_rejects_null_frame(void)
   /* (Simulating that callback early returns) */
 
   uint32_t estop_count_after = mock_shared_data_get_trigger_estop_count();
+
   TEST_ASSERT_EQUAL_UINT32(estop_count_before, estop_count_after);
 }
 
@@ -329,12 +330,12 @@ void test_comm_task_updates_comm_timestamp(void)
  */
 void test_comm_task_can_send_response(void)
 {
+  /* Initialize manager (required for send to work) */
   rx_comm_manager_t     mgr    = {0};
   rx_comm_send_params_t params = {0};
   uint8_t               payload[4];
   rx_err_t              err;
 
-  /* Initialize manager (required for send to work) */
   mgr.initialized = true;
 
   /* Set up send parameters */
@@ -366,10 +367,10 @@ void test_comm_task_can_send_response(void)
  */
 void test_comm_task_handles_decode_failure(void)
 {
+  /* Configure nanopb to fail decoding */
   motor_command_t cmd_out = {0};
   rx_err_t        err;
 
-  /* Configure nanopb to fail decoding */
   mock_nanopb_set_decode_velocity_return(k_rx_err_protocol_error);
 
   /* Try to decode (should fail) */

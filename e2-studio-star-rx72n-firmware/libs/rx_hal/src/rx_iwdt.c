@@ -281,6 +281,20 @@ typedef enum : uint8_t {
  * @invariant tops is valid TOPS register value
  * @invariant cks is valid CKS register value
  *
+ * @par Example:
+ * @code
+ * // Look up a configuration entry and read its fields
+ * const iwdt_timeout_entry_t* cfg = nullptr;
+ * rx_err_t err = internal_find_timeout_config(1000, &cfg);
+ * if (err == k_rx_ok) {
+ *     // cfg->tops and cfg->cks are ready to combine into IWDTCR
+ *     // cfg->timeout_ms reports the actual (>= requested) timeout
+ * }
+ * @endcode
+ *
+ * @see s_timeout_table Table of pre-computed entries
+ * @see internal_find_timeout_config() Lookup function that returns this type
+ *
  * @since Version 1.0.0
  */
 typedef struct {
@@ -531,6 +545,7 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
  *
  * @post IWDTCR configured with specified timeout and window settings
  *
+ * @note Not thread-safe: must be called from single-threaded initialization context
  * @note Window mode disabled (RPES=0%, RPSS=100%)
  * @note Register can only be configured before first refresh
  *
@@ -542,8 +557,6 @@ static rx_err_t internal_find_timeout_config(const uint32_t               timeou
  */
 static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entry_t* config)
 {
-  uint16_t iwdtcr = 0;
-
   if (config == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -551,6 +564,8 @@ static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entr
   if (iwdt() == nullptr) {
     return k_rx_err_hw_unmapped;
   }
+
+  uint16_t iwdtcr = 0;
   iwdtcr |= config->tops;    /* Timeout period */
   iwdtcr |= config->cks;     /* Clock divisor */
   iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
@@ -598,6 +613,7 @@ static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entr
  * @post IWDTRCR configured for reset action
  * @post IWDTCSTPR configured to continue counting in sleep
  *
+ * @note Not thread-safe: must be called from single-threaded initialization context
  * @note These registers can only be written before first refresh
  * @warning Changing RSTIRQS to NMI may compromise system safety
  *
@@ -843,6 +859,7 @@ void rx_hal_iwdt_feed(void)
 
   /* Disable interrupts during refresh for atomicity */
   uint32_t psw;
+
   __asm__ volatile("mvfc psw, %0" : "=r"(psw));
   __asm__ volatile("clrpsw i");
 
@@ -919,7 +936,8 @@ bool rx_hal_iwdt_was_reset(void)
    * Bit 15 REFEF - Refresh Error Flag
    *   1 = Refresh error occurred
    */
-  uint16_t status = iwdt()->iwdtsr;
+  const uint16_t status = iwdt()->iwdtsr;
+
   return ((status & k_iwdt_sr_undff) != 0) || ((status & k_iwdt_sr_refef) != 0);
 
 #else
@@ -988,7 +1006,7 @@ bool rx_hal_iwdt_was_reset(void)
 rx_iwdt_reset_cause_t rx_hal_iwdt_get_reset_cause(void)
 {
 #ifdef __RX__
-  uint16_t status = iwdt()->iwdtsr;
+  const uint16_t status = iwdt()->iwdtsr;
 
   if (status & k_iwdt_sr_refef) {
     return k_iwdt_reset_refresh_error;
@@ -1340,6 +1358,8 @@ static int32_t internal_find_task(const char* task_name)
  * @post s_task_monitor.task_count incremented
  * @post Initial heartbeat timestamp set to current time
  *
+ * @invariant s_task_monitor.task_count <= k_iwdt_max_tasks at all times
+ *
  * @note Task name truncated to 15 characters if longer
  * @note First heartbeat auto-recorded at registration time
  *
@@ -1470,14 +1490,12 @@ rx_err_t rx_hal_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
  */
 void rx_hal_iwdt_task_heartbeat(const char* task_name)
 {
-  int32_t idx = k_task_not_found;
-
   if (task_name == nullptr) {
     rx_log_error(s_tag, "Heartbeat called with nullptr task_name");
     return;
   }
 
-  idx = internal_find_task(task_name);
+  int32_t idx = internal_find_task(task_name);
 
   if (idx == k_task_not_found) {
     /* Task not registered - log warning but don't fail */
@@ -1573,6 +1591,7 @@ rx_err_t rx_hal_iwdt_check_tasks(void)
 {
   uint32_t              current_time_ms;
   rx_err_t              result;
+
   const task_monitor_t* task = nullptr;
   uint32_t              elapsed_ms;
   char                  log_msg[k_log_msg_buffer_size];

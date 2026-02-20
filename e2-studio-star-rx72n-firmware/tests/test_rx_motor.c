@@ -247,12 +247,14 @@ void test_motor_init_success(void)
 void test_motor_init_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_init(nullptr, &s_config);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_init_null_config_fails(void)
 {
   rx_err_t err = rx_motor_init(&s_motor, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -359,12 +361,14 @@ void test_motor_deinit_success(void)
 void test_motor_deinit_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_deinit_not_initialized_fails(void)
 {
   rx_err_t err = rx_motor_deinit(&s_motor);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -742,12 +746,14 @@ void test_motor_stop_coast_from_reverse(void)
 void test_motor_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_stop(nullptr, false);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_stop_not_initialized_fails(void)
 {
   rx_err_t err = rx_motor_stop(&s_motor, false);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -796,6 +802,7 @@ void test_motor_get_duty_null_handle_fails(void)
 {
   float    duty;
   rx_err_t err = rx_motor_get_duty(nullptr, &duty);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -811,6 +818,7 @@ void test_motor_get_duty_not_initialized_fails(void)
 {
   float    duty;
   rx_err_t err = rx_motor_get_duty(&s_motor, &duty);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -832,12 +840,14 @@ void test_motor_get_duty_initial_zero(void)
 void test_motor_set_duty_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_set_duty(nullptr, 50.0f);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_set_duty_not_initialized_fails(void)
 {
   rx_err_t err = rx_motor_set_duty(&s_motor, 50.0f);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -852,6 +862,7 @@ void test_motor_multiple_channels_independent(void)
   rx_motor_handle_t motor1 = {0};
 
   rx_motor_config_t config0 = s_config;
+
   config0.channel           = k_gptw_channel_0;
 
   rx_motor_config_t config1 = s_config;
@@ -882,10 +893,10 @@ void test_motor_multiple_channels_independent(void)
 
 void test_motor_all_four_channels(void)
 {
+  /* Initialize all 4 motors */
   rx_motor_handle_t motors[4] = {0};
   rx_motor_config_t configs[4];
 
-  /* Initialize all 4 motors */
   for (int32_t i = 0; i < 4; i++) {
     configs[i]         = s_config;
     configs[i].channel = (rx_gptw_channel_t)i;
@@ -1106,12 +1117,14 @@ void test_motor_emergency_stop_disables_outputs(void)
 void test_motor_emergency_stop_null_handle_fails(void)
 {
   rx_err_t err = rx_motor_emergency_stop(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 void test_motor_emergency_stop_not_initialized_fails(void)
 {
   rx_err_t err = rx_motor_emergency_stop(&s_motor);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 

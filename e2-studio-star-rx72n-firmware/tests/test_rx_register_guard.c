@@ -217,6 +217,7 @@ void tearDown(void)
 void test_register_guard_init_success(void)
 {
   rx_err_t err = rx_register_guard_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(rx_register_guard_is_initialized());
 }
@@ -240,6 +241,7 @@ void test_register_guard_init_resets_count(void)
 void test_register_guard_double_init(void)
 {
   rx_err_t err = rx_register_guard_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(rx_register_guard_is_initialized());
 
@@ -382,6 +384,7 @@ void test_register_guard_typical_workflow(void)
 {
   /* Step 1: Initialize after peripheral setup */
   rx_err_t err = rx_register_guard_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(rx_register_guard_is_initialized());
 
@@ -417,6 +420,7 @@ void test_register_guard_reinit_workflow(void)
 {
   /* First init */
   rx_err_t err = rx_register_guard_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Some refreshes */
@@ -478,8 +482,9 @@ void test_register_guard_get_count_before_init(void)
 {
   /* Static initialization should give 0 */
   /* Note: This relies on C guaranteeing static variables are zero-initialized */
-  uint32_t count = rx_register_guard_get_correction_count();
   /* May be 0 or undefined depending on prior tests, but should not crash */
+  uint32_t count = rx_register_guard_get_correction_count();
+
   (void)count;
   TEST_PASS();
 }
