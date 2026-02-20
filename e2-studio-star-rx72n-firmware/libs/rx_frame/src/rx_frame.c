@@ -255,6 +255,11 @@ typedef enum : uint8_t {
  *
  * @invariant k_bytes_discarded_none == 0 (matches the initial no-discard state)
  *
+ * @code{.c}
+ * uint32_t bytes_discarded = k_bytes_discarded_none;
+ * rx_err_t err = rx_frame_decode_with_resync(&dec, data, data_len, &frame, &bytes_discarded);
+ * @endcode
+ *
  * @see rx_frame_decode_with_resync() Only caller of this constant
  *
  * @since Version 1.1.0
@@ -485,9 +490,9 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  *
  * @par Example:
  * @code{.c}
- * // Buffer where offset 0 failed sync; sync is at index 1
+ * // Buffer where offset k_frame_offset_start failed sync; sync is at index 1
  * uint8_t data[] = {0x00, 0xAA, 0x55, 0x01, 0x00};
- * uint32_t offset = 0;
+ * uint32_t offset = k_frame_offset_start;
  * rx_err_t err = internal_find_sync_offset(data, sizeof(data), &offset);
  * if (err == k_rx_ok) {
  *     // offset == 1: decode from data[offset]
@@ -812,6 +817,8 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * @post On k_rx_ok, frame contains a fully verified decoded frame
  * @post On k_rx_err_crc_mismatch, *bytes_discarded_out == bytes skipped; caller must still advance stream pointer
  *
+ * @note Parameter order follows the canonical convention: decoder input → data input →
+ *       frame output → diagnostic output (matching rx_frame_decode()).
  * @note Not thread-safe. Caller must synchronize access.
  * @note The scan is bounded at k_frame_max_scan_bytes (NASA Rule 2).
  * @note Log *bytes_discarded_out > 0 as a stream-health diagnostic warning.
@@ -822,7 +829,7 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  *
  * @par Example:
  * @code{.c}
- * uint32_t discarded = 0;
+ * uint32_t discarded = k_bytes_discarded_none;
  * rx_err_t err = rx_frame_decode_with_resync(dec, data, data_len, &frame, &discarded);
  * if (err == k_rx_ok) {
  *     // Advance stream read pointer past any discarded bytes

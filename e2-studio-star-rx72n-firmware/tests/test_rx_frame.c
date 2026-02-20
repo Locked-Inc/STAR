@@ -174,7 +174,7 @@
  * ```
  *
  * **CI Requirements:**
- * - All tests must pass (60+ test cases)
+ * - All tests must pass (71 test cases)
  * - No memory leaks (validated via Valgrind on host build)
  * - Execution time < 1 second
  * - Code coverage > 95% for rx_frame.c
@@ -2366,15 +2366,14 @@ void test_resync_aligned_frame_zero_discarded(void)
   rx_frame_t    frame;
   rx_frame_t    decoded;
   uint8_t       wire[k_frame_max_size];
-  uint32_t      wire_len             = k_resync_zero;
-  const uint8_t payload[k_go_payload_len] = {'T', 'E', 'S', 'T'};
+  uint32_t wire_len = k_resync_zero;
 
   memset(&frame, k_resync_zero, sizeof(frame));
   frame.header.sequence = k_test_seq_42;
   frame.header.length   = k_go_payload_len;
   frame.header.type     = k_frame_type_command;
   frame.header.flags    = k_frame_flag_requires_ack;
-  memcpy(frame.payload, payload, k_go_payload_len);
+  memcpy(frame.payload, s_test_payload_string, k_go_payload_len);
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, wire, &wire_len));
 
@@ -2386,7 +2385,7 @@ void test_resync_aligned_frame_zero_discarded(void)
   TEST_ASSERT_EQUAL(k_frame_type_command, decoded.header.type);
   TEST_ASSERT_EQUAL(k_test_seq_42, decoded.header.sequence);
   TEST_ASSERT_EQUAL(k_go_payload_len, decoded.header.length);
-  TEST_ASSERT_EQUAL_MEMORY(payload, decoded.payload, k_go_payload_len);
+  TEST_ASSERT_EQUAL_MEMORY(s_test_payload_string, decoded.payload, k_go_payload_len);
 }
 
 /**
@@ -2417,8 +2416,8 @@ void test_resync_aligned_frame_zero_discarded(void)
  */
 void test_resync_no_sync_found(void)
 {
-  uint8_t    buf[k_frame_min_size];
-  rx_frame_t frame;
+  uint8_t    buf[k_frame_min_size] = {k_resync_zero};
+  rx_frame_t frame                 = {k_resync_zero};
 
   memset(buf, k_resync_junk_byte, sizeof(buf));
 
@@ -2427,6 +2426,60 @@ void test_resync_no_sync_found(void)
 
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
   TEST_ASSERT_EQUAL(k_resync_zero, discarded);
+}
+
+/**
+ * @brief Verify rx_frame_decode_with_resync() reports bytes_discarded when sync is
+ *        found but the retry decode returns k_rx_err_crc_mismatch
+ *
+ * @details
+ * Constructs a valid frame, encodes it, corrupts the last CRC byte, then
+ * prepends one junk byte to simulate stream misalignment.  Calls
+ * rx_frame_decode_with_resync() and verifies:
+ * - Return value is k_rx_err_crc_mismatch (sync found, CRC check fails)
+ * - bytes_discarded == k_resync_prefix_len (sync_offset written before retry)
+ *
+ * This ensures callers can still advance the stream read pointer by
+ * *bytes_discarded_out even when CRC verification fails, preventing an
+ * infinite re-scan loop on a persistently bad frame.
+ *
+ * @pre s_encoder must be initialized (via setUp())
+ * @pre s_decoder must be initialized (via setUp())
+ * @post err == k_rx_err_crc_mismatch
+ * @post discarded == k_resync_prefix_len (1 byte skipped to reach sync)
+ *
+ * @note Not thread-safe; Unity runs tests sequentially on a single thread
+ *
+ * @see rx_frame_decode_with_resync() Function under test
+ * @see test_resync_dropped_byte_recovery() Complementary success-path test
+ *
+ * @since Version 1.1.0
+ */
+void test_resync_crc_mismatch_sets_discarded(void)
+{
+  rx_frame_t frame                                = {k_resync_zero};
+  uint8_t    wire[k_frame_max_size]               = {k_resync_zero};
+  uint8_t    misaligned[k_frame_max_size + k_resync_prefix_len] = {k_resync_zero};
+  uint32_t   wire_len                             = k_resync_zero;
+
+  /* Build and encode a minimal ACK frame */
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ack(&frame, k_test_seq_one));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, wire, &wire_len));
+
+  /* Corrupt the last CRC byte so CRC verification fails after resync */
+  wire[wire_len - k_crc_byte_1]++;
+
+  /* Prepend one junk byte to misalign the stream */
+  misaligned[k_resync_zero] = k_resync_junk_byte;
+  memcpy(&misaligned[k_resync_prefix_len], wire, wire_len);
+
+  rx_frame_t decoded   = {k_resync_zero};
+  uint32_t   discarded = k_resync_sentinel; /* Must be overwritten to sync_offset */
+  rx_err_t   err       = rx_frame_decode_with_resync(
+      &s_decoder, misaligned, wire_len + k_resync_prefix_len, &decoded, &discarded);
+
+  TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
+  TEST_ASSERT_EQUAL(k_resync_prefix_len, discarded);
 }
 
 /**
@@ -2494,10 +2547,10 @@ void test_resync_null_args(void)
  * 10. Endianness tests (4 tests)
  * 11. Go compatibility tests (2 tests)
  * 12. Edge case tests (3 tests)
- * 13. Resynchronization tests (4 tests) - Dropped byte recovery, aligned fast-path,
- *     no-sync exhaustion, null args
+ * 13. Resynchronization tests (5 tests) - Dropped byte recovery, aligned fast-path,
+ *     no-sync exhaustion, CRC mismatch discarded, null args
  *
- * **Total Tests:** 70 test cases
+ * **Total Tests:** 71 test cases
  *
  * @return int Unity test result (0 = all passed, non-zero = failures)
  *
@@ -2623,6 +2676,7 @@ int main(void)
   RUN_TEST(test_resync_dropped_byte_recovery);
   RUN_TEST(test_resync_aligned_frame_zero_discarded);
   RUN_TEST(test_resync_no_sync_found);
+  RUN_TEST(test_resync_crc_mismatch_sets_discarded);
 
   return UNITY_END();
 }
