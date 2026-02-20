@@ -223,7 +223,7 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "MOTOR";
+static const char s_tag[] = "MOTOR";
 
 /**
  * @enum motor_constants_t

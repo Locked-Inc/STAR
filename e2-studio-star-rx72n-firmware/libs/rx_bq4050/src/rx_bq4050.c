@@ -159,7 +159,7 @@ typedef enum : uint8_t {
  * @brief Constants for formatted logging output
  *
  * @details
- * Formatting constants for hexadecimal and loop counter displays.
+ * Formatting constants for hexadecimal displays.
  *
  * @since Version 1.0.0
  */
@@ -171,15 +171,6 @@ typedef enum : uint16_t {
    * **Value:** 2 (displays as "0x0B", not "0xB")
    */
   k_bq4050_smbus_addr_hex_width = 2,
-
-  /**
-   * @brief Loop counter initialization value (0)
-   * @details
-   * Initial value for loop counters to satisfy zero magic numbers policy.
-   * **Value:** 0
-   * **Usage:** for (i = k_bq4050_loop_init; ...)
-   */
-  k_bq4050_loop_init = 0,
 } bq4050_log_constants_t;
 
 /**
@@ -411,7 +402,7 @@ typedef enum : uint8_t {
  * @retval k_rx_err_out_of_range Intermediate or final value out of range
  *   (extremely rare - would require corrupted SMBus data or hardware fault)
  *
- * @pre temp_celsius_out must not benullptr
+ * @pre temp_celsius_out must not be nullptr
  * @pre temp_0_1k is valid SBS temperature reading (caller validated SMBus transaction)
  *
  * @post temp_celsius_out contains temperature in °C on success
@@ -991,6 +982,8 @@ static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
  * @retval k_rx_err_null_ptr nullptr
  * @retval Other rx_err_t values from SMBus/conversion
  *
+ * @note Not thread-safe; caller must hold the BMS mutex before invoking.
+ *
  * @see rx_bq4050_read_status() Caller function
  *
  * @since Version 1.0.0
@@ -1040,6 +1033,8 @@ static rx_err_t internal_read_soc_status(rx_bus_manager_t*   manager,
  * @param[out] status Status structure to populate (capacity fields)
  *
  * @return rx_err_t Error code
+ *
+ * @note Not thread-safe; caller must hold the BMS mutex before invoking.
  *
  * @see rx_bq4050_read_status() Caller function
  *
@@ -1096,6 +1091,8 @@ static rx_err_t internal_read_capacity_status(rx_bus_manager_t*   manager,
  *
  * @return rx_err_t Error code
  *
+ * @note Not thread-safe; caller must hold the BMS mutex before invoking.
+ *
  * @see rx_bq4050_read_status() Caller function
  *
  * @since Version 1.0.0
@@ -1147,6 +1144,8 @@ static rx_err_t internal_read_timing_status(rx_bus_manager_t*   manager,
  * @param[out] status Status structure to populate (flag fields)
  *
  * @return rx_err_t Error code
+ *
+ * @note Not thread-safe; caller must hold the BMS mutex before invoking.
  *
  * @see rx_bq4050_read_status() Caller function
  * @see bq4050_status_flags_t Status flag bit definitions

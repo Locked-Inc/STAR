@@ -315,7 +315,7 @@
  * =============================================================================
  */
 
-static const char* s_tag = "rx_spi_comm";
+static const char s_tag[] = "rx_spi_comm";
 
 /** @brief Maximum left-shift for exponential backoff (prevents UB on uint32_t) */
 typedef enum : uint8_t {

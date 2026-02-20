@@ -112,6 +112,8 @@ typedef enum : uint8_t {
   k_onewire_crc_offset            = 1U,
   k_onewire_rom_family_code_idx   = 0U,
   k_onewire_invalid_family_code   = 0x00U,
+  k_onewire_instance_idx_start    = 0U, /**< Starting index for instance pool iteration */
+  k_onewire_rom_crc_idx           = 7U, /**< CRC byte index in ROM (k_onewire_rom_crc_idx) */
 } onewire_driver_constants_t;
 
 /**
@@ -333,7 +335,7 @@ static rx_err_t internal_acquire_state(rx_bus_config_t* bus_config, onewire_runt
     return k_rx_ok;
   }
 
-  for (uint32_t i = 0; i < k_onewire_max_instances; ++i) {
+  for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     if (!s_state_pool[i].in_use) {
       s_state_pool[i].in_use = true;
       memset(&s_state_pool[i].state, 0, sizeof(onewire_runtime_state_t));
@@ -775,24 +777,23 @@ static rx_err_t internal_search_bits(rx_bus_config_t*         bus_config,
                                      uint8_t                  rom[k_onewire_rom_bytes],
                                      uint8_t*                 last_zero)
 {
-  uint8_t  total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
-  uint8_t  rom_byte_index = 0;
-  uint8_t  rom_bit_mask   = k_onewire_bit_mask_lsb;
-  rx_err_t err            = k_rx_ok;
-
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
   RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is nullptr");
   RX_CHECK_NULL_PTR(last_zero, s_tag, "last_zero pointer is nullptr");
 
+  const uint8_t total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
+  uint8_t       rom_byte_index = 0;
+  uint8_t       rom_bit_mask   = k_onewire_bit_mask_lsb;
+
   for (uint8_t bit_number = k_onewire_first_bit_number; bit_number <= total_bits; ++bit_number) {
-    err = internal_search_step(bus_config,
-                               state,
-                               rom,
-                               bit_number,
-                               &rom_byte_index,
-                               &rom_bit_mask,
-                               last_zero);
+    const rx_err_t err = internal_search_step(bus_config,
+                                              state,
+                                              rom,
+                                              bit_number,
+                                              &rom_byte_index,
+                                              &rom_bit_mask,
+                                              last_zero);
     if (err != k_rx_ok) {
       return err;
     }
@@ -855,12 +856,12 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
                                           uint8_t                  rom[k_onewire_rom_bytes],
                                           bool*                    device_found)
 {
-  uint8_t last_zero = k_onewire_search_last_zero_init;
-
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
   RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is nullptr");
   RX_CHECK_NULL_PTR(device_found, s_tag, "device_found pointer is nullptr");
+
+  uint8_t last_zero = k_onewire_search_last_zero_init;
 
   *device_found = false;
 
@@ -899,8 +900,8 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   memcpy(state->last_rom, rom, k_onewire_rom_bytes);
 
-  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_bytes - k_onewire_crc_offset);
-  if (crc != rom[k_onewire_rom_bytes - k_onewire_crc_offset]) {
+  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_crc_idx);
+  if (crc != rom[k_onewire_rom_crc_idx]) {
     return k_rx_err_crc_mismatch;
   }
 
@@ -1060,7 +1061,7 @@ static void internal_release_state(rx_bus_config_t* bus_config)
     return;
   }
 
-  for (uint32_t i = 0; i < k_onewire_max_instances; ++i) {
+  for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     if (s_state_pool[i].in_use &&
         &s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle) {
       s_state_pool[i].in_use = false;
@@ -1610,8 +1611,8 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
     ctx->rom[i] = byte;
   }
 
-  crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_bytes - k_onewire_crc_offset);
-  if (crc != ctx->rom[k_onewire_rom_bytes - k_onewire_crc_offset]) {
+  crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx);
+  if (crc != ctx->rom[k_onewire_rom_crc_idx]) {
     ctx->result = k_rx_err_crc_mismatch;
     return ctx->result;
   }

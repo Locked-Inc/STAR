@@ -75,6 +75,31 @@ typedef enum : uint8_t {
 } led_timing_constants_t;
 
 /**
+ * @enum led_timing_divisor_t
+ * @brief Divisor constants for LED blink period calculations
+ *
+ * @details
+ * Provides named constants for arithmetic performed on LED timing values.
+ * Using a named divisor instead of a bare literal prevents magic numbers
+ * and makes the intent of half-period calculations self-documenting.
+ *
+ * @invariant k_led_half_period_divisor must equal 2 (half-period = full/2)
+ *
+ * @code
+ * // Convert a full-period counter to half-period comparison:
+ * bool led_on = (s_heartbeat_counter < (k_led_heartbeat_half_period
+ *                                       / k_led_half_period_divisor));
+ * @endcode
+ *
+ * @see led_timing_constants_t Full-period and half-period tick counts
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_led_half_period_divisor = 2, /**< Divisor to convert full period to half period (full / 2) */
+} led_timing_divisor_t;
+
+/**
  * @enum led_index_t
  * @brief LED index assignments for clarity
  * @since Version 1.0.0
@@ -214,14 +239,38 @@ rx_err_t led_status_task_create(void)
  * @brief Initialize LED GPIO pins as outputs with all LEDs off
  *
  * @details
- * Configures PORT3 pin 2, PORT8 pin 7, and PORT5 pins 2/4/5/6 as
- * GPIO outputs set low (LEDs off). Uses rx_port_get_base for safe
- * register access.
+ * Iterates over all k_led_count LED entries in the s_led_ports and s_led_pins
+ * lookup tables and configures each pin as a GPIO output set low (LED off).
+ * For each pin the function:
+ * 1. Retrieves the PORT register base via rx_port_get_base()
+ * 2. Clears the PMR bit to set the pin to GPIO mode
+ * 3. Sets the PDR bit to configure the pin as an output
+ * 4. Clears the PODR bit to drive the pin low (LED off)
  *
- * @pre PORT register space accessible
- * @post LED pins configured as GPIO outputs, all low
+ * Invalid port entries (rx_port_get_base returns nullptr) are skipped with
+ * an error log; remaining valid pins continue to be initialized.
  *
- * @note Thread Safety: Call once during task init only
+ * @pre PORT register space must be accessible (clock and power initialized)
+ * @pre s_led_ports[] and s_led_pins[] must contain valid PORT/pin values
+ *
+ * @post All valid LED pins are configured as GPIO outputs, driven low
+ * @post Invalid LED port entries are skipped (error logged, not fatal)
+ *
+ * @note Thread Safety: Call once during task initialization only; not
+ *       re-entrant due to read-modify-write on PORT registers
+ *
+ * @code
+ * // Called internally during LED task startup:
+ * static void internal_led_task_entry(ULONG input) {
+ *     (void)input;
+ *     internal_led_init_gpio();   // All LEDs off after this
+ *     while (true) { ... }        // Main blink loop
+ * }
+ * @endcode
+ *
+ * @see internal_led_task_entry() Only caller of this function
+ * @see internal_led_set() Runtime LED state control after initialization
+ * @see rx_port_get_base() PORT register accessor used for each pin
  *
  * @since Version 1.0.0
  */
@@ -248,15 +297,49 @@ static void internal_led_init_gpio(void)
 }
 
 /**
- * @brief Set an LED on or off
+ * @brief Set an LED on or off by writing to its PORT output data register
  *
- * @param[in] led_index LED index (0-5)
- * @param[in] on true to turn LED on, false to turn off
+ * @details
+ * Drives a single LED high (on) or low (off) by writing to the PODR bit of
+ * the corresponding PORT register. Out-of-range led_index values or invalid
+ * port pointers return silently to prevent crashes from defensive callers.
+ *
+ * Algorithm:
+ * 1. Bounds-check led_index against k_led_count; return silently if invalid
+ * 2. Retrieve PORT register base from s_led_ports[led_index]
+ * 3. Return silently if port is nullptr (invalid port configuration)
+ * 4. Compute pin_mask = (1U << s_led_pins[led_index])
+ * 5. Set (on=true) or clear (on=false) the PODR bit for the pin
+ *
+ * @param[in] led_index LED index (0 to k_led_count - 1, inclusive)
+ *   - 0: Heartbeat LED
+ *   - 1: Error LED
+ *   - 2: Motor active LED
+ *   - 3: Communication activity LED
+ *   - 4: Obstacle detected LED
+ *   - 5: E-stop active LED
+ * @param[in] on true to turn LED on (PODR bit set), false to turn off
  *
  * @pre LED GPIO initialized via internal_led_init_gpio()
- * @post LED output state changed
+ * @pre led_index < k_led_count (silently ignored if out of range)
  *
- * @note Thread Safety: Safe from single task context
+ * @post LED PODR bit set or cleared to match the requested on/off state
+ * @post No change if led_index is out of range or port is invalid
+ *
+ * @note Thread Safety: Safe from single task context; do not call from
+ *       multiple tasks without external synchronization
+ *
+ * @code
+ * // Turn heartbeat LED on:
+ * internal_led_set(k_led_idx_heartbeat, true);
+ *
+ * // Turn error LED off:
+ * internal_led_set(k_led_idx_error, false);
+ * @endcode
+ *
+ * @see internal_led_init_gpio() Must be called first to configure pins as outputs
+ * @see led_index_t Named constants for led_index values
+ * @see internal_led_task_entry() Main loop that calls this function at 20 Hz
  *
  * @since Version 1.0.0
  */
@@ -324,7 +407,7 @@ static void internal_led_task_entry(ULONG input)
       s_heartbeat_counter = 0;
     }
     internal_led_set(k_led_idx_heartbeat,
-                     (s_heartbeat_counter < (k_led_heartbeat_half_period / 2)));
+                     (s_heartbeat_counter < (k_led_heartbeat_half_period / k_led_half_period_divisor)));
 
     /* ---- LED 1: Error indicator (fast blink on fault) ---- */
     {
@@ -350,7 +433,7 @@ static void internal_led_task_entry(ULONG input)
         if (s_error_counter >= k_led_error_half_period) {
           s_error_counter = 0;
         }
-        internal_led_set(k_led_idx_error, (s_error_counter < (k_led_error_half_period / 2)));
+        internal_led_set(k_led_idx_error, (s_error_counter < (k_led_error_half_period / k_led_half_period_divisor)));
       } else {
         s_error_counter = 0;
         internal_led_set(k_led_idx_error, false);

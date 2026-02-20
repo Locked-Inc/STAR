@@ -246,9 +246,7 @@ typedef struct {
  */
 static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  i2c_init_ctx_t* ctx = (i2c_init_ctx_t*)user_ctx;
-  rx_err_t        err;
-  riic_channel_t  riic_channel;
+  i2c_init_ctx_t* const ctx = (i2c_init_ctx_t*)user_ctx;
 
   /* Validate bus type */
   if (bus_config->type != k_bus_type_i2c) {
@@ -258,8 +256,8 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Initialize RIIC channel */
-  riic_channel.value = bus_config->proto.i2c.channel;
-  err                = riic_init(riic_channel, bus_config->proto.i2c.frequency_hz);
+  const riic_channel_t riic_channel = {.value = bus_config->proto.i2c.channel};
+  rx_err_t             err          = riic_init(riic_channel, bus_config->proto.i2c.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC HAL initialization failed");
@@ -283,17 +281,63 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
 /**
  * @brief Callback for I2C write operation
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (i2c_write_ctx_t*)
+ * @details
+ * Internal callback implementing a raw I2C write transfer. Validates the bus
+ * is initialized and the data pointer is non-NULL when length > 0, then
+ * performs the I2C write via the RIIC HAL. Stores the operation result in the
+ * context structure for retrieval by the caller.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Validate bus is initialized
+ * 2. Validate ctx->data non-NULL when ctx->length > 0
+ * 3. Call riic_write() with channel, device address, data, and length
+ * 4. Set ctx->result and return
+ *
+ * @param[in,out] bus_config Bus configuration structure
+ *   - initialized must be true
+ *   - proto.i2c.channel specifies the RIIC channel
+ *   - proto.i2c.device_addr specifies the 7-bit target address
+ * @param[in,out] user_ctx User context (i2c_write_ctx_t*)
+ *   - input: ctx->data points to bytes to transmit (may be NULL when length=0)
+ *   - input: ctx->length specifies number of bytes to write
+ *   - output: ctx->result contains the operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, data transmitted to device
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_invalid_arg ctx->data is nullptr and ctx->length > 0
+ * @retval k_rx_err_hw_error RIIC write failed (NAK, bus error, or timeout)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->data must be non-NULL when ctx->length > 0
+ *
+ * @post ctx->result contains the operation result
+ * @post Data bytes transmitted on the I2C bus on k_rx_ok
+ *
+ * @note Not thread-safe; called from bus manager with bus lock held
+ * @warning Zero-length writes (length=0) are permitted and generate an I2C
+ *          address probe (write with no data bytes)
+ *
+ * @code
+ * const uint8_t reg_data[] = { 0x01, 0x23 };
+ * i2c_write_ctx_t ctx = {
+ *     .data   = reg_data,
+ *     .length = sizeof(reg_data),
+ *     .result = k_rx_err_invalid_state,
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_i2c_write_callback, &ctx);
+ * @endcode
+ *
+ * @see rx_bus_i2c_write() Public API that invokes this callback
+ * @see i2c_write_ctx_t Context structure passed as user_ctx
+ * @see riic_write() Underlying RIIC HAL write function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  i2c_write_ctx_t*  ctx = (i2c_write_ctx_t*)user_ctx;
-  riic_channel_t    riic_channel;
-  i2c_device_addr_t device_addr;
-  rx_err_t          err;
+  i2c_write_ctx_t* const ctx = (i2c_write_ctx_t*)user_ctx;
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -310,9 +354,9 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Write I2C data */
-  riic_channel.value = bus_config->proto.i2c.channel;
-  device_addr.value  = bus_config->proto.i2c.device_addr;
-  err                = riic_write(riic_channel, device_addr, ctx->data, ctx->length);
+  const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
+  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
+  rx_err_t                err          = riic_write(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write failed");
@@ -327,17 +371,64 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
 /**
  * @brief Callback for I2C read operation
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (i2c_read_ctx_t*)
+ * @details
+ * Internal callback implementing a raw I2C read transfer. Validates the bus
+ * is initialized and the data pointer is non-NULL when length > 0, then
+ * performs the I2C read via the RIIC HAL. The received bytes are stored
+ * directly in the caller-supplied buffer.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Validate bus is initialized
+ * 2. Validate ctx->data non-NULL when ctx->length > 0
+ * 3. Call riic_read() with channel, device address, data buffer, and length
+ * 4. Set ctx->result and return
+ *
+ * @param[in,out] bus_config Bus configuration structure
+ *   - initialized must be true
+ *   - proto.i2c.channel specifies the RIIC channel
+ *   - proto.i2c.device_addr specifies the 7-bit target address
+ * @param[in,out] user_ctx User context (i2c_read_ctx_t*)
+ *   - input: ctx->data points to receive buffer (may be NULL when length=0)
+ *   - input: ctx->length specifies number of bytes to read
+ *   - output: ctx->data buffer filled with received bytes on success
+ *   - output: ctx->result contains the operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, data received from device into ctx->data
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_invalid_arg ctx->data is nullptr and ctx->length > 0
+ * @retval k_rx_err_hw_error RIIC read failed (NAK, bus error, or timeout)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->data must be non-NULL and point to a buffer of at least ctx->length bytes
+ *
+ * @post ctx->result contains the operation result
+ * @post ctx->data buffer contains received bytes on k_rx_ok
+ *
+ * @note Not thread-safe; called from bus manager with bus lock held
+ * @warning The receive buffer must remain valid for the entire duration of the
+ *          callback; do not use stack-allocated buffers that may be invalidated
+ *
+ * @code
+ * uint8_t recv_buf[4];
+ * i2c_read_ctx_t ctx = {
+ *     .data   = recv_buf,
+ *     .length = sizeof(recv_buf),
+ *     .result = k_rx_err_invalid_state,
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_i2c_read_callback, &ctx);
+ * @endcode
+ *
+ * @see rx_bus_i2c_read() Public API that invokes this callback
+ * @see i2c_read_ctx_t Context structure passed as user_ctx
+ * @see riic_read() Underlying RIIC HAL read function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  i2c_read_ctx_t*   ctx = (i2c_read_ctx_t*)user_ctx;
-  riic_channel_t    riic_channel;
-  i2c_device_addr_t device_addr;
-  rx_err_t          err;
+  i2c_read_ctx_t* const ctx = (i2c_read_ctx_t*)user_ctx;
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -354,9 +445,9 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Read I2C data */
-  riic_channel.value = bus_config->proto.i2c.channel;
-  device_addr.value  = bus_config->proto.i2c.device_addr;
-  err                = riic_read(riic_channel, device_addr, ctx->data, ctx->length);
+  const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
+  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
+  rx_err_t                err          = riic_read(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C read failed");
@@ -369,19 +460,72 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
 }
 
 /**
- * @brief Callback for I2C write-read operation
+ * @brief Callback for I2C combined write-read (register read) operation
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (i2c_write_read_ctx_t*)
+ * @details
+ * Internal callback implementing a combined I2C write-then-read transfer with
+ * a repeated START between phases. This is the standard protocol for reading
+ * device registers: write the register address byte(s), issue a repeated START,
+ * then read the response without releasing the bus between phases.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Validate bus is initialized
+ * 2. Validate write_data non-NULL when write_length > 0
+ * 3. Validate read_data non-NULL when read_length > 0
+ * 4. Call riic_write_read() with both write and read parameters
+ * 5. Set ctx->result and return
+ *
+ * @param[in,out] bus_config Bus configuration structure
+ *   - initialized must be true
+ *   - proto.i2c.channel specifies the RIIC channel
+ *   - proto.i2c.device_addr specifies the 7-bit target address
+ * @param[in,out] user_ctx User context (i2c_write_read_ctx_t*)
+ *   - input: ctx->write_data points to bytes to write (register address)
+ *   - input: ctx->write_length specifies number of bytes to write
+ *   - input: ctx->read_data points to receive buffer for response bytes
+ *   - input: ctx->read_length specifies number of bytes to read
+ *   - output: ctx->read_data buffer filled with received bytes on success
+ *   - output: ctx->result contains the operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, combined write-read completed
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_invalid_arg write_data nullptr with write_length > 0, or
+ *                              read_data nullptr with read_length > 0
+ * @retval k_rx_err_hw_error RIIC write-read failed (NAK, bus error, or timeout)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->write_data non-NULL when ctx->write_length > 0
+ *
+ * @post ctx->result contains the operation result
+ * @post ctx->read_data buffer contains device response bytes on k_rx_ok
+ *
+ * @note Not thread-safe; called from bus manager with bus lock held
+ * @warning Both write and read buffers must remain valid throughout the callback
+ *
+ * @code
+ * const uint8_t reg_addr[] = { 0x09 };   // voltage register
+ * uint8_t       resp[2]    = { 0, 0 };
+ * i2c_write_read_ctx_t ctx = {
+ *     .write_data   = reg_addr,
+ *     .write_length = sizeof(reg_addr),
+ *     .read_data    = resp,
+ *     .read_length  = sizeof(resp),
+ *     .result       = k_rx_err_invalid_state,
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_i2c_write_read_callback, &ctx);
+ * @endcode
+ *
+ * @see rx_bus_i2c_write_read() Public API that invokes this callback
+ * @see i2c_write_read_ctx_t Context structure passed as user_ctx
+ * @see riic_write_read() Underlying RIIC HAL combined transfer function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  i2c_write_read_ctx_t* ctx = (i2c_write_read_ctx_t*)user_ctx;
-  riic_channel_t        riic_channel;
-  i2c_device_addr_t     device_addr;
-  rx_err_t              err;
+  i2c_write_read_ctx_t* const ctx = (i2c_write_read_ctx_t*)user_ctx;
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
@@ -391,23 +535,23 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
   }
 
   /* Pre-condition: Validate write data pointer when write_length > 0 */
-  if (ctx->write_length > 0 && ctx->write_data == nullptr) {
+  if (ctx->write_length > k_i2c_length_zero && ctx->write_data == nullptr) {
     rx_log_error(s_tag, "I2C write-read write_data pointer is nullptr");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
   }
 
   /* Pre-condition: Validate read data pointer when read_length > 0 */
-  if (ctx->read_length > 0 && ctx->read_data == nullptr) {
+  if (ctx->read_length > k_i2c_length_zero && ctx->read_data == nullptr) {
     rx_log_error(s_tag, "I2C write-read read_data pointer is nullptr");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
   }
 
   /* I2C write-read operation */
-  riic_channel.value = bus_config->proto.i2c.channel;
-  device_addr.value  = bus_config->proto.i2c.device_addr;
-  err                = riic_write_read(riic_channel,
+  const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
+  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
+  rx_err_t                err          = riic_write_read(riic_channel,
                         device_addr,
                         ctx->write_data,
                         ctx->write_length,

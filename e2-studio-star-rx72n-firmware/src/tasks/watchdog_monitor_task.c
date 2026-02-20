@@ -394,6 +394,11 @@ rx_err_t watchdog_monitor_task_create(void)
  *
  * @note Thread Safety: Safe from single task context
  *
+ * @see watchdog_monitor_task_create() Creates and starts this task entry
+ * @see rx_iwdt_check_tasks() Heartbeat timeout detection called each iteration
+ * @see rx_iwdt_feed() Hardware watchdog feed called when all tasks healthy
+ * @see rx_iwdt_task_heartbeat() Self-monitoring heartbeat reported each iteration
+ *
  * @since Version 1.0.0
  */
 static void internal_watchdog_monitor_task_entry(ULONG input)

@@ -368,26 +368,104 @@ static uint8_t internal_crc8(uint8_t crc, const uint8_t* data, uint16_t length)
  */
 
 /**
+ * @struct smbus_init_ctx_t
  * @brief Context for SMBUS init operation
+ *
+ * @details
+ * Passed to internal_smbus_init_callback() via rx_bus_manager_with_bus() to
+ * carry the result of the SMBUS/I2C channel initialization back to the caller.
+ * Stack-allocated in rx_bus_smbus_init() and destroyed on return. Contains
+ * only a result field because all initialization parameters are already
+ * present in the rx_bus_config_t structure.
+ *
+ * @invariant result is set by the callback before it returns
+ * @invariant result equals the return value of internal_smbus_init_callback()
+ *
+ * @code
+ * smbus_init_ctx_t ctx = { .result = k_rx_err_invalid_state };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_smbus_init_callback, &ctx);
+ * // ctx.result now reflects the initialization outcome
+ * @endcode
+ *
+ * @see internal_smbus_init_callback() Callback that writes to this context
+ * @see rx_bus_smbus_init() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  rx_err_t result; /**< Operation result */
+  rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
 } smbus_init_ctx_t;
 
 /**
+ * @struct smbus_write_byte_ctx_t
  * @brief Context for SMBUS write byte operation
+ *
+ * @details
+ * Passed to internal_smbus_write_byte_callback() via rx_bus_manager_with_bus().
+ * Carries the command byte to transmit and receives the operation result.
+ * Stack-allocated in rx_bus_smbus_write_byte() and destroyed on return.
+ * When PEC is enabled, the callback computes and appends the CRC-8 byte
+ * automatically; only the command byte needs to be set by the caller.
+ *
+ * @invariant command must be set before passing to rx_bus_manager_with_bus()
+ * @invariant result is written by the callback before it returns
+ *
+ * @code
+ * smbus_write_byte_ctx_t ctx = {
+ *     .command = 0x42,                     // SMBus Send Byte command
+ *     .result  = k_rx_err_invalid_state,   // sentinel before callback
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_smbus_write_byte_callback,
+ *                                         &ctx);
+ * @endcode
+ *
+ * @see internal_smbus_write_byte_callback() Callback that consumes this context
+ * @see rx_bus_smbus_write_byte() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  uint8_t  command; /**< Command byte to write */
-  rx_err_t result;  /**< Operation result */
+  uint8_t  command; /**< Command byte to write: SMBus Send Byte command code (0x00-0xFF) */
+  rx_err_t result;  /**< Operation result: k_rx_ok on success, error code on failure */
 } smbus_write_byte_ctx_t;
 
 /**
+ * @struct smbus_read_byte_ctx_t
  * @brief Context for SMBUS read byte operation
+ *
+ * @details
+ * Passed to internal_smbus_read_byte_callback() via rx_bus_manager_with_bus().
+ * Carries a pointer to the output buffer for the received byte and receives
+ * the operation result. Stack-allocated in rx_bus_smbus_read_byte() and
+ * destroyed on return. When PEC is enabled, the callback reads an extra byte,
+ * verifies the CRC-8, and returns k_rx_err_crc_mismatch on failure.
+ *
+ * @invariant data pointer must be non-NULL before passing to the callback
+ * @invariant data pointer must remain valid for the duration of the callback
+ * @invariant result is written by the callback before it returns
+ *
+ * @code
+ * uint8_t received_byte = 0;
+ * smbus_read_byte_ctx_t ctx = {
+ *     .data   = &received_byte,
+ *     .result = k_rx_err_invalid_state,  // sentinel before callback
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_smbus_read_byte_callback,
+ *                                         &ctx);
+ * // received_byte contains the SMBus response on k_rx_ok
+ * @endcode
+ *
+ * @see internal_smbus_read_byte_callback() Callback that writes to this context
+ * @see rx_bus_smbus_read_byte() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  uint8_t* data;   /**< Pointer to store received byte */
-  rx_err_t result; /**< Operation result */
+  uint8_t* data;   /**< Output pointer: stores received byte. Must be non-NULL. */
+  rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
 } smbus_read_byte_ctx_t;
 
 /**
@@ -418,12 +496,44 @@ typedef struct {
 } smbus_write_word_data_ctx_t;
 
 /**
+ * @struct smbus_read_word_data_ctx_t
  * @brief Context for SMBUS read word data operation
+ *
+ * @details
+ * Passed to internal_smbus_read_word_data_callback() via
+ * rx_bus_manager_with_bus(). Carries the command (register address) to write
+ * and a pointer to the 16-bit output buffer. Stack-allocated in
+ * rx_bus_smbus_read_word_data() and destroyed on return. Implements the
+ * SMBus Read Word Data protocol: write one command byte, then read two data
+ * bytes (LSB first, then MSB) plus an optional PEC byte.
+ *
+ * @invariant command must be set before passing to the callback
+ * @invariant data pointer must be non-NULL before passing to the callback
+ * @invariant data pointer must remain valid for the duration of the callback
+ * @invariant result is written by the callback before it returns
+ *
+ * @code
+ * uint16_t word_value = 0;
+ * smbus_read_word_data_ctx_t ctx = {
+ *     .command = 0x09,                      // SBS Voltage register
+ *     .data    = &word_value,
+ *     .result  = k_rx_err_invalid_state,    // sentinel before callback
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_smbus_read_word_data_callback,
+ *                                         &ctx);
+ * // word_value contains the register contents on k_rx_ok
+ * @endcode
+ *
+ * @see internal_smbus_read_word_data_callback() Callback that writes to this context
+ * @see rx_bus_smbus_read_word_data() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  uint8_t   command; /**< Register/command code */
-  uint16_t* data;    /**< Pointer to store received word */
-  rx_err_t  result;  /**< Operation result */
+  uint8_t   command; /**< Register/command code: SMBus command byte sent before the read (0x00-0xFF) */
+  uint16_t* data;    /**< Output pointer: stores received 16-bit word (LSB first). Must be non-NULL. */
+  rx_err_t  result;  /**< Operation result: k_rx_ok on success, error code on failure */
 } smbus_read_word_data_ctx_t;
 
 /**
@@ -442,15 +552,62 @@ typedef struct {
  * =============================================================================
  */
 
+/**
+ * @brief Initialize the underlying RIIC hardware for an SMBUS bus configuration
+ *
+ * @details
+ * Internal callback invoked by rx_bus_manager_with_bus() to initialize the
+ * RIIC (I2C) peripheral channel that backs an SMBUS bus entry. Validates the
+ * bus type, initializes the RIIC channel at the configured frequency, performs
+ * a post-condition address range check, and marks the bus as initialized.
+ *
+ * Algorithm steps:
+ * 1. Cast user_ctx to smbus_init_ctx_t*
+ * 2. Validate bus type is k_bus_type_smbus
+ * 3. Call riic_init() with channel and frequency from bus_config
+ * 4. Verify device address does not exceed 7-bit maximum (warning only)
+ * 5. Set bus_config->initialized = true
+ * 6. Set ctx->result = k_rx_ok and return
+ *
+ * @param[in,out] bus_config Bus configuration structure
+ *   - Must have type = k_bus_type_smbus
+ *   - proto.smbus.i2c_config.channel specifies the RIIC channel
+ *   - proto.smbus.i2c_config.frequency_hz specifies the I2C clock rate
+ *   - initialized flag set to true on success
+ * @param[in,out] user_ctx User context (smbus_init_ctx_t*)
+ *   - output: ctx->result contains operation result on return
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, RIIC channel initialized and bus marked ready
+ * @retval k_rx_err_invalid_arg Bus type is not k_bus_type_smbus
+ * @retval k_rx_err_hw_error RIIC HAL initialization failed
+ *
+ * @pre bus_config pointer is valid (validated by bus manager before call)
+ * @pre user_ctx pointer is valid and points to smbus_init_ctx_t
+ *
+ * @post bus_config->initialized = true on success
+ * @post ctx->result contains the operation result
+ *
+ * @note Not thread-safe; called from bus manager with bus lock held
+ * @warning Do not call directly - use rx_bus_smbus_init() instead
+ *
+ * @code
+ * // Indirect usage through bus manager:
+ * smbus_init_ctx_t ctx = { .result = k_rx_err_invalid_state };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, "smbus0",
+ *                                         internal_smbus_init_callback, &ctx);
+ * if (err == k_rx_ok) { /* bus is ready */ }
+ * @endcode
+ *
+ * @see rx_bus_smbus_init() Public API that invokes this callback
+ * @see smbus_init_ctx_t Context structure passed as user_ctx
+ * @see riic_init() Underlying RIIC HAL initialization
+ *
+ * @since Version 1.0.0
+ */
 static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  rx_err_t          err;
-
-  smbus_init_ctx_t* ctx;
-  riic_channel_t    riic_channel;
-
-  err = k_rx_err_invalid_state;
-  ctx = (smbus_init_ctx_t*)user_ctx;
+  smbus_init_ctx_t* const ctx = (smbus_init_ctx_t*)user_ctx;
 
   if (bus_config->type != k_bus_type_smbus) {
     rx_log_error(s_tag, "Bus is not SMBUS type");
@@ -459,8 +616,8 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Initialize underlying I2C channel */
-  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
-  err                = riic_init(riic_channel, bus_config->proto.smbus.i2c_config.frequency_hz);
+  const riic_channel_t riic_channel = {.value = bus_config->proto.smbus.i2c_config.channel};
+  rx_err_t             err = riic_init(riic_channel, bus_config->proto.smbus.i2c_config.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC initialization failed");
@@ -480,29 +637,60 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
 }
 
 /**
- * @brief Callback for SMBUS write byte operation
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (smbus_write_byte_ctx_t*)
- * @return k_rx_ok on success, error code on failure
+ * @brief Callback for SMBUS write byte (Send Byte) operation
+ *
+ * @details
+ * Internal callback implementing the SMBus Send Byte protocol. Transmits a
+ * single command byte to the device. When PEC is enabled, computes CRC-8
+ * over the address byte and command byte and appends it as a second byte in
+ * the I2C write frame.
+ *
+ * Algorithm steps:
+ * 1. Validate bus is initialized
+ * 2. Place command byte at data[k_smbus_byte_data]
+ * 3. If PEC enabled: compute CRC-8(addr_byte | WRITE, command), append to data
+ * 4. Call riic_write() with 1 or 2 bytes depending on PEC setting
+ * 5. Post-condition: verify buffer length matches PEC configuration
+ * 6. Set ctx->result and return
+ *
+ * @param[in,out] bus_config Bus configuration structure
+ *   - initialized must be true
+ *   - proto.smbus.i2c_config specifies device address and channel
+ *   - proto.smbus.use_pec controls PEC byte appending
+ * @param[in,out] user_ctx User context (smbus_write_byte_ctx_t*)
+ *   - input: ctx->command contains the byte to transmit
+ *   - output: ctx->result contains the operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, byte transmitted (with optional PEC)
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_hw_error RIIC write failed (NAK or bus error)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre user_ctx points to a valid smbus_write_byte_ctx_t with command set
+ *
+ * @post ctx->result contains the operation result
+ * @post Command byte (and PEC if enabled) transmitted on the I2C bus
+ *
+ * @note Not thread-safe; called from bus manager with bus lock held
+ * @warning PEC computation covers address+WRITE and command only (not data)
+ *
+ * @code
+ * smbus_write_byte_ctx_t ctx = { .command = 0x42, .result = k_rx_err_invalid_state };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_smbus_write_byte_callback, &ctx);
+ * @endcode
+ *
+ * @see rx_bus_smbus_write_byte() Public API that invokes this callback
+ * @see smbus_write_byte_ctx_t Context structure passed as user_ctx
+ * @see internal_crc8() PEC computation helper
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  smbus_write_byte_ctx_t* ctx;
-  uint8_t                 data[k_smbus_byte_buf_size];
-  uint8_t                 length;
-  rx_err_t                err;
-  uint8_t                 crc;
-  uint8_t                 addr_byte;
-  riic_channel_t          riic_channel;
-  i2c_device_addr_t       device_addr;
-
-  ctx                = (smbus_write_byte_ctx_t*)user_ctx;
-  length             = k_smbus_single_byte;
-  err                = k_rx_err_invalid_state;
-  crc                = k_smbus_crc8_init;
-  addr_byte          = k_smbus_u8_zero;
-  riic_channel.value = k_smbus_u8_zero;
-  device_addr.value  = k_smbus_u8_zero;
+  smbus_write_byte_ctx_t* const ctx = (smbus_write_byte_ctx_t*)user_ctx;
+  uint8_t                       data[k_smbus_byte_buf_size];
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -510,11 +698,14 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
     return k_rx_err_invalid_state;
   }
 
+  uint8_t length = k_smbus_single_byte;
+
   data[k_smbus_byte_data] = ctx->command;
 
   /* Calculate PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    addr_byte =
+    uint8_t crc       = k_smbus_crc8_init;
+    uint8_t addr_byte =
       (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
     crc                    = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc                    = internal_crc8(crc, data, k_smbus_single_byte);
@@ -522,9 +713,9 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
     length                 = k_smbus_byte_buf_size;
   }
 
-  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
-  device_addr.value  = bus_config->proto.smbus.i2c_config.device_addr;
-  err                = riic_write(riic_channel, device_addr, data, length);
+  const riic_channel_t    riic_channel = {.value = bus_config->proto.smbus.i2c_config.channel};
+  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.smbus.i2c_config.device_addr};
+  rx_err_t                err          = riic_write(riic_channel, device_addr, data, length);
 
   if (err != k_rx_ok) {
     ctx->result = err;
@@ -542,29 +733,65 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
 }
 
 /**
- * @brief Callback for SMBUS read byte operation
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (smbus_read_byte_ctx_t*)
- * @return k_rx_ok on success, error code on failure
+ * @brief Callback for SMBUS read byte (Receive Byte) operation
+ *
+ * @details
+ * Internal callback implementing the SMBus Receive Byte protocol. Reads one
+ * data byte from the device. When PEC is enabled, reads an additional CRC-8
+ * byte and validates it; returns k_rx_err_crc_mismatch if the PEC does not
+ * match the expected value computed over the address+READ and data bytes.
+ *
+ * Algorithm steps:
+ * 1. Validate bus is initialized
+ * 2. Validate ctx->data is non-NULL
+ * 3. Determine read length: 1 byte (no PEC) or 2 bytes (with PEC)
+ * 4. Call riic_read() to receive data from device
+ * 5. If PEC enabled: recompute CRC-8 and compare with data[k_smbus_byte_pec]
+ * 6. Store data[k_smbus_byte_data] into *ctx->data
+ * 7. Set ctx->result and return
+ *
+ * @param[in,out] bus_config Bus configuration structure
+ *   - initialized must be true
+ *   - proto.smbus.i2c_config specifies device address and channel
+ *   - proto.smbus.use_pec controls PEC verification
+ * @param[in,out] user_ctx User context (smbus_read_byte_ctx_t*)
+ *   - input: ctx->data points to output uint8_t (must be non-NULL)
+ *   - output: *ctx->data receives the read byte on success
+ *   - output: ctx->result contains the operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, byte received and stored in *ctx->data
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_invalid_arg ctx->data is nullptr
+ * @retval k_rx_err_crc_mismatch PEC byte does not match computed CRC-8
+ * @retval k_rx_err_hw_error RIIC read failed (no ACK or bus error)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->data must be non-NULL and point to a valid uint8_t
+ *
+ * @post *ctx->data contains the received byte on k_rx_ok
+ * @post ctx->result contains the operation result
+ *
+ * @note Not thread-safe; called from bus manager with bus lock held
+ * @warning PEC verification covers address+READ and data byte only
+ *
+ * @code
+ * uint8_t byte_val = 0;
+ * smbus_read_byte_ctx_t ctx = { .data = &byte_val, .result = k_rx_err_invalid_state };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_smbus_read_byte_callback, &ctx);
+ * @endcode
+ *
+ * @see rx_bus_smbus_read_byte() Public API that invokes this callback
+ * @see smbus_read_byte_ctx_t Context structure passed as user_ctx
+ * @see internal_crc8() PEC verification helper
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  smbus_read_byte_ctx_t* ctx;
-  uint8_t                data[k_smbus_byte_buf_size];
-  uint8_t                length;
-  rx_err_t               err;
-  uint8_t                crc;
-  uint8_t                addr_byte;
-  riic_channel_t         riic_channel;
-  i2c_device_addr_t      device_addr;
-
-  ctx                = (smbus_read_byte_ctx_t*)user_ctx;
-  length             = k_smbus_single_byte;
-  err                = k_rx_err_invalid_state;
-  crc                = k_smbus_crc8_init;
-  addr_byte          = k_smbus_u8_zero;
-  riic_channel.value = k_smbus_u8_zero;
-  device_addr.value  = k_smbus_u8_zero;
+  smbus_read_byte_ctx_t* const ctx = (smbus_read_byte_ctx_t*)user_ctx;
+  uint8_t                      data[k_smbus_byte_buf_size];
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -578,10 +805,10 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
     return k_rx_err_invalid_arg;
   }
 
-  length = bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
-  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
-  device_addr.value  = bus_config->proto.smbus.i2c_config.device_addr;
-  err                = riic_read(riic_channel, device_addr, data, length);
+  const uint8_t           length      = bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
+  const riic_channel_t    riic_channel = {.value = bus_config->proto.smbus.i2c_config.channel};
+  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.smbus.i2c_config.device_addr};
+  rx_err_t                err          = riic_read(riic_channel, device_addr, data, length);
 
   if (err != k_rx_ok) {
     ctx->result = err;
@@ -590,7 +817,8 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
 
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    addr_byte =
+    uint8_t crc       = k_smbus_crc8_init;
+    uint8_t addr_byte =
       (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_read_bit;
     crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc = internal_crc8(crc, data, k_smbus_single_byte);
@@ -609,31 +837,72 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
 }
 
 /**
- * @brief Callback for SMBUS read word data operation
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (smbus_read_word_data_ctx_t*)
- * @return k_rx_ok on success, error code on failure
+ * @brief Callback for SMBUS read word data (Read Word Data) operation
+ *
+ * @details
+ * Internal callback implementing the SMBus Read Word Data protocol. Performs
+ * a combined I2C write-read: writes one command byte (register address) then
+ * reads two data bytes (LSB first, then MSB) and reassembles them into a
+ * 16-bit little-endian value. When PEC is enabled, reads a third byte and
+ * verifies the CRC-8 computed over address+WRITE, command, address+READ,
+ * data_low, data_high.
+ *
+ * Algorithm steps:
+ * 1. Validate bus is initialized and ctx->data is non-NULL
+ * 2. Copy ctx->command into write_data
+ * 3. Determine read length: 2 bytes (no PEC) or 3 bytes (with PEC)
+ * 4. Call riic_write_read() for combined write-then-read transfer
+ * 5. If PEC enabled: recompute CRC-8 and compare with read_data[k_smbus_byte_pec]
+ * 6. Assemble *ctx->data = (read_data[1] << 8) | read_data[0]
+ * 7. Set ctx->result and return
+ *
+ * @param[in,out] bus_config Bus configuration structure
+ *   - initialized must be true
+ *   - proto.smbus.i2c_config specifies device address and channel
+ *   - proto.smbus.use_pec controls PEC verification
+ * @param[in,out] user_ctx User context (smbus_read_word_data_ctx_t*)
+ *   - input: ctx->command contains the register address to read
+ *   - input: ctx->data points to output uint16_t (must be non-NULL)
+ *   - output: *ctx->data receives the 16-bit register value on success
+ *   - output: ctx->result contains the operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, 16-bit word received and stored in *ctx->data
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_invalid_arg ctx->data is nullptr
+ * @retval k_rx_err_crc_mismatch PEC byte does not match computed CRC-8
+ * @retval k_rx_err_hw_error RIIC write-read failed (NAK or bus error)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->data must be non-NULL and point to a valid uint16_t
+ *
+ * @post *ctx->data contains the received 16-bit register value on k_rx_ok
+ * @post ctx->result contains the operation result
+ *
+ * @note Not thread-safe; called from bus manager with bus lock held
+ * @warning Word data is received LSB first per SMBus specification
+ *
+ * @code
+ * uint16_t voltage_mv = 0;
+ * smbus_read_word_data_ctx_t ctx = {
+ *     .command = 0x09,           // SBS Voltage register
+ *     .data    = &voltage_mv,
+ *     .result  = k_rx_err_invalid_state,
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                         internal_smbus_read_word_data_callback, &ctx);
+ * @endcode
+ *
+ * @see rx_bus_smbus_read_word_data() Public API that invokes this callback
+ * @see smbus_read_word_data_ctx_t Context structure passed as user_ctx
+ * @see internal_crc8() PEC verification helper
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  smbus_read_word_data_ctx_t* ctx;
-  uint8_t                     write_data;
-  uint8_t                     read_data[k_smbus_word_buf_size];
-  uint8_t                     read_length;
-  rx_err_t                    err;
-  uint8_t                     crc;
-  uint8_t                     addr_byte;
-  riic_channel_t              riic_channel;
-  i2c_device_addr_t           device_addr;
-
-  ctx                = (smbus_read_word_data_ctx_t*)user_ctx;
-  write_data         = k_smbus_u8_zero;
-  read_length        = k_smbus_u8_zero;
-  err                = k_rx_err_invalid_state;
-  crc                = k_smbus_crc8_init;
-  addr_byte          = k_smbus_u8_zero;
-  riic_channel.value = k_smbus_u8_zero;
-  device_addr.value  = k_smbus_u8_zero;
+  smbus_read_word_data_ctx_t* const ctx = (smbus_read_word_data_ctx_t*)user_ctx;
+  uint8_t                           read_data[k_smbus_word_buf_size];
 
   if (!bus_config->initialized) {
     rx_log_error(s_tag, "Bus not initialized");
@@ -647,11 +916,11 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
     return k_rx_err_invalid_arg;
   }
 
-  write_data  = ctx->command;
-  read_length = bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
-  riic_channel.value = bus_config->proto.smbus.i2c_config.channel;
-  device_addr.value  = bus_config->proto.smbus.i2c_config.device_addr;
-  err                = riic_write_read(riic_channel,
+  uint8_t                 write_data   = ctx->command;
+  const uint8_t           read_length  = bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
+  const riic_channel_t    riic_channel = {.value = bus_config->proto.smbus.i2c_config.channel};
+  const i2c_device_addr_t device_addr  = {.value = bus_config->proto.smbus.i2c_config.device_addr};
+  rx_err_t                err          = riic_write_read(riic_channel,
                         device_addr,
                         &write_data,
                         k_smbus_single_byte,
@@ -665,7 +934,8 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
 
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    addr_byte =
+    uint8_t crc       = k_smbus_crc8_init;
+    uint8_t addr_byte =
       (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
     crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc = internal_crc8(crc, &write_data, k_smbus_single_byte);

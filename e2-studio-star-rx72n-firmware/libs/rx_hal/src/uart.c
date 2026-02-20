@@ -257,11 +257,17 @@ typedef enum : uint8_t {
 
 /** @brief BRR calculation constants */
 typedef enum : uint16_t {
-  k_brr_divisor_n0 = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
-  k_brr_multiplier = 4,   /**< Multiplier per CKS increment (2^2) */
-  k_brr_max_value  = 255, /**< Maximum BRR register value */
-  k_brr_min_value  = 0,   /**< Minimum BRR register value */
+  k_brr_divisor_n0     = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
+  k_brr_multiplier     = 4,   /**< Multiplier per CKS increment (2^2) */
+  k_brr_max_value      = 255, /**< Maximum BRR register value */
+  k_brr_min_value      = 0,   /**< Minimum BRR register value */
+  k_brr_formula_offset = 1,   /**< BRR formula subtract-1 offset: BRR = (PCLKB/(32*B)) - 1 */
 } brr_constants_t;
+
+/** @brief MSTPCRB register bit manipulation constants */
+typedef enum : uint32_t {
+  k_uart_mstpcrb_bit_set = 1UL, /**< Single-bit mask for MSTPCRB bit-clear operations */
+} uart_mstpcrb_constants_t;
 
 /** @brief Maximum SCI channels (array size, must be enum for compile-time constant) */
 typedef enum : uint8_t {
@@ -349,7 +355,7 @@ static uint8_t internal_calculate_brr(const uint32_t baudrate)
   }
 
   /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  const uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
+  const uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - k_brr_formula_offset;
 
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
@@ -415,7 +421,7 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
   *prcr_reg() = k_rx_prcr_unlock_all;
 
   /* Clear module stop bit to enable clock */
-  system_regs()->mstpcrb &= ~(1UL << (uint8_t)mstpb_bit);
+  system_regs()->mstpcrb &= ~(k_uart_mstpcrb_bit_set << (uint8_t)mstpb_bit);
 
   /* Lock protection */
   *prcr_reg() = k_rx_prcr_lock;
@@ -664,8 +670,56 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 
 /**
  * @brief Deinitialize UART channel and disable TX/RX
- * @param[in] channel UART channel to deinitialize
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Disables transmit and receive on the specified SCI channel and marks it
+ * as uninitialized. The module clock is left running (safe to re-initialize
+ * without re-enabling). After this call the channel may be re-initialized
+ * with uart_init_channel().
+ *
+ * **Algorithm steps:**
+ * 1. Validate channel number (0-12)
+ * 2. Get SCI register base address
+ * 3. Write SCR = 0 to disable TX and RX
+ * 4. Clear s_channel_initialized[channel]
+ *
+ * @param[in] channel UART channel to deinitialize (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *   - **Recommended**: Use k_uart_channel_X constants
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success, channel TX/RX disabled
+ * @retval k_rx_err_invalid_arg Invalid channel number (>=13) or invalid register pointer
+ *
+ * @pre channel must be in range [0, 12]
+ * @pre Channel should be initialized before deinitializing (safe to call on uninit channel)
+ *
+ * @post TX and RX disabled (SCR = 0)
+ * @post s_channel_initialized[channel] set to false
+ *
+ * @note Not thread-safe - call during shutdown, not during normal operation
+ * @note Module stop clock is NOT re-asserted (peripheral clock left enabled)
+ *
+ * @par Thread Safety:
+ * Not thread-safe. Do not call while another thread is using the channel.
+ *
+ * @par Performance:
+ * - Execution time: ~1 µs
+ * - Stack usage: 16 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_err_t err = uart_deinit_channel(k_uart_channel_9);
+ * if (err != k_rx_ok) {
+ *   // Handle error (invalid channel)
+ * }
+ * // Channel is now disabled and can be re-initialized
+ * @endcode
+ *
+ * @see uart_init_channel() Initialize channel
+ * @see uart_debug_init() Initialize debug channel (SCI9)
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_deinit_channel(const uart_channel_t channel)
 {
@@ -918,11 +972,64 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
 }
 
 /**
- * @brief Write binary data to UART channel
- * @param[in] channel UART channel to use
- * @param[in] data Pointer to data buffer
+ * @brief Write binary data to UART channel without newline conversion
+ *
+ * @details
+ * Transmits a block of raw bytes on the specified SCI channel using
+ * uart_putc_channel() for each byte. No LF-to-CR+LF conversion is performed,
+ * making this function suitable for binary protocol data.
+ *
+ * **Algorithm steps:**
+ * 1. Validate data pointer (NULL check)
+ * 2. Validate channel number and initialization state
+ * 3. For each byte in [0, length): call uart_putc_channel() and propagate errors
+ *
+ * @param[in] channel UART channel to use (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *
+ * @param[in] data Pointer to buffer containing bytes to transmit
+ *   - **Valid range**: Non-nullptr pointing to at least `length` bytes
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
  * @param[in] length Number of bytes to write
- * @return k_rx_ok on success, error code otherwise
+ *   - **Valid range**: 0 to UINT16_MAX; 0 returns k_rx_ok immediately
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success, all bytes transmitted
+ * @retval k_rx_err_null_ptr data parameter is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_invalid_state Channel not initialized
+ * @retval k_rx_err_timeout Hardware timeout during transmission
+ *
+ * @pre Channel must be initialized via uart_init_channel()
+ * @pre data must point to at least `length` bytes of valid memory
+ *
+ * @post All `length` bytes transmitted in order
+ * @post On error, partial data may have been transmitted
+ *
+ * @note Blocking call - waits for each byte to be accepted by TDR
+ * @note No newline conversion - use uart_puts_channel() for text output
+ *
+ * @par Thread Safety:
+ * Thread-safe for different channels. Not safe for same channel without mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 µs per byte @ 115200 baud
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * const uint8_t frame[] = {0xAA, 0x55, 0x01, 0x02, 0x03};
+ * rx_err_t err = uart_write_channel(k_uart_channel_9, frame, sizeof(frame));
+ * if (err != k_rx_ok) {
+ *   // Handle partial write
+ * }
+ * @endcode
+ *
+ * @see uart_puts_channel() Transmit text string with newline conversion
+ * @see uart_read_channel() Read binary data
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, uint16_t length)
 {
@@ -1088,20 +1195,76 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
 }
 
 /**
- * @brief Read available data from UART channel
+ * @brief Read available bytes from UART channel (non-blocking)
  *
- * Reads up to the specified length of bytes from the UART receive buffer.
- * Returns immediately with available data; does not block waiting for data.
+ * @details
+ * Reads up to `length` bytes from the specified SCI channel using
+ * uart_getc_channel(). Stops immediately when no more data is available
+ * (RDRF flag not set) rather than waiting. Actual bytes received is
+ * reported via `bytes_read`.
  *
- * @param[in]  channel    UART channel to read from
- * @param[out] data       Pointer to buffer for received data
+ * **Algorithm steps:**
+ * 1. Validate data and bytes_read pointers (NULL check)
+ * 2. Validate channel number and initialization state
+ * 3. Set *bytes_read = 0
+ * 4. For each slot in [0, length):
+ *    a. Call uart_getc_channel(); if k_rx_err_empty, break (done)
+ *    b. On other error, propagate immediately
+ *    c. Store byte and increment *bytes_read
+ * 5. Return k_rx_ok (even if zero bytes were read)
+ *
+ * @param[in]  channel    UART channel to read from (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *
+ * @param[out] data       Pointer to buffer to store received bytes
+ *   - **Valid range**: Non-nullptr pointing to at least `length` bytes
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
  * @param[in]  length     Maximum number of bytes to read
- * @param[out] bytes_read Pointer to store actual number of bytes read
+ *   - **Valid range**: 0 to UINT16_MAX
  *
- * @return k_rx_ok on success (bytes_read contains actual count)
- * @return k_rx_err_null_ptr if data or bytes_read is nullptr
- * @return k_rx_err_invalid_arg if channel is invalid
- * @return k_rx_err_invalid_state if channel not initialized
+ * @param[out] bytes_read Pointer to store actual number of bytes read
+ *   - **Valid range**: Non-nullptr to uint16_t
+ *   - **On success**: Set to number of bytes actually received (0..length)
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; *bytes_read contains actual count (may be 0)
+ * @retval k_rx_err_null_ptr data or bytes_read is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_invalid_state Channel not initialized
+ *
+ * @pre Channel must be initialized via uart_init_channel()
+ * @pre data must point to at least `length` bytes of writable memory
+ *
+ * @post *bytes_read set to actual number of bytes received
+ * @post data[0..*bytes_read-1] contain the received bytes
+ *
+ * @note Non-blocking - returns immediately with whatever data is available
+ * @note k_rx_ok with *bytes_read == 0 means no data was available
+ *
+ * @par Thread Safety:
+ * Thread-safe for different channels. Not safe for same channel without mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~5 µs per byte received + ~5 µs when no data
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uint8_t  buf[64];
+ * uint16_t count = 0;
+ * rx_err_t err   = uart_read_channel(k_uart_channel_9, buf, sizeof(buf), &count);
+ * if (err == k_rx_ok && count > 0) {
+ *   process_bytes(buf, count);
+ * }
+ * @endcode
+ *
+ * @see uart_getc_channel() Read single character
+ * @see uart_rx_available() Check if data is available
+ * @see uart_write_channel() Write binary data
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_read_channel(const uart_channel_t channel,
                            uint8_t*             data,
@@ -1142,9 +1305,61 @@ rx_err_t uart_read_channel(const uart_channel_t channel,
 
 /**
  * @brief Check if receive data is available on UART channel
- * @param[in] channel UART channel to check
- * @param[out] available Pointer to store availability status
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Checks the RDRF (Receive Data Register Full) flag in the SSR register of
+ * the specified SCI channel. Provides a non-destructive peek at receive
+ * availability without consuming any data from the buffer.
+ *
+ * **Algorithm steps:**
+ * 1. Validate available pointer (NULL check)
+ * 2. Validate channel number and initialization state
+ * 3. Get SCI register base address
+ * 4. Read SSR and test RDRF bit; store boolean result in *available
+ *
+ * @param[in] channel UART channel to check (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *
+ * @param[out] available Pointer to store result
+ *   - **On success**: true if RDRF flag set (data ready), false otherwise
+ *   - **On error**: value undefined
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; *available set to data availability status
+ * @retval k_rx_err_null_ptr available is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel number or invalid register pointer
+ * @retval k_rx_err_invalid_state Channel not initialized
+ *
+ * @pre Channel must be initialized via uart_init_channel()
+ * @pre available must point to valid bool storage
+ *
+ * @post *available reflects current RDRF state
+ * @post No data is consumed from the receive buffer
+ *
+ * @note Non-destructive - does not read RDR or clear any flags
+ * @note RDRF can be set again immediately after reading if UART is receiving
+ *
+ * @par Thread Safety:
+ * Thread-safe for different channels. Not safe for same channel without mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~2 µs
+ * - Stack usage: 16 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * bool ready = false;
+ * if (uart_rx_available(k_uart_channel_9, &ready) == k_rx_ok && ready) {
+ *   char c;
+ *   uart_getc_channel(k_uart_channel_9, &c);
+ * }
+ * @endcode
+ *
+ * @see uart_getc_channel() Read single character
+ * @see uart_read_channel() Read multiple bytes
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
 {
@@ -1267,7 +1482,47 @@ rx_err_t uart_debug_init(void)
 
 /**
  * @brief Transmit single character on debug UART (SCI9)
- * @param[in] data Character to transmit
+ *
+ * @details
+ * Convenience wrapper around uart_putc_channel() for the fixed debug channel
+ * (SCI9). Errors are silently ignored to allow use in early initialization
+ * contexts where error propagation is not yet possible.
+ *
+ * **Algorithm steps:**
+ * 1. Call uart_putc_channel(k_uart_debug_channel, data)
+ * 2. Cast return value to (void) - errors discarded
+ *
+ * @param[in] data Character to transmit (0x00-0xFF)
+ *   - **Special handling**: '\n' is NOT converted; use uart_debug_puts() for text
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre SCI9 must be initialized and TX enabled
+ *
+ * @post Character written to SCI9 TDR and transmission started
+ * @post Any errors are silently discarded
+ *
+ * @note Error return from uart_putc_channel() is intentionally discarded
+ * @note For error-checked output use uart_putc_channel() directly
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 µs @ 115200 baud
+ * - Stack usage: 16 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_putc('A');     // Send 'A'
+ * uart_debug_putc('\r');    // Carriage return
+ * uart_debug_putc('\n');    // Line feed
+ * @endcode
+ *
+ * @see uart_debug_puts() Transmit string with newline conversion
+ * @see uart_putc_channel() Error-checked single character transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_putc(const char data)
 {
@@ -1276,8 +1531,54 @@ void uart_debug_putc(const char data)
 }
 
 /**
- * @brief Transmit string on debug UART with newline conversion
- * @param[in] str Pointer to null-terminated string
+ * @brief Transmit null-terminated string on debug UART with newline conversion
+ *
+ * @details
+ * Transmits a null-terminated string to SCI9 with automatic LF-to-CR+LF
+ * conversion for terminal compatibility. Enforces a maximum length of
+ * k_uart_max_str_len (256) characters per NASA Power of 10 Rule 2.
+ * Silently returns on NULL pointer to allow safe use in early init.
+ *
+ * **Algorithm steps:**
+ * 1. Return immediately if str is nullptr (defensive, no error return)
+ * 2. For each character up to k_uart_max_str_len:
+ *    a. Stop at null terminator
+ *    b. If '\n', send '\r' first
+ *    c. Send character via uart_debug_putc()
+ *
+ * @param[in] str Pointer to null-terminated ASCII string
+ *   - **Maximum length**: 256 characters (k_uart_max_str_len)
+ *   - **Null handling**: Returns silently if nullptr
+ *   - **Encoding**: ASCII; '\n' converted to '\r\n'
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre str should point to a null-terminated string in valid memory
+ *
+ * @post All characters up to null terminator transmitted to SCI9
+ * @post Each '\n' replaced by '\r\n' in the transmitted output
+ *
+ * @note No return value - errors from uart_debug_putc() are silently discarded
+ * @note String truncated at k_uart_max_str_len (256) characters
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 µs per character @ 115200 baud
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_puts("Hello, World!\n");  // Sends "Hello, World!\r\n"
+ * uart_debug_puts("[INFO] Boot complete\n");
+ * @endcode
+ *
+ * @see uart_debug_putc() Transmit single character
+ * @see uart_debug_putint() Transmit decimal integer
+ * @see uart_puts_channel() Error-checked string transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_puts(const char* str)
 {
@@ -1296,23 +1597,63 @@ void uart_debug_puts(const char* str)
 }
 
 /**
- * @brief Transmit signed integer as decimal string on debug UART
- * @param[in] value Integer value to transmit
+ * @brief Transmit signed 32-bit integer as decimal string on debug UART
+ *
+ * @details
+ * Converts a signed 32-bit integer to a decimal ASCII string and transmits
+ * it on SCI9. Handles INT32_MIN correctly by using int64_t for the negation.
+ * Uses a fixed-size stack buffer (k_uart_int_buffer_size = 12) built in
+ * reverse then passed to uart_debug_puts().
+ *
+ * **Algorithm steps:**
+ * 1. Determine sign; compute abs_value as uint32_t
+ * 2. Null-terminate the buffer end
+ * 3. Build digits right-to-left (statically bounded by k_uart_int_buffer_size)
+ * 4. Prepend '-' if negative
+ * 5. Call uart_debug_puts() with the resulting substring pointer
+ *
+ * @param[in] value Signed 32-bit integer to print
+ *   - **Valid range**: INT32_MIN (-2147483648) to INT32_MAX (2147483647)
+ *   - **INT32_MIN handling**: Correctly handled via int64_t cast
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre uart_debug_puts() must be functional
+ *
+ * @post Decimal representation of value transmitted on SCI9
+ * @post Leading zeros suppressed; negative values prefixed with '-'
+ *
+ * @note No return value - output errors are silently discarded
+ * @note Buffer is stack-allocated; safe for re-entrant calls on different tasks
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 µs per digit @ 115200 baud + digit-loop overhead
+ * - Stack usage: 32 bytes (buffer + locals)
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_puts("Value: ");
+ * uart_debug_putint(42);          // Sends "42"
+ * uart_debug_putint(-2147483648); // Sends "-2147483648"
+ * uart_debug_putc('\n');
+ * @endcode
+ *
+ * @see uart_debug_puthex() Print value in hexadecimal
+ * @see uart_debug_puts() Underlying string transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_putint(const int32_t value)
 {
-  char     buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
-  char*    p = buffer + sizeof(buffer) - 1;
-  uint32_t abs_value;
-  bool     is_negative = false;
+  char  buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
+  char* p = buffer + sizeof(buffer) - 1;
 
   /* Handle negative numbers */
-  if (value < 0) {
-    is_negative = true;
-    abs_value   = (uint32_t)(-(int64_t)value);
-  } else {
-    abs_value = (uint32_t)value;
-  }
+  const bool is_negative = (value < 0);
+  uint32_t   abs_value   = is_negative ? (uint32_t)(-(int64_t)value) : (uint32_t)value;
 
   /* Null terminate */
   *p = '\0';
@@ -1339,9 +1680,56 @@ void uart_debug_putint(const int32_t value)
 }
 
 /**
- * @brief Transmit unsigned integer as hexadecimal string on debug UART
- * @param[in] value Value to transmit
- * @param[in] digits Number of hex digits to display (1-8)
+ * @brief Transmit 32-bit unsigned integer as hexadecimal string on debug UART
+ *
+ * @details
+ * Transmits "0x" prefix followed by the specified number of uppercase hex
+ * digits of `value` on SCI9. Digits are always printed most-significant first.
+ * The `digits` parameter is clamped to [k_uart_hex_min_digits, k_uart_hex_max_digits]
+ * (1-8) before use.
+ *
+ * **Algorithm steps:**
+ * 1. Send "0x" prefix via uart_debug_puts()
+ * 2. Clamp digits to [1, 8]
+ * 3. Iterate nibbles from MSN to LSN (statically bounded by k_uart_hex_max_digits)
+ * 4. For each nibble index < digits, extract nibble and print uppercase hex char
+ *
+ * @param[in] value  Unsigned 32-bit value to display in hexadecimal
+ *   - **Valid range**: 0x00000000 to 0xFFFFFFFF
+ *
+ * @param[in] digits Number of hex digits to print (1-8)
+ *   - **Valid range**: 1 to 8 (clamped; 0 -> 1, >8 -> 8)
+ *   - **Common values**: 2 for byte, 4 for word, 8 for full 32-bit
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre uart_debug_puts() and uart_debug_putc() must be functional
+ *
+ * @post "0x" followed by `digits` uppercase hex characters transmitted on SCI9
+ * @post digits clamped to [1, 8] if out of range
+ *
+ * @note Uses static lookup table s_hex[] for digit-to-character conversion
+ * @note Always prefixes output with "0x"
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 µs per character @ 115200 baud
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_puts("Addr: ");
+ * uart_debug_puthex(0xDEADBEEF, 8);  // Sends "0xDEADBEEF"
+ * uart_debug_puthex(0x42, 2);        // Sends "0x42"
+ * uart_debug_putc('\n');
+ * @endcode
+ *
+ * @see uart_debug_putint() Print signed decimal value
+ * @see uart_debug_puts() Underlying string transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_puthex(const uint32_t value, uint8_t digits)
 {

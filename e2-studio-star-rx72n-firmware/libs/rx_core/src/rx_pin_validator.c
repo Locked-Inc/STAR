@@ -501,7 +501,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
   /* Check if already reserved */
   if (reservation->reserved) {
     /* Release mutex before returning error */
-    tx_mutex_put(&validator->mutex);
+    (void)tx_mutex_put(&validator->mutex);
 
     rx_log_warn("PIN_VALIDATOR", "Pin already reserved");
     return k_rx_err_gpio_conflict;
@@ -513,7 +513,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
   reservation->function[k_pin_function_name_max_len - 1] = '\0';
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   rx_log_debug("PIN_VALIDATOR", "Pin reserved");
 
@@ -614,7 +614,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
   /* Check if pin was reserved */
   if (!reservation->reserved) {
     /* Release mutex before returning error */
-    tx_mutex_put(&validator->mutex);
+    (void)tx_mutex_put(&validator->mutex);
 
     rx_log_warn("PIN_VALIDATOR", "Pin was not reserved");
     return k_rx_err_invalid_state;
@@ -625,7 +625,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
   reservation->function[0] = '\0';
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   rx_log_debug("PIN_VALIDATOR", "Pin released");
 
@@ -708,7 +708,7 @@ static bool impl_is_pin_reserved(void* ctx, const uint8_t port, const uint8_t pi
   const bool reserved = validator->reservations[port_index][pin].reserved;
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   return reserved;
 }
@@ -818,7 +818,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
 
   /* Check if pin is reserved */
   if (!reservation->reserved) {
-    tx_mutex_put(&validator->mutex);
+    (void)tx_mutex_put(&validator->mutex);
     return k_rx_err_invalid_state;
   }
 
@@ -827,7 +827,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
   function_out[function_len - 1] = '\0';
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   return k_rx_ok;
 }
@@ -925,7 +925,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   }
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   rx_log_debug("PIN_VALIDATOR", "All reservations cleared");
 

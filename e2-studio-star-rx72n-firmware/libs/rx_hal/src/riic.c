@@ -262,6 +262,16 @@ typedef enum : uint32_t {
  * | RIIC0   | P16     | P17     | 0x00088300   |
  * | RIIC1   | P21     | P20     | 0x00088320   |
  * | RIIC2   | P66     | P67     | 0x00088340   |
+ *
+ * @invariant Values are contiguous starting from 0 and match hardware channel indices
+ *
+ * @code
+ * // Select channel 0 base address
+ * volatile rx_riic_regs_t* regs = internal_get_riic_base(k_riic_channel_0);
+ * @endcode
+ *
+ * @see internal_get_riic_base() Maps channel number to hardware register pointer
+ * @see riic_constants_t For k_riic_max_channels bound used with these values
  */
 typedef enum : uint8_t {
   k_riic_channel_0 = 0, /**< RIIC channel 0 (P16/SCL0, P17/SDA0) */
@@ -307,6 +317,17 @@ typedef enum : uint8_t {
  * | Standard   | 100 kHz   | 10 µs    | 90 µs     | ~1 meter  |
  * | Fast       | 400 kHz   | 2.5 µs   | 22.5 µs   | ~0.5 m    |
  * | Fast Plus  | 1 MHz     | 1 µs     | 9 µs      | ~0.2 m    |
+ *
+ * @invariant Only these three discrete values are accepted by riic_init()
+ *
+ * @code
+ * // Initialize channel 0 at standard (100 kHz) mode
+ * riic_channel_t ch = {.value = 0};
+ * rx_err_t err = riic_init(ch, k_riic_freq_100khz);
+ * @endcode
+ *
+ * @see riic_init() Validates frequency_hz against these enum values
+ * @see internal_calculate_bit_rate() Uses frequency to compute ICBRL/ICBRH
  *
  * @note Fast Plus mode requires pull-up resistors < 1kΩ for proper rise time.
  */
@@ -408,6 +429,17 @@ typedef enum : uint8_t {
  * @par Address Calculation
  * - Write to 0x50: (0x50 << 1) | 0 = 0xA0
  * - Read from 0x50: (0x50 << 1) | 1 = 0xA1
+ *
+ * @invariant k_riic_addr_max_7bit == 127 (I2C spec: addresses 0x00-0x7F)
+ *
+ * @code
+ * // Format a write address byte for device at 0x50
+ * riic_device_addr_t dev = {.value = 0x50};
+ * uint8_t addr_byte = (uint8_t)((dev.value << k_riic_addr_shift) | k_riic_addr_write_bit);
+ * @endcode
+ *
+ * @see internal_write_byte() Uses these constants to format address bytes
+ * @see riic_write() Passes formatted address bytes during write transactions
  */
 typedef enum : uint8_t {
   k_riic_addr_shift     = 1,   /**< Left shift amount for 7-bit address */
@@ -903,6 +935,11 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
     timeout--;
   }
 
+  if (timeout == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "ACK/NACK timeout");
+    return k_rx_err_timeout;
+  }
+
   /* Check for NACK */
   if (riic->icsr2 & k_riic_icsr2_nackf) {
     riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_nackf;
@@ -1288,16 +1325,12 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
  * @see riic_read() Read data after initialization
  * @see riic_write_read() Combined write-read after initialization
  *
+ * @since Version 1.0.0
+ *
  * @callgraph
  */
 rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 {
-  uint8_t                  icbrl;
-  uint8_t                  icbrh;
-  rx_err_t                 err;
-
-  volatile rx_riic_regs_t* riic;
-
   /* Validate channel */
   if (channel.value >= k_riic_max_channels) {
     rx_log_error(s_tag, "Invalid RIIC channel");
@@ -1312,7 +1345,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   }
 
   /* Get RIIC base */
-  riic = internal_get_riic_base(channel.value);
+  volatile rx_riic_regs_t* const riic = internal_get_riic_base(channel.value);
   if (riic == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -1335,7 +1368,9 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   riic->iccr1 = k_riic_timeout_zero;
 
   /* Calculate bit rate */
-  err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
+  uint8_t  icbrl = 0;
+  uint8_t  icbrh = 0;
+  const rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */

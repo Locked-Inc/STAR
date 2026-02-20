@@ -173,9 +173,36 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-/* Track initialized channels */
-static bool     s_mtu_initialized[k_mtu_max_channels] = {false};
-static uint16_t s_mtu_period[k_mtu_max_channels]      = {0};
+/**
+ * @var s_mtu_initialized
+ * @brief Track which MTU channels have been initialized
+ *
+ * @details
+ * Boolean array indexed by MTU channel number (0-7). Elements are set to
+ * true by rx_mtu_init_pwm() and cleared to false by rx_mtu_deinit(). Guards
+ * all public API functions that require prior initialization.
+ *
+ * @note Indexed directly by rx_mtu_channel_t value (sparse: indices 0-4, 6-7)
+ * @warning Do not modify directly - use the public API functions
+ * @since Version 1.0.0
+ */
+static bool s_mtu_initialized[k_mtu_max_channels] = {false};
+
+/**
+ * @var s_mtu_period
+ * @brief Cached PWM period register values for each MTU channel
+ *
+ * @details
+ * Stores the TGRA (period) register value written during rx_mtu_init_pwm().
+ * Used by rx_mtu_set_duty() to convert duty percentage to raw counts without
+ * re-reading the hardware register, and by rx_mtu_get_period() to report
+ * the current period.
+ *
+ * @note Indexed directly by rx_mtu_channel_t value (sparse: indices 0-4, 6-7)
+ * @warning Do not modify directly - value must match hardware TGRA register
+ * @since Version 1.0.0
+ */
+static uint16_t s_mtu_period[k_mtu_max_channels] = {0};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -269,6 +296,39 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
   return internal_get_mtu_base(channel) != nullptr;
 }
 
+/**
+ * @brief Clear a counter-start bit in a TSTR register and verify it cleared
+ *
+ * @details
+ * Performs a read-modify-write on the TSTR register to clear the specified
+ * bit mask, then reads back the register to confirm the bit was cleared.
+ * Returns a hardware error if the bit is still set after the write, which
+ * can indicate a peripheral fault.
+ *
+ * @param[in] tstr Pointer to the MTU timer-start register structure (TSTRA or TSTRB)
+ *   - Must be non-NULL
+ * @param[in] mask Bitmask of the bit(s) to clear (e.g. k_mtu_tstr_cst0)
+ *   - Must correspond to a valid CSTn bit for the chosen register
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Bit cleared successfully and verified
+ * @retval k_rx_err_invalid_arg tstr pointer is nullptr
+ * @retval k_rx_err_hw_error Bit still set after write (hardware fault)
+ *
+ * @pre tstr points to a valid TSTRA or TSTRB hardware register
+ * @pre mask is a valid CSTn bit mask from mtu_tstr_bits_t
+ *
+ * @post Specified CSTn bit is cleared (counter stopped) on success
+ * @post tstr register unchanged on error
+ *
+ * @note Not thread-safe: caller must ensure exclusive access to TSTR register
+ * @note Readback verification adds one extra register read cycle
+ *
+ * @see rx_mtu_stop() Primary caller of this function
+ * @see k_mtu_tstr_cst0 Counter-start bit constants
+ *
+ * @since Version 1.0.0
+ */
 static rx_err_t internal_clear_tstr_bit(volatile rx_mtu_tstr_regs_t* tstr, const uint8_t mask)
 {
   if (tstr == nullptr) {
@@ -484,19 +544,17 @@ static rx_err_t internal_set_duty_raw_mtu(volatile rx_mtu_channel_regs_t* mtu,
  */
 rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* config)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-  uint16_t                        period;
-  rx_err_t                        err;
-
   RX_VALIDATE_PTR(config, s_tag, "config pointer is nullptr");
 
-  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   /* Calculate period from frequency */
-  err = internal_calculate_period(config->frequency_hz, &period);
+  uint16_t period;
+  rx_err_t err = internal_calculate_period(config->frequency_hz, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -567,14 +625,54 @@ rx_err_t rx_mtu_init_pwm(const rx_mtu_channel_t channel, const rx_mtu_config_t* 
   return k_rx_ok;
 }
 
+/**
+ * @brief Set PWM duty cycle as a floating-point percentage
+ *
+ * @details
+ * Converts a percentage value to raw timer counts using the cached period and
+ * writes it to the appropriate TGR register. The update is buffered and takes
+ * effect at the next PWM period boundary (glitch-free).
+ *
+ * Algorithm:
+ * 1. Validate channel and initialization state
+ * 2. Validate duty_percent in range [0.0, 100.0]
+ * 3. Retrieve cached period from s_mtu_period[channel]
+ * 4. Compute duty_count = (duty_percent * period) / 100
+ * 5. Write duty_count to TGR register via internal_set_duty_raw_mtu()
+ *
+ * @param[in] channel MTU channel (0-4, 6-7)
+ * @param[in] output  Output pin to update (k_mtu_output_a through k_mtu_output_d)
+ * @param[in] duty_percent Duty cycle percentage [0.0, 100.0]
+ *   - 0.0 = always-off (0% duty)
+ *   - 100.0 = always-on (100% duty)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Duty cycle updated successfully
+ * @retval k_rx_err_invalid_arg Invalid channel or duty_percent out of range
+ * @retval k_rx_err_not_initialized Channel not initialized via rx_mtu_init_pwm()
+ *
+ * @pre Channel must be initialized via rx_mtu_init_pwm()
+ * @pre duty_percent must be in [0.0, 100.0]
+ *
+ * @post TGR register updated with new duty count
+ * @post Change takes effect at next PWM period boundary
+ *
+ * @note Not thread-safe: caller must prevent concurrent access
+ *
+ * @code{.c}
+ * rx_err_t err = rx_mtu_set_duty(k_mtu_channel_0, k_mtu_output_b, 50.0f);
+ * @endcode
+ *
+ * @see rx_mtu_set_duty_raw() Set duty using raw count value
+ * @see rx_mtu_get_duty() Read current duty cycle
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t
 rx_mtu_set_duty(const rx_mtu_channel_t channel, rx_mtu_output_t output, const float duty_percent)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-  uint16_t                        period;
-  uint16_t                        duty_count;
-
-  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -587,19 +685,58 @@ rx_mtu_set_duty(const rx_mtu_channel_t channel, rx_mtu_output_t output, const fl
   }
 
   /* Convert percentage to count value */
-  period     = s_mtu_period[channel];
-  duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
+  const uint16_t period     = s_mtu_period[channel];
+  const uint16_t duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
 
   return internal_set_duty_raw_mtu(mtu, output, duty_count);
 }
 
+/**
+ * @brief Set PWM duty cycle using a raw 16-bit timer count
+ *
+ * @details
+ * Directly sets the compare register (TGR) for the specified output to
+ * duty_count timer ticks. Values larger than the channel period are clamped
+ * to the period value (100% duty). The update is buffered.
+ *
+ * Use this function when the caller has already converted a duty percentage
+ * to counts (e.g. via rx_mtu_get_period()) to avoid redundant floating-point
+ * multiplication.
+ *
+ * @param[in] channel    MTU channel (0-4, 6-7)
+ * @param[in] output     Output pin (k_mtu_output_a through k_mtu_output_d)
+ * @param[in] duty_count Raw count value in range [0, period]
+ *   - Values > period are automatically clamped to period
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Duty count written successfully
+ * @retval k_rx_err_invalid_arg Invalid channel or output
+ * @retval k_rx_err_not_initialized Channel not initialized
+ *
+ * @pre Channel must be initialized via rx_mtu_init_pwm()
+ * @pre duty_count should be in [0, period]; values above period are clamped
+ *
+ * @post TGR register written with (possibly clamped) duty_count
+ * @post Change takes effect at next PWM period boundary
+ *
+ * @note Not thread-safe: caller must prevent concurrent access
+ *
+ * @code{.c}
+ * uint16_t period;
+ * rx_mtu_get_period(k_mtu_channel_0, &period);
+ * rx_mtu_set_duty_raw(k_mtu_channel_0, k_mtu_output_b, period / 2U); // 50%
+ * @endcode
+ *
+ * @see rx_mtu_set_duty() Set duty using floating-point percentage
+ * @see rx_mtu_get_period() Retrieve period for count calculation
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t
 rx_mtu_set_duty_raw(const rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-  uint16_t                        period;
-
-  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -607,7 +744,7 @@ rx_mtu_set_duty_raw(const rx_mtu_channel_t channel, rx_mtu_output_t output, uint
   RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
   /* Clamp to period */
-  period = s_mtu_period[channel];
+  const uint16_t period = s_mtu_period[channel];
   if (duty_count > period) {
     duty_count = period;
   }
@@ -615,30 +752,66 @@ rx_mtu_set_duty_raw(const rx_mtu_channel_t channel, rx_mtu_output_t output, uint
   return internal_set_duty_raw_mtu(mtu, output, duty_count);
 }
 
+/**
+ * @brief Read the current PWM duty cycle as a floating-point percentage
+ *
+ * @details
+ * Reads the TGR register for the specified output and converts the raw count
+ * to a percentage using the cached period value.
+ *
+ * @f[
+ *   \text{duty\_percent} = \frac{\text{duty\_count} \times 100}{\text{period}}
+ * @f]
+ *
+ * @param[in]  channel      MTU channel (0-4, 6-7)
+ * @param[in]  output       Output to read (k_mtu_output_a through k_mtu_output_d)
+ * @param[out] duty_percent Pointer to store percentage result [0.0, 100.0]
+ *   - Must be non-NULL
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, duty_percent updated
+ * @retval k_rx_err_null_ptr duty_percent is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel or output
+ * @retval k_rx_err_not_initialized Channel not initialized
+ *
+ * @pre Channel must be initialized via rx_mtu_init_pwm()
+ * @pre duty_percent must point to valid float storage
+ *
+ * @post *duty_percent contains duty cycle in [0.0, 100.0] on success
+ * @post Hardware TGR register unchanged
+ *
+ * @note Not thread-safe: concurrent set_duty calls may cause torn reads
+ *
+ * @code{.c}
+ * float duty;
+ * rx_err_t err = rx_mtu_get_duty(k_mtu_channel_0, k_mtu_output_b, &duty);
+ * @endcode
+ *
+ * @see rx_mtu_set_duty() Set duty using percentage
+ * @see rx_mtu_get_period() Retrieve period count
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t
 rx_mtu_get_duty(const rx_mtu_channel_t channel, const rx_mtu_output_t output, float* duty_percent)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-  const volatile uint16_t*        tgr;
-  uint16_t                        period;
-  uint16_t                        duty_count;
-
   RX_VALIDATE_PTR(duty_percent, s_tag, "duty_percent pointer is nullptr");
 
-  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
-  tgr = internal_get_tgr_register(mtu, output);
+  const volatile uint16_t* const tgr = internal_get_tgr_register(mtu, output);
   if (tgr == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
-  period     = s_mtu_period[channel];
-  duty_count = *tgr;
+  const uint16_t period     = s_mtu_period[channel];
+  const uint16_t duty_count = *tgr;
 
   *duty_percent = (float)(duty_count * (float)k_mtu_duty_max) / period;
 
@@ -661,7 +834,25 @@ rx_mtu_get_duty(const rx_mtu_channel_t channel, const rx_mtu_output_t output, fl
  * @retval k_rx_err_invalid_arg Invalid channel
  * @retval k_rx_err_not_initialized Channel not initialized
  *
+ * @pre Channel must be initialized via rx_mtu_init_pwm()
+ * @pre period_count must point to valid uint16_t storage
+ *
+ * @post *period_count contains the TGRA register value on success
+ * @post Hardware registers unchanged
+ *
+ * @note Thread-safe: reads from static cache, no hardware access
+ *
+ * @code{.c}
+ * uint16_t period;
+ * rx_err_t err = rx_mtu_get_period(k_mtu_channel_0, &period);
+ * if (err == k_rx_ok) {
+ *     uint16_t half_duty = period / 2U; // 50%
+ *     rx_mtu_set_duty_raw(k_mtu_channel_0, k_mtu_output_b, half_duty);
+ * }
+ * @endcode
+ *
  * @see rx_mtu.h Complete API documentation
+ * @see rx_mtu_set_duty_raw() Use period count to set duty
  *
  * @since Version 1.0.0
  */
@@ -679,13 +870,55 @@ rx_err_t rx_mtu_get_period(const rx_mtu_channel_t channel, uint16_t* period_coun
   return k_rx_ok;
 }
 
+/**
+ * @brief Enable or disable a single MTU PWM output pin
+ *
+ * @details
+ * Controls whether the MTIOCA/B/C/D pin actively drives the PWM waveform or
+ * is held in its initial state (off). Modifies the TIORH or TIORL register
+ * nibble corresponding to the requested output without disturbing other outputs.
+ *
+ * | Output | Register | Nibble |
+ * |--------|----------|--------|
+ * | A      | TIORH    | Low  (bits 3:0) |
+ * | B      | TIORH    | High (bits 7:4) |
+ * | C      | TIORL    | Low  (bits 3:0) |
+ * | D      | TIORL    | High (bits 7:4) |
+ *
+ * @param[in] channel MTU channel (0-4, 6-7)
+ * @param[in] output  Output to control (k_mtu_output_a through k_mtu_output_d)
+ * @param[in] enable  true to enable PWM output, false to disable (hold initial state)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Output state changed successfully
+ * @retval k_rx_err_invalid_arg Invalid channel or output
+ * @retval k_rx_err_not_initialized Channel not initialized
+ *
+ * @pre Channel must be initialized via rx_mtu_init_pwm()
+ * @pre output must be a valid rx_mtu_output_t enum value
+ *
+ * @post TIORH or TIORL nibble updated; timer continues running
+ * @post Other outputs on the same channel are unchanged
+ *
+ * @note Not thread-safe: caller must prevent concurrent register access
+ * @note Timer keeps running; only output pin drive changes
+ *
+ * @warning Outputs may remain HIGH when disabled, depending on last compare state
+ *
+ * @code{.c}
+ * rx_mtu_enable_output(k_mtu_channel_0, k_mtu_output_a, false); // disable
+ * @endcode
+ *
+ * @see rx_mtu_init_pwm() Initialize channel before calling
+ * @see rx_mtu_stop() Halt the entire timer
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t
 rx_mtu_enable_output(const rx_mtu_channel_t channel, rx_mtu_output_t output, const bool enable)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-  uint8_t                         tior_value;
-
-  mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -693,7 +926,7 @@ rx_mtu_enable_output(const rx_mtu_channel_t channel, rx_mtu_output_t output, con
   RX_VALIDATE_INIT(s_mtu_initialized[channel], s_tag, "MTU channel not initialized");
 
   /* Enable/disable output by modifying TIOR registers */
-  tior_value = enable ? k_mtu_tior_init_low : k_mtu_tior_disabled;
+  const uint8_t tior_value = enable ? k_mtu_tior_init_low : k_mtu_tior_disabled;
 
   switch (output) {
     case k_mtu_output_a:
@@ -856,6 +1089,47 @@ rx_err_t rx_mtu_stop(const rx_mtu_channel_t channel)
   return err;
 }
 
+/**
+ * @brief Deinitialize an MTU PWM channel
+ *
+ * @details
+ * Performs an orderly shutdown of the specified MTU channel:
+ * 1. Stop the timer counter (rx_mtu_stop())
+ * 2. Disable all four outputs (A, B, C, D) via rx_mtu_enable_output()
+ * 3. Clear the cached period to 0
+ * 4. Clear the initialized flag
+ *
+ * After this call the channel may be safely re-initialized with different
+ * parameters via rx_mtu_init_pwm().
+ *
+ * @param[in] channel MTU channel to deinitialize (0-4, 6-7)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Channel successfully deinitialized
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_hw_error Hardware error while stopping timer
+ *
+ * @pre Motor or load driven by this channel must be stopped externally before call
+ * @pre channel must be a valid MTU channel (0-4, 6-7)
+ *
+ * @post Timer stopped and outputs disabled
+ * @post s_mtu_initialized[channel] == false
+ * @post s_mtu_period[channel] == k_mtu_period_zero
+ *
+ * @note Not thread-safe: do not call while another task is accessing this channel
+ * @note Idempotent with respect to re-initialization (can call init again after)
+ *
+ * @warning Ensure motor is at rest before calling to avoid abrupt stop
+ *
+ * @code{.c}
+ * rx_err_t err = rx_mtu_deinit(k_mtu_channel_0);
+ * @endcode
+ *
+ * @see rx_mtu_init_pwm() Re-initialize after deinit
+ * @see rx_mtu_stop() Stop timer without full teardown
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_mtu_deinit(const rx_mtu_channel_t channel)
 {
   if (!internal_is_valid_channel(channel)) {
