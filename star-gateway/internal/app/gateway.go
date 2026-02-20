@@ -11,8 +11,10 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
+	"unicode/utf8"
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
@@ -47,6 +49,19 @@ const (
 
 	// defaultDispatcherShutdownTimeout is the default graceful shutdown timeout for dispatcher stop.
 	defaultDispatcherShutdownTimeout = 5 * time.Second
+
+	// estopTimeout is the maximum duration allowed for an emergency stop command to reach
+	// the motor controller before the context is cancelled.
+	estopTimeout = 5 * time.Second
+
+	// defaultEstopReason is the fallback reason string used when the HTTP /api/estop
+	// endpoint is called without an explicit ?reason= query parameter.
+	defaultEstopReason = "user_http_fallback"
+
+	// maxEstopReasonLen caps the length of the sanitized emergency-stop reason
+	// written to logs and forwarded to the motor controller. Prevents log
+	// injection and unbounded memory usage from adversarially long query params.
+	maxEstopReasonLen = 256
 )
 
 // Config holds the application configuration.
@@ -580,6 +595,9 @@ type motorControllerAdapter struct {
 }
 
 func (a *motorControllerAdapter) EmergencyStop(ctx context.Context, reason string) error {
+	if a == nil || a.svc == nil {
+		return fmt.Errorf("motorControllerAdapter.EmergencyStop: adapter or svc is nil")
+	}
 	_, err := a.svc.EmergencyStop(ctx, &starv1.EmergencyStopRequest{Reason: reason})
 	return err
 }
@@ -596,6 +614,12 @@ func startHTTPServer(ctx context.Context, servers *Servers, services *serviceSet
 //   - /ws for the WebSocket hub (UI telemetry streaming, teleop input, and e-stop)
 //   - /api/estop for a REST emergency stop fallback (POST ?reason=...)
 //   - /healthz for liveness checks
+//
+// Safety requirement: services.motorControl must be non-nil. Both the /ws WebSocket
+// e-stop path and the /api/estop REST fallback depend on it; starting the server
+// without motor control would silently disable safety-critical stop paths. Callers
+// must supply a valid MotorControlService or explicitly handle this degraded state
+// before calling startHTTPServerWithAddr.
 //
 // UI static files are served by the dedicated UI service, not by the gateway.
 func startHTTPServerWithAddr(
@@ -614,24 +638,81 @@ func startHTTPServerWithAddr(
 	if services.gateway == nil {
 		return fmt.Errorf("gateway service is nil")
 	}
+	if services.motorControl == nil {
+		// Both the WebSocket e-stop path and the /api/estop REST fallback require
+		// motorControl; starting without it would silently disable safety-critical
+		// stop paths and any call to EmergencyStop would panic.
+		return fmt.Errorf("motorControl service is nil: cannot start HTTP server without motor control (e-stop paths would be disabled)")
+	}
 	if logger == nil {
 		logger = slog.Default()
 	}
 
-	// Create HTTP router
+	// internalCtx is a child of the caller-supplied ctx. Cancelling it shuts
+	// down the HTTP server (and hub) even when the outer ctx is still live —
+	// e.g. when the hub crashes and we must not serve /ws with a broken hub.
+	// internalCtx is automatically cancelled when ctx is cancelled (parent
+	// propagation), so no explicit defer is needed for the normal-flow cleanup.
+	internalCtx, internalCancel := context.WithCancel(ctx)
+	// No defer internalCancel() here!
+
 	mux := http.NewServeMux()
 
-	// Instantiate WebSocket hub and start its event loop. ctx is the application
-	// shutdown context so the hub closes all client connections on graceful exit.
+	// ── WebSocket hub setup ───────────────────────────────────────────────
 	adapter := &motorControllerAdapter{svc: services.motorControl}
-	hub := ws.NewHub(adapter, logger)
-	go hub.Run(ctx)
+	hub := ws.NewHub(logger)
 
-	// Wire hub into GatewayService so ForwardTelemetry broadcasts push to UI clients.
+	hubErrChan := make(chan error, 1)
+	go func() {
+		var hubErr error
+		defer func() {
+			if r := recover(); r != nil {
+				hubErr = fmt.Errorf("ws hub.Run panicked: %v", r)
+			}
+			if hubErr != nil {
+				hubErrChan <- hubErr
+			}
+			close(hubErrChan)
+		}()
+		hub.Run(internalCtx)
+	}()
+
+	// Monitor hub; owns internalCancel so the HTTP server shuts down
+	// if the hub dies, but NOT before the setup function returns.
+	go func() {
+		defer internalCancel() // ← lives here now
+		if err, ok := <-hubErrChan; ok && err != nil {
+			logger.Error("ws hub exited with error — initiating HTTP server shutdown",
+				slog.Any("error", err))
+		} else {
+			logger.Info("ws hub.Run exited cleanly")
+		}
+	}()
+
 	services.gateway.SetHub(hub)
 
-	// WebSocket endpoint — upgrades to the hub-based full-duplex transport.
-	mux.Handle("/ws", ws.NewHandler(hub, adapter, logger))
+	// WebSocket origin checking: defaults to true (secure) for production.
+	// Can be disabled via WS_STRICT_ORIGIN=false for development/testing only.
+	//
+	// SECURITY WARNING: Disabling origin checking allows cross-origin WebSocket
+	// connections, which can enable CSRF attacks. Only disable if:
+	// - Running in a trusted development environment
+	// - Additional authentication/authorization is implemented at the application layer
+	// - Network segmentation prevents unauthorized access
+	strictOriginChecking := true
+	if envVal := os.Getenv("WS_STRICT_ORIGIN"); envVal != "" {
+		if envVal == "false" || envVal == "0" {
+			strictOriginChecking = false
+			logger.Warn("WebSocket strict origin checking DISABLED via WS_STRICT_ORIGIN environment variable",
+				slog.String("compensating_controls_required", "ensure network segmentation and application-layer auth"))
+		}
+	}
+	if !strictOriginChecking {
+		logger.Error("SECURITY: WebSocket origin validation is disabled - vulnerable to CSRF attacks",
+			slog.Bool("strict_origin_checking", false),
+			slog.String("mitigation", "set WS_STRICT_ORIGIN=true or remove environment variable"))
+	}
+	mux.Handle("/ws", ws.NewHandler(hub, adapter, logger, strictOriginChecking))
 
 	// REST fallback for emergency stop. The frontend sends the reason as a query
 	// parameter (fetch('/api/estop?reason=...', { method: 'POST' })).
@@ -642,18 +723,51 @@ func startHTTPServerWithAddr(
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		reason := r.URL.Query().Get("reason")
-		if reason == "" {
-			reason = "user_http_fallback"
+		// Defensive nil-check: motorControl is validated at startup, but guard here
+		// in case the handler is ever reached in a degraded/test scenario.
+		if services.motorControl == nil {
+			logger.Error("REST emergency stop: motorControl service unavailable")
+			http.Error(w, "motor control unavailable", http.StatusServiceUnavailable)
+			return
 		}
-		estopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		raw := r.URL.Query().Get("reason")
+		// Sanitize the reason string: replace control characters (including
+		// newlines and carriage returns) with a space to prevent log injection,
+		// then truncate to maxEstopReasonLen.
+		sanitizedReason := strings.Map(func(r rune) rune {
+			if r < 0x20 || r == 0x7F {
+				return ' '
+			}
+			return r
+		}, raw)
+		if len(sanitizedReason) > maxEstopReasonLen {
+			byteCount := 0
+			truncIdx := 0
+			for i, r := range sanitizedReason {
+				if byteCount+utf8.RuneLen(r) > maxEstopReasonLen {
+					truncIdx = i
+					break
+				}
+				byteCount += utf8.RuneLen(r)
+				truncIdx = i + utf8.RuneLen(r)
+			}
+			sanitizedReason = sanitizedReason[:truncIdx]
+		}
+		sanitizedReason = strings.TrimSpace(sanitizedReason)
+		if sanitizedReason == "" {
+			sanitizedReason = defaultEstopReason
+		}
+		estopCtx, cancel := context.WithTimeout(context.Background(), estopTimeout)
 		defer cancel()
 		if _, err := services.motorControl.EmergencyStop(estopCtx,
-			&starv1.EmergencyStopRequest{Reason: reason}); err != nil {
-			logger.Error("REST emergency stop failed", slog.Any("err", err))
+			&starv1.EmergencyStopRequest{Reason: sanitizedReason}); err != nil {
+			logger.Error("REST emergency stop failed",
+				slog.Any("error", err),
+				slog.String("reason", sanitizedReason))
 			http.Error(w, "emergency stop failed", http.StatusInternalServerError)
 			return
 		}
+		logger.Info("REST emergency stop succeeded", slog.String("reason", sanitizedReason))
 		w.WriteHeader(http.StatusNoContent)
 	})
 
@@ -678,8 +792,9 @@ func startHTTPServerWithAddr(
 	}
 	servers.HTTPServer = httpSrv
 
-	// Start server (non-blocking)
-	errChan, err := server.RunHTTPServer(ctx, httpSrv, logger)
+	// Start server (non-blocking). Uses internalCtx so a hub failure (which
+	// calls internalCancel) triggers graceful HTTP server shutdown.
+	errChan, err := server.RunHTTPServer(internalCtx, httpSrv, logger)
 	if err != nil {
 		return fmt.Errorf("failed to start HTTP server: %w", err)
 	}

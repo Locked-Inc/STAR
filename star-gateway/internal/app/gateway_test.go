@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -21,6 +23,20 @@ import (
 const (
 	httpServerStartupDelay = 50 * time.Millisecond
 	websocketDialTimeout   = 2 * time.Second
+
+	// serverReadinessDeadline is the maximum time to wait for the HTTP server to
+	// accept its first TCP connection in the readiness probe of startTestHTTPServer.
+	// Larger than httpServerStartupDelay to accommodate slow CI runners where OS
+	// scheduling delays can stretch server startup well beyond 50 ms.
+	serverReadinessDeadline = 500 * time.Millisecond
+
+	// dialProbeTimeout is the per-attempt TCP dial timeout in the server readiness probe.
+	dialProbeTimeout = 10 * time.Millisecond
+	// dialProbeInterval is the sleep between TCP dial attempts in the server readiness probe.
+	dialProbeInterval = 2 * time.Millisecond
+
+	// testHTTPClientTimeout is the HTTP client timeout used in test helper requests.
+	testHTTPClientTimeout = 100 * time.Millisecond
 )
 
 // serviceGetters is the shared table of service accessor functions.
@@ -362,6 +378,8 @@ func newTestServiceSetWith(t *testing.T, h harq.HARQ) *serviceSet {
 
 // startTestHTTPServer starts the HTTP server on a random port and returns the
 // base URL ("http://host:port"). Cancellation and cleanup are wired to t.
+// Instead of a fixed sleep it uses a readiness probe so the test only
+// proceeds once the server is actually accepting connections.
 func startTestHTTPServer(t *testing.T, services *serviceSet) string {
 	t.Helper()
 	ctx, cancel := context.WithCancel(context.Background())
@@ -370,8 +388,26 @@ func startTestHTTPServer(t *testing.T, services *serviceSet) string {
 	if err := startHTTPServerWithAddr(ctx, servers, services, "127.0.0.1:0", testutil.NewDiscardLogger()); err != nil {
 		t.Fatalf("startHTTPServerWithAddr: %v", err)
 	}
-	time.Sleep(httpServerStartupDelay)
-	return "http://" + servers.HTTPServer.Addr
+
+	// Readiness probe: repeatedly attempt a TCP dial until the server accepts
+	// connections or the startup deadline is exceeded.
+	addr := servers.HTTPServer.Addr
+	deadline := time.Now().Add(serverReadinessDeadline)
+	serverReady := false
+	for time.Now().Before(deadline) {
+		conn, dialErr := net.DialTimeout("tcp", addr, dialProbeTimeout)
+		if dialErr == nil {
+			_ = conn.Close()
+			serverReady = true
+			break
+		}
+		time.Sleep(dialProbeInterval)
+	}
+	if !serverReady {
+		t.Fatalf("HTTP server at %s did not become ready within %v", addr, serverReadinessDeadline)
+	}
+
+	return "http://" + addr
 }
 
 // doRequest sends an HTTP request with the given method and URL, registers body
@@ -382,7 +418,8 @@ func doRequest(t *testing.T, method, url string) *http.Response {
 	if err != nil {
 		t.Fatalf("http.NewRequest(%s, %s): %v", method, url, err)
 	}
-	resp, err := http.DefaultClient.Do(req)
+	client := &http.Client{Timeout: testHTTPClientTimeout}
+	resp, err := client.Do(req)
 	if err != nil {
 		t.Fatalf("http.Do %s %s: %v", method, url, err)
 	}
@@ -478,7 +515,7 @@ func TestEstopEndpoint_ReasonFromQueryParam(t *testing.T) {
 	base := startTestHTTPServer(t, newTestServiceSetWith(t, mock))
 
 	const wantReason = "sensor_fault"
-	resp := doRequest(t, http.MethodPost, base+"/api/estop?reason="+wantReason)
+	resp := doRequest(t, http.MethodPost, base+"/api/estop?reason="+url.QueryEscape(wantReason))
 	if resp.StatusCode != http.StatusNoContent {
 		t.Fatalf("expected 204, got %d", resp.StatusCode)
 	}
@@ -523,9 +560,8 @@ func TestEstopEndpoint_DefaultReason(t *testing.T) {
 	if estop == nil {
 		t.Fatal("WireMessage contains no EmergencyStopCommand")
 	}
-	const wantDefault = "user_http_fallback"
-	if estop.Reason != wantDefault {
-		t.Errorf("reason: got %q, want %q", estop.Reason, wantDefault)
+	if estop.Reason != defaultEstopReason {
+		t.Errorf("reason: got %q, want %q", estop.Reason, defaultEstopReason)
 	}
 }
 

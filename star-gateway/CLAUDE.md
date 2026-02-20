@@ -113,6 +113,45 @@ go fmt ./...
 go vet ./...
 ```
 
+## Configuration
+
+### Environment Variables
+
+The gateway supports the following environment variables:
+
+#### WS_STRICT_ORIGIN
+
+Controls WebSocket origin checking for cross-origin requests.
+
+- **Type:** boolean
+- **Default:** `true` (strict origin checking enabled)
+- **Production:** Must be `true` (secure default)
+- **Development:** Can be set to `false` for local development only
+
+**Values:**
+- `true` or `1` - Enable strict origin checking (secure, recommended)
+- `false` or `0` - Disable origin checking (development only, insecure)
+- Unset - Uses default (`true`)
+
+**Example:**
+```bash
+# Production (default - no override needed)
+./star-gateway
+
+# Development with disabled origin checking (UNSAFE)
+WS_STRICT_ORIGIN=false ./star-gateway
+```
+
+**Security Warning:**  
+Disabling origin checking (`WS_STRICT_ORIGIN=false`) allows cross-origin WebSocket connections, which can enable CSRF attacks. Only disable in trusted development environments with:
+- Network segmentation preventing unauthorized access
+- Additional authentication/authorization at the application layer
+- Understanding of the associated security risks
+
+When `WS_STRICT_ORIGIN=false` is set, the gateway logs:
+- Warning message on startup
+- Error message explaining CSRF vulnerability and mitigation steps
+
 ## Dependencies
 
 This module depends on:

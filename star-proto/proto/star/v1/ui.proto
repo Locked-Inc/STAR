@@ -25,11 +25,11 @@ option java_package = "com.star.proto.v1";
 
 // Alert severity level.
 enum AlertLevel {
-    ALERT_LEVEL_UNKNOWN  = 0; // Unknown or unset alert level.
-    ALERT_LEVEL_INFO     = 1; // Informational alert.
-    ALERT_LEVEL_WARN     = 2; // Warning alert requiring attention.
-    ALERT_LEVEL_ERROR    = 3; // Error alert indicating degraded operation.
-    ALERT_LEVEL_CRITICAL = 4; // Critical alert requiring immediate action.
+  ALERT_LEVEL_UNKNOWN  = 0; // Unknown or unset alert level.
+  ALERT_LEVEL_INFO     = 1; // Informational alert.
+  ALERT_LEVEL_WARN     = 2; // Warning alert requiring attention.
+  ALERT_LEVEL_ERROR    = 3; // Error alert indicating degraded operation.
+  ALERT_LEVEL_CRITICAL = 4; // Critical alert requiring immediate action.
 }
 
 // STAREnvelope is a single multiplexed message type for the /ws WebSocket.
@@ -37,61 +37,74 @@ enum AlertLevel {
 //   Payload variants: 1-9  (single-byte encoding, most frequent)
 //   Metadata: 14-15         (present on every message but single-byte range preserved for payload)
 message STAREnvelope {
-    // Monotonic sequence stamped by gateway on outbound messages.
-    uint64 seq   = 14;
-    // Gateway wall-clock timestamp in milliseconds at send time.
-    int64  ts_ms = 15;
+  // Monotonic sequence stamped by gateway on outbound messages.
+  uint64 seq = 14;
+  // Gateway wall-clock timestamp in microseconds (Unix epoch) at send time.
+  // Use microseconds for consistency with all other timestamp fields in this file.
+  int64 timestamp_us = 15;
 
-    // Exactly one payload field should be set.
-    oneof payload {
-        TelemetryData   telemetry  = 1;
-        MotorStatusList motors     = 2;
-        BatteryState    battery    = 3;
-        OdometryData    odometry   = 4;
-        LidarScan       lidar      = 5;
-        Alert           alert      = 6;
-        SystemStatus    system     = 7;
-        ControllerState controller = 8;
-        EStopCommand    estop      = 9;
-    }
+  // Exactly one payload field should be set.
+  oneof payload {
+    TelemetryData   telemetry  = 1;
+    MotorStatusList motors     = 2;
+    BatteryState    battery    = 3;
+    OdometryData    odometry   = 4;
+    LidarScan       lidar      = 5;
+    Alert           alert      = 6;
+    SystemStatus    system     = 7;
+    ControllerState controller = 8;
+    EStopCommand    estop      = 9;
+  }
 }
 
 // MotorStatusList bundles the status of all drive motors into one envelope payload.
 message MotorStatusList {
-    repeated MotorStatus motors = 1; // Per-motor status; up to 4 motors (nanopb max_count:4).
+  // Per-motor status for each drive motor.
+  // nanopb max_count:4 (4-motor robot configuration, see ui.options).
+  repeated MotorStatus motors = 1;
 }
 
 // OdometryData reports the robot's estimated pose and velocity from wheel odometry.
 message OdometryData {
-    double x_m                       = 1; // X position in metres, world frame.
-    double y_m                       = 2; // Y position in metres, world frame.
-    double theta_rad                  = 3; // Heading angle in radians [-π, π].
-    double linear_velocity_mps        = 4; // Forward linear velocity in m/s.
-    double angular_velocity_rad_per_s = 5; // Angular velocity in rad/s.
-    int64  timestamp_us               = 6; // Source timestamp in microseconds (CLOCK_MONOTONIC).
+  double x_m                    = 1; // X position in metres, world frame.
+  double y_m                    = 2; // Y position in metres, world frame.
+  double theta_rad              = 3; // Heading angle in radians [-π, π].
+  double linear_velocity_mps    = 4; // Forward linear velocity in m/s.
+  double angular_velocity_radps = 5; // Angular velocity in rad/s.
+  int64  timestamp_us           = 6; // Source timestamp in microseconds (CLOCK_MONOTONIC).
 }
 
 // LidarScan is a single 360° scan from the RPLiDAR C1.
-// angle_rad, range_m, and intensity arrays are parallel; all have the same length.
+// angle_rad, range_m, and intensity_raw arrays are parallel; all have the same length.
+// Maximum samples per revolution: RPLIDAR_C1_MAX_SAMPLES = 800 (RPLiDAR C1 @ 10 Hz scan mode).
+// nanopb static bound: max_count:800 for all three arrays (see ui.options).
 message LidarScan {
-    repeated float angle_rad    = 1; // Angle in radians for each sample.
-    repeated float range_m      = 2; // Range in metres for each sample (0 = invalid).
-    repeated float intensity    = 3; // Reflectance intensity (sensor-specific units).
-    int64          timestamp_us = 4; // Scan start timestamp in microseconds (CLOCK_MONOTONIC).
+  // Angle in radians for each sample [0, 2π).
+  // nanopb max_count:800 (RPLIDAR_C1_MAX_SAMPLES; see ui.options).
+  repeated float angle_rad = 1;
+  // Range in metres for each sample (0 = invalid/out-of-range).
+  // nanopb max_count:800 (RPLIDAR_C1_MAX_SAMPLES; see ui.options).
+  repeated float range_m = 2;
+  // Reflectance intensity in arbitrary sensor units (dimensionless, sensor-specific scale).
+  // The "_raw" suffix emphasises this value is unprocessed and must not be compared across
+  // different RPLiDAR models. nanopb max_count:800 (RPLIDAR_C1_MAX_SAMPLES; see ui.options).
+  repeated float intensity_raw = 3;
+  // Scan start timestamp in microseconds (CLOCK_MONOTONIC, same epoch as other telemetry).
+  int64 timestamp_us = 4;
 }
 
 // Alert is a structured diagnostic notification from any subsystem.
 message Alert {
-    AlertLevel level        = 1; // Severity of the alert.
-    string     code         = 2; // Short machine-readable alert code (max 16 chars).
-    string     message      = 3; // Human-readable description (max 128 chars).
-    string     source       = 4; // Subsystem that raised the alert (max 32 chars).
-    int64      timestamp_us = 5; // Alert creation timestamp in microseconds (CLOCK_MONOTONIC).
+  AlertLevel level        = 1; // Severity of the alert.
+  string     code         = 2; // Short machine-readable alert code (max 16 chars).
+  string     message      = 3; // Human-readable description (max 128 chars).
+  string     source       = 4; // Subsystem that raised the alert (max 32 chars).
+  int64      timestamp_us = 5; // Alert creation timestamp in microseconds (CLOCK_MONOTONIC).
 }
 
 // EStopCommand activates or clears the robot emergency stop.
 message EStopCommand {
-    bool   active       = 1; // true = stop active, false = stop cleared.
-    string reason       = 2; // Reason for the stop (max 64 chars).
-    int64  timestamp_us = 3; // Command timestamp in microseconds (CLOCK_MONOTONIC).
+  bool   active       = 1; // true = stop active, false = stop cleared.
+  string reason       = 2; // Reason for the stop (max 64 chars).
+  int64  timestamp_us = 3; // Command timestamp in microseconds (CLOCK_MONOTONIC).
 }

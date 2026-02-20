@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"sync"
 	"sync/atomic"
 	"time"
 
@@ -21,17 +22,35 @@ import (
 // saturated and the envelope must be dropped to avoid blocking.
 var ErrBroadcastFull = errors.New("ws: hub broadcast channel full")
 
+// ErrInvalidEnvelope is returned by Broadcast when the caller passes a nil envelope.
+var ErrInvalidEnvelope = errors.New("ws: nil envelope passed to Broadcast")
+
+// InboundDispatcher receives envelopes forwarded inbound by WebSocket clients
+// (all non-e-stop payloads read from the browser/UI). Implement this interface
+// and register it with Hub.SetInboundDispatcher to route commands to the
+// application layer instead of silently dropping them.
+type InboundDispatcher interface {
+	// Dispatch is called by the hub's event loop for every inbound envelope.
+	// Implementations must be non-blocking or fast; the hub's main select loop
+	// runs Dispatch synchronously and any stall delays all hub processing.
+	Dispatch(ctx context.Context, env *starv1.STAREnvelope) error
+}
+
 // Hub maintains the set of active clients and broadcasts messages to the clients.
 type Hub struct {
 	clients    map[*Client]struct{}
 	register   chan *Client
 	unregister chan *Client
-	broadcast  chan *starv1.STAREnvelope // buffered 32, from GatewayService
-	inbound    chan *starv1.STAREnvelope // buffered 32, UI→GW messages
+	broadcast  chan *starv1.STAREnvelope // buffered defaultChannelBuffer, from GatewayService
+	inbound    chan *starv1.STAREnvelope // buffered defaultChannelBuffer, UI→GW messages
 
-	seq          atomic.Uint64 // outbound envelopes only
-	motorService MotorController
-	logger       *slog.Logger
+	inboundDispatcher InboundDispatcher // optional; nil means drop inbound envelopes
+
+	startMu           sync.Mutex    // guards running flag and inboundDispatcher set-before-start
+	running           atomic.Bool   // set to true when Run starts; guards SetInboundDispatcher
+	seq               atomic.Uint64 // outbound envelopes only
+	registeredClients atomic.Int32  // thread-safe count of active clients
+	logger            *slog.Logger
 }
 
 // typeThrottleState holds the last-broadcast time per throttled message type.
@@ -47,33 +66,66 @@ type typeThrottleState struct {
 
 const (
 	defaultChannelBuffer = 32
+	// clientChanBufferSize is the buffer depth for client register/unregister channels.
+	// A buffer of 1 prevents callers from blocking if hub.Run has not yet started.
+	clientChanBufferSize = 1
 	telemetryInterval    = 100 * time.Millisecond // <=10 Hz
 	lidarInterval        = 400 * time.Millisecond // <=2.5 Hz
 )
 
-// NewHub creates a new Hub with the provided MotorController and logger.
-func NewHub(motorService MotorController, logger *slog.Logger) *Hub {
+// NewHub creates a new Hub with the provided logger.
+func NewHub(logger *slog.Logger) *Hub {
 	if logger == nil {
 		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
 	return &Hub{
-		clients:      make(map[*Client]struct{}),
-		register:     make(chan *Client),
-		unregister:   make(chan *Client),
-		broadcast:    make(chan *starv1.STAREnvelope, defaultChannelBuffer),
-		inbound:      make(chan *starv1.STAREnvelope, defaultChannelBuffer),
-		motorService: motorService,
-		logger:       logger,
+		clients:    make(map[*Client]struct{}),
+		register:   make(chan *Client, clientChanBufferSize), // buffered so callers don't block if Run hasn't started yet
+		unregister: make(chan *Client, clientChanBufferSize), // buffered so callers don't block if Run hasn't started yet
+		broadcast:  make(chan *starv1.STAREnvelope, defaultChannelBuffer),
+		inbound:    make(chan *starv1.STAREnvelope, defaultChannelBuffer),
+		logger:     logger,
 	}
+}
+
+// SetInboundDispatcher registers an InboundDispatcher that receives all inbound
+// WebSocket envelopes (non-e-stop payloads forwarded by client readPumps).
+// Must be called before Hub.Run starts. Panics if called after Run has started
+// to enforce the "set-before-start" invariant and prevent data races.
+func (h *Hub) SetInboundDispatcher(d InboundDispatcher) {
+	h.startMu.Lock()
+	defer h.startMu.Unlock()
+	if h.running.Load() {
+		panic("ws.Hub.SetInboundDispatcher: must be called before Hub.Run starts")
+	}
+	h.inboundDispatcher = d
+}
+
+// ClientCount returns the current number of active registered WebSocket clients.
+// The value is read atomically and is safe to call from any goroutine without
+// locking. Intended for use by metrics collection and health checks.
+func (h *Hub) ClientCount() int {
+	return int(h.registeredClients.Load())
 }
 
 // Broadcast pushes env to all connected clients. Non-blocking: if the hub's
 // internal channel is full, the envelope is dropped and ErrBroadcastFull is
-// returned so callers can decide whether to log or meter the drop.
-func (h *Hub) Broadcast(env *starv1.STAREnvelope) error {
+// returned so callers can decide whether to log or meter the drop. If ctx is
+// already cancelled when Broadcast is called, ctx.Err() is returned immediately.
+//
+// Ownership transfer: the caller must not access or reuse env after calling
+// Broadcast. The Hub's event loop (stampAndFanOut) mutates env.Seq and
+// env.TimestampUs in-place before marshalling and fan-out.
+func (h *Hub) Broadcast(ctx context.Context, env *starv1.STAREnvelope) error {
+	if env == nil {
+		h.logger.Warn("hub Broadcast called with nil envelope", slog.Uint64("seq", h.seq.Load()))
+		return ErrInvalidEnvelope
+	}
 	select {
 	case h.broadcast <- env:
 		return nil
+	case <-ctx.Done():
+		return ctx.Err()
 	default:
 		h.logger.Warn("hub broadcast channel full, dropping message", slog.Uint64("seq", h.seq.Load()))
 		return ErrBroadcastFull
@@ -92,6 +144,12 @@ func (h *Hub) Broadcast(env *starv1.STAREnvelope) error {
 //   - When ctx is cancelled, Run closes every active client's send channel
 //     before returning so writePump goroutines terminate cleanly.
 func (h *Hub) Run(ctx context.Context) {
+	// Signal that the hub is running; SetInboundDispatcher must not be called
+	// after this point. Held briefly under startMu to synchronise with any
+	// concurrent SetInboundDispatcher caller.
+	h.startMu.Lock()
+	h.running.Store(true)
+	h.startMu.Unlock()
 	var t typeThrottleState
 
 	for {
@@ -101,16 +159,19 @@ func (h *Hub) Run(ctx context.Context) {
 			for client := range h.clients {
 				close(client.send)
 				delete(h.clients, client)
+				h.registeredClients.Add(-1)
 			}
 			return
 
 		case client := <-h.register:
 			h.clients[client] = struct{}{}
+			h.registeredClients.Add(1)
 
 		case client := <-h.unregister:
 			if _, ok := h.clients[client]; ok {
 				delete(h.clients, client)
 				close(client.send)
+				h.registeredClients.Add(-1)
 			}
 
 		case env := <-h.broadcast:
@@ -119,9 +180,21 @@ func (h *Hub) Run(ctx context.Context) {
 
 		case env := <-h.inbound:
 			// Inbound envelopes forwarded by client readPumps (all non-estop payloads).
-			// Consumed here to drain the channel and prevent client-side backpressure.
-			// Future: dispatch to an application-level command handler.
-			_ = env
+			if h.inboundDispatcher != nil {
+				if err := h.inboundDispatcher.Dispatch(ctx, env); err != nil {
+					h.logger.Warn("hub: inboundDispatcher.Dispatch failed",
+						slog.Uint64("seq", env.Seq),
+						slog.String("type", fmt.Sprintf("%T", env.Payload)),
+						slog.Any("error", err),
+					)
+				}
+			} else {
+				// No dispatcher wired — drain the channel to prevent client backpressure.
+				h.logger.Warn("hub: inbound envelope dropped (no dispatcher wired)",
+					slog.Uint64("seq", env.Seq),
+					slog.String("type", fmt.Sprintf("%T", env.Payload)),
+				)
+			}
 		}
 	}
 }
@@ -141,7 +214,9 @@ func (h *Hub) route(
 	env *starv1.STAREnvelope,
 	now time.Time,
 	t *typeThrottleState,
-	telemetryInterval, lidarInterval time.Duration,
+	// telemetryRate and lidarRate are caller-supplied rate limits (not the package constants).
+	// Pass the package-level telemetryInterval / lidarInterval at normal call sites.
+	telemetryRate, lidarRate time.Duration,
 ) {
 	switch env.Payload.(type) {
 	// ── Alerts and E-stop: ALWAYS immediate, no throttle ──
@@ -150,38 +225,38 @@ func (h *Hub) route(
 
 	// ── LiDAR: independent throttle (large packed payload) ──
 	case *starv1.STAREnvelope_Lidar:
-		if shouldThrottle(&t.lidar, now, lidarInterval) {
+		if shouldThrottle(&t.lidar, now, lidarRate) {
 			return
 		}
 		h.stampAndFanOut(env, now)
 
 	// ── Per-type throttle for remaining sensor data ──
 	case *starv1.STAREnvelope_Telemetry:
-		if shouldThrottle(&t.telemetry, now, telemetryInterval) {
+		if shouldThrottle(&t.telemetry, now, telemetryRate) {
 			return
 		}
 		h.stampAndFanOut(env, now)
 
 	case *starv1.STAREnvelope_Motors:
-		if shouldThrottle(&t.motor, now, telemetryInterval) {
+		if shouldThrottle(&t.motor, now, telemetryRate) {
 			return
 		}
 		h.stampAndFanOut(env, now)
 
 	case *starv1.STAREnvelope_Battery:
-		if shouldThrottle(&t.battery, now, telemetryInterval) {
+		if shouldThrottle(&t.battery, now, telemetryRate) {
 			return
 		}
 		h.stampAndFanOut(env, now)
 
 	case *starv1.STAREnvelope_Odometry:
-		if shouldThrottle(&t.odometry, now, telemetryInterval) {
+		if shouldThrottle(&t.odometry, now, telemetryRate) {
 			return
 		}
 		h.stampAndFanOut(env, now)
 
 	case *starv1.STAREnvelope_System:
-		if shouldThrottle(&t.system, now, telemetryInterval) {
+		if shouldThrottle(&t.system, now, telemetryRate) {
 			return
 		}
 		h.stampAndFanOut(env, now)
@@ -204,7 +279,7 @@ func (h *Hub) stampAndFanOut(env *starv1.STAREnvelope, now time.Time) {
 
 	data, err := proto.Marshal(env)
 	if err != nil {
-		h.logger.Error("failed to marshal envelope for broadcast", slog.String("err", err.Error()), slog.Uint64("seq", env.Seq))
+		h.logger.Error("failed to marshal envelope for broadcast", slog.Any("error", err), slog.Uint64("seq", env.Seq))
 		return
 	}
 

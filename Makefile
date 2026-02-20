@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync
 
 help:
 	@echo "STAR Project Development Helper"
@@ -24,6 +24,7 @@ help:
 	@echo ""
 	@echo "Protocol Buffers:"
 	@echo "  make proto-gen    - Generate all proto code and setup Go modules (Go, TS, C/nanopb)"
+	@echo "  make proto-check-nanopb-sync - Verify LidarScan nanopb bounds are in sync"
 	@echo ""
 	@echo "Persistent Container (optional):"
 	@echo "  make up           - Start a persistent background container named '$(CONTAINER_NAME)'"
@@ -83,8 +84,8 @@ stop:
 # Protocol Buffer Generation (monorepo-wide)
 # ------------------------------------------------------------
 
-# Aggregate target: generate for all consumers
-proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware
+# Aggregate target: generate for all consumers (and verify nanopb option sync)
+proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware proto-check-nanopb-sync
 
 # Generate code using buf for all configured plugins (runs from workspace root)
 proto-gen-go:
@@ -123,3 +124,10 @@ proto-gen-firmware: proto-gen-go
 test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
 	@cd e2-studio-star-rx72n-firmware/tests && bash run_tests.sh
+
+# Verify LidarScan nanopb max_count bounds are identical in ui.options and gateway_service.options.
+# Fails with a clear SYNC ERROR message if any value diverges between the two files.
+# Run this in CI after buf generate to enforce lockstep updates.
+proto-check-nanopb-sync:
+	@echo "Checking LidarScan nanopb bound sync across option files..."
+	@cd star-proto && bash scripts/check_nanopb_sync.sh

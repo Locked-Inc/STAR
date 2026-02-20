@@ -7,6 +7,7 @@ package ws
 import (
 	"context"
 	"log/slog"
+	"sync"
 	"time"
 
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
@@ -14,66 +15,120 @@ import (
 	"google.golang.org/protobuf/proto"
 )
 
+// Client represents a single connected WebSocket client managed by the Hub.
+// Each Client owns two goroutines — readPump (reads frames from the connection)
+// and writePump (serialises frames onto the connection) — and communicates with
+// the Hub via the send channel and the hub.register / hub.unregister channels.
+// motorService is called synchronously in readPump for e-stop frames.
+// logger is used for structured diagnostic output; it is never nil.
 type Client struct {
 	hub          *Hub
 	conn         *websocket.Conn
-	send         chan []byte // buffered 32 — outbound frames
+	send         chan []byte // buffered defaultChannelBuffer — outbound frames
 	motorService MotorController
 	logger       *slog.Logger
+	closeOnce    sync.Once // ensures conn.Close is called exactly once
 }
 
 const (
 	writeWait = 10 * time.Second
 	pongWait  = 60 * time.Second
-	// pingPeriodRatio is the fraction of pongWait used for ping intervals.
-	// Set below 1.0 to ensure pings arrive before the pong deadline expires.
-	pingPeriodRatio = 9
-	pingPeriodDenom = 10
+	// pingPeriod is the interval between WebSocket ping frames sent to the client.
+	// It must be strictly less than pongWait so that pings arrive before the pong
+	// deadline expires. Set to 90 % of pongWait (54 s), matching the previous
+	// ratio-based computation of (pongWait * 9) / 10.
+	pingPeriod = (pongWait * 9) / 10
 	// maxMessageSize is the read-limit cap for inbound WebSocket frames.
 	// The largest valid inbound message (~ControllerState) is ~100 bytes;
 	// 4 KiB provides comfortable headroom while bounding per-connection
 	// memory abuse from malformed or oversized frames.
 	maxMessageSize = 4096
+	// estopTimeout is the maximum time allowed for the motor-controller to
+	// acknowledge an emergency stop before the context is cancelled. Using
+	// context.Background() as the root ensures a dropped HTTP connection cannot
+	// abort the safety command before it reaches the motor controller.
+	estopTimeout = 5 * time.Second
 )
+
+// NewClient creates a properly initialised Client and registers it with the
+// provided hub. It is the canonical constructor for external callers; the hub's
+// handler (ws.NewHandler) uses this to ensure all unexported fields are set.
+//
+// Callers must start the read and write pump goroutines after construction:
+//
+//	go client.writePump()
+//	client.readPump()
+func NewClient(hub *Hub, conn *websocket.Conn, motorService MotorController, logger *slog.Logger) *Client {
+	if hub == nil {
+		panic("ws.NewClient: hub must not be nil")
+	}
+	if conn == nil {
+		panic("ws.NewClient: conn must not be nil")
+	}
+	if motorService == nil {
+		panic("ws.NewClient: motorService must not be nil")
+	}
+	if logger == nil {
+		logger = slog.Default()
+	}
+	return &Client{
+		hub:          hub,
+		conn:         conn,
+		send:         make(chan []byte, defaultChannelBuffer),
+		motorService: motorService,
+		logger:       logger,
+	}
+}
+
+// closeConn closes the WebSocket connection exactly once regardless of how
+// many goroutines call it concurrently (readPump and writePump both defer it).
+func (c *Client) closeConn() {
+	c.closeOnce.Do(func() {
+		if err := c.conn.Close(); err != nil {
+			c.logger.Debug("closeConn: error closing websocket connection", slog.Any("error", err))
+		}
+	})
+}
 
 // writePump is the ONLY goroutine that ever calls WriteMessage on conn.
 // All writes go through the send channel. No direct writes from other goroutines.
 func (c *Client) writePump() {
-	pingPeriod := (pongWait * pingPeriodRatio) / pingPeriodDenom
-
 	ticker := time.NewTicker(pingPeriod)
 	defer func() {
 		ticker.Stop()
-		c.conn.Close()
+		c.closeConn()
 	}()
 	for {
 		select {
 		case message, ok := <-c.send:
 			// SetWriteDeadline before EVERY WriteMessage.
 			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
-				c.logger.Error("failed to set write deadline", "error", err)
+				c.logger.Error("failed to set write deadline", slog.Any("error", err))
 				return
 			}
 			if !ok {
 				// Hub closed the channel — send WS close frame and exit.
 				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
-					c.logger.Error("failed to write close message", "error", err)
+					c.logger.Error("failed to write close message", slog.Any("error", err))
 				}
 				return
 			}
 			if err := c.conn.WriteMessage(websocket.BinaryMessage, message); err != nil {
-				c.logger.Error("failed to write binary message", "error", err)
+				c.logger.Error("failed to write binary message", slog.Any("error", err))
 				return
 			}
 
 		case <-ticker.C:
-			// WriteControl permanently mutates WriteDeadline.
+			// Use SetWriteDeadline + WriteMessage for ping instead of WriteControl.
+			// WriteControl permanently mutates the connection write deadline (gorilla
+			// issue #841 / ADR-17); SetWriteDeadline + WriteMessage keeps the deadline
+			// scoped to this write only.
 			if err := c.conn.SetWriteDeadline(time.Now().Add(writeWait)); err != nil {
-				c.logger.Error("failed to set write deadline for ping", "error", err)
+				c.logger.Error("failed to set write deadline for ping", slog.Any("error", err))
 				return
 			}
 			if err := c.conn.WriteMessage(websocket.PingMessage, nil); err != nil {
-				c.logger.Error("failed to write ping message", "error", err)
+				c.logger.Error("failed to write ping", slog.Any("error", err))
 				return
 			}
 		}
@@ -86,14 +141,14 @@ func (c *Client) writePump() {
 func (c *Client) readPump() {
 	defer func() {
 		c.hub.unregister <- c
-		c.conn.Close()
+		c.closeConn()
 	}()
 
 	// Hard cap: see maxMessageSize for rationale.
 	c.conn.SetReadLimit(maxMessageSize)
 
 	if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
-		c.logger.Error("failed to set initial read deadline", slog.String("err", err.Error()))
+		c.logger.Error("failed to set initial read deadline", slog.Any("error", err))
 		return
 	}
 	c.conn.SetPongHandler(func(string) error {
@@ -103,7 +158,14 @@ func (c *Client) readPump() {
 	for {
 		_, data, err := c.conn.ReadMessage()
 		if err != nil {
-			// Covers: clean close, ping timeout, network drop, read limit exceeded.
+			// Log unexpected (non-clean) disconnects at Debug level for diagnostics.
+			if websocket.IsUnexpectedCloseError(err,
+				websocket.CloseGoingAway,
+				websocket.CloseNormalClosure,
+				websocket.CloseNoStatusReceived,
+			) {
+				c.logger.Debug("readPump: unexpected close", slog.Any("error", err))
+			}
 			return
 		}
 
@@ -111,7 +173,7 @@ func (c *Client) readPump() {
 		if err := proto.Unmarshal(data, env); err != nil {
 			// Malformed frame — log and continue. Do not kill the connection.
 			c.logger.Warn("bad envelope from client",
-				slog.String("err", err.Error()),
+				slog.Any("error", err),
 				slog.Int("bytes", len(data)),
 			)
 			continue
@@ -122,18 +184,22 @@ func (c *Client) readPump() {
 			// Use a short-lived context so a slow motor controller cannot
 			// block readPump indefinitely. context.Background() is the root
 			// so cancellation of connection context cannot abort an e-stop.
-			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), estopTimeout)
 			if err := c.motorService.EmergencyStop(ctx, estop.Estop.Reason); err != nil {
 				c.logger.Error("emergency stop failed",
 					slog.String("reason", estop.Estop.Reason),
-					slog.String("err", err.Error()),
+					slog.Any("error", err),
 				)
 			}
-			cancel()
+			cancel() // Release context resources immediately; do not defer inside a loop.
 			// Forward for packet analyzer visibility (non-blocking)
 			select {
 			case c.hub.inbound <- env:
 			default:
+				c.logger.Warn("hub inbound full, dropped e-stop forward",
+					slog.Uint64("seq", env.Seq),
+					slog.String("reason", estop.Estop.Reason),
+				)
 			}
 			continue
 		}
