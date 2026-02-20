@@ -12,6 +12,15 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
+// HubNotifier is the interface GatewayService uses to push STAREnvelope messages to the
+// WebSocket hub. Defined here (not in ws) to avoid circular imports; ws.Hub satisfies it.
+type HubNotifier interface {
+	// Broadcast sends a STAREnvelope to the hub for distribution to connected UI clients.
+	// This is a non-blocking call; if the hub's broadcast channel is full, the
+	// message will be dropped and an error returned.
+	Broadcast(env *starv1.STAREnvelope) error
+}
+
 // GatewayService implements the gRPC GatewayService for ROS2 ↔ UI bridging.
 //
 // Architecture:
@@ -19,23 +28,23 @@ import (
 //	ROS2 (C++) ↔ gRPC ↔ GatewayService (Go) ↔ WebSocket ↔ UI (TypeScript)
 //
 // Data flows:
-//  1. Telemetry (ROS2 → UI):
-//     ROS2 calls ForwardTelemetry() → cached → WebSocket streams to UI
-//  2. Teleop (UI → ROS2):
-//     UI sends via WebSocket → UpdateTeleopCommand() → ROS2 polls GetTeleopCommand()
-//  3. PID Gains (UI → ROS2):
-//     UI sends via WebSocket → SetPIDGains() → ROS2 → SPI → RX72N
+//  1. Telemetry (ROS2 -> UI):
+//     ROS2 calls ForwardTelemetry() -> cached -> WebSocket streams to UI
+//  2. Teleop (UI -> ROS2):
+//     UI sends via WebSocket -> UpdateTeleopCommand() -> ROS2 polls GetTeleopCommand()
+//  3. PID Gains (UI -> ROS2):
+//     UI sends via WebSocket -> SetPIDGains() -> ROS2 -> SPI -> RX72N
 type GatewayService struct {
 	starv1.UnimplementedGatewayServiceServer
 
-	// Telemetry cache (ROS2 → UI)
+	// Telemetry cache (ROS2 -> UI)
 	telemetryMu          sync.RWMutex
 	cachedSystemStatus   *starv1.SystemStatus
 	cachedBatteryState   *starv1.BatteryState
 	cachedTelemetry      *starv1.TelemetryData
 	telemetryLastUpdated time.Time
 
-	// Teleop command cache (UI → ROS2)
+	// Teleop command cache (UI -> ROS2)
 	teleopMu          sync.RWMutex
 	cachedTeleop      *starv1.VelocityCommand
 	teleopLastUpdated time.Time
@@ -44,6 +53,9 @@ type GatewayService struct {
 	clientsMu      sync.RWMutex
 	activeClients  int32
 	clientCounters map[string]bool // Track unique client IDs
+
+	// hub is the WebSocket hub used to push STAREnvelope messages to connected UI clients.
+	hub HubNotifier
 
 	// Constants
 	teleopStalenessThreshold time.Duration
@@ -80,6 +92,57 @@ func (s *GatewayService) ForwardTelemetry(
 	s.cachedTelemetry = req.Telemetry
 	s.telemetryLastUpdated = time.Now()
 	s.telemetryMu.Unlock()
+
+	// Broadcast each non-nil payload individually so the hub's per-type throttle
+	// logic fires independently for each message kind.
+	if s.hub != nil {
+		if req.SystemStatus != nil {
+			if err := s.hub.Broadcast(&starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_System{System: req.SystemStatus},
+			}); err != nil {
+				log.Printf("ForwardTelemetry: system broadcast dropped: %v", err)
+			}
+		}
+		if req.BatteryState != nil {
+			if err := s.hub.Broadcast(&starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Battery{Battery: req.BatteryState},
+			}); err != nil {
+				log.Printf("ForwardTelemetry: battery broadcast dropped: %v", err)
+			}
+		}
+		if req.Telemetry != nil {
+			if err := s.hub.Broadcast(&starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Telemetry{Telemetry: req.Telemetry},
+			}); err != nil {
+				log.Printf("ForwardTelemetry: telemetry broadcast dropped: %v", err)
+			}
+		}
+		if req.MotorStatus != nil {
+			if err := s.hub.Broadcast(&starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Motors{
+					Motors: &starv1.MotorStatusList{Motors: req.MotorStatus},
+				},
+			}); err != nil {
+				log.Printf("ForwardTelemetry: motor broadcast dropped: %v", err)
+			}
+		}
+
+		if req.Odometry != nil {
+			if err := s.hub.Broadcast(&starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Odometry{Odometry: req.Odometry},
+			}); err != nil {
+				log.Printf("ForwardTelemetry: odometry broadcast dropped: %v", err)
+			}
+		}
+
+		if req.LidarScan != nil {
+			if err := s.hub.Broadcast(&starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Lidar{Lidar: req.LidarScan},
+			}); err != nil {
+				log.Printf("ForwardTelemetry: lidar broadcast dropped: %v", err)
+			}
+		}
+	}
 
 	// Get active client count
 	s.clientsMu.RLock()
@@ -319,4 +382,10 @@ func (s *GatewayService) GetActiveClientCount() int32 {
 	defer s.clientsMu.RUnlock()
 
 	return s.activeClients
+}
+
+// SetHub wires the WebSocket hub into the service so ForwardTelemetry can push
+// STAREnvelope messages directly to connected UI clients.
+func (s *GatewayService) SetHub(h HubNotifier) {
+	s.hub = h
 }

@@ -20,6 +20,7 @@ import "star/v1/battery_management.proto";
 import "star/v1/common.proto";
 import "star/v1/motor_control.proto";
 import "star/v1/telemetry.proto";
+import "star/v1/ui.proto";
 
 option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
@@ -85,8 +86,19 @@ message ForwardTelemetryRequest {
   BatteryState battery_state = 3;
 
   // Optional: Additional telemetry data (IMU, GPS, etc.).
-  // Can be added in future without breaking changes.
   TelemetryData telemetry = 4;
+
+  // Per-motor status for all drive motors.
+  // Forwarded from /motor_status ROS2 topic.
+  repeated MotorStatus motor_status = 5;
+
+  // Robot pose and velocity from wheel odometry.
+  // Forwarded from /odometry ROS2 topic.
+  OdometryData odometry = 6;
+
+  // Latest LiDAR scan from RPLiDAR C1.
+  // Forwarded from /scan ROS2 topic.
+  LidarScan lidar_scan = 7;
 }
 
 // Response to telemetry forwarding.
