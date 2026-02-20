@@ -21,7 +21,7 @@
  *   node [shape=box, style=rounded];
  *
  *   EXTAL [label="External Crystal\n12 MHz", shape=ellipse, fillcolor=lightyellow, style=filled];
- *   PLL [label="PLL\n×40", fillcolor=lightblue, style=filled];
+ *   PLL [label="PLL\nx40", fillcolor=lightblue, style=filled];
  *   ICLK [label="ICLK\n240 MHz\nCPU", fillcolor=lightgreen, style=filled];
  *   PCLKA [label="PCLKA\n120 MHz\nTimers", fillcolor=lightpink, style=filled];
  *   PCLKB [label="PCLKB\n60 MHz\nUART/SPI", fillcolor=lightpink, style=filled];
@@ -31,13 +31,13 @@
  *   BCLK [label="BCLK\n120 MHz\nExt Bus", fillcolor=lightgray, style=filled];
  *
  *   EXTAL -> PLL [label="12 MHz"];
- *   PLL -> ICLK [label="480 MHz\n÷2"];
- *   ICLK -> PCLKA [label="÷2"];
- *   ICLK -> PCLKB [label="÷4"];
- *   ICLK -> PCLKC [label="÷4"];
- *   ICLK -> PCLKD [label="÷4"];
- *   ICLK -> FCLK [label="÷4"];
- *   ICLK -> BCLK [label="÷2"];
+ *   PLL -> ICLK [label="480 MHz\n/2"];
+ *   ICLK -> PCLKA [label="/2"];
+ *   ICLK -> PCLKB [label="/4"];
+ *   ICLK -> PCLKC [label="/4"];
+ *   ICLK -> PCLKD [label="/4"];
+ *   ICLK -> FCLK [label="/4"];
+ *   ICLK -> BCLK [label="/2"];
  * }
  * @enddot
  *
@@ -58,14 +58,14 @@
  * Clock frequencies are set during boot by `rx_clock_power_init()`:
  *
  * 1. **Main Clock Enable**: MOSCWTCR, MOSCCR, MOFCR registers
- * 2. **PLL Configuration**: PLLCR (×40 multiplier), PLLCR2 (enable)
+ * 2. **PLL Configuration**: PLLCR (x40 multiplier), PLLCR2 (enable)
  * 3. **Clock Dividers**: SCKCR register sets ICK, PCKA, PCKB, PCKC, PCKD, FCK, BCK dividers
  * 4. **Clock Source Selection**: SCKCR3 selects PLL as system clock
  *
  * **Register Configuration** (from rx_clock_power_init.c):
  * ```
- * SYSTEM.SCKCR.LONG = 0x21C21211;  // ICK=÷2, PCKA=÷4, PCKB/C/D=÷8, FCK=÷8, BCK=÷4
- * SYSTEM.PLLCR.WORD = 0x2700;      // PLL multiplier = ×40
+ * SYSTEM.SCKCR.LONG = 0x21C21211;  // ICK=/2, PCKA=/4, PCKB/C/D=/8, FCK=/8, BCK=/4
+ * SYSTEM.PLLCR.WORD = 0x2700;      // PLL multiplier = x40
  * ```
  *
  * ## Performance Implications
@@ -82,32 +82,32 @@
  *
  * | Requirement | Value | Notes |
  * |-------------|-------|-------|
- * | External Crystal | 12 MHz | ±50 ppm accuracy required |
+ * | External Crystal | 12 MHz | +/-50 ppm accuracy required |
  * | PLL Input Range | 8-24 MHz | 12 MHz nominal for STAR project |
- * | PLL Output Range | 200-520 MHz | 480 MHz output (÷2 for CPU) |
+ * | PLL Output Range | 200-520 MHz | 480 MHz output (/2 for CPU) |
  * | CPU Max Frequency | 240 MHz | Absolute max per datasheet |
  * | Flash Max Frequency | 60 MHz | Must not exceed! (hardware limit) |
- * | Operating Voltage | 3.3V ±10% | Required for 240 MHz operation |
- * | Temperature Range | -40°C to +85°C | Industrial grade |
+ * | Operating Voltage | 3.3V +/-10% | Required for 240 MHz operation |
+ * | Temperature Range | -40degC to +85degC | Industrial grade |
  *
  * ## Timing Calculation Examples
  *
  * **PWM Frequency**:
  * ```
- * PWM_freq = PCLKA / (prescaler × period)
- * 20 kHz = 120 MHz / (1 × 6000)
+ * PWM_freq = PCLKA / (prescaler x period)
+ * 20 kHz = 120 MHz / (1 x 6000)
  * ```
  *
  * **UART Baud Rate**:
  * ```
- * Baud_rate = PCLKB / (32 × (N + 1))
- * 115200 = 60 MHz / (32 × (16 + 1))  -> N=16 (BRR register value)
+ * Baud_rate = PCLKB / (32 x (N + 1))
+ * 115200 = 60 MHz / (32 x (16 + 1))  -> N=16 (BRR register value)
  * ```
  *
  * **Timer Period**:
  * ```
- * Period_ms = (counter_max × prescaler) / PCLKD_MHz
- * 1 ms = (60000 × 1) / 60 MHz
+ * Period_ms = (counter_max x prescaler) / PCLKD_MHz
+ * 1 ms = (60000 x 1) / 60 MHz
  * ```
  *
  * @par Module Dependencies:
@@ -139,7 +139,7 @@
  *
  * // Calculate UART BRR register value for desired baud rate
  * uint8_t uart_calculate_brr(uint32_t baud_rate) {
- *     // Formula: BRR = (PCLKB / (32 × baud)) - 1
+ *     // Formula: BRR = (PCLKB / (32 x baud)) - 1
  *     uint32_t brr = (k_pclkb_hz / (32 * baud_rate)) - 1;
  *     return (uint8_t)brr;
  * }
@@ -157,9 +157,9 @@
  *         k_prescaler = 1,         // Timer prescaler
  *     } pwm_config_t;
  *
- *     // Calculate timer period: Period = PCLKA / (prescaler × freq)
+ *     // Calculate timer period: Period = PCLKA / (prescaler x freq)
  *     uint32_t period = k_pclka_hz / (k_prescaler * k_pwm_freq_hz);
- *     // period = 120,000,000 / (1 × 20,000) = 6000 counts
+ *     // period = 120,000,000 / (1 x 20,000) = 6000 counts
  *
  *     uint32_t duty_50pct = period / 2;  // 3000 counts = 50%
  *
@@ -174,7 +174,7 @@
  * void delay_us(uint32_t us) {
  *     // Cycles per microsecond at ICLK frequency
  *     typedef enum : uint32_t {
- *         k_cycles_per_us = k_iclk_hz / 1000000,  // 240 cycles/µs
+ *         k_cycles_per_us = k_iclk_hz / 1000000,  // 240 cycles/us
  *     } delay_config_t;
  *
  *     uint32_t cycles = us * k_cycles_per_us;
@@ -239,15 +239,15 @@ extern "C" {
  * These values are determined by the PLL and clock divider settings in
  * rx_clock_power_init() and are guaranteed to be accurate for timing calculations.
  *
- * **Clock Source**: 12 MHz external crystal -> PLL (×40) -> 480 MHz -> divided per domain
+ * **Clock Source**: 12 MHz external crystal -> PLL (x40) -> 480 MHz -> divided per domain
  *
  * **Frequency Derivation**:
- * - PLL output: 12 MHz × 40 = 480 MHz
- * - ICLK: 480 MHz ÷ 2 = 240 MHz (CPU)
- * - PCLKA: 240 MHz ÷ 2 = 120 MHz (high-speed peripherals)
- * - PCLKB/C/D: 240 MHz ÷ 4 = 60 MHz (standard peripherals)
- * - FCLK: 240 MHz ÷ 4 = 60 MHz (flash - max allowed)
- * - BCLK: 240 MHz ÷ 2 = 120 MHz (external bus - not used in STAR)
+ * - PLL output: 12 MHz x 40 = 480 MHz
+ * - ICLK: 480 MHz / 2 = 240 MHz (CPU)
+ * - PCLKA: 240 MHz / 2 = 120 MHz (high-speed peripherals)
+ * - PCLKB/C/D: 240 MHz / 4 = 60 MHz (standard peripherals)
+ * - FCLK: 240 MHz / 4 = 60 MHz (flash - max allowed)
+ * - BCLK: 240 MHz / 2 = 120 MHz (external bus - not used in STAR)
  *
  * ## Clock Domain Usage Table
  *
@@ -296,7 +296,7 @@ typedef enum : uint32_t {
    * **Value**: 240,000,000 Hz (240 MHz)
    * **Source**: PLL output (480 MHz) divided by 2
    * **Cycle time**: 4.17 nanoseconds per cycle
-   * **Register**: SYSTEM.SCKCR.ICK (divider = b'0001' = ÷2 from PLL)
+   * **Register**: SYSTEM.SCKCR.ICK (divider = b'0001' = /2 from PLL)
    *
    * **Performance Metrics** @ 240 MHz:
    * - Single-cycle instructions: 4.17 ns (e.g., MOV, ADD)
@@ -305,14 +305,14 @@ typedef enum : uint32_t {
    * - Interrupt latency: ~200 ns (minimum, no context save)
    *
    * **Use Cases in STAR Project**:
-   * - PID control loop execution (~2 µs per motor update @ -O2)
-   * - Protocol parsing (nanopb decode ~50 µs for 256-byte frame)
+   * - PID control loop execution (~2 us per motor update @ -O2)
+   * - Protocol parsing (nanopb decode ~50 us for 256-byte frame)
    * - Floating-point math (division ~20 cycles = 83 ns)
    * - Critical timing operations (encoder pulse measurement)
    *
    * **Rationale**: Maximum frequency selected for:
    * - Minimize control loop latency (100 Hz loop = 10ms budget)
-   * - Fast protocol processing (SPI @ 10 Mbps = 25.6 µs per 32-byte frame)
+   * - Fast protocol processing (SPI @ 10 Mbps = 25.6 us per 32-byte frame)
    * - Headroom for future features (current usage ~30% of CPU)
    *
    * @par Impact of Changing:
@@ -322,7 +322,7 @@ typedef enum : uint32_t {
    * @warning Flash wait states increase CPU power consumption. Use `-O2` optimization
    *          to minimize instruction count and reduce power.
    *
-   * @see k_fclk_hz Flash clock must stay ≤60 MHz regardless of ICLK
+   * @see k_fclk_hz Flash clock must stay <=60 MHz regardless of ICLK
    */
   k_iclk_hz = 240000000UL,
 
@@ -336,7 +336,7 @@ typedef enum : uint32_t {
    * **Value**: 120,000,000 Hz (120 MHz)
    * **Source**: ICLK (240 MHz) divided by 2
    * **Cycle time**: 8.33 nanoseconds per cycle
-   * **Register**: SYSTEM.SCKCR.PCKA (divider = b'0001' = ÷2 from ICLK)
+   * **Register**: SYSTEM.SCKCR.PCKA (divider = b'0001' = /2 from ICLK)
    *
    * **Connected Peripherals**:
    * - **MTU (Multi-Function Timer)**: Encoder quadrature capture (4 motors)
@@ -350,18 +350,18 @@ typedef enum : uint32_t {
    * ```
    * Period = PCLKA / PWM_freq = 120,000,000 / 20,000 = 6000 counts
    * Resolution = 100% / 6000 = 0.0167% per count
-   * Voltage resolution (12V supply) = 12V × 0.0167% = 2 mV per step
+   * Voltage resolution (12V supply) = 12V x 0.0167% = 2 mV per step
    * ```
    *
    * **Encoder Capture Precision**:
    * ```
    * Max velocity = 2.5 m/s (STAR robot spec)
    * Wheel diameter = 0.1 m -> circumference = 0.314 m
-   * Max RPM = (2.5 m/s / 0.314 m) × 60 = 477 RPM
-   * Encoder PPR = 341 × 4 (quadrature) = 1364 edges/rev
-   * Max edge rate = 477 RPM × 1364 edges / 60 = 10,836 edges/sec
-   * Min edge period = 1 / 10,836 = 92.3 µs
-   * Timer counts per edge @ 120 MHz = 92.3 µs × 120 MHz = 11,076 counts
+   * Max RPM = (2.5 m/s / 0.314 m) x 60 = 477 RPM
+   * Encoder PPR = 341 x 4 (quadrature) = 1364 edges/rev
+   * Max edge rate = 477 RPM x 1364 edges / 60 = 10,836 edges/sec
+   * Min edge period = 1 / 10,836 = 92.3 us
+   * Timer counts per edge @ 120 MHz = 92.3 us x 120 MHz = 11,076 counts
    * Velocity resolution = 1 count / 11,076 = 0.009% per timer count [OK]
    * ```
    *
@@ -389,7 +389,7 @@ typedef enum : uint32_t {
    * **Value**: 60,000,000 Hz (60 MHz)
    * **Source**: ICLK (240 MHz) divided by 4
    * **Cycle time**: 16.67 nanoseconds per cycle
-   * **Register**: SYSTEM.SCKCR.PCKB (divider = b'0010' = ÷4 from ICLK)
+   * **Register**: SYSTEM.SCKCR.PCKB (divider = b'0010' = /4 from ICLK)
    *
    * **Connected Peripherals**:
    * - **SCI (Serial Communication Interface)**: UART for USB CDC debug console
@@ -400,25 +400,25 @@ typedef enum : uint32_t {
    *
    * **UART (SCI) @ 115200 baud**:
    * ```
-   * BRR = (PCLKB / (32 × baud_rate)) - 1
-   * BRR = (60,000,000 / (32 × 115200)) - 1 = 16.276... ≈ 16
-   * Actual baud = 60,000,000 / (32 × 17) = 110,294 baud
-   * Error = (110,294 - 115200) / 115200 = -4.3% (within ±5% tolerance) [OK]
+   * BRR = (PCLKB / (32 x baud_rate)) - 1
+   * BRR = (60,000,000 / (32 x 115200)) - 1 = 16.276... ~ 16
+   * Actual baud = 60,000,000 / (32 x 17) = 110,294 baud
+   * Error = (110,294 - 115200) / 115200 = -4.3% (within +/-5% tolerance) [OK]
    * ```
    *
    * **SPI (RSPI) @ 10 Mbps** (STAR project: communication with RPi5):
    * ```
-   * SPI_bitrate = PCLKB / (2 × (SPBR + 1))
-   * 10 Mbps = 60,000,000 / (2 × (SPBR + 1))
-   * SPBR = (60,000,000 / (2 × 10,000,000)) - 1 = 2
-   * Actual rate = 60,000,000 / (2 × 3) = 10 Mbps exact [OK]
+   * SPI_bitrate = PCLKB / (2 x (SPBR + 1))
+   * 10 Mbps = 60,000,000 / (2 x (SPBR + 1))
+   * SPBR = (60,000,000 / (2 x 10,000,000)) - 1 = 2
+   * Actual rate = 60,000,000 / (2 x 3) = 10 Mbps exact [OK]
    * ```
    *
    * **I2C (RIIC) @ 400 kHz** (Fast-mode I2C for IMU):
    * ```
-   * I2C_freq = PCLKB / (CKS × (BRL + BRH + 4))
+   * I2C_freq = PCLKB / (CKS x (BRL + BRH + 4))
    * 400 kHz typical with CKS=0 (prescaler /1), BRL=BRH=73
-   * Actual = 60,000,000 / (1 × (73 + 73 + 4)) = 400 kHz exact [OK]
+   * Actual = 60,000,000 / (1 x (73 + 73 + 4)) = 400 kHz exact [OK]
    * ```
    *
    * **Rationale**: 60 MHz chosen for:
@@ -445,7 +445,7 @@ typedef enum : uint32_t {
    *
    * **Value**: 60,000,000 Hz (60 MHz)
    * **Source**: ICLK (240 MHz) divided by 4
-   * **Register**: SYSTEM.SCKCR.PCKC (divider = b'0010' = ÷4 from ICLK)
+   * **Register**: SYSTEM.SCKCR.PCKC (divider = b'0010' = /4 from ICLK)
    *
    * **Rationale**: Configured to 60 MHz (matching PCLKB/D) for:
    * - Consistency: All general-purpose clocks run at same frequency
@@ -466,7 +466,7 @@ typedef enum : uint32_t {
    * **Value**: 60,000,000 Hz (60 MHz)
    * **Source**: ICLK (240 MHz) divided by 4
    * **Cycle time**: 16.67 nanoseconds per cycle
-   * **Register**: SYSTEM.SCKCR.PCKD (divider = b'0010' = ÷4 from ICLK)
+   * **Register**: SYSTEM.SCKCR.PCKD (divider = b'0010' = /4 from ICLK)
    *
    * **Connected Peripherals**:
    * - **CMT (Compare Match Timer)**: ThreadX 10ms system tick
@@ -502,7 +502,7 @@ typedef enum : uint32_t {
    *
    * **Value**: 120,000,000 Hz (120 MHz)
    * **Source**: ICLK (240 MHz) divided by 2
-   * **Register**: SYSTEM.SCKCR.BCK (divider = b'0001' = ÷2 from ICLK)
+   * **Register**: SYSTEM.SCKCR.BCK (divider = b'0001' = /2 from ICLK)
    *
    * **Rationale**: Configured to 120 MHz despite being unused because:
    * - Default safe value (does not affect internal operation)
@@ -524,10 +524,10 @@ typedef enum : uint32_t {
    * **Value**: 60,000,000 Hz (60 MHz)
    * **Source**: ICLK (240 MHz) divided by 4
    * **Cycle time**: 16.67 nanoseconds per cycle
-   * **Register**: SYSTEM.SCKCR.FCK (divider = b'0010' = ÷4 from ICLK)
+   * **Register**: SYSTEM.SCKCR.FCK (divider = b'0010' = /4 from ICLK)
    *
    * **Flash Access Characteristics**:
-   * - **1-wait access**: 16.67 ns + wait state ≈ 20 ns per access
+   * - **1-wait access**: 16.67 ns + wait state ~ 20 ns per access
    * - **CPU cycles per access**: 20 ns / 4.17 ns = ~5 CPU cycles
    * - **Code throughput**: ~48 million instructions/sec (if 1 fetch per instruction)
    * - **Actual throughput**: Higher due to caching and instruction pipelining
@@ -558,7 +558,7 @@ typedef enum : uint32_t {
    *          corruption, crashes, and potential permanent flash damage.
    *
    * @attention If increasing ICLK in future, MUST adjust FCK divider to keep
-   *            FCLK ≤60 MHz. Example: ICLK=480 MHz requires FCK divider ÷8.
+   *            FCLK <=60 MHz. Example: ICLK=480 MHz requires FCK divider /8.
    */
   k_fclk_hz = 60000000UL,
 

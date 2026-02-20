@@ -202,7 +202,7 @@ typedef enum : uint8_t {
 
 /**
  * @defgroup host_spi_pins Host SPI Pin Assignments
- * @brief RSPI2_A for RPi5 ↔ RX72N high-speed SPI communication
+ * @brief RSPI2_A for RPi5 <-> RX72N high-speed SPI communication
  *
  * @details
  * RSPI2 channel A pins on PORTD. All pins use MPC alternate function "A".
@@ -270,7 +270,7 @@ typedef enum : uint8_t {
 
 /**
  * @defgroup host_i2c_pins Host I2C Pin Assignments
- * @brief RIIC0 for RPi5 ↔ RX72N I2C communication
+ * @brief RIIC0 for RPi5 <-> RX72N I2C communication
  *
  * @details
  * | Signal | Pin | Pkg Pin | Function |

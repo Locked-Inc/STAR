@@ -81,15 +81,15 @@
  *
  * | Operation | Execution Time | Notes |
  * |-----------|----------------|-------|
- * | **uart_init()** | ~50 µs | One-time setup per channel |
- * | **uart_putc()** | ~2 µs + TX time | FIFO write + DMA/interrupt |
- * | **uart_getc()** | ~2 µs (polling) | Returns k_rx_err_empty if no data |
- * | **uart_write()** | ~10 µs + TX time | DMA transfer (background) |
- * | **uart_read()** | ~5 µs + RX time | Reads available bytes (non-blocking) |
- * | **rx_available()** | ~1 µs | Check FIFO status register |
+ * | **uart_init()** | ~50 us | One-time setup per channel |
+ * | **uart_putc()** | ~2 us + TX time | FIFO write + DMA/interrupt |
+ * | **uart_getc()** | ~2 us (polling) | Returns k_rx_err_empty if no data |
+ * | **uart_write()** | ~10 us + TX time | DMA transfer (background) |
+ * | **uart_read()** | ~5 us + RX time | Reads available bytes (non-blocking) |
+ * | **rx_available()** | ~1 us | Check FIFO status register |
  *
  * **TX/RX time** depends on baud rate:
- * - 115200 bps: ~87 µs per byte (11 bits: 1 start + 8 data + 1 stop + 1 stop gap)
+ * - 115200 bps: ~87 us per byte (11 bits: 1 start + 8 data + 1 stop + 1 stop gap)
  * - 9600 bps: ~1.04 ms per byte
  *
  * ## Memory Usage
@@ -98,7 +98,7 @@
  * |-----------|------|----------|
  * | Function code | ~1.5 KB | Flash (.text) |
  * | Context structs | 12-16 bytes | Stack (per operation) |
- * | SCI HAL buffers | 16×2×13 = 416 bytes | SRAM (TX/RX FIFOs, all channels) |
+ * | SCI HAL buffers | 16x2x13 = 416 bytes | SRAM (TX/RX FIFOs, all channels) |
  * | **Total static** | ~2 KB | Flash + fixed SRAM |
  *
  * ## NASA Power of 10 Compliance
@@ -108,11 +108,11 @@
  * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line control flow |
  * | **Rule 2** | [PASS] No unbounded loops (HAL uses timeout counters) |
  * | **Rule 3** | [PASS] No malloc - all buffers stack-allocated or static FIFOs |
- * | **Rule 4** | [PASS] All functions ≤60 lines (longest: init_callback at 44 lines) |
+ * | **Rule 4** | [PASS] All functions <=60 lines (longest: init_callback at 44 lines) |
  * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL + state checks) |
  * | **Rule 6** | [PASS] Variables at smallest scope (contexts in callbacks) |
  * | **Rule 7** | [PASS] All HAL returns checked (uart_init, uart_write, etc.) |
- * | **Rule 8** | [PASS] C23 typed enums for constants (s_uart_ascii_max: uint8_t) |
+ * | **Rule 8** | [PASS] C23 typed enums for constants (k_uart_ascii_max: uint8_t) |
  * | **Rule 9** | [PASS] Single-level pointers only (data*, ctx*, no arithmetic) |
  * | **Rule 10** | [PASS] Compiles with -Wall -Wextra -Werror, zero warnings |
  *
@@ -170,14 +170,19 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "BUS_UART";
+static const char s_tag[] = "BUS_UART";
 
 /* =============================================================================
  * Constants
  * =============================================================================
  */
 
-static const uint8_t s_uart_ascii_max = 127; /**< Max 7-bit ASCII value */
+/**
+ * @brief UART character range limits for ASCII validation
+ */
+typedef enum : uint8_t {
+  k_uart_ascii_max = 127U, /**< Maximum 7-bit ASCII code point (DEL character) */
+} uart_char_limits_t;
 
 /* =============================================================================
  * Callback Context Structures
@@ -185,61 +190,246 @@ static const uint8_t s_uart_ascii_max = 127; /**< Max 7-bit ASCII value */
  */
 
 /**
- * @brief Context for UART init operation
+ * @struct uart_init_ctx_t
+ * @brief Context for UART initialization operation
+ *
+ * @details
+ * Passed to internal_uart_init_callback() via rx_bus_manager_with_bus() to
+ * carry the result of the SCI channel initialization back to the caller.
+ * Stack-allocated in rx_bus_uart_init() and destroyed on return. Contains
+ * only a result field because all initialization parameters are already
+ * present in the rx_bus_config_t structure.
+ *
+ * @invariant result is set by the callback before it returns
+ * @invariant result equals the return value of internal_uart_init_callback()
+ *
+ * @code
+ * uart_init_ctx_t ctx = { .result = k_rx_err_hw_init_failed };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_uart_init_callback, &ctx);
+ * // ctx.result now reflects the initialization outcome
+ * @endcode
+ *
+ * @see internal_uart_init_callback() Callback that writes to this context
+ * @see rx_bus_uart_init() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  rx_err_t result; /**< Operation result */
+  rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
 } uart_init_ctx_t;
 
 /**
- * @brief Context for UART write operation
+ * @struct uart_write_ctx_t
+ * @brief Context for UART binary write operation
+ *
+ * @details
+ * Passed to internal_uart_write_callback() via rx_bus_manager_with_bus().
+ * Carries the data pointer, byte count, and operation result. Stack-allocated
+ * in rx_bus_uart_write() and destroyed on return. The data buffer must remain
+ * valid until the callback completes (DMA transfers hold this pointer during
+ * background transmission).
+ *
+ * @invariant data must be non-NULL when length > 0
+ * @invariant length must equal the number of bytes in the data buffer
+ * @invariant result is set by the callback before it returns
+ *
+ * @code
+ * const uint8_t payload[] = {0xAA, 0x01, 0x10};
+ * uart_write_ctx_t ctx = {
+ *     .data   = payload,
+ *     .length = sizeof(payload),
+ *     .result = k_rx_err_uart_error,
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_uart_write_callback, &ctx);
+ * // ctx.result reflects whether the write succeeded
+ * @endcode
+ *
+ * @see internal_uart_write_callback() Callback that reads from this context
+ * @see rx_bus_uart_write() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  const uint8_t* data;   /**< Pointer to data to write */
-  uint16_t       length; /**< Number of bytes to write */
-  rx_err_t       result; /**< Operation result */
+  const uint8_t* data;   /**< Pointer to data buffer to transmit. Must be non-NULL if length > 0. */
+  uint16_t       length; /**< Number of bytes to transmit. Valid range: [0, 65535]. */
+  rx_err_t       result; /**< Operation result: k_rx_ok on success, error code on failure. */
 } uart_write_ctx_t;
 
 /**
- * @brief Context for UART read operation
+ * @struct uart_read_ctx_t
+ * @brief Context for UART binary read operation
+ *
+ * @details
+ * Passed to internal_uart_read_callback() via rx_bus_manager_with_bus().
+ * Carries the receive buffer pointer, maximum byte count, actual bytes read,
+ * and operation result. Stack-allocated in rx_bus_uart_read() and destroyed
+ * on return. The HAL writes available bytes directly into the data buffer and
+ * sets bytes_read to the actual count (may be 0 if RX FIFO is empty).
+ *
+ * @invariant data must be non-NULL and point to a buffer of at least length bytes
+ * @invariant bytes_read <= length after the callback returns
+ * @invariant result is set by the callback before it returns
+ *
+ * @code
+ * uint8_t rx_buf[64];
+ * uart_read_ctx_t ctx = {
+ *     .data       = rx_buf,
+ *     .length     = sizeof(rx_buf),
+ *     .bytes_read = 0,
+ *     .result     = k_rx_err_uart_error,
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_uart_read_callback, &ctx);
+ * // ctx.bytes_read contains the actual byte count received
+ * @endcode
+ *
+ * @see internal_uart_read_callback() Callback that writes to this context
+ * @see rx_bus_uart_read() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  uint8_t* data;       /**< Pointer to buffer for received data */
-  uint16_t length;     /**< Maximum bytes to read */
-  uint16_t bytes_read; /**< Actual bytes read */
-  rx_err_t result;     /**< Operation result */
+  uint8_t* data;       /**< Pointer to receive buffer. Must be at least length bytes. */
+  uint16_t length;     /**< Maximum bytes to read (buffer capacity). Valid range: [1, 65535]. */
+  uint16_t bytes_read; /**< Actual bytes read from RX FIFO. Range: [0, length]. */
+  rx_err_t result;     /**< Operation result: k_rx_ok on success, error code on failure. */
 } uart_read_ctx_t;
 
 /**
- * @brief Context for UART putc operation
+ * @struct uart_putc_ctx_t
+ * @brief Context for UART single-character write operation
+ *
+ * @details
+ * Passed to internal_uart_putc_callback() via rx_bus_manager_with_bus().
+ * Carries the character to transmit and the operation result. Stack-allocated
+ * in rx_bus_uart_putc() and destroyed on return. A post-condition warning is
+ * generated if the character is outside the 7-bit ASCII range, but transmission
+ * proceeds regardless (some protocols use extended ASCII values 128-255).
+ *
+ * @invariant c may be any byte value (0-255); values > 127 generate a warning
+ * @invariant result is set by the callback before it returns
+ *
+ * @code
+ * uart_putc_ctx_t ctx = { .c = '\n', .result = k_rx_err_uart_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_uart_putc_callback, &ctx);
+ * // ctx.result reflects whether the character was transmitted
+ * @endcode
+ *
+ * @see internal_uart_putc_callback() Callback that reads from this context
+ * @see rx_bus_uart_putc() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  char     c;      /**< Character to write */
-  rx_err_t result; /**< Operation result */
+  char     c;      /**< Character to transmit. Typically 7-bit ASCII (0-127); 128-255 also accepted. */
+  rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure. */
 } uart_putc_ctx_t;
 
 /**
- * @brief Context for UART puts operation
+ * @struct uart_puts_ctx_t
+ * @brief Context for UART null-terminated string write operation
+ *
+ * @details
+ * Passed to internal_uart_puts_callback() via rx_bus_manager_with_bus().
+ * Carries the string pointer and operation result. Stack-allocated in
+ * rx_bus_uart_puts() and destroyed on return. The HAL computes the string
+ * length internally (strlen) and writes all bytes to the TX FIFO in one
+ * operation, making this more efficient than a putc() loop for multi-character
+ * strings.
+ *
+ * @invariant str must be a valid null-terminated C string (not NULL)
+ * @invariant result is set by the callback before it returns
+ *
+ * @code
+ * uart_puts_ctx_t ctx = {
+ *     .str    = "Hello UART\r\n",
+ *     .result = k_rx_err_uart_error,
+ * };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_uart_puts_callback, &ctx);
+ * // ctx.result reflects whether the string was transmitted
+ * @endcode
+ *
+ * @see internal_uart_puts_callback() Callback that reads from this context
+ * @see rx_bus_uart_puts() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  const char* str;    /**< String to write */
-  rx_err_t    result; /**< Operation result */
+  const char* str;    /**< Pointer to null-terminated string to transmit. Must not be NULL. */
+  rx_err_t    result; /**< Operation result: k_rx_ok on success, error code on failure. */
 } uart_puts_ctx_t;
 
 /**
- * @brief Context for UART getc operation
+ * @struct uart_getc_ctx_t
+ * @brief Context for UART single-character read operation
+ *
+ * @details
+ * Passed to internal_uart_getc_callback() via rx_bus_manager_with_bus().
+ * Carries the received character and operation result. Stack-allocated in
+ * rx_bus_uart_getc() and destroyed on return. The result field stores the
+ * HAL return directly: k_rx_ok on successful read, k_rx_err_empty if the
+ * RX FIFO had no data (this is normal and not an error condition), or a
+ * true error code on hardware faults.
+ *
+ * @invariant c is valid only when result == k_rx_ok
+ * @invariant result == k_rx_err_empty is a normal non-error condition
+ * @invariant result is set by the callback before it returns
+ *
+ * @code
+ * uart_getc_ctx_t ctx = { .c = '\0', .result = k_rx_err_uart_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_uart_getc_callback, &ctx);
+ * if (ctx.result == k_rx_ok) {
+ *     // ctx.c contains the received character
+ * }
+ * @endcode
+ *
+ * @see internal_uart_getc_callback() Callback that writes to this context
+ * @see rx_bus_uart_getc() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  char     c;      /**< Character received */
-  rx_err_t result; /**< Operation result */
+  char     c;      /**< Received character. Valid only when result == k_rx_ok. */
+  rx_err_t result; /**< Operation result: k_rx_ok, k_rx_err_empty (no data), or error code. */
 } uart_getc_ctx_t;
 
 /**
- * @brief Context for UART rx_available operation
+ * @struct uart_rx_avail_ctx_t
+ * @brief Context for UART receive-data availability check operation
+ *
+ * @details
+ * Passed to internal_uart_rx_avail_callback() via rx_bus_manager_with_bus().
+ * Carries the availability flag and operation result. Stack-allocated in
+ * rx_bus_uart_rx_available() and destroyed on return. The HAL reads the SCI
+ * RX FIFO status register and sets available to true if at least one byte is
+ * present, without consuming any data from the FIFO.
+ *
+ * @invariant available is a valid bool value (true or false) after the callback
+ * @invariant available == false does not indicate an error; it means FIFO is empty
+ * @invariant result is set by the callback before it returns
+ *
+ * @code
+ * uart_rx_avail_ctx_t ctx = { .available = false, .result = k_rx_err_uart_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_uart_rx_avail_callback, &ctx);
+ * if (ctx.result == k_rx_ok && ctx.available) {
+ *     // At least one byte is ready to read
+ * }
+ * @endcode
+ *
+ * @see internal_uart_rx_avail_callback() Callback that writes to this context
+ * @see rx_bus_uart_rx_available() Function that creates and uses this context
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
-  bool     available; /**< True if data available */
-  rx_err_t result;    /**< Operation result */
+  bool     available; /**< True if at least one byte is in the RX FIFO; false if FIFO is empty. */
+  rx_err_t result;    /**< Operation result: k_rx_ok on success, error code on failure. */
 } uart_rx_avail_ctx_t;
 
 /* =============================================================================
@@ -248,12 +438,59 @@ typedef struct {
  */
 
 /**
- * @brief Callback for UART initialization
+ * @brief Internal callback for SCI UART channel initialization
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (uart_init_ctx_t*)
+ * @details
+ * Initializes a Renesas RX72N SCI channel for asynchronous 8N1 UART mode.
+ * Called by the bus manager via rx_bus_manager_with_bus() with the mutex held.
+ * Validates bus type and SCI channel number, builds the HAL configuration
+ * from the bus config, calls uart_init_channel(), and marks the bus as
+ * initialized.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Cast user_ctx to uart_init_ctx_t*
+ * 2. Validate bus type is k_bus_type_uart
+ * 3. Validate SCI channel is within [0, k_sci_channel_count)
+ * 4. Build uart_channel_config_t from bus_config fields
+ * 5. Call uart_init_channel() HAL function
+ * 6. Set bus_config->initialized = true on success
+ * 7. Set ctx->result and return
+ *
+ * @param[in,out] bus_config Bus configuration structure.
+ *                           - type must equal k_bus_type_uart
+ *                           - proto.uart.channel: SCI channel number (0-12)
+ *                           - proto.uart.baudrate: Desired baud rate in bps
+ *                           - proto.uart.tx_pin: GPIO pin for TXD
+ *                           - proto.uart.rx_pin: GPIO pin for RXD
+ *                           - initialized flag set to true on success
+ * @param[in,out] user_ctx User context pointer (uart_init_ctx_t*).
+ *                         output: ctx->result contains the operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, SCI channel initialized
+ * @retval k_rx_err_invalid_arg Bus type is not UART or SCI channel out of range
+ * @retval k_rx_err_hw_init_failed HAL uart_init_channel() returned an error
+ *
+ * @pre bus_config pointer is valid (guaranteed by bus manager)
+ * @pre user_ctx pointer is valid and points to uart_init_ctx_t
+ * @pre SCI channel is within [0, k_sci_channel_count)
+ * @pre GPIO pins are not in use by another peripheral
+ *
+ * @post bus_config->initialized == true on success
+ * @post ctx->result contains the operation result
+ * @post SCI peripheral configured for 8N1 UART at requested baud rate
+ * @post TX/RX GPIO pins configured for alternate function
+ *
+ * @note Called with bus manager mutex held (thread-safe context)
+ * @note Execution time: ~50 us (SCI register configuration + GPIO setup)
+ *
+ * @warning Do NOT call directly - use rx_bus_uart_init() instead
+ * @warning SCI channel must not be in use by another bus instance
+ *
+ * @see rx_bus_uart_init() Public API that invokes this callback
+ * @see uart_init_channel() Underlying HAL initialization function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -297,12 +534,51 @@ static rx_err_t internal_uart_init_callback(rx_bus_config_t* bus_config, void* u
 }
 
 /**
- * @brief Callback for UART write operation
+ * @brief Internal callback for UART binary data write operation
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (uart_write_ctx_t*)
+ * @details
+ * Transmits a binary data buffer over the SCI UART channel. Called by the bus
+ * manager via rx_bus_manager_with_bus() with the mutex held. Validates bus
+ * initialization state, validates the data pointer when length > 0, and
+ * delegates to uart_write_channel() HAL function for the actual transmission.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Cast user_ctx to uart_write_ctx_t*
+ * 2. Validate bus is initialized (bus_config->initialized == true)
+ * 3. Validate data pointer is non-NULL when ctx->length > 0
+ * 4. Call uart_write_channel() with channel, data, length
+ * 5. Set ctx->result and return
+ *
+ * @param[in] bus_config Bus configuration structure.
+ *                       - initialized must be true
+ *                       - proto.uart.channel: SCI channel number
+ * @param[in,out] user_ctx User context pointer (uart_write_ctx_t*).
+ *                         - input: ctx->data pointer to transmit buffer
+ *                         - input: ctx->length number of bytes to transmit
+ *                         - output: ctx->result contains operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, data queued for transmission
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_invalid_arg length > 0 but data is nullptr
+ * @retval k_rx_err_uart_error HAL transmission error (FIFO full, timeout)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->data must be non-NULL when ctx->length > 0
+ * @pre Data buffer must remain valid until transmission completes (DMA mode)
+ *
+ * @post Data queued in TX FIFO or DMA transfer started
+ * @post ctx->result contains the operation result
+ *
+ * @note Called with bus manager mutex held (thread-safe context)
+ * @note In DMA mode the data buffer must stay valid until transmission ends
+ *
+ * @warning ctx->data must outlive this call in DMA transfer mode
+ *
+ * @see rx_bus_uart_write() Public API that invokes this callback
+ * @see uart_write_channel() Underlying HAL write function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_uart_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -335,12 +611,54 @@ static rx_err_t internal_uart_write_callback(rx_bus_config_t* bus_config, void* 
 }
 
 /**
- * @brief Callback for UART read operation
+ * @brief Internal callback for UART binary data read operation (non-blocking)
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (uart_read_ctx_t*)
+ * @details
+ * Reads up to ctx->length bytes from the SCI RX FIFO into ctx->data. Called
+ * by the bus manager via rx_bus_manager_with_bus() with the mutex held.
+ * Non-blocking: returns immediately with however many bytes are currently
+ * available (may be 0). A post-condition check logs a warning if bytes_read
+ * exceeds length (should not happen but guards against HAL bugs).
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Cast user_ctx to uart_read_ctx_t*
+ * 2. Validate bus is initialized (bus_config->initialized == true)
+ * 3. Call uart_read_channel() with channel, data, length, &bytes_read
+ * 4. Validate bytes_read <= length (post-condition)
+ * 5. Set ctx->result and return
+ *
+ * @param[in] bus_config Bus configuration structure.
+ *                       - initialized must be true
+ *                       - proto.uart.channel: SCI channel number
+ * @param[in,out] user_ctx User context pointer (uart_read_ctx_t*).
+ *                         - input: ctx->data points to receive buffer
+ *                         - input: ctx->length maximum bytes to read
+ *                         - output: ctx->bytes_read actual bytes received
+ *                         - output: ctx->result contains operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success; check ctx->bytes_read for actual byte count
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_uart_error HAL error (framing error, overrun, etc.)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->data must point to a valid buffer of at least ctx->length bytes
+ * @pre ctx->length must equal the receive buffer capacity
+ *
+ * @post ctx->bytes_read contains the actual number of bytes copied
+ * @post ctx->bytes_read <= ctx->length (guaranteed by post-condition check)
+ * @post ctx->result contains the operation result
+ * @post Consumed bytes are removed from the RX FIFO
+ *
+ * @note Called with bus manager mutex held (thread-safe context)
+ * @note bytes_read == 0 is normal when RX FIFO is empty (not an error)
+ *
+ * @warning Overrun error returned by HAL if RX FIFO filled before this call
+ *
+ * @see rx_bus_uart_read() Public API that invokes this callback
+ * @see uart_read_channel() Underlying HAL read function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_uart_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -374,12 +692,48 @@ static rx_err_t internal_uart_read_callback(rx_bus_config_t* bus_config, void* u
 }
 
 /**
- * @brief Callback for UART putc operation
+ * @brief Internal callback for UART single-character write operation
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (uart_putc_ctx_t*)
+ * @details
+ * Transmits one character over the SCI UART channel. Called by the bus manager
+ * via rx_bus_manager_with_bus() with the mutex held. Validates bus
+ * initialization, calls uart_putc_channel() HAL function, and emits a warning
+ * (but continues) if the character is outside the 7-bit ASCII range.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Cast user_ctx to uart_putc_ctx_t*
+ * 2. Validate bus is initialized (bus_config->initialized == true)
+ * 3. Call uart_putc_channel() with channel and ctx->c
+ * 4. Validate (uint8_t)ctx->c <= k_uart_ascii_max (post-condition warning)
+ * 5. Set ctx->result and return
+ *
+ * @param[in] bus_config Bus configuration structure.
+ *                       - initialized must be true
+ *                       - proto.uart.channel: SCI channel number
+ * @param[in,out] user_ctx User context pointer (uart_putc_ctx_t*).
+ *                         - input: ctx->c character to transmit
+ *                         - output: ctx->result contains operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, character written to TX FIFO
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_uart_error HAL transmission error (FIFO full, timeout)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->c may be any byte value (transmission accepts 0-255)
+ *
+ * @post Character written to TX FIFO or transmission started
+ * @post ctx->result contains the operation result
+ *
+ * @note Called with bus manager mutex held (thread-safe context)
+ * @note Extended ASCII (values 128-255) generates warning log but is transmitted
+ *
+ * @warning Values > 127 emit a warning; use with care in ASCII-only protocols
+ *
+ * @see rx_bus_uart_putc() Public API that invokes this callback
+ * @see uart_putc_channel() Underlying HAL function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_uart_putc_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -402,7 +756,7 @@ static rx_err_t internal_uart_putc_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Post-condition: Verify character is valid ASCII */
-  if ((uint8_t)ctx->c > s_uart_ascii_max) {
+  if ((uint8_t)ctx->c > k_uart_ascii_max) {
     rx_log_warn(s_tag, "UART putc wrote non-ASCII character");
     /* Continue anyway - some protocols use extended ASCII */
   }
@@ -412,12 +766,48 @@ static rx_err_t internal_uart_putc_callback(rx_bus_config_t* bus_config, void* u
 }
 
 /**
- * @brief Callback for UART puts operation
+ * @brief Internal callback for UART null-terminated string write operation
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (uart_puts_ctx_t*)
+ * @details
+ * Transmits a null-terminated C string over the SCI UART channel (without
+ * the null terminator). Called by the bus manager via rx_bus_manager_with_bus()
+ * with the mutex held. Validates bus initialization state and delegates to
+ * uart_puts_channel() HAL function, which computes the string length
+ * internally and writes the entire string to the TX FIFO in one call.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Cast user_ctx to uart_puts_ctx_t*
+ * 2. Validate bus is initialized (bus_config->initialized == true)
+ * 3. Call uart_puts_channel() with channel and ctx->str
+ * 4. Set ctx->result and return
+ *
+ * @param[in] bus_config Bus configuration structure.
+ *                       - initialized must be true
+ *                       - proto.uart.channel: SCI channel number
+ * @param[in,out] user_ctx User context pointer (uart_puts_ctx_t*).
+ *                         - input: ctx->str pointer to null-terminated string
+ *                         - output: ctx->result contains operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, string transmitted (null terminator not sent)
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_uart_error HAL transmission error
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->str must point to a valid null-terminated string
+ *
+ * @post String characters transmitted to TX FIFO (null terminator excluded)
+ * @post ctx->result contains the operation result
+ *
+ * @note Called with bus manager mutex held (thread-safe context)
+ * @note More efficient than repeated putc() calls: single mutex lock covers all characters
+ *
+ * @warning ctx->str must be null-terminated; undefined behaviour otherwise
+ *
+ * @see rx_bus_uart_puts() Public API that invokes this callback
+ * @see uart_puts_channel() Underlying HAL function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_uart_puts_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -444,12 +834,52 @@ static rx_err_t internal_uart_puts_callback(rx_bus_config_t* bus_config, void* u
 }
 
 /**
- * @brief Callback for UART getc operation
+ * @brief Internal callback for UART single-character read operation (non-blocking)
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (uart_getc_ctx_t*)
+ * @details
+ * Reads one character from the SCI RX FIFO without blocking. Called by the
+ * bus manager via rx_bus_manager_with_bus() with the mutex held. Validates
+ * bus initialization state, calls uart_getc_channel() HAL function, and
+ * stores k_rx_err_empty in ctx->result when the FIFO is empty (this is a
+ * normal non-error condition that the public API propagates to the caller).
+ * A post-condition warning is emitted for characters outside the 7-bit ASCII
+ * range but the character is still returned.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Cast user_ctx to uart_getc_ctx_t*
+ * 2. Validate bus is initialized (bus_config->initialized == true)
+ * 3. Call uart_getc_channel() with channel, &ctx->c
+ * 4. If err == k_rx_ok: validate (uint8_t)ctx->c <= k_uart_ascii_max
+ * 5. Store err directly in ctx->result (includes k_rx_err_empty)
+ * 6. Return k_rx_ok always (bus manager layer sees no fault)
+ *
+ * @param[in] bus_config Bus configuration structure.
+ *                       - initialized must be true
+ *                       - proto.uart.channel: SCI channel number
+ * @param[in,out] user_ctx User context pointer (uart_getc_ctx_t*).
+ *                         - output: ctx->c received character (valid when result == k_rx_ok)
+ *                         - output: ctx->result: k_rx_ok, k_rx_err_empty, or error
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Always returned to bus manager (HAL result is in ctx->result)
+ * @retval k_rx_err_invalid_state Bus not initialized (returned directly, not via ctx)
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx->c must point to a valid char variable for the result
+ *
+ * @post ctx->c contains received character when ctx->result == k_rx_ok
+ * @post ctx->result contains k_rx_err_empty when RX FIFO is empty (normal)
+ * @post Character is consumed from RX FIFO when k_rx_ok
+ *
+ * @note Called with bus manager mutex held (thread-safe context)
+ * @note k_rx_err_empty in ctx->result is a normal status, not an error
+ *
+ * @warning ctx->c is undefined when ctx->result == k_rx_err_empty
+ *
+ * @see rx_bus_uart_getc() Public API that invokes this callback
+ * @see uart_getc_channel() Underlying HAL function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -466,7 +896,7 @@ static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* u
   const rx_err_t err = uart_getc_channel(bus_config->proto.uart.channel, &ctx->c);
 
   /* Post-condition: Verify character is valid ASCII when data available */
-  if (err == k_rx_ok && (uint8_t)ctx->c > s_uart_ascii_max) {
+  if (err == k_rx_ok && (uint8_t)ctx->c > k_uart_ascii_max) {
     rx_log_warn(s_tag, "UART getc received non-ASCII character");
     /* Continue anyway - some protocols use extended ASCII */
   }
@@ -477,12 +907,51 @@ static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* u
 }
 
 /**
- * @brief Callback for UART rx_available operation
+ * @brief Internal callback for UART RX FIFO availability check (non-blocking)
  *
- * @param[in] bus_config Bus configuration
- * @param[in] user_ctx User context (uart_rx_avail_ctx_t*)
+ * @details
+ * Checks whether at least one byte is available in the SCI RX FIFO without
+ * consuming any data. Called by the bus manager via rx_bus_manager_with_bus()
+ * with the mutex held. Validates bus initialization state, calls
+ * uart_rx_available() HAL function (which reads only the FIFO status
+ * register), and performs a post-condition validity check on the returned
+ * boolean.
  *
- * @return k_rx_ok on success, error code on failure
+ * Algorithm steps:
+ * 1. Cast user_ctx to uart_rx_avail_ctx_t*
+ * 2. Validate bus is initialized (bus_config->initialized == true)
+ * 3. Call uart_rx_available() with channel, &ctx->available
+ * 4. Validate ctx->available is a valid bool (post-condition)
+ * 5. Set ctx->result and return
+ *
+ * @param[in] bus_config Bus configuration structure.
+ *                       - initialized must be true
+ *                       - proto.uart.channel: SCI channel number
+ * @param[in,out] user_ctx User context pointer (uart_rx_avail_ctx_t*).
+ *                         - output: ctx->available true if FIFO has >=1 byte
+ *                         - output: ctx->result contains operation result
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, ctx->available contains FIFO status
+ * @retval k_rx_err_invalid_state Bus not initialized
+ * @retval k_rx_err_uart_error HAL error reading FIFO status register
+ *
+ * @pre bus_config->initialized must be true
+ * @pre ctx must point to a valid uart_rx_avail_ctx_t
+ *
+ * @post ctx->available == true if >=1 byte in RX FIFO, false if empty
+ * @post RX FIFO data is NOT consumed (non-destructive check)
+ * @post ctx->result contains the operation result
+ *
+ * @note Called with bus manager mutex held (thread-safe context)
+ * @note Fastest UART query: reads only a status register (~1 us)
+ *
+ * @warning ctx->available == false is not an error; it means FIFO is empty
+ *
+ * @see rx_bus_uart_rx_available() Public API that invokes this callback
+ * @see uart_rx_available() Underlying HAL function
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_uart_rx_avail_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -558,7 +1027,7 @@ static rx_err_t internal_uart_rx_avail_callback(rx_bus_config_t* bus_config, voi
  * - **Max**: 2,500,000 bps @ f_PCLK = 120 MHz
  * - **Common**: 9600, 19200, 38400, 57600, 115200, 230400, 460800, 921600
  *
- * **Accuracy**: ±1% or better for standard baud rates
+ * **Accuracy**: +/-1% or better for standard baud rates
  *
  * @param[in] manager Pointer to bus manager instance.
  *                    Must be initialized via rx_bus_manager_init().
@@ -582,7 +1051,7 @@ static rx_err_t internal_uart_rx_avail_callback(rx_bus_config_t* bus_config, voi
  * @post bus_config->initialized == true
  * @post Ready for UART read/write operations
  *
- * @note Initialization may take ~50 µs (register configuration + pin setup)
+ * @note Initialization may take ~50 us (register configuration + pin setup)
  * @note TX FIFO and RX FIFO are both enabled (16 bytes each)
  * @note Thread-safe (bus manager mutex)
  *
@@ -726,13 +1195,13 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name)
  * ## Transmission Behavior (HAL-dependent)
  *
  * **Option 1 - Polling Mode:**
- * - Function blocks until all bytes transmitted (~length × 87 µs @ 115200 bps)
+ * - Function blocks until all bytes transmitted (~length x 87 us @ 115200 bps)
  * - Simple but inefficient for large transfers
  *
  * **Option 2 - Interrupt/DMA Mode (preferred):**
  * - Function loads TX FIFO (16 bytes) and returns immediately
  * - Remaining bytes transmitted via interrupt or DMA in background
- * - Much faster return (~10 µs overhead)
+ * - Much faster return (~10 us overhead)
  *
  * **STAR firmware uses**: Interrupt/DMA mode for efficiency
  *
@@ -740,12 +1209,12 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name)
  *
  * | Length | @ 115200 bps | @ 9600 bps | Notes |
  * |--------|--------------|------------|-------|
- * | **1 byte** | ~90 µs | ~1.1 ms | 1 start + 8 data + 1 stop bit |
+ * | **1 byte** | ~90 us | ~1.1 ms | 1 start + 8 data + 1 stop bit |
  * | **16 bytes** | ~1.4 ms | ~17 ms | Fill TX FIFO once |
  * | **64 bytes** | ~5.6 ms | ~67 ms | Typical packet size |
  * | **256 bytes** | ~22 ms | ~267 ms | Max recommended per call |
  *
- * **Overhead**: ~10 µs (FIFO load + context switch)
+ * **Overhead**: ~10 us (FIFO load + context switch)
  *
  * @param[in] manager Pointer to bus manager instance.
  * @param[in] bus_name Name of UART bus (e.g., "debug", "sensor").
@@ -862,7 +1331,7 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
  *    b. Call uart_read_channel() HAL function
  *    c. HAL reads available bytes from RX FIFO (up to 'length')
  *    d. HAL updates bytes_read with actual count
- *    e. Validate bytes_read ≤ length (postcondition check)
+ *    e. Validate bytes_read <= length (postcondition check)
  * 5. Copy bytes_read to output parameter
  * 6. Return result
  *
@@ -896,9 +1365,9 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
  *
  * ## Performance
  *
- * - **Function overhead**: ~5 µs (FIFO read + context switch)
+ * - **Function overhead**: ~5 us (FIFO read + context switch)
  * - **Actual read time**: ~200 ns per byte (memcpy from FIFO to buffer)
- * - **Total**: ~5 µs + (bytes_read × 200 ns)
+ * - **Total**: ~5 us + (bytes_read x 200 ns)
  *
  * ## RX FIFO Overflow Handling
  *
@@ -908,7 +1377,7 @@ rx_err_t rx_bus_uart_write(rx_bus_manager_t* manager,
  * - **Prevention**: Poll frequently enough to prevent overflow
  *
  * **Rule of thumb**: Read at least every (16 bytes / baud_rate) seconds
- * - @ 115200 bps: ~1.4 ms (16 bytes × 87 µs/byte)
+ * - @ 115200 bps: ~1.4 ms (16 bytes x 87 us/byte)
  * - @ 9600 bps: ~17 ms
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1091,9 +1560,9 @@ rx_err_t rx_bus_uart_read(rx_bus_manager_t* manager,
  *
  * ## Performance
  *
- * - **Function overhead**: ~2 µs (FIFO write + context)
+ * - **Function overhead**: ~2 us (FIFO write + context)
  * - **Transmission time** (baud-dependent):
- *   - @ 115200 bps: ~87 µs per character
+ *   - @ 115200 bps: ~87 us per character
  *   - @ 9600 bps: ~1.04 ms per character
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1198,10 +1667,10 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  *
  * | Method | Function Calls | Mutex Locks | Overhead |
  * |--------|---------------|-------------|----------|
- * | **puts("Hello")** | 1 | 1 | ~10 µs total |
- * | **putc() × 5** | 5 | 5 | ~10 µs × 5 = 50 µs |
+ * | **puts("Hello")** | 1 | 1 | ~10 us total |
+ * | **putc() x 5** | 5 | 5 | ~10 us x 5 = 50 us |
  *
- * **puts() is 5× more efficient** for multi-character strings due to single mutex lock.
+ * **puts() is 5x more efficient** for multi-character strings due to single mutex lock.
  *
  * ## Common Use Cases
  *
@@ -1212,12 +1681,12 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  *
  * ## Performance
  *
- * - **Function overhead**: ~10 µs (strlen + FIFO load)
+ * - **Function overhead**: ~10 us (strlen + FIFO load)
  * - **Transmission time** (baud-dependent):
- *   - @ 115200 bps: ~87 µs × strlen(str)
- *   - @ 9600 bps: ~1.04 ms × strlen(str)
+ *   - @ 115200 bps: ~87 us x strlen(str)
+ *   - @ 9600 bps: ~1.04 ms x strlen(str)
  *
- * **Example**: "Hello\r\n" (7 chars) @ 115200 bps = 10 µs + (7 × 87 µs) = ~620 µs
+ * **Example**: "Hello\r\n" (7 chars) @ 115200 bps = 10 us + (7 x 87 us) = ~620 us
  *
  * @param[in] manager Pointer to bus manager instance.
  * @param[in] bus_name Name of UART bus (e.g., "debug", "console").
@@ -1277,7 +1746,7 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  * @code{.c}
  * // Print formatted telemetry
  * char msg[80];
- * snprintf(msg, sizeof(msg), "Voltage: %.2fV, Current: %.2fA, Temp: %d°C\r\n",
+ * snprintf(msg, sizeof(msg), "Voltage: %.2fV, Current: %.2fA, Temp: %ddegC\r\n",
  *          battery_voltage, battery_current, temperature);
  * rx_bus_uart_puts(&bus_mgr, "debug", msg);
  * @endcode
@@ -1358,7 +1827,7 @@ rx_err_t rx_bus_uart_puts(rx_bus_manager_t* manager, const char* bus_name, const
  *
  * ## Performance
  *
- * - **Function overhead**: ~2 µs (FIFO read + context)
+ * - **Function overhead**: ~2 us (FIFO read + context)
  * - **Returns immediately** (no blocking wait)
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1538,7 +2007,7 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  *    a. Validate bus initialized
  *    b. Call uart_rx_available() HAL function
  *    c. HAL checks RX FIFO status register (FRDR bit or count)
- *    d. Set *available = true if FIFO has ≥1 byte, false otherwise
+ *    d. Set *available = true if FIFO has >=1 byte, false otherwise
  *    e. Validate boolean value (postcondition check)
  * 5. Copy availability status to output parameter
  * 6. Return result
@@ -1575,7 +2044,7 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  *
  * ## Performance
  *
- * - **Function overhead**: ~1 µs (register read + context)
+ * - **Function overhead**: ~1 us (register read + context)
  * - **Fastest UART query** (just reads status register, no data movement)
  *
  * ## Use Cases
@@ -1588,7 +2057,7 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  * @param[in] manager Pointer to bus manager instance.
  * @param[in] bus_name Name of UART bus (e.g., "console", "gps").
  * @param[out] available Pointer to store availability status.
- *                       Set to true if ≥1 byte in RX FIFO.
+ *                       Set to true if >=1 byte in RX FIFO.
  *                       Set to false if RX FIFO is empty.
  *                       Must point to valid bool variable.
  *
@@ -1603,13 +2072,13 @@ rx_err_t rx_bus_uart_getc(rx_bus_manager_t* manager, const char* bus_name, char*
  * @pre manager initialized, bus registered and initialized
  * @pre available points to valid bool variable
  *
- * @post *available = true if ≥1 byte available, false if FIFO empty
+ * @post *available = true if >=1 byte available, false if FIFO empty
  * @post RX FIFO unchanged (data not consumed)
  *
  * @note NON-BLOCKING: Returns immediately
  * @note Does NOT remove data from FIFO (use getc/read to consume)
  * @note Thread-safe (bus manager mutex)
- * @note Fastest UART query operation (~1 µs)
+ * @note Fastest UART query operation (~1 us)
  *
  * @par Thread Safety:
  * Thread-safe. Bus manager provides mutex protection.

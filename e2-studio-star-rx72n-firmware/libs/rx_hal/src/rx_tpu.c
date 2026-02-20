@@ -238,7 +238,9 @@ static bool s_tpu_initialized[k_tpu_phase_channel_count] = {false, false, false,
  * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
  *
  * @pre index must be non-NULL (caller responsibility)
+ * @pre channel must be a valid rx_tpu_channel_t enumeration value
  * @post *index contains valid array index on success
+ * @post *index is unchanged on k_rx_err_invalid_arg
  *
  * @note Thread Safety: Safe - pure function with no shared state
  *
@@ -280,7 +282,9 @@ static rx_err_t internal_channel_to_index(const rx_tpu_channel_t channel, uint8_
  * @retval NULL Invalid channel (not phase-counting capable)
  *
  * @pre TPU module enabled (MSTPCRA.MSTPA13 = 0)
+ * @pre channel must be a valid rx_tpu_channel_t enumeration value
  * @post No registers modified
+ * @post Returned pointer (if non-NULL) points to valid hardware register block
  *
  * @note Thread Safety: Safe - returns constant hardware address
  *
@@ -309,12 +313,19 @@ static volatile rx_tpu_regs_t* internal_get_regs(const rx_tpu_channel_t channel)
  * @details
  * Returns the counter start bit mask in TSTR for the specified channel.
  * This bit is set to start counting and cleared to stop counting.
+ * Each phase-counting-capable channel has a dedicated bit position in the
+ * shared TSTR register: CST1, CST2, CST4, and CST5.
  *
  * @param[in] channel TPU channel identifier (1, 2, 4, or 5)
  *
  * @return TSTR bit mask for the channel
  * @retval Non-zero Valid CST bit mask
  * @retval 0 Invalid channel
+ *
+ * @pre channel must be one of k_tpu_channel_1, _2, _4, or _5
+ * @pre Caller validates that a non-zero return indicates a valid channel
+ * @post No hardware registers modified
+ * @post Returned value is safe to OR/AND into TSTR register
  *
  * @note Thread Safety: Safe - pure function
  *
@@ -341,13 +352,20 @@ static uint8_t internal_get_cst_bit(const rx_tpu_channel_t channel)
  *
  * @details
  * Converts the phase mode enumeration (1-4) to the corresponding TMDR
- * register value for phase counting mode selection.
+ * register value for phase counting mode selection. The caller must check
+ * whether the return value equals k_tpu_tmdr_md_normal (0x00) to detect
+ * an invalid mode argument before writing to hardware.
  *
  * @param[in] mode Phase counting mode (1-4)
  *
  * @return TMDR.MD register value
  * @retval 0x04-0x07 Valid phase counting mode values
  * @retval 0x00 Invalid mode (normal operation fallback)
+ *
+ * @pre mode must be a valid rx_tpu_phase_mode_t enumeration value
+ * @pre Caller must check return != k_tpu_tmdr_md_normal before hardware write
+ * @post No hardware registers modified
+ * @post Returned value is safe to write directly to TMDR.MD field
  *
  * @note Thread Safety: Safe - pure function
  *
@@ -379,6 +397,7 @@ static uint8_t internal_get_tmdr_mode(const rx_tpu_phase_mode_t mode)
  * safe to call multiple times.
  *
  * @pre System clock configured
+ * @pre PRCR register accessible (system not in protected mode that blocks PRC1)
  * @post TPU module clock enabled (MSTPCRA.MSTPA13 = 0)
  * @post PRCR protection re-enabled
  *
@@ -418,14 +437,12 @@ static void internal_enable_tpu_module_clock(void)
  */
 rx_err_t rx_tpu_init_phase_count(const rx_tpu_config_t* config)
 {
-  uint8_t  idx;
-  rx_err_t err;
-
   /* Pre-condition 1: validate config pointer (NASA Rule 5) */
   RX_CHECK_NULL_PTR(config, s_tag, "Config pointer is nullptr");
 
   /* Pre-condition 2: validate channel is phase-counting capable */
-  err = internal_channel_to_index(config->channel, &idx);
+  uint8_t        idx = 0U;
+  const rx_err_t err = internal_channel_to_index(config->channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -479,22 +496,44 @@ rx_err_t rx_tpu_init_phase_count(const rx_tpu_config_t* config)
 }
 
 /**
- * @brief Start TPU channel counter
+ * @brief Start the TPU channel counter (begin phase counting)
  *
  * @details
- * Implementation of rx_tpu_start() - see rx_tpu.h for complete documentation.
- * Sets the CSTn bit in TSTR to begin counter operation.
+ * Sets the Count Start (CSTn) bit in the TSTR register to begin counter
+ * operation. Once started, the TCNT register increments or decrements on
+ * each external encoder clock edge according to the configured phase mode.
  *
- * @see rx_tpu.h Full API documentation
+ * @param[in] channel TPU channel to start (1, 2, 4, or 5)
+ *   - Must have been previously initialized via rx_tpu_init_phase_count()
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Counter started successfully
+ * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
+ * @retval k_rx_err_not_initialized Channel not yet initialized
+ *
+ * @pre Channel must be initialized via rx_tpu_init_phase_count()
+ * @pre External encoder clock pins must be connected and valid
+ *
+ * @post TSTR.CSTn bit set, counter begins counting encoder pulses
+ * @post TCNT updates in real time from encoder edges
+ *
+ * @note Not thread-safe: modifies shared TSTR register
+ * @note Idempotent: safe to call when already running
+ *
+ * @code{.c}
+ * rx_err_t err = rx_tpu_start(k_tpu_channel_1);
+ * @endcode
+ *
+ * @see rx_tpu_stop() Stop the counter
+ * @see rx_tpu_read_count() Read current counter value
+ *
  * @since Version 1.0.0
  */
 rx_err_t rx_tpu_start(const rx_tpu_channel_t channel)
 {
-  uint8_t  idx;
-  rx_err_t err;
-
   /* Pre-condition 1: validate channel */
-  err = internal_channel_to_index(channel, &idx);
+  uint8_t idx = 0U;
+  rx_err_t const err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -510,22 +549,43 @@ rx_err_t rx_tpu_start(const rx_tpu_channel_t channel)
 }
 
 /**
- * @brief Stop TPU channel counter
+ * @brief Stop the TPU channel counter (halt phase counting)
  *
  * @details
- * Implementation of rx_tpu_stop() - see rx_tpu.h for complete documentation.
- * Clears the CSTn bit in TSTR to stop counter operation.
+ * Clears the Count Start (CSTn) bit in the TSTR register to halt counter
+ * operation. The TCNT value is preserved and encoder edges no longer update
+ * it. The channel remains initialized and can be restarted with rx_tpu_start().
  *
- * @see rx_tpu.h Full API documentation
+ * @param[in] channel TPU channel to stop (1, 2, 4, or 5)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Counter stopped successfully
+ * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
+ * @retval k_rx_err_not_initialized Channel not yet initialized
+ *
+ * @pre Channel must be initialized via rx_tpu_init_phase_count()
+ * @pre TSTR register must be accessible (module clock enabled)
+ *
+ * @post TSTR.CSTn bit cleared, counter halted
+ * @post TCNT value preserved at last count
+ *
+ * @note Not thread-safe: modifies shared TSTR register
+ * @note Idempotent: safe to call when already stopped
+ *
+ * @code{.c}
+ * rx_err_t err = rx_tpu_stop(k_tpu_channel_1);
+ * @endcode
+ *
+ * @see rx_tpu_start() Resume counter operation
+ * @see rx_tpu_reset_count() Clear counter to zero
+ *
  * @since Version 1.0.0
  */
 rx_err_t rx_tpu_stop(const rx_tpu_channel_t channel)
 {
-  uint8_t  idx;
-  rx_err_t err;
-
   /* Pre-condition 1: validate channel */
-  err = internal_channel_to_index(channel, &idx);
+  uint8_t idx = 0U;
+  rx_err_t const err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -541,25 +601,50 @@ rx_err_t rx_tpu_stop(const rx_tpu_channel_t channel)
 }
 
 /**
- * @brief Read TPU channel 16-bit counter value
+ * @brief Read the current 16-bit encoder counter value
  *
  * @details
- * Implementation of rx_tpu_read_count() - see rx_tpu.h for complete
- * documentation. Single volatile register read of TCNT.
+ * Performs a single volatile read of the TCNT register for the specified
+ * channel. In 4x phase counting mode, the counter increments or decrements
+ * on every edge of both A and B encoder channels.
  *
- * @see rx_tpu.h Full API documentation
+ * @param[in]  channel TPU channel to read (1, 2, 4, or 5)
+ * @param[out] count   Pointer to store the 16-bit counter value [0, 65535]
+ *   - Must be non-NULL
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Counter value read into *count
+ * @retval k_rx_err_null_ptr count pointer is nullptr
+ * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
+ * @retval k_rx_err_not_initialized Channel not yet initialized
+ *
+ * @pre Channel must be initialized via rx_tpu_init_phase_count()
+ * @pre count must point to valid uint16_t storage
+ *
+ * @post *count contains the TCNT register value at the time of the read
+ * @post Hardware registers unchanged
+ *
+ * @note Not thread-safe: counter may wrap between multiple reads
+ * @note Wraps naturally at 0 and 65535 (16-bit overflow)
+ *
+ * @code{.c}
+ * uint16_t count;
+ * rx_err_t err = rx_tpu_read_count(k_tpu_channel_1, &count);
+ * @endcode
+ *
+ * @see rx_tpu_reset_count() Clear counter to zero
+ * @see rx_tpu_read_direction() Read counting direction
+ *
  * @since Version 1.0.0
  */
 rx_err_t rx_tpu_read_count(const rx_tpu_channel_t channel, uint16_t* count)
 {
-  uint8_t  idx;
-  rx_err_t err;
-
   /* Pre-condition 1: validate output pointer */
   RX_CHECK_NULL_PTR(count, s_tag, "Count pointer is nullptr");
 
   /* Pre-condition 2: validate channel */
-  err = internal_channel_to_index(channel, &idx);
+  uint8_t        idx = 0U;
+  const rx_err_t err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -579,26 +664,53 @@ rx_err_t rx_tpu_read_count(const rx_tpu_channel_t channel, uint16_t* count)
 }
 
 /**
- * @brief Read TPU channel counting direction
+ * @brief Read the current encoder counting direction
  *
  * @details
- * Implementation of rx_tpu_read_direction() - see rx_tpu.h for complete
- * documentation. Reads the TCFD bit (bit 7) in the TSR register.
- * TCFD = 1 means counting up (forward), TCFD = 0 means counting down.
+ * Reads the Timer Counter Flag Direction (TCFD) bit in the TSR register.
+ * TCFD reflects the last count event direction:
+ * - TCFD = 1: Counter incremented on the last edge (counting up / forward)
+ * - TCFD = 0: Counter decremented on the last edge (counting down / reverse)
  *
- * @see rx_tpu.h Full API documentation
+ * @param[in]  channel     TPU channel to query (1, 2, 4, or 5)
+ * @param[out] counting_up Pointer to store direction result
+ *   - true  = last count was an increment (encoder moving forward)
+ *   - false = last count was a decrement (encoder moving in reverse)
+ *   - Must be non-NULL
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Direction read into *counting_up
+ * @retval k_rx_err_null_ptr counting_up pointer is nullptr
+ * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
+ * @retval k_rx_err_not_initialized Channel not yet initialized
+ *
+ * @pre Channel must be initialized via rx_tpu_init_phase_count()
+ * @pre counting_up must point to valid bool storage
+ *
+ * @post *counting_up reflects TSR.TCFD at the time of the read
+ * @post Hardware registers unchanged
+ *
+ * @note Not thread-safe: value may change between reads if encoder is moving
+ * @note Direction is unreliable if counter is stationary (no recent edge)
+ *
+ * @code{.c}
+ * bool forward;
+ * rx_err_t err = rx_tpu_read_direction(k_tpu_channel_1, &forward);
+ * @endcode
+ *
+ * @see rx_tpu_read_count() Read counter position
+ * @see k_tpu_tsr_tcfd TSR direction bit mask
+ *
  * @since Version 1.0.0
  */
 rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up)
 {
-  uint8_t  idx;
-  rx_err_t err;
-
   /* Pre-condition 1: validate output pointer */
   RX_CHECK_NULL_PTR(counting_up, s_tag, "Direction pointer is nullptr");
 
   /* Pre-condition 2: validate channel */
-  err = internal_channel_to_index(channel, &idx);
+  uint8_t idx = 0U;
+  const rx_err_t err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -618,22 +730,47 @@ rx_err_t rx_tpu_read_direction(const rx_tpu_channel_t channel, bool* counting_up
 }
 
 /**
- * @brief Reset TPU channel counter to zero
+ * @brief Reset the TPU channel encoder counter to zero
  *
  * @details
- * Implementation of rx_tpu_reset_count() - see rx_tpu.h for complete
- * documentation. Writes zero to the TCNT register.
+ * Writes k_tpu_tcnt_zero (0x0000) to the TCNT register, resetting the
+ * encoder position counter. The counter continues running from the new
+ * zero baseline.
  *
- * @see rx_tpu.h Full API documentation
+ * Typical use: zero encoder position at a known reference point (home).
+ *
+ * @param[in] channel TPU channel to reset (1, 2, 4, or 5)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Counter reset to zero successfully
+ * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
+ * @retval k_rx_err_not_initialized Channel not yet initialized
+ *
+ * @pre Channel must be initialized via rx_tpu_init_phase_count()
+ * @pre Channel should be stopped (rx_tpu_stop()) before resetting for atomic 0
+ *
+ * @post TCNT register written to 0x0000
+ * @post Counter resumes from zero if running
+ *
+ * @note Not thread-safe: write races with live counter updates from encoder
+ * @note May cause a single spurious velocity estimate if called while running
+ *
+ * @code{.c}
+ * rx_tpu_stop(k_tpu_channel_1);
+ * rx_tpu_reset_count(k_tpu_channel_1);
+ * rx_tpu_start(k_tpu_channel_1);
+ * @endcode
+ *
+ * @see rx_tpu_stop() Stop counter before resetting for deterministic result
+ * @see rx_tpu_read_count() Verify counter after reset
+ *
  * @since Version 1.0.0
  */
 rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
 {
-  uint8_t  idx;
-  rx_err_t err;
-
   /* Pre-condition 1: validate channel */
-  err = internal_channel_to_index(channel, &idx);
+  uint8_t idx = 0U;
+  const rx_err_t err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
@@ -642,7 +779,7 @@ rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
   RX_VALIDATE_INIT(s_tpu_initialized[idx], s_tag, "Channel not initialized");
 
   /* Write 0 to TCNT */
-  volatile rx_tpu_regs_t* regs = internal_get_regs(channel);
+  volatile rx_tpu_regs_t* const regs = internal_get_regs(channel);
   if (regs == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -653,29 +790,57 @@ rx_err_t rx_tpu_reset_count(const rx_tpu_channel_t channel)
 }
 
 /**
- * @brief Deinitialize TPU channel
+ * @brief Deinitialize a TPU phase-counting channel
  *
  * @details
- * Implementation of rx_tpu_deinit() - see rx_tpu.h for complete documentation.
- * Stops the channel counter, resets mode to normal, clears the counter,
- * and marks the channel as uninitialized.
+ * Performs an orderly shutdown of the specified TPU channel:
+ * 1. Validate channel and get array index
+ * 2. Stop counter (clear CSTn in TSTR)
+ * 3. Reset TMDR to normal operation mode (0x00)
+ * 4. Disable all interrupts (TIER = 0)
+ * 5. Clear counter (TCNT = 0)
+ * 6. Mark channel as uninitialized in s_tpu_initialized[]
  *
- * @see rx_tpu.h Full API documentation
+ * This function does NOT disable the TPU module clock (MSTPCRA.MSTPA13),
+ * as other channels may still be in use.
+ *
+ * @param[in] channel TPU channel to deinitialize (1, 2, 4, or 5)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Channel deinitialized successfully
+ * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
+ * @retval k_rx_err_invalid_arg Register pointer could not be resolved
+ *
+ * @pre channel must be a valid phase-counting TPU channel (1, 2, 4, or 5)
+ * @pre Motor driven by this encoder must be stopped before calling
+ *
+ * @post Counter stopped and zeroed
+ * @post TMDR reset to normal mode
+ * @post s_tpu_initialized[idx] == false
+ *
+ * @note Not thread-safe: do not access channel concurrently during deinit
+ * @note Channel may be partially initialized; deinit succeeds regardless
+ *
+ * @code{.c}
+ * rx_err_t err = rx_tpu_deinit(k_tpu_channel_1);
+ * @endcode
+ *
+ * @see rx_tpu_init_phase_count() Re-initialize after deinit
+ * @see rx_tpu_stop() Stop counter without full teardown
+ *
  * @since Version 1.0.0
  */
 rx_err_t rx_tpu_deinit(const rx_tpu_channel_t channel)
 {
-  uint8_t  idx;
-  rx_err_t err;
-
   /* Pre-condition 1: validate channel */
-  err = internal_channel_to_index(channel, &idx);
+  uint8_t idx = 0U;
+  const rx_err_t err = internal_channel_to_index(channel, &idx);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Get register pointer (no init check - allow deinit of partially init'd channel) */
-  volatile rx_tpu_regs_t* regs = internal_get_regs(channel);
+  volatile rx_tpu_regs_t* const regs = internal_get_regs(channel);
   if (regs == nullptr) {
     return k_rx_err_invalid_arg;
   }

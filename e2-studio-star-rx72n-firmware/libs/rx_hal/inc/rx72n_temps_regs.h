@@ -12,14 +12,14 @@
  * The RX72N has a built-in temperature sensor that:
  * 1. Outputs voltage proportional to temperature
  * 2. Connects to 12-bit A/D converter unit 1
- * 3. Has factory-programmed calibration data (CAL125 @ 125°C)
+ * 3. Has factory-programmed calibration data (CAL125 @ 125degC)
  *
  * @par Temperature Calculation Formula
- * T = (Vs - V1) / Slope + 125 [°C]
+ * T = (Vs - V1) / Slope + 125 [degC]
  * Where:
  * - Vs: Measured voltage (from ADC)
- * - V1: Calibration voltage at 125°C = 3.3 × TSCDR / 4096 [V]
- * - Slope: Temperature slope from Table 63.57 (typ. -4.1 mV/°C)
+ * - V1: Calibration voltage at 125degC = 3.3 x TSCDR / 4096 [V]
+ * - Slope: Temperature slope from Table 63.57 (typ. -4.1 mV/degC)
  *
  * @par Register Summary
  * | Register | Address      | Size | Description                          |
@@ -31,9 +31,9 @@
  * 1. Clear module stop bit (MSTPCRB.MSTPC22 = 0)
  * 2. Configure ADC unit 1 for temperature sensor input
  * 3. Set TSCR.TSEN = 1 (start temperature sensor)
- * 4. Wait 30 µs for reference voltage stabilization (tTSTBL)
+ * 4. Wait 30 us for reference voltage stabilization (tTSTBL)
  * 5. Set TSCR.TSOE = 1 (enable output to ADC)
- * 6. Wait 0 µs for output stabilization (tOSTBL)
+ * 6. Wait 0 us for output stabilization (tOSTBL)
  * 7. Start ADC conversion
  * 8. Read ADC result from ADTSDR register
  * 9. Calculate temperature using formula above
@@ -153,7 +153,7 @@ typedef enum : uint8_t {
 
   /**
    * @brief Temperature sensor enabled, output disabled
-   * @note Use this during tTSTBL wait (30 µs stabilization)
+   * @note Use this during tTSTBL wait (30 us stabilization)
    */
   k_tscr_sensor_only = 0x80U,
 
@@ -187,13 +187,13 @@ typedef enum : uint8_t {
 typedef enum : uint16_t {
   /**
    * @brief Reference voltage stabilization wait time (tTSTBL)
-   * @details Minimum 30 µs wait after setting TSEN = 1
+   * @details Minimum 30 us wait after setting TSEN = 1
    */
   k_temps_tstbl_us = 30U,
 
   /**
    * @brief Output stabilization wait time (tOSTBL)
-   * @details Minimum 0 µs wait after setting TSOE = 1
+   * @details Minimum 0 us wait after setting TSOE = 1
    */
   k_temps_tostbl_us = 0U,
 } temps_timing_t;
@@ -212,7 +212,7 @@ typedef enum : uint16_t {
  *
  * @par Temperature Calculation
  * The calibration data (TSCDR) was measured at:
- * - Tj = 125°C (junction temperature)
+ * - Tj = 125degC (junction temperature)
  * - AVCC1 = 3.3V (ADC reference voltage)
  *
  * @note Manual ref: Ch58 section 58.3.1
@@ -220,7 +220,7 @@ typedef enum : uint16_t {
  */
 typedef enum : uint16_t {
   /**
-   * @brief Calibration temperature (125°C)
+   * @brief Calibration temperature (125degC)
    * @details Factory calibration performed at this temperature
    */
   k_temps_cal_temp_celsius = 125U,
@@ -236,8 +236,8 @@ typedef enum : uint16_t {
   k_temps_avcc_mv = 3300U,
 
   /**
-   * @brief Typical temperature slope in µV/°C (absolute value)
-   * @details From Table 63.57: typ. -4.1 mV/°C = -4100 µV/°C
+   * @brief Typical temperature slope in uV/degC (absolute value)
+   * @details From Table 63.57: typ. -4.1 mV/degC = -4100 uV/degC
    * @note Actual value varies by chip; two-point calibration recommended
    */
   k_temps_slope_uv_per_c = 4100U,
@@ -294,7 +294,7 @@ typedef enum : uint32_t {
  * // 1. Start temperature sensor
  * *temps_tscr_reg() = k_tscr_sensor_only;
  *
- * // 2. Wait for stabilization (30 µs)
+ * // 2. Wait for stabilization (30 us)
  * delay_us(k_temps_tstbl_us);
  *
  * // 3. Enable output to ADC
@@ -320,12 +320,12 @@ static inline volatile uint8_t* temps_tscr_reg(void)
  * This is a 32-bit read-only register containing factory calibration data.
  *
  * @par Calibration Data Format
- * The lower 12 bits contain the ADC value measured at 125°C and 3.3V:
+ * The lower 12 bits contain the ADC value measured at 125degC and 3.3V:
  * - Bits [11:0]: ADC value (0-4095)
  * - Bits [31:12]: Reserved (read as 0)
  *
  * @par Converting to Voltage
- * V1 = 3.3 × (TSCDR & 0xFFF) / 4096 [V]
+ * V1 = 3.3 x (TSCDR & 0xFFF) / 4096 [V]
  *
  * @return Volatile pointer to TSCDR register (32-bit, read-only)
  * @retval Non-NULL Always returns valid pointer (hardware address)
@@ -342,8 +342,8 @@ static inline volatile uint8_t* temps_tscr_reg(void)
  * // Read calibration data
  * uint32_t cal125 = *temps_tscdr_reg() & 0xFFF;
  *
- * // Calculate reference voltage at 125°C
- * // V1 = 3.3 × cal125 / 4096 (in fixed-point or float)
+ * // Calculate reference voltage at 125degC
+ * // V1 = 3.3 x cal125 / 4096 (in fixed-point or float)
  * @endcode
  *
  * @see k_temps_tscdr_addr Address constant

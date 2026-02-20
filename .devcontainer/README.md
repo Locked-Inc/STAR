@@ -69,11 +69,11 @@ This setup avoids the `ms-vscode.cpptools` extension which conflicts with clangd
 CLI tool credentials persist across container rebuilds via explicit bind mounts:
 
 ```
-Host: ~/.config/gh/       →  Container: /home/star/.config/gh/
-Host: ~/.config/opencode/ →  Container: /home/star/.config/opencode/
-Host: ~/.config/openai/   →  Container: /home/star/.config/openai/
-Host: ~/.ssh/             →  Container: /home/star/.ssh/
-Host: ~/.gitconfig        →  Container: /home/star/.gitconfig
+Host: ~/.config/gh/       ->  Container: /home/star/.config/gh/
+Host: ~/.config/opencode/ ->  Container: /home/star/.config/opencode/
+Host: ~/.config/openai/   ->  Container: /home/star/.config/openai/
+Host: ~/.ssh/             ->  Container: /home/star/.ssh/
+Host: ~/.gitconfig        ->  Container: /home/star/.gitconfig
 ```
 
 Only the specific subdirectories listed above are mounted. This prevents host-specific files (iTerm2 sockets, dconf databases, PulseAudio configs) from leaking into the container and works identically on macOS, Windows, and Linux.
@@ -109,12 +109,12 @@ If both are defined (e.g., Cygwin, Git Bash), the path becomes invalid. In that 
 
 The Dockerfile installs a minimal LaTeX distribution for Doxygen PDF output. If `latexmk -pdf star_documentation.tex` fails with missing package errors, add the required `texlive-*` package. Likely candidates:
 
-- `texlive-latex-extra` — tikz extras, booktabs, enumitem, etc.
-- `texlive-science` — algorithm packages
+- `texlive-latex-extra` -- tikz extras, booktabs, enumitem, etc.
+- `texlive-science` -- algorithm packages
 
 ### Codespaces Prebuilds
 
-For instant Codespaces startup, enable prebuilds in your repository settings (Settings → Codespaces) or add a `.github/workflows/codespaces-prebuild.yml`. Without prebuilds, first Codespaces startup still requires `onCreateCommand` to run.
+For instant Codespaces startup, enable prebuilds in your repository settings (Settings -> Codespaces) or add a `.github/workflows/codespaces-prebuild.yml`. Without prebuilds, first Codespaces startup still requires `onCreateCommand` to run.
 
 ## Troubleshooting
 
@@ -128,7 +128,7 @@ For instant Codespaces startup, enable prebuilds in your repository settings (Se
 
 ```
 Command Palette (Ctrl+Shift+P)
-→ Dev Containers: Rebuild Container Without Cache
+-> Dev Containers: Rebuild Container Without Cache
 ```
 
 ### Yarn GPG key error during build
@@ -141,7 +141,7 @@ Command Palette (Ctrl+Shift+P)
 
 ```
 Command Palette (Ctrl+Shift+P)
-→ Dev Containers: Rebuild Container Without Cache
+-> Dev Containers: Rebuild Container Without Cache
 ```
 
 ### "cppbuild" task type error
@@ -153,7 +153,7 @@ Command Palette (Ctrl+Shift+P)
 **Fix**: Ignore this error or reload the window:
 
 ```
-Ctrl+Shift+P → "Developer: Reload Window"
+Ctrl+Shift+P -> "Developer: Reload Window"
 ```
 
 ### "clangd not found on PATH"
@@ -163,7 +163,7 @@ Ctrl+Shift+P → "Developer: Reload Window"
 **Fix**: The Dockerfile installs `clangd` via apt. Rebuild the container:
 
 ```
-Ctrl+Shift+P → "Dev Containers: Rebuild Container"
+Ctrl+Shift+P -> "Dev Containers: Rebuild Container"
 ```
 
 ### "No such file or directory" on mount
@@ -201,13 +201,13 @@ To apply configuration changes:
 
 ```
 Command Palette (Ctrl+Shift+P)
-→ Dev Containers: Rebuild Container
+-> Dev Containers: Rebuild Container
 ```
 
 For a clean rebuild (clears Docker cache):
 
 ```
-→ Dev Containers: Rebuild Container Without Cache
+-> Dev Containers: Rebuild Container Without Cache
 ```
 
 ## Architecture

@@ -28,7 +28,7 @@
  * | Operation         | Time Complexity | Space Complexity |
  * |-------------------|-----------------|------------------|
  * | Encoding          | O(n)            | O(1)             |
- * | Decoding (Viterbi)| O(n × 64 × 2)   | O(n × 64 bits)   |
+ * | Decoding (Viterbi)| O(n x 64 x 2)   | O(n x 64 bits)   |
  * | Traceback         | O(n)            | O(1)             |
  *
  * where n = number of input bits.
@@ -38,8 +38,8 @@
  * The Viterbi algorithm finds the maximum likelihood path through the trellis
  * of encoder states using dynamic programming:
  *
- * 1. **Initialization**: Set path metric for state 0 to 0, all others to ∞
- * 2. **Forward Pass**: For each received symbol pair (r₀, r₁):
+ * 1. **Initialization**: Set path metric for state 0 to 0, all others to inf
+ * 2. **Forward Pass**: For each received symbol pair (r_0, r_1):
  *    - For each current state with finite metric:
  *      - Compute metrics for both possible transitions (input=0, input=1)
  *      - Update next state metrics (keep minimum)
@@ -56,7 +56,7 @@
  * @f]
  *
  * where:
- * - @f$ r_i @f$ = received soft bit (−127 to +127)
+ * - @f$ r_i @f$ = received soft bit (-127 to +127)
  * - @f$ e_i' = +127 @f$ if expected bit is 1, @f$ -127 @f$ if 0
  * - Lower metric = better match
  *
@@ -79,8 +79,8 @@
  * - **Rule 1**: [OK] No recursion, goto, or setjmp/longjmp
  * - **Rule 2**: [OK] All loops bounded (k_fec_max_symbols, k_fec_num_states)
  * - **Rule 3**: [OK] Zero dynamic allocation
- * - **Rule 4**: [OK] All functions ≤ 60 lines
- * - **Rule 5**: [OK] All functions have ≥2 assertions
+ * - **Rule 4**: [OK] All functions <= 60 lines
+ * - **Rule 5**: [OK] All functions have >=2 assertions
  * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
  * @author STAR Team
@@ -662,8 +662,6 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
                                                 const rx_fec_decode_soft_params_t* params,
                                                 uint32_t*                          num_symbols_out)
 {
-  uint32_t num_symbols;
-
   if (dec == nullptr || params == nullptr || num_symbols_out == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -681,7 +679,7 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
     return k_rx_err_invalid_arg;
   }
 
-  num_symbols = (params->expected_output_len > k_fec_zero)
+  const uint32_t num_symbols = (params->expected_output_len > k_fec_zero)
                   ? (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits)
                   : k_fec_zero;
 
@@ -776,19 +774,79 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
 /**
  * @brief Decode FEC-encoded data using soft-decision Viterbi algorithm
  *
- * @param[in] dec Pointer to initialized decoder
- * @param[in] params Decode parameters (soft bits, expected output length, output buffer)
+ * @details
+ * Implements Rate-1/2 Viterbi soft-decision decoding with constraint length 7.
+ * Accepts soft-decision values (signed integers in range [-128, 127]) to
+ * achieve approximately 3 dB coding gain over hard-decision decoding.
  *
- * @return k_rx_ok on success, error code otherwise
+ * Algorithm steps:
+ * 1. Validate parameters via internal_validate_decode_params()
+ * 2. Forward pass: compute branch and path metrics for all symbols
+ * 3. Calculate data bit count (num_symbols - tail bits)
+ * 4. Traceback: extract maximum-likelihood decoded bit sequence
+ * 5. Pack decoded bits into output byte array
+ *
+ * @param[in] dec    Pointer to initialized FEC decoder (must be initialized via
+ *                   rx_fec_decoder_init(); survivors buffer must be sized for input)
+ * @param[in] params Decode parameters:
+ *                   - soft_bits: signed soft values, G1/G2 interleaved pairs
+ *                   - soft_len: must be non-zero and divisible by 2
+ *                   - expected_output_len: expected decoded byte count (> 0)
+ *                   - output: output buffer (must be >= expected_output_len bytes)
+ *                   - output_len: written with actual decoded byte count on success
+ *
+ * @return rx_err_t Status code
+ * @retval k_rx_ok             Decoding succeeded; output_len updated with byte count
+ * @retval k_rx_err_invalid_arg dec or params (or required fields) are nullptr;
+ *                              or soft_len is zero or not divisible by 2
+ * @retval k_rx_err_invalid_state dec is not initialized
+ * @retval k_rx_err_invalid_size  expected_output_len out of range; or derived
+ *                                num_symbols falls outside [k_fec_tail_bits,
+ *                                k_fec_max_symbols]; or data_bits == 0 after
+ *                                subtracting tail bits
+ *
+ * @pre dec must be initialized via rx_fec_decoder_init()
+ * @pre params->soft_len must be divisible by 2 (G1/G2 symbol pairs)
+ * @pre params->expected_output_len must be > 0 and <= k_fec_max_input_bytes
+ *
+ * @post *params->output_len written with actual decoded byte count on k_rx_ok
+ * @post params->output contains decoded data bytes on k_rx_ok
+ * @post dec path metric arrays updated (internal state consumed by traceback)
+ *
+ * @note Not thread-safe; caller must ensure exclusive access to dec and params
+ * @note Soft values: positive = bit-1 likely, negative = bit-0 likely (signed).
+ *
+ * @see rx_fec_decoder_init()  Initialize decoder before calling this function
+ * @see rx_fec_decode_hard()   Hard-decision wrapper (lower coding gain, simpler input)
+ * @see rx_fec_encode()        Encoder that produces the data this function decodes
+ *
+ * @since Version 1.0.0
+ *
+ * @code
+ * // Example: soft-decision decode of a previously FEC-encoded buffer
+ * rx_fec_decoder_t            dec;
+ * uint64_t                    survivors[k_fec_max_symbols];
+ * rx_soft_bit_t               soft_buf[k_fec_max_symbols * k_fec_num_outputs];
+ * uint8_t                     out_buf[k_fec_max_input_bytes];
+ * uint32_t                    out_len = k_fec_zero;
+ *
+ * (void)rx_fec_decoder_init(&dec, survivors, k_fec_max_symbols);
+ *
+ * // Populate soft_buf from channel (positive = bit-1 likely)
+ * rx_fec_decode_soft_params_t p = {
+ *     .soft_bits           = soft_buf,
+ *     .soft_len            = encoded_len_bits,
+ *     .expected_output_len = original_data_len,
+ *     .output              = out_buf,
+ *     .output_len          = &out_len,
+ * };
+ * rx_err_t err = rx_fec_decode_soft(&dec, &p);
+ * @endcode
  */
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params)
 {
-  uint32_t num_symbols;
-  rx_err_t err;
-  uint32_t data_bits;
-  uint32_t output_bytes;
-
-  err = internal_validate_decode_params(dec, params, &num_symbols);
+  uint32_t       num_symbols = k_fec_zero;
+  const rx_err_t err         = internal_validate_decode_params(dec, params, &num_symbols);
   if (err != k_rx_ok) {
     return err;
   }
@@ -797,12 +855,12 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
   internal_viterbi_forward_pass(dec, params->soft_bits, num_symbols);
 
   /* Calculate data bits and output size */
-  data_bits = num_symbols - k_fec_tail_bits;
+  const uint32_t data_bits = num_symbols - k_fec_tail_bits;
   if (data_bits == k_fec_zero) {
     return k_rx_err_invalid_size;
   }
 
-  output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
+  const uint32_t output_bytes = (data_bits + k_fec_msb_bit_position) / k_rx_bits_per_byte;
 
   /* Traceback: extract decoded bits */
   internal_viterbi_traceback(dec, num_symbols, data_bits, params->output, output_bytes);
@@ -814,16 +872,82 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
 /**
  * @brief Decode FEC-encoded data using hard-decision bits (converts to soft internally)
  *
- * @param[in] dec Pointer to initialized decoder
- * @param[in] params Decode parameters (hard bits, soft buffer, expected output, output buffer)
+ * @details
+ * Convenience wrapper that converts hard-decision bits (0/1) to soft-decision
+ * values and delegates to rx_fec_decode_soft(). Accepts raw bit-packed data
+ * (MSB-first) as produced by standard digital logic or RSPI transfers.
  *
- * @return k_rx_ok on success, error code otherwise
+ * Algorithm steps:
+ * 1. Validate all input pointers and size constraints
+ * 2. Convert each hard bit to a soft value via rx_fec_hard_to_soft()
+ *    (maps 0 -> negative confidence, 1 -> positive confidence)
+ * 3. Build rx_fec_decode_soft_params_t from the converted soft bits
+ * 4. Delegate to rx_fec_decode_soft() for full Viterbi decode
+ *
+ * @param[in] dec    Pointer to initialized FEC decoder (must be initialized via
+ *                   rx_fec_decoder_init(); survivors buffer sized for decoded output)
+ * @param[in] params Decode parameters:
+ *                   - data: bit-packed hard-decision input (MSB-first per byte)
+ *                   - data_len: byte count of hard data; must be > 0 and
+ *                               <= k_fec_max_input_bytes
+ *                   - soft_bits_buffer: caller-supplied scratch buffer for soft
+ *                                       conversion; must be >= data_len*8 entries
+ *                   - soft_buffer_len: element count of soft_bits_buffer
+ *                   - expected_output_len: expected decoded byte count
+ *                   - output: output buffer (must be >= expected_output_len bytes)
+ *                   - output_len: written with actual decoded byte count on success
+ *
+ * @return rx_err_t Status code
+ * @retval k_rx_ok             Decoding succeeded; output_len updated
+ * @retval k_rx_err_invalid_arg dec or required params fields are nullptr;
+ *                              or data_len == 0
+ * @retval k_rx_err_invalid_state dec is not initialized
+ * @retval k_rx_err_invalid_size  data_len > k_fec_max_input_bytes; or
+ *                                soft_bits_buffer too small for converted bits;
+ *                                or errors propagated from rx_fec_decode_soft()
+ *
+ * @pre dec must be initialized via rx_fec_decoder_init()
+ * @pre params->soft_bits_buffer must be large enough: soft_buffer_len >= data_len * 8
+ * @pre params->data_len must be > 0 and <= k_fec_max_input_bytes
+ *
+ * @post *params->output_len written with actual decoded byte count on k_rx_ok
+ * @post params->output contains decoded data bytes on k_rx_ok
+ * @post params->soft_bits_buffer populated with converted soft values (side effect)
+ *
+ * @note Not thread-safe; caller must ensure exclusive access to dec and params
+ * @note Hard-decision decoding has ~3 dB lower coding gain than soft-decision
+ *
+ * @see rx_fec_decode_soft()   Preferred: use when soft values are available
+ * @see rx_fec_decoder_init()  Initialize decoder before calling this function
+ * @see rx_fec_hard_to_soft()  Conversion function used internally
+ * @see rx_fec_encode()        Encoder that produces data this function decodes
+ *
+ * @since Version 1.0.0
+ *
+ * @code
+ * // Example: hard-decision decode of packed FEC-encoded bytes
+ * rx_fec_decoder_t            dec;
+ * uint64_t                    survivors[k_fec_max_symbols];
+ * rx_soft_bit_t               soft_scratch[k_fec_max_symbols * k_fec_num_outputs];
+ * uint8_t                     out_buf[k_fec_max_input_bytes];
+ * uint32_t                    out_len = k_fec_zero;
+ *
+ * (void)rx_fec_decoder_init(&dec, survivors, k_fec_max_symbols);
+ *
+ * rx_fec_decode_hard_params_t p = {
+ *     .data                = received_bytes,
+ *     .data_len            = received_len,
+ *     .soft_bits_buffer    = soft_scratch,
+ *     .soft_buffer_len     = k_fec_max_symbols * k_fec_num_outputs,
+ *     .expected_output_len = original_data_len,
+ *     .output              = out_buf,
+ *     .output_len          = &out_len,
+ * };
+ * rx_err_t err = rx_fec_decode_hard(&dec, &p);
+ * @endcode
  */
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params)
 {
-  uint32_t                    num_bits;
-  rx_fec_decode_soft_params_t soft_params;
-
   if (dec == nullptr || params == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -846,7 +970,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
   }
 
   /* Convert hard bits to soft bits */
-  num_bits = (uint32_t)(params->data_len * k_rx_bits_per_byte);
+  const uint32_t num_bits = (uint32_t)(params->data_len * k_rx_bits_per_byte);
 
   /* Ensure soft bits buffer is large enough */
   if (num_bits > params->soft_buffer_len) {
@@ -859,11 +983,13 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
   }
 
   /* Prepare soft decode parameters */
-  soft_params.soft_bits           = params->soft_bits_buffer;
-  soft_params.soft_len            = num_bits;
-  soft_params.expected_output_len = params->expected_output_len;
-  soft_params.output              = params->output;
-  soft_params.output_len          = params->output_len;
+  const rx_fec_decode_soft_params_t soft_params = {
+    .soft_bits           = params->soft_bits_buffer,
+    .soft_len            = num_bits,
+    .expected_output_len = params->expected_output_len,
+    .output              = params->output,
+    .output_len          = params->output_len,
+  };
 
   return rx_fec_decode_soft(dec, &soft_params);
 }

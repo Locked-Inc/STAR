@@ -21,48 +21,48 @@
  * ## Layered Design
  *
  * @code{.unparsed}
- * ┌─────────────────────────────────────────────────┐
- * │ Application Layer (Tasks)                        │
- * │ - Obstacle detection task                        │
- * │ - Collision avoidance                            │
- * │ - Autonomous navigation                          │
- * └────────────────┬────────────────────────────────┘
- *                  │
- * ┌────────────────▼────────────────────────────────┐
- * │ HC-SR04 Driver (This Module)                     │
- * │ ┌─────────────────────────────────────────────┐ │
- * │ │ Public API                                  │ │
- * │ │ - rx_hcsr04_init/deinit                     │ │
- * │ │ - rx_hcsr04_measure_blocking                │ │
- * │ │ - rx_hcsr04_measure_async                   │ │
- * │ │ - rx_hcsr04_set_temperature                 │ │
- * │ └────────────┬────────────────────────────────┘ │
- * │ ┌────────────▼────────────────────────────────┐ │
- * │ │ Worker Thread Infrastructure                 │ │
- * │ │ - ThreadX event flags                        │ │
- * │ │ - Mutex-protected pending queue              │ │
- * │ │ - Async callback dispatch                    │ │
- * │ └────────────┬────────────────────────────────┘ │
- * │ ┌────────────▼────────────────────────────────┐ │
- * │ │ Internal Helpers                             │ │
- * │ │ - internal_send_trigger_pulse()              │ │
- * │ │ - internal_wait_for_echo()                   │ │
- * │ │ - internal_measure_echo_pulse()              │ │
- * │ └────────────┬────────────────────────────────┘ │
- * └──────────────┼──────────────────────────────────┘
- *                │
- * ┌──────────────▼──────────────────────────────────┐
- * │ HAL Layer (rx_hcsr04_hal.h)                      │
- * │ - GPIO control (set output/input, write, read)   │
- * │ - Microsecond timing (delay_us, get_time_us)     │
- * │ - Platform-specific implementation               │
- * └──────────────┬──────────────────────────────────┘
- *                │
- * ┌──────────────▼──────────────────────────────────┐
- * │ Hardware Layer                                    │
- * │ - RX72N GPIO peripheral (182 pins)               │
- * │ - CMT2 timer (7.5 MHz for µs precision)          │
- * └───────────────────────────────────────────────────┘
+ * +-------------------------------------------------+
+ * | Application Layer (Tasks)                        |
+ * | - Obstacle detection task                        |
+ * | - Collision avoidance                            |
+ * | - Autonomous navigation                          |
+ * +----------------+--------------------------------+
+ *                  |
+ * +----------------v--------------------------------+
+ * | HC-SR04 Driver (This Module)                     |
+ * | +---------------------------------------------+ |
+ * | | Public API                                  | |
+ * | | - rx_hcsr04_init/deinit                     | |
+ * | | - rx_hcsr04_measure_blocking                | |
+ * | | - rx_hcsr04_measure_async                   | |
+ * | | - rx_hcsr04_set_temperature                 | |
+ * | +------------+--------------------------------+ |
+ * | +------------v--------------------------------+ |
+ * | | Worker Thread Infrastructure                 | |
+ * | | - ThreadX event flags                        | |
+ * | | - Mutex-protected pending queue              | |
+ * | | - Async callback dispatch                    | |
+ * | +------------+--------------------------------+ |
+ * | +------------v--------------------------------+ |
+ * | | Internal Helpers                             | |
+ * | | - internal_send_trigger_pulse()              | |
+ * | | - internal_wait_for_echo()                   | |
+ * | | - internal_measure_echo_pulse()              | |
+ * | +------------+--------------------------------+ |
+ * +--------------+----------------------------------+
+ *                |
+ * +--------------v----------------------------------+
+ * | HAL Layer (rx_hcsr04_hal.h)                      |
+ * | - GPIO control (set output/input, write, read)   |
+ * | - Microsecond timing (delay_us, get_time_us)     |
+ * | - Platform-specific implementation               |
+ * +--------------+----------------------------------+
+ *                |
+ * +--------------v----------------------------------+
+ * | Hardware Layer                                    |
+ * | - RX72N GPIO peripheral (182 pins)               |
+ * | - CMT2 timer (7.5 MHz for us precision)          |
+ * +---------------------------------------------------+
  * @endcode
  *
  * # Design Rationale
@@ -113,15 +113,15 @@
  *
  * ## Temperature Compensation Algorithm
  *
- * Speed of sound varies with temperature: **v = 331.3 + 0.606 × T** (m/s)
+ * Speed of sound varies with temperature: **v = 331.3 + 0.606 x T** (m/s)
  *
  * | Temperature | Speed (m/s) | Error at 100cm (no compensation) |
  * |-------------|-------------|----------------------------------|
- * | 0°C         | 331.3       | +1.75 cm (too short)             |
- * | 20°C        | 343.4       | 0 cm (reference)                 |
- * | 40°C        | 355.5       | -1.75 cm (too long)              |
+ * | 0degC         | 331.3       | +1.75 cm (too short)             |
+ * | 20degC        | 343.4       | 0 cm (reference)                 |
+ * | 40degC        | 355.5       | -1.75 cm (too long)              |
  *
- * Enabling compensation improves accuracy by **~1.75% across 40°C range**.
+ * Enabling compensation improves accuracy by **~1.75% across 40degC range**.
  *
  * ## Memory Architecture
  *
@@ -406,17 +406,17 @@
  * **Measurement breakdown:**
  * | Phase                | Duration       | Notes                          |
  * |----------------------|----------------|--------------------------------|
- * | Trigger pulse        | 10 µs          | GPIO write sequence            |
- * | Echo wait (near)     | 116 µs         | 2 cm object                    |
+ * | Trigger pulse        | 10 us          | GPIO write sequence            |
+ * | Echo wait (near)     | 116 us         | 2 cm object                    |
  * | Echo wait (far)      | 23.2 ms        | 400 cm object                  |
  * | Echo wait (timeout)  | 30 ms          | No object detected             |
- * | Distance calculation | <1 µs          | Float division                 |
+ * | Distance calculation | <1 us          | Float division                 |
  * | **Total (typical)**  | **1-30 ms**    | Depends on object distance     |
  *
  * **Worker thread overhead:**
  * - Event flag wait: Blocks until request (zero CPU when idle)
- * - Callback dispatch: <10 µs (function pointer call)
- * - Mutex acquire/release: ~5 µs each
+ * - Callback dispatch: <10 us (function pointer call)
+ * - Mutex acquire/release: ~5 us each
  *
  * ## Memory Usage
  *
@@ -499,7 +499,7 @@
  *
  * **Timer:**
  * - CMT2 (Compare Match Timer 2)
- * - 7.5 MHz (PCLKB 60 MHz ÷ 8)
+ * - 7.5 MHz (PCLKB 60 MHz / 8)
  * - 133 ns resolution per tick
  *
  * **ThreadX Objects (async mode):**
@@ -561,7 +561,7 @@ typedef enum : uint8_t {
  * - Function call depth: 4 (worker -> measure -> measure_pulse -> HAL)
  * - Local variables: ~200 bytes (result struct, counters, status)
  * - ThreadX overhead: ~256 bytes
- * - Safety margin: 2× (568 bytes)
+ * - Safety margin: 2x (568 bytes)
  * - **Total: 1024 bytes** (conservative, allows future expansion)
  *
  * **Verified by stack checking:**
@@ -683,7 +683,7 @@ typedef enum : uint8_t {
  *
  * @details
  * Number of ThreadX ticks to sleep per iteration in the IRQ echo wait loop.
- * At the default 100 Hz tick rate, 1 tick ≈ 10 ms.
+ * At the default 100 Hz tick rate, 1 tick ~ 10 ms.
  *
  * @invariant k_irq_yield_ticks >= 1 (must yield at least 1 tick to avoid busy-wait)
  *
@@ -734,27 +734,27 @@ typedef enum : uint32_t {
 } rx_hcsr04_irq_poll_limits_t;
 
 /**
- * @brief Speed of sound base constant (m/s at 0°C)
+ * @brief Speed of sound base constant (m/s at 0degC)
  */
 static const float s_speed_of_sound_base_mps = 331.3F;
 
 /**
- * @brief Speed of sound temperature coefficient (m/s per °C)
+ * @brief Speed of sound temperature coefficient (m/s per degC)
  */
 static const float s_speed_of_sound_coeff = 0.606F;
 
 /**
- * @brief Default temperature for distance calculations (°C)
+ * @brief Default temperature for distance calculations (degC)
  */
 static const float s_default_temperature_celsius = 20.0F;
 
 /**
- * @brief Minimum valid temperature (°C) - DS18B20 sensor lower limit
+ * @brief Minimum valid temperature (degC) - DS18B20 sensor lower limit
  */
 static const float s_min_temp_celsius = -40.0F;
 
 /**
- * @brief Maximum valid temperature (°C) - DS18B20 sensor upper limit
+ * @brief Maximum valid temperature (degC) - DS18B20 sensor upper limit
  */
 static const float s_max_temp_celsius = 85.0F;
 
@@ -789,7 +789,7 @@ static const float s_roundtrip_divisor = 2.0F;
  * 3. Worker: Invokes callback, clears `handle` to NULL (signals idle)
  * 4. Caller: Next `measure_async()` can proceed (handle == nullptr)
  *
- * **Invariant:** `handle == nullptr` ⟺ worker is idle (ready for new request)
+ * **Invariant:** `handle == nullptr` <=> worker is idle (ready for new request)
  *
  * ## Memory Layout
  *
@@ -839,7 +839,7 @@ static TX_THREAD s_hcsr04_worker_thread;
  * **Stack Usage Breakdown:**
  * - ThreadX overhead: ~256 bytes
  * - Local variables: ~200 bytes
- * - Call stack depth: 4 levels × ~50 bytes = 200 bytes
+ * - Call stack depth: 4 levels x ~50 bytes = 200 bytes
  * - Remaining headroom: ~368 bytes (36%)
  *
  * **Verification:**
@@ -939,17 +939,17 @@ static TX_MUTEX s_pending_mutex;
  * **State Transitions:**
  * ```
  * IDLE (handle == nullptr)
- *   ↓ [measure_async called]
+ *   v [measure_async called]
  * QUEUED (handle != nullptr, worker not yet started)
- *   ↓ [worker wakes, starts measurement]
+ *   v [worker wakes, starts measurement]
  * ACTIVE (handle != nullptr, measurement in progress)
- *   ↓ [measurement completes, callback invoked]
+ *   v [measurement completes, callback invoked]
  * IDLE (handle = nullptr, ready for next request)
  * ```
  *
  * **Synchronization Invariants:**
- * - `handle == nullptr` ⟹ worker is idle
- * - `handle != nullptr` ⟹ measurement active or queued
+ * - `handle == nullptr` => worker is idle
+ * - `handle != nullptr` => measurement active or queued
  * - Modifications protected by `s_pending_mutex`
  *
  * @warning NEVER access without holding `s_pending_mutex`
@@ -991,14 +991,14 @@ static bool s_worker_initialized = false;
  */
 
 /**
- * @brief Send 10µs trigger pulse to initiate HC-SR04 measurement
+ * @brief Send 10us trigger pulse to initiate HC-SR04 measurement
  *
  * @details
  * Generates the HC-SR04 trigger pulse sequence per datasheet:
  * 1. Ensure trigger pin LOW (baseline)
- * 2. Delay 2µs (settle time)
+ * 2. Delay 2us (settle time)
  * 3. Set trigger pin HIGH
- * 4. Delay 10µs (pulse width)
+ * 4. Delay 10us (pulse width)
  * 5. Set trigger pin LOW (return to idle)
  *
  * This pulse sequence causes the HC-SR04 to transmit 8 ultrasonic pulses
@@ -1006,12 +1006,12 @@ static bool s_worker_initialized = false;
  *
  * **Timing Diagram:**
  * @code{.unparsed}
- *         ┌─────────┐
- * TRIG    │  10µs   │
- *       ──┘         └─────────────────
- *         ↑         ↑
- *         │         └─ Return to LOW
- *         └─ Send 8×40kHz burst
+ *         +---------+
+ * TRIG    |  10us   |
+ *       --+         +-----------------
+ *         ^         ^
+ *         |         +- Return to LOW
+ *         +- Send 8x40kHz burst
  * @endcode
  *
  * **Algorithm:**
@@ -1021,9 +1021,9 @@ static bool s_worker_initialized = false;
  *   node [shape=box, style=rounded];
  *   start [label="Start"];
  *   low1 [label="Set trigger LOW"];
- *   settle [label="Delay 2µs"];
+ *   settle [label="Delay 2us"];
  *   high [label="Set trigger HIGH"];
- *   pulse [label="Delay 10µs"];
+ *   pulse [label="Delay 10us"];
  *   low2 [label="Set trigger LOW"];
  *   done [label="Return k_rx_ok"];
  *   error [label="Return error", style=filled, fillcolor=lightcoral];
@@ -1049,7 +1049,7 @@ static bool s_worker_initialized = false;
  * @pre handle != nullptr
  * @pre handle->initialized == true
  * @pre handle->trigger_pin is configured as output
- * @post Trigger pulse sent (10µs HIGH pulse completed)
+ * @post Trigger pulse sent (10us HIGH pulse completed)
  * @post Trigger pin returned to LOW state
  *
  * @note Not thread-safe - concurrent calls corrupt trigger timing
@@ -1063,23 +1063,19 @@ static bool s_worker_initialized = false;
  */
 static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
-  rx_err_t err;
-  uint8_t  port;
-  uint8_t  pin_num;
-
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
-  port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
-  pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
+  const uint8_t port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
+  const uint8_t pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
   if ((port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) ||
       (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Ensure trigger is low initially */
-  err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  rx_err_t err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
   RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to set trigger low");
   hcsr04_hal_delay_us(k_hcsr04_trigger_settle_us);
 
@@ -1110,7 +1106,7 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
  * 2. Wait for echo LOW (pulse end): `internal_wait_for_echo(handle, false, timeout_us)`
  *
  * **Timing Analysis:**
- * - Near object (2cm): ~116µs (2 iterations @ 60µs/iter)
+ * - Near object (2cm): ~116us (2 iterations @ 60us/iter)
  * - Far object (400cm): ~23.2ms (387 iterations)
  * - Timeout (no object): ~30ms (500 iterations)
  *
@@ -1173,7 +1169,7 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
  * @attention Cancellation only checked during polling (not retroactive)
  *
  * @par Performance:
- * - Per-iteration time: ~1-2µs (GPIO read + comparison)
+ * - Per-iteration time: ~1-2us (GPIO read + comparison)
  * - Typical iterations: 10-400 (depends on object distance)
  * - CPU usage: 100% during polling (busy-wait)
  *
@@ -1191,28 +1187,22 @@ static rx_err_t
 internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t timeout_us)
 {
   const uint32_t start_time = hcsr04_hal_get_time_us();
-  uint32_t       elapsed    = 0;
-  bool           pin_state  = false;
-  rx_err_t       read_err   = k_rx_ok;
-
   for (uint32_t i = 0; i < k_echo_poll_max_iterations; i++) {
     /* Check for cancellation request */
     if (handle->cancel_requested) {
       handle->cancel_requested = false;
       return k_rx_err_cancelled;
     }
-
-    read_err = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
+    bool           pin_state = false;
+    const rx_err_t read_err  = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
     if (read_err != k_rx_ok) {
       return read_err;
     }
-
     if (pin_state == target_state) {
       return k_rx_ok;
     }
-
     /* Check for timeout */
-    elapsed = hcsr04_hal_get_time_us() - start_time;
+    const uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
@@ -1226,7 +1216,7 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
  *
  * @details
  * Captures rising and falling edges of echo pulse to compute duration.
- * Echo pulse width is proportional to object distance (58µs per cm roundtrip).
+ * Echo pulse width is proportional to object distance (58us per cm roundtrip).
  *
  * **Measurement Sequence:**
  * @msc
@@ -1251,10 +1241,10 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
  * **Timing Examples:**
  * | Distance | Echo Pulse Width | Calculation                |
  * |----------|------------------|----------------------------|
- * | 2 cm     | 116 µs           | 2 × 58 µs/cm               |
- * | 10 cm    | 580 µs           | 10 × 58 µs/cm              |
- * | 100 cm   | 5.8 ms           | 100 × 58 µs/cm             |
- * | 400 cm   | 23.2 ms          | 400 × 58 µs/cm (max range) |
+ * | 2 cm     | 116 us           | 2 x 58 us/cm               |
+ * | 10 cm    | 580 us           | 10 x 58 us/cm              |
+ * | 100 cm   | 5.8 ms           | 100 x 58 us/cm             |
+ * | 400 cm   | 23.2 ms          | 400 x 58 us/cm (max range) |
  *
  * **Error Conditions:**
  * - No rising edge: Object too far (>400cm) or sensor fault
@@ -1295,7 +1285,7 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
  *
  * if (err == k_rx_ok) {
  *     float distance_cm = (float)pulse_us / 58.0f;
- *     printf("Distance: %.1f cm (pulse: %lu µs)\n", distance_cm, pulse_us);
+ *     printf("Distance: %.1f cm (pulse: %lu us)\n", distance_cm, pulse_us);
  * } else if (err == k_rx_err_timeout) {
  *     printf("No object detected (>400cm or no echo)\n");
  * }
@@ -1309,17 +1299,13 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
  */
 static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* duration_us)
 {
-  rx_err_t err;
-  uint32_t pulse_start = 0;
-  uint32_t pulse_end   = 0;
-
   /* Wait for echo to go HIGH (pulse start) */
-  err = internal_wait_for_echo(handle, true, handle->timeout_us);
+  rx_err_t err = internal_wait_for_echo(handle, true, handle->timeout_us);
   if (err != k_rx_ok) {
     return err;
   }
 
-  pulse_start = hcsr04_hal_get_time_us();
+  const uint32_t pulse_start = hcsr04_hal_get_time_us();
 
   /* Wait for echo to go LOW (pulse end) */
   err = internal_wait_for_echo(handle, false, handle->timeout_us);
@@ -1327,7 +1313,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  pulse_end    = hcsr04_hal_get_time_us();
+  const uint32_t pulse_end   = hcsr04_hal_get_time_us();
   *duration_us = pulse_end - pulse_start;
 
   return k_rx_ok;
@@ -1353,7 +1339,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
  *
  * @param[in]  handle      Sensor handle configured for IRQ mode (must not be NULL)
  * @param[out] duration_us Pointer to store echo pulse duration in microseconds
- *                         (must not be NULL; valid range 150-8700 µs for 2-150 cm in IRQ mode)
+ *                         (must not be NULL; valid range 150-8700 us for 2-150 cm in IRQ mode)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Measurement complete, duration written to *duration_us
@@ -1508,7 +1494,7 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
  * **Performance:**
  * - Idle power: Near-zero CPU (blocked on event flag)
  * - Active time: 1-30ms per measurement (same as blocking mode)
- * - Context switch overhead: ~10µs (wake + dispatch)
+ * - Context switch overhead: ~10us (wake + dispatch)
  *
  * @param[in] input ThreadX thread input parameter (unused, reserved for future use)
  *
@@ -1560,18 +1546,15 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
 static void hcsr04_worker_entry(const ULONG input)
 {
   (void)input;
-  ULONG              actual_flags;
-  rx_hcsr04_result_t result;
-  UINT               status;
-  rx_err_t           err;
 
   while (true) {
     /* Wait for measurement request OR shutdown request */
-    status = tx_event_flags_get(&s_measurement_request,
-                                k_event_measurement_request | k_event_shutdown_request,
-                                TX_OR_CLEAR,
-                                &actual_flags,
-                                TX_WAIT_FOREVER);
+    ULONG      actual_flags = 0;
+    const UINT status       = tx_event_flags_get(&s_measurement_request,
+                                                 k_event_measurement_request | k_event_shutdown_request,
+                                                 TX_OR_CLEAR,
+                                                 &actual_flags,
+                                                 TX_WAIT_FOREVER);
 
     if (status != TX_SUCCESS) {
       continue; /* Should not happen with TX_WAIT_FOREVER */
@@ -1584,7 +1567,8 @@ static void hcsr04_worker_entry(const ULONG input)
     }
 
     /* Perform blocking measurement */
-    err = rx_hcsr04_measure(s_pending.handle, &result);
+    rx_hcsr04_result_t result;
+    const rx_err_t     err = rx_hcsr04_measure(s_pending.handle, &result);
     if (err != k_rx_ok) {
       result.status = err;
     }
@@ -1623,15 +1607,13 @@ static void hcsr04_worker_entry(const ULONG input)
  */
 rx_err_t rx_hcsr04_worker_init(void)
 {
-  UINT status;
-
   /* Check if already initialized */
   if (s_worker_initialized) {
     return k_rx_err_invalid_state;
   }
 
   /* Create mutex for pending measurement protection */
-  status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
+  UINT status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -1693,8 +1675,6 @@ rx_err_t rx_hcsr04_worker_init(void)
  */
 rx_err_t rx_hcsr04_worker_deinit(void)
 {
-  UINT status;
-
   /* Check if initialized */
   if (!s_worker_initialized) {
     return k_rx_err_invalid_state;
@@ -1705,7 +1685,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
    * This prevents abrupt termination mid-measurement, which could leave
    * sensor handles stuck in measurement_active state.
    */
-  status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
+  UINT status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -1795,7 +1775,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  * handle->irq_priority = effective_priority;
  * @endcode
  *
- * @see rx_hcsr04_init() Sole caller — handles trigger pin cleanup on error
+ * @see rx_hcsr04_init() Sole caller -- handles trigger pin cleanup on error
  *
  * @since Version 1.3.0 (Issue #336 - sensor_index validated and forwarded to ISR)
  */
@@ -1817,7 +1797,7 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
     return k_rx_err_invalid_arg;
   }
 
-  /* Validate that echo_pin matches echo_irq (P00→IRQ8, P01→IRQ9, P02→IRQ10, P03→IRQ11) */
+  /* Validate that echo_pin matches echo_irq (P00->IRQ8, P01->IRQ9, P02->IRQ10, P03->IRQ11) */
   const uint8_t pin_port     = rx_port_from_pin(config->echo_pin);
   const uint8_t pin_num      = rx_pin_from_pin(config->echo_pin);
   const uint8_t expected_pin = (uint8_t)config->echo_irq - (uint8_t)k_irq_range_min;
@@ -1871,10 +1851,6 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
  */
 rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 {
-  rx_err_t err;
-  uint8_t  effective_priority =
-    k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
-
   if (handle == nullptr || config == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -1884,12 +1860,13 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Configure trigger pin as output */
-  err = hcsr04_hal_gpio_set_output(config->trigger_pin);
+  rx_err_t err = hcsr04_hal_gpio_set_output(config->trigger_pin);
   if (err != k_rx_ok) {
     return err;
   }
 
-  /* Configure echo pin based on mode (explicit validation — no implicit fallback) */
+  /* Configure echo pin based on mode (explicit validation -- no implicit fallback) */
+  uint8_t effective_priority = k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
   if (config->echo_mode == k_hcsr04_echo_irq) {
     /* IRQ mode: delegate to helper to keep this function under 60 lines (NASA Rule 4) */
     err = internal_init_irq_mode(config, &effective_priority);
@@ -2099,9 +2076,6 @@ static rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_
  */
 rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 {
-  rx_err_t err;
-  uint32_t echo_time_us = 0;
-
   if (handle == nullptr || distance_cm == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -2114,7 +2088,8 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   handle->measurement_count++;
 
   /* Arm ISR (if IRQ mode), send trigger pulse, and measure echo */
-  err = internal_trigger_and_measure(handle, &echo_time_us);
+  uint32_t echo_time_us = 0;
+  rx_err_t err          = internal_trigger_and_measure(handle, &echo_time_us);
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;
@@ -2159,8 +2134,6 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
  */
 rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 {
-  rx_err_t err;
-
   if (handle == nullptr || result == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -2179,7 +2152,7 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
   handle->measurement_count++;
 
   /* Arm ISR (if IRQ mode), send trigger pulse, and measure echo */
-  err = internal_trigger_and_measure(handle, &result->echo_time_us);
+  rx_err_t err = internal_trigger_and_measure(handle, &result->echo_time_us);
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;
@@ -2216,10 +2189,6 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 rx_err_t
 rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback, void* user_data)
 {
-  rx_err_t           err;
-  UINT               status;
-  rx_hcsr04_result_t result;
-
   if (handle == nullptr || callback == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -2240,7 +2209,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
      * True async mode: queue measurement request for worker thread.
      * Use mutex to prevent race condition with worker thread.
      */
-    status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+    UINT status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
     if (status != TX_SUCCESS) {
       handle->measurement_active = false;
       return k_rx_err_rtos_error;
@@ -2275,7 +2244,8 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
     return k_rx_ok; /* Callback will be invoked from worker thread */
   }
   /* Fallback sync mode: perform measurement inline (backward compatible) */
-  err = rx_hcsr04_measure(handle, &result);
+  rx_hcsr04_result_t result;
+  rx_err_t           err = rx_hcsr04_measure(handle, &result);
 
   handle->measurement_active = false;
 
@@ -2344,7 +2314,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
  * for calculating the speed of sound in distance conversions.
  *
  * @param[in,out] handle Sensor handle
- * @param[in] temp_celsius Ambient temperature in degrees Celsius (-40 to +85°C)
+ * @param[in] temp_celsius Ambient temperature in degrees Celsius (-40 to +85degC)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if handle is nullptr
@@ -2376,7 +2346,7 @@ rx_err_t rx_hcsr04_set_temperature(rx_hcsr04_t* handle, const float temp_celsius
 /**
  * @brief Disable temperature compensation
  *
- * Disables temperature compensation and uses default 20°C speed of sound
+ * Disables temperature compensation and uses default 20degC speed of sound
  * for distance calculations.
  *
  * @param[in,out] handle Sensor handle
@@ -2479,7 +2449,7 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
    * Speed of sound in dry air:
    * v = 331.3 + (0.606 * temp_c) m/s
    *
-   * Valid range: -40°C to +85°C (DS18B20 sensor range)
+   * Valid range: -40degC to +85degC (DS18B20 sensor range)
    */
 
   /* Clamp temperature to valid range */
@@ -2498,27 +2468,23 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
  * Calculates distance using temperature-compensated speed of sound.
  *
  * @param[in] echo_time_us Echo pulse duration in microseconds
- * @param[in] temp_celsius Ambient temperature in degrees Celsius (-40 to +85°C)
+ * @param[in] temp_celsius Ambient temperature in degrees Celsius (-40 to +85degC)
  *
  * @return Distance in centimeters, or 0.0 if input is invalid
  */
 float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_celsius)
 {
-  float speed_mps   = 0.0F;
-  float speed_cm_us = 0.0F;
-  float distance_cm = 0.0F;
   /*
    * Temperature-compensated distance calculation:
    * 1. Calculate speed of sound at given temperature
    * 2. Convert speed to cm/us: speed_cm_us = speed_mps / 10000
    * 3. Calculate distance: distance = (echo_us * speed_cm_us) / 2
    *
-   * Example at 20°C:
+   * Example at 20degC:
    * - Speed = 331.3 + (0.606 * 20) = 343.42 m/s
    * - Speed = 0.034342 cm/us
-   * - For echo_us = 580: distance = (580 * 0.034342) / 2 = 9.96 cm ≈ 10 cm
+   * - For echo_us = 580: distance = (580 * 0.034342) / 2 = 9.96 cm ~ 10 cm
    */
-
   /* Pre-condition: Validate temperature range - use default if invalid */
   if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
     return rx_hcsr04_echo_to_cm(echo_time_us);
@@ -2529,9 +2495,9 @@ float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_cel
     return 0.0F;
   }
 
-  speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
-  speed_cm_us = speed_mps / s_mps_to_cm_per_us;
-  distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
+  const float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
+  const float speed_cm_us = speed_mps / s_mps_to_cm_per_us;
+  const float distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
 
   /* Post-condition: Ensure non-negative result */
   if (distance_cm < 0.0F) {

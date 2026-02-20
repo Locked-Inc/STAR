@@ -26,14 +26,14 @@
  * | **Detection** | 4.3 billion errors | 256 errors |
  * | **Usage** | Ethernet, ZIP, PNG, SPI frames | OneWire devices, ROM codes |
  * | **Compatibility** | Go crc32.ChecksumIEEE() | DS18B20, DS2482 |
- * | **Performance (SW)** | ~130 µs/100 bytes @ 240 MHz | ~15 µs/8 bytes @ 240 MHz |
- * | **Performance (HW)** | ~32 µs/100 bytes @ 240 MHz | N/A (SW only) |
+ * | **Performance (SW)** | ~130 us/100 bytes @ 240 MHz | ~15 us/8 bytes @ 240 MHz |
+ * | **Performance (HW)** | ~32 us/100 bytes @ 240 MHz | N/A (SW only) |
  *
  * ## Hardware vs Software Implementation
  *
  * **Hardware CRC (RX72N only):**
  * - Uses RX72N CRC peripheral (32-bit, polynomial 0x04C11DB7)
- * - **4x faster** than software for CRC-32 (32 µs vs 130 µs per 100 bytes)
+ * - **4x faster** than software for CRC-32 (32 us vs 130 us per 100 bytes)
  * - Requires initialization via rx_crc_init()
  * - Zero CPU overhead during computation
  * - Limited to CRC-32/IEEE 802.3 polynomial
@@ -61,30 +61,30 @@
  *
  * | Data Size | Hardware CRC | Software CRC | Speedup |
  * |-----------|--------------|--------------|---------|
- * | 8 bytes | 5 µs | 10 µs | 2.0x |
- * | 64 bytes | 20 µs | 85 µs | 4.25x |
- * | 100 bytes | 32 µs | 130 µs | 4.06x |
- * | 255 bytes | 80 µs | 330 µs | 4.13x |
- * | 1024 bytes | 320 µs | 1320 µs | 4.13x |
+ * | 8 bytes | 5 us | 10 us | 2.0x |
+ * | 64 bytes | 20 us | 85 us | 4.25x |
+ * | 100 bytes | 32 us | 130 us | 4.06x |
+ * | 255 bytes | 80 us | 330 us | 4.13x |
+ * | 1024 bytes | 320 us | 1320 us | 4.13x |
  *
  * **CRC-8/Maxim** (Software only, @ 240 MHz):
  *
  * | Data Size | Time | Notes |
  * |-----------|------|-------|
- * | 8 bytes | ~15 µs | Typical OneWire ROM code |
- * | 9 bytes | ~17 µs | ROM + CRC byte |
- * | 64 bytes | ~120 µs | Scratchpad data |
+ * | 8 bytes | ~15 us | Typical OneWire ROM code |
+ * | 9 bytes | ~17 us | ROM + CRC byte |
+ * | 64 bytes | ~120 us | Scratchpad data |
  *
  * **Throughput Analysis:**
- * - **Hardware CRC-32**: ~3.2 MB/s (1024 bytes / 320 µs)
- * - **Software CRC-32**: ~0.78 MB/s (1024 bytes / 1320 µs)
- * - **Software CRC-8**: ~0.47 MB/s (64 bytes / 120 µs, limited use case)
+ * - **Hardware CRC-32**: ~3.2 MB/s (1024 bytes / 320 us)
+ * - **Software CRC-32**: ~0.78 MB/s (1024 bytes / 1320 us)
+ * - **Software CRC-8**: ~0.47 MB/s (64 bytes / 120 us, limited use case)
  *
  * ## Memory Usage
  *
  * **Static Memory:**
- * - **CRC-32 lookup table**: 1024 bytes (256 entries × 4 bytes)
- * - **CRC-8 lookup table**: 256 bytes (256 entries × 1 byte)
+ * - **CRC-32 lookup table**: 1024 bytes (256 entries x 4 bytes)
+ * - **CRC-8 lookup table**: 256 bytes (256 entries x 1 byte)
  * - **Total**: 1280 bytes (shared globally, one-time cost)
  *
  * **Stack Usage:**
@@ -131,7 +131,7 @@
  * **Properties:**
  * - Detects all single-bit errors
  * - Detects all double-bit errors
- * - Detects all burst errors ≤ 32 bits
+ * - Detects all burst errors <= 32 bits
  * - Detects 99.9999% of all other errors
  *
  * ## CRC-8/Maxim Mathematical Definition
@@ -401,8 +401,8 @@ extern "C" {
  * @warning On RX72N, failure to call this results in slower software CRC fallback
  *
  * @par Performance Impact:
- * - **With init (HW CRC)**: 32 µs per 100 bytes (4x faster)
- * - **Without init (SW CRC)**: 130 µs per 100 bytes
+ * - **With init (HW CRC)**: 32 us per 100 bytes (4x faster)
+ * - **Without init (SW CRC)**: 130 us per 100 bytes
  *
  * @par Example - System Initialization:
  * @code{.c}
@@ -497,7 +497,7 @@ extern "C" {
  * The current implementation intentionally does NOT disable the CRC module
  * after initialization. Reasons:
  * 1. CRC calculations may be needed at any time for frame validation
- * 2. Module stop/start overhead is significant (~50 µs per init)
+ * 2. Module stop/start overhead is significant (~50 us per init)
  * 3. Power savings from disabling are minimal (<0.2 mA)
  * 4. No functional benefit in typical operation
  *
@@ -505,8 +505,8 @@ extern "C" {
  * modify implementation to actually disable peripheral.
  *
  * @par Performance Impact:
- * - **After deinit (SW CRC)**: 130 µs per 100 bytes (4x slower)
- * - **After init (HW CRC)**: 32 µs per 100 bytes
+ * - **After deinit (SW CRC)**: 130 us per 100 bytes (4x slower)
+ * - **After init (HW CRC)**: 32 us per 100 bytes
  *
  * @par Example - System Shutdown:
  * @code{.c}
@@ -623,9 +623,9 @@ extern "C" {
  * @warning For large buffers (>10 KB), consider chunking with rx_crc32_update()
  *
  * @par Performance:
- * - **Hardware (RX72N)**: ~32 µs / 100 bytes @ 240 MHz
- * - **Software (RX72N)**: ~130 µs / 100 bytes @ 240 MHz
- * - **Software (x86)**: ~50 µs / 100 bytes @ 3 GHz
+ * - **Hardware (RX72N)**: ~32 us / 100 bytes @ 240 MHz
+ * - **Software (RX72N)**: ~130 us / 100 bytes @ 240 MHz
+ * - **Software (x86)**: ~50 us / 100 bytes @ 3 GHz
  *
  * @par Example - Basic Usage:
  * @code{.c}
@@ -685,17 +685,17 @@ extern "C" {
  * uint32_t start = rx_time_get_us();
  * uint32_t crc_sw = rx_crc32_ieee(data, sizeof(data));  // Software
  * uint32_t elapsed_sw = rx_time_get_us() - start;
- * rx_log_info("CRC", "Software: %u µs", elapsed_sw);
- * // Output: Software: 1320 µs
+ * rx_log_info("CRC", "Software: %u us", elapsed_sw);
+ * // Output: Software: 1320 us
  *
  * // With hardware CRC initialization
  * rx_crc_init();
  * start = rx_time_get_us();
  * uint32_t crc_hw = rx_crc32_ieee(data, sizeof(data));  // Hardware
  * uint32_t elapsed_hw = rx_time_get_us() - start;
- * rx_log_info("CRC", "Hardware: %u µs (%.1fx faster)",
+ * rx_log_info("CRC", "Hardware: %u us (%.1fx faster)",
  *             elapsed_hw, (float)elapsed_sw / elapsed_hw);
- * // Output: Hardware: 320 µs (4.1x faster)
+ * // Output: Hardware: 320 us (4.1x faster)
  *
  * // Both produce same result
  * assert(crc_sw == crc_hw);
@@ -728,7 +728,7 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * **Implementation:**
  * - **Always uses software CRC** (even on RX72N with hardware support)
  * - **Rationale**: Hardware CRC peripheral cannot load arbitrary initial CRC state
- * - **Performance**: Same as software rx_crc32_ieee() (~130 µs per 100 bytes @ 240 MHz)
+ * - **Performance**: Same as software rx_crc32_ieee() (~130 us per 100 bytes @ 240 MHz)
  *
  * **Algorithm (Software Table Lookup):**
  * 1. **Un-finalize input CRC**: `crc ^= 0xFFFFFFFF` (reverse final XOR)
@@ -787,8 +787,8 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * @warning Do not mix rx_crc32_ieee() and rx_crc32_update() incorrectly (see examples)
  *
  * @par Performance:
- * - **Software (RX72N)**: ~130 µs / 100 bytes @ 240 MHz (same as rx_crc32_ieee)
- * - **Software (x86)**: ~50 µs / 100 bytes @ 3 GHz
+ * - **Software (RX72N)**: ~130 us / 100 bytes @ 240 MHz (same as rx_crc32_ieee)
+ * - **Software (x86)**: ~50 us / 100 bytes @ 3 GHz
  *
  * @par Example - Basic Incremental CRC:
  * @code{.c}
@@ -958,7 +958,7 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * **Properties:**
  * - Detects all single-bit errors
  * - Detects all 2-bit errors within 8 bits
- * - Detects all burst errors ≤ 8 bits
+ * - Detects all burst errors <= 8 bits
  * - Detects 99.6% of all other errors (256 possible values)
  *
  * @param[in] data Input buffer to checksum
@@ -989,8 +989,8 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * @warning Different from other CRC-8 variants (CRC-8/CCITT, CRC-8/WCDMA, etc.)
  *
  * @par Performance:
- * - **Software (RX72N)**: ~15 µs / 8 bytes @ 240 MHz
- * - **Software (x86)**: ~5 µs / 8 bytes @ 3 GHz
+ * - **Software (RX72N)**: ~15 us / 8 bytes @ 240 MHz
+ * - **Software (x86)**: ~5 us / 8 bytes @ 3 GHz
  *
  * @par Example - OneWire ROM Code Validation:
  * @code{.c}
@@ -1026,7 +1026,7 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  *   // Extract temperature (bytes 0-1, little-endian)
  *   int16_t raw_temp = (scratchpad[1] << 8) | scratchpad[0];
  *   float temp_c = raw_temp / 16.0f;  // 12-bit resolution
- *   printf("Temperature: %.2f °C\n", temp_c);
+ *   printf("Temperature: %.2f degC\n", temp_c);
  * } else {
  *   rx_log_error("OneWire", "Scratchpad CRC mismatch");
  * }

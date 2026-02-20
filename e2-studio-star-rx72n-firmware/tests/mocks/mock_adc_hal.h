@@ -40,7 +40,7 @@
  * | Aspect | Mock | Real |
  * |--------|------|------|
  * | Hardware | Simulated values | Actual analog voltage |
- * | Timing | Instant | Conversion time (~µs) |
+ * | Timing | Instant | Conversion time (~us) |
  *
  * @par Usage: tests/test_adc_hal.c
  *

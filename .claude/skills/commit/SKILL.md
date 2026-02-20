@@ -29,7 +29,7 @@ Create commits following STAR project conventions with proper safety checks and 
 
 When the user asks to create a commit, follow these steps:
 
-### Step 1: Analyze Current State ✅ READ-ONLY (Safe to run immediately)
+### Step 1: Analyze Current State [PASS] READ-ONLY (Safe to run immediately)
 
 Run these commands in parallel to understand the repository state:
 
@@ -44,7 +44,7 @@ git diff HEAD
 git log --oneline -n 10
 ```
 
-### Step 2: Draft Commit Message ✅ READ-ONLY (Safe to draft)
+### Step 2: Draft Commit Message [PASS] READ-ONLY (Safe to draft)
 
 Analyze all changes (both previously staged and newly added) and draft a message that:
 - Summarizes the nature of changes (new feature, enhancement, bug fix, refactoring, test, docs)
@@ -145,17 +145,17 @@ git commit -m "Update CLAUDE.md with LSP configuration instructions"
 
 ## Common Mistakes to Avoid
 
-❌ **Wrong**: Using `git add .` (might stage sensitive files)
-✅ **Correct**: `git add src/module.c include/module.h`
+[FAIL] **Wrong**: Using `git add .` (might stage sensitive files)
+[PASS] **Correct**: `git add src/module.c include/module.h`
 
-❌ **Wrong**: Amending after hook failure
-✅ **Correct**: Fix issue, re-stage, create NEW commit
+[FAIL] **Wrong**: Amending after hook failure
+[PASS] **Correct**: Fix issue, re-stage, create NEW commit
 
-❌ **Wrong**: Adding AI attribution to commit message
-✅ **Correct**: Write natural, human-style commit messages
+[FAIL] **Wrong**: Adding AI attribution to commit message
+[PASS] **Correct**: Write natural, human-style commit messages
 
-❌ **Wrong**: Vague messages like "fix bug" or "update code"
-✅ **Correct**: "Fix SPI timeout calculation in rx_spi.c"
+[FAIL] **Wrong**: Vague messages like "fix bug" or "update code"
+[PASS] **Correct**: "Fix SPI timeout calculation in rx_spi.c"
 
 ## Important Notes
 

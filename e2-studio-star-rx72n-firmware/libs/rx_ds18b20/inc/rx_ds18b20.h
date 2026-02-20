@@ -19,7 +19,7 @@
  * # Key Features
  *
  * ## Measurement Capabilities
- * - **Temperature range**: -55°C to +125°C with ±0.5°C accuracy (-10°C to +85°C)
+ * - **Temperature range**: -55degC to +125degC with +/-0.5degC accuracy (-10degC to +85degC)
  * - **Programmable resolution**: 9, 10, 11, or 12 bits
  * - **Conversion times**: 94ms (9-bit) to 750ms (12-bit)
  * - **CRC-8 validation**: Detects transmission errors (polynomial x^8 + x^5 + x^4 + 1)
@@ -28,10 +28,10 @@
  *
  * | Resolution | Precision | Conversion Time | Use Case |
  * |------------|-----------|-----------------|----------|
- * | 9-bit      | 0.5°C     | ~94ms           | Fast updates, low precision needed |
- * | 10-bit     | 0.25°C    | ~188ms          | Balanced for most applications |
- * | 11-bit     | 0.125°C   | ~375ms          | High precision, moderate speed |
- * | 12-bit     | 0.0625°C  | ~750ms          | Maximum precision, slow updates |
+ * | 9-bit      | 0.5degC     | ~94ms           | Fast updates, low precision needed |
+ * | 10-bit     | 0.25degC    | ~188ms          | Balanced for most applications |
+ * | 11-bit     | 0.125degC   | ~375ms          | High precision, moderate speed |
+ * | 12-bit     | 0.0625degC  | ~750ms          | Maximum precision, slow updates |
  *
  * ## Advanced Features
  * - **ROM matching**: Supports multi-device 1-Wire buses (up to 255 sensors)
@@ -45,40 +45,40 @@
  * The DS18B20 driver sits at the sensor layer of the STAR firmware stack:
  *
  * @code{.unparsed}
- * ┌─────────────────────────────────────────────────┐
- * │ Application Layer (Tasks)                        │
- * │ - Temperature monitoring task                    │
- * │ - Environmental control                          │
- * └────────────────┬────────────────────────────────┘
- *                  │
- * ┌────────────────▼────────────────────────────────┐
- * │ Sensor Driver Layer                              │
- * │ ┌─────────────────────────────────────────────┐ │
- * │ │ rx_ds18b20 (This Module)                    │ │
- * │ │ - Handle management                         │ │
- * │ │ - CRC validation                            │ │
- * │ │ - Temperature conversion                    │ │
- * │ └──────────────┬──────────────────────────────┘ │
- * └────────────────┼────────────────────────────────┘
- *                  │
- * ┌────────────────▼────────────────────────────────┐
- * │ Bus Manager Layer (rx_bus_manager)              │
- * │ - Abstraction for I2C, SPI, 1-Wire, etc.        │
- * │ - Dependency injection for testability          │
- * └────────────────┬────────────────────────────────┘
- *                  │
- * ┌────────────────▼────────────────────────────────┐
- * │ 1-Wire HAL (rx_bus_onewire)                     │
- * │ - Bit-level 1-Wire protocol                     │
- * │ - Reset/presence detection                      │
- * │ - ROM commands (Match/Skip/Search)              │
- * └────────────────┬────────────────────────────────┘
- *                  │
- * ┌────────────────▼────────────────────────────────┐
- * │ Hardware Layer (GPIO, Timers)                    │
- * │ - Microsecond-precision timing                   │
- * │ - Open-drain GPIO control                        │
- * └──────────────────────────────────────────────────┘
+ * +-------------------------------------------------+
+ * | Application Layer (Tasks)                        |
+ * | - Temperature monitoring task                    |
+ * | - Environmental control                          |
+ * +----------------+--------------------------------+
+ *                  |
+ * +----------------v--------------------------------+
+ * | Sensor Driver Layer                              |
+ * | +---------------------------------------------+ |
+ * | | rx_ds18b20 (This Module)                    | |
+ * | | - Handle management                         | |
+ * | | - CRC validation                            | |
+ * | | - Temperature conversion                    | |
+ * | +--------------+------------------------------+ |
+ * +----------------+--------------------------------+
+ *                  |
+ * +----------------v--------------------------------+
+ * | Bus Manager Layer (rx_bus_manager)              |
+ * | - Abstraction for I2C, SPI, 1-Wire, etc.        |
+ * | - Dependency injection for testability          |
+ * +----------------+--------------------------------+
+ *                  |
+ * +----------------v--------------------------------+
+ * | 1-Wire HAL (rx_bus_onewire)                     |
+ * | - Bit-level 1-Wire protocol                     |
+ * | - Reset/presence detection                      |
+ * | - ROM commands (Match/Skip/Search)              |
+ * +----------------+--------------------------------+
+ *                  |
+ * +----------------v--------------------------------+
+ * | Hardware Layer (GPIO, Timers)                    |
+ * | - Microsecond-precision timing                   |
+ * | - Open-drain GPIO control                        |
+ * +--------------------------------------------------+
  * @endcode
  *
  * # Design Rationale
@@ -153,7 +153,7 @@
  * @code
  * Bit:   7   6   5   4   3   2   1   0
  *        0  R1  R0   1   1   1   1   1
- *           └───┴─ Resolution: 00=9b, 01=10b, 10=11b, 11=12b
+ *           +---+- Resolution: 00=9b, 01=10b, 10=11b, 11=12b
  * @endcode
  *
  * # Performance Characteristics
@@ -194,27 +194,27 @@
  * | **Flash**      | ~2KB code + ~100 bytes constants                 |
  * | **GPIO**       | 1 pin (open-drain or push-pull with resistor)    |
  * | **Timing**     | Microsecond-precision delays (1-Wire protocol)   |
- * | **Pull-up**    | 4.7kΩ resistor to VCC (external)                 |
+ * | **Pull-up**    | 4.7kOhm resistor to VCC (external)                 |
  * | **Power**      | 3.0V-5.5V (parasitic mode: data pin can power)   |
  *
  * ## Typical Wiring (Single Sensor)
  *
  * @code{.unparsed}
  *     VCC (3.3V or 5V)
- *      │
- *      ├─────┬────── 4.7kΩ pull-up resistor
- *      │     │
- *   ┌──┴─────┴──┐
- *   │ DS18B20   │
- *   │           │
- *   │  DQ  VDD  │
- *   └───┬───┬───┘
- *       │   │
- *       │   └────── VCC (or GND for parasitic mode)
- *       │
- *       └────────── MCU GPIO (data line)
+ *      |
+ *      +-----+------ 4.7kOhm pull-up resistor
+ *      |     |
+ *   +--+-----+--+
+ *   | DS18B20   |
+ *   |           |
+ *   |  DQ  VDD  |
+ *   +---+---+---+
+ *       |   |
+ *       |   +------ VCC (or GND for parasitic mode)
+ *       |
+ *       +---------- MCU GPIO (data line)
  *
- *   GND ────────── GND
+ *   GND ---------- GND
  * @endcode
  *
  * # Example Usage Patterns
@@ -231,7 +231,7 @@
  *     rx_ds18b20_config_t config = {
  *         .bus_manager = &g_bus_manager,
  *         .bus_name = "onewire0",
- *         .resolution = k_ds18b20_resolution_12bit,  // 0.0625°C precision
+ *         .resolution = k_ds18b20_resolution_12bit,  // 0.0625degC precision
  *         .use_rom_matching = false,                  // Skip ROM (single sensor)
  *     };
  *
@@ -254,7 +254,7 @@
  *         err = rx_ds18b20_read_temperature(&sensor, &temp_celsius);
  *         if (err == k_rx_ok) {
  *             // Process temperature (e.g., log, control, transmit)
- *             printf("Temperature: %.2f°C\n", temp_celsius);
+ *             printf("Temperature: %.2fdegC\n", temp_celsius);
  *         } else if (err == k_rx_err_crc_mismatch) {
  *             // CRC error: retry or log fault
  *         }
@@ -321,7 +321,7 @@
  *         break;
  *
  *     case k_rx_err_out_of_range:
- *         // Temperature outside -55°C to +125°C
+ *         // Temperature outside -55degC to +125degC
  *         // Sensor fault or extreme environment
  *         break;
  *
@@ -334,7 +334,7 @@
  * ## Example 4: Runtime Resolution Change
  *
  * @code
- * // Switch to 9-bit for faster updates (0.5°C precision)
+ * // Switch to 9-bit for faster updates (0.5degC precision)
  * rx_ds18b20_set_resolution(&sensor, k_ds18b20_resolution_9bit);
  *
  * // Persist to EEPROM (survives power cycle)
@@ -402,7 +402,7 @@
  * - **Rule 1** (No goto): [OK] All control flow uses structured statements
  * - **Rule 2** (Bounded loops): [OK] All loops have compile-time or runtime bounds
  * - **Rule 3** (No heap): [OK] Zero dynamic allocation (static handles only)
- * - **Rule 4** (Functions ≤60 lines): [OK] All public functions <60 lines
+ * - **Rule 4** (Functions <=60 lines): [OK] All public functions <60 lines
  * - **Rule 5** (Assertions): [OK] 2+ preconditions per function (NULL checks, state)
  * - **Rule 6** (Data scope): [OK] Variables declared at smallest scope
  * - **Rule 7** (Return checking): [OK] All HAL returns validated
@@ -420,12 +420,12 @@
  * @par Module Dependencies:
  * @code{.unparsed}
  * rx_ds18b20
- *   ├── rx_bus_manager (bus abstraction, injected)
- *   ├── rx_bus_onewire (1-Wire protocol layer)
- *   ├── rx_crc (CRC-8 validation)
- *   ├── rx_err (error codes)
- *   ├── rx_log (diagnostic logging)
- *   └── rx_check (nullptr validation macros)
+ *   +-- rx_bus_manager (bus abstraction, injected)
+ *   +-- rx_bus_onewire (1-Wire protocol layer)
+ *   +-- rx_crc (CRC-8 validation)
+ *   +-- rx_err (error codes)
+ *   +-- rx_log (diagnostic logging)
+ *   +-- rx_check (nullptr validation macros)
  * @endcode
  *
  * @author STAR Team
@@ -474,7 +474,7 @@ extern "C" {
  * | Write Scratchpad   | 0x4E | 3          | ~2ms       | Write TH, TL, Config registers |
  * | Read Scratchpad    | 0xBE | 0          | ~2ms       | Read 9-byte scratchpad + CRC   |
  * | Copy Scratchpad    | 0x48 | 0          | ~10ms      | Save scratchpad to EEPROM      |
- * | Recall E²          | 0xB8 | 0          | ~1ms       | Restore EEPROM to scratchpad   |
+ * | Recall E^2          | 0xB8 | 0          | ~1ms       | Restore EEPROM to scratchpad   |
  * | Read Power Supply  | 0xB4 | 0          | <1ms       | Check parasitic vs. external   |
  *
  * @par Usage Example:
@@ -515,8 +515,8 @@ typedef enum : uint8_t {
  * |-------|------|---------------|------------------------------------------------|-----------|
  * | 0     | 0    | Temp LSB      | Temperature low byte (bits 0-7)                | Read-only |
  * | 1     | 1    | Temp MSB      | Temperature high byte (sign + bits 8-11)       | Read-only |
- * | 2     | 2    | TH Register   | High alarm threshold (-55 to +125°C)           | R/W       |
- * | 3     | 3    | TL Register   | Low alarm threshold (-55 to +125°C)            | R/W       |
+ * | 2     | 2    | TH Register   | High alarm threshold (-55 to +125degC)           | R/W       |
+ * | 3     | 3    | TL Register   | Low alarm threshold (-55 to +125degC)            | R/W       |
  * | 4     | 4    | Config        | Resolution bits [6:5]: 00=9b, 01=10b, 10=11b, 11=12b | R/W |
  * | 5     | 5    | Reserved      | Always 0xFF (ignore)                           | Read-only |
  * | 6     | 6    | Reserved      | Factory-programmed (ignore)                    | Read-only |
@@ -525,16 +525,16 @@ typedef enum : uint8_t {
  *
  * **Temperature Format (Bytes 0-1):**
  *
- * 16-bit signed integer in 1/16°C units (two's complement):
+ * 16-bit signed integer in 1/16degC units (two's complement):
  * @code
  * MSB (byte 1):  S  S  S  S  S  T10 T9  T8
  * LSB (byte 0):  T7 T6 T5 T4 T3 T2  T1  T0
- *                └────────────────────────┴─ Temperature bits (12-bit for 12-bit resolution)
+ *                +------------------------+- Temperature bits (12-bit for 12-bit resolution)
  * @endcode
  *
  * - **S**: Sign bits (all 0 for positive, all 1 for negative)
  * - **T10-T0**: Temperature bits (11 bits used, T0-T2 undefined for lower resolutions)
- * - **Value range**: -880 to +2000 (represents -55.0°C to +125.0°C)
+ * - **Value range**: -880 to +2000 (represents -55.0degC to +125.0degC)
  * - **Conversion**: `temp_celsius = raw_value / 16.0`
  *
  * **Configuration Register (Byte 4):**
@@ -543,10 +543,10 @@ typedef enum : uint8_t {
  *
  * | R1 | R0 | Resolution | Precision | Conversion Time |
  * |----|----|-----------:|-----------|-----------------|
- * | 0  | 0  | 9-bit      | 0.5°C     | 93.75ms         |
- * | 0  | 1  | 10-bit     | 0.25°C    | 187.5ms         |
- * | 1  | 0  | 11-bit     | 0.125°C   | 375ms           |
- * | 1  | 1  | 12-bit     | 0.0625°C  | 750ms           |
+ * | 0  | 0  | 9-bit      | 0.5degC     | 93.75ms         |
+ * | 0  | 1  | 10-bit     | 0.25degC    | 187.5ms         |
+ * | 1  | 0  | 11-bit     | 0.125degC   | 375ms           |
+ * | 1  | 1  | 12-bit     | 0.0625degC  | 750ms           |
  *
  * **CRC-8 Calculation (Byte 8):**
  *
@@ -610,10 +610,10 @@ typedef enum : uint8_t {
  * @brief DS18B20 temperature resolution modes
  */
 typedef enum : uint8_t {
-  k_ds18b20_resolution_9bit  = 0, /**< 9-bit: 0.5°C, 93.75ms */
-  k_ds18b20_resolution_10bit = 1, /**< 10-bit: 0.25°C, 187.5ms */
-  k_ds18b20_resolution_11bit = 2, /**< 11-bit: 0.125°C, 375ms */
-  k_ds18b20_resolution_12bit = 3, /**< 12-bit: 0.0625°C, 750ms */
+  k_ds18b20_resolution_9bit  = 0, /**< 9-bit: 0.5degC, 93.75ms */
+  k_ds18b20_resolution_10bit = 1, /**< 10-bit: 0.25degC, 187.5ms */
+  k_ds18b20_resolution_11bit = 2, /**< 11-bit: 0.125degC, 375ms */
+  k_ds18b20_resolution_12bit = 3, /**< 12-bit: 0.0625degC, 750ms */
 } ds18b20_resolution_t;
 
 /**
@@ -651,8 +651,8 @@ typedef enum : int32_t {
   k_ds18b20_crc_bytes              = 8,      /**< Number of bytes for CRC calculation */
   k_ds18b20_shift_byte             = 8,      /**< Shift for byte positioning */
   k_ds18b20_scratchpad_write_bytes = 3,      /**< Scratchpad write size (TH, TL, Config) */
-  k_ds18b20_temp_min_raw           = -880,   /**< Minimum temperature (-55°C raw value) */
-  k_ds18b20_temp_max_raw           = 2000,   /**< Maximum temperature (+125°C raw value) */
+  k_ds18b20_temp_min_raw           = -880,   /**< Minimum temperature (-55degC raw value) */
+  k_ds18b20_temp_max_raw           = 2000,   /**< Maximum temperature (+125degC raw value) */
 } ds18b20_conversion_constants_t;
 
 /**
@@ -768,7 +768,7 @@ typedef struct {
  * Temperature conversion must complete before calling (see conversion times).
  *
  * @param[in] handle Pointer to initialized handle. Must not be nullptr.
- * @param[out] temperature_celsius Pointer to store temperature in °C. Must not be nullptr.
+ * @param[out] temperature_celsius Pointer to store temperature in degC. Must not be nullptr.
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if any pointer is nullptr

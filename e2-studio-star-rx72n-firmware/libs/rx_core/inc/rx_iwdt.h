@@ -52,7 +52,7 @@
  * **RX72N Independent Watchdog Timer (IWDT)**:
  * - **Register Base Address**: 0x00088030
  * - **Clock Source**: IWDTCLK (independent oscillator, typically 125 kHz)
- * - **Clock Frequency**: 125 kHz (8 µs period)
+ * - **Clock Frequency**: 125 kHz (8 us period)
  * - **Counter Width**: 14-bit down-counter
  * - **Timeout Range**: ~128ms to ~16.4 seconds
  * - **Reset Output**: Connected to internal reset controller
@@ -101,11 +101,11 @@
  *
  * | Operation | Execution Time | Memory Usage | Notes |
  * |-----------|---------------|--------------|-------|
- * | rx_iwdt_init() | ~50 µs | 0 heap | One-time setup |
- * | rx_iwdt_feed() | ~2 µs | 0 | Register write only |
- * | rx_iwdt_task_heartbeat() | ~5 µs | 0 | Timestamp update |
- * | rx_iwdt_check_tasks() | ~10 µs × N tasks | 0 | Linear scan |
- * | rx_iwdt_get_status() | ~15 µs | 0 | Structure copy |
+ * | rx_iwdt_init() | ~50 us | 0 heap | One-time setup |
+ * | rx_iwdt_feed() | ~2 us | 0 | Register write only |
+ * | rx_iwdt_task_heartbeat() | ~5 us | 0 | Timestamp update |
+ * | rx_iwdt_check_tasks() | ~10 us x N tasks | 0 | Linear scan |
+ * | rx_iwdt_get_status() | ~15 us | 0 | Structure copy |
  *
  * **Memory Footprint**:
  * - Static variables: ~2 KB (task tracking array, status, configuration)
@@ -187,7 +187,7 @@
  * | 2. Fixed loop bounds | [OK] | All loops bounded by k_iwdt_max_tasks (16) |
  * | 3. No dynamic allocation | [OK] | Zero malloc/free, static task array |
  * | 4. Small functions | [OK] | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
+ * | 5. Assertions (>=2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
  * | 6. Narrow scope | [OK] | File-scope statics, function-local variables |
  * | 7. Check return values | [OK] | All functions return rx_err_t, checked by callers |
  * | 8. Limited preprocessor | [OK] | C23 typed enums only, zero computation macros |
@@ -266,8 +266,8 @@ extern "C" {
  *
  * **k_iwdt_max_tasks = 16**:
  * - Sized for typical STAR system (4 motors + communication + sensors)
- * - Keeps task array < 1 KB (16 × 64 bytes = 1024 bytes)
- * - Allows linear scan in < 10 µs at 240 MHz
+ * - Keeps task array < 1 KB (16 x 64 bytes = 1024 bytes)
+ * - Allows linear scan in < 10 us at 240 MHz
  *
  * **k_iwdt_task_name_len = 32**:
  * - Matches ThreadX TX_THREAD_NAME_SIZE
@@ -281,12 +281,12 @@ extern "C" {
  *
  * **k_iwdt_min_timeout_ms = 128**:
  * - Hardware minimum with CKS=0 divider
- * - Calculated: 1024 / 125kHz ≈ 128ms
+ * - Calculated: 1024 / 125kHz ~ 128ms
  * - Use only for very fast loops (> 10 Hz)
  *
  * **k_iwdt_max_timeout_ms = 16384**:
  * - Hardware maximum with CKS=3 divider
- * - Calculated: 65536 / 125kHz ≈ 8192ms
+ * - Calculated: 65536 / 125kHz ~ 8192ms
  * - Conservative limit prevents excessive hang detection time
  *
  * @par Usage Example:
@@ -302,7 +302,7 @@ extern "C" {
  * }
  * @endcode
  *
- * @invariant k_iwdt_max_tasks × sizeof(rx_iwdt_task_info_t) < 2048 bytes
+ * @invariant k_iwdt_max_tasks x sizeof(rx_iwdt_task_info_t) < 2048 bytes
  * @invariant k_iwdt_min_timeout_ms <= k_iwdt_default_timeout_ms <= k_iwdt_max_timeout_ms
  * @invariant All values are compile-time constants (no runtime overhead)
  *
@@ -448,7 +448,7 @@ typedef enum : uint8_t {
  * @note k_system_state_count is used for array sizing and validation
  *
  * @warning Invalid state transitions are allowed but may indicate logic errors
- * @attention Changing state does NOT reset the watchdog counter—still need rx_iwdt_feed()
+ * @attention Changing state does NOT reset the watchdog counter--still need rx_iwdt_feed()
  *
  * @see rx_iwdt_set_state() Set current system state
  * @see rx_iwdt_set_timeout_for_state() Configure timeout for specific state

@@ -26,24 +26,24 @@
  * @par 1-Wire Timing (Standard Speed):
  * | Operation        | Parameter          | Value    |
  * |------------------|--------------------|----------|
- * | Reset pulse      | T_RSTL             | 480 µs   |
- * | Presence wait    | T_PDH              | 70 µs    |
- * | Presence tail    | T_RSTH             | 410 µs   |
- * | Write-1 low      | T_LOW1             | 6 µs     |
- * | Write-1 high     | T_SLOT - T_LOW1    | 64 µs    |
- * | Write-0 low      | T_LOW0             | 60 µs    |
- * | Write-0 high     | T_SLOT - T_LOW0    | 10 µs    |
- * | Read init        | T_LOWR             | 6 µs     |
- * | Read sample      | T_RDV              | 9 µs     |
- * | Read recovery    | T_REC              | 55 µs    |
+ * | Reset pulse      | T_RSTL             | 480 us   |
+ * | Presence wait    | T_PDH              | 70 us    |
+ * | Presence tail    | T_RSTH             | 410 us   |
+ * | Write-1 low      | T_LOW1             | 6 us     |
+ * | Write-1 high     | T_SLOT - T_LOW1    | 64 us    |
+ * | Write-0 low      | T_LOW0             | 60 us    |
+ * | Write-0 high     | T_SLOT - T_LOW0    | 10 us    |
+ * | Read init        | T_LOWR             | 6 us     |
+ * | Read sample      | T_RDV              | 9 us     |
+ * | Read recovery    | T_REC              | 55 us    |
  *
  * @par Open-Drain Emulation:
  * GPIO is configured as:
  * - Output LOW to drive line low
- * - Input (high-Z) to release line (external 4.7kΩ pullup drives high)
+ * - Input (high-Z) to release line (external 4.7kOhm pullup drives high)
  *
  * @par Hardware Requirements:
- * - 4.7kΩ external pullup resistor on 1-Wire data line
+ * - 4.7kOhm external pullup resistor on 1-Wire data line
  * - CMT3 timer for microsecond delays (PCLKB/8 = 7.5 MHz)
  * - GPIO pin with configurable direction
  *
@@ -112,6 +112,8 @@ typedef enum : uint8_t {
   k_onewire_crc_offset            = 1U,
   k_onewire_rom_family_code_idx   = 0U,
   k_onewire_invalid_family_code   = 0x00U,
+  k_onewire_instance_idx_start    = 0U, /**< Starting index for instance pool iteration */
+  k_onewire_rom_crc_idx           = 7U, /**< CRC byte index in ROM (k_onewire_rom_crc_idx) */
 } onewire_driver_constants_t;
 
 /**
@@ -237,7 +239,7 @@ static void internal_delay_timer_init(void)
  * @par Algorithm:
  * 1. Return immediately if microseconds == 0
  * 2. Initialize timer if not already done
- * 3. Calculate required ticks: (µs * timer_hz + round) / 1000000
+ * 3. Calculate required ticks: (us * timer_hz + round) / 1000000
  * 4. Ensure minimum 1 tick for very short delays
  * 5. Loop while ticks > 0:
  *    a. Calculate wait_ticks (capped at 0xFFFF)
@@ -248,16 +250,16 @@ static void internal_delay_timer_init(void)
  * @param[in] microseconds Delay duration in microseconds (0 = no delay)
  *
  * @pre System clocks initialized
- * @post Delay of approximately `microseconds` µs elapsed
+ * @post Delay of approximately `microseconds` us elapsed
  *
  * @note Busy-wait implementation, blocks CPU
- * @note Accuracy: ±1 timer tick (~133ns @ 7.5MHz)
+ * @note Accuracy: +/-1 timer tick (~133ns @ 7.5MHz)
  * @note Maximum single delay: limited by uint32_t microseconds
  *
  * @par Performance:
  * - Overhead: ~10 cycles for function call
  * - Resolution: 133ns (1 tick @ 7.5MHz)
- * - Accuracy: ±0.5% typical
+ * - Accuracy: +/-0.5% typical
  *
  * @warning Disables preemption during delay (busy-wait)
  *
@@ -333,10 +335,10 @@ static rx_err_t internal_acquire_state(rx_bus_config_t* bus_config, onewire_runt
     return k_rx_ok;
   }
 
-  for (uint32_t i = 0; i < k_onewire_max_instances; ++i) {
+  for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     if (!s_state_pool[i].in_use) {
       s_state_pool[i].in_use = true;
-      memset(&s_state_pool[i].state, 0, sizeof(onewire_runtime_state_t));
+      s_state_pool[i].state = (onewire_runtime_state_t){0};
       bus_config->handle = &s_state_pool[i].state;
       *state             = &s_state_pool[i].state;
       return k_rx_ok;
@@ -372,7 +374,6 @@ static rx_err_t internal_set_drive_mode(const rx_bus_config_t*   bus_config,
                                         const bool               output)
 {
   rx_err_t err = k_rx_ok;
-
   if (output && !state->line_is_output) {
     err = gpio_set_output(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
@@ -440,12 +441,12 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  *
  * @details
  * Executes the 1-Wire reset/presence detect sequence. Controller drives line
- * low for 480µs (reset pulse), then releases and samples during presence
- * window. Devices respond by pulling line low within 60µs of release.
+ * low for 480us (reset pulse), then releases and samples during presence
+ * window. Devices respond by pulling line low within 60us of release.
  *
  * @par Timing Diagram:
  * @code
- *          |<-- 480µs -->|<-70µs->|<-- 410µs -->|
+ *          |<-- 480us -->|<-70us->|<-- 410us -->|
  *     _____|             |________|_____________|_____
  *          |_____________|        |             |
  *          ^             ^        ^             ^
@@ -456,12 +457,12 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  *
  * @par Algorithm:
  * 1. Drive line low via internal_drive_low()
- * 2. Delay 480µs (reset pulse duration)
+ * 2. Delay 480us (reset pulse duration)
  * 3. Release line via internal_release_line()
- * 4. Delay 70µs (presence wait)
+ * 4. Delay 70us (presence wait)
  * 5. Sample line level
  * 6. presence = !line_high (low = device present)
- * 7. Delay 410µs (complete reset slot)
+ * 7. Delay 410us (complete reset slot)
  *
  * @param[in] bus_config Bus configuration with GPIO pin
  * @param[in,out] state Runtime state for GPIO mode tracking
@@ -477,12 +478,12 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  * @post *presence indicates device response
  * @post Line released (high via pullup)
  *
- * @note Total reset slot: ~960µs
+ * @note Total reset slot: ~960us
  * @note Multiple devices can respond simultaneously
  *
- * @see k_onewire_reset_pulse_us Reset pulse duration (480µs)
- * @see k_onewire_presence_wait_us Presence sample delay (70µs)
- * @see k_onewire_presence_tail_us Remaining window after sample (410µs)
+ * @see k_onewire_reset_pulse_us Reset pulse duration (480us)
+ * @see k_onewire_presence_wait_us Presence sample delay (70us)
+ * @see k_onewire_presence_tail_us Remaining window after sample (410us)
  */
 static rx_err_t
 internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* presence)
@@ -523,14 +524,14 @@ internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state
  *
  * @par Write-1 Timing:
  * @code
- *     |<-6µs->|<------ 64µs ------>|
+ *     |<-6us->|<------ 64us ------>|
  *     |______|                     |
  *            |_____________________|
  * @endcode
  *
  * @par Write-0 Timing:
  * @code
- *     |<-------- 60µs -------->|<10µs>|
+ *     |<-------- 60us -------->|<10us>|
  *     |________________________|      |
  *                              |______|
  * @endcode
@@ -547,7 +548,7 @@ internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state
  * @pre state != nullptr
  * @post Bit transmitted, line released high
  *
- * @note Total write slot: ~70µs
+ * @note Total write slot: ~70us
  *
  * @see internal_write_byte() Writes 8 bits LSB-first
  */
@@ -588,7 +589,7 @@ internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
  *
  * @par Read Timing:
  * @code
- *     |<6µs>|<-9µs->|<---- 55µs ---->|
+ *     |<6us>|<-9us->|<---- 55us ---->|
  *     |_____|       |                |
  *           |_______|________________| (reading 0)
  *           |_______________________| (reading 1)
@@ -611,19 +612,15 @@ internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
  * @post *bit contains read value
  * @post Line released high
  *
- * @note Total read slot: ~70µs
- * @note Sample point: ~15µs after slot start
+ * @note Total read slot: ~70us
+ * @note Sample point: ~15us after slot start
  *
  * @see internal_read_byte() Reads 8 bits LSB-first
  */
 static rx_err_t
 internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* bit)
 {
-  rx_err_t err;
-  uint32_t sample_delay_us;
-  bool     line_high;
-
-  err = internal_drive_low(bus_config, state);
+  rx_err_t err = internal_drive_low(bus_config, state);
   if (err != k_rx_ok) {
     return err;
   }
@@ -635,13 +632,13 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
     return err;
   }
 
-  sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
-                      ? (k_onewire_read_sample_us - k_onewire_read_init_us)
-                      : k_onewire_read_sample_us;
+  const uint32_t sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
+                               ? (k_onewire_read_sample_us - k_onewire_read_init_us)
+                               : k_onewire_read_sample_us;
   internal_delay_us(sample_delay_us);
 
-  line_high = true;
-  err       = internal_read_line(bus_config, &line_high);
+  bool line_high = true;
+  err            = internal_read_line(bus_config, &line_high);
   if (err != k_rx_ok) {
     return err;
   }
@@ -659,12 +656,9 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
 static rx_err_t
 internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, const uint8_t byte)
 {
-  bool     bit = false;
-  rx_err_t err = k_rx_ok;
-
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
-    bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
-    err = internal_write_bit(bus_config, state, bit);
+    const bool     bit = ((byte >> i) & k_onewire_single_bit_mask) != 0U;
+    const rx_err_t err = internal_write_bit(bus_config, state, bit);
     if (err != k_rx_ok) {
       return err;
     }
@@ -679,17 +673,13 @@ internal_write_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state,
 static rx_err_t
 internal_read_byte(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, uint8_t* byte)
 {
-  uint8_t  value = 0;
-  bool     bit   = false;
-  rx_err_t err   = k_rx_ok;
-
+  uint8_t value = 0;
   for (uint8_t i = 0; i < k_bits_per_byte; ++i) {
-    bit = false;
-    err = internal_read_bit(bus_config, state, &bit);
+    bool           bit = false;
+    const rx_err_t err = internal_read_bit(bus_config, state, &bit);
     if (err != k_rx_ok) {
       return err;
     }
-
     if (bit) {
       value |= (uint8_t)(k_onewire_bit_mask_lsb << i);
     }
@@ -720,18 +710,16 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
                                      uint8_t*                 rom_bit_mask,
                                      uint8_t*                 last_zero)
 {
-  bool     bit      = false;
-  bool     comp_bit = false;
-  bool     search_direction;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
-  err = internal_read_bit(bus_config, state, &bit);
+
+  bool     bit = false;
+  rx_err_t err = internal_read_bit(bus_config, state, &bit);
   if (err != k_rx_ok) {
     return err;
   }
-  err = internal_read_bit(bus_config, state, &comp_bit);
+  bool comp_bit = false;
+  err           = internal_read_bit(bus_config, state, &comp_bit);
   if (err != k_rx_ok) {
     return err;
   }
@@ -739,6 +727,7 @@ static rx_err_t internal_search_step(rx_bus_config_t*         bus_config,
     return k_rx_err_hw_error;
   }
 
+  bool search_direction = false;
   if (!bit && !comp_bit) {
     if (bit_number == state->last_discrepancy) {
       search_direction = true;
@@ -788,24 +777,23 @@ static rx_err_t internal_search_bits(rx_bus_config_t*         bus_config,
                                      uint8_t                  rom[k_onewire_rom_bytes],
                                      uint8_t*                 last_zero)
 {
-  uint8_t  total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
-  uint8_t  rom_byte_index = 0;
-  uint8_t  rom_bit_mask   = k_onewire_bit_mask_lsb;
-  rx_err_t err            = k_rx_ok;
-
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
   RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is nullptr");
   RX_CHECK_NULL_PTR(last_zero, s_tag, "last_zero pointer is nullptr");
 
+  const uint8_t total_bits     = k_onewire_rom_bytes * k_bits_per_byte;
+  uint8_t       rom_byte_index = 0;
+  uint8_t       rom_bit_mask   = k_onewire_bit_mask_lsb;
+
   for (uint8_t bit_number = k_onewire_first_bit_number; bit_number <= total_bits; ++bit_number) {
-    err = internal_search_step(bus_config,
-                               state,
-                               rom,
-                               bit_number,
-                               &rom_byte_index,
-                               &rom_bit_mask,
-                               last_zero);
+    const rx_err_t err = internal_search_step(bus_config,
+                                              state,
+                                              rom,
+                                              bit_number,
+                                              &rom_byte_index,
+                                              &rom_bit_mask,
+                                              last_zero);
     if (err != k_rx_ok) {
       return err;
     }
@@ -868,12 +856,12 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
                                           uint8_t                  rom[k_onewire_rom_bytes],
                                           bool*                    device_found)
 {
-  uint8_t last_zero = k_onewire_search_last_zero_init;
-
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is nullptr");
   RX_CHECK_NULL_PTR(rom, s_tag, "rom pointer is nullptr");
   RX_CHECK_NULL_PTR(device_found, s_tag, "device_found pointer is nullptr");
+
+  uint8_t last_zero = k_onewire_search_last_zero_init;
 
   *device_found = false;
 
@@ -912,8 +900,8 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   memcpy(state->last_rom, rom, k_onewire_rom_bytes);
 
-  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_bytes - k_onewire_crc_offset);
-  if (crc != rom[k_onewire_rom_bytes - k_onewire_crc_offset]) {
+  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_crc_idx);
+  if (crc != rom[k_onewire_rom_crc_idx]) {
     return k_rx_err_crc_mismatch;
   }
 
@@ -1073,11 +1061,11 @@ static void internal_release_state(rx_bus_config_t* bus_config)
     return;
   }
 
-  for (uint32_t i = 0; i < k_onewire_max_instances; ++i) {
+  for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     if (s_state_pool[i].in_use &&
         &s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle) {
       s_state_pool[i].in_use = false;
-      memset(&s_state_pool[i].state, 0, sizeof(onewire_runtime_state_t));
+      s_state_pool[i].state = (onewire_runtime_state_t){0};
       break;
     }
   }
@@ -1623,8 +1611,8 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
     ctx->rom[i] = byte;
   }
 
-  crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_bytes - k_onewire_crc_offset);
-  if (crc != ctx->rom[k_onewire_rom_bytes - k_onewire_crc_offset]) {
+  crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx);
+  if (crc != ctx->rom[k_onewire_rom_crc_idx]) {
     ctx->result = k_rx_err_crc_mismatch;
     return ctx->result;
   }
@@ -1758,7 +1746,7 @@ static rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config, vo
  *
  * @pre manager != nullptr and initialized
  * @pre bus_name registered via rx_bus_manager_register()
- * @pre 4.7kΩ pullup resistor connected to data line
+ * @pre 4.7kOhm pullup resistor connected to data line
  * @post Bus ready for reset, read, write operations
  *
  * @note Logs warning if pullup not detected (may still work)

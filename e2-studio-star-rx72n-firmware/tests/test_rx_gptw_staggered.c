@@ -83,28 +83,28 @@
  *
  * Phase staggering distributes the PWM start phase of each motor channel to
  * reduce peak current draw and electromagnetic interference (EMI). Instead of
- * all 4 motors switching simultaneously, each channel is offset by 90°.
+ * all 4 motors switching simultaneously, each channel is offset by 90deg.
  *
  * @par Phase Offset Configuration:
  *
  * | Channel | Motor Position | Phase Offset | Counter Init | Period Offset |
  * |---------|---------------|--------------|--------------|---------------|
- * | GPTW0 | Front-Left | 0° | 0 | 0 counts |
- * | GPTW1 | Front-Right | 90° | Period/4 | T/4 |
- * | GPTW2 | Rear-Left | 180° | Period/2 | T/2 |
- * | GPTW3 | Rear-Right | 270° | 3×Period/4 | 3T/4 |
+ * | GPTW0 | Front-Left | 0deg | 0 | 0 counts |
+ * | GPTW1 | Front-Right | 90deg | Period/4 | T/4 |
+ * | GPTW2 | Rear-Left | 180deg | Period/2 | T/2 |
+ * | GPTW3 | Rear-Right | 270deg | 3xPeriod/4 | 3T/4 |
  *
  * @par Current Spike Reduction Analysis:
  *
  * **Without Staggering** (all channels in phase):
  * - All 4 motors switch simultaneously
- * - Peak current = 4 × single motor current
+ * - Peak current = 4 x single motor current
  * - Large current spikes stress power supply
  * - High conducted EMI on power rails
  *
- * **With 90° Staggering**:
+ * **With 90deg Staggering**:
  * - Motor switching events spread across PWM period
- * - Peak current ≈ 1-2 × single motor current (depends on duty cycle)
+ * - Peak current ~ 1-2 x single motor current (depends on duty cycle)
  * - Current draw more constant (better voltage regulation)
  * - Reduced conducted EMI (staggered di/dt)
  *
@@ -113,19 +113,19 @@
  *
  * --- [label="Phase Staggered PWM (50% duty, 4 channels)"];
  *
- * Ch0 box Ch0 [label="█████_____"];
- * Ch1 rbox Ch1 [label="__█████___"];
- * Ch2 rbox Ch2 [label="____█████_"];
- * Ch3 rbox Ch3 [label="██____████"];
- * Current note Current [label="Distributed load\nNo 4× peak"];
+ * Ch0 box Ch0 [label="#####_____"];
+ * Ch1 rbox Ch1 [label="__#####___"];
+ * Ch2 rbox Ch2 [label="____#####_"];
+ * Ch3 rbox Ch3 [label="##____####"];
+ * Current note Current [label="Distributed load\nNo 4x peak"];
  *
  * --- [label="Synchronized PWM (50% duty, 4 channels)"];
  *
- * Ch0 box Ch0 [label="█████_____"];
- * Ch1 box Ch1 [label="█████_____"];
- * Ch2 box Ch2 [label="█████_____"];
- * Ch3 box Ch3 [label="█████_____"];
- * Current abox Current [label="4× current spike!", textcolor=red];
+ * Ch0 box Ch0 [label="#####_____"];
+ * Ch1 box Ch1 [label="#####_____"];
+ * Ch2 box Ch2 [label="#####_____"];
+ * Ch3 box Ch3 [label="#####_____"];
+ * Current abox Current [label="4x current spike!", textcolor=red];
  * @endmsc
  *
  * @par Mathematical Model:
@@ -136,17 +136,17 @@
  * @f]
  *
  * **Example for 20 kHz PWM** (120 MHz PCLKA):
- * - Period = 120,000,000 / 20,000 = 6000 ticks (50 µs)
- * - 90° offset = (90/360) × 6000 = 1500 ticks (12.5 µs)
- * - 180° offset = (180/360) × 6000 = 3000 ticks (25 µs)
- * - 270° offset = (270/360) × 6000 = 4500 ticks (37.5 µs)
+ * - Period = 120,000,000 / 20,000 = 6000 ticks (50 us)
+ * - 90deg offset = (90/360) x 6000 = 1500 ticks (12.5 us)
+ * - 180deg offset = (180/360) x 6000 = 3000 ticks (25 us)
+ * - 270deg offset = (270/360) x 6000 = 4500 ticks (37.5 us)
  *
  * **Peak current reduction** (theoretical):
  * @f[
  *   \text{Reduction Factor} = \frac{N_{\text{channels}}}{\text{channels per phase}} = \frac{4}{1} = 4\times
  * @f]
  *
- * At 50% duty cycle, ideal staggering reduces peak by 4×. Actual reduction
+ * At 50% duty cycle, ideal staggering reduces peak by 4x. Actual reduction
  * depends on duty cycle, motor inductance, and switching transients.
  *
  * ## Test Methodology
@@ -200,7 +200,7 @@
  * | 2. Fixed loop bounds | [OK] | for-loop bounded by k_staggered_channel_count (4) |
  * | 3. No dynamic allocation | [OK] | All stack-based variables |
  * | 4. Small functions | [OK] | Each test < 30 lines, clear single purpose |
- * | 5. Assertions | [OK] | Every test has ≥2 assertions |
+ * | 5. Assertions | [OK] | Every test has >=2 assertions |
  * | 6. Narrow scope | [OK] | Variables declared at smallest scope |
  * | 7. Check return values | [OK] | All API returns validated with TEST_ASSERT |
  * | 8. Limited preprocessor | [OK] | C23 typed enums, no macros except Unity |
@@ -306,7 +306,7 @@
  * - Typical motor control frequency (above audible range)
  * - Same as production firmware default
  * - Provides realistic test scenario
- * - Period = 120,000,000 / 20,000 = 6000 ticks (50 µs)
+ * - Period = 120,000,000 / 20,000 = 6000 ticks (50 us)
  *
  * **k_staggered_channel_count = 4**:
  * - STAR project uses 4 motors (front-left, front-right, rear-left, rear-right)
@@ -329,10 +329,10 @@
  * @f[
  *   \text{offset}[i] = \frac{i}{4} \times 6000 = 1500i \text{ ticks}
  * @f]
- * - Channel 0: 0 ticks (0°)
- * - Channel 1: 1500 ticks (90°, 12.5 µs)
- * - Channel 2: 3000 ticks (180°, 25 µs)
- * - Channel 3: 4500 ticks (270°, 37.5 µs)
+ * - Channel 0: 0 ticks (0deg)
+ * - Channel 1: 1500 ticks (90deg, 12.5 us)
+ * - Channel 2: 3000 ticks (180deg, 25 us)
+ * - Channel 3: 4500 ticks (270deg, 37.5 us)
  *
  * @invariant k_staggered_channel_count = 4 (fixed for STAR hardware)
  * @invariant k_staggered_start_channel = 0 (always start from channel 0)
@@ -426,7 +426,7 @@ typedef enum : uint32_t {
  * @post Test environment ready for clean test execution
  *
  * @note Called by Unity framework, not directly by test code
- * @note Execution time: < 1 µs (simple memory clear)
+ * @note Execution time: < 1 us (simple memory clear)
  *
  * @see mock_gptw_reset() Mock reset implementation
  * @see tearDown() Corresponding teardown function
@@ -469,7 +469,7 @@ void setUp(void)
  * @post No state changes (already cleaned by setUp of next test)
  *
  * @note Called by Unity framework, not directly by test code
- * @note Execution time: 0 µs (no-op function)
+ * @note Execution time: 0 us (no-op function)
  *
  * @attention If adding cleanup logic in the future, ensure it is exception-safe
  * @attention tearDown() runs even if test fails, so must not assert or crash
@@ -554,16 +554,16 @@ void tearDown(void)
  *
  * | Channel | is_initialized | is_running | Phase Offset (production) |
  * |---------|----------------|------------|---------------------------|
- * | 0 | true | true | 0° (0 ticks) |
- * | 1 | true | true | 90° (1500 ticks @ 20kHz) |
- * | 2 | true | true | 180° (3000 ticks @ 20kHz) |
- * | 3 | true | true | 270° (4500 ticks @ 20kHz) |
+ * | 0 | true | true | 0deg (0 ticks) |
+ * | 1 | true | true | 90deg (1500 ticks @ 20kHz) |
+ * | 2 | true | true | 180deg (3000 ticks @ 20kHz) |
+ * | 3 | true | true | 270deg (4500 ticks @ 20kHz) |
  *
  * **Note**: Phase offset calculations happen in rx_gptw.c (HAL), not tested here
  *
  * ## Assertions
  *
- * **Total Assertions**: 9 (1 return code + 4 channels × 2 checks)
+ * **Total Assertions**: 9 (1 return code + 4 channels x 2 checks)
  *
  * 1. `TEST_ASSERT_EQUAL(k_rx_ok, err)` - Function succeeded
  * 2. `TEST_ASSERT_TRUE(mock_gptw_is_initialized(k_gptw_channel_0))` - Ch0 initialized
@@ -607,11 +607,11 @@ void tearDown(void)
  */
 void test_staggered_init_success(void)
 {
+  /* Initialize config structure */
   rx_gptw_config_t  config;
   rx_err_t          err;
   rx_gptw_channel_t ch;
 
-  /* Initialize config structure */
   config.frequency_hz         = k_staggered_test_freq_hz;
   config.wave_mode            = k_gptw_wave_tri_pwm3;
   config.invert_polarity      = false;
@@ -832,11 +832,11 @@ void test_staggered_init_null_config_fails(void)
  */
 void test_staggered_init_zero_frequency_fails(void)
 {
+  /* Initialize config structure with valid values except frequency */
   rx_gptw_config_t config;
   rx_err_t         err;
-
-  /* Initialize config structure with valid values except frequency */
   config.frequency_hz         = 0; /* Invalid: zero frequency */
+
   config.wave_mode            = k_gptw_wave_tri_pwm3;
   config.invert_polarity      = false;
   config.deadtime_ns          = 0;
@@ -932,8 +932,8 @@ void test_staggered_init_zero_frequency_fails(void)
  *
  * @par Performance:
  * - Total execution time: < 1 ms (mock-based, no hardware)
- * - Per-test overhead: ~10 µs (Unity framework)
- * - Actual test execution: < 100 µs each
+ * - Per-test overhead: ~10 us (Unity framework)
+ * - Actual test execution: < 100 us each
  *
  * @par Example Usage:
  * @code{.sh}

@@ -155,15 +155,15 @@
  *
  * | Operation | Execution Time | Notes |
  * |-----------|----------------|-------|
- * | **rx_comm_manager_init()** | ~50 µs | Handle initialization, no hardware config |
- * | **rx_comm_manager_poll()** | ~15-200 µs | Depends on channels enabled and frames available |
- * | - No frames available | ~15 µs | Quick check both channels, early return |
- * | - USB frame received | ~120 µs | Frame validation + callback + ASCII (if enabled) |
- * | - SPI frame received | ~80 µs | Faster than USB (less overhead) |
- * | - Both frames received | ~200 µs | Sequential processing of both channels |
- * | **rx_comm_manager_send()** | ~100-150 µs | Frame encoding + transport layer send |
- * | **rx_comm_manager_respond()** | ~100-150 µs | Same as send (convenience wrapper) |
- * | **Callback overhead** | ~5-50 µs | User-defined, depends on handler complexity |
+ * | **rx_comm_manager_init()** | ~50 us | Handle initialization, no hardware config |
+ * | **rx_comm_manager_poll()** | ~15-200 us | Depends on channels enabled and frames available |
+ * | - No frames available | ~15 us | Quick check both channels, early return |
+ * | - USB frame received | ~120 us | Frame validation + callback + ASCII (if enabled) |
+ * | - SPI frame received | ~80 us | Faster than USB (less overhead) |
+ * | - Both frames received | ~200 us | Sequential processing of both channels |
+ * | **rx_comm_manager_send()** | ~100-150 us | Frame encoding + transport layer send |
+ * | **rx_comm_manager_respond()** | ~100-150 us | Same as send (convenience wrapper) |
+ * | **Callback overhead** | ~5-50 us | User-defined, depends on handler complexity |
  *
  * All timing measured @ 240 MHz CPU clock, -O2 optimization, typical frame size 64 bytes.
  *
@@ -372,7 +372,7 @@
  *
  * @attention Manager does not own USB/SPI handles - caller must initialize transports before manager
  * @attention Callback is invoked from poll() context - keep processing minimal or defer to task queue
- * @attention Decoded ASCII output adds ~80 µs latency per frame - disable for high-frequency applications
+ * @attention Decoded ASCII output adds ~80 us latency per frame - disable for high-frequency applications
  *
  * @author STAR Team
  * @date 2026-01-27
@@ -609,7 +609,7 @@ typedef enum : uint8_t {
  *
  * **Restrictions:**
  * - Do NOT call `rx_comm_manager_poll()` from callback (recursion!)
- * - Keep processing minimal (~50 µs recommended)
+ * - Keep processing minimal (~50 us recommended)
  * - For slow operations, queue to task and return immediately
  * - Do NOT modify frame structure (it may be const or recycled)
  *
@@ -682,7 +682,7 @@ typedef enum : uint8_t {
  * }
  * @endcode
  *
- * @warning Callback must return quickly (<50 µs recommended) to avoid blocking communication
+ * @warning Callback must return quickly (<50 us recommended) to avoid blocking communication
  * @warning Do NOT call rx_comm_manager_poll() from callback (causes recursion)
  * @warning Frame pointer only valid during callback - copy data if needed beyond callback scope
  *
@@ -918,7 +918,7 @@ typedef struct {
    * ```
    *
    * **Performance Impact:**
-   * - Adds ~80 µs latency per frame (formatting + USB send)
+   * - Adds ~80 us latency per frame (formatting + USB send)
    * - Negligible for command/response (< 100 Hz)
    * - May impact high-frequency telemetry (> 1 kHz)
    *
@@ -936,7 +936,7 @@ typedef struct {
    * @brief Callback invoked when a transport link status changes
    * @details
    * Optional. Called when heartbeat monitoring detects a link transition
-   * (e.g., healthy → dead). NULL to disable link status notifications.
+   * (e.g., healthy -> dead). NULL to disable link status notifications.
    */
   rx_comm_link_status_callback_t link_status_cb;
 

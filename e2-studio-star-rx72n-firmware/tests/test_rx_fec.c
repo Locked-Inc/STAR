@@ -202,7 +202,7 @@
  *   L_{\text{out}} = \left\lceil \frac{(8n + 6) \times 2}{8} \right\rceil = 2n + 2 \text{ bytes}
  * @f]
  *
- * **Expansion factor:** @f$ \approx 2.0 @f$ for large @f$ n @f$ (rate 1/2 ≈ 2× expansion)
+ * **Expansion factor:** @f$ \approx 2.0 @f$ for large @f$ n @f$ (rate 1/2 ~ 2x expansion)
  *
  * ## NASA Power of 10 Compliance
  *
@@ -212,15 +212,15 @@
  * - **Rule 2 (Loop Bounds):** [OK] All loops have static upper bounds (k_fec_max_symbols, k_fec_num_states).
  * - **Rule 3 (No Dynamic Allocation):** [OK] All buffers are static arrays (no malloc/free).
  * - **Rule 4 (Function Length):** [OK] All test functions < 60 lines (average ~20 lines).
- * - **Rule 5 (Assertions):** [OK] Every test has ≥2 assertions (parameter validation + result check).
+ * - **Rule 5 (Assertions):** [OK] Every test has >=2 assertions (parameter validation + result check).
  * - **Rule 6 (Data Scope):** [OK] Test fixtures in file scope, local variables in function scope.
  * - **Rule 7 (Return Checks):** [OK] All API calls check return values (TEST_ASSERT_EQUAL).
  * - **Rule 8 (Preprocessor):** [OK] Uses C23 typed enums (bit_manipulation_t), no #define constants.
  * - **Rule 10 (Warnings):** [OK] Compiles with -Wall -Wextra -Werror (zero warnings).
  *
  * **Rationale for Rule 3 (Static Allocation):**
- * - Survivors buffer (8200 × uint64_t = 65.6 KB) is statically allocated in setUp()
- * - Soft bits buffer (8200 × 2 × int8_t = 16.4 KB) is statically allocated
+ * - Survivors buffer (8200 x uint64_t = 65.6 KB) is statically allocated in setUp()
+ * - Soft bits buffer (8200 x 2 x int8_t = 16.4 KB) is statically allocated
  * - Total: ~82 KB per test (fits in RX72N's 512 KB SRAM)
  *
  * ## SOLID Principles Application
@@ -308,7 +308,7 @@
  * **Memory Allocation:**
  * - Encoder: 4 bytes (stateless, only initialization flag)
  * - Decoder: ~82 KB (64 path metrics + survivors buffer for max payload)
- * - Soft bits buffer: 16.4 KB (k_fec_max_symbols × 2 × int8_t)
+ * - Soft bits buffer: 16.4 KB (k_fec_max_symbols x 2 x int8_t)
  * - Total: ~100 KB per test (fits in RX72N's 512 KB SRAM)
  *
  * **Rationale for Static Allocation:**
@@ -351,9 +351,9 @@ static rx_fec_encoder_t s_encoder;
  *
  * **Decoder Complexity:**
  * - States: 64 (2^(K-1) = 2^6)
- * - Path metrics: 64 × int32_t = 256 bytes
- * - Survivors: k_fec_max_symbols × uint64_t = 65.6 KB
- * - Branch table: 64 × 2 × 2 × uint8_t = 256 bytes
+ * - Path metrics: 64 x int32_t = 256 bytes
+ * - Survivors: k_fec_max_symbols x uint64_t = 65.6 KB
+ * - Branch table: 64 x 2 x 2 x uint8_t = 256 bytes
  */
 static rx_fec_decoder_t s_decoder;
 
@@ -363,7 +363,7 @@ static rx_fec_decoder_t s_decoder;
  *
  * @details
  * Stores the predecessor state bits for Viterbi traceback. Size must be
- * at least k_fec_max_symbols (8200 entries × 8 bytes = 65.6 KB).
+ * at least k_fec_max_symbols (8200 entries x 8 bytes = 65.6 KB).
  *
  * **Memory Layout:**
  * Each uint64_t stores 64 bits (one per state) indicating which predecessor
@@ -384,7 +384,7 @@ static uint64_t s_survivors[k_fec_max_symbols];
  * @details
  * Used by rx_fec_decode_hard() to convert hard bits (0/1) to soft bits
  * ([-127, +127]) before invoking Viterbi decoder. Size must be at least
- * k_fec_max_symbols × k_fec_num_outputs (8200 × 2 = 16400 soft bits).
+ * k_fec_max_symbols x k_fec_num_outputs (8200 x 2 = 16400 soft bits).
  *
  * **Rationale for Separate Buffer:**
  * - Thread safety: Caller provides buffer (no global state in rx_fec.c)
@@ -493,6 +493,7 @@ void tearDown(void)
 void test_encoder_init_null(void)
 {
   rx_err_t err = rx_fec_encoder_init(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -522,6 +523,7 @@ void test_encoder_init_success(void)
 {
   rx_fec_encoder_t enc;
   rx_err_t         err = rx_fec_encoder_init(&enc);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, enc.initialized);
 }
@@ -545,6 +547,7 @@ void test_encoder_init_success(void)
 void test_encoder_deinit_null(void)
 {
   rx_err_t err = rx_fec_encoder_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -596,6 +599,7 @@ void test_encoder_deinit_null(void)
 void test_decoder_init_null_dec(void)
 {
   rx_err_t err = rx_fec_decoder_init(nullptr, s_survivors, 100);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -619,6 +623,7 @@ void test_decoder_init_null_buffer(void)
 {
   rx_fec_decoder_t dec;
   rx_err_t         err = rx_fec_decoder_init(&dec, nullptr, 100);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -646,6 +651,7 @@ void test_decoder_init_zero_length(void)
 {
   rx_fec_decoder_t dec;
   rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, 0);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -664,7 +670,7 @@ void test_decoder_init_zero_length(void)
  *
  * **Post-Conditions:**
  * - Decoder is ready for rx_fec_decode_soft() or rx_fec_decode_hard() calls
- * - Branch table is initialized (64 states × 2 inputs × 2 outputs)
+ * - Branch table is initialized (64 states x 2 inputs x 2 outputs)
  * - Survivors buffer is associated with decoder
  *
  * @pre Valid survivors buffer provided
@@ -676,6 +682,7 @@ void test_decoder_init_success(void)
 {
   rx_fec_decoder_t dec;
   rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, 100);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, dec.initialized);
 }
@@ -705,7 +712,7 @@ void test_decoder_init_success(void)
  * **Test Coverage:**
  * - Edge case: Zero input (should return 0, invalid)
  * - Small inputs: 1 byte, 2 bytes (significant overhead from tail bits)
- * - Large inputs: 1024 bytes (approaches 2× expansion asymptotically)
+ * - Large inputs: 1024 bytes (approaches 2x expansion asymptotically)
  *
  * @{
  */
@@ -746,7 +753,7 @@ void test_encoded_len_zero(void)
  * **Overhead Analysis:**
  * - Input: 1 byte
  * - Output: 4 bytes
- * - Expansion: 4.0× (tail bits dominate for small inputs)
+ * - Expansion: 4.0x (tail bits dominate for small inputs)
  *
  * @test Validates 1-byte encoding length formula
  */
@@ -772,7 +779,7 @@ void test_encoded_len_one_byte(void)
  * **Overhead Analysis:**
  * - Input: 2 bytes
  * - Output: 6 bytes
- * - Expansion: 3.0× (tail bits still significant)
+ * - Expansion: 3.0x (tail bits still significant)
  *
  * @test Validates 2-byte encoding length formula
  */
@@ -798,7 +805,7 @@ void test_encoded_len_two_bytes(void)
  * **Overhead Analysis:**
  * - Input: 1024 bytes
  * - Output: 2050 bytes
- * - Expansion: 2.002× (tail bits negligible, approaches asymptotic 2× rate)
+ * - Expansion: 2.002x (tail bits negligible, approaches asymptotic 2x rate)
  *
  * **Simplified Formula:**
  * For large @f$ n @f$: @f$ L_{\text{out}} \approx 2n + 2 @f$ bytes
@@ -906,6 +913,7 @@ void test_encode_uninitialized(void)
   uint32_t         len;
 
   rx_err_t err = rx_fec_encode(&enc, input, 1, output, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -932,6 +940,7 @@ void test_encode_zero_length(void)
   uint32_t len;
 
   rx_err_t err = rx_fec_encode(&s_encoder, input, 0, output, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -945,8 +954,8 @@ void test_encode_zero_length(void)
  * **Mathematical Verification:**
  * - Input: 1 byte = 8 bits
  * - Add tail bits: 8 + 6 = 14 bits
- * - Apply rate 1/2: 14 × 2 = 28 bits
- * - Convert to bytes: ⌈28 / 8⌉ = 4 bytes
+ * - Apply rate 1/2: 14 x 2 = 28 bits
+ * - Convert to bytes: ceil(28 / 8) = 4 bytes
  *
  * **Test Methodology:**
  * 1. Encode input = {0x00} (all zeros)
@@ -969,6 +978,7 @@ void test_encode_single_byte(void)
   uint32_t len;
 
   rx_err_t err = rx_fec_encode(&s_encoder, input, 1, output, &len);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(4, len); /* (8+6)*2/8 = 4 bytes */
 }
@@ -1004,6 +1014,7 @@ void test_encode_deterministic(void)
   uint8_t  input[] = {0xDE, 0xAD, 0xBE, 0xEF};
   uint8_t  output1[16];
   uint8_t  output2[16];
+
   uint32_t len1, len2;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, 4, output1, &len1));
@@ -1027,7 +1038,7 @@ void test_encode_deterministic(void)
 
 /**
  * @defgroup test_fec_bit_conversion FEC Soft/Hard Bit Conversion Tests
- * @brief Validate soft ↔ hard bit conversion utility functions
+ * @brief Validate soft <-> hard bit conversion utility functions
  *
  * @details
  * Tests the inline utility functions for converting between hard bits (0/1)
@@ -1082,7 +1093,7 @@ void test_hard_to_soft(void)
  * Verifies that rx_fec_soft_to_hard() correctly maps soft bits to hard bits
  * using sign-based decision:
  * - s < 0 -> 0 (likely bit 0)
- * - s ≥ 0 -> 1 (likely bit 1)
+ * - s >= 0 -> 1 (likely bit 1)
  *
  * **Mathematical Verification:**
  * @f[
@@ -1170,6 +1181,7 @@ void test_decode_null_args(void)
   rx_soft_bit_t               soft[32];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 32,
@@ -1222,6 +1234,7 @@ void test_decode_uninitialized(void)
   rx_soft_bit_t               soft[32];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 32,
@@ -1260,6 +1273,7 @@ void test_decode_odd_soft_length(void)
   rx_soft_bit_t               soft[33];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 33,
@@ -1295,6 +1309,7 @@ void test_decode_zero_length(void)
   rx_soft_bit_t               soft[32];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 0,
@@ -1363,6 +1378,7 @@ void test_decode_hard_null_args(void)
   uint8_t                     hard[16] = {0};
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 16,
@@ -1422,6 +1438,7 @@ void test_decode_hard_uninitialized(void)
   uint8_t                     hard[16] = {0};
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 16,
@@ -1458,6 +1475,7 @@ void test_decode_hard_zero_length(void)
   uint8_t                     hard[16] = {0};
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 0,
@@ -1489,7 +1507,7 @@ void test_decode_hard_zero_length(void)
  *
  * **Test Methodology:**
  * 1. Encode input data -> encoded bits
- * 2. Convert encoded hard bits to soft bits (maximum confidence ±127)
+ * 2. Convert encoded hard bits to soft bits (maximum confidence +/-127)
  * 3. Decode soft bits -> decoded data
  * 4. Verify decoded data == original input (bit-exact match)
  *
@@ -1540,6 +1558,7 @@ void test_roundtrip_single_byte(void)
   uint8_t  input[] = {0x42};
   uint8_t  encoded[16];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1590,6 +1609,7 @@ void test_roundtrip_multi_byte(void)
   uint8_t  input[] = {0xDE, 0xAD, 0xBE, 0xEF};
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1638,6 +1658,7 @@ void test_roundtrip_all_zeros(void)
   uint8_t  input[8];
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   memset(input, 0x00, 8);
@@ -1688,6 +1709,7 @@ void test_roundtrip_all_ones(void)
   uint8_t  input[8];
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   memset(input, 0xFF, 8);
@@ -1738,6 +1760,7 @@ void test_roundtrip_alternating_pattern(void)
   uint8_t  input[] = {0xAA, 0x55, 0xAA, 0x55};
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1792,6 +1815,7 @@ void test_roundtrip_larger_payload(void)
   uint8_t  input[32];
   uint8_t  encoded[128];
   uint8_t  decoded[64];
+
   uint32_t enc_len, dec_len;
 
   /* Fill with ascending pattern */
@@ -1881,7 +1905,7 @@ void test_roundtrip_larger_payload(void)
  * **Error Injection:**
  * Flip bit 0 (LSB) of first encoded byte:
  * - Original: encoded[0] = 0bXXXXXXXX
- * - After flip: encoded[0] ^= 0x01 = 0bXXXXXXX(X⊕1)
+ * - After flip: encoded[0] ^= 0x01 = 0bXXXXXXX(XXOR1)
  *
  * @pre setUp() has initialized s_encoder and s_decoder
  * @post Successful error correction, original data recovered
@@ -1893,6 +1917,7 @@ void test_single_bit_error_correction(void)
   uint8_t  input[] = {0x42};
   uint8_t  encoded[16];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1954,6 +1979,7 @@ void test_multiple_bit_error_correction(void)
   uint8_t  input[] = {0xAB, 0xCD};
   uint8_t  encoded[16];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */

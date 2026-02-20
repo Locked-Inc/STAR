@@ -167,7 +167,7 @@ func TestEncoderByteOrder(t *testing.T) {
 }
 
 // ============================================================================
-// Cross-Compatibility Test Vectors (Go ↔ C byte-exact)
+// Cross-Compatibility Test Vectors (Go <-> C byte-exact)
 //
 // These vectors define the canonical wire encoding for every frame type.
 // The C firmware tests (test_rx_frame.c) verify against the same hardcoded

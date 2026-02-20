@@ -16,15 +16,15 @@
  *
  * ```
  * Application Layer
- *     ↓
- * Bus Manager API (rx_bus_gpio.c) ← This file
- *     ↓
+ *     v
+ * Bus Manager API (rx_bus_gpio.c) <- This file
+ *     v
  * Bus Manager Core (mutex, lookup)
- *     ↓
+ *     v
  * Pin Validator (conflict detection)
- *     ↓
+ *     v
  * GPIO HAL (rx_port_utils.c)
- *     ↓
+ *     v
  * PORT Registers (hardware.h)
  * ```
  *
@@ -48,16 +48,16 @@
  *
  * | Operation | Cycles @ 240 MHz | Time | Description |
  * |-----------|------------------|------|-------------|
- * | Init | ~3600 | ~15 µs | Pin validator + direction config |
- * | Write | ~480 | ~2 µs | Set output state (with mutex) |
- * | Read | ~480 | ~2 µs | Read input state (with mutex) |
- * | Toggle | ~720 | ~3 µs | Read-modify-write (with mutex) |
+ * | Init | ~3600 | ~15 us | Pin validator + direction config |
+ * | Write | ~480 | ~2 us | Set output state (with mutex) |
+ * | Read | ~480 | ~2 us | Read input state (with mutex) |
+ * | Toggle | ~720 | ~3 us | Read-modify-write (with mutex) |
  *
  * Overhead breakdown:
- * - Mutex acquire/release: ~1.5 µs
- * - Bus lookup: ~0.3 µs
- * - Pin validator: ~0.2 µs (init only)
- * - HAL call: ~0.1 µs
+ * - Mutex acquire/release: ~1.5 us
+ * - Bus lookup: ~0.3 us
+ * - Pin validator: ~0.2 us (init only)
+ * - HAL call: ~0.1 us
  *
  * ## Memory Usage
  *
@@ -75,10 +75,10 @@
  * ## Execution Timing
  *
  * Measured on RX72N @ 240 MHz with -O2 optimization:
- * - Best case (cache hit): 1.8 µs
- * - Typical case: 2.0 µs
- * - Worst case (cache miss): 3.2 µs
- * - Init worst case: 18 µs (includes pin validator scan)
+ * - Best case (cache hit): 1.8 us
+ * - Typical case: 2.0 us
+ * - Worst case (cache miss): 3.2 us
+ * - Init worst case: 18 us (includes pin validator scan)
  *
  * ## Hardware Requirements
  *
@@ -89,7 +89,7 @@
  * | RAM | 32 bytes stack per concurrent call |
  * | Flash | 832 bytes code + 24 bytes constants |
  * | Peripherals | PORT module (built-in) |
- * | GPIO levels | 3.3V CMOS (VDD = 3.3V ± 10%) |
+ * | GPIO levels | 3.3V CMOS (VDD = 3.3V +/- 10%) |
  *
  * ## Callback Pattern Implementation
  *
@@ -163,7 +163,20 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "BUS_GPIO";
+/**
+ * @var s_tag
+ * @brief Logging tag for all rx_bus_gpio module log messages
+ *
+ * @details
+ * Identifies GPIO bus log entries in the system log output. Used by
+ * rx_log_error(), rx_log_warn(), and rx_log_debug() throughout this module.
+ * Stored as a read-only character array in the .rodata section.
+ *
+ * @note Read-only; must never be modified at runtime
+ * @warning Direct modification would corrupt all log output from this module
+ * @since Version 1.0.0
+ */
+static const char s_tag[] = "BUS_GPIO";
 
 /* =============================================================================
  * Callback Context Structures
@@ -331,7 +344,7 @@ typedef struct {
  *
  * @note Called from bus manager with mutex held (thread-safe)
  * @note Post-init verification read may fail on output-only pins (acceptable)
- * @note Execution time: ~15 µs (includes pin validator check)
+ * @note Execution time: ~15 us (includes pin validator check)
  *
  * @warning Do not call directly - use rx_bus_gpio_init() instead
  * @attention Failure leaves bus in uninitialized state
@@ -354,23 +367,19 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Initialize GPIO pin */
-  rx_err_t err;
-  if (ctx->output) {
-    err = gpio_set_output(bus_config->proto.gpio.pin);
-  } else {
-    err = gpio_set_input(bus_config->proto.gpio.pin);
-  }
+  const rx_err_t init_err = ctx->output ? gpio_set_output(bus_config->proto.gpio.pin)
+                                        : gpio_set_input(bus_config->proto.gpio.pin);
 
-  if (err != k_rx_ok) {
+  if (init_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO HAL initialization failed");
-    ctx->result = err;
-    return err;
+    ctx->result = init_err;
+    return init_err;
   }
 
   /* Post-condition: Verify GPIO is responsive by attempting a read */
-  bool test_value = false;
-  err             = gpio_read(bus_config->proto.gpio.pin, &test_value);
-  if (err != k_rx_ok) {
+  bool           test_value = false;
+  const rx_err_t read_err   = gpio_read(bus_config->proto.gpio.pin, &test_value);
+  if (read_err != k_rx_ok) {
     rx_log_warn(s_tag, "Post-init verification read failed (pin may not support readback)");
     /* Continue anyway - init succeeded, readback limitation is acceptable */
   }
@@ -422,7 +431,7 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
  *
  * @note Called from bus manager with mutex held (thread-safe)
  * @note Post-write readback may mismatch on some hardware (acceptable warning)
- * @note Execution time: ~2 µs (including readback verification)
+ * @note Execution time: ~2 us (including readback verification)
  *
  * @warning Readback verification may fail on output-only pins
  * @warning Readback mismatch logged as warning but operation succeeds
@@ -445,23 +454,19 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Write GPIO value */
-  rx_err_t err;
-  if (ctx->value) {
-    err = gpio_write_high(bus_config->proto.gpio.pin);
-  } else {
-    err = gpio_write_low(bus_config->proto.gpio.pin);
-  }
+  const rx_err_t write_err = ctx->value ? gpio_write_high(bus_config->proto.gpio.pin)
+                                        : gpio_write_low(bus_config->proto.gpio.pin);
 
-  if (err != k_rx_ok) {
+  if (write_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO write failed");
-    ctx->result = err;
-    return err;
+    ctx->result = write_err;
+    return write_err;
   }
 
   /* Post-condition: Verify written value by reading back */
-  bool readback_value = false;
-  err                 = gpio_read(bus_config->proto.gpio.pin, &readback_value);
-  if (err != k_rx_ok) {
+  bool           readback_value = false;
+  const rx_err_t read_err       = gpio_read(bus_config->proto.gpio.pin, &readback_value);
+  if (read_err != k_rx_ok) {
     rx_log_warn(s_tag, "Post-write verification read failed");
     /* Continue anyway - write succeeded, readback limitation is acceptable */
   } else if (readback_value != ctx->value) {
@@ -518,7 +523,7 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
  *
  * @note Called from bus manager with mutex held (thread-safe)
  * @note Works for both input and output pins (reads PIDR)
- * @note Execution time: ~2 µs
+ * @note Execution time: ~2 us
  * @note Floating inputs may read unpredictably (enable pull-up if needed)
  *
  * @warning ctx->value undefined if return != k_rx_ok
@@ -532,7 +537,6 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
 static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   gpio_read_ctx_t* ctx = (gpio_read_ctx_t*)user_ctx;
-  rx_err_t         err = k_rx_err_hw_error;
 
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(ctx, s_tag, "user_ctx pointer is nullptr");
@@ -546,7 +550,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read GPIO value */
-  err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
+  const rx_err_t err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO read failed");
@@ -601,7 +605,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
  * @pre user_ctx points to valid gpio_toggle_ctx_t
  *
  * @post ctx->result contains operation result
- * @post Pin output state inverted (high ↔ low)
+ * @post Pin output state inverted (high <-> low)
  * @post Physical pin reflects new state within 10-20 ns
  *
  * @invariant Bus remains initialized
@@ -609,7 +613,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
  * @note Called from bus manager with mutex held (atomic read-modify-write)
  * @note Pre-toggle read may fail on output-only pins (logged as warning)
  * @note Post-toggle verification may fail on some hardware (logged as warning)
- * @note Execution time: ~3 µs (read + toggle + read)
+ * @note Execution time: ~3 us (read + toggle + read)
  *
  * @warning Pre/post-toggle verification may fail on output-only pins
  * @warning Verification failures logged but operation proceeds
@@ -633,26 +637,26 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
   }
 
   /* Read current state before toggle for verification */
-  bool     state_before = false;
-  rx_err_t err          = gpio_read(bus_config->proto.gpio.pin, &state_before);
-  if (err != k_rx_ok) {
+  bool           state_before   = false;
+  const rx_err_t pre_read_err   = gpio_read(bus_config->proto.gpio.pin, &state_before);
+  if (pre_read_err != k_rx_ok) {
     rx_log_warn(s_tag, "Pre-toggle read failed (output pin may not support readback)");
     state_before = false; /* Assume low if can't read */
   }
 
   /* Toggle GPIO */
-  err = gpio_toggle(bus_config->proto.gpio.pin);
+  const rx_err_t toggle_err = gpio_toggle(bus_config->proto.gpio.pin);
 
-  if (err != k_rx_ok) {
+  if (toggle_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO toggle failed");
-    ctx->result = err;
-    return err;
+    ctx->result = toggle_err;
+    return toggle_err;
   }
 
   /* Post-condition: Verify pin actually toggled */
-  bool state_after = false;
-  err              = gpio_read(bus_config->proto.gpio.pin, &state_after);
-  if (err != k_rx_ok) {
+  bool           state_after    = false;
+  const rx_err_t post_read_err  = gpio_read(bus_config->proto.gpio.pin, &state_after);
+  if (post_read_err != k_rx_ok) {
     rx_log_warn(s_tag,
                 "Post-toggle verification read failed (output pin may not support readback)");
     /* Continue anyway - toggle succeeded, readback limitation is acceptable */
@@ -720,7 +724,7 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
  *
  * @note Thread-safe via bus manager mutex
  * @note Stack usage: 8 bytes for context
- * @note Execution time: ~15 µs
+ * @note Execution time: ~15 us
  *
  * @par Example:
  * @code
@@ -774,8 +778,8 @@ rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool 
  * @param[in] bus_name Name of the GPIO bus
  *   - Must match registered and initialized bus
  * @param[in] value Output state
- *   - true: High (VDD ≈ 3.3V)
- *   - false: Low (GND ≈ 0V)
+ *   - true: High (VDD ~ 3.3V)
+ *   - false: Low (GND ~ 0V)
  *
  * @return rx_err_t Error code indicating result
  * @retval k_rx_ok Success, output changed
@@ -792,7 +796,7 @@ rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool 
  *
  * @note Thread-safe via bus manager mutex
  * @note Stack usage: 8 bytes for context
- * @note Execution time: ~2 µs
+ * @note Execution time: ~2 us
  *
  * @par Example:
  * @code
@@ -864,7 +868,7 @@ rx_err_t rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool
  * @note Thread-safe via bus manager mutex
  * @note Works for both input and output pins
  * @note Stack usage: 16 bytes for context
- * @note Execution time: ~2 µs
+ * @note Execution time: ~2 us
  *
  * @warning value undefined if return != k_rx_ok
  * @warning Floating inputs read unpredictably
@@ -902,7 +906,7 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
 }
 
 /**
- * @brief Toggle GPIO output pin state (high ↔ low)
+ * @brief Toggle GPIO output pin state (high <-> low)
  *
  * @details
  * Public API function to invert GPIO output state. Performs atomic
@@ -942,12 +946,12 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
  *
  * @note Thread-safe - atomic read-modify-write via mutex
  * @note Stack usage: 4 bytes for context
- * @note Execution time: ~3 µs (read + write)
+ * @note Execution time: ~3 us (read + write)
  *
  * @warning Attempting to toggle input pin returns k_rx_err_invalid_state
  *
  * @par Performance:
- * - Execution time: ~3 µs (slower than write due to read)
+ * - Execution time: ~3 us (slower than write due to read)
  * - Maximum toggle rate: ~330 kHz (theoretical)
  * - Practical toggle rate: < 10 kHz (recommended)
  *

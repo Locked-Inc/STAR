@@ -31,8 +31,8 @@
  * @par Performance:
  * | Operation      | Typical   | Worst Case  |
  * |----------------|-----------|-------------|
- * | Send (64B)     | 80 µs     | 200 µs      |
- * | Receive        | 500 µs    | timeout_ms  |
+ * | Send (64B)     | 80 us     | 200 us      |
+ * | Receive        | 500 us    | timeout_ms  |
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto, setjmp, recursion
@@ -126,10 +126,6 @@ static rx_err_t internal_decode_header(const uint8_t* data,
                                        rx_frame_t*    frame,
                                        uint32_t*      offset_out)
 {
-  uint32_t offset;
-  uint16_t sync_word;
-  uint32_t expected_size;
-
   RX_ASSERT(data != nullptr, "Data pointer is nullptr");
   RX_ASSERT(frame != nullptr, "Frame pointer is nullptr");
   if (data == nullptr || frame == nullptr) {
@@ -140,9 +136,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  offset = 0;
-
-  sync_word = rx_frame_read_le16(&data[offset]);
+  uint32_t offset    = 0;
+  const uint16_t sync_word = rx_frame_read_le16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
@@ -158,7 +153,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
     return k_rx_err_invalid_size;
   }
 
-  expected_size = rx_frame_encoded_size(frame->header.length);
+  const uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
     return k_rx_err_invalid_size;
   }
@@ -209,7 +204,7 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @note CRC stored in little-endian format in frame
  *
  * @par Performance:
- * CRC calculation: ~10 µs for 64-byte payload @ 240 MHz
+ * CRC calculation: ~10 us for 64-byte payload @ 240 MHz
  *
  * @see rx_crc32_ieee() CRC calculation function
  * @see internal_decode_header() Called before this to parse header
@@ -757,11 +752,6 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
                                                       uint32_t*             elapsed_ms,
                                                       rx_err_t*             err)
 {
-  int32_t  sync_pos    = k_sync_not_found;
-  uint32_t available   = 0;
-  uint32_t total_size  = 0;
-  uint16_t payload_len = 0;
-
   /* Read any available USB data */
   *err = internal_read_usb_data(handle);
   if (*err != k_rx_ok && *err != k_rx_err_timeout) {
@@ -769,6 +759,7 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
   }
 
   /* Search for sync word */
+  int32_t  sync_pos    = k_sync_not_found;
   *err = internal_find_sync(handle, &sync_pos);
   if (*err == k_rx_err_not_found) {
     *err = internal_handle_no_sync(handle, timeout_ms, elapsed_ms);
@@ -782,13 +773,15 @@ static rx_receive_result_t internal_receive_iteration(rx_usb_comm_handle_t* hand
   internal_align_to_sync(handle, sync_pos);
 
   /* Check if we have enough data for header */
-  available = handle->rx_buffer_len - handle->rx_buffer_pos;
+  const uint32_t available = handle->rx_buffer_len - handle->rx_buffer_pos;
   if (available < k_frame_header_total) {
     *err = internal_wait_for_data(handle, timeout_ms, elapsed_ms);
     return (*err != k_rx_ok) ? k_receive_error : k_receive_continue;
   }
 
   /* Parse and validate header */
+  uint32_t total_size  = 0;
+  uint16_t payload_len = 0;
   if (!internal_parse_header(handle, &payload_len, &total_size)) {
     return k_receive_continue;
   }
@@ -872,7 +865,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_usb_comm_handle_t));
+  *handle = (rx_usb_comm_handle_t){0};
 
   /* Apply configuration - config is required for session pointer */
   if (config == nullptr || config->session == nullptr) {
@@ -958,8 +951,6 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
  */
 rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
 {
-  rx_err_t result = k_rx_ok;
-
   /* Rule 5: Pre-condition 1 - validate pointer */
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
@@ -967,6 +958,7 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
 
   /* Rule 5: Pre-condition 2 - catch programming error (deinit without init) */
   RX_ASSERT(handle->initialized, "Attempt to deinitialize uninitialized USB comm handle");
+  rx_err_t result = k_rx_ok;
 
   if (handle->initialized) {
     /* Rule 7: Check all return values */

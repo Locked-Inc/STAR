@@ -108,11 +108,11 @@
  *
  * | Operation | Execution Time | Stack Usage | Notes |
  * |-----------|---------------|-------------|-------|
- * | uart_init_channel | ~50 µs | 48 bytes | Includes MPC configuration |
- * | uart_putc_channel | ~90 µs @ 115200 | 16 bytes | Includes wait for TDRE |
- * | uart_puts_channel | ~90 µs/char | 24 bytes | With \n->\r\n conversion |
- * | uart_getc_channel | ~5 µs | 16 bytes | Non-blocking if no data |
- * | uart_debug_init | ~50 µs | 64 bytes | Wrapper for SCI9 |
+ * | uart_init_channel | ~50 us | 48 bytes | Includes MPC configuration |
+ * | uart_putc_channel | ~90 us @ 115200 | 16 bytes | Includes wait for TDRE |
+ * | uart_puts_channel | ~90 us/char | 24 bytes | With \n->\r\n conversion |
+ * | uart_getc_channel | ~5 us | 16 bytes | Non-blocking if no data |
+ * | uart_debug_init | ~50 us | 64 bytes | Wrapper for SCI9 |
  *
  * @par Memory Footprint:
  * - Code size: ~2 KB (all functions)
@@ -157,7 +157,7 @@
  * | 2. Fixed loop bounds | [OK] | All loops use k_uart_max_str_len limit |
  * | 3. No dynamic allocation | [OK] | Zero malloc/free, static buffers only |
  * | 4. Small functions | [OK] | All functions < 60 lines |
- * | 5. Assertions (≥2/func) | [OK] | Parameter validation + state checks |
+ * | 5. Assertions (>=2/func) | [OK] | Parameter validation + state checks |
  * | 6. Narrow scope | [OK] | Static file-scope state, local variables |
  * | 7. Check return values | [OK] | All rx_err_t returns propagated |
  * | 8. Limited preprocessor | [OK] | C23 typed enums only |
@@ -257,11 +257,17 @@ typedef enum : uint8_t {
 
 /** @brief BRR calculation constants */
 typedef enum : uint16_t {
-  k_brr_divisor_n0 = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
-  k_brr_multiplier = 4,   /**< Multiplier per CKS increment (2^2) */
-  k_brr_max_value  = 255, /**< Maximum BRR register value */
-  k_brr_min_value  = 0,   /**< Minimum BRR register value */
+  k_brr_divisor_n0     = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
+  k_brr_multiplier     = 4,   /**< Multiplier per CKS increment (2^2) */
+  k_brr_max_value      = 255, /**< Maximum BRR register value */
+  k_brr_min_value      = 0,   /**< Minimum BRR register value */
+  k_brr_formula_offset = 1,   /**< BRR formula subtract-1 offset: BRR = (PCLKB/(32*B)) - 1 */
 } brr_constants_t;
+
+/** @brief MSTPCRB register bit manipulation constants */
+typedef enum : uint32_t {
+  k_uart_mstpcrb_bit_set = 1UL, /**< Single-bit mask for MSTPCRB bit-clear operations */
+} uart_mstpcrb_constants_t;
 
 /** @brief Maximum SCI channels (array size, must be enum for compile-time constant) */
 typedef enum : uint8_t {
@@ -271,9 +277,50 @@ typedef enum : uint8_t {
   k_uart_max_channels      = 13, /**< Maximum valid channel value (SCI channels 0-12) */
 } uart_internal_constants_t;
 
+/**
+ * @enum uart_validation_limits_t
+ * @brief Baud rate validation bounds for uart_init_channel() parameter checking
+ *
+ * @details
+ * Defines the closed interval [k_uart_baudrate_min, k_uart_baudrate_max] that
+ * every requested baud rate must satisfy before the driver attempts to program
+ * the BRR register.
+ *
+ * The maximum is derived directly from the BRR formula for n=0 (CKS=00):
+ * @f[
+ *   \text{BRR} = \frac{\text{PCLKB}}{32 \times B} - 1 \geq 0
+ *   \implies B \leq \frac{\text{PCLKB}}{32}
+ * @f]
+ * A BRR of 0 corresponds to the fastest achievable baud rate at the current
+ * PCLKB frequency, so requesting anything higher would underflow the register.
+ *
+ * The minimum is 1 bps, which prevents a divide-by-zero in the BRR formula.
+ * In practice, any baud rate below ~9600 is impractical on a 60 MHz PCLKB, but
+ * the lower bound is kept permissive to avoid false negatives during testing.
+ *
+ * @invariant k_uart_baudrate_min must be > 0 to prevent division by zero in
+ * internal_calculate_brr().
+ * @invariant k_uart_baudrate_max must equal k_pclkb_hz / k_brr_divisor_n0 so
+ * that the computed BRR is always >= 0 (i.e., no register underflow).
+ *
+ * @par Example:
+ * @code{.c}
+ * // Validation performed inside uart_init_channel()
+ * if ((config->baudrate < k_uart_baudrate_min) ||
+ *     (config->baudrate > k_uart_baudrate_max)) {
+ *   return k_rx_err_invalid_arg;
+ * }
+ * @endcode
+ *
+ * @see uart_init_channel() Uses these bounds to validate the baudrate field
+ * @see internal_calculate_brr() Computes the actual BRR register value
+ * @see brr_constants_t BRR formula divisor constants
+ *
+ * @since Version 1.0.0
+ */
 typedef enum : uint32_t {
-  k_uart_baudrate_min = 1,
-  k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0),
+  k_uart_baudrate_min = 1,                              /**< Minimum valid baud rate (bps); must be > 0 to avoid divide-by-zero in BRR formula */
+  k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0), /**< Maximum valid baud rate (bps); BRR = 0 at this rate, higher values would underflow */
 } uart_validation_limits_t;
 
 /** @brief UART timeout constants */
@@ -315,9 +362,35 @@ typedef enum : uint16_t {
   k_uart_debug_rx_gpio = k_rx_pb_6, /**< PB6 = RXD9 */
 } uart_debug_pins_t;
 
-/** @brief GPIO register bit manipulation constant */
+/**
+ * @enum uart_gpio_constants_t
+ * @brief GPIO register bit manipulation constants for UART pin configuration
+ *
+ * @details
+ * Provides the single-bit seed value used when constructing per-pin bitmasks
+ * for the PDR (Port Direction Register) and PMR (Port Mode Register) during
+ * UART TX/RX pin setup.  A bit mask for a specific pin is formed by shifting
+ * this value left by the pin index obtained from rx_pin_from_pin().
+ *
+ * @invariant k_uart_gpio_bit_set must equal 1 so that left-shifting by a pin
+ * index produces an isolated single-bit mask.
+ *
+ * @par Example:
+ * @code{.c}
+ * // Build the TX pin mask and set the direction bit
+ * const uint8_t tx_pin      = rx_pin_from_pin(tx_gpio);
+ * const uint8_t tx_pin_mask = (uint8_t)(k_uart_gpio_bit_set << tx_pin);
+ * tx_port_base->pdr |= tx_pin_mask;  // Set output direction
+ * tx_port_base->pmr |= tx_pin_mask;  // Switch to peripheral mode
+ * @endcode
+ *
+ * @see internal_configure_uart_pins() Only consumer of this constant
+ * @see uart_init_channel() Top-level function that triggers pin configuration
+ *
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
-  k_uart_gpio_bit_set = 1,
+  k_uart_gpio_bit_set = 1, /**< Seed value for constructing a single-pin bitmask via left-shift */
 } uart_gpio_constants_t;
 
 /* =============================================================================
@@ -334,13 +407,76 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  */
 
 /**
- * @brief Calculate BRR value for given baud rate
+ * @brief Calculate the 8-bit BRR register value for a target baud rate
  *
- * BRR = (PCLKB / (64 * 2^(2n-1) * B)) - 1
- * For n=0 (CKS=00, PCLK/1): BRR = (PCLKB / (32 * B)) - 1
+ * @details
+ * Computes the value to be written to the SCI Bit Rate Register (BRR) so that
+ * the SCI peripheral generates the requested baud rate from PCLKB.  The
+ * general RX72N SCI baud rate formula for asynchronous mode is:
  *
- * @param[in] baudrate Target baud rate
- * @return BRR register value
+ * @f[
+ *   \text{BRR} = \frac{\text{PCLKB}}{64 \times 2^{2n-1} \times B} - 1
+ * @f]
+ *
+ * This driver always uses n=0 (CKS bits = 0b00, clock source = PCLK/1), which
+ * simplifies to:
+ *
+ * @f[
+ *   \text{BRR} = \frac{\text{PCLKB}}{32 \times B} - 1
+ * @f]
+ *
+ * **Algorithm steps:**
+ * 1. Guard against baudrate == 0 (return k_brr_max_value as a safe sentinel).
+ * 2. Apply the n=0 formula using integer arithmetic (truncating division).
+ * 3. Clamp the result to k_brr_max_value (255) if the integer exceeds the
+ *    8-bit range (indicates a baud rate too slow for this clock).
+ * 4. Return the clamped 8-bit result.
+ *
+ * **Baud rate error:**
+ * Integer truncation introduces a small positive frequency error.  At PCLKB =
+ * 60 MHz the worst-case error is +1.73 % (at 115 200 bps, BRR = 15), which is
+ * within the +/-2 % tolerance of the RS-232/UART standard.
+ *
+ * @param[in] baudrate Target baud rate in bps
+ *   - **Valid range**: 1 to k_uart_baudrate_max (k_pclkb_hz / k_brr_divisor_n0)
+ *   - **Special case**: 0 returns k_brr_max_value (255) as a safe sentinel
+ *   - **Units**: bits per second
+ *
+ * @return uint8_t BRR register value to program into sci->brr
+ * @retval 0..254 Computed BRR for the requested baud rate
+ * @retval 255 (k_brr_max_value) Returned when baudrate == 0 or the computed
+ *         value exceeds 255 (baud rate too low for n=0 divisor)
+ *
+ * @pre baudrate should be validated against [k_uart_baudrate_min,
+ *      k_uart_baudrate_max] by the caller before invoking this function
+ * @pre k_pclkb_hz and k_brr_divisor_n0 must be non-zero compile-time constants
+ *
+ * @post Return value is always in [0, 255]; no register overflow is possible
+ * @post Caller must write the returned value to sci->brr before enabling TX/RX
+ *
+ * @note This function performs only integer arithmetic; no floating-point is
+ *       used, making it suitable for the RX72N toolchain with FPU disabled
+ * @note Always uses n=0 (CKS=00); support for n=1..3 is not implemented
+ *
+ * @par Thread Safety:
+ * Stateless pure function; safe to call from any context including ISR.
+ *
+ * @par Performance:
+ * - Execution time: ~5 cycles (two integer multiplications and a comparison)
+ * - Stack usage: 8 bytes (one local uint32_t)
+ *
+ * @par Example:
+ * @code{.c}
+ * // Program BRR for 115200 bps on an already-disabled SCI channel
+ * sci->brr = internal_calculate_brr(115200U);
+ * // At PCLKB = 60 MHz: brr = (60000000 / (32 * 115200)) - 1 = 15
+ * @endcode
+ *
+ * @see uart_init_channel() Caller that validates baudrate and writes sci->brr
+ * @see brr_constants_t Constants used in the BRR formula
+ * @see uart_validation_limits_t Baud rate bounds checked before this call
+ *
+ * @since Version 1.0.0
  */
 static uint8_t internal_calculate_brr(const uint32_t baudrate)
 {
@@ -349,7 +485,7 @@ static uint8_t internal_calculate_brr(const uint32_t baudrate)
   }
 
   /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  const uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
+  const uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - k_brr_formula_offset;
 
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
@@ -359,9 +495,73 @@ static uint8_t internal_calculate_brr(const uint32_t baudrate)
 }
 
 /**
- * @brief Clear error flags in SSR register
+ * @brief Clear receive error flags in the SCI Serial Status Register (SSR)
  *
- * @param[in] sci Pointer to SCI registers
+ * @details
+ * Reads the SSR register and writes it back with the three receive error flag
+ * bits masked out, which clears any pending ORER (Overrun Error), FER
+ * (Framing Error), and PER (Parity Error) conditions on the SCI channel.
+ *
+ * The RX72N SCI peripheral requires a read-modify-write sequence to clear
+ * error flags: the hardware only allows clearing a flag by writing 0 to it
+ * while keeping the rest of the register unchanged.  Writing 1 to an already-
+ * set flag has no effect (the write is ignored).
+ *
+ * **Algorithm steps:**
+ * 1. Guard: return immediately if sci is nullptr (NASA Power of 10 Rule 5).
+ * 2. Read the current value of sci->ssr into a local volatile variable.
+ * 3. Cast-to-void the read result to suppress the unused-variable warning while
+ *    still ensuring the volatile read is not optimised away.
+ * 4. Write sci->ssr = (ssr & ~k_sci_ssr_error_mask) to clear bits [5:3]
+ *    (ORER, FER, PER) while preserving all other SSR bits.
+ *
+ * **Error flag bit positions in SSR:**
+ * | Bit | Flag | Description |
+ * |-----|------|-------------|
+ * |  5  | ORER | Overrun Error - new data arrived before previous data was read |
+ * |  4  | FER  | Framing Error - no valid stop bit detected |
+ * |  3  | PER  | Parity Error  - parity mismatch (unused in 8N1 mode) |
+ *
+ * @param[in] sci Pointer to the SCI register block for the target channel
+ *   - **Valid range**: Non-nullptr pointer obtained from sci_get_channel()
+ *   - **Null handling**: Returns silently if nullptr (no-op; no error return)
+ *
+ * @pre sci must point to a valid, hardware-mapped rx_sci_regs_t register block
+ * @pre The SCI module clock must be enabled (MSTPCRB bit cleared) before
+ *      any SSR access; undefined behaviour otherwise
+ *
+ * @post ORER, FER, and PER bits in sci->ssr are cleared (written to 0)
+ * @post All other SSR bits (TDRE, RDRF, TEND, MPB, MPBT) are preserved
+ *
+ * @note This function is intentionally void-returning; the caller (uart_getc_channel)
+ *       checks for errors before calling and does not need a return code
+ * @note The intermediate volatile read prevents the compiler from merging the
+ *       read and write into a single store, which would miss the read requirement
+ *
+ * @par Thread Safety:
+ * Not thread-safe. SSR is a read-modify-write target; concurrent access from
+ * two threads on the same channel can corrupt flag state.  External mutex
+ * protection is required if multiple threads share a channel.
+ *
+ * @par Performance:
+ * - Execution time: ~3 cycles (volatile read + mask + volatile write)
+ * - Stack usage: 4 bytes (one volatile uint8_t local)
+ *
+ * @par Example:
+ * @code{.c}
+ * volatile rx_sci_regs_t* sci = sci_get_channel(k_uart_channel_9);
+ * if (sci != nullptr) {
+ *   // Clear any stale error flags before reading receive data
+ *   internal_clear_errors(sci);
+ *   const char data = (char)sci->rdr;
+ * }
+ * @endcode
+ *
+ * @see uart_getc_channel() Caller that invokes this before reading RDR
+ * @see sci_register_values_t k_sci_ssr_error_mask bitmask definition
+ * @see uart_rx_available() Non-destructive receive availability check
+ *
+ * @since Version 1.0.0
  */
 static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 {
@@ -379,11 +579,79 @@ static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 }
 
 /**
- * @brief Get MSTPCRB bit position for SCI channel
+ * @brief Return the MSTPCRB bit position that controls the module-stop clock
+ *        gate for a given SCI channel
  *
- * @param[in] channel SCI channel (0-11)
+ * @details
+ * The RX72N Module Stop Control Register B (MSTPCRB) contains one bit per SCI
+ * channel (SCI0-SCI11).  Clearing a bit removes the module from the stopped
+ * state, allowing its clock to run.  The bit layout is contiguous and
+ * descending: SCI0 occupies bit 31, SCI1 occupies bit 30, and so on down to
+ * SCI11 at bit 20.
  *
- * @return Bit position in MSTPCRB, or -1 if invalid channel
+ * SCI12 is controlled by a different register (MSTPCRC bit 4) and is therefore
+ * outside the scope of this function; channel 12 returns -1 to signal the
+ * caller that a different mechanism is needed.
+ *
+ * **Algorithm steps:**
+ * 1. Check whether channel > k_uart_max_mstpb_channel (11); return -1 if so.
+ * 2. Compute bit position as k_sci_mstpb_sci0 (31) minus channel index.
+ * 3. Cast to int8_t and return.
+ *
+ * **Bit position table (MSTPCRB):**
+ * | Channel | Bit | Enum constant       |
+ * |---------|-----|---------------------|
+ * | SCI0    | 31  | k_sci_mstpb_sci0    |
+ * | SCI1    | 30  | k_sci_mstpb_sci1    |
+ * | SCI2    | 29  | k_sci_mstpb_sci2    |
+ * | ...     | ... | ...                 |
+ * | SCI11   | 20  | k_sci_mstpb_sci11   |
+ * | SCI12   | N/A | handled in MSTPCRC  |
+ *
+ * @param[in] channel SCI channel index
+ *   - **Valid range**: 0 to k_uart_max_mstpb_channel (11)
+ *   - **Out-of-range**: 12 or above returns -1 (SCI12 is in MSTPCRC)
+ *   - **Units**: dimensionless channel index
+ *
+ * @return int8_t MSTPCRB bit position for the given channel
+ * @retval 20..31 Valid bit position (MSTPCRB bit index)
+ * @retval -1 Channel is not in MSTPCRB (channel >= 12); caller must use an
+ *         alternative register (MSTPCRC) or treat as an error
+ *
+ * @pre channel is obtained from a validated uart_channel_t value
+ * @pre k_sci_mstpb_sci0 must equal 31 so that the descending formula is correct
+ *
+ * @post Return value, if >= 0, is a valid bit index in [20, 31]
+ * @post Caller is responsible for performing the register unlock/lock sequence
+ *       around the MSTPCRB write
+ *
+ * @note Returns int8_t (signed) so that -1 can be used as an unambiguous
+ *       sentinel without consuming any valid bit position in [0, 31]
+ * @note SCI12 support requires a separate call path using MSTPCRC; this
+ *       function deliberately does not handle it
+ *
+ * @par Thread Safety:
+ * Stateless pure function; safe to call from any context including ISR.
+ *
+ * @par Performance:
+ * - Execution time: ~2 cycles (one comparison, one subtraction)
+ * - Stack usage: 0 bytes (no locals beyond return register)
+ *
+ * @par Example:
+ * @code{.c}
+ * const int8_t bit = internal_get_mstpb_bit(9U);
+ * // bit == 22  (k_sci_mstpb_sci9)
+ * if (bit >= 0) {
+ *   system_regs()->mstpcrb &= ~(1UL << (uint8_t)bit);
+ * }
+ * @endcode
+ *
+ * @see internal_enable_sci_clock() Only caller; uses the returned bit to
+ *      clear the module-stop gate in MSTPCRB
+ * @see sci_mstpb_bits_t Enum defining all SCI MSTPCRB bit positions
+ * @see uart_internal_constants_t k_uart_max_mstpb_channel boundary constant
+ *
+ * @since Version 1.0.0
  */
 static int8_t internal_get_mstpb_bit(const uint8_t channel)
 {
@@ -397,15 +665,87 @@ static int8_t internal_get_mstpb_bit(const uint8_t channel)
 }
 
 /**
- * @brief Enable SCI module clock (clear module stop)
+ * @brief Enable the peripheral clock for an SCI channel by clearing its
+ *        Module Stop Control Register B (MSTPCRB) bit
  *
- * @param[in] channel SCI channel (0-11)
+ * @details
+ * On reset, all SCI modules are held in the module-stop state (their clock
+ * gates are closed) to minimize power consumption.  Before any SCI register
+ * can be accessed, the corresponding MSTPCRB bit must be cleared.  Clearing
+ * the bit opens the clock gate and allows the SCI peripheral to operate.
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if channel invalid
+ * The MSTPCRB register is write-protected by the Protect Register (PRCR).
+ * This function performs the required unlock/modify/lock sequence:
+ *
+ * **Algorithm steps:**
+ * 1. Call internal_get_mstpb_bit(channel) to obtain the MSTPCRB bit index.
+ *    Return k_rx_err_invalid_arg immediately if the result is negative (channel
+ *    12 or out of range).
+ * 2. Write k_rx_prcr_unlock_all to *prcr_reg() to remove write protection.
+ * 3. Clear the target bit in system_regs()->mstpcrb using a read-modify-write
+ *    with the single-bit mask k_uart_mstpcrb_bit_set shifted left by mstpb_bit.
+ * 4. Write k_rx_prcr_lock to *prcr_reg() to restore write protection.
+ * 5. Return k_rx_ok.
+ *
+ * **Register sequence:**
+ * @code{.c}
+ * PRCR  = 0xA50B;   // Unlock
+ * MSTPCRB &= ~(1UL << bit);  // Clear module-stop bit
+ * PRCR  = 0xA500;   // Lock
+ * @endcode
+ *
+ * @param[in] channel SCI channel index to enable
+ *   - **Valid range**: 0 to k_uart_max_mstpb_channel (11)
+ *   - **Invalid**: 12 or above -- SCI12 uses MSTPCRC (not supported here)
+ *   - **Units**: dimensionless channel index
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success -- MSTPCRB bit cleared, SCI clock enabled
+ * @retval k_rx_err_invalid_arg channel >= 12 (not in MSTPCRB); MSTPCRB
+ *         is not modified and the channel clock remains gated
+ *
+ * @pre channel must be in range [0, k_uart_max_mstpb_channel] (i.e., 0-11)
+ * @pre PRCR register must be accessible; this function does not check for
+ *      nested unlock attempts
+ *
+ * @post On success, the MSTPCRB bit for the specified channel is cleared and
+ *       the SCI module clock is running
+ * @post On success, the PRCR register is returned to its locked state
+ *
+ * @note This function does not re-assert module stop on error or deinit; the
+ *       clock is left enabled for the lifetime of the MCU session
+ * @warning Do not call while another thread or ISR is modifying MSTPCRB or
+ *          any other PRCR-protected register; the unlock/lock window is not
+ *          atomic
+ *
+ * @par Thread Safety:
+ * Not thread-safe. The PRCR unlock-MSTPCRB write-PRCR lock sequence must
+ * execute atomically.  Call only during single-threaded initialization before
+ * ThreadX starts.
+ *
+ * @par Performance:
+ * - Execution time: ~5 cycles (two PRCR writes + one RMW on MSTPCRB)
+ * - Stack usage: 8 bytes (one int8_t local for mstpb_bit)
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_err_t err = internal_enable_sci_clock(9U);  // Enable SCI9 clock
+ * if (err != k_rx_ok) {
+ *   return err;  // Channel 12 or invalid -- caller must handle
+ * }
+ * // SCI9 registers are now accessible
+ * @endcode
+ *
+ * @see internal_get_mstpb_bit() Helper that maps channel -> MSTPCRB bit index
+ * @see uart_init_channel() Caller that invokes this as part of channel setup
+ * @see uart_mstpcrb_constants_t k_uart_mstpcrb_bit_set single-bit mask seed
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_enable_sci_clock(const uint8_t channel)
 {
   const int8_t mstpb_bit = internal_get_mstpb_bit(channel);
+
   if (mstpb_bit < 0) {
     return k_rx_err_invalid_arg;
   }
@@ -414,7 +754,7 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
   *prcr_reg() = k_rx_prcr_unlock_all;
 
   /* Clear module stop bit to enable clock */
-  system_regs()->mstpcrb &= ~(1UL << (uint8_t)mstpb_bit);
+  system_regs()->mstpcrb &= ~(k_uart_mstpcrb_bit_set << (uint8_t)mstpb_bit);
 
   /* Lock protection */
   *prcr_reg() = k_rx_prcr_lock;
@@ -423,14 +763,102 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
 }
 
 /**
- * @brief Configure pins for SCI UART operation
+ * @brief Configure the GPIO and MPC pin-mux settings for a UART TX/RX pin pair
  *
- * Sets up MPC (pin mux) and GPIO registers for TX/RX pins.
+ * @details
+ * Prepares the two GPIO pins required for SCI UART operation by programming
+ * the Multi-Function Pin Controller (MPC) and the Port Direction/Mode registers
+ * in the correct order.  The RX72N hardware requires that:
+ *  - MPC is configured before switching a pin to peripheral mode (PMR)
+ *  - TX pin is driven as an output; RX pin is configured as an input
+ *  - Both pins are switched to peripheral mode (PMR bit = 1) last
  *
- * @param[in] tx_gpio TX pin (rx_port_pin_t from rx_port_constants.h)
- * @param[in] rx_gpio RX pin (rx_port_pin_t from rx_port_constants.h)
+ * **Algorithm steps:**
+ * 1. Extract the port number and pin number from each rx_port_pin_t using
+ *    rx_port_from_pin() and rx_pin_from_pin().
+ * 2. Validate that both pin numbers are <= k_rx_pin_max (7); return
+ *    k_rx_err_invalid_arg if out of range.  (Lower-bound check is omitted
+ *    because pin numbers are uint8_t and k_rx_pin_min == 0, which would
+ *    trigger -Wtype-limits.)
+ * 3. Obtain volatile port register base pointers via rx_port_get_base(); return
+ *    k_rx_err_invalid_arg if either is nullptr (invalid port number).
+ * 4. Call rx_mpc_set_sci(tx_gpio) to set the TX pin's PFS register to the SCI
+ *    TXD function; propagate any error immediately.
+ * 5. Call rx_mpc_set_sci(rx_gpio) to set the RX pin's PFS register to the SCI
+ *    RXD function; propagate any error immediately.
+ * 6. Build per-pin bitmasks (k_uart_gpio_bit_set << pin_number).
+ * 7. Set PDR bit for TX pin (output direction) and PMR bit for TX pin
+ *    (peripheral mode).
+ * 8. Clear PDR bit for RX pin (input direction) and set PMR bit for RX pin
+ *    (peripheral mode).
+ * 9. Return k_rx_ok.
  *
- * @return k_rx_ok on success, error code on failure
+ * **MPC write protection:**
+ * rx_mpc_set_sci() internally handles the PFSWE unlock/lock sequence, so this
+ * function does not need to touch the PFSWE bit directly.
+ *
+ * **Pin direction and mode summary:**
+ * | Pin | PDR (direction) | PMR (mode) |
+ * |-----|-----------------|------------|
+ * | TX  | 1 (output)      | 1 (peripheral) |
+ * | RX  | 0 (input)       | 1 (peripheral) |
+ *
+ * @param[in] tx_gpio TX pin encoded as rx_port_pin_t
+ *   - **Valid range**: Any rx_port_pin_t with port in [0, k_rx_port_max] and
+ *     pin in [0, k_rx_pin_max]
+ *   - **Typical value**: k_uart_debug_tx_gpio (k_rx_pb_7) for SCI9
+ *   - **Encoding**: Use k_rx_p{port}_{pin} constants from rx_port_constants.h
+ *
+ * @param[in] rx_gpio RX pin encoded as rx_port_pin_t
+ *   - **Valid range**: Same constraints as tx_gpio; must be distinct from tx_gpio
+ *   - **Typical value**: k_uart_debug_rx_gpio (k_rx_pb_6) for SCI9
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success -- both pins configured for SCI UART operation
+ * @retval k_rx_err_invalid_arg tx_pin > k_rx_pin_max, rx_pin > k_rx_pin_max,
+ *         or rx_port_get_base() returned nullptr for either port number
+ * @retval k_rx_err_invalid_arg Propagated from rx_mpc_set_sci() if the MPC
+ *         mapping is not supported for the given pin
+ *
+ * @pre tx_gpio and rx_gpio must correspond to physically valid RX72N port pins
+ * @pre The SCI module clock must already be enabled (MSTPCRB bit cleared) so
+ *      that the SCI TXD/RXD MPC function codes are accepted
+ *
+ * @post TX pin: PDR bit set (output), PMR bit set (peripheral function)
+ * @post RX pin: PDR bit cleared (input), PMR bit set (peripheral function)
+ * @post Both pins' PFS registers configured for SCI TX/RX function via MPC
+ *
+ * @note Pin validation only checks upper bound (>k_rx_pin_max); lower bound
+ *       (0) is omitted to avoid the -Wtype-limits compiler warning triggered by
+ *       comparing an unsigned type to 0
+ * @warning Passing the same pin for both TX and RX produces undefined hardware
+ *          behaviour; no duplicate-pin check is performed
+ *
+ * @par Thread Safety:
+ * Not thread-safe. PDR/PMR are read-modify-write targets shared with all GPIO
+ * operations on the same port.  Call only during single-threaded initialization.
+ *
+ * @par Performance:
+ * - Execution time: ~10 us (dominated by two rx_mpc_set_sci() calls)
+ * - Stack usage: 32 bytes (four uint8_t locals + two pointer locals)
+ *
+ * @par Example:
+ * @code{.c}
+ * // Configure SCI9 default debug pins (PB7=TX, PB6=RX)
+ * rx_err_t err = internal_configure_uart_pins(
+ *   (rx_port_pin_t)k_uart_debug_tx_gpio,
+ *   (rx_port_pin_t)k_uart_debug_rx_gpio);
+ * if (err != k_rx_ok) {
+ *   return err;  // Invalid pin specification or MPC error
+ * }
+ * @endcode
+ *
+ * @see uart_init_channel() Caller that passes validated tx_gpio/rx_gpio
+ * @see rx_mpc_set_sci() MPC pin-function assignment (with PFSWE unlock)
+ * @see rx_port_get_base() Port register base address lookup
+ * @see uart_gpio_constants_t k_uart_gpio_bit_set used to build pin bitmasks
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_port_pin_t rx_gpio)
 {
@@ -550,7 +978,7 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
  * @return rx_err_t Error code indicating success or failure
  * @retval k_rx_ok Success, channel initialized and ready
  * @retval k_rx_err_null_ptr config parameter is nullptr
- * @retval k_rx_err_invalid_arg Invalid channel (≥13) or invalid baud rate
+ * @retval k_rx_err_invalid_arg Invalid channel (>=13) or invalid baud rate
  * @retval k_rx_err_invalid_state Channel already initialized
  *
  * @pre config must point to valid uart_channel_config_t structure
@@ -571,7 +999,7 @@ static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_por
  * Not thread-safe. Call once per channel during system initialization.
  *
  * @par Performance:
- * - Execution time: ~50 µs (includes MPC and delay)
+ * - Execution time: ~50 us (includes MPC and delay)
  * - Stack usage: 48 bytes
  *
  * @par Example:
@@ -663,8 +1091,56 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
 
 /**
  * @brief Deinitialize UART channel and disable TX/RX
- * @param[in] channel UART channel to deinitialize
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Disables transmit and receive on the specified SCI channel and marks it
+ * as uninitialized. The module clock is left running (safe to re-initialize
+ * without re-enabling). After this call the channel may be re-initialized
+ * with uart_init_channel().
+ *
+ * **Algorithm steps:**
+ * 1. Validate channel number (0-12)
+ * 2. Get SCI register base address
+ * 3. Write SCR = 0 to disable TX and RX
+ * 4. Clear s_channel_initialized[channel]
+ *
+ * @param[in] channel UART channel to deinitialize (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *   - **Recommended**: Use k_uart_channel_X constants
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success, channel TX/RX disabled
+ * @retval k_rx_err_invalid_arg Invalid channel number (>=13) or invalid register pointer
+ *
+ * @pre channel must be in range [0, 12]
+ * @pre Channel should be initialized before deinitializing (safe to call on uninit channel)
+ *
+ * @post TX and RX disabled (SCR = 0)
+ * @post s_channel_initialized[channel] set to false
+ *
+ * @note Not thread-safe - call during shutdown, not during normal operation
+ * @note Module stop clock is NOT re-asserted (peripheral clock left enabled)
+ *
+ * @par Thread Safety:
+ * Not thread-safe. Do not call while another thread is using the channel.
+ *
+ * @par Performance:
+ * - Execution time: ~1 us
+ * - Stack usage: 16 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_err_t err = uart_deinit_channel(k_uart_channel_9);
+ * if (err != k_rx_ok) {
+ *   // Handle error (invalid channel)
+ * }
+ * // Channel is now disabled and can be re-initialized
+ * @endcode
+ *
+ * @see uart_init_channel() Initialize channel
+ * @see uart_debug_init() Initialize debug channel (SCI9)
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_deinit_channel(const uart_channel_t channel)
 {
@@ -705,10 +1181,10 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
  * 6. Clear TDRE flag (read SSR, write back with TDRE=0)
  *
  * **Character transmission timing at 115200 baud:**
- * - Start bit: 8.68 µs
- * - 8 data bits: 69.44 µs
- * - Stop bit: 8.68 µs
- * - **Total**: ~86.8 µs per character
+ * - Start bit: 8.68 us
+ * - 8 data bits: 69.44 us
+ * - Stop bit: 8.68 us
+ * - **Total**: ~86.8 us per character
  *
  * @param[in] channel UART channel to use (0-12)
  *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
@@ -720,7 +1196,7 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
  *
  * @return rx_err_t Error code indicating success or failure
  * @retval k_rx_ok Success, character transmitted
- * @retval k_rx_err_invalid_arg Invalid channel number (≥13)
+ * @retval k_rx_err_invalid_arg Invalid channel number (>=13)
  * @retval k_rx_err_invalid_state Channel not initialized
  * @retval k_rx_err_timeout Transmit buffer did not become empty within timeout
  *
@@ -738,7 +1214,7 @@ rx_err_t uart_deinit_channel(const uart_channel_t channel)
  * Thread-safe for different channels. Not safe for same channel without mutex.
  *
  * @par Performance:
- * - Execution time: ~90 µs @ 115200 baud (one character time)
+ * - Execution time: ~90 us @ 115200 baud (one character time)
  * - Stack usage: 16 bytes
  *
  * @par Example:
@@ -847,15 +1323,15 @@ rx_err_t uart_putc_channel(const uart_channel_t channel, const char data)
  *
  * @note Blocking call - waits for each character to transmit
  * @note String length limited to 256 characters for safety
- * @warning Long strings may take significant time (256 chars ≈ 22ms @ 115200)
+ * @warning Long strings may take significant time (256 chars ~ 22ms @ 115200)
  *
  * @par Thread Safety:
  * Thread-safe for different channels. Not safe for same channel without mutex.
  *
  * @par Performance:
- * - Execution time: ~90 µs per character @ 115200 baud
+ * - Execution time: ~90 us per character @ 115200 baud
  * - Stack usage: 24 bytes
- * - Example: 100-char string ≈ 9 ms
+ * - Example: 100-char string ~ 9 ms
  *
  * @par Example:
  * @code{.c}
@@ -917,11 +1393,64 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
 }
 
 /**
- * @brief Write binary data to UART channel
- * @param[in] channel UART channel to use
- * @param[in] data Pointer to data buffer
+ * @brief Write binary data to UART channel without newline conversion
+ *
+ * @details
+ * Transmits a block of raw bytes on the specified SCI channel using
+ * uart_putc_channel() for each byte. No LF-to-CR+LF conversion is performed,
+ * making this function suitable for binary protocol data.
+ *
+ * **Algorithm steps:**
+ * 1. Validate data pointer (NULL check)
+ * 2. Validate channel number and initialization state
+ * 3. For each byte in [0, length): call uart_putc_channel() and propagate errors
+ *
+ * @param[in] channel UART channel to use (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *
+ * @param[in] data Pointer to buffer containing bytes to transmit
+ *   - **Valid range**: Non-nullptr pointing to at least `length` bytes
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
  * @param[in] length Number of bytes to write
- * @return k_rx_ok on success, error code otherwise
+ *   - **Valid range**: 0 to UINT16_MAX; 0 returns k_rx_ok immediately
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success, all bytes transmitted
+ * @retval k_rx_err_null_ptr data parameter is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_invalid_state Channel not initialized
+ * @retval k_rx_err_timeout Hardware timeout during transmission
+ *
+ * @pre Channel must be initialized via uart_init_channel()
+ * @pre data must point to at least `length` bytes of valid memory
+ *
+ * @post All `length` bytes transmitted in order
+ * @post On error, partial data may have been transmitted
+ *
+ * @note Blocking call - waits for each byte to be accepted by TDR
+ * @note No newline conversion - use uart_puts_channel() for text output
+ *
+ * @par Thread Safety:
+ * Thread-safe for different channels. Not safe for same channel without mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 us per byte @ 115200 baud
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * const uint8_t frame[] = {0xAA, 0x55, 0x01, 0x02, 0x03};
+ * rx_err_t err = uart_write_channel(k_uart_channel_9, frame, sizeof(frame));
+ * if (err != k_rx_ok) {
+ *   // Handle partial write
+ * }
+ * @endcode
+ *
+ * @see uart_puts_channel() Transmit text string with newline conversion
+ * @see uart_read_channel() Read binary data
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, uint16_t length)
 {
@@ -1003,7 +1532,7 @@ rx_err_t uart_write_channel(const uart_channel_t channel, const uint8_t* data, u
  * Thread-safe for different channels. Not safe for same channel without mutex.
  *
  * @par Performance:
- * - Execution time: ~5 µs (no wait)
+ * - Execution time: ~5 us (no wait)
  * - Stack usage: 16 bytes
  *
  * @par Example (Polling Loop):
@@ -1087,20 +1616,76 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
 }
 
 /**
- * @brief Read available data from UART channel
+ * @brief Read available bytes from UART channel (non-blocking)
  *
- * Reads up to the specified length of bytes from the UART receive buffer.
- * Returns immediately with available data; does not block waiting for data.
+ * @details
+ * Reads up to `length` bytes from the specified SCI channel using
+ * uart_getc_channel(). Stops immediately when no more data is available
+ * (RDRF flag not set) rather than waiting. Actual bytes received is
+ * reported via `bytes_read`.
  *
- * @param[in]  channel    UART channel to read from
- * @param[out] data       Pointer to buffer for received data
+ * **Algorithm steps:**
+ * 1. Validate data and bytes_read pointers (NULL check)
+ * 2. Validate channel number and initialization state
+ * 3. Set *bytes_read = 0
+ * 4. For each slot in [0, length):
+ *    a. Call uart_getc_channel(); if k_rx_err_empty, break (done)
+ *    b. On other error, propagate immediately
+ *    c. Store byte and increment *bytes_read
+ * 5. Return k_rx_ok (even if zero bytes were read)
+ *
+ * @param[in]  channel    UART channel to read from (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *
+ * @param[out] data       Pointer to buffer to store received bytes
+ *   - **Valid range**: Non-nullptr pointing to at least `length` bytes
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
  * @param[in]  length     Maximum number of bytes to read
- * @param[out] bytes_read Pointer to store actual number of bytes read
+ *   - **Valid range**: 0 to UINT16_MAX
  *
- * @return k_rx_ok on success (bytes_read contains actual count)
- * @return k_rx_err_null_ptr if data or bytes_read is nullptr
- * @return k_rx_err_invalid_arg if channel is invalid
- * @return k_rx_err_invalid_state if channel not initialized
+ * @param[out] bytes_read Pointer to store actual number of bytes read
+ *   - **Valid range**: Non-nullptr to uint16_t
+ *   - **On success**: Set to number of bytes actually received (0..length)
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; *bytes_read contains actual count (may be 0)
+ * @retval k_rx_err_null_ptr data or bytes_read is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel number
+ * @retval k_rx_err_invalid_state Channel not initialized
+ *
+ * @pre Channel must be initialized via uart_init_channel()
+ * @pre data must point to at least `length` bytes of writable memory
+ *
+ * @post *bytes_read set to actual number of bytes received
+ * @post data[0..*bytes_read-1] contain the received bytes
+ *
+ * @note Non-blocking - returns immediately with whatever data is available
+ * @note k_rx_ok with *bytes_read == 0 means no data was available
+ *
+ * @par Thread Safety:
+ * Thread-safe for different channels. Not safe for same channel without mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~5 us per byte received + ~5 us when no data
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uint8_t  buf[64];
+ * uint16_t count = 0;
+ * rx_err_t err   = uart_read_channel(k_uart_channel_9, buf, sizeof(buf), &count);
+ * if (err == k_rx_ok && count > 0) {
+ *   process_bytes(buf, count);
+ * }
+ * @endcode
+ *
+ * @see uart_getc_channel() Read single character
+ * @see uart_rx_available() Check if data is available
+ * @see uart_write_channel() Write binary data
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_read_channel(const uart_channel_t channel,
                            uint8_t*             data,
@@ -1141,9 +1726,61 @@ rx_err_t uart_read_channel(const uart_channel_t channel,
 
 /**
  * @brief Check if receive data is available on UART channel
- * @param[in] channel UART channel to check
- * @param[out] available Pointer to store availability status
- * @return k_rx_ok on success, error code otherwise
+ *
+ * @details
+ * Checks the RDRF (Receive Data Register Full) flag in the SSR register of
+ * the specified SCI channel. Provides a non-destructive peek at receive
+ * availability without consuming any data from the buffer.
+ *
+ * **Algorithm steps:**
+ * 1. Validate available pointer (NULL check)
+ * 2. Validate channel number and initialization state
+ * 3. Get SCI register base address
+ * 4. Read SSR and test RDRF bit; store boolean result in *available
+ *
+ * @param[in] channel UART channel to check (0-12)
+ *   - **Valid range**: 0 to 12 (SCI0 through SCI12)
+ *
+ * @param[out] available Pointer to store result
+ *   - **On success**: true if RDRF flag set (data ready), false otherwise
+ *   - **On error**: value undefined
+ *   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success; *available set to data availability status
+ * @retval k_rx_err_null_ptr available is nullptr
+ * @retval k_rx_err_invalid_arg Invalid channel number or invalid register pointer
+ * @retval k_rx_err_invalid_state Channel not initialized
+ *
+ * @pre Channel must be initialized via uart_init_channel()
+ * @pre available must point to valid bool storage
+ *
+ * @post *available reflects current RDRF state
+ * @post No data is consumed from the receive buffer
+ *
+ * @note Non-destructive - does not read RDR or clear any flags
+ * @note RDRF can be set again immediately after reading if UART is receiving
+ *
+ * @par Thread Safety:
+ * Thread-safe for different channels. Not safe for same channel without mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~2 us
+ * - Stack usage: 16 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * bool ready = false;
+ * if (uart_rx_available(k_uart_channel_9, &ready) == k_rx_ok && ready) {
+ *   char c;
+ *   uart_getc_channel(k_uart_channel_9, &c);
+ * }
+ * @endcode
+ *
+ * @see uart_getc_channel() Read single character
+ * @see uart_read_channel() Read multiple bytes
+ *
+ * @since Version 1.0.0
  */
 rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
 {
@@ -1214,7 +1851,7 @@ rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
  * Not thread-safe. Call once during startup before ThreadX.
  *
  * @par Performance:
- * - Execution time: ~50 µs
+ * - Execution time: ~50 us
  * - Stack usage: 64 bytes
  *
  * @par Example:
@@ -1266,7 +1903,47 @@ rx_err_t uart_debug_init(void)
 
 /**
  * @brief Transmit single character on debug UART (SCI9)
- * @param[in] data Character to transmit
+ *
+ * @details
+ * Convenience wrapper around uart_putc_channel() for the fixed debug channel
+ * (SCI9). Errors are silently ignored to allow use in early initialization
+ * contexts where error propagation is not yet possible.
+ *
+ * **Algorithm steps:**
+ * 1. Call uart_putc_channel(k_uart_debug_channel, data)
+ * 2. Cast return value to (void) - errors discarded
+ *
+ * @param[in] data Character to transmit (0x00-0xFF)
+ *   - **Special handling**: '\n' is NOT converted; use uart_debug_puts() for text
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre SCI9 must be initialized and TX enabled
+ *
+ * @post Character written to SCI9 TDR and transmission started
+ * @post Any errors are silently discarded
+ *
+ * @note Error return from uart_putc_channel() is intentionally discarded
+ * @note For error-checked output use uart_putc_channel() directly
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 us @ 115200 baud
+ * - Stack usage: 16 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_putc('A');     // Send 'A'
+ * uart_debug_putc('\r');    // Carriage return
+ * uart_debug_putc('\n');    // Line feed
+ * @endcode
+ *
+ * @see uart_debug_puts() Transmit string with newline conversion
+ * @see uart_putc_channel() Error-checked single character transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_putc(const char data)
 {
@@ -1275,8 +1952,54 @@ void uart_debug_putc(const char data)
 }
 
 /**
- * @brief Transmit string on debug UART with newline conversion
- * @param[in] str Pointer to null-terminated string
+ * @brief Transmit null-terminated string on debug UART with newline conversion
+ *
+ * @details
+ * Transmits a null-terminated string to SCI9 with automatic LF-to-CR+LF
+ * conversion for terminal compatibility. Enforces a maximum length of
+ * k_uart_max_str_len (256) characters per NASA Power of 10 Rule 2.
+ * Silently returns on NULL pointer to allow safe use in early init.
+ *
+ * **Algorithm steps:**
+ * 1. Return immediately if str is nullptr (defensive, no error return)
+ * 2. For each character up to k_uart_max_str_len:
+ *    a. Stop at null terminator
+ *    b. If '\n', send '\r' first
+ *    c. Send character via uart_debug_putc()
+ *
+ * @param[in] str Pointer to null-terminated ASCII string
+ *   - **Maximum length**: 256 characters (k_uart_max_str_len)
+ *   - **Null handling**: Returns silently if nullptr
+ *   - **Encoding**: ASCII; '\n' converted to '\r\n'
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre str should point to a null-terminated string in valid memory
+ *
+ * @post All characters up to null terminator transmitted to SCI9
+ * @post Each '\n' replaced by '\r\n' in the transmitted output
+ *
+ * @note No return value - errors from uart_debug_putc() are silently discarded
+ * @note String truncated at k_uart_max_str_len (256) characters
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 us per character @ 115200 baud
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_puts("Hello, World!\n");  // Sends "Hello, World!\r\n"
+ * uart_debug_puts("[INFO] Boot complete\n");
+ * @endcode
+ *
+ * @see uart_debug_putc() Transmit single character
+ * @see uart_debug_putint() Transmit decimal integer
+ * @see uart_puts_channel() Error-checked string transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_puts(const char* str)
 {
@@ -1295,23 +2018,63 @@ void uart_debug_puts(const char* str)
 }
 
 /**
- * @brief Transmit signed integer as decimal string on debug UART
- * @param[in] value Integer value to transmit
+ * @brief Transmit signed 32-bit integer as decimal string on debug UART
+ *
+ * @details
+ * Converts a signed 32-bit integer to a decimal ASCII string and transmits
+ * it on SCI9. Handles INT32_MIN correctly by using int64_t for the negation.
+ * Uses a fixed-size stack buffer (k_uart_int_buffer_size = 12) built in
+ * reverse then passed to uart_debug_puts().
+ *
+ * **Algorithm steps:**
+ * 1. Determine sign; compute abs_value as uint32_t
+ * 2. Null-terminate the buffer end
+ * 3. Build digits right-to-left (statically bounded by k_uart_int_buffer_size)
+ * 4. Prepend '-' if negative
+ * 5. Call uart_debug_puts() with the resulting substring pointer
+ *
+ * @param[in] value Signed 32-bit integer to print
+ *   - **Valid range**: INT32_MIN (-2147483648) to INT32_MAX (2147483647)
+ *   - **INT32_MIN handling**: Correctly handled via int64_t cast
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre uart_debug_puts() must be functional
+ *
+ * @post Decimal representation of value transmitted on SCI9
+ * @post Leading zeros suppressed; negative values prefixed with '-'
+ *
+ * @note No return value - output errors are silently discarded
+ * @note Buffer is stack-allocated; safe for re-entrant calls on different tasks
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 us per digit @ 115200 baud + digit-loop overhead
+ * - Stack usage: 32 bytes (buffer + locals)
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_puts("Value: ");
+ * uart_debug_putint(42);          // Sends "42"
+ * uart_debug_putint(-2147483648); // Sends "-2147483648"
+ * uart_debug_putc('\n');
+ * @endcode
+ *
+ * @see uart_debug_puthex() Print value in hexadecimal
+ * @see uart_debug_puts() Underlying string transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_putint(const int32_t value)
 {
-  char     buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
-  char*    p = buffer + sizeof(buffer) - 1;
-  uint32_t abs_value;
-  bool     is_negative = false;
+  char  buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
+  char* p = buffer + sizeof(buffer) - 1;
 
   /* Handle negative numbers */
-  if (value < 0) {
-    is_negative = true;
-    abs_value   = (uint32_t)(-(int64_t)value);
-  } else {
-    abs_value = (uint32_t)value;
-  }
+  const bool is_negative = (value < 0);
+  uint32_t   abs_value   = is_negative ? (uint32_t)(-(int64_t)value) : (uint32_t)value;
 
   /* Null terminate */
   *p = '\0';
@@ -1338,15 +2101,60 @@ void uart_debug_putint(const int32_t value)
 }
 
 /**
- * @brief Transmit unsigned integer as hexadecimal string on debug UART
- * @param[in] value Value to transmit
- * @param[in] digits Number of hex digits to display (1-8)
+ * @brief Transmit 32-bit unsigned integer as hexadecimal string on debug UART
+ *
+ * @details
+ * Transmits "0x" prefix followed by the specified number of uppercase hex
+ * digits of `value` on SCI9. Digits are always printed most-significant first.
+ * The `digits` parameter is clamped to [k_uart_hex_min_digits, k_uart_hex_max_digits]
+ * (1-8) before use.
+ *
+ * **Algorithm steps:**
+ * 1. Send "0x" prefix via uart_debug_puts()
+ * 2. Clamp digits to [1, 8]
+ * 3. Iterate nibbles from MSN to LSN (statically bounded by k_uart_hex_max_digits)
+ * 4. For each nibble index < digits, extract nibble and print uppercase hex char
+ *
+ * @param[in] value  Unsigned 32-bit value to display in hexadecimal
+ *   - **Valid range**: 0x00000000 to 0xFFFFFFFF
+ *
+ * @param[in] digits Number of hex digits to print (1-8)
+ *   - **Valid range**: 1 to 8 (clamped; 0 -> 1, >8 -> 8)
+ *   - **Common values**: 2 for byte, 4 for word, 8 for full 32-bit
+ *
+ * @pre uart_debug_init() must have been called successfully
+ * @pre uart_debug_puts() and uart_debug_putc() must be functional
+ *
+ * @post "0x" followed by `digits` uppercase hex characters transmitted on SCI9
+ * @post digits clamped to [1, 8] if out of range
+ *
+ * @note Uses static lookup table s_hex[] for digit-to-character conversion
+ * @note Always prefixes output with "0x"
+ * @warning Only available when RX_IS_SIMULATOR is 0 (hardware builds)
+ *
+ * @par Thread Safety:
+ * Not safe for concurrent access on SCI9 without external mutex.
+ *
+ * @par Performance:
+ * - Execution time: ~90 us per character @ 115200 baud
+ * - Stack usage: 24 bytes
+ *
+ * @par Example:
+ * @code{.c}
+ * uart_debug_puts("Addr: ");
+ * uart_debug_puthex(0xDEADBEEF, 8);  // Sends "0xDEADBEEF"
+ * uart_debug_puthex(0x42, 2);        // Sends "0x42"
+ * uart_debug_putc('\n');
+ * @endcode
+ *
+ * @see uart_debug_putint() Print signed decimal value
+ * @see uart_debug_puts() Underlying string transmit
+ *
+ * @since Version 1.0.0
  */
 void uart_debug_puthex(const uint32_t value, uint8_t digits)
 {
   static const char s_hex[] = "0123456789ABCDEF";
-  int32_t           i;
-  uint8_t           nibble;
 
   uart_debug_puts("0x");
 
@@ -1359,9 +2167,9 @@ void uart_debug_puthex(const uint32_t value, uint8_t digits)
   }
 
   /* Print hex digits from most significant (statically bounded) */
-  for (i = k_uart_hex_max_digits - 1; i >= 0; i--) {
+  for (int32_t i = k_uart_hex_max_digits - 1; i >= 0; i--) {
     if (i < digits) {
-      nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
+      uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
       uart_debug_putc(s_hex[nibble]);
     }
   }

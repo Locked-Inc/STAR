@@ -2,7 +2,7 @@
 // gRPC service for bidirectional communication between ROS2 and Gateway (UI).
 //
 // Architecture:
-//   ROS2 (C++) ↔ gRPC ↔ Gateway (Go) ↔ WebSocket ↔ UI (TypeScript)
+//   ROS2 (C++) <-> gRPC <-> Gateway (Go) <-> WebSocket <-> UI (TypeScript)
 //
 // Following Boston Dynamics style guide:
 // - Proto3 only, 100 char line limit, 4 space indent
@@ -27,21 +27,21 @@ option java_multiple_files = true;
 option java_outer_classname = "GatewayServiceProto";
 option java_package = "com.star.proto.v1";
 
-// Gateway service for bidirectional ROS2 ↔ UI communication.
+// Gateway service for bidirectional ROS2 <-> UI communication.
 //
 // This service acts as a bridge between:
 // - ROS2 bridge node (C++ gRPC client) - forwards telemetry, polls for commands
 // - Gateway WebSocket handler (Go server) - receives UI commands, streams telemetry
 //
 // Data flow:
-// 1. Telemetry (ROS2 → UI):
-//    ROS2 calls ForwardTelemetry() → Gateway caches → WebSocket streams to UI
+// 1. Telemetry (ROS2 -> UI):
+//    ROS2 calls ForwardTelemetry() -> Gateway caches -> WebSocket streams to UI
 //
-// 2. Teleop (UI → ROS2):
-//    UI sends via WebSocket → Gateway caches → ROS2 polls GetTeleopCommand()
+// 2. Teleop (UI -> ROS2):
+//    UI sends via WebSocket -> Gateway caches -> ROS2 polls GetTeleopCommand()
 //
-// 3. PID Gains (UI → ROS2 → Motor Controller):
-//    UI sends via WebSocket → Gateway calls SetPIDGains() → ROS2 → SPI → RX72N
+// 3. PID Gains (UI -> ROS2 -> Motor Controller):
+//    UI sends via WebSocket -> Gateway calls SetPIDGains() -> ROS2 -> SPI -> RX72N
 service GatewayService {
   // Forward telemetry data from ROS2 to Gateway for UI streaming.
   //
@@ -69,7 +69,7 @@ service GatewayService {
 }
 
 // ============================================================================
-// ForwardTelemetry: ROS2 → Gateway → UI
+// ForwardTelemetry: ROS2 -> Gateway -> UI
 // ============================================================================
 
 // Request to forward telemetry from ROS2 to Gateway.
@@ -121,7 +121,7 @@ message ForwardTelemetryResponse {
 }
 
 // ============================================================================
-// GetTeleopCommand: UI → Gateway → ROS2
+// GetTeleopCommand: UI -> Gateway -> ROS2
 // ============================================================================
 
 // Request for latest teleop command from Gateway.
@@ -148,7 +148,7 @@ message GetTeleopCommandResponse {
 }
 
 // ============================================================================
-// SetPIDGains: UI → Gateway → ROS2 → Motor Controller
+// SetPIDGains: UI -> Gateway -> ROS2 -> Motor Controller
 // ============================================================================
 
 // Request to set PID gains for motor velocity control.

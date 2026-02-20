@@ -10,24 +10,24 @@
  *
  * @par System Architecture
  * @verbatim
- *   ┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
- *   │  Application    │    │  rx_time_if     │    │   ThreadX       │
- *   │  (Motor Ctrl)   │───>│  (This Module)  │───>│   Kernel        │
- *   └─────────────────┘    └─────────────────┘    └─────────────────┘
- *                                  │                      │
- *                                  │                      ▼
- *                                  │              ┌─────────────────┐
- *                                  │              │   CMT0 Timer    │
- *                                  │              │   (100 Hz ISR)  │
- *                                  │              └─────────────────┘
- *                                  │
- *         ┌────────────────────────┴────────────────────────┐
- *         │              rx_time_interface_t                │
- *         │  ┌─────────────┬─────────────┬────────────────┐ │
- *         │  │  sleep_ms() │  get_ms()   │  is_elapsed()  │ │
- *         │  │  (blocking) │  (instant)  │  (instant)     │ │
- *         │  └─────────────┴─────────────┴────────────────┘ │
- *         └─────────────────────────────────────────────────┘
+ *   +-----------------+    +-----------------+    +-----------------+
+ *   |  Application    |    |  rx_time_if     |    |   ThreadX       |
+ *   |  (Motor Ctrl)   |--->|  (This Module)  |--->|   Kernel        |
+ *   +-----------------+    +-----------------+    +-----------------+
+ *                                  |                      |
+ *                                  |                      v
+ *                                  |              +-----------------+
+ *                                  |              |   CMT0 Timer    |
+ *                                  |              |   (100 Hz ISR)  |
+ *                                  |              +-----------------+
+ *                                  |
+ *         +------------------------+------------------------+
+ *         |              rx_time_interface_t                |
+ *         |  +-------------+-------------+----------------+ |
+ *         |  |  sleep_ms() |  get_ms()   |  is_elapsed()  | |
+ *         |  |  (blocking) |  (instant)  |  (instant)     | |
+ *         |  +-------------+-------------+----------------+ |
+ *         +-------------------------------------------------+
  * @endverbatim
  *
  * @par Threading Model
@@ -44,7 +44,7 @@
  * @par Performance Characteristics
  * | Operation    | Time       | Notes                          |
  * |--------------|------------|--------------------------------|
- * | sleep_ms()   | ~1 µs      | Context switch to scheduler    |
+ * | sleep_ms()   | ~1 us      | Context switch to scheduler    |
  * | get_ms()     | ~100 ns    | Single register read           |
  * | is_elapsed() | ~150 ns    | Two reads + subtraction        |
  *
@@ -66,7 +66,7 @@
  * - Rule 4: [OK] All functions < 20 lines
  * - Rule 5: [OK] Each function has preconditions (via RX_CHECK_NULL_PTR)
  * - Rule 6: [OK] Variables declared at smallest scope
- * - Rule 7: [OK] Return value checking (tx_thread_sleep checked implicitly)
+ * - Rule 7: [OK] Return value checking (tx_thread_sleep discarded explicitly)
  * - Rule 8: [OK] Minimal preprocessor (only __RX__ guard)
  * - Rule 9: [OK] Function pointers used for DIP pattern (intentional deviation)
  * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
@@ -114,6 +114,57 @@
 #include "tx_api.h"
 
 /* =============================================================================
+ * Module Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_time_threadx_zero_t
+ * @brief Zero sentinel for ThreadX time computations
+ * @details Used in ceiling-division and guard checks to avoid magic number 0.
+ *
+ * @invariant k_rx_zero equals zero; used as a guard against zero-division in
+ *            tick ceiling calculation
+ *
+ * @code{.c}
+ * // Guard: only sleep if ticks > 0
+ * if (ticks > k_rx_zero) {
+ *     (void)tx_thread_sleep(ticks);
+ * }
+ * @endcode
+ *
+ * @see rx_time_threadx_ms_to_ticks()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_rx_zero = 0u, /**< Zero sentinel -- used in overflow-safe ceiling division */
+} rx_time_threadx_zero_t;
+
+/**
+ * @enum rx_time_ceil_offset_t
+ * @brief Ceiling-division rounding offset
+ * @details Added to the remainder check when computing tick ceiling from milliseconds.
+ *
+ * @invariant k_ceil_div_offset equals 1; adding this before integer division
+ *            implements ceiling division
+ *
+ * @code{.c}
+ * // Ceiling division: ticks = ceil(ms / k_threadx_ms_per_tick)
+ * const uint32_t quotient  = ms / k_threadx_ms_per_tick;
+ * const uint32_t remainder = ms % k_threadx_ms_per_tick;
+ * const uint32_t ticks     = quotient + (remainder > k_rx_zero ? k_ceil_div_offset : k_rx_zero);
+ * @endcode
+ *
+ * @see rx_time_threadx_ms_to_ticks()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_ceil_div_offset = 1u, /**< Standard ceiling-division rounding offset */
+} rx_time_ceil_offset_t;
+
+/* =============================================================================
  * Interface Implementation Functions
  * =============================================================================
  */
@@ -133,8 +184,10 @@
  * @par Tick Conversion Formula:
  * @f[
  *   \text{ticks} = \left\lceil \frac{\text{ms}}{10} \right\rceil
- *                = \frac{\text{ms} + 9}{10}
+ *                = \left\lfloor \frac{\text{ms}}{10} \right\rfloor
+ *                + \begin{cases} 1 & \text{ms} \bmod 10 > 0 \\ 0 & \text{otherwise} \end{cases}
  * @f]
+ * @note Implemented via overflow-safe quotient/remainder to avoid wrap at high ms values.
  *
  * @param[in] ctx Unused context pointer (ThreadX uses global state)
  *                Must be NULL for this implementation
@@ -174,11 +227,12 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
 {
   (void)ctx; /* ThreadX uses global state - no context needed */
 
-  /* Convert ms to ticks, rounding up */
-  uint32_t ticks = (ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
-
-  if (ticks > 0) {
-    tx_thread_sleep(ticks);
+  /* Convert ms to ticks, rounding up (overflow-safe ceiling division) */
+  const uint32_t quotient  = ms / k_threadx_ms_per_tick;
+  const uint32_t remainder = ms % k_threadx_ms_per_tick;
+  const uint32_t ticks     = quotient + (remainder > k_rx_zero ? k_ceil_div_offset : k_rx_zero);
+  if (ticks > k_rx_zero) {
+    (void)tx_thread_sleep(ticks);
   }
 }
 
@@ -216,7 +270,7 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
  * @note Resolution is 10ms (cannot distinguish times < 10ms apart)
  *
  * @par Wraparound Handling:
- * Time wraps after ~49.7 days: 2^32 ticks × 10ms = 49,710,269,491 ms
+ * Time wraps after ~49.7 days: 2^32 ticks x 10ms = 49,710,269,491 ms
  * Use impl_is_elapsed() for correct timeout handling across wraparound.
  *
  * @par Example:
@@ -249,14 +303,14 @@ static uint32_t impl_get_ms(void* ctx)
  * due to modular arithmetic properties.
  *
  * @par Algorithm Steps:
- * 1. Get current time via tx_time_get() × 10
+ * 1. Get current time via tx_time_get() x 10
  * 2. Calculate elapsed = now - start_ms (unsigned, handles wrap)
  * 3. Return true if elapsed >= timeout_ms
  *
  * @par Wraparound Correctness:
  * Using unsigned 32-bit arithmetic, the subtraction `now - start_ms` yields
  * the correct elapsed time even when `now` has wrapped past zero, as long as
- * the actual elapsed time is less than 2^32 / 100 / 2 ≈ 24.8 days.
+ * the actual elapsed time is less than 2^32 / 100 / 2 ~ 24.8 days.
  *
  * @f[
  *   \text{elapsed} = (\text{now} - \text{start}) \mod 2^{32}
@@ -317,8 +371,8 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
 {
   (void)ctx; /* ThreadX uses global state - no context needed */
 
-  uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
-  uint32_t elapsed = now - start_ms;
+  const uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
+  const uint32_t elapsed = now - start_ms;
 
   return elapsed >= timeout_ms;
 }
@@ -347,7 +401,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  * |------------|------------------|--------------------------------|
  * | ctx        | NULL             | ThreadX uses global state      |
  * | sleep_ms   | impl_sleep_ms    | tx_thread_sleep() wrapper      |
- * | get_ms     | impl_get_ms      | tx_time_get() × 10 wrapper     |
+ * | get_ms     | impl_get_ms      | tx_time_get() x 10 wrapper     |
  * | is_elapsed | impl_is_elapsed  | Wraparound-safe timeout check  |
  *
  * @param[out] iface Pointer to interface structure to populate

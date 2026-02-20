@@ -76,9 +76,9 @@ void tearDown(void)
  */
 void test_telemetry_task_create_success(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task */
@@ -94,9 +94,9 @@ void test_telemetry_task_create_success(void)
  */
 void test_telemetry_task_create_thread_failure(void)
 {
+  /* Configure ThreadX to fail */
   rx_err_t err;
 
-  /* Configure ThreadX to fail */
   mock_tx_set_thread_create_return(TX_NO_MEMORY);
 
   /* Create the task */
@@ -111,9 +111,9 @@ void test_telemetry_task_create_thread_failure(void)
  */
 void test_telemetry_task_create_already_created(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task first time - should succeed */
@@ -139,11 +139,11 @@ void test_telemetry_task_create_already_created(void)
  */
 void test_telemetry_task_collects_encoder_data(void)
 {
+  /* Set up motor state with encoder data */
   motor_state_t state_in  = {0};
   motor_state_t state_out = {0};
   rx_err_t      err;
 
-  /* Set up motor state with encoder data */
   state_in.encoder_counts[0]       = 1000;
   state_in.encoder_counts[1]       = 1050;
   state_in.encoder_counts[2]       = 995;
@@ -180,11 +180,11 @@ void test_telemetry_task_collects_encoder_data(void)
  */
 void test_telemetry_task_collects_bms_data(void)
 {
+  /* Set up BMS state */
   bms_state_t bms_in  = {0};
   bms_state_t bms_out = {0};
   rx_err_t    err;
 
-  /* Set up BMS state */
   bms_in.voltage_mv  = 16500;
   bms_in.soc_percent = 75;
   bms_in.valid       = true;
@@ -211,11 +211,11 @@ void test_telemetry_task_collects_bms_data(void)
  */
 void test_telemetry_task_collects_temp_data(void)
 {
+  /* Set up temp state (25.50degC = 2550 centi-degrees) */
   temp_sensor_state_t temp_in  = {0};
   temp_sensor_state_t temp_out = {0};
   rx_err_t            err;
 
-  /* Set up temp state (25.50°C = 2550 centi-degrees) */
   temp_in.temperature_cdegc[0] = 2550;
   temp_in.sensor_valid[0]      = true;
   temp_in.sensor_count         = 1;
@@ -306,12 +306,12 @@ void test_telemetry_task_handles_encode_failure(void)
  */
 void test_telemetry_task_broadcasts_to_usb(void)
 {
+  /* Initialize manager (required for send to work) */
   rx_comm_manager_t     mgr    = {0};
   rx_comm_send_params_t params = {0};
   uint8_t               payload[64];
   rx_err_t              err;
 
-  /* Initialize manager (required for send to work) */
   mgr.initialized = true;
 
   /* Set up send parameters as task does */
@@ -339,11 +339,11 @@ void test_telemetry_task_broadcasts_to_usb(void)
  */
 void test_telemetry_task_handles_send_failure(void)
 {
+  /* Configure mock to fail */
   rx_comm_manager_t     mgr    = {0};
   rx_comm_send_params_t params = {0};
   rx_err_t              err;
 
-  /* Configure mock to fail */
   mock_comm_manager_set_send_return(k_rx_err_timeout);
 
   /* Send (should fail but not crash) */
@@ -365,7 +365,7 @@ void test_telemetry_task_handles_send_failure(void)
  * logic must prefer USB over SPI. This test exercises the real channel selection
  * path: query USB readiness, find it ready, and send via USB channel.
  *
- * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * The channel is derived from rx_comm_manager_channel_ready() -- not hardcoded --
  * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_transport_selects_usb_when_ready(void)
@@ -396,7 +396,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
     selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
-  /* Verify USB was selected (USB ready → USB preferred) */
+  /* Verify USB was selected (USB ready -> USB preferred) */
   TEST_ASSERT_EQUAL(k_comm_channel_usb, selected_channel);
 
   /* Send via the selected channel and verify the mock records it correctly */
@@ -419,7 +419,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
  * selection logic must fall back to SPI. This test exercises the real failover
  * path: query USB (not ready), query SPI (ready), select SPI, send.
  *
- * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * The channel is derived from rx_comm_manager_channel_ready() -- not hardcoded --
  * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
@@ -439,7 +439,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
-  /* Exercise transport selection: USB first (not ready) → SPI fallback */
+  /* Exercise transport selection: USB first (not ready) -> SPI fallback */
   err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(usb_ready);
@@ -450,7 +450,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
 
   selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
 
-  /* Verify SPI was selected (USB not ready → SPI fallback) */
+  /* Verify SPI was selected (USB not ready -> SPI fallback) */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
 
   /* Send via the selected channel and verify the mock records it correctly */
@@ -527,10 +527,10 @@ void test_telemetry_channel_ready_spi_reports_correctly(void)
  * @details
  * Verifies that telemetry can be delivered via SPI when USB is unavailable.
  * This exercises the full failover path end-to-end: channel selection via
- * rx_comm_manager_channel_ready() (USB not ready → SPI selected) followed
+ * rx_comm_manager_channel_ready() (USB not ready -> SPI selected) followed
  * by a successful send with a real payload buffer.
  *
- * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * The channel is derived from rx_comm_manager_channel_ready() -- not hardcoded --
  * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_spi_fallback_send_succeeds(void)
@@ -550,7 +550,7 @@ void test_telemetry_spi_fallback_send_succeeds(void)
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
-  /* Exercise transport selection: USB first (not ready) → SPI fallback */
+  /* Exercise transport selection: USB first (not ready) -> SPI fallback */
   err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   if (usb_ready) {
@@ -561,7 +561,7 @@ void test_telemetry_spi_fallback_send_succeeds(void)
     selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
-  /* Verify SPI was selected (USB not ready → SPI fallback) */
+  /* Verify SPI was selected (USB not ready -> SPI fallback) */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
 
   /* Send with a real payload via the selected channel */

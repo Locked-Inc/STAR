@@ -70,10 +70,10 @@
  * Standard asynchronous UART frame used throughout STAR project:
  *
  * @verbatim
- * ┌───────┬────┬────┬────┬────┬────┬────┬────┬────┬────────┐
- * │ Start │ D0 │ D1 │ D2 │ D3 │ D4 │ D5 │ D6 │ D7 │ Stop   │
- * │  Bit  │    │    │    │    │    │    │    │    │  Bit   │
- * └───────┴────┴────┴────┴────┴────┴────┴────┴────┴────────┘
+ * +-------+----+----+----+----+----+----+----+----+--------+
+ * | Start | D0 | D1 | D2 | D3 | D4 | D5 | D6 | D7 | Stop   |
+ * |  Bit  |    |    |    |    |    |    |    |    |  Bit   |
+ * +-------+----+----+----+----+----+----+----+----+--------+
  *    0      LSB                              MSB      1
  *
  * Start bit: Always 0 (low)
@@ -83,8 +83,8 @@
  * Total bits per character: 10 bits
  *
  * Timing at 115200 baud:
- *   Bit time: 8.68 µs
- *   Character time: 86.8 µs (10 bits)
+ *   Bit time: 8.68 us
+ *   Character time: 86.8 us (10 bits)
  *   Max throughput: 11,520 bytes/sec
  * @endverbatim
  *
@@ -112,7 +112,7 @@
  * | 115200      | 15        | 117188      | +1.73%    | [OK] Pass |
  * | 230400      | 7         | 234375      | +1.73%    | [WARN] Marginal |
  *
- * **Acceptable error**: ±2% (UART standard tolerance)
+ * **Acceptable error**: +/-2% (UART standard tolerance)
  *
  * ### Example Calculation: 115200 baud
  *
@@ -305,7 +305,7 @@
  * | 2. Fixed loop bounds | String length limit (256) | puts, debug_puts tests |
  * | 3. No dynamic allocation | Zero malloc/free | Memory leak check |
  * | 4. Small functions | All functions < 60 lines | Code review |
- * | 5. Assertions (≥2/func) | nullptr + state validation | Error handling tests |
+ * | 5. Assertions (>=2/func) | nullptr + state validation | Error handling tests |
  * | 6. Narrow scope | Static channel state | Isolation tests |
  * | 7. Check return values | All rx_err_t validated | All test assertions |
  * | 8. Limited preprocessor | C23 typed enums only | Code inspection |
@@ -430,7 +430,7 @@ static const uart_channel_t k_test_channel_invalid =
  * - **115200**: High-speed debug UART (default for SCI9)
  * - **9600**: Low-speed legacy UART (for multi-channel tests)
  *
- * Both rates are within ±2% error tolerance at PCLKB = 60 MHz.
+ * Both rates are within +/-2% error tolerance at PCLKB = 60 MHz.
  */
 typedef enum : uint32_t {
   k_test_baudrate_115200 = 115200, /**< High-speed: SCI9 debug UART */
@@ -744,6 +744,7 @@ void test_uart_deinit_channel_success(void)
 void test_uart_deinit_channel_invalid(void)
 {
   rx_err_t err = uart_deinit_channel(k_test_channel_invalid);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -824,6 +825,7 @@ void test_uart_putc_channel_success(void)
 void test_uart_putc_channel_not_initialized(void)
 {
   rx_err_t err = uart_putc_channel(k_test_channel_sci9, 'A');
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -839,6 +841,7 @@ void test_uart_putc_channel_not_initialized(void)
 void test_uart_putc_channel_invalid_channel(void)
 {
   rx_err_t err = uart_putc_channel(k_test_channel_invalid, 'A');
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -986,6 +989,7 @@ void test_uart_puts_channel_null_string(void)
 void test_uart_puts_channel_not_initialized(void)
 {
   rx_err_t err = uart_puts_channel(k_test_channel_sci9, "Test");
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1161,6 +1165,7 @@ void test_uart_getc_channel_not_initialized(void)
 {
   char     received = '\0';
   rx_err_t err      = uart_getc_channel(k_test_channel_sci9, &received);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1596,6 +1601,7 @@ void test_uart_write_error_injection(void)
 void test_uart_debug_init(void)
 {
   rx_err_t err = uart_debug_init();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(k_test_channel_sci9));
   TEST_ASSERT_EQUAL(k_test_baudrate_115200, mock_uart_hw_get_baudrate(k_test_channel_sci9));

@@ -17,11 +17,11 @@
  * **Control Architecture:**
  * ```
  * RPi5 -> CommTask -> MotorControlTask (this)
- *                        ↓ (250 Hz)
+ *                        v (250 Hz)
  *                   [PID Controller]
- *                        ↓
- *                   [Encoder Feedback] ← MTU (Hall effect)
- *                        ↓
+ *                        v
+ *                   [Encoder Feedback] <- MTU (Hall effect)
+ *                        v
  *                   [PWM Output] -> DRV8243 -> Motors
  * ```
  *
@@ -54,7 +54,7 @@
  * uint8_t motor_count = k_motor_count_none;
  * rx_motor_handle_t** motors = motor_control_task_get_motors(&motor_count);
  * if (motors == nullptr || motor_count == k_motor_count_none) {
- *     // Motor task not yet created — motors not available
+ *     // Motor task not yet created -- motors not available
  * }
  * @endcode
  *
@@ -64,7 +64,7 @@
  */
 typedef enum : uint8_t {
   k_motor_count_none =
-    0, /**< Zero motors available — motor_control_task_create() has not yet been called */
+    0, /**< Zero motors available -- motor_control_task_create() has not yet been called */
 } motor_count_t;
 
 /**
@@ -133,11 +133,11 @@ rx_err_t motor_control_task_create(void);
  * @return rx_motor_handle_t** Pointer to array of motor handle pointers
  *
  * @retval Non-null pointer to static array of k_motor_count (4) rx_motor_handle_t*,
- *         with out_count set to k_motor_count — returned when motors are initialized
+ *         with out_count set to k_motor_count -- returned when motors are initialized
  *         and out_count is non-NULL
- * @retval nullptr with out_count set to k_motor_count_none (0) — returned when
+ * @retval nullptr with out_count set to k_motor_count_none (0) -- returned when
  *         motor_control_task_create() has not yet been called (motors not ready)
- * @retval nullptr (out_count unchanged) — returned when out_count argument is nullptr
+ * @retval nullptr (out_count unchanged) -- returned when out_count argument is nullptr
  *
  * @pre motor_control_task_create() has been called successfully
  * @pre out_count != nullptr (NULL pointer returns nullptr immediately)
@@ -149,7 +149,7 @@ rx_err_t motor_control_task_create(void);
  *   - Standard Rule 9: Maximum one level of pointer dereferencing
  *   - **Justification**: Enables zero-copy access to motor handles for emergency stop
  *   - **Safety**: Returns pointer to static array (no dynamic allocation, lifetime guaranteed)
- *   - **Alternative rejected**: Copy-out API would require 128 bytes stack per call (4 handles × 32 bytes)
+ *   - **Alternative rejected**: Copy-out API would require 128 bytes stack per call (4 handles x 32 bytes)
  *   - **Usage pattern**: Similar to argv in main(int argc, char** argv) - read-only array access
  *   - **Verification**: Static analysis confirms single dereference in obstacle_detect_task.c
  *

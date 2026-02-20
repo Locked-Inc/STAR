@@ -192,6 +192,7 @@ void test_init_tpu5_phase_mode_3(void)
 void test_init_null_config(void)
 {
   rx_err_t err = rx_tpu_init_phase_count(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -308,6 +309,7 @@ void test_stop_tpu2(void)
 void test_start_uninit_channel(void)
 {
   rx_err_t err = rx_tpu_start(k_tpu_channel_1);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -317,6 +319,7 @@ void test_start_uninit_channel(void)
 void test_stop_uninit_channel(void)
 {
   rx_err_t err = rx_tpu_stop(k_tpu_channel_2);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -326,6 +329,7 @@ void test_stop_uninit_channel(void)
 void test_start_invalid_channel(void)
 {
   rx_err_t err = rx_tpu_start((rx_tpu_channel_t)3);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -335,6 +339,7 @@ void test_start_invalid_channel(void)
 void test_stop_invalid_channel(void)
 {
   rx_err_t err = rx_tpu_stop((rx_tpu_channel_t)0);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -410,6 +415,7 @@ void test_read_count_uninit(void)
 {
   uint16_t count = 0;
   rx_err_t err   = rx_tpu_read_count(k_tpu_channel_4, &count);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -485,6 +491,7 @@ void test_read_direction_uninit(void)
 {
   bool     counting_up = false;
   rx_err_t err         = rx_tpu_read_direction(k_tpu_channel_5, &counting_up);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -519,6 +526,7 @@ void test_reset_count(void)
 void test_reset_count_invalid_channel(void)
 {
   rx_err_t err = rx_tpu_reset_count((rx_tpu_channel_t)3);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -528,6 +536,7 @@ void test_reset_count_invalid_channel(void)
 void test_reset_count_uninit(void)
 {
   rx_err_t err = rx_tpu_reset_count(k_tpu_channel_4);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -606,6 +615,7 @@ void test_deinit_then_reinit(void)
 void test_deinit_invalid_channel(void)
 {
   rx_err_t err = rx_tpu_deinit((rx_tpu_channel_t)0);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 

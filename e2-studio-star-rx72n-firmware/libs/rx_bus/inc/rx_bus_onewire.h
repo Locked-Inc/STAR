@@ -37,14 +37,14 @@
  *     style=filled;
  *     color=lightgreen;
  *     gpio [label="GPIO Port\nOpen-drain mode"];
- *     timing [label="Precise µs timing\nCMT-based delays"];
+ *     timing [label="Precise us timing\nCMT-based delays"];
  *   }
  *
  *   subgraph cluster_hw {
  *     label="Hardware";
  *     style=filled;
  *     color=lightcoral;
- *     bus_line [label="1-Wire Bus\n4.7kΩ pullup"];
+ *     bus_line [label="1-Wire Bus\n4.7kOhm pullup"];
  *     ds18b20 [label="DS18B20\nTemp Sensor"];
  *     other [label="Other 1-Wire\nDevices"];
  *   }
@@ -73,22 +73,22 @@
  * Controller, Bus, Device;
  *
  * --- [label="Reset/Presence"];
- * Controller -> Bus [label="Drive LOW 480µs"];
+ * Controller -> Bus [label="Drive LOW 480us"];
  * Controller -> Bus [label="Release"];
- * Bus -> Device [label="Presence pulse (60-240µs)"];
+ * Bus -> Device [label="Presence pulse (60-240us)"];
  *
  * --- [label="Write 1"];
- * Controller -> Bus [label="Drive LOW 10µs"];
- * Controller -> Bus [label="Release (55µs high)"];
+ * Controller -> Bus [label="Drive LOW 10us"];
+ * Controller -> Bus [label="Release (55us high)"];
  *
  * --- [label="Write 0"];
- * Controller -> Bus [label="Drive LOW 60µs"];
- * Controller -> Bus [label="Release (10µs recovery)"];
+ * Controller -> Bus [label="Drive LOW 60us"];
+ * Controller -> Bus [label="Release (10us recovery)"];
  *
  * --- [label="Read Bit"];
- * Controller -> Bus [label="Drive LOW 6µs"];
+ * Controller -> Bus [label="Drive LOW 6us"];
  * Controller -> Bus [label="Release"];
- * Device -> Controller [label="Sample at 9µs from slot start"];
+ * Device -> Controller [label="Sample at 9us from slot start"];
  * @endmsc
  *
  * @par Supported Devices
@@ -102,20 +102,20 @@
  * @par Timing Parameters
  * | Operation | Parameter | Value | Tolerance |
  * |-----------|-----------|-------|-----------|
- * | Reset | Drive LOW | 480 µs | min |
- * | Reset | Presence sample | 70 µs | 60-75 µs |
- * | Write 1 | LOW pulse | 10 µs | 6-15 µs |
- * | Write 0 | LOW pulse | 60 µs | min |
- * | Read | Init LOW | 6 µs | 1-15 µs |
- * | Read | Sample | 9 µs | within 15 µs |
- * | Slot | Duration | 65 µs | 60 µs min |
+ * | Reset | Drive LOW | 480 us | min |
+ * | Reset | Presence sample | 70 us | 60-75 us |
+ * | Write 1 | LOW pulse | 10 us | 6-15 us |
+ * | Write 0 | LOW pulse | 60 us | min |
+ * | Read | Init LOW | 6 us | 1-15 us |
+ * | Read | Sample | 9 us | within 15 us |
+ * | Slot | Duration | 65 us | 60 us min |
  *
  * @par Performance Characteristics
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | Bit rate | ~15.4 kbit/s | 65 µs per bit |
- * | Byte time | ~520 µs | 8 bits + overhead |
- * | Reset cycle | ~960 µs | 480 + 480 µs |
+ * | Bit rate | ~15.4 kbit/s | 65 us per bit |
+ * | Byte time | ~520 us | 8 bits + overhead |
+ * | Reset cycle | ~960 us | 480 + 480 us |
  * | ROM read | ~5 ms | Reset + 9 bytes |
  * | Search (N devices) | ~5*N ms | Per device |
  *
@@ -130,9 +130,9 @@
  * | Requirement | Specification |
  * |-------------|---------------|
  * | GPIO | Open-drain capable or external FET |
- * | Pullup | 4.7 kΩ to VDD (external) |
+ * | Pullup | 4.7 kOhm to VDD (external) |
  * | VDD | 3.0V - 5.5V |
- * | Timing | CMT timer for µs delays |
+ * | Timing | CMT timer for us delays |
  *
  * @par Module Dependencies
  * - rx_bus_manager.h: Bus abstraction and mutex protection
@@ -198,17 +198,17 @@ extern "C" {
  *
  * @details
  * Precise timing values based on Dallas/Maxim OneWire specification.
- * All values in microseconds (µs). These timings are critical for
+ * All values in microseconds (us). These timings are critical for
  * reliable communication - timing violations cause bus errors.
  *
  * @par Timing Diagram Reference
  * ```
- * Reset/Presence (960 µs total slot):
+ * Reset/Presence (960 us total slot):
  *   ___      ______________________________
  *      |____|        |_______             |
  *      |<480>|<70>|<--- 410 remaining --->|
  *                    Device presence pulse  ^
- *                    lasts 60-240 µs       Slot complete
+ *                    lasts 60-240 us       Slot complete
  *
  * Write 1:
  *   ___    __________
@@ -227,14 +227,14 @@ extern "C" {
  * ```
  *
  * @par Timing Tolerance
- * - Reset pulse: 480 µs minimum
- * - Write 1 LOW: 6-15 µs (centered at 10 µs)
- * - Write 0 LOW: 60 µs minimum
- * - Read sample: within 15 µs of slot start
- * - Slot duration: 60 µs minimum + 1 µs recovery
+ * - Reset pulse: 480 us minimum
+ * - Write 1 LOW: 6-15 us (centered at 10 us)
+ * - Write 0 LOW: 60 us minimum
+ * - Read sample: within 15 us of slot start
+ * - Slot duration: 60 us minimum + 1 us recovery
  *
- * @invariant Slot timing must be >= 60 µs for reliable communication
- * @invariant Sample timing must be within 15 µs window
+ * @invariant Slot timing must be >= 60 us for reliable communication
+ * @invariant Sample timing must be within 15 us window
  *
  * @see Dallas/Maxim Application Note AN126 for timing details
  *
@@ -244,66 +244,66 @@ typedef enum : uint16_t {
   /* Reset and presence detection timing */
   k_onewire_reset_pulse_us = 480, /**< Reset pulse duration.
                                        Controller drives bus LOW for this duration.
-                                       @par Value: 480 µs (minimum per spec)
-                                       @note Longer pulses (up to 960 µs) are allowed */
+                                       @par Value: 480 us (minimum per spec)
+                                       @note Longer pulses (up to 960 us) are allowed */
 
   k_onewire_presence_wait_us = 70, /**< Wait time before sampling presence.
                                         After releasing reset, wait before sampling.
-                                        @par Value: 70 µs (within 60-75 µs window)
-                                        @note Device pulls low 15-60 µs after reset release */
+                                        @par Value: 70 us (within 60-75 us window)
+                                        @note Device pulls low 15-60 us after reset release */
 
   k_onewire_presence_tail_us = 410, /**< Remaining presence window after sampling.
-                                         Wait after sampling to complete the full 960 µs reset slot.
-                                         @par Value: 410 µs (= 480 µs recovery − 70 µs pre-sample wait)
-                                         @note Total reset slot: 480 + 70 + 410 = 960 µs (per spec)
-                                         @note Device presence pulse is 60-240 µs; this wait covers
+                                         Wait after sampling to complete the full 960 us reset slot.
+                                         @par Value: 410 us (= 480 us recovery - 70 us pre-sample wait)
+                                         @note Total reset slot: 480 + 70 + 410 = 960 us (per spec)
+                                         @note Device presence pulse is 60-240 us; this wait covers
                                                the remaining recovery window regardless of pulse width */
 
   k_onewire_reset_slot_total_us = 960, /**< Total reset slot duration in microseconds.
                                             Sum of reset pulse, presence wait, and presence tail:
                                             k_onewire_reset_pulse_us + k_onewire_presence_wait_us +
-                                            k_onewire_presence_tail_us = 480 + 70 + 410 = 960 µs.
-                                            @par Value: 960 µs (per Dallas/Maxim 1-Wire spec) */
+                                            k_onewire_presence_tail_us = 480 + 70 + 410 = 960 us.
+                                            @par Value: 960 us (per Dallas/Maxim 1-Wire spec) */
 
   /* Write bit timing */
   k_onewire_write_1_low_us = 10, /**< Write-1 LOW pulse duration.
                                       Short pulse for logic 1.
-                                      @par Value: 10 µs (within 6-15 µs window) */
+                                      @par Value: 10 us (within 6-15 us window) */
 
   k_onewire_write_1_high_us = 55, /**< Write-1 recovery time.
                                        Bus HIGH after LOW pulse.
-                                       @par Value: 55 µs (slot = 65 µs total) */
+                                       @par Value: 55 us (slot = 65 us total) */
 
   k_onewire_write_0_low_us = 60, /**< Write-0 LOW pulse duration.
                                       Long pulse for logic 0.
-                                      @par Value: 60 µs (minimum per spec) */
+                                      @par Value: 60 us (minimum per spec) */
 
   k_onewire_write_0_high_us = 10, /**< Write-0 recovery time.
                                        Bus HIGH after LOW pulse.
-                                       @par Value: 10 µs (short recovery) */
+                                       @par Value: 10 us (short recovery) */
 
   /* Read bit timing */
   k_onewire_read_init_us = 6, /**< Read initiation LOW pulse.
                                    Controller pulls LOW to start read slot.
-                                   @par Value: 6 µs (within 1-15 µs window) */
+                                   @par Value: 6 us (within 1-15 us window) */
 
   k_onewire_read_sample_us = 9, /**< Read sample time from slot start.
                                      Sample bus state at this time.
-                                     @par Value: 9 µs (within 15 µs window)
+                                     @par Value: 9 us (within 15 us window)
                                      @note Must sample before device releases bus */
 
   k_onewire_read_recovery_us = 55, /**< Read slot recovery time.
                                         Wait for slot completion.
-                                        @par Value: 55 µs */
+                                        @par Value: 55 us */
 
   /* Slot timing */
   k_onewire_slot_duration_us = 65, /**< Total time slot duration.
                                         Minimum slot time + recovery.
-                                        @par Value: 65 µs (60 µs min + 5 µs margin) */
+                                        @par Value: 65 us (60 us min + 5 us margin) */
 
   k_onewire_recovery_us = 1, /**< Inter-slot recovery time.
                                   Minimum time between slots.
-                                  @par Value: 1 µs (minimum per spec) */
+                                  @par Value: 1 us (minimum per spec) */
 } onewire_timing_us_t;
 
 /**

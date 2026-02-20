@@ -89,7 +89,7 @@ typedef struct {
   uint16_t voltage_mv;          /**< Battery voltage (mV) */
   int16_t  current_ma;          /**< Battery current (mA) */
   uint8_t  soc_percent;         /**< State of charge (%) */
-  int16_t  temperature_celsius; /**< Battery temperature (°C) */
+  int16_t  temperature_celsius; /**< Battery temperature (degC) */
   uint16_t capacity_mah;        /**< Remaining capacity (mAh) */
   uint16_t full_capacity_mah;   /**< Full charge capacity (mAh) */
   uint16_t cycle_count;         /**< Battery cycle count */
@@ -119,9 +119,36 @@ typedef struct {
 } obstacle_state_t;
 
 /**
+ * @enum shared_event_flags_t
  * @brief Event flags for inter-task signaling
+ *
+ * @details
+ * One-hot bitmask constants used to signal asynchronous events between RTOS
+ * tasks via a ThreadX TX_EVENT_FLAGS_GROUP. Flags are OR-combined when raised
+ * and remain set (sticky) until explicitly cleared by the consuming task.
+ * Multiple flags may be set simultaneously; consumers should test each bit
+ * independently.
+ *
+ * @invariant k_event_none == 0 (no-op / cleared state; safe as a default value)
+ * @invariant All non-zero members are distinct powers of two (one-hot bit fields)
+ *
+ * @code
+ * // Raise two flags at once:
+ * (void)shared_data_set_event(k_event_low_battery | k_event_comm_timeout);
+ *
+ * // Test for a specific flag in the consumer task:
+ * shared_event_flags_t flags;
+ * (void)tx_event_flags_get(&g_event_flags, k_event_low_battery,
+ *                          TX_OR_CLEAR, (ULONG*)&flags, TX_WAIT_FOREVER);
+ * @endcode
+ *
+ * @see shared_data_set_event() Raises one or more flags
+ * @see shared_data.c ThreadX event-flags group used internally
+ *
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
+  k_event_none                  = 0x00000000, /**< No events pending (cleared state) */
   k_event_motor_command_updated = 0x00000001, /**< New motor command available */
   k_event_estop_triggered       = 0x00000002, /**< E-stop activated */
   k_event_pid_gains_updated     = 0x00000004, /**< PID gains changed */
@@ -133,11 +160,58 @@ typedef enum : uint32_t {
 } shared_event_flags_t;
 
 /**
- * @brief Shared data module constants
+ * @enum shared_data_constants_t
+ * @brief Shared data module timing constants
+ *
+ * @details
+ * Communication timing thresholds used by the shared data module for
+ * timeout detection and watchdog monitoring. Values fit in uint32_t
+ * because they represent millisecond durations that exceed uint16_t range
+ * at higher values.
+ *
+ * @invariant k_shared_comm_timeout_ms > 0
+ *
+ * @code{.c}
+ * if ((current_tick - last_tick) * k_tick_period_ms > k_shared_comm_timeout_ms) {
+ *     shared_data_trigger_estop(k_estop_reason_comm_timeout);
+ * }
+ * @endcode
+ *
+ * @see shared_data_is_comm_timeout() Communication timeout check
+ * @see shared_data_update_last_comm_tick() Update communication watchdog
+ *
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_shared_comm_timeout_ms = 500, /**< Communication timeout (ms) */
+  k_shared_comm_timeout_ms = 500, /**< Communication timeout threshold in milliseconds */
 } shared_data_constants_t;
+
+/**
+ * @enum shared_data_soc_constants_t
+ * @brief Shared data module state-of-charge threshold constants
+ *
+ * @details
+ * Battery state-of-charge (SoC) thresholds used by the shared data module
+ * to detect low battery conditions and trigger events. Values are percentages
+ * in the range [0, 100] and fit in uint8_t.
+ *
+ * @invariant k_shared_low_battery_soc_pct <= 100
+ *
+ * @code{.c}
+ * if (state->valid && state->soc_percent < k_shared_low_battery_soc_pct) {
+ *     (void)tx_event_flags_set(&g_shared_data.event_flags,
+ *                              (ULONG)k_event_low_battery, TX_OR);
+ * }
+ * @endcode
+ *
+ * @see shared_data_update_bms() BMS update function that checks this threshold
+ * @see shared_event_flags_t Event flag definitions
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_shared_low_battery_soc_pct = 15, /**< Low battery SoC threshold in percent (0-100) */
+} shared_data_soc_constants_t;
 
 /**
  * @brief Main shared data container structure
@@ -278,7 +352,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  * @post k_event_estop_triggered set via tx_event_flags_set(&g_shared_data.event_flags, k_event_estop_triggered, TX_OR)
  * @post Motor task will commit within 4ms via shared_data_commit_isr_estop()
  *
- * @note ISR-safe: No blocking calls, no mutex usage (~1 µs execution)
+ * @note ISR-safe: No blocking calls, no mutex usage (~1 us execution)
  * @note Thread Safety: Volatile writes are atomic on RX72N
  * @note Multiple ISRs may race - last reason wins (acceptable for safety)
  *
@@ -332,7 +406,7 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason);
  * @post estop_mutex released (if acquired) or state unchanged if none pending
  *
  * @note Thread Safety: Protected by estop_mutex and critical section
- * @note Performance: ~2.5 µs when pending, ~0.5 µs when not pending
+ * @note Performance: ~2.5 us when pending, ~0.5 us when not pending
  * @note Frequency: Called every 4ms by motor task (250 Hz)
  *
  * @code{.c}

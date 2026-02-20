@@ -48,24 +48,24 @@
  * - **Clock Source**: PCLKB (Peripheral Clock B, typically 60 MHz)
  * - **Clock Frequency**: 60 MHz (assuming default PCLKB)
  * - **Counter Width**: 14-bit down-counter
- * - **Timeout Range**: 4.3 µs to 273 µs (at 60 MHz PCLKB)
+ * - **Timeout Range**: 4.3 us to 273 us (at 60 MHz PCLKB)
  * - **Control**: Software start/stop via WDTCR register
  * - **Reset Output**: Connected to internal reset controller (if configured)
  *
  * **Timeout Calculation**:
  * ```
- * Timeout (seconds) = (Divider × Cycles) / PCLKB_Frequency
+ * Timeout (seconds) = (Divider x Cycles) / PCLKB_Frequency
  *
  * Where Divider is selected by CKS (Clock Select) bits:
- *   CKS=00: Divider=1   -> 256 cycles   -> 4.3 µs at 60 MHz
- *   CKS=01: Divider=4   -> 1024 cycles  -> 17 µs at 60 MHz
- *   CKS=10: Divider=16  -> 4096 cycles  -> 68 µs at 60 MHz
- *   CKS=11: Divider=64  -> 16384 cycles -> 273 µs at 60 MHz
+ *   CKS=00: Divider=1   -> 256 cycles   -> 4.3 us at 60 MHz
+ *   CKS=01: Divider=4   -> 1024 cycles  -> 17 us at 60 MHz
+ *   CKS=10: Divider=16  -> 4096 cycles  -> 68 us at 60 MHz
+ *   CKS=11: Divider=64  -> 16384 cycles -> 273 us at 60 MHz
  *
  * Example: For 1ms timeout at PCLKB=60MHz:
  *   1ms = N / 60,000,000
  *   N = 60,000 cycles
- *   Use CKS=11 (16384 cycles) × 4 feeds per timeout = ~273µs per feed
+ *   Use CKS=11 (16384 cycles) x 4 feeds per timeout = ~273us per feed
  * ```
  *
  * **Note**: Very short timeouts make WDT impractical for general use.
@@ -91,7 +91,7 @@
  * 2. After initialization complete:
  *    - rx_wdt_start() - Enable watchdog
  * 3. Normal operation:
- *    - Main loop: rx_wdt_feed() every N µs (N < timeout)
+ *    - Main loop: rx_wdt_feed() every N us (N < timeout)
  * 4. During debugging/flash:
  *    - rx_wdt_stop() - Suspend watchdog
  *    - ... perform long operation ...
@@ -102,10 +102,10 @@
  *
  * | Operation | Execution Time | Memory Usage | Notes |
  * |-----------|---------------|--------------|-------|
- * | rx_wdt_init() | ~20 µs | 0 heap | One-time setup |
- * | rx_wdt_start() | ~2 µs | 0 | Register write |
- * | rx_wdt_stop() | ~2 µs | 0 | Register write |
- * | rx_wdt_feed() | ~1 µs | 0 | Single register write |
+ * | rx_wdt_init() | ~20 us | 0 heap | One-time setup |
+ * | rx_wdt_start() | ~2 us | 0 | Register write |
+ * | rx_wdt_stop() | ~2 us | 0 | Register write |
+ * | rx_wdt_feed() | ~1 us | 0 | Single register write |
  *
  * **Memory Footprint**:
  * - Static variables: ~16 bytes (configuration state)
@@ -176,7 +176,7 @@
  * | 2. Fixed loop bounds | [OK] | No loops in driver (stateless operations) |
  * | 3. No dynamic allocation | [OK] | Zero malloc/free, static configuration |
  * | 4. Small functions | [OK] | All functions < 30 lines |
- * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
+ * | 5. Assertions (>=2 per function) | [OK] | Minimum 2 checks per function (pre/post) |
  * | 6. Narrow scope | [OK] | File-scope statics, function-local variables |
  * | 7. Check return values | [OK] | All functions return rx_err_t, checked by callers |
  * | 8. Limited preprocessor | [OK] | C23 typed enums only, zero computation macros |
@@ -336,7 +336,7 @@ typedef enum : uint8_t {
  *
  * | CKS Setting | TOPS=1024 | TOPS=4096 | TOPS=8192 | TOPS=16384 |
  * |-------------|-----------|-----------|-----------|------------|
- * | div-by-4 | 68 µs | 273 µs | 546 µs | 1.09 ms |
+ * | div-by-4 | 68 us | 273 us | 546 us | 1.09 ms |
  * | div-by-64 | 1.1 ms | 4.4 ms | 8.7 ms | 17.5 ms |
  * | div-by-128 | 2.2 ms | 8.7 ms | 17.5 ms | 34.9 ms |
  * | div-by-512 | 8.7 ms | 34.9 ms | 69.9 ms | 140 ms |
@@ -613,7 +613,7 @@ typedef struct {
  * @warning WDT cannot be reconfigured while initialized (must stop first)
  * @warning If enable_on_init=true, rx_wdt_feed() must be called within timeout period
  * @warning timeout_cycles determines actual timeout based on PCLKB frequency
- * @attention Very short timeouts (µs range) may be difficult to meet reliably
+ * @attention Very short timeouts (us range) may be difficult to meet reliably
  *
  * @par Thread Safety:
  * Thread-safe. Uses internal mutex to prevent concurrent initialization.
@@ -621,7 +621,7 @@ typedef struct {
  * k_rx_err_invalid_state).
  *
  * @par Performance:
- * - Execution time: ~20 µs @ 240 MHz (register configuration)
+ * - Execution time: ~20 us @ 240 MHz (register configuration)
  * - Memory: No dynamic allocation, configuration copied to static storage
  * - Stack usage: < 32 bytes
  *
@@ -636,7 +636,7 @@ typedef struct {
  * void system_init(void) {
  *   // Configure WDT with longest timeout, manual start
  *   rx_wdt_config_t config = {
- *     .timeout_cycles   = k_wdt_timeout_16384_cycles,  // ~273µs at 60MHz
+ *     .timeout_cycles   = k_wdt_timeout_16384_cycles,  // ~273us at 60MHz
  *     .enable_on_init   = false,  // Don't start yet
  *     .reset_on_timeout = true    // Reset on timeout
  *   };
@@ -673,7 +673,7 @@ typedef struct {
  *   system_fault_handler();
  * }
  *
- * // WDT is now running - must call rx_wdt_feed() within ~273µs
+ * // WDT is now running - must call rx_wdt_feed() within ~273us
  * @endcode
  *
  * @par Example (Error Handling):
@@ -754,14 +754,14 @@ typedef struct {
  * @note Complementary to rx_wdt_stop() for runtime control
  *
  * @warning Ensure rx_wdt_feed() will be called within timeout period before starting
- * @warning At 60 MHz PCLKB with max divider, timeout is only ~273 µs (very short!)
+ * @warning At 60 MHz PCLKB with max divider, timeout is only ~273 us (very short!)
  * @attention After starting, missing even ONE feed will cause timeout/reset
  *
  * @par Thread Safety:
  * Thread-safe. Uses internal mutex to prevent concurrent start/stop operations.
  *
  * @par Performance:
- * - Execution time: ~2 µs @ 240 MHz (single register write)
+ * - Execution time: ~2 us @ 240 MHz (single register write)
  * - Memory: No allocation
  * - Stack usage: < 16 bytes
  *
@@ -787,7 +787,7 @@ typedef struct {
  *   uart_debug_puts("[ERROR] WDT start failed\r\n");
  * }
  *
- * // Must now call rx_wdt_feed() within ~273µs
+ * // Must now call rx_wdt_feed() within ~273us
  * @endcode
  *
  * @par Example (Start/Stop Control):
@@ -868,7 +868,7 @@ typedef struct {
  * Thread-safe. Uses internal mutex to prevent concurrent start/stop operations.
  *
  * @par Performance:
- * - Execution time: ~2 µs @ 240 MHz (single register write)
+ * - Execution time: ~2 us @ 240 MHz (single register write)
  * - Memory: No allocation
  * - Stack usage: < 16 bytes
  *
@@ -960,9 +960,9 @@ typedef struct {
  * **Feed Requirements**:
  * - **Frequency**: Must call faster than timeout period
  * - **Example**: With k_wdt_timeout_16384_cycles at 60 MHz PCLKB:
- *   - Timeout = ~273 µs
- *   - Feed frequency > 3.6 kHz (every ~273 µs)
- *   - Recommended: Feed at 2× margin = ~130 µs interval
+ *   - Timeout = ~273 us
+ *   - Feed frequency > 3.6 kHz (every ~273 us)
+ *   - Recommended: Feed at 2x margin = ~130 us interval
  *
  * @return rx_err_t Error code indicating success or failure
  * @retval k_rx_ok Success, WDT counter reset to initial value
@@ -986,7 +986,7 @@ typedef struct {
  *
  * @warning Missing even ONE feed within timeout period will cause reset
  * @warning Feed frequency must account for worst-case execution time variations
- * @warning Very short timeouts (~273 µs max) require very frequent feeds
+ * @warning Very short timeouts (~273 us max) require very frequent feeds
  * @attention Do NOT call from multiple locations - defeats failure detection
  *
  * @par Thread Safety:
@@ -994,7 +994,7 @@ typedef struct {
  * Multiple threads can safely call this function.
  *
  * @par Performance:
- * - Execution time: ~1 µs @ 240 MHz (two register writes)
+ * - Execution time: ~1 us @ 240 MHz (two register writes)
  * - Memory: No allocation
  * - Stack usage: < 8 bytes
  * - Fastest WDT operation
@@ -1019,7 +1019,7 @@ typedef struct {
  *     }
  *
  *     // Short delay (must be < timeout period)
- *     delay_us(100);  // 100µs delay, well under 273µs timeout
+ *     delay_us(100);  // 100us delay, well under 273us timeout
  *   }
  * }
  * @endcode
@@ -1034,8 +1034,8 @@ typedef struct {
  *     // Feed watchdog
  *     rx_wdt_feed();
  *
- *     // Sleep for 100µs (well under 273µs timeout)
- *     tx_thread_sleep(1);  // Assuming 10 kHz tick rate = 100µs
+ *     // Sleep for 100us (well under 273us timeout)
+ *     tx_thread_sleep(1);  // Assuming 10 kHz tick rate = 100us
  *   }
  * }
  * @endcode
@@ -1044,8 +1044,8 @@ typedef struct {
  * @code{.c}
  * // Calculate safe feed interval
  * const uint32_t timeout_us = 273;  // k_wdt_timeout_16384_cycles at 60MHz
- * const uint32_t safety_margin = 2;  // 2× safety margin
- * const uint32_t feed_interval_us = timeout_us / safety_margin;  // 136µs
+ * const uint32_t safety_margin = 2;  // 2x safety margin
+ * const uint32_t feed_interval_us = timeout_us / safety_margin;  // 136us
  *
  * void main_loop(void) {
  *   uint32_t last_feed_time = get_time_us();

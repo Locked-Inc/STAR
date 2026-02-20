@@ -12,69 +12,69 @@
  * @par RIIC System Architecture
  * @verbatim
  *                       RX72N RIIC I2C Bus Interface Architecture
- *   ┌───────────────────────────────────────────────────────────────────────┐
- *   │                           RIIC Module                                 │
- *   │                                                                       │
- *   │  ┌─────────────────────────────────────────────────────────────────┐ │
- *   │  │                    Clock Generator (PCLKB)                      │ │
- *   │  │                         60 MHz                                  │ │
- *   │  └───────────────────────────┬─────────────────────────────────────┘ │
- *   │                              │                                       │
- *   │         ┌────────────────────┼────────────────────┐                  │
- *   │         │                    │                    │                  │
- *   │         ▼                    ▼                    ▼                  │
- *   │  ┌─────────────┐      ┌─────────────┐      ┌─────────────┐          │
- *   │  │   RIIC0     │      │   RIIC1     │      │   RIIC2     │          │
- *   │  │             │      │             │      │             │          │
- *   │  │ Controller/ │      │ Controller/ │      │ Controller/ │          │
- *   │  │ Peripheral  │      │ Peripheral  │      │ Peripheral  │          │
- *   │  │             │      │             │      │             │          │
- *   │  │ ≤1 Mbps     │      │ ≤1 Mbps     │      │ ≤1 Mbps     │          │
- *   │  │ (Fast+)     │      │ (Fast+)     │      │ (Fast+)     │          │
- *   │  └──────┬──────┘      └──────┬──────┘      └──────┬──────┘          │
- *   │         │                    │                    │                  │
- *   └─────────┼────────────────────┼────────────────────┼──────────────────┘
- *             │                    │                    │
- *             ▼                    ▼                    ▼
- *        ┌─────────┐          ┌─────────┐          ┌─────────┐
- *        │ SCL0/   │          │ SCL1/   │          │ SCL2/   │
- *        │ SDA0    │          │ SDA1    │          │ SDA2    │
- *        └────┬────┘          └────┬────┘          └────┬────┘
- *             │                    │                    │
- *             ▼                    ▼                    ▼
- *        ┌─────────────────────────────────────────────────────┐
- *        │                   I2C Bus                           │
- *        │    ┌─────┐  ┌─────┐  ┌─────┐  ┌─────┐               │
- *        │    │Sensor│ │EEPROM│ │RTC  │  │Other│               │
- *        │    │0x48  │ │0x50  │ │0x68 │  │ ... │               │
- *        │    └─────┘  └─────┘  └─────┘  └─────┘               │
- *        └─────────────────────────────────────────────────────┘
+ *   +-----------------------------------------------------------------------+
+ *   |                           RIIC Module                                 |
+ *   |                                                                       |
+ *   |  +-----------------------------------------------------------------+ |
+ *   |  |                    Clock Generator (PCLKB)                      | |
+ *   |  |                         60 MHz                                  | |
+ *   |  +---------------------------+-------------------------------------+ |
+ *   |                              |                                       |
+ *   |         +--------------------+--------------------+                  |
+ *   |         |                    |                    |                  |
+ *   |         v                    v                    v                  |
+ *   |  +-------------+      +-------------+      +-------------+          |
+ *   |  |   RIIC0     |      |   RIIC1     |      |   RIIC2     |          |
+ *   |  |             |      |             |      |             |          |
+ *   |  | Controller/ |      | Controller/ |      | Controller/ |          |
+ *   |  | Peripheral  |      | Peripheral  |      | Peripheral  |          |
+ *   |  |             |      |             |      |             |          |
+ *   |  | <=1 Mbps     |      | <=1 Mbps     |      | <=1 Mbps     |          |
+ *   |  | (Fast+)     |      | (Fast+)     |      | (Fast+)     |          |
+ *   |  +------+------+      +------+------+      +------+------+          |
+ *   |         |                    |                    |                  |
+ *   +---------+--------------------+--------------------+------------------+
+ *             |                    |                    |
+ *             v                    v                    v
+ *        +---------+          +---------+          +---------+
+ *        | SCL0/   |          | SCL1/   |          | SCL2/   |
+ *        | SDA0    |          | SDA1    |          | SDA2    |
+ *        +----+----+          +----+----+          +----+----+
+ *             |                    |                    |
+ *             v                    v                    v
+ *        +-----------------------------------------------------+
+ *        |                   I2C Bus                           |
+ *        |    +-----+  +-----+  +-----+  +-----+               |
+ *        |    |Sensor| |EEPROM| |RTC  |  |Other|               |
+ *        |    |0x48  | |0x50  | |0x68 |  | ... |               |
+ *        |    +-----+  +-----+  +-----+  +-----+               |
+ *        +-----------------------------------------------------+
  *
  *   Memory Map (Verified against RX72N Manual Ch42):
- *   ┌────────────┬──────────────────────────────────────────────┐
- *   │  Address   │  Register                                    │
- *   ├────────────┼──────────────────────────────────────────────┤
- *   │ 0x00088300 │  RIIC0 base (ICCR1 at +0x00)                 │
- *   │ 0x00088320 │  RIIC1 base (ICCR1 at +0x00)                 │
- *   │ 0x00088340 │  RIIC2 base (ICCR1 at +0x00)                 │
- *   ├────────────┼──────────────────────────────────────────────┤
- *   │ Offset     │  Register (per channel)                      │
- *   │ 0x00       │  ICCR1 (Control Register 1)                  │
- *   │ 0x01       │  ICCR2 (Control Register 2)                  │
- *   │ 0x02       │  ICMR1 (Mode Register 1)                     │
- *   │ 0x03       │  ICMR2 (Mode Register 2)                     │
- *   │ 0x04       │  ICMR3 (Mode Register 3)                     │
- *   │ 0x05       │  ICFER (Function Enable)                     │
- *   │ 0x06       │  ICSER (Status Enable)                       │
- *   │ 0x07       │  ICIER (Interrupt Enable)                    │
- *   │ 0x08       │  ICSR1 (Status Register 1)                   │
- *   │ 0x09       │  ICSR2 (Status Register 2)                   │
- *   │ 0x0A-0x0F  │  SARLn/SARUn (Peripheral Addresses)          │
- *   │ 0x10       │  ICBRL (Bit Rate Low)                        │
- *   │ 0x11       │  ICBRH (Bit Rate High)                       │
- *   │ 0x12       │  ICDRT (Transmit Data)                       │
- *   │ 0x13       │  ICDRR (Receive Data)                        │
- *   └────────────┴──────────────────────────────────────────────┘
+ *   +------------+----------------------------------------------+
+ *   |  Address   |  Register                                    |
+ *   +------------+----------------------------------------------+
+ *   | 0x00088300 |  RIIC0 base (ICCR1 at +0x00)                 |
+ *   | 0x00088320 |  RIIC1 base (ICCR1 at +0x00)                 |
+ *   | 0x00088340 |  RIIC2 base (ICCR1 at +0x00)                 |
+ *   +------------+----------------------------------------------+
+ *   | Offset     |  Register (per channel)                      |
+ *   | 0x00       |  ICCR1 (Control Register 1)                  |
+ *   | 0x01       |  ICCR2 (Control Register 2)                  |
+ *   | 0x02       |  ICMR1 (Mode Register 1)                     |
+ *   | 0x03       |  ICMR2 (Mode Register 2)                     |
+ *   | 0x04       |  ICMR3 (Mode Register 3)                     |
+ *   | 0x05       |  ICFER (Function Enable)                     |
+ *   | 0x06       |  ICSER (Status Enable)                       |
+ *   | 0x07       |  ICIER (Interrupt Enable)                    |
+ *   | 0x08       |  ICSR1 (Status Register 1)                   |
+ *   | 0x09       |  ICSR2 (Status Register 2)                   |
+ *   | 0x0A-0x0F  |  SARLn/SARUn (Peripheral Addresses)          |
+ *   | 0x10       |  ICBRL (Bit Rate Low)                        |
+ *   | 0x11       |  ICBRH (Bit Rate High)                       |
+ *   | 0x12       |  ICDRT (Transmit Data)                       |
+ *   | 0x13       |  ICDRR (Receive Data)                        |
+ *   +------------+----------------------------------------------+
  * @endverbatim
  *
  * @par I2C Bit Rate Calculation
@@ -101,16 +101,16 @@
  * @par I2C Controller Write Transaction
  * @verbatim
  *   RX72N                                  Peripheral
- *     │                                       │
- *     │─── START ────────────────────────────▶│
- *     │─── Address + W (0) ──────────────────▶│
- *     │◀── ACK ──────────────────────────────▶│
- *     │─── Data Byte 0 ──────────────────────▶│
- *     │◀── ACK ──────────────────────────────▶│
- *     │─── Data Byte N ──────────────────────▶│
- *     │◀── ACK ──────────────────────────────▶│
- *     │─── STOP ─────────────────────────────▶│
- *     │                                       │
+ *     |                                       |
+ *     |--- START ---------------------------->|
+ *     |--- Address + W (0) ------------------>|
+ *     |<-- ACK ------------------------------>|
+ *     |--- Data Byte 0 ---------------------->|
+ *     |<-- ACK ------------------------------>|
+ *     |--- Data Byte N ---------------------->|
+ *     |<-- ACK ------------------------------>|
+ *     |--- STOP ----------------------------->|
+ *     |                                       |
  * @endverbatim
  *
  * @par Example: Initialize RIIC0 for 400 kHz Fast Mode
@@ -121,7 +121,7 @@
  * riic0()->iccr1 = k_riic_iccr1_iicrst;
  *
  * // Configure bit rate for 400 kHz
- * // PCLKB=60MHz, CKS=1 (÷2), BRL=19, BRH=16
+ * // PCLKB=60MHz, CKS=1 (/2), BRL=19, BRH=16
  * // f_SCL = 60MHz / ((19+16+2) * 2^1) = 810.8 kHz / 2 = 405.4 kHz
  * riic0()->icmr1 = 0x28;  // CKS=1, BCWP=1
  * riic0()->icbrl = 0x13;  // Low period = 19
@@ -201,11 +201,11 @@ extern "C" {
  *
  * @par Memory Layout
  * @verbatim
- *   Address      │ Channel  │ Pins
- *   ─────────────┼──────────┼─────────────────────
- *   0x00088300   │ RIIC0    │ P16/SCL0, P17/SDA0
- *   0x00088320   │ RIIC1    │ P21/SCL1, P20/SDA1
- *   0x00088340   │ RIIC2    │ P66/SCL2, P67/SDA2
+ *   Address      | Channel  | Pins
+ *   -------------+----------+---------------------
+ *   0x00088300   | RIIC0    | P16/SCL0, P17/SDA0
+ *   0x00088320   | RIIC1    | P21/SCL1, P20/SDA1
+ *   0x00088340   | RIIC2    | P66/SCL2, P67/SDA2
  * @endverbatim
  *
  * @note Channel spacing is 0x20 (32 bytes) between adjacent channels.
@@ -226,28 +226,28 @@ typedef enum : uint32_t {
  *
  * @par Register Layout (20 bytes)
  * @verbatim
- *   Offset │ Size │ Register │ Description
- *   ───────┼──────┼──────────┼──────────────────────────────────
- *   0x00   │  1   │ ICCR1    │ Control 1 (enable, reset)
- *   0x01   │  1   │ ICCR2    │ Control 2 (start, stop, restart)
- *   0x02   │  1   │ ICMR1    │ Mode 1 (clock divider)
- *   0x03   │  1   │ ICMR2    │ Mode 2 (timeout, SDA delay)
- *   0x04   │  1   │ ICMR3    │ Mode 3 (ACK/NACK control)
- *   0x05   │  1   │ ICFER    │ Function Enable
- *   0x06   │  1   │ ICSER    │ Status Enable
- *   0x07   │  1   │ ICIER    │ Interrupt Enable
- *   0x08   │  1   │ ICSR1    │ Status 1 (ACK status)
- *   0x09   │  1   │ ICSR2    │ Status 2 (TX/RX flags)
- *   0x0A   │  1   │ SARL0    │ Peripheral Address 0 Low
- *   0x0B   │  1   │ SARU0    │ Peripheral Address 0 Upper
- *   0x0C   │  1   │ SARL1    │ Peripheral Address 1 Low
- *   0x0D   │  1   │ SARU1    │ Peripheral Address 1 Upper
- *   0x0E   │  1   │ SARL2    │ Peripheral Address 2 Low
- *   0x0F   │  1   │ SARU2    │ Peripheral Address 2 Upper
- *   0x10   │  1   │ ICBRL    │ Bit Rate Low period
- *   0x11   │  1   │ ICBRH    │ Bit Rate High period
- *   0x12   │  1   │ ICDRT    │ Transmit Data
- *   0x13   │  1   │ ICDRR    │ Receive Data
+ *   Offset | Size | Register | Description
+ *   -------+------+----------+----------------------------------
+ *   0x00   |  1   | ICCR1    | Control 1 (enable, reset)
+ *   0x01   |  1   | ICCR2    | Control 2 (start, stop, restart)
+ *   0x02   |  1   | ICMR1    | Mode 1 (clock divider)
+ *   0x03   |  1   | ICMR2    | Mode 2 (timeout, SDA delay)
+ *   0x04   |  1   | ICMR3    | Mode 3 (ACK/NACK control)
+ *   0x05   |  1   | ICFER    | Function Enable
+ *   0x06   |  1   | ICSER    | Status Enable
+ *   0x07   |  1   | ICIER    | Interrupt Enable
+ *   0x08   |  1   | ICSR1    | Status 1 (ACK status)
+ *   0x09   |  1   | ICSR2    | Status 2 (TX/RX flags)
+ *   0x0A   |  1   | SARL0    | Peripheral Address 0 Low
+ *   0x0B   |  1   | SARU0    | Peripheral Address 0 Upper
+ *   0x0C   |  1   | SARL1    | Peripheral Address 1 Low
+ *   0x0D   |  1   | SARU1    | Peripheral Address 1 Upper
+ *   0x0E   |  1   | SARL2    | Peripheral Address 2 Low
+ *   0x0F   |  1   | SARU2    | Peripheral Address 2 Upper
+ *   0x10   |  1   | ICBRL    | Bit Rate Low period
+ *   0x11   |  1   | ICBRH    | Bit Rate High period
+ *   0x12   |  1   | ICDRT    | Transmit Data
+ *   0x13   |  1   | ICDRR    | Receive Data
  * @endverbatim
  *
  * @par Initialization Sequence
@@ -468,12 +468,12 @@ static inline volatile rx_riic_regs_t* riic2(void)
  *
  * @par Register Layout
  * @verbatim
- *   Bit │ Name   │ Description
- *   ────┼────────┼────────────────────────────────────────
- *    7  │ ICE    │ RIIC Enable (1=enabled, 0=disabled)
- *    6  │ IICRST │ Internal Reset (1=reset state)
- *   5-4 │  -     │ Reserved
- *   3-0 │ CLO    │ Extra Clock Output (SCL cycles to recover bus)
+ *   Bit | Name   | Description
+ *   ----+--------+----------------------------------------
+ *    7  | ICE    | RIIC Enable (1=enabled, 0=disabled)
+ *    6  | IICRST | Internal Reset (1=reset state)
+ *   5-4 |  -     | Reserved
+ *   3-0 | CLO    | Extra Clock Output (SCL cycles to recover bus)
  * @endverbatim
  */
 typedef enum : uint8_t {
@@ -491,16 +491,16 @@ typedef enum : uint8_t {
  *
  * @par Register Layout
  * @verbatim
- *   Bit │ Name │ R/W │ Description
- *   ────┼──────┼─────┼────────────────────────────────────────
- *    7  │ BBSY │  R  │ Bus Busy (1=bus busy, 0=bus free)
- *    6  │ MST  │  R  │ Controller Mode (1=controller, 0=peripheral)
- *    5  │ TRS  │  R  │ Transmit Mode (1=transmit, 0=receive)
- *    4  │  -   │  -  │ Reserved
- *    3  │ SP   │  W  │ Stop Condition Request (write 1 to issue)
- *    2  │ RS   │  W  │ Restart Condition Request
- *    1  │ ST   │  W  │ Start Condition Request
- *    0  │  -   │  -  │ Reserved
+ *   Bit | Name | R/W | Description
+ *   ----+------+-----+----------------------------------------
+ *    7  | BBSY |  R  | Bus Busy (1=bus busy, 0=bus free)
+ *    6  | MST  |  R  | Controller Mode (1=controller, 0=peripheral)
+ *    5  | TRS  |  R  | Transmit Mode (1=transmit, 0=receive)
+ *    4  |  -   |  -  | Reserved
+ *    3  | SP   |  W  | Stop Condition Request (write 1 to issue)
+ *    2  | RS   |  W  | Restart Condition Request
+ *    1  | ST   |  W  | Start Condition Request
+ *    0  |  -   |  -  | Reserved
  * @endverbatim
  *
  * @note ST, RS, SP bits are write-only and always read as 0.
@@ -544,16 +544,16 @@ typedef enum : uint8_t {
  *
  * @par Register Layout
  * @verbatim
- *   Bit │ Name  │ Description
- *   ────┼───────┼────────────────────────────────────────
- *    7  │ TDRE  │ Transmit Data Empty (1=can write ICDRT)
- *    6  │  -    │ Reserved
- *    5  │ TEND  │ Transmit End (1=all data transmitted)
- *    4  │ NACKF │ NACK Detection Flag
- *    3  │ STOP  │ Stop Condition Detected
- *    2  │ START │ Start Condition Detected
- *    1  │ RDRF  │ Receive Data Full (1=data in ICDRR)
- *    0  │  -    │ Reserved
+ *   Bit | Name  | Description
+ *   ----+-------+----------------------------------------
+ *    7  | TDRE  | Transmit Data Empty (1=can write ICDRT)
+ *    6  |  -    | Reserved
+ *    5  | TEND  | Transmit End (1=all data transmitted)
+ *    4  | NACKF | NACK Detection Flag
+ *    3  | STOP  | Stop Condition Detected
+ *    2  | START | Start Condition Detected
+ *    1  | RDRF  | Receive Data Full (1=data in ICDRR)
+ *    0  |  -    | Reserved
  * @endverbatim
  *
  * @par Typical Polling Sequence

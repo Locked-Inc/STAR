@@ -29,8 +29,8 @@
  *
  * **Timing Requirements:**
  * - Wake-up time after power-on: 1ms typical, 2ms max
- * - Register write settling time: 10µs typical
- * - Fault clear propagation: <100µs
+ * - Register write settling time: 10us typical
+ * - Fault clear propagation: <100us
  * - CS assertion to first clock: 50ns min (t_CSS)
  * - Last clock to CS deassertion: 50ns min (t_CSH)
  *
@@ -740,6 +740,7 @@ void tearDown(void)
 static rx_drv8243_handle_t create_initialized_spi_handle(void)
 {
   rx_drv8243_handle_t handle = {0};
+
   handle.initialized         = true;
   handle.spi_enabled         = true;
   handle.sci_channel         = k_mock_sci_channel;
@@ -764,19 +765,19 @@ static rx_drv8243_handle_t create_initialized_spi_handle(void)
 
 static void test_spi_write_frame_construction(void)
 {
-  uint16_t frame = DRV8243_SPI_WRITE_FRAME(k_drv8243_reg_config3, k_test_data_value);
-
   /* Verify: W/R bit = 0 (write), Address = 0x0E, Data = 0x55 */
   /* Expected: 0b0_0_001110_01010101 = k_expected_write_frame */
+  uint16_t frame = DRV8243_SPI_WRITE_FRAME(k_drv8243_reg_config3, k_test_data_value);
+
   TEST_ASSERT_EQUAL_HEX16(k_expected_write_frame, frame);
 }
 
 static void test_spi_read_frame_construction(void)
 {
-  uint16_t frame = DRV8243_SPI_READ_FRAME(k_drv8243_reg_device_id);
-
   /* Verify: W/R bit = 1 (read), Address = 0x00, Data = 0x00 */
   /* Expected: 0b0_1_000000_00000000 = k_expected_read_frame */
+  uint16_t frame = DRV8243_SPI_READ_FRAME(k_drv8243_reg_device_id);
+
   TEST_ASSERT_EQUAL_HEX16(k_expected_read_frame, frame);
 }
 

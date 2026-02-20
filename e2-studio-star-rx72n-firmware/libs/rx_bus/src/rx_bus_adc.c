@@ -16,15 +16,15 @@
  *
  * ```
  * Application Layer (Motor Control, Battery Monitor)
- *     ↓
- * Bus Manager API (rx_bus_adc.c) ← This file
- *     ↓
+ *     v
+ * Bus Manager API (rx_bus_adc.c) <- This file
+ *     v
  * Bus Manager Core (mutex, lookup)
- *     ↓
+ *     v
  * ADC HAL (rx_adc.c)
- *     ↓
+ *     v
  * S12ADFa Registers (S12AD0/S12AD1)
- *     ↓
+ *     v
  * Analog Hardware (Current Sensors, Battery, Temperature)
  * ```
  *
@@ -49,16 +49,16 @@
  *
  * | Operation | Cycles @ 240 MHz | Time | Description |
  * |-----------|------------------|------|-------------|
- * | Init | ~12000 | ~50 µs | ADC setup + dummy conversion |
- * | Read raw | ~2400 | ~10 µs | 4.5 µs ADC + overhead |
- * | Read voltage | ~2880 | ~12 µs | ADC + scaling calculation |
+ * | Init | ~12000 | ~50 us | ADC setup + dummy conversion |
+ * | Read raw | ~2400 | ~10 us | 4.5 us ADC + overhead |
+ * | Read voltage | ~2880 | ~12 us | ADC + scaling calculation |
  *
  * Conversion timing breakdown:
- * - Sampling phase: 3.0 µs (configurable via ADCS register)
- * - Conversion phase: 1.5 µs (12 clocks @ 25 MHz ADCLK)
- * - Total ADC time: 4.5 µs
- * - Mutex overhead: ~1.5 µs
- * - Scaling calc: ~2 µs (division + multiplication)
+ * - Sampling phase: 3.0 us (configurable via ADCS register)
+ * - Conversion phase: 1.5 us (12 clocks @ 25 MHz ADCLK)
+ * - Total ADC time: 4.5 us
+ * - Mutex overhead: ~1.5 us
+ * - Scaling calc: ~2 us (division + multiplication)
  *
  * ## Memory Usage
  *
@@ -76,10 +76,10 @@
  * ## Execution Timing
  *
  * Measured on RX72N @ 240 MHz with -O2 optimization:
- * - Best case (cache hit): 9.5 µs
- * - Typical case: 10 µs
- * - Worst case (cache miss): 15 µs
- * - Init worst case: 55 µs (includes dummy conversion for settling)
+ * - Best case (cache hit): 9.5 us
+ * - Typical case: 10 us
+ * - Worst case (cache miss): 15 us
+ * - Init worst case: 55 us (includes dummy conversion for settling)
  *
  * ## Hardware Requirements
  *
@@ -87,46 +87,46 @@
  * |-------------|---------------|
  * | CPU | Renesas RX72N (R5F572NNHxFB, 144-pin LFQFP) |
  * | Peripherals | S12AD0 and/or S12AD1 (28 total channels) |
- * | VREFH | 3.3V or 5.0V (reference voltage, ±2%) |
+ * | VREFH | 3.3V or 5.0V (reference voltage, +/-2%) |
  * | VREFL | 0V (ground) |
  * | Input range | VREFL to VREFH (0-3.3V typical) |
- * | Source impedance | < 10 kΩ (for fast settling) |
- * | Bypass capacitor | 0.1 µF ceramic on VREFH pin |
+ * | Source impedance | < 10 kOhm (for fast settling) |
+ * | Bypass capacitor | 0.1 uF ceramic on VREFH pin |
  * | Input capacitor | 10 nF on each analog input |
  *
  * ## ADC Channel Usage (STAR Project - 144-pin LFQFP)
  *
  * | Unit | Channel | Pin | Signal | Range | Conversion |
  * |------|---------|-----|--------|-------|------------|
- * | S12AD0 | AN007 | P47 | Motor 0 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
- * | S12AD0 | AN006 | P46 | Motor 1 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
- * | S12AD0 | AN005 | P45 | Motor 2 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
- * | S12AD0 | AN004 | P44 | Motor 3 Current | 0-3.3V | I = V/4.99kΩ × 1000 |
+ * | S12AD0 | AN007 | P47 | Motor 0 Current | 0-3.3V | I = V/4.99kOhm x 1000 |
+ * | S12AD0 | AN006 | P46 | Motor 1 Current | 0-3.3V | I = V/4.99kOhm x 1000 |
+ * | S12AD0 | AN005 | P45 | Motor 2 Current | 0-3.3V | I = V/4.99kOhm x 1000 |
+ * | S12AD0 | AN004 | P44 | Motor 3 Current | 0-3.3V | I = V/4.99kOhm x 1000 |
  *
  * ## Analog Signal Conditioning
  *
  * **Motor Current Sensing (DRV8243 IPROPI):**
  * - Current ratio: 1000:1 (1mA output per 1A load)
- * - Sense resistor: 4990 Ω (1% tolerance)
- * - Formula: I_motor = (V_IPROPI / 4990) × 1000 mA
+ * - Sense resistor: 4990 Ohm (1% tolerance)
+ * - Formula: I_motor = (V_IPROPI / 4990) x 1000 mA
  * - Full scale: 3.3V -> 661 mA motor current
  *
  * **Battery Voltage Measurement:**
- * - Resistor divider: 100kΩ / 10kΩ = 1:11 ratio
+ * - Resistor divider: 100kOhm / 10kOhm = 1:11 ratio
  * - Input range: 0-36.3V battery -> 0-3.3V ADC
- * - Formula: V_battery = V_ADC × 11
+ * - Formula: V_battery = V_ADC x 11
  * - Protection: Zener diode clamp at 3.6V
  *
  * ## Error Sources and Mitigation
  *
  * | Error Source | Magnitude | Mitigation Strategy |
  * |--------------|-----------|---------------------|
- * | Quantization | ± 0.5 LSB (0.4 mV) | Software averaging (2-32 samples) |
- * | Noise | ± 2 LSB (1.6 mV) | Hardware RC low-pass filter |
- * | Offset error | ± 10 mV | Calibration via ground reading |
- * | Gain error | ± 1% | Calibration via VREF reading |
- * | Temperature drift | ± 5 mV/°C | Lookup table compensation |
- * | Source impedance | Variable | Buffer amp if > 10 kΩ |
+ * | Quantization | +/- 0.5 LSB (0.4 mV) | Software averaging (2-32 samples) |
+ * | Noise | +/- 2 LSB (1.6 mV) | Hardware RC low-pass filter |
+ * | Offset error | +/- 10 mV | Calibration via ground reading |
+ * | Gain error | +/- 1% | Calibration via VREF reading |
+ * | Temperature drift | +/- 5 mV/degC | Lookup table compensation |
+ * | Source impedance | Variable | Buffer amp if > 10 kOhm |
  *
  * @par NASA Power of 10 Compliance
  * - **Rule 1**: [PASS] No goto, setjmp/longjmp, or recursion
@@ -185,7 +185,19 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "BUS_ADC";
+static const char s_tag[] = "BUS_ADC";
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief ADC voltage range safety limits in millivolts
+ */
+typedef enum : uint32_t {
+  k_adc_max_safety_voltage_mv = 5500U, /**< 5.5 V upper bound for sanity check on raw ADC output */
+} adc_voltage_limits_t;
 
 /* =============================================================================
  * Callback Context Structures
@@ -199,7 +211,8 @@ static const char* s_tag = "BUS_ADC";
  * @details
  * Passed to internal_adc_init_callback() via rx_bus_manager_with_bus()
  * callback mechanism. Contains operation result only (no input parameters
- * needed - all config comes from bus_config). Allocated on stack.
+ * needed - all config comes from bus_config). Stack-allocated in
+ * rx_bus_adc_init() and destroyed on return.
  *
  * @par Memory Layout:
  * | Offset | Size | Field | Type | Alignment |
@@ -207,10 +220,18 @@ static const char* s_tag = "BUS_ADC";
  * | 0 | 4 | result | rx_err_t | 4 |
  * **Total size**: 4 bytes (no padding)
  *
- * @par Lifetime: Stack-allocated in rx_bus_adc_init(), destroyed on return
+ * @invariant result is set by the callback before it returns
+ * @invariant result equals the return value of internal_adc_init_callback()
  *
- * @see internal_adc_init_callback() Consumer of this context
- * @see rx_bus_adc_init() Creator of this context
+ * @code
+ * adc_init_ctx_t ctx = { .result = k_rx_err_hw_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_adc_init_callback, &ctx);
+ * // ctx.result now reflects the initialization outcome
+ * @endcode
+ *
+ * @see internal_adc_init_callback() Callback that writes to this context
+ * @see rx_bus_adc_init() Function that creates and uses this context
  *
  * @since Version 1.0.0
  */
@@ -225,7 +246,7 @@ typedef struct {
  * @details
  * Passed to internal_adc_read_callback() via rx_bus_manager_with_bus().
  * Contains pointer to store raw ADC value (0-4095 for 12-bit) and operation
- * result. Stack-allocated.
+ * result. Stack-allocated in rx_bus_adc_read() and destroyed on return.
  *
  * @par Memory Layout (64-bit platform):
  * | Offset | Size | Field | Type | Alignment |
@@ -235,13 +256,19 @@ typedef struct {
  * | 12-15 | 4 | (padding) | - | - |
  * **Total size**: 16 bytes
  *
- * @par Lifetime: Stack-allocated in rx_bus_adc_read(), destroyed on return
- *
- * @invariant value pointer must be non-NULL
+ * @invariant value pointer must be non-NULL before passing to callback
  * @invariant *value range: 0 to (2^bits - 1) after successful read
  *
- * @see internal_adc_read_callback() Consumer of this context
- * @see rx_bus_adc_read() Creator of this context
+ * @code
+ * uint16_t raw = 0;
+ * adc_read_ctx_t ctx = { .value = &raw, .result = k_rx_err_hw_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_adc_read_callback, &ctx);
+ * // ctx.result and raw now reflect the read outcome
+ * @endcode
+ *
+ * @see internal_adc_read_callback() Callback that writes to this context
+ * @see rx_bus_adc_read() Function that creates and uses this context
  *
  * @since Version 1.0.0
  */
@@ -258,7 +285,8 @@ typedef struct {
  * @details
  * Passed to internal_adc_voltage_callback() via rx_bus_manager_with_bus().
  * Contains pointer to store voltage in millivolts, ADC resolution, and
- * operation result. Stack-allocated.
+ * operation result. Stack-allocated in rx_bus_adc_read_voltage_mv() and
+ * destroyed on return.
  *
  * @par Memory Layout (64-bit platform):
  * | Offset | Size | Field | Type | Alignment |
@@ -269,14 +297,20 @@ typedef struct {
  * | 12 | 4 | result | rx_err_t | 4 |
  * **Total size**: 16 bytes
  *
- * @par Lifetime: Stack-allocated in rx_bus_adc_read_voltage_mv(), destroyed on return
- *
- * @invariant voltage_mv pointer must be non-NULL
+ * @invariant voltage_mv pointer must be non-NULL before passing to callback
  * @invariant bits value: 8, 10, or 12 (ADC resolution)
  * @invariant *voltage_mv range: 0 to vref_mv after successful read
  *
- * @see internal_adc_voltage_callback() Consumer of this context
- * @see rx_bus_adc_read_voltage_mv() Creator of this context
+ * @code
+ * uint32_t mv = 0;
+ * adc_voltage_ctx_t ctx = { .voltage_mv = &mv, .result = k_rx_err_hw_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_adc_voltage_callback, &ctx);
+ * // ctx.result and mv now reflect the voltage read outcome
+ * @endcode
+ *
+ * @see internal_adc_voltage_callback() Callback that writes to this context
+ * @see rx_bus_adc_read_voltage_mv() Function that creates and uses this context
  *
  * @since Version 1.0.0
  */
@@ -314,7 +348,7 @@ typedef struct {
  * - Enable S12AD module clock (MSTPCRA.MSTPA17 or MSTPA16)
  * - Configure pin as analog input (MPC, PMR, PDR)
  * - Set resolution (ADCER.ADPRC = 12-bit)
- * - Set sampling time (ADSSTR0-7 = 75 states ≈ 3 µs @ 25 MHz)
+ * - Set sampling time (ADSSTR0-7 = 75 states ~ 3 us @ 25 MHz)
  * - Set trigger mode (ADCSR.EXTRG = 0, software trigger)
  * - Enable ADC unit (ADCSR.ADST cleared initially)
  *
@@ -348,7 +382,7 @@ typedef struct {
  *
  * @note Called from bus manager with mutex held (thread-safe)
  * @note Test read may fail on first attempt (settling time - acceptable)
- * @note Execution time: ~50 µs (includes dummy conversion)
+ * @note Execution time: ~50 us (includes dummy conversion)
  * @note First real conversion after init should be discarded for best accuracy
  *
  * @warning Do not call directly - use rx_bus_adc_init() instead
@@ -422,14 +456,14 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
  * @par ADC Conversion Process:
  * Hardware operations performed by adc_read():
  * - Set ADCSR.ADST = 1 (start conversion)
- * - Wait for ADCSR.ADST = 0 (conversion complete, ~4.5 µs)
+ * - Wait for ADCSR.ADST = 0 (conversion complete, ~4.5 us)
  * - Read ADDRn register (n = channel number)
  * - Clear ADCSR.ADIE interrupt flag
  *
  * @par Timing:
- * - Sampling: 3.0 µs (75 ADCLK cycles @ 25 MHz)
- * - Conversion: 1.5 µs (12 ADCLK cycles for 12-bit)
- * - Total: 4.5 µs typical
+ * - Sampling: 3.0 us (75 ADCLK cycles @ 25 MHz)
+ * - Conversion: 1.5 us (12 ADCLK cycles for 12-bit)
+ * - Total: 4.5 us typical
  *
  * @param[in] bus_config Bus configuration structure
  *   - Must be initialized (initialized flag = true)
@@ -460,7 +494,7 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
  * @invariant value range: 0 to (2^bits - 1)
  *
  * @note Called from bus manager with mutex held (thread-safe)
- * @note Blocking call - waits for conversion completion (~4.5 µs)
+ * @note Blocking call - waits for conversion completion (~4.5 us)
  * @note Value exceeding max_value logged as warning but operation succeeds
  * @note For voltage conversion, use internal_adc_voltage_callback() instead
  *
@@ -567,23 +601,23 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
  * @invariant voltage_mv range: 0 to vref_mv
  *
  * @note Called from bus manager with mutex held (thread-safe)
- * @note Blocking call - waits for conversion + calculation (~12 µs)
+ * @note Blocking call - waits for conversion + calculation (~12 us)
  * @note Voltage > 5.5V logged as warning but operation succeeds
  * @note External voltage dividers must be accounted for in application layer
  * @note Uses VREF from bus configuration (set during rx_bus_register)
  *
  * @warning Analog input exceeding VREFH may damage MCU
  * @warning voltage_mv undefined if return != k_rx_ok
- * @warning Battery voltage dividers need separate scaling (e.g., ×11)
+ * @warning Battery voltage dividers need separate scaling (e.g., x11)
  *
  * @par Example Usage Context:
  * For motor current sensing (DRV8243 IPROPI):
  * - Read voltage: 1650 mV
- * - Convert to current: I = (1650 / 4990) × 1000 = 331 mA
+ * - Convert to current: I = (1650 / 4990) x 1000 = 331 mA
  *
  * For battery voltage (1:11 divider):
  * - Read voltage: 3000 mV (ADC input)
- * - Scale up: V_batt = 3000 × 11 = 33000 mV = 33V
+ * - Scale up: V_batt = 3000 x 11 = 33000 mV = 33V
  *
  * @see rx_bus_adc_read_voltage_mv() Public API that calls this callback
  * @see adc_read_voltage_mv() HAL function to perform conversion and scaling
@@ -615,8 +649,7 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
   }
 
   /* Post-condition: Verify voltage is within reasonable range (0-5V typical) */
-  static const uint32_t s_max_voltage_mv = 5500U; /* 5.5V max for safety */
-  if (*ctx->voltage_mv > s_max_voltage_mv) {
+  if (*ctx->voltage_mv > k_adc_max_safety_voltage_mv) {
     rx_log_warn(s_tag, "ADC voltage exceeds typical maximum");
     /* Continue anyway - could be valid in some configurations */
   }
@@ -677,7 +710,7 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
  *
  * @note Thread-safe via bus manager mutex
  * @note Stack usage: 4 bytes for context
- * @note Execution time: ~50 µs
+ * @note Execution time: ~50 us
  * @note First conversion after init should be discarded for best accuracy
  *
  * @par Example:
@@ -750,9 +783,9 @@ rx_err_t rx_bus_adc_init(rx_bus_manager_t* manager, const char* bus_name)
  * @post ADC ready for next conversion
  *
  * @note Thread-safe via bus manager mutex
- * @note Blocking call - waits for conversion (~4.5 µs)
+ * @note Blocking call - waits for conversion (~4.5 us)
  * @note Stack usage: 16 bytes for context
- * @note Execution time: ~10 µs
+ * @note Execution time: ~10 us
  *
  * @warning value undefined if return != k_rx_ok
  * @warning Analog input must not exceed VREFH
@@ -834,9 +867,9 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
  * @post ADC ready for next conversion
  *
  * @note Thread-safe via bus manager mutex
- * @note Blocking call - waits for conversion + calculation (~12 µs)
+ * @note Blocking call - waits for conversion + calculation (~12 us)
  * @note Stack usage: 16 bytes for context
- * @note Execution time: ~12 µs
+ * @note Execution time: ~12 us
  * @note Preferred over rx_bus_adc_read() for direct voltage measurement
  *
  * @warning voltage_mv undefined if return != k_rx_ok
@@ -848,7 +881,7 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
  * uint32_t ipropi_mv = 0;
  * rx_err_t err = rx_bus_adc_read_voltage_mv(&manager, "motor_current", &ipropi_mv);
  * if (err == k_rx_ok) {
- *     // DRV8243: I_motor = (V_IPROPI / 4990Ω) * 1000
+ *     // DRV8243: I_motor = (V_IPROPI / 4990Ohm) * 1000
  *     uint32_t current_ma = (ipropi_mv * 1000) / 4990;
  *     if (current_ma > 5000) {
  *         motor_emergency_stop();

@@ -30,7 +30,7 @@
  *
  * 1. **Small payloads**: OneWire data is typically 8-64 bytes
  * 2. **Memory efficiency**: Saves 256 bytes of flash (table size)
- * 3. **Acceptable performance**: ~15 µs for 8 bytes @ 240 MHz
+ * 3. **Acceptable performance**: ~15 us for 8 bytes @ 240 MHz
  *
  * The algorithm processes data LSB-first (reflected) to match the OneWire
  * bit transmission order:
@@ -52,9 +52,9 @@
  *
  * | Data Size | Bitwise (this) | Table-based | Notes |
  * |-----------|----------------|-------------|-------|
- * | 8 bytes | ~15 µs | ~4 µs | ROM code validation |
- * | 9 bytes | ~17 µs | ~5 µs | Scratchpad + CRC |
- * | 64 bytes | ~120 µs | ~32 µs | Full scratchpad |
+ * | 8 bytes | ~15 us | ~4 us | ROM code validation |
+ * | 9 bytes | ~17 us | ~5 us | Scratchpad + CRC |
+ * | 64 bytes | ~120 us | ~32 us | Full scratchpad |
  *
  * For typical OneWire payloads (8-9 bytes), the bitwise algorithm is
  * fast enough and saves 256 bytes of flash.
@@ -103,8 +103,8 @@
  * | Function entry | ~10 | 42 ns | Prologue |
  * | Per-byte setup | ~8 | 33 ns | XOR, loop init |
  * | Per-bit operation | ~12 | 50 ns | Shift, conditional XOR |
- * | Per-byte total | ~104 | 433 ns | 8 bits × 12 + overhead |
- * | 8-byte total | ~850 | 3.5 µs | Typical ROM code |
+ * | Per-byte total | ~104 | 433 ns | 8 bits x 12 + overhead |
+ * | 8-byte total | ~850 | 3.5 us | Typical ROM code |
  *
  * ## NASA Power of 10 Compliance
  *
@@ -310,7 +310,7 @@ typedef enum : uint8_t {
  *
  * 1. **Small payloads**: OneWire data is typically 8-64 bytes
  * 2. **Flash savings**: Avoids 256-byte lookup table
- * 3. **Acceptable speed**: ~15 µs for 8-byte ROM code @ 240 MHz
+ * 3. **Acceptable speed**: ~15 us for 8-byte ROM code @ 240 MHz
  * 4. **Simplicity**: Easier to verify correctness, fewer failure modes
  *
  * For high-throughput CRC-8 needs, a table-based variant could be added.
@@ -354,10 +354,10 @@ typedef enum : uint8_t {
  * @par Performance (RX72N @ 240 MHz, -O2):
  * | Data Size | Cycles | Time | Use Case |
  * |-----------|--------|------|----------|
- * | 7 bytes | ~750 | ~3.1 µs | ROM code (without CRC byte) |
- * | 8 bytes | ~850 | ~3.5 µs | ROM code + CRC verification |
- * | 9 bytes | ~960 | ~4.0 µs | Scratchpad + CRC |
- * | 64 bytes | ~6800 | ~28 µs | Full scratchpad buffer |
+ * | 7 bytes | ~750 | ~3.1 us | ROM code (without CRC byte) |
+ * | 8 bytes | ~850 | ~3.5 us | ROM code + CRC verification |
+ * | 9 bytes | ~960 | ~4.0 us | Scratchpad + CRC |
+ * | 64 bytes | ~6800 | ~28 us | Full scratchpad buffer |
  *
  * @par Memory Usage:
  * - Stack: 12 bytes (crc, i, bit loop counters)
@@ -433,11 +433,11 @@ typedef enum : uint8_t {
  */
 uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t len)
 {
-  uint8_t crc = k_crc8_initial_value;
-
   if ((data == nullptr) || (len == 0)) {
     return 0;
   }
+
+  uint8_t crc = k_crc8_initial_value;
 
   for (uint32_t i = 0; i < len; ++i) {
     crc ^= data[i];

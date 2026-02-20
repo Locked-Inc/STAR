@@ -12,25 +12,25 @@
  *
  * @par System Architecture Context:
  * @verbatim
- * ┌──────────────────────────────────────────────────────────────────────┐
- * │                    STAR Motor PWM Generation (GPTW)                  │
- * ├──────────────────────────────────────────────────────────────────────┤
- * │                                                                      │
- * │   PID Output ──► GPTW Compare ──► GTIOCA/B ──► DRV8243 ──► Motor     │
- * │   (0-100%)       (32-bit)        (PWM pins)   (H-bridge)  (DC motor) │
- * │                                                                      │
- * │   ┌─────────────────────────────────────────────────────────────┐   │
- * │   │ GPTW Channel Configuration (per motor)                      │   │
- * │   │                                                             │   │
- * │   │   GTPR (Period) = PCLKA / (Prescaler × PWM_Freq) - 1       │   │
- * │   │   GTCCRA (Duty) = GTPR × (duty_percent / 100)              │   │
- * │   │                                                             │   │
- * │   │   @ PCLKA=120MHz, Prescaler=1, PWM_Freq=20kHz:             │   │
- * │   │   GTPR = 120MHz / 20kHz - 1 = 5999                         │   │
- * │   │   50% duty: GTCCRA = 2999                                  │   │
- * │   └─────────────────────────────────────────────────────────────┘   │
- * │                                                                      │
- * └──────────────────────────────────────────────────────────────────────┘
+ * +----------------------------------------------------------------------+
+ * |                    STAR Motor PWM Generation (GPTW)                  |
+ * +----------------------------------------------------------------------+
+ * |                                                                      |
+ * |   PID Output --> GPTW Compare --> GTIOCA/B --> DRV8243 --> Motor     |
+ * |   (0-100%)       (32-bit)        (PWM pins)   (H-bridge)  (DC motor) |
+ * |                                                                      |
+ * |   +-------------------------------------------------------------+   |
+ * |   | GPTW Channel Configuration (per motor)                      |   |
+ * |   |                                                             |   |
+ * |   |   GTPR (Period) = PCLKA / (Prescaler x PWM_Freq) - 1       |   |
+ * |   |   GTCCRA (Duty) = GTPR x (duty_percent / 100)              |   |
+ * |   |                                                             |   |
+ * |   |   @ PCLKA=120MHz, Prescaler=1, PWM_Freq=20kHz:             |   |
+ * |   |   GTPR = 120MHz / 20kHz - 1 = 5999                         |   |
+ * |   |   50% duty: GTCCRA = 2999                                  |   |
+ * |   +-------------------------------------------------------------+   |
+ * |                                                                      |
+ * +----------------------------------------------------------------------+
  * @endverbatim
  *
  * @par GPTW Key Features:

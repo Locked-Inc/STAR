@@ -16,29 +16,29 @@
  * @par System Architecture
  * @verbatim
  *                     IRQ Digital Filter Architecture
- *   ┌─────────────────────────────────────────────────────────────────────┐
- *   │                        External Inputs                             │
- *   │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐               │
- *   │   │ E-STOP  │  │  VBUS   │  │ Battery │  │  Hall   │  ... (16)    │
- *   │   │ Button  │  │ Detect  │  │ Charger │  │ Encoder │               │
- *   │   └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘               │
- *   └────────┼───────────┼───────────┼───────────┼───────────────────────┘
- *            │           │           │           │
- *   ┌────────▼───────────▼───────────▼───────────▼───────────────────────┐
- *   │                    ICU Digital Filter Block                        │
- *   │   ┌─────────────────────────────────────────────────────────────┐  │
- *   │   │   IRQ0 ──► [3-Sample Filter] ──► IRQn Interrupt             │  │
- *   │   │   IRQ1 ──► [3-Sample Filter] ──► IRQn Interrupt             │  │
- *   │   │    ...              ...                  ...                 │  │
- *   │   │   IRQ15 ─► [3-Sample Filter] ──► IRQn Interrupt             │  │
- *   │   └─────────────────────────────────────────────────────────────┘  │
- *   │                                                                    │
- *   │   Control Registers:                                               │
- *   │   ┌────────────┐  ┌────────────┐                                   │
- *   │   │ IRQFLTE[2] │  │ IRQFLTC[2] │                                   │
- *   │   │ (Enable)   │  │ (Clock)    │                                   │
- *   │   └────────────┘  └────────────┘                                   │
- *   └────────────────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------------------+
+ *   |                        External Inputs                             |
+ *   |   +---------+  +---------+  +---------+  +---------+               |
+ *   |   | E-STOP  |  |  VBUS   |  | Battery |  |  Hall   |  ... (16)    |
+ *   |   | Button  |  | Detect  |  | Charger |  | Encoder |               |
+ *   |   +----+----+  +----+----+  +----+----+  +----+----+               |
+ *   +--------+-----------+-----------+-----------+-----------------------+
+ *            |           |           |           |
+ *   +--------v-----------v-----------v-----------v-----------------------+
+ *   |                    ICU Digital Filter Block                        |
+ *   |   +-------------------------------------------------------------+  |
+ *   |   |   IRQ0 --> [3-Sample Filter] --> IRQn Interrupt             |  |
+ *   |   |   IRQ1 --> [3-Sample Filter] --> IRQn Interrupt             |  |
+ *   |   |    ...              ...                  ...                 |  |
+ *   |   |   IRQ15 -> [3-Sample Filter] --> IRQn Interrupt             |  |
+ *   |   +-------------------------------------------------------------+  |
+ *   |                                                                    |
+ *   |   Control Registers:                                               |
+ *   |   +------------+  +------------+                                   |
+ *   |   | IRQFLTE[2] |  | IRQFLTC[2] |                                   |
+ *   |   | (Enable)   |  | (Clock)    |                                   |
+ *   |   +------------+  +------------+                                   |
+ *   +--------------------------------------------------------------------+
  * @endverbatim
  *
  * @par Digital Filter Operation
@@ -46,19 +46,19 @@
  *   Input Signal with Noise:
  *        ___________      _   _______________
  *   ____|           |____| |_|
- *                        ▲ ▲
- *                        │ │ Noise spikes
+ *                        ^ ^
+ *                        | | Noise spikes
  *
  *   After Digital Filter (3 samples @ PCLK/64):
  *        ___________      ___________________
  *   ____|           |____|
- *                              ▲
- *                              │ Noise rejected (< 3 sample duration)
+ *                              ^
+ *                              | Noise rejected (< 3 sample duration)
  *
  *   Filter Timing:
  *   - Sample period = PCLKB / divisor
- *   - Transition delay = 3 × sample period
- *   - With PCLKB=60MHz, PCLK/64: 3.2µs delay (rejects noise < 1µs)
+ *   - Transition delay = 3 x sample period
+ *   - With PCLKB=60MHz, PCLK/64: 3.2us delay (rejects noise < 1us)
  * @endverbatim
  *
  * @par Filter Response Times (PCLKB = 60 MHz)
@@ -66,8 +66,8 @@
  * |---------|---------------|---------------|-----------------|
  * | PCLK/1 | 16.7 ns | 50 ns | Minimal |
  * | PCLK/8 | 133 ns | 400 ns | Fast signals |
- * | PCLK/32 | 533 ns | 1.6 µs | Moderate |
- * | PCLK/64 | 1.07 µs | 3.2 µs | Buttons/switches |
+ * | PCLK/32 | 533 ns | 1.6 us | Moderate |
+ * | PCLK/64 | 1.07 us | 3.2 us | Buttons/switches |
  *
  * @par STAR Project Usage
  * | IRQ Pin | Function | Recommended Filter | Notes |
@@ -196,7 +196,7 @@ typedef enum : uint8_t {
  * response times to valid transitions.
  *
  * The digital filter requires 3 consecutive samples at the same level to
- * recognize a valid transition. Total response time = 3 × sample period.
+ * recognize a valid transition. Total response time = 3 x sample period.
  *
  * @par Response Time Calculation
  * @f[
@@ -208,12 +208,12 @@ typedef enum : uint8_t {
  * |---------|---------------|---------------|----------|
  * | /1 | 16.7 ns | 50 ns | High-speed signals |
  * | /8 | 133 ns | 400 ns | Encoder pulses |
- * | /32 | 533 ns | 1.6 µs | Sensor interrupts |
- * | /64 | 1.07 µs | 3.2 µs | Buttons, switches |
+ * | /32 | 533 ns | 1.6 us | Sensor interrupts |
+ * | /64 | 1.07 us | 3.2 us | Buttons, switches |
  *
  * @par Noise Rejection Capability
- * Noise pulses shorter than 2 × sample period are rejected. For PCLK/64 with
- * PCLKB=60MHz, noise pulses < 2.1µs are filtered out.
+ * Noise pulses shorter than 2 x sample period are rejected. For PCLK/64 with
+ * PCLKB=60MHz, noise pulses < 2.1us are filtered out.
  *
  * @note Register encoding: 2 bits per IRQ in IRQFLTC register
  * @warning Lower divisors provide faster response but less noise immunity
@@ -249,8 +249,8 @@ typedef enum : uint8_t {
    * @brief PCLKB/32 - Moderate sampling, good filtering
    * @details
    * Sample period: 533 ns @ 60 MHz PCLKB
-   * Response time: 1.6 µs (3 samples)
-   * Noise rejection: < 1.07 µs pulses filtered
+   * Response time: 1.6 us (3 samples)
+   * Noise rejection: < 1.07 us pulses filtered
    * @par Use Case: Battery alerts, charger interrupts, VBUS detection
    */
   k_irq_filter_pclk_32 = 2,
@@ -258,9 +258,9 @@ typedef enum : uint8_t {
   /**
    * @brief PCLKB/64 - Slowest sampling, maximum filtering
    * @details
-   * Sample period: 1.07 µs @ 60 MHz PCLKB
-   * Response time: 3.2 µs (3 samples)
-   * Noise rejection: < 2.1 µs pulses filtered
+   * Sample period: 1.07 us @ 60 MHz PCLKB
+   * Response time: 3.2 us (3 samples)
+   * Noise rejection: < 2.1 us pulses filtered
    * @par Use Case: Mechanical buttons, E-STOP, user input switches
    * @note Recommended for all human-activated inputs
    */

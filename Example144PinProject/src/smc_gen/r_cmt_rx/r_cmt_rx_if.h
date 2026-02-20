@@ -58,9 +58,9 @@
 *         : 28.06.2022 5.30    Updated demo projects.
 *         : 27.12.2022 5.40    Updated macro definition enable and disable nested interrupt for CMT.
 *         : 31.03.2023 5.50    Added support for RX26T.
-*                              Fixed to comply with GSCE Coding Standards Rev.6.5.0.
+*                              Fixed to comply with GSCE Coding Standards Rev.6.5.0.
 *         : 29.05.2023 5.60    Added support for RX23E-B.
-*                              Fixed to comply with GSCE Coding Standards Rev.6.5.0.
+*                              Fixed to comply with GSCE Coding Standards Rev.6.5.0.
 ***********************************************************************************************************************/
 #ifndef CMT_HEADER_FILE
 #define CMT_HEADER_FILE

@@ -10,18 +10,18 @@
  * This test suite validates the rx_usb_comm layer - a frame-based protocol that
  * sits above the raw USB CDC driver (rx_usb) and below the application logic.
  * It tests frame construction, CRC validation, and sequence number management
- * for reliable RX72N ↔ RPi5 communication.
+ * for reliable RX72N <-> RPi5 communication.
  *
  * **Protocol Stack Architecture:**
  * @code
  * +---------------------------+
- * |  Application Layer        | ← Motor control, telemetry
+ * |  Application Layer        | <- Motor control, telemetry
  * +---------------------------+
- * |  rx_usb_comm (THIS LAYER) | ← Frame encode/decode, CRC, sequence #
+ * |  rx_usb_comm (THIS LAYER) | <- Frame encode/decode, CRC, sequence #
  * +---------------------------+
- * |  rx_usb (CDC Driver)      | ← Multi-port USB CDC, buffers, callbacks
+ * |  rx_usb (CDC Driver)      | <- Multi-port USB CDC, buffers, callbacks
  * +---------------------------+
- * |  RX72N USB0 Hardware      | ← USB Full-Speed peripheral (12 Mbps)
+ * |  RX72N USB0 Hardware      | <- USB Full-Speed peripheral (12 Mbps)
  * +---------------------------+
  * @endcode
  *
@@ -103,8 +103,8 @@
  *
  *
  * **Timing Requirements:**
- * - Frame encoding time: <50µs @ 240 MHz for 1024-byte payload (software CRC-32)
- * - Frame decoding time: <60µs (includes CRC validation)
+ * - Frame encoding time: <50us @ 240 MHz for 1024-byte payload (software CRC-32)
+ * - Frame decoding time: <60us (includes CRC validation)
  * - USB CDC bulk transfer latency: 1-5ms (USB FS polling interval)
  * - Total send-receive round-trip: <10ms typical
  * - Timeout resolution: 1ms (based on systick or CMT timer)
@@ -267,6 +267,7 @@ extern uint32_t rx_usb_rx_push(rx_usb_port_id_t port, const uint8_t* data, uint3
 static rx_usb_comm_config_t helper_default_config(void)
 {
   rx_usb_comm_config_t config = {.session = &s_session, .time_iface = nullptr};
+
   return config;
 }
 
@@ -278,6 +279,7 @@ static rx_usb_comm_config_t helper_default_config(void)
 static rx_usb_comm_config_t helper_config_with_time(const rx_time_interface_t* time_iface)
 {
   rx_usb_comm_config_t config = {.session = &s_session, .time_iface = time_iface};
+
   return config;
 }
 
@@ -289,6 +291,7 @@ static uint16_t helper_get_tx_seq(void)
 {
   uint16_t seq = 0;
   rx_err_t err = rx_session_get_tx(&s_session, &seq);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   return seq;
 }
@@ -301,6 +304,7 @@ static uint16_t helper_get_rx_seq(void)
 {
   uint16_t seq = 0;
   rx_err_t err = rx_session_get_rx(&s_session, &seq);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   return seq;
 }
@@ -1711,17 +1715,17 @@ void test_usb_comm_set_mode_to_binary(void)
 
 void test_usb_comm_get_mode_null_handle_returns_invalid(void)
 {
+  /* Should return invalid for nullptr handle */
   rx_usb_comm_mode_t mode = rx_usb_comm_get_mode(nullptr);
 
-  /* Should return invalid for nullptr handle */
   TEST_ASSERT_EQUAL(k_usb_comm_mode_invalid, mode);
 }
 
 void test_usb_comm_get_mode_not_initialized_returns_invalid(void)
 {
+  /* Should return invalid for uninitialized handle */
   rx_usb_comm_mode_t mode = rx_usb_comm_get_mode(&s_handle);
 
-  /* Should return invalid for uninitialized handle */
   TEST_ASSERT_EQUAL(k_usb_comm_mode_invalid, mode);
 }
 
@@ -1888,6 +1892,7 @@ void test_usb_comm_receive_immediate_timeout_zero(void)
 void test_usb_comm_set_callbacks_null_handle_fails(void)
 {
   rx_err_t err =
+
     rx_usb_comm_set_control_callbacks(nullptr, test_ping_callback, test_reset_callback, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -1895,6 +1900,7 @@ void test_usb_comm_set_callbacks_null_handle_fails(void)
 void test_usb_comm_set_callbacks_not_initialized_fails(void)
 {
   rx_err_t err =
+
     rx_usb_comm_set_control_callbacks(&s_handle, test_ping_callback, test_reset_callback, nullptr);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -1920,12 +1926,14 @@ void test_usb_comm_set_callbacks_success(void)
 void test_usb_comm_send_pong_null_handle_fails(void)
 {
   rx_err_t err = rx_usb_comm_send_pong(nullptr, nullptr, 0);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_usb_comm_send_pong_not_initialized_fails(void)
 {
   rx_err_t err = rx_usb_comm_send_pong(&s_handle, nullptr, 0);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1954,12 +1962,14 @@ void test_usb_comm_send_pong_echoes_payload(void)
 void test_usb_comm_send_reset_ack_null_handle_fails(void)
 {
   rx_err_t err = rx_usb_comm_send_reset_ack(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_usb_comm_send_reset_ack_not_initialized_fails(void)
 {
   rx_err_t err = rx_usb_comm_send_reset_ack(&s_handle);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 

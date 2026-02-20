@@ -228,10 +228,9 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
  */
 static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq)
 {
-  rx_frame_t ack_frame;
-  (void)memset(&ack_frame, 0, sizeof(ack_frame));
+  rx_frame_t     ack_frame = {0};
+  const rx_err_t err       = rx_spi_comm_receive(link->spi_handle, &ack_frame, k_spi_link_ack_timeout_ms);
 
-  const rx_err_t err = rx_spi_comm_receive(link->spi_handle, &ack_frame, k_spi_link_ack_timeout_ms);
   if (err == k_rx_err_timeout) {
     return k_rx_err_timeout;
   }
@@ -284,7 +283,7 @@ rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* confi
   }
 
   /* Zero-fill link handle */
-  (void)memset(link, 0, sizeof(*link));
+  *link = (rx_spi_link_t){0};
 
   /* Store configuration */
   link->spi_handle  = config->spi_handle;
@@ -653,7 +652,7 @@ static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
      * works as follows:
      *   1. soft_len is the total encoded bit count (includes tail bits)
      *   2. Divide by k_bits_per_byte (8) to get encoded byte count
-     *   3. Divide by 2 because FEC rate is 1/2 (each input bit → 2 output bits)
+     *   3. Divide by 2 because FEC rate is 1/2 (each input bit -> 2 output bits)
      * The FEC decoder (rx_fec_viterbi_decode) automatically handles tail bit
      * flushing internally, so we don't subtract them here. */
   const uint32_t expected_decoded_len = (soft_len / (uint32_t)k_bits_per_byte) / 2U;
@@ -748,9 +747,8 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
   }
 
   /* Receive raw frame from SPI transport */
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
-  (void)memset(result, 0, sizeof(*result));
+  rx_frame_t                    frame  = {0};
+  *result = (rx_spi_link_receive_result_t){0};
 
   const rx_err_t recv_err = rx_spi_comm_receive(link->spi_handle, &frame, timeout_ms);
   if (recv_err != k_rx_ok) {

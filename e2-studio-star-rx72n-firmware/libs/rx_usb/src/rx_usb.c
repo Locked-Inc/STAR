@@ -43,27 +43,27 @@
  * }
  * @enddot
  *
- * ## Data Flow - Transmission (Host ← RX72N)
+ * ## Data Flow - Transmission (Host <- RX72N)
  *
  * **Application writes data to USB port:**
  * ```
  * Application: rx_usb_write(port, data, len)
- *            ↓
+ *            v
  * 1. Validate port, check configured state
  * 2. Copy data to TX ring buffer (priv_ring_buffer_write)
  * 3. Update statistics (tx_requests++)
  * 4. Trigger transmission (internal_trigger_tx_if_idle)
- *            ↓
+ *            v
  * 5. CDC layer: rx_usb_cdc_handle_bulk_in(port)
  *    - Read from TX ring buffer
  *    - Write to USB FIFO (hardware layer)
  *    - Enable BEMP interrupt for completion
- *            ↓
+ *            v
  * 6. ISR: usb0_usbi_isr() detects BEMP (buffer empty)
  *    - Clear BEMP flag
  *    - Call rx_usb_cdc_handle_bulk_in() for more data
  *    - Repeat until TX ring buffer empty
- *            ↓
+ *            v
  * 7. Host receives data via Bulk IN endpoint
  * ```
  *
@@ -72,17 +72,17 @@
  * **Host sends data to USB port:**
  * ```
  * Host sends data
- *            ↓
+ *            v
  * 1. USB0 peripheral receives data in Bulk OUT FIFO
  * 2. ISR: usb0_usbi_isr() detects BRDY (buffer ready)
  *    - Call rx_usb_cdc_handle_bulk_out(port)
- *            ↓
+ *            v
  * 3. CDC layer: rx_usb_cdc_handle_bulk_out(port)
  *    - Read from USB FIFO (hardware layer)
  *    - Write to RX ring buffer (priv_ring_buffer_write)
  *    - Update statistics (bytes_received++)
  *    - Invoke callback if registered
- *            ↓
+ *            v
  * 4. Application: rx_usb_read(port, buffer, len)
  *    - Read from RX ring buffer (priv_ring_buffer_read)
  *    - Return data to application
@@ -160,7 +160,7 @@
  *
  * **Device State Transitions:**
  * ```
- * Detached -> Attached -> Powered -> Default -> Addressed -> Configured ⇄ Suspended
+ * Detached -> Attached -> Powered -> Default -> Addressed -> Configured <-> Suspended
  * ```
  *
  * **Port State Management:**
@@ -206,7 +206,7 @@
  * Port 2 RX buffer:  2048 bytes
  * Port 2 TX buffer:  2048 bytes
  * Driver state:       ~500 bytes (usb_driver_t + port states)
- * ───────────────────────────────
+ * -------------------------------
  * Total:            ~7668 bytes
  * ```
  *
@@ -224,11 +224,11 @@
  * **Throughput (measured @ 240 MHz RX72N, USB Full-Speed 12 Mbps):**
  * | Operation | Throughput | Latency | Notes |
  * |-----------|------------|---------|-------|
- * | rx_usb_write() | ~1.2 MB/s | 10-50 µs | Limited by USB FS bandwidth |
- * | rx_usb_read() | ~1.2 MB/s | 5-20 µs | Ring buffer copy overhead |
- * | Ring buffer write | ~30 MB/s | <1 µs | Memcpy-based |
- * | Ring buffer read | ~30 MB/s | <1 µs | Memcpy-based |
- * | State query | N/A | <0.1 µs | Single flag check |
+ * | rx_usb_write() | ~1.2 MB/s | 10-50 us | Limited by USB FS bandwidth |
+ * | rx_usb_read() | ~1.2 MB/s | 5-20 us | Ring buffer copy overhead |
+ * | Ring buffer write | ~30 MB/s | <1 us | Memcpy-based |
+ * | Ring buffer read | ~30 MB/s | <1 us | Memcpy-based |
+ * | State query | N/A | <0.1 us | Single flag check |
  *
  * **USB Transfer Timing:**
  * - **Bulk transfer latency**: 1-2 ms (host polling interval)
@@ -437,8 +437,6 @@
  */
 
 #include "rx_usb.h"
-
-#include <string.h>
 
 #include "rx_time_constants.h"
 #include "rx_usb_endpoints.h"
@@ -1096,7 +1094,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   rx_log_info(s_tag, "Initializing USB CDC composite driver");
 
   /* Clear driver state */
-  memset(&s_usb, 0, sizeof(s_usb));
+  s_usb = (usb_driver_t){0};
 
   /* Store global callback if provided */
   if (config != nullptr) {
@@ -1229,12 +1227,12 @@ rx_usb_state_t rx_usb_get_state(void)
  *
  * **Transmission Timeline:**
  * ```
- * T+0µs:   rx_usb_write() called by application
- * T+1µs:   Data copied to TX ring buffer (~30 MB/s memcpy)
- * T+2µs:   internal_trigger_tx_if_idle() called
- * T+3µs:   rx_usb_cdc_handle_bulk_in() loads USB FIFO
- * T+5µs:   rx_usb_write() returns k_rx_ok to application
- * T+50µs:  USB host polls endpoint, receives first packet
+ * T+0us:   rx_usb_write() called by application
+ * T+1us:   Data copied to TX ring buffer (~30 MB/s memcpy)
+ * T+2us:   internal_trigger_tx_if_idle() called
+ * T+3us:   rx_usb_cdc_handle_bulk_in() loads USB FIFO
+ * T+5us:   rx_usb_write() returns k_rx_ok to application
+ * T+50us:  USB host polls endpoint, receives first packet
  * T+1ms:   ISR: BEMP interrupt, send next packet from ring buffer
  * T+2ms:   ISR: BEMP interrupt, send next packet
  * ...      (continues until ring buffer empty)
@@ -1295,7 +1293,7 @@ rx_usb_state_t rx_usb_get_state(void)
  * @warning Large writes may fill buffer - check return value and handle k_rx_err_busy
  *
  * @par Performance:
- * - **Execution time**: ~1-5 µs @ 240 MHz (ring buffer copy + trigger)
+ * - **Execution time**: ~1-5 us @ 240 MHz (ring buffer copy + trigger)
  * - **Throughput**: ~30 MB/s (ring buffer copy via memcpy)
  * - **USB bandwidth**: ~1.2 MB/s (actual transmission to host, USB Full-Speed limit)
  * - **Stack usage**: ~32 bytes (locals + ring buffer function call)
@@ -1513,7 +1511,7 @@ rx_err_t rx_usb_write(const rx_usb_port_id_t port, const uint8_t* data, const ui
  * @warning Do not assume data received - check actual_len before processing
  *
  * @par Performance:
- * - **Execution time**: ~1-3 µs @ 240 MHz (ring buffer copy)
+ * - **Execution time**: ~1-3 us @ 240 MHz (ring buffer copy)
  * - **Throughput**: ~30 MB/s (ring buffer copy via memcpy)
  * - **Stack usage**: ~32 bytes (locals + ring buffer function call)
  *
@@ -1870,7 +1868,7 @@ rx_err_t rx_usb_get_stats(const rx_usb_port_id_t port, rx_usb_stats_t* stats)
 void rx_usb_reset_stats(const rx_usb_port_id_t port)
 {
   if (internal_port_is_valid(port)) {
-    memset(&s_usb.ports[port].stats, 0, sizeof(rx_usb_stats_t));
+    s_usb.ports[port].stats = (rx_usb_stats_t){0};
   }
 }
 
@@ -1984,11 +1982,6 @@ rx_err_t rx_usb_puts(const rx_usb_port_id_t port, const char* str)
  */
 rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
 {
-  char     buffer[k_int_buffer_size];
-  uint8_t  pos      = 0;
-  bool     negative = false;
-  uint32_t abs_val;
-
   if (!internal_port_is_valid(port)) {
     return k_rx_err_invalid_arg;
   }
@@ -2002,6 +1995,11 @@ rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
   }
 
   /* Handle negative numbers */
+  char     buffer[k_int_buffer_size];
+  uint8_t  pos      = 0;
+  bool     negative = false;
+  uint32_t abs_val;
+
   if (value < 0) {
     negative = true;
     /* Handle INT32_MIN specially to avoid overflow */
@@ -2052,8 +2050,6 @@ rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
  */
 rx_err_t rx_usb_puthex(const rx_usb_port_id_t port, uint32_t value, uint8_t digits)
 {
-  char buffer[k_hex_buffer_size];
-
   if (!internal_port_is_valid(port)) {
     return k_rx_err_invalid_arg;
   }
@@ -2065,6 +2061,8 @@ rx_err_t rx_usb_puthex(const rx_usb_port_id_t port, uint32_t value, uint8_t digi
   if (s_usb.device_state != k_usb_state_configured) {
     return k_rx_err_invalid_state;
   }
+
+  char buffer[k_hex_buffer_size];
 
   /* Clamp digits to valid range */
   if (digits == 0) {

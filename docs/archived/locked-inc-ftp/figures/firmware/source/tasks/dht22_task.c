@@ -83,7 +83,7 @@ static esp_err_t internal_read_dht22(dht22_task_context_t *const ctx) {
                esp_err_to_name(temp_update_ret));
     }
 
-    ESP_LOGI(s_TAG, "DHT22 reading: %.1f°C, %.1f%% RH",
+    ESP_LOGI(s_TAG, "DHT22 reading: %.1fdegC, %.1f%% RH",
              dht22_data.temperature_c, dht22_data.humidity_percent);
   } else {
     ctx->consecutive_failures++;

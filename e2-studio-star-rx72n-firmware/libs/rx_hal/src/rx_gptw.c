@@ -27,7 +27,7 @@
  *
  * **2. Triangle-wave PWM (center-aligned)**:
  * - Counter: 0 -> GTPR -> 0 (up/down counting)
- * - Period = PCLKA / (2 × frequency)
+ * - Period = PCLKA / (2 x frequency)
  * - For 20kHz: period = 120MHz / 40kHz = 3000 counts (~11.5-bit resolution)
  * - Update at crest and/or trough (mode dependent)
  * - Lower EMI due to symmetric switching edges
@@ -44,10 +44,10 @@
  *
  * **Phase Staggering Implementation**:
  * For 4-motor systems, channels are initialized with counter offsets:
- * - Ch0: GTCNT = 0 (0° reference)
- * - Ch1: GTCNT = period/4 (90° offset)
- * - Ch2: GTCNT = period/2 (180° offset)
- * - Ch3: GTCNT = 3×period/4 (270° offset)
+ * - Ch0: GTCNT = 0 (0deg reference)
+ * - Ch1: GTCNT = period/4 (90deg offset)
+ * - Ch2: GTCNT = period/2 (180deg offset)
+ * - Ch3: GTCNT = 3xperiod/4 (270deg offset)
  *
  * ## Memory Map
  *
@@ -895,13 +895,48 @@ static rx_err_t internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t
   return k_rx_ok;
 }
 
+/**
+ * @brief Validate channel and compute period for PWM initialization
+ *
+ * @details
+ * Shared pre-initialization helper used by rx_gptw_init_pwm(). Performs
+ * two actions in a single function to reduce code duplication:
+ * 1. Validate channel range and resolve register base pointer
+ * 2. Calculate the GTPR period value from frequency and wave mode
+ *
+ * @param[in]  channel    GPTW channel to initialize
+ *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
+ * @param[in]  config     Configuration structure (caller guarantees non-NULL)
+ *   - config->frequency_hz and config->wave_mode are used
+ * @param[out] gptw_out   Pointer-to-pointer to receive the channel register base
+ *   - Must be non-NULL; *gptw_out set on success
+ * @param[out] period_out Pointer to receive the calculated period count
+ *   - Must be non-NULL; *period_out set on success
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Validation and period calculation succeeded
+ * @retval k_rx_err_invalid_arg channel out of range or register base unresolvable
+ * @retval k_rx_err_invalid_arg frequency_hz is zero, wave_mode invalid, or period out of range
+ *
+ * @pre gptw_out and period_out must be non-NULL (caller's responsibility)
+ * @pre config must be non-NULL (caller's responsibility)
+ *
+ * @post *gptw_out points to valid GPTW channel registers on success
+ * @post *period_out contains a value in [k_gptw_period_min, s_gptw_period_max] on success
+ *
+ * @note Pure helper: does not modify hardware registers or module state
+ * @note Not thread-safe: relies on config content stability during call
+ *
+ * @see internal_calculate_period() Period calculation details
+ * @see rx_gptw_init_pwm() Primary caller
+ *
+ * @since Version 1.0.0
+ */
 static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t           channel,
                                                const rx_gptw_config_t*           config,
                                                volatile rx_gptw_channel_regs_t** gptw_out,
                                                uint32_t*                         period_out)
 {
-  rx_err_t err;
-
   if ((int32_t)channel >= (int32_t)k_gptw_max_channels) {
     rx_log_error(s_tag, "Invalid GPTW channel");
     return k_rx_err_invalid_arg;
@@ -912,7 +947,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
     return k_rx_err_invalid_arg;
   }
 
-  err = internal_calculate_period(config->frequency_hz, config->wave_mode, period_out);
+  rx_err_t err = internal_calculate_period(config->frequency_hz, config->wave_mode, period_out);
   if (err != k_rx_ok) {
     return err;
   }
@@ -978,7 +1013,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
  * @attention For 4-motor systems, use rx_gptw_init_all_staggered() instead
  *
  * @par Performance:
- * - Execution time: ~50 µs at 240 MHz
+ * - Execution time: ~50 us at 240 MHz
  * - Memory: 0 bytes heap, ~32 bytes stack
  *
  * @par Example (Single Channel for LED PWM):
@@ -1012,13 +1047,11 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
  */
 rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_t* config)
 {
-  volatile rx_gptw_channel_regs_t* gptw;
-  uint32_t                         period;
-  rx_err_t                         err;
-
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
-  err = internal_prepare_gptw_pwm_init(channel, config, &gptw, &period);
+  volatile rx_gptw_channel_regs_t* gptw   = nullptr;
+  uint32_t                         period = 0U;
+  rx_err_t err = internal_prepare_gptw_pwm_init(channel, config, &gptw, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1072,18 +1105,43 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
  * @brief Set PWM duty cycle using floating-point percentage
  *
  * @details
- * Implementation of rx_gptw_set_duty() - see rx_gptw.h for complete documentation.
- *
  * Converts floating-point duty percentage [0.0, 100.0] to raw count value and
- * delegates to rx_gptw_set_duty_raw() for hardware register update.
+ * delegates to rx_gptw_set_duty_raw() for hardware register update. The compare
+ * register (GTCCRA or GTCCRB) is written and the change takes effect on the next
+ * PWM period boundary (glitch-free via buffer mode).
  *
  * @par Algorithm:
  * @f[
  *   \text{duty\_count} = \left\lfloor \frac{\text{duty\_percent} \times \text{period}}{100} \right\rfloor
  * @f]
  *
- * @see rx_gptw.h Complete API documentation with examples
- * @see rx_gptw_set_duty_raw() Raw count implementation
+ * @param[in] channel      Typed channel identifier (use rx_gptw_channel_id())
+ * @param[in] output       Typed output identifier (use rx_gptw_output_id())
+ * @param[in] duty_percent Duty cycle [0.0, 100.0] percent
+ *   - 0.0 = always-off, 100.0 = always-on
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Duty cycle updated successfully
+ * @retval k_rx_err_invalid_state Channel out of range or not initialized
+ * @retval k_rx_err_invalid_arg duty_percent outside [0.0, 100.0] or invalid output
+ *
+ * @pre Channel must be initialized via rx_gptw_init_*()
+ * @pre duty_percent must be in [0.0, 100.0]
+ *
+ * @post Compare register written; change takes effect next period boundary
+ * @post Motor output drive updated on next PWM cycle
+ *
+ * @note Not thread-safe: concurrent writes to same output cause undefined behavior
+ *
+ * @code{.c}
+ * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
+ *                  rx_gptw_output_id(k_gptw_output_a), 75.0f);
+ * @endcode
+ *
+ * @see rx_gptw_set_duty_raw() Set duty using raw count value
+ * @see rx_gptw_get_duty() Read current duty cycle
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_gptw_set_duty(const rx_gptw_channel_id_t channel,
                           const rx_gptw_output_id_t  output,
@@ -1112,22 +1170,46 @@ rx_err_t rx_gptw_set_duty(const rx_gptw_channel_id_t channel,
 }
 
 /**
- * @brief Set PWM duty cycle using raw count value
+ * @brief Set PWM duty cycle using a raw 32-bit timer count
  *
  * @details
- * Implementation of rx_gptw_set_duty_raw() - see rx_gptw.h for complete documentation.
- *
- * Directly writes the duty count to the compare register (GTCCRA or GTCCRB).
- * Buffer mode ensures glitch-free updates on the next PWM period boundary.
+ * Directly writes duty_count to the compare register (GTCCRA or GTCCRB).
+ * Buffer mode (enabled during init via GTBER) ensures the update takes effect
+ * on the next PWM period boundary without glitches. Values exceeding the period
+ * are clamped to period (100% duty).
  *
  * @par Register Access:
  * - Output A: Writes to GTCCRA
  * - Output B: Writes to GTCCRB
  *
- * @note Thread-safe: Single atomic register write
- * @note Values exceeding period are clamped to period
+ * @param[in] channel    GPTW channel (k_gptw_channel_0 to k_gptw_channel_3)
+ * @param[in] output     Output to update (k_gptw_output_a or k_gptw_output_b)
+ * @param[in] duty_count Raw count [0, period]; values > period clamped to period
  *
- * @see rx_gptw.h Complete API documentation with examples
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Duty count written successfully
+ * @retval k_rx_err_invalid_state Channel out of range or not initialized
+ * @retval k_rx_err_invalid_arg Could not resolve register base or invalid output
+ *
+ * @pre Channel must be initialized via rx_gptw_init_*()
+ * @pre duty_count should be in [0, period] for meaningful duty; higher values clamped
+ *
+ * @post GTCCRA or GTCCRB written with clamped duty_count
+ * @post Change takes effect at next PWM period boundary
+ *
+ * @note Not thread-safe: concurrent writes to the same register cause undefined behavior
+ * @note Values exceeding period are silently clamped to period
+ *
+ * @code{.c}
+ * uint32_t period;
+ * rx_gptw_get_period(k_gptw_channel_0, &period);
+ * rx_gptw_set_duty_raw(k_gptw_channel_0, k_gptw_output_a, period / 2U); // 50%
+ * @endcode
+ *
+ * @see rx_gptw_set_duty() Set duty using floating-point percentage
+ * @see rx_gptw_get_period() Retrieve period count for duty calculation
+ *
+ * @since Version 1.0.0
  */
 rx_err_t
 rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
@@ -1163,23 +1245,47 @@ rx_gptw_set_duty_raw(const rx_gptw_channel_t channel, rx_gptw_output_t output, u
 }
 
 /**
- * @brief Get current PWM duty cycle as floating-point percentage
+ * @brief Read the current PWM duty cycle as a floating-point percentage
  *
  * @details
- * Implementation of rx_gptw_get_duty() - see rx_gptw.h for complete documentation.
- *
- * Reads the current compare register value (GTCCRA or GTCCRB) and converts it
- * to a percentage value [0.0, 100.0].
+ * Reads the current compare register value (GTCCRA or GTCCRB) from hardware
+ * and converts it to a percentage using the cached period from s_gptw_period[].
  *
  * @par Algorithm:
  * @f[
  *   \text{duty\_percent} = \frac{\text{duty\_count} \times 100}{\text{period}}
  * @f]
  *
- * @note Returns actual register value, which may differ from last set value
- *       if buffer transfer hasn't occurred yet
+ * @param[in]  channel      GPTW channel (k_gptw_channel_0 to k_gptw_channel_3)
+ * @param[in]  output       Output to read (k_gptw_output_a or k_gptw_output_b)
+ * @param[out] duty_percent Pointer to store percentage result [0.0, 100.0]
+ *   - Must be non-NULL
  *
- * @see rx_gptw.h Complete API documentation with examples
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Percentage written to *duty_percent
+ * @retval k_rx_err_null_ptr duty_percent is nullptr
+ * @retval k_rx_err_invalid_state Channel out of range or not initialized
+ * @retval k_rx_err_invalid_arg Invalid output or register pointer unresolvable
+ *
+ * @pre Channel must be initialized via rx_gptw_init_*()
+ * @pre duty_percent must point to valid float storage
+ *
+ * @post *duty_percent contains duty cycle in [0.0, 100.0] on success
+ * @post Hardware registers unchanged
+ *
+ * @note Returns actual register value; may differ from the last set value if
+ *       buffer transfer has not yet occurred at period boundary
+ * @note Not thread-safe: concurrent rx_gptw_set_duty calls may cause torn reads
+ *
+ * @code{.c}
+ * float duty;
+ * rx_err_t err = rx_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a, &duty);
+ * @endcode
+ *
+ * @see rx_gptw_set_duty() Set duty using floating-point percentage
+ * @see rx_gptw_get_period() Retrieve period count
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_gptw_get_duty(const rx_gptw_channel_t channel,
                           const rx_gptw_output_t  output,
@@ -1197,7 +1303,7 @@ rx_err_t rx_gptw_get_duty(const rx_gptw_channel_t channel,
   }
 
   const uint32_t period     = s_gptw_period[channel];
-  uint32_t       duty_count = 0;
+  uint32_t       duty_count = k_gptw_period_zero;
 
   switch (output) {
     case k_gptw_output_a:
@@ -1451,10 +1557,31 @@ rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
  */
 
 /**
+ * @enum gptw_phase_divisor_t
  * @brief Phase divisors for staggered PWM initialization
- * @details Values represent the divisor used to calculate counter offset from period.
- * k_phase_divisor_none=1 for 0-degree (no division needed, offset=0).
- * Division by these values yields the phase offset in counts.
+ *
+ * @details
+ * Divisor constants used to calculate the initial GTCNT counter value for each
+ * GPTW channel during staggered initialization. Each channel is offset by
+ * 90 degrees from the previous one to spread switching edges across the PWM period.
+ *
+ * For a given period P the offsets are:
+ * - Ch0: 0         (0/4 of P)
+ * - Ch1: P / 4     (quarter divisor)
+ * - Ch2: P / 2     (half divisor)
+ * - Ch3: 3 * P / 4 (three-quarter: multiply by 3, then divide by 4)
+ *
+ * @invariant All divisor values are >= 1, preventing division-by-zero in
+ *            internal_calculate_phase_offset()
+ *
+ * @code{.c}
+ * // Example: derive 90-degree offset for a period of 3000 counts
+ * uint32_t offset_ch1 = 3000U / k_phase_divisor_quarter; // == 750
+ * uint32_t offset_ch3 = (3000U * 3U) / k_phase_divisor_three_quarter; // == 2250
+ * @endcode
+ *
+ * @see internal_calculate_phase_offset() Uses these divisors for GTCNT seeding
+ * @see rx_gptw_init_all_staggered() Top-level staggered initialization function
  */
 typedef enum : uint8_t {
   k_phase_divisor_none    = 1, /**< 0 deg: no offset (safe default, never causes div-by-zero) */
@@ -1475,19 +1602,19 @@ typedef enum : uint8_t {
  *
  * | Channel | Phase | Counter Init | Direction |
  * |---------|-------|--------------|-----------|
- * | Ch0 | 0° | 0 | Up (n/a) |
- * | Ch1 | 90° | period/4 | Up (n/a) |
- * | Ch2 | 180° | period/2 | Up (n/a) |
- * | Ch3 | 270° | 3×period/4 | Up (n/a) |
+ * | Ch0 | 0deg | 0 | Up (n/a) |
+ * | Ch1 | 90deg | period/4 | Up (n/a) |
+ * | Ch2 | 180deg | period/2 | Up (n/a) |
+ * | Ch3 | 270deg | 3xperiod/4 | Up (n/a) |
  *
  * ## Phase Offset Table (Triangle Mode)
  *
  * | Channel | Phase | Counter Init | Direction |
  * |---------|-------|--------------|-----------|
- * | Ch0 | 0° | 0 | Up |
- * | Ch1 | 90° | period/2 | Up |
- * | Ch2 | 180° | period | Down |
- * | Ch3 | 270° | period/2 | Down |
+ * | Ch0 | 0deg | 0 | Up |
+ * | Ch1 | 90deg | period/2 | Up |
+ * | Ch2 | 180deg | period | Down |
+ * | Ch3 | 270deg | period/2 | Down |
  *
  * @param[in] channel GPTW channel for phase calculation
  *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
@@ -1634,10 +1761,10 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
  * ## Phase Staggering
  *
  * Counter is initialized to a phase-offset value:
- * - Ch0: 0° (reference, GTCNT=0)
- * - Ch1: 90° (GTCNT=period/4)
- * - Ch2: 180° (GTCNT=period/2)
- * - Ch3: 270° (GTCNT=3×period/4)
+ * - Ch0: 0deg (reference, GTCNT=0)
+ * - Ch1: 90deg (GTCNT=period/4)
+ * - Ch2: 180deg (GTCNT=period/2)
+ * - Ch3: 270deg (GTCNT=3xperiod/4)
  *
  * @param[in] channel GPTW channel to configure
  *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
@@ -1662,6 +1789,8 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
  * @post s_gptw_period[channel] = period
  * @post Timer NOT started (caller starts all channels together)
  *
+ * @note Not thread-safe: modifies hardware registers and shared state arrays
+ *       (s_gptw_initialized, s_gptw_period); caller must ensure exclusive access
  * @note Timer is NOT started by this function
  * @note Called from rx_gptw_init_all_staggered() in a loop
  *
@@ -1677,8 +1806,6 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
                                                      const uint32_t          period,
                                                      const bool              is_triangle)
 {
-  rx_err_t err;
-
   /* Pre-condition: validate channel range (NASA Power of 10 Rule 5) */
   if ((int32_t)channel >= (int32_t)k_gptw_max_channels) {
     return k_rx_err_invalid_arg;
@@ -1692,7 +1819,7 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
   }
 
   /* Base hardware configuration */
-  err = internal_configure_gptw_hardware(gptw, config, period);
+  rx_err_t err = internal_configure_gptw_hardware(gptw, config, period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1778,9 +1905,6 @@ static rx_err_t internal_configure_channel_staggered(const rx_gptw_channel_t cha
  */
 rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
 {
-  rx_err_t err;
-  uint32_t period;
-
   /* Pre-condition: validate config pointer (NASA Power of 10 Rule 5) */
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
@@ -1813,7 +1937,8 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
   }
 
   /* Calculate period once (assumes same frequency for all) */
-  err = internal_calculate_period(config->frequency_hz, config->wave_mode, &period);
+  uint32_t period;
+  rx_err_t err = internal_calculate_period(config->frequency_hz, config->wave_mode, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1854,11 +1979,28 @@ rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config)
  * @retval k_rx_ok Success
  * @retval k_rx_err_invalid_arg Invalid channel number
  *
- * @pre Motor using this channel must be stopped
- * @post Timer stopped, outputs disabled, counter zeroed
+ * @pre Motor using this channel must be stopped before calling
+ * @pre channel must be in range [k_gptw_channel_0, k_gptw_channel_3]
+ *
+ * @post Timer counter stopped (GTCR.CST = 0)
+ * @post Both outputs disabled (GTIOR.OAE = 0, GTIOR.OBE = 0)
+ * @post Counter register zeroed (GTCNT = k_gptw_period_zero)
+ *
+ * @invariant Write protection re-locked (GTWP) on all exit paths
+ *
+ * @note Not thread-safe: modifies hardware registers directly
+ * @note Does not clear s_gptw_initialized[] or s_gptw_period[]
+ *
+ * @warning Ensure motor is at rest before calling to prevent abrupt stop
+ *
+ * @code{.c}
+ * rx_err_t err = rx_gptw_deinit(k_gptw_channel_0);
+ * @endcode
  *
  * @see rx_gptw_init_all() Re-initialize after deinit
  * @see rx_gptw_stop() Stop without full teardown
+ *
+ * @since Version 1.0.0
  */
 rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
 {
@@ -1881,7 +2023,7 @@ rx_err_t rx_gptw_deinit(const rx_gptw_channel_t channel)
   gptw->gtior &= ~(k_gptw_gtior_oae | k_gptw_gtior_obe);
 
   /* Reset counter to zero */
-  gptw->gtcnt = 0;
+  gptw->gtcnt = k_gptw_period_zero;
 
   /* Re-lock write protection */
   gptw->gtwp = k_gptw_gtwp_lock;

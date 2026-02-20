@@ -32,7 +32,7 @@
  * @par Mock Capabilities:
  * | Feature | Supported | Description |
  * |---------|-----------|-------------|
- * | Timing simulation | Yes | CMT timer for µs delays |
+ * | Timing simulation | Yes | CMT timer for us delays |
  * | Bit I/O | Yes | GPIO-level wire control |
  * | Device response | Yes | Simulated DS18B20 replies |
  *

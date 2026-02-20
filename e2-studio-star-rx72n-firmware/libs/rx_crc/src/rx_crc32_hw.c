@@ -8,7 +8,7 @@
  * # Overview
  *
  * Implements **IEEE 802.3 CRC-32** using the **RX72N CRC Calculator peripheral**,
- * providing **5× faster throughput** (~40 MB/s) compared to software lookup table
+ * providing **5x faster throughput** (~40 MB/s) compared to software lookup table
  * implementation (~8 MB/s).
  *
  * This file is **conditionally compiled** only when `RX_CRC32_USE_HARDWARE` is defined,
@@ -76,7 +76,7 @@
  * - `0b00` = CRC-8 (0x07)
  * - `0b01` = CRC-16 (0x8005)
  * - `0b10` = CRC-16-CCITT (0x1021)
- * - `0b11` = **CRC-32 (0x04C11DB7)** ← IEEE 802.3
+ * - `0b11` = **CRC-32 (0x04C11DB7)** <- IEEE 802.3
  *
  * ## Module Stop Control
  *
@@ -124,11 +124,11 @@
  *
  * | Buffer Size | Execution Time | Throughput | CPU Cycles |
  * |-------------|----------------|------------|------------|
- * | 16 bytes | 1.5 µs | 10.7 MB/s | 360 |
- * | 64 bytes | 2.0 µs | 32.0 MB/s | 480 |
- * | 256 bytes | 7.0 µs | 36.6 MB/s | 1680 |
- * | 1024 bytes | 26.0 µs | **39.4 MB/s** | 6240 |
- * | 4096 bytes | 102.0 µs | **40.2 MB/s** | 24480 |
+ * | 16 bytes | 1.5 us | 10.7 MB/s | 360 |
+ * | 64 bytes | 2.0 us | 32.0 MB/s | 480 |
+ * | 256 bytes | 7.0 us | 36.6 MB/s | 1680 |
+ * | 1024 bytes | 26.0 us | **39.4 MB/s** | 6240 |
+ * | 4096 bytes | 102.0 us | **40.2 MB/s** | 24480 |
  *
  * **Peak throughput:** ~40 MB/s (memory-bandwidth limited)
  *
@@ -136,11 +136,11 @@
  *
  * | Metric | Hardware (this file) | Software (rx_crc32_sw.c) | Speedup |
  * |--------|----------------------|--------------------------|---------|
- * | Throughput (1 KB) | 39.4 MB/s | 8.0 MB/s | **4.9×** |
- * | Latency (1 KB) | 26 µs | 128 µs | **4.9×** |
- * | CPU cycles/byte | ~6 cycles | ~30 cycles | **5.0×** |
- * | Code size (ROM) | ~200 bytes | ~1100 bytes | 5.5× smaller |
- * | Data size (RAM) | 1 byte (flag) | 1024 bytes (table) | 1024× smaller |
+ * | Throughput (1 KB) | 39.4 MB/s | 8.0 MB/s | **4.9x** |
+ * | Latency (1 KB) | 26 us | 128 us | **4.9x** |
+ * | CPU cycles/byte | ~6 cycles | ~30 cycles | **5.0x** |
+ * | Code size (ROM) | ~200 bytes | ~1100 bytes | 5.5x smaller |
+ * | Data size (RAM) | 1 byte (flag) | 1024 bytes (table) | 1024x smaller |
  * | Thread safety | Stateless (reentrant) | Stateless (reentrant) | Equal |
  * | Power consumption | +2 mA (active) | +0 mA | SW advantage |
  *
@@ -152,7 +152,7 @@
  *
  * **Crossover point:**
  * - Buffers < 32 bytes: Software slightly faster (lower setup cost)
- * - Buffers ≥ 64 bytes: Hardware significantly faster (4-5× speedup)
+ * - Buffers >= 64 bytes: Hardware significantly faster (4-5x speedup)
  *
  * ## Memory Usage
  *
@@ -222,11 +222,11 @@
  * **SPI frame validation:**
  * - Frame format: `[SYNC][LEN][PAYLOAD][CRC32]`
  * - CRC computed over: LEN + PAYLOAD
- * - Typical size: 16-256 bytes -> **HW is 4-5× faster**
+ * - Typical size: 16-256 bytes -> **HW is 4-5x faster**
  *
  * **USB bulk transfer verification:**
  * - Packet size: 64 bytes (USB Full-Speed max)
- * - HW throughput: 32 MB/s -> **~2 µs per packet**
+ * - HW throughput: 32 MB/s -> **~2 us per packet**
  * - Latency budget: Acceptable for 1 kHz control loop
  *
  * ## NASA Power of 10 Compliance
@@ -370,7 +370,7 @@ static bool s_crc_initialized = false;
  * 6. Configure CRCCR = 0xC3 (CRC-32 + LSB-first + clear)
  * 7. Set s_crc_initialized flag
  *
- * **Total execution time:** ~0.5 µs @ 240 MHz (register writes only)
+ * **Total execution time:** ~0.5 us @ 240 MHz (register writes only)
  *
  * ## CRCCR Configuration
  *
@@ -415,8 +415,8 @@ static bool s_crc_initialized = false;
  *
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | **Execution time** | ~0.5 µs | First call (hardware config) |
- * | **Execution time (cached)** | ~0.05 µs | Subsequent calls (early return) |
+ * | **Execution time** | ~0.5 us | First call (hardware config) |
+ * | **Execution time (cached)** | ~0.05 us | Subsequent calls (early return) |
  * | **CPU cycles** | ~120 cycles | Register writes + protection unlock |
  * | **Blocking time** | 0 cycles | No busy-wait (instant config) |
  *
@@ -581,7 +581,7 @@ rx_err_t rx_crc_deinit(void)
  *
  * @details
  * Computes 32-bit Cyclic Redundancy Check using the **RX72N CRC Calculator peripheral**,
- * providing **5× faster** throughput compared to software implementation.
+ * providing **5x faster** throughput compared to software implementation.
  *
  * This is the **internal implementation** called by `rx_crc32_ieee()` in `rx_crc32.c`
  * when hardware backend is selected at compile time.
@@ -595,7 +595,7 @@ rx_err_t rx_crc_deinit(void)
  * ## Algorithm: Hardware CRC-32 Calculation
  *
  * **Processing steps (5 operations):**
- * 1. **Validate inputs:** NULL check, range check (0 < len ≤ 65535)
+ * 1. **Validate inputs:** NULL check, range check (0 < len <= 65535)
  * 2. **Lazy init:** Call rx_crc_init() if !s_crc_initialized (first use)
  * 3. **Reset state:** Set CRCCR.DORCLR = 1 (loads 0xFFFFFFFF to accumulator)
  * 4. **Process data:** For each byte: write to CRCDIR (hardware computes)
@@ -628,7 +628,7 @@ rx_err_t rx_crc_deinit(void)
  *
  * ### Execution Time vs Buffer Size
  *
- * | Buffer Size | Cycles | Time (µs) | Throughput (MB/s) | Notes |
+ * | Buffer Size | Cycles | Time (us) | Throughput (MB/s) | Notes |
  * |-------------|--------|-----------|-------------------|-------|
  * | 16 bytes | 360 | 1.5 | 10.7 | Setup overhead dominates |
  * | 64 bytes | 480 | 2.0 | 32.0 | Approaching peak |
@@ -639,9 +639,9 @@ rx_err_t rx_crc_deinit(void)
  * **Breakdown (1024-byte buffer):**
  * - Validation: ~10 cycles (nullptr, range checks)
  * - DORCLR write: ~5 cycles
- * - Loop (1024 bytes × 6 cycles/byte): 6144 cycles
+ * - Loop (1024 bytes x 6 cycles/byte): 6144 cycles
  * - CRCDOR read + XOR: ~10 cycles
- * - **Total:** ~6240 cycles = 26.0 µs
+ * - **Total:** ~6240 cycles = 26.0 us
  *
  * **Cycle cost per byte:** ~6 cycles/byte (constant, data-independent)
  *
@@ -651,11 +651,11 @@ rx_err_t rx_crc_deinit(void)
  *
  * | Metric | Hardware (this) | Software (rx_crc32_sw.c) | Speedup |
  * |--------|-----------------|--------------------------|---------|
- * | Cycles | 6240 | 30720 | 4.9× |
- * | Time | 26 µs | 128 µs | 4.9× |
- * | Throughput | 39.4 MB/s | 8.0 MB/s | 4.9× |
- * | Code size | 200 bytes | 1100 bytes | 5.5× smaller |
- * | RAM usage | 1 byte | 1024 bytes | 1024× smaller |
+ * | Cycles | 6240 | 30720 | 4.9x |
+ * | Time | 26 us | 128 us | 4.9x |
+ * | Throughput | 39.4 MB/s | 8.0 MB/s | 4.9x |
+ * | Code size | 200 bytes | 1100 bytes | 5.5x smaller |
+ * | RAM usage | 1 byte | 1024 bytes | 1024x smaller |
  *
  * ## Memory Usage
  *
@@ -806,10 +806,10 @@ rx_err_t rx_crc_deinit(void)
  *   uint64_t total_us = end - start;
  *   uint64_t per_iter_us = total_us / 1000;
  *
- *   rx_log_info("CRC", "1000 iterations: %llu µs total", total_us);
- *   rx_log_info("CRC", "Per iteration: %llu µs", per_iter_us);
+ *   rx_log_info("CRC", "1000 iterations: %llu us total", total_us);
+ *   rx_log_info("CRC", "Per iteration: %llu us", per_iter_us);
  *   rx_log_info("CRC", "Throughput: ~40 MB/s");
- *   // Expected: ~26 µs per iteration
+ *   // Expected: ~26 us per iteration
  * }
  * @endcode
  *
@@ -829,6 +829,7 @@ rx_err_t rx_crc_deinit(void)
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
   rx_err_t          init_err;
+
   volatile uint8_t* crcdir_byte;
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */

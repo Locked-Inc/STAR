@@ -104,11 +104,11 @@
  * | Operation | Time Complexity | Typical Latency | Notes |
  * |-----------|-----------------|-----------------|-------|
  * | validate_pin | O(1) | ~100 ns | No mutex, direct lookup |
- * | reserve_pin | O(1) | ~1-5 µs | Mutex + strcpy |
- * | release_pin | O(1) | ~1-3 µs | Mutex + clear |
- * | is_reserved | O(1) | ~1-2 µs | Mutex + bool read |
- * | get_function | O(1) | ~2-5 µs | Mutex + strcpy |
- * | clear_all | O(n×m) | ~50-100 µs | 17 ports × 8 pins |
+ * | reserve_pin | O(1) | ~1-5 us | Mutex + strcpy |
+ * | release_pin | O(1) | ~1-3 us | Mutex + clear |
+ * | is_reserved | O(1) | ~1-2 us | Mutex + bool read |
+ * | get_function | O(1) | ~2-5 us | Mutex + strcpy |
+ * | clear_all | O(nxm) | ~50-100 us | 17 ports x 8 pins |
  *
  * ## Memory Usage
  *
@@ -449,7 +449,7 @@ static rx_err_t impl_validate_pin(void* ctx, const uint8_t port, const uint8_t p
  * @post Mutex always released (even on error path)
  *
  * @note Thread-safe: Mutex-protected critical section
- * @note Performance: O(1), ~1-5 µs (dominated by mutex operations)
+ * @note Performance: O(1), ~1-5 us (dominated by mutex operations)
  * @note Function name is COPIED (up to 31 chars) - original can be freed after
  *
  * @warning Calling with already-reserved pin returns k_rx_err_gpio_conflict
@@ -501,7 +501,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
   /* Check if already reserved */
   if (reservation->reserved) {
     /* Release mutex before returning error */
-    tx_mutex_put(&validator->mutex);
+    (void)tx_mutex_put(&validator->mutex);
 
     rx_log_warn("PIN_VALIDATOR", "Pin already reserved");
     return k_rx_err_gpio_conflict;
@@ -513,7 +513,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
   reservation->function[k_pin_function_name_max_len - 1] = '\0';
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   rx_log_debug("PIN_VALIDATOR", "Pin reserved");
 
@@ -565,7 +565,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
  * @post Mutex always released (even on error path)
  *
  * @note Thread-safe: Mutex-protected critical section
- * @note Performance: O(1), ~1-3 µs
+ * @note Performance: O(1), ~1-3 us
  * @note Idempotent safety: Releasing unreserved pin returns error (not silent)
  *
  * @warning Calling on unreserved pin returns k_rx_err_invalid_state
@@ -614,7 +614,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
   /* Check if pin was reserved */
   if (!reservation->reserved) {
     /* Release mutex before returning error */
-    tx_mutex_put(&validator->mutex);
+    (void)tx_mutex_put(&validator->mutex);
 
     rx_log_warn("PIN_VALIDATOR", "Pin was not reserved");
     return k_rx_err_invalid_state;
@@ -625,7 +625,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
   reservation->function[0] = '\0';
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   rx_log_debug("PIN_VALIDATOR", "Pin released");
 
@@ -664,7 +664,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
  * @post Mutex acquired and released during operation
  *
  * @note Thread-safe: Mutex-protected read
- * @note Performance: O(1), ~1-2 µs
+ * @note Performance: O(1), ~1-2 us
  * @note Error handling: Errors return false (conservative "not reserved")
  *
  * @par Example:
@@ -708,7 +708,7 @@ static bool impl_is_pin_reserved(void* ctx, const uint8_t port, const uint8_t pi
   const bool reserved = validator->reservations[port_index][pin].reserved;
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   return reserved;
 }
@@ -762,7 +762,7 @@ static bool impl_is_pin_reserved(void* ctx, const uint8_t port, const uint8_t pi
  * @post Mutex always released
  *
  * @note Thread-safe: Mutex-protected read + strcpy
- * @note Performance: O(1), ~2-5 µs (includes string copy)
+ * @note Performance: O(1), ~2-5 us (includes string copy)
  * @note Buffer size checked before mutex acquisition
  *
  * @par Example:
@@ -818,7 +818,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
 
   /* Check if pin is reserved */
   if (!reservation->reserved) {
-    tx_mutex_put(&validator->mutex);
+    (void)tx_mutex_put(&validator->mutex);
     return k_rx_err_invalid_state;
   }
 
@@ -827,7 +827,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
   function_out[function_len - 1] = '\0';
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   return k_rx_ok;
 }
@@ -852,8 +852,8 @@ static rx_err_t impl_get_pin_function(void*          ctx,
  *
  * ## Performance
  *
- * This function iterates all 136 slots (17 ports × 8 pins) and clears each one.
- * Typical execution time: 50-100 µs @ 240 MHz.
+ * This function iterates all 136 slots (17 ports x 8 pins) and clears each one.
+ * Typical execution time: 50-100 us @ 240 MHz.
  *
  * @param[in] ctx Context pointer (must be pin_validator_t*)
  *
@@ -871,7 +871,7 @@ static rx_err_t impl_get_pin_function(void*          ctx,
  * @post Mutex released
  *
  * @note Thread-safe: Mutex-protected critical section
- * @note Performance: O(n×m) where n=ports, m=pins (~50-100 µs)
+ * @note Performance: O(nxm) where n=ports, m=pins (~50-100 us)
  * @note Destructive: All existing reservations lost without warning
  *
  * @warning All reservations are lost - modules will not be notified
@@ -925,7 +925,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   }
 
   /* Release mutex */
-  tx_mutex_put(&validator->mutex);
+  (void)tx_mutex_put(&validator->mutex);
 
   rx_log_debug("PIN_VALIDATOR", "All reservations cleared");
 
@@ -998,7 +998,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
  *
  * @note NOT thread-safe: Call from main() or initialization thread only
  * @note Idempotent: Calling twice is NOT supported (undefined behavior)
- * @note Performance: ~200-500 µs @ 240 MHz (dominated by mutex creation)
+ * @note Performance: ~200-500 us @ 240 MHz (dominated by mutex creation)
  *
  * @warning MUST be called before any pin operations
  * @warning Do NOT call from ISR
@@ -1032,7 +1032,7 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
 
   /* Clear all state */
-  memset(validator, 0, sizeof(pin_validator_t));
+  *validator = (pin_validator_t){0};
 
   /* Create mutex */
   const UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);
@@ -1060,28 +1060,28 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
  *
  * ```
  * High-Level Module (e.g., SPI Driver)
- *         │
- *         │ depends on (abstract interface)
- *         ▼
- * ┌─────────────────────────────────────┐
- * │      rx_pin_interface_t             │ ◄── THIS FUNCTION PRODUCES
- * │  - ctx: void*                       │
- * │  - validate_pin: function pointer   │
- * │  - reserve_pin: function pointer    │
- * │  - release_pin: function pointer    │
- * │  - is_pin_reserved: function ptr    │
- * │  - get_pin_function: function ptr   │
- * │  - clear_all_reservations: func ptr │
- * └─────────────────────────────────────┘
- *         ▲
- *         │ implements
- *         │
- * ┌─────────────────────────────────────┐
- * │      pin_validator_t                │ ◄── THIS FUNCTION CONSUMES
- * │  - mutex                            │
- * │  - reservations[17][8]              │
- * │  - initialized                      │
- * └─────────────────────────────────────┘
+ *         |
+ *         | depends on (abstract interface)
+ *         v
+ * +-------------------------------------+
+ * |      rx_pin_interface_t             | <-- THIS FUNCTION PRODUCES
+ * |  - ctx: void*                       |
+ * |  - validate_pin: function pointer   |
+ * |  - reserve_pin: function pointer    |
+ * |  - release_pin: function pointer    |
+ * |  - is_pin_reserved: function ptr    |
+ * |  - get_pin_function: function ptr   |
+ * |  - clear_all_reservations: func ptr |
+ * +-------------------------------------+
+ *         ^
+ *         | implements
+ *         |
+ * +-------------------------------------+
+ * |      pin_validator_t                | <-- THIS FUNCTION CONSUMES
+ * |  - mutex                            |
+ * |  - reservations[17][8]              |
+ * |  - initialized                      |
+ * +-------------------------------------+
  * ```
  *
  * ## Interface Population
@@ -1224,7 +1224,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  *
  * @note NOT thread-safe: Ensure no concurrent access during deinit
  * @note Idempotent: Safe to call multiple times
- * @note Performance: ~100-300 µs @ 240 MHz
+ * @note Performance: ~100-300 us @ 240 MHz
  *
  * @warning All interfaces become invalid after this call
  * @warning Modules using pins should be stopped first
@@ -1256,8 +1256,6 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator)
 {
-  UINT status;
-
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
 
   if (!validator->initialized) {
@@ -1265,7 +1263,7 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
   }
 
   /* Delete mutex */
-  status = tx_mutex_delete(&validator->mutex);
+  const UINT status = tx_mutex_delete(&validator->mutex);
   if (status != TX_SUCCESS) {
     rx_log_warn("PIN_VALIDATOR", "Failed to delete mutex during deinit");
   }

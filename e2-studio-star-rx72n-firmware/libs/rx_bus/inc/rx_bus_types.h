@@ -70,7 +70,7 @@
  * | Bus Type | RX72N Peripheral | Max Instances | Typical Use |
  * |----------|------------------|---------------|-------------|
  * | **GPIO** | I/O Ports A-J | ~80 pins | LEDs, buttons, chip selects |
- * | **ADC** | S12ADFa | 2 units × 8 ch | Current sensing, battery monitor |
+ * | **ADC** | S12ADFa | 2 units x 8 ch | Current sensing, battery monitor |
  * | **I2C** | RIIC | 3 channels | IMU, temperature, pressure sensors |
  * | **SMBUS** | RIIC + CRC-8 | 3 channels | Battery fuel gauge |
  * | **SPI** | RSPI | 3 channels | Motor drivers (DRV8243) |
@@ -228,7 +228,7 @@ extern "C" {
  * | Type | Peripheral | Speed | Wires | Typical Use |
  * |------|------------|-------|-------|-------------|
  * | GPIO | I/O Ports | N/A | 1 | Digital I/O, chip selects |
- * | ADC | S12ADFa | ~1 µs/sample | 1 | Analog sensing |
+ * | ADC | S12ADFa | ~1 us/sample | 1 | Analog sensing |
  * | I2C | RIIC | 100-1000 kHz | 2 | Sensors, EEPROMs |
  * | SMBUS | RIIC+CRC | 100-400 kHz | 2 | Battery fuel gauge |
  * | SPI | RSPI | 1-15 MHz | 4 | Motor drivers, fast sensors |
@@ -276,7 +276,7 @@ typedef enum : uint8_t {
    * - Temperature sensing (analog sensors)
    * @par RX72N Peripheral: S12ADFa (12-bit ADC)
    * @par Resolution: 8, 10, or 12 bits
-   * @par Conversion time: ~1 µs (12-bit @ 60 MHz PCLKD)
+   * @par Conversion time: ~1 us (12-bit @ 60 MHz PCLKD)
    * @see rx_adc_bus_config_t ADC configuration structure
    */
   k_bus_type_adc,
@@ -514,8 +514,9 @@ typedef enum : uint8_t {
  * @brief SMBUS byte operation buffer indices (command + data)
  */
 typedef enum : uint8_t {
-  k_smbus_byte_data = 0, /**< Command/data byte index */
-  k_smbus_byte_pec  = 1, /**< PEC (CRC-8) index */
+  k_smbus_byte_data = 0, /**< Command byte index (register address) */
+  k_smbus_byte_val  = 1, /**< Data value byte index (no-PEC writes: command + value layout) */
+  k_smbus_byte_pec  = 1, /**< PEC (CRC-8) byte index (PEC-enabled writes: data + PEC layout) */
 } smbus_byte_pec_idx_t;
 
 /**
@@ -575,8 +576,8 @@ typedef enum : uint8_t {
  *
  * | Field | Constraint | Validation |
  * |-------|------------|------------|
- * | name | Non-NULL, ≤31 chars | rx_bus_manager_add_bus() |
- * | type | 0 ≤ type < k_bus_type_max | rx_bus_manager_add_bus() |
+ * | name | Non-NULL, <=31 chars | rx_bus_manager_add_bus() |
+ * | type | 0 <= type < k_bus_type_max | rx_bus_manager_add_bus() |
  * | proto.* | Type-specific | Protocol validators |
  *
  * @par Usage Example - SPI Bus Configuration:
@@ -639,7 +640,7 @@ typedef struct rx_bus_config {
    * @details
    * Human-readable identifier for the bus instance.
    * Used by rx_bus_manager_find_bus() and logging.
-   * @par Valid Range: Non-NULL, ≤31 characters (k_max_bus_name_len)
+   * @par Valid Range: Non-NULL, <=31 characters (k_max_bus_name_len)
    * @par Examples: "motor_drv0", "imu", "battery_gauge", "debug_uart"
    * @invariant Must be unique within bus manager
    * @warning Must remain valid for lifetime of bus config
@@ -651,7 +652,7 @@ typedef struct rx_bus_config {
    * @details
    * Determines which member of proto union to use and which
    * driver functions to invoke for operations.
-   * @par Valid Range: 0 ≤ type < k_bus_type_max
+   * @par Valid Range: 0 <= type < k_bus_type_max
    * @see rx_bus_type_t Protocol type enumeration
    */
   rx_bus_type_t type;
@@ -744,7 +745,7 @@ typedef struct rx_bus_config {
  * static memory allocation and bounds checking.
  *
  * @par Rationale:
- * - k_max_buses: 32 buses sufficient for typical robot (4 motors × 2 buses + sensors)
+ * - k_max_buses: 32 buses sufficient for typical robot (4 motors x 2 buses + sensors)
  * - k_max_bus_name_len: 31 chars allows descriptive names like "motor_driver_front_left"
  *
  * @since Version 1.0.0
@@ -755,7 +756,7 @@ typedef enum : uint8_t {
    * @details
    * Hard limit to prevent unbounded memory allocation.
    * Exceeding returns k_rx_err_no_mem from rx_bus_manager_add_bus().
-   * @par Derivation: 4 motors × (SPI + GPIO) + 8 sensors + 8 spare = 32
+   * @par Derivation: 4 motors x (SPI + GPIO) + 8 sensors + 8 spare = 32
    */
   k_max_buses = 32,
 
@@ -881,7 +882,7 @@ typedef enum : uint8_t {
  * rx_bus_manager_deinit(&manager);
  * @endcode
  *
- * @invariant bus_count ≤ k_max_buses
+ * @invariant bus_count <= k_max_buses
  * @invariant mutex valid after rx_bus_manager_init()
  * @invariant buses list consistent (no cycles, proper NULL termination)
  *
@@ -925,7 +926,7 @@ typedef struct {
    * Identifies log messages from this manager instance.
    * Passed to rx_log_*() functions.
    * @par Examples: "MOTOR", "SENSOR", "MAIN"
-   * @par Valid Range: Non-NULL, typically ≤8 characters
+   * @par Valid Range: Non-NULL, typically <=8 characters
    */
   const char* tag;
 

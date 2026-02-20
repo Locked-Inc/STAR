@@ -1152,9 +1152,9 @@ void* R_BSP_GetDEPC(void)
 /** @name TFU Scaling Constants */
 /** @{ */
 #define K_TFU_SCALE_INV_2PI_FLOAT                                                                  \
-  3F1B74EEH /**< Float 1/(2π) scaling factor for atan2 normalization */
+  3F1B74EEH /**< Float 1/(2pi) scaling factor for atan2 normalization */
 #define K_TFU_SCALE_INV_2PI_FIXED                                                                  \
-  9B74EDA8H /**< Fixed-point 1/(2π) scaling factor for atan2 normalization */
+  9B74EDA8H /**< Fixed-point 1/(2pi) scaling factor for atan2 normalization */
 /** @} */
 
 #if BSP_MCU_TFU_VERSION == 1

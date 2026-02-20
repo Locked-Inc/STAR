@@ -12,40 +12,40 @@
  * @par Implementation Architecture
  * @verbatim
  *                      rx_mpc.c Implementation Structure
- *   ┌─────────────────────────────────────────────────────────────────────┐
- *   │                         Public API Layer                           │
- *   │   ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
- *   │   │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │  │
- *   │   │  gpio()     │ │ peripheral()│ │  mtu_pwm()  │ │   sci()     │  │
- *   │   └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘  │
- *   │          │               │               │               │         │
- *   └──────────┼───────────────┼───────────────┼───────────────┼─────────┘
- *              │               │               │               │
- *   ┌──────────▼───────────────▼───────────────▼───────────────▼─────────┐
- *   │                        Internal Helper Layer                        │
- *   │   ┌─────────────────────────────────────────────────────────────┐  │
- *   │   │                  internal_write_pfs()                        │  │
- *   │   │    (unlock -> write PFS -> lock with error handling)          │  │
- *   │   └─────────────────────────┬───────────────────────────────────┘  │
- *   │                             │                                      │
- *   │   ┌─────────────────────────▼───────────────────────────────────┐  │
- *   │   │              internal_get_pfs_register()                    │  │
- *   │   │    (port/pin -> PFS register address calculation)            │  │
- *   │   └─────────────────────────┬───────────────────────────────────┘  │
- *   │                             │                                      │
- *   │   ┌─────────────┐     ┌─────▼─────────┐                           │
- *   │   │internal_mpc_│     │internal_mpc_  │                           │
- *   │   │  unlock()   │     │  lock()       │                           │
- *   │   └──────┬──────┘     └──────┬────────┘                           │
- *   └──────────┼───────────────────┼─────────────────────────────────────┘
- *              │                   │
- *   ┌──────────▼───────────────────▼─────────────────────────────────────┐
- *   │                    Hardware Register Layer                         │
- *   │   ┌─────────────────────────────────────────────────────────────┐  │
- *   │   │                     mpc() accessor                          │  │
- *   │   │              (rx72n_mpc_regs.h, 0x0008C100)                  │  │
- *   │   └─────────────────────────────────────────────────────────────┘  │
- *   └────────────────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------------------+
+ *   |                         Public API Layer                           |
+ *   |   +-------------+ +-------------+ +-------------+ +-------------+  |
+ *   |   |rx_mpc_set_  | |rx_mpc_set_  | |rx_mpc_set_  | |rx_mpc_set_  |  |
+ *   |   |  gpio()     | | peripheral()| |  mtu_pwm()  | |   sci()     |  |
+ *   |   +------+------+ +------+------+ +------+------+ +------+------+  |
+ *   |          |               |               |               |         |
+ *   +----------+---------------+---------------+---------------+---------+
+ *              |               |               |               |
+ *   +----------v---------------v---------------v---------------v---------+
+ *   |                        Internal Helper Layer                        |
+ *   |   +-------------------------------------------------------------+  |
+ *   |   |                  internal_write_pfs()                        |  |
+ *   |   |    (unlock -> write PFS -> lock with error handling)          |  |
+ *   |   +-------------------------+-----------------------------------+  |
+ *   |                             |                                      |
+ *   |   +-------------------------v-----------------------------------+  |
+ *   |   |              internal_get_pfs_register()                    |  |
+ *   |   |    (port/pin -> PFS register address calculation)            |  |
+ *   |   +-------------------------+-----------------------------------+  |
+ *   |                             |                                      |
+ *   |   +-------------+     +-----v---------+                           |
+ *   |   |internal_mpc_|     |internal_mpc_  |                           |
+ *   |   |  unlock()   |     |  lock()       |                           |
+ *   |   +------+------+     +------+--------+                           |
+ *   +----------+-------------------+-------------------------------------+
+ *              |                   |
+ *   +----------v-------------------v-------------------------------------+
+ *   |                    Hardware Register Layer                         |
+ *   |   +-------------------------------------------------------------+  |
+ *   |   |                     mpc() accessor                          |  |
+ *   |   |              (rx72n_mpc_regs.h, 0x0008C100)                  |  |
+ *   |   +-------------------------------------------------------------+  |
+ *   +--------------------------------------------------------------------+
  * @endverbatim
  *
  * @par PWPR Write Protection Sequence
@@ -91,10 +91,10 @@
  * @par Performance Characteristics
  * | Function | Typical Time | Stack Usage | Notes |
  * |----------|-------------|-------------|-------|
- * | rx_mpc_set_gpio() | 1.2 µs | 24 bytes | Direct PFS write |
- * | rx_mpc_set_peripheral() | 1.5 µs | 32 bytes | With validation |
- * | rx_mpc_set_mtu_pwm() | 1.6 µs | 40 bytes | Calls set_peripheral |
- * | Bulk config (10 pins) | 15 µs | - | Sequential calls |
+ * | rx_mpc_set_gpio() | 1.2 us | 24 bytes | Direct PFS write |
+ * | rx_mpc_set_peripheral() | 1.5 us | 32 bytes | With validation |
+ * | rx_mpc_set_mtu_pwm() | 1.6 us | 40 bytes | Calls set_peripheral |
+ * | Bulk config (10 pins) | 15 us | - | Sequential calls |
  *
  * @par Memory Usage
  * | Category | Size | Description |
@@ -420,6 +420,7 @@ typedef enum : uint8_t {
  * @retval NULL Invalid pin number (> 7)
  *
  * @pre PCLKB clock must be running for MPC register access
+ * @pre Caller has verified channel is in valid range for the target package
  *
  * @post No registers modified (read-only address calculation)
  *
@@ -452,7 +453,7 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
   volatile uint8_t* pfs_base = (volatile uint8_t*)mpc() + k_mpc_pfs_base_offset;
 
   /* Port offset calculation */
-  uint16_t port_offset = 0;
+  uint16_t port_offset;
 
   switch (port) {
     case k_mpc_port_0:
@@ -544,6 +545,14 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
  * @warning Not thread-safe - window between unlock and lock is vulnerable
  * @warning Failing to lock after modification leaves PFS unprotected
  *
+ * @par Example:
+ * @code
+ * // Typical usage: unlock, modify PFS, then lock immediately
+ * internal_mpc_unlock();
+ * *pfs_reg = k_psel_sci_tx;  // Write peripheral select value
+ * internal_mpc_lock();
+ * @endcode
+ *
  * @see internal_mpc_lock() Must be called after PFS writes
  * @see k_mpc_pwpr_pfswe PFSWE enable constant (0x40)
  *
@@ -583,6 +592,14 @@ static void internal_mpc_unlock(void)
  * @post PWPR.B0WI = 1 (PFSWE bit protected)
  *
  * @note Internal function - not exported in header
+ *
+ * @par Example:
+ * @code
+ * // Typical usage: unlock, modify PFS, then lock immediately
+ * internal_mpc_unlock();
+ * *pfs_reg = k_psel_rspi_clk;  // Write peripheral select value
+ * internal_mpc_lock();         // Restore write protection
+ * @endcode
  *
  * @see internal_mpc_unlock() Must be called before PFS writes
  * @see k_mpc_pwpr_b0wi B0WI enable constant (0x80)
@@ -723,16 +740,24 @@ static rx_err_t internal_write_pfs(const uint8_t port, uint8_t pin, uint8_t valu
  * @note Thread safety: Not thread-safe
  * @note Also set PORT PMR bit to 0 for complete GPIO configuration
  *
+ * @code
+ * // Configure P30 (port 3, pin 0) for GPIO use
+ * rx_err_t err = rx_mpc_set_gpio(RX_PORT_PIN(3, 0));
+ * if (err != k_rx_ok) {
+ *     // handle error
+ * }
+ * @endcode
+ *
  * @see rx_mpc.h Full API documentation
  * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
 {
   /* Extract port and pin number from rx_port_pin_t */
+  /* Pre-condition: port and pin must be in valid range */
   const uint8_t port    = rx_port_from_pin(pin);
   const uint8_t pin_num = rx_pin_from_pin(pin);
 
-  /* Pre-condition: port and pin must be in valid range */
   RX_CHECK_RANGE_TAG(port, k_mpc_port_start, k_mpc_port_j, k_rx_err_invalid_arg, s_tag);
   RX_CHECK_RANGE_TAG(pin_num, k_mpc_min_pin, k_mpc_max_pin, k_rx_err_invalid_arg, s_tag);
 
@@ -772,6 +797,18 @@ rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
  *
  * @note Thread safety: Not thread-safe
  * @note Also set PORT PMR bit to 1 for peripheral mode
+ *
+ * @code
+ * // Configure PA0 for RSPI clock (PSEL = 0x0D)
+ * const rx_mpc_peripheral_config_t cfg = {
+ *     .pin  = RX_PORT_PIN(0xA, 0),
+ *     .psel = 0x0D,
+ * };
+ * rx_err_t err = rx_mpc_set_peripheral(&cfg);
+ * if (err != k_rx_ok) {
+ *     // handle error
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @since Version 1.0.0
@@ -819,7 +856,22 @@ rx_err_t rx_mpc_set_peripheral(const rx_mpc_peripheral_config_t* config)
  * @retval k_rx_ok Pin configured for MTU PWM
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination supported by MTU MTIOC
+ *
+ * @post PFS register contains k_psel_mtu_ioc (0x01) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note STAR project uses GPTW (PSEL=0x07) for motor PWM, not MTU
+ *
+ * @code
+ * // Configure P14 for MTU3 PWM output (MTIOCA)
+ * rx_err_t err = rx_mpc_set_mtu_pwm(RX_PORT_PIN(1, 4));
+ * if (err != k_rx_ok) {
+ *     // handle error
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @since Version 1.0.0
@@ -832,6 +884,7 @@ rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
    * - P24-P27: MTU4 MTIOCA/B/C/D
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_ioc};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -848,7 +901,22 @@ rx_err_t rx_mpc_set_mtu_pwm(const rx_port_pin_t pin)
  * @retval k_rx_ok Pin configured for encoder input
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination supported by MTCLK input
+ *
+ * @post PFS register contains k_psel_mtu_phase (0x03) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Configure both Phase A and Phase B pins for proper operation
+ *
+ * @code
+ * // Configure PC0 and PC1 for MTU phase counting (MTCLKA/B)
+ * rx_err_t err = rx_mpc_set_mtu_encoder(RX_PORT_PIN(0xC, 0));
+ * if (err == k_rx_ok) {
+ *     err = rx_mpc_set_mtu_encoder(RX_PORT_PIN(0xC, 1));
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @see rx_mtu_encoder.h Encoder driver using MTU phase counting
@@ -864,6 +932,7 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
    * For phase counting mode, use PSEL = 0x03
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -882,7 +951,22 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
  * @retval k_rx_ok Pin configured for TPU encoder input
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination supported by TCLK input
+ *
+ * @post PFS register contains k_psel_mtu_phase (0x03) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Configure both Phase A and Phase B pins for proper operation
+ *
+ * @code
+ * // Configure PC2 and PA3 for TPU phase counting (TCLKA/B)
+ * rx_err_t err = rx_mpc_set_tpu_encoder(RX_PORT_PIN(0xC, 2));
+ * if (err == k_rx_ok) {
+ *     err = rx_mpc_set_tpu_encoder(RX_PORT_PIN(0xA, 3));
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @see rx_encoder_tpu.h TPU encoder driver using phase counting
@@ -896,6 +980,7 @@ rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
    * - PC0/PB3: TCLKC/TCLKD (Motor 3, Rear Right)
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_mtu_phase};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -913,8 +998,23 @@ rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
  * @retval k_rx_ok Pin configured for ADC input
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination with analog capability
+ *
+ * @post PFS register contains k_pfs_asel (0x80) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Sets ASEL bit (0x80) rather than PSEL field
  * @note Also configure S12ADC for actual conversion
+ *
+ * @code
+ * // Configure P40 (AN000) for ADC analog input
+ * rx_err_t err = rx_mpc_set_adc(RX_PORT_PIN(4, 0));
+ * if (err != k_rx_ok) {
+ *     // handle error
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @since Version 1.0.0
@@ -950,7 +1050,22 @@ rx_err_t rx_mpc_set_adc(const rx_port_pin_t pin)
  * @retval k_rx_ok Pin configured for SCI UART
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination with SCI multiplexing
+ *
+ * @post PFS register contains k_psel_sci_tx (0x0A) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Configure both TXD and RXD pins for bidirectional UART
+ *
+ * @code
+ * // Configure PB7 for SCI9 TXD
+ * rx_err_t err = rx_mpc_set_sci(RX_PORT_PIN(0xB, 7));
+ * if (err != k_rx_ok) {
+ *     // handle error
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @since Version 1.0.0
@@ -961,6 +1076,7 @@ rx_err_t rx_mpc_set_sci(const rx_port_pin_t pin)
    * TX and RX use the same PSEL code
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_sci_tx};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -977,7 +1093,22 @@ rx_err_t rx_mpc_set_sci(const rx_port_pin_t pin)
  * @retval k_rx_ok Pin configured for RIIC I2C
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination with RIIC multiplexing
+ *
+ * @post PFS register contains k_psel_riic_scl (0x0F) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Configure both SCL and SDA pins; external pull-ups required
+ *
+ * @code
+ * // Configure P12 (SCL) and P13 (SDA) for RIIC0
+ * rx_err_t err = rx_mpc_set_riic(RX_PORT_PIN(1, 2));
+ * if (err == k_rx_ok) {
+ *     err = rx_mpc_set_riic(RX_PORT_PIN(1, 3));
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @since Version 1.0.0
@@ -988,6 +1119,7 @@ rx_err_t rx_mpc_set_riic(const rx_port_pin_t pin)
    * SCL and SDA use the same PSEL code
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_riic_scl};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -1005,8 +1137,23 @@ rx_err_t rx_mpc_set_riic(const rx_port_pin_t pin)
  * @retval k_rx_ok Pin configured for RSPI SPI
  * @retval k_rx_err_invalid_arg Invalid port or pin
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination with RSPI multiplexing
+ *
+ * @post PFS register contains k_psel_rspi_clk (0x0D) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Configure all 4 SPI pins (CLK, COPI, CIPO, CS)
  * @note Uses OSHWA-approved inclusive terminology
+ *
+ * @code
+ * // Configure PA0-PA4 for RSPI0 (CLK, COPI, CIPO, SSL0, SSL1)
+ * rx_err_t err = rx_mpc_set_rspi(RX_PORT_PIN(0xA, 0)); // CLK
+ * if (err == k_rx_ok) {
+ *     err = rx_mpc_set_rspi(RX_PORT_PIN(0xA, 1)); // COPI
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation
  * @see rx_spi_comm.h SPI communication driver
@@ -1018,6 +1165,7 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
    * All RSPI signals (CLK, COPI, CIPO, SSL) use same PSEL
    */
   const rx_mpc_peripheral_config_t config = {.pin = pin, .psel = k_psel_rspi_clk};
+
   return rx_mpc_set_peripheral(&config);
 }
 
@@ -1036,8 +1184,23 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  * @retval k_rx_err_invalid_arg Invalid port or pin
  * @retval k_rx_err_hw_error PWPR unlock failed
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination with GPTW multiplexing
+ *
+ * @post PFS register contains k_psel_gptw (0x14) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Used for 4 GPTW channels (0-3) with 8 total pins (PH + EN per motor)
  * @note Phase staggering configured separately via rx_gptw driver
+ *
+ * @code
+ * // Configure motor 0 GPTW phase and enable pins
+ * rx_err_t err = rx_mpc_set_gptw(RX_PORT_PIN(6, 0)); // PH pin
+ * if (err == k_rx_ok) {
+ *     err = rx_mpc_set_gptw(RX_PORT_PIN(6, 1)); // EN pin
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation with usage examples
  * @see rx_gptw_init_all_staggered() GPTW channel configuration
@@ -1070,8 +1233,23 @@ rx_err_t rx_mpc_set_gptw(const rx_port_pin_t pin)
  * @retval k_rx_err_invalid_arg Invalid port or pin
  * @retval k_rx_err_hw_error PWPR unlock failed
  *
+ * @pre PCLKB clock must be running, MPC not in module stop
+ * @pre pin must encode a valid port/pin combination with USB VBUS multiplexing
+ *
+ * @post PFS register contains k_psel_usb_vbus (0x11) for the specified pin
+ * @post PWPR locked after operation
+ *
+ * @note Thread safety: Not thread-safe
  * @note Active-high VBUS detect (pin = 1 when 5V present)
  * @note Also requires USB PHY and controller configuration
+ *
+ * @code
+ * // Configure P16 for USB0_VBUS detection
+ * rx_err_t err = rx_mpc_set_usb_vbus(RX_PORT_PIN(1, 6));
+ * if (err != k_rx_ok) {
+ *     // handle error
+ * }
+ * @endcode
  *
  * @see rx_mpc.h Full API documentation with usage examples
  * @see rx_usb.h USB controller driver
@@ -1124,6 +1302,15 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
  * @note Thread safety: Not thread-safe
  * @note Typical pins: P00-P07 for IRQ8-IRQ15 on RX72N
  * @note Used by HC-SR04 ultrasonic sensors for echo pulse measurement
+ *
+ * @code
+ * // Configure P00 for IRQ8 (HC-SR04 echo input)
+ * rx_err_t err = rx_mpc_set_irq(RX_PORT_PIN(0, 0));
+ * if (err != k_rx_ok) {
+ *     // handle error
+ * }
+ * // Then configure ICU for rising/falling edge detection
+ * @endcode
  *
  * @see rx_mpc_set_adc() Same pattern: writes ASEL bit (0x80) directly
  * @see rx_mpc.h Full API documentation with usage examples

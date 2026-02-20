@@ -15,15 +15,15 @@
  * **nanopb Integration Architecture:**
  * @code
  * +---------------------------+
- * |  Application Layer        | ← Motor control, telemetry tasks
+ * |  Application Layer        | <- Motor control, telemetry tasks
  * +---------------------------+
- * |  rx_nanopb (THIS LAYER)   | ← Encode/decode wrapper, helper functions
+ * |  rx_nanopb (THIS LAYER)   | <- Encode/decode wrapper, helper functions
  * +---------------------------+
- * |  nanopb Library           | ← Core protobuf encoder/decoder (no malloc)
+ * |  nanopb Library           | <- Core protobuf encoder/decoder (no malloc)
  * +---------------------------+
- * |  Generated .pb.h/c        | ← star.v1.* message definitions
+ * |  Generated .pb.h/c        | <- star.v1.* message definitions
  * +---------------------------+
- * |  SPI/USB Transport        | ← Physical layer (RPi5 ↔ RX72N)
+ * |  SPI/USB Transport        | <- Physical layer (RPi5 <-> RX72N)
  * +---------------------------+
  * @endcode
  *
@@ -102,7 +102,7 @@
  *
  * Telemetry Data (15+ fields):
  * - battery_percent: 0-100 (double)
- * - temperature_celsius: -40 to +85°C (double)
+ * - temperature_celsius: -40 to +85degC (double)
  * - cpu_usage_percent: 0-100 (double)
  * - motor_load_percent: 0-100 (double)
  * - wifi_signal_dbm: -100 to 0 dBm (int32)
@@ -195,11 +195,11 @@
  * **Performance Expectations:**
  * | Operation | Time @ 240 MHz | Notes |
  * |-----------|----------------|-------|
- * | Encode VelocityCommand (4 motors) | ~20 µs | Software protobuf encoding |
- * | Decode VelocityCommand | ~15 µs | Software protobuf decoding |
- * | Encode TelemetryData (full) | ~30 µs | GPS + IMU + 9 scalar fields |
- * | Encode TelemetryData (empty) | ~2 µs | 0-byte message optimization |
- * | Round-trip (encode + decode) | ~35 µs | No memcpy overhead |
+ * | Encode VelocityCommand (4 motors) | ~20 us | Software protobuf encoding |
+ * | Decode VelocityCommand | ~15 us | Software protobuf decoding |
+ * | Encode TelemetryData (full) | ~30 us | GPS + IMU + 9 scalar fields |
+ * | Encode TelemetryData (empty) | ~2 us | 0-byte message optimization |
+ * | Round-trip (encode + decode) | ~35 us | No memcpy overhead |
  *
  * **Critical Design Decisions:**
  * @par 1. Empty Messages Encode to 0 Bytes:
@@ -302,8 +302,8 @@ static const uint32_t s_test_sequence_max = UINT32_MAX;
  * - k_test_sequence_number: Arbitrary non-zero sequence (42)
  *
  * @par Timestamp Constants:
- * - k_test_timestamp_us: 1 second in microseconds (1,000,000 µs)
- * - k_test_latency_us: 500 µs response latency
+ * - k_test_timestamp_us: 1 second in microseconds (1,000,000 us)
+ * - k_test_latency_us: 500 us response latency
  *
  * @par Telemetry Field Constants:
  * - k_test_wifi_signal_dbm: -65 dBm (typical WiFi signal strength)
@@ -371,7 +371,7 @@ static const double s_test_zero_velocity_mps = 0.0; /**< Zero velocity (stop com
  */
 static const double s_test_battery_percent    = 85.5;      /**< Battery level (0-100%) */
 static const double s_test_cpu_usage_percent  = 45.0;      /**< CPU utilization (0-100%) */
-static const double s_test_temperature_c      = 25.5;      /**< Temperature (°C) */
+static const double s_test_temperature_c      = 25.5;      /**< Temperature (degC) */
 static const double s_test_motor_load_percent = 30.0;      /**< Motor load (0-100%) */
 static const double s_test_latitude_deg       = 37.7749;   /**< GPS latitude (San Francisco) */
 static const double s_test_longitude_deg      = -122.4194; /**< GPS longitude (San Francisco) */
@@ -379,7 +379,7 @@ static const double s_test_altitude_m         = 10.0;      /**< GPS altitude (me
 static const double s_test_accuracy_m         = 2.5;       /**< GPS accuracy (meters) */
 static const double s_test_pitch_rad          = 0.1;       /**< IMU pitch angle (radians) */
 static const double s_test_roll_rad           = 0.05;      /**< IMU roll angle (radians) */
-static const double s_test_yaw_rad            = 1.57;      /**< IMU yaw angle (~90°) */
+static const double s_test_yaw_rad            = 1.57;      /**< IMU yaw angle (~90deg) */
 static const double s_test_accel_z_mps2       = 9.81;      /**< IMU Z-axis acceleration (gravity) */
 /** @} */
 
@@ -705,6 +705,7 @@ void test_encode_velocity_request_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_velocity_request(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -795,7 +796,7 @@ void test_encode_velocity_request_empty(void)
  *
  * **Expected Wire Format:**
  * - Tag+wire_type for command field: 1 byte
- * - 4× velocity fields: ~4 bytes each (double encoded as varint)
+ * - 4x velocity fields: ~4 bytes each (double encoded as varint)
  * - Sequence varint: 1 byte (value 42 fits in 1 byte)
  * - Timestamp varint: 3 bytes (1,000,000 requires 3 bytes varint)
  * - **Total:** ~18-20 bytes minimum
@@ -975,6 +976,7 @@ void test_decode_velocity_request_null_msg(void)
 {
   uint8_t  data[16] = {0};
   rx_err_t err      = rx_nanopb_decode_velocity_request(data, sizeof(data), nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -984,6 +986,7 @@ void test_decode_velocity_request_null_msg(void)
 void test_decode_velocity_request_empty_buffer(void)
 {
   uint8_t                    data[1] = {0};
+
   star_v1_SetVelocityRequest msg     = star_v1_SetVelocityRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_velocity_request(data, 0, &msg);
@@ -1021,6 +1024,7 @@ void test_decode_velocity_request_invalid_data(void)
 {
   /* Invalid protobuf data - starts with invalid wire type */
   uint8_t                    invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
   star_v1_SetVelocityRequest msg            = star_v1_SetVelocityRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_velocity_request(invalid_data, sizeof(invalid_data), &msg);
@@ -1107,7 +1111,7 @@ void test_decode_velocity_request_oversized_buffer(void)
  * - Back-left: 1.0 m/s
  * - Back-right: 1.0 m/s
  * - Sequence: 42
- * - Timestamp: 1,000,000 µs
+ * - Timestamp: 1,000,000 us
  *
  * **Test Sequence:**
  * 1. Create original message with has_command=true and all fields populated
@@ -1255,6 +1259,7 @@ void test_encode_velocity_response_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_velocity_response(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1393,6 +1398,7 @@ void test_decode_estop_request_null_msg(void)
 {
   uint8_t  data[16] = {0};
   rx_err_t err      = rx_nanopb_decode_estop_request(data, sizeof(data), nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1402,6 +1408,7 @@ void test_decode_estop_request_null_msg(void)
 void test_decode_estop_request_empty_buffer(void)
 {
   uint8_t                      data[1] = {0};
+
   star_v1_EmergencyStopRequest msg     = star_v1_EmergencyStopRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_estop_request(data, 0, &msg);
@@ -1414,6 +1421,7 @@ void test_decode_estop_request_empty_buffer(void)
 void test_decode_estop_request_invalid_data(void)
 {
   uint8_t                      invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
   star_v1_EmergencyStopRequest msg            = star_v1_EmergencyStopRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_estop_request(invalid_data, sizeof(invalid_data), &msg);
@@ -1503,6 +1511,7 @@ void test_decode_pid_gains_request_null_msg(void)
 {
   uint8_t  buffer[64] = {0};
   rx_err_t err        = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1512,6 +1521,7 @@ void test_decode_pid_gains_request_null_msg(void)
 void test_decode_pid_gains_request_empty_buffer(void)
 {
   uint8_t                    buffer[64] = {0};
+
   star_v1_SetPIDGainsRequest msg;
   rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1524,6 +1534,7 @@ void test_decode_pid_gains_request_empty_buffer(void)
 void test_decode_pid_gains_request_invalid_data(void)
 {
   uint8_t                    buffer[64];
+
   star_v1_SetPIDGainsRequest msg;
 
   /* Fill buffer with invalid protobuf data */
@@ -1539,6 +1550,7 @@ void test_decode_pid_gains_request_invalid_data(void)
 void test_decode_pid_gains_request_not_initialized(void)
 {
   uint8_t                    buffer[64] = {0};
+
   star_v1_SetPIDGainsRequest msg;
 
   /* Reset state to uninitialized */
@@ -1571,6 +1583,7 @@ void test_decode_pid_gains_request_valid(void)
 {
   uint8_t                    encode_buffer[256];
   uint32_t                   encode_len;
+
   star_v1_SetPIDGainsRequest encode_msg = star_v1_SetPIDGainsRequest_init_zero;
 
   /* Build valid PID gains request */
@@ -1614,9 +1627,10 @@ void test_pid_gains_request_round_trip(void)
 {
   uint8_t                    buffer[256];
   uint32_t                   encode_len;
+
   star_v1_SetPIDGainsRequest original = star_v1_SetPIDGainsRequest_init_zero;
 
-  /* MATLAB-tuned gains for motor system (τ=75ms) */
+  /* MATLAB-tuned gains for motor system (tau=75ms) */
   original.has_pid_config                = true;
   original.pid_config.kp                 = 0.286;
   original.pid_config.ki                 = 8.01;
@@ -1679,6 +1693,7 @@ void test_encode_estop_response_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_estop_response(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1795,7 +1810,7 @@ void test_encode_estop_response_not_initialized(void)
  * @code
  * message TelemetryData {
  *   double battery_percent = 1;       // 0-100%
- *   double temperature_celsius = 2;   // -40 to +85°C
+ *   double temperature_celsius = 2;   // -40 to +85degC
  *   double cpu_usage_percent = 3;     // 0-100%
  *   double motor_load_percent = 4;    // 0-100%
  *   int32 wifi_signal_dbm = 5;        // -100 to 0 dBm
@@ -1825,6 +1840,7 @@ void test_encode_telemetry_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_telemetry(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2070,6 +2086,7 @@ void test_encode_telemetry_not_initialized(void)
 void test_create_velocity_command_null(void)
 {
   rx_velocity_command_params_t params =
+
     internal_make_velocity_params(s_test_front_left_velocity_mps,
                                   s_test_front_right_velocity_mps,
                                   s_test_back_left_velocity_mps,
@@ -2384,7 +2401,7 @@ void test_empty_message_minimal_size(void)
  * - Production: s_nanopb_buffer_size = 512 bytes
  * - Test: k_test_buffer_size = 512 bytes (matches production)
  * - Max message: ~256 bytes (TelemetryData with all fields)
- * - Safety margin: 2× largest message
+ * - Safety margin: 2x largest message
  *
  * **Test Coverage (2 tests):**
  * - VelocityRequest with max values fits in buffer

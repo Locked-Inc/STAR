@@ -37,8 +37,8 @@ const (
 	// Safety thresholds validation constraints
 	minOvercurrentMa            = 1000
 	maxOvercurrentMa            = 20000
-	minThermalShutdownDeciC     = 500  // 50.0°C
-	maxThermalShutdownDeciC     = 1000 // 100.0°C
+	minThermalShutdownDeciC     = 500  // 50.0degC
+	maxThermalShutdownDeciC     = 1000 // 100.0degC
 	minCellImbalanceThresholdMv = 50
 	maxCellImbalanceThresholdMv = 500
 
@@ -668,7 +668,7 @@ func (s *ConfigurationService) validateSafetyThresholds(thresholds *starv1.Safet
 			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW,
 			Message:            "thermal_shutdown_deci_celsius out of valid range",
 			ActualValue:        fmt.Sprintf("%d", thresholds.ThermalShutdownDeciCelsius),
-			ExpectedConstraint: fmt.Sprintf("%d-%d deci-C (%.1f-%.1f °C)", minThermalShutdownDeciC, maxThermalShutdownDeciC, float64(minThermalShutdownDeciC)/10, float64(maxThermalShutdownDeciC)/10),
+			ExpectedConstraint: fmt.Sprintf("%d-%d deci-C (%.1f-%.1f degC)", minThermalShutdownDeciC, maxThermalShutdownDeciC, float64(minThermalShutdownDeciC)/10, float64(maxThermalShutdownDeciC)/10),
 		})
 	}
 

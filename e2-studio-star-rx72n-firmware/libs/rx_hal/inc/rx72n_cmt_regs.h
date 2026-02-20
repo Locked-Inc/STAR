@@ -12,63 +12,63 @@
  * @par CMT System Architecture
  * @verbatim
  *                         RX72N CMT Timer Architecture
- *   ┌─────────────────────────────────────────────────────────────────────────┐
- *   │                              CMT Module                                 │
- *   │  ┌─────────────────────────────────────────────────────────────────┐   │
- *   │  │                     Clock Source (PCLKB)                        │   │
- *   │  │                          60 MHz                                 │   │
- *   │  └───────────────────────────────┬─────────────────────────────────┘   │
- *   │                                  │                                     │
- *   │         ┌────────────────────────┼────────────────────────┐            │
- *   │         │                        │                        │            │
- *   │         ▼                        ▼                        ▼            │
- *   │  ┌─────────────┐          ┌─────────────┐          ┌─────────────┐     │
- *   │  │ CMT0 (Unit0)│          │ CMT1 (Unit0)│          │ CMT2 (Unit1)│     │
- *   │  │ ÷8/32/128/512│         │ ÷8/32/128/512│         │ ÷8/32/128/512│    │
- *   │  │             │          │             │          │             │     │
- *   │  │ CMCNT[16]   │          │ CMCNT[16]   │          │ CMCNT[16]   │     │
- *   │  │    ↑        │          │    ↑        │          │    ↑        │     │
- *   │  │    │ Count  │          │    │ Count  │          │    │ Count  │     │
- *   │  │    ▼        │          │    ▼        │          │    ▼        │     │
- *   │  │ CMCOR[16]   │          │ CMCOR[16]   │          │ CMCOR[16]   │     │
- *   │  │ (Compare)   │          │ (Compare)   │          │ (Compare)   │     │
- *   │  └──────┬──────┘          └──────┬──────┘          └──────┬──────┘     │
- *   │         │                        │                        │            │
- *   │         │ Match                  │ Match                  │ Match      │
- *   │         ▼                        ▼                        ▼            │
- *   └─────────┼────────────────────────┼────────────────────────┼────────────┘
- *             │                        │                        │
- *             ▼                        ▼                        ▼
- *       ┌──────────┐            ┌──────────┐            ┌──────────┐
- *       │ CMI0 IRQ │            │ CMI1 IRQ │            │ CMI2 IRQ │
- *       │ (Vec 28) │            │ (Vec 29) │            │ (Vec 30) │
- *       └──────────┘            └──────────┘            └──────────┘
- *             │
- *             ▼
- *       ┌──────────────┐
- *       │ ThreadX Tick │
- *       │   100 Hz     │
- *       └──────────────┘
+ *   +-------------------------------------------------------------------------+
+ *   |                              CMT Module                                 |
+ *   |  +-----------------------------------------------------------------+   |
+ *   |  |                     Clock Source (PCLKB)                        |   |
+ *   |  |                          60 MHz                                 |   |
+ *   |  +-------------------------------+---------------------------------+   |
+ *   |                                  |                                     |
+ *   |         +------------------------+------------------------+            |
+ *   |         |                        |                        |            |
+ *   |         v                        v                        v            |
+ *   |  +-------------+          +-------------+          +-------------+     |
+ *   |  | CMT0 (Unit0)|          | CMT1 (Unit0)|          | CMT2 (Unit1)|     |
+ *   |  | /8/32/128/512|         | /8/32/128/512|         | /8/32/128/512|    |
+ *   |  |             |          |             |          |             |     |
+ *   |  | CMCNT[16]   |          | CMCNT[16]   |          | CMCNT[16]   |     |
+ *   |  |    ^        |          |    ^        |          |    ^        |     |
+ *   |  |    | Count  |          |    | Count  |          |    | Count  |     |
+ *   |  |    v        |          |    v        |          |    v        |     |
+ *   |  | CMCOR[16]   |          | CMCOR[16]   |          | CMCOR[16]   |     |
+ *   |  | (Compare)   |          | (Compare)   |          | (Compare)   |     |
+ *   |  +------+------+          +------+------+          +------+------+     |
+ *   |         |                        |                        |            |
+ *   |         | Match                  | Match                  | Match      |
+ *   |         v                        v                        v            |
+ *   +---------+------------------------+------------------------+------------+
+ *             |                        |                        |
+ *             v                        v                        v
+ *       +----------+            +----------+            +----------+
+ *       | CMI0 IRQ |            | CMI1 IRQ |            | CMI2 IRQ |
+ *       | (Vec 28) |            | (Vec 29) |            | (Vec 30) |
+ *       +----------+            +----------+            +----------+
+ *             |
+ *             v
+ *       +--------------+
+ *       | ThreadX Tick |
+ *       |   100 Hz     |
+ *       +--------------+
  *
  *   Memory Map (Verified against RX72N Manual Ch31):
- *   ┌────────────┬──────────────────────────────────────────────┐
- *   │  Address   │  Register                                    │
- *   ├────────────┼──────────────────────────────────────────────┤
- *   │ 0x00088000 │  CMSTR0 (Start Register Unit 0: CMT0/1)      │
- *   │ 0x00088002 │  CMT0.CMCR (Control Register)                │
- *   │ 0x00088004 │  CMT0.CMCNT (Counter)                        │
- *   │ 0x00088006 │  CMT0.CMCOR (Compare Match Register)         │
- *   │ 0x00088008 │  CMT1.CMCR                                   │
- *   │ 0x0008800A │  CMT1.CMCNT                                  │
- *   │ 0x0008800C │  CMT1.CMCOR                                  │
- *   │ 0x00088010 │  CMSTR1 (Start Register Unit 1: CMT2/3)      │
- *   │ 0x00088012 │  CMT2.CMCR                                   │
- *   │ 0x00088014 │  CMT2.CMCNT                                  │
- *   │ 0x00088016 │  CMT2.CMCOR                                  │
- *   │ 0x00088018 │  CMT3.CMCR                                   │
- *   │ 0x0008801A │  CMT3.CMCNT                                  │
- *   │ 0x0008801C │  CMT3.CMCOR                                  │
- *   └────────────┴──────────────────────────────────────────────┘
+ *   +------------+----------------------------------------------+
+ *   |  Address   |  Register                                    |
+ *   +------------+----------------------------------------------+
+ *   | 0x00088000 |  CMSTR0 (Start Register Unit 0: CMT0/1)      |
+ *   | 0x00088002 |  CMT0.CMCR (Control Register)                |
+ *   | 0x00088004 |  CMT0.CMCNT (Counter)                        |
+ *   | 0x00088006 |  CMT0.CMCOR (Compare Match Register)         |
+ *   | 0x00088008 |  CMT1.CMCR                                   |
+ *   | 0x0008800A |  CMT1.CMCNT                                  |
+ *   | 0x0008800C |  CMT1.CMCOR                                  |
+ *   | 0x00088010 |  CMSTR1 (Start Register Unit 1: CMT2/3)      |
+ *   | 0x00088012 |  CMT2.CMCR                                   |
+ *   | 0x00088014 |  CMT2.CMCNT                                  |
+ *   | 0x00088016 |  CMT2.CMCOR                                  |
+ *   | 0x00088018 |  CMT3.CMCR                                   |
+ *   | 0x0008801A |  CMT3.CMCNT                                  |
+ *   | 0x0008801C |  CMT3.CMCOR                                  |
+ *   +------------+----------------------------------------------+
  * @endverbatim
  *
  * @par Timer Period Calculation
@@ -170,14 +170,14 @@ extern "C" {
  *
  * @par Memory Layout
  * @verbatim
- *   Address      │ Content
- *   ─────────────┼─────────────────────
- *   0x00088000   │ CMSTR0 (Unit 0 start)
- *   0x00088002   │ CMT0 registers (6 bytes)
- *   0x00088008   │ CMT1 registers (6 bytes)
- *   0x00088010   │ CMSTR1 (Unit 1 start)
- *   0x00088012   │ CMT2 registers (6 bytes)
- *   0x00088018   │ CMT3 registers (6 bytes)
+ *   Address      | Content
+ *   -------------+---------------------
+ *   0x00088000   | CMSTR0 (Unit 0 start)
+ *   0x00088002   | CMT0 registers (6 bytes)
+ *   0x00088008   | CMT1 registers (6 bytes)
+ *   0x00088010   | CMSTR1 (Unit 1 start)
+ *   0x00088012   | CMT2 registers (6 bytes)
+ *   0x00088018   | CMT3 registers (6 bytes)
  * @endverbatim
  *
  * @note CMSTR registers are at base, channel registers follow at +2 offset.
@@ -201,21 +201,21 @@ typedef enum : uint32_t {
  *
  * @par Register Layout (6 bytes)
  * @verbatim
- *   Offset │ Size │ Register │ Description
- *   ───────┼──────┼──────────┼──────────────────────────────
- *   0x00   │  2   │ CMCR     │ Control: clock div, IRQ enable
- *   0x02   │  2   │ CMCNT    │ Counter: current count value
- *   0x04   │  2   │ CMCOR    │ Compare: match value (period)
+ *   Offset | Size | Register | Description
+ *   -------+------+----------+------------------------------
+ *   0x00   |  2   | CMCR     | Control: clock div, IRQ enable
+ *   0x02   |  2   | CMCNT    | Counter: current count value
+ *   0x04   |  2   | CMCOR    | Compare: match value (period)
  * @endverbatim
  *
  * @par CMCR Register Bit Layout
  * @verbatim
- *   Bit │ Name │ Description
- *   ────┼──────┼────────────────────────────────────
- *    15 │  -   │ Reserved
- *   7-6 │ CMIE │ Compare Match Interrupt Enable
- *   5-2 │  -   │ Reserved
- *   1-0 │ CKS  │ Clock Select (00=PCLK/8, 01=/32, 10=/128, 11=/512)
+ *   Bit | Name | Description
+ *   ----+------+------------------------------------
+ *    15 |  -   | Reserved
+ *   7-6 | CMIE | Compare Match Interrupt Enable
+ *   5-2 |  -   | Reserved
+ *   1-0 | CKS  | Clock Select (00=PCLK/8, 01=/32, 10=/128, 11=/512)
  * @endverbatim
  *
  * @par Timer Operation
@@ -284,10 +284,10 @@ typedef struct {
  *
  * @par Memory Layout
  * @verbatim
- *   Address    │ Register │ Controls
- *   ───────────┼──────────┼───────────────
- *   0x00088000 │ CMSTR0   │ CMT0, CMT1
- *   0x00088010 │ CMSTR1   │ CMT2, CMT3
+ *   Address    | Register | Controls
+ *   -----------+----------+---------------
+ *   0x00088000 | CMSTR0   | CMT0, CMT1
+ *   0x00088010 | CMSTR1   | CMT2, CMT3
  * @endverbatim
  *
  * @note CMSTR0 and CMSTR1 are NOT contiguous! CMSTR1 is at +0x10 from CMSTR0.
@@ -333,11 +333,11 @@ typedef struct {
  *
  * @par Register Layout (16-bit, only bits 0-1 used)
  * @verbatim
- *   Bit │ Name │ Description
- *   ────┼──────┼────────────────────────────────
- *    0  │ STR0 │ 1 = Start CMT0, 0 = Stop CMT0
- *    1  │ STR1 │ 1 = Start CMT1, 0 = Stop CMT1
- *   2-15│  -   │ Reserved (write 0)
+ *   Bit | Name | Description
+ *   ----+------+--------------------------------
+ *    0  | STR0 | 1 = Start CMT0, 0 = Stop CMT0
+ *    1  | STR1 | 1 = Start CMT1, 0 = Stop CMT1
+ *   2-15|  -   | Reserved (write 0)
  * @endverbatim
  */
 typedef enum : uint8_t {
@@ -357,11 +357,11 @@ typedef enum : uint8_t {
  *
  * @par Register Layout (16-bit, only bits 0-1 used)
  * @verbatim
- *   Bit │ Name │ Description
- *   ────┼──────┼────────────────────────────────
- *    0  │ STR2 │ 1 = Start CMT2, 0 = Stop CMT2
- *    1  │ STR3 │ 1 = Start CMT3, 0 = Stop CMT3
- *   2-15│  -   │ Reserved (write 0)
+ *   Bit | Name | Description
+ *   ----+------+--------------------------------
+ *    0  | STR2 | 1 = Start CMT2, 0 = Stop CMT2
+ *    1  | STR3 | 1 = Start CMT3, 0 = Stop CMT3
+ *   2-15|  -   | Reserved (write 0)
  * @endverbatim
  */
 typedef enum : uint8_t {
@@ -493,7 +493,7 @@ static inline volatile rx_cmt_control_regs_t* cmt_ctrl(void)
  * @{
  */
 
-/* Verify CMT channel register structure size (3 × 16-bit = 6 bytes) */
+/* Verify CMT channel register structure size (3 x 16-bit = 6 bytes) */
 static_assert(sizeof(rx_cmt_channel_regs_t) == 6, "CMT channel register structure size mismatch");
 
 /* Verify CMT channel register offsets */
@@ -503,7 +503,7 @@ static_assert(offsetof(rx_cmt_channel_regs_t, cmcnt) == 0x02,
 static_assert(offsetof(rx_cmt_channel_regs_t, cmcor) == 0x04,
               "CMT CMCOR register offset incorrect");
 
-/* Verify CMT control register structure size (2 × 16-bit = 4 bytes) */
+/* Verify CMT control register structure size (2 x 16-bit = 4 bytes) */
 static_assert(sizeof(rx_cmt_control_regs_t) == 4, "CMT control register structure size mismatch");
 
 /* Verify base addresses match RX72N Hardware Manual Chapter 31 */

@@ -80,9 +80,9 @@
  *
  * | Message Type | Proto Definition | Size | Processing Time | Frequency |
  * |--------------|------------------|------|-----------------|-----------|
- * | **SetVelocityRequest** | star.v1.SetVelocityRequest | ~32 bytes | ~200 µs | 100 Hz (10ms) |
- * | **EmergencyStopRequest** | star.v1.EmergencyStopRequest | ~8 bytes | ~50 µs | On event |
- * | **SetPIDGainsRequest** | star.v1.SetPIDGainsRequest | ~28 bytes | ~180 µs | Rarely (config) |
+ * | **SetVelocityRequest** | star.v1.SetVelocityRequest | ~32 bytes | ~200 us | 100 Hz (10ms) |
+ * | **EmergencyStopRequest** | star.v1.EmergencyStopRequest | ~8 bytes | ~50 us | On event |
+ * | **SetPIDGainsRequest** | star.v1.SetPIDGainsRequest | ~28 bytes | ~180 us | Rarely (config) |
  *
  * **SetVelocityRequest structure (4-motor differential drive):**
  * @code{.proto}
@@ -147,7 +147,7 @@
  * CommTask box CommTask [label="Update last_comm_tick\n(500ms watchdog)"];
  * CommTask => CommTask [label="internal_handle_command_frame()"];
  * CommTask => Nanopb [label="rx_nanopb_decode_velocity_request()"];
- * Nanopb box Nanopb [label="Decode protobuf\n(~200 µs)"];
+ * Nanopb box Nanopb [label="Decode protobuf\n(~200 us)"];
  * Nanopb => CommTask [label="star_v1_SetVelocityRequest"];
  *
  * --- [label="Motor Command Update"];
@@ -185,6 +185,16 @@
  *   trigger_estop [label="shared_data_trigger_estop(k_estop_reason_manual)"];
  *   return_estop [label="return (success)", fillcolor=lightgreen, style=filled];
  *
+ *   try_pid [label="rx_nanopb_decode_pid_gains_request()", shape=diamond];
+ *   pid_ok [label="SetPIDGainsRequest decoded", fillcolor=lightblue, style=filled];
+ *   set_pid [label="shared_data_set_pid_gains()"];
+ *   return_pid [label="return (success)", fillcolor=lightgreen, style=filled];
+ *
+ *   try_retransmit [label="rx_nanopb_decode_retransmit_config_request()", shape=diamond];
+ *   retransmit_ok [label="SetRetransmitConfigRequest decoded", fillcolor=lightblue, style=filled];
+ *   set_retransmit [label="rx_comm_manager_set_auto_retransmit()"];
+ *   return_retransmit [label="return (success)", fillcolor=lightgreen, style=filled];
+ *
  *   unknown [label="Log warning\n'Could not decode command payload'",
  *            fillcolor=yellow, style=filled];
  *   return_unknown [label="return (unknown)", fillcolor=orange, style=filled];
@@ -197,9 +207,19 @@
  *   set_cmd -> return_velocity;
  *
  *   try_estop -> estop_ok [label="k_rx_ok"];
- *   try_estop -> unknown [label="decode failed"];
+ *   try_estop -> try_pid [label="decode failed"];
  *   estop_ok -> trigger_estop;
  *   trigger_estop -> return_estop;
+ *
+ *   try_pid -> pid_ok [label="k_rx_ok"];
+ *   try_pid -> try_retransmit [label="decode failed"];
+ *   pid_ok -> set_pid;
+ *   set_pid -> return_pid;
+ *
+ *   try_retransmit -> retransmit_ok [label="k_rx_ok"];
+ *   try_retransmit -> unknown [label="decode failed"];
+ *   retransmit_ok -> set_retransmit;
+ *   set_retransmit -> return_retransmit;
  *
  *   unknown -> return_unknown;
  * }
@@ -237,23 +257,23 @@
  * |--------|-------|-------|
  * | **Poll Rate** | 100 Hz | One poll per 10ms tick |
  * | **Priority** | 5 | HIGHEST application priority (preempts all except system tasks) |
- * | **CPU Time per Poll** | ~220 µs | Includes frame decode + protobuf decode + shared_data update |
- * | **CPU Idle Time** | 9780 µs | 97.8% idle time (yields CPU during sleep) |
- * | **CPU Utilization** | 2.2% | (220 µs / 10ms) × 100% |
+ * | **CPU Time per Poll** | ~220 us | Includes frame decode + protobuf decode + shared_data update |
+ * | **CPU Idle Time** | 9780 us | 97.8% idle time (yields CPU during sleep) |
+ * | **CPU Utilization** | 2.2% | (220 us / 10ms) x 100% |
  * | **Worst Case Latency** | 10ms | Max time from frame arrival to motor task notification |
- * | **Frame Processing** | ~50 µs | CRC validation + header parsing |
- * | **Protobuf Decode** | ~200 µs | nanopb decode (SetVelocityRequest) |
- * | **Shared Data Update** | ~7 µs | Mutex lock + memcpy + event set + unlock |
+ * | **Frame Processing** | ~50 us | CRC validation + header parsing |
+ * | **Protobuf Decode** | ~200 us | nanopb decode (SetVelocityRequest) |
+ * | **Shared Data Update** | ~7 us | Mutex lock + memcpy + event set + unlock |
  *
  * **Latency Budget (Frame Arrival -> Motor Update):**
- * - SPI ISR receive: ~5 µs (RSPI2 interrupt)
- * - rx_comm_manager buffer copy: ~20 µs
- * - CRC-32 validation: ~30 µs (hardware CRC peripheral)
- * - Frame callback dispatch: ~10 µs
- * - Protobuf decode: ~200 µs (nanopb)
- * - Shared data update: ~7 µs
- * - Motor task event wait: ~50 µs (ThreadX context switch)
- * - **Total latency:** ~320 µs (0.32ms)
+ * - SPI ISR receive: ~5 us (RSPI2 interrupt)
+ * - rx_comm_manager buffer copy: ~20 us
+ * - CRC-32 validation: ~30 us (hardware CRC peripheral)
+ * - Frame callback dispatch: ~10 us
+ * - Protobuf decode: ~200 us (nanopb)
+ * - Shared data update: ~7 us
+ * - Motor task event wait: ~50 us (ThreadX context switch)
+ * - **Total latency:** ~320 us (0.32ms)
  *
  * **Why Priority 5?**
  * - Lower number = higher priority in ThreadX
@@ -282,7 +302,7 @@
  * - rx_comm_manager poll requires ~64 bytes for frame buffers
  * - Local variables (velocity_req, estop_req, cmd): ~96 bytes
  * - ThreadX overhead: ~32 bytes
- * - Safety margin: 2× nominal usage = 2048 bytes
+ * - Safety margin: 2x nominal usage = 2048 bytes
  *
  * ## Module Dependencies
  *
@@ -409,6 +429,43 @@ typedef enum : uint8_t {
   k_motor_idx_back_right  = 3, /**< Back right motor index */
 } comm_motor_constants_t;
 
+/**
+ * @enum retransmit_retries_limits_t
+ * @brief Valid range limits for max_retries in SetRetransmitConfigRequest
+ *
+ * @details
+ * Bounds used to validate the max_retries field before narrowing from uint32_t to
+ * uint8_t. Prevents undefined behaviour on out-of-range protobuf values.
+ *
+ * @invariant k_retransmit_max_retries_min <= k_retransmit_max_retries_max
+ * @see retransmit_timing_limits_t Companion enum for timing field limits
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_retransmit_max_retries_min = 1,  /**< Minimum allowed max_retries value */
+  k_retransmit_max_retries_max = 10, /**< Maximum allowed max_retries value */
+} retransmit_retries_limits_t;
+
+/**
+ * @enum retransmit_timing_limits_t
+ * @brief Valid range limits for timing fields in SetRetransmitConfigRequest
+ *
+ * @details
+ * Bounds used to validate ack_timeout_ms and max_backoff_ms before narrowing from
+ * uint32_t to uint16_t. Prevents undefined behaviour on out-of-range protobuf values.
+ *
+ * @invariant k_retransmit_ack_timeout_min_ms <= k_retransmit_ack_timeout_max_ms
+ * @invariant k_retransmit_backoff_min_ms <= k_retransmit_backoff_max_ms
+ * @see retransmit_retries_limits_t Companion enum for retry count limits
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_retransmit_ack_timeout_min_ms = 10,   /**< Minimum ACK timeout (ms) */
+  k_retransmit_ack_timeout_max_ms = 1000, /**< Maximum ACK timeout (ms) */
+  k_retransmit_backoff_min_ms     = 50,   /**< Minimum backoff delay (ms) */
+  k_retransmit_backoff_max_ms     = 5000, /**< Maximum backoff delay (ms) */
+} retransmit_timing_limits_t;
+
 /* =============================================================================
  * Static Variables
  * =============================================================================
@@ -499,7 +556,11 @@ static rx_spi_comm_handle_t s_spi_comm_handle;
 static void internal_comm_task_entry(ULONG input);
 static void internal_init_transports(rx_comm_manager_config_t* config);
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx);
-static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
+static rx_err_t internal_handle_command_frame(const rx_frame_t* frame);
+static bool internal_handle_velocity_command(const rx_frame_t* frame);
+static bool internal_handle_estop_command(const rx_frame_t* frame);
+static bool internal_handle_pid_gains_command(const rx_frame_t* frame);
+static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
 
 /* =============================================================================
  * Public Functions
@@ -581,20 +642,20 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  * ## Priority Justification (Why Priority 5?)
  *
  * **Command-to-Motor Latency Budget:**
- * - Frame arrival (SPI ISR): 0 µs
- * - Comm task wake-up: ~50 µs (ThreadX context switch from priority 8 motor task)
- * - Protobuf decode: ~200 µs
- * - Shared data update: ~7 µs
- * - Motor task wake-up: ~50 µs (ThreadX context switch)
- * - **Total latency: ~310 µs**
+ * - Frame arrival (SPI ISR): 0 us
+ * - Comm task wake-up: ~50 us (ThreadX context switch from priority 8 motor task)
+ * - Protobuf decode: ~200 us
+ * - Shared data update: ~7 us
+ * - Motor task wake-up: ~50 us (ThreadX context switch)
+ * - **Total latency: ~310 us**
  *
  * If comm task had LOWER priority (e.g., Priority 10):
  * - Must wait for motor task (Priority 8) to yield
  * - Worst-case motor task execution: 4ms (250 Hz control loop)
- * - **Total latency: 4000 µs + 310 µs = 4.3ms** (14× slower!)
+ * - **Total latency: 4000 us + 310 us = 4.3ms** (14x slower!)
  *
  * **Design decision:** Priority 5 ensures comm task **immediately preempts** motor task
- * when a new command arrives, minimizing latency to ~310 µs.
+ * when a new command arrives, minimizing latency to ~310 us.
  *
  * @return rx_err_t Task creation status
  *
@@ -631,7 +692,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  *       task context or interrupt handlers.
  * @note **Thread safety:** Not thread-safe (assumes single-threaded boot).
  *       No synchronization needed during tx_application_define().
- * @note **Performance:** 2.2% CPU utilization at 100 Hz poll rate (220 µs active per 10ms).
+ * @note **Performance:** 2.2% CPU utilization at 100 Hz poll rate (220 us active per 10ms).
  *
  * @warning **Never call twice.** Assertion will fire in debug builds. Release
  *          builds return k_rx_err_invalid_state on second call.
@@ -656,7 +717,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  * - tx_thread_sleep(): Safe (yields CPU)
  *
  * @par Performance:
- * - **Creation time:** ~120 µs @ 240 MHz (thread control block initialization)
+ * - **Creation time:** ~120 us @ 240 MHz (thread control block initialization)
  * - **CPU cycles:** ~28,800 cycles
  * - **Stack usage during creation:** ~64 bytes (function call overhead)
  * - **Memory allocation:** 2453 bytes total (2048 stack + 140 TCB + 265 static vars)
@@ -777,8 +838,6 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
  */
 rx_err_t comm_task_create(void)
 {
-  UINT tx_status;
-
   /* Check if already created */
   RX_ASSERT(!s_comm_created, "Comm task already created");
   if (s_comm_created) {
@@ -786,7 +845,7 @@ rx_err_t comm_task_create(void)
   }
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_comm_thread,
+  const UINT tx_status = tx_thread_create(&s_comm_thread,
                                "CommTask",
                                internal_comm_task_entry,
                                k_comm_task_input,
@@ -1007,7 +1066,7 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  *
  * **Decision:** Non-blocking poll chosen for simplicity and robustness:
  * - rx_comm_manager_poll() returns immediately (no blocking)
- * - 100 Hz poll rate is 10× slower than frame arrival rate (1 kHz max)
+ * - 100 Hz poll rate is 10x slower than frame arrival rate (1 kHz max)
  * - 2.2% CPU overhead acceptable for communication task
  * - No ISR coordination needed (frame buffering handled by rx_comm_manager)
  *
@@ -1045,11 +1104,11 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * | Metric | Value | Measurement Method |
  * |--------|-------|-------------------|
  * | **Poll Rate** | 100 Hz | Fixed 10ms sleep period |
- * | **rx_comm_manager_poll() Time** | ~50 µs | USB + SPI buffer check |
- * | **Frame Processing Time** | ~220 µs | CRC + callback + protobuf decode |
- * | **CPU Active Time** | 220 µs per cycle | Poll + process (when frame present) |
- * | **CPU Idle Time** | 9780 µs per cycle | 97.8% idle (yields CPU during sleep) |
- * | **CPU Utilization** | 2.2% | (220 µs / 10ms) × 100% |
+ * | **rx_comm_manager_poll() Time** | ~50 us | USB + SPI buffer check |
+ * | **Frame Processing Time** | ~220 us | CRC + callback + protobuf decode |
+ * | **CPU Active Time** | 220 us per cycle | Poll + process (when frame present) |
+ * | **CPU Idle Time** | 9780 us per cycle | 97.8% idle (yields CPU during sleep) |
+ * | **CPU Utilization** | 2.2% | (220 us / 10ms) x 100% |
  * | **Worst Case Latency** | 10ms | Max time from frame arrival to callback |
  *
  * ## Memory Usage
@@ -1091,7 +1150,7 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  * @note **Thread Safety:** This function runs in its own thread context (Priority 5).
  *       All shared data access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. Single instance only (enforced by s_comm_created).
- * @note **Performance:** 97.8% CPU idle time. Polling is 220 µs out of 10ms period.
+ * @note **Performance:** 97.8% CPU idle time. Polling is 220 us out of 10ms period.
  * @note **Memory:** Peak stack usage is 320 bytes (in callback, not here).
  * @note **Polling Rate:** 100 Hz is sufficient for command processing (10ms latency budget).
  *       Faster polling (1 kHz) would waste CPU cycles (99.98% idle) with no latency benefit.
@@ -1119,12 +1178,12 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown (per 10ms iteration):**
- * - rx_comm_manager_poll(): ~50 µs (buffer check, no frame)
- * - Frame processing (when present): ~220 µs (CRC + callback + protobuf)
- * - tx_thread_sleep(): ~5 µs (ThreadX scheduler overhead)
- * - **Total active time:** ~55 µs (no frame) or ~275 µs (with frame)
- * - **Sleep time:** 10000 µs - 275 µs = 9725 µs (CPU idle)
- * - **CPU utilization:** (275 µs / 10000 µs) × 100% = 2.75% (worst case)
+ * - rx_comm_manager_poll(): ~50 us (buffer check, no frame)
+ * - Frame processing (when present): ~220 us (CRC + callback + protobuf)
+ * - tx_thread_sleep(): ~5 us (ThreadX scheduler overhead)
+ * - **Total active time:** ~55 us (no frame) or ~275 us (with frame)
+ * - **Sleep time:** 10000 us - 275 us = 9725 us (CPU idle)
+ * - **CPU utilization:** (275 us / 10000 us) x 100% = 2.75% (worst case)
  * - **Average utilization:** 2.2% (frames arrive at ~100 Hz, not every poll)
  *
  * @par Example - Normal Operation (Frame Received):
@@ -1207,22 +1266,19 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
  */
 static void internal_comm_task_entry(ULONG input)
 {
-  rx_err_t                 err;
-  rx_comm_manager_config_t config;
-
   (void)input;
 
   rx_log_info(s_tag, "Communication task starting");
 
   /* Initialize transport layers and wire into comm manager config */
-  (void)memset(&config, 0, sizeof(config));
+  rx_comm_manager_config_t config = {0};
   internal_init_transports(&config);
   config.callback              = internal_frame_callback;
   config.callback_ctx          = &g_comm_manager;
   config.enable_decoded_output = true;
 
   /* Initialize communication manager */
-  err = rx_comm_manager_init(&g_comm_manager, &config);
+  rx_err_t err = rx_comm_manager_init(&g_comm_manager, &config);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Comm manager init failed", (uint32_t)err);
     /* Continue - task will poll but won't receive frames */
@@ -1376,12 +1432,12 @@ static void internal_comm_task_entry(ULONG input)
  *
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | **Execution Time** | ~20 µs | Logging + watchdog update + dispatch |
- * | **Command Processing** | ~220 µs | If frame type is COMMAND (protobuf decode) |
- * | **ACK Processing** | ~5 µs | Just log debug message |
- * | **NACK Processing** | ~10 µs | Log warning message |
+ * | **Execution Time** | ~20 us | Logging + watchdog update + dispatch |
+ * | **Command Processing** | ~220 us | If frame type is COMMAND (protobuf decode) |
+ * | **ACK Processing** | ~5 us | Just log debug message |
+ * | **NACK Processing** | ~10 us | Log warning message |
  * | **Call Frequency** | ~100 Hz | Average (matches command rate) |
- * | **CPU Utilization** | < 0.5% | (20 µs × 100 Hz) / 10ms = 0.2% |
+ * | **CPU Utilization** | < 0.5% | (20 us x 100 Hz) / 10ms = 0.2% |
  *
  * @param[in] channel Channel the frame was received on
  *                    - Type: rx_comm_channel_t enum
@@ -1423,12 +1479,12 @@ static void internal_comm_task_entry(ULONG input)
  *       data access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. rx_comm_manager guarantees single-threaded
  *       callback invocation (one frame at a time).
- * @note **Performance:** 20 µs overhead (logging + watchdog) + command processing time.
+ * @note **Performance:** 20 us overhead (logging + watchdog) + command processing time.
  * @note **Callback Context:** Runs synchronously during rx_comm_manager_poll(), not
  *       deferred to later time.
  *
  * @warning **Do not block in callback.** This function must complete quickly (<1ms)
- *          to maintain 100 Hz poll rate. Protobuf decode is fast (~200 µs).
+ *          to maintain 100 Hz poll rate. Protobuf decode is fast (~200 us).
  * @warning **Frame lifetime.** Frame pointer is only valid during callback. Handlers
  *          must copy data if needed beyond callback return.
  * @warning **NULL frame check.** Defensive check should never trigger (rx_comm_manager
@@ -1448,13 +1504,13 @@ static void internal_comm_task_entry(ULONG input)
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown:**
- * - NULL check: ~0.5 µs
- * - Debug logging (2 calls): ~8 µs (UART transmit)
- * - shared_data_update_last_comm_tick(): ~3 µs (mutex lock + update + unlock)
- * - Switch dispatch: ~1 µs
- * - Command handler (if COMMAND): ~220 µs (protobuf decode + shared_data update)
- * - ACK/NACK logging: ~5 µs
- * - **Total:** 20 µs (ACK/NACK) or 240 µs (COMMAND)
+ * - NULL check: ~0.5 us
+ * - Debug logging (2 calls): ~8 us (UART transmit)
+ * - shared_data_update_last_comm_tick(): ~3 us (mutex lock + update + unlock)
+ * - Switch dispatch: ~1 us
+ * - Command handler (if COMMAND): ~220 us (protobuf decode + shared_data update)
+ * - ACK/NACK logging: ~5 us
+ * - **Total:** 20 us (ACK/NACK) or 240 us (COMMAND)
  *
  * @par Example - SetVelocityRequest Frame Reception:
  * @code{.c}
@@ -1571,7 +1627,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
   /* Dispatch based on frame type */
   switch (frame->header.type) {
     case k_frame_type_command:
-      internal_handle_command_frame(channel, frame);
+      (void)internal_handle_command_frame(frame);
       break;
 
     case k_frame_type_ack:
@@ -1602,9 +1658,10 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * 1. **SetVelocityRequest** (~100 Hz) - Motor velocity commands for 4-wheel differential drive
  * 2. **EmergencyStopRequest** (rare) - Manual emergency stop trigger
  * 3. **SetPIDGainsRequest** (very rare) - Runtime PID tuning for motor controllers
- * 4. **Unknown** (log warning) - Unsupported message type or corrupted protobuf
+ * 4. **SetRetransmitConfigRequest** (very rare) - Runtime HARQ retransmission configuration
+ * 5. **Unknown** (log warning) - Unsupported message type or corrupted protobuf
  *
- * ## Algorithm Steps (18 Steps)
+ * ## Algorithm Steps (24 Steps)
  *
  * ### SetVelocityRequest Processing (Steps 1-7)
  *
@@ -1670,9 +1727,27 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *    - If error: Log error with error code
  * 17. **Return:** Exit function (PID gains applied successfully)
  *
- * ### Unknown Message Handling (Step 18)
+ * ### SetRetransmitConfigRequest Processing (Steps 18-23)
  *
- * 18. **Log Warning:** "Could not decode command payload"
+ * 18. **Try SetRetransmitConfigRequest Decode:** Call rx_nanopb_decode_retransmit_config_request()
+ *    - Payload: frame->payload (nanopb-encoded bytes)
+ *    - Length: frame->header.length (~20-30 bytes)
+ *    - Output: star_v1_SetRetransmitConfigRequest structure
+ * 19. **Check Decode Result:**
+ *    - If k_rx_ok AND retransmit_req.has_retransmit_config == true: Proceed to step 20
+ *    - If decode failed: Jump to step 24 (unknown message)
+ * 20. **Build retransmit config:** Build rx_spi_comm_retransmit_config_t from protobuf
+ *    - Copy max_retries, ack_timeout_ms, max_backoff_ms from protobuf
+ * 21. **Update Retransmit Config:** Call rx_comm_manager_set_auto_retransmit()
+ *    - Thread-safe update of HARQ retransmission parameters
+ * 22. **Check Update Result:**
+ *    - If k_rx_ok: Log info "Retransmit config updated"
+ *    - If error: Log error with error code
+ * 23. **Return:** Exit function (retransmit config applied successfully)
+ *
+ * ### Unknown Message Handling (Step 24)
+ *
+ * 24. **Log Warning:** "Could not decode command payload"
  *     - None of the known message types decoded successfully
  *     - Possible causes: Unsupported message type, corrupted protobuf, version mismatch
  *     - Return (ignore frame, continue normal operation)
@@ -1721,14 +1796,50 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *   log_success -> return_velocity;
  *   log_error -> return_velocity;
  *
+ *   try_pid [label="rx_nanopb_decode_pid_gains_request()", shape=diamond];
+ *   pid_ok [label="Decode OK + has_pid_config?", shape=diamond];
+ *   set_pid [label="shared_data_set_pid_gains(&gains)"];
+ *   check_pid [label="Update OK?", shape=diamond];
+ *   log_pid_success [label="Log info:\nPID gains updated", fillcolor=lightgreen, style=filled];
+ *   log_pid_error [label="Log error:\nFailed to set PID gains", fillcolor=red, style=filled];
+ *   return_pid [label="return", fillcolor=lightgreen, style=filled];
+ *
+ *   try_retransmit [label="rx_nanopb_decode_retransmit_config_request()", shape=diamond];
+ *   retransmit_ok [label="Decode OK + has_retransmit_config?", shape=diamond];
+ *   set_retransmit [label="rx_comm_manager_set_auto_retransmit()"];
+ *   check_retransmit [label="Update OK?", shape=diamond];
+ *   log_retransmit [label="Log info:\nRetransmit config updated",
+ *                   fillcolor=lightgreen, style=filled];
+ *   log_retransmit_error [label="Log error:\nFailed to set retransmit config",
+ *                         fillcolor=red, style=filled];
+ *   return_retransmit [label="return", fillcolor=lightgreen, style=filled];
+ *
  *   try_estop -> estop_ok;
  *   estop_ok -> log_estop [label="k_rx_ok"];
- *   estop_ok -> unknown [label="decode failed"];
+ *   estop_ok -> try_pid [label="decode failed"];
  *   log_estop -> trigger_estop;
  *   trigger_estop -> check_trigger;
  *   check_trigger -> return_estop [label="k_rx_ok"];
  *   check_trigger -> log_estop_error [label="error"];
  *   log_estop_error -> return_estop;
+ *
+ *   try_pid -> pid_ok;
+ *   pid_ok -> set_pid [label="k_rx_ok +\nhas_pid_config"];
+ *   pid_ok -> try_retransmit [label="decode failed"];
+ *   set_pid -> check_pid;
+ *   check_pid -> log_pid_success [label="k_rx_ok"];
+ *   check_pid -> log_pid_error [label="error"];
+ *   log_pid_success -> return_pid;
+ *   log_pid_error -> return_pid;
+ *
+ *   try_retransmit -> retransmit_ok;
+ *   retransmit_ok -> set_retransmit [label="k_rx_ok +\nhas_retransmit_config"];
+ *   retransmit_ok -> unknown [label="decode failed"];
+ *   set_retransmit -> check_retransmit;
+ *   check_retransmit -> log_retransmit [label="k_rx_ok"];
+ *   check_retransmit -> log_retransmit_error [label="error"];
+ *   log_retransmit -> return_retransmit;
+ *   log_retransmit_error -> return_retransmit;
  *
  *   unknown -> return_unknown;
  * }
@@ -1775,12 +1886,12 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | **SetVelocityRequest Decode** | ~200 µs | nanopb decode (most common) |
- * | **EmergencyStopRequest Decode** | ~50 µs | nanopb decode (rare) |
- * | **motor_command_t Build** | ~5 µs | memset + 4 float copies |
- * | **shared_data Update** | ~7 µs | Mutex lock + memcpy + event set |
- * | **Total (Velocity)** | ~220 µs | Decode + build + update |
- * | **Total (E-Stop)** | ~60 µs | Decode + trigger |
+ * | **SetVelocityRequest Decode** | ~200 us | nanopb decode (most common) |
+ * | **EmergencyStopRequest Decode** | ~50 us | nanopb decode (rare) |
+ * | **motor_command_t Build** | ~5 us | memset + 4 float copies |
+ * | **shared_data Update** | ~7 us | Mutex lock + memcpy + event set |
+ * | **Total (Velocity)** | ~220 us | Decode + build + update |
+ * | **Total (E-Stop)** | ~60 us | Decode + trigger |
  * | **Call Frequency** | ~100 Hz | Matches SetVelocityRequest rate |
  *
  * @param[in] channel Channel the command was received on
@@ -1819,7 +1930,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @note **Thread Safety:** Runs in Communication Task context. All shared data
  *       access uses thread-safe APIs (mutex-protected).
  * @note **Re-entrancy:** NOT reentrant. Single-threaded callback invocation.
- * @note **Performance:** 220 µs for SetVelocityRequest (most common case).
+ * @note **Performance:** 220 us for SetVelocityRequest (most common case).
  * @note **Decode Order:** Try SetVelocityRequest first (100 Hz) before EmergencyStopRequest
  *       (rare) to minimize average decode time.
  *
@@ -1829,7 +1940,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *          decode fails and warning logged. Update firmware to match ROS2 messages.
  * @warning **Double to float conversion.** Protobuf uses double (8 bytes), firmware
  *          uses float (4 bytes). Loss of precision acceptable for motor velocities
- *          (±0.0001 m/s is negligible for 0-2.5 m/s range).
+ *          (+/-0.0001 m/s is negligible for 0-2.5 m/s range).
  *
  * @attention All errors are logged via rx_log_* but NOT returned to caller.
  * @attention SetVelocityRequest is tried FIRST (optimization for common case).
@@ -1843,13 +1954,13 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown (SetVelocityRequest path):**
- * - rx_nanopb_decode_velocity_request(): ~200 µs (nanopb decode)
- * - memset(&cmd): ~2 µs (zero 24-byte structure)
- * - 4× float assignment: ~2 µs (protobuf double -> float conversion)
- * - tx_time_get(): ~1 µs (read ThreadX tick counter)
- * - shared_data_set_motor_command(): ~7 µs (mutex + memcpy + event)
- * - rx_log_debug(): ~5 µs (UART transmit)
- * - **Total:** ~220 µs
+ * - rx_nanopb_decode_velocity_request(): ~200 us (nanopb decode)
+ * - memset(&cmd): ~2 us (zero 24-byte structure)
+ * - 4x float assignment: ~2 us (protobuf double -> float conversion)
+ * - tx_time_get(): ~1 us (read ThreadX tick counter)
+ * - shared_data_set_motor_command(): ~7 us (mutex + memcpy + event)
+ * - rx_log_debug(): ~5 us (UART transmit)
+ * - **Total:** ~220 us
  *
  * **Why decode cascade instead of message type field?**
  * - nanopb does not support "oneof" with runtime type identification
@@ -1932,8 +2043,11 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @see internal_frame_callback() Caller (frame dispatch)
  * @see rx_nanopb_decode_velocity_request() Decode SetVelocityRequest protobuf
  * @see rx_nanopb_decode_estop_request() Decode EmergencyStopRequest protobuf
+ * @see rx_nanopb_decode_pid_gains_request() Decode SetPIDGainsRequest protobuf
+ * @see rx_nanopb_decode_retransmit_config_request() Decode SetRetransmitConfigRequest protobuf
  * @see shared_data_set_motor_command() Thread-safe motor command update
  * @see shared_data_trigger_estop() Trigger emergency stop
+ * @see rx_comm_manager_set_auto_retransmit() Update HARQ retransmission config
  * @see motor_control_task.c Consumer of motor commands (reads from shared_data)
  * @see docs/sections/02_protobuf_schemas.tex Protocol Buffer message definitions
  *
@@ -1941,6 +2055,8 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * @test test_comm_task.c - Verify SetVelocityRequest decode and motor command update
  * @test test_comm_task.c - Verify EmergencyStopRequest decode and e-stop trigger
+ * @test test_comm_task.c - Verify SetPIDGainsRequest decode and PID gains update
+ * @test test_comm_task.c - Verify SetRetransmitConfigRequest decode and retransmit update
  * @test test_comm_task.c - Verify unknown message type logged as warning
  * @test test_comm_task.c - Verify decode error handling (corrupted protobuf)
  * @test test_comm_task.c - Verify double -> float conversion accuracy
@@ -1948,7 +2064,9 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @par NASA Power of 10 Compliance:
  * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/return control flow)
  * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based)
- * - **Rule 4:** [PASS] Function is 56 lines (under 100 LOC guideline)
+ * - **Rule 4:** [NOTE] Function body is ~80 lines handling 4 message types; each decode
+ *               branch is a single-responsibility path; consider extracting per-message
+ *               handlers if the 60 LOC target must be met
  * - **Rule 5:** [PASS] 5 preconditions, 4 postconditions documented
  * - **Rule 7:** [PASS] All function returns checked or cast to (void)
  * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
@@ -1956,105 +2074,395 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @callgraph
  * @callergraph
  */
-static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame)
+/**
+ * @brief Handle command frame by delegating to per-message-type helper functions
+ *
+ * @details
+ * Dispatches a COMMAND-type frame to the appropriate per-message handler using a
+ * try-each-in-order cascade. Each helper attempts to decode the frame as its specific
+ * protobuf message type and returns true if it handled the message, false otherwise.
+ * The first handler that returns true wins; if none match the frame is an unknown type.
+ *
+ * **Decode Priority (most frequent first):**
+ * 1. SetVelocityRequest (~100 Hz)
+ * 2. EmergencyStopRequest (rare, on demand)
+ * 3. SetPIDGainsRequest (very rare, config only)
+ * 4. SetRetransmitConfigRequest (very rare, config only)
+ * 5. Unknown (log warning, return error)
+ *
+ * @dot
+ * digraph handle_command_frame {
+ *   rankdir=TB;
+ *   node [shape=box, style=rounded];
+ *
+ *   start [label="internal_handle_command_frame()", fillcolor=lightgreen, style=filled];
+ *   null_check [label="frame != nullptr?", shape=diamond];
+ *   return_null [label="return k_rx_err_null_ptr", fillcolor=red, style=filled];
+ *
+ *   try_vel [label="internal_handle_velocity_command()", shape=diamond];
+ *   try_estop [label="internal_handle_estop_command()", shape=diamond];
+ *   try_pid [label="internal_handle_pid_gains_command()", shape=diamond];
+ *   try_retx [label="internal_handle_retransmit_config_command()", shape=diamond];
+ *
+ *   ok [label="return k_rx_ok", fillcolor=lightgreen, style=filled];
+ *   unknown [label="Log warning: unknown command\nreturn k_rx_err_invalid_arg",
+ *            fillcolor=orange, style=filled];
+ *
+ *   start -> null_check;
+ *   null_check -> return_null [label="NULL"];
+ *   null_check -> try_vel [label="valid"];
+ *   try_vel -> ok [label="true"];
+ *   try_vel -> try_estop [label="false"];
+ *   try_estop -> ok [label="true"];
+ *   try_estop -> try_pid [label="false"];
+ *   try_pid -> ok [label="true"];
+ *   try_pid -> try_retx [label="false"];
+ *   try_retx -> ok [label="true"];
+ *   try_retx -> unknown [label="false"];
+ * }
+ * @enddot
+ *
+ * @param[in] frame Frame containing the command payload
+ *                  - Type: const rx_frame_t*
+ *                  - Must NOT be NULL
+ *                  - frame->header.type must be k_frame_type_command
+ *                  - frame->payload contains nanopb-encoded protobuf message
+ *                  - frame->header.length is protobuf message size in bytes
+ *
+ * @return rx_err_t Processing status
+ * @retval k_rx_ok Message decoded and handled by one of the helpers
+ * @retval k_rx_err_null_ptr frame is nullptr
+ * @retval k_rx_err_invalid_arg No helper recognised the payload (unknown message type)
+ *
+ * @pre frame must not be nullptr
+ * @pre frame->header.type == k_frame_type_command (enforced by caller)
+ * @post If k_rx_ok: shared_data updated (motor command, e-stop, PID gains, or retransmit cfg)
+ * @post If k_rx_err_invalid_arg: warning logged, no shared_data changes
+ *
+ * @invariant Function executes in Communication Task context (Priority 5), not ISR
+ * @invariant Unknown message types do NOT crash firmware (log warning, return error)
+ *
+ * @note Not thread-safe; single-threaded callback invocation guaranteed by rx_comm_manager
+ * @since Version 1.0.0
+ *
+ * @see internal_handle_velocity_command() SetVelocityRequest handler
+ * @see internal_handle_estop_command() EmergencyStopRequest handler
+ * @see internal_handle_pid_gains_command() SetPIDGainsRequest handler
+ * @see internal_handle_retransmit_config_command() SetRetransmitConfigRequest handler
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 4: [PASS] Function body is 12 lines (well under 60 LOC target)
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ *
+ * @callgraph
+ * @callergraph
+ */
+static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
 {
-  rx_err_t                     err;
-  star_v1_SetVelocityRequest   velocity_req;
-  star_v1_EmergencyStopRequest estop_req;
-  motor_command_t              cmd;
+  RX_CHECK_NULL_PTR(frame, s_tag, "frame pointer must not be NULL");
 
-  (void)channel;
+  if (internal_handle_velocity_command(frame))           { return k_rx_ok; }
+  if (internal_handle_estop_command(frame))              { return k_rx_ok; }
+  if (internal_handle_pid_gains_command(frame))          { return k_rx_ok; }
+  if (internal_handle_retransmit_config_command(frame))  { return k_rx_ok; }
 
-  /* Try to decode as SetVelocityRequest */
-  err = rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
-  if (err == k_rx_ok && velocity_req.has_command) {
-    /* Build motor command from protobuf */
-    (void)memset(&cmd, 0, sizeof(cmd));
-    cmd.target_velocity_mps[k_motor_idx_front_left] =
-      (float)velocity_req.command.front_left_velocity_mps;
-    cmd.target_velocity_mps[k_motor_idx_front_right] =
-      (float)velocity_req.command.front_right_velocity_mps;
-    cmd.target_velocity_mps[k_motor_idx_back_left] =
-      (float)velocity_req.command.back_left_velocity_mps;
-    cmd.target_velocity_mps[k_motor_idx_back_right] =
-      (float)velocity_req.command.back_right_velocity_mps;
-    cmd.sequence     = velocity_req.command.sequence;
-    cmd.timestamp_ms = tx_time_get();
-    cmd.valid        = true;
+  rx_log_warn(s_tag, "unknown command frame message type");
+  return k_rx_err_invalid_arg;
+}
 
-    err = shared_data_set_motor_command(&cmd);
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "Failed to set motor cmd", (uint32_t)err);
-    } else {
-      rx_log_debug(s_tag, "Velocity command received");
-    }
-    return;
+/**
+ * @brief Attempt to decode and handle a SetVelocityRequest from a command frame
+ *
+ * @details
+ * Tries to decode the frame payload as a star_v1_SetVelocityRequest protobuf message.
+ * If decoding succeeds and the required command sub-message is present, converts the
+ * four motor velocities (double -> float) into a motor_command_t and writes it to
+ * shared_data for consumption by the Motor Control Task.
+ *
+ * Algorithm:
+ * 1. Attempt nanopb decode via rx_nanopb_decode_velocity_request()
+ * 2. Verify has_command flag is set (sub-message present)
+ * 3. Build motor_command_t: copy 4 velocities, sequence number, timestamp, valid=true
+ * 4. Write to shared_data via shared_data_set_motor_command()
+ * 5. Log result and return true
+ *
+ * @param[in] frame COMMAND frame to decode
+ *                  - Must NOT be nullptr (caller guarantees)
+ *                  - frame->payload and frame->header.length are used for decode
+ *
+ * @return bool Whether this handler recognised and consumed the frame
+ * @retval true  Frame decoded as SetVelocityRequest; motor command written to shared_data
+ * @retval false Decode failed; frame is not a SetVelocityRequest (try next handler)
+ *
+ * @pre frame must not be nullptr
+ * @pre shared_data_init() must have been called
+ * @post On true: shared_data motor command updated with new velocities
+ * @post On true: k_event_new_motor_cmd event set (wakes Motor Control Task)
+ *
+ * @note Not thread-safe; executes in Communication Task context (Priority 5)
+ * @note double -> float velocity conversion: +/-0.0001 m/s precision loss acceptable
+ *
+ * @since Version 1.0.0
+ * @see rx_nanopb_decode_velocity_request() nanopb decode function
+ * @see shared_data_set_motor_command() Thread-safe motor command write
+ * @see internal_handle_command_frame() Caller (cascade dispatcher)
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 4: [PASS] Function body is under 30 lines
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ * - Rule 7: [PASS] All return values checked
+ */
+static bool internal_handle_velocity_command(const rx_frame_t* frame)
+{
+  star_v1_SetVelocityRequest velocity_req = {0};
+  const rx_err_t err = rx_nanopb_decode_velocity_request(frame->payload,
+                                                         frame->header.length,
+                                                         &velocity_req);
+  if (err != k_rx_ok || !velocity_req.has_command) {
+    return false;
   }
 
-  /* Try to decode as EmergencyStopRequest */
-  err = rx_nanopb_decode_estop_request(frame->payload, frame->header.length, &estop_req);
-  if (err == k_rx_ok) {
-    rx_log_warn(s_tag, "E-Stop request received");
+  /* Build motor command from protobuf doubles -> firmware floats */
+  motor_command_t cmd = {0};
+  cmd.target_velocity_mps[k_motor_idx_front_left] =
+    (float)velocity_req.command.front_left_velocity_mps;
+  cmd.target_velocity_mps[k_motor_idx_front_right] =
+    (float)velocity_req.command.front_right_velocity_mps;
+  cmd.target_velocity_mps[k_motor_idx_back_left] =
+    (float)velocity_req.command.back_left_velocity_mps;
+  cmd.target_velocity_mps[k_motor_idx_back_right] =
+    (float)velocity_req.command.back_right_velocity_mps;
+  cmd.sequence     = velocity_req.command.sequence;
+  cmd.timestamp_ms = tx_time_get();
+  cmd.valid        = true;
 
-    /* Trigger emergency stop */
-    err = shared_data_trigger_estop(k_estop_reason_manual);
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "Failed to trigger e-stop", (uint32_t)err);
-    }
-    return;
+  const rx_err_t set_err = shared_data_set_motor_command(&cmd);
+  if (set_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Failed to set motor cmd", (uint32_t)set_err);
+  } else {
+    rx_log_debug(s_tag, "Velocity command received");
+  }
+  return true;
+}
+
+/**
+ * @brief Attempt to decode and handle an EmergencyStopRequest from a command frame
+ *
+ * @details
+ * Tries to decode the frame payload as a star_v1_EmergencyStopRequest protobuf message.
+ * If decoding succeeds, triggers an emergency stop via shared_data with reason
+ * k_estop_reason_manual. This immediately disables all motor outputs in the Motor Control Task.
+ *
+ * Algorithm:
+ * 1. Attempt nanopb decode via rx_nanopb_decode_estop_request()
+ * 2. Log warning ("E-Stop request received")
+ * 3. Call shared_data_trigger_estop(k_estop_reason_manual)
+ * 4. Log any error and return true
+ *
+ * @param[in] frame COMMAND frame to decode
+ *                  - Must NOT be nullptr (caller guarantees)
+ *                  - frame->payload and frame->header.length are used for decode
+ *
+ * @return bool Whether this handler recognised and consumed the frame
+ * @retval true  Frame decoded as EmergencyStopRequest; emergency stop triggered
+ * @retval false Decode failed; frame is not an EmergencyStopRequest (try next handler)
+ *
+ * @pre frame must not be nullptr
+ * @pre shared_data_init() must have been called
+ * @post On true: estop_active == true in shared_data
+ * @post On true: k_event_estop_triggered event set (wakes Motor Control Task)
+ *
+ * @note Not thread-safe; executes in Communication Task context (Priority 5)
+ * @warning E-stop overrides any pending velocity commands; motors disabled immediately
+ *
+ * @since Version 1.0.0
+ * @see rx_nanopb_decode_estop_request() nanopb decode function
+ * @see shared_data_trigger_estop() Thread-safe emergency stop trigger
+ * @see internal_handle_command_frame() Caller (cascade dispatcher)
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 4: [PASS] Function body is under 20 lines
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ * - Rule 7: [PASS] All return values checked
+ */
+static bool internal_handle_estop_command(const rx_frame_t* frame)
+{
+  star_v1_EmergencyStopRequest estop_req = {0};
+  const rx_err_t err = rx_nanopb_decode_estop_request(frame->payload,
+                                                      frame->header.length,
+                                                      &estop_req);
+  if (err != k_rx_ok) {
+    return false;
   }
 
-  /* Try to decode as SetPIDGainsRequest */
-  star_v1_SetPIDGainsRequest pid_req;
-  err = rx_nanopb_decode_pid_gains_request(frame->payload, frame->header.length, &pid_req);
-  if (err == k_rx_ok && pid_req.has_pid_config) {
-    rx_log_info(s_tag, "PID gains request received");
+  rx_log_warn(s_tag, "E-Stop request received");
 
-    /* Convert protobuf PID config to firmware structure */
-    pid_gains_t gains;
-    (void)memset(&gains, 0, sizeof(gains));
-    gains.kp             = (float)pid_req.pid_config.kp;
-    gains.ki             = (float)pid_req.pid_config.ki;
-    gains.kd             = (float)pid_req.pid_config.kd;
-    gains.output_min     = (float)pid_req.pid_config.output_min_percent;
-    gains.output_max     = (float)pid_req.pid_config.output_max_percent;
-    gains.integral_min   = (float)pid_req.pid_config.integral_min;
-    gains.integral_max   = (float)pid_req.pid_config.integral_max;
-    gains.update_pending = true;
+  const rx_err_t trigger_err = shared_data_trigger_estop(k_estop_reason_manual);
+  if (trigger_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Failed to trigger e-stop", (uint32_t)trigger_err);
+  }
+  return true;
+}
 
-    /* Update shared PID gains (applies to all motors) */
-    err = shared_data_set_pid_gains(&gains);
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "Failed to set PID gains", (uint32_t)err);
-    } else {
-      rx_log_info(s_tag, "PID gains updated successfully");
-    }
-    return;
+/**
+ * @brief Attempt to decode and handle a SetPIDGainsRequest from a command frame
+ *
+ * @details
+ * Tries to decode the frame payload as a star_v1_SetPIDGainsRequest protobuf message.
+ * If decoding succeeds and the required pid_config sub-message is present, converts all
+ * gain fields (double -> float) into a pid_gains_t structure and writes it to shared_data.
+ * The Motor Control Task applies the gains on the next control cycle.
+ *
+ * Algorithm:
+ * 1. Attempt nanopb decode via rx_nanopb_decode_pid_gains_request()
+ * 2. Verify has_pid_config flag is set (sub-message present)
+ * 3. Build pid_gains_t: convert kp, ki, kd, limits, set update_pending=true
+ * 4. Write to shared_data via shared_data_set_pid_gains()
+ * 5. Log result and return true
+ *
+ * @param[in] frame COMMAND frame to decode
+ *                  - Must NOT be nullptr (caller guarantees)
+ *                  - frame->payload and frame->header.length are used for decode
+ *
+ * @return bool Whether this handler recognised and consumed the frame
+ * @retval true  Frame decoded as SetPIDGainsRequest; PID gains written to shared_data
+ * @retval false Decode failed or has_pid_config not set (try next handler)
+ *
+ * @pre frame must not be nullptr
+ * @pre shared_data_init() must have been called
+ * @post On true: shared_data PID gains updated with new values
+ * @post On true: k_event_pid_gains_updated event set (Motor Control Task will apply)
+ *
+ * @note Not thread-safe; executes in Communication Task context (Priority 5)
+ * @note double -> float gain conversion: precision loss negligible for PID tuning
+ *
+ * @since Version 1.0.0
+ * @see rx_nanopb_decode_pid_gains_request() nanopb decode function
+ * @see shared_data_set_pid_gains() Thread-safe PID gains write
+ * @see internal_handle_command_frame() Caller (cascade dispatcher)
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 4: [PASS] Function body is under 30 lines
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ * - Rule 7: [PASS] All return values checked
+ */
+static bool internal_handle_pid_gains_command(const rx_frame_t* frame)
+{
+  star_v1_SetPIDGainsRequest pid_req = {0};
+  const rx_err_t err = rx_nanopb_decode_pid_gains_request(frame->payload,
+                                                          frame->header.length,
+                                                          &pid_req);
+  if (err != k_rx_ok || !pid_req.has_pid_config) {
+    return false;
   }
 
-  /* Try to decode as SetRetransmitConfigRequest */
-  star_v1_SetRetransmitConfigRequest retransmit_req;
-  err = rx_nanopb_decode_retransmit_config_request(frame->payload,
-                                                   frame->header.length,
-                                                   &retransmit_req);
-  if (err == k_rx_ok && retransmit_req.has_retransmit_config) {
-    rx_spi_comm_retransmit_config_t cfg;
-    (void)memset(&cfg, 0, sizeof(cfg));
-    cfg.max_retries    = (uint8_t)retransmit_req.retransmit_config.max_retries;
-    cfg.ack_timeout_ms = (uint16_t)retransmit_req.retransmit_config.ack_timeout_ms;
-    cfg.max_backoff_ms = (uint16_t)retransmit_req.retransmit_config.max_backoff_ms;
+  rx_log_info(s_tag, "PID gains request received");
 
-    err = rx_comm_manager_set_auto_retransmit(&g_comm_manager,
-                                              retransmit_req.retransmit_config.enabled,
-                                              &cfg);
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "Failed to set retransmit config", (uint32_t)err);
-    } else {
-      rx_log_info(s_tag, "Retransmit config updated");
-    }
-    return;
+  /* Convert protobuf PID config to firmware structure */
+  pid_gains_t gains = {0};
+  gains.kp             = (float)pid_req.pid_config.kp;
+  gains.ki             = (float)pid_req.pid_config.ki;
+  gains.kd             = (float)pid_req.pid_config.kd;
+  gains.output_min     = (float)pid_req.pid_config.output_min_percent;
+  gains.output_max     = (float)pid_req.pid_config.output_max_percent;
+  gains.integral_min   = (float)pid_req.pid_config.integral_min;
+  gains.integral_max   = (float)pid_req.pid_config.integral_max;
+  gains.update_pending = true;
+
+  const rx_err_t set_err = shared_data_set_pid_gains(&gains);
+  if (set_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Failed to set PID gains", (uint32_t)set_err);
+  } else {
+    rx_log_info(s_tag, "PID gains updated successfully");
+  }
+  return true;
+}
+
+/**
+ * @brief Attempt to decode and handle a SetRetransmitConfigRequest from a command frame
+ *
+ * @details
+ * Tries to decode the frame payload as a star_v1_SetRetransmitConfigRequest protobuf
+ * message. If decoding succeeds and the required retransmit_config sub-message is present,
+ * validates all fields against safe bounds before narrowing to their firmware types, then
+ * calls rx_comm_manager_set_auto_retransmit() to update the HARQ retransmission parameters.
+ *
+ * Algorithm:
+ * 1. Attempt nanopb decode via rx_nanopb_decode_retransmit_config_request()
+ * 2. Verify has_retransmit_config flag is set (sub-message present)
+ * 3. Extract fields into const uint32_t locals for bounds checking
+ * 4. Validate each field against typed enum limits; log error and return false on violation
+ * 5. Build rx_spi_comm_retransmit_config_t with safe narrowing casts
+ * 6. Call rx_comm_manager_set_auto_retransmit()
+ * 7. Log result and return true
+ *
+ * **Bounds validated:**
+ * - max_retries: [1, 10]
+ * - ack_timeout_ms: [10, 1000]
+ * - max_backoff_ms: [50, 5000]
+ *
+ * @param[in] frame COMMAND frame to decode
+ *                  - Must NOT be nullptr (caller guarantees)
+ *                  - frame->payload and frame->header.length are used for decode
+ *
+ * @return bool Whether this handler recognised and consumed the frame
+ * @retval true  Frame decoded as SetRetransmitConfigRequest; retransmit config updated
+ * @retval false Decode failed, has_retransmit_config not set, or fields out of range
+ *
+ * @pre frame must not be nullptr
+ * @pre g_comm_manager must be initialised (comm manager init called)
+ * @post On true: rx_comm_manager HARQ retransmit parameters updated
+ * @post On true: retransmit config is within safe validated bounds
+ *
+ * @note Not thread-safe; executes in Communication Task context (Priority 5)
+ * @warning Out-of-range protobuf values are rejected (logged error, returns false)
+ *
+ * @since Version 1.0.0
+ * @see rx_nanopb_decode_retransmit_config_request() nanopb decode function
+ * @see rx_comm_manager_set_auto_retransmit() Update HARQ retransmission config
+ * @see retransmit_retries_limits_t Bounds for max_retries
+ * @see retransmit_timing_limits_t Bounds for timing fields
+ * @see internal_handle_command_frame() Caller (cascade dispatcher)
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 4: [PASS] Function body is under 40 lines
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ * - Rule 7: [PASS] All return values checked
+ */
+static bool internal_handle_retransmit_config_command(const rx_frame_t* frame)
+{
+  star_v1_SetRetransmitConfigRequest retransmit_req = {0};
+  const rx_err_t err = rx_nanopb_decode_retransmit_config_request(frame->payload,
+                                                                   frame->header.length,
+                                                                   &retransmit_req);
+  if (err != k_rx_ok || !retransmit_req.has_retransmit_config) {
+    return false;
   }
 
-  /* Unknown message type */
-  rx_log_warn(s_tag, "Could not decode command payload");
+  /* Validate retransmit config bounds before narrowing casts */
+  const uint32_t max_retries = retransmit_req.retransmit_config.max_retries;
+  const uint32_t ack_timeout = retransmit_req.retransmit_config.ack_timeout_ms;
+  const uint32_t max_backoff = retransmit_req.retransmit_config.max_backoff_ms;
+
+  if ((max_retries < k_retransmit_max_retries_min) || (max_retries > k_retransmit_max_retries_max) ||
+      (ack_timeout < k_retransmit_ack_timeout_min_ms) || (ack_timeout > k_retransmit_ack_timeout_max_ms) ||
+      (max_backoff < k_retransmit_backoff_min_ms) || (max_backoff > k_retransmit_backoff_max_ms)) {
+    rx_log_error(s_tag, "retransmit config out of range");
+    return false;
+  }
+
+  rx_spi_comm_retransmit_config_t cfg = {0};
+  cfg.max_retries    = (uint8_t)max_retries;
+  cfg.ack_timeout_ms = (uint16_t)ack_timeout;
+  cfg.max_backoff_ms = (uint16_t)max_backoff;
+
+  const rx_err_t set_err = rx_comm_manager_set_auto_retransmit(&g_comm_manager,
+                                                                retransmit_req.retransmit_config.enabled,
+                                                                &cfg);
+  if (set_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "Failed to set retransmit config", (uint32_t)set_err);
+  } else {
+    rx_log_info(s_tag, "Retransmit config updated");
+  }
+  return true;
 }

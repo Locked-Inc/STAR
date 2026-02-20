@@ -13,36 +13,36 @@
  * ## Module Architecture
  *
  * ```
- * ┌─────────────────────────────────────────────────────────────────────────┐
- * │                         RIIC Driver Architecture                        │
- * ├─────────────────────────────────────────────────────────────────────────┤
- * │                                                                         │
- * │   Application Layer                                                     │
- * │   ┌─────────────────────────────────────────────────────────────────┐  │
- * │   │  riic_init()  riic_write()  riic_read()  riic_write_read()     │  │
- * │   └──────────────────────────┬──────────────────────────────────────┘  │
- * │                              │                                         │
- * │   Internal Layer            │                                         │
- * │   ┌──────────────────────────┴──────────────────────────────────────┐  │
- * │   │  internal_get_riic_base()     - Channel to address mapping      │  │
- * │   │  internal_calculate_bit_rate() - Frequency calculation          │  │
- * │   │  internal_wait_bus_ready()     - Bus arbitration                │  │
- * │   │  internal_send_start()         - START condition generation     │  │
- * │   │  internal_send_stop()          - STOP condition generation      │  │
- * │   │  internal_write_byte()         - Single byte transmission       │  │
- * │   │  internal_read_byte()          - Single byte reception          │  │
- * │   │  internal_riic_write_phase()   - Combined write sequence        │  │
- * │   │  internal_riic_read_phase()    - Combined read sequence         │  │
- * │   └──────────────────────────┬──────────────────────────────────────┘  │
- * │                              │                                         │
- * │   Hardware Layer            │                                         │
- * │   ┌──────────────────────────┴──────────────────────────────────────┐  │
- * │   │  RIIC0: 0x00088300  (SCL0/P16, SDA0/P17)                        │  │
- * │   │  RIIC1: 0x00088320  (SCL1/P21, SDA1/P20)                        │  │
- * │   │  RIIC2: 0x00088340  (SCL2/P66, SDA2/P67)                        │  │
- * │   └─────────────────────────────────────────────────────────────────┘  │
- * │                                                                         │
- * └─────────────────────────────────────────────────────────────────────────┘
+ * +-------------------------------------------------------------------------+
+ * |                         RIIC Driver Architecture                        |
+ * +-------------------------------------------------------------------------+
+ * |                                                                         |
+ * |   Application Layer                                                     |
+ * |   +-----------------------------------------------------------------+  |
+ * |   |  riic_init()  riic_write()  riic_read()  riic_write_read()     |  |
+ * |   +--------------------------+--------------------------------------+  |
+ * |                              |                                         |
+ * |   Internal Layer            |                                         |
+ * |   +--------------------------+--------------------------------------+  |
+ * |   |  internal_get_riic_base()     - Channel to address mapping      |  |
+ * |   |  internal_calculate_bit_rate() - Frequency calculation          |  |
+ * |   |  internal_wait_bus_ready()     - Bus arbitration                |  |
+ * |   |  internal_send_start()         - START condition generation     |  |
+ * |   |  internal_send_stop()          - STOP condition generation      |  |
+ * |   |  internal_write_byte()         - Single byte transmission       |  |
+ * |   |  internal_read_byte()          - Single byte reception          |  |
+ * |   |  internal_riic_write_phase()   - Combined write sequence        |  |
+ * |   |  internal_riic_read_phase()    - Combined read sequence         |  |
+ * |   +--------------------------+--------------------------------------+  |
+ * |                              |                                         |
+ * |   Hardware Layer            |                                         |
+ * |   +--------------------------+--------------------------------------+  |
+ * |   |  RIIC0: 0x00088300  (SCL0/P16, SDA0/P17)                        |  |
+ * |   |  RIIC1: 0x00088320  (SCL1/P21, SDA1/P20)                        |  |
+ * |   |  RIIC2: 0x00088340  (SCL2/P66, SDA2/P67)                        |  |
+ * |   +-----------------------------------------------------------------+  |
+ * |                                                                         |
+ * +-------------------------------------------------------------------------+
  * ```
  *
  * ## I2C Protocol Implementation
@@ -52,46 +52,46 @@
  * ### Write Transaction
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │──── START ────────────────────────────────▶│
- *     │──── Address + W (0) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── Data Byte 0 ─────────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── Data Byte N ─────────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── STOP ────────────────────────────────▶│
+ *     |                                            |
+ *     |---- START -------------------------------->|
+ *     |---- Address + W (0) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- Data Byte 0 ------------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- Data Byte N ------------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- STOP -------------------------------->|
  * ```
  *
  * ### Read Transaction
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │──── START ────────────────────────────────▶│
- *     │──── Address + R (1) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │◀─── Data Byte 0 ─────────────────────────◀─│
- *     │──── ACK ─────────────────────────────────▶│
- *     │◀─── Data Byte N ─────────────────────────◀─│
- *     │──── NACK (last byte) ───────────────────▶│
- *     │──── STOP ────────────────────────────────▶│
+ *     |                                            |
+ *     |---- START -------------------------------->|
+ *     |---- Address + R (1) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |<--- Data Byte 0 -------------------------<-|
+ *     |---- ACK --------------------------------->|
+ *     |<--- Data Byte N -------------------------<-|
+ *     |---- NACK (last byte) ------------------->|
+ *     |---- STOP -------------------------------->|
  * ```
  *
  * ### Write-Read Transaction (Register Read)
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │──── START ────────────────────────────────▶│
- *     │──── Address + W (0) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── Register Address ────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── REPEATED START ──────────────────────▶│
- *     │──── Address + R (1) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │◀─── Data Byte 0 ─────────────────────────◀─│
- *     │──── NACK ────────────────────────────────▶│
- *     │──── STOP ────────────────────────────────▶│
+ *     |                                            |
+ *     |---- START -------------------------------->|
+ *     |---- Address + W (0) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- Register Address -------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- REPEATED START ---------------------->|
+ *     |---- Address + R (1) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |<--- Data Byte 0 -------------------------<-|
+ *     |---- NACK -------------------------------->|
+ *     |---- STOP -------------------------------->|
  * ```
  *
  * ## Bit Rate Calculation
@@ -231,9 +231,9 @@
  *
  * @par Timeout Selection
  * The 10ms timeout provides sufficient margin for:
- * - Standard mode: 100 kHz = 10µs/bit, 90µs/byte -> 10ms = ~111 bytes
- * - Fast mode: 400 kHz = 2.5µs/bit, 22.5µs/byte -> 10ms = ~444 bytes
- * - Fast Plus: 1 MHz = 1µs/bit, 9µs/byte -> 10ms = ~1111 bytes
+ * - Standard mode: 100 kHz = 10us/bit, 90us/byte -> 10ms = ~111 bytes
+ * - Fast mode: 400 kHz = 2.5us/bit, 22.5us/byte -> 10ms = ~444 bytes
+ * - Fast Plus: 1 MHz = 1us/bit, 9us/byte -> 10ms = ~1111 bytes
  *
  * @invariant k_riic_max_channels == 3 (hardware limitation)
  * @invariant k_riic_max_transfer_length == 256 (single-byte length limit)
@@ -262,6 +262,16 @@ typedef enum : uint32_t {
  * | RIIC0   | P16     | P17     | 0x00088300   |
  * | RIIC1   | P21     | P20     | 0x00088320   |
  * | RIIC2   | P66     | P67     | 0x00088340   |
+ *
+ * @invariant Values are contiguous starting from 0 and match hardware channel indices
+ *
+ * @code
+ * // Select channel 0 base address
+ * volatile rx_riic_regs_t* regs = internal_get_riic_base(k_riic_channel_0);
+ * @endcode
+ *
+ * @see internal_get_riic_base() Maps channel number to hardware register pointer
+ * @see riic_constants_t For k_riic_max_channels bound used with these values
  */
 typedef enum : uint8_t {
   k_riic_channel_0 = 0, /**< RIIC channel 0 (P16/SCL0, P17/SDA0) */
@@ -304,11 +314,22 @@ typedef enum : uint8_t {
  * @par Timing Characteristics (at PCLKB = 60 MHz)
  * | Mode       | Frequency | Bit Time | Byte Time | Max Cable |
  * |------------|-----------|----------|-----------|-----------|
- * | Standard   | 100 kHz   | 10 µs    | 90 µs     | ~1 meter  |
- * | Fast       | 400 kHz   | 2.5 µs   | 22.5 µs   | ~0.5 m    |
- * | Fast Plus  | 1 MHz     | 1 µs     | 9 µs      | ~0.2 m    |
+ * | Standard   | 100 kHz   | 10 us    | 90 us     | ~1 meter  |
+ * | Fast       | 400 kHz   | 2.5 us   | 22.5 us   | ~0.5 m    |
+ * | Fast Plus  | 1 MHz     | 1 us     | 9 us      | ~0.2 m    |
  *
- * @note Fast Plus mode requires pull-up resistors < 1kΩ for proper rise time.
+ * @invariant Only these three discrete values are accepted by riic_init()
+ *
+ * @code
+ * // Initialize channel 0 at standard (100 kHz) mode
+ * riic_channel_t ch = {.value = 0};
+ * rx_err_t err = riic_init(ch, k_riic_freq_100khz);
+ * @endcode
+ *
+ * @see riic_init() Validates frequency_hz against these enum values
+ * @see internal_calculate_bit_rate() Uses frequency to compute ICBRL/ICBRH
+ *
+ * @note Fast Plus mode requires pull-up resistors < 1kOhm for proper rise time.
  */
 typedef enum : uint32_t {
   k_riic_freq_100khz = 100000,  /**< Standard mode: 100 kHz (Sm) */
@@ -365,8 +386,35 @@ typedef enum : uint8_t {
  * @brief ICMR2 (Mode Register 2) configuration values
  *
  * @details
- * ICMR2 configures timeout detection and SDA output delay. Default value
- * disables timeout (handled in software) and uses no SDA delay.
+ * ICMR2 configures hardware timeout detection and SDA output hold-time delay.
+ * The STAR project disables hardware timeout (TMOE = 0) because bus-busy
+ * detection is handled in software by internal_wait_bus_ready() using the
+ * k_riic_timeout_us countdown. The SDA output delay is also left at zero
+ * (no additional hold time) since the pull-up resistors on the target PCB
+ * provide adequate signal integrity at all supported speeds.
+ *
+ * ## ICMR2 Register Bit Layout
+ *
+ * | Bit | Name  | Function                          | Value Used |
+ * |-----|-------|-----------------------------------|------------|
+ * |  7  | TMOH  | Timeout detection (high period)   | 0 (off)    |
+ * |  6  | TMOL  | Timeout detection (low period)    | 0 (off)    |
+ * |  5  | TMOE  | Timeout enable                    | 0 (off)    |
+ * | 4:3 | SDDL  | SDA output hold-time delay        | 0 (none)   |
+ * |  2  | DLCS  | SDA delay clock source            | 0          |
+ * | 1:0 | -     | Reserved                          | 0          |
+ *
+ * @invariant k_riic_icmr2_default == 0; writing 0x00 leaves all ICMR2 control
+ *            bits in their hardware-reset state (timeouts off, no SDA delay)
+ *
+ * @code
+ * // Apply default ICMR2 configuration during RIIC channel initialization
+ * volatile rx_riic_regs_t* riic = internal_get_riic_base(k_riic_channel_0);
+ * riic->icmr2 = k_riic_icmr2_default;
+ * @endcode
+ *
+ * @see riic_init() Applies this value during channel initialization
+ * @see k_riic_timeout_us Software timeout used instead of hardware TMOE
  */
 typedef enum : uint8_t {
   k_riic_icmr2_default = 0, /**< No hardware timeout, no SDA delay */
@@ -377,12 +425,45 @@ typedef enum : uint8_t {
  * @brief ICMR3 (Mode Register 3) ACK/NACK control bit definitions
  *
  * @details
- * ICMR3 controls ACK/NACK transmission during receive operations.
- * - Set ACKBT=0 to send ACK (acknowledge, continue reading)
- * - Set ACKBT=1 to send NACK (not acknowledge, signal end of read)
+ * ICMR3 controls ACK/NACK transmission during receive operations. The key
+ * field is ACKBT (Acknowledge Bit), which determines whether the controller
+ * sends an ACK or NACK after each received byte.
  *
- * @note NACK must be sent before reading the last byte to signal
- *       the peripheral that the transfer is complete.
+ * ## ACK/NACK Signalling Rules (I2C Specification)
+ *
+ * - Set ACKBT=0 (clear bit) to send ACK: instructs the peripheral to continue
+ *   transmitting; used for all bytes except the last in a read transfer.
+ * - Set ACKBT=1 (set bit) to send NACK: instructs the peripheral to stop
+ *   transmitting; must be applied before clocking in the final byte so that
+ *   the NACK is sent automatically at the correct clock edge.
+ *
+ * ## ICMR3 Register Bit Layout (relevant bits)
+ *
+ * | Bit | Name  | Function                  |
+ * |-----|-------|---------------------------|
+ * |  3  | ACKBT | ACK/NACK bit to transmit  |
+ * |  2  | ACKWP | ACKBT write protect       |
+ *
+ * @invariant k_riic_icmr3_ackbt_pos == 3 matches the RX72N hardware bit
+ *            position for ACKBT in ICMR3; changing this breaks ACK/NACK control
+ * @invariant k_riic_icmr3_ackbt_mask == (1U << 3) == 0x08; derived from pos
+ *
+ * @note NACK must be sent before reading the last byte to signal to the
+ *       peripheral that the transfer is complete per I2C specification.
+ *
+ * @code
+ * // Prepare to NACK the last byte in a read transfer
+ * volatile rx_riic_regs_t* riic = internal_get_riic_base(k_riic_channel_0);
+ * riic->icmr3 |= k_riic_icmr3_ackbt_mask;   // Set ACKBT=1 -> send NACK
+ *
+ * // Re-enable ACK for subsequent transfers
+ * riic->icmr3 &= (uint8_t)~k_riic_icmr3_ackbt_mask;  // Set ACKBT=0 -> send ACK
+ * @endcode
+ *
+ * @see internal_read_byte() Uses these constants to control ACK/NACK output
+ * @see riic_read() Orchestrates NACK signalling for multi-byte reads
+ *
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_riic_icmr3_ackbt_pos  = 3,                              /**< ACKBT bit position (bit 3) */
@@ -401,13 +482,24 @@ typedef enum : uint8_t {
  * @par Address Byte Format
  * ```
  *   Bit:  7  6  5  4  3  2  1  0
- *         ├──────────────┤  └─ R/W (0=Write, 1=Read)
- *         └─ 7-bit Address
+ *         +--------------+  +- R/W (0=Write, 1=Read)
+ *         +- 7-bit Address
  * ```
  *
  * @par Address Calculation
  * - Write to 0x50: (0x50 << 1) | 0 = 0xA0
  * - Read from 0x50: (0x50 << 1) | 1 = 0xA1
+ *
+ * @invariant k_riic_addr_max_7bit == 127 (I2C spec: addresses 0x00-0x7F)
+ *
+ * @code
+ * // Format a write address byte for device at 0x50
+ * riic_device_addr_t dev = {.value = 0x50};
+ * uint8_t addr_byte = (uint8_t)((dev.value << k_riic_addr_shift) | k_riic_addr_write_bit);
+ * @endcode
+ *
+ * @see internal_write_byte() Uses these constants to format address bytes
+ * @see riic_write() Passes formatted address bytes during write transactions
  */
 typedef enum : uint8_t {
   k_riic_addr_shift     = 1,   /**< Left shift amount for 7-bit address */
@@ -471,33 +563,72 @@ static bool s_riic_channel_initialized[k_riic_max_channels] = {false, false, fal
  *
  * @details
  * Maps an RIIC channel number (0-2) to its corresponding hardware register
- * base address. This function provides the abstraction between channel numbers
- * and physical memory addresses.
+ * base address using a compile-time-dispatched switch statement. This function
+ * is the single point of truth for the channel-to-address mapping and provides
+ * a clean abstraction between the logical channel index used throughout the
+ * driver and the physical memory-mapped peripheral addresses defined by the
+ * RX72N hardware.
+ *
+ * ## Channel-to-Address Mapping
+ *
+ * The three RIIC channels are located at fixed, evenly spaced addresses in the
+ * RX72N peripheral address space (0x00088300, 0x00088320, 0x00088340). Each
+ * block is 32 bytes in size and contains all control, status, bit-rate, and
+ * data registers for one channel.
  *
  * ## Memory Map
  *
- * | Channel | Function | Base Address | Register Block Size |
+ * | Channel | Accessor | Base Address | Register Block Size |
  * |---------|----------|--------------|---------------------|
- * | 0       | riic0()  | 0x00088300   | 20 bytes            |
- * | 1       | riic1()  | 0x00088320   | 20 bytes            |
- * | 2       | riic2()  | 0x00088340   | 20 bytes            |
+ * | 0       | riic0()  | 0x00088300   | 32 bytes            |
+ * | 1       | riic1()  | 0x00088320   | 32 bytes            |
+ * | 2       | riic2()  | 0x00088340   | 32 bytes            |
  *
- * @param[in] channel RIIC channel number (valid range: 0-2)
+ * ## Why Return NULL for Invalid Channel
+ *
+ * Returning nullptr for an out-of-range channel allows every caller to perform
+ * a single null-pointer check with RX_CHECK_NULL_PTR rather than duplicating
+ * range validation logic. This pattern is consistent with rx_port_get_base()
+ * in the GPIO driver.
+ *
+ * @param[in] channel RIIC channel number (valid range: 0 to k_riic_max_channels-1)
  *
  * @return Pointer to RIIC register structure
- * @retval Non-NULL Valid volatile pointer for channels 0, 1, or 2
- * @retval NULL Invalid channel number (>= 3)
+ * @retval Non-NULL Valid volatile register pointer aligned to the channel's
+ *                  32-byte peripheral block for channels 0, 1, or 2
+ * @retval NULL     Channel number is out of range (>= k_riic_max_channels)
  *
- * @pre channel should be validated before calling in production code
- * @post Return value is either a valid register pointer or nullptr
+ * @pre channel must be less than k_riic_max_channels (3); values >= 3 yield nullptr
+ * @pre caller must have verified that the corresponding RIIC module stop bit in
+ *      MSTPCRB has been cleared (module enabled) before using the returned pointer
+ * @post returned pointer is non-NULL if and only if channel is 0, 1, or 2
+ * @post returned pointer, when non-NULL, is aligned to the RIIC peripheral register
+ *       block boundary as required by the RX72N hardware specification
  *
- * @note This function does NOT validate channel - caller must ensure validity.
- * @note Return value is volatile to prevent compiler optimization of register access.
+ * @note This function does NOT validate the channel - the caller is responsible
+ *       for ensuring the value is in range before calling
+ * @note The return type is volatile to prevent the compiler from optimizing away
+ *       hardware register reads or writes through the returned pointer
  *
- * @par Performance
- * O(1) - simple switch statement with direct return
+ * @par Performance:
+ * O(1) - simple switch statement with a direct return per case
  *
- * @see riic0(), riic1(), riic2() Low-level accessor functions
+ * @par Example:
+ * @code
+ * // Look up the register base for RIIC channel 1 and send a START condition
+ * volatile rx_riic_regs_t* riic = internal_get_riic_base(k_riic_channel_1);
+ * if (riic == nullptr) {
+ *     return k_rx_err_invalid_arg;
+ * }
+ * riic->iccr2 |= k_riic_iccr2_st;  // Issue START condition
+ * @endcode
+ *
+ * @see riic0() Inline accessor for RIIC channel 0 base address
+ * @see riic1() Inline accessor for RIIC channel 1 base address
+ * @see riic2() Inline accessor for RIIC channel 2 base address
+ * @see k_riic_max_channels Upper bound on valid channel numbers
+ *
+ * @since Version 1.0.0
  */
 static volatile rx_riic_regs_t* internal_get_riic_base(const uint8_t channel)
 {
@@ -541,9 +672,9 @@ static volatile rx_riic_regs_t* internal_get_riic_base(const uint8_t channel)
  *
  * | Target    | Calculation         | Divisor | Actual Rate |
  * |-----------|---------------------|---------|-------------|
- * | 100 kHz   | 60M / (100k × 3)    | 200     | 100.0 kHz   |
- * | 400 kHz   | 60M / (400k × 3)    | 50      | 400.0 kHz   |
- * | 1 MHz     | 60M / (1M × 3)      | 20      | 1.00 MHz    |
+ * | 100 kHz   | 60M / (100k x 3)    | 200     | 100.0 kHz   |
+ * | 400 kHz   | 60M / (400k x 3)    | 50      | 400.0 kHz   |
+ * | 1 MHz     | 60M / (1M x 3)      | 20      | 1.00 MHz    |
  *
  * @param[in] frequency_hz Desired I2C clock frequency in Hz
  *                         (valid: 100000, 400000, or 1000000)
@@ -618,8 +749,8 @@ internal_calculate_bit_rate(const uint32_t frequency_hz, uint8_t* icbrl, uint8_t
  * ## Timeout Calculation
  *
  * At 100 kHz (slowest mode), maximum byte transfer time:
- * - 9 bits per byte (8 data + 1 ACK) × 10 µs = 90 µs
- * - For 256 bytes (max transfer): 256 × 90 µs = 23 ms
+ * - 9 bits per byte (8 data + 1 ACK) x 10 us = 90 us
+ * - For 256 bytes (max transfer): 256 x 90 us = 23 ms
  *
  * The 10 ms timeout (k_riic_timeout_us) provides margin for typical
  * operations while catching true bus-stuck conditions.
@@ -674,13 +805,13 @@ static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
  * ## START Condition Timing
  *
  * ```
- *     SDA  ─────┐
- *               └──────────
- *     SCL  ───────────┐
- *                     └────
- *              │      │
- *              │      └─ SCL goes low (start of first bit)
- *              └─ SDA goes low while SCL high (START)
+ *     SDA  -----+
+ *               +----------
+ *     SCL  -----------+
+ *                     +----
+ *              |      |
+ *              |      +- SCL goes low (start of first bit)
+ *              +- SDA goes low while SCL high (START)
  * ```
  *
  * ## Hardware Sequence
@@ -713,15 +844,13 @@ static rx_err_t internal_wait_bus_ready(const volatile rx_riic_regs_t* riic)
  */
 static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
 {
-  uint32_t timeout;
-
   RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is nullptr");
 
   /* Issue start condition */
   riic->iccr2 |= k_riic_iccr2_st;
 
   /* Wait for start condition to be issued */
-  timeout = k_riic_timeout_us;
+  uint32_t timeout = k_riic_timeout_us;
   while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
@@ -748,12 +877,12 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
  * ## STOP Condition Timing
  *
  * ```
- *     SDA  ──────────┌─────
- *                    │
- *     SCL  ────┌─────┴─────
- *              │     │
- *              │     └─ SDA goes high while SCL high (STOP)
- *              └─ SCL goes high (end of last bit/ACK)
+ *     SDA  ----------+-----
+ *                    |
+ *     SCL  ----+-----+-----
+ *              |     |
+ *              |     +- SDA goes high while SCL high (STOP)
+ *              +- SCL goes high (end of last bit/ACK)
  * ```
  *
  * ## Hardware Sequence
@@ -801,15 +930,13 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
  */
 static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
 {
-  uint32_t timeout;
-
   RX_CHECK_NULL_PTR(riic, s_tag, "RIIC peripheral base is nullptr");
 
   /* Issue stop condition */
   riic->iccr2 |= k_riic_iccr2_sp;
 
   /* Wait for stop condition to be issued */
-  timeout = k_riic_timeout_us;
+  uint32_t timeout = k_riic_timeout_us;
   while (!(riic->icsr2 & k_riic_icsr2_stop) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
@@ -844,12 +971,12 @@ static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
  * ## I2C Byte Timing
  *
  * ```
- *     SCL  ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐
- *          ││ ││ ││ ││ ││ ││ ││ ││ ││
- *          └┘ └┘ └┘ └┘ └┘ └┘ └┘ └┘ └┘
+ *     SCL  ++ ++ ++ ++ ++ ++ ++ ++ ++
+ *          || || || || || || || || ||
+ *          ++ ++ ++ ++ ++ ++ ++ ++ ++
  *          D7 D6 D5 D4 D3 D2 D1 D0 ACK
- *     SDA  ───────────────────────┐
- *          Data bits (8)         └─ ACK (low)
+ *     SDA  -----------------------+
+ *          Data bits (8)         +- ACK (low)
  * ```
  *
  * ## NACK Handling
@@ -907,6 +1034,11 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
     timeout--;
   }
 
+  if (timeout == k_riic_timeout_zero) {
+    rx_log_error(s_tag, "ACK/NACK timeout");
+    return k_rx_err_timeout;
+  }
+
   /* Check for NACK */
   if (riic->icsr2 & k_riic_icsr2_nackf) {
     riic->icsr2 &= (uint8_t) ~(uint8_t)k_riic_icsr2_nackf;
@@ -943,12 +1075,12 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, const uint8_t
  * ## I2C Read Byte Timing
  *
  * ```
- *     SCL  ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐ ┌┐
- *          ││ ││ ││ ││ ││ ││ ││ ││ ││
- *          └┘ └┘ └┘ └┘ └┘ └┘ └┘ └┘ └┘
+ *     SCL  ++ ++ ++ ++ ++ ++ ++ ++ ++
+ *          || || || || || || || || ||
+ *          ++ ++ ++ ++ ++ ++ ++ ++ ++
  *          D7 D6 D5 D4 D3 D2 D1 D0 ACK/NACK
- *     SDA  ───────────────────────┐
- *          Peripheral drives      └─ Controller drives ACK/NACK
+ *     SDA  -----------------------+
+ *          Peripheral drives      +- Controller drives ACK/NACK
  * ```
  *
  * @param[in,out] riic Pointer to RIIC register structure (must not be NULL)
@@ -1028,15 +1160,15 @@ internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, const bool send
  *
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │──── START ────────────────────────────────▶│
- *     │──── Address + W (0) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── Register Address ────────────────────▶│  ← write_data[0]
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── [Additional bytes...] ───────────────▶│  ← write_data[1..N]
- *     │                                            │
- *     │    (No STOP - read phase follows)          │
+ *     |                                            |
+ *     |---- START -------------------------------->|
+ *     |---- Address + W (0) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- Register Address -------------------->|  <- write_data[0]
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- [Additional bytes...] --------------->|  <- write_data[1..N]
+ *     |                                            |
+ *     |    (No STOP - read phase follows)          |
  * ```
  *
  * ## Error Handling
@@ -1074,13 +1206,11 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t* riic,
                                           const uint8_t*           write_data,
                                           const uint16_t           write_length)
 {
-  rx_err_t err;
-
   /* Set controller transmit mode */
   riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
 
   /* Send start condition */
-  err = internal_send_start(riic);
+  rx_err_t err = internal_send_start(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Start condition failed");
 
   /* Send device address (write) */
@@ -1116,18 +1246,18 @@ static rx_err_t internal_riic_write_phase(volatile rx_riic_regs_t* riic,
  *
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │    (Write phase completed, no STOP)        │
- *     │                                            │
- *     │──── REPEATED START ──────────────────────▶│
- *     │──── Address + R (1) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │◀─── Data Byte 0 ─────────────────────────◀─│
- *     │──── ACK ─────────────────────────────────▶│
- *     │◀─── Data Byte N-1 ───────────────────────◀─│
- *     │──── NACK ────────────────────────────────▶│  ← Signals end
- *     │                                            │
- *     │    (Caller issues STOP)                    │
+ *     |                                            |
+ *     |    (Write phase completed, no STOP)        |
+ *     |                                            |
+ *     |---- REPEATED START ---------------------->|
+ *     |---- Address + R (1) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |<--- Data Byte 0 -------------------------<-|
+ *     |---- ACK --------------------------------->|
+ *     |<--- Data Byte N-1 -----------------------<-|
+ *     |---- NACK -------------------------------->|  <- Signals end
+ *     |                                            |
+ *     |    (Caller issues STOP)                    |
  * ```
  *
  * ## Repeated START vs STOP+START
@@ -1173,13 +1303,10 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
                                          uint8_t*                 read_data,
                                          const uint16_t           read_length)
 {
-  uint32_t timeout;
-  rx_err_t err;
-
   /* Send repeated start condition */
   riic->iccr2 |= k_riic_iccr2_rs;
 
-  timeout = k_riic_timeout_us;
+  uint32_t timeout = k_riic_timeout_us;
   while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > k_riic_timeout_zero) {
     timeout--;
   }
@@ -1197,7 +1324,8 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
   riic->iccr2 = k_riic_iccr2_mst;
 
   /* Send device address (read) */
-  err = internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
+  rx_err_t err =
+    internal_write_byte(riic, (device_addr.value << k_riic_addr_shift) | k_riic_addr_read_bit);
   if (err != k_rx_ok) {
     rx_err_t stop_err = internal_send_stop(riic);
     (void)stop_err; /* Preserve original error, stop is best-effort cleanup */
@@ -1296,15 +1424,12 @@ static rx_err_t internal_riic_read_phase(volatile rx_riic_regs_t* riic,
  * @see riic_read() Read data after initialization
  * @see riic_write_read() Combined write-read after initialization
  *
+ * @since Version 1.0.0
+ *
  * @callgraph
  */
 rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
 {
-  uint8_t                  icbrl;
-  uint8_t                  icbrh;
-  rx_err_t                 err;
-  volatile rx_riic_regs_t* riic;
-
   /* Validate channel */
   if (channel.value >= k_riic_max_channels) {
     rx_log_error(s_tag, "Invalid RIIC channel");
@@ -1319,7 +1444,7 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   }
 
   /* Get RIIC base */
-  riic = internal_get_riic_base(channel.value);
+  volatile rx_riic_regs_t* const riic = internal_get_riic_base(channel.value);
   if (riic == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -1342,7 +1467,9 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   riic->iccr1 = k_riic_timeout_zero;
 
   /* Calculate bit rate */
-  err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
+  uint8_t  icbrl = 0;
+  uint8_t  icbrh = 0;
+  const rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */
@@ -1377,15 +1504,15 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
  *
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │──── START ────────────────────────────────▶│
- *     │──── Address + W (0) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── data[0] ─────────────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── data[N-1] ───────────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── STOP ────────────────────────────────▶│
+ *     |                                            |
+ *     |---- START -------------------------------->|
+ *     |---- Address + W (0) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- data[0] ----------------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- data[N-1] --------------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- STOP -------------------------------->|
  * ```
  *
  * ## Common Use Cases
@@ -1532,17 +1659,17 @@ rx_err_t riic_write(const riic_channel_t    channel,
  *
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │──── START ────────────────────────────────▶│
- *     │──── Address + R (1) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │◀─── data[0] ─────────────────────────────◀─│
- *     │──── ACK ─────────────────────────────────▶│
- *     │◀─── data[N-2] ───────────────────────────◀─│
- *     │──── ACK ─────────────────────────────────▶│
- *     │◀─── data[N-1] ───────────────────────────◀─│
- *     │──── NACK ────────────────────────────────▶│  ← Last byte
- *     │──── STOP ────────────────────────────────▶│
+ *     |                                            |
+ *     |---- START -------------------------------->|
+ *     |---- Address + R (1) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |<--- data[0] -----------------------------<-|
+ *     |---- ACK --------------------------------->|
+ *     |<--- data[N-2] ---------------------------<-|
+ *     |---- ACK --------------------------------->|
+ *     |<--- data[N-1] ---------------------------<-|
+ *     |---- NACK -------------------------------->|  <- Last byte
+ *     |---- STOP -------------------------------->|
  * ```
  *
  * ## When to Use riic_read() vs riic_write_read()
@@ -1692,20 +1819,20 @@ rx_err_t riic_read(const riic_channel_t    channel,
  *
  * ```
  * Controller                                   Peripheral
- *     │                                            │
- *     │──── START ────────────────────────────────▶│
- *     │──── Address + W (0) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │──── Register Address ────────────────────▶│  ← write_data
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │                                            │
- *     │──── REPEATED START ──────────────────────▶│  ← No STOP!
- *     │                                            │
- *     │──── Address + R (1) ──────────────────────▶│
- *     │◀─── ACK ─────────────────────────────────◀─│
- *     │◀─── Register Data ───────────────────────◀─│  ← read_data
- *     │──── ACK/NACK ────────────────────────────▶│
- *     │──── STOP ────────────────────────────────▶│
+ *     |                                            |
+ *     |---- START -------------------------------->|
+ *     |---- Address + W (0) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |---- Register Address -------------------->|  <- write_data
+ *     |<--- ACK ---------------------------------<-|
+ *     |                                            |
+ *     |---- REPEATED START ---------------------->|  <- No STOP!
+ *     |                                            |
+ *     |---- Address + R (1) ---------------------->|
+ *     |<--- ACK ---------------------------------<-|
+ *     |<--- Register Data -----------------------<-|  <- read_data
+ *     |---- ACK/NACK ---------------------------->|
+ *     |---- STOP -------------------------------->|
  * ```
  *
  * ## Why Repeated START?

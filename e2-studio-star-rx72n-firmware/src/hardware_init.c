@@ -14,14 +14,14 @@
  * **Boot sequence context:**
  * ```
  * main() -> rx_clock_power_init() -> hardware_init() -> tx_kernel_enter()
- *           ↑ System clocks        ↑ This file      ↑ Start RTOS
+ *           ^ System clocks        ^ This file      ^ Start RTOS
  * ```
  *
  * ## Peripheral Initialization Order (7 Stages)
  *
  * **Critical ordering** - later stages depend on earlier stages:
  *
- * 1. **Precondition validation** (~0.5 µs)
+ * 1. **Precondition validation** (~0.5 us)
  *    - Verify system clocks initialized (SCKCR3 register check)
  *    - Ensure memory-mapped I/O accessible
  *
@@ -30,7 +30,7 @@
  *    - LED indicators (status, error, activity)
  *    - Sensor chip selects (SPI CS pins)
  *
- * 3. **Timers** (~10 µs) **IMPLEMENTED**
+ * 3. **Timers** (~10 us) **IMPLEMENTED**
  *    - CMT0 for ThreadX tick (1 kHz)
  *    - GPTW for PWM generation (motor control)
  *
@@ -44,7 +44,7 @@
  *    - I2C for IMU, temperature sensors
  *    - USB CDC for ROS2 communication
  *
- * 6. **BMS Alert** (~5 µs) **IMPLEMENTED**
+ * 6. **BMS Alert** (~5 us) **IMPLEMENTED**
  *    - IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection)
  *
  * 7. **ADC channels** (planned, not yet implemented)
@@ -95,17 +95,17 @@
  *
  * | Stage | Duration | Implementation | Notes |
  * |-------|----------|----------------|-------|
- * | **Precondition check** | ~0.5 µs | [COMPLETE] | SCKCR3 register read + assert |
- * | **GPIO init** | ~5 µs | [PENDING] Planned | Pin mode, pull-up/down, output levels |
- * | **Timer init** | ~10 µs | [COMPLETE] | CMT0 setup for ThreadX tick |
- * | **UART debug** | ~50 µs | [COMPLETE] | SCI9 baud rate, FIFO, interrupts |
- * | **SPI init** | ~20 µs | [COMPLETE] | RSPI2 peripheral mode, 8-bit, mode 0 |
- * | **I2C init** | ~15 µs | [PENDING] Planned | RIIC0 speed, addressing, interrupts |
- * | **BMS Alert init** | ~5 µs | [COMPLETE] | IRQ13 for BQ4050 ALERT pin |
- * | **ADC init** | ~100 µs | [PENDING] Planned | ADC0 calibration, channel config |
- * | **Postcondition check** | ~0.5 µs | [COMPLETE] | SCKCR3 stability verification |
- * | **Total (current)** | **~86 µs** | Timers + UART + SPI + BMS Alert | |
- * | **Total (planned)** | **~206 µs** | All peripherals | |
+ * | **Precondition check** | ~0.5 us | [COMPLETE] | SCKCR3 register read + assert |
+ * | **GPIO init** | ~5 us | [PENDING] Planned | Pin mode, pull-up/down, output levels |
+ * | **Timer init** | ~10 us | [COMPLETE] | CMT0 setup for ThreadX tick |
+ * | **UART debug** | ~50 us | [COMPLETE] | SCI9 baud rate, FIFO, interrupts |
+ * | **SPI init** | ~20 us | [COMPLETE] | RSPI2 peripheral mode, 8-bit, mode 0 |
+ * | **I2C init** | ~15 us | [PENDING] Planned | RIIC0 speed, addressing, interrupts |
+ * | **BMS Alert init** | ~5 us | [COMPLETE] | IRQ13 for BQ4050 ALERT pin |
+ * | **ADC init** | ~100 us | [PENDING] Planned | ADC0 calibration, channel config |
+ * | **Postcondition check** | ~0.5 us | [COMPLETE] | SCKCR3 stability verification |
+ * | **Total (current)** | **~86 us** | Timers + UART + SPI + BMS Alert | |
+ * | **Total (planned)** | **~206 us** | All peripherals | |
  *
  * ## Memory Usage
  *
@@ -258,8 +258,8 @@ typedef enum : uint16_t {
    * - PD1 (MOSIC): COPI - Controller Out, Peripheral In (data from RPi5)
    * - PD2 (MISOC): CIPO - Controller In, Peripheral Out (data to RPi5)
    */
-  k_pin_host_copi = k_rx_pd_1, /**< PD.1 - COPI/MOSIC (RPi5 → RX72N) */
-  k_pin_host_cipo = k_rx_pd_2, /**< PD.2 - CIPO/MISOC (RX72N → RPi5) */
+  k_pin_host_copi = k_rx_pd_1, /**< PD.1 - COPI/MOSIC (RPi5 -> RX72N) */
+  k_pin_host_cipo = k_rx_pd_2, /**< PD.2 - CIPO/MISOC (RX72N -> RPi5) */
   k_pin_host_sclk = k_rx_pd_3, /**< PD.3 - SCLK (RSPI2 clock from RPi5) */
   k_pin_host_cs0  = k_rx_pd_4, /**< PD.4 - CS0 (chip select from RPi5) */
 
@@ -275,7 +275,7 @@ typedef enum : uint16_t {
   k_pin_enc3_pha = k_rx_pc_0, /**< PC.0 - TCLKC (encoder 3 phase A) */
   k_pin_enc3_phb = k_rx_pb_3, /**< PB.3 - TCLKD (encoder 3 phase B) */
 
-  /* GPTW PWM outputs (4 motors × 2 pins = PH + EN, all on PORT E) */
+  /* GPTW PWM outputs (4 motors x 2 pins = PH + EN, all on PORT E) */
   k_pin_motor0_ph = k_rx_pe_5, /**< PE.5 - GTIOC0A (motor 0 phase, pin 106) */
   k_pin_motor0_en = k_rx_pe_2, /**< PE.2 - GTIOC0B (motor 0 enable, pin 109) */
   k_pin_motor1_ph = k_rx_pe_4, /**< PE.4 - GTIOC1A (motor 1 phase, pin 107) */
@@ -358,11 +358,10 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  */
 static rx_err_t internal_gpio_init_i2c(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_I2C";
 
   /* Host I2C (RIIC0): SCL0 + SDA0 */
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_scl0);
+  rx_err_t err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_scl0);
   RX_RETURN_ON_ERROR(err, s_tag, "SCL0 pin config failed");
 
   err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_sda0);
@@ -402,10 +401,9 @@ static rx_err_t internal_gpio_init_i2c(void)
  */
 static rx_err_t internal_gpio_init_host_spi(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SPI";
 
-  err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi);
+  rx_err_t err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_copi);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 COPI pin config failed");
 
   err = rx_mpc_set_rspi((rx_port_pin_t)k_pin_host_cipo);
@@ -444,10 +442,9 @@ static rx_err_t internal_gpio_init_host_spi(void)
  */
 static rx_err_t internal_gpio_init_mtu_encoders(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_MTU_ENC";
 
-  err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_pha);
+  rx_err_t err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "MTCLKA pin config failed");
 
   err = rx_mpc_set_mtu_encoder((rx_port_pin_t)k_pin_enc0_phb);
@@ -486,10 +483,9 @@ static rx_err_t internal_gpio_init_mtu_encoders(void)
  */
 static rx_err_t internal_gpio_init_tpu_encoders(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_TPU_ENC";
 
-  err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha);
+  rx_err_t err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_pha);
   RX_RETURN_ON_ERROR(err, s_tag, "TCLKA pin config failed");
 
   err = rx_mpc_set_tpu_encoder((rx_port_pin_t)k_pin_enc2_phb);
@@ -509,7 +505,7 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
  *
  * @details
  * Configures MPC pin multiplexing for GPTW0-GPTW3 PWM outputs on PORT E
- * (PE0-PE7). Sets PSEL=0x1E for all 8 pins (4 motors × PH+EN per motor).
+ * (PE0-PE7). Sets PSEL=0x1E for all 8 pins (4 motors x PH+EN per motor).
  * Enables complementary PWM mode for motor phase and enable control.
  *
  * @return rx_err_t Error code
@@ -528,7 +524,6 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
  */
 static rx_err_t internal_gpio_init_gptw_pwm(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_GPTW";
 
   const rx_port_pin_t gptw_pins[] = {(rx_port_pin_t)k_pin_motor0_ph,
@@ -541,7 +536,7 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
                                      (rx_port_pin_t)k_pin_motor3_en};
 
   for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
-    err = rx_mpc_set_gptw(gptw_pins[i]);
+    const rx_err_t err = rx_mpc_set_gptw(gptw_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "GPTW pin config failed");
   }
 
@@ -572,10 +567,9 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
  */
 static rx_err_t internal_gpio_init_adc(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_ADC";
 
-  err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an004);
+  rx_err_t err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an004);
   RX_RETURN_ON_ERROR(err, s_tag, "AN004 pin config failed");
 
   err = rx_mpc_set_adc((rx_port_pin_t)k_pin_adc_an005);
@@ -613,10 +607,9 @@ static rx_err_t internal_gpio_init_adc(void)
  */
 static rx_err_t internal_gpio_init_usb(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_USB";
 
-  err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
+  rx_err_t err = rx_mpc_set_usb_vbus((rx_port_pin_t)k_pin_usb_vbus);
   RX_RETURN_ON_ERROR(err, s_tag, "USB VBUS pin config failed");
 
   return k_rx_ok;
@@ -646,7 +639,6 @@ static rx_err_t internal_gpio_init_usb(void)
  */
 static rx_err_t internal_gpio_init_sonar_triggers(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SONAR_TRIG";
 
   const rx_port_pin_t sonar_trig_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_trig0,
@@ -655,7 +647,7 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
                                                         (rx_port_pin_t)k_pin_sonar_trig3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
-    err = rx_mpc_set_gpio(sonar_trig_pins[i]);
+    const rx_err_t err = rx_mpc_set_gpio(sonar_trig_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(sonar_trig_pins[i]);
@@ -694,7 +686,6 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
  */
 static rx_err_t internal_gpio_init_sonar_echoes(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SONAR_ECHO";
 
   const rx_port_pin_t sonar_echo_pins[k_sonar_count] = {(rx_port_pin_t)k_pin_sonar_echo0,
@@ -703,7 +694,7 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
                                                         (rx_port_pin_t)k_pin_sonar_echo3};
 
   for (uint8_t i = 0; i < k_sonar_count; i++) {
-    err = rx_mpc_set_gpio(sonar_echo_pins[i]);
+    const rx_err_t err = rx_mpc_set_gpio(sonar_echo_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(sonar_echo_pins[i]);
@@ -741,7 +732,6 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
  */
 static rx_err_t internal_gpio_init_drv_cs(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_DRV_CS";
 
   const rx_port_pin_t drv_cs_pins[k_drv_cs_count] = {(rx_port_pin_t)k_pin_drv_cs0,
@@ -750,7 +740,7 @@ static rx_err_t internal_gpio_init_drv_cs(void)
                                                      (rx_port_pin_t)k_pin_drv_cs3};
 
   for (uint8_t i = 0; i < k_drv_cs_count; i++) {
-    err = rx_mpc_set_gpio(drv_cs_pins[i]);
+    const rx_err_t err = rx_mpc_set_gpio(drv_cs_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "DRV CS MPC config failed");
 
     const uint8_t            port = rx_port_from_pin(drv_cs_pins[i]);
@@ -789,10 +779,9 @@ static rx_err_t internal_gpio_init_drv_cs(void)
  */
 static rx_err_t internal_gpio_init_sci7_spi(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO_SCI7";
 
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk);
+  rx_err_t err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk);
   RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SCK pin config failed");
 
   err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi);
@@ -813,9 +802,9 @@ static rx_err_t internal_gpio_init_sci7_spi(void)
  * specific PSEL values determined by hardware function.
  *
  * **Pin configuration:**
- * - **8× GPTW PWM pins** - Motor control via DRV8243 H-bridge drivers (PORT E)
- * - **2× I2C pins** - Sensor communication bus (SCL/SDA)
- * - **1× USB pin** - USB VBUS detection for CDC debug interface
+ * - **8x GPTW PWM pins** - Motor control via DRV8243 H-bridge drivers (PORT E)
+ * - **2x I2C pins** - Sensor communication bus (SCL/SDA)
+ * - **1x USB pin** - USB VBUS detection for CDC debug interface
  *
  * **Algorithm steps:**
  * 1. Validate all pin identifiers are within valid range
@@ -860,7 +849,7 @@ static rx_err_t internal_gpio_init_sci7_spi(void)
  * @note **Re-entrancy**: Not reentrant. Calling multiple times is safe (idempotent)
  *       but wastes CPU cycles re-writing same register values.
  *
- * @note **Performance**: Execution time ~15 µs @ 240 MHz (8 pins × 2 µs/pin).
+ * @note **Performance**: Execution time ~15 us @ 240 MHz (8 pins x 2 us/pin).
  *       One-time initialization cost, not runtime overhead.
  *
  * @warning **Pin conflicts**: If pins are already in use by another peripheral,
@@ -923,10 +912,9 @@ static rx_err_t internal_gpio_init_sci7_spi(void)
  */
 static rx_err_t gpio_init(void)
 {
-  rx_err_t           err;
   static const char* s_tag = "GPIO";
 
-  err = internal_gpio_init_i2c();
+  rx_err_t err = internal_gpio_init_i2c();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C pin init failed");
 
   err = internal_gpio_init_host_spi();
@@ -971,7 +959,7 @@ static rx_err_t gpio_init(void)
  *
  * @details
  * Configures GPTW channels 0-3 for complementary PWM output at 20 kHz with
- * 1 µs dead-time. Channels are phase-staggered by 90 degrees to reduce peak
+ * 1 us dead-time. Channels are phase-staggered by 90 degrees to reduce peak
  * current draw and EMI.
  *
  * @return rx_err_t Error code
@@ -1223,15 +1211,15 @@ static void validate_peripherals(void)
  *
  * | Stage | Duration | CPU Cycles | Implementation | Critical Path? |
  * |-------|----------|------------|----------------|----------------|
- * | **Precondition check** | 0.5 µs | ~120 | [COMPLETE] | No |
- * | **Timer init (CMT0)** | 10 µs | ~2,400 | [COMPLETE] | No |
- * | **UART init (SCI9)** | 50 µs | ~12,000 | [COMPLETE] | No |
- * | **SPI init (RSPI2)** | 20 µs | ~4,800 | [COMPLETE] | No |
- * | **I2C init (RIIC0+1)** | 15 µs | ~3,600 | [COMPLETE] | No |
- * | **BMS Alert (IRQ13)** | 5 µs | ~1,200 | [COMPLETE] | No |
- * | **ADC init (S12AD0)** | 100 µs | ~24,000 | [COMPLETE] | No |
- * | **Postcondition check** | 0.5 µs | ~120 | [COMPLETE] | No |
- * | **Total (current)** | **~201 µs** | **~48,240** | All peripherals | **No** |
+ * | **Precondition check** | 0.5 us | ~120 | [COMPLETE] | No |
+ * | **Timer init (CMT0)** | 10 us | ~2,400 | [COMPLETE] | No |
+ * | **UART init (SCI9)** | 50 us | ~12,000 | [COMPLETE] | No |
+ * | **SPI init (RSPI2)** | 20 us | ~4,800 | [COMPLETE] | No |
+ * | **I2C init (RIIC0+1)** | 15 us | ~3,600 | [COMPLETE] | No |
+ * | **BMS Alert (IRQ13)** | 5 us | ~1,200 | [COMPLETE] | No |
+ * | **ADC init (S12AD0)** | 100 us | ~24,000 | [COMPLETE] | No |
+ * | **Postcondition check** | 0.5 us | ~120 | [COMPLETE] | No |
+ * | **Total (current)** | **~201 us** | **~48,240** | All peripherals | **No** |
  *
  * **Note:** Not on critical boot path. Total boot time (main to ThreadX) is ~51 ms,
  * dominated by USB enumeration (~50 ms) which happens later in app_main_task.
@@ -1352,7 +1340,7 @@ static void validate_peripherals(void)
  *
  * @par Planned Peripherals (Future Implementation):
  * - **GPIO:** Port initialization for motor control (PA0-PA7), LEDs (PB0-PB2), sensor CS (PC0-PC3)
- * - **SPI:** RSPI0 for motor drivers (DRV8243 × 4), RSPI1 for sensor bus
+ * - **SPI:** RSPI0 for motor drivers (DRV8243 x 4), RSPI1 for sensor bus
  * - **I2C:** RIIC0 for IMU (MPU6050), temperature (LM75), pressure (BMP280)
  * - **ADC:** ADC0 channels for current sensing (4 channels), battery voltage (1 channel)
  * - **USB:** USB CDC for ROS2 communication (already partially implemented, needs integration)

@@ -14,7 +14,7 @@
  * - Handle communication errors and timeouts
  *
  * **Communication Protocol:**
- * - Physical: SPI peripheral (RX72N) ← SPI controller (RPi5)
+ * - Physical: SPI peripheral (RX72N) <- SPI controller (RPi5)
  * - Data link: Custom frame protocol with CRC-32
  * - Application: Protocol Buffers (nanopb) messages
  * - Commands: MotorCommand, EmergencyStop, TelemetryRequest

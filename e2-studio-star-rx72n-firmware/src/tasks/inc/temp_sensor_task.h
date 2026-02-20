@@ -16,8 +16,8 @@
  * **Sensor Configuration:**
  * - Sensors: DS18B20 digital thermometers
  * - Interface: 1-Wire protocol
- * - Resolution: 12-bit (0.0625°C precision)
- * - Range: -55°C to +125°C
+ * - Resolution: 12-bit (0.0625degC precision)
+ * - Range: -55degC to +125degC
  * - Update rate: 10 Hz (100 ms period)
  *
  * @see temp_sensor_task.c Implementation

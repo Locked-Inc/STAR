@@ -123,14 +123,14 @@
  *
  * | Operation | Execution Time | Notes |
  * |-----------|----------------|-------|
- * | **rx_drv8243_init()** | ~500 µs | Includes GPTW init + GPIO config + SPI init |
- * | **rx_drv8243_set_speed()** | ~20 µs | Without current limit check |
- * | **rx_drv8243_set_speed()** | ~200 µs | With ADC current limit check |
- * | **rx_drv8243_read_current()** | ~180 µs | ADC conversion + calculation |
- * | **rx_drv8243_get_fault_status()** | ~5 µs | Simple GPIO read |
- * | **rx_drv8243_stop()** | ~15 µs | Disable PWM outputs |
- * | **SPI register read** | ~25 µs | 16-bit SPI transfer @ 5 MHz |
- * | **SPI register write** | ~25 µs | 16-bit SPI transfer @ 5 MHz |
+ * | **rx_drv8243_init()** | ~500 us | Includes GPTW init + GPIO config + SPI init |
+ * | **rx_drv8243_set_speed()** | ~20 us | Without current limit check |
+ * | **rx_drv8243_set_speed()** | ~200 us | With ADC current limit check |
+ * | **rx_drv8243_read_current()** | ~180 us | ADC conversion + calculation |
+ * | **rx_drv8243_get_fault_status()** | ~5 us | Simple GPIO read |
+ * | **rx_drv8243_stop()** | ~15 us | Disable PWM outputs |
+ * | **SPI register read** | ~25 us | 16-bit SPI transfer @ 5 MHz |
+ * | **SPI register write** | ~25 us | 16-bit SPI transfer @ 5 MHz |
  *
  * All timing measured @ 240 MHz CPU clock, -O2 optimization.
  *
@@ -172,7 +172,7 @@
  * 4. Log warning on current limit violation
  *
  * **Limitations:**
- * - ~200 µs latency (ADC conversion time)
+ * - ~200 us latency (ADC conversion time)
  * - Not a substitute for hardware overcurrent protection (ITRIP)
  * - Use for soft limiting and telemetry, not safety-critical protection
  *
@@ -222,7 +222,7 @@
  *     .output_ph        = k_gptw_out_gtioca,  // Phase output
  *     .output_en        = k_gptw_out_gtiocb,  // Enable output
  *     .pwm_freq_hz      = 20000,       // 20 kHz (inaudible)
- *     .dead_time_ns     = 1000,        // 1 µs dead-time
+ *     .dead_time_ns     = 1000,        // 1 us dead-time
  *     .pin_ipropi       = 2,           // ADC channel 2
  *     .port_nfault      = 0,           // PORT0
  *     .pin_nfault       = 5,           // Pin 5
@@ -273,9 +273,9 @@
  * config.sci_channel        = 7;               // SCI7
  * config.spi_cs_port        = 3;               // PORT3
  * config.spi_cs_pin         = 2;               // Pin 2
- * config.initial_slew_rate  = k_drv8243_slew_15v_us;  // 15 V/µs (lower EMI)
+ * config.initial_slew_rate  = k_drv8243_slew_15v_us;  // 15 V/us (lower EMI)
  * config.initial_itrip      = k_drv8243_itrip_1v65;   // 1.65V trip threshold
- * config.initial_toff       = k_drv8243_toff_16us;    // 16 µs off-time
+ * config.initial_toff       = k_drv8243_toff_16us;    // 16 us off-time
  * config.initial_mode       = k_drv8243_mode_ph_en_1; // PH/EN mode (1x PWM)
  *
  * rx_err_t err = rx_drv8243_init(&motor_driver, &config);
@@ -342,7 +342,7 @@
  *
  * @warning Do NOT call set_speed() from ISR context (calls bus_manager which may use mutex/ADC)
  * @warning SPI variant configuration changes require unlock/modify/lock sequence to prevent corruption
- * @warning Current limiting adds ~200 µs latency to set_speed() - disable for time-critical loops
+ * @warning Current limiting adds ~200 us latency to set_speed() - disable for time-critical loops
  * @attention Always check nFAULT status before operating motor - fault condition prevents speed changes
  *
  * @author STAR Team
@@ -356,8 +356,6 @@
  */
 
 #include "rx_drv8243.h"
-
-#include <string.h>
 
 #include "hardware.h"
 #include "rx72n_regs.h"
@@ -393,6 +391,33 @@ typedef enum : uint16_t {
   k_drv8243_min_current_limit_ma = 0,     /**< 0mA min current limit (0 = no limit) */
   k_drv8243_max_current_limit_ma = 10000, /**< 10A max current limit */
 } drv8243_current_constants_t;
+
+/**
+ * @enum drv8243_spi_frame_constants_t
+ * @brief DRV8243 SPI frame initialization constants
+ *
+ * @details
+ * Defines default/initial SPI RX frame constants for the DRV8243 SPI subsystem.
+ * Used to initialize the RX frame buffer prior to SPI transfer operations.
+ *
+ * @invariant k_drv8243_spi_rx_idle must remain zero as the default pre-transfer RX frame value
+ *
+ * @code{.c}
+ * // Initialize RX frame buffer before a 16-bit SPI transfer
+ * uint16_t rx_frame = k_drv8243_spi_rx_idle;
+ * sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
+ * // rx_frame now contains the response from the DRV8243
+ * @endcode
+ *
+ * @see internal_drv8243_spi_read_reg() Uses k_drv8243_spi_rx_idle to initialize RX buffer
+ * @see internal_drv8243_spi_write_reg() Uses k_drv8243_spi_rx_idle to initialize RX buffer
+ * @see sci_spi_controller_transfer_16bit() Underlying 16-bit SPI transfer function
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint16_t {
+  k_drv8243_spi_rx_idle = 0, /**< Default RX frame value before SPI transfer */
+} drv8243_spi_frame_constants_t;
 
 /**
  * @brief DRV8243 configuration and control constants
@@ -513,7 +538,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * 3. **Motor controller initialization**:
  *    - Configure rx_motor with GPTW channel, outputs, PWM frequency, dead-time
  *    - Uses sign-magnitude PWM mode (PH/EN)
- *    - Typical: 20 kHz PWM, 1 µs dead-time
+ *    - Typical: 20 kHz PWM, 1 us dead-time
  *
  * 4. **Fault pin configuration**:
  *    - Set nFAULT pin as GPIO input
@@ -602,9 +627,9 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @invariant If function returns error, handle is left in uninitialized state (safe to retry)
  *
  * @note Not thread-safe - call from single thread only (typically at system startup)
- * @note Initialization time: ~500 µs without SPI, ~700 µs with SPI (@ 240 MHz)
+ * @note Initialization time: ~500 us without SPI, ~700 us with SPI (@ 240 MHz)
  * @note To reinitialize: Must call rx_drv8243_deinit() first, then can call init() again
- * @note SPI variant adds ~200 µs init time + increases code size by ~2 KB
+ * @note SPI variant adds ~200 us init time + increases code size by ~2 KB
  *
  * @warning Do NOT call from interrupt context (uses GPTW/SCI SPI which may disable interrupts)
  * @warning Ensure GPTW channel and SCI channel are not in use by other modules
@@ -624,7 +649,7 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *     .output_ph        = k_gptw_out_gtioca,
  *     .output_en        = k_gptw_out_gtiocb,
  *     .pwm_freq_hz      = 20000,       // 20 kHz (inaudible)
- *     .dead_time_ns     = 1000,        // 1 µs dead-time
+ *     .dead_time_ns     = 1000,        // 1 us dead-time
  *     .pin_ipropi       = 2,           // ADC channel 2
  *     .port_nfault      = 0,           // PORT0
  *     .pin_nfault       = 5,           // P05
@@ -650,9 +675,9 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  *     .sci_channel        = 7,                      // SCI7
  *     .spi_cs_port        = 3,                       // PORT3
  *     .spi_cs_pin         = 2,                       // P32
- *     .initial_slew_rate  = k_drv8243_slew_15v_us,   // 15 V/µs (lower EMI)
+ *     .initial_slew_rate  = k_drv8243_slew_15v_us,   // 15 V/us (lower EMI)
  *     .initial_itrip      = k_drv8243_itrip_1v65,    // 1.65V trip (~875mA)
- *     .initial_toff       = k_drv8243_toff_16us,     // 16 µs off-time
+ *     .initial_toff       = k_drv8243_toff_16us,     // 16 us off-time
  *     .initial_mode       = k_drv8243_mode_ph_en_1,  // PH/EN mode (1x PWM)
  * };
  *
@@ -702,8 +727,8 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  * @endcode
  *
  * @par Performance:
- * - Execution time (non-SPI): ~500 µs @ 240 MHz
- * - Execution time (SPI variant): ~700 µs @ 240 MHz
+ * - Execution time (non-SPI): ~500 us @ 240 MHz
+ * - Execution time (SPI variant): ~700 us @ 240 MHz
  * - Stack usage: ~80 bytes
  * - Code size: ~800 bytes (non-SPI), ~1200 bytes (with SPI support)
  *
@@ -736,9 +761,6 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  */
 rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t* config)
 {
-  rx_motor_config_t motor_config;
-  rx_err_t          err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
   RX_CHECK_NULL_PTR(config->bus_manager, s_tag, "bus_manager pointer is nullptr");
@@ -758,7 +780,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   }
 
   /* Zero out handle */
-  memset(handle, 0, sizeof(rx_drv8243_handle_t));
+  *handle = (rx_drv8243_handle_t){0};
 
   /* Store configuration */
   handle->bus_manager      = config->bus_manager;
@@ -776,7 +798,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->config_locked = false;
 
   /* Initialize motor control (GPTW for H-bridge) */
-  motor_config = (rx_motor_config_t){
+  const rx_motor_config_t motor_config = {
     .channel      = config->gptw_channel,
     .output_a     = config->output_ph,
     .output_b     = config->output_en,
@@ -785,7 +807,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
     .invert_pwm   = (bool)k_pwm_not_inverted,
   };
 
-  err = rx_motor_init(&handle->motor, &motor_config);
+  rx_err_t err = rx_motor_init(&handle->motor, &motor_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize motor controller");
     return err;
@@ -841,8 +863,6 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
  */
 rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized) {
@@ -851,7 +871,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   }
 
   /* Stop motor (best effort - log but continue if error) */
-  err = rx_drv8243_stop(handle, (bool)k_motor_coast);
+  rx_err_t err = rx_drv8243_stop(handle, (bool)k_motor_coast);
   RX_ERROR_CHECK_WITHOUT_ABORT(err);
 
   /* Deinitialize motor controller (best effort - log but continue if error) */
@@ -865,7 +885,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_drv8243_handle_t));
+  *handle = (rx_drv8243_handle_t){0};
 
   rx_log_info(s_tag, "DRV8243 deinitialized");
 
@@ -992,9 +1012,9 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * @invariant Motor duty cycle always matches handle->current_speed after successful call
  * @invariant If function returns error, motor duty cycle unchanged from previous state
  *
- * @note Execution time: ~20 µs without current limiting, ~200 µs with current limiting (ADC read)
+ * @note Execution time: ~20 us without current limiting, ~200 us with current limiting (ADC read)
  * @note Not callable from ISR context (may use mutex in bus_manager, ADC conversion takes time)
- * @note Current limiting is software-based with ~200 µs latency - NOT a substitute for hardware ITRIP protection
+ * @note Current limiting is software-based with ~200 us latency - NOT a substitute for hardware ITRIP protection
  * @note Thread safety depends on bus_manager implementation - recommend external mutex if multi-threaded
  *
  * @warning If nFAULT is active LOW, function will fail with k_rx_err_invalid_state
@@ -1085,8 +1105,8 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  * @endcode
  *
  * @par Performance:
- * - Execution time (no current limit): ~20 µs @ 240 MHz
- * - Execution time (with current limit): ~200 µs @ 240 MHz (includes ADC read)
+ * - Execution time (no current limit): ~20 us @ 240 MHz
+ * - Execution time (with current limit): ~200 us @ 240 MHz (includes ADC read)
  * - Stack usage: ~40 bytes
  * - Interrupt latency: None (no critical sections)
  *
@@ -1113,9 +1133,6 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
  */
 rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
 {
-  bool     fault_active = false;
-  rx_err_t err          = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized) {
@@ -1130,7 +1147,8 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   }
 
   /* Check for fault condition */
-  err = rx_drv8243_get_fault_status(handle, &fault_active);
+  bool     fault_active = false;
+  rx_err_t err          = rx_drv8243_get_fault_status(handle, &fault_active);
   if (err == k_rx_ok && fault_active) {
     rx_log_warn(s_tag, "Cannot set speed: fault condition active");
     return k_rx_err_invalid_state;
@@ -1165,8 +1183,6 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
  */
 rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, const bool brake)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized) {
@@ -1174,7 +1190,7 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, const bool brake)
     return k_rx_err_invalid_state;
   }
 
-  err = rx_motor_stop(&handle->motor, brake);
+  rx_err_t err = rx_motor_stop(&handle->motor, brake);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to stop motor");
     return err;
@@ -1193,9 +1209,6 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, const bool brake)
  */
 rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_current)
 {
-  uint32_t voltage_mv = 0;
-  rx_err_t err        = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(out_current, s_tag, "out_current pointer is nullptr");
 
@@ -1208,7 +1221,8 @@ rx_err_t rx_drv8243_read_current(const rx_drv8243_handle_t* handle, float* out_c
    * Read ADC voltage from IPROPI pin.
    * The voltage is returned in millivolts after calibration.
    */
-  err = rx_bus_adc_read_voltage_mv(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
+  uint32_t voltage_mv;
+  rx_err_t err = rx_bus_adc_read_voltage_mv(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read IPROPI ADC");
     return err;
@@ -1338,12 +1352,10 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, const uint16_
  */
 static rx_err_t internal_drv8243_check_current_limit(const rx_drv8243_handle_t* handle)
 {
-  float    current_ma = 0.0f;
-  rx_err_t err        = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
-  err = rx_drv8243_read_current(handle, &current_ma);
+  float    current_ma;
+  rx_err_t err = rx_drv8243_read_current(handle, &current_ma);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read current for limit check");
     return err;
@@ -1417,10 +1429,6 @@ static const uint32_t s_drv8243_spi_freq_hz = 5000000U; /**< 5 MHz SPI clock (co
 static rx_err_t
 internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, uint8_t* data)
 {
-  uint16_t tx_frame;
-  uint16_t rx_frame = 0;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is nullptr");
 
@@ -1430,9 +1438,9 @@ internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, u
     return k_rx_err_invalid_arg;
   }
 
-  tx_frame = DRV8243_SPI_READ_FRAME(addr);
-
-  err = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
+  const uint16_t tx_frame = DRV8243_SPI_READ_FRAME(addr);
+  uint16_t rx_frame = k_drv8243_spi_rx_idle;
+  rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI read failed");
     return err;
@@ -1456,10 +1464,6 @@ internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, u
 static rx_err_t
 internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, const uint8_t data)
 {
-  uint16_t tx_frame;
-  uint16_t rx_frame = 0;
-  rx_err_t err;
-
   /* Rule 5: Pre-condition validation */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
@@ -1468,9 +1472,9 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
     return k_rx_err_invalid_arg;
   }
 
-  tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
-
-  err = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
+  const uint16_t tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
+  uint16_t rx_frame = k_drv8243_spi_rx_idle;
+  rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI write failed");
     return err;
@@ -1492,19 +1496,18 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
 static rx_err_t internal_drv8243_spi_init(rx_drv8243_handle_t*       handle,
                                           const rx_drv8243_config_t* config)
 {
-  sci_spi_controller_config_t spi_config;
-  rx_err_t                    err;
-
   /* Rule 5: Pre-condition validation */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
-  spi_config.spi_mode = k_sci_spi_mode_1; /* DRV8243 uses SPI mode 1 (CPOL=0, CPHA=1) */
-  spi_config.freq_hz  = s_drv8243_spi_freq_hz;
-  /* Construct rx_port_pin_t from separate port and pin values */
-  spi_config.cs = (rx_port_pin_t)((config->spi_cs_port << k_port_shift) | config->spi_cs_pin);
+  /* DRV8243 uses SPI mode 1 (CPOL=0, CPHA=1); construct CS pin from port/pin fields */
+  const sci_spi_controller_config_t spi_config = {
+    .spi_mode = k_sci_spi_mode_1,
+    .freq_hz  = s_drv8243_spi_freq_hz,
+    .cs       = (rx_port_pin_t)((config->spi_cs_port << k_port_shift) | config->spi_cs_pin),
+  };
 
-  err = sci_spi_init_controller(config->sci_channel, &spi_config);
+  rx_err_t err = sci_spi_init_controller(config->sci_channel, &spi_config);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to initialize SCI SPI controller");
     return err;
@@ -1527,14 +1530,12 @@ static rx_err_t internal_drv8243_spi_init(rx_drv8243_handle_t*       handle,
 static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       handle,
                                                   const rx_drv8243_config_t* config)
 {
-  rx_err_t err;
-
   /* Rule 5: Pre-condition validation - check NULL pointers */
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
   /* Unlock configuration registers */
-  err = rx_drv8243_spi_unlock_config(handle);
+  rx_err_t err = rx_drv8243_spi_unlock_config(handle);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1581,9 +1582,6 @@ static rx_err_t internal_drv8243_spi_apply_config(rx_drv8243_handle_t*       han
  */
 rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
 {
-  uint8_t  cmd_reg;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1592,7 +1590,8 @@ rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
   }
 
   /* Read current COMMAND register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
+  uint8_t  cmd_reg;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1611,13 +1610,83 @@ rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
   return k_rx_ok;
 }
 
+/**
+ * @brief Read detailed fault status from DRV8243 via SPI
+ *
+ * @details
+ * Reads both the FAULT_SUMMARY register (address 0x00) and STATUS1 register
+ * (address 0x01) via SPI to populate a comprehensive fault detail structure.
+ * This provides per-fault-type diagnostic information beyond the single nFAULT
+ * GPIO pin, which only indicates that one or more fault conditions are active.
+ *
+ * ## Register Reads
+ *
+ * 1. **FAULT_SUMMARY (0x00)**: Global fault flags -- SPI error, power-on reset,
+ *    VM overvoltage (VMOV), VM undervoltage (VMUV), overcurrent (OCP),
+ *    thermal shutdown (TSD), and open-load alarm (OLA).
+ *
+ * 2. **STATUS1 (0x01)**: Per-channel fault detail -- open-load per channel
+ *    (OLA1/OLA2), hardware current trip comparator status (ITRIP_CMP),
+ *    device active flag, and per-FET overcurrent flags (OCP_H1/L1/H2/L2).
+ *
+ * After reading both registers, each bit-field is extracted using the
+ * appropriate mask constants and stored as a boolean in the fault output
+ * structure.
+ *
+ * @param[in,out] handle Pointer to an initialized DRV8243 SPI-variant handle
+ *   - Must be non-NULL
+ *   - handle->initialized must be true
+ *   - handle->spi_enabled must be true (SPI variant only)
+ *   - After the call, handle->last_spi_status is updated with the STATUS byte
+ *     received during the final SPI transfer
+ *
+ * @param[out] fault Pointer to fault detail structure to populate
+ *   - Must be non-NULL
+ *   - All fields are overwritten; caller need not pre-initialize
+ *   - On failure, contents are indeterminate (partially written)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success -- fault structure fully populated
+ * @retval k_rx_err_null_ptr handle or fault pointer is NULL
+ * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
+ * @retval k_rx_err_comm SPI transfer failed during FAULT_SUMMARY or STATUS1 read
+ *
+ * @pre handle must be initialized via rx_drv8243_init() with use_spi_variant = true
+ * @pre handle->spi_enabled must be true (call returns k_rx_err_invalid_state otherwise)
+ *
+ * @post fault structure fully populated from live register reads on k_rx_ok
+ * @post handle->last_spi_status updated with the SPI status byte from last transfer
+ *
+ * @note Not thread-safe; caller must provide synchronization if called from
+ *       multiple threads concurrently with other SPI operations on the same handle
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
+ * @note Does not clear faults; use rx_drv8243_spi_clear_fault() after handling
+ *
+ * @code{.c}
+ * rx_drv8243_detailed_fault_t detail;
+ * rx_err_t err = rx_drv8243_spi_get_detailed_fault(&motor, &detail);
+ * if (err == k_rx_ok) {
+ *     if (detail.ocp) {
+ *         rx_log_error("MOTOR", "Overcurrent protection triggered");
+ *     }
+ *     if (detail.tsd) {
+ *         rx_log_error("MOTOR", "Thermal shutdown triggered");
+ *     }
+ *     if (detail.itrip_active) {
+ *         rx_log_warn("MOTOR", "Hardware current trip comparator active");
+ *     }
+ * }
+ * @endcode
+ *
+ * @see rx_drv8243_get_fault_status() GPIO-based fault detection (no SPI required)
+ * @see rx_drv8243_spi_clear_fault() Clear fault flags via SPI COMMAND register
+ * @see internal_drv8243_spi_read_reg() Underlying SPI register read helper
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
                                            rx_drv8243_detailed_fault_t* fault)
 {
-  uint8_t  fault_summary;
-  uint8_t  status1;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(fault, s_tag, "fault pointer is nullptr");
 
@@ -1627,12 +1696,14 @@ rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
   }
 
   /* Read FAULT_SUMMARY register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_fault_summary, &fault_summary);
+  uint8_t  fault_summary;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_fault_summary, &fault_summary);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Read STATUS1 register */
+  uint8_t status1;
   err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_status1, &status1);
   if (err != k_rx_ok) {
     return err;
@@ -1668,9 +1739,6 @@ rx_err_t rx_drv8243_spi_get_detailed_fault(rx_drv8243_handle_t*         handle,
  */
 rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243_slew_rate_t rate)
 {
-  uint8_t  config3;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1690,7 +1758,8 @@ rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243
   }
 
   /* Read current CONFIG3 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
+  uint8_t  config3;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1708,14 +1777,82 @@ rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243
   return k_rx_ok;
 }
 
+/**
+ * @brief Set hardware current trip threshold and TOFF time via SPI
+ *
+ * @details
+ * Configures the DRV8243 hardware current trip (ITRIP) comparator threshold
+ * and the current regulation off-time (TOFF) using two SPI register writes.
+ *
+ * ## Configuration Steps
+ *
+ * 1. Validate handle, initialization, SPI enable, and config lock state.
+ * 2. Validate that @p level is within the valid drv8243_itrip_level_t range.
+ * 3. Validate that @p toff is within the valid drv8243_toff_t range.
+ * 4. Write the 3-bit ITRIP level to the CONFIG_ITRIP register (address 0x08).
+ * 5. Read-modify-write the TOFF bits in CONFIG3 (address 0x06):
+ *    - Read current CONFIG3 value.
+ *    - Clear TOFF field using k_drv8243_cfg3_toff_mask.
+ *    - Set new TOFF value at k_drv8243_cfg3_toff_pos.
+ *    - Write back modified CONFIG3.
+ *
+ * @note Configuration registers must be unlocked before calling this function.
+ *       Call rx_drv8243_spi_unlock_config() first, then lock after all writes
+ *       with rx_drv8243_spi_lock_config().
+ *
+ * @param[in,out] handle Pointer to an initialized DRV8243 SPI-variant handle
+ *   - Must be non-NULL
+ *   - handle->initialized must be true
+ *   - handle->spi_enabled must be true
+ *   - handle->config_locked must be false (unlock with rx_drv8243_spi_unlock_config())
+ *   - After the call, handle->last_spi_status is updated
+ *
+ * @param[in] level Hardware current trip threshold level
+ *   - Valid range: k_drv8243_itrip_* enumeration values (0 to k_drv8243_itrip_2v97)
+ *   - Sets the ITRIP comparator reference voltage (see datasheet Table 8-6)
+ *   - Higher values increase the current trip threshold
+ *
+ * @param[in] toff Current regulation off-time
+ *   - Valid range: k_drv8243_toff_* enumeration values (0 to k_drv8243_toff_50us)
+ *   - Controls the time the output stays off during current regulation
+ *   - Longer TOFF reduces current ripple at the cost of slower response
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success -- ITRIP level and TOFF configured
+ * @retval k_rx_err_null_ptr handle pointer is NULL
+ * @retval k_rx_err_invalid_state Driver not initialized, not SPI variant, or config locked
+ * @retval k_rx_err_invalid_arg level or toff value out of valid range
+ * @retval k_rx_err_comm SPI transfer failed during CONFIG_ITRIP write or CONFIG3 read/write
+ *
+ * @pre handle must be initialized with use_spi_variant = true
+ * @pre Configuration registers must be unlocked (handle->config_locked == false)
+ *
+ * @post CONFIG_ITRIP register updated with new ITRIP level
+ * @post CONFIG3 register TOFF field updated with new off-time value
+ *
+ * @note Not thread-safe; caller must provide synchronization
+ * @note This function performs three SPI transfers (~75 us total @ 5 MHz)
+ *
+ * @code{.c}
+ * // Set 2A hardware current trip with 25 us off-time
+ * rx_drv8243_spi_unlock_config(&motor);
+ * rx_err_t err = rx_drv8243_spi_set_itrip(&motor, k_drv8243_itrip_2v00, k_drv8243_toff_25us);
+ * rx_drv8243_spi_lock_config(&motor);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("MOTOR", "Failed to set ITRIP");
+ * }
+ * @endcode
+ *
+ * @see rx_drv8243_spi_unlock_config() Must be called before this function
+ * @see rx_drv8243_spi_lock_config() Call after configuration writes
+ * @see rx_drv8243_spi_set_ocp() Configure overcurrent protection threshold
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
                                   const drv8243_itrip_level_t level,
                                   const drv8243_toff_t        toff)
 {
-  uint8_t  config_itrip;
-  uint8_t  config3;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1740,13 +1877,14 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
   }
 
   /* Write ITRIP level to CONFIG_ITRIP */
-  config_itrip = (uint8_t)level & k_config_itrip_mask;
-  err          = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_config_itrip, config_itrip);
+  uint8_t  config_itrip = (uint8_t)level & k_config_itrip_mask;
+  rx_err_t err = internal_drv8243_spi_write_reg(handle, k_drv8243_reg_config_itrip, config_itrip);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Read current CONFIG3 for TOFF */
+  uint8_t config3;
   err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
   if (err != k_rx_ok) {
     return err;
@@ -1773,9 +1911,6 @@ rx_err_t rx_drv8243_spi_set_itrip(rx_drv8243_handle_t*        handle,
  */
 rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_control_mode_t mode)
 {
-  uint8_t  config3;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1795,7 +1930,8 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_cont
   }
 
   /* Read current CONFIG3 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
+  uint8_t  config3;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config3, &config3);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1813,13 +1949,85 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_cont
   return k_rx_ok;
 }
 
+/**
+ * @brief Configure overcurrent protection threshold and filter time via SPI
+ *
+ * @details
+ * Sets the DRV8243 hardware overcurrent protection (OCP) threshold voltage
+ * and the OCP deglitch filter time by performing a read-modify-write on the
+ * CONFIG4 register (address 0x07) via SPI.
+ *
+ * ## Configuration Steps
+ *
+ * 1. Validate handle, initialization, SPI enable, and config lock state.
+ * 2. Validate @p thresh is within the valid drv8243_ocp_thresh_t range.
+ * 3. Validate @p filter is within the valid drv8243_ocp_filter_t range.
+ * 4. Read current CONFIG4 register value.
+ * 5. Clear OCP_SEL and TOCP_SEL bit-fields.
+ * 6. Set new threshold value at k_drv8243_cfg4_ocp_sel_pos.
+ * 7. Set new filter value at k_drv8243_cfg4_tocp_sel_pos.
+ * 8. Write modified CONFIG4 back via SPI.
+ *
+ * @note Configuration registers must be unlocked before calling. OCP provides
+ *       hardware-level protection; tuning the threshold affects the current level
+ *       at which the DRV8243 shuts down the H-bridge outputs and asserts nFAULT.
+ *
+ * @param[in,out] handle Pointer to an initialized DRV8243 SPI-variant handle
+ *   - Must be non-NULL
+ *   - handle->initialized must be true
+ *   - handle->spi_enabled must be true
+ *   - handle->config_locked must be false
+ *   - After the call, handle->last_spi_status is updated
+ *
+ * @param[in] thresh Overcurrent protection threshold
+ *   - Valid range: k_drv8243_ocp_thresh_* enumeration values
+ *   - Selects the OCP sense resistor threshold voltage (see datasheet Table 8-8)
+ *   - Higher threshold allows more current before OCP triggers
+ *
+ * @param[in] filter OCP deglitch filter time
+ *   - Valid range: k_drv8243_ocp_filter_* enumeration values (0 to k_drv8243_ocp_filter_8us)
+ *   - Filters out short current spikes to avoid false OCP trips
+ *   - Longer filter times allow brief current spikes through before protection activates
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success -- OCP threshold and filter configured
+ * @retval k_rx_err_null_ptr handle pointer is NULL
+ * @retval k_rx_err_invalid_state Driver not initialized, not SPI variant, or config locked
+ * @retval k_rx_err_invalid_arg thresh or filter value out of valid range
+ * @retval k_rx_err_comm SPI transfer failed during CONFIG4 read or write
+ *
+ * @pre handle must be initialized with use_spi_variant = true
+ * @pre Configuration registers must be unlocked (handle->config_locked == false)
+ *
+ * @post CONFIG4 OCP_SEL field updated with new threshold value
+ * @post CONFIG4 TOCP_SEL field updated with new filter time value
+ *
+ * @note Not thread-safe; caller must provide synchronization
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
+ *
+ * @code{.c}
+ * // Set high OCP threshold with 4 us deglitch filter
+ * rx_drv8243_spi_unlock_config(&motor);
+ * rx_err_t err = rx_drv8243_spi_set_ocp(&motor,
+ *                                        k_drv8243_ocp_thresh_high,
+ *                                        k_drv8243_ocp_filter_4us);
+ * rx_drv8243_spi_lock_config(&motor);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("MOTOR", "Failed to configure OCP");
+ * }
+ * @endcode
+ *
+ * @see rx_drv8243_spi_unlock_config() Must be called before this function
+ * @see rx_drv8243_spi_lock_config() Call after configuration writes
+ * @see rx_drv8243_spi_set_itrip() Configure hardware current trip threshold
+ * @see rx_drv8243_spi_get_detailed_fault() Read OCP fault status after an OCP event
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
                                 const drv8243_ocp_thresh_t thresh,
                                 const drv8243_ocp_filter_t filter)
 {
-  uint8_t  config4;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1845,7 +2053,8 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
   }
 
   /* Read current CONFIG4 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config4, &config4);
+  uint8_t  config4;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config4, &config4);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1864,11 +2073,73 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
   return k_rx_ok;
 }
 
+/**
+ * @brief Enable or disable spread-spectrum clocking (SSC) via SPI
+ *
+ * @details
+ * Configures the DRV8243 spread-spectrum clocking feature by setting or
+ * clearing the SSC_DIS bit in the CONFIG1 register (address 0x04) via SPI.
+ * Spread-spectrum clocking modulates the PWM switching frequency to spread
+ * electromagnetic interference (EMI) energy across a wider frequency band,
+ * reducing peak EMI levels and easing regulatory compliance.
+ *
+ * ## Configuration Steps
+ *
+ * 1. Validate handle, initialization, SPI enable, and config lock state.
+ * 2. Read current CONFIG1 register value.
+ * 3. Modify the SSC_DIS bit based on the @p enable parameter:
+ *    - @p enable = true:  clear SSC_DIS (SSC enabled, 0 = enabled per datasheet)
+ *    - @p enable = false: set SSC_DIS (SSC disabled)
+ * 4. Write modified CONFIG1 back via SPI.
+ *
+ * @warning The SSC_DIS bit is active-low (0 = SSC enabled, 1 = SSC disabled).
+ *          The @p enable parameter follows positive logic: true = SSC on.
+ *
+ * @param[in,out] handle Pointer to an initialized DRV8243 SPI-variant handle
+ *   - Must be non-NULL
+ *   - handle->initialized must be true
+ *   - handle->spi_enabled must be true
+ *   - handle->config_locked must be false
+ *   - After the call, handle->last_spi_status is updated
+ *
+ * @param[in] enable Spread-spectrum clocking enable flag
+ *   - true:  enable SSC (sets SSC_DIS = 0 in CONFIG1)
+ *   - false: disable SSC (sets SSC_DIS = 1 in CONFIG1)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success -- SSC state updated
+ * @retval k_rx_err_null_ptr handle pointer is NULL
+ * @retval k_rx_err_invalid_state Driver not initialized, not SPI variant, or config locked
+ * @retval k_rx_err_comm SPI transfer failed during CONFIG1 read or write
+ *
+ * @pre handle must be initialized with use_spi_variant = true
+ * @pre Configuration registers must be unlocked (handle->config_locked == false)
+ *
+ * @post CONFIG1 SSC_DIS bit updated to reflect the requested SSC state
+ * @post handle->last_spi_status updated with the SPI status byte from last transfer
+ *
+ * @note Not thread-safe; caller must provide synchronization
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
+ * @note SSC introduces slight frequency variation (~10%) around the nominal PWM frequency
+ *
+ * @code{.c}
+ * // Enable SSC for EMI reduction before motor operation
+ * rx_drv8243_spi_unlock_config(&motor);
+ * rx_err_t err = rx_drv8243_spi_enable_ssc(&motor, true);
+ * rx_drv8243_spi_lock_config(&motor);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("MOTOR", "Failed to enable SSC");
+ * }
+ * @endcode
+ *
+ * @see rx_drv8243_spi_unlock_config() Must be called before this function
+ * @see rx_drv8243_spi_lock_config() Call after configuration writes
+ * @see rx_drv8243_spi_set_slew_rate() Complementary EMI reduction via slew rate control
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enable)
 {
-  uint8_t  config1;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1882,7 +2153,8 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
   }
 
   /* Read current CONFIG1 */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config1, &config1);
+  uint8_t  config1;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_config1, &config1);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1903,11 +2175,69 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
   return k_rx_ok;
 }
 
+/**
+ * @brief Lock SPI configuration registers to prevent accidental modification
+ *
+ * @details
+ * Write-protects the DRV8243 CONFIG registers (addresses 0x01-0x08) by setting
+ * the REG_LOCK field in the COMMAND register (address 0x03) to the locked state
+ * (REG_LOCK = 01b). After locking, any attempt to write CONFIG registers via SPI
+ * is ignored by the device until rx_drv8243_spi_unlock_config() is called.
+ *
+ * ## Configuration Steps
+ *
+ * 1. Validate handle, initialization, and SPI enable state.
+ * 2. Read current COMMAND register value.
+ * 3. Clear REG_LOCK field (k_drv8243_cmd_reg_lock_mask).
+ * 4. Set REG_LOCK = k_drv8243_cmd_reg_lock_locked (01b).
+ * 5. Write modified COMMAND register back via SPI.
+ * 6. Set handle->config_locked = true.
+ *
+ * @note Locking is the default state at power-on. It is best practice to unlock,
+ *       apply all configuration, then lock again. This function and
+ *       rx_drv8243_spi_unlock_config() are used by internal_drv8243_spi_apply_config()
+ *       to bracket the initial configuration sequence.
+ *
+ * @param[in,out] handle Pointer to an initialized DRV8243 SPI-variant handle
+ *   - Must be non-NULL
+ *   - handle->initialized must be true
+ *   - handle->spi_enabled must be true
+ *   - After success, handle->config_locked is set to true
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success -- CONFIG registers are now locked
+ * @retval k_rx_err_null_ptr handle pointer is NULL
+ * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
+ * @retval k_rx_err_comm SPI transfer failed during COMMAND register read or write
+ *
+ * @pre handle must be initialized with use_spi_variant = true
+ * @pre SPI interface must be operational (not in error state)
+ *
+ * @post handle->config_locked = true on success
+ * @post DRV8243 CONFIG registers (0x01-0x08) are write-protected
+ *
+ * @note Not thread-safe; caller must provide synchronization
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
+ * @note Calling this function when already locked is safe (idempotent effect on device)
+ *
+ * @code{.c}
+ * // Lock configuration after initial setup
+ * rx_drv8243_spi_unlock_config(&motor);
+ * rx_drv8243_spi_set_slew_rate(&motor, k_drv8243_slew_24v_us);
+ * rx_drv8243_spi_set_itrip(&motor, k_drv8243_itrip_2v00, k_drv8243_toff_25us);
+ * rx_err_t err = rx_drv8243_spi_lock_config(&motor);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("MOTOR", "Failed to lock config registers");
+ * }
+ * @endcode
+ *
+ * @see rx_drv8243_spi_unlock_config() Counterpart: unlocks configuration registers
+ * @see internal_drv8243_spi_apply_config() Uses lock/unlock to bracket initial config
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
 {
-  uint8_t  cmd_reg;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1916,7 +2246,8 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Read current COMMAND register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
+  uint8_t  cmd_reg;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1936,11 +2267,70 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
   return k_rx_ok;
 }
 
+/**
+ * @brief Unlock SPI configuration registers to allow modification
+ *
+ * @details
+ * Removes write protection from the DRV8243 CONFIG registers (addresses
+ * 0x01-0x08) by setting the REG_LOCK field in the COMMAND register (address
+ * 0x03) to the unlocked state (REG_LOCK = 10b). Once unlocked, CONFIG register
+ * writes via SPI take effect immediately.
+ *
+ * ## Configuration Steps
+ *
+ * 1. Validate handle, initialization, and SPI enable state.
+ * 2. Read current COMMAND register value.
+ * 3. Clear REG_LOCK field (k_drv8243_cmd_reg_lock_mask).
+ * 4. Set REG_LOCK = k_drv8243_cmd_reg_lock_unlock (10b).
+ * 5. Write modified COMMAND register back via SPI.
+ * 6. Set handle->config_locked = false.
+ *
+ * @warning After calling this function, CONFIG registers are writable. Always
+ *          re-lock with rx_drv8243_spi_lock_config() after completing configuration
+ *          changes to prevent accidental register corruption.
+ *
+ * @warning The COMMAND register (address 0x03) is always writable regardless of
+ *          lock state, so unlock itself is never blocked.
+ *
+ * @param[in,out] handle Pointer to an initialized DRV8243 SPI-variant handle
+ *   - Must be non-NULL
+ *   - handle->initialized must be true
+ *   - handle->spi_enabled must be true
+ *   - After success, handle->config_locked is set to false
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success -- CONFIG registers are now writable
+ * @retval k_rx_err_null_ptr handle pointer is NULL
+ * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
+ * @retval k_rx_err_comm SPI transfer failed during COMMAND register read or write
+ *
+ * @pre handle must be initialized with use_spi_variant = true
+ * @pre SPI interface must be operational (not in error state)
+ *
+ * @post handle->config_locked = false on success
+ * @post DRV8243 CONFIG registers (0x01-0x08) accept write operations
+ *
+ * @note Not thread-safe; caller must provide synchronization
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
+ * @note Calling this function when already unlocked is safe (idempotent effect on device)
+ *
+ * @code{.c}
+ * // Unlock, configure, then re-lock
+ * rx_err_t err = rx_drv8243_spi_unlock_config(&motor);
+ * if (err == k_rx_ok) {
+ *     rx_drv8243_spi_set_slew_rate(&motor, k_drv8243_slew_24v_us);
+ *     rx_drv8243_spi_enable_ssc(&motor, true);
+ *     rx_drv8243_spi_lock_config(&motor);
+ * }
+ * @endcode
+ *
+ * @see rx_drv8243_spi_lock_config() Counterpart: locks configuration registers
+ * @see internal_drv8243_spi_apply_config() Uses lock/unlock to bracket initial config
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
 {
-  uint8_t  cmd_reg;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized || !handle->spi_enabled) {
@@ -1949,7 +2339,8 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
   }
 
   /* Read current COMMAND register */
-  err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
+  uint8_t  cmd_reg;
+  rx_err_t err = internal_drv8243_spi_read_reg(handle, k_drv8243_reg_command, &cmd_reg);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1969,6 +2360,72 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
   return k_rx_ok;
 }
 
+/**
+ * @brief Read device identification register from DRV8243 via SPI
+ *
+ * @details
+ * Reads the DEVICE_ID register (address 0x0F) from the DRV8243 via SPI and
+ * returns the 8-bit device identifier byte. The device ID is a fixed read-only
+ * value programmed at the factory that identifies the specific DRV8243 variant.
+ * This function is primarily used for:
+ *
+ * - **Device verification**: Confirm the correct IC is installed on the PCB
+ * - **Variant detection**: Distinguish between DRV8243 sub-variants if applicable
+ * - **Power-on self-test**: Validate SPI communication integrity at startup
+ *
+ * ## Read Steps
+ *
+ * 1. Validate handle (non-NULL, initialized, SPI enabled).
+ * 2. Validate device_id output pointer (non-NULL).
+ * 3. Delegate to internal_drv8243_spi_read_reg() with register address
+ *    k_drv8243_reg_device_id (0x0F).
+ * 4. SPI response data byte is stored at *device_id.
+ *
+ * @param[in,out] handle Pointer to an initialized DRV8243 SPI-variant handle
+ *   - Must be non-NULL
+ *   - handle->initialized must be true
+ *   - handle->spi_enabled must be true
+ *   - After the call, handle->last_spi_status is updated with the SPI status byte
+ *
+ * @param[out] device_id Pointer to store the 8-bit device identifier
+ *   - Must be non-NULL
+ *   - On k_rx_ok: contains the DEVICE_ID register value from the DRV8243
+ *   - On error: contents are indeterminate
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success -- device ID written to *device_id
+ * @retval k_rx_err_null_ptr handle or device_id pointer is NULL
+ * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
+ * @retval k_rx_err_comm SPI transfer failed during DEVICE_ID read
+ *
+ * @pre handle must be initialized via rx_drv8243_init() with use_spi_variant = true
+ * @pre SPI bus must be operational and DRV8243 must be powered
+ *
+ * @post *device_id contains the DRV8243 DEVICE_ID register value on success
+ * @post handle->last_spi_status updated with the SPI status byte from the transfer
+ *
+ * @note Not thread-safe; caller must provide synchronization if called concurrently
+ *       with other SPI operations on the same handle
+ * @note This function performs one SPI transfer (~25 us @ 5 MHz)
+ * @note The DEVICE_ID register is read-only and not affected by the config lock state
+ * @note CONFIG registers do not need to be unlocked to read DEVICE_ID
+ *
+ * @code{.c}
+ * // Verify DRV8243 identity at startup
+ * uint8_t device_id;
+ * rx_err_t err = rx_drv8243_spi_read_device_id(&motor, &device_id);
+ * if (err == k_rx_ok) {
+ *     rx_log_info("MOTOR", "DRV8243 device ID: 0x%02X", device_id);
+ * } else {
+ *     rx_log_error("MOTOR", "Failed to read device ID - SPI fault?");
+ * }
+ * @endcode
+ *
+ * @see rx_drv8243_spi_get_detailed_fault() Read detailed fault status registers
+ * @see internal_drv8243_spi_read_reg() Underlying SPI register read helper
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_drv8243_spi_read_device_id(rx_drv8243_handle_t* handle, uint8_t* device_id)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");

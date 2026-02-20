@@ -116,18 +116,18 @@
  *
  * | Operation | Avg Time | Worst Case | Notes |
  * |-----------|----------|------------|-------|
- * | **rx_comm_manager_init()** | ~5 µs | ~10 µs | memset dominates (328 bytes) |
- * | **rx_comm_manager_poll()** | ~15-200 µs | ~500 µs | Depends on channels enabled, frames available |
- * | **rx_comm_manager_send()** | ~30-150 µs | ~300 µs | Depends on payload size, channel |
- * | **internal_poll_usb()** | ~10-100 µs | ~250 µs | USB CDC bulk transfer latency |
- * | **internal_poll_spi()** | ~5-50 µs | ~150 µs | SPI hardware transfer latency |
- * | **internal_handle_frame()** | ~2 µs | ~5 µs | Callback invocation overhead |
- * | **internal_output_decoded()** | ~50-150 µs | ~300 µs | ASCII formatting + USB puts |
+ * | **rx_comm_manager_init()** | ~5 us | ~10 us | memset dominates (328 bytes) |
+ * | **rx_comm_manager_poll()** | ~15-200 us | ~500 us | Depends on channels enabled, frames available |
+ * | **rx_comm_manager_send()** | ~30-150 us | ~300 us | Depends on payload size, channel |
+ * | **internal_poll_usb()** | ~10-100 us | ~250 us | USB CDC bulk transfer latency |
+ * | **internal_poll_spi()** | ~5-50 us | ~150 us | SPI hardware transfer latency |
+ * | **internal_handle_frame()** | ~2 us | ~5 us | Callback invocation overhead |
+ * | **internal_output_decoded()** | ~50-150 us | ~300 us | ASCII formatting + USB puts |
  *
  * **Timing Analysis**:
  * - Measured @ 240 MHz CPU clock with -O2 optimization
  * - Poll time dominated by transport layer (USB/SPI receive)
- * - ASCII debugging adds ~50-150 µs per frame (disable in production)
+ * - ASCII debugging adds ~50-150 us per frame (disable in production)
  * - Callback execution time not included (application-dependent)
  *
  * ## Memory Usage
@@ -190,7 +190,7 @@
  * Routing algorithm with post-send ASCII debugging support:
  *
  * **Steps:**
- * 1. **Validate parameters** (NULL checks, payload length ≤ k_frame_max_payload)
+ * 1. **Validate parameters** (NULL checks, payload length <= k_frame_max_payload)
  * 2. **Route to channel**:
  *    - USB: Call rx_usb_comm_send()
  *    - SPI: Call rx_spi_comm_send()
@@ -200,7 +200,7 @@
  *    - Format as ASCII via rx_frame_ascii_format()
  *    - Send to USB Port 1 via rx_usb_puts()
  *
- * **Performance Note**: ASCII formatting adds ~50-150 µs overhead per send.
+ * **Performance Note**: ASCII formatting adds ~50-150 us overhead per send.
  * Disable in production with `cfg->enable_decoded_output = false`.
  *
  * ## Thread Safety Analysis
@@ -527,7 +527,7 @@ typedef enum : uint32_t {
  * 3. Format frame as ASCII via rx_frame_ascii_format()
  * 4. Send ASCII string to USB Port 1 via rx_usb_puts()
  *
- * **Performance**: ~50-150 µs depending on frame size (ASCII formatting overhead).
+ * **Performance**: ~50-150 us depending on frame size (ASCII formatting overhead).
  * Disable in production for optimal performance.
  *
  * @param[in,out] mgr Communication manager handle (uses ascii_buffer)
@@ -629,8 +629,8 @@ static void internal_output_decoded(rx_comm_manager_t* mgr, const rx_frame_t* fr
  * @warning User callback must not block for extended periods (affects polling rate)
  *
  * @par Performance:
- * - Without decoded output: ~2 µs (callback overhead only)
- * - With decoded output: ~50-150 µs (ASCII formatting + USB puts)
+ * - Without decoded output: ~2 us (callback overhead only)
+ * - With decoded output: ~50-150 us (ASCII formatting + USB puts)
  *
  * @see internal_output_decoded() ASCII debugging output
  * @see rx_comm_frame_callback_t User callback type
@@ -722,8 +722,8 @@ internal_handle_frame(rx_comm_manager_t* mgr, rx_comm_channel_t channel, const r
  * @warning Do not call if usb_handle is uninitialized (will return timeout)
  *
  * @par Performance:
- * - No data available: ~10 µs (fast path)
- * - Frame received: ~100-250 µs (USB bulk transfer + callback)
+ * - No data available: ~10 us (fast path)
+ * - Frame received: ~100-250 us (USB bulk transfer + callback)
  *
  * @see internal_handle_frame() Frame dispatch
  * @see rx_usb_comm_receive() USB CDC receive implementation
@@ -794,8 +794,8 @@ static rx_err_t internal_poll_usb(rx_comm_manager_t* mgr)
  * @warning Do not call if spi_handle is uninitialized (will return timeout)
  *
  * @par Performance:
- * - No data available: ~5 µs (fast path)
- * - Frame received: ~50-150 µs (SPI hardware transfer + callback)
+ * - No data available: ~5 us (fast path)
+ * - Frame received: ~50-150 us (SPI hardware transfer + callback)
  *
  * @see internal_handle_frame() Frame dispatch
  * @see rx_spi_comm_receive() SPI receive implementation
@@ -830,7 +830,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
 
       /* Convert link result to rx_frame_t for internal_handle_frame() */
       static rx_frame_t s_frame1;
-      (void)memset(&s_frame1, (int)k_zero_u32, sizeof(s_frame1));
+      s_frame1 = (rx_frame_t){0};
       s_frame1.header.sequence = s_link_result.sequence;
       s_frame1.header.length   = (uint16_t)s_link_result.payload_len;
       s_frame1.header.type     = s_link_result.frame_type;
@@ -1066,7 +1066,7 @@ static void internal_check_heartbeat(rx_comm_manager_t* mgr)
  * @note Thread-safe ONLY if each thread uses a different mgr handle
  *
  * @par Performance:
- * - Execution time: ~5 µs @ 240 MHz
+ * - Execution time: ~5 us @ 240 MHz
  * - Dominated by memset (328 bytes)
  *
  * @par Configuration Example - Both Channels Enabled:
@@ -1144,7 +1144,7 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
   }
 
   /* Clear handle */
-  (void)memset(mgr, 0, sizeof(rx_comm_manager_t));
+  *mgr = (rx_comm_manager_t){0};
 
   /* Apply configuration */
   if (cfg != nullptr) {
@@ -1276,10 +1276,10 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
  *    - k_rx_err_timeout if NO channels received (normal condition)
  *    - Other error codes propagated from transport layers
  *
- * **Performance**: 15-200 µs typical, depends on:
+ * **Performance**: 15-200 us typical, depends on:
  * - Number of enabled channels (USB/SPI/both)
  * - Whether frames are available (data path vs fast timeout path)
- * - ASCII debugging enabled (adds ~50-150 µs per frame)
+ * - ASCII debugging enabled (adds ~50-150 us per frame)
  * - User callback execution time (not included in measurement)
  *
  * **Design Rationale**:
@@ -1315,11 +1315,11 @@ rx_err_t rx_comm_manager_deinit(rx_comm_manager_t* mgr)
  * @warning User callback must not block for extended periods
  *
  * @par Performance:
- * - No frames available: ~15 µs (both channels timeout, fast path)
- * - USB frame received: ~100-250 µs (USB bulk transfer + callback)
- * - SPI frame received: ~50-150 µs (SPI hardware transfer + callback)
- * - Both frames: ~150-400 µs (both channels + callbacks)
- * - With ASCII debugging: Add ~50-150 µs per frame
+ * - No frames available: ~15 us (both channels timeout, fast path)
+ * - USB frame received: ~100-250 us (USB bulk transfer + callback)
+ * - SPI frame received: ~50-150 us (SPI hardware transfer + callback)
+ * - Both frames: ~150-400 us (both channels + callbacks)
+ * - With ASCII debugging: Add ~50-150 us per frame
  *
  * @par Typical Usage - ThreadX Communication Task:
  * @code{.c}
@@ -1425,7 +1425,7 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
  *    - mgr and params pointers non-NULL
  *    - Manager initialized flag
  *    - Payload pointer valid if payload_len > 0
- *    - payload_len ≤ k_frame_max_payload (255 bytes)
+ *    - payload_len <= k_frame_max_payload (255 bytes)
  * 2. **Route to channel**:
  *    - USB: Verify usb_handle non-NULL, call rx_usb_comm_send()
  *    - SPI: Verify spi_handle non-NULL, call rx_spi_comm_send()
@@ -1436,9 +1436,9 @@ rx_err_t rx_comm_manager_poll(rx_comm_manager_t* mgr)
  *    - Send to USB Port 1 (TX direction)
  *
  * **Performance**:
- * - USB: ~30-150 µs (depends on payload size, USB bulk transfer)
- * - SPI: ~20-100 µs (depends on payload size, SPI hardware transfer)
- * - ASCII debugging: Add ~50-150 µs if enabled
+ * - USB: ~30-150 us (depends on payload size, USB bulk transfer)
+ * - SPI: ~20-100 us (depends on payload size, SPI hardware transfer)
+ * - ASCII debugging: Add ~50-150 us if enabled
  *
  * @param[in] mgr Communication manager handle
  *   - **Valid range**: Non-nullptr to initialized handle
@@ -1547,9 +1547,8 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
     return k_rx_err_invalid_arg;
   }
 
-  rx_err_t err;
-
   /* Send on appropriate channel */
+  rx_err_t err = k_rx_ok;
   switch (params->channel) {
     case k_comm_channel_usb:
       if (mgr->usb_handle == nullptr) {

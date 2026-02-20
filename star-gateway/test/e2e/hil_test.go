@@ -208,7 +208,7 @@ func (m *MockRX72N) handleConnection(c net.Conn) {
 			ackedSeq := decodedFrame.Header.Sequence
 			m.debugLog("Received ACK Seq=%d", ackedSeq)
 
-			// ✅ FIXED: After ACK, clear the frame and WAIT for next request
+			// [PASS] FIXED: After ACK, clear the frame and WAIT for next request
 			// Don't spontaneously send the next frame - this implements proper
 			// Stop-and-Wait HARQ where Gateway (Controller) initiates requests
 			// and MockRX72N (Peripheral) only responds when asked.

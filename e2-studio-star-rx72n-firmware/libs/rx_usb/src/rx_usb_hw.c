@@ -170,24 +170,24 @@
  * **Attach (rx_usb_hw_attach()):**
  * ```
  * SYSCFG.DPRPU = 1
- *   ↓
- * 1.5kΩ pull-up resistor enabled on D+
- *   ↓
+ *   v
+ * 1.5kOhm pull-up resistor enabled on D+
+ *   v
  * Host detects Full-Speed device (D+ pulled high)
- *   ↓
+ *   v
  * Host sends USB RESET (drives D+/D- both low for 10ms)
- *   ↓
+ *   v
  * Device enters Default state, enumeration begins
  * ```
  *
  * **Detach (rx_usb_hw_detach()):**
  * ```
  * SYSCFG.DPRPU = 0
- *   ↓
- * 1.5kΩ pull-up resistor disabled on D+
- *   ↓
+ *   v
+ * 1.5kOhm pull-up resistor disabled on D+
+ *   v
  * Host detects disconnect (D+ no longer pulled high)
- *   ↓
+ *   v
  * Host unbinds driver, closes /dev/ttyACMx ports
  * ```
  *
@@ -217,13 +217,13 @@
  * ```
  *
  * **FIFO Timeout:**
- * - Busy-wait up to 1000 iterations (~10 µs @ 240 MHz)
+ * - Busy-wait up to 1000 iterations (~10 us @ 240 MHz)
  * - If timeout, log error and return 0
  * - **Rationale:** FIFO ready is hardware operation (microseconds), busy-wait acceptable in ISR
  *
  * **Performance:**
- * - Read/write 64 bytes: ~5 µs (FIFO access + loop overhead)
- * - FIFO ready wait: <1 µs typical, 10 µs worst-case
+ * - Read/write 64 bytes: ~5 us (FIFO access + loop overhead)
+ * - FIFO ready wait: <1 us typical, 10 us worst-case
  *
  * ---
  *
@@ -279,15 +279,15 @@
  * **State Transitions:**
  * ```
  * Detached -> (VBUS attach) -> Powered
- *          ↓
+ *          v
  *       (USB RESET) -> Default
- *          ↓
+ *          v
  *     (SET_ADDRESS) -> Addressed
- *          ↓
+ *          v
  *  (SET_CONFIGURATION) -> Configured
- *          ↓
+ *          v
  *      (Bus idle >3ms) -> Suspended
- *          ↓
+ *          v
  *    (Resume signaling) -> Configured
  * ```
  *
@@ -315,9 +315,9 @@
  * | Function | Typical | Worst-Case |
  * |----------|---------|------------|
  * | rx_usb_hw_init() | 20ms | 25ms (sleep dominates) |
- * | rx_usb_hw_fifo_read(64) | 5 µs | 15 µs (with timeout) |
- * | rx_usb_hw_fifo_write(64) | 5 µs | 15 µs (with timeout) |
- * | rx_usb_hw_configure_pipe() | 2 µs | 5 µs |
+ * | rx_usb_hw_fifo_read(64) | 5 us | 15 us (with timeout) |
+ * | rx_usb_hw_fifo_write(64) | 5 us | 15 us (with timeout) |
+ * | rx_usb_hw_configure_pipe() | 2 us | 5 us |
  *
  * ---
  *
@@ -329,10 +329,10 @@
  * - `rx_usb_hw_fifo_*()`, `rx_usb_hw_configure_pipe()` -> USB ISR only
  *
  * **Busy-Wait Justification:**
- * - FIFO ready wait (~1-10 µs) too short for context switch overhead
+ * - FIFO ready wait (~1-10 us) too short for context switch overhead
  * - ISR context prevents blocking calls (no tx_sleep())
  * - Hardware guarantees microsecond-scale completion
- * - Alternative (interrupt per byte) would increase overhead 64×
+ * - Alternative (interrupt per byte) would increase overhead 64x
  *
  * ---
  *
@@ -419,7 +419,7 @@
  * dmesg | grep usb       # Check enumeration log
  *
  * # Oscilloscope verification:
- * # - Probe D+ line: Should see 1.5kΩ pull-up to 3.3V when attached
+ * # - Probe D+ line: Should see 1.5kOhm pull-up to 3.3V when attached
  * # - Probe D+/D-: Should see differential signaling at 12 Mbps
  * ```
  *
@@ -427,9 +427,9 @@
  *
  * ## Known Limitations
  *
- * 1. **Busy-wait for FIFO ready:** Blocks ISR for up to 10 µs
+ * 1. **Busy-wait for FIFO ready:** Blocks ISR for up to 10 us
  *    - Rationale: Hardware operation too fast for interrupt overhead
- *    - Alternative (interrupt per byte) would be 64× slower
+ *    - Alternative (interrupt per byte) would be 64x slower
  *
  * 2. **No DMA support:** FIFO access is software-driven
  *    - Rationale: Simplicity, determinism, no DMA channel allocation
@@ -830,7 +830,6 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
 {
   const uint16_t intsts0 = usb0()->intsts0;
   const uint16_t dvsq    = (intsts0 & k_usb_intsts0_dvsq_mask);
-
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:
       return k_usb_state_powered;

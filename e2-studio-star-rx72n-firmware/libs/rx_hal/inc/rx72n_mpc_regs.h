@@ -12,72 +12,72 @@
  * @par MPC System Architecture
  * @verbatim
  *                    RX72N Multi-Function Pin Controller Architecture
- *   ┌───────────────────────────────────────────────────────────────────────┐
- *   │                         MPC Module (0x0008C100)                       │
- *   │                                                                       │
- *   │  ┌────────────┐     ┌────────────┐     ┌────────────────────────────┐ │
- *   │  │   PWPR     │     │ Bus Ctrl   │     │    PFS Registers           │ │
- *   │  │ (Protect)  │     │ (External) │     │    (Pin Function)          │ │
- *   │  └──────┬─────┘     └────────────┘     └────────────┬───────────────┘ │
- *   │         │                                           │                 │
- *   │         │ Unlock                                    │ PSEL[4:0]       │
- *   │         ▼                                           ▼                 │
- *   └─────────┼───────────────────────────────────────────┼─────────────────┘
- *             │                                           │
- *             │                                           ▼
- *   ┌─────────┴──────────────────────────────────────────────────────────────┐
- *   │                        Pin Multiplexer Matrix                         │
- *   │  ┌─────────────────────────────────────────────────────────────────┐  │
- *   │  │   Physical Pin  ←──── MUX ◄─── [GPIO, SCI, SPI, I2C, MTU, ...]  │  │
- *   │  └─────────────────────────────────────────────────────────────────┘  │
- *   └────────────────────────────────────────────────────────────────────────┘
+ *   +-----------------------------------------------------------------------+
+ *   |                         MPC Module (0x0008C100)                       |
+ *   |                                                                       |
+ *   |  +------------+     +------------+     +----------------------------+ |
+ *   |  |   PWPR     |     | Bus Ctrl   |     |    PFS Registers           | |
+ *   |  | (Protect)  |     | (External) |     |    (Pin Function)          | |
+ *   |  +------+-----+     +------------+     +------------+---------------+ |
+ *   |         |                                           |                 |
+ *   |         | Unlock                                    | PSEL[4:0]       |
+ *   |         v                                           v                 |
+ *   +---------+-------------------------------------------+-----------------+
+ *             |                                           |
+ *             |                                           v
+ *   +---------+--------------------------------------------------------------+
+ *   |                        Pin Multiplexer Matrix                         |
+ *   |  +-----------------------------------------------------------------+  |
+ *   |  |   Physical Pin  <----- MUX <--- [GPIO, SCI, SPI, I2C, MTU, ...]  |  |
+ *   |  +-----------------------------------------------------------------+  |
+ *   +------------------------------------------------------------------------+
  *
  *   PFS Write Protection Sequence:
- *   ┌────────┐    ┌─────────┐    ┌─────────┐    ┌────────┐    ┌────────┐
- *   │ PWPR   │ ->  │ PWPR    │ ->  │ Write   │ ->  │ PWPR   │ ->  │ PWPR   │
- *   │ =0x00  │    │ =0x40   │    │ PnmPFS  │    │ =0x00  │    │ =0x80  │
- *   │(B0WI=0)│    │(PFSWE=1)│    │         │    │(PFSWE=0│    │(B0WI=1)│
- *   └────────┘    └─────────┘    └─────────┘    └────────┘    └────────┘
+ *   +--------+    +---------+    +---------+    +--------+    +--------+
+ *   | PWPR   | ->  | PWPR    | ->  | Write   | ->  | PWPR   | ->  | PWPR   |
+ *   | =0x00  |    | =0x40   |    | PnmPFS  |    | =0x00  |    | =0x80  |
+ *   |(B0WI=0)|    |(PFSWE=1)|    |         |    |(PFSWE=0|    |(B0WI=1)|
+ *   +--------+    +---------+    +---------+    +--------+    +--------+
  *
  *   Memory Map (Verified against RX72N Manual Ch20):
- *   ┌────────────┬──────────────────────────────────────────────┐
- *   │  Address   │  Register                                    │
- *   ├────────────┼──────────────────────────────────────────────┤
- *   │ 0x0008C100 │  PFCSE (CS Output Enable)                    │
- *   │ 0x0008C102 │  PFCSS0/1 (CS Output Pin Select)             │
- *   │ 0x0008C104 │  PFAOE0/1 (Address Output Enable)            │
- *   │ 0x0008C106 │  PFBCR0-3 (External Bus Control)             │
- *   │ 0x0008C10E │  PFENET (Ethernet Control)                   │
- *   │ 0x0008C11F │  PWPR (Write Protect Register)               │
- *   │ 0x0008C128 │  DSCR2[24] (Drive Capacity Control)          │
- *   │ 0x0008C140 │  P00PFS - PJ5PFS (Pin Function Select)       │
- *   └────────────┴──────────────────────────────────────────────┘
+ *   +------------+----------------------------------------------+
+ *   |  Address   |  Register                                    |
+ *   +------------+----------------------------------------------+
+ *   | 0x0008C100 |  PFCSE (CS Output Enable)                    |
+ *   | 0x0008C102 |  PFCSS0/1 (CS Output Pin Select)             |
+ *   | 0x0008C104 |  PFAOE0/1 (Address Output Enable)            |
+ *   | 0x0008C106 |  PFBCR0-3 (External Bus Control)             |
+ *   | 0x0008C10E |  PFENET (Ethernet Control)                   |
+ *   | 0x0008C11F |  PWPR (Write Protect Register)               |
+ *   | 0x0008C128 |  DSCR2[24] (Drive Capacity Control)          |
+ *   | 0x0008C140 |  P00PFS - PJ5PFS (Pin Function Select)       |
+ *   +------------+----------------------------------------------+
  *
  *   STAR Project Pin Assignments (144-pin LFQFP):
- *   ┌──────────┬─────────┬──────┬────────────────────────────────┐
- *   │  Pin     │  Port   │ PSEL │  Function                      │
- *   ├──────────┼─────────┼──────┼────────────────────────────────┤
- *   │ USB D+/- │ (USB)   │  -   │  USB CDC Debug                 │
- *   │ Pin 72   │ PB7     │ 0x0A │  SCI9-TXD (Debug UART TX)      │
- *   │ Pin 74   │ PB6     │ 0x0A │  SCI9-RXD (Debug UART RX)      │
- *   │ Pin 32   │ PA0     │ 0x0D │  RSPI0-MOSIA (SPI COPI)        │
- *   │ Pin 33   │ PA1     │ 0x0D │  RSPI0-MISOA (SPI CIPO)        │
- *   │ Pin 35   │ PA3     │ 0x0D │  RSPI0-RSPCKA (SPI CLK)        │
- *   │ Pin 34   │ PA4     │ 0x0D │  RSPI0-SSLA0-B (SPI CS)        │
- *   │ Pin 97   │ PE5     │ 0x07 │  GTIOC0A (Motor 0 PWM+)        │
- *   │ Pin 96   │ PE4     │ 0x07 │  GTIOC0B (Motor 0 PWM-)        │
- *   │ Pin 60   │ P24     │ 0x02 │  MTCLKA (Encoder 0 Phase A)    │
- *   │ Pin 61   │ P25     │ 0x02 │  MTCLKB (Encoder 0 Phase B)    │
- *   └──────────┴─────────┴──────┴────────────────────────────────┘
+ *   +----------+---------+------+--------------------------------+
+ *   |  Pin     |  Port   | PSEL |  Function                      |
+ *   +----------+---------+------+--------------------------------+
+ *   | USB D+/- | (USB)   |  -   |  USB CDC Debug                 |
+ *   | Pin 72   | PB7     | 0x0A |  SCI9-TXD (Debug UART TX)      |
+ *   | Pin 74   | PB6     | 0x0A |  SCI9-RXD (Debug UART RX)      |
+ *   | Pin 32   | PA0     | 0x0D |  RSPI0-MOSIA (SPI COPI)        |
+ *   | Pin 33   | PA1     | 0x0D |  RSPI0-MISOA (SPI CIPO)        |
+ *   | Pin 35   | PA3     | 0x0D |  RSPI0-RSPCKA (SPI CLK)        |
+ *   | Pin 34   | PA4     | 0x0D |  RSPI0-SSLA0-B (SPI CS)        |
+ *   | Pin 97   | PE5     | 0x07 |  GTIOC0A (Motor 0 PWM+)        |
+ *   | Pin 96   | PE4     | 0x07 |  GTIOC0B (Motor 0 PWM-)        |
+ *   | Pin 60   | P24     | 0x02 |  MTCLKA (Encoder 0 Phase A)    |
+ *   | Pin 61   | P25     | 0x02 |  MTCLKB (Encoder 0 Phase B)    |
+ *   +----------+---------+------+--------------------------------+
  * @endverbatim
  *
  * @par PFS Register Bit Layout
  * Each pin has a Pin Function Select (PFS) register:
  * @verbatim
- *   Bit 7   │ Bit 6   │ Bit 5    │ Bits 4-0
- *   ────────┼─────────┼──────────┼──────────────────
- *   ASEL    │ ISEL    │ Reserved │ PSEL[4:0]
- *   (Analog)│ (IRQ)   │          │ (Peripheral Select)
+ *   Bit 7   | Bit 6   | Bit 5    | Bits 4-0
+ *   --------+---------+----------+------------------
+ *   ASEL    | ISEL    | Reserved | PSEL[4:0]
+ *   (Analog)| (IRQ)   |          | (Peripheral Select)
  * @endverbatim
  *
  * @par Common PSEL Values (varies by pin, check RX72N Manual Appendix)
@@ -454,11 +454,11 @@ static inline volatile rx_mpc_regs_t* mpc(void)
  *
  * @par PWPR Register Layout
  * @verbatim
- *   Bit │ Name  │ Description
- *   ────┼───────┼────────────────────────────────────────────────
- *    7  │ B0WI  │ PFSWE Bit Write Disable (1=PFSWE protected)
- *    6  │ PFSWE │ PFS Write Enable (1=PFS writes allowed)
- *   5-0 │  -    │ Reserved
+ *   Bit | Name  | Description
+ *   ----+-------+------------------------------------------------
+ *    7  | B0WI  | PFSWE Bit Write Disable (1=PFSWE protected)
+ *    6  | PFSWE | PFS Write Enable (1=PFS writes allowed)
+ *   5-0 |  -    | Reserved
  * @endverbatim
  *
  * @par Unlock Sequence
@@ -485,12 +485,12 @@ typedef enum : uint8_t {
  *
  * @par PFS Register Layout
  * @verbatim
- *   Bit │ Name      │ Description
- *   ────┼───────────┼────────────────────────────────────────────
- *    7  │ ASEL      │ Analog Input Select (1=analog function)
- *    6  │ ISEL      │ IRQ Input Select (1=IRQ input enabled)
- *    5  │ Reserved  │ Always write 0
- *   4-0 │ PSEL[4:0] │ Peripheral function select (0x00-0x1F)
+ *   Bit | Name      | Description
+ *   ----+-----------+--------------------------------------------
+ *    7  | ASEL      | Analog Input Select (1=analog function)
+ *    6  | ISEL      | IRQ Input Select (1=IRQ input enabled)
+ *    5  | Reserved  | Always write 0
+ *   4-0 | PSEL[4:0] | Peripheral function select (0x00-0x1F)
  * @endverbatim
  *
  * @note PSEL values are pin-specific. Check RX72N Manual Appendix for

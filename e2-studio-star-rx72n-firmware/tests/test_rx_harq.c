@@ -86,11 +86,11 @@
  *
  * | Transmissions (n) | SNR Gain (dB) | Improvement Factor |
  * |-------------------|---------------|--------------------|
- * | 1                 | 0.0           | 1.0×               |
- * | 2                 | 3.0           | 2.0×               |
- * | 3                 | 4.8           | 3.0×               |
- * | 4                 | 6.0           | 4.0×               |
- * | 5                 | 7.0           | 5.0×               |
+ * | 1                 | 0.0           | 1.0x               |
+ * | 2                 | 3.0           | 2.0x               |
+ * | 3                 | 4.8           | 3.0x               |
+ * | 4                 | 6.0           | 4.0x               |
+ * | 5                 | 7.0           | 5.0x               |
  *
  * **Key Insight:** Each additional retransmission provides **diminishing returns**
  * in dB (logarithmic scale), but **linear improvement** in linear SNR.
@@ -105,8 +105,8 @@
  *   s_{\text{out}}[i] = \text{clamp}_{[-127, 127]}\left(\sum_{k=1}^{n} s_k[i]\right)
  * @f]
  *
- * With maximum 3 combines (default) and max soft bit value ±127, the accumulator
- * reaches at most ±381, well within `int16_t` range (no overflow risk).
+ * With maximum 3 combines (default) and max soft bit value +/-127, the accumulator
+ * reaches at most +/-381, well within `int16_t` range (no overflow risk).
  *
  * ## HARQ State Machine
  *
@@ -153,7 +153,7 @@
  * | **SNR improvement (2 combines)**| +3.0 dB                                | From diversity gain formula                |
  * | **SNR improvement (3 combines)**| +4.8 dB                                | Diminishing returns (logarithmic)          |
  * | **Memory per HARQ handle**      | ~82 KB                                 | Dominated by FEC decoder survivor paths    |
- * | **Memory per combiner**         | ~4 KB (2048 × int16)                   | Soft bit accumulator buffer                |
+ * | **Memory per combiner**         | ~4 KB (2048 x int16)                   | Soft bit accumulator buffer                |
  *
  * ## Test Methodology
  *
@@ -184,7 +184,7 @@
  * - **Objective:** Verify lossless encode -> decode under ideal conditions (no noise)
  * - **Method:**
  *   1. Encode payload with FEC: `rx_harq_encode()`
- *   2. Convert hard bits to soft bits (perfect confidence: ±127)
+ *   2. Convert hard bits to soft bits (perfect confidence: +/-127)
  *   3. Decode with HARQ: `rx_harq_decode()`
  *   4. Compare decoded output with original input
  * - **Coverage:** Single byte, multi-byte, with/without FEC
@@ -236,7 +236,7 @@
  * | **1** | No recursion, goto, setjmp/longjmp        | Test state machine transitions (no goto)        |
  * | **2** | All loops bounded                         | Verify accumulation loops use array bounds      |
  * | **3** | No dynamic memory allocation              | Verify static buffer usage in combiner          |
- * | **4** | Functions ≤ 60 lines                      | Test individual functions, not long pipelines   |
+ * | **4** | Functions <= 60 lines                      | Test individual functions, not long pipelines   |
  * | **5** | Use assertions (min 2 checks per function)| Every test validates pre/postconditions         |
  * | **6** | Data declared at smallest scope           | Test local variable scoping                     |
  * | **7** | Check all return values                   | All `rx_err_t` returns validated with TEST_ASSERT|
@@ -682,6 +682,7 @@ void tearDown(void)
 void test_combiner_init_null(void)
 {
   rx_err_t err = rx_chase_combiner_init(nullptr, k_test_max_combines_medium);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -708,6 +709,7 @@ void test_combiner_init_success(void)
 {
   rx_chase_combiner_t comb;
   rx_err_t            err = rx_chase_combiner_init(&comb, k_test_max_combines_large);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(k_test_count_zero, comb.initialized);
   TEST_ASSERT_EQUAL(k_test_max_combines_large, comb.max_combines);
@@ -735,6 +737,7 @@ void test_combiner_init_default_max(void)
 {
   rx_chase_combiner_t comb;
   rx_err_t            err = rx_chase_combiner_init(&comb, 0); /* 0 = default */
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_harq_default_combines, comb.max_combines);
 }
@@ -757,6 +760,7 @@ void test_combiner_init_default_max(void)
 void test_combiner_deinit_null(void)
 {
   rx_err_t err = rx_chase_combiner_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -801,6 +805,7 @@ void test_combiner_add_null_combiner(void)
 {
   rx_soft_bit_t soft[k_test_array_size_large] = {0};
   rx_err_t      err = rx_chase_combiner_add(nullptr, soft, k_test_array_size_large);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -816,6 +821,7 @@ void test_combiner_add_null_combiner(void)
 void test_combiner_add_null_soft(void)
 {
   rx_err_t err = rx_chase_combiner_add(&s_combiner, nullptr, k_test_array_size_large);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -840,6 +846,7 @@ void test_combiner_add_uninitialized(void)
   rx_chase_combiner_t comb                          = {0};
   rx_soft_bit_t       soft[k_test_array_size_large] = {0};
   rx_err_t            err = rx_chase_combiner_add(&comb, soft, k_test_array_size_large);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -862,6 +869,7 @@ void test_combiner_add_zero_length(void)
 {
   rx_soft_bit_t soft[k_test_array_size_large] = {k_test_count_zero};
   rx_err_t      err = rx_chase_combiner_add(&s_combiner, soft, k_test_count_zero);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -884,6 +892,7 @@ void test_combiner_add_too_large(void)
 {
   rx_soft_bit_t soft[k_test_array_size_large] = {k_test_count_zero};
   rx_err_t      err =
+
     rx_chase_combiner_add(&s_combiner, soft, k_harq_soft_buffer_size + k_test_count_one);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
@@ -965,6 +974,7 @@ void test_combiner_add_length_mismatch(void)
 void test_combiner_add_max_reached(void)
 {
   rx_chase_combiner_t comb;
+
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_chase_combiner_init(&comb, k_test_max_combines_small)); /* Max 2 combines */
 
@@ -1103,6 +1113,7 @@ void test_combiner_combined_no_add(void)
   uint32_t      len;
 
   rx_err_t err = rx_chase_combiner_combined(&s_combiner, output, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1136,6 +1147,7 @@ void test_combiner_combined_no_add(void)
 void test_combiner_can_add(void)
 {
   rx_chase_combiner_t comb;
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_init(&comb, k_test_max_combines_small));
 
   rx_soft_bit_t soft[] = {k_test_soft_pos_10, k_test_soft_pos_20};
@@ -1273,6 +1285,7 @@ void test_combiner_reset(void)
 void test_combiner_reset_null(void)
 {
   rx_err_t err = rx_chase_combiner_reset(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1296,6 +1309,7 @@ void test_combiner_reset_uninitialized(void)
 {
   rx_chase_combiner_t comb = {0};
   rx_err_t            err  = rx_chase_combiner_reset(&comb);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1322,6 +1336,7 @@ void test_combiner_reset_uninitialized(void)
 void test_harq_init_null(void)
 {
   rx_err_t err = rx_harq_init(nullptr, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1347,6 +1362,7 @@ void test_harq_init_null(void)
 void test_harq_init_default_config(void)
 {
   rx_err_t err = rx_harq_init(&s_harq, nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(k_test_count_zero, s_harq.initialized);
   TEST_ASSERT_EQUAL(k_harq_default_retries, s_harq.max_retries);
@@ -1404,6 +1420,7 @@ void test_harq_init_custom_config(void)
 void test_harq_deinit_null(void)
 {
   rx_err_t err = rx_harq_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1505,6 +1522,7 @@ void test_harq_reset(void)
 void test_harq_reset_null(void)
 {
   rx_err_t err = rx_harq_reset(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1528,6 +1546,7 @@ void test_harq_reset_uninitialized(void)
 {
   rx_harq_handle_t harq = {0};
   rx_err_t         err  = rx_harq_reset(&harq);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1600,6 +1619,7 @@ void test_harq_encode_uninitialized(void)
   uint32_t         len;
 
   rx_err_t err = rx_harq_encode(&harq, payload, k_test_buf_tiny, output, k_test_buf_large, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -1695,6 +1715,7 @@ void test_harq_encode_with_fec(void)
   uint32_t len = 0;
 
   rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_tiny, output, k_test_buf_large, &len);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* With FEC, output should be larger than input */
@@ -1723,6 +1744,7 @@ void test_harq_encode_with_fec(void)
 void test_harq_encode_without_fec(void)
 {
   rx_harq_config_t config = {.fec_enabled = k_test_count_zero};
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
 
   uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
@@ -1762,6 +1784,7 @@ void test_harq_encode_buffer_too_small(void)
   uint32_t len = 0;
 
   rx_err_t err = rx_harq_encode(&s_harq, payload, k_test_buf_tiny, output, k_test_buf_small, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -1786,6 +1809,7 @@ void test_harq_encode_buffer_too_small(void)
 void test_harq_encode_buffer_too_small_no_fec(void)
 {
   rx_harq_config_t config = {.fec_enabled = k_test_count_zero};
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
 
   uint8_t  payload[] = {k_test_byte_answer, k_test_byte_next};
@@ -1909,6 +1933,7 @@ void test_harq_can_retry_fresh(void)
 void test_harq_can_retry_exhausted(void)
 {
   rx_harq_config_t config = {.max_retries = k_test_count_two};
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_harq_init(&s_harq, &config));
 
   s_harq.retry_count = k_test_count_two;
@@ -1986,6 +2011,7 @@ void test_harq_decode_uninitialized(void)
   uint8_t                 output[k_test_buf_medium];
   uint32_t                len;
   rx_harq_decode_params_t params =
+
     internal_make_decode_params(soft, k_test_buf_std, k_test_buf_small);
 
   rx_err_t err = rx_harq_decode(&harq, &params, output, &len);
@@ -2084,7 +2110,7 @@ void test_harq_decode_zero_length(void)
  * @par Test Steps:
  * 1. Initialize HARQ (FEC enabled by default)
  * 2. Encode payload `[0xDE, 0xAD]` -> expect ~6 bytes FEC-encoded output
- * 3. Convert encoded hard bits to soft bits (perfect confidence: ±127)
+ * 3. Convert encoded hard bits to soft bits (perfect confidence: +/-127)
  * 4. Reset HARQ state (clear encoder state before decode)
  * 5. Decode soft bits -> expect 2 bytes decoded
  * 6. Verify decoded == original payload
@@ -2174,7 +2200,7 @@ void test_harq_roundtrip_with_fec(void)
  * @par Test Steps (Simplified - No Noise Injection):
  * 1. Initialize HARQ (FEC enabled by default)
  * 2. Encode payload `[0x42]` -> FEC encoded output
- * 3. Convert to perfect soft bits (±127 confidence)
+ * 3. Convert to perfect soft bits (+/-127 confidence)
  * 4. Reset HARQ state
  * 5. Decode soft bits -> expect success (perfect bits always decode)
  * 6. Verify decoded value is 0x42

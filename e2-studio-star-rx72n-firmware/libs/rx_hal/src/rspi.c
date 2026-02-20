@@ -84,7 +84,7 @@
  * | Min clock (controller) | 100 kHz | PCLKB=60MHz, SPBR=255 |
  * | Transfer timeout | 10 ms | Per byte |
  * | CS setup/hold delay | ~300 ns | 10 NOP cycles @ 240MHz |
- * | 16-bit transfer time | ~2-50 µs | Depends on clock |
+ * | 16-bit transfer time | ~2-50 us | Depends on clock |
  *
  * @par Memory Usage
  * | Component | Size | Description |
@@ -168,7 +168,7 @@
  * for worst-case SPI peripheral response times at minimum clock frequency.
  *
  * @par Timeout Calculation
- * At 100 kHz minimum clock, one byte takes ~80 µs. 10 ms timeout provides
+ * At 100 kHz minimum clock, one byte takes ~80 us. 10 ms timeout provides
  * ~125 byte margin before declaring failure, sufficient for any single
  * transfer operation.
  *
@@ -555,9 +555,6 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
                                   uint8_t*       rx_data,
                                   const uint16_t length)
 {
-  rx_err_t                 err;
-  volatile rx_rspi_regs_t* rspi;
-
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is nullptr");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
@@ -573,7 +570,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   }
 
   /* Get RSPI base */
-  rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* const rspi = internal_get_rspi_base(channel);
   if (rspi == nullptr) {
     rx_log_error(s_tag, "Failed to get RSPI base address");
     return k_rx_err_invalid_arg;
@@ -586,7 +583,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
     }
 
     /* Wait for transmit buffer empty */
-    err = internal_wait_tx_ready(rspi);
+    rx_err_t err = internal_wait_tx_ready(rspi);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "SPI transmit timeout");
       return err;
@@ -815,9 +812,6 @@ static void internal_configure_spcmd(uint16_t* spcmd, const uint8_t spi_mode)
  */
 static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
 {
-  uint32_t divisor;
-  uint32_t spbr_val;
-
   RX_CHECK_NULL_PTR(spbr, s_tag, "SPBR output pointer is nullptr");
 
   if (freq_hz < k_rspi_min_freq_hz || freq_hz > k_rspi_max_freq_hz) {
@@ -828,8 +822,8 @@ static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
   /* SPBR formula: freq = PCLKB / (2 * (SPBR + 1) * 2^BRDV)
    * With BRDV=0: freq = PCLKB / (2 * (SPBR + 1))
    * Solving for SPBR: SPBR = (PCLKB / (2 * freq)) - 1 */
-  divisor  = k_rspi_spbr_divisor * freq_hz;
-  spbr_val = (k_rspi_pclkb_hz / divisor) - k_rspi_spbr_offset;
+  const uint32_t divisor  = k_rspi_spbr_divisor * freq_hz;
+  const uint32_t spbr_val = (k_rspi_pclkb_hz / divisor) - k_rspi_spbr_offset;
 
   /* Reject frequencies that are too low (would require SPBR > 255) */
   if (spbr_val > k_rspi_spbr_max) {
@@ -853,7 +847,8 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
 {
   const uint8_t            port      = rx_port_from_pin(pin_config);
   const uint8_t            pin       = rx_pin_from_pin(pin_config);
-  volatile rx_port_regs_t* port_regs = rx_port_get_base(port);
+
+  volatile rx_port_regs_t* const port_regs = rx_port_get_base(port);
 
   if (port_regs == nullptr) {
     rx_log_error(s_tag, "Invalid port number for CS pin");
@@ -930,10 +925,8 @@ static rx_err_t rspi_prepare_controller(const uint8_t                   channel,
                                         volatile rx_rspi_regs_t**       out_rspi,
                                         uint8_t*                        out_spbr)
 {
-  rx_err_t err;
-
   /* Calculate SPBR for requested frequency */
-  err = internal_calculate_spbr(config->freq_hz, out_spbr);
+  rx_err_t err = internal_calculate_spbr(config->freq_hz, out_spbr);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1051,24 +1044,22 @@ static rx_err_t rspi_configure_registers(const uint8_t                   channel
  */
 rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_config_t* config)
 {
-  uint16_t                 spcmd = s_rspi_spcmd_init;
-  uint8_t                  spbr  = k_rspi_spbr_init;
-  volatile rx_rspi_regs_t* rspi  = nullptr;
-  rx_err_t                 err;
-
   /* Validate all arguments and preconditions */
-  err = rspi_validate_controller_args(channel, config);
+  rx_err_t err = rspi_validate_controller_args(channel, config);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Prepare hardware resources (SPBR, RSPI base, CS GPIO) */
+  volatile rx_rspi_regs_t* rspi = nullptr;
+  uint8_t                  spbr = k_rspi_spbr_init;
   err = rspi_prepare_controller(channel, config, &rspi, &spbr);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure SPI mode (CPOL and CPHA) */
+  uint16_t spcmd = s_rspi_spcmd_init;
   internal_configure_spcmd(&spcmd, config->spi_mode);
 
   /* Configure 16-bit data length */
@@ -1101,19 +1092,15 @@ rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_confi
  */
 rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
 {
-  volatile rx_port_regs_t* port_regs;
-  uint8_t                  port;
-  uint8_t                  pin;
-
   /* Validate channel */
   if (channel >= k_rspi_max_channels || !s_rspi_controller_initialized[channel]) {
     rx_log_error(s_tag, "RSPI controller channel not initialized");
     return k_rx_err_invalid_state;
   }
 
-  port      = s_rspi_cs_config[channel].port;
-  pin       = s_rspi_cs_config[channel].pin;
-  port_regs = rx_port_get_base(port);
+  const uint8_t port                   = s_rspi_cs_config[channel].port;
+  const uint8_t pin                    = s_rspi_cs_config[channel].pin;
+  volatile rx_port_regs_t* const port_regs = rx_port_get_base(port);
 
   if (port_regs == nullptr) {
     return k_rx_err_invalid_arg;
@@ -1144,8 +1131,6 @@ rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
  */
 static rx_err_t rspi_controller_assert_cs_with_setup(const uint8_t channel)
 {
-  rx_err_t err;
-
   /* Rule 5: Pre-condition validation */
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
               (channel == k_rspi_channel_2),
@@ -1153,7 +1138,7 @@ static rx_err_t rspi_controller_assert_cs_with_setup(const uint8_t channel)
   RX_ASSERT(s_rspi_controller_initialized[channel], "RSPI controller channel not initialized");
 
   /* Assert CS (active low) */
-  err = rspi_controller_set_cs(channel, true);
+  const rx_err_t err = rspi_controller_set_cs(channel, true);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1218,14 +1203,12 @@ static rx_err_t rspi_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
                                                   uint16_t                 tx_data,
                                                   uint16_t*                rx_data)
 {
-  rx_err_t err;
-
   /* Rule 5: Pre-condition validation */
   RX_CHECK_NULL_PTR(rspi, s_tag, "RSPI register pointer is nullptr");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
   /* Wait for transmit buffer empty */
-  err = internal_wait_tx_ready(rspi);
+  rx_err_t err = internal_wait_tx_ready(rspi);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI controller transmit timeout");
     return err;
@@ -1299,9 +1282,6 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
                                         const uint16_t  tx_data,
                                         uint16_t* const rx_data)
 {
-  rx_err_t                 err;
-  volatile rx_rspi_regs_t* rspi;
-
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
   /* Validate channel */
@@ -1311,13 +1291,13 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
   }
 
   /* Get RSPI base */
-  rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* const rspi = internal_get_rspi_base(channel);
   if (rspi == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   /* Assert CS with setup delay */
-  err = rspi_controller_assert_cs_with_setup(channel);
+  rx_err_t err = rspi_controller_assert_cs_with_setup(channel);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1366,7 +1346,7 @@ rx_err_t rspi_controller_deinit(const uint8_t channel)
   }
 
   /* Get RSPI base */
-  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* const rspi = internal_get_rspi_base(channel);
   if (rspi == nullptr) {
     return k_rx_err_invalid_arg;
   }

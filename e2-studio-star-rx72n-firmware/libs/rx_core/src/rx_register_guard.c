@@ -114,9 +114,9 @@
  *
  * | Operation | Best Case | Worst Case | Average |
  * |-----------|-----------|------------|---------|
- * | init() | 2.0 µs | 2.5 µs | 2.2 µs |
- * | refresh() (no corrections) | 4.0 µs | 4.5 µs | 4.2 µs |
- * | refresh() (all corrected) | 5.5 µs | 6.0 µs | 5.8 µs |
+ * | init() | 2.0 us | 2.5 us | 2.2 us |
+ * | refresh() (no corrections) | 4.0 us | 4.5 us | 4.2 us |
+ * | refresh() (all corrected) | 5.5 us | 6.0 us | 5.8 us |
  * | get_correction_count() | 15 ns | 20 ns | 18 ns |
  * | reset_count() | 25 ns | 35 ns | 30 ns |
  * | is_initialized() | 12 ns | 18 ns | 15 ns |
@@ -330,7 +330,7 @@ typedef struct {
  * @enduml
  *
  * @invariant corrections >= 0 (unsigned)
- * @invariant initialized ∈ {0, 1}
+ * @invariant initialized in {0, 1}
  *
  * @see s_state Static instance of this structure
  *
@@ -344,29 +344,32 @@ typedef struct {
 } register_guard_state_t;
 
 /**
- * @var k_corrections_default
- * @brief Default/reset value for the correction counter
+ * @enum register_guard_defaults_t
+ * @brief Default values for register guard counters and sentinel flags
  *
  * @details
- * Defines the initial/reset value for the corrections counter. Using a
- * named constant instead of literal 0 improves code clarity and allows
- * for easy modification if non-zero initialization is ever needed.
+ * Provides named sentinel values used during register guard initialization
+ * and state reset operations. Using typed enums instead of const variables
+ * ensures predictable size (uint32_t), ABI stability, and debugger
+ * visibility per project C23 style requirements.
  *
- * **Value:** 0
+ * @invariant k_corrections_default must remain zero to correctly reset counters
+ * @invariant k_guard_initialized must remain 1 to match the initialized flag type
  *
- * @par Rationale:
- * Counter starts at zero because no corrections have been made at
- * initialization. This constant is used in both rx_register_guard_init()
- * and rx_register_guard_reset_count() for consistency.
+ * @code
+ * s_state.corrections = k_corrections_default;
+ * s_state.initialized = k_guard_initialized;
+ * @endcode
  *
- * @par NASA Power of 10 Compliance:
- * Rule 8: Named constant instead of magic number
- *
- * @see rx_register_guard_reset_count() Uses this for counter reset
+ * @see rx_register_guard_init()
+ * @see rx_register_guard_reset_count()
  *
  * @since Version 1.0.0
  */
-static const uint32_t k_corrections_default = 0;
+typedef enum : uint32_t {
+  k_corrections_default = 0, /**< Default correction counter value (zero, no corrections applied) */
+  k_guard_initialized   = 1, /**< Sentinel: register guard has been initialized */
+} register_guard_defaults_t;
 
 /* =============================================================================
  * Module State
@@ -434,8 +437,8 @@ static register_guard_state_t s_state = {0};
  * - PORTG, PORTH (176-pin only)
  *
  * @par Execution Timing:
- * - 12 register reads × ~15 cycles = ~180 cycles
- * - At 240 MHz: ~0.75 µs
+ * - 12 register reads x ~15 cycles = ~180 cycles
+ * - At 240 MHz: ~0.75 us
  *
  * @pre None - safe to call anytime
  * @post s_state.pdr contains current PDR values
@@ -488,8 +491,8 @@ static void internal_capture_pdr(void)
  * | MSTPCRD | GPTW0-3, USB0, CRC |
  *
  * @par Execution Timing:
- * - 4 register reads × ~20 cycles = ~80 cycles
- * - At 240 MHz: ~0.33 µs
+ * - 4 register reads x ~20 cycles = ~80 cycles
+ * - At 240 MHz: ~0.33 us
  *
  * @pre None - safe to call anytime
  * @post s_state.mstpcr contains current MSTPCR values
@@ -554,9 +557,9 @@ static void internal_capture_mstpcr(void)
  * @enddot
  *
  * @par Performance:
- * - **Best case** (no mismatches): 12 reads, 0 writes = ~1.5 µs
- * - **Worst case** (all mismatched): 12 reads, 12 writes = ~2.5 µs
- * - **Typical case**: 12 reads, 0-1 writes = ~1.6 µs
+ * - **Best case** (no mismatches): 12 reads, 0 writes = ~1.5 us
+ * - **Worst case** (all mismatched): 12 reads, 12 writes = ~2.5 us
+ * - **Typical case**: 12 reads, 0-1 writes = ~1.6 us
  *
  * @pre s_state.pdr must contain valid golden values (init() called)
  * @post All PORT PDR registers match golden values
@@ -696,8 +699,8 @@ static void internal_refresh_pdr(void)
  * @enddot
  *
  * @par Performance:
- * - **Best case** (no mismatches): 4 reads, fast return = ~0.5 µs
- * - **Worst case** (all mismatched): 8 reads, 4 writes, PRCR unlock = ~1.5 µs
+ * - **Best case** (no mismatches): 4 reads, fast return = ~0.5 us
+ * - **Worst case** (all mismatched): 8 reads, 4 writes, PRCR unlock = ~1.5 us
  * - **Interrupt latency**: ~200 ns (time interrupts are disabled)
  *
  * @par Inline Assembly (NASA Rule 9 Deviation):
@@ -731,9 +734,8 @@ static void internal_refresh_pdr(void)
  */
 static void internal_refresh_mstpcr(void)
 {
-  bool needs_update = false;
-
   /* Check if any MSTPCR needs update */
+  bool needs_update = false;
   if (system_regs()->mstpcra != s_state.mstpcr.mstpcra) {
     needs_update = true;
   }
@@ -834,7 +836,7 @@ static void internal_refresh_mstpcr(void)
  * @note **Thread Safety**: Not thread-safe. Call from main thread during startup.
  * @note **Re-initialization**: Safe to call multiple times to re-capture golden
  *       values after intentional configuration changes.
- * @note **Execution Time**: ~2.2 µs @ 240 MHz
+ * @note **Execution Time**: ~2.2 us @ 240 MHz
  * @note **Conditional Compilation**: On non-RX targets (unit tests), capture
  *       functions are no-ops but module state is still updated.
  *
@@ -874,8 +876,8 @@ rx_err_t rx_register_guard_init(void)
   internal_capture_mstpcr();
 #endif
 
-  s_state.corrections = 0;
-  s_state.initialized = 1;
+  s_state.corrections = k_corrections_default;
+  s_state.initialized = k_guard_initialized;
 
   return k_rx_ok;
 }
@@ -903,8 +905,8 @@ rx_err_t rx_register_guard_init(void)
  *   start [label="rx_register_guard_refresh()"];
  *   check_init [label="initialized?", shape=diamond];
  *   early_return [label="Return (no-op)"];
- *   refresh_pdr [label="internal_refresh_pdr()\n~1.5 µs"];
- *   refresh_mstpcr [label="internal_refresh_mstpcr()\n~0.5-1.5 µs"];
+ *   refresh_pdr [label="internal_refresh_pdr()\n~1.5 us"];
+ *   refresh_mstpcr [label="internal_refresh_mstpcr()\n~0.5-1.5 us"];
  *   done [label="Done"];
  *
  *   start -> check_init;
@@ -920,8 +922,8 @@ rx_err_t rx_register_guard_init(void)
  * | Scenario | Time @ 240 MHz | Notes |
  * |----------|---------------|-------|
  * | Not initialized | ~10 ns | Early return |
- * | No corrections | ~4.2 µs | Typical case |
- * | All corrected | ~5.8 µs | Worst case |
+ * | No corrections | ~4.2 us | Typical case |
+ * | All corrected | ~5.8 us | Worst case |
  * | CPU overhead @ 10 Hz | 0.006% | Negligible |
  *
  * @return void (no return value)

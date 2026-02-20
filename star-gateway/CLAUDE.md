@@ -20,16 +20,16 @@ This file provides guidance to Claude Code when working with the star-gateway mo
 **FORBIDDEN (will be rejected):**
 ```go
 // WRONG - No compatibility aliases
-var OldFunctionName = NewFunctionName  // ❌ Just update call sites
+var OldFunctionName = NewFunctionName  // [FAIL] Just update call sites
 
 // WRONG - No deprecated exports
 // Deprecated: Use NewType instead
-type OldType = NewType  // ❌ Delete it
+type OldType = NewType  // [FAIL] Delete it
 ```
 
 **CORRECT:**
 ```go
-// ✓ Rename types and update all references immediately
+// [PASS] Rename types and update all references immediately
 type MotorControlRequest struct {
     VelocityMPS float32  // Renamed from 'Speed'
 }
@@ -55,36 +55,36 @@ The gateway implements Layers 1-4 of the communication protocol:
 
 ```
 star-gateway/
-├── cmd/
-│   └── star-gateway/
-│       └── main.go          # Entry point
-├── internal/
-│   ├── transport/           # Layer 1: SPI transport
-│   │   ├── spi.go           # Transport interface and SPITransport
-│   │   └── spi_test.go
-│   ├── frame/               # Layer 2: Frame protocol
-│   │   ├── frame.go         # Frame constants and types
-│   │   ├── encoder.go       # Frame encoder
-│   │   ├── decoder.go       # Frame decoder
-│   │   └── frame_test.go
-│   ├── harq/                # Layer 3: HARQ protocol (Chase Combining)
-│   │   ├── harq.go          # HARQ interface and ChaseCombining
-│   │   └── harq_test.go
-│   ├── fec/                 # Forward Error Correction
-│   │   ├── fec.go           # FEC interfaces and SoftBit type
-│   │   ├── convolutional.go # Rate-1/2, K=7 convolutional encoder
-│   │   ├── viterbi.go       # Soft Viterbi decoder
-│   │   ├── combiner.go      # Chase Combiner for soft bit combining
-│   │   └── fec_test.go
-│   └── service/             # Layer 5: gRPC services
-│       ├── motor_control.go
-│       ├── telemetry.go
-│       ├── battery.go
-│       ├── configuration.go
-│       └── firmware.go
-├── go.mod
-├── go.sum
-└── CLAUDE.md
++-- cmd/
+|   +-- star-gateway/
+|       +-- main.go          # Entry point
++-- internal/
+|   +-- transport/           # Layer 1: SPI transport
+|   |   +-- spi.go           # Transport interface and SPITransport
+|   |   +-- spi_test.go
+|   +-- frame/               # Layer 2: Frame protocol
+|   |   +-- frame.go         # Frame constants and types
+|   |   +-- encoder.go       # Frame encoder
+|   |   +-- decoder.go       # Frame decoder
+|   |   +-- frame_test.go
+|   +-- harq/                # Layer 3: HARQ protocol (Chase Combining)
+|   |   +-- harq.go          # HARQ interface and ChaseCombining
+|   |   +-- harq_test.go
+|   +-- fec/                 # Forward Error Correction
+|   |   +-- fec.go           # FEC interfaces and SoftBit type
+|   |   +-- convolutional.go # Rate-1/2, K=7 convolutional encoder
+|   |   +-- viterbi.go       # Soft Viterbi decoder
+|   |   +-- combiner.go      # Chase Combiner for soft bit combining
+|   |   +-- fec_test.go
+|   +-- service/             # Layer 5: gRPC services
+|       +-- motor_control.go
+|       +-- telemetry.go
+|       +-- battery.go
+|       +-- configuration.go
+|       +-- firmware.go
++-- go.mod
++-- go.sum
++-- CLAUDE.md
 ```
 
 ## Build Commands

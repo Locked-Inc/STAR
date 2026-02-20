@@ -93,22 +93,22 @@
  *
  * **Transmission (Device -> Host):**
  * ```
- * T+0µs:   Application: rx_usb_write(port, data, len)
- * T+1µs:   Data copied to TX ring buffer
- * T+2µs:   internal_trigger_tx_if_idle() checks pipe idle
- * T+3µs:   rx_usb_cdc_handle_bulk_in(port) loads FIFO
- * T+4µs:   USB0 hardware transmits packet
- * T+50µs:  Host ACKs packet
- * T+51µs:  USB0 BEMP interrupt fires
- * T+52µs:  usb0_usbi_isr() clears IR flag
- * T+53µs:  internal_handle_bemp_interrupt() identifies pipe
- * T+54µs:  rx_usb_cdc_handle_bulk_in(port) sends next packet
+ * T+0us:   Application: rx_usb_write(port, data, len)
+ * T+1us:   Data copied to TX ring buffer
+ * T+2us:   internal_trigger_tx_if_idle() checks pipe idle
+ * T+3us:   rx_usb_cdc_handle_bulk_in(port) loads FIFO
+ * T+4us:   USB0 hardware transmits packet
+ * T+50us:  Host ACKs packet
+ * T+51us:  USB0 BEMP interrupt fires
+ * T+52us:  usb0_usbi_isr() clears IR flag
+ * T+53us:  internal_handle_bemp_interrupt() identifies pipe
+ * T+54us:  rx_usb_cdc_handle_bulk_in(port) sends next packet
  * ...      (continues until TX ring buffer empty)
  * ```
  *
  * **Reception (Host -> Device):**
  * ```
- * T+0µs:   Host writes to /dev/ttyACM*
+ * T+0us:   Host writes to /dev/ttyACM*
  * T+1ms:   USB0 receives Bulk OUT packet in FIFO
  * T+1ms:   USB0 BRDY interrupt fires
  * T+1ms:   usb0_usbi_isr() clears IR flag
@@ -142,7 +142,7 @@
  * ## Interrupt Timing and Performance
  *
  * **Execution Times @ 240 MHz:**
- * | Handler | Typical (µs) | Worst-Case (µs) | Notes |
+ * | Handler | Typical (us) | Worst-Case (us) | Notes |
  * |---------|--------------|-----------------|-------|
  * | `usb0_usbi_isr()` | 0.5 | 1.0 | Vector entry + IR clear |
  * | `internal_handle_vbus_interrupt()` | 2 | 5 | VBUS state change + callbacks |
@@ -150,7 +150,7 @@
  * | `internal_handle_ctrt_interrupt()` | 2 | 10 | Control transfer stage |
  * | `internal_handle_brdy_interrupt()` | 5 | 50 | Per-pipe RX (depends on FIFO size) |
  * | `internal_handle_bemp_interrupt()` | 5 | 50 | Per-pipe TX (depends on FIFO size) |
- * | **Total (typical)** | **20 µs** | **120 µs** | Multiple interrupts may fire |
+ * | **Total (typical)** | **20 us** | **120 us** | Multiple interrupts may fire |
  *
  * **Interrupt Frequency:**
  * - **Idle**: ~1 kHz (USB SOF packets, 1ms interval)
@@ -158,8 +158,8 @@
  * - **Enumeration**: ~100 Hz (control transfers, CTRT)
  *
  * **CPU Load:**
- * - **Idle**: ~2% (1 kHz × 20 µs = 0.02 = 2%)
- * - **Active**: ~20-40% (20 kHz × 20 µs = 0.4 = 40%)
+ * - **Idle**: ~2% (1 kHz x 20 us = 0.02 = 2%)
+ * - **Active**: ~20-40% (20 kHz x 20 us = 0.4 = 40%)
  * - **Peak**: <50% (burst transfers)
  *
  * ## Thread Safety and Concurrency
@@ -167,7 +167,7 @@
  * **ISR Context:**
  * - All functions in this file run in **interrupt context** (priority 5)
  * - Do NOT call blocking functions (tx_thread_sleep, tx_mutex_get, etc.)
- * - Keep handlers fast (<100 µs total)
+ * - Keep handlers fast (<100 us total)
  * - Use atomic operations for shared state
  *
  * **Data Sharing with Application:**
@@ -368,7 +368,6 @@ static void internal_handle_vbus_interrupt(void)
     /* Full-Speed J-state = idle, cable connected */
     rx_log_debug(s_tag, "VBUS: FS J-state (connected)");
     rx_usb_set_state(k_usb_state_attached);
-
     /* Notify all ports of attach */
     for (rx_usb_port_id_t port = k_usb_port_proto; port < k_usb_port_count; port++) {
       rx_usb_invoke_callback(port, k_usb_event_attached);
@@ -392,40 +391,33 @@ static void internal_handle_dvst_interrupt(void)
       rx_log_debug(s_tag, "DVST: Powered state");
       rx_usb_set_state(k_usb_state_powered);
       break;
-
     case k_usb_intsts0_dvsq_default:
       rx_log_debug(s_tag, "DVST: Default state (bus reset complete)");
       rx_usb_set_state(k_usb_state_default);
       rx_usb_count_bus_reset();
-
       /* Notify all ports of reset */
       for (rx_usb_port_id_t port = k_usb_port_proto; port < k_usb_port_count; port++) {
         rx_usb_invoke_callback(port, k_usb_event_reset);
       }
       break;
-
     case k_usb_intsts0_dvsq_address:
       rx_log_debug(s_tag, "DVST: Address state");
       rx_usb_set_state(k_usb_state_addressed);
       break;
-
     case k_usb_intsts0_dvsq_configured:
       rx_log_debug(s_tag, "DVST: Configured state");
       rx_usb_set_state(k_usb_state_configured);
       /* Note: configured callback is sent from SET_CONFIGURATION handler */
       break;
-
     case k_usb_intsts0_dvsq_suspend:
       rx_log_debug(s_tag, "DVST: Suspended state");
       rx_usb_set_state(k_usb_state_suspended);
       rx_usb_count_suspend();
-
       /* Notify all ports of suspend */
       for (rx_usb_port_id_t port = k_usb_port_proto; port < k_usb_port_count; port++) {
         rx_usb_invoke_callback(port, k_usb_event_suspended);
       }
       break;
-
     default:
       rx_log_warn(s_tag, "DVST: Unknown state");
       break;
@@ -452,41 +444,34 @@ static void internal_handle_ctrt_interrupt(void)
         usb0()->intsts0 = (uint16_t)~k_usb_intsts0_valid;
       }
       break;
-
     case k_usb_intsts0_ctsq_rd_data:
       /* Control read data stage - send data to host */
       /* Handled via SETUP packet handler */
       break;
-
     case k_usb_intsts0_ctsq_rd_status:
       /* Control read status stage - host sends ZLP ACK */
       /* Complete the control transfer */
       usb0()->dcpctr |= k_usb_dcpctr_ccpl;
       break;
-
     case k_usb_intsts0_ctsq_wr_data:
       /* Control write data stage - receive data from host */
       /* Handled via SETUP packet handler */
       break;
-
     case k_usb_intsts0_ctsq_wr_status:
       /* Control write status stage - send ZLP ACK */
       /* Complete the control transfer */
       usb0()->dcpctr |= k_usb_dcpctr_ccpl;
       break;
-
     case k_usb_intsts0_ctsq_wr_nd:
       /* Control write with no data - status stage */
       usb0()->dcpctr |= k_usb_dcpctr_ccpl;
       break;
-
     case k_usb_intsts0_ctsq_seq_err:
       /* Sequence error - stall the pipe */
       rx_log_warn(s_tag, "CTRT: Sequence error");
       usb0()->dcpctr =
         (uint16_t)((usb0()->dcpctr & (uint16_t)~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall);
       break;
-
     default:
       break;
   }
@@ -521,7 +506,6 @@ static void internal_handle_brdy_interrupt(void)
         rx_usb_cdc_handle_bulk_out(k_usb_port_log);
       }
       /* Note: Other pipes (Bulk IN, Interrupt IN) don't trigger BRDY */
-
       /* Clear pipe buffer ready flag */
       usb0()->brdysts = (uint16_t) ~(1U << pipe);
     }
@@ -554,7 +538,6 @@ static void internal_handle_bemp_interrupt(void)
         rx_usb_cdc_handle_bulk_in(k_usb_port_log);
       }
       /* Note: Interrupt IN pipes don't typically need BEMP handling for CDC */
-
       /* Clear pipe buffer empty flag */
       usb0()->bempsts = (uint16_t) ~(1U << pipe);
     }

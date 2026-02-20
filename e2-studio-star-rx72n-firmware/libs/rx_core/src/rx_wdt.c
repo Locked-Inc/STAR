@@ -74,7 +74,7 @@
  * note right of Running
  *   Must call rx_wdt_feed()
  *   within timeout period
- *   (~273µs at 60MHz max)
+ *   (~273us at 60MHz max)
  * end note
  *
  * note right of Initialized
@@ -124,10 +124,10 @@
  *
  * | Function | Execution Time | Stack | Notes |
  * |----------|---------------|-------|-------|
- * | rx_wdt_init() | ~20 µs | 32 B | Config copy + memset |
- * | rx_wdt_start() | ~2 µs | 16 B | 2 register writes |
- * | rx_wdt_stop() | ~1 µs | 8 B | State update only |
- * | rx_wdt_feed() | ~1 µs | 8 B | 2 register writes |
+ * | rx_wdt_init() | ~20 us | 32 B | Config copy + memset |
+ * | rx_wdt_start() | ~2 us | 16 B | 2 register writes |
+ * | rx_wdt_stop() | ~1 us | 8 B | State update only |
+ * | rx_wdt_feed() | ~1 us | 8 B | 2 register writes |
  *
  * @par Module Dependencies:
  * - [rx_wdt.h](../inc/rx_wdt.h) - Public API declarations
@@ -262,7 +262,7 @@ static rx_wdt_state_t s_wdt_state = {0};
  * **Algorithm:**
  * 1. Check if already initialized (return error if so)
  * 2. If config is nullptr, create default configuration:
- *    - timeout_period = k_wdt_timeout_4096_cycles (~68µs at 60MHz)
+ *    - timeout_period = k_wdt_timeout_4096_cycles (~68us at 60MHz)
  *    - enable_on_init = false (manual start)
  *    - reset_on_timeout = true (reset on timeout)
  * 3. Copy configuration to static state
@@ -323,17 +323,13 @@ static rx_wdt_state_t s_wdt_state = {0};
  */
 rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
 {
-  rx_wdt_config_t         default_config;
-  volatile rx_wdt_regs_t* regs;
-  uint16_t                wdtcr_val;
-
   if (s_wdt_state.initialized) {
     return k_rx_err_invalid_state;
   }
 
   /* Use default config if none provided */
+  rx_wdt_config_t default_config = {0};
   if (config == nullptr) {
-    memset(&default_config, 0, sizeof(rx_wdt_config_t));
     default_config.timeout_cycles   = k_wdt_timeout_16384_cycles;
     default_config.clock_division   = k_wdt_clock_div_8192;
     default_config.enable_on_init   = false;
@@ -356,7 +352,7 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  regs = wdt();
+  volatile rx_wdt_regs_t* const regs = wdt();
 
   /* Configure WDTCR register (can only be written once before first refresh!)
    * Bits 1:0 (TOPS): Timeout period cycles
@@ -364,7 +360,7 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
    * Bits 9:8 (RPES): Window end position (set to 0% = no window)
    * Bits 13:12 (RPSS): Window start position (set to 100% = no window)
    */
-  wdtcr_val = (uint16_t)config->timeout_cycles;                        /* TOPS[1:0] */
+  uint16_t wdtcr_val = (uint16_t)config->timeout_cycles;               /* TOPS[1:0] */
   wdtcr_val |= ((uint16_t)config->clock_division << k_wdt_cr_cks_pos); /* CKS[7:4] */
   wdtcr_val |= k_wdt_rpes_0;                                           /* No window end */
   wdtcr_val |= k_wdt_rpss_100;                                         /* No window start */
@@ -440,13 +436,11 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
  */
 rx_err_t rx_wdt_start(void)
 {
-  volatile rx_wdt_regs_t* regs;
-
   if (!s_wdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  regs = wdt();
+  volatile rx_wdt_regs_t* const regs = wdt();
 
   /* Start WDT (only works in register-start mode) */
   regs->wdtrr = k_wdt_refresh_start;
@@ -537,10 +531,10 @@ rx_err_t rx_wdt_stop(void)
  * Feed must occur faster than timeout period:
  * | Timeout Setting | Cycles | At 60MHz | Required Feed Rate |
  * |-----------------|--------|----------|-------------------|
- * | k_wdt_timeout_256_cycles | 256 | 4.3 µs | >233 kHz |
- * | k_wdt_timeout_1024_cycles | 1024 | 17 µs | >59 kHz |
- * | k_wdt_timeout_4096_cycles | 4096 | 68 µs | >14.7 kHz |
- * | k_wdt_timeout_16384_cycles | 16384 | 273 µs | >3.6 kHz |
+ * | k_wdt_timeout_256_cycles | 256 | 4.3 us | >233 kHz |
+ * | k_wdt_timeout_1024_cycles | 1024 | 17 us | >59 kHz |
+ * | k_wdt_timeout_4096_cycles | 4096 | 68 us | >14.7 kHz |
+ * | k_wdt_timeout_16384_cycles | 16384 | 273 us | >3.6 kHz |
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, WDT counter reset
@@ -554,7 +548,7 @@ rx_err_t rx_wdt_stop(void)
  * @post Countdown restarts from reset value
  *
  * @note This is the ONLY function that prevents watchdog timeout
- * @note Execution time: ~1 µs (two register writes)
+ * @note Execution time: ~1 us (two register writes)
  * @warning Missing a single feed within timeout period causes reset
  *
  * @par Example:
@@ -578,8 +572,6 @@ rx_err_t rx_wdt_stop(void)
  */
 rx_err_t rx_wdt_feed(void)
 {
-  volatile rx_wdt_regs_t* regs;
-
   if (!s_wdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
@@ -589,7 +581,7 @@ rx_err_t rx_wdt_feed(void)
   }
 
   /* Refresh watchdog - write 0x00 then 0xFF to WDTRR */
-  regs        = wdt();
+  volatile rx_wdt_regs_t* const regs = wdt();
   regs->wdtrr = k_wdt_refresh_start;
   regs->wdtrr = k_wdt_refresh_end;
 

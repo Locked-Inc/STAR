@@ -34,11 +34,11 @@ static uint32_t internal_count_component_errors(mock_error_handler_t* handler,
                                                 const char*           component)
 {
   uint32_t count = 0;
-
   for (uint32_t i = 0; i < handler->stored_error_count; i++) {
     if (strcmp(handler->errors[i].component, component) == 0) {
       count++;
     }
+
   }
 
   return count;

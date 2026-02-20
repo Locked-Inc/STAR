@@ -14,7 +14,7 @@
  *
  * ```
  * Power On -> USB Init -> Enumeration (200ms) -> Configured -> Flush Boot Buffer
- *    ↓           ↓            ↓                    ↓              ↓
+ *    v           v            v                    v              v
  *  Logs      Buffer      Buffer                Logs to       Boot logs
  *  start     in RAM      in RAM                 USB           appear
  * ```
@@ -94,7 +94,7 @@ typedef enum : uint16_t {
  * **Ring Buffer Layout**:
  * ```
  * data[0] ... data[head-1] data[head] ... data[size-1]
- *              ↑ write here            ↑ wrap around
+ *              ^ write here            ^ wrap around
  * ```
  *
  * **Overflow Handling**:
@@ -177,15 +177,39 @@ static void internal_init_mutex_once(void)
  * Appends data to ring buffer if space available. If buffer full, drops data
  * and sets overflow flag. Overflow warning logged after USB ready.
  *
- * @param[in] data Data to buffer
- * @param[in] len Number of bytes to buffer
+ * Boot log buffering enables logs emitted during system startup (before USB
+ * enumeration completes) to be preserved and flushed to USB once the CDC
+ * interface becomes ready. The ring buffer wraps writes using a head index and
+ * a running byte count.
+ *
+ * @param[in] data Pointer to data bytes to buffer (must not be NULL)
+ * @param[in] len Number of bytes to buffer (must be > 0)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Data buffered successfully
- * @retval k_rx_err_overflow Buffer full, data dropped
+ * @retval k_rx_err_no_mem Buffer full, data dropped and overflow flag set
  *
- * @pre Mutex locked by caller
- * @post s_boot_buffer updated, s_stats.boot_buffered incremented
+ * @pre Mutex locked by caller (internal_init_mutex_once() invoked before call)
+ * @pre s_boot_buffer.head is within [0, k_boot_buffer_size)
+ * @post s_boot_buffer.count incremented by len on success
+ * @post s_stats.boot_buffered incremented by len on success
+ * @post s_boot_buffer.overflow set and s_stats.dropped_bytes incremented on overflow
+ *
+ * @note Not thread-safe on its own; caller must hold s_log_mutex before invoking
+ *
+ * @par Example:
+ * @code
+ * // Called internally by internal_write_usb() when USB not yet configured:
+ * rx_err_t result = internal_buffer_boot_log("boot message\n", 14);
+ * if (result == k_rx_err_no_mem) {
+ *     // Boot buffer full - message dropped, overflow flag set
+ * }
+ * @endcode
+ *
+ * @see internal_check_usb_ready() Flushes this buffer once USB is configured
+ * @see rx_log_usb_puts() Public API that triggers this path during boot
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_buffer_boot_log(const char* data, uint16_t len)
 {
@@ -412,7 +436,7 @@ static void internal_write_usb(const char* data, uint16_t len)
  *
  * @note **Thread Safety**: Yes (ThreadX mutex protects all state)
  * @note **Blocking**: Blocks on mutex acquisition, never blocks on USB TX
- * @note **Performance**: ~2-5 µs per character @ 240 MHz (mutex overhead included)
+ * @note **Performance**: ~2-5 us per character @ 240 MHz (mutex overhead included)
  *
  * @par Thread Safety:
  * Safe to call from multiple ThreadX tasks concurrently. Mutex ensures atomic
@@ -476,7 +500,7 @@ void rx_log_usb_putc(char c)
  * @note **Thread Safety**: Yes (ThreadX mutex protects all state)
  * @note **Blocking**: Blocks on mutex acquisition, never blocks on USB TX
  * @note **NULL Safety**: nullptr silently ignored (defensive programming)
- * @note **Performance**: ~1 µs per character @ 240 MHz (amortized)
+ * @note **Performance**: ~1 us per character @ 240 MHz (amortized)
  *
  * @warning String must be null-terminated. Non-terminated strings cause undefined behavior.
  *
@@ -503,7 +527,7 @@ void rx_log_usb_puts(const char* str)
     return; /* Defensive: ignore null pointer */
   }
 
-  uint16_t len = (uint16_t)strlen(str);
+  const uint16_t len = (uint16_t)strlen(str);
   if (len == 0) {
     return; /* Nothing to write */
   }
@@ -551,7 +575,7 @@ void rx_log_usb_puts(const char* str)
  * @note **Thread Safety**: Yes (via rx_log_usb_puts mutex)
  * @note **Blocking**: Blocks on mutex acquisition in puts(), never blocks on USB TX
  * @note **Stack Usage**: 12 bytes local buffer
- * @note **Performance**: ~50-80 µs for 10-digit number @ 240 MHz
+ * @note **Performance**: ~50-80 us for 10-digit number @ 240 MHz
  *
  * @par Example: Positive Values
  * @code
@@ -585,6 +609,7 @@ void rx_log_usb_putint(int32_t value)
 {
   /* Convert to string (max 11 chars: '-' + 10 digits + NUL) */
   char  buf[12];
+
   char* p = &buf[sizeof(buf) - 1];
   *p      = '\0';
 
@@ -643,7 +668,7 @@ void rx_log_usb_putint(int32_t value)
  * @note **Thread Safety**: Yes (via rx_log_usb_puts mutex)
  * @note **Blocking**: Blocks on mutex acquisition in puts(), never blocks on USB TX
  * @note **Stack Usage**: 9 bytes local buffer
- * @note **Performance**: ~40-70 µs for 8-digit hex @ 240 MHz
+ * @note **Performance**: ~40-70 us for 8-digit hex @ 240 MHz
  * @note **Case**: Always uppercase (A-F, not a-f)
  *
  * @par Example: Different Digit Counts
@@ -753,7 +778,7 @@ void rx_log_usb_puthex(uint32_t value, uint8_t digits)
  * @note **Thread Safety**: Yes (ThreadX mutex ensures atomic read)
  * @note **Blocking**: Blocks on mutex acquisition only (quick operation)
  * @note **NULL Safety**: nullptr silently ignored (defensive)
- * @note **Performance**: ~2-3 µs @ 240 MHz (mutex + 4 field copies)
+ * @note **Performance**: ~2-3 us @ 240 MHz (mutex + 4 field copies)
  *
  * @par Example: Basic Statistics Query
  * @code

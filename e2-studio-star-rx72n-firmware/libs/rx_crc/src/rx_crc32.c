@@ -70,9 +70,9 @@
  *
  * | Metric | Hardware (rx_crc32_hw.c) | Software (rx_crc32_sw.c) | Notes |
  * |--------|--------------------------|--------------------------|-------|
- * | **Throughput** | ~40 MB/s | ~8 MB/s | HW is 5× faster |
- * | **Latency (1 KB)** | ~26 µs | ~128 µs | HW: 5× faster |
- * | **Latency (64 B)** | ~2 µs | ~8 µs | HW overhead dominates |
+ * | **Throughput** | ~40 MB/s | ~8 MB/s | HW is 5x faster |
+ * | **Latency (1 KB)** | ~26 us | ~128 us | HW: 5x faster |
+ * | **Latency (64 B)** | ~2 us | ~8 us | HW overhead dominates |
  * | **CPU cycles/byte** | ~6 cycles | ~30 cycles | HW: busy-wait FIFO |
  * | **Thread safety** | Mutex-protected | Fully reentrant | HW: shared peripheral |
  * | **Power consumption** | +2 mA (active) | +0 mA | HW: peripheral active |
@@ -99,7 +99,7 @@
  * - Reflection: Input and output bits reflected (LSB first)
  * - Detects all single-bit errors
  * - Detects all double-bit errors (separation < 32 bits)
- * - Detects all burst errors ≤ 32 bits
+ * - Detects all burst errors <= 32 bits
  * - Detects 99.9998% of all other errors
  *
  * ## Algorithm: CRC-32 Calculation
@@ -108,7 +108,7 @@
  *
  * 1. **Initialize:** CRC = 0xFFFFFFFF
  * 2. **For each byte** in input:
- *    - Reflect byte (bit reversal: MSB ↔ LSB)
+ *    - Reflect byte (bit reversal: MSB <-> LSB)
  *    - XOR byte with CRC[7:0]
  *    - **HW:** Write to CRCDIR, read CRCCR after processing
  *    - **SW:** Lookup in table: `crc = (crc >> 8) ^ table[(crc ^ byte) & 0xFF]`
@@ -290,7 +290,7 @@
  * }
  * @endcode
  *
- * ### Example 4: Cross-Language Compatibility (Go ↔ C)
+ * ### Example 4: Cross-Language Compatibility (Go <-> C)
  * @code{.c}
  * // C firmware (RX72N):
  * #include "rx_crc.h"
@@ -314,7 +314,7 @@
  *     data := []byte("Hello, STAR!")
  *     crcGo := crc32.ChecksumIEEE(data)
  *     fmt.Printf("CRC (Go): 0x%08X\n", crcGo)
- *     // Output: CRC (Go): 0x1A2B3C4D  ← Matches C!
+ *     // Output: CRC (Go): 0x1A2B3C4D  <- Matches C!
  * }
  * @endcode
  *
@@ -339,11 +339,11 @@
  *   uint64_t per_iter_us = total_us / 1000;
  *   uint64_t throughput_mbps = (sizeof(buffer) * 8) / per_iter_us;
  *
- *   rx_log_info("CRC", "1000 iterations: %llu µs total", total_us);
- *   rx_log_info("CRC", "Per iteration: %llu µs", per_iter_us);
+ *   rx_log_info("CRC", "1000 iterations: %llu us total", total_us);
+ *   rx_log_info("CRC", "Per iteration: %llu us", per_iter_us);
  *   rx_log_info("CRC", "Throughput: %llu MB/s", throughput_mbps);
- *   // HW: ~26 µs/iter, ~40 MB/s
- *   // SW: ~128 µs/iter, ~8 MB/s
+ *   // HW: ~26 us/iter, ~40 MB/s
+ *   // SW: ~128 us/iter, ~8 MB/s
  * }
  * @endcode
  *
@@ -423,12 +423,12 @@
  *
  * **Execution time (RX72N @ 240 MHz):**
  *
- * | Buffer Size | Hardware (µs) | Software (µs) | Speedup |
+ * | Buffer Size | Hardware (us) | Software (us) | Speedup |
  * |-------------|---------------|---------------|---------|
- * | 16 bytes    | 1.5           | 2.0           | 1.3×    |
- * | 64 bytes    | 2.0           | 8.0           | 4.0×    |
- * | 256 bytes   | 7.0           | 32.0          | 4.6×    |
- * | 1024 bytes  | 26.0          | 128.0         | 4.9×    |
+ * | 16 bytes    | 1.5           | 2.0           | 1.3x    |
+ * | 64 bytes    | 2.0           | 8.0           | 4.0x    |
+ * | 256 bytes   | 7.0           | 32.0          | 4.6x    |
+ * | 1024 bytes  | 26.0          | 128.0         | 4.9x    |
  *
  * **Throughput:**
  * - **Hardware:** ~40 MB/s (memory-bandwidth limited)
@@ -494,7 +494,7 @@
  *
  * @note **Thread Safety:** Safe for concurrent calls (see details above)
  * @note **Re-entrancy:** Fully reentrant (SW backend) or mutex-protected (HW backend)
- * @note **Performance:** HW is 5× faster for buffers > 256 bytes
+ * @note **Performance:** HW is 5x faster for buffers > 256 bytes
  * @note **Memory:** Zero heap allocation (safety-critical requirement)
  *
  * @warning Do NOT modify data buffer during CRC calculation (undefined behavior)
@@ -589,8 +589,8 @@
  *   uint32_t crc = rx_crc32_ieee(test_data, 1024);
  *   uint64_t end = rx_time_get_us();
  *
- *   rx_log_info("CRC", "Computed: 0x%08X in %llu µs", crc, end - start);
- *   // HW: ~26 µs, SW: ~128 µs
+ *   rx_log_info("CRC", "Computed: 0x%08X in %llu us", crc, end - start);
+ *   // HW: ~26 us, SW: ~128 us
  * }
  * @endcode
  *
@@ -674,7 +674,7 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len)
  *
  * **Execution time identical to rx_crc32_ieee():**
  *
- * | Buffer Size | Hardware (µs) | Software (µs) |
+ * | Buffer Size | Hardware (us) | Software (us) |
  * |-------------|---------------|---------------|
  * | 16 bytes    | 1.5           | 2.0           |
  * | 64 bytes    | 2.0           | 8.0           |
@@ -683,7 +683,7 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len)
  *
  * **Overhead vs single-shot CRC:**
  * - **None** - incremental update has same cost as processing equivalent bytes
- * - Multiple calls: `update(update(crc, A), B)` ≈ `ieee(A||B)` in total time
+ * - Multiple calls: `update(update(crc, A), B)` ~ `ieee(A||B)` in total time
  *
  * ## Memory Usage
  *

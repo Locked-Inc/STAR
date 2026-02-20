@@ -14,7 +14,7 @@
  * This file implements the "Single Source of Truth" pattern for hardware port
  * addressing, eliminating magic numbers and providing type-safe port/pin
  * identifiers using C23 typed enums. All library and application code must use
- * these constants—never hardcode port numbers directly.
+ * these constants--never hardcode port numbers directly.
  *
  * ## Architecture and Layering
  *
@@ -54,9 +54,9 @@
  * The Renesas RX72N uses non-contiguous port numbering:
  * - **Decimal ports**: 0-9 (0x00-0x09)
  * - **Alphabetic ports**: A-G (0x0A-0x10)
- * - **Port J**: 0x13 (note gap—no ports H or I)
+ * - **Port J**: 0x13 (note gap--no ports H or I)
  *
- * Total: 18 ports × 8 pins = 144 theoretical GPIO combinations
+ * Total: 18 ports x 8 pins = 144 theoretical GPIO combinations
  * (Not all combinations physically available on 144-pin LFQFP package)
  *
  * ## Performance Characteristics
@@ -121,7 +121,7 @@
  * | 2. Fixed loop bounds | [OK] | No loops (constants only) |
  * | 3. No dynamic allocation | [OK] | All constants are compile-time |
  * | 4. Small functions | [OK] | Inline functions are 3-5 lines each |
- * | 5. Assertions (≥2 per function) | [OK] | 3 assertions per function (pre×2, post×1) |
+ * | 5. Assertions (>=2 per function) | [OK] | 3 assertions per function (prex2, postx1) |
  * | 6. Narrow scope | [OK] | File-scope only, no globals |
  * | 7. Check return values | [OK] | Inline functions don't fail |
  * | 8. Limited preprocessor | [OK] | C23 typed enums (zero macros) |
@@ -200,7 +200,7 @@ extern "C" {
  * hexadecimal naming:
  * - **Decimal ports**: 0-9 (values 0x00-0x09)
  * - **Hexadecimal ports**: A-G (values 0x0A-0x10)
- * - **Port J**: 0x13 (gap exists—no ports H or I)
+ * - **Port J**: 0x13 (gap exists--no ports H or I)
  *
  * This numbering matches the Renesas RX72N hardware manual and the encoding
  * scheme used throughout the firmware.
@@ -285,10 +285,10 @@ extern "C" {
  *
  * @note This is a C23 **typed enum** with explicit underlying type uint8_t,
  *       ensuring 1-byte size and consistent ABI across compiler versions
- * @note Port J (0x13) breaks contiguity—ports H (0x11) and I (0x12) do not exist
+ * @note Port J (0x13) breaks contiguity--ports H (0x11) and I (0x12) do not exist
  *
  * @warning Do not assume contiguous port numbering when iterating ports
- * @warning Not all ports available on 144-pin package—check datasheet
+ * @warning Not all ports available on 144-pin package--check datasheet
  *
  * @see rx_pin_number_t Pin number constants (0-7)
  * @see rx_port_pin_t Pre-computed port/pin combinations
@@ -418,7 +418,7 @@ typedef enum : uint8_t {
  * @note All 8 pins exist logically even if not physically bonded on smaller packages
  *
  * @warning Pin numbers are zero-indexed (0-7), not one-indexed (1-8)
- * @warning Do not use raw numbers—use these constants for self-documenting code
+ * @warning Do not use raw numbers--use these constants for self-documenting code
  *
  * @see rx_port_number_t Port number constants
  * @see rx_port_pin_t Pre-computed port/pin combinations
@@ -461,13 +461,13 @@ typedef enum : uint8_t {
  * single 16-bit value:
  *
  * ```
- * ┌─────────────────┬─────────────────┐
- * │   Upper Byte    │   Lower Byte    │
- * │  (Port Number)  │  (Pin Number)   │
- * ├─────────────────┼─────────────────┤
- * │     Bits 15-8   │     Bits 7-0    │
- * │   rx_port_number_t  │  rx_pin_number_t   │
- * └─────────────────┴─────────────────┘
+ * +-----------------+-----------------+
+ * |   Upper Byte    |   Lower Byte    |
+ * |  (Port Number)  |  (Pin Number)   |
+ * +-----------------+-----------------+
+ * |     Bits 15-8   |     Bits 7-0    |
+ * |   rx_port_number_t  |  rx_pin_number_t   |
+ * +-----------------+-----------------+
  *
  * Encoding:   gpio_pin_t = (port << k_port_shift) | pin
  * Decoding:   port = gpio_pin_t >> k_port_shift
@@ -499,7 +499,7 @@ typedef enum : uint8_t {
  *         = 0x0B02
  *
  * Binary:   0000 1011 0000 0010
- *           └─ Port ─┘└─ Pin ─┘
+ *           +- Port -++- Pin -+
  * ```
  *
  * @par Usage Example (Encoding):
@@ -584,7 +584,7 @@ typedef enum : uint8_t {
  *
  * @details
  * Provides ready-to-use 16-bit gpio_pin_t constants for all 144 theoretical
- * port/pin combinations on the RX72N microcontroller (18 ports × 8 pins = 144).
+ * port/pin combinations on the RX72N microcontroller (18 ports x 8 pins = 144).
  * These pre-computed constants eliminate the need for runtime bit-shift operations
  * and provide cleaner, more readable code.
  *
@@ -593,7 +593,7 @@ typedef enum : uint8_t {
  * This enum defines ALL possible port/pin combinations:
  * - **Ports**: 0-9 (decimal) + A-G + J (hexadecimal) = 18 ports
  * - **Pins per port**: 0-7 = 8 pins
- * - **Total combinations**: 18 × 8 = 144 constants
+ * - **Total combinations**: 18 x 8 = 144 constants
  *
  * ## Physical Availability
  *

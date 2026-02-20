@@ -572,6 +572,7 @@ void uart_debug_puts(const char* str)
 void uart_debug_putint(int32_t value)
 {
   char     buffer[12];
+
   char*    p = buffer + sizeof(buffer) - 1;
   uint32_t abs_value;
   bool     is_negative = false;

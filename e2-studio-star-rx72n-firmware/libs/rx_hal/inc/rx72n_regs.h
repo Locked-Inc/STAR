@@ -88,25 +88,25 @@
  * ## RX72N Memory Map (Relevant Sections)
  *
  * ```
- * 0x00000000 ┌─────────────────────────────┐
- *            │ Internal ROM (4MB Flash)    │
- * 0x00400000 ├─────────────────────────────┤
- *            │ Reserved                    │
- * 0x00800000 ├─────────────────────────────┤
- *            │ Peripheral Registers        │
- *            │   CMT: 0x00088000          │
- *            │   ICU: 0x00087000          │
- *            │   ADC: 0x00089000          │
- *            │   SCI: 0x0008A000          │
- *            │   PORT: 0x0008C000         │
- *            │   RSPI: 0x000D0000         │
- * 0x000D4000 ├─────────────────────────────┤
- *            │ Reserved                    │
- * 0x00800000 ├─────────────────────────────┤
- *            │ Internal RAM (512KB SRAM)   │
- * 0x00880000 ├─────────────────────────────┤
- *            │ Reserved                    │
- * 0xFFFFFFFF └─────────────────────────────┘
+ * 0x00000000 +-----------------------------+
+ *            | Internal ROM (4MB Flash)    |
+ * 0x00400000 +-----------------------------+
+ *            | Reserved                    |
+ * 0x00800000 +-----------------------------+
+ *            | Peripheral Registers        |
+ *            |   CMT: 0x00088000          |
+ *            |   ICU: 0x00087000          |
+ *            |   ADC: 0x00089000          |
+ *            |   SCI: 0x0008A000          |
+ *            |   PORT: 0x0008C000         |
+ *            |   RSPI: 0x000D0000         |
+ * 0x000D4000 +-----------------------------+
+ *            | Reserved                    |
+ * 0x00800000 +-----------------------------+
+ *            | Internal RAM (512KB SRAM)   |
+ * 0x00880000 +-----------------------------+
+ *            | Reserved                    |
+ * 0xFFFFFFFF +-----------------------------+
  * ```
  *
  * ## Usage Guidelines
@@ -217,27 +217,27 @@
  * @par Module Dependencies:
  * ```
  * rx72n_regs.h (this file)
- *   ├─-> rx72n_system_regs.h
- *   ├─-> rx72n_port_regs.h
- *   ├─-> rx72n_adc_regs.h
- *   ├─-> rx72n_sci_regs.h
- *   ├─-> rx72n_riic_regs.h
- *   ├─-> rx72n_rspi_regs.h
- *   ├─-> rx72n_cmt_regs.h
- *   ├─-> rx72n_icu_regs.h
- *   ├─-> rx72n_iwdt_regs.h
- *   ├─-> rx72n_wdt_regs.h
- *   ├─-> rx72n_crc_regs.h
- *   ├─-> rx72n_usb_regs.h
- *   ├─-> rx72n_mtu_regs.h
- *   ├─-> rx72n_gptw_regs.h
- *   ├─-> rx72n_mpc_regs.h
- *   ├─-> rx72n_flash_regs.h
- *   ├─-> rx72n_ram_regs.h
- *   └─-> rx72n_clock.h
+ *   +--> rx72n_system_regs.h
+ *   +--> rx72n_port_regs.h
+ *   +--> rx72n_adc_regs.h
+ *   +--> rx72n_sci_regs.h
+ *   +--> rx72n_riic_regs.h
+ *   +--> rx72n_rspi_regs.h
+ *   +--> rx72n_cmt_regs.h
+ *   +--> rx72n_icu_regs.h
+ *   +--> rx72n_iwdt_regs.h
+ *   +--> rx72n_wdt_regs.h
+ *   +--> rx72n_crc_regs.h
+ *   +--> rx72n_usb_regs.h
+ *   +--> rx72n_mtu_regs.h
+ *   +--> rx72n_gptw_regs.h
+ *   +--> rx72n_mpc_regs.h
+ *   +--> rx72n_flash_regs.h
+ *   +--> rx72n_ram_regs.h
+ *   +--> rx72n_clock.h
  *
  * Used by:
- *   └─-> hardware.h (HAL API implementation)
+ *   +--> hardware.h (HAL API implementation)
  * ```
  *
  * @author STAR Team

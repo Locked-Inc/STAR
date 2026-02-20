@@ -69,9 +69,9 @@ void tearDown(void)
  */
 void test_temp_task_create_success(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task */
@@ -87,9 +87,9 @@ void test_temp_task_create_success(void)
  */
 void test_temp_task_create_thread_failure(void)
 {
+  /* Configure ThreadX to fail */
   rx_err_t err;
 
-  /* Configure ThreadX to fail */
   mock_tx_set_thread_create_return(TX_NO_MEMORY);
 
   /* Create the task */
@@ -104,9 +104,9 @@ void test_temp_task_create_thread_failure(void)
  */
 void test_temp_task_create_already_created(void)
 {
+  /* Configure mocks for success */
   rx_err_t err;
 
-  /* Configure mocks for success */
   mock_tx_set_thread_create_return(TX_SUCCESS);
 
   /* Create the task first time - should succeed */
@@ -131,11 +131,11 @@ void test_temp_task_create_already_created(void)
  */
 void test_temp_task_initializes_ds18b20(void)
 {
+  /* Configure mock */
   rx_ds18b20_handle_t handle = {0};
   rx_ds18b20_config_t config = {0};
   rx_err_t            err;
 
-  /* Configure mock */
   mock_ds18b20_set_init_return(k_rx_ok);
 
   /* Configure sensor */
@@ -160,10 +160,10 @@ void test_temp_task_initializes_ds18b20(void)
  */
 void test_temp_task_triggers_conversion(void)
 {
+  /* Configure mock */
   rx_ds18b20_handle_t handle = {0};
   rx_err_t            err;
 
-  /* Configure mock */
   mock_ds18b20_set_trigger_return(k_rx_ok);
 
   /* Trigger conversion */
@@ -181,11 +181,11 @@ void test_temp_task_triggers_conversion(void)
  */
 void test_temp_task_reads_temperature(void)
 {
+  /* Configure mock with known temperature */
   rx_ds18b20_handle_t handle = {0};
   float               temp_celsius;
   rx_err_t            err;
 
-  /* Configure mock with known temperature */
   mock_ds18b20_set_temperature(25.5f);
   mock_ds18b20_set_read_return(k_rx_ok);
 
@@ -206,14 +206,14 @@ void test_temp_task_reads_temperature(void)
  */
 void test_temp_data_stored_in_telemetry(void)
 {
+  /* Build state as task does */
   temp_sensor_state_t state_in  = {0};
   temp_sensor_state_t state_out = {0};
   rx_err_t            err;
 
-  /* Configure temperature reading (25.75°C) */
+  /* Configure temperature reading (25.75degC) */
   float temp_celsius = 25.75f;
 
-  /* Build state as task does */
   state_in.temperature_cdegc[k_test_sensor_idx] = (int16_t)(temp_celsius * 100.0f);
   state_in.sensor_valid[k_test_sensor_idx]      = true;
   state_in.sensor_count                         = 1;
@@ -241,11 +241,11 @@ void test_temp_data_stored_in_telemetry(void)
  */
 void test_temp_task_handles_read_failure(void)
 {
+  /* Configure mock to fail */
   temp_sensor_state_t state_in  = {0};
   temp_sensor_state_t state_out = {0};
   rx_err_t            err;
 
-  /* Configure mock to fail */
   mock_ds18b20_set_read_return(k_rx_err_timeout);
 
   /* Try to read (will fail) */

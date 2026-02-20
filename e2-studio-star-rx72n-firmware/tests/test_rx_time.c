@@ -39,24 +39,24 @@
  * `rx_time_interface_t`, not concrete implementations (ThreadX, mock):
  *
  * ```
- * ┌─────────────────────┐
- * │ Motor Control       │  <--- High-level module
- * └──────────┬──────────┘
- *            │ depends on
- *            ▼
- * ┌─────────────────────┐
- * │ rx_time_interface   │  <--- Abstract interface
- * │ - get_ms()          │
- * │ - sleep_ms()        │
- * │ - is_elapsed()      │
- * └──────────┬──────────┘
- *            │ implemented by
- *     ┌──────┴──────┬────────────────┐
- *     ▼             ▼                ▼
- * ┌────────┐  ┌──────────┐  ┌──────────────┐
- * │ Mock   │  │ ThreadX  │  │ Bare Metal   │
- * │ Time   │  │ Time     │  │ Timer        │
- * └────────┘  └──────────┘  └──────────────┘
+ * +---------------------+
+ * | Motor Control       |  <--- High-level module
+ * +----------+----------+
+ *            | depends on
+ *            v
+ * +---------------------+
+ * | rx_time_interface   |  <--- Abstract interface
+ * | - get_ms()          |
+ * | - sleep_ms()        |
+ * | - is_elapsed()      |
+ * +----------+----------+
+ *            | implemented by
+ *     +------+------+----------------+
+ *     v             v                v
+ * +--------+  +----------+  +--------------+
+ * | Mock   |  | ThreadX  |  | Bare Metal   |
+ * | Time   |  | Time     |  | Timer        |
+ * +--------+  +----------+  +--------------+
  * (tests)     (production)   (no RTOS)
  * ```
  *
@@ -124,13 +124,13 @@
  * ## Performance
  *
  * Mock time operations are **extremely fast** (no real delays):
- * - `mock_time_advance()`: ~0.1 µs (arithmetic only)
- * - `iface.get_ms()`: ~0.05 µs (read variable)
- * - `iface.sleep_ms()`: ~0.2 µs (increment counters, no actual sleep)
+ * - `mock_time_advance()`: ~0.1 us (arithmetic only)
+ * - `iface.get_ms()`: ~0.05 us (read variable)
+ * - `iface.sleep_ms()`: ~0.2 us (increment counters, no actual sleep)
  *
  * Compare to real time:
- * - Real `sleep(100ms)`: 100,000 µs
- * - Mock `sleep(100ms)`: 0.2 µs (**500,000× faster**)
+ * - Real `sleep(100ms)`: 100,000 us
+ * - Mock `sleep(100ms)`: 0.2 us (**500,000x faster**)
  *
  * @par Module Dependencies:
  * - mock_time.h - Mock time implementation
@@ -158,7 +158,7 @@
  * - **Open/Closed:** Extensible via interface (can add new time implementations)
  * - **Liskov Substitution:** Mock substitutes ThreadX time seamlessly
  * - **Interface Segregation:** Minimal interface (3 functions: get, sleep, elapsed)
- * - **Dependency Inversion:** HIGH-LEVEL ← interface -> LOW-LEVEL (testability!)
+ * - **Dependency Inversion:** HIGH-LEVEL <- interface -> LOW-LEVEL (testability!)
  *
  * @author STAR Team
  * @date 2026-01-04
@@ -267,6 +267,7 @@ void tearDown(void)
 void test_mock_time_init_zeros_state(void)
 {
   mock_time_t mock;
+
   mock_time_init(&mock);
 
   TEST_ASSERT_TRUE(mock.initialized);
@@ -279,6 +280,7 @@ void test_mock_time_init_zeros_state(void)
 void test_mock_time_deinit_clears_state(void)
 {
   mock_time_t mock;
+
   mock_time_init(&mock);
   mock_time_advance(&mock, 100);
 
@@ -482,6 +484,7 @@ void test_time_interface_validate_success(void)
 void test_time_interface_validate_missing_sleep_fails(void)
 {
   rx_time_interface_t bad_iface = {0};
+
   bad_iface.get_ms              = s_iface.get_ms;
   bad_iface.is_elapsed          = s_iface.is_elapsed;
   /* sleep_ms is nullptr */
@@ -494,6 +497,7 @@ void test_time_interface_validate_missing_sleep_fails(void)
 void test_time_interface_validate_missing_get_ms_fails(void)
 {
   rx_time_interface_t bad_iface = {0};
+
   bad_iface.sleep_ms            = s_iface.sleep_ms;
   bad_iface.is_elapsed          = s_iface.is_elapsed;
   /* get_ms is nullptr */

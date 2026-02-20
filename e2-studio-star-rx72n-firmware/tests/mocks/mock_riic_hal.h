@@ -70,7 +70,7 @@
  * | Aspect              | Mock (This Module)          | Real (riic_hal.c) |
  * |---------------------|-----------------------------|--------------------|
  * | Hardware access     | None - buffers in RAM       | Direct RIIC register access |
- * | Timing              | Instant response            | I2C bus timing (µs delays) |
+ * | Timing              | Instant response            | I2C bus timing (us delays) |
  * | Error conditions    | Configurable injection      | Actual bus errors |
  * | Data transfer       | Buffer copy                 | DTC/interrupt-driven |
  * | NACK detection      | Simulated flag              | Actual NACK from peripheral |

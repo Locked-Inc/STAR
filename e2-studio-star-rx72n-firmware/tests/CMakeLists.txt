@@ -937,6 +937,20 @@ target_include_directories(test_telemetry_aggregation_task PRIVATE
 )
 target_link_libraries(test_telemetry_aggregation_task unity)
 
+# Test: Stack Monitor (ThreadX stack overflow detection and high-water mark)
+add_executable(test_rx_stack_monitor
+    test_rx_stack_monitor.c
+    ${CMAKE_SOURCE_DIR}/../src/rx_stack_monitor.c
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_stack_monitor)
+apply_test_includes(test_rx_stack_monitor)
+target_include_directories(test_rx_stack_monitor PRIVATE
+    ${CMAKE_SOURCE_DIR}/../src/inc
+    ${CMAKE_SOURCE_DIR}/../libs/threadx
+)
+target_link_libraries(test_rx_stack_monitor unity)
+
 # Test: BMS Alert ISR (self-contained, includes source directly)
 add_executable(test_rx_bms_alert
     test_rx_bms_alert.c
@@ -1003,6 +1017,7 @@ set(ALL_TEST_TARGETS
     test_rx_encoder_tpu
     test_rx_bms_alert
     test_rx_host_irq
+    test_rx_stack_monitor
     # Multi-task firmware tests
     test_motor_control_task
     test_communication_task
@@ -1054,6 +1069,7 @@ add_test(NAME test_rx_tpu COMMAND test_rx_tpu)
 add_test(NAME test_rx_encoder_tpu COMMAND test_rx_encoder_tpu)
 add_test(NAME test_rx_bms_alert COMMAND test_rx_bms_alert)
 add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
+add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 
 # Multi-task firmware tests
 add_test(NAME test_motor_control_task COMMAND test_motor_control_task)

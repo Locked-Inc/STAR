@@ -21,7 +21,7 @@
  * component + message storage, No ThreadX dependencies (no mutex needed),
  * Query functions for test verification
  *
- * @par Memory Usage: ~2.6KB RAM (static allocation: 32 errors × 80 bytes + state)
+ * @par Memory Usage: ~2.6KB RAM (static allocation: 32 errors x 80 bytes + state)
  *
  * @par Usage: All test files requiring error handling
  * @see rx_error_handler.h Real error handler interface

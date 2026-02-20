@@ -10,28 +10,28 @@
  *
  * @par System Architecture
  * @verbatim
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │                     Application Layer                       │
- *   │  (app_main_task, motor_control, communication, sensors)    │
- *   └─────────────────────────────────────────────────────────────┘
- *                              │
- *                              │ rx_infrastructure_get_*()
- *                              ▼
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │                rx_infrastructure (This Module)              │
- *   │  ┌──────────────────────┐  ┌──────────────────────────────┐ │
- *   │  │  Error Handler       │  │  Pin Validator               │ │
- *   │  │  (retry, backoff)    │  │  (conflict detection)        │ │
- *   │  │  s_global_error_*    │  │  s_global_pin_*              │ │
- *   │  └──────────────────────┘  └──────────────────────────────┘ │
- *   └─────────────────────────────────────────────────────────────┘
- *                              │
- *                              │ Uses interfaces from
- *                              ▼
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │                   Core Library Layer                        │
- *   │  rx_error_handler.c    rx_pin_validator.c    rx_log.c      │
- *   └─────────────────────────────────────────────────────────────┘
+ *   +-------------------------------------------------------------+
+ *   |                     Application Layer                       |
+ *   |  (app_main_task, motor_control, communication, sensors)    |
+ *   +-------------------------------------------------------------+
+ *                              |
+ *                              | rx_infrastructure_get_*()
+ *                              v
+ *   +-------------------------------------------------------------+
+ *   |                rx_infrastructure (This Module)              |
+ *   |  +----------------------+  +------------------------------+ |
+ *   |  |  Error Handler       |  |  Pin Validator               | |
+ *   |  |  (retry, backoff)    |  |  (conflict detection)        | |
+ *   |  |  s_global_error_*    |  |  s_global_pin_*              | |
+ *   |  +----------------------+  +------------------------------+ |
+ *   +-------------------------------------------------------------+
+ *                              |
+ *                              | Uses interfaces from
+ *                              v
+ *   +-------------------------------------------------------------+
+ *   |                   Core Library Layer                        |
+ *   |  rx_error_handler.c    rx_pin_validator.c    rx_log.c      |
+ *   +-------------------------------------------------------------+
  * @endverbatim
  *
  * @par Initialization Sequence (MSC)
@@ -362,7 +362,6 @@ rx_err_t rx_infrastructure_init(void)
     .initial_backoff_ms = k_error_handler_default_initial_backoff_ms,
     .max_backoff_ms     = k_error_handler_default_max_backoff_ms,
   };
-  rx_err_t err;
 
   if (s_infrastructure_initialized) {
     rx_log_warn("INFRA", "Infrastructure already initialized");
@@ -372,7 +371,7 @@ rx_err_t rx_infrastructure_init(void)
   rx_log_info("INFRA", "Initializing global infrastructure");
 
   /* Initialize error handler */
-  err = error_handler_init(&s_global_error_handler, &config);
+  rx_err_t err = error_handler_init(&s_global_error_handler, &config);
   if (err != k_rx_ok) {
     rx_log_error("INFRA", "Failed to initialize error handler");
     return err;

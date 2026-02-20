@@ -94,7 +94,7 @@ type serviceSet struct {
 // Package-level variables which point to the real constructors. These are
 // intentionally replaceable test hooks used by unit tests to inject mocks or
 // test doubles. IMPORTANT: modifying these globals is NOT safe for tests that
-// run in parallel — any test that overrides them must NOT call t.Parallel()
+// run in parallel -- any test that overrides them must NOT call t.Parallel()
 // and should restore the original function when finished (or avoid concurrent
 // replacement). The default implementations are `createSPITransport` and
 // `createSPILink` respectively; look up those symbols to find the real logic.
@@ -194,7 +194,7 @@ func Run(ctx context.Context, config Config) error {
 	// Initialize servers struct
 	servers := &Servers{}
 
-	// Start gRPC server (non-blocking) — use derived runCtx so server goroutines
+	// Start gRPC server (non-blocking) -- use derived runCtx so server goroutines
 	// observe cancellation from the Run() signal handler.
 	if err := startGRPCServer(runCtx, servers, services, logger); err != nil {
 		return fmt.Errorf("gRPC server startup failed: %w", err)

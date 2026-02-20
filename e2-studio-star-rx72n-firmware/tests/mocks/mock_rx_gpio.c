@@ -94,6 +94,7 @@ void mock_gpio_deinit(void)
 void mock_gpio_set_read_value(rx_port_pin_t pin, bool high)
 {
   uint32_t idx = internal_pin_to_index(pin);
+
   if (idx < k_mock_gpio_max_pins) {
     s_mock_gpio.pins[idx].read_value = high;
   }
@@ -102,6 +103,7 @@ void mock_gpio_set_read_value(rx_port_pin_t pin, bool high)
 bool mock_gpio_get_written_value(rx_port_pin_t pin)
 {
   uint32_t idx = internal_pin_to_index(pin);
+
   if (idx < k_mock_gpio_max_pins) {
     return s_mock_gpio.pins[idx].output_value;
   }
@@ -111,6 +113,7 @@ bool mock_gpio_get_written_value(rx_port_pin_t pin)
 bool mock_gpio_is_output(rx_port_pin_t pin)
 {
   uint32_t idx = internal_pin_to_index(pin);
+
   if (idx < k_mock_gpio_max_pins) {
     return s_mock_gpio.pins[idx].is_output;
   }

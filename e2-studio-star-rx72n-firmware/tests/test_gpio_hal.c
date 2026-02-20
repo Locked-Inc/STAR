@@ -33,7 +33,7 @@
  *     style=filled;
  *     fillcolor=lightyellow;
  *     mock_gpio [label="Mock GPIO HAL\n(State Tracking)"];
- *     mock_state [label="Pin State Arrays\n20 ports × 8 pins"];
+ *     mock_state [label="Pin State Arrays\n20 ports x 8 pins"];
  *     call_history [label="Call History\n64 entries"];
  *   }
  *
@@ -98,7 +98,7 @@
  * ### 1. Mock-Based Testing Strategy
  *
  * Tests use [mock_gpio_hal.h](mocks/mock_gpio_hal.h) which provides:
- * - **State tracking**: Direction and output value per pin (20 ports × 8 pins)
+ * - **State tracking**: Direction and output value per pin (20 ports x 8 pins)
  * - **Call history**: Records all function calls with parameters (64 entries)
  * - **Error injection**: Simulate failure conditions (validator conflicts, mutex errors)
  * - **Input simulation**: Set simulated pin levels for gpio_read() tests
@@ -202,7 +202,7 @@
  *
  * | Operation | Mock Time | Real HW Time @ 240 MHz | Notes |
  * |-----------|-----------|------------------------|-------|
- * | gpio_set_output() | ~500 ns | ~1-2 µs | Mock is faster (no pin validator) |
+ * | gpio_set_output() | ~500 ns | ~1-2 us | Mock is faster (no pin validator) |
  * | gpio_write_high() | ~100 ns | ~100 ns | Direct register write |
  * | gpio_read() | ~100 ns | ~100 ns | Direct register read |
  * | Test suite total | ~5 ms | N/A | 29 tests on Intel i7 |
@@ -288,11 +288,11 @@ typedef enum : uint8_t {
  *
  * @pre None (initialization function)
  * @post Mock GPIO state completely reset
- * @post All 160 pin states (20 ports × 8 pins) initialized
+ * @post All 160 pin states (20 ports x 8 pins) initialized
  * @post Call history empty
  *
  * @note Called automatically by Unity framework
- * @note Execution time: ~10 µs (memset operations)
+ * @note Execution time: ~10 us (memset operations)
  *
  * @see mock_gpio_init() Implementation in mock_gpio_hal.c
  * @see tearDown() Corresponding cleanup function
@@ -604,6 +604,7 @@ void test_gpio_set_output_error_injection(void)
 void test_gpio_set_output_call_history(void)
 {
   rx_err_t err = gpio_set_output(k_rx_pb_2);
+
   (void)gpio_set_output(k_rx_pa_0);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1126,10 +1127,10 @@ void test_gpio_read_invalid_pin(void)
  */
 void test_gpio_valid_ports(void)
 {
-  rx_err_t err;
-
   /* Test all valid ports (Port 0, 1, 2, 3, 4, 5, A, B, C, D, E, J) */
+  rx_err_t err;
   err = gpio_set_output(k_rx_p0_5); /* Port 0 */
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = gpio_set_output(k_rx_p1_2); /* Port 1 */

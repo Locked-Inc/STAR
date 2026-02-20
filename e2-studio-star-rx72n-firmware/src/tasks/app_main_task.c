@@ -433,7 +433,7 @@ static bool s_app_main_created = false;
  * Executes in dedicated task context. No shared state modified in loop.
  *
  * @par Performance:
- * - Execution time per iteration: ~5 µs (excluding sleep)
+ * - Execution time per iteration: ~5 us (excluding sleep)
  * - CPU utilization: < 0.1% (mostly sleeping)
  *
  * @see app_main_task_create() Creates task with this entry point

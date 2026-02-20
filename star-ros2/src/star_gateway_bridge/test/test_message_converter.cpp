@@ -31,7 +31,7 @@ protected:
 };
 
 // =============================================================================
-// Forward Kinematics Tests (Twist → VelocityCommand)
+// Forward Kinematics Tests (Twist -> VelocityCommand)
 // =============================================================================
 
 TEST_F(MessageConverterTest, TwistToCommandZeroVelocity)
@@ -70,8 +70,8 @@ TEST_F(MessageConverterTest, TwistToCommandPureRotation)
   star::v1::VelocityCommand command;
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, WHEEL_BASE_M));
 
-  // Differential rotation: v_left = -ω*L/2, v_right = +ω*L/2
-  double expected_velocity = twist.angular.z * WHEEL_BASE_M / 2.0;  // ω * L/2 = 0.075 m/s
+  // Differential rotation: v_left = -omega*L/2, v_right = +omega*L/2
+  double expected_velocity = twist.angular.z * WHEEL_BASE_M / 2.0;  // omega * L/2 = 0.075 m/s
 
   EXPECT_NEAR(command.front_left_velocity_mps(), -expected_velocity, TOLERANCE);
   EXPECT_NEAR(command.front_right_velocity_mps(), expected_velocity, TOLERANCE);
@@ -86,8 +86,8 @@ TEST_F(MessageConverterTest, TwistToCommandMixedMotion)
   star::v1::VelocityCommand command;
   ASSERT_TRUE(converter_.twist_to_velocity_command(twist, command, WHEEL_BASE_M));
 
-  // v_left = v - ω*L/2
-  // v_right = v + ω*L/2
+  // v_left = v - omega*L/2
+  // v_right = v + omega*L/2
   double rotational_component = 2.0 * WHEEL_BASE_M / 2.0;  // 0.150 m/s
   double expected_left = 1.0 - rotational_component;       // 0.850 m/s
   double expected_right = 1.0 + rotational_component;      // 1.150 m/s
@@ -127,7 +127,7 @@ TEST_F(MessageConverterTest, TwistToCommandNegativeAngular)
 }
 
 // =============================================================================
-// Inverse Kinematics Tests (VelocityCommand → Twist)
+// Inverse Kinematics Tests (VelocityCommand -> Twist)
 // =============================================================================
 
 TEST_F(MessageConverterTest, CommandToTwistZeroVelocity)
@@ -174,7 +174,7 @@ TEST_F(MessageConverterTest, CommandToTwistPureRotation)
   geometry_msgs::msg::Twist twist;
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
 
-  // ω = (v_right - v_left) / L
+  // omega = (v_right - v_left) / L
   double expected_angular = (wheel_velocity - (-wheel_velocity)) / WHEEL_BASE_M;
 
   EXPECT_NEAR(twist.linear.x, 0.0, TOLERANCE);
@@ -193,7 +193,7 @@ TEST_F(MessageConverterTest, CommandToTwistMixedMotion)
   ASSERT_TRUE(converter_.velocity_command_to_twist(command, twist, WHEEL_BASE_M));
 
   // v = (v_left + v_right) / 2 = (0.5 + 1.5) / 2 = 1.0
-  // ω = (v_right - v_left) / L = (1.5 - 0.5) / 0.150 = 6.667
+  // omega = (v_right - v_left) / L = (1.5 - 0.5) / 0.150 = 6.667
   double expected_linear = (0.5 + 1.5) / 2.0;
   double expected_angular = (1.5 - 0.5) / WHEEL_BASE_M;
 
@@ -202,7 +202,7 @@ TEST_F(MessageConverterTest, CommandToTwistMixedMotion)
 }
 
 // =============================================================================
-// Kinematics Roundtrip Tests (Twist → Command → Twist)
+// Kinematics Roundtrip Tests (Twist -> Command -> Twist)
 // =============================================================================
 
 TEST_F(MessageConverterTest, KinematicsRoundtripZero)
@@ -391,22 +391,22 @@ TEST_F(MessageConverterTest, BatteryStateToProtoNominal)
   star::v1::BatteryState proto_battery;
   ASSERT_TRUE(converter_.battery_state_to_proto(ros_battery, proto_battery));
 
-  // Voltage: V → mV (via nested current message)
+  // Voltage: V -> mV (via nested current message)
   EXPECT_NEAR(proto_battery.current().voltage_mv(), 12600.0, 1.0);
 
-  // Current: A → mA (via nested current message)
+  // Current: A -> mA (via nested current message)
   EXPECT_NEAR(proto_battery.current().current_ma(), -2500.0, 1.0);
 
-  // State of Charge: 0-1 → 0-100 (via nested soc message)
+  // State of Charge: 0-1 -> 0-100 (via nested soc message)
   EXPECT_NEAR(proto_battery.soc().relative_soc_percent(), 85.0, 1.0);
 
-  // Remaining capacity: Ah → mAh
+  // Remaining capacity: Ah -> mAh
   EXPECT_NEAR(proto_battery.soc().remaining_capacity_mah(), 3000.0, 1.0);
 
-  // Full capacity: Ah → mAh
+  // Full capacity: Ah -> mAh
   EXPECT_NEAR(proto_battery.soc().full_capacity_mah(), 5000.0, 1.0);
 
-  // Design capacity: Ah → mAh
+  // Design capacity: Ah -> mAh
   EXPECT_NEAR(proto_battery.soc().design_capacity_mah(), 5000.0, 1.0);
 
   // Status - discharging state
@@ -548,12 +548,12 @@ TEST_F(MessageConverterTest, BatteryStateToProtoWithTemperature)
 {
   sensor_msgs::msg::BatteryState ros_battery;
   ros_battery.voltage = 12.0;
-  ros_battery.cell_temperature.push_back(25.5f);  // 25.5°C
+  ros_battery.cell_temperature.push_back(25.5f);  // 25.5degC
 
   star::v1::BatteryState proto_battery;
   ASSERT_TRUE(converter_.battery_state_to_proto(ros_battery, proto_battery));
 
-  // Temperature: °C → deci-Celsius (25.5 → 255)
+  // Temperature: degC -> deci-Celsius (25.5 -> 255)
   EXPECT_EQ(proto_battery.temperatures().valid_sensors(), 1);
   EXPECT_EQ(proto_battery.temperatures().temp_deci_celsius_size(), 1);
   EXPECT_NEAR(proto_battery.temperatures().temp_deci_celsius(0), 255, 1);
@@ -561,7 +561,7 @@ TEST_F(MessageConverterTest, BatteryStateToProtoWithTemperature)
 }
 
 // =============================================================================
-// PID Configuration Tests (Proto → ROS2 direction)
+// PID Configuration Tests (Proto -> ROS2 direction)
 // =============================================================================
 
 TEST_F(MessageConverterTest, PidConfigToGainsNominal)

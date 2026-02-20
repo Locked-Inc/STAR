@@ -35,6 +35,10 @@
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
+  "[proto]": {
+    "editor.defaultFormatter": "DrBlury.protobuf-vsc",
+    "editor.formatOnSave": true
+  },
   "markdown.validate.enabled": true,
   "markdown.validate.fileLinks.enabled": false,
   "markdown.validate.fragmentLinks.enabled": true,
@@ -55,5 +59,19 @@
   ],
   "files.associations": {
     "e2-studio-star-rx72n-firmware/libs/rx_nanopb/**/*.proto": "plaintext"
-  }
+  },
+  "files.exclude": {
+    "**/e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb/**": true
+  },
+  "search.exclude": {
+    "**/e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb/**": true
+  },
+  "files.watcherExclude": {
+    "**/e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb/**": true
+  },
+  "problems.exclude": {
+    "**/e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb/**": true
+  },
+  "protobuf.buf.path": "/usr/local/bin/buf",
+  "protobuf.protoc.path": "/usr/bin/protoc"
 }

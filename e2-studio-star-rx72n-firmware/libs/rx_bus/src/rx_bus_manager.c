@@ -23,7 +23,7 @@
  * Linked list chosen because:
  * - O(1) add/remove (constant time) vs O(n) array shifts
  * - No wasted memory for unused bus slots
- * - Typical usage: ≤8 buses, so O(n) iteration acceptable
+ * - Typical usage: <=8 buses, so O(n) iteration acceptable
  * - Intrusive list (next pointer in rx_bus_config_t) avoids extra allocation
  *
  * ### Thread Safety Strategy
@@ -41,7 +41,7 @@
  * k_bus_manager_mutex_timeout_ms = 1000 ms:
  * - Long enough for slow SPI/I2C operations (~10ms max)
  * - Short enough to detect deadlocks/hangs
- * - ThreadX tick conversion: timeout_ticks = (timeout_ms × tick_rate_hz) / 1000
+ * - ThreadX tick conversion: timeout_ticks = (timeout_ms x tick_rate_hz) / 1000
  *
  * ## Implementation Approach
  *
@@ -74,26 +74,26 @@
  *
  * | Operation | Time Complexity | Actual Time @ 240 MHz | Notes |
  * |-----------|----------------|----------------------|-------|
- * | init | O(1) | ~10 µs | tx_mutex_create |
- * | deinit | O(n) | ~5 µs/bus + mutex delete | Iterates all buses |
- * | add_bus | O(n) | ~15 µs + mutex | Duplicate check O(n) |
- * | remove_bus | O(n) | ~12 µs + mutex | Find + remove |
- * | find_bus | O(n) | ~8 µs + mutex | Linear search |
- * | with_bus | O(n) + callback | ~10 µs + callback time | Callback dominates |
- * | execute_command | O(n) + command | ~12 µs + command time | Uses with_bus |
+ * | init | O(1) | ~10 us | tx_mutex_create |
+ * | deinit | O(n) | ~5 us/bus + mutex delete | Iterates all buses |
+ * | add_bus | O(n) | ~15 us + mutex | Duplicate check O(n) |
+ * | remove_bus | O(n) | ~12 us + mutex | Find + remove |
+ * | find_bus | O(n) | ~8 us + mutex | Linear search |
+ * | with_bus | O(n) + callback | ~10 us + callback time | Callback dominates |
+ * | execute_command | O(n) + command | ~12 us + command time | Uses with_bus |
  *
- * Mutex overhead: ~2-3 µs per lock/unlock pair (tx_mutex_get/put).
+ * Mutex overhead: ~2-3 us per lock/unlock pair (tx_mutex_get/put).
  *
  * ## Memory Usage
  *
  * | Component | Size | Count | Total |
  * |-----------|------|-------|-------|
  * | rx_bus_manager_t | 72 bytes | 1 | 72 bytes |
- * | rx_bus_config_t | ~128 bytes | ≤16 | ≤2048 bytes |
+ * | rx_bus_config_t | ~128 bytes | <=16 | <=2048 bytes |
  * | TX_MUTEX (ThreadX) | 52 bytes | 1 | 52 bytes |
- * | **Total** | - | - | **≤2172 bytes** |
+ * | **Total** | - | - | **<=2172 bytes** |
  *
- * Stack usage per function: ≤64 bytes (local variables + call overhead).
+ * Stack usage per function: <=64 bytes (local variables + call overhead).
  *
  * ## Hardware Dependencies
  *
@@ -112,7 +112,7 @@
  * | **Rule 1** | [PASS] No goto, setjmp, recursion - only if/while/for |
  * | **Rule 2** | [PASS] All loops bounded: while(buses) limited by k_max_buses, mutex timeout prevents infinite wait |
  * | **Rule 3** | [PASS] No malloc/free - bus_config memory managed by caller, static manager structure |
- * | **Rule 4** | [PASS] All functions ≤60 lines (longest: remove_bus at 42 lines) |
+ * | **Rule 4** | [PASS] All functions <=60 lines (longest: remove_bus at 42 lines) |
  * | **Rule 5** | [PASS] Minimum 2 assertions per function (RX_CHECK_NULL_PTR, RX_ASSERT) |
  * | **Rule 6** | [PASS] Variables at smallest scope (current, status, err declared in blocks) |
  * | **Rule 7** | [PASS] All ThreadX status checked (TX_SUCCESS), all rx_err_t returns validated |
@@ -192,7 +192,7 @@ static const char* s_tag = "BUS_MANAGER";
  * - **DRY Principle**: Single implementation of mutex/lookup code
  * - **Maintainability**: Bug fixes in one place
  * - **Testing**: Test with_bus once, commands inherit thread safety
- * - **Cost**: One extra function call (~0.5 µs overhead) - negligible
+ * - **Cost**: One extra function call (~0.5 us overhead) - negligible
  *
  * @param[in] bus_config Bus configuration pointer (guaranteed valid by with_bus)
  * @param[in] user_ctx User context (rx_bus_command_t* cast by this function)
@@ -223,23 +223,23 @@ static const char* s_tag = "BUS_MANAGER";
  * Not re-entrant (not designed to be called directly).
  *
  * @par Performance:
- * Execution time: ~1 µs @ 240 MHz (NULL checks + function call overhead)
+ * Execution time: ~1 us @ 240 MHz (NULL checks + function call overhead)
  * Does not include command->execute time (command-dependent).
  *
  * @par Example Command Execution Flow:
  * @code{.c}
  * // User calls:
  * rx_bus_manager_execute_command(&mgr, "imu", &read_cmd);
- *   ↓
+ *   v
  * // execute_command calls:
  * rx_bus_manager_with_bus(&mgr, "imu", internal_execute_command_callback, &read_cmd);
- *   ↓
+ *   v
  * // with_bus acquires mutex, finds bus, then calls:
  * internal_execute_command_callback(bus, &read_cmd);
- *   ↓
+ *   v
  * // This function calls:
  * read_cmd.execute(bus, read_cmd.data);
- *   ↓
+ *   v
  * // Results propagate back through call stack
  * @endcode
  *
@@ -256,9 +256,6 @@ static const char* s_tag = "BUS_MANAGER";
  */
 static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  rx_bus_command_t* command = nullptr;
-  rx_err_t          err     = k_rx_err_invalid_state;
-
   /* Pre-conditions: validate inputs (NASA Rule 5) */
   if (bus_config == nullptr) {
     rx_log_error(s_tag, "Bus config is nullptr in command callback");
@@ -270,7 +267,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
     return k_rx_err_null_ptr;
   }
 
-  command = (rx_bus_command_t*)user_ctx;
+  rx_bus_command_t* const command = (rx_bus_command_t*)user_ctx;
 
   /* Validate command has execution function */
   if (command->execute == nullptr) {
@@ -280,7 +277,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
   }
 
   /* Execute the command */
-  err = command->execute(bus_config, command->data);
+  rx_err_t err = command->execute(bus_config, command->data);
 
   /* Store result in command for caller inspection */
   command->result = err;
@@ -342,7 +339,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
  *                        allocated rx_bus_manager_t structure (stack or static).
  *                        On success, contains initialized mutex and empty bus list.
  * @param[in] tag Logging tag for debug messages (e.g., "MOTOR", "SENSOR").
- *                Must be non-NULL, typically ≤8 characters. Pointer stored
+ *                Must be non-NULL, typically <=8 characters. Pointer stored
  *                directly (NOT copied) - string must remain valid for manager lifetime.
  * @param[in] error_iface Error handler interface for operation failures.
  *                        Must be non-NULL and validated. Allows dependency
@@ -391,7 +388,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
  * Not re-entrant for same manager. Re-entrant for different managers.
  *
  * @par Performance:
- * Execution time: ~10 µs @ 240 MHz (dominated by tx_mutex_create)
+ * Execution time: ~10 us @ 240 MHz (dominated by tx_mutex_create)
  *
  * @par Memory:
  * - Stack: ~32 bytes (local variables)
@@ -470,16 +467,13 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
                              rx_error_interface_t* error_iface,
                              rx_pin_interface_t*   pin_iface)
 {
-  rx_err_t err;
-  UINT     status;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
   RX_CHECK_NULL_PTR(tag, s_tag, "Tag pointer is nullptr");
   RX_CHECK_NULL_PTR(error_iface, s_tag, "Error interface is nullptr");
   RX_CHECK_NULL_PTR(pin_iface, s_tag, "Pin interface is nullptr");
 
   /* Validate interfaces */
-  err = rx_error_interface_validate(error_iface);
+  rx_err_t err = rx_error_interface_validate(error_iface);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Error interface validation failed");
     return err;
@@ -492,10 +486,10 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   }
 
   /* Clear manager state */
-  memset(manager, 0, sizeof(rx_bus_manager_t));
+  *manager = (rx_bus_manager_t){0};
 
   /* Create ThreadX mutex for thread safety */
-  status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
+  UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex creation failed");
     return k_rx_err_threadx;
@@ -543,7 +537,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  * Uses simple iteration instead of calling rx_bus_manager_remove_bus():
  * - **Why**: remove_bus() acquires mutex, but we're about to delete it
  * - **Safe**: No other threads should be accessing during deinit (precondition)
- * - **Efficient**: O(n) single pass vs O(n²) repeated remove calls
+ * - **Efficient**: O(n) single pass vs O(n^2) repeated remove calls
  *
  * ### Memory Ownership
  * Manager does NOT free bus_config structures:
@@ -606,8 +600,8 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  * Not re-entrant. Do not call concurrently on same manager.
  *
  * @par Performance:
- * Execution time: ~5 µs × bus_count + 8 µs (mutex delete + memset)
- * Typical: ~40 µs for 8 buses @ 240 MHz
+ * Execution time: ~5 us x bus_count + 8 us (mutex delete + memset)
+ * Typical: ~40 us for 8 buses @ 240 MHz
  *
  * @par Memory:
  * - Stack: ~24 bytes (local variables)
@@ -665,15 +659,12 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  */
 rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
 {
-  const rx_bus_config_t* bus    = nullptr;
-  UINT                   status = TX_SUCCESS;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
 
   /* Remove all buses before destroying mutex */
   while (manager->buses != nullptr) {
-    bus            = manager->buses;
-    manager->buses = bus->next;
+    const rx_bus_config_t* const bus = manager->buses;
+    manager->buses                   = bus->next;
     manager->bus_count--;
 
     /* Note: bus_config memory is owned by caller, we don't free it */
@@ -684,14 +675,14 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
   RX_ASSERT(manager->bus_count == 0, "Bus count should be zero after deinit");
 
   /* Delete ThreadX mutex */
-  status = tx_mutex_delete(&manager->mutex);
+  UINT status = tx_mutex_delete(&manager->mutex);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex deletion failed");
     return k_rx_err_threadx;
   }
 
   /* Clear manager state */
-  memset(manager, 0, sizeof(rx_bus_manager_t));
+  *manager = (rx_bus_manager_t){0};
 
   rx_log_info(s_tag, "Bus manager deinitialized");
 
@@ -743,7 +734,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * Uses strncmp() with k_max_bus_name_len bound:
  * - Prevents buffer overruns from malformed names
  * - Case-sensitive comparison (k_bus_type_i2c vs k_bus_type_I2C are different)
- * - O(n) search acceptable for ≤16 buses (typical: 4-8 buses)
+ * - O(n) search acceptable for <=16 buses (typical: 4-8 buses)
  *
  * ### Mutex Timeout Calculation
  * ```c
@@ -766,7 +757,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * | k_rx_err_invalid_arg | Empty name string | Provide valid name |
  * | k_rx_err_timeout | Mutex timeout (1000ms) | Check for deadlock |
  * | k_rx_err_exists | Duplicate name | Use unique name or remove existing |
- * | k_rx_err_no_mem | ≥16 buses registered | Remove unused buses |
+ * | k_rx_err_no_mem | >=16 buses registered | Remove unused buses |
  *
  * @param[in,out] manager Bus manager instance (must be initialized).
  *                        On success, contains new bus in linked list.
@@ -786,7 +777,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  *
  * @pre manager initialized via rx_bus_manager_init()
  * @pre bus_config points to valid allocated configuration
- * @pre bus_config->name is unique non-empty null-terminated string (≤k_max_bus_name_len)
+ * @pre bus_config->name is unique non-empty null-terminated string (<=k_max_bus_name_len)
  * @pre bus_config->type is valid (< k_bus_type_max)
  * @pre bus_config structure must remain valid until removal or deinit
  *
@@ -795,7 +786,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * @post Bus accessible via rx_bus_manager_find_bus() and with_bus() (if k_rx_ok)
  * @post Manager unchanged on error (atomic - no partial state)
  *
- * @invariant bus_count ≤ k_max_buses at all times
+ * @invariant bus_count <= k_max_buses at all times
  * @invariant All bus names in list are unique
  *
  * @note Manager does NOT own bus_config memory - caller must free
@@ -817,8 +808,8 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * @par Performance:
  * - Best case: O(1) - no duplicate, insert at head
  * - Worst case: O(n) - duplicate at end of list (n = bus_count)
- * - Typical: ~15 µs @ 240 MHz for 8 buses
- * - Mutex overhead: ~3 µs (get + put)
+ * - Typical: ~15 us @ 240 MHz for 8 buses
+ * - Mutex overhead: ~3 us (get + put)
  *
  * @par Memory:
  * - Stack: ~32 bytes (local variables)
@@ -886,10 +877,6 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  */
 rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
 {
-  ULONG                  timeout_ticks = 0;
-  UINT                   status        = TX_SUCCESS;
-  const rx_bus_config_t* current       = nullptr;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_config, s_tag, "Bus config pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_config->name, s_tag, "Bus name is nullptr");
@@ -901,17 +888,17 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
   }
 
   /* Convert timeout from ms to ThreadX ticks */
-  timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  const ULONG timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in add_bus");
     return k_rx_err_timeout;
   }
 
   /* Check for duplicate name */
-  current = manager->buses;
+  const rx_bus_config_t* current = manager->buses;
   while (current != nullptr) {
     if (strncmp(current->name, bus_config->name, k_max_bus_name_len) == 0) {
       (void)tx_mutex_put(&manager->mutex);
@@ -1051,7 +1038,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * @post Bus not accessible via find_bus/with_bus (if k_rx_ok)
  * @post Manager unchanged on error (atomic operation)
  *
- * @invariant bus_count ≥ 0 at all times
+ * @invariant bus_count >= 0 at all times
  *
  * @note Manager does NOT free bus_config memory - caller must free
  * @note Hardware is NOT deinitialized - caller's responsibility
@@ -1072,8 +1059,8 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * @par Performance:
  * - Best case: O(1) - bus at head of list
  * - Worst case: O(n) - bus at end of list or not found (n = bus_count)
- * - Typical: ~12 µs @ 240 MHz for 8 buses
- * - Mutex overhead: ~3 µs (get + put)
+ * - Typical: ~12 us @ 240 MHz for 8 buses
+ * - Mutex overhead: ~3 us (get + put)
  *
  * @par Memory:
  * - Stack: ~32 bytes (local variables)
@@ -1145,6 +1132,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
 {
   ULONG                  timeout_ticks = 0;
   UINT                   status        = TX_SUCCESS;
+
   const rx_bus_config_t* to_remove     = nullptr;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
@@ -1194,6 +1182,7 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
 {
   ULONG            timeout_ticks = 0;
   UINT             status        = TX_SUCCESS;
+
   rx_bus_config_t* current       = nullptr;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
@@ -1234,6 +1223,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
 {
   ULONG            timeout_ticks = 0;
   UINT             status        = TX_SUCCESS;
+
   rx_bus_config_t* current       = nullptr;
   rx_err_t         err           = k_rx_err_invalid_state;
 

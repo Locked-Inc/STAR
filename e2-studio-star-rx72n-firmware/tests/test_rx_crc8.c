@@ -60,8 +60,8 @@
  * [Reserved (3)] [CRC-8 (1)]
  * ```
  *
- * **Temperature encoding:** 12-bit two's complement, resolution 0.0625°C
- * @f$ T = \frac{\text{Temp}_{raw}}{16} \text{°C} @f$
+ * **Temperature encoding:** 12-bit two's complement, resolution 0.0625degC
+ * @f$ T = \frac{\text{Temp}_{raw}}{16} \text{degC} @f$
  *
  * **CRC calculation:** Over first 8 bytes (all data except CRC byte)
  *
@@ -204,6 +204,7 @@ static const uint8_t s_ds18b20_family_code = 0x28U; /**< DS18B20 family code */
 void test_crc8_null_pointer(void)
 {
   uint8_t crc = rx_crc8_maxim(nullptr, 10);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -214,6 +215,7 @@ void test_crc8_zero_length(void)
 {
   uint8_t data[] = {0x01, 0x02, 0x03};
   uint8_t crc    = rx_crc8_maxim(data, 0);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -223,6 +225,7 @@ void test_crc8_zero_length(void)
 void test_crc8_null_zero_length(void)
 {
   uint8_t crc = rx_crc8_maxim(nullptr, 0);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -241,6 +244,7 @@ void test_crc8_single_zero(void)
 {
   uint8_t data[] = {0x00};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -253,6 +257,7 @@ void test_crc8_single_ff(void)
 {
   uint8_t data[] = {0xFF};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0x35, crc);
 }
 
@@ -265,6 +270,7 @@ void test_crc8_single_lsb_set(void)
 {
   uint8_t data[] = {0x01};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0x5E, crc);
 }
 
@@ -277,6 +283,7 @@ void test_crc8_ds18b20_family_code(void)
 {
   uint8_t data[] = {s_ds18b20_family_code};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0xE1, crc);
 }
 
@@ -353,6 +360,7 @@ void test_crc8_ds18b20_rom_1(void)
 {
   uint8_t rom[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0xDB, crc);
 }
 
@@ -368,6 +376,7 @@ void test_crc8_ds18b20_rom_2(void)
 {
   uint8_t rom[] = {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x1E, crc);
 }
 
@@ -383,6 +392,7 @@ void test_crc8_ds18b20_rom_3(void)
 {
   uint8_t rom[] = {0x28, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x0C, crc);
 }
 
@@ -398,6 +408,7 @@ void test_crc8_ds18b20_rom_4(void)
 {
   uint8_t rom[] = {0x28, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x01};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x67, crc);
 }
 
@@ -411,6 +422,7 @@ void test_crc8_full_rom_validation(void)
 {
   uint8_t rom_with_crc[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05, 0xDB};
   uint8_t crc            = rx_crc8_maxim(rom_with_crc, k_rom_code_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -424,7 +436,7 @@ void test_crc8_full_rom_validation(void)
  */
 
 /**
- * @brief Test CRC-8 for DS18B20 scratchpad at room temperature (+25.0625°C)
+ * @brief Test CRC-8 for DS18B20 scratchpad at room temperature (+25.0625degC)
  *
  * @details
  * Validates CRC-8 calculation for DS18B20 scratchpad memory containing typical
@@ -435,8 +447,8 @@ void test_crc8_full_rom_validation(void)
  * ```
  * Byte 0:   0x91 - Temperature LSB
  * Byte 1:   0x01 - Temperature MSB (0x0191 = 401 decimal)
- * Byte 2:   0x4B - TH alarm register (75°C)
- * Byte 3:   0x46 - TL alarm register (70°C)
+ * Byte 2:   0x4B - TH alarm register (75degC)
+ * Byte 3:   0x46 - TL alarm register (70degC)
  * Byte 4:   0x7F - Configuration (12-bit resolution)
  * Bytes 5-7: FF 0F 10 - Reserved bytes
  * Byte 8:   0x25 - CRC-8 (calculated, not in input)
@@ -444,7 +456,7 @@ void test_crc8_full_rom_validation(void)
  *
  * **Temperature decoding:**
  * @f[
- *   T = \frac{0x0191}{16} = \frac{401}{16} = 25.0625 \text{°C}
+ *   T = \frac{0x0191}{16} = \frac{401}{16} = 25.0625 \text{degC}
  * @f]
  *
  * **Algorithm steps:**
@@ -455,7 +467,7 @@ void test_crc8_full_rom_validation(void)
  * @pre rx_crc8_maxim() configured with Dallas/Maxim polynomial
  * @post CRC validated, scratchpad data integrity confirmed
  *
- * @invariant Temperature value within DS18B20 range (-55°C to +125°C)
+ * @invariant Temperature value within DS18B20 range (-55degC to +125degC)
  *
  * @note Configuration 0x7F = 12-bit resolution, conversion time 750ms
  * @note TH/TL values are power-on defaults (non-volatile EEPROM)
@@ -463,10 +475,10 @@ void test_crc8_full_rom_validation(void)
  * @par Temperature Resolution:
  * | Config | Bits | Resolution | Conversion Time |
  * |--------|------|------------|-----------------|
- * | 0x1F   | 9    | 0.5°C      | 93.75 ms        |
- * | 0x3F   | 10   | 0.25°C     | 187.5 ms        |
- * | 0x5F   | 11   | 0.125°C    | 375 ms          |
- * | 0x7F   | 12   | **0.0625°C** | **750 ms**    |
+ * | 0x1F   | 9    | 0.5degC      | 93.75 ms        |
+ * | 0x3F   | 10   | 0.25degC     | 187.5 ms        |
+ * | 0x5F   | 11   | 0.125degC    | 375 ms          |
+ * | 0x7F   | 12   | **0.0625degC** | **750 ms**    |
  *
  * @par Usage Example:
  * @code
@@ -476,7 +488,7 @@ void test_crc8_full_rom_validation(void)
  * uint8_t computed_crc = rx_crc8_maxim(scratchpad, 8);
  * if (computed_crc == scratchpad[8]) {
  *     int16_t raw = (scratchpad[1] << 8) | scratchpad[0];
- *     float temp_c = (float)raw / 16.0f;  // 25.0625°C
+ *     float temp_c = (float)raw / 16.0f;  // 25.0625degC
  * }
  * @endcode
  *
@@ -491,6 +503,7 @@ void test_crc8_scratchpad_25c(void)
 {
   uint8_t scratchpad[] = {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10};
   uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x25, crc);
 }
 
@@ -504,6 +517,7 @@ void test_crc8_scratchpad_85c_reset(void)
 {
   uint8_t scratchpad[] = {0x50, 0x05, 0x4B, 0x46, 0x7F, 0xFF, 0x0C, 0x10};
   uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x1C, crc);
 }
 
@@ -517,6 +531,7 @@ void test_crc8_scratchpad_negative_temp(void)
 {
   uint8_t scratchpad[] = {0x5E, 0xFF, 0x4B, 0x46, 0x7F, 0xFF, 0x02, 0x10};
   uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0xB6, crc);
 }
 
@@ -527,6 +542,7 @@ void test_crc8_full_scratchpad_validation(void)
 {
   uint8_t scratchpad_with_crc[] = {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10, 0x25};
   uint8_t crc                   = rx_crc8_maxim(scratchpad_with_crc, k_scratchpad_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -547,6 +563,7 @@ void test_crc8_ascending_sequence(void)
 {
   uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0x0F, crc);
 }
 
@@ -560,6 +577,7 @@ void test_crc8_descending_sequence(void)
 {
   uint8_t data[] = {0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
 }
 
@@ -572,6 +590,7 @@ void test_crc8_alternating_aa(void)
 {
   uint8_t data[] = {0xAA, 0xAA, 0xAA, 0xAA};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
 }
 
@@ -584,6 +603,7 @@ void test_crc8_alternating_55(void)
 {
   uint8_t data[] = {0x55, 0x55, 0x55, 0x55};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0x7B, crc);
 }
 
@@ -632,7 +652,7 @@ void test_crc8_alternating_55(void)
  * @warning Do not call this function multiple times in same process
  *
  * @par Performance:
- * - Single test: ~50 µs average
+ * - Single test: ~50 us average
  * - Full suite: ~1 ms total
  * - Memory: 256 bytes stack (test data buffers)
  *

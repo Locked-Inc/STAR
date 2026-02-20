@@ -16,9 +16,9 @@
  * **Task Hierarchy:**
  * ```
  * main() -> tx_kernel_enter() -> AppMainTask (this)
- *                                    ↓
+ *                                    v
  *                              [Creates all other tasks]
- *                                    ↓
+ *                                    v
  *          MotorTask, CommTask, BMSTask, ObstacleTask, TelemetryTask, TempTask
  *```
  *

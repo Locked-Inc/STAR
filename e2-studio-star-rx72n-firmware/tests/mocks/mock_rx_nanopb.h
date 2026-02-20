@@ -124,7 +124,7 @@ typedef struct {
   double  battery_voltage_v;   /**< Battery voltage (V) */
   uint8_t battery_soc_percent; /**< Battery state of charge (%) */
   double  battery_percent;     /**< Battery percentage (0-100) */
-  double  temperature_celsius; /**< Ambient temperature (°C) */
+  double  temperature_celsius; /**< Ambient temperature (degC) */
 } star_v1_TelemetryData;
 
 /**

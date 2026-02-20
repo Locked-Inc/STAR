@@ -143,7 +143,7 @@
  *
  * ### Throughput vs Buffer Size (RX72N @ 240 MHz)
  *
- * | Buffer Size | Cycles | Time (µs) | Throughput (MB/s) | Notes |
+ * | Buffer Size | Cycles | Time (us) | Throughput (MB/s) | Notes |
  * |-------------|--------|-----------|-------------------|-------|
  * | 16 bytes | 480 | 2.0 | 8.0 | Overhead ~10% |
  * | 64 bytes | 1920 | 8.0 | 8.0 | Steady state |
@@ -166,12 +166,12 @@
  *
  * | Metric | Software (this) | Hardware (rx_crc32_hw.c) | Ratio |
  * |--------|-----------------|--------------------------|-------|
- * | Cycles | 30720 | 6240 | 4.9× slower |
- * | Time | 128 µs | 26 µs | 4.9× slower |
- * | Throughput | 8.0 MB/s | 39.4 MB/s | 4.9× slower |
- * | Code size | 1100 bytes | 200 bytes | 5.5× larger |
+ * | Cycles | 30720 | 6240 | 4.9x slower |
+ * | Time | 128 us | 26 us | 4.9x slower |
+ * | Throughput | 8.0 MB/s | 39.4 MB/s | 4.9x slower |
+ * | Code size | 1100 bytes | 200 bytes | 5.5x larger |
  * | Data size (RAM) | 0 bytes | 1 byte | Equal (table in ROM) |
- * | Data size (ROM) | 1024 bytes (table) | 0 bytes | 1024× larger |
+ * | Data size (ROM) | 1024 bytes (table) | 0 bytes | 1024x larger |
  * | Thread safety | Reentrant | Reentrant | Equal |
  * | Power | +0 mA | +2 mA (peripheral) | SW advantage |
  *
@@ -182,8 +182,8 @@
  * - Works on host builds (Linux/macOS/Windows)
  *
  * **Hardware advantages:**
- * - 5× faster throughput (memory-limited vs CPU-limited)
- * - 5.5× smaller code (no lookup table)
+ * - 5x faster throughput (memory-limited vs CPU-limited)
+ * - 5.5x smaller code (no lookup table)
  * - Simpler implementation (write->read vs table lookup)
  *
  * ## Memory Usage
@@ -191,7 +191,7 @@
  * | Segment | Usage | Details |
  * |---------|-------|---------|
  * | **ROM (.text)** | ~1100 bytes | 4 functions + table lookup logic |
- * | **ROM (.rodata)** | 1024 bytes | s_crc32_table[256] = 256 × 4 bytes |
+ * | **ROM (.rodata)** | 1024 bytes | s_crc32_table[256] = 256 x 4 bytes |
  * | **RAM (.data)** | 0 bytes | No initialized globals |
  * | **RAM (.bss)** | 1 byte | s_crc_initialized flag (conditional) |
  * | **Stack (max)** | 12 bytes | Local variables in rx_crc32_ieee_impl |
@@ -559,12 +559,10 @@ rx_err_t rx_crc_deinit(void)
  */
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
-  rx_err_t init_err;
-
   /* Rule 5: Pre-condition validation - module must be initialized */
   /* Auto-initialize if needed (consistent with hardware implementation) */
   if (!s_crc_initialized) {
-    init_err = rx_crc_init();
+    rx_err_t init_err = rx_crc_init();
     if (init_err != k_rx_ok) {
       return 0;
     }
@@ -612,12 +610,10 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
  */
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
 {
-  rx_err_t init_err;
-
   /* Rule 5: Pre-condition validation - module must be initialized */
   /* Auto-initialize if needed (consistent with hardware implementation) */
   if (!s_crc_initialized) {
-    init_err = rx_crc_init();
+    rx_err_t init_err = rx_crc_init();
     if (init_err != k_rx_ok) {
       return crc;
     }

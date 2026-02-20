@@ -1,4 +1,4 @@
-// message_converter.hpp - ROS2 ↔ Protobuf Message Converter
+// message_converter.hpp - ROS2 <-> Protobuf Message Converter
 // Bidirectional conversion between ROS2 standard messages and STAR Protocol
 // Buffers.
 //
@@ -23,7 +23,7 @@ namespace star
 {
 
 /**
- * @brief Message converter for ROS2 ↔ Protobuf translation.
+ * @brief Message converter for ROS2 <-> Protobuf translation.
  *
  * Provides stateless conversion functions with input validation and unit
  * conversions. All conversions validate for NaN/infinity and clamp values to
@@ -32,25 +32,25 @@ namespace star
 class MessageConverter {
 public:
   // ===========================================================================
-  // ROS2 → Protobuf Conversions
+  // ROS2 -> Protobuf Conversions
   // ===========================================================================
 
   /**
    * @brief Convert ROS2 Twist message to Protobuf VelocityCommand.
    *
    * Maps differential drive velocities from ROS2 standard Twist to STAR
-   * VelocityCommand. Uses differential drive kinematics: (linear, angular) →
+   * VelocityCommand. Uses differential drive kinematics: (linear, angular) ->
    * (motor_0, motor_1) wheel velocities. Note: motor_0 = left wheel, motor_1 =
    * right wheel for differential drive.
    *
    * Conversions:
-   * - Linear velocity (m/s) → motor_0/motor_1 wheel velocities (m/s)
-   * - Angular velocity (rad/s) → Wheel velocity differential (m/s)
-   * - Timestamp → Microseconds since epoch
+   * - Linear velocity (m/s) -> motor_0/motor_1 wheel velocities (m/s)
+   * - Angular velocity (rad/s) -> Wheel velocity differential (m/s)
+   * - Timestamp -> Microseconds since epoch
    *
    * Safety features:
    * - NaN/infinity validation (returns false on invalid input)
-   * - Velocity clamping to ±2.0 m/s (VelocityCommand valid range)
+   * - Velocity clamping to +/-2.0 m/s (VelocityCommand valid range)
    *
    * @param twist ROS2 Twist message (differential drive command)
    * @param command Output VelocityCommand protobuf
@@ -70,11 +70,11 @@ public:
    * Maps ROS2 standard battery state to STAR BatteryState protobuf.
    *
    * Unit conversions:
-   * - Voltage: V → mV (multiply by 1000)
-   * - Current: A → mA (multiply by 1000)
-   * - Capacity: Ah → mAh (multiply by 1000)
-   * - Temperature: °C → deci-Celsius (multiply by 10)
-   * - Percentage: 0-1 → 0-100% (multiply by 100)
+   * - Voltage: V -> mV (multiply by 1000)
+   * - Current: A -> mA (multiply by 1000)
+   * - Capacity: Ah -> mAh (multiply by 1000)
+   * - Temperature: degC -> deci-Celsius (multiply by 10)
+   * - Percentage: 0-1 -> 0-100% (multiply by 100)
    *
    * @param ros_battery ROS2 BatteryState message
    * @param proto_battery Output BatteryState protobuf
@@ -100,7 +100,7 @@ public:
     star::v1::SystemStatus & system_status);
 
   // ===========================================================================
-  // Protobuf → ROS2 Conversions
+  // Protobuf -> ROS2 Conversions
   // ===========================================================================
 
   /**
@@ -111,8 +111,8 @@ public:
    * Note: motor_0 = left wheel, motor_1 = right wheel for differential drive.
    *
    * Conversions:
-   * - motor_0/motor_1 wheel velocities (m/s) → Linear velocity (m/s)
-   * - Wheel velocity differential (m/s) → Angular velocity (rad/s)
+   * - motor_0/motor_1 wheel velocities (m/s) -> Linear velocity (m/s)
+   * - Wheel velocity differential (m/s) -> Angular velocity (rad/s)
    *
    * Kinematics:
    * - linear.x = (motor_0 + motor_1) / 2

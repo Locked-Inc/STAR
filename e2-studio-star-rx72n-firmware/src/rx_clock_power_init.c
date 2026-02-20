@@ -14,7 +14,7 @@
  * **Boot sequence context:**
  * ```
  * Reset -> main() -> rx_clock_power_init() -> hardware_init() -> tx_kernel_enter()
- *                  ↑ This file          ↑ Peripherals    ↑ Start RTOS
+ *                  ^ This file          ^ Peripherals    ^ Start RTOS
  * ```
  *
  * ## Clock Tree Architecture (RX72N @ 240 MHz)
@@ -26,8 +26,8 @@
  *
  *   XTAL [label="External Crystal\n24 MHz", shape=ellipse];
  *   MainOSC [label="Main Oscillator\n24 MHz"];
- *   PLL [label="PLL\n×10 ÷ 1\n240 MHz", style=filled, fillcolor=lightblue];
- *   PPLL [label="PPLL (USB)\n×8 ÷ 4\n48 MHz", style=filled, fillcolor=lightgreen];
+ *   PLL [label="PLL\nx10 / 1\n240 MHz", style=filled, fillcolor=lightblue];
+ *   PPLL [label="PPLL (USB)\nx8 / 4\n48 MHz", style=filled, fillcolor=lightgreen];
  *
  *   ICLK [label="ICLK (CPU)\n240 MHz", style=filled, fillcolor=yellow];
  *   PCLKA [label="PCLKA\n120 MHz"];
@@ -42,13 +42,13 @@
  *   MainOSC -> PLL [label="24 MHz"];
  *   MainOSC -> PPLL [label="24 MHz"];
  *
- *   PLL -> ICLK [label="÷1"];
- *   PLL -> PCLKA [label="÷2"];
- *   PLL -> PCLKB [label="÷4"];
- *   PLL -> PCLKC [label="÷4"];
- *   PLL -> PCLKD [label="÷4"];
- *   PLL -> FCLK [label="÷4"];
- *   PLL -> BCLK [label="÷2"];
+ *   PLL -> ICLK [label="/1"];
+ *   PLL -> PCLKA [label="/2"];
+ *   PLL -> PCLKB [label="/4"];
+ *   PLL -> PCLKC [label="/4"];
+ *   PLL -> PCLKD [label="/4"];
+ *   PLL -> FCLK [label="/4"];
+ *   PLL -> BCLK [label="/2"];
  *
  *   PPLL -> UCLK [label="Exact 48 MHz"];
  * }
@@ -58,22 +58,22 @@
  *
  * **Phase order is CRITICAL** - violating sequence causes hardware failures:
  *
- * ### Phase 1: Clock Configuration (~200 µs)
+ * ### Phase 1: Clock Configuration (~200 us)
  * 1. Unlock register protection (PRCR)
  * 2. Stop sub-clock oscillator (SOSCCR) - not used in STAR
  * 3. Disable RTC (RCR3) - complete sub-clock shutdown
  * 4. Start main oscillator (MOSCCR) - 24 MHz external crystal
  * 5. Wait for main oscillator stabilization (~10 ms)
- * 6. Configure PLL (PLLCR/PLLCR2) - 24 MHz × 10 ÷ 1 = 240 MHz
- * 7. Wait for PLL stabilization (~200 µs)
- * 8. Configure PPLL (PPLLCR/PPLLCR2) - 24 MHz × 8 ÷ 4 = 48 MHz (USB clock)
- * 9. Wait for PPLL stabilization (~200 µs)
+ * 6. Configure PLL (PLLCR/PLLCR2) - 24 MHz x 10 / 1 = 240 MHz
+ * 7. Wait for PLL stabilization (~200 us)
+ * 8. Configure PPLL (PPLLCR/PPLLCR2) - 24 MHz x 8 / 4 = 48 MHz (USB clock)
+ * 9. Wait for PPLL stabilization (~200 us)
  * 10. **CRITICAL:** Set MEMWAIT=1 for ICLK > 120 MHz (flash access timing)
  * 11. Configure system clock dividers (SCKCR) - set all peripheral clocks
  * 12. Select PLL as system clock source (SCKCR3)
  * 13. Lock register protection (PRCR)
  *
- * ### Phase 2: Module Stop Control (~5 µs)
+ * ### Phase 2: Module Stop Control (~5 us)
  * 1. Unlock register protection (PRCR)
  * 2. Enable CMT0/CMT1 modules (MSTPCRA bit 15) - timers for ThreadX
  * 3. Enable MTU modules (MSTPCRA bit 9) - PWM for motor control
@@ -82,7 +82,7 @@
  * 6. Verify module clocks enabled (retry up to 3 times if needed)
  * 7. Lock register protection (PRCR)
  *
- * ### Phase 3: Verification (~2 µs)
+ * ### Phase 3: Verification (~2 us)
  * 1. Read back all clock registers (PLLCR2, SCKCR, SCKCR3, PPLLCR2, OSCOVFSR, MEMWAIT)
  * 2. Verify PLL enabled and stable
  * 3. Verify PPLL enabled and stable (USB clock)
@@ -93,7 +93,7 @@
  *
  * ## Simulator Support
  *
- * When building for e² studio simulator (RX_SIMULATOR_MODE defined):
+ * When building for e^2 studio simulator (RX_SIMULATOR_MODE defined):
  * - **Main oscillator wait loop** (Phase 1, step 5): Skipped - no external crystal in simulator
  * - **PLL polling loop** (Phase 1, step 7): Skipped - OSCOVFSR flags never set in simulator
  * - **PPLL polling loop** (Phase 1, step 9): Skipped - OSCOVFSR flags never set in simulator
@@ -145,11 +145,11 @@
  * | Phase | Duration | CPU Cycles | Blocking? | Notes |
  * |-------|----------|------------|-----------|-------|
  * | **Main OSC stabilization** | ~10 ms | ~2.4M | Yes | Busy-wait, before ThreadX |
- * | **PLL stabilization** | ~200 µs | ~48K | Yes | Busy-wait, timeout 1M iterations |
- * | **PPLL stabilization** | ~200 µs | ~48K | Yes | Busy-wait, timeout 1M iterations |
- * | **Clock config** | ~50 µs | ~12K | No | Register writes only |
- * | **Module stop init** | ~5 µs | ~1.2K | No | Register writes + verification |
- * | **Verification** | ~2 µs | ~480 | No | Register reads only |
+ * | **PLL stabilization** | ~200 us | ~48K | Yes | Busy-wait, timeout 1M iterations |
+ * | **PPLL stabilization** | ~200 us | ~48K | Yes | Busy-wait, timeout 1M iterations |
+ * | **Clock config** | ~50 us | ~12K | No | Register writes only |
+ * | **Module stop init** | ~5 us | ~1.2K | No | Register writes + verification |
+ * | **Verification** | ~2 us | ~480 | No | Register reads only |
  * | **Total** | **~10.5 ms** | **~2.5M** | Yes | **Dominated by OSC stabilization** |
  *
  * ## Memory Usage
@@ -270,8 +270,10 @@ typedef enum : uint8_t {
 
 /** @brief PLL configuration values */
 typedef enum : uint16_t {
-  k_pll_multiplier_10_div_1 = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz) */
-  k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
+  k_pll_multiplier_10_div_1  = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz) */
+  k_pll_stable_flag          = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
+  k_pll_stable_flag_unset    = 0,      /**< PLL stable flag not yet asserted */
+  k_ppll_stable_flag_unset   = 0,      /**< PPLL stable flag not yet asserted */
 } pll_config_t;
 
 /** @brief System clock configuration */
@@ -311,23 +313,46 @@ typedef enum : uint8_t {
 /**
  * @brief Initialize clock system to 240 MHz
  *
- * Clock tree:
- * - Main oscillator: 24 MHz (external crystal)
- * - PLL: 24 MHz x 10 / 1 = 240 MHz
- * - ICLK (CPU): 240 MHz
- * - PCLKA: 120 MHz
- * - PCLKB/C/D: 60 MHz
- * - FCLK (Flash): 60 MHz
+ * @details
+ * Configures the full RX72N clock tree starting from the 24 MHz external crystal:
+ * - Unlocks PRCR for clock register access
+ * - Stops sub-clock oscillator (not used)
+ * - Starts main oscillator and waits for stabilization
+ * - Configures PLL (24 MHz x 10 / 1 = 240 MHz) and waits for PLL lock
+ * - Configures PPLL (24 MHz x 8 / 4 = 48 MHz USB) and waits for PPLL lock
+ * - Sets MEMWAIT=1 for safe flash access at 240 MHz (applied AFTER PLL and PPLL lock)
+ * - Sets system clock dividers (ICLK=240, PCLKA=120, PCLKB/C/D=60, FCLK=60 MHz)
+ * - Switches clock source to PLL
+ * - Relocks PRCR
  *
- * @return k_rx_ok on success
+ * Must be called before any peripheral initialization or RTOS startup.
+ *
+ * @return rx_err_t Initialization result
+ * @retval k_rx_ok All oscillators locked and clocks configured correctly
+ * @retval k_rx_err_hw_timeout PLL or PPLL failed to lock within stabilization limit
+ *
+ * @pre External 24 MHz crystal is connected and oscillating
+ * @pre VCC supply voltage is within RX72N operating range
+ *
+ * @post System clock running at 240 MHz (ICLK) sourced from PLL
+ * @post MEMWAIT=1 set for safe flash access at 240 MHz
+ * @post PRCR relocked to protect clock registers
+ *
+ * @note Thread safety: Must be called from single-threaded context before ThreadX starts
+ * @note Blocking: Waits for crystal and PLL stabilization (bounded by enum timeout constants)
+ *
+ * @see internal_verify_system_state() Post-initialization verification
+ * @see rx_clock_power_init() Public entry point that calls this function
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions
  */
 static rx_err_t internal_clock_init(void)
 {
-  uint32_t timeout = k_pll_stabilization_timeout;
-
   /* Unlock protection for clock registers */
   *prcr_reg() = k_rx_prcr_unlock_all;
-
   /* Precondition: Verify PRCR unlock took effect
    * Note: PRCR key byte (upper 8 bits) reads back as 0x00, so we must mask it */
   RX_ASSERT((*prcr_reg() & k_rx_prcr_readback_mask) ==
@@ -368,15 +393,17 @@ static rx_err_t internal_clock_init(void)
 #if RX_IS_SIMULATOR
   /* Simulator: PLL stable immediately (no hardware PLL circuit to lock) */
 #else
-  /* Hardware: Poll OSCOVFSR until PLL locks (typically ~200 µs) */
-  while ((system_regs()->oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
-    timeout--;
-  }
-
-  if (timeout == k_pll_stabilization_timeout_expired) {
-    /* PLL failed to stabilize - but can't log yet (UART not initialized) */
-    *prcr_reg() = k_rx_prcr_lock;
-    return k_rx_err_hw_timeout;
+  /* Hardware: Poll OSCOVFSR until PLL locks (typically ~200 us) */
+  {
+    uint32_t timeout = k_pll_stabilization_timeout;
+    while ((system_regs()->oscovfsr & k_pll_stable_flag) == k_pll_stable_flag_unset &&
+           timeout > k_pll_stabilization_timeout_expired) {
+      timeout--;
+    }
+    if (timeout == k_pll_stabilization_timeout_expired) {
+      *prcr_reg() = k_rx_prcr_lock;
+      return k_rx_err_hw_timeout;
+    }
   }
 #endif
 
@@ -386,7 +413,7 @@ static rx_err_t internal_clock_init(void)
    * Per RX72N manual Ch09:
    * - USB requires UCLK = 48 MHz (exact)
    * - PPLL generates USB clock from main oscillator
-   * - Configuration: 48 MHz = (24 MHz × 8) / 4
+   * - Configuration: 48 MHz = (24 MHz x 8) / 4
    */
 
   /* Configure PPLL for 48 MHz USB clock */
@@ -397,16 +424,17 @@ static rx_err_t internal_clock_init(void)
 #if RX_IS_SIMULATOR
   /* Simulator: PPLL stable immediately (no hardware PPLL circuit to lock) */
 #else
-  /* Hardware: Poll OSCOVFSR until PPLL locks (typically ~200 µs) */
-  timeout = k_pll_stabilization_timeout;
-  while ((system_regs()->oscovfsr & k_ppll_stable_flag) == 0 && timeout > 0) {
-    timeout--;
-  }
-
-  if (timeout == k_pll_stabilization_timeout_expired) {
-    /* PPLL failed to stabilize */
-    *prcr_reg() = k_rx_prcr_lock;
-    return k_rx_err_hw_timeout;
+  /* Hardware: Poll OSCOVFSR until PPLL locks (typically ~200 us) */
+  {
+    uint32_t timeout = k_pll_stabilization_timeout;
+    while ((system_regs()->oscovfsr & k_ppll_stable_flag) == k_ppll_stable_flag_unset &&
+           timeout > k_pll_stabilization_timeout_expired) {
+      timeout--;
+    }
+    if (timeout == k_pll_stabilization_timeout_expired) {
+      *prcr_reg() = k_rx_prcr_lock;
+      return k_rx_err_hw_timeout;
+    }
   }
 
   /* Post-condition: Verify PPLL is stable (NASA Rule 5) */
@@ -486,40 +514,31 @@ static rx_err_t internal_module_stop_init(void)
   const uint32_t mstpcra_clear_mask = (1UL << k_mstpcra_cmt) | (1UL << k_mstpcra_mtu);
   const uint32_t mstpcrb_clear_mask = (1UL << k_mstpcrb_rspi0) | (1UL << k_mstpcrb_rspi1);
   const uint32_t mstpcrc_clear_mask = (1UL << k_mstpcrc_s12ad);
-
   for (uint8_t attempt = 0; attempt < k_retry_count_module_stop; attempt++) {
     /* Protect off */
     *prcr_reg() = k_rx_prcr_unlock_all;
-
     /* Module Stop Control Register A */
     system_regs()->mstpcra &= ~mstpcra_clear_mask; /* CMT0, CMT1, MTU */
-
     /* Module Stop Control Register B */
     /* Note: SCI modules are enabled per-channel in uart_init_channel() */
     system_regs()->mstpcrb &= ~mstpcrb_clear_mask; /* RSPI0, RSPI1 */
-
     /* Module Stop Control Register C */
     system_regs()->mstpcrc &= ~mstpcrc_clear_mask; /* S12AD */
-
     /* Protect on */
     *prcr_reg() = k_rx_prcr_lock;
-
     /* Post-condition: Verify bits are cleared */
     const uint32_t mstpcra_actual = system_regs()->mstpcra & mstpcra_clear_mask;
     const uint32_t mstpcrb_actual = system_regs()->mstpcrb & mstpcrb_clear_mask;
     const uint32_t mstpcrc_actual = system_regs()->mstpcrc & mstpcrc_clear_mask;
-
     if ((mstpcra_actual == 0) && (mstpcrb_actual == 0) && (mstpcrc_actual == 0)) {
       /* Postcondition: Re-read hardware registers to verify stability */
       const uint32_t verify_a = system_regs()->mstpcra & mstpcra_clear_mask;
       const uint32_t verify_b = system_regs()->mstpcrb & mstpcrb_clear_mask;
       const uint32_t verify_c = system_regs()->mstpcrc & mstpcrc_clear_mask;
-
       RX_ASSERT((verify_a == 0) && (verify_b == 0) && (verify_c == 0),
                 "Postcondition: Module stop bits remain cleared");
       return k_rx_ok;
     }
-
     /* If verification failed and this isn't the last attempt, retry */
   }
 
@@ -535,61 +554,85 @@ static rx_err_t internal_module_stop_init(void)
 /**
  * @brief Verify system clock configuration is correct
  *
- * Checks that the clock system is properly configured to 240 MHz and
- * that required peripheral modules are enabled.
+ * @details
+ * Performs post-initialization validation of the RX72N clock subsystem by reading
+ * back hardware registers. Checks that:
+ * - System register pointer is valid
+ * - PLL is enabled (pllcr2 register)
+ * - System clock dividers match expected values (sckcr register)
+ * - PLL is selected as the system clock source (sckcr3 register)
+ * - PPLL is enabled for USB clock (ppllcr2 register)
+ * - PPLL oscillator is stable (oscovfsr register, hardware only)
+ * - Flash wait state is configured for 240 MHz operation (memwait register)
  *
- * @return k_rx_ok if system state is valid, error code otherwise
+ * Module-stop register verification (MSTPCRA, MSTPCRB) is performed by
+ * internal_module_stop_init(), not by this function.
+ *
+ * Intended to be called immediately after internal_clock_init() to confirm that
+ * all register writes took effect.
+ *
+ * @return rx_err_t Verification result
+ * @retval k_rx_ok All clock configuration registers match expected values
+ * @retval k_rx_err_null_ptr system_regs() returned nullptr
+ * @retval k_rx_err_hw_init_failed One or more clock registers do not match expected values
+ *
+ * @pre internal_clock_init() completed successfully
+ * @pre Hardware registers are accessible (not in reset or low-power mode)
+ *
+ * @post No hardware state is modified (read-only verification)
+ * @post Return value reliably reflects whether system is in expected clock state
+ *
+ * @note Thread safety: Must be called from single-threaded context before ThreadX starts
+ *
+ * @see internal_clock_init() Clock configuration that this function verifies
+ * @see rx_clock_power_init() Public entry point
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [OK] 2 preconditions, 2 postconditions
  */
 static rx_err_t internal_verify_system_state(void)
 {
   const volatile rx_system_regs_t* sys = system_regs();
-  uint8_t                          pllcr2;
-  uint32_t                         sckcr;
-  uint16_t                         sckcr3;
-  uint8_t                          ppllcr2;
-  uint8_t                          oscovfsr;
-  uint8_t                          memwait;
 
   /* Verify system register access */
   RX_CHECK_NULL_PTR(sys, s_tag, "system_regs pointer is nullptr");
 
   /* Verify PLL is enabled by checking PLLCR2 register */
-  pllcr2 = sys->pllcr2;
+  const uint8_t pllcr2 = sys->pllcr2;
   if (pllcr2 != k_pll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify system clock dividers are configured correctly */
-  sckcr = sys->sckcr;
+  const uint32_t sckcr = sys->sckcr;
   if (sckcr != k_system_clock_dividers) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PLL is selected as the system clock source */
-  sckcr3 = sys->sckcr3;
+  const uint16_t sckcr3 = sys->sckcr3;
   if (sckcr3 != k_system_clock_source_pll) {
     return k_rx_err_hw_init_failed;
   }
 
   /* Verify PPLL is enabled for USB clock */
-  ppllcr2 = *ppllcr2_reg();
+  const uint8_t ppllcr2 = *ppllcr2_reg();
   if (ppllcr2 != k_ppll_enabled) {
     return k_rx_err_hw_init_failed;
   }
 
 #if !RX_IS_SIMULATOR
   /* Verify PPLL is stable (hardware only - simulator doesn't model OSCOVFSR flags) */
-  oscovfsr = sys->oscovfsr;
+  const uint8_t oscovfsr = sys->oscovfsr;
   if ((oscovfsr & k_ppll_stable_flag) == 0) {
     return k_rx_err_hw_init_failed;
   }
-#else
-  /* Simulator: Skip PPLL stability check (OSCOVFSR flags never set in simulator) */
-  (void)oscovfsr; /* Suppress unused variable warning */
 #endif
 
   /* Verify MEMWAIT is configured for 240 MHz operation */
-  memwait = *memwait_reg();
+  const uint8_t memwait = *memwait_reg();
   if (memwait != k_memwait_one_wait) {
     return k_rx_err_hw_init_failed;
   }
@@ -627,8 +670,8 @@ static rx_err_t internal_verify_system_state(void)
  * ### Phase 1: Clock Configuration (internal_clock_init)
  * - Stop sub-clock oscillator (not used)
  * - Start main oscillator (24 MHz external crystal)
- * - Configure PLL (24 MHz × 10 ÷ 1 = 240 MHz)
- * - Configure PPLL (24 MHz × 8 ÷ 4 = 48 MHz USB clock)
+ * - Configure PLL (24 MHz x 10 / 1 = 240 MHz)
+ * - Configure PPLL (24 MHz x 8 / 4 = 48 MHz USB clock)
  * - **Set MEMWAIT=1 for ICLK > 120 MHz** (CRITICAL for flash access)
  * - Configure system clock dividers (ICLK=240 MHz, PCLKA=120 MHz, etc.)
  * - Select PLL as system clock source
@@ -640,7 +683,7 @@ static rx_err_t internal_verify_system_state(void)
  * - Enable RSPI0/RSPI1 (SPI communication)
  * - Enable S12AD (ADC for current/voltage sensing)
  * - Verify all module clocks enabled (retry up to 3 times)
- * - **Duration:** ~5 µs
+ * - **Duration:** ~5 us
  *
  * ### Phase 3: Verification (internal_verify_system_state)
  * - Read back all clock configuration registers
@@ -649,7 +692,7 @@ static rx_err_t internal_verify_system_state(void)
  * - Verify system clock dividers correct (SCKCR)
  * - Verify PLL selected as clock source (SCKCR3)
  * - Verify MEMWAIT=1 set correctly
- * - **Duration:** ~2 µs
+ * - **Duration:** ~2 us
  *
  * ## Clock Tree Output
  *
@@ -657,13 +700,13 @@ static rx_err_t internal_verify_system_state(void)
  *
  * | Clock | Frequency | Divider | Purpose |
  * |-------|-----------|---------|---------|
- * | **ICLK** | 240 MHz | ÷1 | CPU core execution |
- * | **PCLKA** | 120 MHz | ÷2 | High-speed peripherals (CMT, MTU) |
- * | **PCLKB** | 60 MHz | ÷4 | Medium-speed peripherals (SCI, RSPI, RIIC) |
- * | **PCLKC** | 60 MHz | ÷4 | Low-speed peripherals |
- * | **PCLKD** | 60 MHz | ÷4 | Low-speed peripherals |
- * | **FCLK** | 60 MHz | ÷4 | Flash memory access |
- * | **BCLK** | 120 MHz | ÷2 | External bus (if used) |
+ * | **ICLK** | 240 MHz | /1 | CPU core execution |
+ * | **PCLKA** | 120 MHz | /2 | High-speed peripherals (CMT, MTU) |
+ * | **PCLKB** | 60 MHz | /4 | Medium-speed peripherals (SCI, RSPI, RIIC) |
+ * | **PCLKC** | 60 MHz | /4 | Low-speed peripherals |
+ * | **PCLKD** | 60 MHz | /4 | Low-speed peripherals |
+ * | **FCLK** | 60 MHz | /4 | Flash memory access |
+ * | **BCLK** | 120 MHz | /2 | External bus (if used) |
  * | **UCLK** | 48 MHz | PPLL | USB communication (exact frequency required) |
  *
  * ## Performance Characteristics (RX72N @ 240 MHz)
@@ -671,8 +714,8 @@ static rx_err_t internal_verify_system_state(void)
  * | Phase | Duration | Blocking? | Notes |
  * |-------|----------|-----------|-------|
  * | **Clock init** | ~10.5 ms | Yes | Main OSC stabilization dominates |
- * | **Module stop** | ~5 µs | No | Register writes only |
- * | **Verification** | ~2 µs | No | Register reads only |
+ * | **Module stop** | ~5 us | No | Register writes only |
+ * | **Verification** | ~2 us | No | Register reads only |
  * | **Total** | **~10.5 ms** | Yes | **Not on critical boot path** |
  *
  * **Boot time context:** Total boot time (reset -> ThreadX) is ~51 ms, dominated by USB

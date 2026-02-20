@@ -13,28 +13,28 @@
  * and correct ISR routing in a safety-critical embedded environment.
  *
  * **Multi-Port Architecture (3 Logical Ports over 1 USB Connection):**
- * - **Port 0 (Protocol):** Binary protobuf messages (RPi5 ↔ RX72N control)
+ * - **Port 0 (Protocol):** Binary protobuf messages (RPi5 <-> RX72N control)
  * - **Port 1 (Decoded):** Human-readable protocol debug (ASCII hex dumps)
  * - **Port 2 (Log):** General firmware logs (errors, warnings, system events)
  *
  * **USB Composite Device Descriptor Structure:**
  * @code
  * Configuration Descriptor (Multi-Interface CDC)
- * ├── Interface 0 - Port 0 Control (CDC ACM)
- * │   └── Endpoint 0x81 - Notification (Interrupt IN)
- * ├── Interface 1 - Port 0 Data (CDC ACM Data)
- * │   ├── Endpoint 0x01 - Bulk OUT (Host -> Device)
- * │   └── Endpoint 0x82 - Bulk IN  (Device -> Host)
- * ├── Interface 2 - Port 1 Control (CDC ACM)
- * │   └── Endpoint 0x83 - Notification (Interrupt IN)
- * ├── Interface 3 - Port 1 Data (CDC ACM Data)
- * │   ├── Endpoint 0x02 - Bulk OUT (Host -> Device)
- * │   └── Endpoint 0x84 - Bulk IN  (Device -> Host)
- * ├── Interface 4 - Port 2 Control (CDC ACM)
- * │   └── Endpoint 0x85 - Notification (Interrupt IN)
- * └── Interface 5 - Port 2 Data (CDC ACM Data)
- *     ├── Endpoint 0x03 - Bulk OUT (Host -> Device)
- *     └── Endpoint 0x86 - Bulk IN  (Device -> Host)
+ * +-- Interface 0 - Port 0 Control (CDC ACM)
+ * |   +-- Endpoint 0x81 - Notification (Interrupt IN)
+ * +-- Interface 1 - Port 0 Data (CDC ACM Data)
+ * |   +-- Endpoint 0x01 - Bulk OUT (Host -> Device)
+ * |   +-- Endpoint 0x82 - Bulk IN  (Device -> Host)
+ * +-- Interface 2 - Port 1 Control (CDC ACM)
+ * |   +-- Endpoint 0x83 - Notification (Interrupt IN)
+ * +-- Interface 3 - Port 1 Data (CDC ACM Data)
+ * |   +-- Endpoint 0x02 - Bulk OUT (Host -> Device)
+ * |   +-- Endpoint 0x84 - Bulk IN  (Device -> Host)
+ * +-- Interface 4 - Port 2 Control (CDC ACM)
+ * |   +-- Endpoint 0x85 - Notification (Interrupt IN)
+ * +-- Interface 5 - Port 2 Data (CDC ACM Data)
+ *     +-- Endpoint 0x03 - Bulk OUT (Host -> Device)
+ *     +-- Endpoint 0x86 - Bulk IN  (Device -> Host)
  * @endcode
  *
  * **Test Categories:**
@@ -102,10 +102,10 @@
  * @endcode
  *
  * **Timing Requirements:**
- * - USB interrupt latency: <10µs (USB0 ISR to rx_usb_rx_push)
- * - Buffer full detection: <1µs (software check, no hardware involvement)
- * - Per-port callback invocation: <5µs (function pointer call + context switch)
- * - State transition propagation: <100µs (ATTACHED -> CONFIGURED affects all ports)
+ * - USB interrupt latency: <10us (USB0 ISR to rx_usb_rx_push)
+ * - Buffer full detection: <1us (software check, no hardware involvement)
+ * - Per-port callback invocation: <5us (function pointer call + context switch)
+ * - State transition propagation: <100us (ATTACHED -> CONFIGURED affects all ports)
  *
  * **Error Injection Patterns:**
  * - Invalid port ID (>= k_usb_port_count) - Tests bounds checking
@@ -819,6 +819,7 @@ void test_usb_callback_tx_complete_port0(void)
 void test_usb_callback_configured_both_ports(void)
 {
   rx_usb_config_t config = {.callback = test_callback_global, .ctx = (void*)0x9999};
+
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
 
   /* Set state change - should notify both ports */
@@ -923,60 +924,70 @@ void test_usb_stats_suspend_increments_all_ports(void)
 void test_usb_find_port_by_pipe_port0_bulk_in(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_pipe(k_port0_pipe_bulk_in);
+
   TEST_ASSERT_EQUAL(k_usb_port_proto, port);
 }
 
 void test_usb_find_port_by_pipe_port0_bulk_out(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_pipe(k_port0_pipe_bulk_out);
+
   TEST_ASSERT_EQUAL(k_usb_port_proto, port);
 }
 
 void test_usb_find_port_by_pipe_port1_bulk_in(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_pipe(k_port1_pipe_bulk_in);
+
   TEST_ASSERT_EQUAL(k_usb_port_decoded, port);
 }
 
 void test_usb_find_port_by_pipe_port1_bulk_out(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_pipe(k_port1_pipe_bulk_out);
+
   TEST_ASSERT_EQUAL(k_usb_port_decoded, port);
 }
 
 void test_usb_find_port_by_pipe_invalid_returns_port_count(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_pipe(k_invalid_pipe_id);
+
   TEST_ASSERT_EQUAL(k_usb_port_count, port);
 }
 
 void test_usb_find_port_by_interface_port0_control(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_interface(k_port0_interface_ctrl);
+
   TEST_ASSERT_EQUAL(k_usb_port_proto, port);
 }
 
 void test_usb_find_port_by_interface_port0_data(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_interface(k_port0_interface_data);
+
   TEST_ASSERT_EQUAL(k_usb_port_proto, port);
 }
 
 void test_usb_find_port_by_interface_port1_control(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_interface(k_port1_interface_ctrl);
+
   TEST_ASSERT_EQUAL(k_usb_port_decoded, port);
 }
 
 void test_usb_find_port_by_interface_port1_data(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_interface(k_port1_interface_data);
+
   TEST_ASSERT_EQUAL(k_usb_port_decoded, port);
 }
 
 void test_usb_find_port_by_interface_invalid_returns_port_count(void)
 {
   rx_usb_port_id_t port = rx_usb_find_port_by_interface(k_invalid_interface_id);
+
   TEST_ASSERT_EQUAL(k_usb_port_count, port);
 }
 
