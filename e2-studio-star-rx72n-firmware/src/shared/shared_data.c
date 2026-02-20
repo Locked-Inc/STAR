@@ -835,7 +835,7 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -933,7 +933,7 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1023,7 +1023,7 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1097,7 +1097,7 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1196,7 +1196,7 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1282,7 +1282,7 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1348,7 +1348,7 @@ bool shared_data_pid_update_pending(void)
     return false;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return false;
   }
@@ -1409,7 +1409,7 @@ void shared_data_clear_pid_update_flag(void)
     return;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return;
   }
@@ -1525,7 +1525,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1722,7 +1722,7 @@ rx_err_t shared_data_commit_isr_estop(void)
   }
 
   /* Acquire estop mutex (safe in task context) */
-  UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1804,7 +1804,7 @@ rx_err_t shared_data_clear_estop(void)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1877,7 +1877,7 @@ bool shared_data_is_estop_active(void)
     return false;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return false;
   }
@@ -2039,7 +2039,7 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2049,7 +2049,7 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
   (void)tx_mutex_put(&g_shared_data.bms_mutex);
 
   /* Check for low battery and signal event */
-  if (state->valid && state->soc_percent < (uint8_t)k_shared_low_battery_soc_pct) {
+  if (state->valid && state->soc_percent < k_shared_low_battery_soc_pct) {
     (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_low_battery, TX_OR);
   }
 
@@ -2116,7 +2116,7 @@ rx_err_t shared_data_get_bms(bms_state_t* out_state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2197,7 +2197,7 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2271,7 +2271,7 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2368,7 +2368,7 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2448,7 +2448,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2566,7 +2566,7 @@ bool shared_data_is_comm_timeout(void)
     return false;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return false;
   }
@@ -2638,7 +2638,7 @@ void shared_data_update_last_comm_tick(void)
     return;
   }
 
-  UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return;
   }
@@ -2722,7 +2722,7 @@ rx_err_t shared_data_set_event(shared_event_flags_t flags)
     return k_rx_err_not_initialized;
   }
 
-  UINT tx_status = tx_event_flags_set(&g_shared_data.event_flags, (ULONG)flags, TX_OR);
+  const UINT tx_status = tx_event_flags_set(&g_shared_data.event_flags, (ULONG)flags, TX_OR);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -2831,7 +2831,7 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
   }
 
   ULONG actual_flags = (ULONG)k_event_none;
-  UINT  tx_status    = tx_event_flags_get(&g_shared_data.event_flags,
+  const UINT tx_status = tx_event_flags_get(&g_shared_data.event_flags,
                                           (ULONG)flags,
                                           TX_OR_CLEAR,
                                           &actual_flags,

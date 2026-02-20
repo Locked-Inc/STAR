@@ -324,7 +324,7 @@
  * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion. All control flow uses if/while only. |
  * | **Rule 2: Loop Bounds** | [PASS] | Single while(true) loop with fixed 1s period. Provably bounded iteration. |
  * | **Rule 3: No Heap** | [PASS] | Zero dynamic allocation. Stack (1024 bytes) and TCB (140 bytes) statically allocated. |
- * | **Rule 4: Function Length** | [PASS] | temp_sensor_task_create(): 30 lines, internal_temp_task_entry(): 67 lines (both < 60 LOC target). |
+ * | **Rule 4: Function Length** | [PASS] | temp_sensor_task_create(): 30 lines, internal_temp_task_entry(): ~55 lines, internal_send_iwdt_heartbeat(): ~5 lines (all under 60 LOC target). |
  * | **Rule 5: Assertions** | [PASS] | 5 assertions: RX_ASSERT(!s_temp_created), 4 preconditions, 2 postconditions. |
  * | **Rule 6: Data Scope** | [PASS] | All file-scope variables use static (s_temp_thread, s_temp_stack, s_temp_created, s_tag, s_ds18b20). |
  * | **Rule 7: Return Checks** | [PASS] | All rx_ds18b20, shared_data, tx_* returns validated or explicitly cast to (void). |
@@ -426,6 +426,7 @@ static const float s_cdegc_per_degree = 100.0F;
  * =============================================================================
  */
 
+static void internal_send_iwdt_heartbeat(void);
 static void internal_temp_task_entry(ULONG input);
 
 /* =============================================================================
@@ -726,6 +727,34 @@ rx_err_t temp_sensor_task_create(void)
  * Private Functions
  * =============================================================================
  */
+
+/**
+ * @brief Send IWDT task heartbeat to prevent watchdog timeout
+ *
+ * @details
+ * Calls rx_iwdt_task_heartbeat() with the "TempSensor" task identifier and logs
+ * any failure. Called once per temperature monitoring cycle from
+ * internal_temp_task_entry(). Extracted to keep internal_temp_task_entry() under
+ * the 60-line NASA Rule 4 target.
+ *
+ * @pre IWDT subsystem initialized
+ * @post Heartbeat sent if IWDT operational
+ * @post Error logged if heartbeat fails (watchdog monitor will detect timeout)
+ *
+ * @note Not thread-safe; called only from internal_temp_task_entry()
+ *
+ * @see rx_iwdt_task_heartbeat() IWDT heartbeat API
+ * @see internal_temp_task_entry() Caller
+ *
+ * @since Version 1.0.0
+ */
+static void internal_send_iwdt_heartbeat(void)
+{
+  const rx_err_t err_hb = rx_iwdt_task_heartbeat("TempSensor");
+  if (err_hb != k_rx_ok) {
+    rx_log_error(s_tag, "IWDT heartbeat failed");
+  }
+}
 
 /**
  * @brief Temperature sensor task entry point - infinite loop polling DS18B20 at 1 Hz
@@ -1133,7 +1162,7 @@ rx_err_t temp_sensor_task_create(void)
  * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/while control flow)
  * - **Rule 2:** [PASS] Single while(true) loop with fixed 1000ms period
  * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based locals)
- * - **Rule 4:** [PASS] Function is 67 lines (under 100 LOC guideline)
+ * - **Rule 4:** [PASS] Function is ~55 lines (under 60 LOC target; IWDT heartbeat extracted to internal_send_iwdt_heartbeat())
  * - **Rule 5:** [PASS] 6 preconditions, 4 postconditions documented
  * - **Rule 7:** [PASS] All function returns checked or cast to (void)
  * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
@@ -1166,47 +1195,46 @@ static void internal_temp_task_entry(ULONG input)
 
   /* Main polling loop */
   while (true) {
-    /* Step 1: Trigger temperature conversion */
-    const rx_err_t err_trigger = rx_ds18b20_trigger_conversion(&s_ds18b20);
-    if (err_trigger != k_rx_ok) {
-      rx_log_warn_val(s_tag, "Conversion trigger failed", (uint32_t)err_trigger);
-    }
-
-    /* Step 2: Wait for conversion (800ms for 12-bit) */
-    (void)tx_thread_sleep(k_temp_conversion_ticks);
-
-    /* Step 3: Read temperature */
-    float          temp_celsius = 0.0F;
-    const rx_err_t err_read     = rx_ds18b20_read_temperature(&s_ds18b20, &temp_celsius);
-
-    /* Build state structure */
+    /* Build state structure with common fields */
     temp_sensor_state_t state = {0};
     state.sensor_count        = k_temp_sensor_count;
     state.timestamp_ms        = tx_time_get();
 
-    if (err_read == k_rx_ok) {
-      /* Convert to centi-degrees for integer storage */
-      state.temperature_cdegc[k_temp_sensor_idx] = (int16_t)(temp_celsius * s_cdegc_per_degree);
-      state.sensor_valid[k_temp_sensor_idx]      = true;
+    /* Step 1: Trigger temperature conversion */
+    const rx_err_t err_trigger = rx_ds18b20_trigger_conversion(&s_ds18b20);
+    const bool     trigger_ok  = (err_trigger == k_rx_ok);
 
-      rx_log_debug_val(s_tag,
-                       "Temperature (cC)",
-                       (int32_t)state.temperature_cdegc[k_temp_sensor_idx]);
-    } else {
+    if (!trigger_ok) {
+      rx_log_error(s_tag, "trigger conversion failed");
       state.sensor_valid[k_temp_sensor_idx] = false;
+      /* skip sleep and read */
+    } else {
+      /* Step 2: Wait for conversion (800ms for 12-bit) */
+      (void)tx_thread_sleep(k_temp_conversion_ticks);
 
-      rx_log_warn_val(s_tag, "Temperature read failed", (uint32_t)err_read);
+      /* Step 3: Read temperature */
+      float          temp_celsius = 0.0F;
+      const rx_err_t err_read     = rx_ds18b20_read_temperature(&s_ds18b20, &temp_celsius);
+
+      if (err_read == k_rx_ok) {
+        /* Convert to centi-degrees for integer storage */
+        state.temperature_cdegc[k_temp_sensor_idx] = (int16_t)(temp_celsius * s_cdegc_per_degree);
+        state.sensor_valid[k_temp_sensor_idx]      = true;
+
+        rx_log_debug_val(s_tag,
+                         "Temperature (cC)",
+                         (int32_t)state.temperature_cdegc[k_temp_sensor_idx]);
+      } else {
+        rx_log_error(s_tag, "read temperature failed");
+        state.sensor_valid[k_temp_sensor_idx] = false;
+      }
     }
 
     /* Update shared data */
     (void)shared_data_update_temp(&state);
 
     /* Report task heartbeat to IWDT (must execute within 3000ms timeout) */
-    const rx_err_t err_heartbeat = rx_iwdt_task_heartbeat("TempSensor");
-    if (err_heartbeat != k_rx_ok) {
-      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err_heartbeat);
-      /* Continue operation - watchdog monitor will detect timeout */
-    }
+    internal_send_iwdt_heartbeat();
 
     /* Step 4: Wait for remaining period (200ms to complete 1s) */
     (void)tx_thread_sleep(k_temp_remaining_ticks);

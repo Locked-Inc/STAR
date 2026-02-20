@@ -270,8 +270,10 @@ typedef enum : uint8_t {
 
 /** @brief PLL configuration values */
 typedef enum : uint16_t {
-  k_pll_multiplier_10_div_1 = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz) */
-  k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
+  k_pll_multiplier_10_div_1  = 0x1300, /**< PLLCR: 10x multiplier, divide by 1 (240MHz from 24MHz) */
+  k_pll_stable_flag          = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
+  k_pll_stable_flag_unset    = 0,      /**< PLL stable flag not yet asserted */
+  k_ppll_stable_flag_unset   = 0,      /**< PPLL stable flag not yet asserted */
 } pll_config_t;
 
 /** @brief System clock configuration */
@@ -316,10 +318,9 @@ typedef enum : uint8_t {
  * - Unlocks PRCR for clock register access
  * - Stops sub-clock oscillator (not used)
  * - Starts main oscillator and waits for stabilization
- * - Sets MEMWAIT=1 for safe flash access at 240 MHz
- * - Configures PLL (24 MHz x 10 / 1 = 240 MHz)
- * - Configures PPLL (24 MHz x 4 / 2 = 48 MHz USB)
- * - Waits for PLL and PPLL lock
+ * - Configures PLL (24 MHz × 10 / 1 = 240 MHz) and waits for PLL lock
+ * - Configures PPLL (24 MHz × 8 / 4 = 48 MHz USB) and waits for PPLL lock
+ * - Sets MEMWAIT=1 for safe flash access at 240 MHz (applied AFTER PLL and PPLL lock)
  * - Sets system clock dividers (ICLK=240, PCLKA=120, PCLKB/C/D=60, FCLK=60 MHz)
  * - Switches clock source to PLL
  * - Relocks PRCR
@@ -395,7 +396,7 @@ static rx_err_t internal_clock_init(void)
   /* Hardware: Poll OSCOVFSR until PLL locks (typically ~200 µs) */
   {
     uint32_t timeout = k_pll_stabilization_timeout;
-    while ((system_regs()->oscovfsr & k_pll_stable_flag) == k_pll_stabilization_timeout_expired &&
+    while ((system_regs()->oscovfsr & k_pll_stable_flag) == k_pll_stable_flag_unset &&
            timeout > k_pll_stabilization_timeout_expired) {
       timeout--;
     }
@@ -426,7 +427,7 @@ static rx_err_t internal_clock_init(void)
   /* Hardware: Poll OSCOVFSR until PPLL locks (typically ~200 µs) */
   {
     uint32_t timeout = k_pll_stabilization_timeout;
-    while ((system_regs()->oscovfsr & k_ppll_stable_flag) == k_pll_stabilization_timeout_expired &&
+    while ((system_regs()->oscovfsr & k_ppll_stable_flag) == k_ppll_stable_flag_unset &&
            timeout > k_pll_stabilization_timeout_expired) {
       timeout--;
     }
@@ -557,9 +558,15 @@ static rx_err_t internal_module_stop_init(void)
  * Performs post-initialization validation of the RX72N clock subsystem by reading
  * back hardware registers. Checks that:
  * - System register pointer is valid
- * - PLL is enabled (PLLCR2 register)
- * - System clock dividers match expected values (SCKCR register)
- * - Module stop registers are cleared for required peripherals (MSTPCRA, MSTPCRB)
+ * - PLL is enabled (pllcr2 register)
+ * - System clock dividers match expected values (sckcr register)
+ * - PLL is selected as the system clock source (sckcr3 register)
+ * - PPLL is enabled for USB clock (ppllcr2 register)
+ * - PPLL oscillator is stable (oscovfsr register, hardware only)
+ * - Flash wait state is configured for 240 MHz operation (memwait register)
+ *
+ * Module-stop register verification (MSTPCRA, MSTPCRB) is performed by
+ * internal_module_stop_init(), not by this function.
  *
  * Intended to be called immediately after internal_clock_init() to confirm that
  * all register writes took effect.

@@ -19,6 +19,8 @@
  * @par NASA Power of 10 Compliance:
  * - Rule 3: [OK] No dynamic allocation; all state in static g_mock_adc
  * - Rule 5: [OK] All public functions validate inputs (null pointer, range checks)
+ * - Rule 6: [OK] Minimize variable scope; variables declared near first use
+ *           (see g_mock_adc, local variables in mock_adc_read, mock_adc_init)
  * - Rule 7: [OK] All internal function returns checked by callers
  *
  * @author STAR Project
@@ -56,8 +58,9 @@ typedef enum : uint8_t {
 
 /** @brief Bit manipulation constants for ADC calculations */
 typedef enum : uint8_t {
-  k_mock_adc_bit_shift_base   = 1, /**< Base value for 2^n calculation */
-  k_mock_adc_max_value_offset = 1, /**< Offset to get max value from 2^n */
+  k_mock_adc_bit_shift_base      = 1, /**< Base value for 2^n calculation */
+  k_mock_adc_max_value_offset    = 1, /**< Offset to get max value from 2^n */
+  k_mock_adc_raw_value_default   = 0, /**< Default raw value returned when no error injected */
 } mock_adc_bit_constants_t;
 
 /* =============================================================================
@@ -442,7 +445,8 @@ rx_err_t adc_read(adc_unit_t unit, adc_channel_t channel, uint16_t* value)
  * @pre voltage_mv points to valid uint32_t storage
  *
  * @post *voltage_mv contains scaled millivolt reading on k_rx_ok
- * @post Call recorded in g_mock_adc.call_history
+ * @post g_mock_adc.call_history gains two entries:
+ *       k_mock_adc_call_read_voltage_mv (outer) and k_mock_adc_call_read (inner via adc_read())
  *
  * @note Not thread-safe; unit tests are single-threaded by convention
  *
@@ -492,7 +496,7 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
   }
 
   /* Read raw ADC value */
-  uint16_t raw_value = 0U;
+  uint16_t raw_value = k_mock_adc_raw_value_default;
   err = adc_read(unit, channel, &raw_value);
   if (err != k_rx_ok) {
     return err;

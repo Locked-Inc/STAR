@@ -555,10 +555,6 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
                                   uint8_t*       rx_data,
                                   const uint16_t length)
 {
-  rx_err_t                 err;
-
-  volatile rx_rspi_regs_t* rspi;
-
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is nullptr");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
@@ -574,7 +570,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   }
 
   /* Get RSPI base */
-  rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* const rspi = internal_get_rspi_base(channel);
   if (rspi == nullptr) {
     rx_log_error(s_tag, "Failed to get RSPI base address");
     return k_rx_err_invalid_arg;
@@ -587,7 +583,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
     }
 
     /* Wait for transmit buffer empty */
-    err = internal_wait_tx_ready(rspi);
+    rx_err_t err = internal_wait_tx_ready(rspi);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "SPI transmit timeout");
       return err;

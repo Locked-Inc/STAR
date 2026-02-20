@@ -118,6 +118,24 @@ typedef enum : uint16_t {
  * @details
  * Used to detect unconfigured (zero) values for max_combines and max_retries
  * fields in HARQ configuration, to fall back to project defaults.
+ *
+ * @invariant k_harq_zero_combines and k_harq_zero_retries equal zero, signifying
+ * "use default config" — these sentinels must never be changed to non-zero values.
+ *
+ * @code
+ * // Checking sentinels when validating config fields:
+ * const rx_harq_config_t config = { .max_combines = 0, .max_retries = 0 };
+ * // max_combines == k_harq_zero_combines → use k_harq_default_combines
+ * // max_retries  == k_harq_zero_retries  → use k_harq_default_retries
+ * uint8_t combines = (config.max_combines > k_harq_zero_combines)
+ *                        ? config.max_combines : k_harq_default_combines;
+ * uint8_t retries  = (config.max_retries  > k_harq_zero_retries)
+ *                        ? config.max_retries  : k_harq_default_retries;
+ * @endcode
+ *
+ * @see rx_harq_config_t HARQ configuration structure containing max_combines/max_retries
+ * @see rx_harq_init() Applies these sentinels during initialization
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -146,7 +164,11 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, const uint8_t max
 
   combiner->expected_len = 0;
   combiner->count        = 0;
-  combiner->max_combines = (max_combines > k_harq_zero_combines) ? max_combines : k_harq_default_combines;
+  if (max_combines > k_harq_zero_combines) {
+    combiner->max_combines = max_combines;
+  } else {
+    combiner->max_combines = k_harq_default_combines;
+  }
   combiner->initialized  = k_harq_true;
 
   return k_rx_ok;
@@ -318,7 +340,11 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
 
   /* Apply configuration */
   if (config != nullptr) {
-    harq->max_retries = (config->max_retries > k_harq_zero_retries) ? config->max_retries : k_harq_default_retries;
+    if (config->max_retries > k_harq_zero_retries) {
+      harq->max_retries = config->max_retries;
+    } else {
+      harq->max_retries = k_harq_default_retries;
+    }
     harq->fec_enabled = config->fec_enabled;
   } else {
     harq->max_retries = k_harq_default_retries;
@@ -425,7 +451,7 @@ rx_err_t rx_harq_reset(rx_harq_handle_t* harq)
   harq->state       = k_harq_state_idle;
   harq->retry_count = 0;
 
-  rx_err_t err = rx_chase_combiner_reset(&harq->combiner);
+  const rx_err_t err = rx_chase_combiner_reset(&harq->combiner);
   if (err != k_rx_ok) {
     return err;
   }
@@ -468,7 +494,7 @@ rx_err_t rx_harq_encode(const rx_harq_handle_t* harq,
    * Required buffer: (payload_len * 8 + 6) * 2 bits = (payload_len * 8 + 6) / 4 bytes
    * Simplified worst case: payload_len * 2 + 2 bytes
    */
-  uint32_t min_output_size = (payload_len * k_harq_fec_rate_multiplier) + k_harq_tail_bytes;
+  const uint32_t min_output_size = (payload_len * k_harq_fec_rate_multiplier) + k_harq_tail_bytes;
   if (output_size < min_output_size) {
     return k_rx_err_invalid_size;
   }

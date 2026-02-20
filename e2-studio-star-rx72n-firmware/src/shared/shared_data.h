@@ -160,12 +160,58 @@ typedef enum : uint32_t {
 } shared_event_flags_t;
 
 /**
- * @brief Shared data module constants
+ * @enum shared_data_constants_t
+ * @brief Shared data module timing constants
+ *
+ * @details
+ * Communication timing thresholds used by the shared data module for
+ * timeout detection and watchdog monitoring. Values fit in uint32_t
+ * because they represent millisecond durations that exceed uint16_t range
+ * at higher values.
+ *
+ * @invariant k_shared_comm_timeout_ms > 0
+ *
+ * @code{.c}
+ * if ((current_tick - last_tick) * k_tick_period_ms > k_shared_comm_timeout_ms) {
+ *     shared_data_trigger_estop(k_estop_reason_comm_timeout);
+ * }
+ * @endcode
+ *
+ * @see shared_data_is_comm_timeout() Communication timeout check
+ * @see shared_data_update_last_comm_tick() Update communication watchdog
+ *
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_shared_comm_timeout_ms      = 500, /**< Communication timeout (ms) */
-  k_shared_low_battery_soc_pct  = 15,  /**< Low battery SoC threshold (%) */
+  k_shared_comm_timeout_ms = 500, /**< Communication timeout threshold in milliseconds */
 } shared_data_constants_t;
+
+/**
+ * @enum shared_data_soc_constants_t
+ * @brief Shared data module state-of-charge threshold constants
+ *
+ * @details
+ * Battery state-of-charge (SoC) thresholds used by the shared data module
+ * to detect low battery conditions and trigger events. Values are percentages
+ * in the range [0, 100] and fit in uint8_t.
+ *
+ * @invariant k_shared_low_battery_soc_pct <= 100
+ *
+ * @code{.c}
+ * if (state->valid && state->soc_percent < k_shared_low_battery_soc_pct) {
+ *     (void)tx_event_flags_set(&g_shared_data.event_flags,
+ *                              (ULONG)k_event_low_battery, TX_OR);
+ * }
+ * @endcode
+ *
+ * @see shared_data_update_bms() BMS update function that checks this threshold
+ * @see shared_event_flags_t Event flag definitions
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_shared_low_battery_soc_pct = 15, /**< Low battery SoC threshold in percent (0–100) */
+} shared_data_soc_constants_t;
 
 /**
  * @brief Main shared data container structure

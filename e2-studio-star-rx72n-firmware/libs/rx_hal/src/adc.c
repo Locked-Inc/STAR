@@ -333,6 +333,23 @@ typedef enum : uint16_t {
   k_adc_reference_voltage_mv = 3300, /**< ADC reference voltage: 3.3V = 3300 mV */
 } adc_misc_constants_t;
 
+/**
+ * @enum adc_raw_value_t
+ * @brief Raw ADC value reset/default constants
+ *
+ * @details
+ * Default raw value used to initialize the raw_value variable before a
+ * conversion result is written. Using a named constant makes the intent
+ * explicit and avoids magic numeric literals.
+ *
+ * @see adc_read_voltage_mv() Initializes raw_value with k_adc_raw_value_reset
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_adc_raw_value_reset = 0, /**< Reset/default raw ADC value before conversion */
+} adc_raw_value_t;
+
 /* =============================================================================
  * Static Variables
  * =============================================================================
@@ -960,7 +977,7 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
   }
 
   /* Read raw ADC value */
-  uint16_t       raw_value = 0U;
+  uint16_t       raw_value = k_adc_raw_value_reset;
   const rx_err_t err       = adc_read(unit, channel, &raw_value);
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 

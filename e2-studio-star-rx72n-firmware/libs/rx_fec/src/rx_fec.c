@@ -826,9 +826,9 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
  * // Example: soft-decision decode of a previously FEC-encoded buffer
  * rx_fec_decoder_t            dec;
  * uint64_t                    survivors[k_fec_max_symbols];
- * rx_soft_bit_t               soft_buf[k_fec_max_symbols * 2];
+ * rx_soft_bit_t               soft_buf[k_fec_max_symbols * k_fec_num_outputs];
  * uint8_t                     out_buf[k_fec_max_input_bytes];
- * uint32_t                    out_len = 0;
+ * uint32_t                    out_len = k_fec_zero;
  *
  * (void)rx_fec_decoder_init(&dec, survivors, k_fec_max_symbols);
  *
@@ -928,9 +928,9 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
  * // Example: hard-decision decode of packed FEC-encoded bytes
  * rx_fec_decoder_t            dec;
  * uint64_t                    survivors[k_fec_max_symbols];
- * rx_soft_bit_t               soft_scratch[k_fec_max_symbols * 2];
+ * rx_soft_bit_t               soft_scratch[k_fec_max_symbols * k_fec_num_outputs];
  * uint8_t                     out_buf[k_fec_max_input_bytes];
- * uint32_t                    out_len = 0;
+ * uint32_t                    out_len = k_fec_zero;
  *
  * (void)rx_fec_decoder_init(&dec, survivors, k_fec_max_symbols);
  *
@@ -938,7 +938,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
  *     .data                = received_bytes,
  *     .data_len            = received_len,
  *     .soft_bits_buffer    = soft_scratch,
- *     .soft_buffer_len     = k_fec_max_symbols * 2,
+ *     .soft_buffer_len     = k_fec_max_symbols * k_fec_num_outputs,
  *     .expected_output_len = original_data_len,
  *     .output              = out_buf,
  *     .output_len          = &out_len,

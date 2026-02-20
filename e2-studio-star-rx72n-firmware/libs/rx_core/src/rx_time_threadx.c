@@ -66,7 +66,7 @@
  * - Rule 4: [OK] All functions < 20 lines
  * - Rule 5: [OK] Each function has preconditions (via RX_CHECK_NULL_PTR)
  * - Rule 6: [OK] Variables declared at smallest scope
- * - Rule 7: [OK] Return value checking (tx_thread_sleep checked implicitly)
+ * - Rule 7: [OK] Return value checking (tx_thread_sleep discarded explicitly)
  * - Rule 8: [OK] Minimal preprocessor (only __RX__ guard)
  * - Rule 9: [OK] Function pointers used for DIP pattern (intentional deviation)
  * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
@@ -122,6 +122,19 @@
  * @enum rx_time_threadx_zero_t
  * @brief Zero sentinel for ThreadX time computations
  * @details Used in ceiling-division and guard checks to avoid magic number 0.
+ *
+ * @invariant k_rx_zero equals zero; used as a guard against zero-division in
+ *            tick ceiling calculation
+ *
+ * @code{.c}
+ * // Guard: only sleep if ticks > 0
+ * if (ticks > k_rx_zero) {
+ *     (void)tx_thread_sleep(ticks);
+ * }
+ * @endcode
+ *
+ * @see rx_time_threadx_ms_to_ticks()
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
@@ -132,6 +145,19 @@ typedef enum : uint32_t {
  * @enum rx_time_ceil_offset_t
  * @brief Ceiling-division rounding offset
  * @details Added to the remainder check when computing tick ceiling from milliseconds.
+ *
+ * @invariant k_ceil_div_offset equals 1; adding this before integer division
+ *            implements ceiling division
+ *
+ * @code{.c}
+ * // Ceiling division: ticks = ceil(ms / k_threadx_ms_per_tick)
+ * const uint32_t quotient  = ms / k_threadx_ms_per_tick;
+ * const uint32_t remainder = ms % k_threadx_ms_per_tick;
+ * const uint32_t ticks     = quotient + (remainder > k_rx_zero ? k_ceil_div_offset : k_rx_zero);
+ * @endcode
+ *
+ * @see rx_time_threadx_ms_to_ticks()
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
