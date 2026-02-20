@@ -286,7 +286,7 @@ func (hm *HeartbeatManager) Run(ctx context.Context, tm *TransportManager) {
 //  1. pingElapsed = time.Since(lastValidPong): drives the explicit PING mechanism.
 //     Fires when no valid PONG has arrived for pingInterval (1s). Checked FIRST to
 //     enable counter-based detection even when stale buffered frames (ACK/NACK) keep
-//     lastSeen fresh — the "zombie link" scenario the implicit timeout cannot catch
+//     lastSeen fresh -- the "zombie link" scenario the implicit timeout cannot catch
 //     because lastSeen is continuously refreshed by the buffered frames.
 //
 //  2. implicitElapsed = time.Since(lastSeen): drives the implicit timeout mechanism.
@@ -309,7 +309,7 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 	pending := hm.pendingPing
 	hm.mu.Unlock()
 
-	// Explicit PING — checked first.
+	// Explicit PING -- checked first.
 	//
 	// Uses pingElapsed (time since last valid PONG), which is independent of lastSeen.
 	// This allows counter-based detection to fire even when stale buffered frames keep
@@ -349,7 +349,7 @@ func (hm *HeartbeatManager) check(ctx context.Context, tm *TransportManager) {
 		hm.sendPing(ctx, tm)
 	}
 
-	// Implicit timeout — checked second.
+	// Implicit timeout -- checked second.
 	//
 	// Uses implicitElapsed (time since last ANY frame). Fast-path for completely dead
 	// links where no frames flow at all. Because failureTimeout (200ms) << pingInterval

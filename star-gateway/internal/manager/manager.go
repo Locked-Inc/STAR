@@ -698,7 +698,7 @@ func (tm *TransportManager) dispatchControlFrame(ctx context.Context, result *ha
 
 	case frame.FrameTypeAck, frame.FrameTypeNack:
 		// ACK/NACK: Any valid frame proves the remote is alive; update lastSeen
-		// per TRANSPORT_ARCHITECTURE.md §Heartbeat — "ANY valid frame" resets the timer.
+		// per TRANSPORT_ARCHITECTURE.md Sec.Heartbeat -- "ANY valid frame" resets the timer.
 		// Without this, HARQ retransmission bursts (many ACKs, no COMMAND/RESPONSE)
 		// would false-positive the 200ms implicit timeout.
 		tm.heartbeat.OnFrameReceived()

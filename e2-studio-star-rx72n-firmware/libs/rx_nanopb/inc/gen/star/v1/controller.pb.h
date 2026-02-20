@@ -14,7 +14,7 @@
 typedef struct _star_v1_ControllerState {
     /* Linear velocity (v) from Left Stick Y-axis. Range: [-1.0, 1.0] */
     float linear_vel;
-    /* Angular velocity (ω) from Left Stick X-axis. Range: [-1.0, 1.0] */
+    /* Angular velocity (omega) from Left Stick X-axis. Range: [-1.0, 1.0] */
     float angular_vel;
     /* Timestamp in milliseconds (e.g., since epoch or monotonic boot time)
  Used for jitter buffer and out-of-order packet handling. */

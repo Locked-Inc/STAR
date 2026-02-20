@@ -632,7 +632,7 @@ func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 // based on lastValidPong even when lastSeen is kept fresh by OnFrameReceived calls.
 //
 // This is the key property that enables zombie-link detection: stale OS-buffered frames
-// (ACK/NACK) keep lastSeen fresh — preventing the implicit 200ms timeout from firing —
+// (ACK/NACK) keep lastSeen fresh -- preventing the implicit 200ms timeout from firing --
 // while lastValidPong ages independently, eventually triggering the PING. Without this
 // independence, the counter-based path is permanently unreachable because lastSeen is
 // always refreshed before implicitElapsed exceeds failureTimeout.
@@ -681,7 +681,7 @@ func TestHeartbeatManager_PingTimerIndependentOfLastSeen(t *testing.T) {
 
 	if !triggered {
 		t.Error("PING timer (lastValidPong-based) should trigger counter-based failover " +
-			"even when lastSeen is fresh — proves pingElapsed is independent of lastSeen")
+			"even when lastSeen is fresh -- proves pingElapsed is independent of lastSeen")
 	}
 
 	// consecutiveMisses is reset to 0 after counter-based failover.
