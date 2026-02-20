@@ -130,4 +130,6 @@
   (lib (name "282837_4")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/282837_4")(options "")(descr ""))
   (lib (name "R5F572NNHDFB-30")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/R5F572NNHDFB-30")(options "")(descr ""))
   (lib (name "ECS_240_20_4X")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ECS_240_20_4X")(options "")(descr ""))
+  (lib (name "customLibrary")(type "KiCad")(uri "${KIPRJMOD}/customLibrary.pretty")(options "")(descr ""))
+  (lib (name "Library")(type "KiCad")(uri "${KIPRJMOD}/customLibrary.pretty/Library.pretty")(options "")(descr ""))
 )
