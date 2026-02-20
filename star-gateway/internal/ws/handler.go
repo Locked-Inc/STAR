@@ -12,11 +12,18 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+const (
+	// defaultReadBufferSize is the initial read buffer size for WebSocket upgrade negotiation.
+	defaultReadBufferSize = 1024
+	// defaultWriteBufferSize is the initial write buffer size for WebSocket upgrade negotiation.
+	defaultWriteBufferSize = 1024
+)
+
 // upgrader configures the WebSocket upgrade from HTTP.
 // CheckOrigin is permissive because STAR operates on a local private network.
 var upgrader = websocket.Upgrader{
-	ReadBufferSize:  1024,
-	WriteBufferSize: 1024,
+	ReadBufferSize:  defaultReadBufferSize,
+	WriteBufferSize: defaultWriteBufferSize,
 	CheckOrigin: func(_ *http.Request) bool {
 		return true // Local network deployment only. Restrict if deployed externally.
 	},
@@ -29,6 +36,10 @@ func NewHandler(hub *Hub, motorService MotorController, logger *slog.Logger) htt
 		logger = slog.New(slog.NewTextHandler(io.Discard, nil))
 	}
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if hub == nil {
+			http.Error(w, "hub not available", http.StatusServiceUnavailable)
+			return
+		}
 		conn, err := upgrader.Upgrade(w, r, nil)
 		if err != nil {
 			logger.Error("websocket upgrade failed", slog.String("err", err.Error()))

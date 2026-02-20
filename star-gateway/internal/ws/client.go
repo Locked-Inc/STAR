@@ -5,6 +5,7 @@
 package ws
 
 import (
+	"context"
 	"log/slog"
 	"time"
 
@@ -28,6 +29,11 @@ const (
 	// Set below 1.0 to ensure pings arrive before the pong deadline expires.
 	pingPeriodRatio = 9
 	pingPeriodDenom = 10
+	// maxMessageSize is the read-limit cap for inbound WebSocket frames.
+	// The largest valid inbound message (~ControllerState) is ~100 bytes;
+	// 4 KiB provides comfortable headroom while bounding per-connection
+	// memory abuse from malformed or oversized frames.
+	maxMessageSize = 4096
 )
 
 // writePump is the ONLY goroutine that ever calls WriteMessage on conn.
@@ -78,21 +84,20 @@ func (c *Client) writePump() {
 // E-stop is handled SYNCHRONOUSLY here — this is intentional.
 // Joystick commands should not process while stop is propagating.
 func (c *Client) readPump() {
-	const pongWait = 60 * time.Second
-
 	defer func() {
 		c.hub.unregister <- c
 		c.conn.Close()
 	}()
 
-	// Hard cap: largest valid inbound message is ~100 bytes (ControllerState).
-	// SetReadLimit prevents memory abuse from malformed or malicious frames.
-	c.conn.SetReadLimit(4096)
+	// Hard cap: see maxMessageSize for rationale.
+	c.conn.SetReadLimit(maxMessageSize)
 
-	c.conn.SetReadDeadline(time.Now().Add(pongWait))
+	if err := c.conn.SetReadDeadline(time.Now().Add(pongWait)); err != nil {
+		c.logger.Error("failed to set initial read deadline", slog.String("err", err.Error()))
+		return
+	}
 	c.conn.SetPongHandler(func(string) error {
-		c.conn.SetReadDeadline(time.Now().Add(pongWait))
-		return nil
+		return c.conn.SetReadDeadline(time.Now().Add(pongWait))
 	})
 
 	for {
@@ -114,8 +119,17 @@ func (c *Client) readPump() {
 
 		// ── E-stop priority path ──
 		if estop, ok := env.Payload.(*starv1.STAREnvelope_Estop); ok {
-			// context.Background() — must never be cancelled by connection lifecycle
-			c.motorService.EmergencyStop(estop.Estop.Reason)
+			// Use a short-lived context so a slow motor controller cannot
+			// block readPump indefinitely. context.Background() is the root
+			// so cancellation of connection context cannot abort an e-stop.
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			if err := c.motorService.EmergencyStop(ctx, estop.Estop.Reason); err != nil {
+				c.logger.Error("emergency stop failed",
+					slog.String("reason", estop.Estop.Reason),
+					slog.String("err", err.Error()),
+				)
+			}
+			cancel()
 			// Forward for packet analyzer visibility (non-blocking)
 			select {
 			case c.hub.inbound <- env:
@@ -129,6 +143,9 @@ func (c *Client) readPump() {
 		case c.hub.inbound <- env:
 		default:
 			// Hub inbound full — drop. Never block readPump.
+			c.logger.Debug("hub inbound channel full, dropping inbound envelope",
+				slog.Uint64("seq", env.Seq),
+			)
 		}
 	}
 }
