@@ -242,6 +242,27 @@ typedef enum : uint8_t {
   k_frame_scan_start_offset = 1, /**< First offset checked in internal_find_sync_offset();
                                       offset 0 is presumed already tested by rx_frame_decode() */
 } frame_offset_t;
+
+/**
+ * @enum frame_resync_discarded_t
+ * @brief Byte-discard counter initial value for rx_frame_decode_with_resync()
+ *
+ * @details
+ * k_bytes_discarded_none is the zero sentinel written to *bytes_discarded_out
+ * at the start of rx_frame_decode_with_resync() before any sync search.  Using
+ * a named constant makes the intent auditable and prevents a raw 0 literal from
+ * appearing in the implementation (NASA Rule 8 / STAR no-magic-numbers policy).
+ *
+ * @invariant k_bytes_discarded_none == 0 (matches the initial no-discard state)
+ *
+ * @see rx_frame_decode_with_resync() Only caller of this constant
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint32_t {
+  k_bytes_discarded_none = 0U, /**< No bytes have been discarded; stream is aligned */
+} frame_resync_discarded_t;
+
 /* =============================================================================
  * Private Helper Functions
  * =============================================================================
@@ -433,7 +454,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  *
  * Algorithm:
  * 1. Validate preconditions (non-null pointers, minimum buffer size).
- * 2. Compute scan limit = min(data_len - 1, k_frame_max_scan_bytes).
+ * 2. Compute scan limit = min(data_len - k_frame_sync_size, k_frame_max_scan_bytes).
  * 3. Iterate i from 1 to scan_limit inclusive:
  *    a. Read 16-bit LE value at data[i].
  *    b. If it matches k_frame_sync_word, write i to offset_out and return k_rx_ok.
@@ -455,7 +476,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  * @post On error, offset_out is unchanged
  *
  * @note Not thread-safe. Caller must ensure exclusive access to data buffer.
- * @note The loop bound is min(data_len - 1, k_frame_max_scan_bytes), which is
+ * @note The loop bound is min(data_len - k_frame_sync_size, k_frame_max_scan_bytes), which is
  *       statically bounded by k_frame_max_scan_bytes = 1036 (NASA Rule 2).
  *
  * @par Performance:
@@ -464,14 +485,14 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  *
  * @par Example:
  * @code{.c}
- * /* Buffer where offset 0 failed sync; sync is at index 1 */
+ * // Buffer where offset 0 failed sync; sync is at index 1
  * uint8_t data[] = {0x00, 0xAA, 0x55, 0x01, 0x00};
  * uint32_t offset = 0;
  * rx_err_t err = internal_find_sync_offset(data, sizeof(data), &offset);
  * if (err == k_rx_ok) {
- *     /* offset == 1: decode from data[offset] */
+ *     // offset == 1: decode from data[offset]
  * } else {
- *     /* k_rx_err_protocol_error: no sync found within scan window */
+ *     // k_rx_err_protocol_error: no sync found within scan window
  * }
  * @endcode
  *
@@ -755,8 +776,9 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * discards the leading bytes, and reattempts decoding from that position.
  *
  * This function is safe for repeated calls on a stream: the caller must advance
- * its read pointer by bytes_discarded_out bytes on success to avoid re-processing
- * discarded bytes in subsequent calls.
+ * its stream read pointer by *bytes_discarded_out on k_rx_ok and also on
+ * k_rx_err_crc_mismatch (any case where bytes_discarded_out is set) to avoid
+ * re-processing discarded bytes in subsequent calls.
  *
  * Recovery algorithm:
  * 1. Attempt rx_frame_decode() on data[0..data_len-1].
@@ -784,6 +806,8 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  *
  * @pre dec must be initialized via rx_frame_decoder_init()
  * @pre data must point to a buffer of at least data_len bytes
+ * @pre frame must point to a valid rx_frame_t storage location (not NULL)
+ * @pre bytes_discarded_out must point to a valid uint32_t storage location (not NULL)
  * @post On k_rx_ok, *bytes_discarded_out == bytes skipped to reach sync word
  * @post On k_rx_ok, frame contains a fully verified decoded frame
  * @post On k_rx_err_crc_mismatch, *bytes_discarded_out == bytes skipped; caller must still advance stream pointer
@@ -828,7 +852,7 @@ rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
     return k_rx_err_invalid_arg;
   }
 
-  *bytes_discarded_out = 0;
+  *bytes_discarded_out = k_bytes_discarded_none;
 
   /* Fast path: attempt aligned decode first */
   rx_err_t err = rx_frame_decode(dec, data, data_len, frame);

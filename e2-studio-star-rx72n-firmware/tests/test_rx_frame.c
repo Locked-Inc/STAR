@@ -2266,7 +2266,7 @@ void test_roundtrip_reset(void)
  * uint32_t discarded = k_resync_sentinel;
  * rx_frame_decode_with_resync(&dec, misaligned, wire_len + k_resync_prefix_len,
  *                             &frame, &discarded);
- * /* discarded == k_resync_prefix_len on success */
+ * // discarded == k_resync_prefix_len on success
  * @endcode
  *
  * @see rx_frame_decode_with_resync() Function under test
@@ -2369,7 +2369,7 @@ void test_resync_aligned_frame_zero_discarded(void)
   uint32_t      wire_len             = k_resync_zero;
   const uint8_t payload[k_go_payload_len] = {'T', 'E', 'S', 'T'};
 
-  memset(&frame, 0, sizeof(frame));
+  memset(&frame, k_resync_zero, sizeof(frame));
   frame.header.sequence = k_test_seq_42;
   frame.header.length   = k_go_payload_len;
   frame.header.type     = k_frame_type_command;
@@ -2455,8 +2455,8 @@ void test_resync_no_sync_found(void)
  */
 void test_resync_null_args(void)
 {
-  uint8_t    buf[k_frame_min_size] = {0};
-  rx_frame_t frame                 = {0};
+  uint8_t    buf[k_frame_min_size] = {k_resync_zero};
+  rx_frame_t frame                 = {k_resync_zero};
   uint32_t   discarded             = k_resync_zero;
 
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
