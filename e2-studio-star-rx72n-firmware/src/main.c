@@ -1874,7 +1874,25 @@ void tx_application_define(void* first_unused_memory)
   RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
 
   /* BMS Monitor Task - Priority 15 */
-  err = bms_monitor_task_create();
+  /**
+   * @var bms_config
+   * @brief BMS monitoring task configuration with default SoC thresholds
+   *
+   * @details
+   * Configures the BMS monitoring task with the default warning (25%) and
+   * critical (5%) SoC thresholds. Passed to bms_monitor_task_create() at
+   * system startup. Thresholds are copied into the task's internal state
+   * before this variable's scope ends.
+   *
+   * @note Lifetime scoped to tx_application_define(); valid only for the
+   *       duration of the bms_monitor_task_create() call.
+   * @since Version 1.1.0
+   */
+  const bms_monitor_config_t bms_config = {
+    .soc_warning_pct  = k_bms_soc_warning_pct_default,
+    .soc_critical_pct = k_bms_soc_critical_pct_default,
+  };
+  err = bms_monitor_task_create(&bms_config);
   RX_ASSERT(err == k_rx_ok, "bms_monitor_task_create must succeed");
 
   /* Temperature Sensor Task - Priority 15 */

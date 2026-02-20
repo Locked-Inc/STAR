@@ -50,6 +50,48 @@ typedef enum : uint16_t {
 } mock_shared_data_constants_t;
 
 /**
+ * @enum shared_event_flags_t
+ * @brief Event flags for inter-task signaling (must match shared_data.h)
+ *
+ * @details
+ * One-hot bitmask constants used to signal events between RTOS tasks.
+ * In production code the underlying ThreadX event-flags group uses TX_OR
+ * semantics (bits are sticky until explicitly cleared). The mock mirrors
+ * this by OR-accumulating flags in shared_data_set_event().
+ *
+ * **IMPORTANT:** This enum must remain bit-for-bit identical to the
+ * shared_event_flags_t defined in shared_data.h. If either definition
+ * changes, update both simultaneously.
+ *
+ * @invariant All non-zero members are distinct powers of two (one-hot)
+ * @invariant k_event_none == 0 (no-op / cleared state)
+ *
+ * @code
+ * // Test that the BMS task sets the low-battery event
+ * shared_data_set_event(k_event_low_battery);
+ * TEST_ASSERT_EQUAL(k_event_low_battery,
+ *                   mock_shared_data_get_last_event_flags());
+ * @endcode
+ *
+ * @see shared_data.h Production definition (authoritative)
+ * @see shared_data_set_event() Function that raises flags
+ * @see mock_shared_data_get_last_event_flags() Retrieves accumulated bits
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_event_none                  = 0x00000000, /**< No events pending (cleared state) */
+  k_event_motor_command_updated = 0x00000001, /**< New motor command available */
+  k_event_estop_triggered       = 0x00000002, /**< E-stop activated */
+  k_event_pid_gains_updated     = 0x00000004, /**< PID gains changed */
+  k_event_low_battery           = 0x00000008, /**< Low battery detected */
+  k_event_obstacle_detected     = 0x00000010, /**< Obstacle detected */
+  k_event_obstacle_cleared      = 0x00000020, /**< Obstacle cleared */
+  k_event_estop_cleared         = 0x00000040, /**< E-stop cleared */
+  k_event_comm_timeout          = 0x00000080, /**< Communication timeout */
+} shared_event_flags_t;
+
+/**
  * @enum motor_control_mode_t
  * @brief Motor control operating modes
  */
@@ -216,6 +258,70 @@ uint32_t mock_shared_data_get_init_count(void);
 uint32_t mock_shared_data_get_trigger_estop_count(void);
 
 /**
+ * @brief Return the number of times shared_data_set_event() has been called
+ *
+ * @details
+ * Provides test code with a way to assert that the BMS (or other) task called
+ * shared_data_set_event() exactly the expected number of times within a test.
+ *
+ * @return uint32_t Call count since last mock_shared_data_reset()
+ * @retval 0 shared_data_set_event() has not been called since last reset
+ * @retval n Number of times shared_data_set_event() was called
+ *
+ * @pre mock_shared_data_reset() has been called at least once (setUp)
+ * @pre Module initialized via mock_shared_data_reset() before first use
+ *
+ * @post s_set_event_count is unchanged (read-only accessor)
+ * @post Return value reflects all calls since last reset
+ *
+ * @note Thread safety: read-only; safe in single-threaded test context only
+ *
+ * @code
+ * shared_data_set_event(k_event_low_battery);
+ * TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_one, mock_shared_data_get_set_event_count());
+ * @endcode
+ *
+ * @see shared_data_set_event() The function whose calls are counted
+ * @see mock_shared_data_reset() Resets the counter to zero
+ *
+ * @since Version 1.1.0
+ */
+uint32_t mock_shared_data_get_set_event_count(void);
+
+/**
+ * @brief Return the accumulated event flags set via shared_data_set_event()
+ *
+ * @details
+ * Returns the bitwise OR of all flag values passed to shared_data_set_event()
+ * since the last mock_shared_data_reset(). Test code uses this to verify that
+ * the expected event bits were raised without caring about call order.
+ *
+ * @return shared_event_flags_t Accumulated (OR'd) event flags
+ * @retval k_event_none No events have been set since last reset
+ * @retval other OR of every flags argument passed to shared_data_set_event()
+ *
+ * @pre mock_shared_data_reset() has been called at least once (setUp)
+ * @pre Module initialized via mock_shared_data_reset() before first use
+ *
+ * @post s_last_event_flags is unchanged (read-only accessor)
+ * @post Return value is a superset of any single shared_data_set_event() call
+ *
+ * @note Thread safety: read-only; safe in single-threaded test context only
+ *
+ * @code
+ * shared_data_set_event(k_event_low_battery);
+ * TEST_ASSERT_EQUAL(k_event_low_battery,
+ *                   mock_shared_data_get_last_event_flags());
+ * @endcode
+ *
+ * @see shared_data_set_event() The function that accumulates into this value
+ * @see mock_shared_data_reset() Clears accumulated flags to k_event_none
+ *
+ * @since Version 1.1.0
+ */
+shared_event_flags_t mock_shared_data_get_last_event_flags(void);
+
+/**
  * @brief Get the last estop reason that was triggered
  */
 estop_reason_t mock_shared_data_get_last_estop_reason(void);
@@ -277,6 +383,38 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state);
 /* Communication Timeout */
 bool shared_data_is_comm_timeout(void);
 void shared_data_update_last_comm_tick(void);
+
+/* Event Flags */
+
+/**
+ * @brief Accumulate event flag bits into the mock's tracking state
+ *
+ * @details
+ * Mirrors the TX_OR semantics of the production shared_data_set_event() by
+ * OR-accumulating the supplied flags. Unlike a simple assignment, multiple
+ * calls build up the set of raised flags, matching real RTOS behavior where
+ * event bits are sticky until cleared.
+ *
+ * @param[in] flags One or more shared_event_flags_t bits to set
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Flags accumulated successfully (always in mock)
+ *
+ * @pre mock_shared_data_reset() has been called at least once (setUp)
+ * @pre flags is a valid member or OR combination of shared_event_flags_t
+ *
+ * @post mock_shared_data_get_set_event_count() incremented by 1
+ * @post mock_shared_data_get_last_event_flags() has the supplied bits OR'd in
+ *
+ * @note Thread safety: not thread-safe; intended for single-threaded test use only
+ *
+ * @see mock_shared_data_get_set_event_count() Retrieve call count
+ * @see mock_shared_data_get_last_event_flags() Retrieve accumulated flags
+ * @see mock_shared_data_reset() Clear accumulated state between tests
+ *
+ * @since Version 1.1.0
+ */
+rx_err_t shared_data_set_event(shared_event_flags_t flags);
 
 #ifdef __cplusplus
 }
