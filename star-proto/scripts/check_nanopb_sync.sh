@@ -41,11 +41,22 @@ fi
 get_max_count() {
     local file="$1"
     local field="$2"
-    awk -v field="${field}" '$1 == field' "${file}" \
-        | head -1 \
+get_max_count() {
+    local file="$1"
+    local field="$2"
+    local matches
+    matches=$(awk -v field="${field}" '$1 == field' "${file}")
+    local match_count
+    match_count=$(echo -n "${matches}" | grep -c '^' || true)
+    if [[ "${match_count}" -gt 1 ]]; then
+        echo "ERROR: ${field} defined ${match_count} times in ${file}" >&2
+        return 1
+    fi
+    echo "${matches}" \
         | grep -oE 'max_count:[0-9]+' \
         | grep -oE '[0-9]+' \
         || true
+}
 }
 
 FIELDS=(

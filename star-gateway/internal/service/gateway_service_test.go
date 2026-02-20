@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"os"
 	"sync"
 	"testing"
 	"time"
@@ -670,10 +669,9 @@ func TestBroadcastEnvelope_Success(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+	logger := log.New(&buf, "", 0)
 
-	broadcastEnvelope(context.Background(), "system", hub, env)
+	broadcastEnvelope(context.Background(), logger, "system", hub, env)
 
 	if buf.Len() != 0 {
 		t.Errorf("expected no log output on success, got: %s", buf.String())
@@ -692,10 +690,9 @@ func TestBroadcastEnvelope_ChannelSaturation(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+	logger := log.New(&buf, "", 0)
 
-	broadcastEnvelope(context.Background(), "battery", hub, env)
+	broadcastEnvelope(context.Background(), logger, "battery", hub, env)
 
 	if !bytes.Contains(buf.Bytes(), []byte("broadcast dropped")) {
 		t.Errorf("expected 'broadcast dropped' in log output, got: %s", buf.String())
@@ -714,10 +711,9 @@ func TestBroadcastEnvelope_ContextCancellation(t *testing.T) {
 	cancel() // cancel immediately so Broadcast returns ctx.Err()
 
 	var buf bytes.Buffer
-	log.SetOutput(&buf)
-	t.Cleanup(func() { log.SetOutput(os.Stderr) })
+	logger := log.New(&buf, "", 0)
 
-	broadcastEnvelope(ctx, "telemetry", hub, env)
+	broadcastEnvelope(ctx, logger, "telemetry", hub, env)
 
 	if !bytes.Contains(buf.Bytes(), []byte("broadcast dropped")) {
 		t.Errorf("expected 'broadcast dropped' in log output, got: %s", buf.String())

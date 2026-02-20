@@ -10,8 +10,8 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
-	"nhooyr.io/websocket" //nolint:staticcheck
 )
 
 func TestWebSocketHandler_ProcessMessage(t *testing.T) {
@@ -25,14 +25,12 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	//nolint:staticcheck
-	c, _, err := websocket.Dial(ctx, wsURL, nil)
+	c, _, err := websocket.DefaultDialer.DialContext(ctx, wsURL, nil)
 	if err != nil {
 		t.Fatalf("failed to dial: %v", err)
 	}
 	defer func() {
-		//nolint:staticcheck
-		_ = c.Close(websocket.StatusInternalError, "internal error")
+		_ = c.Close()
 	}()
 
 	// 3. Send ControllerState Message
@@ -46,8 +44,7 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 		t.Fatalf("failed to marshal: %v", err)
 	}
 
-	//nolint:staticcheck
-	err = c.Write(ctx, websocket.MessageBinary, bytes)
+	err = c.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
 		t.Fatalf("failed to write: %v", err)
 	}
@@ -81,14 +78,12 @@ func TestWebSocketHandler_DebugFlag(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	//nolint:staticcheck
-	c, _, err := websocket.Dial(ctx, wsURL, nil)
+	c, _, err := websocket.DefaultDialer.DialContext(ctx, wsURL, nil)
 	if err != nil {
 		t.Fatalf("failed to dial: %v", err)
 	}
 	defer func() {
-		//nolint:staticcheck
-		_ = c.Close(websocket.StatusInternalError, "internal error")
+		_ = c.Close()
 	}()
 
 	// 3. Send Message with Debug = true
@@ -103,8 +98,7 @@ func TestWebSocketHandler_DebugFlag(t *testing.T) {
 		t.Fatalf("failed to marshal: %v", err)
 	}
 
-	//nolint:staticcheck
-	err = c.Write(ctx, websocket.MessageBinary, bytes)
+	err = c.WriteMessage(websocket.BinaryMessage, bytes)
 	if err != nil {
 		t.Fatalf("failed to write: %v", err)
 	}
@@ -160,14 +154,12 @@ func TestHandlerWithGateway(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
-	//nolint:staticcheck
-	c, _, err := websocket.Dial(ctx, wsURL, nil)
+	c, _, err := websocket.DefaultDialer.DialContext(ctx, wsURL, nil)
 	if err != nil {
 		t.Fatalf("failed to dial: %v", err)
 	}
 	defer func() {
-		//nolint:staticcheck
-		_ = c.Close(websocket.StatusNormalClosure, "")
+		_ = c.Close()
 	}()
 
 	// 3. Send Message
@@ -177,8 +169,7 @@ func TestHandlerWithGateway(t *testing.T) {
 		Timestamp:  time.Now().UnixMilli(),
 	}
 	bytes, _ := proto.Marshal(msg)
-	//nolint:staticcheck
-	if err := c.Write(ctx, websocket.MessageBinary, bytes); err != nil {
+	if err := c.WriteMessage(websocket.BinaryMessage, bytes); err != nil {
 		t.Fatalf("failed to write: %v", err)
 	}
 

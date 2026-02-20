@@ -15,9 +15,9 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"github.com/gorilla/websocket"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
-	"nhooyr.io/websocket" //nolint:staticcheck
 )
 
 const (
@@ -342,11 +342,11 @@ func TestStartHTTPServerWithAddr_WiresWSAndHealthRoutes(t *testing.T) {
 	wsCtx, wsCancel := context.WithTimeout(context.Background(), websocketDialTimeout)
 	defer wsCancel()
 
-	conn, _, err := websocket.Dial(wsCtx, wsURL, nil) //nolint:staticcheck
+	conn, _, err := websocket.DefaultDialer.DialContext(wsCtx, wsURL, nil)
 	if err != nil {
 		t.Fatalf("failed to connect websocket route: %v", err)
 	}
-	_ = conn.Close(websocket.StatusNormalClosure, "") //nolint:staticcheck
+	_ = conn.Close()
 }
 
 func newTestServiceSet(t *testing.T) *serviceSet {

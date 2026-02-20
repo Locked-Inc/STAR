@@ -29,6 +29,9 @@ import (
 )
 
 const (
+	// wsStrictOriginEnv controls WebSocket strict origin validation.
+	wsStrictOriginEnv = "WS_STRICT_ORIGIN"
+
 	// grpcListenPort is the TCP port for gRPC services.
 	grpcListenPort = ":50051"
 
@@ -700,17 +703,17 @@ func startHTTPServerWithAddr(
 	// - Additional authentication/authorization is implemented at the application layer
 	// - Network segmentation prevents unauthorized access
 	strictOriginChecking := true
-	if envVal := os.Getenv("WS_STRICT_ORIGIN"); envVal != "" {
+	if envVal := os.Getenv(wsStrictOriginEnv); envVal != "" {
 		if envVal == "false" || envVal == "0" {
 			strictOriginChecking = false
-			logger.Warn("WebSocket strict origin checking DISABLED via WS_STRICT_ORIGIN environment variable",
+			logger.Warn(fmt.Sprintf("WebSocket strict origin checking DISABLED via %s environment variable", wsStrictOriginEnv),
 				slog.String("compensating_controls_required", "ensure network segmentation and application-layer auth"))
 		}
 	}
 	if !strictOriginChecking {
 		logger.Error("SECURITY: WebSocket origin validation is disabled - vulnerable to CSRF attacks",
 			slog.Bool("strict_origin_checking", false),
-			slog.String("mitigation", "set WS_STRICT_ORIGIN=true or remove environment variable"))
+			slog.String("mitigation", fmt.Sprintf("set %s=true or remove environment variable", wsStrictOriginEnv)))
 	}
 	mux.Handle("/ws", ws.NewHandler(hub, adapter, logger, strictOriginChecking))
 

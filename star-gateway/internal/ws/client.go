@@ -140,7 +140,11 @@ func (c *Client) writePump() {
 // Joystick commands should not process while stop is propagating.
 func (c *Client) readPump() {
 	defer func() {
-		c.hub.unregister <- c
+		select {
+		case c.hub.unregister <- c:
+		default:
+			c.logger.Warn("hub unregister channel full or closed, client not unregistered")
+		}
 		c.closeConn()
 	}()
 

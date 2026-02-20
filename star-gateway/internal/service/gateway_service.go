@@ -106,34 +106,34 @@ func (s *GatewayService) ForwardTelemetry(
 
 	if hub != nil {
 		if req.SystemStatus != nil {
-			broadcastEnvelope(ctx, "system", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, log.Default(), "system", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_System{System: req.SystemStatus},
 			})
 		}
 		if req.BatteryState != nil {
-			broadcastEnvelope(ctx, "battery", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, log.Default(), "battery", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Battery{Battery: req.BatteryState},
 			})
 		}
 		if req.Telemetry != nil {
-			broadcastEnvelope(ctx, "telemetry", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, log.Default(), "telemetry", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Telemetry{Telemetry: req.Telemetry},
 			})
 		}
 		if req.MotorStatus != nil {
-			broadcastEnvelope(ctx, "motor", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, log.Default(), "motor", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Motors{
 					Motors: &starv1.MotorStatusList{Motors: req.MotorStatus},
 				},
 			})
 		}
 		if req.Odometry != nil {
-			broadcastEnvelope(ctx, "odometry", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, log.Default(), "odometry", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Odometry{Odometry: req.Odometry},
 			})
 		}
 		if req.LidarScan != nil {
-			broadcastEnvelope(ctx, "lidar", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, log.Default(), "lidar", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Lidar{Lidar: req.LidarScan},
 			})
 		}
@@ -405,8 +405,14 @@ func (s *GatewayService) Hub() HubNotifier {
 // ctx is forwarded to hub.Broadcast for cancellation propagation.
 // The caller is responsible for reading s.hub under hubMu and passing a
 // non-nil hub here, which avoids a redundant lock acquisition in the hot path.
-func broadcastEnvelope(ctx context.Context, name string, hub HubNotifier, env *starv1.STAREnvelope) {
+func broadcastEnvelope(
+	ctx context.Context,
+	logger *log.Logger,
+	name string,
+	hub HubNotifier,
+	env *starv1.STAREnvelope,
+) {
 	if err := hub.Broadcast(ctx, env); err != nil {
-		log.Printf("ForwardTelemetry: %s broadcast dropped: %v", name, err)
+		logger.Printf("ForwardTelemetry: %s broadcast dropped: %v", name, err)
 	}
 }
