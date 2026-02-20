@@ -80,13 +80,7 @@ func NewHandler(hub *Hub, motorService MotorController, logger *slog.Logger, all
 			logger.Error("websocket upgrade failed", slog.Any("err", err))
 			return
 		}
-		client := &Client{
-			hub:          hub,
-			conn:         conn,
-			send:         make(chan []byte, defaultChannelBuffer),
-			motorService: motorService,
-			logger:       logger,
-		}
+		client := NewClient(hub, conn, motorService, logger)
 		hub.register <- client
 		go client.writePump()
 		go client.readPump()

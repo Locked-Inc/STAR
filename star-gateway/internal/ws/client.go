@@ -43,11 +43,13 @@ const (
 	// 4 KiB provides comfortable headroom while bounding per-connection
 	// memory abuse from malformed or oversized frames.
 	maxMessageSize = 4096
-	// estopTimeout is the maximum time allowed for the motor-controller to
+	// EstopTimeout is the maximum time allowed for the motor-controller to
 	// acknowledge an emergency stop before the context is cancelled. Using
 	// context.Background() as the root ensures a dropped HTTP connection cannot
 	// abort the safety command before it reaches the motor controller.
-	estopTimeout = 5 * time.Second
+	// Exported so the REST /api/estop handler in the app package can share the
+	// same safety-critical timeout without duplicating the constant.
+	EstopTimeout = 5 * time.Second
 )
 
 // NewClient creates a properly initialised Client and registers it with the
@@ -140,10 +142,16 @@ func (c *Client) writePump() {
 // Joystick commands should not process while stop is propagating.
 func (c *Client) readPump() {
 	defer func() {
+		// Bounded-blocking unregister: wait up to 5 s for the hub to accept the
+		// client removal before giving up. A dropped non-blocking send would leave
+		// the client in h.clients indefinitely, leaking the map entry and causing
+		// stampAndFanOut to attempt writes to a permanently non-draining send channel.
+		t := time.NewTimer(5 * time.Second)
+		defer t.Stop()
 		select {
 		case c.hub.unregister <- c:
-		default:
-			c.logger.Warn("hub unregister channel full or closed, client not unregistered")
+		case <-t.C:
+			c.logger.Error("hub unregister channel blocked for 5s -- client leaked in hub")
 		}
 		c.closeConn()
 	}()
@@ -188,7 +196,7 @@ func (c *Client) readPump() {
 			// Use a short-lived context so a slow motor controller cannot
 			// block readPump indefinitely. context.Background() is the root
 			// so cancellation of connection context cannot abort an e-stop.
-			ctx, cancel := context.WithTimeout(context.Background(), estopTimeout)
+			ctx, cancel := context.WithTimeout(context.Background(), EstopTimeout)
 			if err := c.motorService.EmergencyStop(ctx, estop.Estop.Reason); err != nil {
 				c.logger.Error("emergency stop failed",
 					slog.String("reason", estop.Estop.Reason),

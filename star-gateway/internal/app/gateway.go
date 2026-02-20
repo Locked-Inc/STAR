@@ -53,10 +53,6 @@ const (
 	// defaultDispatcherShutdownTimeout is the default graceful shutdown timeout for dispatcher stop.
 	defaultDispatcherShutdownTimeout = 5 * time.Second
 
-	// estopTimeout is the maximum duration allowed for an emergency stop command to reach
-	// the motor controller before the context is cancelled.
-	estopTimeout = 5 * time.Second
-
 	// defaultEstopReason is the fallback reason string used when the HTTP /api/estop
 	// endpoint is called without an explicit ?reason= query parameter.
 	defaultEstopReason = "user_http_fallback"
@@ -715,7 +711,7 @@ func startHTTPServerWithAddr(
 			slog.Bool("strict_origin_checking", false),
 			slog.String("mitigation", fmt.Sprintf("set %s=true or remove environment variable", wsStrictOriginEnv)))
 	}
-	mux.Handle("/ws", ws.NewHandler(hub, adapter, logger, strictOriginChecking))
+	mux.Handle("/ws", ws.NewHandler(hub, adapter, logger, !strictOriginChecking))
 
 	// REST fallback for emergency stop. The frontend sends the reason as a query
 	// parameter (fetch('/api/estop?reason=...', { method: 'POST' })).
@@ -760,7 +756,7 @@ func startHTTPServerWithAddr(
 		if sanitizedReason == "" {
 			sanitizedReason = defaultEstopReason
 		}
-		estopCtx, cancel := context.WithTimeout(context.Background(), estopTimeout)
+		estopCtx, cancel := context.WithTimeout(context.Background(), ws.EstopTimeout)
 		defer cancel()
 		if _, err := services.motorControl.EmergencyStop(estopCtx,
 			&starv1.EmergencyStopRequest{Reason: sanitizedReason}); err != nil {
@@ -791,6 +787,7 @@ func startHTTPServerWithAddr(
 	// Create server
 	httpSrv, err := server.NewHTTPServer(config, logger)
 	if err != nil {
+		internalCancel() // prevent hub/monitor goroutine leak on early return
 		return fmt.Errorf("failed to create HTTP server: %w", err)
 	}
 	servers.HTTPServer = httpSrv
@@ -799,6 +796,7 @@ func startHTTPServerWithAddr(
 	// calls internalCancel) triggers graceful HTTP server shutdown.
 	errChan, err := server.RunHTTPServer(internalCtx, httpSrv, logger)
 	if err != nil {
+		internalCancel() // prevent hub/monitor goroutine leak on early return
 		return fmt.Errorf("failed to start HTTP server: %w", err)
 	}
 

@@ -318,9 +318,23 @@ func TestStartHTTPServerWithAddr_WiresWSAndHealthRoutes(t *testing.T) {
 		t.Fatal("expected HTTPServer to be initialized")
 	}
 
-	time.Sleep(httpServerStartupDelay)
+	addr := servers.HTTPServer.Addr
+	deadline := time.Now().Add(serverReadinessDeadline)
+	serverReady := false
+	for time.Now().Before(deadline) {
+		c, dialErr := net.DialTimeout("tcp", addr, dialProbeTimeout)
+		if dialErr == nil {
+			_ = c.Close()
+			serverReady = true
+			break
+		}
+		time.Sleep(dialProbeInterval)
+	}
+	if !serverReady {
+		t.Fatalf("HTTP server at %s did not become ready within %v", addr, serverReadinessDeadline)
+	}
 
-	healthResp, err := http.Get("http://" + servers.HTTPServer.Addr + "/healthz")
+	healthResp, err := http.Get("http://" + addr + "/healthz")
 	if err != nil {
 		t.Fatalf("health check request failed: %v", err)
 	}
@@ -338,7 +352,7 @@ func TestStartHTTPServerWithAddr_WiresWSAndHealthRoutes(t *testing.T) {
 		t.Fatalf("expected /healthz body 'ok', got %q", string(body))
 	}
 
-	wsURL := "ws://" + servers.HTTPServer.Addr + "/ws"
+	wsURL := "ws://" + addr + "/ws"
 	wsCtx, wsCancel := context.WithTimeout(context.Background(), websocketDialTimeout)
 	defer wsCancel()
 

@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -64,6 +64,8 @@ type GatewayService struct {
 
 	// Constants
 	teleopStalenessThreshold time.Duration
+
+	logger *slog.Logger
 }
 
 // NewGatewayService creates a new GatewayService instance.
@@ -71,6 +73,7 @@ func NewGatewayService() *GatewayService {
 	return &GatewayService{
 		clientCounters:           make(map[string]bool),
 		teleopStalenessThreshold: 500 * time.Millisecond, // Safety timeout
+		logger:                   slog.Default(),
 	}
 }
 
@@ -106,34 +109,34 @@ func (s *GatewayService) ForwardTelemetry(
 
 	if hub != nil {
 		if req.SystemStatus != nil {
-			broadcastEnvelope(ctx, log.Default(), "system", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, s.logger, "system", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_System{System: req.SystemStatus},
 			})
 		}
 		if req.BatteryState != nil {
-			broadcastEnvelope(ctx, log.Default(), "battery", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, s.logger, "battery", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Battery{Battery: req.BatteryState},
 			})
 		}
 		if req.Telemetry != nil {
-			broadcastEnvelope(ctx, log.Default(), "telemetry", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, s.logger, "telemetry", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Telemetry{Telemetry: req.Telemetry},
 			})
 		}
 		if req.MotorStatus != nil {
-			broadcastEnvelope(ctx, log.Default(), "motor", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, s.logger, "motor", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Motors{
 					Motors: &starv1.MotorStatusList{Motors: req.MotorStatus},
 				},
 			})
 		}
 		if req.Odometry != nil {
-			broadcastEnvelope(ctx, log.Default(), "odometry", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, s.logger, "odometry", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Odometry{Odometry: req.Odometry},
 			})
 		}
 		if req.LidarScan != nil {
-			broadcastEnvelope(ctx, log.Default(), "lidar", hub, &starv1.STAREnvelope{
+			broadcastEnvelope(ctx, s.logger, "lidar", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Lidar{Lidar: req.LidarScan},
 			})
 		}
@@ -155,8 +158,11 @@ func (s *GatewayService) ForwardTelemetry(
 		batteryPercent = float64(req.BatteryState.GetSoc().GetRelativeSocPercent())
 	}
 
-	log.Printf("Telemetry forwarded: mode=%s, battery=%.1f%%, clients=%d",
-		mode, batteryPercent, activeClients)
+	s.logger.Info("Telemetry forwarded",
+		slog.String("mode", mode),
+		slog.Float64("battery_percent", batteryPercent),
+		slog.Int("clients", int(activeClients)),
+	)
 
 	// Build response header
 	respHeader := &starv1.ResponseHeader{
@@ -205,8 +211,10 @@ func (s *GatewayService) GetTeleopCommand(
 		cmd = cachedCmd
 	} else {
 		// Return zero velocity (safe default)
-		log.Printf("Teleop watchdog triggered: no command available or stale (age=%dms, threshold=%dms)",
-			commandAgeMs, s.teleopStalenessThreshold.Milliseconds())
+		s.logger.Warn("Teleop watchdog triggered: no command available or stale",
+			slog.Int64("age_ms", commandAgeMs),
+			slog.Int64("threshold_ms", s.teleopStalenessThreshold.Milliseconds()),
+		)
 		cmd = &starv1.VelocityCommand{
 			FrontLeftVelocityMps:  0.0,
 			FrontRightVelocityMps: 0.0,
@@ -257,8 +265,12 @@ func (s *GatewayService) SetPIDGains(
 	}
 
 	// Log the request
-	log.Printf("SetPIDGains: motor=%d, kp=%.3f, ki=%.3f, kd=%.3f",
-		motorID, req.PidConfig.Kp, req.PidConfig.Ki, req.PidConfig.Kd)
+	s.logger.Info("SetPIDGains",
+		slog.Int("motor_id", int(motorID)),
+		slog.Float64("kp", float64(req.PidConfig.Kp)),
+		slog.Float64("ki", float64(req.PidConfig.Ki)),
+		slog.Float64("kd", float64(req.PidConfig.Kd)),
+	)
 
 	// TODO: Forward to ROS2 service when available
 	// For now, return success (placeholder)
@@ -309,9 +321,12 @@ func (s *GatewayService) UpdateTeleopCommand(cmd *starv1.VelocityCommand) {
 	s.teleopLastUpdated = time.Now()
 	s.teleopMu.Unlock()
 
-	log.Printf("Teleop updated: FL=%.2fm/s, FR=%.2fm/s, BL=%.2fm/s, BR=%.2fm/s",
-		cmd.FrontLeftVelocityMps, cmd.FrontRightVelocityMps,
-		cmd.BackLeftVelocityMps, cmd.BackRightVelocityMps)
+	s.logger.Info("Teleop updated",
+		slog.Float64("front_left_mps", float64(cmd.FrontLeftVelocityMps)),
+		slog.Float64("front_right_mps", float64(cmd.FrontRightVelocityMps)),
+		slog.Float64("back_left_mps", float64(cmd.BackLeftVelocityMps)),
+		slog.Float64("back_right_mps", float64(cmd.BackRightVelocityMps)),
+	)
 }
 
 // GetLatestTelemetry returns the cached telemetry data for UI streaming.
@@ -353,7 +368,7 @@ func (s *GatewayService) RegisterClient(clientID string) {
 	if !s.clientCounters[clientID] {
 		s.clientCounters[clientID] = true
 		s.activeClients++
-		log.Printf("Client registered: %s (total: %d)", clientID, s.activeClients)
+		s.logger.Info("Client registered", slog.String("client_id", clientID), slog.Int("total", int(s.activeClients)))
 	}
 }
 
@@ -367,7 +382,7 @@ func (s *GatewayService) UnregisterClient(clientID string) {
 	if s.clientCounters[clientID] {
 		delete(s.clientCounters, clientID)
 		s.activeClients--
-		log.Printf("Client unregistered: %s (total: %d)", clientID, s.activeClients)
+		s.logger.Info("Client unregistered", slog.String("client_id", clientID), slog.Int("total", int(s.activeClients)))
 	}
 }
 
@@ -407,12 +422,15 @@ func (s *GatewayService) Hub() HubNotifier {
 // non-nil hub here, which avoids a redundant lock acquisition in the hot path.
 func broadcastEnvelope(
 	ctx context.Context,
-	logger *log.Logger,
+	logger *slog.Logger,
 	name string,
 	hub HubNotifier,
 	env *starv1.STAREnvelope,
 ) {
 	if err := hub.Broadcast(ctx, env); err != nil {
-		logger.Printf("ForwardTelemetry: %s broadcast dropped: %v", name, err)
+		logger.Warn("ForwardTelemetry: broadcast dropped",
+			slog.String("type", name),
+			slog.Any("error", err),
+		)
 	}
 }

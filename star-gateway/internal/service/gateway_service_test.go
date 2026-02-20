@@ -5,7 +5,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"testing"
 	"time"
@@ -669,7 +669,7 @@ func TestBroadcastEnvelope_Success(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	logger := log.New(&buf, "", 0)
+	logger := slog.New(slog.NewTextHandler(&buf, nil))
 
 	broadcastEnvelope(context.Background(), logger, "system", hub, env)
 
@@ -690,7 +690,7 @@ func TestBroadcastEnvelope_ChannelSaturation(t *testing.T) {
 	}
 
 	var buf bytes.Buffer
-	logger := log.New(&buf, "", 0)
+	logger := slog.New(slog.NewTextHandler(&buf, nil))
 
 	broadcastEnvelope(context.Background(), logger, "battery", hub, env)
 
@@ -711,7 +711,7 @@ func TestBroadcastEnvelope_ContextCancellation(t *testing.T) {
 	cancel() // cancel immediately so Broadcast returns ctx.Err()
 
 	var buf bytes.Buffer
-	logger := log.New(&buf, "", 0)
+	logger := slog.New(slog.NewTextHandler(&buf, nil))
 
 	broadcastEnvelope(ctx, logger, "telemetry", hub, env)
 
