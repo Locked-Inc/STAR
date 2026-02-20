@@ -55,19 +55,19 @@ typedef struct _star_v1_OdometryData {
 
 /* LidarScan is a single 360deg scan from the RPLiDAR C1.
  angle_rad, range_m, and intensity arrays are parallel; all have the same length.
- Maximum samples per revolution: RPLIDAR_C1_MAX_SAMPLES = 800 (RPLiDAR C1 @ 10 Hz scan mode).
- nanopb static bound: max_count:800 for all three arrays (see ui.options). */
+ Maximum samples per revolution: 500 (RPLiDAR C1 @ 10 Hz: 5 kHz sample rate / 10 Hz = 500 samples/rev).
+ nanopb static bound: max_count:500 for all three arrays (see ui.options). */
 typedef struct _star_v1_LidarScan {
     /* Angle in radians for each sample [0, 2*pi).
- nanopb max_count:800 (RPLIDAR_C1_MAX_SAMPLES; see ui.options). */
+ nanopb max_count:500 (RPLiDAR C1 samples/rev; see ui.options). */
     pb_size_t angle_rad_count;
     float angle_rad[500];
     /* Range in metres for each sample (0 = invalid/out-of-range).
- nanopb max_count:800 (RPLIDAR_C1_MAX_SAMPLES; see ui.options). */
+ nanopb max_count:500 (RPLiDAR C1 samples/rev; see ui.options). */
     pb_size_t range_m_count;
     float range_m[500];
     /* Reflectance intensity in arbitrary sensor units (dimensionless, sensor-specific scale).
- nanopb max_count:800 (RPLIDAR_C1_MAX_SAMPLES; see ui.options). */
+ nanopb max_count:500 (RPLiDAR C1 samples/rev; see ui.options). */
     pb_size_t intensity_count;
     float intensity[500];
     /* Scan start timestamp in microseconds (CLOCK_MONOTONIC, same epoch as other telemetry). */
