@@ -23,7 +23,7 @@ import (
 // mockMotorController is a test stub for the MotorController interface.
 // Set emergencyStopErr to inject a failure from EmergencyStop.
 // Set onEmergencyStop to a non-nil channel to receive a signal (via close)
-// when EmergencyStop is first called — useful for deterministic synchronisation
+// when EmergencyStop is first called -- useful for deterministic synchronisation
 // instead of time.Sleep in tests.
 type mockMotorController struct {
 	emergencyStopErr error
@@ -289,7 +289,7 @@ func TestEstopScenarios(t *testing.T) {
 			// Wait deterministically for readPump to invoke EmergencyStop.
 			select {
 			case <-mock.onEmergencyStop:
-				// EmergencyStop was called — proceed.
+				// EmergencyStop was called -- proceed.
 			case <-time.After(estopProcessingWait):
 				t.Fatal("timed out waiting for EmergencyStop to be called")
 			}

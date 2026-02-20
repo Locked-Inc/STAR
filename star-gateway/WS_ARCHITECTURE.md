@@ -1,4 +1,4 @@
-# STAR UI Backend — Software Design Document
+# STAR UI Backend -- Software Design Document
 
 ---
 
@@ -6,7 +6,7 @@
 
 |Field|Value|
 |---|---|
-|**Document Title**|STAR UI Backend — WebSocket & Dashboard Architecture|
+|**Document Title**|STAR UI Backend -- WebSocket & Dashboard Architecture|
 |**Version**|1.0 (Final)|
 |**Phase**|Software Architecture Design|
 |**Revised**|2026-02-18|
@@ -39,7 +39,7 @@
 
 ## 1. Overview
 
-STAR is a four-wheeled mobile robot platform controlled via an RPi5 running ROS2 Humble. An existing React/TypeScript UI communicates with a Go gateway over WebSocket. Currently the UI only sends gamepad commands (50 Hz) over `/ws/controller` — there is no telemetry path from the robot back to the browser.
+STAR is a four-wheeled mobile robot platform controlled via an RPi5 running ROS2 Humble. An existing React/TypeScript UI communicates with a Go gateway over WebSocket. Currently the UI only sends gamepad commands (50 Hz) over `/ws/controller` -- there is no telemetry path from the robot back to the browser.
 
 This document specifies the complete backend architecture for the UI dashboard: a multiplexed bidirectional WebSocket that carries all robot data (motor telemetry, battery state, odometry, LiDAR scans, alerts) from the gateway to the browser, and all control commands (joystick, E-stop) from the browser to the gateway. It covers the Go WebSocket hub, the protobuf envelope format, the React state management layer, the live charting approach, and the packet analyzer debug tool.
 
@@ -49,28 +49,28 @@ This document specifies the complete backend architecture for the UI dashboard: 
 
 ## Goals
 
-- Replace the single-purpose `/ws/controller` endpoint with one multiplexed `/ws` endpoint carrying all UI↔Gateway traffic
+- Replace the single-purpose `/ws/controller` endpoint with one multiplexed `/ws` endpoint carrying all UI<->Gateway traffic
     
-- Push all robot telemetry types to the UI at appropriate rates (≤10 Hz sensor data, ≤2.5 Hz LiDAR, immediate alerts)
+- Push all robot telemetry types to the UI at appropriate rates (<=10 Hz sensor data, <=2.5 Hz LiDAR, immediate alerts)
     
 - Display motor telemetry, battery state, odometry, LiDAR scan, alerts, and manual control in an MVP dashboard
     
 - Provide a packet analyzer debug panel showing the last 100 raw WebSocket frames with decoded previews
     
-- Keep the SPI firmware path (RX72N ↔ star_spi_bridge) completely untouched
+- Keep the SPI firmware path (RX72N <-> star_spi_bridge) completely untouched
     
-- Keep the gRPC interface (star_gateway_bridge ↔ star-gateway) functionally unchanged for MVP
+- Keep the gRPC interface (star_gateway_bridge <-> star-gateway) functionally unchanged for MVP
     
 
 ## Non-Goals
 
-- Production security hardening (CORS, TLS, auth) — local network deployment only
+- Production security hardening (CORS, TLS, auth) -- local network deployment only
     
-- gRPC streaming migration — deferred to post-MVP
+- gRPC streaming migration -- deferred to post-MVP
     
-- PID tuning controls — deferred to post-MVP
+- PID tuning controls -- deferred to post-MVP
     
-- CSS polish and Tailwind migration — deferred to post-MVP
+- CSS polish and Tailwind migration -- deferred to post-MVP
     
 - Multi-robot support
     
@@ -81,11 +81,11 @@ This document specifies the complete backend architecture for the UI dashboard: 
 
 | Term              | Definition                                                                              |
 | ----------------- | --------------------------------------------------------------------------------------- |
-| **Envelope**      | `STAREnvelope` — the single protobuf wrapper message that carries every WebSocket frame |
+| **Envelope**      | `STAREnvelope` -- the single protobuf wrapper message that carries every WebSocket frame |
 | **Hub**           | Go struct that manages all connected WebSocket clients and fans out outbound frames     |
 | **readPump**      | Per-client goroutine that owns all reads from a WebSocket connection                    |
 | **writePump**     | Per-client goroutine that owns all writes to a WebSocket connection                     |
-| **SoA**           | Structure-of-Arrays — the layout used in `LidarScan` for packed float fields            |
+| **SoA**           | Structure-of-Arrays -- the layout used in `LidarScan` for packed float fields            |
 | **seq**           | Monotonic sequence number stamped by the Hub on every outbound envelope                 |
 | **Throttle**      | Hub-side rate limiter that drops excess frames per data type before broadcast           |
 | **Ring buffer**   | Fixed-size circular array used for uPlot time-series and packet analyzer                |
@@ -99,13 +99,13 @@ This document specifies the complete backend architecture for the UI dashboard: 
 
 ```text
 UI (React/TypeScript)
-  ↕ WebSocket ws://host:8080/ws/controller — binary Protobuf ControllerState at 50Hz
+  ^v WebSocket ws://host:8080/ws/controller -- binary Protobuf ControllerState at 50Hz
 Go Gateway (port 8080 HTTP/WS, port 50051 gRPC)
-  ↕ gRPC unary localhost:50051
+  ^v gRPC unary localhost:50051
 star_gateway_bridge (ROS2 node)
-  ↕ ROS2 topics (/cmd_vel, /battery_state, /robot_status, etc.)
+  ^v ROS2 topics (/cmd_vel, /battery_state, /robot_status, etc.)
 star_spi_bridge (ROS2 node)
-  ↕ SPI 10 MHz, nanopb Protobuf
+  ^v SPI 10 MHz, nanopb Protobuf
 RX72N Firmware (motor controller)
 ```
 
@@ -113,7 +113,7 @@ RX72N Firmware (motor controller)
 
 - The Gateway has no telemetry push path to the browser
     
-- The UI has no dashboard — only a gamepad input view
+- The UI has no dashboard -- only a gamepad input view
     
 - `GatewayService.ForwardTelemetry()` updates an in-memory cache but nothing reads from it for the UI
     
@@ -126,22 +126,22 @@ RX72N Firmware (motor controller)
 
 |#|Decision|Choice|Rationale|
 |---|---|---|---|
-|ADR-01|UI↔Gateway transport|Single WebSocket `/ws`|One reconnect loop, one handler, one binary framing path. Browser cannot do native gRPC client-streaming.|
+|ADR-01|UI<->Gateway transport|Single WebSocket `/ws`|One reconnect loop, one handler, one binary framing path. Browser cannot do native gRPC client-streaming.|
 |ADR-02|Wire format|Binary Protobuf `STAREnvelope` with `oneof`|Type-safe discriminated union in TypeScript, no double serialization, `oneof` enforces exactly-one-payload invariant|
 |ADR-03|Go WebSocket library|`gorilla/websocket` v1.5.3 (pinned)|Unarchived July 2023 with active maintainers; fine for <10 local clients; already in the ecosystem|
-|ADR-04|Hub broadcast model|Event-driven push on ROS2 update, per-type throttle using a typed struct|No stale-data ticker; each data type throttled independently via named struct fields — zero reflection, zero map allocation|
+|ADR-04|Hub broadcast model|Event-driven push on ROS2 update, per-type throttle using a typed struct|No stale-data ticker; each data type throttled independently via named struct fields -- zero reflection, zero map allocation|
 |ADR-05|Slow client policy|Non-blocking send into 32-message per-client buffer; drop frame, never disconnect|Telemetry is latest-value-wins; disconnecting on slow tab would require user to reload|
 |ADR-06|Alerts and E-stop|Always immediate, bypass throttle entirely|Alerts must not be delayed by a co-arriving 10 Hz telemetry burst|
 |ADR-07|React state management|Zustand with individual selectors, one `set()` per switch case|Prevents cross-slice re-renders; no object-allocation anti-pattern|
 |ADR-08|LiDAR in Zustand|Keep field in store for MVP; `LidarPanel` subscribes via `.subscribe()` + `useRef` to bypass React render cycle|At 2.5 Hz, selector evaluation cost is negligible; `useRef` pattern eliminates the React VDOM cycle for the canvas|
 |ADR-09|Charting|uPlot + pre-allocated `Float64Array` ring buffers and scratch arrays outside React state|Canvas-based, imperative `.setData()`, no React re-render per tick; smallest bundle of all candidates|
-|ADR-10|LiDAR visualization|Raw Canvas 2D API, no library|Polar→Cartesian transform is trivial; avoids any dependency for a single panel|
+|ADR-10|LiDAR visualization|Raw Canvas 2D API, no library|Polar->Cartesian transform is trivial; avoids any dependency for a single panel|
 |ADR-11|WebSocket reconnect|Exponential backoff with jitter, stale-data indicator on disconnect|Standard pattern for robotics dashboards over local network|
 |ADR-12|E-stop path|Synchronous call in `readPump` bypassing Hub inbound queue + independent REST fallback `POST /api/estop`|`readPump` block during E-stop is desired; REST fallback handles WS-disconnected case|
-|ADR-13|E-stop context|`context.Background()` independent of connection lifetime|HTTP request context or WS connection context may be cancelled during network hiccup — E-stop must never be cancelled|
-|ADR-14|gRPC (ROS2↔Gateway)|Keep unary `ForwardTelemetry` for MVP|Existing bridge works; streaming migration adds risk with no MVP benefit|
+|ADR-13|E-stop context|`context.Background()` independent of connection lifetime|HTTP request context or WS connection context may be cancelled during network hiccup -- E-stop must never be cancelled|
+|ADR-14|gRPC (ROS2<->Gateway)|Keep unary `ForwardTelemetry` for MVP|Existing bridge works; streaming migration adds risk with no MVP benefit|
 |ADR-15|ROS2 QoS|`BEST_EFFORT` + `keep_last:1` for telemetry; `RELIABLE` for commands|Sensor data is latest-value-wins; commands must not be lost|
-|ADR-16|HTTP server `WriteTimeout`|Not an issue — `HandshakeTimeout: 0` (gorilla default) causes gorilla to call `netConn.SetDeadline(time.Time{})` unconditionally after upgrade, clearing any server-level deadline|Verified against gorilla `server.go` source|
+|ADR-16|HTTP server `WriteTimeout`|Not an issue -- `HandshakeTimeout: 0` (gorilla default) causes gorilla to call `netConn.SetDeadline(time.Time{})` unconditionally after upgrade, clearing any server-level deadline|Verified against gorilla `server.go` source|
 |ADR-17|Ping mechanism|`WriteMessage(websocket.PingMessage, nil)` inside `writePump`, never `WriteControl`|Gorilla issue #841: `WriteControl` permanently mutates `WriteDeadline`; `WriteMessage` respects the write mutex correctly|
 |ADR-18|`ws.binaryType`|Must be set to `'arraybuffer'` immediately after `new WebSocket()`|Browser default is `'blob'`; `Uint8Array` constructor cannot accept a `Blob`, which would silently break all protobuf decoding|
 |ADR-19|SPI / firmware|`STAREnvelope` is UI-layer only, never serialized over SPI|nanopb path uses flat messages; this envelope is a UI transport concern only|
@@ -154,77 +154,77 @@ RX72N Firmware (motor controller)
 ## 6.1 Component Diagram
 
 ```text
-┌──────────────────────────────────────────────────────────────────┐
-│  star-ui  (React 19 + TypeScript, Vite, served on :5173 dev)    │
-│                                                                   │
-│  useSTARConnection (single WS hook)                              │
-│    binaryType = 'arraybuffer'  ← MUST be set before first msg   │
-│    ├── sends: ControllerState (50Hz, seq=0)                      │
-│    ├── sends: EStopCommand    (on demand, seq=0)                 │
-│    └── receives: STAREnvelope (≤10Hz / ≤2.5Hz, seq>0)           │
-│                                                                   │
-│  Zustand (useDashboardStore)                                     │
-│    ├── connectionState, lastSeq, seqGapDetected, dataIsStale     │
-│    ├── eStopActive                                               │
-│    ├── telemetry, motors[4], battery, odometry, systemStatus     │
-│    ├── lidarScan (store field; LidarPanel uses .subscribe+ref)   │
-│    └── alerts[]  (capped at 200)                                 │
-│                                                                   │
-│  Components                                                       │
-│    StatusBar · TeleopPanel · MotorPanel · BatteryPanel           │
-│    OdometryPanel · LidarPanel · AlertsPanel · PacketAnalyzer     │
-└──────────────────────────────────────────────────────────────────┘
-         │  ws://host:8080/ws  (binary Protobuf, STAREnvelope)
-         │  fetch POST /api/estop  (E-stop fallback)
-┌──────────────────────────────────────────────────────────────────┐
-│  star-gateway  (Go, :8080 HTTP/WS, :50051 gRPC)                 │
-│                                                                   │
-│  /ws  →  ws.NewHandler(hub, motorService, logger)                │
-│  POST /api/estop  →  estopHandler(motorService)                  │
-│  GET  /healthz   →  (unchanged)                                  │
-│                                                                   │
-│  Hub  (internal/ws/hub.go)                                       │
-│    clients map[*Client]struct{}                                  │
-│    register / unregister channels                                │
-│    broadcast chan *STAREnvelope  (buffered 32, from GWSvc)       │
-│    inbound   chan *STAREnvelope  (buffered 32, UI→GW)            │
-│    seq  uint64  (atomic, outbound only)                          │
-│    throttle  typeThrottleState  (named struct, zero reflection)  │
-│                                                                   │
-│  Client  (internal/ws/client.go)                                 │
-│    readPump   — owns all reads; E-stop synchronous bypass        │
-│    writePump  — ONLY writer; ping ticker; SetWriteDeadline       │
-│                                                                   │
-│  GatewayService  (internal/service/gateway_service.go)          │
-│    ForwardTelemetry() — unary RPC, calls hub.Broadcast() per    │
-│    data type after updating cache                                │
-│    HubNotifier interface (for testability)                       │
-└──────────────────────────────────────────────────────────────────┘
-         │  gRPC unary :50051
-┌──────────────────────────────────────────────────────────────────┐
-│  star-ros2  (ROS2 Humble)                                        │
-│                                                                  │
-│  star_gateway_bridge_node                                        │
-│    ForwardTelemetry() — unary, sends telemetry to Gateway        │
-│    GetTeleopCommand() — polls command cache                      │
-│    QoS: BEST_EFFORT keep_last:1  (telemetry subs)                │
-│         RELIABLE    keep_last:10 (command pubs)                  │
-│                                                                  │
-│  star_spi_bridge_node  — UNTOUCHED BY THIS WORK                  │
-└──────────────────────────────────────────────────────────────────┘
-         │  SPI 10 MHz, nanopb Protobuf  (UNTOUCHED)
-┌──────────────────────────────────────────────────────────────────┐
-│  RX72N Firmware  (motor controller)  — UNTOUCHED                 │
-└──────────────────────────────────────────────────────────────────┘
++------------------------------------------------------------------+
+|  star-ui  (React 19 + TypeScript, Vite, served on :5173 dev)    |
+|                                                                   |
+|  useSTARConnection (single WS hook)                              |
+|    binaryType = 'arraybuffer'  <- MUST be set before first msg   |
+|    +-- sends: ControllerState (50Hz, seq=0)                      |
+|    +-- sends: EStopCommand    (on demand, seq=0)                 |
+|    +-- receives: STAREnvelope (<=10Hz / <=2.5Hz, seq>0)           |
+|                                                                   |
+|  Zustand (useDashboardStore)                                     |
+|    +-- connectionState, lastSeq, seqGapDetected, dataIsStale     |
+|    +-- eStopActive                                               |
+|    +-- telemetry, motors[4], battery, odometry, systemStatus     |
+|    +-- lidarScan (store field; LidarPanel uses .subscribe+ref)   |
+|    +-- alerts[]  (capped at 200)                                 |
+|                                                                   |
+|  Components                                                       |
+|    StatusBar * TeleopPanel * MotorPanel * BatteryPanel           |
+|    OdometryPanel * LidarPanel * AlertsPanel * PacketAnalyzer     |
++------------------------------------------------------------------+
+         |  ws://host:8080/ws  (binary Protobuf, STAREnvelope)
+         |  fetch POST /api/estop  (E-stop fallback)
++------------------------------------------------------------------+
+|  star-gateway  (Go, :8080 HTTP/WS, :50051 gRPC)                 |
+|                                                                   |
+|  /ws  ->  ws.NewHandler(hub, motorService, logger)                |
+|  POST /api/estop  ->  estopHandler(motorService)                  |
+|  GET  /healthz   ->  (unchanged)                                  |
+|                                                                   |
+|  Hub  (internal/ws/hub.go)                                       |
+|    clients map[*Client]struct{}                                  |
+|    register / unregister channels                                |
+|    broadcast chan *STAREnvelope  (buffered 32, from GWSvc)       |
+|    inbound   chan *STAREnvelope  (buffered 32, UI->GW)            |
+|    seq  uint64  (atomic, outbound only)                          |
+|    throttle  typeThrottleState  (named struct, zero reflection)  |
+|                                                                   |
+|  Client  (internal/ws/client.go)                                 |
+|    readPump   -- owns all reads; E-stop synchronous bypass        |
+|    writePump  -- ONLY writer; ping ticker; SetWriteDeadline       |
+|                                                                   |
+|  GatewayService  (internal/service/gateway_service.go)          |
+|    ForwardTelemetry() -- unary RPC, calls hub.Broadcast() per    |
+|    data type after updating cache                                |
+|    HubNotifier interface (for testability)                       |
++------------------------------------------------------------------+
+         |  gRPC unary :50051
++------------------------------------------------------------------+
+|  star-ros2  (ROS2 Humble)                                        |
+|                                                                  |
+|  star_gateway_bridge_node                                        |
+|    ForwardTelemetry() -- unary, sends telemetry to Gateway        |
+|    GetTeleopCommand() -- polls command cache                      |
+|    QoS: BEST_EFFORT keep_last:1  (telemetry subs)                |
+|         RELIABLE    keep_last:10 (command pubs)                  |
+|                                                                  |
+|  star_spi_bridge_node  -- UNTOUCHED BY THIS WORK                  |
++------------------------------------------------------------------+
+         |  SPI 10 MHz, nanopb Protobuf  (UNTOUCHED)
++------------------------------------------------------------------+
+|  RX72N Firmware  (motor controller)  -- UNTOUCHED                 |
++------------------------------------------------------------------+
 
 ```
-## 6.2 Data Flow — Control Command (UI → Robot)
+## 6.2 Data Flow -- Control Command (UI -> Robot)
 
 ```text
 1. User moves gamepad stick
 2. useSTARConnection encodes ControllerState into STAREnvelope (seq=0)
 3. ws.send(binaryFrame)
-4. readPump receives frame, proto.Unmarshal → STAREnvelope
+4. readPump receives frame, proto.Unmarshal -> STAREnvelope
 5. Routes to hub.inbound channel
 6. GatewayService polls hub.inbound, writes to command cache
 7. star_gateway_bridge calls GetTeleopCommand() at 50Hz
@@ -233,7 +233,7 @@ RX72N Firmware (motor controller)
 10. RX72N executes motor command
 ```
 
-## 6.3 Data Flow — Telemetry (Robot → UI)
+## 6.3 Data Flow -- Telemetry (Robot -> UI)
 
 ```text
 1. RX72N sends telemetry over SPI at 10Hz
@@ -255,7 +255,7 @@ RX72N Firmware (motor controller)
 17. Component re-renders (e.g. BatteryPanel if battery arrived)
 ```
 
-## 6.4 Data Flow — E-Stop (UI → Robot, Priority Path)
+## 6.4 Data Flow -- E-Stop (UI -> Robot, Priority Path)
 
 ```text
 WebSocket path (primary):
@@ -263,9 +263,9 @@ WebSocket path (primary):
 2. GatewayService.ts encodes EStopCommand in STAREnvelope, ws.send()
 3. readPump decodes, detects EStopCommand oneofKind
 4. readPump calls motorService.EmergencyStop(reason) SYNCHRONOUSLY
-   (context.Background() — never cancelled)
+   (context.Background() -- never cancelled)
 5. readPump blocks until EmergencyStop returns
-   (joystick commands do not process during this window — desired)
+   (joystick commands do not process during this window -- desired)
 6. readPump forwards envelope to hub.inbound for packet analyzer visibility
 
 REST fallback (if WS disconnected):
@@ -278,12 +278,12 @@ REST fallback (if WS disconnected):
 
 ## 7. Protocol Specification
 
-## 7.1 `STAREnvelope` — Complete Proto Definition
+## 7.1 `STAREnvelope` -- Complete Proto Definition
 
 ```protobuf
 // star/v1/ui.proto
 // UI transport layer ONLY. Never serialized over SPI.
-// Applies to: star-gateway ↔ star-ui WebSocket boundary.
+// Applies to: star-gateway <-> star-ui WebSocket boundary.
 syntax = "proto3";
 package star.v1;
 
@@ -294,19 +294,19 @@ import "star/v1/battery.proto";
 // STAREnvelope is the single multiplexed message for the /ws WebSocket.
 //
 // Field numbering rationale:
-//   Fields 1–15 encode with a 1-byte wire tag (varint field number + type).
-//   oneof payload uses 1–9 (most frequent, smallest encoding).
+//   Fields 1-15 encode with a 1-byte wire tag (varint field number + type).
+//   oneof payload uses 1-9 (most frequent, smallest encoding).
 //   seq (14) and ts_ms (15) use the last two 1-byte slots.
 //
 // Sequence number contract:
-//   Gateway → UI: Hub atomically increments seq for every outbound envelope.
-//   UI → Gateway: Always seq=0. Gap detection ignores UI-originated envelopes.
+//   Gateway -> UI: Hub atomically increments seq for every outbound envelope.
+//   UI -> Gateway: Always seq=0. Gap detection ignores UI-originated envelopes.
 message STAREnvelope {
   uint64 seq   = 14;   // Gateway-assigned monotonic counter
   int64  ts_ms = 15;   // Gateway wall-clock timestamp at send (ms)
 
   oneof payload {
-    // Gateway → UI  (high-frequency, 1-byte field tags)
+    // Gateway -> UI  (high-frequency, 1-byte field tags)
     TelemetryData   telemetry  = 1;
     MotorStatusList motor      = 2;
     BatteryState    battery    = 3;
@@ -315,13 +315,13 @@ message STAREnvelope {
     Alert           alert      = 6;
     SystemStatus    system     = 7;
 
-    // UI → Gateway
+    // UI -> Gateway
     ControllerState controller = 8;
     EStopCommand    estop      = 9;
   }
 }
 
-// ── New messages ──────────────────────────────────────────────────
+// -- New messages --------------------------------------------------
 
 // MotorStatusList wraps the repeated MotorStatus for oneof compatibility.
 // Index contract: 0=FL, 1=FR, 2=BL, 3=BR. Always 4 entries.
@@ -344,7 +344,7 @@ message OdometryData {
 message LidarScan {
   repeated float angles_rad  = 1 [packed=true];
   repeated float distances_m = 2 [packed=true];
-  repeated float qualities   = 3 [packed=true];  // 0–255 signal quality
+  repeated float qualities   = 3 [packed=true];  // 0-255 signal quality
 }
 
 // Alert carries a timestamped event from any subsystem.
@@ -377,8 +377,8 @@ Every WebSocket frame is a single serialized `STAREnvelope`. There is no length-
 
 |Direction|seq value|Purpose|
 |---|---|---|
-|Gateway → UI|Atomic increment, starts at 1|Gap detection in UI|
-|UI → Gateway|Always `0`|Gap detection ignores these|
+|Gateway -> UI|Atomic increment, starts at 1|Gap detection in UI|
+|UI -> Gateway|Always `0`|Gap detection ignores these|
 
 Gap detection logic in the UI:
 
@@ -393,11 +393,11 @@ if (env.seq > 0 && env.seq > lastSeq + 1) {
     store.addAlert({
         level: AlertLevel.WARN,
         source: 'ws',
-        message: `Sequence gap: ${lastSeq} → ${env.seq}`,
+        message: `Sequence gap: ${lastSeq} -> ${env.seq}`,
         tsMs: BigInt(Date.now()),
     });
 }
-// Always update lastSeq — even on gap, to prevent infinite re-alerting
+// Always update lastSeq -- even on gap, to prevent infinite re-alerting
 store.updateFromEnvelope(env);  // updates lastSeq inside
 recordPacket(env, 'rx', byteLength);
 ```
@@ -406,14 +406,14 @@ recordPacket(env, 'rx', byteLength);
 
 |Message Type|Max Rate|Throttle Type|
 |---|---|---|
-|`telemetry`|≤10 Hz|per-type timestamp struct|
-|`motor`|≤10 Hz|per-type timestamp struct|
-|`battery`|≤10 Hz|per-type timestamp struct|
-|`odometry`|≤10 Hz|per-type timestamp struct|
-|`system`|≤10 Hz|per-type timestamp struct|
-|`lidar`|≤2.5 Hz|per-type timestamp struct|
-|`alert`|Unlimited|**No throttle — always immediate**|
-|`estop`|Unlimited|**No throttle — always immediate**|
+|`telemetry`|<=10 Hz|per-type timestamp struct|
+|`motor`|<=10 Hz|per-type timestamp struct|
+|`battery`|<=10 Hz|per-type timestamp struct|
+|`odometry`|<=10 Hz|per-type timestamp struct|
+|`system`|<=10 Hz|per-type timestamp struct|
+|`lidar`|<=2.5 Hz|per-type timestamp struct|
+|`alert`|Unlimited|**No throttle -- always immediate**|
+|`estop`|Unlimited|**No throttle -- always immediate**|
 |`controller` (inbound)|50 Hz|No Hub throttle; Gateway cache overwrites|
 
 ---
@@ -424,9 +424,9 @@ recordPacket(env, 'rx', byteLength);
 
 ```
 star-gateway/internal/ws/
-  hub.go        — Hub struct, run loop, per-type throttle, stampAndFanOut
-  client.go     — Client struct, readPump, writePump
-  handler.go    — http.Handler that upgrades HTTP → WS, creates Client
+  hub.go        -- Hub struct, run loop, per-type throttle, stampAndFanOut
+  client.go     -- Client struct, readPump, writePump
+  handler.go    -- http.Handler that upgrades HTTP -> WS, creates Client
 ```
 
 ## 8.2 Interfaces
@@ -472,7 +472,7 @@ type Hub struct {
     register   chan *Client
     unregister chan *Client
     broadcast  chan *starv1.STAREnvelope  // buffered 32, from GatewayService
-    inbound    chan *starv1.STAREnvelope  // buffered 32, UI→GW messages
+    inbound    chan *starv1.STAREnvelope  // buffered 32, UI->GW messages
 
     seq          uint64         // atomic; outbound envelopes only
     motorService MotorController
@@ -491,7 +491,7 @@ func NewHub(motorService MotorController, logger *slog.Logger) *Hub {
     }
 }
 
-// Broadcast is called by GatewayService. Non-blocking — drops if buffer full.
+// Broadcast is called by GatewayService. Non-blocking -- drops if buffer full.
 func (h *Hub) Broadcast(env *starv1.STAREnvelope) {
     select {
     case h.broadcast <- env:
@@ -502,8 +502,8 @@ func (h *Hub) Broadcast(env *starv1.STAREnvelope) {
 
 func (h *Hub) Run() {
     const (
-        telemetryInterval = 100 * time.Millisecond  // ≤10 Hz
-        lidarInterval     = 400 * time.Millisecond  // ≤2.5 Hz
+        telemetryInterval = 100 * time.Millisecond  // <=10 Hz
+        lidarInterval     = 400 * time.Millisecond  // <=2.5 Hz
     )
     var t typeThrottleState
 
@@ -533,11 +533,11 @@ func (h *Hub) route(
 ) {
     switch env.Payload.(type) {
 
-    // ── Alerts and E-stop: ALWAYS immediate, no throttle ──
+    // -- Alerts and E-stop: ALWAYS immediate, no throttle --
     case *starv1.STAREnvelope_Alert, *starv1.STAREnvelope_Estop:
         h.stampAndFanOut(env, now)
 
-    // ── LiDAR: independent throttle (large packed payload) ──
+    // -- LiDAR: independent throttle (large packed payload) --
     case *starv1.STAREnvelope_Lidar:
         if now.Sub(t.lidar) < lidarInterval {
             return
@@ -545,7 +545,7 @@ func (h *Hub) route(
         t.lidar = now
         h.stampAndFanOut(env, now)
 
-    // ── Per-type throttle for remaining sensor data ──
+    // -- Per-type throttle for remaining sensor data --
     case *starv1.STAREnvelope_Telemetry:
         if now.Sub(t.telemetry) < telemetryInterval { return }
         t.telemetry = now
@@ -587,7 +587,7 @@ func (h *Hub) stampAndFanOut(env *starv1.STAREnvelope, now time.Time) {
         select {
         case client.send <- data:
         default:
-            // Client send buffer full — drop this frame for this client.
+            // Client send buffer full -- drop this frame for this client.
             // Never disconnect, never block. Client catches up when foregrounded.
         }
     }
@@ -600,7 +600,7 @@ func (h *Hub) stampAndFanOut(env *starv1.STAREnvelope, now time.Time) {
 type Client struct {
     hub          *Hub
     conn         *websocket.Conn
-    send         chan []byte  // buffered 32 — outbound frames
+    send         chan []byte  // buffered 32 -- outbound frames
     motorService MotorController
     logger       *slog.Logger
 }
@@ -612,7 +612,7 @@ func (c *Client) writePump() {
         writeWait  = 10 * time.Second
         pongWait   = 60 * time.Second
     )
-    pingPeriod := (pongWait * 9) / 10  // 54s — derived, not hardcoded
+    pingPeriod := (pongWait * 9) / 10  // 54s -- derived, not hardcoded
 
     ticker := time.NewTicker(pingPeriod)
     defer func() {
@@ -626,7 +626,7 @@ func (c *Client) writePump() {
             // SetWriteDeadline before EVERY WriteMessage.
             c.conn.SetWriteDeadline(time.Now().Add(writeWait))
             if !ok {
-                // Hub closed the channel — send WS close frame and exit.
+                // Hub closed the channel -- send WS close frame and exit.
                 c.conn.WriteMessage(websocket.CloseMessage, []byte{})
                 return
             }
@@ -646,7 +646,7 @@ func (c *Client) writePump() {
 }
 
 // readPump owns all reads from conn. Runs until error or close.
-// E-stop is handled SYNCHRONOUSLY here — this is intentional.
+// E-stop is handled SYNCHRONOUSLY here -- this is intentional.
 // Joystick commands should not process while stop is propagating.
 func (c *Client) readPump() {
     const (
@@ -682,7 +682,7 @@ func (c *Client) readPump() {
 
         env := &starv1.STAREnvelope{}
         if err := proto.Unmarshal(data, env); err != nil {
-            // Malformed frame — log and continue. Do not kill the connection.
+            // Malformed frame -- log and continue. Do not kill the connection.
             c.logger.Warn("bad envelope from client",
                 slog.String("err", err.Error()),
                 slog.Int("bytes", len(data)),
@@ -690,7 +690,7 @@ func (c *Client) readPump() {
             continue
         }
 
-        // ── E-stop priority path ──
+        // -- E-stop priority path --
         if estop, ok := env.Payload.(*starv1.STAREnvelope_Estop); ok {
             // Use a short-lived context so a slow motor controller cannot
             // block readPump indefinitely. context.Background() is the root
@@ -715,7 +715,7 @@ func (c *Client) readPump() {
         select {
         case c.hub.inbound <- env:
         default:
-            // Hub inbound full — drop. Never block readPump.
+            // Hub inbound full -- drop. Never block readPump.
         }
     }
 }
@@ -780,9 +780,9 @@ func (s *GatewayService) SetHub(h HubNotifier) {
     s.hub = h
 }
 
-// ForwardTelemetry — signature unchanged.
+// ForwardTelemetry -- signature unchanged.
 // Now additionally broadcasts each present data type as a separate envelope
-// so the Hub throttles them independently (lidar ≠ telemetry rate).
+// so the Hub throttles them independently (lidar != telemetry rate).
 func (s *GatewayService) ForwardTelemetry(
     ctx context.Context,
     req *gatewayv1.ForwardTelemetryRequest,
@@ -849,7 +849,7 @@ mux.HandleFunc("POST /api/estop", func(w http.ResponseWriter, r *http.Request) {
     if reason == "" {
         reason = "user_http_fallback"
     }
-    // context.Background() — same rationale as readPump; must not be cancelled
+    // context.Background() -- same rationale as readPump; must not be cancelled
     estopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
     defer cancel()
     if err := motorService.EmergencyStop(estopCtx, reason); err != nil {
@@ -870,12 +870,12 @@ gatewayService.SetHub(hub)
 
 **File:** `star_gateway_bridge_node.cpp`
 ```cpp
-// Telemetry subscriptions — latest value only; drop if consumer is slow
+// Telemetry subscriptions -- latest value only; drop if consumer is slow
 auto qos_telemetry = rclcpp::QoS(rclcpp::KeepLast(1))
     .best_effort()
     .durability_volatile();
 
-// Command publishers — reliable delivery; commands must not be lost
+// Command publishers -- reliable delivery; commands must not be lost
 auto qos_commands = rclcpp::QoS(rclcpp::KeepLast(10))
     .reliable()
     .durability_volatile();
@@ -911,7 +911,7 @@ interface DashboardState {
     seqGapDetected:  boolean;
     dataIsStale:     boolean;
 
-    // Robot data — individual slices
+    // Robot data -- individual slices
     telemetry:    TelemetryData   | null;
     motors:       MotorStatus[]   | null;   // length 4: FL, FR, BL, BR
     battery:      BatteryState    | null;
@@ -920,7 +920,7 @@ interface DashboardState {
     systemStatus: SystemStatus    | null;
     eStopActive:  boolean;
 
-    // Alerts — capped array; oldest dropped at 200
+    // Alerts -- capped array; oldest dropped at 200
     alerts: Alert[];
 
     // Actions
@@ -947,7 +947,7 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
 
     setConnectionState: (s) => set({ connectionState: s }),
 
-    // One set() per case — ensures only the relevant selector fires.
+    // One set() per case -- ensures only the relevant selector fires.
     // Never merge multiple fields into one set() call across cases.
     updateFromEnvelope: (env) => {
         // Always advance lastSeq
@@ -976,14 +976,14 @@ export const useDashboardStore = create<DashboardState>()((set, get) => ({
 }));
 ```
 
-**Selector pattern — enforced:**
+**Selector pattern -- enforced:**
 
 ```ts
-// ✅ Correct — one value per selector, no object allocation
+// [PASS] Correct -- one value per selector, no object allocation
 const battery = useDashboardStore(s => s.battery);
 const motors  = useDashboardStore(s => s.motors);
 
-// ❌ Forbidden — new object on every render, re-renders all consumers
+// [FAIL] Forbidden -- new object on every render, re-renders all consumers
 const { battery, motors } = useDashboardStore(s => ({ battery: s.battery, motors: s.motors }));
 ```
 
@@ -1010,7 +1010,7 @@ export function useSTARConnection(url: string) {
         const ws = new WebSocket(url);
 
         // CRITICAL: Must be set before any messages arrive.
-        // Browser default is 'blob' — Uint8Array cannot be constructed from Blob.
+        // Browser default is 'blob' -- Uint8Array cannot be constructed from Blob.
         ws.binaryType = 'arraybuffer';
 
         ws.onopen = () => {
@@ -1035,7 +1035,7 @@ export function useSTARConnection(url: string) {
                 store.getState().addAlert({
                     level:   AlertLevel.WARN,
                     source:  'ws',
-                    message: `Sequence gap: ${lastSeq} → ${env.seq}`,
+                    message: `Sequence gap: ${lastSeq} -> ${env.seq}`,
                     tsMs:    BigInt(Date.now()),
                 });
             }
@@ -1066,7 +1066,7 @@ export function useSTARConnection(url: string) {
             const env = STAREnvelope.create({ payload: { oneofKind: 'estop', estop: { reason } } });
             send(env, 'estop');
         } else {
-            // REST fallback — WebSocket is not open
+            // REST fallback -- WebSocket is not open
             fetch(`/api/estop?reason=${encodeURIComponent(reason)}`, { method: 'POST' });
         }
     }
@@ -1090,18 +1090,18 @@ export function useSTARConnection(url: string) {
 ## 12.3 uPlot Ring Buffer Pattern
 ```ts
 // src/components/MotorPanel.tsx
-// Float64Arrays live OUTSIDE React state — no GC pressure per tick.
+// Float64Arrays live OUTSIDE React state -- no GC pressure per tick.
 
 const WINDOW_PTS = 300;  // 30 seconds @ 10 Hz
 
-// One scratch array per series — all must exist simultaneously for setData()
+// One scratch array per series -- all must exist simultaneously for setData()
 const timestamps  = new Float64Array(WINDOW_PTS);
 const flVelocity  = new Float64Array(WINDOW_PTS);
 const frVelocity  = new Float64Array(WINDOW_PTS);
 const blVelocity  = new Float64Array(WINDOW_PTS);
 const brVelocity  = new Float64Array(WINDOW_PTS);
 
-// Pre-allocated scratch arrays — one per series
+// Pre-allocated scratch arrays -- one per series
 const scratchTs   = new Float64Array(WINDOW_PTS);
 const scratchFL   = new Float64Array(WINDOW_PTS);
 const scratchFR   = new Float64Array(WINDOW_PTS);
@@ -1112,8 +1112,8 @@ let writeIdx = 0;
 
 // Unwrap a ring buffer into chronological order, no allocation.
 function rolledView(ring: Float64Array, wIdx: number, scratch: Float64Array): Float64Array {
-    const tail = ring.subarray(wIdx);         // older half (wIdx → end)
-    const head = ring.subarray(0, wIdx);      // newer half (0 → wIdx)
+    const tail = ring.subarray(wIdx);         // older half (wIdx -> end)
+    const head = ring.subarray(0, wIdx);      // newer half (0 -> wIdx)
     scratch.set(tail, 0);
     scratch.set(head, tail.length);
     return scratch;
@@ -1131,7 +1131,7 @@ function onMotorUpdate(motors: MotorStatus[] | null) {
     writeIdx = (writeIdx + 1) % WINDOW_PTS;
 
     if (chartRef.current) {
-        // Imperative update — no React re-render triggered
+        // Imperative update -- no React re-render triggered
         chartRef.current.setData([
             rolledView(timestamps, writeIdx, scratchTs),
             rolledView(flVelocity, writeIdx, scratchFL),
@@ -1214,7 +1214,7 @@ interface PacketRecord {
     preview:   string;
 }
 
-// Ring buffer in useRef — never in React state
+// Ring buffer in useRef -- never in React state
 const packetRingBuffer = useRef<PacketRecord[]>(new Array(100).fill(null));
 const packetWriteIdx   = useRef(0);
 const packetCount      = useRef(0);
@@ -1242,7 +1242,7 @@ function formatPreview(env: STAREnvelope): string {
     const p = env.payload;
     switch (p.oneofKind) {
         case 'telemetry':
-            return `cpu=${p.telemetry.cpuPercent?.toFixed(1)}% temp=${p.telemetry.tempC?.toFixed(1)}°C`;
+            return `cpu=${p.telemetry.cpuPercent?.toFixed(1)}% temp=${p.telemetry.tempC?.toFixed(1)}degC`;
         case 'motor':
             return p.motor.motors
                 .map((m, i) => `${['FL','FR','BL','BR'][i]}:${m.velocityMps?.toFixed(2)}`)
@@ -1250,7 +1250,7 @@ function formatPreview(env: STAREnvelope): string {
         case 'battery':
             return `V=${p.battery.voltageV?.toFixed(1)}v I=${p.battery.currentA?.toFixed(1)}A SOC=${p.battery.socPercent?.toFixed(0)}%`;
         case 'odometry':
-            return `x=${p.odometry.xM?.toFixed(2)} y=${p.odometry.yM?.toFixed(2)} θ=${p.odometry.thetaRad?.toFixed(2)}`;
+            return `x=${p.odometry.xM?.toFixed(2)} y=${p.odometry.yM?.toFixed(2)} theta=${p.odometry.thetaRad?.toFixed(2)}`;
         case 'lidar':
             return `${p.lidar.anglesRad.length} pts`;
         case 'alert':
@@ -1270,16 +1270,16 @@ function formatPreview(env: STAREnvelope): string {
 
 **Display:**
 ```text
-┌─ PACKET ANALYZER ──────────────────────────────────── [CLEAR] [▼] ─┐
-│ SEQ    TYPE         DIR  SIZE   AGE    DECODED PREVIEW              │
-│ 10042  telemetry    RX   48B    12ms   cpu=23.1% temp=41.0°C        │
-│ 10041  motor        RX   112B   112ms  FL:0.23 FR:0.23 BL:0.22 BR:0│
-│ 10040  battery      RX   64B    212ms  V=11.8v I=2.1A SOC=87%      │
-│ 10039  lidar        RX   1840B  412ms  360 pts                      │
-│ 0      controller   TX   24B    18ms   lin=0.50 ang=0.00 [TX]      │
-│ 0      estop        TX   16B    —      reason=user_ui_button [TX]  │
-│ —      DECODE_ERROR RX   7B     —                                   │
-└─────────────────────────────────────────────────────────────────────┘
++- PACKET ANALYZER ------------------------------------ [CLEAR] [v] -+
+| SEQ    TYPE         DIR  SIZE   AGE    DECODED PREVIEW              |
+| 10042  telemetry    RX   48B    12ms   cpu=23.1% temp=41.0degC        |
+| 10041  motor        RX   112B   112ms  FL:0.23 FR:0.23 BL:0.22 BR:0|
+| 10040  battery      RX   64B    212ms  V=11.8v I=2.1A SOC=87%      |
+| 10039  lidar        RX   1840B  412ms  360 pts                      |
+| 0      controller   TX   24B    18ms   lin=0.50 ang=0.00 [TX]      |
+| 0      estop        TX   16B    --      reason=user_ui_button [TX]  |
+| --      DECODE_ERROR RX   7B     --                                   |
++---------------------------------------------------------------------+
 ```
 ## 12.6 Component Inventory
 
@@ -1289,7 +1289,7 @@ function formatPreview(env: STAREnvelope): string {
 |`TeleopPanel`|`useSTARConnection.sendControllerState`|Gamepad event|
 |`MotorPanel`|Zustand `.subscribe(s => s.motors)`|uPlot `.setData()` imperatively|
 |`BatteryPanel`|`useDashboardStore(s => s.battery)`|Zustand selector|
-|`OdometryPanel`|`useDashboardStore(s => s.odometry)`|Zustand selector → Canvas draw|
+|`OdometryPanel`|`useDashboardStore(s => s.odometry)`|Zustand selector -> Canvas draw|
 |`LidarPanel`|Zustand `.subscribe(s => s.lidarScan)`|Canvas draw imperatively via `useRef`|
 |`AlertsPanel`|`useDashboardStore(s => s.alerts)`|Zustand selector|
 |`PacketAnalyzer`|`useRef` ring buffer|`setInterval` 200ms snapshot|
@@ -1328,10 +1328,10 @@ function formatPreview(env: STAREnvelope): string {
 |uPlot data lives outside React|`Float64Array` ring buffers in module scope; `setData()` called imperatively via `chartRef.current`|
 |LiDAR bypasses React render cycle|`LidarPanel` uses `useDashboardStore.subscribe()` + `useRef`; never `useDashboardStore()` hook|
 |`ws.binaryType = 'arraybuffer'`|Set immediately after `new WebSocket(url)`, before any messages arrive|
-|`sizeBytes` from `raw.byteLength`|Captured from `ArrayBuffer` before `fromBinary()` — no re-serialization|
-|LiDAR SoA validated before render|`angles_rad.length === distances_m.length === qualities.length` — discard on violation|
+|`sizeBytes` from `raw.byteLength`|Captured from `ArrayBuffer` before `fromBinary()` -- no re-serialization|
+|LiDAR SoA validated before render|`angles_rad.length === distances_m.length === qualities.length` -- discard on violation|
 |`lastSeq` updated on every envelope|Prevents infinite re-alerting after a gap|
-|Per-type throttle uses named struct|`typeThrottleState` — zero reflection, zero map allocation in hot path|
+|Per-type throttle uses named struct|`typeThrottleState` -- zero reflection, zero map allocation in hot path|
 |`STAREnvelope` is UI-layer only|Never passed to nanopb or SPI path|
 
 ---
@@ -1360,15 +1360,15 @@ Existing protoc + protobuf-ts toolchain handles the new `ui.proto` file.
 
 ## 16. Implementation Work Order
 
-## Step 1 — star-proto _(unblocks everything)_
+## Step 1 -- star-proto _(unblocks everything)_
 
 |Action|File|
 |---|---|
-|**ADD**|`star/v1/ui.proto` — `STAREnvelope`, `MotorStatusList`, `OdometryData`, `LidarScan`, `Alert`, `AlertLevel`, `EStopCommand`|
-|**RUN**|`/build proto` — regenerates Go + TypeScript targets|
+|**ADD**|`star/v1/ui.proto` -- `STAREnvelope`, `MotorStatusList`, `OdometryData`, `LidarScan`, `Alert`, `AlertLevel`, `EStopCommand`|
+|**RUN**|`/build proto` -- regenerates Go + TypeScript targets|
 |**VERIFY**|Generated TypeScript has `oneofKind` discriminated union for `STAREnvelope.payload`|
 
-## Step 2 — star-gateway _(Go)_
+## Step 2 -- star-gateway _(Go)_
 
 | Action     | File                                  | Key detail                                                                                    |
 | ---------- | ------------------------------------- | --------------------------------------------------------------------------------------------- |
@@ -1379,17 +1379,17 @@ Existing protoc + protobuf-ts toolchain handles the new `ui.proto` file.
 | **MODIFY** | `internal/service/gateway_service.go` | Add `hub HubNotifier` field, `SetHub()`, per-type `Broadcast()` calls in `ForwardTelemetry()` |
 | **MODIFY** | `internal/app/gateway.go`             | Remove `/ws/controller`, add `/ws`, add `POST /api/estop`, wire `hub.Run()` goroutine         |
 
-## Step 3 — star-ros2 _(minimal)_
+## Step 3 -- star-ros2 _(minimal)_
 
 |Action|File|Key detail|
 |---|---|---|
 |**MODIFY**|`star_gateway_bridge_node.cpp`|Update QoS: `BEST_EFFORT keep_last:1` for all telemetry subs; `RELIABLE keep_last:10` for command/estop pubs|
 
-## Step 4 — star-ui _(TypeScript)_
+## Step 4 -- star-ui _(TypeScript)_
 
 |Action|File|Key detail|
 |---|---|---|
-|**RUN**|`npm install zustand uplot uplot-react`|—|
+|**RUN**|`npm install zustand uplot uplot-react`|--|
 |**ADD**|`src/store/dashboardStore.ts`|Individual selectors, one `set()` per `oneofKind` case, `lastSeq` always updated|
 |**ADD**|`src/services/GatewayService.ts`|Envelope encode/decode, `recordPacket()`, `formatPreview()` per type|
 |**ADD**|`src/hooks/useSTARConnection.ts`|`ws.binaryType = 'arraybuffer'`, exponential backoff, gap detection, E-stop REST fallback|
@@ -1410,7 +1410,7 @@ Existing protoc + protobuf-ts toolchain handles the new `ui.proto` file.
 |Layer|What to Test|How|
 |---|---|---|
 |Go Hub|Throttle drops excess frames per type; alerts always pass through|Unit test: send 5 same-type frames in <100ms, assert only 1 broadcast|
-|Go Hub|Fan-out to multiple clients|Unit test: 3 clients, 1 broadcast → assert all 3 receive|
+|Go Hub|Fan-out to multiple clients|Unit test: 3 clients, 1 broadcast -> assert all 3 receive|
 |Go Hub|Slow client drops frames, is not disconnected|Unit test: fill `client.send` buffer, send one more, assert client still registered|
 |Go readPump|E-stop calls `motorService.EmergencyStop` synchronously|Unit test with mock `MotorController`|
 |Go readPump|Malformed proto logs warning and continues|Unit test: send garbage bytes, assert connection stays open|

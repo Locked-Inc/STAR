@@ -42,7 +42,7 @@ type Hub struct {
 	register   chan *Client
 	unregister chan *Client
 	broadcast  chan *starv1.STAREnvelope // buffered defaultChannelBuffer, from GatewayService
-	inbound    chan *starv1.STAREnvelope // buffered defaultChannelBuffer, UI→GW messages
+	inbound    chan *starv1.STAREnvelope // buffered defaultChannelBuffer, UI->GW messages
 
 	inboundDispatcher InboundDispatcher // optional; nil means drop inbound envelopes
 
@@ -189,7 +189,7 @@ func (h *Hub) Run(ctx context.Context) {
 					)
 				}
 			} else {
-				// No dispatcher wired — drain the channel to prevent client backpressure.
+				// No dispatcher wired -- drain the channel to prevent client backpressure.
 				h.logger.Warn("hub: inbound envelope dropped (no dispatcher wired)",
 					slog.Uint64("seq", env.Seq),
 					slog.String("type", fmt.Sprintf("%T", env.Payload)),
@@ -219,18 +219,18 @@ func (h *Hub) route(
 	telemetryRate, lidarRate time.Duration,
 ) {
 	switch env.Payload.(type) {
-	// ── Alerts and E-stop: ALWAYS immediate, no throttle ──
+	// -- Alerts and E-stop: ALWAYS immediate, no throttle --
 	case *starv1.STAREnvelope_Alert, *starv1.STAREnvelope_Estop:
 		h.stampAndFanOut(env, now)
 
-	// ── LiDAR: independent throttle (large packed payload) ──
+	// -- LiDAR: independent throttle (large packed payload) --
 	case *starv1.STAREnvelope_Lidar:
 		if shouldThrottle(&t.lidar, now, lidarRate) {
 			return
 		}
 		h.stampAndFanOut(env, now)
 
-	// ── Per-type throttle for remaining sensor data ──
+	// -- Per-type throttle for remaining sensor data --
 	case *starv1.STAREnvelope_Telemetry:
 		if shouldThrottle(&t.telemetry, now, telemetryRate) {
 			return
@@ -262,7 +262,7 @@ func (h *Hub) route(
 		h.stampAndFanOut(env, now)
 
 	default:
-		// Unknown payload variant — log and discard. This can occur when a new
+		// Unknown payload variant -- log and discard. This can occur when a new
 		// proto field is added and the gateway is not yet updated to handle it.
 		h.logger.Warn("hub: dropping envelope with unrecognised payload type",
 			slog.String("type", fmt.Sprintf("%T", env.Payload)),
@@ -287,7 +287,7 @@ func (h *Hub) stampAndFanOut(env *starv1.STAREnvelope, now time.Time) {
 		select {
 		case client.send <- data:
 		default:
-			// Client send buffer full — drop this frame for this client.
+			// Client send buffer full -- drop this frame for this client.
 			// Never disconnect, never block. Client catches up when foregrounded.
 			h.logger.Debug("dropping frame for client (send buffer full)", slog.Uint64("seq", env.Seq))
 		}

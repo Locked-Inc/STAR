@@ -427,7 +427,7 @@ func doRequest(t *testing.T, method, url string) *http.Response {
 	return resp
 }
 
-// ── motorControllerAdapter ────────────────────────────────────────────────────
+// -- motorControllerAdapter ----------------------------------------------------
 
 // TestMotorControllerAdapter_ForwardsReason verifies that the adapter serialises
 // the plain reason string into the EmergencyStopCommand.Reason field of the
@@ -480,7 +480,7 @@ func TestMotorControllerAdapter_PropagatesError(t *testing.T) {
 	}
 }
 
-// ── /api/estop endpoint ───────────────────────────────────────────────────────
+// -- /api/estop endpoint -------------------------------------------------------
 
 // TestEstopEndpoint_MethodEnforcement verifies that only POST is accepted on
 // /api/estop; every other HTTP verb receives 405 Method Not Allowed.
@@ -581,7 +581,7 @@ func TestEstopEndpoint_Returns500OnHARQError(t *testing.T) {
 	}
 }
 
-// ── Regression tests ──────────────────────────────────────────────────────────
+// -- Regression tests ----------------------------------------------------------
 
 // TestOldWSControllerRoute_Returns404 is a regression guard ensuring the legacy
 // /ws/controller endpoint is no longer served after being replaced by /ws.

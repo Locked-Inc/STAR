@@ -16,15 +16,15 @@ import (
 )
 
 // Client represents a single connected WebSocket client managed by the Hub.
-// Each Client owns two goroutines — readPump (reads frames from the connection)
-// and writePump (serialises frames onto the connection) — and communicates with
+// Each Client owns two goroutines -- readPump (reads frames from the connection)
+// and writePump (serialises frames onto the connection) -- and communicates with
 // the Hub via the send channel and the hub.register / hub.unregister channels.
 // motorService is called synchronously in readPump for e-stop frames.
 // logger is used for structured diagnostic output; it is never nil.
 type Client struct {
 	hub          *Hub
 	conn         *websocket.Conn
-	send         chan []byte // buffered defaultChannelBuffer — outbound frames
+	send         chan []byte // buffered defaultChannelBuffer -- outbound frames
 	motorService MotorController
 	logger       *slog.Logger
 	closeOnce    sync.Once // ensures conn.Close is called exactly once
@@ -107,7 +107,7 @@ func (c *Client) writePump() {
 				return
 			}
 			if !ok {
-				// Hub closed the channel — send WS close frame and exit.
+				// Hub closed the channel -- send WS close frame and exit.
 				if err := c.conn.WriteMessage(websocket.CloseMessage, []byte{}); err != nil {
 					c.logger.Error("failed to write close message", slog.Any("error", err))
 				}
@@ -136,7 +136,7 @@ func (c *Client) writePump() {
 }
 
 // readPump owns all reads from conn. Runs until error or close.
-// E-stop is handled SYNCHRONOUSLY here — this is intentional.
+// E-stop is handled SYNCHRONOUSLY here -- this is intentional.
 // Joystick commands should not process while stop is propagating.
 func (c *Client) readPump() {
 	defer func() {
@@ -175,7 +175,7 @@ func (c *Client) readPump() {
 
 		env := &starv1.STAREnvelope{}
 		if err := proto.Unmarshal(data, env); err != nil {
-			// Malformed frame — log and continue. Do not kill the connection.
+			// Malformed frame -- log and continue. Do not kill the connection.
 			c.logger.Warn("bad envelope from client",
 				slog.Any("error", err),
 				slog.Int("bytes", len(data)),
@@ -183,7 +183,7 @@ func (c *Client) readPump() {
 			continue
 		}
 
-		// ── E-stop priority path ──
+		// -- E-stop priority path --
 		if estop, ok := env.Payload.(*starv1.STAREnvelope_Estop); ok {
 			// Use a short-lived context so a slow motor controller cannot
 			// block readPump indefinitely. context.Background() is the root
@@ -212,7 +212,7 @@ func (c *Client) readPump() {
 		select {
 		case c.hub.inbound <- env:
 		default:
-			// Hub inbound full — drop. Never block readPump.
+			// Hub inbound full -- drop. Never block readPump.
 			c.logger.Debug("hub inbound channel full, dropping inbound envelope",
 				slog.Uint64("seq", env.Seq),
 			)

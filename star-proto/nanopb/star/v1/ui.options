@@ -4,10 +4,11 @@
 # MotorStatusList: 4-motor robot.
 star.v1.MotorStatusList.motors      max_count:4
 
-# LidarScan: RPLiDAR C1 max samples per revolution (RPLIDAR_C1_MAX_SAMPLES = 800 points @ 10 Hz mode).
-star.v1.LidarScan.angle_rad         max_count:800
-star.v1.LidarScan.range_m           max_count:800
-star.v1.LidarScan.intensity_raw     max_count:800
+# LidarScan: RPLiDAR C1 produces ~500 samples per full revolution at 10 Hz scan mode.
+# SYNC: gateway_service.options:LidarScan -- KEEP IN LOCKSTEP
+star.v1.LidarScan.angle_rad         max_count:500
+star.v1.LidarScan.range_m           max_count:500
+star.v1.LidarScan.intensity         max_count:500
 
 # Alert string fields.
 # star.v1.Alert.code    allows 16 characters + 1 null terminator (max_size:17).

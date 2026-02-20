@@ -652,7 +652,7 @@ func startHTTPServerWithAddr(
 	}
 
 	// internalCtx is a child of the caller-supplied ctx. Cancelling it shuts
-	// down the HTTP server (and hub) even when the outer ctx is still live —
+	// down the HTTP server (and hub) even when the outer ctx is still live --
 	// e.g. when the hub crashes and we must not serve /ws with a broken hub.
 	// internalCtx is automatically cancelled when ctx is cancelled (parent
 	// propagation), so no explicit defer is needed for the normal-flow cleanup.
@@ -661,7 +661,7 @@ func startHTTPServerWithAddr(
 
 	mux := http.NewServeMux()
 
-	// ── WebSocket hub setup ───────────────────────────────────────────────
+	// -- WebSocket hub setup -----------------------------------------------
 	adapter := &motorControllerAdapter{svc: services.motorControl}
 	hub := ws.NewHub(logger)
 
@@ -683,9 +683,9 @@ func startHTTPServerWithAddr(
 	// Monitor hub; owns internalCancel so the HTTP server shuts down
 	// if the hub dies, but NOT before the setup function returns.
 	go func() {
-		defer internalCancel() // ← lives here now
+		defer internalCancel() // <- lives here now
 		if err, ok := <-hubErrChan; ok && err != nil {
-			logger.Error("ws hub exited with error — initiating HTTP server shutdown",
+			logger.Error("ws hub exited with error -- initiating HTTP server shutdown",
 				slog.Any("error", err))
 		} else {
 			logger.Info("ws hub.Run exited cleanly")

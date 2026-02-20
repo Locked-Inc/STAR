@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck shell=bash
-# check_nanopb_sync.sh — Verify LidarScan nanopb max_count bounds are identical
+# check_nanopb_sync.sh -- Verify LidarScan nanopb max_count bounds are identical
 # between ui.options and gateway_service.options.
 #
 # Fails with a non-zero exit code and a clear SYNC ERROR message if any of the
@@ -41,9 +41,6 @@ fi
 get_max_count() {
     local file="$1"
     local field="$2"
-get_max_count() {
-    local file="$1"
-    local field="$2"
     local matches
     matches=$(awk -v field="${field}" '$1 == field' "${file}")
     local match_count
@@ -56,7 +53,6 @@ get_max_count() {
         | grep -oE 'max_count:[0-9]+' \
         | grep -oE '[0-9]+' \
         || true
-}
 }
 
 FIELDS=(
@@ -71,12 +67,12 @@ for field in "${FIELDS[@]}"; do
     gw_val=$(get_max_count "${GW_OPTIONS}" "${field}")
 
     if [[ -z "${ui_val}" ]]; then
-        echo "SYNC ERROR: ${field} — entry missing from ui.options" >&2
+        echo "SYNC ERROR: ${field} -- entry missing from ui.options" >&2
         fail=1
         continue
     fi
     if [[ -z "${gw_val}" ]]; then
-        echo "SYNC ERROR: ${field} — entry missing from gateway_service.options" >&2
+        echo "SYNC ERROR: ${field} -- entry missing from gateway_service.options" >&2
         fail=1
         continue
     fi

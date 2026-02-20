@@ -32,12 +32,12 @@ func makeCheckOrigin(allowInsecure bool) func(r *http.Request) bool {
 	return func(r *http.Request) bool {
 		origin := r.Header.Get("Origin")
 		if origin == "" {
-			// No Origin header — non-browser client (e.g., CLI, firmware). Allow.
+			// No Origin header -- non-browser client (e.g., CLI, firmware). Allow.
 			return true
 		}
 		parsed, err := url.Parse(origin)
 		if err != nil {
-			// Malformed Origin — reject.
+			// Malformed Origin -- reject.
 			return false
 		}
 		// Compare the parsed origin host (host[:port]) to the request Host.
@@ -49,9 +49,9 @@ func makeCheckOrigin(allowInsecure bool) func(r *http.Request) bool {
 // connection and wires it into hub.
 //
 // allowInsecureWebsocket controls origin checking for incoming upgrade requests:
-// when true, all origins are permitted — useful for local-network or development
+// when true, all origins are permitted -- useful for local-network or development
 // deployments where requests arrive from a different port or host. When false, a
-// same-origin policy is enforced — the Origin header must match the request Host.
+// same-origin policy is enforced -- the Origin header must match the request Host.
 // Pass false for production deployments; pass true only for local/dev environments.
 //
 // Panics at construction time if hub or motorService is nil:

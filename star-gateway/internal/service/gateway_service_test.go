@@ -632,7 +632,7 @@ func TestForwardTelemetry_NilHub(t *testing.T) {
 }
 
 // TestForwardTelemetry_HubBroadcastError verifies that hub channel saturation
-// (Broadcast returning an error) does not fail the RPC — the gateway drops the
+// (Broadcast returning an error) does not fail the RPC -- the gateway drops the
 // message and logs, but still returns a successful ForwardTelemetryResponse.
 func TestForwardTelemetry_HubBroadcastError(t *testing.T) {
 	svc := NewGatewayService()

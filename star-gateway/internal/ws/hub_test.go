@@ -58,7 +58,7 @@ func newTestHub(t *testing.T) *Hub {
 	return NewHub(slog.New(slog.NewTextHandler(io.Discard, nil)))
 }
 
-// ── shouldThrottle ─────────────────────────────────────────────────────────
+// -- shouldThrottle ---------------------------------------------------------
 
 func TestShouldThrottle_TableDriven(t *testing.T) {
 	now := time.Now()
@@ -72,7 +72,7 @@ func TestShouldThrottle_TableDriven(t *testing.T) {
 	}{
 		{
 			name:            "FirstCall_NotThrottled",
-			initialLastSent: time.Time{}, // zero value — never sent before
+			initialLastSent: time.Time{}, // zero value -- never sent before
 			now:             now,
 			interval:        testInterval,
 			wantThrottled:   false,
@@ -118,7 +118,7 @@ func TestShouldThrottle_TableDriven(t *testing.T) {
 	}
 }
 
-// ── Broadcast ─────────────────────────────────────────────────────────────
+// -- Broadcast -------------------------------------------------------------
 
 func TestBroadcast_EnqueuesMessage(t *testing.T) {
 	h := newTestHub(t)
@@ -155,7 +155,7 @@ func TestBroadcast_DropWhenFull(t *testing.T) {
 	}
 }
 
-// ── route ─────────────────────────────────────────────────────────────────
+// -- route -----------------------------------------------------------------
 
 // routeResult captures the stampAndFanOut calls made to the hub during a
 // route call by tracking the number of sends to its (empty) clients map.
@@ -181,7 +181,7 @@ func TestRoute_TelemetryThrottled(t *testing.T) {
 	h := newTestHub(t)
 	t0 := time.Now()
 	ts := typeThrottleState{
-		telemetry: t0, // just updated — within interval
+		telemetry: t0, // just updated -- within interval
 	}
 
 	before := h.seq.Load()
@@ -267,7 +267,7 @@ func TestRoute_UnknownPayload_DoesNotIncrement(t *testing.T) {
 	}
 }
 
-// ── Hub lifecycle ──────────────────────────────────────────────────────────
+// -- Hub lifecycle ----------------------------------------------------------
 
 func TestHub_RegisterUnregister(t *testing.T) {
 	h := newTestHub(t)
@@ -294,7 +294,7 @@ func TestHub_RegisterUnregister(t *testing.T) {
 		t.Fatal("client was not registered within deadline")
 	}
 
-	// Unregister the client — Run should close its send channel.
+	// Unregister the client -- Run should close its send channel.
 	h.unregister <- client
 
 	// After unregister the send channel must be closed.
@@ -336,7 +336,7 @@ func TestHub_GracefulShutdown(t *testing.T) {
 		t.Fatal("client was not registered before cancelling context")
 	}
 
-	// Cancel context — Run should close all client send channels and return.
+	// Cancel context -- Run should close all client send channels and return.
 	cancel()
 
 	select {
@@ -358,7 +358,7 @@ func TestHub_GracefulShutdown(t *testing.T) {
 	}
 }
 
-// ── Unit tests ─────────────────────────────────────────────────────────────
+// -- Unit tests -------------------------------------------------------------
 
 // TestStampAndFanOut_DropsWhenClientFull verifies that stampAndFanOut is
 // non-blocking: when a client's send channel is at capacity the message must
@@ -401,7 +401,7 @@ func TestStampAndFanOut_DropsWhenClientFull(t *testing.T) {
 	}
 }
 
-// ── Benchmarks ─────────────────────────────────────────────────────────────
+// -- Benchmarks -------------------------------------------------------------
 
 // BenchmarkStampAndFanOut measures fan-out time with varying numbers of mock clients.
 func BenchmarkStampAndFanOut_1Client(b *testing.B)    { benchStampAndFanOut(b, 1) }

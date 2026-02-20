@@ -23,11 +23,11 @@ type HubNotifier interface {
 	Broadcast(ctx context.Context, env *starv1.STAREnvelope) error
 }
 
-// GatewayService implements the gRPC GatewayService for ROS2 ↔ UI bridging.
+// GatewayService implements the gRPC GatewayService for ROS2 <-> UI bridging.
 //
 // Architecture:
 //
-//	ROS2 (C++) ↔ gRPC ↔ GatewayService (Go) ↔ WebSocket ↔ UI (TypeScript)
+//	ROS2 (C++) <-> gRPC <-> GatewayService (Go) <-> WebSocket <-> UI (TypeScript)
 //
 // Data flows:
 //  1. Telemetry (ROS2 -> UI):
