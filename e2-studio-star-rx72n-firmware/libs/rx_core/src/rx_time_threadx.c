@@ -158,8 +158,10 @@ typedef enum : uint32_t {
  * @par Tick Conversion Formula:
  * @f[
  *   \text{ticks} = \left\lceil \frac{\text{ms}}{10} \right\rceil
- *                = \frac{\text{ms} + 9}{10}
+ *                = \left\lfloor \frac{\text{ms}}{10} \right\rfloor
+ *                + \begin{cases} 1 & \text{ms} \bmod 10 > 0 \\ 0 & \text{otherwise} \end{cases}
  * @f]
+ * @note Implemented via overflow-safe quotient/remainder to avoid wrap at high ms values.
  *
  * @param[in] ctx Unused context pointer (ThreadX uses global state)
  *                Must be NULL for this implementation
@@ -343,8 +345,8 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
 {
   (void)ctx; /* ThreadX uses global state - no context needed */
 
-  uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
-  uint32_t elapsed = now - start_ms;
+  const uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
+  const uint32_t elapsed = now - start_ms;
 
   return elapsed >= timeout_ms;
 }

@@ -841,7 +841,7 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
   s_bms_config = *config;
 
   /* Create the thread */
-  UINT tx_status = tx_thread_create(&s_bms_thread,
+  const UINT tx_status = tx_thread_create(&s_bms_thread,
                                "BMSTask",
                                internal_bms_task_entry,
                                k_bms_task_input,

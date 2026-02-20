@@ -163,7 +163,8 @@ typedef enum : uint32_t {
  * @brief Shared data module constants
  */
 typedef enum : uint32_t {
-  k_shared_comm_timeout_ms = 500, /**< Communication timeout (ms) */
+  k_shared_comm_timeout_ms      = 500, /**< Communication timeout (ms) */
+  k_shared_low_battery_soc_pct  = 15,  /**< Low battery SoC threshold (%) */
 } shared_data_constants_t;
 
 /**

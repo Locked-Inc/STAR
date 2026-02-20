@@ -311,15 +311,42 @@ typedef enum : uint8_t {
 /**
  * @brief Initialize clock system to 240 MHz
  *
- * Clock tree:
- * - Main oscillator: 24 MHz (external crystal)
- * - PLL: 24 MHz x 10 / 1 = 240 MHz
- * - ICLK (CPU): 240 MHz
- * - PCLKA: 120 MHz
- * - PCLKB/C/D: 60 MHz
- * - FCLK (Flash): 60 MHz
+ * @details
+ * Configures the full RX72N clock tree starting from the 24 MHz external crystal:
+ * - Unlocks PRCR for clock register access
+ * - Stops sub-clock oscillator (not used)
+ * - Starts main oscillator and waits for stabilization
+ * - Sets MEMWAIT=1 for safe flash access at 240 MHz
+ * - Configures PLL (24 MHz x 10 / 1 = 240 MHz)
+ * - Configures PPLL (24 MHz x 4 / 2 = 48 MHz USB)
+ * - Waits for PLL and PPLL lock
+ * - Sets system clock dividers (ICLK=240, PCLKA=120, PCLKB/C/D=60, FCLK=60 MHz)
+ * - Switches clock source to PLL
+ * - Relocks PRCR
  *
- * @return k_rx_ok on success
+ * Must be called before any peripheral initialization or RTOS startup.
+ *
+ * @return rx_err_t Initialization result
+ * @retval k_rx_ok All oscillators locked and clocks configured correctly
+ * @retval k_rx_err_hw_timeout PLL or PPLL failed to lock within stabilization limit
+ *
+ * @pre External 24 MHz crystal is connected and oscillating
+ * @pre VCC supply voltage is within RX72N operating range
+ *
+ * @post System clock running at 240 MHz (ICLK) sourced from PLL
+ * @post MEMWAIT=1 set for safe flash access at 240 MHz
+ * @post PRCR relocked to protect clock registers
+ *
+ * @note Thread safety: Must be called from single-threaded context before ThreadX starts
+ * @note Blocking: Waits for crystal and PLL stabilization (bounded by enum timeout constants)
+ *
+ * @see internal_verify_system_state() Post-initialization verification
+ * @see rx_clock_power_init() Public entry point that calls this function
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [OK] 2 preconditions, 3 postconditions
  */
 static rx_err_t internal_clock_init(void)
 {
@@ -526,10 +553,37 @@ static rx_err_t internal_module_stop_init(void)
 /**
  * @brief Verify system clock configuration is correct
  *
- * Checks that the clock system is properly configured to 240 MHz and
- * that required peripheral modules are enabled.
+ * @details
+ * Performs post-initialization validation of the RX72N clock subsystem by reading
+ * back hardware registers. Checks that:
+ * - System register pointer is valid
+ * - PLL is enabled (PLLCR2 register)
+ * - System clock dividers match expected values (SCKCR register)
+ * - Module stop registers are cleared for required peripherals (MSTPCRA, MSTPCRB)
  *
- * @return k_rx_ok if system state is valid, error code otherwise
+ * Intended to be called immediately after internal_clock_init() to confirm that
+ * all register writes took effect.
+ *
+ * @return rx_err_t Verification result
+ * @retval k_rx_ok All clock configuration registers match expected values
+ * @retval k_rx_err_null_ptr system_regs() returned nullptr
+ * @retval k_rx_err_hw_init_failed One or more clock registers do not match expected values
+ *
+ * @pre internal_clock_init() completed successfully
+ * @pre Hardware registers are accessible (not in reset or low-power mode)
+ *
+ * @post No hardware state is modified (read-only verification)
+ * @post Return value reliably reflects whether system is in expected clock state
+ *
+ * @note Thread safety: Must be called from single-threaded context before ThreadX starts
+ *
+ * @see internal_clock_init() Clock configuration that this function verifies
+ * @see rx_clock_power_init() Public entry point
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [OK] 2 preconditions, 2 postconditions
  */
 static rx_err_t internal_verify_system_state(void)
 {

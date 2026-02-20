@@ -1155,17 +1155,11 @@ static void internal_temp_task_entry(ULONG input)
   config.resolution       = k_ds18b20_resolution_12bit;
   config.use_rom_matching = false; /* Skip ROM - only one sensor */
 
-  /* Initialize DS18B20 */
-  rx_err_t err = rx_ds18b20_init(&s_ds18b20, &config);
-  if (err != k_rx_ok) {
-    rx_log_error_val(s_tag, "DS18B20 init failed", (uint32_t)err);
+  /* Initialize DS18B20 (internally sets resolution from config.resolution) */
+  const rx_err_t err_init = rx_ds18b20_init(&s_ds18b20, &config);
+  if (err_init != k_rx_ok) {
+    rx_log_error_val(s_tag, "DS18B20 init failed", (uint32_t)err_init);
     /* Continue anyway - will report invalid data */
-  }
-
-  /* Set 12-bit resolution for accuracy */
-  err = rx_ds18b20_set_resolution(&s_ds18b20, k_ds18b20_resolution_12bit);
-  if (err != k_rx_ok) {
-    rx_log_warn_val(s_tag, "Set resolution failed", (uint32_t)err);
   }
 
   rx_log_info(s_tag, "Temperature sensing running @ 1 Hz");
@@ -1187,21 +1181,19 @@ static void internal_temp_task_entry(ULONG input)
 
     /* Build state structure */
     temp_sensor_state_t state = {0};
+    state.sensor_count        = k_temp_sensor_count;
+    state.timestamp_ms        = tx_time_get();
 
     if (err_read == k_rx_ok) {
       /* Convert to centi-degrees for integer storage */
       state.temperature_cdegc[k_temp_sensor_idx] = (int16_t)(temp_celsius * s_cdegc_per_degree);
       state.sensor_valid[k_temp_sensor_idx]      = true;
-      state.sensor_count                         = k_temp_sensor_count;
-      state.timestamp_ms                         = tx_time_get();
 
       rx_log_debug_val(s_tag,
                        "Temperature (cC)",
                        (int32_t)state.temperature_cdegc[k_temp_sensor_idx]);
     } else {
       state.sensor_valid[k_temp_sensor_idx] = false;
-      state.sensor_count                    = k_temp_sensor_count;
-      state.timestamp_ms                    = tx_time_get();
 
       rx_log_warn_val(s_tag, "Temperature read failed", (uint32_t)err_read);
     }

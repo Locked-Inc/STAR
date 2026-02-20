@@ -1096,19 +1096,15 @@ rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_confi
  */
 rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
 {
-  volatile rx_port_regs_t* port_regs;
-  uint8_t                  port;
-  uint8_t                  pin;
-
   /* Validate channel */
   if (channel >= k_rspi_max_channels || !s_rspi_controller_initialized[channel]) {
     rx_log_error(s_tag, "RSPI controller channel not initialized");
     return k_rx_err_invalid_state;
   }
 
-  port      = s_rspi_cs_config[channel].port;
-  pin       = s_rspi_cs_config[channel].pin;
-  port_regs = rx_port_get_base(port);
+  const uint8_t port                   = s_rspi_cs_config[channel].port;
+  const uint8_t pin                    = s_rspi_cs_config[channel].pin;
+  volatile rx_port_regs_t* const port_regs = rx_port_get_base(port);
 
   if (port_regs == nullptr) {
     return k_rx_err_invalid_arg;

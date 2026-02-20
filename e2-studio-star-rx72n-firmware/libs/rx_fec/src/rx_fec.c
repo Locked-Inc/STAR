@@ -983,12 +983,13 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_para
   }
 
   /* Prepare soft decode parameters */
-  rx_fec_decode_soft_params_t soft_params;
-  soft_params.soft_bits           = params->soft_bits_buffer;
-  soft_params.soft_len            = num_bits;
-  soft_params.expected_output_len = params->expected_output_len;
-  soft_params.output              = params->output;
-  soft_params.output_len          = params->output_len;
+  const rx_fec_decode_soft_params_t soft_params = {
+    .soft_bits           = params->soft_bits_buffer,
+    .soft_len            = num_bits,
+    .expected_output_len = params->expected_output_len,
+    .output              = params->output,
+    .output_len          = params->output_len,
+  };
 
   return rx_fec_decode_soft(dec, &soft_params);
 }

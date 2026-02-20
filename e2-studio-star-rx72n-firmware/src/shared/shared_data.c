@@ -384,23 +384,20 @@ typedef enum : uint8_t {
   k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
 } shared_data_internal_constants_t;
 
-/**
- * @enum shared_data_pid_defaults_t
- * @brief PID default values scaled to avoid floating-point constants
- *
- * @details
- * Default PID gains from MATLAB tuning (motor_model_1st_order.m, pid_design_velocity.m).
- * Scaled by 1000 or 100 to store as integers for compile-time initialization.
- *
- * **Derivation:**
- * - Motor time constant τ = 75ms (measured)
- * - Control frequency = 250 Hz (4ms period)
- * - Tuning method: Ziegler-Nichols + empirical adjustment
- */
-typedef enum : uint16_t {
-  k_default_pid_kp_x1000 = 286, /**< Default Kp * 1000 (actual: 0.286) */
-  k_default_pid_ki_x100  = 801, /**< Default Ki * 100 (actual: 8.01) */
-} shared_data_pid_defaults_t;
+/** @brief Default PID proportional gain — Kp = 0.286 (from MATLAB motor_model_1st_order.m) */
+static const float s_default_pid_kp = 0.286f;
+/** @brief Default PID integral gain — Ki = 8.01 (from MATLAB pid_design_velocity.m) */
+static const float s_default_pid_ki = 8.01f;
+/** @brief Default PID derivative gain — Kd = 0.0 (not used) */
+static const float s_default_pid_kd = 0.0f;
+/** @brief Default PID output lower limit (% duty cycle) */
+static const float s_default_pid_output_min = -100.0f;
+/** @brief Default PID output upper limit (% duty cycle) */
+static const float s_default_pid_output_max = 100.0f;
+/** @brief Default PID integral lower limit (anti-windup) */
+static const float s_default_pid_integral_min = -50.0f;
+/** @brief Default PID integral upper limit (anti-windup) */
+static const float s_default_pid_integral_max = 50.0f;
 
 /** @brief Log tag for this module (used by RX_CHECK_NULL_PTR) */
 static const char* const s_tag = "SDATA";
@@ -691,13 +688,13 @@ rx_err_t shared_data_init(void)
   }
 
   /* Initialize default PID gains (from MATLAB tuning) */
-  g_shared_data.pid_gains.kp             = 0.286f;
-  g_shared_data.pid_gains.ki             = 8.01f;
-  g_shared_data.pid_gains.kd             = 0.0f;
-  g_shared_data.pid_gains.output_min     = -100.0f;
-  g_shared_data.pid_gains.output_max     = 100.0f;
-  g_shared_data.pid_gains.integral_min   = -50.0f;
-  g_shared_data.pid_gains.integral_max   = 50.0f;
+  g_shared_data.pid_gains.kp             = s_default_pid_kp;
+  g_shared_data.pid_gains.ki             = s_default_pid_ki;
+  g_shared_data.pid_gains.kd             = s_default_pid_kd;
+  g_shared_data.pid_gains.output_min     = s_default_pid_output_min;
+  g_shared_data.pid_gains.output_max     = s_default_pid_output_max;
+  g_shared_data.pid_gains.integral_min   = s_default_pid_integral_min;
+  g_shared_data.pid_gains.integral_max   = s_default_pid_integral_max;
   g_shared_data.pid_gains.update_pending = false;
 
   /* Initialize motor command as invalid */
@@ -2052,7 +2049,7 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
   (void)tx_mutex_put(&g_shared_data.bms_mutex);
 
   /* Check for low battery and signal event */
-  if (state->valid && state->soc_percent < 15) {
+  if (state->valid && state->soc_percent < (uint8_t)k_shared_low_battery_soc_pct) {
     (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_low_battery, TX_OR);
   }
 

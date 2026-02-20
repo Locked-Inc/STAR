@@ -185,6 +185,16 @@
  *   trigger_estop [label="shared_data_trigger_estop(k_estop_reason_manual)"];
  *   return_estop [label="return (success)", fillcolor=lightgreen, style=filled];
  *
+ *   try_pid [label="rx_nanopb_decode_pid_gains_request()", shape=diamond];
+ *   pid_ok [label="SetPIDGainsRequest decoded", fillcolor=lightblue, style=filled];
+ *   set_pid [label="shared_data_set_pid_gains()"];
+ *   return_pid [label="return (success)", fillcolor=lightgreen, style=filled];
+ *
+ *   try_retransmit [label="rx_nanopb_decode_retransmit_config_request()", shape=diamond];
+ *   retransmit_ok [label="SetRetransmitConfigRequest decoded", fillcolor=lightblue, style=filled];
+ *   set_retransmit [label="rx_comm_manager_set_auto_retransmit()"];
+ *   return_retransmit [label="return (success)", fillcolor=lightgreen, style=filled];
+ *
  *   unknown [label="Log warning\n'Could not decode command payload'",
  *            fillcolor=yellow, style=filled];
  *   return_unknown [label="return (unknown)", fillcolor=orange, style=filled];
@@ -197,9 +207,19 @@
  *   set_cmd -> return_velocity;
  *
  *   try_estop -> estop_ok [label="k_rx_ok"];
- *   try_estop -> unknown [label="decode failed"];
+ *   try_estop -> try_pid [label="decode failed"];
  *   estop_ok -> trigger_estop;
  *   trigger_estop -> return_estop;
+ *
+ *   try_pid -> pid_ok [label="k_rx_ok"];
+ *   try_pid -> try_retransmit [label="decode failed"];
+ *   pid_ok -> set_pid;
+ *   set_pid -> return_pid;
+ *
+ *   try_retransmit -> retransmit_ok [label="k_rx_ok"];
+ *   try_retransmit -> unknown [label="decode failed"];
+ *   retransmit_ok -> set_retransmit;
+ *   set_retransmit -> return_retransmit;
  *
  *   unknown -> return_unknown;
  * }
@@ -1597,9 +1617,10 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * 1. **SetVelocityRequest** (~100 Hz) - Motor velocity commands for 4-wheel differential drive
  * 2. **EmergencyStopRequest** (rare) - Manual emergency stop trigger
  * 3. **SetPIDGainsRequest** (very rare) - Runtime PID tuning for motor controllers
- * 4. **Unknown** (log warning) - Unsupported message type or corrupted protobuf
+ * 4. **SetRetransmitConfigRequest** (very rare) - Runtime HARQ retransmission configuration
+ * 5. **Unknown** (log warning) - Unsupported message type or corrupted protobuf
  *
- * ## Algorithm Steps (18 Steps)
+ * ## Algorithm Steps (24 Steps)
  *
  * ### SetVelocityRequest Processing (Steps 1-7)
  *
@@ -1665,9 +1686,27 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *    - If error: Log error with error code
  * 17. **Return:** Exit function (PID gains applied successfully)
  *
- * ### Unknown Message Handling (Step 18)
+ * ### SetRetransmitConfigRequest Processing (Steps 18-23)
  *
- * 18. **Log Warning:** "Could not decode command payload"
+ * 18. **Try SetRetransmitConfigRequest Decode:** Call rx_nanopb_decode_retransmit_config_request()
+ *    - Payload: frame->payload (nanopb-encoded bytes)
+ *    - Length: frame->header.length (~20-30 bytes)
+ *    - Output: star_v1_SetRetransmitConfigRequest structure
+ * 19. **Check Decode Result:**
+ *    - If k_rx_ok AND retransmit_req.has_retransmit_config == true: Proceed to step 20
+ *    - If decode failed: Jump to step 24 (unknown message)
+ * 20. **Build retransmit config:** Build rx_spi_comm_retransmit_config_t from protobuf
+ *    - Copy max_retries, ack_timeout_ms, max_backoff_ms from protobuf
+ * 21. **Update Retransmit Config:** Call rx_comm_manager_set_auto_retransmit()
+ *    - Thread-safe update of HARQ retransmission parameters
+ * 22. **Check Update Result:**
+ *    - If k_rx_ok: Log info "Retransmit config updated"
+ *    - If error: Log error with error code
+ * 23. **Return:** Exit function (retransmit config applied successfully)
+ *
+ * ### Unknown Message Handling (Step 24)
+ *
+ * 24. **Log Warning:** "Could not decode command payload"
  *     - None of the known message types decoded successfully
  *     - Possible causes: Unsupported message type, corrupted protobuf, version mismatch
  *     - Return (ignore frame, continue normal operation)
@@ -1716,14 +1755,50 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *   log_success -> return_velocity;
  *   log_error -> return_velocity;
  *
+ *   try_pid [label="rx_nanopb_decode_pid_gains_request()", shape=diamond];
+ *   pid_ok [label="Decode OK + has_pid_config?", shape=diamond];
+ *   set_pid [label="shared_data_set_pid_gains(&gains)"];
+ *   check_pid [label="Update OK?", shape=diamond];
+ *   log_pid_success [label="Log info:\nPID gains updated", fillcolor=lightgreen, style=filled];
+ *   log_pid_error [label="Log error:\nFailed to set PID gains", fillcolor=red, style=filled];
+ *   return_pid [label="return", fillcolor=lightgreen, style=filled];
+ *
+ *   try_retransmit [label="rx_nanopb_decode_retransmit_config_request()", shape=diamond];
+ *   retransmit_ok [label="Decode OK + has_retransmit_config?", shape=diamond];
+ *   set_retransmit [label="rx_comm_manager_set_auto_retransmit()"];
+ *   check_retransmit [label="Update OK?", shape=diamond];
+ *   log_retransmit [label="Log info:\nRetransmit config updated",
+ *                   fillcolor=lightgreen, style=filled];
+ *   log_retransmit_error [label="Log error:\nFailed to set retransmit config",
+ *                         fillcolor=red, style=filled];
+ *   return_retransmit [label="return", fillcolor=lightgreen, style=filled];
+ *
  *   try_estop -> estop_ok;
  *   estop_ok -> log_estop [label="k_rx_ok"];
- *   estop_ok -> unknown [label="decode failed"];
+ *   estop_ok -> try_pid [label="decode failed"];
  *   log_estop -> trigger_estop;
  *   trigger_estop -> check_trigger;
  *   check_trigger -> return_estop [label="k_rx_ok"];
  *   check_trigger -> log_estop_error [label="error"];
  *   log_estop_error -> return_estop;
+ *
+ *   try_pid -> pid_ok;
+ *   pid_ok -> set_pid [label="k_rx_ok +\nhas_pid_config"];
+ *   pid_ok -> try_retransmit [label="decode failed"];
+ *   set_pid -> check_pid;
+ *   check_pid -> log_pid_success [label="k_rx_ok"];
+ *   check_pid -> log_pid_error [label="error"];
+ *   log_pid_success -> return_pid;
+ *   log_pid_error -> return_pid;
+ *
+ *   try_retransmit -> retransmit_ok;
+ *   retransmit_ok -> set_retransmit [label="k_rx_ok +\nhas_retransmit_config"];
+ *   retransmit_ok -> unknown [label="decode failed"];
+ *   set_retransmit -> check_retransmit;
+ *   check_retransmit -> log_retransmit [label="k_rx_ok"];
+ *   check_retransmit -> log_retransmit_error [label="error"];
+ *   log_retransmit -> return_retransmit;
+ *   log_retransmit_error -> return_retransmit;
  *
  *   unknown -> return_unknown;
  * }
@@ -1927,8 +2002,11 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @see internal_frame_callback() Caller (frame dispatch)
  * @see rx_nanopb_decode_velocity_request() Decode SetVelocityRequest protobuf
  * @see rx_nanopb_decode_estop_request() Decode EmergencyStopRequest protobuf
+ * @see rx_nanopb_decode_pid_gains_request() Decode SetPIDGainsRequest protobuf
+ * @see rx_nanopb_decode_retransmit_config_request() Decode SetRetransmitConfigRequest protobuf
  * @see shared_data_set_motor_command() Thread-safe motor command update
  * @see shared_data_trigger_estop() Trigger emergency stop
+ * @see rx_comm_manager_set_auto_retransmit() Update HARQ retransmission config
  * @see motor_control_task.c Consumer of motor commands (reads from shared_data)
  * @see docs/sections/02_protobuf_schemas.tex Protocol Buffer message definitions
  *
@@ -1936,6 +2014,8 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * @test test_comm_task.c - Verify SetVelocityRequest decode and motor command update
  * @test test_comm_task.c - Verify EmergencyStopRequest decode and e-stop trigger
+ * @test test_comm_task.c - Verify SetPIDGainsRequest decode and PID gains update
+ * @test test_comm_task.c - Verify SetRetransmitConfigRequest decode and retransmit update
  * @test test_comm_task.c - Verify unknown message type logged as warning
  * @test test_comm_task.c - Verify decode error handling (corrupted protobuf)
  * @test test_comm_task.c - Verify double -> float conversion accuracy
@@ -1943,7 +2023,9 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @par NASA Power of 10 Compliance:
  * - **Rule 1:** [PASS] No goto, setjmp, recursion (only if/return control flow)
  * - **Rule 3:** [PASS] Zero dynamic allocation (all stack-based)
- * - **Rule 4:** [PASS] Function is 56 lines (under 100 LOC guideline)
+ * - **Rule 4:** [NOTE] Function body is ~80 lines handling 4 message types; each decode
+ *               branch is a single-responsibility path; consider extracting per-message
+ *               handlers if the 60 LOC target must be met
  * - **Rule 5:** [PASS] 5 preconditions, 4 postconditions documented
  * - **Rule 7:** [PASS] All function returns checked or cast to (void)
  * - **Rule 8:** [PASS] All constants use C23 typed enums (no macros)
@@ -1997,7 +2079,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
   }
 
   /* Try to decode as SetPIDGainsRequest */
-  star_v1_SetPIDGainsRequest pid_req;
+  star_v1_SetPIDGainsRequest pid_req = {0};
   err = rx_nanopb_decode_pid_gains_request(frame->payload, frame->header.length, &pid_req);
   if (err == k_rx_ok && pid_req.has_pid_config) {
     rx_log_info(s_tag, "PID gains request received");
@@ -2024,13 +2106,12 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
   }
 
   /* Try to decode as SetRetransmitConfigRequest */
-  star_v1_SetRetransmitConfigRequest retransmit_req;
+  star_v1_SetRetransmitConfigRequest retransmit_req = {0};
   err = rx_nanopb_decode_retransmit_config_request(frame->payload,
                                                    frame->header.length,
                                                    &retransmit_req);
   if (err == k_rx_ok && retransmit_req.has_retransmit_config) {
-    rx_spi_comm_retransmit_config_t cfg;
-    (void)memset(&cfg, 0, sizeof(cfg));
+    rx_spi_comm_retransmit_config_t cfg = {0};
     cfg.max_retries    = (uint8_t)retransmit_req.retransmit_config.max_retries;
     cfg.ack_timeout_ms = (uint16_t)retransmit_req.retransmit_config.ack_timeout_ms;
     cfg.max_backoff_ms = (uint16_t)retransmit_req.retransmit_config.max_backoff_ms;

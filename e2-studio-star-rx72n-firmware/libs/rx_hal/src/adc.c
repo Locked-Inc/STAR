@@ -719,11 +719,8 @@ static rx_err_t internal_read_channel_value(volatile rx_s12ad_regs_t* adc,
  */
 rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_resolution_t bits)
 {
-  volatile rx_s12ad_regs_t* adc = nullptr;
-  rx_err_t                  err;
-
   /* Validate parameters */
-  err = internal_validate_unit_channel(unit, channel);
+  rx_err_t err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Validate resolution */
@@ -734,7 +731,7 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
   }
 
   /* Get ADC base */
-  adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* const adc = internal_get_adc_base(unit);
   if (adc == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -835,14 +832,10 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
  */
 rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* value)
 {
-  volatile rx_s12ad_regs_t* adc;
-  rx_err_t                  err;
-  uint32_t                  timeout;
-
   /* Validate parameters */
   RX_CHECK_NULL_PTR(value, s_tag, "Value pointer is nullptr");
 
-  err = internal_validate_unit_channel(unit, channel);
+  const rx_err_t err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Check if unit is initialized */
@@ -852,7 +845,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
   }
 
   /* Get ADC base */
-  adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* const adc = internal_get_adc_base(unit);
   if (adc == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -861,7 +854,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
   adc->adcsr = k_adc_adcsr_adst;
 
   /* Wait for conversion to complete (poll ADCSR.ADST bit) */
-  timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
+  uint32_t timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
   while ((adc->adcsr & k_adc_adcsr_adst) != k_adc_adcsr_idle && timeout > k_adc_timeout_expired) {
     timeout--;
   }

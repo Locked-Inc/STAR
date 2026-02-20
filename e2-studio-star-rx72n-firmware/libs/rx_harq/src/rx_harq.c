@@ -237,7 +237,7 @@ rx_err_t rx_chase_combiner_combined(const rx_chase_combiner_t* combiner,
    * - Array bounds: accumulated[i] and output[i] are safe for i < expected_len
    */
   for (uint32_t i = 0; i < combiner->expected_len; i++) {
-    int16_t acc = combiner->accumulated[i];
+    const int16_t acc = combiner->accumulated[i];
     if (acc > k_soft_bit_max) {
       output[i] = k_soft_bit_max;
     } else if (acc < k_soft_bit_min) {
