@@ -1,10 +1,10 @@
 /**
  * @file rx_simulator_config.h
- * @brief Configuration for e² studio simulator support
+ * @brief Configuration for e^2 studio simulator support
  *
  * @details
  * This header provides simulator-specific configuration for testing
- * firmware logic without real hardware. The Renesas e² studio simulator
+ * firmware logic without real hardware. The Renesas e^2 studio simulator
  * cannot fully model certain hardware features:
  *
  * **Hardware limitations in simulator**:
@@ -38,7 +38,7 @@
  * @par Usage:
  * Define RX_SIMULATOR_MODE during compilation to enable simulator support:
  * @code
- * // In e² studio:
+ * // In e^2 studio:
  * // Project Properties -> C/C++ Build -> Settings -> Compiler -> Preprocessor
  * // Add symbol: RX_SIMULATOR_MODE
  *
@@ -129,8 +129,8 @@
  *
  * **Hardware behavior**:
  * - Main oscillator: ~10 ms stabilization (2.4M instruction cycles)
- * - PLL: ~200 µs stabilization (poll OSCOVFSR bit 2)
- * - PPLL: ~200 µs stabilization (poll OSCOVFSR bit 3)
+ * - PLL: ~200 us stabilization (poll OSCOVFSR bit 2)
+ * - PPLL: ~200 us stabilization (poll OSCOVFSR bit 3)
  *
  * **Simulator behavior**:
  * - All clocks: Assume instant ready (skip polling loops)

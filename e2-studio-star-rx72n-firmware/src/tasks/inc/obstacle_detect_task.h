@@ -14,7 +14,7 @@
  * - Update shared obstacle data for path planning
  *
  * **Sensor Configuration:**
- * - Sensors: 4× HC-SR04 ultrasonic rangefinders
+ * - Sensors: 4x HC-SR04 ultrasonic rangefinders
  * - Range: 2 cm to 400 cm
  * - Trigger: GPTW timer for pulse generation
  * - Echo: MTU input capture for timing

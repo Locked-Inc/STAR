@@ -29,7 +29,7 @@
  *
  * **Phase Staggering**:
  * - 90-degree phase offset between channels
- * - Channel 0: 0°, Channel 1: 90°, Channel 2: 180°, Channel 3: 270°
+ * - Channel 0: 0deg, Channel 1: 90deg, Channel 2: 180deg, Channel 3: 270deg
  * - Spreads current draw across PWM period
  * - Reduces peak power supply current by ~75%
  * - Reduces conducted EMI by preventing simultaneous switching
@@ -95,11 +95,11 @@
  *
  * | Operation | Execution Time | Memory Usage | Notes |
  * |-----------|---------------|--------------|-------|
- * | rx_gptw_init_all_staggered() | ~100 µs | 0 heap | One-time setup |
- * | rx_gptw_set_duty() | ~5 µs | 0 | Float calculation |
- * | rx_gptw_set_duty_raw() | ~1 µs | 0 | Direct register write |
- * | rx_gptw_get_duty() | ~3 µs | 0 | Register read + calc |
- * | rx_gptw_enable_output() | ~1 µs | 0 | Single register write |
+ * | rx_gptw_init_all_staggered() | ~100 us | 0 heap | One-time setup |
+ * | rx_gptw_set_duty() | ~5 us | 0 | Float calculation |
+ * | rx_gptw_set_duty_raw() | ~1 us | 0 | Direct register write |
+ * | rx_gptw_get_duty() | ~3 us | 0 | Register read + calc |
+ * | rx_gptw_enable_output() | ~1 us | 0 | Single register write |
  *
  * **Memory Footprint**:
  * - Static variables: ~64 bytes (initialization flags, period cache)
@@ -148,7 +148,7 @@
  * | 2. Fixed loop bounds | [OK] | Loops bounded by k_gptw_channel_3 (4 iterations max) |
  * | 3. No dynamic allocation | [OK] | Zero malloc/free, all static |
  * | 4. Small functions | [OK] | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 validation checks per function |
+ * | 5. Assertions (>=2 per function) | [OK] | Minimum 2 validation checks per function |
  * | 6. Narrow scope | [OK] | File-scope statics, minimal globals |
  * | 7. Check return values | [OK] | All functions return rx_err_t |
  * | 8. Limited preprocessor | [OK] | C23 typed enums, minimal macros |
@@ -231,10 +231,10 @@ extern "C" {
  *
  * | Channel | Motor | Position | Register Base | Phase Offset |
  * |---------|-------|----------|---------------|--------------|
- * | GPTW0 | Motor 0 | Front-Left | 0x000C2100 | 0° |
- * | GPTW1 | Motor 1 | Front-Right | 0x000C2180 | 90° |
- * | GPTW2 | Motor 2 | Rear-Left | 0x000C2200 | 180° |
- * | GPTW3 | Motor 3 | Rear-Right | 0x000C2280 | 270° |
+ * | GPTW0 | Motor 0 | Front-Left | 0x000C2100 | 0deg |
+ * | GPTW1 | Motor 1 | Front-Right | 0x000C2180 | 90deg |
+ * | GPTW2 | Motor 2 | Rear-Left | 0x000C2200 | 180deg |
+ * | GPTW3 | Motor 3 | Rear-Right | 0x000C2280 | 270deg |
  *
  * @par Pin Assignments:
  *
@@ -278,13 +278,13 @@ extern "C" {
  */
 typedef enum : uint8_t {
   k_gptw_channel_0 =
-    0, /**< GPTW0 channel for Motor 0 (Front-Left). Register base: 0x000C2100. Outputs: PE5/GTIOC0A, PE2/GTIOC0B. Phase offset: 0° in staggered mode */
+    0, /**< GPTW0 channel for Motor 0 (Front-Left). Register base: 0x000C2100. Outputs: PE5/GTIOC0A, PE2/GTIOC0B. Phase offset: 0deg in staggered mode */
   k_gptw_channel_1 =
-    1, /**< GPTW1 channel for Motor 1 (Front-Right). Register base: 0x000C2180. Outputs: PE4/GTIOC1A, PE1/GTIOC1B. Phase offset: 90° in staggered mode */
+    1, /**< GPTW1 channel for Motor 1 (Front-Right). Register base: 0x000C2180. Outputs: PE4/GTIOC1A, PE1/GTIOC1B. Phase offset: 90deg in staggered mode */
   k_gptw_channel_2 =
-    2, /**< GPTW2 channel for Motor 2 (Rear-Left). Register base: 0x000C2200. Outputs: PE3/GTIOC2A, PE0/GTIOC2B. Phase offset: 180° in staggered mode */
+    2, /**< GPTW2 channel for Motor 2 (Rear-Left). Register base: 0x000C2200. Outputs: PE3/GTIOC2A, PE0/GTIOC2B. Phase offset: 180deg in staggered mode */
   k_gptw_channel_3 =
-    3, /**< GPTW3 channel for Motor 3 (Rear-Right). Register base: 0x000C2280. Outputs: PE7/GTIOC3A, PE6/GTIOC3B. Phase offset: 270° in staggered mode */
+    3, /**< GPTW3 channel for Motor 3 (Rear-Right). Register base: 0x000C2280. Outputs: PE7/GTIOC3A, PE6/GTIOC3B. Phase offset: 270deg in staggered mode */
 } rx_gptw_channel_t;
 
 /**
@@ -430,7 +430,7 @@ typedef enum : uint8_t {
  * // Configure for motor control with triangle wave (center-aligned)
  * rx_gptw_config_t config = {
  *     .frequency_hz = 20000,      // 20 kHz PWM
- *     .deadtime_ns = 1000,        // 1 µs deadtime
+ *     .deadtime_ns = 1000,        // 1 us deadtime
  *     .wave_mode = k_gptw_wave_tri_pwm1,  // Triangle, trough update
  *     .enable_complementary = true,
  *     .invert_polarity = false
@@ -585,7 +585,7 @@ static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
  * // Standard motor control configuration
  * rx_gptw_config_t motor_config = {
  *     .frequency_hz = 20000,           // 20 kHz (inaudible)
- *     .deadtime_ns = 1000,             // 1 µs deadtime
+ *     .deadtime_ns = 1000,             // 1 us deadtime
  *     .wave_mode = k_gptw_wave_saw_pwm, // Edge-aligned
  *     .enable_complementary = true,    // H-bridge requires this
  *     .invert_polarity = false         // Active-high outputs
@@ -660,7 +660,7 @@ typedef struct {
    * At 120 MHz: 1000 ns = 120 counts
    *
    * @par Valid Range: [0, 65535] ns
-   * @par Recommended: 1000 ns (1 µs) for DRV8243S
+   * @par Recommended: 1000 ns (1 us) for DRV8243S
    * @warning Too short may cause shoot-through; too long reduces efficiency
    */
   uint16_t deadtime_ns;
@@ -716,10 +716,10 @@ typedef struct {
  * ## Phase Staggering Architecture
  *
  * Phase staggering offsets the start of each channel's PWM period:
- * - **Channel 0**: 0° (reference phase)
- * - **Channel 1**: 90° (period / 4 offset)
- * - **Channel 2**: 180° (period / 2 offset)
- * - **Channel 3**: 270° (3 × period / 4 offset)
+ * - **Channel 0**: 0deg (reference phase)
+ * - **Channel 1**: 90deg (period / 4 offset)
+ * - **Channel 2**: 180deg (period / 2 offset)
+ * - **Channel 3**: 270deg (3 x period / 4 offset)
  *
  * @dot
  * digraph phase_stagger {
@@ -728,10 +728,10 @@ typedef struct {
  *
  *   title [label="Phase Staggered PWM (4 channels at 50% duty)", shape=none];
  *
- *   ch0 [label="{Ch0 (0°)|██████______██████______}"];
- *   ch1 [label="{Ch1 (90°)|___██████______██████___}"];
- *   ch2 [label="{Ch2 (180°)|______██████______██████}"];
- *   ch3 [label="{Ch3 (270°)|███______██████______███}"];
+ *   ch0 [label="{Ch0 (0deg)|######______######______}"];
+ *   ch1 [label="{Ch1 (90deg)|___######______######___}"];
+ *   ch2 [label="{Ch2 (180deg)|______######______######}"];
+ *   ch3 [label="{Ch3 (270deg)|###______######______###}"];
  *   current [label="{Total Current|Spread evenly across period}"];
  *
  *   title -> ch0 [style=invis];
@@ -778,11 +778,11 @@ typedef struct {
  * @pre System clock configured (PCLKA = 120 MHz)
  * @pre Port E pins not used by other peripherals
  *
- * @post All 4 GPTW channels running with 90° phase offsets
+ * @post All 4 GPTW channels running with 90deg phase offsets
  * @post All duty cycles initialized to 0% (motors stopped)
  * @post MPC configured for GTIOC function on Port E pins
  *
- * @invariant Phase relationship maintained: Ch1 = Ch0 + 90°, Ch2 = Ch0 + 180°, Ch3 = Ch0 + 270°
+ * @invariant Phase relationship maintained: Ch1 = Ch0 + 90deg, Ch2 = Ch0 + 180deg, Ch3 = Ch0 + 270deg
  *
  * @note Thread-safe: Call only once during system initialization
  * @note Propagates errors from internal_calculate_period(), internal_configure_gptw_hardware()
@@ -791,7 +791,7 @@ typedef struct {
  * @attention This function should be used INSTEAD of rx_gptw_init_pwm() for motor control
  *
  * @par Performance:
- * - Execution time: ~100 µs at 240 MHz
+ * - Execution time: ~100 us at 240 MHz
  * - Memory usage: 0 heap, ~64 bytes stack
  *
  * @par Example (Complete Motor System Initialization):
@@ -802,7 +802,7 @@ typedef struct {
  *
  * rx_err_t motor_system_init(void)
  * {
- *     // Configure GPTW for 20 kHz PWM with 1 µs deadtime
+ *     // Configure GPTW for 20 kHz PWM with 1 us deadtime
  *     rx_gptw_config_t pwm_config = {
  *         .frequency_hz = 20000,
  *         .deadtime_ns = 1000,
@@ -845,7 +845,7 @@ typedef struct {
  *     cnt2 = GPTW2->GTCNT;
  *     cnt3 = GPTW3->GTCNT;
  *
- *     // Expected: cnt1 ≈ cnt0 + period/4, cnt2 ≈ cnt0 + period/2, etc.
+ *     // Expected: cnt1 ~ cnt0 + period/4, cnt2 ~ cnt0 + period/2, etc.
  *     rx_log_debug("GPTW", "Period=%lu, Offsets: %lu, %lu, %lu, %lu",
  *                  period, cnt0, cnt1 - cnt0, cnt2 - cnt0, cnt3 - cnt0);
  * }
@@ -898,7 +898,7 @@ typedef struct {
  * 1. Validate channel and output wrapper values
  * 2. Check channel is initialized
  * 3. Clamp duty_percent to [0.0, 100.0] range
- * 4. Calculate raw count: duty_count = (duty_percent / 100.0) × period_count
+ * 4. Calculate raw count: duty_count = (duty_percent / 100.0) x period_count
  * 5. Write to compare register (GTCCRA or GTCCRB)
  * 6. Register buffer transfers to active on next period boundary
  *
@@ -937,10 +937,10 @@ typedef struct {
  * @note Thread-safe: Atomic register write, safe from ISR or multiple threads
  * @note Use rx_gptw_set_duty_raw() in tight control loops to avoid float overhead
  *
- * @warning Floating-point calculation adds ~4 µs overhead vs raw version
+ * @warning Floating-point calculation adds ~4 us overhead vs raw version
  *
  * @par Performance:
- * - Execution time: ~5 µs at 240 MHz (includes float multiply)
+ * - Execution time: ~5 us at 240 MHz (includes float multiply)
  * - Memory usage: 0 bytes heap, ~16 bytes stack
  *
  * @par Example (Set Motor Speed):

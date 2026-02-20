@@ -89,9 +89,9 @@
  *
  * | Resolution | Conversion Time | Sample Rate (max) |
  * |------------|-----------------|-------------------|
- * | 12-bit | ~1.0 µs | ~1 MHz |
- * | 10-bit | ~0.9 µs | ~1.1 MHz |
- * | 8-bit | ~0.8 µs | ~1.25 MHz |
+ * | 12-bit | ~1.0 us | ~1 MHz |
+ * | 10-bit | ~0.9 us | ~1.1 MHz |
+ * | 8-bit | ~0.8 us | ~1.25 MHz |
  *
  * Note: Times are approximate at PCLKB = 60 MHz.
  *
@@ -239,9 +239,9 @@ typedef enum : uint8_t {
  *
  * | ADPRC[1:0] | Resolution | Max Value | Conversion Time |
  * |------------|------------|-----------|-----------------|
- * | 00 | 12-bit | 4095 | ~1.0 µs |
- * | 01 | 10-bit | 1023 | ~0.9 µs |
- * | 10 | 8-bit | 255 | ~0.8 µs |
+ * | 00 | 12-bit | 4095 | ~1.0 us |
+ * | 01 | 10-bit | 1023 | ~0.9 us |
+ * | 10 | 8-bit | 255 | ~0.8 us |
  * | 11 | Reserved | - | - |
  *
  * @see internal_configure_adc_unit() Uses these to set resolution
@@ -493,7 +493,7 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(const uint8_t unit)
  * @post s_adc_unit_initialized[unit] = true
  *
  * @note NOT thread-safe: Protected register access
- * @note Performance: ~1 µs @ 240 MHz
+ * @note Performance: ~1 us @ 240 MHz
  * @note PRCR unlock window is minimized
  *
  * @warning Must not be called while ADC is converting
@@ -714,7 +714,7 @@ static rx_err_t internal_read_channel_value(volatile rx_s12ad_regs_t* adc,
  * @post Unit marked as initialized
  *
  * @note NOT thread-safe: Call from initialization code only
- * @note Performance: ~1-2 µs for first init, ~0.5 µs for subsequent
+ * @note Performance: ~1-2 us for first init, ~0.5 us for subsequent
  *
  * @par Example:
  * @code
@@ -824,7 +824,7 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
  *
  * @note NOT thread-safe: Caller must synchronize if shared
  * @note Blocking: Waits up to ~100ms for conversion
- * @note Performance: ~1-10 µs typical (depends on conversion time)
+ * @note Performance: ~1-10 us typical (depends on conversion time)
  *
  * @warning Do not call from ISR (blocking wait)
  *
@@ -903,9 +903,9 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
  *
  * | Resolution | Raw Value | Voltage (mV) | Calculation |
  * |------------|-----------|--------------|-------------|
- * | 12-bit | 2048 | 1650 | 2048 × 3300 / 4095 |
- * | 10-bit | 512 | 1650 | 512 × 3300 / 1023 |
- * | 8-bit | 128 | 1655 | 128 × 3300 / 255 |
+ * | 12-bit | 2048 | 1650 | 2048 x 3300 / 4095 |
+ * | 10-bit | 512 | 1650 | 512 x 3300 / 1023 |
+ * | 8-bit | 128 | 1655 | 128 x 3300 / 255 |
  *
  * @param[in] unit ADC unit number (0 for S12AD0, 1 for S12AD1)
  * @param[in] channel ADC channel to read (0-7)

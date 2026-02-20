@@ -146,7 +146,7 @@ static const char* const s_tag = "HCSR04_ICU"; /**< Logging tag (pointer and dat
  * @par Example
  * @code
  * // Configure P03 (IRQ11) for HC-SR04 echo detection
- * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);    // Pin → IRQ function first
+ * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);    // Pin -> IRQ function first
  * if (err != k_rx_ok) { return err; }
  * err = rx_hcsr04_icu_configure((uint8_t)k_hcsr04_irq_11, k_hcsr04_irq_priority_default);
  * if (err != k_rx_ok) { return err; }

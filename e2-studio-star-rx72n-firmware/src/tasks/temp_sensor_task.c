@@ -21,18 +21,18 @@
  * air varies significantly with temperature according to the formula:
  *
  * @f[
- *   v = 331.3 + 0.606 \times T \quad \text{(m/s at temperature T °C)}
+ *   v = 331.3 + 0.606 \times T \quad \text{(m/s at temperature T degC)}
  * @f]
  *
  * | Temperature | Speed of Sound | Distance Error (1m) | Error % |
  * |-------------|----------------|---------------------|---------|
- * | 0°C | 331.3 m/s | Baseline | 0% |
- * | 10°C | 337.4 m/s | +18mm | +1.8% |
- * | 20°C | 343.4 m/s | +36mm | +3.6% |
- * | 30°C | 349.5 m/s | +55mm | +5.5% |
- * | 40°C | 355.5 m/s | +73mm | +7.3% |
+ * | 0degC | 331.3 m/s | Baseline | 0% |
+ * | 10degC | 337.4 m/s | +18mm | +1.8% |
+ * | 20degC | 343.4 m/s | +36mm | +3.6% |
+ * | 30degC | 349.5 m/s | +55mm | +5.5% |
+ * | 40degC | 355.5 m/s | +73mm | +7.3% |
  *
- * **Without temperature compensation**, a 20°C temperature change causes 7% distance error.
+ * **Without temperature compensation**, a 20degC temperature change causes 7% distance error.
  * This is unacceptable for navigation and collision avoidance.
  *
  * ## DS18B20 Digital Temperature Sensor
@@ -41,9 +41,9 @@
  *
  * | Specification | Value | Notes |
  * |---------------|-------|-------|
- * | **Temperature Range** | -55°C to +125°C | Robot operating range: -10°C to +50°C |
- * | **Accuracy** | ±0.5°C | -10°C to +85°C range |
- * | **Resolution** | 9-12 bits selectable | 12-bit: 0.0625°C per LSB (750ms conversion) |
+ * | **Temperature Range** | -55degC to +125degC | Robot operating range: -10degC to +50degC |
+ * | **Accuracy** | +/-0.5degC | -10degC to +85degC range |
+ * | **Resolution** | 9-12 bits selectable | 12-bit: 0.0625degC per LSB (750ms conversion) |
  * | **Conversion Time (12-bit)** | 750ms typical | Worst case: 800ms (safety margin) |
  * | **Interface** | 1-Wire (single data line) | 15kbps max speed, open-drain |
  * | **Power** | Parasitic or external | Using external 3.3V supply |
@@ -63,7 +63,7 @@
  * - **CRC-8** - Built-in data integrity checks
  *
  * **Protocol Layers:**
- * 1. **Reset/Presence Pulse** - 480µs reset, 60-240µs presence detect
+ * 1. **Reset/Presence Pulse** - 480us reset, 60-240us presence detect
  * 2. **ROM Command** - Device selection (Skip ROM used for single sensor)
  * 3. **Function Command** - Temperature conversion, scratchpad read
  * 4. **Data Transfer** - 8-bit bytes, LSB first
@@ -78,9 +78,9 @@
  *     style=filled;
  *     color=lightblue;
  *
- *     ds18b20 [label="DS18B20\n1-Wire Digital Sensor\n64-bit ROM ID\n±0.5°C accuracy",
+ *     ds18b20 [label="DS18B20\n1-Wire Digital Sensor\n64-bit ROM ID\n+/-0.5degC accuracy",
  *              fillcolor=lightgreen, style=filled];
- *     adc [label="12-bit ADC\n0.0625°C resolution\n750ms conversion",
+ *     adc [label="12-bit ADC\n0.0625degC resolution\n750ms conversion",
  *          fillcolor=lightyellow, style=filled];
  *     rom [label="64-bit ROM\n(Family + Serial + CRC)",
  *          fillcolor=lightcoral, style=filled];
@@ -126,8 +126,8 @@
  *
  *   --- [label="Step 1: Trigger Conversion"];
  *   RX72N => OneWire [label="rx_ds18b20_trigger_conversion()"];
- *   OneWire => DS18B20 [label="Reset pulse (480µs)"];
- *   DS18B20 >> OneWire [label="Presence pulse (60-240µs)"];
+ *   OneWire => DS18B20 [label="Reset pulse (480us)"];
+ *   DS18B20 >> OneWire [label="Presence pulse (60-240us)"];
  *   OneWire => DS18B20 [label="Skip ROM (0xCC)"];
  *   OneWire => DS18B20 [label="Convert T (0x44)"];
  *   DS18B20 box DS18B20 [label="Start 12-bit conversion\n(750ms ADC time)"];
@@ -144,11 +144,11 @@
  *   OneWire => DS18B20 [label="Read Scratchpad (0xBE)"];
  *   DS18B20 >> OneWire [label="9 bytes: Temp LSB, Temp MSB, ..., CRC"];
  *   OneWire box OneWire [label="Verify CRC-8"];
- *   OneWire box OneWire [label="Convert to float (°C)"];
- *   OneWire >> RX72N [label="25.375°C"];
+ *   OneWire box OneWire [label="Convert to float (degC)"];
+ *   OneWire >> RX72N [label="25.375degC"];
  *
  *   --- [label="Step 4: Store in Shared Data"];
- *   RX72N box RX72N [label="Convert to centi-degrees\n2537 = 25.37°C"];
+ *   RX72N box RX72N [label="Convert to centi-degrees\n2537 = 25.37degC"];
  *   RX72N => RX72N [label="shared_data_update_temp()"];
  *
  *   --- [label="Wait 200ms to Complete 1s Period"];
@@ -198,7 +198,7 @@
  * The obstacle detection task uses the following temperature compensation algorithm:
  *
  * @f[
- *   v(T) = 331.3 + 0.606 \times T \quad \text{(m/s at T °C)}
+ *   v(T) = 331.3 + 0.606 \times T \quad \text{(m/s at T degC)}
  * @f]
  *
  * **Distance Calculation with Compensation:**
@@ -212,7 +212,7 @@
  * - @f$ t_{\text{echo}} @f$ = echo pulse width in seconds
  * - Factor of 2: round-trip time (sensor -> obstacle -> sensor)
  *
- * **Example Calculation at 25°C:**
+ * **Example Calculation at 25degC:**
  * @f[
  *   v(25) = 331.3 + 0.606 \times 25 = 346.45 \text{ m/s}
  * @f]
@@ -240,7 +240,7 @@
  *       :Step 2: Wait 800ms\ntx_thread_sleep(80 ticks);
  *       :Step 3: Read temperature\nrx_ds18b20_read_temperature();
  *       if (Read successful?) then (yes)
- *         :Convert to centi-degrees\ntemp_cdegc = temp_celsius × 100;
+ *         :Convert to centi-degrees\ntemp_cdegc = temp_celsius x 100;
  *         :Build temp_sensor_state_t\nSet timestamp, mark valid;
  *       else (no)
  *         :Mark sensor invalid\nLog warning;
@@ -260,7 +260,7 @@
  * |--------|-------|-------|
  * | **Poll Rate** | 1 Hz | One complete temperature read per second |
  * | **Conversion Time** | 750ms (typical), 800ms (with margin) | 12-bit resolution |
- * | **Read Time** | ~5ms | 1-Wire scratchpad read (9 bytes × 500µs) |
+ * | **Read Time** | ~5ms | 1-Wire scratchpad read (9 bytes x 500us) |
  * | **Idle Time** | 200ms | Remaining time to complete 1s period |
  * | **CPU Utilization** | < 0.1% | 805ms active, 195ms idle per cycle |
  * | **1-Wire Bus Speed** | 15 kbps max | Bit-banged GPIO (timing-critical) |
@@ -443,7 +443,7 @@ static void internal_temp_task_entry(ULONG input);
  * The temperature data is used by the obstacle detection task to compensate for air
  * temperature variations in HC-SR04 ultrasonic sensor readings. Accurate temperature
  * measurement is essential for precise distance calculation, as the speed of sound in
- * air varies by ~0.6 m/s per °C.
+ * air varies by ~0.6 m/s per degC.
  *
  * ## Algorithm Steps
  *
@@ -565,7 +565,7 @@ static void internal_temp_task_entry(ULONG input);
  *            and connected to 1-Wire GPIO pin.
  * @attention Low priority (15) ensures temperature monitoring does not preempt critical
  *            real-time tasks (motor control, obstacle detection).
- * @attention 1-Wire GPIO must be configured as open-drain with 4.7kΩ pull-up resistor.
+ * @attention 1-Wire GPIO must be configured as open-drain with 4.7kOhm pull-up resistor.
  *
  * @par Thread Safety:
  * This function is NOT thread-safe and MUST be called from single-threaded
@@ -577,7 +577,7 @@ static void internal_temp_task_entry(ULONG input);
  * - tx_thread_sleep(): Safe (yields CPU)
  *
  * @par Performance:
- * - **Creation time:** ~120 µs @ 240 MHz (thread control block initialization)
+ * - **Creation time:** ~120 us @ 240 MHz (thread control block initialization)
  * - **CPU cycles:** ~28,800 cycles
  * - **Stack usage during creation:** ~64 bytes (function call overhead)
  * - **Memory allocation:** 1217 bytes total (1024 stack + 140 TCB + 53 static vars)
@@ -767,19 +767,19 @@ static void internal_send_iwdt_heartbeat(void)
  * ### Initialization Phase (Steps 1-4)
  *
  * 1. **Log Startup:** Print "Temperature sensor task starting" via UART
- * 2. **Configure DS18B20:** Set resolution = 12-bit for maximum accuracy (0.0625°C)
+ * 2. **Configure DS18B20:** Set resolution = 12-bit for maximum accuracy (0.0625degC)
  * 3. **Disable ROM Matching:** use_rom_matching = false (only 1 sensor on bus)
  * 4. **Initialize 1-Wire:** Call rx_ds18b20_init() to configure 1-Wire protocol
  *    - 1-Wire bus: "onewire0" (GPIO bit-banged)
- *    - Resolution: 12-bit (0.0625°C per LSB, 750ms conversion)
+ *    - Resolution: 12-bit (0.0625degC per LSB, 750ms conversion)
  *    - ROM matching: Disabled (Skip ROM command 0xCC)
  *    - If init fails: Log error but continue (report invalid data)
  *
  * ### Main Polling Loop (Steps 5-13, Infinite)
  *
  * 5. **Trigger Conversion:** Call rx_ds18b20_trigger_conversion()
- *    - Send Reset pulse (480µs low)
- *    - Wait for Presence pulse (60-240µs low from DS18B20)
+ *    - Send Reset pulse (480us low)
+ *    - Wait for Presence pulse (60-240us low from DS18B20)
  *    - Send Skip ROM command (0xCC)
  *    - Send Convert T command (0x44)
  *    - DS18B20 starts 12-bit ADC conversion (750ms typical)
@@ -799,19 +799,19 @@ static void internal_send_iwdt_heartbeat(void)
  *    - Wait for Presence pulse
  *    - Send Skip ROM command (0xCC)
  *    - Send Read Scratchpad command (0xBE)
- *    - Read 9 bytes: Temp LSB, Temp MSB, TH, TL, Config, Reserved×3, CRC-8
+ *    - Read 9 bytes: Temp LSB, Temp MSB, TH, TL, Config, Reservedx3, CRC-8
  *    - Verify CRC-8 checksum
- *    - Convert 16-bit raw value to float °C
+ *    - Convert 16-bit raw value to float degC
  *
  * 9. **Check Read Result:**
  *    - If success (k_rx_ok): Proceed to step 10
  *    - If failure: Mark data invalid, log warning, jump to step 12
  *
  * 10. **Build temp_sensor_state_t:** Convert and store temperature data
- *     - temperature_cdegc[0] ← temp_celsius × 100 (convert to centi-degrees)
- *     - sensor_valid[0] ← true
- *     - sensor_count ← 1 (only one DS18B20)
- *     - timestamp_ms ← tx_time_get() (ThreadX tick count in ms)
+ *     - temperature_cdegc[0] <- temp_celsius x 100 (convert to centi-degrees)
+ *     - sensor_valid[0] <- true
+ *     - sensor_count <- 1 (only one DS18B20)
+ *     - timestamp_ms <- tx_time_get() (ThreadX tick count in ms)
  *     - Log debug message with temperature value
  *
  * 11. **Invalid Data Path (1-Wire failure):**
@@ -838,37 +838,37 @@ static void internal_send_iwdt_heartbeat(void)
  *
  * | Resolution | Bits | Temperature Range | LSB Value | Conversion Time |
  * |------------|------|-------------------|-----------|-----------------|
- * | 9-bit | 9 | -55°C to +125°C | 0.5°C | 93.75ms |
- * | 10-bit | 10 | -55°C to +125°C | 0.25°C | 187.5ms |
- * | 11-bit | 11 | -55°C to +125°C | 0.125°C | 375ms |
- * | **12-bit** | **12** | **-55°C to +125°C** | **0.0625°C** | **750ms** |
+ * | 9-bit | 9 | -55degC to +125degC | 0.5degC | 93.75ms |
+ * | 10-bit | 10 | -55degC to +125degC | 0.25degC | 187.5ms |
+ * | 11-bit | 11 | -55degC to +125degC | 0.125degC | 375ms |
+ * | **12-bit** | **12** | **-55degC to +125degC** | **0.0625degC** | **750ms** |
  *
  * **This task uses 12-bit resolution because:**
- * - **Best accuracy:** ±0.5°C error with 0.0625°C granularity
+ * - **Best accuracy:** +/-0.5degC error with 0.0625degC granularity
  * - **Sufficient time budget:** 750ms conversion + 200ms idle = 950ms < 1000ms period
- * - **Speed-of-sound precision:** 0.0625°C -> 0.038 m/s error -> negligible distance error
+ * - **Speed-of-sound precision:** 0.0625degC -> 0.038 m/s error -> negligible distance error
  * - **No benefit from faster resolution:** Ultrasonic compensation tolerates 1s update rate
  *
  * ## 1-Wire Transaction Timing
  *
- * ### Trigger Conversion Sequence (~500µs total)
- * 1. **Reset pulse:** 480µs low (controller pulls line low)
- * 2. **Presence detect:** 60-240µs low (DS18B20 responds)
- * 3. **Skip ROM (0xCC):** 8 bytes × 60µs = 480µs
- * 4. **Convert T (0x44):** 8 bytes × 60µs = 480µs
- * 5. **Total:** ~1440µs ≈ 1.5ms
+ * ### Trigger Conversion Sequence (~500us total)
+ * 1. **Reset pulse:** 480us low (controller pulls line low)
+ * 2. **Presence detect:** 60-240us low (DS18B20 responds)
+ * 3. **Skip ROM (0xCC):** 8 bytes x 60us = 480us
+ * 4. **Convert T (0x44):** 8 bytes x 60us = 480us
+ * 5. **Total:** ~1440us ~ 1.5ms
  *
  * ### Read Scratchpad Sequence (~5ms total)
- * 1. **Reset pulse:** 480µs
- * 2. **Presence detect:** 60-240µs
- * 3. **Skip ROM (0xCC):** 480µs
- * 4. **Read Scratchpad (0xBE):** 480µs
- * 5. **Read 9 bytes:** 9 × 60µs × 8 bits = 4320µs ≈ 4.3ms
+ * 1. **Reset pulse:** 480us
+ * 2. **Presence detect:** 60-240us
+ * 3. **Skip ROM (0xCC):** 480us
+ * 4. **Read Scratchpad (0xBE):** 480us
+ * 5. **Read 9 bytes:** 9 x 60us x 8 bits = 4320us ~ 4.3ms
  * 6. **Total:** ~5.5ms
  *
  * ## Centi-Degree Storage Format
  *
- * Temperature is stored as int16_t in centi-degrees (0.01°C units) for:
+ * Temperature is stored as int16_t in centi-degrees (0.01degC units) for:
  * - **Integer arithmetic:** Avoids floating-point in shared_data
  * - **Compact storage:** 2 bytes vs 4 bytes for float
  * - **Deterministic:** No floating-point rounding errors
@@ -879,12 +879,12 @@ static void internal_send_iwdt_heartbeat(void)
  * @f]
  *
  * **Examples:**
- * | °C (float) | Centi-degrees (int16_t) |
+ * | degC (float) | Centi-degrees (int16_t) |
  * |------------|-------------------------|
- * | 25.375°C | 2537 |
- * | -10.0625°C | -1006 |
- * | 0.0625°C | 6 |
- * | 50.0°C | 5000 |
+ * | 25.375degC | 2537 |
+ * | -10.0625degC | -1006 |
+ * | 0.0625degC | 6 |
+ * | 50.0degC | 5000 |
  *
  * ## 1-Wire Error Handling Strategy
  *
@@ -925,7 +925,7 @@ static void internal_send_iwdt_heartbeat(void)
  *       :tx_thread_sleep(80 ticks)\n**Wait 800ms for conversion**;
  *       :rx_ds18b20_read_temperature()\n(Read scratchpad, verify CRC, ~5ms);
  *       if (Read successful?) then (yes)
- *         :Convert to centi-degrees\ntemp_cdegc = temp_celsius × 100;
+ *         :Convert to centi-degrees\ntemp_cdegc = temp_celsius x 100;
  *         :Build temp_sensor_state_t\nSet timestamp, mark valid;
  *         :Log debug: Temperature value;
  *       else (no)
@@ -954,7 +954,7 @@ static void internal_send_iwdt_heartbeat(void)
  * | **Read Time** | ~5ms | 1-Wire scratchpad read (9 bytes) |
  * | **CPU Active Time** | ~6.5ms per second | Trigger + read + data copy |
  * | **CPU Idle Time** | 993.5ms per second | tx_thread_sleep() yields CPU |
- * | **CPU Utilization** | 0.65% | (6.5ms / 1000ms) × 100% |
+ * | **CPU Utilization** | 0.65% | (6.5ms / 1000ms) x 100% |
  * | **Worst Case Latency** | 1000ms | Max time to detect temperature change |
  * | **1-Wire Timeout** | 100ms | Per-operation timeout |
  * | **Stack Usage (Peak)** | 128 bytes | During rx_ds18b20_read_temperature() call |
@@ -980,7 +980,7 @@ static void internal_send_iwdt_heartbeat(void)
  * @pre temp_sensor_task_create() called successfully
  * @pre ThreadX scheduler started (task is scheduled)
  * @pre g_bus_manager initialized and ready for 1-Wire operations
- * @pre 1-Wire GPIO pin configured as open-drain with 4.7kΩ pull-up resistor
+ * @pre 1-Wire GPIO pin configured as open-drain with 4.7kOhm pull-up resistor
  * @pre DS18B20 powered and connected to 1-Wire bus
  * @pre shared_data_init() called (for shared_data_update_temp)
  *
@@ -1004,7 +1004,7 @@ static void internal_send_iwdt_heartbeat(void)
  *
  * @warning **Infinite Loop:** This function NEVER returns. Do not call directly from
  *          application code. Only ThreadX should call this via tx_thread_create().
- * @warning **1-Wire Timing Critical:** DS18B20 requires precise timing (±10µs tolerance).
+ * @warning **1-Wire Timing Critical:** DS18B20 requires precise timing (+/-10us tolerance).
  *          Do not disable interrupts during 1-Wire operations.
  * @warning **Conversion Time:** DS18B20 takes 750ms for 12-bit conversion. Task is
  *          blocked during this time and cannot respond to events.
@@ -1026,15 +1026,15 @@ static void internal_send_iwdt_heartbeat(void)
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown (per 1 second iteration):**
- * - rx_ds18b20_trigger_conversion(): ~1500 µs (1-Wire reset + Skip ROM + Convert T)
+ * - rx_ds18b20_trigger_conversion(): ~1500 us (1-Wire reset + Skip ROM + Convert T)
  * - tx_thread_sleep(80 ticks): 800ms (DS18B20 conversion, CPU idle)
- * - rx_ds18b20_read_temperature(): ~5000 µs (1-Wire reset + Skip ROM + Read Scratchpad)
- * - Data structure copy: ~10 µs (memset + field assignments)
- * - shared_data_update_temp(): ~20 µs (mutex lock + copy + unlock)
- * - Logging (if debug): ~100 µs (UART transmit)
- * - **Total active time:** ~6630 µs = 6.6ms
+ * - rx_ds18b20_read_temperature(): ~5000 us (1-Wire reset + Skip ROM + Read Scratchpad)
+ * - Data structure copy: ~10 us (memset + field assignments)
+ * - shared_data_update_temp(): ~20 us (mutex lock + copy + unlock)
+ * - Logging (if debug): ~100 us (UART transmit)
+ * - **Total active time:** ~6630 us = 6.6ms
  * - **Sleep time:** 1000ms - 6.6ms = 993.4ms (CPU idle)
- * - **CPU utilization:** (6.6ms / 1000ms) × 100% = 0.66%
+ * - **CPU utilization:** (6.6ms / 1000ms) x 100% = 0.66%
  *
  * **1-Wire Bandwidth Usage:**
  * - 1 trigger + 1 read per second = ~6.5ms active time
@@ -1058,7 +1058,7 @@ static void internal_send_iwdt_heartbeat(void)
  *
  * // Step 4: Convert to centi-degrees
  * state.temperature_cdegc[0] = (int16_t)(25.375f * 100.0f);
- * // state.temperature_cdegc[0] = 2537 (25.37°C)
+ * // state.temperature_cdegc[0] = 2537 (25.37degC)
  *
  * state.sensor_valid[0] = true;
  * state.sensor_count = 1;
@@ -1100,7 +1100,7 @@ static void internal_send_iwdt_heartbeat(void)
  * // Still update shared data (with invalid marker)
  * shared_data_update_temp(&state);
  * // Obstacle detection task sees sensor_valid[0] == false
- * // and uses default temperature (20°C) for compensation
+ * // and uses default temperature (20degC) for compensation
  *
  * // Wait 200ms and retry
  * tx_thread_sleep(20);
@@ -1119,20 +1119,20 @@ static void internal_send_iwdt_heartbeat(void)
  * if (temp_state.sensor_valid[0]) {
  *   // Convert centi-degrees to float
  *   temp_celsius = (float)temp_state.temperature_cdegc[0] / 100.0f;
- *   // temp_celsius = 25.37°C
+ *   // temp_celsius = 25.37degC
  * }
  *
  * // Calculate temperature-compensated speed of sound
  * float speed_of_sound_mps = 331.3f + 0.606f * temp_celsius;
- * // speed_of_sound_mps = 331.3 + 0.606 × 25.37 = 346.67 m/s
+ * // speed_of_sound_mps = 331.3 + 0.606 x 25.37 = 346.67 m/s
  *
  * // HC-SR04 echo pulse width (microseconds)
  * uint32_t echo_pulse_us = 5775;  // Example: 1 meter distance
  *
  * // Calculate distance with temperature compensation
  * float distance_m = (speed_of_sound_mps * echo_pulse_us / 1000000.0f) / 2.0f;
- * // distance_m = (346.67 × 5775 / 1000000) / 2 = 1.001 meters
- * // Without compensation (343.4 m/s @ 20°C): 0.991 meters (1% error)
+ * // distance_m = (346.67 x 5775 / 1000000) / 2 = 1.001 meters
+ * // Without compensation (343.4 m/s @ 20degC): 0.991 meters (1% error)
  * @endcode
  *
  * @see temp_sensor_task_create() Task creation function

@@ -71,20 +71,20 @@
  *
  * | Operation | Overhead | I2C Transaction | Total @ 400 kHz |
  * |-----------|----------|-----------------|-----------------|
- * | **Init** | ~2 µs | 0 | ~2 µs (one-time) |
- * | **Write 1B** | ~2 µs | ~25 µs | ~27 µs |
- * | **Read 1B** | ~2 µs | ~25 µs | ~27 µs |
- * | **Write-Read 1B+1B** | ~2 µs | ~50 µs | ~52 µs |
+ * | **Init** | ~2 us | 0 | ~2 us (one-time) |
+ * | **Write 1B** | ~2 us | ~25 us | ~27 us |
+ * | **Read 1B** | ~2 us | ~25 us | ~27 us |
+ * | **Write-Read 1B+1B** | ~2 us | ~50 us | ~52 us |
  *
  * **Overhead breakdown:**
- * - Bus manager lookup: ~0.5 µs
- * - Mutex lock/unlock: ~1.0 µs
- * - Callback dispatch: ~0.5 µs
+ * - Bus manager lookup: ~0.5 us
+ * - Mutex lock/unlock: ~1.0 us
+ * - Callback dispatch: ~0.5 us
  *
  * **I2C transaction time** (@ 400 kHz Fast mode):
- * - START + 7-bit addr + R/W + ACK: ~22.5 µs
- * - Data byte + ACK: ~22.5 µs per byte
- * - STOP: ~2.5 µs
+ * - START + 7-bit addr + R/W + ACK: ~22.5 us
+ * - Data byte + ACK: ~22.5 us per byte
+ * - STOP: ~2.5 us
  *
  * ## Memory Usage
  *
@@ -99,7 +99,7 @@
  *
  * - **RX72N RIIC peripheral**: 3 channels (RIIC0, RIIC1, RIIC2)
  * - **GPIO MPC**: Pin function switching for SDA/SCL
- * - **External pull-ups**: 2.2-4.7 kΩ on SDA and SCL lines (REQUIRED)
+ * - **External pull-ups**: 2.2-4.7 kOhm on SDA and SCL lines (REQUIRED)
  * - **PCLK frequency**: Must be stable (frequency calculation depends on it)
  *
  * ## Use Cases
@@ -124,7 +124,7 @@
  *
  * ### Configuration Write (Set IMU range)
  * ```c
- * // Set accelerometer range to ±8g (register 0x1C, value 0x10)
+ * // Set accelerometer range to +/-8g (register 0x1C, value 0x10)
  * uint8_t config_cmd[2] = {0x1C, 0x10};
  * rx_bus_i2c_write(&bus_mgr, "imu_i2c", config_cmd, 2);
  * ```
@@ -136,7 +136,7 @@
  * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line callbacks |
  * | **Rule 2** | [PASS] No loops (zero iterations in validation logic) |
  * | **Rule 3** | [PASS] No malloc - context structs on stack, bus config pre-allocated |
- * | **Rule 4** | [PASS] All functions ≤60 lines (longest callback: 35 lines) |
+ * | **Rule 4** | [PASS] All functions <=60 lines (longest callback: 35 lines) |
  * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL checks + state checks) |
  * | **Rule 6** | [PASS] Variables at smallest scope (ctx in API functions) |
  * | **Rule 7** | [PASS] All RIIC HAL returns checked (err != k_rx_ok) |
@@ -349,7 +349,7 @@ typedef struct {
  * Allocated on the stack by rx_bus_i2c_write_read() (no dynamic allocation).
  *
  * This is the standard context for the I2C register-read pattern:
- * START → ADDR+W → reg_addr_bytes → repeated START → ADDR+R → data_bytes → STOP
+ * START -> ADDR+W -> reg_addr_bytes -> repeated START -> ADDR+R -> data_bytes -> STOP
  *
  * @par Memory Layout (64-bit platform):
  * | Offset | Size | Field        | Type           | Alignment |
@@ -449,7 +449,7 @@ typedef struct {
  *            may cause glitches on the I2C bus
  *
  * @par Performance:
- * Execution time: ~50 µs @ 240 MHz (includes RIIC peripheral setup)
+ * Execution time: ~50 us @ 240 MHz (includes RIIC peripheral setup)
  *
  * @par Example:
  * @code
@@ -552,7 +552,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
  *            that the device address in bus_config matches the physical device
  *
  * @par Performance:
- * Execution time: ~2 µs overhead + ~22.5 µs per byte @ 400 kHz Fast mode
+ * Execution time: ~2 us overhead + ~22.5 us per byte @ 400 kHz Fast mode
  *
  * @par Example:
  * @code
@@ -661,7 +661,7 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
  *            always check the return code before reading the buffer
  *
  * @par Performance:
- * Execution time: ~2 µs overhead + ~22.5 µs per byte @ 400 kHz Fast mode
+ * Execution time: ~2 us overhead + ~22.5 us per byte @ 400 kHz Fast mode
  *
  * @par Example:
  * @code
@@ -870,7 +870,7 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
  *
  * ## Performance
  *
- * - **Execution time**: ~50 µs @ 240 MHz (includes peripheral init)
+ * - **Execution time**: ~50 us @ 240 MHz (includes peripheral init)
  * - **Call frequency**: Once per bus at system startup
  * - **Thread safety**: Mutex-protected by bus manager
  *
@@ -892,7 +892,7 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
  * @pre manager initialized via rx_bus_manager_init()
  * @pre Bus registered via rx_bus_manager_add_bus()
  * @pre Bus config created via rx_bus_config_init_i2c()
- * @pre External pull-up resistors (2.2-4.7 kΩ) present on SDA/SCL
+ * @pre External pull-up resistors (2.2-4.7 kOhm) present on SDA/SCL
  *
  * @post RIIC peripheral configured and enabled
  * @post bus_config->initialized == true
@@ -1027,11 +1027,11 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
  * ```
  *
  * **Timing @ 400 kHz:**
- * - START: ~2.5 µs
- * - Address + ACK: ~22.5 µs
- * - Each data byte + ACK: ~22.5 µs
- * - STOP: ~2.5 µs
- * - **Total**: 27.5 µs + (N × 22.5 µs)
+ * - START: ~2.5 us
+ * - Address + ACK: ~22.5 us
+ * - Each data byte + ACK: ~22.5 us
+ * - STOP: ~2.5 us
+ * - **Total**: 27.5 us + (N x 22.5 us)
  *
  * ## Use Cases
  *
@@ -1088,7 +1088,7 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
  * Reentrant for different bus_name values.
  *
  * @par Performance:
- * Execution time: ~27.5 µs + (N × 22.5 µs) @ 400 kHz + ~2 µs overhead
+ * Execution time: ~27.5 us + (N x 22.5 us) @ 400 kHz + ~2 us overhead
  *
  * @par Example - Write Single Register:
  * @code{.c}
@@ -1106,8 +1106,8 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
  * // Configure MPU6050: Write to multiple registers starting at 0x1B
  * uint8_t config_data[] = {
  *     0x1B,  // Start register: GYRO_CONFIG
- *     0x18,  // GYRO_CONFIG: ±2000°/s range
- *     0x10,  // ACCEL_CONFIG: ±8g range
+ *     0x18,  // GYRO_CONFIG: +/-2000deg/s range
+ *     0x10,  // ACCEL_CONFIG: +/-8g range
  *     0x06   // CONFIG: 5 Hz DLPF
  * };
  * rx_err_t err = rx_bus_i2c_write(&bus_mgr, "imu_i2c", config_data, sizeof(config_data));
@@ -1185,7 +1185,7 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
  * START | ADDR(7bit)+R | ACK | DATA[0] | ACK | ... | DATA[N-2] | ACK | DATA[N-1] | NACK | STOP
  * ```
  *
- * **Timing @ 400 kHz:** 27.5 µs + (N × 22.5 µs)
+ * **Timing @ 400 kHz:** 27.5 us + (N x 22.5 us)
  *
  * @param[in] manager Pointer to bus manager instance
  * @param[in] bus_name Name of I2C bus (must be initialized)
@@ -1262,10 +1262,10 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * - Required by many devices (MPU6050, EEPROM, etc.)
  *
  * **Timing @ 400 kHz:**
- * - Write phase: 27.5 µs + (N × 22.5 µs)
- * - Repeated START: ~2.5 µs
- * - Read phase: 22.5 µs + (M × 22.5 µs)
- * - **Total**: ~50 µs + ((N+M) × 22.5 µs)
+ * - Write phase: 27.5 us + (N x 22.5 us)
+ * - Repeated START: ~2.5 us
+ * - Read phase: 22.5 us + (M x 22.5 us)
+ * - **Total**: ~50 us + ((N+M) x 22.5 us)
  *
  * ## Common Use Cases
  *
@@ -1317,7 +1317,7 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  *
  * @note Most common I2C function for sensor/peripheral access
  * @note Thread-safe (bus manager mutex)
- * @note Blocks until transaction completes (~50 µs for 1+1 byte @ 400 kHz)
+ * @note Blocks until transaction completes (~50 us for 1+1 byte @ 400 kHz)
  *
  * @warning Device must support repeated START (most do, check datasheet)
  * @warning Multi-byte reads require device to support register auto-increment
@@ -1332,7 +1332,7 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * Not reentrant for same bus_name. Reentrant for different buses.
  *
  * @par Performance:
- * Execution time: ~52 µs (1 byte write + 1 byte read @ 400 kHz) + ~2 µs overhead
+ * Execution time: ~52 us (1 byte write + 1 byte read @ 400 kHz) + ~2 us overhead
  *
  * @par Example - Read WHO_AM_I Register:
  * @code{.c}

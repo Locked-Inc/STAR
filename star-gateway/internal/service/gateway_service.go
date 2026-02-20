@@ -12,30 +12,30 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
-// GatewayService implements the gRPC GatewayService for ROS2 ↔ UI bridging.
+// GatewayService implements the gRPC GatewayService for ROS2 <-> UI bridging.
 //
 // Architecture:
 //
-//	ROS2 (C++) ↔ gRPC ↔ GatewayService (Go) ↔ WebSocket ↔ UI (TypeScript)
+//	ROS2 (C++) <-> gRPC <-> GatewayService (Go) <-> WebSocket <-> UI (TypeScript)
 //
 // Data flows:
-//  1. Telemetry (ROS2 → UI):
-//     ROS2 calls ForwardTelemetry() → cached → WebSocket streams to UI
-//  2. Teleop (UI → ROS2):
-//     UI sends via WebSocket → UpdateTeleopCommand() → ROS2 polls GetTeleopCommand()
-//  3. PID Gains (UI → ROS2):
-//     UI sends via WebSocket → SetPIDGains() → ROS2 → SPI → RX72N
+//  1. Telemetry (ROS2 -> UI):
+//     ROS2 calls ForwardTelemetry() -> cached -> WebSocket streams to UI
+//  2. Teleop (UI -> ROS2):
+//     UI sends via WebSocket -> UpdateTeleopCommand() -> ROS2 polls GetTeleopCommand()
+//  3. PID Gains (UI -> ROS2):
+//     UI sends via WebSocket -> SetPIDGains() -> ROS2 -> SPI -> RX72N
 type GatewayService struct {
 	starv1.UnimplementedGatewayServiceServer
 
-	// Telemetry cache (ROS2 → UI)
+	// Telemetry cache (ROS2 -> UI)
 	telemetryMu          sync.RWMutex
 	cachedSystemStatus   *starv1.SystemStatus
 	cachedBatteryState   *starv1.BatteryState
 	cachedTelemetry      *starv1.TelemetryData
 	telemetryLastUpdated time.Time
 
-	// Teleop command cache (UI → ROS2)
+	// Teleop command cache (UI -> ROS2)
 	teleopMu          sync.RWMutex
 	cachedTeleop      *starv1.VelocityCommand
 	teleopLastUpdated time.Time

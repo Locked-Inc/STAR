@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n doxygen doxygen-pdf doxygen-clean
 
 help:
 	@echo "STAR Project Development Helper"
@@ -20,6 +20,9 @@ help:
 	@echo "RX72N Firmware:"
 	@echo "  make proto-gen-firmware - Generate nanopb protos for RX72N firmware"
 	@echo "  make test-rx72n         - Run RX72N unit tests (regenerates protos first)"
+	@echo "  make doxygen            - Generate Doxygen HTML docs for RX72N firmware"
+	@echo "  make doxygen-pdf        - Generate Doxygen HTML + LaTeX PDF (requires lualatex)"
+	@echo "  make doxygen-clean      - Remove generated Doxygen output"
 	@echo "  Note: RX72N firmware is built in e2 studio, not via Makefile"
 	@echo ""
 	@echo "Protocol Buffers:"
@@ -90,14 +93,14 @@ proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware
 proto-gen-go:
 	@echo "Generating protocol buffers (Go, TS, C, C++)..."
 	@buf generate star-proto/proto
-	@echo "✓ Code generated under star-proto/gen/"
+	@echo "[OK] Code generated under star-proto/gen/"
 	@echo "Setting up Go module for generated code..."
 	@if [ ! -f star-proto/gen/go/go.mod ]; then \
 		cd star-proto/gen/go && go mod init github.com/Locked-Inc/star-proto/gen/go; \
 	fi
 	@cd star-proto/gen/go && go mod tidy
 	@go work sync
-	@echo "✓ Go workspace synchronized"
+	@echo "[OK] Go workspace synchronized"
 
 # Placeholder for ROS2-specific generation (if distinct tooling is added)
 proto-gen-ros2:
@@ -116,9 +119,50 @@ proto-gen-firmware: proto-gen-go
 		base=$$(basename "$$proto" .proto); \
 		cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
 	done
-	@echo "✓ Firmware protos updated: e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1"
+	@echo "[OK] Firmware protos updated: e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1"
 
 # Test RX72N firmware (regenerates protos first)
 test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
 	@cd e2-studio-star-rx72n-firmware/tests && bash run_tests.sh
+
+# ------------------------------------------------------------
+# Doxygen Documentation (RX72N firmware)
+# ------------------------------------------------------------
+
+# Generate HTML reference docs only
+doxygen:
+	@echo "Generating Doxygen HTML documentation..."
+	@cd e2-studio-star-rx72n-firmware && doxygen Doxyfile
+	@echo "Done: e2-studio-star-rx72n-firmware/docs/doxygen/html/index.html"
+
+# Generate HTML + compile LaTeX to PDF
+# Uses lualatex (no register limit) instead of pdflatex (hits eTex 32768 cap
+# on our large codebase). Doxygen 1.16.1+ is required (installed from GitHub
+# in the Dockerfile -- Ubuntu 24.04 apt ships 1.9.8 which uses broken tabu).
+LATEX_DIR = e2-studio-star-rx72n-firmware/docs/doxygen/latex
+
+doxygen-pdf:
+	@echo "Generating Doxygen HTML + LaTeX..."
+	@cd e2-studio-star-rx72n-firmware && doxygen Doxyfile
+	@echo "Copying placeholder PDFs for any @msc blocks that failed to render..."
+	@PLACEHOLDER=$$(ls $(LATEX_DIR)/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
+	 if [ -n "$$PLACEHOLDER" ]; then \
+	   for eps in $(LATEX_DIR)/inline_mscgraph_*.eps; do \
+	     pdf="$${eps%.eps}.pdf"; \
+	     [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
+	   done; \
+	   for tex in $(LATEX_DIR)/inline_mscgraph_*.tex; do \
+	     pdf="$${tex%.tex}.pdf"; \
+	     [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
+	   done; \
+	 fi
+	@echo "Compiling refman.pdf (latexmk + lualatex)..."
+	@cd $(LATEX_DIR) && latexmk -lualatex -interaction=nonstopmode -f refman.tex
+	@echo "Done: $(LATEX_DIR)/refman.pdf"
+
+# Remove all generated Doxygen output
+doxygen-clean:
+	@echo "Removing Doxygen output..."
+	@rm -rf e2-studio-star-rx72n-firmware/docs/doxygen
+	@echo "Done."

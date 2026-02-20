@@ -46,7 +46,7 @@
  * The HC-SR04 sensor measures distance by timing ultrasonic pulse reflections:
  *
  * **Physical Process:**
- * 1. MCU sends 10µs trigger pulse -> HC-SR04
+ * 1. MCU sends 10us trigger pulse -> HC-SR04
  * 2. HC-SR04 emits 8 ultrasonic bursts at 40 kHz
  * 3. Sound wave travels to object and reflects back
  * 4. HC-SR04 detects echo and outputs pulse (width = time-of-flight)
@@ -63,8 +63,8 @@
  *
  * Where:
  * - @f$ d @f$ = distance (cm)
- * - @f$ t @f$ = echo pulse duration (µs)
- * - @f$ v_{sound} @f$ = speed of sound (cm/µs)
+ * - @f$ t @f$ = echo pulse duration (us)
+ * - @f$ v_{sound} @f$ = speed of sound (cm/us)
  * - Factor of 2 accounts for roundtrip (to object and back)
  *
  * **Speed of Sound (Temperature-Dependent):**
@@ -73,39 +73,39 @@
  * v_{sound}(T) = 331.3 + 0.606 \times T_{celsius} \quad (\text{m/s})
  * @f]
  *
- * At 20°C (standard reference temperature):
+ * At 20degC (standard reference temperature):
  * @f[
- * v_{sound}(20) = 343 \text{ m/s} = 0.0343 \text{ cm/µs}
+ * v_{sound}(20) = 343 \text{ m/s} = 0.0343 \text{ cm/us}
  * @f]
  *
- * Simplified distance formula at 20°C:
+ * Simplified distance formula at 20degC:
  * @f[
- * d_{cm} = \frac{t_{µs} \times 0.0343}{2} = \frac{t_{µs}}{58.3} \approx \frac{t_{µs}}{58}
+ * d_{cm} = \frac{t_{us} \times 0.0343}{2} = \frac{t_{us}}{58.3} \approx \frac{t_{us}}{58}
  * @f]
  *
  * **Temperature Compensation Example:**
  *
- * At 10°C: @f$ v_{sound}(10) = 337.36 \text{ m/s} @f$ (1.75% slower than 20°C)
+ * At 10degC: @f$ v_{sound}(10) = 337.36 \text{ m/s} @f$ (1.75% slower than 20degC)
  *
- * At 30°C: @f$ v_{sound}(30) = 349.48 \text{ m/s} @f$ (1.89% faster than 20°C)
+ * At 30degC: @f$ v_{sound}(30) = 349.48 \text{ m/s} @f$ (1.89% faster than 20degC)
  *
  * ## Timing Requirements
  *
  * ### Trigger Pulse Timing (MCU -> HC-SR04)
  *
  * ```
- * Time (µs)  TRIG Signal
- *     0      ─────┐
- *     2      ─────┘ LOW  (2µs settle time, ensure clean LOW)
- *     2      ┌────────
- *    12      │  10µs  │  (Trigger pulse, initiates measurement)
- *    12      └────────
- *    12+     ─────────  (Wait for echo response...)
+ * Time (us)  TRIG Signal
+ *     0      -----+
+ *     2      -----+ LOW  (2us settle time, ensure clean LOW)
+ *     2      +--------
+ *    12      |  10us  |  (Trigger pulse, initiates measurement)
+ *    12      +--------
+ *    12+     ---------  (Wait for echo response...)
  * ```
  *
  * Requirements:
- * - Minimum settle time: 2µs LOW before pulse
- * - Pulse width: 10µs ±1µs (HC-SR04 datasheet requirement)
+ * - Minimum settle time: 2us LOW before pulse
+ * - Pulse width: 10us +/-1us (HC-SR04 datasheet requirement)
  * - Pulse shape: Clean rising/falling edges
  *
  * ### Echo Pulse Timing (HC-SR04 -> MCU)
@@ -113,43 +113,43 @@
  * ```
  * Distance   Echo Duration   Behavior
  * --------   -------------   --------
- * 2cm        116µs           Minimum valid range
- *            ┌──116µs──┐
- * ECHO: ─────┘          └────
+ * 2cm        116us           Minimum valid range
+ *            +--116us--+
+ * ECHO: -----+          +----
  *
- * 30cm       1,740µs         Typical indoor range
- *            ┌───1740µs───┐
- * ECHO: ─────┘            └────
+ * 30cm       1,740us         Typical indoor range
+ *            +---1740us---+
+ * ECHO: -----+            +----
  *
- * 100cm      5,800µs         Extended range
- *            ┌─────5800µs─────┐
- * ECHO: ─────┘                └────
+ * 100cm      5,800us         Extended range
+ *            +-----5800us-----+
+ * ECHO: -----+                +----
  *
- * 400cm      23,200µs        Maximum valid range
- *            ┌──────23200µs──────┐
- * ECHO: ─────┘                   └────
+ * 400cm      23,200us        Maximum valid range
+ *            +------23200us------+
+ * ECHO: -----+                   +----
  *
  * >400cm     No pulse        Timeout condition (>30ms)
- * ECHO: ─────────────────────────────
+ * ECHO: -----------------------------
  * ```
  *
  * Echo pulse characteristics:
- * - Minimum duration: 116µs (2cm × 58µs/cm)
- * - Maximum duration: 23,200µs (400cm × 58µs/cm)
- * - Timeout threshold: 30,000µs (30ms = 400cm + 30% margin)
+ * - Minimum duration: 116us (2cm x 58us/cm)
+ * - Maximum duration: 23,200us (400cm x 58us/cm)
+ * - Timeout threshold: 30,000us (30ms = 400cm + 30% margin)
  * - Out-of-range: No echo or echo >30ms
  *
  * ### Measurement Rate Limit
  *
  * ```
  * Measurement 1        Measurement 2
- * │                    │
- * ├─────────60ms───────┤ (Minimum gap per datasheet)
- * │                    │
- * TRIG: ───┐           ───┐
- *          └───        ───└───
- * ECHO:    ───┐        ───┐
- *             └───────     └───────
+ * |                    |
+ * +---------60ms-------+ (Minimum gap per datasheet)
+ * |                    |
+ * TRIG: ---+           ---+
+ *          +---        ---+---
+ * ECHO:    ---+        ---+
+ *             +-------     +-------
  * ```
  *
  * Requirements:
@@ -197,18 +197,18 @@
  *
  * Tests verify the distance formula using known input/output pairs:
  *
- * | Distance (cm) | Echo Time (µs) | Calculation | Tolerance |
+ * | Distance (cm) | Echo Time (us) | Calculation | Tolerance |
  * |---------------|----------------|-------------|-----------|
- * | 2             | 116            | 2 × 58      | ±0.1 cm   |
- * | 10            | 580            | 10 × 58     | ±1.0 cm   |
- * | 30            | 1,740          | 30 × 58     | ±1.5 cm   |
- * | 100           | 5,800          | 100 × 58    | ±3.0 cm   |
- * | 400           | 23,200         | 400 × 58    | ±10.0 cm  |
+ * | 2             | 116            | 2 x 58      | +/-0.1 cm   |
+ * | 10            | 580            | 10 x 58     | +/-1.0 cm   |
+ * | 30            | 1,740          | 30 x 58     | +/-1.5 cm   |
+ * | 100           | 5,800          | 100 x 58    | +/-3.0 cm   |
+ * | 400           | 23,200         | 400 x 58    | +/-10.0 cm  |
  *
  * Tolerance accounts for:
  * - Floating-point rounding
  * - Integer division in conversion
- * - Real-world sensor accuracy (±3mm per datasheet)
+ * - Real-world sensor accuracy (+/-3mm per datasheet)
  *
  * ### Temperature Compensation Verification
  *
@@ -216,9 +216,9 @@
  *
  * | Temperature | Speed of Sound | 100cm Echo Time | Expected Distance |
  * |-------------|----------------|-----------------|-------------------|
- * | 10°C        | 337.36 m/s     | 5,800µs         | 97.84 cm          |
- * | 20°C        | 343.00 m/s     | 5,800µs         | 100.00 cm         |
- * | 30°C        | 349.48 m/s     | 5,800µs         | 101.35 cm         |
+ * | 10degC        | 337.36 m/s     | 5,800us         | 97.84 cm          |
+ * | 20degC        | 343.00 m/s     | 5,800us         | 100.00 cm         |
+ * | 30degC        | 349.48 m/s     | 5,800us         | 101.35 cm         |
  *
  * Formula verification: @f$ d = \frac{t \times (331.3 + 0.606T)}{2 \times 100} @f$
  *
@@ -245,7 +245,7 @@
  * - [OK] **Edge Cases:** Minimum range (2cm), maximum range (400cm), timeout (>400cm)
  * - [OK] **Error Conditions:** Out-of-range (<2cm, >400cm), GPIO failures, timeouts
  * - [OK] **Async Operation:** Callback invocation, busy state, cancellation
- * - [OK] **Temperature Compensation:** Enable/disable, 10°C, 20°C, 30°C measurements
+ * - [OK] **Temperature Compensation:** Enable/disable, 10degC, 20degC, 30degC measurements
  * - [OK] **API Validation:** nullptr pointer checks, state validation, return value checks
  * - [OK] **Statistics:** Measurement count, timeout count, range error count, reset
  * - [OK] **Worker Thread:** Init/deinit lifecycle, double-init protection
@@ -260,7 +260,7 @@
  * | **Rule 2: Fixed Loop Bounds** | [OK] | Test runner loop bounded by test count (compile-time constant) |
  * | **Rule 3: No Dynamic Allocation** | [OK] | Zero `malloc`/`free`; all test data stack-allocated or static |
  * | **Rule 4: Short Functions** | [OK] | All test functions <60 lines; focused on single aspect |
- * | **Rule 5: Assertions** | [OK] | Every test has ≥2 assertions (setup + verify); Unity assertions used |
+ * | **Rule 5: Assertions** | [OK] | Every test has >=2 assertions (setup + verify); Unity assertions used |
  * | **Rule 6: Data Scope** | [OK] | Variables declared at smallest scope; test fixtures static |
  * | **Rule 7: Check Returns** | [OK] | All driver return values validated with `TEST_ASSERT_EQUAL` |
  * | **Rule 8: Limit Preprocessor** | [OK] | Typed enums only; no macros except Unity framework |
@@ -397,7 +397,7 @@ typedef enum : uint32_t {
  *
  * Actions performed:
  * 1. Initialize mock HAL with default state
- * 2. Enable auto-advance timing mode (1µs steps)
+ * 2. Enable auto-advance timing mode (1us steps)
  * 3. Zero-initialize sensor handle
  * 4. Configure default sensor config (PMOD JB pins, 30ms timeout)
  *
@@ -761,9 +761,9 @@ void test_hcsr04_deinit_not_initialized_fails(void)
  * - Trigger pulse generation verification
  *
  * **Distance Test Vectors:**
- * - 10cm: Echo time 580µs, tolerance ±1.0cm
- * - 100cm: Echo time 5,800µs, tolerance ±3.0cm
- * - 400cm: Echo time 23,200µs, tolerance ±10.0cm
+ * - 10cm: Echo time 580us, tolerance +/-1.0cm
+ * - 100cm: Echo time 5,800us, tolerance +/-3.0cm
+ * - 400cm: Echo time 23,200us, tolerance +/-10.0cm
  *
  * @{
  */
@@ -775,12 +775,12 @@ void test_hcsr04_deinit_not_initialized_fails(void)
  * Verifies correct distance calculation for 10cm object.
  *
  * **Physics:**
- * - Echo time: 10cm × 58µs/cm = 580µs
- * - Speed of sound at 20°C: 343 m/s
+ * - Echo time: 10cm x 58us/cm = 580us
+ * - Speed of sound at 20degC: 343 m/s
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`
- * - Distance = 10.0cm ±1.0cm
+ * - Distance = 10.0cm +/-1.0cm
  *
  * @pre Sensor initialized, mock configured for 10cm
  * @post Distance measurement complete
@@ -807,11 +807,11 @@ void test_hcsr04_measure_10cm(void)
  * Verifies correct distance calculation for 100cm object (typical indoor range).
  *
  * **Physics:**
- * - Echo time: 100cm × 58µs/cm = 5,800µs
+ * - Echo time: 100cm x 58us/cm = 5,800us
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`
- * - Distance = 100.0cm ±3.0cm
+ * - Distance = 100.0cm +/-3.0cm
  *
  * @pre Sensor initialized, mock configured for 100cm
  * @post Distance measurement complete
@@ -837,12 +837,12 @@ void test_hcsr04_measure_100cm(void)
  * Verifies correct distance calculation at HC-SR04 maximum range limit.
  *
  * **Physics:**
- * - Echo time: 400cm × 58µs/cm = 23,200µs
- * - Close to timeout threshold (30,000µs)
+ * - Echo time: 400cm x 58us/cm = 23,200us
+ * - Close to timeout threshold (30,000us)
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`
- * - Distance = 400.0cm ±10.0cm (larger tolerance due to sensor limits)
+ * - Distance = 400.0cm +/-10.0cm (larger tolerance due to sensor limits)
  *
  * @pre Sensor initialized, mock configured for 400cm
  * @post Distance measurement complete
@@ -978,7 +978,7 @@ void test_hcsr04_measure_sends_trigger_pulse(void)
  * @details
  * Verifies rejection of measurements below 2cm minimum range.
  *
- * **Condition:** Object at 1cm (echo time 58µs, below 116µs minimum)
+ * **Condition:** Object at 1cm (echo time 58us, below 116us minimum)
  *
  * **Expected Result:** Returns `k_rx_err_out_of_range`
  *
@@ -1029,8 +1029,8 @@ void test_hcsr04_measure_out_of_range_too_close(void)
  * 3. Verify all result fields populated correctly
  *
  * **Expected Result:**
- * - `distance_cm` = 50.0 ±3.0cm
- * - `distance_in` = 19.7 ±1.0in (50cm / 2.54)
+ * - `distance_cm` = 50.0 +/-3.0cm
+ * - `distance_in` = 19.7 +/-1.0in (50cm / 2.54)
  * - `status` = `k_rx_ok`
  *
  * @pre Sensor initialized
@@ -1079,7 +1079,7 @@ void test_hcsr04_measure_full_result(void)
  * - 2.54cm -> 1.0in (definition)
  * - 100cm -> 39.37in
  *
- * **Expected Result:** Accurate to ±0.1in
+ * **Expected Result:** Accurate to +/-0.1in
  *
  * @pre None
  * @post Conversion results validated
@@ -1098,15 +1098,15 @@ void test_hcsr04_cm_to_inches(void)
  * @brief Test echo time to distance conversion
  *
  * @details
- * Verifies `rx_hcsr04_echo_to_cm()` formula at 20°C.
+ * Verifies `rx_hcsr04_echo_to_cm()` formula at 20degC.
  *
  * **Test Vectors:**
- * - 580µs -> 10cm (580 / 58 = 10)
- * - 5,800µs -> 100cm (5800 / 58 = 100)
+ * - 580us -> 10cm (580 / 58 = 10)
+ * - 5,800us -> 100cm (5800 / 58 = 100)
  *
  * **Formula:** distance_cm = echo_us / 58
  *
- * **Expected Result:** Accurate to ±1cm
+ * **Expected Result:** Accurate to +/-1cm
  *
  * @pre None
  * @post Conversion results validated
@@ -1327,7 +1327,7 @@ test_async_callback(rx_hcsr04_t* handle, const rx_hcsr04_result_t* result, void*
  *
  * **Expected Result:**
  * - Callback invoked
- * - Distance = 100cm ±1cm
+ * - Distance = 100cm +/-1cm
  * - Status = `k_rx_ok`
  *
  * @pre Sensor initialized, callback flag reset
@@ -1645,9 +1645,9 @@ void test_hcsr04_cancel_sets_flag(void)
  * Speed of sound varies with temperature: @f$ v(T) = 331.3 + 0.606T @f$ m/s
  *
  * **Test Temperature Points:**
- * - 10°C: 337.36 m/s (1.75% slower than 20°C)
- * - 20°C: 343.00 m/s (reference temperature)
- * - 30°C: 349.48 m/s (1.89% faster than 20°C)
+ * - 10degC: 337.36 m/s (1.75% slower than 20degC)
+ * - 20degC: 343.00 m/s (reference temperature)
+ * - 30degC: 349.48 m/s (1.89% faster than 20degC)
  *
  * @{
  */
@@ -1659,14 +1659,14 @@ void test_hcsr04_cancel_sets_flag(void)
  * Verifies `rx_hcsr04_set_temperature()` enables compensation and stores temperature.
  *
  * **Test Steps:**
- * 1. Set temperature to 25°C
+ * 1. Set temperature to 25degC
  * 2. Verify compensation enabled
- * 3. Verify stored temperature = 25°C
+ * 3. Verify stored temperature = 25degC
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`
  * - Compensation enabled
- * - Temperature = 25°C ±0.01
+ * - Temperature = 25degC +/-0.01
  *
  * @pre Sensor initialized
  * @post Temperature compensation enabled
@@ -1719,7 +1719,7 @@ void test_hcsr04_set_temperature_not_initialized_fails(void)
  * @brief Test set temperature below minimum fails
  *
  * @details
- * Verifies temperature range validation (minimum -40°C).
+ * Verifies temperature range validation (minimum -40degC).
  *
  * **Expected Result:** Returns `k_rx_err_invalid_arg`
  */
@@ -1735,7 +1735,7 @@ void test_hcsr04_set_temperature_below_min_fails(void)
  * @brief Test set temperature above maximum fails
  *
  * @details
- * Verifies temperature range validation (maximum +85°C).
+ * Verifies temperature range validation (maximum +85degC).
  *
  * **Expected Result:** Returns `k_rx_err_invalid_arg`
  */
@@ -1751,7 +1751,7 @@ void test_hcsr04_set_temperature_above_max_fails(void)
  * @brief Test set temperature at range extremes succeeds
  *
  * @details
- * Verifies boundary values -40°C and +85°C are accepted.
+ * Verifies boundary values -40degC and +85degC are accepted.
  *
  * **Expected Result:** Both values accepted
  */
@@ -1835,12 +1835,12 @@ void test_hcsr04_is_temp_compensation_enabled_null_returns_false(void)
 }
 
 /**
- * @brief Test get temperature returns default 20°C
+ * @brief Test get temperature returns default 20degC
  *
  * @details
- * Verifies default temperature is 20°C (reference temperature).
+ * Verifies default temperature is 20degC (reference temperature).
  *
- * **Expected Result:** Temperature = 20.0°C ±0.01
+ * **Expected Result:** Temperature = 20.0degC +/-0.01
  */
 void test_hcsr04_get_temperature_default_20c(void)
 {
@@ -1885,21 +1885,21 @@ void test_hcsr04_get_temperature_null_output_fails(void)
 }
 
 /**
- * @brief Test measurement with temperature compensation at 10°C
+ * @brief Test measurement with temperature compensation at 10degC
  *
  * @details
- * Verifies distance calculation correction at 10°C.
+ * Verifies distance calculation correction at 10degC.
  *
  * **Physics:**
- * - Speed of sound at 10°C: 331.3 + (0.606 × 10) = 337.36 m/s
- * - Distance formula: d = (t × v) / 2
- * - Echo time 5,800µs -> 97.84cm (vs 100cm at 20°C)
+ * - Speed of sound at 10degC: 331.3 + (0.606 x 10) = 337.36 m/s
+ * - Distance formula: d = (t x v) / 2
+ * - Echo time 5,800us -> 97.84cm (vs 100cm at 20degC)
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`
- * - Distance = 97.84cm ±0.1cm (1.75% shorter than 20°C measurement)
+ * - Distance = 97.84cm +/-0.1cm (1.75% shorter than 20degC measurement)
  *
- * @pre Sensor initialized, temperature set to 10°C
+ * @pre Sensor initialized, temperature set to 10degC
  * @post Compensated distance returned
  */
 void test_hcsr04_measure_with_temp_compensation_10c(void)
@@ -1916,11 +1916,11 @@ void test_hcsr04_measure_with_temp_compensation_10c(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /*
-   * At 10°C:
+   * At 10degC:
    * - Speed of sound = 331.3 + (0.606 * 10) = 337.36 m/s = 0.033736 cm/us
    * - Distance = (5800 * 0.033736) / 2 = 97.84 cm
    *
-   * Without compensation (20°C):
+   * Without compensation (20degC):
    * - Distance = 5800 / 58 = 100 cm
    *
    * Expect ~2.16% difference (97.84 vs 100)
@@ -1929,20 +1929,20 @@ void test_hcsr04_measure_with_temp_compensation_10c(void)
 }
 
 /**
- * @brief Test measurement with temperature compensation at 30°C
+ * @brief Test measurement with temperature compensation at 30degC
  *
  * @details
- * Verifies distance calculation correction at 30°C.
+ * Verifies distance calculation correction at 30degC.
  *
  * **Physics:**
- * - Speed of sound at 30°C: 331.3 + (0.606 × 30) = 349.48 m/s
- * - Echo time 5,800µs -> 101.35cm (vs 100cm at 20°C)
+ * - Speed of sound at 30degC: 331.3 + (0.606 x 30) = 349.48 m/s
+ * - Echo time 5,800us -> 101.35cm (vs 100cm at 20degC)
  *
  * **Expected Result:**
  * - Returns `k_rx_ok`
- * - Distance = 101.35cm ±0.1cm (1.89% longer than 20°C measurement)
+ * - Distance = 101.35cm +/-0.1cm (1.89% longer than 20degC measurement)
  *
- * @pre Sensor initialized, temperature set to 30°C
+ * @pre Sensor initialized, temperature set to 30degC
  * @post Compensated distance returned
  */
 void test_hcsr04_measure_with_temp_compensation_30c(void)
@@ -1959,11 +1959,11 @@ void test_hcsr04_measure_with_temp_compensation_30c(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /*
-   * At 30°C:
+   * At 30degC:
    * - Speed of sound = 331.3 + (0.606 * 30) = 349.48 m/s = 0.034948 cm/us
    * - Distance = (5800 * 0.034948) / 2 = 101.35 cm
    *
-   * Without compensation (20°C):
+   * Without compensation (20degC):
    * - Distance = 5800 / 58 = 100 cm
    *
    * Expect ~1.35% difference (101.35 vs 100)
@@ -1972,16 +1972,16 @@ void test_hcsr04_measure_with_temp_compensation_30c(void)
 }
 
 /**
- * @brief Test measurement without compensation uses 20°C default
+ * @brief Test measurement without compensation uses 20degC default
  *
  * @details
- * Verifies uncompensated measurements use 20°C speed of sound.
+ * Verifies uncompensated measurements use 20degC speed of sound.
  *
  * **Expected Result:**
- * - Distance = 100cm (5,800µs / 58 = 100)
+ * - Distance = 100cm (5,800us / 58 = 100)
  *
  * @pre Sensor initialized, compensation disabled
- * @post Distance calculated at 20°C
+ * @post Distance calculated at 20degC
  */
 void test_hcsr04_measure_without_temp_compensation_uses_20c(void)
 {
@@ -1995,7 +1995,7 @@ void test_hcsr04_measure_without_temp_compensation_uses_20c(void)
   rx_err_t err         = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Should use default 20°C calculation: 5800 / 58 = 100 cm */
+  /* Should use default 20degC calculation: 5800 / 58 = 100 cm */
   TEST_ASSERT_FLOAT_WITHIN(0.1f, 100.0f, distance_cm);
 }
 
@@ -2006,15 +2006,15 @@ void test_hcsr04_measure_without_temp_compensation_uses_20c(void)
  * Verifies `rx_hcsr04_measure()` applies temperature compensation to result.
  *
  * **Test Steps:**
- * 1. Set temperature to 10°C
+ * 1. Set temperature to 10degC
  * 2. Perform full result measurement
  * 3. Verify compensated distance in result
  *
  * **Expected Result:**
- * - Distance = 97.84cm (compensated for 10°C)
- * - Echo time = 5,800µs
+ * - Distance = 97.84cm (compensated for 10degC)
+ * - Echo time = 5,800us
  *
- * @pre Sensor initialized, temperature 10°C
+ * @pre Sensor initialized, temperature 10degC
  * @post Full result with compensation
  */
 void test_hcsr04_measure_full_result_with_temp_compensation(void)

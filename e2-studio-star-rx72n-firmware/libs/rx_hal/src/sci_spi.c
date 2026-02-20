@@ -86,7 +86,7 @@ static sci_spi_state_t s_channels[k_sci_spi_max_channels];
 /**
  * @brief Map external channel number to internal state index
  * @details
- * Performs a direct 1:1 mapping from SCI channel number (0–12) to
+ * Performs a direct 1:1 mapping from SCI channel number (0-12) to
  * the corresponding index in the s_channels[] state array.
  *
  * @param[in]  channel External SCI channel number

@@ -132,20 +132,20 @@
  *
  * | Operation | Avg Time | Worst Case | Notes |
  * |-----------|----------|------------|-------|
- * | **rx_spi_comm_init()** | ~10 µs | ~20 µs | Frame encoder/decoder setup |
- * | **rx_spi_comm_send()** | ~150-500 µs | ~1 ms | Depends on payload size, FEC |
- * | **rx_spi_comm_receive()** | ~100-400 µs | ~800 µs | Depends on payload size, FEC |
- * | **rx_spi_comm_send_ack()** | ~50 µs | ~100 µs | Minimal frame (no payload) |
- * | **SPI transfer (HW)** | payload_len × 0.8 µs | - | @ 10 MHz SPI clock |
- * | **CRC-32 calculation** | payload_len × 0.05 µs | - | Software CRC (hardware CRC faster) |
- * | **FEC encoding** | payload_len × 2 µs | - | Optional, adds ~50% overhead |
- * | **FEC decoding** | payload_len × 3 µs | - | Optional, with error correction |
+ * | **rx_spi_comm_init()** | ~10 us | ~20 us | Frame encoder/decoder setup |
+ * | **rx_spi_comm_send()** | ~150-500 us | ~1 ms | Depends on payload size, FEC |
+ * | **rx_spi_comm_receive()** | ~100-400 us | ~800 us | Depends on payload size, FEC |
+ * | **rx_spi_comm_send_ack()** | ~50 us | ~100 us | Minimal frame (no payload) |
+ * | **SPI transfer (HW)** | payload_len x 0.8 us | - | @ 10 MHz SPI clock |
+ * | **CRC-32 calculation** | payload_len x 0.05 us | - | Software CRC (hardware CRC faster) |
+ * | **FEC encoding** | payload_len x 2 us | - | Optional, adds ~50% overhead |
+ * | **FEC decoding** | payload_len x 3 us | - | Optional, with error correction |
  *
  * **Throughput Analysis**:
- * - **Theoretical max**: 10 Mbps (SPI clock) × 8 bits = 80 Mbps
+ * - **Theoretical max**: 10 Mbps (SPI clock) x 8 bits = 80 Mbps
  * - **Practical (no FEC)**: ~6 Mbps (frame overhead + processing)
  * - **With FEC**: ~4 Mbps (encoding/decoding overhead)
- * - **Latency (256B frame)**: ~300 µs (send) + ~250 µs (receive) = ~550 µs round-trip
+ * - **Latency (256B frame)**: ~300 us (send) + ~250 us (receive) = ~550 us round-trip
  *
  * ## Memory Usage
  *
@@ -182,13 +182,13 @@
  *
  * | Scenario | Thread Safety | Mitigation Required |
  * |----------|---------------|---------------------|
- * | **Single-threaded** | ✓ Safe | None |
- * | **Multi-threaded (same handle)** | ✗ Unsafe | External mutex required |
- * | **Multi-threaded (different handles)** | ✓ Safe | None (independent state) |
- * | **Send from multiple threads** | ✗ Unsafe | Mutex around send operations |
- * | **Receive from multiple threads** | ✗ Unsafe | Dedicate one thread to polling |
- * | **Send from ISR** | ⚠️ Conditional | OK if SPI HAL is ISR-safe |
- * | **Receive from ISR** | ⚠️ Conditional | OK if SPI HAL is ISR-safe |
+ * | **Single-threaded** | [PASS] Safe | None |
+ * | **Multi-threaded (same handle)** | [FAIL] Unsafe | External mutex required |
+ * | **Multi-threaded (different handles)** | [PASS] Safe | None (independent state) |
+ * | **Send from multiple threads** | [FAIL] Unsafe | Mutex around send operations |
+ * | **Receive from multiple threads** | [FAIL] Unsafe | Dedicate one thread to polling |
+ * | **Send from ISR** | [WARN] Conditional | OK if SPI HAL is ISR-safe |
+ * | **Receive from ISR** | [WARN] Conditional | OK if SPI HAL is ISR-safe |
  *
  * **Recommended Architecture**:
  * - Dedicate one thread to SPI communication (poll + send)
@@ -329,16 +329,16 @@
  *
  * | Rule | Compliance | Implementation Notes |
  * |------|------------|---------------------|
- * | **Rule 1: Control Flow** | ✓ | No goto, setjmp, longjmp, or recursion |
- * | **Rule 2: Loop Bounds** | ✓ | All loops have statically provable bounds |
- * | **Rule 3: No Dynamic Allocation** | ✓ | Zero malloc/free - all static buffers |
- * | **Rule 4: Function Size** | ✓ | All functions < 60 lines |
- * | **Rule 5: Assertions** | ✓ | Minimum 2 checks per function (nullptr, initialized) |
- * | **Rule 6: Data Scope** | ✓ | Variables declared at smallest scope |
- * | **Rule 7: Check Returns** | ✓ | All return values validated |
- * | **Rule 8: Preprocessor** | ✓ | Typed enums for constants, minimal macros |
- * | **Rule 9: Pointers** | ✓ | Single-level dereferencing only |
- * | **Rule 10: Compiler Warnings** | ✓ | -Wall -Wextra -Werror enabled |
+ * | **Rule 1: Control Flow** | [PASS] | No goto, setjmp, longjmp, or recursion |
+ * | **Rule 2: Loop Bounds** | [PASS] | All loops have statically provable bounds |
+ * | **Rule 3: No Dynamic Allocation** | [PASS] | Zero malloc/free - all static buffers |
+ * | **Rule 4: Function Size** | [PASS] | All functions < 60 lines |
+ * | **Rule 5: Assertions** | [PASS] | Minimum 2 checks per function (nullptr, initialized) |
+ * | **Rule 6: Data Scope** | [PASS] | Variables declared at smallest scope |
+ * | **Rule 7: Check Returns** | [PASS] | All return values validated |
+ * | **Rule 8: Preprocessor** | [PASS] | Typed enums for constants, minimal macros |
+ * | **Rule 9: Pointers** | [PASS] | Single-level dereferencing only |
+ * | **Rule 10: Compiler Warnings** | [PASS] | -Wall -Wextra -Werror enabled |
  *
  * ## SOLID Principles
  *
@@ -813,7 +813,7 @@ typedef struct {
    * If true, applies FEC encoding to outgoing frames and FEC decoding
    * to incoming frames. Improves reliability at cost of throughput.
    * **Default**: false
-   * **Overhead**: ~50% (e.g., 100 bytes → 150 bytes with FEC)
+   * **Overhead**: ~50% (e.g., 100 bytes -> 150 bytes with FEC)
    */
   bool fec_enabled;
 
@@ -896,7 +896,7 @@ typedef struct {
  * @warning Must call rspi_init_peripheral() BEFORE this function
  *
  * @par Performance:
- * - Execution time: ~10 µs @ 240 MHz
+ * - Execution time: ~10 us @ 240 MHz
  * - Dominated by memset (4120 bytes)
  *
  * @par Example:
@@ -1010,9 +1010,9 @@ typedef struct {
  * 7. **Update state**: TX sequence already incremented by rx_session_next_tx()
  *
  * **Performance**:
- * - Small payload (16 bytes): ~150 µs
- * - Medium payload (128 bytes): ~300 µs
- * - Large payload (255 bytes): ~500 µs
+ * - Small payload (16 bytes): ~150 us
+ * - Medium payload (128 bytes): ~300 us
+ * - Large payload (255 bytes): ~500 us
  * - FEC overhead: +50% time
  *
  * @param[in,out] handle Initialized SPI communication handle
@@ -1039,7 +1039,7 @@ typedef struct {
  * @param[in] payload_len Payload length in bytes
  *   - **Valid range**: [0, k_frame_max_payload] (0-255 bytes)
  *   - **Units**: Bytes
- *   - **Constraints**: Must be ≤ k_frame_max_payload
+ *   - **Constraints**: Must be <= k_frame_max_payload
  *
  * @return rx_err_t Error code indicating send success or failure
  * @retval k_rx_ok Frame sent successfully, tx_sequence incremented
@@ -1116,7 +1116,7 @@ typedef struct {
  * 2. Include sequence number in payload (2 bytes, little-endian)
  * 3. Call rx_spi_comm_send() with constructed frame
  *
- * **Performance**: ~50 µs (minimal frame with 2-byte payload)
+ * **Performance**: ~50 us (minimal frame with 2-byte payload)
  *
  * @param[in,out] handle Initialized SPI communication handle
  *   - **Valid range**: Non-nullptr to initialized handle
@@ -1178,7 +1178,7 @@ typedef struct {
  * 2. Include sequence number in payload (2 bytes, little-endian)
  * 3. Call rx_spi_comm_send() with constructed frame
  *
- * **Performance**: ~50 µs (minimal frame with 2-byte payload)
+ * **Performance**: ~50 us (minimal frame with 2-byte payload)
  *
  * @param[in,out] handle Initialized SPI communication handle
  *   - **Valid range**: Non-nullptr to initialized handle
@@ -1266,10 +1266,10 @@ rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t f
  * - **timeout_ms = k_spi_comm_default_timeout**: Use default (1 second)
  *
  * **Performance**:
- * - Small frame (16 bytes): ~100 µs
- * - Medium frame (128 bytes): ~250 µs
- * - Large frame (255 bytes): ~400 µs
- * - FEC overhead: +100 µs
+ * - Small frame (16 bytes): ~100 us
+ * - Medium frame (128 bytes): ~250 us
+ * - Large frame (255 bytes): ~400 us
+ * - FEC overhead: +100 us
  *
  * @param[in,out] handle Initialized SPI communication handle
  *   - **Valid range**: Non-nullptr to initialized handle
@@ -1374,7 +1374,7 @@ rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t ti
  * 2. Query RSPI hardware for RX buffer status
  * 3. Set *available = true if data waiting, false otherwise
  *
- * **Performance**: ~2 µs (fast hardware register read)
+ * **Performance**: ~2 us (fast hardware register read)
  *
  * @param[in] handle Initialized SPI communication handle
  *   - **Valid range**: Non-nullptr to initialized handle

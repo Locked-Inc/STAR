@@ -26,24 +26,24 @@
  * @par 1-Wire Timing (Standard Speed):
  * | Operation        | Parameter          | Value    |
  * |------------------|--------------------|----------|
- * | Reset pulse      | T_RSTL             | 480 µs   |
- * | Presence wait    | T_PDH              | 70 µs    |
- * | Presence tail    | T_RSTH             | 410 µs   |
- * | Write-1 low      | T_LOW1             | 6 µs     |
- * | Write-1 high     | T_SLOT - T_LOW1    | 64 µs    |
- * | Write-0 low      | T_LOW0             | 60 µs    |
- * | Write-0 high     | T_SLOT - T_LOW0    | 10 µs    |
- * | Read init        | T_LOWR             | 6 µs     |
- * | Read sample      | T_RDV              | 9 µs     |
- * | Read recovery    | T_REC              | 55 µs    |
+ * | Reset pulse      | T_RSTL             | 480 us   |
+ * | Presence wait    | T_PDH              | 70 us    |
+ * | Presence tail    | T_RSTH             | 410 us   |
+ * | Write-1 low      | T_LOW1             | 6 us     |
+ * | Write-1 high     | T_SLOT - T_LOW1    | 64 us    |
+ * | Write-0 low      | T_LOW0             | 60 us    |
+ * | Write-0 high     | T_SLOT - T_LOW0    | 10 us    |
+ * | Read init        | T_LOWR             | 6 us     |
+ * | Read sample      | T_RDV              | 9 us     |
+ * | Read recovery    | T_REC              | 55 us    |
  *
  * @par Open-Drain Emulation:
  * GPIO is configured as:
  * - Output LOW to drive line low
- * - Input (high-Z) to release line (external 4.7kΩ pullup drives high)
+ * - Input (high-Z) to release line (external 4.7kOhm pullup drives high)
  *
  * @par Hardware Requirements:
- * - 4.7kΩ external pullup resistor on 1-Wire data line
+ * - 4.7kOhm external pullup resistor on 1-Wire data line
  * - CMT3 timer for microsecond delays (PCLKB/8 = 7.5 MHz)
  * - GPIO pin with configurable direction
  *
@@ -239,7 +239,7 @@ static void internal_delay_timer_init(void)
  * @par Algorithm:
  * 1. Return immediately if microseconds == 0
  * 2. Initialize timer if not already done
- * 3. Calculate required ticks: (µs * timer_hz + round) / 1000000
+ * 3. Calculate required ticks: (us * timer_hz + round) / 1000000
  * 4. Ensure minimum 1 tick for very short delays
  * 5. Loop while ticks > 0:
  *    a. Calculate wait_ticks (capped at 0xFFFF)
@@ -250,16 +250,16 @@ static void internal_delay_timer_init(void)
  * @param[in] microseconds Delay duration in microseconds (0 = no delay)
  *
  * @pre System clocks initialized
- * @post Delay of approximately `microseconds` µs elapsed
+ * @post Delay of approximately `microseconds` us elapsed
  *
  * @note Busy-wait implementation, blocks CPU
- * @note Accuracy: ±1 timer tick (~133ns @ 7.5MHz)
+ * @note Accuracy: +/-1 timer tick (~133ns @ 7.5MHz)
  * @note Maximum single delay: limited by uint32_t microseconds
  *
  * @par Performance:
  * - Overhead: ~10 cycles for function call
  * - Resolution: 133ns (1 tick @ 7.5MHz)
- * - Accuracy: ±0.5% typical
+ * - Accuracy: +/-0.5% typical
  *
  * @warning Disables preemption during delay (busy-wait)
  *
@@ -441,12 +441,12 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  *
  * @details
  * Executes the 1-Wire reset/presence detect sequence. Controller drives line
- * low for 480µs (reset pulse), then releases and samples during presence
- * window. Devices respond by pulling line low within 60µs of release.
+ * low for 480us (reset pulse), then releases and samples during presence
+ * window. Devices respond by pulling line low within 60us of release.
  *
  * @par Timing Diagram:
  * @code
- *          |<-- 480µs -->|<-70µs->|<-- 410µs -->|
+ *          |<-- 480us -->|<-70us->|<-- 410us -->|
  *     _____|             |________|_____________|_____
  *          |_____________|        |             |
  *          ^             ^        ^             ^
@@ -457,12 +457,12 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  *
  * @par Algorithm:
  * 1. Drive line low via internal_drive_low()
- * 2. Delay 480µs (reset pulse duration)
+ * 2. Delay 480us (reset pulse duration)
  * 3. Release line via internal_release_line()
- * 4. Delay 70µs (presence wait)
+ * 4. Delay 70us (presence wait)
  * 5. Sample line level
  * 6. presence = !line_high (low = device present)
- * 7. Delay 410µs (complete reset slot)
+ * 7. Delay 410us (complete reset slot)
  *
  * @param[in] bus_config Bus configuration with GPIO pin
  * @param[in,out] state Runtime state for GPIO mode tracking
@@ -478,12 +478,12 @@ static void internal_reset_search_state(onewire_runtime_state_t* state)
  * @post *presence indicates device response
  * @post Line released (high via pullup)
  *
- * @note Total reset slot: ~960µs
+ * @note Total reset slot: ~960us
  * @note Multiple devices can respond simultaneously
  *
- * @see k_onewire_reset_pulse_us Reset pulse duration (480µs)
- * @see k_onewire_presence_wait_us Presence sample delay (70µs)
- * @see k_onewire_presence_tail_us Remaining window after sample (410µs)
+ * @see k_onewire_reset_pulse_us Reset pulse duration (480us)
+ * @see k_onewire_presence_wait_us Presence sample delay (70us)
+ * @see k_onewire_presence_tail_us Remaining window after sample (410us)
  */
 static rx_err_t
 internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool* presence)
@@ -524,14 +524,14 @@ internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state
  *
  * @par Write-1 Timing:
  * @code
- *     |<-6µs->|<------ 64µs ------>|
+ *     |<-6us->|<------ 64us ------>|
  *     |______|                     |
  *            |_____________________|
  * @endcode
  *
  * @par Write-0 Timing:
  * @code
- *     |<-------- 60µs -------->|<10µs>|
+ *     |<-------- 60us -------->|<10us>|
  *     |________________________|      |
  *                              |______|
  * @endcode
@@ -548,7 +548,7 @@ internal_reset_pulse(rx_bus_config_t* bus_config, onewire_runtime_state_t* state
  * @pre state != nullptr
  * @post Bit transmitted, line released high
  *
- * @note Total write slot: ~70µs
+ * @note Total write slot: ~70us
  *
  * @see internal_write_byte() Writes 8 bits LSB-first
  */
@@ -589,7 +589,7 @@ internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
  *
  * @par Read Timing:
  * @code
- *     |<6µs>|<-9µs->|<---- 55µs ---->|
+ *     |<6us>|<-9us->|<---- 55us ---->|
  *     |_____|       |                |
  *           |_______|________________| (reading 0)
  *           |_______________________| (reading 1)
@@ -612,8 +612,8 @@ internal_write_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, 
  * @post *bit contains read value
  * @post Line released high
  *
- * @note Total read slot: ~70µs
- * @note Sample point: ~15µs after slot start
+ * @note Total read slot: ~70us
+ * @note Sample point: ~15us after slot start
  *
  * @see internal_read_byte() Reads 8 bits LSB-first
  */
@@ -1746,7 +1746,7 @@ static rx_err_t internal_onewire_search_callback(rx_bus_config_t* bus_config, vo
  *
  * @pre manager != nullptr and initialized
  * @pre bus_name registered via rx_bus_manager_register()
- * @pre 4.7kΩ pullup resistor connected to data line
+ * @pre 4.7kOhm pullup resistor connected to data line
  * @post Bus ready for reset, read, write operations
  *
  * @note Logs warning if pullup not detected (may still work)

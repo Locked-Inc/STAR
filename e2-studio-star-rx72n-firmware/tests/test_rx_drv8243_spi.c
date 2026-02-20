@@ -29,8 +29,8 @@
  *
  * **Timing Requirements:**
  * - Wake-up time after power-on: 1ms typical, 2ms max
- * - Register write settling time: 10µs typical
- * - Fault clear propagation: <100µs
+ * - Register write settling time: 10us typical
+ * - Fault clear propagation: <100us
  * - CS assertion to first clock: 50ns min (t_CSS)
  * - Last clock to CS deassertion: 50ns min (t_CSH)
  *

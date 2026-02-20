@@ -15,14 +15,14 @@
  * | Parameter | Value | Notes |
  * |-----------|-------|-------|
  * | **Measurement Range** | 2cm - 400cm | Effective operating range |
- * | **Accuracy** | ±3mm | Under ideal conditions |
+ * | **Accuracy** | +/-3mm | Under ideal conditions |
  * | **Resolution** | ~3mm | Based on timing resolution |
- * | **Beam Angle** | 15° | Effective detection cone |
+ * | **Beam Angle** | 15deg | Effective detection cone |
  * | **Frequency** | 40 kHz | Ultrasonic carrier |
- * | **Supply Voltage** | 5V ±10% | Requires level shifter for 3.3V MCU |
+ * | **Supply Voltage** | 5V +/-10% | Requires level shifter for 3.3V MCU |
  * | **Current Draw** | 15mA typical | 30mA peak during burst |
- * | **Trigger Input** | 10µs HIGH pulse | Initiates measurement |
- * | **Echo Output** | Pulse width = distance | 58µs per cm (roundtrip) |
+ * | **Trigger Input** | 10us HIGH pulse | Initiates measurement |
+ * | **Echo Output** | Pulse width = distance | 58us per cm (roundtrip) |
  * | **Max Measurement Rate** | ~16 Hz | 60ms minimum gap between readings |
  *
  * ## Hardware Setup
@@ -30,12 +30,12 @@
  * **Pin Connections:**
  * ```
  * HC-SR04          RX72N (via level shifter)
- * ┌──────────┐     ┌────────────┐
- * │   VCC    │─────│ 5V supply  │
- * │   TRIG   │◄────│ GPIO output│ (10µs pulse)
- * │   ECHO   │────►│ GPIO input │ (pulse width)
- * │   GND    │─────│ GND        │
- * └──────────┘     └────────────┘
+ * +----------+     +------------+
+ * |   VCC    |-----| 5V supply  |
+ * |   TRIG   |<----| GPIO output| (10us pulse)
+ * |   ECHO   |---->| GPIO input | (pulse width)
+ * |   GND    |-----| GND        |
+ * +----------+     +------------+
  * ```
  *
  * **Level Shifting:**
@@ -46,7 +46,7 @@
  * **Mounting:**
  * - Keep sensor level and stable
  * - Avoid soft/angled surfaces (sound absorption)
- * - Clear 15° cone in front of sensor
+ * - Clear 15deg cone in front of sensor
  *
  * ## Operating Principle
  *
@@ -57,7 +57,7 @@
  * participant HCSR04
  * participant Object
  *
- * MCU -> HCSR04: TRIG pulse (10µs HIGH)
+ * MCU -> HCSR04: TRIG pulse (10us HIGH)
  * activate HCSR04
  * HCSR04 -> Object: Ultrasonic burst (8 pulses @ 40kHz)
  * Object --> HCSR04: Echo reflection
@@ -69,10 +69,10 @@
  *
  * **Distance Calculation:**
  * ```
- * Speed of sound at 20°C: 343 m/s = 0.0343 cm/µs
- * Roundtrip distance: echo_time_µs * 0.0343 cm/µs
- * One-way distance: (echo_time_µs * 0.0343) / 2
- * Simplified: distance_cm = echo_time_µs / 58
+ * Speed of sound at 20degC: 343 m/s = 0.0343 cm/us
+ * Roundtrip distance: echo_time_us * 0.0343 cm/us
+ * One-way distance: (echo_time_us * 0.0343) / 2
+ * Simplified: distance_cm = echo_time_us / 58
  * ```
  *
  * ## Features
@@ -83,7 +83,7 @@
  *
  * **Temperature Compensation:**
  * - Adjusts speed of sound based on ambient temperature
- * - Improves accuracy by ~0.17% per °C
+ * - Improves accuracy by ~0.17% per degC
  * - Integrates with DS18B20 temperature sensor
  *
  * **Error Detection:**
@@ -138,8 +138,8 @@
  *
  * **Typical Operation Times:**
  * - Initialization: <1ms (GPIO configuration)
- * - Trigger pulse: 10µs
- * - Echo wait: 116µs (2cm) to 23.2ms (400cm)
+ * - Trigger pulse: 10us
+ * - Echo wait: 116us (2cm) to 23.2ms (400cm)
  * - Total measurement: 1-30ms depending on distance
  * - Timeout (no object): 30ms
  *
@@ -233,8 +233,8 @@
  * float distance_cm = 0.0f;
  * rx_hcsr04_measure_blocking(&distance_sensor, &distance_cm);
  *
- * // Accuracy improvement at 10°C vs 20°C: ~1.75%
- * // For 100cm reading: ±1.75cm error correction
+ * // Accuracy improvement at 10degC vs 20degC: ~1.75%
+ * // For 100cm reading: +/-1.75cm error correction
  * @endcode
  *
  * @par Example: Statistics Monitoring
@@ -285,51 +285,51 @@ extern "C" {
  *
  * @details
  * Timing parameters derived from HC-SR04 datasheet and ultrasonic propagation.
- * All values calibrated for speed of sound at 20°C (343 m/s).
+ * All values calibrated for speed of sound at 20degC (343 m/s).
  *
  * **Physics Background:**
- * - Speed of sound at 20°C: 343 m/s = 34,300 cm/s = 0.0343 cm/µs
+ * - Speed of sound at 20degC: 343 m/s = 34,300 cm/s = 0.0343 cm/us
  * - Roundtrip distance: sound travels to object and back
- * - Time per cm (roundtrip): 1 / 0.0343 = 29.15 µs/cm (one-way)
- * - Time per cm (total): 29.15 * 2 = 58.3 µs/cm ≈ 58 µs/cm
+ * - Time per cm (roundtrip): 1 / 0.0343 = 29.15 us/cm (one-way)
+ * - Time per cm (total): 29.15 * 2 = 58.3 us/cm ~ 58 us/cm
  *
  * **Distance Calculation:**
  * ```
- * distance_cm = echo_time_µs / k_hcsr04_us_per_cm_roundtrip
- * distance_cm = echo_time_µs / 58
+ * distance_cm = echo_time_us / k_hcsr04_us_per_cm_roundtrip
+ * distance_cm = echo_time_us / 58
  * ```
  *
  * **Trigger Pulse Timing:**
  * ```
- * Time (µs)  Signal
- * 0          TRIG ─┐
- * 2          TRIG  │ (settle time)
- * 2          TRIG  │
- * 12         TRIG ─┘ (10µs pulse)
+ * Time (us)  Signal
+ * 0          TRIG -+
+ * 2          TRIG  | (settle time)
+ * 2          TRIG  |
+ * 12         TRIG -+ (10us pulse)
  * 12+        Wait for echo...
  * ```
  *
  * **Echo Pulse Timing:**
- * - Minimum (2cm): 116 µs = 2 cm * 58 µs/cm
- * - Maximum (400cm): 23,200 µs = 400 cm * 58 µs/cm
- * - Timeout: 30,000 µs (400cm + 30% margin)
+ * - Minimum (2cm): 116 us = 2 cm * 58 us/cm
+ * - Maximum (400cm): 23,200 us = 400 cm * 58 us/cm
+ * - Timeout: 30,000 us (400cm + 30% margin)
  *
  * **Measurement Rate Limit:**
  * - HC-SR04 needs 60ms recovery time between measurements
  * - Faster polling causes echo interference/false readings
- * - Maximum rate: 1000ms / 60ms ≈ 16 Hz
+ * - Maximum rate: 1000ms / 60ms ~ 16 Hz
  *
- * @note Temperature affects speed of sound (~0.17%/°C) - use temp compensation
+ * @note Temperature affects speed of sound (~0.17%/degC) - use temp compensation
  * @see rx_hcsr04_set_temperature() For temperature compensation
  * @see rx_hcsr04_get_speed_of_sound() Speed of sound calculation
  */
 typedef enum : uint16_t {
   k_hcsr04_trigger_settle_us   = 2,     /**< Pre-trigger settle time (ensure clean LOW) */
-  k_hcsr04_trigger_pulse_us    = 10,    /**< Trigger pulse width (10µs min per datasheet) */
+  k_hcsr04_trigger_pulse_us    = 10,    /**< Trigger pulse width (10us min per datasheet) */
   k_hcsr04_echo_timeout_us     = 30000, /**< Echo timeout (30ms = 400cm + margin) */
-  k_hcsr04_min_echo_us         = 116,   /**< Minimum valid echo (2cm * 58 µs/cm) */
-  k_hcsr04_max_echo_us         = 23200, /**< Maximum valid echo (400cm * 58 µs/cm) */
-  k_hcsr04_us_per_cm_roundtrip = 58,    /**< Microseconds per cm roundtrip at 20°C */
+  k_hcsr04_min_echo_us         = 116,   /**< Minimum valid echo (2cm * 58 us/cm) */
+  k_hcsr04_max_echo_us         = 23200, /**< Maximum valid echo (400cm * 58 us/cm) */
+  k_hcsr04_us_per_cm_roundtrip = 58,    /**< Microseconds per cm roundtrip at 20degC */
   k_hcsr04_measurement_gap_ms  = 60,    /**< Minimum gap between measurements (per datasheet) */
 } rx_hcsr04_timing_t;
 
@@ -381,7 +381,7 @@ typedef enum : uint16_t {
  * **Mode Comparison:**
  * | Feature | Polling | IRQ |
  * |---------|---------|-----|
- * | Precision | ±5µs | ±1µs |
+ * | Precision | +/-5us | +/-1us |
  * | CPU Usage | High (busy-wait) | Low (interrupt-driven) |
  * | Complexity | Simple | Requires ICU config |
  * | Timing Jitter | Variable | Minimal |
@@ -401,7 +401,7 @@ typedef enum : uint16_t {
  *     .echo_pin     = k_rx_p0_3,
  *     .timeout_us   = k_hcsr04_echo_timeout_us,
  *     .echo_mode    = k_hcsr04_echo_irq,          // Hardware edge capture
- *     .echo_irq     = k_hcsr04_irq_11,         // P03 → IRQ11
+ *     .echo_irq     = k_hcsr04_irq_11,         // P03 -> IRQ11
  *     .irq_priority = k_hcsr04_irq_priority_default,
  * };
  * rx_hcsr04_t sensor;
@@ -441,7 +441,7 @@ typedef enum : uint8_t {
  * Type-safe enumeration of the valid IRQ numbers for HC-SR04 echo pulse
  * measurement. Use in the `echo_irq` field of `rx_hcsr04_config_t` when
  * `echo_mode == k_hcsr04_echo_irq`. The IRQ number must match the physical
- * echo pin: P00 → IRQ8, P01 → IRQ9, P02 → IRQ10, P03 → IRQ11.
+ * echo pin: P00 -> IRQ8, P01 -> IRQ9, P02 -> IRQ10, P03 -> IRQ11.
  *
  * @invariant Only values k_hcsr04_irq_8 through k_hcsr04_irq_11 are
  *            currently used in the STAR project (one per sonar sensor)
@@ -450,7 +450,7 @@ typedef enum : uint8_t {
  * rx_hcsr04_config_t config = {
  *     .echo_pin  = k_rx_p0_3,
  *     .echo_mode = k_hcsr04_echo_irq,
- *     .echo_irq  = k_hcsr04_irq_11,  // P03 → IRQ11
+ *     .echo_irq  = k_hcsr04_irq_11,  // P03 -> IRQ11
  * };
  * @endcode
  *
@@ -481,7 +481,7 @@ typedef enum : uint8_t {
  * the default priority, or provide an explicit value 1-15.
  *
  * @invariant k_hcsr04_irq_priority_unset (0) means "not set" (rx_hcsr04_init() selects the default);
- *            valid explicit priorities are 1–15; any other value is rejected by rx_hcsr04_icu_configure()
+ *            valid explicit priorities are 1-15; any other value is rejected by rx_hcsr04_icu_configure()
  *
  * @code
  * // Use sentinel to let rx_hcsr04_init() pick the default priority
@@ -537,7 +537,7 @@ typedef enum : uint8_t {
  * // Configure front-left sensor in IRQ mode
  * rx_hcsr04_config_t cfg = {
  *     .trigger_pin  = k_rx_pf_5,
- *     .echo_pin     = k_rx_p0_3,              // P03 → IRQ11
+ *     .echo_pin     = k_rx_p0_3,              // P03 -> IRQ11
  *     .timeout_us   = k_hcsr04_echo_timeout_us,
  *     .echo_mode    = k_hcsr04_echo_irq,
  *     .echo_irq     = k_hcsr04_irq_11,
@@ -587,7 +587,7 @@ typedef enum : uint8_t {
  * ```
  *
  * **Field Descriptions:**
- * - `trigger_pin`: GPIO output pin for 10µs trigger pulse
+ * - `trigger_pin`: GPIO output pin for 10us trigger pulse
  * - `echo_pin`: GPIO input pin (or IRQ pin) for measuring echo pulse width
  * - `timeout_us`: Maximum wait time for echo (default: k_hcsr04_echo_timeout_us = 30ms)
  * - `echo_mode`: Measurement mode (polling or IRQ, default: polling)
@@ -775,8 +775,8 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @details
  * Configures GPIO pins for trigger (output) and echo (input). In IRQ mode,
  * also configures the MPC pin function and ICU for edge detection. Validates
- * that the echo_pin matches the echo_irq mapping (P00→IRQ8, P01→IRQ9,
- * P02→IRQ10, P03→IRQ11) before calling rx_mpc_set_irq().
+ * that the echo_pin matches the echo_irq mapping (P00->IRQ8, P01->IRQ9,
+ * P02->IRQ10, P03->IRQ11) before calling rx_mpc_set_irq().
  *
  * @param[out] handle Handle to initialize (caller-allocated)
  * @param[in]  config Configuration with pin assignments and mode
@@ -792,9 +792,9 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @pre handle must not be NULL
  * @pre config must not be NULL with valid port/pin values
  * @pre If echo_mode == k_hcsr04_echo_irq: echo_pin and echo_irq must match hardware mapping
- *          (P00↔IRQ8, P01↔IRQ9, P02↔IRQ10, P03↔IRQ11)
+ *          (P00<->IRQ8, P01<->IRQ9, P02<->IRQ10, P03<->IRQ11)
  * @pre If echo_mode == k_hcsr04_echo_irq: echo_irq must be in range [k_hcsr04_irq_8..k_hcsr04_irq_11]
- *          (only IRQ8–11 have ISR handlers and ICU support in this firmware)
+ *          (only IRQ8-11 have ISR handlers and ICU support in this firmware)
  *
  * @post handle->initialized == true on success
  * @post Trigger pin configured as GPIO output (low)
@@ -804,7 +804,7 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @note Not thread-safe; caller must synchronize if called from multiple threads
  * @note For IRQ mode, irq_priority of k_hcsr04_irq_priority_unset (0) selects default (k_hcsr04_irq_priority_default)
  * @warning echo_pin and echo_irq MUST match the hardware mapping
- *          (P00↔IRQ8, P01↔IRQ9, P02↔IRQ10, P03↔IRQ11)
+ *          (P00<->IRQ8, P01<->IRQ9, P02<->IRQ10, P03<->IRQ11)
  *
  * @par Example: Initialize Polling Mode Sensor
  * @code
@@ -999,7 +999,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
  *
  * Enables temperature compensation and updates the temperature used for
  * all subsequent distance measurements. The speed of sound varies with
- * temperature (~0.17% per °C), affecting measurement accuracy.
+ * temperature (~0.17% per degC), affecting measurement accuracy.
  *
  * When enabled, all measurement functions (rx_hcsr04_measure_blocking,
  * rx_hcsr04_measure, rx_hcsr04_measure_async) will automatically use
@@ -1010,7 +1010,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
  *
  * @param[in,out] handle         Sensor handle
  * @param[in]     temp_celsius   Ambient temperature in degrees Celsius
- *                                Valid range: -40°C to +85°C
+ *                                Valid range: -40degC to +85degC
  *
  * @return k_rx_ok on success
  * @return k_rx_err_null_ptr if handle is nullptr
@@ -1027,7 +1027,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
 /**
  * @brief Disable automatic temperature compensation
  *
- * Disables temperature compensation and reverts to assuming 20°C for all
+ * Disables temperature compensation and reverts to assuming 20degC for all
  * distance calculations. This is the default behavior after initialization.
  *
  * @param[in,out] handle Sensor handle
@@ -1052,7 +1052,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
  * @brief Get current temperature setting
  *
  * Returns the currently configured temperature value used for compensation.
- * If compensation is disabled, still returns the last set value (or 20.0°C default).
+ * If compensation is disabled, still returns the last set value (or 20.0degC default).
  *
  * @param[in]  handle       Sensor handle
  * @param[out] temp_celsius Current temperature setting
@@ -1083,7 +1083,7 @@ float rx_hcsr04_cm_to_inches(float distance_cm);
  * Uses formula: distance = (echo_us * speed_of_sound) / 2
  * Speed of sound at 20C = 343 m/s = 0.0343 cm/us
  *
- * @note This function assumes 20°C. For temperature compensation, use
+ * @note This function assumes 20degC. For temperature compensation, use
  *       rx_hcsr04_echo_to_cm_with_temp() instead.
  *
  * @param[in] echo_time_us Echo pulse duration in microseconds
@@ -1098,9 +1098,9 @@ float rx_hcsr04_echo_to_cm(uint32_t echo_time_us);
  * Calculates distance using temperature-compensated speed of sound.
  * Speed of sound varies with temperature: v = 331.3 + (0.606 * temp_c) m/s
  *
- * Temperature compensation improves accuracy by ~0.17% per °C deviation from 20°C.
+ * Temperature compensation improves accuracy by ~0.17% per degC deviation from 20degC.
  *
- * Example: At 10°C, speed is ~337 m/s vs 343 m/s at 20°C (~1.75% difference)
+ * Example: At 10degC, speed is ~337 m/s vs 343 m/s at 20degC (~1.75% difference)
  *
  * @param[in] echo_time_us  Echo pulse duration in microseconds
  * @param[in] temp_celsius  Ambient temperature in degrees Celsius
@@ -1114,7 +1114,7 @@ float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius);
  *
  * Uses formula: v = 331.3 + (0.606 * temp_c) m/s
  *
- * Valid temperature range: -40°C to +85°C (DS18B20 operating range)
+ * Valid temperature range: -40degC to +85degC (DS18B20 operating range)
  *
  * @param[in] temp_celsius Ambient temperature in degrees Celsius
  *

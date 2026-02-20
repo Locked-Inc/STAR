@@ -158,7 +158,7 @@
  * **Independent Clock**:
  * - IWDTCLK operates independently of PCLK/ICLK
  * - Continues running even if main clock fails
- * - Accuracy: ±1% (120 kHz ± 1.2 kHz)
+ * - Accuracy: +/-1% (120 kHz +/- 1.2 kHz)
  *
  * **Refresh Sequence**:
  * - Two-byte sequence: 0x00 -> 0xFF to IWDTRR
@@ -186,7 +186,7 @@
  * | 2. Fixed loop bounds | [OK] | Loops bounded by k_iwdt_max_tasks (16) in driver |
  * | 3. No dynamic allocation | [OK] | Zero malloc/free, static arrays only |
  * | 4. Small functions | [OK] | All test functions < 20 lines |
- * | 5. Assertions (≥2 per function) | [OK] | Every test has multiple TEST_ASSERT checks |
+ * | 5. Assertions (>=2 per function) | [OK] | Every test has multiple TEST_ASSERT checks |
  * | 6. Narrow scope | [OK] | Test-local variables, file-scope test helpers |
  * | 7. Check return values | [OK] | All rx_err_t returns verified with TEST_ASSERT_EQUAL |
  * | 8. Limited preprocessor | [OK] | C23 typed enums in driver, no test macros |
@@ -422,8 +422,8 @@ static void test_init_with_custom_config(void)
  *
  * **Why 128ms is the minimum**:
  * - Hardware limitation: TOPS=1024, CKS=1 (no division)
- * - Calculation: 1024 / 120kHz ≈ 8.5ms (absolute minimum)
- * - Conservative limit: 128ms = 1024 × 16 / 120kHz
+ * - Calculation: 1024 / 120kHz ~ 8.5ms (absolute minimum)
+ * - Conservative limit: 128ms = 1024 x 16 / 120kHz
  *
  * @pre Driver is uninitialized (test_setup() called)
  * @post Driver remains uninitialized (rejected invalid config)
@@ -614,7 +614,7 @@ static void test_feed_after_init(void)
  *
  * **Registration Requirements**:
  * - Unique task name (up to 31 characters + null terminator)
- * - Task-specific timeout (typically 3× task period)
+ * - Task-specific timeout (typically 3x task period)
  * - Maximum 16 tasks can be registered (k_iwdt_max_tasks)
  *
  * **Test Coverage**:
@@ -687,7 +687,7 @@ static void test_register_task_null_name(void)
  * @par Example Registration:
  * @code
  * // Motor control task runs at 100Hz (10ms period)
- * // Timeout = 3× period = 30ms
+ * // Timeout = 3x period = 30ms
  * rx_iwdt_register_task("MotorCtrl", 30);
  * @endcode
  *

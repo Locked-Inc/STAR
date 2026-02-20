@@ -108,7 +108,7 @@
  *
  * | Parameter | Value | Notes |
  * |-----------|-------|-------|
- * | **Detection Latency** | poll_interval_ms × debounce_samples | e.g., 20ms × 3 = 60ms worst-case |
+ * | **Detection Latency** | poll_interval_ms x debounce_samples | e.g., 20ms x 3 = 60ms worst-case |
  * | **CPU Usage** | ~5% @ 50Hz, 4 sensors | RX72N @ 240 MHz |
  * | **Memory (Static)** | ~2.5 KB | Stack (2048) + handle struct (512) |
  * | **Memory (Dynamic)** | 0 | Zero heap allocation |
@@ -124,7 +124,7 @@
  *
  * @attention Robot traveling at 1 m/s moves 6cm during worst-case 60ms detection
  * @attention Always leave safety margin: threshold > max_travel_during_latency
- * @attention For 1 m/s max speed, use threshold >= 10cm (60ms × 1m/s + margin)
+ * @attention For 1 m/s max speed, use threshold >= 10cm (60ms x 1m/s + margin)
  *
  * @par Hardware Requirements:
  *
@@ -151,7 +151,7 @@
  * | 1. Simple control flow | [OK] | No goto, setjmp, recursion |
  * | 2. Fixed loop bounds | [OK] | All loops use enum constants |
  * | 3. No dynamic memory | [OK] | Zero malloc/free - static allocation only |
- * | 4. Functions ≤60 lines | [OK] | Longest: `internal_poll_sensors` (54 lines) |
+ * | 4. Functions <=60 lines | [OK] | Longest: `internal_poll_sensors` (54 lines) |
  * | 5. Min 2 assertions/func | [OK] | All public APIs validate inputs |
  * | 6. Smallest scope | [OK] | Variables declared at first use |
  * | 7. Check return values | [OK] | All HC-SR04 and motor calls checked |
@@ -243,8 +243,8 @@ typedef enum : uint16_t {
    * Each sensor requires 2 GPIO pins (TRIG, ECHO) and ~64 bytes RAM.
    *
    * @par Value: 8 sensors
-   * @par Memory Impact: 8 × 64 bytes = 512 bytes (handle struct arrays)
-   * @par Typical Usage: 4-6 sensors for 360° coverage
+   * @par Memory Impact: 8 x 64 bytes = 512 bytes (handle struct arrays)
+   * @par Typical Usage: 4-6 sensors for 360deg coverage
    */
   k_obstacle_detect_max_sensors = 8,
 
@@ -255,7 +255,7 @@ typedef enum : uint16_t {
    * is an `rx_motor_handle_t` pointer in configuration.
    *
    * @par Value: 4 motors
-   * @par Memory Impact: 4 × sizeof(rx_motor_handle_t*) = 16 bytes
+   * @par Memory Impact: 4 x sizeof(rx_motor_handle_t*) = 16 bytes
    * @par STAR Robot: Uses all 4 motors (front-left, front-right, rear-left, rear-right)
    */
   k_obstacle_detect_max_motors = 4,
@@ -277,7 +277,7 @@ typedef enum : uint16_t {
    * - Margin: ~1216 bytes (safe margin for future changes)
    *
    * @par Rationale:
-   * 2048 bytes provides ~4× safety margin over measured usage (~512 bytes).
+   * 2048 bytes provides ~4x safety margin over measured usage (~512 bytes).
    * ThreadX stack overflow detection will catch underruns during testing.
    *
    * @warning Insufficient stack causes undefined behavior (crashes, corruption)
@@ -611,14 +611,14 @@ typedef void (*rx_obstacle_detect_callback_t)(bool    obstacle_detected,
  *
  * where:
  * - @f$ v_{max} @f$ = maximum robot velocity (cm/s)
- * - @f$ t_{latency} @f$ = detection latency (s) = poll_interval × debounce_samples
+ * - @f$ t_{latency} @f$ = detection latency (s) = poll_interval x debounce_samples
  * - @f$ d_{stop} @f$ = braking distance (cm)
  * - margin = safety factor (typically 5-10cm)
  *
  * **Example Calculation:**
  * - Max velocity: 100 cm/s (1 m/s)
  * - Poll interval: 20ms, Debounce: 3 -> Latency = 60ms = 0.06s
- * - Travel during latency: 100 × 0.06 = 6cm
+ * - Travel during latency: 100 x 0.06 = 6cm
  * - Braking distance: ~10cm (depends on motor/PID)
  * - Margin: 10cm
  * - **Threshold: 6 + 10 + 10 = 26cm -> use 30cm**
@@ -683,9 +683,9 @@ typedef struct {
    * - Array must remain valid for lifetime of detection system
    *
    * @par Typical Configuration:
-   * - 4 sensors: Front, rear, left, right (90° coverage)
-   * - 6 sensors: Front×2, sides×2, rear×2 (180° coverage)
-   * - 8 sensors: Full 360° coverage
+   * - 4 sensors: Front, rear, left, right (90deg coverage)
+   * - 6 sensors: Frontx2, sidesx2, rearx2 (180deg coverage)
+   * - 8 sensors: Full 360deg coverage
    *
    * @warning Sensors must remain initialized while detection is running
    */
@@ -750,7 +750,7 @@ typedef struct {
    * @par Unit: Centimeters (cm)
    *
    * @par Selection Guidelines:
-   * threshold >= (max_speed_cm/s × latency_s) + braking_distance_cm + 10cm margin
+   * threshold >= (max_speed_cm/s x latency_s) + braking_distance_cm + 10cm margin
    *
    * @warning Too small: Insufficient stopping time -> collisions
    * @warning Too large: Excessive false stops, limited mobility
@@ -770,9 +770,9 @@ typedef struct {
    * - 5: Heavy debouncing (slower response, fewer false positives)
    *
    * @par Impact on Latency:
-   * detection_latency = poll_interval_ms × debounce_samples
-   * - 20ms × 3 = 60ms latency
-   * - 10ms × 3 = 30ms latency
+   * detection_latency = poll_interval_ms x debounce_samples
+   * - 20ms x 3 = 60ms latency
+   * - 10ms x 3 = 30ms latency
    *
    * @warning Higher values increase detection latency
    */
@@ -798,7 +798,7 @@ typedef struct {
    * - 20Hz (50ms): ~2% CPU @ 4 sensors
    *
    * @par Latency Impact:
-   * Worst-case detection latency = poll_interval_ms × debounce_samples
+   * Worst-case detection latency = poll_interval_ms x debounce_samples
    *
    * @warning Lower intervals increase CPU load
    * @warning Higher intervals increase detection latency
@@ -953,7 +953,7 @@ typedef struct {
  * @warning Ensure ThreadX kernel is running before calling
  *
  * @par Performance:
- * Execution time: ~100µs (ThreadX task creation overhead)
+ * Execution time: ~100us (ThreadX task creation overhead)
  * Memory: 2.6 KB static (handle structure with embedded stack)
  *
  * @par Example:

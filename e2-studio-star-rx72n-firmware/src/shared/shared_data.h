@@ -89,7 +89,7 @@ typedef struct {
   uint16_t voltage_mv;          /**< Battery voltage (mV) */
   int16_t  current_ma;          /**< Battery current (mA) */
   uint8_t  soc_percent;         /**< State of charge (%) */
-  int16_t  temperature_celsius; /**< Battery temperature (°C) */
+  int16_t  temperature_celsius; /**< Battery temperature (degC) */
   uint16_t capacity_mah;        /**< Remaining capacity (mAh) */
   uint16_t full_capacity_mah;   /**< Full charge capacity (mAh) */
   uint16_t cycle_count;         /**< Battery cycle count */
@@ -210,7 +210,7 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_shared_low_battery_soc_pct = 15, /**< Low battery SoC threshold in percent (0–100) */
+  k_shared_low_battery_soc_pct = 15, /**< Low battery SoC threshold in percent (0-100) */
 } shared_data_soc_constants_t;
 
 /**
@@ -352,7 +352,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  * @post k_event_estop_triggered set via tx_event_flags_set(&g_shared_data.event_flags, k_event_estop_triggered, TX_OR)
  * @post Motor task will commit within 4ms via shared_data_commit_isr_estop()
  *
- * @note ISR-safe: No blocking calls, no mutex usage (~1 µs execution)
+ * @note ISR-safe: No blocking calls, no mutex usage (~1 us execution)
  * @note Thread Safety: Volatile writes are atomic on RX72N
  * @note Multiple ISRs may race - last reason wins (acceptable for safety)
  *
@@ -406,7 +406,7 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason);
  * @post estop_mutex released (if acquired) or state unchanged if none pending
  *
  * @note Thread Safety: Protected by estop_mutex and critical section
- * @note Performance: ~2.5 µs when pending, ~0.5 µs when not pending
+ * @note Performance: ~2.5 us when pending, ~0.5 us when not pending
  * @note Frequency: Called every 4ms by motor task (250 Hz)
  *
  * @code{.c}

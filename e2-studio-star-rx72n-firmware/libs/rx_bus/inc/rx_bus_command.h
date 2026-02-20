@@ -42,15 +42,15 @@
  * Commands integrate into the STAR bus abstraction hierarchy:
  * ```
  * Application (Motor, Sensor, LED drivers)
- *         ↓ creates command with operation-specific data
+ *         v creates command with operation-specific data
  * Command Object (rx_bus_command_t)
- *         ↓ submitted to
+ *         v submitted to
  * Bus Manager (rx_bus_manager.c)
- *         ↓ acquires mutex, calls command->execute()
+ *         v acquires mutex, calls command->execute()
  * Command Execute Function (user-defined)
- *         ↓ validates bus type, performs operation
+ *         v validates bus type, performs operation
  * Bus Adapter (rx_bus_i2c, rx_bus_gpio, etc.)
- *         ↓ hardware-specific implementation
+ *         v hardware-specific implementation
  * Hardware (RIIC, PORT, SCI, SPI peripherals)
  * ```
  *
@@ -74,7 +74,7 @@
  *
  * - **Memory overhead**: 12 bytes per command structure (function pointer + data pointer + result)
  * - **Execution overhead**: ~50-100 ns @ 240 MHz (function pointer call)
- * - **Thread safety cost**: Mutex acquisition time (~1-2 µs with ThreadX)
+ * - **Thread safety cost**: Mutex acquisition time (~1-2 us with ThreadX)
  * - **Scalability**: O(1) execution time regardless of number of bus types
  *
  * ## Usage Patterns
@@ -281,8 +281,8 @@ typedef struct rx_bus_config rx_bus_config_t;
  * - Execute function can safely access bus->proto fields without synchronization
  *
  * **Performance expectations**:
- * - **Short-duration operations**: GPIO writes (<1 µs), I2C single byte (<50 µs)
- * - **Medium-duration operations**: I2C multi-byte (<500 µs), SPI transfers (<1 ms)
+ * - **Short-duration operations**: GPIO writes (<1 us), I2C single byte (<50 us)
+ * - **Medium-duration operations**: I2C multi-byte (<500 us), SPI transfers (<1 ms)
  * - **Never block indefinitely**: No polling loops, use timeout-based waits
  * - **Mutex hold time**: Target <1 ms to maintain system responsiveness
  *

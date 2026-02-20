@@ -65,7 +65,7 @@
  *
  * 1. **Hardware CRC** (default on RX72N target):
  *    - Uses RX72N CRC Calculator peripheral at 0x0008C000
- *    - ~4x faster than software for large buffers (32 µs vs 130 µs per 100 bytes)
+ *    - ~4x faster than software for large buffers (32 us vs 130 us per 100 bytes)
  *    - IEEE 802.3 polynomial (0x04C11DB7)
  *    - Automatically enabled when `__RX__` is defined
  *
@@ -329,7 +329,7 @@ typedef enum : uint32_t {
  * **Hardware Implementation (RX72N, RX_CRC32_USE_HARDWARE defined):**
  * 1. Validate not already initialized (prevent double-init)
  * 2. Clear module stop bit (MSTPCRB.MSTPB23 = 0) to enable CRCA clock
- * 3. Wait for peripheral ready (typically 1 µs)
+ * 3. Wait for peripheral ready (typically 1 us)
  * 4. Configure polynomial register to 0x04C11DB7 (IEEE 802.3)
  * 5. Set bit order to LSB-first (reflected mode)
  * 6. Set initial value to 0xFFFFFFFF
@@ -382,8 +382,8 @@ typedef enum : uint32_t {
  * @warning Do not call from interrupt context
  *
  * @par Performance:
- * - Hardware init: ~50 µs (includes clock stabilization)
- * - Software init: < 1 µs (no-op)
+ * - Hardware init: ~50 us (includes clock stabilization)
+ * - Software init: < 1 us (no-op)
  *
  * @par Example (Internal Use Only):
  * @code{.c}
@@ -421,7 +421,7 @@ typedef enum : uint32_t {
  * **Design Note:** Current implementation intentionally leaves CRC enabled
  * after deinit because:
  * - CRC may be needed at any time for frame validation
- * - Module stop/start overhead is significant (~50 µs)
+ * - Module stop/start overhead is significant (~50 us)
  * - Power savings are minimal (< 0.2 mA)
  *
  * @return rx_err_t Deinitialization result
@@ -504,8 +504,8 @@ typedef enum : uint32_t {
  * @warning Do not call directly - use rx_crc32_ieee() from rx_crc.h
  *
  * @par Performance:
- * - Hardware: ~32 µs / 100 bytes @ 240 MHz
- * - Software: ~130 µs / 100 bytes @ 240 MHz
+ * - Hardware: ~32 us / 100 bytes @ 240 MHz
+ * - Software: ~130 us / 100 bytes @ 240 MHz
  *
  * @see rx_crc32_ieee() Public API wrapper
  * @see rx_crc32_update_impl() Incremental CRC computation
@@ -638,8 +638,8 @@ uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len);
  * - Lookup table: 1024 bytes (shared static, in .rodata)
  *
  * @par Performance:
- * - ~130 µs / 100 bytes @ 240 MHz RX72N
- * - ~50 µs / 100 bytes @ 3 GHz x86
+ * - ~130 us / 100 bytes @ 240 MHz RX72N
+ * - ~50 us / 100 bytes @ 3 GHz x86
  * - Throughput: ~0.78 MB/s (RX72N)
  *
  * @par Example:

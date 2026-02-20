@@ -108,11 +108,11 @@
  * ## Performance Characteristics
  *
  * - **Encoding**: @f$ O(n) @f$ where @f$ n @f$ is input bits
- *   - Time: ~15 µs per 100 bytes @ 240 MHz
+ *   - Time: ~15 us per 100 bytes @ 240 MHz
  *   - Memory: Zero dynamic allocation
  *
  * - **Decoding**: @f$ O(n \cdot 2^{K-1} \cdot 2) = O(128n) @f$
- *   - Time: ~800 µs per 100 bytes @ 240 MHz
+ *   - Time: ~800 us per 100 bytes @ 240 MHz
  *   - Memory: 64 path metrics + survivors buffer
  *
  * ## Coding Gain
@@ -137,7 +137,7 @@
  * - **Rule 2**: [OK] All loops have fixed bounds (k_fec_max_symbols)
  * - **Rule 3**: [OK] Zero dynamic memory allocation (all static buffers)
  * - **Rule 4**: [OK] Functions < 60 lines (largest: internal_viterbi_process_symbol ~50 lines)
- * - **Rule 5**: [OK] All functions have ≥2 preconditions and postconditions
+ * - **Rule 5**: [OK] All functions have >=2 preconditions and postconditions
  * - **Rule 8**: [OK] Uses C23 typed enums instead of #define for all constants
  * - **Rule 10**: [OK] Compiles with -Wall -Wextra -Werror
  *
@@ -212,7 +212,7 @@ extern "C" {
  * @par Traceback Depth Rationale
  * Traceback depth of 5K is industry standard for K=7 codes, providing
  * 99.99% probability of correct path selection while minimizing memory
- * (5×7 = 35 symbols = 70 bits = ~9 bytes per state).
+ * (5x7 = 35 symbols = 70 bits = ~9 bytes per state).
  *
  * @par Field Constraints
  * | Field              | Min | Max | Rationale                                |
@@ -268,10 +268,10 @@ typedef enum : uint8_t {
    * Complementary to G1 to maximize minimum Hamming distance. */
   k_fec_g2_octal = 0133,
 
-  /**< @brief Traceback depth: 5×K = 35 symbols
+  /**< @brief Traceback depth: 5xK = 35 symbols
    * @details Industry standard for K=7 codes. Deeper traceback increases
    * latency and memory but negligibly improves error rate. 5K provides
-   * >99.99% probability of correct decision. Memory: 35 × 64 bits = 280 bytes. */
+   * >99.99% probability of correct decision. Memory: 35 x 64 bits = 280 bytes. */
   k_fec_traceback_depth = 35,
 
   /**< @brief Number of possible input values: 2 (binary: 0 or 1)
@@ -336,7 +336,7 @@ typedef enum : uint8_t {
  * ## Why Signed 8-bit?
  *
  * - **Range**: [-127, +127] provides sufficient quantization (8 levels above/below threshold)
- * - **Memory**: 1 byte per soft bit vs 1 bit per hard bit (8× overhead acceptable for 2 dB gain)
+ * - **Memory**: 1 byte per soft bit vs 1 bit per hard bit (8x overhead acceptable for 2 dB gain)
  * - **Arithmetic**: Signed addition in Chase Combining uses int16 to prevent overflow
  * - **Performance**: Native CPU type, no bit-packing overhead
  *
@@ -650,7 +650,7 @@ typedef struct {
  * ## Algorithm Steps
  *
  * 1. **Validation**: Check pointers, initialization, input length
- * 2. **Calculation**: Compute output size = (input_bits + 6) × 2 / 8 bytes
+ * 2. **Calculation**: Compute output size = (input_bits + 6) x 2 / 8 bytes
  * 3. **Initialization**: Clear output buffer, reset shift register to 0
  * 4. **Data Encoding**: For each input bit (MSB first):
  *    - Compute G1 = parity(input_bit || state) & 0x79
@@ -690,7 +690,7 @@ typedef struct {
  *
  * - **Time Complexity**: @f$ O(8n) @f$ where @f$ n @f$ = input_len
  * - **Space Complexity**: @f$ O(1) @f$ (constant stack usage)
- * - **Execution Time**: ~15 µs for 100 bytes @ 240 MHz
+ * - **Execution Time**: ~15 us for 100 bytes @ 240 MHz
  * - **Per-Bit Cost**: ~19 CPU cycles per input bit
  *
  * ## State Machine
@@ -727,7 +727,7 @@ typedef struct {
  *
  * @param[in] input_len Number of input bytes
  *                      - Valid range: [1, 1024] bytes
- *                      - Constraint: input_len ≤ k_fec_max_input_bytes
+ *                      - Constraint: input_len <= k_fec_max_input_bytes
  *
  * @param[out] output Output buffer for encoded data
  *                    - Must not be nullptr
@@ -737,8 +737,8 @@ typedef struct {
  *
  * @param[out] output_len Actual number of output bytes written
  *                        - Must not be nullptr
- *                        - Set to (input_len × 8 + 6) × 2 / 8 bytes
- *                        - Always ≤ buffer size if input valid
+ *                        - Set to (input_len x 8 + 6) x 2 / 8 bytes
+ *                        - Always <= buffer size if input valid
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Successfully encoded, output contains FEC data
@@ -748,11 +748,11 @@ typedef struct {
  *
  * @pre enc->initialized == true (via rx_fec_encoder_init())
  * @pre input != nullptr && output != nullptr && output_len != nullptr
- * @pre 1 ≤ input_len ≤ k_fec_max_input_bytes
- * @pre output buffer size ≥ rx_fec_encoded_len(input_len)
+ * @pre 1 <= input_len <= k_fec_max_input_bytes
+ * @pre output buffer size >= rx_fec_encoded_len(input_len)
  *
  * @post output contains FEC-encoded data (big-endian bit packing)
- * @post *output_len == (input_len × 8 + 6) × 2 / 8 (rounded up)
+ * @post *output_len == (input_len x 8 + 6) x 2 / 8 (rounded up)
  * @post Last 6 tail bits ensure encoder state returns to zero
  *
  * @invariant Encoding is deterministic: same input -> same output
@@ -832,7 +832,7 @@ typedef struct {
  * @test test_rx_fec.c::test_encode_tail_bits() Verifies tail bit termination
  *
  * @par NASA Power of 10 Compliance
- * - **Rule 2**: [OK] Loop bounds statically provable (input_len ≤ k_fec_max_input_bytes)
+ * - **Rule 2**: [OK] Loop bounds statically provable (input_len <= k_fec_max_input_bytes)
  * - **Rule 5**: [OK] 7 precondition checks, 3 postconditions
  */
 [[nodiscard]] rx_err_t rx_fec_encode(const rx_fec_encoder_t* enc,
@@ -867,17 +867,17 @@ typedef struct {
  *
  * | Input (bytes) | Output (bytes) | Expansion | Overhead (%) |
  * |---------------|----------------|-----------|--------------|
- * | 1             | 4              | 4.00×     | 300%         |
- * | 10            | 22             | 2.20×     | 120%         |
- * | 100           | 202            | 2.02×     | 102%         |
- * | 1024          | 2050           | 2.00×     | 100.2%       |
+ * | 1             | 4              | 4.00x     | 300%         |
+ * | 10            | 22             | 2.20x     | 120%         |
+ * | 100           | 202            | 2.02x     | 102%         |
+ * | 1024          | 2050           | 2.00x     | 100.2%       |
  *
  * Note: Overhead decreases with larger frames (tail bits amortized).
  *
  * ## Performance
  *
  * - **Time Complexity**: @f$ O(1) @f$ (constant time calculation)
- * - **Execution Time**: < 1 µs @ 240 MHz (integer arithmetic only)
+ * - **Execution Time**: < 1 us @ 240 MHz (integer arithmetic only)
  *
  * @param[in] input_len Number of input bytes to encode
  *                      - Valid range: [0, k_fec_max_input_bytes]
@@ -885,13 +885,13 @@ typedef struct {
  *                      - Values > k_fec_max_input_bytes return 0 (error)
  *
  * @return uint32_t Number of output bytes after encoding
- * @retval 2×input_len+2 Normal case (1 ≤ input_len ≤ 1024)
+ * @retval 2xinput_len+2 Normal case (1 <= input_len <= 1024)
  * @retval 0 Invalid input (input_len == 0 or > k_fec_max_input_bytes)
  *
  * @pre None (pure function, no side effects)
  *
  * @post Return value is deterministic function of input_len
- * @post For valid input: return == 2×input_len + 2
+ * @post For valid input: return == 2xinput_len + 2
  * @post For invalid input: return == 0
  *
  * @note **Thread Safety**: Pure function, safe to call concurrently.
@@ -966,10 +966,10 @@ uint32_t rx_fec_encoded_len(uint32_t input_len);
  * @par Memory Usage
  * | Buffer               | Size                           | Bytes  |
  * |----------------------|--------------------------------|--------|
- * | Soft bits            | 8200 × 2 × 1 byte              | 16400  |
- * | Survivors            | 8200 × 8 bytes (uint64_t)      | 65600  |
- * | Path metrics         | 64 × 4 bytes (int32_t)         | 256    |
- * | Branch table         | 64 × 2 × 2 × 1 byte            | 256    |
+ * | Soft bits            | 8200 x 2 x 1 byte              | 16400  |
+ * | Survivors            | 8200 x 8 bytes (uint64_t)      | 65600  |
+ * | Path metrics         | 64 x 4 bytes (int32_t)         | 256    |
+ * | Branch table         | 64 x 2 x 2 x 1 byte            | 256    |
  * | **Total per decoder**|                                | **~82 KB** |
  *
  * @note Large memory footprint limits number of concurrent decoders.

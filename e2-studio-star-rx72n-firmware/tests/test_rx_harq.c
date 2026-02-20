@@ -86,11 +86,11 @@
  *
  * | Transmissions (n) | SNR Gain (dB) | Improvement Factor |
  * |-------------------|---------------|--------------------|
- * | 1                 | 0.0           | 1.0×               |
- * | 2                 | 3.0           | 2.0×               |
- * | 3                 | 4.8           | 3.0×               |
- * | 4                 | 6.0           | 4.0×               |
- * | 5                 | 7.0           | 5.0×               |
+ * | 1                 | 0.0           | 1.0x               |
+ * | 2                 | 3.0           | 2.0x               |
+ * | 3                 | 4.8           | 3.0x               |
+ * | 4                 | 6.0           | 4.0x               |
+ * | 5                 | 7.0           | 5.0x               |
  *
  * **Key Insight:** Each additional retransmission provides **diminishing returns**
  * in dB (logarithmic scale), but **linear improvement** in linear SNR.
@@ -105,8 +105,8 @@
  *   s_{\text{out}}[i] = \text{clamp}_{[-127, 127]}\left(\sum_{k=1}^{n} s_k[i]\right)
  * @f]
  *
- * With maximum 3 combines (default) and max soft bit value ±127, the accumulator
- * reaches at most ±381, well within `int16_t` range (no overflow risk).
+ * With maximum 3 combines (default) and max soft bit value +/-127, the accumulator
+ * reaches at most +/-381, well within `int16_t` range (no overflow risk).
  *
  * ## HARQ State Machine
  *
@@ -153,7 +153,7 @@
  * | **SNR improvement (2 combines)**| +3.0 dB                                | From diversity gain formula                |
  * | **SNR improvement (3 combines)**| +4.8 dB                                | Diminishing returns (logarithmic)          |
  * | **Memory per HARQ handle**      | ~82 KB                                 | Dominated by FEC decoder survivor paths    |
- * | **Memory per combiner**         | ~4 KB (2048 × int16)                   | Soft bit accumulator buffer                |
+ * | **Memory per combiner**         | ~4 KB (2048 x int16)                   | Soft bit accumulator buffer                |
  *
  * ## Test Methodology
  *
@@ -184,7 +184,7 @@
  * - **Objective:** Verify lossless encode -> decode under ideal conditions (no noise)
  * - **Method:**
  *   1. Encode payload with FEC: `rx_harq_encode()`
- *   2. Convert hard bits to soft bits (perfect confidence: ±127)
+ *   2. Convert hard bits to soft bits (perfect confidence: +/-127)
  *   3. Decode with HARQ: `rx_harq_decode()`
  *   4. Compare decoded output with original input
  * - **Coverage:** Single byte, multi-byte, with/without FEC
@@ -236,7 +236,7 @@
  * | **1** | No recursion, goto, setjmp/longjmp        | Test state machine transitions (no goto)        |
  * | **2** | All loops bounded                         | Verify accumulation loops use array bounds      |
  * | **3** | No dynamic memory allocation              | Verify static buffer usage in combiner          |
- * | **4** | Functions ≤ 60 lines                      | Test individual functions, not long pipelines   |
+ * | **4** | Functions <= 60 lines                      | Test individual functions, not long pipelines   |
  * | **5** | Use assertions (min 2 checks per function)| Every test validates pre/postconditions         |
  * | **6** | Data declared at smallest scope           | Test local variable scoping                     |
  * | **7** | Check all return values                   | All `rx_err_t` returns validated with TEST_ASSERT|
@@ -2110,7 +2110,7 @@ void test_harq_decode_zero_length(void)
  * @par Test Steps:
  * 1. Initialize HARQ (FEC enabled by default)
  * 2. Encode payload `[0xDE, 0xAD]` -> expect ~6 bytes FEC-encoded output
- * 3. Convert encoded hard bits to soft bits (perfect confidence: ±127)
+ * 3. Convert encoded hard bits to soft bits (perfect confidence: +/-127)
  * 4. Reset HARQ state (clear encoder state before decode)
  * 5. Decode soft bits -> expect 2 bytes decoded
  * 6. Verify decoded == original payload
@@ -2200,7 +2200,7 @@ void test_harq_roundtrip_with_fec(void)
  * @par Test Steps (Simplified - No Noise Injection):
  * 1. Initialize HARQ (FEC enabled by default)
  * 2. Encode payload `[0x42]` -> FEC encoded output
- * 3. Convert to perfect soft bits (±127 confidence)
+ * 3. Convert to perfect soft bits (+/-127 confidence)
  * 4. Reset HARQ state
  * 5. Decode soft bits -> expect success (perfect bits always decode)
  * 6. Verify decoded value is 0x42

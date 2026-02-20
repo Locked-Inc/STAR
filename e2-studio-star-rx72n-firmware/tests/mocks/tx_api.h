@@ -56,7 +56,7 @@ typedef void VOID;
  *
  * @details
  * Portable alias for `unsigned char` used throughout ThreadX APIs for raw
- * byte buffers and character data.  Range: 0–255.  Prefer this alias over
+ * byte buffers and character data.  Range: 0-255.  Prefer this alias over
  * plain `unsigned char` wherever ThreadX types are expected, to make the
  * RTOS dependency explicit and improve searchability across the codebase.
  *
@@ -72,7 +72,7 @@ typedef unsigned char UCHAR;
  * @brief ThreadX NULL pointer constant
  *
  * @details
- * Intentional deviation from the no-constant-macro rule (CLAUDE.md §Constants):
+ * Intentional deviation from the no-constant-macro rule (CLAUDE.md Sec.Constants):
  * TX_NULL must be a macro because it is used as a pointer initializer and as a
  * sentinel in struct-initializer contexts where a typed enum or static const
  * cannot legally appear in C (e.g., `.tx_thread_name = TX_NULL`).  This mirrors
@@ -796,7 +796,7 @@ void mock_tx_set_time(ULONG ticks);
  * @post The handler is stored for later invocation (in production ThreadX)
  * @post Returns TX_SUCCESS, indicating the registration was accepted
  *
- * @note This is a mock implementation — it does not store the handler and
+ * @note This is a mock implementation -- it does not store the handler and
  *       will not call it during tests.  Invoke the handler directly from
  *       test code if overflow behaviour needs to be exercised.
  *

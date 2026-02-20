@@ -28,11 +28,11 @@
  *     style=filled;
  *     color=lightblue;
  *
- *     cells [label="4 Cells in Series\n(3.7V × 4 = 14.8V nominal)\n(4.2V × 4 = 16.8V max)",
+ *     cells [label="4 Cells in Series\n(3.7V x 4 = 14.8V nominal)\n(4.2V x 4 = 16.8V max)",
  *            fillcolor=lightyellow, style=filled];
  *     bq4050 [label="BQ4050 Fuel Gauge\n(I2C Address 0x0B)\n7 Monitored Registers",
  *             fillcolor=lightgreen, style=filled];
- *     sensor [label="Current Sense Resistor\n(10mΩ for 0-10A range)",
+ *     sensor [label="Current Sense Resistor\n(10mOhm for 0-10A range)",
  *             fillcolor=lightcoral, style=filled];
  *   }
  *
@@ -71,7 +71,7 @@
  * | **Voltage** | 0x09 | uint16_t | mV | 0-20000 | Total pack voltage |
  * | **Current** | 0x0A | int16_t | mA | -10000 to +10000 | Instantaneous current (+ = charge) |
  * | **RelativeStateOfCharge** | 0x0D | uint8_t | % | 0-100 | Remaining capacity percentage |
- * | **Temperature** | 0x08 | uint16_t | 0.1 K | 2731-3731 | Pack temperature (273.1K = 0°C) |
+ * | **Temperature** | 0x08 | uint16_t | 0.1 K | 2731-3731 | Pack temperature (273.1K = 0degC) |
  * | **RemainingCapacity** | 0x0F | uint16_t | mAh | 0-5000 | Charge remaining |
  * | **FullChargeCapacity** | 0x10 | uint16_t | mAh | 0-5000 | Full capacity (degrades over time) |
  * | **CycleCount** | 0x17 | uint16_t | cycles | 0-65535 | Total charge/discharge cycles |
@@ -79,16 +79,16 @@
  * ### I2C Transaction Timing
  *
  * Each register read involves:
- * 1. **START condition** - 10 µs
- * 2. **Address byte** (0x16 = 0x0B << 1) - 90 µs (9 bits @ 100 kHz)
- * 3. **Command byte** (register address) - 90 µs
- * 4. **Repeated START** - 10 µs
- * 5. **Address byte + Read bit** - 90 µs
- * 6. **Data bytes** (1-2 bytes) - 90-180 µs
- * 7. **STOP condition** - 10 µs
+ * 1. **START condition** - 10 us
+ * 2. **Address byte** (0x16 = 0x0B << 1) - 90 us (9 bits @ 100 kHz)
+ * 3. **Command byte** (register address) - 90 us
+ * 4. **Repeated START** - 10 us
+ * 5. **Address byte + Read bit** - 90 us
+ * 6. **Data bytes** (1-2 bytes) - 90-180 us
+ * 7. **STOP condition** - 10 us
  *
- * **Total per register:** ~300-400 µs
- * **Total for 7 registers:** ~2100-2800 µs (2ms average)
+ * **Total per register:** ~300-400 us
+ * **Total for 7 registers:** ~2100-2800 us (2ms average)
  *
  * ## Battery Monitoring Algorithm
  *
@@ -138,7 +138,7 @@
  * | **Critical** | < 5% | ~13.2V | Emergency stop trigger | Error |
  *
  * **Rationale for 25% Default Warning Threshold:**
- * - Provides ~22 minutes of operation at 2A average current (5000mAh × 0.25 / 2A)
+ * - Provides ~22 minutes of operation at 2A average current (5000mAh x 0.25 / 2A)
  * - Gives operator sufficient margin to navigate to charging station
  * - Prevents deep discharge damage (< 3.0V per cell)
  *
@@ -172,7 +172,7 @@
  *   --- [label="Normal Monitoring Loop (Every 1 Second)"];
  *   BMSTask => I2CBus [label="rx_bq4050_read_status()"];
  *   I2CBus => BQ4050 [label="Read 7 registers\n(~2ms total)"];
- *   BQ4050 >> I2CBus [label="Voltage: 16200mV\nCurrent: 2450mA\nSoC: 85%\nTemp: 25°C"];
+ *   BQ4050 >> I2CBus [label="Voltage: 16200mV\nCurrent: 2450mA\nSoC: 85%\nTemp: 25degC"];
  *   I2CBus >> BMSTask [label="k_rx_ok"];
  *   BMSTask box BMSTask [label="Build bms_state_t\nCheck thresholds (85% > 25%)\nNo warnings"];
  *   BMSTask => SharedData [label="shared_data_update_bms()"];
@@ -209,9 +209,9 @@
  * |--------|-------|-------|
  * | **Poll Rate** | 1 Hz | One complete battery read per second |
  * | **I2C Frequency** | 100 kHz | SMBus standard mode |
- * | **Transaction Time** | ~2ms | 7 registers × 300µs each |
+ * | **Transaction Time** | ~2ms | 7 registers x 300us each |
  * | **CPU Time per Poll** | ~2ms | 99.8% idle time |
- * | **CPU Utilization** | < 0.2% | (2ms / 1000ms) × 100% |
+ * | **CPU Utilization** | < 0.2% | (2ms / 1000ms) x 100% |
  * | **Worst Case Latency** | 1000ms | Max time to detect low battery |
  * | **I2C Timeout** | 100ms | Per-register read timeout |
  *
@@ -352,7 +352,7 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bms_cell_count = 4, /**< Number of series cells in pack (4S LiPo: 4 × 3.7 V nominal) */
+  k_bms_cell_count = 4, /**< Number of series cells in pack (4S LiPo: 4 x 3.7 V nominal) */
 } bms_cell_constants_t;
 
 /* =============================================================================
@@ -446,7 +446,7 @@ static bool internal_check_critical_faults(uint16_t status_flags)
    * CRITICAL Alarms (trigger emergency stop)
    * ========================================================================
    */
-  /* CRITICAL: Over-temperature alarm (>60°C, thermal runaway risk) */
+  /* CRITICAL: Over-temperature alarm (>60degC, thermal runaway risk) */
   if ((status_flags & k_bq4050_status_over_temp_alarm) != k_bq4050_status_flag_clear) {
     rx_log_error(s_tag, "CRITICAL: Over-temperature alarm - battery >60C");
     (void)shared_data_trigger_estop(k_estop_reason_battery_fault);
@@ -674,7 +674,7 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  * - tx_thread_sleep(): Safe (yields CPU)
  *
  * @par Performance:
- * - **Creation time:** ~120 µs @ 240 MHz (thread control block initialization)
+ * - **Creation time:** ~120 us @ 240 MHz (thread control block initialization)
  * - **CPU cycles:** ~28,800 cycles
  * - **Stack usage during creation:** ~64 bytes (function call overhead)
  * - **Memory allocation:** 1293 bytes total (1024 stack + 140 TCB + 129 static vars)
@@ -999,16 +999,16 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  *    - If failure: Mark data invalid, log warning, jump to step 11
  *
  * 6. **Build bms_state_t:** Copy data from rx_bq4050_status_t to bms_state_t:
- *    - voltage_mv ← status.voltage_mv
- *    - current_ma ← status.current_ma
- *    - soc_percent ← status.relative_soc
- *    - temperature_celsius ← status.temperature_c
- *    - capacity_mah ← status.remaining_capacity_mah
- *    - full_capacity_mah ← status.full_capacity_mah
- *    - cycle_count ← status.cycle_count
- *    - fault_flags ← status.battery_status (BatteryStatus register 0x16, 10 flag bits)
- *    - timestamp_ms ← tx_time_get() (ThreadX tick count in ms)
- *    - valid ← true
+ *    - voltage_mv <- status.voltage_mv
+ *    - current_ma <- status.current_ma
+ *    - soc_percent <- status.relative_soc
+ *    - temperature_celsius <- status.temperature_c
+ *    - capacity_mah <- status.remaining_capacity_mah
+ *    - full_capacity_mah <- status.full_capacity_mah
+ *    - cycle_count <- status.cycle_count
+ *    - fault_flags <- status.battery_status (BatteryStatus register 0x16, 10 flag bits)
+ *    - timestamp_ms <- tx_time_get() (ThreadX tick count in ms)
+ *    - valid <- true
  *
  * 7. **Low Battery Warning Check:** If SoC < soc_warning_pct (default 25%):
  *    - Log warning: "Low battery SoC: XX%"
@@ -1046,7 +1046,7 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  * - **Action:** Log warning, set k_event_low_battery event flag
  * - **Purpose:** Early warning for operator (return to base for charging)
  * - **Time Remaining:** ~18 minutes at 2A average current
- *   - Calculation: (5000mAh × 0.25) / 2000mA = 0.625h = 37.5 min (conservative)
+ *   - Calculation: (5000mAh x 0.25) / 2000mA = 0.625h = 37.5 min (conservative)
  *   - Real-world with margin: ~18 minutes safe operation
  *
  * ### Tier 2: Critical (5% SoC)
@@ -1118,10 +1118,10 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  * | Metric | Value | Measurement Method |
  * |--------|-------|-------------------|
  * | **Poll Rate** | 1 Hz | Fixed 1000ms sleep period |
- * | **I2C Transaction Time** | 2ms | 7 registers × 300µs per register |
+ * | **I2C Transaction Time** | 2ms | 7 registers x 300us per register |
  * | **CPU Active Time** | 2ms per second | I2C read + data processing |
  * | **CPU Idle Time** | 998ms per second | tx_thread_sleep() yields CPU |
- * | **CPU Utilization** | 0.2% | (2ms / 1000ms) × 100% |
+ * | **CPU Utilization** | 0.2% | (2ms / 1000ms) x 100% |
  * | **Worst Case Latency** | 1000ms | Max time to detect low battery event |
  * | **I2C Timeout** | 100ms | Per-register read timeout |
  * | **Stack Usage (Peak)** | 256 bytes | During rx_bq4050_read_status() call |
@@ -1173,7 +1173,7 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  * @warning **Infinite Loop:** This function NEVER returns. Do not call directly from
  *          application code. Only ThreadX should call this via tx_thread_create().
  * @warning **I2C Timeout:** If BQ4050 does not respond, each register read times out
- *          after 100ms. Total worst-case I2C timeout: 7 × 100ms = 700ms.
+ *          after 100ms. Total worst-case I2C timeout: 7 x 100ms = 700ms.
  * @warning **Deep Discharge:** If battery drops below 5% SoC, emergency stop is
  *          triggered immediately. Ensure safe shutdown logic is implemented.
  * @warning **Stack Overflow:** 1024 byte stack must accommodate 256 byte peak usage.
@@ -1194,19 +1194,19 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  *
  * @par Performance Analysis:
  * **Execution Time Breakdown (per 1 second iteration):**
- * - rx_bq4050_read_status(): ~2000 µs (I2C transactions)
- * - Data structure copy: ~10 µs (memcpy equivalent)
- * - Threshold checks: ~5 µs (two comparisons)
- * - shared_data_update_bms(): ~20 µs (mutex lock + copy + unlock)
- * - Logging (if warnings): ~100 µs (UART transmit)
- * - **Total active time:** ~2135 µs = 2.1ms
+ * - rx_bq4050_read_status(): ~2000 us (I2C transactions)
+ * - Data structure copy: ~10 us (memcpy equivalent)
+ * - Threshold checks: ~5 us (two comparisons)
+ * - shared_data_update_bms(): ~20 us (mutex lock + copy + unlock)
+ * - Logging (if warnings): ~100 us (UART transmit)
+ * - **Total active time:** ~2135 us = 2.1ms
  * - **Sleep time:** 1000ms - 2.1ms = 997.9ms (CPU idle)
- * - **CPU utilization:** (2.1ms / 1000ms) × 100% = 0.21%
+ * - **CPU utilization:** (2.1ms / 1000ms) x 100% = 0.21%
  *
  * **I2C Bandwidth Usage:**
- * - 7 registers × ~40 bytes per transaction (including overhead) = 280 bytes/second
+ * - 7 registers x ~40 bytes per transaction (including overhead) = 280 bytes/second
  * - At 100 kHz I2C: 12500 bytes/second theoretical max
- * - BMS usage: (280 / 12500) × 100% = 2.24% of I2C bus bandwidth
+ * - BMS usage: (280 / 12500) x 100% = 2.24% of I2C bus bandwidth
  *
  * @par Example - Normal Operation (SoC > 25%):
  * @code{.c}

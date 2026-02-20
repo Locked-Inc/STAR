@@ -6,11 +6,11 @@
 
 **System Architecture:**
 ```
-User → UI (TypeScript/React)
-     → Gateway (Go on RPi5, WebSocket/HTTP ↔ ROS2 bridge)
-     → ROS2 (C++ on RPi5, robot control + SLAM)
-     → SPI Bridge (ROS2 node, 10 Mbps SPI)
-     → RX72N Firmware (C + ThreadX, real-time motor control + nanopb)
+User -> UI (TypeScript/React)
+     -> Gateway (Go on RPi5, WebSocket/HTTP <-> ROS2 bridge)
+     -> ROS2 (C++ on RPi5, robot control + SLAM)
+     -> SPI Bridge (ROS2 node, 10 Mbps SPI)
+     -> RX72N Firmware (C + ThreadX, real-time motor control + nanopb)
 ```
 
 ---
@@ -189,9 +189,9 @@ grep -i "warning" doxygen_warnings.log
 | Component | Description | Language/Framework |
 |-----------|-------------|--------------------|
 | `e2-studio-star-rx72n-firmware/` | Renesas RX72N motor controller firmware | C + ThreadX RTOS |
-| `star-proto/` | Protocol Buffers schemas with code generation | Proto3 → Go/TypeScript/nanopb |
+| `star-proto/` | Protocol Buffers schemas with code generation | Proto3 -> Go/TypeScript/nanopb |
 | `star-yocto-config/` | Custom Buildroot/Yocto for RPi5 | Yocto/OpenEmbedded |
-| `star-gateway/` | Gateway service (UI ↔ ROS2 bridge) | Go + gRPC |
+| `star-gateway/` | Gateway service (UI <-> ROS2 bridge) | Go + gRPC |
 | `star-ros2/` | ROS2 integration + SLAM | C++ (ROS2 Jazzy) |
 | `star-ui/` | User interface | TypeScript + React |
 | `matlab/` | Motor system identification + PID design | MATLAB |
@@ -201,10 +201,10 @@ grep -i "warning" doxygen_warnings.log
 
 - **Main Controller:** Raspberry Pi 5
 - **Motor Controller:** Renesas RX72N (4MB Flash, 512KB SRAM, 240 MHz)
-- **Motors:** 4× 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
+- **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
 - **Motor Drivers:** DRV8243S H-bridge with current sensing
 - **Lidar:** RPLiDAR C1 (12m range, IP54)
-- **Communication:** 10 Mbps SPI (RPi5 ↔ RX72N) with nanopb + CRC-32
+- **Communication:** 10 Mbps SPI (RPi5 <-> RX72N) with nanopb + CRC-32
 
 ### Gateway Architecture (Recent Refactoring)
 
@@ -253,7 +253,7 @@ grep -i "warning" doxygen_warnings.log
 1. **C23 Typed Enums** - MANDATORY for ALL integer constants
 
    ```c
-   // ✅ CORRECT: C23 typed enums with explicit underlying type (MANDATORY)
+   // [PASS] CORRECT: C23 typed enums with explicit underlying type (MANDATORY)
    typedef enum : uint8_t {
        k_motor_state_idle    = 0,
        k_motor_state_running = 1,
@@ -261,16 +261,16 @@ grep -i "warning" doxygen_warnings.log
    } motor_state_t;
 
    typedef enum : uint16_t {
-       k_timeout_ms  = 1000,    // Integer constant → enum
-       k_max_retries = 3,       // Integer constant → enum
+       k_timeout_ms  = 1000,    // Integer constant -> enum
+       k_max_retries = 3,       // Integer constant -> enum
    } motor_config_t;
 
-   // ❌ WRONG: Untyped enum (missing `: uint8_t` type specifier)
+   // [FAIL] WRONG: Untyped enum (missing `: uint8_t` type specifier)
    typedef enum {
        k_motor_state_idle = 0,  // Missing underlying type!
    } motor_state_t;
 
-   // ❌ WRONG: Never use macros for integer constants
+   // [FAIL] WRONG: Never use macros for integer constants
    #define TIMEOUT_MS (1000)  // Should be enum!
    ```
 
@@ -287,18 +287,18 @@ grep -i "warning" doxygen_warnings.log
 2. **const variables** - ONLY for floating-point (enum limitation)
 
    ```c
-   // ✅ CORRECT: Floating-point must use const
+   // [PASS] CORRECT: Floating-point must use const
    static const float s_max_velocity_mps = 2.5f;
    static const float s_pid_kp = 1.0f;
 
-   // ❌ WRONG: Never use macros for floats
+   // [FAIL] WRONG: Never use macros for floats
    #define MAX_VELOCITY_MPS (2.5f)  // Should be const!
    ```
 
 3. **Macros** - ONLY for these 3 specific cases:
 
    ```c
-   // ✅ ALLOWED: Reducing duplicated code
+   // [PASS] ALLOWED: Reducing duplicated code
    #define RX_RETURN_ON_ERROR(err, tag, msg) \
        do { \
            rx_err_t _err = (err); \
@@ -308,23 +308,23 @@ grep -i "warning" doxygen_warnings.log
            } \
        } while (0)
 
-   // ✅ ALLOWED: Conditional compilation
+   // [PASS] ALLOWED: Conditional compilation
    #if LOG_LEVEL >= k_log_error
    #define rx_log_error(tag, msg) internal_rx_log_error((tag), (msg))
    #else
    #define rx_log_error(tag, msg) ((void)0)
    #endif
 
-   // ✅ ALLOWED: Build configuration flags
+   // [PASS] ALLOWED: Build configuration flags
    #ifdef __RX__
    #define RX_CRC32_USE_HARDWARE
    #endif
 
-   // ❌ FORBIDDEN: Hardware register addresses (use inline accessors)
+   // [FAIL] FORBIDDEN: Hardware register addresses (use inline accessors)
    #define CMT0_BASE ((rx_cmt_channel_regs_t*)0x00088000)  // Wrong!
    #define CMT0      (*CMT0_BASE)                          // Wrong!
 
-   // ❌ FORBIDDEN: Backward compatibility (no releases = no compatibility)
+   // [FAIL] FORBIDDEN: Backward compatibility (no releases = no compatibility)
    #define old_function new_function  // Wrong! Update call sites instead
    ```
 
@@ -333,7 +333,7 @@ grep -i "warning" doxygen_warnings.log
 **ALL numeric literals must be named typed enums, including:**
 
 ```c
-// ✅ CORRECT: Array indices as typed enums
+// [PASS] CORRECT: Array indices as typed enums
 typedef enum : uint8_t {
     k_idx_high_byte = 0,
     k_idx_low_byte  = 1,
@@ -341,25 +341,25 @@ typedef enum : uint8_t {
 
 buf[k_idx_high_byte] = (val >> k_shift_byte);
 
-// ✅ CORRECT: Bit shifts as typed enums
+// [PASS] CORRECT: Bit shifts as typed enums
 typedef enum : uint8_t {
     k_shift_byte   = 8,
     k_shift_enable = 7,
 } bit_shifts_t;
 
-// ✅ CORRECT: Protocol offsets as typed enums
+// [PASS] CORRECT: Protocol offsets as typed enums
 typedef enum : uint8_t {
     k_offset_sync    = 0,
     k_offset_payload = 4,
 } frame_offsets_t;
 
-// ✅ CORRECT: Bit masks as typed enums (use uint32_t for masks)
+// [PASS] CORRECT: Bit masks as typed enums (use uint32_t for masks)
 typedef enum : uint32_t {
     k_mask_byte   = 0xFF,
     k_mask_enable = 0x80,
 } bit_masks_t;
 
-// ❌ WRONG: Magic numbers
+// [FAIL] WRONG: Magic numbers
 buf[0] = (val >> 8);              // What is 0? What is 8?
 frame[4] = payload;               // What's at index 4?
 REG = (1 << 7) | (3 << 3);       // Which bits? Why?
@@ -378,7 +378,7 @@ REG = (1 << 7) | (3 << 3);       // Which bits? Why?
 #### Hardware Register Access
 
 ```c
-// ✅ CORRECT: Inline accessor functions with typed enum addresses
+// [PASS] CORRECT: Inline accessor functions with typed enum addresses
 typedef enum : uint32_t {
     k_cmt0_base_addr  = 0x00088000,
     k_port0_base_addr = 0x000C0000,
@@ -415,14 +415,14 @@ static void led_task_entry(ULONG input) {
     }
 }
 
-// ✅ CORRECT: ThreadX uses UINT return type
+// [PASS] CORRECT: ThreadX uses UINT return type
 UINT led_task_create(void) {
     return tx_thread_create(&led_thread, "LED", led_task_entry,
                            0, led_task_stack, sizeof(led_task_stack),
                            PRIORITY, PRIORITY, TX_NO_TIME_SLICE, TX_AUTO_START);
 }
 
-// ❌ WRONG: Never use esp_err_t (that's ESP-IDF for ESP32!)
+// [FAIL] WRONG: Never use esp_err_t (that's ESP-IDF for ESP32!)
 // esp_err_t led_task_create(void) { ... }  // WRONG!
 ```
 
@@ -551,7 +551,7 @@ RCLCPP_DEBUG(this->get_logger(), "Processing message %d", count);
 RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
   "Stale telemetry (%ldms > %dms)", cmd_age_ms, timeout_ms_);
 
-// ❌ NEVER use printf/cout in ROS2 nodes
+// [FAIL] NEVER use printf/cout in ROS2 nodes
 // printf("Debug message");               // WRONG!
 // std::cout << "Debug" << std::endl;     // WRONG!
 ```
@@ -707,7 +707,7 @@ star.v1.RequestHeader.request_id max_size:64
  * @warning Do not call with varying dt_sec (breaks integral/derivative math)
  *
  * @par Performance:
- * Execution time: ~2 µs @ 240 MHz with -O2 optimization
+ * Execution time: ~2 us @ 240 MHz with -O2 optimization
  *
  * @par Example:
  * @code
@@ -727,7 +727,7 @@ star.v1.RequestHeader.request_id max_size:64
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 preconditions, 3 postconditions
+ * - Rule 5: [PASS] 4 preconditions, 3 postconditions
  */
 rx_err_t rx_pid_compute(rx_pid_handle_t* pid, float setpoint,
                         float measured, float dt_sec, float* output);
@@ -745,20 +745,20 @@ rx_err_t rx_pid_compute(rx_pid_handle_t* pid, float setpoint,
 
 The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded code with one intentional deviation for testability.
 
-1. **Simplify Control Flow** ✓ - No `goto`, `setjmp`/`longjmp`, or recursion
-2. **Fixed Loop Upper-Bounds** ✓ - All loops have statically provable bounds
-3. **No Dynamic Memory** ✓ - Zero malloc/free in RX72N firmware (safety-critical)
-4. **Short Functions** ✓ - ~60 lines max, single verifiable units
-5. **Assertions/Validation** ✓ - 2+ checks per function, pre/post conditions
-6. **Smallest Scope** ✓ - Variables declared close to first use
-7. **Check Return Values** ✓ - All returns validated or explicitly cast `(void)`
-8. **Limit Preprocessor** ✓ - C23 typed enums for ALL constants, macros only for 3 cases
-9. **Restrict Pointers** ⚠️ - **INTENTIONAL DEVIATION** for Dependency Inversion Principle (DIP)
+1. **Simplify Control Flow** [PASS] - No `goto`, `setjmp`/`longjmp`, or recursion
+2. **Fixed Loop Upper-Bounds** [PASS] - All loops have statically provable bounds
+3. **No Dynamic Memory** [PASS] - Zero malloc/free in RX72N firmware (safety-critical)
+4. **Short Functions** [PASS] - ~60 lines max, single verifiable units
+5. **Assertions/Validation** [PASS] - 2+ checks per function, pre/post conditions
+6. **Smallest Scope** [PASS] - Variables declared close to first use
+7. **Check Return Values** [PASS] - All returns validated or explicitly cast `(void)`
+8. **Limit Preprocessor** [PASS] - C23 typed enums for ALL constants, macros only for 3 cases
+9. **Restrict Pointers** [WARN] - **INTENTIONAL DEVIATION** for Dependency Inversion Principle (DIP)
    - **Standard:** Maximum one level of dereferencing, no function pointers
    - **STAR Deviation:** Function pointers ALLOWED for hardware abstraction and unit testing
    - **Why:** Enables mock implementations for testability
    - Example: `typedef struct { rx_err_t (*read)(void* ctx, ...); void* ctx; } bus_interface_t;`
-10. **Maximum Warnings** ✓ - `-Wall -Wextra -Werror`, zero warnings, CI/CD enforced
+10. **Maximum Warnings** [PASS] - `-Wall -Wextra -Werror`, zero warnings, CI/CD enforced
 
 ---
 
@@ -798,28 +798,28 @@ The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded
 
 ---
 
-## Simulator Support (e² Studio)
+## Simulator Support (e^2 Studio)
 
 ### Purpose
 
-The Renesas e² studio simulator allows testing firmware **logic** without real hardware:
+The Renesas e^2 studio simulator allows testing firmware **logic** without real hardware:
 
-- ✅ Algorithm validation (PID controllers, state machines)
-- ✅ Protocol parsing and encoding
-- ✅ Error handling paths
-- ✅ Interactive debugging (breakpoints, step-through, variable inspection)
-- ❌ Timing behavior (not cycle-accurate)
-- ❌ Hardware peripheral specifics (USB, SPI, clocks fully functional)
+- [PASS] Algorithm validation (PID controllers, state machines)
+- [PASS] Protocol parsing and encoding
+- [PASS] Error handling paths
+- [PASS] Interactive debugging (breakpoints, step-through, variable inspection)
+- [FAIL] Timing behavior (not cycle-accurate)
+- [FAIL] Hardware peripheral specifics (USB, SPI, clocks fully functional)
 
 **WARNING**: Simulator builds are FOR LOGIC TESTING ONLY. Always validate critical paths on real hardware before deployment.
 
 ### Building for Simulator
 
-#### Option 1: e² studio (Interactive Debugging)
+#### Option 1: e^2 studio (Interactive Debugging)
 
 **Creating Simulator Build Configuration:**
-1. In e² studio, right-click project "e2-studio-star-rx72n-firmware" → Properties
-2. Navigate to: C/C++ Build → Manage Configurations
+1. In e^2 studio, right-click project "e2-studio-star-rx72n-firmware" -> Properties
+2. Navigate to: C/C++ Build -> Manage Configurations
 3. Click "New..." button
 4. Name: **"Simulator Debug"**
 5. Select "Copy settings from": **"Debug"**
@@ -827,22 +827,22 @@ The Renesas e² studio simulator allows testing firmware **logic** without real 
 
 **Adding RX_SIMULATOR_MODE Define:**
 1. Still in Properties, select configuration: **"Simulator Debug"** (top dropdown)
-2. Navigate to: C/C++ Build → Settings
-3. Expand: **"Compiler"** → click **"Preprocessor"**
+2. Navigate to: C/C++ Build -> Settings
+3. Expand: **"Compiler"** -> click **"Preprocessor"**
 4. In "Defined symbols (-D)" section, click "Add" (green + icon)
 5. Enter: **`RX_SIMULATOR_MODE`** (no value needed)
-6. Click OK → Apply → Close
+6. Click OK -> Apply -> Close
 
 **Building:**
-1. Project → Build Configurations → Set Active → **"Simulator Debug"**
-2. Project → Build Project (Ctrl+B)
+1. Project -> Build Configurations -> Set Active -> **"Simulator Debug"**
+2. Project -> Build Project (Ctrl+B)
 3. Verify build succeeds with warning: "RX_SIMULATOR_MODE: This build is FOR SIMULATOR ONLY"
 
 **Launching Simulator:**
-1. Run → Debug As → Renesas GDB Hardware Debugging
+1. Run -> Debug As -> Renesas GDB Hardware Debugging
 2. Ensure "Simulator" is selected as target device (not hardware emulator)
 3. Set breakpoints, step through code, inspect variables
-4. Logs appear in Console view (Window → Show View → Console)
+4. Logs appear in Console view (Window -> Show View -> Console)
 
 #### Option 2: CMake (Automated Testing)
 
@@ -920,7 +920,7 @@ cd star-ui && npm run test
 
 ## Boundaries
 
-### ✅ Always Do
+### [PASS] Always Do
 
 - **Run tests before commits:** `go test ./...`, `colcon test`, `ctest`, etc.
 - **Format code:** `clang-format`, `go fmt`, `buf format`, `npm run lint`
@@ -932,7 +932,7 @@ cd star-ui && npm run test
 - **Use RCLCPP logging** in ROS2 nodes (`RCLCPP_INFO`, `RCLCPP_ERROR`, etc.)
 - **Follow conventional commits:** `feat(spi): add device initialization`
 
-### ⚠️ Ask First
+### [WARN] Ask First
 
 - **Database schema changes**
 - **Breaking changes to Protocol Buffer schemas** (field numbers, types, deletions)
@@ -942,7 +942,7 @@ cd star-ui && npm run test
 - **Destructive git operations** (`reset --hard`, `clean -f`, `branch -D`)
 - **Skipping pre-commit hooks** (`--no-verify`) without explicit approval
 
-### 🚫 Never Do
+### ? Never Do
 
 - **Commit secrets, API keys, or credentials** to repository
 - **Use backward compatibility shims** (no deprecation macros, function aliases, wrappers)
@@ -984,8 +984,8 @@ Always reference `.tex` files in `docs/sections/` for accurate technical informa
 ### Motor Control
 
 **PID Tuning Workflow:**
-1. Measure motor step response → estimate time constant (τ = 75ms)
-2. Run MATLAB: `motor_model_1st_order.m` → `pid_design_velocity.m` → `pid_discretize.m`
+1. Measure motor step response -> estimate time constant (tau = 75ms)
+2. Run MATLAB: `motor_model_1st_order.m` -> `pid_design_velocity.m` -> `pid_discretize.m`
 3. Update RX72N firmware with new gains (Kp=0.286, Ki=8.01)
 4. Test closed-loop at 100 Hz control rate
 

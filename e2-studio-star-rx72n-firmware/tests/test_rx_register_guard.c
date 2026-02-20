@@ -101,10 +101,10 @@
  *
  * | Operation | Execution Time | Notes |
  * |-----------|----------------|-------|
- * | init() | ~5 µs | Read registers, store golden values |
- * | refresh() (no correction) | ~2 µs | Read + compare registers |
- * | refresh() (correction) | ~8 µs | Read + compare + write + increment |
- * | get_correction_count() | ~0.1 µs | Read counter variable |
+ * | init() | ~5 us | Read registers, store golden values |
+ * | refresh() (no correction) | ~2 us | Read + compare registers |
+ * | refresh() (correction) | ~8 us | Read + compare + write + increment |
+ * | get_correction_count() | ~0.1 us | Read counter variable |
  *
  * **Refresh frequency:** 10ms (100 Hz) provides good protection without
  * significant CPU overhead (~0.02% @ 240 MHz).

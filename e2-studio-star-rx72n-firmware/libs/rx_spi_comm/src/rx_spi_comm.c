@@ -127,7 +127,7 @@
  *
  * ## Performance Characteristics
  *
- * | Operation | Avg Time (µs) | Worst Case (µs) | Notes |
+ * | Operation | Avg Time (us) | Worst Case (us) | Notes |
  * |-----------|---------------|-----------------|-------|
  * | **rx_spi_comm_send()** | 150-500 | 1000 | Depends on payload (0-1024 bytes) |
  * | **rx_spi_comm_receive()** | 200-600 | 2000 | Includes wait + decode + CRC |
@@ -139,9 +139,9 @@
  * | **internal_wait_for_data()** | 10 | timeout_ms*1000 | Polls every 10ms until timeout |
  *
  * **Throughput Analysis** (10 MHz SPI, no FEC):
- * - **Max payload**: 1024 bytes → 1038 bytes on wire → 830 µs SPI time
- * - **Frame overhead**: ~100 µs encode + ~150 µs decode + ~250 µs CRC
- * - **Total latency**: ~1330 µs per 1024-byte frame = ~770 KB/s effective
+ * - **Max payload**: 1024 bytes -> 1038 bytes on wire -> 830 us SPI time
+ * - **Frame overhead**: ~100 us encode + ~150 us decode + ~250 us CRC
+ * - **Total latency**: ~1330 us per 1024-byte frame = ~770 KB/s effective
  * - **Theoretical max**: 10 MHz / 8 = 1.25 MB/s (raw SPI)
  * - **Efficiency**: ~62% (overhead from framing, CRC, ACK waits)
  *
@@ -159,12 +159,12 @@
  *
  * | Function | Thread Safe? | Notes |
  * |----------|--------------|-------|
- * | `rx_spi_comm_init()` | ❌ No | Call once during init, not from multiple threads |
- * | `rx_spi_comm_send()` | ❌ No | Use external mutex if multiple threads send |
- * | `rx_spi_comm_receive()` | ❌ No | Use external mutex if multiple threads receive |
- * | `rx_spi_comm_send_ack()` | ❌ No | Same as send (shares TX sequence) |
- * | `rx_spi_comm_send_nack()` | ❌ No | Same as send (shares TX sequence) |
- * | `rx_spi_comm_data_available()` | ✅ Yes | Read-only hardware poll (safe if HAL is safe) |
+ * | `rx_spi_comm_init()` | [FAIL] No | Call once during init, not from multiple threads |
+ * | `rx_spi_comm_send()` | [FAIL] No | Use external mutex if multiple threads send |
+ * | `rx_spi_comm_receive()` | [FAIL] No | Use external mutex if multiple threads receive |
+ * | `rx_spi_comm_send_ack()` | [FAIL] No | Same as send (shares TX sequence) |
+ * | `rx_spi_comm_send_nack()` | [FAIL] No | Same as send (shares TX sequence) |
+ * | `rx_spi_comm_data_available()` | [PASS] Yes | Read-only hardware poll (safe if HAL is safe) |
  *
  * **Typical pattern**: Dedicate one ThreadX task to SPI communication, no locking needed.
  *
@@ -182,8 +182,8 @@
  * **Pin Connections** (RSPI0 example):
  * - **CS**: PD0 (chip select, active low)
  * - **CLK**: PD1 (clock from RPi5)
- * - **CIPO**: PD2 (Controller In Peripheral Out, RX72N → RPi5)
- * - **COPI**: PD3 (Controller Out Peripheral In, RPi5 → RX72N)
+ * - **CIPO**: PD2 (Controller In Peripheral Out, RX72N -> RPi5)
+ * - **COPI**: PD3 (Controller Out Peripheral In, RPi5 -> RX72N)
  *
  * ## Error Handling Strategy
  *
@@ -198,7 +198,7 @@
  * - `k_rx_err_invalid_size`: Payload > 1024 bytes, violates protocol spec
  *
  * **Hardware Errors** (propagated from RSPI HAL):
- * - Overrun, underrun, mode fault → logged and returned to caller
+ * - Overrun, underrun, mode fault -> logged and returned to caller
  *
  * ## Integration Example
  *
@@ -266,16 +266,16 @@
  *
  * | Rule | Status | Implementation Notes |
  * |------|--------|---------------------|
- * | 1. Simple control flow | ✅ Pass | No goto/setjmp/recursion, structured if/while/for only |
- * | 2. Fixed loop bounds | ✅ Pass | All loops bounded by enum constants (k_max_poll_iterations) |
- * | 3. No dynamic memory | ✅ Pass | Zero malloc/free, all buffers in handle (stack/static) |
- * | 4. Short functions | ✅ Pass | All <60 lines, single responsibility |
- * | 5. Assertions | ✅ Pass | Minimum 2 checks per function (RX_CHECK_NULL_PTR + state) |
- * | 6. Small scope | ✅ Pass | Variables declared near use, file-static for module data |
- * | 7. Check returns | ✅ Pass | All rx_err_t checked via RX_RETURN_ON_ERROR or explicit if |
- * | 8. Limited preprocessor | ✅ Pass | C23 typed enums for constants, macros only for conditionals |
- * | 9. Restrict pointers | ⚠️ Deviation | Function pointers in HAL interface (DIP, testability) |
- * | 10. Compiler warnings | ✅ Pass | -Wall -Wextra -Werror, zero warnings |
+ * | 1. Simple control flow | [PASS] Pass | No goto/setjmp/recursion, structured if/while/for only |
+ * | 2. Fixed loop bounds | [PASS] Pass | All loops bounded by enum constants (k_max_poll_iterations) |
+ * | 3. No dynamic memory | [PASS] Pass | Zero malloc/free, all buffers in handle (stack/static) |
+ * | 4. Short functions | [PASS] Pass | All <60 lines, single responsibility |
+ * | 5. Assertions | [PASS] Pass | Minimum 2 checks per function (RX_CHECK_NULL_PTR + state) |
+ * | 6. Small scope | [PASS] Pass | Variables declared near use, file-static for module data |
+ * | 7. Check returns | [PASS] Pass | All rx_err_t checked via RX_RETURN_ON_ERROR or explicit if |
+ * | 8. Limited preprocessor | [PASS] Pass | C23 typed enums for constants, macros only for conditionals |
+ * | 9. Restrict pointers | [WARN] Deviation | Function pointers in HAL interface (DIP, testability) |
+ * | 10. Compiler warnings | [PASS] Pass | -Wall -Wextra -Werror, zero warnings |
  *
  * ## SOLID Principles
  *
@@ -358,7 +358,7 @@ static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle);
  * 1. **Validate inputs**: Check data and frame pointers, minimum buffer size
  * 2. **Parse sync word**: Read little-endian 0x55AA, validate against k_frame_sync_word
  * 3. **Parse sequence**: Read little-endian 16-bit sequence number
- * 4. **Parse length**: Read little-endian 16-bit payload length, validate ≤ 1024
+ * 4. **Parse length**: Read little-endian 16-bit payload length, validate <= 1024
  * 5. **Validate total size**: Check buffer contains header + payload + CRC
  * 6. **Parse type and flags**: Extract frame type and flags bytes
  * 7. **Return payload offset**: Optionally return offset to payload start
@@ -382,7 +382,7 @@ static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle);
  *   - **Format**: Little-endian header fields
  *
  * @param[in] data_len Length of data buffer in bytes
- *   - **Valid range**: ≥ 14 (minimum frame: header + 0 payload + CRC)
+ *   - **Valid range**: >= 14 (minimum frame: header + 0 payload + CRC)
  *   - **Typical range**: 14-1038 bytes (0-1024 payload + overhead)
  *
  * @param[out] frame Frame structure to populate with parsed header
@@ -413,7 +413,7 @@ static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle);
  * @warning Do not assume frame->payload is valid after this call
  *
  * @par Performance:
- * Execution time: ~15 µs @ 240 MHz (byte-level parsing, no memcpy)
+ * Execution time: ~15 us @ 240 MHz (byte-level parsing, no memcpy)
  *
  * @par Example Usage:
  * @code{.c}
@@ -536,10 +536,10 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  * @warning CRC mismatch indicates transmission error, do NOT process frame
  *
  * @par Performance:
- * - **Execution time**: 40-250 µs @ 240 MHz (depends on offset = bytes to hash)
- * - **10-byte frame** (ACK): ~40 µs
- * - **100-byte frame**: ~130 µs
- * - **263-byte frame** (max): ~250 µs
+ * - **Execution time**: 40-250 us @ 240 MHz (depends on offset = bytes to hash)
+ * - **10-byte frame** (ACK): ~40 us
+ * - **100-byte frame**: ~130 us
+ * - **263-byte frame** (max): ~250 us
  * - **Hardware CRC**: If RX_CRC32_USE_HARDWARE defined, 4x faster
  *
  * @par CRC Mismatch Handling:
@@ -630,7 +630,7 @@ typedef enum : uint16_t {
  *    - If ready: Return k_rx_ok immediately
  *    - If error: Return HAL error code
  *    - If not ready: Sleep 1 tick (10ms) and retry
- * 3. **Timeout check**: If elapsed time ≥ timeout_ms, return k_rx_err_timeout
+ * 3. **Timeout check**: If elapsed time >= timeout_ms, return k_rx_err_timeout
  * 4. **Thread yield**: tx_thread_sleep() yields CPU to other tasks (not busy-wait)
  *
  * **Platform Differences:**
@@ -659,10 +659,10 @@ typedef enum : uint16_t {
  *
  * @note Yields CPU via tx_thread_sleep(1) every iteration (cooperative multitasking)
  * @warning Do NOT call with timeout_ms = 0 (will return timeout immediately on RX72N)
- * @warning Timeout does NOT guarantee exact millisecond precision (±10ms due to tick granularity)
+ * @warning Timeout does NOT guarantee exact millisecond precision (+/-10ms due to tick granularity)
  *
  * @par Performance:
- * - **Best case**: ~10 µs (host ready immediately, 1 HAL call)
+ * - **Best case**: ~10 us (host ready immediately, 1 HAL call)
  * - **Typical**: 10-50 ms (host ready within 1-5 polling iterations)
  * - **Worst case**: timeout_ms (50 ms default, host never ready)
  *
@@ -766,7 +766,7 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
  * **Algorithm:**
  * 1. **Pre-condition 1**: Validate handle pointer (RX_CHECK_NULL_PTR)
  * 2. **Pre-condition 2**: Calculate transfer_len = max(tx_len, rx_len)
- * 3. **Pre-condition 3**: Validate transfer_len ≤ k_spi_comm_tx_buffer_size (2048)
+ * 3. **Pre-condition 3**: Validate transfer_len <= k_spi_comm_tx_buffer_size (2048)
  * 4. **Pre-condition 4**: Validate TX data pointer consistent with tx_len
  * 5. **Pre-condition 5**: Validate RX data pointer consistent with rx_len
  * 6. **Flow control**: If transmitting (tx_data != nullptr), wait for host ready via internal_wait_for_ack()
@@ -815,8 +815,8 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
  * @retval (HAL errors) RSPI peripheral transfer failure (overrun, mode fault, etc.)
  *
  * @pre handle must be initialized via rx_spi_comm_init()
- * @pre If tx_data != nullptr, tx_len must be > 0 and ≤ 2048
- * @pre If rx_data != nullptr, rx_len must be > 0 and ≤ 2048
+ * @pre If tx_data != nullptr, tx_len must be > 0 and <= 2048
+ * @pre If rx_data != nullptr, rx_len must be > 0 and <= 2048
  * @pre tx_data and rx_data must not alias (undefined behavior if overlapping)
  * @post On k_rx_ok, rx_data (if non-nullptr) contains received bytes
  * @post On k_rx_ok, handle->tx_buffer and handle->rx_buffer modified
@@ -828,10 +828,10 @@ static rx_err_t internal_wait_for_ack(const rx_spi_comm_handle_t* handle, uint32
  * @warning This function is NOT thread-safe (use external mutex if multi-threaded)
  *
  * @par Performance:
- * - **Execution time**: 80-400 µs @ 10 MHz SPI (depends on transfer_len)
- * - **10-byte transfer** (ACK/NACK): ~80 µs (8 µs SPI + 72 µs overhead)
- * - **100-byte transfer**: ~180 µs (80 µs SPI + 100 µs overhead)
- * - **1038-byte transfer** (max frame): ~1000 µs (830 µs SPI + 170 µs overhead)
+ * - **Execution time**: 80-400 us @ 10 MHz SPI (depends on transfer_len)
+ * - **10-byte transfer** (ACK/NACK): ~80 us (8 us SPI + 72 us overhead)
+ * - **100-byte transfer**: ~180 us (80 us SPI + 100 us overhead)
+ * - **1038-byte transfer** (max frame): ~1000 us (830 us SPI + 170 us overhead)
  * - **Host ACK wait**: Add 0-50 ms if transmitting (see internal_wait_for_ack)
  *
  * @par Example - Transmit Only:
@@ -994,7 +994,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
  * @warning RSPI peripheral hardware (rspi HAL) must be initialized separately
  *
  * @par Performance:
- * Execution time: ~50 µs @ 240 MHz (memset + encoder/decoder init)
+ * Execution time: ~50 us @ 240 MHz (memset + encoder/decoder init)
  *
  * @par Example - Default Configuration:
  * @code{.c}
@@ -1167,7 +1167,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  *
  * **Algorithm:**
  * 1. **Validate inputs**: Check handle, frame, payload pointer consistency
- * 2. **Validate payload size**: Ensure payload_len ≤ 1024 bytes (protocol limit)
+ * 2. **Validate payload size**: Ensure payload_len <= 1024 bytes (protocol limit)
  * 3. **Zero frame**: Clear rx_frame_t to ensure padding bytes are zero
  * 4. **Set sequence**: Use handle->tx_sequence (auto-incremented by sender)
  * 5. **Set length**: payload_len (0-1024)
@@ -1205,7 +1205,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * @param[in] payload_len Payload length in bytes
  *   - **Valid range**: 0-1024 bytes (k_frame_max_payload)
  *   - **Typical**: 0 (ACK/NACK), 8-64 (telemetry), 100-1024 (bulk data)
- *   - **Constraints**: Must be ≤ 1024 (protocol specification limit)
+ *   - **Constraints**: Must be <= 1024 (protocol specification limit)
  *
  * @param[out] frame Frame structure to populate
  *   - **Valid range**: Non-nullptr pointer to rx_frame_t (304 bytes)
@@ -1219,7 +1219,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * @retval k_rx_err_invalid_size payload_len > 1024 (exceeds protocol limit)
  *
  * @pre handle must be initialized via rx_spi_comm_init()
- * @pre If payload != nullptr, payload_len must be > 0 and ≤ 1024
+ * @pre If payload != nullptr, payload_len must be > 0 and <= 1024
  * @pre If payload == nullptr, payload_len must be 0
  * @post On success, frame->header populated with sequence, length, type, flags
  * @post On success, frame->payload contains payload_len bytes from payload
@@ -1231,7 +1231,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
  * @warning Do not modify frame after build and before encode (breaks CRC)
  *
  * @par Performance:
- * Execution time: 5-20 µs @ 240 MHz (depends on payload_len memcpy)
+ * Execution time: 5-20 us @ 240 MHz (depends on payload_len memcpy)
  *
  * @par Example - Data Frame:
  * @code{.c}
@@ -1388,7 +1388,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * @retval (HAL errors) RSPI peripheral transfer failure (overrun, mode fault)
  *
  * @pre handle must be initialized via rx_spi_comm_init()
- * @pre If payload != nullptr, payload_len must be > 0 and ≤ 1024
+ * @pre If payload != nullptr, payload_len must be > 0 and <= 1024
  * @pre If payload == nullptr, payload_len must be 0
  * @pre RSPI peripheral hardware must be initialized and enabled
  * @pre RPi5 controller must be ready to receive (CS asserted, clock provided)
@@ -1403,10 +1403,10 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * @warning Do not modify payload buffer during call (memcpy in progress)
  *
  * @par Performance:
- * - **Execution time**: 150-500 µs @ 10 MHz SPI + 0-50 ms host ACK wait
- * - **10-byte payload**: ~150 µs (10 µs build + 20 µs encode + 120 µs SPI)
- * - **100-byte payload**: ~300 µs (15 µs build + 100 µs encode + 185 µs SPI)
- * - **1024-byte payload**: ~800 µs (20 µs build + 250 µs encode + 530 µs SPI)
+ * - **Execution time**: 150-500 us @ 10 MHz SPI + 0-50 ms host ACK wait
+ * - **10-byte payload**: ~150 us (10 us build + 20 us encode + 120 us SPI)
+ * - **100-byte payload**: ~300 us (15 us build + 100 us encode + 185 us SPI)
+ * - **1024-byte payload**: ~800 us (20 us build + 250 us encode + 530 us SPI)
  * - **Host ACK wait**: Add 0-50 ms if RPi5 not immediately ready
  *
  * @par Example - Send Telemetry Data:
@@ -1819,7 +1819,7 @@ static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
                                                 rx_frame_t*             frame,
                                                 ctrl_dispatch_result_t* result)
 {
-  /* PING → auto-send PONG, invoke callback, consume */
+  /* PING -> auto-send PONG, invoke callback, consume */
   if (frame->header.type == k_frame_type_ping) {
     rx_err_t pong_err = rx_spi_comm_send_pong(handle, frame->payload, frame->header.length);
     if (pong_err != k_rx_ok) {
@@ -1834,7 +1834,7 @@ static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
     return k_rx_ok;
   }
 
-  /* RESET → send RESET_ACK, reset session, invoke callback, consume */
+  /* RESET -> send RESET_ACK, reset session, invoke callback, consume */
   if (frame->header.type == k_frame_type_reset) {
     rx_err_t ack_err = rx_spi_comm_send_reset_ack(handle);
     if (ack_err != k_rx_ok) {
@@ -1856,7 +1856,7 @@ static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
     return k_rx_ok;
   }
 
-  /* ACK/NACK → retransmit subsystem or pass through */
+  /* ACK/NACK -> retransmit subsystem or pass through */
   if (frame->header.type == k_frame_type_ack || frame->header.type == k_frame_type_nack) {
     if (handle->auto_retransmit) {
       if (frame->header.type == k_frame_type_ack) {
@@ -1945,7 +1945,7 @@ static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
  *   - **Valid range**: 0-65535 ms
  *   - **0**: Non-blocking (return immediately if no data)
  *   - **Typical**: 100-1000 ms (polling loop timeout)
- *   - **Precision**: ±10 ms (ThreadX tick granularity)
+ *   - **Precision**: +/-10 ms (ThreadX tick granularity)
  *
  * @return rx_err_t Error code indicating receive result
  * @retval k_rx_ok Frame received successfully, frame populated, RX sequence updated
@@ -1974,10 +1974,10 @@ static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
  * @warning Send NACK if k_rx_err_crc_mismatch to request retransmit
  *
  * @par Performance:
- * - **Execution time**: 200-600 µs @ 10 MHz SPI + 0-timeout_ms wait
- * - **14-byte frame** (ACK): ~200 µs (10 µs wait + 80 µs read + 110 µs decode)
- * - **100-byte frame**: ~400 µs (10 µs wait + 200 µs read + 190 µs decode)
- * - **279-byte frame** (max): ~600 µs (10 µs wait + 300 µs read + 290 µs decode)
+ * - **Execution time**: 200-600 us @ 10 MHz SPI + 0-timeout_ms wait
+ * - **14-byte frame** (ACK): ~200 us (10 us wait + 80 us read + 110 us decode)
+ * - **100-byte frame**: ~400 us (10 us wait + 200 us read + 190 us decode)
+ * - **279-byte frame** (max): ~600 us (10 us wait + 300 us read + 290 us decode)
  * - **Wait time**: Add 0-timeout_ms if data not immediately available
  *
  * @par Example - Polling Loop (Typical Usage):

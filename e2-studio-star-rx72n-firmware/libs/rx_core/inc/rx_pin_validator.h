@@ -14,35 +14,35 @@
  * **Key Design Pattern: Dependency Inversion + Interface Segregation**
  *
  * ```
- * ┌──────────────────────────────────────────────────────────────────┐
- * │              High-Level Modules (Peripheral Drivers)             │
- * │   SPI, I2C, UART, USB, Motor Control, Encoder, GPIO, PWM, etc.  │
- * └───────────────┬──────────────────────────────┬───────────────────┘
- *                 │                              │
- *                 │ depends on (abstract)        │ depends on (abstract)
- *                 ▼                              ▼
- * ┌───────────────────────────┐  ┌─────────────────────────────────┐
- * │  rx_pin_interface_t       │  │   rx_infrastructure module      │
- * │  (ABSTRACT INTERFACE)     │◄─┤   (Global service locator)      │
- * │  - Function pointers      │  └─────────────────────────────────┘
- * │  - No implementation      │
- * └───────────┬───────────────┘
- *             │
- *             │ implements (this file provides concrete functions)
- *             ▼
- * ┌───────────────────────────────────────────────────────────────────┐
- * │  pin_validator_t (THIS FILE - CONCRETE IMPLEMENTATION)            │
- * │  ├─ TX_MUTEX mutex (thread safety)                                │
- * │  ├─ pin_reservation_t[17][8] (reservation tracking)               │
- * │  ├─ bool initialized (lifecycle management)                       │
- * │  └─ Implementation functions:                                     │
- * │     ├─ pin_validator_validate()  -> iface.validate_pin             │
- * │     ├─ pin_validator_reserve()   -> iface.reserve_pin              │
- * │     ├─ pin_validator_release()   -> iface.release_pin              │
- * │     ├─ pin_validator_is_reserved() -> iface.is_pin_reserved        │
- * │     ├─ pin_validator_get_function() -> iface.get_pin_function      │
- * │     └─ pin_validator_clear_all() -> iface.clear_all_reservations   │
- * └───────────────────────────────────────────────────────────────────┘
+ * +------------------------------------------------------------------+
+ * |              High-Level Modules (Peripheral Drivers)             |
+ * |   SPI, I2C, UART, USB, Motor Control, Encoder, GPIO, PWM, etc.  |
+ * +---------------+------------------------------+-------------------+
+ *                 |                              |
+ *                 | depends on (abstract)        | depends on (abstract)
+ *                 v                              v
+ * +---------------------------+  +---------------------------------+
+ * |  rx_pin_interface_t       |  |   rx_infrastructure module      |
+ * |  (ABSTRACT INTERFACE)     |<-+   (Global service locator)      |
+ * |  - Function pointers      |  +---------------------------------+
+ * |  - No implementation      |
+ * +-----------+---------------+
+ *             |
+ *             | implements (this file provides concrete functions)
+ *             v
+ * +-------------------------------------------------------------------+
+ * |  pin_validator_t (THIS FILE - CONCRETE IMPLEMENTATION)            |
+ * |  +- TX_MUTEX mutex (thread safety)                                |
+ * |  +- pin_reservation_t[17][8] (reservation tracking)               |
+ * |  +- bool initialized (lifecycle management)                       |
+ * |  +- Implementation functions:                                     |
+ * |     +- pin_validator_validate()  -> iface.validate_pin             |
+ * |     +- pin_validator_reserve()   -> iface.reserve_pin              |
+ * |     +- pin_validator_release()   -> iface.release_pin              |
+ * |     +- pin_validator_is_reserved() -> iface.is_pin_reserved        |
+ * |     +- pin_validator_get_function() -> iface.get_pin_function      |
+ * |     +- pin_validator_clear_all() -> iface.clear_all_reservations   |
+ * +-------------------------------------------------------------------+
  * ```
  *
  * ## Architecture Principles
@@ -75,7 +75,7 @@
  *
  * ### 4. Memory Efficiency
  * - **Static allocation**: No malloc/free (NASA Rule 3)
- * - **Fixed size**: 17 ports × 8 pins = 136 pin slots
+ * - **Fixed size**: 17 ports x 8 pins = 136 pin slots
  * - **Predictable footprint**: ~4.7 KB total RAM
  * - **Zero overhead**: Direct array indexing, no lists/trees
  *
@@ -84,7 +84,7 @@
  * | Component | Size (bytes) | Calculation | Location |
  * |-----------|--------------|-------------|----------|
  * | TX_MUTEX | ~100 | ThreadX mutex structure | .bss |
- * | pin_reservation_t array | 4352 | 17 × 8 × 32 = 4352 | .bss |
+ * | pin_reservation_t array | 4352 | 17 x 8 x 32 = 4352 | .bss |
  * | bool initialized | 1 | Single flag | .bss |
  * | **Total pin_validator_t** | **~4453** | Struct total | .bss |
  *
@@ -92,7 +92,7 @@
  * - `bool reserved`: 1 byte
  * - `char function[32]`: 32 bytes
  * - **Total per pin**: 33 bytes
- * - **Total for 136 pins**: 136 × 33 = 4488 bytes (~4.4 KB)
+ * - **Total for 136 pins**: 136 x 33 = 4488 bytes (~4.4 KB)
  *
  * ## RX72N Pin Architecture
  *
@@ -293,14 +293,14 @@ extern "C" {
  *
  * ## Memory Impact
  *
- * Total pin slots: 17 ports × 8 pins = **136 slots**
+ * Total pin slots: 17 ports x 8 pins = **136 slots**
  *
  * Per-slot memory:
  * - `bool reserved`: 1 byte
  * - `char function[32]`: 32 bytes
  * - **Total**: 33 bytes per slot
  *
- * Total table size: 136 slots × 33 bytes = **4488 bytes (~4.4 KB)**
+ * Total table size: 136 slots x 33 bytes = **4488 bytes (~4.4 KB)**
  *
  * ## Alternative Designs Considered
  *
@@ -459,9 +459,9 @@ typedef struct {
  *
  * ### reservations[port][pin] (2D Array)
  * - **Purpose**: Stores reservation status for all pins
- * - **Dimensions**: 17 ports × 8 pins = 136 slots
+ * - **Dimensions**: 17 ports x 8 pins = 136 slots
  * - **Per-slot size**: 33 bytes (1 bool + 32 char)
- * - **Total size**: 136 × 33 = 4488 bytes (~4.4 KB)
+ * - **Total size**: 136 x 33 = 4488 bytes (~4.4 KB)
  * - **Indexing**: `reservations[port][pin]` where:
  *   - `port`: 0-9 (decimal), 10-16 (hex A-G)
  *   - `pin`: 0-7
@@ -663,7 +663,7 @@ typedef struct {
  * @note **NOT thread-safe**: Must be called from single thread during initialization
  * @note Calling twice returns k_rx_err_invalid_state (double-init protection)
  * @note On failure, validator is left in undefined state - must not use
- * @note Typical execution time: ~200-500 µs @ 240 MHz
+ * @note Typical execution time: ~200-500 us @ 240 MHz
  *
  * @warning **CRITICAL**: Must be called before any pin reservation operations
  * @warning Do NOT call from multiple threads (not thread-safe during init)
@@ -691,10 +691,10 @@ typedef struct {
  * ## Dependency Inversion Pattern
  * ```
  * High-Level Module (SPI Driver)
- *        ↓ depends on ↓
- * rx_pin_interface_t (Abstract)  ← THIS FUNCTION PRODUCES THIS
- *        ↑ implements ↑
- * pin_validator_t (Concrete)     ← THIS FUNCTION CONSUMES THIS
+ *        v depends on v
+ * rx_pin_interface_t (Abstract)  <- THIS FUNCTION PRODUCES THIS
+ *        ^ implements ^
+ * pin_validator_t (Concrete)     <- THIS FUNCTION CONSUMES THIS
  * ```
  *
  * ## What This Function Does
@@ -844,7 +844,7 @@ typedef struct {
  * @note **NOT thread-safe**: Must ensure no concurrent access during deinit
  * @note Calling when not initialized returns k_rx_err_invalid_state (safe no-op)
  * @note After deinit, all extracted interfaces become INVALID
- * @note Typical execution time: ~100-300 µs @ 240 MHz
+ * @note Typical execution time: ~100-300 us @ 240 MHz
  *
  * @warning **DANGEROUS**: All interfaces extracted from this validator become invalid
  * @warning Ensure all modules have stopped using pins before calling

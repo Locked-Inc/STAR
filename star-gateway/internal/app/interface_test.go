@@ -25,7 +25,7 @@ import (
 const firstReceiveTrigger = 1
 
 // newResetCapableAppMock creates a MockHARQ that handles the reset handshake so
-// tm.Start() completes instantly instead of waiting for ACK timeout × retries.
+// tm.Start() completes instantly instead of waiting for ACK timeout x retries.
 func newResetCapableAppMock() *testutil.MockHARQ {
 	var capturedSessionID atomic.Uint32
 	var receiveCount atomic.Int32

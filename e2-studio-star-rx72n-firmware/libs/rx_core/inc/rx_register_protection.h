@@ -160,7 +160,7 @@
  *     SYSTEM.PRCR.WORD = k_rx_prcr_unlock_prc0_prc1;
  *
  *     // Configure PLL (protected by PRC0)
- *     SYSTEM.PLLCR.WORD = 0x2700;      // PLL multiplier ×40
+ *     SYSTEM.PLLCR.WORD = 0x2700;      // PLL multiplier x40
  *     SYSTEM.PLLCR2.BYTE = 0x00;       // Enable PLL
  *
  *     // Wait for PLL stabilization
@@ -389,7 +389,7 @@ typedef enum : uint16_t {
    * **Use Cases**:
    * - System clock initialization at boot
    * - PLL configuration and selection
-   * - Switching clock sources (main osc ↔ PLL)
+   * - Switching clock sources (main osc <-> PLL)
    * - Enabling peripheral clocks simultaneously
    *
    * **STAR Project Usage**: **LOW FREQUENCY**
@@ -410,7 +410,7 @@ typedef enum : uint16_t {
    *     SYSTEM.PRCR.WORD = k_rx_prcr_unlock_prc0_prc1;
    *
    *     // Configure PLL (PRC0 protected)
-   *     SYSTEM.PLLCR.WORD = 0x2700;     // ×40 multiplier
+   *     SYSTEM.PLLCR.WORD = 0x2700;     // x40 multiplier
    *     SYSTEM.PLLCR2.BYTE = 0x00;      // Enable PLL
    *
    *     // Wait for PLL lock (~2ms)

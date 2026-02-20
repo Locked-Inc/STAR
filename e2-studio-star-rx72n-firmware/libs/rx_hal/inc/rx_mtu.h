@@ -69,15 +69,15 @@
  * | Clock Source | PCLKA | Peripheral Clock A |
  * | Clock Frequency | 120 MHz | After system clock configuration |
  * | Counter Resolution | 8.33 ns | 1/120MHz |
- * | Max Period (16-bit) | 546 µs | 65535 counts at 120 MHz |
- * | Min PWM Frequency | 1831 Hz | 1 / 546 µs |
+ * | Max Period (16-bit) | 546 us | 65535 counts at 120 MHz |
+ * | Min PWM Frequency | 1831 Hz | 1 / 546 us |
  *
  * ## PWM Modes
  *
  * **PWM Mode 1 (Center-Aligned)**:
  * - Counter counts up to period, then down to 0
  * - Symmetric current ripple (better for motors)
- * - Effective PWM frequency = PCLKA / (2 × period)
+ * - Effective PWM frequency = PCLKA / (2 x period)
  *
  * **PWM Mode 2 (Edge-Aligned)**:
  * - Counter counts up to period, then resets
@@ -100,10 +100,10 @@
  *
  * | Operation | Execution Time | Memory Usage | Notes |
  * |-----------|---------------|--------------|-------|
- * | rx_mtu_init_pwm() | ~50 µs | 0 heap | One-time setup |
- * | rx_mtu_set_duty() | ~5 µs | 0 | Float calculation |
- * | rx_mtu_set_duty_raw() | ~1 µs | 0 | Direct register write |
- * | rx_mtu_enable_output() | ~1 µs | 0 | Single register write |
+ * | rx_mtu_init_pwm() | ~50 us | 0 heap | One-time setup |
+ * | rx_mtu_set_duty() | ~5 us | 0 | Float calculation |
+ * | rx_mtu_set_duty_raw() | ~1 us | 0 | Direct register write |
+ * | rx_mtu_enable_output() | ~1 us | 0 | Single register write |
  *
  * **Memory Footprint**:
  * - Static variables: ~32 bytes (initialization flags)
@@ -137,7 +137,7 @@
  * | 2. Fixed loop bounds | [OK] | Loops bounded by channel count (8 max) |
  * | 3. No dynamic allocation | [OK] | Zero malloc/free, all static |
  * | 4. Small functions | [OK] | All functions < 60 lines |
- * | 5. Assertions (≥2 per function) | [OK] | Minimum 2 validation checks per function |
+ * | 5. Assertions (>=2 per function) | [OK] | Minimum 2 validation checks per function |
  * | 6. Narrow scope | [OK] | File-scope statics, minimal globals |
  * | 7. Check return values | [OK] | All functions return rx_err_t |
  * | 8. Limited preprocessor | [OK] | C23 typed enums, minimal macros |
@@ -391,7 +391,7 @@ typedef enum : uint8_t {
  * }
  * @endcode
  *
- * @invariant frequency_hz must produce period ≤ 65535 counts
+ * @invariant frequency_hz must produce period <= 65535 counts
  * @invariant Structure is copied during init (no need to keep alive)
  *
  * @note For motor control, prefer rx_gptw.h with 32-bit resolution

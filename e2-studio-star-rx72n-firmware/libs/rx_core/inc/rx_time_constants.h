@@ -40,7 +40,7 @@
  *
  * Constants are derived from SI unit definitions:
  * - 1 second = 1000 milliseconds (ms)
- * - 1 millisecond = 1000 microseconds (µs)
+ * - 1 millisecond = 1000 microseconds (us)
  * - 1 microsecond = 1000 nanoseconds (ns)
  *
  * ThreadX configuration:
@@ -135,9 +135,9 @@ extern "C" {
  *
  * ```
  * 1 second (s)
- *   └─ 1,000 milliseconds (ms)
- *        └─ 1,000 microseconds (µs)
- *             └─ 1,000 nanoseconds (ns)
+ *   +- 1,000 milliseconds (ms)
+ *        +- 1,000 microseconds (us)
+ *             +- 1,000 nanoseconds (ns)
  * ```
  *
  * ## ThreadX RTOS Tick Configuration
@@ -189,12 +189,12 @@ extern "C" {
  *
  * | From | To | Multiply By | Constant |
  * |------|----|-----------|---------|
- * | seconds | milliseconds | × 1,000 | k_rx_ms_per_second |
- * | seconds | microseconds | × 1,000,000 | k_rx_us_per_second |
- * | milliseconds | microseconds | × 1,000 | k_rx_us_per_ms |
- * | milliseconds | nanoseconds | × 1,000,000 | k_rx_ns_per_ms |
- * | microseconds | nanoseconds | × 1,000 | k_rx_ns_per_us |
- * | milliseconds | ThreadX ticks | ÷ 10 | k_threadx_ms_per_tick |
+ * | seconds | milliseconds | x 1,000 | k_rx_ms_per_second |
+ * | seconds | microseconds | x 1,000,000 | k_rx_us_per_second |
+ * | milliseconds | microseconds | x 1,000 | k_rx_us_per_ms |
+ * | milliseconds | nanoseconds | x 1,000,000 | k_rx_ns_per_ms |
+ * | microseconds | nanoseconds | x 1,000 | k_rx_ns_per_us |
+ * | milliseconds | ThreadX ticks | / 10 | k_threadx_ms_per_tick |
  *
  * @invariant k_rx_us_per_second == k_rx_ms_per_second * k_rx_us_per_ms
  * @invariant k_rx_ns_per_ms == k_rx_us_per_ms * k_rx_ns_per_us
@@ -251,11 +251,11 @@ extern "C" {
  * void configure_cmt0_for_threadx(void)
  * {
  *     // Target period: 10ms
- *     uint32_t target_period_us = k_threadx_ms_per_tick * k_rx_us_per_ms;  // 10,000 µs
+ *     uint32_t target_period_us = k_threadx_ms_per_tick * k_rx_us_per_ms;  // 10,000 us
  *
  *     // CMT0 clock: PCLKB/32 = 60 MHz / 32 = 1.875 MHz
  *     uint32_t cmt_clock_hz = 1875000;
- *     uint32_t cmt_period_us = k_rx_us_per_second / cmt_clock_hz;  // 0.533 µs per tick
+ *     uint32_t cmt_period_us = k_rx_us_per_second / cmt_clock_hz;  // 0.533 us per tick
  *
  *     // Calculate compare value
  *     uint16_t compare_value = target_period_us / cmt_period_us;  // 18,750
@@ -320,12 +320,12 @@ typedef enum : uint32_t {
    * @details
    * One millisecond contains exactly 1000 microseconds. Used for fine-grained
    * timing conversions and hardware timer calculations.
-   * @par Value: 1,000 µs/ms
+   * @par Value: 1,000 us/ms
    * @par Rationale: SI definition - 1 millisecond = 1000 microseconds
    * @par Common Usage: Hardware timer period calculations, precise delays
    * @par Example:
    * @code{.c}
-   * uint32_t delay_us = 250 * k_rx_us_per_ms;  // 250,000 µs = 250ms
+   * uint32_t delay_us = 250 * k_rx_us_per_ms;  // 250,000 us = 250ms
    * @endcode
    */
   k_rx_us_per_ms = 1000,
@@ -335,7 +335,7 @@ typedef enum : uint32_t {
    * @details
    * One microsecond contains exactly 1000 nanoseconds. Used for ultra-precise
    * timing calculations and CPU cycle counting.
-   * @par Value: 1,000 ns/µs
+   * @par Value: 1,000 ns/us
    * @par Rationale: SI definition - 1 microsecond = 1000 nanoseconds
    * @par Common Usage: CPU cycle time calculations (240 MHz = 4.17ns/cycle)
    * @par Example:
@@ -352,14 +352,14 @@ typedef enum : uint32_t {
    * @brief Microseconds per second (derived SI constant)
    * @details
    * One second contains exactly 1,000,000 microseconds. Derived from:
-   * k_rx_ms_per_second × k_rx_us_per_ms = 1000 × 1000 = 1,000,000
-   * @par Value: 1,000,000 µs/s
+   * k_rx_ms_per_second x k_rx_us_per_ms = 1000 x 1000 = 1,000,000
+   * @par Value: 1,000,000 us/s
    * @par Rationale: Derived SI conversion for direct second-to-microsecond conversion
    * @par Common Usage: High-resolution timestamp conversions
    * @par Example:
    * @code{.c}
    * // Convert 2.5 seconds to microseconds
-   * uint32_t duration_us = (uint32_t)(2.5f * k_rx_us_per_second);  // 2,500,000 µs
+   * uint32_t duration_us = (uint32_t)(2.5f * k_rx_us_per_second);  // 2,500,000 us
    * @endcode
    * @note Max representable time: ~4294 seconds (71.6 minutes) before uint32_t overflow
    */
@@ -369,13 +369,13 @@ typedef enum : uint32_t {
    * @brief Nanoseconds per millisecond (derived SI constant)
    * @details
    * One millisecond contains exactly 1,000,000 nanoseconds. Derived from:
-   * k_rx_us_per_ms × k_rx_ns_per_us = 1000 × 1000 = 1,000,000
+   * k_rx_us_per_ms x k_rx_ns_per_us = 1000 x 1000 = 1,000,000
    * @par Value: 1,000,000 ns/ms
    * @par Rationale: Derived SI conversion for direct millisecond-to-nanosecond conversion
    * @par Common Usage: Precision timing, interrupt latency measurements
    * @par Example:
    * @code{.c}
-   * // Calculate interrupt latency budget: 50µs = 50,000ns
+   * // Calculate interrupt latency budget: 50us = 50,000ns
    * uint32_t latency_ns = 50 * k_rx_ns_per_us;
    * uint32_t latency_ms = latency_ns / k_rx_ns_per_ms;  // 0.05ms
    * @endcode

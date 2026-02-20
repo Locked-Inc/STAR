@@ -38,7 +38,7 @@
  * **Why this pattern?**
  * - **NASA Rule 3**: No dynamic allocation (safety-critical code)
  * - **Deterministic**: No malloc failures at runtime
- * - **Performance**: No heap allocation overhead (~50 µs on some systems)
+ * - **Performance**: No heap allocation overhead (~50 us on some systems)
  * - **Lifetime clarity**: Caller controls memory lifetime
  *
  * ## Implementation Approach
@@ -75,14 +75,14 @@
  *
  * | Function | Time @ 240 MHz | Dominant Cost |
  * |----------|---------------|---------------|
- * | init_gpio | ~3 µs | memset + validation |
- * | init_adc | ~4 µs | Resolution validation |
- * | init_i2c | ~5 µs | 2× pin validation |
- * | init_smbus | ~6 µs | I2C validation + PEC |
- * | init_uart | ~5 µs | 2× pin + baud validation |
- * | init_onewire | ~3 µs | Pin validation |
+ * | init_gpio | ~3 us | memset + validation |
+ * | init_adc | ~4 us | Resolution validation |
+ * | init_i2c | ~5 us | 2x pin validation |
+ * | init_smbus | ~6 us | I2C validation + PEC |
+ * | init_uart | ~5 us | 2x pin + baud validation |
+ * | init_onewire | ~3 us | Pin validation |
  *
- * **All functions complete in <10 µs** - negligible for one-time initialization.
+ * **All functions complete in <10 us** - negligible for one-time initialization.
  *
  * ## Memory Usage
  *
@@ -109,7 +109,7 @@
  * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line code |
  * | **Rule 2** | [PASS] No loops (zero-iteration memset doesn't count) |
  * | **Rule 3** | [PASS] No malloc - static allocation pattern |
- * | **Rule 4** | [PASS] All functions ≤60 lines (longest: init_smbus at 52 lines) |
+ * | **Rule 4** | [PASS] All functions <=60 lines (longest: init_smbus at 52 lines) |
  * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL checks + range checks) |
  * | **Rule 6** | [PASS] Variables at smallest scope (err declared in functions) |
  * | **Rule 7** | [PASS] All internal_validate_port_pin returns checked |
@@ -208,8 +208,8 @@ typedef uint8_t rx_pin_t;
  *
  * 1. Extract port number via rx_port_from_pin(pin) - upper byte
  * 2. Extract pin number via rx_pin_from_pin(pin) - lower 3 bits
- * 3. Validate port ≤ k_rx_port_j (Port J is maximum)
- * 4. Validate pin ≤ k_rx_pin_max (7 for 8-pin ports)
+ * 3. Validate port <= k_rx_port_j (Port J is maximum)
+ * 4. Validate pin <= k_rx_pin_max (7 for 8-pin ports)
  * 5. Return k_rx_ok if valid, k_rx_err_invalid_arg if out of range
  *
  * ## Implementation Details
@@ -233,7 +233,7 @@ typedef uint8_t rx_pin_t;
  *
  * @return rx_err_t Validation status
  *
- * @retval k_rx_ok Pin is valid (port ≤ Port J, pin ≤ 7)
+ * @retval k_rx_ok Pin is valid (port <= Port J, pin <= 7)
  * @retval k_rx_err_invalid_arg Port > Port J or pin > 7
  *
  * @pre pin is rx_port_pin_t typed enum value (compile-time type safety)
@@ -255,7 +255,7 @@ typedef uint8_t rx_pin_t;
  * Fully re-entrant.
  *
  * @par Performance:
- * Execution time: ~0.5 µs @ 240 MHz (bit extraction + comparisons)
+ * Execution time: ~0.5 us @ 240 MHz (bit extraction + comparisons)
  *
  * @par Example Usage:
  * @code{.c}
@@ -339,11 +339,11 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
  *                    Caller-allocated (stack or static). On success, contains
  *                    fully initialized GPIO bus configuration.
  * @param[in] name Bus name string (e.g., "led_status", "motor_enable").
- *                 Must be non-NULL, unique within bus manager, ≤k_max_bus_name_len.
+ *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
  *                 String pointer stored directly (NOT copied).
  * @param[in] pin GPIO port and pin number as rx_port_pin_t typed enum.
  *                Format: k_rx_pin_pXY where X=port, Y=pin (e.g., k_rx_pin_p40).
- *                Must be valid RX72N pin (port ≤ Port J, pin ≤ 7).
+ *                Must be valid RX72N pin (port <= Port J, pin <= 7).
  *
  * @return rx_err_t Initialization status
  *
@@ -353,7 +353,7 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
  *
  * @pre config points to allocated rx_bus_config_t structure
  * @pre name is non-NULL string (must remain valid after this call)
- * @pre pin is valid rx_port_pin_t value (port ≤ J, pin ≤ 7)
+ * @pre pin is valid rx_port_pin_t value (port <= J, pin <= 7)
  *
  * @post config fully initialized and ready for rx_bus_manager_add_bus()
  * @post config->type == k_bus_type_gpio
@@ -375,7 +375,7 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
  * Reentrant across different config structures.
  *
  * @par Performance:
- * Execution time: ~3 µs @ 240 MHz (validation + memset + field assignments)
+ * Execution time: ~3 us @ 240 MHz (validation + memset + field assignments)
  *
  * @par Memory:
  * - Stack: ~16 bytes (local variables)
@@ -492,7 +492,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * ## Use Cases
  *
  * ADC buses are used for:
- * - **Motor current sensing**: DRV8243 analog current feedback (12-bit, ±2% accuracy)
+ * - **Motor current sensing**: DRV8243 analog current feedback (12-bit, +/-2% accuracy)
  * - **Battery voltage monitoring**: BQ4050 voltage measurement (10-bit sufficient)
  * - **Temperature sensing**: Analog temperature sensors (8-10 bit)
  * - **Position sensing**: Analog potentiometers for position feedback
@@ -507,17 +507,17 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * | Resolution | LSB @ 3.3V | Conversion Time | Use Case |
  * |------------|-----------|-----------------|----------|
- * | 8-bit | 12.9 mV | ~3 µs | Fast, low-precision (temperature) |
- * | 10-bit | 3.2 mV | ~8 µs | Balanced (battery voltage) |
- * | 12-bit | 0.8 mV | ~16 µs | High-precision (current sensing) |
+ * | 8-bit | 12.9 mV | ~3 us | Fast, low-precision (temperature) |
+ * | 10-bit | 3.2 mV | ~8 us | Balanced (battery voltage) |
+ * | 12-bit | 0.8 mV | ~16 us | High-precision (current sensing) |
  *
- * **Recommendation**: Use 12-bit for motor current (needs ±1% accuracy), 10-bit for voltage.
+ * **Recommendation**: Use 12-bit for motor current (needs +/-1% accuracy), 10-bit for voltage.
  *
  * @param[out] config Pointer to bus configuration structure to initialize.
  *                    Caller-allocated (stack or static). On success, contains
  *                    fully initialized ADC bus configuration.
  * @param[in] name Bus name string (e.g., "motor0_current", "battery_voltage").
- *                 Must be non-NULL, unique within bus manager, ≤k_max_bus_name_len.
+ *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
  *                 String pointer stored directly (NOT copied).
  * @param[in] unit ADC unit number (0 or 1 on RX72N).
  *                 - Unit 0: Port 4 analog inputs (AN000-AN007)
@@ -525,7 +525,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *                 Must be < k_adc_unit_count (2 on RX72N).
  * @param[in] channel ADC channel number (0-7).
  *                    Maps to ANxxx pin (e.g., channel 0 = AN000 for unit 0).
- *                    Must be ≤ k_adc_channel_max (7).
+ *                    Must be <= k_adc_channel_max (7).
  * @param[in] bits ADC resolution in bits (8, 10, or 12).
  *                 - 8: Fast conversion, 12.9 mV LSB @ 3.3V
  *                 - 10: Balanced, 3.2 mV LSB @ 3.3V
@@ -557,7 +557,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * @warning name pointer must remain valid for config lifetime
  * @warning Does not check pin conflicts (ADC pin might be used for GPIO)
- * @warning Higher resolution = slower conversion (12-bit takes 16 µs vs 3 µs for 8-bit)
+ * @warning Higher resolution = slower conversion (12-bit takes 16 us vs 3 us for 8-bit)
  *
  * @attention ADC readings affected by reference voltage stability (use low-noise AVCC)
  *
@@ -569,7 +569,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * Reentrant across different config structures.
  *
  * @par Performance:
- * Execution time: ~4 µs @ 240 MHz (validation + memset + field assignments)
+ * Execution time: ~4 us @ 240 MHz (validation + memset + field assignments)
  *
  * @par Memory:
  * - Stack: ~20 bytes (local variables)
@@ -577,7 +577,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * @par Example - Motor Current Sensing:
  * @code{.c}
- * // DRV8243 motor 0 current sense (12-bit for ±1% accuracy)
+ * // DRV8243 motor 0 current sense (12-bit for +/-1% accuracy)
  * rx_bus_config_t motor0_isense_cfg;
  * rx_err_t err = rx_bus_config_init_adc(
  *     &motor0_isense_cfg,
@@ -597,7 +597,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * @par Example - Battery Voltage Monitoring:
  * @code{.c}
- * // Battery voltage divider (10-bit sufficient for ±0.3% accuracy)
+ * // Battery voltage divider (10-bit sufficient for +/-0.3% accuracy)
  * static rx_bus_config_t battery_voltage_cfg;
  * rx_err_t err = rx_bus_config_init_adc(
  *     &battery_voltage_cfg,
@@ -759,18 +759,18 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  *                    Caller-allocated (stack or static). On success, contains
  *                    fully initialized I2C bus configuration.
  * @param[in] name Bus name string (e.g., "imu_i2c", "eeprom_i2c").
- *                 Must be non-NULL, unique within bus manager, ≤k_max_bus_name_len.
+ *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
  *                 String pointer stored directly (NOT copied).
  * @param[in] channel RIIC channel number (0-2 on RX72N).
  *                    Must be < k_riic_channel_count (3).
  * @param[in] device_addr I2C device address (7-bit, 0x08-0x77).
- *                        Must be ≤ k_i2c_addr_max_7bit (0x7F) and NOT in reserved range.
+ *                        Must be <= k_i2c_addr_max_7bit (0x7F) and NOT in reserved range.
  *                        Example: MPU6050 IMU = 0x68, AT24C256 EEPROM = 0x50.
  * @param[in] sda_pin SDA (data) pin as rx_port_pin_t typed enum.
- *                    Must be valid RX72N pin (port ≤ Port J, pin ≤ 7).
+ *                    Must be valid RX72N pin (port <= Port J, pin <= 7).
  *                    Must support I2C SDA function (check MPC settings).
  * @param[in] scl_pin SCL (clock) pin as rx_port_pin_t typed enum.
- *                    Must be valid RX72N pin (port ≤ Port J, pin ≤ 7).
+ *                    Must be valid RX72N pin (port <= Port J, pin <= 7).
  *                    Must support I2C SCL function (check MPC settings).
  * @param[in] frequency_hz I2C bus frequency in Hz.
  *                         - 100000 (100 kHz): Standard mode
@@ -803,7 +803,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @note name string NOT copied - must remain valid
  * @note Hardware NOT initialized until first bus access
  * @note Pin functions (SDA/SCL) automatically configured during I2C init
- * @note Pull-up resistors (2.2-4.7 kΩ) REQUIRED on SDA and SCL lines (external)
+ * @note Pull-up resistors (2.2-4.7 kOhm) REQUIRED on SDA and SCL lines (external)
  *
  * @warning name pointer must remain valid for config lifetime
  * @warning SDA and SCL pins must have external pull-up resistors (not internal)
@@ -821,7 +821,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * Reentrant across different config structures.
  *
  * @par Performance:
- * Execution time: ~5 µs @ 240 MHz (2× pin validation + memset + field assignments)
+ * Execution time: ~5 us @ 240 MHz (2x pin validation + memset + field assignments)
  *
  * @par Memory:
  * - Stack: ~24 bytes (local variables)
@@ -1051,12 +1051,12 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
  *                    Caller-allocated (stack or static). On success, contains
  *                    fully initialized SMBus configuration.
  * @param[in] name Bus name string (e.g., "battery_smbus", "pmbus").
- *                 Must be non-NULL, unique within bus manager, ≤k_max_bus_name_len.
+ *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
  *                 String pointer stored directly (NOT copied).
  * @param[in] channel RIIC channel number (0-2 on RX72N).
  *                    Must be < k_riic_channel_count (3).
  * @param[in] device_addr SMBus device address (7-bit, 0x08-0x77).
- *                        Must be ≤ k_i2c_addr_max_7bit (0x7F).
+ *                        Must be <= k_i2c_addr_max_7bit (0x7F).
  *                        Example: BQ4050 battery gauge = 0x0B (default).
  * @param[in] sda_pin SMBDAT (data) pin as rx_port_pin_t typed enum.
  *                    Must be valid RX72N pin with I2C/SMBus capability.
@@ -1097,7 +1097,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
  * @note Hardware NOT initialized until first bus access
  * @note SMBus timeout (25 ms) enforced in bus manager layer
  * @note PEC calculated in software using CRC-8 (polynomial 0x07)
- * @note Pull-up resistors (2.2-4.7 kΩ) REQUIRED on SMBDAT/SMBCLK (external)
+ * @note Pull-up resistors (2.2-4.7 kOhm) REQUIRED on SMBDAT/SMBCLK (external)
  *
  * @warning name pointer must remain valid for config lifetime
  * @warning BQ4050 battery gauge REQUIRES use_pec=true (spec compliance)
@@ -1115,7 +1115,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
  * Reentrant across different config structures.
  *
  * @par Performance:
- * Execution time: ~6 µs @ 240 MHz (2× pin validation + memset + field assignments)
+ * Execution time: ~6 us @ 240 MHz (2x pin validation + memset + field assignments)
  *
  * @par Memory:
  * - Stack: ~28 bytes (local variables)
@@ -1306,29 +1306,29 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
  *
  * | Baud Rate | Use Case | Accuracy | Notes |
  * |-----------|----------|----------|-------|
- * | 9600 | GPS, legacy sensors | ±2.5% | Universal compatibility |
- * | 19200 | Industrial sensors | ±2.5% | Good noise immunity |
- * | 38400 | Medium-speed sensors | ±2.5% | Balanced speed/reliability |
- * | 57600 | Fast sensors | ±2.5% | Check device support |
- * | 115200 | Debugging, Bluetooth | ±2.5% | Most common debug rate |
- * | 230400 | High-speed data | ±1.5% | Requires good signal quality |
- * | 460800 | Very high-speed | ±1.0% | Short cables only |
- * | 921600 | Maximum speed | ±0.5% | Minimal noise, short distance |
+ * | 9600 | GPS, legacy sensors | +/-2.5% | Universal compatibility |
+ * | 19200 | Industrial sensors | +/-2.5% | Good noise immunity |
+ * | 38400 | Medium-speed sensors | +/-2.5% | Balanced speed/reliability |
+ * | 57600 | Fast sensors | +/-2.5% | Check device support |
+ * | 115200 | Debugging, Bluetooth | +/-2.5% | Most common debug rate |
+ * | 230400 | High-speed data | +/-1.5% | Requires good signal quality |
+ * | 460800 | Very high-speed | +/-1.0% | Short cables only |
+ * | 921600 | Maximum speed | +/-0.5% | Minimal noise, short distance |
  *
  * **Recommendation**: Use 115200 for debugging, 9600 for GPS, device-specific for sensors.
  *
  * ### Baud Rate Error Calculation
  *
  * RX72N SCI uses integer divider:
- * - **Formula**: baud_rate = PCLK / (64 × 2^(2n-1) × (N+1))
- * - **Typical error**: ±0.16% @ 115200 with 240 MHz PCLK
+ * - **Formula**: baud_rate = PCLK / (64 x 2^(2n-1) x (N+1))
+ * - **Typical error**: +/-0.16% @ 115200 with 240 MHz PCLK
  * - **Acceptable**: <3% error for async communication
  *
  * @param[out] config Pointer to bus configuration structure to initialize.
  *                    Caller-allocated (stack or static). On success, contains
  *                    fully initialized UART bus configuration.
  * @param[in] name Bus name string (e.g., "debug_uart", "gps_uart", "bt_uart").
- *                 Must be non-NULL, unique within bus manager, ≤k_max_bus_name_len.
+ *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
  *                 String pointer stored directly (NOT copied).
  * @param[in] channel SCI channel number (0-12 on RX72N).
  *                    Must be < k_sci_channel_count (13).
@@ -1387,7 +1387,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
  * Reentrant across different config structures.
  *
  * @par Performance:
- * Execution time: ~5 µs @ 240 MHz (channel + 2× pin validation + memset)
+ * Execution time: ~5 us @ 240 MHz (channel + 2x pin validation + memset)
  *
  * @par Memory:
  * - Stack: ~24 bytes (local variables)
@@ -1403,7 +1403,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
  *     0,             // SCI channel 0
  *     k_rx_pin_p26,  // TXD0 pin
  *     k_rx_pin_p30,  // RXD0 pin
- *     115200         // 115200 baud (±0.16% error)
+ *     115200         // 115200 baud (+/-0.16% error)
  * );
  * if (err != k_rx_ok) {
  *     // Can't log to UART if UART config failed!
@@ -1564,7 +1564,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * ## Use Cases
  *
  * 1-Wire buses are used for:
- * - **Temperature sensing**: DS18B20 digital thermometer (-55°C to +125°C, ±0.5°C)
+ * - **Temperature sensing**: DS18B20 digital thermometer (-55degC to +125degC, +/-0.5degC)
  * - **Authentication**: DS2431 EEPROM with unique 64-bit ID
  * - **Battery monitoring**: DS2438 battery monitor with ADC
  * - **Multi-drop networks**: Up to 200 devices on single wire (with repeaters)
@@ -1573,19 +1573,19 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  *
  * ### Single-Wire Communication
  * - **One data line** + ground (power can be parasitic or external)
- * - **Open-drain** with external pull-up resistor (4.7 kΩ typical)
+ * - **Open-drain** with external pull-up resistor (4.7 kOhm typical)
  * - **Bidirectional**: Host and devices use same wire (time-division multiplexing)
  *
  * ### Timing Requirements
  *
  * | Operation | Duration | Tolerance | Notes |
  * |-----------|----------|-----------|-------|
- * | Reset pulse | 480 µs | ±10% | Host pulls low |
- * | Presence pulse | 60-240 µs | Device-specific | Device responds |
- * | Write 1 slot | 60 µs | ±10% | Pull low <15 µs |
- * | Write 0 slot | 60 µs | ±10% | Pull low 60 µs |
- * | Read slot | 60 µs | ±10% | Sample at 15 µs |
- * | Recovery time | 1 µs | Min | Between slots |
+ * | Reset pulse | 480 us | +/-10% | Host pulls low |
+ * | Presence pulse | 60-240 us | Device-specific | Device responds |
+ * | Write 1 slot | 60 us | +/-10% | Pull low <15 us |
+ * | Write 0 slot | 60 us | +/-10% | Pull low 60 us |
+ * | Read slot | 60 us | +/-10% | Sample at 15 us |
+ * | Recovery time | 1 us | Min | Between slots |
  *
  * **Critical**: Timing accuracy is ESSENTIAL - use hardware timer for bit-banging.
  *
@@ -1601,20 +1601,20 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * ## Hardware Requirements
  *
  * ### Pull-up Resistor
- * - **Value**: 4.7 kΩ typical (2.2-10 kΩ range)
+ * - **Value**: 4.7 kOhm typical (2.2-10 kOhm range)
  * - **Connection**: Data line to VDD (3.3V)
  * - **Purpose**: Returns bus to idle high state
  *
  * ### Pin Selection
  * - Any GPIO pin with open-drain capability
- * - Must support fast switching (60 µs slots)
+ * - Must support fast switching (60 us slots)
  * - Avoid pins with analog functions (ADC crosstalk)
  *
  * ## Implementation Details
  *
  * ### RX72N GPIO Bit-Banging
  * 1-Wire uses software bit-banging (no dedicated hardware):
- * - **Timer**: MTU3 provides precise µs timing
+ * - **Timer**: MTU3 provides precise us timing
  * - **GPIO**: Open-drain mode (PDR output, PODR control)
  * - **Interrupts**: Disabled during critical timing sections
  *
@@ -1628,11 +1628,11 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  *                    Caller-allocated (stack or static). On success, contains
  *                    fully initialized 1-Wire bus configuration.
  * @param[in] name Bus name string (e.g., "temp_onewire", "ds18b20_bus").
- *                 Must be non-NULL, unique within bus manager, ≤k_max_bus_name_len.
+ *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
  *                 String pointer stored directly (NOT copied).
  * @param[in] pin 1-Wire data line pin as rx_port_pin_t typed enum.
- *                Must be valid RX72N pin (port ≤ Port J, pin ≤ 7).
- *                Requires external 4.7 kΩ pull-up resistor to VDD.
+ *                Must be valid RX72N pin (port <= Port J, pin <= 7).
+ *                Requires external 4.7 kOhm pull-up resistor to VDD.
  *                Example: k_rx_pin_pc6 for 1-Wire data line.
  *
  * @return rx_err_t Initialization status
@@ -1644,7 +1644,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * @pre config points to allocated rx_bus_config_t structure
  * @pre name is non-NULL string (must remain valid after this call)
  * @pre pin is valid RX72N GPIO pin with open-drain capability
- * @pre External 4.7 kΩ pull-up resistor connected to pin
+ * @pre External 4.7 kOhm pull-up resistor connected to pin
  *
  * @post config fully initialized and ready for rx_bus_manager_add_bus()
  * @post config->type == k_bus_type_onewire
@@ -1672,7 +1672,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * Reentrant across different config structures.
  *
  * @par Performance:
- * Execution time: ~3 µs @ 240 MHz (pin validation + memset + field assignments)
+ * Execution time: ~3 us @ 240 MHz (pin validation + memset + field assignments)
  *
  * @par Memory:
  * - Stack: ~16 bytes (local variables)
@@ -1705,7 +1705,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  *
  * @par Example - Multi-Drop Network:
  * @code{.c}
- * // 1-Wire bus with 4× DS18B20 sensors (unique ROM IDs)
+ * // 1-Wire bus with 4x DS18B20 sensors (unique ROM IDs)
  * static rx_bus_config_t multi_temp_cfg;
  * rx_err_t err = rx_bus_config_init_onewire(&multi_temp_cfg, "multi_temp", k_rx_pin_pc6);
  * assert(err == k_rx_ok);
@@ -1744,9 +1744,9 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * Host, Bus, Device;
  *
  * --- [label="Initialization"];
- * Host box Bus [label="Pull low 480 µs (reset)"];
+ * Host box Bus [label="Pull low 480 us (reset)"];
  * Bus box Device [label="Bus released (pull-up)"];
- * Device box Bus [label="Pull low 60-240 µs (presence)"];
+ * Device box Bus [label="Pull low 60-240 us (presence)"];
  * Bus box Host [label="Read presence pulse"];
  *
  * --- [label="ROM Command"];

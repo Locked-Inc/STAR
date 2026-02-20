@@ -67,7 +67,7 @@
  * | Bus Type | RX72N Peripheral | Speed | Use Case |
  * |----------|------------------|-------|----------|
  * | **GPIO** | I/O Ports | N/A | Digital I/O, LEDs, buttons |
- * | **ADC** | S12ADFa | ~1 µs/sample | Current sensing, battery |
+ * | **ADC** | S12ADFa | ~1 us/sample | Current sensing, battery |
  * | **I2C** | RIIC | 100-1000 kHz | Sensors, EEPROMs |
  * | **SMBUS** | RIIC + CRC | 100-400 kHz | Battery fuel gauge |
  * | **SPI** | RSPI | 1-15 MHz | Motor drivers, fast sensors |
@@ -138,7 +138,7 @@
  * | **Rule 1** | [PASS] | No goto, setjmp, recursion |
  * | **Rule 2** | [PASS] | Loop bounds via k_max_buses |
  * | **Rule 3** | [PASS] | Static allocation (bus pool) |
- * | **Rule 4** | [PASS] | Functions ≤60 lines |
+ * | **Rule 4** | [PASS] | Functions <=60 lines |
  * | **Rule 5** | [PASS] | Pre/post conditions documented |
  * | **Rule 6** | [PASS] | Smallest scope variables |
  * | **Rule 7** | [PASS] | All returns checked |
@@ -219,7 +219,7 @@ extern "C" {
  * @param[in,out] manager Bus manager instance to initialize. Must point to
  *                        allocated rx_bus_manager_t structure.
  * @param[in] tag Logging tag for debug messages (e.g., "MOTOR", "SENSOR").
- *                Must be non-NULL, typically ≤8 characters.
+ *                Must be non-NULL, typically <=8 characters.
  * @param[in] error_iface Error handler interface for operation failures.
  *                        Can be NULL to use default error handling.
  * @param[in] pin_iface Pin validator interface for GPIO configuration.

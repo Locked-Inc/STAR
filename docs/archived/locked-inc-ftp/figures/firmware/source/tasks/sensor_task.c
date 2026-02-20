@@ -234,7 +234,7 @@ esp_err_t sensor_task_update_temperature(const float temperature_c) {
   }
 
   if (!star_validate_temperature(temperature_c)) {
-    ESP_LOGE(s_TAG, "Invalid temperature: %.1f°C", temperature_c);
+    ESP_LOGE(s_TAG, "Invalid temperature: %.1fdegC", temperature_c);
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -251,7 +251,7 @@ esp_err_t sensor_task_update_temperature(const float temperature_c) {
   }
 
   if (ret == ESP_OK) {
-    ESP_LOGI(s_TAG, "Temperature updated to %.1f°C for all sensors",
+    ESP_LOGI(s_TAG, "Temperature updated to %.1fdegC for all sensors",
              temperature_c);
   }
 

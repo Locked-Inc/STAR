@@ -17,22 +17,22 @@
  *
  * ```
  * RX72N Microcontroller                 DRV8243-Q1 H-Bridge IC
- * ┌─────────────────────┐               ┌──────────────────────┐
- * │                     │               │                      │
- * │  Application Code   │               │  Control Logic       │
- * │         ↓           │               │         ↑            │
- * │  rx_drv8243_spi.c   │               │  SPI Register File   │
- * │         ↓           │   SPI Bus     │  (16 registers)      │
- * │  RSPI0 Hardware  ───┼──────────────>│  - Status (0x00-0x03)│
- * │  (10 MHz, 16-bit) <─┼──────────────>│  - Command (0x08-0x09)│
- * │         ↓           │               │  - Config (0x0A-0x0F)│
- * │  GPIO (CS, nFAULT)  │               │         ↓            │
- * └─────────────────────┘               │  Gate Driver Logic   │
- *                                       │         ↓            │
- *                                       │  4x Power MOSFETs    │
- *                                       │         ↓            │
- *                                       └──────────┬───────────┘
- *                                                  ↓
+ * +---------------------+               +----------------------+
+ * |                     |               |                      |
+ * |  Application Code   |               |  Control Logic       |
+ * |         v           |               |         ^            |
+ * |  rx_drv8243_spi.c   |               |  SPI Register File   |
+ * |         v           |   SPI Bus     |  (16 registers)      |
+ * |  RSPI0 Hardware  ---+-------------->|  - Status (0x00-0x03)|
+ * |  (10 MHz, 16-bit) <-+-------------->|  - Command (0x08-0x09)|
+ * |         v           |               |  - Config (0x0A-0x0F)|
+ * |  GPIO (CS, nFAULT)  |               |         v            |
+ * +---------------------+               |  Gate Driver Logic   |
+ *                                       |         v            |
+ *                                       |  4x Power MOSFETs    |
+ *                                       |         v            |
+ *                                       +----------+-----------+
+ *                                                  v
  *                                            Brushed DC Motor
  * ```
  *
@@ -43,21 +43,21 @@
  * **SDI (Controller -> Peripheral):**
  * ```
  * Bit   15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
- *      ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
- *      │ 0  │R/W │     Address (6 bits)      │           Data (8 bits)                │
- *      └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
- *             │                                      │
- *             └─ 0=Write, 1=Read                    └─ Data byte to write
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ *      | 0  |R/W |     Address (6 bits)      |           Data (8 bits)                |
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ *             |                                      |
+ *             +- 0=Write, 1=Read                    +- Data byte to write
  * ```
  *
  * **SDO (Peripheral -> Controller):**
  * ```
  * Bit   15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
- *      ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
- *      │ 1  │ -  │  FAULT_SUMMARY (6 bits)   │       Register Data (8 bits)           │
- *      └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
- *             │                                      │
- *             └─ Status byte (always MSB=1)         └─ Data byte from read operation
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ *      | 1  | -  |  FAULT_SUMMARY (6 bits)   |       Register Data (8 bits)           |
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ *             |                                      |
+ *             +- Status byte (always MSB=1)         +- Data byte from read operation
  * ```
  *
  * ### SPI Electrical Characteristics
@@ -71,8 +71,8 @@
  * | **Data Setup Time** | 50 | - | - | ns | SDI stable before SCLK rising |
  * | **Data Hold Time** | 50 | - | - | ns | SDI stable after SCLK rising |
  * | **Output Valid Time** | - | - | 125 | ns | SDO valid after SCLK falling |
- * | **Wake-Up Delay (Sleep -> Active)** | - | 400 | - | µs | After first SPI frame |
- * | **Register Write Propagation** | - | 1 | - | µs | Config change takes effect |
+ * | **Wake-Up Delay (Sleep -> Active)** | - | 400 | - | us | After first SPI frame |
+ * | **Register Write Propagation** | - | 1 | - | us | Config change takes effect |
  *
  * ### SPI Transfer Sequence
  *
@@ -82,7 +82,7 @@
  * RX72N=>DRV8243 [label="1. CS LOW"];
  * RX72N=>DRV8243 [label="2. Transmit 16-bit frame\n[0][R/W][ADDR][DATA]"];
  * DRV8243=>RX72N [label="3. Receive 16-bit response\n[1][STATUS][DATA]"];
- * RX72N=>DRV8243 [label="4. CS HIGH (≥300ns)"];
+ * RX72N=>DRV8243 [label="4. CS HIGH (>=300ns)"];
  *
  * --- [label="Read Example: Read FAULT_SUMMARY"];
  *
@@ -138,15 +138,15 @@
  * - **CONFIG_ITRIP (0x0B)**: Set current regulation threshold for ITRIP feature
  * - **CONFIG1 (0x0C)**: Enable on-state OLA, configure VMOV threshold, disable spread spectrum clocking
  * - **CONFIG2 (0x0D)**: PWM extend mode (Hi-Z during low-side recirculation), diagnostics mode
- * - **CONFIG3 (0x0E)**: Slew rate (1.6-47 V/µs), control mode (PH/EN, Independent, PWM), ITRIP off-time
- * - **CONFIG4 (0x0F)**: OCP threshold (low/medium/high), OCP filter time (1-8 µs), pin/register control select
+ * - **CONFIG3 (0x0E)**: Slew rate (1.6-47 V/us), control mode (PH/EN, Independent, PWM), ITRIP off-time
+ * - **CONFIG4 (0x0F)**: OCP threshold (low/medium/high), OCP filter time (1-8 us), pin/register control select
  *
  * ## Usage Pattern
  *
  * ### 1. Device Initialization
  *
  * @code
- * // 1. Wait for device power-on reset (≥1ms after VM applied)
+ * // 1. Wait for device power-on reset (>=1ms after VM applied)
  * rx_threadx_sleep_ms(1);
  *
  * // 2. Read DEVICE_ID to verify SPI communication
@@ -161,7 +161,7 @@
  * tx_frame = DRV8243_SPI_WRITE_FRAME(k_drv8243_reg_command, k_drv8243_cmd_reg_lock_unlock);
  * rspi0_transfer_16(tx_frame);
  *
- * // 4. Configure slew rate (20 V/µs for balanced EMI/efficiency)
+ * // 4. Configure slew rate (20 V/us for balanced EMI/efficiency)
  * uint8_t cfg3_value = (k_drv8243_slew_20v_us << k_drv8243_cfg3_s_sr_pos) |
  *                      (k_drv8243_mode_ph_en << k_drv8243_cfg3_s_mode_pos) |
  *                      (k_drv8243_toff_30us << k_drv8243_cfg3_toff_pos);
@@ -231,7 +231,7 @@
  * **Why SPI Variant Over Standard DRV8243?**
  *
  * 1. **Runtime Configurability**: Standard variant requires hardware resistors for slew rate, OCP threshold
- *    - SPI variant: Change slew rate in software (1.6-47 V/µs)
+ *    - SPI variant: Change slew rate in software (1.6-47 V/us)
  *    - Standard variant: Fixed by external RISET resistor
  *
  * 2. **Advanced Diagnostics**: Per-FET fault visibility
@@ -250,19 +250,19 @@
  *    - SPI variant: 8 ITRIP levels (1.18V-2.97V) -> 0.62A-1.57A regulation current
  *    - Standard variant: Fixed by IPROPI pin configuration
  *
- * **Cost:** +$0.50/unit (+10% over standard) — acceptable for 4-unit production run
+ * **Cost:** +$0.50/unit (+10% over standard) -- acceptable for 4-unit production run
  *
  * ## Performance Characteristics
  *
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | **SPI Transaction Time** | 2.1 µs | 16 bits @ 7.5 MHz + CS delays |
- * | **Register Read Latency** | 3.1 µs | Transaction + processing overhead |
- * | **Register Write Latency** | 3.1 µs | Write + 1 µs propagation |
- * | **Fault Check Overhead** | 0.031% | 3.1 µs every 10ms (100 Hz loop) |
+ * | **SPI Transaction Time** | 2.1 us | 16 bits @ 7.5 MHz + CS delays |
+ * | **Register Read Latency** | 3.1 us | Transaction + processing overhead |
+ * | **Register Write Latency** | 3.1 us | Write + 1 us propagation |
+ * | **Fault Check Overhead** | 0.031% | 3.1 us every 10ms (100 Hz loop) |
  * | **Max Polling Rate** | ~300 kHz | Limited by 300ns CS inter-frame delay |
- * | **Configuration Change Time** | ~1 µs | Internal logic propagation |
- * | **Fault Clear Time** | ~3 µs | CLR_FLT command + gate driver reset |
+ * | **Configuration Change Time** | ~1 us | Internal logic propagation |
+ * | **Fault Clear Time** | ~3 us | CLR_FLT command + gate driver reset |
  *
  * ## Memory Characteristics
  *
@@ -450,7 +450,7 @@ typedef enum : uint8_t {
    * Bit 4: VMOV    - VM overvoltage (>37V)
    * Bit 3: VMUV    - VM undervoltage (<4.5V)
    * Bit 2: OCP     - Overcurrent protection (any FET)
-   * Bit 1: TSD     - Thermal shutdown (TJ >165°C)
+   * Bit 1: TSD     - Thermal shutdown (TJ >165degC)
    * Bit 0: OLA     - Open-load (any output)
    * ```
    *
@@ -700,7 +700,7 @@ typedef enum : uint8_t {
    *
    * **Current Calculation:**
    * ```
-   * I_regulate [A] = V_ITRIP [V] × IPROPI_ratio [A/V]
+   * I_regulate [A] = V_ITRIP [V] x IPROPI_ratio [A/V]
    * Default IPROPI_ratio = 525 A/V (configured by external resistor)
    * ```
    *
@@ -732,7 +732,7 @@ typedef enum : uint8_t {
    * **Open-Load Detection (EN_OLA):**
    * - **1 (enabled)**: Detect disconnected motor terminal during on-state (active drive)
    * - **0 (disabled)**: OLA detection off (default for most applications)
-   * - **STAR project**: Disabled (EN_OLA=0) — motor always connected
+   * - **STAR project**: Disabled (EN_OLA=0) -- motor always connected
    *
    * **VMOV Threshold Select (VMOV_SEL):**
    * | Value | Threshold | Use Case |
@@ -746,7 +746,7 @@ typedef enum : uint8_t {
    * **Spread Spectrum Clocking (SSC_DIS):**
    * - **0 (enabled)**: Internal oscillator frequency dithering reduces EMI
    * - **1 (disabled)**: Fixed oscillator frequency (better for timing-sensitive applications)
-   * - **STAR project**: Enabled (SSC_DIS=0) — EMI reduction for enclosed robot
+   * - **STAR project**: Enabled (SSC_DIS=0) -- EMI reduction for enclosed robot
    *
    * @see k_drv8243_reg_fault_summary Check VMOV fault (bit 4)
    * @see k_drv8243_reg_status1 Check OLA1/OLA2 faults (bits 7:6)
@@ -773,7 +773,7 @@ typedef enum : uint8_t {
    * - **0 (disabled)**: Low-side recirculation during PWM off-time (standard mode)
    * - **1 (enabled)**: Hi-Z during PWM off-time (freewheeling diode conduction)
    * - **Effect**: Reduces low-side FET conduction losses, increases diode losses
-   * - **STAR project**: Disabled (PWM_EXTEND=0) — synchronous rectification for efficiency
+   * - **STAR project**: Disabled (PWM_EXTEND=0) -- synchronous rectification for efficiency
    *
    * **Diagnostics Mode (S_DIAG):**
    * - **00b**: Normal operation (default)
@@ -806,8 +806,8 @@ typedef enum : uint8_t {
    * **Slew Rate (S_SR):**
    * - Controls FET gate drive slew rate (dV/dt at OUT1/OUT2)
    * - **Trade-off**: Faster slew = lower switching losses, higher EMI
-   * - **Range**: 1.6 V/µs (slowest, low EMI) to 47 V/µs (fastest, low loss)
-   * - **STAR project**: 20 V/µs (balanced EMI/efficiency)
+   * - **Range**: 1.6 V/us (slowest, low EMI) to 47 V/us (fastest, low loss)
+   * - **STAR project**: 20 V/us (balanced EMI/efficiency)
    *
    * **Control Mode (S_MODE):**
    * | Value | Mode | Description |
@@ -816,13 +816,13 @@ typedef enum : uint8_t {
    * | 01b | Independent | Two independent half-bridges |
    * | 10b | PWM Mode 2 | Datasheet-specific PWM mode |
    * | 11b | PWM Mode 3 | Datasheet-specific PWM mode |
-   * - **STAR project**: PH/EN mode (00b) — standard brushed DC motor control
+   * - **STAR project**: PH/EN mode (00b) -- standard brushed DC motor control
    *
    * **ITRIP Off-Time (TOFF):**
    * - Duration FETs remain off during ITRIP current regulation cycle
-   * - **Range**: 20 µs to 50 µs
+   * - **Range**: 20 us to 50 us
    * - **Effect**: Longer TOFF = lower average current, slower regulation response
-   * - **STAR project**: 30 µs (default)
+   * - **STAR project**: 30 us (default)
    *
    * @see drv8243_slew_rate_t Available slew rate settings
    * @see drv8243_control_mode_t Available control modes
@@ -855,18 +855,18 @@ typedef enum : uint8_t {
    * | 01b | Medium | ~5.0 A peak (default) |
    * | 10b | High | ~6.5 A peak |
    * | 11b | Reserved | - |
-   * - **STAR project**: Medium (01b) — 5A peak for 1A nominal motor
+   * - **STAR project**: Medium (01b) -- 5A peak for 1A nominal motor
    *
    * **OCP Filter Time (TOCP_SEL):**
    * - Debounce filter for OCP comparator (rejects current spikes)
-   * - **Range**: 1 µs to 8 µs
+   * - **Range**: 1 us to 8 us
    * - **Trade-off**: Longer filter = fewer false OCP triggers, slower FET protection
-   * - **STAR project**: 2 µs (balanced noise immunity and protection speed)
+   * - **STAR project**: 2 us (balanced noise immunity and protection speed)
    *
    * **Pin vs Register Control (DRVOFF_SEL, EN_IN1_SEL, PH_IN2_SEL):**
    * - **0 (pin control)**: Hardware pins control bridge (default, low SPI latency)
    * - **1 (SPI control)**: SPI_IN register controls bridge (software override)
-   * - **STAR project**: Pin control (all bits = 0) — real-time PWM via GPTW
+   * - **STAR project**: Pin control (all bits = 0) -- real-time PWM via GPTW
    *
    * @see drv8243_ocp_thresh_t Available OCP threshold settings
    * @see drv8243_ocp_filter_t Available OCP filter times
@@ -896,24 +896,24 @@ typedef enum : uint8_t {
  *
  * **SDI Frame (Controller -> Peripheral):**
  * ```
- * ┌───────┬───────┬─────────────────┬─────────────────────────────┐
- * │ Bit15 │ Bit14 │   Bits 13:8     │          Bits 7:0           │
- * ├───────┼───────┼─────────────────┼─────────────────────────────┤
- * │   0   │ R/W   │ Address (6-bit) │      Data (8-bit)           │
- * │ (std) │ 0=W   │   0x00-0x3F     │   Write: data to write      │
- * │       │ 1=R   │                 │   Read:  don't care (0x00)  │
- * └───────┴───────┴─────────────────┴─────────────────────────────┘
+ * +-------+-------+-----------------+-----------------------------+
+ * | Bit15 | Bit14 |   Bits 13:8     |          Bits 7:0           |
+ * +-------+-------+-----------------+-----------------------------+
+ * |   0   | R/W   | Address (6-bit) |      Data (8-bit)           |
+ * | (std) | 0=W   |   0x00-0x3F     |   Write: data to write      |
+ * |       | 1=R   |                 |   Read:  don't care (0x00)  |
+ * +-------+-------+-----------------+-----------------------------+
  * ```
  *
  * **SDO Frame (Peripheral -> Controller):**
  * ```
- * ┌───────┬───────────────────────────┬─────────────────────────────┐
- * │ Bit15 │       Bits 14:8           │          Bits 7:0           │
- * ├───────┼───────────────────────────┼─────────────────────────────┤
- * │   1   │  Status byte (7-bit)      │      Data (8-bit)           │
- * │(resp) │  FAULT_SUMMARY subset     │   Read: register value      │
- * │       │  (bits 5:0 = faults)      │   Write: previous reg value │
- * └───────┴───────────────────────────┴─────────────────────────────┘
+ * +-------+---------------------------+-----------------------------+
+ * | Bit15 |       Bits 14:8           |          Bits 7:0           |
+ * +-------+---------------------------+-----------------------------+
+ * |   1   |  Status byte (7-bit)      |      Data (8-bit)           |
+ * |(resp) |  FAULT_SUMMARY subset     |   Read: register value      |
+ * |       |  (bits 5:0 = faults)      |   Write: previous reg value |
+ * +-------+---------------------------+-----------------------------+
  * ```
  *
  * ## Usage Example
@@ -1041,9 +1041,9 @@ typedef enum : uint16_t {
  *
  * ```
  * Bit   7     6     5      4      3      2     1     0
- *      ┌─────┬─────┬──────┬──────┬──────┬─────┬─────┬────────┐
- *      │  1  │  -  │FAULT │ VMOV │ VMUV │ OCP │ TSD │SPI_ERR │
- *      └─────┴─────┴──────┴──────┴──────┴─────┴─────┴────────┘
+ *      +-----+-----+------+------+------+-----+-----+--------+
+ *      |  1  |  -  |FAULT | VMOV | VMUV | OCP | TSD |SPI_ERR |
+ *      +-----+-----+------+------+------+-----+-----+--------+
  *       MSB   Rsvd   OR of all faults  Fault indicators
  *      (always 1)
  * ```
@@ -1055,14 +1055,14 @@ typedef enum : uint16_t {
  * - **Bit 4 (VMOV)**: VM overvoltage fault (>37V)
  * - **Bit 3 (VMUV)**: VM undervoltage fault (<4.5V)
  * - **Bit 2 (OCP)**: Overcurrent protection (any FET)
- * - **Bit 1 (TSD)**: Thermal shutdown (TJ >165°C)
+ * - **Bit 1 (TSD)**: Thermal shutdown (TJ >165degC)
  * - **Bit 0 (SPI_ERR)**: SPI frame error (parity, format)
  *
  * ## Relationship to FAULT_SUMMARY Register
  *
  * Status byte provides subset of FAULT_SUMMARY register (0x01):
  * - **Included in status byte**: VMOV, VMUV, OCP, TSD, SPI_ERR (5 faults)
- * - **NOT in status byte**: POR, OLA (2 faults) — must read FAULT_SUMMARY register
+ * - **NOT in status byte**: POR, OLA (2 faults) -- must read FAULT_SUMMARY register
  *
  * | Fault | Status Byte Bit | FAULT_SUMMARY Bit |
  * |-------|----------------|-------------------|
@@ -1119,7 +1119,7 @@ typedef enum : uint8_t {
   k_drv8243_sdo_status_vmov_pos    = 4, /**< VMOV bit: VM overvoltage (>37V) */
   k_drv8243_sdo_status_vmuv_pos    = 3, /**< VMUV bit: VM undervoltage (<4.5V) */
   k_drv8243_sdo_status_ocp_pos     = 2, /**< OCP bit: Overcurrent protection */
-  k_drv8243_sdo_status_tsd_pos     = 1, /**< TSD bit: Thermal shutdown (>165°C) */
+  k_drv8243_sdo_status_tsd_pos     = 1, /**< TSD bit: Thermal shutdown (>165degC) */
   k_drv8243_sdo_status_spi_err_pos = 0, /**< SPI_ERR bit: SPI frame error */
 } drv8243_sdo_status_bits_t;
 
@@ -1284,11 +1284,11 @@ typedef enum : uint8_t {
  *
  * **IPROPI Pin:**
  * - Analog output proportional to motor current
- * - Voltage = I_motor × K_IPROPI (K_IPROPI typically 525 A/V, set by external resistor)
+ * - Voltage = I_motor x K_IPROPI (K_IPROPI typically 525 A/V, set by external resistor)
  * - DRV8243 compares IPROPI voltage to ITRIP threshold
  *
  * **Regulation Action:**
- * - When V_IPROPI > V_ITRIP: Reduce FET on-time by TOFF duration (20-50 µs)
+ * - When V_IPROPI > V_ITRIP: Reduce FET on-time by TOFF duration (20-50 us)
  * - Cycle repeats until V_IPROPI < V_ITRIP
  * - Motor current effectively clamped to I_regulate = V_ITRIP / K_IPROPI
  *
@@ -1296,7 +1296,7 @@ typedef enum : uint8_t {
  *
  * | Value | V_ITRIP | I_regulate @ 525 A/V | I_regulate @ 1050 A/V | Availability |
  * |-------|---------|----------------------|-----------------------|--------------|
- * | **0** | Disabled | ∞ (no limiting) | ∞ (no limiting) | SPI |
+ * | **0** | Disabled | inf (no limiting) | inf (no limiting) | SPI |
  * | **1** | 1.18 V | 0.62 A | 1.12 A | SPI only |
  * | **2** | 1.41 V | 0.74 A | 1.34 A | SPI only |
  * | **3** | 1.65 V | 0.87 A | 1.57 A | SPI + Hardware |
@@ -1312,7 +1312,7 @@ typedef enum : uint8_t {
  * **Motor Specifications:**
  * - Nominal current: 1.0 A (continuous)
  * - Stall current: 1.5 A (locked rotor)
- * - Resistance: 4Ω (measured at terminals)
+ * - Resistance: 4Ohm (measured at terminals)
  *
  * **ITRIP Selection (k_drv8243_itrip_1v98):**
  * - Regulation current: 1.04 A (4% above nominal)
@@ -1332,15 +1332,15 @@ typedef enum : uint8_t {
  *
  * **Example 1: Motor Stall (STAR project)**
  * ```
- * I_stall = V_supply / R_motor = 6V / 4Ω = 1.5A
- * V_IPROPI = I_stall × 525 A/V = 1.5A × 525 = 787 mV ... wait, this is wrong
+ * I_stall = V_supply / R_motor = 6V / 4Ohm = 1.5A
+ * V_IPROPI = I_stall x 525 A/V = 1.5A x 525 = 787 mV ... wait, this is wrong
  *
  * Actually: V_IPROPI = I_motor / K_IPROPI
  * K_IPROPI = 525 A/V means 1 amp produces 1/525 = 1.9 mV
  * V_IPROPI = 1.5A / 525 A/V = 2.86 mV ... still wrong
  *
  * Correction: K_IPROPI = 1/525 V/A (inverse ratio)
- * V_IPROPI = I_motor × (1/525 V/A) = 1.5A × 0.0019 V/A = 2.86 V
+ * V_IPROPI = I_motor x (1/525 V/A) = 1.5A x 0.0019 V/A = 2.86 V
  *
  * Since ITRIP = 1.98V < 2.86V (at stall):
  * -> ITRIP regulation active, limits current to 1.04A
@@ -1355,8 +1355,8 @@ typedef enum : uint8_t {
  * IPROPI ratio: For every 1A of current, IPROPI voltage rises by (1/525)V = 1.9mV
  * Wait, that's too small. Let me check datasheet convention.
  *
- * Actually, "525 A/V" means: Current = 525 × Voltage
- * So: I_motor = 525 A/V × V_IPROPI
+ * Actually, "525 A/V" means: Current = 525 x Voltage
+ * So: I_motor = 525 A/V x V_IPROPI
  * Therefore: V_IPROPI = I_motor / (525 A/V)
  *
  * At 0.5A: V_IPROPI = 0.5A / 525 = 0.00095V = 0.95mV
@@ -1370,15 +1370,15 @@ typedef enum : uint8_t {
  * Actually from datasheet: IPROPI ratio is typically expressed as mV/A or A/V.
  * If "525 A/V" means "525 amps per volt measured at IPROPI":
  * Then V_IPROPI_at_1A = 1A / 525 A/V = 0.0019V = 1.9mV per amp
- * At 1.5A stall: V_IPROPI = 1.5 × 1.9mV = 2.85mV
+ * At 1.5A stall: V_IPROPI = 1.5 x 1.9mV = 2.85mV
  *
  * This is still way too small compared to 1.98V threshold!
  *
  * I think the ratio is backwards. Let me assume "525" means:
- * V_IPROPI = I_motor × 525 mV/A (millivolts per amp)
- * At 1.5A: V_IPROPI = 1.5A × 0.525 V/A = 0.7875V ... closer but still <1.98V
+ * V_IPROPI = I_motor x 525 mV/A (millivolts per amp)
+ * At 1.5A: V_IPROPI = 1.5A x 0.525 V/A = 0.7875V ... closer but still <1.98V
  *
- * Let me try: K = 1/525 Ω (sense resistor equivalent)
+ * Let me try: K = 1/525 Ohm (sense resistor equivalent)
  * No, IPROPI is not a resistor drop.
  *
  * Final attempt with most likely interpretation:
@@ -1388,10 +1388,10 @@ typedef enum : uint8_t {
  *
  * Let me use a more realistic ratio from typical DRV8243 applications:
  * If IPROPI gain = 1.9 V/A (1900 mV/A):
- * At 1.04A: V_IPROPI = 1.04A × 1.9 V/A = 1.976V ≈ 1.98V threshold [OK]
- * At 1.5A stall: V_IPROPI = 1.5A × 1.9 V/A = 2.85V > 1.98V -> regulation active [OK]
+ * At 1.04A: V_IPROPI = 1.04A x 1.9 V/A = 1.976V ~ 1.98V threshold [OK]
+ * At 1.5A stall: V_IPROPI = 1.5A x 1.9 V/A = 2.85V > 1.98V -> regulation active [OK]
  *
- * This makes sense! K_IPROPI ≈ 1.9 V/A (configured by external resistor)
+ * This makes sense! K_IPROPI ~ 1.9 V/A (configured by external resistor)
  * I'll update the documentation to use this realistic value.
  * ```
  *
@@ -1501,62 +1501,62 @@ typedef enum : uint8_t {
  *
  * | Slew Rate | EMI | Switching Loss | Motor Voltage Stress | Use Case |
  * |-----------|-----|----------------|----------------------|----------|
- * | **Fast** (47 V/µs) | [FAIL] High | [PASS] Low (~2 mJ/switch) | [FAIL] High ringing | High-frequency PWM, minimize heat |
- * | **Medium** (20 V/µs) | [PASS] Moderate | [PASS] Moderate (~5 mJ) | [PASS] Moderate | **Balanced (STAR default)** |
- * | **Slow** (1.6 V/µs) | [PASS] Low | [FAIL] High (~15 mJ) | [PASS] Low | EMI-sensitive, low-speed PWM |
+ * | **Fast** (47 V/us) | [FAIL] High | [PASS] Low (~2 mJ/switch) | [FAIL] High ringing | High-frequency PWM, minimize heat |
+ * | **Medium** (20 V/us) | [PASS] Moderate | [PASS] Moderate (~5 mJ) | [PASS] Moderate | **Balanced (STAR default)** |
+ * | **Slow** (1.6 V/us) | [PASS] Low | [FAIL] High (~15 mJ) | [PASS] Low | EMI-sensitive, low-speed PWM |
  *
  * ## Slew Rate Selection Guide
  *
- * **Choose FAST (30-47 V/µs) if:**
+ * **Choose FAST (30-47 V/us) if:**
  * - High PWM frequency (>50 kHz) -> minimize switching losses
  * - Excellent PCB layout (short traces, good ground plane) -> EMI manageable
- * - Motor has low winding inductance (<100 µH) -> less voltage ringing
+ * - Motor has low winding inductance (<100 uH) -> less voltage ringing
  *
- * **Choose MEDIUM (13-20 V/µs) if:**
+ * **Choose MEDIUM (13-20 V/us) if:**
  * - Moderate PWM frequency (20-50 kHz) -> balanced efficiency/EMI
  * - Standard PCB layout with basic EMI precautions
- * - **STAR project uses 20 V/µs** (25 kHz PWM, mixed-signal PCB)
+ * - **STAR project uses 20 V/us** (25 kHz PWM, mixed-signal PCB)
  *
- * **Choose SLOW (1.6-6.6 V/µs) if:**
+ * **Choose SLOW (1.6-6.6 V/us) if:**
  * - Low PWM frequency (<20 kHz) -> switching loss less critical
  * - Poor PCB layout or long motor cable (>1m) -> EMI critical concern
- * - Motor has high winding inductance (>500 µH) -> reduce voltage overshoot
+ * - Motor has high winding inductance (>500 uH) -> reduce voltage overshoot
  *
  * ## Calculation of Switching Loss vs. Slew Rate
  *
  * **Switching Energy per Transition:**
  * ```
- * E_switch ≈ (V_supply × I_load × t_transition) / 6
+ * E_switch ~ (V_supply x I_load x t_transition) / 6
  * t_transition = V_supply / slew_rate
  *
  * Example (STAR project: 6V supply, 1A load):
- * - Slew = 47 V/µs: t_trans = 6V/47V/µs = 128 ns -> E_sw = 128 µJ
- * - Slew = 20 V/µs: t_trans = 6V/20V/µs = 300 ns -> E_sw = 300 µJ (STAR choice)
- * - Slew = 1.6 V/µs: t_trans = 6V/1.6V/µs = 3.75 µs -> E_sw = 3.75 mJ
+ * - Slew = 47 V/us: t_trans = 6V/47V/us = 128 ns -> E_sw = 128 uJ
+ * - Slew = 20 V/us: t_trans = 6V/20V/us = 300 ns -> E_sw = 300 uJ (STAR choice)
+ * - Slew = 1.6 V/us: t_trans = 6V/1.6V/us = 3.75 us -> E_sw = 3.75 mJ
  *
  * At 25 kHz PWM (STAR frequency):
- * - Slew = 47 V/µs: P_switch = 128 µJ × 25 kHz × 2 transitions = 6.4 mW
- * - Slew = 20 V/µs: P_switch = 300 µJ × 25 kHz × 2 transitions = 15 mW (STAR)
- * - Slew = 1.6 V/µs: P_switch = 3.75 mJ × 25 kHz × 2 transitions = 187.5 mW
+ * - Slew = 47 V/us: P_switch = 128 uJ x 25 kHz x 2 transitions = 6.4 mW
+ * - Slew = 20 V/us: P_switch = 300 uJ x 25 kHz x 2 transitions = 15 mW (STAR)
+ * - Slew = 1.6 V/us: P_switch = 3.75 mJ x 25 kHz x 2 transitions = 187.5 mW
  * ```
  *
- * **STAR Project Decision:** 20 V/µs provides <20 mW switching loss per motor
+ * **STAR Project Decision:** 20 V/us provides <20 mW switching loss per motor
  * (negligible compared to 6W motor power) while meeting FCC Class B EMI limits.
  *
  * ## EMI Impact
  *
  * Slew rate directly affects radiated EMI frequency content:
  * ```
- * f_emi_max ≈ 0.5 / t_rise
- * t_rise ≈ V_supply / slew_rate
+ * f_emi_max ~ 0.5 / t_rise
+ * t_rise ~ V_supply / slew_rate
  *
  * Example (6V supply):
- * - Slew = 47 V/µs: t_rise = 128 ns -> f_emi_max ≈ 3.9 MHz
- * - Slew = 20 V/µs: t_rise = 300 ns -> f_emi_max ≈ 1.7 MHz (STAR)
- * - Slew = 1.6 V/µs: t_rise = 3.75 µs -> f_emi_max ≈ 133 kHz
+ * - Slew = 47 V/us: t_rise = 128 ns -> f_emi_max ~ 3.9 MHz
+ * - Slew = 20 V/us: t_rise = 300 ns -> f_emi_max ~ 1.7 MHz (STAR)
+ * - Slew = 1.6 V/us: t_rise = 3.75 us -> f_emi_max ~ 133 kHz
  * ```
  *
- * **STAR Project:** 20 V/µs keeps primary EMI energy below 2 MHz (easy to filter).
+ * **STAR Project:** 20 V/us keeps primary EMI energy below 2 MHz (easy to filter).
  *
  * @see k_drv8243_reg_config3 CONFIG3 register (contains S_SR field)
  * @see k_drv8243_cfg3_s_sr_pos Bit position of slew rate field
@@ -1569,14 +1569,14 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_drv8243_slew_1v6_us = 0, /**< 1.6 V/µs (slowest, lowest EMI, highest switching loss) */
-  k_drv8243_slew_3v3_us = 1, /**< 3.3 V/µs (very slow, low EMI) */
-  k_drv8243_slew_6v6_us = 2, /**< 6.6 V/µs (slow, reduced EMI) */
-  k_drv8243_slew_13v_us = 3, /**< 13 V/µs (moderate, balanced) */
-  k_drv8243_slew_20v_us = 4, /**< 20 V/µs (STAR project default, good balance) */
-  k_drv8243_slew_30v_us = 5, /**< 30 V/µs (fast, lower loss) */
-  k_drv8243_slew_40v_us = 6, /**< 40 V/µs (very fast, minimal loss) */
-  k_drv8243_slew_47v_us = 7, /**< 47 V/µs (fastest, lowest switching loss, highest EMI) */
+  k_drv8243_slew_1v6_us = 0, /**< 1.6 V/us (slowest, lowest EMI, highest switching loss) */
+  k_drv8243_slew_3v3_us = 1, /**< 3.3 V/us (very slow, low EMI) */
+  k_drv8243_slew_6v6_us = 2, /**< 6.6 V/us (slow, reduced EMI) */
+  k_drv8243_slew_13v_us = 3, /**< 13 V/us (moderate, balanced) */
+  k_drv8243_slew_20v_us = 4, /**< 20 V/us (STAR project default, good balance) */
+  k_drv8243_slew_30v_us = 5, /**< 30 V/us (fast, lower loss) */
+  k_drv8243_slew_40v_us = 6, /**< 40 V/us (very fast, minimal loss) */
+  k_drv8243_slew_47v_us = 7, /**< 47 V/us (fastest, lowest switching loss, highest EMI) */
 } drv8243_slew_rate_t;
 
 /**
@@ -1598,7 +1598,7 @@ typedef enum : uint8_t {
  * | **PWM Mode 2** | Advanced control | See datasheet | See datasheet | Custom applications |
  * | **PWM Mode 3** | Advanced control | See datasheet | See datasheet | Custom applications |
  *
- * ## Mode 0: PH/EN (Phase/Enable) — STAR Project Default
+ * ## Mode 0: PH/EN (Phase/Enable) -- STAR Project Default
  *
  * **Description:** Standard brushed DC motor control with direction and PWM speed.
  *
@@ -1672,7 +1672,7 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_drv8243_mode_ph_en =
-    0, /**< PH/EN mode: Phase (direction) + Enable (PWM speed) — STAR default */
+    0, /**< PH/EN mode: Phase (direction) + Enable (PWM speed) -- STAR default */
   k_drv8243_mode_independent =
     1,                      /**< Independent half-bridge mode: Dual motor or custom H-bridge */
   k_drv8243_mode_pwm_2 = 2, /**< PWM mode 2: Datasheet-specific (see DRV8243-Q1 section 8.3.7) */
@@ -1697,7 +1697,7 @@ typedef enum : uint8_t {
  * Motor=>DRV8243 [label="Current rises (acceleration)"];
  * IPROPI=>DRV8243 [label="V_IPROPI > V_ITRIP"];
  * DRV8243=>Motor [label="Disable FETs (TOFF duration)"];
- * Motor=>DRV8243 [label="Current decays (L × di/dt)"];
+ * Motor=>DRV8243 [label="Current decays (L x di/dt)"];
  * DRV8243=>Motor [label="Re-enable FETs"];
  * IPROPI=>DRV8243 [label="Check V_IPROPI"];
  * DRV8243=>Motor [label="Repeat if still > V_ITRIP"];
@@ -1707,61 +1707,61 @@ typedef enum : uint8_t {
  *
  * | TOFF | Current Decay per Cycle | Regulation Frequency | Avg Current Ripple | Use Case |
  * |------|-------------------------|----------------------|--------------------|----------|
- * | **20 µs** | Low (fast response) | ~50 kHz | ±5% | Fast regulation, low ripple |
- * | **30 µs** | Moderate | ~33 kHz | ±10% | **STAR default (balanced)** |
- * | **40 µs** | High | ~25 kHz | ±15% | Slower response, lower switching loss |
- * | **50 µs** | Very high | ~20 kHz | ±20% | Minimize switching, high ripple |
+ * | **20 us** | Low (fast response) | ~50 kHz | +/-5% | Fast regulation, low ripple |
+ * | **30 us** | Moderate | ~33 kHz | +/-10% | **STAR default (balanced)** |
+ * | **40 us** | High | ~25 kHz | +/-15% | Slower response, lower switching loss |
+ * | **50 us** | Very high | ~20 kHz | +/-20% | Minimize switching, high ripple |
  *
  * ## Current Decay Calculation
  *
  * **Inductive Current Decay:**
  * ```
- * ΔI = (V_supply / L_motor) × TOFF
+ * DeltaI = (V_supply / L_motor) x TOFF
  *
  * STAR Project Example:
  * - V_supply = 6V
- * - L_motor ≈ 200 µH (estimated from motor datasheet)
- * - TOFF = 30 µs
+ * - L_motor ~ 200 uH (estimated from motor datasheet)
+ * - TOFF = 30 us
  *
- * ΔI = (6V / 200µH) × 30µs = (6 / 0.0002) × 0.00003 = 30,000 A/s × 0.00003s = 0.9A
+ * DeltaI = (6V / 200uH) x 30us = (6 / 0.0002) x 0.00003 = 30,000 A/s x 0.00003s = 0.9A
  *
  * Wait, that's way too high. Let me recalculate:
- * di/dt = V / L = 6V / 200µH = 6 / (200 × 10^-6) = 30,000 A/s
- * ΔI = di/dt × Δt = 30,000 A/s × 30 × 10^-6 s = 0.9A per cycle
+ * di/dt = V / L = 6V / 200uH = 6 / (200 x 10^-6) = 30,000 A/s
+ * DeltaI = di/dt x Deltat = 30,000 A/s x 30 x 10^-6 s = 0.9A per cycle
  *
  * This is a huge ripple! Let me check if motor inductance is realistic...
- * Typical brushed DC motor: 100-500 µH
- * Let's assume L = 400 µH:
+ * Typical brushed DC motor: 100-500 uH
+ * Let's assume L = 400 uH:
  *
- * ΔI = (6V / 400µH) × 30µs = 15,000 A/s × 0.00003s = 0.45A per cycle
+ * DeltaI = (6V / 400uH) x 30us = 15,000 A/s x 0.00003s = 0.45A per cycle
  *
  * Still large. But this is the MAXIMUM decay (assumes freewheeling diode path).
  * In reality, back-EMF opposes current change, so actual decay is lower.
  *
  * Effective decay with back-EMF:
- * ΔI ≈ ((V_supply - V_backEMF) / L_motor) × TOFF
+ * DeltaI ~ ((V_supply - V_backEMF) / L_motor) x TOFF
  * At stall (V_backEMF = 0): Maximum decay
- * At high speed (V_backEMF ≈ V_supply): Minimal decay
+ * At high speed (V_backEMF ~ V_supply): Minimal decay
  * ```
  *
- * **STAR Project Choice (30 µs):**
- * - Moderate decay rate (≈0.3-0.5A per cycle at stall)
- * - Regulation frequency ≈33 kHz (above audible range, minimal acoustic noise)
- * - Current ripple ≈±10% (acceptable for brushed DC motor)
- * - Switching loss moderate (≈5 mW per motor during regulation)
+ * **STAR Project Choice (30 us):**
+ * - Moderate decay rate (~0.3-0.5A per cycle at stall)
+ * - Regulation frequency ~33 kHz (above audible range, minimal acoustic noise)
+ * - Current ripple ~+/-10% (acceptable for brushed DC motor)
+ * - Switching loss moderate (~5 mW per motor during regulation)
  *
  * ## Regulation Frequency Impact
  *
  * **Audible Noise:**
- * - TOFF < 25 µs: Regulation frequency >40 kHz (inaudible)
- * - TOFF = 30-40 µs: Regulation frequency 25-33 kHz (faint whine possible)
- * - TOFF > 50 µs: Regulation frequency <20 kHz (audible whine likely)
+ * - TOFF < 25 us: Regulation frequency >40 kHz (inaudible)
+ * - TOFF = 30-40 us: Regulation frequency 25-33 kHz (faint whine possible)
+ * - TOFF > 50 us: Regulation frequency <20 kHz (audible whine likely)
  *
- * **STAR Project:** 30 µs keeps regulation at 33 kHz (mostly inaudible, acceptable for robotics)
+ * **STAR Project:** 30 us keeps regulation at 33 kHz (mostly inaudible, acceptable for robotics)
  *
  * **Motor Heating:**
- * - Shorter TOFF: Higher switching frequency -> lower I²R heating, higher switching loss
- * - Longer TOFF: Lower switching frequency -> higher I²R heating (ripple), lower switching loss
+ * - Shorter TOFF: Higher switching frequency -> lower I^2R heating, higher switching loss
+ * - Longer TOFF: Lower switching frequency -> higher I^2R heating (ripple), lower switching loss
  *
  * @see k_drv8243_reg_config3 CONFIG3 register (contains TOFF field)
  * @see k_drv8243_cfg3_toff_pos Bit position of TOFF field
@@ -1771,19 +1771,19 @@ typedef enum : uint8_t {
  * @note Write to CONFIG3 register bits [2:1] (2-bit field)
  * @note TOFF only affects behavior when ITRIP regulation is active (V_IPROPI > V_ITRIP)
  * @note Actual current ripple depends on motor inductance and back-EMF (speed-dependent)
- * @warning Very short TOFF (<20 µs) increases switching losses significantly
- * @warning Very long TOFF (>50 µs) may cause excessive current ripple and motor heating
+ * @warning Very short TOFF (<20 us) increases switching losses significantly
+ * @warning Very long TOFF (>50 us) may cause excessive current ripple and motor heating
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_drv8243_toff_20us =
-    0, /**< 20 µs off-time (fast regulation, low ripple, higher switching loss) */
+    0, /**< 20 us off-time (fast regulation, low ripple, higher switching loss) */
   k_drv8243_toff_30us =
-    1, /**< 30 µs off-time (STAR default, balanced ripple/loss, 33 kHz regulation) */
-  k_drv8243_toff_40us = 2, /**< 40 µs off-time (moderate regulation, moderate ripple, lower loss) */
+    1, /**< 30 us off-time (STAR default, balanced ripple/loss, 33 kHz regulation) */
+  k_drv8243_toff_40us = 2, /**< 40 us off-time (moderate regulation, moderate ripple, lower loss) */
   k_drv8243_toff_50us =
-    3, /**< 50 µs off-time (slow regulation, high ripple, lowest switching loss) */
+    3, /**< 50 us off-time (slow regulation, high ripple, lowest switching loss) */
 } drv8243_toff_t;
 
 /* =============================================================================
@@ -1828,7 +1828,7 @@ typedef enum : uint8_t {
  * |---------|-------------------|------------------|
  * | **Purpose** | Regulate current to safe level | Protect FETs from damage |
  * | **Action** | Modulate FET on-time (PWM) | Disable outputs immediately |
- * | **Latency** | ~1 µs (comparator delay) | <3 µs (hardware protection) |
+ * | **Latency** | ~1 us (comparator delay) | <3 us (hardware protection) |
  * | **Fault** | No fault triggered | OCP fault latched in FAULT_SUMMARY |
  * | **Recovery** | Automatic (continues operation) | Manual (requires CLR_FLT command) |
  * | **Typical Level** | 1-2A (motor nominal) | 5-6.5A (FET thermal limit) |
@@ -1852,7 +1852,7 @@ typedef enum : uint8_t {
  * - Max safe current: ~2.0 A (thermal limit per motor datasheet)
  *
  * **OCP Threshold Selection (Medium = 5.0A):**
- * - **Margin above stall:** 5.0A / 1.5A = 3.3× safety factor
+ * - **Margin above stall:** 5.0A / 1.5A = 3.3x safety factor
  * - **Protects against:** Short circuit (I >> 5A), severe mechanical jam
  * - **Allows:** Transient inrush current during rapid acceleration (<100ms, <3A peak)
  * - **Coordination with ITRIP:** ITRIP (1.04A) handles normal overload, OCP (5.0A) handles faults
@@ -1873,8 +1873,8 @@ typedef enum : uint8_t {
  * - Result: Motor current limited, no fault
  *
  * **Scenario 2: Short Circuit (OUT1-OUT2)**
- * - I_short = V_supply / R_FET_on ≈ 6V / 0.05Ω = 120A (initial surge)
- * - OCP trips within 3 µs (before FETs damaged)
+ * - I_short = V_supply / R_FET_on ~ 6V / 0.05Ohm = 120A (initial surge)
+ * - OCP trips within 3 us (before FETs damaged)
  * - Result: Outputs disabled, OCP fault latched
  *
  * **Scenario 3: Mechanical Jam (gradual)**
@@ -1919,52 +1919,52 @@ typedef enum : uint8_t {
  * **Comparator + Digital Filter:**
  * ```
  * Motor Current -> Sense FET -> IPROPI -> Comparator -> [Digital Filter TOCP] -> OCP Fault
- *                                          ↓
+ *                                          v
  *                                    OCP_Threshold
  * ```
  *
  * **Filter Logic:**
  * - If I_sense > I_threshold for duration < TOCP: No OCP fault (spike rejected)
- * - If I_sense > I_threshold for duration ≥ TOCP: OCP fault triggered (sustained overcurrent)
+ * - If I_sense > I_threshold for duration >= TOCP: OCP fault triggered (sustained overcurrent)
  *
  * ## Filter Time Selection Trade-offs
  *
  * | TOCP | Noise Immunity | Protection Speed | Nuisance Trip Risk | Use Case |
  * |------|----------------|------------------|--------------------|----------|
- * | **1 µs** | [FAIL] Low | [PASS] Fastest (<4 µs) | [WARN] High | Clean power, short traces |
- * | **2 µs** | [PASS] Good | [PASS] Fast (<5 µs) | [PASS] Low | **STAR default (balanced)** |
- * | **4 µs** | [PASS] Excellent | [WARN] Moderate (<7 µs) | [PASS] Very low | Noisy environment, long cables |
- * | **8 µs** | [PASS] Maximum | [FAIL] Slower (<11 µs) | [PASS] Minimal | Very noisy, EMI-critical |
+ * | **1 us** | [FAIL] Low | [PASS] Fastest (<4 us) | [WARN] High | Clean power, short traces |
+ * | **2 us** | [PASS] Good | [PASS] Fast (<5 us) | [PASS] Low | **STAR default (balanced)** |
+ * | **4 us** | [PASS] Excellent | [WARN] Moderate (<7 us) | [PASS] Very low | Noisy environment, long cables |
+ * | **8 us** | [PASS] Maximum | [FAIL] Slower (<11 us) | [PASS] Minimal | Very noisy, EMI-critical |
  *
  * ## STAR Project Configuration Rationale
  *
- * **Selected Filter: 2 µs**
+ * **Selected Filter: 2 us**
  *
  * **Noise Sources in STAR System:**
- * - PWM switching transients: <500 ns duration (rejected by 2 µs filter)
- * - Inductive kickback spikes: <1 µs duration (rejected by 2 µs filter)
- * - EMI from 2.4 GHz WiFi: <100 ns pulses (rejected by 2 µs filter)
+ * - PWM switching transients: <500 ns duration (rejected by 2 us filter)
+ * - Inductive kickback spikes: <1 us duration (rejected by 2 us filter)
+ * - EMI from 2.4 GHz WiFi: <100 ns pulses (rejected by 2 us filter)
  *
  * **Protection Speed:**
- * - Total OCP latency: Comparator (1 µs) + Filter (2 µs) = 3 µs
- * - FET safe operating area (SOA): Can withstand 10A for 10 µs per datasheet
- * - Margin: 3 µs latency << 10 µs SOA (FETs protected with 3.3× time margin)
+ * - Total OCP latency: Comparator (1 us) + Filter (2 us) = 3 us
+ * - FET safe operating area (SOA): Can withstand 10A for 10 us per datasheet
+ * - Margin: 3 us latency << 10 us SOA (FETs protected with 3.3x time margin)
  *
- * **Why Not 1 µs?**
+ * **Why Not 1 us?**
  * - Risk of false trips from PWM switching transients (~500 ns spikes)
  * - Mixed-signal PCB has moderate noise coupling (not ultra-clean)
  *
- * **Why Not 4-8 µs?**
- * - Slower protection (5-9 µs total latency) reduces FET SOA margin
+ * **Why Not 4-8 us?**
+ * - Slower protection (5-9 us total latency) reduces FET SOA margin
  * - STAR PCB has adequate noise immunity (ground plane, filtered power)
- * - 2 µs filter already rejects all expected noise sources
+ * - 2 us filter already rejects all expected noise sources
  *
  * ## False Trip Analysis
  *
  * **Example: PWM Switching Spike**
  * ```
  * Scenario: FET turns off, inductive kickback causes 10A current spike for 800ns
- * - Spike duration: 800ns < 2µs filter time
+ * - Spike duration: 800ns < 2us filter time
  * - Result: OCP comparator sees spike, but filter rejects it (no fault)
  * - Protection: FETs safe (spike duration << SOA time limit)
  * ```
@@ -1972,9 +1972,9 @@ typedef enum : uint8_t {
  * **Example: Short Circuit**
  * ```
  * Scenario: OUT1-OUT2 shorted, sustained 100A+ current
- * - Current persists: >2µs (exceeds filter time)
- * - Result: OCP fault triggers after 3µs total (comparator + filter)
- * - Protection: Outputs disabled before FET damage (3µs << 10µs SOA)
+ * - Current persists: >2us (exceeds filter time)
+ * - Result: OCP fault triggers after 3us total (comparator + filter)
+ * - Protection: Outputs disabled before FET damage (3us << 10us SOA)
  * ```
  *
  * @see k_drv8243_reg_config4 CONFIG4 register (contains TOCP_SEL field)
@@ -1983,22 +1983,22 @@ typedef enum : uint8_t {
  * @see k_drv8243_ocp_thresh_t OCP threshold levels (what filter is applied to)
  *
  * @note Write to CONFIG4 register bits [7:6] (2-bit field)
- * @note Filter time is additional delay on top of comparator propagation (~1 µs)
- * @note Total OCP latency = Comparator delay (1 µs) + Filter time (1-8 µs)
+ * @note Filter time is additional delay on top of comparator propagation (~1 us)
+ * @note Total OCP latency = Comparator delay (1 us) + Filter time (1-8 us)
  * @note Shorter filter = faster protection but higher false trip risk from noise
- * @warning Filter too short (<1 µs) causes nuisance trips from switching transients
- * @warning Filter too long (>8 µs) may not protect FETs within safe operating area
+ * @warning Filter too short (<1 us) causes nuisance trips from switching transients
+ * @warning Filter too long (>8 us) may not protect FETs within safe operating area
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_drv8243_ocp_filter_1us =
-    0, /**< 1 µs filter (fastest, lowest noise immunity, high false trip risk) */
+    0, /**< 1 us filter (fastest, lowest noise immunity, high false trip risk) */
   k_drv8243_ocp_filter_2us =
-    1, /**< 2 µs filter (STAR default, balanced noise immunity and protection speed) */
+    1, /**< 2 us filter (STAR default, balanced noise immunity and protection speed) */
   k_drv8243_ocp_filter_4us =
-    2, /**< 4 µs filter (excellent noise immunity, moderate protection speed) */
-  k_drv8243_ocp_filter_8us = 3, /**< 8 µs filter (maximum noise immunity, slowest protection) */
+    2, /**< 4 us filter (excellent noise immunity, moderate protection speed) */
+  k_drv8243_ocp_filter_8us = 3, /**< 8 us filter (maximum noise immunity, slowest protection) */
 } drv8243_ocp_filter_t;
 
 /* =============================================================================
@@ -2023,7 +2023,7 @@ typedef enum : uint8_t {
  * | **CS Setup Time** | t_CSS | 100 | - | - | ns | CS LOW before first SCLK |
  * | **CS Hold Time** | t_CSH | 100 | - | - | ns | CS LOW after last SCLK |
  * | **Inter-Frame Delay** | t_CSHI | 300 | - | - | ns | CS HIGH between frames |
- * | **Wake-Up Time** | t_WAKE | 400 | - | - | µs | Sleep to active transition |
+ * | **Wake-Up Time** | t_WAKE | 400 | - | - | us | Sleep to active transition |
  * | **Power-On Ready** | t_POR | 1 | - | - | ms | VM applied to registers ready |
  *
  * ## STAR Project SPI Configuration
@@ -2036,16 +2036,16 @@ typedef enum : uint8_t {
  * - CS control: GPIO manual control (ensures t_CSHI timing)
  *
  * **Timing Margins:**
- * - Inter-frame delay: 1 µs (3.3× minimum 300ns requirement)
- * - Wake-up delay: 500 µs (1.25× minimum 400µs requirement)
- * - Ready delay: 2 ms (2× minimum 1ms requirement)
+ * - Inter-frame delay: 1 us (3.3x minimum 300ns requirement)
+ * - Wake-up delay: 500 us (1.25x minimum 400us requirement)
+ * - Ready delay: 2 ms (2x minimum 1ms requirement)
  *
  * ## Usage Examples
  *
  * **Power-On Initialization:**
  * @code
  * // 1. Wait for VM supply to stabilize (typ. 1ms after VM applied)
- * rx_threadx_sleep_ms(2);  // 2× safety margin
+ * rx_threadx_sleep_ms(2);  // 2x safety margin
  *
  * // 2. Read DEVICE_ID to verify SPI communication
  * uint16_t tx = DRV8243_SPI_READ_FRAME(k_drv8243_reg_device_id);
@@ -2063,8 +2063,8 @@ typedef enum : uint8_t {
  * uint16_t tx1 = DRV8243_SPI_WRITE_FRAME(k_drv8243_reg_config3, cfg3_value);
  * rspi0_transfer_16(tx1);
  *
- * // MUST wait ≥300ns before next frame (CS high time)
- * // At 240 MHz, 1 µs = 240 cycles (adequate delay via SPI hardware CS deassertion)
+ * // MUST wait >=300ns before next frame (CS high time)
+ * // At 240 MHz, 1 us = 240 cycles (adequate delay via SPI hardware CS deassertion)
  *
  * // Write to CONFIG4 register
  * uint16_t tx2 = DRV8243_SPI_WRITE_FRAME(k_drv8243_reg_config4, cfg4_value);
@@ -2091,7 +2091,7 @@ typedef enum : uint8_t {
  *
  * @see DRV8243-Q1 datasheet Table 7-3 for complete SPI timing specifications
  *
- * @note k_drv8243_spi_fault_check_us (100 µs) is STAR project polling interval, not a datasheet requirement
+ * @note k_drv8243_spi_fault_check_us (100 us) is STAR project polling interval, not a datasheet requirement
  * @warning Violating t_CSHI (inter-frame delay) can cause SPI frame errors or data corruption
  * @warning Insufficient t_POR delay may result in failed DEVICE_ID reads (device not ready)
  *
@@ -2106,9 +2106,9 @@ typedef enum : uint32_t {
    *
    * **RX72N RSPI0 clock calculation:**
    * ```
-   * f_RSPI = PCLK / (2 × (SPBRn + 1))
+   * f_RSPI = PCLK / (2 x (SPBRn + 1))
    * PCLK = 60 MHz, SPBRn = 3
-   * f_RSPI = 60 MHz / (2 × 4) = 7.5 MHz
+   * f_RSPI = 60 MHz / (2 x 4) = 7.5 MHz
    * ```
    */
   k_drv8243_spi_max_freq_hz = 10000000,
@@ -2121,13 +2121,13 @@ typedef enum : uint32_t {
    *
    * **STAR project implementation:**
    * - RSPI0 configured for GPIO-controlled CS (manual assertion)
-   * - Software ensures ≥1 µs CS high time (3.3× safety margin)
-   * - At 7.5 MHz SPI clock, 16-bit frame = 2.1 µs + 1 µs CS high = 3.1 µs total
+   * - Software ensures >=1 us CS high time (3.3x safety margin)
+   * - At 7.5 MHz SPI clock, 16-bit frame = 2.1 us + 1 us CS high = 3.1 us total
    */
   k_drv8243_spi_min_cs_high_ns = 300,
 
   /**
-   * @brief Wake-up delay from sleep mode (~400 µs typical per datasheet)
+   * @brief Wake-up delay from sleep mode (~400 us typical per datasheet)
    * @details
    * Time required for DRV8243 to transition from sleep mode (nSLEEP LOW)
    * to active mode (nSLEEP HIGH). First SPI transaction after wake-up may
@@ -2146,7 +2146,7 @@ typedef enum : uint32_t {
    *
    * **STAR project initialization:**
    * @code
-   * // Wait 2ms after VM power-on (2× safety margin)
+   * // Wait 2ms after VM power-on (2x safety margin)
    * rx_threadx_sleep_ms(2);
    *
    * // Now safe to communicate via SPI
@@ -2157,18 +2157,18 @@ typedef enum : uint32_t {
   k_drv8243_spi_ready_delay_us = 1000,
 
   /**
-   * @brief Recommended fault check polling interval (100 µs = 10 kHz)
+   * @brief Recommended fault check polling interval (100 us = 10 kHz)
    * @details
    * **NOTE:** This is STAR project guideline, NOT a datasheet requirement.
    *
    * For high-speed fault detection, poll FAULT_SUMMARY register at 10 kHz
-   * (every 100 µs). This provides <200 µs total fault detection latency
-   * (100 µs polling period + 100 µs processing margin).
+   * (every 100 us). This provides <200 us total fault detection latency
+   * (100 us polling period + 100 us processing margin).
    *
    * **STAR project:** Polls at 100 Hz (10 ms period) during normal operation
    * - Motor control loop: 100 Hz (adequate for brushed DC motor)
    * - Fault latency: <10 ms (acceptable, nFAULT pin provides async notification)
-   * - SPI overhead: 0.031% (3.1 µs transaction / 10 ms period)
+   * - SPI overhead: 0.031% (3.1 us transaction / 10 ms period)
    *
    * **High-speed polling (10 kHz) use cases:**
    * - Safety-critical applications requiring <1 ms fault response
@@ -2176,8 +2176,8 @@ typedef enum : uint32_t {
    * - Predictive fault detection (analyze current trends)
    *
    * **Overhead at 10 kHz:**
-   * - SPI transaction: 3.1 µs per poll
-   * - CPU overhead: 3.1 µs / 100 µs period = 3.1% (acceptable for dedicated task)
+   * - SPI transaction: 3.1 us per poll
+   * - CPU overhead: 3.1 us / 100 us period = 3.1% (acceptable for dedicated task)
    */
   k_drv8243_spi_fault_check_us = 100,
 } drv8243_spi_timing_t;
@@ -2315,9 +2315,9 @@ static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
  *
  * ```
  * Bit   15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
- *      ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
- *      │ 0  │ 0  │     Address (6 bits)      │           Data (8 bits)                │
- *      └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┘
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ *      | 0  | 0  |     Address (6 bits)      |           Data (8 bits)                |
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
  *       Std  Write
  *      frame  cmd
  * ```
@@ -2339,7 +2339,7 @@ static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
  *
  * **Example 2: Configure Slew Rate (Write CONFIG3 register)**
  * @code
- * // Build CONFIG3 value: 20 V/µs slew, PH/EN mode, 30µs TOFF
+ * // Build CONFIG3 value: 20 V/us slew, PH/EN mode, 30us TOFF
  * uint8_t cfg3_value = (k_drv8243_slew_20v_us << k_drv8243_cfg3_s_sr_pos) |
  *                      (k_drv8243_mode_ph_en << k_drv8243_cfg3_s_mode_pos) |
  *                      (k_drv8243_toff_30us << k_drv8243_cfg3_toff_pos);
@@ -2407,9 +2407,9 @@ static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
  *
  * ```
  * Bit   15   14   13   12   11   10    9    8    7    6    5    4    3    2    1    0
- *      ┌────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┬────┐
- *      │ 0  │ 1  │     Address (6 bits)      │           0x00 (don't care)            │
- *      └────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┴────┬────┴────┴────┘
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
+ *      | 0  | 1  |     Address (6 bits)      |           0x00 (don't care)            |
+ *      +----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+----+
  *       Std  Read
  *      frame  cmd
  * ```
@@ -2520,9 +2520,9 @@ static inline uint16_t drv8243_spi_set_parity(uint16_t frame)
  *
  * ```
  * Bit   7     6     5      4      3      2     1     0
- *      ┌─────┬─────┬──────┬──────┬──────┬─────┬─────┬────────┐
- *      │  1  │  -  │FAULT │ VMOV │ VMUV │ OCP │ TSD │SPI_ERR │
- *      └─────┴─────┴──────┴──────┴──────┴─────┴─────┴────────┘
+ *      +-----+-----+------+------+------+-----+-----+--------+
+ *      |  1  |  -  |FAULT | VMOV | VMUV | OCP | TSD |SPI_ERR |
+ *      +-----+-----+------+------+------+-----+-----+--------+
  *       MSB   Rsvd   Fault indicators (subset of FAULT_SUMMARY)
  * ```
  *

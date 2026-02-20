@@ -2,7 +2,7 @@
 
 ## Overview
 
-Implement `star_spi_bridge`, a ROS2 lifecycle node that enables communication between the Raspberry Pi 5 (ROS2) and the Renesas RX72N motor controller via 10 MHz SPI. This is **Issue #137** - the critical blocker for enabling the `/cmd_vel` → SPI → Motors pipeline.
+Implement `star_spi_bridge`, a ROS2 lifecycle node that enables communication between the Raspberry Pi 5 (ROS2) and the Renesas RX72N motor controller via 10 MHz SPI. This is **Issue #137** - the critical blocker for enabling the `/cmd_vel` -> SPI -> Motors pipeline.
 
 **Key Achievement**: Bridge the gap between ROS2 navigation commands and real-time motor control.
 
@@ -18,9 +18,9 @@ Implement `star_spi_bridge`, a ROS2 lifecycle node that enables communication be
 ```
 ROS2 Navigation        star_spi_bridge          RX72N Firmware
 ----------------       ----------------         ---------------
-/cmd_vel (Twist)  →→→  StarSpiDriverNode   →→→  comm_manager.c
-                         ↓ ↑                     ↓ ↑
-/odom/unfiltered  ←←←  SpiDriver (ioctl)   ←←←  Motor_Controller
+/cmd_vel (Twist)  ->->->  StarSpiDriverNode   ->->->  comm_manager.c
+                         v ^                     v ^
+/odom/unfiltered  <-<-<-  SpiDriver (ioctl)   <-<-<-  Motor_Controller
 /joint_states                                    (4x PID @ 250 Hz)
 /battery_state
 ```
@@ -33,17 +33,17 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Full-duplex transfer via `/dev/spidev0.0` ioctl
    - HARQ retry logic (3 attempts, 3ms timeout)
 
-2. **SpiMessageConverter** (`spi_message_converter.cpp`): ROS2 ↔ Protobuf
-   - Twist → VelocityCommand (4-wheel differential drive kinematics)
-   - TelemetryData → Odometry (dead reckoning from encoder ticks)
-   - TelemetryData → JointState (wheel positions/velocities)
-   - TelemetryData → BatteryState (voltage, SOC)
+2. **SpiMessageConverter** (`spi_message_converter.cpp`): ROS2 <-> Protobuf
+   - Twist -> VelocityCommand (4-wheel differential drive kinematics)
+   - TelemetryData -> Odometry (dead reckoning from encoder ticks)
+   - TelemetryData -> JointState (wheel positions/velocities)
+   - TelemetryData -> BatteryState (voltage, SOC)
 
 3. **StarSpiDriverNode** (`star_spi_driver_node.cpp`): ROS2 Lifecycle Node
    - 100 Hz timer (critical: prevents 500ms E-STOP timeout on RX72N)
    - Subscribes to `/cmd_vel` with timeout detection
    - Publishes `/odom/unfiltered`, `/joint_states`, `/battery_state`
-   - Lifecycle management (configure → activate → deactivate → cleanup)
+   - Lifecycle management (configure -> activate -> deactivate -> cleanup)
 
 ## Protocol Specifications
 
@@ -70,10 +70,10 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 ### Robot Configuration
 
 - **Motors**: 4-wheel differential drive (FL, FR, BL, BR)
-- **Encoders**: 341 PPR Hall encoders × 34.02 gear ratio = 11,599 ticks/revolution
+- **Encoders**: 341 PPR Hall encoders x 34.02 gear ratio = 11,599 ticks/revolution
 - **Wheels**: 65mm diameter (0.0325m radius)
 - **Wheelbase**: 150mm (0.150m)
-- **Velocity Limits**: ±2.0 m/s per wheel
+- **Velocity Limits**: +/-2.0 m/s per wheel
 
 ## Implementation Phases
 
@@ -87,22 +87,22 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 
    ```
    star-ros2/src/star_spi_bridge/
-   ├── CMakeLists.txt
-   ├── package.xml
-   ├── include/star_spi_bridge/
-   │   ├── spi_driver.hpp
-   │   ├── spi_message_converter.hpp
-   │   └── star_spi_driver_node.hpp
-   ├── src/
-   │   ├── spi_driver.cpp
-   │   ├── spi_message_converter.cpp
-   │   ├── star_spi_driver_node.cpp
-   │   └── main.cpp
-   ├── test/
-   │   ├── test_spi_driver.cpp
-   │   └── test_spi_message_converter.cpp
-   └── launch/
-       └── star_spi_bridge.launch.py
+   +-- CMakeLists.txt
+   +-- package.xml
+   +-- include/star_spi_bridge/
+   |   +-- spi_driver.hpp
+   |   +-- spi_message_converter.hpp
+   |   +-- star_spi_driver_node.hpp
+   +-- src/
+   |   +-- spi_driver.cpp
+   |   +-- spi_message_converter.cpp
+   |   +-- star_spi_driver_node.cpp
+   |   +-- main.cpp
+   +-- test/
+   |   +-- test_spi_driver.cpp
+   |   +-- test_spi_message_converter.cpp
+   +-- launch/
+       +-- star_spi_bridge.launch.py
    ```
 
 2. Implement `SpiDriver` class with:
@@ -113,7 +113,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Full-duplex transfer (simultaneous TX command + RX telemetry)
 
 3. Write unit tests:
-   - CRC-32 test vector: `"123456789"` → `0xCBF43926` (must match Go implementation)
+   - CRC-32 test vector: `"123456789"` -> `0xCBF43926` (must match Go implementation)
    - Frame encode/decode roundtrip
    - Sync word detection
    - Sequence number tracking
@@ -134,7 +134,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 
 ### Phase 2: Message Conversion (Kinematics & Odometry)
 
-**Goal**: Implement bidirectional ROS2 ↔ Protobuf conversion with robot kinematics.
+**Goal**: Implement bidirectional ROS2 <-> Protobuf conversion with robot kinematics.
 
 **Tasks**:
 
@@ -147,14 +147,14 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
      right_vel = linear.x + (angular.z * wheelbase / 2)
      ```
    - Populate 4-wheel VelocityCommand: `FL=BL=left_vel`, `FR=BR=right_vel`
-   - Clamp to ±2.0 m/s
+   - Clamp to +/-2.0 m/s
    - Add sequence number and timestamp
 
 2. Implement `SpiMessageConverter::telemetry_to_odometry()`:
    - Extract 4 encoder tick deltas from TelemetryData
    - Convert ticks to wheel displacements:
      ```
-     meters_per_tick = (2π × wheel_radius) / ticks_per_rev
+     meters_per_tick = (2pi x wheel_radius) / ticks_per_rev
      disp_left = (disp_FL + disp_BL) / 2
      disp_right = (disp_FR + disp_BR) / 2
      ```
@@ -163,7 +163,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
      delta_x = (disp_left + disp_right) / 2
      delta_theta = (disp_right - disp_left) / wheelbase
      ```
-   - Integrate pose: `x += delta_x * cos(θ)`, `y += delta_x * sin(θ)`, `θ += delta_theta`
+   - Integrate pose: `x += delta_x * cos(theta)`, `y += delta_x * sin(theta)`, `theta += delta_theta`
    - Populate Odometry message with pose and twist
    - Add covariance estimates (error grows with distance)
 
@@ -177,9 +177,9 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 
 **Unit Tests**:
 
-- Pure rotation: `linear.x=0, angular.z=1.0` → `left=-wheelbase/2, right=+wheelbase/2`
-- Pure translation: `linear.x=1.0, angular.z=0` → `left=right=1.0`
-- NaN rejection: `linear.x=NaN` → conversion fails
+- Pure rotation: `linear.x=0, angular.z=1.0` -> `left=-wheelbase/2, right=+wheelbase/2`
+- Pure translation: `linear.x=1.0, angular.z=0` -> `left=right=1.0`
+- NaN rejection: `linear.x=NaN` -> conversion fails
 - Odometry integration: Simulate encoder ticks, verify pose accumulation
 
 **Reference Files**:
@@ -190,7 +190,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 
 **Success Criteria**:
 
-- [ ] Unit tests pass for kinematics (all Twist → VelocityCommand scenarios)
+- [ ] Unit tests pass for kinematics (all Twist -> VelocityCommand scenarios)
 - [ ] Unit tests pass for odometry integration
 - [ ] NaN/infinity validation works
 
@@ -225,7 +225,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
 2. Implement `spi_timer_callback()` (100 Hz):
    - Check `/cmd_vel` age (timeout if >500ms)
    - Use latest command or zero velocity (safety)
-   - Convert Twist → VelocityCommand
+   - Convert Twist -> VelocityCommand
    - Serialize protobuf to bytes
    - Call `spi_driver_->send_velocity_command(cmd_payload, telemetry_payload)`
    - Deserialize telemetry protobuf
@@ -285,7 +285,7 @@ parameters=[{
    ```
 
 2. Configure Raspberry Pi 5 for SPI access:
-   - Enable SPI: `sudo raspi-config` → Interface Options → SPI → Enable
+   - Enable SPI: `sudo raspi-config` -> Interface Options -> SPI -> Enable
    - Add user to spi group: `sudo usermod -a -G spi $USER`
    - Create udev rule: `/etc/udev/rules.d/50-spi.rules`
      ```
@@ -301,9 +301,9 @@ parameters=[{
    - **Latency measurement**: Measure round-trip time (target <10ms)
 
 4. Error handling:
-   - CRC mismatch → retry (up to 3 attempts)
-   - SPI timeout → log warning, continue
-   - Emergency stop → stop sending commands, log error
+   - CRC mismatch -> retry (up to 3 attempts)
+   - SPI timeout -> log warning, continue
+   - Emergency stop -> stop sending commands, log error
 
 **Success Criteria**:
 
@@ -350,41 +350,41 @@ parameters=[{
 
 ```
 /Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_spi_bridge/
-├── CMakeLists.txt                          # Build configuration
-├── package.xml                              # ROS2 dependencies
-├── include/star_spi_bridge/
-│   ├── spi_driver.hpp                      # SPI I/O + framing
-│   ├── spi_message_converter.hpp           # ROS2 ↔ Protobuf
-│   └── star_spi_driver_node.hpp            # Lifecycle node
-├── src/
-│   ├── spi_driver.cpp                      # Core SPI implementation
-│   ├── spi_message_converter.cpp           # Message conversion
-│   ├── star_spi_driver_node.cpp            # Node implementation
-│   └── main.cpp                             # Entrypoint
-├── test/
-│   ├── test_spi_driver.cpp                 # Frame/CRC tests
-│   └── test_spi_message_converter.cpp      # Kinematics tests
-└── launch/
-    └── star_spi_bridge.launch.py           # Launch configuration
++-- CMakeLists.txt                          # Build configuration
++-- package.xml                              # ROS2 dependencies
++-- include/star_spi_bridge/
+|   +-- spi_driver.hpp                      # SPI I/O + framing
+|   +-- spi_message_converter.hpp           # ROS2 <-> Protobuf
+|   +-- star_spi_driver_node.hpp            # Lifecycle node
++-- src/
+|   +-- spi_driver.cpp                      # Core SPI implementation
+|   +-- spi_message_converter.cpp           # Message conversion
+|   +-- star_spi_driver_node.cpp            # Node implementation
+|   +-- main.cpp                             # Entrypoint
++-- test/
+|   +-- test_spi_driver.cpp                 # Frame/CRC tests
+|   +-- test_spi_message_converter.cpp      # Kinematics tests
++-- launch/
+    +-- star_spi_bridge.launch.py           # Launch configuration
 ```
 
 ### Reference Files (existing)
 
 ```
 /Users/cesarmagana/Documents/GitHub/STAR/star-ros2/src/star_gateway_bridge/
-├── CMakeLists.txt                          # Build pattern reference
-├── package.xml                              # Dependency reference
-├── src/star_gateway_bridge_node.cpp        # Node pattern reference
-└── src/message_converter.cpp               # Conversion pattern reference
++-- CMakeLists.txt                          # Build pattern reference
++-- package.xml                              # Dependency reference
++-- src/star_gateway_bridge_node.cpp        # Node pattern reference
++-- src/message_converter.cpp               # Conversion pattern reference
 
 /Users/cesarmagana/Documents/GitHub/STAR/star-proto/gen/cpp/star/v1/
-├── motor_control.pb.h                      # VelocityCommand protobuf
-├── telemetry.pb.h                          # TelemetryData protobuf
-└── common.pb.h                             # Common message types
++-- motor_control.pb.h                      # VelocityCommand protobuf
++-- telemetry.pb.h                          # TelemetryData protobuf
++-- common.pb.h                             # Common message types
 
 /Users/cesarmagana/Documents/GitHub/STAR/docs/sections/
-├── 01_nanopb_protocol.tex                  # SPI protocol spec
-└── 03_hardware_pinout.tex                  # GPIO/SPI pinout
++-- 01_nanopb_protocol.tex                  # SPI protocol spec
++-- 03_hardware_pinout.tex                  # GPIO/SPI pinout
 ```
 
 ## Coding Standards
@@ -403,7 +403,7 @@ Follow `/Users/cesarmagana/Documents/GitHub/STAR/CLAUDE.md`:
 
 - **Inclusive terminology**: Controller/Peripheral (NOT master/slave), COPI/CIPO (NOT MOSI/MISO)
 - **NO magic numbers**: All numeric literals must be named enums
-- **Input validation**: Check for NaN/infinity in all ROS2 → Protobuf conversions
+- **Input validation**: Check for NaN/infinity in all ROS2 -> Protobuf conversions
 - **Safety first**: Send zero velocity on timeout, emergency stop, or communication failure
 - **No dynamic allocation**: Use stack buffers and preallocated vectors in critical paths
 
@@ -421,8 +421,8 @@ colcon test-result --verbose
 Expected test coverage:
 
 - Frame encoding/decoding (CRC-32 validation)
-- Kinematics (Twist → 4-wheel velocities)
-- Odometry integration (encoder ticks → pose)
+- Kinematics (Twist -> 4-wheel velocities)
+- Odometry integration (encoder ticks -> pose)
 - NaN/infinity rejection
 
 ### Manual Testing (Hardware Required)

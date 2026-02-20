@@ -17,7 +17,7 @@
  * **Traditional Approach (BAD)**:
  * ```
  * High-Level Module (Motor Control)
- *         ↓ directly depends on ↓
+ *         v directly depends on v
  * Low-Level Module (Concrete Error Handler)
  * ```
  * **Problem**: High-level code tightly coupled to low-level implementation. Cannot test,
@@ -26,9 +26,9 @@
  * **Dependency Inversion (GOOD - THIS MODULE)**:
  * ```
  * High-Level Module (Motor Control)
- *         ↓ depends on ↓
+ *         v depends on v
  * rx_error_interface_t (ABSTRACT INTERFACE - THIS FILE)
- *         ↑ implements ↑
+ *         ^ implements ^
  * Low-Level Module (error_handler_t in rx_error_handler.h)
  * ```
  * **Benefit**: High-level code depends on stable abstraction. Can mock for testing,
@@ -57,24 +57,24 @@
  * **Three-Layer Architecture**:
  *
  * ```
- * ┌──────────────────────────────────────────────────┐
- * │  HIGH-LEVEL MODULES (Business Logic)             │
- * │  - motor_controller.c                            │
- * │  - spi_driver.c                                  │
- * │  - communication_manager.c                       │
- * └──────────────┬───────────────────────────────────┘
- *                │ depends on ↓
- * ┌──────────────▼───────────────────────────────────┐
- * │  ABSTRACTION LAYER (Interface)                   │
- * │  rx_error_interface_t (THIS FILE) ← STABLE       │
- * └──────────────▲───────────────────────────────────┘
- *                │ implements ↑
- * ┌──────────────┴───────────────────────────────────┐
- * │  LOW-LEVEL MODULES (Implementation Details)      │
- * │  - error_handler_t (rx_error_handler.h)          │
- * │  - mock_error_handler_t (unit tests)             │
- * │  - diagnostic_error_handler_t (debugging)        │
- * └──────────────────────────────────────────────────┘
+ * +--------------------------------------------------+
+ * |  HIGH-LEVEL MODULES (Business Logic)             |
+ * |  - motor_controller.c                            |
+ * |  - spi_driver.c                                  |
+ * |  - communication_manager.c                       |
+ * +--------------+-----------------------------------+
+ *                | depends on v
+ * +--------------v-----------------------------------+
+ * |  ABSTRACTION LAYER (Interface)                   |
+ * |  rx_error_interface_t (THIS FILE) <- STABLE       |
+ * +--------------^-----------------------------------+
+ *                | implements ^
+ * +--------------+-----------------------------------+
+ * |  LOW-LEVEL MODULES (Implementation Details)      |
+ * |  - error_handler_t (rx_error_handler.h)          |
+ * |  - mock_error_handler_t (unit tests)             |
+ * |  - diagnostic_error_handler_t (debugging)        |
+ * +--------------------------------------------------+
  * ```
  *
  * **Key Insight**: High-level modules never include `rx_error_handler.h`. They only
@@ -163,7 +163,7 @@
  *
  * | Operation | Cost | Notes |
  * |-----------|------|-------|
- * | Interface storage | 8 pointers × 8 bytes = 64 bytes | Lightweight |
+ * | Interface storage | 8 pointers x 8 bytes = 64 bytes | Lightweight |
  * | Function call via pointer | +1 indirection (~1 cycle) | Negligible overhead |
  * | Context cast | 0 cycles | Compile-time |
  * | Total overhead | < 5% vs direct call | Excellent for benefits gained |
@@ -220,7 +220,7 @@
  * | 2. Fixed loop bounds | [OK] | No loops in interface |
  * | 3. No dynamic allocation | [OK] | Interface is stack-allocated |
  * | 4. Small functions | [OK] | Validation function < 10 lines |
- * | 5. Assertions (≥2 per function) | [OK] | Validation checks NULL and function pointers |
+ * | 5. Assertions (>=2 per function) | [OK] | Validation checks NULL and function pointers |
  * | 6. Narrow scope | [OK] | All definitions in single header |
  * | 7. Check return values | [OK] | All functions return rx_err_t |
  * | 8. Limited preprocessor | [OK] | Zero macros, pure interface |
@@ -312,7 +312,7 @@ typedef struct rx_error_interface rx_error_interface_t;
  *
  * **Thread Safety**: Implementation MUST be thread-safe (use mutex)
  * **Null Handling**: Must validate all pointer parameters
- * **Performance**: Should complete in < 50 µs (logging is expensive)
+ * **Performance**: Should complete in < 50 us (logging is expensive)
  * **Memory**: No dynamic allocation allowed
  *
  * ## Example Implementation
@@ -527,7 +527,7 @@ typedef rx_err_t (*rx_error_reset_retry_fn)(void* ctx, const char* component);
  * Calculates the recommended delay before retrying an operation, typically using
  * exponential backoff algorithm:
  * ```
- * delay = initial_backoff × (2 ^ retry_count)
+ * delay = initial_backoff x (2 ^ retry_count)
  * delay = min(delay, max_backoff)  // Cap at maximum
  * ```
  *

@@ -16,7 +16,7 @@
  *   node [shape=box, style=rounded];
  *
  *   mosc [label="Main OSC\n24 MHz" style="filled" fillcolor="lightblue"];
- *   pll [label="PLL\n×10 = 240 MHz"];
+ *   pll [label="PLL\nx10 = 240 MHz"];
  *   ppll [label="PPLL\n48 MHz (USB)"];
  *
  *   iclk [label="ICLK\n240 MHz"];
@@ -431,7 +431,7 @@ typedef enum : uint8_t {
  * | 31:28 | FCK    | FCLK     | /4 (60 MHz from 240) |
  *
  * @par STAR Project Configuration
- * With 24 MHz main oscillator × PLL(×10) = 240 MHz:
+ * With 24 MHz main oscillator x PLL(x10) = 240 MHz:
  * - ICLK  = 240 MHz (CPU instruction clock)
  * - PCLKA = 120 MHz (high-speed peripherals)
  * - PCLKB = 60 MHz (CMT, WDT, etc.)
@@ -468,7 +468,7 @@ typedef enum : uint32_t {
   k_sckcr_pstop0 = (1UL << 22), /**< PCLKA/PCLKB stop (1=stopped) */
   k_sckcr_pstop1 = (1UL << 23), /**< USB clock stop (1=stopped) */
 
-  /* STAR Project configuration value (24 MHz × 10 = 240 MHz) */
+  /* STAR Project configuration value (24 MHz x 10 = 240 MHz) */
   k_sckcr_star_240mhz =
     (((uint32_t)k_clock_div_4 << k_sckcr_pckd_shift) | /* PCLKD = 240/4 = 60 MHz */
      ((uint32_t)k_clock_div_4 << k_sckcr_pckc_shift) | /* PCLKC = 240/4 = 60 MHz */
@@ -524,7 +524,7 @@ typedef enum : uint16_t {
  *
  * @details
  * Controls PLL input divider, output multiplier, and source selection.
- * PLL output frequency = (Input / PLIDIV) × (STC + 1)
+ * PLL output frequency = (Input / PLIDIV) x (STC + 1)
  *
  * @par Register Layout (16-bit @ offset 0x28)
  * | Bits  | Field     | Description                          |
@@ -533,13 +533,13 @@ typedef enum : uint16_t {
  * | 3:2   | -         | Reserved                             |
  * | 4     | PLLSRCSEL | PLL source (0=main osc, 1=HOCO)      |
  * | 7:5   | -         | Reserved                             |
- * | 13:8  | STC       | PLL multiplier (value N -> ×(N+1))    |
+ * | 13:8  | STC       | PLL multiplier (value N -> x(N+1))    |
  * | 15:14 | -         | Reserved                             |
  *
  * @par STAR Project PLL Configuration
  * Input: 24 MHz main oscillator
  * Target: 240 MHz PLL output
- * Calculation: 24 MHz / 1 × 10 = 240 MHz
+ * Calculation: 24 MHz / 1 x 10 = 240 MHz
  * - PLIDIV = 00 (divide by 1) -> 24 MHz
  * - STC = 0x09 (multiply by 10) -> 240 MHz
  * - PLLSRCSEL = 0 (main oscillator source)
@@ -570,12 +570,12 @@ typedef enum : uint16_t {
   k_pllcr_star_24mhz_to_240mhz = (k_pllcr_plidiv_1 |        /* 24 MHz input (no division) */
                                   k_pllcr_src_main |        /* Main oscillator source */
                                   (9U << k_pllcr_stc_shift) /* STC=9 -> multiply by 10 */
-                                  ),                        /**< STAR: 24 MHz × 10 = 240 MHz */
+                                  ),                        /**< STAR: 24 MHz x 10 = 240 MHz */
 
   k_pllcr_12mhz_to_240mhz = (k_pllcr_plidiv_1 |         /* 12 MHz input (no division) */
                              k_pllcr_src_main |         /* Main oscillator source */
                              (19U << k_pllcr_stc_shift) /* STC=19 -> multiply by 20 */
-                             ),                         /**< Alternative: 12 MHz × 20 = 240 MHz */
+                             ),                         /**< Alternative: 12 MHz x 20 = 240 MHz */
 } pllcr_bits_t;
 
 /**
@@ -661,8 +661,8 @@ typedef enum : uint8_t {
  * // 3. Wait for oscillator stabilization
  * while (!(sys->oscovfsr & 0x01)) { }
  *
- * // 4. Configure PLL (24 MHz × 10 = 240 MHz)
- * sys->pllcr = 0x0913;  // STC=9 (×10), PLIDIV=1 (/1)
+ * // 4. Configure PLL (24 MHz x 10 = 240 MHz)
+ * sys->pllcr = 0x0913;  // STC=9 (x10), PLIDIV=1 (/1)
  * sys->pllcr2 = 0x00;   // Enable PLL
  *
  * // 5. Wait for PLL stabilization
@@ -1057,11 +1057,11 @@ typedef enum : uint32_t {
 /**
  * @brief MEMWAIT register bit values
  * @details
- * - 0: No wait cycle (ICLK ≤ 120 MHz)
+ * - 0: No wait cycle (ICLK <= 120 MHz)
  * - 1: One wait cycle (ICLK > 120 MHz) - REQUIRED for 240 MHz operation
  */
 typedef enum : uint8_t {
-  k_memwait_no_wait  = 0x00, /**< No wait cycle (ICLK ≤ 120 MHz) */
+  k_memwait_no_wait  = 0x00, /**< No wait cycle (ICLK <= 120 MHz) */
   k_memwait_one_wait = 0x01, /**< One wait cycle (ICLK > 120 MHz) - MANDATORY */
 } rx_memwait_bits_t;
 
@@ -1096,7 +1096,7 @@ typedef enum : uint32_t {
  * @brief PPLL configuration values
  * @details
  * PPLL generates 48 MHz USB clock from 24 MHz main oscillator.
- * Calculation: 48 MHz = (24 MHz × 8) / 4
+ * Calculation: 48 MHz = (24 MHz x 8) / 4
  * - PPLSTBY[1:0] = 01 (divide by 2)
  * - STC[5:0] = 07h (multiply by 8)
  * - PPLSRCSEL = 0 (main clock source)

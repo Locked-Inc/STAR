@@ -576,10 +576,10 @@ const minWDTSafetyFactor = 3
 //
 // Dual-detection model:
 //
-//	Primary: Implicit timeout (DefaultFailureTimeout = 200ms) — any frame resets timer
+//	Primary: Implicit timeout (DefaultFailureTimeout = 200ms) -- any frame resets timer
 //	Check interval: failureTimeout / checkIntervalDivisor = 50ms
 //	Worst-case detection: failureTimeout + checkInterval = 250ms
-//	Secondary: Explicit PING (DefaultPingInterval = 1s) — rare idle-link probe
+//	Secondary: Explicit PING (DefaultPingInterval = 1s) -- rare idle-link probe
 //	Safety margin = WDT timeout / detection time = 1000ms / 200ms = 5x (best case)
 func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 	// Primary detection time is the implicit failure timeout
@@ -632,7 +632,7 @@ func TestHeartbeatManager_WDTTimingVerification(t *testing.T) {
 // based on lastValidPong even when lastSeen is kept fresh by OnFrameReceived calls.
 //
 // This is the key property that enables zombie-link detection: stale OS-buffered frames
-// (ACK/NACK) keep lastSeen fresh — preventing the implicit 200ms timeout from firing —
+// (ACK/NACK) keep lastSeen fresh -- preventing the implicit 200ms timeout from firing --
 // while lastValidPong ages independently, eventually triggering the PING. Without this
 // independence, the counter-based path is permanently unreachable because lastSeen is
 // always refreshed before implicitElapsed exceeds failureTimeout.
@@ -681,7 +681,7 @@ func TestHeartbeatManager_PingTimerIndependentOfLastSeen(t *testing.T) {
 
 	if !triggered {
 		t.Error("PING timer (lastValidPong-based) should trigger counter-based failover " +
-			"even when lastSeen is fresh — proves pingElapsed is independent of lastSeen")
+			"even when lastSeen is fresh -- proves pingElapsed is independent of lastSeen")
 	}
 
 	// consecutiveMisses is reset to 0 after counter-based failover.

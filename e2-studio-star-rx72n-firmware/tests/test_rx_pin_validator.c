@@ -20,7 +20,7 @@
  * - **17 ports:** PORT0, PORT1, PORT2, PORT3, PORT4, PORT5, PORT6, PORT7, PORT8,
  *                PORT9, PORTA, PORTB, PORTC, PORTD, PORTE, PORTF, PORTG
  * - **8 pins per port:** Pins 0-7 (some ports have fewer pins on specific packages)
- * - **Total pins:** Up to 136 GPIO pins (17 × 8)
+ * - **Total pins:** Up to 136 GPIO pins (17 x 8)
  *
  * **Reservation bitmap structure:**
  * ```
@@ -32,7 +32,7 @@
  * }
  * ```
  *
- * **Memory usage:** 17 ports × 8 pins × sizeof(reservation_t) = ~136 bytes
+ * **Memory usage:** 17 ports x 8 pins x sizeof(reservation_t) = ~136 bytes
  *
  * ## Dependency Inversion Principle (DIP) Implementation
  *
@@ -40,23 +40,23 @@
  * `rx_pin_interface_t`, not concrete `pin_validator_t`:
  *
  * ```
- * ┌─────────────────────┐
- * │ GPIO Driver         │  <--- High-level module
- * └──────────┬──────────┘
- *            │ depends on
- *            ▼
- * ┌─────────────────────┐
- * │ rx_pin_interface    │  <--- Abstract interface
- * │ - reserve_pin()     │
- * │ - release_pin()     │
- * │ - is_reserved()     │
- * └──────────┬──────────┘
- *            │ implemented by
- *            ▼
- * ┌─────────────────────┐
- * │ pin_validator_t     │  <--- Concrete implementation
- * │ (this file tests)   │
- * └─────────────────────┘
+ * +---------------------+
+ * | GPIO Driver         |  <--- High-level module
+ * +----------+----------+
+ *            | depends on
+ *            v
+ * +---------------------+
+ * | rx_pin_interface    |  <--- Abstract interface
+ * | - reserve_pin()     |
+ * | - release_pin()     |
+ * | - is_reserved()     |
+ * +----------+----------+
+ *            | implemented by
+ *            v
+ * +---------------------+
+ * | pin_validator_t     |  <--- Concrete implementation
+ * | (this file tests)   |
+ * +---------------------+
  * ```
  *
  * **Benefits:**
@@ -130,7 +130,7 @@
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1 (Control Flow): [OK] No goto, recursion, or setjmp
- * - Rule 2 (Loop Bounds): [OK] All loops have fixed bounds (17 ports × 8 pins)
+ * - Rule 2 (Loop Bounds): [OK] All loops have fixed bounds (17 ports x 8 pins)
  * - Rule 3 (Dynamic Memory): [OK] No malloc/free, all data stack/static allocated
  * - Rule 4 (Function Size): [OK] All functions < 60 lines, focused tests
  * - Rule 5 (Assertions): [OK] TEST_ASSERT validates all preconditions/postconditions
@@ -145,7 +145,7 @@
  * - **Open/Closed:** Extensible via interface (can add new implementations)
  * - **Liskov Substitution:** Any rx_pin_interface_t implementation is substitutable
  * - **Interface Segregation:** Minimal interface (3 functions: reserve, release, check)
- * - **Dependency Inversion:** HIGH-LEVEL ← interface -> LOW-LEVEL (prevents conflicts!)
+ * - **Dependency Inversion:** HIGH-LEVEL <- interface -> LOW-LEVEL (prevents conflicts!)
  *
  * @author STAR Team
  * @date 2026-01-05
@@ -178,7 +178,7 @@
  * Single pin validator instance used by all tests. Cleared in setUp() before
  * each test to ensure isolation. Deinitialized in tearDown() if initialized.
  *
- * **Memory layout:** ~136 bytes for reservation bitmap (17 ports × 8 pins)
+ * **Memory layout:** ~136 bytes for reservation bitmap (17 ports x 8 pins)
  *
  * @note Not thread-local: Tests run sequentially (Unity single-threaded)
  * @warning Do not use in production code (test-only global)
@@ -196,7 +196,7 @@ static pin_validator_t s_validator;
  * **Algorithm steps:**
  * 1. Zero all fields in s_validator using memset()
  * 2. Ensures initialized flag is false
- * 3. Clears all 17×8 = 136 pin reservation slots
+ * 3. Clears all 17x8 = 136 pin reservation slots
  *
  * @pre None (Unity framework initialization handled by UNITY_BEGIN)
  * @post s_validator.initialized == false

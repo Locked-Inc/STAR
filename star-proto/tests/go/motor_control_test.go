@@ -92,7 +92,7 @@ func TestVelocityCommand_DifferentialDrive(t *testing.T) {
 	}
 }
 
-// TestVelocityCommand_VelocityRange tests valid velocity range (±2.0 m/s)
+// TestVelocityCommand_VelocityRange tests valid velocity range (+/-2.0 m/s)
 func TestVelocityCommand_VelocityRange(t *testing.T) {
 	testCases := []struct {
 		name     string
@@ -128,7 +128,7 @@ func TestVelocityCommand_VelocityRange(t *testing.T) {
 			}
 
 			// Protocol buffers will serialize any value, but application
-			// should validate and clamp to ±2.0 m/s range
+			// should validate and clamp to +/-2.0 m/s range
 			if tc.valid {
 				if decoded.FrontLeftVelocityMps != tc.velocity {
 					t.Errorf("Velocity = %f, want %f", decoded.FrontLeftVelocityMps, tc.velocity)

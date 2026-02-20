@@ -11,13 +11,13 @@
  * hardware-generated PWM, automatic dead-time insertion for shoot-through prevention,
  * and fail-safe emergency stop capability.
  *
- * **Application:** STAR robot platform - 4× 6V brushed DC gearmotors (210 RPM, 341 PPR encoders)
+ * **Application:** STAR robot platform - 4x 6V brushed DC gearmotors (210 RPM, 341 PPR encoders)
  * **H-Bridge Driver:** DRV8243S dual H-bridge with integrated current sensing
  * **PWM Peripheral:** RX72N GPTW (General PWM Timer) - 32-bit resolution
  *
  * **Key Features:**
  * - **Bidirectional control**: -100% (full reverse) to +100% (full forward)
- * - **Hardware dead-time insertion**: Prevents H-bridge shoot-through (configurable, typically 1µs)
+ * - **Hardware dead-time insertion**: Prevents H-bridge shoot-through (configurable, typically 1us)
  * - **Configurable PWM frequency**: Typically 20 kHz (above audible range, below switching losses)
  * - **Brake and coast modes**: Active braking (short-circuit) or free-wheeling coast
  * - **Hardware PWM generation**: Zero CPU overhead during steady-state operation
@@ -67,25 +67,25 @@
  * **How It Works:**
  * - When switching from HIGH to LOW, insert delay before complementary switch turns ON
  * - GPTW hardware automatically inserts dead-time (configured via dead_time_ns parameter)
- * - Typical value: 1000 ns (1 µs) - accounts for FET turn-off time (~500-800 ns)
+ * - Typical value: 1000 ns (1 us) - accounts for FET turn-off time (~500-800 ns)
  *
  * **Shoot-Through Scenario (WITHOUT Dead-Time):**
  * @code{.unparsed}
  * Time ->
- * High-side FET: ████████████░░░░░░░░  (turning off)
- * Low-side FET:  ░░░░░░░░░░░░████████  (turning on)
- *                          ↑
+ * High-side FET: ############........  (turning off)
+ * Low-side FET:  ............########  (turning on)
+ *                          ^
  *                    OVERLAP = SHOOT-THROUGH!
  *                    (Both FETs ON simultaneously)
  * @endcode
  *
  * **Protected with Dead-Time:**
  * @code{.unparsed}
- * High-side FET: ████████████░░░░░░░░░░░░░░░░
- * Dead-time:     ░░░░░░░░░░░░┊━━━┊░░░░░░░░░░░
- * Low-side FET:  ░░░░░░░░░░░░░░░░░░░░████████
- *                              ↑
- *                         SAFE GAP (1 µs)
+ * High-side FET: ############................
+ * Dead-time:     ............|---|...........
+ * Low-side FET:  ....................########
+ *                              ^
+ *                         SAFE GAP (1 us)
  * @endcode
  *
  * ## PWM Frequency Selection
@@ -168,7 +168,7 @@
  * ### Computational Cost (RX72N @ 240 MHz)
  * | Operation | Cycles | Time | Notes |
  * |-----------|--------|------|-------|
- * | rx_motor_init() | ~500 | 2.1 µs | One-time GPTW configuration |
+ * | rx_motor_init() | ~500 | 2.1 us | One-time GPTW configuration |
  * | rx_motor_set_duty() | ~200 | 833 ns | Update PWM duty cycle |
  * | rx_motor_stop() | ~150 | 625 ns | Stop/brake command |
  * | rx_motor_get_duty() | ~50 | 208 ns | Read current duty |
@@ -216,15 +216,15 @@
  * @par Module Dependencies:
  * ```
  * rx_motor.h
- *   ├─-> rx_err.h (error code definitions)
- *   ├─-> rx_gptw.h (GPTW PWM peripheral abstraction)
- *   │     └─-> rx72n_gptw_regs.h (GPTW register definitions)
- *   └─-> stdbool.h, stdint.h (standard C types)
+ *   +--> rx_err.h (error code definitions)
+ *   +--> rx_gptw.h (GPTW PWM peripheral abstraction)
+ *   |     +--> rx72n_gptw_regs.h (GPTW register definitions)
+ *   +--> stdbool.h, stdint.h (standard C types)
  *
  * Used by:
- *   ├─-> Motor control tasks (velocity/position closed-loop)
- *   ├─-> lib/rx_encoder/ (encoder feedback for motor control)
- *   └─-> Application-level robot control
+ *   +--> Motor control tasks (velocity/position closed-loop)
+ *   +--> lib/rx_encoder/ (encoder feedback for motor control)
+ *   +--> Application-level robot control
  * ```
  *
  * @author STAR Team
@@ -285,8 +285,8 @@ extern "C" {
  * @f]
  *
  * **Typical Values:**
- * - Small FETs (DRV8243S): 500-800 ns turn-off -> use 1000 ns (1 µs) dead-time
- * - Large FETs: 1-2 µs turn-off -> use 2000-3000 ns dead-time
+ * - Small FETs (DRV8243S): 500-800 ns turn-off -> use 1000 ns (1 us) dead-time
+ * - Large FETs: 1-2 us turn-off -> use 2000-3000 ns dead-time
  *
  * **Too Short:** Risk of shoot-through (FET destruction)
  * **Too Long:** Reduces effective duty cycle, lower max speed
@@ -298,7 +298,7 @@ extern "C" {
  * | output_a | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN1 pin |
  * | output_b | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN2 pin (must differ from output_a) |
  * | pwm_freq_hz | uint32_t | 1000-100000 Hz | Hz | Typical: 20000 (20 kHz) |
- * | dead_time_ns | uint32_t | 0-10000 ns | nanoseconds | Typical: 1000 (1 µs), 0 = no dead-time (unsafe) |
+ * | dead_time_ns | uint32_t | 0-10000 ns | nanoseconds | Typical: 1000 (1 us), 0 = no dead-time (unsafe) |
  * | invert_pwm | bool | true/false | boolean | Swap active-high/active-low logic |
  *
  * @par Usage Example: STAR Robot Motor 0 Configuration
@@ -312,7 +312,7 @@ extern "C" {
  *   .output_a = k_gptw_output_a,     // GTIOC0A (P21) -> DRV8243 IN1
  *   .output_b = k_gptw_output_b,     // GTIOC0B (P20) -> DRV8243 IN2
  *   .pwm_freq_hz = 20000,            // 20 kHz PWM (inaudible)
- *   .dead_time_ns = 1000,            // 1 µs dead-time (DRV8243S safe)
+ *   .dead_time_ns = 1000,            // 1 us dead-time (DRV8243S safe)
  *   .invert_pwm = false              // Active-high logic (DRV8243 default)
  * };
  *
@@ -365,7 +365,7 @@ typedef struct {
   uint32_t
     pwm_freq_hz; /**< PWM frequency in Hertz. Range: 1,000-100,000 Hz. Recommended: 20,000 Hz (20 kHz) for inaudible operation. Higher = more switching losses. */
   uint32_t
-    dead_time_ns; /**< Dead-time in nanoseconds to prevent H-bridge shoot-through. Typical: 1000 ns (1 µs). Must exceed FET turn-off time. Zero = no protection (unsafe). */
+    dead_time_ns; /**< Dead-time in nanoseconds to prevent H-bridge shoot-through. Typical: 1000 ns (1 us). Must exceed FET turn-off time. Zero = no protection (unsafe). */
   bool
     invert_pwm; /**< Invert PWM polarity. false = active-high (default for DRV8243), true = active-low. Use if H-bridge has inverted logic. */
 } rx_motor_config_t;
@@ -417,9 +417,9 @@ typedef struct {
  * | invert_pwm | PWM polarity | init | Never | true/false |
  * | initialized | Ready for use | init | deinit, emergency_stop | true/false |
  *
- * @invariant initialized == true ⇒ GPTW configured and outputs enabled
- * @invariant initialized == false ⇒ Motor cannot be controlled (init or emergency_stop called)
- * @invariant -100.0 ≤ current_duty ≤ +100.0 (enforced by rx_motor_set_duty clamping)
+ * @invariant initialized == true => GPTW configured and outputs enabled
+ * @invariant initialized == false => Motor cannot be controlled (init or emergency_stop called)
+ * @invariant -100.0 <= current_duty <= +100.0 (enforced by rx_motor_set_duty clamping)
  *
  * @par Usage Example: Static Handle Allocation
  * @code{.c}
@@ -449,7 +449,7 @@ typedef struct {
  *   for (uint8_t i = 0; i < 4; i++) {
  *     if (motors[i].initialized) {
  *       rx_motor_set_duty(&motors[i], duty);
- *       // motors[i].current_duty now updated to duty (clamped to ±100)
+ *       // motors[i].current_duty now updated to duty (clamped to +/-100)
  *     }
  *   }
  * }

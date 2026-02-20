@@ -1,0 +1,53 @@
+# ascii-check.yml - ASCII-only source file enforcement for STAR project
+#
+# Rejects any commit that introduces non-ASCII characters into source files.
+# Covers .c .h .go .cpp .hpp .proto .ts .md files.
+#
+# STAR Project - Texas A&M University
+
+name: ASCII Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  ascii-check:
+    name: ASCII-only source files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check for non-ASCII characters
+        run: |
+          echo "Scanning source files for non-ASCII characters..."
+
+          # Find all tracked source files of interest
+          mapfile -t files < <(git ls-files -- \
+            '*.c' '*.h' '*.go' '*.cpp' '*.hpp' '*.proto' '*.ts' '*.md')
+
+          failed=0
+          for f in "${files[@]}"; do
+            if grep -qP "[^\x00-\x7F]" "$f" 2>/dev/null; then
+              echo "::error file=$f::Non-ASCII characters found"
+              echo ""
+              echo "  $f"
+              grep -nP "[^\x00-\x7F]" "$f" | head -10 | while IFS= read -r line; do
+                echo "    $line"
+              done
+              failed=1
+            fi
+          done
+
+          if [[ $failed -ne 0 ]]; then
+            echo ""
+            echo "STAR policy: all source files must be pure 7-bit ASCII."
+            echo "Fix with: python3 scripts/fix-encoding.py <file>"
+            echo "See CLAUDE.md 'Character Encoding Policy' for the replacement table."
+            exit 1
+          fi
+
+          echo "[OK] All ${#files[@]} source files are ASCII-clean."

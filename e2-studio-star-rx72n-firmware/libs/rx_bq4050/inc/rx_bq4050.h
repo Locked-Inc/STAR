@@ -12,7 +12,7 @@
  *
  * **BQ4050 Key Features:**
  * - CEDV (Compensated End-of-Discharge Voltage) gas gauging algorithm
- * - Accurate state of charge estimation (±1% typical at 25°C)
+ * - Accurate state of charge estimation (+/-1% typical at 25degC)
  * - Individual cell voltage monitoring and active balancing (1-4 cells)
  * - Integrated battery protection (OVP, UVP, OCP, OTP, SCP)
  * - SHA-1/HMAC authentication for battery identification
@@ -55,14 +55,14 @@
  * | I2C Speed | 10-400 kHz |
  * | Supply Voltage | 2.7V - 5.5V (I/O compatible with 3.3V/5V) |
  * | Battery Config | 1-4 series Li-Ion/Li-Polymer cells |
- * | Temperature Range | -20°C to +70°C (operational) |
+ * | Temperature Range | -20degC to +70degC (operational) |
  *
  * @par STAR Hardware Configuration:
  * - Battery Pack: 4S Li-Ion (14.8V nominal, 16.8V max)
  * - Capacity: TBD mAh (configured in BQ4050 data flash)
  * - SMBus: Connected via I2C peripheral (RIIC0/RIIC1/RIIC2)
- * - Pull-ups: 4.7kΩ on SDA/SCL lines
- * - Thermistor: 10kΩ NTC (Beta=3380K)
+ * - Pull-ups: 4.7kOhm on SDA/SCL lines
+ * - Thermistor: 10kOhm NTC (Beta=3380K)
  *
  * @par Module Dependencies:
  * - rx_err.h: Error code definitions
@@ -324,7 +324,7 @@ typedef struct {
    * **Resolution:** 1 mA (typical), depends on sense resistor value
    * **Source:** SBS register 0x0A (Current)
    * **Update Rate:** ~250 ms
-   * **Accuracy:** ±1% typical (±3% max) at room temperature
+   * **Accuracy:** +/-1% typical (+/-3% max) at room temperature
    * **Note:** Noisy - use average_current_ma for stable readings
    */
   int16_t current_ma;
@@ -356,7 +356,7 @@ typedef struct {
    * **Source:** SBS register 0x0D (RelativeStateOfCharge)
    * **Update Rate:** ~1 second
    * **Algorithm:** CEDV (Compensated End-of-Discharge Voltage)
-   * **Accuracy:** ±1% typical after learning cycle
+   * **Accuracy:** +/-1% typical after learning cycle
    * **Note:** Clamped to 0-100% by driver (SBS allows >100%)
    * **Typical Use:** Battery icon percentage, "% remaining"
    */
@@ -382,16 +382,16 @@ typedef struct {
    * @details
    * Temperature measured by thermistor in battery pack. Critical for
    * charge/discharge safety and performance optimization.
-   * **Units:** Degrees Celsius (°C)
-   * **Range:** -273 to +6280°C (full int16_t range after conversion)
-   * **Typical Range:** -20 to +70°C (operational)
-   * **Resolution:** 1°C (after conversion from 0.1K SBS format)
+   * **Units:** Degrees Celsius (degC)
+   * **Range:** -273 to +6280degC (full int16_t range after conversion)
+   * **Typical Range:** -20 to +70degC (operational)
+   * **Resolution:** 1degC (after conversion from 0.1K SBS format)
    * **Source:** SBS register 0x08 (Temperature)
    * **Update Rate:** ~1 second
-   * **Sensor:** 10kΩ NTC thermistor (Beta=3380K typical)
+   * **Sensor:** 10kOhm NTC thermistor (Beta=3380K typical)
    * **Critical Thresholds:**
-   * - Charge: 0-45°C (stop charging outside this range)
-   * - Discharge: -20-60°C (performance degrades at extremes)
+   * - Charge: 0-45degC (stop charging outside this range)
+   * - Discharge: -20-60degC (performance degrades at extremes)
    */
   int16_t temperature_c;
 
@@ -421,7 +421,7 @@ typedef struct {
    * **Source:** SBS register 0x10 (FullChargeCapacity)
    * **Update Rate:** Updated after each full charge cycle
    * **Typical Degradation:** 80% of design capacity after 500 cycles
-   * **Relationship:** full_capacity ≤ design_capacity (aging)
+   * **Relationship:** full_capacity <= design_capacity (aging)
    * **Use Case:** Battery health monitoring, SOC calculations
    */
   uint16_t full_capacity_mah;
@@ -437,7 +437,7 @@ typedef struct {
    * **Source:** SBS register 0x18 (DesignCapacity)
    * **Update Rate:** Constant (read-only)
    * **Programmed:** During battery pack manufacturing
-   * **Relationship:** Constant reference, full_capacity ≤ design_capacity
+   * **Relationship:** Constant reference, full_capacity <= design_capacity
    * **Use Case:** Calculate battery health: (full/design) * 100%
    */
   uint16_t design_capacity_mah;
@@ -660,7 +660,7 @@ typedef struct {
  * @pre Bus manager must be initialized via rx_bus_manager_init()
  * @pre SMBus peripheral hardware must be configured and enabled
  * @pre BQ4050 must be powered (2.7V-5.5V supply)
- * @pre I2C pull-up resistors must be present on SDA/SCL (4.7kΩ typical)
+ * @pre I2C pull-up resistors must be present on SDA/SCL (4.7kOhm typical)
  *
  * @post SMBus bus is initialized and ready for BQ4050 transactions
  * @post BQ4050 communication verified (voltage register read successful)
@@ -726,7 +726,7 @@ typedef struct {
  *
  *     case k_rx_err_timeout:
  *         rx_log_error("Battery", "SMBus communication timeout");
- *         // Check: Bus speed (100kHz/400kHz), pull-up values (4.7kΩ)
+ *         // Check: Bus speed (100kHz/400kHz), pull-up values (4.7kOhm)
  *         break;
  *
  *     case k_rx_err_not_found:
@@ -976,9 +976,9 @@ rx_bq4050_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t
  * - Zero current (0): Battery idle (no charge/discharge)
  *
  * **Measurement Characteristics:**
- * - Sense method: Voltage drop across precision sense resistor (5-20mΩ typical)
+ * - Sense method: Voltage drop across precision sense resistor (5-20mOhm typical)
  * - ADC resolution: 14-16 bits
- * - Measurement accuracy: ±1% typical, ±3% max at 25°C
+ * - Measurement accuracy: +/-1% typical, +/-3% max at 25degC
  * - Update rate: ~250ms (BQ4050 internal ADC conversion)
  * - Noise: Instantaneous reading can be noisy - use average_current for stability
  *
@@ -1133,7 +1133,7 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
  * - Tracks voltage, current, temperature
  * - Compensates for rate, temperature effects
  * - Learns battery characteristics over cycles
- * - Provides ±1% accuracy after learning cycle
+ * - Provides +/-1% accuracy after learning cycle
  *
  * **Relative vs Absolute SOC:**
  * - Relative: SOC vs current full capacity (accounts for aging)
@@ -1167,7 +1167,7 @@ rx_bq4050_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t*
  *
  * @note Thread Safety: NOT thread-safe
  * @note Performance: ~1-5ms @ 100kHz SMBus
- * @note Accuracy: ±1% typical after battery learning cycle
+ * @note Accuracy: +/-1% typical after battery learning cycle
  *
  * @warning SOC invalid until BQ4050 initialized flag set (see BatteryStatus)
  *
@@ -1215,7 +1215,7 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  * Battery health = (full_capacity / design_capacity) * 100%
  *
  * Comparing absolute_soc to relative_soc indicates battery degradation:
- * - New battery: absolute_soc ≈ relative_soc
+ * - New battery: absolute_soc ~ relative_soc
  * - Aged battery: absolute_soc < relative_soc
  *
  * @param[in] manager Bus manager instance
@@ -1294,9 +1294,9 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  * - Conversion: temp_c = (temp_0.1k - 2731) / 10
  *
  * **Temperature Monitoring Critical For:**
- * - Charge safety (0-45°C safe charge range for Li-Ion)
- * - Discharge safety (-20-60°C operational range)
- * - Thermal protection (>60°C triggers alarm)
+ * - Charge safety (0-45degC safe charge range for Li-Ion)
+ * - Discharge safety (-20-60degC operational range)
+ * - Thermal protection (>60degC triggers alarm)
  * - Performance optimization (capacity varies with temperature)
  *
  * **Algorithm:**
@@ -1317,9 +1317,9 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  *
  * @param[out] temperature_c Pointer to store temperature in degrees Celsius
  *   - **Must not be nullptr**
- *   - **Range:** -273 to +6280°C (full conversion range)
- *   - **Typical Range:** -20 to +70°C (operational)
- *   - **Resolution:** 1°C (after conversion from 0.1K)
+ *   - **Range:** -273 to +6280degC (full conversion range)
+ *   - **Typical Range:** -20 to +70degC (operational)
+ *   - **Resolution:** 1degC (after conversion from 0.1K)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Success, temperature_c contains valid temperature
@@ -1332,14 +1332,14 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  *
  * @pre rx_bq4050_init() called successfully
  *
- * @post temperature_c contains temperature in °C on success
+ * @post temperature_c contains temperature in degC on success
  *
  * @note Thread Safety: NOT thread-safe
- * @note Performance: ~1-5ms @ 100kHz SMBus + conversion overhead (<1µs)
+ * @note Performance: ~1-5ms @ 100kHz SMBus + conversion overhead (<1us)
  * @note Update Rate: BQ4050 updates temperature every ~1 second
  *
- * @warning Stop charging if temperature outside 0-45°C (Li-Ion safety)
- * @warning Stop discharging if temperature >60°C (thermal protection)
+ * @warning Stop charging if temperature outside 0-45degC (Li-Ion safety)
+ * @warning Stop discharging if temperature >60degC (thermal protection)
  *
  * @par Example - Temperature Monitoring:
  * @code{.c}
@@ -1350,9 +1350,9 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
  *     rx_log_info_val("Battery", "Temperature (C)", temperature_c);
  *
  *     // Check temperature thresholds
- *     const int16_t k_charge_temp_min_c = 0;    // 0°C min charge temp
- *     const int16_t k_charge_temp_max_c = 45;   // 45°C max charge temp
- *     const int16_t k_temp_critical_c = 60;     // 60°C critical shutdown
+ *     const int16_t k_charge_temp_min_c = 0;    // 0degC min charge temp
+ *     const int16_t k_charge_temp_max_c = 45;   // 45degC max charge temp
+ *     const int16_t k_temp_critical_c = 60;     // 60degC critical shutdown
  *
  *     if (temperature_c > k_temp_critical_c) {
  *         rx_log_error("Battery", "CRITICAL: Temperature >60C - emergency stop!");
@@ -1410,7 +1410,7 @@ rx_bq4050_read_temperature(rx_bus_manager_t* manager, const char* bus_name, int1
  * calling two separate functions.
  *
  * **Capacity Relationships:**
- * - remaining_capacity ≤ full_charge_capacity ≤ design_capacity
+ * - remaining_capacity <= full_charge_capacity <= design_capacity
  * - SOC = (remaining_capacity / full_charge_capacity) * 100%
  * - Health = (full_charge_capacity / design_capacity) * 100%
  *

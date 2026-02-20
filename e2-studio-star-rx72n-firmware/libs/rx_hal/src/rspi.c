@@ -84,7 +84,7 @@
  * | Min clock (controller) | 100 kHz | PCLKB=60MHz, SPBR=255 |
  * | Transfer timeout | 10 ms | Per byte |
  * | CS setup/hold delay | ~300 ns | 10 NOP cycles @ 240MHz |
- * | 16-bit transfer time | ~2-50 µs | Depends on clock |
+ * | 16-bit transfer time | ~2-50 us | Depends on clock |
  *
  * @par Memory Usage
  * | Component | Size | Description |
@@ -168,7 +168,7 @@
  * for worst-case SPI peripheral response times at minimum clock frequency.
  *
  * @par Timeout Calculation
- * At 100 kHz minimum clock, one byte takes ~80 µs. 10 ms timeout provides
+ * At 100 kHz minimum clock, one byte takes ~80 us. 10 ms timeout provides
  * ~125 byte margin before declaring failure, sufficient for any single
  * transfer operation.
  *

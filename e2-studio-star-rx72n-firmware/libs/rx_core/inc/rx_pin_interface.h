@@ -15,33 +15,33 @@
  * **Key Design Pattern: Interface Segregation + Dependency Inversion**
  *
  * ```
- * ┌──────────────────────────────────────────────────────────────────┐
- * │              High-Level Modules (Peripheral Drivers)             │
- * │   SPI, I2C, UART, USB, Motor Control, Encoder, GPIO, PWM, etc.  │
- * └───────────────┬──────────────────────────────┬───────────────────┘
- *                 │                              │
- *                 │ depends on (abstract)        │ depends on (abstract)
- *                 ▼                              ▼
- * ┌───────────────────────────┐  ┌─────────────────────────────────┐
- * │  rx_pin_interface_t       │  │   rx_infrastructure module      │
- * │  (THIS FILE - ABSTRACT)   │◄─┤   (Global service locator)      │
- * │  - validate_pin()         │  └─────────────────────────────────┘
- * │  - reserve_pin()          │
- * │  - release_pin()          │
- * │  - is_pin_reserved()      │
- * │  - get_pin_function()     │
- * │  - clear_all()            │
- * └───────────┬───────────────┘
- *             │
- *             │ implements (concrete)
- *             ▼
- * ┌───────────────────────────┐
- * │  pin_validator_t          │
- * │  (CONCRETE IMPLEMENTATION)│
- * │  - Pin reservation table  │
- * │  - Mutex for thread safety│
- * │  - Validation logic       │
- * └───────────────────────────┘
+ * +------------------------------------------------------------------+
+ * |              High-Level Modules (Peripheral Drivers)             |
+ * |   SPI, I2C, UART, USB, Motor Control, Encoder, GPIO, PWM, etc.  |
+ * +---------------+------------------------------+-------------------+
+ *                 |                              |
+ *                 | depends on (abstract)        | depends on (abstract)
+ *                 v                              v
+ * +---------------------------+  +---------------------------------+
+ * |  rx_pin_interface_t       |  |   rx_infrastructure module      |
+ * |  (THIS FILE - ABSTRACT)   |<-+   (Global service locator)      |
+ * |  - validate_pin()         |  +---------------------------------+
+ * |  - reserve_pin()          |
+ * |  - release_pin()          |
+ * |  - is_pin_reserved()      |
+ * |  - get_pin_function()     |
+ * |  - clear_all()            |
+ * +-----------+---------------+
+ *             |
+ *             | implements (concrete)
+ *             v
+ * +---------------------------+
+ * |  pin_validator_t          |
+ * |  (CONCRETE IMPLEMENTATION)|
+ * |  - Pin reservation table  |
+ * |  - Mutex for thread safety|
+ * |  - Validation logic       |
+ * +---------------------------+
  * ```
  *
  * ## Why This Design Matters
@@ -283,7 +283,7 @@
  *
  * | Component | Size (bytes) | Notes |
  * |-----------|--------------|-------|
- * | rx_pin_interface_t | 32 | 7 pointers × 4-8 bytes (architecture-dependent) |
+ * | rx_pin_interface_t | 32 | 7 pointers x 4-8 bytes (architecture-dependent) |
  * | ctx pointer | 4-8 | Points to concrete implementation |
  * | Function pointers | 4-8 each | 6 methods |
  * | **Total** | **32-56** | Stack-allocated, no heap |
@@ -350,9 +350,9 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  * ## Memory Impact
  *
  * Assuming 128 reservable pins:
- * - Function names: 128 × 32 = 4096 bytes (4 KB)
- * - Reservation flags: 128 × 1 = 128 bytes
- * - Port/pin storage: 128 × 2 = 256 bytes
+ * - Function names: 128 x 32 = 4096 bytes (4 KB)
+ * - Reservation flags: 128 x 1 = 128 bytes
+ * - Port/pin storage: 128 x 2 = 256 bytes
  * - **Total**: ~4.5 KB for complete pin tracking
  *
  * @see rx_pin_reserve_fn Function that uses this limit
@@ -522,7 +522,7 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, const uint8_t port, const uint
  * @note **Thread-safe**: Implementation must use mutex or atomic operations
  * @note **String lifetime**: function string must remain valid (use literals!)
  * @note **Idempotent check**: Reserving same pin twice returns conflict error
- * @note **Performance**: ~10-50 µs typical (mutex + table update)
+ * @note **Performance**: ~10-50 us typical (mutex + table update)
  *
  * @warning Function name is **NOT copied** - must be string literal or static storage
  * @warning Must call release_pin() to free the pin for reuse
@@ -588,7 +588,7 @@ typedef rx_err_t (*rx_pin_reserve_fn)(void*         ctx,
  * @note **Thread-safe**: Implementation must use mutex or atomic operations
  * @note **Idempotent safe**: Releasing unreserved pin returns error but doesn't crash
  * @note **Best-effort cleanup**: Most code ignores return value during cleanup
- * @note **Performance**: ~5-30 µs typical (mutex + flag clear)
+ * @note **Performance**: ~5-30 us typical (mutex + flag clear)
  *
  * @see rx_pin_reserve_fn Reserve a pin (must be called first)
  * @see RX_RELEASE_PIN() Convenience macro wrapping this function
@@ -637,7 +637,7 @@ typedef rx_err_t (*rx_pin_release_fn)(void* ctx, const uint8_t port, const uint8
  *
  * @note **Thread-safe**: Read-only check, safe to call concurrently
  * @note **No error codes**: Returns false for invalid pins (simple boolean API)
- * @note **Fast**: Typically 1-5 µs (direct table lookup)
+ * @note **Fast**: Typically 1-5 us (direct table lookup)
  *
  * @see rx_pin_get_function_fn Get the function name for a reserved pin
  * @see rx_pin_reserve_fn Reserve a pin
@@ -700,7 +700,7 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, const uint8_t port, const uint8
  * @param[in] port Port number (0x0-0x9, 0xA-0xG)
  * @param[in] pin Pin number within port (0-7)
  * @param[out] function_out Buffer to store function name (must be non-NULL)
- * @param[in] function_len Length of function_out buffer (should be ≥ k_pin_function_name_max_len)
+ * @param[in] function_len Length of function_out buffer (should be >= k_pin_function_name_max_len)
  *
  * @return rx_err_t Error code indicating retrieval result
  * @retval k_rx_ok Function name copied successfully to function_out
@@ -713,7 +713,7 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, const uint8_t port, const uint8
  * @note **Thread-safe**: Implementation must use mutex for consistent reads
  * @note **Null termination**: Output is always null-terminated if buffer size > 0
  * @note **Truncation**: Long names are truncated to fit buffer (including null)
- * @note **Performance**: ~10-30 µs typical (mutex + string copy)
+ * @note **Performance**: ~10-30 us typical (mutex + string copy)
  *
  * @warning Check return value before using function_out contents
  * @warning Buffer size should be at least k_pin_function_name_max_len bytes
@@ -793,7 +793,7 @@ typedef rx_err_t (*rx_pin_get_function_fn)(void*          ctx,
  * @note **Thread-safe**: Implementation must use exclusive mutex lock
  * @note **Destructive**: All pin reservations are lost (no undo)
  * @note **No confirmation**: Clears immediately without prompts
- * @note **Performance**: ~50-200 µs typical (mutex + full table clear)
+ * @note **Performance**: ~50-200 us typical (mutex + full table clear)
  *
  * @warning **DANGEROUS**: Clears ALL reservations. Ensure no modules are using pins.
  * @warning Only use during controlled shutdown, reset, or test teardown
@@ -1157,7 +1157,7 @@ struct rx_pin_interface {
  *
  * ## Performance Characteristics
  *
- * - **Execution time**: ~20-50 cycles @ 240 MHz (~0.1-0.2 µs)
+ * - **Execution time**: ~20-50 cycles @ 240 MHz (~0.1-0.2 us)
  * - **Operations**: 7 nullptr checks (1 iface + 6 function pointers)
  * - **Overhead**: Negligible for init paths, skip in tight loops if needed
  * - **Optimization**: Compiler may inline this function (static inline)

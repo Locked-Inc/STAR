@@ -35,7 +35,7 @@ const (
 )
 
 // newResetCapableMock creates a MockHARQ that handles the reset handshake so
-// tm.Start() completes instantly instead of waiting for ACK timeout × retries.
+// tm.Start() completes instantly instead of waiting for ACK timeout x retries.
 // Extra funcs (e.g. GetStateFunc, GetTxSeqFunc) can be set on the returned mock
 // after creation.
 func newResetCapableMock() *testutil.MockHARQ {

@@ -15,7 +15,7 @@
  *
  * @verbatim
  *   Traditional MCU Layout          RX72N Layout (Type-Grouped)
- *   ──────────────────────          ──────────────────────────────
+ *   ----------------------          ------------------------------
  *   PORT0: PDR0, PODR0, ...         PDR:  PDR0, PDR1, PDR2, ... (contiguous)
  *   PORT1: PDR1, PODR1, ...         PODR: PODR0, PODR1, PODR2, ... (contiguous)
  *   PORT2: PDR2, PODR2, ...         PIDR: PIDR0, PIDR1, PIDR2, ... (contiguous)
@@ -27,53 +27,53 @@
  *
  * @par System Architecture - STAR Robot GPIO Usage
  * @verbatim
- *   ┌─────────────────────────────────────────────────────────────────────────┐
- *   │                    RX72N GPIO Architecture (144-pin LFQFP)              │
- *   │                                                                         │
- *   │  ┌─────────────────────────────────────────────────────────────────────┐│
- *   │  │                        PORT Module                                  ││
- *   │  │                                                                     ││
- *   │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  ││
- *   │  │  │ Port 0   │ │ Port 1   │ │ Port 2   │ │ Port 3   │ │ Port 4   │  ││
- *   │  │  │ 6 pins   │ │ P12-P17  │ │ P20-P27  │ │ P30-P37  │ │ P40-P47  │  ││
- *   │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
- *   │  │                                                                     ││
- *   │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  ││
- *   │  │  │ Port 5   │ │ Port 6   │ │ Port 7   │ │ Port 8   │ │ Port 9   │  ││
- *   │  │  │ P50-P56  │ │ P60-P67  │ │ P70-P77  │ │ 6 pins   │ │ P90-P93  │  ││
- *   │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
- *   │  │                                                                     ││
- *   │  │  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────┐  ││
- *   │  │  │ Port A   │ │ Port B   │ │ Port C   │ │ Port D   │ │ Port E   │  ││
- *   │  │  │ PA0-PA7  │ │ PB0-PB7  │ │ PC0-PC7  │ │ PD0-PD7  │ │ PE0-PE7  │  ││
- *   │  │  └──────────┘ └──────────┘ └──────────┘ └──────────┘ └──────────┘  ││
- *   │  │                                                                     ││
- *   │  │  ┌──────────┐ ┌──────────┐  Unavailable on 144-pin:                 ││
- *   │  │  │ Port F   │ │ Port J   │  Ports G, H, K, L, M, N, Q               ││
- *   │  │  │ PF5 only │ │ PJ3,PJ5  │                                          ││
- *   │  │  └──────────┘ └──────────┘                                          ││
- *   │  └─────────────────────────────────────────────────────────────────────┘│
- *   │                                                                         │
- *   │  STAR Robot GPIO Assignments (from 03_hardware_pinout.tex):             │
- *   │  ┌────────────────────────────────────────────────────────────────────┐ │
- *   │  │ Motor Control:                                                     │ │
- *   │  │   - PWM outputs: TIOCA0-3, TIOCB0-3 (MTU channels)                 │ │
- *   │  │   - Enable pins: GPIO outputs to DRV8243                           │ │
- *   │  │   - Fault inputs: GPIO inputs from DRV8243                         │ │
- *   │  │                                                                     │ │
- *   │  │ Encoder Inputs:                                                    │ │
- *   │  │   - MTCLKA/B: Quadrature encoder A/B signals                       │ │
- *   │  │                                                                     │ │
- *   │  │ Communication:                                                     │ │
- *   │  │   - SPI (RSPI0): COPI, CIPO, SCK, CS                               │ │
- *   │  │   - UART (SCI): TXD, RXD                                           │ │
- *   │  │   - I2C (RIIC): SDA, SCL                                           │ │
- *   │  │   - USB: USB_DP, USB_DM                                            │ │
- *   │  │                                                                     │ │
- *   │  │ Status LEDs:                                                       │ │
- *   │  │   - System status, error indicators                                │ │
- *   │  └────────────────────────────────────────────────────────────────────┘ │
- *   └─────────────────────────────────────────────────────────────────────────┘
+ *   +-------------------------------------------------------------------------+
+ *   |                    RX72N GPIO Architecture (144-pin LFQFP)              |
+ *   |                                                                         |
+ *   |  +---------------------------------------------------------------------+|
+ *   |  |                        PORT Module                                  ||
+ *   |  |                                                                     ||
+ *   |  |  +----------+ +----------+ +----------+ +----------+ +----------+  ||
+ *   |  |  | Port 0   | | Port 1   | | Port 2   | | Port 3   | | Port 4   |  ||
+ *   |  |  | 6 pins   | | P12-P17  | | P20-P27  | | P30-P37  | | P40-P47  |  ||
+ *   |  |  +----------+ +----------+ +----------+ +----------+ +----------+  ||
+ *   |  |                                                                     ||
+ *   |  |  +----------+ +----------+ +----------+ +----------+ +----------+  ||
+ *   |  |  | Port 5   | | Port 6   | | Port 7   | | Port 8   | | Port 9   |  ||
+ *   |  |  | P50-P56  | | P60-P67  | | P70-P77  | | 6 pins   | | P90-P93  |  ||
+ *   |  |  +----------+ +----------+ +----------+ +----------+ +----------+  ||
+ *   |  |                                                                     ||
+ *   |  |  +----------+ +----------+ +----------+ +----------+ +----------+  ||
+ *   |  |  | Port A   | | Port B   | | Port C   | | Port D   | | Port E   |  ||
+ *   |  |  | PA0-PA7  | | PB0-PB7  | | PC0-PC7  | | PD0-PD7  | | PE0-PE7  |  ||
+ *   |  |  +----------+ +----------+ +----------+ +----------+ +----------+  ||
+ *   |  |                                                                     ||
+ *   |  |  +----------+ +----------+  Unavailable on 144-pin:                 ||
+ *   |  |  | Port F   | | Port J   |  Ports G, H, K, L, M, N, Q               ||
+ *   |  |  | PF5 only | | PJ3,PJ5  |                                          ||
+ *   |  |  +----------+ +----------+                                          ||
+ *   |  +---------------------------------------------------------------------+|
+ *   |                                                                         |
+ *   |  STAR Robot GPIO Assignments (from 03_hardware_pinout.tex):             |
+ *   |  +--------------------------------------------------------------------+ |
+ *   |  | Motor Control:                                                     | |
+ *   |  |   - PWM outputs: TIOCA0-3, TIOCB0-3 (MTU channels)                 | |
+ *   |  |   - Enable pins: GPIO outputs to DRV8243                           | |
+ *   |  |   - Fault inputs: GPIO inputs from DRV8243                         | |
+ *   |  |                                                                     | |
+ *   |  | Encoder Inputs:                                                    | |
+ *   |  |   - MTCLKA/B: Quadrature encoder A/B signals                       | |
+ *   |  |                                                                     | |
+ *   |  | Communication:                                                     | |
+ *   |  |   - SPI (RSPI0): COPI, CIPO, SCK, CS                               | |
+ *   |  |   - UART (SCI): TXD, RXD                                           | |
+ *   |  |   - I2C (RIIC): SDA, SCL                                           | |
+ *   |  |   - USB: USB_DP, USB_DM                                            | |
+ *   |  |                                                                     | |
+ *   |  | Status LEDs:                                                       | |
+ *   |  |   - System status, error indicators                                | |
+ *   |  +--------------------------------------------------------------------+ |
+ *   +-------------------------------------------------------------------------+
  * @endverbatim
  *
  * @par Register Memory Map
@@ -188,7 +188,7 @@ extern "C" {
  * @par Memory Map Overview
  * @verbatim
  *   Address Range        Register Type    Description
- *   ──────────────────────────────────────────────────────────────────
+ *   ------------------------------------------------------------------
  *   0x0008C000-0x0008C017  PDR[]          Port Direction Registers
  *   0x0008C020-0x0008C037  PODR[]         Port Output Data Registers
  *   0x0008C040-0x0008C057  PIDR[]         Port Input Data Registers
@@ -381,7 +381,7 @@ typedef enum : uint8_t {
  * @par Register Memory Layout (297 bytes total per port view)
  * @verbatim
  *   Offset  Size  Register  Description
- *   ──────────────────────────────────────────────────────────────────
+ *   ------------------------------------------------------------------
  *   0x00    1     PDR       Port Direction (0=input, 1=output)
  *   0x01    31    [pad]     Reserved padding to PODR
  *   0x20    1     PODR      Port Output Data (0=low, 1=high)
@@ -505,7 +505,7 @@ typedef struct __attribute__((packed)) {
 
   /**
    * @brief Pull-up Control Register (PCR) - +0xC0
-   * @details Enables internal pull-up resistor (approx 50kΩ typical).
+   * @details Enables internal pull-up resistor (approx 50kOhm typical).
    * PCR bit = 0: Pull-up disabled.
    * PCR bit = 1: Pull-up enabled.
    * @note Only effective when PDR bit = 0 (input direction).

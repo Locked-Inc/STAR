@@ -86,19 +86,19 @@
  * | Stack (rx_pid_compute) | 32 bytes | Transient (local variables) |
  * | Code (Flash) | ~800 bytes | Shared across all instances |
  *
- * **Example:** 4 motors = 4 × 40 = 160 bytes RAM + 800 bytes Flash (shared)
+ * **Example:** 4 motors = 4 x 40 = 160 bytes RAM + 800 bytes Flash (shared)
  *
  * ### Numerical Precision
  * - **IEEE 754 single-precision float**: 6-7 decimal digits accuracy
- * - **Dynamic range**: ±1.2 × 10^-38 to ±3.4 × 10^38
- * - **Epsilon**: ~1.2 × 10^-7 (smallest representable difference)
+ * - **Dynamic range**: +/-1.2 x 10^-38 to +/-3.4 x 10^38
+ * - **Epsilon**: ~1.2 x 10^-7 (smallest representable difference)
  * - **Sufficient for motor control**: Typical velocity error < 1 RPM, output 0-100%
  *
  * ## Hardware Requirements
  *
  * | Requirement | Value | Notes |
  * |-------------|-------|-------|
- * | **CPU** | Any ARM/RX with FPU | Software floating-point possible but 10× slower |
+ * | **CPU** | Any ARM/RX with FPU | Software floating-point possible but 10x slower |
  * | **RAM** | 40 bytes per instance | No dynamic allocation |
  * | **Flash** | ~800 bytes | Code size with -O2 optimization |
  * | **FPU** | Single-precision (optional) | Accelerates float operations |
@@ -136,17 +136,17 @@
  * @par Module Dependencies:
  * ```
  * rx_pid.c
- *   ├─-> rx_pid.h (API definitions)
- *   ├─-> rx_err.h (error codes: k_rx_ok, k_rx_err_null_ptr, etc.)
- *   ├─-> rx_check.h (validation macros: RX_CHECK_NULL_PTR)
- *   ├─-> rx_log.h (logging: rx_log_info, rx_log_error, rx_log_debug)
- *   ├─-> math.h (isfinite() for NaN/Inf detection)
- *   └─-> string.h (memset() for structure initialization)
+ *   +--> rx_pid.h (API definitions)
+ *   +--> rx_err.h (error codes: k_rx_ok, k_rx_err_null_ptr, etc.)
+ *   +--> rx_check.h (validation macros: RX_CHECK_NULL_PTR)
+ *   +--> rx_log.h (logging: rx_log_info, rx_log_error, rx_log_debug)
+ *   +--> math.h (isfinite() for NaN/Inf detection)
+ *   +--> string.h (memset() for structure initialization)
  *
  * Used by:
- *   ├─-> lib/rx_motor/src/rx_motor.c (motor velocity/position control)
- *   ├─-> Application tasks requiring closed-loop control
- *   └─-> Unit tests: tests/test_rx_pid.c
+ *   +--> lib/rx_motor/src/rx_motor.c (motor velocity/position control)
+ *   +--> Application tasks requiring closed-loop control
+ *   +--> Unit tests: tests/test_rx_pid.c
  * ```
  *
  * @author STAR Team
@@ -223,22 +223,22 @@ static const char* s_tag = "PID";
  *                  - Can be any finite floating-point value
  *                  - NaN/Inf handling: NaN propagates, Inf may saturate to min/max
  * @param[in] min Minimum allowed value (lower saturation limit)
- *                - Must be ≤ max for correct operation
+ *                - Must be <= max for correct operation
  *                - Example: -100.0f for motor reverse limit
  * @param[in] max Maximum allowed value (upper saturation limit)
- *                - Must be ≥ min for correct operation
+ *                - Must be >= min for correct operation
  *                - Example: +100.0f for motor forward limit
  *
  * @return float Clamped value in range [min, max]
  * @retval min if input value < min (lower saturation active)
  * @retval max if input value > max (upper saturation active)
- * @retval value if min ≤ value ≤ max (linear pass-through)
+ * @retval value if min <= value <= max (linear pass-through)
  *
- * @pre min ≤ max (caller responsibility - not validated for performance)
+ * @pre min <= max (caller responsibility - not validated for performance)
  * @pre value should be finite (NaN/Inf not explicitly handled)
- * @post Return value ∈ [min, max] (guaranteed if preconditions met)
+ * @post Return value in [min, max] (guaranteed if preconditions met)
  *
- * @invariant For all valid inputs: min ≤ clamp(value, min, max) ≤ max
+ * @invariant For all valid inputs: min <= clamp(value, min, max) <= max
  *
  * @note **Performance**: Inline function, 3 comparisons worst-case (~15 cycles @ 240 MHz = 62 ns)
  * @note **Thread Safety**: Reentrant - no shared state, pure function
@@ -283,7 +283,7 @@ static const char* s_tag = "PID";
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 4**: Function is 8 lines (well under 60-line limit)
- * - **Rule 5**: Preconditions documented (min ≤ max)
+ * - **Rule 5**: Preconditions documented (min <= max)
  * - **Rule 9**: No pointer dereferencing (value types only)
  */
 static inline float internal_clamp(const float value, const float min, const float max)
@@ -370,8 +370,8 @@ static inline float internal_clamp(const float value, const float min, const flo
  * @retval k_rx_err_null_ptr handle or config pointer is nullptr
  * @retval k_rx_err_invalid_state Controller already initialized (call rx_pid_deinit first)
  * @retval k_rx_err_invalid_arg Configuration validation failed:
- *                              - output_max ≤ output_min, OR
- *                              - integral_max ≤ integral_min
+ *                              - output_max <= output_min, OR
+ *                              - integral_max <= integral_min
  *
  * @pre handle must point to allocated rx_pid_handle_t structure
  * @pre config must point to valid rx_pid_config_t with properly set fields
@@ -505,7 +505,7 @@ static inline float internal_clamp(const float value, const float min, const flo
  *
  * @par NASA Power of 10 Compliance:
  * - **Rule 4**: Function is 29 lines (well under 60-line limit)
- * - **Rule 5**: 5 validation checks (NULL×2, initialized, output limits, integral limits)
+ * - **Rule 5**: 5 validation checks (NULLx2, initialized, output limits, integral limits)
  * - **Rule 7**: All return values must be checked by caller
  */
 rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
@@ -930,7 +930,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  * **Validation Steps:**
  * 1. nullptr check (handle)
  * 2. Initialization state check
- * 3. Validate gains are non-negative (kp ≥ 0, ki ≥ 0, kd ≥ 0)
+ * 3. Validate gains are non-negative (kp >= 0, ki >= 0, kd >= 0)
  * 4. Validate gains are finite (not NaN or Inf)
  * 5. Store new gains
  * 6. Verify storage success (post-condition check per NASA Rule 5)
@@ -947,19 +947,19 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  *                       - Gains will be updated on success
  *                       - State (integral, prev_error) preserved
  * @param[in] kp New proportional gain (K_p)
- *               - Must be ≥ 0.0 (validated - negative gains cause instability)
+ *               - Must be >= 0.0 (validated - negative gains cause instability)
  *               - Must be finite (validated - NaN/Inf causes undefined behavior)
  *               - Units: output / error
  *               - Example: 0.286 for motor velocity control
  *               - Higher = faster response, risk of overshoot
  * @param[in] ki New integral gain (K_i)
- *               - Must be ≥ 0.0 (validated)
+ *               - Must be >= 0.0 (validated)
  *               - Must be finite (validated)
- *               - Units: output / (error · s)
+ *               - Units: output / (error * s)
  *               - Example: 8.01 for motor velocity control
  *               - Higher = faster steady-state error elimination, risk of windup
  * @param[in] kd New derivative gain (K_d)
- *               - Must be ≥ 0.0 (validated)
+ *               - Must be >= 0.0 (validated)
  *               - Must be finite (validated)
  *               - Units: output / (error/s)
  *               - Example: 0.0 (disabled for noisy encoder feedback)
@@ -974,9 +974,9 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true
- * @pre kp ≥ 0.0 and isfinite(kp)
- * @pre ki ≥ 0.0 and isfinite(ki)
- * @pre kd ≥ 0.0 and isfinite(kd)
+ * @pre kp >= 0.0 and isfinite(kp)
+ * @pre ki >= 0.0 and isfinite(ki)
+ * @pre kd >= 0.0 and isfinite(kd)
  *
  * @post handle->kp == kp (on success)
  * @post handle->ki == ki (on success)
@@ -1105,7 +1105,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
  * |------------|-----------|------------|
  * | nullptr | handle != nullptr | k_rx_err_null_ptr |
  * | Initialized | handle->initialized == true | k_rx_err_invalid_state |
- * | Non-negative | kp ≥ 0 && ki ≥ 0 && kd ≥ 0 | k_rx_err_invalid_arg |
+ * | Non-negative | kp >= 0 && ki >= 0 && kd >= 0 | k_rx_err_invalid_arg |
  * | Finite | isfinite(kp/ki/kd) | k_rx_err_invalid_arg |
  * | Storage | handle->kp == kp (etc.) | k_rx_fail |
  *
@@ -1205,7 +1205,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
  * @retval k_rx_ok Output limits updated successfully
  * @retval k_rx_err_null_ptr handle pointer is nullptr
  * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
- * @retval k_rx_err_invalid_arg output_max ≤ output_min (not strictly greater)
+ * @retval k_rx_err_invalid_arg output_max <= output_min (not strictly greater)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true
@@ -1238,7 +1238,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
  * void enter_safety_mode(void) {
  *   rx_err_t err = rx_pid_set_output_limits(&motor_pid, -50.0f, 50.0f);
  *   if (err == k_rx_ok) {
- *     rx_log_info("MOTOR", "Safety mode: output limited to ±50%");
+ *     rx_log_info("MOTOR", "Safety mode: output limited to +/-50%");
  *   }
  * }
  *
@@ -1384,7 +1384,7 @@ rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const 
  *                       - **IMPORTANT**: Current integral value will be clamped to new limits
  * @param[in] integral_min New minimum integral accumulator limit (anti-windup lower bound)
  *                         - Must be < integral_max (validated - strict inequality)
- *                         - Units same as output (since I_term = Ki × integral)
+ *                         - Units same as output (since I_term = Ki x integral)
  *                         - Example: -50.0f for motor control (50% of output range)
  *                         - Prevents excessive negative integral buildup
  * @param[in] integral_max New maximum integral accumulator limit (anti-windup upper bound)
@@ -1397,7 +1397,7 @@ rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const 
  * @retval k_rx_ok Integral limits updated successfully, current integral clamped
  * @retval k_rx_err_null_ptr handle pointer is nullptr
  * @retval k_rx_err_invalid_state Controller not initialized (call rx_pid_init first)
- * @retval k_rx_err_invalid_arg integral_max ≤ integral_min (not strictly greater)
+ * @retval k_rx_err_invalid_arg integral_max <= integral_min (not strictly greater)
  *
  * @pre handle must not benullptr
  * @pre handle->initialized must be true
@@ -1405,10 +1405,10 @@ rx_pid_set_output_limits(rx_pid_handle_t* handle, const float output_min, const 
  *
  * @post handle->integral_min == integral_min (on success)
  * @post handle->integral_max == integral_max (on success)
- * @post handle->integral ∈ [integral_min, integral_max] (immediately clamped)
+ * @post handle->integral in [integral_min, integral_max] (immediately clamped)
  * @post Gains and output limits unchanged (kp, ki, kd, output_min/max)
  *
- * @invariant After successful call: integral_min ≤ handle->integral ≤ integral_max
+ * @invariant After successful call: integral_min <= handle->integral <= integral_max
  * @invariant handle->kp, ki, kd unchanged
  * @invariant handle->output_min/max unchanged
  * @invariant handle->prev_error unchanged

@@ -36,7 +36,7 @@ export interface ControllerState {
      */
     linearVel: number;
     /**
-     * Angular velocity (ω) from Left Stick X-axis. Range: [-1.0, 1.0]
+     * Angular velocity (omega) from Left Stick X-axis. Range: [-1.0, 1.0]
      *
      * @generated from protobuf field: float angular_vel = 2
      */

@@ -54,12 +54,12 @@
  * | nullptr handle checks | [OK] | All API functions |
  * | nullptr pointer checks | [OK] | All output parameters |
  * | Initialization state | [OK] | Before/after init |
- * | Invalid dt (≤ 0) | [OK] | Compute function |
+ * | Invalid dt (<= 0) | [OK] | Compute function |
  * | NaN inputs | [OK] | Setpoint, measured, gains |
  * | Infinity inputs | [OK] | Setpoint, measured, gains |
  * | Negative gains | [OK] | Kp, Ki, Kd |
- * | Invalid output limits | [OK] | max ≤ min |
- * | Invalid integral limits | [OK] | max ≤ min |
+ * | Invalid output limits | [OK] | max <= min |
+ * | Invalid integral limits | [OK] | max <= min |
  * | Double initialization | [OK] | Already initialized |
  *
  * @par Runtime Tuning:
@@ -161,7 +161,7 @@
  * @par Boundary Value Testing:
  * | Boundary | Min | Max | Tested |
  * |----------|-----|-----|--------|
- * | Error | -∞ | +∞ | [OK] |
+ * | Error | -inf | +inf | [OK] |
  * | dt | 0.000001s | 10s | [OK] |
  * | Output | output_min | output_max | [OK] |
  * | Integral | integral_min | integral_max | [OK] |

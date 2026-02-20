@@ -10,28 +10,28 @@
  *
  * @par System Architecture
  * @verbatim
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │                     Application Layer                       │
- *   │  (app_main_task, motor_control, communication, sensors)    │
- *   └─────────────────────────────────────────────────────────────┘
- *                              │
- *                              │ rx_infrastructure_get_*()
- *                              ▼
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │                rx_infrastructure (This Module)              │
- *   │  ┌──────────────────────┐  ┌──────────────────────────────┐ │
- *   │  │  Error Handler       │  │  Pin Validator               │ │
- *   │  │  (retry, backoff)    │  │  (conflict detection)        │ │
- *   │  │  s_global_error_*    │  │  s_global_pin_*              │ │
- *   │  └──────────────────────┘  └──────────────────────────────┘ │
- *   └─────────────────────────────────────────────────────────────┘
- *                              │
- *                              │ Uses interfaces from
- *                              ▼
- *   ┌─────────────────────────────────────────────────────────────┐
- *   │                   Core Library Layer                        │
- *   │  rx_error_handler.c    rx_pin_validator.c    rx_log.c      │
- *   └─────────────────────────────────────────────────────────────┘
+ *   +-------------------------------------------------------------+
+ *   |                     Application Layer                       |
+ *   |  (app_main_task, motor_control, communication, sensors)    |
+ *   +-------------------------------------------------------------+
+ *                              |
+ *                              | rx_infrastructure_get_*()
+ *                              v
+ *   +-------------------------------------------------------------+
+ *   |                rx_infrastructure (This Module)              |
+ *   |  +----------------------+  +------------------------------+ |
+ *   |  |  Error Handler       |  |  Pin Validator               | |
+ *   |  |  (retry, backoff)    |  |  (conflict detection)        | |
+ *   |  |  s_global_error_*    |  |  s_global_pin_*              | |
+ *   |  +----------------------+  +------------------------------+ |
+ *   +-------------------------------------------------------------+
+ *                              |
+ *                              | Uses interfaces from
+ *                              v
+ *   +-------------------------------------------------------------+
+ *   |                   Core Library Layer                        |
+ *   |  rx_error_handler.c    rx_pin_validator.c    rx_log.c      |
+ *   +-------------------------------------------------------------+
  * @endverbatim
  *
  * @par Initialization Sequence (MSC)

@@ -20,17 +20,17 @@
  * The system tick is the fundamental time quantum for all ThreadX operations:
  * ```
  * Hardware Timer (CMT0) @ 100 Hz
- *         ↓
+ *         v
  * ThreadX Tick ISR (every 10ms)
- *         ↓
- * ┌───────────────────────────────┐
- * │ _tx_timer_interrupt()         │
- * │  - Increment tick counter     │
- * │  - Check sleeping threads     │
- * │  - Expire software timers     │
- * │  - Trigger time-slice rotation│
- * └───────────────────────────────┘
- *         ↓
+ *         v
+ * +-------------------------------+
+ * | _tx_timer_interrupt()         |
+ * |  - Increment tick counter     |
+ * |  - Check sleeping threads     |
+ * |  - Expire software timers     |
+ * |  - Trigger time-slice rotation|
+ * +-------------------------------+
+ *         v
  * Schedule highest-priority ready thread
  * ```
  *
@@ -45,7 +45,7 @@
  *         style=filled;
  *         color=lightgrey;
  *         PCLKB [label="PCLKB\n60 MHz", shape=ellipse, fillcolor=yellow, style=filled];
- *         Divider [label="÷32\nDivider", shape=diamond];
+ *         Divider [label="/32\nDivider", shape=diamond];
  *         CMT0_Clock [label="CMT0 Clock\n1.875 MHz"];
  *         CMT0 [label="CMT0 Timer\nCompare: 18750", fillcolor=lightblue, style=filled];
  *     }
@@ -89,7 +89,7 @@
  *
  * **Why 100 Hz Tick Rate?**
  * 1. **Control loop alignment**: Motor control runs at 100 Hz, matching tick period
- * 2. **Low overhead**: Context switch overhead <1% of CPU time (~24µs per 10ms)
+ * 2. **Low overhead**: Context switch overhead <1% of CPU time (~24us per 10ms)
  * 3. **Simple conversions**: ms -> ticks is divide-by-10 (compiler optimizes to shift)
  * 4. **Adequate responsiveness**: 10ms maximum scheduling latency acceptable for robotics
  * 5. **Standard practice**: Common RTOS tick rate (FreeRTOS, VxWorks use 100-1000 Hz)
@@ -118,15 +118,15 @@
  * |--------|-------|-------|
  * | **Tick period** | 10 milliseconds | Fixed by CMT0 configuration |
  * | **Tick frequency** | 100 Hz | Reciprocal of tick period |
- * | **Tick jitter** | < 1 µs | CMT0 crystal accuracy ±50 ppm |
- * | **ISR latency** | < 5 µs | ThreadX tick ISR execution time |
- * | **Context switch** | ~24 µs | Worst-case at 240 MHz (measured) |
- * | **CPU overhead** | < 1% | (5µs ISR + 24µs switch) / 10ms = 0.29% |
- * | **Max tick count** | 2³² - 1 | 32-bit counter wraps after ~497 days |
+ * | **Tick jitter** | < 1 us | CMT0 crystal accuracy +/-50 ppm |
+ * | **ISR latency** | < 5 us | ThreadX tick ISR execution time |
+ * | **Context switch** | ~24 us | Worst-case at 240 MHz (measured) |
+ * | **CPU overhead** | < 1% | (5us ISR + 24us switch) / 10ms = 0.29% |
+ * | **Max tick count** | 2^3^2 - 1 | 32-bit counter wraps after ~497 days |
  *
  * **Tick Resolution vs. Alternatives:**
  * - **10ms ticks**: Current configuration, 0.29% overhead
- * - **1ms ticks (1000 Hz)**: 10× overhead ~2.9%, better responsiveness
+ * - **1ms ticks (1000 Hz)**: 10x overhead ~2.9%, better responsiveness
  * - **100ms ticks (10 Hz)**: 0.029% overhead, unacceptable latency for robotics
  *
  * ## Memory Usage
@@ -266,7 +266,7 @@ extern "C" {
  * |--------|----------|
  * | **Control loop alignment** | Motor PID runs at 100 Hz - tick period matches control quantum |
  * | **Scheduling latency** | 10ms worst-case latency acceptable for robotics (vs. 1ms for hard real-time) |
- * | **CPU overhead** | Context switch ~24µs, ISR ~5µs, total 0.29% overhead |
+ * | **CPU overhead** | Context switch ~24us, ISR ~5us, total 0.29% overhead |
  * | **Simple arithmetic** | ms -> ticks is divide-by-10 (optimized to right-shift-by-1 + divide-by-5) |
  * | **Tick counter range** | 32-bit counter @ 100 Hz wraps after 497 days (acceptable) |
  * | **Standard practice** | Common RTOS tick rate (FreeRTOS default: 100-1000 Hz) |
@@ -277,28 +277,28 @@ extern "C" {
  * |-----------|------|------|---------|
  * | **10 Hz (100ms)** | Minimal overhead (0.029%) | 100ms latency unacceptable for robotics | [FAIL] Rejected |
  * | **100 Hz (10ms)** | Good balance, aligns with control loops | N/A | [PASS] **Selected** |
- * | **1000 Hz (1ms)** | Excellent responsiveness | 10× overhead (2.9%), overkill for our use case | [FAIL] Rejected |
+ * | **1000 Hz (1ms)** | Excellent responsiveness | 10x overhead (2.9%), overkill for our use case | [FAIL] Rejected |
  *
  * ## Conversion Formulas
  *
  * **Milliseconds -> ThreadX Ticks:**
  * ```
- * ticks = ms × (tick_rate_hz / 1000)
- *       = ms × (100 / 1000)
+ * ticks = ms x (tick_rate_hz / 1000)
+ *       = ms x (100 / 1000)
  *       = ms / 10
  * ```
  *
  * **ThreadX Ticks -> Milliseconds:**
  * ```
- * ms = ticks × (1000 / tick_rate_hz)
- *    = ticks × (1000 / 100)
- *    = ticks × 10
+ * ms = ticks x (1000 / tick_rate_hz)
+ *    = ticks x (1000 / 100)
+ *    = ticks x 10
  * ```
  *
  * **Seconds -> ThreadX Ticks:**
  * ```
- * ticks = seconds × tick_rate_hz
- *       = seconds × 100
+ * ticks = seconds x tick_rate_hz
+ *       = seconds x 100
  * ```
  *
  * @par Value: 100 Hz
@@ -332,7 +332,7 @@ extern "C" {
  *     // Method 1: Using tick rate (forward conversion)
  *     uint32_t timeout_ms = 500;
  *     uint32_t ticks = (timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
- *     // Result: (500 × 100) / 1000 = 50 ticks
+ *     // Result: (500 x 100) / 1000 = 50 ticks
  *
  *     // Method 2: Using tick period (preferred - simpler)
  *     ticks = timeout_ms / k_threadx_ms_per_tick;

@@ -29,13 +29,13 @@
  * **Example backoff sequence (initial=100ms, max=5000ms):**
  * | Retry | Formula | Backoff |
  * |-------|---------|---------|
- * | 0     | 100×2⁰  | 100 ms  |
- * | 1     | 100×2¹  | 200 ms  |
- * | 2     | 100×2²  | 400 ms  |
- * | 3     | 100×2³  | 800 ms  |
- * | 4     | 100×2⁴  | 1600 ms |
- * | 5     | 100×2⁵  | 3200 ms |
- * | 6     | 100×2⁶  | **5000 ms** (capped at max) |
+ * | 0     | 100x2^0  | 100 ms  |
+ * | 1     | 100x2^1  | 200 ms  |
+ * | 2     | 100x2^2  | 400 ms  |
+ * | 3     | 100x2^3  | 800 ms  |
+ * | 4     | 100x2^4  | 1600 ms |
+ * | 5     | 100x2^5  | 3200 ms |
+ * | 6     | 100x2^6  | **5000 ms** (capped at max) |
  *
  * ## Dependency Inversion Principle (DIP) Implementation
  *
@@ -43,23 +43,23 @@
  * `rx_error_interface_t`, not concrete `error_handler_t` implementation:
  *
  * ```
- * ┌─────────────────────┐
- * │ Motor Control       │  <--- High-level module
- * └──────────┬──────────┘
- *            │ depends on
- *            ▼
- * ┌─────────────────────┐
- * │ rx_error_interface  │  <--- Abstract interface
- * │ - report_error()    │
- * │ - clear_error()     │
- * │ - get_backoff()     │
- * └──────────┬──────────┘
- *            │ implemented by
- *            ▼
- * ┌─────────────────────┐
- * │ error_handler_t     │  <--- Concrete implementation
- * │ (this file tests)   │
- * └─────────────────────┘
+ * +---------------------+
+ * | Motor Control       |  <--- High-level module
+ * +----------+----------+
+ *            | depends on
+ *            v
+ * +---------------------+
+ * | rx_error_interface  |  <--- Abstract interface
+ * | - report_error()    |
+ * | - clear_error()     |
+ * | - get_backoff()     |
+ * +----------+----------+
+ *            | implemented by
+ *            v
+ * +---------------------+
+ * | error_handler_t     |  <--- Concrete implementation
+ * | (this file tests)   |
+ * +---------------------+
  * ```
  *
  * **Benefits:**
@@ -119,7 +119,7 @@
  * - **Open/Closed:** Extensible via interface (can add new implementations)
  * - **Liskov Substitution:** Any rx_error_interface_t implementation is substitutable
  * - **Interface Segregation:** Minimal interface (4 functions: report, clear, backoff, check)
- * - **Dependency Inversion:** HIGH-LEVEL ← interface -> LOW-LEVEL (this is the point!)
+ * - **Dependency Inversion:** HIGH-LEVEL <- interface -> LOW-LEVEL (this is the point!)
  *
  * @author STAR Team
  * @date 2026-01-05

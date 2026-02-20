@@ -215,11 +215,11 @@ typedef enum : uint8_t {
  * level. Passed by value to internal_configure_cmt_interrupt() so that the
  * caller does not need to keep the structure alive after the call returns.
  *
- * The channel field selects which ICU interrupt vector to program (CMI0–CMI3),
+ * The channel field selects which ICU interrupt vector to program (CMI0-CMI3),
  * and the priority field is written directly into the corresponding IPR[]
  * register.
  *
- * @invariant channel must be a valid rx_cmt_channel_t value (0–3)
+ * @invariant channel must be a valid rx_cmt_channel_t value (0-3)
  * @invariant priority must be in [k_ipr_level_min, k_ipr_level_max]
  *
  * @par Example:
@@ -237,8 +237,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_cmt_channel_t channel;  /**< CMT channel identifier (k_cmt_channel_0 … k_cmt_channel_3) */
-  uint8_t          priority; /**< ICU interrupt priority level (k_ipr_level_min … k_ipr_level_max) */
+  rx_cmt_channel_t channel;  /**< CMT channel identifier (k_cmt_channel_0 ... k_cmt_channel_3) */
+  uint8_t          priority; /**< ICU interrupt priority level (k_ipr_level_min ... k_ipr_level_max) */
 } rx_cmt_interrupt_config_t;
 
 /** @brief CMCR register bit positions */
@@ -335,8 +335,8 @@ static void* s_cmt_user_data[k_cmt_max_channels] = {nullptr};
  * @details
  * Uses a switch statement to convert a logical channel identifier into a
  * pointer to the corresponding volatile rx_cmt_channel_regs_t register block.
- * The four CMT channels (CMT0–CMT3) each have a distinct base address in the
- * RX72N memory map; the inline accessor functions cmt0()–cmt3() encode those
+ * The four CMT channels (CMT0-CMT3) each have a distinct base address in the
+ * RX72N memory map; the inline accessor functions cmt0()-cmt3() encode those
  * addresses in a type-safe manner.
  *
  * The default case returns nullptr, which every caller is expected to check
@@ -350,7 +350,7 @@ static void* s_cmt_user_data[k_cmt_max_channels] = {nullptr};
  * @retval Non-null Pointer to rx_cmt_channel_regs_t for the requested channel
  * @retval nullptr   channel is outside the valid range [0, 3]
  *
- * @pre channel is a member of rx_cmt_channel_t (0–3)
+ * @pre channel is a member of rx_cmt_channel_t (0-3)
  * @pre Hardware register addresses must be accessible (clocks enabled before use)
  *
  * @post Return value, if non-null, points to the live hardware register block
@@ -427,7 +427,7 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
  *   - **Valid range**: 1 to PCLKB/8 (typically 1 to 7,500,000 Hz)
  *   - **Constraint**: Must produce a period that fits in 16 bits for at least
  *     one of the four clock dividers
- * @param[out] divider CKS field value to write into CMCR.CKS (0–3)
+ * @param[out] divider CKS field value to write into CMCR.CKS (0-3)
  *   - **On success**: Set to the index of the chosen divider
  *   - **On failure**: Undefined
  * @param[out] cmcor  Raw period count before the -1 adjustment
@@ -443,11 +443,11 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
  * @pre divider must point to a valid uint8_t storage location
  * @pre cmcor must point to a valid uint16_t storage location
  *
- * @post On k_rx_ok: *divider holds the CKS value (0–3) for CMCR
+ * @post On k_rx_ok: *divider holds the CKS value (0-3) for CMCR
  * @post On k_rx_ok: *cmcor holds the period count; caller subtracts 1 before writing CMCOR
  *
  * @note Not thread-safe; pure computation with no shared state modification
- * @note Uses a bounded loop (k_cmt_num_dividers iterations) — NASA Rule 2 compliant
+ * @note Uses a bounded loop (k_cmt_num_dividers iterations) -- NASA Rule 2 compliant
  *
  * @par Thread Safety:
  * Pure computation with no global or static state; safe to call from any context.
@@ -466,7 +466,7 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
  * @endcode
  *
  * @see internal_configure_cmt_timer_registers() Consumes the output of this function
- * @see cmt_constants_t  Divider index constants (k_cmt_div_8 … k_cmt_div_512)
+ * @see cmt_constants_t  Divider index constants (k_cmt_div_8 ... k_cmt_div_512)
  * @see cmt_divider_values_t Actual divisor values (8, 32, 128, 512)
  *
  * @since Version 1.0.0
@@ -509,7 +509,7 @@ internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uin
  * @brief Enable the CMT module clock by clearing the MSTPCRB module-stop bit
  *
  * @details
- * Removes the CMT0–CMT3 peripheral from module-stop state so that the module
+ * Removes the CMT0-CMT3 peripheral from module-stop state so that the module
  * clock is supplied and its registers become accessible. The sequence is:
  *
  * 1. Unlock the write-protect register (PRCR) for PRC1 and PRC3 bits
@@ -572,7 +572,7 @@ static void internal_enable_cmt_module_clock(void)
  * 1. **CMCR** - Sets the CKS (clock-select) field from divider and enables the
  *    compare-match interrupt (CMIE bit).
  * 2. **CMCOR** - Loads the compare-match value after subtracting the adjustment
- *    constant k_cmt_period_adj (−1) so the hardware fires at the correct period.
+ *    constant k_cmt_period_adj (-1) so the hardware fires at the correct period.
  * 3. **CMCNT** - Clears the counter to 0 so the first interrupt occurs exactly
  *    one full period after the timer is started.
  *
@@ -581,11 +581,11 @@ static void internal_enable_cmt_module_clock(void)
  *
  * @param[in] cmt     Pointer to the volatile CMT channel register block
  *   - **Constraint**: Must not be nullptr (asserted)
- * @param[in] divider CKS clock-select field value (0–3) produced by
+ * @param[in] divider CKS clock-select field value (0-3) produced by
  *                    internal_calculate_cmt_params()
  *   - 0 = PCLKB/8, 1 = PCLKB/32, 2 = PCLKB/128, 3 = PCLKB/512
  * @param[in] cmcor   Period count (before adjustment) produced by
- *                    internal_calculate_cmt_params(); the −1 adjustment is
+ *                    internal_calculate_cmt_params(); the -1 adjustment is
  *                    applied internally before writing to hardware
  *
  * @return void This function does not return an error code; the assert on cmt
@@ -595,7 +595,7 @@ static void internal_enable_cmt_module_clock(void)
  * @pre The CMT timer must be stopped before calling this function
  *
  * @post cmt->cmcr  = (divider << CKS_SHIFT) | CMIE_BIT
- * @post cmt->cmcor = cmcor − k_cmt_period_adj
+ * @post cmt->cmcor = cmcor - k_cmt_period_adj
  * @post cmt->cmcnt = 0
  *
  * @note Not thread-safe; caller must ensure the timer is stopped
@@ -664,7 +664,7 @@ static void internal_configure_cmt_timer_registers(volatile rx_cmt_channel_regs_
  * yields CMI0 for channel 0, CMI1 for channel 1, and so on.
  *
  * @param[in] config Interrupt routing and priority specification (passed by value)
- *   - **config.channel**: CMT channel (0–3); mapped to ICU vector
+ *   - **config.channel**: CMT channel (0-3); mapped to ICU vector
  *   - **config.priority**: ICU priority (k_ipr_level_min to k_ipr_level_max)
  *
  * @return rx_err_t Error code indicating success or failure
@@ -1071,7 +1071,7 @@ static void internal_save_cmt_callback(const rx_cmt_channel_t channel,
  * the RTOS scheduler or with interrupts disabled.
  *
  * @par Performance:
- * - Execution time: ~5 µs (mostly register writes)
+ * - Execution time: ~5 us (mostly register writes)
  * - Stack usage: 48 bytes
  *
  * @par Example:

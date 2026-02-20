@@ -39,7 +39,7 @@
  * | Average Current | 0x0B | int16 mA | Rolling average |
  * | Relative SOC | 0x0D | uint8 % | 0-100%, clamping >100% |
  * | Absolute SOC | 0x0E | uint8 % | vs design capacity |
- * | Temperature | 0x08 | int16 °C | 0.1K->°C conversion, range |
+ * | Temperature | 0x08 | int16 degC | 0.1K->degC conversion, range |
  * | Capacity | 0x0F, 0x10 | uint16 mAh | Remaining, full |
  * | Cycle Count | 0x17 | uint16 | Lifetime cycles |
  * | Time Estimates | 0x11, 0x13 | uint16 min | To empty/full |
@@ -75,7 +75,7 @@
  *    - Bus state tracking (initialized, transaction counts)
  *
  * 2. **Data Conversion Validation:**
- *    - Temperature: Verify 0.1K -> °C conversion (temp_c = (0.1K - 2731) / 10)
+ *    - Temperature: Verify 0.1K -> degC conversion (temp_c = (0.1K - 2731) / 10)
  *    - Current: Verify signed int16 interpretation (positive = charge, negative = discharge)
  *    - SOC Clamping: Verify driver clamps >100% to 100% (SBS allows >100%)
  *
@@ -104,7 +104,7 @@
  * | Cell Voltage Reads | 5 | 1-4 cells, nullptr, invalid arg, partial fail |
  * | Current Reads | 6 | Charge, discharge, idle, average, nullptr |
  * | SOC Reads | 7 | Full, half, empty, clamping, nullptr, both types |
- * | Temperature Reads | 4 | +25°C, 0°C, -10°C, nullptr, conversion |
+ * | Temperature Reads | 4 | +25degC, 0degC, -10degC, nullptr, conversion |
  * | Capacity Reads | 5 | Success, nullptr, first/second read fail |
  * | Bulk Status Reads | 8 | Success, nullptr, flags, cells, invalid args |
  * | Error Handling | 3 | NACK, CRC, timeout, uninitialized |
@@ -246,14 +246,14 @@ typedef enum : uint8_t {
  *
  * @details
  * Comprehensive set of test values covering:
- * - Typical operational values (25°C, 14.8V, 50% SOC)
- * - Boundary conditions (0°C, -10°C, 100% SOC, 0% SOC)
+ * - Typical operational values (25degC, 14.8V, 50% SOC)
+ * - Boundary conditions (0degC, -10degC, 100% SOC, 0% SOC)
  * - Invalid/over-range values for clamping tests (>100% SOC)
  * - Charging/discharging current sign conventions
  *
  * **Value Selection Rationale:**
  * - k_test_typical_voltage_mv = 14800: Typical 4S Li-Ion at ~3.7V/cell
- * - k_test_temp_25c_0_1k = 2981: 25.0°C in SBS format (298.1K * 10)
+ * - k_test_temp_25c_0_1k = 2981: 25.0degC in SBS format (298.1K * 10)
  * - k_test_charging_ma = 2000: Typical 2A charge current
  * - k_test_discharging_ma = -1500: Typical 1.5A discharge current
  *
@@ -261,7 +261,7 @@ typedef enum : uint8_t {
  */
 typedef enum : int16_t {
   /* Pack voltage values (mV) */
-  k_test_typical_voltage_mv = 14800, /**< Typical 4S pack voltage (3.7V/cell × 4) */
+  k_test_typical_voltage_mv = 14800, /**< Typical 4S pack voltage (3.7V/cell x 4) */
 
   /* Cell voltage values (mV) */
   k_test_cell_voltage_mv        = 3700, /**< Typical single cell voltage (nominal) */
@@ -277,9 +277,9 @@ typedef enum : int16_t {
   k_test_current_idle_ma = 0,     /**< Idle/zero current (no charge/discharge) */
 
   /* Temperature values (0.1 Kelvin units, SBS format) */
-  k_test_temp_25c_0_1k    = 2981, /**< 25.0°C in 0.1K units (298.1K × 10) */
-  k_test_temp_0c_0_1k     = 2731, /**< 0.0°C in 0.1K units (273.1K × 10) */
-  k_test_temp_neg10c_0_1k = 2631, /**< -10.0°C in 0.1K units (263.1K × 10) */
+  k_test_temp_25c_0_1k    = 2981, /**< 25.0degC in 0.1K units (298.1K x 10) */
+  k_test_temp_0c_0_1k     = 2731, /**< 0.0degC in 0.1K units (273.1K x 10) */
+  k_test_temp_neg10c_0_1k = 2631, /**< -10.0degC in 0.1K units (263.1K x 10) */
 
   /* State of charge values (percent) */
   k_test_soc_full       = 100, /**< Full state of charge 100% */
@@ -301,9 +301,9 @@ typedef enum : int16_t {
   k_test_status_no_flags = 0,   /**< Battery status with no flags set (all clear) */
 
   /* Expected converted temperature values (degrees Celsius) */
-  k_test_temp_25c_expected    = 25,  /**< Expected 25°C after 0.1K->°C conversion */
-  k_test_temp_0c_expected     = 0,   /**< Expected 0°C after conversion */
-  k_test_temp_neg10c_expected = -10, /**< Expected -10°C after conversion */
+  k_test_temp_25c_expected    = 25,  /**< Expected 25degC after 0.1K->degC conversion */
+  k_test_temp_0c_expected     = 0,   /**< Expected 0degC after conversion */
+  k_test_temp_neg10c_expected = -10, /**< Expected -10degC after conversion */
 } test_values_t;
 
 /* =============================================================================
@@ -463,13 +463,13 @@ static void internal_test_setup(void)
  * tests to verify driver correctly assembles complete battery telemetry.
  *
  * **Simulated Battery State:**
- * - Pack Voltage: 14.8V (4S × 3.7V/cell nominal)
+ * - Pack Voltage: 14.8V (4S x 3.7V/cell nominal)
  * - Cell Voltages: All cells balanced at 3.7V
  * - Current: +2000mA (charging at 2A)
  * - Average Current: +2000mA (stable charge rate)
  * - Relative SOC: 100% (fully charged)
  * - Absolute SOC: 50% (battery aged to 50% of design capacity)
- * - Temperature: 25°C (room temperature)
+ * - Temperature: 25degC (room temperature)
  * - Remaining Capacity: 2500mAh (50% of full)
  * - Full Capacity: 5000mAh (aged capacity)
  * - Design Capacity: 5000mAh (factory spec)
@@ -489,7 +489,7 @@ static void internal_test_setup(void)
  * Register 0x0B (AverageCurrent)  = 2000 mA
  * Register 0x0D (RelativeSOC)     = 100 %
  * Register 0x0E (AbsoluteSOC)     = 50 % (shows aging)
- * Register 0x08 (Temperature)     = 2981 (25.0°C in 0.1K)
+ * Register 0x08 (Temperature)     = 2981 (25.0degC in 0.1K)
  * Register 0x0F (RemainingCap)    = 2500 mAh
  * Register 0x10 (FullChargeCap)   = 5000 mAh
  * Register 0x18 (DesignCapacity)  = 5000 mAh
@@ -1154,21 +1154,21 @@ static void test_read_absolute_soc_clamped(void)
  * @defgroup bq4050_temperature_tests BQ4050 Temperature Measurement Tests
  * @brief Tests for rx_bq4050_read_temperature() with unit conversion
  * @details
- * Validates temperature read and 0.1K -> °C conversion:
- * - Positive temperatures (25°C, 0°C)
- * - Negative temperatures (-10°C)
+ * Validates temperature read and 0.1K -> degC conversion:
+ * - Positive temperatures (25degC, 0degC)
+ * - Negative temperatures (-10degC)
  * - Conversion formula: temp_c = (temp_0.1k - 2731) / 10
  * - nullptr pointer validation
  * @{
  */
 
 /**
- * @brief Test read room temperature (25°C)
+ * @brief Test read room temperature (25degC)
  * @details
  * Verifies temperature conversion:
- * - SBS format: 2981 (298.1K * 10 = 25.0°C + 273.1K offset)
- * - Conversion: (2981 - 2731) / 10 = 25°C
- * - Validates correct °C output
+ * - SBS format: 2981 (298.1K * 10 = 25.0degC + 273.1K offset)
+ * - Conversion: (2981 - 2731) / 10 = 25degC
+ * - Validates correct degC output
  */
 static void test_read_temperature_25c(void)
 {
@@ -1184,11 +1184,11 @@ static void test_read_temperature_25c(void)
 }
 
 /**
- * @brief Test read freezing temperature (0°C)
+ * @brief Test read freezing temperature (0degC)
  * @details
- * Verifies 0°C boundary conversion:
+ * Verifies 0degC boundary conversion:
  * - SBS format: 2731 (273.1K * 10)
- * - Conversion: (2731 - 2731) / 10 = 0°C
+ * - Conversion: (2731 - 2731) / 10 = 0degC
  */
 static void test_read_temperature_0c(void)
 {
@@ -1204,11 +1204,11 @@ static void test_read_temperature_0c(void)
 }
 
 /**
- * @brief Test read negative temperature (-10°C)
+ * @brief Test read negative temperature (-10degC)
  * @details
  * Verifies negative temperature conversion:
- * - SBS format: 2631 (263.1K * 10 = -10°C + 273.1K)
- * - Conversion: (2631 - 2731) / 10 = -10°C
+ * - SBS format: 2631 (263.1K * 10 = -10degC + 273.1K)
+ * - Conversion: (2631 - 2731) / 10 = -10degC
  * - Validates signed int16_t handles negatives
  */
 static void test_read_temperature_negative(void)
@@ -1381,7 +1381,7 @@ static void test_read_capacity_second_read_fail(void)
  * - Pack voltage: 14.8V
  * - Cell voltages: All 3.7V (balanced)
  * - Relative SOC: 100%
- * - Temperature: 25°C
+ * - Temperature: 25degC
  * - All status structure fields valid
  */
 static void test_read_status_success(void)

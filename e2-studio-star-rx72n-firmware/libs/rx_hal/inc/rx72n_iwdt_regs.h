@@ -41,7 +41,7 @@
  * | Stop in Software  | No (once started)        | Yes                     |
  * | Sleep Mode Ctrl   | Yes (IWDTCSTPR)          | No                      |
  * | Best For          | **Production safety**    | Development/debugging   |
- * | Timeout Range     | 8.5 ms to 17.5 s         | 4 µs to 2.2 s           |
+ * | Timeout Range     | 8.5 ms to 17.5 s         | 4 us to 2.2 s           |
  *
  * @par Key Features
  * - 14-bit down counter with dedicated 120 kHz oscillator

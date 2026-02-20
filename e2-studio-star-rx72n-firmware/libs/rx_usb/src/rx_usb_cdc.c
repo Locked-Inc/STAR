@@ -114,24 +114,24 @@
  *                   (handled by rx_usb.c)
  *
  * 2. GET_DESCRIPTOR(Device) -> Host requests device descriptor
- *                             ← s_device_desc (18 bytes)
+ *                             <- s_device_desc (18 bytes)
  *                             Device class: 0xEF (Miscellaneous with IAD)
  *
  * 3. SET_ADDRESS(7) -> Host assigns address 7
  *                     Device enters Addressed state
  *
  * 4. GET_DESCRIPTOR(Configuration) -> Host requests full config
- *                                    ← s_config_desc (207 bytes)
+ *                                    <- s_config_desc (207 bytes)
  *                                    3 IADs + 6 interfaces + 9 endpoints
  *
  * 5. GET_DESCRIPTOR(String 0) -> Language ID
- *                               ← 0x0409 (English US)
+ *                               <- 0x0409 (English US)
  *
  * 6. GET_DESCRIPTOR(String 1,2,3) -> Manufacturer, Product, Serial
- *                                   ← "Renesas", "STAR RX72N CDC", "00000001"
+ *                                   <- "Renesas", "STAR RX72N CDC", "00000001"
  *
  * 7. SET_CONFIGURATION(1) -> Host selects configuration 1
- *                           Configure 9 pipes (3 ports × 3 pipes each)
+ *                           Configure 9 pipes (3 ports x 3 pipes each)
  *                           Enable BRDY/BEMP interrupts
  *                           Device enters Configured state
  *                           -> Invoke configured callbacks for all 3 ports
@@ -152,29 +152,29 @@
  *
  * ```
  * Configuration Descriptor (9 bytes)
- *   ├─ bNumInterfaces = 6 (3 CDC functions × 2 interfaces each)
- *   └─ wTotalLength = 207
+ *   +- bNumInterfaces = 6 (3 CDC functions x 2 interfaces each)
+ *   +- wTotalLength = 207
  *
  * IAD 0: Port 0 CDC Function (8 bytes)
- *   ├─ bFirstInterface = 0
- *   ├─ bInterfaceCount = 2
- *   └─ bFunctionClass = 0x02 (CDC)
+ *   +- bFirstInterface = 0
+ *   +- bInterfaceCount = 2
+ *   +- bFunctionClass = 0x02 (CDC)
  *
  *   Interface 0: CDC Control (9 bytes)
- *     ├─ bInterfaceClass = 0x02 (CDC)
- *     ├─ bInterfaceSubClass = 0x02 (ACM)
- *     ├─ bNumEndpoints = 1
- *     ├─ CDC Header Functional Descriptor (5 bytes)
- *     ├─ CDC Call Management Functional Descriptor (5 bytes)
- *     ├─ CDC ACM Functional Descriptor (4 bytes)
- *     ├─ CDC Union Functional Descriptor (5 bytes)
- *     └─ Endpoint 3 Interrupt IN (7 bytes): 8 bytes @ 10ms
+ *     +- bInterfaceClass = 0x02 (CDC)
+ *     +- bInterfaceSubClass = 0x02 (ACM)
+ *     +- bNumEndpoints = 1
+ *     +- CDC Header Functional Descriptor (5 bytes)
+ *     +- CDC Call Management Functional Descriptor (5 bytes)
+ *     +- CDC ACM Functional Descriptor (4 bytes)
+ *     +- CDC Union Functional Descriptor (5 bytes)
+ *     +- Endpoint 3 Interrupt IN (7 bytes): 8 bytes @ 10ms
  *
  *   Interface 1: CDC Data (9 bytes)
- *     ├─ bInterfaceClass = 0x0A (CDC Data)
- *     ├─ bNumEndpoints = 2
- *     ├─ Endpoint 1 Bulk IN (7 bytes): 64 bytes
- *     └─ Endpoint 2 Bulk OUT (7 bytes): 64 bytes
+ *     +- bInterfaceClass = 0x0A (CDC Data)
+ *     +- bNumEndpoints = 2
+ *     +- Endpoint 1 Bulk IN (7 bytes): 64 bytes
+ *     +- Endpoint 2 Bulk OUT (7 bytes): 64 bytes
  *
  * IAD 1: Port 1 CDC Function (8 bytes)
  *   [Same structure as Port 0, interfaces 2-3, endpoints 4-6]
@@ -248,9 +248,9 @@
  * @enduml
  *
  * **Control transfer timing:**
- * - SETUP stage: ~10 µs (read 8-byte packet from registers)
- * - Data stage: ~50-500 µs (depends on descriptor size, 64 bytes/packet)
- * - Status stage: ~5 µs (zero-length packet)
+ * - SETUP stage: ~10 us (read 8-byte packet from registers)
+ * - Data stage: ~50-500 us (depends on descriptor size, 64 bytes/packet)
+ * - Status stage: ~5 us (zero-length packet)
  *
  * **Error handling:** Unsupported requests/descriptors receive STALL response
  *
@@ -258,15 +258,15 @@
  *
  * ## Bulk Transfer Data Flow
  *
- * **Transmission (Host ← RX72N):**
+ * **Transmission (Host <- RX72N):**
  *
  * ```
  * Application: rx_usb_write(port, data, len)
- *            ↓
+ *            v
  * rx_usb.c: Copy to TX ring buffer
- *            ↓
+ *            v
  * USB ISR: BEMP interrupt (buffer empty)
- *            ↓
+ *            v
  * rx_usb_cdc_handle_bulk_in(port)
  *   1. rx_usb_tx_pop(port, data, 64) -> Read from ring buffer
  *   2. rx_usb_hw_fifo_write(pipe, data, len) -> Write to USB FIFO
@@ -279,9 +279,9 @@
  *
  * ```
  * USB Hardware: Packet received in FIFO
- *            ↓
+ *            v
  * USB ISR: BRDY interrupt (buffer ready)
- *            ↓
+ *            v
  * rx_usb_cdc_handle_bulk_out(port)
  *   1. rx_usb_hw_fifo_read(pipe, data, 64) -> Read from USB FIFO
  *   2. rx_usb_rx_push(port, data, len) -> Write to RX ring buffer
@@ -327,16 +327,16 @@
  *
  * ```
  * SET_CONFIGURATION(1) received
- *   ↓
+ *   v
  * Configure Pipe 1 (Port 0 Bulk IN) -> Success
  * Configure Pipe 2 (Port 0 Bulk OUT) -> Success
  * Configure Pipe 3 (Port 0 Interrupt IN) -> Success
  * Configure Pipe 4 (Port 1 Bulk IN) -> Success
  * Configure Pipe 5 (Port 1 Bulk OUT) -> FAILURE [FAIL]
- *   ↓
+ *   v
  * internal_rollback_pipes(5)
  *   -> Disable pipes 1, 2, 3, 4 (set PID to NAK)
- *   ↓
+ *   v
  * Send STALL to host
  * Device remains in Addressed state (not Configured)
  * Host retries SET_CONFIGURATION
@@ -370,18 +370,18 @@
  * **RAM Usage (runtime state):**
  * | Variable | Size | Description |
  * |----------|------|-------------|
- * | `s_line_coding[3]` | 21 bytes | Per-port line coding (3 × 7 bytes) |
- * | `s_control_line_state[3]` | 6 bytes | Per-port DTR/RTS (3 × 2 bytes) |
+ * | `s_line_coding[3]` | 21 bytes | Per-port line coding (3 x 7 bytes) |
+ * | `s_control_line_state[3]` | 6 bytes | Per-port DTR/RTS (3 x 2 bytes) |
  * | `s_cdc_initialized` | 1 byte | Initialization flag |
  * | **Total** | **28 bytes** | All runtime state (RAM) |
  *
  * **CPU Usage:**
  * | Function | Typical | Worst-Case | Frequency |
  * |----------|---------|------------|-----------|
- * | `rx_usb_cdc_handle_setup()` | 10 µs | 500 µs | ~10 Hz during enum, rare after |
- * | `rx_usb_cdc_handle_bulk_out()` | 5 µs | 50 µs | Up to 18 kHz @ full bandwidth |
- * | `rx_usb_cdc_handle_bulk_in()` | 5 µs | 50 µs | Up to 18 kHz @ full bandwidth |
- * | `rx_usb_cdc_init()` | 2 µs | 5 µs | Once at startup |
+ * | `rx_usb_cdc_handle_setup()` | 10 us | 500 us | ~10 Hz during enum, rare after |
+ * | `rx_usb_cdc_handle_bulk_out()` | 5 us | 50 us | Up to 18 kHz @ full bandwidth |
+ * | `rx_usb_cdc_handle_bulk_in()` | 5 us | 50 us | Up to 18 kHz @ full bandwidth |
+ * | `rx_usb_cdc_init()` | 2 us | 5 us | Once at startup |
  *
  * **Total CPU load:** 1-5% idle, up to 40% at maximum USB bandwidth (all 3 ports saturated)
  *
@@ -396,20 +396,20 @@
  *   uint16_t intsts0 = usb0()->intsts0;
  *
  *   if (intsts0 & k_usb_intsts0_ctrt) {
- *     rx_usb_cdc_handle_setup();  // ← ISR context!
+ *     rx_usb_cdc_handle_setup();  // <- ISR context!
  *   }
  *   if (intsts0 & k_usb_intsts0_brdy) {
- *     rx_usb_cdc_handle_bulk_out(port);  // ← ISR context!
+ *     rx_usb_cdc_handle_bulk_out(port);  // <- ISR context!
  *   }
  *   if (intsts0 & k_usb_intsts0_bemp) {
- *     rx_usb_cdc_handle_bulk_in(port);  // ← ISR context!
+ *     rx_usb_cdc_handle_bulk_in(port);  // <- ISR context!
  *   }
  * }
  * ```
  *
  * **ISR safety requirements:**
  * - [OK] No blocking operations (no tx_sleep(), no polling loops)
- * - [OK] Minimal execution time (<100 µs per interrupt)
+ * - [OK] Minimal execution time (<100 us per interrupt)
  * - [OK] No dynamic memory allocation
  * - [OK] Re-entrant code (no shared mutable state without protection)
  * - [OK] Callback invocation safe (callbacks must also be ISR-safe)
@@ -610,7 +610,7 @@ static const char* s_tag = "USB_CDC";
 typedef enum : uint8_t {
   k_usb_subclass_none             = 0x00, /**< No subclass */
   k_usb_protocol_none             = 0x00, /**< No protocol */
-  k_usb_num_interfaces_composite  = 6,    /**< Total interfaces: 3 CDC × 2 interfaces each */
+  k_usb_num_interfaces_composite  = 6,    /**< Total interfaces: 3 CDC x 2 interfaces each */
   k_usb_config_value_default      = 1,    /**< Default configuration value */
   k_usb_alternate_setting_default = 0,    /**< Default alternate setting */
   k_usb_string_index_none         = 0,    /**< No string descriptor */
@@ -1935,7 +1935,7 @@ static void internal_handle_set_control_line_state(const rx_usb_port_id_t port,
  * @warning Do NOT call after USB interrupts enabled (race condition with ISR)
  *
  * @par Performance:
- * Execution time: ~2 µs @ 240 MHz (simple memory initialization)
+ * Execution time: ~2 us @ 240 MHz (simple memory initialization)
  *
  * @par Example:
  * @code
@@ -1948,7 +1948,7 @@ static void internal_handle_set_control_line_state(const rx_usb_port_id_t port,
  * err = rx_usb_init();
  * if (err != k_rx_ok) { return err; }
  *
- * err = rx_usb_cdc_init();  // ← This function
+ * err = rx_usb_cdc_init();  // <- This function
  * if (err != k_rx_ok) { return err; }
  *
  * // Now safe to enable USB interrupts and attach to host
@@ -2131,7 +2131,7 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * wIndex        = 0x0000 [Interface 0 = Port 0]
  * wLength       = 0x0007 [7 bytes]
  * Data: [00 C2 01 00] [00] [00] [08]
- *       ↑ 115200 bps   ↑    ↑    ↑ 8 data bits
+ *       ^ 115200 bps   ^    ^    ^ 8 data bits
  *                    1 stop  No parity
  * -> Action: Update s_line_coding[0]
  * -> Response: Send zero-length status packet (CCPL)
@@ -2148,15 +2148,15 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * **Control Transfer Timing:**
  * | Request Type | Typical Time | Worst-Case |
  * |--------------|--------------|------------|
- * | GET_DESCRIPTOR (Device) | 10 µs | 20 µs |
- * | GET_DESCRIPTOR (Config) | 50 µs | 500 µs (207 bytes) |
- * | SET_ADDRESS | 5 µs | 10 µs |
- * | SET_CONFIGURATION | 100 µs | 200 µs (9 pipes) |
- * | SET_LINE_CODING | 15 µs | 30 µs |
+ * | GET_DESCRIPTOR (Device) | 10 us | 20 us |
+ * | GET_DESCRIPTOR (Config) | 50 us | 500 us (207 bytes) |
+ * | SET_ADDRESS | 5 us | 10 us |
+ * | SET_CONFIGURATION | 100 us | 200 us (9 pipes) |
+ * | SET_LINE_CODING | 15 us | 30 us |
  *
  * **Execution Context:** USB ISR (interrupt priority 5)
  * - [OK] No blocking operations
- * - [OK] Minimal execution time (<500 µs worst-case)
+ * - [OK] Minimal execution time (<500 us worst-case)
  * - [OK] Re-entrant safe (no shared mutable state between SETUP packets)
  *
  * @param None (reads SETUP packet from USB registers)
@@ -2178,8 +2178,8 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * @warning Do NOT block inside this function (breaks ISR timing)
  *
  * @par Performance:
- * - Typical: 10-100 µs (descriptor fetch)
- * - Worst-case: 500 µs (SET_CONFIGURATION with 9 pipes)
+ * - Typical: 10-100 us (descriptor fetch)
+ * - Worst-case: 500 us (SET_CONFIGURATION with 9 pipes)
  * - Frequency: ~10 Hz during enumeration, <1 Hz after configured
  *
  * @par State Machine Impact:
@@ -2195,7 +2195,7 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  *
  *   if (intsts0 & k_usb_intsts0_ctrt) {
  *     usb0()->intsts0 = ~k_usb_intsts0_ctrt;  // Clear interrupt flag
- *     rx_usb_cdc_handle_setup();  // ← This function
+ *     rx_usb_cdc_handle_setup();  // <- This function
  *   }
  * }
  * @endcode
@@ -2204,16 +2204,16 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * @code
  * # Enumeration sequence captured by USBPcap:
  * 1. SETUP [80 06 00 01 00 00 12 00] GET_DESCRIPTOR(Device)
- *    ← DATA [12 01 00 02 EF 02 01 40 5B 04 35 02 00 01 01 02 03 01]
+ *    <- DATA [12 01 00 02 EF 02 01 40 5B 04 35 02 00 01 01 02 03 01]
  *
  * 2. SETUP [00 05 07 00 00 00 00 00] SET_ADDRESS(7)
- *    ← STATUS (zero-length)
+ *    <- STATUS (zero-length)
  *
  * 3. SETUP [80 06 00 02 00 00 CF 00] GET_DESCRIPTOR(Config)
- *    ← DATA [207 bytes: config + 3 IADs + 6 interfaces + 9 endpoints]
+ *    <- DATA [207 bytes: config + 3 IADs + 6 interfaces + 9 endpoints]
  *
  * 4. SETUP [00 09 01 00 00 00 00 00] SET_CONFIGURATION(1)
- *    ← STATUS (zero-length)
+ *    <- STATUS (zero-length)
  *    [Device now ready for data transfer]
  * @endcode
  *
@@ -2273,19 +2273,19 @@ void rx_usb_cdc_handle_setup(void)
  * **Reception Flow (Host -> RX72N):**
  * ```
  * 1. Host sends bulk OUT packet (up to 64 bytes)
- *    ↓
+ *    v
  * 2. USB hardware receives packet into FIFO
- *    ↓
+ *    v
  * 3. BRDY interrupt fires (pipe-specific bit set)
- *    ↓
- * 4. ISR calls rx_usb_cdc_handle_bulk_out(port) ← This function
- *    ↓
+ *    v
+ * 4. ISR calls rx_usb_cdc_handle_bulk_out(port) <- This function
+ *    v
  * 5. Read data from USB FIFO via rx_usb_hw_fifo_read()
- *    ↓
+ *    v
  * 6. Push data to RX ring buffer via rx_usb_rx_push()
- *    ↓
+ *    v
  * 7. If RX_AVAILABLE callback registered, invoke callback
- *    ↓
+ *    v
  * 8. Application calls rx_usb_read(port) to consume data
  * ```
  *
@@ -2324,19 +2324,19 @@ void rx_usb_cdc_handle_setup(void)
  * **Performance Characteristics:**
  * | Packet Size | FIFO Read | Ring Buffer Push | Total Time |
  * |-------------|-----------|------------------|------------|
- * | 1 byte | 1 µs | 0.5 µs | 1.5 µs |
- * | 64 bytes | 5 µs | 2 µs | 7 µs |
- * | Zero-length | 0.5 µs | 0 µs | 0.5 µs |
+ * | 1 byte | 1 us | 0.5 us | 1.5 us |
+ * | 64 bytes | 5 us | 2 us | 7 us |
+ * | Zero-length | 0.5 us | 0 us | 0.5 us |
  *
  * **Interrupt Frequency:**
  * - Idle: 0 Hz (no host traffic)
  * - Low traffic: 1-10 Hz (occasional commands)
- * - High traffic: Up to 18 kHz (1000 frames/sec × 18 packets/frame = saturated USB)
- * - CPU load: ~0.1% idle, up to 12% saturated (7 µs × 18 kHz)
+ * - High traffic: Up to 18 kHz (1000 frames/sec x 18 packets/frame = saturated USB)
+ * - CPU load: ~0.1% idle, up to 12% saturated (7 us x 18 kHz)
  *
  * **Execution Context:** USB ISR (interrupt priority 5)
  * - [OK] No blocking operations
- * - [OK] Fast execution (<10 µs typical)
+ * - [OK] Fast execution (<10 us typical)
  * - [OK] Re-entrant safe (per-port state isolation)
  * - [OK] Callback invoked from ISR context (callback must be ISR-safe)
  *
@@ -2361,8 +2361,8 @@ void rx_usb_cdc_handle_setup(void)
  * @warning Ring buffer overflow causes data loss (application must read promptly)
  *
  * @par Performance:
- * - Typical: 5-7 µs per 64-byte packet
- * - Worst-case: 10 µs (with callback overhead)
+ * - Typical: 5-7 us per 64-byte packet
+ * - Worst-case: 10 us (with callback overhead)
  * - Frequency: Up to 18 kHz @ full bandwidth
  * - CPU load: 0.1-12% (depends on traffic)
  *
@@ -2373,7 +2373,7 @@ void rx_usb_cdc_handle_setup(void)
  *
  *   if (brdysts & (1 << 2)) {  // Pipe 2 (Port 0 Bulk OUT)
  *     usb0()->brdysts = ~(1 << 2);  // Clear interrupt flag
- *     rx_usb_cdc_handle_bulk_out(k_usb_port_proto);  // ← This function
+ *     rx_usb_cdc_handle_bulk_out(k_usb_port_proto);  // <- This function
  *   }
  *
  *   if (brdysts & (1 << 5)) {  // Pipe 5 (Port 1 Bulk OUT)
@@ -2479,23 +2479,23 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * **Transmission Flow (RX72N -> Host):**
  * ```
  * 1. Application calls rx_usb_write(port, data, len)
- *    ↓
+ *    v
  * 2. Data copied to TX ring buffer (rx_usb.c)
- *    ↓
+ *    v
  * 3. First packet loaded into USB FIFO
- *    ↓
+ *    v
  * 4. USB hardware sends packet to host (up to 64 bytes)
- *    ↓
+ *    v
  * 5. BEMP interrupt fires (buffer empty, ready for more)
- *    ↓
- * 6. ISR calls rx_usb_cdc_handle_bulk_in(port) ← This function
- *    ↓
+ *    v
+ * 6. ISR calls rx_usb_cdc_handle_bulk_in(port) <- This function
+ *    v
  * 7. Pop next packet from TX ring buffer via rx_usb_tx_pop()
- *    ↓
+ *    v
  * 8. Write to USB FIFO via rx_usb_hw_fifo_write()
- *    ↓
+ *    v
  * 9. Repeat steps 4-8 until TX buffer empty
- *    ↓
+ *    v
  * 10. If TX buffer empty, invoke TX_COMPLETE callback
  * ```
  *
@@ -2530,11 +2530,11 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * ```c
  * // After last packet sent:
  * rx_usb_tx_pop(port, ...) returns 0 (buffer empty)
- *   ↓
+ *   v
  * No data written to FIFO
- *   ↓
+ *   v
  * BEMP interrupts stop (no more data to send)
- *   ↓
+ *   v
  * TX_COMPLETE callback invoked (by rx_usb_tx_pop())
  * ```
  *
@@ -2547,14 +2547,14 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * **Performance Characteristics:**
  * | Packet Size | Ring Buffer Pop | FIFO Write | Total Time |
  * |-------------|-----------------|------------|------------|
- * | 1 byte | 0.5 µs | 1 µs | 1.5 µs |
- * | 64 bytes | 2 µs | 5 µs | 7 µs |
- * | Zero-length | 0.5 µs | 0 µs | 0.5 µs |
+ * | 1 byte | 0.5 us | 1 us | 1.5 us |
+ * | 64 bytes | 2 us | 5 us | 7 us |
+ * | Zero-length | 0.5 us | 0 us | 0.5 us |
  *
  * **Interrupt Frequency:**
  * - Idle: 0 Hz (no application TX, no BEMP interrupts)
- * - Burst TX: Up to 18 kHz (1000 frames/sec × 18 packets/frame = saturated USB)
- * - CPU load: ~0% idle, up to 12% saturated (7 µs × 18 kHz)
+ * - Burst TX: Up to 18 kHz (1000 frames/sec x 18 packets/frame = saturated USB)
+ * - CPU load: ~0% idle, up to 12% saturated (7 us x 18 kHz)
  *
  * **Typical Transmission Timeline:**
  * ```
@@ -2568,7 +2568,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  *
  * **Execution Context:** USB ISR (interrupt priority 5)
  * - [OK] No blocking operations
- * - [OK] Fast execution (<10 µs typical)
+ * - [OK] Fast execution (<10 us typical)
  * - [OK] Re-entrant safe (per-port state isolation)
  * - [OK] Callback invoked from ISR context (callback must be ISR-safe)
  *
@@ -2593,8 +2593,8 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * @warning High-frequency BEMP interrupts can saturate CPU (~12% @ full bandwidth)
  *
  * @par Performance:
- * - Typical: 5-7 µs per 64-byte packet
- * - Worst-case: 10 µs (with callback overhead)
+ * - Typical: 5-7 us per 64-byte packet
+ * - Worst-case: 10 us (with callback overhead)
  * - Frequency: Up to 18 kHz @ full bandwidth
  * - CPU load: 0% idle, 12% saturated
  *
@@ -2605,7 +2605,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  *
  *   if (bempsts & (1 << 1)) {  // Pipe 1 (Port 0 Bulk IN)
  *     usb0()->bempsts = ~(1 << 1);  // Clear interrupt flag
- *     rx_usb_cdc_handle_bulk_in(k_usb_port_proto);  // ← This function
+ *     rx_usb_cdc_handle_bulk_in(k_usb_port_proto);  // <- This function
  *   }
  *
  *   if (bempsts & (1 << 4)) {  // Pipe 4 (Port 1 Bulk IN)

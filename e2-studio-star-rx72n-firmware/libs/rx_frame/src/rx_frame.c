@@ -124,8 +124,8 @@
  *
  * | Operation | Empty | 64B | 256B | 1KB |
  * |-----------|-------|-----|------|-----|
- * | Encode | 5 µs | 12 µs | 35 µs | 130 µs |
- * | Decode | 5 µs | 12 µs | 35 µs | 130 µs |
+ * | Encode | 5 us | 12 us | 35 us | 130 us |
+ * | Decode | 5 us | 12 us | 35 us | 130 us |
  *
  * **Bottleneck:** CRC calculation dominates for larger payloads.
  * Hardware CRC reduces time by ~4x.
@@ -216,7 +216,7 @@ typedef enum : uint8_t {
  * Defines named byte-offset constants used by the frame encoder, decoder, and
  * the bounded sync-word scanner. k_frame_offset_start marks the beginning of a
  * frame buffer for normal aligned decoding. k_frame_scan_start_offset is the
- * index at which internal_find_sync_offset() begins its forward scan — offset 0
+ * index at which internal_find_sync_offset() begins its forward scan -- offset 0
  * is omitted because rx_frame_decode() has already tested it before invoking
  * the scanner, so the scan starts at the next candidate position.
  *
@@ -802,8 +802,8 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * @post On k_rx_ok, frame contains a fully verified decoded frame
  * @post On k_rx_err_crc_mismatch, *bytes_discarded_out == bytes skipped; caller must still advance stream pointer
  *
- * @note Parameter order follows the canonical convention: decoder input → data input →
- *       frame output → diagnostic output (matching rx_frame_decode()).
+ * @note Parameter order follows the canonical convention: decoder input -> data input ->
+ *       frame output -> diagnostic output (matching rx_frame_decode()).
  * @note Not thread-safe. Caller must synchronize access.
  * @note The scan is bounded at k_frame_max_scan_bytes (NASA Rule 2).
  * @note Log *bytes_discarded_out > 0 as a stream-health diagnostic warning.
@@ -820,7 +820,7 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  *     // Advance stream read pointer past any discarded bytes
  *     stream_read_ptr += discarded;
  * } else if (err == k_rx_err_crc_mismatch) {
- *     // Sync was found but CRC failed — still advance to avoid infinite re-scan
+ *     // Sync was found but CRC failed -- still advance to avoid infinite re-scan
  *     stream_read_ptr += discarded;
  *     rx_log_error(TAG, "sync found but CRC failed");
  * } else {

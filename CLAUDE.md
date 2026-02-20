@@ -41,19 +41,19 @@ Note: External APIs may still use legacy terminology internally. Map these to ou
 
 ### Examples
 
-**❌ WRONG - Don't do this:**
+**[FAIL] WRONG - Don't do this:**
 ```c
 // WRONG - No backward compatibility shims!
-#define motor_set_speed motor_set_velocity_mps  // ❌ Just update call sites
-rx_err_t motor_set_speed(float speed) __attribute__((deprecated));  // ❌ Delete it
+#define motor_set_speed motor_set_velocity_mps  // [FAIL] Just update call sites
+rx_err_t motor_set_speed(float speed) __attribute__((deprecated));  // [FAIL] Delete it
 
 // WRONG - Don't keep old implementations
-rx_err_t old_pid_compute(pid_t* pid) {  // ❌ Delete and update callers
+rx_err_t old_pid_compute(pid_t* pid) {  // [FAIL] Delete and update callers
     return new_pid_compute(pid);
 }
 ```
 
-**✅ CORRECT - Do this:**
+**[PASS] CORRECT - Do this:**
 ```c
 // CORRECT - Just rename the function and update all call sites
 rx_err_t motor_set_velocity_mps(float velocity_mps);
@@ -68,11 +68,39 @@ typedef struct {
 
 Even Protocol Buffers can have breaking changes:
 - Field numbers CAN change if all consumers are updated in the same PR
-- Field types CAN change (e.g., int32 → uint32) if needed
+- Field types CAN change (e.g., int32 -> uint32) if needed
 - Messages CAN be deleted if no longer used
 - Enum values CAN be reordered or removed
 
 **Requirement:** Update firmware, gateway, and ROS2 code in the same PR.
+
+## Character Encoding Policy
+
+**MANDATORY:** ALL source files in the STAR project must use **pure 7-bit ASCII only**
+(Unicode code points U+0000-U+007F). This applies to every `.c`, `.h`, `.go`, `.cpp`,
+`.hpp`, `.proto`, `.ts`, and `.md` file -- including comments, documentation, and string
+literals.
+
+**Rationale:** Multi-byte UTF-8 characters break downstream toolchains (static analyzers,
+MISRA checkers, code coverage tools, Windows IDEs) used by other teams integrating with
+the STAR project.
+
+### Enforcement
+
+A pre-commit hook at `scripts/pre-commit` rejects any commit containing non-ASCII
+characters in source files. CI/CD will also run the check.
+
+To auto-fix non-ASCII in a file:
+
+```
+python3 scripts/fix-encoding.py path/to/file
+```
+
+To check a directory without modifying files:
+
+```
+python3 scripts/fix-encoding.py --check path/to/dir
+```
 
 ## Project Overview
 
@@ -85,7 +113,7 @@ Even Protocol Buffers can have breaking changes:
 | `star-rx72n-firmware/` | Renesas RX72N motor controller (CMake + GNURX + ThreadX) |
 | `star-proto/` | Protocol Buffers schemas with multi-language code generation |
 | `star-rpi5-buildroot/` | Custom Buildroot Linux for Raspberry Pi 5 |
-| `star-gateway/` | Go gateway service (UI ↔ ROS2 bridge) running on RPi5 |
+| `star-gateway/` | Go gateway service (UI <-> ROS2 bridge) running on RPi5 |
 | `star-ui/` | User interface (TypeScript) |
 | `matlab/` | Motor system identification and PID controller design |
 | `schematic/` | KiCad PCB designs |
@@ -93,11 +121,11 @@ Even Protocol Buffers can have breaking changes:
 ### System Communication Flow
 
 ```
-User → UI (TypeScript)
-     → Gateway (Go on RPi5)
-     → ROS2 (C++ on RPi5)
-     → [SPI Bridge - TBD: ROS2 node or custom C]
-     → RX72N (C firmware with ThreadX + nanopb)
+User -> UI (TypeScript)
+     -> Gateway (Go on RPi5)
+     -> ROS2 (C++ on RPi5)
+     -> [SPI Bridge - TBD: ROS2 node or custom C]
+     -> RX72N (C firmware with ThreadX + nanopb)
 ```
 
 **Key Design Notes:**
@@ -113,7 +141,7 @@ User → UI (TypeScript)
 - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
 - **Motor Drivers:** DRV8243S H-bridge with current sensing
 - **Lidar:** RPLiDAR C1 (12m range, IP54)
-- **Communication:** 10 Mbps SPI (RPi5 ↔ RX72N) with nanopb + CRC-32
+- **Communication:** 10 Mbps SPI (RPi5 <-> RX72N) with nanopb + CRC-32
 
 ## Available Skills
 
@@ -132,7 +160,7 @@ Skills provide workflow-specific instructions that load automatically when relev
 - **`/code-review [directory]`** - Review code for NASA Power of 10, SOLID, and STAR standards
 - **`/pid-tune [motor-id]`** - Motor PID controller tuning workflow with MATLAB system identification
 - **`/ros2-style`** - ROS2 C++ style guide and formatting reference for star-ros2 packages
-- **`/simulator-setup`** - Configure e² Studio simulator for RX72N firmware logic testing
+- **`/simulator-setup`** - Configure e^2 Studio simulator for RX72N firmware logic testing
 
 **Note:** Skills replace workflow instructions that were previously embedded in this file, reducing CLAUDE.md size while maintaining full context availability on demand.
 
@@ -270,7 +298,7 @@ This project enforces **MAXIMUM documentation coverage** with zero tolerance for
  * @warning Do not call with varying dt_sec (breaks integral/derivative math)
  *
  * @par Performance:
- * Execution time: ~2 µs @ 240 MHz with -O2 optimization
+ * Execution time: ~2 us @ 240 MHz with -O2 optimization
  *
  * @par Example:
  * @code
@@ -291,7 +319,7 @@ This project enforces **MAXIMUM documentation coverage** with zero tolerance for
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 4 preconditions, 3 postconditions
+ * - Rule 5: [PASS] 4 preconditions, 3 postconditions
  */
 rx_err_t rx_pid_compute(rx_pid_handle_t* pid, float setpoint,
                         float measured, float dt_sec, float* output);
@@ -327,7 +355,7 @@ typedef enum : uint8_t {
      * @details
      * All outputs disabled, no power to motor.
      * @par Entry Actions: Disable PWM, clear faults
-     * @par Valid Transitions: IDLE → RUNNING
+     * @par Valid Transitions: IDLE -> RUNNING
      */
     k_motor_state_idle = 0,
 
@@ -337,7 +365,7 @@ typedef enum : uint8_t {
      * PID active, outputs enabled, fault monitoring active.
      * @par Entry Actions: Enable PWM, start PID loop
      * @par Do Actions: Update PID at 100 Hz
-     * @par Valid Transitions: RUNNING → IDLE, RUNNING → ERROR
+     * @par Valid Transitions: RUNNING -> IDLE, RUNNING -> ERROR
      */
     k_motor_state_running = 1,
 
@@ -346,7 +374,7 @@ typedef enum : uint8_t {
      * @details
      * Recoverable fault (overcurrent, encoder error).
      * @par Entry Actions: Emergency disable outputs, log fault
-     * @par Valid Transitions: ERROR → IDLE (after reset)
+     * @par Valid Transitions: ERROR -> IDLE (after reset)
      */
     k_motor_state_error = 2,
 
@@ -428,7 +456,7 @@ enums, variables, typedefs, and macros.
 **DO NOT use traditional include guards:**
 
 ```c
-// ❌ WRONG - Don't use traditional guards
+// [FAIL] WRONG - Don't use traditional guards
 #ifndef STAR_RX72N_FILENAME_H
 #define STAR_RX72N_FILENAME_H
 // ...
@@ -451,17 +479,17 @@ enums, variables, typedefs, and macros.
    } motor_state_t;
 
    typedef enum : uint16_t {
-     k_timeout_ms  = 1000,    // Integer constant → enum
-     k_max_retries = 3,       // Integer constant → enum
+     k_timeout_ms  = 1000,    // Integer constant -> enum
+     k_max_retries = 3,       // Integer constant -> enum
    } motor_config_t;
 
    // WRONG: Untyped enum (no underlying type specified)
    typedef enum {
-     k_motor_state_idle = 0,  // ❌ Missing `: uint8_t`
+     k_motor_state_idle = 0,  // [FAIL] Missing `: uint8_t`
    } motor_state_t;
 
    // WRONG: Never use macros for integer constants
-   #define TIMEOUT_MS (1000)  // ❌ Should be enum!
+   #define TIMEOUT_MS (1000)  // [FAIL] Should be enum!
    ```
 
    **C23 Typed Enum Requirements (MANDATORY for RX72N firmware):**
@@ -481,12 +509,12 @@ enums, variables, typedefs, and macros.
    static const float s_pid_kp = 1.0f;
 
    // WRONG: Never use macros for floats
-   #define MAX_VELOCITY_MPS (2.5f)  // ❌ Should be const!
+   #define MAX_VELOCITY_MPS (2.5f)  // [FAIL] Should be const!
    ```
 
 3. **Macros** - ONLY for these 3 specific cases:
    ```c
-   // ✓ ALLOWED: Reducing duplicated code
+   // [PASS] ALLOWED: Reducing duplicated code
    #define RX_RETURN_ON_ERROR(err, tag, msg) \
        do { \
            rx_err_t _err = (err); \
@@ -496,29 +524,29 @@ enums, variables, typedefs, and macros.
            } \
        } while (0)
 
-   // ✓ ALLOWED: Conditional compilation (optimization)
+   // [PASS] ALLOWED: Conditional compilation (optimization)
    #if LOG_LEVEL >= k_log_error
    #define rx_log_error(tag, msg) internal_rx_log_error((tag), (msg))
    #else
    #define rx_log_error(tag, msg) ((void)0)
    #endif
 
-   // ✓ ALLOWED: Build configuration flags
+   // [PASS] ALLOWED: Build configuration flags
    #ifdef __RX__
    #define RX_CRC32_USE_HARDWARE
    #endif
 
-   // ❌ FORBIDDEN: Hardware register addresses (use inline accessors)
+   // [FAIL] FORBIDDEN: Hardware register addresses (use inline accessors)
    #define CMT0_BASE ((rx_cmt_channel_regs_t*)0x00088000)  // Wrong!
    #define CMT0      (*CMT0_BASE)                          // Wrong!
 
-   // ❌ FORBIDDEN: Backward compatibility (no releases = no compatibility)
+   // [FAIL] FORBIDDEN: Backward compatibility (no releases = no compatibility)
    #define old_function new_function  // Wrong! Update call sites instead
    ```
 
 4. **Hardware Register Access** - Use inline accessor functions:
    ```c
-   // ✓ CORRECT: Inline accessor with typed enum address
+   // [PASS] CORRECT: Inline accessor with typed enum address
    typedef enum : uint32_t {
        k_cmt0_base_addr  = 0x00088000,
        k_port0_base_addr = 0x000C0000,
@@ -546,7 +574,7 @@ enums, variables, typedefs, and macros.
 **ZERO TOLERANCE for magic numbers.** ALL numeric literals must be named typed enums, including:
 
 ```c
-// ✓ CORRECT: Array indices as typed enums
+// [PASS] CORRECT: Array indices as typed enums
 typedef enum : uint8_t {
     k_idx_high_byte = 0,
     k_idx_low_byte  = 1,
@@ -554,30 +582,30 @@ typedef enum : uint8_t {
 
 buf[k_idx_high_byte] = (val >> k_shift_byte);
 
-// ✓ CORRECT: Bit shifts as typed enums
+// [PASS] CORRECT: Bit shifts as typed enums
 typedef enum : uint8_t {
     k_shift_byte   = 8,
     k_shift_enable = 7,
 } bit_shifts_t;
 
-// ✓ CORRECT: Protocol offsets as typed enums
+// [PASS] CORRECT: Protocol offsets as typed enums
 typedef enum : uint8_t {
     k_offset_sync    = 0,
     k_offset_payload = 4,
 } frame_offsets_t;
 
-// ✓ CORRECT: Bit masks as typed enums (use uint32_t for masks)
+// [PASS] CORRECT: Bit masks as typed enums (use uint32_t for masks)
 typedef enum : uint32_t {
     k_mask_byte   = 0xFF,
     k_mask_enable = 0x80,
 } bit_masks_t;
 
-// ❌ WRONG: Magic numbers
+// [FAIL] WRONG: Magic numbers
 buf[0] = (val >> 8);              // What is 0? What is 8?
 frame[4] = payload;               // What's at index 4?
 REG = (1 << 7) | (3 << 3);       // Which bits? Why?
 
-// ❌ WRONG: Untyped enums
+// [FAIL] WRONG: Untyped enums
 typedef enum {                    // Missing `: uint8_t`
     k_idx_high_byte = 0,
 } be16_byte_idx_t;
@@ -618,55 +646,55 @@ typedef enum {                    // Missing `: uint8_t`
 
 The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded code with one intentional deviation for testability.
 
-### Rule 1: Simplify Control Flow ✓ COMPLIANT
+### Rule 1: Simplify Control Flow [PASS] COMPLIANT
 - No `goto`, `setjmp`/`longjmp`, or recursion
 - All control flow uses `if`/`while`/`for` only
 - Example: `rx_pid_init()` uses sequential error checking, no goto cleanup
 
-### Rule 2: Fixed Loop Upper-Bounds ✓ COMPLIANT
+### Rule 2: Fixed Loop Upper-Bounds [PASS] COMPLIANT
 - All loops have statically provable bounds
 - Exception: Main control loops use `while(1)` with watchdog
 - Example: `for (uint8_t i = 0; i < k_max_retries; i++)` - enum provides bound
 
-### Rule 3: No Dynamic Memory After Initialization ✓ COMPLIANT
+### Rule 3: No Dynamic Memory After Initialization [PASS] COMPLIANT
 - **Zero malloc/free in RX72N firmware** (safety-critical)
 - All buffers statically allocated with enum-defined sizes
 - ThreadX stacks are static arrays
 - Example: `char items[k_max_items][k_max_desc_len]` - compile-time allocation
 
-### Rule 4: Keep Functions Short (~60 lines) ✓ COMPLIANT
+### Rule 4: Keep Functions Short (~60 lines) [PASS] COMPLIANT
 - Functions represent single verifiable units
 - Example: `rx_pid_compute()` is 44 lines - complete PID algorithm in one screen
 
-### Rule 5: Use Assertions/Validation ✓ COMPLIANT
+### Rule 5: Use Assertions/Validation [PASS] COMPLIANT
 - Minimum 2 validation checks per function
 - **Pre-conditions**: `RX_CHECK_NULL_PTR`, state validation
 - **Post-conditions**: Output bounds checking, invariant validation
-- Example: `rx_pid_compute()` has 4 checks (NULL×2, initialized, dt > 0)
+- Example: `rx_pid_compute()` has 4 checks (NULLx2, initialized, dt > 0)
 
-### Rule 6: Declare Data at Smallest Scope ✓ COMPLIANT
+### Rule 6: Declare Data at Smallest Scope [PASS] COMPLIANT
 - Variables declared close to first use
 - Loop counters in for-statement: `for (uint8_t i = 0; ...)`
 - File-scope variables use `static` prefix (`s_tag`)
 
-### Rule 7: Check All Return Values ✓ COMPLIANT
+### Rule 7: Check All Return Values [PASS] COMPLIANT
 - All function returns validated or explicitly cast to `(void)`
 - Use `RX_RETURN_ON_ERROR` macro for propagation
 - Example: `rx_err_t ret = bus_init(config); if (ret != k_rx_ok) return ret;`
 
-### Rule 8: Limit Preprocessor Use ✓ COMPLIANT
+### Rule 8: Limit Preprocessor Use [PASS] COMPLIANT
 - **C23 typed enums** for ALL integer constants (mandatory): `typedef enum : uint8_t { ... } name_t;`
 - Macros ONLY for: duplicated code, conditional compilation, build flags
 - Hardware register access: Use inline accessor functions (never macros)
 - See "Constants and Macros (RX72N C Firmware)" section above for complete policy
 
-### Rule 9: Restrict Pointer Use ⚠️ INTENTIONAL DEVIATION
+### Rule 9: Restrict Pointer Use [WARN] INTENTIONAL DEVIATION
 - **Standard**: Maximum one level of dereferencing, no function pointers
 - **STAR Deviation**: Function pointers ALLOWED for Dependency Inversion Principle (DIP)
 - **Why**: Enables mock implementations for unit testing and hardware abstraction
 - Example: `typedef struct { rx_err_t (*read)(void* ctx, ...); void* ctx; } bus_interface_t;`
 
-### Rule 10: Compile with Maximum Warnings ✓ COMPLIANT
+### Rule 10: Compile with Maximum Warnings [PASS] COMPLIANT
 - CMake flags: `-Wall -Wextra -Werror`
 - Build fails on ANY warning
 - CI/CD enforces zero-warning builds
@@ -709,7 +737,7 @@ The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded
 
 For motor PID tuning workflow (MATLAB system identification, controller design, firmware integration), use the **`/pid-tune`** skill.
 
-**Motor Model**: G(s) = 3.665 / (0.075s + 1) - DC motor first-order model with gain = 3.665 rad/s/V and time constant τ = 0.075 s (75 ms)
+**Motor Model**: G(s) = 3.665 / (0.075s + 1) - DC motor first-order model with gain = 3.665 rad/s/V and time constant tau = 0.075 s (75 ms)
 
 ## CI/CD
 

@@ -14,7 +14,7 @@ Goal: Establish package and implement low-level SPI communication.
 - [x] Task: Conductor - User Manual Verification 'Phase 1' (Protocol in workflow.md)
 
 ## Phase 2: Message Conversion (Kinematics & Odometry)
-Goal: Implement bidirectional ROS2 ↔ Protobuf conversion with robot kinematics.
+Goal: Implement bidirectional ROS2 <-> Protobuf conversion with robot kinematics.
 
 - [x] Task: Implement `SpiMessageConverter::twist_to_velocity_command()`.
     - [x] Sub-task: Implement differential drive kinematics.

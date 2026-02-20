@@ -17,21 +17,21 @@ This workspace implements a Visual-LiDAR sensor fusion architecture using **RTAB
 **Coordinate Frames (REP-105):**
 ```
 map (RTAB-Map - global, corrected)
-  └─ odom (EKF - local, drift-prone)
-      └─ base_link (robot center)
-          ├─ laser_frame (RPLiDAR C1)
-          └─ camera_link (OAK-D RGB-D camera)
+  +- odom (EKF - local, drift-prone)
+      +- base_link (robot center)
+          +- laser_frame (RPLiDAR C1)
+          +- camera_link (OAK-D RGB-D camera)
 ```
 
 **Node Communication Flow:**
 ```
-/cmd_vel → star_spi_bridge → /odom/unfiltered
-                           → /joint_states
-                           → [SPI @ 10MHz] → RX72N
+/cmd_vel -> star_spi_bridge -> /odom/unfiltered
+                           -> /joint_states
+                           -> [SPI @ 10MHz] -> RX72N
 
-/odom/unfiltered + IMU → robot_localization (EKF) → /odom/filtered
+/odom/unfiltered + IMU -> robot_localization (EKF) -> /odom/filtered
 
-/odom/filtered + /scan + RGB-D → rtabmap_ros → /map
+/odom/filtered + /scan + RGB-D -> rtabmap_ros -> /map
 ```
 
 ---
@@ -208,10 +208,10 @@ The baseline script automatically:
 
 | Scenario | Metric | Target | Status |
 |----------|--------|--------|--------|
-| Idle | Telemetry drop rate | < 1% | ✅ Expected |
-| Active Control | Teleop drop rate | < 1% | ✅ Critical |
-| Active Control | Telemetry drop rate | < 5% | ✅ Acceptable |
-| Stress Test | Telemetry drop rate | < 10% | ⚠️ Degraded but acceptable |
+| Idle | Telemetry drop rate | < 1% | [PASS] Expected |
+| Active Control | Teleop drop rate | < 1% | [PASS] Critical |
+| Active Control | Telemetry drop rate | < 5% | [PASS] Acceptable |
+| Stress Test | Telemetry drop rate | < 10% | [WARN] Degraded but acceptable |
 
 ### Monitoring During Collection
 
@@ -239,9 +239,9 @@ For complete baseline methodology, analysis procedures, and troubleshooting:
 
 | Package | Status | Lines | Description | Pull Request |
 |---------|--------|-------|-------------|--------------|
-| `star_bringup` | 🟢 Skeleton | 25 | Launch files and system bringup | This PR (#141) |
-| `star_spi_bridge` | 🔴 Not Included | - | SPI communication to RX72N | [PR #145](https://github.com/Locked-Inc/STAR/pull/145) |
-| `star_gateway_bridge` | 🔴 Not Included | - | gRPC bridge to Go gateway | [PR #146](https://github.com/Locked-Inc/STAR/pull/146) |
+| `star_bringup` | [GREEN] Skeleton | 25 | Launch files and system bringup | This PR (#141) |
+| `star_spi_bridge` | [RED] Not Included | - | SPI communication to RX72N | [PR #145](https://github.com/Locked-Inc/STAR/pull/145) |
+| `star_gateway_bridge` | [RED] Not Included | - | gRPC bridge to Go gateway | [PR #146](https://github.com/Locked-Inc/STAR/pull/146) |
 
 **Note:** This PR establishes the foundation (Docker, devcontainer, CI/CD, docs). Application nodes are in separate PRs.
 
@@ -256,49 +256,49 @@ For complete baseline methodology, analysis procedures, and troubleshooting:
 ### Node Graph
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                         ROS2 Graph                          │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  /cmd_vel (geometry_msgs/Twist)                            │
-│     │                                                       │
-│     ├──> star_spi_bridge ──> /odom/unfiltered (nav_msgs/Odometry)
-│     │                    └──> /joint_states (sensor_msgs/JointState)
-│     │                    └──> [SPI] → RX72N Motor Controller
-│     │                                                       │
-│  /odom/unfiltered + /imu/data                              │
-│     │                                                       │
-│     └──> robot_localization (EKF)                          │
-│              └──> /odom/filtered (nav_msgs/Odometry)       │
-│                                                             │
-│  /odom/filtered + /scan (sensor_msgs/LaserScan)            │
-│                 + /rgb/image_raw + /depth/image_raw        │
-│     │                                                       │
-│     └──> rtabmap_ros (SLAM)                                │
-│              ├──> /map (nav_msgs/OccupancyGrid)            │
-│              └──> /rtabmap/grid_map (3D octomap)           │
-│                                                             │
-│  star_gateway_bridge (gRPC ↔ Go Gateway)                   │
-│     ├──> Subscribes: /robot_status, /battery_state         │
-│     └──> Publishes: /teleop/cmd_vel                        │
-│                                                             │
-│  star_safety_monitor (Watchdog)                            │
-│     ├──> Monitors: Battery, Current, Heartbeat             │
-│     └──> Publishes: /emergency_stop (std_msgs/Bool)        │
-│                                                             │
-└─────────────────────────────────────────────────────────────┘
++-------------------------------------------------------------+
+|                         ROS2 Graph                          |
++-------------------------------------------------------------+
+|                                                             |
+|  /cmd_vel (geometry_msgs/Twist)                            |
+|     |                                                       |
+|     +--> star_spi_bridge --> /odom/unfiltered (nav_msgs/Odometry)
+|     |                    +--> /joint_states (sensor_msgs/JointState)
+|     |                    +--> [SPI] -> RX72N Motor Controller
+|     |                                                       |
+|  /odom/unfiltered + /imu/data                              |
+|     |                                                       |
+|     +--> robot_localization (EKF)                          |
+|              +--> /odom/filtered (nav_msgs/Odometry)       |
+|                                                             |
+|  /odom/filtered + /scan (sensor_msgs/LaserScan)            |
+|                 + /rgb/image_raw + /depth/image_raw        |
+|     |                                                       |
+|     +--> rtabmap_ros (SLAM)                                |
+|              +--> /map (nav_msgs/OccupancyGrid)            |
+|              +--> /rtabmap/grid_map (3D octomap)           |
+|                                                             |
+|  star_gateway_bridge (gRPC <-> Go Gateway)                   |
+|     +--> Subscribes: /robot_status, /battery_state         |
+|     +--> Publishes: /teleop/cmd_vel                        |
+|                                                             |
+|  star_safety_monitor (Watchdog)                            |
+|     +--> Monitors: Battery, Current, Heartbeat             |
+|     +--> Publishes: /emergency_stop (std_msgs/Bool)        |
+|                                                             |
++-------------------------------------------------------------+
 ```
 
 ### TF Tree
 
 ```
 map (published by rtabmap_ros)
- └─ odom (published by robot_localization)
-     └─ base_link (robot center)
-         ├─ laser_frame (RPLiDAR C1 mount)
-         ├─ camera_link (OAK-D camera mount)
-         ├─ wheel_left_link (left wheel)
-         └─ wheel_right_link (right wheel)
+ +- odom (published by robot_localization)
+     +- base_link (robot center)
+         +- laser_frame (RPLiDAR C1 mount)
+         +- camera_link (OAK-D camera mount)
+         +- wheel_left_link (left wheel)
+         +- wheel_right_link (right wheel)
 ```
 
 **Static Transforms:** Defined in launch files (TODO: Issue #140)

@@ -33,7 +33,7 @@ bool SpiMessageConverter::twist_to_velocity_command(
 
   // Clamp to hardware limits (e.g. +/- 2.0 m/s as per spec)
   // Although the firmware should also handle this, good to be safe.
-  // The spec says: "Velocity Limits: ±2.0 m/s per wheel"
+  // The spec says: "Velocity Limits: +/-2.0 m/s per wheel"
   const double k_max_vel = 2.0;
   right_vel = std::clamp(right_vel, -k_max_vel, k_max_vel);
   left_vel = std::clamp(left_vel, -k_max_vel, k_max_vel);

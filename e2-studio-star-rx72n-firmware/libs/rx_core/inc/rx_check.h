@@ -80,7 +80,7 @@
  *
  * All macros expand to minimal code:
  * - **Success path:** 1-2 comparisons (2-4 cycles @ 240 MHz)
- * - **Error path:** Logging + action (varies, but typically < 100 µs for non-fatal)
+ * - **Error path:** Logging + action (varies, but typically < 100 us for non-fatal)
  * - **Fatal error:** Logging + infinite loop (system halted)
  * - **Memory:** 0 bytes overhead (pure compile-time code generation)
  *
@@ -332,7 +332,7 @@ extern "C" {
  * - Useful during development for post-mortem debugging
  *
  * @par Performance:
- * - Execution time: ~500 µs (UART output dominates)
+ * - Execution time: ~500 us (UART output dominates)
  * - Stack usage: ~16 bytes (local variables, return address)
  * - UART bandwidth: ~100 bytes @ 115200 baud = ~9ms transmission time
  * - **Not performance-critical:** Only called on fatal errors

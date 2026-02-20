@@ -38,7 +38,7 @@
  * 3. Restore any registers that changed unexpectedly
  * 4. Count corrections for diagnostics/logging
  *
- * The refresh is non-intrusive and completes in <5 µs @ 240 MHz, making it
+ * The refresh is non-intrusive and completes in <5 us @ 240 MHz, making it
  * suitable for 1-10 Hz refresh rates from the main control loop.
  *
  * ## Protected Registers
@@ -70,7 +70,7 @@
  * ## Performance Characteristics
  *
  * - **Memory usage**: 52 bytes static (10 PORTs + 16 IPRs + 4 MSTCPRs)
- * - **Execution time**: ~4.2 µs @ 240 MHz (worst case, all registers checked)
+ * - **Execution time**: ~4.2 us @ 240 MHz (worst case, all registers checked)
  * - **Interrupt latency**: ~200 ns during PRCR unlock (brief interrupt disable)
  * - **Recommended refresh rate**: 1-10 Hz (balance detection speed vs overhead)
  *
@@ -79,7 +79,7 @@
  * | Requirement | Value | Notes |
  * |-------------|-------|-------|
  * | MCU | RX72N | Uses RX72N-specific register addresses |
- * | CPU Speed | ≥120 MHz | Timing verified at 240 MHz |
+ * | CPU Speed | >=120 MHz | Timing verified at 240 MHz |
  * | RAM | 52 bytes | Static storage for golden values |
  * | PRCR Support | Required | For MSTPCR write protection unlock |
  *
@@ -210,9 +210,9 @@ extern "C" {
  * peripheral usage (4 motors = 8 GPIOs, plus sensors and communication).
  *
  * Memory allocation:
- * - PORT guards: 10 × 1 byte = 10 bytes
- * - IPR guards: 16 × 1 byte = 16 bytes
- * - MSTPCR guards: 4 × 4 bytes = 16 bytes (hardcoded in .c file)
+ * - PORT guards: 10 x 1 byte = 10 bytes
+ * - IPR guards: 16 x 1 byte = 16 bytes
+ * - MSTPCR guards: 4 x 4 bytes = 16 bytes (hardcoded in .c file)
  * - Metadata: 10 bytes (counters, flags)
  * - **Total: 52 bytes static RAM**
  *
@@ -338,7 +338,7 @@ typedef enum : uint8_t {
  * @note **Thread Safety**: Not thread-safe. Call only from main thread during startup.
  * @note **Re-initialization**: Safe to call multiple times. Use to update golden
  *       values after intentional configuration changes (e.g., mode switch).
- * @note **Execution Time**: ~2.5 µs @ 240 MHz (read-only, no writes)
+ * @note **Execution Time**: ~2.5 us @ 240 MHz (read-only, no writes)
  * @note **Memory**: Allocates 52 bytes static RAM on first call
  *
  * @attention This function captures CURRENT register values. If peripherals are
@@ -412,7 +412,7 @@ typedef enum : uint8_t {
  * events are counted for diagnostics and telemetry.
  *
  * This function is the core of the register guard protection mechanism. It
- * executes quickly (<5 µs) and is designed to be called periodically from
+ * executes quickly (<5 us) and is designed to be called periodically from
  * the main control loop at 1-10 Hz.
  *
  * Algorithm steps:
@@ -435,19 +435,19 @@ typedef enum : uint8_t {
  * @par Performance Analysis:
  *
  * **Best Case** (no corrections needed):
- * - Execution time: ~4.2 µs @ 240 MHz
+ * - Execution time: ~4.2 us @ 240 MHz
  * - Memory reads: 30 (10 PORTs + 16 IPRs + 4 MSTCPRs)
  * - Memory writes: 0
  * - Interrupt latency: ~200 ns (PRCR unlock/lock)
  *
  * **Worst Case** (all registers corrupted):
- * - Execution time: ~5.8 µs @ 240 MHz
+ * - Execution time: ~5.8 us @ 240 MHz
  * - Memory reads: 30
  * - Memory writes: 30
  * - Interrupt latency: ~200 ns (same)
  *
  * **Average Case** (1-2 corrections per refresh):
- * - Execution time: ~4.5 µs @ 240 MHz
+ * - Execution time: ~4.5 us @ 240 MHz
  * - CPU overhead at 10 Hz: 0.0045% (negligible)
  *
  * @return void (no return value)
@@ -487,12 +487,12 @@ typedef enum : uint8_t {
  *   stop
  * endif
  *
- * :Refresh PORT.PDR registers\n(~1.5 µs);
- * :Refresh ICU.IPR registers\n(~1.8 µs);
+ * :Refresh PORT.PDR registers\n(~1.5 us);
+ * :Refresh ICU.IPR registers\n(~1.8 us);
  *
  * :Disable interrupts;
  * :Unlock PRCR;
- * :Refresh MSTPCR registers\n(~0.9 µs);
+ * :Refresh MSTPCR registers\n(~0.9 us);
  * :Lock PRCR;
  * :Enable interrupts;
  *
@@ -503,7 +503,7 @@ typedef enum : uint8_t {
  * @code{.c}
  * void main_control_loop(void) {
  *     typedef enum : uint32_t {
- *         k_refresh_interval_100hz = 100,  // Refresh at 1 Hz (100 × 10ms)
+ *         k_refresh_interval_100hz = 100,  // Refresh at 1 Hz (100 x 10ms)
  *     } refresh_config_t;
  *
  *     uint32_t loop_counter = 0;

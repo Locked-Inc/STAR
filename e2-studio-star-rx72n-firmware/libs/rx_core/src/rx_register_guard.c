@@ -114,9 +114,9 @@
  *
  * | Operation | Best Case | Worst Case | Average |
  * |-----------|-----------|------------|---------|
- * | init() | 2.0 µs | 2.5 µs | 2.2 µs |
- * | refresh() (no corrections) | 4.0 µs | 4.5 µs | 4.2 µs |
- * | refresh() (all corrected) | 5.5 µs | 6.0 µs | 5.8 µs |
+ * | init() | 2.0 us | 2.5 us | 2.2 us |
+ * | refresh() (no corrections) | 4.0 us | 4.5 us | 4.2 us |
+ * | refresh() (all corrected) | 5.5 us | 6.0 us | 5.8 us |
  * | get_correction_count() | 15 ns | 20 ns | 18 ns |
  * | reset_count() | 25 ns | 35 ns | 30 ns |
  * | is_initialized() | 12 ns | 18 ns | 15 ns |
@@ -330,7 +330,7 @@ typedef struct {
  * @enduml
  *
  * @invariant corrections >= 0 (unsigned)
- * @invariant initialized ∈ {0, 1}
+ * @invariant initialized in {0, 1}
  *
  * @see s_state Static instance of this structure
  *
@@ -437,8 +437,8 @@ static register_guard_state_t s_state = {0};
  * - PORTG, PORTH (176-pin only)
  *
  * @par Execution Timing:
- * - 12 register reads × ~15 cycles = ~180 cycles
- * - At 240 MHz: ~0.75 µs
+ * - 12 register reads x ~15 cycles = ~180 cycles
+ * - At 240 MHz: ~0.75 us
  *
  * @pre None - safe to call anytime
  * @post s_state.pdr contains current PDR values
@@ -491,8 +491,8 @@ static void internal_capture_pdr(void)
  * | MSTPCRD | GPTW0-3, USB0, CRC |
  *
  * @par Execution Timing:
- * - 4 register reads × ~20 cycles = ~80 cycles
- * - At 240 MHz: ~0.33 µs
+ * - 4 register reads x ~20 cycles = ~80 cycles
+ * - At 240 MHz: ~0.33 us
  *
  * @pre None - safe to call anytime
  * @post s_state.mstpcr contains current MSTPCR values
@@ -557,9 +557,9 @@ static void internal_capture_mstpcr(void)
  * @enddot
  *
  * @par Performance:
- * - **Best case** (no mismatches): 12 reads, 0 writes = ~1.5 µs
- * - **Worst case** (all mismatched): 12 reads, 12 writes = ~2.5 µs
- * - **Typical case**: 12 reads, 0-1 writes = ~1.6 µs
+ * - **Best case** (no mismatches): 12 reads, 0 writes = ~1.5 us
+ * - **Worst case** (all mismatched): 12 reads, 12 writes = ~2.5 us
+ * - **Typical case**: 12 reads, 0-1 writes = ~1.6 us
  *
  * @pre s_state.pdr must contain valid golden values (init() called)
  * @post All PORT PDR registers match golden values
@@ -699,8 +699,8 @@ static void internal_refresh_pdr(void)
  * @enddot
  *
  * @par Performance:
- * - **Best case** (no mismatches): 4 reads, fast return = ~0.5 µs
- * - **Worst case** (all mismatched): 8 reads, 4 writes, PRCR unlock = ~1.5 µs
+ * - **Best case** (no mismatches): 4 reads, fast return = ~0.5 us
+ * - **Worst case** (all mismatched): 8 reads, 4 writes, PRCR unlock = ~1.5 us
  * - **Interrupt latency**: ~200 ns (time interrupts are disabled)
  *
  * @par Inline Assembly (NASA Rule 9 Deviation):
@@ -836,7 +836,7 @@ static void internal_refresh_mstpcr(void)
  * @note **Thread Safety**: Not thread-safe. Call from main thread during startup.
  * @note **Re-initialization**: Safe to call multiple times to re-capture golden
  *       values after intentional configuration changes.
- * @note **Execution Time**: ~2.2 µs @ 240 MHz
+ * @note **Execution Time**: ~2.2 us @ 240 MHz
  * @note **Conditional Compilation**: On non-RX targets (unit tests), capture
  *       functions are no-ops but module state is still updated.
  *
@@ -905,8 +905,8 @@ rx_err_t rx_register_guard_init(void)
  *   start [label="rx_register_guard_refresh()"];
  *   check_init [label="initialized?", shape=diamond];
  *   early_return [label="Return (no-op)"];
- *   refresh_pdr [label="internal_refresh_pdr()\n~1.5 µs"];
- *   refresh_mstpcr [label="internal_refresh_mstpcr()\n~0.5-1.5 µs"];
+ *   refresh_pdr [label="internal_refresh_pdr()\n~1.5 us"];
+ *   refresh_mstpcr [label="internal_refresh_mstpcr()\n~0.5-1.5 us"];
  *   done [label="Done"];
  *
  *   start -> check_init;
@@ -922,8 +922,8 @@ rx_err_t rx_register_guard_init(void)
  * | Scenario | Time @ 240 MHz | Notes |
  * |----------|---------------|-------|
  * | Not initialized | ~10 ns | Early return |
- * | No corrections | ~4.2 µs | Typical case |
- * | All corrected | ~5.8 µs | Worst case |
+ * | No corrections | ~4.2 us | Typical case |
+ * | All corrected | ~5.8 us | Worst case |
  * | CPU overhead @ 10 Hz | 0.006% | Negligible |
  *
  * @return void (no return value)

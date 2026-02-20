@@ -68,8 +68,8 @@
  * The S12ADFa (Successive Approximation ADC Fast) is a 12-bit ADC peripheral:
  * - **12-bit resolution**: 0-4095 counts (4096 levels)
  * - **Multiple units**: S12AD0 and S12AD1 (28 total channels)
- * - **Sampling time**: 0.5-16.5 µs configurable
- * - **Conversion time**: ~1.5 µs @ 12-bit resolution
+ * - **Sampling time**: 0.5-16.5 us configurable
+ * - **Conversion time**: ~1.5 us @ 12-bit resolution
  * - **Input range**: 0V to VREFH (typically 3.3V)
  * - **Trigger modes**: Software, hardware, periodic
  * - **Averaging**: 2, 4, 8, 16, or 32 samples
@@ -80,19 +80,19 @@
  *
  * 1. Sample Phase (ADCS = sampling time):
  *    Input voltage charges internal sample & hold capacitor
- *    Duration: 0.5 - 16.5 µs (configurable)
+ *    Duration: 0.5 - 16.5 us (configurable)
  *
  * 2. Conversion Phase (12 clock cycles):
  *    Successive approximation algorithm
  *    Binary search from MSB to LSB
- *    Duration: ~1.5 µs @ 25 MHz PCLKD
+ *    Duration: ~1.5 us @ 25 MHz PCLKD
  *
  * 3. Result Ready:
  *    12-bit result available in ADDRn register
  *    Conversion end interrupt (ADIE) if enabled
  *
  * Total Time = Sampling Time + Conversion Time
- * Example: 3 µs + 1.5 µs = 4.5 µs per channel
+ * Example: 3 us + 1.5 us = 4.5 us per channel
  * @endverbatim
  *
  * @par Resolution and Precision
@@ -141,14 +141,14 @@
  * @par Performance Characteristics
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | Init time | ~50 µs | One-time setup |
- * | Single conversion | 4.5 µs | 3 µs sample + 1.5 µs conversion |
+ * | Init time | ~50 us | One-time setup |
+ * | Single conversion | 4.5 us | 3 us sample + 1.5 us conversion |
  * | Maximum rate | 222 kSPS | @ minimum sampling time |
  * | Practical rate | 100 kSPS | With adequate settling time |
- * | INL error | ± 2 LSB | Integral non-linearity |
- * | DNL error | ± 1 LSB | Differential non-linearity |
- * | Offset error | ± 10 mV | Typical @ 25°C |
- * | Gain error | ± 1% | Typical |
+ * | INL error | +/- 2 LSB | Integral non-linearity |
+ * | DNL error | +/- 1 LSB | Differential non-linearity |
+ * | Offset error | +/- 10 mV | Typical @ 25degC |
+ * | Gain error | +/- 1% | Typical |
  *
  * @par Memory Usage
  * | Component | Size | Description |
@@ -163,8 +163,8 @@
  * | VREFH | 3.3V or 5V (reference voltage) |
  * | VREFL | 0V (ground) |
  * | V_IN range | VREFL to VREFH |
- * | Source impedance | < 10 kΩ (for fast settling) |
- * | Bypass cap | 0.1 µF ceramic on VREFH |
+ * | Source impedance | < 10 kOhm (for fast settling) |
+ * | Bypass cap | 0.1 uF ceramic on VREFH |
  * | Input cap | 10 nF on each analog input |
  *
  * @par Channel Assignments (STAR Project - 144-pin LFQFP)
@@ -178,8 +178,8 @@
  * @par Current Sensing (DRV8243 IPROPI)
  * The DRV8243 motor driver outputs a current proportional voltage on IPROPI:
  * - **Current ratio**: 1000:1 (1mA output per 1A load current)
- * - **Sense resistor**: 4990 Ω (1% tolerance)
- * - **Conversion**: I_motor = (V_IPROPI / 4990 Ω) × 1000
+ * - **Sense resistor**: 4990 Ohm (1% tolerance)
+ * - **Conversion**: I_motor = (V_IPROPI / 4990 Ohm) x 1000
  *
  * Example: V_IPROPI = 1.65V (mid-scale):
  * @f[
@@ -188,18 +188,18 @@
  *
  * @par Battery Voltage Measurement
  * Battery voltage uses a 1:11 resistor divider to scale down to ADC range:
- * - **Divider ratio**: 1/11 (100kΩ / 10kΩ)
+ * - **Divider ratio**: 1/11 (100kOhm / 10kOhm)
  * - **Input range**: 0-36.3V battery -> 0-3.3V ADC
- * - **Conversion**: V_battery = V_ADC × 11
+ * - **Conversion**: V_battery = V_ADC x 11
  *
  * @par Error Sources and Mitigation
  * | Error Source | Magnitude | Mitigation |
  * |--------------|-----------|------------|
- * | Quantization | ± 0.5 LSB | Averaging (2-32 samples) |
- * | Noise | ± 2 LSB | Low-pass filter on input |
- * | Offset drift | ± 5 mV/°C | Temperature compensation |
- * | Gain error | ± 1% | Calibration lookup table |
- * | Source impedance | Variable | Buffer amplifier if > 10 kΩ |
+ * | Quantization | +/- 0.5 LSB | Averaging (2-32 samples) |
+ * | Noise | +/- 2 LSB | Low-pass filter on input |
+ * | Offset drift | +/- 5 mV/degC | Temperature compensation |
+ * | Gain error | +/- 1% | Calibration lookup table |
+ * | Source impedance | Variable | Buffer amplifier if > 10 kOhm |
  *
  * @par Thread Safety
  * All functions are thread-safe when used with the bus manager:
@@ -262,7 +262,7 @@
  * err = rx_bus_adc_read_voltage_mv(&manager, "motor0_current", &voltage_mv);
  * if (err == k_rx_ok) {
  *     // Convert IPROPI voltage to motor current (mA)
- *     // IPROPI = I_motor / 1000 * 4990 Ω
+ *     // IPROPI = I_motor / 1000 * 4990 Ohm
  *     uint32_t current_ma = (voltage_mv * 1000) / 4990;
  *
  *     if (current_ma > 5000) {  // 5A limit
@@ -388,8 +388,8 @@ extern "C" {
  * @par ADC Configuration:
  * The initialization configures:
  * - **Resolution**: 12-bit (4096 counts, 0.805 mV/LSB @ 3.3V)
- * - **Sampling time**: 3 µs (adequate for most sensors)
- * - **Conversion time**: 1.5 µs (12 clocks @ 25 MHz)
+ * - **Sampling time**: 3 us (adequate for most sensors)
+ * - **Conversion time**: 1.5 us (12 clocks @ 25 MHz)
  * - **Reference**: VREFH pin (typically 3.3V or 5V)
  * - **Trigger**: Software (manual start per conversion)
  *
@@ -424,10 +424,10 @@ extern "C" {
  *
  * @warning Do not exceed VREFH on analog input (damage possible)
  * @warning Do not call from interrupt context (mutex wait)
- * @warning Ensure source impedance < 10 kΩ for accurate readings
+ * @warning Ensure source impedance < 10 kOhm for accurate readings
  *
  * @par Performance:
- * - Execution time: ~50 µs typical (ADC setup + dummy conversion)
+ * - Execution time: ~50 us typical (ADC setup + dummy conversion)
  * - Mutex timeout: 1000 ms (configurable via bus manager)
  *
  * @par Example - Current Sensor Initialization:
@@ -483,11 +483,11 @@ extern "C" {
  * Timeline for single ADC read:
  *
  * |<--- Sampling --->|<- Conversion ->|
- * |     3.0 µs       |     1.5 µs     |
+ * |     3.0 us       |     1.5 us     |
  * |                                   |
  * Start                           Result Ready
  *
- * Total: 4.5 µs typical @ 12-bit resolution
+ * Total: 4.5 us typical @ 12-bit resolution
  * @endverbatim
  *
  * @param[in] manager Bus manager instance
@@ -517,15 +517,15 @@ extern "C" {
  * @invariant value range: 0-4095 for 12-bit ADC
  *
  * @note Thread-safe via bus manager mutex
- * @note Blocking call (waits for conversion ~4.5 µs)
+ * @note Blocking call (waits for conversion ~4.5 us)
  * @note For voltage conversion, use rx_bus_adc_read_voltage_mv() instead
  *
  * @warning value undefined if return != k_rx_ok
  * @warning Analog input must not exceed VREFH (damage possible)
  *
  * @par Performance:
- * - Execution time: ~10 µs (4.5 µs conversion + overhead)
- * - Conversion timeout: 100 µs (configurable)
+ * - Execution time: ~10 us (4.5 us conversion + overhead)
+ * - Conversion timeout: 100 us (configurable)
  *
  * @par Example - Raw ADC Reading:
  * @code
@@ -578,7 +578,7 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  * 5. Start ADC conversion
  * 6. Wait for conversion complete
  * 7. Read raw ADC value
- * 8. Convert to millivolts: V_mV = (raw × VREF_mV) / 4095
+ * 8. Convert to millivolts: V_mV = (raw x VREF_mV) / 4095
  * 9. Release mutex
  * 10. Return voltage in millivolts
  *
@@ -627,7 +627,7 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  * @invariant voltage_mv range: 0 to vref_mv
  *
  * @note Thread-safe via bus manager mutex
- * @note Blocking call (waits for conversion ~4.5 µs)
+ * @note Blocking call (waits for conversion ~4.5 us)
  * @note Uses VREF from bus configuration (set in rx_bus_register)
  * @note Preferred over rx_bus_adc_read() for direct voltage measurement
  *
@@ -636,8 +636,8 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  * @warning External voltage dividers must be accounted for separately
  *
  * @par Performance:
- * - Execution time: ~12 µs (4.5 µs conversion + calculation + overhead)
- * - Conversion timeout: 100 µs (configurable)
+ * - Execution time: ~12 us (4.5 us conversion + calculation + overhead)
+ * - Conversion timeout: 100 us (configurable)
  *
  * @par Example - Motor Current Measurement:
  * @code
@@ -645,7 +645,7 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  * uint32_t ipropi_mv = 0;
  * rx_err_t err = rx_bus_adc_read_voltage_mv(&manager, "motor0_current", &ipropi_mv);
  * if (err == k_rx_ok) {
- *     // IPROPI = I_motor / 1000 * 4990 Ω
+ *     // IPROPI = I_motor / 1000 * 4990 Ohm
  *     // I_motor = IPROPI / 4990 * 1000 (in mA)
  *     uint32_t current_ma = (ipropi_mv * 1000) / 4990;
  *
@@ -674,16 +674,16 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  *
  * @par Example - Temperature Sensor (Linear):
  * @code
- * // LM35 temperature sensor: 10 mV/°C, 0°C = 0V
+ * // LM35 temperature sensor: 10 mV/degC, 0degC = 0V
  * uint32_t sensor_mv = 0;
  * err = rx_bus_adc_read_voltage_mv(&manager, "temperature", &sensor_mv);
  * if (err == k_rx_ok) {
- *     // Convert to temperature (10 mV/°C)
+ *     // Convert to temperature (10 mV/degC)
  *     int32_t temp_celsius = sensor_mv / 10;
  *
  *     if (temp_celsius > 85) {
  *         // Overtemperature warning
- *         rx_log_warn("TEMP", "High temperature: %d °C", temp_celsius);
+ *         rx_log_warn("TEMP", "High temperature: %d degC", temp_celsius);
  *     }
  * }
  * @endcode

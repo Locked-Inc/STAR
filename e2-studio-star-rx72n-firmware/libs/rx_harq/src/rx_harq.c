@@ -15,7 +15,7 @@
  *
  * 1. **Chase Combiner** (rx_chase_combiner_t)
  *    - Accumulates soft bits element-wise across transmissions
- *    - Uses int16 accumulators (prevents overflow with ≤255 combines)
+ *    - Uses int16 accumulators (prevents overflow with <=255 combines)
  *    - Clamps output to [-127, +127] range before decoding
  *
  * 2. **FEC Codec** (rx_fec_encoder_t, rx_fec_decoder_t)
@@ -48,10 +48,10 @@
  *
  * ## Overflow Prevention
  *
- * Accumulators use int16 (range ±32768):
+ * Accumulators use int16 (range +/-32768):
  * - Max combines: 255
- * - Max soft bit: ±127
- * - Max accumulator value: ±(255 × 127) = ±32385
+ * - Max soft bit: +/-127
+ * - Max accumulator value: +/-(255 x 127) = +/-32385
  * - **Safe**: 32385 < 32768 (no overflow with default max_combines=3)
  *
  * ## Protocol Flow
@@ -89,7 +89,7 @@
  * - **Rule 1**: [OK] No recursion, goto, setjmp/longjmp
  * - **Rule 2**: [OK] Loops bounded by k_harq_soft_buffer_size
  * - **Rule 3**: [OK] Zero dynamic allocation
- * - **Rule 4**: [OK] Functions ≤ 60 lines
+ * - **Rule 4**: [OK] Functions <= 60 lines
  * - **Rule 5**: [OK] Extensive validation checks
  *
  * @author STAR Team
@@ -114,19 +114,19 @@ typedef enum : uint16_t {
 
 /**
  * @enum harq_cfg_sentinel_t
- * @brief HARQ config validation sentinels — zero values for "not configured, use default"
+ * @brief HARQ config validation sentinels -- zero values for "not configured, use default"
  * @details
  * Used to detect unconfigured (zero) values for max_combines and max_retries
  * fields in HARQ configuration, to fall back to project defaults.
  *
  * @invariant k_harq_zero_combines and k_harq_zero_retries equal zero, signifying
- * "use default config" — these sentinels must never be changed to non-zero values.
+ * "use default config" -- these sentinels must never be changed to non-zero values.
  *
  * @code
  * // Checking sentinels when validating config fields:
  * const rx_harq_config_t config = { .max_combines = 0, .max_retries = 0 };
- * // max_combines == k_harq_zero_combines → use k_harq_default_combines
- * // max_retries  == k_harq_zero_retries  → use k_harq_default_retries
+ * // max_combines == k_harq_zero_combines -> use k_harq_default_combines
+ * // max_retries  == k_harq_zero_retries  -> use k_harq_default_retries
  * uint8_t combines = (config.max_combines > k_harq_zero_combines)
  *                        ? config.max_combines : k_harq_default_combines;
  * uint8_t retries  = (config.max_retries  > k_harq_zero_retries)
@@ -139,8 +139,8 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_harq_zero_combines = 0, /**< Sentinel: no max_combines configured → fall back to default */
-  k_harq_zero_retries  = 0, /**< Sentinel: no max_retries configured → fall back to default */
+  k_harq_zero_combines = 0, /**< Sentinel: no max_combines configured -> fall back to default */
+  k_harq_zero_retries  = 0, /**< Sentinel: no max_retries configured -> fall back to default */
 } harq_cfg_sentinel_t;
 
 typedef enum : uint8_t {

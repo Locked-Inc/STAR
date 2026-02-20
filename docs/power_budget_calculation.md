@@ -20,7 +20,7 @@
 - **Power Supply**: 3.3V rail
 
 ### DRV8243S Motor Drivers (4 units)
-- **Sleep Current**: 5µA per driver @ 6V
+- **Sleep Current**: 5uA per driver @ 6V
 - **Quiescent (Active, No Load)**: ~8mA per driver @ 6V (estimated)
 - **Operating**: Current pass-through to motors (minimal IC consumption)
 - **Power Supply**: 6V motor rail (VM) and 3.3V logic (VDD)

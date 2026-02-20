@@ -27,11 +27,11 @@
  * PORT utilities are foundational infrastructure used throughout the system:
  * ```
  * Application Layer (hardware_pinout.h)
- *         ↓ uses port constants
+ *         v uses port constants
  * HAL Layer (rx_gpio.c, rx_mtu_encoder.c)
- *         ↓ uses rx_port_get_base()
+ *         v uses rx_port_get_base()
  * PORT Utils (THIS FILE - rx_port_utils.h)
- *         ↓ maps to
+ *         v maps to
  * Hardware Registers (rx72n_port_regs.h)
  * ```
  *

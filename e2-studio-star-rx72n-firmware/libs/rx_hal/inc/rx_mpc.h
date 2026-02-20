@@ -12,47 +12,47 @@
  * @par System Architecture
  * @verbatim
  *                        MPC Driver Architecture
- *   ┌─────────────────────────────────────────────────────────────────────┐
- *   │                         Application Layer                          │
- *   │   ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐  │
- *   │   │ Motor   │  │ Encoder │  │  UART   │  │   SPI   │  │   ADC   │  │
- *   │   │ Control │  │ Driver  │  │ Debug   │  │  Comm   │  │ Sensing │  │
- *   │   └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘  │
- *   └────────┼───────────┼───────────┼───────────┼───────────┼───────────┘
- *            │           │           │           │           │
- *   ┌────────▼───────────▼───────────▼───────────▼───────────▼───────────┐
- *   │                         rx_mpc.h API                               │
- *   │   ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌─────────────┐  │
- *   │   │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │ │rx_mpc_set_  │  │
- *   │   │  mtu_pwm()  │ │  sci()      │ │  rspi()     │ │  gpio()     │  │
- *   │   └──────┬──────┘ └──────┬──────┘ └──────┬──────┘ └──────┬──────┘  │
- *   │          │               │               │               │         │
- *   │   ┌──────▼───────────────▼───────────────▼───────────────▼──────┐  │
- *   │   │              rx_mpc_set_peripheral()                        │  │
- *   │   │     (core PSEL configuration function — peripheral path)    │  │
- *   │   └─────────────────────────┬───────────────────────────────────┘  │
- *   │                             │                                       │
- *   │   Note: rx_mpc_set_irq() and rx_mpc_set_adc() bypass               │
- *   │   rx_mpc_set_peripheral() and write ISEL/ASEL bits directly        │
- *   │   via internal_write_pfs() (ISEL=0x40, ASEL=0x80 exceed PSEL       │
- *   │   5-bit field; they are separate bits in the PFS register).        │
- *   └─────────────────────────────┼──────────────────────────────────────┘
- *                                 │
- *   ┌─────────────────────────────▼──────────────────────────────────────┐
- *   │                       rx72n_mpc_regs.h                             │
- *   │   ┌────────────┐      ┌────────────┐      ┌────────────────────┐   │
- *   │   │   PWPR     │      │  PFS Regs  │      │   mpc() accessor   │   │
- *   │   │ (Protect)  │─────►│ P00PFS-    │◄─────│   (0x0008C100)     │   │
- *   │   │            │      │ PJ5PFS     │      │                    │   │
- *   │   └────────────┘      └────────────┘      └────────────────────┘   │
- *   └────────────────────────────────────────────────────────────────────┘
- *                                 │
- *   ┌─────────────────────────────▼──────────────────────────────────────┐
- *   │                      Physical Pins                                 │
- *   │   Pin (function) ──► Peripheral    Pin (function) ──► Peripheral   │
- *   │   (Configured via PFS register PSEL field)                        │
- *   │   @see hardware_config.h for application-level pin assignments    │
- *   └────────────────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------------------+
+ *   |                         Application Layer                          |
+ *   |   +---------+  +---------+  +---------+  +---------+  +---------+  |
+ *   |   | Motor   |  | Encoder |  |  UART   |  |   SPI   |  |   ADC   |  |
+ *   |   | Control |  | Driver  |  | Debug   |  |  Comm   |  | Sensing |  |
+ *   |   +----+----+  +----+----+  +----+----+  +----+----+  +----+----+  |
+ *   +--------+-----------+-----------+-----------+-----------+-----------+
+ *            |           |           |           |           |
+ *   +--------v-----------v-----------v-----------v-----------v-----------+
+ *   |                         rx_mpc.h API                               |
+ *   |   +-------------+ +-------------+ +-------------+ +-------------+  |
+ *   |   |rx_mpc_set_  | |rx_mpc_set_  | |rx_mpc_set_  | |rx_mpc_set_  |  |
+ *   |   |  mtu_pwm()  | |  sci()      | |  rspi()     | |  gpio()     |  |
+ *   |   +------+------+ +------+------+ +------+------+ +------+------+  |
+ *   |          |               |               |               |         |
+ *   |   +------v---------------v---------------v---------------v------+  |
+ *   |   |              rx_mpc_set_peripheral()                        |  |
+ *   |   |     (core PSEL configuration function -- peripheral path)    |  |
+ *   |   +-------------------------+-----------------------------------+  |
+ *   |                             |                                       |
+ *   |   Note: rx_mpc_set_irq() and rx_mpc_set_adc() bypass               |
+ *   |   rx_mpc_set_peripheral() and write ISEL/ASEL bits directly        |
+ *   |   via internal_write_pfs() (ISEL=0x40, ASEL=0x80 exceed PSEL       |
+ *   |   5-bit field; they are separate bits in the PFS register).        |
+ *   +-----------------------------+--------------------------------------+
+ *                                 |
+ *   +-----------------------------v--------------------------------------+
+ *   |                       rx72n_mpc_regs.h                             |
+ *   |   +------------+      +------------+      +--------------------+   |
+ *   |   |   PWPR     |      |  PFS Regs  |      |   mpc() accessor   |   |
+ *   |   | (Protect)  |----->| P00PFS-    |<-----|   (0x0008C100)     |   |
+ *   |   |            |      | PJ5PFS     |      |                    |   |
+ *   |   +------------+      +------------+      +--------------------+   |
+ *   +--------------------------------------------------------------------+
+ *                                 |
+ *   +-----------------------------v--------------------------------------+
+ *   |                      Physical Pins                                 |
+ *   |   Pin (function) --> Peripheral    Pin (function) --> Peripheral   |
+ *   |   (Configured via PFS register PSEL field)                        |
+ *   |   @see hardware_config.h for application-level pin assignments    |
+ *   +--------------------------------------------------------------------+
  * @endverbatim
  *
  * @par Pin Configuration Flow
@@ -89,8 +89,8 @@
  * @par Performance Characteristics
  * | Operation | Typical Time | Notes |
  * |-----------|-------------|-------|
- * | Pin config | ~1 µs | PWPR unlock/lock overhead |
- * | Bulk config (10 pins) | ~10 µs | Sequential calls |
+ * | Pin config | ~1 us | PWPR unlock/lock overhead |
+ * | Bulk config (10 pins) | ~10 us | Sequential calls |
  *
  * @par Memory Usage
  * | Category | Size | Notes |
@@ -110,7 +110,7 @@
  * MPC configuration should occur early in system initialization:
  * 1. Clock configuration (PCLKB must be running)
  * 2. Module stop clear (if MPC in module stop)
- * 3. **MPC pin configuration** ◄ This module
+ * 3. **MPC pin configuration** < This module
  * 4. GPIO direction configuration (PMR, PDR registers)
  * 5. Peripheral driver initialization
  *
@@ -416,10 +416,10 @@ typedef enum : uint8_t {
  * @par PSEL Field in PFS Register
  * @verbatim
  *   Bit:   7      6      5      4  3  2  1  0
- *        ┌──────┬──────┬──────┬─────────────────┐
- *        │ ASEL │ ISEL │ Rsvd │    PSEL[4:0]    │
- *        └──────┴──────┴──────┴─────────────────┘
- *                              ◄── These values ──►
+ *        +------+------+------+-----------------+
+ *        | ASEL | ISEL | Rsvd |    PSEL[4:0]    |
+ *        +------+------+------+-----------------+
+ *                              <-- These values -->
  * @endverbatim
  *
  * @par PSEL Values by Peripheral (STAR Project)
@@ -654,7 +654,7 @@ typedef enum : uint8_t {
  *          but does not cause hardware fault.
  *
  * @par Performance
- * - Execution time: ~1 µs @ 240 MHz (PWPR unlock/lock overhead)
+ * - Execution time: ~1 us @ 240 MHz (PWPR unlock/lock overhead)
  * - No loops or blocking operations
  *
  * @par Thread Safety
@@ -786,7 +786,7 @@ typedef enum : uint8_t {
  * @warning Not all PSEL values are valid for all pins.
  *
  * @par Performance
- * - Execution time: ~1 µs @ 240 MHz
+ * - Execution time: ~1 us @ 240 MHz
  * - No loops or blocking operations
  *
  * @par Thread Safety
@@ -911,11 +911,11 @@ typedef enum : uint8_t {
  * @par Quadrature Encoder Interface
  * @verbatim
  *    Encoder Output          MTU3a Phase Counting
- *    ┌────────────┐         ┌─────────────────────┐
- *    │  Phase A   │────────►│ MTCLKA (Count Up)   │
- *    │  Phase B   │────────►│ MTCLKB (Count Down) │
- *    │  (Index Z) │────────►│ (Optional reset)    │
- *    └────────────┘         └─────────────────────┘
+ *    +------------+         +---------------------+
+ *    |  Phase A   |-------->| MTCLKA (Count Up)   |
+ *    |  Phase B   |-------->| MTCLKB (Count Down) |
+ *    |  (Index Z) |-------->| (Optional reset)    |
+ *    +------------+         +---------------------+
  *                           Counter increments/decrements
  *                           based on phase relationship
  * @endverbatim
@@ -1039,12 +1039,12 @@ typedef enum : uint8_t {
  * @par ADC Pin Configuration
  * @verbatim
  *    PFS Register for ADC:
- *    ┌──────┬──────┬──────┬─────────────────┐
- *    │ ASEL │ ISEL │ Rsvd │    PSEL[4:0]    │
- *    │  1   │  0   │  0   │     0x00        │
- *    └──────┴──────┴──────┴─────────────────┘
- *       ▲
- *       └── Set to 1 for analog input
+ *    +------+------+------+-----------------+
+ *    | ASEL | ISEL | Rsvd |    PSEL[4:0]    |
+ *    |  1   |  0   |  0   |     0x00        |
+ *    +------+------+------+-----------------+
+ *       ^
+ *       +-- Set to 1 for analog input
  * @endverbatim
  *
  * @par Common ADC Pins (STAR Project)
@@ -1172,7 +1172,7 @@ typedef enum : uint8_t {
  * @post Pin ready for I2C operation
  *
  * @note Configure both SCL and SDA pins
- * @note External pull-up resistors required (typically 4.7kΩ)
+ * @note External pull-up resistors required (typically 4.7kOhm)
  * @note Also requires RIIC channel configuration
  *
  * @par Example - I2C Bus Setup
@@ -1214,13 +1214,13 @@ typedef enum : uint8_t {
  * @par SPI Bus Topology
  * @verbatim
  *    RX72N (Controller)              RPi5 (Controller)
- *    ┌─────────────────┐            ┌─────────────────┐
- *    │ RSPI0           │            │ SPI             │
- *    │  PA0 (COPI) ────┼────────────┼─► CIPO          │
- *    │  PA1 (CIPO) ◄───┼────────────┼── COPI          │
- *    │  PA3 (CLK)  ◄───┼────────────┼── CLK           │
- *    │  PA4 (CS)   ◄───┼────────────┼── CS            │
- *    └─────────────────┘            └─────────────────┘
+ *    +-----------------+            +-----------------+
+ *    | RSPI0           |            | SPI             |
+ *    |  PA0 (COPI) ----+------------+-> CIPO          |
+ *    |  PA1 (CIPO) <---+------------+-- COPI          |
+ *    |  PA3 (CLK)  <---+------------+-- CLK           |
+ *    |  PA4 (CS)   <---+------------+-- CS            |
+ *    +-----------------+            +-----------------+
  *    Note: RX72N is SPI peripheral, RPi5 is controller
  * @endverbatim
  *
@@ -1271,7 +1271,7 @@ typedef enum : uint8_t {
  *
  * GPTW channels support:
  * - 20 kHz PWM frequency (ultrasonic, inaudible)
- * - 1 µs dead-time (prevents H-bridge shoot-through)
+ * - 1 us dead-time (prevents H-bridge shoot-through)
  * - 90-degree phase staggering (reduces peak current)
  * - Complementary mode (PH + EN pins synchronized)
  *
@@ -1313,7 +1313,7 @@ typedef enum : uint8_t {
  *
  * @par Example - Configure All Motor PWM Pins
  * @code{.c}
- * // Configure 8 GPTW pins (4 motors × 2 pins = PH + EN)
+ * // Configure 8 GPTW pins (4 motors x 2 pins = PH + EN)
  * const rx_port_pin_t gptw_pins[] = {
  *     k_rx_p2_3, k_rx_p1_7,  // Motor 0 PH/EN
  *     k_rx_p2_2, k_rx_pc_3,  // Motor 1 PH/EN
