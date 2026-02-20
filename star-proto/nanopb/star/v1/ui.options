@@ -1,20 +1,26 @@
-# ui.options - nanopb field size constraints for ui.proto
-# Static bounds for embedded targets (no dynamic allocation).
-#
-# STAR Project - Texas A&M University
+# ui.options - nanopb static bounds for STAREnvelope UI messages.
+# These constraints enforce zero dynamic allocation on the RX72N firmware target.
 
-# MotorStatusList (4-wheel platform)
-star.v1.MotorStatusList.motors          max_count:4
+# MotorStatusList: 4-motor robot.
+star.v1.MotorStatusList.motors      max_count:4
 
-# LidarScan (RPLiDAR C1 upper-bound points per frame)
-star.v1.LidarScan.angle_rad             max_count:800
-star.v1.LidarScan.range_m               max_count:800
-star.v1.LidarScan.intensity             max_count:800
+# LidarScan: RPLiDAR C1 produces ~500 samples per full revolution at 10 Hz scan mode.
+# SYNC: gateway_service.options:LidarScan -- KEEP IN LOCKSTEP
+star.v1.LidarScan.angle_rad         max_count:500
+star.v1.LidarScan.range_m           max_count:500
+star.v1.LidarScan.intensity         max_count:500
 
-# Alert strings
-star.v1.Alert.code                      max_size:16
-star.v1.Alert.message                   max_size:128
-star.v1.Alert.source                    max_size:32
+# Alert string fields.
+# star.v1.Alert.code    allows 16 characters + 1 null terminator (max_size:17).
+# star.v1.Alert.message allows 128 characters + 1 null terminator (max_size:129).
+# star.v1.Alert.source  allows 32 characters + 1 null terminator (max_size:33).
+star.v1.Alert.code                  max_size:17
+star.v1.Alert.message               max_size:129
+star.v1.Alert.source                max_size:33
 
-# E-stop reason
-star.v1.EStopCommand.reason             max_size:64
+# EStopCommand reason string.
+# 64 chars is sufficient for operator-entered emergency-stop reasons and matches
+# the coding-guidelines example in docs/sections/01_nanopb_protocol.tex.
+# Longer reasons should be truncated by the sender before transmission.
+# max_size = 64 chars + 1 null terminator.
+star.v1.EStopCommand.reason         max_size:65

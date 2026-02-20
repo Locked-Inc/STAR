@@ -2,8 +2,11 @@ package app
 
 import (
 	"context"
+	"fmt"
 	"io"
+	"net"
 	"net/http"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -12,13 +15,28 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/testutil"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"github.com/gorilla/websocket"
 	"google.golang.org/grpc"
-	"nhooyr.io/websocket" //nolint:staticcheck
+	"google.golang.org/protobuf/proto"
 )
 
 const (
 	httpServerStartupDelay = 50 * time.Millisecond
 	websocketDialTimeout   = 2 * time.Second
+
+	// serverReadinessDeadline is the maximum time to wait for the HTTP server to
+	// accept its first TCP connection in the readiness probe of startTestHTTPServer.
+	// Larger than httpServerStartupDelay to accommodate slow CI runners where OS
+	// scheduling delays can stretch server startup well beyond 50 ms.
+	serverReadinessDeadline = 500 * time.Millisecond
+
+	// dialProbeTimeout is the per-attempt TCP dial timeout in the server readiness probe.
+	dialProbeTimeout = 10 * time.Millisecond
+	// dialProbeInterval is the sleep between TCP dial attempts in the server readiness probe.
+	dialProbeInterval = 2 * time.Millisecond
+
+	// testHTTPClientTimeout is the HTTP client timeout used in test helper requests.
+	testHTTPClientTimeout = 100 * time.Millisecond
 )
 
 // serviceGetters is the shared table of service accessor functions.
@@ -284,7 +302,7 @@ func TestStartGRPCServerWithAddr_RegistersAllServices(t *testing.T) {
 	}
 }
 
-func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
+func TestStartHTTPServerWithAddr_WiresWSAndHealthRoutes(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -300,9 +318,23 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 		t.Fatal("expected HTTPServer to be initialized")
 	}
 
-	time.Sleep(httpServerStartupDelay)
+	addr := servers.HTTPServer.Addr
+	deadline := time.Now().Add(serverReadinessDeadline)
+	serverReady := false
+	for time.Now().Before(deadline) {
+		c, dialErr := net.DialTimeout("tcp", addr, dialProbeTimeout)
+		if dialErr == nil {
+			_ = c.Close()
+			serverReady = true
+			break
+		}
+		time.Sleep(dialProbeInterval)
+	}
+	if !serverReady {
+		t.Fatalf("HTTP server at %s did not become ready within %v", addr, serverReadinessDeadline)
+	}
 
-	healthResp, err := http.Get("http://" + servers.HTTPServer.Addr + "/healthz")
+	healthResp, err := http.Get("http://" + addr + "/healthz")
 	if err != nil {
 		t.Fatalf("health check request failed: %v", err)
 	}
@@ -320,15 +352,15 @@ func TestStartHTTPServerWithAddr_WiresControllerAndHealthRoutes(t *testing.T) {
 		t.Fatalf("expected /healthz body 'ok', got %q", string(body))
 	}
 
-	wsURL := "ws://" + servers.HTTPServer.Addr + "/ws/controller"
+	wsURL := "ws://" + addr + "/ws"
 	wsCtx, wsCancel := context.WithTimeout(context.Background(), websocketDialTimeout)
 	defer wsCancel()
 
-	conn, _, err := websocket.Dial(wsCtx, wsURL, nil) //nolint:staticcheck
+	conn, _, err := websocket.DefaultDialer.DialContext(wsCtx, wsURL, nil)
 	if err != nil {
 		t.Fatalf("failed to connect websocket route: %v", err)
 	}
-	_ = conn.Close(websocket.StatusNormalClosure, "") //nolint:staticcheck
+	_ = conn.Close()
 }
 
 func newTestServiceSet(t *testing.T) *serviceSet {
@@ -345,4 +377,232 @@ func newTestServiceSet(t *testing.T) *serviceSet {
 	}
 
 	return services
+}
+
+// newTestServiceSetWith creates a serviceSet using the provided HARQ implementation.
+// Use this when you need to control HARQ behaviour (e.g. inject failures) in a test.
+func newTestServiceSetWith(t *testing.T, h harq.HARQ) *serviceSet {
+	t.Helper()
+	services, err := initServices(context.Background(), h, &mockDispatcher{}, testutil.NewDiscardLogger())
+	if err != nil {
+		t.Fatalf("initServices: %v", err)
+	}
+	return services
+}
+
+// startTestHTTPServer starts the HTTP server on a random port and returns the
+// base URL ("http://host:port"). Cancellation and cleanup are wired to t.
+// Instead of a fixed sleep it uses a readiness probe so the test only
+// proceeds once the server is actually accepting connections.
+func startTestHTTPServer(t *testing.T, services *serviceSet) string {
+	t.Helper()
+	ctx, cancel := context.WithCancel(context.Background())
+	t.Cleanup(cancel)
+	servers := &Servers{}
+	if err := startHTTPServerWithAddr(ctx, servers, services, "127.0.0.1:0", testutil.NewDiscardLogger()); err != nil {
+		t.Fatalf("startHTTPServerWithAddr: %v", err)
+	}
+
+	// Readiness probe: repeatedly attempt a TCP dial until the server accepts
+	// connections or the startup deadline is exceeded.
+	addr := servers.HTTPServer.Addr
+	deadline := time.Now().Add(serverReadinessDeadline)
+	serverReady := false
+	for time.Now().Before(deadline) {
+		conn, dialErr := net.DialTimeout("tcp", addr, dialProbeTimeout)
+		if dialErr == nil {
+			_ = conn.Close()
+			serverReady = true
+			break
+		}
+		time.Sleep(dialProbeInterval)
+	}
+	if !serverReady {
+		t.Fatalf("HTTP server at %s did not become ready within %v", addr, serverReadinessDeadline)
+	}
+
+	return "http://" + addr
+}
+
+// doRequest sends an HTTP request with the given method and URL, registers body
+// cleanup with t, and returns the response. Fails the test on transport errors.
+func doRequest(t *testing.T, method, url string) *http.Response {
+	t.Helper()
+	req, err := http.NewRequest(method, url, http.NoBody)
+	if err != nil {
+		t.Fatalf("http.NewRequest(%s, %s): %v", method, url, err)
+	}
+	client := &http.Client{Timeout: testHTTPClientTimeout}
+	resp, err := client.Do(req)
+	if err != nil {
+		t.Fatalf("http.Do %s %s: %v", method, url, err)
+	}
+	t.Cleanup(func() { _ = resp.Body.Close() })
+	return resp
+}
+
+// -- motorControllerAdapter ----------------------------------------------------
+
+// TestMotorControllerAdapter_ForwardsReason verifies that the adapter serialises
+// the plain reason string into the EmergencyStopCommand.Reason field of the
+// WireMessage that reaches the HARQ layer.
+func TestMotorControllerAdapter_ForwardsReason(t *testing.T) {
+	mock := &testutil.MockHARQ{}
+	services := newTestServiceSetWith(t, mock)
+	adapter := &motorControllerAdapter{svc: services.motorControl}
+
+	const wantReason = "encoder_fault"
+	if err := adapter.EmergencyStop(context.Background(), wantReason); err != nil {
+		t.Fatalf("EmergencyStop returned unexpected error: %v", err)
+	}
+
+	payload := mock.GetLastSentPayload()
+	if payload == nil {
+		t.Fatal("no payload captured: HARQ.Send was never called")
+	}
+
+	var wire starv1.WireMessage
+	if err := proto.Unmarshal(payload, &wire); err != nil {
+		t.Fatalf("proto.Unmarshal: %v", err)
+	}
+
+	estop := wire.GetEmergencyStopCommand()
+	if estop == nil {
+		t.Fatal("WireMessage contains no EmergencyStopCommand")
+	}
+	if estop.Reason != wantReason {
+		t.Errorf("reason: got %q, want %q", estop.Reason, wantReason)
+	}
+	if !estop.EngageHardwareStop {
+		t.Error("EngageHardwareStop must be true for hardware safety interlock")
+	}
+}
+
+// TestMotorControllerAdapter_PropagatesError verifies that errors returned by
+// the underlying MotorControlService are surfaced to the caller.
+func TestMotorControllerAdapter_PropagatesError(t *testing.T) {
+	mock := &testutil.MockHARQ{
+		SendFunc: func(_ context.Context, _ []byte, _ ...harq.Priority) error {
+			return fmt.Errorf("harq transport unavailable")
+		},
+	}
+	services := newTestServiceSetWith(t, mock)
+	adapter := &motorControllerAdapter{svc: services.motorControl}
+
+	if err := adapter.EmergencyStop(context.Background(), "test"); err == nil {
+		t.Fatal("expected error from failing HARQ, got nil")
+	}
+}
+
+// -- /api/estop endpoint -------------------------------------------------------
+
+// TestEstopEndpoint_MethodEnforcement verifies that only POST is accepted on
+// /api/estop; every other HTTP verb receives 405 Method Not Allowed.
+func TestEstopEndpoint_MethodEnforcement(t *testing.T) {
+	base := startTestHTTPServer(t, newTestServiceSet(t))
+	url := base + "/api/estop"
+
+	tests := []struct {
+		method   string
+		wantCode int
+	}{
+		{http.MethodPost, http.StatusNoContent},
+		{http.MethodGet, http.StatusMethodNotAllowed},
+		{http.MethodPut, http.StatusMethodNotAllowed},
+		{http.MethodPatch, http.StatusMethodNotAllowed},
+		{http.MethodDelete, http.StatusMethodNotAllowed},
+	}
+	for _, tc := range tests {
+		t.Run(tc.method, func(t *testing.T) {
+			resp := doRequest(t, tc.method, url)
+			if resp.StatusCode != tc.wantCode {
+				t.Errorf("expected %d, got %d", tc.wantCode, resp.StatusCode)
+			}
+		})
+	}
+}
+
+// TestEstopEndpoint_ReasonFromQueryParam verifies that the ?reason= query
+// parameter is forwarded as EmergencyStopCommand.Reason in the WireMessage.
+func TestEstopEndpoint_ReasonFromQueryParam(t *testing.T) {
+	mock := &testutil.MockHARQ{}
+	base := startTestHTTPServer(t, newTestServiceSetWith(t, mock))
+
+	const wantReason = "sensor_fault"
+	resp := doRequest(t, http.MethodPost, base+"/api/estop?reason="+url.QueryEscape(wantReason))
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d", resp.StatusCode)
+	}
+
+	payload := mock.GetLastSentPayload()
+	if payload == nil {
+		t.Fatal("no payload captured by mock HARQ")
+	}
+	var wire starv1.WireMessage
+	if err := proto.Unmarshal(payload, &wire); err != nil {
+		t.Fatalf("proto.Unmarshal: %v", err)
+	}
+	estop := wire.GetEmergencyStopCommand()
+	if estop == nil {
+		t.Fatal("WireMessage contains no EmergencyStopCommand")
+	}
+	if estop.Reason != wantReason {
+		t.Errorf("reason: got %q, want %q", estop.Reason, wantReason)
+	}
+}
+
+// TestEstopEndpoint_DefaultReason verifies that omitting ?reason= results in
+// the fallback string "user_http_fallback" reaching the motor controller.
+func TestEstopEndpoint_DefaultReason(t *testing.T) {
+	mock := &testutil.MockHARQ{}
+	base := startTestHTTPServer(t, newTestServiceSetWith(t, mock))
+
+	resp := doRequest(t, http.MethodPost, base+"/api/estop") // no ?reason=
+	if resp.StatusCode != http.StatusNoContent {
+		t.Fatalf("expected 204, got %d", resp.StatusCode)
+	}
+
+	payload := mock.GetLastSentPayload()
+	if payload == nil {
+		t.Fatal("no payload captured")
+	}
+	var wire starv1.WireMessage
+	if err := proto.Unmarshal(payload, &wire); err != nil {
+		t.Fatalf("proto.Unmarshal: %v", err)
+	}
+	estop := wire.GetEmergencyStopCommand()
+	if estop == nil {
+		t.Fatal("WireMessage contains no EmergencyStopCommand")
+	}
+	if estop.Reason != defaultEstopReason {
+		t.Errorf("reason: got %q, want %q", estop.Reason, defaultEstopReason)
+	}
+}
+
+// TestEstopEndpoint_Returns500OnHARQError verifies that a transport-level
+// failure causes the handler to return HTTP 500.
+func TestEstopEndpoint_Returns500OnHARQError(t *testing.T) {
+	mock := &testutil.MockHARQ{
+		SendFunc: func(_ context.Context, _ []byte, _ ...harq.Priority) error {
+			return fmt.Errorf("transport unavailable")
+		},
+	}
+	base := startTestHTTPServer(t, newTestServiceSetWith(t, mock))
+
+	resp := doRequest(t, http.MethodPost, base+"/api/estop")
+	if resp.StatusCode != http.StatusInternalServerError {
+		t.Errorf("expected 500, got %d", resp.StatusCode)
+	}
+}
+
+// -- Regression tests ----------------------------------------------------------
+
+// TestOldWSControllerRoute_Returns404 is a regression guard ensuring the legacy
+// /ws/controller endpoint is no longer served after being replaced by /ws.
+func TestOldWSControllerRoute_Returns404(t *testing.T) {
+	base := startTestHTTPServer(t, newTestServiceSet(t))
+	resp := doRequest(t, http.MethodGet, base+"/ws/controller")
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("expected 404 from removed route /ws/controller, got %d", resp.StatusCode)
+	}
 }

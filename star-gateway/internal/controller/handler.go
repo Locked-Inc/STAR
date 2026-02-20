@@ -8,10 +8,8 @@ import (
 
 	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
-
+	"github.com/gorilla/websocket"
 	"google.golang.org/protobuf/proto"
-
-	"nhooyr.io/websocket" //nolint:staticcheck
 )
 
 type Handler struct {
@@ -35,10 +33,10 @@ func NewHandlerWithGateway(gatewaySvc *service.GatewayService) *Handler {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	//nolint:staticcheck // library is deprecated but migration is out of scope
-	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{
-		InsecureSkipVerify: true,
-	})
+	upgrader := websocket.Upgrader{
+		CheckOrigin: func(_ *http.Request) bool { return true },
+	}
+	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Printf("failed to accept websocket: %v", err)
 		return
@@ -47,24 +45,28 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	log.Printf("controller connected from %s", r.RemoteAddr)
 
 	defer func() {
-		if err := c.Close(websocket.StatusInternalError, "internal error"); err != nil { //nolint:staticcheck
+		deadline := time.Now().Add(time.Second)
+		closePayload := websocket.FormatCloseMessage(websocket.CloseInternalServerErr, "internal error")
+		if err := c.WriteControl(websocket.CloseMessage, closePayload, deadline); err != nil {
 			// It's normal for Close to fail if connection is already closed
+			log.Printf("websocket close: %v", err)
+		}
+		if err := c.Close(); err != nil {
 			log.Printf("websocket close: %v", err)
 		}
 		log.Printf("controller disconnected from %s", r.RemoteAddr)
 	}()
 
-	ctx := r.Context()
 	var lastDebug bool
 
 	for {
-		typ, bytes, err := c.Read(ctx) //nolint:staticcheck
+		typ, bytes, err := c.ReadMessage()
 		if err != nil {
 			log.Printf("failed to read: %v", err)
 			break
 		}
 
-		if typ != websocket.MessageBinary {
+		if typ != websocket.BinaryMessage {
 			continue
 		}
 

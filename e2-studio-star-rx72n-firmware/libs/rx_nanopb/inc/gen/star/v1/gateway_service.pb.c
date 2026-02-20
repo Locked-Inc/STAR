@@ -6,7 +6,7 @@
 #error Regenerate this file with the current version of nanopb generator.
 #endif
 
-PB_BIND(star_v1_ForwardTelemetryRequest, star_v1_ForwardTelemetryRequest, 2)
+PB_BIND(star_v1_ForwardTelemetryRequest, star_v1_ForwardTelemetryRequest, 4)
 
 
 PB_BIND(star_v1_ForwardTelemetryResponse, star_v1_ForwardTelemetryResponse, 2)

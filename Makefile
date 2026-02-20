@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n doxygen doxygen-pdf doxygen-clean
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen doxygen-pdf doxygen-clean
 
 help:
 	@echo "STAR Project Development Helper"
@@ -27,6 +27,7 @@ help:
 	@echo ""
 	@echo "Protocol Buffers:"
 	@echo "  make proto-gen    - Generate all proto code and setup Go modules (Go, TS, C/nanopb)"
+	@echo "  make proto-check-nanopb-sync - Verify LidarScan nanopb bounds are in sync"
 	@echo ""
 	@echo "Persistent Container (optional):"
 	@echo "  make up           - Start a persistent background container named '$(CONTAINER_NAME)'"
@@ -86,45 +87,53 @@ stop:
 # Protocol Buffer Generation (monorepo-wide)
 # ------------------------------------------------------------
 
-# Aggregate target: generate for all consumers
-proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware
+# Aggregate target: generate for all consumers (and verify nanopb option sync)
+proto-gen: proto-gen-go proto-gen-ros2 proto-gen-firmware proto-check-nanopb-sync
 
 # Generate code using buf for all configured plugins (runs from workspace root)
 proto-gen-go:
 	@echo "Generating protocol buffers (Go, TS, C, C++)..."
 	@buf generate star-proto/proto
-	@echo "[OK] Code generated under star-proto/gen/"
+	@echo "✓ Code generated under star-proto/gen/"
 	@echo "Setting up Go module for generated code..."
 	@if [ ! -f star-proto/gen/go/go.mod ]; then \
 		cd star-proto/gen/go && go mod init github.com/Locked-Inc/star-proto/gen/go; \
 	fi
 	@cd star-proto/gen/go && go mod tidy
 	@go work sync
-	@echo "[OK] Go workspace synchronized"
+	@echo "✓ Go workspace synchronized"
 
 # Placeholder for ROS2-specific generation (if distinct tooling is added)
 proto-gen-ros2:
 	@echo "ROS2 proto generation is handled via buf; no separate step."
 
-# Copy nanopb outputs to firmware include directory
+# Copy nanopb outputs to firmware include directory.
+# ui.pb.* is included because gateway_service.pb.h depends on ui.pb.h for
+# OdometryData and LidarScan types used in ForwardTelemetryRequest.
 proto-gen-firmware: proto-gen-go
 	@echo "Preparing firmware nanopb headers/sources..."
 	@mkdir -p e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1
 	@set -e; \
 	dst=e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1; \
-	src_proto=star-proto/proto/star/v1; \
 	src_gen=star-proto/gen/nanopb/star/v1; \
 	rm -f "$$dst"/*.pb.h "$$dst"/*.pb.c; \
-	for proto in "$$src_proto"/*.proto; do \
-		base=$$(basename "$$proto" .proto); \
+	for header in "$$src_gen"/*.pb.h; do \
+		base=$$(basename "$$header" .pb.h); \
 		cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
 	done
-	@echo "[OK] Firmware protos updated: e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1"
+	@echo "✓ Firmware protos updated"
 
 # Test RX72N firmware (regenerates protos first)
 test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
 	@cd e2-studio-star-rx72n-firmware/tests && bash run_tests.sh
+
+# Verify LidarScan nanopb max_count bounds are identical in ui.options and gateway_service.options.
+# Fails with a clear SYNC ERROR message if any value diverges between the two files.
+# Run this in CI after buf generate to enforce lockstep updates.
+proto-check-nanopb-sync:
+	@echo "Checking LidarScan nanopb bound sync across option files..."
+	@cd star-proto && bash scripts/check_nanopb_sync.sh
 
 # ------------------------------------------------------------
 # Doxygen Documentation (RX72N firmware)
