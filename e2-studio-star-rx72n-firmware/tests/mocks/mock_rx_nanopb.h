@@ -129,7 +129,7 @@ typedef struct {
  */
 #define star_v1_TelemetryData_init_zero                                                            \
   {                                                                                                \
-    0, 0, false, 0, false, {0}, false, {0}, false, {0}, false, {0}, 0.0, 0, 0.0, 0.0               \
+    0, 0, false, 0, false, {0}, false, {0}, false, {0}, false, {0}, 0.0                            \
   }
 
 /* =============================================================================
