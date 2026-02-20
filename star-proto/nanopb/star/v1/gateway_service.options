@@ -1,0 +1,27 @@
+# gateway_service.options - nanopb static bounds for GatewayService messages.
+# These constraints enforce zero dynamic allocation on the RX72N firmware target.
+
+# ForwardTelemetryRequest: repeated MotorStatus field.
+# max_count:4 matches the 4-motor drive configuration (2 front + 2 rear).
+# Aligns with MotorStatusList.motors max_count:4 in ui.options.
+star.v1.ForwardTelemetryRequest.motor_status    max_count:4
+
+# ForwardTelemetryRequest: LidarScan repeated float fields.
+# LidarScan (defined in ui.proto) has three parallel repeated float arrays:
+#   angle_rad, range_m, intensity.
+# RPLiDAR C1 produces ~500 samples per full revolution at 10 Hz scan mode
+# (5 kHz sample rate -> 500 samples/rev; angular resolution which is around 0.72° -> 360/0.72≈500).
+# Bounds are authoritative in ui.options (max_count:500); the entries below
+# duplicate them here so gateway_service firmware builds are self-contained.
+#
+# SYNC: ui.options:LidarScan — KEEP IN LOCKSTEP
+# These three max_count values must always equal the corresponding entries in
+# ui.options. If LidarScan bounds change, update BOTH files in the same commit
+# and verify with: grep 'LidarScan.*max_count' nanopb/star/v1/*.options
+star.v1.LidarScan.angle_rad    max_count:500
+star.v1.LidarScan.range_m      max_count:500
+star.v1.LidarScan.intensity    max_count:500
+
+# ForwardTelemetryRequest: OdometryData has no repeated fields or variable-length
+# strings, so no additional nanopb constraints are required for OdometryData.
+# All fields are fixed-width scalar types (double, int64) and need no max_size.

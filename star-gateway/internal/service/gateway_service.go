@@ -2,7 +2,7 @@ package service
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -11,6 +11,17 @@ import (
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 )
+
+// HubNotifier is the interface GatewayService uses to push STAREnvelope messages to the
+// WebSocket hub. Defined here (not in ws) to avoid circular imports; ws.Hub satisfies it.
+type HubNotifier interface {
+	// Broadcast sends a STAREnvelope to the hub for distribution to connected UI clients.
+	// ctx is used to detect cancellation; the call is non-blocking if the hub's
+	// broadcast channel has capacity, and returns ctx.Err() if the context is
+	// already cancelled. If the channel is full the message is dropped and
+	// ErrBroadcastFull (from the ws package) is returned.
+	Broadcast(ctx context.Context, env *starv1.STAREnvelope) error
+}
 
 // GatewayService implements the gRPC GatewayService for ROS2 <-> UI bridging.
 //
@@ -45,8 +56,16 @@ type GatewayService struct {
 	activeClients  int32
 	clientCounters map[string]bool // Track unique client IDs
 
+	// hub is the WebSocket hub used to push STAREnvelope messages to connected UI clients.
+	// hubMu guards all reads and writes to hub so SetHub is safe to call before
+	// server start and ForwardTelemetry is safe to call concurrently afterwards.
+	hubMu sync.RWMutex
+	hub   HubNotifier
+
 	// Constants
 	teleopStalenessThreshold time.Duration
+
+	logger *slog.Logger
 }
 
 // NewGatewayService creates a new GatewayService instance.
@@ -54,6 +73,7 @@ func NewGatewayService() *GatewayService {
 	return &GatewayService{
 		clientCounters:           make(map[string]bool),
 		teleopStalenessThreshold: 500 * time.Millisecond, // Safety timeout
+		logger:                   slog.Default(),
 	}
 }
 
@@ -81,6 +101,47 @@ func (s *GatewayService) ForwardTelemetry(
 	s.telemetryLastUpdated = time.Now()
 	s.telemetryMu.Unlock()
 
+	// Broadcast each non-nil payload individually so the hub's per-type throttle
+	// logic fires independently for each message kind.
+	s.hubMu.RLock()
+	hub := s.hub
+	s.hubMu.RUnlock()
+
+	if hub != nil {
+		if req.SystemStatus != nil {
+			broadcastEnvelope(ctx, s.logger, "system", hub, &starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_System{System: req.SystemStatus},
+			})
+		}
+		if req.BatteryState != nil {
+			broadcastEnvelope(ctx, s.logger, "battery", hub, &starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Battery{Battery: req.BatteryState},
+			})
+		}
+		if req.Telemetry != nil {
+			broadcastEnvelope(ctx, s.logger, "telemetry", hub, &starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Telemetry{Telemetry: req.Telemetry},
+			})
+		}
+		if req.MotorStatus != nil {
+			broadcastEnvelope(ctx, s.logger, "motor", hub, &starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Motors{
+					Motors: &starv1.MotorStatusList{Motors: req.MotorStatus},
+				},
+			})
+		}
+		if req.Odometry != nil {
+			broadcastEnvelope(ctx, s.logger, "odometry", hub, &starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Odometry{Odometry: req.Odometry},
+			})
+		}
+		if req.LidarScan != nil {
+			broadcastEnvelope(ctx, s.logger, "lidar", hub, &starv1.STAREnvelope{
+				Payload: &starv1.STAREnvelope_Lidar{Lidar: req.LidarScan},
+			})
+		}
+	}
+
 	// Get active client count
 	s.clientsMu.RLock()
 	activeClients := s.activeClients
@@ -97,8 +158,11 @@ func (s *GatewayService) ForwardTelemetry(
 		batteryPercent = float64(req.BatteryState.GetSoc().GetRelativeSocPercent())
 	}
 
-	log.Printf("Telemetry forwarded: mode=%s, battery=%.1f%%, clients=%d",
-		mode, batteryPercent, activeClients)
+	s.logger.Info("Telemetry forwarded",
+		slog.String("mode", mode),
+		slog.Float64("battery_percent", batteryPercent),
+		slog.Int("clients", int(activeClients)),
+	)
 
 	// Build response header
 	respHeader := &starv1.ResponseHeader{
@@ -147,8 +211,10 @@ func (s *GatewayService) GetTeleopCommand(
 		cmd = cachedCmd
 	} else {
 		// Return zero velocity (safe default)
-		log.Printf("Teleop watchdog triggered: no command available or stale (age=%dms, threshold=%dms)",
-			commandAgeMs, s.teleopStalenessThreshold.Milliseconds())
+		s.logger.Warn("Teleop watchdog triggered: no command available or stale",
+			slog.Int64("age_ms", commandAgeMs),
+			slog.Int64("threshold_ms", s.teleopStalenessThreshold.Milliseconds()),
+		)
 		cmd = &starv1.VelocityCommand{
 			FrontLeftVelocityMps:  0.0,
 			FrontRightVelocityMps: 0.0,
@@ -199,8 +265,12 @@ func (s *GatewayService) SetPIDGains(
 	}
 
 	// Log the request
-	log.Printf("SetPIDGains: motor=%d, kp=%.3f, ki=%.3f, kd=%.3f",
-		motorID, req.PidConfig.Kp, req.PidConfig.Ki, req.PidConfig.Kd)
+	s.logger.Info("SetPIDGains",
+		slog.Int("motor_id", int(motorID)),
+		slog.Float64("kp", float64(req.PidConfig.Kp)),
+		slog.Float64("ki", float64(req.PidConfig.Ki)),
+		slog.Float64("kd", float64(req.PidConfig.Kd)),
+	)
 
 	// TODO: Forward to ROS2 service when available
 	// For now, return success (placeholder)
@@ -251,9 +321,12 @@ func (s *GatewayService) UpdateTeleopCommand(cmd *starv1.VelocityCommand) {
 	s.teleopLastUpdated = time.Now()
 	s.teleopMu.Unlock()
 
-	log.Printf("Teleop updated: FL=%.2fm/s, FR=%.2fm/s, BL=%.2fm/s, BR=%.2fm/s",
-		cmd.FrontLeftVelocityMps, cmd.FrontRightVelocityMps,
-		cmd.BackLeftVelocityMps, cmd.BackRightVelocityMps)
+	s.logger.Info("Teleop updated",
+		slog.Float64("front_left_mps", float64(cmd.FrontLeftVelocityMps)),
+		slog.Float64("front_right_mps", float64(cmd.FrontRightVelocityMps)),
+		slog.Float64("back_left_mps", float64(cmd.BackLeftVelocityMps)),
+		slog.Float64("back_right_mps", float64(cmd.BackRightVelocityMps)),
+	)
 }
 
 // GetLatestTelemetry returns the cached telemetry data for UI streaming.
@@ -295,7 +368,7 @@ func (s *GatewayService) RegisterClient(clientID string) {
 	if !s.clientCounters[clientID] {
 		s.clientCounters[clientID] = true
 		s.activeClients++
-		log.Printf("Client registered: %s (total: %d)", clientID, s.activeClients)
+		s.logger.Info("Client registered", slog.String("client_id", clientID), slog.Int("total", int(s.activeClients)))
 	}
 }
 
@@ -309,7 +382,7 @@ func (s *GatewayService) UnregisterClient(clientID string) {
 	if s.clientCounters[clientID] {
 		delete(s.clientCounters, clientID)
 		s.activeClients--
-		log.Printf("Client unregistered: %s (total: %d)", clientID, s.activeClients)
+		s.logger.Info("Client unregistered", slog.String("client_id", clientID), slog.Int("total", int(s.activeClients)))
 	}
 }
 
@@ -319,4 +392,45 @@ func (s *GatewayService) GetActiveClientCount() int32 {
 	defer s.clientsMu.RUnlock()
 
 	return s.activeClients
+}
+
+// SetHub wires the WebSocket hub into the service so ForwardTelemetry can push
+// STAREnvelope messages directly to connected UI clients.
+//
+// SetHub is safe to call concurrently with ForwardTelemetry and other hub
+// readers because it synchronises via hubMu (Lock/RLock). It is intended to
+// wire a HubNotifier and may also be used to replace s.hub at runtime.
+func (s *GatewayService) SetHub(h HubNotifier) {
+	s.hubMu.Lock()
+	s.hub = h
+	s.hubMu.Unlock()
+}
+
+// Hub returns the current HubNotifier under the read lock. Intended for use
+// in tests that need to inspect the wired hub without accessing the unexported
+// field directly, which would race with concurrent SetHub or ForwardTelemetry calls.
+func (s *GatewayService) Hub() HubNotifier {
+	s.hubMu.RLock()
+	defer s.hubMu.RUnlock()
+	return s.hub
+}
+
+// broadcastEnvelope sends a single STAREnvelope to hub and logs a warning on
+// channel saturation. name is a short human-readable label used in log lines.
+// ctx is forwarded to hub.Broadcast for cancellation propagation.
+// The caller is responsible for reading s.hub under hubMu and passing a
+// non-nil hub here, which avoids a redundant lock acquisition in the hot path.
+func broadcastEnvelope(
+	ctx context.Context,
+	logger *slog.Logger,
+	name string,
+	hub HubNotifier,
+	env *starv1.STAREnvelope,
+) {
+	if err := hub.Broadcast(ctx, env); err != nil {
+		logger.Warn("ForwardTelemetry: broadcast dropped",
+			slog.String("type", name),
+			slog.Any("error", err),
+		)
+	}
 }

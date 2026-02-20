@@ -8,6 +8,7 @@
 #include "star/v1/common.pb.h"
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/telemetry.pb.h"
+#include "star/v1/ui.pb.h"
 
 #if PB_PROTO_HEADER_VERSION != 40
 #error Regenerate this file with the current version of nanopb generator.
@@ -27,10 +28,28 @@ typedef struct _star_v1_ForwardTelemetryRequest {
  Forwarded from /battery_state ROS2 topic. */
     bool has_battery_state;
     star_v1_BatteryState battery_state;
-    /* Optional: Additional telemetry data (IMU, GPS, etc.).
- Can be added in future without breaking changes. */
+    /* Optional: Additional telemetry data (IMU, GPS, etc.). */
     bool has_telemetry;
     star_v1_TelemetryData telemetry;
+    /* Per-motor status for all drive motors.
+ Forwarded from /motor_status ROS2 topic.
+ nanopb: max_count:4 (4-motor drive configuration; defined in gateway_service.options). */
+    pb_size_t motor_status_count;
+    star_v1_MotorStatus motor_status[4];
+    /* Robot pose and velocity from wheel odometry.
+ Forwarded from /odometry ROS2 topic.
+ nanopb: OdometryData contains only fixed-width scalar fields (double, int64);
+   no repeated fields or variable-length strings, so no max_size/max_count
+   constraints are needed beyond those enforced by the message field types. */
+    bool has_odometry;
+    star_v1_OdometryData odometry;
+    /* Latest LiDAR scan from RPLiDAR C1.
+ Forwarded from /scan ROS2 topic.
+ nanopb: LidarScan.angle_rad, LidarScan.range_m, and LidarScan.intensity are
+   bounded by max_count:800 (RPLiDAR C1 maximum samples per revolution at
+   10 Hz scan mode). Defined in ui.options and duplicated in gateway_service.options. */
+    bool has_lidar_scan;
+    star_v1_LidarScan lidar_scan;
 } star_v1_ForwardTelemetryRequest;
 
 /* Response to telemetry forwarding. */
@@ -96,13 +115,13 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define star_v1_ForwardTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_SystemStatus_init_default, false, star_v1_BatteryState_init_default, false, star_v1_TelemetryData_init_default}
+#define star_v1_ForwardTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_SystemStatus_init_default, false, star_v1_BatteryState_init_default, false, star_v1_TelemetryData_init_default, 0, {star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default, star_v1_MotorStatus_init_default}, false, star_v1_OdometryData_init_default, false, star_v1_LidarScan_init_default}
 #define star_v1_ForwardTelemetryResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0}
 #define star_v1_GetTeleopCommandRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetTeleopCommandResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_VelocityCommand_init_default, 0, 0}
 #define star_v1_SetPIDGainsRequest_init_default  {false, star_v1_RequestHeader_init_default, false, star_v1_PidConfig_init_default, 0}
 #define star_v1_SetPIDGainsResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, {{NULL}, NULL}}
-#define star_v1_ForwardTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemStatus_init_zero, false, star_v1_BatteryState_init_zero, false, star_v1_TelemetryData_init_zero}
+#define star_v1_ForwardTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemStatus_init_zero, false, star_v1_BatteryState_init_zero, false, star_v1_TelemetryData_init_zero, 0, {star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero, star_v1_MotorStatus_init_zero}, false, star_v1_OdometryData_init_zero, false, star_v1_LidarScan_init_zero}
 #define star_v1_ForwardTelemetryResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0}
 #define star_v1_GetTeleopCommandRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetTeleopCommandResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_VelocityCommand_init_zero, 0, 0}
@@ -114,6 +133,9 @@ extern "C" {
 #define star_v1_ForwardTelemetryRequest_system_status_tag 2
 #define star_v1_ForwardTelemetryRequest_battery_state_tag 3
 #define star_v1_ForwardTelemetryRequest_telemetry_tag 4
+#define star_v1_ForwardTelemetryRequest_motor_status_tag 5
+#define star_v1_ForwardTelemetryRequest_odometry_tag 6
+#define star_v1_ForwardTelemetryRequest_lidar_scan_tag 7
 #define star_v1_ForwardTelemetryResponse_header_tag 1
 #define star_v1_ForwardTelemetryResponse_cached_tag 2
 #define star_v1_ForwardTelemetryResponse_active_clients_tag 3
@@ -134,13 +156,19 @@ extern "C" {
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  system_status,     2) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  battery_state,     3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         4)
+X(a, STATIC,   OPTIONAL, MESSAGE,  telemetry,         4) \
+X(a, STATIC,   REPEATED, MESSAGE,  motor_status,      5) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  odometry,          6) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  lidar_scan,        7)
 #define star_v1_ForwardTelemetryRequest_CALLBACK NULL
 #define star_v1_ForwardTelemetryRequest_DEFAULT NULL
 #define star_v1_ForwardTelemetryRequest_header_MSGTYPE star_v1_RequestHeader
 #define star_v1_ForwardTelemetryRequest_system_status_MSGTYPE star_v1_SystemStatus
 #define star_v1_ForwardTelemetryRequest_battery_state_MSGTYPE star_v1_BatteryState
 #define star_v1_ForwardTelemetryRequest_telemetry_MSGTYPE star_v1_TelemetryData
+#define star_v1_ForwardTelemetryRequest_motor_status_MSGTYPE star_v1_MotorStatus
+#define star_v1_ForwardTelemetryRequest_odometry_MSGTYPE star_v1_OdometryData
+#define star_v1_ForwardTelemetryRequest_lidar_scan_MSGTYPE star_v1_LidarScan
 
 #define star_v1_ForwardTelemetryResponse_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
@@ -202,7 +230,7 @@ extern const pb_msgdesc_t star_v1_SetPIDGainsResponse_msg;
 /* star_v1_SetPIDGainsResponse_size depends on runtime parameters */
 #if defined(star_v1_BatteryState_size)
 #define STAR_V1_STAR_V1_GATEWAY_SERVICE_PB_H_MAX_SIZE star_v1_ForwardTelemetryRequest_size
-#define star_v1_ForwardTelemetryRequest_size     (645 + star_v1_BatteryState_size)
+#define star_v1_ForwardTelemetryRequest_size     (8481 + star_v1_BatteryState_size)
 #endif
 #define star_v1_ForwardTelemetryResponse_size    376
 #define star_v1_GetTeleopCommandRequest_size     149
