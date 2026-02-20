@@ -48,8 +48,8 @@ bool is_connected() const;
 void on_battery_state_received(const sensor_msgs::msg::BatteryState::SharedPtr msg);
 
 // Use verb-based names that clarify actions
-void check_for_errors();      // ✓ Clear intent
-void error_check();           // ✗ Noun-first is confusing
+void check_for_errors();      // [PASS] Clear intent
+void error_check();           // [FAIL] Noun-first is confusing
 ```
 
 ### Variables
@@ -333,8 +333,8 @@ RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
   "Telemetry command stale (%ldms > %dms)", cmd_age_ms, timeout_ms_);
 
 // Never use printf/cout in ROS2 nodes
-printf("Debug message");        // ✗ Don't use
-std::cout << "Debug" << std::endl;  // ✗ Don't use
+printf("Debug message");        // [FAIL] Don't use
+std::cout << "Debug" << std::endl;  // [FAIL] Don't use
 ```
 
 ## Documentation
@@ -427,7 +427,7 @@ find src -name '*.cpp' -o -name '*.hpp' | xargs clang-format --dry-run --Werror
 - **ROS2 C++ Style Guide**: https://docs.ros.org/en/rolling/The-ROS2-Project/Contributing/Code-Style-Language-Versions.html
 - **ROS C++ Best Practices**: https://wiki.ros.org/CppStyleGuide
 - **Google C++ Style Guide**: https://google.github.io/styleguide/cppguide.html (ROS2 loosely based on this)
-- **This project's C style**: See root CLAUDE.md § Code Style
+- **This project's C style**: See root CLAUDE.md Sec. Code Style
 
 ## Quick Reference
 

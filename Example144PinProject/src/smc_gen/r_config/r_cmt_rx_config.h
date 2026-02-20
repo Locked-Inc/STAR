@@ -59,7 +59,7 @@ Configuration Options
 #include "r_bsp_config.h"
 #define _RI_TRACE_TIMER BSP_CFG_RTOS_SYSTEM_TIMER /* RI600PX does not actually have the trace feature.*/
 #else
-#define _RI_TRACE_TIMER 1 /* It’s guaranteed that definition _RI_TRACE_TIMER is never used unless BSP_CFG_RTOS_USED == 4.*/
+#define _RI_TRACE_TIMER 1 /* It's guaranteed that definition _RI_TRACE_TIMER is never used unless BSP_CFG_RTOS_USED == 4.*/
 #endif
 
 #endif /* CMT_CONFIG_HEADER_FILE */

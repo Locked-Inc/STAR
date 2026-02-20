@@ -19,7 +19,7 @@ Create pull requests following STAR project conventions with comprehensive descr
 
 When the user asks to create a pull request, follow these steps:
 
-### Step 1: Analyze Branch State ✅ READ-ONLY (Safe to run immediately)
+### Step 1: Analyze Branch State [PASS] READ-ONLY (Safe to run immediately)
 
 Run these commands in parallel to understand the full scope of changes:
 
@@ -42,7 +42,7 @@ git diff main...HEAD
 
 **IMPORTANT**: Analyze ALL commits that will be included in the PR, not just the latest commit!
 
-### Step 2: Draft PR Title and Description ✅ READ-ONLY (Safe to draft)
+### Step 2: Draft PR Title and Description [PASS] READ-ONLY (Safe to draft)
 
 Based on analysis of ALL changes:
 
@@ -71,7 +71,7 @@ Based on analysis of ALL changes:
 
 **IMPORTANT**: Do NOT add AI attribution to PR descriptions. Write natural, professional descriptions as if written by a human developer (per CLAUDE.md policy).
 
-### Step 3: Verify Base Branch ✅ READ-ONLY (Verify before push)
+### Step 3: Verify Base Branch [PASS] READ-ONLY (Verify before push)
 
 ```bash
 # Get current branch name

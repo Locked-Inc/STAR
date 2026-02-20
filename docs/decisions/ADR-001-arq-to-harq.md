@@ -37,7 +37,7 @@ Chase Combining retransmits identical frames and combines soft bits from all att
 Transmission 1: Soft bits S1 (CRC fail)
 Transmission 2: Soft bits S2 (CRC fail)
 Combined:       S_combined = S1 + S2 (element-wise)
-Decode:         Viterbi(S_combined) → success
+Decode:         Viterbi(S_combined) -> success
 ```
 
 **Why Chase Combining over Incremental Redundancy:**
@@ -64,7 +64,7 @@ Decode:         Viterbi(S_combined) → success
 **Parameters:**
 - Rate: 1/2 (2 output bits per input bit)
 - Constraint Length: K=7 (64 states)
-- Generator Polynomials: G1=171₈, G2=133₈ (NASA standard)
+- Generator Polynomials: G1=171?, G2=133? (NASA standard)
 
 ## Consequences
 
@@ -119,7 +119,7 @@ This represents 13% of 512KB SRAM, well within acceptable limits.
 
 1. **Phase 1:** Documentation (ADR, protocol spec update)
 2. **Phase 2:** Go FEC codec (`internal/fec/`)
-3. **Phase 3:** Go HARQ layer (refactor `arq/` → `harq/`)
+3. **Phase 3:** Go HARQ layer (refactor `arq/` -> `harq/`)
 4. **Phase 4:** RX72N FEC codec (`lib/rx_fec/`)
 5. **Phase 5:** RX72N HARQ layer (`lib/rx_harq/`)
 6. **Phase 6:** Documentation updates
@@ -131,27 +131,27 @@ This represents 13% of 512KB SRAM, well within acceptable limits.
 
 | Phase | Component | Status | Notes |
 |-------|-----------|--------|-------|
-| 1 | ADR-001 | ✅ Done | This document |
-| 1 | Protocol spec update | ✅ Done | `docs/sections/01_nanopb_protocol.tex` |
-| 2 | Go FEC encoder | ✅ Done | `internal/fec/convolutional.go` |
-| 2 | Go Viterbi decoder | ✅ Done | `internal/fec/viterbi.go` |
-| 2 | Go Chase Combiner | ✅ Done | `internal/fec/combiner.go` |
-| 2 | Go FEC tests | ✅ Done | 31 tests passing |
-| 3 | Go HARQ layer | ✅ Done | `internal/harq/harq.go` |
-| 3 | Go HARQ tests | ✅ Done | 38 tests passing |
-| 6 | CLAUDE.md updates | ✅ Done | `star-gateway/CLAUDE.md` |
+| 1 | ADR-001 | [PASS] Done | This document |
+| 1 | Protocol spec update | [PASS] Done | `docs/sections/01_nanopb_protocol.tex` |
+| 2 | Go FEC encoder | [PASS] Done | `internal/fec/convolutional.go` |
+| 2 | Go Viterbi decoder | [PASS] Done | `internal/fec/viterbi.go` |
+| 2 | Go Chase Combiner | [PASS] Done | `internal/fec/combiner.go` |
+| 2 | Go FEC tests | [PASS] Done | 31 tests passing |
+| 3 | Go HARQ layer | [PASS] Done | `internal/harq/harq.go` |
+| 3 | Go HARQ tests | [PASS] Done | 38 tests passing |
+| 6 | CLAUDE.md updates | [PASS] Done | `star-gateway/CLAUDE.md` |
 
 ### Remaining Work
 
 | Phase | Component | Status | Description |
 |-------|-----------|--------|-------------|
-| 4 | RX72N FEC encoder | ⏳ Pending | C implementation in `lib/rx_fec/` |
-| 4 | RX72N Viterbi decoder | ⏳ Pending | Memory-optimized C implementation |
-| 5 | RX72N HARQ layer | ⏳ Pending | C implementation in `lib/rx_harq/` |
-| 5 | RX72N soft buffers | ⏳ Pending | Static allocation (no malloc) |
-| 7 | Go ↔ C compatibility | ⏳ Pending | Shared test vectors for bit-exact verification |
-| 7 | Integration tests | ⏳ Pending | End-to-end HARQ handshake testing |
-| 7 | Performance tests | ⏳ Pending | Verify Viterbi < 1ms on RX72N |
+| 4 | RX72N FEC encoder | [WAIT] Pending | C implementation in `lib/rx_fec/` |
+| 4 | RX72N Viterbi decoder | [WAIT] Pending | Memory-optimized C implementation |
+| 5 | RX72N HARQ layer | [WAIT] Pending | C implementation in `lib/rx_harq/` |
+| 5 | RX72N soft buffers | [WAIT] Pending | Static allocation (no malloc) |
+| 7 | Go <-> C compatibility | [WAIT] Pending | Shared test vectors for bit-exact verification |
+| 7 | Integration tests | [WAIT] Pending | End-to-end HARQ handshake testing |
+| 7 | Performance tests | [WAIT] Pending | Verify Viterbi < 1ms on RX72N |
 
 ### RX72N Implementation Notes
 
@@ -182,30 +182,30 @@ The RX72N implementation should follow these guidelines:
 4. **Files to Create:**
    ```
    star-rx72n-firmware/lib/rx_fec/
-   ├── inc/
-   │   ├── rx_fec.h
-   │   ├── rx_convolutional.h
-   │   └── rx_viterbi.h
-   └── src/
-       ├── rx_fec.c
-       ├── rx_convolutional.c
-       └── rx_viterbi.c
+   +-- inc/
+   |   +-- rx_fec.h
+   |   +-- rx_convolutional.h
+   |   +-- rx_viterbi.h
+   +-- src/
+       +-- rx_fec.c
+       +-- rx_convolutional.c
+       +-- rx_viterbi.c
 
    star-rx72n-firmware/lib/rx_harq/
-   ├── inc/
-   │   ├── rx_harq.h
-   │   └── rx_chase_combiner.h
-   └── src/
-       ├── rx_harq.c
-       └── rx_chase_combiner.c
+   +-- inc/
+   |   +-- rx_harq.h
+   |   +-- rx_chase_combiner.h
+   +-- src/
+       +-- rx_harq.c
+       +-- rx_chase_combiner.c
    ```
 
 ### Verification Criteria
 
 Before merging to main:
 
-- [ ] Go FEC round-trip encode/decode passes (✅ done)
-- [ ] Go HARQ state machine tests pass (✅ done)
+- [ ] Go FEC round-trip encode/decode passes ([PASS] done)
+- [ ] Go HARQ state machine tests pass ([PASS] done)
 - [ ] C FEC produces bit-exact output matching Go for same input
 - [ ] C HARQ handles combining and recovery correctly
 - [ ] Viterbi decode latency < 1ms on RX72N @ 120 MHz
@@ -217,4 +217,4 @@ Before merging to main:
 - [Hybrid ARQ - Wikipedia](https://en.wikipedia.org/wiki/Hybrid_automatic_repeat_request)
 - [ARQ vs HARQ - RF Wireless World](https://www.rfwireless-world.com/terminology/arq-vs-harq)
 - [Hybrid ARQ - Devopedia](https://devopedia.org/hybrid-arq)
-- NASA Convolutional Code Standard: Polynomials 171₈, 133₈
+- NASA Convolutional Code Standard: Polynomials 171?, 133?

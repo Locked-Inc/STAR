@@ -1,32 +1,32 @@
 ---
 name: simulator-setup
-description: Configure e² Studio simulator for RX72N firmware logic testing without hardware
+description: Configure e^2 Studio simulator for RX72N firmware logic testing without hardware
 disable-model-invocation: false
 ---
 
-# e² Studio Simulator Setup
+# e^2 Studio Simulator Setup
 
-Configure the Renesas e² studio simulator for testing firmware logic without real hardware.
+Configure the Renesas e^2 studio simulator for testing firmware logic without real hardware.
 
 ## Purpose
 
-The Renesas e² studio simulator allows testing firmware **logic** without real hardware:
-- ✅ Algorithm validation (PID controllers, state machines)
-- ✅ Protocol parsing and encoding
-- ✅ Error handling paths
-- ✅ Interactive debugging (breakpoints, step-through, variable inspection)
-- ❌ Timing behavior (not cycle-accurate)
-- ❌ Hardware peripheral specifics (clocks, USB, SPI fully functional)
+The Renesas e^2 studio simulator allows testing firmware **logic** without real hardware:
+- [PASS] Algorithm validation (PID controllers, state machines)
+- [PASS] Protocol parsing and encoding
+- [PASS] Error handling paths
+- [PASS] Interactive debugging (breakpoints, step-through, variable inspection)
+- [FAIL] Timing behavior (not cycle-accurate)
+- [FAIL] Hardware peripheral specifics (clocks, USB, SPI fully functional)
 
 **WARNING**: Simulator builds are FOR LOGIC TESTING ONLY. Always validate critical paths on real hardware before deployment.
 
 ## Building for Simulator
 
-### Option 1: e² studio (Interactive Debugging)
+### Option 1: e^2 studio (Interactive Debugging)
 
 **Creating Simulator Build Configuration**:
-1. In e² studio, right-click project "e2-studio-star-rx72n-firmware" → Properties
-2. Navigate to: C/C++ Build → Manage Configurations
+1. In e^2 studio, right-click project "e2-studio-star-rx72n-firmware" -> Properties
+2. Navigate to: C/C++ Build -> Manage Configurations
 3. Click "New..." button
 4. Name: **"Simulator Debug"**
 5. Select "Copy settings from": **"Debug"**
@@ -34,22 +34,22 @@ The Renesas e² studio simulator allows testing firmware **logic** without real 
 
 **Adding RX_SIMULATOR_MODE Define**:
 1. Still in Properties, select configuration: **"Simulator Debug"** (top dropdown)
-2. Navigate to: C/C++ Build → Settings
-3. Expand: **"Compiler"** → click **"Preprocessor"**
+2. Navigate to: C/C++ Build -> Settings
+3. Expand: **"Compiler"** -> click **"Preprocessor"**
 4. In "Defined symbols (-D)" section, click "Add" (green + icon)
 5. Enter: **`RX_SIMULATOR_MODE`** (no value needed)
-6. Click OK → Apply → Close
+6. Click OK -> Apply -> Close
 
 **Building**:
-1. Project → Build Configurations → Set Active → **"Simulator Debug"**
-2. Project → Build Project (Ctrl+B)
+1. Project -> Build Configurations -> Set Active -> **"Simulator Debug"**
+2. Project -> Build Project (Ctrl+B)
 3. Verify build succeeds with warning: "RX_SIMULATOR_MODE: This build is FOR SIMULATOR ONLY"
 
 **Launching Simulator**:
-1. Run → Debug As → Renesas GDB Hardware Debugging
+1. Run -> Debug As -> Renesas GDB Hardware Debugging
 2. Ensure "Simulator" is selected as target device (not hardware emulator)
 3. Set breakpoints, step through code, inspect variables
-4. Logs appear in Console view (Window → Show View → Console)
+4. Logs appear in Console view (Window -> Show View -> Console)
 
 ### Option 2: CMake (Automated Testing)
 
@@ -73,7 +73,7 @@ ctest --output-on-failure
 
 **Clock/Oscillator**:
 - External 24 MHz crystal oscillation
-- PLL/PPLL lock timing (flags never set → our fix skips polling)
+- PLL/PPLL lock timing (flags never set -> our fix skips polling)
 - Precise frequency generation
 
 **Peripherals**:
@@ -105,12 +105,12 @@ ctest --output-on-failure
 
 **Problem**: Simulator still hangs in clock init
 - **Solution**: Verify `RX_SIMULATOR_MODE` is defined
-  - Check: Project Properties → C/C++ Build → Settings → Preprocessor
+  - Check: Project Properties -> C/C++ Build -> Settings -> Preprocessor
   - Should see: `RX_SIMULATOR_MODE` in defined symbols list
 - **Alternative**: Build from wrong configuration (use "Simulator Debug", not "Debug")
 
 **Problem**: No log output in simulator
-- **Solution**: Open Console view (Window → Show View → Console)
+- **Solution**: Open Console view (Window -> Show View -> Console)
 - Logs use stdout, not UART hardware
 
 **Problem**: Error "undefined reference to putchar"
@@ -132,14 +132,14 @@ ctest --output-on-failure
 
 ## When to Use Simulator
 
-✅ **Good for**:
+[PASS] **Good for**:
 - Testing PID algorithm logic before hardware integration
 - Validating protocol parsing (nanopb decoding)
 - Checking error handling paths
 - Interactive debugging with breakpoints
 - Unit testing control flow
 
-❌ **Not good for**:
+[FAIL] **Not good for**:
 - Performance measurement
 - Timing-dependent code
 - Hardware peripheral integration

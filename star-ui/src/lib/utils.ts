@@ -14,7 +14,7 @@ export function formatMps(value: number): string {
 }
 
 export function formatRad(value: number): string {
-  return `${(value * (180 / Math.PI)).toFixed(1)}°`
+  return `${(value * (180 / Math.PI)).toFixed(1)}deg`
 }
 
 export function formatMs(value: number): string {
