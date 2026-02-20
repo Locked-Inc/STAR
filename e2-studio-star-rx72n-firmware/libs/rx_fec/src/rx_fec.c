@@ -814,13 +814,34 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
  * @post dec path metric arrays updated (internal state consumed by traceback)
  *
  * @note Not thread-safe; caller must ensure exclusive access to dec and params
- * @note Soft values: positive = bit-0 likely, negative = bit-1 likely (signed)
+ * @note Soft values: positive = bit-1 likely, negative = bit-0 likely (signed).
  *
  * @see rx_fec_decoder_init()  Initialize decoder before calling this function
  * @see rx_fec_decode_hard()   Hard-decision wrapper (lower coding gain, simpler input)
  * @see rx_fec_encode()        Encoder that produces the data this function decodes
  *
  * @since Version 1.0.0
+ *
+ * @code
+ * // Example: soft-decision decode of a previously FEC-encoded buffer
+ * rx_fec_decoder_t            dec;
+ * uint64_t                    survivors[k_fec_max_symbols];
+ * rx_soft_bit_t               soft_buf[k_fec_max_symbols * 2];
+ * uint8_t                     out_buf[k_fec_max_input_bytes];
+ * uint32_t                    out_len = 0;
+ *
+ * (void)rx_fec_decoder_init(&dec, survivors, k_fec_max_symbols);
+ *
+ * // Populate soft_buf from channel (positive = bit-1 likely)
+ * rx_fec_decode_soft_params_t p = {
+ *     .soft_bits           = soft_buf,
+ *     .soft_len            = encoded_len_bits,
+ *     .expected_output_len = original_data_len,
+ *     .output              = out_buf,
+ *     .output_len          = &out_len,
+ * };
+ * rx_err_t err = rx_fec_decode_soft(&dec, &p);
+ * @endcode
  */
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_params_t* params)
 {
@@ -859,7 +880,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
  * Algorithm steps:
  * 1. Validate all input pointers and size constraints
  * 2. Convert each hard bit to a soft value via rx_fec_hard_to_soft()
- *    (maps 0 → positive confidence, 1 → negative confidence)
+ *    (maps 0 → negative confidence, 1 → positive confidence)
  * 3. Build rx_fec_decode_soft_params_t from the converted soft bits
  * 4. Delegate to rx_fec_decode_soft() for full Viterbi decode
  *
@@ -902,6 +923,28 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
  * @see rx_fec_encode()        Encoder that produces data this function decodes
  *
  * @since Version 1.0.0
+ *
+ * @code
+ * // Example: hard-decision decode of packed FEC-encoded bytes
+ * rx_fec_decoder_t            dec;
+ * uint64_t                    survivors[k_fec_max_symbols];
+ * rx_soft_bit_t               soft_scratch[k_fec_max_symbols * 2];
+ * uint8_t                     out_buf[k_fec_max_input_bytes];
+ * uint32_t                    out_len = 0;
+ *
+ * (void)rx_fec_decoder_init(&dec, survivors, k_fec_max_symbols);
+ *
+ * rx_fec_decode_hard_params_t p = {
+ *     .data                = received_bytes,
+ *     .data_len            = received_len,
+ *     .soft_bits_buffer    = soft_scratch,
+ *     .soft_buffer_len     = k_fec_max_symbols * 2,
+ *     .expected_output_len = original_data_len,
+ *     .output              = out_buf,
+ *     .output_len          = &out_len,
+ * };
+ * rx_err_t err = rx_fec_decode_hard(&dec, &p);
+ * @endcode
  */
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec, const rx_fec_decode_hard_params_t* params)
 {

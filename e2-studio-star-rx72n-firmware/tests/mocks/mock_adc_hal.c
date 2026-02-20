@@ -299,7 +299,7 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
   }
 
   /* Calculate voltage */
-  uint32_t max_value = ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
+  const uint32_t max_value = ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
   *voltage_mv        = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
 
   return k_rx_ok;

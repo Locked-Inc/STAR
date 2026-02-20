@@ -1173,22 +1173,22 @@ static void internal_temp_task_entry(ULONG input)
   /* Main polling loop */
   while (true) {
     /* Step 1: Trigger temperature conversion */
-    err = rx_ds18b20_trigger_conversion(&s_ds18b20);
-    if (err != k_rx_ok) {
-      rx_log_warn_val(s_tag, "Conversion trigger failed", (uint32_t)err);
+    const rx_err_t err_trigger = rx_ds18b20_trigger_conversion(&s_ds18b20);
+    if (err_trigger != k_rx_ok) {
+      rx_log_warn_val(s_tag, "Conversion trigger failed", (uint32_t)err_trigger);
     }
 
     /* Step 2: Wait for conversion (800ms for 12-bit) */
     (void)tx_thread_sleep(k_temp_conversion_ticks);
 
     /* Step 3: Read temperature */
-    float temp_celsius = 0.0F;
-    err = rx_ds18b20_read_temperature(&s_ds18b20, &temp_celsius);
+    float          temp_celsius = 0.0F;
+    const rx_err_t err_read     = rx_ds18b20_read_temperature(&s_ds18b20, &temp_celsius);
 
     /* Build state structure */
     temp_sensor_state_t state = {0};
 
-    if (err == k_rx_ok) {
+    if (err_read == k_rx_ok) {
       /* Convert to centi-degrees for integer storage */
       state.temperature_cdegc[k_temp_sensor_idx] = (int16_t)(temp_celsius * s_cdegc_per_degree);
       state.sensor_valid[k_temp_sensor_idx]      = true;
@@ -1203,16 +1203,16 @@ static void internal_temp_task_entry(ULONG input)
       state.sensor_count                    = k_temp_sensor_count;
       state.timestamp_ms                    = tx_time_get();
 
-      rx_log_warn_val(s_tag, "Temperature read failed", (uint32_t)err);
+      rx_log_warn_val(s_tag, "Temperature read failed", (uint32_t)err_read);
     }
 
     /* Update shared data */
     (void)shared_data_update_temp(&state);
 
     /* Report task heartbeat to IWDT (must execute within 3000ms timeout) */
-    err = rx_iwdt_task_heartbeat("TempSensor");
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+    const rx_err_t err_heartbeat = rx_iwdt_task_heartbeat("TempSensor");
+    if (err_heartbeat != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err_heartbeat);
       /* Continue operation - watchdog monitor will detect timeout */
     }
 

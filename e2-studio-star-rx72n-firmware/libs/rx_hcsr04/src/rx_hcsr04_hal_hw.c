@@ -766,6 +766,7 @@ typedef enum : uint32_t {
   k_min_ticks              = 1,                          /**< Minimum delay to prevent zero-wait */
   k_cmstr1_cmt2_enable_bit = k_rx72n_cmstr1_cmt2_enable, /**< CMSTR1.STR2 bit (bit 0) */
   k_counter_reset          = 0,                          /**< Counter initial value */
+  k_iteration_init         = 0,                          /**< Iteration counter initial value */
   k_isr_us_numerator       = 2, /**< ISR timestamp ratio numerator: 1000000 / (60000000/8) = 2/15 */
   k_isr_us_denominator = 15, /**< ISR timestamp ratio denominator: avoids 64-bit division in ISR */
 } cmt2_timing_constants_t;
@@ -1093,7 +1094,7 @@ void hcsr04_hal_delay_us(uint32_t us)
     return;
   }
 
-  uint32_t iteration_count = 0;
+  uint32_t iteration_count = k_iteration_init;
   while (ticks > 0 && iteration_count < k_max_delay_iterations) {
     const uint32_t wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
     const uint16_t start      = cmt2()->cmcnt;

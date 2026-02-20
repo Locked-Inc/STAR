@@ -1956,7 +1956,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
   (void)channel;
 
   /* Try to decode as SetVelocityRequest */
-  star_v1_SetVelocityRequest velocity_req;
+  star_v1_SetVelocityRequest velocity_req = {0};
   rx_err_t err = rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err == k_rx_ok && velocity_req.has_command) {
     /* Build motor command from protobuf */
@@ -1983,7 +1983,7 @@ static void internal_handle_command_frame(rx_comm_channel_t channel, const rx_fr
   }
 
   /* Try to decode as EmergencyStopRequest */
-  star_v1_EmergencyStopRequest estop_req;
+  star_v1_EmergencyStopRequest estop_req = {0};
   err = rx_nanopb_decode_estop_request(frame->payload, frame->header.length, &estop_req);
   if (err == k_rx_ok) {
     rx_log_warn(s_tag, "E-Stop request received");

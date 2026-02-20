@@ -852,7 +852,7 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
   const uint8_t            port      = rx_port_from_pin(pin_config);
   const uint8_t            pin       = rx_pin_from_pin(pin_config);
 
-  volatile rx_port_regs_t* port_regs = rx_port_get_base(port);
+  volatile rx_port_regs_t* const port_regs = rx_port_get_base(port);
 
   if (port_regs == nullptr) {
     rx_log_error(s_tag, "Invalid port number for CS pin");
@@ -1048,25 +1048,22 @@ static rx_err_t rspi_configure_registers(const uint8_t                   channel
  */
 rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_config_t* config)
 {
-  uint16_t                 spcmd = s_rspi_spcmd_init;
-  uint8_t                  spbr  = k_rspi_spbr_init;
-
-  volatile rx_rspi_regs_t* rspi  = nullptr;
-  rx_err_t                 err;
-
   /* Validate all arguments and preconditions */
-  err = rspi_validate_controller_args(channel, config);
+  rx_err_t err = rspi_validate_controller_args(channel, config);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Prepare hardware resources (SPBR, RSPI base, CS GPIO) */
+  volatile rx_rspi_regs_t* rspi = nullptr;
+  uint8_t                  spbr = k_rspi_spbr_init;
   err = rspi_prepare_controller(channel, config, &rspi, &spbr);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure SPI mode (CPOL and CPHA) */
+  uint16_t spcmd = s_rspi_spcmd_init;
   internal_configure_spcmd(&spcmd, config->spi_mode);
 
   /* Configure 16-bit data length */
@@ -1357,7 +1354,7 @@ rx_err_t rspi_controller_deinit(const uint8_t channel)
   }
 
   /* Get RSPI base */
-  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* const rspi = internal_get_rspi_base(channel);
   if (rspi == nullptr) {
     return k_rx_err_invalid_arg;
   }

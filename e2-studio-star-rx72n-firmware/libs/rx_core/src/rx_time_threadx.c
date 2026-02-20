@@ -114,6 +114,31 @@
 #include "tx_api.h"
 
 /* =============================================================================
+ * Module Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_time_threadx_zero_t
+ * @brief Zero sentinel for ThreadX time computations
+ * @details Used in ceiling-division and guard checks to avoid magic number 0.
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_rx_zero = 0u, /**< Zero sentinel — used in overflow-safe ceiling division */
+} rx_time_threadx_zero_t;
+
+/**
+ * @enum rx_time_ceil_offset_t
+ * @brief Ceiling-division rounding offset
+ * @details Added to the remainder check when computing tick ceiling from milliseconds.
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_ceil_div_offset = 1u, /**< Standard ceiling-division rounding offset */
+} rx_time_ceil_offset_t;
+
+/* =============================================================================
  * Interface Implementation Functions
  * =============================================================================
  */
@@ -174,9 +199,11 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
 {
   (void)ctx; /* ThreadX uses global state - no context needed */
 
-  /* Convert ms to ticks, rounding up */
-  const uint32_t ticks = (ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
-  if (ticks > 0) {
+  /* Convert ms to ticks, rounding up (overflow-safe ceiling division) */
+  const uint32_t quotient  = ms / k_threadx_ms_per_tick;
+  const uint32_t remainder = ms % k_threadx_ms_per_tick;
+  const uint32_t ticks     = quotient + (remainder > k_rx_zero ? k_ceil_div_offset : k_rx_zero);
+  if (ticks > k_rx_zero) {
     (void)tx_thread_sleep(ticks);
   }
 }

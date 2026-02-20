@@ -108,10 +108,22 @@
 
 /** @brief HARQ FEC size constants */
 typedef enum : uint16_t {
-  k_harq_zero_combines       = 0, /**< Sentinel: no max_combines configured */
   k_harq_fec_rate_multiplier = 2, /**< Rate 1/2: encoded length multiplier */
   k_harq_tail_bytes          = 2, /**< Tail overhead in bytes */
 } harq_fec_constants_t;
+
+/**
+ * @enum harq_cfg_sentinel_t
+ * @brief HARQ config validation sentinels — zero values for "not configured, use default"
+ * @details
+ * Used to detect unconfigured (zero) values for max_combines and max_retries
+ * fields in HARQ configuration, to fall back to project defaults.
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_harq_zero_combines = 0, /**< Sentinel: no max_combines configured → fall back to default */
+  k_harq_zero_retries  = 0, /**< Sentinel: no max_retries configured → fall back to default */
+} harq_cfg_sentinel_t;
 
 typedef enum : uint8_t {
   k_harq_false = 0U,
@@ -134,7 +146,7 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, const uint8_t max
 
   combiner->expected_len = 0;
   combiner->count        = 0;
-  combiner->max_combines = (max_combines > 0) ? max_combines : k_harq_default_combines;
+  combiner->max_combines = (max_combines > k_harq_zero_combines) ? max_combines : k_harq_default_combines;
   combiner->initialized  = k_harq_true;
 
   return k_rx_ok;
@@ -306,7 +318,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
 
   /* Apply configuration */
   if (config != nullptr) {
-    harq->max_retries = (config->max_retries > 0) ? config->max_retries : k_harq_default_retries;
+    harq->max_retries = (config->max_retries > k_harq_zero_retries) ? config->max_retries : k_harq_default_retries;
     harq->fec_enabled = config->fec_enabled;
   } else {
     harq->max_retries = k_harq_default_retries;
@@ -314,9 +326,9 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   }
 
   /* Initialize Chase Combiner */
-  uint8_t  max_combines = (config != nullptr && config->max_combines > k_harq_zero_combines) ? config->max_combines
-                                                                           : k_harq_default_combines;
-  rx_err_t err          = rx_chase_combiner_init(&harq->combiner, max_combines);
+  const bool    has_combines = (config != nullptr && config->max_combines > k_harq_zero_combines);
+  const uint8_t max_combines = has_combines ? config->max_combines : k_harq_default_combines;
+  rx_err_t      err          = rx_chase_combiner_init(&harq->combiner, max_combines);
   if (err != k_rx_ok) {
     return err;
   }

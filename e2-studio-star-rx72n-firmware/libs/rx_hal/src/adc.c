@@ -967,8 +967,8 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
   }
 
   /* Read raw ADC value */
-  uint16_t raw_value;
-  rx_err_t err = adc_read(unit, channel, &raw_value);
+  uint16_t       raw_value = 0U;
+  const rx_err_t err       = adc_read(unit, channel, &raw_value);
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 
   /* Calculate voltage (using ADC reference voltage) */

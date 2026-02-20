@@ -390,10 +390,18 @@ typedef enum : int16_t {
 } drv8243_speed_constants_t;
 
 typedef enum : uint16_t {
-  k_drv8243_u16_zero             = 0,     /**< Zero sentinel for uint16_t initialization */
   k_drv8243_min_current_limit_ma = 0,     /**< 0mA min current limit (0 = no limit) */
   k_drv8243_max_current_limit_ma = 10000, /**< 10A max current limit */
 } drv8243_current_constants_t;
+
+/**
+ * @enum drv8243_spi_frame_constants_t
+ * @brief DRV8243 SPI frame initialization constants
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_drv8243_spi_rx_idle = 0, /**< Default RX frame value before SPI transfer */
+} drv8243_spi_frame_constants_t;
 
 /**
  * @brief DRV8243 configuration and control constants
@@ -1425,7 +1433,7 @@ internal_drv8243_spi_read_reg(rx_drv8243_handle_t* handle, const uint8_t addr, u
   }
 
   uint16_t tx_frame = DRV8243_SPI_READ_FRAME(addr);
-  uint16_t rx_frame = k_drv8243_u16_zero;
+  uint16_t rx_frame = k_drv8243_spi_rx_idle;
   rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI read failed");
@@ -1459,7 +1467,7 @@ internal_drv8243_spi_write_reg(rx_drv8243_handle_t* handle, const uint8_t addr, 
   }
 
   uint16_t tx_frame = DRV8243_SPI_WRITE_FRAME(addr, data);
-  uint16_t rx_frame = k_drv8243_u16_zero;
+  uint16_t rx_frame = k_drv8243_spi_rx_idle;
   rx_err_t err      = sci_spi_controller_transfer_16bit(handle->sci_channel, tx_frame, &rx_frame);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI write failed");
@@ -1486,11 +1494,12 @@ static rx_err_t internal_drv8243_spi_init(rx_drv8243_handle_t*       handle,
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
-  sci_spi_controller_config_t spi_config;
-  spi_config.spi_mode = k_sci_spi_mode_1; /* DRV8243 uses SPI mode 1 (CPOL=0, CPHA=1) */
-  spi_config.freq_hz  = s_drv8243_spi_freq_hz;
-  /* Construct rx_port_pin_t from separate port and pin values */
-  spi_config.cs = (rx_port_pin_t)((config->spi_cs_port << k_port_shift) | config->spi_cs_pin);
+  /* DRV8243 uses SPI mode 1 (CPOL=0, CPHA=1); construct CS pin from port/pin fields */
+  const sci_spi_controller_config_t spi_config = {
+    .spi_mode = k_sci_spi_mode_1,
+    .freq_hz  = s_drv8243_spi_freq_hz,
+    .cs       = (rx_port_pin_t)((config->spi_cs_port << k_port_shift) | config->spi_cs_pin),
+  };
 
   rx_err_t err = sci_spi_init_controller(config->sci_channel, &spi_config);
   if (err != k_rx_ok) {

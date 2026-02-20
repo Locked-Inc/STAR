@@ -366,15 +366,16 @@ static rx_err_t internal_clock_init(void)
   /* Simulator: PLL stable immediately (no hardware PLL circuit to lock) */
 #else
   /* Hardware: Poll OSCOVFSR until PLL locks (typically ~200 µs) */
-  uint32_t timeout = k_pll_stabilization_timeout;
-  while ((system_regs()->oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
-    timeout--;
-  }
-
-  if (timeout == k_pll_stabilization_timeout_expired) {
-    /* PLL failed to stabilize - but can't log yet (UART not initialized) */
-    *prcr_reg() = k_rx_prcr_lock;
-    return k_rx_err_hw_timeout;
+  {
+    uint32_t timeout = k_pll_stabilization_timeout;
+    while ((system_regs()->oscovfsr & k_pll_stable_flag) == k_pll_stabilization_timeout_expired &&
+           timeout > k_pll_stabilization_timeout_expired) {
+      timeout--;
+    }
+    if (timeout == k_pll_stabilization_timeout_expired) {
+      *prcr_reg() = k_rx_prcr_lock;
+      return k_rx_err_hw_timeout;
+    }
   }
 #endif
 
@@ -396,15 +397,16 @@ static rx_err_t internal_clock_init(void)
   /* Simulator: PPLL stable immediately (no hardware PPLL circuit to lock) */
 #else
   /* Hardware: Poll OSCOVFSR until PPLL locks (typically ~200 µs) */
-  uint32_t timeout = k_pll_stabilization_timeout;
-  while ((system_regs()->oscovfsr & k_ppll_stable_flag) == 0 && timeout > 0) {
-    timeout--;
-  }
-
-  if (timeout == k_pll_stabilization_timeout_expired) {
-    /* PPLL failed to stabilize */
-    *prcr_reg() = k_rx_prcr_lock;
-    return k_rx_err_hw_timeout;
+  {
+    uint32_t timeout = k_pll_stabilization_timeout;
+    while ((system_regs()->oscovfsr & k_ppll_stable_flag) == k_pll_stabilization_timeout_expired &&
+           timeout > k_pll_stabilization_timeout_expired) {
+      timeout--;
+    }
+    if (timeout == k_pll_stabilization_timeout_expired) {
+      *prcr_reg() = k_rx_prcr_lock;
+      return k_rx_err_hw_timeout;
+    }
   }
 
   /* Post-condition: Verify PPLL is stable (NASA Rule 5) */

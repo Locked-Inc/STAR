@@ -1360,10 +1360,10 @@ static void internal_bms_task_entry(ULONG input)
   rx_log_info(s_tag, "BMS monitoring running @ 1 Hz");
 
   /* Main polling loop */
-  rx_bq4050_status_t status = {0};
-  bms_state_t        bms = {0};
-
   while (true) {
+    rx_bq4050_status_t status = {0};
+    bms_state_t        bms    = {0};
+
     /* Read battery status */
     err = rx_bq4050_read_status(&g_bus_manager, s_i2c_bus_name, &status, k_bms_cell_count);
 

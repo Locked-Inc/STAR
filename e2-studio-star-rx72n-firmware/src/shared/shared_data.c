@@ -320,7 +320,7 @@
  * **Synchronization mechanisms:**
  * - ThreadX mutexes (TX_MUTEX): Protect shared data structures
  * - ThreadX event flags (TX_EVENT_FLAGS_GROUP): Lock-free inter-task signaling
- * - Priority inheritance: TX_NO_INHERIT (not needed - no nested locking)
+ * - Priority inheritance: TX_INHERIT (enabled for all mutexes)
  *
  * **Deadlock prevention:**
  * - Rule 1: Never acquire multiple mutexes in same function
@@ -380,8 +380,8 @@
  * Constants used internally by the shared data module. Not exposed in public API.
  */
 typedef enum : uint8_t {
-  k_mutex_no_inherit = 0, /**< TX_NO_INHERIT for mutex creation (no priority inheritance) */
-  k_ms_per_tick      = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
+  k_mutex_inherit = 1,  /**< TX_INHERIT for mutex creation (priority inheritance enabled) */
+  k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
 } shared_data_internal_constants_t;
 
 /**
@@ -537,7 +537,7 @@ shared_data_t g_shared_data = {0};
  * ## Algorithm Steps:
  *
  * 1. **Check re-initialization:** Return error if already initialized
- * 2. **Create 5 mutexes:** motor, bms, temp, obstacle, estop (TX_NO_INHERIT priority)
+ * 2. **Create 5 mutexes:** motor, bms, temp, obstacle, estop (priority inheritance enabled (TX_INHERIT))
  * 3. **Create event flags:** Inter-task signaling group (8 flags defined)
  * 4. **Set default PID gains:** Kp=0.286, Ki=8.01, Kd=0.0 (from MATLAB)
  * 5. **Invalidate motor command:** Set valid=false (no command received yet)
@@ -548,10 +548,10 @@ shared_data_t g_shared_data = {0};
  *
  * ## Mutex Configuration:
  *
- * All mutexes use `TX_NO_INHERIT` (no priority inheritance) because:
- * - Tasks never hold multiple mutexes simultaneously (no nested locking)
- * - Critical sections are very short (<10 µs)
- * - Priority inversion unlikely with 6 fixed-priority tasks
+ * All mutexes use priority inheritance enabled (TX_INHERIT) because:
+ * - Tasks may hold mutexes across preemptible operations
+ * - Priority inheritance prevents unbounded priority inversion
+ * - Critical sections may span multiple register accesses
  *
  * ## Default PID Gains Rationale:
  *
@@ -655,31 +655,31 @@ rx_err_t shared_data_init(void)
   }
 
   /* Create motor_mutex with priority inheritance */
-  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", TX_INHERIT);
+  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create bms_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.bms_mutex, "BMSMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.bms_mutex, "BMSMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create temp_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create obstacle_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create estop_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1705,7 +1705,7 @@ rx_err_t shared_data_commit_isr_estop(void)
   }
 
   /* Enter critical section to atomically check-and-clear pending flag */
-  UINT           saved_interrupt_state = tx_interrupt_control(TX_INT_DISABLE);
+  const UINT     saved_interrupt_state = tx_interrupt_control(TX_INT_DISABLE);
   bool           pending               = false;
   estop_reason_t reason                = k_estop_reason_none;
 
@@ -2833,7 +2833,7 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
     return k_rx_err_not_initialized;
   }
 
-  ULONG actual_flags = 0;
+  ULONG actual_flags = (ULONG)k_event_none;
   UINT  tx_status    = tx_event_flags_get(&g_shared_data.event_flags,
                                           (ULONG)flags,
                                           TX_OR_CLEAR,
