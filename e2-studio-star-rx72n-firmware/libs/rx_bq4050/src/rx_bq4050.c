@@ -907,7 +907,7 @@ rx_err_t rx_bq4050_read_capacity(rx_bus_manager_t* manager,
  * @post Electrical fields in status structure populated on success
  * @post On error, status may contain partial data (do not use)
  *
- * @note Thread Safety: NOT thread-safe
+ * @note Not thread-safe; caller must hold the BQ4050 mutex before calling.
  * @note Performance: ~10-40ms @ 100kHz (4 + num_cells SMBus transactions)
  *
  * @see rx_bq4050_read_status() Public function that calls this helper
@@ -982,7 +982,7 @@ static rx_err_t internal_read_electrical_status(rx_bus_manager_t*   manager,
  * @retval k_rx_err_null_ptr nullptr
  * @retval Other rx_err_t values from SMBus/conversion
  *
- * @note Not thread-safe; caller must hold the BMS mutex before invoking.
+ * @note Not thread-safe; caller must hold the BQ4050 mutex before calling.
  *
  * @see rx_bq4050_read_status() Caller function
  *
@@ -1034,7 +1034,7 @@ static rx_err_t internal_read_soc_status(rx_bus_manager_t*   manager,
  *
  * @return rx_err_t Error code
  *
- * @note Not thread-safe; caller must hold the BMS mutex before invoking.
+ * @note Not thread-safe; caller must hold the BQ4050 mutex before calling.
  *
  * @see rx_bq4050_read_status() Caller function
  *
@@ -1091,7 +1091,7 @@ static rx_err_t internal_read_capacity_status(rx_bus_manager_t*   manager,
  *
  * @return rx_err_t Error code
  *
- * @note Not thread-safe; caller must hold the BMS mutex before invoking.
+ * @note Not thread-safe; caller must hold the BQ4050 mutex before calling.
  *
  * @see rx_bq4050_read_status() Caller function
  *
@@ -1145,7 +1145,7 @@ static rx_err_t internal_read_timing_status(rx_bus_manager_t*   manager,
  *
  * @return rx_err_t Error code
  *
- * @note Not thread-safe; caller must hold the BMS mutex before invoking.
+ * @note Not thread-safe; caller must hold the BQ4050 mutex before calling.
  *
  * @see rx_bq4050_read_status() Caller function
  * @see bq4050_status_flags_t Status flag bit definitions

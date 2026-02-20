@@ -386,8 +386,35 @@ typedef enum : uint8_t {
  * @brief ICMR2 (Mode Register 2) configuration values
  *
  * @details
- * ICMR2 configures timeout detection and SDA output delay. Default value
- * disables timeout (handled in software) and uses no SDA delay.
+ * ICMR2 configures hardware timeout detection and SDA output hold-time delay.
+ * The STAR project disables hardware timeout (TMOE = 0) because bus-busy
+ * detection is handled in software by internal_wait_bus_ready() using the
+ * k_riic_timeout_us countdown. The SDA output delay is also left at zero
+ * (no additional hold time) since the pull-up resistors on the target PCB
+ * provide adequate signal integrity at all supported speeds.
+ *
+ * ## ICMR2 Register Bit Layout
+ *
+ * | Bit | Name  | Function                          | Value Used |
+ * |-----|-------|-----------------------------------|------------|
+ * |  7  | TMOH  | Timeout detection (high period)   | 0 (off)    |
+ * |  6  | TMOL  | Timeout detection (low period)    | 0 (off)    |
+ * |  5  | TMOE  | Timeout enable                    | 0 (off)    |
+ * | 4:3 | SDDL  | SDA output hold-time delay        | 0 (none)   |
+ * |  2  | DLCS  | SDA delay clock source            | 0          |
+ * | 1:0 | -     | Reserved                          | 0          |
+ *
+ * @invariant k_riic_icmr2_default == 0; writing 0x00 leaves all ICMR2 control
+ *            bits in their hardware-reset state (timeouts off, no SDA delay)
+ *
+ * @code
+ * // Apply default ICMR2 configuration during RIIC channel initialization
+ * volatile rx_riic_regs_t* riic = internal_get_riic_base(k_riic_channel_0);
+ * riic->icmr2 = k_riic_icmr2_default;
+ * @endcode
+ *
+ * @see riic_init() Applies this value during channel initialization
+ * @see k_riic_timeout_us Software timeout used instead of hardware TMOE
  */
 typedef enum : uint8_t {
   k_riic_icmr2_default = 0, /**< No hardware timeout, no SDA delay */
@@ -398,12 +425,45 @@ typedef enum : uint8_t {
  * @brief ICMR3 (Mode Register 3) ACK/NACK control bit definitions
  *
  * @details
- * ICMR3 controls ACK/NACK transmission during receive operations.
- * - Set ACKBT=0 to send ACK (acknowledge, continue reading)
- * - Set ACKBT=1 to send NACK (not acknowledge, signal end of read)
+ * ICMR3 controls ACK/NACK transmission during receive operations. The key
+ * field is ACKBT (Acknowledge Bit), which determines whether the controller
+ * sends an ACK or NACK after each received byte.
  *
- * @note NACK must be sent before reading the last byte to signal
- *       the peripheral that the transfer is complete.
+ * ## ACK/NACK Signalling Rules (I2C Specification)
+ *
+ * - Set ACKBT=0 (clear bit) to send ACK: instructs the peripheral to continue
+ *   transmitting; used for all bytes except the last in a read transfer.
+ * - Set ACKBT=1 (set bit) to send NACK: instructs the peripheral to stop
+ *   transmitting; must be applied before clocking in the final byte so that
+ *   the NACK is sent automatically at the correct clock edge.
+ *
+ * ## ICMR3 Register Bit Layout (relevant bits)
+ *
+ * | Bit | Name  | Function                  |
+ * |-----|-------|---------------------------|
+ * |  3  | ACKBT | ACK/NACK bit to transmit  |
+ * |  2  | ACKWP | ACKBT write protect       |
+ *
+ * @invariant k_riic_icmr3_ackbt_pos == 3 matches the RX72N hardware bit
+ *            position for ACKBT in ICMR3; changing this breaks ACK/NACK control
+ * @invariant k_riic_icmr3_ackbt_mask == (1U << 3) == 0x08; derived from pos
+ *
+ * @note NACK must be sent before reading the last byte to signal to the
+ *       peripheral that the transfer is complete per I2C specification.
+ *
+ * @code
+ * // Prepare to NACK the last byte in a read transfer
+ * volatile rx_riic_regs_t* riic = internal_get_riic_base(k_riic_channel_0);
+ * riic->icmr3 |= k_riic_icmr3_ackbt_mask;   // Set ACKBT=1 → send NACK
+ *
+ * // Re-enable ACK for subsequent transfers
+ * riic->icmr3 &= (uint8_t)~k_riic_icmr3_ackbt_mask;  // Set ACKBT=0 → send ACK
+ * @endcode
+ *
+ * @see internal_read_byte() Uses these constants to control ACK/NACK output
+ * @see riic_read() Orchestrates NACK signalling for multi-byte reads
+ *
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_riic_icmr3_ackbt_pos  = 3,                              /**< ACKBT bit position (bit 3) */
@@ -503,33 +563,72 @@ static bool s_riic_channel_initialized[k_riic_max_channels] = {false, false, fal
  *
  * @details
  * Maps an RIIC channel number (0-2) to its corresponding hardware register
- * base address. This function provides the abstraction between channel numbers
- * and physical memory addresses.
+ * base address using a compile-time-dispatched switch statement. This function
+ * is the single point of truth for the channel-to-address mapping and provides
+ * a clean abstraction between the logical channel index used throughout the
+ * driver and the physical memory-mapped peripheral addresses defined by the
+ * RX72N hardware.
+ *
+ * ## Channel-to-Address Mapping
+ *
+ * The three RIIC channels are located at fixed, evenly spaced addresses in the
+ * RX72N peripheral address space (0x00088300, 0x00088320, 0x00088340). Each
+ * block is 32 bytes in size and contains all control, status, bit-rate, and
+ * data registers for one channel.
  *
  * ## Memory Map
  *
- * | Channel | Function | Base Address | Register Block Size |
+ * | Channel | Accessor | Base Address | Register Block Size |
  * |---------|----------|--------------|---------------------|
- * | 0       | riic0()  | 0x00088300   | 20 bytes            |
- * | 1       | riic1()  | 0x00088320   | 20 bytes            |
- * | 2       | riic2()  | 0x00088340   | 20 bytes            |
+ * | 0       | riic0()  | 0x00088300   | 32 bytes            |
+ * | 1       | riic1()  | 0x00088320   | 32 bytes            |
+ * | 2       | riic2()  | 0x00088340   | 32 bytes            |
  *
- * @param[in] channel RIIC channel number (valid range: 0-2)
+ * ## Why Return NULL for Invalid Channel
+ *
+ * Returning nullptr for an out-of-range channel allows every caller to perform
+ * a single null-pointer check with RX_CHECK_NULL_PTR rather than duplicating
+ * range validation logic. This pattern is consistent with rx_port_get_base()
+ * in the GPIO driver.
+ *
+ * @param[in] channel RIIC channel number (valid range: 0 to k_riic_max_channels-1)
  *
  * @return Pointer to RIIC register structure
- * @retval Non-NULL Valid volatile pointer for channels 0, 1, or 2
- * @retval NULL Invalid channel number (>= 3)
+ * @retval Non-NULL Valid volatile register pointer aligned to the channel's
+ *                  32-byte peripheral block for channels 0, 1, or 2
+ * @retval NULL     Channel number is out of range (>= k_riic_max_channels)
  *
- * @pre channel should be validated before calling in production code
- * @post Return value is either a valid register pointer or nullptr
+ * @pre channel must be less than k_riic_max_channels (3); values >= 3 yield nullptr
+ * @pre caller must have verified that the corresponding RIIC module stop bit in
+ *      MSTPCRB has been cleared (module enabled) before using the returned pointer
+ * @post returned pointer is non-NULL if and only if channel is 0, 1, or 2
+ * @post returned pointer, when non-NULL, is aligned to the RIIC peripheral register
+ *       block boundary as required by the RX72N hardware specification
  *
- * @note This function does NOT validate channel - caller must ensure validity.
- * @note Return value is volatile to prevent compiler optimization of register access.
+ * @note This function does NOT validate the channel - the caller is responsible
+ *       for ensuring the value is in range before calling
+ * @note The return type is volatile to prevent the compiler from optimizing away
+ *       hardware register reads or writes through the returned pointer
  *
- * @par Performance
- * O(1) - simple switch statement with direct return
+ * @par Performance:
+ * O(1) - simple switch statement with a direct return per case
  *
- * @see riic0(), riic1(), riic2() Low-level accessor functions
+ * @par Example:
+ * @code
+ * // Look up the register base for RIIC channel 1 and send a START condition
+ * volatile rx_riic_regs_t* riic = internal_get_riic_base(k_riic_channel_1);
+ * if (riic == nullptr) {
+ *     return k_rx_err_invalid_arg;
+ * }
+ * riic->iccr2 |= k_riic_iccr2_st;  // Issue START condition
+ * @endcode
+ *
+ * @see riic0() Inline accessor for RIIC channel 0 base address
+ * @see riic1() Inline accessor for RIIC channel 1 base address
+ * @see riic2() Inline accessor for RIIC channel 2 base address
+ * @see k_riic_max_channels Upper bound on valid channel numbers
+ *
+ * @since Version 1.0.0
  */
 static volatile rx_riic_regs_t* internal_get_riic_base(const uint8_t channel)
 {

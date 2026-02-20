@@ -452,6 +452,53 @@ static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs
   }
 }
 
+/**
+ * @brief Write a raw duty count to the TGR register for the specified output
+ *
+ * @details
+ * Resolves the TGR register pointer for the requested output via
+ * internal_get_tgr_register() and writes duty_count to it. The write is
+ * buffered by hardware and takes effect at the next PWM period boundary,
+ * producing a glitch-free duty cycle update.
+ *
+ * Algorithm:
+ * 1. Validate mtu pointer is non-NULL
+ * 2. Resolve TGR register pointer for output via internal_get_tgr_register()
+ * 3. Validate resolved TGR pointer is non-NULL
+ * 4. Write duty_count to TGR register
+ *
+ * @param[in] mtu        Pointer to MTU channel register structure
+ *   - Must be non-NULL
+ *   - Must point to a valid, clock-enabled MTU channel register block
+ * @param[in] output     Output channel whose TGR register to update
+ *   - Valid values: k_mtu_output_a, k_mtu_output_b, k_mtu_output_c, k_mtu_output_d
+ * @param[in] duty_count Raw count value to write to the TGR register
+ *   - Caller is responsible for clamping to [0, period] before calling
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok duty_count written to TGR register successfully
+ * @retval k_rx_err_invalid_arg mtu is nullptr, or output has no corresponding TGR register
+ *
+ * @pre mtu points to a valid, initialized MTU channel register block
+ * @pre duty_count has been validated or clamped by the caller to [0, period]
+ *
+ * @post TGR register written with duty_count
+ * @post Change takes effect at next PWM period boundary (buffered by hardware)
+ *
+ * @note Not thread-safe: caller must ensure exclusive access to the TGR register
+ * @note Duty count is not bounds-checked; caller must clamp before calling
+ *
+ * @code{.c}
+ * volatile rx_mtu_channel_regs_t* mtu =
+ *     (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(k_mtu_channel_0);
+ * rx_err_t err = internal_set_duty_raw_mtu(mtu, k_mtu_output_b, 1500U);
+ * @endcode
+ *
+ * @see internal_get_tgr_register() Resolves TGR pointer from output selector
+ * @see rx_mtu_set_duty_raw() Public API caller that clamps duty_count first
+ *
+ * @since Version 1.0.0
+ */
 static rx_err_t internal_set_duty_raw_mtu(volatile rx_mtu_channel_regs_t* mtu,
                                           const rx_mtu_output_t           output,
                                           const uint16_t                  duty_count)

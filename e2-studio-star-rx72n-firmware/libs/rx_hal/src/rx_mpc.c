@@ -420,6 +420,7 @@ typedef enum : uint8_t {
  * @retval NULL Invalid pin number (> 7)
  *
  * @pre PCLKB clock must be running for MPC register access
+ * @pre Caller has verified channel is in valid range for the target package
  *
  * @post No registers modified (read-only address calculation)
  *
@@ -544,6 +545,14 @@ static volatile uint8_t* internal_get_pfs_register(const uint8_t port, uint8_t p
  * @warning Not thread-safe - window between unlock and lock is vulnerable
  * @warning Failing to lock after modification leaves PFS unprotected
  *
+ * @par Example:
+ * @code
+ * // Typical usage: unlock, modify PFS, then lock immediately
+ * internal_mpc_unlock();
+ * *pfs_reg = k_psel_sci_tx;  // Write peripheral select value
+ * internal_mpc_lock();
+ * @endcode
+ *
  * @see internal_mpc_lock() Must be called after PFS writes
  * @see k_mpc_pwpr_pfswe PFSWE enable constant (0x40)
  *
@@ -583,6 +592,14 @@ static void internal_mpc_unlock(void)
  * @post PWPR.B0WI = 1 (PFSWE bit protected)
  *
  * @note Internal function - not exported in header
+ *
+ * @par Example:
+ * @code
+ * // Typical usage: unlock, modify PFS, then lock immediately
+ * internal_mpc_unlock();
+ * *pfs_reg = k_psel_rspi_clk;  // Write peripheral select value
+ * internal_mpc_lock();         // Restore write protection
+ * @endcode
  *
  * @see internal_mpc_unlock() Must be called before PFS writes
  * @see k_mpc_pwpr_b0wi B0WI enable constant (0x80)

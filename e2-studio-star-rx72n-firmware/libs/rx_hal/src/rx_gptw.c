@@ -1051,7 +1051,7 @@ rx_err_t rx_gptw_init_pwm(const rx_gptw_channel_t channel, const rx_gptw_config_
 
   volatile rx_gptw_channel_regs_t* gptw   = nullptr;
   uint32_t                         period = 0U;
-  rx_err_t const err = internal_prepare_gptw_pwm_init(channel, config, &gptw, &period);
+  rx_err_t err = internal_prepare_gptw_pwm_init(channel, config, &gptw, &period);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1557,10 +1557,31 @@ rx_err_t rx_gptw_stop(const rx_gptw_channel_t channel)
  */
 
 /**
+ * @enum gptw_phase_divisor_t
  * @brief Phase divisors for staggered PWM initialization
- * @details Values represent the divisor used to calculate counter offset from period.
- * k_phase_divisor_none=1 for 0-degree (no division needed, offset=0).
- * Division by these values yields the phase offset in counts.
+ *
+ * @details
+ * Divisor constants used to calculate the initial GTCNT counter value for each
+ * GPTW channel during staggered initialization. Each channel is offset by
+ * 90 degrees from the previous one to spread switching edges across the PWM period.
+ *
+ * For a given period P the offsets are:
+ * - Ch0: 0         (0/4 of P)
+ * - Ch1: P / 4     (quarter divisor)
+ * - Ch2: P / 2     (half divisor)
+ * - Ch3: 3 * P / 4 (three-quarter: multiply by 3, then divide by 4)
+ *
+ * @invariant All divisor values are >= 1, preventing division-by-zero in
+ *            internal_calculate_phase_offset()
+ *
+ * @code{.c}
+ * // Example: derive 90-degree offset for a period of 3000 counts
+ * uint32_t offset_ch1 = 3000U / k_phase_divisor_quarter; // == 750
+ * uint32_t offset_ch3 = (3000U * 3U) / k_phase_divisor_three_quarter; // == 2250
+ * @endcode
+ *
+ * @see internal_calculate_phase_offset() Uses these divisors for GTCNT seeding
+ * @see rx_gptw_init_all_staggered() Top-level staggered initialization function
  */
 typedef enum : uint8_t {
   k_phase_divisor_none    = 1, /**< 0 deg: no offset (safe default, never causes div-by-zero) */
@@ -1768,6 +1789,8 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
  * @post s_gptw_period[channel] = period
  * @post Timer NOT started (caller starts all channels together)
  *
+ * @note Not thread-safe: modifies hardware registers and shared state arrays
+ *       (s_gptw_initialized, s_gptw_period); caller must ensure exclusive access
  * @note Timer is NOT started by this function
  * @note Called from rx_gptw_init_all_staggered() in a loop
  *

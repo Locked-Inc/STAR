@@ -277,9 +277,50 @@ typedef enum : uint8_t {
   k_uart_max_channels      = 13, /**< Maximum valid channel value (SCI channels 0-12) */
 } uart_internal_constants_t;
 
+/**
+ * @enum uart_validation_limits_t
+ * @brief Baud rate validation bounds for uart_init_channel() parameter checking
+ *
+ * @details
+ * Defines the closed interval [k_uart_baudrate_min, k_uart_baudrate_max] that
+ * every requested baud rate must satisfy before the driver attempts to program
+ * the BRR register.
+ *
+ * The maximum is derived directly from the BRR formula for n=0 (CKS=00):
+ * @f[
+ *   \text{BRR} = \frac{\text{PCLKB}}{32 \times B} - 1 \geq 0
+ *   \implies B \leq \frac{\text{PCLKB}}{32}
+ * @f]
+ * A BRR of 0 corresponds to the fastest achievable baud rate at the current
+ * PCLKB frequency, so requesting anything higher would underflow the register.
+ *
+ * The minimum is 1 bps, which prevents a divide-by-zero in the BRR formula.
+ * In practice, any baud rate below ~9600 is impractical on a 60 MHz PCLKB, but
+ * the lower bound is kept permissive to avoid false negatives during testing.
+ *
+ * @invariant k_uart_baudrate_min must be > 0 to prevent division by zero in
+ * internal_calculate_brr().
+ * @invariant k_uart_baudrate_max must equal k_pclkb_hz / k_brr_divisor_n0 so
+ * that the computed BRR is always >= 0 (i.e., no register underflow).
+ *
+ * @par Example:
+ * @code{.c}
+ * // Validation performed inside uart_init_channel()
+ * if ((config->baudrate < k_uart_baudrate_min) ||
+ *     (config->baudrate > k_uart_baudrate_max)) {
+ *   return k_rx_err_invalid_arg;
+ * }
+ * @endcode
+ *
+ * @see uart_init_channel() Uses these bounds to validate the baudrate field
+ * @see internal_calculate_brr() Computes the actual BRR register value
+ * @see brr_constants_t BRR formula divisor constants
+ *
+ * @since Version 1.0.0
+ */
 typedef enum : uint32_t {
-  k_uart_baudrate_min = 1,
-  k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0),
+  k_uart_baudrate_min = 1,                              /**< Minimum valid baud rate (bps); must be > 0 to avoid divide-by-zero in BRR formula */
+  k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0), /**< Maximum valid baud rate (bps); BRR = 0 at this rate, higher values would underflow */
 } uart_validation_limits_t;
 
 /** @brief UART timeout constants */
@@ -321,9 +362,35 @@ typedef enum : uint16_t {
   k_uart_debug_rx_gpio = k_rx_pb_6, /**< PB6 = RXD9 */
 } uart_debug_pins_t;
 
-/** @brief GPIO register bit manipulation constant */
+/**
+ * @enum uart_gpio_constants_t
+ * @brief GPIO register bit manipulation constants for UART pin configuration
+ *
+ * @details
+ * Provides the single-bit seed value used when constructing per-pin bitmasks
+ * for the PDR (Port Direction Register) and PMR (Port Mode Register) during
+ * UART TX/RX pin setup.  A bit mask for a specific pin is formed by shifting
+ * this value left by the pin index obtained from rx_pin_from_pin().
+ *
+ * @invariant k_uart_gpio_bit_set must equal 1 so that left-shifting by a pin
+ * index produces an isolated single-bit mask.
+ *
+ * @par Example:
+ * @code{.c}
+ * // Build the TX pin mask and set the direction bit
+ * const uint8_t tx_pin      = rx_pin_from_pin(tx_gpio);
+ * const uint8_t tx_pin_mask = (uint8_t)(k_uart_gpio_bit_set << tx_pin);
+ * tx_port_base->pdr |= tx_pin_mask;  // Set output direction
+ * tx_port_base->pmr |= tx_pin_mask;  // Switch to peripheral mode
+ * @endcode
+ *
+ * @see internal_configure_uart_pins() Only consumer of this constant
+ * @see uart_init_channel() Top-level function that triggers pin configuration
+ *
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
-  k_uart_gpio_bit_set = 1,
+  k_uart_gpio_bit_set = 1, /**< Seed value for constructing a single-pin bitmask via left-shift */
 } uart_gpio_constants_t;
 
 /* =============================================================================
@@ -340,13 +407,76 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  */
 
 /**
- * @brief Calculate BRR value for given baud rate
+ * @brief Calculate the 8-bit BRR register value for a target baud rate
  *
- * BRR = (PCLKB / (64 * 2^(2n-1) * B)) - 1
- * For n=0 (CKS=00, PCLK/1): BRR = (PCLKB / (32 * B)) - 1
+ * @details
+ * Computes the value to be written to the SCI Bit Rate Register (BRR) so that
+ * the SCI peripheral generates the requested baud rate from PCLKB.  The
+ * general RX72N SCI baud rate formula for asynchronous mode is:
  *
- * @param[in] baudrate Target baud rate
- * @return BRR register value
+ * @f[
+ *   \text{BRR} = \frac{\text{PCLKB}}{64 \times 2^{2n-1} \times B} - 1
+ * @f]
+ *
+ * This driver always uses n=0 (CKS bits = 0b00, clock source = PCLK/1), which
+ * simplifies to:
+ *
+ * @f[
+ *   \text{BRR} = \frac{\text{PCLKB}}{32 \times B} - 1
+ * @f]
+ *
+ * **Algorithm steps:**
+ * 1. Guard against baudrate == 0 (return k_brr_max_value as a safe sentinel).
+ * 2. Apply the n=0 formula using integer arithmetic (truncating division).
+ * 3. Clamp the result to k_brr_max_value (255) if the integer exceeds the
+ *    8-bit range (indicates a baud rate too slow for this clock).
+ * 4. Return the clamped 8-bit result.
+ *
+ * **Baud rate error:**
+ * Integer truncation introduces a small positive frequency error.  At PCLKB =
+ * 60 MHz the worst-case error is +1.73 % (at 115 200 bps, BRR = 15), which is
+ * within the ±2 % tolerance of the RS-232/UART standard.
+ *
+ * @param[in] baudrate Target baud rate in bps
+ *   - **Valid range**: 1 to k_uart_baudrate_max (k_pclkb_hz / k_brr_divisor_n0)
+ *   - **Special case**: 0 returns k_brr_max_value (255) as a safe sentinel
+ *   - **Units**: bits per second
+ *
+ * @return uint8_t BRR register value to program into sci->brr
+ * @retval 0..254 Computed BRR for the requested baud rate
+ * @retval 255 (k_brr_max_value) Returned when baudrate == 0 or the computed
+ *         value exceeds 255 (baud rate too low for n=0 divisor)
+ *
+ * @pre baudrate should be validated against [k_uart_baudrate_min,
+ *      k_uart_baudrate_max] by the caller before invoking this function
+ * @pre k_pclkb_hz and k_brr_divisor_n0 must be non-zero compile-time constants
+ *
+ * @post Return value is always in [0, 255]; no register overflow is possible
+ * @post Caller must write the returned value to sci->brr before enabling TX/RX
+ *
+ * @note This function performs only integer arithmetic; no floating-point is
+ *       used, making it suitable for the RX72N toolchain with FPU disabled
+ * @note Always uses n=0 (CKS=00); support for n=1..3 is not implemented
+ *
+ * @par Thread Safety:
+ * Stateless pure function; safe to call from any context including ISR.
+ *
+ * @par Performance:
+ * - Execution time: ~5 cycles (two integer multiplications and a comparison)
+ * - Stack usage: 8 bytes (one local uint32_t)
+ *
+ * @par Example:
+ * @code{.c}
+ * // Program BRR for 115200 bps on an already-disabled SCI channel
+ * sci->brr = internal_calculate_brr(115200U);
+ * // At PCLKB = 60 MHz: brr = (60000000 / (32 * 115200)) - 1 = 15
+ * @endcode
+ *
+ * @see uart_init_channel() Caller that validates baudrate and writes sci->brr
+ * @see brr_constants_t Constants used in the BRR formula
+ * @see uart_validation_limits_t Baud rate bounds checked before this call
+ *
+ * @since Version 1.0.0
  */
 static uint8_t internal_calculate_brr(const uint32_t baudrate)
 {
@@ -365,9 +495,73 @@ static uint8_t internal_calculate_brr(const uint32_t baudrate)
 }
 
 /**
- * @brief Clear error flags in SSR register
+ * @brief Clear receive error flags in the SCI Serial Status Register (SSR)
  *
- * @param[in] sci Pointer to SCI registers
+ * @details
+ * Reads the SSR register and writes it back with the three receive error flag
+ * bits masked out, which clears any pending ORER (Overrun Error), FER
+ * (Framing Error), and PER (Parity Error) conditions on the SCI channel.
+ *
+ * The RX72N SCI peripheral requires a read-modify-write sequence to clear
+ * error flags: the hardware only allows clearing a flag by writing 0 to it
+ * while keeping the rest of the register unchanged.  Writing 1 to an already-
+ * set flag has no effect (the write is ignored).
+ *
+ * **Algorithm steps:**
+ * 1. Guard: return immediately if sci is nullptr (NASA Power of 10 Rule 5).
+ * 2. Read the current value of sci->ssr into a local volatile variable.
+ * 3. Cast-to-void the read result to suppress the unused-variable warning while
+ *    still ensuring the volatile read is not optimised away.
+ * 4. Write sci->ssr = (ssr & ~k_sci_ssr_error_mask) to clear bits [5:3]
+ *    (ORER, FER, PER) while preserving all other SSR bits.
+ *
+ * **Error flag bit positions in SSR:**
+ * | Bit | Flag | Description |
+ * |-----|------|-------------|
+ * |  5  | ORER | Overrun Error - new data arrived before previous data was read |
+ * |  4  | FER  | Framing Error - no valid stop bit detected |
+ * |  3  | PER  | Parity Error  - parity mismatch (unused in 8N1 mode) |
+ *
+ * @param[in] sci Pointer to the SCI register block for the target channel
+ *   - **Valid range**: Non-nullptr pointer obtained from sci_get_channel()
+ *   - **Null handling**: Returns silently if nullptr (no-op; no error return)
+ *
+ * @pre sci must point to a valid, hardware-mapped rx_sci_regs_t register block
+ * @pre The SCI module clock must be enabled (MSTPCRB bit cleared) before
+ *      any SSR access; undefined behaviour otherwise
+ *
+ * @post ORER, FER, and PER bits in sci->ssr are cleared (written to 0)
+ * @post All other SSR bits (TDRE, RDRF, TEND, MPB, MPBT) are preserved
+ *
+ * @note This function is intentionally void-returning; the caller (uart_getc_channel)
+ *       checks for errors before calling and does not need a return code
+ * @note The intermediate volatile read prevents the compiler from merging the
+ *       read and write into a single store, which would miss the read requirement
+ *
+ * @par Thread Safety:
+ * Not thread-safe. SSR is a read-modify-write target; concurrent access from
+ * two threads on the same channel can corrupt flag state.  External mutex
+ * protection is required if multiple threads share a channel.
+ *
+ * @par Performance:
+ * - Execution time: ~3 cycles (volatile read + mask + volatile write)
+ * - Stack usage: 4 bytes (one volatile uint8_t local)
+ *
+ * @par Example:
+ * @code{.c}
+ * volatile rx_sci_regs_t* sci = sci_get_channel(k_uart_channel_9);
+ * if (sci != nullptr) {
+ *   // Clear any stale error flags before reading receive data
+ *   internal_clear_errors(sci);
+ *   const char data = (char)sci->rdr;
+ * }
+ * @endcode
+ *
+ * @see uart_getc_channel() Caller that invokes this before reading RDR
+ * @see sci_register_values_t k_sci_ssr_error_mask bitmask definition
+ * @see uart_rx_available() Non-destructive receive availability check
+ *
+ * @since Version 1.0.0
  */
 static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 {
@@ -385,11 +579,79 @@ static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 }
 
 /**
- * @brief Get MSTPCRB bit position for SCI channel
+ * @brief Return the MSTPCRB bit position that controls the module-stop clock
+ *        gate for a given SCI channel
  *
- * @param[in] channel SCI channel (0-11)
+ * @details
+ * The RX72N Module Stop Control Register B (MSTPCRB) contains one bit per SCI
+ * channel (SCI0–SCI11).  Clearing a bit removes the module from the stopped
+ * state, allowing its clock to run.  The bit layout is contiguous and
+ * descending: SCI0 occupies bit 31, SCI1 occupies bit 30, and so on down to
+ * SCI11 at bit 20.
  *
- * @return Bit position in MSTPCRB, or -1 if invalid channel
+ * SCI12 is controlled by a different register (MSTPCRC bit 4) and is therefore
+ * outside the scope of this function; channel 12 returns -1 to signal the
+ * caller that a different mechanism is needed.
+ *
+ * **Algorithm steps:**
+ * 1. Check whether channel > k_uart_max_mstpb_channel (11); return -1 if so.
+ * 2. Compute bit position as k_sci_mstpb_sci0 (31) minus channel index.
+ * 3. Cast to int8_t and return.
+ *
+ * **Bit position table (MSTPCRB):**
+ * | Channel | Bit | Enum constant       |
+ * |---------|-----|---------------------|
+ * | SCI0    | 31  | k_sci_mstpb_sci0    |
+ * | SCI1    | 30  | k_sci_mstpb_sci1    |
+ * | SCI2    | 29  | k_sci_mstpb_sci2    |
+ * | ...     | ... | ...                 |
+ * | SCI11   | 20  | k_sci_mstpb_sci11   |
+ * | SCI12   | N/A | handled in MSTPCRC  |
+ *
+ * @param[in] channel SCI channel index
+ *   - **Valid range**: 0 to k_uart_max_mstpb_channel (11)
+ *   - **Out-of-range**: 12 or above returns -1 (SCI12 is in MSTPCRC)
+ *   - **Units**: dimensionless channel index
+ *
+ * @return int8_t MSTPCRB bit position for the given channel
+ * @retval 20..31 Valid bit position (MSTPCRB bit index)
+ * @retval -1 Channel is not in MSTPCRB (channel >= 12); caller must use an
+ *         alternative register (MSTPCRC) or treat as an error
+ *
+ * @pre channel is obtained from a validated uart_channel_t value
+ * @pre k_sci_mstpb_sci0 must equal 31 so that the descending formula is correct
+ *
+ * @post Return value, if >= 0, is a valid bit index in [20, 31]
+ * @post Caller is responsible for performing the register unlock/lock sequence
+ *       around the MSTPCRB write
+ *
+ * @note Returns int8_t (signed) so that -1 can be used as an unambiguous
+ *       sentinel without consuming any valid bit position in [0, 31]
+ * @note SCI12 support requires a separate call path using MSTPCRC; this
+ *       function deliberately does not handle it
+ *
+ * @par Thread Safety:
+ * Stateless pure function; safe to call from any context including ISR.
+ *
+ * @par Performance:
+ * - Execution time: ~2 cycles (one comparison, one subtraction)
+ * - Stack usage: 0 bytes (no locals beyond return register)
+ *
+ * @par Example:
+ * @code{.c}
+ * const int8_t bit = internal_get_mstpb_bit(9U);
+ * // bit == 22  (k_sci_mstpb_sci9)
+ * if (bit >= 0) {
+ *   system_regs()->mstpcrb &= ~(1UL << (uint8_t)bit);
+ * }
+ * @endcode
+ *
+ * @see internal_enable_sci_clock() Only caller; uses the returned bit to
+ *      clear the module-stop gate in MSTPCRB
+ * @see sci_mstpb_bits_t Enum defining all SCI MSTPCRB bit positions
+ * @see uart_internal_constants_t k_uart_max_mstpb_channel boundary constant
+ *
+ * @since Version 1.0.0
  */
 static int8_t internal_get_mstpb_bit(const uint8_t channel)
 {
@@ -403,11 +665,82 @@ static int8_t internal_get_mstpb_bit(const uint8_t channel)
 }
 
 /**
- * @brief Enable SCI module clock (clear module stop)
+ * @brief Enable the peripheral clock for an SCI channel by clearing its
+ *        Module Stop Control Register B (MSTPCRB) bit
  *
- * @param[in] channel SCI channel (0-11)
+ * @details
+ * On reset, all SCI modules are held in the module-stop state (their clock
+ * gates are closed) to minimize power consumption.  Before any SCI register
+ * can be accessed, the corresponding MSTPCRB bit must be cleared.  Clearing
+ * the bit opens the clock gate and allows the SCI peripheral to operate.
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if channel invalid
+ * The MSTPCRB register is write-protected by the Protect Register (PRCR).
+ * This function performs the required unlock/modify/lock sequence:
+ *
+ * **Algorithm steps:**
+ * 1. Call internal_get_mstpb_bit(channel) to obtain the MSTPCRB bit index.
+ *    Return k_rx_err_invalid_arg immediately if the result is negative (channel
+ *    12 or out of range).
+ * 2. Write k_rx_prcr_unlock_all to *prcr_reg() to remove write protection.
+ * 3. Clear the target bit in system_regs()->mstpcrb using a read-modify-write
+ *    with the single-bit mask k_uart_mstpcrb_bit_set shifted left by mstpb_bit.
+ * 4. Write k_rx_prcr_lock to *prcr_reg() to restore write protection.
+ * 5. Return k_rx_ok.
+ *
+ * **Register sequence:**
+ * @code{.c}
+ * PRCR  = 0xA50B;   // Unlock
+ * MSTPCRB &= ~(1UL << bit);  // Clear module-stop bit
+ * PRCR  = 0xA500;   // Lock
+ * @endcode
+ *
+ * @param[in] channel SCI channel index to enable
+ *   - **Valid range**: 0 to k_uart_max_mstpb_channel (11)
+ *   - **Invalid**: 12 or above — SCI12 uses MSTPCRC (not supported here)
+ *   - **Units**: dimensionless channel index
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success — MSTPCRB bit cleared, SCI clock enabled
+ * @retval k_rx_err_invalid_arg channel >= 12 (not in MSTPCRB); MSTPCRB
+ *         is not modified and the channel clock remains gated
+ *
+ * @pre channel must be in range [0, k_uart_max_mstpb_channel] (i.e., 0–11)
+ * @pre PRCR register must be accessible; this function does not check for
+ *      nested unlock attempts
+ *
+ * @post On success, the MSTPCRB bit for the specified channel is cleared and
+ *       the SCI module clock is running
+ * @post On success, the PRCR register is returned to its locked state
+ *
+ * @note This function does not re-assert module stop on error or deinit; the
+ *       clock is left enabled for the lifetime of the MCU session
+ * @warning Do not call while another thread or ISR is modifying MSTPCRB or
+ *          any other PRCR-protected register; the unlock/lock window is not
+ *          atomic
+ *
+ * @par Thread Safety:
+ * Not thread-safe. The PRCR unlock–MSTPCRB write–PRCR lock sequence must
+ * execute atomically.  Call only during single-threaded initialization before
+ * ThreadX starts.
+ *
+ * @par Performance:
+ * - Execution time: ~5 cycles (two PRCR writes + one RMW on MSTPCRB)
+ * - Stack usage: 8 bytes (one int8_t local for mstpb_bit)
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_err_t err = internal_enable_sci_clock(9U);  // Enable SCI9 clock
+ * if (err != k_rx_ok) {
+ *   return err;  // Channel 12 or invalid — caller must handle
+ * }
+ * // SCI9 registers are now accessible
+ * @endcode
+ *
+ * @see internal_get_mstpb_bit() Helper that maps channel -> MSTPCRB bit index
+ * @see uart_init_channel() Caller that invokes this as part of channel setup
+ * @see uart_mstpcrb_constants_t k_uart_mstpcrb_bit_set single-bit mask seed
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_enable_sci_clock(const uint8_t channel)
 {
@@ -430,14 +763,102 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
 }
 
 /**
- * @brief Configure pins for SCI UART operation
+ * @brief Configure the GPIO and MPC pin-mux settings for a UART TX/RX pin pair
  *
- * Sets up MPC (pin mux) and GPIO registers for TX/RX pins.
+ * @details
+ * Prepares the two GPIO pins required for SCI UART operation by programming
+ * the Multi-Function Pin Controller (MPC) and the Port Direction/Mode registers
+ * in the correct order.  The RX72N hardware requires that:
+ *  - MPC is configured before switching a pin to peripheral mode (PMR)
+ *  - TX pin is driven as an output; RX pin is configured as an input
+ *  - Both pins are switched to peripheral mode (PMR bit = 1) last
  *
- * @param[in] tx_gpio TX pin (rx_port_pin_t from rx_port_constants.h)
- * @param[in] rx_gpio RX pin (rx_port_pin_t from rx_port_constants.h)
+ * **Algorithm steps:**
+ * 1. Extract the port number and pin number from each rx_port_pin_t using
+ *    rx_port_from_pin() and rx_pin_from_pin().
+ * 2. Validate that both pin numbers are <= k_rx_pin_max (7); return
+ *    k_rx_err_invalid_arg if out of range.  (Lower-bound check is omitted
+ *    because pin numbers are uint8_t and k_rx_pin_min == 0, which would
+ *    trigger -Wtype-limits.)
+ * 3. Obtain volatile port register base pointers via rx_port_get_base(); return
+ *    k_rx_err_invalid_arg if either is nullptr (invalid port number).
+ * 4. Call rx_mpc_set_sci(tx_gpio) to set the TX pin's PFS register to the SCI
+ *    TXD function; propagate any error immediately.
+ * 5. Call rx_mpc_set_sci(rx_gpio) to set the RX pin's PFS register to the SCI
+ *    RXD function; propagate any error immediately.
+ * 6. Build per-pin bitmasks (k_uart_gpio_bit_set << pin_number).
+ * 7. Set PDR bit for TX pin (output direction) and PMR bit for TX pin
+ *    (peripheral mode).
+ * 8. Clear PDR bit for RX pin (input direction) and set PMR bit for RX pin
+ *    (peripheral mode).
+ * 9. Return k_rx_ok.
  *
- * @return k_rx_ok on success, error code on failure
+ * **MPC write protection:**
+ * rx_mpc_set_sci() internally handles the PFSWE unlock/lock sequence, so this
+ * function does not need to touch the PFSWE bit directly.
+ *
+ * **Pin direction and mode summary:**
+ * | Pin | PDR (direction) | PMR (mode) |
+ * |-----|-----------------|------------|
+ * | TX  | 1 (output)      | 1 (peripheral) |
+ * | RX  | 0 (input)       | 1 (peripheral) |
+ *
+ * @param[in] tx_gpio TX pin encoded as rx_port_pin_t
+ *   - **Valid range**: Any rx_port_pin_t with port in [0, k_rx_port_max] and
+ *     pin in [0, k_rx_pin_max]
+ *   - **Typical value**: k_uart_debug_tx_gpio (k_rx_pb_7) for SCI9
+ *   - **Encoding**: Use k_rx_p{port}_{pin} constants from rx_port_constants.h
+ *
+ * @param[in] rx_gpio RX pin encoded as rx_port_pin_t
+ *   - **Valid range**: Same constraints as tx_gpio; must be distinct from tx_gpio
+ *   - **Typical value**: k_uart_debug_rx_gpio (k_rx_pb_6) for SCI9
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Success — both pins configured for SCI UART operation
+ * @retval k_rx_err_invalid_arg tx_pin > k_rx_pin_max, rx_pin > k_rx_pin_max,
+ *         or rx_port_get_base() returned nullptr for either port number
+ * @retval k_rx_err_invalid_arg Propagated from rx_mpc_set_sci() if the MPC
+ *         mapping is not supported for the given pin
+ *
+ * @pre tx_gpio and rx_gpio must correspond to physically valid RX72N port pins
+ * @pre The SCI module clock must already be enabled (MSTPCRB bit cleared) so
+ *      that the SCI TXD/RXD MPC function codes are accepted
+ *
+ * @post TX pin: PDR bit set (output), PMR bit set (peripheral function)
+ * @post RX pin: PDR bit cleared (input), PMR bit set (peripheral function)
+ * @post Both pins' PFS registers configured for SCI TX/RX function via MPC
+ *
+ * @note Pin validation only checks upper bound (>k_rx_pin_max); lower bound
+ *       (0) is omitted to avoid the -Wtype-limits compiler warning triggered by
+ *       comparing an unsigned type to 0
+ * @warning Passing the same pin for both TX and RX produces undefined hardware
+ *          behaviour; no duplicate-pin check is performed
+ *
+ * @par Thread Safety:
+ * Not thread-safe. PDR/PMR are read-modify-write targets shared with all GPIO
+ * operations on the same port.  Call only during single-threaded initialization.
+ *
+ * @par Performance:
+ * - Execution time: ~10 µs (dominated by two rx_mpc_set_sci() calls)
+ * - Stack usage: 32 bytes (four uint8_t locals + two pointer locals)
+ *
+ * @par Example:
+ * @code{.c}
+ * // Configure SCI9 default debug pins (PB7=TX, PB6=RX)
+ * rx_err_t err = internal_configure_uart_pins(
+ *   (rx_port_pin_t)k_uart_debug_tx_gpio,
+ *   (rx_port_pin_t)k_uart_debug_rx_gpio);
+ * if (err != k_rx_ok) {
+ *   return err;  // Invalid pin specification or MPC error
+ * }
+ * @endcode
+ *
+ * @see uart_init_channel() Caller that passes validated tx_gpio/rx_gpio
+ * @see rx_mpc_set_sci() MPC pin-function assignment (with PFSWE unlock)
+ * @see rx_port_get_base() Port register base address lookup
+ * @see uart_gpio_constants_t k_uart_gpio_bit_set used to build pin bitmasks
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_configure_uart_pins(const rx_port_pin_t tx_gpio, rx_port_pin_t rx_gpio)
 {

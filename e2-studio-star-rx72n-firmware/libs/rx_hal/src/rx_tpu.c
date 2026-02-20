@@ -238,7 +238,9 @@ static bool s_tpu_initialized[k_tpu_phase_channel_count] = {false, false, false,
  * @retval k_rx_err_invalid_arg Channel is not 1, 2, 4, or 5
  *
  * @pre index must be non-NULL (caller responsibility)
+ * @pre channel must be a valid rx_tpu_channel_t enumeration value
  * @post *index contains valid array index on success
+ * @post *index is unchanged on k_rx_err_invalid_arg
  *
  * @note Thread Safety: Safe - pure function with no shared state
  *
@@ -280,7 +282,9 @@ static rx_err_t internal_channel_to_index(const rx_tpu_channel_t channel, uint8_
  * @retval NULL Invalid channel (not phase-counting capable)
  *
  * @pre TPU module enabled (MSTPCRA.MSTPA13 = 0)
+ * @pre channel must be a valid rx_tpu_channel_t enumeration value
  * @post No registers modified
+ * @post Returned pointer (if non-NULL) points to valid hardware register block
  *
  * @note Thread Safety: Safe - returns constant hardware address
  *
@@ -309,12 +313,19 @@ static volatile rx_tpu_regs_t* internal_get_regs(const rx_tpu_channel_t channel)
  * @details
  * Returns the counter start bit mask in TSTR for the specified channel.
  * This bit is set to start counting and cleared to stop counting.
+ * Each phase-counting-capable channel has a dedicated bit position in the
+ * shared TSTR register: CST1, CST2, CST4, and CST5.
  *
  * @param[in] channel TPU channel identifier (1, 2, 4, or 5)
  *
  * @return TSTR bit mask for the channel
  * @retval Non-zero Valid CST bit mask
  * @retval 0 Invalid channel
+ *
+ * @pre channel must be one of k_tpu_channel_1, _2, _4, or _5
+ * @pre Caller validates that a non-zero return indicates a valid channel
+ * @post No hardware registers modified
+ * @post Returned value is safe to OR/AND into TSTR register
  *
  * @note Thread Safety: Safe - pure function
  *
@@ -341,13 +352,20 @@ static uint8_t internal_get_cst_bit(const rx_tpu_channel_t channel)
  *
  * @details
  * Converts the phase mode enumeration (1-4) to the corresponding TMDR
- * register value for phase counting mode selection.
+ * register value for phase counting mode selection. The caller must check
+ * whether the return value equals k_tpu_tmdr_md_normal (0x00) to detect
+ * an invalid mode argument before writing to hardware.
  *
  * @param[in] mode Phase counting mode (1-4)
  *
  * @return TMDR.MD register value
  * @retval 0x04-0x07 Valid phase counting mode values
  * @retval 0x00 Invalid mode (normal operation fallback)
+ *
+ * @pre mode must be a valid rx_tpu_phase_mode_t enumeration value
+ * @pre Caller must check return != k_tpu_tmdr_md_normal before hardware write
+ * @post No hardware registers modified
+ * @post Returned value is safe to write directly to TMDR.MD field
  *
  * @note Thread Safety: Safe - pure function
  *
@@ -379,6 +397,7 @@ static uint8_t internal_get_tmdr_mode(const rx_tpu_phase_mode_t mode)
  * safe to call multiple times.
  *
  * @pre System clock configured
+ * @pre PRCR register accessible (system not in protected mode that blocks PRC1)
  * @post TPU module clock enabled (MSTPCRA.MSTPA13 = 0)
  * @post PRCR protection re-enabled
  *

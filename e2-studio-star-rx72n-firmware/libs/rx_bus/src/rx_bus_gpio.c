@@ -163,7 +163,20 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "BUS_GPIO";
+/**
+ * @var s_tag
+ * @brief Logging tag for all rx_bus_gpio module log messages
+ *
+ * @details
+ * Identifies GPIO bus log entries in the system log output. Used by
+ * rx_log_error(), rx_log_warn(), and rx_log_debug() throughout this module.
+ * Stored as a read-only character array in the .rodata section.
+ *
+ * @note Read-only; must never be modified at runtime
+ * @warning Direct modification would corrupt all log output from this module
+ * @since Version 1.0.0
+ */
+static const char s_tag[] = "BUS_GPIO";
 
 /* =============================================================================
  * Callback Context Structures
