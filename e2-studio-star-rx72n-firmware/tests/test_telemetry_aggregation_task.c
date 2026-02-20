@@ -172,36 +172,6 @@ void test_telemetry_task_collects_encoder_data(void)
   TEST_ASSERT_EQUAL_FLOAT(1.00f, state_out.current_velocity_mps[1]);
 }
 
-/**
- * @brief Test telemetry collects BMS data
- *
- * @details
- * Verifies that BMS state is read from shared_data for telemetry.
- */
-void test_telemetry_task_collects_bms_data(void)
-{
-  /* Set up BMS state */
-  bms_state_t bms_in  = {0};
-  bms_state_t bms_out = {0};
-  rx_err_t    err;
-
-  bms_in.voltage_mv  = 16500;
-  bms_in.soc_percent = 75;
-  bms_in.valid       = true;
-
-  /* Store */
-  err = shared_data_update_bms(&bms_in);
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-
-  /* Read for telemetry */
-  err = shared_data_get_bms(&bms_out);
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-
-  /* Verify */
-  TEST_ASSERT_TRUE(bms_out.valid);
-  TEST_ASSERT_EQUAL_UINT16(16500, bms_out.voltage_mv);
-  TEST_ASSERT_EQUAL_UINT8(75, bms_out.soc_percent);
-}
 
 /**
  * @brief Test telemetry collects temperature data
@@ -256,9 +226,6 @@ void test_telemetry_task_encodes_protobuf(void)
   telemetry.timestamp_us      = 1000000;
   telemetry.frame_sequence    = 42;
   telemetry.emergency_stop    = false;
-  telemetry.battery_voltage_v = 16.5;
-  telemetry.battery_percent   = 75.0;
-
   /* Configure mock to succeed */
   mock_nanopb_set_encode_telemetry_return(k_rx_ok);
   mock_nanopb_set_encode_length(64);
@@ -594,7 +561,6 @@ int main(void)
 
   /* Data Collection Tests */
   RUN_TEST(test_telemetry_task_collects_encoder_data);
-  RUN_TEST(test_telemetry_task_collects_bms_data);
   RUN_TEST(test_telemetry_task_collects_temp_data);
 
   /* Encoding Tests */

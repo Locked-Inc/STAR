@@ -6,7 +6,7 @@
  *
  * @details
  * Register definitions for the I2C Bus Interface (RIIC) peripheral on the
- * RX72N microcontroller. RIIC provides I2C and SMBus communication with
+ * RX72N microcontroller. RIIC provides I2C communication with
  * support for both controller and peripheral modes.
  *
  * @par RIIC System Architecture
@@ -187,7 +187,7 @@ extern "C" {
  */
 
 /* =============================================================================
- * I2C Bus Interface (RIIC) - For I2C/SMBus Communication
+ * I2C Bus Interface (RIIC) - For I2C Communication
  * =============================================================================
  */
 

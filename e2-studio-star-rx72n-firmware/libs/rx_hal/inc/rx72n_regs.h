@@ -68,7 +68,7 @@
  * |-------------|------------|--------------|-----------------|
  * | rx72n_system_regs.h | System Control | 0x00080000 | Clock config, module stop control |
  * | rx72n_port_regs.h | GPIO Ports | 0x0008C000 | Digital I/O, motor control signals |
- * | rx72n_adc_regs.h | S12AD0/1 | 0x00089000 | Battery voltage, current sensing |
+ * | rx72n_adc_regs.h | S12AD0/1 | 0x00089000 | Current sensing, voltage measurement |
  * | rx72n_sci_regs.h | SCI0-12 | 0x0008A000 | UART debug output (SCI9) |
  * | rx72n_riic_regs.h | RIIC0-2 | 0x00088300 | I2C sensors (IMU) |
  * | rx72n_rspi_regs.h | RSPI0-2 | 0x000D0000 | SPI: RPi5 comm, motor drivers |
@@ -285,7 +285,7 @@ extern "C" {
 #include "rx72n_sci_regs.h"
 
 /* =============================================================================
- * I2C Bus Interface (RIIC) - For I2C/SMBUS Communication
+ * I2C Bus Interface (RIIC) - For I2C Communication
  * =============================================================================
  */
 

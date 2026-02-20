@@ -484,9 +484,9 @@ typedef enum : uint8_t {
    * @par Usage Example:
    * @code{.c}
    * rx_usb_puts(k_usb_port_log, "[INFO] System initialized\r\n");
-   * rx_usb_puts(k_usb_port_log, "[WARN] Battery voltage low: ");
-   * rx_usb_putint(k_usb_port_log, battery_mv);
-   * rx_usb_puts(k_usb_port_log, " mV\r\n");
+   * rx_usb_puts(k_usb_port_log, "[WARN] Motor current high: ");
+   * rx_usb_putint(k_usb_port_log, current_ma);
+   * rx_usb_puts(k_usb_port_log, " mA\r\n");
    * @endcode
    * @see k_usb_port_log_rx_size, k_usb_port_log_tx_size
    */

@@ -58,7 +58,6 @@ type Hub struct {
 type typeThrottleState struct {
 	telemetry time.Time
 	motor     time.Time
-	battery   time.Time
 	odometry  time.Time
 	system    time.Time
 	lidar     time.Time
@@ -243,11 +242,6 @@ func (h *Hub) route(
 		}
 		h.stampAndFanOut(env, now)
 
-	case *starv1.STAREnvelope_Battery:
-		if shouldThrottle(&t.battery, now, telemetryRate) {
-			return
-		}
-		h.stampAndFanOut(env, now)
 
 	case *starv1.STAREnvelope_Odometry:
 		if shouldThrottle(&t.odometry, now, telemetryRate) {

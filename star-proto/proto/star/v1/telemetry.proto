@@ -89,10 +89,6 @@ message TelemetryData {
   // GPS data (if available).
   GpsData gps = 2;
 
-  // Battery state of charge.
-  // Range: 0 to 100 percent.
-  double battery_percent = 3;
-
   // WiFi signal strength in dBm.
   // Typical range: -100 to -30 dBm.
   int32 wifi_signal_dbm = 4;
@@ -130,13 +126,6 @@ message TelemetryData {
   // Motor fault flags bitfield (RX72N specific).
   // Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc.
   uint32 fault_flags = 11;
-
-  // Battery voltage in volts (RX72N specific - BQ4050).
-  double battery_voltage_v = 12;
-
-  // Battery state of charge percentage (RX72N specific - BQ4050).
-  // Range: 0 to 100 percent.
-  uint32 battery_soc_percent = 13;
 
   // Frame sequence number from transport layer for drop detection.
   // Increments with each transmitted frame. Used by diagnostics to detect

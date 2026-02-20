@@ -8,7 +8,7 @@
  *
  * **Responsibilities:**
  * - Read temperature from DS18B20 sensors
- * - Monitor critical temperatures (motor, battery, ambient)
+ * - Monitor critical temperatures (motor, ambient)
  * - Trigger warnings on high temperature conditions
  * - Update shared temperature data
  * - Detect sensor faults (CRC errors, disconnects)
@@ -58,7 +58,7 @@
  * @post Warnings triggered on high temperatures
  *
  * @note Call this from AppMainTask after sensor initialization
- * @note Thermal monitoring prevents motor/battery overheating
+ * @note Thermal monitoring prevents motor overheating
  *
  * @see temp_sensor_task.c Implementation details
  * @see app_main_task.c Task creation coordinator

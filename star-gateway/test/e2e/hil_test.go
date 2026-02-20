@@ -333,7 +333,6 @@ func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 			GyroYRadPerS: 0.0,
 			GyroZRadPerS: 0.0,
 		},
-		BatteryPercent:     85.0,
 		WifiSignalDbm:      -45,
 		CpuUsagePercent:    25.5,
 		TemperatureCelsius: 35.2,
@@ -363,10 +362,8 @@ func generateMockTelemetryData(timestampUs int64) *starv1.TelemetryData {
 			VelocityMps: 0.50,
 			TimestampUs: timestampUs,
 		},
-		EmergencyStop:     false,
-		FaultFlags:        0,
-		BatteryVoltageV:   24.5,
-		BatterySocPercent: 85,
+		EmergencyStop: false,
+		FaultFlags:    0,
 	}
 }
 
@@ -521,12 +518,6 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 
 	// Verify telemetry contains expected simulator data
 	telemetry := telemetryResp.Telemetry
-	if telemetry.BatteryVoltageV == 0 {
-		t.Error("Expected non-zero battery voltage")
-	}
-	if telemetry.BatteryPercent == 0 {
-		t.Error("Expected non-zero battery percentage")
-	}
 	if telemetry.Imu == nil {
 		t.Error("Expected non-nil IMU data")
 	}
@@ -534,10 +525,7 @@ func TestHIL_SimulatedIntegration(t *testing.T) {
 		t.Error("Expected non-nil front left encoder data")
 	}
 
-	t.Logf("GetTelemetry success: battery=%.1fV (%.0f%%), IMU pitch=%.3f rad",
-		telemetry.BatteryVoltageV,
-		telemetry.BatteryPercent,
-		telemetry.Imu.PitchRad)
+	t.Logf("GetTelemetry success: IMU pitch=%.3f rad", telemetry.Imu.PitchRad)
 
 	// 5. Test GetTeleopCommand (verify connection)
 	req := &starv1.GetTeleopCommandRequest{

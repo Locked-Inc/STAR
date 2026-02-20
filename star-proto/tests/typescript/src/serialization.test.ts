@@ -139,7 +139,6 @@ describe('Protobuf Serialization Tests', () => {
                     gyroYRadPerS: 0,
                     gyroZRadPerS: 0,
                 },
-                batteryPercent: 75.0,
                 temperatureCelsius: 35.0,
             };
 

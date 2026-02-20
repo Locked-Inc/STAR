@@ -28,11 +28,10 @@ typedef enum : uint8_t {
   k_estop_reason_none          = 0, /**< No e-stop active */
   k_estop_reason_comm_timeout  = 1, /**< Communication timeout */
   k_estop_reason_obstacle      = 2, /**< Obstacle too close */
-  k_estop_reason_driver_fault  = 3, /**< DRV8243 fault */
+  k_estop_reason_driver_fault  = 3, /**< Motor driver hardware fault */
   k_estop_reason_overcurrent   = 4, /**< Motor overcurrent */
   k_estop_reason_manual        = 5, /**< Manual request */
-  k_estop_reason_low_battery   = 6, /**< Battery low */
-  k_estop_reason_battery_fault = 7, /**< Battery fault (OTA, OCA, TDA) */
+
 } estop_reason_t;
 
 /**
@@ -82,21 +81,6 @@ typedef struct {
   bool  update_pending; /**< true if gains should be updated */
 } pid_gains_t;
 
-/**
- * @brief BMS (Battery Management System) state
- */
-typedef struct {
-  uint16_t voltage_mv;          /**< Battery voltage (mV) */
-  int16_t  current_ma;          /**< Battery current (mA) */
-  uint8_t  soc_percent;         /**< State of charge (%) */
-  int16_t  temperature_celsius; /**< Battery temperature (degC) */
-  uint16_t capacity_mah;        /**< Remaining capacity (mAh) */
-  uint16_t full_capacity_mah;   /**< Full charge capacity (mAh) */
-  uint16_t cycle_count;         /**< Battery cycle count */
-  uint16_t fault_flags;         /**< BMS fault flags */
-  uint32_t timestamp_ms;        /**< Timestamp (ms) */
-  bool     valid;               /**< true if data valid */
-} bms_state_t;
 
 /**
  * @brief Temperature sensor state
@@ -134,11 +118,11 @@ typedef struct {
  *
  * @code
  * // Raise two flags at once:
- * (void)shared_data_set_event(k_event_low_battery | k_event_comm_timeout);
+ * (void)shared_data_set_event(k_event_comm_timeout | k_event_estop_triggered);
  *
  * // Test for a specific flag in the consumer task:
  * shared_event_flags_t flags;
- * (void)tx_event_flags_get(&g_event_flags, k_event_low_battery,
+ * (void)tx_event_flags_get(&g_event_flags, k_event_comm_timeout,
  *                          TX_OR_CLEAR, (ULONG*)&flags, TX_WAIT_FOREVER);
  * @endcode
  *
@@ -152,7 +136,6 @@ typedef enum : uint32_t {
   k_event_motor_command_updated = 0x00000001, /**< New motor command available */
   k_event_estop_triggered       = 0x00000002, /**< E-stop activated */
   k_event_pid_gains_updated     = 0x00000004, /**< PID gains changed */
-  k_event_low_battery           = 0x00000008, /**< Low battery detected */
   k_event_obstacle_detected     = 0x00000010, /**< Obstacle detected */
   k_event_obstacle_cleared      = 0x00000020, /**< Obstacle cleared */
   k_event_estop_cleared         = 0x00000040, /**< E-stop cleared */
@@ -186,32 +169,6 @@ typedef enum : uint32_t {
   k_shared_comm_timeout_ms = 500, /**< Communication timeout threshold in milliseconds */
 } shared_data_constants_t;
 
-/**
- * @enum shared_data_soc_constants_t
- * @brief Shared data module state-of-charge threshold constants
- *
- * @details
- * Battery state-of-charge (SoC) thresholds used by the shared data module
- * to detect low battery conditions and trigger events. Values are percentages
- * in the range [0, 100] and fit in uint8_t.
- *
- * @invariant k_shared_low_battery_soc_pct <= 100
- *
- * @code{.c}
- * if (state->valid && state->soc_percent < k_shared_low_battery_soc_pct) {
- *     (void)tx_event_flags_set(&g_shared_data.event_flags,
- *                              (ULONG)k_event_low_battery, TX_OR);
- * }
- * @endcode
- *
- * @see shared_data_update_bms() BMS update function that checks this threshold
- * @see shared_event_flags_t Event flag definitions
- *
- * @since Version 1.0.0
- */
-typedef enum : uint8_t {
-  k_shared_low_battery_soc_pct = 15, /**< Low battery SoC threshold in percent (0-100) */
-} shared_data_soc_constants_t;
 
 /**
  * @brief Main shared data container structure
@@ -224,7 +181,6 @@ typedef enum : uint8_t {
 typedef struct {
   /* ThreadX synchronization primitives */
   TX_MUTEX             motor_mutex;    /**< Mutex for motor data */
-  TX_MUTEX             bms_mutex;      /**< Mutex for BMS data */
   TX_MUTEX             temp_mutex;     /**< Mutex for temperature data */
   TX_MUTEX             obstacle_mutex; /**< Mutex for obstacle data */
   TX_MUTEX             estop_mutex;    /**< Mutex for e-stop data */
@@ -234,7 +190,6 @@ typedef struct {
   motor_command_t     motor_command;  /**< Motor velocity command */
   motor_state_t       motor_state;    /**< Motor state telemetry */
   pid_gains_t         pid_gains;      /**< PID controller gains */
-  bms_state_t         bms_state;      /**< BMS state */
   temp_sensor_state_t temp_state;     /**< Temperature sensor state */
   obstacle_state_t    obstacle_state; /**< Obstacle detection state */
 
@@ -334,18 +289,18 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  * ISR e-stop via shared_data_commit_isr_estop() within 4ms (250 Hz loop).
  *
  * **CRITICAL:** This function MUST be used instead of shared_data_trigger_estop()
- * when called from interrupt handlers (POEG, BMS alert ISRs).
+ * when called from interrupt handlers (POEG ISRs).
  *
  * **Algorithm:** Write s_pending_estop_reason first, then s_estop_pending_from_isr
  * (ensures reason always valid when flag is set), then set event flag via
  * tx_event_flags_set(&g_shared_data.event_flags, k_event_estop_triggered, TX_OR).
  *
- * @param[in] reason E-stop reason code (driver_fault, battery_fault, etc.)
+ * @param[in] reason E-stop reason code (driver_fault, overcurrent, etc.)
  *
  * @return void (no return value)
  * @retval N/A Always succeeds (void return, no error cases, side-effect only)
  *
- * @pre Called from ISR context only (POEG motor fault ISRs, BMS alert ISR)
+ * @pre Called from ISR context only (POEG motor fault ISRs)
  * @pre shared_data_init() completed and g_shared_data.event_flags initialized
  * @post s_estop_pending_from_isr == true (volatile flag set)
  * @post s_pending_estop_reason == reason (volatile reason stored)
@@ -455,19 +410,6 @@ bool shared_data_is_estop_active(void);
  */
 estop_reason_t shared_data_get_estop_reason(void);
 
-/**
- * @brief Update BMS state
- * @param state BMS state
- * @return rx_err_t Error code
- */
-rx_err_t shared_data_update_bms(const bms_state_t* state);
-
-/**
- * @brief Get BMS state
- * @param out_state Output BMS state
- * @return rx_err_t Error code
- */
-rx_err_t shared_data_get_bms(bms_state_t* out_state);
 
 /**
  * @brief Update temperature sensor state

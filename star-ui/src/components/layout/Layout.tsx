@@ -6,7 +6,6 @@ const ROUTE_TITLES: Record<string, string> = {
   '/': 'Dashboard',
   '/controller': 'Controller',
   '/telemetry': 'Telemetry',
-  '/battery': 'Battery Management',
   '/motors': 'Motor Control',
   '/configuration': 'Configuration',
   '/firmware': 'Firmware',

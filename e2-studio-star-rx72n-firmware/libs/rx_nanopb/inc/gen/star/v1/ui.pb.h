@@ -4,7 +4,6 @@
 #ifndef PB_STAR_V1_STAR_V1_UI_PB_H_INCLUDED
 #define PB_STAR_V1_STAR_V1_UI_PB_H_INCLUDED
 #include <pb.h>
-#include "star/v1/battery_management.pb.h"
 #include "star/v1/controller.pb.h"
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/telemetry.pb.h"
@@ -109,8 +108,6 @@ typedef struct _star_v1_STAREnvelope {
         star_v1_TelemetryData telemetry;
         /* Motor status list for all drive motors. */
         star_v1_MotorStatusList motors;
-        /* Battery state and charge information. */
-        star_v1_BatteryState battery;
         /* Wheel odometry pose and velocity estimate. */
         star_v1_OdometryData odometry;
         /* Single 360-degree lidar scan. */
@@ -184,7 +181,6 @@ extern "C" {
 #define star_v1_EStopCommand_timestamp_us_tag    3
 #define star_v1_STAREnvelope_telemetry_tag       1
 #define star_v1_STAREnvelope_motors_tag          2
-#define star_v1_STAREnvelope_battery_tag         3
 #define star_v1_STAREnvelope_odometry_tag        4
 #define star_v1_STAREnvelope_lidar_tag           5
 #define star_v1_STAREnvelope_alert_tag           6
@@ -198,7 +194,6 @@ extern "C" {
 #define star_v1_STAREnvelope_FIELDLIST(X, a) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,telemetry,payload.telemetry),   1) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,motors,payload.motors),   2) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,battery,payload.battery),   3) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,odometry,payload.odometry),   4) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,lidar,payload.lidar),   5) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,alert,payload.alert),   6) \
@@ -211,7 +206,6 @@ X(a, STATIC,   SINGULAR, INT64,    ts_ms,            15)
 #define star_v1_STAREnvelope_DEFAULT NULL
 #define star_v1_STAREnvelope_payload_telemetry_MSGTYPE star_v1_TelemetryData
 #define star_v1_STAREnvelope_payload_motors_MSGTYPE star_v1_MotorStatusList
-#define star_v1_STAREnvelope_payload_battery_MSGTYPE star_v1_BatteryState
 #define star_v1_STAREnvelope_payload_odometry_MSGTYPE star_v1_OdometryData
 #define star_v1_STAREnvelope_payload_lidar_MSGTYPE star_v1_LidarScan
 #define star_v1_STAREnvelope_payload_alert_MSGTYPE star_v1_Alert
@@ -275,12 +269,7 @@ extern const pb_msgdesc_t star_v1_EStopCommand_msg;
 #define star_v1_EStopCommand_fields &star_v1_EStopCommand_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(star_v1_BatteryState_size)
-union star_v1_STAREnvelope_payload_size_union {char f3[(6 + star_v1_BatteryState_size)]; char f0[7514];};
-#endif
-#if defined(star_v1_BatteryState_size)
-#define star_v1_STAREnvelope_size                (22 + sizeof(union star_v1_STAREnvelope_payload_size_union))
-#endif
+#define star_v1_STAREnvelope_size                7536
 #define STAR_V1_STAR_V1_UI_PB_H_MAX_SIZE         star_v1_LidarScan_size
 #define star_v1_Alert_size                       196
 #define star_v1_EStopCommand_size                79

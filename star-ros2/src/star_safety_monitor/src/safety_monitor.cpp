@@ -49,9 +49,6 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     declare_parameter("heartbeat_timeout_ms", 500);
     declare_parameter("max_linear_velocity", 1.0);
     declare_parameter("max_angular_velocity", 2.0);
-    declare_parameter("min_battery_voltage", 10.5);
-    declare_parameter("max_battery_current", 30.0);
-    declare_parameter("max_battery_temp", 60.0);
     declare_parameter("publish_rate", 10.0);
     declare_parameter("enable_auto_estop", true);
     declare_parameter("estop_recovery_delay", 5.0);
@@ -62,9 +59,6 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     heartbeat_timeout_ms_ = get_parameter("heartbeat_timeout_ms").as_int();
     max_linear_velocity_ = get_parameter("max_linear_velocity").as_double();
     max_angular_velocity_ = get_parameter("max_angular_velocity").as_double();
-    min_battery_voltage_ = get_parameter("min_battery_voltage").as_double();
-    max_battery_current_ = get_parameter("max_battery_current").as_double();
-    max_battery_temp_ = get_parameter("max_battery_temp").as_double();
     publish_rate_ = get_parameter("publish_rate").as_double();
     enable_auto_estop_ = get_parameter("enable_auto_estop").as_bool();
     estop_recovery_delay_ = get_parameter("estop_recovery_delay").as_double();
@@ -76,8 +70,6 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     RCLCPP_INFO(get_logger(), "  Heartbeat timeout: %d ms", heartbeat_timeout_ms_);
     RCLCPP_INFO(get_logger(), "  Max linear velocity: %.2f m/s", max_linear_velocity_);
     RCLCPP_INFO(get_logger(), "  Max angular velocity: %.2f rad/s", max_angular_velocity_);
-    RCLCPP_INFO(get_logger(), "  Min battery voltage: %.1f V", min_battery_voltage_);
-    RCLCPP_INFO(get_logger(), "  Max battery current: %.1f A", max_battery_current_);
 
     // Create lifecycle publishers
     diagnostics_pub_ =
@@ -93,17 +85,12 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
       "/diagnostics", 10,
       std::bind(&SafetyMonitor::diagnostics_callback, this, std::placeholders::_1));
 
-    battery_sub_ = create_subscription<sensor_msgs::msg::BatteryState>(
-      "/battery_state", 10,
-      std::bind(&SafetyMonitor::battery_state_callback, this, std::placeholders::_1));
-
     cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
       "/cmd_vel", 10,
       std::bind(&SafetyMonitor::cmd_vel_callback, this, std::placeholders::_1));
 
     // Initialize state
     last_diagnostics_time_ = std::chrono::system_clock::now();
-    last_battery_time_ = std::chrono::system_clock::now();
     last_cmd_vel_time_ = std::chrono::system_clock::now();
     heartbeat_times_.clear();
     current_linear_velocity_ = 0.0;
@@ -111,8 +98,6 @@ SafetyMonitor::on_configure(const rclcpp_lifecycle::State & previous_state)
     velocity_exceeded_ = false;
     heartbeat_timeout_triggered_ = false;
     emergency_stop_active_ = false;
-    battery_voltage_low_ = false;
-    battery_current_high_ = false;
     motor_stall_detected_ = false;
     stall_detection_count_ = 0;
     overall_severity_ = SeverityLevel::OK;
@@ -188,7 +173,6 @@ SafetyMonitor::on_cleanup(const rclcpp_lifecycle::State & previous_state)
     emergency_stop_pub_.reset();
     odom_sub_.reset();
     diag_sub_.reset();
-    battery_sub_.reset();
     cmd_vel_sub_.reset();
 
     // Clear state
@@ -243,15 +227,6 @@ void SafetyMonitor::diagnostics_callback(
   }
 }
 
-void SafetyMonitor::battery_state_callback(
-  const sensor_msgs::msg::BatteryState::SharedPtr msg)
-{
-  last_battery_time_ = std::chrono::system_clock::now();
-  battery_voltage_ = msg->voltage;
-  battery_current_ = msg->current;
-  battery_percentage_ = msg->percentage;
-}
-
 void SafetyMonitor::cmd_vel_callback(
   const geometry_msgs::msg::Twist::SharedPtr msg)
 {
@@ -264,7 +239,6 @@ void SafetyMonitor::monitoring_timer_callback()
   // Perform safety checks
   check_heartbeat_health();
   check_velocity_limits();
-  check_battery_health();
   check_motor_stall();
   check_diagnostic_health();
   update_overall_state();
@@ -316,46 +290,6 @@ void SafetyMonitor::check_velocity_limits()
       "Angular velocity limit exceeded: %.2f > %.2f rad/s",
       current_angular_velocity_, max_angular_velocity_);
     velocity_exceeded_ = true;
-  }
-}
-
-void SafetyMonitor::check_battery_health()
-{
-  battery_voltage_low_ = false;
-  battery_current_high_ = false;
-
-  // Check battery voltage
-  if (battery_voltage_ > 0.0 && battery_voltage_ < min_battery_voltage_) {
-    RCLCPP_WARN(get_logger(),
-      "Battery voltage low: %.2f V < %.2f V",
-      battery_voltage_, min_battery_voltage_);
-    battery_voltage_low_ = true;
-    if (enable_auto_estop_) {
-      emergency_stop_active_ = true;
-      estop_trigger_time_ = std::chrono::system_clock::now();
-    }
-  }
-
-  // Check battery current (absolute value - both charging and discharging)
-  double abs_current = std::abs(battery_current_);
-  if (abs_current > max_battery_current_) {
-    RCLCPP_WARN(get_logger(),
-      "Battery current high: %.2f A > %.2f A",
-      abs_current, max_battery_current_);
-    battery_current_high_ = true;
-    if (enable_auto_estop_) {
-      emergency_stop_active_ = true;
-      estop_trigger_time_ = std::chrono::system_clock::now();
-    }
-  }
-
-  // Check battery stale (no updates for timeout period)
-  auto now = std::chrono::system_clock::now();
-  auto battery_age = now - last_battery_time_;
-  if (battery_age > std::chrono::milliseconds(heartbeat_timeout_ms_)) {
-    RCLCPP_WARN(get_logger(), "Battery state stale");
-    // Note: We don't trigger E-Stop for stale battery alone, as it could be
-    // a separate subsystem. The heartbeat check will catch RX72N failure.
   }
 }
 
@@ -411,7 +345,7 @@ void SafetyMonitor::update_overall_state()
 
   if (heartbeat_timeout_triggered_) {
     overall_severity_ = SeverityLevel::ERROR;
-  } else if (battery_voltage_low_ || battery_current_high_ || motor_stall_detected_) {
+  } else if (motor_stall_detected_) {
     overall_severity_ = SeverityLevel::WARN;
   } else if (velocity_exceeded_) {
     overall_severity_ = SeverityLevel::WARN;
@@ -490,41 +424,8 @@ void SafetyMonitor::publish_diagnostics()
     heartbeat_status.values.push_back(kv);
   }
 
-  // Battery status
-  diagnostic_msgs::msg::DiagnosticStatus battery_status;
-  battery_status.name = "safety_monitor: Battery Status";
-  battery_status.hardware_id = "safety_monitor";
-  if (battery_voltage_low_ || battery_current_high_) {
-    battery_status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
-    battery_status.message = "Battery warning conditions detected";
-  } else {
-    battery_status.level = diagnostic_msgs::msg::DiagnosticStatus::OK;
-    battery_status.message = "Battery nominal";
-  }
-
-  kv.key = "Voltage (V)";
-  kv.value = std::to_string(battery_voltage_);
-  battery_status.values.push_back(kv);
-
-  kv.key = "Current (A)";
-  kv.value = std::to_string(battery_current_);
-  battery_status.values.push_back(kv);
-
-  kv.key = "Percentage (%)";
-  kv.value = std::to_string(battery_percentage_ * 100);
-  battery_status.values.push_back(kv);
-
-  kv.key = "Voltage Low";
-  kv.value = battery_voltage_low_ ? "true" : "false";
-  battery_status.values.push_back(kv);
-
-  kv.key = "Current High";
-  kv.value = battery_current_high_ ? "true" : "false";
-  battery_status.values.push_back(kv);
-
   diag_array.status.push_back(system_status);
   diag_array.status.push_back(heartbeat_status);
-  diag_array.status.push_back(battery_status);
 
   // Motor status
   diagnostic_msgs::msg::DiagnosticStatus motor_status;

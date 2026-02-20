@@ -31,7 +31,7 @@ class StarGatewayBridgeNode : public rclcpp::Node {
 
 // CamelCase for structs used as types
 struct TelemetryData {
-  double battery_voltage_;
+  double encoder_ticks_;
   double current_ma_;
 };
 
@@ -45,7 +45,7 @@ using TelemetryPtr = std::shared_ptr<TelemetryData>;
 // snake_case for methods (same as C firmware)
 void publish_telemetry(const TelemetryData & data);
 bool is_connected() const;
-void on_battery_state_received(const sensor_msgs::msg::BatteryState::SharedPtr msg);
+void on_encoder_data_received(const sensor_msgs::msg::JointState::SharedPtr msg);
 
 // Use verb-based names that clarify actions
 void check_for_errors();      // [PASS] Clear intent

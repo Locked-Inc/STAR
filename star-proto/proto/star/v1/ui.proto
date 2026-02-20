@@ -13,7 +13,6 @@ syntax = "proto3";
 
 package star.v1;
 
-import "star/v1/battery_management.proto";
 import "star/v1/controller.proto";
 import "star/v1/motor_control.proto";
 import "star/v1/telemetry.proto";
@@ -53,8 +52,6 @@ message STAREnvelope {
     TelemetryData telemetry = 1;
     // Motor status list for all drive motors.
     MotorStatusList motors = 2;
-    // Battery state and charge information.
-    BatteryState battery = 3;
     // Wheel odometry pose and velocity estimate.
     OdometryData odometry = 4;
     // Single 360-degree lidar scan.

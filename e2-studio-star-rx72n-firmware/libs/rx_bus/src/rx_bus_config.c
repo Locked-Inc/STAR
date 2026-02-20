@@ -8,7 +8,7 @@
  * # Implementation Overview
  *
  * Provides factory-style helper functions to initialize rx_bus_config_t structures
- * for all 7 supported bus types (GPIO, ADC, I2C, SMBus, UART, SPI, 1-Wire).
+ * for all 6 supported bus types (GPIO, ADC, I2C, UART, SPI, 1-Wire).
  * Follows **static allocation** pattern - caller provides memory, functions initialize fields.
  *
  * ## Design Rationale
@@ -78,7 +78,6 @@
  * | init_gpio | ~3 us | memset + validation |
  * | init_adc | ~4 us | Resolution validation |
  * | init_i2c | ~5 us | 2x pin validation |
- * | init_smbus | ~6 us | I2C validation + PEC |
  * | init_uart | ~5 us | 2x pin + baud validation |
  * | init_onewire | ~3 us | Pin validation |
  *
@@ -109,7 +108,7 @@
  * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line code |
  * | **Rule 2** | [PASS] No loops (zero-iteration memset doesn't count) |
  * | **Rule 3** | [PASS] No malloc - static allocation pattern |
- * | **Rule 4** | [PASS] All functions <=60 lines (longest: init_smbus at 52 lines) |
+ * | **Rule 4** | [PASS] All functions <=60 lines |
  * | **Rule 5** | [PASS] Minimum 2 validations per function (NULL checks + range checks) |
  * | **Rule 6** | [PASS] Variables at smallest scope (err declared in functions) |
  * | **Rule 7** | [PASS] All internal_validate_port_pin returns checked |
@@ -493,7 +492,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * ADC buses are used for:
  * - **Motor current sensing**: DRV8243 analog current feedback (12-bit, +/-2% accuracy)
- * - **Battery voltage monitoring**: BQ4050 voltage measurement (10-bit sufficient)
+ * - **Power rail monitoring**: Voltage divider ADC measurement (10-bit sufficient)
  * - **Temperature sensing**: Analog temperature sensors (8-10 bit)
  * - **Position sensing**: Analog potentiometers for position feedback
  *
@@ -508,7 +507,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * | Resolution | LSB @ 3.3V | Conversion Time | Use Case |
  * |------------|-----------|-----------------|----------|
  * | 8-bit | 12.9 mV | ~3 us | Fast, low-precision (temperature) |
- * | 10-bit | 3.2 mV | ~8 us | Balanced (battery voltage) |
+ * | 10-bit | 3.2 mV | ~8 us | Balanced (voltage sensing) |
  * | 12-bit | 0.8 mV | ~16 us | High-precision (current sensing) |
  *
  * **Recommendation**: Use 12-bit for motor current (needs +/-1% accuracy), 10-bit for voltage.
@@ -516,7 +515,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * @param[out] config Pointer to bus configuration structure to initialize.
  *                    Caller-allocated (stack or static). On success, contains
  *                    fully initialized ADC bus configuration.
- * @param[in] name Bus name string (e.g., "motor0_current", "battery_voltage").
+ * @param[in] name Bus name string (e.g., "motor0_current", "power_rail").
  *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
  *                 String pointer stored directly (NOT copied).
  * @param[in] unit ADC unit number (0 or 1 on RX72N).
@@ -595,13 +594,13 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * err = rx_bus_manager_add_bus(&bus_mgr, &motor0_isense_cfg);
  * @endcode
  *
- * @par Example - Battery Voltage Monitoring:
+ * @par Example - ADC Voltage Monitoring:
  * @code{.c}
- * // Battery voltage divider (10-bit sufficient for +/-0.3% accuracy)
- * static rx_bus_config_t battery_voltage_cfg;
+ * // Voltage divider (10-bit sufficient for +/-0.3% accuracy)
+ * static rx_bus_config_t power_rail_cfg;
  * rx_err_t err = rx_bus_config_init_adc(
- *     &battery_voltage_cfg,
- *     "battery_voltage",
+ *     &power_rail_cfg,
+ *     "power_rail",
  *     1,    // ADC Unit 1
  *     5,    // Channel AN105 (Port D, Pin 5)
  *     k_adc_resolution_10bit  // 3.2 mV LSB
@@ -609,7 +608,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * assert(err == k_rx_ok);
  *
  * // Use for voltage monitoring
- * rx_bus_manager_add_bus(&power_mgr, &battery_voltage_cfg);
+ * rx_bus_manager_add_bus(&power_mgr, &power_rail_cfg);
  * @endcode
  *
  * @par Example - Error Handling:
@@ -729,7 +728,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  *
  * I2C buses are used for:
  * - **Sensor communication**: IMUs, magnetometers, pressure sensors
- * - **Power management**: BQ4050 battery fuel gauge (uses SMBus over I2C)
+ * - **Power management**: External power management ICs
  * - **EEPROM access**: Configuration storage, calibration data
  * - **DAC/ADC**: External high-resolution converters
  * - **GPIO expansion**: I2C port expanders (e.g., PCA9555)
@@ -885,7 +884,6 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @endcode
  *
  * @see rx_bus_config_t Bus configuration structure
- * @see rx_bus_config_init_smbus() SMBus variant with PEC support
  * @see rx_bus_manager_add_bus() Register config with manager
  * @see k_riic_channel_count Maximum RIIC channels (3 on RX72N)
  * @see k_i2c_addr_max_7bit Maximum 7-bit address (0x7F)
@@ -964,300 +962,6 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
   return k_rx_ok;
 }
 
-/* =============================================================================
- * SMBus Bus Configuration
- * =============================================================================
- */
-
-/**
- * @brief Initialize SMBus (System Management Bus) configuration structure
- *
- * @details
- * Factory function to create an SMBus configuration for power management ICs,
- * battery monitoring, and system management applications. SMBus is I2C-compatible
- * with additional features: timeout detection, Packet Error Checking (PEC), and
- * specific protocol semantics.
- *
- * ## Algorithm Steps
- *
- * 1. Validate config parameter (NULL check via RX_CHECK_NULL_PTR)
- * 2. Validate name parameter (NULL check via RX_CHECK_NULL_PTR)
- * 3. Validate SDA pin via internal_validate_port_pin()
- * 4. Validate SCL pin via internal_validate_port_pin()
- * 5. Validate RIIC channel number (0-2 on RX72N)
- * 6. Validate device address (7-bit, 0x08-0x77 range)
- * 7. Zero entire config structure with memset(0, sizeof(rx_bus_config_t))
- * 8. Set common fields: name, type=k_bus_type_smbus, initialized=false
- * 9. Set SMBus I2C config fields: channel, sda_pin, scl_pin, frequency_hz, device_addr
- * 10. Set SMBus-specific field: use_pec (Packet Error Checking enable)
- * 11. Log debug message
- * 12. Return k_rx_ok
- *
- * ## Use Cases
- *
- * SMBus buses are used for:
- * - **Battery management**: BQ4050 fuel gauge (SMBus with PEC required)
- * - **Power management**: Voltage regulators with SMBus interface
- * - **Temperature monitoring**: LM75, TMP75 thermal sensors
- * - **Fan control**: PC fan controllers (PWM + tachometer over SMBus)
- * - **Server management**: IPMI, platform monitoring
- *
- * ## SMBus vs I2C Differences
- *
- * | Feature | I2C | SMBus |
- * |---------|-----|-------|
- * | **Timeout** | None | 25-35 ms required |
- * | **PEC** | Optional | Optional CRC-8 |
- * | **Clock** | 0-3.4 MHz | 10-100 kHz (strict) |
- * | **Address** | 7/10-bit | 7-bit only |
- * | **Logic levels** | Device-specific | Fixed (VDD-based) |
- *
- * **Key difference**: SMBus requires timeout (prevents bus lockup), I2C does not.
- *
- * ## Packet Error Checking (PEC)
- *
- * ### What is PEC?
- * - **CRC-8 checksum** appended to every transaction
- * - Polynomial: x^8 + x^2 + x + 1 (0x07)
- * - Detects single/double bit errors, most burst errors
- *
- * ### When to Enable PEC?
- * - **ALWAYS for BQ4050 battery gauge** (spec requires PEC)
- * - Power-critical applications (prevents incorrect voltage/current readings)
- * - Noisy electrical environments (motor PWM interference)
- *
- * ### PEC Trade-offs
- *
- * | PEC Enabled | Pro | Con |
- * |-------------|-----|-----|
- * | Yes | Error detection, data integrity | +8% transaction time |
- * | No | Faster transactions | Undetected corruption possible |
- *
- * **Recommendation**: Enable PEC for battery management, disable for non-critical sensors.
- *
- * ## Implementation Details
- *
- * ### RX72N RIIC Configuration
- * SMBus uses same RIIC peripheral as I2C:
- * - **Channel 0-2**: RIIC0, RIIC1, RIIC2
- * - **Timeout**: Implemented in software (25 ms watchdog)
- * - **PEC**: Implemented in software (CRC-8 calculation)
- *
- * ### Typical SMBus Frequency
- * - **100 kHz**: Standard SMBus frequency (most devices)
- * - **10 kHz**: Low-speed mode (rare, legacy devices)
- *
- * @param[out] config Pointer to bus configuration structure to initialize.
- *                    Caller-allocated (stack or static). On success, contains
- *                    fully initialized SMBus configuration.
- * @param[in] name Bus name string (e.g., "battery_smbus", "pmbus").
- *                 Must be non-NULL, unique within bus manager, <=k_max_bus_name_len.
- *                 String pointer stored directly (NOT copied).
- * @param[in] channel RIIC channel number (0-2 on RX72N).
- *                    Must be < k_riic_channel_count (3).
- * @param[in] device_addr SMBus device address (7-bit, 0x08-0x77).
- *                        Must be <= k_i2c_addr_max_7bit (0x7F).
- *                        Example: BQ4050 battery gauge = 0x0B (default).
- * @param[in] sda_pin SMBDAT (data) pin as rx_port_pin_t typed enum.
- *                    Must be valid RX72N pin with I2C/SMBus capability.
- * @param[in] scl_pin SMBCLK (clock) pin as rx_port_pin_t typed enum.
- *                    Must be valid RX72N pin with I2C/SMBus capability.
- * @param[in] frequency_hz SMBus clock frequency in Hz.
- *                         - 100000 (100 kHz): Standard SMBus (recommended)
- *                         - 10000 (10 kHz): Low-speed SMBus (rare)
- * @param[in] use_pec Enable Packet Error Checking (CRC-8).
- *                    - true: Append CRC-8 to all transactions (BQ4050 requires this)
- *                    - false: No error checking (faster, less safe)
- *
- * @return rx_err_t Initialization status
- *
- * @retval k_rx_ok Configuration initialized successfully
- * @retval k_rx_err_null_ptr config or name is nullptr
- * @retval k_rx_err_invalid_arg sda_pin invalid (port > J or pin > 7)
- * @retval k_rx_err_invalid_arg scl_pin invalid (port > J or pin > 7)
- * @retval k_rx_err_invalid_arg channel >= 3 (invalid RIIC channel)
- * @retval k_rx_err_invalid_arg device_addr > 0x7F (invalid 7-bit address)
- *
- * @pre config points to allocated rx_bus_config_t structure
- * @pre name is non-NULL string (must remain valid after this call)
- * @pre sda_pin and scl_pin are valid RX72N pins with I2C capability
- * @pre channel is 0-2 (RX72N has 3 RIIC channels)
- * @pre device_addr is valid 7-bit SMBus address (0x08-0x77)
- * @pre frequency_hz is 10 kHz or 100 kHz (SMBus standard frequencies)
- *
- * @post config fully initialized and ready for rx_bus_manager_add_bus()
- * @post config->type == k_bus_type_smbus
- * @post config->initialized == false (hardware init deferred)
- * @post config->proto.smbus.i2c_config.{channel, pins, freq, addr} set
- * @post config->proto.smbus.use_pec == use_pec parameter
- *
- * @invariant SDA and SCL pins must be different
- *
- * @note name string NOT copied - must remain valid
- * @note Hardware NOT initialized until first bus access
- * @note SMBus timeout (25 ms) enforced in bus manager layer
- * @note PEC calculated in software using CRC-8 (polynomial 0x07)
- * @note Pull-up resistors (2.2-4.7 kOhm) REQUIRED on SMBDAT/SMBCLK (external)
- *
- * @warning name pointer must remain valid for config lifetime
- * @warning BQ4050 battery gauge REQUIRES use_pec=true (spec compliance)
- * @warning SMBus timeout NOT enforced at this layer (delegated to bus manager)
- * @warning PEC overhead adds ~8% to transaction time (enable only if needed)
- *
- * @attention SMBus address conflicts NOT detected (scan bus before deployment)
- * @attention VDD variations affect SMBus logic levels (use stable power supply)
- *
- * @par Thread Safety:
- * Thread-safe for different config structures. Not safe for same config
- * (caller must serialize).
- *
- * @par Re-entrancy:
- * Reentrant across different config structures.
- *
- * @par Performance:
- * Execution time: ~6 us @ 240 MHz (2x pin validation + memset + field assignments)
- *
- * @par Memory:
- * - Stack: ~28 bytes (local variables)
- * - Config: 128 bytes (zeroed)
- *
- * @par Example - BQ4050 Battery Fuel Gauge:
- * @code{.c}
- * // BQ4050 battery gauge on RIIC0 @ 100 kHz with PEC enabled
- * rx_bus_config_t battery_smbus_cfg;
- * rx_err_t err = rx_bus_config_init_smbus(
- *     &battery_smbus_cfg,
- *     "battery_smbus",
- *     0,             // RIIC channel 0
- *     0x0B,          // BQ4050 default address
- *     k_rx_pin_p12,  // SMBDAT pin
- *     k_rx_pin_p13,  // SMBCLK pin
- *     100000,        // 100 kHz (SMBus standard)
- *     true           // Enable PEC (REQUIRED by BQ4050)
- * );
- * if (err != k_rx_ok) {
- *     rx_log_error("BATTERY", "SMBus config failed: %d", err);
- *     return err;
- * }
- *
- * // Register with bus manager
- * err = rx_bus_manager_add_bus(&power_mgr, &battery_smbus_cfg);
- * @endcode
- *
- * @par Example - Temperature Sensor Without PEC:
- * @code{.c}
- * // LM75 temperature sensor (non-critical, PEC disabled for speed)
- * static rx_bus_config_t temp_smbus_cfg;
- * rx_err_t err = rx_bus_config_init_smbus(
- *     &temp_smbus_cfg,
- *     "temp_smbus",
- *     1,             // RIIC channel 1
- *     0x48,          // LM75 address (A0=A1=A2=0)
- *     k_rx_pin_p16,  // SMBDAT pin
- *     k_rx_pin_p17,  // SMBCLK pin
- *     100000,        // 100 kHz
- *     false          // Disable PEC (faster, sensor reads are non-critical)
- * );
- * assert(err == k_rx_ok);
- * @endcode
- *
- * @par Example - Error Handling:
- * @code{.c}
- * rx_bus_config_t pmbus_cfg;
- *
- * // Same SDA and SCL pin (invalid)
- * rx_err_t err = rx_bus_config_init_smbus(&pmbus_cfg, "pmbus", 0,
- *                                         0x50, k_rx_pin_p12, k_rx_pin_p12, 100000, true);
- * // Pin validation would catch identical pins
- *
- * // Invalid address (broadcast)
- * err = rx_bus_config_init_smbus(&pmbus_cfg, "pmbus", 0,
- *                                0x00, k_rx_pin_p12, k_rx_pin_p13, 100000, true);
- * if (err == k_rx_err_invalid_arg) {
- *     rx_log_error("SMBUS", "Invalid address (0x00 is reserved for broadcast)");
- * }
- * @endcode
- *
- * @see rx_bus_config_t Bus configuration structure
- * @see rx_bus_config_init_i2c() Standard I2C variant (no PEC)
- * @see rx_bus_manager_add_bus() Register config with manager
- * @see k_riic_channel_count Maximum RIIC channels (3 on RX72N)
- * @see k_i2c_addr_max_7bit Maximum 7-bit address (0x7F)
- * @see docs/sections/03_hardware_pinout.tex SMBus pin assignments
- *
- * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with PEC support
- *
- * @test test_rx_bus_config.c::test_init_smbus_success()
- * @test test_rx_bus_config.c::test_init_smbus_with_pec()
- * @test test_rx_bus_config.c::test_init_smbus_without_pec()
- * @test test_rx_bus_config.c::test_init_smbus_invalid_params()
- *
- * @par NASA Power of 10 Compliance:
- * - **Rule 5**: 6 preconditions, 5 postconditions
- * - **Rule 4**: Function is 52 lines (under 60 limit)
- * - **Rule 7**: All pin validation returns checked (err != k_rx_ok)
- * - **Rule 8**: C23 typed enums for pins and bool for use_pec
- */
-rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
-                                  const char*         name,
-                                  const uint8_t       channel,
-                                  const uint8_t       device_addr,
-                                  const rx_port_pin_t sda_pin,
-                                  const rx_port_pin_t scl_pin,
-                                  const uint32_t      frequency_hz,
-                                  const bool          use_pec)
-{
-  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
-  RX_CHECK_NULL_PTR(name, s_tag, "name pointer is nullptr");
-
-  /* Validate SDA pin */
-  rx_err_t err = internal_validate_port_pin(sda_pin, "SMBUS SDA");
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Validate SCL pin */
-  err = internal_validate_port_pin(scl_pin, "SMBUS SCL");
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Validate channel (0-2) */
-  if (channel >= k_riic_channel_count) {
-    rx_log_error(s_tag, "Invalid SMBUS channel");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Validate device address (7-bit) */
-  if (device_addr > k_i2c_addr_max_7bit) {
-    rx_log_error(s_tag, "Invalid SMBUS device address");
-    return k_rx_err_invalid_arg;
-  }
-
-  /* Zero out config structure */
-  *config = (rx_bus_config_t){0};
-
-  /* Set common fields */
-  config->name        = name;
-  config->type        = k_bus_type_smbus;
-  config->initialized = false;
-  config->handle      = nullptr;
-  config->user_ctx    = nullptr;
-  config->next        = nullptr;
-
-  /* Set SMBUS-specific fields (extends I2C) */
-  config->proto.smbus.i2c_config.channel      = channel;
-  config->proto.smbus.i2c_config.sda_pin      = sda_pin;
-  config->proto.smbus.i2c_config.scl_pin      = scl_pin;
-  config->proto.smbus.i2c_config.frequency_hz = frequency_hz;
-  config->proto.smbus.i2c_config.device_addr  = device_addr;
-  config->proto.smbus.use_pec                 = use_pec;
-
-  rx_log_debug(s_tag, "SMBUS bus config initialized");
-
-  return k_rx_ok;
-}
 
 /* =============================================================================
  * UART Bus Configuration
@@ -1566,7 +1270,6 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * 1-Wire buses are used for:
  * - **Temperature sensing**: DS18B20 digital thermometer (-55degC to +125degC, +/-0.5degC)
  * - **Authentication**: DS2431 EEPROM with unique 64-bit ID
- * - **Battery monitoring**: DS2438 battery monitor with ADC
  * - **Multi-drop networks**: Up to 200 devices on single wire (with repeaters)
  *
  * ## 1-Wire Protocol Overview

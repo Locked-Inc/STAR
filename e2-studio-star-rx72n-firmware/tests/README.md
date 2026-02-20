@@ -14,9 +14,9 @@ ctest --output-on-failure
 
 ## Test Infrastructure
 
-- **38 independent test executables** - Each test suite runs separately
+- **35 independent test executables** - Each test suite runs separately
 - **Unity v2.6.1 test framework** - Lightweight C unit testing framework (auto-fetched by CMake)
-- **39 mock implementations** - Hardware abstraction for host testing (in `mocks/` directory)
+- **37 mock implementations** - Hardware abstraction for host testing (in `mocks/` directory)
 - **CMake build system** - Cross-platform, parallel compilation support
 - **Host target compilation** - Tests run on x86_64, not embedded RX72N
 
@@ -44,7 +44,6 @@ ctest --output-on-failure
 ### Peripherals & Sensors
 - `test_rx_hcsr04`, `test_rx_obstacle_detect` - Ultrasonic sensor and obstacle detection
 - `test_rx_ds18b20` - Temperature sensor (1-Wire)
-- `test_rx_bq4050` - Battery management IC (SMBus)
 - `test_rx_encoder` - Motor quadrature encoder
 
 ### Motor Control
@@ -55,7 +54,6 @@ ctest --output-on-failure
 - `test_motor_control_task` - Motor control task (ThreadX)
 - `test_communication_task` - Communication task
 - `test_obstacle_detection_task` - Obstacle detection task
-- `test_bms_monitoring_task` - Battery management system monitoring
 - `test_temperature_sensing_task` - Temperature sensing task
 - `test_telemetry_aggregation_task` - Telemetry collection and reporting
 

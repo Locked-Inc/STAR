@@ -1,7 +1,7 @@
 // Package dispatcher implements a centralized message router for the star-gateway.
 //
 // The Dispatcher solves the concurrency race condition where multiple services
-// (MotorControlService, TelemetryService, BatteryService) all call HARQ.Receive()
+// (MotorControlService, TelemetryService) all call HARQ.Receive()
 // in parallel, causing frame stealing and deserialization errors.
 //
 // Architecture:
@@ -72,12 +72,6 @@ const (
 
 	// MessageTypeEncoderData is an EncoderData (encoder feedback).
 	MessageTypeEncoderData
-
-	// MessageTypeBatteryStatus is a BatteryStatus (battery info).
-	MessageTypeBatteryStatus
-
-	// MessageTypeBatteryData is a BatteryState (detailed BMS telemetry).
-	MessageTypeBatteryData
 
 	// MessageTypePidConfig is a PidConfig (tuning parameters).
 	MessageTypePidConfig
@@ -427,10 +421,6 @@ func (d *dispatcher) extractPayload(msg *starv1.WireMessage) (MessageType, inter
 		return MessageTypeTelemetryData, payload.TelemetryData
 	case *starv1.WireMessage_EncoderData:
 		return MessageTypeEncoderData, payload.EncoderData
-	case *starv1.WireMessage_BatteryStatus:
-		return MessageTypeBatteryStatus, payload.BatteryStatus
-	case *starv1.WireMessage_BatteryState:
-		return MessageTypeBatteryData, payload.BatteryState
 	case *starv1.WireMessage_PidConfig:
 		return MessageTypePidConfig, payload.PidConfig
 	default:

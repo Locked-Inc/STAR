@@ -1,6 +1,6 @@
 import { useGateway } from '@/hooks/useGateway'
 import { Badge } from '@/components/ui/badge'
-import { Wifi, Battery, Cpu } from 'lucide-react'
+import { Wifi, Cpu } from 'lucide-react'
 
 export function Header({ title }: { title: string }) {
   const { snapshot } = useGateway()
@@ -13,10 +13,6 @@ export function Header({ title }: { title: string }) {
       <div className="flex items-center gap-4 text-xs text-slate-400">
         {t && (
           <>
-            <span className="flex items-center gap-1.5">
-              <Battery size={14} className="text-emerald-400" />
-              {t.batteryPercent.toFixed(0)}%
-            </span>
             <span className="flex items-center gap-1.5">
               <Wifi size={14} className="text-blue-400" />
               {t.wifiSignalDbm} dBm

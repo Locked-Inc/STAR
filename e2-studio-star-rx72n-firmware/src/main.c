@@ -176,7 +176,6 @@
 #include "hardware.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
-#include "rx_bq4050.h"
 #include "rx_bus_config.h"
 #include "rx_bus_manager.h"
 #include "rx_bus_types.h"
@@ -188,7 +187,6 @@
 #include "tx_api.h"
 
 /* Multi-task architecture includes */
-#include "bms_monitor_task.h"
 #include "comm_task.h"
 #include "led_status_task.h"
 #include "motor_control_task.h"
@@ -233,22 +231,20 @@ typedef enum : uint8_t {
  * @note hardware.h defines riic_channel_t as a struct wrapper, but bus
  *       configuration functions use raw uint8_t for channel numbers.
  *
- * @see rx_bus_config_init_smbus() Uses uint8_t channel parameter
  * @see rx_bus_config_init_i2c() Uses uint8_t channel parameter
  */
 typedef enum : uint8_t {
   k_riic_channel_0 = 0, /**< RIIC channel 0 */
-  k_riic_channel_1 = 1, /**< RIIC channel 1 (used for BQ4050 BMS) */
+  k_riic_channel_1 = 1, /**< RIIC channel 1 */
   k_riic_channel_2 = 2, /**< RIIC channel 2 */
 } riic_channel_num_t;
 
 /**
- * @brief Standard I2C bus frequencies for RIIC/SMBus configuration
+ * @brief Standard I2C bus frequencies for RIIC configuration
  * @details
  * Standard I2C frequency constants for bus configuration.
  * Values in Hz for clarity and type safety.
  *
- * @see rx_bus_config_init_smbus() Uses frequency_hz parameter
  * @see rx_bus_config_init_i2c() Uses frequency_hz parameter
  */
 typedef enum : uint32_t {
@@ -261,40 +257,6 @@ typedef enum : uint32_t {
  * =============================================================================
  */
 
-/**
- * @var s_i2c0_config
- * @brief SMBus configuration for BQ4050 battery management system
- *
- * @details
- * Configures RIIC1 channel as SMBus interface for BQ4050 fuel gauge IC.
- * Uses P20 (SDA) and P21 (SCL) at 100 kHz with Packet Error Checking (PEC).
- *
- * **Hardware Configuration:**
- * - Bus type: SMBus (I2C with PEC)
- * - Channel: RIIC1
- * - Device: BQ4050 @ 0x0B (7-bit address)
- * - Pins: P20 (SDA), P21 (SCL)
- * - Frequency: 100 kHz (standard mode)
- * - Features: PEC enabled for error detection
- *
- * **Device Details:**
- * The BQ4050 is a fully integrated battery management IC that provides:
- * - State of charge (SoC) estimation
- * - Cell voltage monitoring (up to 4 cells)
- * - Current monitoring with coulomb counting
- * - Temperature sensing
- * - Safety protection (overcurrent, overvoltage, undertemperature)
- *
- * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
- * @note Registered with bus manager in tx_application_define() before task creation.
- * @note SMBus protocol requires PEC for CRC-8 error checking on all transactions.
- *
- * @see rx_bus_config_init_smbus() Bus configuration function
- * @see bms_monitor_task.c Task that uses this bus for battery monitoring
- *
- * @since Version 1.0.0
- */
-static rx_bus_config_t s_i2c0_config;
 
 /**
  * @var s_onewire0_config
@@ -346,8 +308,7 @@ static rx_bus_config_t s_onewire0_config;
  *
  * **Usage Pattern:**
  * Motor control task uses this generic GPIO bus to access:
- * - DRV8243 nFAULT pins (fault detection)
- * - DRV8243 chip select pins (SPI communication)
+ * - Motor nFAULT pins (fault detection)
  * - Motor enable/disable control pins
  * - LED status indicators
  *
@@ -384,15 +345,12 @@ static rx_bus_config_t s_gpio_config;
  * - Actual channels: Specified by motor_control_task at runtime
  *
  * **Motor Current Sensing Channels:**
- * | Motor | ADC Channel | Pin    | DRV8243 Output |
- * |-------|-------------|--------|----------------|
- * | Motor 0 | AN007 (ch 7) | P40.7  | IPROPI output  |
- * | Motor 1 | AN006 (ch 6) | P40.6  | IPROPI output  |
- * | Motor 2 | AN005 (ch 5) | P40.5  | IPROPI output  |
- * | Motor 3 | AN004 (ch 4) | P40.4  | IPROPI output  |
- *
- * Each DRV8243 motor driver outputs an analog current signal (IPROPI) proportional
- * to motor current: 500 uA per 1 A of motor current (500:1 ratio).
+ * | Motor | ADC Channel | Pin    |
+ * |-------|-------------|--------|
+ * | Motor 0 | AN007 (ch 7) | P40.7  |
+ * | Motor 1 | AN006 (ch 6) | P40.6  |
+ * | Motor 2 | AN005 (ch 5) | P40.5  |
+ * | Motor 3 | AN004 (ch 4) | P40.4  |
  *
  * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
  * @note Registered with bus manager in tx_application_define() before task creation.
@@ -442,7 +400,7 @@ static rx_bus_config_t s_adc0_config;
  * - Expected on normal power-up
  * - Flash memory state unknown (may contain prior data)
  * - All peripherals reset to default state
- * - Typical after battery installation, power cycle
+ * - Typical after power connection, power cycle
  *
  * **Warm start (PORF=0):**
  * - Software reset (via SWRR register write)
@@ -905,7 +863,7 @@ static bool internal_check_swrf(void)
  * 1. **Inadequate power supply:** Regulator cannot provide sufficient current
  * 2. **Motor inrush current:** High current draw from motors causes voltage sag
  * 3. **Loose power connector:** Intermittent connection causes voltage drops
- * 4. **Battery depletion:** Battery voltage falls below LVD threshold
+ * 4. **Power depletion:** Supply voltage falls below LVD threshold
  *
  * ## Brownout Detection and Recovery
  *
@@ -941,7 +899,7 @@ static bool internal_check_swrf(void)
  *       and explicit write to RSTSR0.
  *
  * @note **LVD0RF=1 indicates hardware issue, not firmware bug.** Investigate power supply
- *       capacity, motor inrush current, or battery voltage.
+ *       capacity, motor inrush current, or supply voltage.
  *
  * @par Thread Safety:
  * Executes before ThreadX starts (single-threaded context).
@@ -954,10 +912,6 @@ static bool internal_check_swrf(void)
  *   rx_log_warn("MAIN", "Brownout reset detected (VCC dropped below threshold)");
  *   rx_log_warn("MAIN", "Check power supply capacity and motor inrush current");
  *
- *   // Optional: Implement low-power mode or graceful shutdown
- *   if (battery_voltage_low()) {
- *     enter_low_power_mode();
- *   }
  * }
  * @endcode
  *
@@ -1512,7 +1466,7 @@ typedef enum : uint32_t {
  * **Timeout Categories:**
  * - **Fast tasks (10ms period)**: 30ms timeout - Motor control, communication, watchdog
  * - **Medium tasks (50ms period)**: 150ms timeout - Telemetry, LED status
- * - **Slow tasks (1000ms period)**: 3000ms timeout - BMS monitor, temperature sensor
+ * - **Slow tasks (1000ms period)**: 3000ms timeout - temperature sensor
  * - **Variable tasks**: Custom timeout based on worst-case execution time
  *
  * **Failure Detection Flow:**
@@ -1532,7 +1486,6 @@ typedef enum : uint32_t {
  * err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);  // 30ms
  * err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);    // 30ms
  * err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);  // 150ms
- * err = rx_iwdt_register_task("BMSMonitor", k_iwdt_task_timeout_bmsmonitor_ms); // 3000ms
  * @endcode
  *
  * @note All timeouts are in milliseconds (ms)
@@ -1549,8 +1502,6 @@ typedef enum : uint32_t {
     150, /**< Telemetry task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3x period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: telemetry stops, system reset after 2s. */
   k_iwdt_task_timeout_ledstatus_ms =
     150, /**< LED Status task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3x period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: LED updates stop, system reset after 2s. */
-  k_iwdt_task_timeout_bmsmonitor_ms =
-    3000, /**< BMS Monitor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3x period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: battery monitoring stops, system reset after 2s. */
   k_iwdt_task_timeout_tempsensor_ms =
     3000, /**< Temperature Sensor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3x period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: temp compensation stops, system reset after 2s. */
   k_iwdt_task_timeout_obstdetect_ms =
@@ -1582,7 +1533,7 @@ typedef enum : uint32_t {
  * - Motor/Comm/Watchdog: 30ms (3x 10ms period)
  * - Obstacle: 60ms (3x 20ms period)
  * - LED/Telemetry: 150ms (3x 50ms period)
- * - BMS/Temp: 3000ms (3x 1000ms period)
+ * - Temp: 3000ms (3x 1000ms period)
  *
  * @warning Configuration is immutable after rx_iwdt_init()
  *
@@ -1756,7 +1707,6 @@ void tx_application_define(void* first_unused_memory)
    *   5  = Communication (highest - command latency)
    *   8  = Motor Control (250 Hz control loop)
    *   12 = Obstacle Detection (safety-critical)
-   *   15 = BMS Monitoring (1 Hz)
    *   15 = Temperature Sensing (1 Hz)
    *   17 = LED Status (20 Hz, visual feedback)
    *   18 = Telemetry Aggregation (20 Hz, lowest)
@@ -1776,19 +1726,6 @@ void tx_application_define(void* first_unused_memory)
   /* Step 1b: Register buses with manager (before tasks need them) */
   {
     extern rx_bus_manager_t g_bus_manager;
-
-    /* Register i2c0 (SMBus) - BQ4050 Battery Management System */
-    err = rx_bus_config_init_smbus(&s_i2c0_config,
-                                   "i2c0",                 /* name */
-                                   k_riic_channel_1,       /* channel = RIIC1 */
-                                   k_bq4050_i2c_addr,      /* device_addr = BQ4050 @ 0x0B */
-                                   k_rx_p2_0,              /* sda_pin = P20 */
-                                   k_rx_p2_1,              /* scl_pin = P21 */
-                                   k_i2c_frequency_100khz, /* frequency_hz = 100 kHz */
-                                   true);                  /* use_pec = true */
-    RX_ASSERT(err == k_rx_ok, "i2c0 config init must succeed");
-    err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c0_config);
-    RX_ASSERT(err == k_rx_ok, "i2c0 registration must succeed");
 
     /* Register onewire0 - DS18B20 Temperature Sensor */
     err = rx_bus_config_init_onewire(&s_onewire0_config,
@@ -1830,7 +1767,6 @@ void tx_application_define(void* first_unused_memory)
    * Task timeout = 3x normal period (allows 2 missed heartbeats):
    * - Telemetry (50ms period) -> 150ms timeout
    * - LED Status (50ms period) -> 150ms timeout
-   * - BMS Monitor (1000ms period) -> 3000ms timeout
    * - Temp Sensor (1000ms period) -> 3000ms timeout
    * - Obstacle Detect (20ms period) -> 60ms timeout
    * - Motor Control (10ms period) -> 30ms timeout
@@ -1843,9 +1779,6 @@ void tx_application_define(void* first_unused_memory)
 
   err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
   RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
-
-  err = rx_iwdt_register_task("BMSMonitor", k_iwdt_task_timeout_bmsmonitor_ms);
-  RX_ASSERT(err == k_rx_ok, "BMSMonitor IWDT registration must succeed");
 
   err = rx_iwdt_register_task("TempSensor", k_iwdt_task_timeout_tempsensor_ms);
   RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
@@ -1875,28 +1808,6 @@ void tx_application_define(void* first_unused_memory)
   /* LED Status Task - Priority 17 (visual feedback) */
   err = led_status_task_create();
   RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
-
-  /* BMS Monitor Task - Priority 15 */
-  /**
-   * @var bms_config
-   * @brief BMS monitoring task configuration with default SoC thresholds
-   *
-   * @details
-   * Configures the BMS monitoring task with the default warning (25%) and
-   * critical (5%) SoC thresholds. Passed to bms_monitor_task_create() at
-   * system startup. Thresholds are copied into the task's internal state
-   * before this variable's scope ends.
-   *
-   * @note Lifetime scoped to tx_application_define(); valid only for the
-   *       duration of the bms_monitor_task_create() call.
-   * @since Version 1.1.0
-   */
-  const bms_monitor_config_t bms_config = {
-    .soc_warning_pct  = k_bms_soc_warning_pct_default,
-    .soc_critical_pct = k_bms_soc_critical_pct_default,
-  };
-  err = bms_monitor_task_create(&bms_config);
-  RX_ASSERT(err == k_rx_ok, "bms_monitor_task_create must succeed");
 
   /* Temperature Sensor Task - Priority 15 */
   err = temp_sensor_task_create();

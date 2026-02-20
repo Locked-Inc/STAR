@@ -47,7 +47,6 @@
  *     color=lightcoral;
  *     scl [label="SCL (Clock)\nOpen-drain"];
  *     sda [label="SDA (Data)\nOpen-drain"];
- *     bq4050 [label="BQ4050\nBattery Monitor"];
  *     other [label="Other I2C\nPeripherals"];
  *   }
  *
@@ -60,8 +59,6 @@
  *   riic -> regs;
  *   regs -> scl;
  *   regs -> sda;
- *   scl -> bq4050;
- *   sda -> bq4050;
  *   scl -> other;
  *   sda -> other;
  * }
@@ -113,7 +110,6 @@
  * @par Supported Devices (STAR Project)
  * | Device | Address | Description | Bus |
  * |--------|---------|-------------|-----|
- * | BQ4050 | 0x0B | Battery fuel gauge (SMBus) | RIIC0 |
  * | EEPROM | 0x50-0x57 | Configuration storage | RIIC1 |
  * | IMU | 0x68/0x69 | Inertial measurement unit | RIIC1 |
  *
@@ -161,7 +157,7 @@
  * @par RIIC Channel Assignments (STAR Project)
  * | Channel | SCL Pin | SDA Pin | Usage |
  * |---------|---------|---------|-------|
- * | RIIC0 | P16 | P17 | Battery monitor (BQ4050) |
+ * | RIIC0 | P16 | P17 | General purpose I2C |
  * | RIIC1 | P52 | P50 | Sensor expansion |
  * | RIIC2 | Reserved | Reserved | Future use |
  *
@@ -215,28 +211,28 @@
  *     .type = k_rx_bus_type_i2c,
  *     .channel = 0,
  *     .i2c = {
- *         .address = 0x0B,      // BQ4050 address
- *         .speed_hz = 100000,   // 100 kHz standard mode
+ *         .address = 0x68,      // IMU address
+ *         .speed_hz = 400000,   // 400 kHz fast mode
  *     }
  * };
- * rx_bus_register(&manager, "bq4050", &config);
+ * rx_bus_register(&manager, "imu_i2c", &config);
  *
  * // Initialize I2C bus
- * rx_err_t err = rx_bus_i2c_init(&manager, "bq4050");
+ * rx_err_t err = rx_bus_i2c_init(&manager, "imu_i2c");
  * if (err != k_rx_ok) {
  *     // Handle initialization error
  *     return err;
  * }
  *
- * // Read battery voltage register (0x09)
- * uint8_t reg_addr = 0x09;
- * uint8_t voltage_data[2];
- * err = rx_bus_i2c_write_read(&manager, "bq4050",
+ * // Read IMU register (0x3B = ACCEL_XOUT_H)
+ * uint8_t reg_addr = 0x3B;
+ * uint8_t accel_data[2];
+ * err = rx_bus_i2c_write_read(&manager, "imu_i2c",
  *                              &reg_addr, 1,
- *                              voltage_data, 2);
+ *                              accel_data, 2);
  * if (err == k_rx_ok) {
- *     uint16_t voltage_mv = (voltage_data[1] << 8) | voltage_data[0];
- *     // Process voltage reading
+ *     int16_t accel_x = (int16_t)((accel_data[0] << 8) | accel_data[1]);
+ *     // Process accelerometer reading
  * }
  * @endcode
  *
@@ -547,7 +543,6 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * | Read 8-bit register | 1 byte (reg addr) | 1 byte | Temperature |
  * | Read 16-bit register | 1 byte (reg addr) | 2 bytes | Voltage |
  * | Read block | 1 byte (reg addr) | N bytes | EEPROM page |
- * | SMBus block read | 1 byte (cmd) | 1+N bytes | BQ4050 |
  *
  * @param[in] manager Bus manager instance
  *   - Must be initialized via rx_bus_manager_init()
@@ -596,19 +591,17 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * - 1 write + 8 read: ~900 us
  * - Overhead: ~40 us (START/RESTART/STOP/addresses)
  *
- * @par Example - Reading BQ4050 Voltage:
+ * @par Example - Reading IMU Register:
  * @code
- * // Read battery voltage from BQ4050 (register 0x09, 2 bytes)
- * uint8_t reg_addr = 0x09;  // Voltage register
- * uint8_t voltage_raw[2];
+ * // Read accelerometer X-axis from IMU (register 0x3B, 2 bytes)
+ * uint8_t reg_addr = 0x3B;  // ACCEL_XOUT_H register
+ * uint8_t accel_raw[2];
  *
- * rx_err_t err = rx_bus_i2c_write_read(&manager, "bq4050",
+ * rx_err_t err = rx_bus_i2c_write_read(&manager, "imu_i2c",
  *                                       &reg_addr, 1,
- *                                       voltage_raw, 2);
+ *                                       accel_raw, 2);
  * if (err == k_rx_ok) {
- *     // BQ4050 returns little-endian 16-bit value in mV
- *     uint16_t voltage_mv = (voltage_raw[1] << 8) | voltage_raw[0];
- *     float voltage_v = voltage_mv / 1000.0f;
+ *     int16_t accel_x = (int16_t)((accel_raw[0] << 8) | accel_raw[1]);
  * }
  * @endcode
  *

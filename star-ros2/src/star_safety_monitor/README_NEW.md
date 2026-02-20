@@ -14,8 +14,6 @@ This package provides platform integrity monitoring and safety watchdog function
 - [x] Diagnostic message publishing
 - [x] Watchdog timer for critical nodes
 - [x] Velocity limit enforcement
-- [ ] Battery voltage/current monitoring (future: integrate with gateway)
-- [ ] Thermal monitoring (future: integrate with gateway)
 
 ## Nodes
 
@@ -38,9 +36,6 @@ This package provides platform integrity monitoring and safety watchdog function
 - `heartbeat_timeout_ms` (int, default: 500) - Heartbeat timeout in milliseconds
 - `max_linear_velocity` (double, default: 1.0) - Maximum linear velocity (m/s)
 - `max_angular_velocity` (double, default: 2.0) - Maximum angular velocity (rad/s)
-- `min_battery_voltage` (double, default: 10.5) - Minimum battery voltage (V)
-- `max_battery_current` (double, default: 30.0) - Maximum battery current (A)
-- `max_battery_temp` (double, default: 60.0) - Maximum battery temperature (degC)
 - `publish_rate` (double, default: 10.0) - Diagnostic publish rate (Hz)
 - `enable_auto_estop` (bool, default: true) - Automatically trigger E-Stop on critical violations
 - `estop_recovery_delay` (double, default: 5.0) - Delay before allowing E-Stop recovery (seconds)

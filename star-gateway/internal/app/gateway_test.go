@@ -47,7 +47,6 @@ var serviceGetters = []struct {
 }{
 	{name: "motorControl", getter: func(s *serviceSet) any { return s.motorControl }},
 	{name: "telemetry", getter: func(s *serviceSet) any { return s.telemetry }},
-	{name: "battery", getter: func(s *serviceSet) any { return s.battery }},
 	{name: "configuration", getter: func(s *serviceSet) any { return s.configuration }},
 	{name: "firmware", getter: func(s *serviceSet) any { return s.firmware }},
 	{name: "gateway", getter: func(s *serviceSet) any { return s.gateway }},
@@ -160,12 +159,6 @@ func TestRegisterGRPCServices_NilServices(t *testing.T) {
 			wantErrContains: "telemetry",
 		},
 		{
-			name:            "NilBatteryService",
-			services:        func() *serviceSet { s := newTestServiceSet(t); s.battery = nil; return s }(),
-			wantErr:         true,
-			wantErrContains: "battery",
-		},
-		{
 			name:            "NilConfigurationService",
 			services:        func() *serviceSet { s := newTestServiceSet(t); s.configuration = nil; return s }(),
 			wantErr:         true,
@@ -214,7 +207,6 @@ func TestServiceSet_TypeCompatibility(t *testing.T) {
 
 	var _ starv1.MotorControlServiceServer = services.motorControl
 	var _ starv1.TelemetryServiceServer = services.telemetry
-	var _ starv1.BatteryManagementServiceServer = services.battery
 	var _ starv1.ConfigurationServiceServer = services.configuration
 	var _ starv1.FirmwareUpdateServiceServer = services.firmware
 	var _ starv1.GatewayServiceServer = services.gateway
@@ -235,7 +227,7 @@ func TestServiceSet_AllFieldsPopulated(t *testing.T) {
 	}
 
 	// Expected count of services (update this when adding new services)
-	const expectedServiceCount = 6
+	const expectedServiceCount = 5
 	if len(serviceGetters) != expectedServiceCount {
 		t.Errorf("Expected %d services, got %d. Did you add a new service without updating serviceGetters?",
 			expectedServiceCount, len(serviceGetters))
@@ -289,7 +281,6 @@ func TestStartGRPCServerWithAddr_RegistersAllServices(t *testing.T) {
 	required := []string{
 		"star.v1.MotorControlService",
 		"star.v1.TelemetryService",
-		"star.v1.BatteryManagementService",
 		"star.v1.ConfigurationService",
 		"star.v1.FirmwareUpdateService",
 		"star.v1.GatewayService",

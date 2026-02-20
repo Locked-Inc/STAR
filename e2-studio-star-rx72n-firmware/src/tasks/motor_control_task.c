@@ -29,7 +29,7 @@
  *
  *     motors [label="4x DC Gearmotors\n6V, 210 RPM, 341 PPR Hall Encoders\nFL, FR, BL, BR",
  *             fillcolor=lightyellow, style=filled];
- *     drivers [label="4x DRV8243S H-Bridge Drivers\nCurrent Sensing, Fault Detection\nPWM @ 20 kHz",
+ *     drivers [label="4x H-Bridge Drivers\nPWM @ 20 kHz",
  *              fillcolor=lightcoral, style=filled];
  *     encoders [label="4x Hall Effect Encoders\n341 PPR x 4 (quadrature) = 1364 counts/rev\nMTU1-2 (front) + TPU1-2 (rear)",
  *               fillcolor=lightgreen, style=filled];
@@ -48,8 +48,8 @@
  *               fillcolor=lightcoral, style=filled];
  *     rx_encoder [label="Encoder Drivers\nMTU (front) + TPU (rear)\nQuadrature Decoding",
  *                 fillcolor=lightcoral, style=filled];
- *     rx_drv8243 [label="rx_drv8243 Driver\nCurrent Sensing, Fault Check",
- *                 fillcolor=lightcoral, style=filled];
+ *     rx_motor_drv [label="H-Bridge Driver\nPWM Control",
+ *                  fillcolor=lightcoral, style=filled];
  *     shared_data [label="Shared Data\nThread-Safe Command/State",
  *                  shape=cylinder, fillcolor=lightgrey, style=filled];
  *   }
@@ -68,15 +68,12 @@
  *   // Hardware connections
  *   drivers -> motors [label="H-bridge PWM"];
  *   encoders -> rx_encoder [label="Quadrature signals"];
- *   drivers -> rx_drv8243 [label="Current sense, fault"];
- *
  *   // Firmware control loop
  *   motor_task -> rx_encoder [label="1. Read velocity"];
  *   motor_task -> shared_data [label="2. Get command"];
  *   motor_task -> pid [label="3. Compute output"];
  *   pid -> rx_motor [label="4. Apply PWM duty"];
  *   rx_motor -> drivers [label="PWM signals"];
- *   motor_task -> rx_drv8243 [label="5. Check faults"];
  *   motor_task -> shared_data [label="6. Update state"];
  *
  *   // Communication
@@ -114,11 +111,6 @@
  *         :2. Get Target Velocity\n(from motor_command_t);
  *         :3. Compute PID Output\n(rx_pid_compute);
  *         :4. Apply PWM Duty\n(rx_motor_set_duty);
- *         :5. Check Driver Faults\n(rx_drv8243_get_fault_status);
- *         if (Fault detected?) then (yes)
- *           :Emergency stop motor;
- *           :Trigger e-stop\n(k_estop_reason_driver_fault);
- *         endif
  *       }
  *
  *       :Update Motor State\n(for telemetry);
@@ -289,13 +281,12 @@
  * | `s_motors` (4) | 256 | .bss | rx_motor_handle_t x 4 (64 bytes each) |
  * | `s_encoder_state` (4) | 128 | .bss | rx_encoder_state_t x 4 (32 bytes each) |
  * | `s_pids` (4) | 192 | .bss | rx_pid_handle_t x 4 (48 bytes each) |
- * | `s_drivers` (4) | 128 | .bss | rx_drv8243_handle_t x 4 (32 bytes each) |
  * | `s_motor_created` | 1 | .bss | Creation guard flag |
  * | `s_timeout_estop_triggered` | 1 | .bss | Timeout flag |
  * | `s_active_brake_in_progress` | 1 | .bss | Brake sequence flag |
  * | `s_dt_sec` | 4 | .rodata | Control period constant (0.004f) |
  * | `s_tag` | 8 | .rodata | Log tag string ("MOTOR" + null) |
- * | **Total Static** | ~2907 | - | Sum of .bss + .rodata |
+ * | **Total Static** | ~2779 | - | Sum of .bss + .rodata |
  * | **Peak Stack** | ~512 | Stack | During control loop iteration |
  *
  * ## Module Dependencies
@@ -312,7 +303,6 @@
  *   rx_motor [label="rx_motor.h\n(PWM Motor Driver)", fillcolor=lightyellow, style=filled];
  *   rx_encoder [label="rx_mtu_encoder.h + rx_encoder_tpu.h\n(Quadrature Encoders)", fillcolor=lightyellow, style=filled];
  *   rx_pid [label="rx_pid.h\n(PID Controller)", fillcolor=lightyellow, style=filled];
- *   rx_drv8243 [label="rx_drv8243.h\n(H-Bridge Driver)", fillcolor=lightyellow, style=filled];
  *   shared_data [label="shared_data.h\n(Thread-Safe Storage)", fillcolor=lightcoral, style=filled];
  *   rx_check [label="rx_check.h\n(Assertions)"];
  *   rx_log [label="rx_log.h\n(Logging)"];
@@ -328,7 +318,6 @@
  *   motor_task -> rx_motor [label="PWM generation"];
  *   motor_task -> rx_encoder [label="Velocity measurement"];
  *   motor_task -> rx_pid [label="Control algorithm"];
- *   motor_task -> rx_drv8243 [label="Current/fault sensing"];
  *   motor_task -> shared_data [label="Command/state exchange"];
  *   motor_task -> rx_check [label="RX_ASSERT"];
  *   motor_task -> rx_log [label="Logging"];
@@ -352,7 +341,7 @@
  * | **Rule 4: Function Length** | [PASS] | motor_control_task_create(): 31 lines, control functions: 50-90 lines (all < 100 LOC). |
  * | **Rule 5: Assertions** | [PASS] | 8+ assertions: RX_ASSERT(!s_motor_created), preconditions in all functions, postconditions. |
  * | **Rule 6: Data Scope** | [PASS] | All file-scope variables use static (s_motor_thread, s_motors, s_pids, s_encoder_state, etc.). |
- * | **Rule 7: Return Checks** | [PASS] | All rx_motor, rx_encoder, rx_pid, rx_drv8243, shared_data returns validated or cast to (void). |
+ * | **Rule 7: Return Checks** | [PASS] | All rx_motor, rx_encoder, rx_pid, shared_data returns validated or cast to (void). |
  * | **Rule 8: Preprocessor** | [PASS] | C23 typed enums for all constants (k_motor_task_*, k_motor_control_*, k_motor_index_*). Zero macros. |
  * | **Rule 9: Pointers** | [PASS] | Single-level pointers only (motor_command_t*, pid_gains_t*, rx_motor_handle_t*). |
  * | **Rule 10: Warnings** | [PASS] | Compiles with -Wall -Wextra -Werror. Zero warnings. |
@@ -372,7 +361,6 @@
  * @see rx_mtu_encoder.h Quadrature encoder driver - front wheels (MTU peripheral)
  * @see rx_encoder_tpu.h Quadrature encoder driver - rear wheels (TPU peripheral)
  * @see rx_pid.h PID controller algorithm (discrete-time with anti-windup)
- * @see rx_drv8243.h DRV8243S H-bridge driver (current sensing, fault detection)
  * @see telemetry_task.h Consumer of motor state (forwards to RPI5 via SPI)
  * @see comm_task.h Producer of motor commands (receives from RPI5 via SPI)
  * @see matlab/motor_model_1st_order.m MATLAB system identification
@@ -391,7 +379,6 @@
 #include "hardware_config.h"
 #include "rx_bus_manager.h"
 #include "rx_check.h"
-#include "rx_drv8243.h"
 #include "rx_encoder_tpu.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
@@ -464,7 +451,7 @@ typedef enum : uint16_t {
  * 341 pulses per revolution (PPR) x 4 (quadrature decoding edges) = 1364
  * counts per revolution. This provides ~0.26deg angular resolution.
  *
- * @invariant k_motor_count must match the number of DRV8243S H-bridge channels
+ * @invariant k_motor_count must match the number of H-bridge channels
  *            physically wired on the PCB (4 channels fixed)
  * @invariant k_control_period_us must match the ThreadX tick period in
  *            microseconds (10 ticks/s x 1000 us/tick = 10000 us)
@@ -498,7 +485,7 @@ typedef enum : uint16_t {
  * Maps logical motor positions to array indices used throughout the motor
  * control subsystem. The index order (front-left=0, front-right=1,
  * back-left=2, back-right=3) is consistent across all motor arrays:
- * DRV8243S channels, encoder handles, PID controllers, and shared_data
+ * motor handles, encoder handles, PID controllers, and shared_data
  * motor state arrays.
  *
  * The physical motor layout viewed from above:
@@ -526,10 +513,10 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_motor_front_left  = 0, /**< Front-left motor: array index 0, DRV8243S channel 0 */
-  k_motor_front_right = 1, /**< Front-right motor: array index 1, DRV8243S channel 1 */
-  k_motor_back_left   = 2, /**< Back-left motor: array index 2, DRV8243S channel 2 */
-  k_motor_back_right  = 3, /**< Back-right motor: array index 3, DRV8243S channel 3 */
+  k_motor_front_left  = 0, /**< Front-left motor: array index 0 */
+  k_motor_front_right = 1, /**< Front-right motor: array index 1 */
+  k_motor_back_left   = 2, /**< Back-left motor: array index 2 */
+  k_motor_back_right  = 3, /**< Back-right motor: array index 3 */
 } motor_index_t;
 
 /**
@@ -572,36 +559,31 @@ typedef enum : uint8_t {
 
 /**
  * @enum motor_hw_constants_t
- * @brief Motor hardware configuration constants for DRV8243S H-bridge drivers
+ * @brief Motor hardware configuration constants for H-bridge drivers
  *
  * @details
- * Defines hardware-level parameters that configure the DRV8243S H-bridge motor
- * drivers. These values are derived from the DRV8243S datasheet, PCB layout
- * constraints, and system power budget analysis.
+ * Defines hardware-level parameters that configure the H-bridge motor drivers.
+ * These values are derived from hardware specifications and system power budget
+ * analysis.
  *
  * - **PWM frequency**: 20 kHz chosen to be inaudible to humans while keeping
  *   switching losses acceptable for the 6V brushed DC motors
  * - **Dead-time**: 1 us prevents shoot-through in the H-bridge during
  *   high/low-side switching transitions
- * - **Current limit**: 2A software limit protects motor windings; set below
- *   the DRV8243S hardware overcurrent threshold (4A typical)
- * - **IPROPI ratio**: 525 A/V is the DRV8243S IPROPI current-sense amplifier
- *   gain (RIPROPI = 1.91 kOhm typical -> 525 mA/mV -> 525 A/V)
+ * - **Current limit**: 2A software limit protects motor windings
  *
  * @invariant k_motor_pwm_freq_hz must be supported by the RX72N MTU/GPT
  *            at the configured PCLK frequency (120 MHz -> minimum 1.8 kHz)
- * @invariant k_motor_dead_time_ns must exceed the DRV8243S propagation
+ * @invariant k_motor_dead_time_ns must exceed the H-bridge propagation
  *            delay (typically 100-500 ns) to prevent shoot-through
  *
  * @code
- * // Initializing one H-bridge channel:
- * drv8243_config_t cfg = {
- *     .pwm_frequency_hz  = k_motor_pwm_freq_hz,
- *     .dead_time_ns      = k_motor_dead_time_ns,
- *     .current_limit_ma  = k_motor_current_limit_ma,
- *     .ipropi_ratio_av   = k_motor_ki_propi,
+ * // Configuring motor PWM:
+ * rx_motor_config_t cfg = {
+ *     .pwm_freq_hz  = k_motor_pwm_freq_hz,
+ *     .dead_time_ns = k_motor_dead_time_ns,
  * };
- * rx_err_t err = drv8243_init(&s_drivers[i], &cfg);
+ * rx_err_t err = rx_motor_init(&s_motors[i], &cfg);
  * @endcode
  *
  * @see motor_control_constants_t Algorithm-level constants (PID period, encoder PPR)
@@ -613,7 +595,6 @@ typedef enum : uint32_t {
   k_motor_pwm_freq_hz        = 20000, /**< PWM frequency: 20 kHz (inaudible, low switching loss) */
   k_motor_dead_time_ns       = 1000,  /**< H-bridge dead-time: 1000 ns = 1 us (prevents shoot-through) */
   k_motor_current_limit_ma   = 2000,  /**< Software current limit: 2000 mA = 2A per motor channel */
-  k_motor_ki_propi           = 525,   /**< IPROPI current-sense ratio: 525 A/V (DRV8243S RIPROPI=1.91kOhm) */
   k_threadx_tick_interval_ms = 10,    /**< ThreadX tick period: 10 ms at 100 Hz tick rate */
 } motor_hw_constants_t;
 
@@ -720,9 +701,6 @@ static rx_encoder_state_t s_encoder_state[k_motor_count];
 /** @brief PID controller handles for each motor */
 static rx_pid_handle_t s_pids[k_motor_count];
 
-/** @brief DRV8243 driver handles for each motor */
-static rx_drv8243_handle_t s_drivers[k_motor_count];
-
 /** @brief Control loop dt (seconds) */
 static const float s_dt_sec = 0.004f;
 
@@ -768,7 +746,6 @@ static void     internal_motor_task_entry(ULONG input);
 static rx_err_t internal_init_motor_stack(void);
 static rx_err_t internal_init_pid_controllers(void);
 static rx_err_t internal_init_encoders(void);
-static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channels);
 static void     internal_control_loop_iteration(void);
 static void     internal_active_brake_sequence(void);
 static void     internal_apply_pid_updates(void);
@@ -871,7 +848,6 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * @pre tx_application_define() callback currently executing
  * @pre shared_data_init() called successfully (required for shared_data_get_motor_command)
  * @pre MTU peripheral powered and clocked (for encoders and PWM)
- * @pre DRV8243 drivers initialized and ready (for current sensing)
  * @pre s_motor_created == false (never called before)
  * @pre s_motor_thread uninitialized (first use)
  * @pre s_motor_stack allocated and uninitialized (first use)
@@ -898,7 +874,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * @note **Thread safety:** Not thread-safe (assumes single-threaded boot).
  *       No synchronization needed during tx_application_define().
  * @note **Real-time critical:** Priority 8 ensures motor control preempts
- *       non-critical tasks (telemetry, BMS, temperature monitoring).
+ *       non-critical tasks (telemetry, temperature monitoring).
  *
  * @warning **Never call twice.** Assertion will fire in debug builds. Release
  *          builds return k_rx_err_invalid_state on second call.
@@ -1182,7 +1158,6 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  *    - 4x motor PWM drivers (rx_motor)
  *    - 4x encoder drivers (rx_mtu_encoder)
  *    - 4x PID controllers (rx_pid) with MATLAB-tuned gains
- *    - 4x DRV8243 H-bridge drivers (rx_drv8243)
  * 3. **Check Init Result:**
  *    - If success: Log "Motor control running @ 100 Hz"
  *    - If failure: Log error but continue (partial functionality)
@@ -1247,12 +1222,7 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  *     - Set direction (forward/reverse based on sign)
  *     - Update PWM output (20 kHz frequency)
  *
- * 17. **Check Driver Faults:** rx_drv8243_get_fault_status()
- *     - Read fault status from DRV8243 via GPIO
- *     - Faults: overcurrent, thermal shutdown, undervoltage
- *     - If fault: Emergency stop motor, trigger e-stop
- *
- * 18. **Next Motor:** Repeat steps 13-17 for next motor
+ * 17. **Next Motor:** Repeat steps 13-16 for next motor
  *
  * ## Control Loop State Machine
  *
@@ -1324,7 +1294,6 @@ rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
  * @pre ThreadX scheduler started (task is scheduled)
  * @pre shared_data_init() called (for shared_data_get_motor_command)
  * @pre MTU peripheral powered and clocked (for encoders and PWM)
- * @pre DRV8243 drivers initialized and ready
  * @pre All 4 motors physically connected and operational
  *
  * @post Motor stack initialized (if successful)
@@ -1765,13 +1734,7 @@ static rx_err_t internal_init_motor_stack(void)
     return err;
   }
 
-  /* Step 4: Initialize DRV8243 motor drivers */
-  err = internal_init_motor_drivers(gptw_channels);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  rx_log_info(s_tag, "Motor stack initialized (4 motors, encoders, drivers)");
+  rx_log_info(s_tag, "Motor stack initialized (4 motors, encoders)");
   rx_log_debug(s_tag, "PID gains loaded (defaults or shared_data)");
 
   /* Signal that handles are safe to return from motor_control_task_get_motors() */
@@ -1975,96 +1938,6 @@ static rx_err_t internal_read_encoder_count(const uint8_t motor_idx, rx_encoder_
 }
 
 /**
- * @brief Initialize DRV8243 H-bridge motor drivers for all 4 motors
- *
- * @details
- * Configures each DRV8243S driver with ADC current-sensing channel,
- * nFAULT GPIO pin, PWM frequency, and current limits. Drivers use the
- * global bus manager for GPIO and ADC access.
- *
- * @param[in] gptw_channels Array of GPTW channels (one per motor, k_motor_count elements)
- *
- * @return rx_err_t Initialization status
- * @retval k_rx_ok All 4 drivers initialized
- * @retval k_rx_err_* Error from rx_drv8243_init()
- *
- * @pre g_bus_manager initialized with "gpio" and "adc0" buses
- * @pre GPTW channels initialized (motors already set up)
- *
- * @post s_drivers[0-3] ready for current sensing and fault detection
- *
- * @note Not thread-safe. Called once during task startup.
- *
- * @since Version 1.0.0
- */
-static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channels)
-{
-  const uint8_t adc_channels[k_motor_count] = {
-    k_motor_0_current_adc_ch, /* Motor 0: AN007 */
-    k_motor_1_current_adc_ch, /* Motor 1: AN006 */
-    k_motor_2_current_adc_ch, /* Motor 2: AN005 */
-    k_motor_3_current_adc_ch  /* Motor 3: AN004 */
-  };
-
-  const uint8_t nfault_ports[k_motor_count] = {
-    k_motor_0_nfault_port, /* Motor 0: PORT1 */
-    k_motor_1_nfault_port, /* Motor 1: PORTA */
-    k_motor_2_nfault_port, /* Motor 2: PORTC */
-    k_motor_3_nfault_port  /* Motor 3: PORT1 */
-  };
-
-  const uint8_t nfault_pins[k_motor_count] = {
-    k_motor_0_nfault_pin, /* Motor 0: P15 */
-    k_motor_1_nfault_pin, /* Motor 1: PA6 */
-    k_motor_2_nfault_pin, /* Motor 2: PC4 */
-    k_motor_3_nfault_pin  /* Motor 3: P14 */
-  };
-
-  const uint8_t cs_ports[k_motor_count] = {
-    k_drv_cs0_port, /* Motor 0: PORT7 (P74, pin 72) */
-    k_drv_cs1_port, /* Motor 1: PORTC (PC1, pin 73) */
-    k_drv_cs2_port, /* Motor 2: PORTB (PB5, pin 80) */
-    k_drv_cs3_port  /* Motor 3: PORTB (PB4, pin 81) */
-  };
-
-  const uint8_t cs_pins[k_motor_count] = {
-    k_drv_cs0_pin, /* Motor 0: pin 4 (P74) */
-    k_drv_cs1_pin, /* Motor 1: pin 1 (PC1) */
-    k_drv_cs2_pin, /* Motor 2: pin 5 (PB5) */
-    k_drv_cs3_pin  /* Motor 3: pin 4 (PB4) */
-  };
-
-  for (uint8_t i = 0; i < k_motor_count; i++) {
-    rx_drv8243_config_t driver_config = {.bus_manager   = &g_bus_manager,
-                                         .gpio_bus_name = "gpio",
-                                         .adc_bus_name  = "adc0",
-                                         .gptw_channel  = gptw_channels[i],
-                                         .output_ph     = k_gptw_output_a,
-                                         .output_en     = k_gptw_output_b,
-                                         .pin_ipropi    = adc_channels[i],
-                                         .port_nfault   = nfault_ports[i],
-                                         .pin_nfault    = nfault_pins[i],
-                                         .pwm_freq_hz   = k_motor_pwm_freq_hz,
-                                         .dead_time_ns  = k_motor_dead_time_ns,
-                                         .current_limit_ma =
-                                           k_motor_current_limit_ma,   /* 2A software limit */
-                                         .ki_propi = k_motor_ki_propi, /* IPROPI ratio (525 A/V) */
-                                         .use_spi_variant = true,      /* DRV8243S SPI variant */
-                                         .sci_channel     = 12, /* SCI12 for motor driver SPI bus */
-                                         .spi_cs_port     = cs_ports[i],
-                                         .spi_cs_pin      = cs_pins[i]};
-
-    rx_err_t err = rx_drv8243_init(&s_drivers[i], &driver_config);
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "Driver init failed for motor", (uint8_t)i);
-      return err;
-    }
-  }
-
-  return k_rx_ok;
-}
-
-/**
  * @brief Execute one iteration of the 100 Hz control loop (10ms cycle for 4 motors)
  *
  * @details
@@ -2110,20 +1983,9 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  *    - Update PWM output at 20 kHz frequency
  *    - Return value ignored (best effort)
  *
- * 7. **Check Driver Faults:** Call rx_drv8243_get_fault_status()
- *    - Read fault GPIO pin from DRV8243 H-bridge driver
- *    - Faults include: overcurrent, thermal shutdown, undervoltage, short circuit
- *    - If error reading fault: Skip check (assume no fault)
+ * 7. **Next Motor:** Increment loop index (i++), repeat steps 3-6 for next motor
  *
- * 8. **Handle Fault:** If fault detected:
- *    - Log error with motor index
- *    - Call rx_motor_emergency_stop() - immediately disable PWM
- *    - Trigger e-stop via shared_data_trigger_estop(k_estop_reason_driver_fault)
- *    - E-stop triggers active brake sequence in next iteration
- *
- * 9. **Next Motor:** Increment loop index (i++), repeat steps 3-8 for next motor
- *
- * 10. **Return:** All 4 motors controlled, function returns
+ * 8. **Return:** All 4 motors controlled, function returns
  *
  * ## Control Loop Timing
  *
@@ -2133,36 +1995,8 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * | **Get Command** | 1 | 5 (shared across motors) |
  * | **PID Compute** | 40 | 160 |
  * | **PWM Apply** | 5 | 20 |
- * | **Fault Check** | 10 | 40 |
  * | **Loop Overhead** | 15 | 60 |
- * | **Total** | - | **~325 us** |
- *
- * ## Fault Handling Flow
- *
- * @msc
- * msc {
- *   width=900;
- *   ControlLoop, DRV8243, Motor, SharedData, NextIteration;
- *
- *   --- [label="Normal Operation"];
- *   ControlLoop => DRV8243 [label="rx_drv8243_get_fault_status()"];
- *   DRV8243 >> ControlLoop [label="fault = false"];
- *   ControlLoop box ControlLoop [label="No action, continue"];
- *
- *   --- [label="Fault Detected"];
- *   ControlLoop => DRV8243 [label="rx_drv8243_get_fault_status()"];
- *   DRV8243 >> ControlLoop [label="fault = true (overcurrent)"];
- *   ControlLoop box ControlLoop [label="Log: Driver fault on motor X"];
- *   ControlLoop => Motor [label="rx_motor_emergency_stop()"];
- *   Motor box Motor [label="PWM disabled immediately"];
- *   ControlLoop => SharedData [label="shared_data_trigger_estop(k_estop_reason_driver_fault)"];
- *   SharedData box SharedData [label="E-stop active = true"];
- *
- *   --- [label="Next Iteration"];
- *   NextIteration => SharedData [label="shared_data_is_estop_active()"];
- *   SharedData >> NextIteration [label="true"];
- *   NextIteration box NextIteration [label="Execute active brake sequence\n(50ms reverse PWM)"];
- * }
+ * | **Total** | - | **~285 us** |
  * @endmsc
  *
  * @return void Function always completes (no error return)
@@ -2170,11 +2004,10 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * @pre shared_data_init() called (for shared_data_get_motor_command)
  * @pre s_motors[0-3] initialized (via internal_init_motor_stack)
  * @pre s_pids[0-3] initialized (via internal_init_motor_stack)
- * @pre s_drivers[0-3] initialized (via internal_init_motor_stack)
+ * @pre s_motors[0-3] initialized (via internal_init_motor_stack)
  * @pre Encoders functional and connected (for rx_encoder_read_velocity)
  *
  * @post PWM duty updated for all 4 motors (or 0% if invalid command)
- * @post E-stop triggered if any driver fault detected
  * @post Encoder velocities read and PID outputs computed
  *
  * @invariant All 4 motors controlled symmetrically (same algorithm)
@@ -2191,10 +2024,6 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  *
  * @warning **No Error Propagation:** Errors are logged but not returned. Function always
  *          completes and returns void. Caller cannot detect partial failures.
- * @warning **Fault Latency:** Driver faults are detected at end of control loop (step 7).
- *          Motor continues running at current PWM duty until fault check completes.
- * @warning **Emergency Stop:** Driver faults trigger immediate e-stop for ALL motors, not
- *          just the faulted motor. This is intentional safety behavior.
  *
  * @attention This is the most critical function in the firmware - executed 250 times per second.
  * @attention Timing is critical - function must complete in < 10ms to meet 100 Hz rate.
@@ -2205,7 +2034,6 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * - rx_encoder_read_velocity(): Reads hardware registers (atomic)
  * - rx_pid_compute(): Thread-local state (no shared state)
  * - rx_motor_set_duty(): Writes hardware registers (atomic)
- * - rx_drv8243_get_fault_status(): Reads GPIO (atomic)
  * - shared_data_trigger_estop(): Mutex-protected write
  *
  * @par Performance:
@@ -2215,9 +2043,8 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * - Encoder reads: 10 us x 4 = 40 us
  * - PID computes: 40 us x 4 = 160 us
  * - PWM applies: 5 us x 4 = 20 us
- * - Fault checks: 10 us x 4 = 40 us
- * - **Total:** ~325 us
- * - **Margin:** 10000us - 325us = 3675us (92% idle)
+ * - **Total:** ~285 us
+ * - **Margin:** 10000us - 285us = 9715us (97% idle)
  *
  * @par Example - Normal Operation:
  * @code{.c}
@@ -2233,27 +2060,9 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * target = 1.5;  // from cmd
  * rx_pid_compute(&s_pids[0], 1.5, 1.2, 0.004, &duty);  // duty = 45.2%
  * rx_motor_set_duty(&s_motors[0], 45.2);  // Apply PWM
- * rx_drv8243_get_fault_status(&s_drivers[0], &fault);  // fault = false
  *
  * // Repeat for motors 1-3...
  * // Function returns, all motors controlled
- * @endcode
- *
- * @par Example - Driver Fault:
- * @code{.c}
- * // Motor 2 (BL) experiences overcurrent fault:
- * internal_control_loop_iteration();
- *
- * // Inside function:
- * // Motors 0-1: Normal operation
- * // Motor 2:
- * rx_drv8243_get_fault_status(&s_drivers[2], &fault);  // fault = true
- * rx_log_error_val("MOTOR", "Driver fault on motor", 2);
- * rx_motor_emergency_stop(&s_motors[2]);  // Stop motor 2 immediately
- * shared_data_trigger_estop(k_estop_reason_driver_fault);  // Trigger e-stop
- *
- * // Motors 3: Continues (but e-stop will activate next iteration)
- * // Next iteration: Active brake sequence for ALL motors
  * @endcode
  *
  * @par Example - Invalid Command:
@@ -2277,7 +2086,6 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * @see rx_encoder_read_velocity() Read encoder velocity (MTU peripheral)
  * @see rx_pid_compute() PID control algorithm
  * @see rx_motor_set_duty() Apply PWM duty cycle
- * @see rx_drv8243_get_fault_status() Check driver faults
  * @see shared_data_get_motor_command() Retrieve motor command
  * @see shared_data_trigger_estop() Trigger emergency stop
  *
@@ -2286,7 +2094,6 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
  * @test test_motor_control_task.c - Verify all 4 motors controlled
  * @test test_motor_control_task.c - Verify execution time < 10ms
  * @test test_motor_control_task.c - Verify invalid command stops motors
- * @test test_motor_control_task.c - Verify driver fault triggers e-stop
  * @test test_motor_control_task.c - Verify encoder error fallback (0.0 m/s)
  * @test test_motor_control_task.c - Verify PID error fallback (0.0% duty)
  *
@@ -2334,15 +2141,6 @@ static void internal_control_loop_iteration(void)
 
     /* 4. Apply PWM duty */
     (void)rx_motor_set_duty(&s_motors[i], pwm_duty);
-
-    /* 5. Check for driver faults */
-    bool fault = false;
-    err = rx_drv8243_get_fault_status(&s_drivers[i], &fault);
-    if (err == k_rx_ok && fault) {
-      rx_log_error_val(s_tag, "Driver fault on motor", (uint8_t)i);
-      (void)rx_motor_emergency_stop(&s_motors[i]);
-      (void)shared_data_trigger_estop(k_estop_reason_driver_fault);
-    }
   }
 }
 
@@ -2811,23 +2609,19 @@ static void internal_check_comm_timeout(void)
  *
  * 4. **Read Duty:** rx_motor_get_duty() -> state.duty_cycle_percent[i]
  *
- * 5. **Read Current:** rx_drv8243_read_current() -> state.current_ma[i]
+ * 5. **Read Encoder Count:** rx_encoder_read_count() -> state.encoder_counts[i]
  *
- * 6. **Read Encoder Count:** rx_encoder_read_count() -> state.encoder_counts[i]
+ * 6. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
  *
- * 7. **Read Fault:** rx_drv8243_get_fault_status() -> state.fault_flags[i]
+ * 7. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
  *
- * 8. **Aggregate E-Stop:** state.estop_active = shared_data_is_estop_active()
+ * 8. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
  *
- * 9. **E-Stop Reason:** state.estop_reason = shared_data_get_estop_reason()
- *
- * 10. **Mode:** state.mode = estop ? k_motor_mode_estop : k_motor_mode_velocity
- *
- * 11. **Write to Shared Data:** shared_data_update_motor_state(&state)
+ * 9. **Write to Shared Data:** shared_data_update_motor_state(&state)
  *
  * @return void Function always completes (no error return)
  *
- * @pre s_motors[0-3], s_encoder_state[0-3], s_drivers[0-3] initialized
+ * @pre s_motors[0-3], s_encoder_state[0-3] initialized
  * @pre shared_data_init() called
  *
  * @post shared_data.motor_state updated with latest values
@@ -2840,7 +2634,6 @@ static void internal_check_comm_timeout(void)
  * @see shared_data_update_motor_state() Write aggregated state
  * @see rx_encoder_read_velocity() Read motor velocity
  * @see rx_motor_get_duty() Read PWM duty cycle
- * @see rx_drv8243_read_current() Read motor current
  * @see rx_encoder_read_count() Read encoder position
  *
  * @since Version 1.0.0
@@ -2864,24 +2657,10 @@ static void internal_update_motor_state(void)
     /* Duty cycle */
     (void)rx_motor_get_duty(&s_motors[i], &state.duty_cycle_percent[i]);
 
-    /* Motor current */
-    float current_ma = 0.0f;
-    err = rx_drv8243_read_current(&s_drivers[i], &current_ma);
-    if (err == k_rx_ok) {
-      state.current_ma[i] = current_ma;
-    }
-
     /* Encoder counts */
     err = internal_read_encoder_count(i, &s_encoder_state[i]);
     if (err == k_rx_ok) {
       state.encoder_counts[i] = s_encoder_state[i].total_count;
-    }
-
-    /* Fault status */
-    bool fault = false;
-    err = rx_drv8243_get_fault_status(&s_drivers[i], &fault);
-    if (err == k_rx_ok && fault) {
-      state.fault_flags[i] = 1;
     }
   }
 

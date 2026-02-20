@@ -1,5 +1,5 @@
 // Package starproto_test provides serialization and functionality tests for STAR Protocol Buffer messages.
-// Tests verify RX72N telemetry encoding, battery monitoring, encoder data, and safety fields.
+// Tests verify RX72N telemetry encoding, encoder data, and safety fields.
 package starproto_test
 
 import (
@@ -82,34 +82,6 @@ func TestTelemetryData_RX72N_EncoderFields(t *testing.T) {
 	}
 }
 
-// TestTelemetryData_RX72N_BatteryFields verifies battery telemetry from BQ4050
-func TestTelemetryData_RX72N_BatteryFields(t *testing.T) {
-	telem := &starv1.TelemetryData{
-		BatteryVoltageV:   12.6,
-		BatterySocPercent: 85,
-		BatteryPercent:    85.0, // Legacy field
-		TimestampUs:       1000000,
-	}
-
-	data, err := proto.Marshal(telem)
-	if err != nil {
-		t.Fatalf("Marshal failed: %v", err)
-	}
-
-	decoded := &starv1.TelemetryData{}
-	if err := proto.Unmarshal(data, decoded); err != nil {
-		t.Fatalf("Unmarshal failed: %v", err)
-	}
-
-	// Verify battery fields
-	if decoded.BatteryVoltageV != 12.6 {
-		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.BatteryVoltageV)
-	}
-	if decoded.BatterySocPercent != 85 {
-		t.Errorf("BatterySocPercent = %d, want 85", decoded.BatterySocPercent)
-	}
-}
-
 // TestTelemetryData_RX72N_SafetyFields verifies emergency stop and fault flags
 func TestTelemetryData_RX72N_SafetyFields(t *testing.T) {
 	testCases := []struct {
@@ -182,7 +154,6 @@ func TestTelemetryData_Complete(t *testing.T) {
 	telem := &starv1.TelemetryData{
 		// Standard fields
 		Timestamp:          timestamppb.Now(),
-		BatteryPercent:     85.0,
 		WifiSignalDbm:      -45,
 		CpuUsagePercent:    25.5,
 		TemperatureCelsius: 45.0,
@@ -214,10 +185,8 @@ func TestTelemetryData_Complete(t *testing.T) {
 			VelocityMps: 1.0,
 			TimestampUs: 1000000,
 		},
-		EmergencyStop:     false,
-		FaultFlags:        0,
-		BatteryVoltageV:   12.6,
-		BatterySocPercent: 85,
+		EmergencyStop: false,
+		FaultFlags:    0,
 	}
 
 	// Serialize
@@ -247,9 +216,6 @@ func TestTelemetryData_Complete(t *testing.T) {
 	}
 	if decoded.EncoderFrontLeft.VelocityMps != 1.5 {
 		t.Errorf("Encoder 0 velocity = %f, want 1.5", decoded.EncoderFrontLeft.VelocityMps)
-	}
-	if decoded.BatteryVoltageV != 12.6 {
-		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.BatteryVoltageV)
 	}
 }
 
@@ -284,10 +250,8 @@ func TestTelemetryData_Streaming(t *testing.T) {
 				VelocityMps: 1.0,
 				TimestampUs: i * 10000,
 			},
-			EmergencyStop:     false,
-			FaultFlags:        0,
-			BatteryVoltageV:   12.6,
-			BatterySocPercent: 85,
+			EmergencyStop: false,
+			FaultFlags:    0,
 		}
 
 		data, err := proto.Marshal(telem)
@@ -332,10 +296,8 @@ func TestGetTelemetryResponse(t *testing.T) {
 				VelocityMps: 1.5,
 				TimestampUs: 1000000,
 			},
-			EmergencyStop:     false,
-			FaultFlags:        0,
-			BatteryVoltageV:   12.6,
-			BatterySocPercent: 85,
+			EmergencyStop: false,
+			FaultFlags:    0,
 		},
 	}
 
@@ -355,9 +317,6 @@ func TestGetTelemetryResponse(t *testing.T) {
 	if decoded.Telemetry == nil {
 		t.Fatal("Telemetry should not be nil")
 	}
-	if decoded.Telemetry.BatteryVoltageV != 12.6 {
-		t.Errorf("BatteryVoltageV = %f, want 12.6", decoded.Telemetry.BatteryVoltageV)
-	}
 }
 
 // TestStreamTelemetryRequest verifies streaming request configuration
@@ -367,7 +326,7 @@ func TestStreamTelemetryRequest(t *testing.T) {
 			RequestId: "stream-request-1",
 		},
 		RateHz: 100, // 100 Hz streaming
-		Fields: []string{"encoders", "battery", "emergency_stop"},
+		Fields: []string{"encoders", "emergency_stop"},
 	}
 
 	data, err := proto.Marshal(req)
@@ -383,7 +342,7 @@ func TestStreamTelemetryRequest(t *testing.T) {
 	if decoded.RateHz != 100 {
 		t.Errorf("RateHz = %d, want 100", decoded.RateHz)
 	}
-	if len(decoded.Fields) != 3 {
-		t.Errorf("Fields count = %d, want 3", len(decoded.Fields))
+	if len(decoded.Fields) != 2 {
+		t.Errorf("Fields count = %d, want 2", len(decoded.Fields))
 	}
 }

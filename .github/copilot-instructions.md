@@ -106,26 +106,6 @@ make -j$(nproc)
 ctest --output-on-failure
 ```
 
-### Yocto/Buildroot (star-yocto-config/)
-
-**Custom Linux images for Raspberry Pi 5:**
-
-```bash
-# Build custom Linux image with ROS2 Jazzy
-cd star-yocto-config
-bitbake core-image-minimal
-
-# Build with meta-star layer
-bitbake star-image
-
-# Clean build
-bitbake -c cleanall <recipe-name>
-```
-
-- Contains `meta-star` layer with ROS2 integration
-- Builds custom Linux images for RPi5
-- Alternative to manual apt-get installations on stock Raspberry Pi OS
-
 ### UI (star-ui/)
 
 ```bash
@@ -190,7 +170,6 @@ grep -i "warning" doxygen_warnings.log
 |-----------|-------------|--------------------|
 | `e2-studio-star-rx72n-firmware/` | Renesas RX72N motor controller firmware | C + ThreadX RTOS |
 | `star-proto/` | Protocol Buffers schemas with code generation | Proto3 -> Go/TypeScript/nanopb |
-| `star-yocto-config/` | Custom Buildroot/Yocto for RPi5 | Yocto/OpenEmbedded |
 | `star-gateway/` | Gateway service (UI <-> ROS2 bridge) | Go + gRPC |
 | `star-ros2/` | ROS2 integration + SLAM | C++ (ROS2 Jazzy) |
 | `star-ui/` | User interface | TypeScript + React |
@@ -447,7 +426,7 @@ class StarGatewayBridgeNode : public rclcpp::Node {
 
 // CamelCase for structs used as types
 struct TelemetryData {
-  double battery_voltage_;
+  double encoder_ticks_;
   double current_ma_;
 };
 

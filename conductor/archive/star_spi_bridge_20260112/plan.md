@@ -21,7 +21,7 @@ Goal: Implement bidirectional ROS2 <-> Protobuf conversion with robot kinematics
     - [x] Sub-task: Implement NaN/Infinity validation.
 - [x] Task: Implement `SpiMessageConverter::telemetry_to_odometry()`.
     - [x] Sub-task: Implement encoder tick to pose integration.
-- [x] Task: Implement telemetry conversion for JointState and BatteryState.
+- [x] Task: Implement telemetry conversion for JointState.
 - [x] Task: Write unit tests for `SpiMessageConverter`.
     - [x] Sub-task: Test kinematics scenarios (rotation, translation).
     - [x] Sub-task: Test odometry integration.

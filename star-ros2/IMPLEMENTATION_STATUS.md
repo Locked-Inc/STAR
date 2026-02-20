@@ -61,8 +61,6 @@ Gateway (10 files):
 - internal/harq/harq_test.go
 - internal/dispatcher/dispatcher.go
 - internal/dispatcher/dispatcher_test.go
-- internal/service/battery.go
-- internal/service/battery_test.go
 - internal/service/configuration.go
 - internal/service/configuration_test.go
 - internal/service/motor_control.go
@@ -234,7 +232,6 @@ go test ./internal/...
 cd star-proto/tests/go && go test ./...
 [PASS] TestSystemStatusRoundTrip (updated for Rx72NConnected)
 [PASS] TestTelemetryData_RX72N_EncoderFields
-[PASS] TestTelemetryData_RX72N_BatteryFields
 [PASS] TestTelemetryData_Complete
 [PASS] TestTelemetryData_Streaming
 ```

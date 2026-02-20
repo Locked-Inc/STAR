@@ -1259,15 +1259,20 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, const float kp, const float k
  * }
  * @endcode
  *
- * @par Example: Runtime Limit Adjustment Based on Battery
+ * @par Example: Runtime Limit Adjustment Based on Temperature
  * @code{.c}
- * // Reduce max output as battery voltage drops
- * void adjust_limits_for_battery(float battery_voltage) {
- *   const float k_nominal_voltage = 12.0f;
+ * // Reduce max output as motor temperature rises
+ * void adjust_limits_for_temperature(float temperature_celsius) {
+ *   const float k_max_temp = 80.0f;
+ *   const float k_warn_temp = 60.0f;
  *   const float k_max_duty = 100.0f;
  *
- *   // Scale max output proportionally to battery voltage
- *   float scaled_max = k_max_duty * (battery_voltage / k_nominal_voltage);
+ *   // Scale max output inversely proportional to temperature above warning threshold
+ *   float scaled_max = k_max_duty;
+ *   if (temperature_celsius > k_warn_temp) {
+ *     scaled_max = k_max_duty * (1.0f - (temperature_celsius - k_warn_temp) /
+ *                                        (k_max_temp - k_warn_temp));
+ *   }
  *
  *   // Clamp to reasonable range
  *   if (scaled_max > k_max_duty) scaled_max = k_max_duty;

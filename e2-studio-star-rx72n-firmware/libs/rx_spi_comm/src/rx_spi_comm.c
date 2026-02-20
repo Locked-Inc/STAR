@@ -1413,8 +1413,8 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
  * @code{.c}
  * // Pack telemetry into payload
  * uint8_t telemetry[32];
- * telemetry[0] = battery_voltage_mv & 0xFF;
- * telemetry[1] = (battery_voltage_mv >> 8) & 0xFF;
+ * telemetry[0] = temperature_celsius & 0xFF;
+ * telemetry[1] = (temperature_celsius >> 8) & 0xFF;
  * // ... pack more fields ...
  *
  * // Send to RPi5

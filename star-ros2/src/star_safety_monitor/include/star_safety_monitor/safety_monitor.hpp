@@ -32,7 +32,6 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <sensor_msgs/msg/battery_state.hpp>
 #include <std_msgs/msg/bool.hpp>
 
 namespace star_safety_monitor
@@ -68,8 +67,6 @@ private:
   void odometry_callback(const nav_msgs::msg::Odometry::SharedPtr msg);
   void diagnostics_callback(
     const diagnostic_msgs::msg::DiagnosticArray::SharedPtr msg);
-  void
-  battery_state_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg);
   void cmd_vel_callback(const geometry_msgs::msg::Twist::SharedPtr msg);
 
   // Timer callback for monitoring and publishing diagnostics
@@ -78,7 +75,6 @@ private:
   // Monitoring and safety check methods
   void check_heartbeat_health();
   void check_velocity_limits();
-  void check_battery_health();
   void check_motor_stall();
   void check_diagnostic_health();
   void update_overall_state();
@@ -95,7 +91,6 @@ private:
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
   rclcpp::Subscription<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr
     diag_sub_;
-  rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr battery_sub_;
   rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_vel_sub_;
 
   rclcpp_lifecycle::LifecyclePublisher<
@@ -110,9 +105,6 @@ private:
   int heartbeat_timeout_ms_;
   double max_linear_velocity_;
   double max_angular_velocity_;
-  double min_battery_voltage_;
-  double max_battery_current_;
-  double max_battery_temp_;
   double publish_rate_;
   bool enable_auto_estop_;
   double estop_recovery_delay_;
@@ -129,14 +121,6 @@ private:
   bool heartbeat_timeout_triggered_{false};
   bool emergency_stop_active_{false};
   std::chrono::system_clock::time_point estop_trigger_time_;
-
-  // Battery state tracking
-  double battery_voltage_{0.0};
-  double battery_current_{0.0};
-  double battery_percentage_{0.0};
-  bool battery_voltage_low_{false};
-  bool battery_current_high_{false};
-  std::chrono::system_clock::time_point last_battery_time_;
 
   // Motor stall tracking
   geometry_msgs::msg::Twist last_cmd_vel_{};

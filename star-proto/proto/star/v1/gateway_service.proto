@@ -16,7 +16,6 @@ syntax = "proto3";
 
 package star.v1;
 
-import "star/v1/battery_management.proto";
 import "star/v1/common.proto";
 import "star/v1/motor_control.proto";
 import "star/v1/telemetry.proto";
@@ -45,8 +44,8 @@ option java_package = "com.star.proto.v1";
 service GatewayService {
   // Forward telemetry data from ROS2 to Gateway for UI streaming.
   //
-  // Called by ROS2 bridge node at 10 Hz to push latest robot status and
-  // battery state. Gateway caches this data and streams to UI clients via WebSocket.
+  // Called by ROS2 bridge node at 10 Hz to push latest robot status.
+  // Gateway caches this data and streams to UI clients via WebSocket.
   //
   // Non-blocking: Returns immediately after caching data.
   rpc ForwardTelemetry(ForwardTelemetryRequest) returns (ForwardTelemetryResponse);
@@ -80,10 +79,6 @@ message ForwardTelemetryRequest {
   // Robot system status (mode, connections, uptime).
   // Forwarded from /robot_status ROS2 topic.
   SystemStatus system_status = 2;
-
-  // Battery state (voltage, current, SOC, temperature).
-  // Forwarded from /battery_state ROS2 topic.
-  BatteryState battery_state = 3;
 
   // Optional: Additional telemetry data (IMU, GPS, etc.).
   TelemetryData telemetry = 4;

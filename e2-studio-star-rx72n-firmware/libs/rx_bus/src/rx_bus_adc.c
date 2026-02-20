@@ -15,7 +15,7 @@
  * This module implements the bus abstraction pattern for ADC operations:
  *
  * ```
- * Application Layer (Motor Control, Battery Monitor)
+ * Application Layer (Motor Control, Telemetry)
  *     v
  * Bus Manager API (rx_bus_adc.c) <- This file
  *     v
@@ -25,7 +25,7 @@
  *     v
  * S12ADFa Registers (S12AD0/S12AD1)
  *     v
- * Analog Hardware (Current Sensors, Battery, Temperature)
+ * Analog Hardware (Current Sensors, Temperature)
  * ```
  *
  * ## Design Rationale
@@ -111,11 +111,10 @@
  * - Formula: I_motor = (V_IPROPI / 4990) x 1000 mA
  * - Full scale: 3.3V -> 661 mA motor current
  *
- * **Battery Voltage Measurement:**
- * - Resistor divider: 100kOhm / 10kOhm = 1:11 ratio
- * - Input range: 0-36.3V battery -> 0-3.3V ADC
- * - Formula: V_battery = V_ADC x 11
- * - Protection: Zener diode clamp at 3.6V
+ * **Temperature Sensor Measurement:**
+ * - Analog output: 10 mV/degC (e.g., TMP36)
+ * - Input range: 0-3.3V ADC -> -50 to +125 degC
+ * - Formula: T_celsius = (V_ADC - 500) / 10
  *
  * ## Error Sources and Mitigation
  *
@@ -608,16 +607,16 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
  *
  * @warning Analog input exceeding VREFH may damage MCU
  * @warning voltage_mv undefined if return != k_rx_ok
- * @warning Battery voltage dividers need separate scaling (e.g., x11)
+ * @warning Voltage dividers for scaling must be handled in the application layer
  *
  * @par Example Usage Context:
  * For motor current sensing (DRV8243 IPROPI):
  * - Read voltage: 1650 mV
  * - Convert to current: I = (1650 / 4990) x 1000 = 331 mA
  *
- * For battery voltage (1:11 divider):
- * - Read voltage: 3000 mV (ADC input)
- * - Scale up: V_batt = 3000 x 11 = 33000 mV = 33V
+ * For temperature sensing (10 mV/degC sensor):
+ * - Read voltage: 750 mV (ADC input)
+ * - Convert: T = (750 - 500) / 10 = 25 degC
  *
  * @see rx_bus_adc_read_voltage_mv() Public API that calls this callback
  * @see adc_read_voltage_mv() HAL function to perform conversion and scaling
@@ -889,14 +888,14 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
  * }
  * @endcode
  *
- * @par Example - Battery Voltage:
+ * @par Example - Temperature Sensor:
  * @code
  * uint32_t adc_mv = 0;
- * err = rx_bus_adc_read_voltage_mv(&manager, "battery", &adc_mv);
+ * err = rx_bus_adc_read_voltage_mv(&manager, "temp_sensor", &adc_mv);
  * if (err == k_rx_ok) {
- *     uint32_t battery_mv = adc_mv * 11;  // Scale by divider ratio
- *     if (battery_mv < 14000) {
- *         rx_log_warn("POWER", "Low battery: %d mV", battery_mv);
+ *     int32_t temp_c = ((int32_t)adc_mv - 500) / 10;  // TMP36 formula
+ *     if (temp_c > 80) {
+ *         rx_log_warn("TEMP", "High temperature: %d C", temp_c);
  *     }
  * }
  * @endcode

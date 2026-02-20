@@ -15,7 +15,7 @@
  * ## Bus Manager Architecture Under Test
  *
  * The bus manager provides a **centralized registry** for managing up to 16 communication
- * buses (GPIO, ADC, I2C, SPI, UART, 1-Wire, SMBus) with thread-safe operations:
+ * buses (GPIO, ADC, I2C, SPI, UART, 1-Wire) with thread-safe operations:
  *
  * @dot
  * digraph bus_manager_test_arch {
@@ -79,7 +79,6 @@
  * | **UART** | SCI | 9.6-921.6 kbps | [PASS] Tertiary test bus |
  * | **I2C** | RIIC | 100-1000 kHz | [ ] Config tested via add_bus max capacity |
  * | **SPI** | RSPI | 1-15 MHz | [ ] Config tested via add_bus max capacity |
- * | **SMBus** | RIIC + CRC | 100-400 kHz | [ ] Config tested via add_bus max capacity |
  * | **ADC** | S12ADFa | ~1 us/sample | [ ] Config tested via add_bus max capacity |
  *
  * ## Command Pattern Design (Gang of Four)

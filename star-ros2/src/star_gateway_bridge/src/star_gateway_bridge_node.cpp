@@ -140,12 +140,6 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
       std::bind(&StarGatewayBridgeNode::robot_status_callback, this,
                 std::placeholders::_1));
 
-  battery_state_sub_ =
-    this->create_subscription<sensor_msgs::msg::BatteryState>(
-          "/battery_state", 10,
-          std::bind(&StarGatewayBridgeNode::battery_state_callback, this,
-                    std::placeholders::_1));
-
   // Services
   set_pid_gains_service_ = this->create_service<std_srvs::srv::SetBool>(
       "/set_pid_gains",
@@ -201,17 +195,6 @@ void StarGatewayBridgeNode::robot_status_callback(
   // If try_lock fails, skip this update (cache will use previous value)
 }
 
-void StarGatewayBridgeNode::battery_state_callback(
-  const sensor_msgs::msg::BatteryState::SharedPtr msg)
-{
-  // Use try_lock to avoid blocking callback (non-blocking pattern)
-  if (battery_state_mutex_.try_lock()) {
-    cached_battery_state_ = *msg;
-    battery_state_mutex_.unlock();
-  }
-  // If try_lock fails, skip this update (cache will use previous value)
-}
-
 void StarGatewayBridgeNode::set_pid_gains_callback(
   const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
   std::shared_ptr<std_srvs::srv::SetBool::Response> response)
@@ -243,20 +226,14 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
 
   // Get cached telemetry (non-blocking)
   std::optional<std_msgs::msg::String> robot_status;
-  std::optional<sensor_msgs::msg::BatteryState> battery_state;
 
   if (robot_status_mutex_.try_lock()) {
     robot_status = cached_robot_status_;
     robot_status_mutex_.unlock();
   }
 
-  if (battery_state_mutex_.try_lock()) {
-    battery_state = cached_battery_state_;
-    battery_state_mutex_.unlock();
-  }
-
   // Forward telemetry to Gateway via gRPC
-  if (grpc_stub_ && (robot_status.has_value() || battery_state.has_value())) {
+  if (grpc_stub_ && robot_status.has_value()) {
     grpc::ClientContext context;
     context.set_deadline(std::chrono::system_clock::now() +
                          std::chrono::milliseconds(grpc_deadline_ms_));
@@ -275,11 +252,6 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
                                          *request.mutable_system_status());
     }
 
-    if (battery_state.has_value()) {
-      converter_.battery_state_to_proto(*battery_state,
-                                        *request.mutable_battery_state());
-    }
-
     star::v1::ForwardTelemetryResponse response;
     grpc::Status status =
       grpc_stub_->ForwardTelemetry(&context, request, &response);
@@ -296,9 +268,8 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
   }
 
   RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 10000,
-                        "Telemetry forward: robot_status=%s, battery_state=%s",
-                        robot_status.has_value() ? "cached" : "none",
-                        battery_state.has_value() ? "cached" : "none");
+                        "Telemetry forward: robot_status=%s",
+                        robot_status.has_value() ? "cached" : "none");
 }
 
 void StarGatewayBridgeNode::teleop_poll_timer_callback()

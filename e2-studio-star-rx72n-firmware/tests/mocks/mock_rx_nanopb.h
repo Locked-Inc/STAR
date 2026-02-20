@@ -121,9 +121,6 @@ typedef struct {
   bool                has_encoder_back_right; /**< Has BR encoder */
   star_v1_EncoderData encoder_back_right;     /**< BR encoder data */
 
-  double  battery_voltage_v;   /**< Battery voltage (V) */
-  uint8_t battery_soc_percent; /**< Battery state of charge (%) */
-  double  battery_percent;     /**< Battery percentage (0-100) */
   double  temperature_celsius; /**< Ambient temperature (degC) */
 } star_v1_TelemetryData;
 
@@ -132,7 +129,7 @@ typedef struct {
  */
 #define star_v1_TelemetryData_init_zero                                                            \
   {                                                                                                \
-    0, 0, false, 0, false, {0}, false, {0}, false, {0}, false, {0}, 0.0, 0, 0.0, 0.0               \
+    0, 0, false, 0, false, {0}, false, {0}, false, {0}, false, {0}, 0.0                            \
   }
 
 /* =============================================================================

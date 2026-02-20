@@ -10,7 +10,7 @@
  * - Run PID control loop at 250 Hz (4 ms period)
  * - Read encoder feedback from MTU quadrature inputs
  * - Compute PID output for each motor
- * - Command DRV8243 H-bridge drivers via SPI
+ * - Command H-bridge drivers via PWM (PH/EN mode)
  * - Monitor motor faults (overcurrent, stall detection)
  * - Handle emergency stop conditions
  *
@@ -22,13 +22,13 @@
  *                        v
  *                   [Encoder Feedback] <- MTU (Hall effect)
  *                        v
- *                   [PWM Output] -> DRV8243 -> Motors
+ *                   [PWM Output] -> H-Bridge -> Motors
  * ```
  *
  * @see motor_control_task.c Implementation
  * @see rx_pid.h PID controller
  * @see rx_motor.h Motor abstraction
- * @see rx_drv8243.h H-bridge driver
+ * @see rx_motor.h H-bridge PWM control
  *
  * @copyright Copyright (c) 2026 STAR Project
  */
@@ -86,7 +86,7 @@ typedef enum : uint8_t {
  * @retval k_rx_err_* ThreadX task creation failed
  *
  * @pre ThreadX kernel running
- * @pre Motor drivers (DRV8243) initialized
+ * @pre Motor drivers (H-bridge PWM) initialized
  * @pre Encoders (MTU) configured
  * @pre PID controllers tuned
  * @pre Shared data initialized

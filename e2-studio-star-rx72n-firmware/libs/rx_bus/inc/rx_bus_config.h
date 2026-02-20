@@ -6,7 +6,7 @@
  *
  * @details
  * Provides type-safe configuration helpers for the RX72N bus manager system,
- * enabling unified access to GPIO, ADC, I2C, SMBus, OneWire, and UART peripherals
+ * enabling unified access to GPIO, ADC, I2C, OneWire, and UART peripherals
  * through a common interface abstraction.
  *
  * ## System Architecture Context
@@ -65,7 +65,6 @@
  * | rx_bus_config_init_gpio() | ~0.5 us | 3 validation checks + struct init |
  * | rx_bus_config_init_adc() | ~0.8 us | 5 validation checks + struct init |
  * | rx_bus_config_init_i2c() | ~1.2 us | 7 validation checks + struct init |
- * | rx_bus_config_init_smbus() | ~1.5 us | 8 validation checks + struct init |
  * | rx_bus_config_init_onewire() | ~0.6 us | 3 validation checks + struct init |
  * | rx_bus_config_init_uart() | ~1.0 us | 6 validation checks + struct init |
  *
@@ -84,7 +83,6 @@
  * | GPIO | 0-E (112 pins) | 1 pin per config | Any general-purpose I/O pin |
  * | ADC | ADC0, ADC1 | 1 analog input pin | 12-bit resolution, 8 channels each |
  * | I2C (RIIC) | RIIC0-RIIC2 | SDA + SCL pins | 100k/400k/1MHz, open-drain required |
- * | SMBus | RIIC0-RIIC2 | SDA + SCL pins | I2C + CRC-8 PEC, typically 100 kHz |
  * | OneWire | Any GPIO | 1 pin + 4.7k pullup | Bidirectional, 5V tolerant preferred |
  * | UART (SCI) | SCI0-SCI12 | TX + RX pins | Standard baud rates up to 4 Mbps |
  *
@@ -507,23 +505,23 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
  * @warning Config and name must have static or sufficient lifetime
  * @attention Must call rx_bus_manager_add_bus() after initialization
  *
- * @par Example: Battery voltage monitoring
+ * @par Example: ADC voltage monitoring
  * @code{.c}
- * static rx_bus_config_t battery_adc_config;
+ * static rx_bus_config_t power_rail_adc_config;
  *
  * // Initialize ADC1 channel 0 with 12-bit resolution
- * rx_err_t err = rx_bus_config_init_adc(&battery_adc_config, "battery_voltage",
+ * rx_err_t err = rx_bus_config_init_adc(&power_rail_adc_config, "power_rail",
  *                                       1,   // ADC1
  *                                       0,   // Channel 0
  *                                       12); // 12-bit resolution
- * RX_RETURN_ON_ERROR(err, "CFG", "Battery ADC init failed");
+ * RX_RETURN_ON_ERROR(err, "CFG", "Power rail ADC init failed");
  *
  * // Register with bus manager
- * rx_bus_manager_add_bus(&bus_manager, &battery_adc_config);
+ * rx_bus_manager_add_bus(&bus_manager, &power_rail_adc_config);
  *
  * // Read voltage (0-4095 for 12-bit, scaled to 0-3.3V)
  * uint16_t raw_value;
- * rx_bus_adc_read(&bus_manager, "battery_voltage", &raw_value);
+ * rx_bus_adc_read(&bus_manager, "power_rail", &raw_value);
  * float voltage_v = (raw_value / 4095.0f) * 3.3f;
  * @endcode
  *
@@ -626,94 +624,6 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
                                               rx_port_pin_t    sda_pin,
                                               rx_port_pin_t    scl_pin,
                                               uint32_t         frequency_hz);
-
-/* =============================================================================
- * SMBUS Bus Configuration
- * =============================================================================
- */
-
-/**
- * @brief Initialize SMBus (System Management Bus) configuration
- *
- * @details
- * Configures an SMBus device for bus manager control. SMBus is a variant of
- * I2C with additional protocols and optional Packet Error Checking (PEC) using
- * CRC-8. Commonly used for battery management (BQ4050), temperature sensors
- * (LM75), and system monitoring.
- *
- * **SMBus vs I2C Differences**:
- * - Timeout requirement: 25-35 ms clock low timeout
- * - Minimum clock frequency: 10 kHz (vs I2C's DC)
- * - Packet Error Checking (PEC): Optional CRC-8 on data bytes
- * - Alert signal: Optional alert pin for interrupt-driven events
- * - Default addressing: Some protocols use specific addresses
- *
- * **Algorithm**:
- * 1. Validate all pointers and parameters (same as I2C)
- * 2. Validate use_pec is boolean (true/false)
- * 3. Zero-init config
- * 4. Set type to k_rx_bus_type_smbus
- * 5. Populate smbus-specific fields including PEC flag
- * 6. Return k_rx_ok
- *
- * **CRC-8 (PEC) Algorithm**:
- * - Polynomial: x^8 + x^2 + x + 1 (0x07)
- * - Initialization: 0x00
- * - Covers: Address + R/W bit + all data bytes
- * - Appended: As last byte of transaction
- *
- * @param[out] config Pointer to bus config structure
- * @param[in] name Unique bus name
- * @param[in] channel RIIC channel (0-2)
- * @param[in] device_addr 7-bit SMBus device address
- * @param[in] sda_pin SDA pin
- * @param[in] scl_pin SCL pin
- * @param[in] frequency_hz Clock frequency (typically 100000 Hz for SMBus)
- * @param[in] use_pec Enable Packet Error Checking (CRC-8)
- *
- * @return rx_err_t Error code
- * @retval k_rx_ok Success
- * @retval k_rx_err_null_ptr NULL parameter
- * @retval k_rx_err_invalid_arg Invalid parameters
- *
- * @pre Same as I2C, plus:
- * @pre frequency_hz should be 100 kHz for SMBus compliance
- * @pre Device must support SMBus protocol (not all I2C devices do)
- *
- * @post config.type == k_rx_bus_type_smbus
- * @post config.smbus.use_pec == use_pec
- *
- * @note **Hardware**: SMBus devices may have timeout requirements
- * @note **PEC Overhead**: Adds 1 byte per transaction, ~10% time overhead
- *
- * @par Example: BQ4050 fuel gauge with PEC
- * @code{.c}
- * static rx_bus_config_t bq4050_config;
- *
- * // Configure BQ4050 on RIIC0 with PEC enabled
- * rx_err_t err = rx_bus_config_init_smbus(&bq4050_config, "fuel_gauge",
- *                                         0,           // RIIC0
- *                                         0x0B,        // BQ4050 address
- *                                         k_rx_p1_2,   // SDA
- *                                         k_rx_p1_3,   // SCL
- *                                         100000,      // 100 kHz
- *                                         true);       // Enable PEC
- * @endcode
- *
- * @see rx_bus_config_init_i2c() Standard I2C configuration
- * @see rx_bus_smbus_read_word() Read 16-bit word with optional PEC
- * @see rx_bus_smbus_write_word() Write 16-bit word with optional PEC
- *
- * @since Version 1.0.0
- */
-[[nodiscard]] rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
-                                                const char*      name,
-                                                uint8_t          channel,
-                                                uint8_t          device_addr,
-                                                rx_port_pin_t    sda_pin,
-                                                rx_port_pin_t    scl_pin,
-                                                uint32_t         frequency_hz,
-                                                bool             use_pec);
 
 /* =============================================================================
  * OneWire Bus Configuration

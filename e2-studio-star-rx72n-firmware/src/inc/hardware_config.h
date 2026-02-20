@@ -16,10 +16,8 @@
  * |-------|------------|---------|
  * | Motor PWM | GPTW 0-3 | 8 pins (PH/EN per motor) |
  * | GTETRG Emergency Stop | GPTW triggers | 4 pins (nFAULT per motor) |
- * | Motor Driver SPI | SCI12 | 3 data + 4 CS = 7 pins |
  * | Host SPI | RSPI2_A | 3 data + 1 CS = 4 pins |
  * | Host I2C | RIIC0 | 2 pins (SCL0/SDA0) |
- * | BMS I2C | RIIC1 | 2 pins (SCL1/SDA1) |
  * | Debug UART | SCI9 | 2 pins (TXD9/RXD9) |
  * | MTU Encoders | MTU1/MTU2 | 4 pins |
  * | TPU Encoders | TPU1/TPU2 | 4 pins |
@@ -27,7 +25,6 @@
  * | Sonar HC-SR04 | IRQ + GPIO | 4 ECHO + 4 TRIG = 8 pins |
  * | LEDs | GPIO | 6 pins |
  * | 1-Wire Temperature | GPIO | 1 pin |
- * | BMS Alert | IRQ13 | 1 pin |
  * | HOST_IRQ | IRQ15 | 1 pin |
  *
  * @see pinout.txt Complete verified pin assignment table
@@ -100,7 +97,7 @@ typedef enum : uint8_t {
 
 /**
  * @defgroup gtetrg_pins GTETRG Emergency Stop Pin Assignments
- * @brief Hardware GPTW external trigger pins for DRV8243S nFAULT signals
+ * @brief Hardware GPTW external trigger pins for motor fault (nFAULT) signals
  *
  * @details
  * GTETRG provides hardware-level emergency stop: when nFAULT goes low,
@@ -131,70 +128,6 @@ typedef enum : uint8_t {
 } motor_nfault_pins_t;
 
 /** @} */ /* end of gtetrg_pins */
-
-/* =========================================================================
- * Motor Driver SPI (SCI12 hardware SPI)
- * ========================================================================= */
-
-/**
- * @defgroup motor_spi_pins Motor Driver SPI Pin Assignments
- * @brief SCI7 hardware SPI for DRV8243S motor driver communication
- *
- * @details
- * SCI7 provides hardware SPI for DRV8243S motor driver communication.
- * Four chip selects allow independent communication with each DRV8243S.
- *
- * **NOTE:** Originally assigned to SCI12 (PE0/1/2), but those pins had a
- * hardware conflict with GPTW motor PWM outputs. Moved to SCI7 (P90/91/92)
- * to resolve the pin function conflict. See Issue #288.
- *
- * **Pin Naming Convention:** Hardware signal names (SMOSI7/SMISO7) are from
- * the RX72N datasheet. This project uses COPI/CIPO terminology per OSHWA
- * inclusive naming standards.
- *
- * | Signal | Pin | Pkg Pin | Function | SCI Channel |
- * |--------|-----|---------|----------|-------------|
- * | DRV_SCLK | P91 | 129 | SCK7 | SCI7 |
- * | DRV_COPI | P90 | 131 | SMOSI7 | SCI7 |
- * | DRV_CIPO | P92 | 128 | SMISO7 | SCI7 |
- * | DRV_CS0 | P74 | 72 | GPIO (CS4#) | N/A |
- * | DRV_CS1 | PC1 | 73 | GPIO | N/A |
- * | DRV_CS2 | PB5 | 80 | GPIO | N/A |
- * | DRV_CS3 | PB4 | 81 | GPIO | N/A |
- * @{
- */
-
-typedef enum : uint8_t {
-  k_drv_sclk_port = 9, /**< DRV_SCLK on PORT9 (P91/SCK7, pin 129) */
-  k_drv_copi_port = 9, /**< DRV_COPI on PORT9 (P90/SMOSI7, pin 131) */
-  k_drv_cipo_port = 9, /**< DRV_CIPO on PORT9 (P92/SMISO7, pin 128) */
-} drv_spi_ports_t;
-
-typedef enum : uint8_t {
-  k_drv_sclk_pin = 1, /**< DRV_SCLK pin 1 (P91, pin 129) */
-  k_drv_copi_pin = 0, /**< DRV_COPI pin 0 (P90, pin 131) */
-  k_drv_cipo_pin = 2, /**< DRV_CIPO pin 2 (P92, pin 128) */
-} drv_spi_pins_t;
-
-typedef enum : uint8_t {
-  k_drv_spi_channel = 7, /**< Motor driver SPI uses SCI7 */
-} drv_spi_channel_t;
-
-typedef enum : uint8_t {
-  k_drv_cs0_port = 7,  /**< DRV_CS0 on PORT7 (P74/CS4#, pin 72) */
-  k_drv_cs1_port = 12, /**< DRV_CS1 on PORTC (PC1, pin 73) */
-  k_drv_cs2_port = 11, /**< DRV_CS2 on PORTB (PB5, pin 80) */
-  k_drv_cs3_port = 11, /**< DRV_CS3 on PORTB (PB4, pin 81) */
-} drv_cs_ports_t;
-
-typedef enum : uint8_t {
-  k_drv_cs0_pin = 4, /**< DRV_CS0 pin 4 (P74, pin 72) */
-  k_drv_cs1_pin = 1, /**< DRV_CS1 pin 1 (PC1, pin 73) */
-  k_drv_cs2_pin = 5, /**< DRV_CS2 pin 5 (PB5, pin 80) */
-  k_drv_cs3_pin = 4, /**< DRV_CS3 pin 4 (PB4, pin 81) */
-} drv_cs_pins_t;
-
-/** @} */ /* end of motor_spi_pins */
 
 /* =========================================================================
  * Host SPI (RSPI2 channel A)
@@ -292,35 +225,6 @@ typedef enum : uint8_t {
 /** @} */ /* end of host_i2c_pins */
 
 /* =========================================================================
- * BMS I2C (RIIC1)
- * ========================================================================= */
-
-/**
- * @defgroup bms_i2c_pins BMS I2C Pin Assignments
- * @brief RIIC1 for Battery Management System communication
- *
- * @details
- * Dedicated RIIC1 I2C bus for BMS communication.
- *
- * | Signal | Pin | Pkg Pin | Function |
- * |--------|-----|---------|----------|
- * | BMS_SCL1 | P21 | 36 | SCL1 |
- * | BMS_SDA1 | P20 | 37 | SDA1 |
- * @{
- */
-
-typedef enum : uint8_t {
-  k_bms_i2c_port = 2, /**< BMS I2C on PORT2 (P20/P21) */
-} bms_i2c_ports_t;
-
-typedef enum : uint8_t {
-  k_bms_scl1_pin = 1, /**< BMS_SCL1 pin 1 (P21/SCL1, pin 36) */
-  k_bms_sda1_pin = 0, /**< BMS_SDA1 pin 0 (P20/SDA1, pin 37) */
-} bms_i2c_pins_t;
-
-/** @} */ /* end of bms_i2c_pins */
-
-/* =========================================================================
  * MTU Encoders (MTU1 and MTU2 phase counting)
  * ========================================================================= */
 
@@ -406,7 +310,7 @@ typedef enum : uint8_t {
 
 /**
  * @defgroup motor_adc_pins Motor Current Sense ADC Pin Assignments
- * @brief S12AD0 channels for DRV8243S IPROPI current sense
+ * @brief S12AD0 channels for motor current sense (AN004-AN007)
  *
  * @details
  * All motor current sense uses ADC Unit 0 (S12AD0) on P44-P47.
@@ -577,35 +481,6 @@ typedef enum : uint8_t {
 } onewire_pins_t;
 
 /** @} */ /* end of onewire_pins */
-
-/* =========================================================================
- * BMS Alert (IRQ13)
- * ========================================================================= */
-
-/**
- * @defgroup bms_alert_pins BMS Alert Pin Assignment
- * @brief IRQ input for Battery Management System alert signal
- *
- * @details
- * | Signal | Pin | Pkg Pin | IRQ |
- * |--------|-----|---------|-----|
- * | BMS_ALERT | P05 | 2 | IRQ13 |
- * @{
- */
-
-typedef enum : uint8_t {
-  k_bms_alert_port = 0, /**< BMS_ALERT on PORT0 (P05/IRQ13, pin 2) */
-} bms_alert_ports_t;
-
-typedef enum : uint8_t {
-  k_bms_alert_pin = 5, /**< BMS_ALERT pin 5 (P05, pin 2) */
-} bms_alert_pins_t;
-
-typedef enum : uint8_t {
-  k_bms_alert_irq = 13, /**< BMS_ALERT IRQ13 */
-} bms_alert_irqs_t;
-
-/** @} */ /* end of bms_alert_pins */
 
 /* =========================================================================
  * HOST_IRQ (IRQ15)
