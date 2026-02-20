@@ -308,8 +308,7 @@ static rx_bus_config_t s_onewire0_config;
  *
  * **Usage Pattern:**
  * Motor control task uses this generic GPIO bus to access:
- * - DRV8243 nFAULT pins (fault detection)
- * - DRV8243 chip select pins (SPI communication)
+ * - Motor nFAULT pins (fault detection)
  * - Motor enable/disable control pins
  * - LED status indicators
  *
@@ -346,15 +345,12 @@ static rx_bus_config_t s_gpio_config;
  * - Actual channels: Specified by motor_control_task at runtime
  *
  * **Motor Current Sensing Channels:**
- * | Motor | ADC Channel | Pin    | DRV8243 Output |
- * |-------|-------------|--------|----------------|
- * | Motor 0 | AN007 (ch 7) | P40.7  | IPROPI output  |
- * | Motor 1 | AN006 (ch 6) | P40.6  | IPROPI output  |
- * | Motor 2 | AN005 (ch 5) | P40.5  | IPROPI output  |
- * | Motor 3 | AN004 (ch 4) | P40.4  | IPROPI output  |
- *
- * Each DRV8243 motor driver outputs an analog current signal (IPROPI) proportional
- * to motor current: 500 uA per 1 A of motor current (500:1 ratio).
+ * | Motor | ADC Channel | Pin    |
+ * |-------|-------------|--------|
+ * | Motor 0 | AN007 (ch 7) | P40.7  |
+ * | Motor 1 | AN006 (ch 6) | P40.6  |
+ * | Motor 2 | AN005 (ch 5) | P40.5  |
+ * | Motor 3 | AN004 (ch 4) | P40.4  |
  *
  * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
  * @note Registered with bus manager in tx_application_define() before task creation.

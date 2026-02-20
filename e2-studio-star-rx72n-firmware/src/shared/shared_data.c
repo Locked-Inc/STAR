@@ -169,7 +169,7 @@
  * **E-stop triggers:**
  * - Communication timeout (>500ms)
  * - Obstacle detected (<30cm)
- * - DRV8243 driver fault
+ * - Motor driver hardware fault
  * - Motor overcurrent (>2A sustained)
  * - Manual request via SetEmergencyStopRequest
  *
@@ -458,7 +458,7 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  * @details
  * Centralized bus manager for all off-chip peripherals:
  * - **I2C:** MPU-6050 IMU
- * - **SPI:** DRV8243 motor drivers (4x)
+ * - **SPI:** Motor driver communication
  * - **1-Wire:** DS18B20 temperature sensors (4x)
  *
  * **Initialization:** hardware_init() configures bus manager before task creation
@@ -953,7 +953,7 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
  *            - duty_cycle_percent[] in range [-100, +100]
  *            - current_ma[] in milliamps (from ADC)
  *            - encoder_counts[] raw quadrature counts
- *            - fault_flags[] DRV8243 status bits
+ *            - fault_flags[] motor driver fault status bits
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok State updated successfully
@@ -986,7 +986,7 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
  *     state.duty_cycle_percent[i] = pid_output[i];
  *     state.current_ma[i] = adc_read_current(i);
  *     state.encoder_counts[i] = encoder_read_raw(i);
- *     state.fault_flags[i] = drv8243_get_faults(i);
+ *     state.fault_flags[i] = motor_get_faults(i);
  * }
  *
  * shared_data_update_motor_state(&state);
@@ -1447,7 +1447,7 @@ void shared_data_clear_pid_update_flag(void)
  * @param[in] reason Reason code for emergency stop
  *            - k_estop_reason_comm_timeout: No commands for 500ms
  *            - k_estop_reason_obstacle: Collision detected
- *            - k_estop_reason_driver_fault: DRV8243 fault
+ *            - k_estop_reason_driver_fault: Motor driver hardware fault
  *            - k_estop_reason_overcurrent: Motor current >2A
  *            - k_estop_reason_manual: User request
  *
@@ -1876,7 +1876,7 @@ bool shared_data_is_estop_active(void)
  * @retval k_estop_reason_none No e-stop active, or not initialized, or error
  * @retval k_estop_reason_comm_timeout Communication loss detected
  * @retval k_estop_reason_obstacle Collision imminent
- * @retval k_estop_reason_driver_fault DRV8243 hardware fault
+ * @retval k_estop_reason_driver_fault Motor driver hardware fault
  * @retval k_estop_reason_overcurrent Motor current exceeded limit
  * @retval k_estop_reason_manual Operator-initiated stop
  *

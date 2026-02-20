@@ -11,7 +11,6 @@
  * Test coverage:
  * - Task creation success
  * - PID initialization for all 4 motors
- * - Driver fault handling triggers e-stop
  * - Velocity command reading from shared data
  *
  * @author STAR Team
@@ -21,7 +20,6 @@
 
 #include <string.h>
 
-#include "mock_rx_drv8243.h"
 #include "mock_rx_motor.h"
 #include "mock_rx_mtu_encoder.h"
 #include "mock_rx_pid.h"
@@ -51,7 +49,6 @@ void setUp(void)
   /* Reset all mocks before each test */
   mock_shared_data_reset();
   mock_pid_reset();
-  mock_drv8243_reset();
   mock_rx_motor_reset();
   mock_encoder_reset();
   mock_tx_reset();
@@ -252,42 +249,6 @@ void test_motor_task_estop_active_skips_control(void)
   /* Verify e-stop is active */
   TEST_ASSERT_TRUE(shared_data_is_estop_active());
   TEST_ASSERT_EQUAL(k_estop_reason_manual, shared_data_get_estop_reason());
-}
-
-/**
- * @brief Test driver fault triggers e-stop
- *
- * @details
- * When DRV8243 reports a fault, the motor task should trigger
- * emergency stop with k_estop_reason_driver_fault.
- */
-void test_motor_task_driver_fault_triggers_estop(void)
-{
-  /* Configure driver to report fault on motor 0
-   * Note: Mock uses call count to determine motor index, so first call reads motor 0
-   */
-  uint8_t motor_idx;
-  bool    fault;
-
-  motor_idx = 0;
-  mock_drv8243_set_fault_status(motor_idx, true);
-  mock_drv8243_set_fault_status_return(k_rx_ok);
-
-  /* Check fault status via mock */
-  rx_drv8243_handle_t driver = {0};
-  rx_err_t            err    = rx_drv8243_get_fault_status(&driver, &fault);
-
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_TRUE(fault);
-
-  /* Simulate what the task does when fault detected */
-  if (fault) {
-    (void)shared_data_trigger_estop(k_estop_reason_driver_fault);
-  }
-
-  /* Verify e-stop was triggered with correct reason */
-  TEST_ASSERT_EQUAL_UINT32(1, mock_shared_data_get_trigger_estop_count());
-  TEST_ASSERT_EQUAL(k_estop_reason_driver_fault, mock_shared_data_get_last_estop_reason());
 }
 
 /* =============================================================================
@@ -526,7 +487,6 @@ int main(void)
 
   /* Emergency Stop Tests */
   RUN_TEST(test_motor_task_estop_active_skips_control);
-  RUN_TEST(test_motor_task_driver_fault_triggers_estop);
 
   /* Velocity Command Tests */
   RUN_TEST(test_motor_task_reads_velocity_commands);

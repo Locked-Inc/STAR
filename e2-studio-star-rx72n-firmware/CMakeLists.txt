@@ -100,7 +100,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_comm_manager/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_core/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_crc/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_drv8243/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_ds18b20/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_encoder/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_fec/inc
@@ -140,7 +139,6 @@ file(GLOB_RECURSE LIB_RX_BUS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/
 file(GLOB_RECURSE LIB_RX_PID_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_pid/src/*.c)
 file(GLOB_RECURSE LIB_RX_MOTOR_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_motor/src/*.c)
 file(GLOB_RECURSE LIB_RX_ENCODER_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_encoder/src/*.c)
-file(GLOB_RECURSE LIB_RX_DRV8243_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_drv8243/src/*.c)
 file(GLOB_RECURSE LIB_RX_CRC_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_crc/src/*.c)
 file(GLOB_RECURSE LIB_RX_FRAME_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_frame/src/*.c)
 file(GLOB_RECURSE LIB_RX_FRAME_ASCII_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_frame_ascii/src/*.c)
@@ -186,7 +184,6 @@ set(ALL_SOURCES
     ${LIB_RX_PID_SOURCES}
     ${LIB_RX_MOTOR_SOURCES}
     ${LIB_RX_ENCODER_SOURCES}
-    ${LIB_RX_DRV8243_SOURCES}
     ${LIB_RX_CRC_SOURCES}
     ${LIB_RX_FRAME_SOURCES}
     ${LIB_RX_FRAME_ASCII_SOURCES}
@@ -264,7 +261,6 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_pid/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_motor/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_encoder/inc
-    ${CMAKE_SOURCE_DIR}/libs/rx_drv8243/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_crc/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_frame/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_frame_ascii/inc

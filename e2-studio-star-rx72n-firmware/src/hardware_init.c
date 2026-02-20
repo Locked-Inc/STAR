@@ -26,7 +26,7 @@
  *    - Ensure memory-mapped I/O accessible
  *
  * 2. **GPIO configuration** (planned, not yet implemented)
- *    - Motor control pins (DRV8243 enable, fault detection)
+ *    - Motor control pins (PWM enable, GTETRG fault detection)
  *    - LED indicators (status, error, activity)
  *    - Sensor chip selects (SPI CS pins)
  *
@@ -228,21 +228,6 @@ typedef enum : uint16_t {
   k_pin_sonar_echo2 = k_rx_p0_1, /**< P0.1 - Sonar 2 echo (pin 7, IRQ9) */
   k_pin_sonar_echo3 = k_rx_p0_0, /**< P0.0 - Sonar 3 echo (pin 8, IRQ8) */
 
-  /* DRV8243S SPI chip selects (GPIO output, initial HIGH) */
-  k_pin_drv_cs0 = k_rx_p7_4, /**< P7.4 - DRV_CS0 motor 0 (pin 72) */
-  k_pin_drv_cs1 = k_rx_pc_1, /**< PC.1 - DRV_CS1 motor 1 (pin 73) */
-  k_pin_drv_cs2 = k_rx_pb_5, /**< PB.5 - DRV_CS2 motor 2 (pin 80) */
-  k_pin_drv_cs3 = k_rx_pb_4, /**< PB.4 - DRV_CS3 motor 3 (pin 81) */
-
-  /**
-   * DRV8243S SPI data (SCI7 alternate function)
-   * - P90 (SMOSI7): COPI - Controller Out, Peripheral In (data to motor drivers)
-   * - P92 (SMISO7): CIPO - Controller In, Peripheral Out (data from motor drivers)
-   */
-  k_pin_drv_sclk = k_rx_p9_1, /**< P9.1 - SCK7 (pin 129) */
-  k_pin_drv_copi = k_rx_p9_0, /**< P9.0 - COPI/SMOSI7 (pin 131) - data to drivers */
-  k_pin_drv_cipo = k_rx_p9_2, /**< P9.2 - CIPO/SMISO7 (pin 128) - data from drivers */
-
   /**
    * Host SPI (RSPI2 peripheral mode on PORTD)
    * - PD1 (MOSIC): COPI - Controller Out, Peripheral In (data from RPi5)
@@ -286,7 +271,6 @@ typedef enum : uint16_t {
 typedef enum : uint8_t {
   k_gptw_pin_count = 8, /**< 4 motors x 2 pins (PH + EN) */
   k_sonar_count    = 4, /**< 4 HC-SR04 ultrasonic sensors */
-  k_drv_cs_count   = 4, /**< 4 DRV8243S chip select pins */
 } gpio_pin_counts_t;
 
 /** @brief GPTW PWM frequency constant */
@@ -691,91 +675,6 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
 }
 
 /**
- * @brief Configure DRV8243S chip select pins (GPIO outputs)
- *
- * @details
- * Configures 4 motor driver CS pins as GPIO outputs with initial HIGH state
- * (deselected). Pins: P74, PC1, PB5, PB4. Used for SPI communication with
- * DRV8243S motor driver chips.
- *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
- *
- * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
- * @pre Pins not in use by other peripherals
- * @post All 4 DRV CS pins configured as GPIO outputs
- * @post CS pins initialized to HIGH (deselected state)
- *
- * @note Thread-safe. No shared state modified.
- * @note Called only during system initialization.
- *
- * @since Version 1.0.0
- */
-static rx_err_t internal_gpio_init_drv_cs(void)
-{
-  static const char* s_tag = "GPIO_DRV_CS";
-
-  const rx_port_pin_t drv_cs_pins[k_drv_cs_count] = {(rx_port_pin_t)k_pin_drv_cs0,
-                                                     (rx_port_pin_t)k_pin_drv_cs1,
-                                                     (rx_port_pin_t)k_pin_drv_cs2,
-                                                     (rx_port_pin_t)k_pin_drv_cs3};
-
-  for (uint8_t i = 0; i < k_drv_cs_count; i++) {
-    const rx_err_t err = rx_mpc_set_gpio(drv_cs_pins[i]);
-    RX_RETURN_ON_ERROR(err, s_tag, "DRV CS MPC config failed");
-
-    const uint8_t            port = rx_port_from_pin(drv_cs_pins[i]);
-    const uint8_t            pin  = rx_pin_from_pin(drv_cs_pins[i]);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid DRV CS port");
-    regs->pmr &= ~(uint8_t)(1U << pin);
-    regs->podr |= (uint8_t)(1U << pin);
-    regs->pdr |= (uint8_t)(1U << pin);
-  }
-
-  return k_rx_ok;
-}
-
-/**
- * @brief Configure SCI7 SPI pins for motor driver communication
- *
- * @details
- * Configures MPC pin multiplexing for SCI7 in clock-synchronous mode on
- * P90-P92. Sets PSEL to enable SCI7 SCK/COPI/CIPO functions for SPI
- * communication with DRV8243S motor drivers.
- *
- * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
- * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
- *
- * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
- * @pre Pins not in use by other peripherals
- * @post P90-P92 configured as SCI7 COPI/SCK/CIPO
- * @post SCI7 SPI pins ready for motor driver communication
- *
- * @note Thread-safe. No shared state modified.
- * @note Called only during system initialization.
- *
- * @since Version 1.0.0
- */
-static rx_err_t internal_gpio_init_sci7_spi(void)
-{
-  static const char* s_tag = "GPIO_SCI7";
-
-  rx_err_t err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_sclk);
-  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SCK pin config failed");
-
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_copi);
-  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 COPI pin config failed");
-
-  err = rx_mpc_set_sci((rx_port_pin_t)k_pin_drv_cipo);
-  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 CIPO pin config failed");
-
-  return k_rx_ok;
-}
-
-/**
  * @brief Initialize GPIO pins for motor control, I2C, and USB communication
  *
  * @details
@@ -784,7 +683,7 @@ static rx_err_t internal_gpio_init_sci7_spi(void)
  * specific PSEL values determined by hardware function.
  *
  * **Pin configuration:**
- * - **8x GPTW PWM pins** - Motor control via DRV8243 H-bridge drivers (PORT E)
+ * - **8x GPTW PWM pins** - Motor control GPTW PWM outputs (PORT E)
  * - **2x I2C pins** - Sensor communication bus (SCL/SDA)
  * - **1x USB pin** - USB VBUS detection for CDC debug interface
  *
@@ -923,12 +822,6 @@ static rx_err_t gpio_init(void)
   err = internal_gpio_init_sonar_echoes();
   RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo pin init failed");
 
-  err = internal_gpio_init_drv_cs();
-  RX_RETURN_ON_ERROR(err, s_tag, "DRV CS pin init failed");
-
-  err = internal_gpio_init_sci7_spi();
-  RX_RETURN_ON_ERROR(err, s_tag, "SCI7 SPI pin init failed");
-
   /* GTETRG nFAULT pins: no MPC config needed (documented in header) */
 
   rx_log_info(s_tag, "GPIO pin muxing complete");
@@ -984,9 +877,6 @@ static rx_err_t gptw_pwm_init(void)
  * Configures RSPI2 in peripheral mode for receiving commands from the
  * Raspberry Pi 5 host controller. Uses SPI mode 0 (CPOL=0, CPHA=0) with
  * 8-bit transfers.
- *
- * Motor driver SPI uses SCI7 (not RSPI) and is deferred since DRV8243 runs
- * in PH/EN mode (use_spi_variant = false).
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok RSPI2 peripheral initialized successfully
@@ -1056,7 +946,7 @@ static rx_err_t i2c_init(void)
  *
  * @details
  * Configures S12AD0 channels AN004-AN007 at 12-bit resolution for reading
- * motor current via DRV8243S IPROPI analog output.
+ * motor current via analog sense inputs.
  *
  * | Channel | Motor | Pin |
  * |---------|-------|-----|
@@ -1142,7 +1032,7 @@ static void validate_peripherals(void)
  * 1. **GPIO** ([PASS] implemented) - Motor control pins, LEDs, sensor chip selects
  * 2. **Timers** ([PASS] implemented) - CMT0 for ThreadX tick at 1 kHz
  * 3. **UART** ([PASS] implemented) - SCI9 for debug console at 115200 baud
- * 4. **SPI** ([PASS] implemented) - Motor drivers (DRV8243), sensor bus
+ * 4. **SPI** ([PASS] implemented) - Host SPI peripheral (RSPI2), sensor bus
  * 5. **I2C** (planned) - IMU, temperature, pressure sensors
  * 7. **ADC** (planned) - Current sensing
  *
@@ -1311,7 +1201,7 @@ static void validate_peripherals(void)
  *
  * @par Planned Peripherals (Future Implementation):
  * - **GPIO:** Port initialization for motor control (PA0-PA7), LEDs (PB0-PB2), sensor CS (PC0-PC3)
- * - **SPI:** RSPI0 for motor drivers (DRV8243 x 4), RSPI1 for sensor bus
+ * - **SPI:** RSPI1 for sensor bus
  * - **I2C:** RIIC0 for IMU (MPU6050), temperature (LM75), pressure (BMP280)
  * - **ADC:** ADC0 channels for current sensing (4 channels)
  * - **USB:** USB CDC for ROS2 communication (already partially implemented, needs integration)

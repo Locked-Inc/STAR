@@ -166,11 +166,6 @@ set(MOCK_RSPI_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rspi.c
 )
 
-# Mock SCI SPI source for DRV8243 motor driver SPI testing
-set(MOCK_SCI_SPI_SRC
-    ${CMAKE_SOURCE_DIR}/mocks/mock_sci_spi.c
-)
-
 # rx_spi_comm source
 set(RX_SPI_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_spi_comm/src/rx_spi_comm.c
@@ -588,18 +583,6 @@ target_compile_options(test_rx_nanopb PRIVATE
 )
 target_link_libraries(test_rx_nanopb unity m)
 
-# Test: DRV8243 SPI Variant
-add_executable(test_rx_drv8243_spi
-    test_rx_drv8243_spi.c
-    ${MOCK_SCI_SPI_SRC}
-)
-apply_strict_warnings(test_rx_drv8243_spi)
-apply_test_includes(test_rx_drv8243_spi)
-target_include_directories(test_rx_drv8243_spi PRIVATE
-    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8243/inc
-)
-target_link_libraries(test_rx_drv8243_spi unity)
-
 # Test: Session State (shared across transports)
 add_executable(test_rx_session
     test_rx_session.c
@@ -648,17 +631,6 @@ target_include_directories(test_rx_comm_manager PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_comm_manager/inc
 )
 target_link_libraries(test_rx_comm_manager unity)
-
-# Test: DRV8243 H-Bridge Motor Driver
-add_executable(test_rx_drv8243
-    test_rx_drv8243.c
-)
-apply_strict_warnings(test_rx_drv8243)
-apply_test_includes(test_rx_drv8243)
-target_include_directories(test_rx_drv8243 PRIVATE
-    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8243/inc
-)
-target_link_libraries(test_rx_drv8243 unity m)
 
 # Test: Independent Watchdog Timer (IWDT) Driver
 add_executable(test_rx_iwdt
@@ -750,10 +722,6 @@ set(MOCK_PID_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_pid.c
 )
 
-set(MOCK_DRV8243_SRC
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_drv8243.c
-)
-
 set(MOCK_COMM_MANAGER_SRC_TASK
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_comm_manager.c
 )
@@ -798,7 +766,6 @@ add_executable(test_motor_control_task
     ${MOCK_TASKS_SRC}
     ${MOCK_SHARED_DATA_SRC}
     ${MOCK_PID_SRC}
-    ${MOCK_DRV8243_SRC}
     ${MOCK_MOTOR_SRC}
     ${MOCK_MTU_ENCODER_SRC}
     ${MOCK_LOG_SRC}
@@ -809,7 +776,6 @@ target_compile_definitions(test_motor_control_task PRIVATE MOCK_TX_THREAD_CREATE
 target_include_directories(test_motor_control_task PRIVATE
     ${CMAKE_SOURCE_DIR}/../src/shared
     ${CMAKE_SOURCE_DIR}/../src/tasks/inc
-    ${CMAKE_SOURCE_DIR}/../libs/rx_drv8243/inc
 )
 target_link_libraries(test_motor_control_task unity m)
 
@@ -945,11 +911,9 @@ set(ALL_TEST_TARGETS
     test_rx_register_guard
     test_rx_nanopb
     test_rx_gptw_staggered
-    test_rx_drv8243_spi
     test_rx_frame_ascii
     test_rx_session
     test_rx_comm_manager
-    test_rx_drv8243
     test_rx_iwdt
     test_rx_gpio
     test_rx_mpc
@@ -994,11 +958,9 @@ add_test(NAME test_rx_pin_validator COMMAND test_rx_pin_validator)
 add_test(NAME test_rx_register_guard COMMAND test_rx_register_guard)
 add_test(NAME test_rx_nanopb COMMAND test_rx_nanopb)
 add_test(NAME test_rx_gptw_staggered COMMAND test_rx_gptw_staggered)
-add_test(NAME test_rx_drv8243_spi COMMAND test_rx_drv8243_spi)
 add_test(NAME test_rx_frame_ascii COMMAND test_rx_frame_ascii)
 add_test(NAME test_rx_session COMMAND test_rx_session)
 add_test(NAME test_rx_comm_manager COMMAND test_rx_comm_manager)
-add_test(NAME test_rx_drv8243 COMMAND test_rx_drv8243)
 add_test(NAME test_rx_iwdt COMMAND test_rx_iwdt)
 add_test(NAME test_rx_gpio COMMAND test_rx_gpio)
 add_test(NAME test_rx_mpc COMMAND test_rx_mpc)

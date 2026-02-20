@@ -240,7 +240,7 @@
  *               (motor_state.fault_flags[3] << 24);   // Motor 3 (BR) in bits [24:31]
  * ```
  *
- * Each byte contains DRV8243S fault flags (overcurrent, thermal, etc.).
+ * Each byte contains motor driver fault flags (overcurrent, thermal, etc.).
  *
  * ## Unit Conversions
  *

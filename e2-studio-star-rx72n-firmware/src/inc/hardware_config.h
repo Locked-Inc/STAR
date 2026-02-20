@@ -16,7 +16,6 @@
  * |-------|------------|---------|
  * | Motor PWM | GPTW 0-3 | 8 pins (PH/EN per motor) |
  * | GTETRG Emergency Stop | GPTW triggers | 4 pins (nFAULT per motor) |
- * | Motor Driver SPI | SCI12 | 3 data + 4 CS = 7 pins |
  * | Host SPI | RSPI2_A | 3 data + 1 CS = 4 pins |
  * | Host I2C | RIIC0 | 2 pins (SCL0/SDA0) |
  * | Debug UART | SCI9 | 2 pins (TXD9/RXD9) |
@@ -98,7 +97,7 @@ typedef enum : uint8_t {
 
 /**
  * @defgroup gtetrg_pins GTETRG Emergency Stop Pin Assignments
- * @brief Hardware GPTW external trigger pins for DRV8243S nFAULT signals
+ * @brief Hardware GPTW external trigger pins for motor fault (nFAULT) signals
  *
  * @details
  * GTETRG provides hardware-level emergency stop: when nFAULT goes low,
@@ -129,70 +128,6 @@ typedef enum : uint8_t {
 } motor_nfault_pins_t;
 
 /** @} */ /* end of gtetrg_pins */
-
-/* =========================================================================
- * Motor Driver SPI (SCI12 hardware SPI)
- * ========================================================================= */
-
-/**
- * @defgroup motor_spi_pins Motor Driver SPI Pin Assignments
- * @brief SCI7 hardware SPI for DRV8243S motor driver communication
- *
- * @details
- * SCI7 provides hardware SPI for DRV8243S motor driver communication.
- * Four chip selects allow independent communication with each DRV8243S.
- *
- * **NOTE:** Originally assigned to SCI12 (PE0/1/2), but those pins had a
- * hardware conflict with GPTW motor PWM outputs. Moved to SCI7 (P90/91/92)
- * to resolve the pin function conflict. See Issue #288.
- *
- * **Pin Naming Convention:** Hardware signal names (SMOSI7/SMISO7) are from
- * the RX72N datasheet. This project uses COPI/CIPO terminology per OSHWA
- * inclusive naming standards.
- *
- * | Signal | Pin | Pkg Pin | Function | SCI Channel |
- * |--------|-----|---------|----------|-------------|
- * | DRV_SCLK | P91 | 129 | SCK7 | SCI7 |
- * | DRV_COPI | P90 | 131 | SMOSI7 | SCI7 |
- * | DRV_CIPO | P92 | 128 | SMISO7 | SCI7 |
- * | DRV_CS0 | P74 | 72 | GPIO (CS4#) | N/A |
- * | DRV_CS1 | PC1 | 73 | GPIO | N/A |
- * | DRV_CS2 | PB5 | 80 | GPIO | N/A |
- * | DRV_CS3 | PB4 | 81 | GPIO | N/A |
- * @{
- */
-
-typedef enum : uint8_t {
-  k_drv_sclk_port = 9, /**< DRV_SCLK on PORT9 (P91/SCK7, pin 129) */
-  k_drv_copi_port = 9, /**< DRV_COPI on PORT9 (P90/SMOSI7, pin 131) */
-  k_drv_cipo_port = 9, /**< DRV_CIPO on PORT9 (P92/SMISO7, pin 128) */
-} drv_spi_ports_t;
-
-typedef enum : uint8_t {
-  k_drv_sclk_pin = 1, /**< DRV_SCLK pin 1 (P91, pin 129) */
-  k_drv_copi_pin = 0, /**< DRV_COPI pin 0 (P90, pin 131) */
-  k_drv_cipo_pin = 2, /**< DRV_CIPO pin 2 (P92, pin 128) */
-} drv_spi_pins_t;
-
-typedef enum : uint8_t {
-  k_drv_spi_channel = 7, /**< Motor driver SPI uses SCI7 */
-} drv_spi_channel_t;
-
-typedef enum : uint8_t {
-  k_drv_cs0_port = 7,  /**< DRV_CS0 on PORT7 (P74/CS4#, pin 72) */
-  k_drv_cs1_port = 12, /**< DRV_CS1 on PORTC (PC1, pin 73) */
-  k_drv_cs2_port = 11, /**< DRV_CS2 on PORTB (PB5, pin 80) */
-  k_drv_cs3_port = 11, /**< DRV_CS3 on PORTB (PB4, pin 81) */
-} drv_cs_ports_t;
-
-typedef enum : uint8_t {
-  k_drv_cs0_pin = 4, /**< DRV_CS0 pin 4 (P74, pin 72) */
-  k_drv_cs1_pin = 1, /**< DRV_CS1 pin 1 (PC1, pin 73) */
-  k_drv_cs2_pin = 5, /**< DRV_CS2 pin 5 (PB5, pin 80) */
-  k_drv_cs3_pin = 4, /**< DRV_CS3 pin 4 (PB4, pin 81) */
-} drv_cs_pins_t;
-
-/** @} */ /* end of motor_spi_pins */
 
 /* =========================================================================
  * Host SPI (RSPI2 channel A)
@@ -375,7 +310,7 @@ typedef enum : uint8_t {
 
 /**
  * @defgroup motor_adc_pins Motor Current Sense ADC Pin Assignments
- * @brief S12AD0 channels for DRV8243S IPROPI current sense
+ * @brief S12AD0 channels for motor current sense (AN004-AN007)
  *
  * @details
  * All motor current sense uses ADC Unit 0 (S12AD0) on P44-P47.
