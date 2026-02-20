@@ -80,7 +80,7 @@
  * | **I2C** | RIIC | 100-1000 kHz | [ ] Config tested via add_bus max capacity |
  * | **SPI** | RSPI | 1-15 MHz | [ ] Config tested via add_bus max capacity |
  * | **SMBus** | RIIC + CRC | 100-400 kHz | [ ] Config tested via add_bus max capacity |
- * | **ADC** | S12ADFa | ~1 µs/sample | [ ] Config tested via add_bus max capacity |
+ * | **ADC** | S12ADFa | ~1 us/sample | [ ] Config tested via add_bus max capacity |
  *
  * ## Command Pattern Design (Gang of Four)
  *
@@ -186,21 +186,21 @@
  * not concrete implementations. Tests verify:
  *
  * ```
- * ┌─────────────────────┐
- * │ rx_bus_manager      │  <--- Concrete implementation (under test)
- * └──────────┬──────────┘
- *            │ depends on
- *            ▼
- * ┌─────────────────────┐
- * │ rx_error_interface  │  <--- Abstract interface
- * │ rx_pin_interface    │
- * └──────────┬──────────┘
- *            │ implemented by
- *            ▼
- * ┌─────────────────────┐
- * │ Mock Implementations│  <--- Test doubles (future)
- * │ (nullptr for now)      │
- * └─────────────────────┘
+ * +---------------------+
+ * | rx_bus_manager      |  <--- Concrete implementation (under test)
+ * +----------+----------+
+ *            | depends on
+ *            v
+ * +---------------------+
+ * | rx_error_interface  |  <--- Abstract interface
+ * | rx_pin_interface    |
+ * +----------+----------+
+ *            | implemented by
+ *            v
+ * +---------------------+
+ * | Mock Implementations|  <--- Test doubles (future)
+ * | (nullptr for now)      |
+ * +---------------------+
  * ```
  *
  * **Current Testing:** Manager accepts nullptr for interfaces (minimal testing)
@@ -245,7 +245,7 @@
  * | **Rule 1** | [PASS] | No goto, setjmp, recursion - only if/while/for |
  * | **Rule 2** | [PASS] | All loops bounded by k_max_buses (16) or test constants |
  * | **Rule 3** | [PASS] | No malloc/free - all data static or stack-allocated |
- * | **Rule 4** | [PASS] | All test functions ≤60 lines, focused single assertion |
+ * | **Rule 4** | [PASS] | All test functions <=60 lines, focused single assertion |
  * | **Rule 5** | [PASS] | Preconditions via API calls, postconditions via TEST_ASSERT |
  * | **Rule 6** | [PASS] | Variables declared at smallest scope (loop counters, configs) |
  * | **Rule 7** | [PASS] | All error codes validated with TEST_ASSERT_EQUAL |
@@ -459,7 +459,7 @@ static rx_bus_config_t s_uart_config;
  * @note Thread-safe: Tests run sequentially (no concurrent access)
  *
  * @par Performance:
- * Execution time: ~5 µs @ 240 MHz (4 × memset on small structures)
+ * Execution time: ~5 us @ 240 MHz (4 x memset on small structures)
  *
  * @see tearDown() Cleanup function (deinitializes if needed)
  * @see UNITY_BEGIN() Unity framework entry point
@@ -519,8 +519,8 @@ void setUp(void)
  * @warning Assumes single-threaded test execution (Unity framework guarantee)
  *
  * @par Performance:
- * - If manager initialized: ~40 µs (bus removal + mutex delete)
- * - If manager not initialized: ~0.5 µs (ID check only)
+ * - If manager initialized: ~40 us (bus removal + mutex delete)
+ * - If manager not initialized: ~0.5 us (ID check only)
  *
  * @see setUp() Initialization function (zeros structure)
  * @see rx_bus_manager_deinit() Manager cleanup function
@@ -1454,21 +1454,21 @@ void test_rx_bus_manager_with_bus_not_found(void)
  * ## Command Pattern Structure
  *
  * ```
- * ┌─────────────────┐
- * │ rx_bus_command_t│  ← Command structure (what to execute)
- * ├─────────────────┤
- * │ execute()       │  ← Function pointer to command logic
- * │ data            │  ← Command-specific parameters
- * │ result          │  ← Execution result (output)
- * └─────────────────┘
- *          │
- *          ▼
- * ┌─────────────────────┐
- * │ Manager Executes    │
- * │ 1. Find bus         │
- * │ 2. cmd.execute(...) │
- * │ 3. Store result     │
- * └─────────────────────┘
+ * +-----------------+
+ * | rx_bus_command_t|  <- Command structure (what to execute)
+ * +-----------------+
+ * | execute()       |  <- Function pointer to command logic
+ * | data            |  <- Command-specific parameters
+ * | result          |  <- Execution result (output)
+ * +-----------------+
+ *          |
+ *          v
+ * +---------------------+
+ * | Manager Executes    |
+ * | 1. Find bus         |
+ * | 2. cmd.execute(...) |
+ * | 3. Store result     |
+ * +---------------------+
  * ```
  *
  * ## Mock Commands Under Test

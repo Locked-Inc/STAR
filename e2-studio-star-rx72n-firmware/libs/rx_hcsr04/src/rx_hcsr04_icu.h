@@ -30,7 +30,7 @@
  * @par Example: Configure IRQ11 for HC-SR04 Echo
  * @code
  * // Step 1: Configure pin for IRQ function
- * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);  // P03 → IRQ11
+ * rx_err_t err = rx_mpc_set_irq(k_rx_p0_3);  // P03 -> IRQ11
  * if (err != k_rx_ok) {
  *     return err;
  * }

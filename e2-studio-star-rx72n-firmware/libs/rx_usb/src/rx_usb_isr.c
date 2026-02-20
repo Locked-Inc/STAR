@@ -93,22 +93,22 @@
  *
  * **Transmission (Device -> Host):**
  * ```
- * T+0µs:   Application: rx_usb_write(port, data, len)
- * T+1µs:   Data copied to TX ring buffer
- * T+2µs:   internal_trigger_tx_if_idle() checks pipe idle
- * T+3µs:   rx_usb_cdc_handle_bulk_in(port) loads FIFO
- * T+4µs:   USB0 hardware transmits packet
- * T+50µs:  Host ACKs packet
- * T+51µs:  USB0 BEMP interrupt fires
- * T+52µs:  usb0_usbi_isr() clears IR flag
- * T+53µs:  internal_handle_bemp_interrupt() identifies pipe
- * T+54µs:  rx_usb_cdc_handle_bulk_in(port) sends next packet
+ * T+0us:   Application: rx_usb_write(port, data, len)
+ * T+1us:   Data copied to TX ring buffer
+ * T+2us:   internal_trigger_tx_if_idle() checks pipe idle
+ * T+3us:   rx_usb_cdc_handle_bulk_in(port) loads FIFO
+ * T+4us:   USB0 hardware transmits packet
+ * T+50us:  Host ACKs packet
+ * T+51us:  USB0 BEMP interrupt fires
+ * T+52us:  usb0_usbi_isr() clears IR flag
+ * T+53us:  internal_handle_bemp_interrupt() identifies pipe
+ * T+54us:  rx_usb_cdc_handle_bulk_in(port) sends next packet
  * ...      (continues until TX ring buffer empty)
  * ```
  *
  * **Reception (Host -> Device):**
  * ```
- * T+0µs:   Host writes to /dev/ttyACM*
+ * T+0us:   Host writes to /dev/ttyACM*
  * T+1ms:   USB0 receives Bulk OUT packet in FIFO
  * T+1ms:   USB0 BRDY interrupt fires
  * T+1ms:   usb0_usbi_isr() clears IR flag
@@ -142,7 +142,7 @@
  * ## Interrupt Timing and Performance
  *
  * **Execution Times @ 240 MHz:**
- * | Handler | Typical (µs) | Worst-Case (µs) | Notes |
+ * | Handler | Typical (us) | Worst-Case (us) | Notes |
  * |---------|--------------|-----------------|-------|
  * | `usb0_usbi_isr()` | 0.5 | 1.0 | Vector entry + IR clear |
  * | `internal_handle_vbus_interrupt()` | 2 | 5 | VBUS state change + callbacks |
@@ -150,7 +150,7 @@
  * | `internal_handle_ctrt_interrupt()` | 2 | 10 | Control transfer stage |
  * | `internal_handle_brdy_interrupt()` | 5 | 50 | Per-pipe RX (depends on FIFO size) |
  * | `internal_handle_bemp_interrupt()` | 5 | 50 | Per-pipe TX (depends on FIFO size) |
- * | **Total (typical)** | **20 µs** | **120 µs** | Multiple interrupts may fire |
+ * | **Total (typical)** | **20 us** | **120 us** | Multiple interrupts may fire |
  *
  * **Interrupt Frequency:**
  * - **Idle**: ~1 kHz (USB SOF packets, 1ms interval)
@@ -158,8 +158,8 @@
  * - **Enumeration**: ~100 Hz (control transfers, CTRT)
  *
  * **CPU Load:**
- * - **Idle**: ~2% (1 kHz × 20 µs = 0.02 = 2%)
- * - **Active**: ~20-40% (20 kHz × 20 µs = 0.4 = 40%)
+ * - **Idle**: ~2% (1 kHz x 20 us = 0.02 = 2%)
+ * - **Active**: ~20-40% (20 kHz x 20 us = 0.4 = 40%)
  * - **Peak**: <50% (burst transfers)
  *
  * ## Thread Safety and Concurrency
@@ -167,7 +167,7 @@
  * **ISR Context:**
  * - All functions in this file run in **interrupt context** (priority 5)
  * - Do NOT call blocking functions (tx_thread_sleep, tx_mutex_get, etc.)
- * - Keep handlers fast (<100 µs total)
+ * - Keep handlers fast (<100 us total)
  * - Use atomic operations for shared state
  *
  * **Data Sharing with Application:**

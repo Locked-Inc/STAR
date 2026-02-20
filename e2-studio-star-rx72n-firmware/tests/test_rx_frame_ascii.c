@@ -259,7 +259,7 @@
  * **Target Execution Time (RX72N @ 240 MHz):**
  * - **Full test suite**: < 500 ms (30 tests)
  * - **Individual test**: < 20 ms
- * - **Format operations**: < 100 µs (small payload), < 500 µs (large payload)
+ * - **Format operations**: < 100 us (small payload), < 500 us (large payload)
  *
  * ## NASA Power of 10 Compliance
  *
@@ -313,7 +313,7 @@
  *
  * Potential areas for additional test coverage:
  * - Buffer size boundary tests (exact minimum buffer calculations)
- * - Performance benchmarks (µs per byte formatted)
+ * - Performance benchmarks (us per byte formatted)
  * - Stress tests (maximum payload, all flags set)
  * - Unicode/extended ASCII character handling
  *
@@ -545,7 +545,7 @@ static char s_output_buffer[k_test_output_buffer_size];
  * @note Thread-safe: single-threaded test execution only
  *
  * @par Performance:
- * ~10 µs @ 240 MHz (memset 2048 bytes)
+ * ~10 us @ 240 MHz (memset 2048 bytes)
  *
  * @see tearDown() Test cleanup (no-op)
  * @see s_output_buffer Global output buffer

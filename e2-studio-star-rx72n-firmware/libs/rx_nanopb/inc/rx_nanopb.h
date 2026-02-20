@@ -106,10 +106,10 @@
  * @par Performance Characteristics
  * | Operation | Time @ 240 MHz | Notes |
  * |-----------|----------------|-------|
- * | Encode velocity | ~20 µs | 4-motor command |
- * | Decode velocity | ~15 µs | 4-motor command |
- * | Encode telemetry | ~30 µs | Full telemetry packet |
- * | Buffer copy | ~5 µs | 256 bytes |
+ * | Encode velocity | ~20 us | 4-motor command |
+ * | Decode velocity | ~15 us | 4-motor command |
+ * | Encode telemetry | ~30 us | Full telemetry packet |
+ * | Buffer copy | ~5 us | 256 bytes |
  *
  * @par Wire Format
  * nanopb uses standard Protocol Buffer encoding:
@@ -314,7 +314,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @note Not thread-safe (uses shared internal buffer)
  *
- * @par Performance: ~20 µs @ 240 MHz
+ * @par Performance: ~20 us @ 240 MHz
  *
  * @see rx_nanopb_decode_velocity_request() Decode counterpart
  * @since Version 1.0.0
@@ -359,7 +359,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @note Not thread-safe (uses shared internal state)
  *
- * @par Performance: ~15 µs @ 240 MHz
+ * @par Performance: ~15 us @ 240 MHz
  *
  * @par Example:
  * @code
@@ -419,7 +419,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @pre rx_nanopb_init() must be called first
  * @post buffer contains wire-format response
  *
- * @par Performance: ~15 µs @ 240 MHz
+ * @par Performance: ~15 us @ 240 MHz
  *
  * @see rx_nanopb_decode_velocity_request() Decode the incoming request
  * @see rx_nanopb_create_response_header() Create header with status
@@ -461,7 +461,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @warning E-stop must be processed immediately regardless of return value
  * @note Consider stopping motors first, then decode for response
  *
- * @par Performance: ~10 µs @ 240 MHz (minimal message)
+ * @par Performance: ~10 us @ 240 MHz (minimal message)
  *
  * @see rx_nanopb_encode_estop_response() Send acknowledgment
  * @since Version 1.0.0
@@ -490,7 +490,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_invalid_size Buffer too small
  *
- * @par Performance: ~10 µs @ 240 MHz
+ * @par Performance: ~10 us @ 240 MHz
  *
  * @see rx_nanopb_decode_estop_request() Decode incoming E-stop
  * @since Version 1.0.0
@@ -552,7 +552,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @note Not thread-safe (uses shared internal state)
  *
- * @par Performance: ~18 µs @ 240 MHz
+ * @par Performance: ~18 us @ 240 MHz
  *
  * @par Example:
  * @code
@@ -638,13 +638,13 @@ rx_nanopb_decode_retransmit_config_request(const uint8_t*                      b
  * @par Telemetry Contents
  * | Field | Type | Units | Update Rate |
  * |-------|------|-------|-------------|
- * | Motor velocities | double × 4 | m/s | 100 Hz |
- * | Motor currents | double × 4 | A | 100 Hz |
- * | Encoder positions | int32 × 4 | ticks | 100 Hz |
+ * | Motor velocities | double x 4 | m/s | 100 Hz |
+ * | Motor currents | double x 4 | A | 100 Hz |
+ * | Encoder positions | int32 x 4 | ticks | 100 Hz |
  * | Battery voltage | double | V | 10 Hz |
  * | Battery current | double | A | 10 Hz |
  * | Battery SOC | double | % | 1 Hz |
- * | Temperature | double | °C | 1 Hz |
+ * | Temperature | double | degC | 1 Hz |
  *
  * @param[in] msg Message to encode (fully populated telemetry)
  * @param[out] buffer Output buffer for encoded bytes
@@ -657,7 +657,7 @@ rx_nanopb_decode_retransmit_config_request(const uint8_t*                      b
  * @retval k_rx_err_not_initialized Module not initialized
  * @retval k_rx_err_invalid_size Buffer too small
  *
- * @par Performance: ~30 µs @ 240 MHz (full telemetry)
+ * @par Performance: ~30 us @ 240 MHz (full telemetry)
  *
  * @par Example:
  * @code

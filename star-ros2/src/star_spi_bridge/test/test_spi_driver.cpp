@@ -38,11 +38,11 @@ TEST_F(SpiDriverTest, FrameEncoding)
   EXPECT_EQ(frame[0], 0xAA);  // LSB first
   EXPECT_EQ(frame[1], 0x55);  // MSB second
 
-  // Check SEQ field (Little Endian: seq=100=0x0064 → [0x64, 0x00])
+  // Check SEQ field (Little Endian: seq=100=0x0064 -> [0x64, 0x00])
   EXPECT_EQ(frame[2], 0x64);  // SEQ LSB
   EXPECT_EQ(frame[3], 0x00);  // SEQ MSB
 
-  // Check LEN field (Little Endian: len=3=0x0003 → [0x03, 0x00])
+  // Check LEN field (Little Endian: len=3=0x0003 -> [0x03, 0x00])
   EXPECT_EQ(frame[4], 0x03);  // LEN LSB
   EXPECT_EQ(frame[5], 0x00);  // LEN MSB
 

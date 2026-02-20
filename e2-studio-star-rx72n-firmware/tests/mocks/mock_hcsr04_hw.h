@@ -11,7 +11,7 @@
  * and distance-to-time conversion.
  *
  * Enables testing of:
- * - HC-SR04 trigger pulse generation (10µs pulse)
+ * - HC-SR04 trigger pulse generation (10us pulse)
  * - Echo pulse width measurement (distance->time)
  * - Distance calculation (pulse width -> cm/mm)
  * - Timeout handling (no echo received)

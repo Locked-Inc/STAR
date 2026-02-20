@@ -15,35 +15,35 @@
  * **Key Design Pattern: Service Locator + Dependency Inversion**
  *
  * ```
- * ┌──────────────────────────────────────────────────────────────────┐
- * │                     High-Level Modules                           │
- * │   (Motor Control, SPI Driver, USB Stack, etc.)                   │
- * └───────────────┬──────────────────────────────┬───────────────────┘
- *                 │                              │
- *                 │ depends on (abstract)        │ depends on (abstract)
- *                 ▼                              ▼
- * ┌───────────────────────────┐  ┌─────────────────────────────────┐
- * │  rx_error_interface_t     │  │   rx_pin_interface_t            │
- * │  (Abstract Interface)     │  │   (Abstract Interface)          │
- * └───────────┬───────────────┘  └─────────────┬───────────────────┘
- *             │                                 │
- *             │ implements                      │ implements
- *             ▼                                 ▼
- * ┌───────────────────────────┐  ┌─────────────────────────────────┐
- * │  error_handler_t          │  │   pin_validator_t               │
- * │  (Concrete Impl)          │  │   (Concrete Impl)               │
- * └───────────┬───────────────┘  └─────────────┬───────────────────┘
- *             │                                 │
- *             └─────────────────┬───────────────┘
- *                               │
+ * +------------------------------------------------------------------+
+ * |                     High-Level Modules                           |
+ * |   (Motor Control, SPI Driver, USB Stack, etc.)                   |
+ * +---------------+------------------------------+-------------------+
+ *                 |                              |
+ *                 | depends on (abstract)        | depends on (abstract)
+ *                 v                              v
+ * +---------------------------+  +---------------------------------+
+ * |  rx_error_interface_t     |  |   rx_pin_interface_t            |
+ * |  (Abstract Interface)     |  |   (Abstract Interface)          |
+ * +-----------+---------------+  +-------------+-------------------+
+ *             |                                 |
+ *             | implements                      | implements
+ *             v                                 v
+ * +---------------------------+  +---------------------------------+
+ * |  error_handler_t          |  |   pin_validator_t               |
+ * |  (Concrete Impl)          |  |   (Concrete Impl)               |
+ * +-----------+---------------+  +-------------+-------------------+
+ *             |                                 |
+ *             +-----------------+---------------+
+ *                               |
  *                 owned and initialized by
- *                               ▼
- *             ┌─────────────────────────────────┐
- *             │  rx_infrastructure (THIS FILE)  │
- *             │  - Global instances             │
- *             │  - Initialization sequence      │
- *             │  - Interface accessors          │
- *             └─────────────────────────────────┘
+ *                               v
+ *             +---------------------------------+
+ *             |  rx_infrastructure (THIS FILE)  |
+ *             |  - Global instances             |
+ *             |  - Initialization sequence      |
+ *             |  - Interface accessors          |
+ *             +---------------------------------+
  * ```
  *
  * ## Architecture Principles
@@ -58,26 +58,26 @@
  *
  * ```
  * System Boot
- *     │
- *     ├─ 1. rx_infrastructure_init()
- *     │      ├─ Initialize global error handler
- *     │      │  └─ Config: max_retries=3, initial_backoff=100ms, max_backoff=5s
- *     │      ├─ Initialize global pin validator
- *     │      │  └─ Allocates pin reservation table
- *     │      └─ Extract interfaces from concrete implementations
- *     │
- *     ├─ 2. Module Initialization (SPI, USB, Motor, etc.)
- *     │      ├─ Get interfaces via accessors
- *     │      ├─ Reserve pins via RX_RESERVE_PIN()
- *     │      └─ Report errors via RX_REPORT_ERROR()
- *     │
- *     ├─ 3. Runtime Operation
- *     │      ├─ All modules use global interfaces
- *     │      └─ No direct access to concrete implementations
- *     │
- *     └─ 4. rx_infrastructure_deinit() [optional, shutdown]
- *            ├─ Release all resources
- *            └─ Clear interface pointers
+ *     |
+ *     +- 1. rx_infrastructure_init()
+ *     |      +- Initialize global error handler
+ *     |      |  +- Config: max_retries=3, initial_backoff=100ms, max_backoff=5s
+ *     |      +- Initialize global pin validator
+ *     |      |  +- Allocates pin reservation table
+ *     |      +- Extract interfaces from concrete implementations
+ *     |
+ *     +- 2. Module Initialization (SPI, USB, Motor, etc.)
+ *     |      +- Get interfaces via accessors
+ *     |      +- Reserve pins via RX_RESERVE_PIN()
+ *     |      +- Report errors via RX_REPORT_ERROR()
+ *     |
+ *     +- 3. Runtime Operation
+ *     |      +- All modules use global interfaces
+ *     |      +- No direct access to concrete implementations
+ *     |
+ *     +- 4. rx_infrastructure_deinit() [optional, shutdown]
+ *            +- Release all resources
+ *            +- Clear interface pointers
  * ```
  *
  * ## Thread Safety
@@ -418,7 +418,7 @@ extern "C" {
  * - After successful init, interface getters are thread-safe (read-only)
  *
  * @par Performance:
- * - Execution time: ~500 µs @ 240 MHz (one-time cost at boot)
+ * - Execution time: ~500 us @ 240 MHz (one-time cost at boot)
  * - Memory allocated: ~584 bytes in .bss section
  * - Stack usage: ~64 bytes
  *
@@ -667,7 +667,7 @@ extern "C" {
  * - Suspend all ThreadX threads before calling
  *
  * @par Performance:
- * - Execution time: ~200 µs @ 240 MHz
+ * - Execution time: ~200 us @ 240 MHz
  * - No heap operations (all cleanup is static)
  *
  * @par Example: Safe Shutdown Sequence
@@ -779,17 +779,17 @@ extern "C" {
  *
  * ```
  * System Boot
- *     │
- *     ├─ rx_infrastructure_init()
- *     │      └─ Interface pointer becomes valid
- *     │
- *     ├─ Runtime (entire program lifetime)
- *     │      ├─ Pointer remains valid
- *     │      ├─ Safe to call from any thread
- *     │      └─ Safe to cache in module state
- *     │
- *     └─ rx_infrastructure_deinit() [optional]
- *            └─ Pointer becomes NULL (rare in embedded)
+ *     |
+ *     +- rx_infrastructure_init()
+ *     |      +- Interface pointer becomes valid
+ *     |
+ *     +- Runtime (entire program lifetime)
+ *     |      +- Pointer remains valid
+ *     |      +- Safe to call from any thread
+ *     |      +- Safe to cache in module state
+ *     |
+ *     +- rx_infrastructure_deinit() [optional]
+ *            +- Pointer becomes NULL (rare in embedded)
  * ```
  *
  * ## Usage Patterns
@@ -998,19 +998,19 @@ rx_error_interface_t* rx_infrastructure_get_error_interface(void);
  *
  * ```
  * Module Init Sequence:
- *     │
- *     ├─ SPI Driver Init
- *     │      ├─ Reserve PA0 ("SPI_CIPO") -> Success
- *     │      ├─ Reserve PA1 ("SPI_COPI") -> Success
- *     │      └─ Reserve PA2 ("SPI_CLK")  -> Success
- *     │
- *     ├─ I2C Driver Init
- *     │      ├─ Reserve PA0 ("I2C_SDA")  -> FAIL (already SPI_CIPO)
- *     │      └─ Init fails, prevents pin conflict
- *     │
- *     └─ USB Driver Init
- *            ├─ Reserve PB0 ("USB_DP")   -> Success
- *            └─ Reserve PB1 ("USB_DM")   -> Success
+ *     |
+ *     +- SPI Driver Init
+ *     |      +- Reserve PA0 ("SPI_CIPO") -> Success
+ *     |      +- Reserve PA1 ("SPI_COPI") -> Success
+ *     |      +- Reserve PA2 ("SPI_CLK")  -> Success
+ *     |
+ *     +- I2C Driver Init
+ *     |      +- Reserve PA0 ("I2C_SDA")  -> FAIL (already SPI_CIPO)
+ *     |      +- Init fails, prevents pin conflict
+ *     |
+ *     +- USB Driver Init
+ *            +- Reserve PB0 ("USB_DP")   -> Success
+ *            +- Reserve PB1 ("USB_DM")   -> Success
  * ```
  *
  * ## Usage Patterns

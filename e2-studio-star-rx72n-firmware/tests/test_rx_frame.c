@@ -16,7 +16,7 @@
  * - **Encoder/decoder initialization** - nullptr checks, state validation
  * - **Frame encoding** - SYNC word, sequence numbers, payload, CRC generation
  * - **Frame decoding** - Header parsing, CRC verification, payload extraction
- * - **Round-trip validation** - Encode → Decode → Verify identity
+ * - **Round-trip validation** - Encode -> Decode -> Verify identity
  * - **Endianness** - Little-endian multi-byte fields, little-endian CRC-32
  * - **Go compatibility** - Bit-exact wire format matching Go test vectors
  * - **Edge cases** - Max payload, sequence rollover, truncated frames
@@ -25,11 +25,11 @@
  * ## Frame Protocol Summary
  *
  * ```
- * ┌──────────┬──────────┬──────────┬──────────┬──────────┬───────────────┬──────────┐
- * │  SYNC    │   SEQ    │   LEN    │  TYPE    │  FLAGS   │   PAYLOAD     │  CRC-32  │
- * │  2 bytes │  2 bytes │  2 bytes │  1 byte  │  1 byte  │   0-1024 B    │  4 bytes │
- * │  0x55AA  │   (LE)   │   (LE)   │          │          │               │   (LE)   │
- * └──────────┴──────────┴──────────┴──────────┴──────────┴───────────────┴──────────┘
+ * +----------+----------+----------+----------+----------+---------------+----------+
+ * |  SYNC    |   SEQ    |   LEN    |  TYPE    |  FLAGS   |   PAYLOAD     |  CRC-32  |
+ * |  2 bytes |  2 bytes |  2 bytes |  1 byte  |  1 byte  |   0-1024 B    |  4 bytes |
+ * |  0x55AA  |   (LE)   |   (LE)   |          |          |               |   (LE)   |
+ * +----------+----------+----------+----------+----------+---------------+----------+
  * ```
  *
  * ## Test Organization
@@ -39,7 +39,7 @@
  * 1. **Initialization Tests** - Encoder/decoder setup and validation
  * 2. **Encode Tests** - Frame construction, header generation, payload handling
  * 3. **Decode Tests** - Wire data parsing, validation, error detection
- * 4. **Round-Trip Tests** - Encode → Decode identity verification
+ * 4. **Round-Trip Tests** - Encode -> Decode identity verification
  * 5. **Utility Function Tests** - Helper APIs (create_ack, create_nack, etc.)
  * 6. **Frame Type Tests** - Command, response, ACK, NACK frame handling
  * 7. **Frame Flag Tests** - All flag combinations (requires_ack, retransmit, etc.)
@@ -144,16 +144,16 @@
  *
  * | Rule | Test Coverage |
  * |------|---------------|
- * | 1. Simple control flow | ✅ Verified via round-trip tests (no goto) |
- * | 2. Fixed loop bounds | ✅ Max payload tests verify bounded iteration |
- * | 3. No dynamic memory | ✅ All buffers stack-allocated |
- * | 4. Short functions | ✅ N/A (test code exempt) |
- * | 5. Assertions | ✅ Every test validates preconditions |
- * | 6. Small scope | ✅ Test fixtures have file scope |
- * | 7. Check returns | ✅ All rx_frame_* returns verified |
- * | 8. Limited preprocessor | ✅ Only include guards used |
- * | 9. Restrict pointers | ✅ No function pointers in frame API |
- * | 10. Compiler warnings | ✅ Tests build with -Wall -Wextra -Werror |
+ * | 1. Simple control flow | [PASS] Verified via round-trip tests (no goto) |
+ * | 2. Fixed loop bounds | [PASS] Max payload tests verify bounded iteration |
+ * | 3. No dynamic memory | [PASS] All buffers stack-allocated |
+ * | 4. Short functions | [PASS] N/A (test code exempt) |
+ * | 5. Assertions | [PASS] Every test validates preconditions |
+ * | 6. Small scope | [PASS] Test fixtures have file scope |
+ * | 7. Check returns | [PASS] All rx_frame_* returns verified |
+ * | 8. Limited preprocessor | [PASS] Only include guards used |
+ * | 9. Restrict pointers | [PASS] No function pointers in frame API |
+ * | 10. Compiler warnings | [PASS] Tests build with -Wall -Wextra -Werror |
  *
  * ## SOLID Principles
  *
@@ -475,8 +475,8 @@ static rx_frame_decoder_t s_decoder;
  *
  * **Algorithm:**
  * ```
- * 1. Initialize encoder → Set encoder.initialized = 1
- * 2. Initialize decoder → Set decoder.initialized = 1
+ * 1. Initialize encoder -> Set encoder.initialized = 1
+ * 2. Initialize decoder -> Set decoder.initialized = 1
  * ```
  *
  * @pre Unity test framework has called this function
@@ -512,8 +512,8 @@ void setUp(void)
  *
  * **Algorithm:**
  * ```
- * 1. Deinitialize encoder → Set encoder.initialized = 0
- * 2. Deinitialize decoder → Set decoder.initialized = 0
+ * 1. Deinitialize encoder -> Set encoder.initialized = 0
+ * 2. Deinitialize decoder -> Set decoder.initialized = 0
  * ```
  *
  * @pre Test function has completed execution
@@ -693,10 +693,10 @@ void test_decoder_init_success(void)
  * k_rx_err_invalid_arg when any pointer is nullptr.
  *
  * **Test Algorithm:**
- * 1. Test nullptr encoder → k_rx_err_invalid_arg
- * 2. Test nullptr frame → k_rx_err_invalid_arg
- * 3. Test nullptr buffer → k_rx_err_invalid_arg
- * 4. Test nullptr len → k_rx_err_invalid_arg
+ * 1. Test nullptr encoder -> k_rx_err_invalid_arg
+ * 2. Test nullptr frame -> k_rx_err_invalid_arg
+ * 3. Test nullptr buffer -> k_rx_err_invalid_arg
+ * 4. Test nullptr len -> k_rx_err_invalid_arg
  *
  * @pre s_encoder initialized by setUp()
  * @post No state changes (all calls rejected before execution)
@@ -1649,7 +1649,7 @@ void test_go_compatibility_command_with_payload(void)
 }
 
 /* =============================================================================
- * Byte-Exact Cross-Compatibility Vectors (C ↔ Go)
+ * Byte-Exact Cross-Compatibility Vectors (C <-> Go)
  *
  * These test vectors define the canonical wire encoding for every frame type.
  * The Go tests (frame_test.go TestCrossCompatibility_*) verify against the
@@ -2312,7 +2312,7 @@ typedef enum : uint8_t {
  * - bytes_discarded == 1 (the junk byte)
  * - Decoded frame matches the original ACK frame
  *
- * This exercises the k_rx_err_protocol_error → internal_find_sync_offset() →
+ * This exercises the k_rx_err_protocol_error -> internal_find_sync_offset() ->
  * retry decode path.
  *
  * @pre s_encoder must be initialized (via setUp())
@@ -2412,8 +2412,8 @@ void test_resync_aligned_frame_zero_discarded(void)
  *        when no sync word exists anywhere in the buffer
  *
  * @details
- * Fills a buffer with k_resync_junk_byte (0xBB) — a byte that never forms part
- * of the 0x55AA sync word — and calls rx_frame_decode_with_resync(). Verifies:
+ * Fills a buffer with k_resync_junk_byte (0xBB) -- a byte that never forms part
+ * of the 0x55AA sync word -- and calls rx_frame_decode_with_resync(). Verifies:
  * - Return value is k_rx_err_protocol_error
  * - bytes_discarded is 0 (no partial progress)
  *

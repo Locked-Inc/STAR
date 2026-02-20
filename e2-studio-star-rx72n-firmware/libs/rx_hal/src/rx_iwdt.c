@@ -12,42 +12,42 @@
  * @par Implementation Architecture
  * @verbatim
  *                    IWDT Implementation Structure
- *   ┌─────────────────────────────────────────────────────────────────────┐
- *   │                         Public API Layer                           │
- *   │   ┌─────────────┐  ┌─────────────┐  ┌─────────────┐  ┌───────────┐  │
- *   │   │ rx_iwdt_    │  │ rx_iwdt_    │  │ rx_iwdt_    │  │rx_iwdt_   │  │
- *   │   │   init()    │  │   feed()    │  │was_reset()  │  │check_     │  │
- *   │   └──────┬──────┘  └──────┬──────┘  └──────┬──────┘  │ tasks()   │  │
- *   │          │                │                │         └─────┬─────┘  │
- *   └──────────┼────────────────┼────────────────┼───────────────┼────────┘
- *              │                │                │               │
- *   ┌──────────▼────────────────▼────────────────▼───────────────▼────────┐
- *   │                    Internal Helper Layer                           │
- *   │   ┌────────────────────────┐  ┌────────────────────────────────┐   │
- *   │   │ internal_find_         │  │ internal_configure_iwdt_       │   │
- *   │   │   timeout_config()     │  │   control_register()           │   │
- *   │   │   └-> Lookup table      │  │   └-> IWDTCR setup              │   │
- *   │   └────────────────────────┘  └────────────────────────────────┘   │
- *   └────────────────────────────────────────────────────────────────────┘
- *                                    │
- *   ┌────────────────────────────────▼───────────────────────────────────┐
- *   │                      IWDT Hardware Registers                       │
- *   │   ┌──────────────┐  ┌──────────────┐  ┌──────────────┐             │
- *   │   │   IWDTCR     │  │   IWDTRR     │  │   IWDTSR     │             │
- *   │   │   (Control)  │  │   (Refresh)  │  │   (Status)   │             │
- *   │   │   [16-bit]   │  │   [8-bit]    │  │   [16-bit]   │             │
- *   │   └──────────────┘  └──────────────┘  └──────────────┘             │
- *   │   Base: 0x00088030                                                 │
- *   └────────────────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------------------+
+ *   |                         Public API Layer                           |
+ *   |   +-------------+  +-------------+  +-------------+  +-----------+  |
+ *   |   | rx_iwdt_    |  | rx_iwdt_    |  | rx_iwdt_    |  |rx_iwdt_   |  |
+ *   |   |   init()    |  |   feed()    |  |was_reset()  |  |check_     |  |
+ *   |   +------+------+  +------+------+  +------+------+  | tasks()   |  |
+ *   |          |                |                |         +-----+-----+  |
+ *   +----------+----------------+----------------+---------------+--------+
+ *              |                |                |               |
+ *   +----------v----------------v----------------v---------------v--------+
+ *   |                    Internal Helper Layer                           |
+ *   |   +------------------------+  +--------------------------------+   |
+ *   |   | internal_find_         |  | internal_configure_iwdt_       |   |
+ *   |   |   timeout_config()     |  |   control_register()           |   |
+ *   |   |   +-> Lookup table      |  |   +-> IWDTCR setup              |   |
+ *   |   +------------------------+  +--------------------------------+   |
+ *   +--------------------------------------------------------------------+
+ *                                    |
+ *   +--------------------------------v-----------------------------------+
+ *   |                      IWDT Hardware Registers                       |
+ *   |   +--------------+  +--------------+  +--------------+             |
+ *   |   |   IWDTCR     |  |   IWDTRR     |  |   IWDTSR     |             |
+ *   |   |   (Control)  |  |   (Refresh)  |  |   (Status)   |             |
+ *   |   |   [16-bit]   |  |   [8-bit]    |  |   [16-bit]   |             |
+ *   |   +--------------+  +--------------+  +--------------+             |
+ *   |   Base: 0x00088030                                                 |
+ *   +--------------------------------------------------------------------+
  * @endverbatim
  *
  * @par Register Layout (IWDTCR - 0x00088030)
  * @verbatim
  *   Bits [15:14] RPSS - Window Start Position
- *   ┌─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
- *   │  -  │RPSS1│RPSS0│  -  │RP-  │RP-  │  -  │  -  │CKS3 │CKS2 │CKS1 │CKS0 │  -  │  -  │TOPS1│TOPS0│
- *   │ b15 │ b14 │ b13 │ b12 │ES1  │ES0  │ b9  │ b8  │ b7  │ b6  │ b5  │ b4  │ b3  │ b2  │ b1  │ b0  │
- *   └─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┴─────┘
+ *   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
+ *   |  -  |RPSS1|RPSS0|  -  |RP-  |RP-  |  -  |  -  |CKS3 |CKS2 |CKS1 |CKS0 |  -  |  -  |TOPS1|TOPS0|
+ *   | b15 | b14 | b13 | b12 |ES1  |ES0  | b9  | b8  | b7  | b6  | b5  | b4  | b3  | b2  | b1  | b0  |
+ *   +-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+-----+
  *   TOPS[1:0]: Timeout Period Select (00=1024, 01=4096, 10=8192, 11=16384 cycles)
  *   CKS[3:0]:  Clock Division Ratio (0000=/1, 0010=/16, 0100=/32, 1111=/128)
  *   RPES[1:0]: Window End Position (00=75%, 01=50%, 10=25%, 11=0%)
@@ -57,18 +57,18 @@
  * @par IWDT Refresh Sequence (IWDTRR)
  * @verbatim
  *   Refresh Sequence (must not be interrupted):
- *   ┌────────────────────────────────────────────────────────────────┐
- *   │  Step 1: Write 0x00 to IWDTRR                                 │
- *   │  Step 2: Write 0xFF to IWDTRR                                 │
- *   │          ↓                                                    │
- *   │  Counter reloads to initial value                             │
- *   └────────────────────────────────────────────────────────────────┘
+ *   +----------------------------------------------------------------+
+ *   |  Step 1: Write 0x00 to IWDTRR                                 |
+ *   |  Step 2: Write 0xFF to IWDTRR                                 |
+ *   |          v                                                    |
+ *   |  Counter reloads to initial value                             |
+ *   +----------------------------------------------------------------+
  *   WARNING: Incomplete sequence = Refresh Error -> System Reset
  * @endverbatim
  *
  * @par Timeout Calculation
  * @verbatim
- *   Timeout = (TOPS_cycles × CKS_divisor) / IWDTCLK
+ *   Timeout = (TOPS_cycles x CKS_divisor) / IWDTCLK
  *
  *   Where:
  *   - TOPS_cycles = 1024, 4096, 8192, or 16384 (based on TOPS bits)
@@ -76,18 +76,18 @@
  *   - IWDTCLK = 120 kHz (dedicated oscillator)
  *
  *   Example: TOPS=16384, CKS=16
- *   Timeout = (16384 × 16) / 120000 = 2.18 seconds
+ *   Timeout = (16384 x 16) / 120000 = 2.18 seconds
  * @endverbatim
  *
  * @par Performance Characteristics
  * | Function | Execution Time | Stack Usage | Notes |
  * |----------|---------------|-------------|-------|
- * | rx_hal_iwdt_init() | ~50 µs | 24 bytes | One-time setup |
- * | rx_hal_iwdt_feed() | ~2 µs | 8 bytes | Critical path |
- * | rx_hal_iwdt_was_reset() | ~5 µs | 8 bytes | Register read |
- * | rx_hal_iwdt_check_tasks() | ~10 µs × N | 32 bytes | N = task count |
- * | rx_hal_iwdt_register_task() | ~15 µs | 16 bytes | String copy |
- * | internal_find_timeout_config() | ~3 µs | 8 bytes | Table lookup |
+ * | rx_hal_iwdt_init() | ~50 us | 24 bytes | One-time setup |
+ * | rx_hal_iwdt_feed() | ~2 us | 8 bytes | Critical path |
+ * | rx_hal_iwdt_was_reset() | ~5 us | 8 bytes | Register read |
+ * | rx_hal_iwdt_check_tasks() | ~10 us x N | 32 bytes | N = task count |
+ * | rx_hal_iwdt_register_task() | ~15 us | 16 bytes | String copy |
+ * | internal_find_timeout_config() | ~3 us | 8 bytes | Table lookup |
  *
  * @par Memory Usage
  * | Category | Size | Notes |
@@ -164,7 +164,7 @@
  *   - Actual hardware minimum will be selected from timeout table
  *
  *   Maximum (16384 ms):
- *   - Hardware maximum = 16384 × 128 / 120000 ≈ 17.5 seconds
+ *   - Hardware maximum = 16384 x 128 / 120000 ~ 17.5 seconds
  *   - Conservative limit (16.4 s) ensures reasonable failure detection
  *   - Longer timeouts make watchdog less effective
  * @endverbatim
@@ -203,13 +203,13 @@ typedef enum : uint32_t {
  * @par State Transitions
  * @verbatim
  *   [Power On] -> k_iwdt_not_initialized
- *        │
- *        │ rx_hal_iwdt_init() succeeds
- *        ▼
+ *        |
+ *        | rx_hal_iwdt_init() succeeds
+ *        v
  *   k_iwdt_initialized
- *        │
- *        │ (No return path - IWDT cannot be stopped)
- *        ▼
+ *        |
+ *        | (No return path - IWDT cannot be stopped)
+ *        v
  *   [System Reset] -> k_iwdt_not_initialized
  * @endverbatim
  *
@@ -235,7 +235,7 @@ typedef enum : uint8_t {
  *   k_task_name_max_len (16):
  *   - Fits typical task names: "MotorCtrl", "SpiComm", "MainLoop"
  *   - Keeps task_monitor_t struct compact (~32 bytes per task)
- *   - Allows up to 8 tasks × 32 bytes = 256 bytes array
+ *   - Allows up to 8 tasks x 32 bytes = 256 bytes array
  *
  *   k_log_msg_buffer_size (64):
  *   - Fits formatted message: "Task deadlock: %s (timeout 16384 ms)"
@@ -271,7 +271,7 @@ typedef enum : uint8_t {
  *
  * @par Timeout Calculation Formula
  * @verbatim
- *   Actual_Timeout = (TOPS_cycles × CKS_divisor) / IWDTCLK
+ *   Actual_Timeout = (TOPS_cycles x CKS_divisor) / IWDTCLK
  *
  *   Where IWDTCLK = 120,000 Hz
  * @endverbatim
@@ -315,7 +315,7 @@ typedef struct {
  * @par Table Organization
  * @verbatim
  *   Index  Request   TOPS    CKS   Actual Timeout   Use Case
- *   ─────  ────────  ─────   ───   ──────────────   ────────────────────
+ *   -----  --------  -----   ---   --------------   --------------------
  *   0      128ms     16384   /1    ~136ms           Fast control loops
  *   1      512ms     4096    /16   ~546ms           Normal operations
  *   2      1000ms    8192    /16   ~1.09s           Default timeout
@@ -326,9 +326,9 @@ typedef struct {
  *
  * @par Calculation Examples
  * @verbatim
- *   Entry 0: (16384 × 1) / 120000 = 0.1365s = 136.5ms
- *   Entry 2: (8192 × 16) / 120000 = 1.092s  = 1092ms
- *   Entry 5: (16384 × 128) / 120000 = 17.48s = 17476ms
+ *   Entry 0: (16384 x 1) / 120000 = 0.1365s = 136.5ms
+ *   Entry 2: (8192 x 16) / 120000 = 1.092s  = 1092ms
+ *   Entry 5: (16384 x 128) / 120000 = 17.48s = 17476ms
  * @endverbatim
  *
  * @note Values are slightly longer than requested to provide safety margin
@@ -587,17 +587,17 @@ static rx_err_t internal_configure_iwdt_control_register(const iwdt_timeout_entr
  * @par Register Configuration
  * @verbatim
  *   IWDTRCR (Reset Control Register):
- *   ┌─────────────────────────────────────────────────────────┐
- *   │ Bit 7 (RSTIRQS) = 1: Reset on underflow/error          │
- *   │                   0: NMI on underflow/error (not used) │
- *   └─────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------+
+ *   | Bit 7 (RSTIRQS) = 1: Reset on underflow/error          |
+ *   |                   0: NMI on underflow/error (not used) |
+ *   +---------------------------------------------------------+
  *   Using reset (1) for safety - NMI could be masked/ignored
  *
  *   IWDTCSTPR (Count Stop Control Register):
- *   ┌─────────────────────────────────────────────────────────┐
- *   │ Bit 7 (SLCSTP) = 0: Continue counting in sleep mode    │
- *   │                  1: Stop counting in sleep (not used)  │
- *   └─────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------+
+ *   | Bit 7 (SLCSTP) = 0: Continue counting in sleep mode    |
+ *   |                  1: Stop counting in sleep (not used)  |
+ *   +---------------------------------------------------------+
  *   Continue counting for safety - sleeping should not bypass watchdog
  * @endverbatim
  *
@@ -793,18 +793,18 @@ rx_err_t rx_hal_iwdt_init(const uint32_t timeout_ms)
  *
  * @par Refresh Sequence (Atomic Operation)
  * @verbatim
- *   ┌──────────────────────────────────────────────────────────────┐
- *   │ 1. Disable interrupts (save PSW)                            │
- *   │ 2. Write 0x00 to IWDTRR                                     │
- *   │ 3. Write 0xFF to IWDTRR                                     │
- *   │ 4. Restore interrupt state                                  │
- *   └──────────────────────────────────────────────────────────────┘
+ *   +--------------------------------------------------------------+
+ *   | 1. Disable interrupts (save PSW)                            |
+ *   | 2. Write 0x00 to IWDTRR                                     |
+ *   | 3. Write 0xFF to IWDTRR                                     |
+ *   | 4. Restore interrupt state                                  |
+ *   +--------------------------------------------------------------+
  *   CRITICAL: Steps 2 and 3 must not be interrupted!
  * @endverbatim
  *
  * @par Timing Requirements
  * @verbatim
- *   - Execution time: ~2 µs including interrupt disable/enable
+ *   - Execution time: ~2 us including interrupt disable/enable
  *   - Must be called faster than configured timeout period
  *   - Typical call rate: Every 100-500 ms depending on timeout
  * @endverbatim
@@ -1096,34 +1096,34 @@ void rx_hal_iwdt_clear_status(void)
  *
  * @par Architecture
  * @verbatim
- *   ┌─────────────────────────────────────────────────────────────────────┐
- *   │                      Task Monitoring Layer                         │
- *   │                                                                     │
- *   │  ┌─────────┐  ┌─────────┐  ┌─────────┐  ┌─────────┐               │
- *   │  │ Task 0  │  │ Task 1  │  │ Task 2  │  │ Task N  │               │
- *   │  │"Motor"  │  │"SPI"    │  │"USB"    │  │  ...    │               │
- *   │  │ 500ms   │  │ 1000ms  │  │ 2000ms  │  │         │               │
- *   │  └────┬────┘  └────┬────┘  └────┬────┘  └────┬────┘               │
- *   │       │            │            │            │                     │
- *   │       │ heartbeat()│ heartbeat()│ heartbeat()│                     │
- *   │       ▼            ▼            ▼            ▼                     │
- *   │  ┌─────────────────────────────────────────────────────────────┐  │
- *   │  │              s_task_monitor.tasks[] Array                   │  │
- *   │  │  [task_name, timeout_ms, last_heartbeat_ms, registered]     │  │
- *   │  └─────────────────────────────────────────────────────────────┘  │
- *   │                              │                                     │
- *   │                              │ rx_hal_iwdt_check_tasks()               │
- *   │                              ▼                                     │
- *   │  ┌─────────────────────────────────────────────────────────────┐  │
- *   │  │ For each task: if (now - last_heartbeat > timeout) -> FAIL   │  │
- *   │  └─────────────────────────────────────────────────────────────┘  │
- *   │                              │                                     │
- *   │                              │ If all pass: rx_hal_iwdt_feed()         │
- *   │                              ▼                                     │
- *   │  ┌─────────────────────────────────────────────────────────────┐  │
- *   │  │                  Hardware IWDT (refresh)                    │  │
- *   │  └─────────────────────────────────────────────────────────────┘  │
- *   └─────────────────────────────────────────────────────────────────────┘
+ *   +---------------------------------------------------------------------+
+ *   |                      Task Monitoring Layer                         |
+ *   |                                                                     |
+ *   |  +---------+  +---------+  +---------+  +---------+               |
+ *   |  | Task 0  |  | Task 1  |  | Task 2  |  | Task N  |               |
+ *   |  |"Motor"  |  |"SPI"    |  |"USB"    |  |  ...    |               |
+ *   |  | 500ms   |  | 1000ms  |  | 2000ms  |  |         |               |
+ *   |  +----+----+  +----+----+  +----+----+  +----+----+               |
+ *   |       |            |            |            |                     |
+ *   |       | heartbeat()| heartbeat()| heartbeat()|                     |
+ *   |       v            v            v            v                     |
+ *   |  +-------------------------------------------------------------+  |
+ *   |  |              s_task_monitor.tasks[] Array                   |  |
+ *   |  |  [task_name, timeout_ms, last_heartbeat_ms, registered]     |  |
+ *   |  +-------------------------------------------------------------+  |
+ *   |                              |                                     |
+ *   |                              | rx_hal_iwdt_check_tasks()               |
+ *   |                              v                                     |
+ *   |  +-------------------------------------------------------------+  |
+ *   |  | For each task: if (now - last_heartbeat > timeout) -> FAIL   |  |
+ *   |  +-------------------------------------------------------------+  |
+ *   |                              |                                     |
+ *   |                              | If all pass: rx_hal_iwdt_feed()         |
+ *   |                              v                                     |
+ *   |  +-------------------------------------------------------------+  |
+ *   |  |                  Hardware IWDT (refresh)                    |  |
+ *   |  +-------------------------------------------------------------+  |
+ *   +---------------------------------------------------------------------+
  * @endverbatim
  *
  * @{
@@ -1215,7 +1215,7 @@ typedef struct {
  *
  * @par Memory Layout (~520 bytes total)
  * @verbatim
- *   Offset   0: tasks[8]          [~256 bytes] - Task array (8 × 32 bytes)
+ *   Offset   0: tasks[8]          [~256 bytes] - Task array (8 x 32 bytes)
  *   Offset 256: task_count        [1 byte]     - Number of registered tasks
  *   Offset 257: failed_task[16]   [16 bytes]   - Failed task name buffer
  *   Offset 273: padding           [7 bytes]    - Alignment
@@ -1277,7 +1277,7 @@ static task_monitor_state_t s_task_monitor = {0};
  * @endverbatim
  *
  * @par Complexity
- * - Time: O(n × m) where n = task_count, m = k_task_name_cmp_len
+ * - Time: O(n x m) where n = task_count, m = k_task_name_cmp_len
  * - Space: O(1) - no additional memory
  *
  * @param[in] task_name Task name to search for (null-terminated string)
@@ -1532,13 +1532,13 @@ void rx_hal_iwdt_task_heartbeat(const char* task_name)
  * @par Typical Usage Pattern
  * @verbatim
  *   Monitoring Task Loop:
- *   ┌────────────────────────────────────────────┐
- *   │  1. rx_hal_iwdt_check_tasks()                  │
- *   │  2. If all tasks OK: rx_hal_iwdt_feed()        │
- *   │  3. If timeout: DON'T feed (let WDT reset) │
- *   │  4. tx_thread_sleep(check_interval)        │
- *   │  5. Repeat                                 │
- *   └────────────────────────────────────────────┘
+ *   +--------------------------------------------+
+ *   |  1. rx_hal_iwdt_check_tasks()                  |
+ *   |  2. If all tasks OK: rx_hal_iwdt_feed()        |
+ *   |  3. If timeout: DON'T feed (let WDT reset) |
+ *   |  4. tx_thread_sleep(check_interval)        |
+ *   |  5. Repeat                                 |
+ *   +--------------------------------------------+
  * @endverbatim
  *
  * @return rx_err_t Error code

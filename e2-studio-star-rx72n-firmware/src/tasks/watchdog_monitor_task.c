@@ -58,12 +58,12 @@
  *
  * ## Timeout Strategy
  *
- * - Fast tasks (10ms period): 30ms timeout (3× period)
- * - Medium tasks (20ms period): 60ms timeout (3× period)
- * - Slow tasks (50ms period): 150ms timeout (3× period)
- * - Very slow tasks (1000ms period): 3000ms timeout (3× period)
+ * - Fast tasks (10ms period): 30ms timeout (3x period)
+ * - Medium tasks (20ms period): 60ms timeout (3x period)
+ * - Slow tasks (50ms period): 150ms timeout (3x period)
+ * - Very slow tasks (1000ms period): 3000ms timeout (3x period)
  *
- * **Rationale**: 3× period allows 2 missed heartbeats before timeout,
+ * **Rationale**: 3x period allows 2 missed heartbeats before timeout,
  * providing margin for scheduler delays without false positives.
  *
  * @par Hardware Requirements:
@@ -121,13 +121,13 @@
  * **Task Characteristics:**
  * - **Stack**: 512 bytes (minimal - no complex logic, just checks and feeds)
  * - **Priority**: 6 (high - ensures IWDT fed even under heavy load)
- * - **Period**: 10ms (100 Hz - provides 200× safety margin for 2048ms IWDT timeout)
+ * - **Period**: 10ms (100 Hz - provides 200x safety margin for 2048ms IWDT timeout)
  * - **CPU Utilization**: < 0.01% (extremely lightweight)
  *
  * **Design Rationale:**
  * - Small stack sufficient for heartbeat checks and IWDT feed operations
  * - High priority prevents preemption during safety-critical watchdog operations
- * - 100 Hz rate ensures hardware watchdog fed with 200× margin (2048ms / 10ms)
+ * - 100 Hz rate ensures hardware watchdog fed with 200x margin (2048ms / 10ms)
  *
  * @note All size values in bytes, periods in ThreadX ticks (10ms @ 100 Hz)
  * @see watchdog_monitor_task_create() Task creation using these constants
@@ -143,7 +143,7 @@ typedef enum : uint16_t {
   k_watchdog_task_input =
     0, /**< Thread entry input parameter (0). Unused by watchdog monitor task. ThreadX convention for parameterless tasks. */
   k_watchdog_task_period_ticks =
-    1, /**< Task period (1 tick = 10ms @ 100 Hz). Watchdog check and feed rate. Provides 200× safety margin for 2048ms hardware IWDT timeout. Valid range: 1-10 ticks (10-100ms). */
+    1, /**< Task period (1 tick = 10ms @ 100 Hz). Watchdog check and feed rate. Provides 200x safety margin for 2048ms hardware IWDT timeout. Valid range: 1-10 ticks (10-100ms). */
 } watchdog_task_constants_t;
 
 /* =============================================================================
@@ -201,7 +201,7 @@ static uint8_t s_watchdog_stack[k_watchdog_task_stack_size];
  * successful tx_thread_create() call.
  *
  * **State Transitions:**
- * - false → true: First successful call to watchdog_monitor_task_create()
+ * - false -> true: First successful call to watchdog_monitor_task_create()
  * - Never resets (watchdog task runs for entire system lifetime)
  *
  * @note Not thread-safe - watchdog_monitor_task_create() must only be called
@@ -362,7 +362,7 @@ rx_err_t watchdog_monitor_task_create(void)
  *
  * **Timing**:
  * - 100 Hz execution rate (10ms period)
- * - Feed margin: 2000ms / 10ms = 200× safety factor
+ * - Feed margin: 2000ms / 10ms = 200x safety factor
  * - Can tolerate ~200 missed iterations before reset
  *
  * @par Usage:

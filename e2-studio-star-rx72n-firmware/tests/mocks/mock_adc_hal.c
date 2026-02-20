@@ -12,9 +12,9 @@
  * pre-programming via g_mock_adc.
  *
  * @par SOLID Principles:
- * - **S:** Single responsibility — mock state management only, no production logic
- * - **L:** Liskov Substitution — drop-in replacement for adc_hal.c functions
- * - **D:** Dependency Inversion — tests depend on mock interface, not hardware
+ * - **S:** Single responsibility -- mock state management only, no production logic
+ * - **L:** Liskov Substitution -- drop-in replacement for adc_hal.c functions
+ * - **D:** Dependency Inversion -- tests depend on mock interface, not hardware
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 3: [OK] No dynamic allocation; all state in static g_mock_adc
@@ -77,7 +77,7 @@ typedef enum : uint8_t {
  * call history ring buffer, error injection slot, and timeout simulation flag.
  * Callers must invoke mock_adc_init() to zero this structure before each test.
  *
- * @note Access from test code only — never modify directly from production code
+ * @note Access from test code only -- never modify directly from production code
  * @warning Direct modification outside of mock helpers bypasses call recording
  *          and may cause tests to observe inconsistent state
  * @since Version 1.0.0
@@ -257,7 +257,7 @@ void mock_adc_clear_history(void)
  */
 
 /**
- * @brief Mock implementation of adc_init() — initialize ADC unit/channel
+ * @brief Mock implementation of adc_init() -- initialize ADC unit/channel
  *
  * @details
  * Records the call in the call-history buffer, checks for injected errors,
@@ -334,7 +334,7 @@ rx_err_t adc_init(adc_unit_t unit, adc_channel_t channel, adc_resolution_t bits)
 }
 
 /**
- * @brief Mock implementation of adc_read() — return pre-programmed raw ADC value
+ * @brief Mock implementation of adc_read() -- return pre-programmed raw ADC value
  *
  * @details
  * Records the call, checks for injected errors, validates parameters and
@@ -418,7 +418,7 @@ rx_err_t adc_read(adc_unit_t unit, adc_channel_t channel, uint16_t* value)
 }
 
 /**
- * @brief Mock implementation of adc_read_voltage_mv() — return pre-programmed value in mV
+ * @brief Mock implementation of adc_read_voltage_mv() -- return pre-programmed value in mV
  *
  * @details
  * Records the call, checks for injected errors, validates parameters,

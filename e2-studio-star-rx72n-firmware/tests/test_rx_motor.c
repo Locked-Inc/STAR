@@ -20,7 +20,7 @@
  * | Forward Duty Control | 4 | 0%, 25%, 50%, 100% |
  * | Reverse Duty Control | 3 | -50%, -75%, -100% |
  * | Duty Clamping | 4 | Upper/lower bounds, extremes |
- * | Direction Transitions | 3 | Forward↔Reverse, through zero |
+ * | Direction Transitions | 3 | Forward<->Reverse, through zero |
  * | PWM Inversion | 2 | Bidirectional inversion |
  * | Brake Mode | 2 | Active brake from running |
  * | Coast Mode | 4 | High-Z output state |
@@ -30,7 +30,7 @@
  * | Duty Tracking | 2 | Internal state management |
  * | NaN/Inf Validation | 3 | Invalid float detection |
  * | PWM Frequency | 4 | Boundary validation 1-50kHz |
- * | Dead-Time | 4 | Boundary validation 100ns-10µs |
+ * | Dead-Time | 4 | Boundary validation 100ns-10us |
  * | Emergency Stop | 5 | Safety shutdown |
  * | Parameter Validation | 2 | nullptr checks, state checks |
  * | **Total** | **86 tests** | **100% code coverage** |
@@ -45,7 +45,7 @@
  * | PH = X, EN = 0% -> Coast | [OK] | Both directions |
  * | Direction determined by PH pin | [OK] | Forward/Reverse |
  * | Speed determined by EN pin | [OK] | 0-100% PWM |
- * | Dead-time insertion | [OK] | 100ns-10µs range |
+ * | Dead-time insertion | [OK] | 100ns-10us range |
  * | Duty clamping [-100, +100] | [OK] | Boundaries tested |
  * | PWM inversion support | [OK] | Both directions |
  * | Emergency shutdown | [OK] | Immediate disable |
@@ -56,7 +56,7 @@
  * | 4 independent channels | [OK] | All tested |
  * | Complementary outputs (A/B) | [OK] | PH/EN verified |
  * | Frequency 1kHz - 50kHz | [OK] | Boundaries tested |
- * | Dead-time 100ns - 10µs | [OK] | Boundaries tested |
+ * | Dead-time 100ns - 10us | [OK] | Boundaries tested |
  * | Channel isolation | [OK] | Multi-motor test |
  * | Output enable/disable | [OK] | Stop modes |
  *
@@ -113,7 +113,7 @@
  * |----------|-----|-----|--------|
  * | Duty Cycle | -100% | +100% | [OK] |
  * | PWM Frequency | 1kHz | 50kHz | [OK] |
- * | Dead-Time | 100ns | 10µs | [OK] |
+ * | Dead-Time | 100ns | 10us | [OK] |
  * | GPTW Channels | 0 | 3 | [OK] |
  *
  * ## Hardware Integration
@@ -123,7 +123,7 @@
  * - **Control Mode:** PH/EN (Phase/Enable) PWM
  * - **MCU Timer:** RX72N GPTW
  * - **PWM Frequency:** 20kHz typical
- * - **Dead-Time:** 1µs (prevents shoot-through)
+ * - **Dead-Time:** 1us (prevents shoot-through)
  * - **Motors:** 6V brushed DC, 210 RPM, 3.3A stall
  *
  * @see rx_motor.h for motor control API

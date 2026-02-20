@@ -27,7 +27,7 @@
  *
  * **2. Triangle-wave PWM (center-aligned)**:
  * - Counter: 0 -> GTPR -> 0 (up/down counting)
- * - Period = PCLKA / (2 × frequency)
+ * - Period = PCLKA / (2 x frequency)
  * - For 20kHz: period = 120MHz / 40kHz = 3000 counts (~11.5-bit resolution)
  * - Update at crest and/or trough (mode dependent)
  * - Lower EMI due to symmetric switching edges
@@ -44,10 +44,10 @@
  *
  * **Phase Staggering Implementation**:
  * For 4-motor systems, channels are initialized with counter offsets:
- * - Ch0: GTCNT = 0 (0° reference)
- * - Ch1: GTCNT = period/4 (90° offset)
- * - Ch2: GTCNT = period/2 (180° offset)
- * - Ch3: GTCNT = 3×period/4 (270° offset)
+ * - Ch0: GTCNT = 0 (0deg reference)
+ * - Ch1: GTCNT = period/4 (90deg offset)
+ * - Ch2: GTCNT = period/2 (180deg offset)
+ * - Ch3: GTCNT = 3xperiod/4 (270deg offset)
  *
  * ## Memory Map
  *
@@ -1013,7 +1013,7 @@ static rx_err_t internal_prepare_gptw_pwm_init(const rx_gptw_channel_t          
  * @attention For 4-motor systems, use rx_gptw_init_all_staggered() instead
  *
  * @par Performance:
- * - Execution time: ~50 µs at 240 MHz
+ * - Execution time: ~50 us at 240 MHz
  * - Memory: 0 bytes heap, ~32 bytes stack
  *
  * @par Example (Single Channel for LED PWM):
@@ -1602,19 +1602,19 @@ typedef enum : uint8_t {
  *
  * | Channel | Phase | Counter Init | Direction |
  * |---------|-------|--------------|-----------|
- * | Ch0 | 0° | 0 | Up (n/a) |
- * | Ch1 | 90° | period/4 | Up (n/a) |
- * | Ch2 | 180° | period/2 | Up (n/a) |
- * | Ch3 | 270° | 3×period/4 | Up (n/a) |
+ * | Ch0 | 0deg | 0 | Up (n/a) |
+ * | Ch1 | 90deg | period/4 | Up (n/a) |
+ * | Ch2 | 180deg | period/2 | Up (n/a) |
+ * | Ch3 | 270deg | 3xperiod/4 | Up (n/a) |
  *
  * ## Phase Offset Table (Triangle Mode)
  *
  * | Channel | Phase | Counter Init | Direction |
  * |---------|-------|--------------|-----------|
- * | Ch0 | 0° | 0 | Up |
- * | Ch1 | 90° | period/2 | Up |
- * | Ch2 | 180° | period | Down |
- * | Ch3 | 270° | period/2 | Down |
+ * | Ch0 | 0deg | 0 | Up |
+ * | Ch1 | 90deg | period/2 | Up |
+ * | Ch2 | 180deg | period | Down |
+ * | Ch3 | 270deg | period/2 | Down |
  *
  * @param[in] channel GPTW channel for phase calculation
  *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3
@@ -1761,10 +1761,10 @@ static void internal_calculate_phase_offset(const rx_gptw_channel_t channel,
  * ## Phase Staggering
  *
  * Counter is initialized to a phase-offset value:
- * - Ch0: 0° (reference, GTCNT=0)
- * - Ch1: 90° (GTCNT=period/4)
- * - Ch2: 180° (GTCNT=period/2)
- * - Ch3: 270° (GTCNT=3×period/4)
+ * - Ch0: 0deg (reference, GTCNT=0)
+ * - Ch1: 90deg (GTCNT=period/4)
+ * - Ch2: 180deg (GTCNT=period/2)
+ * - Ch3: 270deg (GTCNT=3xperiod/4)
  *
  * @param[in] channel GPTW channel to configure
  *   - Valid range: k_gptw_channel_0 to k_gptw_channel_3

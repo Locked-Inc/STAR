@@ -167,7 +167,7 @@ typedef struct {
  *
  * **C Standard Guarantee:**
  * All static and global variables without explicit initializers are
- * guaranteed to be zero-initialized (C11 §6.7.9¶10).
+ * guaranteed to be zero-initialized (C11 Sec.6.7.910).
  *
  * @see _BTBL[] Array of all BSS section zero descriptors
  * @see _INITSCT() C runtime function that performs the zeroing
@@ -258,7 +258,7 @@ extern st_dtbl_t const _DTBL[] = {
  * _INITSCT() iterates through this table and zeros each RAM range.
  *
  * **C Standard Compliance:**
- * The C standard (C11 §6.7.9¶10) guarantees that all static and global
+ * The C standard (C11 Sec.6.7.910) guarantees that all static and global
  * variables without explicit initializers are zero-initialized. This table
  * enables the compiler to fulfill that guarantee.
  *

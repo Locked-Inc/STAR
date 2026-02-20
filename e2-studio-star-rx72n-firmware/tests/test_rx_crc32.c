@@ -70,8 +70,8 @@
  * @par Performance Comparison:
  * | Implementation | 1KB Buffer | 10KB Buffer | Notes |
  * |----------------|------------|-------------|-------|
- * | Software (table) | 120 µs | 1.2 ms | Portable, no HW dependency |
- * | Hardware (CRCA) | 12 µs | 120 µs | 10x faster, requires CRCA init |
+ * | Software (table) | 120 us | 1.2 ms | Portable, no HW dependency |
+ * | Hardware (CRCA) | 12 us | 120 us | 10x faster, requires CRCA init |
  *
  * Measurements at 240 MHz CPU clock, PCLKA @ 120 MHz.
  *
@@ -568,8 +568,8 @@ void test_crc32_update_zero_len_returns_original(void)
  * @attention Failure of test_crc32_standard_vector() indicates broken CRC-32
  *
  * @par Performance:
- * - Single test: ~10-50 µs (small vectors)
- * - Large buffer test: ~120 µs (1KB, software) or ~12 µs (hardware)
+ * - Single test: ~10-50 us (small vectors)
+ * - Large buffer test: ~120 us (1KB, software) or ~12 us (hardware)
  * - Full suite: ~5 ms total
  * - Memory: 1280 bytes stack (1KB test buffer + overhead)
  *

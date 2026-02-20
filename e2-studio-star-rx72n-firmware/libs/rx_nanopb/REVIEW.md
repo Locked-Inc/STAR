@@ -31,7 +31,7 @@ The rx_nanopb library provides a safety-critical wrapper around the nanopb proto
 - Underlying nanopb library: 3,157 lines (pb_encode.c, pb_decode.c, pb_common.c) - **NOT REVIEWED IN DETAIL** (third-party code)
 
 **Key Findings:**
-- **No dynamic allocation** - Compliant with Rule 3 (PB_ENABLE_MALLOC is disabled) ✓
+- **No dynamic allocation** - Compliant with Rule 3 (PB_ENABLE_MALLOC is disabled) [PASS]
 - **Missing buffer size validation** - HIGH severity buffer overflow risk
 - **Missing len parameter validation** - HIGH severity on decode operations
 - **Unchecked strlen() return** - MEDIUM severity
@@ -94,7 +94,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
   }
 
   pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
-  // If caller provided buffer < 512 bytes → BUFFER OVERFLOW!
+  // If caller provided buffer < 512 bytes -> BUFFER OVERFLOW!
 }
 
 // REQUIRED FIX:
@@ -136,7 +136,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
   }
 
   pb_istream_t stream = pb_istream_from_buffer(buffer, len);
-  // If len > actual buffer size → READ OVERFLOW!
+  // If len > actual buffer size -> READ OVERFLOW!
 }
 
 // REQUIRED FIX:

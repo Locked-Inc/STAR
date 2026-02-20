@@ -185,8 +185,8 @@ typedef enum : uint32_t {
    * Used for RPi5 communication in peripheral mode at 10 Mbps.
    * @par Pin Assignments:
    * - RSPCKA: P27/RSPCKA (clock input from RPi5)
-   * - MOSIA: P26/MOSIA (RX72N hardware name) → COPI (project name) - data from RPi5
-   * - MISOA: P30/MISOA (RX72N hardware name) → CIPO (project name) - data to RPi5
+   * - MOSIA: P26/MOSIA (RX72N hardware name) -> COPI (project name) - data from RPi5
+   * - MISOA: P30/MISOA (RX72N hardware name) -> CIPO (project name) - data to RPi5
    * - SSLA0: P54/SSLA0 (chip select from RPi5)
    */
   k_rspi0_base_addr = 0x000D0100,
@@ -198,8 +198,8 @@ typedef enum : uint32_t {
    * Directly follows RSPI0 in memory (0x40 byte offset).
    * @par Pin Assignments:
    * - RSPCKB: PE5/RSPCKB (clock output to drivers)
-   * - MOSIB: PE6/MOSIB (RX72N hardware name) → COPI (project name) - data to drivers
-   * - MISOB: PE7/MISOB (RX72N hardware name) → CIPO (project name) - data from drivers
+   * - MOSIB: PE6/MOSIB (RX72N hardware name) -> COPI (project name) - data to drivers
+   * - MISOB: PE7/MISOB (RX72N hardware name) -> CIPO (project name) - data from drivers
    * - SSLB0-3: Individual chip selects for 4 motor drivers
    */
   k_rspi1_base_addr = 0x000D0140,
@@ -411,7 +411,7 @@ typedef struct __attribute__((packed)) {
 
   /**
    * @brief SPI Bit Rate Register (SPBR) @ offset 0x0A
-   * @details Sets SPI clock frequency: f_SPCK = PCLKB / (2 × (SPBR + 1))
+   * @details Sets SPI clock frequency: f_SPCK = PCLKB / (2 x (SPBR + 1))
    * @par Calculation Examples (PCLKB = 60 MHz):
    * - SPBR=0: 30 MHz (maximum)
    * - SPBR=2: 10 MHz (RPi5 communication)

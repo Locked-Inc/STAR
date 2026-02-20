@@ -86,9 +86,9 @@ func (s State) String() string {
 	case StateActiveSPI:
 		return "Active(SPI)"
 	case StateSwitchingToUSB:
-		return "Switching→USB"
+		return "Switching->USB"
 	case StateSwitchingToSPI:
-		return "Switching→SPI"
+		return "Switching->SPI"
 	case StateDegraded:
 		return "Degraded"
 	case StateFailed:
@@ -184,7 +184,7 @@ type HealthMetrics struct {
 	// LastFailure is the timestamp of the last failed operation.
 	LastFailure time.Time
 
-	// LastRecovery is the timestamp of the most recent unhealthy→healthy transition.
+	// LastRecovery is the timestamp of the most recent unhealthy->healthy transition.
 	// Used for failback hysteresis: transports must stay healthy for FailbackDamping
 	// before being eligible for priority-based selection again.
 	LastRecovery time.Time

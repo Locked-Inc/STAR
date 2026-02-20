@@ -176,8 +176,8 @@ typedef enum : uint8_t {
    * Battery pack temperature measured by internal thermistor.
    * **Access:** Read-only word
    * **Format:** Unsigned 16-bit, 0.1 Kelvin units
-   * **Range:** 0-6553.5K (-273.15°C to 6280.35°C)
-   * **Typical Range:** 2731-3731 (0°C to 100°C)
+   * **Range:** 0-6553.5K (-273.15degC to 6280.35degC)
+   * **Typical Range:** 2731-3731 (0degC to 100degC)
    * **Conversion:** temp_celsius = (value / 10.0) - 273.15
    * **Update Rate:** ~1 second
    */
@@ -206,7 +206,7 @@ typedef enum : uint8_t {
    * **Sign Convention:** Positive = charging, Negative = discharging
    * **Resolution:** 1 mA
    * **Update Rate:** ~250 ms
-   * **Accuracy:** ±1% typical
+   * **Accuracy:** +/-1% typical
    */
   k_sbs_current = 0x0A,
 
@@ -512,7 +512,7 @@ typedef enum : uint8_t {
    * **Position:** Bit 12
    * **Priority:** CRITICAL - thermal protection
    * **Action:** Stop charge/discharge, allow cooling
-   * **Typical Threshold:** >60°C (configurable in data flash)
+   * **Typical Threshold:** >60degC (configurable in data flash)
    */
   k_bq4050_status_bit_pos_over_temp_alarm = 12,
 
@@ -664,8 +664,8 @@ typedef enum : uint16_t {
    * **CRITICAL ALARM** - Battery temperature exceeded safe operating range.
    * **Action Required:** Stop charge/discharge, monitor temperature.
    * **Cause:** Excessive ambient temp, high current, poor thermal design.
-   * **Typical Threshold:** >60°C (configurable in BQ4050 data flash).
-   * **Recovery:** Allow battery to cool <45°C before resuming operation.
+   * **Typical Threshold:** >60degC (configurable in BQ4050 data flash).
+   * **Recovery:** Allow battery to cool <45degC before resuming operation.
    */
   k_bq4050_status_over_temp_alarm = (1U << k_bq4050_status_bit_pos_over_temp_alarm),
 

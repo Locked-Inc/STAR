@@ -15,19 +15,41 @@ staged_files=$(git diff --cached --name-only --diff-filter=ACMR)
 # Flags to track errors
 error_found=0
 
-echo "🔍 Running pre-commit checks..."
+echo "Running pre-commit checks..."
+
+# -----------------------------------------------------------------------------
+# ASCII-ONLY SOURCE CODE CHECK
+# -----------------------------------------------------------------------------
+ascii_ok=true
+while IFS= read -r staged_file; do
+    if [[ "$staged_file" =~ \.(c|h|go|cpp|hpp|proto|ts|md)$ ]]; then
+        if grep -qP "[^\x00-\x7F]" "$staged_file" 2>/dev/null; then
+            echo "ERROR: Non-ASCII characters in staged file: $staged_file"
+            grep -nP "[^\x00-\x7F]" "$staged_file" | head -5
+            ascii_ok=false
+        fi
+    fi
+done < <(git diff --cached --name-only --diff-filter=ACM)
+
+if [[ "$ascii_ok" == "false" ]]; then
+    echo ""
+    echo "STAR policy: All source files must use ASCII-only characters."
+    echo "Run: python3 scripts/fix-encoding.py <file> to auto-fix."
+    echo "See CLAUDE.md 'Character Encoding Policy' for replacement table."
+    exit 1
+fi
 
 # -----------------------------------------------------------------------------
 # GO CHECKS
 # -----------------------------------------------------------------------------
 go_files=$(echo "$staged_files" | grep "\.go$" || true)
 if [[ -n "$go_files" ]]; then
-    echo "🐹 Checking Go files..."
+    echo "Checking Go files..."
     
     # Check formatting
     unformatted=$(gofmt -l $go_files)
     if [[ -n "$unformatted" ]]; then
-        echo "❌ Unformatted Go files:"
+        echo "[FAIL] Unformatted Go files:"
         echo "$unformatted"
         echo "   Run: gofmt -w $unformatted"
         error_found=1
@@ -38,7 +60,7 @@ if [[ -n "$go_files" ]]; then
     # golangci-lint works best on packages.
     pushd star-gateway >/dev/null
     if ! golangci-lint run --fast --timeout=2m ./...; then
-        echo "❌ Go linting failed."
+        echo "[FAIL] Go linting failed."
         error_found=1
     fi
     popd >/dev/null
@@ -49,12 +71,12 @@ fi
 # -----------------------------------------------------------------------------
 cpp_files=$(echo "$staged_files" | grep -E "\.(cpp|hpp|cc|h)$" || true)
 if [[ -n "$cpp_files" ]]; then
-    echo "🦕 Checking C++ files..."
+    echo "Checking C++ files..."
 
     # Use the official format-ros2.sh script in check mode
     # This uses ament_uncrustify and checks header guards
     if ! ./scripts/format-ros2.sh --check --verbose; then
-        echo "❌ C++ formatting or header guard check failed."
+        echo "[FAIL] C++ formatting or header guard check failed."
         echo "   Run: ./scripts/format-ros2.sh"
         error_found=1
     fi
@@ -65,19 +87,19 @@ fi
 # -----------------------------------------------------------------------------
 proto_files=$(echo "$staged_files" | grep "\.proto$" || true)
 if [[ -n "$proto_files" ]]; then
-    echo "📦 Checking Protobuf files..."
+    echo "Checking Protobuf files..."
 
     # Check formatting
     pushd star-proto >/dev/null
     if ! buf format --diff --exit-code; then
-        echo "❌ Protobuf formatting failed."
+        echo "[FAIL] Protobuf formatting failed."
         echo "   Run: buf format -w"
         error_found=1
     fi
 
     # Check linting
     if ! buf lint; then
-        echo "❌ Protobuf linting failed."
+        echo "[FAIL] Protobuf linting failed."
         error_found=1
     fi
     popd >/dev/null
@@ -87,9 +109,9 @@ fi
 # CONCLUSION
 # -----------------------------------------------------------------------------
 if [[ $error_found -ne 0 ]]; then
-    echo "⛔ Commit rejected due to linting/formatting errors."
+    echo "[FAIL] Commit rejected due to linting/formatting errors."
     exit 1
 fi
 
-echo "✅ All checks passed."
+echo "[PASS] All checks passed."
 exit 0

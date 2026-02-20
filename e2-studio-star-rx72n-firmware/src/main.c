@@ -72,9 +72,9 @@
  *
  * | Phase | Duration | Description |
  * |-------|----------|-------------|
- * | Reset to main() | ~500 µs | Hardware reset, C runtime init (crt0.S) |
- * | Startup flag checks | ~10 µs | 6 register reads + validation |
- * | Clock initialization | ~200 µs | PLL stabilization (see rx_clock_power_init.c) |
+ * | Reset to main() | ~500 us | Hardware reset, C runtime init (crt0.S) |
+ * | Startup flag checks | ~10 us | 6 register reads + validation |
+ * | Clock initialization | ~200 us | PLL stabilization (see rx_clock_power_init.c) |
  * | Hardware initialization | ~50 ms | USB enumeration, motor driver init |
  * | **Total boot time** | **~50 ms** | Ready for first PID control loop |
  *
@@ -307,20 +307,20 @@ static rx_bus_config_t s_i2c0_config;
  * **Hardware Configuration:**
  * - Bus type: 1-Wire (Dallas/Maxim protocol)
  * - Pin: P51 (bidirectional data line)
- * - Pullup: 4.7 kΩ resistor required (external)
+ * - Pullup: 4.7 kOhm resistor required (external)
  * - Protocol: Bit-banging with microsecond timing
  *
  * **Device Details:**
  * The DS18B20 is a digital temperature sensor providing:
- * - Temperature range: -55°C to +125°C
- * - Accuracy: ±0.5°C (-10°C to +85°C)
+ * - Temperature range: -55degC to +125degC
+ * - Accuracy: +/-0.5degC (-10degC to +85degC)
  * - Resolution: 9 to 12 bits (configurable)
  * - Conversion time: 750 ms max (12-bit resolution)
  * - Unique 64-bit serial number per device
  *
  * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
  * @note Registered with bus manager in tx_application_define() before task creation.
- * @note Requires 4.7 kΩ pullup resistor on P51 (see schematic).
+ * @note Requires 4.7 kOhm pullup resistor on P51 (see schematic).
  * @note 1-Wire protocol timing is critical - interrupts may cause timing violations.
  *
  * @see rx_bus_config_init_onewire() Bus configuration function
@@ -392,7 +392,7 @@ static rx_bus_config_t s_gpio_config;
  * | Motor 3 | AN004 (ch 4) | P40.4  | IPROPI output  |
  *
  * Each DRV8243 motor driver outputs an analog current signal (IPROPI) proportional
- * to motor current: 500 µA per 1 A of motor current (500:1 ratio).
+ * to motor current: 500 uA per 1 A of motor current (500:1 ratio).
  *
  * @note Static allocation follows NASA Power of 10 Rule 3 (no dynamic memory).
  * @note Registered with bus manager in tx_application_define() before task creation.
@@ -457,10 +457,10 @@ static rx_bus_config_t s_adc0_config;
  *
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
- * | Register read (rstsr0) | ~0.5 µs | Single 8-bit read |
+ * | Register read (rstsr0) | ~0.5 us | Single 8-bit read |
  * | Bit masking (& k_rstsr0_porf) | ~5 cycles | Bitwise AND |
- * | Conditional logging | ~5 µs | If warm boot detected (UART output) |
- * | **Total** | **~0.5 µs** | No logging (cold start) |
+ * | Conditional logging | ~5 us | If warm boot detected (UART output) |
+ * | **Total** | **~0.5 us** | No logging (cold start) |
  *
  * @return bool Power-on reset detection status
  * @retval true PORF is set (cold start - power-on reset occurred)
@@ -558,10 +558,10 @@ static bool internal_check_porf(void)
  *
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
- * | Register read (rstsr2) | ~0.5 µs | Single 8-bit read |
+ * | Register read (rstsr2) | ~0.5 us | Single 8-bit read |
  * | Bit masking | ~5 cycles | Bitwise AND + comparison |
- * | Assertions (debug build) | ~0.2 µs | Two RX_ASSERT checks |
- * | **Total** | **~0.7 µs** | Negligible overhead |
+ * | Assertions (debug build) | ~0.2 us | Two RX_ASSERT checks |
+ * | **Total** | **~0.7 us** | Negligible overhead |
  *
  * @param[in] flag_mask Bit mask for the flag to check (e.g., k_rstsr2_iwdtrf = 0x02)
  *                      Must be non-zero (validated by assertion).
@@ -684,8 +684,8 @@ static bool internal_check_rstsr2_flag_clear(const uint8_t flag_mask)
  *
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
- * | Call helper (internal_check_rstsr2_flag_clear) | ~0.7 µs | Register read + mask |
- * | **Total** | **~0.7 µs** | Single register check |
+ * | Call helper (internal_check_rstsr2_flag_clear) | ~0.7 us | Register read + mask |
+ * | **Total** | **~0.7 us** | Single register check |
  *
  * @return bool IWDT reset detection status
  * @retval true IWDTRF is CLEAR (0) - **normal condition** (no watchdog timeout)
@@ -1130,20 +1130,20 @@ static bool internal_check_cwsf(void)
  *
  * ```
  * main()
- *   ├─ internal_check_startup_flags()  // Check flags (silent, UART not ready)
- *   ├─ rx_clock_power_init()           // Initialize clocks
- *   ├─ uart_debug_init()               // Initialize UART
- *   ├─ internal_report_startup_flags() // ← Report flags NOW (UART available)
- *   └─ rx_infrastructure_init()        // Continue boot...
+ *   +- internal_check_startup_flags()  // Check flags (silent, UART not ready)
+ *   +- rx_clock_power_init()           // Initialize clocks
+ *   +- uart_debug_init()               // Initialize UART
+ *   +- internal_report_startup_flags() // <- Report flags NOW (UART available)
+ *   +- rx_infrastructure_init()        // Continue boot...
  * ```
  *
  * ## Performance (RX72N @ 240 MHz)
  *
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
- * | Register reads (3 regs) | ~1.5 µs | RSTSR0, RSTSR1, RSTSR2 |
- * | Logging (5-6 messages) | ~500 µs | UART @ 115200 baud |
- * | **Total** | **~500 µs** | Negligible boot overhead |
+ * | Register reads (3 regs) | ~1.5 us | RSTSR0, RSTSR1, RSTSR2 |
+ * | Logging (5-6 messages) | ~500 us | UART @ 115200 baud |
+ * | **Total** | **~500 us** | Negligible boot overhead |
  *
  * @return void (No return value - informational logging only)
  *
@@ -1286,11 +1286,11 @@ static void internal_report_startup_flags(void)
  *
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
- * | Register reads (6 flags) | ~2 µs | 3 registers × 2 reads each |
- * | Validation logic | ~1 µs | Boolean comparisons, assertions |
- * | Logging (if needed) | ~5 µs | UART write for warnings |
- * | **Total (normal boot)** | **~3 µs** | No warnings logged |
- * | **Total (with warnings)** | **~10 µs** | Includes UART output |
+ * | Register reads (6 flags) | ~2 us | 3 registers x 2 reads each |
+ * | Validation logic | ~1 us | Boolean comparisons, assertions |
+ * | Logging (if needed) | ~5 us | UART write for warnings |
+ * | **Total (normal boot)** | **~3 us** | No warnings logged |
+ * | **Total (with warnings)** | **~10 us** | Includes UART output |
  *
  * ## Example Reset Scenarios
  *
@@ -1405,7 +1405,7 @@ static rx_err_t internal_check_startup_flags(void)
  * **Hardware Configuration:**
  * - CKS = 10 (PCLKB/8192 divider)
  * - PCLKB = 60 MHz
- * - Timeout period = 2048ms (±10% tolerance)
+ * - Timeout period = 2048ms (+/-10% tolerance)
  *
  * **Usage:**
  * Set as `default_timeout_ms` in `rx_iwdt_config_t` during initialization.
@@ -1432,7 +1432,7 @@ static rx_err_t internal_check_startup_flags(void)
  */
 typedef enum : uint32_t {
   k_iwdt_hw_timeout_ms =
-    2048, /**< Hardware IWDT timeout in milliseconds (CKS=10, ~2048ms ±10%). Must exceed all task timeouts to prevent spurious resets. Valid range: 128-16384ms per hardware limits. */
+    2048, /**< Hardware IWDT timeout in milliseconds (CKS=10, ~2048ms +/-10%). Must exceed all task timeouts to prevent spurious resets. Valid range: 128-16384ms per hardware limits. */
 } iwdt_hardware_timeout_ms_t;
 
 /**
@@ -1507,7 +1507,7 @@ typedef enum : uint32_t {
  * a system reset after 2 seconds.
  *
  * **Timeout Calculation Strategy:**
- * Task timeout = 3× task period (allows 2 missed heartbeats before failure detection)
+ * Task timeout = 3x task period (allows 2 missed heartbeats before failure detection)
  *
  * **Timeout Categories:**
  * - **Fast tasks (10ms period)**: 30ms timeout - Motor control, communication, watchdog
@@ -1546,21 +1546,21 @@ typedef enum : uint32_t {
  */
 typedef enum : uint32_t {
   k_iwdt_task_timeout_telemetry_ms =
-    150, /**< Telemetry task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: telemetry stops, system reset after 2s. */
+    150, /**< Telemetry task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3x period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: telemetry stops, system reset after 2s. */
   k_iwdt_task_timeout_ledstatus_ms =
-    150, /**< LED Status task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3× period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: LED updates stop, system reset after 2s. */
+    150, /**< LED Status task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3x period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: LED updates stop, system reset after 2s. */
   k_iwdt_task_timeout_bmsmonitor_ms =
-    3000, /**< BMS Monitor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: battery monitoring stops, system reset after 2s. */
+    3000, /**< BMS Monitor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3x period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: battery monitoring stops, system reset after 2s. */
   k_iwdt_task_timeout_tempsensor_ms =
-    3000, /**< Temperature Sensor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3× period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: temp compensation stops, system reset after 2s. */
+    3000, /**< Temperature Sensor task timeout (3000ms). Task period: 1000ms @ 1 Hz. Timeout = 3x period. Heartbeat called every 1s. Valid range: 2000-5000ms. If exceeded: temp compensation stops, system reset after 2s. */
   k_iwdt_task_timeout_obstdetect_ms =
-    60, /**< Obstacle Detection task timeout (60ms). Task heartbeat: 20ms @ 50 Hz. Timeout = 3× 20ms period. Heartbeat called every 20ms. Valid range: 50-150ms. If exceeded: collision avoidance stops, system reset after 2s. */
+    60, /**< Obstacle Detection task timeout (60ms). Task heartbeat: 20ms @ 50 Hz. Timeout = 3x 20ms period. Heartbeat called every 20ms. Valid range: 50-150ms. If exceeded: collision avoidance stops, system reset after 2s. */
   k_iwdt_task_timeout_motorctrl_ms =
-    30, /**< Motor Control task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: motor control stops, system reset after 2s. CRITICAL TASK. */
+    30, /**< Motor Control task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: motor control stops, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_commtask_ms =
-    30, /**< Communication task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
+    30, /**< Communication task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_watchdog_ms =
-    30, /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3× period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
+    30, /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
 } iwdt_task_timeout_ms_t;
 
 /**
@@ -1576,13 +1576,13 @@ typedef enum : uint32_t {
  *
  * **Hardware watchdog**: 2048ms (CKS=10, ~2 seconds)
  * - Fed by watchdog monitor task @ 100 Hz (10ms period)
- * - Safety margin: 2048ms / 10ms = 204× (allows ~204 missed iterations)
+ * - Safety margin: 2048ms / 10ms = 204x (allows ~204 missed iterations)
  *
  * **Task monitoring**: Individual task timeouts
- * - Motor/Comm/Watchdog: 30ms (3× 10ms period)
- * - Obstacle: 60ms (3× 20ms period)
- * - LED/Telemetry: 150ms (3× 50ms period)
- * - BMS/Temp: 3000ms (3× 1000ms period)
+ * - Motor/Comm/Watchdog: 30ms (3x 10ms period)
+ * - Obstacle: 60ms (3x 20ms period)
+ * - LED/Telemetry: 150ms (3x 50ms period)
+ * - BMS/Temp: 3000ms (3x 1000ms period)
  *
  * @warning Configuration is immutable after rx_iwdt_init()
  *
@@ -1661,9 +1661,9 @@ static const rx_iwdt_config_t s_iwdt_config = {
  *
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
- * | tx_application_define() call | ~5 µs | ThreadX callback overhead |
- * | app_main_task_create() | ~20 µs | TCB init, stack setup |
- * | **Total** | **~25 µs** | Fast thread creation |
+ * | tx_application_define() call | ~5 us | ThreadX callback overhead |
+ * | app_main_task_create() | ~20 us | TCB init, stack setup |
+ * | **Total** | **~25 us** | Fast thread creation |
  *
  * ## Error Handling
  *
@@ -1827,15 +1827,15 @@ void tx_application_define(void* first_unused_memory)
 
   /* Step 1e: Register all tasks for heartbeat monitoring
    *
-   * Task timeout = 3× normal period (allows 2 missed heartbeats):
-   * - Telemetry (50ms period) → 150ms timeout
-   * - LED Status (50ms period) → 150ms timeout
-   * - BMS Monitor (1000ms period) → 3000ms timeout
-   * - Temp Sensor (1000ms period) → 3000ms timeout
-   * - Obstacle Detect (20ms period) → 60ms timeout
-   * - Motor Control (10ms period) → 30ms timeout
-   * - Communication (10ms period) → 30ms timeout
-   * - Watchdog Monitor (10ms period) → 30ms timeout
+   * Task timeout = 3x normal period (allows 2 missed heartbeats):
+   * - Telemetry (50ms period) -> 150ms timeout
+   * - LED Status (50ms period) -> 150ms timeout
+   * - BMS Monitor (1000ms period) -> 3000ms timeout
+   * - Temp Sensor (1000ms period) -> 3000ms timeout
+   * - Obstacle Detect (20ms period) -> 60ms timeout
+   * - Motor Control (10ms period) -> 30ms timeout
+   * - Communication (10ms period) -> 30ms timeout
+   * - Watchdog Monitor (10ms period) -> 30ms timeout
    */
 
   err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);
@@ -1933,12 +1933,12 @@ void tx_application_define(void* first_unused_memory)
  * @details
  * Implements the **three-stage bootstrap sequence** for the embedded system:
  *
- * 1. **Stage 1: Startup Validation** (~10 µs)
+ * 1. **Stage 1: Startup Validation** (~10 us)
  *    - Read reset status registers (RSTSR0, RSTSR1, RSTSR2)
  *    - Detect abnormal reset conditions (watchdog timeout, brownout, etc.)
  *    - Assert-halt on critical flags (IWDTRF = firmware bug)
  *
- * 2. **Stage 2: System Initialization** (~250 µs)
+ * 2. **Stage 2: System Initialization** (~250 us)
  *    - Configure PLL for 240 MHz operation (rx_clock_power_init)
  *    - Initialize UART for early error logging (uart_debug_init)
  *    - Report startup flags to console (internal_report_startup_flags)
@@ -1976,11 +1976,11 @@ void tx_application_define(void* first_unused_memory)
  *
  * | Phase | Execution Time | CPU Cycles | Notes |
  * |-------|----------------|------------|-------|
- * | **C runtime init** | ~500 µs | ~120,000 | crt0.S: BSS clear, data copy |
- * | **Startup flag checks** | ~10 µs | ~2,400 | 6 register reads + validation |
- * | **Clock init (PLL lock)** | ~200 µs | ~48,000 | PLL stabilization wait |
+ * | **C runtime init** | ~500 us | ~120,000 | crt0.S: BSS clear, data copy |
+ * | **Startup flag checks** | ~10 us | ~2,400 | 6 register reads + validation |
+ * | **Clock init (PLL lock)** | ~200 us | ~48,000 | PLL stabilization wait |
  * | **Hardware init** | ~50 ms | ~12M | USB enumeration dominates |
- * | **ThreadX start** | ~100 µs | ~24,000 | Kernel object creation |
+ * | **ThreadX start** | ~100 us | ~24,000 | Kernel object creation |
  * | **Total boot time** | **~51 ms** | **~12.2M** | Ready for first control loop |
  *
  * ## Memory Usage (Static Allocation Only - No Heap)
@@ -2021,7 +2021,7 @@ void tx_application_define(void* first_unused_memory)
  * - **No console output available**
  *
  * **Debugging UART Failure:**
- * - Use hardware debugger (e² studio debugger, OpenOCD, J-Link, GDB)
+ * - Use hardware debugger (e^2 studio debugger, OpenOCD, J-Link, GDB)
  * - Check SCI9 clock enable (MSTPCRB bit 22 must be clear)
  * - Verify GPIO pin configuration (P2.6/TXD9, P2.7/RXD9 in peripheral mode)
  * - Confirm crystal oscillator stable (UART requires PCLKB = 60 MHz)

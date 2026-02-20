@@ -434,7 +434,7 @@ typedef enum : uint8_t {
  *
  * @details
  * This structure is placed in RAM and read by the DTC hardware.
- * The address is calculated from DTCVBR + (vector_number × 4).
+ * The address is calculated from DTCVBR + (vector_number x 4).
  *
  * @warning Must be aligned to 4-byte boundary
  * @note For short-address mode, use dtc_transfer_info_short_t

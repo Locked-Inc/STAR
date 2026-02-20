@@ -11,7 +11,7 @@
  * - Protocol encoding/decoding (Protocol Buffers, ASCII frames, CRC)
  * - Data serialization and deserialization
  * - Bit manipulation (extraction, packing, masking)
- * - Endianness conversion (big-endian ↔ little-endian)
+ * - Endianness conversion (big-endian <-> little-endian)
  * - Buffer size calculations
  *
  * **Design Philosophy:**
@@ -108,14 +108,14 @@
  * @par Module Dependencies:
  * ```
  * rx_bit_constants.h
- *   └─-> stdint.h (uint8_t for underlying enum type)
+ *   +--> stdint.h (uint8_t for underlying enum type)
  *
  * Used by:
- *   ├─-> lib/rx_frame/ (protocol framing, byte packing)
- *   ├─-> lib/rx_crc/ (CRC-32 byte-wise operations)
- *   ├─-> lib/rx_nanopb/ (Protocol Buffer serialization)
- *   ├─-> lib/rx_comm_manager/ (communication buffer management)
- *   └─-> lib/rx_hal/src/uart.c (data serialization)
+ *   +--> lib/rx_frame/ (protocol framing, byte packing)
+ *   +--> lib/rx_crc/ (CRC-32 byte-wise operations)
+ *   +--> lib/rx_nanopb/ (Protocol Buffer serialization)
+ *   +--> lib/rx_comm_manager/ (communication buffer management)
+ *   +--> lib/rx_hal/src/uart.c (data serialization)
  * ```
  *
  * @author STAR Team
@@ -189,10 +189,10 @@ extern "C" {
  *
  * | Constant | Value | Rationale | Standard Reference |
  * |----------|-------|-----------|-------------------|
- * | k_rx_bits_per_byte | 8 | Universal (ANSI, ISO/IEC, POSIX) | C99 §3.6: CHAR_BIT = 8 |
- * | k_rx_bits_per_word16 | 16 | uint16_t guaranteed size | C99 §7.18.1.1 exact-width types |
- * | k_rx_bits_per_word32 | 32 | uint32_t guaranteed size | C99 §7.18.1.1 exact-width types |
- * | k_rx_bits_per_word64 | 64 | uint64_t guaranteed size | C99 §7.18.1.1 exact-width types |
+ * | k_rx_bits_per_byte | 8 | Universal (ANSI, ISO/IEC, POSIX) | C99 Sec.3.6: CHAR_BIT = 8 |
+ * | k_rx_bits_per_word16 | 16 | uint16_t guaranteed size | C99 Sec.7.18.1.1 exact-width types |
+ * | k_rx_bits_per_word32 | 32 | uint32_t guaranteed size | C99 Sec.7.18.1.1 exact-width types |
+ * | k_rx_bits_per_word64 | 64 | uint64_t guaranteed size | C99 Sec.7.18.1.1 exact-width types |
  *
  * @par Historical Note:
  * While some legacy systems used 7-bit bytes (e.g., CDC 6600) or 9-bit bytes (PDP-10),
@@ -250,7 +250,7 @@ typedef enum : uint8_t {
  * **Relationship to rx_bit_sizes_t:**
  * - k_rx_shift_byte = k_rx_bits_per_byte (both = 8)
  * - k_rx_shift_word16 = k_rx_bits_per_word16 (both = 16)
- * - k_rx_shift_word24 = 3 × k_rx_bits_per_byte (3 bytes = 24 bits)
+ * - k_rx_shift_word24 = 3 x k_rx_bits_per_byte (3 bytes = 24 bits)
  *
  * ## Usage Patterns
  *
@@ -310,9 +310,9 @@ typedef enum : uint8_t {
  *
  * | Constant | Value | Derivation | Use Case |
  * |----------|-------|------------|----------|
- * | k_rx_shift_byte | 8 | 1 byte × 8 bits | Access byte N in multi-byte word |
- * | k_rx_shift_word16 | 16 | 2 bytes × 8 bits | Access upper 16 bits of 32-bit word |
- * | k_rx_shift_word24 | 24 | 3 bytes × 8 bits | Access MSB (byte 3) of 32-bit word |
+ * | k_rx_shift_byte | 8 | 1 byte x 8 bits | Access byte N in multi-byte word |
+ * | k_rx_shift_word16 | 16 | 2 bytes x 8 bits | Access upper 16 bits of 32-bit word |
+ * | k_rx_shift_word24 | 24 | 3 bytes x 8 bits | Access MSB (byte 3) of 32-bit word |
  *
  * @par Usage Example: CRC-32 Byte-Wise Processing
  * @code{.c}

@@ -129,12 +129,12 @@
  * | **Logic Supply (VCC)** | 3.0 | 3.3/5.0 | 5.5 | V | RX72N uses 3.3V |
  * | **Output Current (RMS)** | - | - | 2.5 | A | Per channel, continuous |
  * | **Output Current (Peak)** | - | - | 5.0 | A | Per channel, transient |
- * | **RDS(on) HS/LS** | - | 230 | 350 | mΩ | @ 25°C, TJ |
+ * | **RDS(on) HS/LS** | - | 230 | 350 | mOhm | @ 25degC, TJ |
  * | **PWM Frequency** | 0 | 20 | 100 | kHz | Max 100kHz, 25kHz recommended |
  * | **Dead Time** | 250 | 500 | 1000 | ns | Prevents shoot-through |
  * | **IPROPI Ratio** | - | 525 | - | A/V | Default current sense ratio |
- * | **Fault Response** | - | 1 | 3 | µs | nFAULT assertion latency |
- * | **Thermal Shutdown** | 150 | 165 | 175 | °C | TJ threshold |
+ * | **Fault Response** | - | 1 | 3 | us | nFAULT assertion latency |
+ * | **Thermal Shutdown** | 150 | 165 | 175 | degC | TJ threshold |
  *
  * ### Pin Configuration (STAR Project)
  *
@@ -179,7 +179,7 @@
  *
  * **Current Sense Equation:**
  * ```
- * V_IPROPI = I_motor × K_IPROPI
+ * V_IPROPI = I_motor x K_IPROPI
  *
  * Where:
  *   V_IPROPI = Voltage at IPROPI pin (0 to 3.3V)
@@ -189,8 +189,8 @@
  *
  * **Reverse Calculation:**
  * ```
- * I_motor_ma = (ADC_counts / 4095) × 3.3V × (1000 / K_IPROPI) × 1000
- *            = (ADC_counts / 4095) × 3.3 × 1904.76 mA  (for K_IPROPI = 525)
+ * I_motor_ma = (ADC_counts / 4095) x 3.3V x (1000 / K_IPROPI) x 1000
+ *            = (ADC_counts / 4095) x 3.3 x 1904.76 mA  (for K_IPROPI = 525)
  * ```
  *
  * **12-bit ADC Resolution:**
@@ -211,7 +211,7 @@
  * | Fault Type | Trigger | Protection Action | Recovery |
  * |------------|---------|-------------------|----------|
  * | **Overcurrent (OCP)** | I > 5A peak | Disable outputs, assert nFAULT | Clear fault, reduce current |
- * | **Thermal Shutdown (TSD)** | TJ > 165°C | Disable outputs, assert nFAULT | Cool down, clear fault |
+ * | **Thermal Shutdown (TSD)** | TJ > 165degC | Disable outputs, assert nFAULT | Cool down, clear fault |
  * | **Undervoltage Lockout (UVLO)** | VM < 4.5V | Disable outputs, assert nFAULT | Restore supply voltage |
  * | **Overvoltage Protection (OVP)** | VM > 37V | Clamp voltage, assert nFAULT | Reduce supply voltage |
  * | **Open Load (SPI variant)** | No motor connected | Flag in STATUS register | Check motor connection |
@@ -221,9 +221,9 @@
  *
  * **Why DRV8243?**
  * 1. **Integrated protection**: Eliminates external current sensing resistors and protection circuits
- * 2. **Automotive-qualified**: AEC-Q100 Grade 1 (-40°C to +125°C ambient)
+ * 2. **Automotive-qualified**: AEC-Q100 Grade 1 (-40degC to +125degC ambient)
  * 3. **High current capacity**: 2.5A RMS sufficient for STAR 6V gearmotors (1.5A stall)
- * 4. **Low RDS(on)**: 230mΩ typical reduces power dissipation and heat
+ * 4. **Low RDS(on)**: 230mOhm typical reduces power dissipation and heat
  * 5. **PH/EN mode**: Simplifies bidirectional control with complementary PWM
  * 6. **Diagnostic features**: Current sensing and fault reporting enable closed-loop control
  * 7. **SPI variant available**: Runtime configuration for advanced tuning (slew rate, ITRIP)
@@ -248,27 +248,27 @@
  * **Speed Control Workflow:**
  * ```
  * User calls rx_drv8243_set_speed(handle, speed_percent)
- *     ↓
+ *     v
  * Check fault status (nFAULT pin via GPIO)
- *     ↓ (no fault)
+ *     v (no fault)
  * Convert speed (-100 to +100) -> PH duty + EN duty
- *     ↓
+ *     v
  * Call rx_motor_set_duty() for both PWM outputs
- *     ↓
+ *     v
  * Update handle->current_speed
  * ```
  *
  * **Current Monitoring Workflow:**
  * ```
  * User calls rx_drv8243_read_current(handle, &current_ma)
- *     ↓
+ *     v
  * Read IPROPI pin via ADC (rx_bus_manager)
- *     ↓
+ *     v
  * Convert ADC counts -> voltage -> current_ma
- * current_ma = (ADC / 4095) × 3.3V × (1000 / ki_propi) × 1000
- *     ↓
+ * current_ma = (ADC / 4095) x 3.3V x (1000 / ki_propi) x 1000
+ *     v
  * (Optional) Check against current_limit_ma
- *     ↓
+ *     v
  * Return current to user
  * ```
  *
@@ -277,12 +277,12 @@
  * | Metric | Value | Notes |
  * |--------|-------|-------|
  * | **PWM Resolution** | 16-bit (65536 steps) | GPTW timer counter width |
- * | **Speed Precision** | ±0.0015% | 1/65536 duty cycle granularity |
+ * | **Speed Precision** | +/-0.0015% | 1/65536 duty cycle granularity |
  * | **Current Sense Resolution** | ~1.52 mA/LSB | 12-bit ADC @ 3.3V, K_IPROPI=525 |
- * | **Current Read Latency** | ~10 µs | ADC conversion + bus transaction |
- * | **Fault Detect Latency** | ~1 µs (HW) + 5 µs (SW poll) | nFAULT assertion + GPIO read |
- * | **Speed Update Latency** | ~8 µs | rx_motor PWM duty update |
- * | **SPI Transaction Time** | ~50 µs | 16-bit read/write @ 1 MHz SPI clock |
+ * | **Current Read Latency** | ~10 us | ADC conversion + bus transaction |
+ * | **Fault Detect Latency** | ~1 us (HW) + 5 us (SW poll) | nFAULT assertion + GPIO read |
+ * | **Speed Update Latency** | ~8 us | rx_motor PWM duty update |
+ * | **SPI Transaction Time** | ~50 us | 16-bit read/write @ 1 MHz SPI clock |
  * | **Memory Footprint** | 72 bytes | sizeof(rx_drv8243_handle_t) |
  *
  * ## Memory Usage
@@ -296,7 +296,7 @@
  * | **Total per driver** | **72 bytes** | - | One handle per motor |
  *
  * **STAR System (4 motors):**
- * - 4 × rx_drv8243_handle_t = 288 bytes
+ * - 4 x rx_drv8243_handle_t = 288 bytes
  * - Shared rx_bus_manager = 64 bytes
  * - **Total**: 352 bytes RAM
  *
@@ -329,7 +329,7 @@
  * | 2. Fixed loop bounds | [OK] | No unbounded loops (register polling has timeout) |
  * | 3. No dynamic memory | [OK] | All structures user-provided or stack-allocated |
  * | 4. Function length <60 lines | [OK] | Longest function ~45 lines (init) |
- * | 5. Assertions | [OK] | All functions validate inputs (≥2 checks) |
+ * | 5. Assertions | [OK] | All functions validate inputs (>=2 checks) |
  * | 6. Smallest scope | [OK] | Variables declared at point of use |
  * | 7. Check return values | [OK] | All bus_manager and rx_motor calls checked |
  * | 8. Limited preprocessor | [OK] | C23 typed enums, no macro constants |
@@ -494,9 +494,9 @@
  *         .use_spi_variant = true,              // Enable SPI features
  *         .sci_channel = 7,                     // SCI7
  *         .spi_cs_port = 2, .spi_cs_pin = 5,    // PORT2.5 for nSCS
- *         .initial_slew_rate = k_drv8243_slew_100_vus,  // 100 V/µs (moderate EMI)
+ *         .initial_slew_rate = k_drv8243_slew_100_vus,  // 100 V/us (moderate EMI)
  *         .initial_itrip = k_drv8243_itrip_2_0a,        // 2.0A current regulation
- *         .initial_toff = k_drv8243_toff_16us,          // 16µs off-time
+ *         .initial_toff = k_drv8243_toff_16us,          // 16us off-time
  *         .initial_mode = k_drv8243_mode_ph_en,         // PH/EN mode
  *     };
  *
@@ -538,7 +538,7 @@
  *
  *     // Check specific fault conditions
  *     if (fault.tsd) {
- *         rx_log_error("MOTOR", "Thermal shutdown! TJ > 165°C");
+ *         rx_log_error("MOTOR", "Thermal shutdown! TJ > 165degC");
  *     }
  *     if (fault.ocp) {
  *         rx_log_error("MOTOR", "Overcurrent protection triggered");
@@ -637,7 +637,7 @@ typedef enum : uint8_t {
    * Motor driver is operating within safe limits.
    *
    * @par Hardware Indication:
-   * - nFAULT pin: HIGH (pulled up to 3.3V via internal 100kΩ resistor)
+   * - nFAULT pin: HIGH (pulled up to 3.3V via internal 100kOhm resistor)
    * - FAULT_SUMMARY register (SPI): 0x00 (all bits clear)
    *
    * @par Action Required: None
@@ -661,13 +661,13 @@ typedef enum : uint8_t {
    * The DRV8243 immediately disables outputs and asserts nFAULT to prevent FET damage.
    *
    * @par Trigger Conditions:
-   * - Motor stall (locked rotor): I_stall = V_supply / R_motor = 6V / 4Ω = 1.5A continuous
+   * - Motor stall (locked rotor): I_stall = V_supply / R_motor = 6V / 4Ohm = 1.5A continuous
    * - Mechanical jam or obstruction
    * - Short circuit: OUT1-OUT2 or OUT-GND
    * - Inrush current during rapid acceleration (transient >5A)
    *
    * @par Hardware Response:
-   * - **Latency**: <3 µs from current threshold to output disable
+   * - **Latency**: <3 us from current threshold to output disable
    * - **Protection**: All FET gates driven LOW (outputs Hi-Z)
    * - **Fault signaling**: nFAULT pin asserted LOW
    * - **Latching**: Fault remains until cleared (power cycle or SPI CLR_FLT)
@@ -701,33 +701,33 @@ typedef enum : uint8_t {
    * @brief Thermal shutdown (TSD) - junction temperature exceeded
    * @details
    * The DRV8243 internal junction temperature (TJ) exceeded the thermal shutdown
-   * threshold of 165°C. This is typically caused by sustained high current,
+   * threshold of 165degC. This is typically caused by sustained high current,
    * inadequate heatsinking, or high ambient temperature.
    *
    * @par Trigger Conditions:
-   * - **Sustained overcurrent**: I² × R_DS(on) power dissipation
+   * - **Sustained overcurrent**: I^2 x R_DS(on) power dissipation
    * - **Inadequate cooling**: Insufficient PCB copper area or airflow
-   * - **High ambient**: T_ambient > 85°C (automotive environment)
+   * - **High ambient**: T_ambient > 85degC (automotive environment)
    * - **Thermal runaway**: R_DS(on) increases with temperature
    *
    * @par Thermal Calculation:
    * ```
    * Power dissipation (per FET):
-   *   P = I²_RMS × R_DS(on) = (2.5A)² × 0.23Ω = 1.44W
+   *   P = I^2_RMS x R_DS(on) = (2.5A)^2 x 0.23Ohm = 1.44W
    *
    * Junction temperature rise:
-   *   ΔTJ = P × θ_JA = 1.44W × 40°C/W = 57.6°C
+   *   DeltaTJ = P x theta_JA = 1.44W x 40degC/W = 57.6degC
    *
-   * If T_ambient = 85°C:
-   *   TJ = 85°C + 57.6°C = 142.6°C (approaching shutdown threshold)
+   * If T_ambient = 85degC:
+   *   TJ = 85degC + 57.6degC = 142.6degC (approaching shutdown threshold)
    * ```
    *
    * @par Hardware Response:
-   * - **Threshold**: TJ = 165°C (±10°C tolerance)
-   * - **Hysteresis**: Re-enable at TJ < 150°C (15°C hysteresis)
+   * - **Threshold**: TJ = 165degC (+/-10degC tolerance)
+   * - **Hysteresis**: Re-enable at TJ < 150degC (15degC hysteresis)
    * - **Latency**: Instantaneous (analog comparator)
    * - **Protection**: Disable all FET gates, assert nFAULT
-   * - **Latching**: Fault clears automatically when TJ < 150°C, but nFAULT remains asserted
+   * - **Latching**: Fault clears automatically when TJ < 150degC, but nFAULT remains asserted
    *
    * @par Recovery Procedure:
    * 1. **Immediate**: Stop motor (outputs already disabled by hardware)
@@ -742,8 +742,8 @@ typedef enum : uint8_t {
    * @par Prevention Strategies:
    * - **Thermal design**:
    *   - Minimum 2 oz copper PCB under DRV8243 thermal pad
-   *   - Thermal vias (4× 0.3mm) from thermal pad to bottom ground plane
-   *   - Forced air cooling if T_ambient > 70°C
+   *   - Thermal vias (4x 0.3mm) from thermal pad to bottom ground plane
+   *   - Forced air cooling if T_ambient > 70degC
    * - **Software**:
    *   - Monitor IPROPI continuously, limit to 2A RMS continuous
    *   - Implement duty cycle throttling if current >2A for >5 seconds
@@ -771,7 +771,7 @@ typedef enum : uint8_t {
    *
    * @par Hardware Response:
    * - **Threshold**: VM < 4.5V (rising), VM > 4.7V (falling, 200mV hysteresis)
-   * - **Latency**: <10 µs (analog comparator)
+   * - **Latency**: <10 us (analog comparator)
    * - **Protection**: Disable all outputs, assert nFAULT
    * - **Auto-recovery**: Clears when VM > 4.7V (non-latching)
    *
@@ -780,11 +780,11 @@ typedef enum : uint8_t {
    * Example STAR robot scenario:
    *   V_battery = 6.0V (nominal)
    *   I_motor = 1.5A (stall current)
-   *   R_cable = 0.5Ω (long wiring run)
+   *   R_cable = 0.5Ohm (long wiring run)
    *
    * Voltage at DRV8243:
-   *   VM = V_battery - I_motor × R_cable
-   *      = 6.0V - (1.5A × 0.5Ω)
+   *   VM = V_battery - I_motor x R_cable
+   *      = 6.0V - (1.5A x 0.5Ohm)
    *      = 5.25V (safe, >4.5V threshold)
    *
    * If battery discharges to 5.0V:
@@ -799,13 +799,13 @@ typedef enum : uint8_t {
    * 3. **Fix root cause**:
    *    - Charge/replace battery if V_battery < 5.5V
    *    - Reduce cable resistance (thicker wire, shorter run)
-   *    - Add bulk capacitance near DRV8243 (100µF ceramic + 470µF electrolytic)
+   *    - Add bulk capacitance near DRV8243 (100uF ceramic + 470uF electrolytic)
    * 4. **Restart**: Fault clears automatically when VM > 4.7V
    *
    * @par Prevention Strategies:
    * - **Design**:
    *   - Use 16-18 AWG power cables for motor supply (minimize R_cable)
-   *   - Place 100µF ceramic + 470µF electrolytic caps <10mm from VM pin
+   *   - Place 100uF ceramic + 470uF electrolytic caps <10mm from VM pin
    * - **Software**:
    *   - Monitor battery voltage, disable motors if V_battery < 5.5V
    *   - Implement soft-start (gradual acceleration) to reduce inrush
@@ -833,19 +833,19 @@ typedef enum : uint8_t {
    * - **Threshold**: VM > 37V (absolute maximum rating)
    * - **Protection**: Internal Zener clamp limits VM, assert nFAULT
    * - **Damage risk**: Repeated OVP reduces component lifespan
-   * - **Latency**: <1 µs (analog comparator)
+   * - **Latency**: <1 us (analog comparator)
    *
    * @par Inductive Kickback Analysis:
    * ```
    * Motor is an inductor (L ~10mH for STAR gearmotors):
-   *   V_kickback = -L × (dI/dt)
+   *   V_kickback = -L x (dI/dt)
    *
    * During hard braking (EN goes LOW):
-   *   I_motor = 1.5A -> 0A in 10µs
-   *   dI/dt = 1.5A / 10µs = 150 A/ms
+   *   I_motor = 1.5A -> 0A in 10us
+   *   dI/dt = 1.5A / 10us = 150 A/ms
    *
    * Induced voltage:
-   *   V_kickback = 10mH × 150 A/ms = 1.5kV! (without protection)
+   *   V_kickback = 10mH x 150 A/ms = 1.5kV! (without protection)
    *
    * With proper TVS diode (clamps at 30V):
    *   V_spike = min(1.5kV, 30V) = 30V (safe, <37V)
@@ -890,23 +890,23 @@ typedef enum : uint8_t {
    * - **Disconnected motor**: OUT1/OUT2 terminals not connected to motor
    * - **Open winding**: Motor winding broken (rare, mechanical damage)
    * - **Poor contact**: Loose connector, cold solder joint
-   * - **Wrong motor**: Very high impedance motor (>100Ω DC resistance)
+   * - **Wrong motor**: Very high impedance motor (>100Ohm DC resistance)
    *
    * @par Detection Mechanism (SPI Variant):
    * - When outputs enabled (EN = HIGH), measure current via internal sense FETs
-   * - If I_OUT < 10mA for >100µs, flag open load condition
+   * - If I_OUT < 10mA for >100us, flag open load condition
    * - STATUS1 register bits OLA1/OLA2 indicate which output is open
    *
    * @par Hardware Response:
    * - **Standard mode**: NOT DETECTED (no open-load detection capability)
    * - **SPI variant**: Set STATUS1.OLA1/OLA2 bits, assert nFAULT (if enabled)
-   * - **Latency**: ~100 µs from enable to detection
+   * - **Latency**: ~100 us from enable to detection
    * - **Latching**: Fault latched until CLR_FLT command
    *
    * @par Recovery Procedure:
    * 1. **Diagnose**:
    *    - Physically inspect motor connectors (secure connection?)
-   *    - Measure motor DC resistance with multimeter (should be 4-10Ω for STAR motors)
+   *    - Measure motor DC resistance with multimeter (should be 4-10Ohm for STAR motors)
    *    - Check for broken wiring between DRV8243 and motor
    * 2. **Fix**:
    *    - Reconnect motor if disconnected
@@ -962,7 +962,7 @@ typedef enum : uint8_t {
    * @par Recovery Procedure:
    * 1. **Diagnose**:
    *    - Verify SPI wiring with multimeter (continuity test)
-   *    - Check SPI clock frequency (should be ≤1 MHz)
+   *    - Check SPI clock frequency (should be <=1 MHz)
    *    - Review SPI bus configuration (CPOL=0, CPHA=1 for DRV8243)
    * 2. **Troubleshooting**:
    *    - Add logic analyzer capture of SPI transaction
@@ -971,13 +971,13 @@ typedef enum : uint8_t {
    * 3. **Fix**:
    *    - Correct wiring errors
    *    - Reduce SPI clock frequency (try 500 kHz)
-   *    - Add 10kΩ pull-up on SDO line (improves signal integrity)
+   *    - Add 10kOhm pull-up on SDO line (improves signal integrity)
    * 4. **Retry**: Call rx_drv8243_spi_* function again
    *
    * @par Prevention Strategies:
    * - **Design**:
    *   - Route SPI traces <50mm, avoid stubs
-   *   - Add 22Ω series resistors on SCLK/SDI (dampen reflections)
+   *   - Add 22Ohm series resistors on SCLK/SDI (dampen reflections)
    *   - Separate SPI GND return path from motor GND (reduce noise)
    * - **Software**:
    *   - Implement retry logic (up to 3 retries on timeout)
@@ -1040,7 +1040,7 @@ typedef enum : uint8_t {
  * Bit 5: VMOV      - VM overvoltage (>37V)
  * Bit 4: VMUV      - VM undervoltage (<4.5V)
  * Bit 3: OCP       - Overcurrent protection (any FET)
- * Bit 2: TSD       - Thermal shutdown (TJ >165°C)
+ * Bit 2: TSD       - Thermal shutdown (TJ >165degC)
  * Bit 1: OLA       - Open load (any output)
  * Bit 0: Reserved
  * ```
@@ -1084,7 +1084,7 @@ typedef enum : uint8_t {
  *
  * if (err == k_rx_ok) {
  *     if (fault.tsd) {
- *         rx_log_error("MOTOR", "Thermal shutdown - TJ exceeded 165°C");
+ *         rx_log_error("MOTOR", "Thermal shutdown - TJ exceeded 165degC");
  *     }
  *     if (fault.ocp) {
  *         // Determine which FET(s) triggered
@@ -1111,7 +1111,7 @@ typedef struct {
   bool vmov;      /**< VM overvoltage fault (>37V) (FAULT_SUMMARY.VMOV) */
   bool vmuv;      /**< VM undervoltage fault (<4.5V) (FAULT_SUMMARY.VMUV) */
   bool ocp;       /**< Overcurrent protection (any FET) (FAULT_SUMMARY.OCP) */
-  bool tsd;       /**< Thermal shutdown (TJ >165°C) (FAULT_SUMMARY.TSD) */
+  bool tsd;       /**< Thermal shutdown (TJ >165degC) (FAULT_SUMMARY.TSD) */
   bool ola;       /**< Open-load detected (any output) (FAULT_SUMMARY.OLA) */
   bool ocp_h1;    /**< Overcurrent on high-side OUT1 FET (STATUS1.OCP_H1) */
   bool ocp_l1;    /**< Overcurrent on low-side OUT1 FET (STATUS1.OCP_L1) */

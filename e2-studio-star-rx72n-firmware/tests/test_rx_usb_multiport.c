@@ -13,28 +13,28 @@
  * and correct ISR routing in a safety-critical embedded environment.
  *
  * **Multi-Port Architecture (3 Logical Ports over 1 USB Connection):**
- * - **Port 0 (Protocol):** Binary protobuf messages (RPi5 ↔ RX72N control)
+ * - **Port 0 (Protocol):** Binary protobuf messages (RPi5 <-> RX72N control)
  * - **Port 1 (Decoded):** Human-readable protocol debug (ASCII hex dumps)
  * - **Port 2 (Log):** General firmware logs (errors, warnings, system events)
  *
  * **USB Composite Device Descriptor Structure:**
  * @code
  * Configuration Descriptor (Multi-Interface CDC)
- * ├── Interface 0 - Port 0 Control (CDC ACM)
- * │   └── Endpoint 0x81 - Notification (Interrupt IN)
- * ├── Interface 1 - Port 0 Data (CDC ACM Data)
- * │   ├── Endpoint 0x01 - Bulk OUT (Host -> Device)
- * │   └── Endpoint 0x82 - Bulk IN  (Device -> Host)
- * ├── Interface 2 - Port 1 Control (CDC ACM)
- * │   └── Endpoint 0x83 - Notification (Interrupt IN)
- * ├── Interface 3 - Port 1 Data (CDC ACM Data)
- * │   ├── Endpoint 0x02 - Bulk OUT (Host -> Device)
- * │   └── Endpoint 0x84 - Bulk IN  (Device -> Host)
- * ├── Interface 4 - Port 2 Control (CDC ACM)
- * │   └── Endpoint 0x85 - Notification (Interrupt IN)
- * └── Interface 5 - Port 2 Data (CDC ACM Data)
- *     ├── Endpoint 0x03 - Bulk OUT (Host -> Device)
- *     └── Endpoint 0x86 - Bulk IN  (Device -> Host)
+ * +-- Interface 0 - Port 0 Control (CDC ACM)
+ * |   +-- Endpoint 0x81 - Notification (Interrupt IN)
+ * +-- Interface 1 - Port 0 Data (CDC ACM Data)
+ * |   +-- Endpoint 0x01 - Bulk OUT (Host -> Device)
+ * |   +-- Endpoint 0x82 - Bulk IN  (Device -> Host)
+ * +-- Interface 2 - Port 1 Control (CDC ACM)
+ * |   +-- Endpoint 0x83 - Notification (Interrupt IN)
+ * +-- Interface 3 - Port 1 Data (CDC ACM Data)
+ * |   +-- Endpoint 0x02 - Bulk OUT (Host -> Device)
+ * |   +-- Endpoint 0x84 - Bulk IN  (Device -> Host)
+ * +-- Interface 4 - Port 2 Control (CDC ACM)
+ * |   +-- Endpoint 0x85 - Notification (Interrupt IN)
+ * +-- Interface 5 - Port 2 Data (CDC ACM Data)
+ *     +-- Endpoint 0x03 - Bulk OUT (Host -> Device)
+ *     +-- Endpoint 0x86 - Bulk IN  (Device -> Host)
  * @endcode
  *
  * **Test Categories:**
@@ -102,10 +102,10 @@
  * @endcode
  *
  * **Timing Requirements:**
- * - USB interrupt latency: <10µs (USB0 ISR to rx_usb_rx_push)
- * - Buffer full detection: <1µs (software check, no hardware involvement)
- * - Per-port callback invocation: <5µs (function pointer call + context switch)
- * - State transition propagation: <100µs (ATTACHED -> CONFIGURED affects all ports)
+ * - USB interrupt latency: <10us (USB0 ISR to rx_usb_rx_push)
+ * - Buffer full detection: <1us (software check, no hardware involvement)
+ * - Per-port callback invocation: <5us (function pointer call + context switch)
+ * - State transition propagation: <100us (ATTACHED -> CONFIGURED affects all ports)
  *
  * **Error Injection Patterns:**
  * - Invalid port ID (>= k_usb_port_count) - Tests bounds checking

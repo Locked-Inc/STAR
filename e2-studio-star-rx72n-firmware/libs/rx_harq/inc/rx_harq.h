@@ -86,14 +86,14 @@
  *
  * **Transition Guards:**
  * - WaitingAck -> Combining: Only if retry_count < max_retries
- * - Combining -> Error: When retry_count ≥ max_retries AND decode still fails
+ * - Combining -> Error: When retry_count >= max_retries AND decode still fails
  *
  * ## Performance Characteristics
  *
  * | Metric                  | Value                                    |
  * |-------------------------|------------------------------------------|
- * | Throughput (1 tx)       | 100 / 202 ≈ 49.5% (FEC overhead)        |
- * | Throughput (2 tx avg)   | 100 / 404 ≈ 24.8% (2× retransmissions)  |
+ * | Throughput (1 tx)       | 100 / 202 ~ 49.5% (FEC overhead)        |
+ * | Throughput (2 tx avg)   | 100 / 404 ~ 24.8% (2x retransmissions)  |
  * | Latency (1 tx)          | ~1 ms encode + transmit                  |
  * | Latency (2 tx)          | ~2-5 ms (includes RTT for NACK)         |
  * | Memory (per handle)     | ~82 KB (dominated by FEC decoder)        |
@@ -121,14 +121,14 @@
  * - **Rule 1**: [OK] No recursion, goto, setjmp/longjmp
  * - **Rule 2**: [OK] All loops bounded (k_harq_soft_buffer_size)
  * - **Rule 3**: [OK] Zero dynamic allocation
- * - **Rule 4**: [OK] Functions ≤ 60 lines
- * - **Rule 5**: [OK] All functions have ≥2 pre/postconditions
+ * - **Rule 4**: [OK] Functions <= 60 lines
+ * - **Rule 5**: [OK] All functions have >=2 pre/postconditions
  *
  * @note **Thread Safety**: HARQ handles are NOT thread-safe. Caller must
  *       provide synchronization if sharing handles between threads.
  *
- * @warning Soft bit accumulation uses int16 (range ±32768). With max 3 combines
- *          and soft bits ±127, accumulator saturates at ±381 (no overflow).
+ * @warning Soft bit accumulation uses int16 (range +/-32768). With max 3 combines
+ *          and soft bits +/-127, accumulator saturates at +/-381 (no overflow).
  *
  * @see star-gateway/internal/harq/ Go reference implementation
  * @see star-gateway/internal/fec/combiner.go Chase Combiner algorithm

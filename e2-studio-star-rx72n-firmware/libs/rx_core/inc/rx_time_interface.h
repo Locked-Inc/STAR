@@ -51,7 +51,7 @@
  * | **Flexibility** | Swap RTOS without changing USB/SPI code | ThreadX -> FreeRTOS |
  * | **Decoupling** | Communication layers have zero ThreadX includes | Clean dependencies |
  * | **Portability** | Same code runs on bare-metal with null impl | Debug builds |
- * | **Simulation** | Mock advances time instantly for fast tests | 1000ms timeout in 1µs |
+ * | **Simulation** | Mock advances time instantly for fast tests | 1000ms timeout in 1us |
  *
  * ## Concrete Implementations
  *
@@ -89,7 +89,7 @@
  *
  * - **Memory overhead**: 16 bytes per interface instance (4 function pointers)
  * - **Call overhead**: ~3 cycles (indirect jump through function pointer)
- * - **ThreadX sleep_ms**: Yields to scheduler (~50-200 µs context switch)
+ * - **ThreadX sleep_ms**: Yields to scheduler (~50-200 us context switch)
  * - **Mock sleep_ms**: Instant return if auto_advance disabled
  * - **get_ms**: ~10-50 cycles depending on implementation
  *
@@ -279,7 +279,7 @@ typedef struct rx_time_interface rx_time_interface_t;
  * **Mock Implementation (auto-advance)**:
  * - Returns immediately AND advances simulated time by ms
  * - Useful for testing timeout logic without real delays
- * - 1000ms timeout completes in ~1µs real time
+ * - 1000ms timeout completes in ~1us real time
  *
  * **Null Implementation (bare-metal)**:
  * - Function pointer set tonullptr
@@ -308,9 +308,9 @@ typedef struct rx_time_interface rx_time_interface_t;
  *
  * @note **Thread Safety**: ThreadX implementation is thread-safe. Mock depends
  *       on test harness (single-threaded tests are safe).
- * @note **Accuracy**: ThreadX sleep accuracy limited by tick rate (typically ±10ms).
+ * @note **Accuracy**: ThreadX sleep accuracy limited by tick rate (typically +/-10ms).
  *       Use hardware timers for precise delays <1ms.
- * @note **Execution Time**: ThreadX context switch ~50-200µs. Mock returns in <1µs.
+ * @note **Execution Time**: ThreadX context switch ~50-200us. Mock returns in <1us.
  * @note **Blocking**: ThreadX yields CPU (other threads run). Mock returns immediately.
  *
  * @warning ThreadX tick granularity causes rounding: 15ms sleep with 10ms tick = 20ms actual.

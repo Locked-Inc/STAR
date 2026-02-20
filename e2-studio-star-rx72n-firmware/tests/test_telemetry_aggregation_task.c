@@ -211,7 +211,7 @@ void test_telemetry_task_collects_bms_data(void)
  */
 void test_telemetry_task_collects_temp_data(void)
 {
-  /* Set up temp state (25.50°C = 2550 centi-degrees) */
+  /* Set up temp state (25.50degC = 2550 centi-degrees) */
   temp_sensor_state_t temp_in  = {0};
   temp_sensor_state_t temp_out = {0};
   rx_err_t            err;
@@ -365,7 +365,7 @@ void test_telemetry_task_handles_send_failure(void)
  * logic must prefer USB over SPI. This test exercises the real channel selection
  * path: query USB readiness, find it ready, and send via USB channel.
  *
- * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * The channel is derived from rx_comm_manager_channel_ready() -- not hardcoded --
  * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_transport_selects_usb_when_ready(void)
@@ -396,7 +396,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
     selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
-  /* Verify USB was selected (USB ready → USB preferred) */
+  /* Verify USB was selected (USB ready -> USB preferred) */
   TEST_ASSERT_EQUAL(k_comm_channel_usb, selected_channel);
 
   /* Send via the selected channel and verify the mock records it correctly */
@@ -419,7 +419,7 @@ void test_telemetry_transport_selects_usb_when_ready(void)
  * selection logic must fall back to SPI. This test exercises the real failover
  * path: query USB (not ready), query SPI (ready), select SPI, send.
  *
- * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * The channel is derived from rx_comm_manager_channel_ready() -- not hardcoded --
  * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
@@ -439,7 +439,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
-  /* Exercise transport selection: USB first (not ready) → SPI fallback */
+  /* Exercise transport selection: USB first (not ready) -> SPI fallback */
   err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(usb_ready);
@@ -450,7 +450,7 @@ void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
 
   selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
 
-  /* Verify SPI was selected (USB not ready → SPI fallback) */
+  /* Verify SPI was selected (USB not ready -> SPI fallback) */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
 
   /* Send via the selected channel and verify the mock records it correctly */
@@ -527,10 +527,10 @@ void test_telemetry_channel_ready_spi_reports_correctly(void)
  * @details
  * Verifies that telemetry can be delivered via SPI when USB is unavailable.
  * This exercises the full failover path end-to-end: channel selection via
- * rx_comm_manager_channel_ready() (USB not ready → SPI selected) followed
+ * rx_comm_manager_channel_ready() (USB not ready -> SPI selected) followed
  * by a successful send with a real payload buffer.
  *
- * The channel is derived from rx_comm_manager_channel_ready() — not hardcoded —
+ * The channel is derived from rx_comm_manager_channel_ready() -- not hardcoded --
  * mirroring the behaviour of internal_select_transport() in the task.
  */
 void test_telemetry_spi_fallback_send_succeeds(void)
@@ -550,7 +550,7 @@ void test_telemetry_spi_fallback_send_succeeds(void)
   mock_comm_manager_set_channel_ready(k_comm_channel_spi, true);
   mock_comm_manager_set_send_return(k_rx_ok);
 
-  /* Exercise transport selection: USB first (not ready) → SPI fallback */
+  /* Exercise transport selection: USB first (not ready) -> SPI fallback */
   err = rx_comm_manager_channel_ready(&mgr, k_comm_channel_usb, &usb_ready);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   if (usb_ready) {
@@ -561,7 +561,7 @@ void test_telemetry_spi_fallback_send_succeeds(void)
     selected_channel = spi_ready ? k_comm_channel_spi : k_comm_channel_count;
   }
 
-  /* Verify SPI was selected (USB not ready → SPI fallback) */
+  /* Verify SPI was selected (USB not ready -> SPI fallback) */
   TEST_ASSERT_EQUAL(k_comm_channel_spi, selected_channel);
 
   /* Send with a real payload via the selected channel */

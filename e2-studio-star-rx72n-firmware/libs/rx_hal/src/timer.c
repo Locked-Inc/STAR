@@ -26,18 +26,18 @@
  * ```
  * Hardware:
  *   PCLKB (60 MHz)
- *      ↓
+ *      v
  *   CMT0 (/128) -> 468.75 kHz
- *      ↓
+ *      v
  *   Compare: 4687 -> 100.00 Hz interrupt
- *      ↓
+ *      v
  * Software:
  *   cmt0_isr() (this file)
- *      ↓
+ *      v
  *   _tx_timer_interrupt() (ThreadX kernel)
- *      ↓
+ *      v
  *   tx_timer_expiration_process() (ThreadX kernel)
- *      ↓
+ *      v
  *   Application thread scheduling, tx_thread_sleep(), tx_event_flags_get()
  * ```
  *
@@ -62,8 +62,8 @@
  * ## Performance Characteristics
  *
  * - **Tick period**: 10.000 ms (100.00 Hz)
- * - **Tick accuracy**: ±0 ticks (hardware compare match, no drift)
- * - **ISR execution time**: ~2-5 µs @ 240 MHz (measured with logic analyzer)
+ * - **Tick accuracy**: +/-0 ticks (hardware compare match, no drift)
+ * - **ISR execution time**: ~2-5 us @ 240 MHz (measured with logic analyzer)
  * - **ISR overhead**: 0.02% - 0.05% CPU utilization
  * - **Jitter**: <100 ns (hardware interrupt latency only)
  * - **Memory usage**: 0 bytes RAM (all static/code)
@@ -410,8 +410,8 @@ typedef enum : uint8_t {
  * - Trigger context switch if higher-priority thread ready
  *
  * @par Performance:
- * - **Execution time**: 2-5 µs @ 240 MHz (measured)
- * - **CPU overhead**: 0.02% - 0.05% (5 µs × 100 Hz / 1 second)
+ * - **Execution time**: 2-5 us @ 240 MHz (measured)
+ * - **CPU overhead**: 0.02% - 0.05% (5 us x 100 Hz / 1 second)
  * - **Stack usage**: ~64 bytes (interrupt frame + _tx_timer_interrupt)
  * - **Jitter**: <100 ns (hardware interrupt latency)
  *
@@ -457,7 +457,7 @@ typedef enum : uint8_t {
  *       interrupt cannot nest on itself. Higher-priority interrupts (motor
  *       faults) can preempt this ISR.
  *
- * @note **Critical Timing**: This ISR must complete quickly (<10 µs target)
+ * @note **Critical Timing**: This ISR must complete quickly (<10 us target)
  *       to maintain system responsiveness. Excessive ISR time causes scheduler
  *       latency and motor control jitter.
  *
@@ -476,7 +476,7 @@ typedef enum : uint8_t {
  * t=10.000ms: CMT0 compare match -> Hardware interrupt
  * t=10.001ms: ISR entry (CPU context save: ~500ns)
  * t=10.002ms: Clear IR flag (register write: ~100ns)
- * t=10.003ms: Call _tx_timer_interrupt() (~2µs processing)
+ * t=10.003ms: Call _tx_timer_interrupt() (~2us processing)
  * t=10.005ms: ISR exit (CPU context restore: ~500ns)
  * t=10.006ms: Resume application thread (or switch to higher priority)
  * @endcode
@@ -588,7 +588,7 @@ void __attribute__((interrupt)) cmt0_isr(void)
  * @note **Re-entrancy**: Not reentrant. Calling multiple times without
  *       timer_stop() is undefined behavior (timer will be reconfigured).
  *
- * @note **Performance**: Initialization takes ~10 µs @ 240 MHz (multiple
+ * @note **Performance**: Initialization takes ~10 us @ 240 MHz (multiple
  *       register writes). This is one-time startup cost, not runtime overhead.
  *
  * @note **Memory**: Zero heap allocation. All configuration is register I/O.
@@ -778,7 +778,7 @@ rx_err_t timer_init(void)
  * @note **Thread Safety**: Not thread-safe. Should only be called from
  *       single-threaded shutdown sequence or with ThreadX suspended.
  *
- * @note **Performance**: Executes in ~1 µs @ 240 MHz (register read/write).
+ * @note **Performance**: Executes in ~1 us @ 240 MHz (register read/write).
  *
  * @par Example - Controlled Shutdown:
  * @code
@@ -839,14 +839,14 @@ rx_err_t timer_stop(void)
  * 5. Store count value to output parameter
  *
  * **Counter behavior**:
- * - Increments every 1/(468.75 kHz) = 2.133 µs
+ * - Increments every 1/(468.75 kHz) = 2.133 us
  * - Resets to 0 when reaching CMCOR (4687)
  * - Wraps every 10 ms (one system tick)
  * - Can be read at any time without affecting timer operation
  *
  * **Timing resolution**:
  * @f[
- *   \text{Resolution} = \frac{1}{f_{CMT}} = \frac{1}{468750\text{ Hz}} = 2.133\text{ µs}
+ *   \text{Resolution} = \frac{1}{f_{CMT}} = \frac{1}{468750\text{ Hz}} = 2.133\text{ us}
  * @f]
  *
  * **Maximum readable value**:
@@ -858,7 +858,7 @@ rx_err_t timer_stop(void)
  *                   - **Type**: uint16_t*
  *                   - **Valid range**: Must be non-NULL
  *                   - **Output range**: 0 to k_cmt0_compare_match (4687)
- *                   - **Units**: Timer counts (1 count = 2.133 µs)
+ *                   - **Units**: Timer counts (1 count = 2.133 us)
  *                   - **Null handling**: Returns k_rx_err_null_ptr if nullptr
  *                   - **Lifetime**: Caller must ensure pointer valid until return
  *
@@ -911,9 +911,9 @@ rx_err_t timer_stop(void)
  * uint16_t count;
  * rx_err_t err = timer_get_count(&count);
  * if (err == k_rx_ok) {
- *     // Convert to microseconds: count * 2.133 µs
+ *     // Convert to microseconds: count * 2.133 us
  *     float us = count * 2.133f;
- *     rx_log_info("TIMER", "Current time in tick: %.1f µs", us);
+ *     rx_log_info("TIMER", "Current time in tick: %.1f us", us);
  * }
  * @endcode
  *
@@ -937,7 +937,7 @@ rx_err_t timer_stop(void)
  * }
  *
  * float us = elapsed * 2.133f;
- * rx_log_info("PERF", "motor_update took %.1f µs", us);
+ * rx_log_info("PERF", "motor_update took %.1f us", us);
  * @endcode
  *
  * @par Example - Jitter Analysis:
@@ -951,7 +951,7 @@ rx_err_t timer_stop(void)
  *     timer_get_count(&current);
  *
  *     int16_t jitter = current - last_count;
- *     if (abs(jitter) > 10) {  // >21 µs jitter
+ *     if (abs(jitter) > 10) {  // >21 us jitter
  *         rx_log_warn("TIMER", "High jitter detected: %d counts", jitter);
  *     }
  *

@@ -15,8 +15,8 @@
  *
  * **Operation:**
  * 1. Application calls `rx_hcsr04_isr_start()` before trigger pulse
- * 2. ISR fires on rising edge → captures start timestamp
- * 3. ISR fires on falling edge → captures end timestamp, sets complete flag
+ * 2. ISR fires on rising edge -> captures start timestamp
+ * 3. ISR fires on falling edge -> captures end timestamp, sets complete flag
  * 4. Application calls `rx_hcsr04_isr_get_duration()` to retrieve pulse width
  *
  * @par STAR Project ISR Mapping
@@ -32,7 +32,7 @@
  *       k_hcsr04_trigger_pulse_us from rx_hcsr04.h; s_hcsr04_us_per_cm from this header
  * @code
  * // Step 1: Register sensor with ISR (during init)
- * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, k_hcsr04_sensor_front_left);  // IRQ11 → Sensor 0
+ * rx_hcsr04_isr_register((uint8_t)k_hcsr04_irq_11, k_hcsr04_sensor_front_left);  // IRQ11 -> Sensor 0
  *
  * // Step 2: Arm ISR BEFORE trigger (prevents missing rising edge)
  * rx_hcsr04_isr_start((uint8_t)k_hcsr04_irq_11);
@@ -52,7 +52,7 @@
  *
  * @note This is an internal header (src/ not inc/)
  * @note ISR functions must match vector table naming (INT_IRQn)
- * @note Keep ISR execution time minimal (< 5µs)
+ * @note Keep ISR execution time minimal (< 5us)
  *
  * @see rx_hcsr04_icu.h Configure ICU before enabling ISRs
  * @see rx_hcsr04.c Main driver using this ISR layer
@@ -102,10 +102,10 @@ extern "C" {
  * @brief Microseconds per centimeter (roundtrip) for HC-SR04 distance conversion
  *
  * @details
- * The HC-SR04 echo pulse width encodes round-trip time-of-flight. At 20°C,
+ * The HC-SR04 echo pulse width encodes round-trip time-of-flight. At 20degC,
  * sound travels at 343 m/s. The round-trip conversion factor is:
  *
- *   2 cm / (343 m/s * 100 cm/m) = 58.31 µs/cm ≈ 58 µs/cm
+ *   2 cm / (343 m/s * 100 cm/m) = 58.31 us/cm ~ 58 us/cm
  *
  * This variable is replicated from `rx_hcsr04_timing_t::k_hcsr04_us_per_cm_roundtrip`
  * as a `static const float` for direct use in floating-point distance calculations
@@ -270,7 +270,7 @@ typedef struct {
  *
  * @param[in] irq_num IRQ number (8-11)
  * @param[out] duration_us Pointer to store pulse duration (microseconds)
- *                         - Valid range: 150µs - 8700µs (2cm - 150cm in IRQ mode)
+ *                         - Valid range: 150us - 8700us (2cm - 150cm in IRQ mode)
  *                         - CMT2 16-bit wrap handled automatically
  *                         - Must not be NULL
  *
@@ -352,13 +352,13 @@ typedef struct {
  *
  * // Step 2: Send trigger pulse
  * gpio_set_high(trigger_pin);
- * delay_us(k_hcsr04_trigger_pulse_us);  // 10µs pulse
+ * delay_us(k_hcsr04_trigger_pulse_us);  // 10us pulse
  * gpio_set_low(trigger_pin);
  *
  * // Step 3: Wait for completion (bounded loop - NASA Rule 2)
  * uint32_t duration_us;
  * err = k_rx_err_timeout;
- * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {  // k_hcsr04_echo_timeout_us iter max (~30ms at 1µs/iter)
+ * for (uint32_t i = 0; i < k_hcsr04_echo_timeout_us; i++) {  // k_hcsr04_echo_timeout_us iter max (~30ms at 1us/iter)
  *     err = rx_hcsr04_isr_get_duration((uint8_t)k_hcsr04_irq_11, &duration_us);
  *     if (err == k_rx_ok) {
  *         break;  // Measurement complete
@@ -391,7 +391,7 @@ typedef struct {
  *
  * err = internal_send_trigger_pulse(handle);              // Send trigger
  * if (err != k_rx_ok) {
- *     // Trigger failed — disarm ISR to restore consistent state
+ *     // Trigger failed -- disarm ISR to restore consistent state
  *     (void)rx_hcsr04_isr_disarm((uint8_t)handle->echo_irq);
  *     return err;
  * }
@@ -441,7 +441,7 @@ typedef struct {
  * @post IR[72] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[0] if measurement active
  *
- * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ * @note Called by hardware on both rising and falling edges; execution time < 5us
  *
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
@@ -466,7 +466,7 @@ void INT_IRQ8(void);
  * @post IR[73] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[1] if measurement active
  *
- * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ * @note Called by hardware on both rising and falling edges; execution time < 5us
  *
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
@@ -491,7 +491,7 @@ void INT_IRQ9(void);
  * @post IR[74] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[2] if measurement active
  *
- * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ * @note Called by hardware on both rising and falling edges; execution time < 5us
  *
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
@@ -516,7 +516,7 @@ void INT_IRQ10(void);
  * @post IR[75] flag cleared (interrupt acknowledged)
  * @post Echo edge timestamp captured in s_irq_state[3] if measurement active
  *
- * @note Called by hardware on both rising and falling edges; execution time < 5µs
+ * @note Called by hardware on both rising and falling edges; execution time < 5us
  *
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps

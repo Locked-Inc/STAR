@@ -81,10 +81,10 @@
  *
  * | Operation | I2C Time @ 100kHz | PEC Overhead | Total with PEC |
  * |-----------|-------------------|--------------|----------------|
- * | **Byte write** | ~250 µs | ~22 µs | ~272 µs |
- * | **Byte read** | ~250 µs | ~44 µs | ~294 µs |
- * | **Word read** | ~340 µs | ~66 µs | ~406 µs |
- * | **Block read (32B)** | ~3.2 ms | ~22 µs | ~3.22 ms |
+ * | **Byte write** | ~250 us | ~22 us | ~272 us |
+ * | **Byte read** | ~250 us | ~44 us | ~294 us |
+ * | **Word read** | ~340 us | ~66 us | ~406 us |
+ * | **Block read (32B)** | ~3.2 ms | ~22 us | ~3.22 ms |
  *
  * **PEC overhead**: ~8% for typical transactions (one extra byte + calculation time)
  *
@@ -100,7 +100,7 @@
  * ## Hardware Dependencies
  *
  * - **RX72N RIIC peripheral**: Same as I2C (3 channels)
- * - **External pull-ups**: 2.2-4.7 kΩ on SDA/SCL (REQUIRED)
+ * - **External pull-ups**: 2.2-4.7 kOhm on SDA/SCL (REQUIRED)
  * - **Timeout**: Software 25 ms watchdog (SMBus spec compliance)
  * - **Frequency**: Typically 100 kHz (SMBus standard mode)
  *
@@ -139,7 +139,7 @@
  * | **Rule 1** | [PASS] No goto, setjmp, recursion - straight-line code |
  * | **Rule 2** | [PASS] Loops have compile-time bounds (CRC-8: 8 iterations per byte) |
  * | **Rule 3** | [PASS] No malloc - all buffers on stack, context structs stack-allocated |
- * | **Rule 4** | [PASS] All functions ≤60 lines (longest: block_read at 34 lines) |
+ * | **Rule 4** | [PASS] All functions <=60 lines (longest: block_read at 34 lines) |
  * | **Rule 5** | [PASS] Minimum 2 validations per function (nullptr checks + state checks) |
  * | **Rule 6** | [PASS] Variables at smallest scope (loop counters in for statements) |
  * | **Rule 7** | [PASS] All RIIC/I2C returns checked (err != k_rx_ok, PEC verified) |
@@ -246,7 +246,7 @@ typedef enum : uint8_t {
  *
  * ## Performance
  *
- * - **Execution time**: ~0.8 µs per byte @ 240 MHz with -O2
+ * - **Execution time**: ~0.8 us per byte @ 240 MHz with -O2
  * - **Memory**: ~80 bytes flash (no lookup table - direct calculation)
  * - **Loop bounds**: Statically provable (8 iterations per byte)
  *
@@ -293,7 +293,7 @@ typedef enum : uint8_t {
  *                 This is the PEC byte to append to SMBus transaction.
  *
  * @pre data is valid pointer if length > 0
- * @pre length ≤ 65535 (uint16_t max)
+ * @pre length <= 65535 (uint16_t max)
  *
  * @post Return value is 8-bit CRC over input data
  * @post Input data buffer unchanged
@@ -979,7 +979,7 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
  * 3. Inside callback: Validate bus type is k_bus_type_smbus
  * 4. Extract RIIC channel and frequency from bus config
  * 5. Call riic_init() to initialize I2C hardware
- * 6. Validate device address ≤ 0x7F (7-bit address)
+ * 6. Validate device address <= 0x7F (7-bit address)
  * 7. Mark bus as initialized
  * 8. Return result
  *
@@ -1003,7 +1003,7 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
  * @retval k_rx_err_hw_error RIIC peripheral init failed
  *
  * @pre manager initialized, bus registered with smbus config
- * @pre External 2.2-4.7 kΩ pull-ups on SDA/SCL
+ * @pre External 2.2-4.7 kOhm pull-ups on SDA/SCL
  * @pre PEC enabled in config if device requires it (BQ4050 = true)
  *
  * @post RIIC peripheral configured for 100 kHz operation
@@ -1104,8 +1104,8 @@ rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name)
  *
  * ## Performance
  *
- * - **Without PEC**: ~250 µs @ 100 kHz (address + command)
- * - **With PEC**: ~272 µs @ 100 kHz (+PEC byte + calculation)
+ * - **Without PEC**: ~250 us @ 100 kHz (address + command)
+ * - **With PEC**: ~272 us @ 100 kHz (+PEC byte + calculation)
  * - **Overhead**: +9% for PEC
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1272,8 +1272,8 @@ rx_err_t rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name
  *
  * ## Performance
  *
- * - **Without PEC**: ~250 µs @ 100 kHz (address + data)
- * - **With PEC**: ~294 µs @ 100 kHz (+PEC byte + verification)
+ * - **Without PEC**: ~250 us @ 100 kHz (address + data)
+ * - **With PEC**: ~294 us @ 100 kHz (+PEC byte + verification)
  * - **Overhead**: +18% for PEC
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1361,7 +1361,7 @@ rx_err_t rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name
  * err = rx_bus_smbus_read_byte(&bus_mgr, "sensor", &temp_raw);
  * if (err == k_rx_ok) {
  *     float temp_c = temp_raw - 40.0f;  // Device-specific conversion
- *     rx_log_debug("SENSOR", "Temperature: %.1f°C", temp_c);
+ *     rx_log_debug("SENSOR", "Temperature: %.1fdegC", temp_c);
  * }
  * @endcode
  *
@@ -1458,8 +1458,8 @@ rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name,
  *
  * ## Performance
  *
- * - **Without PEC**: ~340 µs @ 100 kHz (address + command + data)
- * - **With PEC**: ~362 µs @ 100 kHz (+PEC byte)
+ * - **Without PEC**: ~340 us @ 100 kHz (address + command + data)
+ * - **With PEC**: ~362 us @ 100 kHz (+PEC byte)
  * - **Overhead**: +6% for PEC
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1658,8 +1658,8 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
  *
  * ## Performance
  *
- * - **Without PEC**: ~250 µs @ 100 kHz
- * - **With PEC**: ~294 µs @ 100 kHz
+ * - **Without PEC**: ~250 us @ 100 kHz
+ * - **With PEC**: ~294 us @ 100 kHz
  * - **Overhead**: +18% for PEC
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1769,8 +1769,8 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
  *
  * ## Performance
  *
- * - **Without PEC**: ~430 µs @ 100 kHz
- * - **With PEC**: ~452 µs @ 100 kHz
+ * - **Without PEC**: ~430 us @ 100 kHz
+ * - **With PEC**: ~452 us @ 100 kHz
  * - **Overhead**: +5% for PEC
  *
  * @param[in] manager Pointer to bus manager instance.
@@ -1885,7 +1885,7 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
  * |---------|-------|-------|-------------|
  * | Voltage() | 0x09 | mV | Battery voltage (e.g., 12450 = 12.45V) |
  * | Current() | 0x0A | mA | Signed current (negative = discharge) |
- * | Temperature() | 0x08 | 0.1K | Battery temp (e.g., 2981 = 25°C) |
+ * | Temperature() | 0x08 | 0.1K | Battery temp (e.g., 2981 = 25degC) |
  * | RelativeSOC() | 0x0D | % | State of charge (0-100%) |
  * | RemainingCapacity() | 0x0F | mAh | Remaining capacity |
  * | FullChargeCapacity() | 0x10 | mAh | Full charge capacity |
@@ -1893,8 +1893,8 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
  *
  * ## Performance
  *
- * - **Without PEC**: ~340 µs @ 100 kHz (command + 2 data bytes)
- * - **With PEC**: ~406 µs @ 100 kHz (+1 PEC byte + calculation ~20 µs)
+ * - **Without PEC**: ~340 us @ 100 kHz (command + 2 data bytes)
+ * - **With PEC**: ~406 us @ 100 kHz (+1 PEC byte + calculation ~20 us)
  * - **Overhead**: +19% for PEC (worth it for data integrity)
  *
  * @param[in] manager Pointer to bus manager instance
@@ -1987,7 +1987,7 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
  *     int16_t  current_ma;     // 0x0A (signed!)
  *     uint16_t soc_percent;    // 0x0D
  *     uint16_t capacity_mah;   // 0x0F
- *     uint16_t temperature_dk; // 0x08 (deci-Kelvin, 2981 = 25°C)
+ *     uint16_t temperature_dk; // 0x08 (deci-Kelvin, 2981 = 25degC)
  * } battery_status_t;
  *
  * battery_status_t status;
@@ -2014,7 +2014,7 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
  * // Convert temperature: deci-Kelvin to Celsius
  * float temp_c = (status.temperature_dk / 10.0f) - 273.15f;
  *
- * rx_log_debug("BATTERY", "V=%.3fV I=%dmA SOC=%u%% Cap=%umAh T=%.1f°C",
+ * rx_log_debug("BATTERY", "V=%.3fV I=%dmA SOC=%u%% Cap=%umAh T=%.1fdegC",
  *              status.voltage_mv/1000.0f, status.current_ma,
  *              status.soc_percent, status.capacity_mah, temp_c);
  * @endcode
@@ -2092,8 +2092,8 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
  * 2. Write command byte
  * 3. Read length byte from device (first byte after command)
  * 4. Validate length:
- *    - Must be ≥ 1 (at least one data byte)
- *    - Must be ≤ max_length (buffer overflow protection)
+ *    - Must be >= 1 (at least one data byte)
+ *    - Must be <= max_length (buffer overflow protection)
  * 5. Read 'length' data bytes into buffer
  * 6. Store actual length in *length
  * 7. Return result
@@ -2128,14 +2128,14 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
  *
  * - **8-byte block**: ~1.0 ms @ 100 kHz
  * - **32-byte block**: ~3.2 ms @ 100 kHz
- * - **Overhead**: ~90 µs per byte (includes ACK/NACK)
+ * - **Overhead**: ~90 us per byte (includes ACK/NACK)
  *
  * ## Memory Safety
  *
  * This function enforces buffer bounds:
  * - Rejects len_byte > max_length (prevents overflow)
  * - Rejects len_byte < 1 (invalid per SMBus spec)
- * - Caller MUST provide buffer ≥ max_length bytes
+ * - Caller MUST provide buffer >= max_length bytes
  *
  * @param[in] manager Pointer to bus manager instance.
  * @param[in] bus_name Name of SMBus bus (e.g., "battery_smbus").

@@ -10,18 +10,18 @@
  * This test suite validates the rx_usb_comm layer - a frame-based protocol that
  * sits above the raw USB CDC driver (rx_usb) and below the application logic.
  * It tests frame construction, CRC validation, and sequence number management
- * for reliable RX72N ↔ RPi5 communication.
+ * for reliable RX72N <-> RPi5 communication.
  *
  * **Protocol Stack Architecture:**
  * @code
  * +---------------------------+
- * |  Application Layer        | ← Motor control, telemetry
+ * |  Application Layer        | <- Motor control, telemetry
  * +---------------------------+
- * |  rx_usb_comm (THIS LAYER) | ← Frame encode/decode, CRC, sequence #
+ * |  rx_usb_comm (THIS LAYER) | <- Frame encode/decode, CRC, sequence #
  * +---------------------------+
- * |  rx_usb (CDC Driver)      | ← Multi-port USB CDC, buffers, callbacks
+ * |  rx_usb (CDC Driver)      | <- Multi-port USB CDC, buffers, callbacks
  * +---------------------------+
- * |  RX72N USB0 Hardware      | ← USB Full-Speed peripheral (12 Mbps)
+ * |  RX72N USB0 Hardware      | <- USB Full-Speed peripheral (12 Mbps)
  * +---------------------------+
  * @endcode
  *
@@ -103,8 +103,8 @@
  *
  *
  * **Timing Requirements:**
- * - Frame encoding time: <50µs @ 240 MHz for 1024-byte payload (software CRC-32)
- * - Frame decoding time: <60µs (includes CRC validation)
+ * - Frame encoding time: <50us @ 240 MHz for 1024-byte payload (software CRC-32)
+ * - Frame decoding time: <60us (includes CRC validation)
  * - USB CDC bulk transfer latency: 1-5ms (USB FS polling interval)
  * - Total send-receive round-trip: <10ms typical
  * - Timeout resolution: 1ms (based on systick or CMT timer)

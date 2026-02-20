@@ -844,7 +844,7 @@ func (s *SPILink) Reset() {
 // ============================================================================
 
 // bytesToSoftBits converts bytes to soft bits for Viterbi decoder.
-// Each bit is converted to confidence level: 1 → +127, 0 → -127.
+// Each bit is converted to confidence level: 1 -> +127, 0 -> -127.
 func bytesToSoftBits(data []byte) []fec.SoftBit {
 	softBits := make([]fec.SoftBit, len(data)*bitWidth)
 

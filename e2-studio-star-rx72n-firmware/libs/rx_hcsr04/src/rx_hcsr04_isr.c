@@ -7,7 +7,7 @@
  * Captures rising and falling edge timestamps with microsecond precision.
  *
  * **ISR Design:**
- * - Keep ISR execution time minimal (< 5µs)
+ * - Keep ISR execution time minimal (< 5us)
  * - No blocking operations in ISR
  * - No ThreadX calls in ISR (use TX_INTERRUPT_SAVE_AREA if needed)
  * - Clear interrupt flag before exit
@@ -78,7 +78,7 @@
  *
  * // Validate IRQ number before indexing:
  * if (irq_num < k_irq_min || irq_num > k_irq_max) { return k_rx_err_invalid_arg; }
- * const uint8_t idx = irq_num - k_irq_min;  // IRQ8→0, IRQ11→3
+ * const uint8_t idx = irq_num - k_irq_min;  // IRQ8->0, IRQ11->3
  * @endcode
  *
  * @see internal_irq_handler() Uses k_vector_base, k_irq_min, k_pin_state_mask
@@ -103,7 +103,7 @@ typedef enum : uint8_t {
  *
  * @details
  * The CMT2 16-bit counter wraps every 65536 ticks at PCLKB/8 = 7.5 MHz.
- * Wrap period = 65536 / 7500000 s = ~8738 µs. hcsr04_hal_get_time_us_isr()
+ * Wrap period = 65536 / 7500000 s = ~8738 us. hcsr04_hal_get_time_us_isr()
  * returns values in [0, 8738]. When the falling edge timestamp wraps around
  * to a value smaller than the rising edge timestamp, this constant is added
  * to correct the duration calculation.
@@ -129,7 +129,7 @@ typedef enum : uint8_t {
  * @since Version 1.2.0 (Issue #296)
  */
 typedef enum : uint32_t {
-  k_cmt2_wrap_us = 8738, /**< CMT2 16-bit counter wrap period in µs (65536 / 7.5 MHz) */
+  k_cmt2_wrap_us = 8738, /**< CMT2 16-bit counter wrap period in us (65536 / 7.5 MHz) */
 } isr_timer_constants_t;
 
 /* =============================================================================
@@ -139,7 +139,7 @@ typedef enum : uint32_t {
 
 /**
  * @var s_irq_state
- * @brief Per-IRQ echo measurement state (IRQ8-11 → array indices 0-3)
+ * @brief Per-IRQ echo measurement state (IRQ8-11 -> array indices 0-3)
  *
  * @details
  * Written by ISR (INT_IRQ8-11), read by application code (rx_hcsr04_isr_get_duration).
@@ -157,7 +157,7 @@ static volatile rx_hcsr04_irq_state_t s_irq_state[k_irq_count];
 
 /**
  * @var s_sensor_map
- * @brief Sensor index mapping table (IRQ number → sensor array index)
+ * @brief Sensor index mapping table (IRQ number -> sensor array index)
  *
  * @details
  * Maps each IRQ number (0-15) to a sensor array index (0-3) or k_sensor_unused.
@@ -229,7 +229,7 @@ static uint8_t s_sensor_map[k_sensor_map_size] = {
  * @post If active and rising edge: start_us timestamp captured
  * @post If active and falling edge: end_us captured, complete=true, active=false
  *
- * @note Called from ISR context - keep execution time minimal (< 5µs)
+ * @note Called from ISR context - keep execution time minimal (< 5us)
  * @note Assumes PORT0 pins (P00-P07) map to IRQ8-15
  * @warning Do not call from task context
  *
@@ -245,7 +245,7 @@ static void internal_irq_handler(const uint8_t irq_num)
 
   icu()->ir[vector]    = k_ir_flag_clear;
 
-  /* Step 2: Compute state array index (IRQ8→0, IRQ9→1, ...) */
+  /* Step 2: Compute state array index (IRQ8->0, IRQ9->1, ...) */
   const uint8_t idx = irq_num - k_irq_min;
 
   /* Step 3: Check if measurement is active (ignore spurious interrupts) */
@@ -467,7 +467,7 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
  *
  * @param[in]  irq_num     IRQ number (8-11)
  * @param[out] duration_us Pointer to store pulse duration in microseconds
- *                         (valid range: 150-8700 µs for 2-150 cm in IRQ mode;
+ *                         (valid range: 150-8700 us for 2-150 cm in IRQ mode;
  *                          CMT2 wrap handled automatically for durations < k_cmt2_wrap_us)
  *
  * @return rx_err_t Error code
@@ -541,7 +541,7 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
  * 8, 9, 10, 11 per the project "No Magic Numbers" policy.
  *
  * @invariant Values are fixed 8..11, matching P00..P03 pin assignments;
- *            each value must equal k_irq_min + pin_number (P0x → IRQ(8+x))
+ *            each value must equal k_irq_min + pin_number (P0x -> IRQ(8+x))
  *
  * @code
  * // Each ISR wrapper passes its named constant to the common handler:
@@ -578,7 +578,7 @@ typedef enum : uint8_t {
  * @post Echo edge timestamp captured in s_irq_state[0] if measurement active
  *
  * @note Thin wrapper; all logic is in internal_irq_handler()
- * @note Keep ISR execution time minimal (< 5 µs)
+ * @note Keep ISR execution time minimal (< 5 us)
  *
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_8 IRQ number constant passed to the handler
@@ -607,7 +607,7 @@ void INT_IRQ8(void)
  * @post Echo edge timestamp captured in s_irq_state[1] if measurement active
  *
  * @note Thin wrapper; all logic is in internal_irq_handler()
- * @note Keep ISR execution time minimal (< 5 µs)
+ * @note Keep ISR execution time minimal (< 5 us)
  *
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_9 IRQ number constant passed to the handler
@@ -636,7 +636,7 @@ void INT_IRQ9(void)
  * @post Echo edge timestamp captured in s_irq_state[2] if measurement active
  *
  * @note Thin wrapper; all logic is in internal_irq_handler()
- * @note Keep ISR execution time minimal (< 5 µs)
+ * @note Keep ISR execution time minimal (< 5 us)
  *
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_10 IRQ number constant passed to the handler
@@ -665,7 +665,7 @@ void INT_IRQ10(void)
  * @post Echo edge timestamp captured in s_irq_state[3] if measurement active
  *
  * @note Thin wrapper; all logic is in internal_irq_handler()
- * @note Keep ISR execution time minimal (< 5 µs)
+ * @note Keep ISR execution time minimal (< 5 us)
  *
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_11 IRQ number constant passed to the handler

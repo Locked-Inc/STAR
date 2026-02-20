@@ -77,19 +77,19 @@
  * @verbatim
  * g_mock_hal (mock_hal_state_t):
  * +------------------+
- * | ports[20]        |  ← mock_port_regs_t × 20 (120 bytes)
+ * | ports[20]        |  <- mock_port_regs_t x 20 (120 bytes)
  * +------------------+
- * | adc[2]           |  ← mock_adc_regs_t × 2 (48 bytes)
+ * | adc[2]           |  <- mock_adc_regs_t x 2 (48 bytes)
  * +------------------+
- * | riic[3]          |  ← mock_riic_regs_t × 3 (42 bytes)
+ * | riic[3]          |  <- mock_riic_regs_t x 3 (42 bytes)
  * +------------------+
- * | system           |  ← mock_system_regs_t (14 bytes)
+ * | system           |  <- mock_system_regs_t (14 bytes)
  * +------------------+
- * | adc_initialized[2]|  ← bool × 2
+ * | adc_initialized[2]|  <- bool x 2
  * +------------------+
- * | riic_initialized[3]| ← bool × 3
+ * | riic_initialized[3]| <- bool x 3
  * +------------------+
- * | simulation flags |  ← Error injection controls
+ * | simulation flags |  <- Error injection controls
  * +------------------+
  * Total: ~250 bytes
  * @endverbatim
@@ -135,9 +135,9 @@
  * @par Performance (Host-Side Testing)
  * | Operation | Time | Notes |
  * |-----------|------|-------|
- * | mock_hal_init() | < 1 µs | memset() of state |
+ * | mock_hal_init() | < 1 us | memset() of state |
  * | Register access | < 10 ns | Direct memory access |
- * | Typical test | < 100 µs | Full test case |
+ * | Typical test | < 100 us | Full test case |
  *
  * @par Supported Test Frameworks
  * - Unity (primary): Used in STAR project
@@ -284,7 +284,7 @@ typedef struct {
  * @par ADC Resolution
  * - 12-bit resolution: Values 0-4095 (0x000-0xFFF)
  * - Voltage calculation: @f$ V = \frac{ADC_{value} \times V_{ref}}{4096} @f$
- * - With 3.3V reference: 1 LSB ≈ 0.806 mV
+ * - With 3.3V reference: 1 LSB ~ 0.806 mV
  *
  * @par Memory Layout
  * @verbatim
@@ -493,11 +493,11 @@ typedef struct {
  * @verbatim
  * mock_hal_state_t:
  * +------------------------------------------+
- * | ports[20] (mock_port_regs_t × 20)        | 120 bytes
+ * | ports[20] (mock_port_regs_t x 20)        | 120 bytes
  * +------------------------------------------+
- * | adc[2] (mock_adc_regs_t × 2)             | 48 bytes
+ * | adc[2] (mock_adc_regs_t x 2)             | 48 bytes
  * +------------------------------------------+
- * | riic[3] (mock_riic_regs_t × 3)           | 42 bytes
+ * | riic[3] (mock_riic_regs_t x 3)           | 42 bytes
  * +------------------------------------------+
  * | system (mock_system_regs_t)              | 14 bytes
  * +------------------------------------------+
@@ -798,7 +798,7 @@ mock_adc_regs_t* mock_hal_get_adc(uint8_t unit);
  * @par Example:
  * @code
  * // Simulate 1.65V reading with 3.3V reference
- * // 1.65V / 3.3V × 4096 = 2048
+ * // 1.65V / 3.3V x 4096 = 2048
  * mock_hal_set_adc_value(0, 0, 2048);
  *
  * uint16_t result;

@@ -14,60 +14,60 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 ## Architecture Diagram
 
 ```
-┌─────────────────────────────────────────────────────────────────┐
-│                        gRPC Clients (UI)                        │
-└────────────────────────────┬────────────────────────────────────┘
-                             │ Protobuf/gRPC
-┌────────────────────────────▼────────────────────────────────────┐
-│              Layer 5: gRPC Services                             │
-│  MotorControl │ Telemetry │ Battery │ Config │ Firmware        │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│         Layer 4.5: Dispatcher (Message Router)                  │
-│  - Demultiplexes by message type                                │
-│  - Pub/sub to services                                          │
-└────────────────────────────┬────────────────────────────────────┘
-                             │
-┌────────────────────────────▼────────────────────────────────────┐
-│         Layer 4: Transport Manager (Smart Switching)            │
-│  ┌──────────────────────────────────────────────────────────┐  │
-│  │ State: Active USB │ Active SPI │ Switching │ Degraded    │  │
-│  ├──────────────────────────────────────────────────────────┤  │
-│  │ Health Monitor: Tracks consecutive failures, latency     │  │
-│  │ Hot-Plug Detector: USB add/remove events (inotify)       │  │
-│  │ Heartbeat Manager: Implicit + Explicit (PING/PONG)       │  │
-│  │ Session State: Shared sequence counters (TX/RX)          │  │
-│  └──────────────────────────────────────────────────────────┘  │
-│                             │                                   │
-│              ┌──────────────┴──────────────┐                    │
-│              │                             │                    │
-│    ┌─────────▼─────────┐        ┌─────────▼─────────┐          │
-│    │   USB CDC Link    │        │    SPI Link       │          │
-│    │ (Lightweight)     │        │  (Full HARQ)      │          │
-│    │ - Framing only    │        │  - Retransmit     │          │
-│    │ - Sequence track  │        │  - FEC (Viterbi)  │          │
-│    │ - CRC32 validate  │        │  - Soft combining │          │
-│    │ - NO retries      │        │  - ACK/NACK       │          │
-│    └─────────┬─────────┘        └─────────┬─────────┘          │
-└──────────────┼──────────────────────────────┼──────────────────┘
-               │                              │
-     ┌─────────▼─────────┐          ┌────────▼────────┐
-     │  CDCTransport     │          │  SPITransport   │
-     │  (USB CDC)        │          │  (10MHz SPI)    │
-     │  /dev/ttyACM0     │          │  /dev/spidev0.0 │
-     └─────────┬─────────┘          └────────┬────────┘
-               │                              │
-          ┌────▼──────────────────────────────▼────┐
-          │           Raspberry Pi 5                │
-          └────────────────┬────────────────────────┘
-                           │ USB / SPI
-          ┌────────────────▼────────────────────────┐
-          │   RX72N Motor Controller (ThreadX)      │
-          │   - Motor control (100Hz)                │
-          │   - Encoder feedback                     │
-          │   - Telemetry generation                 │
-          └──────────────────────────────────────────┘
++-----------------------------------------------------------------+
+|                        gRPC Clients (UI)                        |
++----------------------------+------------------------------------+
+                             | Protobuf/gRPC
++----------------------------v------------------------------------+
+|              Layer 5: gRPC Services                             |
+|  MotorControl | Telemetry | Battery | Config | Firmware        |
++----------------------------+------------------------------------+
+                             |
++----------------------------v------------------------------------+
+|         Layer 4.5: Dispatcher (Message Router)                  |
+|  - Demultiplexes by message type                                |
+|  - Pub/sub to services                                          |
++----------------------------+------------------------------------+
+                             |
++----------------------------v------------------------------------+
+|         Layer 4: Transport Manager (Smart Switching)            |
+|  +----------------------------------------------------------+  |
+|  | State: Active USB | Active SPI | Switching | Degraded    |  |
+|  +----------------------------------------------------------+  |
+|  | Health Monitor: Tracks consecutive failures, latency     |  |
+|  | Hot-Plug Detector: USB add/remove events (inotify)       |  |
+|  | Heartbeat Manager: Implicit + Explicit (PING/PONG)       |  |
+|  | Session State: Shared sequence counters (TX/RX)          |  |
+|  +----------------------------------------------------------+  |
+|                             |                                   |
+|              +--------------+--------------+                    |
+|              |                             |                    |
+|    +---------v---------+        +---------v---------+          |
+|    |   USB CDC Link    |        |    SPI Link       |          |
+|    | (Lightweight)     |        |  (Full HARQ)      |          |
+|    | - Framing only    |        |  - Retransmit     |          |
+|    | - Sequence track  |        |  - FEC (Viterbi)  |          |
+|    | - CRC32 validate  |        |  - Soft combining |          |
+|    | - NO retries      |        |  - ACK/NACK       |          |
+|    +---------+---------+        +---------+---------+          |
++--------------+------------------------------+------------------+
+               |                              |
+     +---------v---------+          +--------v--------+
+     |  CDCTransport     |          |  SPITransport   |
+     |  (USB CDC)        |          |  (10MHz SPI)    |
+     |  /dev/ttyACM0     |          |  /dev/spidev0.0 |
+     +---------+---------+          +--------+--------+
+               |                              |
+          +----v------------------------------v----+
+          |           Raspberry Pi 5                |
+          +----------------+------------------------+
+                           | USB / SPI
+          +----------------v------------------------+
+          |   RX72N Motor Controller (ThreadX)      |
+          |   - Motor control (100Hz)                |
+          |   - Encoder feedback                     |
+          |   - Telemetry generation                 |
+          +------------------------------------------+
 ```
 
 ## Transport Comparison
@@ -104,12 +104,12 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
 All frames use the same wire format regardless of transport:
 
 ```text
-┌──────┬──────┬──────┬──────┬───────┬─────────┬─────────┐
-│ SYNC │ SEQ  │ LEN  │ TYPE │ FLAGS │ PAYLOAD │ CRC-32  │
-│ (LE) │ (LE) │ (LE) │      │       │         │  (LE)   │
-├──────┼──────┼──────┼──────┼───────┼─────────┼─────────┤
-│ 2B   │ 2B   │ 2B   │ 1B   │ 1B    │ 0-1024B │ 4B      │
-└──────┴──────┴──────┴──────┴───────┴─────────┴─────────┘
++------+------+------+------+-------+---------+---------+
+| SYNC | SEQ  | LEN  | TYPE | FLAGS | PAYLOAD | CRC-32  |
+| (LE) | (LE) | (LE) |      |       |         |  (LE)   |
++------+------+------+------+-------+---------+---------+
+| 2B   | 2B   | 2B   | 1B   | 1B    | 0-1024B | 4B      |
++------+------+------+------+-------+---------+---------+
 ```
 
 **Header Fields (little-endian):**
@@ -179,11 +179,11 @@ The CDC protocol is designed for minimal overhead, relying on USB hardware for r
 4. Return payload to caller
 
 **Key Features:**
-- ✅ Sequence tracking via shared SessionState
-- ✅ CRC32 validation
-- ❌ No application-level retries
-- ❌ No FEC encoding
-- ❌ No ACK/NACK frames
+- [PASS] Sequence tracking via shared SessionState
+- [PASS] CRC32 validation
+- [FAIL] No application-level retries
+- [FAIL] No FEC encoding
+- [FAIL] No ACK/NACK frames
 
 ### SPI Protocol (Full HARQ)
 
@@ -206,10 +206,10 @@ The SPI protocol uses Chase Combining (Type I HARQ) for robustness:
 6. Chase combine on retransmissions
 
 **Key Features:**
-- ✅ Application-level retries (up to 3x)
-- ✅ Viterbi FEC with soft combining
-- ✅ ACK/NACK handshake
-- ✅ Sequence tracking (shared SessionState with USB for failover continuity)
+- [PASS] Application-level retries (up to 3x)
+- [PASS] Viterbi FEC with soft combining
+- [PASS] ACK/NACK handshake
+- [PASS] Sequence tracking (shared SessionState with USB for failover continuity)
 
 ## Heartbeat Mechanism
 
@@ -217,15 +217,15 @@ The SPI protocol uses Chase Combining (Type I HARQ) for robustness:
 
 The heartbeat system uses two complementary detection mechanisms:
 
-**1. Implicit Timeout (Primary) — 200ms**
+**1. Implicit Timeout (Primary) -- 200ms**
 - Update `LastSeen` timestamp when ANY valid frame arrives (COMMAND, RESPONSE, PING, etc.)
-- If no frames for 200ms → declare link dead, trigger failover
-- Zero overhead when link is active — data frames implicitly serve as heartbeats
+- If no frames for 200ms -> declare link dead, trigger failover
+- Zero overhead when link is active -- data frames implicitly serve as heartbeats
 
-**2. Explicit PING (Secondary) — 1s idle-link probe**
+**2. Explicit PING (Secondary) -- 1s idle-link probe**
 - Send PING with 4-byte counter if link idle for >1s
 - Wait for PONG echo; validate counter matches
-- 1 consecutive miss → trigger failover
+- 1 consecutive miss -> trigger failover
 - Rarely fires under normal traffic; only needed when link is genuinely idle
 
 **Timing Budget:**
@@ -298,8 +298,8 @@ stateDiagram-v2
 | **Initializing** | Manager starting, detecting transports | Register transports, select best |
 | **ActiveUSB** | USB CDC active, heartbeat monitoring | Send/Receive via USB, monitor health |
 | **ActiveSPI** | SPI active, heartbeat monitoring | Send/Receive via SPI, monitor health |
-| **SwitchingToSPI** | Transitioning USB → SPI | Pause operations, smart drain (conditional) |
-| **SwitchingToUSB** | Transitioning SPI → USB | Pause operations, smart drain (conditional) |
+| **SwitchingToSPI** | Transitioning USB -> SPI | Pause operations, smart drain (conditional) |
+| **SwitchingToUSB** | Transitioning SPI -> USB | Pause operations, smart drain (conditional) |
 | **Degraded** | Active transport unhealthy, no alternatives | Continue with degraded transport, log warnings |
 | **Failed** | No healthy transports available | Log error, retry probing |
 
@@ -410,7 +410,7 @@ A transport is marked unhealthy when ANY of these thresholds are exceeded:
 | PacketLossRate > limit | 10% | Detect unreliable links |
 
 **Failback Damping (30s):**
-When a transport recovers (unhealthy → healthy), it enters a 30-second damping period. During this period, the transport manager will not proactively switch back to it — this prevents oscillation ("flapping") between transports when a link is intermittently recovering.
+When a transport recovers (unhealthy -> healthy), it enters a 30-second damping period. During this period, the transport manager will not proactively switch back to it -- this prevents oscillation ("flapping") between transports when a link is intermittently recovering.
 
 ### Health Probing
 
@@ -485,8 +485,8 @@ To add a new transport (e.g., Ethernet, CAN):
     **Concrete implementations to follow:**
     - Session/sequence management: `SessionState` in [`internal/manager/session.go`](internal/manager/session.go)
     - Reliable transport API implementation:
-       - `CDCLink.Send`/`CDCLink.Receive` in [`internal/link/cdc.go`](internal/link/cdc.go) — CDC implementation
-       - `SPILink.Send`/`SPILink.Receive` in [`internal/link/spi.go`](internal/link/spi.go) — SPI implementation
+       - `CDCLink.Send`/`CDCLink.Receive` in [`internal/link/cdc.go`](internal/link/cdc.go) -- CDC implementation
+       - `SPILink.Send`/`SPILink.Receive` in [`internal/link/spi.go`](internal/link/spi.go) -- SPI implementation
     - Frame codec components:
        - `Encoder` in [`internal/frame/encoder.go`](internal/frame/encoder.go)
        - `StreamDecoder` in [`internal/frame/stream_decoder.go`](internal/frame/stream_decoder.go)
@@ -585,7 +585,7 @@ grpcurl -plaintext localhost:50051 star.v1.Gateway/GetHealth
 | Transport | Theoretical Max | Practical Max | Typical |
 |-----------|----------------|---------------|---------|
 | USB CDC | 12 Mbps (USB Full-Speed) | 10 Mbps | 5-8 Mbps |
-| SPI | 10 MHz × 8 bits = 80 Mbps | 40 Mbps (half-duplex frames) | 20-30 Mbps |
+| SPI | 10 MHz x 8 bits = 80 Mbps | 40 Mbps (half-duplex frames) | 20-30 Mbps |
 
 **Note**: Practical throughput limited by:
 - Protocol overhead (framing, CRC)
@@ -622,8 +622,8 @@ Both Go (gateway) and C (firmware) encode/decode frames identically. This is ver
 | RESET_ACK | 0xFE | 0 | (empty) | 0x110062D8 |
 
 **Test locations:**
-- Go: `star-gateway/internal/frame/frame_test.go` — `TestCrossCompatibility_Encode/Decode/RoundTrip`
-- C: `star-rx72n-firmware/tests/test_rx_frame.c` — `test_cross_compat_*`
+- Go: `star-gateway/internal/frame/frame_test.go` -- `TestCrossCompatibility_Encode/Decode/RoundTrip`
+- C: `star-rx72n-firmware/tests/test_rx_frame.c` -- `test_cross_compat_*`
 
 ## References
 

@@ -25,15 +25,15 @@
  * ### Log Level Hierarchy
  * ```
  * k_log_none (0)     - No logging (production builds)
- *     ↓
+ *     v
  * k_log_error (1)    - Critical failures only
- *     ↓
+ *     v
  * k_log_warn (2)     - Recoverable issues
- *     ↓
+ *     v
  * k_log_info (3)     - Informational events (default)
- *     ↓
+ *     v
  * k_log_debug (4)    - Development debugging
- *     ↓
+ *     v
  * k_log_verbose (5)  - Trace-level detail
  * ```
  *
@@ -67,10 +67,10 @@
  * | Log Type | Cycles | Time | Bytes (UART 115200) |
  * |----------|--------|------|---------------------|
  * | Disabled log | 0 | 0 ns | 0 |
- * | rx_log_error() | ~2400 | 10 µs | ~30 bytes |
- * | rx_log_error_val(uint8_t) | ~3600 | 15 µs | ~35 bytes |
- * | rx_log_error_hex() | ~4200 | 17.5 µs | ~40 bytes |
- * | rx_log_error_str(64 chars) | ~18000 | 75 µs | ~95 bytes |
+ * | rx_log_error() | ~2400 | 10 us | ~30 bytes |
+ * | rx_log_error_val(uint8_t) | ~3600 | 15 us | ~35 bytes |
+ * | rx_log_error_hex() | ~4200 | 17.5 us | ~40 bytes |
+ * | rx_log_error_str(64 chars) | ~18000 | 75 us | ~95 bytes |
  *
  * ### Memory Footprint
  * | Component | Flash | RAM | Stack |
@@ -227,9 +227,9 @@
  * @par Module Dependencies:
  * ```
  * rx_log.h
- *   ├─-> rx_err.h (error code definitions)
- *   ├─-> uart.h (uart_debug_* output functions)
- *   └─-> rx_usb.h (optional, if USB_LOG_MIRROR=1)
+ *   +--> rx_err.h (error code definitions)
+ *   +--> uart.h (uart_debug_* output functions)
+ *   +--> rx_usb.h (optional, if USB_LOG_MIRROR=1)
  * ```
  *
  * @author STAR Team
@@ -261,11 +261,11 @@ extern "C" {
 /* =============================================================================
  * Simulator Mode: Logging to stdout
  * =============================================================================
- * When building for e² studio simulator, UART hardware doesn't work.
+ * When building for e^2 studio simulator, UART hardware doesn't work.
  * Redirect logging to stdout so output appears in the simulator console.
  *
  * These inline implementations replace the hardware UART functions.
- * The simulator console automatically appears in e² studio when running
+ * The simulator console automatically appears in e^2 studio when running
  * in debug mode (View -> Console if not visible).
  *
  * NOTE: These are inline to avoid linking against UART driver in simulator.
@@ -628,7 +628,7 @@ typedef enum : uint8_t {
  *
  * **Rationale**:
  * - **Safety**: Prevents unbounded loops reading past buffer end
- * - **Predictability**: Maximum execution time is known (256 × ~15 cycles/char = 3840 cycles)
+ * - **Predictability**: Maximum execution time is known (256 x ~15 cycles/char = 3840 cycles)
  * - **Practicality**: 256 bytes sufficient for typical log messages
  * - **Stack impact**: No stack allocation (loop counter is uint32_t = 4 bytes)
  *
@@ -646,8 +646,8 @@ typedef enum : uint8_t {
  * ## Performance Impact
  * | Constant | CPU Impact | Memory Impact |
  * |----------|------------|---------------|
- * | k_log_hex_width_err | 8 hex digits ≈ 240 cycles @ 240 MHz | 0 bytes (immediate) |
- * | k_log_str_max_len | Max 3840 cycles (256 × 15) | 4 bytes (loop counter) |
+ * | k_log_hex_width_err | 8 hex digits ~ 240 cycles @ 240 MHz | 0 bytes (immediate) |
+ * | k_log_str_max_len | Max 3840 cycles (256 x 15) | 4 bytes (loop counter) |
  *
  * @par Underlying Type: uint16_t (C23 typed enum)
  * - **Range**: 0-65535
@@ -707,7 +707,7 @@ typedef enum : uint16_t {
  *
  * ## Performance
  * - **Cycles**: ~600 cycles @ 240 MHz (depends on string lengths)
- * - **Time**: ~2.5 µs
+ * - **Time**: ~2.5 us
  * - **UART bytes**: ~15-25 bytes (depends on level_str and tag lengths)
  * - **Stack**: 0 bytes (inline, no local variables)
  *
@@ -783,7 +783,7 @@ static inline void internal_log_header(const char* level_str, const char* tag)
  * | Metric | Value |
  * |--------|-------|
  * | Cycles | ~2400 @ 240 MHz (30-char message) |
- * | Time | ~10 µs |
+ * | Time | ~10 us |
  * | UART bytes | ~45 bytes (header + message + \r\n) |
  * | Stack | 0 bytes (inline) |
  *
@@ -945,7 +945,7 @@ internal_rx_log_error_hex(const char* tag, const char* message, uint32_t value, 
  * | Metric | Best Case | Worst Case |
  * |--------|-----------|------------|
  * | Cycles | ~2700 (1 char) | ~21600 (256 chars) @ 240 MHz |
- * | Time | ~11 µs | ~90 µs |
+ * | Time | ~11 us | ~90 us |
  * | UART bytes | ~50 bytes | ~300 bytes |
  * | Stack | 4 bytes (uint32_t i) | 4 bytes |
  *

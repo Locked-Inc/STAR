@@ -1,4 +1,4 @@
-// message_converter.cpp - ROS2 ↔ Protobuf Message Converter Implementation
+// message_converter.cpp - ROS2 <-> Protobuf Message Converter Implementation
 // Bidirectional conversion between ROS2 standard messages and STAR Protocol
 // Buffers.
 //
@@ -13,7 +13,7 @@ namespace star
 {
 
 // ===========================================================================
-// ROS2 → Protobuf Conversions
+// ROS2 -> Protobuf Conversions
 // ===========================================================================
 
 bool MessageConverter::twist_to_velocity_command(
@@ -39,7 +39,7 @@ bool MessageConverter::twist_to_velocity_command(
   double angular =
     clamp(twist.angular.z, -k_max_angular_vel, k_max_angular_vel);
 
-  // Differential drive kinematics: (linear, angular) → (left, right)
+  // Differential drive kinematics: (linear, angular) -> (left, right)
   // left_vel = linear - (angular * wheel_base / 2)
   // right_vel = linear + (angular * wheel_base / 2)
   double half_base = wheel_base / 2.0;
@@ -77,21 +77,21 @@ bool MessageConverter::battery_state_to_proto(
   // ROS2 sensor_msgs/BatteryState uses NaN to indicate "unknown" values
   // We need to check each field before conversion
 
-  // Voltage: V → mV (check for valid value first)
+  // Voltage: V -> mV (check for valid value first)
   if (is_valid_double(ros_battery.voltage)) {
     auto *current_data = proto_battery.mutable_current();
     current_data->set_voltage_mv(
         static_cast<uint32_t>(ros_battery.voltage * k_v_to_mv));
   }
 
-  // Current: A → mA (positive = charging, negative = discharging)
+  // Current: A -> mA (positive = charging, negative = discharging)
   if (is_valid_double(ros_battery.current)) {
     auto *current_data = proto_battery.mutable_current();
     current_data->set_current_ma(
         static_cast<int32_t>(ros_battery.current * k_a_to_ma));
   }
 
-  // Capacity: Ah → mAh
+  // Capacity: Ah -> mAh
   if (is_valid_double(ros_battery.capacity)) {
     auto *soc_data = proto_battery.mutable_soc();
     soc_data->set_full_capacity_mah(
@@ -110,14 +110,14 @@ bool MessageConverter::battery_state_to_proto(
         static_cast<uint32_t>(ros_battery.charge * k_ah_to_mah));
   }
 
-  // Percentage: 0-1 → 0-100%
+  // Percentage: 0-1 -> 0-100%
   if (is_valid_double(ros_battery.percentage)) {
     auto *soc_data = proto_battery.mutable_soc();
     soc_data->set_relative_soc_percent(
         static_cast<int32_t>(ros_battery.percentage * k_percent_to_int));
   }
 
-  // Temperature: °C → deci-Celsius (first temperature sensor only)
+  // Temperature: degC -> deci-Celsius (first temperature sensor only)
   if (!ros_battery.cell_temperature.empty()) {
     float temp_c = ros_battery.cell_temperature[0];
     if (is_valid_double(temp_c)) {
@@ -130,7 +130,7 @@ bool MessageConverter::battery_state_to_proto(
     }
   }
 
-  // Power state mapping (ROS2 → Protobuf enum)
+  // Power state mapping (ROS2 -> Protobuf enum)
   auto *status = proto_battery.mutable_status();
   switch (ros_battery.power_supply_status) {
     case sensor_msgs::msg::BatteryState::POWER_SUPPLY_STATUS_CHARGING:
@@ -201,7 +201,7 @@ bool MessageConverter::string_to_system_status(
 }
 
 // ===========================================================================
-// Protobuf → ROS2 Conversions
+// Protobuf -> ROS2 Conversions
 // ===========================================================================
 
 bool MessageConverter::velocity_command_to_twist(
@@ -231,7 +231,7 @@ bool MessageConverter::velocity_command_to_twist(
     return false;
   }
 
-  // Differential drive inverse kinematics: (left, right) → (linear, angular)
+  // Differential drive inverse kinematics: (left, right) -> (linear, angular)
   // linear = (left + right) / 2
   // angular = (right - left) / wheel_base
   double linear_x = (left_vel + right_vel) / 2.0;

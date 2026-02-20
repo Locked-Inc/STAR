@@ -85,7 +85,7 @@ func (m *MockHARQ) Receive(ctx context.Context) (*harq.ReceiveResult, error) {
 			return nil, harq.ErrTimeout
 		}
 	}
-	// No func or chan configured — block until context cancels so callers
+	// No func or chan configured -- block until context cancels so callers
 	// (e.g. drainUntilResetAck) time out gracefully instead of tight-looping.
 	<-ctx.Done()
 	return nil, ctx.Err()

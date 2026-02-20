@@ -20,26 +20,26 @@
  * ## Layered Design
  *
  * @code{.unparsed}
- * ┌──────────────────────────────────────────────┐
- * │ HC-SR04 Driver (rx_hcsr04.c)                 │
- * │ - Sensor logic (trigger, measure, convert)   │
- * │ - Depends on HAL abstraction (this file)     │
- * └──────────────────┬───────────────────────────┘
- *                    │ #include "rx_hcsr04_hal.h"
- * ┌──────────────────▼───────────────────────────┐
- * │ HAL Interface (This File)                    │
- * │ - Function declarations only                 │
- * │ - No platform-specific code                  │
- * └──────────────────┬───────────────────────────┘
- *                    │ Link-time selection
- *         ┌──────────┴──────────┐
- *         │                     │
- * ┌───────▼────────┐   ┌────────▼────────┐
- * │ Hardware HAL   │   │ Mock HAL        │
- * │ (hal_hw.c)     │   │ (hal_mock.c)    │
- * │ - RX72N GPIO   │   │ - Simulated I/O │
- * │ - CMT2 timer   │   │ - Host testing  │
- * └────────────────┘   └─────────────────┘
+ * +----------------------------------------------+
+ * | HC-SR04 Driver (rx_hcsr04.c)                 |
+ * | - Sensor logic (trigger, measure, convert)   |
+ * | - Depends on HAL abstraction (this file)     |
+ * +------------------+---------------------------+
+ *                    | #include "rx_hcsr04_hal.h"
+ * +------------------v---------------------------+
+ * | HAL Interface (This File)                    |
+ * | - Function declarations only                 |
+ * | - No platform-specific code                  |
+ * +------------------+---------------------------+
+ *                    | Link-time selection
+ *         +----------+----------+
+ *         |                     |
+ * +-------v--------+   +--------v--------+
+ * | Hardware HAL   |   | Mock HAL        |
+ * | (hal_hw.c)     |   | (hal_mock.c)    |
+ * | - RX72N GPIO   |   | - Simulated I/O |
+ * | - CMT2 timer   |   | - Host testing  |
+ * +----------------+   +-----------------+
  * @endcode
  *
  * # Design Rationale
@@ -109,14 +109,14 @@
  * ## Timing Implementation
  *
  * **CMT2 (Compare Match Timer 2):**
- * - Clock: PCLKB 60 MHz ÷ 8 = 7.5 MHz
+ * - Clock: PCLKB 60 MHz / 8 = 7.5 MHz
  * - Resolution: 133 ns per tick
  * - Range: 8.7 ms (16-bit counter)
  * - Overflow tracking: Extended to 32-bit via software
  *
  * **Why CMT2?**
  * - CMT0/CMT1 reserved for ThreadX system tick
- * - 7.5 MHz sufficient for µs-precision ultrasonic timing
+ * - 7.5 MHz sufficient for us-precision ultrasonic timing
  * - Free-running mode (no interrupt overhead)
  *
  * # Mock HAL Implementation (Host Testing)
@@ -136,7 +136,7 @@
  * **Echo Pulse Simulation:**
  * - Mock can inject specific echo pulse widths
  * - Test cases: Valid distance, timeout, cancellation
- * - Example: Set ECHO pin HIGH for 580µs -> simulates 10cm object
+ * - Example: Set ECHO pin HIGH for 580us -> simulates 10cm object
  *
  * # NASA Power of 10 Compliance
  *
@@ -182,23 +182,23 @@
  * **GPIO Operations:**
  * | Function       | Execution Time | Notes                    |
  * |----------------|----------------|--------------------------|
- * | `set_output`   | ~1 µs          | PDR register write       |
- * | `set_input`    | ~1 µs          | PDR register write       |
+ * | `set_output`   | ~1 us          | PDR register write       |
+ * | `set_input`    | ~1 us          | PDR register write       |
  * | `write_high`   | ~200 ns        | PODR bit set             |
  * | `write_low`    | ~200 ns        | PODR bit clear           |
  * | `read`         | ~150 ns        | PIDR register read       |
- * | `deinit`       | ~1 µs          | No-op (GPIO static)      |
+ * | `deinit`       | ~1 us          | No-op (GPIO static)      |
  *
  * **Timing Operations:**
  * | Function       | Resolution | Range     | Accuracy  |
  * |----------------|------------|-----------|-----------|
- * | `delay_us`     | 1 µs       | 0-8.7 ms  | ±5%       |
- * | `get_time_us`  | 133 ns     | 0-571 s   | ±0.1%     |
+ * | `delay_us`     | 1 us       | 0-8.7 ms  | +/-5%       |
+ * | `get_time_us`  | 133 ns     | 0-571 s   | +/-0.1%     |
  *
  * ## Mock HAL (Host)
  *
  * **Timing varies by platform:**
- * - Linux: `clock_gettime()` - ~1 µs resolution
+ * - Linux: `clock_gettime()` - ~1 us resolution
  * - macOS: `mach_absolute_time()` - ~1 ns resolution
  * - Windows: `QueryPerformanceCounter()` - ~100 ns resolution
  *
@@ -214,7 +214,7 @@
  * hcsr04_hal_gpio_set_output(trig);
  * hcsr04_hal_gpio_set_input(echo);
  *
- * // Send 10µs trigger pulse
+ * // Send 10us trigger pulse
  * hcsr04_hal_gpio_write_high(trig);
  * hcsr04_hal_delay_us(10);
  * hcsr04_hal_gpio_write_low(trig);
@@ -228,7 +228,7 @@
  * uint32_t end = hcsr04_hal_get_time_us();
  * uint32_t pulse_us = end - start;
  *
- * printf("Echo pulse: %lu µs\n", pulse_us);
+ * printf("Echo pulse: %lu us\n", pulse_us);
  * @endcode
  *
  * ## Mock HAL Example (Unit Test)
@@ -243,7 +243,7 @@
  *
  * // Verify result
  * assert(err == k_rx_ok);
- * assert(fabs(distance_cm - 10.0f) < 0.5f);  // ±0.5cm tolerance
+ * assert(fabs(distance_cm - 10.0f) < 0.5f);  // +/-0.5cm tolerance
  * @endcode
  *
  * # Hardware Requirements
@@ -371,12 +371,12 @@ extern "C" {
  *
  * **Hardware Operation (RX72N):**
  * - Sets PODR (Port Output Data Register) bit to 1
- * - Output voltage: VCC (3.3V ±10%)
+ * - Output voltage: VCC (3.3V +/-10%)
  * - Rise time: ~5 ns (typical for RX72N GPIO)
- * - Drive current: ±4 mA (standard drive strength)
+ * - Drive current: +/-4 mA (standard drive strength)
  *
  * **Timing Constraints:**
- * - HC-SR04 requires ≥10µs HIGH pulse
+ * - HC-SR04 requires >=10us HIGH pulse
  * - This function executes in ~200 ns
  * - Caller must add delay between write_high() and write_low()
  *
@@ -399,7 +399,7 @@ extern "C" {
  *
  * @par Example:
  * @code
- * // Generate 10µs trigger pulse
+ * // Generate 10us trigger pulse
  * hcsr04_hal_gpio_write_high(trigger_pin);
  * hcsr04_hal_delay_us(10);
  * hcsr04_hal_gpio_write_low(trigger_pin);
@@ -421,12 +421,12 @@ extern "C" {
  *
  * **Hardware Operation (RX72N):**
  * - Clears PODR (Port Output Data Register) bit to 0
- * - Output voltage: GND (0V ±0.3V)
+ * - Output voltage: GND (0V +/-0.3V)
  * - Fall time: ~5 ns (typical for RX72N GPIO)
- * - Sink current: ±4 mA (standard drive strength)
+ * - Sink current: +/-4 mA (standard drive strength)
  *
  * **HC-SR04 Behavior:**
- * - Falling edge of trigger pulse ends the 10µs sequence
+ * - Falling edge of trigger pulse ends the 10us sequence
  * - Sensor begins ultrasonic burst transmission
  * - Echo pin will go HIGH when echo starts
  *
@@ -470,13 +470,13 @@ extern "C" {
  *
  * **Hardware Operation (RX72N):**
  * - Reads PIDR (Port Input Data Register) bit
- * - Input threshold: ~0.7×VCC (HIGH), ~0.3×VCC (LOW)
+ * - Input threshold: ~0.7xVCC (HIGH), ~0.3xVCC (LOW)
  * - Schmitt trigger: ~0.2V hysteresis (noise immunity)
  * - Sample time: ~150 ns (single register read)
  *
  * **Return Values:**
- * - `*value = true`: Pin at HIGH level (≥2.3V on 3.3V system)
- * - `*value = false`: Pin at LOW level (≤1.0V on 3.3V system)
+ * - `*value = true`: Pin at HIGH level (>=2.3V on 3.3V system)
+ * - `*value = false`: Pin at LOW level (<=1.0V on 3.3V system)
  *
  * **Mock Implementation:**
  * - Returns simulated pin state from memory
@@ -594,28 +594,28 @@ extern "C" {
  * @details
  * Busy-wait delay with microsecond precision. Blocks the calling thread
  * for the specified duration. Used for HC-SR04 trigger pulse timing
- * (10µs pulse, 2µs settle).
+ * (10us pulse, 2us settle).
  *
  * **Hardware Implementation (RX72N):**
  * - Uses CMT2 (Compare Match Timer 2)
- * - Clock: PCLKB 60 MHz ÷ 8 = 7.5 MHz
+ * - Clock: PCLKB 60 MHz / 8 = 7.5 MHz
  * - Resolution: 133 ns per tick
- * - Accuracy: ±5% (clock variation + loop overhead)
+ * - Accuracy: +/-5% (clock variation + loop overhead)
  * - Method: Spin-wait on hardware counter
  *
  * **Delay Ranges:**
  * | Duration  | Ticks    | Iterations | Notes                  |
  * |-----------|----------|------------|------------------------|
- * | 1 µs      | 7-8      | 1          | Minimum reliable delay |
- * | 10 µs     | 75       | 1          | HC-SR04 trigger pulse  |
- * | 100 µs    | 750      | 1          | Short settling time    |
+ * | 1 us      | 7-8      | 1          | Minimum reliable delay |
+ * | 10 us     | 75       | 1          | HC-SR04 trigger pulse  |
+ * | 100 us    | 750      | 1          | Short settling time    |
  * | 1 ms      | 7,500    | 1          | Medium delay           |
  * | 8.7 ms    | 65,535   | 1          | Max single iteration   |
  * | >8.7 ms   | Multiple | 2-100      | Looped iterations      |
  *
  * **Mock Implementation:**
  * - Uses host OS sleep functions (nanosleep, usleep, Sleep)
- * - Accuracy: ±10% (OS scheduler variance)
+ * - Accuracy: +/-10% (OS scheduler variance)
  * - Non-blocking: May yield CPU (unlike hardware version)
  *
  * **Performance Characteristics:**
@@ -634,20 +634,20 @@ extern "C" {
  * @note NOT thread-safe: Concurrent calls may interfere on mock HAL
  * @note Does NOT yield to RTOS: Use tx_thread_sleep() for long delays
  * @warning Delays >10ms should use RTOS sleep (avoid busy-wait)
- * @warning Accuracy degrades for very short delays (<2µs) due to function call overhead
+ * @warning Accuracy degrades for very short delays (<2us) due to function call overhead
  *
  * @par Example:
  * @code
- * // Generate precise 10µs trigger pulse
+ * // Generate precise 10us trigger pulse
  * hcsr04_hal_gpio_write_high(trig_pin);
- * hcsr04_hal_delay_us(10);  // Accurate to ±0.5µs
+ * hcsr04_hal_delay_us(10);  // Accurate to +/-0.5us
  * hcsr04_hal_gpio_write_low(trig_pin);
  * @endcode
  *
  * @par Performance:
  * - Function call overhead: ~500 ns
  * - Loop overhead: ~100 ns per iteration
- * - Effective minimum delay: ~1 µs
+ * - Effective minimum delay: ~1 us
  *
  * @par Thread Safety:
  * - Hardware HAL: Safe (uses dedicated timer, no shared state)
@@ -670,7 +670,7 @@ void hcsr04_hal_delay_us(uint32_t us);
  *
  * **Hardware Implementation (RX72N):**
  * - Timer: CMT2 (Compare Match Timer 2)
- * - Clock: PCLKB 60 MHz ÷ 8 = 7.5 MHz
+ * - Clock: PCLKB 60 MHz / 8 = 7.5 MHz
  * - Native resolution: 133 ns per tick
  * - Counter width: 16-bit (0-65535)
  * - Overflow period: ~8.7 ms
@@ -687,7 +687,7 @@ void hcsr04_hal_delay_us(uint32_t us);
  * - Uses host monotonic clock:
  *   - Linux/macOS: `clock_gettime(CLOCK_MONOTONIC)`
  *   - Windows: `QueryPerformanceCounter()`
- * - Resolution: Platform-dependent (100 ns to 1 µs)
+ * - Resolution: Platform-dependent (100 ns to 1 us)
  *
  * **Monotonicity Guarantee:**
  * - Time never goes backward
@@ -709,16 +709,16 @@ void hcsr04_hal_delay_us(uint32_t us);
  * @post No side effects (read-only operation)
  *
  * @invariant Returned value never decreases (monotonic property)
- * @invariant Resolution ≥ 1 µs (meets HC-SR04 timing requirements)
+ * @invariant Resolution >= 1 us (meets HC-SR04 timing requirements)
  *
  * @note Thread-safe on RX72N (mutex-protected overflow counter)
  * @note Zero cost when idle (no active counting overhead)
- * @warning Wraps at 2^32 µs (~71 minutes) - caller must handle wrap-around
- * @warning First call initializes CMT2 (~5 µs overhead)
+ * @warning Wraps at 2^32 us (~71 minutes) - caller must handle wrap-around
+ * @warning First call initializes CMT2 (~5 us overhead)
  *
  * @par Performance:
- * - Read time: ~1-2 µs (register read + conversion)
- * - Mutex overhead: ~5 µs (if overflow tracking needed)
+ * - Read time: ~1-2 us (register read + conversion)
+ * - Mutex overhead: ~5 us (if overflow tracking needed)
  * - Call frequency: Unlimited (no rate limiting)
  *
  * @par Thread Safety:
@@ -726,8 +726,8 @@ void hcsr04_hal_delay_us(uint32_t us);
  * - Mock HAL: SAFE - system monotonic clock is thread-safe
  *
  * @par Accuracy:
- * - RX72N: ±0.1% (crystal tolerance)
- * - Mock: Platform-dependent (typically ±0.01%)
+ * - RX72N: +/-0.1% (crystal tolerance)
+ * - Mock: Platform-dependent (typically +/-0.01%)
  *
  * @par Example: Echo Pulse Measurement
  * @code
@@ -753,9 +753,9 @@ void hcsr04_hal_delay_us(uint32_t us);
  * @code
  * // Even if overflow occurs between start and end:
  * uint32_t start = 0xFFFFFFF0;  // Near overflow
- * // ... 20 µs later ...
+ * // ... 20 us later ...
  * uint32_t end   = 0x00000004;  // Wrapped around
- * uint32_t dur   = end - start; // = 20 µs (correct!)
+ * uint32_t dur   = end - start; // = 20 us (correct!)
  * // uint32_t subtraction handles wrap-around correctly
  * @endcode
  *
@@ -768,7 +768,7 @@ void hcsr04_hal_delay_us(uint32_t us);
 [[nodiscard]] uint32_t hcsr04_hal_get_time_us(void);
 
 /**
- * @brief Get monotonic timestamp in microseconds — ISR-safe (no mutex)
+ * @brief Get monotonic timestamp in microseconds -- ISR-safe (no mutex)
  *
  * @details
  * Returns the raw CMT2 counter value converted to microseconds. Unlike
@@ -776,13 +776,13 @@ void hcsr04_hal_delay_us(uint32_t us);
  * and does NOT track 16-bit counter overflows. It is safe to call from
  * interrupt context and provides sub-microsecond latency.
  *
- * **Hardware Constraint — 8.7 ms Maximum Echo Duration:**
+ * **Hardware Constraint -- 8.7 ms Maximum Echo Duration:**
  * The CMT2 timer is a 16-bit counter clocked at PCLKB/8 = 7.5 MHz, which
- * wraps every ~8.7 ms. HC-SR04 echo pulses can be up to ~23 ms (400 cm ×
- * 58 µs/cm). If the echo spans more than one counter period, the naive
+ * wraps every ~8.7 ms. HC-SR04 echo pulses can be up to ~23 ms (400 cm x
+ * 58 us/cm). If the echo spans more than one counter period, the naive
  * `end_us - start_us` subtraction will be incorrect.
  *
- * **Supported range in IRQ mode: ≤ 150 cm (~8.7 ms echo pulse)**
+ * **Supported range in IRQ mode: <= 150 cm (~8.7 ms echo pulse)**
  * For longer ranges, use polling mode with hcsr04_hal_get_time_us() (which
  * tracks overflows via a software overflow counter protected by a mutex).
  *
@@ -794,7 +794,7 @@ void hcsr04_hal_delay_us(uint32_t us);
  * @pre Called from ISR context (no ThreadX blocking calls permitted)
  *
  * @post No side effects (read-only, no mutex acquired)
- * @post Returned value is in range [0, ~8700) µs (wraps with CMT2 period)
+ * @post Returned value is in range [0, ~8700) us (wraps with CMT2 period)
  *
  * @note ISR-safe: does NOT call tx_mutex_get() or any blocking ThreadX API
  * @note For task context, prefer hcsr04_hal_get_time_us() (overflow tracking)
@@ -808,7 +808,7 @@ void hcsr04_hal_delay_us(uint32_t us);
  * {
  *     internal_irq_handler(k_irq_num_11);  // captures hcsr04_hal_get_time_us_isr()
  * }
- * // Duration is valid only if echo < 8.7 ms (≤ 150 cm)
+ * // Duration is valid only if echo < 8.7 ms (<= 150 cm)
  * @endcode
  *
  * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking for task context

@@ -40,12 +40,12 @@
  *
  * @code{.c}
  * tx_application_define()
- *   ├─ rx_iwdt_init(&config)              // Initialize hardware
- *   ├─ rx_iwdt_register_task("CommTask", 30)  // Register all tasks
- *   ├─ ...
- *   ├─ rx_iwdt_set_state(k_system_state_init)
- *   ├─ Create all tasks (including watchdog monitor)
- *   └─ rx_iwdt_set_state(k_system_state_running)
+ *   +- rx_iwdt_init(&config)              // Initialize hardware
+ *   +- rx_iwdt_register_task("CommTask", 30)  // Register all tasks
+ *   +- ...
+ *   +- rx_iwdt_set_state(k_system_state_init)
+ *   +- Create all tasks (including watchdog monitor)
+ *   +- rx_iwdt_set_state(k_system_state_running)
  * @endcode
  *
  * ## Main Loop Logic

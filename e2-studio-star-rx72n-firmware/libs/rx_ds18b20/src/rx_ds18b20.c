@@ -84,7 +84,7 @@
  * ```
  * Byte | Field        | Description
  * -----|--------------|------------------------------------------
- * 0    | Temp LSB     | Temperature low byte (1/16°C units)
+ * 0    | Temp LSB     | Temperature low byte (1/16degC units)
  * 1    | Temp MSB     | Temperature high byte (sign-extended)
  * 2    | TH Register  | High alarm threshold (user-defined)
  * 3    | TL Register  | Low alarm threshold (user-defined)
@@ -98,10 +98,10 @@
  * **Temperature Data Format:**
  * ```
  * 15 14 13 12 11 10  9  8  7  6  5  4  3  2  1  0
- * ┌──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┬──┐
- * │ S│ S│ S│ S│ S│ 2⁶│ 2⁵│ 2⁴│ 2³│ 2²│ 2¹│ 2⁰│2⁻¹│2⁻²│2⁻³│2⁻⁴│
- * └──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┴──┘
- *    Sign extend    Integer part      Fractional (1/16°C)
+ * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ * | S| S| S| S| S| 2^6| 2^5| 2^4| 2^3| 2^2| 2^1| 2^0|2^-^1|2^-^2|2^-^3|2^-^4|
+ * +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+ *    Sign extend    Integer part      Fractional (1/16degC)
  * ```
  *
  * **Resolution vs Temperature Bits:**
@@ -130,7 +130,7 @@
  * - `k_rx_err_invalid_state` - Sensor not initialized or not present
  * - `k_rx_err_invalid_arg` - Invalid resolution or ROM family code
  * - `k_rx_err_crc_mismatch` - Scratchpad CRC validation failed
- * - `k_rx_err_out_of_range` - Temperature outside -55°C to +125°C
+ * - `k_rx_err_out_of_range` - Temperature outside -55degC to +125degC
  *
  * @par Example: Basic Temperature Reading
  * @code
@@ -157,7 +157,7 @@
  * float temp_c = 0.0f;
  * err = rx_ds18b20_read_temperature(&sensor, &temp_c);
  * if (err == k_rx_ok) {
- *     printf("Temperature: %.2f°C\n", temp_c);
+ *     printf("Temperature: %.2fdegC\n", temp_c);
  * }
  *
  * // 5. Cleanup
@@ -222,7 +222,7 @@ static const uint8_t s_ds18b20_family_code = 0x28U;
 
 /**
  * @brief Temperature conversion divisor (raw to Celsius)
- * @details DS18B20 stores temperature in 1/16°C units. Divide by 16 to get Celsius.
+ * @details DS18B20 stores temperature in 1/16degC units. Divide by 16 to get Celsius.
  */
 static const float s_temp_conversion_divisor = 16.0f;
 
@@ -305,8 +305,8 @@ static const uint32_t s_ds18b20_conversion_time_invalid_u32 = 0U;
  * ```
  * Offset | Field  | Description
  * -------|--------|--------------------------------------------------
- * 0      | th     | High temperature alarm threshold (-55 to +125°C)
- * 1      | tl     | Low temperature alarm threshold (-55 to +125°C)
+ * 0      | th     | High temperature alarm threshold (-55 to +125degC)
+ * 1      | tl     | Low temperature alarm threshold (-55 to +125degC)
  * 2      | config | Resolution bits R1:R0 at bits 6:5
  * ```
  *
@@ -315,15 +315,15 @@ static const uint32_t s_ds18b20_conversion_time_invalid_u32 = 0U;
  * Bit 7 | Bit 6 | Bit 5 | Bit 4 | Bit 3 | Bit 2 | Bit 1 | Bit 0
  * ------|-------|-------|-------|-------|-------|-------|-------
  *   0   |  R1   |  R0   |   1   |   1   |   1   |   1   |   1
- *       └───────┴───────┘
+ *       +-------+-------+
  *       Resolution bits
  * ```
  *
  * **Resolution Encoding:**
- * - R1=0, R0=0: 9-bit (0.5°C, 93.75ms)
- * - R1=0, R0=1: 10-bit (0.25°C, 187.5ms)
- * - R1=1, R0=0: 11-bit (0.125°C, 375ms)
- * - R1=1, R0=1: 12-bit (0.0625°C, 750ms)
+ * - R1=0, R0=0: 9-bit (0.5degC, 93.75ms)
+ * - R1=0, R0=1: 10-bit (0.25degC, 187.5ms)
+ * - R1=1, R0=0: 11-bit (0.125degC, 375ms)
+ * - R1=1, R0=1: 12-bit (0.0625degC, 750ms)
  *
  * @note This structure is for internal use only - not exposed in public API.
  * @see internal_ds18b20_write_scratchpad()
@@ -546,7 +546,7 @@ rx_err_t rx_ds18b20_trigger_conversion(const rx_ds18b20_handle_t* handle)
  * temperature value, applies the resolution mask to clear undefined low-order
  * bits, validates the result is within the sensor's physical range, and
  * converts to a floating-point Celsius value using the DS18B20 fixed-point
- * encoding (1 LSB = 1/16 °C).
+ * encoding (1 LSB = 1/16 degC).
  *
  * Algorithm steps:
  * 1. Validate handle and output pointer are non-null
@@ -562,7 +562,7 @@ rx_err_t rx_ds18b20_trigger_conversion(const rx_ds18b20_handle_t* handle)
  * @retval k_rx_ok Temperature read and converted successfully
  * @retval k_rx_err_null_ptr handle or temperature_celsius is nullptr
  * @retval k_rx_err_invalid_state handle not initialized
- * @retval k_rx_err_out_of_range raw temperature outside [-55°C, +125°C]
+ * @retval k_rx_err_out_of_range raw temperature outside [-55degC, +125degC]
  * @retval k_rx_err_crc_failure Scratchpad CRC mismatch
  * @retval k_rx_err_bus_error 1-Wire bus communication failure
  *
@@ -620,9 +620,9 @@ rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* tempera
  * low-order bits, casts to signed int16_t, and range-validates the result.
  *
  * The DS18B20 temperature encoding uses a signed fixed-point format where
- * 1 LSB = 1/16 °C (12-bit mode). The valid raw range is:
- *   - Minimum: -55 °C = 0xFC90 (int16: -880)
- *   - Maximum: +125 °C = 0x07D0 (int16: +2000)
+ * 1 LSB = 1/16 degC (12-bit mode). The valid raw range is:
+ *   - Minimum: -55 degC = 0xFC90 (int16: -880)
+ *   - Maximum: +125 degC = 0x07D0 (int16: +2000)
  *
  * Resolution masks (clears undefined bits in lower-resolution modes):
  * - 9-bit:  0xFFF8 (3 undefined bits)
@@ -639,7 +639,7 @@ rx_err_t rx_ds18b20_read_temperature(rx_ds18b20_handle_t* handle, float* tempera
  * 6. Write validated result to *raw_temp
  *
  * @param[in,out] handle Sensor handle (must be initialized)
- * @param[out] raw_temp Signed 16-bit raw temperature in 1/16 °C units,
+ * @param[out] raw_temp Signed 16-bit raw temperature in 1/16 degC units,
  *             valid range [k_ds18b20_temp_min_raw, k_ds18b20_temp_max_raw];
  *             undefined on error
  *
@@ -700,7 +700,7 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
   /* Post-condition: Validate temperature is within sensor range */
   *raw_temp = (int16_t)temp;
   if (*raw_temp < k_ds18b20_temp_min_raw || *raw_temp > k_ds18b20_temp_max_raw) {
-    rx_log_error(s_tag, "Temperature out of sensor range (-55°C to +125°C)");
+    rx_log_error(s_tag, "Temperature out of sensor range (-55degC to +125degC)");
     return k_rx_err_out_of_range;
   }
 
@@ -718,10 +718,10 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
  *
  * Higher resolution provides finer temperature steps but increases
  * conversion time:
- * - 9-bit:  0.5 °C steps,  94 ms conversion
- * - 10-bit: 0.25 °C steps, 188 ms conversion
- * - 11-bit: 0.125 °C steps, 375 ms conversion
- * - 12-bit: 0.0625 °C steps, 750 ms conversion
+ * - 9-bit:  0.5 degC steps,  94 ms conversion
+ * - 10-bit: 0.25 degC steps, 188 ms conversion
+ * - 11-bit: 0.125 degC steps, 375 ms conversion
+ * - 12-bit: 0.0625 degC steps, 750 ms conversion
  *
  * Algorithm steps:
  * 1. Validate handle is initialized and resolution is a legal enum value
@@ -835,7 +835,7 @@ rx_err_t rx_ds18b20_set_resolution(rx_ds18b20_handle_t*       handle,
  * @post handle state is unchanged
  *
  * @note Not thread-safe; caller must ensure handle is not concurrently modified
- * @note Returns cached value from handle — does not issue 1-Wire bus transaction
+ * @note Returns cached value from handle -- does not issue 1-Wire bus transaction
  *
  * @par Example:
  * @code
@@ -1133,7 +1133,7 @@ rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* ext
  * |  3   | TL Register    | Low alarm threshold               |
  * |  4   | Config Register | Resolution configuration byte     |
  * |  5-7 | Reserved       | Reserved (0xFF, 0x10, 0x10)       |
- * |  8   | CRC            | CRC-8 of bytes 0–7                |
+ * |  8   | CRC            | CRC-8 of bytes 0-7                |
  *
  * CRC is verified internally by internal_ds18b20_read_scratchpad_raw() before
  * the buffer is returned. This function is a thin public wrapper around the
@@ -1160,7 +1160,7 @@ rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* ext
  * @pre handle must be initialized via rx_ds18b20_init()
  * @pre scratchpad must point to a buffer of at least k_ds18b20_scratchpad_bytes bytes
  * @post scratchpad[0..8] contains valid data on k_rx_ok
- * @post CRC of scratchpad bytes 0–7 matches byte 8 on k_rx_ok
+ * @post CRC of scratchpad bytes 0-7 matches byte 8 on k_rx_ok
  *
  * @note Not thread-safe; caller must serialize access to the same handle
  * @note Use rx_ds18b20_read_temperature() for converted Celsius value
@@ -1244,16 +1244,16 @@ uint32_t rx_ds18b20_get_conversion_time_ms(const rx_ds18b20_handle_t* handle)
  *
  * **Validation Rules:**
  * ```
- * ┌─────────────────┬────────────────┬─────────────────────┐
- * │ Field           │ Check          │ Error Code          │
- * ├─────────────────┼────────────────┼─────────────────────┤
- * │ config          │ != nullptr        │ k_rx_err_null_ptr   │
- * │ bus_manager     │ != nullptr        │ k_rx_err_null_ptr   │
- * │ bus_name        │ != nullptr        │ k_rx_err_null_ptr   │
- * │ initialized     │ == false       │ k_rx_err_invalid_state │
- * │ resolution      │ <= 3           │ k_rx_err_invalid_arg│
- * │ rom[0] (if ROM) │ == 0x28        │ k_rx_err_invalid_arg│
- * └─────────────────┴────────────────┴─────────────────────┘
+ * +-----------------+----------------+---------------------+
+ * | Field           | Check          | Error Code          |
+ * +-----------------+----------------+---------------------+
+ * | config          | != nullptr        | k_rx_err_null_ptr   |
+ * | bus_manager     | != nullptr        | k_rx_err_null_ptr   |
+ * | bus_name        | != nullptr        | k_rx_err_null_ptr   |
+ * | initialized     | == false       | k_rx_err_invalid_state |
+ * | resolution      | <= 3           | k_rx_err_invalid_arg|
+ * | rom[0] (if ROM) | == 0x28        | k_rx_err_invalid_arg|
+ * +-----------------+----------------+---------------------+
  * ```
  *
  * @param[in] config Configuration structure to validate
@@ -1338,8 +1338,8 @@ static rx_err_t internal_ds18b20_validate_config(const rx_ds18b20_config_t* conf
  * 3. **Communication Test** - Read scratchpad with CRC validation
  *
  * **Timing:**
- * - Reset pulse: 480-960 µs LOW
- * - Presence detect: 60-240 µs after reset
+ * - Reset pulse: 480-960 us LOW
+ * - Presence detect: 60-240 us after reset
  * - Scratchpad read: ~5ms (9 bytes + CRC)
  *
  * @param[in,out] handle DS18B20 handle with bus configuration
@@ -1524,19 +1524,19 @@ static rx_err_t internal_ds18b20_select_device(const rx_ds18b20_handle_t* handle
  *
  * **Scratchpad Memory Map:**
  * ```
- * ┌──────┬──────────────┬─────────────────────────────┐
- * │ Byte │ Field        │ Description                 │
- * ├──────┼──────────────┼─────────────────────────────┤
- * │  0   │ Temp LSB     │ Temperature low byte        │
- * │  1   │ Temp MSB     │ Temperature high byte       │
- * │  2   │ TH Register  │ High alarm threshold        │
- * │  3   │ TL Register  │ Low alarm threshold         │
- * │  4   │ Config       │ Resolution bits (6:5)       │
- * │  5   │ Reserved     │ Always 0xFF                 │
- * │  6   │ Reserved     │ Factory-programmed          │
- * │  7   │ Reserved     │ Count remain (legacy)       │
- * │  8   │ CRC          │ CRC-8/MAXIM checksum        │
- * └──────┴──────────────┴─────────────────────────────┘
+ * +------+--------------+-----------------------------+
+ * | Byte | Field        | Description                 |
+ * +------+--------------+-----------------------------+
+ * |  0   | Temp LSB     | Temperature low byte        |
+ * |  1   | Temp MSB     | Temperature high byte       |
+ * |  2   | TH Register  | High alarm threshold        |
+ * |  3   | TL Register  | Low alarm threshold         |
+ * |  4   | Config       | Resolution bits (6:5)       |
+ * |  5   | Reserved     | Always 0xFF                 |
+ * |  6   | Reserved     | Factory-programmed          |
+ * |  7   | Reserved     | Count remain (legacy)       |
+ * |  8   | CRC          | CRC-8/MAXIM checksum        |
+ * +------+--------------+-----------------------------+
  * ```
  *
  * **CRC-8/MAXIM Calculation:**
@@ -1686,10 +1686,10 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
  * **Configuration Register Encoding:**
  * ```
  * Bit:  7   6   5   4   3   2   1   0
- *      ┌───┬───┬───┬───┬───┬───┬───┬───┐
- *      │ 0 │R1 │R0 │ 1 │ 1 │ 1 │ 1 │ 1 │
- *      └───┴───┴───┴───┴───┴───┴───┴───┘
- *          └───┴───┘
+ *      +---+---+---+---+---+---+---+---+
+ *      | 0 |R1 |R0 | 1 | 1 | 1 | 1 | 1 |
+ *      +---+---+---+---+---+---+---+---+
+ *          +---+---+
  *        Resolution
  *
  * R1 R0 | Resolution | Conversion Time
@@ -1833,7 +1833,7 @@ static uint16_t internal_ds18b20_get_temp_mask(const ds18b20_resolution_t resolu
 /**
  * @brief Convert raw temperature to Celsius
  *
- * DS18B20 stores temperature as 16-bit signed value in 1/16°C units.
+ * DS18B20 stores temperature as 16-bit signed value in 1/16degC units.
  * Divide by 16 to get Celsius.
  *
  * @param[in] raw_temp Raw 16-bit temperature value
@@ -1847,7 +1847,7 @@ static float internal_ds18b20_raw_to_celsius(const int16_t raw_temp)
     return NAN;
   }
 
-  /* Convert from 1/16°C to °C */
+  /* Convert from 1/16degC to degC */
   float result = (float)raw_temp / s_temp_conversion_divisor;
 
   /* Post-condition: Validate result is finite (not NaN or Inf) */

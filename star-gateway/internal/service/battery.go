@@ -37,10 +37,10 @@ const (
 	maxOverchargeMa    = 10000 // 10A
 	minOverdischargeMa = 1000  // 1A
 	maxOverdischargeMa = 20000 // 20A
-	minOvertempDeciC   = 450   // 45.0°C
-	maxOvertempDeciC   = 700   // 70.0°C
-	minUndertempDeciC  = -200  // -20.0°C
-	maxUndertempDeciC  = 0     // 0.0°C
+	minOvertempDeciC   = 450   // 45.0degC
+	maxOvertempDeciC   = 700   // 70.0degC
+	minUndertempDeciC  = -200  // -20.0degC
+	maxUndertempDeciC  = 0     // 0.0degC
 
 	// Cell balancing validation (BQ7850 supports 16 cells max)
 	maxCellMask = 0xFFFF // 16 bits
@@ -287,7 +287,7 @@ func (s *BatteryService) validateProtectionThresholds(t *starv1.ProtectionThresh
 	// Overtemperature validation
 	if t.OvertempDeciCelsius < minOvertempDeciC || t.OvertempDeciCelsius > maxOvertempDeciC {
 		return status.Errorf(codes.InvalidArgument,
-			"overtemp_deci_celsius must be %d-%d (%.1f-%.1f°C), got %d",
+			"overtemp_deci_celsius must be %d-%d (%.1f-%.1fdegC), got %d",
 			minOvertempDeciC, maxOvertempDeciC,
 			float64(minOvertempDeciC)/10.0, float64(maxOvertempDeciC)/10.0,
 			t.OvertempDeciCelsius)
@@ -296,7 +296,7 @@ func (s *BatteryService) validateProtectionThresholds(t *starv1.ProtectionThresh
 	// Undertemperature validation
 	if t.UndertempDeciCelsius < minUndertempDeciC || t.UndertempDeciCelsius > maxUndertempDeciC {
 		return status.Errorf(codes.InvalidArgument,
-			"undertemp_deci_celsius must be %d-%d (%.1f-%.1f°C), got %d",
+			"undertemp_deci_celsius must be %d-%d (%.1f-%.1fdegC), got %d",
 			minUndertempDeciC, maxUndertempDeciC,
 			float64(minUndertempDeciC)/10.0, float64(maxUndertempDeciC)/10.0,
 			t.UndertempDeciCelsius)

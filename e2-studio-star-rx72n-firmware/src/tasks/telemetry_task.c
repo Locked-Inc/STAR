@@ -172,7 +172,7 @@
  *       endif
  *
  *       if (Temperature data valid?) then (yes)
- *         :Convert temperature (cdegC -> °C);
+ *         :Convert temperature (cdegC -> degC);
  *         :Populate temperature_celsius;
  *       endif
  *     }
@@ -223,7 +223,7 @@
  *
  * | Protobuf Field | Type | Source | Units | Conversion | Description |
  * |----------------|------|--------|-------|------------|-------------|
- * | **timestamp_us** | int64 | tx_time_get() | µs | ThreadX ticks × 10000 | System uptime in microseconds |
+ * | **timestamp_us** | int64 | tx_time_get() | us | ThreadX ticks x 10000 | System uptime in microseconds |
  * | **frame_sequence** | uint32 | s_sequence++ | - | Auto-increment | Message sequence counter |
  * | **emergency_stop** | bool | motor_state.estop_active | - | Direct copy | E-stop active flag |
  * | **fault_flags** | uint32 | motor_state.fault_flags[4] | - | Bitfield pack | 4 motor fault bytes -> uint32 |
@@ -231,10 +231,10 @@
  * | **encoder_front_right** | EncoderData | motor_state.encoder_counts[1] | ticks | Direct copy | Motor 1 encoder state |
  * | **encoder_back_left** | EncoderData | motor_state.encoder_counts[2] | ticks | Direct copy | Motor 2 encoder state |
  * | **encoder_back_right** | EncoderData | motor_state.encoder_counts[3] | ticks | Direct copy | Motor 3 encoder state |
- * | **battery_voltage_v** | double | bms_state.voltage_mv | V | mV ÷ 1000.0 | Battery terminal voltage |
+ * | **battery_voltage_v** | double | bms_state.voltage_mv | V | mV / 1000.0 | Battery terminal voltage |
  * | **battery_soc_percent** | float | bms_state.soc_percent | % | Direct copy | State of charge (0-100%) |
  * | **battery_percent** | double | bms_state.soc_percent | % | Direct copy | Duplicate field (legacy) |
- * | **temperature_celsius** | double | temp_state.temperature_cdegc[0] | °C | cdegC ÷ 100.0 | Ambient temperature |
+ * | **temperature_celsius** | double | temp_state.temperature_cdegc[0] | degC | cdegC / 100.0 | Ambient temperature |
  *
  * ### EncoderData Submessage Fields
  *
@@ -245,7 +245,7 @@
  * | **motor_id** | uint32 | 0-3 | - | Motor index (FL=0, FR=1, BL=2, BR=3) |
  * | **ticks** | int64 | encoder_counts[i] | ticks | Cumulative quadrature encoder count |
  * | **velocity_mps** | double | current_velocity_mps[i] | m/s | Instantaneous velocity (float -> double) |
- * | **timestamp_us** | int64 | telemetry.timestamp_us | µs | Copy of parent message timestamp |
+ * | **timestamp_us** | int64 | telemetry.timestamp_us | us | Copy of parent message timestamp |
  *
  * ### Fault Flags Bitfield Packing
  *
@@ -268,15 +268,15 @@
  * | Internal Type | Internal Units | Protobuf Field | Protobuf Units | Conversion Formula |
  * |---------------|----------------|----------------|----------------|-------------------|
  * | `uint32_t` | millivolts (mV) | `battery_voltage_v` | volts (V) | `voltage_mv / 1000.0` |
- * | `int16_t` | centi-degrees (cdegC) | `temperature_celsius` | degrees (°C) | `temperature_cdegc / 100.0` |
+ * | `int16_t` | centi-degrees (cdegC) | `temperature_celsius` | degrees (degC) | `temperature_cdegc / 100.0` |
  * | `float` | meters/second (m/s) | `velocity_mps` | meters/second (m/s) | `(double)velocity_mps` |
- * | `uint32_t` | ThreadX ticks | `timestamp_us` | microseconds (µs) | `ticks × 10000` |
+ * | `uint32_t` | ThreadX ticks | `timestamp_us` | microseconds (us) | `ticks x 10000` |
  *
  * ### Rationale for Internal Fixed-Point Units
  *
- * - **Millivolts (mV):** BMS ADC reports in mV (12-bit ADC × voltage divider), no float math in BMS task
- * - **Centi-degrees (cdegC):** DS18B20 sensor reports in 0.0625°C steps, stored as `temp × 100`
- * - **ThreadX ticks:** System timer runs at 100 Hz (10ms per tick), multiplication to µs avoids float math
+ * - **Millivolts (mV):** BMS ADC reports in mV (12-bit ADC x voltage divider), no float math in BMS task
+ * - **Centi-degrees (cdegC):** DS18B20 sensor reports in 0.0625degC steps, stored as `temp x 100`
+ * - **ThreadX ticks:** System timer runs at 100 Hz (10ms per tick), multiplication to us avoids float math
  *
  * ## Performance Characteristics
  *
@@ -284,19 +284,19 @@
  * |--------|-------|-------|
  * | **Telemetry Frequency** | 20 Hz | 50ms period (5 ticks @ 100 Hz ThreadX) |
  * | **Task Priority** | 18 | Lowest application task (never preempts control) |
- * | **CPU Time per Cycle** | ~120 µs | Data collection + encoding + send |
- * | **CPU Idle Time** | ~49880 µs | Sleep time within 50ms period |
- * | **CPU Utilization** | ~0.24% | (120µs / 50000µs) × 100% |
+ * | **CPU Time per Cycle** | ~120 us | Data collection + encoding + send |
+ * | **CPU Idle Time** | ~49880 us | Sleep time within 50ms period |
+ * | **CPU Utilization** | ~0.24% | (120us / 50000us) x 100% |
  * | **Average Message Size** | ~250 bytes | Encoded protobuf (varies with data validity) |
- * | **Bandwidth (USB CDC)** | 4 kB/s | 250 bytes × 20 Hz (negligible on 12 Mbps USB) |
- * | **Bandwidth (SPI)** | 4 kB/s | 250 bytes × 20 Hz (negligible on 10 Mbps SPI) |
- * | **Encoding Time** | ~40 µs | nanopb encoding (all fields populated) |
- * | **Transmission Time** | ~60 µs | USB CDC transfer initiation |
+ * | **Bandwidth (USB CDC)** | 4 kB/s | 250 bytes x 20 Hz (negligible on 12 Mbps USB) |
+ * | **Bandwidth (SPI)** | 4 kB/s | 250 bytes x 20 Hz (negligible on 10 Mbps SPI) |
+ * | **Encoding Time** | ~40 us | nanopb encoding (all fields populated) |
+ * | **Transmission Time** | ~60 us | USB CDC transfer initiation |
  * | **Worst Case Latency** | 50ms | Max time to observe system state change |
  *
  * ### Timing Budget Breakdown (per 50ms iteration)
  *
- * | Operation | Time (µs) | % of Budget |
+ * | Operation | Time (us) | % of Budget |
  * |-----------|-----------|-------------|
  * | **Motor State Read** (mutex + 4 motors) | 15 | 0.03% |
  * | **BMS State Read** (mutex + voltage/SoC) | 5 | 0.01% |
@@ -360,7 +360,7 @@
  * 20 Hz is sufficient for:
  * - ROS2 navigation stack planning (typically 1-10 Hz)
  * - Human operator monitoring (10-30 Hz is perceptually smooth)
- * - Bandwidth conservation (10× reduction vs 200 Hz)
+ * - Bandwidth conservation (10x reduction vs 200 Hz)
  *
  * ### 2. Bandwidth Efficiency
  *
@@ -389,7 +389,7 @@
  *
  * ### 4. CPU Utilization
  *
- * At 20 Hz, telemetry uses only **0.24% CPU** (120µs / 50ms), leaving 99.76% for control tasks.
+ * At 20 Hz, telemetry uses only **0.24% CPU** (120us / 50ms), leaving 99.76% for control tasks.
  * This is critical because telemetry is lowest priority (18) and must never impact real-time loops.
  *
  * ## Priority Justification (18 - Lowest Application Task)
@@ -452,7 +452,7 @@
  * | `internal_telem_task_entry()` | 64 | Loop variables, error codes |
  * | `internal_build_and_send_telemetry()` | 336 | TelemetryData struct (~300 bytes), locals |
  * | Peak Usage | **400** | Total when all functions on call stack |
- * | Allocated Stack | **2048** | 5× safety margin (NASA Power of 10 Rule 3) |
+ * | Allocated Stack | **2048** | 5x safety margin (NASA Power of 10 Rule 3) |
  *
  * ## Graceful Degradation Strategy
  *
@@ -589,7 +589,7 @@
  *   MotorTask, SharedData, TelemetryTask;
  *
  *   --- [label="Motor Control Loop (250 Hz - 4ms period)"];
- *   MotorTask box MotorTask [label="Read 4 encoders\n(rx_mtu_encoder_read_velocity × 4)"];
+ *   MotorTask box MotorTask [label="Read 4 encoders\n(rx_mtu_encoder_read_velocity x 4)"];
  *   MotorTask => SharedData [label="shared_data_set_motor_state(&new_motor_state)"];
  *   SharedData box SharedData [label="Lock mutex\nCopy new_motor_state\nUnlock mutex"];
  *   SharedData >> MotorTask [label="k_rx_ok"];
@@ -714,7 +714,7 @@
  *
  * @par Performance Testing:
  * - Tested at 20 Hz with all data sources active
- * - Verified 0.24% CPU utilization (120µs / 50ms)
+ * - Verified 0.24% CPU utilization (120us / 50ms)
  * - Tested USB CDC and SPI failover (automatic channel switching)
  * - Verified graceful degradation when BMS/temperature sensors fail
  *
@@ -722,7 +722,7 @@
  * - `test_telemetry_task_create()` - Creation validation
  * - `test_telemetry_build_full_message()` - All fields populated
  * - `test_telemetry_partial_message()` - Graceful degradation (BMS fail)
- * - `test_telemetry_unit_conversions()` - mV->V, cdegC->°C accuracy
+ * - `test_telemetry_unit_conversions()` - mV->V, cdegC->degC accuracy
  * - `test_telemetry_fault_flags_packing()` - Bitfield correctness
  * - `test_telemetry_sequence_counter()` - Monotonic increment
  * - `test_telemetry_send_failure()` - Non-critical error handling
@@ -764,7 +764,7 @@ typedef enum : uint16_t {
    * @brief Stack size for telemetry task thread in bytes
    *
    * @details
-   * 2048 bytes provides 5× safety margin over measured peak usage (~400 bytes).
+   * 2048 bytes provides 5x safety margin over measured peak usage (~400 bytes).
    * Stack is statically allocated to comply with NASA Power of 10 Rule 3
    * (no dynamic allocation).
    *
@@ -772,7 +772,7 @@ typedef enum : uint16_t {
    * - `internal_telem_task_entry()` frame: 64 bytes
    * - `internal_build_and_send_telemetry()` frame: 336 bytes (TelemetryData struct)
    * - ThreadX overhead: ~100 bytes
-   * - Safety margin: ~1548 bytes (3.8× peak usage)
+   * - Safety margin: ~1548 bytes (3.8x peak usage)
    *
    * @note Stack overflow detection enabled via `TX_ENABLE_STACK_CHECKING`
    */
@@ -803,7 +803,7 @@ typedef enum : uint16_t {
    * @brief Sleep period in ThreadX ticks (5 ticks = 50ms @ 100 Hz)
    *
    * @details
-   * 5 ticks × 10ms/tick = 50ms period -> 20 Hz telemetry rate.
+   * 5 ticks x 10ms/tick = 50ms period -> 20 Hz telemetry rate.
    *
    * Rationale for 20 Hz:
    * - Sufficient for ROS2 navigation (typically 10 Hz path planning)
@@ -813,7 +813,7 @@ typedef enum : uint16_t {
    *
    * Alternative rates:
    * - 10 Hz (10 ticks): Lower bandwidth, acceptable for slow robots
-   * - 50 Hz (2 ticks): Higher update rate, 2.5× bandwidth increase
+   * - 50 Hz (2 ticks): Higher update rate, 2.5x bandwidth increase
    * - 100 Hz (1 tick): Nyquist for motor control, but excessive for telemetry
    *
    * @see ThreadX configuration: `TX_TIMER_TICKS_PER_SECOND = 100` in `tx_user.h`
@@ -835,20 +835,20 @@ typedef enum : uint16_t {
    * @brief Telemetry protobuf encode buffer size in bytes
    *
    * @details
-   * 512 bytes provides 2× safety margin over typical encoded message size (~250 bytes).
+   * 512 bytes provides 2x safety margin over typical encoded message size (~250 bytes).
    *
    * Message size breakdown:
    * - Timestamp (int64): 9 bytes (varint encoding)
    * - Sequence (uint32): 5 bytes (varint encoding)
    * - E-stop (bool): 2 bytes (tag + value)
    * - Fault flags (uint32): 5 bytes (varint encoding)
-   * - Encoders (4 × EncoderData): 4 × 40 bytes = 160 bytes
+   * - Encoders (4 x EncoderData): 4 x 40 bytes = 160 bytes
    * - Battery voltage (double): 9 bytes (fixed64)
    * - Battery SoC (float): 5 bytes (fixed32)
    * - Temperature (double): 9 bytes (fixed64)
    * - Protobuf overhead (tags, lengths): ~40 bytes
    * - **Total typical:** ~250 bytes
-   * - **Buffer size:** 512 bytes (2.0× safety margin)
+   * - **Buffer size:** 512 bytes (2.0x safety margin)
    *
    * @note Buffer is statically allocated (no dynamic allocation, NASA Rule 3)
    * @warning If message size exceeds 512 bytes, `rx_nanopb_encode_telemetry()`
@@ -863,7 +863,7 @@ typedef enum : uint16_t {
  *
  * @details
  * ThreadX system timer runs at 100 Hz (10ms per tick, configured in `tx_user.h`).
- * Protocol Buffers telemetry schema requires timestamps in microseconds (µs)
+ * Protocol Buffers telemetry schema requires timestamps in microseconds (us)
  * for compatibility with ROS2 `builtin_interfaces/Time` (nanosecond precision).
  *
  * Conversion formula:
@@ -874,21 +874,21 @@ typedef enum : uint16_t {
  *
  * Example:
  * - ThreadX ticks = 12345 (123.45 seconds uptime)
- * - timestamp_us = 12345 × 10000 = 123450000 µs = 123.45 seconds
+ * - timestamp_us = 12345 x 10000 = 123450000 us = 123.45 seconds
  *
  * @note All constants use C23 typed enums with explicit underlying type (NASA Rule 8)
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   /**
-   * @brief Microseconds per ThreadX tick (10000 µs = 10 ms @ 100 Hz)
+   * @brief Microseconds per ThreadX tick (10000 us = 10 ms @ 100 Hz)
    *
    * @details
    * ThreadX system timer frequency: 100 Hz (configured via `TX_TIMER_TICKS_PER_SECOND`)
-   * Period per tick: 1/100 Hz = 10 ms = 10,000 µs
+   * Period per tick: 1/100 Hz = 10 ms = 10,000 us
    *
    * This constant is used to convert ThreadX tick count to microseconds for
-   * protobuf `timestamp_us` field (int64, µs since boot).
+   * protobuf `timestamp_us` field (int64, us since boot).
    *
    * @see tx_user.h `TX_TIMER_TICKS_PER_SECOND = 100`
    * @see star.v1.TelemetryData.timestamp_us Protobuf field definition
@@ -935,12 +935,12 @@ static TX_THREAD s_telem_thread;
  *
  * Stack layout (RX72N, grows down):
  * ```
- * s_telem_stack[2047] ← Stack base (initial SP)
+ * s_telem_stack[2047] <- Stack base (initial SP)
  *                     |
  *                     v (grows down during function calls)
  * [...function frames...]
  *                     |
- * s_telem_stack[0]   ← Stack limit (overflow if SP reaches here)
+ * s_telem_stack[0]   <- Stack limit (overflow if SP reaches here)
  * ```
  *
  * Stack overflow detection:
@@ -948,7 +948,7 @@ static TX_THREAD s_telem_thread;
  * - First 4 bytes of stack marked with sentinel value (0xEFEFEFEF)
  * - If sentinel corrupted, ThreadX calls `_tx_thread_stack_error_handler()`
  *
- * @note Size: 2048 bytes (5× safety margin over peak usage ~400 bytes)
+ * @note Size: 2048 bytes (5x safety margin over peak usage ~400 bytes)
  * @note Alignment: ThreadX automatically aligns to 8-byte boundary
  * @warning Stack overflow causes memory corruption (nearby variables overwritten)
  * @warning If peak usage exceeds 1500 bytes, increase `k_telem_task_stack_size`
@@ -995,7 +995,7 @@ static bool s_telem_created = false;
  * - **Typical:** ~250 bytes (all fields populated, 4 motors, BMS, temp)
  * - **Minimum:** ~20 bytes (timestamp + sequence only, all sources failed)
  * - **Maximum:** ~400 bytes (future expansion: IMU, GPS, LIDAR)
- * - **Allocated:** 512 bytes (2× typical, 1.3× max future)
+ * - **Allocated:** 512 bytes (2x typical, 1.3x max future)
  *
  * Data flow:
  * 1. `internal_build_and_send_telemetry()` populates `TelemetryData` struct
@@ -1284,7 +1284,7 @@ static rx_err_t              internal_send_via_channel(rx_comm_channel_t channel
  * system initialization (typically from `tx_application_define()` before scheduler starts).
  *
  * @par Performance:
- * - Execution time: ~50 µs (ThreadX thread creation overhead)
+ * - Execution time: ~50 us (ThreadX thread creation overhead)
  * - Memory allocated: 2188 bytes (2048 stack + 140 TX_THREAD)
  * - Stack usage: 0 bytes (task not yet running)
  *
@@ -1481,9 +1481,9 @@ rx_err_t telemetry_task_create(void)
  * temp) can write to shared_data concurrently without corruption.
  *
  * @par Performance:
- * - Active time per cycle: ~120 µs (data collection + encoding + send)
- * - Sleep time per cycle: ~49880 µs (50ms - 120µs)
- * - CPU utilization: ~0.24% (120µs / 50000µs)
+ * - Active time per cycle: ~120 us (data collection + encoding + send)
+ * - Sleep time per cycle: ~49880 us (50ms - 120us)
+ * - CPU utilization: ~0.24% (120us / 50000us)
  * - Worst-case preemption latency: 50ms (one full cycle if preempted immediately)
  *
  * @par Example Execution Timeline (50ms cycle):
@@ -1493,8 +1493,8 @@ rx_err_t telemetry_task_create(void)
  * t=0.020ms: BMS state read (mutex lock + copy)
  * t=0.023ms: Temp state read (mutex lock + copy)
  * t=0.043ms: Protobuf population complete
- * t=0.083ms: nanopb encoding complete (~40µs)
- * t=0.143ms: USB CDC send initiated (~60µs)
+ * t=0.083ms: nanopb encoding complete (~40us)
+ * t=0.143ms: USB CDC send initiated (~60us)
  * t=0.160ms: tx_thread_sleep(5) called, task yields
  * t=50ms:    Timer expires, task wakes, cycle repeats
  * ```
@@ -1579,7 +1579,7 @@ static void internal_telem_task_entry(ULONG input)
  *    once per transition)
  * 5. If neither is ready, return k_telemetry_transport_none
  *
- * The function uses a static flag to detect the USB→SPI transition and emits
+ * The function uses a static flag to detect the USB->SPI transition and emits
  * a warning log exactly once per failover event (not once per cycle) to avoid
  * log flooding at 20 Hz.
  *
@@ -1591,7 +1591,7 @@ static void internal_telem_task_entry(ULONG input)
  * @pre g_comm_manager must be initialized via rx_comm_manager_init()
  * @pre rx_comm_manager_channel_ready() must be callable (non-blocking)
  * @post Returned transport reflects real-time channel readiness
- * @post Transition warning logged at most once per USB→SPI failover event
+ * @post Transition warning logged at most once per USB->SPI failover event
  *
  * @note Called every 50 ms from internal_build_and_send_telemetry() (20 Hz)
  * @note Non-blocking: rx_comm_manager_channel_ready() never blocks
@@ -1606,7 +1606,7 @@ static void internal_telem_task_entry(ULONG input)
  *   usb : Do - Send telemetry via k_comm_channel_usb
  * }
  * state "SPI Fallback" as spi {
- *   spi : Entry - Log warning (USB→SPI failover detected)
+ *   spi : Entry - Log warning (USB->SPI failover detected)
  *   spi : Do - Send telemetry via k_comm_channel_spi
  * }
  * state "No Transport" as none {
@@ -1805,8 +1805,8 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * Data collected:
  * 1. **Motor state** (via internal_populate_motor_telemetry()):
  *    E-stop flag, fault_flags bitfield, 4 encoder submessages
- * 2. **BMS state:** battery_voltage_v (mV→V), battery_soc_percent, battery_percent
- * 3. **Temperature state:** temperature_celsius (cdegC→°C)
+ * 2. **BMS state:** battery_voltage_v (mV->V), battery_soc_percent, battery_percent
+ * 3. **Temperature state:** temperature_celsius (cdegC->degC)
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
@@ -1914,7 +1914,7 @@ static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry
  * @brief Send the encoded telemetry buffer via the specified comm manager channel (Phase 4)
  *
  * @details
- * Builds `rx_comm_send_params_t` with `k_frame_type_response` (RX72N → host data),
+ * Builds `rx_comm_send_params_t` with `k_frame_type_response` (RX72N -> host data),
  * `s_telem_buffer` as payload, and calls `rx_comm_manager_send()`. The channel
  * argument is the caller-selected transport (USB or SPI) returned by
  * `internal_select_transport()`.
@@ -1998,7 +1998,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * @post s_telem_buffer overwritten with latest encoded protobuf
  *
  * @note Called every 50ms by internal_telem_task_entry() (20 Hz)
- * @note Execution time: ~120 µs (all phases combined)
+ * @note Execution time: ~120 us (all phases combined)
  * @note Data collection is non-blocking (graceful degradation if mutex locked)
  * @note Transport channel selected dynamically each cycle (USB preferred)
  *
@@ -2016,7 +2016,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  *
  * @par NASA Power of 10 Rule 4 Compliance:
  * This function is now a ~30-line orchestrator. Each phase delegated to a focused
- * helper function of ≤60 lines, all individually verifiable.
+ * helper function of <=60 lines, all individually verifiable.
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * - Precondition 1: Shared data initialized

@@ -211,7 +211,7 @@ void test_temp_data_stored_in_telemetry(void)
   temp_sensor_state_t state_out = {0};
   rx_err_t            err;
 
-  /* Configure temperature reading (25.75°C) */
+  /* Configure temperature reading (25.75degC) */
   float temp_celsius = 25.75f;
 
   state_in.temperature_cdegc[k_test_sensor_idx] = (int16_t)(temp_celsius * 100.0f);

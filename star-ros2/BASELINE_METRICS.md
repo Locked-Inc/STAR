@@ -71,9 +71,9 @@ cd star-ros2/scripts
 - Drop rate: N/A
 
 **Conclusion:** [TBD after collection]
-- ✅ System idle performance meets expectations
-- ⚠️ Observed issues: [describe any anomalies]
-- ❌ Performance below acceptable threshold
+- [PASS] System idle performance meets expectations
+- [WARN] Observed issues: [describe any anomalies]
+- [FAIL] Performance below acceptable threshold
 
 ---
 
@@ -94,9 +94,9 @@ cd star-ros2/scripts
 - Drop rate: [TBD]%
 
 **Conclusion:** [TBD after collection]
-- ✅ Normal operation performance acceptable
-- ⚠️ Observed issues: [describe any anomalies]
-- ❌ Performance below acceptable threshold
+- [PASS] Normal operation performance acceptable
+- [WARN] Observed issues: [describe any anomalies]
+- [FAIL] Performance below acceptable threshold
 
 ---
 
@@ -122,9 +122,9 @@ cd star-ros2/scripts
 - Additional subscribers: 2 (odom/unfiltered, robot_status)
 
 **Conclusion:** [TBD after collection]
-- ✅ Stress test performance acceptable
-- ⚠️ Observed issues: [describe any anomalies]
-- ❌ Performance below acceptable threshold
+- [PASS] Stress test performance acceptable
+- [WARN] Observed issues: [describe any anomalies]
+- [FAIL] Performance below acceptable threshold
 
 ---
 
@@ -133,18 +133,18 @@ cd star-ros2/scripts
 Based on these baselines, integration tests should validate:
 
 ### Normal Operation (Active Control Scenario)
-- ✅ **Teleop drop rate < 1.0%** - Critical for real-time control
-- ✅ **Telemetry drop rate < 5.0%** - Acceptable for monitoring
+- [PASS] **Teleop drop rate < 1.0%** - Critical for real-time control
+- [PASS] **Telemetry drop rate < 5.0%** - Acceptable for monitoring
 
 ### Stress Conditions (Stress Test Scenario)
-- ✅ **Telemetry drop rate < 10.0%** - Acceptable under load
-- ⚠️ **Any drop rate > 10%** - Indicates system issues requiring investigation
+- [PASS] **Telemetry drop rate < 10.0%** - Acceptable under load
+- [WARN] **Any drop rate > 10%** - Indicates system issues requiring investigation
 
 ### System Health Indicators
-- ✅ No process crashes during extended runs
-- ✅ No memory leaks (stable memory usage over time)
-- ✅ Consistent frame timing (no large jitter)
-- ✅ Graceful degradation under load (no complete failures)
+- [PASS] No process crashes during extended runs
+- [PASS] No memory leaks (stable memory usage over time)
+- [PASS] Consistent frame timing (no large jitter)
+- [PASS] Graceful degradation under load (no complete failures)
 
 ---
 
@@ -213,10 +213,10 @@ After establishing baselines:
 ### Integration Test Strategy
 
 With observability in place, integration tests can:
-- ✅ Validate performance, not just correctness
-- ✅ Fast debugging when tests fail (check diagnostics first)
-- ✅ Confidence that Virtual RX72N behaves realistically
-- ✅ Data-driven performance optimization
+- [PASS] Validate performance, not just correctness
+- [PASS] Fast debugging when tests fail (check diagnostics first)
+- [PASS] Confidence that Virtual RX72N behaves realistically
+- [PASS] Data-driven performance optimization
 
 ### Future Enhancements
 
@@ -234,16 +234,16 @@ Baseline data is stored in `star-ros2/baselines/` directory:
 
 ```
 star-ros2/baselines/
-├── idle_YYYYMMDD_HHMMSS/
-│   ├── virtual_rx72n.log
-│   ├── gateway.log
-│   ├── ros2_bridge.log
-│   ├── diagnostics.log
-│   └── SUMMARY.txt
-├── active_control_YYYYMMDD_HHMMSS/
-│   └── ...
-└── stress_test_YYYYMMDD_HHMMSS/
-    └── ...
++-- idle_YYYYMMDD_HHMMSS/
+|   +-- virtual_rx72n.log
+|   +-- gateway.log
+|   +-- ros2_bridge.log
+|   +-- diagnostics.log
+|   +-- SUMMARY.txt
++-- active_control_YYYYMMDD_HHMMSS/
+|   +-- ...
++-- stress_test_YYYYMMDD_HHMMSS/
+    +-- ...
 ```
 
 Each baseline run creates a timestamped directory with all logs and a summary file.

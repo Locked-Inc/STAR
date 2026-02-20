@@ -29,17 +29,17 @@
  *
  * ```
  * tx_application_define()
- *   ├─ ...create tasks...
- *   ├─ rx_stack_monitor_init()     ← register handler before scheduler starts
- *   └─ (scheduler starts)
+ *   +- ...create tasks...
+ *   +- rx_stack_monitor_init()     <- register handler before scheduler starts
+ *   +- (scheduler starts)
  * ```
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: No goto, setjmp, recursion
  * - Rule 2: Bounded loops (stack scan uses fixed upper bound = stack size)
  * - Rule 3: No dynamic memory
- * - Rule 4: All functions ≤ 60 lines
- * - Rule 5: ≥ 2 precondition/postcondition checks per function
+ * - Rule 4: All functions <= 60 lines
+ * - Rule 5: >= 2 precondition/postcondition checks per function
  * - Rule 7: All return values checked by callers via RX_ASSERT
  * - Rule 8: C23 typed enums for all integer constants
  * - Rule 10: Compiles with -Wall -Wextra -Werror
@@ -101,7 +101,7 @@ static const char* const s_tag = "STACK_MON";
  * @code
  * // Check whether the first stack byte holds the fill pattern:
  * if (stack_base[k_stack_index_base] == k_stack_fill_byte) {
- *     // pattern present — scanning is valid
+ *     // pattern present -- scanning is valid
  * }
  * @endcode
  *
@@ -157,13 +157,13 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  *
  * @code
- * // Registered indirectly via rx_stack_monitor_init() — do not call directly:
+ * // Registered indirectly via rx_stack_monitor_init() -- do not call directly:
  * tx_thread_stack_error_notify(internal_stack_overflow_handler);
  * @endcode
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ Precondition: handler only called when stack overflow detected
- * - Rule 5: ✓ Postcondition: system halted before corruption propagates
+ * - Rule 5: [PASS] Precondition: handler only called when stack overflow detected
+ * - Rule 5: [PASS] Postcondition: system halted before corruption propagates
  */
 #ifndef UNIT_TEST
 [[noreturn]]
@@ -228,8 +228,8 @@ static void internal_stack_overflow_handler(TX_THREAD* thread_ptr)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: ✓ 2 preconditions, 2 postconditions
- * - Rule 7: ✓ tx_thread_stack_error_notify() return value checked and mapped
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions
+ * - Rule 7: [PASS] tx_thread_stack_error_notify() return value checked and mapped
  */
 rx_err_t rx_stack_monitor_init(void)
 {
@@ -287,8 +287,8 @@ rx_err_t rx_stack_monitor_init(void)
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 2: ✓ Loop bound = tx_thread_stack_size (statically known at entry)
- * - Rule 5: ✓ 2 preconditions (NULL checks), 2 postconditions
+ * - Rule 2: [PASS] Loop bound = tx_thread_stack_size (statically known at entry)
+ * - Rule 5: [PASS] 2 preconditions (NULL checks), 2 postconditions
  */
 rx_err_t rx_stack_monitor_get_free_bytes(const TX_THREAD* thread_ptr, uint32_t* free_bytes)
 {

@@ -36,7 +36,7 @@ func createDefaultConfiguration() *starv1.SystemConfiguration {
 		},
 		SafetyThresholds: &starv1.SafetyThresholds{
 			OvercurrentThresholdMa:     5000,
-			ThermalShutdownDeciCelsius: 800, // 80.0°C
+			ThermalShutdownDeciCelsius: 800, // 80.0degC
 			CellImbalanceThresholdMv:   100,
 		},
 		EncoderConfig: &starv1.EncoderConfiguration{

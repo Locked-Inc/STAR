@@ -75,7 +75,7 @@ describe('Motor Control Tests', () => {
             expect(decoded.motor3VelocityMps).toBeCloseTo(rightVel, 3);
         });
 
-        it('should validate velocity range (±2.0 m/s)', () => {
+        it('should validate velocity range (+/-2.0 m/s)', () => {
             const testCases = [
                 { name: 'zero', vel: 0.0, valid: true },
                 { name: 'max forward', vel: 2.0, valid: true },
@@ -99,7 +99,7 @@ describe('Motor Control Tests', () => {
                 const decoded = VelocityCommand.fromBinary(bytes);
 
                 // Protocol buffers will serialize any value, but application
-                // should validate and clamp to ±2.0 m/s range
+                // should validate and clamp to +/-2.0 m/s range
                 if (tc.valid) {
                     expect(decoded.motor0VelocityMps).toBeCloseTo(tc.vel, 3);
                 }

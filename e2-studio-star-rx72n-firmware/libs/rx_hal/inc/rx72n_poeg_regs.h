@@ -398,8 +398,8 @@ typedef enum : uint8_t {
  * |------|-------------|---------------------------------------------|
  * | 00   | PCLKB/1     | ~50 ns @ 60 MHz (3 samples)                 |
  * | 01   | PCLKB/8     | ~400 ns @ 60 MHz (3 samples)                |
- * | 10   | PCLKB/32    | ~1.6 µs @ 60 MHz (3 samples)                |
- * | 11   | PCLKB/128   | ~6.4 µs @ 60 MHz (3 samples)                |
+ * | 10   | PCLKB/32    | ~1.6 us @ 60 MHz (3 samples)                |
+ * | 11   | PCLKB/128   | ~6.4 us @ 60 MHz (3 samples)                |
  *
  * @see rx_poegg_regs_t::poeggn Register definition
  * @since Version 1.0.0
@@ -426,8 +426,8 @@ typedef enum : uint32_t {
   /* Noise filter clock select (NFCS[1:0]) */
   k_poeg_nfcs_pclkb_div1   = (0U << k_poeg_nfcs_shift), /**< Sample @ PCLKB/1 (~50ns) */
   k_poeg_nfcs_pclkb_div8   = (1U << k_poeg_nfcs_shift), /**< Sample @ PCLKB/8 (~400ns) */
-  k_poeg_nfcs_pclkb_div32  = (2U << k_poeg_nfcs_shift), /**< Sample @ PCLKB/32 (~1.6µs) */
-  k_poeg_nfcs_pclkb_div128 = (3U << k_poeg_nfcs_shift), /**< Sample @ PCLKB/128 (~6.4µs) */
+  k_poeg_nfcs_pclkb_div32  = (2U << k_poeg_nfcs_shift), /**< Sample @ PCLKB/32 (~1.6us) */
+  k_poeg_nfcs_pclkb_div128 = (3U << k_poeg_nfcs_shift), /**< Sample @ PCLKB/128 (~6.4us) */
 
   /* Combined masks for convenience */
   k_poeg_all_flags_mask = (k_poeg_pidf_detected | k_poeg_iocf_detected | k_poeg_ostpf_detected |

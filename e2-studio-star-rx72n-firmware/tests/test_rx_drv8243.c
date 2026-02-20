@@ -66,12 +66,12 @@
  * // Test: test_current_limit_above_threshold()
  * // Configuration: current_limit_ma = 1000 (1.0A limit)
  * // Commanded speed: 100% forward
- * // Measured current: 1050mA (via ADC: 2000mV × 525 A/V / 1000 = 1050mA)
+ * // Measured current: 1050mA (via ADC: 2000mV x 525 A/V / 1000 = 1050mA)
  * //
  * // Expected behavior:
  * // 1. Read current via ADC: 1050mA
  * // 2. Compare to limit: 1050mA > 1000mA -> OVER LIMIT
- * // 3. Apply reduction factor: 100% × 0.9 = 90%
+ * // 3. Apply reduction factor: 100% x 0.9 = 90%
  * // 4. Final motor speed: 90%
  * //
  * // Result: PASS (current limiting prevents overcurrent)
@@ -100,8 +100,8 @@
  * // DRV8243 gain: ki_propi = 525 A/V (typical)
  * //
  * // Conversion:
- * // current_ma = (voltage_mv × ki_propi) / 1000
- * // current_ma = (1000mV × 525) / 1000 = 525mA
+ * // current_ma = (voltage_mv x ki_propi) / 1000
+ * // current_ma = (1000mV x 525) / 1000 = 525mA
  * //
  * // Result: PASS (0.525A measured correctly)
  * @endcode
@@ -159,11 +159,11 @@
  *
  * @par Current Sense Calculation:
  * The DRV8243 outputs a voltage proportional to motor current on the IPROPI pin.
- * Typical gain (ki_propi) is 525 A/V with internal 3.3kΩ resistor.
+ * Typical gain (ki_propi) is 525 A/V with internal 3.3kOhm resistor.
  *
- * Formula: `I_motor = (V_IPROPI × ki_propi) / 1000`
+ * Formula: `I_motor = (V_IPROPI x ki_propi) / 1000`
  *
- * Example: V_IPROPI = 2.0V -> I_motor = (2000mV × 525) / 1000 = 1050mA
+ * Example: V_IPROPI = 2.0V -> I_motor = (2000mV x 525) / 1000 = 1050mA
  *
  * @see rx_drv8243.h for DRV8243 driver API
  * @see rx_drv8243.c for implementation

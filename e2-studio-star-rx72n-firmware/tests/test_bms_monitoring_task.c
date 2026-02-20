@@ -82,8 +82,8 @@ typedef enum : uint8_t {
  * @brief Test voltage values for BMS data tests
  *
  * @details
- * Pack voltages corresponding to healthy (4.2 V/cell × 4) and
- * low-battery (3.6 V/cell × 4) states, expressed in millivolts.
+ * Pack voltages corresponding to healthy (4.2 V/cell x 4) and
+ * low-battery (3.6 V/cell x 4) states, expressed in millivolts.
  * Used as inputs to mock_bq4050_set_status() in voltage-sensitive tests.
  *
  * @invariant k_test_low_voltage_mv < k_test_normal_voltage_mv
@@ -233,7 +233,7 @@ typedef enum : uint16_t {
  */
 typedef enum : int16_t {
   k_test_telem_current_ma          = 1500, /**< Discharge current for telemetry test (mA) */
-  k_test_telem_temperature_celsius = 25,   /**< Battery temperature for telemetry test (°C) */
+  k_test_telem_temperature_celsius = 25,   /**< Battery temperature for telemetry test (degC) */
 } test_bms_telemetry_int16_t;
 
 /**
@@ -386,7 +386,7 @@ typedef enum : uint32_t {
  */
 
 /**
- * @brief Unity test fixture setup — resets all mocks before each test
+ * @brief Unity test fixture setup -- resets all mocks before each test
  *
  * @details
  * Called automatically by Unity before every test function in this file.
@@ -420,7 +420,7 @@ void setUp(void)
 }
 
 /**
- * @brief Unity test fixture teardown — resets BMS task singleton guard
+ * @brief Unity test fixture teardown -- resets BMS task singleton guard
  *
  * @details
  * Called automatically by Unity after every test function in this file.
@@ -1009,8 +1009,8 @@ void test_bms_task_create_custom_thresholds(void)
 
   bool is_warning  = (status.relative_soc < custom_config.soc_warning_pct);
   bool is_critical = (status.relative_soc < custom_config.soc_critical_pct);
-  TEST_ASSERT_TRUE(is_warning);   /* 29% < 30% warning → warning fires */
-  TEST_ASSERT_FALSE(is_critical); /* 29% > 10% critical → no e-stop */
+  TEST_ASSERT_TRUE(is_warning);   /* 29% < 30% warning -> warning fires */
+  TEST_ASSERT_FALSE(is_critical); /* 29% > 10% critical -> no e-stop */
 
   /* ------------------------------------------------------------------ *
    * Verify critical branch: 9% SoC is below both thresholds; critical wins
@@ -1023,7 +1023,7 @@ void test_bms_task_create_custom_thresholds(void)
   TEST_ASSERT_EQUAL_UINT8(k_test_custom_soc_below_critical, status.relative_soc);
 
   is_critical = (status.relative_soc < custom_config.soc_critical_pct);
-  TEST_ASSERT_TRUE(is_critical); /* 9% < 10% critical → e-stop fires */
+  TEST_ASSERT_TRUE(is_critical); /* 9% < 10% critical -> e-stop fires */
 }
 
 /**

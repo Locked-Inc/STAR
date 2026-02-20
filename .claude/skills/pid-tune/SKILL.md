@@ -20,12 +20,12 @@ The STAR project uses a first-order transfer function model to design discrete-t
 Collect experimental data from motor:
 1. Apply step input (e.g., 50% PWM duty cycle)
 2. Record motor velocity over time
-3. Measure time constant (τ) - time to reach 63.2% of final value
+3. Measure time constant (tau) - time to reach 63.2% of final value
 4. Estimate DC gain (K) - steady-state output / input
 
 **Example**: For STAR motors:
-- τ ≈ 75ms (time constant)
-- K ≈ 3.665 RPM/% duty cycle
+- tau ~ 75ms (time constant)
+- K ~ 3.665 RPM/% duty cycle
 
 ### Step 2: Run MATLAB System Identification
 
@@ -65,7 +65,7 @@ const rx_pid_config_t motor_pid_config = {
 
 Validate controller on hardware:
 1. Upload firmware with new gains
-2. Command step velocity input (e.g., 0 → 100 RPM)
+2. Command step velocity input (e.g., 0 -> 100 RPM)
 3. Monitor actual velocity response
 4. Check for:
    - Settling time (< 500ms target)
@@ -86,13 +86,13 @@ Return to Step 2 with adjusted design criteria in MATLAB.
 
 **Transfer Function** (continuous-time):
 ```
-G(s) = K / (τs + 1)
+G(s) = K / (taus + 1)
      = 3.665 / (0.075s + 1)
 ```
 
 Where:
 - K = 3.665 (DC gain, RPM per % duty cycle)
-- τ = 75ms (time constant)
+- tau = 75ms (time constant)
 
 **Discretization**: Backward Euler at 100 Hz (Ts = 0.01s)
 
@@ -108,7 +108,7 @@ Where:
 - Input step magnitude (% duty cycle)
 
 **Outputs**:
-- Time constant τ
+- Time constant tau
 - DC gain K
 - Transfer function model G(s)
 
@@ -182,7 +182,7 @@ matlab -batch "motor_model_1st_order; pid_design_velocity; pid_discretize"
 
 # 5. Build and upload
 cd ../e2-studio-star-rx72n-firmware
-# (Build in e² Studio or use CMake)
+# (Build in e^2 Studio or use CMake)
 
 # 6. Test closed-loop response
 # (Monitor via USB serial, plot step response)
@@ -192,7 +192,7 @@ cd ../e2-studio-star-rx72n-firmware
 
 **Problem**: MATLAB can't find transfer function
 - **Solution**: Check step response data quality (smooth, monotonic rise to steady-state)
-- Ensure sufficient sampling rate (> 10× motor bandwidth)
+- Ensure sufficient sampling rate (> 10x motor bandwidth)
 
 **Problem**: Closed-loop is unstable (oscillations)
 - **Solution**: Reduce all gains by 50%, verify motor model accuracy

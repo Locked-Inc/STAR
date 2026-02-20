@@ -277,10 +277,10 @@ static bool cmt_create_priority (uint32_t frequency_hz, void (* callback)(void *
 * Function Name: R_CMT_CreatePeriodic
 ********************************************************************************************************************//**
 * @brief This function finds an unused CMT channel, configures it for the requested frequency,
-* associates a user callback function with the timer’s interrupt, and powers up and starts the timer
+* associates a user callback function with the timer's interrupt, and powers up and starts the timer
 * @param[in] frequency_hz Desired frequency in Hz(1 ~PCLK/8 Hz) note 1. The range and resolution of the timer is determined by settings of the peripheral clock.
 * The best pre-scaler for the CMT channel is chosen by the driver.\n
-* @param[in] callback Pointer to the user’s callback function.  It should receive a single void * argument.\n
+* @param[in] callback Pointer to the user's callback function.  It should receive a single void * argument.\n
 * @param[in] *channel The CMT FIT module finds the first CMT channel that is not in use and assigns it to the caller.
 * This allows multiple drivers to use the CMT driver without having to pre-assign all timer channels.
 * This argument provides a way for the driver to indicate back to the caller which channel has been assigned.\n
@@ -292,7 +292,7 @@ static bool cmt_create_priority (uint32_t frequency_hz, void (* callback)(void *
 * @note 1.  Maximum periodic frequency\n
 * In hardware, the CMT timer maximum clocking speed is limited to PCLK/8.
 * However, when using the periodic timer function to generate a clock, be aware that interrupt and callback processing takes some time.
-* As requested frequency rises, interrupt and callback processing will take an increasing percentage of the processor’s time.
+* As requested frequency rises, interrupt and callback processing will take an increasing percentage of the processor's time.
 * At some point, too much time is consumed to leave any time for other useful work.
 * So this will limit the maximum frequency that can be generated.
 *  The maximum practical frequency will depend on your system design, but in general, frequencies up to a few kilohertz are reasonable.\n
@@ -307,12 +307,12 @@ bool R_CMT_CreatePeriodic(uint32_t frequency_hz, void(* callback)(void * pdata),
 * Function Name: R_CMT_CreatePeriodicAssignChannelPriority
 * ******************************************************************************************************************//**
 * @brief This function configures desired CMT channel for the requested frequency and desired interrupt priority level,
-* associates a user callback function with the timer’s interrupt, powers up and starts the timer
+* associates a user callback function with the timer's interrupt, powers up and starts the timer
 * @param[in] frequency_hz Desired frequency in Hz(1 ~PCLK/8 Hz) note 1. The range and resolution of the timer is determined by settings of the peripheral clock.
 * The best pre-scaler for the CMT channel is chosen by the driver.\n
-* @param[in] callback Pointer to the user’s callback function. It should receive a single void * argument.\n
+* @param[in] callback Pointer to the user's callback function. It should receive a single void * argument.\n
 * @param[in] channel Desired CMT channel that is used to configure.\n
-* @param[in] priority Desired priority level of timer’s interrupt:\n
+* @param[in] priority Desired priority level of timer's interrupt:\n
 * CMT_PRIORITY_0: Interrupt is disabled\n
 * CMT_PRIORITY_1: Lowest interrupt priority\n
 * CMT_PRIORITY_2\n
@@ -337,7 +337,7 @@ bool R_CMT_CreatePeriodic(uint32_t frequency_hz, void(* callback)(void * pdata),
 * @note 1.  Maximum periodic frequency\n
 * In hardware, the CMT timer maximum clocking speed is limited to PCLK/8.
 * However, when using the periodic timer function to generate a clock, be aware that interrupt and callback processing takes some time.
-* As requested frequency rises, interrupt and callback processing will take an increasing percentage of the processor’s time.
+* As requested frequency rises, interrupt and callback processing will take an increasing percentage of the processor's time.
 * At some point, too much time is consumed to leave any time for other useful work.
 * So this will limit the maximum frequency that can be generated.
 *  The maximum practical frequency will depend on your system design, but in general, frequencies up to a few kilohertz are reasonable.\n
@@ -355,11 +355,11 @@ bool R_CMT_CreatePeriodicAssignChannelPriority(uint32_t frequency_hz, void(* cal
 * Function Name: R_CMT_CreateOneShot
 * ******************************************************************************************************************//**
  @brief This function finds an unused CMT channel, configures it for the requested period,
-* associates a user callback function with the timer’s interrupt, and powers up and starts the timer
+* associates a user callback function with the timer's interrupt, and powers up and starts the timer
 * @param[in] period_us Desired period in microseconds (1 ~ 1,000,000us).
 * The range and resolution of the timer is determined by settings of the peripheral clock.
 * The best pre-scaler for the CMT channel is chosen by the driver.\n
-* @param[in] callback Pointer to the user’s callback function.  It should data a single void * argument.\n
+* @param[in] callback Pointer to the user's callback function.  It should data a single void * argument.\n
 * @param[in] channel The CMT FIT module finds the first CMT channel that is not in use and assigns it to the caller.
 * This allows multiple drivers to use the CMT driver without having to pre-assign all timer channels.
 * This argument provides a way for the driver to indicate back to the caller which channel has been assigned.\n
@@ -380,13 +380,13 @@ bool R_CMT_CreateOneShot(uint32_t period_us, void(* callback)(void * pdata), uin
 * Function Name: R_CMT_CreateOneShotAssignChannelPriority
 ********************************************************************************************************************//**
 * @brief This function configures the desired CMT channel for the requested period with desired interrupt priority level,
-* associates a user callback function with the timer’s interrupt, powers up and starts the timer
+* associates a user callback function with the timer's interrupt, powers up and starts the timer
 * @param[in] period_us Desired period in microseconds (1 ~ 1,000,000us).
 * The range and resolution of the timer is determined by settings of the peripheral clock.
 * The best pre-scaler for the CMT channel is chosen by the driver.\n
-* @param[in] callback Pointer to the user’s callback function. It should data a single void * argument.\n
+* @param[in] callback Pointer to the user's callback function. It should data a single void * argument.\n
 * @param[in] channel Desired CMT channel that is used to configure.\n
-* @param[in] priority Desired priority level of timer’s interrupt:\n
+* @param[in] priority Desired priority level of timer's interrupt:\n
 * CMT_PRIORITY_0: Interrupt is disabled\n
 * CMT_PRIORITY_1: Lowest interrupt priority\n
 * CMT_PRIORITY_2\n

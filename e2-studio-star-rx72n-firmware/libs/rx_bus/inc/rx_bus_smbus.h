@@ -132,16 +132,16 @@
  *
  * | Operation | Typical Time @ 100 kHz | Notes |
  * |-----------|------------------------|-------|
- * | rx_bus_smbus_init() | ~50 µs | I2C peripheral configuration |
- * | rx_bus_smbus_write_byte() | ~200 µs | 3 bytes + START/STOP overhead |
- * | rx_bus_smbus_read_byte() | ~180 µs | 2 bytes + START/STOP overhead |
- * | rx_bus_smbus_write_byte_data() | ~280 µs | 4 bytes + PEC |
- * | rx_bus_smbus_read_byte_data() | ~300 µs | 3 bytes + PEC |
- * | rx_bus_smbus_write_word_data() | ~360 µs | 5 bytes + PEC |
- * | rx_bus_smbus_read_word_data() | ~400 µs | 4 bytes + PEC |
+ * | rx_bus_smbus_init() | ~50 us | I2C peripheral configuration |
+ * | rx_bus_smbus_write_byte() | ~200 us | 3 bytes + START/STOP overhead |
+ * | rx_bus_smbus_read_byte() | ~180 us | 2 bytes + START/STOP overhead |
+ * | rx_bus_smbus_write_byte_data() | ~280 us | 4 bytes + PEC |
+ * | rx_bus_smbus_read_byte_data() | ~300 us | 3 bytes + PEC |
+ * | rx_bus_smbus_write_word_data() | ~360 us | 5 bytes + PEC |
+ * | rx_bus_smbus_read_word_data() | ~400 us | 4 bytes + PEC |
  * | rx_bus_smbus_read_block_data() | 1-3 ms | 32 bytes max + PEC |
  *
- * **PEC Overhead**: ~10 µs per transaction (software CRC-8 calculation)
+ * **PEC Overhead**: ~10 us per transaction (software CRC-8 calculation)
  *
  * ## Memory Usage
  *
@@ -155,8 +155,8 @@
  * |-----------|-------------|-------|
  * | RX72N RIIC | RIIC0, RIIC1, or RIIC2 | I2C peripheral |
  * | Clock Frequency | 100 kHz (typical) | SMBus standard speed |
- * | SDA Pullup | 4.7 kΩ (5V) or 10 kΩ (3.3V) | External resistor required |
- * | SCL Pullup | 4.7 kΩ (5V) or 10 kΩ (3.3V) | External resistor required |
+ * | SDA Pullup | 4.7 kOhm (5V) or 10 kOhm (3.3V) | External resistor required |
+ * | SCL Pullup | 4.7 kOhm (5V) or 10 kOhm (3.3V) | External resistor required |
  * | Voltage Level | 3.3V or 5V | Must match device requirements |
  * | Timeout | 25-35 ms | Enforced by I2C layer |
  *
@@ -270,13 +270,13 @@ extern "C" {
  * **SMBus Initialization Requirements**:
  * - Clock frequency: Typically 100 kHz (SMBus standard)
  * - Timeout: 25-35 ms clock low timeout (REQUIRED by SMBus spec)
- * - Rise time: <1 µs for 100 kHz with 4.7k pullups
+ * - Rise time: <1 us for 100 kHz with 4.7k pullups
  * - Logic levels: SMBus-compliant (3.3V or 5V)
  *
  * **Thread Safety**: NOT thread-safe. Caller must ensure exclusive access
  * to the bus during initialization. After init, bus operations use mutex.
  *
- * **Performance**: ~50 µs @ 240 MHz (parameter validation + RIIC config)
+ * **Performance**: ~50 us @ 240 MHz (parameter validation + RIIC config)
  *
  * @param[in] manager Bus manager instance.
  *                    - **Valid range**: Non-NULL, previously initialized
@@ -371,7 +371,7 @@ extern "C" {
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] 4 assertions (NULL×2, bus found, bus type)
+ * - Rule 5: [OK] 4 assertions (NULLx2, bus found, bus type)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name);
 
@@ -417,7 +417,7 @@ extern "C" {
  * // Send crc as PEC byte
  * ```
  *
- * **Performance**: ~200 µs @ 100 kHz (3 bytes + overhead)
+ * **Performance**: ~200 us @ 100 kHz (3 bytes + overhead)
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBus bus name
@@ -443,7 +443,7 @@ extern "C" {
  * @post If error, bus state reset for next transaction
  *
  * @note **Thread Safety**: Thread-safe via bus manager mutex
- * @note **Performance**: ~200 µs per call @ 100 kHz
+ * @note **Performance**: ~200 us per call @ 100 kHz
  *
  * @warning Device may NACK if busy - implement retry logic in application
  *
@@ -499,7 +499,7 @@ rx_bus_smbus_write_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t
  * 8. Send STOP
  * 9. Return k_rx_ok
  *
- * **Performance**: ~180 µs @ 100 kHz
+ * **Performance**: ~180 us @ 100 kHz
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBus bus name
@@ -559,7 +559,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  *
  * **PEC Coverage**: Address+W, Command, Data
  *
- * **Performance**: ~280 µs @ 100 kHz (4 bytes + PEC)
+ * **Performance**: ~280 us @ 100 kHz (4 bytes + PEC)
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBus bus name
@@ -619,7 +619,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  * 6. Receive and verify PEC (if enabled)
  * 7. STOP
  *
- * **Performance**: ~300 µs @ 100 kHz
+ * **Performance**: ~300 us @ 100 kHz
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBus bus name
@@ -684,7 +684,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  *
  * **PEC Coverage**: Address+W, Command, DataLow, DataHigh
  *
- * **Performance**: ~360 µs @ 100 kHz (5 bytes + PEC)
+ * **Performance**: ~360 us @ 100 kHz (5 bytes + PEC)
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBus bus name
@@ -721,7 +721,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] 4 assertions (NULL×2, bus found, initialized)
+ * - Rule 5: [OK] 4 assertions (NULLx2, bus found, initialized)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
                                                     const char*       bus_name,
@@ -759,7 +759,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  * 9. STOP
  * 10. Return result in *data
  *
- * **Performance**: ~400 µs @ 100 kHz (4 bytes + PEC overhead)
+ * **Performance**: ~400 us @ 100 kHz (4 bytes + PEC overhead)
  *
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBus bus name
@@ -790,7 +790,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  * @post Value converted from little-endian to host byte order
  *
  * @note **Thread Safety**: Thread-safe via bus manager mutex
- * @note **Performance**: ~400 µs @ 100 kHz
+ * @note **Performance**: ~400 us @ 100 kHz
  * @note **Byte Order**: Automatic little-endian conversion
  *
  * @warning PEC errors indicate data corruption - do NOT use data value
@@ -866,7 +866,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] 5 assertions (NULL×3, bus found, initialized)
+ * - Rule 5: [OK] 5 assertions (NULLx3, bus found, initialized)
  * - Rule 7: [OK] Returns rx_err_t for caller validation
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
@@ -966,7 +966,7 @@ rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 2: [OK] Loop bound is statically known (max_length, max 32)
- * - Rule 5: [OK] 6 assertions (NULL×4, bus found, max_length valid)
+ * - Rule 5: [OK] 6 assertions (NULLx4, bus found, max_length valid)
  */
 [[nodiscard]] rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
                                                     const char*       bus_name,

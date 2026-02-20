@@ -14,7 +14,7 @@
  *
  * ```
  * Power On -> USB Init -> Enumeration (200ms) -> Configured -> Flush Boot Buffer
- *    ↓           ↓            ↓                    ↓              ↓
+ *    v           v            v                    v              v
  *  Logs      Buffer      Buffer                Logs to       Boot logs
  *  start     in RAM      in RAM                 USB           appear
  * ```
@@ -94,7 +94,7 @@ typedef enum : uint16_t {
  * **Ring Buffer Layout**:
  * ```
  * data[0] ... data[head-1] data[head] ... data[size-1]
- *              ↑ write here            ↑ wrap around
+ *              ^ write here            ^ wrap around
  * ```
  *
  * **Overflow Handling**:
@@ -436,7 +436,7 @@ static void internal_write_usb(const char* data, uint16_t len)
  *
  * @note **Thread Safety**: Yes (ThreadX mutex protects all state)
  * @note **Blocking**: Blocks on mutex acquisition, never blocks on USB TX
- * @note **Performance**: ~2-5 µs per character @ 240 MHz (mutex overhead included)
+ * @note **Performance**: ~2-5 us per character @ 240 MHz (mutex overhead included)
  *
  * @par Thread Safety:
  * Safe to call from multiple ThreadX tasks concurrently. Mutex ensures atomic
@@ -500,7 +500,7 @@ void rx_log_usb_putc(char c)
  * @note **Thread Safety**: Yes (ThreadX mutex protects all state)
  * @note **Blocking**: Blocks on mutex acquisition, never blocks on USB TX
  * @note **NULL Safety**: nullptr silently ignored (defensive programming)
- * @note **Performance**: ~1 µs per character @ 240 MHz (amortized)
+ * @note **Performance**: ~1 us per character @ 240 MHz (amortized)
  *
  * @warning String must be null-terminated. Non-terminated strings cause undefined behavior.
  *
@@ -575,7 +575,7 @@ void rx_log_usb_puts(const char* str)
  * @note **Thread Safety**: Yes (via rx_log_usb_puts mutex)
  * @note **Blocking**: Blocks on mutex acquisition in puts(), never blocks on USB TX
  * @note **Stack Usage**: 12 bytes local buffer
- * @note **Performance**: ~50-80 µs for 10-digit number @ 240 MHz
+ * @note **Performance**: ~50-80 us for 10-digit number @ 240 MHz
  *
  * @par Example: Positive Values
  * @code
@@ -668,7 +668,7 @@ void rx_log_usb_putint(int32_t value)
  * @note **Thread Safety**: Yes (via rx_log_usb_puts mutex)
  * @note **Blocking**: Blocks on mutex acquisition in puts(), never blocks on USB TX
  * @note **Stack Usage**: 9 bytes local buffer
- * @note **Performance**: ~40-70 µs for 8-digit hex @ 240 MHz
+ * @note **Performance**: ~40-70 us for 8-digit hex @ 240 MHz
  * @note **Case**: Always uppercase (A-F, not a-f)
  *
  * @par Example: Different Digit Counts
@@ -778,7 +778,7 @@ void rx_log_usb_puthex(uint32_t value, uint8_t digits)
  * @note **Thread Safety**: Yes (ThreadX mutex ensures atomic read)
  * @note **Blocking**: Blocks on mutex acquisition only (quick operation)
  * @note **NULL Safety**: nullptr silently ignored (defensive)
- * @note **Performance**: ~2-3 µs @ 240 MHz (mutex + 4 field copies)
+ * @note **Performance**: ~2-3 us @ 240 MHz (mutex + 4 field copies)
  *
  * @par Example: Basic Statistics Query
  * @code

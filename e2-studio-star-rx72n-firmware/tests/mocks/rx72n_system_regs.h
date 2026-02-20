@@ -894,7 +894,7 @@ typedef struct {
  *
  * **Why Module Stop Control Exists:**
  * - **Power savings**: Disabling unused peripherals reduces power consumption
- * - **Default state**: Most modules stopped after reset (MSTPCRB ≈ 0xFFFFFFFF)
+ * - **Default state**: Most modules stopped after reset (MSTPCRB ~ 0xFFFFFFFF)
  * - **Initialization requirement**: Must clear module stop bit BEFORE configuring peripheral
  *
  * **Typical Initialization Sequence:**

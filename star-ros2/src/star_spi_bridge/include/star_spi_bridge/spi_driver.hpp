@@ -26,8 +26,8 @@ namespace star_spi_bridge
  */
 enum class FrameType : uint8_t
 {
-  VelocityCommand = 0x01,  /**< Motor velocity setpoint (RPi5 → RX72N) */
-  TelemetryData = 0x02     /**< Sensor telemetry payload  (RX72N → RPi5) */
+  VelocityCommand = 0x01,  /**< Motor velocity setpoint (RPi5 -> RX72N) */
+  TelemetryData = 0x02     /**< Sensor telemetry payload  (RX72N -> RPi5) */
 };
 
 /**
@@ -38,7 +38,7 @@ enum class FrameType : uint8_t
  * The wire format is:
  *
  *   SYNC(2, LE) + SEQ(2, LE) + LEN(2, LE) + TYPE(1) + FLAGS(1)
- *   + PAYLOAD(0–1024) + CRC-32 (IEEE 802.3, 4 B, LE)
+ *   + PAYLOAD(0-1024) + CRC-32 (IEEE 802.3, 4 B, LE)
  *
  * The Raspberry Pi 5 acts as SPI controller at 10 MHz, Mode 0 (CPOL=0, CPHA=0).
  *
@@ -57,7 +57,7 @@ enum class FrameType : uint8_t
  */
 class SpiDriver {
 public:
-  // ── Frame‑structure constants ──────────────────────────────────────────
+  // -- Frame-structure constants ------------------------------------------
   /// @brief SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes.
   static constexpr size_t k_header_size = 8;
 
@@ -83,7 +83,7 @@ public:
     const std::string & device_path,
     uint32_t speed_hz = 10000000);
 
-  /// @brief Destructor — calls close_device() if the device is still open.
+  /// @brief Destructor -- calls close_device() if the device is still open.
   virtual ~SpiDriver();
 
   /**
@@ -136,10 +136,10 @@ public:
    * appends the payload, then computes and appends the CRC-32.
    * The output buffer is cleared and filled in place for reuse.
    *
-   * @param[in]  seq        Sequence number (0–65535).
+   * @param[in]  seq        Sequence number (0-65535).
    * @param[in]  type       Frame type (see FrameType enum).
    * @param[in]  flags      Control flags byte.
-   * @param[in]  payload    Application data (0–k_max_payload_size bytes).
+   * @param[in]  payload    Application data (0-k_max_payload_size bytes).
    * @param[out] out_frame  Encoded wire bytes (header + payload + CRC).
    *
    * @pre  `payload.size() <= k_max_payload_size`.

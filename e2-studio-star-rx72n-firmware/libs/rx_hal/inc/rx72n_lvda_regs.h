@@ -408,7 +408,7 @@ typedef enum : uint8_t {
  * @details
  * Voltage detection level selection for monitors 1 and 2.
  *
- * @par Voltage Levels (typical values at Ta = 25°C)
+ * @par Voltage Levels (typical values at Ta = 25degC)
  * | Setting | LVD1LVL/LVD2LVL | Voltage  |
  * |---------|-----------------|----------|
  * | _1      | 1001b (0x09)    | 2.99V    |
@@ -449,10 +449,10 @@ typedef enum : uint8_t {
  * @par Digital Filter Sampling Clock (FSAMP)
  * | Value | Clock              | Sample Time   |
  * |-------|--------------------|---------------|
- * | 00    | LOCO/2 (120 kHz)   | ~17 µs        |
- * | 01    | LOCO/4 (60 kHz)    | ~33 µs        |
- * | 10    | LOCO/8 (30 kHz)    | ~67 µs        |
- * | 11    | LOCO/16 (15 kHz)   | ~133 µs       |
+ * | 00    | LOCO/2 (120 kHz)   | ~17 us        |
+ * | 01    | LOCO/4 (60 kHz)    | ~33 us        |
+ * | 10    | LOCO/8 (30 kHz)    | ~67 us        |
+ * | 11    | LOCO/16 (15 kHz)   | ~133 us       |
  *
  * @since Version 1.0.0
  */

@@ -87,7 +87,7 @@
  * | Clock Source | IWDTCLK (125 kHz independent) | PCLKB (system clock) |
  * | Can be Stopped | [X] No (hardware safety) | [OK] Yes |
  * | Clock Fault Detection | [OK] Yes (independent clock) | [X] No |
- * | Timeout Range | ~8 ms to ~17 seconds | ~4 µs to ~273 µs |
+ * | Timeout Range | ~8 ms to ~17 seconds | ~4 us to ~273 us |
  * | Register Base | 0x00088030 | 0x00088020 |
  * | Task Monitoring | [OK] Software layer | [X] Not implemented |
  * | Primary Use | Production safety | Development/debugging |
@@ -138,11 +138,11 @@
  *
  * | Function | Execution Time | Stack | Notes |
  * |----------|---------------|-------|-------|
- * | rx_iwdt_init() | ~30 µs | 64 B | Memset + config copy |
- * | rx_iwdt_feed() | ~1 µs | 8 B | 2 register writes |
- * | rx_iwdt_register_task() | ~10 µs | 32 B | String copy + slot search |
- * | rx_iwdt_task_heartbeat() | ~5 µs | 16 B | Task lookup + tick update |
- * | rx_iwdt_check_tasks() | ~20 µs | 24 B | Scan all 8 tasks |
+ * | rx_iwdt_init() | ~30 us | 64 B | Memset + config copy |
+ * | rx_iwdt_feed() | ~1 us | 8 B | 2 register writes |
+ * | rx_iwdt_register_task() | ~10 us | 32 B | String copy + slot search |
+ * | rx_iwdt_task_heartbeat() | ~5 us | 16 B | Task lookup + tick update |
+ * | rx_iwdt_check_tasks() | ~20 us | 24 B | Scan all 8 tasks |
  *
  * @par Module Dependencies:
  * - [rx_iwdt.h](../inc/rx_iwdt.h) - Public API declarations
@@ -577,7 +577,7 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
  * @warning Failing to call within the hardware timeout triggers a system reset
  *
  * @par Performance:
- * Execution time: <1 µs @ 240 MHz; safe to call from any task or ISR context
+ * Execution time: <1 us @ 240 MHz; safe to call from any task or ISR context
  *
  * @par Example:
  * @code
@@ -1057,12 +1057,12 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
  * @retval true  RSTSR2.IWDTRF is set; last reset was caused by IWDT timeout
  * @retval false RSTSR2.IWDTRF is clear; last reset was not caused by IWDT
  *
- * @pre None — safe to call before rx_iwdt_init() (reads hardware register directly)
+ * @pre None -- safe to call before rx_iwdt_init() (reads hardware register directly)
  * @pre Must be called before the application clears the reset status register
  * @post Hardware RSTSR2 register is read-only; this function does not modify it
  * @post Return value reflects hardware register state at the instant of the call
  *
- * @note Thread-safe — reads a single hardware register without shared state
+ * @note Thread-safe -- reads a single hardware register without shared state
  * @note Typically called once at startup to log the reset cause
  * @warning RSTSR2.IWDTRF remains set across warm resets; clear it in startup if needed
  *
@@ -1107,7 +1107,7 @@ bool rx_iwdt_was_reset(void)
  * returns k_rx_ok immediately without checking any tasks.
  *
  * The caller (typically the watchdog task) should conditionally feed the
- * hardware IWDT only if this function returns k_rx_ok — i.e., only refresh
+ * hardware IWDT only if this function returns k_rx_ok -- i.e., only refresh
  * the hardware watchdog when all software tasks are alive.
  *
  * Algorithm steps:
@@ -1143,8 +1143,8 @@ bool rx_iwdt_was_reset(void)
  *     if (rx_iwdt_check_tasks() == k_rx_ok) {
  *         rx_iwdt_feed();  // Only feed if all tasks are alive
  *     } else {
- *         rx_log_error("wdt", "Task timeout detected — allowing IWDT reset");
- *         // Do NOT feed the watchdog — let hardware reset occur
+ *         rx_log_error("wdt", "Task timeout detected -- allowing IWDT reset");
+ *         // Do NOT feed the watchdog -- let hardware reset occur
  *     }
  *     tx_thread_sleep(k_watchdog_check_interval_ticks);
  * }

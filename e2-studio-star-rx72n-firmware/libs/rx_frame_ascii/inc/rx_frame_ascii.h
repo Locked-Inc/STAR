@@ -74,8 +74,8 @@
  * @par Performance Characteristics
  * | Metric | Value | Notes |
  * |--------|-------|-------|
- * | Format time (64B payload) | ~50 µs | At 240 MHz |
- * | Format time (2KB payload) | ~500 µs | At 240 MHz |
+ * | Format time (64B payload) | ~50 us | At 240 MHz |
+ * | Format time (2KB payload) | ~500 us | At 240 MHz |
  * | Stack usage | ~100 bytes | Fixed, no recursion |
  * | Output size ratio | ~4:1 | Output ~4x input size |
  *
@@ -184,7 +184,7 @@ typedef enum : uint16_t {
    * maximum-size frames without truncation. Accounts for header line, hex
    * dump lines (4 chars per byte + ASCII sidebar), and CRC footer.
    * @par Value: 2048 bytes
-   * @par Calculation: ~500 payload × 4 expansion + 64 header + 32 CRC
+   * @par Calculation: ~500 payload x 4 expansion + 64 header + 32 CRC
    */
   k_frame_ascii_max_output = 2048,
 
@@ -346,7 +346,7 @@ typedef enum : uint16_t {
  * @endcode
  *
  * @par Performance
- * - Execution time: ~50 µs for 64-byte payload @ 240 MHz
+ * - Execution time: ~50 us for 64-byte payload @ 240 MHz
  * - Stack usage: ~100 bytes (fixed)
  * - No heap allocation
  *

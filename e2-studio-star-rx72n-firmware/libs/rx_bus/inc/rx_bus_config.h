@@ -40,7 +40,7 @@
  * **Name-Based Access**: Buses are identified by string names rather than handles.
  * This simplifies configuration management and makes code more readable, at the
  * cost of O(n) lookup time. For typical systems with <20 buses, this overhead
- * is negligible (~1-2 µs per lookup at 240 MHz).
+ * is negligible (~1-2 us per lookup at 240 MHz).
  *
  * **Separation of Configuration and Runtime State**: Configuration structures
  * (rx_bus_config_t) are separate from runtime state (maintained internally by
@@ -62,12 +62,12 @@
  *
  * | Operation | Typical Time @ 240 MHz | Notes |
  * |-----------|------------------------|-------|
- * | rx_bus_config_init_gpio() | ~0.5 µs | 3 validation checks + struct init |
- * | rx_bus_config_init_adc() | ~0.8 µs | 5 validation checks + struct init |
- * | rx_bus_config_init_i2c() | ~1.2 µs | 7 validation checks + struct init |
- * | rx_bus_config_init_smbus() | ~1.5 µs | 8 validation checks + struct init |
- * | rx_bus_config_init_onewire() | ~0.6 µs | 3 validation checks + struct init |
- * | rx_bus_config_init_uart() | ~1.0 µs | 6 validation checks + struct init |
+ * | rx_bus_config_init_gpio() | ~0.5 us | 3 validation checks + struct init |
+ * | rx_bus_config_init_adc() | ~0.8 us | 5 validation checks + struct init |
+ * | rx_bus_config_init_i2c() | ~1.2 us | 7 validation checks + struct init |
+ * | rx_bus_config_init_smbus() | ~1.5 us | 8 validation checks + struct init |
+ * | rx_bus_config_init_onewire() | ~0.6 us | 3 validation checks + struct init |
+ * | rx_bus_config_init_uart() | ~1.0 us | 6 validation checks + struct init |
  *
  * All functions execute in constant time O(1) with deterministic worst-case bounds.
  *
@@ -225,16 +225,16 @@ extern "C" {
  * manager, the config becomes read-only.
  *
  * **Performance Analysis**:
- * - Best case: ~0.4 µs @ 240 MHz (all checks pass)
- * - Worst case: ~0.5 µs @ 240 MHz (all checks + struct zeroing)
- * - Average case: ~0.45 µs
+ * - Best case: ~0.4 us @ 240 MHz (all checks pass)
+ * - Worst case: ~0.5 us @ 240 MHz (all checks + struct zeroing)
+ * - Average case: ~0.45 us
  *
  * **Memory Usage**:
  * - Stack: 16 bytes (function arguments + return address)
  * - Static: 0 bytes
  * - Heap: 0 bytes (no dynamic allocation)
  *
- * **Execution Time**: ~120 CPU cycles @ 240 MHz = 0.5 µs
+ * **Execution Time**: ~120 CPU cycles @ 240 MHz = 0.5 us
  *
  * @param[out] config Pointer to bus config structure to initialize.
  *                    Must be statically allocated or have lifetime exceeding
@@ -288,7 +288,7 @@ extern "C" {
  * @post On error, config structure remains in its original state
  *
  * @invariant sizeof(rx_bus_config_t) remains constant (union with padding)
- * @invariant Function always returns in <1 µs (deterministic timing)
+ * @invariant Function always returns in <1 us (deterministic timing)
  *
  * @note **Thread Safety**: Not thread-safe during initialization. After
  *       registration with bus manager, config becomes read-only and can be
@@ -323,7 +323,7 @@ extern "C" {
  * | Parameter | Type | Direction | Valid Range | Units | Constraints |
  * |-----------|------|-----------|-------------|-------|-------------|
  * | config | rx_bus_config_t* | out | Non-NULL | - | Must remain valid for bus lifetime |
- * | name | const char* | in | Non-NULL, ≤32 chars | - | Must remain valid for bus lifetime |
+ * | name | const char* | in | Non-NULL, <=32 chars | - | Must remain valid for bus lifetime |
  * | pin | rx_port_pin_t | in | k_rx_p0_0 to k_rx_pj_5 | - | Must be valid RX72N GPIO pin |
  *
  * @par Return Value Table:
@@ -453,9 +453,9 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
  * - 2 ADC units (ADC0, ADC1)
  * - 8 channels per unit (0-7)
  * - Resolutions: 8-bit, 10-bit, 12-bit
- * - Conversion time: 1.0 µs (12-bit @ 240 MHz PCLKD)
+ * - Conversion time: 1.0 us (12-bit @ 240 MHz PCLKD)
  * - Input range: 0V to VREFH (typically 3.3V)
- * - Input impedance: 10 kΩ typical
+ * - Input impedance: 10 kOhm typical
  *
  * @param[out] config Pointer to bus config structure to initialize.
  *                    - **Valid range**: Non-NULL
@@ -501,7 +501,7 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
  * @post config.adc.bits == bits
  *
  * @note **Thread Safety**: Not thread-safe during initialization.
- * @note **Performance**: ~0.8 µs @ 240 MHz (5 validations + init)
+ * @note **Performance**: ~0.8 us @ 240 MHz (5 validations + init)
  * @note **Memory**: Stack: 20 bytes, Static: 0 bytes
  *
  * @warning Config and name must have static or sufficient lifetime
@@ -534,7 +534,7 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] 5 assertions (NULL×2, unit, channel, bits validation)
+ * - Rule 5: [OK] 5 assertions (NULLx2, unit, channel, bits validation)
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
                                               const char*      name,
@@ -735,18 +735,18 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
  * - CRC: Built-in CRC-8 for data integrity
  *
  * **Timing Requirements (Standard Speed)**:
- * - Reset pulse: 480 µs low, then release
- * - Presence pulse: Device pulls low 60-240 µs after reset
- * - Write 0: 60 µs low, 10 µs recovery
- * - Write 1: 1 µs low, 59 µs recovery
- * - Read: 1 µs low, sample at 15 µs, 45 µs recovery
- * - Recovery time: Minimum 1 µs between slots
+ * - Reset pulse: 480 us low, then release
+ * - Presence pulse: Device pulls low 60-240 us after reset
+ * - Write 0: 60 us low, 10 us recovery
+ * - Write 1: 1 us low, 59 us recovery
+ * - Read: 1 us low, sample at 15 us, 45 us recovery
+ * - Recovery time: Minimum 1 us between slots
  *
  * **Hardware Requirements**:
- * - External 4.7 kΩ pullup resistor to VCC (REQUIRED)
+ * - External 4.7 kOhm pullup resistor to VCC (REQUIRED)
  * - Pin must support open-drain or be configured for input/output switching
- * - For long cables (>3m), reduce pullup to 2.2 kΩ
- * - For short cables (<1m), increase to 10 kΩ for lower power
+ * - For long cables (>3m), reduce pullup to 2.2 kOhm
+ * - For short cables (<1m), increase to 10 kOhm for lower power
  *
  * **Algorithm**:
  * 1. Validate config pointer
@@ -768,14 +768,14 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t
  *
  * @pre config must point to valid structure
  * @pre Pin must support bidirectional I/O (input and output modes)
- * @pre External 4.7 kΩ pullup resistor MUST be present on pin
+ * @pre External 4.7 kOhm pullup resistor MUST be present on pin
  * @pre Pin voltage levels must be 1-Wire compatible (0-5.5V tolerant preferred)
  *
  * @post config.type == k_rx_bus_type_onewire
  * @post config.onewire.pin == pin
  *
  * @note **Thread Safety**: Not thread-safe during initialization
- * @note **Hardware**: REQUIRES external 4.7 kΩ pullup resistor
+ * @note **Hardware**: REQUIRES external 4.7 kOhm pullup resistor
  * @note **Timing**: Requires precise microsecond timing - uses delay loops
  *
  * @warning Missing pullup resistor will cause communication failures
@@ -925,7 +925,7 @@ rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, rx_port_pi
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 5: [OK] 6 assertions (NULL×2, channel, TX pin, RX pin, baudrate)
+ * - Rule 5: [OK] 6 assertions (NULLx2, channel, TX pin, RX pin, baudrate)
  */
 [[nodiscard]] rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
                                                const char*      name,
