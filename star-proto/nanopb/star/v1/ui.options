@@ -1,0 +1,18 @@
+# ui.options - nanopb static bounds for STAREnvelope UI messages.
+# These constraints enforce zero dynamic allocation on the RX72N firmware target.
+
+# MotorStatusList: 4-motor robot.
+star.v1.MotorStatusList.motors      max_count:4
+
+# LidarScan: RPLiDAR C1 max samples per revolution (800 points @ 10 Hz mode).
+star.v1.LidarScan.angle_rad         max_count:800
+star.v1.LidarScan.range_m           max_count:800
+star.v1.LidarScan.intensity         max_count:800
+
+# Alert string fields.
+star.v1.Alert.code                  max_size:16
+star.v1.Alert.message               max_size:128
+star.v1.Alert.source                max_size:32
+
+# EStopCommand reason string.
+star.v1.EStopCommand.reason         max_size:64

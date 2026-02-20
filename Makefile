@@ -103,12 +103,21 @@ proto-gen-go:
 proto-gen-ros2:
 	@echo "ROS2 proto generation is handled via buf; no separate step."
 
-# Copy nanopb outputs to firmware include directory
+# Copy nanopb outputs to firmware include directory (ui.proto excluded — not needed on MCU)
 proto-gen-firmware: proto-gen-go
 	@echo "Preparing firmware nanopb headers/sources..."
 	@mkdir -p e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1
-	@cp -v star-proto/gen/nanopb/star/v1/*.pb.h star-proto/gen/nanopb/star/v1/*.pb.c e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1/
-	@echo "✓ Firmware protos updated: e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1"
+	@set -e; \
+	dst=e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1; \
+	src_gen=star-proto/gen/nanopb/star/v1; \
+	rm -f "$$dst"/*.pb.h "$$dst"/*.pb.c; \
+	for header in "$$src_gen"/*.pb.h; do \
+		base=$$(basename "$$header" .pb.h); \
+		if [ "$$base" != "ui" ]; then \
+			cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
+		fi \
+	done
+	@echo "✓ Firmware protos updated"
 
 # Test RX72N firmware (regenerates protos first)
 test-rx72n: proto-gen-firmware
