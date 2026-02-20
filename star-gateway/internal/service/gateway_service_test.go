@@ -2,6 +2,8 @@ package service
 
 import (
 	"context"
+	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -9,6 +11,32 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+// mockHub is a thread-safe test double for HubNotifier.
+type mockHub struct {
+	mu         sync.Mutex
+	broadcasts []*starv1.STAREnvelope
+	err        error // returned from every Broadcast call when non-nil
+}
+
+func (m *mockHub) Broadcast(env *starv1.STAREnvelope) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.broadcasts = append(m.broadcasts, env)
+	return m.err
+}
+
+func (m *mockHub) count() int {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return len(m.broadcasts)
+}
+
+func (m *mockHub) at(i int) *starv1.STAREnvelope {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	return m.broadcasts[i]
+}
 
 func TestNewGatewayService(t *testing.T) {
 	svc := NewGatewayService()
@@ -398,5 +426,226 @@ func TestClientRegistration(t *testing.T) {
 	svc.UnregisterClient("client-2")
 	if svc.GetActiveClientCount() != 0 {
 		t.Errorf("Expected 0 active clients, got %d", svc.GetActiveClientCount())
+	}
+}
+
+// TestSetHub verifies that SetHub stores the notifier and ForwardTelemetry uses it.
+func TestSetHub(t *testing.T) {
+	svc := NewGatewayService()
+
+	// hub must be nil before SetHub is called.
+	if svc.hub != nil {
+		t.Fatal("Expected hub to be nil before SetHub")
+	}
+
+	hub := &mockHub{}
+	svc.SetHub(hub)
+
+	if svc.hub != hub {
+		t.Fatal("Expected hub to be set after SetHub")
+	}
+}
+
+// TestForwardTelemetry_Hub_AllFields checks that ForwardTelemetry broadcasts one
+// STAREnvelope for each of the six non-nil payload fields in the request.
+func TestForwardTelemetry_Hub_AllFields(t *testing.T) {
+	svc := NewGatewayService()
+	hub := &mockHub{}
+	svc.SetHub(hub)
+
+	req := &starv1.ForwardTelemetryRequest{
+		Header:       &starv1.RequestHeader{RequestId: "all-fields"},
+		SystemStatus: &starv1.SystemStatus{},
+		BatteryState: &starv1.BatteryState{},
+		Telemetry:    &starv1.TelemetryData{},
+		MotorStatus:  []*starv1.MotorStatus{{}, {}},
+		Odometry:     &starv1.OdometryData{XM: 1.0, YM: 2.0},
+		LidarScan:    &starv1.LidarScan{TimestampUs: 42},
+	}
+
+	if _, err := svc.ForwardTelemetry(context.Background(), req); err != nil {
+		t.Fatalf("ForwardTelemetry returned unexpected error: %v", err)
+	}
+
+	if hub.count() != 6 {
+		t.Errorf("Expected 6 broadcasts (one per non-nil field), got %d", hub.count())
+	}
+
+	// Verify each broadcast carries the expected payload type.
+	wantTypes := []string{
+		"*starv1.STAREnvelope_System",
+		"*starv1.STAREnvelope_Battery",
+		"*starv1.STAREnvelope_Telemetry",
+		"*starv1.STAREnvelope_Motors",
+		"*starv1.STAREnvelope_Odometry",
+		"*starv1.STAREnvelope_Lidar",
+	}
+	for i, env := range hub.broadcasts {
+		switch env.Payload.(type) {
+		case *starv1.STAREnvelope_System:
+			if wantTypes[i] != "*starv1.STAREnvelope_System" {
+				t.Errorf("broadcast[%d]: want %s, got System", i, wantTypes[i])
+			}
+		case *starv1.STAREnvelope_Battery:
+			if wantTypes[i] != "*starv1.STAREnvelope_Battery" {
+				t.Errorf("broadcast[%d]: want %s, got Battery", i, wantTypes[i])
+			}
+		case *starv1.STAREnvelope_Telemetry:
+			if wantTypes[i] != "*starv1.STAREnvelope_Telemetry" {
+				t.Errorf("broadcast[%d]: want %s, got Telemetry", i, wantTypes[i])
+			}
+		case *starv1.STAREnvelope_Motors:
+			if wantTypes[i] != "*starv1.STAREnvelope_Motors" {
+				t.Errorf("broadcast[%d]: want %s, got Motors", i, wantTypes[i])
+			}
+		case *starv1.STAREnvelope_Odometry:
+			if wantTypes[i] != "*starv1.STAREnvelope_Odometry" {
+				t.Errorf("broadcast[%d]: want %s, got Odometry", i, wantTypes[i])
+			}
+		case *starv1.STAREnvelope_Lidar:
+			if wantTypes[i] != "*starv1.STAREnvelope_Lidar" {
+				t.Errorf("broadcast[%d]: want %s, got Lidar", i, wantTypes[i])
+			}
+		default:
+			t.Errorf("broadcast[%d]: unexpected payload type %T", i, env.Payload)
+		}
+	}
+}
+
+// TestForwardTelemetry_Hub_PartialFields verifies only non-nil fields produce broadcasts.
+func TestForwardTelemetry_Hub_PartialFields(t *testing.T) {
+	tests := []struct {
+		name           string
+		req            *starv1.ForwardTelemetryRequest
+		wantBroadcasts int
+	}{
+		{
+			name: "SystemOnly",
+			req: &starv1.ForwardTelemetryRequest{
+				Header:       &starv1.RequestHeader{RequestId: "system-only"},
+				SystemStatus: &starv1.SystemStatus{},
+			},
+			wantBroadcasts: 1,
+		},
+		{
+			name: "BatteryAndOdometry",
+			req: &starv1.ForwardTelemetryRequest{
+				Header:       &starv1.RequestHeader{RequestId: "battery-odometry"},
+				BatteryState: &starv1.BatteryState{},
+				Odometry:     &starv1.OdometryData{},
+			},
+			wantBroadcasts: 2,
+		},
+		{
+			name: "AllNilPayloads",
+			req: &starv1.ForwardTelemetryRequest{
+				Header: &starv1.RequestHeader{RequestId: "empty"},
+			},
+			wantBroadcasts: 0,
+		},
+		{
+			name: "MotorsOnly",
+			req: &starv1.ForwardTelemetryRequest{
+				Header:      &starv1.RequestHeader{RequestId: "motors-only"},
+				MotorStatus: []*starv1.MotorStatus{{}},
+			},
+			wantBroadcasts: 1,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			svc := NewGatewayService()
+			hub := &mockHub{}
+			svc.SetHub(hub)
+
+			if _, err := svc.ForwardTelemetry(context.Background(), tc.req); err != nil {
+				t.Fatalf("ForwardTelemetry returned unexpected error: %v", err)
+			}
+
+			if hub.count() != tc.wantBroadcasts {
+				t.Errorf("want %d broadcasts, got %d", tc.wantBroadcasts, hub.count())
+			}
+		})
+	}
+}
+
+// TestForwardTelemetry_NilHub verifies ForwardTelemetry does not panic when no hub is set.
+func TestForwardTelemetry_NilHub(t *testing.T) {
+	svc := NewGatewayService() // hub is nil
+
+	req := &starv1.ForwardTelemetryRequest{
+		Header:       &starv1.RequestHeader{RequestId: "no-hub"},
+		SystemStatus: &starv1.SystemStatus{},
+		BatteryState: &starv1.BatteryState{},
+		Telemetry:    &starv1.TelemetryData{},
+		Odometry:     &starv1.OdometryData{},
+		LidarScan:    &starv1.LidarScan{},
+	}
+
+	resp, err := svc.ForwardTelemetry(context.Background(), req)
+	if err != nil {
+		t.Fatalf("Expected no error with nil hub, got %v", err)
+	}
+	if !resp.Cached {
+		t.Error("Expected cached=true even without hub")
+	}
+}
+
+// TestForwardTelemetry_HubBroadcastError verifies that hub channel saturation
+// (Broadcast returning an error) does not fail the RPC — the gateway drops the
+// message and logs, but still returns a successful ForwardTelemetryResponse.
+func TestForwardTelemetry_HubBroadcastError(t *testing.T) {
+	svc := NewGatewayService()
+	hub := &mockHub{err: errors.New("broadcast channel full")}
+	svc.SetHub(hub)
+
+	req := &starv1.ForwardTelemetryRequest{
+		Header:       &starv1.RequestHeader{RequestId: "hub-error"},
+		SystemStatus: &starv1.SystemStatus{},
+		BatteryState: &starv1.BatteryState{},
+	}
+
+	resp, err := svc.ForwardTelemetry(context.Background(), req)
+	if err != nil {
+		t.Fatalf("Expected RPC to succeed despite broadcast error, got %v", err)
+	}
+	if !resp.Cached {
+		t.Error("Expected cached=true even when broadcast fails")
+	}
+	// Broadcast was still attempted for both non-nil fields.
+	if hub.count() != 2 {
+		t.Errorf("Expected 2 broadcast attempts, got %d", hub.count())
+	}
+}
+
+// TestForwardTelemetry_Motors_WrappedInList checks that repeated MotorStatus entries
+// are correctly wrapped into a MotorStatusList before broadcasting.
+func TestForwardTelemetry_Motors_WrappedInList(t *testing.T) {
+	svc := NewGatewayService()
+	hub := &mockHub{}
+	svc.SetHub(hub)
+
+	motors := []*starv1.MotorStatus{{}, {}, {}, {}}
+	req := &starv1.ForwardTelemetryRequest{
+		Header:      &starv1.RequestHeader{RequestId: "motors-list"},
+		MotorStatus: motors,
+	}
+
+	if _, err := svc.ForwardTelemetry(context.Background(), req); err != nil {
+		t.Fatalf("Unexpected error: %v", err)
+	}
+
+	if hub.count() != 1 {
+		t.Fatalf("Expected 1 broadcast for motors, got %d", hub.count())
+	}
+
+	env := hub.at(0)
+	motorsPayload, ok := env.Payload.(*starv1.STAREnvelope_Motors)
+	if !ok {
+		t.Fatalf("Expected STAREnvelope_Motors payload, got %T", env.Payload)
+	}
+	if len(motorsPayload.Motors.Motors) != 4 {
+		t.Errorf("Expected 4 motors in MotorStatusList, got %d", len(motorsPayload.Motors.Motors))
 	}
 }
