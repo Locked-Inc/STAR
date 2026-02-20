@@ -111,11 +111,6 @@ func (s *GatewayService) ForwardTelemetry(
 				Payload: &starv1.STAREnvelope_System{System: req.SystemStatus},
 			})
 		}
-		if req.BatteryState != nil {
-			broadcastEnvelope(ctx, s.logger, "battery", hub, &starv1.STAREnvelope{
-				Payload: &starv1.STAREnvelope_Battery{Battery: req.BatteryState},
-			})
-		}
 		if req.Telemetry != nil {
 			broadcastEnvelope(ctx, s.logger, "telemetry", hub, &starv1.STAREnvelope{
 				Payload: &starv1.STAREnvelope_Telemetry{Telemetry: req.Telemetry},

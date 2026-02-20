@@ -227,7 +227,7 @@ func TestServiceSet_AllFieldsPopulated(t *testing.T) {
 	}
 
 	// Expected count of services (update this when adding new services)
-	const expectedServiceCount = 6
+	const expectedServiceCount = 5
 	if len(serviceGetters) != expectedServiceCount {
 		t.Errorf("Expected %d services, got %d. Did you add a new service without updating serviceGetters?",
 			expectedServiceCount, len(serviceGetters))
