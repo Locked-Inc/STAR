@@ -285,7 +285,7 @@ extern "C" {
 #include "rx72n_sci_regs.h"
 
 /* =============================================================================
- * I2C Bus Interface (RIIC) - For I2C/SMBUS Communication
+ * I2C Bus Interface (RIIC) - For I2C Communication
  * =============================================================================
  */
 

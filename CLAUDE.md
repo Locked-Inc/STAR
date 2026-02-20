@@ -112,7 +112,6 @@ python3 scripts/fix-encoding.py --check path/to/dir
 |-----------|-------------|
 | `star-rx72n-firmware/` | Renesas RX72N motor controller (CMake + GNURX + ThreadX) |
 | `star-proto/` | Protocol Buffers schemas with multi-language code generation |
-| `star-rpi5-buildroot/` | Custom Buildroot Linux for Raspberry Pi 5 |
 | `star-gateway/` | Go gateway service (UI <-> ROS2 bridge) running on RPi5 |
 | `star-ui/` | User interface (TypeScript) |
 | `matlab/` | Motor system identification and PID controller design |

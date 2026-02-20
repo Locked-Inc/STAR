@@ -66,7 +66,7 @@ declare -A SUBSYSTEMS
 SUBSYSTEMS[motor]="rx_motor rx_pid rx_drv8243 rx_encoder"
 SUBSYSTEMS[comm]="rx_comm_manager rx_spi_comm rx_usb_comm rx_usb rx_frame rx_frame_ascii"
 SUBSYSTEMS[protocol]="rx_nanopb rx_crc rx_fec rx_harq"
-SUBSYSTEMS[sensors]="rx_bq4050 rx_ds18b20 rx_hcsr04 rx_obstacle_detect"
+SUBSYSTEMS[sensors]="rx_ds18b20 rx_hcsr04 rx_obstacle_detect"
 SUBSYSTEMS[bus]="rx_bus"
 SUBSYSTEMS[core]="rx_core rx_hal rx_infrastructure"
 
@@ -160,7 +160,7 @@ Subsystems:
   motor     rx_motor, rx_pid, rx_drv8243, rx_encoder
   comm      rx_comm_manager, rx_spi_comm, rx_usb_comm, rx_usb, rx_frame, rx_frame_ascii
   protocol  rx_nanopb, rx_crc, rx_fec, rx_harq
-  sensors   rx_bq4050, rx_ds18b20, rx_hcsr04, rx_obstacle_detect
+  sensors   rx_ds18b20, rx_hcsr04, rx_obstacle_detect
   bus       rx_bus
   core      rx_core, rx_hal, rx_infrastructure
 USAGE

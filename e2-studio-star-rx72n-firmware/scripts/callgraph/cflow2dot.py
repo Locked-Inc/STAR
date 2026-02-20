@@ -33,7 +33,6 @@ MODULE_COLORS = {
     "rx_harq": "#73C6B6",       # Teal
     "rx_ds18b20": "#D2B4DE",    # Light purple
     "rx_hcsr04": "#BB8FCE",     # Purple
-    "rx_bq4050": "#C39BD3",     # Orchid
     "rx_obstacle_detect": "#F5B7B1", # Light red
     "rx_bus": "#FADBD8",        # Pink
     "rx_core": "#D5DBDB",       # Light gray
