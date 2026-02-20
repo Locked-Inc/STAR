@@ -60,9 +60,6 @@ StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &)
   odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("odom/unfiltered", 10);
   joint_state_pub_ =
     create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
-  battery_pub_ =
-    create_publisher<sensor_msgs::msg::BatteryState>("battery_state", 10);
-
   // Create subscription
   cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10,
@@ -83,7 +80,6 @@ StarSpiDriverNode::on_activate(const rclcpp_lifecycle::State &)
 
   odom_pub_->on_activate();
   joint_state_pub_->on_activate();
-  battery_pub_->on_activate();
 
   // Start 100 Hz timer (10ms)
   timer_ = create_wall_timer(
@@ -113,7 +109,6 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 
   odom_pub_->on_deactivate();
   joint_state_pub_->on_deactivate();
-  battery_pub_->on_deactivate();
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
          CallbackReturn::SUCCESS;
@@ -130,7 +125,6 @@ StarSpiDriverNode::on_cleanup(const rclcpp_lifecycle::State &)
 
   odom_pub_.reset();
   joint_state_pub_.reset();
-  battery_pub_.reset();
   cmd_vel_sub_.reset();
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
@@ -237,11 +231,6 @@ void StarSpiDriverNode::timer_callback()
       converter_->telemetry_to_joint_state(telemetry, joint_state);
       joint_state_pub_->publish(joint_state);
 
-      // Publish Battery State
-      sensor_msgs::msg::BatteryState battery_state;
-      battery_state.header.stamp = now;
-      converter_->telemetry_to_battery_state(telemetry, battery_state);
-      battery_pub_->publish(battery_state);
     } else {
       RCLCPP_WARN(get_logger(), "Failed to parse TelemetryData protobuf");
     }

@@ -21,7 +21,6 @@ Go Gateway Service (RPi5)
 +-- GatewayService [PASS]
 +-- MotorControlService [PASS] (with E-Stop priority)
 +-- TelemetryService [PASS]
-+-- BatteryManagementService [PASS]
 +-- ConfigurationService [PASS]
 +-- FirmwareUpdateService [FAIL] (stub only)
 
@@ -38,7 +37,7 @@ RX72N Motor Controller
 | Component | Status | Completion |
 |-----------|--------|------------|
 | **Infrastructure** | [PASS] Complete | 100% (8/8 merged PRs) |
-| **Gateway Services** | [PASS] Nearly Complete | 83% (5/6 services) |
+| **Gateway Services** | [PASS] Nearly Complete | 80% (4/5 services) |
 | **Transport Layer** | [PASS] Complete | 100% (SPI ready) |
 | **ROS2 Nodes** | [PASS] Complete | 100% (3/3 nodes) |
 | **Safety Systems** | [PASS] Complete | 100% (safety monitor implemented) |
@@ -47,7 +46,6 @@ RX72N Motor Controller
 
 **Major Accomplishments (Last 7 Days):**
 - [PASS] PR #184: TelemetryService + ConfigurationService (1072 lines)
-- [PASS] PR #191: BatteryManagementService (656 lines, 80% test coverage)
 - [PASS] PR #192: SPI Transport with periph.io (276 lines, production-ready)
 - [PASS] PR #199: star_safety_monitor (1558 lines, 7 passing tests)
 - [PASS] PR #200: HIL Simulation (Virtual RX72N, Socket Transport, Service Tests)
@@ -58,11 +56,10 @@ RX72N Motor Controller
 1. ~~Implement `star_safety_monitor` node (Issue #139)~~ [PASS] Complete
 2. ~~Add E-Stop priority queue (Issue #176)~~ [PASS] Complete
 3. ~~Virtual RX72N Full Protocol Stack (PR #202)~~ [PASS] Complete
-4. **Fix Flaky Battery Test** (TestNewBatteryService race condition) 
-5. Simulated Integration Tests (Virtual RX72N + ROS2)
-6. Hardware integration tests on RPi5 (Issue #180)
+4. Simulated Integration Tests (Virtual RX72N + ROS2)
+5. Hardware integration tests on RPi5 (Issue #180)
 
-**Estimated Time to Production MVP:** ~3-5 days (pending battery test fix + HIL tests)
+**Estimated Time to Production MVP:** ~3-5 days (pending HIL tests)
 
 ---
 
@@ -78,7 +75,6 @@ RX72N Motor Controller
 | `star_spi_bridge` | #172 | [PASS] Merged | 889 | 2026-01-13 |
 | MotorControlService | #174 | [PASS] Merged | 318 | 2026-01-14 |
 | TelemetryService + ConfigurationService | #184 | [PASS] Merged | 1072 (258+814) | 2026-01-15 |
-| BatteryManagementService | #191 | [PASS] Merged | 656 | 2026-01-16 |
 | SPI Transport Layer | #192 | [PASS] Merged | 276 | 2026-01-17 |
 | `star_safety_monitor` | #199 | [PASS] Merged | 1558 | 2026-01-19 |
 | HIL Sim + Socket Transport | #200 | [PASS] Merged | 1000+ | 2026-01-19 |
@@ -94,14 +90,13 @@ RX72N Motor Controller
 **ROS2 Nodes Complete (3/3):**
 - [PASS] `star_spi_bridge` - Full SPI driver with CRC-32, lifecycle management, 100 Hz polling
 - [PASS] `star_gateway_bridge` - gRPC client, telemetry forwarding, teleop polling
-- [PASS] `star_safety_monitor` - Platform integrity monitoring with battery, heartbeat, and stall detection
+- [PASS] `star_safety_monitor` - Platform integrity monitoring with heartbeat and stall detection
 
-**Gateway Services Complete (5/6 services, 83%):**
+**Gateway Services Complete (4/5 services, 80%):**
 - [PASS] `GatewayService` (322 lines) - ForwardTelemetry, GetTeleopCommand
 - [PASS] `MotorControlService` (318 lines) - SetVelocity, SetMotorPower, SetPIDGains, StreamEncoders, ControlStream, EmergencyStop
 - [PASS] `TelemetryService` (258 lines) - GetTelemetry, StreamTelemetry, GetSystemStatus
 - [PASS] `ConfigurationService` (814 lines) - Get/Set/Validate/Save configuration, PID tuning, factory reset
-- [PASS] `BatteryManagementService` (656 lines) - All 10 methods for BQ7850 battery management
 - [FAIL] `FirmwareUpdateService` (50 lines stub) - OTA updates (deferred, low priority)
 
 **Transport Layer Complete:**
@@ -142,7 +137,6 @@ RX72N Motor Controller
 - [PASS] `MotorControlService` (6 methods: SetVelocity, SetMotorPower, SetPIDGains, StreamEncoders, ControlStream, EmergencyStop) - PR #174
 - [PASS] `TelemetryService` (3 methods: GetTelemetry, StreamTelemetry, GetSystemStatus) - PR #184
 - [PASS] `ConfigurationService` (7 methods: Get/Set/Validate/Save config, PID tuning, factory reset) - PR #184
-- [PASS] `BatteryManagementService` (10 methods: All BQ7850 battery management operations) - PR #191
 - [WARN] `FirmwareUpdateService` (5 methods - stub only, deferred to future release)
 
 ### Task 2.1: Implement TelemetryService [PASS] COMPLETE
@@ -182,63 +176,6 @@ GetSystemStatus(context.Context, *GetSystemStatusRequest) (*GetSystemStatusRespo
 - Context-aware with deadline handling
 
 **Testing:** 629 lines of tests, 80%+ coverage
-
----
-
-### Task 2.2: Implement BatteryManagementService [PASS] COMPLETE
-
-**Issue:** #181 (part 2)
-**Files:** `star-gateway/internal/service/battery.go` (656 lines)
-**Priority:** [YELLOW] Medium (hardware dependency)
-**Status:** [PASS] Merged in PR #191 (2026-01-16)
-
-**Methods to Implement:**
-```go
-// Complete battery snapshot (cells, temps, SOC, current, voltage)
-GetBatteryState(context.Context, *GetBatteryStateRequest) (*GetBatteryStateResponse, error)
-
-// Continuous battery monitoring (server streaming)
-StreamBatteryState(*StreamBatteryStateRequest, BatteryManagementService_StreamBatteryStateServer) error
-
-// Read OV/UV/OC/OT protection limits from BQ78350
-GetProtectionThresholds(context.Context, *GetProtectionThresholdsRequest) (*GetProtectionThresholdsResponse, error)
-
-// Configure protection limits (write to BQ78350 registers)
-SetProtectionThresholds(context.Context, *SetProtectionThresholdsRequest) (*SetProtectionThresholdsResponse, error)
-
-// Per-cell passive balancing control
-EnableCellBalancing(context.Context, *EnableCellBalancingRequest) (*EnableCellBalancingResponse, error)
-DisableCellBalancing(context.Context, *DisableCellBalancingRequest) (*DisableCellBalancingResponse, error)
-
-// Charge/discharge FET enable/disable (emergency cutoff)
-ControlFets(context.Context, *ControlFetsRequest) (*ControlFetsResponse, error)
-
-// Manufacturer, serial number, chemistry, firmware versions
-GetDeviceInfo(context.Context, *GetDeviceInfoRequest) (*GetDeviceInfoResponse, error)
-```
-
-**Integration Points:**
-- Communicate with RX72N BQ78350 driver via SPI + protobuf
-- Forward SMBus commands to BQ78350 fuel gauge
-- Handle safety-critical operations (FET control, protection thresholds)
-
-**Hardware Dependencies:**
-- BQ78350-R1A fuel gauge driver on RX72N (Issue #158)
-- 3S lithium-ion battery pack
-
-**Testing:**
-- Mock BMS responses for unit tests
-- Integration test with real BQ78350 hardware
-- Safety validation (protection threshold limits, FET control)
-
-**Implementation Details:**
-- All 10 RPC methods for BQ7850 battery management
-- Li-ion battery safety validation
-- Cell balancing bitmask validation (16-cell support)
-- Defensive copy pattern for thread safety
-- FET control for emergency cutoff
-
-**Testing:** 1058 lines of tests, 80.4% coverage, race-free
 
 ---
 
@@ -451,8 +388,7 @@ message RX72NMessage {
   oneof payload {
     VelocityCommand velocity_command = 1;
     TelemetryData telemetry_data = 2;
-    BatteryState battery_state = 3;
-    ConfigurationData configuration_data = 4;
+    ConfigurationData configuration_data = 3;
     // ... other message types
   }
 }
@@ -535,17 +471,14 @@ s.harqHandler.Send(ctx, payload, harq.PriorityEmergency)
 
 **Implementation Summary:**
 - [PASS] Lifecycle node with full state management (UNCONFIGURED -> INACTIVE -> ACTIVE)
-- [PASS] Battery voltage/current monitoring with configurable thresholds
 - [PASS] Motor stall detection (cmd_vel vs. actual velocity mismatch)
 - [PASS] Heartbeat monitoring with >500ms timeout -> E-Stop
 - [PASS] Emergency stop publishing to `/emergency_stop`
 - [PASS] Comprehensive diagnostic message publishing
 - [PASS] Configurable parameters (thresholds, timeouts, enable_auto_estop)
-- [PASS] Full test coverage (7/10 tests passing, 3 skipped placeholders)
+- [PASS] Full test coverage (6/9 tests passing, 2 skipped placeholders)
 
 **Features Implemented:**
-- Battery voltage monitoring (min_battery_voltage: 10.5V)
-- Battery current monitoring (max_battery_current: 30.0A)
 - Motor stall detection (cmd_vel vs. odom velocity mismatch)
 - Heartbeat monitoring (timeout: 500ms)
 - Velocity limit enforcement (linear: 1.0 m/s, angular: 2.0 rad/s)
@@ -554,15 +487,13 @@ s.harqHandler.Send(ctx, payload, harq.PriorityEmergency)
 - Comprehensive diagnostic status publishing
 
 **Topics:**
-- **Subscribed:** `/battery_state`, `/odom`, `/diagnostics`, `/cmd_vel`
+- **Subscribed:** `/odom`, `/diagnostics`, `/cmd_vel`
 - **Published:** `/emergency_stop` (std_msgs/Bool), `/diagnostics` (diagnostic_msgs/DiagnosticArray)
 
 **Parameters:**
 - `heartbeat_timeout_ms` (default: 500) - Heartbeat timeout
 - `max_linear_velocity` (default: 1.0) - Maximum linear velocity
 - `max_angular_velocity` (default: 2.0) - Maximum angular velocity
-- `min_battery_voltage` (default: 10.5) - Minimum battery voltage
-- `max_battery_current` (default: 30.0) - Maximum battery current
 - `publish_rate` (default: 10.0) - Diagnostic publish rate
 - `enable_auto_estop` (default: true) - Auto E-Stop on violations
 - `estop_recovery_delay` (default: 5.0) - E-Stop recovery delay
@@ -570,8 +501,8 @@ s.harqHandler.Send(ctx, payload, harq.PriorityEmergency)
 - `stall_samples_required` (default: 5) - Stall detection debouncing
 
 **Testing:**
-- [PASS] 7 tests passing (lifecycle, parameters, subscriptions, diagnostics)
-- [PAUSE] 3 tests skipped (battery safety, E-Stop trigger, diagnostic publishing - placeholders)
+- [PASS] 6 tests passing (lifecycle, parameters, subscriptions, diagnostics)
+- [PAUSE] 2 tests skipped (E-Stop trigger, diagnostic publishing - placeholders)
 - [PASS] All formatters and linters passing
 - [PASS] CI/CD validation complete
 
@@ -588,10 +519,9 @@ From PR #199 review (CodeRabbit):
    - Creates false heartbeat signal - needs filtering or separate topic
 2. **Enhancement:** Replace `std::chrono::system_clock` with `rclcpp::Time`
    - Current implementation incompatible with ROS2 sim time (`use_sim_time`)
-   - Affects all timestamp comparisons (heartbeat, battery age, cmd_vel age)
+   - Affects all timestamp comparisons (heartbeat, cmd_vel age)
 3. **Enhancement:** Add parameter validation (e.g., `publish_rate > 0`)
-4. **Testing:** Implement 3 skipped test cases:
-   - `BatterySafetyChecks` - Verify voltage/current threshold triggering
+4. **Testing:** Implement 2 skipped test cases:
    - `EmergencyStopTrigger` - Validate E-Stop publishing logic
    - `DiagnosticPublishing` - Verify diagnostic message content
 
@@ -968,8 +898,7 @@ go tool pprof mem.prof
 | 1 | Close PR #145/#144 | [GREEN] Low | 10 min | - | [WARN] Pending |
 | 3.1 | **SPI Transport** |  Critical | 1-2 days | All HW testing | [PASS] **DONE** |
 | 2.1 | TelemetryService |  High | 2-3 days | - | [PASS] **DONE** |
-| 2.2 | BatteryManagementService | [YELLOW] Medium | 3-4 days | Issue #158 | [PASS] **DONE** |
-| 2.3 | ConfigurationService | [YELLOW] Medium | 2-3 days | SPI transport | [PASS] **DONE** |
+| 2.2 | ConfigurationService | [YELLOW] Medium | 2-3 days | SPI transport | [PASS] **DONE** |
 | 4.1 | **Safety Monitor** |  High | 2-3 days | - | [PASS] **DONE** |
 | 3.4 | **E-Stop Priority Queue** |  High | 1 day | - | [PASS] **DONE** |
 | 3.2 | Dispatcher Metrics | [YELLOW] Medium | 1 day | - | [FAIL] TODO |
@@ -991,7 +920,6 @@ Phase 1: Cleanup ------------------------------------------------ [WARN] Pending
 
 Phase 2: Gateway Services --------------------------------------- [PASS] COMPLETE
 +-- TelemetryService ------------------------------------------ [PASS] DONE
-+-- BatteryManagementService ---------------------------------- [PASS] DONE
 +-- ConfigurationService -------------------------------------- [PASS] DONE
 +-- FirmwareUpdateService ------------------------------------- [WARN] Deferred
 
@@ -1022,14 +950,7 @@ Phase 6: Integration Testing ----------------------------------- [WARN] Ready wh
 
 ### Immediate Priority (Week of 2026-01-22)
 
-1. **Fix Flaky Battery Test** (TestNewBatteryService) - 0.5 days  **URGENT**
-   - Race condition: Background goroutine not starting within 500ms timeout
-   - Affects CI reliability (intermittent failures on PR #202)
-   - Solution: Increase timeout OR add synchronization signal OR refactor test
-   - File: `star-gateway/internal/service/battery_test.go:129-158`
-   - Issue: Blocking CI merges
-
-2. **Simulated Integration Tests** (Virtual RX72N) - 1-2 days  **START HERE**
+1. **Simulated Integration Tests** (Virtual RX72N) - 1-2 days  **START HERE**
    - Verify `star_gateway_bridge` connects to Gateway (Sim Mode)
    - Verify Telemetry/Command flow end-to-end (ROS2 <-> Gateway <-> Virtual RX72N)
    - Verify Safety Monitor E-Stop triggering in simulation
@@ -1076,7 +997,6 @@ Phase 6: Integration Testing ----------------------------------- [WARN] Ready wh
 - [PAUSE] **Phase 5-6:** Blocked on hardware availability (RPi5 + RX72N)
 
 **Total Estimated Effort to Production MVP:** ~3-5 days
--  **Immediate:** Fix flaky battery test (0.5 days)
 - [WARN] **Next:** HIL integration tests with Virtual RX72N (1-2 days)
 - [PAUSE] **Blocked:** Hardware integration tests on RPi5+RX72N (2-3 days)
 

@@ -931,15 +931,15 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
  *
  * @par Example:
  * @code
- * // Read battery voltage divider
+ * // Read motor current sense (DRV8243 IPROPI output)
  * uint32_t voltage_mv;
- * rx_err_t err = adc_read_voltage_mv(k_adc_unit_0, k_adc_channel_2,
+ * rx_err_t err = adc_read_voltage_mv(k_adc_unit_0, k_adc_channel_0,
  *                                     k_adc_resolution_12bit, &voltage_mv);
  * if (err == k_rx_ok) {
  *   // voltage_mv: 0-3300 mV
- *   // For 2:1 divider, actual voltage = voltage_mv * 2
- *   uint32_t battery_mv = voltage_mv * 2;
- *   rx_log_info("BATT", "Battery: %lu mV", battery_mv);
+ *   // For IPROPI (1000:1, 4990 Ohm sense): I_motor = (voltage_mv / 4990) * 1000 mA
+ *   uint32_t current_ma = (voltage_mv * 1000) / 4990;
+ *   rx_log_info("ADC", "Current: %lu mA", current_ma);
  * }
  * @endcode
  *

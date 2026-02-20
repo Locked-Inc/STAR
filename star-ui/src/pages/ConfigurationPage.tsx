@@ -331,17 +331,6 @@ export function ConfigurationPage() {
                     step={100}
                     unit="ms"
                   />
-                  <NumberField
-                    label="BMS Poll Period"
-                    value={timingConfig.bmsPollPeriodMs}
-                    onChange={(v) =>
-                      setConfig((c) => c ? { ...c, timingConfig: { ...timingConfig, bmsPollPeriodMs: v } } : c)
-                    }
-                    min={100}
-                    max={10000}
-                    step={100}
-                    unit="ms"
-                  />
                 </>
               ) : (
                 <div className="col-span-3 text-slate-500">No timing configuration data</div>

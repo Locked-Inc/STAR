@@ -6,7 +6,6 @@ import { MockGatewayClient } from '@/services/MockGatewayClient'
 const EMPTY_SNAPSHOT: RobotSnapshot = {
   telemetry: null,
   systemStatus: null,
-  battery: null,
   motors: [],
   encoders: [],
   lastUpdated: null,

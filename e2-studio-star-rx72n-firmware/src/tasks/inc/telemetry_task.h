@@ -7,7 +7,7 @@
  * from all subsystems and sending it to the Raspberry Pi 5.
  *
  * **Responsibilities:**
- * - Collect data from shared memory (motor status, battery, sensors)
+ * - Collect data from shared memory (motor status, sensors)
  * - Aggregate into Protocol Buffer telemetry messages
  * - Send periodic status updates to RPi5 via SPI
  * - Monitor system health and diagnostic counters
@@ -15,7 +15,6 @@
  *
  * **Telemetry Data:**
  * - Motor: Velocity, current, encoder position, faults
- * - Battery: Voltage, current, SOC, temperature
  * - Sensors: Temperature, obstacle distances
  * - System: CPU usage, task status, error counters
  *

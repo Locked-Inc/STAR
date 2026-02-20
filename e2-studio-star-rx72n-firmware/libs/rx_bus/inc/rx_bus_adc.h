@@ -46,7 +46,7 @@
  *     style=filled;
  *     color=lightcoral;
  *     current [label="Motor Current\nDRV8243 IPROPI"];
- *     voltage [label="Battery Voltage\nDivider 1/11"];
+ *     voltage [label="Motor Power Rail\nVoltage Divider"];
  *     temp [label="Temperature\nInternal Sensor"];
  *     analog [label="Analog Sensors\n0-3.3V"];
  *   }
@@ -186,12 +186,6 @@
  * I_{motor} = \frac{1.65}{4990} \times 1000 = 0.331 A = 331 mA
  * @f]
  *
- * @par Battery Voltage Measurement
- * Battery voltage uses a 1:11 resistor divider to scale down to ADC range:
- * - **Divider ratio**: 1/11 (100kOhm / 10kOhm)
- * - **Input range**: 0-36.3V battery -> 0-3.3V ADC
- * - **Conversion**: V_battery = V_ADC x 11
- *
  * @par Error Sources and Mitigation
  * | Error Source | Magnitude | Mitigation |
  * |--------------|-----------|------------|
@@ -272,10 +266,10 @@
  * }
  * @endcode
  *
- * @par Usage Example - Battery Voltage Monitoring
+ * @par Usage Example - ADC Voltage Monitoring
  * @code
- * // Register ADC for battery voltage (1:11 divider)
- * rx_bus_config_t battery_config = {
+ * // Register ADC for power rail voltage (1:11 divider)
+ * rx_bus_config_t power_rail_config = {
  *     .type = k_rx_bus_type_adc,
  *     .adc = {
  *         .unit = 0,
@@ -284,18 +278,18 @@
  *         .vref_mv = 3300,
  *     }
  * };
- * rx_bus_register(&manager, "battery_voltage", &battery_config);
- * rx_bus_adc_init(&manager, "battery_voltage");
+ * rx_bus_register(&manager, "power_rail", &power_rail_config);
+ * rx_bus_adc_init(&manager, "power_rail");
  *
- * // Read battery voltage
+ * // Read supply voltage
  * uint32_t adc_voltage_mv = 0;
- * err = rx_bus_adc_read_voltage_mv(&manager, "battery_voltage", &adc_voltage_mv);
+ * err = rx_bus_adc_read_voltage_mv(&manager, "power_rail", &adc_voltage_mv);
  * if (err == k_rx_ok) {
  *     // Scale up by divider ratio (1:11)
- *     uint32_t battery_voltage_mv = adc_voltage_mv * 11;
+ *     uint32_t supply_voltage_mv = adc_voltage_mv * 11;
  *
- *     if (battery_voltage_mv < 14000) {  // 14V low battery
- *         rx_log_warn("POWER", "Low battery: %d mV", battery_voltage_mv);
+ *     if (supply_voltage_mv < 11000) {  // 11V low supply warning
+ *         rx_log_warn("POWER", "Low supply voltage: %d mV", supply_voltage_mv);
  *     }
  * }
  * @endcode
@@ -656,18 +650,18 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  * }
  * @endcode
  *
- * @par Example - Battery Voltage with Divider:
+ * @par Example - ADC Voltage with Divider:
  * @code
- * // Read battery voltage through 1:11 resistor divider
+ * // Read power rail voltage through 1:11 resistor divider
  * uint32_t adc_voltage_mv = 0;
- * err = rx_bus_adc_read_voltage_mv(&manager, "battery_voltage", &adc_voltage_mv);
+ * err = rx_bus_adc_read_voltage_mv(&manager, "power_rail", &adc_voltage_mv);
  * if (err == k_rx_ok) {
  *     // Scale up by divider ratio
- *     uint32_t battery_mv = adc_voltage_mv * 11;
+ *     uint32_t supply_mv = adc_voltage_mv * 11;
  *
- *     if (battery_mv < 14000) {  // 14V low battery warning
- *         rx_log_warn("POWER", "Low battery: %d.%d V",
- *                     battery_mv / 1000, (battery_mv % 1000) / 100);
+ *     if (supply_mv < 11000) {  // 11V low supply warning
+ *         rx_log_warn("POWER", "Low supply voltage: %d.%d V",
+ *                     supply_mv / 1000, (supply_mv % 1000) / 100);
  *     }
  * }
  * @endcode

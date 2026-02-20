@@ -865,7 +865,7 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
  * - **Module stop release**: Enable RIIC peripheral clock
  * - **Pin configuration**: Set MPC for SDA/SCL alternate functions
  * - **Baud rate**: Configure BRL/BRH registers for target frequency
- * - **Timeout**: Enable SCL timeout detection (SMBus compliance)
+ * - **Timeout**: Enable SCL timeout detection (bus lockup prevention)
  * - **Interrupt priority**: Set RIIC interrupt priority level
  *
  * ## Performance

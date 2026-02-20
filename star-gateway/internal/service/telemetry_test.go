@@ -44,15 +44,12 @@ func (m *mockTelemetryStreamServer) Context() context.Context {
 func createTestTelemetryData() *starv1.TelemetryData {
 	return &starv1.TelemetryData{
 		TimestampUs:        time.Now().UnixMicro(),
-		BatteryPercent:     85.5,
 		WifiSignalDbm:      -45,
 		CpuUsagePercent:    32.1,
 		TemperatureCelsius: 28.5,
 		MotorLoadPercent:   50.0,
 		EmergencyStop:      false,
 		FaultFlags:         0,
-		BatteryVoltageV:    48.2,
-		BatterySocPercent:  85,
 	}
 }
 
@@ -124,10 +121,6 @@ func TestGetTelemetry_Success(t *testing.T) {
 
 	if resp.Telemetry == nil {
 		t.Fatal("Expected non-nil telemetry")
-	}
-
-	if resp.Telemetry.BatteryPercent != testTelemetry.BatteryPercent {
-		t.Errorf("Expected battery percent %.2f, got %.2f", testTelemetry.BatteryPercent, resp.Telemetry.BatteryPercent)
 	}
 }
 

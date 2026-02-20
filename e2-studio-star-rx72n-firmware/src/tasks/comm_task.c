@@ -281,7 +281,7 @@
  * - Priority 5: Communication (this task) - HIGHEST application priority
  * - Priority 8: Motor Control - Second highest (needs fast command reaction)
  * - Priority 12: Obstacle Detection
- * - Priority 15: BMS Monitor, Temperature Sensor
+ * - Priority 15: Temperature Sensor
  * - Priority 18: Telemetry (lowest, non-critical)
  *
  * ## Memory Usage Breakdown
@@ -1424,7 +1424,7 @@ static void internal_comm_task_entry(ULONG input)
  * | **COMMAND** | RPi5 -> RX72N | Motor velocity commands, e-stop, config | 100 Hz (10ms) |
  * | **ACK** | RPi5 -> RX72N | Acknowledge telemetry frame received | 10 Hz (100ms) |
  * | **NACK** | RPi5 -> RX72N | Reject telemetry (CRC error, decode fail) | Rare (error) |
- * | **TELEMETRY** | RX72N -> RPi5 | Motor state, battery, sensors | 10 Hz (100ms) |
+ * | **TELEMETRY** | RX72N -> RPi5 | Motor state, sensors | 10 Hz (100ms) |
  *
  * **Note:** TELEMETRY frames are sent by telemetry_task, not received here.
  *

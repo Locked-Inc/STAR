@@ -20,7 +20,7 @@ The STAR Gateway implements intelligent transport switching between USB CDC (pri
                              | Protobuf/gRPC
 +----------------------------v------------------------------------+
 |              Layer 5: gRPC Services                             |
-|  MotorControl | Telemetry | Battery | Config | Firmware        |
+|  MotorControl | Telemetry | Config | Firmware                    |
 +----------------------------+------------------------------------+
                              |
 +----------------------------v------------------------------------+

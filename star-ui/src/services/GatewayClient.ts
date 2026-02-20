@@ -1,5 +1,4 @@
 import type { TelemetryData, SystemStatus } from '@/proto/star/v1/telemetry'
-import type { BatteryState } from '@/proto/star/v1/battery_management'
 import type { MotorStatus, EncoderData } from '@/proto/star/v1/motor_control'
 import type {
   SystemConfiguration,
@@ -11,7 +10,6 @@ import type { FirmwareInfo, FirmwareUpdateProgress } from '@/proto/star/v1/firmw
 export interface RobotSnapshot {
   telemetry: TelemetryData | null
   systemStatus: SystemStatus | null
-  battery: BatteryState | null
   motors: MotorStatus[]
   encoders: EncoderData[]
   lastUpdated: Date | null
@@ -48,7 +46,4 @@ export interface GatewayClient {
   rollback(): Promise<void>
   markValid(): Promise<void>
 
-  // Battery
-  enableBalancing(cells: number[]): Promise<void>
-  disableBalancing(): Promise<void>
 }

@@ -306,8 +306,8 @@ extern void R_BSP_MAIN_FUNCTION(void);
  * - Set DPSW register -> double-precision FP status (if DPFPU supported)
  * - Initialize TFU -> trigonometric function unit (if supported)
  *
- * **3. VBATT Stabilization (if battery backup function enabled):**
- * - Wait for VBATT voltage stability before accessing RTC/battery RAM
+ * **3. VBATT Stabilization (if RTC backup function enabled):**
+ * - Wait for VBATT voltage stability before accessing RTC/backup RAM
  *
  * **4. C Runtime Initialization:**
  * - Call _INITSCT() -> copy .data section from ROM to RAM, zero .bss section

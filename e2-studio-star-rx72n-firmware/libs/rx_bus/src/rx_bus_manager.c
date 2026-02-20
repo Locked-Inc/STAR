@@ -100,7 +100,7 @@
  * **None direct** - Pure software abstraction.
  * Managed buses may depend on:
  * - I/O Ports (GPIO buses)
- * - RIIC (I2C/SMBus buses)
+ * - RIIC (I2C buses)
  * - RSPI (SPI buses)
  * - SCI (UART buses)
  * - S12ADFa (ADC buses)
@@ -1081,7 +1081,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  *
  * @par Example - Remove All Buses:
  * @code{.c}
- * const char* bus_names[] = {"imu", "motor_drv0", "battery"};
+ * const char* bus_names[] = {"imu", "motor_drv0", "temp_sensor"};
  * for (uint8_t i = 0; i < 3; i++) {
  *     rx_err_t err = rx_bus_manager_remove_bus(&manager, bus_names[i]);
  *     if (err == k_rx_ok) {

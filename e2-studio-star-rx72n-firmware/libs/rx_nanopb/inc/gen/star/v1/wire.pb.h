@@ -4,7 +4,6 @@
 #ifndef PB_STAR_V1_STAR_V1_WIRE_PB_H_INCLUDED
 #define PB_STAR_V1_STAR_V1_WIRE_PB_H_INCLUDED
 #include <pb.h>
-#include "star/v1/battery_management.pb.h"
 #include "star/v1/configuration.pb.h"
 #include "star/v1/diagnostics.pb.h"
 #include "star/v1/motor_control.pb.h"
@@ -65,10 +64,6 @@ typedef struct _star_v1_WireMessage {
         star_v1_TelemetryData telemetry_data;
         /* Encoder data contains quadrature encoder readings and velocity estimates. */
         star_v1_EncoderData encoder_data;
-        /* Battery management (bidirectional) */
-        star_v1_BatteryStatus battery_status;
-        /* BatteryState contains detailed BMS telemetry for StreamBatteryState. */
-        star_v1_BatteryState battery_state;
         /* Configuration (RPi5 -> RX72N) */
         star_v1_PidConfig pid_config;
         /* Retransmit configuration (RPi5 -> RX72N) */
@@ -98,8 +93,6 @@ extern "C" {
 #define star_v1_WireMessage_motor_power_command_tag 3
 #define star_v1_WireMessage_telemetry_data_tag   10
 #define star_v1_WireMessage_encoder_data_tag     11
-#define star_v1_WireMessage_battery_status_tag   20
-#define star_v1_WireMessage_battery_state_tag    21
 #define star_v1_WireMessage_pid_config_tag       30
 #define star_v1_WireMessage_retransmit_config_tag 31
 #define star_v1_WireMessage_transport_diagnostics_tag 50
@@ -111,8 +104,6 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (payload,emergency_stop_command,payload.emerg
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,motor_power_command,payload.motor_power_command),   3) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,telemetry_data,payload.telemetry_data),  10) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,encoder_data,payload.encoder_data),  11) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,battery_status,payload.battery_status),  20) \
-X(a, STATIC,   ONEOF,    MESSAGE,  (payload,battery_state,payload.battery_state),  21) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,pid_config,payload.pid_config),  30) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,retransmit_config,payload.retransmit_config),  31) \
 X(a, STATIC,   ONEOF,    MESSAGE,  (payload,transport_diagnostics,payload.transport_diagnostics),  50)
@@ -123,8 +114,6 @@ X(a, STATIC,   ONEOF,    MESSAGE,  (payload,transport_diagnostics,payload.transp
 #define star_v1_WireMessage_payload_motor_power_command_MSGTYPE star_v1_MotorPowerCommand
 #define star_v1_WireMessage_payload_telemetry_data_MSGTYPE star_v1_TelemetryData
 #define star_v1_WireMessage_payload_encoder_data_MSGTYPE star_v1_EncoderData
-#define star_v1_WireMessage_payload_battery_status_MSGTYPE star_v1_BatteryStatus
-#define star_v1_WireMessage_payload_battery_state_MSGTYPE star_v1_BatteryState
 #define star_v1_WireMessage_payload_pid_config_MSGTYPE star_v1_PidConfig
 #define star_v1_WireMessage_payload_retransmit_config_MSGTYPE star_v1_RetransmitConfig
 #define star_v1_WireMessage_payload_transport_diagnostics_MSGTYPE star_v1_TransportDiagnostics
@@ -144,12 +133,7 @@ extern const pb_msgdesc_t star_v1_EmergencyStopCommand_msg;
 #define star_v1_EmergencyStopCommand_fields &star_v1_EmergencyStopCommand_msg
 
 /* Maximum encoded size of messages (where known) */
-#if defined(star_v1_BatteryState_size)
-union star_v1_WireMessage_payload_size_union {char f21[(7 + star_v1_BatteryState_size)]; char f0[1403];};
-#endif
-#if defined(star_v1_BatteryState_size)
-#define star_v1_WireMessage_size                 (0 + sizeof(union star_v1_WireMessage_payload_size_union))
-#endif
+#define star_v1_WireMessage_size                 1403
 #define STAR_V1_STAR_V1_WIRE_PB_H_MAX_SIZE       star_v1_EmergencyStopCommand_size
 #define star_v1_EmergencyStopCommand_size        143
 

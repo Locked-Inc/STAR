@@ -29,9 +29,6 @@ The system follows a layered architecture:
   - Convert encoder ticks to wheel displacement.
   - Integrate pose (x, y, theta) using differential drive kinematics.
   - Publish to `/odom/unfiltered` and `/joint_states`.
-- **Battery Monitoring**:
-  - Extract voltage and SOC from telemetry and publish to `/battery_state`.
-
 ### 3.3 Lifecycle Management
 - **Configure**: Initialize SPI driver, declare parameters.
 - **Activate**: Start 100 Hz timer, enable publishers.

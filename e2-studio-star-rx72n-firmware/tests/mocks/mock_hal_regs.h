@@ -853,7 +853,7 @@ void mock_hal_set_adc_timeout(bool simulate);
  * access. Use for verifying I2C register configuration.
  *
  * @param[in] channel RIIC channel number
- *   - 0: RIIC0 (battery monitor on STAR)
+ *   - 0: RIIC0 (I2C channel 0)
  *   - 1: RIIC1 (sensor expansion)
  *   - 2: RIIC2 (reserved)
  *

@@ -164,7 +164,6 @@ void test_telemetry_data_mks_units(void) {
     telemetry.imu.gyro_x_rad_per_s = 0.01; // rad/s
     telemetry.imu.gyro_y_rad_per_s = 0.0;
     telemetry.imu.gyro_z_rad_per_s = 0.0;
-    telemetry.battery_percent = 85.5;
     telemetry.temperature_celsius = 42.0;
 
     bool encode_status = pb_encode(&ostream, star_v1_TelemetryData_fields, &telemetry);
@@ -213,10 +212,6 @@ void test_telemetry_data_rx72n_fields(void) {
     telemetry.emergency_stop = false;
     telemetry.fault_flags = 0;
 
-    // Battery data (BQ4050)
-    telemetry.battery_voltage_v = 12.6;
-    telemetry.battery_soc_percent = 85;
-
     bool encode_status = pb_encode(&ostream, star_v1_TelemetryData_fields, &telemetry);
     TEST_ASSERT_TRUE_MESSAGE(encode_status, "Encoding failed");
 
@@ -243,11 +238,9 @@ void test_telemetry_data_rx72n_fields(void) {
     TEST_ASSERT_EQUAL_INT32(3, decoded.encoder_3.motor_id);
     TEST_ASSERT_EQUAL_INT64(950, decoded.encoder_3.ticks);
 
-    // Verify safety and battery data
+    // Verify safety data
     TEST_ASSERT_FALSE(decoded.emergency_stop);
     TEST_ASSERT_EQUAL_UINT32(0, decoded.fault_flags);
-    TEST_ASSERT_FLOAT_WITHIN(0.01, 12.6, decoded.battery_voltage_v);
-    TEST_ASSERT_EQUAL_UINT32(85, decoded.battery_soc_percent);
 }
 
 void test_request_header_string_limits(void) {

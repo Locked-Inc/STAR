@@ -189,12 +189,6 @@ TEST_F(SafetyMonitorTest, OdometrySubscription)
   EXPECT_TRUE(true);
 }
 
-TEST_F(SafetyMonitorTest, BatterySafetyChecks)
-{
-  // TODO(locked-in): Test battery voltage/current monitoring
-  GTEST_SKIP() << "Battery safety tests not yet implemented";
-}
-
 TEST_F(SafetyMonitorTest, EmergencyStopTrigger)
 {
   // TODO(locked-in): Test E-Stop triggering logic

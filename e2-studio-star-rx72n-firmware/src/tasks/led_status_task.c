@@ -369,7 +369,7 @@ static void internal_led_set(uint8_t led_index, bool on)
  * @details
  * Reads system state from shared_data each tick and updates 6 LEDs:
  * - LED 0: Heartbeat toggle at 1 Hz (10 ticks on, 10 ticks off)
- * - LED 1: Fast blink when any motor fault or BMS fault active
+ * - LED 1: Fast blink when any motor fault active
  * - LED 2: Solid on when any motor has nonzero duty cycle
  * - LED 3: 100ms pulse when new motor command received
  * - LED 4: Solid on when any obstacle detected
@@ -419,13 +419,6 @@ static void internal_led_task_entry(ULONG input)
         if (motor_state.fault_flags[i] != 0) {
           any_fault = true;
         }
-      }
-
-      /* Also check BMS faults */
-      bms_state_t bms_state;
-      (void)shared_data_get_bms(&bms_state);
-      if (bms_state.fault_flags != 0) {
-        any_fault = true;
       }
 
       if (any_fault) {

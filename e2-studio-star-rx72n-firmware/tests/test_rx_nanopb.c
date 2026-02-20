@@ -38,7 +38,7 @@
  * | Emergency Stop Request Decode | 6 | E-stop message parsing, error injection |
  * | Emergency Stop Response Encode | 8 | E-stop engaged/disengaged states, status codes |
  * | SetPIDGainsRequest Decode | 8 | PID controller gains update command validation |
- * | Telemetry Encode | 14 | Battery, GPS, IMU, temperature, WiFi, CPU, motor load |
+ * | Telemetry Encode | 13 | GPS, IMU, temperature, WiFi, CPU, motor load |
  * | Helper Functions (Velocity Cmd) | 5 | Message factory validation, zero initialization |
  * | Helper Functions (Response Hdr) | 6 | Status code mapping, request ID handling |
  * | Encoded Length Tracking | 2 | Message size validation, empty message edge case |
@@ -51,7 +51,7 @@
  * | star.v1.SetVelocityResponse | RX72N -> RPi5 | ResponseHeader (optional) | Command acknowledgment with status/latency |
  * | star.v1.EmergencyStopRequest | RPi5 -> RX72N | engage (bool) | Emergency stop command |
  * | star.v1.EmergencyStopResponse | RX72N -> RPi5 | ResponseHeader + estop_engaged (bool) | E-stop state confirmation |
- * | star.v1.TelemetryData | RX72N -> RPi5 | 15+ fields (battery, GPS, IMU, etc.) | Sensor/motor status telemetry |
+ * | star.v1.TelemetryData | RX72N -> RPi5 | 14+ fields (GPS, IMU, etc.) | Sensor/motor status telemetry |
  *
  * **Test Methodology:**
  * @par 1. Initialization Tests:
@@ -100,8 +100,7 @@
  * - sequence: 0 to UINT32_MAX (wraps to 0)
  * - timestamp_us: microsecond timestamp (optional)
  *
- * Telemetry Data (15+ fields):
- * - battery_percent: 0-100 (double)
+ * Telemetry Data (14+ fields):
  * - temperature_celsius: -40 to +85degC (double)
  * - cpu_usage_percent: 0-100 (double)
  * - motor_load_percent: 0-100 (double)
@@ -129,7 +128,7 @@
  * @par Field Type Coverage:
  * | Field Type | Tests | Examples |
  * |------------|-------|----------|
- * | double | 20 | velocity_mps, battery_percent, temperature_celsius, GPS coords |
+ * | double | 20 | velocity_mps, temperature_celsius, GPS coords |
  * | uint32 | 8 | sequence, timestamp_us, satellites, latency_us |
  * | int32 | 3 | wifi_signal_dbm |
  * | bool | 6 | has_command, has_gps, has_imu, estop_engaged |
@@ -183,7 +182,7 @@
  *
  * @par Test Vector Generation:
  * - **internal_make_velocity_params():** Factory function for VelocityCommand parameter struct
- * - **Static constants:** s_test_front_left_velocity_mps, s_test_battery_percent, etc.
+ * - **Static constants:** s_test_front_left_velocity_mps, s_test_temperature_c, etc.
  * - **Edge cases:** Zero velocity, max velocity (2.0 m/s), negative velocity (-2.0 m/s)
  * - **Sequence numbers:** 0, 42 (arbitrary), UINT32_MAX (wrap test)
  *
@@ -369,7 +368,6 @@ static const double s_test_zero_velocity_mps = 0.0; /**< Zero velocity (stop com
  * Values chosen to be non-zero and distinguishable from defaults.
  * @{
  */
-static const double s_test_battery_percent    = 85.5;      /**< Battery level (0-100%) */
 static const double s_test_cpu_usage_percent  = 45.0;      /**< CPU utilization (0-100%) */
 static const double s_test_temperature_c      = 25.5;      /**< Temperature (degC) */
 static const double s_test_motor_load_percent = 30.0;      /**< Motor load (0-100%) */
@@ -1803,26 +1801,25 @@ void test_encode_estop_response_not_initialized(void)
  * @defgroup nanopb_test_telemetry_encode TelemetryData Encoding Tests
  * @brief Tests for encoding telemetry sensor/motor data (RX72N -> RPi5)
  * @details
- * Validates rx_nanopb_encode_telemetry() with 15+ telemetry fields including
- * battery, GPS, IMU, temperature, CPU usage, motor load, and WiFi signal strength.
+ * Validates rx_nanopb_encode_telemetry() with 14+ telemetry fields including
+ * GPS, IMU, temperature, CPU usage, motor load, and WiFi signal strength.
  *
  * **Message Structure:**
  * @code
  * message TelemetryData {
- *   double battery_percent = 1;       // 0-100%
- *   double temperature_celsius = 2;   // -40 to +85degC
- *   double cpu_usage_percent = 3;     // 0-100%
- *   double motor_load_percent = 4;    // 0-100%
- *   int32 wifi_signal_dbm = 5;        // -100 to 0 dBm
- *   optional GpsData gps = 6;         // Nested message
- *   optional ImuData imu = 7;         // Nested message
+ *   double temperature_celsius = 1;   // -40 to +85degC
+ *   double cpu_usage_percent = 2;     // 0-100%
+ *   double motor_load_percent = 3;    // 0-100%
+ *   int32 wifi_signal_dbm = 4;        // -100 to 0 dBm
+ *   optional GpsData gps = 5;         // Nested message
+ *   optional ImuData imu = 6;         // Nested message
  * }
  * @endcode
  *
- * **Test Coverage (14 tests):**
+ * **Test Coverage (13 tests):**
  * - nullptr pointer checks (3 tests)
  * - Buffer size validation (2 tests)
- * - Individual field encoding (6 tests: battery, temp, CPU, motor, WiFi, GPS, IMU)
+ * - Individual field encoding (5 tests: temp, CPU, motor, WiFi, GPS, IMU)
  * - All fields combined (1 test)
  * - State validation (1 test)
  *
@@ -1888,20 +1885,6 @@ void test_encode_telemetry_empty(void)
 
   rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-}
-
-/**
- * @brief Test encode telemetry with battery data
- */
-void test_encode_telemetry_battery(void)
-{
-  star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-  msg.battery_percent       = s_test_battery_percent;
-
-  uint32_t len = 0;
-  rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
-  TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_GREATER_THAN(k_min_encoded_telemetry, len);
 }
 
 /**
@@ -2003,7 +1986,6 @@ void test_encode_telemetry_all_fields(void)
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
 
   /* Basic sensor data */
-  msg.battery_percent     = s_test_battery_percent;
   msg.temperature_celsius = s_test_temperature_c;
   msg.cpu_usage_percent   = s_test_cpu_usage_percent;
   msg.motor_load_percent  = s_test_motor_load_percent;
@@ -2336,19 +2318,19 @@ void test_create_response_header_all_status_codes(void)
  * @brief Test that encoded length increases with more data
  * @details
  * Verifies protobuf size optimization - more fields = larger message.
- * Compares small message (battery only) vs large message (battery + GPS + IMU).
+ * Compares small message (temperature only) vs large message (temperature + GPS + IMU).
  */
 void test_encoded_length_increases_with_data(void)
 {
   star_v1_TelemetryData msg_small = star_v1_TelemetryData_init_zero;
   star_v1_TelemetryData msg_large = star_v1_TelemetryData_init_zero;
 
-  /* Small message: just battery */
-  msg_small.battery_percent = s_test_battery_percent;
+  /* Small message: just temperature */
+  msg_small.temperature_celsius = s_test_temperature_c;
 
-  /* Large message: battery + GPS + IMU */
-  msg_large.battery_percent   = s_test_battery_percent;
-  msg_large.has_gps           = true;
+  /* Large message: temperature + GPS + IMU */
+  msg_large.temperature_celsius = s_test_temperature_c;
+  msg_large.has_gps             = true;
   msg_large.gps.latitude_deg  = s_test_latitude_deg;
   msg_large.gps.longitude_deg = s_test_longitude_deg;
   msg_large.has_imu           = true;
@@ -2441,7 +2423,6 @@ void test_telemetry_fits_in_buffer(void)
   star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
 
   /* Fill all fields */
-  msg.battery_percent     = s_test_battery_percent;
   msg.temperature_celsius = s_test_temperature_c;
   msg.cpu_usage_percent   = s_test_cpu_usage_percent;
   msg.motor_load_percent  = s_test_motor_load_percent;
@@ -2586,7 +2567,6 @@ int main(void)
   RUN_TEST(test_encode_telemetry_null_len);
   RUN_TEST(test_encode_telemetry_small_buffer);
   RUN_TEST(test_encode_telemetry_empty);
-  RUN_TEST(test_encode_telemetry_battery);
   RUN_TEST(test_encode_telemetry_temperature);
   RUN_TEST(test_encode_telemetry_cpu_usage);
   RUN_TEST(test_encode_telemetry_motor_load);

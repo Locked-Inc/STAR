@@ -1250,7 +1250,7 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*              
  *
  * @details
  * Serializes telemetry data for periodic transmission to RPi5. Contains
- * motor states, encoder readings, battery status, and sensor data.
+ * motor states, encoder readings, and sensor data.
  * Typically called at 10-100 Hz depending on telemetry requirements.
  *
  * @par Telemetry Contents
@@ -1259,7 +1259,6 @@ rx_err_t rx_nanopb_decode_retransmit_config_request(const uint8_t*              
  * | Motor velocities | 4 x double (m/s) | 100 Hz |
  * | Motor currents | 4 x double (A) | 100 Hz |
  * | Encoder positions | 4 x int32 (ticks) | 100 Hz |
- * | Battery | voltage, current, SOC | 10 Hz |
  * | Temperature | system temp (degC) | 1 Hz |
  *
  * @param[in] msg TelemetryData message to encode

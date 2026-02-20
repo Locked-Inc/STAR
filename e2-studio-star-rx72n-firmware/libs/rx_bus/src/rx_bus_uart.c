@@ -1279,7 +1279,7 @@ rx_err_t rx_bus_uart_init(rx_bus_manager_t* manager, const char* bus_name)
  * uint8_t pb_buffer[128];
  * pb_ostream_t stream = pb_ostream_from_buffer(pb_buffer, sizeof(pb_buffer));
  *
- * TelemetryMessage msg = {.battery_voltage = 12.5f, .soc_percent = 85};
+ * TelemetryMessage msg = {.temperature_celsius = 28.5f, .cpu_usage = 45};
  * bool status = pb_encode(&stream, TelemetryMessage_fields, &msg);
  * if (status) {
  *     rx_bus_uart_write(&bus_mgr, "telemetry", pb_buffer, stream.bytes_written);
@@ -1746,8 +1746,8 @@ rx_err_t rx_bus_uart_putc(rx_bus_manager_t* manager, const char* bus_name, char 
  * @code{.c}
  * // Print formatted telemetry
  * char msg[80];
- * snprintf(msg, sizeof(msg), "Voltage: %.2fV, Current: %.2fA, Temp: %ddegC\r\n",
- *          battery_voltage, battery_current, temperature);
+ * snprintf(msg, sizeof(msg), "Current: %.2fA, Temp: %ddegC\r\n",
+ *          motor_current, temperature);
  * rx_bus_uart_puts(&bus_mgr, "debug", msg);
  * @endcode
  *

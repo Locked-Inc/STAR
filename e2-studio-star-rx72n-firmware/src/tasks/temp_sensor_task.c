@@ -486,7 +486,7 @@ static void internal_temp_task_entry(ULONG input);
  *    - Motor control (Priority 10 @ 100 Hz)
  *    - Obstacle detection (Priority 12 @ 10 Hz)
  *    - Encoder reading (Priority 8 @ 1 kHz)
- * 5. **Shared with BMS:** Same priority as BMS monitoring (both low-priority 1 Hz tasks)
+ * 5. **Low priority:** Low-priority 1 Hz task (does not preempt control tasks)
  *
  * ## Control Flow Diagram
  *

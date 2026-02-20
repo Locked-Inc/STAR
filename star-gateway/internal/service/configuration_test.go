@@ -48,7 +48,6 @@ func createDefaultConfiguration() *starv1.SystemConfiguration {
 			MotorControlPeriodMs:   10,
 			TelemetryPeriodMs:      100,
 			CommunicationTimeoutMs: 500,
-			BmsPollPeriodMs:        1000,
 		},
 		ConfigVersion: 1,
 		ConfigCrc:     0,
@@ -1182,7 +1181,6 @@ func TestValidateConfiguration_AllTimingParametersInvalid(t *testing.T) {
 	config.TimingConfig.MotorControlPeriodMs = 0
 	config.TimingConfig.TelemetryPeriodMs = 5
 	config.TimingConfig.CommunicationTimeoutMs = 50
-	config.TimingConfig.BmsPollPeriodMs = 50
 
 	req := &starv1.ValidateConfigurationRequest{
 		Header: &starv1.RequestHeader{
@@ -1200,19 +1198,18 @@ func TestValidateConfiguration_AllTimingParametersInvalid(t *testing.T) {
 		t.Errorf("Expected INVALID status, got %v", resp.ValidationResult.Status)
 	}
 
-	// Should have 4 timing errors
+	// Should have 3 timing errors
 	timingErrors := 0
 	for _, err := range resp.ValidationResult.Errors {
 		if err.FieldPath == "timing_config.motor_control_period_ms" ||
 			err.FieldPath == "timing_config.telemetry_period_ms" ||
-			err.FieldPath == "timing_config.communication_timeout_ms" ||
-			err.FieldPath == "timing_config.bms_poll_period_ms" {
+			err.FieldPath == "timing_config.communication_timeout_ms" {
 			timingErrors++
 		}
 	}
 
-	if timingErrors != 4 {
-		t.Errorf("Expected 4 timing errors, got %d", timingErrors)
+	if timingErrors != 3 {
+		t.Errorf("Expected 3 timing errors, got %d", timingErrors)
 	}
 }
 

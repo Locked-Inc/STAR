@@ -476,7 +476,7 @@ extern "C" {
  * **Power Savings:**
  * - **With deinit**: CRCA module stopped, saves ~0.2 mA @ 3.3V (negligible)
  * - **Without deinit**: CRCA remains clocked, minimal power overhead
- * - **Recommendation**: Leave CRC enabled unless power is critical (battery operation)
+ * - **Recommendation**: Leave CRC enabled unless power is critical (low-power mode)
  *
  * @return rx_err_t Deinitialization result
  * @retval k_rx_ok Deinitialization successful (hardware or no-op)
@@ -501,7 +501,7 @@ extern "C" {
  * 3. Power savings from disabling are minimal (<0.2 mA)
  * 4. No functional benefit in typical operation
  *
- * If power optimization is critical (battery operation, low-power modes),
+ * If power optimization is critical (low-power sleep modes),
  * modify implementation to actually disable peripheral.
  *
  * @par Performance Impact:
@@ -526,7 +526,7 @@ extern "C" {
  * }
  * @endcode
  *
- * @par Example - Conditional Deinit (Battery Operation):
+ * @par Example - Conditional Deinit (Low-Power Mode):
  * @code{.c}
  * void enter_low_power_mode(void)
  * {

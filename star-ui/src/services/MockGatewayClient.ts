@@ -5,14 +5,12 @@
 
 import type { GatewayClient, RobotSnapshot } from './GatewayClient'
 import type { TelemetryData, SystemStatus } from '@/proto/star/v1/telemetry'
-import type { BatteryState } from '@/proto/star/v1/battery_management'
 import type { MotorStatus } from '@/proto/star/v1/motor_control'
 import type { SystemConfiguration, MotorPidConfiguration } from '@/proto/star/v1/configuration'
 import type { FirmwareInfo, FirmwareUpdateProgress } from '@/proto/star/v1/firmware_update'
 import { ConnectionStatus, RobotMode, GpsFix } from '@/proto/star/v1/telemetry'
 import { FirmwareUpdateState } from '@/proto/star/v1/firmware_update'
 import { MotorState } from '@/proto/star/v1/motor_control'
-import { BatteryStateEnum } from '@/proto/star/v1/battery_management'
 
 type Subscriber = (snapshot: RobotSnapshot) => void
 
@@ -46,7 +44,6 @@ export class MockGatewayClient implements GatewayClient {
   private yaw = 0
   private cpu = 35
   private wifi = -65
-  private battPct = 87
   private motorVelocities: number[] = [0.0, 0.0, 0.0, 0.0]
   private motorTargets: number[] = [0.3, 0.3, 0.3, 0.3]
   private bootTime = Date.now()
@@ -77,8 +74,6 @@ export class MockGatewayClient implements GatewayClient {
     this.yaw = (this.yaw + rand(-0.005, 0.005)) % (2 * Math.PI)
     this.cpu = Math.max(5, Math.min(95, this.cpu + rand(-2, 2)))
     this.wifi = Math.max(-90, Math.min(-40, this.wifi + rand(-1, 1)))
-    this.battPct = Math.max(0, this.battPct - 0.001)
-
     for (let i = 0; i < MOTOR_COUNT; i++) {
       this.motorVelocities[i] = lerp(
         this.motorVelocities[i],
@@ -112,7 +107,6 @@ export class MockGatewayClient implements GatewayClient {
         satellites: 9,
         fixType: GpsFix.GPS_FIX_3D,
       },
-      batteryPercent: this.battPct,
       wifiSignalDbm: Math.round(this.wifi),
       cpuUsagePercent: this.cpu,
       temperatureCelsius: 28.5 + rand(-0.5, 0.5),
@@ -131,57 +125,6 @@ export class MockGatewayClient implements GatewayClient {
       freeHeapBytes: Math.round(rand(180000, 220000)),
     }
 
-    const cellMvs = [3710, 3720, 3700, 3680, 3715, 3705].map((v) => Math.round(v + rand(-8, 8)))
-    const minCellMv = Math.min(...cellMvs)
-    const maxCellMv = Math.max(...cellMvs)
-    const packMv = cellMvs.reduce((a, b) => a + b, 0)
-
-    const battery: BatteryState = {
-      cells: {
-        cellMv: cellMvs,
-        validCells: 6,
-        packMv,
-        minCellMv,
-        maxCellMv,
-        deltaMv: maxCellMv - minCellMv,
-      },
-      temperatures: {
-        tempDeciCelsius: [295, 298, 301].map((v) => Math.round(v + rand(-5, 5))),
-        validSensors: 3,
-        avgTempDeciCelsius: Math.round(298 + rand(-3, 3)),
-        minTempDeciCelsius: 293,
-        maxTempDeciCelsius: 303,
-      },
-      current: {
-        currentMa: Math.round(-1200 - rand(0, 100)),
-        avgCurrentMa: Math.round(-1150 + rand(-50, 50)),
-        voltageMv: packMv,
-        powerMw: Math.round(packMv * 1.2),
-      },
-      soc: {
-        remainingCapacityMah: Math.round(this.battPct * 25),
-        fullCapacityMah: 2500,
-        designCapacityMah: 2600,
-        relativeSocPercent: Math.round(this.battPct * 10) / 10,
-        absoluteSocPercent: Math.round(this.battPct * 9.5) / 10,
-        cycleCount: 42,
-      },
-      status: {
-        batteryStatusRegister: 0x0000,
-        safetyStatusRegister: 0x0000,
-        operationStatusRegister: 0x0003,
-        alarmWarningRegister: 0x0000,
-        charging: false,
-        discharging: true,
-        fullyCharged: false,
-        fullyDischarged: false,
-        faultActive: false,
-        safetyFaults: undefined,
-        state: BatteryStateEnum.DISCHARGING,
-      },
-      timestampUs: String(Date.now() * 1000),
-    }
-
     const motors: MotorStatus[] = Array.from({ length: MOTOR_COUNT }, (_, i) => ({
       motorId: i,
       dutyCyclePercent: this.motorVelocities[i] * 50,
@@ -196,7 +139,6 @@ export class MockGatewayClient implements GatewayClient {
     return {
       telemetry,
       systemStatus,
-      battery,
       motors,
       encoders: motors.map((_, i) => ({
         motorId: i,
@@ -240,7 +182,6 @@ export class MockGatewayClient implements GatewayClient {
         motorControlPeriodMs: 10,
         telemetryPeriodMs: 100,
         communicationTimeoutMs: 500,
-        bmsPollPeriodMs: 1000,
       },
       configVersion: 1,
       configCrc: 0,
@@ -322,16 +263,6 @@ export class MockGatewayClient implements GatewayClient {
   }
 
   async markValid(): Promise<void> {
-    await new Promise((r) => setTimeout(r, 100))
-  }
-
-  // ---- Battery -------------------------------------------------------------
-
-  async enableBalancing(_cells: number[]): Promise<void> {
-    await new Promise((r) => setTimeout(r, 100))
-  }
-
-  async disableBalancing(): Promise<void> {
     await new Promise((r) => setTimeout(r, 100))
   }
 }

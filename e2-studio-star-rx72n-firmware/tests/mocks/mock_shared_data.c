@@ -86,7 +86,6 @@ static motor_state_t   s_motor_state        = {0};
 static pid_gains_t     s_pid_gains          = {0};
 static bool            s_pid_update_pending = false;
 
-static bms_state_t         s_bms_state      = {0};
 static temp_sensor_state_t s_temp_state     = {0};
 static obstacle_state_t    s_obstacle_state = {0};
 
@@ -142,7 +141,6 @@ void mock_shared_data_reset(void)
   s_pid_gains.integral_min = -50.0f;
   s_pid_gains.integral_max = 50.0f;
 
-  (void)memset(&s_bms_state, 0, sizeof(s_bms_state));
   (void)memset(&s_temp_state, 0, sizeof(s_temp_state));
   (void)memset(&s_obstacle_state, 0, sizeof(s_obstacle_state));
 
@@ -210,7 +208,7 @@ estop_reason_t mock_shared_data_get_last_estop_reason(void)
  * @brief Return the number of times shared_data_set_event() has been called
  *
  * @details
- * Provides test code with a way to assert that the BMS task called
+ * Provides test code with a way to assert that a task called
  * shared_data_set_event() exactly the expected number of times within a test.
  *
  * @return uint32_t Call count since last mock_shared_data_reset()
@@ -401,27 +399,6 @@ bool shared_data_is_estop_active(void)
 estop_reason_t shared_data_get_estop_reason(void)
 {
   return s_estop_reason;
-}
-
-/* BMS State */
-rx_err_t shared_data_update_bms(const bms_state_t* state)
-{
-  if (state == nullptr) {
-    return k_rx_err_null_ptr;
-  }
-
-  (void)memcpy(&s_bms_state, state, sizeof(s_bms_state));
-  return k_rx_ok;
-}
-
-rx_err_t shared_data_get_bms(bms_state_t* out_state)
-{
-  if (out_state == nullptr) {
-    return k_rx_err_null_ptr;
-  }
-
-  (void)memcpy(out_state, &s_bms_state, sizeof(*out_state));
-  return k_rx_ok;
 }
 
 /* Temperature State */

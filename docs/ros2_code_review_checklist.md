@@ -10,7 +10,7 @@ Use this checklist when reviewing ROS2 C++ code in the STAR project.
 
 - [ ] ? Classes use `CamelCase` (e.g., `StarGatewayBridgeNode`)
 - [ ] ? Methods use `snake_case` (e.g., `publish_telemetry()`) - same as C firmware
-- [ ] ? Variables use `snake_case` (e.g., `battery_voltage`)
+- [ ] ? Variables use `snake_case` (e.g., `encoder_ticks`)
 - [ ] ? Member variables have trailing `_` (e.g., `grpc_channel_`)
 - [ ] ? Constants use `ALL_CAPITALS` (e.g., `MAX_RETRIES`)
 - [ ] ? Namespaces use `under_scored` and match package name (e.g., `star::spi_bridge`)

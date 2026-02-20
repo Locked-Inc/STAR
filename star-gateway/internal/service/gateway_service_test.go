@@ -74,7 +74,6 @@ func TestForwardTelemetry_ConcurrentStress(t *testing.T) {
 						RequestId: fmt.Sprintf("g%d-i%d", g, i),
 					},
 					SystemStatus: &starv1.SystemStatus{},
-					BatteryState: &starv1.BatteryState{},
 					Telemetry:    &starv1.TelemetryData{},
 				}
 				_, err := svc.ForwardTelemetry(context.Background(), req)
@@ -86,9 +85,9 @@ func TestForwardTelemetry_ConcurrentStress(t *testing.T) {
 	}
 	wg.Wait()
 
-	// Each ForwardTelemetry call broadcasts 3 non-nil payloads
-	// (SystemStatus, BatteryState, Telemetry), so expected count is goroutines * callsPerRoutine * 3.
-	const payloadsPerCall = 3
+	// Each ForwardTelemetry call broadcasts 2 non-nil payloads
+	// (SystemStatus, Telemetry), so expected count is goroutines * callsPerRoutine * 2.
+	const payloadsPerCall = 2
 	expected := goroutines * callsPerRoutine * payloadsPerCall
 	if got := hub.count(); got != expected {
 		t.Errorf("hub.count() = %d, want %d (goroutines=%d, calls=%d, payloads=%d)",
@@ -122,7 +121,6 @@ func TestForwardTelemetry(t *testing.T) {
 				RequestId: "test-123",
 			},
 			SystemStatus: &starv1.SystemStatus{},
-			BatteryState: &starv1.BatteryState{},
 			Telemetry:    &starv1.TelemetryData{},
 		}
 
@@ -401,21 +399,20 @@ func TestGetLatestTelemetry(t *testing.T) {
 	svc := NewGatewayService()
 
 	// Initially should return nil
-	status, battery, telemetry := svc.GetLatestTelemetry()
-	if status != nil || battery != nil || telemetry != nil {
+	status, telemetry := svc.GetLatestTelemetry()
+	if status != nil || telemetry != nil {
 		t.Error("Expected all nil telemetry initially")
 	}
 
 	// Set telemetry
 	svc.telemetryMu.Lock()
 	svc.cachedSystemStatus = &starv1.SystemStatus{}
-	svc.cachedBatteryState = &starv1.BatteryState{}
 	svc.cachedTelemetry = &starv1.TelemetryData{}
 	svc.telemetryMu.Unlock()
 
 	// Verify retrieval
-	status, battery, telemetry = svc.GetLatestTelemetry()
-	if status == nil || battery == nil || telemetry == nil {
+	status, telemetry = svc.GetLatestTelemetry()
+	if status == nil || telemetry == nil {
 		t.Error("Expected non-nil telemetry after caching")
 	}
 }
@@ -505,7 +502,7 @@ func TestSetHub(t *testing.T) {
 }
 
 // TestForwardTelemetry_Hub_AllFields checks that ForwardTelemetry broadcasts one
-// STAREnvelope for each of the six non-nil payload fields in the request.
+// STAREnvelope for each of the five non-nil payload fields in the request.
 func TestForwardTelemetry_Hub_AllFields(t *testing.T) {
 	svc := NewGatewayService()
 	hub := &mockHub{}
@@ -514,7 +511,6 @@ func TestForwardTelemetry_Hub_AllFields(t *testing.T) {
 	req := &starv1.ForwardTelemetryRequest{
 		Header:       &starv1.RequestHeader{RequestId: "all-fields"},
 		SystemStatus: &starv1.SystemStatus{},
-		BatteryState: &starv1.BatteryState{},
 		Telemetry:    &starv1.TelemetryData{},
 		MotorStatus:  []*starv1.MotorStatus{{}, {}},
 		Odometry:     &starv1.OdometryData{XM: 1.0, YM: 2.0},
@@ -533,7 +529,6 @@ func TestForwardTelemetry_Hub_AllFields(t *testing.T) {
 	}
 	wantTypes := []payloadCheck{
 		{"*starv1.STAREnvelope_System", func(e *starv1.STAREnvelope) bool { _, ok := e.Payload.(*starv1.STAREnvelope_System); return ok }},
-		{"*starv1.STAREnvelope_Battery", func(e *starv1.STAREnvelope) bool { _, ok := e.Payload.(*starv1.STAREnvelope_Battery); return ok }},
 		{"*starv1.STAREnvelope_Telemetry", func(e *starv1.STAREnvelope) bool { _, ok := e.Payload.(*starv1.STAREnvelope_Telemetry); return ok }},
 		{"*starv1.STAREnvelope_Motors", func(e *starv1.STAREnvelope) bool { _, ok := e.Payload.(*starv1.STAREnvelope_Motors); return ok }},
 		{"*starv1.STAREnvelope_Odometry", func(e *starv1.STAREnvelope) bool { _, ok := e.Payload.(*starv1.STAREnvelope_Odometry); return ok }},
@@ -567,13 +562,12 @@ func TestForwardTelemetry_Hub_PartialFields(t *testing.T) {
 			wantBroadcasts: 1,
 		},
 		{
-			name: "BatteryAndOdometry",
+			name: "OdometryOnly",
 			req: &starv1.ForwardTelemetryRequest{
-				Header:       &starv1.RequestHeader{RequestId: "battery-odometry"},
-				BatteryState: &starv1.BatteryState{},
-				Odometry:     &starv1.OdometryData{},
+				Header:   &starv1.RequestHeader{RequestId: "odometry-only"},
+				Odometry: &starv1.OdometryData{},
 			},
-			wantBroadcasts: 2,
+			wantBroadcasts: 1,
 		},
 		{
 			name: "AllNilPayloads",
@@ -616,7 +610,6 @@ func TestForwardTelemetry_NilHub(t *testing.T) {
 	req := &starv1.ForwardTelemetryRequest{
 		Header:       &starv1.RequestHeader{RequestId: "no-hub"},
 		SystemStatus: &starv1.SystemStatus{},
-		BatteryState: &starv1.BatteryState{},
 		Telemetry:    &starv1.TelemetryData{},
 		Odometry:     &starv1.OdometryData{},
 		LidarScan:    &starv1.LidarScan{},
@@ -642,7 +635,6 @@ func TestForwardTelemetry_HubBroadcastError(t *testing.T) {
 	req := &starv1.ForwardTelemetryRequest{
 		Header:       &starv1.RequestHeader{RequestId: "hub-error"},
 		SystemStatus: &starv1.SystemStatus{},
-		BatteryState: &starv1.BatteryState{},
 	}
 
 	resp, err := svc.ForwardTelemetry(context.Background(), req)
@@ -652,9 +644,9 @@ func TestForwardTelemetry_HubBroadcastError(t *testing.T) {
 	if !resp.Cached {
 		t.Error("Expected cached=true even when broadcast fails")
 	}
-	// Broadcast was still attempted for both non-nil fields.
-	// expectedBroadcasts = 2 because only SystemStatus and BatteryState are non-nil in req.
-	const expectedBroadcasts = 2
+	// Broadcast was still attempted for the one non-nil field.
+	// expectedBroadcasts = 1 because only SystemStatus is non-nil in req.
+	const expectedBroadcasts = 1
 	if hub.count() != expectedBroadcasts {
 		t.Errorf("Expected %d broadcast attempts, got %d", expectedBroadcasts, hub.count())
 	}
@@ -686,13 +678,13 @@ func TestBroadcastEnvelope_Success(t *testing.T) {
 func TestBroadcastEnvelope_ChannelSaturation(t *testing.T) {
 	hub := &mockHub{err: errors.New("broadcast channel full")}
 	env := &starv1.STAREnvelope{
-		Payload: &starv1.STAREnvelope_Battery{Battery: &starv1.BatteryState{}},
+		Payload: &starv1.STAREnvelope_System{System: &starv1.SystemStatus{}},
 	}
 
 	var buf bytes.Buffer
 	logger := slog.New(slog.NewTextHandler(&buf, nil))
 
-	broadcastEnvelope(context.Background(), logger, "battery", hub, env)
+	broadcastEnvelope(context.Background(), logger, "system", hub, env)
 
 	if !bytes.Contains(buf.Bytes(), []byte("broadcast dropped")) {
 		t.Errorf("expected 'broadcast dropped' in log output, got: %s", buf.String())

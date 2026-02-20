@@ -60,14 +60,14 @@
  * | Monitor   | Threshold | Action    | Use Case                        |
  * |-----------|-----------|-----------|-------------------------------- |
  * | Vdet0     | OFS1 conf | Reset     | Emergency brownout protection   |
- * | Vdet1     | 2.92V     | Interrupt | Low battery warning             |
+ * | Vdet1     | 2.92V     | Interrupt | Low voltage warning             |
  * | Vdet2     | 2.85V     | Reset     | Critical brownout shutdown      |
  *
  * @par Voltage Detection Levels
  * | Level     | Voltage (typ) | Hysteresis | Notes                       |
  * |-----------|---------------|------------|------------------------------|
  * | Vdet1_1   | 2.99V         | ~50mV      | Early warning                 |
- * | Vdet1_2   | 2.92V         | ~50mV      | Low battery threshold         |
+ * | Vdet1_2   | 2.92V         | ~50mV      | Low voltage threshold         |
  * | Vdet1_3   | 2.85V         | ~50mV      | Critical threshold            |
  *
  * @par Hardware Requirements

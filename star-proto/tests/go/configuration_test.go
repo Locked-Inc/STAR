@@ -33,7 +33,7 @@ func TestSafetyThresholdsRoundTrip(t *testing.T) {
 		{"standard", 5000, 600, 100, "Standard safety thresholds"},
 		{"conservative", 2000, 500, 50, "Conservative thresholds"},
 		{"high_current", 15000, 700, 200, "High-current motor thresholds"},
-		{"battery_sensitive", 3000, 550, 30, "Battery-sensitive thresholds"},
+		{"sensitive", 3000, 550, 30, "Sensitive thresholds"},
 	}
 
 	for _, tc := range tests {
@@ -98,13 +98,12 @@ func TestTimingConfigurationRoundTrip(t *testing.T) {
 		motorPeriodMs     uint32
 		telemetryPeriodMs uint32
 		commTimeoutMs     uint32
-		bmsPollPeriodMs   uint32
 		desc              string
 	}{
-		{"high_freq", 1, 10, 100, 500, "1kHz motor, 100Hz telemetry"},
-		{"standard", 10, 100, 500, 1000, "100Hz motor, 10Hz telemetry"},
-		{"low_power", 50, 500, 2000, 5000, "20Hz motor, 2Hz telemetry"},
-		{"balanced", 20, 200, 1000, 2000, "50Hz motor, 5Hz telemetry"},
+		{"high_freq", 1, 10, 100, "1kHz motor, 100Hz telemetry"},
+		{"standard", 10, 100, 500, "100Hz motor, 10Hz telemetry"},
+		{"low_power", 50, 500, 2000, "20Hz motor, 2Hz telemetry"},
+		{"balanced", 20, 200, 1000, "50Hz motor, 5Hz telemetry"},
 	}
 
 	for _, tc := range tests {
@@ -113,7 +112,6 @@ func TestTimingConfigurationRoundTrip(t *testing.T) {
 				MotorControlPeriodMs:   tc.motorPeriodMs,
 				TelemetryPeriodMs:      tc.telemetryPeriodMs,
 				CommunicationTimeoutMs: tc.commTimeoutMs,
-				BmsPollPeriodMs:        tc.bmsPollPeriodMs,
 			}
 
 			bytes, err := proto.Marshal(timing)
@@ -126,7 +124,6 @@ func TestTimingConfigurationRoundTrip(t *testing.T) {
 			assert.Equal(t, tc.motorPeriodMs, parsed.MotorControlPeriodMs, tc.desc)
 			assert.Equal(t, tc.telemetryPeriodMs, parsed.TelemetryPeriodMs, tc.desc)
 			assert.Equal(t, tc.commTimeoutMs, parsed.CommunicationTimeoutMs, tc.desc)
-			assert.Equal(t, tc.bmsPollPeriodMs, parsed.BmsPollPeriodMs, tc.desc)
 		})
 	}
 }
@@ -387,7 +384,6 @@ func TestCompleteSystemConfigurationRoundTrip(t *testing.T) {
 			MotorControlPeriodMs:   10,
 			TelemetryPeriodMs:      100,
 			CommunicationTimeoutMs: 500,
-			BmsPollPeriodMs:        1000,
 		},
 		ConfigVersion: 1,
 		ConfigCrc:     0x12345678,

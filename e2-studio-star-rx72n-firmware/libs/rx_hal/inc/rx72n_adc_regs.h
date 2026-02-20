@@ -205,7 +205,7 @@ typedef enum : uint32_t {
    * sensor and internal voltage reference channels.
    * Channels AN100-AN120 mapped to various ports.
    *
-   * @par Usage: Temperature monitoring, battery sensing
+   * @par Usage: Temperature monitoring, analog sensing
    * @par Special Channels: Temperature sensor (AN127), Ref voltage (AN128)
    */
   k_s12ad1_base_addr = 0x00089100,

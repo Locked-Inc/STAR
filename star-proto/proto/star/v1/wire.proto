@@ -20,7 +20,6 @@ syntax = "proto3";
 
 package star.v1;
 
-import "star/v1/battery_management.proto";
 import "star/v1/configuration.proto";
 import "star/v1/diagnostics.proto";
 import "star/v1/motor_control.proto";
@@ -65,11 +64,6 @@ message WireMessage {
     TelemetryData telemetry_data = 10;
     // Encoder data contains quadrature encoder readings and velocity estimates.
     EncoderData encoder_data = 11;
-
-    // Battery management (bidirectional)
-    BatteryStatus battery_status = 20;
-    // BatteryState contains detailed BMS telemetry for StreamBatteryState.
-    BatteryState battery_state = 21;
 
     // Configuration (RPi5 -> RX72N)
     PidConfig pid_config = 30;

@@ -52,8 +52,6 @@ const (
 	maxTelemetryPeriodMs      = 1000
 	minCommunicationTimeoutMs = 100
 	maxCommunicationTimeoutMs = 5000
-	minBmsPollPeriodMs        = 100
-	maxBmsPollPeriodMs        = 10000
 )
 
 // ConfigurationService implements the ConfigurationServiceServer interface.
@@ -787,26 +785,6 @@ func (s *ConfigurationService) validateTimingConfig(config *starv1.TimingConfigu
 			Message:            "communication_timeout_ms is too high",
 			ActualValue:        fmt.Sprintf("%d", config.CommunicationTimeoutMs),
 			ExpectedConstraint: fmt.Sprintf("<= %d ms", maxCommunicationTimeoutMs),
-		})
-	}
-
-	// Validate BMS poll period
-	if config.BmsPollPeriodMs < minBmsPollPeriodMs {
-		errors = append(errors, &starv1.ConfigValidationError{
-			FieldPath:          "timing_config.bms_poll_period_ms",
-			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW,
-			Message:            "bms_poll_period_ms is too low",
-			ActualValue:        fmt.Sprintf("%d", config.BmsPollPeriodMs),
-			ExpectedConstraint: fmt.Sprintf(">= %d ms", minBmsPollPeriodMs),
-		})
-	}
-	if config.BmsPollPeriodMs > maxBmsPollPeriodMs {
-		errors = append(errors, &starv1.ConfigValidationError{
-			FieldPath:          "timing_config.bms_poll_period_ms",
-			ErrorCode:          starv1.ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH,
-			Message:            "bms_poll_period_ms is too high",
-			ActualValue:        fmt.Sprintf("%d", config.BmsPollPeriodMs),
-			ExpectedConstraint: fmt.Sprintf("<= %d ms", maxBmsPollPeriodMs),
 		})
 	}
 

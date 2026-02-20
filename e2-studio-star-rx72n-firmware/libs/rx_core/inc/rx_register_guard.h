@@ -695,7 +695,7 @@ void rx_register_guard_refresh(void);
  * void send_telemetry(void) {
  *     telemetry_packet_t packet = {
  *         .timestamp = get_system_time_ms(),
- *         .battery_voltage = read_battery_voltage(),
+ *         .temperature_celsius = read_temperature_celsius(),
  *         .motor_current = read_motor_current(),
  *         .register_corrections = rx_register_guard_get_correction_count(),
  *         // ... other fields ...
