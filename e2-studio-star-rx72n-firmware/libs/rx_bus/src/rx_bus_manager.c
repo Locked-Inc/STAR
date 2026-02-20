@@ -486,7 +486,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   }
 
   /* Clear manager state */
-  memset(manager, 0, sizeof(rx_bus_manager_t));
+  *manager = (rx_bus_manager_t){0};
 
   /* Create ThreadX mutex for thread safety */
   UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
@@ -682,7 +682,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
   }
 
   /* Clear manager state */
-  memset(manager, 0, sizeof(rx_bus_manager_t));
+  *manager = (rx_bus_manager_t){0};
 
   rx_log_info(s_tag, "Bus manager deinitialized");
 

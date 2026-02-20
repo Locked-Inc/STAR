@@ -848,8 +848,6 @@
 
 #include "obstacle_detect_task.h"
 
-#include <string.h>
-
 #include "motor_control_task.h"
 #include "rx_check.h"
 #include "rx_hcsr04.h"
@@ -1814,8 +1812,7 @@ static void internal_obstacle_task_entry(ULONG input)
   }
 
   /* Configure obstacle detection system */
-  rx_obstacle_detect_config_t config;
-  (void)memset(&config, 0, sizeof(config));
+  rx_obstacle_detect_config_t config = {0};
   config.sensor_count           = k_obstacle_sensor_count;
   config.sensors                = s_sensor_ptrs;
   config.motor_count            = motor_count;

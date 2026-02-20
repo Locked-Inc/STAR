@@ -865,7 +865,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_usb_comm_handle_t));
+  *handle = (rx_usb_comm_handle_t){0};
 
   /* Apply configuration - config is required for session pointer */
   if (config == nullptr || config->session == nullptr) {

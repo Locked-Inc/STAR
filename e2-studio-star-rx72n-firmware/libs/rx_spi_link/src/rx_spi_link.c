@@ -283,7 +283,7 @@ rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* confi
   }
 
   /* Zero-fill link handle */
-  (void)memset(link, 0, sizeof(*link));
+  *link = (rx_spi_link_t){0};
 
   /* Store configuration */
   link->spi_handle  = config->spi_handle;
@@ -747,9 +747,8 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
   }
 
   /* Receive raw frame from SPI transport */
-  rx_frame_t frame;
-  (void)memset(&frame, 0, sizeof(frame));
-  (void)memset(result, 0, sizeof(*result));
+  rx_frame_t                    frame  = {0};
+  *result = (rx_spi_link_receive_result_t){0};
 
   const rx_err_t recv_err = rx_spi_comm_receive(link->spi_handle, &frame, timeout_ms);
   if (recv_err != k_rx_ok) {

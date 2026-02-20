@@ -357,8 +357,6 @@
 
 #include "rx_drv8243.h"
 
-#include <string.h>
-
 #include "hardware.h"
 #include "rx72n_regs.h"
 #include "rx_bus_adc.h"
@@ -782,7 +780,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   }
 
   /* Zero out handle */
-  memset(handle, 0, sizeof(rx_drv8243_handle_t));
+  *handle = (rx_drv8243_handle_t){0};
 
   /* Store configuration */
   handle->bus_manager      = config->bus_manager;
@@ -887,7 +885,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_drv8243_handle_t));
+  *handle = (rx_drv8243_handle_t){0};
 
   rx_log_info(s_tag, "DRV8243 deinitialized");
 

@@ -328,9 +328,8 @@ rx_err_t rx_wdt_init(const rx_wdt_config_t* config)
   }
 
   /* Use default config if none provided */
-  rx_wdt_config_t default_config;
+  rx_wdt_config_t default_config = {0};
   if (config == nullptr) {
-    memset(&default_config, 0, sizeof(rx_wdt_config_t));
     default_config.timeout_cycles   = k_wdt_timeout_16384_cycles;
     default_config.clock_division   = k_wdt_clock_div_8192;
     default_config.enable_on_init   = false;

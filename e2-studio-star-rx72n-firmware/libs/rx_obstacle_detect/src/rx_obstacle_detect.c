@@ -157,8 +157,6 @@
 
 #include "rx_obstacle_detect.h"
 
-#include <string.h>
-
 #include "rx_check.h"
 #include "rx_threadx_config.h"
 #include "rx_time_constants.h"
@@ -317,7 +315,7 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_obstacle_detect_t));
+  *handle = (rx_obstacle_detect_t){0};
 
   /* Copy configuration */
   handle->sensor_count           = config->sensor_count;

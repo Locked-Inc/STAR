@@ -438,8 +438,6 @@
 
 #include "rx_usb.h"
 
-#include <string.h>
-
 #include "rx_time_constants.h"
 #include "rx_usb_endpoints.h"
 #include "rx_usb_internal.h"
@@ -1096,7 +1094,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   rx_log_info(s_tag, "Initializing USB CDC composite driver");
 
   /* Clear driver state */
-  memset(&s_usb, 0, sizeof(s_usb));
+  s_usb = (usb_driver_t){0};
 
   /* Store global callback if provided */
   if (config != nullptr) {
@@ -1870,7 +1868,7 @@ rx_err_t rx_usb_get_stats(const rx_usb_port_id_t port, rx_usb_stats_t* stats)
 void rx_usb_reset_stats(const rx_usb_port_id_t port)
 {
   if (internal_port_is_valid(port)) {
-    memset(&s_usb.ports[port].stats, 0, sizeof(rx_usb_stats_t));
+    s_usb.ports[port].stats = (rx_usb_stats_t){0};
   }
 }
 

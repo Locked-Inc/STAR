@@ -338,7 +338,7 @@ static rx_err_t internal_acquire_state(rx_bus_config_t* bus_config, onewire_runt
   for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     if (!s_state_pool[i].in_use) {
       s_state_pool[i].in_use = true;
-      memset(&s_state_pool[i].state, 0, sizeof(onewire_runtime_state_t));
+      s_state_pool[i].state = (onewire_runtime_state_t){0};
       bus_config->handle = &s_state_pool[i].state;
       *state             = &s_state_pool[i].state;
       return k_rx_ok;
@@ -1065,7 +1065,7 @@ static void internal_release_state(rx_bus_config_t* bus_config)
     if (s_state_pool[i].in_use &&
         &s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle) {
       s_state_pool[i].in_use = false;
-      memset(&s_state_pool[i].state, 0, sizeof(onewire_runtime_state_t));
+      s_state_pool[i].state = (onewire_runtime_state_t){0};
       break;
     }
   }

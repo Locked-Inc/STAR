@@ -305,8 +305,6 @@
 
 #include "bms_monitor_task.h"
 
-#include <string.h>
-
 #include "rx_bq4050.h"
 #include "rx_bq4050_constants.h"
 #include "rx_check.h"
@@ -899,7 +897,7 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 void bms_monitor_task_reset(void)
 {
   s_bms_created = false;
-  (void)memset(&s_bms_config, 0, sizeof(s_bms_config));
+  s_bms_config = (bms_monitor_config_t){0};
 }
 #endif /* UNIT_TEST */
 

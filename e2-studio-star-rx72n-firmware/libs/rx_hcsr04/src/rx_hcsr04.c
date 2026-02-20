@@ -1546,18 +1546,15 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
 static void hcsr04_worker_entry(const ULONG input)
 {
   (void)input;
-  ULONG              actual_flags;
-  rx_hcsr04_result_t result;
-  UINT               status;
-  rx_err_t           err;
 
   while (true) {
     /* Wait for measurement request OR shutdown request */
-    status = tx_event_flags_get(&s_measurement_request,
-                                k_event_measurement_request | k_event_shutdown_request,
-                                TX_OR_CLEAR,
-                                &actual_flags,
-                                TX_WAIT_FOREVER);
+    ULONG      actual_flags = 0;
+    const UINT status       = tx_event_flags_get(&s_measurement_request,
+                                                 k_event_measurement_request | k_event_shutdown_request,
+                                                 TX_OR_CLEAR,
+                                                 &actual_flags,
+                                                 TX_WAIT_FOREVER);
 
     if (status != TX_SUCCESS) {
       continue; /* Should not happen with TX_WAIT_FOREVER */
@@ -1570,7 +1567,8 @@ static void hcsr04_worker_entry(const ULONG input)
     }
 
     /* Perform blocking measurement */
-    err = rx_hcsr04_measure(s_pending.handle, &result);
+    rx_hcsr04_result_t result;
+    const rx_err_t     err = rx_hcsr04_measure(s_pending.handle, &result);
     if (err != k_rx_ok) {
       result.status = err;
     }

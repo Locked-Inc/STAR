@@ -388,8 +388,6 @@
 
 #include "motor_control_task.h"
 
-#include <string.h>
-
 #include "hardware_config.h"
 #include "rx_bus_manager.h"
 #include "rx_check.h"
@@ -2304,14 +2302,8 @@ static rx_err_t internal_init_motor_drivers(const rx_gptw_channel_t* gptw_channe
 static void internal_control_loop_iteration(void)
 {
   /* Get current motor command */
-  rx_err_t        err;
   motor_command_t cmd;
-  float           current_velocity_mps;
-  float           target_velocity_mps;
-  float           pwm_duty;
-  bool            fault;
-
-  err = shared_data_get_motor_command(&cmd);
+  rx_err_t        err = shared_data_get_motor_command(&cmd);
   if (err != k_rx_ok || !cmd.valid) {
     /* No valid command - hold at zero */
     for (uint8_t i = 0; i < k_motor_count; i++) {
@@ -2323,15 +2315,17 @@ static void internal_control_loop_iteration(void)
   /* Process each motor */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     /* 1. Read encoder velocity */
+    float current_velocity_mps = 0.0f;
     err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
       current_velocity_mps = 0.0f;
     }
 
     /* 2. Get target velocity */
-    target_velocity_mps = internal_get_target_velocity(&cmd, i);
+    const float target_velocity_mps = internal_get_target_velocity(&cmd, i);
 
     /* 3. Compute PID output */
+    float pwm_duty = 0.0f;
     err =
       rx_pid_compute(&s_pids[i], target_velocity_mps, current_velocity_mps, s_dt_sec, &pwm_duty);
     if (err != k_rx_ok) {
@@ -2342,6 +2336,7 @@ static void internal_control_loop_iteration(void)
     (void)rx_motor_set_duty(&s_motors[i], pwm_duty);
 
     /* 5. Check for driver faults */
+    bool fault = false;
     err = rx_drv8243_get_fault_status(&s_drivers[i], &fault);
     if (err == k_rx_ok && fault) {
       rx_log_error_val(s_tag, "Driver fault on motor", (uint8_t)i);
@@ -2855,18 +2850,13 @@ static void internal_check_comm_timeout(void)
  */
 static void internal_update_motor_state(void)
 {
-  rx_err_t      err;
-  motor_state_t state;
-  float         velocity_mps;
-  float         current_ma;
-  bool          fault;
-
-  (void)memset(&state, 0, sizeof(state));
+  motor_state_t state = {0};
 
   /* Collect state for each motor */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     /* Velocity */
-    err = internal_read_encoder_velocity(&velocity_mps, s_dt_sec, i);
+    float    velocity_mps = 0.0f;
+    rx_err_t err          = internal_read_encoder_velocity(&velocity_mps, s_dt_sec, i);
     if (err == k_rx_ok) {
       state.current_velocity_mps[i] = velocity_mps;
     }
@@ -2875,6 +2865,7 @@ static void internal_update_motor_state(void)
     (void)rx_motor_get_duty(&s_motors[i], &state.duty_cycle_percent[i]);
 
     /* Motor current */
+    float current_ma = 0.0f;
     err = rx_drv8243_read_current(&s_drivers[i], &current_ma);
     if (err == k_rx_ok) {
       state.current_ma[i] = current_ma;
@@ -2887,6 +2878,7 @@ static void internal_update_motor_state(void)
     }
 
     /* Fault status */
+    bool fault = false;
     err = rx_drv8243_get_fault_status(&s_drivers[i], &fault);
     if (err == k_rx_ok && fault) {
       state.fault_flags[i] = 1;

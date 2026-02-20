@@ -1059,7 +1059,7 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_spi_comm_handle_t));
+  *handle = (rx_spi_comm_handle_t){0};
 
   /* Apply configuration */
   handle->session         = config->session;
@@ -1292,7 +1292,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_size;
   }
 
-  memset(frame, 0, sizeof(*frame));
+  *frame = (rx_frame_t){0};
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = (uint8_t)type;
@@ -1478,11 +1478,6 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           const uint8_t*        payload,
                           const uint32_t        payload_len)
 {
-  rx_frame_t frame;
-  uint8_t    wire_buffer[k_frame_max_size];
-  uint32_t   wire_len;
-  rx_err_t   err;
-
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -1505,21 +1500,23 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
 
   /* Get next TX sequence from shared session (atomically increments) */
   uint16_t sequence = 0;
-  err               = rx_session_next_tx(handle->session, &sequence);
+  rx_err_t err      = rx_session_next_tx(handle->session, &sequence);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to get TX sequence");
     return err;
   }
 
   /* Build frame (payload already validated above) */
+  rx_frame_t frame;
   err = internal_build_frame(handle, sequence, type, flags, payload, payload_len, &frame);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Encode frame to wire format */
-  wire_len = 0;
-  err      = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
+  uint8_t  wire_buffer[k_frame_max_size];
+  uint32_t wire_len = 0;
+  err               = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame encode failed");
     return err;

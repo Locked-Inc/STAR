@@ -2155,8 +2155,6 @@ void uart_debug_putint(const int32_t value)
 void uart_debug_puthex(const uint32_t value, uint8_t digits)
 {
   static const char s_hex[] = "0123456789ABCDEF";
-  int32_t           i;
-  uint8_t           nibble;
 
   uart_debug_puts("0x");
 
@@ -2169,9 +2167,9 @@ void uart_debug_puthex(const uint32_t value, uint8_t digits)
   }
 
   /* Print hex digits from most significant (statically bounded) */
-  for (i = k_uart_hex_max_digits - 1; i >= 0; i--) {
+  for (int32_t i = k_uart_hex_max_digits - 1; i >= 0; i--) {
     if (i < digits) {
-      nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
+      uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
       uart_debug_putc(s_hex[nibble]);
     }
   }

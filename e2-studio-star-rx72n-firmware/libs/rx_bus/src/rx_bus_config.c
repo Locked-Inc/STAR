@@ -445,7 +445,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -678,7 +678,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -942,7 +942,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -1236,7 +1236,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -1516,7 +1516,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -1789,7 +1789,7 @@ rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, r
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;

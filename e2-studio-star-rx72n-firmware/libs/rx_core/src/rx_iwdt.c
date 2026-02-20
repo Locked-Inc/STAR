@@ -285,7 +285,7 @@ static rx_iwdt_state_t s_iwdt_state = {0};
  */
 void rx_iwdt_test_reset(void)
 {
-  memset(&s_iwdt_state, 0, sizeof(s_iwdt_state));
+  s_iwdt_state = (rx_iwdt_state_t){0};
 }
 #endif
 
@@ -507,7 +507,7 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
   }
 
   /* Initialize state */
-  memset(&s_iwdt_state, 0, sizeof(s_iwdt_state));
+  s_iwdt_state = (rx_iwdt_state_t){0};
   memcpy(&s_iwdt_state.config, config, sizeof(rx_iwdt_config_t));
   s_iwdt_state.current_state = k_system_state_init;
 
@@ -710,7 +710,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   }
 
   /* Register task */
-  memset(slot, 0, sizeof(rx_iwdt_task_info_t));
+  *slot = (rx_iwdt_task_info_t){0};
   strncpy(slot->task_name, task_name, k_iwdt_task_name_len - 1);
   slot->task_name[k_iwdt_task_name_len - 1] = '\0';
   slot->timeout_ms                          = timeout_ms;

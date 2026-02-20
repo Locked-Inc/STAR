@@ -357,8 +357,6 @@
 
 #include "temp_sensor_task.h"
 
-#include <string.h>
-
 #include "rx_check.h"
 #include "rx_ds18b20.h"
 #include "rx_iwdt.h"
@@ -1177,8 +1175,7 @@ static void internal_temp_task_entry(ULONG input)
   rx_log_info(s_tag, "Temperature sensor task starting");
 
   /* Configure DS18B20 */
-  rx_ds18b20_config_t config;
-  (void)memset(&config, 0, sizeof(config));
+  rx_ds18b20_config_t config = {0};
   config.bus_manager      = &g_bus_manager;
   config.bus_name         = s_onewire_bus_name;
   config.resolution       = k_ds18b20_resolution_12bit;

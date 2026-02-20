@@ -1131,7 +1131,7 @@ rx_err_t error_handler_init(error_handler_t* handler, const error_handler_config
   }
 
   /* Clear all state */
-  memset(handler, 0, sizeof(error_handler_t));
+  *handler = (error_handler_t){0};
 
   /* Initialize configuration */
   handler->max_retries        = config->max_retries;

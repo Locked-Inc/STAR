@@ -1032,7 +1032,7 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
 
   /* Clear all state */
-  memset(validator, 0, sizeof(pin_validator_t));
+  *validator = (pin_validator_t){0};
 
   /* Create mutex */
   const UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);

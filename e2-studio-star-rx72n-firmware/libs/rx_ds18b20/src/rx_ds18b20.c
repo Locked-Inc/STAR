@@ -364,7 +364,7 @@ rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t*
   }
 
   /* Initialize handle */
-  memset(handle, 0, sizeof(rx_ds18b20_handle_t));
+  *handle = (rx_ds18b20_handle_t){0};
   handle->bus_manager      = config->bus_manager;
   handle->bus_name         = config->bus_name;
   handle->resolution       = config->resolution;
@@ -448,7 +448,7 @@ rx_err_t rx_ds18b20_deinit(rx_ds18b20_handle_t* handle)
   }
 
   /* Clear handle */
-  memset(handle, 0, sizeof(rx_ds18b20_handle_t));
+  *handle = (rx_ds18b20_handle_t){0};
 
   rx_log_info(s_tag, "DS18B20 deinitialized");
   return k_rx_ok;
