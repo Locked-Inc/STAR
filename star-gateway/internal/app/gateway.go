@@ -81,7 +81,6 @@ type Servers struct {
 type serviceSet struct {
 	motorControl  *service.MotorControlService
 	telemetry     *service.TelemetryService
-	battery       *service.BatteryService
 	configuration *service.ConfigurationService
 	firmware      *service.FirmwareService
 	gateway       *service.GatewayService
@@ -108,9 +107,6 @@ func (s *serviceSet) count() int {
 		n++
 	}
 	if s.telemetry != nil {
-		n++
-	}
-	if s.battery != nil {
 		n++
 	}
 	if s.configuration != nil {
@@ -484,7 +480,6 @@ func initServices(ctx context.Context, tm harq.HARQ, disp dispatcher.Dispatcher,
 	return &serviceSet{
 		motorControl:  service.NewMotorControlService(tm, disp, logger),
 		telemetry:     service.NewTelemetryService(ctx, tm, disp, logger),
-		battery:       service.NewBatteryService(ctx, tm, disp, logger),
 		configuration: service.NewConfigurationService(tm, disp, logger),
 		firmware:      service.NewFirmwareService(),
 		gateway:       service.NewGatewayService(),
@@ -509,9 +504,6 @@ func registerGRPCServices(srv *grpc.Server, services *serviceSet) error {
 	if services.telemetry == nil {
 		return fmt.Errorf("service set contains nil service: telemetry")
 	}
-	if services.battery == nil {
-		return fmt.Errorf("service set contains nil service: battery")
-	}
 	if services.configuration == nil {
 		return fmt.Errorf("service set contains nil service: configuration")
 	}
@@ -524,7 +516,6 @@ func registerGRPCServices(srv *grpc.Server, services *serviceSet) error {
 
 	starv1.RegisterMotorControlServiceServer(srv, services.motorControl)
 	starv1.RegisterTelemetryServiceServer(srv, services.telemetry)
-	starv1.RegisterBatteryManagementServiceServer(srv, services.battery)
 	starv1.RegisterConfigurationServiceServer(srv, services.configuration)
 	starv1.RegisterFirmwareUpdateServiceServer(srv, services.firmware)
 	starv1.RegisterGatewayServiceServer(srv, services.gateway)

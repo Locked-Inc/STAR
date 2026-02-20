@@ -19,7 +19,6 @@
  * | Motor Driver SPI | SCI12 | 3 data + 4 CS = 7 pins |
  * | Host SPI | RSPI2_A | 3 data + 1 CS = 4 pins |
  * | Host I2C | RIIC0 | 2 pins (SCL0/SDA0) |
- * | BMS I2C | RIIC1 | 2 pins (SCL1/SDA1) |
  * | Debug UART | SCI9 | 2 pins (TXD9/RXD9) |
  * | MTU Encoders | MTU1/MTU2 | 4 pins |
  * | TPU Encoders | TPU1/TPU2 | 4 pins |
@@ -27,7 +26,6 @@
  * | Sonar HC-SR04 | IRQ + GPIO | 4 ECHO + 4 TRIG = 8 pins |
  * | LEDs | GPIO | 6 pins |
  * | 1-Wire Temperature | GPIO | 1 pin |
- * | BMS Alert | IRQ13 | 1 pin |
  * | HOST_IRQ | IRQ15 | 1 pin |
  *
  * @see pinout.txt Complete verified pin assignment table
@@ -292,35 +290,6 @@ typedef enum : uint8_t {
 /** @} */ /* end of host_i2c_pins */
 
 /* =========================================================================
- * BMS I2C (RIIC1)
- * ========================================================================= */
-
-/**
- * @defgroup bms_i2c_pins BMS I2C Pin Assignments
- * @brief RIIC1 for Battery Management System communication
- *
- * @details
- * Dedicated RIIC1 I2C bus for BMS communication.
- *
- * | Signal | Pin | Pkg Pin | Function |
- * |--------|-----|---------|----------|
- * | BMS_SCL1 | P21 | 36 | SCL1 |
- * | BMS_SDA1 | P20 | 37 | SDA1 |
- * @{
- */
-
-typedef enum : uint8_t {
-  k_bms_i2c_port = 2, /**< BMS I2C on PORT2 (P20/P21) */
-} bms_i2c_ports_t;
-
-typedef enum : uint8_t {
-  k_bms_scl1_pin = 1, /**< BMS_SCL1 pin 1 (P21/SCL1, pin 36) */
-  k_bms_sda1_pin = 0, /**< BMS_SDA1 pin 0 (P20/SDA1, pin 37) */
-} bms_i2c_pins_t;
-
-/** @} */ /* end of bms_i2c_pins */
-
-/* =========================================================================
  * MTU Encoders (MTU1 and MTU2 phase counting)
  * ========================================================================= */
 
@@ -577,35 +546,6 @@ typedef enum : uint8_t {
 } onewire_pins_t;
 
 /** @} */ /* end of onewire_pins */
-
-/* =========================================================================
- * BMS Alert (IRQ13)
- * ========================================================================= */
-
-/**
- * @defgroup bms_alert_pins BMS Alert Pin Assignment
- * @brief IRQ input for Battery Management System alert signal
- *
- * @details
- * | Signal | Pin | Pkg Pin | IRQ |
- * |--------|-----|---------|-----|
- * | BMS_ALERT | P05 | 2 | IRQ13 |
- * @{
- */
-
-typedef enum : uint8_t {
-  k_bms_alert_port = 0, /**< BMS_ALERT on PORT0 (P05/IRQ13, pin 2) */
-} bms_alert_ports_t;
-
-typedef enum : uint8_t {
-  k_bms_alert_pin = 5, /**< BMS_ALERT pin 5 (P05, pin 2) */
-} bms_alert_pins_t;
-
-typedef enum : uint8_t {
-  k_bms_alert_irq = 13, /**< BMS_ALERT IRQ13 */
-} bms_alert_irqs_t;
-
-/** @} */ /* end of bms_alert_pins */
 
 /* =========================================================================
  * HOST_IRQ (IRQ15)

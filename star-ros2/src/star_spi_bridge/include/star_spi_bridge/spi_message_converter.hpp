@@ -5,7 +5,6 @@
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
-#include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
 #include "star/v1/motor_control.pb.h"
@@ -37,10 +36,6 @@ public:
   void telemetry_to_joint_state(
     const star::v1::TelemetryData & telemetry,
     sensor_msgs::msg::JointState & joint_state);
-  void
-  telemetry_to_battery_state(
-    const star::v1::TelemetryData & telemetry,
-    sensor_msgs::msg::BatteryState & battery_state);
 
 private:
   Parameters params_;

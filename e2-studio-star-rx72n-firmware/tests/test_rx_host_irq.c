@@ -6,8 +6,7 @@
  *
  * @details
  * Self-contained test that reimplements the HOST_IRQ driver logic
- * against mock PORT registers. Follows the same pattern as test_rx_poeg.c
- * and test_rx_bms_alert.c.
+ * against mock PORT registers. Follows the same pattern as test_rx_poeg.c.
  *
  * @author STAR Team
  * @date 2026-02-10

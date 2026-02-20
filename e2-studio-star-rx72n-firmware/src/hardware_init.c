@@ -44,12 +44,8 @@
  *    - I2C for IMU, temperature sensors
  *    - USB CDC for ROS2 communication
  *
- * 6. **BMS Alert** (~5 us) **IMPLEMENTED**
- *    - IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection)
- *
- * 7. **ADC channels** (planned, not yet implemented)
+ * 6. **ADC channels** (planned, not yet implemented)
  *    - Current sensing (motor protection)
- *    - Battery voltage monitoring
  *    - Temperature sensing (thermal management)
  *
  * ## Hardware Initialization Architecture
@@ -66,7 +62,6 @@
  *   UART [label="UART Debug Init\nSCI9 @ 115200", style=filled, fillcolor=lightgreen];
  *   SPI [label="SPI Init\n(Planned)", style=dashed];
  *   I2C [label="I2C Init\n(Planned)", style=dashed];
- *   BMSAlert [label="BMS Alert Init\nIRQ13 @ BQ4050", style=filled, fillcolor=lightgreen];
  *   ADC [label="ADC Init\n(Planned)", style=dashed];
  *   Postcond [label="Postcondition Check\nSCKCR3 still valid"];
  *   Exit [label="return k_rx_ok", shape=ellipse];
@@ -77,15 +72,13 @@
  *   Timers -> UART [label="k_rx_ok"];
  *   UART -> SPI [label="k_rx_ok"];
  *   SPI -> I2C;
- *   I2C -> BMSAlert;
- *   BMSAlert -> ADC [label="k_rx_ok"];
+ *   I2C -> ADC [label="k_rx_ok"];
  *   ADC -> Postcond;
  *   Postcond -> Exit [label="Assert OK"];
  *
  *   Timers -> Halt [label="Error", color=red];
  *   UART -> Halt [label="Error", color=red];
  *   SPI -> Halt [label="Error", color=red];
- *   BMSAlert -> Halt [label="Error", color=red];
  *
  *   Halt [label="return error", shape=octagon, color=red];
  * }
@@ -101,10 +94,9 @@
  * | **UART debug** | ~50 us | [COMPLETE] | SCI9 baud rate, FIFO, interrupts |
  * | **SPI init** | ~20 us | [COMPLETE] | RSPI2 peripheral mode, 8-bit, mode 0 |
  * | **I2C init** | ~15 us | [PENDING] Planned | RIIC0 speed, addressing, interrupts |
- * | **BMS Alert init** | ~5 us | [COMPLETE] | IRQ13 for BQ4050 ALERT pin |
  * | **ADC init** | ~100 us | [PENDING] Planned | ADC0 calibration, channel config |
  * | **Postcondition check** | ~0.5 us | [COMPLETE] | SCKCR3 stability verification |
- * | **Total (current)** | **~86 us** | Timers + UART + SPI + BMS Alert | |
+ * | **Total (current)** | **~81 us** | Timers + UART + SPI + I2C | |
  * | **Total (planned)** | **~206 us** | All peripherals | |
  *
  * ## Memory Usage
@@ -180,7 +172,7 @@
  * - **UART HAL:** See [uart.c](../lib/rx_hal/src/uart.c) - SCI9 configuration for debug console
  *
  * @note **This file is incomplete.** GPIO, I2C, and ADC initialization are planned but not yet
- *       implemented. Timers, UART, SPI, and BMS Alert are functional in current version.
+ *       implemented. Timers, UART, SPI, and I2C are functional in current version.
  *
  * @warning **Never call hardware_init() before rx_clock_power_init().** System clocks must be
  *          configured first. Precondition assertion will halt execution if violated.
@@ -204,7 +196,7 @@
 #include "hardware.h"
 #include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
-#include "rx_bms_alert.h"
+
 #include "rx_check.h"
 #include "rx_err.h"
 #include "rx_gptw.h"
@@ -219,9 +211,7 @@ typedef enum : uint16_t {
   k_pin_host_scl0 = k_rx_p1_2, /**< P1.2 - SCL0 (host I2C clock) */
   k_pin_host_sda0 = k_rx_p1_3, /**< P1.3 - SDA0 (host I2C data) */
 
-  /* BMS I2C (RIIC1) */
-  k_pin_bms_sda1 = k_rx_p2_0, /**< P2.0 - SDA1 (BMS I2C data) */
-  k_pin_bms_scl1 = k_rx_p2_1, /**< P2.1 - SCL1 (BMS I2C clock) */
+
 
   /* USB */
   k_pin_usb_vbus = k_rx_p1_6, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
@@ -317,13 +307,12 @@ typedef enum : uint8_t {
 /** @brief I2C channel assignments */
 typedef enum : uint8_t {
   k_i2c_channel_host = 0, /**< RIIC0 = host I2C (RPi5 comms) */
-  k_i2c_channel_bms  = 1, /**< RIIC1 = BMS I2C (BQ4050) */
+  k_i2c_channel_1    = 1, /**< RIIC1 (reserved) */
 } i2c_channel_t;
 
 /** @brief I2C bus frequency constants */
 typedef enum : uint32_t {
   k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host */
-  k_i2c_bms_freq_hz  = 100000, /**< 100 kHz standard mode for BMS */
 } i2c_freq_t;
 
 /** @brief Number of motor current ADC channels */
@@ -339,7 +328,7 @@ static const uint8_t s_sckcr3_reset_state = 0U;
  *
  * @details
  * Configures MPC pin multiplexing for Host I2C (RIIC0) on P1.2/P1.3 and
- * BMS I2C (RIIC1) on P2.0/P2.1. Sets PSEL registers to enable I2C peripheral
+ * RIIC host I2C on P2.0/P2.1. Sets PSEL registers to enable I2C peripheral
  * function for SCL and SDA pins.
  *
  * @return rx_err_t Error code
@@ -366,13 +355,6 @@ static rx_err_t internal_gpio_init_i2c(void)
 
   err = rx_mpc_set_riic((rx_port_pin_t)k_pin_host_sda0);
   RX_RETURN_ON_ERROR(err, s_tag, "SDA0 pin config failed");
-
-  /* BMS I2C (RIIC1): SCL1 + SDA1 */
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_bms_scl1);
-  RX_RETURN_ON_ERROR(err, s_tag, "SCL1 pin config failed");
-
-  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_bms_sda1);
-  RX_RETURN_ON_ERROR(err, s_tag, "SDA1 pin config failed");
 
   return k_rx_ok;
 }
@@ -1036,12 +1018,11 @@ static rx_err_t spi_init(void)
 }
 
 /**
- * @brief Initialize I2C buses for host communication and BMS
+ * @brief Initialize I2C buses for host communication
  *
  * @details
  * Configures two RIIC channels:
  * - **RIIC0** at 400 kHz (fast mode) for RPi5 host I2C
- * - **RIIC1** at 100 kHz (standard mode) for BQ4050 BMS communication
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Both RIIC channels initialized successfully
@@ -1051,7 +1032,6 @@ static rx_err_t spi_init(void)
  * @pre PCLKB clock running at 60 MHz
  *
  * @post RIIC0 ready for host I2C at 400 kHz
- * @post RIIC1 ready for BMS I2C at 100 kHz
  *
  * @note Not thread-safe. Call during single-threaded initialization only.
  *
@@ -1067,11 +1047,7 @@ static rx_err_t i2c_init(void)
   rx_err_t       err = riic_init(ch0, k_i2c_host_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC0 init failed");
 
-  riic_channel_t ch1 = {.value = k_i2c_channel_bms};
-  err                = riic_init(ch1, k_i2c_bms_freq_hz);
-  RX_RETURN_ON_ERROR(err, s_tag, "RIIC1 init failed");
-
-  rx_log_info(s_tag, "RIIC0 @ 400kHz, RIIC1 @ 100kHz");
+  rx_log_info(s_tag, "RIIC0 @ 400kHz");
   return k_rx_ok;
 }
 
@@ -1168,8 +1144,7 @@ static void validate_peripherals(void)
  * 3. **UART** ([PASS] implemented) - SCI9 for debug console at 115200 baud
  * 4. **SPI** ([PASS] implemented) - Motor drivers (DRV8243), sensor bus
  * 5. **I2C** (planned) - IMU, temperature, pressure sensors
- * 6. **BMS Alert** ([PASS] implemented) - IRQ13 for BQ4050 ALERT pin (battery fault detection)
- * 7. **ADC** (planned) - Current sensing, battery voltage monitoring
+ * 7. **ADC** (planned) - Current sensing
  *
  * ## Initialization Sequence (7 Stages)
  *
@@ -1178,7 +1153,7 @@ static void validate_peripherals(void)
  * @msc
  * msc {
  *   width=700;
- *   Caller, HwInit, Timers, UART, SPI, I2C, BMS, ADC;
+ *   Caller, HwInit, Timers, UART, SPI, I2C, ADC;
  *
  *   Caller => HwInit [label="hardware_init()"];
  *   HwInit note HwInit [label="Precondition: Check SCKCR3 != reset_state", textcolor="blue"];
@@ -1193,11 +1168,8 @@ static void validate_peripherals(void)
  *   SPI => SPI [label="Configure RSPI2\nhost peripheral"];
  *   SPI => HwInit [label="k_rx_ok"];
  *   HwInit => I2C [label="i2c_init()"];
- *   I2C => I2C [label="Configure RIIC0+RIIC1"];
+ *   I2C => I2C [label="Configure RIIC0"];
  *   I2C => HwInit [label="k_rx_ok"];
- *   HwInit => BMS [label="rx_bms_alert_init()"];
- *   BMS => BMS [label="Configure IRQ13\nBQ4050 ALERT"];
- *   BMS => HwInit [label="k_rx_ok"];
  *   HwInit => ADC [label="adc_init_channels()"];
  *   ADC => ADC [label="Configure S12AD0\nAN004-AN007"];
  *   ADC => HwInit [label="k_rx_ok"];
@@ -1216,7 +1188,6 @@ static void validate_peripherals(void)
  * | **UART init (SCI9)** | 50 us | ~12,000 | [COMPLETE] | No |
  * | **SPI init (RSPI2)** | 20 us | ~4,800 | [COMPLETE] | No |
  * | **I2C init (RIIC0+1)** | 15 us | ~3,600 | [COMPLETE] | No |
- * | **BMS Alert (IRQ13)** | 5 us | ~1,200 | [COMPLETE] | No |
  * | **ADC init (S12AD0)** | 100 us | ~24,000 | [COMPLETE] | No |
  * | **Postcondition check** | 0.5 us | ~120 | [COMPLETE] | No |
  * | **Total (current)** | **~201 us** | **~48,240** | All peripherals | **No** |
@@ -1342,7 +1313,7 @@ static void validate_peripherals(void)
  * - **GPIO:** Port initialization for motor control (PA0-PA7), LEDs (PB0-PB2), sensor CS (PC0-PC3)
  * - **SPI:** RSPI0 for motor drivers (DRV8243 x 4), RSPI1 for sensor bus
  * - **I2C:** RIIC0 for IMU (MPU6050), temperature (LM75), pressure (BMP280)
- * - **ADC:** ADC0 channels for current sensing (4 channels), battery voltage (1 channel)
+ * - **ADC:** ADC0 channels for current sensing (4 channels)
  * - **USB:** USB CDC for ROS2 communication (already partially implemented, needs integration)
  *
  * @see rx_clock_power_init() System clock configuration (MUST call before this function)
@@ -1373,7 +1344,7 @@ rx_err_t hardware_init(void)
   /* =========================================================================
    * INITIALIZE PERIPHERALS
    *
-   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> BMS Alert -> ADC -> Validate
+   * Order: GPIO -> GPTW -> Timer -> UART -> SPI -> I2C -> ADC -> Validate
    * Later stages depend on earlier stages (GPIO must precede peripherals).
    * =========================================================================
    */
@@ -1405,15 +1376,11 @@ rx_err_t hardware_init(void)
   err = spi_init();
   RX_RETURN_ON_ERROR(err, s_tag, "SPI initialization failed");
 
-  /* 6. I2C: RIIC0 host + RIIC1 BMS */
+  /* 6. I2C: RIIC0 host */
   err = i2c_init();
   RX_RETURN_ON_ERROR(err, s_tag, "I2C initialization failed");
 
-  /* 7. BMS Alert: IRQ13 interrupt for BQ4050 ALERT pin (battery fault detection) */
-  err = rx_bms_alert_init();
-  RX_RETURN_ON_ERROR(err, s_tag, "BMS alert IRQ13 initialization failed");
-
-  /* 8. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
+  /* 7. ADC: S12AD0 channels AN004-AN007 for motor current sensing */
   err = adc_init_channels();
   RX_RETURN_ON_ERROR(err, s_tag, "ADC initialization failed");
 

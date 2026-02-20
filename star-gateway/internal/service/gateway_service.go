@@ -42,7 +42,6 @@ type GatewayService struct {
 	// Telemetry cache (ROS2 -> UI)
 	telemetryMu          sync.RWMutex
 	cachedSystemStatus   *starv1.SystemStatus
-	cachedBatteryState   *starv1.BatteryState
 	cachedTelemetry      *starv1.TelemetryData
 	telemetryLastUpdated time.Time
 
@@ -96,7 +95,6 @@ func (s *GatewayService) ForwardTelemetry(
 	// Cache telemetry data with write lock
 	s.telemetryMu.Lock()
 	s.cachedSystemStatus = req.SystemStatus
-	s.cachedBatteryState = req.BatteryState
 	s.cachedTelemetry = req.Telemetry
 	s.telemetryLastUpdated = time.Now()
 	s.telemetryMu.Unlock()
@@ -153,14 +151,8 @@ func (s *GatewayService) ForwardTelemetry(
 		mode = req.SystemStatus.GetMode().String()
 	}
 
-	batteryPercent := 0.0
-	if req.BatteryState != nil && req.BatteryState.GetSoc() != nil {
-		batteryPercent = float64(req.BatteryState.GetSoc().GetRelativeSocPercent())
-	}
-
 	s.logger.Info("Telemetry forwarded",
 		slog.String("mode", mode),
-		slog.Float64("battery_percent", batteryPercent),
 		slog.Int("clients", int(activeClients)),
 	)
 
@@ -335,13 +327,12 @@ func (s *GatewayService) UpdateTeleopCommand(cmd *starv1.VelocityCommand) {
 // Returns nil if no telemetry has been received yet.
 func (s *GatewayService) GetLatestTelemetry() (
 	*starv1.SystemStatus,
-	*starv1.BatteryState,
 	*starv1.TelemetryData,
 ) {
 	s.telemetryMu.RLock()
 	defer s.telemetryMu.RUnlock()
 
-	return s.cachedSystemStatus, s.cachedBatteryState, s.cachedTelemetry
+	return s.cachedSystemStatus, s.cachedTelemetry
 }
 
 // GetTelemetryAge returns how old the cached telemetry is.

@@ -279,11 +279,11 @@ For complete baseline methodology, analysis procedures, and troubleshooting:
 |              +--> /rtabmap/grid_map (3D octomap)           |
 |                                                             |
 |  star_gateway_bridge (gRPC <-> Go Gateway)                   |
-|     +--> Subscribes: /robot_status, /battery_state         |
+|     +--> Subscribes: /robot_status                         |
 |     +--> Publishes: /teleop/cmd_vel                        |
 |                                                             |
 |  star_safety_monitor (Watchdog)                            |
-|     +--> Monitors: Battery, Current, Heartbeat             |
+|     +--> Monitors: Heartbeat, Motor Stall                  |
 |     +--> Publishes: /emergency_stop (std_msgs/Bool)        |
 |                                                             |
 +-------------------------------------------------------------+

@@ -10,7 +10,6 @@
 #include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp_lifecycle/lifecycle_node.hpp>
-#include <sensor_msgs/msg/battery_state.hpp>
 #include <sensor_msgs/msg/joint_state.hpp>
 
 #include "star_spi_bridge/spi_driver.hpp"
@@ -52,8 +51,6 @@ private:
     odom_pub_;
   rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr
     joint_state_pub_;
-  rclcpp_lifecycle::LifecyclePublisher<
-    sensor_msgs::msg::BatteryState>::SharedPtr battery_pub_;
   rclcpp::TimerBase::SharedPtr timer_;
 
   // State

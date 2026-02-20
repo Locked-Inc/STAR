@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Progress } from '@/components/ui/progress'
 import {
-  Battery,
   Wifi,
   Cpu,
   Thermometer,
@@ -24,12 +23,6 @@ function formatUptime(seconds: string): string {
   if (h > 0) return `${h}h ${m}m ${sec}s`
   if (m > 0) return `${m}m ${sec}s`
   return `${sec}s`
-}
-
-function batteryColor(pct: number): string {
-  if (pct > 50) return 'bg-emerald-500'
-  if (pct > 20) return 'bg-amber-500'
-  return 'bg-red-500'
 }
 
 function wifiLabel(dbm: number): string {
@@ -72,14 +65,13 @@ function modeBadgeVariant(mode: RobotMode): 'success' | 'warning' | 'info' | 'de
 
 export function DashboardPage() {
   const { snapshot } = useGateway()
-  const { telemetry: t, systemStatus: s, motors, battery } = snapshot
+  const { telemetry: t, systemStatus: s, motors } = snapshot
 
   const isConnected = s?.connectionStatus === ConnectionStatus.CONNECTED
   const avgMotorVel =
     motors.length > 0
       ? motors.reduce((sum, m) => sum + Math.abs(m.velocityMps), 0) / motors.length
       : 0
-  const socPct = battery?.soc?.relativeSocPercent ?? t?.batteryPercent ?? 0
 
   return (
     <div className="space-y-6">
@@ -156,44 +148,7 @@ export function DashboardPage() {
       </div>
 
       {/* Metrics row */}
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-        {/* Battery */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Battery size={14} /> Battery
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <div className="flex items-end justify-between">
-              <span className="font-mono text-3xl font-bold text-white">
-                {socPct.toFixed(1)}
-                <span className="ml-1 text-base font-normal text-slate-400">%</span>
-              </span>
-              <Badge variant={socPct > 50 ? 'success' : socPct > 20 ? 'warning' : 'danger'}>
-                {socPct > 80 ? 'Full' : socPct > 50 ? 'Good' : socPct > 20 ? 'Low' : 'Critical'}
-              </Badge>
-            </div>
-            <Progress value={socPct} indicatorClassName={batteryColor(socPct)} />
-            {battery?.current && (
-              <div className="grid grid-cols-2 gap-2 text-xs text-slate-400">
-                <span>
-                  Current:{' '}
-                  <span className="text-white font-mono">
-                    {(Math.abs(battery.current.currentMa) / 1000).toFixed(2)} A
-                  </span>
-                </span>
-                <span>
-                  Voltage:{' '}
-                  <span className="text-white font-mono">
-                    {(battery.current.voltageMv / 1000).toFixed(2)} V
-                  </span>
-                </span>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {/* Wireless */}
         <Card>
           <CardHeader>

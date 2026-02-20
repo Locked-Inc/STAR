@@ -289,7 +289,7 @@ message TemperatureCalibration {
   double offset_celsius = 1;
 }
 
-// Safety thresholds for motor and battery protection.
+// Safety thresholds for motor protection.
 message SafetyThresholds {
   // Motor overcurrent limit in milliamps.
   // Motors disabled if current exceeds this.
@@ -301,8 +301,7 @@ message SafetyThresholds {
   // Valid range: 500-1000 (50.0-100.0 C).
   int32 thermal_shutdown_deci_celsius = 2;
 
-  // Battery cell voltage imbalance threshold in millivolts.
-  // Warning generated if cell delta exceeds this.
+  // Motor phase imbalance threshold in millivolts.
   // Valid range: 50-500 mV.
   uint32 cell_imbalance_threshold_mv = 3;
 }
@@ -337,9 +336,6 @@ message TimingConfiguration {
   // Valid range: 100-5000 ms. Typical: 500 ms.
   uint32 communication_timeout_ms = 3;
 
-  // BMS polling period in milliseconds.
-  // Valid range: 100-10000 ms. Typical: 1000 ms.
-  uint32 bms_poll_period_ms = 4;
 }
 
 // Configuration validation result.

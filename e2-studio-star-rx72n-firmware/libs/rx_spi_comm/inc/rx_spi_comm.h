@@ -265,7 +265,7 @@
  *   uint8_t telemetry[16];
  *
  *   // Fill telemetry data
- *   telemetry[0] = get_battery_voltage();
+ *   telemetry[0] = get_temperature_celsius();
  *   telemetry[1] = get_motor_current();
  *   // ... fill remaining fields ...
  *

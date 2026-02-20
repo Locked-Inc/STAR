@@ -8,14 +8,14 @@
  * # Overview
  *
  * The bus manager provides a **centralized registry** for managing multiple communication
- * protocols (GPIO, ADC, I2C, SPI, UART, 1-Wire, SMBUS) with thread-safe operations using
+ * protocols (GPIO, ADC, I2C, SPI, UART, 1-Wire) with thread-safe operations using
  * ThreadX mutex protection. It follows the **Dependency Inversion Principle** by accepting
  * injected interfaces for error handling and pin validation.
  *
  * ## Key Features
  *
  * - **Thread-safe**: All operations protected by ThreadX mutex
- * - **Multi-protocol**: Supports 7 different communication protocols
+ * - **Multi-protocol**: Supports 6 different communication protocols
  * - **Testable**: Dependency injection for mocking in unit tests
  * - **Resource tracking**: Prevents double-initialization of shared hardware
  * - **Command pattern**: Extensible operation model via rx_bus_command_t
@@ -67,9 +67,8 @@
  * | Bus Type | RX72N Peripheral | Speed | Use Case |
  * |----------|------------------|-------|----------|
  * | **GPIO** | I/O Ports | N/A | Digital I/O, LEDs, buttons |
- * | **ADC** | S12ADFa | ~1 us/sample | Current sensing, battery |
+ * | **ADC** | S12ADFa | ~1 us/sample | Current sensing, analog inputs |
  * | **I2C** | RIIC | 100-1000 kHz | Sensors, EEPROMs |
- * | **SMBUS** | RIIC + CRC | 100-400 kHz | Battery fuel gauge |
  * | **SPI** | RSPI | 1-15 MHz | Motor drivers, fast sensors |
  * | **UART** | SCI | 9.6-921.6 kbps | Debug console, RS-485 |
  * | **1-Wire** | GPIO bit-bang | ~15 kbps | Temperature sensors |

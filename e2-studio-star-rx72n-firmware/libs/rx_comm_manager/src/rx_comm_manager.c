@@ -1680,7 +1680,7 @@ rx_err_t rx_comm_manager_send(rx_comm_manager_t* mgr, const rx_comm_send_params_
  *   uint8_t telemetry[16];
  *
  *   // Gather telemetry data
- *   telemetry[0] = get_battery_voltage();
+ *   telemetry[0] = get_temperature_celsius();
  *   telemetry[1] = get_current_ma();
  *   // ... fill remaining fields ...
  *

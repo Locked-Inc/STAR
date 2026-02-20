@@ -67,9 +67,9 @@ typedef enum : uint16_t {
  * @invariant k_event_none == 0 (no-op / cleared state)
  *
  * @code
- * // Test that the BMS task sets the low-battery event
- * shared_data_set_event(k_event_low_battery);
- * TEST_ASSERT_EQUAL(k_event_low_battery,
+ * // Test that a task sets the expected event flag
+ * shared_data_set_event(k_event_obstacle_detected);
+ * TEST_ASSERT_EQUAL(k_event_obstacle_detected,
  *                   mock_shared_data_get_last_event_flags());
  * @endcode
  *
@@ -84,7 +84,6 @@ typedef enum : uint32_t {
   k_event_motor_command_updated = 0x00000001, /**< New motor command available */
   k_event_estop_triggered       = 0x00000002, /**< E-stop activated */
   k_event_pid_gains_updated     = 0x00000004, /**< PID gains changed */
-  k_event_low_battery           = 0x00000008, /**< Low battery detected */
   k_event_obstacle_detected     = 0x00000010, /**< Obstacle detected */
   k_event_obstacle_cleared      = 0x00000020, /**< Obstacle cleared */
   k_event_estop_cleared         = 0x00000040, /**< E-stop cleared */
@@ -114,7 +113,6 @@ typedef enum : uint8_t {
   k_estop_reason_driver_fault = 3, /**< DRV8243 fault detected */
   k_estop_reason_overcurrent  = 4, /**< Motor overcurrent detected */
   k_estop_reason_manual       = 5, /**< Manual e-stop request */
-  k_estop_reason_low_battery  = 6, /**< Critical battery level */
 } estop_reason_t;
 
 /* =============================================================================
@@ -162,23 +160,6 @@ typedef struct {
   float integral_max;   /**< Integral anti-windup max */
   bool  update_pending; /**< Gains need applying */
 } pid_gains_t;
-
-/**
- * @struct bms_state_t
- * @brief Battery Management System state
- */
-typedef struct {
-  uint16_t voltage_mv;          /**< Pack voltage (mV) */
-  int16_t  current_ma;          /**< Current draw (mA) */
-  uint8_t  soc_percent;         /**< State of charge (0-100%) */
-  int16_t  temperature_celsius; /**< Battery temperature */
-  uint16_t capacity_mah;        /**< Remaining capacity */
-  uint16_t full_capacity_mah;   /**< Full charge capacity */
-  uint16_t cycle_count;         /**< Charge cycle count */
-  uint32_t fault_flags;         /**< BMS fault flags */
-  uint32_t timestamp_ms;        /**< Last update timestamp */
-  bool     valid;               /**< Data is valid */
-} bms_state_t;
 
 /**
  * @struct temp_sensor_state_t
@@ -261,7 +242,7 @@ uint32_t mock_shared_data_get_trigger_estop_count(void);
  * @brief Return the number of times shared_data_set_event() has been called
  *
  * @details
- * Provides test code with a way to assert that the BMS (or other) task called
+ * Provides test code with a way to assert that a task called
  * shared_data_set_event() exactly the expected number of times within a test.
  *
  * @return uint32_t Call count since last mock_shared_data_reset()
@@ -277,7 +258,7 @@ uint32_t mock_shared_data_get_trigger_estop_count(void);
  * @note Thread safety: read-only; safe in single-threaded test context only
  *
  * @code
- * shared_data_set_event(k_event_low_battery);
+ * shared_data_set_event(k_event_obstacle_detected);
  * TEST_ASSERT_EQUAL_UINT32(k_expect_call_count_one, mock_shared_data_get_set_event_count());
  * @endcode
  *
@@ -309,8 +290,8 @@ uint32_t mock_shared_data_get_set_event_count(void);
  * @note Thread safety: read-only; safe in single-threaded test context only
  *
  * @code
- * shared_data_set_event(k_event_low_battery);
- * TEST_ASSERT_EQUAL(k_event_low_battery,
+ * shared_data_set_event(k_event_obstacle_detected);
+ * TEST_ASSERT_EQUAL(k_event_obstacle_detected,
  *                   mock_shared_data_get_last_event_flags());
  * @endcode
  *
@@ -367,10 +348,6 @@ rx_err_t       shared_data_trigger_estop(estop_reason_t reason);
 rx_err_t       shared_data_clear_estop(void);
 bool           shared_data_is_estop_active(void);
 estop_reason_t shared_data_get_estop_reason(void);
-
-/* BMS State */
-rx_err_t shared_data_update_bms(const bms_state_t* state);
-rx_err_t shared_data_get_bms(bms_state_t* out_state);
 
 /* Temperature State */
 rx_err_t shared_data_update_temp(const temp_sensor_state_t* state);

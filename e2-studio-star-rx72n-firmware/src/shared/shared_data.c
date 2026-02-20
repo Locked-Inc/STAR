@@ -9,8 +9,8 @@
  *
  * This file implements the **centralized shared data module** for inter-task communication
  * in the STAR RX72N firmware. It provides **mutex-protected access** to all shared state
- * between the six concurrent ThreadX tasks (Communication, Motor Control, Obstacle Detection,
- * BMS Monitoring, Temperature Sensing, and Telemetry).
+ * between the five concurrent ThreadX tasks (Communication, Motor Control, Obstacle Detection,
+ * Temperature Sensing, and Telemetry).
  *
  * **Key Design Pattern:** Producer-Consumer with Mutex Protection
  * - Each shared data structure has dedicated producer and consumer tasks
@@ -33,7 +33,6 @@
  *     comm [label="Comm Task\n(Priority 5)", fillcolor=lightblue, style=filled];
  *     motor [label="Motor Task\n(Priority 8)", fillcolor=lightgreen, style=filled];
  *     obstacle [label="Obstacle Task\n(Priority 12)", fillcolor=lightyellow, style=filled];
- *     bms [label="BMS Task\n(Priority 15)", fillcolor=lightpink, style=filled];
  *     temp [label="Temp Task\n(Priority 15)", fillcolor=lightpink, style=filled];
  *   }
  *
@@ -45,7 +44,6 @@
  *     motor_cmd [label="motor_command_t\n(motor_mutex)"];
  *     motor_state [label="motor_state_t\n(motor_mutex)"];
  *     pid_gains [label="pid_gains_t\n(motor_mutex)"];
- *     bms_state [label="bms_state_t\n(bms_mutex)"];
  *     temp_state [label="temp_sensor_state_t\n(temp_mutex)"];
  *     obstacle_state [label="obstacle_state_t\n(obstacle_mutex)"];
  *     estop [label="estop_active\n(estop_mutex)"];
@@ -68,10 +66,8 @@
  *   motor -> estop [label="read", color=blue];
  *   obstacle -> estop [label="trigger", color=red];
  *   obstacle -> obstacle_state [label="update", color=green];
- *   bms -> bms_state [label="update", color=green];
  *   temp -> temp_state [label="update", color=green];
  *   telem -> motor_state [label="get", color=blue];
- *   telem -> bms_state [label="get", color=blue];
  *   telem -> temp_state [label="get", color=blue];
  *   telem -> obstacle_state [label="get", color=blue];
  *
@@ -79,21 +75,19 @@
  *   pid_gains -> events [label="gains_updated", style=dashed];
  *   estop -> events [label="estop_triggered", style=dashed];
  *   obstacle_state -> events [label="obstacle_detected", style=dashed];
- *   bms_state -> events [label="low_battery", style=dashed];
  * }
  * @enddot
  *
  * ## Thread Safety Strategy - Mutex Assignment
  *
- * **Five independent mutexes** prevent deadlock through non-overlapping ownership:
+ * **Four independent mutexes** prevent deadlock through non-overlapping ownership:
  *
  * | Mutex | Protected Data | Producer(s) | Consumer(s) | Lock Duration |
  * |-------|----------------|-------------|-------------|---------------|
  * | **motor_mutex** | motor_command_t, motor_state_t, pid_gains_t, last_comm_tick | Comm, Motor | Motor, Telemetry, Comm | ~5 us |
- * | **bms_mutex** | bms_state_t | BMS | Telemetry | ~2 us |
  * | **temp_mutex** | temp_sensor_state_t | Temp | Telemetry | ~2 us |
  * | **obstacle_mutex** | obstacle_state_t | Obstacle | Telemetry | ~2 us |
- * | **estop_mutex** | estop_active, estop_reason | Comm, Obstacle, BMS | Motor | ~1 us |
+ * | **estop_mutex** | estop_active, estop_reason | Comm, Obstacle | Motor | ~1 us |
  *
  * **Mutex Acquisition Order (to prevent deadlock):**
  * 1. Never acquire multiple mutexes in same function call
@@ -178,7 +172,6 @@
  * - DRV8243 driver fault
  * - Motor overcurrent (>2A sustained)
  * - Manual request via SetEmergencyStopRequest
- * - Low battery (<15% SoC)
  *
  * ## Initialization Sequence
  *
@@ -190,7 +183,6 @@
  *   Start [label="shared_data_init()", shape=ellipse];
  *   CheckInit [label="Check initialized flag", shape=diamond];
  *   CreateMotorMutex [label="Create motor_mutex"];
- *   CreateBMSMutex [label="Create bms_mutex"];
  *   CreateTempMutex [label="Create temp_mutex"];
  *   CreateObstacleMutex [label="Create obstacle_mutex"];
  *   CreateEstopMutex [label="Create estop_mutex"];
@@ -203,10 +195,8 @@
  *   Start -> CheckInit;
  *   CheckInit -> Error [label="Already init"];
  *   CheckInit -> CreateMotorMutex [label="Not init"];
- *   CreateMotorMutex -> CreateBMSMutex [label="TX_SUCCESS"];
+ *   CreateMotorMutex -> CreateTempMutex [label="TX_SUCCESS"];
  *   CreateMotorMutex -> Error [label="TX_ERROR", color=red];
- *   CreateBMSMutex -> CreateTempMutex [label="TX_SUCCESS"];
- *   CreateBMSMutex -> Error [label="TX_ERROR", color=red];
  *   CreateTempMutex -> CreateObstacleMutex [label="TX_SUCCESS"];
  *   CreateTempMutex -> Error [label="TX_ERROR", color=red];
  *   CreateObstacleMutex -> CreateEstopMutex [label="TX_SUCCESS"];
@@ -257,7 +247,6 @@
  * - motor_command_t: 24 bytes (4 floats + metadata)
  * - motor_state_t: 128 bytes (4 motors x 8 fields)
  * - pid_gains_t: 32 bytes (7 floats + bool)
- * - bms_state_t: 64 bytes (BQ4050 telemetry)
  * - temp_sensor_state_t: 32 bytes (4 sensors)
  * - obstacle_state_t: 32 bytes (4 HC-SR04 sensors)
  * - estop state: 8 bytes (bool + enum + padding)
@@ -310,7 +299,7 @@
  * | **Single Responsibility** | Module does ONLY shared data access (no business logic) |
  * | **Open/Closed** | New data types added without modifying existing accessors |
  * | **Liskov Substitution** | All accessors return rx_err_t with consistent semantics |
- * | **Interface Segregation** | Separate functions per data type (motor, bms, temp, etc.) |
+ * | **Interface Segregation** | Separate functions per data type (motor, temp, etc.) |
  * | **Dependency Inversion** | Tasks depend on accessor API, not g_shared_data directly |
  *
  * ## Thread Safety Analysis
@@ -412,7 +401,7 @@ static const char* const s_tag = "SDATA";
  * @brief ISR-safe e-stop trigger flag (set by ISR, cleared by task)
  *
  * @details
- * Volatile flag set by POEG and BMS alert ISRs to signal e-stop without
+ * Volatile flag set by POEG ISRs to signal e-stop without
  * blocking on mutex. Motor control task commits this to mutex-protected
  * state via shared_data_commit_isr_estop() at start of each iteration.
  *
@@ -468,7 +457,7 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  *
  * @details
  * Centralized bus manager for all off-chip peripherals:
- * - **I2C:** BQ4050 battery monitor, MPU-6050 IMU
+ * - **I2C:** MPU-6050 IMU
  * - **SPI:** DRV8243 motor drivers (4x)
  * - **1-Wire:** DS18B20 temperature sensors (4x)
  *
@@ -478,9 +467,8 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  *
  * **Access pattern:**
  * ```c
- * // In BMS task:
  * rx_bus_interface_t* i2c = rx_bus_manager_get_bus(&g_bus_manager, k_rx_bus_type_i2c);
- * i2c->read(i2c->ctx, bq4050_addr, data, len);
+ * i2c->read(i2c->ctx, imu_addr, data, len);
  * ```
  *
  * @note Do NOT access this variable directly from tasks. Use rx_bus_manager_get_bus().
@@ -534,7 +522,7 @@ shared_data_t g_shared_data = {0};
  * ## Algorithm Steps:
  *
  * 1. **Check re-initialization:** Return error if already initialized
- * 2. **Create 5 mutexes:** motor, bms, temp, obstacle, estop (priority inheritance enabled (TX_INHERIT))
+ * 2. **Create 4 mutexes:** motor, temp, obstacle, estop (priority inheritance enabled (TX_INHERIT))
  * 3. **Create event flags:** Inter-task signaling group (8 flags defined)
  * 4. **Set default PID gains:** Kp=0.286, Ki=8.01, Kd=0.0 (from MATLAB)
  * 5. **Invalidate motor command:** Set valid=false (no command received yet)
@@ -653,12 +641,6 @@ rx_err_t shared_data_init(void)
 
   /* Create motor_mutex with priority inheritance */
   UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", k_mutex_inherit);
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_mutex;
-  }
-
-  /* Create bms_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.bms_mutex, "BMSMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1434,7 +1416,6 @@ void shared_data_clear_pid_update_flag(void)
  * **Can be called from any task** when dangerous condition detected:
  * - Communication Task: timeout, manual request
  * - Obstacle Task: collision imminent
- * - BMS Task: critical battery level
  * - Motor Task: overcurrent, driver fault
  *
  * ## Algorithm Steps:
@@ -1469,7 +1450,6 @@ void shared_data_clear_pid_update_flag(void)
  *            - k_estop_reason_driver_fault: DRV8243 fault
  *            - k_estop_reason_overcurrent: Motor current >2A
  *            - k_estop_reason_manual: User request
- *            - k_estop_reason_low_battery: SoC <15%
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok E-stop triggered, motor task will respond within ~4ms
@@ -1562,12 +1542,12 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  * **Commit path:** Motor control task calls shared_data_commit_isr_estop() every
  * 4ms (250 Hz) to transfer ISR-triggered e-stop to mutex-protected shared state.
  *
- * @param[in] reason E-stop reason code (driver_fault, battery_fault, etc.)
+ * @param[in] reason E-stop reason code (driver_fault, etc.)
  *
  * @return void (no return value)
  * @retval N/A Function always succeeds (void return, no error cases)
  *
- * @pre Called from ISR context only (POEG, BMS alert ISRs)
+ * @pre Called from ISR context only (POEG ISRs)
  * @pre shared_data_init() completed and g_shared_data.event_flags initialized
  * @post s_estop_pending_from_isr == true
  * @post s_pending_estop_reason == reason
@@ -1591,18 +1571,6 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  *
  *     // ISR-safe e-stop trigger (no mutex)
  *     shared_data_trigger_estop_isr_safe(k_estop_reason_driver_fault);
- * }
- * @endcode
- *
- * @par Example - BMS Alert ISR:
- * @code{.c}
- * void __attribute__((interrupt)) irq13_bms_alert_isr(void)
- * {
- *     icu()->ir[k_bms_alert_vector] = 0;
- *     rx_log_error("BMS", "BQ4050 ALERT");
- *
- *     // ISR-safe e-stop trigger
- *     shared_data_trigger_estop_isr_safe(k_estop_reason_battery_fault);
  * }
  * @endcode
  *
@@ -1911,7 +1879,6 @@ bool shared_data_is_estop_active(void)
  * @retval k_estop_reason_driver_fault DRV8243 hardware fault
  * @retval k_estop_reason_overcurrent Motor current exceeded limit
  * @retval k_estop_reason_manual Operator-initiated stop
- * @retval k_estop_reason_low_battery Battery critically low
  *
  * @pre None (safe to call anytime)
  *
@@ -1964,168 +1931,6 @@ estop_reason_t shared_data_get_estop_reason(void)
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
 
   return reason;
-}
-
-/* =============================================================================
- * BMS State Access
- * =============================================================================
- */
-
-/**
- * @brief Update BMS state (called by BMS Task)
- *
- * @details
- * Stores battery telemetry from BQ4050 fuel gauge. Called at 1 Hz by BMS task.
- * Automatically triggers low battery event if SoC drops below 15%.
- *
- * ## Algorithm Steps:
- *
- * 1. **Validate input:** Check state pointer not nullptr
- * 2. **Check initialization:** Return error if not initialized
- * 3. **Acquire bms_mutex:** Block until available
- * 4. **Copy state:** memcpy entire bms_state_t (64 bytes)
- * 5. **Release bms_mutex:** Allow readers
- * 6. **Check battery level:** If valid and SoC <15%, set k_event_low_battery
- *
- * @param[in] state Pointer to BMS state structure
- *            - Must not benullptr
- *            - voltage_mv in millivolts (typical: 11000-12600)
- *            - current_ma in milliamps (negative = charging)
- *            - soc_percent range [0, 100]
- *            - temperature_celsius in 0.1degC units
- *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State updated, telemetry task can read
- * @retval k_rx_err_null_ptr state is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex failed
- *
- * @pre Module initialized
- * @pre state pointer valid
- * @pre state->valid = true if data is fresh
- *
- * @post bms_state copied to g_shared_data.bms_state
- * @post If SoC <15%, k_event_low_battery flag set
- *
- * @invariant bms_mutex held for <3 us
- *
- * @note Thread Safety: Protected by bms_mutex
- * @note Performance: ~2.5 us total (64-byte copy)
- * @note Frequency: Called at 1 Hz by BMS Task
- *
- * @par Example Usage:
- * @code{.c}
- * // In BMS task - read BQ4050 via I2C
- * bms_state_t state;
- * state.voltage_mv = bq4050_read_voltage();
- * state.current_ma = bq4050_read_current();
- * state.soc_percent = bq4050_read_soc();
- * state.valid = true;
- *
- * shared_data_update_bms(&state);
- * @endcode
- *
- * @see shared_data_get_bms() Read state (Telemetry Task)
- * @see bms_state_t Structure definition
- * @see k_event_low_battery Event flag
- *
- * @since Version 1.0.0
- */
-rx_err_t shared_data_update_bms(const bms_state_t* state)
-{
-  RX_CHECK_NULL_PTR(state, s_tag, "BMS state pointer is nullptr");
-
-  if (!g_shared_data.initialized) {
-    return k_rx_err_not_initialized;
-  }
-
-  const UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_mutex;
-  }
-
-  (void)memcpy(&g_shared_data.bms_state, state, sizeof(bms_state_t));
-
-  (void)tx_mutex_put(&g_shared_data.bms_mutex);
-
-  /* Check for low battery and signal event */
-  if (state->valid && state->soc_percent < k_shared_low_battery_soc_pct) {
-    (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_low_battery, TX_OR);
-  }
-
-  return k_rx_ok;
-}
-
-/**
- * @brief Get BMS state (called by Telemetry Task)
- *
- * @details
- * Retrieves battery telemetry for transmission to ROS2 gateway.
- * Called at 20 Hz by telemetry task.
- *
- * ## Algorithm Steps:
- *
- * 1. **Validate output:** Check out_state not nullptr
- * 2. **Check initialization:** Return error if not initialized
- * 3. **Acquire bms_mutex:** Block until available
- * 4. **Copy state:** memcpy from g_shared_data to caller's buffer
- * 5. **Release bms_mutex:** Allow writer to update
- *
- * @param[out] out_state Pointer to buffer for BMS state
- *             - Must not benullptr
- *             - Receives snapshot of bms_state_t
- *             - Check out_state->valid before using
- *
- * @return rx_err_t Operation status
- * @retval k_rx_ok State retrieved successfully
- * @retval k_rx_err_null_ptr out_state is nullptr
- * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex failed
- *
- * @pre Module initialized
- * @pre out_state pointer valid
- *
- * @post out_state contains snapshot of BMS state
- *
- * @invariant bms_mutex held for <3 us
- *
- * @note Thread Safety: Protected by bms_mutex
- * @note Performance: ~2.5 us total
- * @note Frequency: Called at 20 Hz by Telemetry Task
- *
- * @par Example Usage:
- * @code{.c}
- * // In telemetry task
- * bms_state_t bms;
- * if (shared_data_get_bms(&bms) == k_rx_ok && bms.valid) {
- *     telemetry_msg.battery_voltage = bms.voltage_mv;
- *     telemetry_msg.battery_soc = bms.soc_percent;
- * }
- * @endcode
- *
- * @see shared_data_update_bms() Write state (BMS Task)
- * @see bms_state_t Structure definition
- *
- * @since Version 1.0.0
- */
-rx_err_t shared_data_get_bms(bms_state_t* out_state)
-{
-  RX_CHECK_NULL_PTR(out_state, s_tag, "Output BMS state pointer is nullptr");
-
-  if (!g_shared_data.initialized) {
-    return k_rx_err_not_initialized;
-  }
-
-  const UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
-  if (tx_status != TX_SUCCESS) {
-    return k_rx_err_rtos_mutex;
-  }
-
-  (void)memcpy(out_state, &g_shared_data.bms_state, sizeof(bms_state_t));
-
-  (void)tx_mutex_put(&g_shared_data.bms_mutex);
-
-  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -2677,7 +2482,6 @@ void shared_data_update_last_comm_tick(void)
  *            - k_event_comm_timeout: Communication timeout
  *            - k_event_obstacle_detected: Obstacle detected
  *            - k_event_obstacle_cleared: Obstacle cleared
- *            - k_event_low_battery: Battery SoC <15%
  *
  * @return rx_err_t Operation status
  * @retval k_rx_ok Flags set, waiting tasks woken
@@ -2805,13 +2609,13 @@ rx_err_t shared_data_set_event(shared_event_flags_t flags)
  * // Check for event without blocking
  * uint32_t flags;
  * rx_err_t err = shared_data_wait_event(
- *     k_event_low_battery,
+ *     k_event_obstacle_detected,
  *     TX_NO_WAIT,  // Don't block
  *     &flags
  * );
  *
  * if (err == k_rx_ok) {
- *     rx_log_warn("BMS", "Low battery detected");
+ *     rx_log_warn("OBS", "Obstacle event pending");
  * } else if (err == k_rx_err_timeout) {
  *     // No event pending (normal)
  * }

@@ -557,7 +557,7 @@ typedef enum : uint8_t {
    * Disables digital input buffer for analog signal measurement.
    * Actually sets ASEL bit in PFS, not PSEL field.
    * @par Typical Pins: P40-P47 (AN000-AN007)
-   * @par Application: Motor current sensing, battery voltage monitoring
+   * @par Application: Motor current sensing, analog input measurement
    * @note Use rx_mpc_set_adc() for proper configuration (sets ASEL bit)
    */
   k_psel_adc = 0x00,
@@ -1054,7 +1054,7 @@ typedef enum : uint8_t {
  * | P41 | AN001 | Motor 1 current sense |
  * | P42 | AN002 | Motor 2 current sense |
  * | P43 | AN003 | Motor 3 current sense |
- * | P44 | AN004 | Battery voltage |
+ * | P44 | AN004 | Analog input (unused) |
  * | P45 | AN005 | Temperature sensor |
  *
  * @param[in] pin GPIO pin identifier for ADC input

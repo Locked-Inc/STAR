@@ -79,7 +79,6 @@ star-gateway/
 |   +-- service/             # Layer 5: gRPC services
 |       +-- motor_control.go
 |       +-- telemetry.go
-|       +-- battery.go
 |       +-- configuration.go
 |       +-- firmware.go
 +-- go.mod
@@ -204,13 +203,12 @@ replace github.com/Locked-Inc/star-proto/gen/go => ../star-proto/gen/go
 
 ## gRPC Services
 
-The gateway exposes 5 gRPC services:
+The gateway exposes 4 gRPC services:
 
 1. **MotorControlService** - Differential drive control, encoder streaming
 2. **TelemetryService** - IMU, GPS, system status
-3. **BatteryManagementService** - BQ7850 BMS monitoring
-4. **ConfigurationService** - Runtime parameters, NVS persistence
-5. **FirmwareUpdateService** - OTA updates, rollback
+3. **ConfigurationService** - Runtime parameters, NVS persistence
+4. **FirmwareUpdateService** - OTA updates, rollback
 
 ## Implementation Status
 

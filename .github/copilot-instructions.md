@@ -447,7 +447,7 @@ class StarGatewayBridgeNode : public rclcpp::Node {
 
 // CamelCase for structs used as types
 struct TelemetryData {
-  double battery_voltage_;
+  double encoder_ticks_;
   double current_ma_;
 };
 

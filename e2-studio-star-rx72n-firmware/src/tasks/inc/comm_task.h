@@ -18,7 +18,7 @@
  * - Data link: Custom frame protocol with CRC-32
  * - Application: Protocol Buffers (nanopb) messages
  * - Commands: MotorCommand, EmergencyStop, TelemetryRequest
- * - Responses: MotorStatus, BatteryStatus, SensorData
+ * - Responses: MotorStatus, SensorData
  *
  * @see comm_task.c Implementation
  * @see rx_nanopb.h Protocol Buffers encoder/decoder

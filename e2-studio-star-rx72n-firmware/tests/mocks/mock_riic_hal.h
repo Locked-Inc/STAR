@@ -77,7 +77,6 @@
  *
  * @par Usage in Tests:
  * - tests/test_riic_hal.c - RIIC HAL unit tests
- * - tests/test_rx_bq4050.c - BQ4050 battery monitor (SMBus over I2C)
  *
  * @par Example Usage:
  * @code

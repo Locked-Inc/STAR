@@ -96,7 +96,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_nanopb/inc
 
     # Custom libraries
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_bq4050/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_bus/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_comm_manager/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_core/inc
@@ -147,7 +146,7 @@ file(GLOB_RECURSE LIB_RX_FRAME_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/lib
 file(GLOB_RECURSE LIB_RX_FRAME_ASCII_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_frame_ascii/src/*.c)
 file(GLOB_RECURSE LIB_RX_FEC_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_fec/src/*.c)
 file(GLOB_RECURSE LIB_RX_HARQ_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_harq/src/*.c)
-file(GLOB_RECURSE LIB_RX_BQ4050_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_bq4050/src/*.c)
+
 file(GLOB_RECURSE LIB_RX_DS18B20_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_ds18b20/src/*.c)
 file(GLOB_RECURSE LIB_RX_HCSR04_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_hcsr04/src/*.c)
 file(GLOB_RECURSE LIB_RX_OBSTACLE_DETECT_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_obstacle_detect/src/*.c)
@@ -193,7 +192,6 @@ set(ALL_SOURCES
     ${LIB_RX_FRAME_ASCII_SOURCES}
     ${LIB_RX_FEC_SOURCES}
     ${LIB_RX_HARQ_SOURCES}
-    ${LIB_RX_BQ4050_SOURCES}
     ${LIB_RX_DS18B20_SOURCES}
     ${LIB_RX_HCSR04_SOURCES}
     ${LIB_RX_OBSTACLE_DETECT_SOURCES}
@@ -275,7 +273,6 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen
     ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/nanopb
-    ${CMAKE_SOURCE_DIR}/libs/rx_bq4050/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_ds18b20/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_hcsr04/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_obstacle_detect/inc

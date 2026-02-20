@@ -19,8 +19,8 @@
  *   +---------------------------------------------------------------------+
  *   |                        External Inputs                             |
  *   |   +---------+  +---------+  +---------+  +---------+               |
- *   |   | E-STOP  |  |  VBUS   |  | Battery |  |  Hall   |  ... (16)    |
- *   |   | Button  |  | Detect  |  | Charger |  | Encoder |               |
+ *   |   | E-STOP  |  |  VBUS   |  |Expansion|  |  Hall   |  ... (16)    |
+ *   |   | Button  |  | Detect  |  |  Input  |  | Encoder |               |
  *   |   +----+----+  +----+----+  +----+----+  +----+----+               |
  *   +--------+-----------+-----------+-----------+-----------------------+
  *            |           |           |           |
@@ -74,7 +74,7 @@
  * |---------|----------|-------------------|-------|
  * | IRQ0 | E-STOP Button | PCLK/64 | Max filtering for safety |
  * | IRQ5 | USB VBUS | PCLK/32 | Moderate noise rejection |
- * | IRQ8 | Battery Alert | PCLK/32 | BQ4050 charger interrupt |
+ * | IRQ8 | Expansion | PCLK/32 | General-purpose interrupt |
  *
  * @par Hardware Requirements
  * | Resource | Requirement | Notes |
@@ -251,7 +251,7 @@ typedef enum : uint8_t {
    * Sample period: 533 ns @ 60 MHz PCLKB
    * Response time: 1.6 us (3 samples)
    * Noise rejection: < 1.07 us pulses filtered
-   * @par Use Case: Battery alerts, charger interrupts, VBUS detection
+   * @par Use Case: External interrupts, VBUS detection, expansion inputs
    */
   k_irq_filter_pclk_32 = 2,
 

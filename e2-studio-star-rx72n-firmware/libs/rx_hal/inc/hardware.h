@@ -16,7 +16,7 @@
  * |------------|----------|---------|---------------|
  * | **GPIO** | 14 ports (A-N) | Digital I/O, motor control signals | Output/Input, Read/Write/Toggle |
  * | **CMT** | 4 channels | ThreadX system tick (100 Hz) | CMT0 configured for 10ms intervals |
- * | **S12AD** | 2 units (0-1) | Battery voltage, current sensing | 8/10/12-bit resolution |
+ * | **S12AD** | 2 units (0-1) | Motor current sensing, analog inputs | 8/10/12-bit resolution |
  * | **RIIC** | 3 channels (0-2) | I2C sensors (IMU, temperature) | 100kHz, 400kHz, 1MHz |
  * | **RSPI** | 3 channels (0-2) | SPI: RPi5 comm (peripheral), DRV8243 (controller) | Mode 0-3, 100kHz-10MHz |
  * | **SCI** | 13 channels (0-12) | UART: Debug (SCI9 @ 115200), expansion | Configurable baud rates |
@@ -620,7 +620,7 @@ extern "C" {
  */
 typedef enum : uint8_t {
   k_adc_unit_0 =
-    0, /**< S12AD0 - ADC unit 0 (channels AN000-AN007). Used for battery/current sensing. */
+    0, /**< S12AD0 - ADC unit 0 (channels AN000-AN007). Used for motor current sensing. */
   k_adc_unit_1 =
     1 /**< S12AD1 - ADC unit 1 (channels AN100-AN120). Reserved for expansion sensors. */
 } adc_unit_t;
@@ -655,12 +655,12 @@ typedef enum : uint8_t {
  *
  * ## Usage Example
  * @code{.c}
- * // Battery voltage monitoring
+ * // Motor current sensing
  * adc_init(k_adc_unit_0, k_adc_channel_0, k_adc_resolution_12bit);
  *
  * uint32_t voltage_mv;
  * adc_read_voltage_mv(k_adc_unit_0, k_adc_channel_0, k_adc_resolution_12bit, &voltage_mv);
- * rx_log_info_val("ADC", "Battery voltage (mV)", voltage_mv);
+ * rx_log_info_val("ADC", "Current sense (mV)", voltage_mv);
  * @endcode
  *
  * @par Underlying Type: uint8_t (C23 typed enum)

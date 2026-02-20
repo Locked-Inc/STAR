@@ -19,7 +19,7 @@
  *                                    v
  *                              [Creates all other tasks]
  *                                    v
- *          MotorTask, CommTask, BMSTask, ObstacleTask, TelemetryTask, TempTask
+ *          MotorTask, CommTask, ObstacleTask, TelemetryTask, TempTask
  *```
  *
  * @see app_main_task.c Implementation

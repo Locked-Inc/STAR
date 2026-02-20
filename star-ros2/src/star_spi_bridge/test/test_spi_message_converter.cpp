@@ -197,52 +197,6 @@ TEST_F(SpiMessageConverterTest, TelemetryToJointState_Velocity)
 }
 
 // =============================================================================
-// Tests for telemetry_to_battery_state
-// =============================================================================
-
-TEST_F(SpiMessageConverterTest, TelemetryToBatteryState_Voltage)
-{
-  star::v1::TelemetryData telemetry;
-  telemetry.set_battery_voltage_v(12.6);
-  telemetry.set_battery_soc_percent(85);
-
-  sensor_msgs::msg::BatteryState battery_state;
-  converter.telemetry_to_battery_state(telemetry, battery_state);
-
-  EXPECT_NEAR(battery_state.voltage, 12.6f, 0.01f);
-  EXPECT_NEAR(battery_state.percentage, 0.85f, 0.01f);
-  EXPECT_TRUE(battery_state.present);
-}
-
-TEST_F(SpiMessageConverterTest, TelemetryToBatteryState_FullCharge)
-{
-  star::v1::TelemetryData telemetry;
-  telemetry.set_battery_voltage_v(14.4);
-  telemetry.set_battery_soc_percent(100);
-
-  sensor_msgs::msg::BatteryState battery_state;
-  converter.telemetry_to_battery_state(telemetry, battery_state);
-
-  EXPECT_NEAR(battery_state.voltage, 14.4f, 0.01f);
-  EXPECT_NEAR(battery_state.percentage, 1.0f, 0.01f);
-  EXPECT_TRUE(battery_state.present);
-}
-
-TEST_F(SpiMessageConverterTest, TelemetryToBatteryState_LowBattery)
-{
-  star::v1::TelemetryData telemetry;
-  telemetry.set_battery_voltage_v(10.5);
-  telemetry.set_battery_soc_percent(10);
-
-  sensor_msgs::msg::BatteryState battery_state;
-  converter.telemetry_to_battery_state(telemetry, battery_state);
-
-  EXPECT_NEAR(battery_state.voltage, 10.5f, 0.01f);
-  EXPECT_NEAR(battery_state.percentage, 0.1f, 0.01f);
-  EXPECT_TRUE(battery_state.present);
-}
-
-// =============================================================================
 // Round-trip encode/decode test
 // =============================================================================
 

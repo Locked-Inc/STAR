@@ -13,7 +13,7 @@ Implement the `star_spi_bridge` ROS2 node to handle communication with the RX72N
 **Requirements:**
 - [ ] Initialize SPI interface (`/dev/spidev*`) using `ioctl`.
 - [ ] Subscribe to `/cmd_vel` (geometry_msgs/Twist) and convert to motor setpoints using kinematic model.
-- [ ] Periodically read SPI telemetry (encoders, battery) at 50Hz.
+- [ ] Periodically read SPI telemetry (encoders) at 50Hz.
 - [ ] Publish `/odom/unfiltered` (nav_msgs/Odometry) based on wheel encoders.
 - [ ] Publish `/joint_states` (sensor_msgs/JointState) for wheel positions/velocities.
 - [ ] Handle SPI transmission errors and timeouts.
@@ -29,7 +29,7 @@ Implement the `star_spi_bridge` ROS2 node to handle communication with the RX72N
 Implement the `star_gateway_bridge` node to bridge the Go Gateway service (gRPC/WebSockets) with the ROS2 ecosystem.
 
 **Requirements:**
-- [ ] Subscribe to system status topics (`/robot_status`, `/battery_state`).
+- [ ] Subscribe to system status topics (`/robot_status`).
 - [ ] Forward critical status to the Go Gateway via gRPC for UI display.
 - [ ] Implement a `teleop` interface to allow the Gateway (WebSocket/Gamepad) to publish to `/teleop/cmd_vel`.
 - [ ] Expose ROS2 services for PID tuning (`/set_pid_gains`) triggered by Gateway requests.
@@ -45,7 +45,6 @@ Implement the `star_gateway_bridge` node to bridge the Go Gateway service (gRPC/
 Implement the `star_safety_monitor` node to ensure the robot operates within safe limits.
 
 **Requirements:**
-- [ ] Monitor battery voltage topic and publish warnings/critical alerts.
 - [ ] Monitor motor currents and detect stalls.
 - [ ] Implement a heartbeat mechanism; if the RPi5 or RX72N is silent for >500ms, trigger an emergency stop.
 - [ ] Publish `/emergency_stop` (std_msgs/Bool) to halt all motion.

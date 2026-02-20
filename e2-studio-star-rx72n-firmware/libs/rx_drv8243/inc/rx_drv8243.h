@@ -767,7 +767,7 @@ typedef enum : uint8_t {
    * - **Insufficient supply**: VM < 4.5V (UVLO threshold)
    * - **Brown-out**: Momentary voltage sag during high current draw
    * - **Wiring resistance**: Voltage drop in long power cables
-   * - **Battery discharge**: Low battery state-of-charge
+   * - **Supply sag**: Low power supply voltage under heavy load
    *
    * @par Hardware Response:
    * - **Threshold**: VM < 4.5V (rising), VM > 4.7V (falling, 200mV hysteresis)
@@ -778,26 +778,26 @@ typedef enum : uint8_t {
    * @par Voltage Analysis:
    * ```
    * Example STAR robot scenario:
-   *   V_battery = 6.0V (nominal)
+   *   V_supply = 6.0V (nominal)
    *   I_motor = 1.5A (stall current)
    *   R_cable = 0.5Ohm (long wiring run)
    *
    * Voltage at DRV8243:
-   *   VM = V_battery - I_motor x R_cable
+   *   VM = V_supply - I_motor x R_cable
    *      = 6.0V - (1.5A x 0.5Ohm)
    *      = 5.25V (safe, >4.5V threshold)
    *
-   * If battery discharges to 5.0V:
+   * If supply voltage drops to 5.0V:
    *   VM = 5.0V - 0.75V = 4.25V (UVLO triggered!)
    * ```
    *
    * @par Recovery Procedure:
    * 1. **Immediate**: Motor stops automatically (outputs disabled)
    * 2. **Diagnose**:
-   *    - Measure VM at DRV8243 pins (not at battery terminals)
+   *    - Measure VM at DRV8243 pins (not at supply terminals)
    *    - Check for voltage drop under load (current inrush)
    * 3. **Fix root cause**:
-   *    - Charge/replace battery if V_battery < 5.5V
+   *    - Check power supply if V_supply < 5.5V
    *    - Reduce cable resistance (thicker wire, shorter run)
    *    - Add bulk capacitance near DRV8243 (100uF ceramic + 470uF electrolytic)
    * 4. **Restart**: Fault clears automatically when VM > 4.7V
@@ -807,10 +807,10 @@ typedef enum : uint8_t {
    *   - Use 16-18 AWG power cables for motor supply (minimize R_cable)
    *   - Place 100uF ceramic + 470uF electrolytic caps <10mm from VM pin
    * - **Software**:
-   *   - Monitor battery voltage, disable motors if V_battery < 5.5V
+   *   - Monitor supply voltage, disable motors if V_supply < 5.5V
    *   - Implement soft-start (gradual acceleration) to reduce inrush
    * - **Operational**:
-   *   - Replace batteries when V_battery < 5.8V under load
+   *   - Check power supply when VM < 5.8V under load
    *
    * @note UVLO is non-latching (auto-recovers), unlike OCP/TSD
    * @warning Sustained UVLO cycling indicates power supply inadequate for load

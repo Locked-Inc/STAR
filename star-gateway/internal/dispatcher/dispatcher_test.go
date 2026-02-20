@@ -178,8 +178,7 @@ func TestDispatcherBasicRouting(t *testing.T) {
 
 	// Create telemetry message
 	telemetry := &starv1.TelemetryData{
-		BatteryPercent: 85.0,
-		TimestampUs:    time.Now().UnixMicro(),
+		TimestampUs: time.Now().UnixMicro(),
 	}
 
 	wrapper := &starv1.WireMessage{
@@ -231,9 +230,6 @@ func TestDispatcherBasicRouting(t *testing.T) {
 		if receivedTelem == nil {
 			t.Fatal("Expected TelemetryData, got nil")
 		}
-		if receivedTelem.BatteryPercent != 85.0 {
-			t.Errorf("Expected battery 85%%, got %.1f%%", receivedTelem.BatteryPercent)
-		}
 	case <-time.After(testMediumTimeout):
 		t.Fatal("Timeout waiting for message")
 	}
@@ -251,7 +247,7 @@ func TestDispatcherBasicRouting(t *testing.T) {
 func TestDispatcherMultipleSubscribers(t *testing.T) {
 	logger := slog.New(slog.NewTextHandler(os.Stderr, &slog.HandlerOptions{Level: slog.LevelError}))
 
-	telemetry := &starv1.TelemetryData{BatteryPercent: 75.0}
+	telemetry := &starv1.TelemetryData{}
 	wrapper := &starv1.WireMessage{
 		Payload: &starv1.WireMessage_TelemetryData{TelemetryData: telemetry},
 	}
@@ -315,7 +311,6 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 		{"EmergencyStopCommand", MessageTypeEmergencyStopCommand, &starv1.EmergencyStopCommand{Reason: "test"}},
 		{"TelemetryData", MessageTypeTelemetryData, &starv1.TelemetryData{}},
 		{"EncoderData", MessageTypeEncoderData, &starv1.EncoderData{MotorId: 0}},
-		{"BatteryStatus", MessageTypeBatteryStatus, &starv1.BatteryStatus{}},
 	}
 
 	for _, tc := range testCases {
@@ -331,8 +326,6 @@ func TestDispatcherAllMessageTypes(t *testing.T) {
 				wrapper = &starv1.WireMessage{Payload: &starv1.WireMessage_TelemetryData{TelemetryData: tc.payload.(*starv1.TelemetryData)}}
 			case MessageTypeEncoderData:
 				wrapper = &starv1.WireMessage{Payload: &starv1.WireMessage_EncoderData{EncoderData: tc.payload.(*starv1.EncoderData)}}
-			case MessageTypeBatteryStatus:
-				wrapper = &starv1.WireMessage{Payload: &starv1.WireMessage_BatteryStatus{BatteryStatus: tc.payload.(*starv1.BatteryStatus)}}
 			}
 
 			data, err := proto.Marshal(wrapper)

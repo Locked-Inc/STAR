@@ -142,9 +142,6 @@ typedef struct _star_v1_TelemetryData {
     /* GPS data (if available). */
     bool has_gps;
     star_v1_GpsData gps;
-    /* Battery state of charge.
- Range: 0 to 100 percent. */
-    double battery_percent;
     /* WiFi signal strength in dBm.
  Typical range: -100 to -30 dBm. */
     int32_t wifi_signal_dbm;
@@ -164,11 +161,6 @@ typedef struct _star_v1_TelemetryData {
     /* Motor fault flags bitfield (RX72N specific).
  Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc. */
     uint32_t fault_flags;
-    /* Battery voltage in volts (RX72N specific - BQ4050). */
-    double battery_voltage_v;
-    /* Battery state of charge percentage (RX72N specific - BQ4050).
- Range: 0 to 100 percent. */
-    uint32_t battery_soc_percent;
     /* Timestamp in microseconds since boot (RX72N specific). */
     int64_t timestamp_us;
     /* Encoder data from motors (RX72N specific - fixed size for embedded).
@@ -267,7 +259,7 @@ extern "C" {
 #define star_v1_StreamTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
 #define star_v1_GetSystemStatusRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetSystemStatusResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemStatus_init_default}
-#define star_v1_TelemetryData_init_default       {false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, 0, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_default, 0, 0, 0, 0, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0}
+#define star_v1_TelemetryData_init_default       {false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_default, 0, 0, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0}
 #define star_v1_ImuData_init_default             {0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_GpsData_init_default             {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
 #define star_v1_SystemStatus_init_default        {_star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, "", 0, 0}
@@ -276,7 +268,7 @@ extern "C" {
 #define star_v1_StreamTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
 #define star_v1_GetSystemStatusRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetSystemStatusResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemStatus_init_zero}
-#define star_v1_TelemetryData_init_zero          {false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, 0, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_zero, 0, 0, 0, 0, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0}
+#define star_v1_TelemetryData_init_zero          {false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_zero, 0, 0, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0}
 #define star_v1_ImuData_init_zero                {0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_GpsData_init_zero                {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
 #define star_v1_SystemStatus_init_zero           {_star_v1_ConnectionStatus_MIN, _star_v1_RobotMode_MIN, 0, 0, 0, "", 0, 0}
@@ -304,7 +296,6 @@ extern "C" {
 #define star_v1_GpsData_fix_type_tag             6
 #define star_v1_TelemetryData_imu_tag            1
 #define star_v1_TelemetryData_gps_tag            2
-#define star_v1_TelemetryData_battery_percent_tag 3
 #define star_v1_TelemetryData_wifi_signal_dbm_tag 4
 #define star_v1_TelemetryData_cpu_usage_percent_tag 5
 #define star_v1_TelemetryData_temperature_celsius_tag 6
@@ -312,8 +303,6 @@ extern "C" {
 #define star_v1_TelemetryData_timestamp_tag      8
 #define star_v1_TelemetryData_emergency_stop_tag 10
 #define star_v1_TelemetryData_fault_flags_tag    11
-#define star_v1_TelemetryData_battery_voltage_v_tag 12
-#define star_v1_TelemetryData_battery_soc_percent_tag 13
 #define star_v1_TelemetryData_timestamp_us_tag   14
 #define star_v1_TelemetryData_encoder_front_left_tag 15
 #define star_v1_TelemetryData_encoder_front_right_tag 16
@@ -373,7 +362,6 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  status,            2)
 #define star_v1_TelemetryData_FIELDLIST(X, a) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  imu,               1) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  gps,               2) \
-X(a, STATIC,   SINGULAR, DOUBLE,   battery_percent,   3) \
 X(a, STATIC,   SINGULAR, INT32,    wifi_signal_dbm,   4) \
 X(a, STATIC,   SINGULAR, DOUBLE,   cpu_usage_percent,   5) \
 X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius,   6) \
@@ -381,8 +369,6 @@ X(a, STATIC,   SINGULAR, DOUBLE,   motor_load_percent,   7) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  timestamp,         8) \
 X(a, STATIC,   SINGULAR, BOOL,     emergency_stop,   10) \
 X(a, STATIC,   SINGULAR, UINT32,   fault_flags,      11) \
-X(a, STATIC,   SINGULAR, DOUBLE,   battery_voltage_v,  12) \
-X(a, STATIC,   SINGULAR, UINT32,   battery_soc_percent,  13) \
 X(a, STATIC,   SINGULAR, INT64,    timestamp_us,     14) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_left,  15) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_right,  16) \

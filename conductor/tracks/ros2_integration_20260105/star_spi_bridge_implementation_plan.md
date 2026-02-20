@@ -22,7 +22,6 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
                          v ^                     v ^
 /odom/unfiltered  <-<-<-  SpiDriver (ioctl)   <-<-<-  Motor_Controller
 /joint_states                                    (4x PID @ 250 Hz)
-/battery_state
 ```
 
 ### Component Breakdown
@@ -37,12 +36,11 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Twist -> VelocityCommand (4-wheel differential drive kinematics)
    - TelemetryData -> Odometry (dead reckoning from encoder ticks)
    - TelemetryData -> JointState (wheel positions/velocities)
-   - TelemetryData -> BatteryState (voltage, SOC)
 
 3. **StarSpiDriverNode** (`star_spi_driver_node.cpp`): ROS2 Lifecycle Node
    - 100 Hz timer (critical: prevents 500ms E-STOP timeout on RX72N)
    - Subscribes to `/cmd_vel` with timeout detection
-   - Publishes `/odom/unfiltered`, `/joint_states`, `/battery_state`
+   - Publishes `/odom/unfiltered`, `/joint_states`
    - Lifecycle management (configure -> activate -> deactivate -> cleanup)
 
 ## Protocol Specifications
@@ -171,10 +169,6 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Convert encoder ticks to wheel angles (radians)
    - Populate joint names: `["front_left_wheel", "front_right_wheel", "back_left_wheel", "back_right_wheel"]`
 
-4. Implement `SpiMessageConverter::telemetry_to_battery_state()`:
-   - Extract voltage_v, soc_percent from TelemetryData
-   - Populate BatteryState message
-
 **Unit Tests**:
 
 - Pure rotation: `linear.x=0, angular.z=1.0` -> `left=-wheelbase/2, right=+wheelbase/2`
@@ -230,7 +224,7 @@ ROS2 Navigation        star_spi_bridge          RX72N Firmware
    - Call `spi_driver_->send_velocity_command(cmd_payload, telemetry_payload)`
    - Deserialize telemetry protobuf
    - Check `telemetry.emergency_stop()` flag
-   - Publish odometry, joint states, battery state
+   - Publish odometry, joint states
 
 3. Implement `/cmd_vel` subscription callback:
    - Cache latest Twist message (mutex-protected)
@@ -438,7 +432,6 @@ ros2 lifecycle set /star_spi_driver activate
 # Terminal 3: Monitor topics
 ros2 topic hz /odom/unfiltered     # Should show ~100 Hz
 ros2 topic echo /joint_states      # Verify encoder counts
-ros2 topic echo /battery_state     # Check voltage/SOC
 
 # Terminal 4: Send test command
 ros2 topic pub /cmd_vel geometry_msgs/msg/Twist "{linear: {x: 0.5}, angular: {z: 0.0}}" --once

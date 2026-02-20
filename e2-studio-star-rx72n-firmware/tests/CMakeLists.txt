@@ -47,7 +47,6 @@ function(apply_test_includes target)
         ${CMAKE_SOURCE_DIR}/../libs/rx_pid/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_session/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_encoder/inc
-        ${CMAKE_SOURCE_DIR}/../libs/rx_bq4050/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc
         ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen
         ${nanopb_SOURCE_DIR}
@@ -225,16 +224,6 @@ set(RX_ENCODER_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_encoder/src/rx_mtu_encoder.c
 )
 
-# Mock SMBus source for BQ4050 testing
-set(MOCK_SMBUS_SRC
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_smbus.c
-)
-
-# rx_bq4050 source
-set(RX_BQ4050_SRC
-    ${CMAKE_SOURCE_DIR}/../libs/rx_bq4050/src/rx_bq4050.c
-)
-
 # rx_core sources for infrastructure testing
 set(RX_ERROR_HANDLER_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_core/src/rx_error_handler.c
@@ -256,7 +245,6 @@ set(RX_NANOPB_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/common.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
-    ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/battery_management.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/gateway_service.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/configuration.pb.c
 )
@@ -541,17 +529,6 @@ apply_strict_warnings(test_rx_encoder)
 apply_test_includes(test_rx_encoder)
 target_link_libraries(test_rx_encoder unity)
 
-# Test: BQ4050 Battery Fuel Gauge Driver
-add_executable(test_rx_bq4050
-    test_rx_bq4050.c
-    ${RX_BQ4050_SRC}
-    ${MOCK_SMBUS_SRC}
-    ${MOCK_LOG_SRC}
-)
-apply_strict_warnings(test_rx_bq4050)
-apply_test_includes(test_rx_bq4050)
-target_link_libraries(test_rx_bq4050 unity)
-
 # Test: DS18B20 Temperature Sensor
 add_executable(test_rx_ds18b20
     test_rx_ds18b20.c
@@ -793,10 +770,6 @@ set(MOCK_DS18B20_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_ds18b20.c
 )
 
-set(MOCK_BQ4050_SRC
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bq4050.c
-)
-
 # Task source files
 set(TASK_MOTOR_CONTROL_SRC
     ${CMAKE_SOURCE_DIR}/../src/tasks/motor_control_task.c
@@ -808,10 +781,6 @@ set(TASK_COMM_SRC
 
 set(TASK_OBSTACLE_DETECT_SRC
     ${CMAKE_SOURCE_DIR}/../src/tasks/obstacle_detect_task.c
-)
-
-set(TASK_BMS_MONITOR_SRC
-    ${CMAKE_SOURCE_DIR}/../src/tasks/bms_monitor_task.c
 )
 
 set(TASK_TEMP_SENSOR_SRC
@@ -881,24 +850,6 @@ target_include_directories(test_obstacle_detection_task PRIVATE
 )
 target_link_libraries(test_obstacle_detection_task unity)
 
-# Test: BMS Monitoring Task
-add_executable(test_bms_monitoring_task
-    test_bms_monitoring_task.c
-    ${MOCK_TX_API_SRC}
-    ${MOCK_TASKS_SRC}
-    ${MOCK_SHARED_DATA_SRC}
-    ${MOCK_BQ4050_SRC}
-    ${MOCK_LOG_SRC}
-)
-apply_strict_warnings(test_bms_monitoring_task)
-apply_test_includes(test_bms_monitoring_task)
-target_compile_definitions(test_bms_monitoring_task PRIVATE MOCK_TX_THREAD_CREATE)
-target_include_directories(test_bms_monitoring_task PRIVATE
-    ${CMAKE_SOURCE_DIR}/../src/shared
-    ${CMAKE_SOURCE_DIR}/../src/tasks/inc
-)
-target_link_libraries(test_bms_monitoring_task unity)
-
 # Test: Temperature Sensing Task
 add_executable(test_temperature_sensing_task
     test_temperature_sensing_task.c
@@ -951,14 +902,6 @@ target_include_directories(test_rx_stack_monitor PRIVATE
 )
 target_link_libraries(test_rx_stack_monitor unity)
 
-# Test: BMS Alert ISR (self-contained, includes source directly)
-add_executable(test_rx_bms_alert
-    test_rx_bms_alert.c
-)
-apply_strict_warnings(test_rx_bms_alert)
-apply_test_includes(test_rx_bms_alert)
-target_link_libraries(test_rx_bms_alert unity)
-
 # Test: HOST_IRQ GPIO Output Driver (self-contained)
 add_executable(test_rx_host_irq
     test_rx_host_irq.c
@@ -996,7 +939,6 @@ set(ALL_TEST_TARGETS
     test_rx_spi_link
     test_rx_pid
     test_rx_encoder
-    test_rx_bq4050
     test_rx_ds18b20
     test_rx_error_handler
     test_rx_pin_validator
@@ -1015,14 +957,12 @@ set(ALL_TEST_TARGETS
     test_rx_led_status
     test_rx_tpu
     test_rx_encoder_tpu
-    test_rx_bms_alert
     test_rx_host_irq
     test_rx_stack_monitor
     # Multi-task firmware tests
     test_motor_control_task
     test_communication_task
     test_obstacle_detection_task
-    test_bms_monitoring_task
     test_temperature_sensing_task
     test_telemetry_aggregation_task
 )
@@ -1048,7 +988,6 @@ add_test(NAME test_rx_spi_comm COMMAND test_rx_spi_comm)
 add_test(NAME test_rx_spi_link COMMAND test_rx_spi_link)
 add_test(NAME test_rx_pid COMMAND test_rx_pid)
 add_test(NAME test_rx_encoder COMMAND test_rx_encoder)
-add_test(NAME test_rx_bq4050 COMMAND test_rx_bq4050)
 add_test(NAME test_rx_ds18b20 COMMAND test_rx_ds18b20)
 add_test(NAME test_rx_error_handler COMMAND test_rx_error_handler)
 add_test(NAME test_rx_pin_validator COMMAND test_rx_pin_validator)
@@ -1067,7 +1006,6 @@ add_test(NAME test_rx_poeg COMMAND test_rx_poeg)
 add_test(NAME test_rx_led_status COMMAND test_rx_led_status)
 add_test(NAME test_rx_tpu COMMAND test_rx_tpu)
 add_test(NAME test_rx_encoder_tpu COMMAND test_rx_encoder_tpu)
-add_test(NAME test_rx_bms_alert COMMAND test_rx_bms_alert)
 add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 
@@ -1075,7 +1013,6 @@ add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
 add_test(NAME test_motor_control_task COMMAND test_motor_control_task)
 add_test(NAME test_communication_task COMMAND test_communication_task)
 add_test(NAME test_obstacle_detection_task COMMAND test_obstacle_detection_task)
-add_test(NAME test_bms_monitoring_task COMMAND test_bms_monitoring_task)
 add_test(NAME test_temperature_sensing_task COMMAND test_temperature_sensing_task)
 add_test(NAME test_telemetry_aggregation_task COMMAND test_telemetry_aggregation_task)
 

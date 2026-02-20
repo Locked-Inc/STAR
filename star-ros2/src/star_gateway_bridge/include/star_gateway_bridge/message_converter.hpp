@@ -12,10 +12,8 @@
 
 #include <geometry_msgs/msg/twist.hpp>
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/battery_state.hpp>
 #include <std_msgs/msg/string.hpp>
 
-#include "star/v1/battery_management.pb.h"
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/telemetry.pb.h"
 
@@ -63,27 +61,6 @@ public:
     star::v1::VelocityCommand & command,
     double wheel_base = 0.150,
     uint32_t sequence = 0);
-
-  /**
-   * @brief Convert ROS2 BatteryState message to Protobuf BatteryState.
-   *
-   * Maps ROS2 standard battery state to STAR BatteryState protobuf.
-   *
-   * Unit conversions:
-   * - Voltage: V -> mV (multiply by 1000)
-   * - Current: A -> mA (multiply by 1000)
-   * - Capacity: Ah -> mAh (multiply by 1000)
-   * - Temperature: degC -> deci-Celsius (multiply by 10)
-   * - Percentage: 0-1 -> 0-100% (multiply by 100)
-   *
-   * @param ros_battery ROS2 BatteryState message
-   * @param proto_battery Output BatteryState protobuf
-   * @return true if conversion successful, false if input validation failed
-   */
-  static bool
-  battery_state_to_proto(
-    const sensor_msgs::msg::BatteryState & ros_battery,
-    star::v1::BatteryState & proto_battery);
 
   /**
    * @brief Convert ROS2 String message to Protobuf SystemStatus.
@@ -182,16 +159,6 @@ private:
   static constexpr double k_max_angular_vel =
     4.0;   // Maximum angular velocity (rad/s)
 
-  // Battery state constants (ROS2 sensor_msgs/BatteryState uses NaN for
-  // unknown)
-  static constexpr float k_battery_nan_sentinel = NAN;
-
-  // Unit conversion factors
-  static constexpr double k_v_to_mv = 1000.0;   // Volts to millivolts
-  static constexpr double k_a_to_ma = 1000.0;   // Amps to milliamps
-  static constexpr double k_ah_to_mah = 1000.0; // Amp-hours to milliamp-hours
-  static constexpr double k_c_to_decic = 10.0;  // Celsius to deci-Celsius
-  static constexpr double k_percent_to_int = 100.0; // 0-1 to 0-100%
 };
 
 } // namespace star

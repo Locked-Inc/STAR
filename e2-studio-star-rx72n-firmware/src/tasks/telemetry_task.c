@@ -8,7 +8,7 @@
  * # Overview
  *
  * This module implements the Telemetry Aggregation Task that collects all robot system state
- * data (motors, battery, temperature, sensors), encodes it into Protocol Buffer messages, and
+ * data (motors, temperature, sensors), encodes it into Protocol Buffer messages, and
  * broadcasts it to the Raspberry Pi 5 host controller at 20 Hz (50ms period) via USB CDC (primary)
  * or SPI (fallback). This task provides **real-time observability** for the entire robot system.
  *
@@ -30,8 +30,6 @@
  *
  *     motor_task [label="Motor Control Task\n(250 Hz)\n4x encoders (ticks, velocity_mps)\n4x fault flags\nE-stop status",
  *                 fillcolor=lightgreen, style=filled];
- *     bms_task [label="BMS Monitor Task\n(5 Hz)\nBattery voltage (mV)\nState of charge (%)",
- *               fillcolor=lightyellow, style=filled];
  *     temp_task [label="Temperature Sensor Task\n(1 Hz)\nDS18B20 ambient (cdegC)",
  *                fillcolor=lightcoral, style=filled];
  *     obstacle_task [label="Obstacle Detection Task\n(50 Hz)\nLIDAR obstacle flags\n(future expansion)",
@@ -86,7 +84,6 @@
  *
  *   // Data flow: Sources -> Telemetry Task
  *   motor_task -> telemetry_task [label="shared_data_get_motor_state()"];
- *   bms_task -> telemetry_task [label="shared_data_get_bms()"];
  *   temp_task -> telemetry_task [label="shared_data_get_temp()"];
  *   obstacle_task -> telemetry_task [label="shared_data_get_obstacle()"];
  *
@@ -134,11 +131,6 @@
  *       :Read fault flags (4 motors);
  *       :Unlock motor state mutex;
  *
- *       :Lock BMS mutex;
- *       :Read battery voltage (mV);
- *       :Read state of charge (%);
- *       :Unlock BMS mutex;
- *
  *       :Lock temperature mutex;
  *       :Read DS18B20 sensor (cdegC);
  *       :Unlock temperature mutex;
@@ -162,13 +154,6 @@
  *         :Populate encoder_front_right;
  *         :Populate encoder_back_left;
  *         :Populate encoder_back_right;
- *       endif
- *
- *       if (BMS data valid?) then (yes)
- *         :Convert voltage (mV -> V);
- *         :Populate battery_voltage_v;
- *         :Populate battery_soc_percent;
- *         :Populate battery_percent (duplicate);
  *       endif
  *
  *       if (Temperature data valid?) then (yes)
@@ -231,9 +216,6 @@
  * | **encoder_front_right** | EncoderData | motor_state.encoder_counts[1] | ticks | Direct copy | Motor 1 encoder state |
  * | **encoder_back_left** | EncoderData | motor_state.encoder_counts[2] | ticks | Direct copy | Motor 2 encoder state |
  * | **encoder_back_right** | EncoderData | motor_state.encoder_counts[3] | ticks | Direct copy | Motor 3 encoder state |
- * | **battery_voltage_v** | double | bms_state.voltage_mv | V | mV / 1000.0 | Battery terminal voltage |
- * | **battery_soc_percent** | float | bms_state.soc_percent | % | Direct copy | State of charge (0-100%) |
- * | **battery_percent** | double | bms_state.soc_percent | % | Direct copy | Duplicate field (legacy) |
  * | **temperature_celsius** | double | temp_state.temperature_cdegc[0] | degC | cdegC / 100.0 | Ambient temperature |
  *
  * ### EncoderData Submessage Fields
@@ -267,14 +249,12 @@
  *
  * | Internal Type | Internal Units | Protobuf Field | Protobuf Units | Conversion Formula |
  * |---------------|----------------|----------------|----------------|-------------------|
- * | `uint32_t` | millivolts (mV) | `battery_voltage_v` | volts (V) | `voltage_mv / 1000.0` |
  * | `int16_t` | centi-degrees (cdegC) | `temperature_celsius` | degrees (degC) | `temperature_cdegc / 100.0` |
  * | `float` | meters/second (m/s) | `velocity_mps` | meters/second (m/s) | `(double)velocity_mps` |
  * | `uint32_t` | ThreadX ticks | `timestamp_us` | microseconds (us) | `ticks x 10000` |
  *
  * ### Rationale for Internal Fixed-Point Units
  *
- * - **Millivolts (mV):** BMS ADC reports in mV (12-bit ADC x voltage divider), no float math in BMS task
  * - **Centi-degrees (cdegC):** DS18B20 sensor reports in 0.0625degC steps, stored as `temp x 100`
  * - **ThreadX ticks:** System timer runs at 100 Hz (10ms per tick), multiplication to us avoids float math
  *
@@ -299,7 +279,6 @@
  * | Operation | Time (us) | % of Budget |
  * |-----------|-----------|-------------|
  * | **Motor State Read** (mutex + 4 motors) | 15 | 0.03% |
- * | **BMS State Read** (mutex + voltage/SoC) | 5 | 0.01% |
  * | **Temperature Read** (mutex + sensor) | 3 | 0.006% |
  * | **Protobuf Population** (all fields) | 20 | 0.04% |
  * | **Nanopb Encoding** | 40 | 0.08% |
@@ -381,7 +360,6 @@
  *
  * Standard ROS2 topic rates for similar data:
  * - `/joint_states` (encoders): 10-50 Hz
- * - `/battery_state` (BMS): 1-10 Hz
  * - `/odom` (odometry): 20-50 Hz
  *
  * 20 Hz matches the **lower end of typical ROS2 odometry rates**, which is appropriate for
@@ -404,7 +382,6 @@
  * | **Motor Control Task** | 8 | 250 Hz | PID velocity control | **CRITICAL** (robot motion) |
  * | **Encoder Read ISR** | 3 | 20 kHz | Quadrature decoding | **CRITICAL** (feedback) |
  * | **Comm Task** | 10 | 100 Hz | SPI command receive | **HIGH** (command latency) |
- * | **BMS Monitor Task** | 12 | 5 Hz | Battery monitoring | **MEDIUM** (safety) |
  * | **Temperature Task** | 14 | 1 Hz | Thermal monitoring | **MEDIUM** (safety) |
  * | **Obstacle Detect Task** | 16 | 50 Hz | LIDAR processing | **MEDIUM** (collision avoidance) |
  * | **Telemetry Task** | **18** | **20 Hz** | **State broadcasting** | **LOW** (informational only) |
@@ -414,7 +391,7 @@
  * 1. **Non-Critical Data:** Telemetry is informational - missing a telemetry message does NOT
  *    affect robot safety or control stability.
  *
- * 2. **Graceful Degradation:** If the system is under heavy load (e.g., BMS fault handling,
+ * 2. **Graceful Degradation:** If the system is under heavy load (e.g., motor fault handling,
  *    motor fault recovery), telemetry can be delayed or dropped without consequence.
  *
  * 3. **Never Preempt Control:** The motor control task MUST execute every 4ms. If telemetry
@@ -464,34 +441,19 @@
  * @msc
  * msc {
  *   width=900;
- *   ThreadX, TelemetryTask, SharedData, MotorTask, BMSTask, TempTask, CommManager;
+ *   ThreadX, TelemetryTask, SharedData, MotorTask, TempTask, CommManager;
  *
  *   --- [label="Normal Operation (All Sources Valid)"];
  *   TelemetryTask => SharedData [label="shared_data_get_motor_state()"];
  *   SharedData >> TelemetryTask [label="k_rx_ok, motor_state"];
- *   TelemetryTask => SharedData [label="shared_data_get_bms()"];
- *   SharedData >> TelemetryTask [label="k_rx_ok, bms_state"];
  *   TelemetryTask => SharedData [label="shared_data_get_temp()"];
  *   SharedData >> TelemetryTask [label="k_rx_ok, temp_state"];
  *   TelemetryTask => CommManager [label="rx_comm_manager_send() (all fields populated)"];
  *   CommManager >> TelemetryTask [label="k_rx_ok"];
  *
- *   --- [label="Partial Failure (BMS Sensor Fault)"];
- *   TelemetryTask => SharedData [label="shared_data_get_motor_state()"];
- *   SharedData >> TelemetryTask [label="k_rx_ok, motor_state"];
- *   TelemetryTask => SharedData [label="shared_data_get_bms()"];
- *   SharedData >> TelemetryTask [label="k_rx_ok, bms_state.valid=false"];
- *   TelemetryTask box TelemetryTask [label="Skip BMS fields\n(battery_voltage_v, battery_soc_percent)"];
- *   TelemetryTask => SharedData [label="shared_data_get_temp()"];
- *   SharedData >> TelemetryTask [label="k_rx_ok, temp_state"];
- *   TelemetryTask => CommManager [label="rx_comm_manager_send() (partial data)"];
- *   CommManager >> TelemetryTask [label="k_rx_ok"];
- *
  *   --- [label="Transmission Failure (USB Disconnect)"];
  *   TelemetryTask => SharedData [label="shared_data_get_motor_state()"];
  *   SharedData >> TelemetryTask [label="k_rx_ok, motor_state"];
- *   TelemetryTask => SharedData [label="shared_data_get_bms()"];
- *   SharedData >> TelemetryTask [label="k_rx_ok, bms_state"];
  *   TelemetryTask => SharedData [label="shared_data_get_temp()"];
  *   SharedData >> TelemetryTask [label="k_rx_ok, temp_state"];
  *   TelemetryTask => CommManager [label="rx_comm_manager_send()"];
@@ -507,7 +469,6 @@
  * | Failure Scenario | Detection | Response | Impact on Telemetry |
  * |------------------|-----------|----------|---------------------|
  * | **Motor data unavailable** | `shared_data_get_motor_state() != k_rx_ok` | Skip motor fields, continue | Encoders/fault flags omitted |
- * | **BMS data invalid** | `bms_state.valid == false` | Skip BMS fields, continue | Battery voltage/SoC omitted |
  * | **Temperature invalid** | `temp_state.sensor_valid[0] == false` | Skip temp fields, continue | Temperature omitted |
  * | **Protobuf encoding fails** | `rx_nanopb_encode_telemetry() != k_rx_ok` | Log error, skip transmission | Message dropped (retry next cycle) |
  * | **Transmission fails** | `rx_comm_manager_send() != k_rx_ok` | Log debug, continue | Message lost (retry next cycle) |
@@ -524,7 +485,7 @@
  * @msc
  * msc {
  *   width=1200;
- *   ThreadX, TelemetryTask, MotorTask, BMSTask, TempTask, SharedData, Nanopb, CommManager, USB;
+ *   ThreadX, TelemetryTask, MotorTask, TempTask, SharedData, Nanopb, CommManager, USB;
  *
  *   --- [label="20 Hz Timer Fires (50ms elapsed)"];
  *   ThreadX => TelemetryTask [label="Wake from sleep\n(tx_thread_sleep(5) expired)"];
@@ -538,13 +499,6 @@
  *   SharedData box SharedData [label="Unlock motor mutex"];
  *   SharedData >> TelemetryTask [label="k_rx_ok, motor_state"];
  *
- *   TelemetryTask => SharedData [label="shared_data_get_bms(&bms_state)"];
- *   SharedData box SharedData [label="Lock BMS mutex"];
- *   BMSTask => SharedData [label="(concurrent) Write latest BMS data"];
- *   SharedData => TelemetryTask [label="Copy bms_state struct"];
- *   SharedData box SharedData [label="Unlock BMS mutex"];
- *   SharedData >> TelemetryTask [label="k_rx_ok, bms_state"];
- *
  *   TelemetryTask => SharedData [label="shared_data_get_temp(&temp_state)"];
  *   SharedData box SharedData [label="Lock temp mutex"];
  *   TempTask => SharedData [label="(concurrent) Write latest temp data"];
@@ -555,7 +509,6 @@
  *   --- [label="Phase 2: Protobuf Population (Build TelemetryData Message)"];
  *   TelemetryTask box TelemetryTask [label="Initialize TelemetryData protobuf\nSet timestamp_us = tx_time_get() * 10000\nSet frame_sequence = s_sequence++"];
  *   TelemetryTask box TelemetryTask [label="Populate motor fields:\n- emergency_stop\n- fault_flags (4 bytes -> uint32)\n- encoder_front_left (ticks, velocity_mps)\n- encoder_front_right\n- encoder_back_left\n- encoder_back_right"];
- *   TelemetryTask box TelemetryTask [label="Convert BMS units:\n- battery_voltage_v = voltage_mv / 1000.0\n- battery_soc_percent = soc_percent"];
  *   TelemetryTask box TelemetryTask [label="Convert temp units:\n- temperature_celsius = temperature_cdegc / 100.0"];
  *
  *   --- [label="Phase 3: Nanopb Encoding"];
@@ -637,7 +590,7 @@
  * |----------|---------------|----------------|-------------------|
  * | `telemetry_task_create()` | 1. Task not already created (`!s_telem_created`) <br> 2. ThreadX kernel initialized | 1. Task thread created <br> 2. `s_telem_created = true` <br> 3. Thread auto-started | `RX_ASSERT(!s_telem_created)`, `tx_thread_create()` return check |
  * | `internal_telem_task_entry()` | 1. ThreadX running <br> 2. Shared data initialized | 1. Task logs startup message <br> 2. Enters infinite loop | No return, validates `internal_build_and_send_telemetry()` |
- * | `internal_build_and_send_telemetry()` | 1. Shared data valid <br> 2. Comm manager initialized <br> 3. Nanopb initialized | 1. Telemetry sent or error logged <br> 2. Sequence counter incremented | Validates ALL 5 return values: `shared_data_get_motor_state()`, `shared_data_get_bms()`, `shared_data_get_temp()`, `rx_nanopb_encode_telemetry()`, `rx_comm_manager_send()` |
+ * | `internal_build_and_send_telemetry()` | 1. Shared data valid <br> 2. Comm manager initialized <br> 3. Nanopb initialized | 1. Telemetry sent or error logged <br> 2. Sequence counter incremented | Validates ALL 4 return values: `shared_data_get_motor_state()`, `shared_data_get_temp()`, `rx_nanopb_encode_telemetry()`, `rx_comm_manager_send()` |
  *
  * ## SOLID Principles Compliance
  *
@@ -648,8 +601,8 @@
  * | **Single Responsibility (S)** | [OK] COMPLIANT | This task has ONE job: aggregate telemetry data and broadcast it. Does NOT handle communication protocol (rx_comm_manager), encoding (rx_nanopb), or data collection (shared_data). |
  * | **Open/Closed (O)** | [OK] COMPLIANT | Adding new telemetry fields requires NO changes to this task - only shared_data + protobuf schema update. New data sources (e.g., IMU, GPS) can be added via `shared_data_get_imu()` pattern. |
  * | **Liskov Substitution (L)** | [OK] COMPLIANT | Comm manager channel abstraction allows USB CDC and SPI to be used interchangeably. Telemetry task is agnostic to transport layer. |
- * | **Interface Segregation (I)** | [OK] COMPLIANT | Task uses only needed shared_data functions: `shared_data_get_motor_state()`, `shared_data_get_bms()`, `shared_data_get_temp()`. Does NOT depend on `shared_data_set_*()` (motor control's responsibility). |
- * | **Dependency Inversion (D)** | [OK] COMPLIANT | Depends on abstract `rx_comm_manager` interface (not concrete USB CDC implementation). Depends on abstract `shared_data` interface (not concrete motor/BMS tasks). Uses `rx_nanopb` encoding abstraction (not raw protobuf API). |
+ * | **Interface Segregation (I)** | [OK] COMPLIANT | Task uses only needed shared_data functions: `shared_data_get_motor_state()`, `shared_data_get_temp()`. Does NOT depend on `shared_data_set_*()` (motor control's responsibility). |
+ * | **Dependency Inversion (D)** | [OK] COMPLIANT | Depends on abstract `rx_comm_manager` interface (not concrete USB CDC implementation). Depends on abstract `shared_data` interface (not concrete task implementations). Uses `rx_nanopb` encoding abstraction (not raw protobuf API). |
  *
  * ### Dependency Inversion Details
  *
@@ -675,7 +628,6 @@
  * | Shared Resource | Access Pattern | Synchronization | Risk |
  * |-----------------|----------------|-----------------|------|
  * | **Motor State** | Read-only (from telemetry), Write (from motor task) | `shared_data` internal mutex | None (mutex-protected) |
- * | **BMS State** | Read-only (from telemetry), Write (from BMS task) | `shared_data` internal mutex | None (mutex-protected) |
  * | **Temp State** | Read-only (from telemetry), Write (from temp task) | `shared_data` internal mutex | None (mutex-protected) |
  * | **Comm Manager** | Write (from telemetry), Write (from comm task) | `rx_comm_manager` internal queue/mutex | None (queue-protected) |
  * | **s_sequence** | Write (from telemetry only) | None (single writer) | None (telemetry is only writer) |
@@ -694,7 +646,6 @@
  * @see rx_comm_manager.h Communication channel abstraction layer
  * @see rx_frame.h Frame encoding/decoding with CRC-32
  * @see motor_control_task.c Motor control task (data source)
- * @see bms_monitor_task.c BMS monitor task (data source)
  * @see temp_sensor_task.c Temperature sensor task (data source)
  *
  * @par Protocol Buffers Schema:
@@ -716,12 +667,12 @@
  * - Tested at 20 Hz with all data sources active
  * - Verified 0.24% CPU utilization (120us / 50ms)
  * - Tested USB CDC and SPI failover (automatic channel switching)
- * - Verified graceful degradation when BMS/temperature sensors fail
+ * - Verified graceful degradation when temperature sensors fail
  *
  * @test Unit tests in `tests/tasks/test_telemetry_task.c`:
  * - `test_telemetry_task_create()` - Creation validation
  * - `test_telemetry_build_full_message()` - All fields populated
- * - `test_telemetry_partial_message()` - Graceful degradation (BMS fail)
+ * - `test_telemetry_partial_message()` - Graceful degradation (sensor fail)
  * - `test_telemetry_unit_conversions()` - mV->V, cdegC->degC accuracy
  * - `test_telemetry_fault_flags_packing()` - Bitfield correctness
  * - `test_telemetry_sequence_counter()` - Monotonic increment
@@ -785,7 +736,6 @@ typedef enum : uint16_t {
    * Priority 18 ensures telemetry NEVER preempts real-time control tasks:
    * - Motor control (priority 8) always preempts telemetry
    * - Comm task (priority 10) always preempts telemetry
-   * - BMS monitor (priority 12) always preempts telemetry
    * - Temperature sensor (priority 14) always preempts telemetry
    * - Obstacle detection (priority 16) always preempts telemetry
    *
@@ -843,8 +793,6 @@ typedef enum : uint16_t {
    * - E-stop (bool): 2 bytes (tag + value)
    * - Fault flags (uint32): 5 bytes (varint encoding)
    * - Encoders (4 x EncoderData): 4 x 40 bytes = 160 bytes
-   * - Battery voltage (double): 9 bytes (fixed64)
-   * - Battery SoC (float): 5 bytes (fixed32)
    * - Temperature (double): 9 bytes (fixed64)
    * - Protobuf overhead (tags, lengths): ~40 bytes
    * - **Total typical:** ~250 bytes
@@ -992,7 +940,7 @@ static bool s_telem_created = false;
  * plus protobuf overhead (tags, varint lengths, wire type markers).
  *
  * Buffer usage:
- * - **Typical:** ~250 bytes (all fields populated, 4 motors, BMS, temp)
+ * - **Typical:** ~250 bytes (all fields populated, 4 motors, temp)
  * - **Minimum:** ~20 bytes (timestamp + sequence only, all sources failed)
  * - **Maximum:** ~400 bytes (future expansion: IMU, GPS, LIDAR)
  * - **Allocated:** 512 bytes (2x typical, 1.3x max future)
@@ -1099,7 +1047,6 @@ static const char* const s_tag = "TELEM";
 static uint32_t s_sequence = 0;
 
 /** @brief Conversion factor: millivolts per volt */
-static const float s_mv_per_volt = 1000.0F;
 
 /** @brief Conversion factor: centi-degrees Celsius per degree Celsius */
 static const float s_cdegc_per_degree = 100.0F;
@@ -1302,7 +1249,6 @@ static rx_err_t              internal_send_via_channel(rx_comm_channel_t channel
  *   // Create all tasks
  *   motor_control_task_create();  // Priority 8 (highest)
  *   comm_task_create();            // Priority 10
- *   bms_monitor_task_create();    // Priority 12
  *   temp_sensor_task_create();    // Priority 14
  *   telemetry_task_create();      // Priority 18 (lowest)
  *
@@ -1390,12 +1336,11 @@ rx_err_t telemetry_task_create(void)
  * - USB CDC disconnected (comm_manager auto-fails to SPI)
  * - SPI communication error (log error, retry next cycle)
  * - nanopb encoding error (log error, skip transmission)
- * - BMS sensor failure (send partial message without battery data)
  * - Temperature sensor failure (send partial message without temp data)
  * - ALL sources fail (send timestamp + sequence only)
  *
  * **Key principle:** Partial telemetry is better than no telemetry. If motors are
- * working but BMS failed, host still receives motor encoder data.
+ * working but temperature sensor failed, host still receives motor encoder data.
  *
  * ## Execution Flow Diagram
  *
@@ -1450,7 +1395,7 @@ rx_err_t telemetry_task_create(void)
  * note right of Sleeping
  *   Task yields CPU for 50ms.
  *   Higher priority tasks
- *   (motor, comm, BMS)
+ *   (motor, comm)
  *   can preempt.
  * end note
  * @enduml
@@ -1477,7 +1422,7 @@ rx_err_t telemetry_task_create(void)
  *
  * @par Thread Safety:
  * This function is thread-safe. It uses mutex-protected shared_data accessors and
- * thread-safe comm_manager send operations. Multiple data source tasks (motor, BMS,
+ * thread-safe comm_manager send operations. Multiple data source tasks (motor,
  * temp) can write to shared_data concurrently without corruption.
  *
  * @par Performance:
@@ -1490,8 +1435,7 @@ rx_err_t telemetry_task_create(void)
  * ```
  * t=0ms:     Task wakes, internal_build_and_send_telemetry() starts
  * t=0.015ms: Motor state read (mutex lock + copy)
- * t=0.020ms: BMS state read (mutex lock + copy)
- * t=0.023ms: Temp state read (mutex lock + copy)
+ * t=0.018ms: Temp state read (mutex lock + copy)
  * t=0.043ms: Protobuf population complete
  * t=0.083ms: nanopb encoding complete (~40us)
  * t=0.143ms: USB CDC send initiated (~60us)
@@ -1501,28 +1445,19 @@ rx_err_t telemetry_task_create(void)
  *
  * @par Graceful Degradation Example:
  * @code
- * // Scenario: BMS sensor fails, but motors and temp still work
+ * // Scenario: Temperature sensor fails, but motors still work
  * // Cycle 1:
  * internal_build_and_send_telemetry():
  *   - Motor state: OK (encoders populated)
- *   - BMS state: FAIL (bms_state.valid == false, skip battery fields)
- *   - Temp state: OK (temperature populated)
- *   - Result: Partial message sent (motors + temp, no battery)
- *   - Host receives: timestamp, sequence, encoders, temp (missing battery)
+ *   - Temp state: FAIL (temp_state.sensor_valid == false, skip temp field)
+ *   - Result: Partial message sent (motors, no temperature)
+ *   - Host receives: timestamp, sequence, encoders (missing temperature)
  *
  * // Cycle 2:
  * internal_build_and_send_telemetry():
  *   - Motor state: OK
- *   - BMS state: STILL FAIL (skip again)
- *   - Temp state: OK
+ *   - Temp state: STILL FAIL (skip again)
  *   - Result: Partial message sent again
- *
- * // Host-side handling:
- * if (msg.has_battery_voltage_v) {
- *     // Battery data available, update UI
- * } else {
- *     // Battery data missing, show "N/A" or use last known value
- * }
  * @endcode
  *
  * @see internal_build_and_send_telemetry() Actual telemetry aggregation function
@@ -1797,7 +1732,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * @brief Collect all robot system state into the telemetry message (Phase 1 + Phase 2)
  *
  * @details
- * Reads motor, BMS, and temperature state from shared_data and populates
+ * Reads motor and temperature state from shared_data and populates
  * the corresponding fields in `telemetry`. All reads are **non-blocking**
  * and non-fatal: if a data source is unavailable, the corresponding fields
  * are left at zero-init defaults and collection continues for remaining sources.
@@ -1805,8 +1740,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * Data collected:
  * 1. **Motor state** (via internal_populate_motor_telemetry()):
  *    E-stop flag, fault_flags bitfield, 4 encoder submessages
- * 2. **BMS state:** battery_voltage_v (mV->V), battery_soc_percent, battery_percent
- * 3. **Temperature state:** temperature_celsius (cdegC->degC)
+ * 2. **Temperature state:** temperature_celsius (cdegC->degC)
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
@@ -1820,7 +1754,6 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * @note Thread-safe: shared_data accessors are mutex-protected
  *
  * @see internal_populate_motor_telemetry() Motor field population helper
- * @see shared_data_get_bms() BMS state accessor
  * @see shared_data_get_temp() Temperature state accessor
  * @see internal_build_and_send_telemetry() Caller - sets timestamp before calling
  *
@@ -1830,27 +1763,16 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * - Precondition 1: telemetry != NULL
  * - Precondition 2: timestamp_us set before call (for encoder sub-timestamps)
  * - Postcondition 1: Motor fields populated if shared_data_get_motor_state() == k_rx_ok
- * - Postcondition 2: BMS fields populated if shared_data_get_bms() == k_rx_ok && valid
- * - Postcondition 3: Temp fields populated if shared_data_get_temp() == k_rx_ok && valid
+ * - Postcondition 2: Temp fields populated if shared_data_get_temp() == k_rx_ok && valid
  */
 static void internal_collect_state(star_v1_TelemetryData* telemetry)
 {
-  bms_state_t         bms_state;
   temp_sensor_state_t temp_state;
   rx_err_t            err;
 
   /* Collect motor state (non-fatal: missing data leaves fields at zero-init) */
   err = internal_populate_motor_telemetry(telemetry);
   (void)err; /* Non-fatal: partial telemetry is acceptable per graceful degradation policy */
-
-  /* Collect BMS state */
-  err = shared_data_get_bms(&bms_state);
-  if (err == k_rx_ok && bms_state.valid) {
-    /* Convert millivolts to volts */
-    telemetry->battery_voltage_v   = (float)bms_state.voltage_mv / s_mv_per_volt;
-    telemetry->battery_soc_percent = bms_state.soc_percent;
-    telemetry->battery_percent     = (float)bms_state.soc_percent;
-  }
 
   /* Collect temperature state */
   err = shared_data_get_temp(&temp_state);
@@ -1971,7 +1893,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * Orchestrates the complete telemetry aggregation pipeline across 4 focused helpers:
  *
  * 1. **Timestamp + sequence** - Set timestamp_us and increment s_sequence
- * 2. **internal_collect_state()** - Phase 1+2: populate motor, BMS, and temperature fields
+ * 2. **internal_collect_state()** - Phase 1+2: populate motor and temperature fields
  * 3. **internal_encode_telemetry()** - Phase 3: nanopb encode to s_telem_buffer
  * 4. **internal_select_transport()** - Phase 4a: USB preferred, SPI fallback
  * 5. **internal_send_via_channel()** - Phase 4b: transmit via comm manager

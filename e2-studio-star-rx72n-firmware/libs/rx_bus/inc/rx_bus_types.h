@@ -9,7 +9,7 @@
  *
  * This header defines all data structures for the RX72N bus manager, which provides
  * a unified interface for managing multiple communication protocols (GPIO, ADC, I2C,
- * SPI, UART, 1-Wire, SMBUS). The bus manager enables centralized configuration,
+ * SPI, UART, 1-Wire). The bus manager enables centralized configuration,
  * thread-safe access, and consistent error handling across all bus types.
  *
  * ## Architecture Overview
@@ -40,7 +40,6 @@
  *     spi [label="SPI\n(RSPI)"];
  *     uart [label="UART\n(SCI)"];
  *     onewire [label="1-Wire\n(Bit-bang)"];
- *     smbus [label="SMBUS\n(RIIC+PEC)"];
  *   }
  *
  *   subgraph cluster_hw {
@@ -58,7 +57,6 @@
  *   list -> gpio -> ports;
  *   list -> adc -> s12ad;
  *   list -> i2c -> riic;
- *   list -> smbus -> riic;
  *   list -> spi -> rspi;
  *   list -> uart -> sci;
  *   list -> onewire -> ports;
@@ -70,9 +68,8 @@
  * | Bus Type | RX72N Peripheral | Max Instances | Typical Use |
  * |----------|------------------|---------------|-------------|
  * | **GPIO** | I/O Ports A-J | ~80 pins | LEDs, buttons, chip selects |
- * | **ADC** | S12ADFa | 2 units x 8 ch | Current sensing, battery monitor |
+ * | **ADC** | S12ADFa | 2 units x 8 ch | Current sensing, analog inputs |
  * | **I2C** | RIIC | 3 channels | IMU, temperature, pressure sensors |
- * | **SMBUS** | RIIC + CRC-8 | 3 channels | Battery fuel gauge |
  * | **SPI** | RSPI | 3 channels | Motor drivers (DRV8243) |
  * | **UART** | SCI | 13 channels | Debug console, RS-485 |
  * | **1-Wire** | GPIO bit-bang | Unlimited | Temperature sensors (DS18B20) |
@@ -230,7 +227,6 @@ extern "C" {
  * | GPIO | I/O Ports | N/A | 1 | Digital I/O, chip selects |
  * | ADC | S12ADFa | ~1 us/sample | 1 | Analog sensing |
  * | I2C | RIIC | 100-1000 kHz | 2 | Sensors, EEPROMs |
- * | SMBUS | RIIC+CRC | 100-400 kHz | 2 | Battery fuel gauge |
  * | SPI | RSPI | 1-15 MHz | 4 | Motor drivers, fast sensors |
  * | UART | SCI | 9.6-921.6 kbps | 2 | Debug console, RS-485 |
  * | 1-Wire | GPIO | ~15 kbps | 1 | Temperature sensors |
@@ -272,7 +268,7 @@ typedef enum : uint8_t {
    * @details
    * Analog voltage measurement. Used for:
    * - Motor current sensing
-   * - Battery voltage monitoring
+   * - Analog sensor inputs
    * - Temperature sensing (analog sensors)
    * @par RX72N Peripheral: S12ADFa (12-bit ADC)
    * @par Resolution: 8, 10, or 12 bits
@@ -295,19 +291,6 @@ typedef enum : uint8_t {
    * @see rx_i2c_bus_config_t I2C configuration structure
    */
   k_bus_type_i2c,
-
-  /**
-   * @brief System Management Bus (I2C variant with PEC)
-   * @details
-   * I2C with Packet Error Checking (CRC-8). Used for:
-   * - Battery fuel gauges (BQ34Z100)
-   * - Smart battery packs
-   * @par RX72N Peripheral: RIIC + software CRC-8
-   * @par Speeds: 100 kHz (standard), 400 kHz (fast)
-   * @par PEC: Optional CRC-8 for data integrity
-   * @see rx_smbus_bus_config_t SMBUS configuration structure
-   */
-  k_bus_type_smbus,
 
   /**
    * @brief Serial Peripheral Interface (4-wire synchronous)
@@ -394,14 +377,6 @@ typedef struct {
 } rx_i2c_bus_config_t;
 
 /**
- * @brief SMBUS bus configuration (extends I2C)
- */
-typedef struct {
-  rx_i2c_bus_config_t i2c_config; /**< Base I2C configuration */
-  bool                use_pec;    /**< Use Packet Error Checking (CRC-8) */
-} rx_smbus_bus_config_t;
-
-/**
  * @brief SPI bus configuration
  */
 typedef struct {
@@ -481,15 +456,14 @@ typedef enum : uint8_t {
 } rx_adc_resolution_t;
 
 /**
- * @brief I2C/SMBUS protocol constants
+ * @brief I2C protocol constants
  */
 typedef enum : uint8_t {
-  k_i2c_write_bit        = 0,   /**< I2C write bit (R/W = 0) */
-  k_i2c_read_bit         = 1,   /**< I2C read bit (R/W = 1) */
-  k_i2c_addr_shift       = 1,   /**< Bit shift for 7-bit address */
-  k_i2c_addr_max_7bit    = 127, /**< Maximum 7-bit I2C address (127) */
-  k_bits_per_byte        = 8,   /**< Bits per byte */
-  k_smbus_max_block_size = 32,  /**< SMBUS maximum block transfer size */
+  k_i2c_write_bit     = 0,   /**< I2C write bit (R/W = 0) */
+  k_i2c_read_bit      = 1,   /**< I2C read bit (R/W = 1) */
+  k_i2c_addr_shift    = 1,   /**< Bit shift for 7-bit address */
+  k_i2c_addr_max_7bit = 127, /**< Maximum 7-bit I2C address (127) */
+  k_bits_per_byte     = 8,   /**< Bits per byte */
 } rx_i2c_constants_t;
 
 /**
@@ -499,35 +473,6 @@ typedef enum : uint8_t {
   k_byte_mask     = 255, /**< Full byte mask (all 8 bits) */
   k_byte_msb_mask = 128, /**< Most significant bit of a byte (bit 7) */
 } bit_masks_t;
-
-/**
- * @brief SMBUS buffer and transfer sizes
- */
-typedef enum : uint8_t {
-  k_smbus_single_byte     = 1, /**< Single byte transfer size */
-  k_smbus_byte_buf_size   = 2, /**< Byte operation buffer (command + data) */
-  k_smbus_word_data_bytes = 2, /**< Word data size (LSB + MSB) */
-  k_smbus_word_buf_size   = 4, /**< Word operation buffer (command + LSB + MSB + PEC) */
-} smbus_sizes_t;
-
-/**
- * @brief SMBUS byte operation buffer indices (command + data)
- */
-typedef enum : uint8_t {
-  k_smbus_byte_data = 0, /**< Command byte index (register address) */
-  k_smbus_byte_val  = 1, /**< Data value byte index (no-PEC writes: command + value layout) */
-  k_smbus_byte_pec  = 1, /**< PEC (CRC-8) byte index (PEC-enabled writes: data + PEC layout) */
-} smbus_byte_pec_idx_t;
-
-/**
- * @brief SMBUS word operation buffer indices (command + LSB + MSB + PEC)
- */
-typedef enum : uint8_t {
-  k_smbus_word_cmd = 0, /**< Command byte index */
-  k_smbus_word_lsb = 1, /**< Low byte (LSB) index */
-  k_smbus_word_msb = 2, /**< High byte (MSB) index */
-  k_smbus_word_pec = 3, /**< PEC (CRC-8) index */
-} smbus_word_pec_idx_t;
 
 /* =============================================================================
  * Bus Configuration Node (Linked List)
@@ -641,7 +586,7 @@ typedef struct rx_bus_config {
    * Human-readable identifier for the bus instance.
    * Used by rx_bus_manager_find_bus() and logging.
    * @par Valid Range: Non-NULL, <=31 characters (k_max_bus_name_len)
-   * @par Examples: "motor_drv0", "imu", "battery_gauge", "debug_uart"
+   * @par Examples: "motor_drv0", "imu", "temp_sensor", "debug_uart"
    * @invariant Must be unique within bus manager
    * @warning Must remain valid for lifetime of bus config
    */
@@ -702,7 +647,6 @@ typedef struct rx_bus_config {
    * | k_bus_type_gpio | proto.gpio | GPIO pin config |
    * | k_bus_type_adc | proto.adc | ADC channel config |
    * | k_bus_type_i2c | proto.i2c | I2C bus config |
-   * | k_bus_type_smbus | proto.smbus | SMBUS config |
    * | k_bus_type_spi | proto.spi | SPI bus config |
    * | k_bus_type_uart | proto.uart | UART config |
    * | k_bus_type_onewire | proto.onewire | 1-Wire config |
@@ -714,7 +658,6 @@ typedef struct rx_bus_config {
     rx_gpio_bus_config_t    gpio;    /**< GPIO pin configuration */
     rx_adc_bus_config_t     adc;     /**< ADC channel configuration */
     rx_i2c_bus_config_t     i2c;     /**< I2C bus configuration */
-    rx_smbus_bus_config_t   smbus;   /**< SMBUS configuration (extends I2C) */
     rx_spi_bus_config_t     spi;     /**< SPI bus configuration */
     rx_uart_bus_config_t    uart;    /**< UART configuration */
     rx_onewire_bus_config_t onewire; /**< 1-Wire bus configuration */
@@ -765,7 +708,7 @@ typedef enum : uint8_t {
    * @details
    * Limits name storage requirements. Names are not copied by manager
    * (pointer to caller's string), but length is validated.
-   * @par Examples: "motor_drv_fl" (12), "battery_gauge" (13), "imu_mpu6050" (11)
+   * @par Examples: "motor_drv_fl" (12), "temp_sensor0" (12), "imu_mpu6050" (11)
    */
   k_max_bus_name_len = 31,
 } bus_manager_limits_t;

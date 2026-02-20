@@ -75,24 +75,6 @@ describe('Telemetry Tests', () => {
         });
     });
 
-    describe('TelemetryData - RX72N Battery Fields', () => {
-        it('should support battery telemetry from BQ4050', () => {
-            const telem: TelemetryData = {
-                batteryVoltageV: 12.6,
-                batterySocPercent: 85,
-                batteryPercent: 85.0, // Legacy field
-                timestampUs: BigInt(1000000),
-            };
-
-            const bytes = TelemetryData.toBinary(telem);
-            const decoded = TelemetryData.fromBinary(bytes);
-
-            // Verify battery fields
-            expect(decoded.batteryVoltageV).toBeCloseTo(12.6, 1);
-            expect(decoded.batterySocPercent).toBe(85);
-        });
-    });
-
     describe('TelemetryData - RX72N Safety Fields', () => {
         it('should support emergency stop and fault flags', () => {
             const testCases = [
@@ -141,7 +123,6 @@ describe('Telemetry Tests', () => {
             const telem: TelemetryData = {
                 // Standard fields
                 timestamp: { seconds: BigInt(Date.now() / 1000), nanos: 0 },
-                batteryPercent: 85.0,
                 wifiSignalDbm: -45,
                 cpuUsagePercent: 25.5,
                 temperatureCelsius: 45.0,
@@ -175,8 +156,6 @@ describe('Telemetry Tests', () => {
                 },
                 emergencyStop: false,
                 faultFlags: 0,
-                batteryVoltageV: 12.6,
-                batterySocPercent: 85,
             };
 
             // Serialize
@@ -192,7 +171,6 @@ describe('Telemetry Tests', () => {
             expect(decoded.emergencyStop).toBe(false);
             expect(decoded.encoder0).toBeDefined();
             expect(decoded.encoder0?.velocityMps).toBeCloseTo(1.5, 3);
-            expect(decoded.batteryVoltageV).toBeCloseTo(12.6, 1);
         });
     });
 
@@ -229,8 +207,6 @@ describe('Telemetry Tests', () => {
                     },
                     emergencyStop: false,
                     faultFlags: 0,
-                    batteryVoltageV: 12.6,
-                    batterySocPercent: 85,
                 };
 
                 const bytes = TelemetryData.toBinary(telem);
@@ -269,8 +245,6 @@ describe('Telemetry Tests', () => {
                     },
                     emergencyStop: false,
                     faultFlags: 0,
-                    batteryVoltageV: 12.6,
-                    batterySocPercent: 85,
                 },
             };
 
@@ -279,7 +253,6 @@ describe('Telemetry Tests', () => {
 
             expect(decoded.header?.requestId).toBe('telem-request-1');
             expect(decoded.telemetry).toBeDefined();
-            expect(decoded.telemetry?.batteryVoltageV).toBeCloseTo(12.6, 1);
         });
     });
 
@@ -291,14 +264,14 @@ describe('Telemetry Tests', () => {
                     clientVersion: '1.0.0',
                 },
                 rateHz: 100, // 100 Hz streaming
-                fields: ['encoders', 'battery', 'emergency_stop'],
+                fields: ['encoders', 'emergency_stop'],
             };
 
             const bytes = StreamTelemetryRequest.toBinary(req);
             const decoded = StreamTelemetryRequest.fromBinary(bytes);
 
             expect(decoded.rateHz).toBe(100);
-            expect(decoded.fields).toHaveLength(3);
+            expect(decoded.fields).toHaveLength(2);
         });
     });
     */

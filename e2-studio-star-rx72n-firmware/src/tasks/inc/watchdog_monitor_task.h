@@ -31,7 +31,6 @@
  * | **6** | **Watchdog Monitor** | **10ms** |
  * | 8 | Motor Control | 10ms |
  * | 12 | Obstacle Detection | 20ms |
- * | 15 | BMS Monitor | 1000ms |
  * | 15 | Temperature Sensor | 1000ms |
  * | 17 | LED Status | 50ms |
  * | 18 | Telemetry | 50ms |

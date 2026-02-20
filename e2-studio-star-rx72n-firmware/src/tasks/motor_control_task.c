@@ -898,7 +898,7 @@ static float    internal_get_target_velocity(const motor_command_t* cmd, uint8_t
  * @note **Thread safety:** Not thread-safe (assumes single-threaded boot).
  *       No synchronization needed during tx_application_define().
  * @note **Real-time critical:** Priority 8 ensures motor control preempts
- *       non-critical tasks (telemetry, BMS, temperature monitoring).
+ *       non-critical tasks (telemetry, temperature monitoring).
  *
  * @warning **Never call twice.** Assertion will fire in debug builds. Release
  *          builds return k_rx_err_invalid_state on second call.

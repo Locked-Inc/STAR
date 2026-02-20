@@ -2,8 +2,7 @@
 // Bridges ROS2 ecosystem with Go gateway service via gRPC.
 //
 // This node handles bidirectional communication:
-// - ROS2 -> Gateway: Forward telemetry (robot status, battery state) for UI
-// display
+// - ROS2 -> Gateway: Forward telemetry (robot status) for UI display
 // - Gateway -> ROS2: Poll teleop commands and PID gain updates from UI
 //
 // STAR Project - Texas A&M University
@@ -24,7 +23,6 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <grpcpp/grpcpp.h> // NOLINT(build/include_order)
 #include <rclcpp/rclcpp.hpp>
-#include <sensor_msgs/msg/battery_state.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 
@@ -42,7 +40,7 @@ namespace star
  *   ROS2 Topics/Services <-> StarGatewayBridgeNode <-> gRPC <-> Go Gateway <-> UI
  *
  * Responsibilities:
- * 1. Subscribe to /robot_status and /battery_state ROS2 topics
+ * 1. Subscribe to /robot_status ROS2 topic
  * 2. Forward critical telemetry to Gateway via gRPC for UI display
  * 3. Poll Gateway for teleop commands from UI
  * 4. Publish teleop commands to /teleop/cmd_vel ROS2 topic
@@ -122,17 +120,6 @@ private:
   void robot_status_callback(const std_msgs::msg::String::SharedPtr msg);
 
   /**
-   * @brief Callback for /battery_state topic (sensor_msgs/BatteryState).
-   *
-   * Caches latest battery state for telemetry forwarding.
-   * Uses non-blocking mutex (try_lock) to avoid delaying callback.
-   *
-   * @param msg Battery state message
-   */
-  void
-  battery_state_callback(const sensor_msgs::msg::BatteryState::SharedPtr msg);
-
-  /**
    * @brief Service callback for /set_pid_gains (std_srvs/SetBool placeholder).
    *
    * TODO: Define custom service type for PID gains (kp, ki, kd).
@@ -152,7 +139,7 @@ private:
   /**
    * @brief Timer callback for telemetry forwarding (10 Hz).
    *
-   * Forwards cached robot status and battery state to Gateway via gRPC.
+   * Forwards cached robot status to Gateway via gRPC.
    * Uses non-blocking gRPC call with deadline.
    */
   void telemetry_forward_timer_callback();
@@ -202,8 +189,6 @@ private:
 
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
-  rclcpp::Subscription<sensor_msgs::msg::BatteryState>::SharedPtr
-    battery_state_sub_;
 
   // ROS2 Services
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_pid_gains_service_;
@@ -221,8 +206,6 @@ private:
   std::mutex robot_status_mutex_;
   std::optional<std_msgs::msg::String> cached_robot_status_;
 
-  std::mutex battery_state_mutex_;
-  std::optional<sensor_msgs::msg::BatteryState> cached_battery_state_;
 
   // Parameters (cached for performance)
   std::string gateway_address_;

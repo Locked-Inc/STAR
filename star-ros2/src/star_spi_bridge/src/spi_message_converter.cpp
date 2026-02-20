@@ -168,16 +168,6 @@ void SpiMessageConverter::telemetry_to_joint_state(
     enc_br.velocity_mps() * inv_radius};
 }
 
-void SpiMessageConverter::telemetry_to_battery_state(
-  const star::v1::TelemetryData & telemetry,
-  sensor_msgs::msg::BatteryState & battery_state)
-{
-  // Battery data is directly on TelemetryData (RX72N specific - BQ4050)
-  battery_state.voltage = static_cast<float>(telemetry.battery_voltage_v());
-  battery_state.percentage = static_cast<float>(telemetry.battery_soc_percent()) / 100.0f;
-  battery_state.present = true;
-}
-
 double SpiMessageConverter::normalize_angle(double angle)
 {
   while (angle > M_PI) {

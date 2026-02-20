@@ -773,7 +773,7 @@ extern "C" {
  *
  * // Formatted output (use snprintf first)
  * char msg[64];
- * snprintf(msg, sizeof(msg), "Battery: %d mV\n", voltage_mv);
+ * snprintf(msg, sizeof(msg), "Speed: %d mps\n", velocity_mps);
  * rx_bus_uart_puts(&manager, "console", msg);
  * @endcode
  *

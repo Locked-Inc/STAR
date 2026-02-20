@@ -86,19 +86,6 @@ typedef struct {
 } mock_motor_command_t;
 
 typedef struct {
-  uint16_t voltage_mv;
-  int16_t  current_ma;
-  uint8_t  soc_percent;
-  int16_t  temperature_celsius;
-  uint16_t capacity_mah;
-  uint16_t full_capacity_mah;
-  uint16_t cycle_count;
-  uint16_t fault_flags;
-  uint32_t timestamp_ms;
-  bool     valid;
-} mock_bms_state_t;
-
-typedef struct {
   uint16_t distance_cm[4];
   bool     obstacle_detected[4];
   bool     any_obstacle;
@@ -108,13 +95,11 @@ typedef struct {
 /* Use same type names as real code */
 typedef mock_motor_state_t    motor_state_t;
 typedef mock_motor_command_t  motor_command_t;
-typedef mock_bms_state_t      bms_state_t;
 typedef mock_obstacle_state_t obstacle_state_t;
 
 /* ---- Mock shared_data values ---- */
 static motor_state_t    s_mock_motor_state;
 static motor_command_t  s_mock_motor_command;
-static bms_state_t      s_mock_bms_state;
 static obstacle_state_t s_mock_obstacle_state;
 static bool             s_mock_estop_active;
 
@@ -222,12 +207,6 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out)
 rx_err_t shared_data_get_motor_command(motor_command_t* out)
 {
   *out = s_mock_motor_command;
-  return k_rx_ok;
-}
-
-rx_err_t shared_data_get_bms(bms_state_t* out)
-{
-  *out = s_mock_bms_state;
   return k_rx_ok;
 }
 
@@ -506,7 +485,6 @@ void setUp(void)
   memset(&s_mock_portb, 0xFF, sizeof(s_mock_portb));
   memset(&s_mock_motor_state, 0, sizeof(s_mock_motor_state));
   memset(&s_mock_motor_command, 0, sizeof(s_mock_motor_command));
-  memset(&s_mock_bms_state, 0, sizeof(s_mock_bms_state));
   memset(&s_mock_obstacle_state, 0, sizeof(s_mock_obstacle_state));
   s_mock_estop_active = false;
 
@@ -826,21 +804,6 @@ void test_led_error_on_motor_fault(void)
   TEST_ASSERT_TRUE(any_fault);
 }
 
-/** @brief Verify error LED activates on BMS fault */
-void test_led_error_on_bms_fault(void)
-{
-  /* No BMS fault */
-  s_mock_bms_state.fault_flags = 0;
-  bms_state_t bms;
-  (void)shared_data_get_bms(&bms);
-  TEST_ASSERT_EQUAL(0, bms.fault_flags);
-
-  /* BMS fault active */
-  s_mock_bms_state.fault_flags = 0x0001;
-  (void)shared_data_get_bms(&bms);
-  TEST_ASSERT_NOT_EQUAL(0, bms.fault_flags);
-}
-
 /** @brief Verify comm LED pulse on new command sequence */
 void test_led_comm_pulse_on_new_command(void)
 {
@@ -1009,7 +972,6 @@ int main(void)
   RUN_TEST(test_led_obstacle_reflects_shared_data);
   RUN_TEST(test_led_estop_reflects_shared_data);
   RUN_TEST(test_led_error_on_motor_fault);
-  RUN_TEST(test_led_error_on_bms_fault);
   RUN_TEST(test_led_comm_pulse_on_new_command);
 
   /* Heartbeat Timing */
