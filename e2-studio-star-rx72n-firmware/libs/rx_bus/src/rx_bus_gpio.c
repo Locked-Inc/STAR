@@ -163,7 +163,20 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "BUS_GPIO";
+/**
+ * @var s_tag
+ * @brief Logging tag for all rx_bus_gpio module log messages
+ *
+ * @details
+ * Identifies GPIO bus log entries in the system log output. Used by
+ * rx_log_error(), rx_log_warn(), and rx_log_debug() throughout this module.
+ * Stored as a read-only character array in the .rodata section.
+ *
+ * @note Read-only; must never be modified at runtime
+ * @warning Direct modification would corrupt all log output from this module
+ * @since Version 1.0.0
+ */
+static const char s_tag[] = "BUS_GPIO";
 
 /* =============================================================================
  * Callback Context Structures
@@ -354,23 +367,19 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Initialize GPIO pin */
-  rx_err_t err;
-  if (ctx->output) {
-    err = gpio_set_output(bus_config->proto.gpio.pin);
-  } else {
-    err = gpio_set_input(bus_config->proto.gpio.pin);
-  }
+  const rx_err_t init_err = ctx->output ? gpio_set_output(bus_config->proto.gpio.pin)
+                                        : gpio_set_input(bus_config->proto.gpio.pin);
 
-  if (err != k_rx_ok) {
+  if (init_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO HAL initialization failed");
-    ctx->result = err;
-    return err;
+    ctx->result = init_err;
+    return init_err;
   }
 
   /* Post-condition: Verify GPIO is responsive by attempting a read */
-  bool test_value = false;
-  err             = gpio_read(bus_config->proto.gpio.pin, &test_value);
-  if (err != k_rx_ok) {
+  bool           test_value = false;
+  const rx_err_t read_err   = gpio_read(bus_config->proto.gpio.pin, &test_value);
+  if (read_err != k_rx_ok) {
     rx_log_warn(s_tag, "Post-init verification read failed (pin may not support readback)");
     /* Continue anyway - init succeeded, readback limitation is acceptable */
   }
@@ -445,23 +454,19 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Write GPIO value */
-  rx_err_t err;
-  if (ctx->value) {
-    err = gpio_write_high(bus_config->proto.gpio.pin);
-  } else {
-    err = gpio_write_low(bus_config->proto.gpio.pin);
-  }
+  const rx_err_t write_err = ctx->value ? gpio_write_high(bus_config->proto.gpio.pin)
+                                        : gpio_write_low(bus_config->proto.gpio.pin);
 
-  if (err != k_rx_ok) {
+  if (write_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO write failed");
-    ctx->result = err;
-    return err;
+    ctx->result = write_err;
+    return write_err;
   }
 
   /* Post-condition: Verify written value by reading back */
-  bool readback_value = false;
-  err                 = gpio_read(bus_config->proto.gpio.pin, &readback_value);
-  if (err != k_rx_ok) {
+  bool           readback_value = false;
+  const rx_err_t read_err       = gpio_read(bus_config->proto.gpio.pin, &readback_value);
+  if (read_err != k_rx_ok) {
     rx_log_warn(s_tag, "Post-write verification read failed");
     /* Continue anyway - write succeeded, readback limitation is acceptable */
   } else if (readback_value != ctx->value) {
@@ -532,7 +537,6 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
 static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   gpio_read_ctx_t* ctx = (gpio_read_ctx_t*)user_ctx;
-  rx_err_t         err = k_rx_err_hw_error;
 
   RX_CHECK_NULL_PTR(bus_config, s_tag, "bus_config pointer is nullptr");
   RX_CHECK_NULL_PTR(ctx, s_tag, "user_ctx pointer is nullptr");
@@ -546,7 +550,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read GPIO value */
-  err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
+  const rx_err_t err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO read failed");
@@ -633,26 +637,26 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
   }
 
   /* Read current state before toggle for verification */
-  bool     state_before = false;
-  rx_err_t err          = gpio_read(bus_config->proto.gpio.pin, &state_before);
-  if (err != k_rx_ok) {
+  bool           state_before   = false;
+  const rx_err_t pre_read_err   = gpio_read(bus_config->proto.gpio.pin, &state_before);
+  if (pre_read_err != k_rx_ok) {
     rx_log_warn(s_tag, "Pre-toggle read failed (output pin may not support readback)");
     state_before = false; /* Assume low if can't read */
   }
 
   /* Toggle GPIO */
-  err = gpio_toggle(bus_config->proto.gpio.pin);
+  const rx_err_t toggle_err = gpio_toggle(bus_config->proto.gpio.pin);
 
-  if (err != k_rx_ok) {
+  if (toggle_err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO toggle failed");
-    ctx->result = err;
-    return err;
+    ctx->result = toggle_err;
+    return toggle_err;
   }
 
   /* Post-condition: Verify pin actually toggled */
-  bool state_after = false;
-  err              = gpio_read(bus_config->proto.gpio.pin, &state_after);
-  if (err != k_rx_ok) {
+  bool           state_after    = false;
+  const rx_err_t post_read_err  = gpio_read(bus_config->proto.gpio.pin, &state_after);
+  if (post_read_err != k_rx_ok) {
     rx_log_warn(s_tag,
                 "Post-toggle verification read failed (output pin may not support readback)");
     /* Continue anyway - toggle succeeded, readback limitation is acceptable */

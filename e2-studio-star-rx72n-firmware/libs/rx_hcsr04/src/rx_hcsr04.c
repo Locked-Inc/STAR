@@ -1063,23 +1063,19 @@ static bool s_worker_initialized = false;
  */
 static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
-  rx_err_t err;
-  uint8_t  port;
-  uint8_t  pin_num;
-
   if (handle == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
-  port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
-  pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
+  const uint8_t port    = (uint8_t)(handle->trigger_pin >> k_port_shift);
+  const uint8_t pin_num = (uint8_t)(handle->trigger_pin & k_port_mask);
   if ((port > k_rx_port_j) || (port > k_rx_port_g && port < k_rx_port_j) ||
       (pin_num > k_rx_pin_max)) {
     return k_rx_err_invalid_arg;
   }
 
   /* Ensure trigger is low initially */
-  err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
+  rx_err_t err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
   RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to set trigger low");
   hcsr04_hal_delay_us(k_hcsr04_trigger_settle_us);
 
@@ -1191,28 +1187,22 @@ static rx_err_t
 internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t timeout_us)
 {
   const uint32_t start_time = hcsr04_hal_get_time_us();
-  uint32_t       elapsed    = 0;
-  bool           pin_state  = false;
-  rx_err_t       read_err   = k_rx_ok;
-
   for (uint32_t i = 0; i < k_echo_poll_max_iterations; i++) {
     /* Check for cancellation request */
     if (handle->cancel_requested) {
       handle->cancel_requested = false;
       return k_rx_err_cancelled;
     }
-
-    read_err = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
+    bool           pin_state = false;
+    const rx_err_t read_err  = hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
     if (read_err != k_rx_ok) {
       return read_err;
     }
-
     if (pin_state == target_state) {
       return k_rx_ok;
     }
-
     /* Check for timeout */
-    elapsed = hcsr04_hal_get_time_us() - start_time;
+    const uint32_t elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
@@ -1309,17 +1299,13 @@ internal_wait_for_echo(rx_hcsr04_t* handle, const bool target_state, uint32_t ti
  */
 static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* duration_us)
 {
-  rx_err_t err;
-  uint32_t pulse_start = 0;
-  uint32_t pulse_end   = 0;
-
   /* Wait for echo to go HIGH (pulse start) */
-  err = internal_wait_for_echo(handle, true, handle->timeout_us);
+  rx_err_t err = internal_wait_for_echo(handle, true, handle->timeout_us);
   if (err != k_rx_ok) {
     return err;
   }
 
-  pulse_start = hcsr04_hal_get_time_us();
+  const uint32_t pulse_start = hcsr04_hal_get_time_us();
 
   /* Wait for echo to go LOW (pulse end) */
   err = internal_wait_for_echo(handle, false, handle->timeout_us);
@@ -1327,7 +1313,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  pulse_end    = hcsr04_hal_get_time_us();
+  const uint32_t pulse_end   = hcsr04_hal_get_time_us();
   *duration_us = pulse_end - pulse_start;
 
   return k_rx_ok;
@@ -1560,18 +1546,15 @@ static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* d
 static void hcsr04_worker_entry(const ULONG input)
 {
   (void)input;
-  ULONG              actual_flags;
-  rx_hcsr04_result_t result;
-  UINT               status;
-  rx_err_t           err;
 
   while (true) {
     /* Wait for measurement request OR shutdown request */
-    status = tx_event_flags_get(&s_measurement_request,
-                                k_event_measurement_request | k_event_shutdown_request,
-                                TX_OR_CLEAR,
-                                &actual_flags,
-                                TX_WAIT_FOREVER);
+    ULONG      actual_flags = 0;
+    const UINT status       = tx_event_flags_get(&s_measurement_request,
+                                                 k_event_measurement_request | k_event_shutdown_request,
+                                                 TX_OR_CLEAR,
+                                                 &actual_flags,
+                                                 TX_WAIT_FOREVER);
 
     if (status != TX_SUCCESS) {
       continue; /* Should not happen with TX_WAIT_FOREVER */
@@ -1584,7 +1567,8 @@ static void hcsr04_worker_entry(const ULONG input)
     }
 
     /* Perform blocking measurement */
-    err = rx_hcsr04_measure(s_pending.handle, &result);
+    rx_hcsr04_result_t result;
+    const rx_err_t     err = rx_hcsr04_measure(s_pending.handle, &result);
     if (err != k_rx_ok) {
       result.status = err;
     }
@@ -1623,15 +1607,13 @@ static void hcsr04_worker_entry(const ULONG input)
  */
 rx_err_t rx_hcsr04_worker_init(void)
 {
-  UINT status;
-
   /* Check if already initialized */
   if (s_worker_initialized) {
     return k_rx_err_invalid_state;
   }
 
   /* Create mutex for pending measurement protection */
-  status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
+  UINT status = tx_mutex_create(&s_pending_mutex, "HCSR04_Mutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -1693,8 +1675,6 @@ rx_err_t rx_hcsr04_worker_init(void)
  */
 rx_err_t rx_hcsr04_worker_deinit(void)
 {
-  UINT status;
-
   /* Check if initialized */
   if (!s_worker_initialized) {
     return k_rx_err_invalid_state;
@@ -1705,7 +1685,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
    * This prevents abrupt termination mid-measurement, which could leave
    * sensor handles stuck in measurement_active state.
    */
-  status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
+  UINT status = tx_event_flags_set(&s_measurement_request, k_event_shutdown_request, TX_OR);
   if (status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -1871,10 +1851,6 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
  */
 rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
 {
-  rx_err_t err;
-  uint8_t  effective_priority =
-    k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
-
   if (handle == nullptr || config == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -1884,12 +1860,13 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Configure trigger pin as output */
-  err = hcsr04_hal_gpio_set_output(config->trigger_pin);
+  rx_err_t err = hcsr04_hal_gpio_set_output(config->trigger_pin);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure echo pin based on mode (explicit validation — no implicit fallback) */
+  uint8_t effective_priority = k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
   if (config->echo_mode == k_hcsr04_echo_irq) {
     /* IRQ mode: delegate to helper to keep this function under 60 lines (NASA Rule 4) */
     err = internal_init_irq_mode(config, &effective_priority);
@@ -2099,9 +2076,6 @@ static rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_
  */
 rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
 {
-  rx_err_t err;
-  uint32_t echo_time_us = 0;
-
   if (handle == nullptr || distance_cm == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -2114,7 +2088,8 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   handle->measurement_count++;
 
   /* Arm ISR (if IRQ mode), send trigger pulse, and measure echo */
-  err = internal_trigger_and_measure(handle, &echo_time_us);
+  uint32_t echo_time_us = 0;
+  rx_err_t err          = internal_trigger_and_measure(handle, &echo_time_us);
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;
@@ -2159,8 +2134,6 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
  */
 rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 {
-  rx_err_t err;
-
   if (handle == nullptr || result == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -2179,7 +2152,7 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
   handle->measurement_count++;
 
   /* Arm ISR (if IRQ mode), send trigger pulse, and measure echo */
-  err = internal_trigger_and_measure(handle, &result->echo_time_us);
+  rx_err_t err = internal_trigger_and_measure(handle, &result->echo_time_us);
 
   if (err == k_rx_err_timeout) {
     handle->timeout_count++;
@@ -2216,10 +2189,6 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
 rx_err_t
 rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback, void* user_data)
 {
-  rx_err_t           err;
-  UINT               status;
-  rx_hcsr04_result_t result;
-
   if (handle == nullptr || callback == nullptr) {
     return k_rx_err_null_ptr;
   }
@@ -2240,7 +2209,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
      * True async mode: queue measurement request for worker thread.
      * Use mutex to prevent race condition with worker thread.
      */
-    status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
+    UINT status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
     if (status != TX_SUCCESS) {
       handle->measurement_active = false;
       return k_rx_err_rtos_error;
@@ -2275,7 +2244,8 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, const rx_hcsr04_callback_t callback
     return k_rx_ok; /* Callback will be invoked from worker thread */
   }
   /* Fallback sync mode: perform measurement inline (backward compatible) */
-  err = rx_hcsr04_measure(handle, &result);
+  rx_hcsr04_result_t result;
+  rx_err_t           err = rx_hcsr04_measure(handle, &result);
 
   handle->measurement_active = false;
 
@@ -2504,9 +2474,6 @@ float rx_hcsr04_get_speed_of_sound(float temp_celsius)
  */
 float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_celsius)
 {
-  float speed_mps   = 0.0F;
-  float speed_cm_us = 0.0F;
-  float distance_cm = 0.0F;
   /*
    * Temperature-compensated distance calculation:
    * 1. Calculate speed of sound at given temperature
@@ -2518,7 +2485,6 @@ float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_cel
    * - Speed = 0.034342 cm/us
    * - For echo_us = 580: distance = (580 * 0.034342) / 2 = 9.96 cm ≈ 10 cm
    */
-
   /* Pre-condition: Validate temperature range - use default if invalid */
   if (temp_celsius < s_min_temp_celsius || temp_celsius > s_max_temp_celsius) {
     return rx_hcsr04_echo_to_cm(echo_time_us);
@@ -2529,9 +2495,9 @@ float rx_hcsr04_echo_to_cm_with_temp(const uint32_t echo_time_us, float temp_cel
     return 0.0F;
   }
 
-  speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
-  speed_cm_us = speed_mps / s_mps_to_cm_per_us;
-  distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
+  const float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
+  const float speed_cm_us = speed_mps / s_mps_to_cm_per_us;
+  const float distance_cm = ((float)echo_time_us * speed_cm_us) / s_roundtrip_divisor;
 
   /* Post-condition: Ensure non-negative result */
   if (distance_cm < 0.0F) {

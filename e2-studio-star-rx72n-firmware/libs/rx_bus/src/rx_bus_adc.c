@@ -185,7 +185,19 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "BUS_ADC";
+static const char s_tag[] = "BUS_ADC";
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief ADC voltage range safety limits in millivolts
+ */
+typedef enum : uint32_t {
+  k_adc_max_safety_voltage_mv = 5500U, /**< 5.5 V upper bound for sanity check on raw ADC output */
+} adc_voltage_limits_t;
 
 /* =============================================================================
  * Callback Context Structures
@@ -199,7 +211,8 @@ static const char* s_tag = "BUS_ADC";
  * @details
  * Passed to internal_adc_init_callback() via rx_bus_manager_with_bus()
  * callback mechanism. Contains operation result only (no input parameters
- * needed - all config comes from bus_config). Allocated on stack.
+ * needed - all config comes from bus_config). Stack-allocated in
+ * rx_bus_adc_init() and destroyed on return.
  *
  * @par Memory Layout:
  * | Offset | Size | Field | Type | Alignment |
@@ -207,10 +220,18 @@ static const char* s_tag = "BUS_ADC";
  * | 0 | 4 | result | rx_err_t | 4 |
  * **Total size**: 4 bytes (no padding)
  *
- * @par Lifetime: Stack-allocated in rx_bus_adc_init(), destroyed on return
+ * @invariant result is set by the callback before it returns
+ * @invariant result equals the return value of internal_adc_init_callback()
  *
- * @see internal_adc_init_callback() Consumer of this context
- * @see rx_bus_adc_init() Creator of this context
+ * @code
+ * adc_init_ctx_t ctx = { .result = k_rx_err_hw_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_adc_init_callback, &ctx);
+ * // ctx.result now reflects the initialization outcome
+ * @endcode
+ *
+ * @see internal_adc_init_callback() Callback that writes to this context
+ * @see rx_bus_adc_init() Function that creates and uses this context
  *
  * @since Version 1.0.0
  */
@@ -225,7 +246,7 @@ typedef struct {
  * @details
  * Passed to internal_adc_read_callback() via rx_bus_manager_with_bus().
  * Contains pointer to store raw ADC value (0-4095 for 12-bit) and operation
- * result. Stack-allocated.
+ * result. Stack-allocated in rx_bus_adc_read() and destroyed on return.
  *
  * @par Memory Layout (64-bit platform):
  * | Offset | Size | Field | Type | Alignment |
@@ -235,13 +256,19 @@ typedef struct {
  * | 12-15 | 4 | (padding) | - | - |
  * **Total size**: 16 bytes
  *
- * @par Lifetime: Stack-allocated in rx_bus_adc_read(), destroyed on return
- *
- * @invariant value pointer must be non-NULL
+ * @invariant value pointer must be non-NULL before passing to callback
  * @invariant *value range: 0 to (2^bits - 1) after successful read
  *
- * @see internal_adc_read_callback() Consumer of this context
- * @see rx_bus_adc_read() Creator of this context
+ * @code
+ * uint16_t raw = 0;
+ * adc_read_ctx_t ctx = { .value = &raw, .result = k_rx_err_hw_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_adc_read_callback, &ctx);
+ * // ctx.result and raw now reflect the read outcome
+ * @endcode
+ *
+ * @see internal_adc_read_callback() Callback that writes to this context
+ * @see rx_bus_adc_read() Function that creates and uses this context
  *
  * @since Version 1.0.0
  */
@@ -258,7 +285,8 @@ typedef struct {
  * @details
  * Passed to internal_adc_voltage_callback() via rx_bus_manager_with_bus().
  * Contains pointer to store voltage in millivolts, ADC resolution, and
- * operation result. Stack-allocated.
+ * operation result. Stack-allocated in rx_bus_adc_read_voltage_mv() and
+ * destroyed on return.
  *
  * @par Memory Layout (64-bit platform):
  * | Offset | Size | Field | Type | Alignment |
@@ -269,14 +297,20 @@ typedef struct {
  * | 12 | 4 | result | rx_err_t | 4 |
  * **Total size**: 16 bytes
  *
- * @par Lifetime: Stack-allocated in rx_bus_adc_read_voltage_mv(), destroyed on return
- *
- * @invariant voltage_mv pointer must be non-NULL
+ * @invariant voltage_mv pointer must be non-NULL before passing to callback
  * @invariant bits value: 8, 10, or 12 (ADC resolution)
  * @invariant *voltage_mv range: 0 to vref_mv after successful read
  *
- * @see internal_adc_voltage_callback() Consumer of this context
- * @see rx_bus_adc_read_voltage_mv() Creator of this context
+ * @code
+ * uint32_t mv = 0;
+ * adc_voltage_ctx_t ctx = { .voltage_mv = &mv, .result = k_rx_err_hw_error };
+ * rx_err_t err = rx_bus_manager_with_bus(manager, bus_name,
+ *                                        internal_adc_voltage_callback, &ctx);
+ * // ctx.result and mv now reflect the voltage read outcome
+ * @endcode
+ *
+ * @see internal_adc_voltage_callback() Callback that writes to this context
+ * @see rx_bus_adc_read_voltage_mv() Function that creates and uses this context
  *
  * @since Version 1.0.0
  */
@@ -615,8 +649,7 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
   }
 
   /* Post-condition: Verify voltage is within reasonable range (0-5V typical) */
-  static const uint32_t s_max_voltage_mv = 5500U; /* 5.5V max for safety */
-  if (*ctx->voltage_mv > s_max_voltage_mv) {
+  if (*ctx->voltage_mv > k_adc_max_safety_voltage_mv) {
     rx_log_warn(s_tag, "ADC voltage exceeds typical maximum");
     /* Continue anyway - could be valid in some configurations */
   }

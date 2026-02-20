@@ -830,7 +830,6 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
 {
   const uint16_t intsts0 = usb0()->intsts0;
   const uint16_t dvsq    = (intsts0 & k_usb_intsts0_dvsq_mask);
-
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:
       return k_usb_state_powered;

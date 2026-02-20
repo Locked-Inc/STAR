@@ -320,7 +320,7 @@
  * **Synchronization mechanisms:**
  * - ThreadX mutexes (TX_MUTEX): Protect shared data structures
  * - ThreadX event flags (TX_EVENT_FLAGS_GROUP): Lock-free inter-task signaling
- * - Priority inheritance: TX_NO_INHERIT (not needed - no nested locking)
+ * - Priority inheritance: TX_INHERIT (enabled for all mutexes)
  *
  * **Deadlock prevention:**
  * - Rule 1: Never acquire multiple mutexes in same function
@@ -380,27 +380,24 @@
  * Constants used internally by the shared data module. Not exposed in public API.
  */
 typedef enum : uint8_t {
-  k_mutex_no_inherit = 0, /**< TX_NO_INHERIT for mutex creation (no priority inheritance) */
-  k_ticks_per_ms     = 1, /**< ThreadX ticks per millisecond (100 Hz tick = 10ms/tick) */
+  k_mutex_inherit = 1,  /**< TX_INHERIT for mutex creation (priority inheritance enabled) */
+  k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
 } shared_data_internal_constants_t;
 
-/**
- * @enum shared_data_pid_defaults_t
- * @brief PID default values scaled to avoid floating-point constants
- *
- * @details
- * Default PID gains from MATLAB tuning (motor_model_1st_order.m, pid_design_velocity.m).
- * Scaled by 1000 or 100 to store as integers for compile-time initialization.
- *
- * **Derivation:**
- * - Motor time constant τ = 75ms (measured)
- * - Control frequency = 250 Hz (4ms period)
- * - Tuning method: Ziegler-Nichols + empirical adjustment
- */
-typedef enum : uint16_t {
-  k_default_pid_kp_x1000 = 286, /**< Default Kp * 1000 (actual: 0.286) */
-  k_default_pid_ki_x100  = 801, /**< Default Ki * 100 (actual: 8.01) */
-} shared_data_pid_defaults_t;
+/** @brief Default PID proportional gain — Kp = 0.286 (from MATLAB motor_model_1st_order.m) */
+static const float s_default_pid_kp = 0.286f;
+/** @brief Default PID integral gain — Ki = 8.01 (from MATLAB pid_design_velocity.m) */
+static const float s_default_pid_ki = 8.01f;
+/** @brief Default PID derivative gain — Kd = 0.0 (not used) */
+static const float s_default_pid_kd = 0.0f;
+/** @brief Default PID output lower limit (% duty cycle) */
+static const float s_default_pid_output_min = -100.0f;
+/** @brief Default PID output upper limit (% duty cycle) */
+static const float s_default_pid_output_max = 100.0f;
+/** @brief Default PID integral lower limit (anti-windup) */
+static const float s_default_pid_integral_min = -50.0f;
+/** @brief Default PID integral upper limit (anti-windup) */
+static const float s_default_pid_integral_max = 50.0f;
 
 /** @brief Log tag for this module (used by RX_CHECK_NULL_PTR) */
 static const char* const s_tag = "SDATA";
@@ -537,7 +534,7 @@ shared_data_t g_shared_data = {0};
  * ## Algorithm Steps:
  *
  * 1. **Check re-initialization:** Return error if already initialized
- * 2. **Create 5 mutexes:** motor, bms, temp, obstacle, estop (TX_NO_INHERIT priority)
+ * 2. **Create 5 mutexes:** motor, bms, temp, obstacle, estop (priority inheritance enabled (TX_INHERIT))
  * 3. **Create event flags:** Inter-task signaling group (8 flags defined)
  * 4. **Set default PID gains:** Kp=0.286, Ki=8.01, Kd=0.0 (from MATLAB)
  * 5. **Invalidate motor command:** Set valid=false (no command received yet)
@@ -548,10 +545,10 @@ shared_data_t g_shared_data = {0};
  *
  * ## Mutex Configuration:
  *
- * All mutexes use `TX_NO_INHERIT` (no priority inheritance) because:
- * - Tasks never hold multiple mutexes simultaneously (no nested locking)
- * - Critical sections are very short (<10 µs)
- * - Priority inversion unlikely with 6 fixed-priority tasks
+ * All mutexes use priority inheritance enabled (TX_INHERIT) because:
+ * - Tasks may hold mutexes across preemptible operations
+ * - Priority inheritance prevents unbounded priority inversion
+ * - Critical sections may span multiple register accesses
  *
  * ## Default PID Gains Rationale:
  *
@@ -649,39 +646,37 @@ shared_data_t g_shared_data = {0};
  */
 rx_err_t shared_data_init(void)
 {
-  UINT tx_status;
-
   /* Check if already initialized */
   if (g_shared_data.initialized) {
     return k_rx_err_invalid_state;
   }
 
   /* Create motor_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", TX_INHERIT);
+  UINT tx_status = tx_mutex_create(&g_shared_data.motor_mutex, "MotorMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create bms_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.bms_mutex, "BMSMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.bms_mutex, "BMSMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create temp_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create obstacle_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
 
   /* Create estop_mutex with priority inheritance */
-  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", TX_INHERIT);
+  tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -693,13 +688,13 @@ rx_err_t shared_data_init(void)
   }
 
   /* Initialize default PID gains (from MATLAB tuning) */
-  g_shared_data.pid_gains.kp             = 0.286f;
-  g_shared_data.pid_gains.ki             = 8.01f;
-  g_shared_data.pid_gains.kd             = 0.0f;
-  g_shared_data.pid_gains.output_min     = -100.0f;
-  g_shared_data.pid_gains.output_max     = 100.0f;
-  g_shared_data.pid_gains.integral_min   = -50.0f;
-  g_shared_data.pid_gains.integral_max   = 50.0f;
+  g_shared_data.pid_gains.kp             = s_default_pid_kp;
+  g_shared_data.pid_gains.ki             = s_default_pid_ki;
+  g_shared_data.pid_gains.kd             = s_default_pid_kd;
+  g_shared_data.pid_gains.output_min     = s_default_pid_output_min;
+  g_shared_data.pid_gains.output_max     = s_default_pid_output_max;
+  g_shared_data.pid_gains.integral_min   = s_default_pid_integral_min;
+  g_shared_data.pid_gains.integral_max   = s_default_pid_integral_max;
   g_shared_data.pid_gains.update_pending = false;
 
   /* Initialize motor command as invalid */
@@ -834,15 +829,13 @@ rx_err_t shared_data_init(void)
  */
 rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(cmd, s_tag, "Command pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -934,15 +927,13 @@ rx_err_t shared_data_set_motor_command(const motor_command_t* cmd)
  */
 rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(out_cmd, s_tag, "Output command pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1026,15 +1017,13 @@ rx_err_t shared_data_get_motor_command(motor_command_t* out_cmd)
  */
 rx_err_t shared_data_update_motor_state(const motor_state_t* state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(state, s_tag, "Motor state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1102,15 +1091,13 @@ rx_err_t shared_data_update_motor_state(const motor_state_t* state)
  */
 rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(out_state, s_tag, "Output state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1203,15 +1190,13 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  */
 rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(gains, s_tag, "PID gains pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1291,15 +1276,13 @@ rx_err_t shared_data_set_pid_gains(const pid_gains_t* gains)
  */
 rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(out_gains, s_tag, "Output gains pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1361,19 +1344,16 @@ rx_err_t shared_data_get_pid_gains(pid_gains_t* out_gains)
  */
 bool shared_data_pid_update_pending(void)
 {
-  UINT tx_status;
-  bool pending;
-
   if (!g_shared_data.initialized) {
     return false;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return false;
   }
 
-  pending = g_shared_data.pid_gains.update_pending;
+  const bool pending = g_shared_data.pid_gains.update_pending;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
@@ -1425,13 +1405,11 @@ bool shared_data_pid_update_pending(void)
  */
 void shared_data_clear_pid_update_flag(void)
 {
-  UINT tx_status;
-
   if (!g_shared_data.initialized) {
     return;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return;
   }
@@ -1543,13 +1521,11 @@ void shared_data_clear_pid_update_flag(void)
  */
 rx_err_t shared_data_trigger_estop(estop_reason_t reason)
 {
-  UINT tx_status;
-
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1720,18 +1696,15 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
  */
 rx_err_t shared_data_commit_isr_estop(void)
 {
-  UINT           tx_status;
-  UINT           saved_interrupt_state;
-  bool           pending = false;
-  estop_reason_t reason  = k_estop_reason_none;
-
   /* Check initialization */
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
   /* Enter critical section to atomically check-and-clear pending flag */
-  saved_interrupt_state = tx_interrupt_control(TX_INT_DISABLE);
+  const UINT     saved_interrupt_state = tx_interrupt_control(TX_INT_DISABLE);
+  bool           pending               = false;
+  estop_reason_t reason                = k_estop_reason_none;
 
   /* Atomically read and clear the pending flag */
   pending = s_estop_pending_from_isr;
@@ -1749,7 +1722,7 @@ rx_err_t shared_data_commit_isr_estop(void)
   }
 
   /* Acquire estop mutex (safe in task context) */
-  tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1827,13 +1800,11 @@ rx_err_t shared_data_commit_isr_estop(void)
  */
 rx_err_t shared_data_clear_estop(void)
 {
-  UINT tx_status;
-
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -1902,19 +1873,16 @@ rx_err_t shared_data_clear_estop(void)
  */
 bool shared_data_is_estop_active(void)
 {
-  UINT tx_status;
-  bool active;
-
   if (!g_shared_data.initialized) {
     return false;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return false;
   }
 
-  active = g_shared_data.estop_active;
+  const bool active = g_shared_data.estop_active;
 
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
 
@@ -1982,19 +1950,16 @@ bool shared_data_is_estop_active(void)
  */
 estop_reason_t shared_data_get_estop_reason(void)
 {
-  UINT           tx_status;
-  estop_reason_t reason;
-
   if (!g_shared_data.initialized) {
     return k_estop_reason_none;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  UINT           tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_estop_reason_none;
   }
 
-  reason = g_shared_data.estop_reason;
+  const estop_reason_t reason = g_shared_data.estop_reason;
 
   (void)tx_mutex_put(&g_shared_data.estop_mutex);
 
@@ -2068,15 +2033,13 @@ estop_reason_t shared_data_get_estop_reason(void)
  */
 rx_err_t shared_data_update_bms(const bms_state_t* state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(state, s_tag, "BMS state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2086,7 +2049,7 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
   (void)tx_mutex_put(&g_shared_data.bms_mutex);
 
   /* Check for low battery and signal event */
-  if (state->valid && state->soc_percent < 15) {
+  if (state->valid && state->soc_percent < k_shared_low_battery_soc_pct) {
     (void)tx_event_flags_set(&g_shared_data.event_flags, (ULONG)k_event_low_battery, TX_OR);
   }
 
@@ -2147,15 +2110,13 @@ rx_err_t shared_data_update_bms(const bms_state_t* state)
  */
 rx_err_t shared_data_get_bms(bms_state_t* out_state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(out_state, s_tag, "Output BMS state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.bms_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2230,15 +2191,13 @@ rx_err_t shared_data_get_bms(bms_state_t* out_state)
  */
 rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(state, s_tag, "Temp state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2306,15 +2265,13 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
  */
 rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(out_state, s_tag, "Output temp state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.temp_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2405,15 +2362,13 @@ rx_err_t shared_data_get_temp(temp_sensor_state_t* out_state)
  */
 rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(state, s_tag, "Obstacle state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2487,15 +2442,13 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
  */
 rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
 {
-  UINT tx_status;
-
   RX_CHECK_NULL_PTR(out_state, s_tag, "Output obstacle state pointer is nullptr");
 
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2609,31 +2562,25 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  */
 bool shared_data_is_comm_timeout(void)
 {
-  UINT     tx_status;
-  uint32_t current_tick;
-  uint32_t last_tick;
-  uint32_t elapsed_ms;
-  bool     timeout;
-
   if (!g_shared_data.initialized) {
     return false;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return false;
   }
 
-  current_tick = tx_time_get();
-  last_tick    = g_shared_data.last_comm_tick;
+  const uint32_t current_tick = tx_time_get();
+  const uint32_t last_tick    = g_shared_data.last_comm_tick;
 
   (void)tx_mutex_put(&g_shared_data.motor_mutex);
 
   /* Calculate elapsed time in milliseconds */
   /* ThreadX tick rate is 100 Hz (10ms per tick) */
-  elapsed_ms = (current_tick - last_tick) * 10;
+  const uint32_t elapsed_ms = (current_tick - last_tick) * k_ms_per_tick;
 
-  timeout = (elapsed_ms > k_shared_comm_timeout_ms);
+  const bool timeout = (elapsed_ms > k_shared_comm_timeout_ms);
 
   if (timeout) {
     /* Signal timeout event */
@@ -2687,13 +2634,11 @@ bool shared_data_is_comm_timeout(void)
  */
 void shared_data_update_last_comm_tick(void)
 {
-  UINT tx_status;
-
   if (!g_shared_data.initialized) {
     return;
   }
 
-  tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.motor_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return;
   }
@@ -2773,13 +2718,11 @@ void shared_data_update_last_comm_tick(void)
  */
 rx_err_t shared_data_set_event(shared_event_flags_t flags)
 {
-  UINT tx_status;
-
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_event_flags_set(&g_shared_data.event_flags, (ULONG)flags, TX_OR);
+  const UINT tx_status = tx_event_flags_set(&g_shared_data.event_flags, (ULONG)flags, TX_OR);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_error;
   }
@@ -2883,18 +2826,16 @@ rx_err_t shared_data_set_event(shared_event_flags_t flags)
 rx_err_t
 shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_t* out_actual_flags)
 {
-  UINT  tx_status;
-  ULONG actual_flags = 0;
-
   if (!g_shared_data.initialized) {
     return k_rx_err_not_initialized;
   }
 
-  tx_status = tx_event_flags_get(&g_shared_data.event_flags,
-                                 (ULONG)flags,
-                                 TX_OR_CLEAR,
-                                 &actual_flags,
-                                 wait_option);
+  ULONG actual_flags = (ULONG)k_event_none;
+  const UINT tx_status = tx_event_flags_get(&g_shared_data.event_flags,
+                                          (ULONG)flags,
+                                          TX_OR_CLEAR,
+                                          &actual_flags,
+                                          wait_option);
   if (tx_status == TX_NO_EVENTS) {
     return k_rx_err_timeout;
   }

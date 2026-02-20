@@ -256,9 +256,6 @@ static const char* s_tag = "BUS_MANAGER";
  */
 static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  rx_bus_command_t* command = nullptr;
-  rx_err_t          err     = k_rx_err_invalid_state;
-
   /* Pre-conditions: validate inputs (NASA Rule 5) */
   if (bus_config == nullptr) {
     rx_log_error(s_tag, "Bus config is nullptr in command callback");
@@ -270,7 +267,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
     return k_rx_err_null_ptr;
   }
 
-  command = (rx_bus_command_t*)user_ctx;
+  rx_bus_command_t* const command = (rx_bus_command_t*)user_ctx;
 
   /* Validate command has execution function */
   if (command->execute == nullptr) {
@@ -280,7 +277,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
   }
 
   /* Execute the command */
-  err = command->execute(bus_config, command->data);
+  rx_err_t err = command->execute(bus_config, command->data);
 
   /* Store result in command for caller inspection */
   command->result = err;
@@ -470,16 +467,13 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
                              rx_error_interface_t* error_iface,
                              rx_pin_interface_t*   pin_iface)
 {
-  rx_err_t err;
-  UINT     status;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
   RX_CHECK_NULL_PTR(tag, s_tag, "Tag pointer is nullptr");
   RX_CHECK_NULL_PTR(error_iface, s_tag, "Error interface is nullptr");
   RX_CHECK_NULL_PTR(pin_iface, s_tag, "Pin interface is nullptr");
 
   /* Validate interfaces */
-  err = rx_error_interface_validate(error_iface);
+  rx_err_t err = rx_error_interface_validate(error_iface);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Error interface validation failed");
     return err;
@@ -492,10 +486,10 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   }
 
   /* Clear manager state */
-  memset(manager, 0, sizeof(rx_bus_manager_t));
+  *manager = (rx_bus_manager_t){0};
 
   /* Create ThreadX mutex for thread safety */
-  status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
+  UINT status = tx_mutex_create(&manager->mutex, "BusMgr", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex creation failed");
     return k_rx_err_threadx;
@@ -665,15 +659,12 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  */
 rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
 {
-  const rx_bus_config_t* bus    = nullptr;
-  UINT                   status = TX_SUCCESS;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
 
   /* Remove all buses before destroying mutex */
   while (manager->buses != nullptr) {
-    bus            = manager->buses;
-    manager->buses = bus->next;
+    const rx_bus_config_t* const bus = manager->buses;
+    manager->buses                   = bus->next;
     manager->bus_count--;
 
     /* Note: bus_config memory is owned by caller, we don't free it */
@@ -684,14 +675,14 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
   RX_ASSERT(manager->bus_count == 0, "Bus count should be zero after deinit");
 
   /* Delete ThreadX mutex */
-  status = tx_mutex_delete(&manager->mutex);
+  UINT status = tx_mutex_delete(&manager->mutex);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "ThreadX mutex deletion failed");
     return k_rx_err_threadx;
   }
 
   /* Clear manager state */
-  memset(manager, 0, sizeof(rx_bus_manager_t));
+  *manager = (rx_bus_manager_t){0};
 
   rx_log_info(s_tag, "Bus manager deinitialized");
 
@@ -886,10 +877,6 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  */
 rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
 {
-  ULONG                  timeout_ticks = 0;
-  UINT                   status        = TX_SUCCESS;
-  const rx_bus_config_t* current       = nullptr;
-
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_config, s_tag, "Bus config pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_config->name, s_tag, "Bus name is nullptr");
@@ -901,17 +888,17 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
   }
 
   /* Convert timeout from ms to ThreadX ticks */
-  timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
+  const ULONG timeout_ticks = (k_bus_manager_mutex_timeout_ms * s_rx_threadx_tick_rate_hz) / k_rx_ms_per_second;
 
   /* Lock mutex for thread-safe access */
-  status = tx_mutex_get(&manager->mutex, timeout_ticks);
+  UINT status = tx_mutex_get(&manager->mutex, timeout_ticks);
   if (status != TX_SUCCESS) {
     rx_log_error(s_tag, "Mutex timeout in add_bus");
     return k_rx_err_timeout;
   }
 
   /* Check for duplicate name */
-  current = manager->buses;
+  const rx_bus_config_t* current = manager->buses;
   while (current != nullptr) {
     if (strncmp(current->name, bus_config->name, k_max_bus_name_len) == 0) {
       (void)tx_mutex_put(&manager->mutex);
@@ -1145,6 +1132,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
 {
   ULONG                  timeout_ticks = 0;
   UINT                   status        = TX_SUCCESS;
+
   const rx_bus_config_t* to_remove     = nullptr;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
@@ -1194,6 +1182,7 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
 {
   ULONG            timeout_ticks = 0;
   UINT             status        = TX_SUCCESS;
+
   rx_bus_config_t* current       = nullptr;
 
   RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is nullptr");
@@ -1234,6 +1223,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*       manager,
 {
   ULONG            timeout_ticks = 0;
   UINT             status        = TX_SUCCESS;
+
   rx_bus_config_t* current       = nullptr;
   rx_err_t         err           = k_rx_err_invalid_state;
 

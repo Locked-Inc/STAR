@@ -493,6 +493,7 @@ void tearDown(void)
 void test_encoder_init_null(void)
 {
   rx_err_t err = rx_fec_encoder_init(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -522,6 +523,7 @@ void test_encoder_init_success(void)
 {
   rx_fec_encoder_t enc;
   rx_err_t         err = rx_fec_encoder_init(&enc);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, enc.initialized);
 }
@@ -545,6 +547,7 @@ void test_encoder_init_success(void)
 void test_encoder_deinit_null(void)
 {
   rx_err_t err = rx_fec_encoder_deinit(nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -596,6 +599,7 @@ void test_encoder_deinit_null(void)
 void test_decoder_init_null_dec(void)
 {
   rx_err_t err = rx_fec_decoder_init(nullptr, s_survivors, 100);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -619,6 +623,7 @@ void test_decoder_init_null_buffer(void)
 {
   rx_fec_decoder_t dec;
   rx_err_t         err = rx_fec_decoder_init(&dec, nullptr, 100);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -646,6 +651,7 @@ void test_decoder_init_zero_length(void)
 {
   rx_fec_decoder_t dec;
   rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, 0);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
@@ -676,6 +682,7 @@ void test_decoder_init_success(void)
 {
   rx_fec_decoder_t dec;
   rx_err_t         err = rx_fec_decoder_init(&dec, s_survivors, 100);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(0, dec.initialized);
 }
@@ -906,6 +913,7 @@ void test_encode_uninitialized(void)
   uint32_t         len;
 
   rx_err_t err = rx_fec_encode(&enc, input, 1, output, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -932,6 +940,7 @@ void test_encode_zero_length(void)
   uint32_t len;
 
   rx_err_t err = rx_fec_encode(&s_encoder, input, 0, output, &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -969,6 +978,7 @@ void test_encode_single_byte(void)
   uint32_t len;
 
   rx_err_t err = rx_fec_encode(&s_encoder, input, 1, output, &len);
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(4, len); /* (8+6)*2/8 = 4 bytes */
 }
@@ -1004,6 +1014,7 @@ void test_encode_deterministic(void)
   uint8_t  input[] = {0xDE, 0xAD, 0xBE, 0xEF};
   uint8_t  output1[16];
   uint8_t  output2[16];
+
   uint32_t len1, len2;
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_fec_encode(&s_encoder, input, 4, output1, &len1));
@@ -1170,6 +1181,7 @@ void test_decode_null_args(void)
   rx_soft_bit_t               soft[32];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 32,
@@ -1222,6 +1234,7 @@ void test_decode_uninitialized(void)
   rx_soft_bit_t               soft[32];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 32,
@@ -1260,6 +1273,7 @@ void test_decode_odd_soft_length(void)
   rx_soft_bit_t               soft[33];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 33,
@@ -1295,6 +1309,7 @@ void test_decode_zero_length(void)
   rx_soft_bit_t               soft[32];
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
     .soft_len            = 0,
@@ -1363,6 +1378,7 @@ void test_decode_hard_null_args(void)
   uint8_t                     hard[16] = {0};
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 16,
@@ -1422,6 +1438,7 @@ void test_decode_hard_uninitialized(void)
   uint8_t                     hard[16] = {0};
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 16,
@@ -1458,6 +1475,7 @@ void test_decode_hard_zero_length(void)
   uint8_t                     hard[16] = {0};
   uint8_t                     output[16];
   uint32_t                    len;
+
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
     .data_len            = 0,
@@ -1540,6 +1558,7 @@ void test_roundtrip_single_byte(void)
   uint8_t  input[] = {0x42};
   uint8_t  encoded[16];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1590,6 +1609,7 @@ void test_roundtrip_multi_byte(void)
   uint8_t  input[] = {0xDE, 0xAD, 0xBE, 0xEF};
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1638,6 +1658,7 @@ void test_roundtrip_all_zeros(void)
   uint8_t  input[8];
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   memset(input, 0x00, 8);
@@ -1688,6 +1709,7 @@ void test_roundtrip_all_ones(void)
   uint8_t  input[8];
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   memset(input, 0xFF, 8);
@@ -1738,6 +1760,7 @@ void test_roundtrip_alternating_pattern(void)
   uint8_t  input[] = {0xAA, 0x55, 0xAA, 0x55};
   uint8_t  encoded[32];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1792,6 +1815,7 @@ void test_roundtrip_larger_payload(void)
   uint8_t  input[32];
   uint8_t  encoded[128];
   uint8_t  decoded[64];
+
   uint32_t enc_len, dec_len;
 
   /* Fill with ascending pattern */
@@ -1893,6 +1917,7 @@ void test_single_bit_error_correction(void)
   uint8_t  input[] = {0x42};
   uint8_t  encoded[16];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */
@@ -1954,6 +1979,7 @@ void test_multiple_bit_error_correction(void)
   uint8_t  input[] = {0xAB, 0xCD};
   uint8_t  encoded[16];
   uint8_t  decoded[16];
+
   uint32_t enc_len, dec_len;
 
   /* Encode */

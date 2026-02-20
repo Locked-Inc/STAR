@@ -308,10 +308,10 @@ typedef enum : uint16_t {
  */
 static inline bool internal_is_valid_pin(rx_port_pin_t pin)
 {
+  /* Lower bound checks omitted - unsigned types can't be < 0 (-Wtype-limits) */
   const uint16_t pin_portion  = (uint16_t)pin & k_port_mask;
   const uint16_t port_portion = (uint16_t)pin >> k_port_shift;
 
-  /* Lower bound checks omitted - unsigned types can't be < 0 (-Wtype-limits) */
   RX_ASSERT(pin_portion <= k_rx_pin_max, "Pin portion must be <= k_rx_pin_max");
   RX_ASSERT(port_portion <= k_rx_port_j, "Port portion must be <= k_rx_port_j");
   return (pin <= k_rx_pj_7);
@@ -1224,9 +1224,9 @@ void hcsr04_hal_delay_us(uint32_t us)
  */
 uint32_t hcsr04_hal_get_time_us(void)
 {
+  /* Post-condition 1: Mock time should not be invalid sentinel value */
   uint32_t time_us = mock_get_time_us();
 
-  /* Post-condition 1: Mock time should not be invalid sentinel value */
   RX_ASSERT(time_us != UINT32_MAX, "Mock time returned invalid sentinel value");
 
   /* Post-condition 2: Mock time should be within reasonable test bounds */

@@ -305,8 +305,6 @@
 
 #include "bms_monitor_task.h"
 
-#include <string.h>
-
 #include "rx_bq4050.h"
 #include "rx_bq4050_constants.h"
 #include "rx_check.h"
@@ -448,7 +446,6 @@ static bool internal_check_critical_faults(uint16_t status_flags)
    * CRITICAL Alarms (trigger emergency stop)
    * ========================================================================
    */
-
   /* CRITICAL: Over-temperature alarm (>60°C, thermal runaway risk) */
   if ((status_flags & k_bq4050_status_over_temp_alarm) != k_bq4050_status_flag_clear) {
     rx_log_error(s_tag, "CRITICAL: Over-temperature alarm - battery >60C");
@@ -809,8 +806,6 @@ static bool internal_check_critical_faults(uint16_t status_flags)
  */
 rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 {
-  UINT tx_status;
-
   /* Validate config pointer */
   RX_CHECK_NULL_PTR(config, s_tag, "bms_monitor_task_create: config is NULL");
 
@@ -844,7 +839,7 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
   s_bms_config = *config;
 
   /* Create the thread */
-  tx_status = tx_thread_create(&s_bms_thread,
+  const UINT tx_status = tx_thread_create(&s_bms_thread,
                                "BMSTask",
                                internal_bms_task_entry,
                                k_bms_task_input,
@@ -902,7 +897,7 @@ rx_err_t bms_monitor_task_create(const bms_monitor_config_t* config)
 void bms_monitor_task_reset(void)
 {
   s_bms_created = false;
-  (void)memset(&s_bms_config, 0, sizeof(s_bms_config));
+  s_bms_config = (bms_monitor_config_t){0};
 }
 #endif /* UNIT_TEST */
 
@@ -1136,8 +1131,8 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  * | Variable | Type | Size | Scope | Lifetime |
  * |----------|------|------|-------|----------|
  * | `err` | rx_err_t | 4 bytes | Local | Function lifetime |
- * | `status` | rx_bq4050_status_t | ~32 bytes | Local | Function lifetime |
- * | `bms` | bms_state_t | ~40 bytes | Local | Function lifetime |
+ * | `status` | rx_bq4050_status_t | ~32 bytes | Local (inside while loop) | Loop-iteration scope |
+ * | `bms` | bms_state_t | ~40 bytes | Local (inside while loop) | Loop-iteration scope |
  * | `config` | rx_bq4050_config_t | ~8 bytes | Local | Init phase only |
  * | **Total Stack** | - | ~256 bytes | Stack | Peak during I2C call |
  *
@@ -1348,20 +1343,15 @@ static void internal_bms_convert_status_to_state(const rx_bq4050_status_t* statu
  */
 static void internal_bms_task_entry(ULONG input)
 {
-  rx_err_t           err;
-  rx_bq4050_status_t status;
-  bms_state_t        bms = {0};
-  rx_bq4050_config_t config;
-
   (void)input;
 
   rx_log_info(s_tag, "BMS monitoring task starting");
 
   /* Initialize BQ4050 */
-  config.num_cells = k_bms_cell_count;
-  err              = rx_bq4050_init(&g_bus_manager, s_i2c_bus_name, &config);
-  if (err != k_rx_ok) {
-    rx_log_error_val(s_tag, "BQ4050 init failed", (uint32_t)err);
+  const rx_bq4050_config_t config   = {.num_cells = k_bms_cell_count};
+  const rx_err_t           err_init = rx_bq4050_init(&g_bus_manager, s_i2c_bus_name, &config);
+  if (err_init != k_rx_ok) {
+    rx_log_error_val(s_tag, "BQ4050 init failed", (uint32_t)err_init);
     /* Continue anyway - will report invalid data */
   }
 
@@ -1369,10 +1359,13 @@ static void internal_bms_task_entry(ULONG input)
 
   /* Main polling loop */
   while (true) {
-    /* Read battery status */
-    err = rx_bq4050_read_status(&g_bus_manager, s_i2c_bus_name, &status, k_bms_cell_count);
+    rx_bq4050_status_t status = {0};
+    bms_state_t        bms    = {0};
 
-    if (err == k_rx_ok) {
+    /* Read battery status */
+    const rx_err_t err_read = rx_bq4050_read_status(&g_bus_manager, s_i2c_bus_name, &status, k_bms_cell_count);
+
+    if (err_read == k_rx_ok) {
       /* Convert BQ4050 snapshot into shared bms_state_t */
       internal_bms_convert_status_to_state(&status, &bms);
 
@@ -1393,16 +1386,16 @@ static void internal_bms_task_entry(ULONG input)
       bms.valid        = false;
       bms.timestamp_ms = tx_time_get();
 
-      rx_log_warn_val(s_tag, "BQ4050 read failed", (uint32_t)err);
+      rx_log_warn_val(s_tag, "BQ4050 read failed", (uint32_t)err_read);
     }
 
     /* Update shared data */
     (void)shared_data_update_bms(&bms);
 
     /* Report task heartbeat to IWDT (must execute within 3000ms timeout) */
-    err = rx_iwdt_task_heartbeat("BMSMonitor");
-    if (err != k_rx_ok) {
-      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err);
+    const rx_err_t err_hb = rx_iwdt_task_heartbeat("BMSMonitor");
+    if (err_hb != k_rx_ok) {
+      rx_log_error_val(s_tag, "IWDT heartbeat failed", (uint32_t)err_hb);
       /* Continue operation - watchdog monitor will detect timeout */
     }
 

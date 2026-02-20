@@ -66,7 +66,7 @@
  * - Rule 4: [OK] All functions < 20 lines
  * - Rule 5: [OK] Each function has preconditions (via RX_CHECK_NULL_PTR)
  * - Rule 6: [OK] Variables declared at smallest scope
- * - Rule 7: [OK] Return value checking (tx_thread_sleep checked implicitly)
+ * - Rule 7: [OK] Return value checking (tx_thread_sleep discarded explicitly)
  * - Rule 8: [OK] Minimal preprocessor (only __RX__ guard)
  * - Rule 9: [OK] Function pointers used for DIP pattern (intentional deviation)
  * - Rule 10: [OK] Compiles with -Wall -Wextra -Werror
@@ -114,6 +114,57 @@
 #include "tx_api.h"
 
 /* =============================================================================
+ * Module Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_time_threadx_zero_t
+ * @brief Zero sentinel for ThreadX time computations
+ * @details Used in ceiling-division and guard checks to avoid magic number 0.
+ *
+ * @invariant k_rx_zero equals zero; used as a guard against zero-division in
+ *            tick ceiling calculation
+ *
+ * @code{.c}
+ * // Guard: only sleep if ticks > 0
+ * if (ticks > k_rx_zero) {
+ *     (void)tx_thread_sleep(ticks);
+ * }
+ * @endcode
+ *
+ * @see rx_time_threadx_ms_to_ticks()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_rx_zero = 0u, /**< Zero sentinel — used in overflow-safe ceiling division */
+} rx_time_threadx_zero_t;
+
+/**
+ * @enum rx_time_ceil_offset_t
+ * @brief Ceiling-division rounding offset
+ * @details Added to the remainder check when computing tick ceiling from milliseconds.
+ *
+ * @invariant k_ceil_div_offset equals 1; adding this before integer division
+ *            implements ceiling division
+ *
+ * @code{.c}
+ * // Ceiling division: ticks = ceil(ms / k_threadx_ms_per_tick)
+ * const uint32_t quotient  = ms / k_threadx_ms_per_tick;
+ * const uint32_t remainder = ms % k_threadx_ms_per_tick;
+ * const uint32_t ticks     = quotient + (remainder > k_rx_zero ? k_ceil_div_offset : k_rx_zero);
+ * @endcode
+ *
+ * @see rx_time_threadx_ms_to_ticks()
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_ceil_div_offset = 1u, /**< Standard ceiling-division rounding offset */
+} rx_time_ceil_offset_t;
+
+/* =============================================================================
  * Interface Implementation Functions
  * =============================================================================
  */
@@ -133,8 +184,10 @@
  * @par Tick Conversion Formula:
  * @f[
  *   \text{ticks} = \left\lceil \frac{\text{ms}}{10} \right\rceil
- *                = \frac{\text{ms} + 9}{10}
+ *                = \left\lfloor \frac{\text{ms}}{10} \right\rfloor
+ *                + \begin{cases} 1 & \text{ms} \bmod 10 > 0 \\ 0 & \text{otherwise} \end{cases}
  * @f]
+ * @note Implemented via overflow-safe quotient/remainder to avoid wrap at high ms values.
  *
  * @param[in] ctx Unused context pointer (ThreadX uses global state)
  *                Must be NULL for this implementation
@@ -174,11 +227,12 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
 {
   (void)ctx; /* ThreadX uses global state - no context needed */
 
-  /* Convert ms to ticks, rounding up */
-  uint32_t ticks = (ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
-
-  if (ticks > 0) {
-    tx_thread_sleep(ticks);
+  /* Convert ms to ticks, rounding up (overflow-safe ceiling division) */
+  const uint32_t quotient  = ms / k_threadx_ms_per_tick;
+  const uint32_t remainder = ms % k_threadx_ms_per_tick;
+  const uint32_t ticks     = quotient + (remainder > k_rx_zero ? k_ceil_div_offset : k_rx_zero);
+  if (ticks > k_rx_zero) {
+    (void)tx_thread_sleep(ticks);
   }
 }
 
@@ -317,8 +371,8 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
 {
   (void)ctx; /* ThreadX uses global state - no context needed */
 
-  uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
-  uint32_t elapsed = now - start_ms;
+  const uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
+  const uint32_t elapsed = now - start_ms;
 
   return elapsed >= timeout_ms;
 }

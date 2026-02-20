@@ -333,6 +333,23 @@ typedef enum : uint16_t {
   k_adc_reference_voltage_mv = 3300, /**< ADC reference voltage: 3.3V = 3300 mV */
 } adc_misc_constants_t;
 
+/**
+ * @enum adc_raw_value_t
+ * @brief Raw ADC value reset/default constants
+ *
+ * @details
+ * Default raw value used to initialize the raw_value variable before a
+ * conversion result is written. Using a named constant makes the intent
+ * explicit and avoids magic numeric literals.
+ *
+ * @see adc_read_voltage_mv() Initializes raw_value with k_adc_raw_value_reset
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_adc_raw_value_reset = 0, /**< Reset/default raw ADC value before conversion */
+} adc_raw_value_t;
+
 /* =============================================================================
  * Static Variables
  * =============================================================================
@@ -490,8 +507,6 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(const uint8_t unit)
 static rx_err_t
 internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, const uint8_t bits)
 {
-  uint16_t adcer;
-
   RX_CHECK_NULL_PTR(adc, s_tag, "ADC register pointer is nullptr");
   RX_CHECK_RANGE_TAG(unit, k_adc_unit_0, k_adc_unit_1, k_rx_err_invalid_arg, s_tag);
 
@@ -511,7 +526,7 @@ internal_configure_adc_unit(const uint8_t unit, volatile rx_s12ad_regs_t* adc, c
 
   *prcr_reg() = k_rx_prcr_lock;
 
-  adcer = adc->adcer;
+  uint16_t adcer = adc->adcer;
   adcer &= (uint16_t) ~(uint16_t)(k_adc_adcer_adprc_mask << k_adc_adcer_adprc_shift);
   if (bits == k_adc_resolution_8bit) {
     adcer |= k_adc_adcer_adprc_8bit;
@@ -721,11 +736,8 @@ static rx_err_t internal_read_channel_value(volatile rx_s12ad_regs_t* adc,
  */
 rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_resolution_t bits)
 {
-  volatile rx_s12ad_regs_t* adc = nullptr;
-  rx_err_t                  err;
-
   /* Validate parameters */
-  err = internal_validate_unit_channel(unit, channel);
+  rx_err_t err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Validate resolution */
@@ -736,7 +748,7 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
   }
 
   /* Get ADC base */
-  adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* const adc = internal_get_adc_base(unit);
   if (adc == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -837,14 +849,10 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
  */
 rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* value)
 {
-  volatile rx_s12ad_regs_t* adc;
-  rx_err_t                  err;
-  uint32_t                  timeout;
-
   /* Validate parameters */
   RX_CHECK_NULL_PTR(value, s_tag, "Value pointer is nullptr");
 
-  err = internal_validate_unit_channel(unit, channel);
+  const rx_err_t err = internal_validate_unit_channel(unit, channel);
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Check if unit is initialized */
@@ -854,7 +862,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
   }
 
   /* Get ADC base */
-  adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* const adc = internal_get_adc_base(unit);
   if (adc == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -863,7 +871,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
   adc->adcsr = k_adc_adcsr_adst;
 
   /* Wait for conversion to complete (poll ADCSR.ADST bit) */
-  timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
+  uint32_t timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
   while ((adc->adcsr & k_adc_adcsr_adst) != k_adc_adcsr_idle && timeout > k_adc_timeout_expired) {
     timeout--;
   }
@@ -948,10 +956,6 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
                              adc_resolution_t bits,
                              uint32_t*        voltage_mv)
 {
-  uint16_t raw_value;
-  rx_err_t err;
-  uint32_t max_value;
-
   /* Parameter order: unit, channel, resolution bits. */
   RX_CHECK_NULL_PTR(voltage_mv, s_tag, "Voltage pointer is nullptr");
 
@@ -973,11 +977,12 @@ rx_err_t adc_read_voltage_mv(const adc_unit_t unit,
   }
 
   /* Read raw ADC value */
-  err = adc_read(unit, channel, &raw_value);
+  uint16_t       raw_value = k_adc_raw_value_reset;
+  const rx_err_t err       = adc_read(unit, channel, &raw_value);
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 
   /* Calculate voltage (using ADC reference voltage) */
-  max_value   = ((uint32_t)k_adc_bit_one << bits) - k_adc_bit_one;
+  const uint32_t max_value = ((uint32_t)k_adc_bit_one << bits) - k_adc_bit_one;
   *voltage_mv = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
 
   return k_rx_ok;

@@ -514,8 +514,9 @@ typedef enum : uint8_t {
  * @brief SMBUS byte operation buffer indices (command + data)
  */
 typedef enum : uint8_t {
-  k_smbus_byte_data = 0, /**< Command/data byte index */
-  k_smbus_byte_pec  = 1, /**< PEC (CRC-8) index */
+  k_smbus_byte_data = 0, /**< Command byte index (register address) */
+  k_smbus_byte_val  = 1, /**< Data value byte index (no-PEC writes: command + value layout) */
+  k_smbus_byte_pec  = 1, /**< PEC (CRC-8) byte index (PEC-enabled writes: data + PEC layout) */
 } smbus_byte_pec_idx_t;
 
 /**

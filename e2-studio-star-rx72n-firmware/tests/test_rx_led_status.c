@@ -541,6 +541,7 @@ void test_led_task_create_success(void)
 void test_led_task_create_double_returns_error(void)
 {
   rx_err_t err = test_led_status_task_create();
+
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = test_led_status_task_create();

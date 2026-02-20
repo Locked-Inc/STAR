@@ -155,9 +155,45 @@
 #include "rx_log.h"
 #include "rx_port_constants.h"
 
-static const char* s_tag = "BUS_CFG";
+/**
+ * @var s_tag
+ * @brief Logging tag for all rx_bus_config module log messages
+ *
+ * @details
+ * Identifies bus configuration log entries in the system log output.
+ * Used by rx_log_error(), rx_log_warn(), and rx_log_debug() throughout
+ * this module. Stored as a read-only character array in .rodata section.
+ *
+ * @note Read-only; must never be modified at runtime
+ * @warning Direct modification would corrupt all log output from this module
+ * @since Version 1.0.0
+ */
+static const char s_tag[] = "BUS_CFG";
 
+/**
+ * @typedef rx_port_t
+ * @brief Port number type for RX72N GPIO port identification
+ *
+ * @details
+ * Aliases uint8_t to provide semantic clarity when a value represents
+ * an RX72N port number (0 through Port J = 10). Values are extracted
+ * from rx_port_pin_t using rx_port_from_pin().
+ *
+ * @since Version 1.0.0
+ */
 typedef uint8_t rx_port_t;
+
+/**
+ * @typedef rx_pin_t
+ * @brief Pin number type for RX72N GPIO pin identification within a port
+ *
+ * @details
+ * Aliases uint8_t to provide semantic clarity when a value represents
+ * a pin number within a port (0 through k_rx_pin_max = 7). Values are
+ * extracted from rx_port_pin_t using rx_pin_from_pin().
+ *
+ * @since Version 1.0.0
+ */
 typedef uint8_t rx_pin_t;
 
 /**
@@ -204,6 +240,7 @@ typedef uint8_t rx_pin_t;
  * @pre context_tag is non-NULL string (used for logging only)
  *
  * @post No state modified (pure validation function)
+ * @post Logging output produced on validation failure (side-effect only)
  *
  * @note Called by all bus config init functions that use GPIO pins
  * @note Does NOT check if pin exists on specific port (e.g., Port C has only 4 pins)
@@ -250,9 +287,8 @@ typedef uint8_t rx_pin_t;
  */
 static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* context_tag)
 {
-  rx_port_t port    = rx_port_from_pin(pin);
-  rx_pin_t  pin_num = rx_pin_from_pin(pin);
-
+  const rx_port_t port    = rx_port_from_pin(pin);
+  const rx_pin_t  pin_num = rx_pin_from_pin(pin);
   if (port > k_rx_port_j) {
     rx_log_error_str(s_tag, "Invalid port", context_tag, (uint32_t)strlen(context_tag));
     return k_rx_err_invalid_arg;
@@ -399,19 +435,17 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
  */
 rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_port_pin_t pin)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is nullptr");
 
   /* Validate port and pin from type-safe enum */
-  err = internal_validate_port_pin(pin, "GPIO");
+  const rx_err_t err = internal_validate_port_pin(pin, "GPIO");
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -644,7 +678,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -880,13 +914,11 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
                                 const rx_port_pin_t scl_pin,
                                 const uint32_t      frequency_hz)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is nullptr");
 
   /* Validate SDA pin */
-  err = internal_validate_port_pin(sda_pin, "I2C SDA");
+  rx_err_t err = internal_validate_port_pin(sda_pin, "I2C SDA");
   if (err != k_rx_ok) {
     return err;
   }
@@ -910,7 +942,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -1176,13 +1208,11 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
                                   const uint32_t      frequency_hz,
                                   const bool          use_pec)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is nullptr");
 
   /* Validate SDA pin */
-  err = internal_validate_port_pin(sda_pin, "SMBUS SDA");
+  rx_err_t err = internal_validate_port_pin(sda_pin, "SMBUS SDA");
   if (err != k_rx_ok) {
     return err;
   }
@@ -1206,7 +1236,7 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t*    config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -1460,8 +1490,6 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
                                  const rx_port_pin_t rx_pin,
                                  const uint32_t      baudrate)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is nullptr");
 
@@ -1471,7 +1499,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
     return k_rx_err_invalid_arg;
   }
 
-  err = internal_validate_port_pin(tx_pin, "UART TX");
+  rx_err_t err = internal_validate_port_pin(tx_pin, "UART TX");
   if (err != k_rx_ok) {
     return err;
   }
@@ -1488,7 +1516,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;
@@ -1751,19 +1779,17 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  */
 rx_err_t rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, rx_port_pin_t pin)
 {
-  rx_err_t err = k_rx_err_invalid_state;
-
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is nullptr");
 
   /* Validate GPIO pin */
-  err = internal_validate_port_pin(pin, "OneWire GPIO");
+  const rx_err_t err = internal_validate_port_pin(pin, "OneWire GPIO");
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Zero out config structure */
-  memset(config, 0, sizeof(rx_bus_config_t));
+  *config = (rx_bus_config_t){0};
 
   /* Set common fields */
   config->name        = name;

@@ -1397,6 +1397,7 @@ static const struct __attribute__((packed)) {
   uint8_t  length;
   uint8_t  descriptor_type;
   uint16_t langid;
+
 } s_string_langid = {
   .length = k_usb_string_header_size + (k_usb_string_langid_chars * k_usb_string_char_size),
   .descriptor_type = k_usb_desc_type_string,
@@ -1405,9 +1406,10 @@ static const struct __attribute__((packed)) {
 
 /** @brief String Descriptor 1: Manufacturer ("Renesas") */
 static const struct __attribute__((packed)) {
+  uint16_t string[k_usb_string_mfr_chars]; /* "Renesas" in UTF-16LE */
   uint8_t  length;
   uint8_t  descriptor_type;
-  uint16_t string[k_usb_string_mfr_chars]; /* "Renesas" in UTF-16LE */
+
 } s_string_manufacturer = {
   .length          = k_usb_string_header_size + (k_usb_string_mfr_chars * k_usb_string_char_size),
   .descriptor_type = k_usb_desc_type_string,
@@ -1416,9 +1418,10 @@ static const struct __attribute__((packed)) {
 
 /** @brief String Descriptor 2: Product ("STAR RX72N CDC") */
 static const struct __attribute__((packed)) {
+  uint16_t string[k_usb_string_product_chars]; /* "STAR RX72N CDC" in UTF-16LE */
   uint8_t  length;
   uint8_t  descriptor_type;
-  uint16_t string[k_usb_string_product_chars]; /* "STAR RX72N CDC" in UTF-16LE */
+
 } s_string_product = {
   .length = k_usb_string_header_size + (k_usb_string_product_chars * k_usb_string_char_size),
   .descriptor_type = k_usb_desc_type_string,
@@ -1427,9 +1430,10 @@ static const struct __attribute__((packed)) {
 
 /** @brief String Descriptor 3: Serial Number ("00000001") */
 static const struct __attribute__((packed)) {
+  uint16_t string[k_usb_string_serial_chars]; /* "00000001" in UTF-16LE */
   uint8_t  length;
   uint8_t  descriptor_type;
-  uint16_t string[k_usb_string_serial_chars]; /* "00000001" in UTF-16LE */
+
 } s_string_serial = {
   .length = k_usb_string_header_size + (k_usb_string_serial_chars * k_usb_string_char_size),
   .descriptor_type = k_usb_desc_type_string,
@@ -1476,9 +1480,9 @@ static uint16_t s_control_line_state[k_usb_port_count] = {k_usb_control_line_cle
  */
 static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uint16_t requested_len)
 {
-  const uint16_t len = (desc_len < requested_len) ? desc_len : requested_len;
-
+  const uint16_t len    = (desc_len < requested_len) ? desc_len : requested_len;
   const uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_dcp, desc, len);
+
   if (written != len) {
     rx_log_error(s_tag, "Descriptor write incomplete");
   }
@@ -1496,11 +1500,9 @@ static void internal_handle_get_descriptor(const uint16_t usb_value, const uint1
     case k_usb_desc_type_device:
       internal_send_descriptor((const uint8_t*)&s_device_desc, sizeof(s_device_desc), usb_length);
       break;
-
     case k_usb_desc_type_configuration:
       internal_send_descriptor((const uint8_t*)&s_config_desc, sizeof(s_config_desc), usb_length);
       break;
-
     case k_usb_desc_type_string:
       switch (desc_index) {
         case k_usb_string_index_langid:
@@ -1529,7 +1531,6 @@ static void internal_handle_get_descriptor(const uint16_t usb_value, const uint1
           break;
       }
       break;
-
     default:
       /* STALL for unknown descriptor type */
       usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
@@ -1542,9 +1543,9 @@ static void internal_handle_get_descriptor(const uint16_t usb_value, const uint1
  */
 static void internal_handle_set_address(const uint16_t usb_value)
 {
+  /* Send zero-length status packet first */
   const uint8_t address = usb_value & k_usb_address_mask;
 
-  /* Send zero-length status packet first */
   usb0()->dcpctr |= k_usb_dcpctr_ccpl;
 
   /* Then set the address */
@@ -1619,14 +1620,12 @@ static void internal_handle_set_configuration(const uint16_t usb_value)
             "USB configuration out of range");
 
   if (config == k_usb_config_value_1) {
-    rx_err_t err;
-
     /* ========================================================================
      * Configure Port 0 pipes
      * ======================================================================== */
 
     /* Pipe 1: Port 0 Bulk IN (EP1) */
-    err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_in,
+    rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_in,
                                    k_usb_port0_pipe_bulk_in, /* EP number = pipe number */
                                    true,
                                    k_usb_pipecfg_type_bulk,
@@ -2046,15 +2045,12 @@ static void internal_handle_class_request(const uint8_t  usb_request,
     case k_cdc_set_line_coding:
       internal_handle_set_line_coding(port);
       break;
-
     case k_cdc_get_line_coding:
       internal_handle_get_line_coding(port);
       break;
-
     case k_cdc_set_control_line_state:
       internal_handle_set_control_line_state(port, usb_value);
       break;
-
     default:
       /* STALL unknown class requests */
       usb0()->dcpctr |= k_usb_dcpctr_pid_stall;
@@ -2250,6 +2246,7 @@ void rx_usb_cdc_handle_setup(void)
 
   const uint8_t usb_request_type = (uint8_t)(usb_request_type_and_request & k_byte_mask);
   const uint8_t usb_request =
+
     (uint8_t)((usb_request_type_and_request >> k_bit_shift_byte_1) & k_byte_mask);
 
   /* Determine request type */

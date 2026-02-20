@@ -371,7 +371,7 @@
 #include "rx_log.h"
 #include "rx_register_protection.h"
 
-static const char* s_tag = "MTU_ENCODER";
+static const char s_tag[] = "MTU_ENCODER";
 
 /* =============================================================================
  * Constants
@@ -622,9 +622,6 @@ static bool internal_is_valid_channel(const rx_mtu_channel_t channel)
  */
 rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 {
-  rx_err_t                        err = k_rx_ok;
-  volatile rx_mtu_channel_regs_t* mtu;
-
   /* Validate inputs */
   RX_VALIDATE_PTR(config, s_tag, "config pointer is nullptr");
 
@@ -637,13 +634,13 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu = internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
 
   /* Enable MTU module */
-  err = internal_enable_mtu_module(channel);
+  rx_err_t err = internal_enable_mtu_module(channel);
   if (err != k_rx_ok) {
     return err;
   }
@@ -759,11 +756,9 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
  */
 rx_err_t rx_encoder_read_raw(const rx_mtu_channel_t channel, uint16_t* count)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-
   RX_VALIDATE_PTR(count, s_tag, "count pointer is nullptr");
 
-  mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu = internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -782,11 +777,9 @@ rx_err_t rx_encoder_read_raw(const rx_mtu_channel_t channel, uint16_t* count)
  */
 rx_err_t rx_encoder_read_count(const rx_mtu_channel_t channel, rx_encoder_state_t* state)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-
   RX_VALIDATE_PTR(state, s_tag, "state pointer is nullptr");
 
-  mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu = internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -963,10 +956,6 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
                                   const float            delta_time_s,
                                   const rx_mtu_channel_t channel)
 {
-  volatile rx_mtu_channel_regs_t* mtu;
-  rx_encoder_state_t              state;
-  rx_err_t                        err;
-
   RX_VALIDATE_PTR(velocity_rps, s_tag, "velocity_rps pointer is nullptr");
 
   /* Runtime validation to catch accidental parameter swaps */
@@ -980,7 +969,7 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
     return k_rx_err_invalid_arg;
   }
 
-  mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* const mtu = internal_get_mtu_base(channel);
   if (mtu == nullptr) {
     return k_rx_err_invalid_arg;
   }
@@ -988,7 +977,8 @@ rx_err_t rx_encoder_read_velocity(float*                 velocity_rps,
   RX_VALIDATE_INIT(s_encoder_initialized[channel], s_tag, "Encoder not initialized");
 
   /* Read current count */
-  err = internal_update_state_from_count(&state, channel, mtu->tcnt);
+  rx_encoder_state_t state;
+  rx_err_t           err = internal_update_state_from_count(&state, channel, mtu->tcnt);
   if (err != k_rx_ok) {
     return err;
   }

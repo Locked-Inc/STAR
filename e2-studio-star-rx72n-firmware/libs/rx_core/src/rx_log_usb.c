@@ -177,15 +177,39 @@ static void internal_init_mutex_once(void)
  * Appends data to ring buffer if space available. If buffer full, drops data
  * and sets overflow flag. Overflow warning logged after USB ready.
  *
- * @param[in] data Data to buffer
- * @param[in] len Number of bytes to buffer
+ * Boot log buffering enables logs emitted during system startup (before USB
+ * enumeration completes) to be preserved and flushed to USB once the CDC
+ * interface becomes ready. The ring buffer wraps writes using a head index and
+ * a running byte count.
+ *
+ * @param[in] data Pointer to data bytes to buffer (must not be NULL)
+ * @param[in] len Number of bytes to buffer (must be > 0)
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Data buffered successfully
- * @retval k_rx_err_overflow Buffer full, data dropped
+ * @retval k_rx_err_no_mem Buffer full, data dropped and overflow flag set
  *
- * @pre Mutex locked by caller
- * @post s_boot_buffer updated, s_stats.boot_buffered incremented
+ * @pre Mutex locked by caller (internal_init_mutex_once() invoked before call)
+ * @pre s_boot_buffer.head is within [0, k_boot_buffer_size)
+ * @post s_boot_buffer.count incremented by len on success
+ * @post s_stats.boot_buffered incremented by len on success
+ * @post s_boot_buffer.overflow set and s_stats.dropped_bytes incremented on overflow
+ *
+ * @note Not thread-safe on its own; caller must hold s_log_mutex before invoking
+ *
+ * @par Example:
+ * @code
+ * // Called internally by internal_write_usb() when USB not yet configured:
+ * rx_err_t result = internal_buffer_boot_log("boot message\n", 14);
+ * if (result == k_rx_err_no_mem) {
+ *     // Boot buffer full - message dropped, overflow flag set
+ * }
+ * @endcode
+ *
+ * @see internal_check_usb_ready() Flushes this buffer once USB is configured
+ * @see rx_log_usb_puts() Public API that triggers this path during boot
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_buffer_boot_log(const char* data, uint16_t len)
 {
@@ -503,7 +527,7 @@ void rx_log_usb_puts(const char* str)
     return; /* Defensive: ignore null pointer */
   }
 
-  uint16_t len = (uint16_t)strlen(str);
+  const uint16_t len = (uint16_t)strlen(str);
   if (len == 0) {
     return; /* Nothing to write */
   }
@@ -585,6 +609,7 @@ void rx_log_usb_putint(int32_t value)
 {
   /* Convert to string (max 11 chars: '-' + 10 digits + NUL) */
   char  buf[12];
+
   char* p = &buf[sizeof(buf) - 1];
   *p      = '\0';
 

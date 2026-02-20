@@ -772,6 +772,7 @@ void test_usb_init_transitions_to_attached(void)
 void test_usb_init_with_callback(void)
 {
   rx_usb_config_t config = {0};
+
   config.callback        = test_callback;
   config.ctx             = (void*)0xDEADBEEF;
 
@@ -1328,6 +1329,7 @@ extern void     rx_usb_count_suspend(void);
 void test_usb_set_state_triggers_callback(void)
 {
   rx_usb_config_t config = {0};
+
   config.callback        = test_callback;
   config.ctx             = (void*)0xCAFEBABE;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
@@ -1342,6 +1344,7 @@ void test_usb_set_state_triggers_callback(void)
 void test_usb_set_state_no_callback_if_same_state(void)
 {
   rx_usb_config_t config = {0};
+
   config.callback        = test_callback;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));
 
@@ -1354,6 +1357,7 @@ void test_usb_set_state_no_callback_if_same_state(void)
 void test_usb_set_state_triggers_callback_on_configured(void)
 {
   rx_usb_config_t config = {0};
+
   config.callback        = test_callback;
   config.ctx             = (void*)0xCAFEBABE;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_usb_init(&config));

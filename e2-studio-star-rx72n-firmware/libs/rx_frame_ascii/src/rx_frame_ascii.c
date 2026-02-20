@@ -617,10 +617,6 @@ static uint32_t internal_format_payload(char*          buf,
                                         const uint8_t* payload,
                                         uint16_t       length)
 {
-  uint16_t offset = 0;
-  uint16_t line_bytes;
-  uint8_t  c;
-
   /* Rule 5: Pre-condition validation */
   if (buf == nullptr || max == k_empty_buffer || pos >= max) {
     return pos;
@@ -636,6 +632,7 @@ static uint32_t internal_format_payload(char*          buf,
     return pos;
   }
 
+  uint16_t offset = 0;
   while (offset < length) {
     /* Start new line with offset */
     pos = internal_append_str(buf, pos, max, "[");
@@ -643,7 +640,7 @@ static uint32_t internal_format_payload(char*          buf,
     pos = internal_append_str(buf, pos, max, "] ");
 
     /* Calculate bytes on this line */
-    line_bytes = length - offset;
+    uint16_t line_bytes = length - offset;
     if (line_bytes > k_bytes_per_line) {
       line_bytes = k_bytes_per_line;
     }
@@ -661,8 +658,8 @@ static uint32_t internal_format_payload(char*          buf,
     /* ASCII sidebar */
     pos = internal_append_char(buf, pos, max, ' ');
     for (uint16_t i = 0; i < line_bytes; i++) {
-      c   = payload[offset + i];
-      pos = internal_append_char(buf, pos, max, internal_is_printable(c) ? (char)c : '.');
+      uint8_t c = payload[offset + i];
+      pos       = internal_append_char(buf, pos, max, internal_is_printable(c) ? (char)c : '.');
     }
 
     pos = internal_append_str(buf, pos, max, "\r\n");

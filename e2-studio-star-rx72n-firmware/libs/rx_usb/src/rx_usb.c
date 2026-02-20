@@ -438,8 +438,6 @@
 
 #include "rx_usb.h"
 
-#include <string.h>
-
 #include "rx_time_constants.h"
 #include "rx_usb_endpoints.h"
 #include "rx_usb_internal.h"
@@ -1096,7 +1094,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   rx_log_info(s_tag, "Initializing USB CDC composite driver");
 
   /* Clear driver state */
-  memset(&s_usb, 0, sizeof(s_usb));
+  s_usb = (usb_driver_t){0};
 
   /* Store global callback if provided */
   if (config != nullptr) {
@@ -1870,7 +1868,7 @@ rx_err_t rx_usb_get_stats(const rx_usb_port_id_t port, rx_usb_stats_t* stats)
 void rx_usb_reset_stats(const rx_usb_port_id_t port)
 {
   if (internal_port_is_valid(port)) {
-    memset(&s_usb.ports[port].stats, 0, sizeof(rx_usb_stats_t));
+    s_usb.ports[port].stats = (rx_usb_stats_t){0};
   }
 }
 
@@ -1984,11 +1982,6 @@ rx_err_t rx_usb_puts(const rx_usb_port_id_t port, const char* str)
  */
 rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
 {
-  char     buffer[k_int_buffer_size];
-  uint8_t  pos      = 0;
-  bool     negative = false;
-  uint32_t abs_val;
-
   if (!internal_port_is_valid(port)) {
     return k_rx_err_invalid_arg;
   }
@@ -2002,6 +1995,11 @@ rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
   }
 
   /* Handle negative numbers */
+  char     buffer[k_int_buffer_size];
+  uint8_t  pos      = 0;
+  bool     negative = false;
+  uint32_t abs_val;
+
   if (value < 0) {
     negative = true;
     /* Handle INT32_MIN specially to avoid overflow */
@@ -2052,8 +2050,6 @@ rx_err_t rx_usb_putint(const rx_usb_port_id_t port, int32_t value)
  */
 rx_err_t rx_usb_puthex(const rx_usb_port_id_t port, uint32_t value, uint8_t digits)
 {
-  char buffer[k_hex_buffer_size];
-
   if (!internal_port_is_valid(port)) {
     return k_rx_err_invalid_arg;
   }
@@ -2065,6 +2061,8 @@ rx_err_t rx_usb_puthex(const rx_usb_port_id_t port, uint32_t value, uint8_t digi
   if (s_usb.device_state != k_usb_state_configured) {
     return k_rx_err_invalid_state;
   }
+
+  char buffer[k_hex_buffer_size];
 
   /* Clamp digits to valid range */
   if (digits == 0) {

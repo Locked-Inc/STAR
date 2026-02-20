@@ -705,6 +705,7 @@ void test_encode_velocity_request_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_velocity_request(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -975,6 +976,7 @@ void test_decode_velocity_request_null_msg(void)
 {
   uint8_t  data[16] = {0};
   rx_err_t err      = rx_nanopb_decode_velocity_request(data, sizeof(data), nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -984,6 +986,7 @@ void test_decode_velocity_request_null_msg(void)
 void test_decode_velocity_request_empty_buffer(void)
 {
   uint8_t                    data[1] = {0};
+
   star_v1_SetVelocityRequest msg     = star_v1_SetVelocityRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_velocity_request(data, 0, &msg);
@@ -1021,6 +1024,7 @@ void test_decode_velocity_request_invalid_data(void)
 {
   /* Invalid protobuf data - starts with invalid wire type */
   uint8_t                    invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
   star_v1_SetVelocityRequest msg            = star_v1_SetVelocityRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_velocity_request(invalid_data, sizeof(invalid_data), &msg);
@@ -1255,6 +1259,7 @@ void test_encode_velocity_response_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_velocity_response(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1393,6 +1398,7 @@ void test_decode_estop_request_null_msg(void)
 {
   uint8_t  data[16] = {0};
   rx_err_t err      = rx_nanopb_decode_estop_request(data, sizeof(data), nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1402,6 +1408,7 @@ void test_decode_estop_request_null_msg(void)
 void test_decode_estop_request_empty_buffer(void)
 {
   uint8_t                      data[1] = {0};
+
   star_v1_EmergencyStopRequest msg     = star_v1_EmergencyStopRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_estop_request(data, 0, &msg);
@@ -1414,6 +1421,7 @@ void test_decode_estop_request_empty_buffer(void)
 void test_decode_estop_request_invalid_data(void)
 {
   uint8_t                      invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
   star_v1_EmergencyStopRequest msg            = star_v1_EmergencyStopRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_estop_request(invalid_data, sizeof(invalid_data), &msg);
@@ -1503,6 +1511,7 @@ void test_decode_pid_gains_request_null_msg(void)
 {
   uint8_t  buffer[64] = {0};
   rx_err_t err        = rx_nanopb_decode_pid_gains_request(buffer, sizeof(buffer), nullptr);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1512,6 +1521,7 @@ void test_decode_pid_gains_request_null_msg(void)
 void test_decode_pid_gains_request_empty_buffer(void)
 {
   uint8_t                    buffer[64] = {0};
+
   star_v1_SetPIDGainsRequest msg;
   rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1524,6 +1534,7 @@ void test_decode_pid_gains_request_empty_buffer(void)
 void test_decode_pid_gains_request_invalid_data(void)
 {
   uint8_t                    buffer[64];
+
   star_v1_SetPIDGainsRequest msg;
 
   /* Fill buffer with invalid protobuf data */
@@ -1539,6 +1550,7 @@ void test_decode_pid_gains_request_invalid_data(void)
 void test_decode_pid_gains_request_not_initialized(void)
 {
   uint8_t                    buffer[64] = {0};
+
   star_v1_SetPIDGainsRequest msg;
 
   /* Reset state to uninitialized */
@@ -1571,6 +1583,7 @@ void test_decode_pid_gains_request_valid(void)
 {
   uint8_t                    encode_buffer[256];
   uint32_t                   encode_len;
+
   star_v1_SetPIDGainsRequest encode_msg = star_v1_SetPIDGainsRequest_init_zero;
 
   /* Build valid PID gains request */
@@ -1614,6 +1627,7 @@ void test_pid_gains_request_round_trip(void)
 {
   uint8_t                    buffer[256];
   uint32_t                   encode_len;
+
   star_v1_SetPIDGainsRequest original = star_v1_SetPIDGainsRequest_init_zero;
 
   /* MATLAB-tuned gains for motor system (τ=75ms) */
@@ -1679,6 +1693,7 @@ void test_encode_estop_response_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_estop_response(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1825,6 +1840,7 @@ void test_encode_telemetry_null_msg(void)
 {
   uint32_t len;
   rx_err_t err = rx_nanopb_encode_telemetry(nullptr, s_buffer, sizeof(s_buffer), &len);
+
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -2070,6 +2086,7 @@ void test_encode_telemetry_not_initialized(void)
 void test_create_velocity_command_null(void)
 {
   rx_velocity_command_params_t params =
+
     internal_make_velocity_params(s_test_front_left_velocity_mps,
                                   s_test_front_right_velocity_mps,
                                   s_test_back_left_velocity_mps,

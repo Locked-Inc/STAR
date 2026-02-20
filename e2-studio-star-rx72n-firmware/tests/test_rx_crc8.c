@@ -204,6 +204,7 @@ static const uint8_t s_ds18b20_family_code = 0x28U; /**< DS18B20 family code */
 void test_crc8_null_pointer(void)
 {
   uint8_t crc = rx_crc8_maxim(nullptr, 10);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -214,6 +215,7 @@ void test_crc8_zero_length(void)
 {
   uint8_t data[] = {0x01, 0x02, 0x03};
   uint8_t crc    = rx_crc8_maxim(data, 0);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -223,6 +225,7 @@ void test_crc8_zero_length(void)
 void test_crc8_null_zero_length(void)
 {
   uint8_t crc = rx_crc8_maxim(nullptr, 0);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -241,6 +244,7 @@ void test_crc8_single_zero(void)
 {
   uint8_t data[] = {0x00};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -253,6 +257,7 @@ void test_crc8_single_ff(void)
 {
   uint8_t data[] = {0xFF};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0x35, crc);
 }
 
@@ -265,6 +270,7 @@ void test_crc8_single_lsb_set(void)
 {
   uint8_t data[] = {0x01};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0x5E, crc);
 }
 
@@ -277,6 +283,7 @@ void test_crc8_ds18b20_family_code(void)
 {
   uint8_t data[] = {s_ds18b20_family_code};
   uint8_t crc    = rx_crc8_maxim(data, 1);
+
   TEST_ASSERT_EQUAL_HEX8(0xE1, crc);
 }
 
@@ -353,6 +360,7 @@ void test_crc8_ds18b20_rom_1(void)
 {
   uint8_t rom[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0xDB, crc);
 }
 
@@ -368,6 +376,7 @@ void test_crc8_ds18b20_rom_2(void)
 {
   uint8_t rom[] = {0x28, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x1E, crc);
 }
 
@@ -383,6 +392,7 @@ void test_crc8_ds18b20_rom_3(void)
 {
   uint8_t rom[] = {0x28, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x0C, crc);
 }
 
@@ -398,6 +408,7 @@ void test_crc8_ds18b20_rom_4(void)
 {
   uint8_t rom[] = {0x28, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE, 0x01};
   uint8_t crc   = rx_crc8_maxim(rom, k_rom_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x67, crc);
 }
 
@@ -411,6 +422,7 @@ void test_crc8_full_rom_validation(void)
 {
   uint8_t rom_with_crc[] = {0x28, 0xFF, 0x64, 0x1E, 0x81, 0x16, 0x05, 0xDB};
   uint8_t crc            = rx_crc8_maxim(rom_with_crc, k_rom_code_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -491,6 +503,7 @@ void test_crc8_scratchpad_25c(void)
 {
   uint8_t scratchpad[] = {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10};
   uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x25, crc);
 }
 
@@ -504,6 +517,7 @@ void test_crc8_scratchpad_85c_reset(void)
 {
   uint8_t scratchpad[] = {0x50, 0x05, 0x4B, 0x46, 0x7F, 0xFF, 0x0C, 0x10};
   uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x1C, crc);
 }
 
@@ -517,6 +531,7 @@ void test_crc8_scratchpad_negative_temp(void)
 {
   uint8_t scratchpad[] = {0x5E, 0xFF, 0x4B, 0x46, 0x7F, 0xFF, 0x02, 0x10};
   uint8_t crc          = rx_crc8_maxim(scratchpad, k_scratchpad_data_size);
+
   TEST_ASSERT_EQUAL_HEX8(0xB6, crc);
 }
 
@@ -527,6 +542,7 @@ void test_crc8_full_scratchpad_validation(void)
 {
   uint8_t scratchpad_with_crc[] = {0x91, 0x01, 0x4B, 0x46, 0x7F, 0xFF, 0x0F, 0x10, 0x25};
   uint8_t crc                   = rx_crc8_maxim(scratchpad_with_crc, k_scratchpad_size);
+
   TEST_ASSERT_EQUAL_HEX8(0x00, crc);
 }
 
@@ -547,6 +563,7 @@ void test_crc8_ascending_sequence(void)
 {
   uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0x0F, crc);
 }
 
@@ -560,6 +577,7 @@ void test_crc8_descending_sequence(void)
 {
   uint8_t data[] = {0x07, 0x06, 0x05, 0x04, 0x03, 0x02, 0x01};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
 }
 
@@ -572,6 +590,7 @@ void test_crc8_alternating_aa(void)
 {
   uint8_t data[] = {0xAA, 0xAA, 0xAA, 0xAA};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0xF6, crc);
 }
 
@@ -584,6 +603,7 @@ void test_crc8_alternating_55(void)
 {
   uint8_t data[] = {0x55, 0x55, 0x55, 0x55};
   uint8_t crc    = rx_crc8_maxim(data, sizeof(data));
+
   TEST_ASSERT_EQUAL_HEX8(0x7B, crc);
 }
 

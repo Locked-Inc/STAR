@@ -223,7 +223,7 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
-static const char* s_tag = "MOTOR";
+static const char s_tag[] = "MOTOR";
 
 /**
  * @enum motor_constants_t
@@ -914,10 +914,6 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  */
 rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config)
 {
-  rx_err_t              err;
-  rx_gptw_config_t      gptw_config;
-  rx_gptw_output_pair_t outputs;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
@@ -942,15 +938,16 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   rx_log_info(s_tag, "Initializing motor");
 
   /* Initialize GPTW PWM */
-  gptw_config = (rx_gptw_config_t){
+  rx_gptw_config_t gptw_config = (rx_gptw_config_t){
     .frequency_hz         = config->pwm_freq_hz,
     .deadtime_ns          = (uint16_t)config->dead_time_ns,
     .enable_complementary = false, /* We control direction manually */
     .invert_polarity      = config->invert_pwm,
   };
 
-  outputs = (rx_gptw_output_pair_t){.a = config->output_a, .b = config->output_b};
-  err     = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
+  const rx_gptw_output_pair_t outputs = {.a = config->output_a,
+                                         .b = config->output_b};
+  rx_err_t              err    = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1083,8 +1080,6 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
  */
 rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 {
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized) {
@@ -1093,7 +1088,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
   }
 
   /* Stop motor before deinit */
-  err = rx_motor_stop(handle, false);
+  rx_err_t err = rx_motor_stop(handle, false);
   if (err != k_rx_ok) {
     rx_log_warn(s_tag, "Failed to stop motor during deinit");
   }
@@ -1357,9 +1352,6 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  */
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 {
-  float    speed_pwm = 0.0F;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized) {
@@ -1389,13 +1381,13 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    * Duty sign determines PH (+ = forward/HIGH, - = reverse/LOW).
    * EN always receives positive PWM duty proportional to speed.
    */
-  speed_pwm = fabsf(duty);
+  const float speed_pwm = fabsf(duty);
 
   if (duty >= (float)k_motor_duty_zero) {
     /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */
-    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                           rx_gptw_output_id(handle->output_a),
-                           (float)k_motor_ph_high);
+    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                                    rx_gptw_output_id(handle->output_a),
+                                    (float)k_motor_ph_high);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set PH output (forward)");
       return err;
@@ -1410,9 +1402,9 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     }
   } else {
     /* Reverse: PH = LOW, EN = PWM - NASA Rule 7 compliance */
-    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                           rx_gptw_output_id(handle->output_a),
-                           (float)k_motor_ph_low);
+    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                                    rx_gptw_output_id(handle->output_a),
+                                    (float)k_motor_ph_low);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set PH output (reverse)");
       return err;
@@ -1871,9 +1863,6 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  */
 rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
 {
-  rx_err_t result = k_rx_ok;
-  rx_err_t err;
-
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is nullptr");
 
   if (!handle->initialized) {
@@ -1882,7 +1871,8 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
   }
 
   /* Immediately set duty to 0% */
-  err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+  rx_err_t result = k_rx_ok;
+  rx_err_t err    = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_a),
                          s_duty_zero);
   if (err != k_rx_ok) {

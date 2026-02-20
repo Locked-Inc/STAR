@@ -495,6 +495,7 @@ void test_pwpr_unlock_sequence_values(void)
 {
   /* Step 1: Clear B0WI (write 0x00) */
   uint8_t step1 = 0x00;
+
   TEST_ASSERT_EQUAL_HEX8(0x00, step1);
 
   /* Step 2: Set PFSWE (write 0x40 = k_mpc_pwpr_pfswe) */
@@ -514,6 +515,7 @@ void test_pwpr_lock_sequence_values(void)
 {
   /* Step 1: Clear PFSWE (write 0x00) */
   uint8_t step1 = 0x00;
+
   TEST_ASSERT_EQUAL_HEX8(0x00, step1);
 
   /* Step 2: Set B0WI (write 0x80 = k_mpc_pwpr_b0wi) */

@@ -285,7 +285,7 @@ static rx_iwdt_state_t s_iwdt_state = {0};
  */
 void rx_iwdt_test_reset(void)
 {
-  memset(&s_iwdt_state, 0, sizeof(s_iwdt_state));
+  s_iwdt_state = (rx_iwdt_state_t){0};
 }
 #endif
 
@@ -488,15 +488,13 @@ static void internal_init_default_config(rx_iwdt_config_t* config)
  */
 rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
 {
-  volatile rx_iwdt_regs_t* regs;
-  rx_iwdt_config_t         local_config;
-
   /* Check if already initialized */
   if (s_iwdt_state.initialized) {
     return k_rx_err_invalid_state;
   }
 
   /* Use default config if none provided */
+  rx_iwdt_config_t local_config;
   if (config == nullptr) {
     internal_init_default_config(&local_config);
     config = &local_config;
@@ -509,7 +507,7 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
   }
 
   /* Initialize state */
-  memset(&s_iwdt_state, 0, sizeof(s_iwdt_state));
+  s_iwdt_state = (rx_iwdt_state_t){0};
   memcpy(&s_iwdt_state.config, config, sizeof(rx_iwdt_config_t));
   s_iwdt_state.current_state = k_system_state_init;
 
@@ -532,7 +530,7 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
    * the timeout period at runtime. This driver manages the software state and
    * provides the feed mechanism. The requested timeout is used for software task
    * monitoring only. */
-  regs = iwdt();
+  volatile rx_iwdt_regs_t* const regs = iwdt();
 
   /* Feed the watchdog to establish baseline */
   regs->iwdtrr = k_iwdt_refresh_start;
@@ -544,9 +542,62 @@ rx_err_t rx_iwdt_init(const rx_iwdt_config_t* config)
 }
 
 /**
- * @brief Feed the independent watchdog timer to prevent timeout
+ * @brief Feed the independent watchdog timer to prevent system reset
  *
- * @return k_rx_ok on success, k_rx_err_not_initialized if IWDT not initialized
+ * @details
+ * Writes the two-byte refresh sequence (0x00 then 0xFF) to the IWDT Refresh
+ * Register (IWDTRR) to reset the hardware watchdog counter. This must be
+ * called periodically within the configured hardware timeout window or the
+ * IWDT will reset the microcontroller.
+ *
+ * Per the RX72N hardware manual the refresh sequence is strictly ordered:
+ * writing 0x00 to IWDTRR starts the window; writing 0xFF completes the
+ * refresh. The entire sequence must occur within the permitted refresh window.
+ *
+ * Also increments the software diagnostic counter s_iwdt_state.status.watchdog_feeds
+ * for telemetry and debugging purposes.
+ *
+ * Algorithm steps:
+ * 1. Check s_iwdt_state.initialized; return k_rx_err_not_initialized if false
+ * 2. Write k_iwdt_refresh_start (0x00) to regs->iwdtrr
+ * 3. Write k_iwdt_refresh_end   (0xFF) to regs->iwdtrr
+ * 4. Increment status.watchdog_feeds counter
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Watchdog counter successfully refreshed
+ * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
+ *
+ * @pre rx_iwdt_init() must have been called successfully
+ * @pre Must be called within the hardware IWDT refresh window (no gap > configured timeout)
+ * @post Hardware IWDT counter is reset; timeout window restarts
+ * @post s_iwdt_state.status.watchdog_feeds is incremented by one
+ *
+ * @note Not thread-safe; concurrent feeds from multiple tasks are benign for
+ *       the hardware but may produce incorrect feed counts
+ * @warning Failing to call within the hardware timeout triggers a system reset
+ *
+ * @par Performance:
+ * Execution time: <1 µs @ 240 MHz; safe to call from any task or ISR context
+ *
+ * @par Example:
+ * @code
+ * // In main watchdog task loop
+ * while (1) {
+ *     rx_err_t err = rx_iwdt_feed();
+ *     if (err != k_rx_ok) {
+ *         rx_log_error("wdt", "IWDT not initialized");
+ *     }
+ *     tx_thread_sleep(k_watchdog_feed_interval_ticks);
+ * }
+ * @endcode
+ *
+ * @see rx_iwdt_init() Initialize IWDT before feeding
+ * @see rx_iwdt_check_tasks() Verify all tasks are alive before feeding
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 1 precondition (initialized check), 2 postconditions (HW reset, counter++)
  */
 rx_err_t rx_iwdt_feed(void)
 {
@@ -568,22 +619,66 @@ rx_err_t rx_iwdt_feed(void)
 }
 
 /**
- * @brief Register a task for watchdog monitoring
+ * @brief Register a ThreadX task for software watchdog monitoring
  *
- * @param[in] task_name Unique task name (must be non-empty, max 31 chars)
- * @param[in] timeout_ms Task-specific timeout in milliseconds (100-60000)
+ * @details
+ * Adds a task entry to the IWDT software monitoring table, associating the
+ * task name with a per-task timeout. Once registered, the task must call
+ * rx_iwdt_task_heartbeat() at least once per timeout_ms milliseconds or
+ * rx_iwdt_check_tasks() will report k_rx_err_timeout.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if task_name is nullptr
- * @return k_rx_err_not_initialized if IWDT not initialized
- * @return k_rx_err_invalid_arg if timeout invalid, name empty/too long, or task already registered
- * @return k_rx_err_no_mem if no free task slots available
+ * The registration also records the current tick count as the initial
+ * last_heartbeat_tick, giving the task a full timeout_ms window before
+ * the first heartbeat is required.
+ *
+ * Algorithm steps:
+ * 1. Validate task_name is non-null
+ * 2. Verify s_iwdt_state.initialized
+ * 3. Validate timeout_ms is in [k_iwdt_min_timeout_ms, k_iwdt_max_timeout_ms]
+ * 4. Check task name length is in (0, k_iwdt_task_name_len)
+ * 5. Check task is not already registered via internal_find_task()
+ * 6. Find a free slot via internal_find_free_slot()
+ * 7. Initialize slot with task name, timeout, current tick, active=true, timed_out=false
+ * 8. Increment status.active_tasks
+ *
+ * @param[in] task_name Unique task identifier string (non-empty, max k_iwdt_task_name_len-1 chars,
+ *            null-terminated); must remain valid for the lifetime of registration
+ * @param[in] timeout_ms Per-task heartbeat timeout in milliseconds;
+ *            valid range [k_iwdt_min_timeout_ms(100), k_iwdt_max_timeout_ms(60000)]
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Task successfully registered
+ * @retval k_rx_err_null_ptr task_name is nullptr
+ * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
+ * @retval k_rx_err_invalid_arg timeout_ms out of range, name empty, name too long,
+ *         or task already registered
+ * @retval k_rx_err_no_mem No free task slots (maximum k_iwdt_max_tasks tasks)
+ *
+ * @pre rx_iwdt_init() must have been called successfully
+ * @pre task_name must be unique among registered tasks
+ * @post Task entry is active in s_iwdt_state.tasks[]
+ * @post status.active_tasks is incremented by one
+ *
+ * @note Not thread-safe; serialize registrations from multiple contexts
+ *
+ * @par Example:
+ * @code
+ * rx_err_t err = rx_iwdt_register_task("motor_ctrl", 500);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("wdt", "Failed to register motor_ctrl task");
+ * }
+ * @endcode
+ *
+ * @see rx_iwdt_task_heartbeat() Update heartbeat for a registered task
+ * @see rx_iwdt_check_tasks() Check all registered tasks for timeout
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 5 preconditions (null, initialized, timeout, name, duplicate), 2 postconditions
  */
 rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 {
-  rx_iwdt_task_info_t* slot;
-  uint32_t             name_len;
-
   /* Validate inputs */
   if (task_name == nullptr) {
     return k_rx_err_null_ptr;
@@ -598,7 +693,7 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   }
 
   /* Check task name length */
-  name_len = (uint32_t)strlen(task_name);
+  const uint32_t name_len = (uint32_t)strlen(task_name);
   if (name_len == 0 || name_len >= k_iwdt_task_name_len) {
     return k_rx_err_invalid_arg;
   }
@@ -609,13 +704,13 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
   }
 
   /* Find free slot */
-  slot = internal_find_free_slot();
+  rx_iwdt_task_info_t* const slot = internal_find_free_slot();
   if (slot == nullptr) {
     return k_rx_err_no_mem;
   }
 
   /* Register task */
-  memset(slot, 0, sizeof(rx_iwdt_task_info_t));
+  *slot = (rx_iwdt_task_info_t){0};
   strncpy(slot->task_name, task_name, k_iwdt_task_name_len - 1);
   slot->task_name[k_iwdt_task_name_len - 1] = '\0';
   slot->timeout_ms                          = timeout_ms;
@@ -629,19 +724,62 @@ rx_err_t rx_iwdt_register_task(const char* task_name, uint32_t timeout_ms)
 }
 
 /**
- * @brief Send heartbeat for a registered task
+ * @brief Send a heartbeat signal for a registered task to reset its timeout
  *
- * @param[in] task_name Name of task sending heartbeat
+ * @details
+ * Updates the last_heartbeat_tick for the named task to the current ThreadX
+ * tick count, resetting the timeout window. Also clears the timed_out flag
+ * if the task had previously been marked as timed out.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if task_name is nullptr
- * @return k_rx_err_not_initialized if IWDT not initialized
- * @return k_rx_err_not_found if task not registered
+ * Tasks must call this function at least once per their registered timeout_ms
+ * window (configured in rx_iwdt_register_task()) to remain in good standing.
+ * If the interval between heartbeats exceeds timeout_ms, the next call to
+ * rx_iwdt_check_tasks() will return k_rx_err_timeout.
+ *
+ * Algorithm steps:
+ * 1. Validate task_name is non-null
+ * 2. Verify s_iwdt_state.initialized
+ * 3. Find the task entry via internal_find_task()
+ * 4. Set task->last_heartbeat_tick = internal_get_tick_count()
+ * 5. Clear task->timed_out
+ *
+ * @param[in] task_name Null-terminated name of the registered task sending heartbeat;
+ *            must exactly match the name used in rx_iwdt_register_task()
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Heartbeat timestamp updated and timed_out flag cleared
+ * @retval k_rx_err_null_ptr task_name is nullptr
+ * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
+ * @retval k_rx_err_not_found No task registered with the given name
+ *
+ * @pre rx_iwdt_init() must have been called successfully
+ * @pre Task must have been registered via rx_iwdt_register_task()
+ * @post task->last_heartbeat_tick is refreshed to the current tick count
+ * @post task->timed_out is false
+ *
+ * @note Not thread-safe; concurrent heartbeats from different tasks are safe
+ *       as they write to distinct slots, but concurrent writes to the same slot are not
+ *
+ * @par Example:
+ * @code
+ * // At top of motor control task loop
+ * while (1) {
+ *     rx_iwdt_task_heartbeat("motor_ctrl");
+ *     motor_control_update();
+ *     tx_thread_sleep(k_motor_ctrl_period_ticks);
+ * }
+ * @endcode
+ *
+ * @see rx_iwdt_register_task() Register a task before sending heartbeats
+ * @see rx_iwdt_check_tasks() Verify all tasks are within their timeout windows
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 3 preconditions (null, initialized, registered), 2 postconditions
  */
 rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
 {
-  rx_iwdt_task_info_t* task;
-
   /* Validate inputs */
   if (task_name == nullptr) {
     return k_rx_err_null_ptr;
@@ -652,7 +790,7 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
   }
 
   /* Find task */
-  task = internal_find_task(task_name);
+  rx_iwdt_task_info_t* const task = internal_find_task(task_name);
   if (task == nullptr) {
     return k_rx_err_not_found;
   }
@@ -665,14 +803,59 @@ rx_err_t rx_iwdt_task_heartbeat(const char* task_name)
 }
 
 /**
- * @brief Set watchdog timeout for a specific system state
+ * @brief Set the software task monitoring timeout for a specific system state
  *
- * @param[in] state System state to configure
- * @param[in] timeout_ms Timeout in milliseconds (100-60000)
+ * @details
+ * Configures the state-dependent software timeout used by rx_iwdt_check_tasks()
+ * when the system is in the specified state. This allows different task heartbeat
+ * windows depending on the operational mode (e.g. longer timeouts during
+ * initialization, tighter timeouts during normal operation).
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if state invalid or timeout out of range
- * @return k_rx_err_not_initialized if IWDT not initialized
+ * Note: This does NOT change the hardware IWDT timeout. The hardware watchdog
+ * timeout is fixed at compile/flash time via OFS registers and cannot be altered
+ * at runtime. Only software task monitoring timeouts are affected.
+ *
+ * If state matches the currently active state (s_iwdt_state.current_state),
+ * the active timeout (status.current_timeout_ms) is also updated immediately.
+ *
+ * Algorithm steps:
+ * 1. Validate state is less than k_system_state_count
+ * 2. Verify s_iwdt_state.initialized
+ * 3. Validate timeout_ms is in [k_iwdt_min_timeout_ms, k_iwdt_max_timeout_ms]
+ * 4. Set config.state_timeouts_ms[state] = timeout_ms
+ * 5. If state == current_state, update status.current_timeout_ms
+ *
+ * @param[in] state System state identifier to configure (must be < k_system_state_count)
+ * @param[in] timeout_ms Software task monitoring timeout in milliseconds;
+ *            valid range [k_iwdt_min_timeout_ms(100), k_iwdt_max_timeout_ms(60000)]
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Timeout successfully updated
+ * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
+ * @retval k_rx_err_invalid_arg state >= k_system_state_count or timeout_ms out of range
+ *
+ * @pre rx_iwdt_init() must have been called successfully
+ * @pre state must be a valid system_state_t value less than k_system_state_count
+ * @post config.state_timeouts_ms[state] equals timeout_ms
+ * @post If state is current, status.current_timeout_ms is updated immediately
+ *
+ * @note Not thread-safe; serialize state configuration changes
+ * @warning Hardware IWDT timeout is unaffected; only software task monitoring changes
+ *
+ * @par Example:
+ * @code
+ * // Allow longer task timeouts during initialization phase
+ * rx_iwdt_set_timeout_for_state(k_system_state_initializing, 5000);
+ * rx_iwdt_set_timeout_for_state(k_system_state_running, 500);
+ * @endcode
+ *
+ * @see rx_iwdt_set_state() Change the active system state
+ * @see rx_iwdt_check_tasks() Uses current state timeout to evaluate task heartbeats
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 3 preconditions (initialized, valid state, valid timeout), 2 postconditions
  */
 rx_err_t rx_iwdt_set_timeout_for_state(const system_state_t state, const uint32_t timeout_ms)
 {
@@ -701,13 +884,60 @@ rx_err_t rx_iwdt_set_timeout_for_state(const system_state_t state, const uint32_
 }
 
 /**
- * @brief Set current system state (affects task monitoring timeout)
+ * @brief Set the current system state for software task monitoring
  *
- * @param[in] state New system state
+ * @details
+ * Updates the active system state used by rx_iwdt_check_tasks() to select
+ * per-state task heartbeat timeout windows. Transitions between states
+ * (e.g. initializing -> running) change which timeout threshold is applied
+ * when evaluating task heartbeat intervals.
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if state invalid
- * @return k_rx_err_not_initialized if IWDT not initialized
+ * This function updates three tracking fields atomically:
+ * - s_iwdt_state.current_state
+ * - s_iwdt_state.status.current_state
+ * - s_iwdt_state.status.current_timeout_ms (set from config.state_timeouts_ms[state])
+ *
+ * Important: This does NOT modify the hardware IWDT peripheral. The hardware
+ * watchdog timeout is a fixed constant set in OFS registers at compile time.
+ * Only the software task monitoring timeout threshold changes.
+ *
+ * Algorithm steps:
+ * 1. Validate state is less than k_system_state_count
+ * 2. Verify s_iwdt_state.initialized
+ * 3. Update current_state and status.current_state = state
+ * 4. Update status.current_timeout_ms = config.state_timeouts_ms[state]
+ *
+ * @param[in] state New system state (must be < k_system_state_count)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok State successfully updated
+ * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
+ * @retval k_rx_err_invalid_arg state >= k_system_state_count
+ *
+ * @pre rx_iwdt_init() must have been called successfully
+ * @pre state must be a valid system_state_t value less than k_system_state_count
+ * @post s_iwdt_state.current_state reflects the new state
+ * @post status.current_timeout_ms reflects the configured timeout for the new state
+ *
+ * @note Not thread-safe; serialize state transitions from multiple contexts
+ * @warning Hardware IWDT is unaffected; only software task monitoring changes
+ *
+ * @par Example:
+ * @code
+ * // Transition from initialization to running state
+ * rx_err_t err = rx_iwdt_set_state(k_system_state_running);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("wdt", "Failed to set IWDT system state");
+ * }
+ * @endcode
+ *
+ * @see rx_iwdt_set_timeout_for_state() Configure per-state timeouts
+ * @see rx_iwdt_get_status() Query current state and timeout
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (initialized, valid state), 2 postconditions
  */
 rx_err_t rx_iwdt_set_state(const system_state_t state)
 {
@@ -733,13 +963,57 @@ rx_err_t rx_iwdt_set_state(const system_state_t state)
 }
 
 /**
- * @brief Get current IWDT status
+ * @brief Get a snapshot of the current IWDT module status
  *
- * @param[out] status Pointer to status structure to populate
+ * @details
+ * Copies the internal s_iwdt_state.status structure into the caller-provided
+ * buffer via memcpy. The status snapshot includes: active task count, total
+ * feed count, current system state, current timeout threshold, and the name
+ * of the last task that timed out (if any).
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if status is nullptr
- * @return k_rx_err_not_initialized if IWDT not initialized
+ * This is a diagnostic/telemetry function intended for logging and health
+ * monitoring. The returned data is a point-in-time snapshot and may become
+ * stale if the detection task or other threads update IWDT state concurrently.
+ *
+ * Algorithm steps:
+ * 1. Validate status pointer is non-null
+ * 2. Verify s_iwdt_state.initialized
+ * 3. memcpy(&s_iwdt_state.status, status, sizeof(rx_iwdt_status_t))
+ *
+ * @param[out] status Pointer to caller-allocated rx_iwdt_status_t structure
+ *             to receive the status snapshot; must be non-null; undefined on error
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Status snapshot successfully copied
+ * @retval k_rx_err_null_ptr status is nullptr
+ * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
+ *
+ * @pre rx_iwdt_init() must have been called successfully
+ * @pre status must be a valid non-null pointer to an rx_iwdt_status_t
+ * @post *status contains a copy of s_iwdt_state.status at the time of the call
+ * @post Internal IWDT state is unchanged
+ *
+ * @note Not thread-safe; status fields may be updated concurrently by the task monitor
+ * @note Snapshot accuracy depends on timing; use as diagnostic data, not safety-critical logic
+ *
+ * @par Example:
+ * @code
+ * rx_iwdt_status_t status;
+ * rx_err_t err = rx_iwdt_get_status(&status);
+ * if (err == k_rx_ok) {
+ *     rx_log_info("wdt", "Active tasks: %u, Feeds: %u",
+ *                 (unsigned)status.active_tasks,
+ *                 (unsigned)status.watchdog_feeds);
+ * }
+ * @endcode
+ *
+ * @see rx_iwdt_was_reset() Check if last reset was hardware IWDT timeout
+ * @see rx_iwdt_check_tasks() Check all tasks for software timeout
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (null check, initialized check), 2 postconditions
  */
 rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
 {
@@ -759,38 +1033,134 @@ rx_err_t rx_iwdt_get_status(rx_iwdt_status_t* status)
 }
 
 /**
- * @brief Check if last reset was caused by IWDT timeout
+ * @brief Check whether the last microcontroller reset was caused by an IWDT timeout
  *
- * @return true if last reset was IWDT timeout, false otherwise
+ * @details
+ * Reads the IWDT Reset Flag (IWDTRF) from the Reset Status Register 2 (RSTSR2)
+ * of the RX72N. This register is located at a separate address from RSTSR0/1
+ * and retains the reset cause flags across a reset event (values are cleared
+ * on power-on reset only).
+ *
+ * The IWDTRF bit (bit position k_rstsr2_iwdtrf) is set by hardware when the IWDT
+ * counter underflows (i.e., the watchdog was not refreshed in time). It remains
+ * set until explicitly cleared or a power-on reset occurs.
+ *
+ * This function is used during startup to detect and log prior watchdog resets,
+ * which may indicate a firmware hang or task scheduling failure.
+ *
+ * Algorithm steps:
+ * 1. Read the RSTSR2 register byte via rstsr2() inline accessor
+ * 2. Mask with k_rstsr2_iwdtrf to extract the IWDT reset flag bit
+ * 3. Return true if the bit is set, false otherwise
+ *
+ * @return bool IWDT reset detection result
+ * @retval true  RSTSR2.IWDTRF is set; last reset was caused by IWDT timeout
+ * @retval false RSTSR2.IWDTRF is clear; last reset was not caused by IWDT
+ *
+ * @pre None — safe to call before rx_iwdt_init() (reads hardware register directly)
+ * @pre Must be called before the application clears the reset status register
+ * @post Hardware RSTSR2 register is read-only; this function does not modify it
+ * @post Return value reflects hardware register state at the instant of the call
+ *
+ * @note Thread-safe — reads a single hardware register without shared state
+ * @note Typically called once at startup to log the reset cause
+ * @warning RSTSR2.IWDTRF remains set across warm resets; clear it in startup if needed
+ *
+ * @par Example:
+ * @code
+ * if (rx_iwdt_was_reset()) {
+ *     rx_log_error("boot", "Prior reset caused by IWDT timeout - check task health");
+ * }
+ * rx_iwdt_init(&iwdt_config);
+ * @endcode
+ *
+ * @see rx_iwdt_feed() Feed the hardware watchdog to prevent reset
+ * @see rx_iwdt_check_tasks() Monitor software task heartbeats
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (safe before init, called before register clear), 2 postconditions
  */
 bool rx_iwdt_was_reset(void)
 {
-  volatile uint8_t* rstsr2_reg;
-  uint8_t           status;
-
   /* Read reset status register 2 for IWDT reset flag
    * Note: RSTSR2 is at a separate address from RSTSR0/1 */
-  rstsr2_reg = rstsr2();
-  status     = *rstsr2_reg;
+  volatile uint8_t* const rstsr2_reg = rstsr2();
+  const uint8_t           status     = *rstsr2_reg;
 
   /* Check IWDT reset flag in RSTSR2 */
   return ((status & k_rstsr2_iwdtrf) != 0);
 }
 
 /**
- * @brief Check all registered tasks for timeout
+ * @brief Check all registered tasks for software heartbeat timeout
  *
- * @return k_rx_ok if all tasks are within timeout
- * @return k_rx_err_timeout if any task has timed out
- * @return k_rx_err_not_initialized if IWDT not initialized
+ * @details
+ * Iterates over all active task slots and compares the elapsed tick count
+ * since each task's last heartbeat against that task's configured timeout
+ * (converted from milliseconds to ThreadX ticks). If any task has exceeded
+ * its timeout, the task's timed_out flag is set, the task name is recorded
+ * in status.last_failed_task, and the function returns k_rx_err_timeout.
+ *
+ * If task monitoring is disabled (config.enable_task_monitoring == false),
+ * returns k_rx_ok immediately without checking any tasks.
+ *
+ * The caller (typically the watchdog task) should conditionally feed the
+ * hardware IWDT only if this function returns k_rx_ok — i.e., only refresh
+ * the hardware watchdog when all software tasks are alive.
+ *
+ * Algorithm steps:
+ * 1. Verify s_iwdt_state.initialized
+ * 2. If !config.enable_task_monitoring, return k_rx_ok early
+ * 3. Capture current_tick = internal_get_tick_count()
+ * 4. For each active task slot (i < k_iwdt_max_tasks):
+ *    a. Skip inactive slots
+ *    b. Compute elapsed_ticks = current_tick - task->last_heartbeat_tick
+ *    c. Compute timeout_in_ticks from task->timeout_ms and TX_TIMER_TICKS_PER_SECOND
+ *    d. If elapsed_ticks > timeout_in_ticks: set timed_out=true, record task name, set any_timeout=true
+ * 5. Return k_rx_err_timeout if any_timeout, else k_rx_ok
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All active tasks are within their heartbeat timeout windows
+ * @retval k_rx_err_timeout One or more registered tasks have exceeded their timeout;
+ *         name of first failing task is recorded in status.last_failed_task
+ * @retval k_rx_err_not_initialized rx_iwdt_init() has not been called
+ *
+ * @pre rx_iwdt_init() must have been called successfully
+ * @pre Registered tasks must be calling rx_iwdt_task_heartbeat() on schedule
+ * @post Timed-out tasks have their timed_out flag set
+ * @post status.last_failed_task contains the name of the most recently detected failure
+ *
+ * @note Not thread-safe; task heartbeat fields may be updated concurrently
+ * @warning Do NOT feed the hardware IWDT (rx_iwdt_feed()) if this returns k_rx_err_timeout;
+ *          allow the hardware watchdog to fire and reset the system
+ *
+ * @par Example:
+ * @code
+ * // Watchdog task main loop
+ * while (1) {
+ *     if (rx_iwdt_check_tasks() == k_rx_ok) {
+ *         rx_iwdt_feed();  // Only feed if all tasks are alive
+ *     } else {
+ *         rx_log_error("wdt", "Task timeout detected — allowing IWDT reset");
+ *         // Do NOT feed the watchdog — let hardware reset occur
+ *     }
+ *     tx_thread_sleep(k_watchdog_check_interval_ticks);
+ * }
+ * @endcode
+ *
+ * @see rx_iwdt_feed() Feed hardware watchdog (call only when this returns k_rx_ok)
+ * @see rx_iwdt_task_heartbeat() Update per-task heartbeat from each monitored task
+ * @see rx_iwdt_register_task() Register a task for monitoring
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: 2 preconditions (initialized, tasks registered), 2 postconditions
  */
 rx_err_t rx_iwdt_check_tasks(void)
 {
-  uint32_t current_tick;
-  uint32_t elapsed_ticks;
-  uint32_t timeout_in_ticks;
-  bool     any_timeout = false;
-
   if (!s_iwdt_state.initialized) {
     return k_rx_err_not_initialized;
   }
@@ -799,7 +1169,8 @@ rx_err_t rx_iwdt_check_tasks(void)
     return k_rx_ok;
   }
 
-  current_tick = internal_get_tick_count();
+  const uint32_t current_tick  = internal_get_tick_count();
+  bool     any_timeout   = false;
 
   /* Check each registered task */
   for (uint32_t i = 0; i < k_iwdt_max_tasks; i++) {
@@ -808,8 +1179,8 @@ rx_err_t rx_iwdt_check_tasks(void)
     }
 
     /* Calculate elapsed time */
-    elapsed_ticks = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
-    timeout_in_ticks =
+    const uint32_t elapsed_ticks   = current_tick - s_iwdt_state.tasks[i].last_heartbeat_tick;
+    const uint32_t timeout_in_ticks =
       (s_iwdt_state.tasks[i].timeout_ms * TX_TIMER_TICKS_PER_SECOND) / k_ms_per_second;
 
     /* Check for timeout */
