@@ -25,11 +25,16 @@ option java_package = "com.star.proto.v1";
 
 // Alert severity level.
 enum AlertLevel {
-  ALERT_LEVEL_UNKNOWN = 0; // Unknown or unset alert level.
-  ALERT_LEVEL_INFO = 1; // Informational alert.
-  ALERT_LEVEL_WARN = 2; // Warning alert requiring attention.
-  ALERT_LEVEL_ERROR = 3; // Error alert indicating degraded operation.
-  ALERT_LEVEL_CRITICAL = 4; // Critical alert requiring immediate action.
+  // Unknown or unset alert level.
+  ALERT_LEVEL_UNKNOWN = 0;
+  // Informational alert.
+  ALERT_LEVEL_INFO = 1;
+  // Warning alert requiring attention.
+  ALERT_LEVEL_WARN = 2;
+  // Error alert indicating degraded operation.
+  ALERT_LEVEL_ERROR = 3;
+  // Critical alert requiring immediate action.
+  ALERT_LEVEL_CRITICAL = 4;
 }
 
 // STAREnvelope is a single multiplexed message type for the /ws WebSocket.
@@ -44,14 +49,23 @@ message STAREnvelope {
 
   // Exactly one payload field should be set.
   oneof payload {
+    // Robot telemetry sensor readings.
     TelemetryData telemetry = 1;
+    // Motor status list for all drive motors.
     MotorStatusList motors = 2;
+    // Battery state and charge information.
     BatteryState battery = 3;
+    // Wheel odometry pose and velocity estimate.
     OdometryData odometry = 4;
+    // Single 360-degree lidar scan.
     LidarScan lidar = 5;
+    // Diagnostic alert from a subsystem.
     Alert alert = 6;
+    // System health and resource status.
     SystemStatus system = 7;
+    // Gamepad or joystick controller state.
     ControllerState controller = 8;
+    // Emergency stop command or status.
     EStopCommand estop = 9;
   }
 }
@@ -65,12 +79,18 @@ message MotorStatusList {
 
 // OdometryData reports the robot's estimated pose and velocity from wheel odometry.
 message OdometryData {
-  double x_m = 1; // X position in metres, world frame.
-  double y_m = 2; // Y position in metres, world frame.
-  double theta_rad = 3; // Heading angle in radians [-pi, pi].
-  double linear_velocity_mps = 4; // Forward linear velocity in m/s.
-  double angular_velocity_radps = 5; // Angular velocity in rad/s.
-  int64 timestamp_us = 6; // Source timestamp in microseconds (CLOCK_MONOTONIC).
+  // X position in metres, world frame.
+  double x_m = 1;
+  // Y position in metres, world frame.
+  double y_m = 2;
+  // Heading angle in radians [-pi, pi].
+  double theta_rad = 3;
+  // Forward linear velocity in m/s.
+  double linear_velocity_mps = 4;
+  // Angular velocity in rad/s.
+  double angular_velocity_radps = 5;
+  // Source timestamp in microseconds (CLOCK_MONOTONIC).
+  int64 timestamp_us = 6;
 }
 
 // LidarScan is a single 360deg scan from the RPLiDAR C1.
@@ -93,16 +113,24 @@ message LidarScan {
 
 // Alert is a structured diagnostic notification from any subsystem.
 message Alert {
-  AlertLevel level = 1; // Severity of the alert.
-  string code = 2; // Short machine-readable alert code (max 16 chars).
-  string message = 3; // Human-readable description (max 128 chars).
-  string source = 4; // Subsystem that raised the alert (max 32 chars).
-  int64 timestamp_us = 5; // Alert creation timestamp in microseconds (CLOCK_MONOTONIC).
+  // Severity of the alert.
+  AlertLevel level = 1;
+  // Short machine-readable alert code (max 16 chars).
+  string code = 2;
+  // Human-readable description (max 128 chars).
+  string message = 3;
+  // Subsystem that raised the alert (max 32 chars).
+  string source = 4;
+  // Alert creation timestamp in microseconds (CLOCK_MONOTONIC).
+  int64 timestamp_us = 5;
 }
 
 // EStopCommand activates or clears the robot emergency stop.
 message EStopCommand {
-  bool active = 1; // true = stop active, false = stop cleared.
-  string reason = 2; // Reason for the stop (max 64 chars).
-  int64 timestamp_us = 3; // Command timestamp in microseconds (CLOCK_MONOTONIC).
+  // true = stop active, false = stop cleared.
+  bool active = 1;
+  // Reason for the stop (max 64 chars).
+  string reason = 2;
+  // Command timestamp in microseconds (CLOCK_MONOTONIC).
+  int64 timestamp_us = 3;
 }
