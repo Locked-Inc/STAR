@@ -132,4 +132,5 @@
   (lib (name "ECS_240_20_4X")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ECS_240_20_4X")(options "")(descr ""))
   (lib (name "customLibrary")(type "KiCad")(uri "${KIPRJMOD}/customLibrary.pretty")(options "")(descr ""))
   (lib (name "Library")(type "KiCad")(uri "${KIPRJMOD}/customLibrary.pretty/Library.pretty")(options "")(descr ""))
+  (lib (name "54_00130")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/54_00130")(options "")(descr ""))
 )

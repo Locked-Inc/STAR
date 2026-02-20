@@ -122,4 +122,5 @@
   (lib (name "R5F572NNHDFB#30")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/R5F572NNHDFB-30/R5F572NNHDFB#30.kicad_sym")(options "")(descr ""))
   (lib (name "282837-2")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/282837_2/282837-2.kicad_sym")(options "")(descr ""))
   (lib (name "282837-4")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/282837_4/282837-4.kicad_sym")(options "")(descr ""))
+  (lib (name "54-00130")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/54_00130/54-00130.kicad_sym")(options "")(descr ""))
 )
