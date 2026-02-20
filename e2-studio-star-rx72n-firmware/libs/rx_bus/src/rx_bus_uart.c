@@ -482,7 +482,7 @@ typedef struct {
  * @post TX/RX GPIO pins configured for alternate function
  *
  * @note Called with bus manager mutex held (thread-safe context)
- * @note Execution time: ~50 µs (SCI register configuration + GPIO setup)
+ * @note Execution time: ~50 us (SCI register configuration + GPIO setup)
  *
  * @warning Do NOT call directly - use rx_bus_uart_init() instead
  * @warning SCI channel must not be in use by another bus instance
@@ -928,7 +928,7 @@ static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* u
  *                       - initialized must be true
  *                       - proto.uart.channel: SCI channel number
  * @param[in,out] user_ctx User context pointer (uart_rx_avail_ctx_t*).
- *                         - output: ctx->available true if FIFO has ≥1 byte
+ *                         - output: ctx->available true if FIFO has >=1 byte
  *                         - output: ctx->result contains operation result
  *
  * @return rx_err_t Error code indicating result
@@ -939,12 +939,12 @@ static rx_err_t internal_uart_getc_callback(rx_bus_config_t* bus_config, void* u
  * @pre bus_config->initialized must be true
  * @pre ctx must point to a valid uart_rx_avail_ctx_t
  *
- * @post ctx->available == true if ≥1 byte in RX FIFO, false if empty
+ * @post ctx->available == true if >=1 byte in RX FIFO, false if empty
  * @post RX FIFO data is NOT consumed (non-destructive check)
  * @post ctx->result contains the operation result
  *
  * @note Called with bus manager mutex held (thread-safe context)
- * @note Fastest UART query: reads only a status register (~1 µs)
+ * @note Fastest UART query: reads only a status register (~1 us)
  *
  * @warning ctx->available == false is not an error; it means FIFO is empty
  *

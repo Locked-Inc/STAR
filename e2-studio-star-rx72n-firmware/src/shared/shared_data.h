@@ -210,7 +210,7 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_shared_low_battery_soc_pct = 15, /**< Low battery SoC threshold in percent (0–100) */
+  k_shared_low_battery_soc_pct = 15, /**< Low battery SoC threshold in percent (0-100) */
 } shared_data_soc_constants_t;
 
 /**

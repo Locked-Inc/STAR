@@ -114,19 +114,19 @@ typedef enum : uint16_t {
 
 /**
  * @enum harq_cfg_sentinel_t
- * @brief HARQ config validation sentinels — zero values for "not configured, use default"
+ * @brief HARQ config validation sentinels -- zero values for "not configured, use default"
  * @details
  * Used to detect unconfigured (zero) values for max_combines and max_retries
  * fields in HARQ configuration, to fall back to project defaults.
  *
  * @invariant k_harq_zero_combines and k_harq_zero_retries equal zero, signifying
- * "use default config" — these sentinels must never be changed to non-zero values.
+ * "use default config" -- these sentinels must never be changed to non-zero values.
  *
  * @code
  * // Checking sentinels when validating config fields:
  * const rx_harq_config_t config = { .max_combines = 0, .max_retries = 0 };
- * // max_combines == k_harq_zero_combines → use k_harq_default_combines
- * // max_retries  == k_harq_zero_retries  → use k_harq_default_retries
+ * // max_combines == k_harq_zero_combines -> use k_harq_default_combines
+ * // max_retries  == k_harq_zero_retries  -> use k_harq_default_retries
  * uint8_t combines = (config.max_combines > k_harq_zero_combines)
  *                        ? config.max_combines : k_harq_default_combines;
  * uint8_t retries  = (config.max_retries  > k_harq_zero_retries)
@@ -139,8 +139,8 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_harq_zero_combines = 0, /**< Sentinel: no max_combines configured → fall back to default */
-  k_harq_zero_retries  = 0, /**< Sentinel: no max_retries configured → fall back to default */
+  k_harq_zero_combines = 0, /**< Sentinel: no max_combines configured -> fall back to default */
+  k_harq_zero_retries  = 0, /**< Sentinel: no max_retries configured -> fall back to default */
 } harq_cfg_sentinel_t;
 
 typedef enum : uint8_t {

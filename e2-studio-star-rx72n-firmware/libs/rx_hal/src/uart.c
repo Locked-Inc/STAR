@@ -435,7 +435,7 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  * **Baud rate error:**
  * Integer truncation introduces a small positive frequency error.  At PCLKB =
  * 60 MHz the worst-case error is +1.73 % (at 115 200 bps, BRR = 15), which is
- * within the ±2 % tolerance of the RS-232/UART standard.
+ * within the +/-2 % tolerance of the RS-232/UART standard.
  *
  * @param[in] baudrate Target baud rate in bps
  *   - **Valid range**: 1 to k_uart_baudrate_max (k_pclkb_hz / k_brr_divisor_n0)
@@ -584,7 +584,7 @@ static void internal_clear_errors(volatile rx_sci_regs_t* sci)
  *
  * @details
  * The RX72N Module Stop Control Register B (MSTPCRB) contains one bit per SCI
- * channel (SCI0–SCI11).  Clearing a bit removes the module from the stopped
+ * channel (SCI0-SCI11).  Clearing a bit removes the module from the stopped
  * state, allowing its clock to run.  The bit layout is contiguous and
  * descending: SCI0 occupies bit 31, SCI1 occupies bit 30, and so on down to
  * SCI11 at bit 20.
@@ -696,15 +696,15 @@ static int8_t internal_get_mstpb_bit(const uint8_t channel)
  *
  * @param[in] channel SCI channel index to enable
  *   - **Valid range**: 0 to k_uart_max_mstpb_channel (11)
- *   - **Invalid**: 12 or above — SCI12 uses MSTPCRC (not supported here)
+ *   - **Invalid**: 12 or above -- SCI12 uses MSTPCRC (not supported here)
  *   - **Units**: dimensionless channel index
  *
  * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success — MSTPCRB bit cleared, SCI clock enabled
+ * @retval k_rx_ok Success -- MSTPCRB bit cleared, SCI clock enabled
  * @retval k_rx_err_invalid_arg channel >= 12 (not in MSTPCRB); MSTPCRB
  *         is not modified and the channel clock remains gated
  *
- * @pre channel must be in range [0, k_uart_max_mstpb_channel] (i.e., 0–11)
+ * @pre channel must be in range [0, k_uart_max_mstpb_channel] (i.e., 0-11)
  * @pre PRCR register must be accessible; this function does not check for
  *      nested unlock attempts
  *
@@ -719,7 +719,7 @@ static int8_t internal_get_mstpb_bit(const uint8_t channel)
  *          atomic
  *
  * @par Thread Safety:
- * Not thread-safe. The PRCR unlock–MSTPCRB write–PRCR lock sequence must
+ * Not thread-safe. The PRCR unlock-MSTPCRB write-PRCR lock sequence must
  * execute atomically.  Call only during single-threaded initialization before
  * ThreadX starts.
  *
@@ -731,7 +731,7 @@ static int8_t internal_get_mstpb_bit(const uint8_t channel)
  * @code{.c}
  * rx_err_t err = internal_enable_sci_clock(9U);  // Enable SCI9 clock
  * if (err != k_rx_ok) {
- *   return err;  // Channel 12 or invalid — caller must handle
+ *   return err;  // Channel 12 or invalid -- caller must handle
  * }
  * // SCI9 registers are now accessible
  * @endcode
@@ -814,7 +814,7 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
  *   - **Typical value**: k_uart_debug_rx_gpio (k_rx_pb_6) for SCI9
  *
  * @return rx_err_t Error code indicating success or failure
- * @retval k_rx_ok Success — both pins configured for SCI UART operation
+ * @retval k_rx_ok Success -- both pins configured for SCI UART operation
  * @retval k_rx_err_invalid_arg tx_pin > k_rx_pin_max, rx_pin > k_rx_pin_max,
  *         or rx_port_get_base() returned nullptr for either port number
  * @retval k_rx_err_invalid_arg Propagated from rx_mpc_set_sci() if the MPC
@@ -839,7 +839,7 @@ static rx_err_t internal_enable_sci_clock(const uint8_t channel)
  * operations on the same port.  Call only during single-threaded initialization.
  *
  * @par Performance:
- * - Execution time: ~10 µs (dominated by two rx_mpc_set_sci() calls)
+ * - Execution time: ~10 us (dominated by two rx_mpc_set_sci() calls)
  * - Stack usage: 32 bytes (four uint8_t locals + two pointer locals)
  *
  * @par Example:
@@ -1125,7 +1125,7 @@ rx_err_t uart_init_channel(const uart_channel_config_t* config)
  * Not thread-safe. Do not call while another thread is using the channel.
  *
  * @par Performance:
- * - Execution time: ~1 µs
+ * - Execution time: ~1 us
  * - Stack usage: 16 bytes
  *
  * @par Example:
@@ -1435,7 +1435,7 @@ rx_err_t uart_puts_channel(const uart_channel_t channel, const char* str)
  * Thread-safe for different channels. Not safe for same channel without mutex.
  *
  * @par Performance:
- * - Execution time: ~90 µs per byte @ 115200 baud
+ * - Execution time: ~90 us per byte @ 115200 baud
  * - Stack usage: 24 bytes
  *
  * @par Example:
@@ -1668,7 +1668,7 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
  * Thread-safe for different channels. Not safe for same channel without mutex.
  *
  * @par Performance:
- * - Execution time: ~5 µs per byte received + ~5 µs when no data
+ * - Execution time: ~5 us per byte received + ~5 us when no data
  * - Stack usage: 24 bytes
  *
  * @par Example:
@@ -1765,7 +1765,7 @@ rx_err_t uart_read_channel(const uart_channel_t channel,
  * Thread-safe for different channels. Not safe for same channel without mutex.
  *
  * @par Performance:
- * - Execution time: ~2 µs
+ * - Execution time: ~2 us
  * - Stack usage: 16 bytes
  *
  * @par Example:
@@ -1930,7 +1930,7 @@ rx_err_t uart_debug_init(void)
  * Not safe for concurrent access on SCI9 without external mutex.
  *
  * @par Performance:
- * - Execution time: ~90 µs @ 115200 baud
+ * - Execution time: ~90 us @ 115200 baud
  * - Stack usage: 16 bytes
  *
  * @par Example:
@@ -1986,7 +1986,7 @@ void uart_debug_putc(const char data)
  * Not safe for concurrent access on SCI9 without external mutex.
  *
  * @par Performance:
- * - Execution time: ~90 µs per character @ 115200 baud
+ * - Execution time: ~90 us per character @ 115200 baud
  * - Stack usage: 24 bytes
  *
  * @par Example:
@@ -2051,7 +2051,7 @@ void uart_debug_puts(const char* str)
  * Not safe for concurrent access on SCI9 without external mutex.
  *
  * @par Performance:
- * - Execution time: ~90 µs per digit @ 115200 baud + digit-loop overhead
+ * - Execution time: ~90 us per digit @ 115200 baud + digit-loop overhead
  * - Stack usage: 32 bytes (buffer + locals)
  *
  * @par Example:
@@ -2136,7 +2136,7 @@ void uart_debug_putint(const int32_t value)
  * Not safe for concurrent access on SCI9 without external mutex.
  *
  * @par Performance:
- * - Execution time: ~90 µs per character @ 115200 baud
+ * - Execution time: ~90 us per character @ 115200 baud
  * - Stack usage: 24 bytes
  *
  * @par Example:

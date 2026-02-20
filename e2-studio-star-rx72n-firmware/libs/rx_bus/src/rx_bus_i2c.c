@@ -349,7 +349,7 @@ typedef struct {
  * Allocated on the stack by rx_bus_i2c_write_read() (no dynamic allocation).
  *
  * This is the standard context for the I2C register-read pattern:
- * START → ADDR+W → reg_addr_bytes → repeated START → ADDR+R → data_bytes → STOP
+ * START -> ADDR+W -> reg_addr_bytes -> repeated START -> ADDR+R -> data_bytes -> STOP
  *
  * @par Memory Layout (64-bit platform):
  * | Offset | Size | Field        | Type           | Alignment |
@@ -449,7 +449,7 @@ typedef struct {
  *            may cause glitches on the I2C bus
  *
  * @par Performance:
- * Execution time: ~50 µs @ 240 MHz (includes RIIC peripheral setup)
+ * Execution time: ~50 us @ 240 MHz (includes RIIC peripheral setup)
  *
  * @par Example:
  * @code
@@ -552,7 +552,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
  *            that the device address in bus_config matches the physical device
  *
  * @par Performance:
- * Execution time: ~2 µs overhead + ~22.5 µs per byte @ 400 kHz Fast mode
+ * Execution time: ~2 us overhead + ~22.5 us per byte @ 400 kHz Fast mode
  *
  * @par Example:
  * @code
@@ -661,7 +661,7 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
  *            always check the return code before reading the buffer
  *
  * @par Performance:
- * Execution time: ~2 µs overhead + ~22.5 µs per byte @ 400 kHz Fast mode
+ * Execution time: ~2 us overhead + ~22.5 us per byte @ 400 kHz Fast mode
  *
  * @par Example:
  * @code

@@ -1621,11 +1621,11 @@ rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
  *
  * ## Register Reads
  *
- * 1. **FAULT_SUMMARY (0x00)**: Global fault flags — SPI error, power-on reset,
+ * 1. **FAULT_SUMMARY (0x00)**: Global fault flags -- SPI error, power-on reset,
  *    VM overvoltage (VMOV), VM undervoltage (VMUV), overcurrent (OCP),
  *    thermal shutdown (TSD), and open-load alarm (OLA).
  *
- * 2. **STATUS1 (0x01)**: Per-channel fault detail — open-load per channel
+ * 2. **STATUS1 (0x01)**: Per-channel fault detail -- open-load per channel
  *    (OLA1/OLA2), hardware current trip comparator status (ITRIP_CMP),
  *    device active flag, and per-FET overcurrent flags (OCP_H1/L1/H2/L2).
  *
@@ -1646,7 +1646,7 @@ rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
  *   - On failure, contents are indeterminate (partially written)
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Success — fault structure fully populated
+ * @retval k_rx_ok Success -- fault structure fully populated
  * @retval k_rx_err_null_ptr handle or fault pointer is NULL
  * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
  * @retval k_rx_err_comm SPI transfer failed during FAULT_SUMMARY or STATUS1 read
@@ -1659,7 +1659,7 @@ rx_err_t rx_drv8243_spi_clear_fault(rx_drv8243_handle_t* handle)
  *
  * @note Not thread-safe; caller must provide synchronization if called from
  *       multiple threads concurrently with other SPI operations on the same handle
- * @note This function performs two SPI transfers (~50 µs total @ 5 MHz)
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
  * @note Does not clear faults; use rx_drv8243_spi_clear_fault() after handling
  *
  * @code{.c}
@@ -1818,7 +1818,7 @@ rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243
  *   - Longer TOFF reduces current ripple at the cost of slower response
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Success — ITRIP level and TOFF configured
+ * @retval k_rx_ok Success -- ITRIP level and TOFF configured
  * @retval k_rx_err_null_ptr handle pointer is NULL
  * @retval k_rx_err_invalid_state Driver not initialized, not SPI variant, or config locked
  * @retval k_rx_err_invalid_arg level or toff value out of valid range
@@ -1831,10 +1831,10 @@ rx_err_t rx_drv8243_spi_set_slew_rate(rx_drv8243_handle_t* handle, const drv8243
  * @post CONFIG3 register TOFF field updated with new off-time value
  *
  * @note Not thread-safe; caller must provide synchronization
- * @note This function performs three SPI transfers (~75 µs total @ 5 MHz)
+ * @note This function performs three SPI transfers (~75 us total @ 5 MHz)
  *
  * @code{.c}
- * // Set 2A hardware current trip with 25 µs off-time
+ * // Set 2A hardware current trip with 25 us off-time
  * rx_drv8243_spi_unlock_config(&motor);
  * rx_err_t err = rx_drv8243_spi_set_itrip(&motor, k_drv8243_itrip_2v00, k_drv8243_toff_25us);
  * rx_drv8243_spi_lock_config(&motor);
@@ -1990,7 +1990,7 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_cont
  *   - Longer filter times allow brief current spikes through before protection activates
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Success — OCP threshold and filter configured
+ * @retval k_rx_ok Success -- OCP threshold and filter configured
  * @retval k_rx_err_null_ptr handle pointer is NULL
  * @retval k_rx_err_invalid_state Driver not initialized, not SPI variant, or config locked
  * @retval k_rx_err_invalid_arg thresh or filter value out of valid range
@@ -2003,10 +2003,10 @@ rx_err_t rx_drv8243_spi_set_mode(rx_drv8243_handle_t* handle, const drv8243_cont
  * @post CONFIG4 TOCP_SEL field updated with new filter time value
  *
  * @note Not thread-safe; caller must provide synchronization
- * @note This function performs two SPI transfers (~50 µs total @ 5 MHz)
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
  *
  * @code{.c}
- * // Set high OCP threshold with 4 µs deglitch filter
+ * // Set high OCP threshold with 4 us deglitch filter
  * rx_drv8243_spi_unlock_config(&motor);
  * rx_err_t err = rx_drv8243_spi_set_ocp(&motor,
  *                                        k_drv8243_ocp_thresh_high,
@@ -2107,7 +2107,7 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
  *   - false: disable SSC (sets SSC_DIS = 1 in CONFIG1)
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Success — SSC state updated
+ * @retval k_rx_ok Success -- SSC state updated
  * @retval k_rx_err_null_ptr handle pointer is NULL
  * @retval k_rx_err_invalid_state Driver not initialized, not SPI variant, or config locked
  * @retval k_rx_err_comm SPI transfer failed during CONFIG1 read or write
@@ -2119,7 +2119,7 @@ rx_err_t rx_drv8243_spi_set_ocp(rx_drv8243_handle_t*       handle,
  * @post handle->last_spi_status updated with the SPI status byte from last transfer
  *
  * @note Not thread-safe; caller must provide synchronization
- * @note This function performs two SPI transfers (~50 µs total @ 5 MHz)
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
  * @note SSC introduces slight frequency variation (~10%) around the nominal PWM frequency
  *
  * @code{.c}
@@ -2179,7 +2179,7 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
  * @brief Lock SPI configuration registers to prevent accidental modification
  *
  * @details
- * Write-protects the DRV8243 CONFIG registers (addresses 0x01–0x08) by setting
+ * Write-protects the DRV8243 CONFIG registers (addresses 0x01-0x08) by setting
  * the REG_LOCK field in the COMMAND register (address 0x03) to the locked state
  * (REG_LOCK = 01b). After locking, any attempt to write CONFIG registers via SPI
  * is ignored by the device until rx_drv8243_spi_unlock_config() is called.
@@ -2205,7 +2205,7 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
  *   - After success, handle->config_locked is set to true
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Success — CONFIG registers are now locked
+ * @retval k_rx_ok Success -- CONFIG registers are now locked
  * @retval k_rx_err_null_ptr handle pointer is NULL
  * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
  * @retval k_rx_err_comm SPI transfer failed during COMMAND register read or write
@@ -2214,10 +2214,10 @@ rx_err_t rx_drv8243_spi_enable_ssc(rx_drv8243_handle_t* handle, const bool enabl
  * @pre SPI interface must be operational (not in error state)
  *
  * @post handle->config_locked = true on success
- * @post DRV8243 CONFIG registers (0x01–0x08) are write-protected
+ * @post DRV8243 CONFIG registers (0x01-0x08) are write-protected
  *
  * @note Not thread-safe; caller must provide synchronization
- * @note This function performs two SPI transfers (~50 µs total @ 5 MHz)
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
  * @note Calling this function when already locked is safe (idempotent effect on device)
  *
  * @code{.c}
@@ -2272,7 +2272,7 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
  *
  * @details
  * Removes write protection from the DRV8243 CONFIG registers (addresses
- * 0x01–0x08) by setting the REG_LOCK field in the COMMAND register (address
+ * 0x01-0x08) by setting the REG_LOCK field in the COMMAND register (address
  * 0x03) to the unlocked state (REG_LOCK = 10b). Once unlocked, CONFIG register
  * writes via SPI take effect immediately.
  *
@@ -2299,7 +2299,7 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
  *   - After success, handle->config_locked is set to false
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Success — CONFIG registers are now writable
+ * @retval k_rx_ok Success -- CONFIG registers are now writable
  * @retval k_rx_err_null_ptr handle pointer is NULL
  * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
  * @retval k_rx_err_comm SPI transfer failed during COMMAND register read or write
@@ -2308,10 +2308,10 @@ rx_err_t rx_drv8243_spi_lock_config(rx_drv8243_handle_t* handle)
  * @pre SPI interface must be operational (not in error state)
  *
  * @post handle->config_locked = false on success
- * @post DRV8243 CONFIG registers (0x01–0x08) accept write operations
+ * @post DRV8243 CONFIG registers (0x01-0x08) accept write operations
  *
  * @note Not thread-safe; caller must provide synchronization
- * @note This function performs two SPI transfers (~50 µs total @ 5 MHz)
+ * @note This function performs two SPI transfers (~50 us total @ 5 MHz)
  * @note Calling this function when already unlocked is safe (idempotent effect on device)
  *
  * @code{.c}
@@ -2393,7 +2393,7 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
  *   - On error: contents are indeterminate
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Success — device ID written to *device_id
+ * @retval k_rx_ok Success -- device ID written to *device_id
  * @retval k_rx_err_null_ptr handle or device_id pointer is NULL
  * @retval k_rx_err_invalid_state Driver not initialized or not SPI variant
  * @retval k_rx_err_comm SPI transfer failed during DEVICE_ID read
@@ -2406,7 +2406,7 @@ rx_err_t rx_drv8243_spi_unlock_config(rx_drv8243_handle_t* handle)
  *
  * @note Not thread-safe; caller must provide synchronization if called concurrently
  *       with other SPI operations on the same handle
- * @note This function performs one SPI transfer (~25 µs @ 5 MHz)
+ * @note This function performs one SPI transfer (~25 us @ 5 MHz)
  * @note The DEVICE_ID register is read-only and not affected by the config lock state
  * @note CONFIG registers do not need to be unlocked to read DEVICE_ID
  *

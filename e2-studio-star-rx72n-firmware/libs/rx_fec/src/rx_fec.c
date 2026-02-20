@@ -880,7 +880,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t* dec, const rx_fec_decode_soft_para
  * Algorithm steps:
  * 1. Validate all input pointers and size constraints
  * 2. Convert each hard bit to a soft value via rx_fec_hard_to_soft()
- *    (maps 0 → negative confidence, 1 → positive confidence)
+ *    (maps 0 -> negative confidence, 1 -> positive confidence)
  * 3. Build rx_fec_decode_soft_params_t from the converted soft bits
  * 4. Delegate to rx_fec_decode_soft() for full Viterbi decode
  *

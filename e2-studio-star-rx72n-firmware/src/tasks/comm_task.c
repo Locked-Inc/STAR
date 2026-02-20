@@ -2176,7 +2176,7 @@ static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
  * @details
  * Tries to decode the frame payload as a star_v1_SetVelocityRequest protobuf message.
  * If decoding succeeds and the required command sub-message is present, converts the
- * four motor velocities (double → float) into a motor_command_t and writes it to
+ * four motor velocities (double -> float) into a motor_command_t and writes it to
  * shared_data for consumption by the Motor Control Task.
  *
  * Algorithm:
@@ -2200,7 +2200,7 @@ static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
  * @post On true: k_event_new_motor_cmd event set (wakes Motor Control Task)
  *
  * @note Not thread-safe; executes in Communication Task context (Priority 5)
- * @note double → float velocity conversion: ±0.0001 m/s precision loss acceptable
+ * @note double -> float velocity conversion: +/-0.0001 m/s precision loss acceptable
  *
  * @since Version 1.0.0
  * @see rx_nanopb_decode_velocity_request() nanopb decode function
@@ -2310,7 +2310,7 @@ static bool internal_handle_estop_command(const rx_frame_t* frame)
  * @details
  * Tries to decode the frame payload as a star_v1_SetPIDGainsRequest protobuf message.
  * If decoding succeeds and the required pid_config sub-message is present, converts all
- * gain fields (double → float) into a pid_gains_t structure and writes it to shared_data.
+ * gain fields (double -> float) into a pid_gains_t structure and writes it to shared_data.
  * The Motor Control Task applies the gains on the next control cycle.
  *
  * Algorithm:
@@ -2334,7 +2334,7 @@ static bool internal_handle_estop_command(const rx_frame_t* frame)
  * @post On true: k_event_pid_gains_updated event set (Motor Control Task will apply)
  *
  * @note Not thread-safe; executes in Communication Task context (Priority 5)
- * @note double → float gain conversion: precision loss negligible for PID tuning
+ * @note double -> float gain conversion: precision loss negligible for PID tuning
  *
  * @since Version 1.0.0
  * @see rx_nanopb_decode_pid_gains_request() nanopb decode function

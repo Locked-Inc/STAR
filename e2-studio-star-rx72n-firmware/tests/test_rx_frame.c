@@ -2312,7 +2312,7 @@ typedef enum : uint8_t {
  * - bytes_discarded == 1 (the junk byte)
  * - Decoded frame matches the original ACK frame
  *
- * This exercises the k_rx_err_protocol_error → internal_find_sync_offset() →
+ * This exercises the k_rx_err_protocol_error -> internal_find_sync_offset() ->
  * retry decode path.
  *
  * @pre s_encoder must be initialized (via setUp())
@@ -2412,8 +2412,8 @@ void test_resync_aligned_frame_zero_discarded(void)
  *        when no sync word exists anywhere in the buffer
  *
  * @details
- * Fills a buffer with k_resync_junk_byte (0xBB) — a byte that never forms part
- * of the 0x55AA sync word — and calls rx_frame_decode_with_resync(). Verifies:
+ * Fills a buffer with k_resync_junk_byte (0xBB) -- a byte that never forms part
+ * of the 0x55AA sync word -- and calls rx_frame_decode_with_resync(). Verifies:
  * - Return value is k_rx_err_protocol_error
  * - bytes_discarded is 0 (no partial progress)
  *

@@ -138,7 +138,7 @@
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_rx_zero = 0u, /**< Zero sentinel — used in overflow-safe ceiling division */
+  k_rx_zero = 0u, /**< Zero sentinel -- used in overflow-safe ceiling division */
 } rx_time_threadx_zero_t;
 
 /**

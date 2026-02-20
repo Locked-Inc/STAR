@@ -461,13 +461,13 @@ typedef enum : uint16_t {
  * tick rate to ensure the PID dt parameter is accurate.
  *
  * The encoder count of 1364 is derived from the Hall encoder specification:
- * 341 pulses per revolution (PPR) × 4 (quadrature decoding edges) = 1364
- * counts per revolution. This provides ~0.26° angular resolution.
+ * 341 pulses per revolution (PPR) x 4 (quadrature decoding edges) = 1364
+ * counts per revolution. This provides ~0.26deg angular resolution.
  *
  * @invariant k_motor_count must match the number of DRV8243S H-bridge channels
  *            physically wired on the PCB (4 channels fixed)
  * @invariant k_control_period_us must match the ThreadX tick period in
- *            microseconds (10 ticks/s × 1000 µs/tick = 10000 µs)
+ *            microseconds (10 ticks/s x 1000 us/tick = 10000 us)
  *
  * @code
  * // Computing velocity from encoder counts:
@@ -483,11 +483,11 @@ typedef enum : uint16_t {
  */
 typedef enum : uint16_t {
   k_motor_count            = 4,     /**< Number of motors: 4 wheels (front-left, front-right, back-left, back-right) */
-  k_control_period_us      = 10000, /**< Control period: 10000 µs = 10ms = 100 Hz control loop rate */
+  k_control_period_us      = 10000, /**< Control period: 10000 us = 10ms = 100 Hz control loop rate */
   k_active_brake_ms        = 50,    /**< Active brake duration: 50ms short-circuit braking before coast */
   k_active_brake_duty      = 30,    /**< Active brake PWM duty: 30% duty cycle during braking phase */
   k_pwm_frequency_hz       = 20000, /**< PWM frequency: 20 kHz (above human hearing, reduces audible noise) */
-  k_encoder_counts_per_rev = 1364,  /**< Encoder resolution: 341 PPR × 4 (quadrature) = 1364 counts/rev */
+  k_encoder_counts_per_rev = 1364,  /**< Encoder resolution: 341 PPR x 4 (quadrature) = 1364 counts/rev */
 } motor_control_constants_t;
 
 /**
@@ -581,15 +581,15 @@ typedef enum : uint8_t {
  *
  * - **PWM frequency**: 20 kHz chosen to be inaudible to humans while keeping
  *   switching losses acceptable for the 6V brushed DC motors
- * - **Dead-time**: 1 µs prevents shoot-through in the H-bridge during
+ * - **Dead-time**: 1 us prevents shoot-through in the H-bridge during
  *   high/low-side switching transitions
  * - **Current limit**: 2A software limit protects motor windings; set below
  *   the DRV8243S hardware overcurrent threshold (4A typical)
  * - **IPROPI ratio**: 525 A/V is the DRV8243S IPROPI current-sense amplifier
- *   gain (RIPROPI = 1.91 kΩ typical → 525 mA/mV → 525 A/V)
+ *   gain (RIPROPI = 1.91 kOhm typical -> 525 mA/mV -> 525 A/V)
  *
  * @invariant k_motor_pwm_freq_hz must be supported by the RX72N MTU/GPT
- *            at the configured PCLK frequency (120 MHz → minimum 1.8 kHz)
+ *            at the configured PCLK frequency (120 MHz -> minimum 1.8 kHz)
  * @invariant k_motor_dead_time_ns must exceed the DRV8243S propagation
  *            delay (typically 100-500 ns) to prevent shoot-through
  *
@@ -611,9 +611,9 @@ typedef enum : uint8_t {
  */
 typedef enum : uint32_t {
   k_motor_pwm_freq_hz        = 20000, /**< PWM frequency: 20 kHz (inaudible, low switching loss) */
-  k_motor_dead_time_ns       = 1000,  /**< H-bridge dead-time: 1000 ns = 1 µs (prevents shoot-through) */
+  k_motor_dead_time_ns       = 1000,  /**< H-bridge dead-time: 1000 ns = 1 us (prevents shoot-through) */
   k_motor_current_limit_ma   = 2000,  /**< Software current limit: 2000 mA = 2A per motor channel */
-  k_motor_ki_propi           = 525,   /**< IPROPI current-sense ratio: 525 A/V (DRV8243S RIPROPI=1.91kΩ) */
+  k_motor_ki_propi           = 525,   /**< IPROPI current-sense ratio: 525 A/V (DRV8243S RIPROPI=1.91kOhm) */
   k_threadx_tick_interval_ms = 10,    /**< ThreadX tick period: 10 ms at 100 Hz tick rate */
 } motor_hw_constants_t;
 

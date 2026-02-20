@@ -776,7 +776,7 @@ func (tm *TransportManager) sendPong(ctx context.Context, payload []byte) {
 //
 // Called from within the Receive loop; bypasses the operations gate to avoid
 // deadlock (same rationale as sendPong). RESET_ACK carries no payload per
-// TRANSPORT_ARCHITECTURE.md §Frame Types.
+// TRANSPORT_ARCHITECTURE.md Sec.Frame Types.
 func (tm *TransportManager) sendResetAck(ctx context.Context) {
 	tm.mu.RLock()
 	active := tm.activeTransport

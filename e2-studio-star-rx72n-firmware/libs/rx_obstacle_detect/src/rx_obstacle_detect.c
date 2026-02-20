@@ -706,9 +706,9 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
  * no bus or sensor transactions are issued.
  *
  * Possible states:
- * - k_obstacle_detect_state_stopped  — task suspended, not polling
- * - k_obstacle_detect_state_running  — actively polling, no obstacle
- * - k_obstacle_detect_state_obstacle — obstacle confirmed by debounce
+ * - k_obstacle_detect_state_stopped  -- task suspended, not polling
+ * - k_obstacle_detect_state_running  -- actively polling, no obstacle
+ * - k_obstacle_detect_state_obstacle -- obstacle confirmed by debounce
  *
  * Algorithm steps:
  * 1. Validate handle and out_state pointer are non-null
@@ -730,7 +730,7 @@ rx_err_t rx_obstacle_detect_clear_obstacle(rx_obstacle_detect_t* handle)
  * @post handle state is unchanged
  *
  * @note Not thread-safe; state may change concurrently if detection task is running
- * @note Returns cached state — does not re-evaluate sensor readings
+ * @note Returns cached state -- does not re-evaluate sensor readings
  *
  * @par Example:
  * @code
@@ -782,13 +782,13 @@ rx_err_t rx_obstacle_detect_get_state(const rx_obstacle_detect_t* handle,
  * 1. Guard against null or uninitialized handle (returns false)
  * 2. Return (handle->state == k_obstacle_detect_state_obstacle)
  *
- * @param[in] handle Pointer to obstacle detection handle (may be null — returns false)
+ * @param[in] handle Pointer to obstacle detection handle (may be null -- returns false)
  *
  * @return bool Obstacle detection result
  * @retval true  handle is valid and state is k_obstacle_detect_state_obstacle
  * @retval false handle is null, uninitialized, stopped, or running without obstacle
  *
- * @pre None — safe to call with null handle
+ * @pre None -- safe to call with null handle
  * @pre For meaningful results, handle should be initialized and detection started
  * @post handle state is unchanged
  * @post Return value reflects handle->state at the instant of the call
@@ -827,7 +827,7 @@ bool rx_obstacle_detect_is_obstacle_detected(const rx_obstacle_detect_t* handle)
  * @details
  * Returns the three running counters maintained by the detection task:
  * total sensor poll cycles, confirmed obstacle events, and filtered
- * false positive readings. All output parameters are optional — passing
+ * false positive readings. All output parameters are optional -- passing
  * nullptr for any counter skips that output without error.
  *
  * Counters are incremented by the internal detection task and are NOT
