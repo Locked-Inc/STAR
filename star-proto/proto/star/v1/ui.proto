@@ -88,7 +88,7 @@ message OdometryData {
   // Forward linear velocity in m/s.
   double linear_velocity_mps = 4;
   // Angular velocity in rad/s.
-  double angular_velocity_radps = 5;
+  double angular_velocity_rad_per_s = 5;
   // Source timestamp in microseconds (CLOCK_MONOTONIC).
   int64 timestamp_us = 6;
 }

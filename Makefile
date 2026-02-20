@@ -107,7 +107,9 @@ proto-gen-go:
 proto-gen-ros2:
 	@echo "ROS2 proto generation is handled via buf; no separate step."
 
-# Copy nanopb outputs to firmware include directory (ui.proto excluded — not needed on MCU)
+# Copy nanopb outputs to firmware include directory.
+# ui.pb.* is included because gateway_service.pb.h depends on ui.pb.h for
+# OdometryData and LidarScan types used in ForwardTelemetryRequest.
 proto-gen-firmware: proto-gen-go
 	@echo "Preparing firmware nanopb headers/sources..."
 	@mkdir -p e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1
@@ -117,9 +119,7 @@ proto-gen-firmware: proto-gen-go
 	rm -f "$$dst"/*.pb.h "$$dst"/*.pb.c; \
 	for header in "$$src_gen"/*.pb.h; do \
 		base=$$(basename "$$header" .pb.h); \
-		if [ "$$base" != "ui" ]; then \
-			cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
-		fi \
+		cp -v "$$src_gen/$$base.pb.h" "$$src_gen/$$base.pb.c" "$$dst/"; \
 	done
 	@echo "✓ Firmware protos updated"
 
