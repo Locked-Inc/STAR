@@ -14,7 +14,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/Locked-Inc/STAR/star-gateway/internal/controller"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/dispatcher"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/harq"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/link"
@@ -22,6 +21,7 @@ import (
 	"github.com/Locked-Inc/STAR/star-gateway/internal/server"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/service"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
+	"github.com/Locked-Inc/STAR/star-gateway/internal/ws"
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/grpc"
 )
@@ -572,6 +572,18 @@ func startGRPCServerWithAddr(
 	return nil
 }
 
+// motorControllerAdapter adapts *service.MotorControlService to the ws.MotorController
+// interface. The gRPC EmergencyStop method takes a full request struct, while the WebSocket
+// hub interface only passes the plain reason string, so this thin adapter bridges the gap.
+type motorControllerAdapter struct {
+	svc *service.MotorControlService
+}
+
+func (a *motorControllerAdapter) EmergencyStop(ctx context.Context, reason string) error {
+	_, err := a.svc.EmergencyStop(ctx, &starv1.EmergencyStopRequest{Reason: reason})
+	return err
+}
+
 // startHTTPServer starts the HTTP/WebSocket server on the configured port.
 // The server handles HTTP requests and WebSocket connections for the UI.
 func startHTTPServer(ctx context.Context, servers *Servers, services *serviceSet, logger *slog.Logger) error {
@@ -580,8 +592,9 @@ func startHTTPServer(ctx context.Context, servers *Servers, services *serviceSet
 
 // startHTTPServerWithAddr starts the HTTP server using the provided listen address.
 //
-// The HTTP layer only exposes transport-architecture aligned endpoints:
-//   - /ws/controller for UI teleop command ingestion
+// The HTTP layer exposes the following endpoints:
+//   - /ws for the WebSocket hub (UI telemetry streaming, teleop input, and e-stop)
+//   - /api/estop for a REST emergency stop fallback (POST ?reason=...)
 //   - /healthz for liveness checks
 //
 // UI static files are served by the dedicated UI service, not by the gateway.
@@ -608,10 +621,41 @@ func startHTTPServerWithAddr(
 	// Create HTTP router
 	mux := http.NewServeMux()
 
-	// Wire controller WebSocket handler to shared GatewayService.
-	// This keeps UI -> WebSocket and ROS2 -> gRPC paths synchronized via one command cache.
-	controllerHandler := controller.NewHandlerWithGateway(services.gateway)
-	mux.Handle("/ws/controller", controllerHandler)
+	// Instantiate WebSocket hub and start its event loop. ctx is the application
+	// shutdown context so the hub closes all client connections on graceful exit.
+	adapter := &motorControllerAdapter{svc: services.motorControl}
+	hub := ws.NewHub(adapter, logger)
+	go hub.Run(ctx)
+
+	// Wire hub into GatewayService so ForwardTelemetry broadcasts push to UI clients.
+	services.gateway.SetHub(hub)
+
+	// WebSocket endpoint — upgrades to the hub-based full-duplex transport.
+	mux.Handle("/ws", ws.NewHandler(hub, adapter, logger))
+
+	// REST fallback for emergency stop. The frontend sends the reason as a query
+	// parameter (fetch('/api/estop?reason=...', { method: 'POST' })).
+	// ADR-13: context.Background() is used so a dropped HTTP connection cannot
+	// cancel the safety command before it reaches the motor controller.
+	mux.HandleFunc("/api/estop", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		reason := r.URL.Query().Get("reason")
+		if reason == "" {
+			reason = "user_http_fallback"
+		}
+		estopCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if _, err := services.motorControl.EmergencyStop(estopCtx,
+			&starv1.EmergencyStopRequest{Reason: reason}); err != nil {
+			logger.Error("REST emergency stop failed", slog.Any("err", err))
+			http.Error(w, "emergency stop failed", http.StatusInternalServerError)
+			return
+		}
+		w.WriteHeader(http.StatusNoContent)
+	})
 
 	// Lightweight liveness endpoint for orchestration and local debugging.
 	mux.HandleFunc("/healthz", func(w http.ResponseWriter, _ *http.Request) {
