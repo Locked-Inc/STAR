@@ -14,6 +14,10 @@ from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import FindPackageShare, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 
+# Slamtec RPLiDAR C1 DTOF protocol requires exactly 460800 baud.
+# This is a hardware-fixed parameter, not user-tunable.
+RPLIDAR_C1_BAUDRATE = 460800
+
 
 def generate_launch_description():
     pkg_star_bringup = get_package_share_directory('star_bringup')
@@ -32,7 +36,7 @@ def generate_launch_description():
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
     # rplidar_ros 2.1.0 uses SDK 1.12.0 which returns 0x80008000/0x80008002 for the C1's
     # DTOF scan protocol. sllidar_ros2 uses the updated SDK that supports C1 natively.
-    # Official C1 params: channel_type='serial', baudrate=460800, scan_mode='Standard'.
+    # Official C1 params: serial, RPLIDAR_C1_BAUDRATE baud, scan_mode='Standard'.
     rplidar = Node(
         name='sllidar_node',
         package='sllidar_ros2',
@@ -41,7 +45,7 @@ def generate_launch_description():
         parameters=[{
             'channel_type': 'serial',
             'serial_port': LaunchConfiguration('serial_port'),
-            'serial_baudrate': 460800,
+            'serial_baudrate': RPLIDAR_C1_BAUDRATE,
             'frame_id': 'laser_frame',
             'inverted': False,
             'angle_compensate': True,

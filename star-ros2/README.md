@@ -54,6 +54,7 @@ map  (slam_toolbox -- global, loop-closure corrected)
 ### Setup -- Devcontainer (x86/macOS development)
 
 1. **Open the repository in VS Code**
+
    ```bash
    code /path/to/STAR
    ```

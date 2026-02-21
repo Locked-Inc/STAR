@@ -55,7 +55,8 @@ Successfully implemented complete frame drop diagnostics infrastructure followin
 - [x] Test mocks updated for new interface
 
 **Files Modified:**
-```
+
+```text
 Gateway (10 files):
 - internal/harq/harq.go
 - internal/harq/harq_test.go
@@ -305,7 +306,8 @@ cd star-ros2/scripts
 ### Expected Output
 
 Results saved in timestamped directories:
-```
+
+```text
 star-ros2/baselines/
 +-- idle_20260122_210000/
 |   +-- SUMMARY.txt          <- Performance assessment
@@ -457,13 +459,12 @@ The metrics-first approach provides:
 
 ---
 
-**Implementation Team:** Claude Code (Anthropic)
 **Reviewed By:** [TBD]
 **Next Milestone:** Baseline data collection and analysis
 
 ---
 
-*This implementation follows the STAR project's coding standards: NASA Power of 10 rules, SOLID principles, and inclusive terminology (Controller/Peripheral, not master/slave).*
+*This implementation follows the STAR project's coding standards: NASA Power of 10 rules, SOLID principles, and inclusive terminology (Controller/Peripheral).*
 
 ---
 
