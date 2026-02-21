@@ -64,8 +64,16 @@ Use a scoped deploy key -- one key per Pi, scoped to this repo only.
 ### Generate the Key
 
 ```bash
-ssh-keygen -t ed25519 -C "star-pi5@star-desktop" -f ~/.ssh/id_ed25519_star -N ""
+ssh-keygen -t ed25519 -C "star-pi5@star-desktop" -f ~/.ssh/id_ed25519_star
 cat ~/.ssh/id_ed25519_star.pub   # copy this output
+```
+
+Use a strong passphrase when prompted. On the Pi, use `ssh-agent` so you only unlock once
+per session:
+
+```bash
+eval "$(ssh-agent -s)"
+ssh-add ~/.ssh/id_ed25519_star
 ```
 
 ### Add to GitHub
@@ -73,11 +81,14 @@ cat ~/.ssh/id_ed25519_star.pub   # copy this output
 1. Go to the repo: **Settings -> Deploy Keys -> Add deploy key**
 2. Title: `Star Pi 5 - star-desktop`
 3. Paste the public key
-4. Check **Allow write access** (needed to push branches from the Pi)
+4. **Write access:** only enable if the Pi needs to push commits or branches. If the Pi
+   is used only to pull and build, leave this unchecked (read-only is safer on embedded
+   hardware). This Pi is used for development (creating PRs from the Pi), so write
+   access is enabled here.
 
 ### Configure SSH
 
-```
+```ssh-config
 # ~/.ssh/config
 Host github.com
     HostName github.com
@@ -135,19 +146,19 @@ To get native aarch64 test results from this Pi:
 2. Select: **Linux / ARM64**
 3. On the Pi, follow the commands GitHub shows (they include a one-time token):
 
-```bash
-mkdir ~/actions-runner && cd ~/actions-runner
-curl -o actions-runner-linux-arm64.tar.gz -L <URL-from-GitHub>
-tar xzf ./actions-runner-linux-arm64.tar.gz
-./config.sh --url https://github.com/Locked-Inc/STAR --token <ONE-TIME-TOKEN>
-```
+    ```bash
+    mkdir ~/actions-runner && cd ~/actions-runner
+    curl -o actions-runner-linux-arm64.tar.gz -L <URL-from-GitHub>
+    tar xzf ./actions-runner-linux-arm64.tar.gz
+    ./config.sh --url https://github.com/Locked-Inc/STAR --token <ONE-TIME-TOKEN>
+    ```
 
 4. Install as a systemd service so it survives reboots:
 
-```bash
-sudo ./svc.sh install
-sudo ./svc.sh start
-```
+    ```bash
+    sudo ./svc.sh install
+    sudo ./svc.sh start
+    ```
 
 The runner will appear in **Settings -> Actions -> Runners** as `star-desktop`.
 
@@ -165,9 +176,14 @@ build-and-test-pi:
   steps:
     - uses: actions/checkout@v4
     - name: Build
-      run: ./build-ros2.sh
-    - name: Test
+      shell: bash
       run: |
+        source /opt/ros/jazzy/setup.bash
+        ./build-ros2.sh
+    - name: Test
+      shell: bash
+      run: |
+        source /opt/ros/jazzy/setup.bash
         cd star-ros2
         source install/local_setup.bash
         colcon test
@@ -175,6 +191,8 @@ build-and-test-pi:
 ```
 
 Note: no `container:` directive -- this runs directly on the Pi's native environment.
+The explicit `source /opt/ros/jazzy/setup.bash` is required because GitHub Actions uses
+a non-interactive shell and does not source `.bashrc`.
 
 ---
 

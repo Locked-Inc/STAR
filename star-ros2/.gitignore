@@ -30,4 +30,5 @@ COLCON_IGNORE
 AMENT_IGNORE
 
 # Baseline run results - store as CI artifacts, not source
-baselines/
+baselines/*
+!baselines/.gitkeep

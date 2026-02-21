@@ -80,6 +80,7 @@ cd /workspaces/STAR
 ```
 
 **Required apt package** (for `safety_monitor.launch.py`):
+
 ```bash
 sudo apt install ros-jazzy-nav2-lifecycle-manager
 ```
