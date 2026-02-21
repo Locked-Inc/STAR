@@ -21,3 +21,14 @@ __pycache__/
 # Phase 2 tracker (untracked)
 PHASE2_TRACKER.md
 star-gateway/PHASE2_TRACKER.md
+
+# Generated per-machine during colcon build
+compile_commands.json
+
+# colcon workspace markers
+COLCON_IGNORE
+AMENT_IGNORE
+
+# Baseline run results - store as CI artifacts, not source
+baselines/*
+!baselines/.gitkeep
