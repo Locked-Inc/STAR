@@ -4,34 +4,39 @@ ROS2 Jazzy integration for the STAR (Simultaneous Tracking and Robotics) platfor
 
 ## Overview
 
-This workspace implements a Visual-LiDAR sensor fusion architecture using **RTAB-Map** for SLAM and **robot_localization** for local state estimation. The system bridges ROS2 with the STAR platform's RX72N motor controller, Go gateway service, and user interface.
+This workspace implements a LiDAR-based SLAM and autonomous navigation architecture using **slam_toolbox** for mapping and **robot_localization** for local state estimation. The system bridges ROS2 with the STAR platform's RX72N motor controller, Go gateway service, and user interface.
 
 **Documentation:** For detailed architecture and design decisions, see [`../docs/sections/10_ros2_integration.tex`](../docs/sections/10_ros2_integration.tex)
 
 ### Architecture Highlights
 
 **Sensor Fusion Strategy:**
-- **Local Estimation:** `robot_localization` EKF fuses wheel odometry + IMU
-- **Global SLAM:** `rtabmap_ros` performs Visual-LiDAR fusion with loop closure detection
+- **Local Estimation:** `robot_localization` EKF fuses wheel encoder odometry + IMU (yaw + angular rate)
+- **Global SLAM:** `slam_toolbox` async mapper produces `/map` and corrects `map->odom` drift
+- **Autonomous Navigation:** Nav2 stack (NavFn A* + DWB controller + costmaps) drives to goals
+- **Frontier Exploration:** `explore_lite` (m-explore-ros2) detects frontiers, sends Nav2 goals
 
 **Coordinate Frames (REP-105):**
 ```
-map (RTAB-Map - global, corrected)
-  +- odom (EKF - local, drift-prone)
-      +- base_link (robot center)
-          +- laser_frame (RPLiDAR C1)
-          +- camera_link (OAK-D RGB-D camera)
+map  (slam_toolbox -- global, loop-closure corrected)
+ +- odom  (robot_localization EKF -- local, drift-prone, 50 Hz)
+     +- base_link  (robot body center)
+         +- laser_frame  (RPLiDAR C1, z = +0.05 m)
+         +- imu_link     (RX72N IMU, co-located with base_link)
 ```
 
 **Node Communication Flow:**
 ```
-/cmd_vel -> star_spi_bridge -> /odom/unfiltered
-                           -> /joint_states
-                           -> [SPI @ 10MHz] -> RX72N
+/cmd_vel  --> star_spi_bridge --> /odom/unfiltered  -+
+                              +--> /imu/data          +--> EKF --> /odometry/filtered
+                              +--> /joint_states       |          +--> odom->base_link TF
+                              +--> [SPI @ 10MHz] --> RX72N
 
-/odom/unfiltered + IMU -> robot_localization (EKF) -> /odom/filtered
+/scan (RPLiDAR C1) --> slam_toolbox --> /map + map->odom TF
 
-/odom/filtered + /scan + RGB-D -> rtabmap_ros -> /map
+/map + /odometry/filtered + /scan --> Nav2 --> /cmd_vel (autonomous)
+
+/map + Nav2 costmaps --> explore_lite --> Nav2 goals (frontier exploration)
 ```
 
 ---
@@ -79,10 +84,19 @@ cd /workspaces/STAR
 ./build-ros2.sh
 ```
 
-**Required apt package** (for `safety_monitor.launch.py`):
+**Required apt packages:**
 
 ```bash
+# Safety monitor lifecycle manager
 sudo apt install ros-jazzy-nav2-lifecycle-manager
+
+# SLAM + Nav2 navigation stack
+sudo apt install ros-jazzy-slam-toolbox ros-jazzy-navigation2 ros-jazzy-nav2-bringup
+
+# Frontier exploration (m-explore-ros2 -- build from source)
+cd /workspaces/STAR/star-ros2/src
+git clone https://github.com/robo-friends/m-explore-ros2.git
+cd /workspaces/STAR && ./build-ros2.sh
 ```
 
 See [docs/PI_DEPLOYMENT.md](../docs/PI_DEPLOYMENT.md) for full Pi setup including SPI, SSH keys, and GitHub integration.
@@ -253,68 +267,159 @@ For complete baseline methodology, analysis procedures, and troubleshooting:
 
 | Package | Status | Description |
 |---------|--------|-------------|
-| `star_bringup` | [GREEN] Built | Launch files and system bringup |
-| `star_spi_bridge` | [GREEN] Built | SPI communication to RX72N |
+| `star_bringup` | [GREEN] Built | Launch files, URDF, SLAM + Nav2 config |
+| `star_spi_bridge` | [GREEN] Built | SPI to RX72N; publishes `/odom/unfiltered` + `/imu/data` |
 | `star_gateway_bridge` | [GREEN] Built | gRPC bridge to Go gateway |
 | `star_safety_monitor` | [GREEN] Built | Safety watchdog and diagnostics |
+| `sllidar_ros2` | [GREEN] Built | RPLiDAR C1 driver (SDK 2.x, DTOF support) |
 
-**SLAM Configuration:** Not yet implemented. See [Issue #140](https://github.com/Locked-Inc/STAR/issues/140)
+**SLAM Stack (working):** slam_toolbox async + robot_localization EKF + RPLiDAR C1 -> `/map` at ~0.5 Hz, TF chain map->odom->base_link->laser_frame.
+
+**Autonomous Exploration:** Nav2 (NavFn + DWB) + m-explore-ros2 frontier exploration. See [Autonomous Exploration](#autonomous-exploration) section below.
+
+---
+
+## Autonomous Exploration
+
+STAR can autonomously explore an unknown indoor environment using frontier-based exploration.
+The robot navigates toward the boundary between known and unknown space until no frontiers remain.
+
+### Prerequisites
+
+1. Nav2 installed: `sudo apt install ros-jazzy-navigation2 ros-jazzy-nav2-bringup`
+2. m-explore-ros2 built from source:
+   ```bash
+   cd /workspaces/STAR/star-ros2/src
+   git clone https://github.com/robo-friends/m-explore-ros2.git
+   cd /workspaces/STAR && ./build-ros2.sh
+   ```
+3. RPLiDAR C1 connected to `/dev/ttyUSB0`
+4. RX72N SPI bridge running (`star_spi_bridge` in active lifecycle state)
+
+### Hardware Setup
+
+```bash
+sudo systemctl stop ModemManager   # must run before launch (grabs ttyUSB0 on boot)
+sudo chmod a+rw /dev/ttyUSB0       # grant serial access (until reboot/udev rule applies)
+```
+
+### Launch Sequence
+
+```bash
+# Terminal 1: Full SLAM + Nav2 stack
+ros2 launch star_bringup slam.launch.py
+
+# Terminal 2: Start frontier exploration (after Terminal 1 is stable)
+ros2 launch star_bringup explore.launch.py
+```
+
+### Monitoring in RViz
+
+Topics to visualize:
+- `/map` (OccupancyGrid) -- SLAM map building in real time
+- `/explore/frontiers` (MarkerArray) -- frontier candidates
+- `/global_costmap/costmap` -- Nav2 global costmap
+- `/local_costmap/costmap` -- Nav2 local costmap (3x3 m rolling)
+- TF tree -- confirm map->odom->base_link->laser_frame chain
+
+### Expected Behavior
+
+1. Robot begins scanning; `/map` fills in incrementally
+2. `explore_lite` detects frontiers (grey/white boundaries on the map)
+3. Nav2 plans a path to the nearest frontier; robot drives autonomously
+4. Process repeats until `explore_lite` logs: `"No frontiers found, exploration complete"`
+
+### Known Limitations
+
+- Coverage is not guaranteed 100% (small gaps narrower than `min_frontier_size: 0.75 m` are skipped)
+- Exploration pauses if Nav2 recovery behaviors exhaust all options (robot may need manual repositioning)
+- Virtual RX72N sends no autonomous telemetry in idle mode; real hardware required for full exploration
+
+---
+
+## SLAM Configuration
+
+**Status: Working** (slam_toolbox async, verified on Raspberry Pi 5)
+
+```bash
+# Launch SLAM only (no Nav2)
+ros2 launch star_bringup slam.launch.py use_nav2:=false
+
+# Verify scan
+ros2 topic hz /scan             # should be ~10 Hz
+
+# Verify map
+ros2 topic hz /map              # ~0.5 Hz during active mapping
+
+# View TF tree
+ros2 run tf2_tools view_frames  # confirms map->odom->base_link->laser_frame
+```
+
+**LiDAR:** RPLiDAR C1 via `sllidar_ros2` (SDK 2.x required for C1's DTOF protocol).
+Baud: 460800, scan_mode: Standard, frame_id: laser_frame.
+
+**Troubleshooting:**
+- `0x80008002` error -> wrong scan_mode or driver; use `sllidar_ros2`, not `rplidar_ros`
+- No scan data -> ModemManager grabbed `/dev/ttyUSB0`; run `sudo systemctl stop ModemManager`
+- `dialout` group not active -> run `sudo chmod a+rw /dev/ttyUSB0`
 
 ---
 
 ## Architecture
 
-**Note:** The diagrams below show the planned system architecture. SLAM packages (`rtabmap_ros`, `robot_localization`) are not yet configured.
-
 ### Node Graph
 
 ```
-+-------------------------------------------------------------+
-|                         ROS2 Graph                          |
-+-------------------------------------------------------------+
-|                                                             |
-|  /cmd_vel (geometry_msgs/Twist)                            |
-|     |                                                       |
++------------------------------------------------------------------+
+|                           ROS2 Graph                             |
++------------------------------------------------------------------+
+|                                                                  |
+|  /cmd_vel (geometry_msgs/Twist)                                 |
+|     |                                                            |
 |     +--> star_spi_bridge --> /odom/unfiltered (nav_msgs/Odometry)
-|     |                    +--> /joint_states (sensor_msgs/JointState)
-|     |                    +--> [SPI] -> RX72N Motor Controller
-|     |                                                       |
-|  /odom/unfiltered + /imu/data                              |
-|     |                                                       |
-|     +--> robot_localization (EKF)                          |
-|              +--> /odom/filtered (nav_msgs/Odometry)       |
-|                                                             |
-|  /odom/filtered + /scan (sensor_msgs/LaserScan)            |
-|                 + /rgb/image_raw + /depth/image_raw        |
-|     |                                                       |
-|     +--> rtabmap_ros (SLAM)                                |
-|              +--> /map (nav_msgs/OccupancyGrid)            |
-|              +--> /rtabmap/grid_map (3D octomap)           |
-|                                                             |
-|  star_gateway_bridge (gRPC <-> Go Gateway)                   |
-|     +--> Subscribes: /robot_status                         |
-|     +--> Publishes: /teleop/cmd_vel                        |
-|                                                             |
-|  star_safety_monitor (Watchdog)                            |
-|     +--> Monitors: Heartbeat, Motor Stall                  |
-|     +--> Publishes: /emergency_stop (std_msgs/Bool)        |
-|                                                             |
-+-------------------------------------------------------------+
+|                          +--> /imu/data (sensor_msgs/Imu)       |
+|                          +--> /joint_states                      |
+|                          +--> [SPI @ 10MHz] --> RX72N            |
+|                                                                  |
+|  /odom/unfiltered + /imu/data                                   |
+|     +--> robot_localization (EKF, 50 Hz)                        |
+|              +--> /odometry/filtered (nav_msgs/Odometry)        |
+|              +--> odom->base_link TF                            |
+|                                                                  |
+|  /scan (sllidar_node, 10 Hz)                                    |
+|     +--> slam_toolbox (async) --> /map + map->odom TF           |
+|                                                                  |
+|  /map + /odometry/filtered + /scan                              |
+|     +--> Nav2 (planner + controller + costmaps)                 |
+|              +--> /cmd_vel (autonomous driving)                  |
+|                                                                  |
+|  Nav2 costmaps + /map                                           |
+|     +--> explore_lite --> Nav2 NavigateToPose goals             |
+|                                                                  |
+|  robot_state_publisher (URDF: base_link, laser_frame, imu_link) |
+|                                                                  |
+|  star_gateway_bridge (gRPC <-> Go Gateway)                       |
+|     +--> Subscribes: /robot_status                              |
+|     +--> Publishes: /teleop/cmd_vel                             |
+|                                                                  |
+|  star_safety_monitor (Watchdog)                                 |
+|     +--> Monitors: Heartbeat, Motor Stall                       |
+|     +--> Publishes: /emergency_stop (std_msgs/Bool)             |
+|                                                                  |
++------------------------------------------------------------------+
 ```
 
 ### TF Tree
 
 ```
-map (published by rtabmap_ros)
- +- odom (published by robot_localization)
-     +- base_link (robot center)
-         +- laser_frame (RPLiDAR C1 mount)
-         +- camera_link (OAK-D camera mount)
-         +- wheel_left_link (left wheel)
-         +- wheel_right_link (right wheel)
+map  (slam_toolbox -- global, loop-closure corrected)
+ +- odom  (robot_localization EKF -- local, 50 Hz)
+     +- base_link  (robot body center)
+         +- laser_frame  (RPLiDAR C1, z = +0.05 m -- static via URDF)
+         +- imu_link     (RX72N IMU, co-located -- static via URDF)
 ```
 
-**Static Transforms:** Defined in launch files (TODO: Issue #140)
+**URDF:** `star-ros2/src/star_bringup/urdf/star.urdf.xacro` loaded by `robot_state_publisher`.
 
 ---
 

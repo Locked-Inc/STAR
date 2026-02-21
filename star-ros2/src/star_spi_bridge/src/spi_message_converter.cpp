@@ -139,16 +139,16 @@ void SpiMessageConverter::telemetry_to_odometry(
 
   // Pose covariance -- row-major 6x6 (x, y, z, roll, pitch, yaw)
   // Zero covariance makes robot_localization unstable; use realistic dead-reckoning values.
-  odom.pose.covariance[0]  = 0.1;    // x
-  odom.pose.covariance[7]  = 0.1;    // y
+  odom.pose.covariance[0] = 0.1;     // x
+  odom.pose.covariance[7] = 0.1;     // y
   odom.pose.covariance[14] = 1e6;    // z (not observed)
   odom.pose.covariance[21] = 1e6;    // roll (not observed)
   odom.pose.covariance[28] = 1e6;    // pitch (not observed)
   odom.pose.covariance[35] = 0.1;    // yaw
 
   // Twist covariance -- same layout
-  odom.twist.covariance[0]  = 0.05;  // vx
-  odom.twist.covariance[7]  = 1e6;   // vy (not observed -- diff drive constraint)
+  odom.twist.covariance[0] = 0.05;   // vx
+  odom.twist.covariance[7] = 1e6;    // vy (not observed -- diff drive constraint)
   odom.twist.covariance[14] = 1e6;   // vz
   odom.twist.covariance[21] = 1e6;   // roll rate
   odom.twist.covariance[28] = 1e6;   // pitch rate

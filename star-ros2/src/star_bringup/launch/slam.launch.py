@@ -1,7 +1,15 @@
+# Copyright 2026 Locked Inc.
+#
+# Use of this source code is governed by an MIT-style
+# license that can be found in the LICENSE file or at
+# https://opensource.org/licenses/MIT.
+
 import os
+
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import Node
@@ -10,10 +18,16 @@ from launch_ros.actions import Node
 def generate_launch_description():
     pkg_star_bringup = get_package_share_directory('star_bringup')
     pkg_slam_toolbox = get_package_share_directory('slam_toolbox')
+    pkg_nav2_bringup = get_package_share_directory('nav2_bringup')
 
     serial_port_arg = DeclareLaunchArgument(
         'serial_port', default_value='/dev/ttyUSB0',
         description='Serial port for RPLiDAR C1'
+    )
+
+    use_nav2_arg = DeclareLaunchArgument(
+        'use_nav2', default_value='true',
+        description='Launch Nav2 navigation stack alongside SLAM'
     )
 
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
@@ -42,8 +56,8 @@ def generate_launch_description():
         ),
     )
 
-    # EKF node: consumes /odom/unfiltered, publishes odom→base_link TF and /odometry/filtered.
-    # Must start before SLAM so the odom→base_link TF link is available.
+    # EKF node: consumes /odom/unfiltered + /imu/data, publishes odom→base_link TF
+    # and /odometry/filtered. Must start before SLAM so odom→base_link TF is available.
     ekf = Node(
         package='robot_localization',
         executable='ekf_node',
@@ -62,10 +76,26 @@ def generate_launch_description():
         }.items(),
     )
 
+    # Nav2 navigation stack (navigation_launch.py — no map server, uses /map from SLAM).
+    # Requires: sudo apt install ros-jazzy-navigation2 ros-jazzy-nav2-bringup
+    nav2 = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            os.path.join(pkg_nav2_bringup, 'launch', 'navigation_launch.py')
+        ),
+        launch_arguments={
+            'use_sim_time': 'false',
+            'params_file': os.path.join(pkg_star_bringup, 'config', 'nav2_params.yaml'),
+            'map_subscribe_transient_local': 'true',
+        }.items(),
+        condition=IfCondition(LaunchConfiguration('use_nav2')),
+    )
+
     return LaunchDescription([
         serial_port_arg,
+        use_nav2_arg,
         static_tf,
         ekf,
         rplidar,
         slam,
+        nav2,
     ])

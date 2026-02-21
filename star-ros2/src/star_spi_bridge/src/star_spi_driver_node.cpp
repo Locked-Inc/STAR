@@ -4,6 +4,8 @@
 
 #include <chrono>
 
+#include <tf2/LinearMath/Quaternion.h>  // NOLINT(build/include_order)
+
 using namespace std::chrono_literals;
 
 namespace star_spi_bridge
@@ -60,6 +62,7 @@ StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &)
   odom_pub_ = create_publisher<nav_msgs::msg::Odometry>("odom/unfiltered", 10);
   joint_state_pub_ =
     create_publisher<sensor_msgs::msg::JointState>("joint_states", 10);
+  imu_pub_ = create_publisher<sensor_msgs::msg::Imu>("imu/data", 10);
   // Create subscription
   cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
       "cmd_vel", 10,
@@ -80,6 +83,7 @@ StarSpiDriverNode::on_activate(const rclcpp_lifecycle::State &)
 
   odom_pub_->on_activate();
   joint_state_pub_->on_activate();
+  imu_pub_->on_activate();
 
   // Start 100 Hz timer (10ms)
   timer_ = create_wall_timer(
@@ -109,6 +113,7 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 
   odom_pub_->on_deactivate();
   joint_state_pub_->on_deactivate();
+  imu_pub_->on_deactivate();
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
          CallbackReturn::SUCCESS;
@@ -125,6 +130,7 @@ StarSpiDriverNode::on_cleanup(const rclcpp_lifecycle::State &)
 
   odom_pub_.reset();
   joint_state_pub_.reset();
+  imu_pub_.reset();
   cmd_vel_sub_.reset();
 
   return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
@@ -230,6 +236,44 @@ void StarSpiDriverNode::timer_callback()
       joint_state.header.stamp = now;
       converter_->telemetry_to_joint_state(telemetry, joint_state);
       joint_state_pub_->publish(joint_state);
+
+      // Publish IMU data
+      const auto & imu_data = telemetry.imu();
+      sensor_msgs::msg::Imu imu_msg;
+      imu_msg.header.stamp = now;
+      imu_msg.header.frame_id = "imu_link";
+
+      tf2::Quaternion q;
+      q.setRPY(imu_data.roll_rad(), imu_data.pitch_rad(), imu_data.yaw_rad());
+      imu_msg.orientation.x = q.x();
+      imu_msg.orientation.y = q.y();
+      imu_msg.orientation.z = q.z();
+      imu_msg.orientation.w = q.w();
+      // Orientation covariance (3x3 row-major): ~1 degree RMS
+      imu_msg.orientation_covariance = {
+        0.01, 0.0, 0.0,
+        0.0, 0.01, 0.0,
+        0.0, 0.0, 0.01};
+
+      imu_msg.angular_velocity.x = imu_data.gyro_x_rad_per_s();
+      imu_msg.angular_velocity.y = imu_data.gyro_y_rad_per_s();
+      imu_msg.angular_velocity.z = imu_data.gyro_z_rad_per_s();
+      // Angular velocity covariance: ~0.03 rad/s RMS (typical MEMS gyro)
+      imu_msg.angular_velocity_covariance = {
+        0.001, 0.0, 0.0,
+        0.0, 0.001, 0.0,
+        0.0, 0.0, 0.001};
+
+      imu_msg.linear_acceleration.x = imu_data.accel_x_mps2();
+      imu_msg.linear_acceleration.y = imu_data.accel_y_mps2();
+      imu_msg.linear_acceleration.z = imu_data.accel_z_mps2();
+      // Linear acceleration covariance: ~0.1 m/s^2 RMS (typical MEMS accel)
+      imu_msg.linear_acceleration_covariance = {
+        0.1, 0.0, 0.0,
+        0.0, 0.1, 0.0,
+        0.0, 0.0, 0.1};
+
+      imu_pub_->publish(imu_msg);
 
     } else {
       RCLCPP_WARN(get_logger(), "Failed to parse TelemetryData protobuf");
