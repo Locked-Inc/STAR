@@ -20,9 +20,9 @@ export function useSTARConnection(url: string): {
 } {
   const wsRef = useRef<WebSocket | null>(null);
   const attemptRef = useRef(0);
-  const connectRef = useRef<() => void>(() => { /* initial no-op */ });
 
   useEffect(() => {
+    let cancelled = false;
     const store = useDashboardStore;
 
     function connect(): void {
@@ -66,10 +66,11 @@ export function useSTARConnection(url: string): {
       };
 
       ws.onclose = () => {
+        if (cancelled) return; // StrictMode cleanup: skip reconnect
         store.getState().markStale();
         store.getState().setConnectionState('reconnecting');
         const delay = getReconnectDelay(attemptRef.current++);
-        setTimeout(() => connectRef.current(), delay);
+        setTimeout(() => { if (!cancelled) connect(); }, delay);
       };
 
       ws.onerror = () => {
@@ -79,10 +80,10 @@ export function useSTARConnection(url: string): {
       wsRef.current = ws;
     }
 
-    connectRef.current = connect;
     connect();
 
     return () => {
+      cancelled = true;
       wsRef.current?.close();
     };
   }, [url]);
