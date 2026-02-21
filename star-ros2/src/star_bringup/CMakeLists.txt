@@ -13,15 +13,13 @@ endif()
 # Find dependencies
 find_package(ament_cmake REQUIRED)
 
-# Install launch files (placeholder - to be added in future PRs)
-# install(DIRECTORY launch/
-#   DESTINATION share/${PROJECT_NAME}/launch
-# )
+install(DIRECTORY launch/
+  DESTINATION share/${PROJECT_NAME}/launch
+)
 
-# Install config files (placeholder - to be added in future PRs)
-# install(DIRECTORY config/
-#   DESTINATION share/${PROJECT_NAME}/config
-# )
+install(DIRECTORY config/
+  DESTINATION share/${PROJECT_NAME}/config
+)
 
 if(BUILD_TESTING)
   find_package(ament_lint_auto REQUIRED)

@@ -14,7 +14,7 @@ def generate_launch_description():
     # Node
     driver_node = LifecycleNode(
         package='star_spi_bridge',
-        executable='star_spi_driver_node',
+        executable='star_spi_bridge_node',
         name='star_spi_driver',
         namespace='',
         output='screen',

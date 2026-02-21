@@ -136,7 +136,7 @@ source install/setup.bash
 set -u
 
 # Start the bridge
-ros2 run star_gateway_bridge star_gateway_bridge_node > "$OUTPUT_DIR/ros2_bridge.log" 2>&1 &
+ros2 run star_gateway_bridge star_gateway_bridge_main > "$OUTPUT_DIR/ros2_bridge.log" 2>&1 &
 ROS2_BRIDGE_PID=$!
 echo "  Started (PID: $ROS2_BRIDGE_PID)"
 sleep 5
