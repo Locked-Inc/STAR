@@ -40,15 +40,15 @@ map (RTAB-Map - global, corrected)
 
 ### Prerequisites
 
-- **Docker** (for containerized ROS2 environment)
-- **VS Code** with **Dev Containers** extension
-- **Hardware** (for deployment): Raspberry Pi 5, SPI/USB/video device passthrough
+- **Docker** (for containerized ROS2 environment) -- or --
+- **Raspberry Pi 5** with ROS2 Jazzy natively installed (see [docs/PI_DEPLOYMENT.md](../docs/PI_DEPLOYMENT.md))
+- **VS Code** with **Dev Containers** extension (devcontainer path only)
 
-### Setup
+### Setup -- Devcontainer (x86/macOS development)
 
 1. **Open the repository in VS Code**
    ```bash
-   code /Users/cesarmagana/Documents/GitHub/STAR
+   code /path/to/STAR
    ```
 
 2. **Reopen in Container**
@@ -63,6 +63,29 @@ map (RTAB-Map - global, corrected)
    ```bash
    ros2 doctor  # Should show ROS2 Jazzy setup
    ```
+
+### Setup -- Pi Native (Raspberry Pi 5 aarch64)
+
+```bash
+# Source ROS2 and workspace
+source /opt/ros/jazzy/setup.bash
+source /workspaces/STAR/star-ros2/install/local_setup.bash  # after first build
+
+# Set RMW
+export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+
+# Build everything (proto gen + colcon)
+cd /workspaces/STAR
+./build-ros2.sh
+```
+
+**Required apt package** (for `safety_monitor.launch.py`):
+
+```bash
+sudo apt install ros-jazzy-nav2-lifecycle-manager
+```
+
+See [docs/PI_DEPLOYMENT.md](../docs/PI_DEPLOYMENT.md) for full Pi setup including SPI, SSH keys, and GitHub integration.
 
 **Hardware Passthrough (for deployment on RPi5):**
 - `/dev/spidev*` - RX72N motor controller
@@ -97,47 +120,40 @@ colcon build --packages-select star_spi_bridge
 
 ## Verifying the Build
 
-This PR contains only infrastructure. To verify the build system works:
-
 ```bash
-# Open devcontainer
-code .
-
-# Build all packages (should succeed with star_bringup skeleton)
-colcon build
-
-# Verify build output
-ls -la build/ install/
-
-# Expected output:
-# build/star_bringup/ (CMake build artifacts)
-# install/star_bringup/ (install space with setup scripts)
+# Build all packages
+./build-ros2.sh   # from repo root -- handles proto gen + colcon
 
 # Source the workspace
-source install/setup.bash
+source star-ros2/install/local_setup.bash
 
 # List available packages
 ros2 pkg list | grep star
-# Expected output: star_bringup
-```
+# Expected output:
+# star_bringup
+# star_gateway_bridge
+# star_safety_monitor
+# star_spi_bridge
 
-**Application Nodes:**
-- `star_spi_bridge` - See [PR #145](https://github.com/Locked-Inc/STAR/pull/145)
-- `star_gateway_bridge` - See [PR #146](https://github.com/Locked-Inc/STAR/pull/146)
+# Run all tests
+cd star-ros2
+colcon test
+colcon test-result --verbose
+```
 
 ---
 
 ## Testing
 
 ```bash
-# Test all packages (star_bringup has no tests yet - skeleton only)
+# Test all packages
 colcon test
 
 # View test results
 colcon test-result --verbose
 ```
 
-**Current Status:** This PR contains only infrastructure. Unit tests will be added in application node PRs ([#145](https://github.com/Locked-Inc/STAR/pull/145), [#146](https://github.com/Locked-Inc/STAR/pull/146)).
+**Current Status:** 134 tests, 0 failures across all 4 packages (9 gtest + linting).
 
 ---
 
@@ -235,15 +251,12 @@ For complete baseline methodology, analysis procedures, and troubleshooting:
 
 ## Package Status
 
-**This PR (#141) - Infrastructure Only**
-
-| Package | Status | Lines | Description | Pull Request |
-|---------|--------|-------|-------------|--------------|
-| `star_bringup` | [GREEN] Skeleton | 25 | Launch files and system bringup | This PR (#141) |
-| `star_spi_bridge` | [RED] Not Included | - | SPI communication to RX72N | [PR #145](https://github.com/Locked-Inc/STAR/pull/145) |
-| `star_gateway_bridge` | [RED] Not Included | - | gRPC bridge to Go gateway | [PR #146](https://github.com/Locked-Inc/STAR/pull/146) |
-
-**Note:** This PR establishes the foundation (Docker, devcontainer, CI/CD, docs). Application nodes are in separate PRs.
+| Package | Status | Description |
+|---------|--------|-------------|
+| `star_bringup` | [GREEN] Built | Launch files and system bringup |
+| `star_spi_bridge` | [GREEN] Built | SPI communication to RX72N |
+| `star_gateway_bridge` | [GREEN] Built | gRPC bridge to Go gateway |
+| `star_safety_monitor` | [GREEN] Built | Safety watchdog and diagnostics |
 
 **SLAM Configuration:** Not yet implemented. See [Issue #140](https://github.com/Locked-Inc/STAR/issues/140)
 
@@ -251,7 +264,7 @@ For complete baseline methodology, analysis procedures, and troubleshooting:
 
 ## Architecture
 
-**Note:** The diagrams below show the planned system architecture. This PR (#141) contains only infrastructure. Application nodes (`star_spi_bridge`, `star_gateway_bridge`) are in separate PRs ([#145](https://github.com/Locked-Inc/STAR/pull/145), [#146](https://github.com/Locked-Inc/STAR/pull/146)).
+**Note:** The diagrams below show the planned system architecture. SLAM packages (`rtabmap_ros`, `robot_localization`) are not yet configured.
 
 ### Node Graph
 
@@ -447,4 +460,4 @@ See root repository LICENSE file.
 
 ---
 
-**Status:** Infrastructure phase complete. Implementation tracked in Issues #137-#140.
+**Status:** All 4 packages built and tested on Raspberry Pi 5 (native aarch64). See [docs/PI_DEPLOYMENT.md](../docs/PI_DEPLOYMENT.md) for Pi setup.
