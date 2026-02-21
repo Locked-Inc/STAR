@@ -492,7 +492,7 @@ The metrics-first approach provides:
 
 ### Verified
 
-```
+```text
 /scan       at ~10.0 Hz  [PASS]
 /map        publishing   [PASS]
 map->odom TF publishing   [PASS]

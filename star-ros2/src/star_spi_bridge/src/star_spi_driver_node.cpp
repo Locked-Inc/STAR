@@ -12,6 +12,12 @@ namespace star_spi_bridge
 {
 static constexpr int kLogThrottleMs = 1000;
 
+// IMU sensor noise model (variance = sigma^2, all diagonal).
+// sigma_orientation ~5.7 deg, sigma_angular_vel ~0.032 rad/s, sigma_accel ~0.1 m/s^2
+static constexpr double kImuOrientationVar = 0.01;      // rad^2
+static constexpr double kImuAngularVelocityVar = 0.001; // (rad/s)^2
+static constexpr double kImuLinearAccelVar = 0.01;      // (m/s^2)^2
+
 StarSpiDriverNode::StarSpiDriverNode(const rclcpp::NodeOptions & options)
 : rclcpp_lifecycle::LifecycleNode("star_spi_driver", options)
 {
@@ -239,6 +245,14 @@ void StarSpiDriverNode::timer_callback()
 
       // Publish IMU data
       const auto & imu_data = telemetry.imu();
+      // Skip if firmware has not populated IMU fields (proto3 default = all zeros).
+      // A functioning IMU at rest reads ~9.81 m/s^2 on Z; zero indicates no data.
+      const bool imu_populated = (imu_data.accel_z_mps2() != 0.0 ||
+        imu_data.gyro_z_rad_per_s() != 0.0);
+      if (!imu_populated) {
+        return;  // wait for real IMU data
+      }
+
       sensor_msgs::msg::Imu imu_msg;
       imu_msg.header.stamp = now;
       imu_msg.header.frame_id = "imu_link";
@@ -249,29 +263,29 @@ void StarSpiDriverNode::timer_callback()
       imu_msg.orientation.y = q.y();
       imu_msg.orientation.z = q.z();
       imu_msg.orientation.w = q.w();
-      // Orientation covariance (3x3 row-major): ~1 degree RMS
+      // Orientation covariance (3x3 row-major): sigma ~5.7 deg (rad^2)
       imu_msg.orientation_covariance = {
-        0.01, 0.0, 0.0,
-        0.0, 0.01, 0.0,
-        0.0, 0.0, 0.01};
+        kImuOrientationVar, 0.0, 0.0,
+        0.0, kImuOrientationVar, 0.0,
+        0.0, 0.0, kImuOrientationVar};
 
       imu_msg.angular_velocity.x = imu_data.gyro_x_rad_per_s();
       imu_msg.angular_velocity.y = imu_data.gyro_y_rad_per_s();
       imu_msg.angular_velocity.z = imu_data.gyro_z_rad_per_s();
-      // Angular velocity covariance: ~0.03 rad/s RMS (typical MEMS gyro)
+      // Angular velocity covariance (3x3 row-major): sigma ~0.032 rad/s
       imu_msg.angular_velocity_covariance = {
-        0.001, 0.0, 0.0,
-        0.0, 0.001, 0.0,
-        0.0, 0.0, 0.001};
+        kImuAngularVelocityVar, 0.0, 0.0,
+        0.0, kImuAngularVelocityVar, 0.0,
+        0.0, 0.0, kImuAngularVelocityVar};
 
       imu_msg.linear_acceleration.x = imu_data.accel_x_mps2();
       imu_msg.linear_acceleration.y = imu_data.accel_y_mps2();
       imu_msg.linear_acceleration.z = imu_data.accel_z_mps2();
-      // Linear acceleration covariance: ~0.1 m/s^2 RMS (typical MEMS accel)
+      // Linear acceleration covariance (3x3 row-major): sigma ~0.1 m/s^2
       imu_msg.linear_acceleration_covariance = {
-        0.1, 0.0, 0.0,
-        0.0, 0.1, 0.0,
-        0.0, 0.0, 0.1};
+        kImuLinearAccelVar, 0.0, 0.0,
+        0.0, kImuLinearAccelVar, 0.0,
+        0.0, 0.0, kImuLinearAccelVar};
 
       imu_pub_->publish(imu_msg);
 

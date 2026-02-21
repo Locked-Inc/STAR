@@ -11,14 +11,13 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.substitutions import FindPackageShare, LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
 
 
 def generate_launch_description():
     pkg_star_bringup = get_package_share_directory('star_bringup')
     pkg_slam_toolbox = get_package_share_directory('slam_toolbox')
-    pkg_nav2_bringup = get_package_share_directory('nav2_bringup')
 
     serial_port_arg = DeclareLaunchArgument(
         'serial_port', default_value='/dev/ttyUSB0',
@@ -48,6 +47,8 @@ def generate_launch_description():
             'angle_compensate': True,
             'scan_mode': 'Standard',
         }],
+        respawn=True,
+        respawn_delay=2.0,
     )
 
     static_tf = IncludeLaunchDescription(
@@ -64,6 +65,8 @@ def generate_launch_description():
         name='ekf_filter_node',
         output='screen',
         parameters=[os.path.join(pkg_star_bringup, 'config', 'ekf.yaml')],
+        respawn=True,
+        respawn_delay=2.0,
     )
 
     slam = IncludeLaunchDescription(
@@ -78,9 +81,13 @@ def generate_launch_description():
 
     # Nav2 navigation stack (navigation_launch.py — no map server, uses /map from SLAM).
     # Requires: sudo apt install ros-jazzy-navigation2 ros-jazzy-nav2-bringup
+    # PathJoinSubstitution is resolved lazily at launch time; IfCondition(false) prevents
+    # execution so FindPackageShare never runs when use_nav2:=false and nav2_bringup is absent.
     nav2 = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            os.path.join(pkg_nav2_bringup, 'launch', 'navigation_launch.py')
+            PathJoinSubstitution([
+                FindPackageShare('nav2_bringup'), 'launch', 'navigation_launch.py'
+            ])
         ),
         launch_arguments={
             'use_sim_time': 'false',

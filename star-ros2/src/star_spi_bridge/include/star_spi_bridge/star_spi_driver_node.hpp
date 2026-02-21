@@ -53,7 +53,7 @@ private:
   rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::JointState>::SharedPtr
     joint_state_pub_;
   rclcpp_lifecycle::LifecyclePublisher<sensor_msgs::msg::Imu>::SharedPtr
-    imu_pub_;
+    imu_pub_;  /**< Lifecycle publisher for /imu/data (sensor_msgs/Imu). */
   rclcpp::TimerBase::SharedPtr timer_;
 
   // State

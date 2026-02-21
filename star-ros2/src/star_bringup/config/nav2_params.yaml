@@ -42,7 +42,7 @@ controller_server:
     # DWB local planner tuned for differential drive
     FollowPath:
       plugin: 'dwb_core/DWBLocalPlanner'
-      debug_trajectory_details: true
+      debug_trajectory_details: false
       min_vel_x: 0.0
       min_vel_y: 0.0
       max_vel_x: 0.5          # m/s — conservative for indoor
@@ -58,7 +58,7 @@ controller_server:
       decel_lim_y: 0.0
       decel_lim_theta: -2.5
       vx_samples: 20
-      vy_samples: 5
+      vy_samples: 1           # diff drive: max_vel_y=0.0, lateral samples are all equivalent
       vtheta_samples: 20
       sim_time: 1.7
       linear_granularity: 0.05
@@ -226,7 +226,7 @@ velocity_smoother:
     min_velocity: [-0.5, 0.0, -1.5]
     max_accel: [1.0, 0.0, 2.5]
     max_decel: [-1.0, 0.0, -2.5]
-    odom_topic: 'odometry/filtered'
+    odom_topic: '/odometry/filtered'
     odom_duration: 0.1
     deadband_velocity: [0.0, 0.0, 0.0]
     velocity_timeout: 1.0

@@ -27,6 +27,7 @@ ros2 launch star_bringup slam.launch.py serial_port:=/dev/ttyUSB1
 ```
 
 **Prerequisites:**
+
 ```bash
 sudo systemctl stop ModemManager        # prevent ModemManager grabbing ttyUSB0
 sudo chmod a+rw /dev/ttyUSB0            # serial permissions until reboot
@@ -49,6 +50,7 @@ ros2 launch star_bringup explore.launch.py
 ```
 
 **Prerequisites (m-explore-ros2 built from source):**
+
 ```bash
 cd /workspaces/STAR/star-ros2/src
 git clone https://github.com/robo-friends/m-explore-ros2.git
@@ -83,6 +85,7 @@ ros2 launch star_bringup safety_monitor.launch.py
 ## Configuration Files
 
 ### `config/ekf.yaml`
+
 robot_localization EKF configuration. Fuses:
 - `odom0: /odom/unfiltered` -- wheel encoder odometry from `star_spi_bridge`
 - `imu0: /imu/data` -- IMU orientation + angular velocity from `star_spi_bridge`
@@ -90,11 +93,13 @@ robot_localization EKF configuration. Fuses:
 Publishes `/odometry/filtered` and the `odom->base_link` TF at 50 Hz.
 
 ### `config/slam_toolbox.yaml`
+
 slam_toolbox async mapper configuration. Key params:
 - `mode: mapping` (async online)
 - Publishes `/map` (OccupancyGrid) and `map->odom` TF
 
 ### `config/nav2_params.yaml`
+
 Nav2 navigation stack configuration for STAR differential-drive robot:
 - `planner_server`: NavFn A* global planner
 - `controller_server`: DWB local planner, max 0.5 m/s, max 1.5 rad/s
@@ -103,19 +108,21 @@ Nav2 navigation stack configuration for STAR differential-drive robot:
 - `behavior_server`: spin, back_up, drive_on_heading, wait recovery behaviors
 
 ### `config/explore_params.yaml`
+
 m-explore-ros2 frontier exploration configuration:
 - `planner_frequency: 0.5` Hz frontier re-evaluation
 - `min_frontier_size: 0.75` m (ignore tiny openings)
 - `progress_timeout: 30.0` s (give up on unreachable frontiers)
 
 ### `urdf/star.urdf.xacro`
+
 Robot URDF defining the sensor frame tree. Loaded by `robot_state_publisher`.
 
 ---
 
 ## TF Tree
 
-```
+```text
 map  <----- published by slam_toolbox
  +- odom  <----- published by robot_localization EKF (50 Hz)
      +- base_link  <----- robot body origin

@@ -17,7 +17,8 @@ This workspace implements a LiDAR-based SLAM and autonomous navigation architect
 - **Frontier Exploration:** `explore_lite` (m-explore-ros2) detects frontiers, sends Nav2 goals
 
 **Coordinate Frames (REP-105):**
-```
+
+```text
 map  (slam_toolbox -- global, loop-closure corrected)
  +- odom  (robot_localization EKF -- local, drift-prone, 50 Hz)
      +- base_link  (robot body center)
@@ -26,7 +27,8 @@ map  (slam_toolbox -- global, loop-closure corrected)
 ```
 
 **Node Communication Flow:**
-```
+
+```text
 /cmd_vel  --> star_spi_bridge --> /odom/unfiltered  -+
                               +--> /imu/data          +--> EKF --> /odometry/filtered
                               +--> /joint_states       |          +--> odom->base_link TF
@@ -65,6 +67,7 @@ map  (slam_toolbox -- global, loop-closure corrected)
    - Auto-installs: colcon, rosdep, ROS2 tools
 
 4. **Verify environment**
+
    ```bash
    ros2 doctor  # Should show ROS2 Jazzy setup
    ```
@@ -167,7 +170,7 @@ colcon test
 colcon test-result --verbose
 ```
 
-**Current Status:** 134 tests, 0 failures across all 4 packages (9 gtest + linting).
+**Current Status:** 143 tests, 0 failures across all 4 packages (9 gtest + linting).
 
 ---
 
@@ -288,6 +291,7 @@ The robot navigates toward the boundary between known and unknown space until no
 
 1. Nav2 installed: `sudo apt install ros-jazzy-navigation2 ros-jazzy-nav2-bringup`
 2. m-explore-ros2 built from source:
+
    ```bash
    cd /workspaces/STAR/star-ros2/src
    git clone https://github.com/robo-friends/m-explore-ros2.git
@@ -369,7 +373,7 @@ Baud: 460800, scan_mode: Standard, frame_id: laser_frame.
 
 ### Node Graph
 
-```
+```text
 +------------------------------------------------------------------+
 |                           ROS2 Graph                             |
 +------------------------------------------------------------------+
@@ -411,7 +415,7 @@ Baud: 460800, scan_mode: Standard, frame_id: laser_frame.
 
 ### TF Tree
 
-```
+```text
 map  (slam_toolbox -- global, loop-closure corrected)
  +- odom  (robot_localization EKF -- local, 50 Hz)
      +- base_link  (robot body center)
