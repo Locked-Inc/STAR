@@ -1,40 +1,50 @@
+import type { CSSProperties } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
+import type { ConnectionState } from '../store/dashboardStore';
+import { COLORS } from '../theme';
 
 interface StatusBarProps {
   sendEStop: (reason: string) => void;
 }
 
-const DOT_COLORS: Record<string, string> = {
-  connected: '#22c55e',
-  connecting: '#eab308',
-  reconnecting: '#f97316',
-  disconnected: '#ef4444',
+const ESTOP_SOURCE_USER_UI = 'user_ui_button';
+
+const DOT_COLORS: Record<ConnectionState, string> = {
+  connected: COLORS.connected,
+  connecting: COLORS.connecting,
+  reconnecting: COLORS.reconnecting,
+  disconnected: COLORS.disconnected,
+};
+
+const STATUS_BAR_STYLE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: '12px',
+  padding: '6px 12px',
+  background: COLORS.panelBg,
+  borderBottom: `1px solid ${COLORS.border}`,
+  fontSize: '12px',
 };
 
 export function StatusBar({ sendEStop }: StatusBarProps) {
-  const connectionState = useDashboardStore((s) => s.connectionState);
-  const dataIsStale = useDashboardStore((s) => s.dataIsStale);
-  const eStopActive = useDashboardStore((s) => s.eStopActive);
+  const { connectionState, dataIsStale, eStopActive } = useDashboardStore(
+    useShallow((s) => ({
+      connectionState: s.connectionState,
+      dataIsStale: s.dataIsStale,
+      eStopActive: s.eStopActive,
+    }))
+  );
 
-  const dotColor = DOT_COLORS[connectionState] ?? '#ef4444';
+  const dotColor = DOT_COLORS[connectionState] ?? COLORS.disconnected;
 
   function handleEStop(): void {
-    sendEStop('user_ui_button');
+    sendEStop(ESTOP_SOURCE_USER_UI);
     useDashboardStore.getState().triggerEStop();
   }
 
   return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '12px',
-        padding: '6px 12px',
-        background: '#1a1d27',
-        borderBottom: '1px solid #2a2e42',
-        fontSize: '12px',
-      }}
-    >
+    <div style={STATUS_BAR_STYLE}>
       <span style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
         <span
           style={{
@@ -49,17 +59,19 @@ export function StatusBar({ sendEStop }: StatusBarProps) {
       </span>
 
       {dataIsStale && (
-        <span style={{ color: '#f97316', fontWeight: 'bold' }}>STALE</span>
+        <span style={{ color: COLORS.warning, fontWeight: 'bold' }}>STALE</span>
       )}
 
       <span style={{ flex: 1 }} />
 
       <button
+        type="button"
         onClick={handleEStop}
         disabled={eStopActive}
+        aria-label={eStopActive ? 'Emergency stop active' : 'Activate emergency stop'}
         style={{
           padding: '4px 12px',
-          background: eStopActive ? '#7f1d1d' : '#dc2626',
+          background: eStopActive ? COLORS.estopActive : COLORS.estopDefault,
           color: '#fff',
           border: 'none',
           borderRadius: '4px',

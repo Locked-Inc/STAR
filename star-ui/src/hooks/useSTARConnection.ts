@@ -1,9 +1,10 @@
 import { useRef, useEffect } from 'react';
-import { STAREnvelope, AlertLevel } from '../proto/star/v1/ui';
+import { STAREnvelope } from '../proto/star/v1/ui';
 import type { ControllerState } from '../proto/star/v1/controller';
 import { useDashboardStore } from '../store/dashboardStore';
 import { recordPacket } from '../services/GatewayService';
 
+const MS_TO_US = 1000;
 const BASE_DELAY_MS = 500;
 const MAX_DELAY_MS = 30_000;
 const JITTER_FACTOR = 0.3;
@@ -20,6 +21,7 @@ export function useSTARConnection(url: string): {
 } {
   const wsRef = useRef<WebSocket | null>(null);
   const attemptRef = useRef(0);
+  const timeoutRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -50,18 +52,8 @@ export function useSTARConnection(url: string): {
           return;
         }
 
-        const { lastSeq } = store.getState();
-        if (Number(env.seq) > 0 && Number(env.seq) > lastSeq + 1) {
-          store.getState().addAlert({
-            level: AlertLevel.WARN,
-            code: 'SEQ_GAP',
-            message: `Sequence gap: ${lastSeq} -> ${env.seq}`,
-            source: 'ws',
-            timestampUs: String(Date.now() * 1000),
-          });
-        }
-
-        store.getState().updateFromEnvelope(env);
+        const state = store.getState();
+        state.updateFromEnvelope(env);
         recordPacket(env, 'rx', byteLength);
       };
 
@@ -70,7 +62,7 @@ export function useSTARConnection(url: string): {
         store.getState().markStale();
         store.getState().setConnectionState('reconnecting');
         const delay = getReconnectDelay(attemptRef.current++);
-        setTimeout(() => { if (!cancelled) connect(); }, delay);
+        timeoutRef.current = window.setTimeout(() => { if (!cancelled) connect(); }, delay);
       };
 
       ws.onerror = () => {
@@ -85,24 +77,27 @@ export function useSTARConnection(url: string): {
     return () => {
       cancelled = true;
       wsRef.current?.close();
+      if (timeoutRef.current !== null) clearTimeout(timeoutRef.current);
     };
   }, [url]);
 
-  function sendRaw(env: STAREnvelope, kind: string): void {
+  function sendRaw(env: STAREnvelope): void {
     const ws = wsRef.current;
     if (ws?.readyState !== WebSocket.OPEN) return;
-    const bytes = STAREnvelope.toBinary(env);
-    ws.send(bytes);
-    recordPacket(env, 'tx', bytes.byteLength);
-    // Suppress unused variable warning for kind in production usage
-    void kind;
+    try {
+      const bytes = STAREnvelope.toBinary(env);
+      ws.send(bytes);
+      recordPacket(env, 'tx', bytes.byteLength);
+    } catch (e) {
+      console.error('sendRaw: failed to encode/send envelope', env.payload.oneofKind, e);
+    }
   }
 
   function sendControllerState(state: ControllerState): void {
     const env = STAREnvelope.create({
       payload: { oneofKind: 'controller', controller: state },
     });
-    sendRaw(env, 'controller');
+    sendRaw(env);
   }
 
   function sendEStop(reason: string): void {
@@ -111,10 +106,10 @@ export function useSTARConnection(url: string): {
       const env = STAREnvelope.create({
         payload: {
           oneofKind: 'estop',
-          estop: { active: true, reason, timestampUs: String(Date.now() * 1000) },
+          estop: { active: true, reason, timestampUs: String(Date.now() * MS_TO_US) },
         },
       });
-      sendRaw(env, 'estop');
+      sendRaw(env);
     } else {
       // REST fallback -- WebSocket is not open
       fetch(`/api/estop?reason=${encodeURIComponent(reason)}`, { method: 'POST' }).catch(

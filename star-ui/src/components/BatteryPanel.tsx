@@ -1,46 +1,34 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
+import { COLORS, PANEL_CONTAINER_STYLE, PANEL_HEADER_STYLE } from '../theme';
+
+const MV_TO_V = 1000;
+const DECI_C_TO_C = 10;
 
 export function BatteryPanel() {
-  const battery = useDashboardStore((s) => s.battery);
+  const battery = useDashboardStore(useShallow((s) => s.battery));
 
   const packV = battery?.cells?.packMv != null
-    ? (battery.cells.packMv / 1000).toFixed(2)
+    ? (battery.cells.packMv / MV_TO_V).toFixed(2)
     : '--';
 
-  const socPercent = battery?.soc != null
-    ? (battery.soc as unknown as { socPercent?: number }).socPercent?.toFixed(0) ?? '--'
+  const socPercent = battery?.soc?.relativeSocPercent != null
+    ? battery.soc.relativeSocPercent.toFixed(0)
     : '--';
 
   const tempDC = battery?.temperatures?.tempDeciCelsius[0];
-  const tempC = tempDC != null ? (tempDC / 10).toFixed(1) : '--';
+  const tempC = tempDC != null ? (tempDC / DECI_C_TO_C).toFixed(1) : '--';
 
   return (
-    <div
-      style={{
-        background: '#1a1d27',
-        border: '1px solid #2a2e42',
-        borderRadius: '6px',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          padding: '6px 10px',
-          borderBottom: '1px solid #2a2e42',
-          fontSize: '11px',
-          fontWeight: 'bold',
-          color: '#9ca3af',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}
-      >
+    <div style={PANEL_CONTAINER_STYLE}>
+      <div style={PANEL_HEADER_STYLE}>
         Battery
       </div>
       <div style={{ padding: '10px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
         <Row label="Pack Voltage" value={`${packV} V`} />
         <Row label="SOC" value={`${socPercent}%`} />
         <Row label="Temp" value={`${tempC} C`} />
-        {battery?.cells != null && (
+        {battery?.cells?.deltaMv != null && (
           <Row
             label="Cell Delta"
             value={`${battery.cells.deltaMv} mV`}
@@ -48,7 +36,7 @@ export function BatteryPanel() {
         )}
       </div>
       {battery == null && (
-        <div style={{ padding: '10px', color: '#6b7280', fontSize: '12px' }}>
+        <div style={{ padding: '10px', color: COLORS.textDim, fontSize: '12px' }}>
           No battery data
         </div>
       )}
@@ -65,7 +53,7 @@ function Row({ label, value }: { label: string; value: string }) {
         fontSize: '12px',
       }}
     >
-      <span style={{ color: '#9ca3af' }}>{label}</span>
+      <span style={{ color: COLORS.textMuted }}>{label}</span>
       <span style={{ fontFamily: 'monospace', fontWeight: 'bold' }}>{value}</span>
     </div>
   );

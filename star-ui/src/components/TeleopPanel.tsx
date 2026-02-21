@@ -3,6 +3,7 @@ import { useGamepad } from '../hooks/useGamepad';
 import { useDashboardStore } from '../store/dashboardStore';
 import { ControllerView } from './ControllerView';
 import type { ControllerState } from '../proto/star/v1/controller';
+import { PANEL_CONTAINER_STYLE, PANEL_HEADER_STYLE } from '../theme';
 
 const SEND_RATE_HZ = 50;
 const SEND_INTERVAL_MS = 1000 / SEND_RATE_HZ;
@@ -19,7 +20,8 @@ export function TeleopPanel({ sendControllerState }: TeleopPanelProps) {
   const sendRef = useRef(sendControllerState);
   const gamepadRef = useRef(gamepadState);
 
-  // Update refs after each render (before the next paint) to avoid stale closures.
+  // Intentionally no deps: runs after every render to keep refs current,
+  // allowing the interval closure to always read the latest callbacks.
   useLayoutEffect(() => {
     sendRef.current = sendControllerState;
     gamepadRef.current = gamepadState;
@@ -36,29 +38,13 @@ export function TeleopPanel({ sendControllerState }: TeleopPanelProps) {
       });
     }, SEND_INTERVAL_MS);
 
+    // interval is cleared on unmount via clearInterval(interval); refs keep latest values
     return () => clearInterval(interval);
-  }, []); // interval never torn down; refs provide latest values
+  }, []);
 
   return (
-    <div
-      style={{
-        background: '#1a1d27',
-        border: '1px solid #2a2e42',
-        borderRadius: '6px',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          padding: '6px 10px',
-          borderBottom: '1px solid #2a2e42',
-          fontSize: '11px',
-          fontWeight: 'bold',
-          color: '#9ca3af',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}
-      >
+    <div style={PANEL_CONTAINER_STYLE}>
+      <div style={PANEL_HEADER_STYLE}>
         Teleop
       </div>
       <ControllerView

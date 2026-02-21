@@ -8,7 +8,13 @@ import { LidarPanel } from './components/LidarPanel';
 import { AlertsPanel } from './components/AlertsPanel';
 import { PacketAnalyzer } from './components/PacketAnalyzer';
 
-const WS_URL = `ws://${window.location.hostname}:8080/ws`;
+const WS_PORT: number = Number(import.meta.env.VITE_WS_PORT) || 8080;
+const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss' : 'ws';
+const WS_URL = `${WS_PROTOCOL}://${window.location.hostname}:${WS_PORT}/ws`;
+
+const LAYOUT_PADDING = 8;
+const LAYOUT_GAP = 8;
+const MIN_CARD_WIDTH = 280;
 
 function App() {
   const { sendControllerState, sendEStop } = useSTARConnection(WS_URL);
@@ -21,11 +27,11 @@ function App() {
         style={{
           flex: 1,
           overflow: 'auto',
-          padding: '8px',
+          padding: LAYOUT_PADDING,
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gridTemplateColumns: `repeat(auto-fit, minmax(${MIN_CARD_WIDTH}px, 1fr))`,
           gridAutoRows: 'min-content',
-          gap: '8px',
+          gap: LAYOUT_GAP,
           alignContent: 'start',
         }}
       >

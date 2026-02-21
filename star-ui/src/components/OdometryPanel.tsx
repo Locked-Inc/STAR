@@ -1,58 +1,59 @@
 import { useEffect, useRef } from 'react';
+import type { CSSProperties } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
 import type { OdometryData } from '../proto/star/v1/ui';
+import { PANEL_CONTAINER_STYLE, PANEL_HEADER_STYLE } from '../theme';
 
 const TRAIL_MAX = 200;
+const CANVAS_WIDTH = 260;
+const CANVAS_HEIGHT = 200;
 
-// Trail stored outside React state
-const trailX: number[] = [];
-const trailY: number[] = [];
+const PIXELS_PER_METER = 40;
+const ROBOT_MARKER_RADIUS_PX = 5;
+const HEADING_ARROW_LENGTH_PX = 15;
+const GRID_CELLS = 5;
+
+const CONTAINER_STYLE: CSSProperties = { ...PANEL_CONTAINER_STYLE };
+const HEADER_STYLE: CSSProperties = { ...PANEL_HEADER_STYLE };
+const CONTENT_STYLE: CSSProperties = { padding: '8px' };
+const CANVAS_STYLE: CSSProperties = { background: '#0f1117', borderRadius: '4px', display: 'block' };
 
 export function OdometryPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const odometry = useDashboardStore((s) => s.odometry);
+  const trailRef = useRef<{ x: number[]; y: number[] }>({ x: [], y: [] });
+  const odometry = useDashboardStore(useShallow((s) => s.odometry));
 
   useEffect(() => {
     if (!odometry) return;
-    drawOdometry(canvasRef.current, odometry);
 
     // Accumulate trail
-    trailX.push(odometry.xM);
-    trailY.push(odometry.yM);
-    if (trailX.length > TRAIL_MAX) {
-      trailX.shift();
-      trailY.shift();
+    const trail = trailRef.current;
+    trail.x.push(odometry.xM);
+    trail.y.push(odometry.yM);
+    if (trail.x.length > TRAIL_MAX) {
+      trail.x.shift();
+      trail.y.shift();
     }
+
+    drawOdometry(canvasRef.current, odometry, trail.x, trail.y);
   }, [odometry]);
 
+  useEffect(() => {
+    return () => { trailRef.current = { x: [], y: [] }; };
+  }, []);
+
   return (
-    <div
-      style={{
-        background: '#1a1d27',
-        border: '1px solid #2a2e42',
-        borderRadius: '6px',
-        overflow: 'hidden',
-      }}
-    >
-      <div
-        style={{
-          padding: '6px 10px',
-          borderBottom: '1px solid #2a2e42',
-          fontSize: '11px',
-          fontWeight: 'bold',
-          color: '#9ca3af',
-          textTransform: 'uppercase',
-          letterSpacing: '0.05em',
-        }}
-      >
+    <div style={CONTAINER_STYLE}>
+      <div style={HEADER_STYLE}>
         Odometry
       </div>
-      <div style={{ padding: '8px' }}>
+      <div style={CONTENT_STYLE}>
         <canvas
           ref={canvasRef}
-          width={260}
-          height={200}
-          style={{ background: '#0f1117', borderRadius: '4px', display: 'block' }}
+          width={CANVAS_WIDTH}
+          height={CANVAS_HEIGHT}
+          style={CANVAS_STYLE}
         />
         {odometry && (
           <div style={{ marginTop: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace' }}>
@@ -65,7 +66,12 @@ export function OdometryPanel() {
   );
 }
 
-function drawOdometry(canvas: HTMLCanvasElement | null, odom: OdometryData): void {
+function drawOdometry(
+  canvas: HTMLCanvasElement | null,
+  odom: OdometryData,
+  trailX: number[],
+  trailY: number[],
+): void {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   if (!ctx) return;
@@ -74,20 +80,19 @@ function drawOdometry(canvas: HTMLCanvasElement | null, odom: OdometryData): voi
   const h = canvas.height;
   const cx = w / 2;
   const cy = h / 2;
-  const scale = 40; // pixels per meter
 
   ctx.clearRect(0, 0, w, h);
 
   // Grid lines
   ctx.strokeStyle = '#1e2335';
   ctx.lineWidth = 1;
-  for (let i = -5; i <= 5; i++) {
-    const x = cx + i * scale;
+  for (let i = -GRID_CELLS; i <= GRID_CELLS; i++) {
+    const x = cx + i * PIXELS_PER_METER;
     ctx.beginPath();
     ctx.moveTo(x, 0);
     ctx.lineTo(x, h);
     ctx.stroke();
-    const y = cy + i * scale;
+    const y = cy + i * PIXELS_PER_METER;
     ctx.beginPath();
     ctx.moveTo(0, y);
     ctx.lineTo(w, y);
@@ -99,31 +104,30 @@ function drawOdometry(canvas: HTMLCanvasElement | null, odom: OdometryData): voi
     ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
     ctx.lineWidth = 1.5;
     ctx.beginPath();
-    ctx.moveTo(cx + trailX[0] * scale, cy - trailY[0] * scale);
+    ctx.moveTo(cx + trailX[0] * PIXELS_PER_METER, cy - trailY[0] * PIXELS_PER_METER);
     for (let i = 1; i < trailX.length; i++) {
-      ctx.lineTo(cx + trailX[i] * scale, cy - trailY[i] * scale);
+      ctx.lineTo(cx + trailX[i] * PIXELS_PER_METER, cy - trailY[i] * PIXELS_PER_METER);
     }
     ctx.stroke();
   }
 
   // Robot position
-  const rx = cx + odom.xM * scale;
-  const ry = cy - odom.yM * scale;
+  const rx = cx + odom.xM * PIXELS_PER_METER;
+  const ry = cy - odom.yM * PIXELS_PER_METER;
 
   ctx.fillStyle = '#3b82f6';
   ctx.beginPath();
-  ctx.arc(rx, ry, 5, 0, Math.PI * 2);
+  ctx.arc(rx, ry, ROBOT_MARKER_RADIUS_PX, 0, Math.PI * 2);
   ctx.fill();
 
   // Heading arrow
-  const arrowLen = 15;
   ctx.strokeStyle = '#22c55e';
   ctx.lineWidth = 2;
   ctx.beginPath();
   ctx.moveTo(rx, ry);
   ctx.lineTo(
-    rx + Math.cos(odom.thetaRad) * arrowLen,
-    ry - Math.sin(odom.thetaRad) * arrowLen,
+    rx + Math.cos(odom.thetaRad) * HEADING_ARROW_LENGTH_PX,
+    ry - Math.sin(odom.thetaRad) * HEADING_ARROW_LENGTH_PX,
   );
   ctx.stroke();
 }

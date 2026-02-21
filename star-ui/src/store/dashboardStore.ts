@@ -1,11 +1,14 @@
 import { create } from 'zustand';
 import { subscribeWithSelector } from 'zustand/middleware';
 import type { STAREnvelope, Alert, LidarScan, OdometryData } from '../proto/star/v1/ui';
+import { AlertLevel } from '../proto/star/v1/ui';
 import type { TelemetryData, SystemStatus } from '../proto/star/v1/telemetry';
 import type { MotorStatus } from '../proto/star/v1/motor_control';
 import type { BatteryState } from '../proto/star/v1/battery_management';
 
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'reconnecting';
+
+const ALERTS_MAX = 200;
 
 interface DashboardState {
   // Connection
@@ -23,7 +26,7 @@ interface DashboardState {
   systemStatus: SystemStatus | null;
   eStopActive: boolean;
 
-  // Alerts -- capped array; oldest dropped at 200
+  // Alerts -- capped array; oldest dropped at ALERTS_MAX
   alerts: Alert[];
 
   // Actions
@@ -49,14 +52,34 @@ export const useDashboardStore = create<DashboardState>()(
     eStopActive: false,
     alerts: [],
 
-    setConnectionState: (s) => set({ connectionState: s }),
+    setConnectionState: (s) => {
+      if (s === 'connected') {
+        set({ connectionState: s, seqGapDetected: false, lastSeq: 0 });
+      } else {
+        set({ connectionState: s });
+      }
+    },
 
     // One set() per case -- ensures only the relevant selector fires.
     // Never merge multiple fields into one set() call across cases.
     updateFromEnvelope: (env) => {
-      // Always advance lastSeq on gateway-originated messages
+      // Detect sequence gaps and advance lastSeq on gateway-originated messages
       if (Number(env.seq) > 0) {
-        set({ lastSeq: Number(env.seq) });
+        const seq = Number(env.seq);
+        const prev = get().lastSeq;
+        if (seq > prev + 1) {
+          set({ seqGapDetected: true, lastSeq: seq });
+          get().addAlert({
+            level: AlertLevel.WARN,
+            code: 'SEQ_GAP',
+            message: `Sequence gap: ${prev} -> ${seq}`,
+            source: 'ws',
+            timestampUs: String(Date.now() * 1000),
+          });
+        } else if (seq > prev) {
+          set({ lastSeq: seq });
+        }
+        // seq <= prev: duplicate or out-of-order, ignore
       }
       const p = env.payload;
       switch (p.oneofKind) {
@@ -89,7 +112,7 @@ export const useDashboardStore = create<DashboardState>()(
     markStale: () => set({ dataIsStale: true }),
 
     addAlert: (alert) => set((state) => ({
-      alerts: [alert, ...state.alerts].slice(0, 200),
+      alerts: [alert, ...state.alerts].slice(0, ALERTS_MAX),
     })),
 
     triggerEStop: () => set({ eStopActive: true }),

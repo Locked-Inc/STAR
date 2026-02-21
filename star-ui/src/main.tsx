@@ -4,18 +4,27 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-interface EBState { error: Error | null }
+const ERROR_DISPLAY_PADDING = '2rem' as const;
+const ERROR_DISPLAY_FONT_SIZE = '13px' as const;
+const ERROR_DISPLAY_TEXT_COLOR = '#ef4444' as const;
+const ERROR_DISPLAY_BG_COLOR = '#0f1117' as const;
+const ERROR_DISPLAY_MARGIN = 0 as const;
+const ERROR_DISPLAY_WHITE_SPACE = 'pre-wrap' as const;
+const ERROR_DISPLAY_FONT_FAMILY = 'monospace' as const;
 
-class ErrorBoundary extends Component<{ children: ReactNode }, EBState> {
-  state: EBState = { error: null };
-  static getDerivedStateFromError(error: Error): EBState { return { error }; }
+interface ErrorBoundaryState { error: Error | null }
+interface ErrorBoundaryProps { children: ReactNode; }
+
+class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  state: ErrorBoundaryState = { error: null };
+  static getDerivedStateFromError(error: Error): ErrorBoundaryState { return { error }; }
   componentDidCatch(error: Error, info: ErrorInfo): void { console.error(error, info); }
   render() {
     if (this.state.error) {
       return (
         <pre style={{
-          color: '#ef4444', background: '#0f1117', padding: '2rem',
-          margin: 0, whiteSpace: 'pre-wrap', fontFamily: 'monospace', fontSize: '13px',
+          color: ERROR_DISPLAY_TEXT_COLOR, background: ERROR_DISPLAY_BG_COLOR, padding: ERROR_DISPLAY_PADDING,
+          margin: ERROR_DISPLAY_MARGIN, whiteSpace: ERROR_DISPLAY_WHITE_SPACE, fontFamily: ERROR_DISPLAY_FONT_FAMILY, fontSize: ERROR_DISPLAY_FONT_SIZE,
         }}>
           {String(this.state.error)}{'\n'}{this.state.error.stack}
         </pre>

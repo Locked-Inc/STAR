@@ -1,6 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { getRecentPackets } from '../services/GatewayService';
 import type { PacketRecord } from '../services/GatewayService';
+
+const MS_PER_SECOND = 1000;
+const POLL_INTERVAL_MS = 200;
+const MAX_PACKETS = 30;
 
 const DIR_COLORS = { rx: '#22c55e', tx: '#3b82f6' } as const;
 const TYPE_COLORS: Record<string, string> = {
@@ -18,8 +22,8 @@ const TYPE_COLORS: Record<string, string> = {
 
 function ageStr(tsMs: number): string {
   const ms = Date.now() - tsMs;
-  if (ms < 1000) return `${ms}ms`;
-  return `${(ms / 1000).toFixed(1)}s`;
+  if (ms < MS_PER_SECOND) return `${ms}ms`;
+  return `${(ms / MS_PER_SECOND).toFixed(1)}s`;
 }
 
 function PacketRow({ packet }: { packet: PacketRecord }) {
@@ -62,18 +66,13 @@ function PacketRow({ packet }: { packet: PacketRecord }) {
 
 export function PacketAnalyzer() {
   const [packets, setPackets] = useState<PacketRecord[]>([]);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      setPackets(getRecentPackets().slice(0, 30));
-    }, 200);
+    const id = setInterval(() => {
+      setPackets(getRecentPackets().slice(0, MAX_PACKETS));
+    }, POLL_INTERVAL_MS);
 
-    return () => {
-      if (intervalRef.current != null) {
-        clearInterval(intervalRef.current);
-      }
-    };
+    return () => clearInterval(id);
   }, []);
 
   return (
@@ -101,7 +100,7 @@ export function PacketAnalyzer() {
       <div style={{ overflowX: 'auto', maxHeight: '240px', overflowY: 'auto' }}>
         <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px' }}>
           <thead>
-            <tr style={{ background: '#0f1117', position: 'sticky', top: 0 }}>
+            <tr style={{ background: '#0f1117', position: 'sticky', top: 0, zIndex: 1 }}>
               <th style={{ padding: '4px 6px', textAlign: 'left', color: '#6b7280', fontWeight: 'normal' }}>SEQ</th>
               <th style={{ padding: '4px 6px', textAlign: 'left', color: '#6b7280', fontWeight: 'normal' }}>TYPE</th>
               <th style={{ padding: '4px 6px', textAlign: 'left', color: '#6b7280', fontWeight: 'normal' }}>DIR</th>
@@ -118,7 +117,7 @@ export function PacketAnalyzer() {
                 </td>
               </tr>
             ) : (
-              packets.map((p, i) => <PacketRow key={i} packet={p} />)
+              packets.map((p, i) => <PacketRow key={`${p.seq ?? '--'}-${p.tsMs}-${i}`} packet={p} />)
             )}
           </tbody>
         </table>

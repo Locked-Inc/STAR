@@ -6,21 +6,32 @@ import type { MotorStatus } from '../proto/star/v1/motor_control';
 
 const WINDOW_PTS = 300; // 30 seconds @ 10 Hz
 
+const MOTOR_IDX_FL = 0;
+const MOTOR_IDX_FR = 1;
+const MOTOR_IDX_BL = 2;
+const MOTOR_IDX_BR = 3;
+const EXPECTED_MOTOR_COUNT = 4;
+
+const DEFAULT_CHART_WIDTH = 400;
+const DEFAULT_CHART_HEIGHT = 180;
+
 // Float64Arrays live OUTSIDE React state -- no GC pressure per tick.
-const timestamps = new Float64Array(WINDOW_PTS);
-const flVelocity = new Float64Array(WINDOW_PTS);
-const frVelocity = new Float64Array(WINDOW_PTS);
-const blVelocity = new Float64Array(WINDOW_PTS);
-const brVelocity = new Float64Array(WINDOW_PTS);
-
-// Pre-allocated scratch arrays -- one per series
-const scratchTs = new Float64Array(WINDOW_PTS);
-const scratchFL = new Float64Array(WINDOW_PTS);
-const scratchFR = new Float64Array(WINDOW_PTS);
-const scratchBL = new Float64Array(WINDOW_PTS);
-const scratchBR = new Float64Array(WINDOW_PTS);
-
-let writeIdx = 0;
+function createBuffers() {
+  return {
+    timestamps: new Float64Array(WINDOW_PTS),
+    flVelocity: new Float64Array(WINDOW_PTS),
+    frVelocity: new Float64Array(WINDOW_PTS),
+    blVelocity: new Float64Array(WINDOW_PTS),
+    brVelocity: new Float64Array(WINDOW_PTS),
+    // Pre-allocated scratch arrays -- one per series
+    scratchTs: new Float64Array(WINDOW_PTS),
+    scratchFL: new Float64Array(WINDOW_PTS),
+    scratchFR: new Float64Array(WINDOW_PTS),
+    scratchBL: new Float64Array(WINDOW_PTS),
+    scratchBR: new Float64Array(WINDOW_PTS),
+    writeIdx: 0,
+  };
+}
 
 // Unwrap a ring buffer into chronological order, no allocation.
 function rolledView(ring: Float64Array, wIdx: number, scratch: Float64Array): Float64Array {
@@ -34,14 +45,19 @@ function rolledView(ring: Float64Array, wIdx: number, scratch: Float64Array): Fl
 export function MotorPanel() {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<uPlot | null>(null);
+  const buffersRef = useRef<ReturnType<typeof createBuffers> | null>(null);
+  if (!buffersRef.current) buffersRef.current = createBuffers();
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container) return;
 
+    let cancelled = false;
+    const buf = buffersRef.current!;
+
     const opts: uPlot.Options = {
-      width: container.offsetWidth || 400,
-      height: 180,
+      width: container.offsetWidth || DEFAULT_CHART_WIDTH,
+      height: DEFAULT_CHART_HEIGHT,
       series: [
         {},
         { label: 'FL', stroke: '#ef4444' },
@@ -60,36 +76,54 @@ export function MotorPanel() {
 
     const u = new uPlot(
       opts,
-      [scratchTs, scratchFL, scratchFR, scratchBL, scratchBR],
+      [buf.scratchTs, buf.scratchFL, buf.scratchFR, buf.scratchBL, buf.scratchBR],
       container,
     );
     chartRef.current = u;
+
+    const ro = new ResizeObserver(() => {
+      if (chartRef.current && container.offsetWidth > 0) {
+        chartRef.current.setSize({ width: container.offsetWidth, height: DEFAULT_CHART_HEIGHT });
+      }
+    });
+    ro.observe(container);
 
     // Subscribe to motors via Zustand .subscribe() -- imperative, no React re-render
     const unsub = useDashboardStore.subscribe(
       (s) => s.motors,
       (motors: MotorStatus[] | null) => {
+        if (cancelled) return;
         if (!motors) return;
-        timestamps[writeIdx] = Date.now() / 1000;
-        flVelocity[writeIdx] = motors[0]?.velocityMps ?? 0;
-        frVelocity[writeIdx] = motors[1]?.velocityMps ?? 0;
-        blVelocity[writeIdx] = motors[2]?.velocityMps ?? 0;
-        brVelocity[writeIdx] = motors[3]?.velocityMps ?? 0;
-        writeIdx = (writeIdx + 1) % WINDOW_PTS;
+
+        if (motors.length < EXPECTED_MOTOR_COUNT) {
+          console.warn(
+            `MotorPanel: expected ${EXPECTED_MOTOR_COUNT} motors, got ${motors.length}`,
+            motors,
+          );
+        }
+
+        buf.timestamps[buf.writeIdx] = Date.now() / 1000;
+        buf.flVelocity[buf.writeIdx] = motors[MOTOR_IDX_FL]?.velocityMps ?? 0;
+        buf.frVelocity[buf.writeIdx] = motors[MOTOR_IDX_FR]?.velocityMps ?? 0;
+        buf.blVelocity[buf.writeIdx] = motors[MOTOR_IDX_BL]?.velocityMps ?? 0;
+        buf.brVelocity[buf.writeIdx] = motors[MOTOR_IDX_BR]?.velocityMps ?? 0;
+        buf.writeIdx = (buf.writeIdx + 1) % WINDOW_PTS;
 
         if (chartRef.current) {
           chartRef.current.setData([
-            rolledView(timestamps, writeIdx, scratchTs),
-            rolledView(flVelocity, writeIdx, scratchFL),
-            rolledView(frVelocity, writeIdx, scratchFR),
-            rolledView(blVelocity, writeIdx, scratchBL),
-            rolledView(brVelocity, writeIdx, scratchBR),
+            rolledView(buf.timestamps, buf.writeIdx, buf.scratchTs),
+            rolledView(buf.flVelocity, buf.writeIdx, buf.scratchFL),
+            rolledView(buf.frVelocity, buf.writeIdx, buf.scratchFR),
+            rolledView(buf.blVelocity, buf.writeIdx, buf.scratchBL),
+            rolledView(buf.brVelocity, buf.writeIdx, buf.scratchBR),
           ]);
         }
       },
     );
 
     return () => {
+      cancelled = true;
+      ro.disconnect();
       unsub();
       u.destroy();
     };

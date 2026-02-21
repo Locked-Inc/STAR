@@ -1,3 +1,4 @@
+import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
 import { AlertLevel } from '../proto/star/v1/ui';
 import type { Alert } from '../proto/star/v1/ui';
@@ -18,11 +19,22 @@ const LEVEL_NAMES: Record<number, string> = {
   [AlertLevel.CRITICAL]: 'CRIT',
 };
 
-function formatAge(tsMs: string): string {
-  const ageMs = Date.now() - Math.floor(Number(tsMs) / 1000);
-  if (ageMs < 1000) return `${ageMs}ms`;
-  if (ageMs < 60000) return `${(ageMs / 1000).toFixed(0)}s`;
-  return `${(ageMs / 60000).toFixed(0)}m`;
+const US_PER_MS = 1000n;
+const MS_PER_SEC = 1000n;
+const MS_PER_MIN = 60n * MS_PER_SEC;
+
+function formatAge(timestampUs: string): string {
+  try {
+    const timestampMs = BigInt(timestampUs) / US_PER_MS;
+    let ageMs = BigInt(Date.now()) - timestampMs;
+    if (ageMs < 0n) ageMs = 0n;  // clock skew guard
+    if (ageMs < MS_PER_SEC) return `${Number(ageMs)}ms`;
+    if (ageMs < MS_PER_MIN) return `${(Number(ageMs) / Number(MS_PER_SEC)).toFixed(0)}s`;
+    return `${(Number(ageMs) / Number(MS_PER_MIN)).toFixed(0)}m`;
+  } catch (err) {
+    console.debug('formatAge: invalid timestampUs', timestampUs, err);
+    return '--';
+  }
 }
 
 function AlertRow({ alert }: { alert: Alert }) {
@@ -52,7 +64,7 @@ function AlertRow({ alert }: { alert: Alert }) {
 }
 
 export function AlertsPanel() {
-  const alerts = useDashboardStore((s) => s.alerts);
+  const alerts = useDashboardStore(useShallow((s) => s.alerts));
 
   return (
     <div
@@ -86,7 +98,9 @@ export function AlertsPanel() {
             No alerts
           </div>
         ) : (
-          alerts.map((alert, i) => <AlertRow key={i} alert={alert} />)
+          alerts.map((alert) => (
+            <AlertRow key={`${alert.timestampUs}-${alert.source}-${alert.code}`} alert={alert} />
+          ))
         )}
       </div>
     </div>
