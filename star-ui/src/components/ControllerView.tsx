@@ -1,111 +1,118 @@
-import React, { useState } from 'react';
-import { useGamepad } from '../hooks/useGamepad';
-import { useControllerConnection } from '../hooks/useControllerConnection';
+import type { GamepadState } from '../hooks/useGamepad';
 
-export const ControllerView: React.FC = () => {
-  const [debugMode, setDebugMode] = useState(false);
-  const gamepadState = useGamepad();
-  const { gatewayConnected } = useControllerConnection(gamepadState, debugMode);
+interface ControllerViewProps {
+  gamepadState: GamepadState;
+  connected: boolean;
+}
 
+const COLORS = {
+  statusConnectedBg: '#d4edda',
+  statusConnectedText: '#155724',
+  statusDisconnectedBg: '#f8d7da',
+  statusDisconnectedText: '#721c24',
+  warningBg: '#fff3cd',
+  warningBorder: '#ffeeba',
+  joystickTrack: '#1a1d27',
+  joystickKnob: '#3b82f6',
+  joystickBorder: '#2a2e42',
+  labelText: '#aaa',
+} as const;
+
+const SIZES = {
+  joystickDiameter: '100px',
+  joystickKnobDiameter: '20px',
+  joystickBorderWidth: '2px',
+  joystickTransition: '0.05s',
+  warningPadding: '10px',
+  warningBorderRadius: '8px',
+} as const;
+
+// Joystick positioning
+const JOYSTICK_CENTER_PERCENT = 50;  // center of track in percent
+const JOYSTICK_MAX_OFFSET_PERCENT = 40;  // max displacement for full-scale input
+
+function clampToUnit(v: number): number {
+  return Math.max(-1, Math.min(1, v));
+}
+
+export function ControllerView({ gamepadState, connected }: ControllerViewProps) {
   return (
-    <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
-      <h1>STAR Robot Controller</h1>
-
-      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
-        <span style={{ 
-          padding: '5px 10px', 
-          borderRadius: '4px', 
-          backgroundColor: gatewayConnected ? '#d4edda' : '#f8d7da',
-          color: gatewayConnected ? '#155724' : '#721c24',
-          fontSize: '0.9em',
-          fontWeight: 'bold'
-        }}>
-          Gateway: {gatewayConnected ? 'CONNECTED' : 'DISCONNECTED'}
-        </span>
-
-        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '0.9em' }}>
-          <input 
-            type="checkbox" 
-            checked={debugMode} 
-            onChange={(e) => setDebugMode(e.target.checked)}
-            style={{ marginRight: '5px' }}
-          />
-          Debug Mode (Verbose Logs)
-        </label>
+    <div style={{ padding: '12px', textAlign: 'center', fontFamily: 'sans-serif' }}>
+      <div
+        style={{
+          marginBottom: '8px',
+          padding: '4px 10px',
+          borderRadius: '4px',
+          backgroundColor: connected ? COLORS.statusConnectedBg : COLORS.statusDisconnectedBg,
+          color: connected ? COLORS.statusConnectedText : COLORS.statusDisconnectedText,
+          fontSize: '0.85em',
+          fontWeight: 'bold',
+          display: 'inline-block',
+        }}
+      >
+        Gateway: {connected ? 'CONNECTED' : 'DISCONNECTED'}
       </div>
-      
+
       {!gamepadState.connected ? (
-        <div style={{ backgroundColor: '#fff3cd', padding: '20px', borderRadius: '8px', border: '1px solid #ffeeba' }}>
-          <h2>Gamepad Disconnected</h2>
-          <p>Please connect a gamepad and <strong>press any button</strong> to activate.</p>
+        <div
+          style={{
+            backgroundColor: COLORS.warningBg,
+            padding: SIZES.warningPadding,
+            borderRadius: SIZES.warningBorderRadius,
+            border: `1px solid ${COLORS.warningBorder}`,
+            fontSize: '0.85em',
+          }}
+        >
+          <strong>Gamepad Disconnected</strong>
+          <br />
+          Connect gamepad and press any button.
         </div>
       ) : (
-        <div style={{ backgroundColor: '#d4edda', padding: '20px', borderRadius: '8px', border: '1px solid #c3e6cb' }}>
-          <h2 style={{ color: '#155724' }}>Gamepad Connected</h2>
-          
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', marginTop: '30px' }}>
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', marginTop: '10px' }}>
             <div>
-              <h3>Linear (V)</h3>
-              <div style={{ fontSize: '2em', fontWeight: 'bold' }}>{gamepadState.linearVel.toFixed(2)}</div>
-              <div style={{ width: '20px', height: '100px', backgroundColor: '#eee', margin: '10px auto', position: 'relative' }}>
-                <div style={{ 
-                  width: '100%', 
-                  height: `${Math.abs(gamepadState.linearVel) * 50}%`, 
-                  backgroundColor: gamepadState.linearVel >= 0 ? 'green' : 'red',
-                  position: 'absolute',
-                  bottom: gamepadState.linearVel >= 0 ? '50%' : 'auto',
-                  top: gamepadState.linearVel < 0 ? '50%' : 'auto'
-                }} />
+              <div style={{ fontSize: '0.75em', color: COLORS.labelText }}>Linear (V)</div>
+              <div style={{ fontSize: '1.4em', fontWeight: 'bold' }}>
+                {gamepadState.linearVel.toFixed(2)}
               </div>
             </div>
-
             <div>
-              <h3>Angular (ω)</h3>
-              <div style={{ fontSize: '2em', fontWeight: 'bold' }}>{gamepadState.angularVel.toFixed(2)}</div>
-              <div style={{ width: '100px', height: '20px', backgroundColor: '#eee', margin: '50px auto', position: 'relative' }}>
-                <div style={{ 
-                  height: '100%', 
-                  width: `${Math.abs(gamepadState.angularVel) * 50}%`, 
-                  backgroundColor: 'blue',
-                  position: 'absolute',
-                  left: gamepadState.angularVel >= 0 ? '50%' : 'auto',
-                  right: gamepadState.angularVel < 0 ? '50%' : 'auto'
-                }} />
+              <div style={{ fontSize: '0.75em', color: COLORS.labelText }}>Angular (w)</div>
+              <div style={{ fontSize: '1.4em', fontWeight: 'bold' }}>
+                {gamepadState.angularVel.toFixed(2)}
               </div>
             </div>
           </div>
 
-          <div style={{ marginTop: '40px' }}>
-            <div style={{ 
-              width: '150px', 
-              height: '150px', 
-              borderRadius: '50%', 
-              backgroundColor: '#eee', 
-              margin: '0 auto', 
-              position: 'relative',
-              border: '2px solid #ccc'
-            }}>
-              <div style={{ 
-                width: '30px', 
-                height: '30px', 
-                borderRadius: '50%', 
-                backgroundColor: '#007bff', 
-                position: 'absolute',
-                top: `${50 - (gamepadState.linearVel * 40)}%`,
-                left: `${50 + (gamepadState.angularVel * 40)}%`,
-                transform: 'translate(-50%, -50%)',
-                transition: 'top 0.05s, left 0.05s'
-              }} />
+          <div style={{ marginTop: '12px' }}>
+            <div
+              style={{
+                width: SIZES.joystickDiameter,
+                height: SIZES.joystickDiameter,
+                borderRadius: '50%',
+                backgroundColor: COLORS.joystickTrack,
+                margin: '0 auto',
+                position: 'relative',
+                border: `${SIZES.joystickBorderWidth} solid ${COLORS.joystickBorder}`,
+              }}
+            >
+              <div
+                style={{
+                  width: SIZES.joystickKnobDiameter,
+                  height: SIZES.joystickKnobDiameter,
+                  borderRadius: '50%',
+                  backgroundColor: COLORS.joystickKnob,
+                  position: 'absolute',
+                  top: `${JOYSTICK_CENTER_PERCENT - clampToUnit(gamepadState.linearVel) * JOYSTICK_MAX_OFFSET_PERCENT}%`,
+                  left: `${JOYSTICK_CENTER_PERCENT + clampToUnit(gamepadState.angularVel) * JOYSTICK_MAX_OFFSET_PERCENT}%`,
+                  transform: 'translate(-50%, -50%)',
+                  transition: `top ${SIZES.joystickTransition}, left ${SIZES.joystickTransition}`,
+                }}
+              />
             </div>
-            <p>Left Stick Visualization</p>
           </div>
         </div>
       )}
-
-      <div style={{ marginTop: '50px', fontSize: '0.8em', color: '#666' }}>
-        <p>Target Device: Retroid Pocket 2S</p>
-        <p>Ensure "Gamepad Mode" is enabled in Android settings.</p>
-      </div>
     </div>
   );
-};
+}
