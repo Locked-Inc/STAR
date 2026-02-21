@@ -59,7 +59,7 @@ if [[ -n "$go_files" ]]; then
     # We run this on the whole module usually, but let's try to be specific if possible
     # golangci-lint works best on packages.
     pushd star-gateway >/dev/null
-    if ! golangci-lint run --fast --timeout=2m ./...; then
+    if ! golangci-lint run --timeout=2m ./...; then
         echo "[FAIL] Go linting failed."
         error_found=1
     fi

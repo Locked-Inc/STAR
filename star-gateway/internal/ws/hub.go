@@ -242,7 +242,6 @@ func (h *Hub) route(
 		}
 		h.stampAndFanOut(env, now)
 
-
 	case *starv1.STAREnvelope_Odometry:
 		if shouldThrottle(&t.odometry, now, telemetryRate) {
 			return

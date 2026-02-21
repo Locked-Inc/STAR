@@ -134,6 +134,7 @@ find_ros2_packages() {
         -not -path "*/build/*" \
         -not -path "*/install/*" \
         -not -path "*/log/*" \
+        -not -path "*/sllidar_ros2/*" \
         -print0 2>/dev/null)
     
     printf '%s\n' "${packages[@]}"
@@ -310,6 +311,7 @@ check_header_guards() {
         -not -path "*/build/*" \
         -not -path "*/install/*" \
         -not -path "*/log/*" \
+        -not -path "*/sllidar_ros2/*" \
         -print0 2>/dev/null)
     
     if [ "$issues_found" = true ]; then
@@ -369,6 +371,7 @@ fix_header_guards() {
         -not -path "*/build/*" \
         -not -path "*/install/*" \
         -not -path "*/log/*" \
+        -not -path "*/sllidar_ros2/*" \
         -print0 2>/dev/null)
     
     if [ $fixed_count -gt 0 ]; then

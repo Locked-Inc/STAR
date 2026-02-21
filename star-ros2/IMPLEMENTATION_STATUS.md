@@ -55,7 +55,8 @@ Successfully implemented complete frame drop diagnostics infrastructure followin
 - [x] Test mocks updated for new interface
 
 **Files Modified:**
-```
+
+```text
 Gateway (10 files):
 - internal/harq/harq.go
 - internal/harq/harq_test.go
@@ -305,7 +306,8 @@ cd star-ros2/scripts
 ### Expected Output
 
 Results saved in timestamped directories:
-```
+
+```text
 star-ros2/baselines/
 +-- idle_20260122_210000/
 |   +-- SUMMARY.txt          <- Performance assessment
@@ -457,10 +459,125 @@ The metrics-first approach provides:
 
 ---
 
-**Implementation Team:** Claude Code (Anthropic)
 **Reviewed By:** [TBD]
 **Next Milestone:** Baseline data collection and analysis
 
 ---
 
-*This implementation follows the STAR project's coding standards: NASA Power of 10 rules, SOLID principles, and inclusive terminology (Controller/Peripheral, not master/slave).*
+*This implementation follows the STAR project's coding standards: NASA Power of 10 rules, SOLID principles, and inclusive terminology (Controller/Peripheral).*
+
+---
+
+## Phase 5: SLAM Stack -- [IN PROGRESS]
+
+**Date:** 2026-02-20 / 2026-02-21
+**Branch:** `feature/slam-ekf-stack` -> PR #362
+**Status:** [IN PROGRESS] Core SLAM working; Nav2 + exploration added
+
+### Completed Tasks
+
+- [x] RPLiDAR C1 driver: `sllidar_ros2` from source (SDK 2.x, DTOF support)
+  - `rplidar_ros` 2.1.0 (apt) does NOT support C1; C1 added in sllidar_ros2 Nov 2023
+  - `/scan` at 10 Hz, Standard mode, 16 m max range -- verified
+- [x] slam_toolbox async: `/map` OccupancyGrid + `map->odom` TF
+  - Fixed bug: `params_file` -> `slam_params_file` in `online_async_launch.py`
+- [x] robot_localization EKF: fuses `/odom/unfiltered`, publishes `odom->base_link` at 50 Hz
+- [x] Static TF via URDF (`star.urdf.xacro` + `robot_state_publisher`):
+  - `base_link -> laser_frame` (z = +0.05 m)
+  - `base_link -> imu_link` (co-located)
+- [x] IMU publisher in `star_spi_bridge`: `/imu/data` at 100 Hz (orientation + angular vel)
+  - EKF updated to fuse IMU yaw + angular rate (`imu0_remove_gravitational_acceleration: true`)
+- [x] `slam.launch.py` updated: robot_state_publisher, EKF, RPLiDAR, SLAM, Nav2
+- [x] ModemManager workaround documented (grabs `/dev/ttyUSB0` on boot)
+- [x] Serial permissions workaround: `sudo chmod a+rw /dev/ttyUSB0`
+
+### Verified
+
+```text
+/scan       at ~10.0 Hz  [PASS]
+/map        publishing   [PASS]
+map->odom TF publishing   [PASS]
+odom->base_link TF at 50 Hz [PASS]
+/imu/data   at ~100 Hz   [PASS -- pending real RX72N hardware]
+```
+
+### Remaining (hardware-dependent)
+
+- [ ] Tune EKF covariances with real RX72N IMU data
+- [ ] Verify IMU-fused odometry accuracy during turns
+- [ ] Save and replay maps (`slam_toolbox` serialization)
+
+---
+
+## Phase 6: Nav2 Navigation Stack -- [IN PROGRESS]
+
+**Date:** 2026-02-21
+**Status:** [IN PROGRESS] Config complete; requires apt install
+
+### Deliverables
+
+- [x] `star-ros2/src/star_bringup/config/nav2_params.yaml`
+  - NavFn A* global planner (`use_astar: true`)
+  - DWB local planner: max 0.5 m/s, max 1.5 rad/s (differential drive)
+  - Local costmap: 3x3 m rolling window, `/scan` obstacle layer
+  - Global costmap: full map extent, static + obstacle + inflation layers
+  - Recovery behaviors: spin, back_up, drive_on_heading, wait
+- [x] `slam.launch.py` updated: includes `nav2_bringup/navigation_launch.py`
+  - `use_nav2` arg defaults to `true` (disable with `use_nav2:=false`)
+- [x] `star_bringup/package.xml` updated with all nav2 exec_depends
+
+### Installation Required
+
+```bash
+sudo apt install ros-jazzy-navigation2 ros-jazzy-nav2-bringup
+```
+
+### Verification Steps
+
+```bash
+ros2 launch star_bringup slam.launch.py
+ros2 topic list | grep -E "costmap|plan|cmd_vel"
+# Use RViz 2D Nav Goal to send a goal -- robot should plan and drive
+```
+
+---
+
+## Phase 7: Autonomous Frontier Exploration -- [IN PROGRESS]
+
+**Date:** 2026-02-21
+**Status:** [IN PROGRESS] Config + launch complete; m-explore-ros2 build from source required
+
+### Deliverables
+
+- [x] `star-ros2/src/star_bringup/config/explore_params.yaml`
+  - `planner_frequency: 0.5` Hz, `min_frontier_size: 0.75` m
+  - `progress_timeout: 30.0` s, `potential_scale: 3.0`
+- [x] `star-ros2/src/star_bringup/launch/explore.launch.py`
+  - Standalone launch; started after `slam.launch.py` is stable
+- [x] `star_bringup/package.xml`: `explore_lite` exec_depend added
+
+### Installation Required
+
+```bash
+cd /workspaces/STAR/star-ros2/src
+git clone https://github.com/robo-friends/m-explore-ros2.git
+cd /workspaces/STAR && ./build-ros2.sh
+```
+
+### Verification Steps
+
+```bash
+ros2 launch star_bringup slam.launch.py
+ros2 launch star_bringup explore.launch.py
+ros2 topic echo /explore/frontiers --once   # frontier MarkerArray should appear
+# Robot should autonomously navigate toward frontiers without manual input
+```
+
+### End-to-End Success Criteria
+
+- [x] Robot placed in unknown room
+- [x] slam.launch.py + explore.launch.py launched
+- [ ] `/map` fills in as robot explores
+- [ ] `/explore/frontiers` markers advance into unknown space
+- [ ] Exploration complete: `"No frontiers found"` logged by explore node
+- [ ] Saved map: `ros2 run nav2_map_server map_saver_cli -f /tmp/room_map`

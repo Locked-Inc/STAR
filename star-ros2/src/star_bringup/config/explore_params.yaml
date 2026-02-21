@@ -1,0 +1,35 @@
+# Frontier exploration parameters for m-explore-ros2 (explore_lite package)
+# https://github.com/robo-friends/m-explore-ros2
+#
+# Installation (build from source):
+#   cd /workspaces/STAR/star-ros2/src
+#   git clone https://github.com/robo-friends/m-explore-ros2.git
+#   cd /workspaces/STAR && ./build-ros2.sh
+
+explore:
+  ros__parameters:
+    robot_base_frame: base_link
+
+    # Costmap source from Nav2 global costmap
+    costmap_topic: /global_costmap/costmap
+    costmap_updates_topic: /global_costmap/costmap_updates
+
+    # Publish frontier markers to /explore/frontiers (visualise in RViz)
+    visualize: true
+
+    # How often to re-evaluate frontiers and send new Nav2 goal (Hz)
+    planner_frequency: 0.5
+
+    # Give up on a frontier after this many seconds of no progress
+    progress_timeout: 30.0
+
+    # Frontier scoring weights
+    potential_scale: 3.0     # prefer closer frontiers
+    orientation_scale: 0.0   # ignore orientation cost (diff drive rotates freely)
+    gain_scale: 1.0          # frontier size weight
+
+    # TF tolerance for coordinate transforms
+    transform_tolerance: 0.3
+
+    # Minimum frontier edge length in meters — ignore tiny gaps
+    min_frontier_size: 0.75

@@ -222,6 +222,9 @@ func (s *SPITransport) Transfer(ctx context.Context, txData []byte) ([]byte, err
 		return nil, ErrDeviceNotOpen
 	}
 
+	if len(txData) == 0 {
+		return []byte{}, nil
+	}
 	rxBuf := make([]byte, len(txData))
 	if err := s.conn.Tx(txData, rxBuf); err != nil {
 		return nil, fmt.Errorf("SPI transfer failed: %w", err)
