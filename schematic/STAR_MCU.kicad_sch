@@ -11853,6 +11853,16 @@
 		)
 		(uuid "08e1757d-2492-4df2-9568-b32c54d962d9")
 	)
+	(text "removed bms alert"
+		(exclude_from_sim no)
+		(at 770.128 48.514 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "0de5157b-e2c1-40a4-8327-dd1068c0989d")
+	)
 	(text "There are 2 headers because: BNO055 + BMP280"
 		(exclude_from_sim no)
 		(at 693.928 187.198 0)
@@ -12209,6 +12219,16 @@
 		)
 		(uuid "ab40ee82-bb77-4216-8d1d-138acddddd2e")
 	)
+	(text "What you should do (realistic for \"no room\")\n\nMost practical student/robot designs do this:\n\n✅ Option 1: Common ground (recommended for you)\n\nMake L4 = motor/battery ground\n\nTie L2 (MCU_GND) to L4 (MOTOR_GND) at ONE star point (net-tie / 0Ω / ferrite bead)\n\nNow all your digital signals have a real return path and routing becomes much easier.\n\nThen:\n\nMotor driver \"GND\" pins connect to motor ground (L4).\n\nMCU ground is no longer floating; it references the same ground.\n\nYou still keep noise under control by layout, not by floating grounds."
+		(exclude_from_sim no)
+		(at 243.84 419.608 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b0bdc65c-b3d7-4862-911c-c51818e35680")
+	)
 	(text "NC, Leave floating"
 		(exclude_from_sim no)
 		(at 842.01 90.17 0)
@@ -12218,6 +12238,16 @@
 			)
 		)
 		(uuid "b6ca022e-4223-4027-8bbd-c0d6f04ab594")
+	)
+	(text "Quick sanity check question (decides 100%)\n\nDo your “Motor Driver External Modules” have any signal wires back to your MCU board (PWM, enable, SPI, encoder feedback, fault, etc.)?\n\nYes → tie grounds (or add isolators to every crossing signal).\n\nNo, power-only connector and everything else is isolated → your current drawing is fine.\n\nIf you tell me what pins are on J21/J23 besides VCC/VSS (or show that connector’s full netlist), I’ll tell you exactly which option you’re in."
+		(exclude_from_sim no)
+		(at 92.964 403.86 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "b74eac09-8458-4316-be8e-dc9fd627b659")
 	)
 	(text "**NOTE**\ncurrent schematic does not have connections\nfor nSLEEP nor DRVOFF on the MCU\n**TODO**\nAdd them"
 		(exclude_from_sim no)
@@ -13929,6 +13959,10 @@
 	(no_connect
 		(at 81.28 69.85)
 		(uuid "150bc35b-6105-4b90-b1ef-84e2ce320d79")
+	)
+	(no_connect
+		(at 848.36 49.53)
+		(uuid "1b223d8c-ce62-4868-9cec-94c9ff2f3ba2")
 	)
 	(no_connect
 		(at 1159.51 85.09)
@@ -18863,16 +18897,6 @@
 			(type default)
 		)
 		(uuid "7158cec1-c5bb-4116-8887-bd79e4783f94")
-	)
-	(wire
-		(pts
-			(xy 787.4 49.53) (xy 848.36 49.53)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "71a3e3b0-1eee-410d-b474-8131d4ea1142")
 	)
 	(wire
 		(pts
@@ -26111,16 +26135,6 @@
 		)
 		(uuid "54bfc6d6-ffb7-483e-b02e-037d50480d54")
 	)
-	(label "BMS_ALERT"
-		(at 787.4 49.53 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "577b33cb-0201-4fd8-a5f7-fd6842352c0f")
-	)
 	(label "SWITCH_OUT"
 		(at 123.19 278.13 0)
 		(effects
@@ -31056,7 +31070,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "BATTERY_GND"
+		(property "Value" "GND"
 			(at 187.706 308.61 90)
 			(effects
 				(font
@@ -54768,7 +54782,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M23_VSS"
+		(property "Value" "GND"
 			(at 290.068 313.436 0)
 			(effects
 				(font
@@ -84473,7 +84487,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "BATTERY_GND"
+		(property "Value" "GND"
 			(at 187.706 288.29 90)
 			(effects
 				(font
@@ -94894,7 +94908,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "BATTERY_GND"
+		(property "Value" "GND"
 			(at 187.706 328.93 90)
 			(effects
 				(font
@@ -122954,7 +122968,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M01_VSS"
+		(property "Value" "GND"
 			(at 290.068 293.116 0)
 			(effects
 				(font
