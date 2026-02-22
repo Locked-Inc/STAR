@@ -20,28 +20,26 @@
 \textbf{Function Category} & \textbf{Color}
 \\
 \hline
-\rowcolor{blue!20} PWM Motor Control(GPTW) & Blue \\
+\rowcolor{blue!20} PWM Motor Control (GPTW) / Motor Driver GPIO (DRVOFF, nSLEEP) & Blue \\
 \hline
-\rowcolor{green!20} Encoder Inputs(MTU / TPU) & Green \\
+\rowcolor{green!20} Encoder Inputs (MTU / TPU) & Green \\
 \hline
-\rowcolor{orange!20} Host SPI / IRQ Communication(RSPI2) & Orange \\
+\rowcolor{orange!20} Host SPI / IRQ Communication (RSPI2) & Orange \\
 \hline
-\rowcolor{violet!15} I2C Communication(RIIC0 / RIIC1 / IMU SCL,SDA) & Violet \\
+\rowcolor{violet!15} I2C Communication (RIIC0 / RIIC1 / IMU SCL,SDA) & Violet \\
 \hline
-\rowcolor{red!15} ADC Current Sensing &Red \\
+\rowcolor{red!15} ADC Current Sensing & Red \\
 \hline
-\rowcolor{yellow!15} Debug / JTAG / Boot / USB &Yellow \\
+\rowcolor{yellow!15} Debug / JTAG / Boot / USB & Yellow \\
 \hline
-\rowcolor{gray!15} Power / Ground &Gray \\
+\rowcolor{gray!15} Power / Ground & Gray \\
 \hline
-\rowcolor{lime!10} GTETRG Emergency Stop / Temp / Alert / IMU INT,RST &Lime \\
+\rowcolor{lime!10} GTETRG PWM Ext Trig / Temp / IMU INT,RST & Lime \\
 \hline
-\rowcolor{purple!20} Motor Driver SPI(SCI7) & Purple \\
+\rowcolor{cyan!15} Ultrasonic Sonar (HC-SR04) & Cyan \\
 \hline
-\rowcolor{cyan!15} Ultrasonic Sonar(HC - SR04) & Cyan \\
-\hline
-\rowcolor{teal!15} Status LEDs &Teal \\
-\hline Unused / Available &White \\
+\rowcolor{teal!15} Status LEDs & Teal \\
+\hline Unused / Available & White \\
 \hline
 \end{tabular}
 \end{table}
@@ -79,8 +77,7 @@
 }
 1 & AVSS0 & Ground &Analog ground \\
 \hline
-\rowcolor { lime!10}
-2 & P05 / IRQ13 &BMS\_ALERT &BMS alert interrupt(active low) \\
+2 & P05 / IRQ13 & Unused & Available GPIO (IRQ13) \\
 \hline
 \rowcolor {
   gray!15
@@ -230,25 +227,23 @@ tab:
 \rowcolor {
   blue!20
 }
-34 & P23 / GTIOC0A &Motor 0 PH(Phase) & GPTW PWM channel 0A(32 - bit) \\
+34 & P23/GTIOC0A & Motor 0 IN2 & GPTW PWM channel 0A (32-bit) \\
 \hline
 \rowcolor {
   blue!20
 }
-35 & P22 / GTIOC1A &Motor 1 PH(Phase) & GPTW PWM channel 1A(32 - bit) \\
+35 & P22/GTIOC1A & Motor 1 IN2 & GPTW PWM channel 1A (32-bit) \\
 \hline
-\rowcolor {
-  violet!15
-} 36 & P21/SCL1 & BMS I2C Clock & RIIC1 for BMS (dedicated bus) \\
+\rowcolor{violet!15}
+36 & P21/SCL1 & IMU SCL & IMU I2C clock (RIIC1) \\
 \hline
-\rowcolor{
-  violet!15
-} 37 & P20/SDA1 & BMS I2C Data & RIIC1 for BMS (dedicated bus) \\
+\rowcolor{violet!15}
+37 & P20/SDA1 & IMU SDA & IMU I2C data (RIIC1) \\
 \hline
 \rowcolor{
   blue!20
 }
-38 & P17 / GTIOC0B &Motor 0 EN(Enable) & GPTW PWM channel 0B(32 - bit) \\
+38 & P17/GTIOC0B & Motor 0 IN1 & GPTW PWM channel 0B (32-bit) \\
 \hline
 39 & P87 & Unused &Available GPIO \\
 \hline
@@ -258,19 +253,13 @@ tab:
 \rowcolor {
   blue!20
 }
-41 & P86 / GTIOC2B &Motor 2 EN(Enable) & GPTW PWM channel 2B(32 - bit) \\
+41 & P86/GTIOC2B & Motor 2 IN1 & GPTW PWM channel 2B (32-bit) \\
 \hline
-\rowcolor {
-  lime!10
-}
-42 & P15 / GTETRGA &Motor 0 nFAULT &GPTW hardware emergency stop(auto -
-                                                                 disables PWM) \\
+\rowcolor{lime!10}
+42 & P15/GTETRGA & PWM Ext Trig 0 & GPTW external trigger A (GTETRGA) \\
 \hline
-\rowcolor {
-  lime!10
-}
-43 & P14 / GTETRGD &Motor 3 nFAULT &GPTW hardware emergency stop(auto -
-                                                                 disables PWM) \\
+\rowcolor{lime!10}
+43 & P14/GTETRGD & PWM Ext Trig 3 & GPTW external trigger D (GTETRGD) \\
 \hline
 \rowcolor {
   violet!15
@@ -306,14 +295,12 @@ tab:
 \hline
 53 & P53 & Unused &Not available as GPIO when external bus enabled(BCLK) \\
 \hline
-\rowcolor{violet!15}
-54 & P52 & IMU SCL & IMU I2C clock (SCL) \\
+54 & P52 & Unused & Available GPIO \\
 \hline
 \rowcolor { lime!10}
 55 & P51 &DS18B20 DQ & 1 - Wire temperature sensor data pin \\
 \hline
-\rowcolor{violet!15}
-56 & P50 & IMU SDA & IMU I2C data (SDA) \\
+56 & P50 & Unused & Available GPIO \\
 \hline
 \rowcolor {
   gray!15
@@ -337,7 +324,7 @@ tab:
 \\
 \hline
 \rowcolor { blue!20}
-61 & PC6 / GTIOC3B &Motor 3 EN(Enable) & GPTW PWM channel 3B(32 - bit) \\
+61 & PC6/GTIOC3B & Motor 3 IN1 & GPTW PWM channel 3B (32-bit) \\
 \hline
 \rowcolor {
   green!20
@@ -350,16 +337,13 @@ tab:
 \hline
 65 & P80 & Unused &Available GPIO(SCK10, Ethernet, QSPI) \\
 \hline
-\rowcolor {
-  lime!10
-}
-66 & PC4 / GTETRGC &Motor 2 nFAULT &GPTW hardware emergency stop(auto -
-                                                                 disables PWM) \\
+\rowcolor{lime!10}
+66 & PC4/GTETRGC & PWM Ext Trig 2 & GPTW external trigger C (GTETRGC) \\
 \hline
 \rowcolor {
   blue!20
 }
-67 & PC3 / GTIOC1B &Motor 1 EN(Enable) & GPTW PWM channel 1B(32 - bit) \\
+67 & PC3/GTIOC1B & Motor 1 IN1 & GPTW PWM channel 1B (32-bit) \\
 \hline
 68 & P77 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
 \hline
@@ -372,13 +356,9 @@ tab:
 \hline
 71 & P75 & Unused &Available GPIO(SCI11, Ethernet, SDHI) \\
 \hline
-\rowcolor {
-  purple!20
-} 72 & P74/CS4\# & Motor Driver SPI nCS0 & SCI7 chip select for Motor 0 (DRV8243S) \\
+72 & P74/CS4\# & Unused & Available GPIO \\
 \hline
-\rowcolor{
-  purple!20
-} 73 & PC1 & Motor Driver SPI nCS1 & SCI7 chip select for Motor 1 (DRV8243S) \\
+73 & PC1 & Unused & Available GPIO \\
 \hline
 \rowcolor{
   gray!15
@@ -411,11 +391,9 @@ tab:
 }
 \\
 \hline
-\rowcolor { purple!20} 80 & PB5 & Motor Driver SPI nCS2 & SCI7 chip select for Motor 2 (DRV8243S) \\
+80 & PB5 & Unused & Available GPIO \\
 \hline
-\rowcolor{
-  purple!20
-} 81 & PB4 & Motor Driver SPI nCS3 & SCI7 chip select for Motor 3 (DRV8243S) \\
+81 & PB4 & Unused & Available GPIO \\
 \hline
 \rowcolor{
   green!20
@@ -452,12 +430,8 @@ tab:
 }
 88 & PA7 & LED0 &Status LED(GPIO output) \\
 \hline
-\rowcolor {
-  lime!10
-}
-89 &
-    PA6 / GTETRGB &Motor 1 nFAULT &GPTW hardware emergency stop(auto -
-                                                                disables PWM) \\
+\rowcolor{lime!10}
+89 & PA6/GTETRGB & PWM Ext Trig 1 & GPTW external trigger B (GTETRGB) \\
 \hline
 90 &
     PA5 & Unused &Available GPIO(GTIOC0A, RSPI\_A SCLK, Ethernet) \\
@@ -501,11 +475,9 @@ tab:
 \rowcolor {
   blue!20
 }
-101 & PE7 / GTIOC3A &Motor 3 PH(Phase) & GPTW PWM channel 3A(32 - bit) \\
+101 & PE7/GTIOC3A & Motor 3 IN2 & GPTW PWM channel 3A (32-bit) \\
 \hline
-\rowcolor{blue!20}
-102 & PE6 / GTIOC3B
-    &Motor 3 EN(Enable) & GPTW PWM channel 3B(32 - bit) \\
+102 & PE6/GTIOC3B & Unused & Available GPIO (GTIOC3B) \\
 \hline
 \rowcolor {
   gray!15
@@ -519,41 +491,41 @@ tab:
 }
 105 & VSS & Ground &Power supply \\
 \hline
-\rowcolor{blue!20}
-106 & PE5 / GTIOC0A
-    &Motor 0 PH(Phase) & GPTW PWM channel 0A(32 - bit) \\
+106 & PE5/GTIOC0A & Unused & Available GPIO (GTIOC0A) \\
+\hline
+107 & PE4/GTIOC1A & Unused & Available GPIO (GTIOC1A) \\
 \hline
 \rowcolor{blue!20}
-107 & PE4 / GTIOC1A &Motor 1 PH(Phase) & GPTW PWM channel 1A(32 - bit) \\
-\hline
-\rowcolor {
-  blue!20
-}
-108 & PE3 / GTIOC2A &Motor 2 PH(Phase) & GPTW PWM channel 2A(32 - bit) \\
+108 & PE3/GTIOC2A & Motor 2 IN2 & GPTW PWM channel 2A (32-bit) \\
 \hline
 \rowcolor{blue!20}
-109 & PE2 / GTIOC0B &Motor 0 EN(Enable) & GPTW PWM channel 0B(32 - bit) \\
+109 & PE2/GTIOC0B & Motor 3 DRVOFF & DRV8243S motor 3 drive output disable (GPIO output) \\
 \hline
 \rowcolor{blue!20}
-110 & PE1 / GTIOC1B &Motor 1 EN(Enable) & GPTW PWM channel 1B(32 - bit) \\
+110 & PE1/GTIOC1B & Motor 3 nSLEEP & DRV8243S motor 3 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor{blue!20}
-111 & PE0 / GTIOC2B &Motor 2 EN(Enable) & GPTW PWM channel 2B(32 - bit) \\
+111 & PE0/GTIOC2B & Motor 2 DRVOFF & DRV8243S motor 2 drive output disable (GPIO output) \\
 \hline
-112 & P64 & Unused &Available GPIO(external bus, Ethernet) \\
+\rowcolor{blue!20}
+112 & P64 & Motor 2 nSLEEP & DRV8243S motor 2 sleep control (GPIO output, active-low) \\
 \hline
-113 & P63 & Unused &Available GPIO(external bus, Ethernet) \\
+\rowcolor{blue!20}
+113 & P63 & Motor 1 DRVOFF & DRV8243S motor 1 drive output disable (GPIO output) \\
 \hline
-114 & P62 & Unused &Available GPIO(external bus, Ethernet) \\
+\rowcolor{blue!20}
+114 & P62 & Motor 1 nSLEEP & DRV8243S motor 1 sleep control (GPIO output, active-low) \\
 \hline
-115 & P61 & Unused &Available GPIO(external bus, Ethernet) \\
+\rowcolor{blue!20}
+115 & P61 & Motor 0 DRVOFF & DRV8243S motor 0 drive output disable (GPIO output) \\
 \hline
 \rowcolor {
   gray!15
 }
 116 & VSS & Ground &Power supply \\
 \hline
-117 & P60 & Unused &Available GPIO(external bus, Ethernet) \\
+\rowcolor{blue!20}
+117 & P60 & Motor 0 nSLEEP & DRV8243S motor 0 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor {
   gray!15
@@ -590,25 +562,16 @@ tab:
 \hline
 127 & P93 & Unused &Available GPIO(SCI7, Ethernet, AN117) \\
 \hline
-\rowcolor {
-  purple!20
-}
-128 & P92 / SMISO7 &Motor Driver SPI CIPO &SCI7 controller in from DRV8243S \\
+128 & P92/SMISO7 & Unused & Available GPIO (SCI7) \\
 \hline
-\rowcolor {
-  purple!20
-}
-129 & P91 / SCK7 &Motor Driver SPI SCLK &SCI7 clock to all 4 DRV8243S drivers \\
+129 & P91/SCK7 & Unused & Available GPIO (SCI7) \\
 \hline
 \rowcolor {
   gray!15
 }
 130 & VSS & Ground &Power supply \\
 \hline
-\rowcolor {
-  purple!20
-}
-131 & P90 / SMOSI7 &Motor Driver SPI COPI &SCI7 controller out to DRV8243S \\
+131 & P90/SMOSI7 & Unused & Available GPIO (SCI7) \\
 \hline
 \rowcolor {
   gray!15
@@ -737,28 +700,27 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \item \textbf{Peripheral Grouping :
    } Place related functions on contiguous port pins where possible
     \begin{itemize}
-    \item GPTW PWM : All motors on PORT E(PE0 - PE7, pins 101 - 102, 106 - 111)
-        \item Host SPI to RPi5 : PD1 - PD4(RSPI2\_A, pins 122 - 125)
-        \item Motor Driver SPI : P90 - P92(SCI7, pins 131 / 129 / 128) + 4 CS pins
-        \item MTU Encoders : P24 / P25(MTU1), PA1 / PC5(MTU2)
-        \item TPU Encoders : PC2 / PA3(TPU1), PC0 / PB3(TPU2)
-        \item I2C : P12 - P13(RIIC0 Host), P20 - P21(RIIC1 BMS)
+    \item GPTW PWM (IN1/IN2) : Motors spread across PORT E, PORT C, and PORT P (pins 34, 35, 38, 41, 61, 67, 101, 108)
+        \item Motor Driver GPIO (DRVOFF/nSLEEP) : PORT E and PORT P6x (pins 109-115, 117)
+        \item Host SPI to RPi5 : PD1 - PD4 (RSPI2\_A, pins 122 - 125)
+        \item MTU Encoders : P24 / P25 (MTU1), PA1 / PC5 (MTU2)
+        \item TPU Encoders : PC2 / PA3 (TPU1), PC0 / PB3 (TPU2)
+        \item I2C : P12 - P13 (RIIC0 Host RPi5), P20 - P21 (RIIC1 IMU)
     \end{itemize}
 
     \item \textbf{Conflict Resolution via Alternate Functions:}
     \begin{itemize}
         \item 144-pin package provides more pins, reducing conflicts vs.\ 100-pin
         \item Table 1.9 analysis revealed all peripherals have 2-4 alternate pin locations
-        \item SCI7 used for motor driver SPI (moved from SCI12 to resolve PE0 / PE1 / PE2 conflict)
-        \item GTETRG hardware triggers used for motor nFAULT (replaces software IRQ)
-        \item Dedicated RIIC1 for BMS (previously shared RIIC0 with host in 100-pin)
+        \item GTETRG inputs used as PWM external triggers (GTETRGA/B/C/D on pins 42, 89, 66, 43)
+        \item RIIC1 (P20/P21) repurposed for IMU after BMS removal
+        \item Motor driver GPIO (DRVOFF/nSLEEP) placed on PORT E and PORT P6x to keep routing compact
     \end{itemize}
 
         \item \textbf{PCB Routing Optimization:}
         \begin{itemize}
         \item Host SPI signals on PD1-PD4 (pins 122-125) for compact layout
-        \item Motor driver SPI data on P90 / P91 / P92(SCI7, pins 131 / 129 / 128)
-        \item Motor PWM signals grouped on PORT E(PE0 - PE7, pins 101 - 102, 106 - 111)
+        \item Motor PWM (IN1/IN2) and driver GPIO (DRVOFF/nSLEEP) on PORT E and PORT P6x
         \item Sonar sensors grouped on pins 4-13 (top of package)
         \item ADC current sense on P44-P47 (pins 133-136) for short analog traces
     \end{itemize}
@@ -767,7 +729,7 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
         \begin{itemize}
         \item 43 GPIO pins available after critical allocations (of 144 total)
         \item Unused Port D pins (PD5-PD7) available for additional QSPI/SDHI
-        \item All Port E GPTW pins (PE0-PE7) allocated to 4-motor PWM control
+        \item Port E pins split between motor PWM (PE3, PE7), motor GPIO (PE0-PE2), and available GPIO (PE4-PE6)
         \item Ethernet pins (Port B/P7x) available for future network connectivity
         \item Additional ADC channels available (AN000-AN003, AN100-AN117)
     \end{itemize}
@@ -872,7 +834,6 @@ The DS18B20+ is a digital 1-Wire temperature sensor connected to P51 (pin 55).
 \begin{itemize}
     \item Ambient temperature monitoring
     \item Motor driver thermal management (supplement DRV8243S internal temp)
-    \item Battery temperature monitoring
     \item System enclosure temperature
 \end{itemize}
 
@@ -882,8 +843,8 @@ The IMU is connected to the RX72N via I2C with a dedicated interrupt and reset l
 
 \textbf{Pin Connections:}
 \begin{itemize}
-    \item \textbf{SCL (Clock):} P52 (pin 54) --- I2C clock
-    \item \textbf{SDA (Data):} P50 (pin 56) --- I2C data
+    \item \textbf{SCL (Clock):} P21 (pin 36) --- I2C clock (RIIC1)
+    \item \textbf{SDA (Data):} P20 (pin 37) --- I2C data (RIIC1)
     \item \textbf{INT (Interrupt):} P32 (pin 27) --- active-low interrupt output from IMU to RX72N IRQ input
     \item \textbf{RST (Reset):} P83 (pin 58) --- active-low reset, driven as GPIO output by RX72N
     \item \textbf{VDD:} 3.3V power supply
@@ -903,32 +864,31 @@ The IMU is connected to the RX72N via I2C with a dedicated interrupt and reset l
     \item Use I2C to read sensor data registers on each INT assertion
 \end{itemize}
 
-\subsection{Motor Driver Dual-Interface Architecture}
+\subsection{Motor Driver Control Architecture}
 
-The DRV8243S motor drivers use two separate interfaces:
+The DRV8243S motor drivers are controlled via three interfaces:
 
-\textbf{Real - Time Control(PWM) :}
+\textbf{Real-Time Control (PWM):}
 \begin{itemize}
-    \item \textbf{Signals:} PH (Phase) and EN (Enable) distributed across GPTW channels 0-3
+    \item \textbf{Signals:} IN1 and IN2 distributed across GPTW channels 0-3
     \item \textbf{Purpose:} Motor speed/direction control at 20 kHz PWM frequency
     \item \textbf{Update rate:} 100 Hz velocity commands from RPi5
+    \item \textbf{Pin mapping:} IN2 = GTIOC\_A (phase), IN1 = GTIOC\_B (enable)
 \end{itemize}
 
-\textbf{Configuration(SPI) :}
+\textbf{Driver Enable/Sleep Control (GPIO):}
 \begin{itemize}
-    \item \textbf{Peripheral:} SCI7 hardware SPI using dedicated motor driver SPI pins
-    \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
-    \item \textbf{Update rate:} Startup only, or when changing operating parameters
-    \item \textbf{Speed:} 1 MHz SPI clock (configuration is not time-critical)
-    \item \textbf{Signals:} SCLK (P91), COPI (P90), CIPO (P92), nCS0 (P74), nCS1 (PC1), nCS2 (PB5), nCS3 (PB4)
+    \item \textbf{DRVOFF signals:} PE2 (Motor 3), PE0 (Motor 2), P63 (Motor 1), P61 (Motor 0)
+    \item \textbf{nSLEEP signals:} PE1 (Motor 3), P64 (Motor 2), P62 (Motor 1), P60 (Motor 0)
+    \item \textbf{DRVOFF purpose:} Disable H-bridge outputs without entering sleep mode (GPIO output)
+    \item \textbf{nSLEEP purpose:} Put driver into low-power sleep mode when pulled low (GPIO output, active-low)
+    \item \textbf{Update rate:} On demand for enable/disable/sleep transitions
 \end{itemize}
 
-\textbf{Design Rationale:}
+\textbf{External PWM Triggers (GTETRG):}
 \begin{itemize}
-    \item PWM provides low-latency real-time control for motor speed/direction
-    \item SPI allows runtime configuration of driver protection features
-    \item Separation of concerns: high-frequency control vs.\ low-frequency configuration
-    \item Uses SCI7 to keep RSPI2 available for RPi5 communication
+    \item \textbf{Signals:} GTETRGA (pin 42), GTETRGB (pin 89), GTETRGC (pin 66), GTETRGD (pin 43)
+    \item \textbf{Purpose:} GPTW external trigger inputs for synchronised PWM control
 \end{itemize}
 
 \subsection{RX72N Configuration Tables}

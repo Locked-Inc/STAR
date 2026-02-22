@@ -22,16 +22,12 @@
       "test": true,
       "generate": true
     },
-    "directoryFilters": [
-      "-star-proto/gen"
-    ]
+    "directoryFilters": ["-star-proto/gen"]
   },
   "go.lintTool": "golangci-lint",
   "go.lintOnSave": "workspace",
   "golangci-lint.configFilePath": "",
-  "go.lintFlags": [
-    "--exclude-dirs=star-proto/gen"
-  ],
+  "go.lintFlags": ["--exclude-dirs=star-proto/gen"],
   "[markdown]": {
     "editor.defaultFormatter": "DavidAnson.vscode-markdownlint"
   },
@@ -51,12 +47,8 @@
     "../../../CLAUDE.md#terminology-standard"
   ],
   "cmake.sourceDirectory": "/workspaces/STAR/e2-studio-star-rx72n-firmware",
-  "protobuf.lint.ignore": [
-    "e2-studio-star-rx72n-firmware/**"
-  ],
-  "protobuf.options.ignore": [
-    "e2-studio-star-rx72n-firmware/**"
-  ],
+  "protobuf.lint.ignore": ["e2-studio-star-rx72n-firmware/**"],
+  "protobuf.options.ignore": ["e2-studio-star-rx72n-firmware/**"],
   "files.associations": {
     "e2-studio-star-rx72n-firmware/libs/rx_nanopb/**/*.proto": "plaintext"
   },
@@ -73,5 +65,6 @@
     "**/e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb/**": true
   },
   "protobuf.buf.path": "/usr/local/bin/buf",
-  "protobuf.protoc.path": "/usr/bin/protoc"
+  "protobuf.protoc.path": "/usr/bin/protoc",
+  "cmake.ignoreCMakeListsMissing": true
 }
