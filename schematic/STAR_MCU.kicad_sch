@@ -77643,7 +77643,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "BATTERY_GND"
+		(property "Value" "GND"
 			(at 57.15 291.338 90)
 			(effects
 				(font
