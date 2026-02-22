@@ -1309,7 +1309,7 @@ function formatPreview(env: STAREnvelope): string {
 |E-stop gRPC failure|`readPump` / REST handler|Log error; no retry (not safety-critical system)|
 |LiDAR SoA invariant violation|`LidarPanel` subscribe callback|Discard scan, do not render|
 |Sequence gap detected|`useSTARConnection.onmessage`|Add `WARN` alert; update `lastSeq` to prevent re-alerting|
-test
+
 ---
 
 ## 14. Interface Contracts and Invariants
