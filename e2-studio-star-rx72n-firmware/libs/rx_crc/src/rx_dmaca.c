@@ -27,9 +27,6 @@
 #include "rx_dmaca.h"
 #include <stddef.h>          /* NULL */
 
-/* Renesas BSP register-map header (adjust path for your project layout). */
-#include "platform.h"        /* includes iodefine.h, r_bsp, etc.          */
-
 /* =========================================================================
  * Internal helpers — register access
  *
