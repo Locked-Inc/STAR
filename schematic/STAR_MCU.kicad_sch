@@ -70029,7 +70029,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M23_VSS"
+		(property "Value" "GND"
 			(at 486.41 486.664 90)
 			(effects
 				(font
@@ -79094,7 +79094,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M23_VSS"
+		(property "Value" "GND"
 			(at 499.11 466.344 90)
 			(effects
 				(font
@@ -79160,7 +79160,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M23_VSS"
+		(property "Value" "GND"
 			(at 486.41 481.584 90)
 			(effects
 				(font
@@ -99506,7 +99506,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M23_VSS"
+		(property "Value" "GND"
 			(at 452.628 487.426 0)
 			(effects
 				(font
@@ -113164,7 +113164,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M23_VSS"
+		(property "Value" "GND"
 			(at 486.41 484.124 90)
 			(effects
 				(font
@@ -116320,7 +116320,7 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "M23_VSS"
+		(property "Value" "GND"
 			(at 486.41 489.204 90)
 			(effects
 				(font
