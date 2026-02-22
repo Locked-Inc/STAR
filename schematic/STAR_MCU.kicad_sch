@@ -11843,6 +11843,16 @@
 		)
 		(uuid "01d13a4e-22b1-4251-8951-419908857587")
 	)
+	(text "~{FAULT}"
+		(exclude_from_sim no)
+		(at 523.748 377.444 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "069e74cc-e0a4-41c9-8250-faccfdc5d9da")
+	)
 	(text "Use Cypress configuration utility to enable BUSDETECT"
 		(exclude_from_sim no)
 		(at 463.296 126.238 0)
@@ -11853,15 +11863,35 @@
 		)
 		(uuid "08e1757d-2492-4df2-9568-b32c54d962d9")
 	)
-	(text "removed bms alert"
+	(text "IPROPI"
 		(exclude_from_sim no)
-		(at 770.128 48.514 0)
+		(at 524.256 322.58 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "0de5157b-e2c1-40a4-8327-dd1068c0989d")
+		(uuid "09c261f4-d353-4e30-852b-8f62e1af9766")
+	)
+	(text "IPROPI"
+		(exclude_from_sim no)
+		(at 524.256 379.73 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "0c9ac65b-08f6-4c81-9ad4-03243e82d943")
+	)
+	(text "DRVOFF"
+		(exclude_from_sim no)
+		(at 524.764 302.26 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "0e1fc552-e132-4808-90af-8477b361db46")
 	)
 	(text "There are 2 headers because: BNO055 + BMP280"
 		(exclude_from_sim no)
@@ -11872,6 +11902,76 @@
 			)
 		)
 		(uuid "110aecf7-98bd-4b70-b0d6-48add0d2c83e")
+	)
+	(text "GND"
+		(exclude_from_sim no)
+		(at 523.24 411.226 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "11d06832-f448-40d1-ac83-5a1952dea263")
+	)
+	(text "ITRIP"
+		(exclude_from_sim no)
+		(at 523.494 486.664 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "1d49cf1f-93e3-4b36-b829-ef6c1beb3036")
+	)
+	(text "MODE"
+		(exclude_from_sim no)
+		(at 523.494 317.5 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "23e8d4b6-4b8b-4e90-8a4e-7b17595bd3ce")
+	)
+	(text "DIAG"
+		(exclude_from_sim no)
+		(at 522.986 310.134 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "2403de46-6570-49a0-b131-acf387f029de")
+	)
+	(text "SR"
+		(exclude_from_sim no)
+		(at 522.224 428.498 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "262a65e7-5d4a-4217-a25b-91db4c0a18ff")
+	)
+	(text "IN2"
+		(exclude_from_sim no)
+		(at 522.732 364.744 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "2bd31ee1-ce01-4679-87e0-a5a860a06d34")
+	)
+	(text "DRV8263H Single Brushed DC Motor Driver Carrier\n"
+		(exclude_from_sim no)
+		(at 493.776 281.178 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "2c96efac-7e58-49bc-bf4a-e48d831fa316")
 	)
 	(text "Motor Driver"
 		(exclude_from_sim no)
@@ -11894,9 +11994,39 @@
 		)
 		(uuid "2dbd2949-d0f1-468c-8170-289de7089318")
 	)
+	(text "MODE"
+		(exclude_from_sim no)
+		(at 523.748 488.95 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "32645900-2a18-4b09-b18f-19d348da50b1")
+	)
+	(text "ITRIP"
+		(exclude_from_sim no)
+		(at 523.24 431.038 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "382e4044-1ed8-4ace-af11-c065e42cfb35")
+	)
+	(text "MODE"
+		(exclude_from_sim no)
+		(at 523.494 433.324 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "385e2bcc-61c2-4a4b-9f4c-821d4c317aaa")
+	)
 	(text "Switch\n"
 		(exclude_from_sim no)
-		(at 102.87 287.528 0)
+		(at 102.108 295.656 0)
 		(effects
 			(font
 				(size 6.35 6.35)
@@ -11906,9 +12036,19 @@
 		)
 		(uuid "3b65d692-dab7-421f-993c-86eadc31c9ff")
 	)
+	(text "IN2"
+		(exclude_from_sim no)
+		(at 522.732 423.418 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "3daae917-239c-43c6-8e6b-0fbb9fa7a9c7")
+	)
 	(text "i2c_addr\nps2\nps1\nbl_ind"
 		(exclude_from_sim no)
-		(at 677.418 206.756 0)
+		(at 691.642 206.756 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -11916,6 +12056,16 @@
 			(justify right)
 		)
 		(uuid "3e23d5d0-fd2e-4ca6-b6a5-043d4ffc73a5")
+	)
+	(text "MODE"
+		(exclude_from_sim no)
+		(at 523.494 374.65 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "401d8735-b164-42da-8d8d-16c4f4b73c96")
 	)
 	(text "2 setting switch, 1-2 = on, 2-3 off\n"
 		(exclude_from_sim no)
@@ -11937,15 +12087,35 @@
 		)
 		(uuid "4d14277f-53b1-4210-b1c1-43133771e167")
 	)
-	(text "GND\nVDD\n~{SLEEP}\nDRVOFF\nIN1\nIN2\nDIAG\nSR\nITRIP\nMODE\n~{FAULT}\nIPROPI"
+	(text "DIAG"
 		(exclude_from_sim no)
-		(at 525.018 365.506 0)
+		(at 522.986 367.284 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "547ba1f1-5423-425a-9da5-c78686e7401d")
+		(uuid "512aa2e0-bc62-479c-b1bf-ff298a4a9241")
+	)
+	(text "~{SLEEP}"
+		(exclude_from_sim no)
+		(at 524.256 300.228 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "540ba5fb-b5e8-4420-891e-830907e742f9")
+	)
+	(text "~{SLEEP}"
+		(exclude_from_sim no)
+		(at 524.256 357.378 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "550e7efb-bea2-4f35-8443-cd320923a4a3")
 	)
 	(text "VCC\nTRIG\nECHO\nGND"
 		(exclude_from_sim no)
@@ -11957,17 +12127,6 @@
 		)
 		(uuid "55d21cee-2399-4c88-9730-3f6139de84c9")
 	)
-	(text "**NOTE**\ncurrent schematic does not have connections\nfor nSLEEP nor DRVOFF on the MCU\n**TODO**\nAdd them"
-		(exclude_from_sim no)
-		(at 440.944 407.924 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "5622c13b-df84-473e-af5d-f4791f26996f")
-	)
 	(text "VCC\nTRIG\nECHO\nGND"
 		(exclude_from_sim no)
 		(at 104.648 164.338 0)
@@ -11978,9 +12137,19 @@
 		)
 		(uuid "5741b754-9fe3-440c-b315-627bb779ed8f")
 	)
+	(text "~{FAULT}"
+		(exclude_from_sim no)
+		(at 524.002 491.744 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "5adf6215-dd6e-4fe4-81a7-4a8aba137b92")
+	)
 	(text "PACK+"
 		(exclude_from_sim no)
-		(at 34.798 289.306 0)
+		(at 54.864 295.656 0)
 		(effects
 			(font
 				(size 6.35 6.35)
@@ -11989,6 +12158,36 @@
 			)
 		)
 		(uuid "5bfee8b5-2b51-4066-8069-7ecb2e3c8b5f")
+	)
+	(text "SR"
+		(exclude_from_sim no)
+		(at 522.478 484.124 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "631df421-fb10-4b2d-b950-f46454669570")
+	)
+	(text "VDD"
+		(exclude_from_sim no)
+		(at 523.24 297.688 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "64c03456-87b8-451f-9f4c-069afda03c9e")
+	)
+	(text "~{FAULT}"
+		(exclude_from_sim no)
+		(at 523.748 436.118 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "672c9cff-33e6-45ea-8239-dc453dcb06f4")
 	)
 	(text "SCI USB-C"
 		(exclude_from_sim no)
@@ -12003,15 +12202,15 @@
 		)
 		(uuid "67abc759-fc1c-4565-a835-0fa9db6fc1c8")
 	)
-	(text "GND\nVDD\n~{SLEEP}\nDRVOFF\nIN1\nIN2\nDIAG\nSR\nITRIP\nMODE\n~{FAULT}\nIPROPI"
+	(text "IN1"
 		(exclude_from_sim no)
-		(at 525.018 423.926 0)
+		(at 522.732 420.878 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "6e284e3e-b997-42d6-87e2-116534f72a83")
+		(uuid "68b0b271-5a2f-496d-8acf-5fe088c95bac")
 	)
 	(text "DEFAULT MODE: OFF,OFF"
 		(exclude_from_sim no)
@@ -12022,6 +12221,16 @@
 			)
 		)
 		(uuid "6ee94701-bf3b-4047-b66f-ea904880be74")
+	)
+	(text "DRVOFF"
+		(exclude_from_sim no)
+		(at 524.764 418.084 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "70d7bc3a-f813-4b99-bd19-932660bad1c6")
 	)
 	(text "USB0 USB-C"
 		(exclude_from_sim no)
@@ -12047,6 +12256,16 @@
 		)
 		(uuid "73faa02f-1c89-442f-97da-22c492fffc98")
 	)
+	(text "IN1"
+		(exclude_from_sim no)
+		(at 522.732 305.054 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "76216bfa-0e9e-4d9e-a05b-a5c17f2ace3d")
+	)
 	(text "RPi5"
 		(exclude_from_sim no)
 		(at 130.048 103.378 0)
@@ -12060,7 +12279,7 @@
 	)
 	(text "FUSE"
 		(exclude_from_sim no)
-		(at 153.162 288.798 0)
+		(at 152.4 295.91 0)
 		(effects
 			(font
 				(size 6.35 6.35)
@@ -12069,6 +12288,16 @@
 			)
 		)
 		(uuid "7a2978ba-26dd-481c-8779-6ca801e2e8b3")
+	)
+	(text "~{SLEEP}"
+		(exclude_from_sim no)
+		(at 524.256 416.052 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "7af5bb30-51b9-4364-bec3-0611ef520bd4")
 	)
 	(text "Temperature Sensor"
 		(exclude_from_sim no)
@@ -12090,6 +12319,16 @@
 			)
 		)
 		(uuid "8129845b-3172-463e-a75a-7f73455eaefe")
+	)
+	(text "VDD"
+		(exclude_from_sim no)
+		(at 523.24 354.838 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "828695d0-0093-4eb0-bed4-5023a5042e19")
 	)
 	(text "1,17 3v3\n2,4 5v"
 		(exclude_from_sim no)
@@ -12153,17 +12392,6 @@
 		)
 		(uuid "8e793c25-bc5c-4f98-bb2a-8f0ac9345273")
 	)
-	(text "**NOTE**\ncurrent schematic does not have connections\nfor nSLEEP nor DRVOFF on the MCU\n**TODO**\nAdd them"
-		(exclude_from_sim no)
-		(at 440.944 292.354 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "8eaaff66-cf56-4853-9631-d3afd44f0db4")
-	)
 	(text "SINKING use 5k1"
 		(exclude_from_sim no)
 		(at 376.682 71.882 0)
@@ -12177,17 +12405,6 @@
 		)
 		(uuid "90c484b8-ae4b-4ae5-9b6e-be273effea13")
 	)
-	(text "**NOTE**\ncurrent schematic does not have connections\nfor nSLEEP nor DRVOFF on the MCU\n**TODO**\nAdd them"
-		(exclude_from_sim no)
-		(at 440.944 349.504 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "973e7516-9b25-4b87-918f-cad3d0cbd6cd")
-	)
 	(text "5*R2=3.3*(10k+r2), r2=19.41k -> 20k"
 		(exclude_from_sim no)
 		(at 451.104 82.55 0)
@@ -12197,6 +12414,26 @@
 			)
 		)
 		(uuid "981d9851-5848-47cc-96ab-d0f9eee4c018")
+	)
+	(text "IPROPI"
+		(exclude_from_sim no)
+		(at 524.256 438.404 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "991b87e8-8bde-4621-a0e7-db819d058d4c")
+	)
+	(text "VDD"
+		(exclude_from_sim no)
+		(at 523.494 469.138 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "9c0ff806-fd35-4040-b712-5ae2fbf548e0")
 	)
 	(text "Stereo Cameras"
 		(exclude_from_sim no)
@@ -12209,6 +12446,46 @@
 		)
 		(uuid "9c9a9f51-d01d-4d72-ae7a-6a535d244b92")
 	)
+	(text "~{FAULT}"
+		(exclude_from_sim no)
+		(at 523.748 320.294 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "a2841cb3-6293-45ac-bee0-a10d3fb0a51a")
+	)
+	(text "IN1"
+		(exclude_from_sim no)
+		(at 522.732 362.204 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "a2e7517a-ea75-4e46-8089-fe7b323a58c1")
+	)
+	(text "DIAG"
+		(exclude_from_sim no)
+		(at 523.24 481.584 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "a6396419-9ab4-48c9-a54d-2529b471c7a9")
+	)
+	(text "DIAG"
+		(exclude_from_sim no)
+		(at 522.986 425.958 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "a68766e3-6b80-4acb-9f16-3c47dcce0790")
+	)
 	(text "VCC\nTRIG\nECHO\nGND"
 		(exclude_from_sim no)
 		(at 104.648 177.038 0)
@@ -12219,15 +12496,15 @@
 		)
 		(uuid "ab40ee82-bb77-4216-8d1d-138acddddd2e")
 	)
-	(text "What you should do (realistic for \"no room\")\n\nMost practical student/robot designs do this:\n\n✅ Option 1: Common ground (recommended for you)\n\nMake L4 = motor/battery ground\n\nTie L2 (MCU_GND) to L4 (MOTOR_GND) at ONE star point (net-tie / 0Ω / ferrite bead)\n\nNow all your digital signals have a real return path and routing becomes much easier.\n\nThen:\n\nMotor driver \"GND\" pins connect to motor ground (L4).\n\nMCU ground is no longer floating; it references the same ground.\n\nYou still keep noise under control by layout, not by floating grounds."
+	(text "IPROPI"
 		(exclude_from_sim no)
-		(at 243.84 419.608 0)
+		(at 524.51 494.03 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "b0bdc65c-b3d7-4862-911c-c51818e35680")
+		(uuid "af96100d-01f3-4846-8753-2f521ccd72e7")
 	)
 	(text "NC, Leave floating"
 		(exclude_from_sim no)
@@ -12238,27 +12515,6 @@
 			)
 		)
 		(uuid "b6ca022e-4223-4027-8bbd-c0d6f04ab594")
-	)
-	(text "Quick sanity check question (decides 100%)\n\nDo your “Motor Driver External Modules” have any signal wires back to your MCU board (PWM, enable, SPI, encoder feedback, fault, etc.)?\n\nYes → tie grounds (or add isolators to every crossing signal).\n\nNo, power-only connector and everything else is isolated → your current drawing is fine.\n\nIf you tell me what pins are on J21/J23 besides VCC/VSS (or show that connector’s full netlist), I’ll tell you exactly which option you’re in."
-		(exclude_from_sim no)
-		(at 92.964 403.86 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "b74eac09-8458-4316-be8e-dc9fd627b659")
-	)
-	(text "**NOTE**\ncurrent schematic does not have connections\nfor nSLEEP nor DRVOFF on the MCU\n**TODO**\nAdd them"
-		(exclude_from_sim no)
-		(at 440.944 463.804 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b8f03c73-95df-4cc1-a873-05721829b9d8")
 	)
 	(text "USB-C"
 		(exclude_from_sim no)
@@ -12285,15 +12541,55 @@
 		)
 		(uuid "bda8740f-46ff-4acf-9c69-563a2641953f")
 	)
-	(text "GND\nVDD\n~{SLEEP}\nDRVOFF\nIN1\nIN2\nDIAG\nSR\nITRIP\nMODE\n~{FAULT}\nIPROPI"
+	(text "ITRIP"
 		(exclude_from_sim no)
-		(at 525.018 479.806 0)
+		(at 523.24 315.214 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
-		(uuid "ccfb7936-c410-4194-886d-a20210fc067b")
+		(uuid "c0c93cfc-5cb2-4641-a75e-704b51b10500")
+	)
+	(text "VDD"
+		(exclude_from_sim no)
+		(at 523.24 413.512 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c1b7f9e0-f486-4efc-bc5a-94061fbe0847")
+	)
+	(text "DRVOFF"
+		(exclude_from_sim no)
+		(at 524.764 359.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c6acab3e-b01e-4e5e-a02d-81a2503d51af")
+	)
+	(text "IN2"
+		(exclude_from_sim no)
+		(at 522.732 307.594 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "c9dd3f99-5d3c-452e-a29d-f360ba64a191")
+	)
+	(text "GND"
+		(exclude_from_sim no)
+		(at 523.24 352.552 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "ca0eff14-f484-4f7e-9662-b45526acae0c")
 	)
 	(text "LEDs"
 		(exclude_from_sim no)
@@ -12306,15 +12602,85 @@
 		)
 		(uuid "ce201184-cee5-41c7-a520-f67a464e8794")
 	)
-	(text "GND\nVDD\n~{SLEEP}\nDRVOFF\nIN1\nIN2\nDIAG\nSR\nITRIP\nMODE\n~{FAULT}\nIPROPI"
+	(text "GND"
 		(exclude_from_sim no)
-		(at 525.018 308.356 0)
+		(at 523.24 295.402 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 		)
 		(uuid "cf775db2-70bf-4a71-b2c2-396254b838e7")
+	)
+	(text "ITRIP"
+		(exclude_from_sim no)
+		(at 523.24 372.364 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "cfed1275-6e80-40ea-8a9a-81bcb5591207")
+	)
+	(text "SR"
+		(exclude_from_sim no)
+		(at 522.224 369.824 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d0c98187-d521-4645-a573-3fe1bd63f03c")
+	)
+	(text "DRVOFF"
+		(exclude_from_sim no)
+		(at 525.018 473.71 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d35ff008-636a-4f2b-b582-803483673127")
+	)
+	(text "SR"
+		(exclude_from_sim no)
+		(at 522.224 312.674 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d7fbb6ba-aac8-4cc2-8b2e-03805169389f")
+	)
+	(text "~{SLEEP}"
+		(exclude_from_sim no)
+		(at 524.51 471.678 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "e062c6db-4273-419e-845b-411ba0682c5a")
+	)
+	(text "IN1"
+		(exclude_from_sim no)
+		(at 522.986 476.504 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "e55f7384-df15-4f15-9218-61636aba010a")
+	)
+	(text "GND"
+		(exclude_from_sim no)
+		(at 523.494 466.852 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "eac6bfac-3b36-4608-8dd5-86f54532d1df")
 	)
 	(text "5V,6A MAX"
 		(exclude_from_sim no)
@@ -12325,6 +12691,16 @@
 			)
 		)
 		(uuid "eb144df0-f292-41eb-9813-50189d1b6f51")
+	)
+	(text "IN2"
+		(exclude_from_sim no)
+		(at 522.986 479.044 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "eb81ffab-f85b-43d2-bb0e-e8c6fb11e67c")
 	)
 	(text "5V,6A MAX"
 		(exclude_from_sim no)
@@ -13377,6 +13753,12 @@
 		(uuid "adcbe68d-8ad7-4f8c-ae6c-fc026b81d553")
 	)
 	(junction
+		(at 694.69 208.28)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ae06a3da-6a17-4b6a-88e6-4f8515005566")
+	)
+	(junction
 		(at 407.67 180.34)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -13423,12 +13805,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "b318c467-67c6-489b-8725-abc40e1c8adc")
-	)
-	(junction
-		(at 694.69 203.2)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "b5218bfb-e8e5-46e9-ba05-40da9b7ef8d5")
 	)
 	(junction
 		(at 647.7 106.68)
@@ -13827,7 +14203,7 @@
 		(uuid "f19d31c2-d06f-4150-9915-65f566ff9c34")
 	)
 	(junction
-		(at 57.15 280.67)
+		(at 57.15 283.21)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "f226c9c6-2f55-44e9-a036-122872048221")
@@ -13941,10 +14317,6 @@
 		(uuid "03e25e96-4f73-4e0d-9897-d3e861db42eb")
 	)
 	(no_connect
-		(at 148.59 227.33)
-		(uuid "09041cfe-83af-46cd-b547-df8209bd8f1d")
-	)
-	(no_connect
 		(at 848.36 187.96)
 		(uuid "0a158abd-f754-4c46-8210-6f72dd89e487")
 	)
@@ -13975,10 +14347,6 @@
 	(no_connect
 		(at 203.2 283.21)
 		(uuid "277b37cb-c1b2-411f-bd1f-d55630685cbf")
-	)
-	(no_connect
-		(at 123.19 227.33)
-		(uuid "289189d2-b052-49fb-901d-6a5759030cd3")
 	)
 	(no_connect
 		(at 848.36 149.86)
@@ -14049,10 +14417,6 @@
 		(uuid "595f50c7-d402-4223-b537-57b2080e3631")
 	)
 	(no_connect
-		(at 93.98 80.01)
-		(uuid "5a062506-b8f9-4f8d-8584-5b0e2ae8d705")
-	)
-	(no_connect
 		(at 466.09 199.39)
 		(uuid "5a106b46-413b-48ea-b628-cc921d91b2ff")
 	)
@@ -14117,10 +14481,6 @@
 		(uuid "7ff1de85-919c-4662-aad2-4bfff91e963a")
 	)
 	(no_connect
-		(at 1159.51 46.99)
-		(uuid "871a494d-6588-4637-b8e9-158987a7d8a1")
-	)
-	(no_connect
 		(at 81.28 67.31)
 		(uuid "8a841eb9-8c4c-4537-ae1c-6874d5e1689f")
 	)
@@ -14159,6 +14519,10 @@
 	(no_connect
 		(at 1159.51 87.63)
 		(uuid "a6b6f587-bbf9-4688-803e-30676a6f0b72")
+	)
+	(no_connect
+		(at 1159.51 46.99)
+		(uuid "a6eedf84-561b-47c5-a9cb-31f828edb0bb")
 	)
 	(no_connect
 		(at 1159.51 215.9)
@@ -14217,10 +14581,6 @@
 		(uuid "d559bfce-19fc-4e7e-a3c5-89648f7e3c44")
 	)
 	(no_connect
-		(at 110.49 227.33)
-		(uuid "d70a2235-83aa-4659-bf81-be28bd805206")
-	)
-	(no_connect
 		(at 81.28 97.79)
 		(uuid "da2f247c-ed1a-4a6d-b7c0-b3744436dc94")
 	)
@@ -14255,10 +14615,6 @@
 	(no_connect
 		(at 438.15 114.3)
 		(uuid "e6a80379-e105-4e51-8e13-c505d0f0d2bd")
-	)
-	(no_connect
-		(at 135.89 227.33)
-		(uuid "e7318d4a-69c1-4bb2-94d3-408668790191")
 	)
 	(no_connect
 		(at 848.36 210.82)
@@ -14900,7 +15256,7 @@
 	)
 	(wire
 		(pts
-			(xy 57.15 281.94) (xy 57.15 280.67)
+			(xy 57.15 284.48) (xy 57.15 283.21)
 		)
 		(stroke
 			(width 0)
@@ -16620,7 +16976,7 @@
 	)
 	(wire
 		(pts
-			(xy 57.15 278.13) (xy 57.15 280.67)
+			(xy 57.15 280.67) (xy 57.15 283.21)
 		)
 		(stroke
 			(width 0)
@@ -17560,7 +17916,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 275.59) (xy 59.69 280.67)
+			(xy 59.69 278.13) (xy 59.69 283.21)
 		)
 		(stroke
 			(width 0)
@@ -17847,6 +18203,16 @@
 			(type default)
 		)
 		(uuid "58da576e-4891-4890-bdec-dfb1739ecc36")
+	)
+	(wire
+		(pts
+			(xy 142.24 80.01) (xy 93.98 80.01)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "591bf71a-a504-475c-8dde-31772153dc20")
 	)
 	(wire
 		(pts
@@ -18670,7 +19036,7 @@
 	)
 	(wire
 		(pts
-			(xy 57.15 278.13) (xy 54.61 278.13)
+			(xy 57.15 280.67) (xy 54.61 280.67)
 		)
 		(stroke
 			(width 0)
@@ -18767,16 +19133,6 @@
 			(type default)
 		)
 		(uuid "6f626980-ffa6-4de8-8b5a-b2b61d477eaf")
-	)
-	(wire
-		(pts
-			(xy 680.72 203.2) (xy 680.72 205.74)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6f75950f-9ee1-4209-8b35-aec9144458a3")
 	)
 	(wire
 		(pts
@@ -20140,16 +20496,6 @@
 	)
 	(wire
 		(pts
-			(xy 694.69 203.2) (xy 680.72 203.2)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8f3ec4ce-988c-461a-8b6f-c7f4c164f915")
-	)
-	(wire
-		(pts
 			(xy 593.09 142.24) (xy 605.79 142.24)
 		)
 		(stroke
@@ -21100,16 +21446,6 @@
 	)
 	(wire
 		(pts
-			(xy 82.55 273.05) (xy 82.55 275.59)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a8026645-6e3b-4d1a-8301-3f9370295371")
-	)
-	(wire
-		(pts
 			(xy 561.34 76.2) (xy 568.96 76.2)
 		)
 		(stroke
@@ -21307,6 +21643,16 @@
 			(type default)
 		)
 		(uuid "adb8e692-aa72-4654-8884-063e3080189f")
+	)
+	(wire
+		(pts
+			(xy 694.69 208.28) (xy 694.69 209.55)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ae00f99c-d81d-4dab-8334-da8c61de222b")
 	)
 	(wire
 		(pts
@@ -23050,7 +23396,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 280.67) (xy 57.15 280.67)
+			(xy 59.69 283.21) (xy 57.15 283.21)
 		)
 		(stroke
 			(width 0)
@@ -23060,7 +23406,7 @@
 	)
 	(wire
 		(pts
-			(xy 54.61 273.05) (xy 82.55 273.05)
+			(xy 54.61 275.59) (xy 82.55 275.59)
 		)
 		(stroke
 			(width 0)
@@ -23470,7 +23816,7 @@
 	)
 	(wire
 		(pts
-			(xy 54.61 275.59) (xy 59.69 275.59)
+			(xy 54.61 278.13) (xy 59.69 278.13)
 		)
 		(stroke
 			(width 0)
@@ -25694,6 +26040,17 @@
 		)
 		(uuid "14c3db0a-1137-4297-9d36-43be8f8a14ed")
 	)
+	(label "RX72N_RES#"
+		(at 805.18 92.71 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.1588)
+			)
+			(justify left bottom)
+		)
+		(uuid "17e9b57f-cdad-4e81-a778-96b3f7bf8e36")
+	)
 	(label "MOTOR0_IN2"
 		(at 787.4 130.81 0)
 		(effects
@@ -25784,16 +26141,6 @@
 		)
 		(uuid "2aabbf4a-dd26-42a1-8650-31dc66524e43")
 	)
-	(label "MOTOR23_ISOLATED_VSS"
-		(at 284.48 308.61 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "2d085e51-3432-4bb0-af03-d68c7ab9dad7")
-	)
 	(label "FINED"
 		(at 787.4 85.09 0)
 		(effects
@@ -25854,7 +26201,7 @@
 		)
 		(uuid "338ce743-f69d-4ac9-9131-06db132aa329")
 	)
-	(label "MOTOR23_ISOLATED_VCC"
+	(label "MOTOR23_VCC"
 		(at 284.48 298.45 180)
 		(effects
 			(font
@@ -25903,16 +26250,6 @@
 			(justify right bottom)
 		)
 		(uuid "3cc31c19-1aaa-44ab-b2f9-282757bdf76d")
-	)
-	(label "MOTOR01_ISOLATED_VSS"
-		(at 284.48 288.29 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "3d833e18-cc8d-4716-81b2-29b7a8d6ca04")
 	)
 	(label "BOARD_3V3"
 		(at 485.14 201.93 180)
@@ -25964,7 +26301,7 @@
 		)
 		(uuid "460ec46e-9804-411b-81e2-a0a64f56551e")
 	)
-	(label "MOTOR01_ISOLATED_VCC"
+	(label "MOTOR01_VCC"
 		(at 284.48 278.13 180)
 		(effects
 			(font
@@ -26035,7 +26372,7 @@
 		(uuid "4b84f39d-3b70-433b-b404-4536abe601b2")
 	)
 	(label "PACK+"
-		(at 77.47 273.05 180)
+		(at 77.47 275.59 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -26906,6 +27243,17 @@
 			(justify right bottom)
 		)
 		(uuid "980ddd26-ef21-4995-a7e8-85207578d07e")
+	)
+	(label "RX72N_RES#"
+		(at 142.24 80.01 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.1588)
+			)
+			(justify right bottom)
+		)
+		(uuid "98802f4c-957c-45e1-a7a8-0b93ac0bfd8b")
 	)
 	(label "MOTOR0_nSLEEP"
 		(at 458.47 299.72 0)
@@ -31071,7 +31419,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 187.706 308.61 90)
+			(at 192.024 308.61 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31906,15 +32254,15 @@
 		(dnp no)
 		(uuid "0c52c9c1-ca97-4c99-bcc6-8fa37c85a74c")
 		(property "Reference" "Y1"
-			(at 630.936 166.37 0)
+			(at 639.318 163.322 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "Crystal"
-			(at 633.476 166.37 0)
+		(property "Value" "24MHz"
+			(at 641.096 169.672 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -51005,6 +51353,7 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
 			)
 		)
 		(property "Value" "Motor_Driver_Module"
@@ -57018,10 +57367,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "4bf7c879-78af-4305-b213-47b095f48b06")
 		(property "Reference" "J23"
-			(at 320.04 302.2599 0)
+			(at 315.468 295.91 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -57030,7 +57378,7 @@
 			)
 		)
 		(property "Value" "282837-4"
-			(at 320.04 304.7999 0)
+			(at 308.61 311.15 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -57112,6 +57460,72 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "J23")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 135.89 227.33 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4c4f0df4-5daa-4a4d-a672-a40e0df3a1a2")
+		(property "Reference" "#PWR042"
+			(at 135.89 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 135.89 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 135.89 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 135.89 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 135.89 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "44b28f18-930d-4bda-aa84-77c26c840770")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#PWR042")
 					(unit 1)
 				)
 			)
@@ -58943,7 +59357,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 680.72 205.74 0)
+		(at 694.69 209.55 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -58952,7 +59366,7 @@
 		(dnp no)
 		(uuid "5111dbad-fda7-4573-a3c6-24baf54b0979")
 		(property "Reference" "#PWR012"
-			(at 680.72 212.09 0)
+			(at 694.69 215.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -58961,7 +59375,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 678.688 209.042 0)
+			(at 692.658 212.852 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -58970,7 +59384,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 680.72 205.74 0)
+			(at 694.69 209.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -58979,7 +59393,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 680.72 205.74 0)
+			(at 694.69 209.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -58988,7 +59402,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 680.72 205.74 0)
+			(at 694.69 209.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -70085,10 +70499,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "6dd0dca5-d65a-4d9c-92c4-e16036861249")
 		(property "Reference" "J21"
-			(at 320.04 281.9399 0)
+			(at 315.722 275.59 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -70097,7 +70510,7 @@
 			)
 		)
 		(property "Value" "282837-4"
-			(at 320.04 284.4799 0)
+			(at 308.864 291.084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -72697,6 +73110,72 @@
 		)
 	)
 	(symbol
+		(lib_id "power:GND")
+		(at 123.19 227.33 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7536597f-85ba-4d20-aaac-46ece17c7f78")
+		(property "Reference" "#PWR040"
+			(at 123.19 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 123.19 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 123.19 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 123.19 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 123.19 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "bde0bade-0da4-48bd-a028-e832ade01e7d")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#PWR040")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 448.31 478.79 0)
 		(unit 1)
@@ -74748,6 +75227,72 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "R94")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 110.49 227.33 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "7bb97bf0-9e00-406c-870e-8695e3e3b40c")
+		(property "Reference" "#PWR039"
+			(at 110.49 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 110.49 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 110.49 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 110.49 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 110.49 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "bf3bac7a-a1b3-4a2d-b00b-48fd0ccb23e9")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#PWR039")
 					(unit 1)
 				)
 			)
@@ -77626,7 +78171,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 57.15 281.94 0)
+		(at 57.15 284.48 0)
 		(mirror y)
 		(unit 1)
 		(exclude_from_sim no)
@@ -77635,7 +78180,7 @@
 		(dnp no)
 		(uuid "81526af0-bd94-499c-9564-8ded957ec051")
 		(property "Reference" "#PWR021"
-			(at 57.15 288.29 0)
+			(at 57.15 290.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -77644,7 +78189,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 57.15 291.338 90)
+			(at 57.15 288.29 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -77652,7 +78197,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 57.15 281.94 0)
+			(at 57.15 284.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -77661,7 +78206,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 57.15 281.94 0)
+			(at 57.15 284.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -77670,7 +78215,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 57.15 281.94 0)
+			(at 57.15 284.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -84488,7 +85033,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 187.706 288.29 90)
+			(at 192.024 288.29 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87481,16 +88026,15 @@
 	)
 	(symbol
 		(lib_id "54-00130:54-00130")
-		(at 49.53 275.59 0)
+		(at 49.53 278.13 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "a11b4abb-a9dc-4dc2-8589-9d3f840e26ef")
 		(property "Reference" "J7"
-			(at 44.7703 266.7 0)
+			(at 40.894 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87498,7 +88042,7 @@
 			)
 		)
 		(property "Value" "54-00130"
-			(at 44.7703 269.24 0)
+			(at 44.7703 271.78 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87506,7 +88050,7 @@
 			)
 		)
 		(property "Footprint" "54_00130:TENSILITY_54-00130"
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87516,7 +88060,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87525,7 +88069,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87534,7 +88078,7 @@
 			)
 		)
 		(property "PARTREV" "A"
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87544,7 +88088,7 @@
 			)
 		)
 		(property "MANUFACTURER" "TENSILITY"
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87554,7 +88098,7 @@
 			)
 		)
 		(property "SNAPEDA_PN" "54-00129"
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87564,7 +88108,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" "10.8mm"
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87574,7 +88118,7 @@
 			)
 		)
 		(property "STANDARD" "IPC-7351B"
-			(at 49.53 275.59 0)
+			(at 49.53 278.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -94909,7 +95453,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 187.706 328.93 90)
+			(at 191.77 328.93 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -99556,7 +100100,7 @@
 	)
 	(symbol
 		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
-		(at 57.15 280.67 90)
+		(at 57.15 283.21 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -99565,7 +100109,7 @@
 		(fields_autoplaced yes)
 		(uuid "cc4e5c57-65c8-4a43-babf-4069f4eb3346")
 		(property "Reference" "#FLG03"
-			(at 55.245 280.67 0)
+			(at 55.245 283.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -99574,7 +100118,7 @@
 			)
 		)
 		(property "Value" "PWR_FLAG"
-			(at 52.07 280.67 0)
+			(at 52.07 283.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -99583,7 +100127,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 57.15 280.67 0)
+			(at 57.15 283.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -99592,7 +100136,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 57.15 280.67 0)
+			(at 57.15 283.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -99601,7 +100145,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 57.15 280.67 0)
+			(at 57.15 283.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -101366,6 +101910,72 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "R9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 148.59 227.33 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "d2c37284-2d89-485f-8abf-f9b988357906")
+		(property "Reference" "#PWR085"
+			(at 148.59 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 148.59 231.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 148.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 148.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 148.59 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f1208206-df11-4a3b-a907-b0c2932fcbeb")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#PWR085")
 					(unit 1)
 				)
 			)
