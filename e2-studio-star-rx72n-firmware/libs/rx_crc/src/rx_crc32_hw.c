@@ -1016,6 +1016,13 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
       *crcdir_byte = data[i];
     }
   }
+#else
+  for (uint32_t i = k_crc_idx_start; i < k_crc_len_max; i++) {
+    if (i >= len) {
+      break;
+    }
+    *crcdir_byte = data[i];
+  }
 #endif /* RX_CRC32_USE_DMA */
 
   /*
