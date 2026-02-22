@@ -164,9 +164,6 @@ rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg)
             dmtmd |= (0U << 8U);   /* SZ = 00b → 8-bit  */
         }
 
-        /* Activation source — software request = 0b000000. */
-        /* (hardware trigger encoding left for future Phase 2 extension)  */
-
         ch->DMTMD.WORD = dmtmd;
     }
 
