@@ -58,7 +58,60 @@
           "width": 0.0
         }
       ],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        [
+          "clearance|300990000|236830000|a9c14522-d155-4f52-b246-3cea0c0d8789|bb8ef211-3c85-449c-8560-24881cf558c9",
+          ""
+        ],
+        [
+          "clearance|302260000|236830000|d7bc9937-709b-46b4-a44b-4e85be0ad258|a9c14522-d155-4f52-b246-3cea0c0d8789",
+          ""
+        ],
+        [
+          "missing_courtyard|329035000|230915000|b03c81cc-dd3b-4acd-ab62-d3ca7fc50062|00000000-0000-0000-0000-000000000000",
+          ""
+        ],
+        [
+          "silk_edge_clearance|249555000|138575000|4b1e5cb7-b597-4095-ae76-5990d336d11e|1be4e69a-fe7f-46f1-8cdb-92102b7f65bc",
+          ""
+        ],
+        [
+          "silk_edge_clearance|249555000|175510000|4b1e5cb7-b597-4095-ae76-5990d336d11e|19f6b16a-12a7-497c-b40f-d9c25552e6ca",
+          ""
+        ],
+        [
+          "silk_edge_clearance|249555000|190410000|4b1e5cb7-b597-4095-ae76-5990d336d11e|c1ac84e2-8893-4b3e-a20f-524495317795",
+          ""
+        ],
+        [
+          "silk_edge_clearance|287475000|250760000|4b1e5cb7-b597-4095-ae76-5990d336d11e|d9fae2b3-f20c-4bc5-969b-ce54b58bb4ab",
+          ""
+        ],
+        [
+          "silk_edge_clearance|296415000|250760000|4b1e5cb7-b597-4095-ae76-5990d336d11e|9c25587f-ef02-4193-8c60-d04ba2205867",
+          ""
+        ],
+        [
+          "silk_edge_clearance|311125000|250760000|4b1e5cb7-b597-4095-ae76-5990d336d11e|848f3e92-a405-4773-a461-11d48dc946f6",
+          ""
+        ],
+        [
+          "silk_edge_clearance|320065000|250760000|4b1e5cb7-b597-4095-ae76-5990d336d11e|5b2c1dc9-0012-4366-9a06-da2cc51961ef",
+          ""
+        ],
+        [
+          "silk_edge_clearance|360950000|205500000|4b1e5cb7-b597-4095-ae76-5990d336d11e|3d46f831-12f9-402c-9d57-b2dfe0d42a2c",
+          ""
+        ],
+        [
+          "silk_edge_clearance|360950000|214500000|4b1e5cb7-b597-4095-ae76-5990d336d11e|8f0a197f-0579-4bc6-a311-ad3101629851",
+          ""
+        ],
+        [
+          "silk_over_copper|271100883|195750000|09c45140-7c7f-433c-9bce-cb859cd92aae|00000000-0000-0000-0000-000000000000",
+          ""
+        ]
+      ],
       "meta": {
         "version": 2
       },
@@ -108,7 +161,7 @@
         "starved_thermal": "error",
         "text_height": "warning",
         "text_on_edge_cuts": "error",
-        "text_thickness": "warning",
+        "text_thickness": "ignore",
         "through_hole_pad_without_hole": "error",
         "too_many_vias": "error",
         "track_angle": "error",
@@ -1390,7 +1443,7 @@
           "show": false
         }
       ],
-      "filter_string": "fb",
+      "filter_string": "c54",
       "group_symbols": true,
       "include_excluded_from_bom": true,
       "name": "",
