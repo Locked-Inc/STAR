@@ -1,41 +1,55 @@
 import type { CSSProperties } from 'react';
 
 export const COLORS = {
-  panelBg: '#1a1d27',
-  border: '#2a2e42',
-  bodyBg: '#0f1117',
-  textMuted: '#9ca3af',
-  textDim: '#6b7280',
-  textPrimary: '#e2e8f0',
-  accent: '#3b82f6',
-  warning: '#f97316',
-  connected: '#22c55e',
-  connecting: '#eab308',
-  reconnecting: '#f97316',
-  disconnected: '#ef4444',
-  estopActive: '#7f1d1d',
-  estopDefault: '#dc2626',
+  // We rely more on transparent glass now, but keep logical colors for charts/text
+  panelBg: 'rgba(255, 255, 255, 0.04)',
+  border: 'rgba(255, 255, 255, 0.1)',
+  bodyBg: '#000000',
+  textMuted: '#8E8E93', // System Gray
+  textDim: '#AEAEB2',   // System Gray 2
+  textPrimary: '#FFFFFF',
+
+  // Accents (Apple System Colors)
+  accent: '#0A84FF', // System Blue
+  warning: '#FF9F0A', // System Orange
+
+  // Semantic aliases for new panels
+  primary: '#0A84FF',    // = accent (System Blue)
+  success: '#30D158',    // = connected (System Green)
+  danger: '#FF453A',     // = disconnected (System Red)
+
+  // Statuses
+  connected: '#30D158', // System Green
+  connecting: '#FF9F0A', // System Orange
+  reconnecting: '#FF9F0A',
+  disconnected: '#FF453A', // System Red
+
+  // E-Stop
+  estopActive: '#8E0000', // Darker red for active state
+  estopDefault: '#FF453A', // System Red
 } as const;
 
-const PANEL_BORDER_RADIUS = '6px';
-const PANEL_PADDING_VERTICAL = '6px';
-const PANEL_PADDING_HORIZONTAL = '10px';
-const PANEL_HEADER_FONT_SIZE = '11px';
-const PANEL_HEADER_LETTER_SPACING = '0.05em';
+export const PANEL_BORDER_RADIUS = '24px';
+const PANEL_PADDING_VERTICAL = '16px';
+const PANEL_PADDING_HORIZONTAL = '20px';
+const PANEL_HEADER_FONT_SIZE = '12px';
+const PANEL_HEADER_LETTER_SPACING = '0.1em';
 
 export const PANEL_CONTAINER_STYLE: CSSProperties = {
-  background: COLORS.panelBg,
-  border: `1px solid ${COLORS.border}`,
-  borderRadius: PANEL_BORDER_RADIUS,
-  overflow: 'hidden',
+  // The actual glass effect is handled by the className="glass-panel" in index.css
+  // but we keep padding and basic structure here.
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
 };
 
 export const PANEL_HEADER_STYLE: CSSProperties = {
   padding: `${PANEL_PADDING_VERTICAL} ${PANEL_PADDING_HORIZONTAL}`,
   borderBottom: `1px solid ${COLORS.border}`,
   fontSize: PANEL_HEADER_FONT_SIZE,
-  fontWeight: 'bold',
+  fontWeight: 600,
   color: COLORS.textMuted,
   textTransform: 'uppercase',
   letterSpacing: PANEL_HEADER_LETTER_SPACING,
+  background: 'rgba(0, 0, 0, 0.2)', // Slight darkening for header separation
 };

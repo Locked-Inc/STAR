@@ -2,28 +2,25 @@ import { useEffect, useRef } from 'react';
 import type { CSSProperties } from 'react';
 import { useDashboardStore } from '../store/dashboardStore';
 import type { LidarScan } from '../proto/star/v1/ui';
-import { PANEL_CONTAINER_STYLE, PANEL_HEADER_STYLE } from '../theme';
 
-const CANVAS_SIZE_PX = 300;
-const PIXELS_PER_METER = 80;
+const CANVAS_SIZE_PX = 200;
+const PIXELS_PER_METER = 8;
 const MAX_RANGE_M = 12;
 const INTENSITY_DIVISOR = 255;
-const RING_STEP = 2;
-const RING_START = 1;
-const POINT_HALF_WIDTH = 1;    // fillRect uses half-width
-const POINT_SIZE = POINT_HALF_WIDTH * 2;
-const RING_STROKE_ALPHA = 0.05;
+const POINT_RADIUS = 1.5;
 
-const CONTAINER_STYLE: CSSProperties = { ...PANEL_CONTAINER_STYLE };
-const HEADER_STYLE: CSSProperties = { ...PANEL_HEADER_STYLE };
-const CONTENT_STYLE: CSSProperties = { padding: '8px' };
-const CANVAS_STYLE: CSSProperties = { background: '#0a0c14', borderRadius: '4px', display: 'block' };
+const CANVAS_STYLE: CSSProperties = {
+  background: '#060c18', // Deep navy background as requested
+  borderRadius: '50%', // Circle canvas mask
+  border: '0.5px solid rgba(255, 255, 255, 0.15)',
+  display: 'block',
+  boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.4), 0 0 20px rgba(0,229,255,0.05)',
+};
 
 export function LidarPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
-    // Draw any scan already in the store before subscribing
     const initialScan = useDashboardStore.getState().lidarScan;
     if (
       initialScan &&
@@ -33,11 +30,9 @@ export function LidarPanel() {
       drawScan(canvasRef.current, initialScan);
     }
 
-    // Subscribe to Zustand without triggering React re-renders
     const unsub = useDashboardStore.subscribe(
       (state) => state.lidarScan,
       (scan: LidarScan | null) => {
-        // Validate SoA invariant before drawing
         if (
           scan &&
           scan.angleRad.length === scan.rangeM.length &&
@@ -51,11 +46,23 @@ export function LidarPanel() {
   }, []);
 
   return (
-    <div style={CONTAINER_STYLE}>
-      <div style={HEADER_STYLE}>
-        LiDAR
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center' }}>
+      <div
+        className="panel-header"
+        style={{
+          width: '100%',
+          padding: '16px 24px 8px 24px',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: 'rgba(255, 255, 255, 0.5)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          userSelect: 'none',
+        }}
+      >
+        LiDAR Radar
       </div>
-      <div style={CONTENT_STYLE}>
+      <div className="panel-body" style={{ padding: '8px 24px 24px 24px', display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%' }}>
         <canvas
           ref={canvasRef}
           width={CANVAS_SIZE_PX}
@@ -77,32 +84,54 @@ function drawScan(canvas: HTMLCanvasElement | null, scan: LidarScan): void {
 
   ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-  // Draw range rings for reference
-  ctx.strokeStyle = `rgba(255, 255, 255, ${RING_STROKE_ALPHA})`;
+  // Faint dashed max-range ring
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
   ctx.lineWidth = 1;
-  for (let r = RING_START; r <= MAX_RANGE_M; r += RING_STEP) {
-    ctx.beginPath();
-    ctx.arc(cx, cy, r * PIXELS_PER_METER, 0, Math.PI * 2);
-    ctx.stroke();
-  }
+  ctx.setLineDash([4, 4]); // Dashed
+  ctx.beginPath();
+  ctx.arc(cx, cy, MAX_RANGE_M * PIXELS_PER_METER, 0, Math.PI * 2);
+  ctx.stroke();
+
+  // Mid range ring
+  ctx.beginPath();
+  ctx.arc(cx, cy, (MAX_RANGE_M / 2) * PIXELS_PER_METER, 0, Math.PI * 2);
+  ctx.stroke();
+
+  ctx.setLineDash([]); // Reset dash for regular lines
+
+  ctx.fillStyle = '#00e5ff'; // Cyan point color
 
   // Draw points
   for (let i = 0; i < scan.angleRad.length; i++) {
     const d = scan.rangeM[i];
     const a = scan.angleRad[i];
-    const q = Math.max(0, Math.min(1, scan.intensity[i] / INTENSITY_DIVISOR));
+    const q = Math.max(0.1, Math.min(1, scan.intensity[i] / INTENSITY_DIVISOR)); // Ensure min opacity
     if (d <= 0 || d > MAX_RANGE_M) continue; // filter invalid points
 
     const x = cx + Math.cos(a) * d * PIXELS_PER_METER;
     const y = cy - Math.sin(a) * d * PIXELS_PER_METER;
 
-    ctx.fillStyle = `rgba(0, 220, 80, ${q.toFixed(2)})`;
-    ctx.fillRect(x - POINT_HALF_WIDTH, y - POINT_HALF_WIDTH, POINT_SIZE, POINT_SIZE);
+    ctx.globalAlpha = q;
+    ctx.beginPath();
+    ctx.arc(x, y, POINT_RADIUS, 0, Math.PI * 2);
+    ctx.fill();
   }
+  ctx.globalAlpha = 1.0;
 
-  // Robot center
-  ctx.fillStyle = '#3b82f6';
+  // Drawn triangular robot at center pointing upward (angle 0 goes right usually, we will just point it 'forward')
+  ctx.fillStyle = '#4ade80'; // Neon green robot arrow
+  ctx.shadowColor = 'rgba(74, 222, 128, 0.6)';
+  ctx.shadowBlur = 6;
+  const triangleSize = 5;
+
   ctx.beginPath();
-  ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+  // Math: 0 rad usually goes Right. For standard robotics, X is forward, Y is left.
+  // Assuming robot is pointing right on the canvas. So nose is (triangleSize, 0)
+  ctx.moveTo(cx + triangleSize, cy);
+  ctx.lineTo(cx - triangleSize, cy - triangleSize);
+  ctx.lineTo(cx - triangleSize, cy + triangleSize);
+  ctx.closePath();
   ctx.fill();
+
+  ctx.shadowBlur = 0;
 }
