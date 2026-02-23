@@ -53,14 +53,13 @@ body {
  */
 .glass-panel {
   position: relative;
-  border-radius: 0;
-  background: transparent;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.03);
   backdrop-filter: blur(24px) saturate(180%) contrast(1.1);
   -webkit-backdrop-filter: blur(24px) saturate(180%) contrast(1.1);
-  border: 0.5px solid rgba(255, 255, 255, 0.18);
+  border: 0.5px solid rgba(255, 255, 255, 0.08);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.45),
-    inset 0 1.5px 0 rgba(255, 255, 255, 0.12);
+    0 4px 24px rgba(0, 0, 0, 0.35);
   transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s ease;
   /* Tiling WM: flex column so panel-header is fixed, panel-body fills & scrolls */
   display: flex;
@@ -76,17 +75,12 @@ body {
   left: 0;
   right: 0;
   bottom: 0;
-  border-radius: 0;
-  background: rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  background: transparent;
   box-shadow:
-    inset -10px -8px 0px -11px rgba(255, 255, 255, 0.9),
-    inset 0px -9px 0px -8px rgba(255, 255, 255, 0.9),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.15);
-  filter: blur(0.5px) brightness(112%);
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.06);
   pointer-events: none;
-  /* Let clicks pass through to content */
   z-index: -1;
-  /* Sit neatly behind panel content */
 }
 
 /* Draggable specific state */
@@ -390,4 +384,109 @@ body {
   /* allow shrink below content height */
   overflow-y: auto;
   overflow-x: hidden;
+}
+
+/* ────────────────────────────────────
+   Panel Maximize Button
+   ──────────────────────────────────── */
+.panel-maximize-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.3);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s, color 0.15s;
+  pointer-events: auto;
+}
+
+.glass-panel:hover .panel-maximize-btn {
+  opacity: 1;
+}
+
+.panel-maximize-btn:hover {
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* ────────────────────────────────────
+   Maximize Overlay (fullscreen panel)
+   ──────────────────────────────────── */
+.panel-maximize-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: maximize-fade-in 0.2s ease-out;
+  cursor: pointer;
+}
+
+@keyframes maximize-fade-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+.panel-maximize-content {
+  width: calc(100vw - 40px);
+  height: calc(100vh - 40px);
+  border-radius: 16px !important;
+  position: relative;
+  cursor: default;
+  animation: maximize-scale-in 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+}
+
+@keyframes maximize-scale-in {
+  from {
+    transform: scale(0.95);
+    opacity: 0.8;
+  }
+
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.panel-maximize-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  z-index: 10;
+  width: 32px;
+  height: 32px;
+  border: 0.5px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, color 0.15s;
+}
+
+.panel-maximize-close:hover {
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }

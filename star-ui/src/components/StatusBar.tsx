@@ -5,11 +5,15 @@ import { useDashboardStore } from '../store/dashboardStore';
 import type { ConnectionState } from '../store/dashboardStore';
 import { COLORS } from '../theme';
 import { RobotMode } from '../proto/star/v1/telemetry';
+import { VIEWS } from '../store/useWindowStore';
+import type { ViewName } from '../store/useWindowStore';
 
 interface StatusBarProps {
   sendEStop: (reason: string) => void;
+  sendEStopRelease: () => void;
   onResetLayout: () => void;
-  applyPreset: (presetName: 'DEFAULT' | 'FOCUS' | 'DATA') => void;
+  activeView: ViewName;
+  setView: (view: ViewName) => void;
 }
 
 const ESTOP_SOURCE_USER_UI = 'user_ui_button';
@@ -21,7 +25,7 @@ const DOT_COLORS: Record<ConnectionState, string> = {
   disconnected: COLORS.disconnected,
 };
 
-export function StatusBar({ sendEStop, onResetLayout, applyPreset }: StatusBarProps) {
+export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeView, setView }: StatusBarProps) {
   const { connectionState, dataIsStale, eStopActive, systemStatus } = useDashboardStore(
     useShallow((s) => ({
       connectionState: s.connectionState,
@@ -36,6 +40,11 @@ export function StatusBar({ sendEStop, onResetLayout, applyPreset }: StatusBarPr
   function handleEStop(): void {
     sendEStop(ESTOP_SOURCE_USER_UI);
     useDashboardStore.getState().triggerEStop();
+  }
+
+  function handleResume(): void {
+    sendEStopRelease();
+    useDashboardStore.getState().releaseEStop();
   }
 
   const styles = `
@@ -225,19 +234,36 @@ export function StatusBar({ sendEStop, onResetLayout, applyPreset }: StatusBarPr
                 boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
                 minWidth: '200px'
               }}>
-                {(['DEFAULT', 'FOCUS', 'DATA'] as const).map(preset => (
-                  <button
-                    key={preset}
-                    className="reset-btn"
-                    style={{ justifyContent: 'flex-start', padding: '10px 12px', background: 'transparent', border: 'none', borderRadius: '8px' }}
-                    onClick={() => {
-                      applyPreset(preset);
-                      setPresetOpen(false);
-                    }}
-                  >
-                    <span style={{ fontSize: '13px', fontWeight: 500 }}>{preset === 'DEFAULT' ? 'Default Grid' : preset === 'FOCUS' ? 'Focus Mode' : 'Data Mode'}</span>
-                  </button>
-                ))}
+                {(Object.keys(VIEWS) as ViewName[]).map(viewName => {
+                  const v = VIEWS[viewName];
+                  const isActive = viewName === activeView;
+                  return (
+                    <button
+                      key={viewName}
+                      className="reset-btn"
+                      style={{
+                        justifyContent: 'flex-start',
+                        padding: '10px 12px',
+                        background: isActive ? 'rgba(255,255,255,0.08)' : 'transparent',
+                        border: isActive ? '0.5px solid rgba(255,255,255,0.15)' : 'none',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        gap: '10px',
+                        alignItems: 'center',
+                      }}
+                      onClick={() => {
+                        setView(viewName);
+                        setPresetOpen(false);
+                      }}
+                    >
+                      <span style={{ fontSize: '16px' }}>{v.icon}</span>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: '2px' }}>
+                        <span style={{ fontSize: '13px', fontWeight: 600, color: isActive ? '#fff' : 'rgba(255,255,255,0.7)' }}>{v.label}</span>
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)' }}>{v.desc}</span>
+                      </div>
+                    </button>
+                  );
+                })}
                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
                 <button
                   className="reset-btn"
@@ -253,15 +279,41 @@ export function StatusBar({ sendEStop, onResetLayout, applyPreset }: StatusBarPr
             )}
           </div>
 
-          <button
-            type="button"
-            className="estop-btn"
-            onClick={handleEStop}
-            disabled={eStopActive}
-            aria-label={eStopActive ? 'Emergency stop active' : 'Activate emergency stop'}
-          >
-            {eStopActive ? 'E-STOP ACTIVE' : 'E-STOP'}
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {eStopActive && (
+              <button
+                type="button"
+                onClick={handleResume}
+                aria-label="Resume from emergency stop"
+                style={{
+                  background: 'rgba(48,209,88,0.85)',
+                  backdropFilter: 'blur(12px)',
+                  border: '0.5px solid rgba(48,209,88,0.5)',
+                  borderRadius: '12px',
+                  padding: '8px 20px',
+                  color: '#fff',
+                  fontWeight: 700,
+                  fontSize: '13px',
+                  letterSpacing: '0.1em',
+                  textTransform: 'uppercase' as const,
+                  cursor: 'pointer',
+                  transition: 'all 0.2s cubic-bezier(0.25, 1, 0.5, 1)',
+                  boxShadow: '0 4px 12px rgba(48,209,88,0.3)',
+                }}
+              >
+                RESUME
+              </button>
+            )}
+            <button
+              type="button"
+              className="estop-btn"
+              onClick={handleEStop}
+              disabled={eStopActive}
+              aria-label={eStopActive ? 'Emergency stop active' : 'Activate emergency stop'}
+            >
+              {eStopActive ? 'E-STOP ACTIVE' : 'E-STOP'}
+            </button>
+          </div>
         </div>
       </div>
     </>

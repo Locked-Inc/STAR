@@ -35,6 +35,7 @@ interface DashboardState {
   markStale: () => void;
   addAlert: (alert: Alert) => void;
   triggerEStop: () => void;
+  releaseEStop: () => void;
 }
 
 export const useDashboardStore = create<DashboardState>()(
@@ -116,5 +117,7 @@ export const useDashboardStore = create<DashboardState>()(
     })),
 
     triggerEStop: () => set({ eStopActive: true }),
+
+    releaseEStop: () => set({ eStopActive: false }),
   }))
 );

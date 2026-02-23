@@ -1,0 +1,146 @@
+import { useEffect, useRef, useCallback } from 'react';
+import { useDashboardStore } from '../store/dashboardStore';
+import { COLORS } from '../theme';
+
+const MAX_POINTS = 120; // ~2 minutes at 1 Hz
+const GRAPH_W = 280;
+const GRAPH_H = 60;
+
+interface Series {
+    label: string;
+    color: string;
+    getValue: () => number | undefined;
+}
+
+const SERIES: Series[] = [
+    { label: 'FL Motor', color: COLORS.primary, getValue: () => useDashboardStore.getState().motors?.[0]?.velocityMps },
+    { label: 'FR Motor', color: COLORS.success, getValue: () => useDashboardStore.getState().motors?.[1]?.velocityMps },
+    { label: 'CPU %', color: COLORS.warning, getValue: () => useDashboardStore.getState().telemetry?.cpuUsagePercent },
+    { label: 'Temp °C', color: COLORS.danger, getValue: () => useDashboardStore.getState().telemetry?.temperatureCelsius },
+];
+
+/**
+ * Time-Series Graphs Panel — buffers last N telemetry values and renders
+ * sparkline SVG charts in real-time.
+ */
+export function TimeSeriesPanel() {
+    const buffers = useRef<Map<string, number[]>>(new Map());
+    const canvasRefs = useRef<Map<string, SVGSVGElement | null>>(new Map());
+    const rafId = useRef<number>(0);
+
+    // Initialize buffers
+    if (buffers.current.size === 0) {
+        for (const s of SERIES) {
+            buffers.current.set(s.label, []);
+        }
+    }
+
+    const sample = useCallback(() => {
+        for (const s of SERIES) {
+            const val = s.getValue();
+            const buf = buffers.current.get(s.label)!;
+            if (val != null) {
+                buf.push(val);
+                if (buf.length > MAX_POINTS) buf.shift();
+            }
+        }
+    }, []);
+
+    // Draw sparklines
+    const draw = useCallback(() => {
+        for (const s of SERIES) {
+            const svg = canvasRefs.current.get(s.label);
+            const buf = buffers.current.get(s.label)!;
+            if (!svg || buf.length < 2) continue;
+
+            const min = Math.min(...buf);
+            const max = Math.max(...buf);
+            const range = max - min || 1;
+
+            const points = buf.map((v, i) => {
+                const x = (i / (MAX_POINTS - 1)) * GRAPH_W;
+                const y = GRAPH_H - ((v - min) / range) * (GRAPH_H - 4) - 2;
+                return `${x},${y}`;
+            }).join(' ');
+
+            // Update the polyline
+            const polyline = svg.querySelector('polyline');
+            if (polyline) {
+                polyline.setAttribute('points', points);
+            }
+
+            // Update value label
+            const text = svg.querySelector('text');
+            if (text) {
+                text.textContent = buf[buf.length - 1].toFixed(2);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            sample();
+            draw();
+        }, 1000); // 1 Hz sampling
+
+        return () => {
+            clearInterval(interval);
+            cancelAnimationFrame(rafId.current);
+        };
+    }, [sample, draw]);
+
+    return (
+        <>
+            <div
+                className="panel-header"
+                style={{
+                    padding: '16px 20px 8px 20px',
+                    fontSize: '11px', fontWeight: 600,
+                    color: 'rgba(255,255,255,0.5)',
+                    textTransform: 'uppercase' as const,
+                    letterSpacing: '0.12em',
+                    userSelect: 'none' as const,
+                }}
+            >
+                Time Series
+            </div>
+
+            <div className="panel-body" style={{ padding: '8px 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {SERIES.map(s => (
+                    <div key={s.label} style={{
+                        background: 'rgba(255,255,255,0.03)', borderRadius: '6px',
+                        padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '10px',
+                    }}>
+                        <div style={{ width: '70px', flexShrink: 0 }}>
+                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                {s.label}
+                            </div>
+                        </div>
+                        <svg
+                            ref={el => { canvasRefs.current.set(s.label, el); }}
+                            viewBox={`0 0 ${GRAPH_W} ${GRAPH_H}`}
+                            style={{ flex: 1, height: '40px' }}
+                            preserveAspectRatio="none"
+                        >
+                            <polyline
+                                points=""
+                                fill="none"
+                                stroke={s.color}
+                                strokeWidth="1.5"
+                                strokeLinejoin="round"
+                                vectorEffect="non-scaling-stroke"
+                            />
+                            <text
+                                x={GRAPH_W - 2} y="12"
+                                textAnchor="end" fill={s.color}
+                                fontSize="11" fontFamily="monospace" fontWeight="600"
+                            >
+                                —
+                            </text>
+                        </svg>
+                    </div>
+                ))}
+            </div>
+        </>
+    );
+}

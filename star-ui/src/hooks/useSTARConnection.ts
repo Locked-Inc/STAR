@@ -18,6 +18,7 @@ function getReconnectDelay(attempt: number): number {
 export function useSTARConnection(url: string): {
   sendControllerState: (state: ControllerState) => void;
   sendEStop: (reason: string) => void;
+  sendEStopRelease: () => void;
 } {
   const wsRef = useRef<WebSocket | null>(null);
   const attemptRef = useRef(0);
@@ -118,5 +119,15 @@ export function useSTARConnection(url: string): {
     }
   }
 
-  return { sendControllerState, sendEStop };
+  function sendEStopRelease(): void {
+    const env = STAREnvelope.create({
+      payload: {
+        oneofKind: 'estop',
+        estop: { active: false, reason: 'User released E-Stop', timestampUs: String(Date.now() * MS_TO_US) },
+      },
+    });
+    sendRaw(env);
+  }
+
+  return { sendControllerState, sendEStop, sendEStopRelease };
 }

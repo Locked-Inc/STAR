@@ -1,5 +1,5 @@
-// LAYOUT ENGINE: Tiling WM (react-grid-layout)
-import { useEffect, useRef, useState } from 'react';
+// LAYOUT ENGINE: Tiling WM (react-grid-layout) with view-based layout system
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useSTARConnection } from './hooks/useSTARConnection';
 import { StatusBar } from './components/StatusBar';
 import { TeleopPanel } from './components/TeleopPanel';
@@ -12,13 +12,20 @@ import { PacketAnalyzer } from './components/PacketAnalyzer';
 import { ImuPanel } from './components/ImuPanel';
 import { SystemHealthPanel } from './components/SystemHealthPanel';
 import { CameraFeed } from './components/CameraFeed';
-import { useWindowStore, PRESETS } from './store/useWindowStore';
+import { GpsPanel } from './components/GpsPanel';
+import { TimeSeriesPanel } from './components/TimeSeriesPanel';
+import { TransportDiagPanel } from './components/TransportDiagPanel';
+import { PidTuningPanel } from './components/PidTuningPanel';
+import { FirmwarePanel } from './components/FirmwarePanel';
+import { Nav2GoalPanel } from './components/Nav2GoalPanel';
+import { DiagLogPanel } from './components/DiagLogPanel';
+import { useWindowStore, VIEWS } from './store/useWindowStore';
 import type { Layouts } from './store/useWindowStore';
 import { useDashboardStore } from './store/dashboardStore';
 
 // react-grid-layout v2 native API
 // @ts-ignore
-import { ResponsiveGridLayout, useContainerWidth, verticalCompactor } from 'react-grid-layout';
+import { ResponsiveGridLayout, useContainerWidth } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
 
@@ -26,45 +33,89 @@ const WS_PORT: number = Number(import.meta.env.VITE_WS_PORT) || 8080;
 const WS_PROTOCOL = window.location.protocol === 'https:' ? 'wss' : 'ws';
 const WS_URL = `${WS_PROTOCOL}://${window.location.hostname}:${WS_PORT}/ws`;
 
-const TOPBAR_HEIGHT = 80; // approximate height of StatusBar accounting for padding
-const TOTAL_ROW_UNITS = 18; // 24x18 grid is what our presets use
+const TOPBAR_HEIGHT = 80;
+const TOTAL_ROW_UNITS = 18;
+const GRID_GAP = 12; // px gap between panels
+
+// ────────────────────────────────────
+// Panel registry — maps key → component
+// ────────────────────────────────────
+function usePanelRegistry(sendControllerState: (s: any) => void): Record<string, ReactNode> {
+  return {
+    movement: <TeleopPanel sendControllerState={sendControllerState} />,
+    motors: <MotorPanel />,
+    odometry: <OdometryPanel />,
+    lidar: <LidarPanel />,
+    battery: <BatteryPanel />,
+    packet: <PacketAnalyzer />,
+    alerts: <AlertsPanel />,
+    imu: <ImuPanel />,
+    health: <SystemHealthPanel />,
+    camera: <CameraFeed />,
+    gps: <GpsPanel />,
+    timeseries: <TimeSeriesPanel />,
+    transport: <TransportDiagPanel />,
+    pid: <PidTuningPanel />,
+    firmware: <FirmwarePanel />,
+    nav2: <Nav2GoalPanel />,
+    diaglog: <DiagLogPanel />,
+  };
+}
 
 function App() {
-  const { sendControllerState, sendEStop } = useSTARConnection(WS_URL);
-  const { layouts, updateLayouts, applyPreset, resetLayout } = useWindowStore();
+  const { sendControllerState, sendEStop, sendEStopRelease } = useSTARConnection(WS_URL);
+  const {
+    activeView,
+    viewLayouts,
+    maximizedPanel,
+    setView,
+    updateLayouts,
+    toggleMaximize,
+    resetLayout,
+  } = useWindowStore();
   const connectionState = useDashboardStore(s => s.connectionState);
+  const panelRegistry = usePanelRegistry(sendControllerState);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const [rowHeight, setRowHeight] = useState(64);
 
-  // v2 hook for container width measurement
   const { width: gridWidth, containerRef: widthRef, mounted: widthMounted } = useContainerWidth();
 
-  // Responsive layout row height calculation
+  const view = VIEWS[activeView];
+  const isScrollable = view.scrollable ?? false;
+
+  // Responsive row height — only for non-scrollable views
   useEffect(() => {
-    if (!containerRef.current) return;
+    if (!containerRef.current || isScrollable) return;
 
     const dashboardRoot = containerRef.current;
     const ro = new ResizeObserver(([entry]) => {
       const { height } = entry.contentRect;
-      // Recalculate rowHeight so 18 rows fill the screen perfectly
-      const newRowHeight = Math.floor((height - TOPBAR_HEIGHT) / TOTAL_ROW_UNITS);
-      setRowHeight(Math.max(newRowHeight, 20)); // Keep a minimum
+      // Account for gaps (17 inter-row gaps) + container padding (top + bottom)
+      const gapTotal = (TOTAL_ROW_UNITS - 1) * GRID_GAP + 2 * GRID_GAP;
+      const newRowHeight = Math.floor((height - TOPBAR_HEIGHT - gapTotal) / TOTAL_ROW_UNITS);
+      setRowHeight(Math.max(newRowHeight, 20));
     });
 
     ro.observe(dashboardRoot);
     return () => ro.disconnect();
-  }, []);
+  }, [isScrollable]);
 
-  const handleResetLayout = () => {
-    resetLayout();
-  };
+  // For scrollable (FULL) view, use a fixed row height
+  const effectiveRowHeight = isScrollable ? 48 : rowHeight;
+
+  // Resolve layouts: user overrides → default from view definition
+  const activeLayouts: Layouts = viewLayouts[activeView] ?? view.layouts;
+
+  // Escape key to exit maximize
+  useEffect(() => {
+    if (!maximizedPanel) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') toggleMaximize(maximizedPanel); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [maximizedPanel, toggleMaximize]);
 
   const isLost = connectionState === 'disconnected';
-
-  // Fallback to default if store is empty
-  const hasLayout = layouts && Object.keys(layouts).length > 0;
-  const activeLayouts = hasLayout ? (layouts as unknown as Layouts) : PRESETS.DEFAULT;
 
   return (
     <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
@@ -76,11 +127,17 @@ function App() {
 
       {/* Top Fixed Area */}
       <div style={{ zIndex: 1000, height: `${TOPBAR_HEIGHT}px` }}>
-        <StatusBar sendEStop={sendEStop} onResetLayout={handleResetLayout} applyPreset={applyPreset} />
+        <StatusBar
+          sendEStop={sendEStop}
+          sendEStopRelease={sendEStopRelease}
+          onResetLayout={resetLayout}
+          activeView={activeView}
+          setView={setView}
+        />
       </div>
 
-      {/* Responsive Grid Area — v2 uses explicit width prop */}
-      <div ref={widthRef} style={{ flex: 1, overflow: 'hidden' }}>
+      {/* Responsive Grid Area */}
+      <div ref={widthRef} style={{ flex: 1, overflow: isScrollable ? 'auto' : 'hidden' }}>
         {widthMounted && (
           <ResponsiveGridLayout
             className="layout"
@@ -89,49 +146,58 @@ function App() {
             onLayoutChange={(currentLayout: any, allLayouts: any) => updateLayouts(currentLayout, allLayouts)}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
             cols={{ lg: 24, md: 18, sm: 12, xs: 8, xxs: 6 }}
-            rowHeight={rowHeight}
-            margin={[0, 0]}
-            containerPadding={[0, 0]}
+            rowHeight={effectiveRowHeight}
+            margin={[GRID_GAP, GRID_GAP]}
+            containerPadding={[GRID_GAP, GRID_GAP]}
             compactType="vertical"
-            isBounded={true}
+            isBounded={!isScrollable}
             isDraggable={true}
             isResizable={true}
             draggableHandle=".panel-header"
             resizeHandles={['se', 'sw', 'ne', 'nw', 'e', 'w', 's', 'n']}
           >
-            <div key="movement" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.05s', borderRight: '0.5px solid rgba(255,255,255,0.1)', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <TeleopPanel sendControllerState={sendControllerState} />
-            </div>
-            <div key="motors" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.1s', borderRight: '0.5px solid rgba(255,255,255,0.1)', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <MotorPanel />
-            </div>
-            <div key="odometry" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.35s', borderRight: '0.5px solid rgba(255,255,255,0.1)', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <OdometryPanel />
-            </div>
-            <div key="lidar" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.15s', borderRight: '0.5px solid rgba(255,255,255,0.1)', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <LidarPanel />
-            </div>
-            <div key="battery" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.25s', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <BatteryPanel />
-            </div>
-            <div key="packet" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.2s', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <PacketAnalyzer />
-            </div>
-            <div key="alerts" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.3s' }}>
-              <AlertsPanel />
-            </div>
-            <div key="imu" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.35s', borderRight: '0.5px solid rgba(255,255,255,0.1)', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <ImuPanel />
-            </div>
-            <div key="health" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.4s', borderRight: '0.5px solid rgba(255,255,255,0.1)', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <SystemHealthPanel />
-            </div>
-            <div key="camera" className="glass-panel panel-hover-container stagger-fade-in" style={{ animationDelay: '0.45s', borderBottom: '0.5px solid rgba(255,255,255,0.1)' }}>
-              <CameraFeed />
-            </div>
+            {view.panels.map((key, i) => (
+              <div
+                key={key}
+                className="glass-panel panel-hover-container stagger-fade-in"
+                style={{
+                  animationDelay: `${0.05 + i * 0.05}s`,
+                }}
+              >
+                {/* Maximize button in header */}
+                <button
+                  className="panel-maximize-btn"
+                  onClick={() => toggleMaximize(key)}
+                  title="Maximize panel"
+                  aria-label={`Maximize ${key} panel`}
+                >
+                  ⤢
+                </button>
+                {panelRegistry[key]}
+              </div>
+            ))}
           </ResponsiveGridLayout>
         )}
       </div>
+
+      {/* Maximized Panel Overlay */}
+      {maximizedPanel && panelRegistry[maximizedPanel] && (
+        <div
+          className="panel-maximize-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) toggleMaximize(maximizedPanel); }}
+        >
+          <div className="glass-panel panel-maximize-content">
+            <button
+              className="panel-maximize-close"
+              onClick={() => toggleMaximize(maximizedPanel)}
+              title="Exit fullscreen (Esc)"
+            >
+              ✕
+            </button>
+            {panelRegistry[maximizedPanel]}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
