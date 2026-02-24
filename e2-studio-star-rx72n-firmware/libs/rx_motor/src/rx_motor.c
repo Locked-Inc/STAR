@@ -16,29 +16,29 @@
  * - **Platform:** STAR autonomous robot with differential drive
  * - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
  * - **Driver:** DRV8263H dual H-bridge with integrated current sensing and protection
- * - **Control Mode:** PH/EN (Phase/Enable) mode for simplified direction control
+ * - **Control Mode:** IN2/IN1 (sign-magnitude) mode for simplified direction control
  * - **PWM Frequency:** 20 kHz (inaudible, efficient, low EMI)
  * - **Dead-time:** 1 us (prevents shoot-through during FET transitions)
  *
- * ## Motor Control Modes (PH/EN Configuration)
+ * ## Motor Control Modes (IN2/IN1 Configuration)
  *
- * The DRV8263H H-bridge operates in PH/EN mode for simplified bidirectional control:
+ * The DRV8263H H-bridge operates in IN2/IN1 mode for simplified bidirectional control:
  *
- * ### PH/EN Signal Mapping (DRV8263H pin names: IN2/IN1):
+ * ### IN2/IN1 Signal Mapping:
  * - **IN2 (direction)** -> output_a: Direction control (HIGH=forward, LOW=reverse)
  * - **IN1 (PWM)** -> output_b: Speed control (PWM duty cycle 0-100%)
  *
  * ### Operating States:
  *
- * | Mode | PH (output_a) | EN (output_b) | Motor Behavior | Current Path |
+ * | Mode | IN2 (output_a) | IN1 (output_b) | Motor Behavior | Current Path |
  * |------|---------------|---------------|----------------|--------------|
  * | **Forward** | HIGH (100%) | PWM (0-100%) | Forward rotation | High-side A -> Motor -> Low-side B |
  * | **Reverse** | LOW (0%) | PWM (0-100%) | Reverse rotation | High-side B -> Motor -> Low-side A |
  * | **Coast** | LOW (0%) | LOW (0%) | High impedance | Free-wheeling via body diodes |
- * | **Brake** | [FAIL] NOT SUPPORTED | [FAIL] | Falls back to coast | N/A in PH/EN mode |
+ * | **Brake** | [FAIL] NOT SUPPORTED | [FAIL] | Falls back to coast | N/A in IN2/IN1 mode |
  *
  * **Note:** Active braking (short-circuit brake) requires IN/IN control mode, not supported in
- * this PH/EN implementation. Coast mode provides sufficient deceleration for the STAR platform.
+ * this IN2/IN1 implementation. Coast mode provides sufficient deceleration for the STAR platform.
  *
  * ## PWM Frequency Selection
  *
@@ -227,10 +227,10 @@ static const char s_tag[] = "MOTOR";
 
 /**
  * @enum motor_constants_t
- * @brief Motor control duty cycle constants for DRV8263H PH/EN mode operation
+ * @brief Motor control duty cycle constants for DRV8263H IN2/IN1 mode operation
  *
  * @details
- * Defines valid duty cycle ranges and special values for PH/EN control mode. In PH/EN mode,
+ * Defines valid duty cycle ranges and special values for IN2/IN1 control mode. In IN2/IN1 mode,
  * the duty cycle sign determines direction (+ = forward, - = reverse) and magnitude determines
  * speed (0-100%). These constants provide named values for duty cycle limits and direction
  * encoding for the IN2 (direction) signal.
@@ -251,9 +251,9 @@ typedef enum : int16_t {
   /**
    * @brief Minimum duty cycle (-100% = full reverse)
    * @details
-   * Represents maximum reverse speed. In PH/EN mode:
-   * - PH (output_a) = LOW (0%)
-   * - EN (output_b) = PWM at 100% duty
+   * Represents maximum reverse speed. In IN2/IN1 mode:
+   * - IN2 (output_a) = LOW (0%)
+   * - IN1 (output_b) = PWM at 100% duty
    * - Motor rotates in reverse direction at full speed
    * @par Value: -100 (integer percentage)
    * @par Units: Percent (%)
@@ -264,9 +264,9 @@ typedef enum : int16_t {
   /**
    * @brief Maximum duty cycle (+100% = full forward)
    * @details
-   * Represents maximum forward speed. In PH/EN mode:
-   * - PH (output_a) = HIGH (100%)
-   * - EN (output_b) = PWM at 100% duty
+   * Represents maximum forward speed. In IN2/IN1 mode:
+   * - IN2 (output_a) = HIGH (100%)
+   * - IN1 (output_b) = PWM at 100% duty
    * - Motor rotates in forward direction at full speed
    * @par Value: +100 (integer percentage)
    * @par Units: Percent (%)
@@ -277,9 +277,9 @@ typedef enum : int16_t {
   /**
    * @brief Zero duty cycle (0% = stopped/coast)
    * @details
-   * Motor stopped in coast mode (high impedance). In PH/EN mode:
-   * - PH (output_a) = LOW (0%)
-   * - EN (output_b) = LOW (0%)
+   * Motor stopped in coast mode (high impedance). In IN2/IN1 mode:
+   * - IN2 (output_a) = LOW (0%)
+   * - IN1 (output_b) = LOW (0%)
    * - Motor free-wheels via body diodes (back-EMF decay)
    * @par Value: 0 (integer percentage)
    * @par Units: Percent (%)
@@ -287,35 +287,8 @@ typedef enum : int16_t {
    */
   k_motor_duty_zero = 0,
 
-  /**
-   * @brief IN2 signal for forward direction (100% = HIGH)
-   * @details
-   * IN2 (direction) signal value for forward motor rotation. In PH/EN mode, IN2 determines direction:
-   * - PH = HIGH (100%) -> Forward rotation
-   * - PH = LOW (0%) -> Reverse rotation
-   *
-   * This constant is used to set output_a when duty cycle is positive (forward).
-   * @par Value: 100 (represents logic HIGH as 100% duty)
-   * @par Signal: PH (Phase, output_a)
-   * @par Direction: Forward
-   * @par H-Bridge State: High-side A ON, Low-side B ON (current: A -> Motor -> B)
-   */
-  k_motor_in2_high = 100,
-
-  /**
-   * @brief IN2 signal for reverse direction (0% = LOW)
-   * @details
-   * IN2 (direction) signal value for reverse motor rotation. In PH/EN mode, IN2 determines direction:
-   * - PH = LOW (0%) -> Reverse rotation
-   * - PH = HIGH (100%) -> Forward rotation
-   *
-   * This constant is used to set output_a when duty cycle is negative (reverse).
-   * @par Value: 0 (represents logic LOW as 0% duty)
-   * @par Signal: PH (Phase, output_a)
-   * @par Direction: Reverse
-   * @par H-Bridge State: High-side B ON, Low-side A ON (current: B -> Motor -> A)
-   */
-  k_motor_in2_low = 0,
+  k_motor_in2_high = 100, /**< IN2 forward direction (100% = HIGH). Sets output_a HIGH for forward rotation. H-bridge: high-side A ON, low-side B ON */
+  k_motor_in2_low  = 0,   /**< IN2 reverse direction (0% = LOW). Sets output_a LOW for reverse rotation. H-bridge: high-side B ON, low-side A ON */
 } motor_constants_t;
 
 /**
@@ -511,14 +484,14 @@ static float internal_clamp_duty(const float duty)
 
 /**
  * @struct rx_gptw_output_pair_t
- * @brief GPTW output pin pair for H-bridge control (PH/EN mode)
+ * @brief GPTW output pin pair for H-bridge control (IN2/IN1 mode)
  *
  * @details
- * Encapsulates the two GPTW output pins required for PH/EN mode H-bridge control. This structure
+ * Encapsulates the two GPTW output pins required for IN2/IN1 mode H-bridge control. This structure
  * simplifies passing output configuration to internal initialization functions and ensures both
  * outputs are specified together as a logical unit.
  *
- * **In PH/EN Mode:**
+ * **In IN2/IN1 Mode:**
  * - **Output A (IN2):** Direction control (HIGH=forward, LOW=reverse)
  * - **Output B (IN1):** Speed control (PWM duty cycle 0-100%)
  *
@@ -528,7 +501,7 @@ static float internal_clamp_duty(const float duty)
  *
  * @par Validation:
  * - Both outputs must be valid GPTW outputs (k_gptw_output_a or k_gptw_output_b)
- * - Outputs must be different (a != b) to prevent same pin controlling both PH and EN
+ * - Outputs must be different (a != b) to prevent same pin controlling both IN2 and IN1
  * - Validation performed in internal_init_gptw_outputs()
  *
  * @par Usage Example:
@@ -545,8 +518,8 @@ static float internal_clamp_duty(const float duty)
  * @see rx_motor_config_t Public config uses individual output_a and output_b fields
  */
 typedef struct {
-  rx_gptw_output_t a; /**< Output A (PH - Phase signal, direction control) */
-  rx_gptw_output_t b; /**< Output B (EN - Enable signal, speed PWM) */
+  rx_gptw_output_t a; /**< Output A (IN2 - direction signal, direction control) */
+  rx_gptw_output_t b; /**< Output B (IN1 - PWM signal, speed PWM) */
 } rx_gptw_output_pair_t;
 
 /**
@@ -560,7 +533,7 @@ typedef struct {
  *
  * **Safety-Critical Behavior:**
  * - Both outputs initialized to 0% duty BEFORE enabling PWM (prevents motor startup surge)
- * - Validation prevents same pin assigned to both PH and EN (would prevent direction control)
+ * - Validation prevents same pin assigned to both IN2 and IN1 (would prevent direction control)
  * - On any error, partially initialized state is cleaned up (GPTW deinitialized)
  *
  * **Algorithm:**
@@ -568,8 +541,8 @@ typedef struct {
  * 2. Validate outputs.a and outputs.b are valid GPTW outputs
  * 3. Validate outputs.a != outputs.b (different pins)
  * 4. Initialize GPTW peripheral with frequency, dead-time, polarity settings
- * 5. Set output_a to 0% duty (PH signal starts LOW)
- * 6. Set output_b to 0% duty (EN signal starts LOW)
+ * 5. Set output_a to 0% duty (IN2 signal starts LOW)
+ * 6. Set output_b to 0% duty (IN1 signal starts LOW)
  * 7. On error during steps 5-6: deinitialize GPTW and propagate error
  *
  * **Error Handling:**
@@ -582,7 +555,7 @@ typedef struct {
  *   - Must support PWM mode and dead-time insertion
  *   - Must have unused/available outputs for motor control
  *
- * @param[in] outputs Output pin pair for PH/EN mode control
+ * @param[in] outputs Output pin pair for IN2/IN1 mode control
  *   - outputs.a: IN2 (direction) signal, direction control
  *   - outputs.b: IN1 (PWM/enable) signal, speed PWM
  *   - Must be from same GPTW channel
@@ -592,7 +565,7 @@ typedef struct {
  *   - Must not benullptr
  *   - frequency_hz: PWM frequency [1 kHz, 50 kHz]
  *   - deadtime_ns: Dead-time insertion [100 ns, 10 us]
- *   - enable_complementary: Should be false for PH/EN mode
+ *   - enable_complementary: Should be false for IN2/IN1 mode
  *   - invert_polarity: true if H-bridge needs inverted PWM
  *
  * @return rx_err_t Error code indicating success or failure
@@ -630,13 +603,13 @@ typedef struct {
  * rx_gptw_config_t gptw_config = {
  *     .frequency_hz = 20000,        // 20 kHz PWM
  *     .deadtime_ns = 1000,          // 1 us dead-time
- *     .enable_complementary = false, // PH/EN mode (not complementary)
+ *     .enable_complementary = false, // IN2/IN1 mode (not complementary)
  *     .invert_polarity = false,     // Normal polarity
  * };
  *
  * rx_gptw_output_pair_t outputs = {
- *     .a = k_gptw_output_a,  // PH signal
- *     .b = k_gptw_output_b,  // EN signal
+ *     .a = k_gptw_output_a,  // IN2 signal
+ *     .b = k_gptw_output_b,  // IN1 signal
  * };
  *
  * rx_err_t err = internal_init_gptw_outputs(k_gptw_channel_0, outputs, &gptw_config);
@@ -901,7 +874,7 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * @see rx_gptw_init_pwm() Underlying GPTW initialization
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with PH/EN mode support
+ * @version 1.0.0 Initial implementation with IN2/IN1 mode support
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto or recursion, sequential error checking
@@ -1113,10 +1086,10 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * @details
  * Primary motor control function for setting speed and direction with a single signed duty
  * cycle value. Positive values drive motor forward, negative values drive motor in reverse,
- * and zero stops the motor (coast mode). Internally converts signed duty cycle into PH/EN
+ * and zero stops the motor (coast mode). Internally converts signed duty cycle into IN2/IN1
  * signal pair for H-bridge control.
  *
- * **Control Mapping (PH/EN Mode):**
+ * **Control Mapping (IN2/IN1 Mode):**
  * - **duty > 0 (Forward):**
  *   - IN2 (output_a) = HIGH (100% duty) -> Direction = forward
  *   - IN1 (output_b) = |duty| PWM -> Speed = magnitude
@@ -1128,8 +1101,8 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *   - Example: duty = -50% -> IN2 = LOW, IN1 = 50% PWM
  *
  * - **duty = 0 (Coast):**
- *   - PH (output_a) = LOW (0% duty)
- *   - EN (output_b) = LOW (0% duty)
+ *   - IN2 (output_a) = LOW (0% duty)
+ *   - IN1 (output_b) = LOW (0% duty)
  *   - Motor free-wheels (high impedance)
  *
  * **Algorithm:**
@@ -1146,8 +1119,8 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *   invert [label="Invert check:\nif (invert_pwm) duty = -duty"];
  *   extract [label="Extract speed:\nspeed = |duty|"];
  *   direction [label="Check direction:\nduty >= 0?", shape=diamond];
- *   forward [label="Forward:\nPH = HIGH (100%)\nEN = speed PWM"];
- *   reverse [label="Reverse:\nPH = LOW (0%)\nEN = speed PWM"];
+ *   forward [label="Forward:\nIN2 = HIGH (100%)\nIN1 = speed PWM"];
+ *   reverse [label="Reverse:\nIN2 = LOW (0%)\nIN1 = speed PWM"];
  *   update [label="Update handle:\nhandle->current_duty = duty"];
  *   verify [label="Post-condition check:\nhandle->current_duty == duty?", shape=diamond];
  *   success [label="Return k_rx_ok", style=filled, fillcolor=lightgreen];
@@ -1213,7 +1186,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *
  * @post On success: handle->current_duty = duty (after clamping and inversion)
  * @post On success: Motor outputs configured for requested speed/direction
- * @post On success: PH and EN signals match duty sign and magnitude
+ * @post On success: IN2 and IN1 signals match duty sign and magnitude
  * @post On failure: Motor outputs unchanged from previous state
  *
  * @invariant If function returns k_rx_ok, handle->current_duty == commanded duty
@@ -1333,7 +1306,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * @see internal_clamp_duty() Internal duty cycle clamping function
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with PH/EN mode
+ * @version 1.0.0 Initial implementation with IN2/IN1 mode
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto or recursion, sequential if-else logic
@@ -1373,7 +1346,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     duty = -duty;
   }
 
-  /* Set PWM outputs based on direction (PH/EN mode)
+  /* Set PWM outputs based on direction (IN2/IN1 mode)
    * IN2 (output_a) = direction (HIGH=forward, LOW=reverse)
    * IN1 (output_b) = speed (PWM duty cycle)
    *
@@ -1384,7 +1357,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
   const float speed_pwm = fabsf(duty);
 
   if (duty >= (float)k_motor_duty_zero) {
-    /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */
+    /* Forward: IN2 = HIGH, IN1 = PWM - NASA Rule 7 compliance */
     rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                                     rx_gptw_output_id(handle->output_a),
                                     (float)k_motor_in2_high);
@@ -1397,11 +1370,11 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
                            rx_gptw_output_id(handle->output_b),
                            speed_pwm);
     if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set EN output (forward)");
+      rx_log_error(s_tag, "Failed to set IN1 output (forward)");
       return err;
     }
   } else {
-    /* Reverse: PH = LOW, EN = PWM - NASA Rule 7 compliance */
+    /* Reverse: IN2 = LOW, IN1 = PWM - NASA Rule 7 compliance */
     rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                                     rx_gptw_output_id(handle->output_a),
                                     (float)k_motor_in2_low);
@@ -1414,7 +1387,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
                            rx_gptw_output_id(handle->output_b),
                            speed_pwm);
     if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set EN output (reverse)");
+      rx_log_error(s_tag, "Failed to set IN1 output (reverse)");
       return err;
     }
   }
@@ -1431,22 +1404,22 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 }
 
 /**
- * @brief Stop motor with coast or brake mode (brake not supported in PH/EN mode)
+ * @brief Stop motor with coast or brake mode (brake not supported in IN2/IN1 mode)
  *
  * @details
- * Stops motor rotation by setting both outputs to 0% duty cycle (coast mode). In PH/EN
+ * Stops motor rotation by setting both outputs to 0% duty cycle (coast mode). In IN2/IN1
  * control mode, active braking (short-circuit brake) is not supported - brake parameter
  * is ignored and motor always coasts. Coast mode allows motor to free-wheel (high impedance),
  * with deceleration due to friction and back-EMF.
  *
- * **PH/EN Mode Behavior:**
- * - **Coast (brake=false):** PH = LOW, EN = LOW -> Motor in high impedance
+ * **IN2/IN1 Mode Behavior:**
+ * - **Coast (brake=false):** IN2 = LOW, IN1 = LOW -> Motor in high impedance
  * - **Brake (brake=true):** [FAIL] NOT SUPPORTED -> Falls back to coast, warning logged
  *
  * **Coast vs. Brake:**
  * - **Coast:** Both outputs LOW -> H-bridge in high impedance -> Motor free-wheels
  * - **Brake:** Both outputs HIGH -> H-bridge shorts motor terminals -> Active braking
- * - **Note:** Brake mode requires IN/IN control mode (not available in PH/EN)
+ * - **Note:** Brake mode requires IN/IN control mode (not available in IN2/IN1)
  *
  * **Use Cases:**
  * - Normal stop: Gradual deceleration via friction
@@ -1458,7 +1431,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  *   - Must be initialized (validated via handle->initialized flag)
  *   - current_duty field will be set to 0.0 on success
  *
- * @param[in] brake Brake mode request (ignored in PH/EN mode)
+ * @param[in] brake Brake mode request (ignored in IN2/IN1 mode)
  *   - true: Request active braking (NOT SUPPORTED, falls back to coast)
  *   - false: Coast mode (supported, motor free-wheels)
  *   - Warning logged if brake=true (user informed of fallback)
@@ -1473,7 +1446,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * @pre GPTW peripheral must be operational
  *
  * @post On success: handle->current_duty = 0.0
- * @post On success: Both outputs (PH and EN) at 0% duty
+ * @post On success: Both outputs (IN2 and IN1) at 0% duty
  * @post On success: Motor in coast mode (high impedance)
  * @post Motor deceleration time depends on mechanical friction (~100-500 ms for STAR)
  *
@@ -1481,7 +1454,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * @note Motor may continue spinning briefly after function returns (inertia)
  * @note For immediate stop, use rx_motor_emergency_stop() (disables outputs)
  *
- * @warning Brake mode NOT supported in PH/EN configuration
+ * @warning Brake mode NOT supported in IN2/IN1 configuration
  * @warning If brake=true, warning logged but function succeeds with coast
  * @attention Motor deceleration is passive (friction only, no active braking)
  *
@@ -1503,9 +1476,9 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  *
  * @par Example - Brake Request (Falls Back to Coast):
  * @code
- * // User requests brake mode (not supported in PH/EN)
+ * // User requests brake mode (not supported in IN2/IN1)
  * rx_err_t err = rx_motor_stop(&motor, true);  // brake=true
- * // Warning logged: "Brake not supported in PH/EN mode, coasting"
+ * // Warning logged: "Brake not supported in IN2/IN1 mode, coasting"
  * // Function succeeds with coast mode (err == k_rx_ok)
  * // Motor will coast to stop (not actively braked)
  * @endcode
@@ -1548,8 +1521,8 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
   }
 
   if (brake) {
-    /* Brake mode not supported in PH/EN mode - coast instead */
-    rx_log_warn(s_tag, "Brake not supported in PH/EN mode, coasting");
+    /* Brake mode not supported in IN2/IN1 mode - coast instead */
+    rx_log_warn(s_tag, "Brake not supported in IN2/IN1 mode, coasting");
   }
 
   /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
@@ -1703,8 +1676,8 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
  *
  * **Emergency Stop Sequence:**
  * @code{.unparsed}
- * 1. Set output_a duty -> 0%  (PH signal LOW)
- * 2. Set output_b duty -> 0%  (EN signal LOW)
+ * 1. Set output_a duty -> 0%  (IN2 signal LOW)
+ * 2. Set output_b duty -> 0%  (IN1 signal LOW)
  * 3. Disable output_a at hardware level (GPTW peripheral)
  * 4. Disable output_b at hardware level (GPTW peripheral)
  * 5. Stop GPTW timer (prevent any further PWM generation)

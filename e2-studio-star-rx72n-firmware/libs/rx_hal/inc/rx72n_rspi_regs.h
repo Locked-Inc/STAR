@@ -28,7 +28,7 @@
  *   }
  *
  *   rpi5 [label="Raspberry Pi 5\n(Controller)"];
- *   future [label="Future SPI\nSensors"];
+ *   future [label="Future SPI\nPeripherals"];
  *
  *   rpi5 -> rspi0 [label="10 Mbps\nCommand/Telemetry"];
  *   rspi1 -> future [label="Reserved", style=dashed];
@@ -194,7 +194,7 @@ typedef enum : uint32_t {
    * - RSPCKB: PE5/RSPCKB (clock output to peripherals)
    * - MOSIB: PE6/MOSIB (RX72N hardware name) -> COPI (project name) - data out
    * - MISOB: PE7/MISOB (RX72N hardware name) -> CIPO (project name) - data in
-   * - SSLB0-3: Individual chip selects (available for future sensors)
+   * - SSLB0-3: Individual chip selects (available for future peripherals)
    */
   k_rspi1_base_addr = 0x000D0140,
 

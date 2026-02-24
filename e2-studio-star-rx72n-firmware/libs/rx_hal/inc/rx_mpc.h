@@ -1315,10 +1315,10 @@ typedef enum : uint8_t {
  * @code{.c}
  * // Configure 8 GPTW pins (4 motors x 2 pins = IN2 + IN1)
  * const rx_port_pin_t gptw_pins[] = {
- *     k_rx_p2_3, k_rx_p1_7,  // Motor 0 PH/EN
- *     k_rx_p2_2, k_rx_pc_3,  // Motor 1 PH/EN
- *     k_rx_pe_3, k_rx_p8_6,  // Motor 2 PH/EN
- *     k_rx_pe_7, k_rx_pc_6   // Motor 3 PH/EN
+ *     k_rx_p2_3, k_rx_p1_7,  // Motor 0 IN2/IN1
+ *     k_rx_p2_2, k_rx_pc_3,  // Motor 1 IN2/IN1
+ *     k_rx_pe_3, k_rx_p8_6,  // Motor 2 IN2/IN1
+ *     k_rx_pe_7, k_rx_pc_6   // Motor 3 IN2/IN1
  * };
  *
  * for (uint8_t i = 0; i < 8; i++) {

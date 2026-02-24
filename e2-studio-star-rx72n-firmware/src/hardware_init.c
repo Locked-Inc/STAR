@@ -646,8 +646,8 @@ static rx_err_t internal_gpio_init_imu(void)
  * - 4x DRVOFF pins: Output HIGH (driver outputs disabled for safe startup)
  * - 4x nSLEEP pins: Output HIGH (driver awake, not in sleep mode)
  *
- * Motor outputs remain disabled until the motor control task explicitly
- * drives DRVOFF LOW after all peripherals are initialized.
+ * Motor outputs remain disabled (DRVOFF=HIGH) until explicitly enabled.
+ * TODO(#367): Motor control task must drive DRVOFF LOW before commanding PWM.
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok All pins configured successfully

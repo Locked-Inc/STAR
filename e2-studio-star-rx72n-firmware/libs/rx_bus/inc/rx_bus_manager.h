@@ -293,7 +293,7 @@ extern "C" {
  * @details
  * Performs complete cleanup of bus manager:
  * 1. Removes and deinitializes all registered buses
- * 2. Frees bus configuration memory
+ * 2. Releases references to all bus configurations
  * 3. Deletes ThreadX mutex
  * 4. Resets all tracking state to initial values
  *
@@ -344,9 +344,9 @@ extern "C" {
  * @brief Register a bus configuration with the manager
  *
  * @details
- * Adds a bus to the manager's registry. The manager takes ownership of the
- * bus_config pointer and will free it during rx_bus_manager_remove_bus() or
- * rx_bus_manager_deinit(). The bus hardware is NOT initialized until first
+ * Adds a bus to the manager's registry. The manager stores a reference to the
+ * bus_config pointer; caller retains ownership and must ensure the configuration
+ * remains valid until removal. The bus hardware is NOT initialized until first
  * access (lazy initialization).
  *
  * ## Registration Process
@@ -360,8 +360,8 @@ extern "C" {
  * 7. Release mutex
  *
  * @param[in,out] manager Bus manager instance (must be initialized)
- * @param[in] bus_config Bus configuration to add. Manager takes ownership.
- *                       Must have valid name and type fields.
+ * @param[in] bus_config Bus configuration to add. Caller retains ownership;
+ *                       must remain valid until removal. Must have valid name and type fields.
  *
  * @return rx_err_t Registration status
  *
@@ -377,15 +377,15 @@ extern "C" {
  * @pre bus_config->name is unique non-empty string
  * @pre bus_config->type is valid (< k_bus_type_max)
  *
- * @post bus_config owned by manager (do not free externally)
+ * @post Manager holds reference to bus_config (caller retains ownership)
  * @post bus_count incremented
  * @post Bus accessible via rx_bus_manager_find_bus()
  *
- * @note Manager takes ownership - do not free bus_config after this call
+ * @note Caller retains ownership - ensure bus_config lifetime exceeds registration
  * @note Hardware init deferred until first access (lazy init)
  *
  * @warning Do not modify bus_config after registration
- * @warning Do not free bus_config - manager owns it
+ * @warning Ensure bus_config outlives registration (use static or module-scope allocation)
  *
  * @par Thread Safety:
  * Thread-safe. Acquires mutex internally.
@@ -409,7 +409,7 @@ extern "C" {
  * }
  * @endcode
  *
- * @see rx_bus_manager_remove_bus() Unregister and free bus
+ * @see rx_bus_manager_remove_bus() Unregister bus
  * @see rx_bus_config_t Bus configuration structure
  *
  * @since Version 1.0.0
@@ -421,8 +421,8 @@ extern "C" {
  * @brief Unregister and cleanup a bus by name
  *
  * @details
- * Removes a bus from the manager's registry, deinitializes the hardware
- * (if initialized), and frees the configuration memory.
+ * Removes a bus from the manager's registry and deinitializes the hardware
+ * (if initialized). The configuration reference is released.
  *
  * ## Removal Process
  *
@@ -431,7 +431,7 @@ extern "C" {
  * 3. Find bus in linked list
  * 4. Deinitialize hardware if initialized
  * 5. Remove from linked list
- * 6. Free configuration memory
+ * 6. Release configuration reference
  * 7. Decrement bus_count
  * 8. Release mutex
  *
@@ -440,7 +440,7 @@ extern "C" {
  *
  * @return rx_err_t Removal status
  *
- * @retval k_rx_ok Bus removed and freed successfully
+ * @retval k_rx_ok Bus removed successfully
  * @retval k_rx_err_null_ptr manager or name is nullptr
  * @retval k_rx_err_not_found No bus with given name found
  * @retval k_rx_err_timeout Mutex timeout acquiring lock
@@ -450,11 +450,11 @@ extern "C" {
  *
  * @post Bus removed from registry
  * @post Hardware deinitialized
- * @post Configuration memory freed
+ * @post Configuration reference removed
  * @post bus_count decremented
  *
  * @note Hardware is properly deinitialized before removal
- * @note Configuration memory is freed by manager
+ * @note Caller may reclaim config memory after removal
  *
  * @warning Do not hold references to bus_config after this call
  *

@@ -8,7 +8,7 @@
  * Comprehensive test suite for the GPTW-based motor control driver providing
  * exhaustive coverage of motor initialization, bidirectional PWM control,
  * duty cycle management, brake/coast modes, and safety features. Tests verify
- * the PH/EN motor control scheme (IN2/IN1 pins) used with DRV8263H H-bridge drivers.
+ * the IN2/IN1 motor control scheme used with DRV8263H H-bridge drivers.
  *
  * ## Test Coverage Summary
  *
@@ -37,14 +37,14 @@
  *
  * ## Functional Coverage Matrix
  *
- * @par PH/EN Motor Control (DRV8263H):
+ * @par IN2/IN1 Motor Control (DRV8263H):
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
- * | PH = 100%, EN = duty -> Forward | [OK] | 0-100% tested |
- * | PH = 0%, EN = duty -> Reverse | [OK] | 0-100% tested |
- * | PH = X, EN = 0% -> Coast | [OK] | Both directions |
- * | Direction determined by PH pin | [OK] | Forward/Reverse |
- * | Speed determined by EN pin | [OK] | 0-100% PWM |
+ * | IN2 = 100%, IN1 = duty -> Forward | [OK] | 0-100% tested |
+ * | IN2 = 0%, IN1 = duty -> Reverse | [OK] | 0-100% tested |
+ * | IN2 = X, IN1 = 0% -> Coast | [OK] | Both directions |
+ * | Direction determined by IN2 pin | [OK] | Forward/Reverse |
+ * | Speed determined by IN1 pin | [OK] | 0-100% PWM |
  * | Dead-time insertion | [OK] | 100ns-10us range |
  * | Duty clamping [-100, +100] | [OK] | Boundaries tested |
  * | PWM inversion support | [OK] | Both directions |
@@ -54,7 +54,7 @@
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
  * | 4 independent channels | [OK] | All tested |
- * | Complementary outputs (A/B) | [OK] | PH/EN verified |
+ * | Complementary outputs (A/B) | [OK] | IN2/IN1 verified |
  * | Frequency 1kHz - 50kHz | [OK] | Boundaries tested |
  * | Dead-time 100ns - 10us | [OK] | Boundaries tested |
  * | Channel isolation | [OK] | Multi-motor test |
@@ -66,16 +66,16 @@
  * @code
  * // Test: test_motor_set_duty_forward_50_percent()
  * // Input: duty = 50.0 (50% forward)
- * // Expected: PH = 100%, EN = 50%
+ * // Expected: IN2 = 100%, IN1 = 50%
  * // Physical: Motor runs forward at half speed
  * @endcode
  *
  * @par Scenario 2: Direction Change
  * @code
  * // Test: test_motor_transition_forward_to_reverse()
- * // Step 1: duty = 50% -> PH = 100%, EN = 50%
- * // Step 2: duty = -50% -> PH = 0%, EN = 50%
- * // Result: Smooth direction transition via PH toggle
+ * // Step 1: duty = 50% -> IN2 = 100%, IN1 = 50%
+ * // Step 2: duty = -50% -> IN2 = 0%, IN1 = 50%
+ * // Result: Smooth direction transition via IN2 toggle
  * @endcode
  *
  * @par Scenario 3: Emergency Stop
@@ -120,7 +120,7 @@
  *
  * @par Physical Hardware:
  * - **Motor Driver:** DRV8263H H-bridge
- * - **Control Mode:** PH/EN (Phase/Enable) PWM
+ * - **Control Mode:** IN2/IN1 (sign-magnitude) PWM
  * - **MCU Timer:** RX72N GPTW
  * - **PWM Frequency:** 20kHz typical
  * - **Dead-Time:** 1us (prevents shoot-through)
@@ -405,7 +405,7 @@ void test_motor_set_duty_forward_50_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, 50.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* PH/EN mode: IN2 (output_a) = 100% for forward, IN1 (output_b) = speed */
+  /* IN2/IN1 mode: IN2 (output_a) = 100% for forward, IN1 (output_b) = speed */
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
                            100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
@@ -473,7 +473,7 @@ void test_motor_set_duty_reverse_50_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, -50.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* PH/EN mode: IN2 (output_a) = 0% for reverse, IN1 (output_b) = speed */
+  /* IN2/IN1 mode: IN2 (output_a) = 0% for reverse, IN1 (output_b) = speed */
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
                            0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
@@ -683,7 +683,7 @@ void test_motor_stop_brake_from_running(void)
   rx_err_t err = rx_motor_stop(&s_motor, true);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Brake not supported in PH/EN mode - falls back to coast (both 0%) */
+  /* Brake not supported in IN2/IN1 mode - falls back to coast (both 0%) */
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
                            0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));

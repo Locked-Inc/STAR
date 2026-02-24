@@ -51,7 +51,7 @@
  *
  * @details
  * Each motor uses one GPTW channel with two outputs for the DRV8263H H-bridge
- * operating in PH/EN mode:
+ * operating in IN2/IN1 mode:
  * - **IN2 (GTIOC_A)**: Direction control (phase input to DRV8263H)
  * - **IN1 (GTIOC_B)**: PWM duty cycle (enable input to DRV8263H)
  *

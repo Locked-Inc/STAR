@@ -36,7 +36,7 @@
  *
  * **Motor Control Integration**:
  * - Direct interface with DRV8263H H-bridge drivers
- * - PH/EN control mode support (Phase/Enable)
+ * - IN2/IN1 control mode support (sign-magnitude)
  * - Glitch-free duty cycle updates on period boundary
  * - Fast raw duty cycle API for tight control loops
  *
@@ -314,11 +314,11 @@ typedef enum : uint8_t {
  * PWM_A box PWM_A [label="HIGH"];
  * @endmsc
  *
- * ## PH/EN Mode (Phase/Enable)
+ * ## IN2/IN1 Mode (Sign-Magnitude)
  *
- * For DRV8263H H-bridge control in PH/EN mode:
- * - Output A: Connected to PH (Phase) input - controls direction
- * - Output B: Connected to EN (Enable) input - controls PWM duty
+ * For DRV8263H H-bridge control in IN2/IN1 mode:
+ * - Output A: Connected to IN2 (direction) input - controls direction
+ * - Output B: Connected to IN1 (PWM) input - controls PWM duty
  *
  * @par H-Bridge Connection:
  *
@@ -360,9 +360,9 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_gptw_output_a =
-    0, /**< GTIOCA output pin. Connected to DRV8263H IN2 (direction) in PH/EN mode. Controls motor direction: HIGH=forward, LOW=reverse */
+    0, /**< GTIOCA output pin. Connected to DRV8263H IN2 (direction) in IN2/IN1 mode. Controls motor direction: HIGH=forward, LOW=reverse */
   k_gptw_output_b =
-    1, /**< GTIOCB output pin. Connected to DRV8263H IN1 (PWM/enable) in PH/EN mode. PWM duty cycle controls motor speed (0-100%) */
+    1, /**< GTIOCB output pin. Connected to DRV8263H IN1 (PWM) in IN2/IN1 mode. PWM duty cycle controls motor speed (0-100%) */
 } rx_gptw_output_t;
 
 /**

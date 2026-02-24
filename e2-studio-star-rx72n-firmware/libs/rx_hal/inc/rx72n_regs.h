@@ -292,7 +292,7 @@ extern "C" {
 #include "rx72n_riic_regs.h"
 
 /* =============================================================================
- * Renesas Serial Peripheral Interface (RSPI) - For SPI to RPi5
+ * Renesas Serial Peripheral Interface (RSPI) - For SPI to RPi5 (RSPI1 reserved for future peripherals)
  * =============================================================================
  */
 

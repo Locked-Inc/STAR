@@ -5477,9 +5477,11 @@ uint32_t pack_voltage_mv = 11100;  /* 11.1V (3S LiPo) */
 uint32_t power_mw = 7400;          /* 7.4W in milliwatts */
 
     /* Current limiting */
-#define MAX_MOTOR_CURRENT_MA (2000) /* 2A limit */
+typedef enum : uint32_t {
+  k_max_motor_current_ma = 2000, /**< 2A motor current limit */
+} motor_current_limits_t;
 
-if (motor_current_ma > MAX_MOTOR_CURRENT_MA) {
+if (motor_current_ma > k_max_motor_current_ma) {
       ESP_LOGW(s_TAG, "Motor current limit exceeded: %lu mA", motor_current_ma);
       star_drv8263_set_speed(&motor, 0.0f);
 }
@@ -6175,12 +6177,16 @@ if (ret != RX_OK) {
 
 \begin{lstlisting}[language=C]
 /* Safe state: all motors stopped, systems halted */
+typedef enum : uint8_t {
+  k_num_motors = 4, /**< Number of motors on STAR platform */
+} motor_count_t;
+
 void system_enter_safe_mode(void)
 {
       RX_LOG_ERROR(s_TAG, "ENTERING SAFE MODE");
 
       /* Stop all motors */
-      for (int i = 0; i < NUM_MOTORS; i++) {
+      for (uint8_t i = 0; i < k_num_motors; i++) {
         star_drv8263_stop(&motors[i], true); /* Brake */
      }
 
@@ -6200,11 +6206,17 @@ void system_enter_safe_mode(void)
 }
 
 /* Trigger safe mode on critical errors */
-if (battery_voltage_mv < BATTERY_CRITICAL_MV) {
+typedef enum : uint16_t {
+  k_battery_critical_mv = 3000, /**< Critical battery threshold (3.0V) */
+} battery_limits_t;
+
+static const float s_motor_thermal_shutdown_celsius = 85.0f;
+
+if (battery_voltage_mv < k_battery_critical_mv) {
       system_enter_safe_mode();
 }
 
-if (motor_temp_celsius > THERMAL_SHUTDOWN_CELSIUS) {
+if (motor_temp_celsius > s_motor_thermal_shutdown_celsius) {
       system_enter_safe_mode();
 }
 

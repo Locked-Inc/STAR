@@ -58,7 +58,7 @@
  *   hal -> sci;
  *
  *   rspi -> rpi [label="RSPI0\nPeripheral"];
- *   rspi -> drv [label="RSPI1\nController"];
+ *   gpio -> drv [label="PWM+GPIO"];
  *   riic -> imu [label="RIIC0\n400kHz"];
  *   sci -> uart_bridge [label="SCI9\n115200"];
  * }
@@ -196,7 +196,6 @@
  * | SPI1_CIPO | PC5 | RSPI1 | Reserved (RSPI1 controller mode) |
  * | SPI1_COPI | PC6 | RSPI1 | Reserved (RSPI1 controller mode) |
  * | SPI1_CLK | PC7 | RSPI1 | Reserved (RSPI1 clock) |
- * | DRV_CS* | PC4,PC3,PC2,PC1 | GPIO | Motor driver chip selects |
  * | UART_TX | PB7 | SCI9 | Debug output (CY7C65213) |
  * | UART_RX | PB6 | SCI9 | Debug input |
  *
@@ -1086,13 +1085,13 @@ typedef struct {
  * };
  * rspi_init_peripheral(0, &rpi_cfg);
  *
- * // Motor driver communication (controller mode, Mode 0)
- * rspi_controller_config_t drv_cfg = {
+ * // External sensor communication (controller mode, Mode 0)
+ * rspi_controller_config_t sensor_cfg = {
  *   .spi_mode = k_rspi_mode_0,  // Standard SPI mode 0
  *   .freq_hz = 1000000,         // 1 MHz
  *   .cs = k_port_c_pin_4
  * };
- * rspi_init_controller(1, &drv_cfg);
+ * rspi_init_controller(1, &sensor_cfg);
  * @endcode
  *
  * @par Underlying Type: uint8_t (C23 typed enum)

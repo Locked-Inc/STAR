@@ -338,10 +338,14 @@ typedef enum : uint8_t {
  * uint16_t raw_count = adc->addr7 & 0x0FFF;
  *
  * // 7. Convert to current (using DRV8263H IPROPI current sensing)
- * static const float s_avcc_volts      = 3.3f;
- * static const float s_adc_max_counts  = 4096.0f;
- * static const float s_ipropi_gain_a   = 0.00002f;  // 20 uA/A
- * float current_amps = (float)raw_count * s_avcc_volts / s_adc_max_counts / s_ipropi_gain_a;
+ * // IPROPI ratio: 1000:1, sense resistor: 4990 ohm
+ * // V_sense = (I_motor / 1000) * 4990, so I_motor = V_sense * 1000 / 4990
+ * static const float s_avcc_volts       = 3.3f;
+ * static const float s_adc_max_counts   = 4096.0f;
+ * static const float s_ipropi_ratio     = 1000.0f;   // 1000:1 current mirror
+ * static const float s_ipropi_sense_ohm = 4990.0f;   // Sense resistor (ohms)
+ * float voltage = (float)raw_count * s_avcc_volts / s_adc_max_counts;
+ * float current_amps = voltage * s_ipropi_ratio / s_ipropi_sense_ohm;
  * @endcode
  *
  * @par Usage Example - Continuous 4-Channel Scan:
