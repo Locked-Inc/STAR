@@ -181,7 +181,7 @@ grep -i "warning" doxygen_warnings.log
 - **Main Controller:** Raspberry Pi 5
 - **Motor Controller:** Renesas RX72N (4MB Flash, 512KB SRAM, 240 MHz)
 - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
-- **Motor Drivers:** DRV8243S H-bridge with current sensing
+- **Motor Drivers:** DRV8263H H-bridge with current sensing and SPI fault diagnostics
 - **Lidar:** RPLiDAR C1 (12m range, IP54)
 - **Communication:** 10 Mbps SPI (RPi5 <-> RX72N) with nanopb + CRC-32
 
@@ -267,11 +267,11 @@ grep -i "warning" doxygen_warnings.log
 
    ```c
    // [PASS] CORRECT: Floating-point must use const
-   static const float s_max_velocity_mps = 2.5f;
-   static const float s_pid_kp = 1.0f;
+   static const float s_max_velocity_mps = 2.5F;
+   static const float s_pid_kp = 1.0F;
 
    // [FAIL] WRONG: Never use macros for floats
-   #define MAX_VELOCITY_MPS (2.5f)  // Should be const!
+   #define MAX_VELOCITY_MPS (2.5F)  // Should be const!
    ```
 
 3. **Macros** - ONLY for these 3 specific cases:
@@ -694,7 +694,7 @@ star.v1.RequestHeader.request_id max_size:64
  * rx_pid_init(&pid, &config);
  *
  * float output;
- * rx_err_t err = rx_pid_compute(&pid, 100.0f, 95.0f, 0.01f, &output);
+ * rx_err_t err = rx_pid_compute(&pid, 100.0F, 95.0F, 0.01F, &output);
  * if (err == k_rx_ok) {
  *     motor_set_pwm(output);
  * }
@@ -854,7 +854,7 @@ ctest --output-on-failure
 **Use Hardware For:**
 - Clock tree validation (actual 240 MHz operation)
 - USB enumeration and bulk transfers
-- SPI communication with real devices (DRV8243, sensors)
+- SPI communication with real devices (DRV8263H fault register readback/diagnostics, sensors)
 - UART communication (actual baud rates)
 - Interrupt latency verification
 - DMA transfer validation

@@ -833,8 +833,10 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
  * uint16_t raw_value;
  * rx_err_t err = adc_read(k_adc_unit_0, k_adc_channel_2, &raw_value);
  * if (err == k_rx_ok) {
- *   // raw_value: 0-4095 for 12-bit resolution
- *   float voltage = (raw_value * 3.3f) / 4095.0f;
+ *   // Example: 12-bit resolution (0-4095 raw -> 0-3.3 V)
+ *   static const float s_vref_volts = 3.3F;
+ *   static const float s_adc_full_scale_12bit = 4095.0F;
+ *   float voltage_v = (raw_value * s_vref_volts) / s_adc_full_scale_12bit;
  * }
  * @endcode
  *
@@ -931,7 +933,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
  *
  * @par Example:
  * @code
- * // Read motor current sense (DRV8243 IPROPI output)
+ * // Read motor current sense (DRV8263H IPROPI output)
  * uint32_t voltage_mv;
  * rx_err_t err = adc_read_voltage_mv(k_adc_unit_0, k_adc_channel_0,
  *                                     k_adc_resolution_12bit, &voltage_mv);

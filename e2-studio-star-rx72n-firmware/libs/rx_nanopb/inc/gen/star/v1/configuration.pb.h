@@ -186,7 +186,7 @@ typedef struct _star_v1_TemperatureCalibration {
     double offset_celsius;
 } star_v1_TemperatureCalibration;
 
-/* Safety thresholds for motor and battery protection. */
+/* Safety thresholds for motor protection. */
 typedef struct _star_v1_SafetyThresholds {
     /* Motor overcurrent limit in milliamps.
  Motors disabled if current exceeds this.
@@ -196,8 +196,7 @@ typedef struct _star_v1_SafetyThresholds {
  System enters safe mode above this temperature.
  Valid range: 500-1000 (50.0-100.0 C). */
     int32_t thermal_shutdown_deci_celsius;
-    /* Battery cell voltage imbalance threshold in millivolts.
- Warning generated if cell delta exceeds this.
+    /* Motor phase imbalance threshold in millivolts.
  Valid range: 50-500 mV. */
     uint32_t cell_imbalance_threshold_mv;
 } star_v1_SafetyThresholds;
@@ -227,9 +226,6 @@ typedef struct _star_v1_TimingConfiguration {
  Motors stopped if no command received within timeout.
  Valid range: 100-5000 ms. Typical: 500 ms. */
     uint32_t communication_timeout_ms;
-    /* BMS polling period in milliseconds.
- Valid range: 100-10000 ms. Typical: 1000 ms. */
-    uint32_t bms_poll_period_ms;
 } star_v1_TimingConfiguration;
 
 /* Complete system configuration.
@@ -425,7 +421,7 @@ extern "C" {
 #define star_v1_TemperatureCalibration_init_default {0}
 #define star_v1_SafetyThresholds_init_default    {0, 0, 0}
 #define star_v1_EncoderConfiguration_init_default {0, 0, 0}
-#define star_v1_TimingConfiguration_init_default {0, 0, 0, 0}
+#define star_v1_TimingConfiguration_init_default {0, 0, 0}
 #define star_v1_ConfigValidationResult_init_default {_star_v1_ConfigValidationStatus_MIN, 0, {star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default}}
 #define star_v1_ConfigValidationError_init_default {"", _star_v1_ConfigErrorCode_MIN, "", "", ""}
 #define star_v1_GetConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero}
@@ -451,7 +447,7 @@ extern "C" {
 #define star_v1_TemperatureCalibration_init_zero {0}
 #define star_v1_SafetyThresholds_init_zero       {0, 0, 0}
 #define star_v1_EncoderConfiguration_init_zero   {0, 0, 0}
-#define star_v1_TimingConfiguration_init_zero    {0, 0, 0, 0}
+#define star_v1_TimingConfiguration_init_zero    {0, 0, 0}
 #define star_v1_ConfigValidationResult_init_zero {_star_v1_ConfigValidationStatus_MIN, 0, {star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero}}
 #define star_v1_ConfigValidationError_init_zero  {"", _star_v1_ConfigErrorCode_MIN, "", "", ""}
 
@@ -493,7 +489,6 @@ extern "C" {
 #define star_v1_TimingConfiguration_motor_control_period_ms_tag 1
 #define star_v1_TimingConfiguration_telemetry_period_ms_tag 2
 #define star_v1_TimingConfiguration_communication_timeout_ms_tag 3
-#define star_v1_TimingConfiguration_bms_poll_period_ms_tag 4
 #define star_v1_SystemConfiguration_motor_configs_tag 1
 #define star_v1_SystemConfiguration_current_calibration_tag 2
 #define star_v1_SystemConfiguration_temperature_calibration_tag 3
@@ -711,8 +706,7 @@ X(a, STATIC,   SINGULAR, DOUBLE,   gear_ratio,        3)
 #define star_v1_TimingConfiguration_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, UINT32,   motor_control_period_ms,   1) \
 X(a, STATIC,   SINGULAR, UINT32,   telemetry_period_ms,   2) \
-X(a, STATIC,   SINGULAR, UINT32,   communication_timeout_ms,   3) \
-X(a, STATIC,   SINGULAR, UINT32,   bms_poll_period_ms,   4)
+X(a, STATIC,   SINGULAR, UINT32,   communication_timeout_ms,   3)
 #define star_v1_TimingConfiguration_CALLBACK NULL
 #define star_v1_TimingConfiguration_DEFAULT NULL
 
@@ -813,7 +807,7 @@ extern const pb_msgdesc_t star_v1_ConfigValidationError_msg;
 #define star_v1_SetRetransmitConfigRequest_size  171
 #define star_v1_SetRetransmitConfigResponse_size 363
 #define star_v1_TemperatureCalibration_size      9
-#define star_v1_TimingConfiguration_size         24
+#define star_v1_TimingConfiguration_size         18
 #define star_v1_ValidateConfigurationResponse_size 5072
 
 #ifdef __cplusplus

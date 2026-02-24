@@ -278,8 +278,8 @@ Different platforms provide error checking macros for development and debugging:
         int spi_device_count[SPI_HOST_MAX];
      } star_bus_manager_t;
 
-      /* CORRECT - Enum brace on same line */
-      typedef enum {
+      /* CORRECT - Enum brace on same line, C23 typed enum */
+      typedef enum : uint8_t {
         k_star_bus_type_none,
         k_star_bus_type_i2c,
         k_star_bus_type_spi,
@@ -1146,18 +1146,18 @@ This section establishes the standards for defining and using enumerations in th
     \subsection{Basic Enum Structure}
 
     \begin{lstlisting}[language = C]
-        /* CORRECT - from star_bus_common_types.h */
-        typedef enum {
-          k_star_bus_type_none,  /**< No bus type specified */
-          k_star_bus_type_i2c,   /**< I2C bus */
-          k_star_bus_type_spi,   /**< SPI bus */
-          k_star_bus_type_gpio,  /**< GPIO bus */
-          k_star_bus_type_adc,   /**< ADC bus */
-          k_star_bus_type_count, /**< Number of bus types (sentinel) */
+        /* CORRECT - C23 typed enum with explicit underlying type */
+        typedef enum : uint8_t {
+          k_star_bus_type_none  = 0, /**< No bus type specified */
+          k_star_bus_type_i2c   = 1, /**< I2C bus */
+          k_star_bus_type_spi   = 2, /**< SPI bus */
+          k_star_bus_type_gpio  = 3, /**< GPIO bus */
+          k_star_bus_type_adc   = 4, /**< ADC bus */
+          k_star_bus_type_count = 5, /**< Number of bus types (sentinel) */
        } star_bus_type_t;
 
     /* WRONG - Various style violations */
-    typedef enum {
+    typedef enum {                  /* Missing `: uint8_t` */
       STAR_BUS_TYPE_I2C,  /* Missing k_ prefix */
       StarBusTypeSpi,     /* PascalCase not allowed */
       star_bus_type_gpio, /* Missing k_ prefix */
@@ -1169,8 +1169,8 @@ This section establishes the standards for defining and using enumerations in th
 Assign explicit values when needed for stability or compatibility.
 
 \begin{lstlisting}[language=C]
-/* CORRECT - Explicit values for protocol compatibility */
-typedef enum {
+/* CORRECT - C23 typed enum with explicit values */
+typedef enum : uint8_t {
   k_error_none  = 0,  /**< No error */
   k_error_minor = 1,  /**< Minor error, operation can continue */
   k_error_major = 2,  /**< Major error, operation should stop */
@@ -1178,8 +1178,8 @@ typedef enum {
   k_error_count = 4,  /**< Number of error levels */
 } error_level_t;
 
-/* CORRECT - Bit flags with explicit values */
-typedef enum {
+/* CORRECT - Bit flags with explicit underlying type */
+typedef enum : uint8_t {
   k_bus_flag_none = 0x00,        /**< No flags */
   k_bus_flag_initialized = 0x01, /**< Bus is initialized */
   k_bus_flag_busy = 0x02,        /**< Bus is busy */
@@ -1196,7 +1196,7 @@ Document each enum value with Doxygen comments.
     /**
      * @brief Types of supported bus interfaces.
      */
-    typedef enum {
+    typedef enum : uint8_t {
       k_star_bus_type_none,  /**< No bus type specified */
       k_star_bus_type_i2c,   /**< I2C bus */
       k_star_bus_type_spi,   /**< SPI bus */
@@ -2260,7 +2260,7 @@ int calculate_value(char* data, int len);  /* Ambiguous! */
 When comparing enums of different types, cast to the appropriate fixed-width type.
 
 \begin{lstlisting}[language=C]
-typedef enum {
+typedef enum : uint8_t {
   k_channel_0 = 0,
   k_channel_1 = 1,
   k_channel_max = 2,
@@ -3490,8 +3490,8 @@ typedef struct star_bus_config star_bus_config;  /* missing _t suffix */
 Enum members use the \texttt{k\_} prefix followed by \texttt{snake\_case}.
 
 \begin{lstlisting}[language=C]
-/* CORRECT - k_prefix with snake_case */
-typedef enum {
+/* CORRECT - k_prefix with snake_case, C23 typed enum */
+typedef enum : uint8_t {
   k_star_bus_type_none,   /**< No bus type specified */
   k_star_bus_type_i2c,    /**< I2C bus */
   k_star_bus_type_spi,    /**< SPI bus */
@@ -5128,7 +5128,7 @@ for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
 \textbf{Good:}
 \begin{verbatim}
 static const uint32_t k_max_buffer_size = 256;
-static const float k_pi = 3.14159f;
+static const float k_pi = 3.14159F;
 
 static inline int max(int a, int b) {
       return (a > b) ? a : b;
@@ -5390,18 +5390,18 @@ The firmware uses the MKS (Meter-Kilogram-Second) system as the foundation for a
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Distance and velocity with units */
-float distance_m = 1.5f;           /* 1.5 meters */
-float velocity_mps = 2.0f;         /* 2.0 meters per second */
-float acceleration_mps2 = 9.81f;   /* 9.81 m/s^2 (gravity) */
+float distance_m = 1.5F;           /* 1.5 meters */
+float velocity_mps = 2.0F;         /* 2.0 meters per second */
+float acceleration_mps2 = 9.81F;   /* 9.81 m/s^2 (gravity) */
 
 /* Motor velocity tracking */
-float target_velocity_mps = 0.5f;
+float target_velocity_mps = 0.5F;
 float current_velocity_mps;
-star_encoder_get_velocity_rpm(&encoder, 10.0f, 500, &current_velocity_mps);
+star_encoder_get_velocity_mps(&encoder, 10.0F, 500, &current_velocity_mps);
 
 /* WRONG - No unit suffix */
-float distance = 1.5f;     /* What unit? Meters? Millimeters? Feet? */
-float velocity = 2.0f;     /* Meters per second? RPM? */
+float distance = 1.5F;     /* What unit? Meters? Millimeters? Feet? */
+float velocity = 2.0F;     /* Meters per second? RPM? */
 
 
 \end{lstlisting}
@@ -5409,8 +5409,8 @@ float velocity = 2.0f;     /* Meters per second? RPM? */
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Angular measurements in radians */
-float heading_rad = 1.57f;              /* 90 degrees in radians */
-float angular_velocity_rad_per_s = 3.14f; /* pi radians per second */
+float heading_rad = 1.57F;              /* 90 degrees in radians */
+float angular_velocity_rad_per_s = 3.14F; /* pi radians per second */
 
 /* Robot pose */
 typedef struct {
@@ -5420,8 +5420,8 @@ typedef struct {
 } robot_pose_t;
 
 /* WRONG - Ambiguous angle units */
-float heading = 90.0f;  /* Degrees or radians? */
-float omega = 3.14f;    /* What unit? */
+float heading = 90.0F;  /* Degrees or radians? */
+float omega = 3.14F;    /* What unit? */
 
 
 \end{lstlisting}
@@ -5436,14 +5436,14 @@ star_sensor_ds18b20_read_temp(&temp_sensor, &motor_temp_celsius);
 int16_t cell_temp_deci_celsius = 235;  /* 23.5 degrees C */
 
     /* Thermal shutdown threshold */
-#define MOTOR_THERMAL_SHUTDOWN_CELSIUS (85.0f)
+static const float s_motor_thermal_shutdown_celsius = 85.0F;
 
-if (motor_temp_celsius > MOTOR_THERMAL_SHUTDOWN_CELSIUS) {
-      star_drv8243_stop(&motor, true); /* Emergency brake */
+if (motor_temp_celsius > s_motor_thermal_shutdown_celsius) {
+      rx_motor_stop(&motor, true); /* Emergency brake */
 }
 
 /* WRONG */
-float motor_temp = 75.0f;  /* Celsius? Fahrenheit? Kelvin? */
+float motor_temp = 75.0F;  /* Celsius? Fahrenheit? Kelvin? */
 
 
 \end{lstlisting}
@@ -5470,18 +5470,20 @@ uint64_t timestamp;         /* What resolution? */
 \begin{lstlisting}[language=C]
 /* CORRECT - Electrical units */
 uint32_t motor_current_ma;
-star_drv8243_read_current(&motor, &motor_current_ma);
+rx_motor_get_current_ma(&motor, &motor_current_ma);
 
 uint32_t cell_voltage_mv = 3700;   /* 3.7V in millivolts */
 uint32_t pack_voltage_mv = 11100;  /* 11.1V (3S LiPo) */
 uint32_t power_mw = 7400;          /* 7.4W in milliwatts */
 
     /* Current limiting */
-#define MAX_MOTOR_CURRENT_MA (2000) /* 2A limit */
+typedef enum : uint32_t {
+  k_max_motor_current_ma = 2000, /**< 2A motor current limit */
+} motor_current_limits_t;
 
-if (motor_current_ma > MAX_MOTOR_CURRENT_MA) {
+if (motor_current_ma > k_max_motor_current_ma) {
       ESP_LOGW(s_TAG, "Motor current limit exceeded: %lu mA", motor_current_ma);
-      star_drv8243_set_speed(&motor, 0.0f);
+      rx_motor_set_duty(&motor, 0.0F);
 }
 
 /* WRONG */
@@ -5494,14 +5496,14 @@ uint32_t voltage = 3700;        /* Millivolts? Volts? */
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Percentage (0-100 range) */
-float duty_cycle_percent = 75.0f;      /* 75% duty cycle */
+float duty_cycle_percent = 75.0F;      /* 75% duty cycle */
 uint8_t battery_soc_percent = 85;      /* 85% state of charge */
-float throttle_percent = 50.0f;        /* 50% throttle */
+float throttle_percent = 50.0F;        /* 50% throttle */
 
-star_drv8243_set_speed(&motor, duty_cycle_percent);
+rx_motor_set_duty(&motor, duty_cycle_percent);
 
 /* WRONG */
-float duty_cycle = 0.75f;    /* Normalized (0-1)? Percentage (0-100)? */
+float duty_cycle = 0.75F;    /* Normalized (0-1)? Percentage (0-100)? */
 uint8_t battery_soc = 85;    /* Percentage? Raw ADC value? */
 
 
@@ -5532,21 +5534,26 @@ When converting between units, use descriptive function names:
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Clear unit conversion */
-float rpm_to_mps(float rpm, float wheel_diameter_m)
+static const float s_seconds_per_minute = 60.0F;
+
+float rpm_to_mps(float rpm, float wheel_circumference_m)
 {
-      float wheel_circumference_m = 3.14159f * wheel_diameter_m;
-      float revolutions_per_second = rpm / 60.0f;
+      float revolutions_per_second = rpm / s_seconds_per_minute;
       return revolutions_per_second * wheel_circumference_m;
 }
 
+static const float s_deci_celsius_per_celsius = 10.0F;
+
 float celsius_to_deci_celsius(float temp_celsius)
 {
-      return temp_celsius * 10.0f;
+      return temp_celsius * s_deci_celsius_per_celsius;
 }
+
+static const float s_mv_per_volt = 1000.0F;
 
 float mv_to_volts(uint32_t voltage_mv)
 {
-      return voltage_mv / 1000.0f;
+      return voltage_mv / s_mv_per_volt;
 }
 
 /* WRONG - Ambiguous conversions */
@@ -5766,11 +5773,11 @@ static const char* const error_messages[] = {
 
 /* CORRECT - Default configuration in flash */
 static const star_pid_config_t default_pid_config = {
-  .kp = 1.0f,
-  .ki = 0.5f,
-  .kd = 0.1f,
-  .output_min = -100.0f,
-  .output_max = 100.0f,
+  .kp = 1.0F,
+  .ki = 0.5F,
+  .kd = 0.1F,
+  .output_min = -100.0F,
+  .output_max = 100.0F,
 };
 
 /* Usage: Copy to RAM only when needed */
@@ -6157,7 +6164,7 @@ rx_err_t read_temperature_safe(float* temp_celsius)
         return ret;
      }
 
-      *temp_celsius = (data[0] << 8 | data[1]) / 10.0f;
+      *temp_celsius = (data[0] << 8 | data[1]) / 10.0F;
       return RX_OK;
 }
 
@@ -6165,7 +6172,7 @@ rx_err_t read_temperature_safe(float* temp_celsius)
 rx_err_t ret = read_temperature_safe(&motor_temp);
 if (ret != RX_OK) {
       /* Sensor failed - enter safe state */
-      star_drv8243_stop(&motor, true);
+      rx_motor_stop(&motor, true);
       system_enter_safe_mode();
 }
 
@@ -6175,13 +6182,17 @@ if (ret != RX_OK) {
 
 \begin{lstlisting}[language=C]
 /* Safe state: all motors stopped, systems halted */
+typedef enum : uint8_t {
+  k_num_motors = 4, /**< Number of motors on STAR platform */
+} motor_count_t;
+
 void system_enter_safe_mode(void)
 {
       RX_LOG_ERROR(s_TAG, "ENTERING SAFE MODE");
 
       /* Stop all motors */
-      for (int i = 0; i < NUM_MOTORS; i++) {
-        star_drv8243_stop(&motors[i], true); /* Brake */
+      for (uint8_t i = 0; i < k_num_motors; i++) {
+        rx_motor_stop(&motors[i], true); /* Brake */
      }
 
       /* Disable all actuators */
@@ -6200,11 +6211,17 @@ void system_enter_safe_mode(void)
 }
 
 /* Trigger safe mode on critical errors */
-if (battery_voltage_mv < BATTERY_CRITICAL_MV) {
+typedef enum : uint16_t {
+  k_battery_critical_mv = 3000, /**< Critical per-cell voltage threshold (3.0V) */
+} battery_limits_t;
+
+static const float s_motor_thermal_shutdown_celsius = 85.0F;
+
+if (cell_voltage_mv < k_battery_critical_mv) {
       system_enter_safe_mode();
 }
 
-if (motor_temp_celsius > THERMAL_SHUTDOWN_CELSIUS) {
+if (motor_temp_celsius > s_motor_thermal_shutdown_celsius) {
       system_enter_safe_mode();
 }
 
@@ -6389,10 +6406,10 @@ gpio_config(&io_conf);
         BENCHMARK_START();
 
         float velocity_rpm;
-        star_encoder_get_velocity_rpm(&encoder, 1.0f, 500, &velocity_rpm);
+        star_encoder_get_velocity_rpm(&encoder, 1.0F, 500, &velocity_rpm);
 
         float output;
-        star_pid_compute(&pid, setpoint, velocity_rpm, 0.001f, &output);
+        star_pid_compute(&pid, setpoint, velocity_rpm, 0.001F, &output);
 
         star_motor_set_duty(&motor, output);
 

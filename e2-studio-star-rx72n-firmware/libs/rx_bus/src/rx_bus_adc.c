@@ -105,7 +105,7 @@
  *
  * ## Analog Signal Conditioning
  *
- * **Motor Current Sensing (DRV8243 IPROPI):**
+ * **Motor Current Sensing (DRV8263H IPROPI):**
  * - Current ratio: 1000:1 (1mA output per 1A load)
  * - Sense resistor: 4990 Ohm (1% tolerance)
  * - Formula: I_motor = (V_IPROPI / 4990) x 1000 mA
@@ -610,13 +610,14 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
  * @warning Voltage dividers for scaling must be handled in the application layer
  *
  * @par Example Usage Context:
- * For motor current sensing (DRV8243 IPROPI):
- * - Read voltage: 1650 mV
- * - Convert to current: I = (1650 / 4990) x 1000 = 331 mA
+ * For motor current sensing (DRV8263H IPROPI):
+ * - Read voltage from ADC
+ * - Convert using: I_motor = V_sense * k_ipropi_ratio / k_ipropi_sense_ohm
+ * - Example: I = (V_sense / 4990) * 1000 (see rx72n_adc_regs.h for constants)
  *
- * For temperature sensing (10 mV/degC sensor):
- * - Read voltage: 750 mV (ADC input)
- * - Convert: T = (750 - 500) / 10 = 25 degC
+ * For temperature sensing (analog sensor):
+ * - Read voltage from ADC
+ * - Apply sensor-specific conversion (see sensor datasheet)
  *
  * @see rx_bus_adc_read_voltage_mv() Public API that calls this callback
  * @see adc_read_voltage_mv() HAL function to perform conversion and scaling
@@ -880,7 +881,7 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
  * uint32_t ipropi_mv = 0;
  * rx_err_t err = rx_bus_adc_read_voltage_mv(&manager, "motor_current", &ipropi_mv);
  * if (err == k_rx_ok) {
- *     // DRV8243: I_motor = (V_IPROPI / 4990Ohm) * 1000
+ *     // DRV8263H: I_motor = (V_IPROPI / 4990Ohm) * 1000
  *     uint32_t current_ma = (ipropi_mv * 1000) / 4990;
  *     if (current_ma > 5000) {
  *         motor_emergency_stop();

@@ -10,7 +10,7 @@
  * - Run PID control loop at 250 Hz (4 ms period)
  * - Read encoder feedback from MTU quadrature inputs
  * - Compute PID output for each motor
- * - Command H-bridge drivers via PWM (PH/EN mode)
+ * - Command DRV8263H drivers via PWM (IN2/IN1 mode)
  * - Monitor motor faults (overcurrent, stall detection)
  * - Handle emergency stop conditions
  *
@@ -22,13 +22,12 @@
  *                        v
  *                   [Encoder Feedback] <- MTU (Hall effect)
  *                        v
- *                   [PWM Output] -> H-Bridge -> Motors
+ *                   [PWM Output] -> DRV8263H -> Motors
  * ```
  *
  * @see motor_control_task.c Implementation
  * @see rx_pid.h PID controller
- * @see rx_motor.h Motor abstraction
- * @see rx_motor.h H-bridge PWM control
+ * @see rx_motor.h Motor abstraction and DRV8263H driver control
  *
  * @copyright Copyright (c) 2026 STAR Project
  */
@@ -86,7 +85,7 @@ typedef enum : uint8_t {
  * @retval k_rx_err_* ThreadX task creation failed
  *
  * @pre ThreadX kernel running
- * @pre Motor drivers (H-bridge PWM) initialized
+ * @pre Motor drivers (DRV8263H PWM) initialized
  * @pre Encoders (MTU) configured
  * @pre PID controllers tuned
  * @pre Shared data initialized
@@ -94,7 +93,8 @@ typedef enum : uint8_t {
  * @post MotorTask created and running at 250 Hz
  * @post Motors ready to respond to velocity commands
  *
- * @note Call this from AppMainTask after motor hardware initialization
+ * @note NOT thread-safe. Must be called from single-threaded init context
+ *       (AppMainTask) after motor hardware initialization
  * @note Highest priority task - runs before all other application tasks
  *
  * @see motor_control_task.c Implementation details

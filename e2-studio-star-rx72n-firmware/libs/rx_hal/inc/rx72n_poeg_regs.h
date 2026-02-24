@@ -40,7 +40,7 @@
  *     color=lightgreen;
  *
  *     pwm [label="GPTW PWM\nGTIOCxA/B"];
- *     motor [label="H-Bridge\n(DRV8243)"];
+ *     motor [label="H-Bridge\n(DRV8263H)"];
  *   }
  *
  *   pin -> poeg [label="PIDF"];

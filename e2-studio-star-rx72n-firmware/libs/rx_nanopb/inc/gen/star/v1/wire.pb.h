@@ -133,9 +133,9 @@ extern const pb_msgdesc_t star_v1_EmergencyStopCommand_msg;
 #define star_v1_EmergencyStopCommand_fields &star_v1_EmergencyStopCommand_msg
 
 /* Maximum encoded size of messages (where known) */
-#define star_v1_WireMessage_size                 1403
-#define STAR_V1_STAR_V1_WIRE_PB_H_MAX_SIZE       star_v1_EmergencyStopCommand_size
+#define STAR_V1_STAR_V1_WIRE_PB_H_MAX_SIZE       star_v1_WireMessage_size
 #define star_v1_EmergencyStopCommand_size        143
+#define star_v1_WireMessage_size                 1403
 
 #ifdef __cplusplus
 } /* extern "C" */

@@ -40,7 +40,7 @@
  *    - See main.c for early UART initialization
  *
  * 5. **Communication peripherals** (planned, not yet implemented)
- *    - SPI for motor drivers and sensors
+ *    - SPI for RPi5 communication and sensors
  *    - I2C for IMU, temperature sensors
  *    - USB CDC for ROS2 communication
  *
@@ -185,6 +185,8 @@
  * @since Version 1.0.0
  *
  * @par Revision History:
+ * - v1.1.0 (2026-02): Add GPIO helper functions for DRV8263H motor driver,
+ *   IMU, sonar, ADC, and LED pin initialization
  * - v1.0.0 (2026-01): Initial implementation with timers and UART
  *
  * @date 2026-01-14
@@ -250,15 +252,33 @@ typedef enum : uint16_t {
   k_pin_enc3_pha = k_rx_pc_0, /**< PC.0 - TCLKC (encoder 3 phase A) */
   k_pin_enc3_phb = k_rx_pb_3, /**< PB.3 - TCLKD (encoder 3 phase B) */
 
-  /* GPTW PWM outputs (4 motors x 2 pins = PH + EN, all on PORT E) */
-  k_pin_motor0_ph = k_rx_pe_5, /**< PE.5 - GTIOC0A (motor 0 phase, pin 106) */
-  k_pin_motor0_en = k_rx_pe_2, /**< PE.2 - GTIOC0B (motor 0 enable, pin 109) */
-  k_pin_motor1_ph = k_rx_pe_4, /**< PE.4 - GTIOC1A (motor 1 phase, pin 107) */
-  k_pin_motor1_en = k_rx_pe_1, /**< PE.1 - GTIOC1B (motor 1 enable, pin 110) */
-  k_pin_motor2_ph = k_rx_pe_3, /**< PE.3 - GTIOC2A (motor 2 phase, pin 108) */
-  k_pin_motor2_en = k_rx_pe_0, /**< PE.0 - GTIOC2B (motor 2 enable, pin 111) */
-  k_pin_motor3_ph = k_rx_pe_7, /**< PE.7 - GTIOC3A (motor 3 phase, pin 101) */
-  k_pin_motor3_en = k_rx_pe_6, /**< PE.6 - GTIOC3B (motor 3 enable, pin 102) */
+  /* GPTW PWM outputs (4 motors x 2 pins = IN2 + IN1, distributed across ports) */
+  k_pin_motor0_in2 = k_rx_p2_3, /**< P2.3 - GTIOC0A (motor 0 IN2/direction, pin 34) */
+  k_pin_motor0_in1 = k_rx_p1_7, /**< P1.7 - GTIOC0B (motor 0 IN1/PWM, pin 38) */
+  k_pin_motor1_in2 = k_rx_p2_2, /**< P2.2 - GTIOC1A (motor 1 IN2/direction, pin 35) */
+  k_pin_motor1_in1 = k_rx_pc_3, /**< PC.3 - GTIOC1B (motor 1 IN1/PWM, pin 67) */
+  k_pin_motor2_in2 = k_rx_pe_3, /**< PE.3 - GTIOC2A (motor 2 IN2/direction, pin 108) */
+  k_pin_motor2_in1 = k_rx_p8_6, /**< P8.6 - GTIOC2B (motor 2 IN1/PWM, pin 41) */
+  k_pin_motor3_in2 = k_rx_pe_7, /**< PE.7 - GTIOC3A (motor 3 IN2/direction, pin 101) */
+  k_pin_motor3_in1 = k_rx_pc_6, /**< PC.6 - GTIOC3B (motor 3 IN1/PWM, pin 61) */
+
+  /* IMU (RIIC1 I2C + GPIO) */
+  k_pin_imu_scl = k_rx_p2_1, /**< P2.1 - SCL1 (IMU I2C clock, pin 36) */
+  k_pin_imu_sda = k_rx_p2_0, /**< P2.0 - SDA1 (IMU I2C data, pin 37) */
+  k_pin_imu_int = k_rx_p3_2, /**< P3.2 - IMU interrupt (active-low, pin 27) */
+  k_pin_imu_rst = k_rx_p8_3, /**< P8.3 - IMU reset (active-low, pin 58) */
+
+  /* DRV8263H DRVOFF pins (GPIO output, initial HIGH = outputs disabled) */
+  k_pin_motor0_drvoff = k_rx_p6_1, /**< P6.1 - Motor 0 DRVOFF (pin 115) */
+  k_pin_motor1_drvoff = k_rx_p6_3, /**< P6.3 - Motor 1 DRVOFF (pin 113) */
+  k_pin_motor2_drvoff = k_rx_pe_0, /**< PE.0 - Motor 2 DRVOFF (pin 111) */
+  k_pin_motor3_drvoff = k_rx_pe_2, /**< PE.2 - Motor 3 DRVOFF (pin 109) */
+
+  /* DRV8263H nSLEEP pins (GPIO output, initial HIGH = awake) */
+  k_pin_motor0_nsleep = k_rx_p6_0, /**< P6.0 - Motor 0 nSLEEP (pin 117) */
+  k_pin_motor1_nsleep = k_rx_p6_2, /**< P6.2 - Motor 1 nSLEEP (pin 114) */
+  k_pin_motor2_nsleep = k_rx_p6_4, /**< P6.4 - Motor 2 nSLEEP (pin 112) */
+  k_pin_motor3_nsleep = k_rx_pe_1, /**< PE.1 - Motor 3 nSLEEP (pin 110) */
 
   /* ADC current sense (S12AD0, AN004-AN007) */
   k_pin_adc_an004 = k_rx_p4_4, /**< P4.4 - AN004 (motor 3 current) */
@@ -267,10 +287,31 @@ typedef enum : uint16_t {
   k_pin_adc_an007 = k_rx_p4_7, /**< P4.7 - AN007 (motor 0 current) */
 } rx_mpc_pin_t;
 
-/** @brief Number of GPTW motor control pins */
+/**
+ * @enum gpio_pin_counts_t
+ * @brief Static array-size and loop-bound constants for GPIO pin groups
+ *
+ * @details
+ * Provides compile-time upper bounds for all GPIO pin arrays. Used as loop
+ * limits in internal_gpio_init_*() helpers and as array-size declarators.
+ *
+ * @invariant All values must fit in uint8_t (loop counter type)
+ *
+ * @code{.c}
+ * const rx_port_pin_t pins[k_gptw_pin_count] = { ... };
+ * for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
+ *     rx_mpc_set_gptw(pins[i]);
+ * }
+ * @endcode
+ *
+ * @see internal_gpio_init_gptw_pwm() Uses k_gptw_pin_count
+ * @see internal_gpio_init_motor_driver_ctrl() Uses k_motor_count
+ * @since Version 1.1.0
+ */
 typedef enum : uint8_t {
-  k_gptw_pin_count = 8, /**< 4 motors x 2 pins (PH + EN) */
-  k_sonar_count    = 4, /**< 4 HC-SR04 ultrasonic sensors */
+  k_gptw_pin_count    = 8, /**< 4 motors x 2 pins (IN2 + IN1) */
+  k_motor_count       = 4, /**< 4 DRV8263H motor drivers */
+  k_sonar_count       = 4, /**< 4 HC-SR04 ultrasonic sensors */
 } gpio_pin_counts_t;
 
 /** @brief GPTW PWM frequency constant */
@@ -303,6 +344,39 @@ typedef enum : uint32_t {
 typedef enum : uint8_t {
   k_motor_adc_count = 4, /**< 4 motors = 4 current sense channels */
 } adc_count_t;
+
+/**
+ * @enum gpio_reg_constants_t
+ * @brief Constants for GPIO register bit manipulation
+ *
+ * @details
+ * Provides named constants for single-bit operations on 8-bit GPIO port
+ * registers (PMR, PDR, PODR). Eliminates magic number `1U` in bit-shift
+ * expressions and documents the hardware-imposed pin count limit.
+ *
+ * @invariant k_gpio_single_bit_mask == 1 (exactly one bit for shift operations)
+ * @invariant k_gpio_max_pin_number == k_pins_per_port - 1
+ *
+ * @see internal_gpio_set_output() Uses these for register bit manipulation
+ * @see internal_gpio_set_input() Uses these for register bit manipulation
+ * @see k_pins_per_port From rx_gpio_constants.h (hardware 8-pin limit)
+ *
+ * @code{.c}
+ * // Set pin 5 as output in PDR register (read-modify-write)
+ * port->PDR |= (uint8_t)(k_gpio_single_bit_mask << k_bit_led);
+ *
+ * // Validate pin number before access
+ * if (pin_number <= k_gpio_max_pin_number) {
+ *     port->PODR |= (uint8_t)(k_gpio_single_bit_mask << pin_number);
+ * }
+ * @endcode
+ *
+ * @since Version 1.1.0
+ */
+typedef enum : uint8_t {
+  k_gpio_single_bit_mask = 1U, /**< Single-bit mask shifted by pin number for register RMW */
+  k_gpio_max_pin_number  = 7U, /**< Maximum valid pin index (0-7, 8 pins per port) */
+} gpio_reg_constants_t;
 
 /** @brief SCKCR3 reset/unconfigured state value (before clock initialization) */
 static const uint8_t s_sckcr3_reset_state = 0U;
@@ -470,9 +544,9 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
  * @brief Configure GPTW PWM output pins (4 motors)
  *
  * @details
- * Configures MPC pin multiplexing for GPTW0-GPTW3 PWM outputs on PORT E
- * (PE0-PE7). Sets PSEL=0x1E for all 8 pins (4 motors x PH+EN per motor).
- * Enables complementary PWM mode for motor phase and enable control.
+ * Configures MPC pin multiplexing for GPTW0-GPTW3 PWM outputs distributed
+ * across PORT2, PORT1, PORT8, PORTC, and PORTE. Sets PSEL for all 8 pins
+ * (4 motors x IN2+IN1 per motor) for DRV8263H motor driver control.
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok All pins configured successfully
@@ -480,7 +554,7 @@ static rx_err_t internal_gpio_init_tpu_encoders(void)
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
- * @post PE5/PE2, PE4/PE1, PE3/PE0, PE7/PE6 configured as GPTW outputs
+ * @post P23/P17, P22/PC3, PE3/P86, PE7/PC6 configured as GPTW outputs
  * @post All 8 GPTW PWM pins ready for motor control
  *
  * @note Thread-safe. No shared state modified.
@@ -492,18 +566,271 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
 {
   static const char* s_tag = "GPIO_GPTW";
 
-  const rx_port_pin_t gptw_pins[] = {(rx_port_pin_t)k_pin_motor0_ph,
-                                     (rx_port_pin_t)k_pin_motor0_en,
-                                     (rx_port_pin_t)k_pin_motor1_ph,
-                                     (rx_port_pin_t)k_pin_motor1_en,
-                                     (rx_port_pin_t)k_pin_motor2_ph,
-                                     (rx_port_pin_t)k_pin_motor2_en,
-                                     (rx_port_pin_t)k_pin_motor3_ph,
-                                     (rx_port_pin_t)k_pin_motor3_en};
+  const rx_port_pin_t gptw_pins[] = {(rx_port_pin_t)k_pin_motor0_in2,
+                                     (rx_port_pin_t)k_pin_motor0_in1,
+                                     (rx_port_pin_t)k_pin_motor1_in2,
+                                     (rx_port_pin_t)k_pin_motor1_in1,
+                                     (rx_port_pin_t)k_pin_motor2_in2,
+                                     (rx_port_pin_t)k_pin_motor2_in1,
+                                     (rx_port_pin_t)k_pin_motor3_in2,
+                                     (rx_port_pin_t)k_pin_motor3_in1};
 
   for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
     const rx_err_t err = rx_mpc_set_gptw(gptw_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "GPTW pin config failed");
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure a single GPIO pin as output with initial level
+ *
+ * @details
+ * Sets the given pin to GPIO mode (PMR cleared), drives the specified
+ * initial logic level on PODR, and configures PDR as output. This is a
+ * common helper used by DRVOFF, nSLEEP, sonar trigger, and IMU reset
+ * pin initialization.
+ *
+ * Register write order is critical for glitch-free startup:
+ * 1. Clear PMR (switch from peripheral to GPIO mode)
+ * 2. Set PODR (drive the desired initial logic level)
+ * 3. Set PDR (enable output driver last to avoid glitch)
+ *
+ * @param[in] port_pin Encoded port/pin value from rx_mpc_pin_t
+ *                     (valid range: any value decodable by rx_port_from_pin()
+ *                     and rx_pin_from_pin() yielding pin 0-7)
+ * @param[in] initial_high true to drive HIGH on startup, false for LOW
+ *
+ * @return void (asserts on invalid input -- does not return on failure)
+ *
+ * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
+ * @pre Port base address must be valid (rx_port_get_base() != nullptr)
+ * @post Pin PMR cleared (GPIO mode), PDR set (output), PODR at requested level
+ * @post Pin is actively driving the requested logic level
+ *
+ * @note Not thread-safe. Performs non-atomic RMW on 8-bit port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @warning Do not call after RTOS start without external synchronization.
+ *
+ * @see internal_gpio_set_input() Complementary function for input pins
+ * @see internal_gpio_init_motor_driver_ctrl() Primary caller for DRVOFF/nSLEEP
+ * @see internal_gpio_init_sonar_triggers() Primary caller for sonar trigger pins
+ *
+ * @since Version 1.1.0
+ */
+static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial_high)
+{
+  const uint8_t            port = rx_port_from_pin(port_pin);
+  const uint8_t            pin  = rx_pin_from_pin(port_pin);
+  volatile rx_port_regs_t* regs = rx_port_get_base(port);
+  RX_ASSERT(regs != nullptr, "Invalid GPIO port for output pin");
+  RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
+  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  if (initial_high) {
+    regs->podr |= (uint8_t)(k_gpio_single_bit_mask << pin);
+  } else {
+    regs->podr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin);
+  }
+  regs->pdr |= (uint8_t)(k_gpio_single_bit_mask << pin); /* Output direction */
+}
+
+/**
+ * @brief Configure a single GPIO pin as input
+ *
+ * @details
+ * Sets the given pin to GPIO mode (PMR cleared) and configures PDR as
+ * input (direction bit cleared). Used by IMU interrupt and sonar echo
+ * pin initialization.
+ *
+ * Register write order:
+ * 1. Clear PMR (switch from peripheral to GPIO mode)
+ * 2. Clear PDR (configure as input direction)
+ *
+ * @param[in] port_pin Encoded port/pin value from rx_mpc_pin_t
+ *                     (valid range: any value decodable by rx_port_from_pin()
+ *                     and rx_pin_from_pin() yielding pin 0-7)
+ *
+ * @return void (asserts on invalid input -- does not return on failure)
+ *
+ * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
+ * @pre Port base address must be valid (rx_port_get_base() != nullptr)
+ * @post Pin PMR cleared (GPIO mode) and PDR cleared (input direction)
+ * @post Pin is in high-impedance input state
+ *
+ * @note Not thread-safe. Performs non-atomic RMW on 8-bit port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @warning Do not call after RTOS start without external synchronization.
+ *
+ * @see internal_gpio_set_output() Complementary function for output pins
+ * @see internal_gpio_init_imu() Primary caller for IMU interrupt pin
+ * @see internal_gpio_init_sonar_echoes() Primary caller for sonar echo pins
+ *
+ * @since Version 1.1.0
+ */
+static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
+{
+  const uint8_t            port = rx_port_from_pin(port_pin);
+  const uint8_t            pin  = rx_pin_from_pin(port_pin);
+  volatile rx_port_regs_t* regs = rx_port_get_base(port);
+  RX_ASSERT(regs != nullptr, "Invalid GPIO port for input pin");
+  RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
+  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pdr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* Input direction */
+}
+
+/**
+ * @brief Configure IMU pins (RIIC1 I2C + GPIO interrupt and reset)
+ *
+ * @details
+ * Configures 4 pins for the inertial measurement unit:
+ * - P2.1/SCL1 and P2.0/SDA1: RIIC1 I2C bus for IMU communication
+ * - P3.2: IMU interrupt input (active-low from IMU INT pin)
+ * - P8.3: IMU reset output (active-low, initialized HIGH = not in reset)
+ *
+ * Pin configuration order:
+ * 1. I2C bus pins (SCL1, SDA1) via RIIC MPC
+ * 2. Interrupt input via GPIO MPC + input direction
+ * 3. Reset output via GPIO MPC + output HIGH (de-asserted)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All 4 pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post P2.1 configured as SCL1, P2.0 configured as SDA1 (RIIC1 peripheral mode)
+ * @post P3.2 configured as GPIO input, P8.3 configured as GPIO output HIGH
+ *
+ * @note Not thread-safe. Performs non-atomic RMW on port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @see internal_gpio_set_input() Used for IMU interrupt pin
+ * @see internal_gpio_set_output() Used for IMU reset pin
+ * @see rx_mpc_set_riic() MPC configuration for I2C pins
+ *
+ * @since Version 1.1.0
+ */
+static rx_err_t internal_gpio_init_imu(void)
+{
+  static const char* s_tag = "GPIO_IMU";
+
+  /* NASA Rule 5: precondition validation */
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_scl)) != nullptr,
+            "IMU SCL port base invalid");
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_rst)) != nullptr,
+            "IMU RST port base invalid");
+
+  /* IMU I2C (RIIC1): SCL1 + SDA1 */
+  rx_err_t err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_scl);
+  RX_RETURN_ON_ERROR(err, s_tag, "SCL1 pin config failed");
+
+  err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_sda);
+  RX_RETURN_ON_ERROR(err, s_tag, "SDA1 pin config failed");
+
+  /* IMU INT: GPIO input (active-low interrupt from IMU) */
+  err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_int);
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU INT MPC config failed");
+
+  internal_gpio_set_input((rx_port_pin_t)k_pin_imu_int);
+
+  /* IMU RST: GPIO output, initial HIGH (not in reset) */
+  err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_rst);
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU RST MPC config failed");
+
+  internal_gpio_set_output((rx_port_pin_t)k_pin_imu_rst, true); /* HIGH = not in reset */
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure DRV8263H motor driver control pins (DRVOFF + nSLEEP)
+ *
+ * @details
+ * Configures 8 GPIO output pins for DRV8263H motor driver control:
+ * - 4x DRVOFF pins: Output HIGH (driver outputs disabled for safe startup)
+ * - 4x nSLEEP pins: Output HIGH (driver awake, not in sleep mode)
+ *
+ * ## Safe Initialization Order (Critical)
+ *
+ * DRVOFF pins are configured **before** nSLEEP pins. This ordering is
+ * required by the DRV8263H power-up sequence:
+ *
+ * 1. DRVOFF = HIGH first  -> H-bridge outputs disabled (safe state)
+ * 2. nSLEEP = HIGH second -> driver wakes up with outputs already disabled
+ *
+ * If nSLEEP were asserted first (waking the driver), the H-bridge outputs
+ * could briefly be in an undefined state before DRVOFF is driven HIGH,
+ * risking uncontrolled motor movement or shoot-through.
+ *
+ * Motor outputs remain disabled (DRVOFF=HIGH) until the motor control task
+ * explicitly drives DRVOFF LOW before commanding PWM.
+ * @todo (#367) Motor control task must drive DRVOFF LOW before commanding PWM.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All 8 pins configured successfully
+ * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
+ *
+ * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
+ * @pre Pins not in use by other peripherals
+ * @post All 4 DRVOFF pins configured as GPIO outputs, driven HIGH (disabled)
+ * @post All 4 nSLEEP pins configured as GPIO outputs, driven HIGH (awake)
+ *
+ * @note Not thread-safe. Performs non-atomic RMW on port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @warning DRVOFF must be driven HIGH before nSLEEP is asserted to prevent
+ *          uncontrolled H-bridge output during driver wake-up.
+ *
+ * @see internal_gpio_set_output() Used for all DRVOFF and nSLEEP pins
+ * @see rx_mpc_set_gpio() MPC configuration for GPIO mode
+ * @see internal_gpio_init_gptw_pwm() Configures PWM pins for DRV8263H IN1/IN2
+ *
+ * @since Version 1.1.0
+ */
+static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
+{
+  static const char* s_tag = "GPIO_DRV_CTRL";
+
+  /* NASA Rule 5: precondition validation */
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_motor0_drvoff)) != nullptr,
+            "Motor 0 DRVOFF port base invalid");
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_motor0_nsleep)) != nullptr,
+            "Motor 0 nSLEEP port base invalid");
+
+  const rx_port_pin_t drvoff_pins[k_motor_count] = {(rx_port_pin_t)k_pin_motor0_drvoff,
+                                                     (rx_port_pin_t)k_pin_motor1_drvoff,
+                                                     (rx_port_pin_t)k_pin_motor2_drvoff,
+                                                     (rx_port_pin_t)k_pin_motor3_drvoff};
+
+  const rx_port_pin_t nsleep_pins[k_motor_count] = {(rx_port_pin_t)k_pin_motor0_nsleep,
+                                                     (rx_port_pin_t)k_pin_motor1_nsleep,
+                                                     (rx_port_pin_t)k_pin_motor2_nsleep,
+                                                     (rx_port_pin_t)k_pin_motor3_nsleep};
+
+  /*
+   * CRITICAL ORDERING: DRVOFF must be configured HIGH (outputs disabled) BEFORE
+   * nSLEEP wakes the driver. This prevents the DRV8263H H-bridge from entering
+   * an undefined output state during the wake-up transition. See DRV8263H
+   * datasheet Section 7.3.1 (Device Functional Modes) for power-up sequencing.
+   */
+
+  /* Step 1: Configure DRVOFF pins HIGH first -- ensures H-bridge outputs are
+   * disabled before the driver is awakened by nSLEEP. */
+  for (uint8_t i = 0; i < k_motor_count; i++) {
+    const rx_err_t err = rx_mpc_set_gpio(drvoff_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "DRVOFF MPC config failed");
+    internal_gpio_set_output(drvoff_pins[i], true); /* HIGH = outputs disabled */
+  }
+
+  /* Step 2: Configure nSLEEP pins HIGH second -- driver wakes with DRVOFF
+   * already asserted, so H-bridge outputs remain safely disabled. */
+  for (uint8_t i = 0; i < k_motor_count; i++) {
+    const rx_err_t err = rx_mpc_set_gpio(nsleep_pins[i]);
+    RX_RETURN_ON_ERROR(err, s_tag, "nSLEEP MPC config failed");
+    internal_gpio_set_output(nsleep_pins[i], true); /* HIGH = awake */
   }
 
   return k_rx_ok;
@@ -615,14 +942,7 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
   for (uint8_t i = 0; i < k_sonar_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(sonar_trig_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
-
-    const uint8_t            port = rx_port_from_pin(sonar_trig_pins[i]);
-    const uint8_t            pin  = rx_pin_from_pin(sonar_trig_pins[i]);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid sonar trigger port");
-    regs->pmr &= ~(uint8_t)(1U << pin);
-    regs->podr &= ~(uint8_t)(1U << pin);
-    regs->pdr |= (uint8_t)(1U << pin);
+    internal_gpio_set_output(sonar_trig_pins[i], false); /* LOW = idle */
   }
 
   return k_rx_ok;
@@ -663,12 +983,7 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
     const rx_err_t err = rx_mpc_set_gpio(sonar_echo_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
 
-    const uint8_t            port = rx_port_from_pin(sonar_echo_pins[i]);
-    const uint8_t            pin  = rx_pin_from_pin(sonar_echo_pins[i]);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid sonar echo port");
-    regs->pmr &= ~(uint8_t)(1U << pin);
-    regs->pdr &= ~(uint8_t)(1U << pin);
+    internal_gpio_set_input(sonar_echo_pins[i]);
   }
 
   return k_rx_ok;
@@ -683,13 +998,13 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
  * specific PSEL values determined by hardware function.
  *
  * **Pin configuration:**
- * - **8x GPTW PWM pins** - Motor control GPTW PWM outputs (PORT E)
+ * - **8x GPTW PWM pins** - Motor control GPTW PWM outputs (PORT2/1/8/C/E)
  * - **2x I2C pins** - Sensor communication bus (SCL/SDA)
  * - **1x USB pin** - USB VBUS detection for CDC debug interface
  *
  * **Algorithm steps:**
  * 1. Validate all pin identifiers are within valid range
- * 2. Configure GPTW PWM pins (PSEL = 0x1E) for 4-motor control on PORT E
+ * 2. Configure GPTW PWM pins for 4-motor DRV8263H IN1/IN2 control
  * 3. Configure I2C pins (PSEL = 0x0F) for sensor bus
  * 4. Configure USB pin (PSEL = 0x11) for USB VBUS detect
  * 5. All operations use rx_mpc API with write-protect handling
@@ -698,14 +1013,14 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
  *
  * | Pin | Port.Bit | Function | PSEL | Usage |
  * |-----|----------|----------|------|-------|
- * | PE5 | PORTE.5 | GTIOC0A | 0x1E | Motor 0 phase (pkg pin 106) |
- * | PE2 | PORTE.2 | GTIOC0B | 0x1E | Motor 0 enable (pkg pin 109) |
- * | PE4 | PORTE.4 | GTIOC1A | 0x1E | Motor 1 phase (pkg pin 107) |
- * | PE1 | PORTE.1 | GTIOC1B | 0x1E | Motor 1 enable (pkg pin 110) |
- * | PE3 | PORTE.3 | GTIOC2A | 0x1E | Motor 2 phase (pkg pin 108) |
- * | PE0 | PORTE.0 | GTIOC2B | 0x1E | Motor 2 enable (pkg pin 111) |
- * | PE7 | PORTE.7 | GTIOC3A | 0x1E | Motor 3 phase (pkg pin 101) |
- * | PE6 | PORTE.6 | GTIOC3B | 0x1E | Motor 3 enable (pkg pin 102) |
+ * | P23 | PORT2.3 | GTIOC0A | 0x1E | Motor 0 IN2/direction (pkg pin 34) |
+ * | P17 | PORT1.7 | GTIOC0B | 0x1E | Motor 0 IN1/PWM (pkg pin 38) |
+ * | P22 | PORT2.2 | GTIOC1A | 0x1E | Motor 1 IN2/direction (pkg pin 35) |
+ * | PC3 | PORTC.3 | GTIOC1B | 0x1E | Motor 1 IN1/PWM (pkg pin 67) |
+ * | PE3 | PORTE.3 | GTIOC2A | 0x1E | Motor 2 IN2/direction (pkg pin 108) |
+ * | P86 | PORT8.6 | GTIOC2B | 0x1E | Motor 2 IN1/PWM (pkg pin 41) |
+ * | PE7 | PORTE.7 | GTIOC3A | 0x1E | Motor 3 IN2/direction (pkg pin 101) |
+ * | PC6 | PORTC.6 | GTIOC3B | 0x1E | Motor 3 IN1/PWM (pkg pin 61) |
  * | P1.2 | PORT1.2 | SCL0 | 0x0F | I2C clock line |
  * | P1.3 | PORT1.3 | SDA0 | 0x0F | I2C data line |
  * | P1.6 | PORT1.6 | USB0_VBUS | 0x11 | USB VBUS detect input |
@@ -809,6 +1124,12 @@ static rx_err_t gpio_init(void)
 
   err = internal_gpio_init_gptw_pwm();
   RX_RETURN_ON_ERROR(err, s_tag, "GPTW PWM pin init failed");
+
+  err = internal_gpio_init_motor_driver_ctrl();
+  RX_RETURN_ON_ERROR(err, s_tag, "Motor driver control pin init failed");
+
+  err = internal_gpio_init_imu();
+  RX_RETURN_ON_ERROR(err, s_tag, "IMU pin init failed");
 
   err = internal_gpio_init_adc();
   RX_RETURN_ON_ERROR(err, s_tag, "ADC pin init failed");

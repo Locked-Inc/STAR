@@ -446,12 +446,12 @@ extern const pb_msgdesc_t star_v1_SystemStatus_msg;
 #define star_v1_GetSystemStatusRequest_size      149
 #define star_v1_GetSystemStatusResponse_size     425
 #define star_v1_GetTelemetryRequest_size         149
-#define star_v1_GetTelemetryResponse_size        791
+#define star_v1_GetTelemetryResponse_size        767
 #define star_v1_GpsData_size                     49
 #define star_v1_ImuData_size                     81
 #define star_v1_StreamTelemetryRequest_size      688
 #define star_v1_SystemStatus_size                60
-#define star_v1_TelemetryData_size               425
+#define star_v1_TelemetryData_size               401
 
 #ifdef __cplusplus
 } /* extern "C" */

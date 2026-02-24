@@ -819,23 +819,23 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * @par Example - Register SPI Bus:
  * @code{.c}
  * // Allocate and configure (static allocation)
- * static rx_bus_config_t motor_spi = {
- *     .name = "motor_drv0",
+ * static rx_bus_config_t s_rpi5_spi = {
+ *     .name = "rpi5_spi",
  *     .type = k_bus_type_spi,
  *     .proto.spi = {
- *         .channel = 0,
- *         .frequency_hz = 1000000,
- *         .mode = 0
+ *         .channel      = k_rspi_channel_0,
+ *         .frequency_hz = k_rspi_freq_10mhz,
+ *         .mode         = k_rspi_mode_0,
  *     }
  * };
  *
  * // Register (manager links it)
- * rx_err_t err = rx_bus_manager_add_bus(&manager, &motor_spi);
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, &s_rpi5_spi);
  * if (err != k_rx_ok) {
- *     rx_log_error("MAIN", "Failed to add motor SPI: %d", err);
+ *     rx_log_error("MAIN", "Failed to add RPi5 SPI: %d", err);
  *     return err;
  * }
- * // motor_spi must remain valid until remove_bus or deinit
+ * // s_rpi5_spi must remain valid until remove_bus or deinit
  * @endcode
  *
  * @par Example - Error Handling:
@@ -1067,22 +1067,22 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * - Heap: 0 bytes (no allocation/deallocation)
  * - Manager: -4 bytes (bus_count decrement)
  *
- * @par Example - Remove and Free Bus:
+ * @par Example - Remove Bus:
  * @code{.c}
  * // Remove bus from manager
- * rx_err_t err = rx_bus_manager_remove_bus(&manager, "motor_drv0");
+ * rx_err_t err = rx_bus_manager_remove_bus(&manager, "rpi5_spi");
  * if (err == k_rx_err_not_found) {
- *     rx_log_warn("MAIN", "Bus not found: motor_drv0");
+ *     rx_log_warn("MAIN", "Bus not found: rpi5_spi");
  * } else if (err == k_rx_ok) {
- *     // Now safe to free bus_config if dynamically allocated
- *     free(motor_drv0_config);
+ *     // Config reference released; static config memory remains valid
+ *     rx_log_info("MAIN", "Bus removed successfully");
  * }
  * @endcode
  *
  * @par Example - Remove All Buses:
  * @code{.c}
- * const char* bus_names[] = {"imu", "motor_drv0", "temp_sensor"};
- * for (uint8_t i = 0; i < 3; i++) {
+ * const char* bus_names[] = {"imu", "rpi5_spi", "temp_sensor"};
+ * for (uint8_t i = 0; i < sizeof(bus_names) / sizeof(bus_names[0]); i++) {
  *     rx_err_t err = rx_bus_manager_remove_bus(&manager, bus_names[i]);
  *     if (err == k_rx_ok) {
  *         rx_log_info("MAIN", "Removed bus: %s", bus_names[i]);

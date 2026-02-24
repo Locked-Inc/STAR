@@ -240,8 +240,13 @@ set(RX_NANOPB_SRC
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/common.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/ui.pb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/controller.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/gateway_service.pb.c
     ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/configuration.pb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/diagnostics.pb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/firmware_update.pb.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_nanopb/inc/gen/star/v1/wire.pb.c
 )
 
 # Include directories are applied per target via apply_test_includes()

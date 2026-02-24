@@ -373,20 +373,78 @@ typedef enum : uint8_t {
   k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
 } shared_data_internal_constants_t;
 
-/** @brief Default PID proportional gain -- Kp = 0.286 (from MATLAB motor_model_1st_order.m) */
-static const float s_default_pid_kp = 0.286f;
-/** @brief Default PID integral gain -- Ki = 8.01 (from MATLAB pid_design_velocity.m) */
-static const float s_default_pid_ki = 8.01f;
-/** @brief Default PID derivative gain -- Kd = 0.0 (not used) */
-static const float s_default_pid_kd = 0.0f;
-/** @brief Default PID output lower limit (% duty cycle) */
-static const float s_default_pid_output_min = -100.0f;
-/** @brief Default PID output upper limit (% duty cycle) */
-static const float s_default_pid_output_max = 100.0f;
-/** @brief Default PID integral lower limit (anti-windup) */
-static const float s_default_pid_integral_min = -50.0f;
-/** @brief Default PID integral upper limit (anti-windup) */
-static const float s_default_pid_integral_max = 50.0f;
+/**
+ * @var s_default_pid_kp
+ * @brief Default PID proportional gain -- Kp = 0.286
+ * @details Derived from MATLAB motor_model_1st_order.m system identification.
+ *          Applied to all 4 motor channels at startup.
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
+static const float s_default_pid_kp = 0.286F;
+
+/**
+ * @var s_default_pid_ki
+ * @brief Default PID integral gain -- Ki = 8.01
+ * @details Derived from MATLAB pid_design_velocity.m controller design.
+ *          Applied to all 4 motor channels at startup.
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
+static const float s_default_pid_ki = 8.01F;
+
+/**
+ * @var s_default_pid_kd
+ * @brief Default PID derivative gain -- Kd = 0.0 (not used)
+ * @details Derivative term disabled by default; motor model is first-order
+ *          so derivative action provides no benefit.
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
+static const float s_default_pid_kd = 0.0F;
+
+/**
+ * @var s_default_pid_output_min
+ * @brief Default PID output lower limit (% duty cycle)
+ * @details Minimum duty cycle for reverse direction. Symmetric with output_max.
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
+static const float s_default_pid_output_min = -100.0F;
+
+/**
+ * @var s_default_pid_output_max
+ * @brief Default PID output upper limit (% duty cycle)
+ * @details Maximum duty cycle for forward direction. Symmetric with output_min.
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
+static const float s_default_pid_output_max = 100.0F;
+
+/**
+ * @var s_default_pid_integral_min
+ * @brief Default PID integral lower limit (anti-windup)
+ * @details Prevents integral term from accumulating below -50% duty cycle.
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
+static const float s_default_pid_integral_min = -50.0F;
+
+/**
+ * @var s_default_pid_integral_max
+ * @brief Default PID integral upper limit (anti-windup)
+ * @details Prevents integral term from accumulating above 50% duty cycle.
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
+static const float s_default_pid_integral_max = 50.0F;
 
 /** @brief Log tag for this module (used by RX_CHECK_NULL_PTR) */
 static const char* const s_tag = "SDATA";
@@ -458,7 +516,7 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  * @details
  * Centralized bus manager for all off-chip peripherals:
  * - **I2C:** MPU-6050 IMU
- * - **SPI:** Motor driver communication
+ * - **SPI:** RPi5 command/telemetry link (RSPI0)
  * - **1-Wire:** DS18B20 temperature sensors (4x)
  *
  * **Initialization:** hardware_init() configures bus manager before task creation
@@ -777,7 +835,7 @@ rx_err_t shared_data_init(void)
  * @code{.c}
  * // In communication task - received SetMotorVelocityRequest
  * motor_command_t cmd = {
- *     .target_velocity_mps = {1.0f, 1.0f, 1.0f, 1.0f},  // Forward 1 m/s
+ *     .target_velocity_mps = {1.0F, 1.0F, 1.0F, 1.0F},  // Forward 1 m/s
  *     .sequence = 42,
  *     .valid = true
  * };
@@ -795,7 +853,7 @@ rx_err_t shared_data_init(void)
  * @code{.c}
  * // Emergency stop all motors
  * motor_command_t stop_cmd = {
- *     .target_velocity_mps = {0.0f, 0.0f, 0.0f, 0.0f},
+ *     .target_velocity_mps = {0.0F, 0.0F, 0.0F, 0.0F},
  *     .sequence = next_seq++,
  *     .valid = true
  * };
@@ -1148,13 +1206,13 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  * @code{.c}
  * // In comm task - received SetPIDGainsRequest
  * pid_gains_t new_gains = {
- *     .kp = 0.35f,  // Increase proportional gain
- *     .ki = 8.01f,  // Keep integral gain
- *     .kd = 0.0f,   // No derivative
- *     .output_min = -100.0f,
- *     .output_max = 100.0f,
- *     .integral_min = -50.0f,
- *     .integral_max = 50.0f
+ *     .kp = 0.35F,  // Increase proportional gain
+ *     .ki = 8.01F,  // Keep integral gain
+ *     .kd = 0.0F,   // No derivative
+ *     .output_min = -100.0F,
+ *     .output_max = 100.0F,
+ *     .integral_min = -50.0F,
+ *     .integral_max = 50.0F
  * };
  *
  * rx_err_t err = shared_data_set_pid_gains(&new_gains);
@@ -1825,7 +1883,7 @@ rx_err_t shared_data_clear_estop(void)
  * if (shared_data_is_estop_active()) {
  *     // Disable all motor outputs immediately
  *     for (uint8_t i = 0; i < k_shared_max_motors; i++) {
- *         motor_set_duty(&motors[i], 0.0f);
+ *         motor_set_duty(&motors[i], 0.0F);
  *     }
  *     return;  // Skip PID control this cycle
  * }
@@ -2057,7 +2115,8 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
  * if (shared_data_get_temp(&temp) == k_rx_ok) {
  *     for (uint8_t i = 0; i < temp.sensor_count; i++) {
  *         if (temp.sensor_valid[i]) {
- *             telemetry_msg.temps[i] = temp.temperature_cdegc[i] / 100.0f;
+ *             static const float s_cdegc_per_degc = 100.0F;
+ *             telemetry_msg.temps[i] = (float)temp.temperature_cdegc[i] / s_cdegc_per_degc;
  *         }
  *     }
  * }
@@ -2337,7 +2396,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  *
  *     // Enter safe state
  *     for (uint8_t i = 0; i < k_shared_max_motors; i++) {
- *         motor_set_duty(&motors[i], 0.0f);
+ *         motor_set_duty(&motors[i], 0.0F);
  *     }
  *     return;  // Skip PID control this cycle
  * }

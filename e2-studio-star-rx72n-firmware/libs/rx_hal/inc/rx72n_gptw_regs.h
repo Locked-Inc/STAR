@@ -16,7 +16,7 @@
  * |                    STAR Motor PWM Generation (GPTW)                  |
  * +----------------------------------------------------------------------+
  * |                                                                      |
- * |   PID Output --> GPTW Compare --> GTIOCA/B --> DRV8243 --> Motor     |
+ * |   PID Output --> GPTW Compare --> GTIOCA/B --> DRV8263H --> Motor     |
  * |   (0-100%)       (32-bit)        (PWM pins)   (H-bridge)  (DC motor) |
  * |                                                                      |
  * |   +-------------------------------------------------------------+   |
@@ -44,7 +44,7 @@
  *
  * @par Channel to Motor Mapping (STAR Project):
  *
- * | Channel | Motor | GTIOCA Pin | GTIOCB Pin | DRV8243 |
+ * | Channel | Motor | GTIOCA Pin | GTIOCB Pin | DRV8263H |
  * |---------|-------|------------|------------|---------|
  * | GPTW0   | M0    | PE5        | PE2        | U1      |
  * | GPTW1   | M1    | PE4        | PE1        | U2      |
@@ -75,7 +75,7 @@
  *
  * @see docs/sections/05_motor_control.tex Motor control system design
  * @see lib/rx_motor/inc/rx_motor.h Motor control API
- * @see lib/rx_drv8243/inc/rx_drv8243.h H-bridge driver interface
+ * @see lib/rx_drv8263/inc/rx_drv8263.h H-bridge driver interface
  * @see RX72N Group User's Manual: Hardware, Chapter 26 (GPTW)
  *
  * @par NASA Power of 10 Compliance:
