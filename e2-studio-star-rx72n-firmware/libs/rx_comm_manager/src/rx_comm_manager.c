@@ -1143,8 +1143,9 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
     }
   }
 
-  /* Clear handle */
-  *mgr = (rx_comm_manager_t){0};
+  /* Clear handle using static zero instance (avoids large compound literal on stack) */
+  static const rx_comm_manager_t s_zero_mgr = {0};
+  *mgr = s_zero_mgr;
 
   /* Apply configuration */
   if (cfg != nullptr) {

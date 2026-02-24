@@ -197,11 +197,15 @@
  * rx_bus_manager_init(&manager);
  *
  * // Register GPIO bus for status LED0 (PA7 - active low)
+ * typedef enum : uint8_t {
+ *     k_led_0_port = 0x0A, // PORTA
+ *     k_led_0_pin  = 7,    // Bit 7
+ * } led_0_gpio_t;
  * rx_bus_config_t led_config = {
  *     .type = k_rx_bus_type_gpio,
  *     .gpio = {
- *         .port = k_led_0_port,  // PORTA
- *         .pin  = k_led_0_pin,   // Bit 7
+ *         .port = k_led_0_port,
+ *         .pin  = k_led_0_pin,
  *     }
  * };
  * rx_bus_register(&manager, "led_red", &led_config);

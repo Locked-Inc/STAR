@@ -639,8 +639,9 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  * uint32_t ipropi_mv = 0;
  * rx_err_t err = rx_bus_adc_read_voltage_mv(&manager, "motor0_current", &ipropi_mv);
  * if (err == k_rx_ok) {
- *     // IPROPI = I_motor / k_drv8263h_mirror_ratio * k_drv8263h_sense_ohm
- *     // I_motor = IPROPI / k_drv8263h_sense_ohm * k_drv8263h_mirror_ratio
+ *     // IPROPI_mV = (I_motor_mA * k_drv8263h_sense_ohm) / k_drv8263h_mirror_ratio
+ *     // I_motor_mA = (IPROPI_mV * k_drv8263h_mirror_ratio) / k_drv8263h_sense_ohm
+ *     // NOTE: Multiply before divide to preserve integer precision
  *     uint32_t current_ma = (ipropi_mv * k_drv8263h_mirror_ratio)
  *                           / k_drv8263h_sense_ohm;
  *

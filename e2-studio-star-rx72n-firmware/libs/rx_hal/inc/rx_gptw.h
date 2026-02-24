@@ -260,7 +260,7 @@ extern "C" {
  * // Set duty cycle for motor 0 (front-left)
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_a),
- *                  50.0f);  // 50% duty cycle
+ *                  50.0F);  // 50% duty cycle
  * @endcode
  *
  * @invariant Channel values are contiguous: 0, 1, 2, 3
@@ -292,27 +292,20 @@ typedef enum : uint8_t {
  * @brief GPTW Output Channel Selection for Complementary PWM
  *
  * @details
- * Selects between the two complementary outputs (A and B) available on each
- * GPTW channel. In H-bridge motor control, these outputs drive the high-side
- * and low-side switches of the bridge.
+ * Selects between the two outputs (A and B) available on each GPTW channel.
+ * Each output has an independent duty cycle and is controlled separately.
  *
- * ## Complementary Output Operation
+ * ## Independent Output Mode (STAR Configuration)
  *
- * When complementary mode is enabled:
- * - Output A and Output B are inverted versions of each other
- * - Deadtime is inserted between transitions to prevent shoot-through
- * - Both outputs switch at the PWM frequency
+ * For the DRV8263H motor driver in IN2/IN1 mode, the GPTW outputs operate
+ * **independently** (not in complementary mode). Each output has its own
+ * compare register and duty cycle:
+ * - Output A: Static direction signal (0% or 100% duty)
+ * - Output B: Variable-duty PWM for speed control
  *
- * @msc
- * PWM_A, Deadtime, PWM_B;
- *
- * --- [label="PWM Cycle with Deadtime"];
- * PWM_A box PWM_A [label="HIGH"];
- * Deadtime box Deadtime [label="Both LOW"];
- * PWM_B box PWM_B [label="HIGH"];
- * Deadtime box Deadtime [label="Both LOW"];
- * PWM_A box PWM_A [label="HIGH"];
- * @endmsc
+ * The outputs are NOT inverted versions of each other and no hardware
+ * deadtime insertion is used. This is safe because the DRV8263H has
+ * integrated shoot-through protection on its internal H-bridge FETs.
  *
  * ## IN2/IN1 Mode (Sign-Magnitude)
  *
@@ -333,24 +326,25 @@ typedef enum : uint8_t {
  * // Output A = HIGH (forward direction)
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_a),
- *                  100.0f);  // IN2 = HIGH (direction)
+ *                  100.0F);  // IN2 = HIGH (direction)
  *
  * // Output B = PWM at 75% (motor speed)
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_b),
- *                  75.0f);   // IN1 = 75% PWM
+ *                  75.0F);   // IN1 = 75% PWM
  *
  * // Reverse direction: set Output A LOW
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_a),
- *                  0.0f);    // IN2 = LOW (reverse)
+ *                  0.0F);    // IN2 = LOW (reverse)
  * @endcode
  *
  * @invariant Output values are 0 (A) or 1 (B) only
  * @invariant Both outputs available on all channels
  *
  * @note C23 typed enum with uint8_t underlying type
- * @warning Do not drive both outputs HIGH simultaneously without deadtime
+ * @warning In independent mode, each output is controlled separately; the
+ *   DRV8263H handles shoot-through protection internally
  *
  * @see rx_gptw_output_id() Type-safe wrapper constructor
  * @see rx_gptw_channel_t Channel selection
@@ -1007,12 +1001,12 @@ typedef struct {
  * // Output A = direction (100% = forward)
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_a),
- *                  100.0f);
+ *                  100.0F);
  *
  * // Output B = speed (75% duty)
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_b),
- *                  75.0f);
+ *                  75.0F);
  * @endcode
  *
  * @par Example (PID Control Loop):
@@ -1024,16 +1018,16 @@ typedef struct {
  *         float measured = read_encoder_velocity();
  *         float output;
  *
- *         rx_pid_compute(&pid, setpoint, measured, 0.01f, &output);
+ *         rx_pid_compute(&pid, setpoint, measured, 0.01F, &output);
  *
  *         // Convert PID output (-100 to +100) to duty cycle
  *         float duty = fabsf(output);
- *         bool forward = (output >= 0.0f);
+ *         bool forward = (output >= 0.0F);
  *
  *         // Set direction
  *         rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                          rx_gptw_output_id(k_gptw_output_a),
- *                          forward ? 100.0f : 0.0f);
+ *                          forward ? 100.0F : 0.0F);
  *
  *         // Set speed
  *         rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),

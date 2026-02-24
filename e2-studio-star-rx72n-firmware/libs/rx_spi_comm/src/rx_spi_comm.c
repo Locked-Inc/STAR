@@ -1058,8 +1058,9 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
     return k_rx_err_invalid_arg;
   }
 
-  /* Clear handle */
-  *handle = (rx_spi_comm_handle_t){0};
+  /* Clear handle using static zero instance (avoids large compound literal on stack) */
+  static const rx_spi_comm_handle_t s_zero_handle = {0};
+  *handle = s_zero_handle;
 
   /* Apply configuration */
   handle->session         = config->session;

@@ -1981,10 +1981,10 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  *
  * // Step 2: Build motor_command_t
  * memset(&cmd, 0, sizeof(cmd));
- * cmd.target_velocity_mps[0] = 1.0f;  // Front left (protobuf: 1.0)
- * cmd.target_velocity_mps[1] = 1.0f;  // Front right (protobuf: 1.0)
- * cmd.target_velocity_mps[2] = 1.0f;  // Back left (protobuf: 1.0)
- * cmd.target_velocity_mps[3] = 1.0f;  // Back right (protobuf: 1.0)
+ * cmd.target_velocity_mps[0] = 1.0F;  // Front left (protobuf: 1.0)
+ * cmd.target_velocity_mps[1] = 1.0F;  // Front right (protobuf: 1.0)
+ * cmd.target_velocity_mps[2] = 1.0F;  // Back left (protobuf: 1.0)
+ * cmd.target_velocity_mps[3] = 1.0F;  // Back right (protobuf: 1.0)
  * cmd.sequence = 123;                 // From protobuf
  * cmd.timestamp_ms = 1234567;         // tx_time_get()
  * cmd.valid = true;

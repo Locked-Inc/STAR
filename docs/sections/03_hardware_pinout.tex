@@ -20,7 +20,7 @@
 \textbf{Function Category} & \textbf{Color}
 \\
 \hline
-\rowcolor{blue!20} PWM Motor Control (GPTW) / Motor Driver GPIO (DRVOFF, nSLEEP) & Blue \\
+\rowcolor{blue!20} PWM Motor Control (\texttt{GPTW}) / Motor Driver GPIO (\texttt{DRVOFF}, \texttt{nSLEEP}) & Blue \\
 \hline
 \rowcolor{green!20} Encoder Inputs (MTU / TPU) & Green \\
 \hline
@@ -227,12 +227,12 @@ tab:
 \rowcolor {
   blue!20
 }
-34 & P23/GTIOC0A & Motor 0 IN2 & GPTW PWM channel 0A (32-bit) \\
+34 & P23/GTIOC0A & Motor 0 \texttt{IN2} & \texttt{GPTW} PWM channel 0A (32-bit) \\
 \hline
 \rowcolor {
   blue!20
 }
-35 & P22/GTIOC1A & Motor 1 IN2 & GPTW PWM channel 1A (32-bit) \\
+35 & P22/GTIOC1A & Motor 1 \texttt{IN2} & \texttt{GPTW} PWM channel 1A (32-bit) \\
 \hline
 \rowcolor{violet!15}
 36 & P21/SCL1 & IMU SCL & IMU I2C clock (RIIC1) \\
@@ -243,7 +243,7 @@ tab:
 \rowcolor{
   blue!20
 }
-38 & P17/GTIOC0B & Motor 0 IN1 & GPTW PWM channel 0B (32-bit) \\
+38 & P17/GTIOC0B & Motor 0 \texttt{IN1} & \texttt{GPTW} PWM channel 0B (32-bit) \\
 \hline
 39 & P87 & Unused &Available GPIO \\
 \hline
@@ -253,7 +253,7 @@ tab:
 \rowcolor {
   blue!20
 }
-41 & P86/GTIOC2B & Motor 2 IN1 & GPTW PWM channel 2B (32-bit) \\
+41 & P86/GTIOC2B & Motor 2 \texttt{IN1} & \texttt{GPTW} PWM channel 2B (32-bit) \\
 \hline
 \rowcolor{lime!10}
 42 & P15/GTETRGA & PWM Ext Trig 0 & GPTW external trigger A (GTETRGA) \\
@@ -324,7 +324,7 @@ tab:
 \\
 \hline
 \rowcolor { blue!20}
-61 & PC6/GTIOC3B & Motor 3 IN1 & GPTW PWM channel 3B (32-bit) \\
+61 & PC6/GTIOC3B & Motor 3 \texttt{IN1} & \texttt{GPTW} PWM channel 3B (32-bit) \\
 \hline
 \rowcolor {
   green!20
@@ -343,7 +343,7 @@ tab:
 \rowcolor {
   blue!20
 }
-67 & PC3/GTIOC1B & Motor 1 IN1 & GPTW PWM channel 1B (32-bit) \\
+67 & PC3/GTIOC1B & Motor 1 \texttt{IN1} & \texttt{GPTW} PWM channel 1B (32-bit) \\
 \hline
 68 & P77 & Unused &Available GPIO(SCI11, Ethernet, QSPI, SDHI) \\
 \hline
@@ -475,7 +475,7 @@ tab:
 \rowcolor {
   blue!20
 }
-101 & PE7/GTIOC3A & Motor 3 IN2 & GPTW PWM channel 3A (32-bit) \\
+101 & PE7/GTIOC3A & Motor 3 \texttt{IN2} & \texttt{GPTW} PWM channel 3A (32-bit) \\
 \hline
 102 & PE6/GTIOC3B & Unused & Available GPIO (GTIOC3B) \\
 \hline
@@ -496,7 +496,7 @@ tab:
 107 & PE4/GTIOC1A & Unused & Available GPIO (GTIOC1A) \\
 \hline
 \rowcolor{blue!20}
-108 & PE3/GTIOC2A & Motor 2 IN2 & GPTW PWM channel 2A (32-bit) \\
+108 & PE3/GTIOC2A & Motor 2 \texttt{IN2} & \texttt{GPTW} PWM channel 2A (32-bit) \\
 \hline
 \rowcolor{blue!20}
 109 & PE2/GTIOC0B & Motor 3 \texttt{DRVOFF} & \texttt{DRV8263H} motor 3 drive output disable (GPIO output) \\
@@ -699,8 +699,8 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \item \textbf{Peripheral Grouping :
    } Place related functions on contiguous port pins where possible
     \begin{itemize}
-    \item GPTW PWM (IN1/IN2) : Motors spread across PORT E, PORT C, and PORT P (pins 34, 35, 38, 41, 61, 67, 101, 108)
-        \item Motor Driver GPIO (DRVOFF/nSLEEP) : PORT E and PORT P6x (pins 109-115, 117)
+    \item \texttt{GPTW} PWM (\texttt{IN1}/\texttt{IN2}) : Motors spread across PORT E, PORT C, and PORT P (pins 34, 35, 38, 41, 61, 67, 101, 108)
+        \item Motor Driver GPIO (\texttt{DRVOFF}/\texttt{nSLEEP}) : PORT E and PORT P6x (pins 109-115, 117)
         \item Host SPI to RPi5 : PD1 - PD4 (RSPI2\_A, pins 122 - 125)
         \item MTU Encoders : P24 / P25 (MTU1), PA1 / PC5 (MTU2)
         \item TPU Encoders : PC2 / PA3 (TPU1), PC0 / PB3 (TPU2)
@@ -713,13 +713,13 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
         \item Table 1.9 analysis revealed all peripherals have 2-4 alternate pin locations
         \item GTETRG inputs used as PWM external triggers (GTETRGA/B/C/D on pins 42, 89, 66, 43)
         \item RIIC1 (P20/P21) repurposed for IMU after BMS removal
-        \item Motor driver GPIO (DRVOFF/nSLEEP) placed on PORT E and PORT P6x to keep routing compact
+        \item Motor driver GPIO (\texttt{DRVOFF}/\texttt{nSLEEP}) placed on PORT E and PORT P6x to keep routing compact
     \end{itemize}
 
         \item \textbf{PCB Routing Optimization:}
         \begin{itemize}
         \item Host SPI signals on PD1-PD4 (pins 122-125) for compact layout
-        \item Motor PWM (IN1/IN2) and driver GPIO (DRVOFF/nSLEEP) on PORT E and PORT P6x
+        \item Motor PWM (\texttt{IN1}/\texttt{IN2}) and driver GPIO (\texttt{DRVOFF}/\texttt{nSLEEP}) on PORT E and PORT P6x
         \item Sonar sensors grouped on pins 4-13 (top of package)
         \item ADC current sense on P44-P47 (pins 133-136) for short analog traces
     \end{itemize}
@@ -872,7 +872,7 @@ The \texttt{DRV8263H} motor drivers are controlled via three interfaces:
     \item \textbf{Signals:} \texttt{IN1} and \texttt{IN2} distributed across \texttt{GPTW} channels 0-3
     \item \textbf{Purpose:} Motor speed/direction control at 20 kHz PWM frequency
     \item \textbf{Update rate:} 100 Hz velocity commands from RPi5
-    \item \textbf{Pin mapping:} \texttt{IN2} = \texttt{GTIOC\_A} (phase), \texttt{IN1} = \texttt{GTIOC\_B} (enable)
+    \item \textbf{Pin mapping:} \texttt{IN2} = \texttt{GTIOC\_A}, \texttt{IN1} = \texttt{GTIOC\_B} (sign-magnitude PWM)
 \end{itemize}
 
 \textbf{Driver Enable/Sleep Control (GPIO):}

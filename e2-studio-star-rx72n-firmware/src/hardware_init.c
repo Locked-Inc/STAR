@@ -323,6 +323,29 @@ typedef enum : uint8_t {
   k_motor_adc_count = 4, /**< 4 motors = 4 current sense channels */
 } adc_count_t;
 
+/**
+ * @enum gpio_reg_constants_t
+ * @brief Constants for GPIO register bit manipulation
+ *
+ * @details
+ * Provides named constants for single-bit operations on 8-bit GPIO port
+ * registers (PMR, PDR, PODR). Eliminates magic number `1U` in bit-shift
+ * expressions and documents the hardware-imposed pin count limit.
+ *
+ * @invariant k_gpio_single_bit_mask == 1 (exactly one bit for shift operations)
+ * @invariant k_gpio_max_pin_number == k_pins_per_port - 1
+ *
+ * @see internal_gpio_set_output() Uses these for register bit manipulation
+ * @see internal_gpio_set_input() Uses these for register bit manipulation
+ * @see k_pins_per_port From rx_gpio_constants.h (hardware 8-pin limit)
+ *
+ * @since Version 1.2.0
+ */
+typedef enum : uint8_t {
+  k_gpio_single_bit_mask = 1U, /**< Single-bit mask shifted by pin number for register RMW */
+  k_gpio_max_pin_number  = 7U, /**< Maximum valid pin index (0-7, 8 pins per port) */
+} gpio_reg_constants_t;
+
 /** @brief SCKCR3 reset/unconfigured state value (before clock initialization) */
 static const uint8_t s_sckcr3_reset_state = 0U;
 
@@ -534,17 +557,34 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
  * @details
  * Sets the given pin to GPIO mode (PMR cleared), drives the specified
  * initial logic level on PODR, and configures PDR as output. This is a
- * common pattern used by DRVOFF, nSLEEP, sonar trigger, and IMU reset pins.
+ * common helper used by DRVOFF, nSLEEP, sonar trigger, and IMU reset
+ * pin initialization.
  *
- * @param[in] port_pin Encoded port/pin value from hardware_config.h
- * @param[in] initial_high True to drive HIGH on startup, false for LOW
+ * Register write order is critical for glitch-free startup:
+ * 1. Clear PMR (switch from peripheral to GPIO mode)
+ * 2. Set PODR (drive the desired initial logic level)
+ * 3. Set PDR (enable output driver last to avoid glitch)
+ *
+ * @param[in] port_pin Encoded port/pin value from rx_mpc_pin_t
+ *                     (valid range: any value decodable by rx_port_from_pin()
+ *                     and rx_pin_from_pin() yielding pin 0-7)
+ * @param[in] initial_high true to drive HIGH on startup, false for LOW
+ *
+ * @return void (asserts on invalid input -- does not return on failure)
  *
  * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
- * @pre Port base address must be valid for the given pin
- * @post Pin configured as GPIO output at the requested level
+ * @pre Port base address must be valid (rx_port_get_base() != nullptr)
+ * @post Pin PMR cleared (GPIO mode), PDR set (output), PODR at requested level
+ * @post Pin is actively driving the requested logic level
  *
- * @note Not thread-safe. Performs non-atomic RMW on port registers.
- * @note Called only during single-threaded initialization.
+ * @note Not thread-safe. Performs non-atomic RMW on 8-bit port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @warning Do not call after RTOS start without external synchronization.
+ *
+ * @see internal_gpio_set_input() Complementary function for input pins
+ * @see internal_gpio_init_motor_driver_ctrl() Primary caller for DRVOFF/nSLEEP
+ * @see internal_gpio_init_sonar_triggers() Primary caller for sonar trigger pins
  *
  * @since Version 1.2.0
  */
@@ -554,14 +594,14 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
   const uint8_t            pin  = rx_pin_from_pin(port_pin);
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for output pin");
-  RX_ASSERT(pin < 8U, "GPIO pin number out of range (0-7)");
-  regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
+  RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
+  regs->pmr &= ~(uint8_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
   if (initial_high) {
-    regs->podr |= (uint8_t)(1U << pin);
+    regs->podr |= (uint8_t)(k_gpio_single_bit_mask << pin);
   } else {
-    regs->podr &= ~(uint8_t)(1U << pin);
+    regs->podr &= ~(uint8_t)(k_gpio_single_bit_mask << pin);
   }
-  regs->pdr |= (uint8_t)(1U << pin); /* Output direction */
+  regs->pdr |= (uint8_t)(k_gpio_single_bit_mask << pin); /* Output direction */
 }
 
 /**
@@ -569,16 +609,32 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
  *
  * @details
  * Sets the given pin to GPIO mode (PMR cleared) and configures PDR as
- * input. Used by IMU interrupt and sonar echo pins.
+ * input (direction bit cleared). Used by IMU interrupt and sonar echo
+ * pin initialization.
  *
- * @param[in] port_pin Encoded port/pin value from hardware_config.h
+ * Register write order:
+ * 1. Clear PMR (switch from peripheral to GPIO mode)
+ * 2. Clear PDR (configure as input direction)
+ *
+ * @param[in] port_pin Encoded port/pin value from rx_mpc_pin_t
+ *                     (valid range: any value decodable by rx_port_from_pin()
+ *                     and rx_pin_from_pin() yielding pin 0-7)
+ *
+ * @return void (asserts on invalid input -- does not return on failure)
  *
  * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
- * @pre Port base address must be valid for the given pin
- * @post Pin configured as GPIO input
+ * @pre Port base address must be valid (rx_port_get_base() != nullptr)
+ * @post Pin PMR cleared (GPIO mode) and PDR cleared (input direction)
+ * @post Pin is in high-impedance input state
  *
- * @note Not thread-safe. Performs non-atomic RMW on port registers.
- * @note Called only during single-threaded initialization.
+ * @note Not thread-safe. Performs non-atomic RMW on 8-bit port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @warning Do not call after RTOS start without external synchronization.
+ *
+ * @see internal_gpio_set_output() Complementary function for output pins
+ * @see internal_gpio_init_imu() Primary caller for IMU interrupt pin
+ * @see internal_gpio_init_sonar_echoes() Primary caller for sonar echo pins
  *
  * @since Version 1.2.0
  */
@@ -588,9 +644,9 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
   const uint8_t            pin  = rx_pin_from_pin(port_pin);
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for input pin");
-  RX_ASSERT(pin < 8U, "GPIO pin number out of range (0-7)");
-  regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
-  regs->pdr &= ~(uint8_t)(1U << pin); /* Input direction */
+  RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
+  regs->pmr &= ~(uint8_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pdr &= ~(uint8_t)(k_gpio_single_bit_mask << pin); /* Input direction */
 }
 
 /**
@@ -599,20 +655,29 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
  * @details
  * Configures 4 pins for the inertial measurement unit:
  * - P2.1/SCL1 and P2.0/SDA1: RIIC1 I2C bus for IMU communication
- * - P3.2: IMU interrupt input (active-low)
+ * - P3.2: IMU interrupt input (active-low from IMU INT pin)
  * - P8.3: IMU reset output (active-low, initialized HIGH = not in reset)
  *
+ * Pin configuration order:
+ * 1. I2C bus pins (SCL1, SDA1) via RIIC MPC
+ * 2. Interrupt input via GPIO MPC + input direction
+ * 3. Reset output via GPIO MPC + output HIGH (de-asserted)
+ *
  * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_ok All 4 pins configured successfully
  * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
- * @post P2.1 configured as SCL1, P2.0 configured as SDA1
+ * @post P2.1 configured as SCL1, P2.0 configured as SDA1 (RIIC1 peripheral mode)
  * @post P3.2 configured as GPIO input, P8.3 configured as GPIO output HIGH
  *
- * @note Thread-safe. No shared state modified.
- * @note Called only during system initialization.
+ * @note Not thread-safe. Performs non-atomic RMW on port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @see internal_gpio_set_input() Used for IMU interrupt pin
+ * @see internal_gpio_set_output() Used for IMU reset pin
+ * @see rx_mpc_set_riic() MPC configuration for I2C pins
  *
  * @since Version 1.1.0
  */
@@ -650,20 +715,40 @@ static rx_err_t internal_gpio_init_imu(void)
  * - 4x DRVOFF pins: Output HIGH (driver outputs disabled for safe startup)
  * - 4x nSLEEP pins: Output HIGH (driver awake, not in sleep mode)
  *
- * Motor outputs remain disabled (DRVOFF=HIGH) until explicitly enabled.
+ * ## Safe Initialization Order (Critical)
+ *
+ * DRVOFF pins are configured **before** nSLEEP pins. This ordering is
+ * required by the DRV8263H power-up sequence:
+ *
+ * 1. DRVOFF = HIGH first  -> H-bridge outputs disabled (safe state)
+ * 2. nSLEEP = HIGH second -> driver wakes up with outputs already disabled
+ *
+ * If nSLEEP were asserted first (waking the driver), the H-bridge outputs
+ * could briefly be in an undefined state before DRVOFF is driven HIGH,
+ * risking uncontrolled motor movement or shoot-through.
+ *
+ * Motor outputs remain disabled (DRVOFF=HIGH) until the motor control task
+ * explicitly drives DRVOFF LOW before commanding PWM.
  * TODO(#367): Motor control task must drive DRVOFF LOW before commanding PWM.
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok All pins configured successfully
+ * @retval k_rx_ok All 8 pins configured successfully
  * @retval k_rx_err_hw_init_failed MPC configuration failed for one or more pins
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
  * @post All 4 DRVOFF pins configured as GPIO outputs, driven HIGH (disabled)
- * @post All 4 nSLEEP pins configured as GPIO outputs, driven HIGH
+ * @post All 4 nSLEEP pins configured as GPIO outputs, driven HIGH (awake)
  *
- * @note Thread-safe. No shared state modified.
- * @note Called only during system initialization.
+ * @note Not thread-safe. Performs non-atomic RMW on port registers.
+ * @note Called only during single-threaded initialization before RTOS start.
+ *
+ * @warning DRVOFF must be driven HIGH before nSLEEP is asserted to prevent
+ *          uncontrolled H-bridge output during driver wake-up.
+ *
+ * @see internal_gpio_set_output() Used for all DRVOFF and nSLEEP pins
+ * @see rx_mpc_set_gpio() MPC configuration for GPIO mode
+ * @see internal_gpio_init_gptw_pwm() Configures PWM pins for DRV8263H IN1/IN2
  *
  * @since Version 1.1.0
  */
@@ -681,14 +766,23 @@ static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
                                                      (rx_port_pin_t)k_pin_motor2_nsleep,
                                                      (rx_port_pin_t)k_pin_motor3_nsleep};
 
-  /* Configure DRVOFF pins as GPIO outputs, drive HIGH (outputs disabled for safe startup) */
+  /*
+   * CRITICAL ORDERING: DRVOFF must be configured HIGH (outputs disabled) BEFORE
+   * nSLEEP wakes the driver. This prevents the DRV8263H H-bridge from entering
+   * an undefined output state during the wake-up transition. See DRV8263H
+   * datasheet Section 7.3.1 (Device Functional Modes) for power-up sequencing.
+   */
+
+  /* Step 1: Configure DRVOFF pins HIGH first -- ensures H-bridge outputs are
+   * disabled before the driver is awakened by nSLEEP. */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(drvoff_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "DRVOFF MPC config failed");
     internal_gpio_set_output(drvoff_pins[i], true); /* HIGH = outputs disabled */
   }
 
-  /* Configure nSLEEP pins as GPIO outputs, drive HIGH (awake) */
+  /* Step 2: Configure nSLEEP pins HIGH second -- driver wakes with DRVOFF
+   * already asserted, so H-bridge outputs remain safely disabled. */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(nsleep_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "nSLEEP MPC config failed");

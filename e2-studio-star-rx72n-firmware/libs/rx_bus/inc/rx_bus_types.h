@@ -238,8 +238,8 @@ extern "C" {
  *     .type = k_bus_type_spi,  // Use SPI protocol
  *     .proto.spi = {
  *         .channel = 0,
- *         .frequency_hz = 10000000,  // 10 MHz
- *         .mode = 0
+ *         .frequency_hz = k_rspi_freq_10mhz,
+ *         .mode = k_rspi_mode_0
  *     }
  * };
  * @endcode
@@ -528,32 +528,34 @@ typedef enum : uint8_t {
  * @par Usage Example - SPI Bus Configuration:
  * @code{.c}
  * // Statically allocate SPI bus config for RPi5 communication (zero dynamic allocation)
- * static rx_bus_config_t rpi5_spi = {0};
+ * static rx_bus_config_t s_rpi5_spi = {
+ *     .name = "rpi5_spi",
+ *     .type = k_bus_type_spi,
+ * };
  *
- * rpi5_spi.name = "rpi5_link";
- * rpi5_spi.type = k_bus_type_spi;
- * rpi5_spi.proto.spi = (rx_spi_bus_config_t){
+ * s_rpi5_spi.proto.spi = (rx_spi_bus_config_t){
  *     .channel = 0,
  *     .copi_pin = k_port_pin_p26,  // RSPI0 COPI
  *     .cipo_pin = k_port_pin_p30,  // RSPI0 CIPO
  *     .sck_pin = k_port_pin_p27,   // RSPI0 SCK
  *     .cs_pin = k_port_pin_p54,    // GPIO chip select
- *     .frequency_hz = 10000000,    // 10 MHz
- *     .mode = 0                    // CPOL=0, CPHA=0
+ *     .frequency_hz = k_rspi_freq_10mhz,
+ *     .mode = k_rspi_mode_0        // CPOL=0, CPHA=0
  * };
  *
  * // Register with bus manager
- * rx_err_t err = rx_bus_manager_add_bus(&manager, &rpi5_spi);
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, &s_rpi5_spi);
  * @endcode
  *
  * @par Usage Example - I2C Bus Configuration:
  * @code{.c}
  * // Statically allocate I2C bus config for IMU sensor (zero dynamic allocation)
- * static rx_bus_config_t imu_i2c = {0};
+ * static rx_bus_config_t s_imu_i2c = {
+ *     .name = "imu",
+ *     .type = k_bus_type_i2c,
+ * };
  *
- * imu_i2c.name = "imu";
- * imu_i2c.type = k_bus_type_i2c;
- * imu_i2c.proto.i2c = (rx_i2c_bus_config_t){
+ * s_imu_i2c.proto.i2c = (rx_i2c_bus_config_t){
  *     .channel = 0,
  *     .sda_pin = k_port_pin_p16,
  *     .scl_pin = k_port_pin_p15,
@@ -561,7 +563,7 @@ typedef enum : uint8_t {
  *     .device_addr = 0x68      // MPU6050 address
  * };
  *
- * rx_bus_manager_add_bus(&manager, &imu_i2c);
+ * rx_bus_manager_add_bus(&manager, &s_imu_i2c);
  * @endcode
  *
  * @invariant name must be unique within bus manager

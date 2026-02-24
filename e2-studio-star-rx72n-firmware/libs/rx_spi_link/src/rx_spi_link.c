@@ -282,8 +282,9 @@ rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* confi
     return k_rx_err_invalid_arg;
   }
 
-  /* Zero-fill link handle */
-  *link = (rx_spi_link_t){0};
+  /* Zero-fill link handle using static zero instance (avoids large compound literal on stack) */
+  static const rx_spi_link_t s_zero_link = {0};
+  *link = s_zero_link;
 
   /* Store configuration */
   link->spi_handle  = config->spi_handle;

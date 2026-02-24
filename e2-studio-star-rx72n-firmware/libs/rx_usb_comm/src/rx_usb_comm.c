@@ -864,8 +864,9 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
     return k_rx_err_invalid_arg;
   }
 
-  /* Clear handle */
-  *handle = (rx_usb_comm_handle_t){0};
+  /* Clear handle using static zero instance (avoids large compound literal on stack) */
+  static const rx_usb_comm_handle_t s_zero_handle = {0};
+  *handle = s_zero_handle;
 
   /* Apply configuration - config is required for session pointer */
   if (config == nullptr || config->session == nullptr) {

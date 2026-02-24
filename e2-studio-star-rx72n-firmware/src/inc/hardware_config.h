@@ -76,8 +76,16 @@
  * HIGH (forward) or LOW (reverse) duty cycle.
  *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_in2_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_in2_pin;
+ * PORT(port)->PODR |= (1U << pin);
+ * @endcode
+ *
  * @see motor_in2_pins_t Corresponding bit positions within each port
  * @see motor_in1_ports_t Companion IN1 (speed PWM) port assignments
+ * @see hardware_init() Configures motor GPIO during boot
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -97,8 +105,16 @@ typedef enum : uint8_t {
  * address for the GPTW output A pin.
  *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_in2_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_in2_pin;
+ * PORT(port)->PDR |= (1U << pin);
+ * @endcode
+ *
  * @see motor_in2_ports_t Corresponding port register indices
  * @see motor_in1_pins_t Companion IN1 (speed PWM) pin assignments
+ * @see hardware_init() Configures motor GPIO during boot
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -118,8 +134,16 @@ typedef enum : uint8_t {
  * PWM waveform at the configured frequency and duty cycle.
  *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_in1_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_in1_pin;
+ * PORT(port)->PODR |= (1U << pin);
+ * @endcode
+ *
  * @see motor_in1_pins_t Corresponding bit positions within each port
  * @see motor_in2_ports_t Companion IN2 (direction) port assignments
+ * @see hardware_init() Configures motor GPIO during boot
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -139,8 +163,16 @@ typedef enum : uint8_t {
  * address for the GPTW output B pin.
  *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_in1_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_in1_pin;
+ * PORT(port)->PDR |= (1U << pin);
+ * @endcode
+ *
  * @see motor_in1_ports_t Corresponding port register indices
  * @see motor_in2_pins_t Companion IN2 (direction) pin assignments
+ * @see hardware_init() Configures motor GPIO during boot
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -149,18 +181,6 @@ typedef enum : uint8_t {
   k_motor_2_in1_pin = 6, /**< Motor 2 IN1 pin 6 (P86, pin 41) */
   k_motor_3_in1_pin = 6, /**< Motor 3 IN1 pin 6 (PC6, pin 61) */
 } motor_in1_pins_t;
-
-/**
- * @enum motor_count_t
- * @brief Total number of motors on the STAR platform
- * @details Used as a loop bound for iterating over motor-indexed arrays and
- *          as an array size for motor configuration tables.
- * @invariant Must equal the number of entries in motor_in2_ports_t and motor_in1_ports_t
- * @since Version 1.0.0
- */
-typedef enum : uint8_t {
-  k_motor_count = 4, /**< Total number of motors */
-} motor_count_t;
 
 /** @} */ /* end of motor_pwm_pins */
 
@@ -201,8 +221,24 @@ typedef enum : uint8_t {
 /**
  * @enum motor_drvoff_ports_t
  * @brief Port numbers for DRV8263H DRVOFF (output disable) GPIO pins
+ *
+ * @details
+ * DRVOFF is an active-high output disable signal. Setting DRVOFF HIGH disables
+ * the H-bridge outputs for safe startup and emergency stop. All DRVOFF pins
+ * are initialized HIGH (outputs disabled) during boot.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_drvoff_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_drvoff_pin;
+ * PORT(port)->PODR |= (1U << pin);
+ * @endcode
+ *
  * @see motor_drvoff_pins_t Corresponding bit positions within each port
+ * @see motor_nsleep_ports_t Companion nSLEEP control port assignments
+ * @see hardware_init() Initializes DRVOFF HIGH for safe startup
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_drvoff_port = 6,  /**< Motor 0 DRVOFF on PORT6 (P61, pin 115) */
@@ -214,8 +250,24 @@ typedef enum : uint8_t {
 /**
  * @enum motor_drvoff_pins_t
  * @brief Pin numbers for DRV8263H DRVOFF (output disable) GPIO pins
+ *
+ * @details
+ * Bit positions within the corresponding port register for each motor's DRVOFF
+ * output disable signal. Combined with motor_drvoff_ports_t to form a complete
+ * GPIO address.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_drvoff_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_drvoff_pin;
+ * PORT(port)->PODR &= ~(1U << pin);
+ * @endcode
+ *
  * @see motor_drvoff_ports_t Corresponding port register indices
+ * @see motor_nsleep_pins_t Companion nSLEEP control pin assignments
+ * @see hardware_init() Initializes DRVOFF HIGH for safe startup
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_drvoff_pin = 1, /**< Motor 0 DRVOFF pin 1 (P61, pin 115) */
@@ -227,8 +279,24 @@ typedef enum : uint8_t {
 /**
  * @enum motor_nsleep_ports_t
  * @brief Port numbers for DRV8263H nSLEEP (sleep mode) GPIO pins
+ *
+ * @details
+ * nSLEEP is an active-low sleep mode control signal. Setting nSLEEP HIGH
+ * wakes the DRV8263H from low-power sleep mode. All nSLEEP pins are
+ * initialized HIGH (awake) during boot.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_nsleep_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_nsleep_pin;
+ * PORT(port)->PODR |= (1U << pin);
+ * @endcode
+ *
  * @see motor_nsleep_pins_t Corresponding bit positions within each port
+ * @see motor_drvoff_ports_t Companion DRVOFF control port assignments
+ * @see hardware_init() Initializes nSLEEP HIGH (awake) during boot
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_nsleep_port = 6,  /**< Motor 0 nSLEEP on PORT6 (P60, pin 117) */
@@ -240,8 +308,24 @@ typedef enum : uint8_t {
 /**
  * @enum motor_nsleep_pins_t
  * @brief Pin numbers for DRV8263H nSLEEP (sleep mode) GPIO pins
+ *
+ * @details
+ * Bit positions within the corresponding port register for each motor's nSLEEP
+ * sleep mode control signal. Combined with motor_nsleep_ports_t to form a
+ * complete GPIO address.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_motor_0_nsleep_port;
+ * uint8_t pin  = (uint8_t)k_motor_0_nsleep_pin;
+ * PORT(port)->PODR &= ~(1U << pin);
+ * @endcode
+ *
  * @see motor_nsleep_ports_t Corresponding port register indices
+ * @see motor_drvoff_pins_t Companion DRVOFF control pin assignments
+ * @see hardware_init() Initializes nSLEEP HIGH (awake) during boot
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_nsleep_pin = 0, /**< Motor 0 nSLEEP pin 0 (P60, pin 117) */
@@ -383,7 +467,15 @@ typedef enum : uint8_t {
  * @brief Port number for SCI9 debug UART pins
  * @details Both TXD9 and RXD9 are on PORTB.
  * @invariant Value must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_debug_uart_port;
+ * uint8_t txd  = (uint8_t)k_debug_txd_pin;
+ * PORT(port)->PMR |= (1U << txd);
+ * @endcode
+ *
  * @see debug_uart_pins_t Corresponding bit positions
+ * @see debug_uart_channel_t SCI channel number
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -395,7 +487,15 @@ typedef enum : uint8_t {
  * @brief Pin numbers for SCI9 debug UART signals (TXD9, RXD9)
  * @details UART TX/RX are crossed in the USB-UART bridge IC.
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_debug_uart_port;
+ * PORT(port)->PMR |= (1U << k_debug_txd_pin);
+ * PORT(port)->PMR |= (1U << k_debug_rxd_pin);
+ * @endcode
+ *
  * @see debug_uart_ports_t Corresponding port register index
+ * @see debug_uart_channel_t SCI channel number
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -408,6 +508,14 @@ typedef enum : uint8_t {
  * @brief SCI channel number for the debug UART
  * @details The RX72N SCI9 is dedicated to the debug console.
  * @invariant Must match MPC configuration in rx_mpc.c
+ *
+ * @code
+ * rx_sci_init(k_debug_uart_channel);
+ * rx_sci_write(k_debug_uart_channel, buf, len);
+ * @endcode
+ *
+ * @see debug_uart_ports_t Port register for UART pins
+ * @see debug_uart_pins_t Pin bit positions for TXD9/RXD9
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -437,7 +545,15 @@ typedef enum : uint8_t {
  * @brief Port number for RIIC0 host I2C communication pins
  * @details RIIC0 on PORT1 provides FM+ capable I2C to RPi5.
  * @invariant Value must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_host_i2c_port;
+ * PORT(port)->PMR |= (1U << k_host_scl0_pin);
+ * PORT(port)->PMR |= (1U << k_host_sda0_pin);
+ * @endcode
+ *
  * @see host_i2c_pins_t Corresponding bit positions
+ * @see imu_ports_t IMU I2C (RIIC1) port assignments
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -449,7 +565,15 @@ typedef enum : uint8_t {
  * @brief Pin numbers for RIIC0 host I2C signals (SCL0, SDA0)
  * @details Both require external 4.7k pull-up resistors to 3.3V.
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_host_i2c_port;
+ * PORT(port)->ODR0 |= (1U << (k_host_scl0_pin * 2U));
+ * PORT(port)->ODR0 |= (1U << (k_host_sda0_pin * 2U));
+ * @endcode
+ *
  * @see host_i2c_ports_t Corresponding port register index
+ * @see imu_pins_t IMU I2C (RIIC1) pin assignments
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -483,8 +607,24 @@ typedef enum : uint8_t {
 /**
  * @enum imu_ports_t
  * @brief Port numbers for IMU (RIIC1 I2C + GPIO) pins
+ *
+ * @details
+ * Maps IMU signals to their respective port registers. The IMU uses RIIC1
+ * for I2C communication (SCL1/SDA1 on PORT2), an IRQ input on PORT3 for
+ * data-ready interrupts, and a GPIO output on PORT8 for hardware reset.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t rst_port = (uint8_t)k_imu_rst_port;
+ * uint8_t rst_pin  = (uint8_t)k_imu_rst_pin;
+ * PORT(rst_port)->PODR &= ~(1U << rst_pin);
+ * @endcode
+ *
  * @see imu_pins_t Corresponding bit positions within each port
+ * @see host_i2c_ports_t Host I2C (RIIC0) port assignments
+ * @see hardware_init() Configures IMU GPIO during boot
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_imu_scl_port = 2, /**< IMU SCL on PORT2 (P21/SCL1, pin 36) */
@@ -496,8 +636,24 @@ typedef enum : uint8_t {
 /**
  * @enum imu_pins_t
  * @brief Pin numbers for IMU (RIIC1 I2C + GPIO) pins
+ *
+ * @details
+ * Bit positions within the corresponding port register for each IMU signal.
+ * Combined with imu_ports_t to form complete GPIO addresses for RIIC1 I2C,
+ * interrupt input, and reset output.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_imu_int_port;
+ * uint8_t pin  = (uint8_t)k_imu_int_pin;
+ * bool active = (PORT(port)->PIDR & (1U << pin)) == 0U;
+ * @endcode
+ *
  * @see imu_ports_t Corresponding port register indices
+ * @see host_i2c_pins_t Host I2C (RIIC0) pin assignments
+ * @see hardware_init() Configures IMU GPIO during boot
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_imu_scl_pin = 1, /**< IMU SCL pin 1 (P21, pin 36) */
@@ -769,8 +925,23 @@ typedef enum : uint8_t {
 /**
  * @enum sonar_echo_pins_t
  * @brief Pin numbers for HC-SR04 ECHO IRQ input pins
+ *
+ * @details
+ * Bit positions within PORT0 for each sonar ECHO input. Each pin is
+ * configured as an IRQ input for microsecond-accurate echo pulse timing.
+ * Pins are ordered descending (P03-P00) mapping to IRQ11-IRQ8.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_sonar_0_echo_port;
+ * uint8_t pin  = (uint8_t)k_sonar_0_echo_pin;
+ * bool echo_high = (PORT(port)->PIDR & (1U << pin)) != 0U;
+ * @endcode
+ *
  * @see sonar_echo_ports_t Corresponding port register index
+ * @see sonar_echo_irqs_t ICU interrupt numbers for echo timing
+ * @see sonar_trig_pins_t Companion TRIG output pin assignments
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -784,7 +955,17 @@ typedef enum : uint8_t {
  * @enum sonar_echo_irqs_t
  * @brief ICU interrupt request numbers for HC-SR04 ECHO timing
  * @details IRQ lines used for microsecond-accurate echo pulse measurement.
+ *          Each IRQ fires on both rising and falling edges to capture the
+ *          full echo pulse width for distance calculation.
  * @invariant IRQ numbers must match PORT0 pin ICU routing
+ *
+ * @code
+ * rx_icu_enable_irq(k_sonar_0_echo_irq);
+ * rx_icu_set_edge(k_sonar_0_echo_irq, k_irq_edge_both);
+ * @endcode
+ *
+ * @see sonar_echo_ports_t Port register for ECHO pins
+ * @see sonar_echo_pins_t Pin bit positions for ECHO inputs
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -812,8 +993,23 @@ typedef enum : uint8_t {
 /**
  * @enum sonar_trig_pins_t
  * @brief Pin numbers for HC-SR04 TRIG GPIO output pins
+ *
+ * @details
+ * Bit positions within the corresponding port register for each sonar TRIG
+ * output. A 10 us HIGH pulse on TRIG initiates an ultrasonic measurement.
+ * Combined with sonar_trig_ports_t to form complete GPIO addresses.
+ *
  * @invariant Values must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_sonar_0_trig_port;
+ * uint8_t pin  = (uint8_t)k_sonar_0_trig_pin;
+ * PORT(port)->PODR |= (1U << pin);
+ * @endcode
+ *
  * @see sonar_trig_ports_t Corresponding port register indices
+ * @see sonar_echo_pins_t Companion ECHO input pin assignments
+ * @see sonar_count_t Total number of sonar sensors
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -829,6 +1025,16 @@ typedef enum : uint8_t {
  * @details Used as a loop bound for iterating over sonar-indexed arrays and
  *          as an array size for sonar configuration tables.
  * @invariant Must equal the number of entries in sonar_echo_ports_t and sonar_trig_ports_t
+ *
+ * @code
+ * uint16_t distances_mm[k_sonar_count];
+ * for (uint8_t i = 0; i < k_sonar_count; i++) {
+ *     distances_mm[i] = rx_sonar_read_mm(i);
+ * }
+ * @endcode
+ *
+ * @see sonar_echo_ports_t ECHO input port assignments
+ * @see sonar_trig_ports_t TRIG output port assignments
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -924,6 +1130,13 @@ typedef enum : uint8_t {
  * @brief Port number for Dallas 1-Wire temperature sensor data line
  * @details Requires external 4.7k pull-up resistor to 3.3V on DQ.
  * @invariant Value must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_temp_1wire_port;
+ * uint8_t pin  = (uint8_t)k_temp_1wire_pin;
+ * PORT(port)->PDR |= (1U << pin);
+ * @endcode
+ *
  * @see onewire_pins_t Corresponding bit position
  * @since Version 1.0.0
  */
@@ -934,7 +1147,20 @@ typedef enum : uint8_t {
 /**
  * @enum onewire_pins_t
  * @brief Pin number for Dallas 1-Wire temperature sensor data line
+ *
+ * @details
+ * Bit position within PORT5 for the 1-Wire data line. The pin direction
+ * is toggled between output (drive LOW) and input (release for pull-up)
+ * to implement the 1-Wire open-drain protocol.
+ *
  * @invariant Value must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_temp_1wire_port;
+ * uint8_t pin  = (uint8_t)k_temp_1wire_pin;
+ * PORT(port)->PODR &= ~(1U << pin);
+ * @endcode
+ *
  * @see onewire_ports_t Corresponding port register index
  * @since Version 1.0.0
  */
@@ -969,9 +1195,19 @@ typedef enum : uint8_t {
 /**
  * @enum host_irq_ports_t
  * @brief Port number for HOST_IRQ GPIO output to RPi5
- * @details Despite IRQ15 naming, this is a GPIO output from RX72N.
+ * @details Despite IRQ15 naming, this is a GPIO output from RX72N to
+ *          signal the RPi5 that SPI data is ready for transfer.
  * @invariant Value must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_host_irq_port;
+ * uint8_t pin  = (uint8_t)k_host_irq_pin;
+ * PORT(port)->PODR &= ~(1U << pin);
+ * @endcode
+ *
  * @see host_irq_pins_t Corresponding bit position
+ * @see host_irq_nums_t ICU interrupt number for this pin
+ * @see host_spi_ports_t Host SPI communication port
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -981,8 +1217,21 @@ typedef enum : uint8_t {
 /**
  * @enum host_irq_pins_t
  * @brief Pin number for HOST_IRQ GPIO output to RPi5
+ *
+ * @details
+ * Bit position within PORT6 for the HOST_IRQ active-low output signal.
+ * The RX72N asserts this pin LOW to notify the RPi5 that new SPI data
+ * is available for transfer.
+ *
  * @invariant Value must match PCB schematic and pinout.txt
+ *
+ * @code
+ * uint8_t port = (uint8_t)k_host_irq_port;
+ * PORT(port)->PODR &= ~(1U << k_host_irq_pin);
+ * @endcode
+ *
  * @see host_irq_ports_t Corresponding port register index
+ * @see host_irq_nums_t ICU interrupt number for this pin
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -993,7 +1242,17 @@ typedef enum : uint8_t {
  * @enum host_irq_nums_t
  * @brief ICU interrupt request number for HOST_IRQ pin
  * @details IRQ15 is the highest-numbered external interrupt on the RX72N.
+ *          Although routed to an IRQ-capable pin, HOST_IRQ is configured as
+ *          a GPIO output (not an ICU input) on the RX72N side.
  * @invariant Must match P67 ICU routing in the hardware manual
+ *
+ * @code
+ * rx_mpc_set_irq(k_host_irq_port, k_host_irq_pin,
+ *                k_host_irq_num);
+ * @endcode
+ *
+ * @see host_irq_ports_t Port register for HOST_IRQ
+ * @see host_irq_pins_t Pin bit position for HOST_IRQ
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {

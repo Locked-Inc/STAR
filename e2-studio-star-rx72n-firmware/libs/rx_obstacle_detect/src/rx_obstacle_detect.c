@@ -314,8 +314,9 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
     return ret;
   }
 
-  /* Clear handle */
-  *handle = (rx_obstacle_detect_t){0};
+  /* Clear handle using static zero instance (avoids large compound literal on stack) */
+  static const rx_obstacle_detect_t s_zero_handle = {0};
+  *handle = s_zero_handle;
 
   /* Copy configuration */
   handle->sensor_count           = config->sensor_count;

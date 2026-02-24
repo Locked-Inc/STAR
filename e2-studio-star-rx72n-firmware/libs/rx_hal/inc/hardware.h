@@ -17,7 +17,7 @@
  * | **GPIO** | 14 ports (A-N) | Digital I/O, motor control signals | Output/Input, Read/Write/Toggle |
  * | **CMT** | 4 channels | ThreadX system tick (100 Hz) | CMT0 configured for 10ms intervals |
  * | **S12AD** | 2 units (0-1) | Motor current sensing, analog inputs | 8/10/12-bit resolution |
- * | **RIIC** | 3 channels (0-2) | I2C sensors (IMU, temperature) | 100kHz, 400kHz, 1MHz |
+ * | **RIIC** | 3 channels (0-2) | I2C sensors (IMU); temperature sensor uses 1-Wire | 100kHz, 400kHz, 1MHz |
  * | **RSPI** | 3 channels (0-2) | SPI: RPi5 comm (peripheral), sensors (controller) | Mode 0-3, 100kHz-10MHz |
  * | **SCI** | 13 channels (0-12) | UART: Debug (SCI9 @ 115200), expansion | Configurable baud rates |
  *
@@ -193,9 +193,9 @@
  * | SPI0_COPI | P31 | RSPI0 | RPi5 -> RX72N |
  * | SPI0_CLK | P32 | RSPI0 | RPi5 clock |
  * | SPI0_CS | P33 | GPIO | RPi5 chip select |
- * | SPI1_CIPO | PC5 | RSPI1 | Reserved (RSPI1 controller mode) |
- * | SPI1_COPI | PC6 | RSPI1 | Reserved (RSPI1 controller mode) |
- * | SPI1_CLK | PC7 | RSPI1 | Reserved (RSPI1 clock) |
+ * | SPI1_CIPO | PC5 | RSPI1 | Not used (RSPI1 controller mode) |
+ * | SPI1_COPI | PC6 | RSPI1 | Not used (RSPI1 controller mode) |
+ * | SPI1_CLK | PC7 | RSPI1 | Not used (RSPI1 clock) |
  * | UART_TX | PB7 | SCI9 | Debug output (CY7C65213) |
  * | UART_RX | PB6 | SCI9 | Debug input |
  *
@@ -1037,7 +1037,7 @@ typedef struct {
  * | Peripheral | Mode | Rationale |
  * |------------|------|-----------|
  * | RPi5 (RSPI0 peripheral) | Mode 0 | Linux spidev default, maximum compatibility |
- * | Reserved (RSPI1 controller) | TBD | RSPI1 reserved for future SPI peripherals |
+ * | RSPI1 controller (not used) | TBD | RSPI1 not used in current design |
  *
  * ## Clock Polarity (CPOL)
  * - **CPOL=0**: Clock idle state is low (GND). Clock starts low, pulses high.
@@ -1091,7 +1091,7 @@ typedef struct {
  *   .freq_hz = k_rspi_freq_1mhz, // 1 MHz
  *   .cs = k_port_c_pin_4
  * };
- * rspi_init_controller(1, &sensor_cfg);  // RSPI1
+ * rspi_init_controller(k_rspi_channel_1, &sensor_cfg);  // RSPI1
  * @endcode
  *
  * @par Underlying Type: uint8_t (C23 typed enum)
@@ -1113,46 +1113,6 @@ typedef enum : uint8_t {
   k_rspi_mode_3 =
     3 /**< CPOL=1, CPHA=1 - Data sampled on rising edge, idle high. Alternative for some devices. */
 } rspi_mode_t;
-
-/**
- * @enum rspi_channel_t
- * @brief RSPI channel identifiers for the RX72N 3-channel SPI peripheral
- *
- * @details
- * The RX72N provides three independent RSPI channels. Each can operate
- * in either controller (master) or peripheral (slave) mode. On STAR hardware:
- * - RSPI0: Available (currently unused)
- * - RSPI1: Available (currently unused)
- * - RSPI2: Host SPI link to RPi5 (peripheral mode on PD1-PD4)
- *
- * @invariant Channel numbers must match hardware register block indices
- * @see rspi_init_peripheral() Initialize a channel in peripheral mode
- * @see rspi_init_controller() Initialize a channel in controller mode
- * @since Version 1.0.0
- */
-typedef enum : uint8_t {
-  k_rspi_channel_0 = 0, /**< RSPI channel 0 */
-  k_rspi_channel_1 = 1, /**< RSPI channel 1 */
-  k_rspi_channel_2 = 2, /**< RSPI channel 2 (STAR: RPi5 host SPI link) */
-} rspi_channel_t;
-
-/**
- * @enum rspi_freq_constants_t
- * @brief Common SPI clock frequency constants for controller mode
- *
- * @details
- * Named constants for commonly used SPI clock frequencies. Use these
- * instead of magic literals when configuring controller-mode SPI clock rate.
- * The RSPI bit rate register (SPBR) is calculated from these values and
- * the peripheral clock (PCLKB).
- *
- * @invariant All values must be positive and expressible by the SPBR register
- * @see rspi_init_controller() Uses freq_hz to calculate SPBR
- * @since Version 1.0.0
- */
-typedef enum : uint32_t {
-  k_rspi_freq_1mhz = 1000000, /**< 1 MHz SPI clock frequency */
-} rspi_freq_constants_t;
 
 /**
  * @brief Initialize RSPI in peripheral mode for RPi5 communication
@@ -1226,6 +1186,25 @@ typedef struct {
  * RSPI (SPI) Functions - Controller Mode
  * =============================================================================
  */
+
+/**
+ * @enum rspi_freq_constants_t
+ * @brief Common SPI clock frequency constants for controller mode
+ *
+ * @details
+ * Named constants for commonly used SPI clock frequencies. Use these
+ * instead of magic literals when configuring controller-mode SPI clock rate.
+ * The RSPI bit rate register (SPBR) is calculated from these values and
+ * the peripheral clock (PCLKB).
+ *
+ * @invariant All values must be positive and expressible by the SPBR register
+ * @see rspi_init_controller() Uses freq_hz to calculate SPBR
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_rspi_freq_1mhz  = 1000000,  /**< 1 MHz SPI clock frequency */
+  k_rspi_freq_10mhz = 10000000, /**< 10 MHz SPI clock frequency (RPi5 link) */
+} rspi_freq_constants_t;
 
 /**
  * @brief RSPI controller mode configuration structure

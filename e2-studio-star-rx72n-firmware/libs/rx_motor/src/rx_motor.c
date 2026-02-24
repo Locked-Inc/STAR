@@ -297,6 +297,21 @@ typedef enum : int16_t {
  * in the DRV8263H IN2/IN1 control mode. IN2 is driven as a static duty level
  * (100% HIGH or 0% LOW) while IN1 carries the speed PWM.
  *
+ * @invariant Values must be either 0 (LOW) or 100 (HIGH) - no intermediate duty levels
+ *            are valid for the IN2 direction pin in DRV8263H IN2/IN1 control mode.
+ *
+ * @code
+ * // Set forward direction: IN2 = HIGH (100%)
+ * rx_err_t err = rx_gptw_set_duty(channel, output_a, (float)k_motor_in2_high);
+ *
+ * // Set reverse direction: IN2 = LOW (0%)
+ * err = rx_gptw_set_duty(channel, output_a, (float)k_motor_in2_low);
+ *
+ * // Coast mode: IN2 = LOW, IN1 = LOW (high impedance)
+ * err = rx_gptw_set_duty(channel, output_a, (float)k_motor_in2_low);
+ * err = rx_gptw_set_duty(channel, output_b, (float)k_motor_duty_zero);
+ * @endcode
+ *
  * @see rx_motor_set_duty() Uses these values to set direction
  * @since Version 1.0.0
  */
@@ -458,13 +473,13 @@ typedef enum : uint32_t {
  *
  * @par Example:
  * @code
- * float duty_cmd = 150.0f;  // User commands 150% (invalid)
+ * float duty_cmd = 150.0F;  // User commands 150% (invalid)
  * float safe_duty = internal_clamp_duty(duty_cmd);
- * // safe_duty = 100.0f (clamped to max)
+ * // safe_duty = 100.0F (clamped to max)
  *
- * float invalid = 0.0f / 0.0f;  // NaN
+ * float invalid = 0.0F / 0.0F;  // NaN
  * float safe = internal_clamp_duty(invalid);
- * // safe = 0.0f (safe default for invalid float)
+ * // safe = 0.0F (safe default for invalid float)
  * @endcode
  *
  * @see rx_motor_set_duty() Calls this function to validate user input
@@ -1241,16 +1256,16 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * // ... initialize motor ...
  *
  * // Forward at 50% speed
- * rx_err_t err = rx_motor_set_duty(&motor, 50.0f);
+ * rx_err_t err = rx_motor_set_duty(&motor, 50.0F);
  * if (err != k_rx_ok) {
  *     rx_log_error("APP", "Failed to set motor duty");
  * }
  *
  * // Reverse at 75% speed
- * err = rx_motor_set_duty(&motor, -75.0f);
+ * err = rx_motor_set_duty(&motor, -75.0F);
  *
  * // Stop motor (coast)
- * err = rx_motor_set_duty(&motor, 0.0f);
+ * err = rx_motor_set_duty(&motor, 0.0F);
  * @endcode
  *
  * @par Example - Velocity Control Loop (100 Hz):
@@ -1268,7 +1283,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *         // Compute PID output
  *         float pid_output;
  *         rx_err_t err = rx_pid_compute(&pid, target_velocity,
- *                                       measured_velocity, 0.01f, &pid_output);
+ *                                       measured_velocity, 0.01F, &pid_output);
  *
  *         // Apply PID output to motor (already in [-100, +100] range)
  *         err = rx_motor_set_duty(motor, pid_output);
@@ -1290,12 +1305,12 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * rx_motor_handle_t motor;
  * // ... initialize motor ...
  *
- * const float ramp_time_s = 2.0f;
- * const float dt_s = 0.01f;  // 100 Hz update rate
- * const float max_duty = 100.0f;
+ * const float ramp_time_s = 2.0F;
+ * const float dt_s = 0.01F;  // 100 Hz update rate
+ * const float max_duty = 100.0F;
  * const float duty_increment = max_duty / (ramp_time_s / dt_s);
  *
- * float current_duty = 0.0f;
+ * float current_duty = 0.0F;
  * while (current_duty < max_duty) {
  *     rx_err_t err = rx_motor_set_duty(&motor, current_duty);
  *     if (err != k_rx_ok) {
@@ -1310,7 +1325,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * tx_thread_sleep(5000);
  *
  * // Ramp down to 0%
- * while (current_duty > 0.0f) {
+ * while (current_duty > 0.0F) {
  *     rx_motor_set_duty(&motor, current_duty);
  *     current_duty -= duty_increment;
  *     tx_thread_sleep(10);
@@ -1522,7 +1537,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * @par Example - Stop Before Direction Change:
  * @code
  * // Motor running forward at 75%
- * rx_motor_set_duty(&motor, 75.0f);
+ * rx_motor_set_duty(&motor, 75.0F);
  * tx_thread_sleep(5000);  // Run for 5 seconds
  *
  * // Stop before reversing direction
@@ -1530,7 +1545,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
  * tx_thread_sleep(500);  // Wait for complete stop
  *
  * // Now safe to reverse
- * rx_motor_set_duty(&motor, -75.0f);
+ * rx_motor_set_duty(&motor, -75.0F);
  * @endcode
  *
  * @see rx_motor_set_duty() Set motor duty to 0 for same effect
@@ -1564,7 +1579,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
   /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
   err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_a),
-                         (float)k_motor_duty_zero);
+                         (float)k_motor_in2_low);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a during stop");
     return err;
@@ -1879,11 +1894,11 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
     return k_rx_err_invalid_state;
   }
 
-  /* Immediately set duty to 0% */
+  /* Immediately set duty to 0%: IN2 = LOW (direction), IN1 = LOW (speed) */
   rx_err_t result = k_rx_ok;
   rx_err_t err    = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_a),
-                         (float)k_motor_duty_zero);
+                         (float)k_motor_in2_low);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "E-STOP: Failed to clear output_a duty");
     if (result == k_rx_ok) {

@@ -24,14 +24,14 @@
  *     color=lightgrey;
  *     rspi0 [label="RSPI0\n(Peripheral)"];
  *     rspi1 [label="RSPI1\n(Controller)"];
- *     rspi2 [label="RSPI2\n(Reserved)"];
+ *     rspi2 [label="RSPI2\n(Not used)"];
  *   }
  *
  *   rpi5 [label="Raspberry Pi 5\n(Controller)"];
  *   future [label="Future SPI\nPeripherals"];
  *
  *   rpi5 -> rspi0 [label="10 Mbps\nCommand/Telemetry"];
- *   rspi1 -> future [label="Reserved", style=dashed];
+ *   rspi1 -> future [label="Not used", style=dashed];
  * }
  * @enddot
  *
@@ -39,8 +39,8 @@
  * | Channel | Base Address | Mode       | Target           | Speed    | Purpose                |
  * |---------|--------------|------------|------------------|----------|------------------------|
  * | RSPI0   | 0x000D0100   | Peripheral | Raspberry Pi 5   | 10 Mbps  | Command/telemetry      |
- * | RSPI1   | 0x000D0140   | Controller | Reserved          | 5 Mbps   | Reserved for future peripherals |
- * | RSPI2   | 0x000D0300   | Reserved   | -                | -        | Future expansion       |
+ * | RSPI1   | 0x000D0140   | Controller | Not used    | 5 Mbps   | Not used in current design        |
+ * | RSPI2   | 0x000D0300   | Not used   | -                | -        | Not used in current design |
  *
  * @par Key Features
  * - Full-duplex or simplex (transmit-only) synchronous communications
@@ -53,13 +53,13 @@
  * - Mode fault detection for multi-controller configurations
  *
  * @par Hardware Requirements
- * | Parameter      | RSPI0 (RPi5)     | RSPI1 (Reserved) |
+ * | Parameter      | RSPI0 (RPi5)     | RSPI1 (Not used) |
  * |----------------|------------------|------------------|
  * | PCLKB          | 60 MHz           | 60 MHz           |
  * | Max Bit Rate   | 30 Mbps          | 30 Mbps          |
  * | Configured     | 10 Mbps          | 5 Mbps           |
  * | Data Width     | 8 bits           | 16 bits          |
- * | CPOL/CPHA      | 0/0              | Default (no SPI device) |
+ * | CPOL/CPHA      | 0/0              | 0/0 (reset default)     |
  *
  * @par Memory Map (per channel)
  * | Offset | Size | Register | Description                       |
@@ -188,7 +188,7 @@ typedef enum : uint32_t {
   /**
    * @brief RSPI1 register base address (0x000D0140)
    * @details
-   * Reserved for future SPI peripherals in controller mode.
+   * Not used in the current STAR design. Available for future SPI peripherals.
    * Directly follows RSPI0 in memory (0x40 byte offset).
    * @par Pin Assignments:
    * - RSPCKB: PE5/RSPCKB (clock output to peripherals)
@@ -201,7 +201,7 @@ typedef enum : uint32_t {
   /**
    * @brief RSPI2 register base address (0x000D0300)
    * @details
-   * Reserved for future expansion. Not currently used in STAR project.
+   * Not used in the current STAR design. Available for future expansion.
    * Located at 0x1C0 bytes after RSPI1 (gap for other peripherals).
    */
   k_rspi2_base_addr = 0x000D0300,
@@ -272,9 +272,9 @@ typedef enum : uint32_t {
  * spi->spcr = k_rspi_spcr_spe | k_rspi_spcr_sprie | k_rspi_spcr_sptie;
  * @endcode
  *
- * @par Initialization Example (Controller Mode - Reserved for Future Peripherals)
+ * @par Initialization Example (Controller Mode - Not Used in Current Design)
  * @code{.c}
- * // Configure RSPI1 for 5 Mbps controller mode (reserved for future peripherals)
+ * // Configure RSPI1 for 5 Mbps controller mode (not used in current design)
  * volatile rx_rspi_regs_t* spi = rspi1();
  *
  * // 1. Disable RSPI before configuration
@@ -409,7 +409,7 @@ typedef struct __attribute__((packed)) {
    * @par Calculation Examples (PCLKB = 60 MHz):
    * - SPBR=0: 30 MHz (maximum)
    * - SPBR=2: 10 MHz (RPi5 communication)
-   * - SPBR=5: 5 MHz (reserved for future SPI peripherals)
+   * - SPBR=5: 5 MHz (not used in current design)
    * - SPBR=29: 1 MHz
    * @note Only used in controller mode; ignored in peripheral mode
    */
@@ -513,11 +513,11 @@ static inline volatile rx_rspi_regs_t* rspi0(void)
 }
 
 /**
- * @brief Get pointer to RSPI1 registers (reserved for future SPI peripherals)
+ * @brief Get pointer to RSPI1 registers (not used in current design)
  *
  * @details
  * Returns a volatile pointer to the RSPI1 register structure at address
- * 0x000D0140. RSPI1 is reserved for future SPI peripherals (not currently used).
+ * 0x000D0140. RSPI1 is not used in the current STAR design.
  *
  * @return Volatile pointer to RSPI1 register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
@@ -544,11 +544,11 @@ static inline volatile rx_rspi_regs_t* rspi1(void)
 }
 
 /**
- * @brief Get pointer to RSPI2 registers (reserved for future expansion)
+ * @brief Get pointer to RSPI2 registers (not used in current design)
  *
  * @details
  * Returns a volatile pointer to the RSPI2 register structure at address
- * 0x000D0300. RSPI2 is currently reserved and not used in the STAR project.
+ * 0x000D0300. RSPI2 is not used in the current STAR design.
  *
  * @return Volatile pointer to RSPI2 register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
@@ -598,7 +598,7 @@ static inline volatile rx_rspi_regs_t* rspi2(void)
  * // Peripheral mode with receive/transmit interrupts (RPi5 communication)
  * rspi0()->spcr = k_rspi_spcr_spe | k_rspi_spcr_sprie | k_rspi_spcr_sptie;
  *
- * // Controller mode with transmit interrupt (reserved for future peripherals)
+ * // Controller mode with transmit interrupt (not used in current design)
  * rspi1()->spcr = k_rspi_spcr_spe | k_rspi_spcr_mstr | k_rspi_spcr_sptie;
  *
  * // Disable RSPI before reconfiguration
@@ -644,7 +644,7 @@ typedef enum : uint8_t {
    * - 0: Peripheral mode (clock input from external controller)
    * - 1: Controller mode (clock output to external peripherals)
    * @note RSPI0 uses peripheral mode (RPi5 is controller)
-   * @note RSPI1 reserved for future peripherals (controller mode)
+   * @note RSPI1 not used in the current STAR design (controller mode)
    */
   k_rspi_spcr_mstr = (1 << 3),
 

@@ -160,7 +160,7 @@
  * |-------|--------------|--------------|--------------|-------|
  * | Motor 0 | GPTW0 | GTIOC0A (P23) | GTIOC0B (P17) | Front-left |
  * | Motor 1 | GPTW1 | GTIOC1A (P22) | GTIOC1B (PC3) | Front-right |
- * | Motor 2 | GPTW2 | GTIOC2A (PE3) | GTIOC2B (P86) | Rear-left |
+ * | Motor 2 | GPTW2 | GTIOC2A (PE3) | GTIOC2B (P8.6) | Rear-left |
  * | Motor 3 | GPTW3 | GTIOC3A (PE7) | GTIOC3B (PC6) | Rear-right |
  *
  * ## Performance Characteristics
@@ -295,7 +295,7 @@ extern "C" {
  * | Field | Type | Valid Range | Units | Validation |
  * |-------|------|-------------|-------|------------|
  * | channel | rx_gptw_channel_t | 0-3 (k_gptw_channel_0 to k_gptw_channel_3) | enum | Must be valid GPTW channel |
- * | output_a | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN2 (direction) pin |
+ * | output_a | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN2 (PWM) pin |
  * | output_b | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN1 (PWM) pin (must differ from output_a) |
  * | pwm_freq_hz | uint32_t | 1000-100000 Hz | Hz | Typical: 20000 (20 kHz) |
  * | dead_time_ns | uint32_t | 0-10000 ns | nanoseconds | Typical: 1000 (1 us), 0 = no dead-time (unsafe) |
@@ -309,7 +309,7 @@ extern "C" {
  * // Configure front-left motor (Motor 0) with GPTW0
  * rx_motor_config_t motor0_config = {
  *   .channel = k_gptw_channel_0,     // GPTW0 timer
- *   .output_a = k_gptw_output_a,     // GTIOC0A (P23) -> DRV8263H IN2 (direction)
+ *   .output_a = k_gptw_output_a,     // GTIOC0A (P23) -> DRV8263H IN2 (PWM)
  *   .output_b = k_gptw_output_b,     // GTIOC0B (P17) -> DRV8263H IN1 (PWM)
  *   .pwm_freq_hz = 20000,            // 20 kHz PWM (inaudible)
  *   .dead_time_ns = 1000,            // 1 us dead-time (DRV8263H safe)
@@ -359,9 +359,9 @@ typedef struct {
   rx_gptw_channel_t
     channel; /**< GPTW timer channel selection (0-3). Determines which GPTW peripheral instance to use. Example: k_gptw_channel_0 for Motor 0. */
   rx_gptw_output_t
-    output_a; /**< PWM output A pin (H-bridge IN2/direction). HIGH=forward, LOW=reverse. Typically k_gptw_output_a (GTIOCA). Must differ from output_b. */
+    output_a; /**< PWM output A pin (H-bridge IN2). Both IN1 and IN2 are PWM signals; direction is determined by which output is active. Typically k_gptw_output_a (GTIOCA). Must differ from output_b. */
   rx_gptw_output_t
-    output_b; /**< PWM output B pin (H-bridge IN1/PWM). PWM duty cycle controls speed 0-100%. Typically k_gptw_output_b (GTIOCB). Must differ from output_a. */
+    output_b; /**< PWM output B pin (H-bridge IN1). Both IN1 and IN2 are PWM signals; speed is controlled by the active output's duty cycle. Typically k_gptw_output_b (GTIOCB). Must differ from output_a. */
   uint32_t
     pwm_freq_hz; /**< PWM frequency in Hertz. Range: 1,000-100,000 Hz. Recommended: 20,000 Hz (20 kHz) for inaudible operation. Higher = more switching losses. */
   uint32_t

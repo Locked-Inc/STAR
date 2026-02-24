@@ -66,71 +66,116 @@ extern "C" {
  */
 
 /**
- * @brief Reset all mock state
+ * @brief Reset all mock GPTW state to defaults
  *
- * Call before each test to ensure clean state.
+ * @details
+ * Clears all tracked duty cycles, frequencies, initialization flags, and
+ * output enable states across every mock GPTW channel. Call before each
+ * test to ensure a clean starting state.
+ *
+ * @see rx_gptw_deinit() Real driver cleanup function
  */
 void mock_gptw_reset(void);
 
 /**
- * @brief Check if channel is initialized
+ * @brief Check if a mock GPTW channel has been initialized
  *
- * @param[in] channel GPTW channel
+ * @details
+ * Returns whether rx_gptw_init_pwm() or rx_gptw_init_all_staggered() has
+ * been called on the given channel since the last mock_gptw_reset().
+ *
+ * @param[in] channel GPTW channel to query
  *
  * @return true if initialized, false otherwise
+ *
+ * @see rx_gptw_init_pwm() Real single-channel initialization
+ * @see rx_gptw_init_all_staggered() Real multi-channel initialization
  */
 bool mock_gptw_is_initialized(rx_gptw_channel_t channel);
 
 /**
- * @brief Get recorded duty cycle for output
+ * @brief Get the duty cycle last set on a mock GPTW output
  *
- * @param[in] channel GPTW channel
- * @param[in] output Output channel (A/B)
+ * @details
+ * Returns the most recent duty cycle percentage written to the specified
+ * channel and output via rx_gptw_set_duty() or rx_gptw_set_duty_raw().
+ *
+ * @param[in] channel GPTW channel to query
+ * @param[in] output  Output identifier (A or B)
  *
  * @return Duty cycle percentage (0.0 - 100.0)
+ *
+ * @see rx_gptw_set_duty() Real driver duty cycle setter
+ * @see rx_gptw_get_duty() Real driver duty cycle getter
  */
 float mock_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output);
 
 /**
- * @brief Get recorded period for channel
+ * @brief Get the period count value recorded for a mock GPTW channel
  *
- * @param[in] channel GPTW channel
+ * @details
+ * Returns the period counter value that was configured during initialization
+ * of the specified channel.
+ *
+ * @param[in] channel GPTW channel to query
  *
  * @return Period count value
+ *
+ * @see rx_gptw_get_period() Real driver period getter
  */
 uint32_t mock_gptw_get_period_value(rx_gptw_channel_t channel);
 
 /**
- * @brief Get recorded frequency for channel
+ * @brief Get the PWM frequency recorded for a mock GPTW channel
  *
- * @param[in] channel GPTW channel
+ * @details
+ * Returns the frequency in Hz that was passed in the configuration during
+ * initialization of the specified channel.
+ *
+ * @param[in] channel GPTW channel to query
  *
  * @return Frequency in Hz
+ *
+ * @see rx_gptw_config_t::frequency_hz Real driver frequency configuration
  */
 uint32_t mock_gptw_get_frequency(rx_gptw_channel_t channel);
 
 /**
- * @brief Check if output is enabled
+ * @brief Check if a mock GPTW output is enabled
  *
- * @param[in] channel GPTW channel
- * @param[in] output Output channel (A/B)
+ * @details
+ * Returns the enable state last set via rx_gptw_enable_output() on the
+ * specified channel and output.
+ *
+ * @param[in] channel GPTW channel to query
+ * @param[in] output  Output identifier (A or B)
  *
  * @return true if enabled, false otherwise
+ *
+ * @see rx_gptw_enable_output() Real driver output enable function
  */
 bool mock_gptw_is_output_enabled(rx_gptw_channel_t channel, rx_gptw_output_t output);
 
 /**
- * @brief Check if timer is running
+ * @brief Check if a mock GPTW timer is running
  *
- * @param[in] channel GPTW channel
+ * @details
+ * Returns whether the timer counter for the specified channel is currently
+ * in the running state (started via rx_gptw_start() and not yet stopped).
+ *
+ * @param[in] channel GPTW channel to query
  *
  * @return true if running, false otherwise
+ *
+ * @see rx_gptw_start() Real driver timer start function
+ * @see rx_gptw_stop() Real driver timer stop function
  */
 bool mock_gptw_is_running(rx_gptw_channel_t channel);
 
 /**
  * @brief Initialize all 4 GPTW channels with 90 degree phase staggering (Mock)
  *
+ * @details
  * Mock implementation for unit testing. Simulates initializing all 4 GPTW
  * channels (0-3) with the provided configuration. In the mock, each channel
  * is initialized via rx_gptw_init_pwm().
@@ -139,9 +184,10 @@ bool mock_gptw_is_running(rx_gptw_channel_t channel);
  *                   wave mode, and other PWM settings for all 4 channels.
  *
  * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if config is NULL
- * @return k_rx_err_invalid_arg if config->frequency_hz is zero
- * @return Propagated error codes from rx_gptw_init_pwm() on failure
+ * @retval k_rx_err_null_ptr if config is NULL
+ * @retval k_rx_err_invalid_arg if config->frequency_hz is zero
+ *
+ * @see rx_gptw_init_all_staggered() Real driver implementation in rx_gptw.h
  */
 rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
 

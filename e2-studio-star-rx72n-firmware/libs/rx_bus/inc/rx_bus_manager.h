@@ -394,7 +394,7 @@ extern "C" {
  * @code{.c}
  * // Statically allocate and configure (zero dynamic allocation)
  * static rx_bus_config_t s_rpi5_spi = {
- *     .name = "rpi5_link",
+ *     .name = "rpi5_spi",
  *     .type = k_bus_type_spi,
  *     .proto.spi = {
  *         .channel       = k_rspi_channel_0,
@@ -455,7 +455,7 @@ extern "C" {
  * @post bus_count decremented
  *
  * @note Hardware is properly deinitialized before removal
- * @note Caller may reclaim config memory after removal
+ * @note Caller may clear config reference after removal
  *
  * @warning Do not hold references to bus_config after this call
  *
@@ -464,9 +464,9 @@ extern "C" {
  *
  * @par Example:
  * @code{.c}
- * rx_err_t err = rx_bus_manager_remove_bus(&manager, "motor_drv0");
+ * rx_err_t err = rx_bus_manager_remove_bus(&manager, "rpi5_spi");
  * if (err == k_rx_err_not_found) {
- *     rx_log_warn("MAIN", "Bus not found: motor_drv0");
+ *     rx_log_warn("MAIN", "Bus not found: rpi5_spi");
  * }
  * @endcode
  *

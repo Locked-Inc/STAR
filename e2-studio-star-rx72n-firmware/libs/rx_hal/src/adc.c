@@ -834,7 +834,7 @@ rx_err_t adc_init(const adc_unit_t unit, const adc_channel_t channel, const adc_
  * rx_err_t err = adc_read(k_adc_unit_0, k_adc_channel_2, &raw_value);
  * if (err == k_rx_ok) {
  *   // raw_value: 0-4095 for 12-bit resolution
- *   float voltage = (raw_value * 3.3f) / 4095.0f;
+ *   float voltage = (raw_value * 3.3F) / 4095.0F;
  * }
  * @endcode
  *

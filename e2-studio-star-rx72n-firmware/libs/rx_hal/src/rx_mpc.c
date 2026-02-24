@@ -1195,10 +1195,10 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  * @note Phase staggering configured separately via rx_gptw driver
  *
  * @code
- * // Configure motor 0 GPTW IN2 and IN1 pins
- * rx_err_t err = rx_mpc_set_gptw(RX_PORT_PIN(6, 0)); // IN2 pin
+ * // Configure motor 2 GPTW IN2 and IN1 pins (Port E)
+ * rx_err_t err = rx_mpc_set_gptw(RX_PORT_PIN(0xE, 3)); // PE3 GTIOC2A (IN2)
  * if (err == k_rx_ok) {
- *     err = rx_mpc_set_gptw(RX_PORT_PIN(6, 1)); // IN1 pin
+ *     err = rx_mpc_set_gptw(RX_PORT_PIN(8, 6)); // P8.6 GTIOC2B (IN1)
  * }
  * @endcode
  *

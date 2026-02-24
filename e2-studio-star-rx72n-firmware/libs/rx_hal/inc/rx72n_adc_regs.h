@@ -143,7 +143,7 @@ extern "C" {
  * uint16_t raw_value = adc->addr7;
  *
  * // Convert to voltage (3.3V reference)
- * float voltage = (float)raw_value * 3.3f / 4096.0f;
+ * float voltage = (float)raw_value * 3.3F / 4095.0F;
  * @endcode
  *
  * @{
@@ -340,10 +340,10 @@ typedef enum : uint8_t {
  * // 7. Convert to current (using DRV8263H IPROPI current sensing)
  * // IPROPI ratio: 1000:1, sense resistor: 4990 ohm
  * // V_sense = (I_motor / 1000) * 4990, so I_motor = V_sense * 1000 / 4990
- * const float avcc_volts       = 3.3f;
- * const float adc_full_scale_divisor = 4095.0f;  // 2^12 - 1 (12-bit full scale)
- * const float ipropi_ratio           = 1000.0f; // 1000:1 current mirror
- * const float ipropi_sense_ohm       = 4990.0f; // Sense resistor (ohms)
+ * const float avcc_volts       = 3.3F;
+ * const float adc_full_scale_divisor = 4095.0F;  // 2^12 - 1 (12-bit full scale)
+ * const float ipropi_ratio           = 1000.0F; // 1000:1 current mirror
+ * const float ipropi_sense_ohm       = 4990.0F; // Sense resistor (ohms)
  * float voltage = (float)raw_count * avcc_volts / adc_full_scale_divisor;
  * float current_amps = voltage * ipropi_ratio / ipropi_sense_ohm;
  * @endcode
@@ -564,7 +564,7 @@ typedef struct {
    * - Bits [15:12]: Always 0
    *
    * @par Conversion Formula:
-   * @f$ V_{in} = \frac{ADC_{result} \times V_{ref}}{4096} @f$
+   * @f$ V_{in} = \frac{ADC_{result} \times V_{ref}}{4095} @f$
    *
    * where Vref = 3.3V (AVCC0)
    */

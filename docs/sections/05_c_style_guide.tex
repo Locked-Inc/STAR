@@ -5128,7 +5128,7 @@ for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
 \textbf{Good:}
 \begin{verbatim}
 static const uint32_t k_max_buffer_size = 256;
-static const float k_pi = 3.14159f;
+static const float k_pi = 3.14159F;
 
 static inline int max(int a, int b) {
       return (a > b) ? a : b;
@@ -5390,18 +5390,18 @@ The firmware uses the MKS (Meter-Kilogram-Second) system as the foundation for a
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Distance and velocity with units */
-float distance_m = 1.5f;           /* 1.5 meters */
-float velocity_mps = 2.0f;         /* 2.0 meters per second */
-float acceleration_mps2 = 9.81f;   /* 9.81 m/s^2 (gravity) */
+float distance_m = 1.5F;           /* 1.5 meters */
+float velocity_mps = 2.0F;         /* 2.0 meters per second */
+float acceleration_mps2 = 9.81F;   /* 9.81 m/s^2 (gravity) */
 
 /* Motor velocity tracking */
-float target_velocity_mps = 0.5f;
+float target_velocity_mps = 0.5F;
 float current_velocity_mps;
-star_encoder_get_velocity_rpm(&encoder, 10.0f, 500, &current_velocity_mps);
+star_encoder_get_velocity_rpm(&encoder, 10.0F, 500, &current_velocity_mps);
 
 /* WRONG - No unit suffix */
-float distance = 1.5f;     /* What unit? Meters? Millimeters? Feet? */
-float velocity = 2.0f;     /* Meters per second? RPM? */
+float distance = 1.5F;     /* What unit? Meters? Millimeters? Feet? */
+float velocity = 2.0F;     /* Meters per second? RPM? */
 
 
 \end{lstlisting}
@@ -5409,8 +5409,8 @@ float velocity = 2.0f;     /* Meters per second? RPM? */
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Angular measurements in radians */
-float heading_rad = 1.57f;              /* 90 degrees in radians */
-float angular_velocity_rad_per_s = 3.14f; /* pi radians per second */
+float heading_rad = 1.57F;              /* 90 degrees in radians */
+float angular_velocity_rad_per_s = 3.14F; /* pi radians per second */
 
 /* Robot pose */
 typedef struct {
@@ -5420,8 +5420,8 @@ typedef struct {
 } robot_pose_t;
 
 /* WRONG - Ambiguous angle units */
-float heading = 90.0f;  /* Degrees or radians? */
-float omega = 3.14f;    /* What unit? */
+float heading = 90.0F;  /* Degrees or radians? */
+float omega = 3.14F;    /* What unit? */
 
 
 \end{lstlisting}
@@ -5436,14 +5436,14 @@ star_sensor_ds18b20_read_temp(&temp_sensor, &motor_temp_celsius);
 int16_t cell_temp_deci_celsius = 235;  /* 23.5 degrees C */
 
     /* Thermal shutdown threshold */
-static const float s_motor_thermal_shutdown_celsius = 85.0f;
+static const float s_motor_thermal_shutdown_celsius = 85.0F;
 
 if (motor_temp_celsius > s_motor_thermal_shutdown_celsius) {
       rx_motor_stop(&motor, true); /* Emergency brake */
 }
 
 /* WRONG */
-float motor_temp = 75.0f;  /* Celsius? Fahrenheit? Kelvin? */
+float motor_temp = 75.0F;  /* Celsius? Fahrenheit? Kelvin? */
 
 
 \end{lstlisting}
@@ -5483,7 +5483,7 @@ typedef enum : uint32_t {
 
 if (motor_current_ma > k_max_motor_current_ma) {
       ESP_LOGW(s_TAG, "Motor current limit exceeded: %lu mA", motor_current_ma);
-      rx_motor_set_duty(&motor, 0.0f);
+      rx_motor_set_duty(&motor, 0.0F);
 }
 
 /* WRONG */
@@ -5496,14 +5496,14 @@ uint32_t voltage = 3700;        /* Millivolts? Volts? */
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Percentage (0-100 range) */
-float duty_cycle_percent = 75.0f;      /* 75% duty cycle */
+float duty_cycle_percent = 75.0F;      /* 75% duty cycle */
 uint8_t battery_soc_percent = 85;      /* 85% state of charge */
-float throttle_percent = 50.0f;        /* 50% throttle */
+float throttle_percent = 50.0F;        /* 50% throttle */
 
 rx_motor_set_duty(&motor, duty_cycle_percent);
 
 /* WRONG */
-float duty_cycle = 0.75f;    /* Normalized (0-1)? Percentage (0-100)? */
+float duty_cycle = 0.75F;    /* Normalized (0-1)? Percentage (0-100)? */
 uint8_t battery_soc = 85;    /* Percentage? Raw ADC value? */
 
 
@@ -5536,19 +5536,19 @@ When converting between units, use descriptive function names:
 /* CORRECT - Clear unit conversion */
 float rpm_to_mps(float rpm, float wheel_diameter_m)
 {
-      float wheel_circumference_m = 3.14159f * wheel_diameter_m;
-      float revolutions_per_second = rpm / 60.0f;
+      float wheel_circumference_m = 3.14159F * wheel_diameter_m;
+      float revolutions_per_second = rpm / 60.0F;
       return revolutions_per_second * wheel_circumference_m;
 }
 
 float celsius_to_deci_celsius(float temp_celsius)
 {
-      return temp_celsius * 10.0f;
+      return temp_celsius * 10.0F;
 }
 
 float mv_to_volts(uint32_t voltage_mv)
 {
-      return voltage_mv / 1000.0f;
+      return voltage_mv / 1000.0F;
 }
 
 /* WRONG - Ambiguous conversions */
@@ -5768,11 +5768,11 @@ static const char* const error_messages[] = {
 
 /* CORRECT - Default configuration in flash */
 static const star_pid_config_t default_pid_config = {
-  .kp = 1.0f,
-  .ki = 0.5f,
-  .kd = 0.1f,
-  .output_min = -100.0f,
-  .output_max = 100.0f,
+  .kp = 1.0F,
+  .ki = 0.5F,
+  .kd = 0.1F,
+  .output_min = -100.0F,
+  .output_max = 100.0F,
 };
 
 /* Usage: Copy to RAM only when needed */
@@ -6159,7 +6159,7 @@ rx_err_t read_temperature_safe(float* temp_celsius)
         return ret;
      }
 
-      *temp_celsius = (data[0] << 8 | data[1]) / 10.0f;
+      *temp_celsius = (data[0] << 8 | data[1]) / 10.0F;
       return RX_OK;
 }
 
@@ -6210,7 +6210,7 @@ typedef enum : uint16_t {
   k_battery_critical_mv = 3000, /**< Critical battery threshold (3.0V) */
 } battery_limits_t;
 
-static const float s_motor_thermal_shutdown_celsius = 85.0f;
+static const float s_motor_thermal_shutdown_celsius = 85.0F;
 
 if (battery_voltage_mv < k_battery_critical_mv) {
       system_enter_safe_mode();
@@ -6401,10 +6401,10 @@ gpio_config(&io_conf);
         BENCHMARK_START();
 
         float velocity_rpm;
-        star_encoder_get_velocity_rpm(&encoder, 1.0f, 500, &velocity_rpm);
+        star_encoder_get_velocity_rpm(&encoder, 1.0F, 500, &velocity_rpm);
 
         float output;
-        star_pid_compute(&pid, setpoint, velocity_rpm, 0.001f, &output);
+        star_pid_compute(&pid, setpoint, velocity_rpm, 0.001F, &output);
 
         star_motor_set_duty(&motor, output);
 

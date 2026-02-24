@@ -957,15 +957,15 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
  *   node [shape=box, style=rounded];
  *
  *   check [label="Check\nNULL ptr"];
- *   memset [label="Clear\nstructure"];
+ *   zero [label="Clear\nstructure"];
  *   mutex [label="Create\nTX_MUTEX"];
  *   flag [label="Set\ninitialized"];
  *   done [label="Return\nk_rx_ok"];
  *   err [label="Return\nerror"];
  *
  *   check -> err [label="NULL"];
- *   check -> memset [label="OK"];
- *   memset -> mutex;
+ *   check -> zero [label="OK"];
+ *   zero -> mutex;
  *   mutex -> err [label="fail"];
  *   mutex -> flag [label="OK"];
  *   flag -> done;
@@ -974,7 +974,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
  *
  * ## Memory Initialization
  *
- * The function uses memset to zero the entire structure, which:
+ * The function uses a static zero-initialized instance to clear the structure, which:
  * - Clears all reservation entries (reserved=false, function="")
  * - Prepares mutex memory for tx_mutex_create
  * - Sets initialized to false (then true after success)
@@ -1031,8 +1031,9 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
 {
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
 
-  /* Clear all state */
-  *validator = (pin_validator_t){0};
+  /* Clear all state using static zero instance (avoids 4KB+ compound literal on stack) */
+  static const pin_validator_t s_zero_validator = {0};
+  *validator = s_zero_validator;
 
   /* Create mutex */
   const UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);

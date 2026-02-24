@@ -374,19 +374,19 @@ typedef enum : uint8_t {
 } shared_data_internal_constants_t;
 
 /** @brief Default PID proportional gain -- Kp = 0.286 (from MATLAB motor_model_1st_order.m) */
-static const float s_default_pid_kp = 0.286f;
+static const float s_default_pid_kp = 0.286F;
 /** @brief Default PID integral gain -- Ki = 8.01 (from MATLAB pid_design_velocity.m) */
-static const float s_default_pid_ki = 8.01f;
+static const float s_default_pid_ki = 8.01F;
 /** @brief Default PID derivative gain -- Kd = 0.0 (not used) */
-static const float s_default_pid_kd = 0.0f;
+static const float s_default_pid_kd = 0.0F;
 /** @brief Default PID output lower limit (% duty cycle) */
-static const float s_default_pid_output_min = -100.0f;
+static const float s_default_pid_output_min = -100.0F;
 /** @brief Default PID output upper limit (% duty cycle) */
-static const float s_default_pid_output_max = 100.0f;
+static const float s_default_pid_output_max = 100.0F;
 /** @brief Default PID integral lower limit (anti-windup) */
-static const float s_default_pid_integral_min = -50.0f;
+static const float s_default_pid_integral_min = -50.0F;
 /** @brief Default PID integral upper limit (anti-windup) */
-static const float s_default_pid_integral_max = 50.0f;
+static const float s_default_pid_integral_max = 50.0F;
 
 /** @brief Log tag for this module (used by RX_CHECK_NULL_PTR) */
 static const char* const s_tag = "SDATA";
@@ -777,7 +777,7 @@ rx_err_t shared_data_init(void)
  * @code{.c}
  * // In communication task - received SetMotorVelocityRequest
  * motor_command_t cmd = {
- *     .target_velocity_mps = {1.0f, 1.0f, 1.0f, 1.0f},  // Forward 1 m/s
+ *     .target_velocity_mps = {1.0F, 1.0F, 1.0F, 1.0F},  // Forward 1 m/s
  *     .sequence = 42,
  *     .valid = true
  * };
@@ -795,7 +795,7 @@ rx_err_t shared_data_init(void)
  * @code{.c}
  * // Emergency stop all motors
  * motor_command_t stop_cmd = {
- *     .target_velocity_mps = {0.0f, 0.0f, 0.0f, 0.0f},
+ *     .target_velocity_mps = {0.0F, 0.0F, 0.0F, 0.0F},
  *     .sequence = next_seq++,
  *     .valid = true
  * };
@@ -1148,13 +1148,13 @@ rx_err_t shared_data_get_motor_state(motor_state_t* out_state)
  * @code{.c}
  * // In comm task - received SetPIDGainsRequest
  * pid_gains_t new_gains = {
- *     .kp = 0.35f,  // Increase proportional gain
- *     .ki = 8.01f,  // Keep integral gain
- *     .kd = 0.0f,   // No derivative
- *     .output_min = -100.0f,
- *     .output_max = 100.0f,
- *     .integral_min = -50.0f,
- *     .integral_max = 50.0f
+ *     .kp = 0.35F,  // Increase proportional gain
+ *     .ki = 8.01F,  // Keep integral gain
+ *     .kd = 0.0F,   // No derivative
+ *     .output_min = -100.0F,
+ *     .output_max = 100.0F,
+ *     .integral_min = -50.0F,
+ *     .integral_max = 50.0F
  * };
  *
  * rx_err_t err = shared_data_set_pid_gains(&new_gains);
@@ -1825,7 +1825,7 @@ rx_err_t shared_data_clear_estop(void)
  * if (shared_data_is_estop_active()) {
  *     // Disable all motor outputs immediately
  *     for (uint8_t i = 0; i < k_shared_max_motors; i++) {
- *         motor_set_duty(&motors[i], 0.0f);
+ *         motor_set_duty(&motors[i], 0.0F);
  *     }
  *     return;  // Skip PID control this cycle
  * }
@@ -2057,7 +2057,7 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
  * if (shared_data_get_temp(&temp) == k_rx_ok) {
  *     for (uint8_t i = 0; i < temp.sensor_count; i++) {
  *         if (temp.sensor_valid[i]) {
- *             telemetry_msg.temps[i] = temp.temperature_cdegc[i] / 100.0f;
+ *             telemetry_msg.temps[i] = temp.temperature_cdegc[i] / 100.0F;
  *         }
  *     }
  * }
@@ -2337,7 +2337,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
  *
  *     // Enter safe state
  *     for (uint8_t i = 0; i < k_shared_max_motors; i++) {
- *         motor_set_duty(&motors[i], 0.0f);
+ *         motor_set_duty(&motors[i], 0.0F);
  *     }
  *     return;  // Skip PID control this cycle
  * }
