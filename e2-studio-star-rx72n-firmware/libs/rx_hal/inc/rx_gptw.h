@@ -35,7 +35,7 @@
  * - Reduces conducted EMI by preventing simultaneous switching
  *
  * **Motor Control Integration**:
- * - Direct interface with DRV8243S H-bridge drivers
+ * - Direct interface with DRV8263H H-bridge drivers
  * - PH/EN control mode support (Phase/Enable)
  * - Glitch-free duty cycle updates on period boundary
  * - Fast raw duty cycle API for tight control loops
@@ -137,7 +137,7 @@
  *
  * **This module is used by**:
  * - `rx_motor.c` - Motor control driver
- * - `rx_drv8243.c` - H-bridge driver interface
+ * - `rx_drv8263.c` - H-bridge driver interface
  * - `app_main_task.c` - Motor control initialization
  *
  * @par NASA Power of 10 Compliance:
@@ -160,7 +160,7 @@
  * **Single Responsibility (S)**:
  * - This module handles ONLY GPTW PWM generation
  * - Motor control logic is in rx_motor.c
- * - H-bridge configuration is in rx_drv8243.c
+ * - H-bridge configuration is in rx_drv8263.c
  *
  * **Open/Closed (O)**:
  * - Extensible via rx_gptw_config_t structure
@@ -181,7 +181,7 @@
  * - Motor control depends on this interface, not hardware registers directly
  *
  * @see rx_motor.h Motor control driver using GPTW
- * @see rx_drv8243.h H-bridge driver interface
+ * @see rx_drv8263.h H-bridge driver interface
  * @see rx72n_gptw_regs.h Register definitions
  * @see RX72N Hardware Manual Section 26 - General PWM Timer
  * @see docs/sections/03_hardware_pinout.tex Pin assignments
@@ -216,7 +216,7 @@ extern "C" {
  * @details
  * Identifies the four GPTW timer channels used for motor PWM generation.
  * Each channel controls one motor through complementary A/B outputs connected
- * to a DRV8243S H-bridge driver.
+ * to a DRV8263H H-bridge driver.
  *
  * ## Channel Architecture
  *
@@ -316,16 +316,16 @@ typedef enum : uint8_t {
  *
  * ## PH/EN Mode (Phase/Enable)
  *
- * For DRV8243S H-bridge control in PH/EN mode:
+ * For DRV8263H H-bridge control in PH/EN mode:
  * - Output A: Connected to PH (Phase) input - controls direction
  * - Output B: Connected to EN (Enable) input - controls PWM duty
  *
  * @par H-Bridge Connection:
  *
- * | Output | DRV8243S Pin | Function | Signal Type |
+ * | Output | DRV8263H Pin | Function | Signal Type |
  * |--------|--------------|----------|-------------|
- * | Output A (GTIOCnA) | PH | Phase/Direction | Static HIGH/LOW |
- * | Output B (GTIOCnB) | EN | Enable/PWM | PWM waveform |
+ * | Output A (GTIOCnA) | IN2 | Direction (phase) | Static HIGH/LOW |
+ * | Output B (GTIOCnB) | IN1 | PWM (enable) | PWM waveform |
  *
  * @par Usage Example:
  * @code{.c}
@@ -354,15 +354,15 @@ typedef enum : uint8_t {
  *
  * @see rx_gptw_output_id() Type-safe wrapper constructor
  * @see rx_gptw_channel_t Channel selection
- * @see rx_drv8243.h H-bridge driver interface
+ * @see rx_drv8263.h H-bridge driver interface
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_gptw_output_a =
-    0, /**< GTIOCA output pin. Connected to DRV8243S PH (Phase) input in PH/EN mode. Controls motor direction: HIGH=forward, LOW=reverse */
+    0, /**< GTIOCA output pin. Connected to DRV8263H IN2 (direction) in PH/EN mode. Controls motor direction: HIGH=forward, LOW=reverse */
   k_gptw_output_b =
-    1, /**< GTIOCB output pin. Connected to DRV8243S EN (Enable) input in PH/EN mode. PWM duty cycle controls motor speed (0-100%) */
+    1, /**< GTIOCB output pin. Connected to DRV8263H IN1 (PWM/enable) in PH/EN mode. PWM duty cycle controls motor speed (0-100%) */
 } rx_gptw_output_t;
 
 /**
@@ -660,7 +660,7 @@ typedef struct {
    * At 120 MHz: 1000 ns = 120 counts
    *
    * @par Valid Range: [0, 65535] ns
-   * @par Recommended: 1000 ns (1 us) for DRV8243S
+   * @par Recommended: 1000 ns (1 us) for DRV8263H
    * @warning Too short may cause shoot-through; too long reduces efficiency
    */
   uint16_t deadtime_ns;
@@ -797,7 +797,7 @@ typedef struct {
  * @par Example (Complete Motor System Initialization):
  * @code{.c}
  * #include "rx_gptw.h"
- * #include "rx_drv8243.h"
+ * #include "rx_drv8263.h"
  * #include "rx_motor.h"
  *
  * rx_err_t motor_system_init(void)
@@ -818,9 +818,9 @@ typedef struct {
  *     }
  *
  *     // Initialize H-bridge drivers
- *     err = rx_drv8243_init_all();
+ *     err = rx_drv8263_init_all();
  *     if (err != k_rx_ok) {
- *         rx_log_error("MOTOR", "DRV8243 init failed: %d", err);
+ *         rx_log_error("MOTOR", "DRV8263H init failed: %d", err);
  *         return err;
  *     }
  *
@@ -854,7 +854,7 @@ typedef struct {
  * @see rx_gptw_init_pwm() Single channel initialization (not recommended for motors)
  * @see rx_gptw_set_duty() Set duty cycle after initialization
  * @see rx_gptw_deinit() Cleanup function
- * @see rx_drv8243_init_all() H-bridge driver initialization
+ * @see rx_drv8263_init_all() H-bridge driver initialization
  *
  * @since Version 1.0.0
  *

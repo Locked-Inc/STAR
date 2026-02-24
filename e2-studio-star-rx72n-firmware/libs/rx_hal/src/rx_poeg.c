@@ -6,7 +6,7 @@
  *
  * @details
  * Implements hardware-level emergency PWM output disable for the STAR
- * motor controller. Each of the 4 DRV8243 motor drivers has its nFAULT
+ * motor controller. Each of the 4 DRV8263H motor drivers has its nFAULT
  * output connected to a GTETRG pin, which feeds a POEG group. When a
  * fault is detected, POEG immediately disables GPTW PWM output (Hi-Z).
  *
@@ -234,7 +234,7 @@ static void internal_poeg_isr_handler(uint8_t motor_index, uint16_t vector)
  * @brief POEG Group A ISR (Motor 0, vector 188)
  *
  * @details
- * Handles fault interrupt from GTETRGA (P15 / DRV8243 Motor 0 nFAULT).
+ * Handles fault interrupt from GTETRGA (P15 / DRV8263H Motor 0 nFAULT).
  * GPTW0 PWM output has already been disabled by hardware before this ISR runs.
  *
  * @pre POEG Group A initialized via rx_poeg_init()

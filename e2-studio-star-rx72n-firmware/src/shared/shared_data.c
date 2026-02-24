@@ -458,7 +458,7 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  * @details
  * Centralized bus manager for all off-chip peripherals:
  * - **I2C:** MPU-6050 IMU
- * - **SPI:** Motor driver communication
+ * - **SPI:** RPi5 command/telemetry link (RSPI0)
  * - **1-Wire:** DS18B20 temperature sensors (4x)
  *
  * **Initialization:** hardware_init() configures bus manager before task creation

@@ -819,23 +819,23 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * @par Example - Register SPI Bus:
  * @code{.c}
  * // Allocate and configure (static allocation)
- * static rx_bus_config_t motor_spi = {
- *     .name = "motor_drv0",
+ * static rx_bus_config_t rpi5_spi = {
+ *     .name = "rpi5_link",
  *     .type = k_bus_type_spi,
  *     .proto.spi = {
  *         .channel = 0,
- *         .frequency_hz = 1000000,
+ *         .frequency_hz = 10000000,
  *         .mode = 0
  *     }
  * };
  *
  * // Register (manager links it)
- * rx_err_t err = rx_bus_manager_add_bus(&manager, &motor_spi);
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, &rpi5_spi);
  * if (err != k_rx_ok) {
- *     rx_log_error("MAIN", "Failed to add motor SPI: %d", err);
+ *     rx_log_error("MAIN", "Failed to add RPi5 SPI: %d", err);
  *     return err;
  * }
- * // motor_spi must remain valid until remove_bus or deinit
+ * // rpi5_spi must remain valid until remove_bus or deinit
  * @endcode
  *
  * @par Example - Error Handling:

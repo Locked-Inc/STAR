@@ -269,13 +269,13 @@ extern const pb_msgdesc_t star_v1_EStopCommand_msg;
 #define star_v1_EStopCommand_fields &star_v1_EStopCommand_msg
 
 /* Maximum encoded size of messages (where known) */
-#define star_v1_STAREnvelope_size                7536
-#define STAR_V1_STAR_V1_UI_PB_H_MAX_SIZE         star_v1_LidarScan_size
+#define STAR_V1_STAR_V1_UI_PB_H_MAX_SIZE         star_v1_STAREnvelope_size
 #define star_v1_Alert_size                       196
 #define star_v1_EStopCommand_size                79
 #define star_v1_LidarScan_size                   7511
 #define star_v1_MotorStatusList_size             264
 #define star_v1_OdometryData_size                56
+#define star_v1_STAREnvelope_size                7536
 
 #ifdef __cplusplus
 } /* extern "C" */

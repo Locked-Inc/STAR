@@ -499,25 +499,25 @@ tab:
 108 & PE3/GTIOC2A & Motor 2 IN2 & GPTW PWM channel 2A (32-bit) \\
 \hline
 \rowcolor{blue!20}
-109 & PE2/GTIOC0B & Motor 3 DRVOFF & DRV8243S motor 3 drive output disable (GPIO output) \\
+109 & PE2/GTIOC0B & Motor 3 DRVOFF & DRV8263H motor 3 drive output disable (GPIO output) \\
 \hline
 \rowcolor{blue!20}
-110 & PE1/GTIOC1B & Motor 3 nSLEEP & DRV8243S motor 3 sleep control (GPIO output, active-low) \\
+110 & PE1/GTIOC1B & Motor 3 nSLEEP & DRV8263H motor 3 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor{blue!20}
-111 & PE0/GTIOC2B & Motor 2 DRVOFF & DRV8243S motor 2 drive output disable (GPIO output) \\
+111 & PE0/GTIOC2B & Motor 2 DRVOFF & DRV8263H motor 2 drive output disable (GPIO output) \\
 \hline
 \rowcolor{blue!20}
-112 & P64 & Motor 2 nSLEEP & DRV8243S motor 2 sleep control (GPIO output, active-low) \\
+112 & P64 & Motor 2 nSLEEP & DRV8263H motor 2 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor{blue!20}
-113 & P63 & Motor 1 DRVOFF & DRV8243S motor 1 drive output disable (GPIO output) \\
+113 & P63 & Motor 1 DRVOFF & DRV8263H motor 1 drive output disable (GPIO output) \\
 \hline
 \rowcolor{blue!20}
-114 & P62 & Motor 1 nSLEEP & DRV8243S motor 1 sleep control (GPIO output, active-low) \\
+114 & P62 & Motor 1 nSLEEP & DRV8263H motor 1 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor{blue!20}
-115 & P61 & Motor 0 DRVOFF & DRV8243S motor 0 drive output disable (GPIO output) \\
+115 & P61 & Motor 0 DRVOFF & DRV8263H motor 0 drive output disable (GPIO output) \\
 \hline
 \rowcolor {
   gray!15
@@ -525,7 +525,7 @@ tab:
 116 & VSS & Ground &Power supply \\
 \hline
 \rowcolor{blue!20}
-117 & P60 & Motor 0 nSLEEP & DRV8243S motor 0 sleep control (GPIO output, active-low) \\
+117 & P60 & Motor 0 nSLEEP & DRV8263H motor 0 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor {
   gray!15
@@ -580,25 +580,25 @@ tab:
 \hline
 \rowcolor { red!15}
 133 & P47 / AN007 &Motor 0 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8243S) \\
+    2.0A max(IPROPI from DRV8263H) \\
 \hline
 \rowcolor {
   red!15
 }
 134 & P46 / AN006 &Motor 1 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8243S) \\
+    2.0A max(IPROPI from DRV8263H) \\
 \hline
 \rowcolor {
   red!15
 }
 135 & P45 / AN005 &Motor 2 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8243S) \\
+    2.0A max(IPROPI from DRV8263H) \\
 \hline
 \rowcolor {
   red!15
 }
 136 & P44 / AN004 &Motor 3 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8243S) \\
+    2.0A max(IPROPI from DRV8263H) \\
 \hline
 137 & P43 & Unused &Available GPIO(IRQ11, AN003) \\
 \hline
@@ -659,7 +659,7 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \item \textbf{Perfect match
 } for
 4 motors in Phase / Enable(PH / EN) control mode
-    \item Each motor driver(DRV8243S)
+    \item Each motor driver(DRV8263H)
       requires exactly 2
     PWM signals
 \end{itemize}
@@ -832,7 +832,7 @@ The DS18B20+ is a digital 1-Wire temperature sensor connected to P51 (pin 55).
 \textbf{Use Cases:}
 \begin{itemize}
     \item Ambient temperature monitoring
-    \item Motor driver thermal management (supplement DRV8243S internal temp)
+    \item Motor driver thermal management (supplement DRV8263H internal temp)
     \item System enclosure temperature
 \end{itemize}
 
@@ -865,7 +865,7 @@ The IMU is connected to the RX72N via I2C with a dedicated interrupt and reset l
 
 \subsection{Motor Driver Control Architecture}
 
-The DRV8243S motor drivers are controlled via three interfaces:
+The DRV8263H motor drivers are controlled via three interfaces:
 
 \textbf{Real-Time Control (PWM):}
 \begin{itemize}

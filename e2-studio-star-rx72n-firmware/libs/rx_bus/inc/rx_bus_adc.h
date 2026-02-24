@@ -45,7 +45,7 @@
  *     label="ADC Hardware";
  *     style=filled;
  *     color=lightcoral;
- *     current [label="Motor Current\nDRV8243 IPROPI"];
+ *     current [label="Motor Current\nDRV8263H IPROPI"];
  *     voltage [label="Motor Power Rail\nVoltage Divider"];
  *     temp [label="Temperature\nInternal Sensor"];
  *     analog [label="Analog Sensors\n0-3.3V"];
@@ -170,13 +170,13 @@
  * @par Channel Assignments (STAR Project - 144-pin LFQFP)
  * | Unit | Channel | Pin | Signal | Range | Notes |
  * |------|---------|-----|--------|-------|-------|
- * | S12AD0 | AN007 | P47 | Motor 0 Current | 0-3.3V | DRV8243 IPROPI |
- * | S12AD0 | AN006 | P46 | Motor 1 Current | 0-3.3V | DRV8243 IPROPI |
- * | S12AD0 | AN005 | P45 | Motor 2 Current | 0-3.3V | DRV8243 IPROPI |
- * | S12AD0 | AN004 | P44 | Motor 3 Current | 0-3.3V | DRV8243 IPROPI |
+ * | S12AD0 | AN007 | P47 | Motor 0 Current | 0-3.3V | DRV8263H IPROPI |
+ * | S12AD0 | AN006 | P46 | Motor 1 Current | 0-3.3V | DRV8263H IPROPI |
+ * | S12AD0 | AN005 | P45 | Motor 2 Current | 0-3.3V | DRV8263H IPROPI |
+ * | S12AD0 | AN004 | P44 | Motor 3 Current | 0-3.3V | DRV8263H IPROPI |
  *
- * @par Current Sensing (DRV8243 IPROPI)
- * The DRV8243 motor driver outputs a current proportional voltage on IPROPI:
+ * @par Current Sensing (DRV8263H IPROPI)
+ * The DRV8263H motor driver outputs a current proportional voltage on IPROPI:
  * - **Current ratio**: 1000:1 (1mA output per 1A load current)
  * - **Sense resistor**: 4990 Ohm (1% tolerance)
  * - **Conversion**: I_motor = (V_IPROPI / 4990 Ohm) x 1000
@@ -635,7 +635,7 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  *
  * @par Example - Motor Current Measurement:
  * @code
- * // Read motor current via DRV8243 IPROPI output
+ * // Read motor current via DRV8263H IPROPI output
  * uint32_t ipropi_mv = 0;
  * rx_err_t err = rx_bus_adc_read_voltage_mv(&manager, "motor0_current", &ipropi_mv);
  * if (err == k_rx_ok) {

@@ -491,7 +491,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * ## Use Cases
  *
  * ADC buses are used for:
- * - **Motor current sensing**: DRV8243 analog current feedback (12-bit, +/-2% accuracy)
+ * - **Motor current sensing**: DRV8263H analog current feedback (12-bit, +/-2% accuracy)
  * - **Power rail monitoring**: Voltage divider ADC measurement (10-bit sufficient)
  * - **Temperature sensing**: Analog temperature sensors (8-10 bit)
  * - **Position sensing**: Analog potentiometers for position feedback
@@ -576,7 +576,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * @par Example - Motor Current Sensing:
  * @code{.c}
- * // DRV8243 motor 0 current sense (12-bit for +/-1% accuracy)
+ * // DRV8263H motor 0 current sense (12-bit for +/-1% accuracy)
  * rx_bus_config_t motor0_isense_cfg;
  * rx_err_t err = rx_bus_config_init_adc(
  *     &motor0_isense_cfg,

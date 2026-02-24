@@ -36,7 +36,7 @@
  * | Multi-channel | Yes | Multiple independent PWM channels |
  * | Call history | Yes | Verifies function call sequences |
  *
- * @par Usage: tests/test_rx_motor.c, tests/test_rx_drv8243.c
+ * @par Usage: tests/test_rx_motor.c, tests/test_rx_drv8263.c
  *
  * @see rx_gptw.h Real GPTW driver interface
  * @see tests/test_rx_motor.c Motor control tests

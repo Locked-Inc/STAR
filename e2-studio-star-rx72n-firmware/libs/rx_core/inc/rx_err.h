@@ -342,11 +342,11 @@ typedef int32_t rx_err_t;
  *         return err;
  *     }
  *
- *     // Initialize SPI for motor drivers
+ *     // Initialize SPI for RPi5 communication
  *     err = init_spi();
  *     if (err != k_rx_ok) {
  *         if (err == k_rx_err_spi_error) {
- *             rx_log_error("MOTOR", "SPI initialization failed");
+ *             rx_log_error("SPI", "SPI initialization failed");
  *         }
  *         return err;
  *     }

@@ -69,7 +69,7 @@
  * | **GPIO** | I/O Ports | N/A | Digital I/O, LEDs, buttons |
  * | **ADC** | S12ADFa | ~1 us/sample | Current sensing, analog inputs |
  * | **I2C** | RIIC | 100-1000 kHz | Sensors, EEPROMs |
- * | **SPI** | RSPI | 1-15 MHz | Motor drivers, fast sensors |
+ * | **SPI** | RSPI | 1-15 MHz | RPi5 communication, sensors |
  * | **UART** | SCI | 9.6-921.6 kbps | Debug console, RS-485 |
  * | **1-Wire** | GPIO bit-bang | ~15 kbps | Temperature sensors |
  *
@@ -393,23 +393,23 @@ extern "C" {
  * @par Example - Register SPI Bus:
  * @code{.c}
  * // Allocate and configure
- * rx_bus_config_t* motor_spi = malloc(sizeof(rx_bus_config_t));
- * memset(motor_spi, 0, sizeof(rx_bus_config_t));
- * motor_spi->name = "motor_drv0";
- * motor_spi->type = k_bus_type_spi;
- * motor_spi->proto.spi = (rx_spi_bus_config_t){
+ * rx_bus_config_t* rpi5_spi = malloc(sizeof(rx_bus_config_t));
+ * memset(rpi5_spi, 0, sizeof(rx_bus_config_t));
+ * rpi5_spi->name = "rpi5_link";
+ * rpi5_spi->type = k_bus_type_spi;
+ * rpi5_spi->proto.spi = (rx_spi_bus_config_t){
  *     .channel = 0,
- *     .frequency_hz = 1000000,
+ *     .frequency_hz = 10000000,
  *     .mode = 0
  * };
  *
  * // Register (manager takes ownership)
- * rx_err_t err = rx_bus_manager_add_bus(&manager, motor_spi);
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, rpi5_spi);
  * if (err != k_rx_ok) {
- *     free(motor_spi);  // Only free on registration failure
+ *     free(rpi5_spi);  // Only free on registration failure
  *     return err;
  * }
- * // motor_spi now owned by manager - do not free
+ * // rpi5_spi now owned by manager - do not free
  * @endcode
  *
  * @see rx_bus_manager_remove_bus() Unregister and free bus
@@ -668,7 +668,7 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  *
  * rx_err_t set_motor(rx_bus_config_t* bus, void* ctx) {
  *     motor_cmd_t* cmd = (motor_cmd_t*)ctx;
- *     return drv8243_set_pwm(bus, cmd->duty_cycle, cmd->enable);
+ *     return drv8263_set_pwm(bus, cmd->duty_cycle, cmd->enable);
  * }
  *
  * motor_cmd_t cmd = { .duty_cycle = 128, .enable = true };

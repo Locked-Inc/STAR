@@ -138,7 +138,7 @@ User -> UI (TypeScript)
 - **Main Controller:** Raspberry Pi 5
 - **Motor Controller:** Renesas RX72N (4MB Flash, 512KB SRAM)
 - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
-- **Motor Drivers:** DRV8243S H-bridge with current sensing
+- **Motor Drivers:** DRV8263H H-bridge with current sensing
 - **Lidar:** RPLiDAR C1 (12m range, IP54)
 - **Communication:** 10 Mbps SPI (RPi5 <-> RX72N) with nanopb + CRC-32
 

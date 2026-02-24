@@ -6,13 +6,13 @@
  *
  * @details
  * Provides hardware-level emergency PWM output disable via the POEG module.
- * When a DRV8243 motor driver asserts its nFAULT output (active low), the
+ * When a DRV8263H motor driver asserts its nFAULT output (active low), the
  * corresponding GTETRG pin triggers POEG to immediately disable GPTW PWM
  * outputs, placing the H-bridge in a safe Hi-Z state.
  *
  * @par System Architecture
  * @verbatim
- *  DRV8243 nFAULT (active low)
+ *  DRV8263H nFAULT (active low)
  *       |
  *       v
  *  GTETRG pin --> POEG (PIDF flag) --> GPTW output disable (Hi-Z)
@@ -96,11 +96,11 @@ typedef enum : uint8_t {
  * Configures POEG Groups A-D for hardware motor fault protection:
  * 1. Enables external pin detection (PIDE) on each group
  * 2. Enables noise filter (NFEN) with PCLKB/8 sampling (~400ns)
- * 3. Inverts input (INV) since DRV8243 nFAULT is active-low
+ * 3. Inverts input (INV) since DRV8263H nFAULT is active-low
  * 4. Links each GPTW channel to its POEG group via GTINTAD
  * 5. Configures ICU interrupts for vectors 188-191 at priority 14
  *
- * After initialization, a DRV8243 fault will:
+ * After initialization, a DRV8263H fault will:
  * - Immediately disable GPTW PWM output (hardware, ~nanoseconds)
  * - Fire POEG ISR which sets fault flags in shared_data
  *
@@ -164,7 +164,7 @@ rx_err_t rx_poeg_get_fault_status(uint8_t motor_index, bool* fault_active);
  * @details
  * Attempts to clear the PIDF flag for the specified motor's POEG group.
  * The flag can only be cleared when the underlying fault condition has
- * been resolved (i.e., DRV8243 nFAULT deasserted / GTETRG pin high).
+ * been resolved (i.e., DRV8263H nFAULT deasserted / GTETRG pin high).
  *
  * After clearing, GPTW output re-enables at the end of the next GPTW
  * counting cycle (delay of up to 1 PWM period, typically 50us at 20kHz).
@@ -176,7 +176,7 @@ rx_err_t rx_poeg_get_fault_status(uint8_t motor_index, bool* fault_active);
  * @retval k_rx_err_invalid_arg motor_index >= 4
  * @retval k_rx_err_busy Fault condition still active (nFAULT still asserted)
  *
- * @pre Underlying fault resolved (DRV8243 nFAULT deasserted)
+ * @pre Underlying fault resolved (DRV8263H nFAULT deasserted)
  * @post If successful, PIDF flag cleared and GPTW output will re-enable
  * @post shared_data fault_flags[motor_index] cleared
  *

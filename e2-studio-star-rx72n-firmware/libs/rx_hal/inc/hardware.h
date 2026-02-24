@@ -18,7 +18,7 @@
  * | **CMT** | 4 channels | ThreadX system tick (100 Hz) | CMT0 configured for 10ms intervals |
  * | **S12AD** | 2 units (0-1) | Motor current sensing, analog inputs | 8/10/12-bit resolution |
  * | **RIIC** | 3 channels (0-2) | I2C sensors (IMU, temperature) | 100kHz, 400kHz, 1MHz |
- * | **RSPI** | 3 channels (0-2) | SPI: RPi5 comm (peripheral), DRV8243 (controller) | Mode 0-3, 100kHz-10MHz |
+ * | **RSPI** | 3 channels (0-2) | SPI: RPi5 comm (peripheral), sensors (controller) | Mode 0-3, 100kHz-10MHz |
  * | **SCI** | 13 channels (0-12) | UART: Debug (SCI9 @ 115200), expansion | Configurable baud rates |
  *
  * ## Hardware Architecture
@@ -44,7 +44,7 @@
  *   subgraph cluster_external {
  *     label="External Hardware";
  *     rpi [label="Raspberry Pi 5\n(SPI Peripheral)"];
- *     drv [label="DRV8243 x4\n(Motor Drivers)"];
+ *     drv [label="DRV8263H x4\n(Motor Drivers)"];
  *     imu [label="IMU\n(I2C Sensor)"];
  *     uart_bridge [label="CY7C65213\n(USB-UART Bridge)"];
  *   }
@@ -157,7 +157,7 @@
  *   gpio_set_output(k_port_c_pin_0);  // Motor enable
  *   gpio_set_output(k_port_c_pin_1);  // Direction
  *
- *   // 4. SPI controller (for DRV8243 motor drivers)
+ *   // 4. SPI controller (for sensors; DRV8263H uses PWM+GPIO, not SPI)
  *   rspi_controller_config_t spi_cfg = {
  *     .spi_mode = k_rspi_mode_0,
  *     .freq_hz = 1000000,  // 1 MHz
@@ -193,9 +193,9 @@
  * | SPI0_COPI | P31 | RSPI0 | RPi5 -> RX72N |
  * | SPI0_CLK | P32 | RSPI0 | RPi5 clock |
  * | SPI0_CS | P33 | GPIO | RPi5 chip select |
- * | SPI1_CIPO | PC5 | RSPI1 | DRV8243 -> RX72N (controller mode) |
- * | SPI1_COPI | PC6 | RSPI1 | DRV8243 <- RX72N |
- * | SPI1_CLK | PC7 | RSPI1 | DRV8243 clock |
+ * | SPI1_CIPO | PC5 | RSPI1 | Reserved (RSPI1 controller mode) |
+ * | SPI1_COPI | PC6 | RSPI1 | Reserved (RSPI1 controller mode) |
+ * | SPI1_CLK | PC7 | RSPI1 | Reserved (RSPI1 clock) |
  * | DRV_CS* | PC4,PC3,PC2,PC1 | GPIO | Motor driver chip selects |
  * | UART_TX | PB7 | SCI9 | Debug output (CY7C65213) |
  * | UART_RX | PB6 | SCI9 | Debug input |
@@ -595,8 +595,8 @@ extern "C" {
  * ## STAR Project Usage (144-pin LFQFP)
  * | Unit | Channel | Pin | Signal | Purpose |
  * |------|---------|-----|--------|---------|
- * | k_adc_unit_0 | k_adc_channel_7 | P47 | MOTOR_I0 | Motor 0 current sense (DRV8243 IPROPI) |
- * | k_adc_unit_0 | k_adc_channel_6 | P46 | MOTOR_I1 | Motor 1 current sense (DRV8243 IPROPI) |
+ * | k_adc_unit_0 | k_adc_channel_7 | P47 | MOTOR_I0 | Motor 0 current sense (DRV8263H IPROPI) |
+ * | k_adc_unit_0 | k_adc_channel_6 | P46 | MOTOR_I1 | Motor 1 current sense (DRV8263H IPROPI) |
  * | k_adc_unit_0 | k_adc_channel_5 | P45 | MOTOR_I2 | Motor 2 current sense |
  * | k_adc_unit_0 | k_adc_channel_4 | P44 | MOTOR_I3 | Motor 3 current sense |
  *
@@ -1032,13 +1032,13 @@ typedef struct {
  * | 0 | 0 | 0 | Low | Rising edge | Falling edge | RPi5, most sensors |
  * | 1 | 0 | 1 | Low | Falling edge | Rising edge | SD cards |
  * | 2 | 1 | 0 | High | Falling edge | Rising edge | Rare |
- * | 3 | 1 | 1 | High | Rising edge | Falling edge | DRV8243 motor drivers |
+ * | 3 | 1 | 1 | High | Rising edge | Falling edge | DRV8263H motor drivers |
  *
  * ## STAR Project Usage
  * | Peripheral | Mode | Rationale |
  * |------------|------|-----------|
  * | RPi5 (RSPI0 peripheral) | Mode 0 | Linux spidev default, maximum compatibility |
- * | DRV8243 (RSPI1 controller) | Mode 0 or 3 | DRV8243 supports both, Mode 0 preferred for consistency |
+ * | Reserved (RSPI1 controller) | Mode 0 or 3 | DRV8263H has no SPI; RSPI1 available for future sensors |
  *
  * ## Clock Polarity (CPOL)
  * - **CPOL=0**: Clock idle state is low (GND). Clock starts low, pulses high.
@@ -1088,7 +1088,7 @@ typedef struct {
  *
  * // Motor driver communication (controller mode, Mode 0)
  * rspi_controller_config_t drv_cfg = {
- *   .spi_mode = k_rspi_mode_0,  // Match DRV8243 datasheet
+ *   .spi_mode = k_rspi_mode_0,  // Standard SPI mode 0
  *   .freq_hz = 1000000,         // 1 MHz
  *   .cs = k_port_c_pin_4
  * };
@@ -1192,7 +1192,7 @@ typedef struct {
  * @brief RSPI controller mode configuration structure
  *
  * Configuration for initializing RSPI in controller mode.
- * Used for communicating with SPI peripheral devices like DRV8243.
+ * Used for communicating with SPI peripheral devices (sensors, etc.).
  */
 typedef struct {
   rspi_mode_t   spi_mode; /**< SPI mode (0-3): CPOL and CPHA configuration */
@@ -1204,7 +1204,7 @@ typedef struct {
  * @brief Initialize SPI controller for external device communication
  *
  * Configures the specified RSPI channel as SPI controller
- * for communicating with external SPI devices like motor drivers.
+ * for communicating with external SPI devices (sensors, etc.).
  *
  * @param[in] channel RSPI channel (0-2)
  * @param[in] config Controller configuration (frequency, mode, CS pin)
@@ -1234,7 +1234,7 @@ typedef struct {
  * @brief Perform 16-bit full-duplex SPI transfer in controller mode
  *
  * Executes a single 16-bit SPI transfer including CS assertion/deassertion.
- * Suitable for register-based communication with devices like DRV8243.
+ * Suitable for register-based communication with devices like DRV8263H.
  *
  * @param[in]  channel RSPI channel (0-2)
  * @param[in]  tx_data 16-bit data to transmit

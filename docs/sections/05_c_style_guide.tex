@@ -5439,7 +5439,7 @@ int16_t cell_temp_deci_celsius = 235;  /* 23.5 degrees C */
 #define MOTOR_THERMAL_SHUTDOWN_CELSIUS (85.0f)
 
 if (motor_temp_celsius > MOTOR_THERMAL_SHUTDOWN_CELSIUS) {
-      star_drv8243_stop(&motor, true); /* Emergency brake */
+      star_drv8263_stop(&motor, true); /* Emergency brake */
 }
 
 /* WRONG */
@@ -5470,7 +5470,7 @@ uint64_t timestamp;         /* What resolution? */
 \begin{lstlisting}[language=C]
 /* CORRECT - Electrical units */
 uint32_t motor_current_ma;
-star_drv8243_read_current(&motor, &motor_current_ma);
+star_drv8263_read_current(&motor, &motor_current_ma);
 
 uint32_t cell_voltage_mv = 3700;   /* 3.7V in millivolts */
 uint32_t pack_voltage_mv = 11100;  /* 11.1V (3S LiPo) */
@@ -5481,7 +5481,7 @@ uint32_t power_mw = 7400;          /* 7.4W in milliwatts */
 
 if (motor_current_ma > MAX_MOTOR_CURRENT_MA) {
       ESP_LOGW(s_TAG, "Motor current limit exceeded: %lu mA", motor_current_ma);
-      star_drv8243_set_speed(&motor, 0.0f);
+      star_drv8263_set_speed(&motor, 0.0f);
 }
 
 /* WRONG */
@@ -5498,7 +5498,7 @@ float duty_cycle_percent = 75.0f;      /* 75% duty cycle */
 uint8_t battery_soc_percent = 85;      /* 85% state of charge */
 float throttle_percent = 50.0f;        /* 50% throttle */
 
-star_drv8243_set_speed(&motor, duty_cycle_percent);
+star_drv8263_set_speed(&motor, duty_cycle_percent);
 
 /* WRONG */
 float duty_cycle = 0.75f;    /* Normalized (0-1)? Percentage (0-100)? */
@@ -6165,7 +6165,7 @@ rx_err_t read_temperature_safe(float* temp_celsius)
 rx_err_t ret = read_temperature_safe(&motor_temp);
 if (ret != RX_OK) {
       /* Sensor failed - enter safe state */
-      star_drv8243_stop(&motor, true);
+      star_drv8263_stop(&motor, true);
       system_enter_safe_mode();
 }
 
@@ -6181,7 +6181,7 @@ void system_enter_safe_mode(void)
 
       /* Stop all motors */
       for (int i = 0; i < NUM_MOTORS; i++) {
-        star_drv8243_stop(&motors[i], true); /* Brake */
+        star_drv8263_stop(&motors[i], true); /* Brake */
      }
 
       /* Disable all actuators */

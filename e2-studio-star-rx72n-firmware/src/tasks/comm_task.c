@@ -1612,6 +1612,7 @@ static void internal_comm_task_entry(ULONG input)
  */
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx)
 {
+  (void)channel;
   (void)ctx;
 
   if (frame == nullptr) {
