@@ -8,7 +8,7 @@
  * Comprehensive test suite for the GPTW-based motor control driver providing
  * exhaustive coverage of motor initialization, bidirectional PWM control,
  * duty cycle management, brake/coast modes, and safety features. Tests verify
- * the PH/EN (Phase/Enable) motor control scheme used with DRV8243 H-bridge drivers.
+ * the PH/EN motor control scheme (IN2/IN1 pins) used with DRV8263H H-bridge drivers.
  *
  * ## Test Coverage Summary
  *
@@ -37,7 +37,7 @@
  *
  * ## Functional Coverage Matrix
  *
- * @par PH/EN Motor Control (DRV8243):
+ * @par PH/EN Motor Control (DRV8263H):
  * | Feature | Tested | Coverage |
  * |---------|--------|----------|
  * | PH = 100%, EN = duty -> Forward | [OK] | 0-100% tested |
@@ -119,7 +119,7 @@
  * ## Hardware Integration
  *
  * @par Physical Hardware:
- * - **Motor Driver:** DRV8243S H-bridge
+ * - **Motor Driver:** DRV8263H H-bridge
  * - **Control Mode:** PH/EN (Phase/Enable) PWM
  * - **MCU Timer:** RX72N GPTW
  * - **PWM Frequency:** 20kHz typical
@@ -129,7 +129,7 @@
  * @see rx_motor.h for motor control API
  * @see rx_motor.c for implementation
  * @see rx_gptw.h for GPTW hardware interface
- * @see rx_drv8243.h for H-bridge driver
+ * @see rx_drv8263.h for H-bridge driver
  * @see mock_rx_gptw.h for mock implementation
  *
  * @author STAR Team
@@ -405,7 +405,7 @@ void test_motor_set_duty_forward_50_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, 50.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* PH/EN mode: PH (output_a) = 100% for forward, EN (output_b) = speed */
+  /* PH/EN mode: IN2 (output_a) = 100% for forward, IN1 (output_b) = speed */
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
                            100.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
@@ -473,7 +473,7 @@ void test_motor_set_duty_reverse_50_percent(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, -50.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* PH/EN mode: PH (output_a) = 0% for reverse, EN (output_b) = speed */
+  /* PH/EN mode: IN2 (output_a) = 0% for reverse, IN1 (output_b) = speed */
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
                            0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));

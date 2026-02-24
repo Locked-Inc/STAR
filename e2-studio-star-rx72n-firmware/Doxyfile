@@ -285,7 +285,6 @@ INCLUDE_PATH            = src/inc \
                           libs/rx_spi_link/inc \
                           libs/rx_usb/inc \
                           libs/rx_usb_comm/inc \
-                          libs/rx_drv8243/inc \
                           libs/rx_ds18b20/inc \
                           libs/rx_bq4050/inc \
                           libs/rx_hcsr04/inc \

@@ -22,7 +22,7 @@
  *   rankdir=LR;
  *   test [label="Obstacle Detection\nNavigation Tests"];
  *   mock [label="Mock Motor\n(velocity tracking)"];
- *   real [label="Real Motor\nDRV8243+PWM", style=dashed];
+ *   real [label="Real Motor\nDRV8263H+PWM", style=dashed];
  *   test -> mock [label="Set velocity"];
  *   mock -> real [style=dashed, label="(replaced)"];
  * }

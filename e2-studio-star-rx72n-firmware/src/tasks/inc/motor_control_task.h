@@ -10,7 +10,7 @@
  * - Run PID control loop at 250 Hz (4 ms period)
  * - Read encoder feedback from MTU quadrature inputs
  * - Compute PID output for each motor
- * - Command H-bridge drivers via PWM (PH/EN mode)
+ * - Command DRV8263H drivers via PWM (PH/EN mode, IN2/IN1 pins)
  * - Monitor motor faults (overcurrent, stall detection)
  * - Handle emergency stop conditions
  *

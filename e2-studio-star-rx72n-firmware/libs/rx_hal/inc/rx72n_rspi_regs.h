@@ -28,16 +28,10 @@
  *   }
  *
  *   rpi5 [label="Raspberry Pi 5\n(Controller)"];
- *   drv0 [label="DRV8243 #0\n(Motor Driver)"];
- *   drv1 [label="DRV8243 #1\n(Motor Driver)"];
- *   drv2 [label="DRV8243 #2\n(Motor Driver)"];
- *   drv3 [label="DRV8243 #3\n(Motor Driver)"];
+ *   future [label="Future SPI\nSensors"];
  *
  *   rpi5 -> rspi0 [label="10 Mbps\nCommand/Telemetry"];
- *   rspi1 -> drv0 [label="5 Mbps"];
- *   rspi1 -> drv1;
- *   rspi1 -> drv2;
- *   rspi1 -> drv3;
+ *   rspi1 -> future [label="Reserved", style=dashed];
  * }
  * @enddot
  *
@@ -45,7 +39,7 @@
  * | Channel | Base Address | Mode       | Target           | Speed    | Purpose                |
  * |---------|--------------|------------|------------------|----------|------------------------|
  * | RSPI0   | 0x000D0100   | Peripheral | Raspberry Pi 5   | 10 Mbps  | Command/telemetry      |
- * | RSPI1   | 0x000D0140   | Controller | DRV8243 (x4)     | 5 Mbps   | Motor driver control   |
+ * | RSPI1   | 0x000D0140   | Controller | Reserved          | 5 Mbps   | Available (DRV8263H has no SPI) |
  * | RSPI2   | 0x000D0300   | Reserved   | -                | -        | Future expansion       |
  *
  * @par Key Features
@@ -59,13 +53,13 @@
  * - Mode fault detection for multi-controller configurations
  *
  * @par Hardware Requirements
- * | Parameter      | RSPI0 (RPi5)     | RSPI1 (Motors)   |
+ * | Parameter      | RSPI0 (RPi5)     | RSPI1 (Reserved) |
  * |----------------|------------------|------------------|
  * | PCLKB          | 60 MHz           | 60 MHz           |
  * | Max Bit Rate   | 30 Mbps          | 30 Mbps          |
  * | Configured     | 10 Mbps          | 5 Mbps           |
  * | Data Width     | 8 bits           | 16 bits          |
- * | CPOL/CPHA      | 0/0              | Per DRV8243 spec |
+ * | CPOL/CPHA      | 0/0              | Default (no SPI device) |
  *
  * @par Memory Map (per channel)
  * | Offset | Size | Register | Description                       |
@@ -194,13 +188,13 @@ typedef enum : uint32_t {
   /**
    * @brief RSPI1 register base address (0x000D0140)
    * @details
-   * Used for DRV8243 motor driver communication in controller mode at 5 Mbps.
+   * Reserved for future SPI peripherals in controller mode (DRV8263H has no SPI).
    * Directly follows RSPI0 in memory (0x40 byte offset).
    * @par Pin Assignments:
-   * - RSPCKB: PE5/RSPCKB (clock output to drivers)
-   * - MOSIB: PE6/MOSIB (RX72N hardware name) -> COPI (project name) - data to drivers
-   * - MISOB: PE7/MISOB (RX72N hardware name) -> CIPO (project name) - data from drivers
-   * - SSLB0-3: Individual chip selects for 4 motor drivers
+   * - RSPCKB: PE5/RSPCKB (clock output to peripherals)
+   * - MOSIB: PE6/MOSIB (RX72N hardware name) -> COPI (project name) - data out
+   * - MISOB: PE7/MISOB (RX72N hardware name) -> CIPO (project name) - data in
+   * - SSLB0-3: Individual chip selects (available for future sensors)
    */
   k_rspi1_base_addr = 0x000D0140,
 
@@ -280,7 +274,7 @@ typedef enum : uint32_t {
  *
  * @par Initialization Example (Controller Mode - Motor Drivers)
  * @code{.c}
- * // Configure RSPI1 for 5 Mbps controller mode (DRV8243 drivers)
+ * // Configure RSPI1 for 5 Mbps controller mode (reserved for sensors)
  * volatile rx_rspi_regs_t* spi = rspi1();
  *
  * // 1. Disable RSPI before configuration
@@ -289,8 +283,8 @@ typedef enum : uint32_t {
  * // 2. Configure bit rate for 5 Mbps (PCLKB=60MHz, n=5: 60/(2*(5+1))=5MHz)
  * spi->spbr = 5;
  *
- * // 3. Configure command register 0 for 16-bit transfers (DRV8243 protocol)
- * //    SPB[3:0]=1111 (16 bits), CPOL=0, CPHA=1 per DRV8243 datasheet
+ * // 3. Configure command register 0 for 16-bit transfers (DRV8263H protocol)
+ * //    SPB[3:0]=1111 (16 bits), CPOL=0, CPHA=1 for 16-bit SPI device
  * spi->spcmd0 = 0x0F02;
  *
  * // 4. Enable RSPI in controller mode
@@ -415,7 +409,7 @@ typedef struct __attribute__((packed)) {
    * @par Calculation Examples (PCLKB = 60 MHz):
    * - SPBR=0: 30 MHz (maximum)
    * - SPBR=2: 10 MHz (RPi5 communication)
-   * - SPBR=5: 5 MHz (DRV8243 motor drivers)
+   * - SPBR=5: 5 MHz (reserved for future SPI peripherals)
    * - SPBR=29: 1 MHz
    * @note Only used in controller mode; ignored in peripheral mode
    */
@@ -519,12 +513,12 @@ static inline volatile rx_rspi_regs_t* rspi0(void)
 }
 
 /**
- * @brief Get pointer to RSPI1 registers (DRV8243 motor driver communication)
+ * @brief Get pointer to RSPI1 registers (reserved for future SPI peripherals)
  *
  * @details
  * Returns a volatile pointer to the RSPI1 register structure at address
- * 0x000D0140. RSPI1 is configured as a controller for communication
- * with four DRV8243 motor drivers at 5 Mbps.
+ * 0x000D0140. RSPI1 is available for future SPI peripherals
+ * (not currently used; DRV8263H motor drivers use PWM+GPIO, not SPI).
  *
  * @return Volatile pointer to RSPI1 register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
@@ -542,7 +536,7 @@ static inline volatile rx_rspi_regs_t* rspi0(void)
  * @endcode
  *
  * @see k_rspi1_base_addr Base address constant
- * @see rx_drv8243_init() Motor driver initialization
+ * @see rspi0() Primary SPI channel (RPi5 communication)
  * @since Version 1.0.0
  */
 static inline volatile rx_rspi_regs_t* rspi1(void)
@@ -605,7 +599,7 @@ static inline volatile rx_rspi_regs_t* rspi2(void)
  * // Peripheral mode with receive/transmit interrupts (RPi5 communication)
  * rspi0()->spcr = k_rspi_spcr_spe | k_rspi_spcr_sprie | k_rspi_spcr_sptie;
  *
- * // Controller mode with transmit interrupt (motor drivers)
+ * // Controller mode with transmit interrupt (future SPI sensors)
  * rspi1()->spcr = k_rspi_spcr_spe | k_rspi_spcr_mstr | k_rspi_spcr_sptie;
  *
  * // Disable RSPI before reconfiguration
@@ -651,7 +645,7 @@ typedef enum : uint8_t {
    * - 0: Peripheral mode (clock input from external controller)
    * - 1: Controller mode (clock output to external peripherals)
    * @note RSPI0 uses peripheral mode (RPi5 is controller)
-   * @note RSPI1 uses controller mode (drives motor drivers)
+   * @note RSPI1 reserved for future SPI sensors (controller mode)
    */
   k_rspi_spcr_mstr = (1 << 3),
 

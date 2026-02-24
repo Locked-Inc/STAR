@@ -178,7 +178,7 @@
  * @par Related Modules:
  * - rx_motor: Motor driver using PID output
  * - rx_encoder: Velocity feedback for PID controller
- * - rx_drv8243: H-bridge driver executing PWM commands
+ * - rx_drv8263: H-bridge driver executing PWM commands
  *
  * @see rx_pid.h for API documentation
  * @see rx_pid.c for implementation details

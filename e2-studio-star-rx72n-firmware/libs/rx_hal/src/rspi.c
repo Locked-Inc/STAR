@@ -7,7 +7,7 @@
  * @details
  * Provides complete SPI driver implementation supporting both peripheral mode
  * (RX72N as SPI peripheral with RPi5 as controller) and controller mode (RX72N
- * as SPI controller for motor driver communication). Implements full-duplex
+ * as SPI controller for sensor communication). Implements full-duplex
  * communication with configurable clock frequency, SPI modes 0-3, and automatic
  * chip select management.
  *
@@ -46,8 +46,7 @@
  *     label="SPI Peripherals";
  *     style=filled;
  *     color=lightcoral;
- *     drv8243 [label="DRV8243S\nMotor Drivers"];
- *     other [label="Other SPI\nDevices"];
+ *     sensors [label="Future SPI\nSensors"];
  *   }
  *
  *   rpi5_spi -> peripheral [label="COPI/CIPO\nSCLK/CS"];
@@ -55,8 +54,7 @@
  *   controller -> rspi_hw;
  *   controller -> gpio [label="CS control"];
  *   helpers -> rspi_hw [style=dashed];
- *   rspi_hw -> drv8243 [label="SPI Bus"];
- *   rspi_hw -> other [label="SPI Bus"];
+ *   rspi_hw -> sensors [label="SPI Bus", style=dashed];
  * }
  * @enddot
  *
@@ -74,7 +72,7 @@
  * | Channel | Use Case | Status Tracking |
  * |---------|----------|-----------------|
  * | RSPI0 | RPi5 communication | s_rspi_channel_initialized[0] |
- * | RSPI1 | Motor drivers | s_rspi_controller_initialized[1] |
+ * | RSPI1 | Reserved (future sensors) | s_rspi_controller_initialized[1] |
  * | RSPI2 | Reserved | Available |
  *
  * @par Performance Characteristics
@@ -135,7 +133,7 @@
  *
  * @see rx72n_rspi_regs.h RSPI register definitions
  * @see rx_spi_comm.h Higher-level SPI communication layer
- * @see rx_drv8243.h Motor driver using RSPI controller mode
+ * @see rx_spi_comm.h Higher-level SPI protocol layer
  * @see docs/sections/03_hardware_pinout.tex SPI pin assignments
  *
  * @author STAR Team

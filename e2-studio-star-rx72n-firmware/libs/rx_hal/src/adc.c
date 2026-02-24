@@ -931,7 +931,7 @@ rx_err_t adc_read(const adc_unit_t unit, const adc_channel_t channel, uint16_t* 
  *
  * @par Example:
  * @code
- * // Read motor current sense (DRV8243 IPROPI output)
+ * // Read motor current sense (DRV8263H IPROPI output)
  * uint32_t voltage_mv;
  * rx_err_t err = adc_read_voltage_mv(k_adc_unit_0, k_adc_channel_0,
  *                                     k_adc_resolution_12bit, &voltage_mv);

@@ -2,31 +2,31 @@
 
 /**
  * @file rx_motor.c
- * @brief Brushed DC Motor Control Implementation for RX72N GPTW PWM with DRV8243 H-Bridge
+ * @brief Brushed DC Motor Control Implementation for RX72N GPTW PWM with DRV8263H H-Bridge
  *
  * @details
  * ## Overview
  *
  * Production-quality implementation of bidirectional brushed DC motor control using the RX72N
- * General PWM Timer (GPTW) peripheral with DRV8243S dual H-bridge driver support. This module
+ * General PWM Timer (GPTW) peripheral with DRV8263H dual H-bridge driver support. This module
  * provides hardware-accelerated PWM generation with configurable frequency and dead-time
  * protection for shoot-through prevention in H-bridge circuits.
  *
  * **Application Context:**
  * - **Platform:** STAR autonomous robot with differential drive
  * - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
- * - **Driver:** DRV8243S dual H-bridge with integrated current sensing and protection
+ * - **Driver:** DRV8263H dual H-bridge with integrated current sensing and protection
  * - **Control Mode:** PH/EN (Phase/Enable) mode for simplified direction control
  * - **PWM Frequency:** 20 kHz (inaudible, efficient, low EMI)
  * - **Dead-time:** 1 us (prevents shoot-through during FET transitions)
  *
  * ## Motor Control Modes (PH/EN Configuration)
  *
- * The DRV8243 H-bridge operates in PH/EN mode for simplified bidirectional control:
+ * The DRV8263H H-bridge operates in PH/EN mode for simplified bidirectional control:
  *
- * ### PH/EN Signal Mapping:
- * - **PH (Phase)** -> output_a: Direction control (HIGH=forward, LOW=reverse)
- * - **EN (Enable)** -> output_b: Speed control (PWM duty cycle 0-100%)
+ * ### PH/EN Signal Mapping (DRV8263H pin names: IN2/IN1):
+ * - **IN2 (direction)** -> output_a: Direction control (HIGH=forward, LOW=reverse)
+ * - **IN1 (PWM)** -> output_b: Speed control (PWM duty cycle 0-100%)
  *
  * ### Operating States:
  *
@@ -85,10 +85,10 @@
  * | Component | Specification | Usage |
  * |-----------|---------------|-------|
  * | **MCU** | Renesas RX72N @ 240 MHz | GPTW peripheral for PWM generation |
- * | **H-Bridge** | DRV8243S dual H-bridge | 3.3V logic, 5-40V motor supply, 4.5A continuous |
+ * | **H-Bridge** | DRV8263H dual H-bridge | 3.3V logic, 5-40V motor supply, 4.5A continuous |
  * | **Motor** | 6V brushed DC gearmotor | 210 RPM, 341 PPR Hall encoder |
  * | **PWM Pins** | GPTW channel outputs | Configurable via rx_gptw_output_t |
- * | **Logic Level** | 3.3V CMOS | Direct connection RX72N -> DRV8243 |
+ * | **Logic Level** | 3.3V CMOS | Direct connection RX72N -> DRV8263H |
  *
  * @par Module Dependencies:
  *
@@ -227,18 +227,18 @@ static const char s_tag[] = "MOTOR";
 
 /**
  * @enum motor_constants_t
- * @brief Motor control duty cycle constants for DRV8243 PH/EN mode operation
+ * @brief Motor control duty cycle constants for DRV8263H PH/EN mode operation
  *
  * @details
  * Defines valid duty cycle ranges and special values for PH/EN control mode. In PH/EN mode,
  * the duty cycle sign determines direction (+ = forward, - = reverse) and magnitude determines
  * speed (0-100%). These constants provide named values for duty cycle limits and direction
- * encoding for the PH (Phase) signal.
+ * encoding for the IN2 (direction) signal.
  *
  * **Usage Context:**
  * - Duty cycle input validation in rx_motor_set_duty()
- * - PH signal encoding (HIGH=forward, LOW=reverse)
- * - EN signal magnitude extraction (absolute value of duty)
+ * - IN2 signal encoding (HIGH=forward, LOW=reverse)
+ * - IN1 signal magnitude extraction (absolute value of duty)
  *
  * @par Valid Range:
  * - Duty cycle: [-100, +100] (integer percentage)
@@ -288,9 +288,9 @@ typedef enum : int16_t {
   k_motor_duty_zero = 0,
 
   /**
-   * @brief PH signal for forward direction (100% = HIGH)
+   * @brief IN2 signal for forward direction (100% = HIGH)
    * @details
-   * PH (Phase) signal value for forward motor rotation. In PH/EN mode, PH determines direction:
+   * IN2 (direction) signal value for forward motor rotation. In PH/EN mode, IN2 determines direction:
    * - PH = HIGH (100%) -> Forward rotation
    * - PH = LOW (0%) -> Reverse rotation
    *
@@ -300,12 +300,12 @@ typedef enum : int16_t {
    * @par Direction: Forward
    * @par H-Bridge State: High-side A ON, Low-side B ON (current: A -> Motor -> B)
    */
-  k_motor_ph_high = 100,
+  k_motor_in2_high = 100,
 
   /**
-   * @brief PH signal for reverse direction (0% = LOW)
+   * @brief IN2 signal for reverse direction (0% = LOW)
    * @details
-   * PH (Phase) signal value for reverse motor rotation. In PH/EN mode, PH determines direction:
+   * IN2 (direction) signal value for reverse motor rotation. In PH/EN mode, IN2 determines direction:
    * - PH = LOW (0%) -> Reverse rotation
    * - PH = HIGH (100%) -> Forward rotation
    *
@@ -315,7 +315,7 @@ typedef enum : int16_t {
    * @par Direction: Reverse
    * @par H-Bridge State: High-side B ON, Low-side A ON (current: B -> Motor -> A)
    */
-  k_motor_ph_low = 0,
+  k_motor_in2_low = 0,
 } motor_constants_t;
 
 /**
@@ -386,13 +386,13 @@ typedef enum : uint32_t {
    * - Ideal gate drive circuit with minimal parasitic capacitance
    * - No PCB trace inductance or capacitance
    *
-   * **Practical minimum:** 500 ns for typical silicon MOSFETs (e.g., DRV8243 internal FETs).
+   * **Practical minimum:** 500 ns for typical silicon MOSFETs (e.g., DRV8263H internal FETs).
    * **Below 100 ns:** High risk of shoot-through and H-bridge destruction.
    * @par Value: 100 nanoseconds (ns)
    * @par Units: Nanoseconds (ns)
-   * @par Rationale: Absolute minimum for ultra-fast FETs (not recommended for DRV8243)
+   * @par Rationale: Absolute minimum for ultra-fast FETs (not recommended for DRV8263H)
    * @warning Values below 100 ns will be rejected with k_rx_err_invalid_arg
-   * @attention Recommended minimum: 1000 ns (1 us) for DRV8243 and typical silicon FETs
+   * @attention Recommended minimum: 1000 ns (1 us) for DRV8263H and typical silicon FETs
    */
   k_motor_min_dead_time = 100,
 
@@ -519,8 +519,8 @@ static float internal_clamp_duty(const float duty)
  * outputs are specified together as a logical unit.
  *
  * **In PH/EN Mode:**
- * - **Output A (PH):** Direction control (HIGH=forward, LOW=reverse)
- * - **Output B (EN):** Speed control (PWM duty cycle 0-100%)
+ * - **Output A (IN2):** Direction control (HIGH=forward, LOW=reverse)
+ * - **Output B (IN1):** Speed control (PWM duty cycle 0-100%)
  *
  * **Hardware Mapping:**
  * Each rx_gptw_output_t value maps to a physical MCU pin configured for GPTW output.
@@ -534,8 +534,8 @@ static float internal_clamp_duty(const float duty)
  * @par Usage Example:
  * @code
  * rx_gptw_output_pair_t outputs = {
- *     .a = k_gptw_output_a,  // PH (Phase) signal
- *     .b = k_gptw_output_b,  // EN (Enable) signal
+ *     .a = k_gptw_output_a,  // IN2 (direction) signal
+ *     .b = k_gptw_output_b,  // IN1 (PWM/enable) signal
  * };
  * rx_err_t err = internal_init_gptw_outputs(channel, outputs, &config);
  * @endcode
@@ -583,8 +583,8 @@ typedef struct {
  *   - Must have unused/available outputs for motor control
  *
  * @param[in] outputs Output pin pair for PH/EN mode control
- *   - outputs.a: PH (Phase) signal, direction control
- *   - outputs.b: EN (Enable) signal, speed PWM
+ *   - outputs.a: IN2 (direction) signal, direction control
+ *   - outputs.b: IN1 (PWM/enable) signal, speed PWM
  *   - Must be from same GPTW channel
  *   - Must be different (a != b)
  *
@@ -735,8 +735,8 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * - **pwm_freq_hz:** PWM frequency [1 kHz, 50 kHz], typical 20 kHz for inaudible operation
  * - **dead_time_ns:** Dead-time insertion [100 ns, 10 us], typical 1 us for shoot-through protection
  * - **channel:** GPTW channel to use (k_gptw_channel_0 through k_gptw_channel_7)
- * - **output_a:** PH (Phase) signal pin for direction control
- * - **output_b:** EN (Enable) signal pin for speed PWM
+ * - **output_a:** IN2 (direction) signal pin for direction control
+ * - **output_b:** IN1 (PWM/enable) signal pin for speed PWM
  * - **invert_pwm:** Polarity inversion (true = inverted, false = normal)
  *
  * @param[out] handle Pointer to motor handle structure to initialize
@@ -805,8 +805,8 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * // Configure motor 0 (front-left wheel)
  * rx_motor_config_t motor0_config = {
  *     .channel = k_gptw_channel_0,
- *     .output_a = k_gptw_output_a,    // PH (Phase) signal
- *     .output_b = k_gptw_output_b,    // EN (Enable) signal
+ *     .output_a = k_gptw_output_a,    // IN2 (direction) signal
+ *     .output_b = k_gptw_output_b,    // IN1 (PWM/enable) signal
  *     .pwm_freq_hz = 20000,           // 20 kHz (inaudible)
  *     .dead_time_ns = 1000,           // 1 us (shoot-through protection)
  *     .invert_pwm = false,            // Normal polarity
@@ -1118,14 +1118,14 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *
  * **Control Mapping (PH/EN Mode):**
  * - **duty > 0 (Forward):**
- *   - PH (output_a) = HIGH (100% duty) -> Direction = forward
- *   - EN (output_b) = |duty| PWM -> Speed = magnitude
- *   - Example: duty = +75% -> PH = HIGH, EN = 75% PWM
+ *   - IN2 (output_a) = HIGH (100% duty) -> Direction = forward
+ *   - IN1 (output_b) = |duty| PWM -> Speed = magnitude
+ *   - Example: duty = +75% -> IN2 = HIGH, IN1 = 75% PWM
  *
  * - **duty < 0 (Reverse):**
- *   - PH (output_a) = LOW (0% duty) -> Direction = reverse
- *   - EN (output_b) = |duty| PWM -> Speed = magnitude
- *   - Example: duty = -50% -> PH = LOW, EN = 50% PWM
+ *   - IN2 (output_a) = LOW (0% duty) -> Direction = reverse
+ *   - IN1 (output_b) = |duty| PWM -> Speed = magnitude
+ *   - Example: duty = -50% -> IN2 = LOW, IN1 = 50% PWM
  *
  * - **duty = 0 (Coast):**
  *   - PH (output_a) = LOW (0% duty)
@@ -1374,12 +1374,12 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
   }
 
   /* Set PWM outputs based on direction (PH/EN mode)
-   * PH (output_a) = direction (HIGH=forward, LOW=reverse)
-   * EN (output_b) = speed (PWM duty cycle)
+   * IN2 (output_a) = direction (HIGH=forward, LOW=reverse)
+   * IN1 (output_b) = speed (PWM duty cycle)
    *
-   * Extract speed magnitude (absolute value) - direction is encoded in PH signal.
-   * Duty sign determines PH (+ = forward/HIGH, - = reverse/LOW).
-   * EN always receives positive PWM duty proportional to speed.
+   * Extract speed magnitude (absolute value) - direction is encoded in IN2 signal.
+   * Duty sign determines IN2 (+ = forward/HIGH, - = reverse/LOW).
+   * IN1 always receives positive PWM duty proportional to speed.
    */
   const float speed_pwm = fabsf(duty);
 
@@ -1387,9 +1387,9 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */
     rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                                     rx_gptw_output_id(handle->output_a),
-                                    (float)k_motor_ph_high);
+                                    (float)k_motor_in2_high);
     if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set PH output (forward)");
+      rx_log_error(s_tag, "Failed to set IN2 output (forward)");
       return err;
     }
 
@@ -1404,9 +1404,9 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     /* Reverse: PH = LOW, EN = PWM - NASA Rule 7 compliance */
     rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                                     rx_gptw_output_id(handle->output_a),
-                                    (float)k_motor_ph_low);
+                                    (float)k_motor_in2_low);
     if (err != k_rx_ok) {
-      rx_log_error(s_tag, "Failed to set PH output (reverse)");
+      rx_log_error(s_tag, "Failed to set IN2 output (reverse)");
       return err;
     }
 

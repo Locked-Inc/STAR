@@ -10,14 +10,16 @@
  * **CRITICAL**: These pin assignments MUST match the PCB design. Any changes
  * to this file require corresponding updates to pinout.txt and vice versa.
  *
- * ## Functional Groups (15 total)
+ * ## Functional Groups (18 total)
  *
  * | Group | Peripheral | Signals |
  * |-------|------------|---------|
- * | Motor PWM | GPTW 0-3 | 8 pins (PH/EN per motor) |
+ * | Motor PWM | GPTW 0-3 | 8 pins (IN1/IN2 per motor) |
+ * | Motor Driver Ctrl | GPIO | 4 DRVOFF + 4 nSLEEP = 8 pins |
  * | GTETRG Emergency Stop | GPTW triggers | 4 pins (nFAULT per motor) |
  * | Host SPI | RSPI2_A | 3 data + 1 CS = 4 pins |
  * | Host I2C | RIIC0 | 2 pins (SCL0/SDA0) |
+ * | IMU | RIIC1 + GPIO | 2 I2C + INT + RST = 4 pins |
  * | Debug UART | SCI9 | 2 pins (TXD9/RXD9) |
  * | MTU Encoders | MTU1/MTU2 | 4 pins |
  * | TPU Encoders | TPU1/TPU2 | 4 pins |
@@ -45,51 +47,115 @@
 
 /**
  * @defgroup motor_pwm_pins Motor PWM Pin Assignments
- * @brief GPTW output pins for H-bridge phase (PH) and enable (EN) control
+ * @brief GPTW output pins for DRV8263H IN1 (PWM) and IN2 (direction) control
  *
  * @details
- * Each motor uses one GPTW channel with two complementary outputs:
- * - **PH (GTIOC_A)**: Direction control (phase)
- * - **EN (GTIOC_B)**: PWM duty cycle (enable)
+ * Each motor uses one GPTW channel with two outputs for the DRV8263H H-bridge
+ * operating in PH/EN mode:
+ * - **IN2 (GTIOC_A)**: Direction control (phase input to DRV8263H)
+ * - **IN1 (GTIOC_B)**: PWM duty cycle (enable input to DRV8263H)
  *
- * | Motor | PH Pin | PH Pkg Pin | EN Pin | EN Pkg Pin | GPTW Ch |
- * |-------|--------|------------|--------|------------|---------|
- * | 0 | PE5 | 106 | PE2 | 109 | GPTW0 |
- * | 1 | PE4 | 107 | PE1 | 110 | GPTW1 |
- * | 2 | PE3 | 108 | PE0 | 111 | GPTW2 |
- * | 3 | PE7 | 101 | PE6 | 102 | GPTW3 |
+ * Pins are distributed across PORT2, PORT1, PORT8, PORTC, and PORTE.
+ *
+ * | Motor | IN2 Pin | IN2 Pkg Pin | IN1 Pin | IN1 Pkg Pin | GPTW Ch |
+ * |-------|---------|-------------|---------|-------------|---------|
+ * | 0 | P23 | 34 | P17 | 38 | GPTW0 |
+ * | 1 | P22 | 35 | PC3 | 67 | GPTW1 |
+ * | 2 | PE3 | 108 | P86 | 41 | GPTW2 |
+ * | 3 | PE7 | 101 | PC6 | 61 | GPTW3 |
  * @{
  */
 
 typedef enum : uint8_t {
-  k_motor_0_ph_port = 14, /**< Motor 0 PH on PORTE (PE5/GTIOC0A, pin 106) */
-  k_motor_1_ph_port = 14, /**< Motor 1 PH on PORTE (PE4/GTIOC1A, pin 107) */
-  k_motor_2_ph_port = 14, /**< Motor 2 PH on PORTE (PE3/GTIOC2A, pin 108) */
-  k_motor_3_ph_port = 14, /**< Motor 3 PH on PORTE (PE7/GTIOC3A, pin 101) */
-} motor_ph_ports_t;
+  k_motor_0_in2_port = 2,  /**< Motor 0 IN2 on PORT2 (P23/GTIOC0A, pin 34) */
+  k_motor_1_in2_port = 2,  /**< Motor 1 IN2 on PORT2 (P22/GTIOC1A, pin 35) */
+  k_motor_2_in2_port = 14, /**< Motor 2 IN2 on PORTE (PE3/GTIOC2A, pin 108) */
+  k_motor_3_in2_port = 14, /**< Motor 3 IN2 on PORTE (PE7/GTIOC3A, pin 101) */
+} motor_in2_ports_t;
 
 typedef enum : uint8_t {
-  k_motor_0_ph_pin = 5, /**< Motor 0 PH pin 5 (PE5, pin 106) */
-  k_motor_1_ph_pin = 4, /**< Motor 1 PH pin 4 (PE4, pin 107) */
-  k_motor_2_ph_pin = 3, /**< Motor 2 PH pin 3 (PE3, pin 108) */
-  k_motor_3_ph_pin = 7, /**< Motor 3 PH pin 7 (PE7, pin 101) */
-} motor_ph_pins_t;
+  k_motor_0_in2_pin = 3, /**< Motor 0 IN2 pin 3 (P23, pin 34) */
+  k_motor_1_in2_pin = 2, /**< Motor 1 IN2 pin 2 (P22, pin 35) */
+  k_motor_2_in2_pin = 3, /**< Motor 2 IN2 pin 3 (PE3, pin 108) */
+  k_motor_3_in2_pin = 7, /**< Motor 3 IN2 pin 7 (PE7, pin 101) */
+} motor_in2_pins_t;
 
 typedef enum : uint8_t {
-  k_motor_0_en_port = 14, /**< Motor 0 EN on PORTE (PE2/GTIOC0B, pin 109) */
-  k_motor_1_en_port = 14, /**< Motor 1 EN on PORTE (PE1/GTIOC1B, pin 110) */
-  k_motor_2_en_port = 14, /**< Motor 2 EN on PORTE (PE0/GTIOC2B, pin 111) */
-  k_motor_3_en_port = 14, /**< Motor 3 EN on PORTE (PE6/GTIOC3B, pin 102) */
-} motor_en_ports_t;
+  k_motor_0_in1_port = 1,  /**< Motor 0 IN1 on PORT1 (P17/GTIOC0B, pin 38) */
+  k_motor_1_in1_port = 12, /**< Motor 1 IN1 on PORTC (PC3/GTIOC1B, pin 67) */
+  k_motor_2_in1_port = 8,  /**< Motor 2 IN1 on PORT8 (P86/GTIOC2B, pin 41) */
+  k_motor_3_in1_port = 12, /**< Motor 3 IN1 on PORTC (PC6/GTIOC3B, pin 61) */
+} motor_in1_ports_t;
 
 typedef enum : uint8_t {
-  k_motor_0_en_pin = 2, /**< Motor 0 EN pin 2 (PE2, pin 109) */
-  k_motor_1_en_pin = 1, /**< Motor 1 EN pin 1 (PE1, pin 110) */
-  k_motor_2_en_pin = 0, /**< Motor 2 EN pin 0 (PE0, pin 111) */
-  k_motor_3_en_pin = 6, /**< Motor 3 EN pin 6 (PE6, pin 102) */
-} motor_en_pins_t;
+  k_motor_0_in1_pin = 7, /**< Motor 0 IN1 pin 7 (P17, pin 38) */
+  k_motor_1_in1_pin = 3, /**< Motor 1 IN1 pin 3 (PC3, pin 67) */
+  k_motor_2_in1_pin = 6, /**< Motor 2 IN1 pin 6 (P86, pin 41) */
+  k_motor_3_in1_pin = 6, /**< Motor 3 IN1 pin 6 (PC6, pin 61) */
+} motor_in1_pins_t;
 
 /** @} */ /* end of motor_pwm_pins */
+
+/* =========================================================================
+ * Motor Driver Control (DRV8263H DRVOFF + nSLEEP)
+ * ========================================================================= */
+
+/**
+ * @defgroup motor_drv_ctrl_pins Motor Driver Control Pin Assignments
+ * @brief GPIO output pins for DRV8263H DRVOFF and nSLEEP control
+ *
+ * @details
+ * Each DRV8263H motor driver has two control pins:
+ * - **DRVOFF**: Driver output disable (active-high, LOW = outputs enabled)
+ * - **nSLEEP**: Sleep mode control (active-low, HIGH = awake)
+ *
+ * **DRVOFF pins (GPIO output, initial LOW = outputs enabled):**
+ * | Motor | Pin | Pkg Pin |
+ * |-------|-----|---------|
+ * | 0 | P61 | 115 |
+ * | 1 | P63 | 113 |
+ * | 2 | PE0 | 111 |
+ * | 3 | PE2 | 109 |
+ *
+ * **nSLEEP pins (GPIO output, initial HIGH = awake):**
+ * | Motor | Pin | Pkg Pin |
+ * |-------|-----|---------|
+ * | 0 | P60 | 117 |
+ * | 1 | P62 | 114 |
+ * | 2 | P64 | 112 |
+ * | 3 | PE1 | 110 |
+ * @{
+ */
+
+typedef enum : uint8_t {
+  k_motor_0_drvoff_port = 6,  /**< Motor 0 DRVOFF on PORT6 (P61, pin 115) */
+  k_motor_1_drvoff_port = 6,  /**< Motor 1 DRVOFF on PORT6 (P63, pin 113) */
+  k_motor_2_drvoff_port = 14, /**< Motor 2 DRVOFF on PORTE (PE0, pin 111) */
+  k_motor_3_drvoff_port = 14, /**< Motor 3 DRVOFF on PORTE (PE2, pin 109) */
+} motor_drvoff_ports_t;
+
+typedef enum : uint8_t {
+  k_motor_0_drvoff_pin = 1, /**< Motor 0 DRVOFF pin 1 (P61, pin 115) */
+  k_motor_1_drvoff_pin = 3, /**< Motor 1 DRVOFF pin 3 (P63, pin 113) */
+  k_motor_2_drvoff_pin = 0, /**< Motor 2 DRVOFF pin 0 (PE0, pin 111) */
+  k_motor_3_drvoff_pin = 2, /**< Motor 3 DRVOFF pin 2 (PE2, pin 109) */
+} motor_drvoff_pins_t;
+
+typedef enum : uint8_t {
+  k_motor_0_nsleep_port = 6,  /**< Motor 0 nSLEEP on PORT6 (P60, pin 117) */
+  k_motor_1_nsleep_port = 6,  /**< Motor 1 nSLEEP on PORT6 (P62, pin 114) */
+  k_motor_2_nsleep_port = 6,  /**< Motor 2 nSLEEP on PORT6 (P64, pin 112) */
+  k_motor_3_nsleep_port = 14, /**< Motor 3 nSLEEP on PORTE (PE1, pin 110) */
+} motor_nsleep_ports_t;
+
+typedef enum : uint8_t {
+  k_motor_0_nsleep_pin = 0, /**< Motor 0 nSLEEP pin 0 (P60, pin 117) */
+  k_motor_1_nsleep_pin = 2, /**< Motor 1 nSLEEP pin 2 (P62, pin 114) */
+  k_motor_2_nsleep_pin = 4, /**< Motor 2 nSLEEP pin 4 (P64, pin 112) */
+  k_motor_3_nsleep_pin = 1, /**< Motor 3 nSLEEP pin 1 (PE1, pin 110) */
+} motor_nsleep_pins_t;
+
+/** @} */ /* end of motor_drv_ctrl_pins */
 
 /* =========================================================================
  * GTETRG Emergency Stop (hardware fault triggers)
@@ -223,6 +289,40 @@ typedef enum : uint8_t {
 } host_i2c_pins_t;
 
 /** @} */ /* end of host_i2c_pins */
+
+/* =========================================================================
+ * IMU (RIIC1 + GPIO)
+ * ========================================================================= */
+
+/**
+ * @defgroup imu_pins IMU Pin Assignments
+ * @brief RIIC1 I2C and GPIO pins for inertial measurement unit
+ *
+ * @details
+ * | Signal | Pin | Pkg Pin | Function |
+ * |--------|-----|---------|----------|
+ * | IMU_SCL | P21/SCL1 | 36 | RIIC1 clock |
+ * | IMU_SDA | P20/SDA1 | 37 | RIIC1 data |
+ * | IMU_INT | P32 | 27 | IRQ input (active-low) |
+ * | IMU_RST | P83 | 58 | GPIO output (active-low reset) |
+ * @{
+ */
+
+typedef enum : uint8_t {
+  k_imu_scl_port = 2, /**< IMU SCL on PORT2 (P21/SCL1, pin 36) */
+  k_imu_sda_port = 2, /**< IMU SDA on PORT2 (P20/SDA1, pin 37) */
+  k_imu_int_port = 3, /**< IMU INT on PORT3 (P32, pin 27) */
+  k_imu_rst_port = 8, /**< IMU RST on PORT8 (P83, pin 58) */
+} imu_ports_t;
+
+typedef enum : uint8_t {
+  k_imu_scl_pin = 1, /**< IMU SCL pin 1 (P21, pin 36) */
+  k_imu_sda_pin = 0, /**< IMU SDA pin 0 (P20, pin 37) */
+  k_imu_int_pin = 2, /**< IMU INT pin 2 (P32, pin 27) */
+  k_imu_rst_pin = 3, /**< IMU RST pin 3 (P83, pin 58) */
+} imu_pins_t;
+
+/** @} */ /* end of imu_pins */
 
 /* =========================================================================
  * MTU Encoders (MTU1 and MTU2 phase counting)

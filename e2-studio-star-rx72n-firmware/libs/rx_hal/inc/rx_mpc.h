@@ -588,12 +588,12 @@ typedef enum : uint8_t {
    * (GPTW0-GPTW3) with phase-staggered PWM outputs.
    *
    * @par Typical Pins:
-   * - P2.3, P1.7 (GPTW0 - Motor 0 PH/EN)
-   * - P2.2, PC.3 (GPTW1 - Motor 1 PH/EN)
-   * - PE.3, P8.6 (GPTW2 - Motor 2 PH/EN)
-   * - PE.7, PC.6 (GPTW3 - Motor 3 PH/EN)
+   * - P2.3, P1.7 (GPTW0 - Motor 0 IN2/IN1)
+   * - P2.2, PC.3 (GPTW1 - Motor 1 IN2/IN1)
+   * - PE.3, P8.6 (GPTW2 - Motor 2 IN2/IN1)
+   * - PE.7, PC.6 (GPTW3 - Motor 3 IN2/IN1)
    *
-   * @par Application: Motor control with complementary phase/enable signals
+   * @par Application: Motor control with direction/PWM signals for DRV8263H
    * @par Feature: 90-degree phase staggering reduces peak current draw
    *
    * @since Version 1.1.0
@@ -1306,14 +1306,14 @@ typedef enum : uint8_t {
  * @post Pin ready for GPTW complementary PWM output
  *
  * @note Thread Safety: Not thread-safe. Call during initialization only.
- * @note Configure both phase (A) and enable (B) pins for each motor
+ * @note Configure both direction (A/IN2) and PWM (B/IN1) pins for each motor
  * @note GPTW channel configuration required for actual PWM operation
  *
  * @warning Motor safety: Configure pins before enabling GPTW channels
  *
  * @par Example - Configure All Motor PWM Pins
  * @code{.c}
- * // Configure 8 GPTW pins (4 motors x 2 pins = PH + EN)
+ * // Configure 8 GPTW pins (4 motors x 2 pins = IN2 + IN1)
  * const rx_port_pin_t gptw_pins[] = {
  *     k_rx_p2_3, k_rx_p1_7,  // Motor 0 PH/EN
  *     k_rx_p2_2, k_rx_pc_3,  // Motor 1 PH/EN

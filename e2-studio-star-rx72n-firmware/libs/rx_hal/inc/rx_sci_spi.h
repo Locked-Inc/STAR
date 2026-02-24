@@ -33,7 +33,7 @@
  * With PCLKB=60 MHz: BRR=1 -> 7.5 MHz, BRR=3 -> 3.75 MHz
  *
  * @see rx72n_sci_regs.h SCI register definitions
- * @see rx_drv8243.h DRV8243 motor driver (example consumer)
+ * @see hardware_config.h Pin assignments for SCI SPI channels
  *
  * @author STAR Team
  * @date 2026-02-11
@@ -62,7 +62,7 @@ extern "C" {
  */
 typedef enum : uint8_t {
   k_sci_spi_mode_0 = 0, /**< CPOL=0, CPHA=0 */
-  k_sci_spi_mode_1 = 1, /**< CPOL=0, CPHA=1 (DRV8243S) */
+  k_sci_spi_mode_1 = 1, /**< CPOL=0, CPHA=1 */
   k_sci_spi_mode_2 = 2, /**< CPOL=1, CPHA=0 */
   k_sci_spi_mode_3 = 3, /**< CPOL=1, CPHA=1 */
 } sci_spi_mode_t;
@@ -107,7 +107,7 @@ typedef struct {
  * @details
  * Executes two consecutive 8-bit SPI transfers (MSB first, then LSB) with
  * CS held asserted throughout. There is a brief clock gap between bytes
- * which DRV8243S tolerates.
+ * which most SPI peripherals tolerate.
  *
  * @param[in]  channel SCI channel number
  * @param[in]  tx_data 16-bit data to transmit

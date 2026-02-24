@@ -58,8 +58,8 @@
  *   |  +--------------------------------------------------------------------+ |
  *   |  | Motor Control:                                                     | |
  *   |  |   - PWM outputs: TIOCA0-3, TIOCB0-3 (MTU channels)                 | |
- *   |  |   - Enable pins: GPIO outputs to DRV8243                           | |
- *   |  |   - Fault inputs: GPIO inputs from DRV8243                         | |
+ *   |  |   - Enable pins: GPIO outputs to DRV8263H                           | |
+ *   |  |   - Fault inputs: GPIO inputs from DRV8263H                         | |
  *   |  |                                                                     | |
  *   |  | Encoder Inputs:                                                    | |
  *   |  |   - MTCLKA/B: Quadrature encoder A/B signals                       | |

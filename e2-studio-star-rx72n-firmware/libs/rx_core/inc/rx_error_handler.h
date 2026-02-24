@@ -268,7 +268,7 @@ extern "C" {
  *   - 4 motors -> 4 components
  *   - Communication (SPI, USB, UART) -> 3 components
  *   - Sensors (encoders, ultrasonic, lidar) -> 5 components
- *   - Peripherals (DRV8243, flash, EEPROM) -> 4 components
+ *   - Peripherals (DRV8263H, flash, EEPROM) -> 4 components
  * - Total: ~16 unique error sources in typical system
  * - Memory usage: 16 x 72 bytes = 1152 bytes (reasonable for RX72N with 512KB SRAM)
  * - Linear search performance: < 10 us for 16 components at 240 MHz

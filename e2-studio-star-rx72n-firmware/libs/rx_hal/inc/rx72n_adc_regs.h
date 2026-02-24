@@ -7,7 +7,7 @@
  * @details
  * This header provides comprehensive register definitions for the RX72N's
  * 12-bit Successive Approximation A/D Converter (S12ADFa). The S12AD is
- * essential for motor current sensing in the STAR project's DRV8243 H-bridge
+ * essential for motor current sensing in the STAR project's DRV8263H H-bridge
  * motor control system.
  *
  * @par System Architecture Context:
@@ -16,7 +16,7 @@
  * |                    STAR Motor Control Current Path                   |
  * +----------------------------------------------------------------------+
  * |                                                                      |
- * |   Motor Current --> Shunt Resistor --> DRV8243 IPROPI --> S12AD     |
+ * |   Motor Current --> Shunt Resistor --> DRV8263H IPROPI --> S12AD     |
  * |                         |                  |                |        |
  * |                    10 mOhm shunt         Current amp      12-bit ADC   |
  * |                    (+/-3A range)         (20 uA/A)        (0-3.3V)     |
@@ -43,7 +43,7 @@
  *
  * @par Motor Current Sensing Pin Mapping (144-pin LFQFP):
  *
- * | Motor | DRV8243 Pin | ADC Channel | RX72N Pin |
+ * | Motor | DRV8263H Pin | ADC Channel | RX72N Pin |
  * |-------|-------------|-------------|-----------|
  * | M0    | IPROPI      | AN007       | P47       |
  * | M1    | IPROPI      | AN006       | P46       |
@@ -62,7 +62,7 @@
  * - Direct memory-mapped register access
  *
  * @see docs/sections/03_hardware_pinout.tex GPIO pin assignments
- * @see lib/rx_drv8243/inc/rx_drv8243.h Motor driver with current sensing
+ * @see lib/rx_drv8263/inc/rx_drv8263.h Motor driver with current sensing
  * @see lib/rx_hal/src/adc.c ADC implementation
  * @see RX72N Group User's Manual: Hardware, Chapter 56 (12-Bit A/D Converter)
  *
@@ -87,11 +87,11 @@
  *   stdint [label="<stdint.h>"];
  *   stddef [label="<stddef.h>"];
  *   adc_impl [label="adc.c"];
- *   drv8243 [label="rx_drv8243.c"];
+ *   drv8263 [label="rx_drv8263.c"];
  *   adc_regs -> stdint;
  *   adc_regs -> stddef;
  *   adc_impl -> adc_regs;
- *   drv8243 -> adc_regs;
+ *   drv8263 -> adc_regs;
  * }
  * @enddot
  *
@@ -340,7 +340,7 @@ typedef enum : uint8_t {
  * // 6. Read 12-bit result
  * uint16_t raw_count = adc->addr7 & 0x0FFF;
  *
- * // 7. Convert to current (using DRV8243 current sensing formula)
+ * // 7. Convert to current (using DRV8263H current sensing formula)
  * // I = (V / 3.3) * 4096 * (1 / 20uA/A) = ADC_count * 3.3 / 4096 / 0.00002
  * float current_amps = (float)raw_count * 3.3f / 4096.0f / 0.00002f;
  * @endcode
