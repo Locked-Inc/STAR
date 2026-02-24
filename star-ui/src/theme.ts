@@ -28,7 +28,7 @@ export const COLORS = {
   bodyBg: 'var(--color-body-bg)',
 } as const;
 
-export const PANEL_BORDER_RADIUS = '24px';
+export const panelBorderRadius = '24px';
 const PANEL_PADDING_VERTICAL = '16px';
 const PANEL_PADDING_HORIZONTAL = '20px';
 const PANEL_HEADER_FONT_SIZE = '12px';

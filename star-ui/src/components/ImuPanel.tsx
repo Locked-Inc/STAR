@@ -1,12 +1,13 @@
 import { useDashboardStore } from '../store/dashboardStore';
+import { useShallow } from 'zustand/react/shallow';
 import { COLORS } from '../theme';
 
 /**
- * IMU Attitude Indicator — displays roll / pitch / yaw plus acceleration & gyro.
+ * IMU Attitude Indicator - displays roll / pitch / yaw plus acceleration & gyro.
  * Safety-critical: helps operators detect tip-over or abnormal orientation.
  */
 export function ImuPanel() {
-    const telemetry = useDashboardStore(s => s.telemetry);
+    const telemetry = useDashboardStore(useShallow(s => s.telemetry));
     const imu = telemetry?.imu;
 
     const fmt = (v: number | undefined) => v != null ? v.toFixed(2) : '--';
@@ -25,7 +26,7 @@ export function ImuPanel() {
                     padding: '16px 20px 8px 20px',
                     fontSize: '11px',
                     fontWeight: 600,
-                    color: 'rgba(255,255,255,0.5)',
+                    color: COLORS.textMuted,
                     textTransform: 'uppercase' as const,
                     letterSpacing: '0.12em',
                     userSelect: 'none' as const,
@@ -40,16 +41,16 @@ export function ImuPanel() {
                     <svg viewBox="-60 -60 120 120" width="110" height="110" aria-labelledby="imu-attitude-title" role="img">
                         <title id="imu-attitude-title">Attitude indicator showing pitch and roll</title>
                         {/* Outer ring */}
-                        <circle cx="0" cy="0" r="55" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
+                        <circle cx="0" cy="0" r="55" fill="none" stroke={COLORS.border} strokeWidth="1" />
                         {/* Horizon - tilts with roll, shifts with pitch */}
                         <g transform={`rotate(${(-roll * 180) / Math.PI})`}>
                             <line x1="-50" y1={pitch * 30} x2="50" y2={pitch * 30}
                                 stroke={COLORS.success} strokeWidth="2" />
                             {/* Sky / ground fill */}
                             <rect x="-50" y={pitch * 30} width="100" height="60"
-                                fill="rgba(65,105,225,0.15)" rx="2" />
+                                fill={`color-mix(in srgb, ${COLORS.primary} 18%, transparent)`} rx="2" />
                             <rect x="-50" y={pitch * 30 - 60} width="100" height="60"
-                                fill="rgba(139,90,43,0.12)" rx="2" />
+                                fill={`color-mix(in srgb, ${COLORS.warning} 14%, transparent)`} rx="2" />
                         </g>
                         {/* Center crosshair (fixed) */}
                         <line x1="-10" y1="0" x2="10" y2="0" stroke={COLORS.primary} strokeWidth="2" />
@@ -69,7 +70,7 @@ export function ImuPanel() {
                         { label: 'Yaw', value: deg(imu?.yawRad), color: COLORS.warning },
                     ].map(v => (
                         <div key={v.label}>
-                            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>{v.label}</div>
+                            <div style={{ fontSize: '10px', color: COLORS.textDim, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{v.label}</div>
                             <div style={{ fontSize: '18px', fontWeight: 600, color: v.color, fontVariantNumeric: 'tabular-nums' }}>{v.value}</div>
                         </div>
                     ))}
@@ -77,21 +78,21 @@ export function ImuPanel() {
 
                 {/* Acceleration */}
                 <div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Acceleration (m/s^2)</div>
+                    <div style={{ fontSize: '10px', color: COLORS.textDim, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Acceleration (m/s^2)</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
-                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>X: {fmt(imu?.accelXMps2)}</span>
-                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Y: {fmt(imu?.accelYMps2)}</span>
-                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Z: {fmt(imu?.accelZMps2)}</span>
+                        <span style={{ color: COLORS.textPrimary }}>X: {fmt(imu?.accelXMps2)}</span>
+                        <span style={{ color: COLORS.textPrimary }}>Y: {fmt(imu?.accelYMps2)}</span>
+                        <span style={{ color: COLORS.textPrimary }}>Z: {fmt(imu?.accelZMps2)}</span>
                     </div>
                 </div>
 
                 {/* Gyro */}
                 <div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Gyroscope (rad/s)</div>
+                    <div style={{ fontSize: '10px', color: COLORS.textDim, textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Gyroscope (rad/s)</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
-                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>X: {fmt(imu?.gyroXRadPerS)}</span>
-                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Y: {fmt(imu?.gyroYRadPerS)}</span>
-                        <span style={{ color: 'rgba(255,255,255,0.7)' }}>Z: {fmt(imu?.gyroZRadPerS)}</span>
+                        <span style={{ color: COLORS.textPrimary }}>X: {fmt(imu?.gyroXRadPerS)}</span>
+                        <span style={{ color: COLORS.textPrimary }}>Y: {fmt(imu?.gyroYRadPerS)}</span>
+                        <span style={{ color: COLORS.textPrimary }}>Z: {fmt(imu?.gyroZRadPerS)}</span>
                     </div>
                 </div>
             </div>

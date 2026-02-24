@@ -1,8 +1,8 @@
 /* LAYOUT ENGINE: Tiling WM (react-grid-layout) */
-@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+@import "https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap";
 
 :root {
-  --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
+  --font-sans: "SF Pro Display", -apple-system, blinkmacsystemfont, "Inter", sans-serif;
 
   /* ── Dark theme (default) ── */
   --color-text: #FFFFFF;
@@ -52,6 +52,17 @@
   --text-30: rgba(255, 255, 255, 0.3);
   --text-25: rgba(255, 255, 255, 0.25);
   --text-full: #FFFFFF;
+
+  --text-primary: var(--color-text);
+  --text-secondary: var(--text-65);
+  --track-bg: rgba(255, 255, 255, 0.04);
+  --track-border: rgba(255, 255, 255, 0.18);
+  --track-shadow: rgba(0, 0, 0, 0.5);
+  --accent-forward: #00e5ff;
+  --accent-reverse: #FF9F0A;
+  --accent-forward-glow: rgba(0, 229, 255, 0.6);
+  --accent-reverse-glow: rgba(255, 159, 10, 0.6);
+  --divider: rgba(255, 255, 255, 0.4);
 }
 
 /* ── Light theme ── */
@@ -102,6 +113,31 @@
   --text-30: rgba(0, 0, 0, 0.3);
   --text-25: rgba(0, 0, 0, 0.25);
   --text-full: #1C1C1E;
+
+  --text-primary: var(--color-text);
+  --text-secondary: var(--text-65);
+  --track-bg: rgba(0, 0, 0, 0.05);
+  --track-border: rgba(0, 0, 0, 0.14);
+  --track-shadow: rgba(0, 0, 0, 0.12);
+  --accent-forward: #007aff;
+  --accent-reverse: #ff9f0a;
+  --accent-forward-glow: rgba(0, 122, 255, 0.45);
+  --accent-reverse-glow: rgba(255, 159, 10, 0.45);
+  --divider: rgba(0, 0, 0, 0.28);
+}
+
+@keyframes pulse-opacity {
+  0% {
+    opacity: 0.4;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.4;
+  }
 }
 
 *,

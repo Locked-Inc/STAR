@@ -1,4 +1,5 @@
 import { useDashboardStore } from '../store/dashboardStore';
+import { useShallow } from 'zustand/react/shallow';
 import { COLORS } from '../theme';
 
 /**
@@ -17,7 +18,7 @@ const fixLabels: Record<number, { label: string; color: string }> = {
 };
 
 export function GpsPanel() {
-    const telemetry = useDashboardStore(s => s.telemetry);
+    const telemetry = useDashboardStore(useShallow(s => s.telemetry));
     const gps = telemetry?.gps;
 
     const fix = fixLabels[gps?.fixType ?? 0] ?? fixLabels[0];
@@ -29,7 +30,7 @@ export function GpsPanel() {
                 style={{
                     padding: '16px 20px 8px 20px',
                     fontSize: '11px', fontWeight: 600,
-                    color: 'rgba(255,255,255,0.5)',
+                    color: COLORS.textMuted,
                     textTransform: 'uppercase' as const,
                     letterSpacing: '0.12em',
                     userSelect: 'none' as const,
@@ -51,7 +52,7 @@ export function GpsPanel() {
                         {fix.label}
                     </div>
                     {gps && (
-                        <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
+                        <span style={{ fontSize: '11px', color: COLORS.textDim }}>
                             {gps.satellites} sats | +/-{gps.accuracyM?.toFixed(1) ?? '--'}m
                         </span>
                     )}
@@ -68,9 +69,9 @@ export function GpsPanel() {
                 {/* Mini coordinate display - only show when fix is 2D or better */}
                 {gps?.fixType != null && gps.fixType >= 2 && (
                     <div style={{
-                        background: 'rgba(255,255,255,0.03)', borderRadius: '6px',
+                        background: COLORS.panelBg, borderRadius: '6px',
                         padding: '10px 14px', fontSize: '11px',
-                        fontFamily: 'monospace', color: 'rgba(255,255,255,0.5)',
+                        fontFamily: 'monospace', color: COLORS.textMuted,
                         textAlign: 'center',
                     }}>
                         {gps.latitudeDeg.toFixed(6)}, {gps.longitudeDeg.toFixed(6)}
@@ -86,13 +87,13 @@ function CoordCard({ label, value, suffix, precision }: {
 }) {
     return (
         <div style={{
-            background: 'rgba(255,255,255,0.03)', borderRadius: '6px',
+            background: COLORS.panelBg, borderRadius: '6px',
             padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: '3px',
         }}>
-            <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+            <span style={{ fontSize: '10px', color: COLORS.textDim, textTransform: 'uppercase', letterSpacing: '0.08em' }}>
                 {label}
             </span>
-            <span style={{ fontSize: '15px', fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
+            <span style={{ fontSize: '15px', fontWeight: 600, color: COLORS.textPrimary, fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
                 {value != null ? value.toFixed(precision) + suffix : '--'}
             </span>
         </div>

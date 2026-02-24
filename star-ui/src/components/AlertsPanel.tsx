@@ -4,7 +4,7 @@ import { useDashboardStore } from '../store/dashboardStore';
 import { AlertLevel } from '../proto/star/v1/ui';
 import type { Alert } from '../proto/star/v1/ui';
 
-const LEVEL_COLORS: Record<number, string> = {
+const levelColors: Record<number, string> = {
   [AlertLevel.UNKNOWN]: '#6b7280', // Gray
   [AlertLevel.INFO]: '#0a84ff',     // System Blue
   [AlertLevel.WARN]: '#ff9f0a',     // System Orange
@@ -12,7 +12,7 @@ const LEVEL_COLORS: Record<number, string> = {
   [AlertLevel.CRITICAL]: '#ff375f', // System Pink/Deep Red
 };
 
-const ICONS: Record<number, ReactNode> = {
+const icons: Record<number, ReactNode> = {
   [AlertLevel.UNKNOWN]: <span style={{ opacity: 0.5 }}>?</span>,
   [AlertLevel.INFO]: (
     <svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -48,14 +48,14 @@ function formatAge(timestampUs: string): string {
     if (ageMs < MS_PER_SEC) return `${Number(ageMs)}ms`;
     if (ageMs < MS_PER_MIN) return `${(Number(ageMs) / Number(MS_PER_SEC)).toFixed(0)}s`;
     return `${(Number(ageMs) / Number(MS_PER_MIN)).toFixed(0)}m`;
-  } catch (err) {
+  } catch {
     return '--';
   }
 }
 
 function AlertRow({ alert }: { alert: Alert }) {
-  const color = LEVEL_COLORS[alert.level] ?? '#6b7280';
-  const icon = ICONS[alert.level] ?? ICONS[AlertLevel.UNKNOWN];
+  const color = levelColors[alert.level] ?? '#6b7280';
+  const icon = icons[alert.level] ?? icons[AlertLevel.UNKNOWN];
 
   return (
     <div

@@ -29,7 +29,7 @@ export type ViewName = 'OVERVIEW' | 'TELEOP' | 'NAVIGATION' | 'DEBUG' | 'CONFIG'
 // --- View definitions - 6 purpose-specific views ---
 // Each shows 6-8 panels that fill viewport (except FULL which scrolls)
 
-export const VIEWS: Record<ViewName, ViewDef> = {
+export const views: Record<ViewName, ViewDef> = {
     OVERVIEW: {
         label: 'Overview',
         icon: 'home',

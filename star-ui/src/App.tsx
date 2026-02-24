@@ -19,7 +19,7 @@ import { PidTuningPanel } from './components/PidTuningPanel';
 import { FirmwarePanel } from './components/FirmwarePanel';
 import { Nav2GoalPanel } from './components/Nav2GoalPanel';
 import { DiagLogPanel } from './components/DiagLogPanel';
-import { useWindowStore, VIEWS } from './store/useWindowStore';
+import { useWindowStore, views } from './store/useWindowStore';
 import type { Layout, Layouts } from './store/useWindowStore';
 import { useDashboardStore } from './store/dashboardStore';
 import type { ControllerState } from './proto/star/v1/controller';
@@ -78,7 +78,7 @@ function App() {
 
   const { width: gridWidth, containerRef: widthRef, mounted: widthMounted } = useContainerWidth();
 
-  const view = VIEWS[activeView];
+  const view = views[activeView];
   const isScrollable = view.scrollable ?? false;
 
   // Responsive row height - only for non-scrollable views

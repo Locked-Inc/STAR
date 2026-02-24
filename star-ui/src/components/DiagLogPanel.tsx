@@ -4,19 +4,20 @@ import { COLORS } from '../theme';
 import { AlertLevel } from '../proto/star/v1/ui';
 
 /**
- * Diagnostic Log Console — scrolling log of all alerts and system events.
+ * Diagnostic Log Console - scrolling log of all alerts and system events.
  * Reads from the alerts array in dashboardStore.
  */
 export function DiagLogPanel() {
     const alerts = useDashboardStore(s => s.alerts);
     const scrollRef = useRef<HTMLDivElement>(null);
+    const latestTimestampUs = alerts.length > 0 ? alerts[0].timestampUs : undefined;
 
     // Auto-scroll to top on new alerts (newest first)
     useEffect(() => {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = 0;
         }
-    }, [alerts[0]?.timestampUs]);
+    }, [latestTimestampUs]);
 
     const levelConfig: Record<number, { label: string; color: string }> = {
         [AlertLevel.INFO]: { label: 'INFO', color: COLORS.primary },

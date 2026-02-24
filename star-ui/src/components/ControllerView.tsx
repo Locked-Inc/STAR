@@ -10,9 +10,9 @@ interface ControllerViewProps {
 
 const joystickSize = 120;
 const dotSize = 16;
-const joystickRadius = 52;
+const joystickRadius = (joystickSize - dotSize) / 2;
 
-const DOT_COLORS: Record<ConnectionState, string> = {
+const dotColors: Record<ConnectionState, string> = {
   connected: COLORS.connected,
   connecting: COLORS.warning,
   reconnecting: COLORS.warning,
@@ -25,7 +25,7 @@ function clampToUnit(v: number): number {
 
 export function ControllerView({ gamepadState, connectionState }: ControllerViewProps) {
   const isAnimated = connectionState === 'reconnecting' || connectionState === 'connecting';
-  const dotColor = DOT_COLORS[connectionState] ?? COLORS.disconnected;
+  const dotColor = dotColors[connectionState] ?? COLORS.disconnected;
 
   const joystickX = clampToUnit(gamepadState.angularVel);
   const joystickY = -clampToUnit(gamepadState.linearVel); // Negative because -1 linear (reverse) should move down, 1 should move up

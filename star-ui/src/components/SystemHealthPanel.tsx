@@ -1,4 +1,5 @@
 import { useDashboardStore } from '../store/dashboardStore';
+import { useShallow } from 'zustand/react/shallow';
 import { COLORS } from '../theme';
 
 /**
@@ -29,8 +30,9 @@ function conn(connected?: boolean): { label: string; color: string } {
 }
 
 export function SystemHealthPanel() {
-    const systemStatus = useDashboardStore(s => s.systemStatus);
-    const telemetry = useDashboardStore(s => s.telemetry);
+    const { systemStatus, telemetry } = useDashboardStore(
+        useShallow((s) => ({ systemStatus: s.systemStatus, telemetry: s.telemetry }))
+    );
 
     const subsystems = [
         { name: 'RX72N', ...conn(systemStatus?.esp32Connected) },

@@ -26,14 +26,16 @@ const SERIES: Series[] = [
 export function TimeSeriesPanel() {
     const buffers = useRef<Map<string, number[]>>(new Map());
     const canvasRefs = useRef<Map<string, SVGSVGElement | null>>(new Map());
-    const rafId = useRef<number>(0);
 
-    // Initialize buffers
-    if (buffers.current.size === 0) {
+    useEffect(() => {
+        if (buffers.current.size !== 0) {
+            return;
+        }
+
         for (const s of SERIES) {
             buffers.current.set(s.label, []);
         }
-    }
+    }, []);
 
     const sample = useCallback(() => {
         for (const s of SERIES) {
@@ -85,7 +87,6 @@ export function TimeSeriesPanel() {
 
         return () => {
             clearInterval(interval);
-            cancelAnimationFrame(rafId.current);
         };
     }, [sample, draw]);
 
@@ -96,7 +97,7 @@ export function TimeSeriesPanel() {
                 style={{
                     padding: '16px 20px 8px 20px',
                     fontSize: '11px', fontWeight: 600,
-                    color: 'rgba(255,255,255,0.5)',
+                    color: COLORS.textMuted,
                     textTransform: 'uppercase' as const,
                     letterSpacing: '0.12em',
                     userSelect: 'none' as const,
@@ -106,13 +107,15 @@ export function TimeSeriesPanel() {
             </div>
 
             <div className="panel-body" style={{ padding: '8px 16px 16px 16px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {SERIES.map(s => (
+                {SERIES.map((s, index) => {
+                    const sparklineTitleId = `sparkline-title-${index}-${s.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}`;
+                    return (
                     <div key={s.label} style={{
-                        background: 'rgba(255,255,255,0.03)', borderRadius: '6px',
+                        background: COLORS.panelBg, borderRadius: '6px',
                         padding: '8px 12px', display: 'flex', alignItems: 'center', gap: '10px',
                     }}>
                         <div style={{ width: '70px', flexShrink: 0 }}>
-                            <div style={{ fontSize: '9px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                            <div style={{ fontSize: '9px', color: COLORS.textDim, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                 {s.label}
                             </div>
                         </div>
@@ -121,7 +124,10 @@ export function TimeSeriesPanel() {
                             viewBox={`0 0 ${graphW} ${graphH}`}
                             style={{ flex: 1, height: '40px' }}
                             preserveAspectRatio="none"
+                            role="img"
+                            aria-labelledby={sparklineTitleId}
                         >
+                            <title id={sparklineTitleId}>{`${s.label} sparkline`}</title>
                             <polyline
                                 points=""
                                 fill="none"
@@ -139,7 +145,8 @@ export function TimeSeriesPanel() {
                             </text>
                         </svg>
                     </div>
-                ))}
+                    );
+                })}
             </div>
         </>
     );

@@ -1,5 +1,6 @@
 import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
+import { COLORS } from '../theme';
 
 const MV_TO_V = 1000;
 const DECI_C_TO_C = 10;
@@ -11,15 +12,16 @@ const getBatteryColor = (soc: number) => {
 };
 
 const SegmentedBatteryIcon = ({ soc, dimmed = false }: { soc: number; dimmed?: boolean }) => {
-  const color = dimmed ? 'rgba(255,255,255,0.1)' : getBatteryColor(soc);
+  const color = dimmed ? COLORS.textDim : getBatteryColor(soc);
   const segments = dimmed ? 0 : Math.max(1, Math.ceil(soc / 20)); // 1 to 5 segments, 0 if dimmed
+  const shadowColor = `color-mix(in srgb, ${getBatteryColor(soc)} 65%, ${COLORS.panelBg})`;
 
   return (
-    <svg aria-hidden="true" width="64" height="32" viewBox="0 0 64 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: dimmed ? 'none' : `drop-shadow(0 0 8px ${color}66)` }}>
+    <svg aria-hidden="true" width="64" height="32" viewBox="0 0 64 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: dimmed ? 'none' : `drop-shadow(0 0 8px ${shadowColor})` }}>
       {/* Battery Body */}
-      <rect x="2" y="2" width="54" height="28" rx="6" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
+      <rect x="2" y="2" width="54" height="28" rx="6" stroke={COLORS.border} strokeWidth="2" />
       {/* Battery Terminal */}
-      <path d="M58 10H60C61.1046 10 62 10.8954 62 12V20C62 21.1046 61.1046 22 60 22H58V10Z" fill="rgba(255,255,255,0.4)" />
+      <path d="M58 10H60C61.1046 10 62 10.8954 62 12V20C62 21.1046 61.1046 22 60 22H58V10Z" fill={COLORS.textMuted} />
 
       {/* Inner Segments */}
       <g style={{ transition: 'fill 0.3s ease' }} fill={color}>

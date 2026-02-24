@@ -18,7 +18,7 @@ function getReconnectDelay(attempt: number): number {
 export function useSTARConnection(url: string): {
   sendControllerState: (state: ControllerState) => void;
   sendEStop: (reason: string) => void;
-  sendEStopRelease: () => void;
+  sendEStopRelease: () => Promise<boolean>;
 } {
   const wsRef = useRef<WebSocket | null>(null);
   const attemptRef = useRef(0);
@@ -82,15 +82,28 @@ export function useSTARConnection(url: string): {
     };
   }, [url]);
 
-  function sendRaw(env: STAREnvelope): void {
+  function sendRaw(env: STAREnvelope): boolean {
     const ws = wsRef.current;
-    if (ws?.readyState !== WebSocket.OPEN) return;
+    if (ws?.readyState !== WebSocket.OPEN) return false;
     try {
       const bytes = STAREnvelope.toBinary(env);
       ws.send(bytes);
       recordPacket(env, 'tx', bytes.byteLength);
+      return true;
     } catch (e) {
       console.error('sendRaw: failed to encode/send envelope', env.payload.oneofKind, e);
+      return false;
+    }
+  }
+
+  async function postEStopFallback(action: 'activate' | 'release', reason: string): Promise<boolean> {
+    try {
+      const params = new URLSearchParams({ action, reason });
+      const response = await fetch(`/api/estop?${params.toString()}`, { method: 'POST' });
+      return response.ok;
+    } catch (err: unknown) {
+      console.error('E-stop fallback failed', err);
+      return false;
     }
   }
 
@@ -113,20 +126,24 @@ export function useSTARConnection(url: string): {
       sendRaw(env);
     } else {
       // REST fallback -- WebSocket is not open
-      fetch(`/api/estop?reason=${encodeURIComponent(reason)}`, { method: 'POST' }).catch(
-        (err: unknown) => console.error('E-stop fallback failed', err)
-      );
+      void postEStopFallback('activate', reason);
     }
   }
 
-  function sendEStopRelease(): void {
+  async function sendEStopRelease(): Promise<boolean> {
+    const ws = wsRef.current;
     const env = STAREnvelope.create({
       payload: {
         oneofKind: 'estop',
         estop: { active: false, reason: 'User released E-Stop', timestampUs: String(Date.now() * msToUs) },
       },
     });
-    sendRaw(env);
+
+    if (ws?.readyState === WebSocket.OPEN) {
+      return sendRaw(env);
+    }
+
+    return postEStopFallback('release', 'User released E-Stop');
   }
 
   return { sendControllerState, sendEStop, sendEStopRelease };

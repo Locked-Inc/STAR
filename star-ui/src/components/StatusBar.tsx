@@ -5,12 +5,12 @@ import { useDashboardStore } from '../store/dashboardStore';
 import type { ConnectionState } from '../store/dashboardStore';
 import { COLORS } from '../theme';
 import { RobotMode } from '../proto/star/v1/telemetry';
-import { VIEWS } from '../store/useWindowStore';
+import { views } from '../store/useWindowStore';
 import type { ViewName } from '../store/useWindowStore';
 
 interface StatusBarProps {
   sendEStop: (reason: string) => void;
-  sendEStopRelease: () => void;
+  sendEStopRelease: () => Promise<boolean>;
   onResetLayout: () => void;
   activeView: ViewName;
   setView: (view: ViewName) => void;
@@ -42,12 +42,14 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
     useDashboardStore.getState().triggerEStop();
   }
 
-  function handleResume(): void {
-    sendEStopRelease();
-    useDashboardStore.getState().releaseEStop();
+  async function handleResume(): Promise<void> {
+    const released = await sendEStopRelease();
+    if (released) {
+      useDashboardStore.getState().releaseEStop();
+    }
   }
 
-  // ── Theme toggle ──
+  // Theme toggle
   const [theme, setTheme] = useState<'dark' | 'light'>(() => {
     if (typeof window !== 'undefined') {
       return (localStorage.getItem('star-theme') as 'dark' | 'light') || 'dark';
@@ -65,11 +67,6 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
   }
 
   const styles = `
-    @keyframes pulse-opacity {
-      0% { opacity: 0.4; }
-      50% { opacity: 1; }
-      100% { opacity: 0.4; }
-    }
     .status-pill {
       background: var(--pill-bg);
       backdrop-filter: blur(24px) saturate(180%);
@@ -149,6 +146,7 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
   `;
 
   const [presetOpen, setPresetOpen] = useState(false);
+  const layoutsTitleId = `layouts-title-${activeView.toLowerCase()}`;
 
   const isAnimated = connectionState === 'reconnecting' || connectionState === 'connecting';
 
@@ -226,7 +224,8 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
               title="Layout Presets"
               style={{ padding: '8px 16px', gap: '8px', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em', backgroundImage: presetOpen ? 'linear-gradient(180deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05))' : '' }}
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" role="img" aria-labelledby={layoutsTitleId}>
+                <title id={layoutsTitleId}>Layouts</title>
                 <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
                 <line x1="3" y1="9" x2="21" y2="9"></line>
                 <line x1="9" y1="21" x2="9" y2="9"></line>
@@ -252,8 +251,8 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
                 boxShadow: 'var(--dropdown-shadow)',
                 minWidth: '200px'
               }}>
-                {(Object.keys(VIEWS) as ViewName[]).map(viewName => {
-                  const v = VIEWS[viewName];
+                {(Object.keys(views) as ViewName[]).map(viewName => {
+                  const v = views[viewName];
                   const isActive = viewName === activeView;
                   return (
                     <button
@@ -306,9 +305,9 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
             onClick={toggleTheme}
             title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
             aria-label="Toggle theme"
-            style={{ padding: '8px 12px', fontSize: '16px' }}
+            style={{ padding: '8px 12px', fontSize: '12px', fontWeight: 600, letterSpacing: '0.05em' }}
           >
-            {theme === 'dark' ? '☀️' : '🌙'}
+            {theme === 'dark' ? 'Light' : 'Dark'}
           </button>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>

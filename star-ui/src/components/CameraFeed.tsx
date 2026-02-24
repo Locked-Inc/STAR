@@ -1,7 +1,7 @@
 import { COLORS } from '../theme';
 
 /**
- * Camera Feed Panel — placeholder for WebRTC/MJPEG video stream.
+ * Camera Feed Panel - placeholder for WebRTC/MJPEG video stream.
  * Shows a camera icon and connection status while waiting for video data.
  */
 export function CameraFeed() {

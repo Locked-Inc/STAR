@@ -48,7 +48,7 @@ export function PidTuningPanel() {
                 style={{
                     padding: '16px 20px 8px 20px',
                     fontSize: '11px', fontWeight: 600,
-                    color: 'rgba(255,255,255,0.5)',
+                    color: COLORS.textMuted,
                     textTransform: 'uppercase' as const,
                     letterSpacing: '0.12em',
                     userSelect: 'none' as const,
@@ -68,8 +68,8 @@ export function PidTuningPanel() {
                             style={{
                                 flex: 1, padding: '6px 0', border: 'none', borderRadius: '6px',
                                 fontSize: '11px', fontWeight: 600, cursor: 'pointer',
-                                background: motorIdx === idx ? `${COLORS.primary}25` : 'rgba(255,255,255,0.04)',
-                                color: motorIdx === idx ? COLORS.primary : 'rgba(255,255,255,0.5)',
+                                background: motorIdx === idx ? `${COLORS.primary}25` : COLORS.panelBg,
+                                color: motorIdx === idx ? COLORS.primary : COLORS.textMuted,
                                 transition: 'all 0.15s',
                             }}
                         >
@@ -83,7 +83,7 @@ export function PidTuningPanel() {
                     <div key={param.id}>
                         <label
                             htmlFor={param.id}
-                            style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '4px' }}
+                            style={{ fontSize: '10px', color: COLORS.textDim, textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '4px' }}
                         >
                             {param.label}
                         </label>
@@ -95,8 +95,8 @@ export function PidTuningPanel() {
                             onChange={e => param.set(e.target.value)}
                             style={{
                                 width: '100%', padding: '8px 12px', borderRadius: '6px',
-                                border: '0.5px solid rgba(255,255,255,0.15)', background: 'rgba(255,255,255,0.04)',
-                                color: '#fff', fontSize: '14px', fontFamily: 'monospace',
+                                border: `0.5px solid ${COLORS.border}`, background: COLORS.panelBg,
+                                color: COLORS.textPrimary, fontSize: '14px', fontFamily: 'monospace',
                                 outline: 'none', boxSizing: 'border-box',
                             }}
                         />
