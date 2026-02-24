@@ -278,8 +278,8 @@ Different platforms provide error checking macros for development and debugging:
         int spi_device_count[SPI_HOST_MAX];
      } star_bus_manager_t;
 
-      /* CORRECT - Enum brace on same line */
-      typedef enum {
+      /* CORRECT - Enum brace on same line, C23 typed enum */
+      typedef enum : uint8_t {
         k_star_bus_type_none,
         k_star_bus_type_i2c,
         k_star_bus_type_spi,
@@ -1196,7 +1196,7 @@ Document each enum value with Doxygen comments.
     /**
      * @brief Types of supported bus interfaces.
      */
-    typedef enum {
+    typedef enum : uint8_t {
       k_star_bus_type_none,  /**< No bus type specified */
       k_star_bus_type_i2c,   /**< I2C bus */
       k_star_bus_type_spi,   /**< SPI bus */
@@ -2260,7 +2260,7 @@ int calculate_value(char* data, int len);  /* Ambiguous! */
 When comparing enums of different types, cast to the appropriate fixed-width type.
 
 \begin{lstlisting}[language=C]
-typedef enum {
+typedef enum : uint8_t {
   k_channel_0 = 0,
   k_channel_1 = 1,
   k_channel_max = 2,
@@ -3490,8 +3490,8 @@ typedef struct star_bus_config star_bus_config;  /* missing _t suffix */
 Enum members use the \texttt{k\_} prefix followed by \texttt{snake\_case}.
 
 \begin{lstlisting}[language=C]
-/* CORRECT - k_prefix with snake_case */
-typedef enum {
+/* CORRECT - k_prefix with snake_case, C23 typed enum */
+typedef enum : uint8_t {
   k_star_bus_type_none,   /**< No bus type specified */
   k_star_bus_type_i2c,    /**< I2C bus */
   k_star_bus_type_spi,    /**< SPI bus */

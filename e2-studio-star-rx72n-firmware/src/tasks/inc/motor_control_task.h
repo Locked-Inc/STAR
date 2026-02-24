@@ -93,7 +93,8 @@ typedef enum : uint8_t {
  * @post MotorTask created and running at 250 Hz
  * @post Motors ready to respond to velocity commands
  *
- * @note Call this from AppMainTask after motor hardware initialization
+ * @note NOT thread-safe. Must be called from single-threaded init context
+ *       (AppMainTask) after motor hardware initialization
  * @note Highest priority task - runs before all other application tasks
  *
  * @see motor_control_task.c Implementation details

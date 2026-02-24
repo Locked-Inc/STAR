@@ -160,7 +160,7 @@
  *   // 4. SPI controller (for sensors; DRV8263H uses PWM+GPIO, not SPI)
  *   rspi_controller_config_t spi_cfg = {
  *     .spi_mode = k_rspi_mode_0,
- *     .freq_hz = 1000000,  // 1 MHz
+ *     .freq_hz = k_rspi_freq_1mhz,
  *     .cs = k_port_c_pin_4
  *   };
  *   rspi_init_controller(1, &spi_cfg);
@@ -1114,7 +1114,42 @@ typedef enum : uint8_t {
     3 /**< CPOL=1, CPHA=1 - Data sampled on rising edge, idle high. Alternative for some devices. */
 } rspi_mode_t;
 
-/** @brief Common SPI clock frequency constants */
+/**
+ * @enum rspi_channel_t
+ * @brief RSPI channel identifiers for the RX72N 3-channel SPI peripheral
+ *
+ * @details
+ * The RX72N provides three independent RSPI channels. Each can operate
+ * in either controller (master) or peripheral (slave) mode. On STAR hardware:
+ * - RSPI0: Available (currently unused)
+ * - RSPI1: Available (currently unused)
+ * - RSPI2: Host SPI link to RPi5 (peripheral mode on PD1-PD4)
+ *
+ * @invariant Channel numbers must match hardware register block indices
+ * @see rspi_init_peripheral() Initialize a channel in peripheral mode
+ * @see rspi_init_controller() Initialize a channel in controller mode
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rspi_channel_0 = 0, /**< RSPI channel 0 */
+  k_rspi_channel_1 = 1, /**< RSPI channel 1 */
+  k_rspi_channel_2 = 2, /**< RSPI channel 2 (STAR: RPi5 host SPI link) */
+} rspi_channel_t;
+
+/**
+ * @enum rspi_freq_constants_t
+ * @brief Common SPI clock frequency constants for controller mode
+ *
+ * @details
+ * Named constants for commonly used SPI clock frequencies. Use these
+ * instead of magic literals when configuring controller-mode SPI clock rate.
+ * The RSPI bit rate register (SPBR) is calculated from these values and
+ * the peripheral clock (PCLKB).
+ *
+ * @invariant All values must be positive and expressible by the SPBR register
+ * @see rspi_init_controller() Uses freq_hz to calculate SPBR
+ * @since Version 1.0.0
+ */
 typedef enum : uint32_t {
   k_rspi_freq_1mhz = 1000000, /**< 1 MHz SPI clock frequency */
 } rspi_freq_constants_t;

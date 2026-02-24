@@ -499,25 +499,25 @@ tab:
 108 & PE3/GTIOC2A & Motor 2 IN2 & GPTW PWM channel 2A (32-bit) \\
 \hline
 \rowcolor{blue!20}
-109 & PE2/GTIOC0B & Motor 3 DRVOFF & DRV8263H motor 3 drive output disable (GPIO output) \\
+109 & PE2/GTIOC0B & Motor 3 \texttt{DRVOFF} & \texttt{DRV8263H} motor 3 drive output disable (GPIO output) \\
 \hline
 \rowcolor{blue!20}
-110 & PE1/GTIOC1B & Motor 3 nSLEEP & DRV8263H motor 3 sleep control (GPIO output, active-low) \\
+110 & PE1/GTIOC1B & Motor 3 \texttt{nSLEEP} & \texttt{DRV8263H} motor 3 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor{blue!20}
-111 & PE0/GTIOC2B & Motor 2 DRVOFF & DRV8263H motor 2 drive output disable (GPIO output) \\
+111 & PE0/GTIOC2B & Motor 2 \texttt{DRVOFF} & \texttt{DRV8263H} motor 2 drive output disable (GPIO output) \\
 \hline
 \rowcolor{blue!20}
-112 & P64 & Motor 2 nSLEEP & DRV8263H motor 2 sleep control (GPIO output, active-low) \\
+112 & P64 & Motor 2 \texttt{nSLEEP} & \texttt{DRV8263H} motor 2 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor{blue!20}
-113 & P63 & Motor 1 DRVOFF & DRV8263H motor 1 drive output disable (GPIO output) \\
+113 & P63 & Motor 1 \texttt{DRVOFF} & \texttt{DRV8263H} motor 1 drive output disable (GPIO output) \\
 \hline
 \rowcolor{blue!20}
-114 & P62 & Motor 1 nSLEEP & DRV8263H motor 1 sleep control (GPIO output, active-low) \\
+114 & P62 & Motor 1 \texttt{nSLEEP} & \texttt{DRV8263H} motor 1 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor{blue!20}
-115 & P61 & Motor 0 DRVOFF & DRV8263H motor 0 drive output disable (GPIO output) \\
+115 & P61 & Motor 0 \texttt{DRVOFF} & \texttt{DRV8263H} motor 0 drive output disable (GPIO output) \\
 \hline
 \rowcolor {
   gray!15
@@ -525,7 +525,7 @@ tab:
 116 & VSS & Ground &Power supply \\
 \hline
 \rowcolor{blue!20}
-117 & P60 & Motor 0 nSLEEP & DRV8263H motor 0 sleep control (GPIO output, active-low) \\
+117 & P60 & Motor 0 \texttt{nSLEEP} & \texttt{DRV8263H} motor 0 sleep control (GPIO output, active-low) \\
 \hline
 \rowcolor {
   gray!15
@@ -580,25 +580,25 @@ tab:
 \hline
 \rowcolor { red!15}
 133 & P47 / AN007 &Motor 0 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8263H) \\
+    \texttildelow 0.661A max(\texttt{IPROPI} from \texttt{DRV8263H}, 4990$\Omega$ sense, 1000:1 ratio) \\
 \hline
 \rowcolor {
   red!15
 }
 134 & P46 / AN006 &Motor 1 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8263H) \\
+    \texttildelow 0.661A max(\texttt{IPROPI} from \texttt{DRV8263H}, 4990$\Omega$ sense, 1000:1 ratio) \\
 \hline
 \rowcolor {
   red!15
 }
 135 & P45 / AN005 &Motor 2 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8263H) \\
+    \texttildelow 0.661A max(\texttt{IPROPI} from \texttt{DRV8263H}, 4990$\Omega$ sense, 1000:1 ratio) \\
 \hline
 \rowcolor {
   red!15
 }
 136 & P44 / AN004 &Motor 3 Current Sense &ADC Unit 0, 12 - bit,
-    2.0A max(IPROPI from DRV8263H) \\
+    \texttildelow 0.661A max(\texttt{IPROPI} from \texttt{DRV8263H}, 4990$\Omega$ sense, 1000:1 ratio) \\
 \hline
 137 & P43 & Unused &Available GPIO(IRQ11, AN003) \\
 \hline
@@ -658,8 +658,8 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     each with 2 complementary outputs(GTIOC0A / B through GTIOC3A / B)
     \item \textbf{Perfect match
 } for
-4 motors in IN2 / IN1 (sign-magnitude) control mode
-    \item Each motor driver(DRV8263H)
+4 motors in \texttt{IN2} / \texttt{IN1} (sign-magnitude) control mode
+    \item Each motor driver(\texttt{DRV8263H})
       requires exactly 2
     PWM signals
 \end{itemize}
@@ -832,7 +832,7 @@ The DS18B20+ is a digital 1-Wire temperature sensor connected to P51 (pin 55).
 \textbf{Use Cases:}
 \begin{itemize}
     \item Ambient temperature monitoring
-    \item Motor driver thermal management (supplement DRV8263H internal temp)
+    \item Motor driver thermal management (supplement \texttt{DRV8263H} internal temp)
     \item System enclosure temperature
 \end{itemize}
 
@@ -865,22 +865,22 @@ The IMU is connected to the RX72N via I2C with a dedicated interrupt and reset l
 
 \subsection{Motor Driver Control Architecture}
 
-The DRV8263H motor drivers are controlled via three interfaces:
+The \texttt{DRV8263H} motor drivers are controlled via three interfaces:
 
 \textbf{Real-Time Control (PWM):}
 \begin{itemize}
-    \item \textbf{Signals:} IN1 and IN2 distributed across GPTW channels 0-3
+    \item \textbf{Signals:} \texttt{IN1} and \texttt{IN2} distributed across \texttt{GPTW} channels 0-3
     \item \textbf{Purpose:} Motor speed/direction control at 20 kHz PWM frequency
     \item \textbf{Update rate:} 100 Hz velocity commands from RPi5
-    \item \textbf{Pin mapping:} IN2 = GTIOC\_A (phase), IN1 = GTIOC\_B (enable)
+    \item \textbf{Pin mapping:} \texttt{IN2} = \texttt{GTIOC\_A} (phase), \texttt{IN1} = \texttt{GTIOC\_B} (enable)
 \end{itemize}
 
 \textbf{Driver Enable/Sleep Control (GPIO):}
 \begin{itemize}
-    \item \textbf{DRVOFF signals:} PE2 (Motor 3), PE0 (Motor 2), P63 (Motor 1), P61 (Motor 0)
-    \item \textbf{nSLEEP signals:} PE1 (Motor 3), P64 (Motor 2), P62 (Motor 1), P60 (Motor 0)
-    \item \textbf{DRVOFF purpose:} Disable H-bridge outputs without entering sleep mode (GPIO output)
-    \item \textbf{nSLEEP purpose:} Put driver into low-power sleep mode when pulled low (GPIO output, active-low)
+    \item \textbf{\texttt{DRVOFF} signals:} PE2 (Motor 3), PE0 (Motor 2), P63 (Motor 1), P61 (Motor 0)
+    \item \textbf{\texttt{nSLEEP} signals:} PE1 (Motor 3), P64 (Motor 2), P62 (Motor 1), P60 (Motor 0)
+    \item \textbf{\texttt{DRVOFF} purpose:} Disable H-bridge outputs without entering sleep mode (GPIO output)
+    \item \textbf{\texttt{nSLEEP} purpose:} Put driver into low-power sleep mode when pulled low (GPIO output, active-low)
     \item \textbf{Update rate:} On demand for enable/disable/sleep transitions
 \end{itemize}
 

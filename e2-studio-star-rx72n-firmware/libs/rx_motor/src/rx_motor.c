@@ -171,7 +171,7 @@
  *
  * **Static Data:**
  * - s_tag: 8 bytes (const char* for logging tag)
- * - s_duty_zero: 4 bytes (float constant for zero duty cycle)
+ * - (float)k_motor_duty_zero: 4 bytes (float constant for zero duty cycle)
  * - Total: 12 bytes
  *
  * **Handle Size:**
@@ -226,7 +226,7 @@
 static const char s_tag[] = "MOTOR";
 
 /**
- * @enum motor_constants_t
+ * @enum motor_duty_limits_t
  * @brief Motor control duty cycle constants for DRV8263H IN2/IN1 mode operation
  *
  * @details
@@ -286,10 +286,24 @@ typedef enum : int16_t {
    * @par Motor State: Coasting (high impedance)
    */
   k_motor_duty_zero = 0,
+} motor_duty_limits_t; /* Split from motor_constants_t: duty limits use int16_t */
 
+/**
+ * @enum motor_in2_signal_t
+ * @brief IN2 direction signal values for DRV8263H H-bridge
+ *
+ * @details
+ * Encodes the IN2 pin duty percentage that determines motor rotation direction
+ * in the DRV8263H IN2/IN1 control mode. IN2 is driven as a static duty level
+ * (100% HIGH or 0% LOW) while IN1 carries the speed PWM.
+ *
+ * @see rx_motor_set_duty() Uses these values to set direction
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
   k_motor_in2_high = 100, /**< IN2 forward direction (100% = HIGH). Sets output_a HIGH for forward rotation. H-bridge: high-side A ON, low-side B ON */
   k_motor_in2_low  = 0,   /**< IN2 reverse direction (0% = LOW). Sets output_a LOW for reverse rotation. H-bridge: high-side B ON, low-side A ON */
-} motor_constants_t;
+} motor_in2_signal_t;
 
 /**
  * @enum motor_validation_limits_t
@@ -390,8 +404,7 @@ typedef enum : uint32_t {
   k_motor_max_dead_time = 10000,
 } motor_validation_limits_t;
 
-/* Zero duty for stopped outputs (floats can't be enums). */
-static const float s_duty_zero = 0.0F;
+/* Zero duty: use (float)k_motor_duty_zero instead of a separate const. */
 
 /* =============================================================================
  * Internal Helper Functions
@@ -660,14 +673,14 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
     return err;
   }
 
-  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.a), s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.a), (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a initial duty");
     (void)rx_gptw_deinit(channel);
     return err;
   }
 
-  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.b), s_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.b), (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_b initial duty");
     (void)rx_gptw_deinit(channel);
@@ -914,7 +927,10 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   rx_gptw_config_t gptw_config = (rx_gptw_config_t){
     .frequency_hz         = config->pwm_freq_hz,
     .deadtime_ns          = (uint16_t)config->dead_time_ns,
-    .enable_complementary = false, /* We control direction manually */
+    .enable_complementary = false, /* IN2/IN1 mode: direction controlled manually via output_a.
+                                    * rx_gptw_init_pwm() resets GTCNT to 0; this is acceptable
+                                    * because phase staggering (if used) is configured separately
+                                    * after all channels are initialized. */
     .invert_polarity      = config->invert_pwm,
   };
 
@@ -930,7 +946,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   handle->output_a     = config->output_a;
   handle->output_b     = config->output_b;
   handle->pwm_freq_hz  = config->pwm_freq_hz;
-  handle->current_duty = s_duty_zero;
+  handle->current_duty = (float)k_motor_duty_zero;
   handle->invert_pwm   = config->invert_pwm;
   handle->initialized  = true;
 
@@ -1405,7 +1421,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 
     err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                            rx_gptw_output_id(handle->output_b),
-                           s_duty_zero);
+                           (float)k_motor_duty_zero);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set IN1 output (coast)");
       return err;
@@ -1548,7 +1564,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
   /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
   err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_a),
-                         s_duty_zero);
+                         (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a during stop");
     return err;
@@ -1556,13 +1572,13 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, const bool brake)
 
   err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_b),
-                         s_duty_zero);
+                         (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_b during stop");
     return err;
   }
 
-  handle->current_duty = s_duty_zero;
+  handle->current_duty = (float)k_motor_duty_zero;
 
   return k_rx_ok;
 }
@@ -1867,7 +1883,7 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
   rx_err_t result = k_rx_ok;
   rx_err_t err    = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_a),
-                         s_duty_zero);
+                         (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "E-STOP: Failed to clear output_a duty");
     if (result == k_rx_ok) {
@@ -1876,7 +1892,7 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
   }
   err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                          rx_gptw_output_id(handle->output_b),
-                         s_duty_zero);
+                         (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "E-STOP: Failed to clear output_b duty");
     if (result == k_rx_ok) {
@@ -1911,7 +1927,7 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
 
   /* Mark as no longer initialized - requires re-init to use */
   handle->initialized  = false;
-  handle->current_duty = s_duty_zero;
+  handle->current_duty = (float)k_motor_duty_zero;
 
   rx_log_warn(s_tag, "EMERGENCY STOP - motor disabled");
 

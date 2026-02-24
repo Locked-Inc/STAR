@@ -33,7 +33,7 @@
  * | Dead-Time | 4 | Boundary validation 100ns-10us |
  * | Emergency Stop | 5 | Safety shutdown |
  * | Parameter Validation | 2 | nullptr checks, state checks |
- * | **Total** | **86 tests** | **100% code coverage** |
+ * | **Total** | **71 tests** | **100% code coverage** |
  *
  * ## Functional Coverage Matrix
  *
@@ -97,7 +97,7 @@
  * test_rx_motor.c:960:test_motor_emergency_stop_from_running:PASS
  *
  * -----------------------
- * 86 Tests 0 Failures 0 Ignored
+ * 71 Tests 0 Failures 0 Ignored
  * OK
  * @endverbatim
  *
@@ -157,10 +157,6 @@
  * Test Constants
  * =============================================================================
  */
-
-typedef enum : uint8_t {
-  k_float_tolerance_percent = 1, /**< 0.01 tolerance for percentage comparisons */
-} test_constants_t;
 
 /**
  * @enum test_frequencies_t

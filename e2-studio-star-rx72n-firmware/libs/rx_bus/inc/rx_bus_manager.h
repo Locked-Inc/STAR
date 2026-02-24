@@ -393,17 +393,18 @@ extern "C" {
  * @par Example - Register SPI Bus:
  * @code{.c}
  * // Statically allocate and configure (zero dynamic allocation)
- * static rx_bus_config_t rpi5_spi = {0};
- * rpi5_spi.name = "rpi5_link";
- * rpi5_spi.type = k_bus_type_spi;
- * rpi5_spi.proto.spi = (rx_spi_bus_config_t){
- *     .channel = k_rspi_channel_0,
- *     .frequency_hz = k_rspi_freq_10mhz,
- *     .mode = k_rspi_mode_0
+ * static rx_bus_config_t s_rpi5_spi = {
+ *     .name = "rpi5_link",
+ *     .type = k_bus_type_spi,
+ *     .proto.spi = {
+ *         .channel       = k_rspi_channel_0,
+ *         .frequency_hz  = k_rspi_freq_10mhz,
+ *         .mode          = k_rspi_mode_0,
+ *     },
  * };
  *
  * // Register (manager references static config - do not modify after registration)
- * rx_err_t err = rx_bus_manager_add_bus(&manager, &rpi5_spi);
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, &s_rpi5_spi);
  * if (err != k_rx_ok) {
  *     return err;
  * }

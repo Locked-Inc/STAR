@@ -19,9 +19,9 @@
  * |   Motor Current --> DRV8263H IPROPI --> Sense Resistor --> S12AD     |
  * |                         |                    |               |       |
  * |                    Current mirror       4990 ohm sense   12-bit ADC  |
- * |                    (1000:1 ratio)       (2.0A range)     (0-3.3V)    |
+ * |                    (1000:1 ratio)       (~0.661A range)  (0-3.3V)    |
  * |                                                                      |
- * |   I_motor = (ADC_value x 3.3V / 4096) x 1000 / 4990                 |
+ * |   I_motor = (ADC_value x 3.3V / 4095) x 1000 / 4990                 |
  * |                                                                      |
  * +----------------------------------------------------------------------+
  * @endverbatim
@@ -340,12 +340,12 @@ typedef enum : uint8_t {
  * // 7. Convert to current (using DRV8263H IPROPI current sensing)
  * // IPROPI ratio: 1000:1, sense resistor: 4990 ohm
  * // V_sense = (I_motor / 1000) * 4990, so I_motor = V_sense * 1000 / 4990
- * static const float s_avcc_volts       = 3.3f;
- * static const float s_adc_full_scale_divisor = 4096.0f;  // 2^12 divisor
- * static const float s_ipropi_ratio           = 1000.0f; // 1000:1 current mirror
- * static const float s_ipropi_sense_ohm       = 4990.0f; // Sense resistor (ohms)
- * float voltage = (float)raw_count * s_avcc_volts / s_adc_full_scale_divisor;
- * float current_amps = voltage * s_ipropi_ratio / s_ipropi_sense_ohm;
+ * const float avcc_volts       = 3.3f;
+ * const float adc_full_scale_divisor = 4095.0f;  // 2^12 - 1 (12-bit full scale)
+ * const float ipropi_ratio           = 1000.0f; // 1000:1 current mirror
+ * const float ipropi_sense_ohm       = 4990.0f; // Sense resistor (ohms)
+ * float voltage = (float)raw_count * avcc_volts / adc_full_scale_divisor;
+ * float current_amps = voltage * ipropi_ratio / ipropi_sense_ohm;
  * @endcode
  *
  * @par Usage Example - Continuous 4-Channel Scan:

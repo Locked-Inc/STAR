@@ -69,6 +69,16 @@
 /**
  * @enum motor_in2_ports_t
  * @brief Port numbers for DRV8263H IN2 (direction) signals
+ *
+ * @details
+ * IN2 determines motor rotation direction in the DRV8263H IN2/IN1 control mode.
+ * Each IN2 signal is driven by a GPTW output A (GTIOC_A) configured as a static
+ * HIGH (forward) or LOW (reverse) duty cycle.
+ *
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see motor_in2_pins_t Corresponding bit positions within each port
+ * @see motor_in1_ports_t Companion IN1 (speed PWM) port assignments
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_in2_port = 2,  /**< Motor 0 IN2 on PORT2 (P23/GTIOC0A, pin 34) */
@@ -80,6 +90,16 @@ typedef enum : uint8_t {
 /**
  * @enum motor_in2_pins_t
  * @brief Pin numbers for DRV8263H IN2 (direction) signals
+ *
+ * @details
+ * Bit positions within the corresponding port register for each motor's IN2
+ * direction signal. Combined with motor_in2_ports_t to form a complete GPIO
+ * address for the GPTW output A pin.
+ *
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see motor_in2_ports_t Corresponding port register indices
+ * @see motor_in1_pins_t Companion IN1 (speed PWM) pin assignments
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_in2_pin = 3, /**< Motor 0 IN2 pin 3 (P23, pin 34) */
@@ -91,6 +111,16 @@ typedef enum : uint8_t {
 /**
  * @enum motor_in1_ports_t
  * @brief Port numbers for DRV8263H IN1 (PWM) signals
+ *
+ * @details
+ * IN1 determines motor speed in the DRV8263H IN2/IN1 control mode.
+ * Each IN1 signal is driven by a GPTW output B (GTIOC_B) carrying the
+ * PWM waveform at the configured frequency and duty cycle.
+ *
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see motor_in1_pins_t Corresponding bit positions within each port
+ * @see motor_in2_ports_t Companion IN2 (direction) port assignments
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_in1_port = 1,  /**< Motor 0 IN1 on PORT1 (P17/GTIOC0B, pin 38) */
@@ -102,6 +132,16 @@ typedef enum : uint8_t {
 /**
  * @enum motor_in1_pins_t
  * @brief Pin numbers for DRV8263H IN1 (PWM) signals
+ *
+ * @details
+ * Bit positions within the corresponding port register for each motor's IN1
+ * speed PWM signal. Combined with motor_in1_ports_t to form a complete GPIO
+ * address for the GPTW output B pin.
+ *
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see motor_in1_ports_t Corresponding port register indices
+ * @see motor_in2_pins_t Companion IN2 (direction) pin assignments
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_0_in1_pin = 7, /**< Motor 0 IN1 pin 7 (P17, pin 38) */
@@ -109,6 +149,18 @@ typedef enum : uint8_t {
   k_motor_2_in1_pin = 6, /**< Motor 2 IN1 pin 6 (P86, pin 41) */
   k_motor_3_in1_pin = 6, /**< Motor 3 IN1 pin 6 (PC6, pin 61) */
 } motor_in1_pins_t;
+
+/**
+ * @enum motor_count_t
+ * @brief Total number of motors on the STAR platform
+ * @details Used as a loop bound for iterating over motor-indexed arrays and
+ *          as an array size for motor configuration tables.
+ * @invariant Must equal the number of entries in motor_in2_ports_t and motor_in1_ports_t
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_motor_count = 4, /**< Total number of motors */
+} motor_count_t;
 
 /** @} */ /* end of motor_pwm_pins */
 
@@ -222,6 +274,15 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum motor_nfault_ports_t
+ * @brief Port numbers for DRV8263H nFAULT -> GTETRG hardware emergency stop
+ * @details Maps each motor's nFAULT signal to the GPTW external trigger input
+ *          port for sub-microsecond hardware fault response.
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see motor_nfault_pins_t Corresponding bit positions within each port
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_motor_0_nfault_port = 1,  /**< Motor 0 nFAULT on PORT1 (P15/GTETRGA, pin 42) */
   k_motor_1_nfault_port = 10, /**< Motor 1 nFAULT on PORTA (PA6/GTETRGB, pin 89) */
@@ -229,6 +290,15 @@ typedef enum : uint8_t {
   k_motor_3_nfault_port = 1,  /**< Motor 3 nFAULT on PORT1 (P14/GTETRGD, pin 43) */
 } motor_nfault_ports_t;
 
+/**
+ * @enum motor_nfault_pins_t
+ * @brief Pin numbers for DRV8263H nFAULT -> GTETRG hardware emergency stop
+ * @details Bit positions within the corresponding port register for each motor's
+ *          nFAULT fault signal input.
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see motor_nfault_ports_t Corresponding port register indices
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_motor_0_nfault_pin = 5, /**< Motor 0 nFAULT pin 5 (P15, pin 42) */
   k_motor_1_nfault_pin = 6, /**< Motor 1 nFAULT pin 6 (PA6, pin 89) */
@@ -262,10 +332,27 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum host_spi_ports_t
+ * @brief Port number for RSPI2_A host SPI communication pins
+ * @details All host SPI signals share PORTD for compact PCB routing.
+ * @invariant All SPI signals must be on the same port (PORTD)
+ * @see host_spi_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_host_spi_port = 13, /**< Host SPI on PORTD (PD1-PD4, pins 122-125) */
 } host_spi_ports_t;
 
+/**
+ * @enum host_spi_pins_t
+ * @brief Pin numbers for RSPI2_A host SPI signals (SCLK, COPI, CIPO, CS)
+ * @details COPI/CIPO follow OSHWA inclusive naming. HW register names
+ *          (MOSIC/MISOC) are from the RX72N datasheet.
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see host_spi_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_host_sclk_pin = 3, /**< HOST_SCLK pin 3 (PD3/RSPCKC, pin 123) */
   k_host_copi_pin = 1, /**< HOST_COPI pin 1 (PD1/MOSIC, pin 125) */
@@ -291,15 +378,38 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum debug_uart_ports_t
+ * @brief Port number for SCI9 debug UART pins
+ * @details Both TXD9 and RXD9 are on PORTB.
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see debug_uart_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_debug_uart_port = 11, /**< Debug UART on PORTB (PB6/PB7) */
 } debug_uart_ports_t;
 
+/**
+ * @enum debug_uart_pins_t
+ * @brief Pin numbers for SCI9 debug UART signals (TXD9, RXD9)
+ * @details UART TX/RX are crossed in the USB-UART bridge IC.
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see debug_uart_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_debug_txd_pin = 7, /**< DEBUG_TXD9 pin 7 (PB7/TXD9, pin 78) */
   k_debug_rxd_pin = 6, /**< DEBUG_RXD9 pin 6 (PB6/RXD9, pin 79) */
 } debug_uart_pins_t;
 
+/**
+ * @enum debug_uart_channel_t
+ * @brief SCI channel number for the debug UART
+ * @details The RX72N SCI9 is dedicated to the debug console.
+ * @invariant Must match MPC configuration in rx_mpc.c
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_debug_uart_channel = 9, /**< Debug UART uses SCI9 */
 } debug_uart_channel_t;
@@ -322,10 +432,26 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum host_i2c_ports_t
+ * @brief Port number for RIIC0 host I2C communication pins
+ * @details RIIC0 on PORT1 provides FM+ capable I2C to RPi5.
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see host_i2c_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_host_i2c_port = 1, /**< Host I2C on PORT1 (P12/P13) */
 } host_i2c_ports_t;
 
+/**
+ * @enum host_i2c_pins_t
+ * @brief Pin numbers for RIIC0 host I2C signals (SCL0, SDA0)
+ * @details Both require external 4.7k pull-up resistors to 3.3V.
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see host_i2c_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_host_scl0_pin = 2, /**< HOST_SCL0 pin 2 (P12/SCL0, pin 45) */
   k_host_sda0_pin = 3, /**< HOST_SDA0 pin 3 (P13/SDA0, pin 44) */
@@ -400,21 +526,49 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum encoder_0_ports_t
+ * @brief Port numbers for encoder 0 (front-left) MTU1 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_0_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_0_phase_a_port = 2, /**< Encoder 0 Phase A on PORT2 (P24/MTCLKA, pin 33) */
   k_encoder_0_phase_b_port = 2, /**< Encoder 0 Phase B on PORT2 (P25/MTCLKB, pin 32) */
 } encoder_0_ports_t;
 
+/**
+ * @enum encoder_0_pins_t
+ * @brief Pin numbers for encoder 0 (front-left) MTU1 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_0_ports_t Corresponding port register indices
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_0_phase_a_pin = 4, /**< Encoder 0 Phase A pin 4 (P24, pin 33) */
   k_encoder_0_phase_b_pin = 5, /**< Encoder 0 Phase B pin 5 (P25, pin 32) */
 } encoder_0_pins_t;
 
+/**
+ * @enum encoder_1_ports_t
+ * @brief Port numbers for encoder 1 (front-right) MTU2 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_1_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_1_phase_a_port = 10, /**< Encoder 1 Phase A on PORTA (PA1/MTCLKC, pin 96) */
   k_encoder_1_phase_b_port = 12, /**< Encoder 1 Phase B on PORTC (PC5/MTCLKD, pin 62) */
 } encoder_1_ports_t;
 
+/**
+ * @enum encoder_1_pins_t
+ * @brief Pin numbers for encoder 1 (front-right) MTU2 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_1_ports_t Corresponding port register indices
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_1_phase_a_pin = 1, /**< Encoder 1 Phase A pin 1 (PA1, pin 96) */
   k_encoder_1_phase_b_pin = 5, /**< Encoder 1 Phase B pin 5 (PC5, pin 62) */
@@ -440,25 +594,65 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum encoder_2_ports_t
+ * @brief Port numbers for encoder 2 (rear-left) TPU1 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_2_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_2_phase_a_port = 12, /**< Encoder 2 Phase A on PORTC (PC2/TCLKA, pin 70) */
   k_encoder_2_phase_b_port = 10, /**< Encoder 2 Phase B on PORTA (PA3/TCLKB, pin 94) */
 } encoder_2_ports_t;
 
+/**
+ * @enum encoder_2_pins_t
+ * @brief Pin numbers for encoder 2 (rear-left) TPU1 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_2_ports_t Corresponding port register indices
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_2_phase_a_pin = 2, /**< Encoder 2 Phase A pin 2 (PC2, pin 70) */
   k_encoder_2_phase_b_pin = 3, /**< Encoder 2 Phase B pin 3 (PA3, pin 94) */
 } encoder_2_pins_t;
 
+/**
+ * @enum encoder_3_ports_t
+ * @brief Port numbers for encoder 3 (rear-right) TPU2 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_3_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_3_phase_a_port = 12, /**< Encoder 3 Phase A on PORTC (PC0/TCLKC, pin 75) */
   k_encoder_3_phase_b_port = 11, /**< Encoder 3 Phase B on PORTB (PB3/TCLKD, pin 82) */
 } encoder_3_ports_t;
 
+/**
+ * @enum encoder_3_pins_t
+ * @brief Pin numbers for encoder 3 (rear-right) TPU2 phase counting inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see encoder_3_ports_t Corresponding port register indices
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_encoder_3_phase_a_pin = 0, /**< Encoder 3 Phase A pin 0 (PC0, pin 75) */
   k_encoder_3_phase_b_pin = 3, /**< Encoder 3 Phase B pin 3 (PB3, pin 82) */
 } encoder_3_pins_t;
+
+/**
+ * @enum encoder_count_t
+ * @brief Total number of quadrature encoders on the STAR platform
+ * @details Used as a loop bound for iterating over encoder-indexed arrays.
+ *          Covers 2 MTU encoders (front) + 2 TPU encoders (rear) = 4 total.
+ * @invariant Must equal the total number of encoder port/pin enum entries
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_encoder_count = 4, /**< Total number of encoders (2 MTU + 2 TPU) */
+} encoder_count_t;
 
 /** @} */ /* end of tpu_encoder_pins */
 
@@ -482,6 +676,14 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum motor_current_ports_t
+ * @brief Port numbers for DRV8263H IPROPI motor current sense ADC inputs
+ * @details All 4 current sense signals are on PORT4 for short analog traces.
+ * @invariant All values must be 4 (PORT4)
+ * @see motor_current_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_motor_0_current_port = 4, /**< Motor 0 current on PORT4 (P47/AN007, pin 133) */
   k_motor_1_current_port = 4, /**< Motor 1 current on PORT4 (P46/AN006, pin 134) */
@@ -489,6 +691,13 @@ typedef enum : uint8_t {
   k_motor_3_current_port = 4, /**< Motor 3 current on PORT4 (P44/AN004, pin 136) */
 } motor_current_ports_t;
 
+/**
+ * @enum motor_current_pins_t
+ * @brief Pin numbers for DRV8263H IPROPI motor current sense ADC inputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see motor_current_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_motor_0_current_pin = 7, /**< Motor 0 current pin 7 (P47/AN007, pin 133) */
   k_motor_1_current_pin = 6, /**< Motor 1 current pin 6 (P46/AN006, pin 134) */
@@ -496,6 +705,14 @@ typedef enum : uint8_t {
   k_motor_3_current_pin = 4, /**< Motor 3 current pin 4 (P44/AN004, pin 136) */
 } motor_current_pins_t;
 
+/**
+ * @enum motor_current_adc_channels_t
+ * @brief S12AD0 channel numbers for motor current sense inputs
+ * @details Maps each motor to its ADC channel (AN004-AN007) on Unit 0.
+ * @invariant Channel numbers must match S12AD0 ADANSA0 register bit positions
+ * @see motor_current_ports_t GPIO port for corresponding analog pin
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_motor_0_current_adc_ch = 7, /**< Motor 0 current ADC channel AN007 */
   k_motor_1_current_adc_ch = 6, /**< Motor 1 current ADC channel AN006 */
@@ -534,6 +751,14 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum sonar_echo_ports_t
+ * @brief Port numbers for HC-SR04 ECHO IRQ input pins
+ * @details All ECHO signals are on PORT0 for IRQ8-IRQ11 interrupt capability.
+ * @invariant All values must be 0 (PORT0)
+ * @see sonar_echo_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_sonar_0_echo_port = 0, /**< Sonar 0 ECHO on PORT0 (P03/IRQ11, pin 4) */
   k_sonar_1_echo_port = 0, /**< Sonar 1 ECHO on PORT0 (P02/IRQ10, pin 6) */
@@ -541,6 +766,13 @@ typedef enum : uint8_t {
   k_sonar_3_echo_port = 0, /**< Sonar 3 ECHO on PORT0 (P00/IRQ8, pin 8) */
 } sonar_echo_ports_t;
 
+/**
+ * @enum sonar_echo_pins_t
+ * @brief Pin numbers for HC-SR04 ECHO IRQ input pins
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see sonar_echo_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_sonar_0_echo_pin = 3, /**< Sonar 0 ECHO pin 3 (P03, pin 4) */
   k_sonar_1_echo_pin = 2, /**< Sonar 1 ECHO pin 2 (P02, pin 6) */
@@ -548,6 +780,13 @@ typedef enum : uint8_t {
   k_sonar_3_echo_pin = 0, /**< Sonar 3 ECHO pin 0 (P00, pin 8) */
 } sonar_echo_pins_t;
 
+/**
+ * @enum sonar_echo_irqs_t
+ * @brief ICU interrupt request numbers for HC-SR04 ECHO timing
+ * @details IRQ lines used for microsecond-accurate echo pulse measurement.
+ * @invariant IRQ numbers must match PORT0 pin ICU routing
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_sonar_0_echo_irq = 11, /**< Sonar 0 ECHO IRQ11 */
   k_sonar_1_echo_irq = 10, /**< Sonar 1 ECHO IRQ10 */
@@ -555,6 +794,14 @@ typedef enum : uint8_t {
   k_sonar_3_echo_irq = 8,  /**< Sonar 3 ECHO IRQ8 */
 } sonar_echo_irqs_t;
 
+/**
+ * @enum sonar_trig_ports_t
+ * @brief Port numbers for HC-SR04 TRIG GPIO output pins
+ * @details TRIG pins are spread across PORTF, PORTJ, and PORT3.
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see sonar_trig_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_sonar_0_trig_port = 15, /**< Sonar 0 TRIG on PORTF (PF5, pin 9) */
   k_sonar_1_trig_port = 18, /**< Sonar 1 TRIG on PORTJ (PJ5, pin 11) */
@@ -562,12 +809,31 @@ typedef enum : uint8_t {
   k_sonar_3_trig_port = 3,  /**< Sonar 3 TRIG on PORT3 (P33, pin 26) */
 } sonar_trig_ports_t;
 
+/**
+ * @enum sonar_trig_pins_t
+ * @brief Pin numbers for HC-SR04 TRIG GPIO output pins
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see sonar_trig_ports_t Corresponding port register indices
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_sonar_0_trig_pin = 5, /**< Sonar 0 TRIG pin 5 (PF5, pin 9) */
   k_sonar_1_trig_pin = 5, /**< Sonar 1 TRIG pin 5 (PJ5, pin 11) */
   k_sonar_2_trig_pin = 3, /**< Sonar 2 TRIG pin 3 (PJ3, pin 13) */
   k_sonar_3_trig_pin = 3, /**< Sonar 3 TRIG pin 3 (P33, pin 26) */
 } sonar_trig_pins_t;
+
+/**
+ * @enum sonar_count_t
+ * @brief Total number of HC-SR04 ultrasonic sensors on the STAR platform
+ * @details Used as a loop bound for iterating over sonar-indexed arrays and
+ *          as an array size for sonar configuration tables.
+ * @invariant Must equal the number of entries in sonar_echo_ports_t and sonar_trig_ports_t
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_sonar_count = 4, /**< Total number of sonar sensors */
+} sonar_count_t;
 
 /** @} */ /* end of hc_sr04_pins */
 
@@ -591,6 +857,14 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum led_ports_t
+ * @brief Port numbers for 6 status LED GPIO outputs
+ * @details LEDs are spread across PORTA, PORTB, and PORT7.
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see led_pins_t Corresponding bit positions
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_led_0_port = 10, /**< LED0 on PORTA (PA7, pin 88) */
   k_led_1_port = 11, /**< LED1 on PORTB (PB0, pin 87) */
@@ -600,6 +874,13 @@ typedef enum : uint8_t {
   k_led_5_port = 11, /**< LED5 on PORTB (PB2, pin 83) */
 } led_ports_t;
 
+/**
+ * @enum led_pins_t
+ * @brief Pin numbers for 6 status LED GPIO outputs
+ * @invariant Values must match PCB schematic and pinout.txt
+ * @see led_ports_t Corresponding port register indices
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_led_0_pin = 7, /**< LED0 pin 7 (PA7, pin 88) */
   k_led_1_pin = 0, /**< LED1 pin 0 (PB0, pin 87) */
@@ -609,6 +890,14 @@ typedef enum : uint8_t {
   k_led_5_pin = 2, /**< LED5 pin 2 (PB2, pin 83) */
 } led_pins_t;
 
+/**
+ * @enum led_count_t
+ * @brief Total number of status LEDs on the STAR platform
+ * @details Used as a loop bound for iterating over LED-indexed arrays and
+ *          as an array size for LED configuration tables.
+ * @invariant Must equal the number of entries in led_ports_t and led_pins_t
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_led_count = 6, /**< Total number of LEDs */
 } led_count_t;
@@ -630,10 +919,25 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum onewire_ports_t
+ * @brief Port number for Dallas 1-Wire temperature sensor data line
+ * @details Requires external 4.7k pull-up resistor to 3.3V on DQ.
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see onewire_pins_t Corresponding bit position
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_temp_1wire_port = 5, /**< 1-Wire on PORT5 (P51, pin 55) */
 } onewire_ports_t;
 
+/**
+ * @enum onewire_pins_t
+ * @brief Pin number for Dallas 1-Wire temperature sensor data line
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see onewire_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_temp_1wire_pin = 1, /**< 1-Wire pin 1 (P51, pin 55) */
 } onewire_pins_t;
@@ -662,14 +966,36 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum host_irq_ports_t
+ * @brief Port number for HOST_IRQ GPIO output to RPi5
+ * @details Despite IRQ15 naming, this is a GPIO output from RX72N.
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see host_irq_pins_t Corresponding bit position
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_host_irq_port = 6, /**< HOST_IRQ on PORT6 (P67/IRQ15, pin 98) */
 } host_irq_ports_t;
 
+/**
+ * @enum host_irq_pins_t
+ * @brief Pin number for HOST_IRQ GPIO output to RPi5
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see host_irq_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_host_irq_pin = 7, /**< HOST_IRQ pin 7 (P67, pin 98) */
 } host_irq_pins_t;
 
+/**
+ * @enum host_irq_nums_t
+ * @brief ICU interrupt request number for HOST_IRQ pin
+ * @details IRQ15 is the highest-numbered external interrupt on the RX72N.
+ * @invariant Must match P67 ICU routing in the hardware manual
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_host_irq_num = 15, /**< HOST_IRQ uses IRQ15 */
 } host_irq_nums_t;
@@ -696,14 +1022,36 @@ typedef enum : uint8_t {
  * @{
  */
 
+/**
+ * @enum usb_ports_t
+ * @brief Port number for USB0 VBUS detection input
+ * @details P16 detects 5V VBUS presence from USB host.
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see usb_pins_t Corresponding bit position
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_usb_vbus_port = 1, /**< USB0_VBUS on PORT1 (P16, pin 40) */
 } usb_ports_t;
 
+/**
+ * @enum usb_pins_t
+ * @brief Pin number for USB0 VBUS detection input
+ * @invariant Value must match PCB schematic and pinout.txt
+ * @see usb_ports_t Corresponding port register index
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_usb_vbus_pin = 6, /**< USB0_VBUS pin 6 (P16, pin 40) */
 } usb_pins_t;
 
+/**
+ * @enum usb_pkg_pins_t
+ * @brief Package pin numbers for USB0 signals (for PCB reference only)
+ * @details USB0_DM and USB0_DP are dedicated pins, not GPIO-capable.
+ * @invariant Values must match 144-pin LFQFP package pinout
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
   k_usb_dm_pkg_pin   = 47, /**< USB0_DM dedicated pin (pin 47) */
   k_usb_dp_pkg_pin   = 48, /**< USB0_DP dedicated pin (pin 48) */

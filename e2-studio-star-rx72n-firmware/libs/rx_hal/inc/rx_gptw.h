@@ -468,17 +468,51 @@ typedef enum : uint8_t {
 } rx_gptw_wave_mode_t;
 
 /**
- * @brief GPTW channel wrapper type (prevents accidental argument swaps)
+ * @struct rx_gptw_channel_id_t
+ * @brief Type-safe GPTW channel wrapper (prevents accidental argument swaps)
+ *
+ * @details
+ * Wraps rx_gptw_channel_t in a struct to leverage the C type system for
+ * catching argument transposition errors at compile time. Without this wrapper,
+ * swapping channel and output arguments (both uint8_t) would compile silently.
+ * Construct via rx_gptw_channel_id() helper function.
+ *
+ * @invariant value must be in range [0, k_gptw_num_channels)
+ *
+ * @code
+ * rx_gptw_channel_id_t ch = rx_gptw_channel_id(k_gptw_channel_0);
+ * @endcode
+ *
+ * @see rx_gptw_channel_id() Constructor function
+ * @see rx_gptw_output_id_t Companion wrapper for output parameter
+ * @since Version 1.0.0
  */
 typedef struct {
-  rx_gptw_channel_t value; /**< GPTW channel */
+  rx_gptw_channel_t value; /**< GPTW channel number (0-3) */
 } rx_gptw_channel_id_t;
 
 /**
- * @brief GPTW output wrapper type (prevents accidental argument swaps)
+ * @struct rx_gptw_output_id_t
+ * @brief Type-safe GPTW output wrapper (prevents accidental argument swaps)
+ *
+ * @details
+ * Wraps rx_gptw_output_t in a struct to leverage the C type system for
+ * catching argument transposition errors at compile time. Without this wrapper,
+ * swapping channel and output arguments (both uint8_t) would compile silently.
+ * Construct via rx_gptw_output_id() helper function.
+ *
+ * @invariant value must be k_gptw_output_a or k_gptw_output_b
+ *
+ * @code
+ * rx_gptw_output_id_t out = rx_gptw_output_id(k_gptw_output_a);
+ * @endcode
+ *
+ * @see rx_gptw_output_id() Constructor function
+ * @see rx_gptw_channel_id_t Companion wrapper for channel parameter
+ * @since Version 1.0.0
  */
 typedef struct {
-  rx_gptw_output_t value; /**< GPTW output */
+  rx_gptw_output_t value; /**< GPTW output identifier (A or B) */
 } rx_gptw_output_id_t;
 
 /**
@@ -684,6 +718,12 @@ typedef struct {
    *
    * - true: Both A and B outputs active (complementary)
    * - false: Only Output A active, Output B held low
+   *
+   * @warning When complementary mode is enabled, GTCCRB is tied to GTCCRA
+   *          by the hardware. Writing GTCCRB directly has no effect; the
+   *          output B duty is always the complement of output A. For
+   *          independent A/B control (e.g., DRV8263H IN2/IN1 mode), set
+   *          this to false.
    */
   bool enable_complementary;
 
@@ -870,18 +910,36 @@ typedef struct {
 [[nodiscard]] rx_err_t rx_gptw_init_all_staggered(const rx_gptw_config_t* config);
 
 /**
- * @brief Initialize GPTW channel for PWM output
+ * @brief Initialize a single GPTW channel for PWM output
  *
- * Configures GPTW channel for PWM mode (sawtooth or triangle wave).
- * Automatically configures MPC for Port E pin alternate functions.
- * Enables timer and starts PWM generation at 0% duty cycle.
+ * @details
+ * Configures the specified GPTW channel for PWM mode (sawtooth or triangle wave).
+ * Automatically configures MPC for the pin alternate functions, sets up dead-time
+ * insertion, and starts PWM generation at 0% duty cycle. The GTCNT counter is
+ * reset to zero during initialization.
  *
- * @param[in] channel GPTW channel (0-3)
- * @param[in] config PWM configuration
+ * @param[in] channel GPTW channel number (valid: 0-3)
+ * @param[in] config Pointer to PWM configuration struct (must be non-null)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel or config is invalid
- * @return k_rx_err_invalid_state if GPTW module not enabled
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, channel initialized and timer running
+ * @retval k_rx_err_invalid_arg Channel out of range or config is null
+ * @retval k_rx_err_invalid_state GPTW module not enabled in MSTPCR
+ *
+ * @pre GPTW module clock must be enabled
+ * @pre config must point to a valid rx_gptw_config_t
+ * @post Channel timer running at configured frequency with 0% duty
+ * @post GTCNT reset to zero (affects phase staggering if called per-channel)
+ *
+ * @note Not thread-safe. Call from single-threaded init context.
+ * @warning Resets GTCNT to 0. If phase staggering is required, use
+ *          rx_gptw_init_all_staggered() instead, or configure phase offsets
+ *          after all channels are initialized.
+ *
+ * @see rx_gptw_init_all_staggered() Phase-staggered multi-channel init
+ * @see rx_gptw_deinit() Release channel resources
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* config);
 
@@ -998,105 +1056,223 @@ typedef struct {
  * - Rule 5: [OK] 2 preconditions, 2 postconditions
  * - Rule 7: [OK] Returns error code, caller must check
  */
-rx_err_t
+[[nodiscard]] rx_err_t
 rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float duty_percent);
 
 /**
- * @brief Set PWM duty cycle (raw count value)
+ * @brief Set PWM duty cycle using raw counter value
  *
- * Updates duty cycle using raw counter value for efficiency.
- * Useful in tight control loops where floating-point calculation overhead
- * should be avoided.
+ * @details
+ * Updates duty cycle using a raw counter value for efficiency in tight control
+ * loops where floating-point overhead should be avoided. The count is written
+ * to the compare register buffer and takes effect on the next PWM period
+ * boundary, ensuring glitch-free operation.
  *
- * @param[in] channel GPTW channel (0-3)
- * @param[in] output Output channel (A/B)
- * @param[in] duty_count Duty cycle count (0 - period_count)
+ * @param[in] channel GPTW channel (valid: 0-3)
+ * @param[in] output Output channel (k_gptw_output_a or k_gptw_output_b)
+ * @param[in] duty_count Duty cycle count (valid range: 0 to period_count)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel, output, or count is invalid
- * @return k_rx_err_invalid_state if channel not initialized
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, duty cycle updated
+ * @retval k_rx_err_invalid_arg Channel, output, or count out of range
+ * @retval k_rx_err_invalid_state Channel not initialized via rx_gptw_init_pwm()
+ *
+ * @pre Channel must be initialized via rx_gptw_init_pwm()
+ * @pre duty_count must not exceed the period count for the channel
+ * @post Compare register buffer updated with new duty count
+ * @post Active register updated on next period boundary
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rx_gptw_set_duty() Percentage-based version with float conversion
+ * @see rx_gptw_get_period() Query period count for duty calculation
+ *
+ * @since Version 1.0.0
  */
-rx_err_t
+[[nodiscard]] rx_err_t
 rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count);
 
 /**
- * @brief Get current duty cycle
+ * @brief Get current duty cycle as a floating-point percentage
  *
- * @param[in] channel GPTW channel (0-3)
- * @param[in] output Output channel (A/B)
- * @param[out] duty_percent Pointer to store duty cycle in percent
+ * @details
+ * Reads the current compare register value for the specified output and
+ * converts it to a percentage of the period count. The value reflects the
+ * most recently committed duty cycle (may differ from the buffered value
+ * pending a period boundary update).
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if duty_percent is nullptr
- * @return k_rx_err_invalid_arg if channel or output is invalid
- * @return k_rx_err_invalid_state if channel not initialized
+ * @param[in] channel GPTW channel number (valid: 0-3)
+ * @param[in] output Output channel (k_gptw_output_a or k_gptw_output_b)
+ * @param[out] duty_percent Pointer to store duty cycle in percent [0.0, 100.0]
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, duty_percent written
+ * @retval k_rx_err_null_ptr duty_percent is nullptr
+ * @retval k_rx_err_invalid_arg Channel or output out of range
+ * @retval k_rx_err_invalid_state Channel not initialized
+ *
+ * @pre Channel must be initialized via rx_gptw_init_pwm()
+ * @pre duty_percent must be a valid non-null pointer
+ * @post duty_percent contains current duty cycle percentage
+ * @post No hardware state modified (read-only operation)
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rx_gptw_set_duty() Set duty cycle by percentage
+ * @see rx_gptw_get_period() Get period count for manual calculation
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty_percent);
 
 /**
- * @brief Get PWM period count
+ * @brief Get the 32-bit PWM period count for a GPTW channel
  *
- * Returns the period register value (useful for raw duty cycle calculations).
+ * @details
+ * Reads the GTPR (General Timer Period Register) value for the specified
+ * channel. This value determines the PWM frequency and is needed to
+ * calculate raw duty counts: duty_count = (duty_percent / 100) * period_count.
  *
- * @param[in] channel GPTW channel (0-3)
- * @param[out] period_count Pointer to store period count
+ * @param[in] channel GPTW channel number (valid: 0-3)
+ * @param[out] period_count Pointer to store 32-bit period count
  *
- * @return k_rx_ok on success
- * @return k_rx_err_null_ptr if period_count is nullptr
- * @return k_rx_err_invalid_arg if channel is invalid
- * @return k_rx_err_invalid_state if channel not initialized
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, period_count written
+ * @retval k_rx_err_null_ptr period_count is nullptr
+ * @retval k_rx_err_invalid_arg Channel out of range
+ * @retval k_rx_err_invalid_state Channel not initialized
+ *
+ * @pre Channel must be initialized via rx_gptw_init_pwm()
+ * @pre period_count must be a valid non-null pointer
+ * @post period_count contains the GTPR register value
+ * @post No hardware state modified (read-only operation)
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rx_gptw_set_duty_raw() Uses period_count for raw duty calculation
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_gptw_get_period(rx_gptw_channel_t channel, uint32_t* period_count);
 
 /**
- * @brief Enable or disable PWM output
+ * @brief Enable or disable a PWM output pin
  *
- * @param[in] channel GPTW channel (0-3)
- * @param[in] output Output channel (A/B)
- * @param[in] enable True to enable output, false to disable
+ * @details
+ * Controls the GTONCR (General Timer Output Negation Control Register) bits
+ * that gate the PWM signal to the physical pin. When disabled, the pin is
+ * driven to its inactive level (determined by polarity configuration).
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel or output is invalid
- * @return k_rx_err_invalid_state if channel not initialized
+ * @param[in] channel GPTW channel number (valid: 0-3)
+ * @param[in] output Output channel (k_gptw_output_a or k_gptw_output_b)
+ * @param[in] enable true to drive PWM on pin, false to hold pin inactive
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, output enable state updated
+ * @retval k_rx_err_invalid_arg Channel or output out of range
+ * @retval k_rx_err_invalid_state Channel not initialized
+ *
+ * @pre Channel must be initialized via rx_gptw_init_pwm()
+ * @pre Output must be k_gptw_output_a or k_gptw_output_b
+ * @post GTONCR bit updated for the specified output
+ * @post Pin either drives PWM signal or holds inactive level
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rx_gptw_start() Start timer (separate from output enable)
+ * @see rx_gptw_stop() Stop timer (separate from output enable)
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool enable);
 
 /**
- * @brief Start GPTW timer
+ * @brief Start the GPTW timer counter for PWM generation
  *
- * Starts the timer counter for PWM generation.
- * Timer is automatically started during init, but can be stopped/restarted.
+ * @details
+ * Sets the GTCR.CST bit to begin counting. The timer is automatically
+ * started during rx_gptw_init_pwm(), but can be stopped via rx_gptw_stop()
+ * and restarted with this function. Counting resumes from the current
+ * GTCNT value (not reset to zero).
  *
- * @param[in] channel GPTW channel (0-3)
+ * @param[in] channel GPTW channel number (valid: 0-3)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel is invalid
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, timer started
+ * @retval k_rx_err_invalid_arg Channel out of range
+ *
+ * @pre Channel must be initialized via rx_gptw_init_pwm()
+ * @pre Channel must currently be stopped (safe to call if already running)
+ * @post Timer counter incrementing at peripheral clock rate
+ * @post PWM outputs active (if enabled via rx_gptw_enable_output())
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rx_gptw_stop() Stop the timer counter
+ * @see rx_gptw_init_pwm() Initializes and starts timer automatically
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_gptw_start(rx_gptw_channel_t channel);
 
 /**
- * @brief Stop GPTW timer
+ * @brief Stop the GPTW timer counter
  *
- * Stops the timer counter. PWM outputs will hold their last state.
+ * @details
+ * Clears the GTCR.CST bit to halt counting. PWM outputs hold their last
+ * state when the timer stops. The GTCNT value is preserved and counting
+ * resumes from that value when rx_gptw_start() is called.
  *
- * @param[in] channel GPTW channel (0-3)
+ * @param[in] channel GPTW channel number (valid: 0-3)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel is invalid
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, timer stopped
+ * @retval k_rx_err_invalid_arg Channel out of range
+ *
+ * @pre Channel must be initialized via rx_gptw_init_pwm()
+ * @pre Channel should be running (safe to call if already stopped)
+ * @post Timer counter halted at current GTCNT value
+ * @post PWM outputs frozen at last driven state
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ * @warning Outputs hold last state; explicitly set duty to 0 before
+ *          stopping if low output is required.
+ *
+ * @see rx_gptw_start() Resume timer counter
+ * @see rx_gptw_deinit() Full shutdown including output disable
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_gptw_stop(rx_gptw_channel_t channel);
 
 /**
- * @brief Deinitialize GPTW channel
+ * @brief Deinitialize a GPTW channel and release all resources
  *
- * Stops timer, disables outputs, and releases resources.
+ * @details
+ * Performs a full shutdown sequence: stops the timer counter, disables both
+ * PWM outputs, resets the compare and period registers, and marks the channel
+ * as uninitialized. After deinit, the channel must be re-initialized via
+ * rx_gptw_init_pwm() before use.
  *
- * @param[in] channel GPTW channel (0-3)
+ * @param[in] channel GPTW channel number (valid: 0-3)
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel is invalid
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Success, channel fully deinitialized
+ * @retval k_rx_err_invalid_arg Channel out of range
+ *
+ * @pre Channel should be initialized (safe to call if already deinitialized)
+ * @pre Motor outputs should be in a safe state before deinit
+ * @post Timer stopped, outputs disabled, channel marked uninitialized
+ * @post All channel registers reset to default values
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rx_gptw_init_pwm() Re-initialize after deinit
+ * @see rx_gptw_stop() Stop timer without full deinit
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_gptw_deinit(rx_gptw_channel_t channel);
 

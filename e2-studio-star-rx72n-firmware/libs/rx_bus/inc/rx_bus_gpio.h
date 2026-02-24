@@ -196,12 +196,12 @@
  * rx_bus_manager_t manager;
  * rx_bus_manager_init(&manager);
  *
- * // Register GPIO bus for status LED (P05 - red LED, active low)
+ * // Register GPIO bus for status LED0 (PA7 - active low)
  * rx_bus_config_t led_config = {
  *     .type = k_rx_bus_type_gpio,
  *     .gpio = {
- *         .port = 0,     // PORT0
- *         .pin = 5,      // Bit 5
+ *         .port = k_led_0_port,  // PORTA
+ *         .pin  = k_led_0_pin,   // Bit 7
  *     }
  * };
  * rx_bus_register(&manager, "led_red", &led_config);
@@ -226,11 +226,15 @@
  * @par Usage Example - Button Input
  * @code
  * // Register GPIO bus for user button (P20 - active low with pull-up)
+ * typedef enum : uint8_t {
+ *     k_button_port = 2,  // PORT2
+ *     k_button_pin  = 0,  // Bit 0
+ * } button_gpio_t;
  * rx_bus_config_t button_config = {
  *     .type = k_rx_bus_type_gpio,
  *     .gpio = {
- *         .port = 2,
- *         .pin = 0,
+ *         .port = k_button_port,
+ *         .pin  = k_button_pin,
  *     }
  * };
  * rx_bus_register(&manager, "button_user", &button_config);
@@ -251,12 +255,12 @@
  *
  * @par Usage Example - Peripheral Enable Control
  * @code
- * // Register GPIO for motor driver nSLEEP (enable) pin
+ * // Register GPIO for motor 0 nSLEEP (enable) pin
  * rx_bus_config_t motor_enable_config = {
  *     .type = k_rx_bus_type_gpio,
  *     .gpio = {
- *         .port = 3,
- *         .pin = 4,
+ *         .port = k_motor_nsleep_port_0,
+ *         .pin  = k_motor_nsleep_pin_0,
  *     }
  * };
  * rx_bus_register(&manager, "motor_enable", &motor_enable_config);
@@ -278,6 +282,7 @@
  * @see rx_port_utils.h Low-level PORT hardware access
  * @see rx_pin_validator.h Pin conflict detection
  *
+ * @author STAR Project Contributors
  * @version 1.0.0
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 STAR Project
