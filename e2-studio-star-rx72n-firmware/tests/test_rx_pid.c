@@ -226,6 +226,7 @@ typedef enum : int8_t {
   k_test_integral_max   = 50,   /**< Default maximum integral accumulation */
   k_test_integral_min   = -50,  /**< Default minimum integral (negative for enum) */
   k_test_num_iterations = 100,  /**< Number of iterations for integration tests */
+  k_test_step_iterations = 10,  /**< Number of iterations for step response tests */
 } test_constants_t;
 
 /**
@@ -246,6 +247,21 @@ static const float s_float_epsilon = 0.0001F;
  * parameter in rx_pid_compute() calls throughout tests.
  */
 static const float s_dt_seconds = 0.01F;
+
+/** @brief Multiplier for second iteration in integral accumulation tests */
+static const float s_iter_multiplier_2 = 2.0F;
+
+/** @brief Multiplier for third iteration in integral accumulation tests */
+static const float s_iter_multiplier_3 = 3.0F;
+
+/** @brief Negative time step for invalid dt validation tests */
+static const float s_test_dt_negative = -0.01F;
+
+/** @brief Sentinel value indicating no previous output has been recorded */
+static const float s_test_prev_output_sentinel = -1000.0F;
+
+/** @brief Fraction of setpoint used as measured value in ramp tracking tests */
+static const float s_ramp_tracking_fraction = 0.9F;
 
 /**
  * @brief MATLAB-tuned Kp gain for motor control
@@ -734,12 +750,12 @@ void test_pid_compute_integral_accumulation(void)
 
   /* Second iteration: integral = 0.1 + 0.1 = 0.2 */
   rx_pid_compute(&pid, setpoint, measured, dt, &output);
-  float expected_integral = error * dt * 2.0F;
+  float expected_integral = error * dt * s_iter_multiplier_2;
   TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, expected_integral * config.ki, output);
 
   /* Third iteration: integral = 0.2 + 0.1 = 0.3 */
   rx_pid_compute(&pid, setpoint, measured, dt, &output);
-  expected_integral = error * dt * 3.0F;
+  expected_integral = error * dt * s_iter_multiplier_3;
   TEST_ASSERT_FLOAT_WITHIN(s_float_epsilon, expected_integral * config.ki, output);
 }
 
@@ -1037,7 +1053,7 @@ void test_pid_compute_invalid_dt(void)
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 
   /* dt < 0 */
-  err = rx_pid_compute(&pid, 100.0F, 90.0F, -0.01F, &output);
+  err = rx_pid_compute(&pid, 100.0F, 90.0F, s_test_dt_negative, &output);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -1136,8 +1152,8 @@ void test_pid_reset_clears_state(void)
   float output = 0.0F;
 
   /* Accumulate some integral */
-  for (uint32_t i = 0; i < 10; i++) {
-    rx_pid_compute(&pid, 100.0F, 90.0F, s_dt_seconds, &output);
+  for (uint32_t i = 0; i < k_test_step_iterations; i++) {
+    (void)rx_pid_compute(&pid, 100.0F, 90.0F, s_dt_seconds, &output);
   }
   TEST_ASSERT_TRUE(pid.integral > 0.0F);
   TEST_ASSERT_TRUE(pid.prev_error != 0.0F);
@@ -1412,8 +1428,8 @@ void test_pid_set_integral_limits_clamps_existing(void)
   float output = 0.0F;
 
   /* Accumulate integral to ~1.0 (100 iterations * 10 error * 0.01 dt = 10) */
-  for (uint32_t i = 0; i < 100; i++) {
-    rx_pid_compute(&pid, 100.0F, 90.0F, s_dt_seconds, &output);
+  for (uint32_t i = 0; i < k_test_num_iterations; i++) {
+    (void)rx_pid_compute(&pid, 100.0F, 90.0F, s_dt_seconds, &output);
   }
   TEST_ASSERT_TRUE(pid.integral > 5.0F);
 
@@ -1509,8 +1525,8 @@ void test_pid_step_response(void)
   float dt       = s_dt_seconds;
 
   /* Simulate several iterations - output should increase */
-  float prev_output = -1000.0F;
-  for (uint32_t i = 0; i < 10; i++) {
+  float prev_output = s_test_prev_output_sentinel;
+  for (uint32_t i = 0; i < k_test_step_iterations; i++) {
     rx_pid_compute(&pid, setpoint, measured, dt, &output);
 
     /* With increasing error (setpoint - measured stays constant with I accumulation),
@@ -1620,9 +1636,9 @@ void test_pid_ramp_tracking(void)
   float ramp_rate = 10.0F; /* Units per second */
 
   /* Track a ramping setpoint */
-  for (uint32_t i = 0; i < 100; i++) {
+  for (uint32_t i = 0; i < k_test_num_iterations; i++) {
     float setpoint = ramp_rate * (float)i * dt;
-    float measured = setpoint * 0.9F; /* Always 10% behind */
+    float measured = setpoint * s_ramp_tracking_fraction; /* Always 10% behind */
 
     rx_pid_compute(&pid, setpoint, measured, dt, &output);
 

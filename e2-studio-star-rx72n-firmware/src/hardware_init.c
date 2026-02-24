@@ -185,6 +185,8 @@
  * @since Version 1.0.0
  *
  * @par Revision History:
+ * - v1.1.0 (2026-02): Add GPIO helper functions for DRV8263H motor driver,
+ *   IMU, sonar, ADC, and LED pin initialization
  * - v1.0.0 (2026-01): Initial implementation with timers and UART
  *
  * @date 2026-01-14
@@ -285,7 +287,27 @@ typedef enum : uint16_t {
   k_pin_adc_an007 = k_rx_p4_7, /**< P4.7 - AN007 (motor 0 current) */
 } rx_mpc_pin_t;
 
-/** @brief GPIO pin group counts */
+/**
+ * @enum gpio_pin_counts_t
+ * @brief Static array-size and loop-bound constants for GPIO pin groups
+ *
+ * @details
+ * Provides compile-time upper bounds for all GPIO pin arrays. Used as loop
+ * limits in internal_gpio_init_*() helpers and as array-size declarators.
+ *
+ * @invariant All values must fit in uint8_t (loop counter type)
+ *
+ * @code{.c}
+ * const rx_port_pin_t pins[k_gptw_pin_count] = { ... };
+ * for (uint8_t i = 0; i < k_gptw_pin_count; i++) {
+ *     rx_mpc_set_gptw(pins[i]);
+ * }
+ * @endcode
+ *
+ * @see internal_gpio_init_gptw_pwm() Uses k_gptw_pin_count
+ * @see internal_gpio_init_motor_driver_ctrl() Uses k_motor_count
+ * @since Version 1.1.0
+ */
 typedef enum : uint8_t {
   k_gptw_pin_count    = 8, /**< 4 motors x 2 pins (IN2 + IN1) */
   k_motor_count       = 4, /**< 4 DRV8263H motor drivers */
@@ -349,7 +371,7 @@ typedef enum : uint8_t {
  * }
  * @endcode
  *
- * @since Version 1.2.0
+ * @since Version 1.1.0
  */
 typedef enum : uint8_t {
   k_gpio_single_bit_mask = 1U, /**< Single-bit mask shifted by pin number for register RMW */
@@ -596,7 +618,7 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
  * @see internal_gpio_init_motor_driver_ctrl() Primary caller for DRVOFF/nSLEEP
  * @see internal_gpio_init_sonar_triggers() Primary caller for sonar trigger pins
  *
- * @since Version 1.2.0
+ * @since Version 1.1.0
  */
 static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial_high)
 {
@@ -605,11 +627,11 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for output pin");
   RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
-  regs->pmr &= ~(uint8_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
   if (initial_high) {
     regs->podr |= (uint8_t)(k_gpio_single_bit_mask << pin);
   } else {
-    regs->podr &= ~(uint8_t)(k_gpio_single_bit_mask << pin);
+    regs->podr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin);
   }
   regs->pdr |= (uint8_t)(k_gpio_single_bit_mask << pin); /* Output direction */
 }
@@ -646,7 +668,7 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
  * @see internal_gpio_init_imu() Primary caller for IMU interrupt pin
  * @see internal_gpio_init_sonar_echoes() Primary caller for sonar echo pins
  *
- * @since Version 1.2.0
+ * @since Version 1.1.0
  */
 static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
 {
@@ -655,8 +677,8 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for input pin");
   RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
-  regs->pmr &= ~(uint8_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
-  regs->pdr &= ~(uint8_t)(k_gpio_single_bit_mask << pin); /* Input direction */
+  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pdr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* Input direction */
 }
 
 /**
@@ -694,6 +716,12 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
 static rx_err_t internal_gpio_init_imu(void)
 {
   static const char* s_tag = "GPIO_IMU";
+
+  /* NASA Rule 5: precondition validation */
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_scl)) != nullptr,
+            "IMU SCL port base invalid");
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_imu_rst)) != nullptr,
+            "IMU RST port base invalid");
 
   /* IMU I2C (RIIC1): SCL1 + SDA1 */
   rx_err_t err = rx_mpc_set_riic((rx_port_pin_t)k_pin_imu_scl);
@@ -739,7 +767,7 @@ static rx_err_t internal_gpio_init_imu(void)
  *
  * Motor outputs remain disabled (DRVOFF=HIGH) until the motor control task
  * explicitly drives DRVOFF LOW before commanding PWM.
- * TODO(#367): Motor control task must drive DRVOFF LOW before commanding PWM.
+ * @todo (#367) Motor control task must drive DRVOFF LOW before commanding PWM.
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok All 8 pins configured successfully
@@ -765,6 +793,12 @@ static rx_err_t internal_gpio_init_imu(void)
 static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
 {
   static const char* s_tag = "GPIO_DRV_CTRL";
+
+  /* NASA Rule 5: precondition validation */
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_motor0_drvoff)) != nullptr,
+            "Motor 0 DRVOFF port base invalid");
+  RX_ASSERT(rx_port_get_base(rx_port_from_pin((rx_port_pin_t)k_pin_motor0_nsleep)) != nullptr,
+            "Motor 0 nSLEEP port base invalid");
 
   const rx_port_pin_t drvoff_pins[k_motor_count] = {(rx_port_pin_t)k_pin_motor0_drvoff,
                                                      (rx_port_pin_t)k_pin_motor1_drvoff,

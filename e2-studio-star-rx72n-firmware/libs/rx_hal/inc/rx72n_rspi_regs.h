@@ -23,7 +23,7 @@
  *     style=filled;
  *     color=lightgrey;
  *     rspi0 [label="RSPI0\n(Peripheral)"];
- *     rspi1 [label="RSPI1\n(Controller)"];
+ *     rspi1 [label="RSPI1\n(Not used)"];
  *     rspi2 [label="RSPI2\n(Not used)"];
  *   }
  *
@@ -39,7 +39,7 @@
  * | Channel | Base Address | Mode       | Target           | Speed    | Purpose                |
  * |---------|--------------|------------|------------------|----------|------------------------|
  * | RSPI0   | 0x000D0100   | Peripheral | Raspberry Pi 5   | 10 Mbps  | Command/telemetry      |
- * | RSPI1   | 0x000D0140   | Controller | Not used    | 5 Mbps   | Not used in current design        |
+ * | RSPI1   | 0x000D0140   | Not used   | -                | -        | Not used in current design        |
  * | RSPI2   | 0x000D0300   | Not used   | -                | -        | Not used in current design |
  *
  * @par Key Features
@@ -55,11 +55,11 @@
  * @par Hardware Requirements
  * | Parameter      | RSPI0 (RPi5)     | RSPI1 (Not used) |
  * |----------------|------------------|------------------|
- * | PCLKB          | 60 MHz           | 60 MHz           |
- * | Max Bit Rate   | 30 Mbps          | 30 Mbps          |
- * | Configured     | 10 Mbps          | 5 Mbps           |
- * | Data Width     | 8 bits           | 16 bits          |
- * | CPOL/CPHA      | 0/0              | 0/0 (reset default)     |
+ * | PCLKB          | 60 MHz           | -                |
+ * | Max Bit Rate   | 30 Mbps          | -                |
+ * | Configured     | 10 Mbps          | -                |
+ * | Data Width     | 8 bits           | -                |
+ * | CPOL/CPHA      | 0/0              | -                |
  *
  * @par Memory Map (per channel)
  * | Offset | Size | Register | Description                       |

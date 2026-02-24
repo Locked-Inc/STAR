@@ -144,8 +144,8 @@ extern "C" {
  *
  * // Convert to voltage (3.3V reference)
  * static const float s_vref_volts = 3.3F;
- * static const float s_adc_full_scale = 4095.0F;
- * float voltage = (float)raw_value * s_vref_volts / s_adc_full_scale;
+ * static const float s_adc_full_scale_12bit = 4095.0F;
+ * float voltage_v = (float)raw_value * s_vref_volts / s_adc_full_scale_12bit;
  * @endcode
  *
  * @{

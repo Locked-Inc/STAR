@@ -1076,7 +1076,7 @@ rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float
  * @post Compare register buffer updated with new duty count
  * @post Active register updated on next period boundary
  *
- * @note Not thread-safe. Caller must provide synchronization.
+ * @note Thread-safe: single 32-bit register write is inherently atomic on RX72N
  *
  * @see rx_gptw_set_duty() Percentage-based version with float conversion
  * @see rx_gptw_get_period() Query period count for duty calculation
@@ -1112,6 +1112,15 @@ rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_
  *
  * @note Not thread-safe. Caller must provide synchronization.
  *
+ * @par Example:
+ * @code{.c}
+ * float duty = 0.0F;
+ * rx_err_t err = rx_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a, &duty);
+ * if (err == k_rx_ok) {
+ *     // duty now contains current duty cycle percentage [0.0, 100.0]
+ * }
+ * @endcode
+ *
  * @see rx_gptw_set_duty() Set duty cycle by percentage
  * @see rx_gptw_get_period() Get period count for manual calculation
  *
@@ -1144,6 +1153,16 @@ rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty
  *
  * @note Not thread-safe. Caller must provide synchronization.
  *
+ * @par Example:
+ * @code{.c}
+ * uint32_t period = 0;
+ * rx_err_t err = rx_gptw_get_period(k_gptw_channel_0, &period);
+ * if (err == k_rx_ok) {
+ *     // Calculate raw duty count for 50% duty cycle
+ *     uint32_t duty_count = period / 2;
+ * }
+ * @endcode
+ *
  * @see rx_gptw_set_duty_raw() Uses period_count for raw duty calculation
  *
  * @since Version 1.0.0
@@ -1173,6 +1192,15 @@ rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty
  * @post Pin either drives PWM signal or holds inactive level
  *
  * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @par Example:
+ * @code{.c}
+ * // Enable PWM output on channel 0, output A
+ * rx_err_t err = rx_gptw_enable_output(k_gptw_channel_0, k_gptw_output_a, true);
+ * if (err != k_rx_ok) {
+ *     // Handle output enable failure
+ * }
+ * @endcode
  *
  * @see rx_gptw_start() Start timer (separate from output enable)
  * @see rx_gptw_stop() Stop timer (separate from output enable)
@@ -1204,6 +1232,15 @@ rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool e
  *
  * @note Not thread-safe. Caller must provide synchronization.
  *
+ * @par Example:
+ * @code{.c}
+ * // Restart timer after a stop
+ * rx_err_t err = rx_gptw_start(k_gptw_channel_0);
+ * if (err != k_rx_ok) {
+ *     // Handle start failure
+ * }
+ * @endcode
+ *
  * @see rx_gptw_stop() Stop the timer counter
  * @see rx_gptw_init_pwm() Initializes and starts timer automatically
  *
@@ -1234,6 +1271,14 @@ rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool e
  * @warning Outputs hold last state; explicitly set duty to 0 before
  *          stopping if low output is required.
  *
+ * @par Example:
+ * @code{.c}
+ * // Stop timer and ensure outputs are low
+ * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
+ *                  rx_gptw_output_id(k_gptw_output_b), 0.0F);
+ * rx_err_t err = rx_gptw_stop(k_gptw_channel_0);
+ * @endcode
+ *
  * @see rx_gptw_start() Resume timer counter
  * @see rx_gptw_deinit() Full shutdown including output disable
  *
@@ -1262,6 +1307,15 @@ rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool e
  * @post All channel registers reset to default values
  *
  * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @par Example:
+ * @code{.c}
+ * // Full shutdown of GPTW channel 0
+ * rx_err_t err = rx_gptw_deinit(k_gptw_channel_0);
+ * if (err == k_rx_ok) {
+ *     // Channel released, must call rx_gptw_init_pwm() before reuse
+ * }
+ * @endcode
  *
  * @see rx_gptw_init_pwm() Re-initialize after deinit
  * @see rx_gptw_stop() Stop timer without full deinit

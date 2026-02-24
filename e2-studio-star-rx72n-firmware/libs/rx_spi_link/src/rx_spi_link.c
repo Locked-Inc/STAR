@@ -266,6 +266,18 @@ static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq
  * ============================================================================= */
 
 /**
+ * @var s_zero_link
+ * @brief Zero-initialized SPI link template for stack-safe initialization
+ * @details Static const instance used to clear rx_spi_link_t without creating
+ *          a large compound literal on the stack. Lives in .rodata section.
+ * @note Read-only; never modified after static initialization
+ * @warning Do not remove - prevents stack overflow in init function
+ * @see rx_spi_link_init() Uses this template to zero-initialize the link handle
+ * @since Version 1.1.0
+ */
+static const rx_spi_link_t s_zero_link = {};
+
+/**
  * @brief Initialize SPI link layer
  * @see rx_spi_link.h for full documentation
  */
@@ -282,16 +294,6 @@ rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* confi
     return k_rx_err_invalid_arg;
   }
 
-  /**
-   * @var s_zero_link
-   * @brief Zero-initialized SPI link template for stack-safe initialization
-   * @details Static const instance used to clear rx_spi_link_t without creating
-   *          a large compound literal on the stack. Lives in .rodata section.
-   * @note Read-only; never modified after static initialization
-   * @warning Do not remove - prevents stack overflow in init function
-   * @since Version 1.0.0
-   */
-  static const rx_spi_link_t s_zero_link = {};
   *link = s_zero_link;
 
   /* Store configuration */

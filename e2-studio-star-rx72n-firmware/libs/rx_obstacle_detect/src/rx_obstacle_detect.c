@@ -297,6 +297,18 @@ static void     internal_invoke_callback(const rx_obstacle_detect_t* handle,
  * =============================================================================
  */
 
+/**
+ * @var s_zero_handle
+ * @brief Zero-initialized obstacle detect template for stack-safe initialization
+ * @details Static const instance used to clear rx_obstacle_detect_t without creating
+ *          a large compound literal on the stack. Lives in .rodata section.
+ * @note Read-only; never modified after static initialization
+ * @warning Do not remove - prevents stack overflow in init function
+ * @see rx_obstacle_detect_init() Uses this template to zero-initialize the handle
+ * @since Version 1.0.0
+ */
+static const rx_obstacle_detect_t s_zero_handle = {};
+
 rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
                                  const rx_obstacle_detect_config_t* config)
 {
@@ -314,16 +326,6 @@ rx_err_t rx_obstacle_detect_init(rx_obstacle_detect_t*              handle,
     return ret;
   }
 
-  /**
-   * @var s_zero_handle
-   * @brief Zero-initialized obstacle detect template for stack-safe initialization
-   * @details Static const instance used to clear rx_obstacle_detect_t without creating
-   *          a large compound literal on the stack. Lives in .rodata section.
-   * @note Read-only; never modified after static initialization
-   * @warning Do not remove - prevents stack overflow in init function
-   * @since Version 1.0.0
-   */
-  static const rx_obstacle_detect_t s_zero_handle = {};
   *handle = s_zero_handle;
 
   /* Copy configuration */

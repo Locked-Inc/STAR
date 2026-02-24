@@ -259,6 +259,9 @@
  *
  * @par Usage Example - Peripheral Enable Control
  * @code
+ * // Motor nSLEEP pin config (constants from hardware_config.h)
+ * #include "hardware_config.h"
+ *
  * // Register GPIO for motor 0 nSLEEP (enable) pin
  * rx_bus_config_t motor_enable_config = {
  *     .type = k_rx_bus_type_gpio,

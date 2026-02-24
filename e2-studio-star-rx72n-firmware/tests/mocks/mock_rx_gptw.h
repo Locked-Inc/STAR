@@ -86,7 +86,8 @@ void mock_gptw_reset(void);
  *
  * @param[in] channel GPTW channel to query
  *
- * @return true if initialized, false otherwise
+ * @retval true  Channel has been initialized via rx_gptw_init_pwm() or rx_gptw_init_all_staggered()
+ * @retval false Channel has not been initialized or was reset via mock_gptw_reset()
  *
  * @see rx_gptw_init_pwm() Real single-channel initialization
  * @see rx_gptw_init_all_staggered() Real multi-channel initialization
@@ -150,7 +151,8 @@ uint32_t mock_gptw_get_frequency(rx_gptw_channel_t channel);
  * @param[in] channel GPTW channel to query
  * @param[in] output  Output identifier (A or B)
  *
- * @return true if enabled, false otherwise
+ * @retval true  Output is enabled on the specified channel
+ * @retval false Output is disabled or channel has not been initialized
  *
  * @see rx_gptw_enable_output() Real driver output enable function
  */
@@ -165,7 +167,8 @@ bool mock_gptw_is_output_enabled(rx_gptw_channel_t channel, rx_gptw_output_t out
  *
  * @param[in] channel GPTW channel to query
  *
- * @return true if running, false otherwise
+ * @retval true  Timer counter is running (started via rx_gptw_start())
+ * @retval false Timer counter is stopped or channel has not been initialized
  *
  * @see rx_gptw_start() Real driver timer start function
  * @see rx_gptw_stop() Real driver timer stop function
@@ -183,9 +186,9 @@ bool mock_gptw_is_running(rx_gptw_channel_t channel);
  * @param[in] config Pointer to configuration structure containing frequency,
  *                   wave mode, and other PWM settings for all 4 channels.
  *
- * @return k_rx_ok on success
- * @retval k_rx_err_null_ptr if config is NULL
- * @retval k_rx_err_invalid_arg if config->frequency_hz is zero
+ * @retval k_rx_ok Success, all 4 channels initialized
+ * @retval k_rx_err_null_ptr config is NULL
+ * @retval k_rx_err_invalid_arg config->frequency_hz is zero
  *
  * @see rx_gptw_init_all_staggered() Real driver implementation in rx_gptw.h
  */

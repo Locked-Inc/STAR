@@ -378,7 +378,7 @@ typedef enum : uint8_t {
  * @brief Default PID proportional gain -- Kp = 0.286
  * @details Derived from MATLAB motor_model_1st_order.m system identification.
  *          Applied to all 4 motor channels at startup.
- * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
  * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
  * @since Version 1.0.0
  */
@@ -389,7 +389,7 @@ static const float s_default_pid_kp = 0.286F;
  * @brief Default PID integral gain -- Ki = 8.01
  * @details Derived from MATLAB pid_design_velocity.m controller design.
  *          Applied to all 4 motor channels at startup.
- * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
  * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
  * @since Version 1.0.0
  */
@@ -400,7 +400,7 @@ static const float s_default_pid_ki = 8.01F;
  * @brief Default PID derivative gain -- Kd = 0.0 (not used)
  * @details Derivative term disabled by default; motor model is first-order
  *          so derivative action provides no benefit.
- * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
  * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
  * @since Version 1.0.0
  */
@@ -410,7 +410,7 @@ static const float s_default_pid_kd = 0.0F;
  * @var s_default_pid_output_min
  * @brief Default PID output lower limit (% duty cycle)
  * @details Minimum duty cycle for reverse direction. Symmetric with output_max.
- * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
  * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
  * @since Version 1.0.0
  */
@@ -420,7 +420,7 @@ static const float s_default_pid_output_min = -100.0F;
  * @var s_default_pid_output_max
  * @brief Default PID output upper limit (% duty cycle)
  * @details Maximum duty cycle for forward direction. Symmetric with output_min.
- * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
  * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
  * @since Version 1.0.0
  */
@@ -430,7 +430,7 @@ static const float s_default_pid_output_max = 100.0F;
  * @var s_default_pid_integral_min
  * @brief Default PID integral lower limit (anti-windup)
  * @details Prevents integral term from accumulating below -50% duty cycle.
- * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
  * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
  * @since Version 1.0.0
  */
@@ -440,7 +440,7 @@ static const float s_default_pid_integral_min = -50.0F;
  * @var s_default_pid_integral_max
  * @brief Default PID integral upper limit (anti-windup)
  * @details Prevents integral term from accumulating above 50% duty cycle.
- * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @note File-scope only; read via shared_data_get_pid_gains(), written via shared_data_set_pid_gains()
  * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
  * @since Version 1.0.0
  */
@@ -2115,7 +2115,8 @@ rx_err_t shared_data_update_temp(const temp_sensor_state_t* state)
  * if (shared_data_get_temp(&temp) == k_rx_ok) {
  *     for (uint8_t i = 0; i < temp.sensor_count; i++) {
  *         if (temp.sensor_valid[i]) {
- *             telemetry_msg.temps[i] = temp.temperature_cdegc[i] / 100.0F;
+ *             static const float s_cdegc_per_degc = 100.0F;
+ *             telemetry_msg.temps[i] = (float)temp.temperature_cdegc[i] / s_cdegc_per_degc;
  *         }
  *     }
  * }

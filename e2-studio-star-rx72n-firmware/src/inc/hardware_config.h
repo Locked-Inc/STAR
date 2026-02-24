@@ -1246,9 +1246,11 @@ typedef enum : uint8_t {
  *          a GPIO output (not an ICU input) on the RX72N side.
  * @invariant Must match P67 ICU routing in the hardware manual
  *
- * @code
- * rx_mpc_set_irq(k_host_irq_port, k_host_irq_pin,
- *                k_host_irq_num);
+ * @code{.c}
+ * // IRQ15 number retained for PCB/schematic cross-reference only.
+ * // Pin is configured as GPIO output (active-high interrupt to RPi5):
+ * internal_gpio_set_output((rx_port_pin_t)k_host_irq_pin, true);  // Assert HOST_IRQ
+ * internal_gpio_set_output((rx_port_pin_t)k_host_irq_pin, false); // Deassert HOST_IRQ
  * @endcode
  *
  * @see host_irq_ports_t Port register for HOST_IRQ

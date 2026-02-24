@@ -302,14 +302,22 @@ typedef enum : int16_t {
  *
  * @code
  * // Set forward direction: IN2 = HIGH (100%)
- * rx_err_t err = rx_gptw_set_duty(channel, output_a, (float)k_motor_in2_high);
+ * rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(channel),
+ *                                  rx_gptw_output_id(output_a),
+ *                                  (float)k_motor_in2_high);
  *
  * // Set reverse direction: IN2 = LOW (0%)
- * err = rx_gptw_set_duty(channel, output_a, (float)k_motor_in2_low);
+ * err = rx_gptw_set_duty(rx_gptw_channel_id(channel),
+ *                         rx_gptw_output_id(output_a),
+ *                         (float)k_motor_in2_low);
  *
  * // Coast mode: IN2 = LOW, IN1 = LOW (high impedance)
- * err = rx_gptw_set_duty(channel, output_a, (float)k_motor_in2_low);
- * err = rx_gptw_set_duty(channel, output_b, (float)k_motor_duty_zero);
+ * err = rx_gptw_set_duty(rx_gptw_channel_id(channel),
+ *                         rx_gptw_output_id(output_a),
+ *                         (float)k_motor_in2_low);
+ * err = rx_gptw_set_duty(rx_gptw_channel_id(channel),
+ *                         rx_gptw_output_id(output_b),
+ *                         (float)k_motor_duty_zero);
  * @endcode
  *
  * @see rx_motor_set_duty() Uses these values to set direction
@@ -590,7 +598,7 @@ typedef struct {
  *   - Must be different (a != b)
  *
  * @param[in] gptw_config GPTW peripheral configuration parameters
- *   - Must not benullptr
+ *   - Must not be nullptr
  *   - frequency_hz: PWM frequency [1 kHz, 50 kHz]
  *   - deadtime_ns: Dead-time insertion [100 ns, 10 us]
  *   - enable_complementary: Should be false for IN2/IN1 mode
@@ -741,14 +749,14 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * - **invert_pwm:** Polarity inversion (true = inverted, false = normal)
  *
  * @param[out] handle Pointer to motor handle structure to initialize
- *   - Must not benullptr
+ *   - Must not be nullptr
  *   - Must not already be initialized (checked via handle->initialized flag)
  *   - Will be populated with configuration on success
  *   - Structure should be allocated by caller (typically stack allocation)
  *   - Contents undefined on error
  *
  * @param[in] config Pointer to motor configuration parameters
- *   - Must not benullptr
+ *   - Must not be nullptr
  *   - pwm_freq_hz: [1000, 50000] Hz (validated)
  *   - dead_time_ns: [100, 10000] ns (validated)
  *   - channel: Valid GPTW channel with available outputs

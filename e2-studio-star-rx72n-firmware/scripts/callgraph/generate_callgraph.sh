@@ -461,8 +461,13 @@ run_cflow() {
     function) sources=$(find_user_sources "function" "$FUNCTION") ;;
   esac
 
+  if [[ -z "$sources" ]]; then
+    print_error "No source files found for scope=$SCOPE (check module directories)"
+    exit 1
+  fi
+
   local source_count
-  source_count=$(echo "$sources" | wc -l)
+  source_count=$(echo "$sources" | grep -c .)
   print_status "Found $source_count source files"
 
   if [[ "$VERBOSE" == "true" ]]; then

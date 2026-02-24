@@ -941,6 +941,18 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
  */
 
 /**
+ * @var s_zero_validator
+ * @brief Zero-initialized pin validator template for stack-safe initialization
+ * @details Static const instance used to clear pin_validator_t without creating
+ *          a large compound literal on the stack. Lives in .rodata section.
+ * @note Read-only; never modified after static initialization
+ * @warning Do not remove - prevents stack overflow in init function
+ * @see pin_validator_init() Uses this template to zero-initialize the validator
+ * @since Version 1.0.0
+ */
+static const pin_validator_t s_zero_validator = {};
+
+/**
  * @brief Initialize pin validator for tracking GPIO pin reservations
  *
  * @details
@@ -1031,16 +1043,6 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
 {
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
 
-  /**
-   * @var s_zero_validator
-   * @brief Zero-initialized pin validator template for stack-safe initialization
-   * @details Static const instance used to clear pin_validator_t without creating
-   *          a large compound literal on the stack. Lives in .rodata section.
-   * @note Read-only; never modified after static initialization
-   * @warning Do not remove - prevents stack overflow in init function
-   * @since Version 1.0.0
-   */
-  static const pin_validator_t s_zero_validator = {};
   *validator = s_zero_validator;
 
   /* Create mutex */
