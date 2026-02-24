@@ -85,7 +85,7 @@
  * | Component | Specification | Usage |
  * |-----------|---------------|-------|
  * | **MCU** | Renesas RX72N @ 240 MHz | GPTW peripheral for PWM generation |
- * | **H-Bridge** | DRV8263H dual H-bridge | 3.3V logic, 5-40V motor supply, 4.5A continuous |
+ * | **H-Bridge** | DRV8263H dual H-bridge | 3.3V logic, 5-40V motor supply, 3.5A continuous, 4.5A peak |
  * | **Motor** | 6V brushed DC gearmotor | 210 RPM, 341 PPR Hall encoder |
  * | **PWM Pins** | GPTW channel outputs | Configurable via rx_gptw_output_t |
  * | **Logic Level** | 3.3V CMOS | Direct connection RX72N -> DRV8263H |

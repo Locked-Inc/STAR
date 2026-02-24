@@ -392,24 +392,21 @@ extern "C" {
  *
  * @par Example - Register SPI Bus:
  * @code{.c}
- * // Allocate and configure
- * rx_bus_config_t* rpi5_spi = malloc(sizeof(rx_bus_config_t));
- * memset(rpi5_spi, 0, sizeof(rx_bus_config_t));
- * rpi5_spi->name = "rpi5_link";
- * rpi5_spi->type = k_bus_type_spi;
- * rpi5_spi->proto.spi = (rx_spi_bus_config_t){
+ * // Statically allocate and configure (zero dynamic allocation)
+ * static rx_bus_config_t rpi5_spi = {0};
+ * rpi5_spi.name = "rpi5_link";
+ * rpi5_spi.type = k_bus_type_spi;
+ * rpi5_spi.proto.spi = (rx_spi_bus_config_t){
  *     .channel = 0,
  *     .frequency_hz = 10000000,
  *     .mode = 0
  * };
  *
- * // Register (manager takes ownership)
- * rx_err_t err = rx_bus_manager_add_bus(&manager, rpi5_spi);
+ * // Register (manager references static config - do not modify after registration)
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, &rpi5_spi);
  * if (err != k_rx_ok) {
- *     free(rpi5_spi);  // Only free on registration failure
  *     return err;
  * }
- * // rpi5_spi now owned by manager - do not free
  * @endcode
  *
  * @see rx_bus_manager_remove_bus() Unregister and free bus

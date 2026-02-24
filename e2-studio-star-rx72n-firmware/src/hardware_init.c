@@ -266,7 +266,7 @@ typedef enum : uint16_t {
   k_pin_imu_int = k_rx_p3_2, /**< P3.2 - IMU interrupt (active-low, pin 27) */
   k_pin_imu_rst = k_rx_p8_3, /**< P8.3 - IMU reset (active-low, pin 58) */
 
-  /* DRV8263H DRVOFF pins (GPIO output, initial LOW = outputs enabled) */
+  /* DRV8263H DRVOFF pins (GPIO output, initial HIGH = outputs disabled) */
   k_pin_motor0_drvoff = k_rx_p6_1, /**< P6.1 - Motor 0 DRVOFF (pin 115) */
   k_pin_motor1_drvoff = k_rx_p6_3, /**< P6.3 - Motor 1 DRVOFF (pin 113) */
   k_pin_motor2_drvoff = k_rx_pe_0, /**< PE.0 - Motor 2 DRVOFF (pin 111) */
@@ -529,6 +529,67 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
 }
 
 /**
+ * @brief Configure a single GPIO pin as output with initial level
+ *
+ * @details
+ * Sets the given pin to GPIO mode (PMR cleared), drives the specified
+ * initial logic level on PODR, and configures PDR as output. This is a
+ * common pattern used by DRVOFF, nSLEEP, sonar trigger, and IMU reset pins.
+ *
+ * @param[in] port_pin Encoded port/pin value from hardware_config.h
+ * @param[in] initial_high True to drive HIGH on startup, false for LOW
+ *
+ * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
+ * @pre Port base address must be valid for the given pin
+ * @post Pin configured as GPIO output at the requested level
+ *
+ * @note Thread-safe. No shared state modified.
+ *
+ * @since Version 1.2.0
+ */
+static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial_high)
+{
+  const uint8_t            port = rx_port_from_pin(port_pin);
+  const uint8_t            pin  = rx_pin_from_pin(port_pin);
+  volatile rx_port_regs_t* regs = rx_port_get_base(port);
+  RX_ASSERT(regs != nullptr, "Invalid GPIO port for output pin");
+  regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
+  if (initial_high) {
+    regs->podr |= (uint8_t)(1U << pin);
+  } else {
+    regs->podr &= ~(uint8_t)(1U << pin);
+  }
+  regs->pdr |= (uint8_t)(1U << pin); /* Output direction */
+}
+
+/**
+ * @brief Configure a single GPIO pin as input
+ *
+ * @details
+ * Sets the given pin to GPIO mode (PMR cleared) and configures PDR as
+ * input. Used by IMU interrupt and sonar echo pins.
+ *
+ * @param[in] port_pin Encoded port/pin value from hardware_config.h
+ *
+ * @pre Pin must have MPC already configured via rx_mpc_set_gpio()
+ * @pre Port base address must be valid for the given pin
+ * @post Pin configured as GPIO input
+ *
+ * @note Thread-safe. No shared state modified.
+ *
+ * @since Version 1.2.0
+ */
+static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
+{
+  const uint8_t            port = rx_port_from_pin(port_pin);
+  const uint8_t            pin  = rx_pin_from_pin(port_pin);
+  volatile rx_port_regs_t* regs = rx_port_get_base(port);
+  RX_ASSERT(regs != nullptr, "Invalid GPIO port for input pin");
+  regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
+  regs->pdr &= ~(uint8_t)(1U << pin); /* Input direction */
+}
+
+/**
  * @brief Configure IMU pins (RIIC1 I2C + GPIO interrupt and reset)
  *
  * @details
@@ -566,28 +627,13 @@ static rx_err_t internal_gpio_init_imu(void)
   err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_int);
   RX_RETURN_ON_ERROR(err, s_tag, "IMU INT MPC config failed");
 
-  {
-    const uint8_t            port = rx_port_from_pin((rx_port_pin_t)k_pin_imu_int);
-    const uint8_t            pin  = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_int);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid IMU INT port");
-    regs->pmr &= ~(uint8_t)(1U << pin);  /* GPIO mode */
-    regs->pdr &= ~(uint8_t)(1U << pin);  /* Input direction */
-  }
+  internal_gpio_set_input((rx_port_pin_t)k_pin_imu_int);
 
   /* IMU RST: GPIO output, initial HIGH (not in reset) */
   err = rx_mpc_set_gpio((rx_port_pin_t)k_pin_imu_rst);
   RX_RETURN_ON_ERROR(err, s_tag, "IMU RST MPC config failed");
 
-  {
-    const uint8_t            port = rx_port_from_pin((rx_port_pin_t)k_pin_imu_rst);
-    const uint8_t            pin  = rx_pin_from_pin((rx_port_pin_t)k_pin_imu_rst);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid IMU RST port");
-    regs->pmr &= ~(uint8_t)(1U << pin);  /* GPIO mode */
-    regs->podr |= (uint8_t)(1U << pin);  /* Drive HIGH (not in reset) */
-    regs->pdr |= (uint8_t)(1U << pin);   /* Output direction */
-  }
+  internal_gpio_set_output((rx_port_pin_t)k_pin_imu_rst, true); /* HIGH = not in reset */
 
   return k_rx_ok;
 }
@@ -597,8 +643,11 @@ static rx_err_t internal_gpio_init_imu(void)
  *
  * @details
  * Configures 8 GPIO output pins for DRV8263H motor driver control:
- * - 4x DRVOFF pins: Output LOW (driver outputs enabled)
+ * - 4x DRVOFF pins: Output HIGH (driver outputs disabled for safe startup)
  * - 4x nSLEEP pins: Output HIGH (driver awake, not in sleep mode)
+ *
+ * Motor outputs remain disabled until the motor control task explicitly
+ * drives DRVOFF LOW after all peripherals are initialized.
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok All pins configured successfully
@@ -606,7 +655,7 @@ static rx_err_t internal_gpio_init_imu(void)
  *
  * @pre MPC write protection disabled (PWPR.B0WI=0, PWPR.PFSWE=1)
  * @pre Pins not in use by other peripherals
- * @post All 4 DRVOFF pins configured as GPIO outputs, driven LOW
+ * @post All 4 DRVOFF pins configured as GPIO outputs, driven HIGH (disabled)
  * @post All 4 nSLEEP pins configured as GPIO outputs, driven HIGH
  *
  * @note Thread-safe. No shared state modified.
@@ -628,32 +677,18 @@ static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
                                                      (rx_port_pin_t)k_pin_motor2_nsleep,
                                                      (rx_port_pin_t)k_pin_motor3_nsleep};
 
-  /* Configure DRVOFF pins as GPIO outputs, drive LOW (outputs enabled) */
+  /* Configure DRVOFF pins as GPIO outputs, drive HIGH (outputs disabled for safe startup) */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(drvoff_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "DRVOFF MPC config failed");
-
-    const uint8_t            port = rx_port_from_pin(drvoff_pins[i]);
-    const uint8_t            pin  = rx_pin_from_pin(drvoff_pins[i]);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid DRVOFF port");
-    regs->pmr &= ~(uint8_t)(1U << pin);   /* GPIO mode */
-    regs->podr &= ~(uint8_t)(1U << pin);  /* Drive LOW (outputs enabled) */
-    regs->pdr |= (uint8_t)(1U << pin);    /* Output direction */
+    internal_gpio_set_output(drvoff_pins[i], true); /* HIGH = outputs disabled */
   }
 
   /* Configure nSLEEP pins as GPIO outputs, drive HIGH (awake) */
   for (uint8_t i = 0; i < k_motor_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(nsleep_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "nSLEEP MPC config failed");
-
-    const uint8_t            port = rx_port_from_pin(nsleep_pins[i]);
-    const uint8_t            pin  = rx_pin_from_pin(nsleep_pins[i]);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid nSLEEP port");
-    regs->pmr &= ~(uint8_t)(1U << pin);  /* GPIO mode */
-    regs->podr |= (uint8_t)(1U << pin);  /* Drive HIGH (awake) */
-    regs->pdr |= (uint8_t)(1U << pin);   /* Output direction */
+    internal_gpio_set_output(nsleep_pins[i], true); /* HIGH = awake */
   }
 
   return k_rx_ok;
@@ -765,14 +800,7 @@ static rx_err_t internal_gpio_init_sonar_triggers(void)
   for (uint8_t i = 0; i < k_sonar_count; i++) {
     const rx_err_t err = rx_mpc_set_gpio(sonar_trig_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar trigger MPC config failed");
-
-    const uint8_t            port = rx_port_from_pin(sonar_trig_pins[i]);
-    const uint8_t            pin  = rx_pin_from_pin(sonar_trig_pins[i]);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid sonar trigger port");
-    regs->pmr &= ~(uint8_t)(1U << pin);
-    regs->podr &= ~(uint8_t)(1U << pin);
-    regs->pdr |= (uint8_t)(1U << pin);
+    internal_gpio_set_output(sonar_trig_pins[i], false); /* LOW = idle */
   }
 
   return k_rx_ok;
@@ -813,12 +841,7 @@ static rx_err_t internal_gpio_init_sonar_echoes(void)
     const rx_err_t err = rx_mpc_set_gpio(sonar_echo_pins[i]);
     RX_RETURN_ON_ERROR(err, s_tag, "Sonar echo MPC config failed");
 
-    const uint8_t            port = rx_port_from_pin(sonar_echo_pins[i]);
-    const uint8_t            pin  = rx_pin_from_pin(sonar_echo_pins[i]);
-    volatile rx_port_regs_t* regs = rx_port_get_base(port);
-    RX_ASSERT(regs != nullptr, "Invalid sonar echo port");
-    regs->pmr &= ~(uint8_t)(1U << pin);
-    regs->pdr &= ~(uint8_t)(1U << pin);
+    internal_gpio_set_input(sonar_echo_pins[i]);
   }
 
   return k_rx_ok;

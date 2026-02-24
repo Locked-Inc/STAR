@@ -248,8 +248,8 @@
  */
 typedef struct {
   uint8_t port0_pdr; /**< PORT0 PDR golden value. STAR: unused port */
-  uint8_t port1_pdr; /**< PORT1 PDR golden value. STAR: motor IN2/IN1 pins */
-  uint8_t port2_pdr; /**< PORT2 PDR golden value. STAR: encoder inputs */
+  uint8_t port1_pdr; /**< PORT1 PDR golden value. STAR: GPTW motor PWM (P17) */
+  uint8_t port2_pdr; /**< PORT2 PDR golden value. STAR: GPTW motor PWM (P23, P22), IMU I2C (P21, P20) */
   uint8_t port3_pdr; /**< PORT3 PDR golden value. STAR: SPI chip selects */
   uint8_t port4_pdr; /**< PORT4 PDR golden value. STAR: status LEDs */
   uint8_t port5_pdr; /**< PORT5 PDR golden value. STAR: debug output */

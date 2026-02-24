@@ -1032,13 +1032,13 @@ typedef struct {
  * | 0 | 0 | 0 | Low | Rising edge | Falling edge | RPi5, most sensors |
  * | 1 | 0 | 1 | Low | Falling edge | Rising edge | SD cards |
  * | 2 | 1 | 0 | High | Falling edge | Rising edge | Rare |
- * | 3 | 1 | 1 | High | Rising edge | Falling edge | DRV8263H motor drivers |
+ * | 3 | 1 | 1 | High | Rising edge | Falling edge | Rare |
  *
  * ## STAR Project Usage
  * | Peripheral | Mode | Rationale |
  * |------------|------|-----------|
  * | RPi5 (RSPI0 peripheral) | Mode 0 | Linux spidev default, maximum compatibility |
- * | Reserved (RSPI1 controller) | Mode 0 or 3 | DRV8263H has no SPI; RSPI1 available for future sensors |
+ * | Reserved (RSPI1 controller) | TBD | RSPI1 reserved for future SPI peripherals |
  *
  * ## Clock Polarity (CPOL)
  * - **CPOL=0**: Clock idle state is low (GND). Clock starts low, pulses high.
@@ -1234,7 +1234,7 @@ typedef struct {
  * @brief Perform 16-bit full-duplex SPI transfer in controller mode
  *
  * Executes a single 16-bit SPI transfer including CS assertion/deassertion.
- * Suitable for register-based communication with devices like DRV8263H.
+ * Suitable for register-based communication with external SPI peripherals.
  *
  * @param[in]  channel RSPI channel (0-2)
  * @param[in]  tx_data 16-bit data to transmit

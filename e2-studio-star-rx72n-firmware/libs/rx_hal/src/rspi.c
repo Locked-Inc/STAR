@@ -133,7 +133,6 @@
  *
  * @see rx72n_rspi_regs.h RSPI register definitions
  * @see rx_spi_comm.h Higher-level SPI communication layer
- * @see rx_spi_comm.h Higher-level SPI protocol layer
  * @see docs/sections/03_hardware_pinout.tex SPI pin assignments
  *
  * @author STAR Team
