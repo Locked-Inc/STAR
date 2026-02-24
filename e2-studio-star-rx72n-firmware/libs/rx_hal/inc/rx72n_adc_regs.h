@@ -62,7 +62,6 @@
  * - Direct memory-mapped register access
  *
  * @see docs/sections/03_hardware_pinout.tex GPIO pin assignments
- * @see lib/rx_drv8263/inc/rx_drv8263.h Motor driver with current sensing
  * @see lib/rx_hal/src/adc.c ADC implementation
  * @see RX72N Group User's Manual: Hardware, Chapter 56 (12-Bit A/D Converter)
  *
@@ -87,11 +86,9 @@
  *   stdint [label="<stdint.h>"];
  *   stddef [label="<stddef.h>"];
  *   adc_impl [label="adc.c"];
- *   drv8263 [label="rx_drv8263.c"];
  *   adc_regs -> stdint;
  *   adc_regs -> stddef;
  *   adc_impl -> adc_regs;
- *   drv8263 -> adc_regs;
  * }
  * @enddot
  *
@@ -340,9 +337,11 @@ typedef enum : uint8_t {
  * // 6. Read 12-bit result
  * uint16_t raw_count = adc->addr7 & 0x0FFF;
  *
- * // 7. Convert to current (using DRV8263H current sensing formula)
- * // I = (V / 3.3) * 4096 * (1 / 20uA/A) = ADC_count * 3.3 / 4096 / 0.00002
- * float current_amps = (float)raw_count * 3.3f / 4096.0f / 0.00002f;
+ * // 7. Convert to current (using DRV8263H IPROPI current sensing)
+ * static const float s_avcc_volts      = 3.3f;
+ * static const float s_adc_max_counts  = 4096.0f;
+ * static const float s_ipropi_gain_a   = 0.00002f;  // 20 uA/A
+ * float current_amps = (float)raw_count * s_avcc_volts / s_adc_max_counts / s_ipropi_gain_a;
  * @endcode
  *
  * @par Usage Example - Continuous 4-Channel Scan:

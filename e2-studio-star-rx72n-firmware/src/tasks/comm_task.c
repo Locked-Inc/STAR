@@ -1443,7 +1443,7 @@ static void internal_comm_task_entry(ULONG input)
  *                    - Type: rx_comm_channel_t enum
  *                    - Values: k_comm_channel_usb_cdc, k_comm_channel_spi
  *                    - Purpose: Identify source (USB for debug, SPI for commands)
- *                    - Used by internal_handle_command_frame() for logging
+ *                    - Currently unused (suppressed with (void)channel)
  *
  * @param[in] frame Received frame structure (already validated by rx_comm_manager)
  *                  - Type: const rx_frame_t*

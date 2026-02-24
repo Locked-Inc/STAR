@@ -129,7 +129,7 @@
  * @see rx_motor.h for motor control API
  * @see rx_motor.c for implementation
  * @see rx_gptw.h for GPTW hardware interface
- * @see rx_drv8263.h for H-bridge driver
+ * @see rx_motor.h for motor control API
  * @see mock_rx_gptw.h for mock implementation
  *
  * @author STAR Team

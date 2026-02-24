@@ -10,7 +10,7 @@
  * **CRITICAL**: These pin assignments MUST match the PCB design. Any changes
  * to this file require corresponding updates to pinout.txt and vice versa.
  *
- * ## Functional Groups (18 total)
+ * ## Functional Groups (14 total)
  *
  * | Group | Peripheral | Signals |
  * |-------|------------|---------|
@@ -109,7 +109,7 @@ typedef enum : uint8_t {
  * - **DRVOFF**: Driver output disable (active-high, LOW = outputs enabled)
  * - **nSLEEP**: Sleep mode control (active-low, HIGH = awake)
  *
- * **DRVOFF pins (GPIO output, initial LOW = outputs enabled):**
+ * **DRVOFF pins (GPIO output, initial HIGH = outputs disabled for safe startup):**
  * | Motor | Pin | Pkg Pin |
  * |-------|-----|---------|
  * | 0 | P61 | 115 |

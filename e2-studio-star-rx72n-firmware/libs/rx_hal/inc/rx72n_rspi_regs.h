@@ -39,7 +39,7 @@
  * | Channel | Base Address | Mode       | Target           | Speed    | Purpose                |
  * |---------|--------------|------------|------------------|----------|------------------------|
  * | RSPI0   | 0x000D0100   | Peripheral | Raspberry Pi 5   | 10 Mbps  | Command/telemetry      |
- * | RSPI1   | 0x000D0140   | Controller | Reserved          | 5 Mbps   | Available (DRV8263H has no SPI) |
+ * | RSPI1   | 0x000D0140   | Controller | Reserved          | 5 Mbps   | Reserved for future peripherals |
  * | RSPI2   | 0x000D0300   | Reserved   | -                | -        | Future expansion       |
  *
  * @par Key Features
@@ -188,7 +188,7 @@ typedef enum : uint32_t {
   /**
    * @brief RSPI1 register base address (0x000D0140)
    * @details
-   * Reserved for future SPI peripherals in controller mode (DRV8263H has no SPI).
+   * Reserved for future SPI peripherals in controller mode.
    * Directly follows RSPI0 in memory (0x40 byte offset).
    * @par Pin Assignments:
    * - RSPCKB: PE5/RSPCKB (clock output to peripherals)
@@ -272,9 +272,9 @@ typedef enum : uint32_t {
  * spi->spcr = k_rspi_spcr_spe | k_rspi_spcr_sprie | k_rspi_spcr_sptie;
  * @endcode
  *
- * @par Initialization Example (Controller Mode - Motor Drivers)
+ * @par Initialization Example (Controller Mode - Reserved for Future Peripherals)
  * @code{.c}
- * // Configure RSPI1 for 5 Mbps controller mode (reserved for sensors)
+ * // Configure RSPI1 for 5 Mbps controller mode (reserved for future peripherals)
  * volatile rx_rspi_regs_t* spi = rspi1();
  *
  * // 1. Disable RSPI before configuration
@@ -283,8 +283,8 @@ typedef enum : uint32_t {
  * // 2. Configure bit rate for 5 Mbps (PCLKB=60MHz, n=5: 60/(2*(5+1))=5MHz)
  * spi->spbr = 5;
  *
- * // 3. Configure command register 0 for 16-bit transfers (DRV8263H protocol)
- * //    SPB[3:0]=1111 (16 bits), CPOL=0, CPHA=1 for 16-bit SPI device
+ * // 3. Configure command register 0 for 16-bit transfers
+ * //    SPB[3:0]=1111 (16 bits), CPOL=0, CPHA=1
  * spi->spcmd0 = 0x0F02;
  *
  * // 4. Enable RSPI in controller mode
@@ -517,8 +517,7 @@ static inline volatile rx_rspi_regs_t* rspi0(void)
  *
  * @details
  * Returns a volatile pointer to the RSPI1 register structure at address
- * 0x000D0140. RSPI1 is available for future SPI peripherals
- * (not currently used; DRV8263H motor drivers use PWM+GPIO, not SPI).
+ * 0x000D0140. RSPI1 is reserved for future SPI peripherals (not currently used).
  *
  * @return Volatile pointer to RSPI1 register structure
  * @retval Non-NULL Always returns valid pointer (hardware address)
@@ -599,7 +598,7 @@ static inline volatile rx_rspi_regs_t* rspi2(void)
  * // Peripheral mode with receive/transmit interrupts (RPi5 communication)
  * rspi0()->spcr = k_rspi_spcr_spe | k_rspi_spcr_sprie | k_rspi_spcr_sptie;
  *
- * // Controller mode with transmit interrupt (future SPI sensors)
+ * // Controller mode with transmit interrupt (reserved for future peripherals)
  * rspi1()->spcr = k_rspi_spcr_spe | k_rspi_spcr_mstr | k_rspi_spcr_sptie;
  *
  * // Disable RSPI before reconfiguration
@@ -645,7 +644,7 @@ typedef enum : uint8_t {
    * - 0: Peripheral mode (clock input from external controller)
    * - 1: Controller mode (clock output to external peripherals)
    * @note RSPI0 uses peripheral mode (RPi5 is controller)
-   * @note RSPI1 reserved for future SPI sensors (controller mode)
+   * @note RSPI1 reserved for future peripherals (controller mode)
    */
   k_rspi_spcr_mstr = (1 << 3),
 

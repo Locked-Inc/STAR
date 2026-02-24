@@ -149,7 +149,7 @@
  * |-----------|---------------|-------|
  * | **MCU** | Renesas RX72N | GPTW peripheral required |
  * | **PWM Timer** | GPTW (General PWM Timer) | 32-bit resolution, 4 channels (GPTW0-3) |
- * | **H-Bridge** | DRV8263H or compatible | Dual H-bridge, 3.5A peak current |
+ * | **H-Bridge** | DRV8263H or compatible | Dual H-bridge, 3.5A continuous, 4.5A peak |
  * | **Motor** | 6V brushed DC gearmotor | 210 RPM no-load, 341 PPR Hall encoder |
  * | **Power Supply** | 6-12V DC | Motor voltage range |
  * | **GPIO Pins** | 2 per motor (GTIOC A/B) | PWM output pins from GPTW |

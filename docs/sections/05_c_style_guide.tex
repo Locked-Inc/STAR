@@ -5436,9 +5436,9 @@ star_sensor_ds18b20_read_temp(&temp_sensor, &motor_temp_celsius);
 int16_t cell_temp_deci_celsius = 235;  /* 23.5 degrees C */
 
     /* Thermal shutdown threshold */
-#define MOTOR_THERMAL_SHUTDOWN_CELSIUS (85.0f)
+static const float s_motor_thermal_shutdown_celsius = 85.0f;
 
-if (motor_temp_celsius > MOTOR_THERMAL_SHUTDOWN_CELSIUS) {
+if (motor_temp_celsius > s_motor_thermal_shutdown_celsius) {
       star_drv8263_stop(&motor, true); /* Emergency brake */
 }
 
