@@ -324,8 +324,8 @@ typedef enum : uint8_t {
  *
  * | Output | DRV8263H Pin | Function | Signal Type |
  * |--------|--------------|----------|-------------|
- * | Output A (GTIOCnA) | IN2 | Direction (phase) | Static HIGH/LOW |
- * | Output B (GTIOCnB) | IN1 | PWM (enable) | PWM waveform |
+ * | Output A (GTIOCnA) | IN2 | Direction control | Static HIGH/LOW |
+ * | Output B (GTIOCnB) | IN1 | PWM speed control | PWM waveform    |
  *
  * @par Usage Example:
  * @code{.c}
@@ -333,17 +333,17 @@ typedef enum : uint8_t {
  * // Output A = HIGH (forward direction)
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_a),
- *                  100.0f);  // PH = HIGH
+ *                  100.0f);  // IN2 = HIGH (direction)
  *
  * // Output B = PWM at 75% (motor speed)
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_b),
- *                  75.0f);   // EN = 75% PWM
+ *                  75.0f);   // IN1 = 75% PWM
  *
  * // Reverse direction: set Output A LOW
  * rx_gptw_set_duty(rx_gptw_channel_id(k_gptw_channel_0),
  *                  rx_gptw_output_id(k_gptw_output_a),
- *                  0.0f);    // PH = LOW (reverse)
+ *                  0.0f);    // IN2 = LOW (reverse)
  * @endcode
  *
  * @invariant Output values are 0 (A) or 1 (B) only

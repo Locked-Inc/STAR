@@ -1271,21 +1271,21 @@ typedef enum : uint8_t {
  *
  * GPTW channels support:
  * - 20 kHz PWM frequency (ultrasonic, inaudible)
- * - 1 us dead-time (prevents H-bridge shoot-through)
+ * - 1 us dead-time (prevents DRV8263H shoot-through)
  * - 90-degree phase staggering (reduces peak current)
- * - Complementary mode (PH + EN pins synchronized)
+ * - IN2/IN1 mode (direction and PWM signals per DRV8263H)
  *
  * @par STAR Project GPTW Pin Allocation
  * | Pin  | GPTW Ch | Signal | Motor | Description          |
  * |------|---------|--------|-------|----------------------|
- * | P2.3 | GPTW0   | GTIOC0A | 0    | Motor 0 Phase/Hold   |
- * | P1.7 | GPTW0   | GTIOC0B | 0    | Motor 0 Enable       |
- * | P2.2 | GPTW1   | GTIOC1A | 1    | Motor 1 Phase/Hold   |
- * | PC.3 | GPTW1   | GTIOC1B | 1    | Motor 1 Enable       |
- * | PE.3 | GPTW2   | GTIOC2A | 2    | Motor 2 Phase/Hold   |
- * | P8.6 | GPTW2   | GTIOC2B | 2    | Motor 2 Enable       |
- * | PE.7 | GPTW3   | GTIOC3A | 3    | Motor 3 Phase/Hold   |
- * | PC.6 | GPTW3   | GTIOC3B | 3    | Motor 3 Enable       |
+ * | P2.3 | GPTW0   | GTIOC0A | 0    | Motor 0 Direction (IN2) |
+ * | P1.7 | GPTW0   | GTIOC0B | 0    | Motor 0 PWM (IN1)      |
+ * | P2.2 | GPTW1   | GTIOC1A | 1    | Motor 1 Direction (IN2) |
+ * | PC.3 | GPTW1   | GTIOC1B | 1    | Motor 1 PWM (IN1)      |
+ * | PE.3 | GPTW2   | GTIOC2A | 2    | Motor 2 Direction (IN2) |
+ * | P8.6 | GPTW2   | GTIOC2B | 2    | Motor 2 PWM (IN1)      |
+ * | PE.7 | GPTW3   | GTIOC3A | 3    | Motor 3 Direction (IN2) |
+ * | PC.6 | GPTW3   | GTIOC3B | 3    | Motor 3 PWM (IN1)      |
  *
  * @param[in] pin GPIO pin identifier for GPTW function
  *                Must be a pin that supports GPTW output (see manual)

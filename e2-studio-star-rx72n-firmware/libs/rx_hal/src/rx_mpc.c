@@ -1191,7 +1191,7 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  * @post PWPR locked after operation
  *
  * @note Thread safety: Not thread-safe
- * @note Used for 4 GPTW channels (0-3) with 8 total pins (PH + EN per motor)
+ * @note Used for 4 GPTW channels (0-3) with 8 total pins (IN2 + IN1 per motor)
  * @note Phase staggering configured separately via rx_gptw driver
  *
  * @code

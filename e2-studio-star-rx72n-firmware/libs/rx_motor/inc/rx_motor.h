@@ -158,10 +158,10 @@
  * ### GPTW Channel Allocation (STAR Platform)
  * | Motor | GPTW Channel | Output A Pin | Output B Pin | Notes |
  * |-------|--------------|--------------|--------------|-------|
- * | Motor 0 | GPTW0 | GTIOC0A (P21) | GTIOC0B (P20) | Front-left |
- * | Motor 1 | GPTW1 | GTIOC1A (P23) | GTIOC1B (P22) | Front-right |
- * | Motor 2 | GPTW2 | GTIOC2A (P25) | GTIOC2B (P24) | Rear-left |
- * | Motor 3 | GPTW3 | GTIOC3A (P27) | GTIOC3B (P26) | Rear-right |
+ * | Motor 0 | GPTW0 | GTIOC0A (P23) | GTIOC0B (P17) | Front-left |
+ * | Motor 1 | GPTW1 | GTIOC1A (P22) | GTIOC1B (PC3) | Front-right |
+ * | Motor 2 | GPTW2 | GTIOC2A (PE3) | GTIOC2B (P86) | Rear-left |
+ * | Motor 3 | GPTW3 | GTIOC3A (PE7) | GTIOC3B (PC6) | Rear-right |
  *
  * ## Performance Characteristics
  *

@@ -402,6 +402,8 @@ find_user_sources() {
           find "$mod_dir" -name "*.c" -type f \
             "${exclude_args[@]}" \
             2>/dev/null
+        else
+          print_warning "Subsystem module directory not found: $mod_dir"
         fi
       done | sort
       ;;

@@ -514,9 +514,9 @@ rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool output);
  *
  * @par Example - Motor Driver Enable:
  * @code
- * // Enable DRV8263H motor driver (active high nSLEEP)
+ * // Wake DRV8263H motor driver (nSLEEP = HIGH to exit sleep, tWAKE ~1 ms)
  * err = rx_bus_gpio_write(&manager, "motor_enable", true);
- * tx_thread_sleep(1);  // Wait 10ms for driver to wake up
+ * tx_thread_sleep(k_motor_wake_ticks);  // 1 tick @ 100 Hz = 10 ms >= tWAKE
  *
  * // Disable motor driver (low power mode)
  * rx_bus_gpio_write(&manager, "motor_enable", false);

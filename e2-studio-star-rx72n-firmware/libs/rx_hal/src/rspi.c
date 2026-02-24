@@ -252,20 +252,22 @@ typedef enum : uint8_t {
   k_rspi_spdcr_byte_mode = 0U, /**< Byte access mode */
 } rspi_spdcr_local_t;
 
-/** @brief SPPCR register values */
-static const uint8_t s_rspi_sppcr_no_loopback = 0U; /**< No loopback mode */
+/** @brief RSPI register default values (reset/disabled state) */
+typedef enum : uint8_t {
+  k_rspi_sppcr_no_loopback = 0U, /**< SPPCR: no loopback mode */
+  k_rspi_spcr_disabled     = 0U, /**< SPCR: SPI disabled */
+} rspi_register_defaults_t;
 
-/** @brief SPCR register disabled value */
-static const uint8_t s_rspi_spcr_disabled = 0U; /**< SPI disabled */
+/** @brief RSPI bit manipulation constants */
+typedef enum : uint32_t {
+  k_rspi_bit_set = 1UL, /**< Single bit set value for register operations */
+} rspi_bit_constants_t;
 
-/** @brief Bit manipulation constants */
-static const uint32_t s_rspi_bit_set = 1UL;
-
-/** @brief RSPI transfer limits */
-static const uint16_t s_rspi_transfer_len_max = 65535U;
-
-/** @brief SPCMD register initial value (all mode bits clear) */
-static const uint16_t s_rspi_spcmd_init = 0U;
+/** @brief RSPI transfer and command constants */
+typedef enum : uint16_t {
+  k_rspi_transfer_len_max = 65535U, /**< Maximum transfer length (16-bit counter) */
+  k_rspi_spcmd_init       = 0U,    /**< SPCMD initial value (reset state) */
+} rspi_transfer_constants_t;
 
 /* =============================================================================
  * Static Variables
@@ -334,17 +336,17 @@ static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool e
   uint32_t mask = k_rspi_zero_u32;
 
   RX_ASSERT(system_regs() != nullptr, "system_regs is nullptr");
-  RX_ASSERT(s_rspi_bit_set != k_rspi_zero_u32, "RSPI bit constant is zero");
+  RX_ASSERT(k_rspi_bit_set != k_rspi_zero_u32, "RSPI bit constant is zero");
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
               (channel == k_rspi_channel_2),
             "Invalid RSPI channel");
 
   if (channel == k_rspi_channel_0) {
-    mask = (s_rspi_bit_set << k_rspi_mstpb_rspi0);
+    mask = (k_rspi_bit_set << k_rspi_mstpb_rspi0);
   } else if (channel == k_rspi_channel_1) {
-    mask = (s_rspi_bit_set << k_rspi_mstpb_rspi1);
+    mask = (k_rspi_bit_set << k_rspi_mstpb_rspi1);
   } else if (channel == k_rspi_channel_2) {
-    mask = (s_rspi_bit_set << k_rspi_mstpb_rspi2);
+    mask = (k_rspi_bit_set << k_rspi_mstpb_rspi2);
   }
   if (enable) {
     system_regs()->mstpcrb &= ~mask;
@@ -393,7 +395,7 @@ static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool e
  */
 rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config)
 {
-  uint16_t spcmd = s_rspi_spcmd_init;
+  uint16_t spcmd = k_rspi_spcmd_init;
 
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
@@ -423,20 +425,20 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Disable SPI before configuration */
-  rspi->spcr = s_rspi_spcr_disabled;
+  rspi->spcr = k_rspi_spcr_disabled;
 
   /* Configure SPI mode (CPOL and CPHA) */
   if (config->spi_mode & k_rspi_spcmd_cpol_mask) {
-    spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
+    spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
   }
   if (config->spi_mode & k_rspi_spcmd_cpha_mask) {
-    spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
+    spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
   }
 
   /* Configure data length */
   if (config->use_16bit) {
     spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift);          /* 16-bit data */
-    rspi->spdcr = (uint8_t)(s_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
+    rspi->spdcr = (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
   } else {
     spcmd |= (k_rspi_spcmd_8bit << k_rspi_spcmd_spl_shift); /* 8-bit data */
     rspi->spdcr = k_rspi_spdcr_byte_mode;                   /* Byte access mode */
@@ -448,7 +450,7 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
   rspi->spcr = k_rspi_spcr_spe; /* Enable SPI in peripheral mode (MSTR=0) */
 
   /* Configure pin control (no loopback) */
-  rspi->sppcr = s_rspi_sppcr_no_loopback;
+  rspi->sppcr = k_rspi_sppcr_no_loopback;
 
   /* Mark channel as initialized */
   s_rspi_channel_initialized[channel] = true;
@@ -555,7 +557,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is nullptr");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
-  if (length == k_rspi_len_zero || length > s_rspi_transfer_len_max) {
+  if (length == k_rspi_len_zero || length > k_rspi_transfer_len_max) {
     rx_log_error(s_tag, "Invalid transfer length");
     return k_rx_err_invalid_arg;
   }
@@ -574,7 +576,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   }
 
   /* NASA Rule 2: Statically bounded loop */
-  for (uint16_t i = 0; i < s_rspi_transfer_len_max; i++) {
+  for (uint16_t i = 0; i < k_rspi_transfer_len_max; i++) {
     if (i >= length) {
       break;
     }
@@ -719,7 +721,7 @@ rx_err_t rspi_deinit(const uint8_t channel)
   }
 
   /* Disable SPI */
-  rspi->spcr = s_rspi_spcr_disabled;
+  rspi->spcr = k_rspi_spcr_disabled;
 
   /* Disable RSPI module (set module stop bit) */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
@@ -792,10 +794,10 @@ static void internal_configure_spcmd(uint16_t* spcmd, const uint8_t spi_mode)
 
   /* Configure SPI mode (CPOL and CPHA) */
   if (spi_mode & k_rspi_spcmd_cpol_mask) {
-    *spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
+    *spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
   }
   if (spi_mode & k_rspi_spcmd_cpha_mask) {
-    *spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
+    *spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
   }
 }
 
@@ -860,10 +862,10 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
   }
 
   /* Configure as output */
-  port_regs->pdr |= ((uint32_t)s_rspi_bit_set << pin);
+  port_regs->pdr |= ((uint32_t)k_rspi_bit_set << pin);
 
   /* Set high (CS inactive - active low) */
-  port_regs->podr |= ((uint32_t)s_rspi_bit_set << pin);
+  port_regs->podr |= ((uint32_t)k_rspi_bit_set << pin);
 
   return k_rx_ok;
 }
@@ -878,7 +880,7 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
  * @return k_rx_err_invalid_arg if config is nullptr, channel invalid, or mode invalid
  * @return k_rx_err_invalid_state if channel already initialized
  */
-static rx_err_t rspi_validate_controller_args(const uint8_t                   channel,
+static rx_err_t internal_validate_controller_args(const uint8_t                   channel,
                                               const rspi_controller_config_t* config)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "Controller config pointer is nullptr");
@@ -917,7 +919,7 @@ static rx_err_t rspi_validate_controller_args(const uint8_t                   ch
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if SPBR calculation or GPIO config fails
  */
-static rx_err_t rspi_prepare_controller(const uint8_t                   channel,
+static rx_err_t internal_prepare_controller(const uint8_t                   channel,
                                         const rspi_controller_config_t* config,
                                         volatile rx_rspi_regs_t**       out_rspi,
                                         uint8_t*                        out_spbr)
@@ -957,7 +959,7 @@ static rx_err_t rspi_prepare_controller(const uint8_t                   channel,
  *
  * @return k_rx_ok on success
  */
-static rx_err_t rspi_configure_registers(const uint8_t                   channel,
+static rx_err_t internal_configure_registers(const uint8_t                   channel,
                                          volatile rx_rspi_regs_t*        rspi,
                                          uint8_t                         spbr,
                                          uint16_t                        spcmd,
@@ -969,20 +971,20 @@ static rx_err_t rspi_configure_registers(const uint8_t                   channel
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Disable SPI before configuration */
-  rspi->spcr = s_rspi_spcr_disabled;
+  rspi->spcr = k_rspi_spcr_disabled;
 
   /* Configure bit rate */
   rspi->spbr = spbr;
 
   /* Apply SPCMD configuration */
-  rspi->spdcr  = (uint8_t)(s_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
+  rspi->spdcr  = (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
   rspi->spcmd0 = spcmd;
 
   /* Configure controller mode with SPI enabled */
   rspi->spcr = k_rspi_spcr_spe | k_rspi_spcr_mstr;
 
   /* Configure pin control (no loopback) */
-  rspi->sppcr = s_rspi_sppcr_no_loopback;
+  rspi->sppcr = k_rspi_sppcr_no_loopback;
 
   /* Store CS pin configuration */
   s_rspi_cs_config[channel].port = rx_port_from_pin(config->cs);
@@ -1042,7 +1044,7 @@ static rx_err_t rspi_configure_registers(const uint8_t                   channel
 rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_config_t* config)
 {
   /* Validate all arguments and preconditions */
-  rx_err_t err = rspi_validate_controller_args(channel, config);
+  rx_err_t err = internal_validate_controller_args(channel, config);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1050,20 +1052,20 @@ rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_confi
   /* Prepare hardware resources (SPBR, RSPI base, CS GPIO) */
   volatile rx_rspi_regs_t* rspi = nullptr;
   uint8_t                  spbr = k_rspi_spbr_init;
-  err = rspi_prepare_controller(channel, config, &rspi, &spbr);
+  err = internal_prepare_controller(channel, config, &rspi, &spbr);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure SPI mode (CPOL and CPHA) */
-  uint16_t spcmd = s_rspi_spcmd_init;
+  uint16_t spcmd = k_rspi_spcmd_init;
   internal_configure_spcmd(&spcmd, config->spi_mode);
 
   /* Configure 16-bit data length */
   spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift);
 
   /* Configure and enable RSPI hardware registers */
-  return rspi_configure_registers(channel, rspi, spbr, spcmd, config);
+  return internal_configure_registers(channel, rspi, spbr, spcmd, config);
 }
 
 /**
@@ -1105,11 +1107,11 @@ rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
 
   if (active) {
     /* CS active (low) */
-    const uint8_t pin_mask = (uint8_t)((uint32_t)s_rspi_bit_set << pin);
+    const uint8_t pin_mask = (uint8_t)((uint32_t)k_rspi_bit_set << pin);
     port_regs->podr &= (uint8_t)~pin_mask;
   } else {
     /* CS inactive (high) */
-    const uint8_t pin_mask = (uint8_t)((uint32_t)s_rspi_bit_set << pin);
+    const uint8_t pin_mask = (uint8_t)((uint32_t)k_rspi_bit_set << pin);
     port_regs->podr |= pin_mask;
   }
 
@@ -1126,7 +1128,7 @@ rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
  * @return k_rx_ok on success
  * @return Error codes from rspi_controller_set_cs()
  */
-static rx_err_t rspi_controller_assert_cs_with_setup(const uint8_t channel)
+static rx_err_t internal_controller_assert_cs_with_setup(const uint8_t channel)
 {
   /* Rule 5: Pre-condition validation */
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
@@ -1162,7 +1164,7 @@ static rx_err_t rspi_controller_assert_cs_with_setup(const uint8_t channel)
  * @return k_rx_ok on success
  * @return Error codes from rspi_controller_set_cs()
  */
-static rx_err_t rspi_controller_deassert_cs_with_hold(const uint8_t channel)
+static rx_err_t internal_controller_deassert_cs_with_hold(const uint8_t channel)
 {
   /* Rule 5: Pre-condition validation */
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
@@ -1196,7 +1198,7 @@ static rx_err_t rspi_controller_deassert_cs_with_hold(const uint8_t channel)
  * @return k_rx_ok on success
  * @return k_rx_err_timeout if TX or RX wait times out
  */
-static rx_err_t rspi_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
+static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
                                                   uint16_t                 tx_data,
                                                   uint16_t*                rx_data)
 {
@@ -1294,13 +1296,13 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
   }
 
   /* Assert CS with setup delay */
-  rx_err_t err = rspi_controller_assert_cs_with_setup(channel);
+  rx_err_t err = internal_controller_assert_cs_with_setup(channel);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Perform 16-bit TX/RX transfer */
-  err = rspi_controller_do_16bit_transfer(rspi, tx_data, rx_data);
+  err = internal_controller_do_16bit_transfer(rspi, tx_data, rx_data);
   if (err != k_rx_ok) {
     /* Deassert CS on error (ignore CS deassert errors) */
     (void)rspi_controller_set_cs(channel, false);
@@ -1308,7 +1310,7 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
   }
 
   /* Deassert CS with hold delay */
-  return rspi_controller_deassert_cs_with_hold(channel);
+  return internal_controller_deassert_cs_with_hold(channel);
 }
 
 /**
@@ -1326,7 +1328,7 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
  *
  * @post If successful:
  *       - CS is deasserted via rspi_controller_set_cs(channel, false)
- *       - RSPI is disabled (rspi->spcr = s_rspi_spcr_disabled)
+ *       - RSPI is disabled (rspi->spcr = k_rspi_spcr_disabled)
  *       - Module clock is stopped via internal_set_mstpcrb_for_channel()
  *       - s_rspi_cs_config[channel] is cleared (port=0, pin=0)
  *       - s_rspi_controller_initialized[channel] = false
@@ -1354,7 +1356,7 @@ rx_err_t rspi_controller_deinit(const uint8_t channel)
   }
 
   /* Disable SPI */
-  rspi->spcr = s_rspi_spcr_disabled;
+  rspi->spcr = k_rspi_spcr_disabled;
 
   /* Disable RSPI module (set module stop bit) */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;

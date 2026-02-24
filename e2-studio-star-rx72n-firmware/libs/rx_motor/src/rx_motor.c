@@ -1118,8 +1118,9 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *   clamp [label="Clamp: duty = clamp(-100, duty, +100)"];
  *   invert [label="Invert check:\nif (invert_pwm) duty = -duty"];
  *   extract [label="Extract speed:\nspeed = |duty|"];
- *   direction [label="Check direction:\nduty >= 0?", shape=diamond];
+ *   direction [label="Check direction:\nduty > 0?", shape=diamond];
  *   forward [label="Forward:\nIN2 = HIGH (100%)\nIN1 = speed PWM"];
+ *   coast [label="Coast:\nIN2 = LOW (0%)\nIN1 = LOW (0%)"];
  *   reverse [label="Reverse:\nIN2 = LOW (0%)\nIN1 = speed PWM"];
  *   update [label="Update handle:\nhandle->current_duty = duty"];
  *   verify [label="Post-condition check:\nhandle->current_duty == duty?", shape=diamond];
@@ -1136,9 +1137,11 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  *   clamp -> invert;
  *   invert -> extract;
  *   extract -> direction;
- *   direction -> forward [label="duty >= 0"];
+ *   direction -> forward [label="duty > 0"];
+ *   direction -> coast [label="duty == 0"];
  *   direction -> reverse [label="duty < 0"];
  *   forward -> update;
+ *   coast -> update;
  *   reverse -> update;
  *   update -> verify;
  *   verify -> success [label="match"];
@@ -1356,7 +1359,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    */
   const float speed_pwm = fabsf(duty);
 
-  if (duty >= (float)k_motor_duty_zero) {
+  if (duty > (float)k_motor_duty_zero) {
     /* Forward: IN2 = HIGH, IN1 = PWM - NASA Rule 7 compliance */
     rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                                     rx_gptw_output_id(handle->output_a),
@@ -1373,7 +1376,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
       rx_log_error(s_tag, "Failed to set IN1 output (forward)");
       return err;
     }
-  } else {
+  } else if (duty < (float)k_motor_duty_zero) {
     /* Reverse: IN2 = LOW, IN1 = PWM - NASA Rule 7 compliance */
     rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
                                     rx_gptw_output_id(handle->output_a),
@@ -1388,6 +1391,23 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
                            speed_pwm);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to set IN1 output (reverse)");
+      return err;
+    }
+  } else {
+    /* Coast: IN2 = LOW, IN1 = LOW (high impedance) - NASA Rule 7 compliance */
+    rx_err_t err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                                    rx_gptw_output_id(handle->output_a),
+                                    (float)k_motor_in2_low);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set IN2 output (coast)");
+      return err;
+    }
+
+    err = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
+                           rx_gptw_output_id(handle->output_b),
+                           s_duty_zero);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set IN1 output (coast)");
       return err;
     }
   }

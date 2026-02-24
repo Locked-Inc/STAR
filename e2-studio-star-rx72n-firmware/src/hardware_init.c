@@ -543,7 +543,8 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
  * @pre Port base address must be valid for the given pin
  * @post Pin configured as GPIO output at the requested level
  *
- * @note Thread-safe. No shared state modified.
+ * @note Not thread-safe. Performs non-atomic RMW on port registers.
+ * @note Called only during single-threaded initialization.
  *
  * @since Version 1.2.0
  */
@@ -553,6 +554,7 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
   const uint8_t            pin  = rx_pin_from_pin(port_pin);
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for output pin");
+  RX_ASSERT(pin < 8U, "GPIO pin number out of range (0-7)");
   regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
   if (initial_high) {
     regs->podr |= (uint8_t)(1U << pin);
@@ -575,7 +577,8 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
  * @pre Port base address must be valid for the given pin
  * @post Pin configured as GPIO input
  *
- * @note Thread-safe. No shared state modified.
+ * @note Not thread-safe. Performs non-atomic RMW on port registers.
+ * @note Called only during single-threaded initialization.
  *
  * @since Version 1.2.0
  */
@@ -585,6 +588,7 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
   const uint8_t            pin  = rx_pin_from_pin(port_pin);
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for input pin");
+  RX_ASSERT(pin < 8U, "GPIO pin number out of range (0-7)");
   regs->pmr &= ~(uint8_t)(1U << pin); /* GPIO mode */
   regs->pdr &= ~(uint8_t)(1U << pin); /* Input direction */
 }

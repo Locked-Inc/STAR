@@ -1146,18 +1146,18 @@ This section establishes the standards for defining and using enumerations in th
     \subsection{Basic Enum Structure}
 
     \begin{lstlisting}[language = C]
-        /* CORRECT - from star_bus_common_types.h */
-        typedef enum {
-          k_star_bus_type_none,  /**< No bus type specified */
-          k_star_bus_type_i2c,   /**< I2C bus */
-          k_star_bus_type_spi,   /**< SPI bus */
-          k_star_bus_type_gpio,  /**< GPIO bus */
-          k_star_bus_type_adc,   /**< ADC bus */
-          k_star_bus_type_count, /**< Number of bus types (sentinel) */
+        /* CORRECT - C23 typed enum with explicit underlying type */
+        typedef enum : uint8_t {
+          k_star_bus_type_none  = 0, /**< No bus type specified */
+          k_star_bus_type_i2c   = 1, /**< I2C bus */
+          k_star_bus_type_spi   = 2, /**< SPI bus */
+          k_star_bus_type_gpio  = 3, /**< GPIO bus */
+          k_star_bus_type_adc   = 4, /**< ADC bus */
+          k_star_bus_type_count = 5, /**< Number of bus types (sentinel) */
        } star_bus_type_t;
 
     /* WRONG - Various style violations */
-    typedef enum {
+    typedef enum {                  /* Missing `: uint8_t` */
       STAR_BUS_TYPE_I2C,  /* Missing k_ prefix */
       StarBusTypeSpi,     /* PascalCase not allowed */
       star_bus_type_gpio, /* Missing k_ prefix */
@@ -1169,8 +1169,8 @@ This section establishes the standards for defining and using enumerations in th
 Assign explicit values when needed for stability or compatibility.
 
 \begin{lstlisting}[language=C]
-/* CORRECT - Explicit values for protocol compatibility */
-typedef enum {
+/* CORRECT - C23 typed enum with explicit values */
+typedef enum : uint8_t {
   k_error_none  = 0,  /**< No error */
   k_error_minor = 1,  /**< Minor error, operation can continue */
   k_error_major = 2,  /**< Major error, operation should stop */
@@ -1178,8 +1178,8 @@ typedef enum {
   k_error_count = 4,  /**< Number of error levels */
 } error_level_t;
 
-/* CORRECT - Bit flags with explicit values */
-typedef enum {
+/* CORRECT - Bit flags with explicit underlying type */
+typedef enum : uint8_t {
   k_bus_flag_none = 0x00,        /**< No flags */
   k_bus_flag_initialized = 0x01, /**< Bus is initialized */
   k_bus_flag_busy = 0x02,        /**< Bus is busy */
@@ -5439,7 +5439,7 @@ int16_t cell_temp_deci_celsius = 235;  /* 23.5 degrees C */
 static const float s_motor_thermal_shutdown_celsius = 85.0f;
 
 if (motor_temp_celsius > s_motor_thermal_shutdown_celsius) {
-      star_drv8263_stop(&motor, true); /* Emergency brake */
+      rx_motor_stop(&motor, true); /* Emergency brake */
 }
 
 /* WRONG */
@@ -5470,7 +5470,7 @@ uint64_t timestamp;         /* What resolution? */
 \begin{lstlisting}[language=C]
 /* CORRECT - Electrical units */
 uint32_t motor_current_ma;
-star_drv8263_read_current(&motor, &motor_current_ma);
+rx_motor_get_current_ma(&motor, &motor_current_ma);
 
 uint32_t cell_voltage_mv = 3700;   /* 3.7V in millivolts */
 uint32_t pack_voltage_mv = 11100;  /* 11.1V (3S LiPo) */
@@ -5483,7 +5483,7 @@ typedef enum : uint32_t {
 
 if (motor_current_ma > k_max_motor_current_ma) {
       ESP_LOGW(s_TAG, "Motor current limit exceeded: %lu mA", motor_current_ma);
-      star_drv8263_set_speed(&motor, 0.0f);
+      rx_motor_set_duty(&motor, 0.0f);
 }
 
 /* WRONG */
@@ -5500,7 +5500,7 @@ float duty_cycle_percent = 75.0f;      /* 75% duty cycle */
 uint8_t battery_soc_percent = 85;      /* 85% state of charge */
 float throttle_percent = 50.0f;        /* 50% throttle */
 
-star_drv8263_set_speed(&motor, duty_cycle_percent);
+rx_motor_set_duty(&motor, duty_cycle_percent);
 
 /* WRONG */
 float duty_cycle = 0.75f;    /* Normalized (0-1)? Percentage (0-100)? */
@@ -6167,7 +6167,7 @@ rx_err_t read_temperature_safe(float* temp_celsius)
 rx_err_t ret = read_temperature_safe(&motor_temp);
 if (ret != RX_OK) {
       /* Sensor failed - enter safe state */
-      star_drv8263_stop(&motor, true);
+      rx_motor_stop(&motor, true);
       system_enter_safe_mode();
 }
 
@@ -6187,7 +6187,7 @@ void system_enter_safe_mode(void)
 
       /* Stop all motors */
       for (uint8_t i = 0; i < k_num_motors; i++) {
-        star_drv8263_stop(&motors[i], true); /* Brake */
+        rx_motor_stop(&motors[i], true); /* Brake */
      }
 
       /* Disable all actuators */

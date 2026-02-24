@@ -153,8 +153,8 @@ improves comprehension, review,
 \begin{lstlisting}[language = C]
     /* COMPLIANT - Single responsibility, short function */
     esp_err_t
-    star_drv8263_read_current(star_drv8263_handle_t *handle,
-                              float *current_ma) {
+    rx_motor_get_current_ma(rx_motor_handle_t *handle,
+                            float *current_ma) {
   if (handle == NULL || current_ma == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
  }

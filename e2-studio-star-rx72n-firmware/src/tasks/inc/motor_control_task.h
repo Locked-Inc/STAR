@@ -22,13 +22,12 @@
  *                        v
  *                   [Encoder Feedback] <- MTU (Hall effect)
  *                        v
- *                   [PWM Output] -> H-Bridge -> Motors
+ *                   [PWM Output] -> DRV8263H -> Motors
  * ```
  *
  * @see motor_control_task.c Implementation
  * @see rx_pid.h PID controller
- * @see rx_motor.h Motor abstraction
- * @see rx_motor.h H-bridge PWM control
+ * @see rx_motor.h Motor abstraction and DRV8263H driver control
  *
  * @copyright Copyright (c) 2026 STAR Project
  */
@@ -86,7 +85,7 @@ typedef enum : uint8_t {
  * @retval k_rx_err_* ThreadX task creation failed
  *
  * @pre ThreadX kernel running
- * @pre Motor drivers (H-bridge PWM) initialized
+ * @pre Motor drivers (DRV8263H PWM) initialized
  * @pre Encoders (MTU) configured
  * @pre PID controllers tuned
  * @pre Shared data initialized

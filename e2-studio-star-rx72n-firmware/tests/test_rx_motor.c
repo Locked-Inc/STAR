@@ -129,7 +129,6 @@
  * @see rx_motor.h for motor control API
  * @see rx_motor.c for implementation
  * @see rx_gptw.h for GPTW hardware interface
- * @see rx_motor.h for motor control API
  * @see mock_rx_gptw.h for mock implementation
  *
  * @author STAR Team
@@ -163,21 +162,40 @@ typedef enum : uint8_t {
   k_float_tolerance_percent = 1, /**< 0.01 tolerance for percentage comparisons */
 } test_constants_t;
 
-/** @brief Common test PWM frequencies in Hz */
-typedef enum : uint16_t {
-  k_test_freq_20khz = 20000, /**< Standard motor PWM frequency */
-  k_test_freq_25khz = 25000, /**< Alternative motor PWM frequency */
-  k_test_freq_1khz  = 1000,  /**< Low frequency for testing */
-  k_test_freq_50khz = 50000, /**< High frequency for testing */
+/**
+ * @enum test_frequencies_t
+ * @brief Common test PWM frequencies in Hz
+ * @details Includes valid frequencies and out-of-range values for boundary testing.
+ */
+typedef enum : uint32_t {
+  k_test_freq_1khz       = 1000,  /**< Low frequency for testing */
+  k_test_freq_20khz      = 20000, /**< Standard motor PWM frequency */
+  k_test_freq_25khz      = 25000, /**< Alternative motor PWM frequency */
+  k_test_freq_50khz      = 50000, /**< High frequency for testing */
+  k_test_freq_below_min  = 500,   /**< Below 1 kHz minimum */
+  k_test_freq_above_max  = 60000, /**< Above 50 kHz maximum */
 } test_frequencies_t;
 
 /** @brief Common test dead-time values in nanoseconds */
 typedef enum : uint16_t {
-  k_test_deadtime_0ns    = 0,    /**< No dead-time */
-  k_test_deadtime_500ns  = 500,  /**< 500ns dead-time */
-  k_test_deadtime_1000ns = 1000, /**< 1us dead-time */
-  k_test_deadtime_2000ns = 2000, /**< 2us dead-time */
+  k_test_deadtime_0ns        = 0,     /**< No dead-time */
+  k_test_deadtime_below_min  = 50,    /**< Below 100 ns minimum */
+  k_test_deadtime_100ns      = 100,   /**< Minimum dead-time (100 ns) */
+  k_test_deadtime_500ns      = 500,   /**< 500ns dead-time */
+  k_test_deadtime_1000ns     = 1000,  /**< 1us dead-time */
+  k_test_deadtime_2000ns     = 2000,  /**< 2us dead-time */
+  k_test_deadtime_10us       = 10000, /**< Maximum dead-time (10 us) */
+  k_test_deadtime_above_max  = 15000, /**< Above 10 us maximum */
 } test_deadtimes_t;
+
+/**
+ * @enum test_motor_count_t
+ * @brief Motor count for multi-channel tests
+ * @details Matches the 4-motor configuration of the STAR platform.
+ */
+typedef enum : uint8_t {
+  k_test_num_motors = 4, /**< Number of motors on STAR platform */
+} test_motor_count_t;
 
 /** @brief Duty cycle test values */
 typedef enum : int16_t {
@@ -452,9 +470,9 @@ void test_motor_set_duty_zero(void)
   rx_err_t err = rx_motor_set_duty(&s_motor, 0.0f);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Zero duty: PH = 100% (forward direction), EN = 0% */
+  /* Zero duty: Coast mode - IN2 = LOW, IN1 = LOW (high impedance) */
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
-                           100.0f,
+                           0.0f,
                            mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a));
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
                            0.0f,
@@ -718,7 +736,7 @@ void test_motor_stop_coast_from_running(void)
   rx_err_t err = rx_motor_stop(&s_motor, false);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Coast: EN = LOW for high impedance */
+  /* Coast: IN2 = LOW, IN1 = LOW for high impedance */
   TEST_ASSERT_FLOAT_WITHIN(s_float_tolerance,
                            0.0f,
                            mock_gptw_get_duty(k_gptw_channel_3, k_gptw_output_a));
@@ -894,17 +912,18 @@ void test_motor_multiple_channels_independent(void)
 void test_motor_all_four_channels(void)
 {
   /* Initialize all 4 motors */
-  rx_motor_handle_t motors[4] = {0};
-  rx_motor_config_t configs[4];
+  rx_motor_handle_t motors[k_test_num_motors];
+  rx_motor_config_t configs[k_test_num_motors];
+  memset(motors, 0, sizeof(motors));
 
-  for (int32_t i = 0; i < 4; i++) {
+  for (uint8_t i = 0; i < k_test_num_motors; i++) {
     configs[i]         = s_config;
     configs[i].channel = (rx_gptw_channel_t)i;
     TEST_ASSERT_EQUAL(k_rx_ok, rx_motor_init(&motors[i], &configs[i]));
   }
 
   /* Verify all channels initialized */
-  for (int32_t i = 0; i < 4; i++) {
+  for (uint8_t i = 0; i < k_test_num_motors; i++) {
     TEST_ASSERT_TRUE(mock_gptw_is_initialized((rx_gptw_channel_t)i));
   }
 }
@@ -1003,7 +1022,7 @@ void test_motor_set_duty_rejects_negative_inf(void)
 
 void test_motor_init_rejects_pwm_freq_too_low(void)
 {
-  s_config.pwm_freq_hz = 500; /* Below 1 kHz minimum */
+  s_config.pwm_freq_hz = (uint32_t)k_test_freq_below_min;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1013,7 +1032,7 @@ void test_motor_init_rejects_pwm_freq_too_low(void)
 
 void test_motor_init_rejects_pwm_freq_too_high(void)
 {
-  s_config.pwm_freq_hz = 60000; /* Above 50 kHz maximum */
+  s_config.pwm_freq_hz = (uint32_t)k_test_freq_above_max;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1023,7 +1042,7 @@ void test_motor_init_rejects_pwm_freq_too_high(void)
 
 void test_motor_init_accepts_pwm_freq_at_min_boundary(void)
 {
-  s_config.pwm_freq_hz = 1000; /* Exactly 1 kHz */
+  s_config.pwm_freq_hz = (uint32_t)k_test_freq_1khz;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1033,7 +1052,7 @@ void test_motor_init_accepts_pwm_freq_at_min_boundary(void)
 
 void test_motor_init_accepts_pwm_freq_at_max_boundary(void)
 {
-  s_config.pwm_freq_hz = 50000; /* Exactly 50 kHz */
+  s_config.pwm_freq_hz = (uint32_t)k_test_freq_50khz;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1048,7 +1067,7 @@ void test_motor_init_accepts_pwm_freq_at_max_boundary(void)
 
 void test_motor_init_rejects_dead_time_too_low(void)
 {
-  s_config.dead_time_ns = 50; /* Below 100 ns minimum */
+  s_config.dead_time_ns = (uint32_t)k_test_deadtime_below_min;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1058,7 +1077,7 @@ void test_motor_init_rejects_dead_time_too_low(void)
 
 void test_motor_init_rejects_dead_time_too_high(void)
 {
-  s_config.dead_time_ns = 15000; /* Above 10 us maximum */
+  s_config.dead_time_ns = (uint32_t)k_test_deadtime_above_max;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1068,7 +1087,7 @@ void test_motor_init_rejects_dead_time_too_high(void)
 
 void test_motor_init_accepts_dead_time_at_min_boundary(void)
 {
-  s_config.dead_time_ns = 100; /* Exactly 100 ns */
+  s_config.dead_time_ns = (uint32_t)k_test_deadtime_100ns;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 
@@ -1078,7 +1097,7 @@ void test_motor_init_accepts_dead_time_at_min_boundary(void)
 
 void test_motor_init_accepts_dead_time_at_max_boundary(void)
 {
-  s_config.dead_time_ns = 10000; /* Exactly 10 us */
+  s_config.dead_time_ns = (uint32_t)k_test_deadtime_10us;
 
   rx_err_t err = rx_motor_init(&s_motor, &s_config);
 

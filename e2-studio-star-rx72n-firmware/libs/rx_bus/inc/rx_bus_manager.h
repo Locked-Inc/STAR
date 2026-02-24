@@ -397,9 +397,9 @@ extern "C" {
  * rpi5_spi.name = "rpi5_link";
  * rpi5_spi.type = k_bus_type_spi;
  * rpi5_spi.proto.spi = (rx_spi_bus_config_t){
- *     .channel = 0,
- *     .frequency_hz = 10000000,
- *     .mode = 0
+ *     .channel = k_rspi_channel_0,
+ *     .frequency_hz = k_rspi_freq_10mhz,
+ *     .mode = k_rspi_mode_0
  * };
  *
  * // Register (manager references static config - do not modify after registration)

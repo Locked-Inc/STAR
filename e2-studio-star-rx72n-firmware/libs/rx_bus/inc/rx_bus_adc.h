@@ -639,11 +639,12 @@ rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16_t* value
  * uint32_t ipropi_mv = 0;
  * rx_err_t err = rx_bus_adc_read_voltage_mv(&manager, "motor0_current", &ipropi_mv);
  * if (err == k_rx_ok) {
- *     // IPROPI = I_motor / 1000 * 4990 Ohm
- *     // I_motor = IPROPI / 4990 * 1000 (in mA)
- *     uint32_t current_ma = (ipropi_mv * 1000) / 4990;
+ *     // IPROPI = I_motor / k_drv8263h_mirror_ratio * k_drv8263h_sense_ohm
+ *     // I_motor = IPROPI / k_drv8263h_sense_ohm * k_drv8263h_mirror_ratio
+ *     uint32_t current_ma = (ipropi_mv * k_drv8263h_mirror_ratio)
+ *                           / k_drv8263h_sense_ohm;
  *
- *     if (current_ma > 5000) {  // 5A overcurrent limit
+ *     if (current_ma > k_motor_overcurrent_ma) {
  *         motor_emergency_stop();
  *         rx_log_error("MOTOR", "Overcurrent: %d mA", current_ma);
  *     }

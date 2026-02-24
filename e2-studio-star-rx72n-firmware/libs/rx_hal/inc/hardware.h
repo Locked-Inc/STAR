@@ -1088,10 +1088,10 @@ typedef struct {
  * // External sensor communication (controller mode, Mode 0)
  * rspi_controller_config_t sensor_cfg = {
  *   .spi_mode = k_rspi_mode_0,  // Standard SPI mode 0
- *   .freq_hz = 1000000,         // 1 MHz
+ *   .freq_hz = k_rspi_freq_1mhz, // 1 MHz
  *   .cs = k_port_c_pin_4
  * };
- * rspi_init_controller(1, &sensor_cfg);
+ * rspi_init_controller(1, &sensor_cfg);  // RSPI1
  * @endcode
  *
  * @par Underlying Type: uint8_t (C23 typed enum)
@@ -1113,6 +1113,11 @@ typedef enum : uint8_t {
   k_rspi_mode_3 =
     3 /**< CPOL=1, CPHA=1 - Data sampled on rising edge, idle high. Alternative for some devices. */
 } rspi_mode_t;
+
+/** @brief Common SPI clock frequency constants */
+typedef enum : uint32_t {
+  k_rspi_freq_1mhz = 1000000, /**< 1 MHz SPI clock frequency */
+} rspi_freq_constants_t;
 
 /**
  * @brief Initialize RSPI in peripheral mode for RPi5 communication
