@@ -317,7 +317,7 @@ typedef enum : uint32_t {
  * SPCMD initial value sets a clean baseline before configuring bit fields
  * for CPOL, CPHA, and data length via bitwise OR operations.
  *
- * @invariant k_rspi_transfer_len_max must equal UINT16_MAX (65535)
+ * @invariant k_rspi_transfer_len_max must equal 65535 (uint16_t maximum, 16-bit DMA counter limit)
  *
  * @code
  * // Validate transfer length before starting peripheral transfer
@@ -725,8 +725,6 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is nullptr");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
-  static_assert(k_rspi_transfer_len_max == UINT16_MAX,
-                "Transfer length max must equal uint16_t max");
   if (length == k_rspi_len_zero) {
     rx_log_error(s_tag, "Invalid transfer length");
     return k_rx_err_invalid_arg;

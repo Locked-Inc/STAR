@@ -471,7 +471,7 @@ typedef enum : uint8_t {
  * swapping channel and output arguments (both uint8_t) would compile silently.
  * Construct via rx_gptw_channel_id() helper function.
  *
- * @invariant value must be in range [0, k_gptw_num_channels)
+ * @invariant value must be a valid rx_gptw_channel_t value (k_gptw_channel_0 through k_gptw_channel_3)
  *
  * @code
  * rx_gptw_channel_id_t ch = rx_gptw_channel_id(k_gptw_channel_0);

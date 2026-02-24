@@ -373,19 +373,77 @@ typedef enum : uint8_t {
   k_ms_per_tick   = 10, /**< ThreadX milliseconds per tick (100 Hz tick rate = 10ms/tick) */
 } shared_data_internal_constants_t;
 
-/** @brief Default PID proportional gain -- Kp = 0.286 (from MATLAB motor_model_1st_order.m) */
+/**
+ * @var s_default_pid_kp
+ * @brief Default PID proportional gain -- Kp = 0.286
+ * @details Derived from MATLAB motor_model_1st_order.m system identification.
+ *          Applied to all 4 motor channels at startup.
+ * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
 static const float s_default_pid_kp = 0.286F;
-/** @brief Default PID integral gain -- Ki = 8.01 (from MATLAB pid_design_velocity.m) */
+
+/**
+ * @var s_default_pid_ki
+ * @brief Default PID integral gain -- Ki = 8.01
+ * @details Derived from MATLAB pid_design_velocity.m controller design.
+ *          Applied to all 4 motor channels at startup.
+ * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
 static const float s_default_pid_ki = 8.01F;
-/** @brief Default PID derivative gain -- Kd = 0.0 (not used) */
+
+/**
+ * @var s_default_pid_kd
+ * @brief Default PID derivative gain -- Kd = 0.0 (not used)
+ * @details Derivative term disabled by default; motor model is first-order
+ *          so derivative action provides no benefit.
+ * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
 static const float s_default_pid_kd = 0.0F;
-/** @brief Default PID output lower limit (% duty cycle) */
+
+/**
+ * @var s_default_pid_output_min
+ * @brief Default PID output lower limit (% duty cycle)
+ * @details Minimum duty cycle for reverse direction. Symmetric with output_max.
+ * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
 static const float s_default_pid_output_min = -100.0F;
-/** @brief Default PID output upper limit (% duty cycle) */
+
+/**
+ * @var s_default_pid_output_max
+ * @brief Default PID output upper limit (% duty cycle)
+ * @details Maximum duty cycle for forward direction. Symmetric with output_min.
+ * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
 static const float s_default_pid_output_max = 100.0F;
-/** @brief Default PID integral lower limit (anti-windup) */
+
+/**
+ * @var s_default_pid_integral_min
+ * @brief Default PID integral lower limit (anti-windup)
+ * @details Prevents integral term from accumulating below -50% duty cycle.
+ * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
 static const float s_default_pid_integral_min = -50.0F;
-/** @brief Default PID integral upper limit (anti-windup) */
+
+/**
+ * @var s_default_pid_integral_max
+ * @brief Default PID integral upper limit (anti-windup)
+ * @details Prevents integral term from accumulating above 50% duty cycle.
+ * @note File-scope only; accessed via shared_data_get_motor_config()
+ * @warning Do not modify directly; use shared_data_set_pid_gains() for runtime updates
+ * @since Version 1.0.0
+ */
 static const float s_default_pid_integral_max = 50.0F;
 
 /** @brief Log tag for this module (used by RX_CHECK_NULL_PTR) */

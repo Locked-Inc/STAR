@@ -192,8 +192,8 @@ typedef enum : uint32_t {
    * Directly follows RSPI0 in memory (0x40 byte offset).
    * @par Pin Assignments:
    * - RSPCKB: PE5/RSPCKB (clock output to peripherals)
-   * - MOSIB: PE6/MOSIB (RX72N hardware name) -> COPI (project name) - data out
-   * - MISOB: PE7/MISOB (RX72N hardware name) -> CIPO (project name) - data in
+   * - PE6/MOSIB (RX72N hardware pin name, project terminology: COPI) - data out to peripheral
+   * - PE7/MISOB (RX72N hardware pin name, project terminology: CIPO) - data in from peripheral
    * - SSLB0-3: Individual chip selects (available for future peripherals)
    */
   k_rspi1_base_addr = 0x000D0140,

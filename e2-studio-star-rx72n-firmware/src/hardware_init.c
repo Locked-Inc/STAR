@@ -339,6 +339,16 @@ typedef enum : uint8_t {
  * @see internal_gpio_set_input() Uses these for register bit manipulation
  * @see k_pins_per_port From rx_gpio_constants.h (hardware 8-pin limit)
  *
+ * @code{.c}
+ * // Set pin 5 as output in PDR register (read-modify-write)
+ * port->PDR |= (uint8_t)(k_gpio_single_bit_mask << k_bit_led);
+ *
+ * // Validate pin number before access
+ * if (pin_number <= k_gpio_max_pin_number) {
+ *     port->PODR |= (uint8_t)(k_gpio_single_bit_mask << pin_number);
+ * }
+ * @endcode
+ *
  * @since Version 1.2.0
  */
 typedef enum : uint8_t {

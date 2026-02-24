@@ -237,7 +237,7 @@ extern "C" {
  *     .name = "rpi5_spi",
  *     .type = k_bus_type_spi,  // Use SPI protocol
  *     .proto.spi = {
- *         .channel = 0,
+ *         .channel = k_rspi_channel_0,
  *         .frequency_hz = k_rspi_freq_10mhz,
  *         .mode = k_rspi_mode_0
  *     }
@@ -514,7 +514,7 @@ typedef enum : uint8_t {
  * Initialized --> Initialized : Read/Write operations
  * Initialized --> Deinitialized : rx_bus_manager_remove_bus()
  * Registered --> Deinitialized : rx_bus_manager_remove_bus()
- * Deinitialized --> [*] : Free config
+ * Deinitialized --> [*] : Release config reference (static, no free)
  * @enduml
  *
  * ## Field Constraints
@@ -534,7 +534,7 @@ typedef enum : uint8_t {
  * };
  *
  * s_rpi5_spi.proto.spi = (rx_spi_bus_config_t){
- *     .channel = 0,
+ *     .channel = k_rspi_channel_0,
  *     .copi_pin = k_port_pin_p26,  // RSPI0 COPI
  *     .cipo_pin = k_port_pin_p30,  // RSPI0 CIPO
  *     .sck_pin = k_port_pin_p27,   // RSPI0 SCK
@@ -556,11 +556,11 @@ typedef enum : uint8_t {
  * };
  *
  * s_imu_i2c.proto.i2c = (rx_i2c_bus_config_t){
- *     .channel = 0,
+ *     .channel = k_riic_channel_0,
  *     .sda_pin = k_port_pin_p16,
  *     .scl_pin = k_port_pin_p15,
- *     .frequency_hz = 400000,  // 400 kHz fast mode
- *     .device_addr = 0x68      // MPU6050 address
+ *     .frequency_hz = k_riic_freq_400khz,  // Fast mode
+ *     .device_addr = k_mpu6050_i2c_addr     // MPU6050 7-bit address
  * };
  *
  * rx_bus_manager_add_bus(&manager, &s_imu_i2c);
@@ -570,7 +570,7 @@ typedef enum : uint8_t {
  * @invariant type must be valid (< k_bus_type_max)
  * @invariant proto union interpretation depends on type field
  *
- * @note Bus manager takes ownership of allocated config memory
+ * @note Bus manager holds a reference to config; caller owns statically-allocated config for its entire lifetime
  * @warning Do not modify config after registration without mutex
  *
  * @see rx_bus_manager_add_bus() Register bus with manager

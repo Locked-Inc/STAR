@@ -726,7 +726,7 @@ void test_pid_compute_integral_accumulation(void)
   float setpoint = 100.0F;
   float measured = 90.0F;
   float error    = 10.0F;
-  float dt       = 0.01F;
+  float dt       = s_dt_seconds;
 
   /* First iteration: integral = error * dt = 10 * 0.01 = 0.1 */
   rx_pid_compute(&pid, setpoint, measured, dt, &output);
@@ -1474,7 +1474,7 @@ void test_pid_compute_full_pid(void)
   float output   = 0.0F;
   float setpoint = 100.0F;
   float measured = 90.0F;
-  float dt       = 0.01F;
+  float dt       = s_dt_seconds;
 
   /* First call: prev_error = 0, error = setpoint - measured = 10 */
   rx_err_t err = rx_pid_compute(&pid, setpoint, measured, dt, &output);
@@ -1506,7 +1506,7 @@ void test_pid_step_response(void)
   float output   = 0.0F;
   float setpoint = 50.0F;
   float measured = 0.0F;
-  float dt       = 0.01F;
+  float dt       = s_dt_seconds;
 
   /* Simulate several iterations - output should increase */
   float prev_output = -1000.0F;
@@ -1616,7 +1616,7 @@ void test_pid_ramp_tracking(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output    = 0.0F;
-  float dt        = 0.01F;
+  float dt        = s_dt_seconds;
   float ramp_rate = 10.0F; /* Units per second */
 
   /* Track a ramping setpoint */
@@ -1653,7 +1653,7 @@ void test_pid_deterministic_behavior(void)
 
   float output1 = 0.0F;
   float output2 = 0.0F;
-  float dt      = 0.01F;
+  float dt      = s_dt_seconds;
 
   /* Run identical sequences */
   float setpoints[]    = {100.0F, 105.0F, 98.0F, 102.0F, 100.0F};

@@ -864,8 +864,16 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
     return k_rx_err_invalid_arg;
   }
 
-  /* Clear handle using static zero instance (avoids large compound literal on stack) */
-  static const rx_usb_comm_handle_t s_zero_handle = {0};
+  /**
+   * @var s_zero_handle
+   * @brief Zero-initialized USB comm handle template for stack-safe initialization
+   * @details Static const instance used to clear rx_usb_comm_handle_t without creating
+   *          a large compound literal on the stack. Lives in .rodata section.
+   * @note Read-only; never modified after static initialization
+   * @warning Do not remove - prevents stack overflow in init function
+   * @since Version 1.0.0
+   */
+  static const rx_usb_comm_handle_t s_zero_handle = {};
   *handle = s_zero_handle;
 
   /* Apply configuration - config is required for session pointer */

@@ -611,12 +611,13 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
  *
  * @par Example Usage Context:
  * For motor current sensing (DRV8263H IPROPI):
- * - Read voltage: 1650 mV
- * - Convert to current: I = (1650 / 4990) x 1000 = 331 mA
+ * - Read voltage from ADC
+ * - Convert using: I_motor = V_sense * k_ipropi_ratio / k_ipropi_sense_ohm
+ * - Example: I = (V_sense / 4990) * 1000 (see rx72n_adc_regs.h for constants)
  *
- * For temperature sensing (10 mV/degC sensor):
- * - Read voltage: 750 mV (ADC input)
- * - Convert: T = (750 - 500) / 10 = 25 degC
+ * For temperature sensing (analog sensor):
+ * - Read voltage from ADC
+ * - Apply sensor-specific conversion (see sensor datasheet)
  *
  * @see rx_bus_adc_read_voltage_mv() Public API that calls this callback
  * @see adc_read_voltage_mv() HAL function to perform conversion and scaling

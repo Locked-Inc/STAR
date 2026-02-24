@@ -976,7 +976,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
  *
  * The function uses a static zero-initialized instance to clear the structure, which:
  * - Clears all reservation entries (reserved=false, function="")
- * - Prepares mutex memory for tx_mutex_create
+ * - Clears mutex bytes to neutral zero state before tx_mutex_create performs RTOS setup
  * - Sets initialized to false (then true after success)
  *
  * @param[in,out] validator Pointer to pin validator instance to initialize
@@ -1031,8 +1031,16 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
 {
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
 
-  /* Clear all state using static zero instance (avoids 4KB+ compound literal on stack) */
-  static const pin_validator_t s_zero_validator = {0};
+  /**
+   * @var s_zero_validator
+   * @brief Zero-initialized pin validator template for stack-safe initialization
+   * @details Static const instance used to clear pin_validator_t without creating
+   *          a large compound literal on the stack. Lives in .rodata section.
+   * @note Read-only; never modified after static initialization
+   * @warning Do not remove - prevents stack overflow in init function
+   * @since Version 1.0.0
+   */
+  static const pin_validator_t s_zero_validator = {};
   *validator = s_zero_validator;
 
   /* Create mutex */

@@ -1143,8 +1143,16 @@ rx_err_t rx_comm_manager_init(rx_comm_manager_t* mgr, const rx_comm_manager_conf
     }
   }
 
-  /* Clear handle using static zero instance (avoids large compound literal on stack) */
-  static const rx_comm_manager_t s_zero_mgr = {0};
+  /**
+   * @var s_zero_mgr
+   * @brief Zero-initialized comm manager template for stack-safe initialization
+   * @details Static const instance used to clear rx_comm_manager_t without creating
+   *          a large compound literal on the stack. Lives in .rodata section.
+   * @note Read-only; never modified after static initialization
+   * @warning Do not remove - prevents stack overflow in init function
+   * @since Version 1.0.0
+   */
+  static const rx_comm_manager_t s_zero_mgr = {};
   *mgr = s_zero_mgr;
 
   /* Apply configuration */

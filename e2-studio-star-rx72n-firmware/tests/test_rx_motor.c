@@ -250,6 +250,14 @@ typedef enum : int16_t {
   k_duty_under_min    = -150, /**< Under minimum for clamping test */
 } test_duty_values_t;
 
+/**
+ * @var s_float_tolerance
+ * @brief Floating-point comparison tolerance for motor duty cycle assertions
+ * @details Used with TEST_ASSERT_FLOAT_WITHIN to account for floating-point
+ *          arithmetic precision in duty cycle calculations.
+ * @note Test-only constant; not used in production code
+ * @since Version 1.0.0
+ */
 static const float s_float_tolerance = 0.01F;
 
 /* =============================================================================
@@ -954,9 +962,8 @@ void test_motor_multiple_channels_independent(void)
 void test_motor_all_four_channels(void)
 {
   /* Initialize all 4 motors */
-  rx_motor_handle_t motors[k_test_num_motors];
+  rx_motor_handle_t motors[k_test_num_motors]  = {0};
   rx_motor_config_t configs[k_test_num_motors];
-  memset(motors, 0, sizeof(motors));
 
   for (uint8_t i = 0; i < k_test_num_motors; i++) {
     configs[i]         = s_config;

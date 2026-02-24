@@ -5397,7 +5397,7 @@ float acceleration_mps2 = 9.81F;   /* 9.81 m/s^2 (gravity) */
 /* Motor velocity tracking */
 float target_velocity_mps = 0.5F;
 float current_velocity_mps;
-star_encoder_get_velocity_rpm(&encoder, 10.0F, 500, &current_velocity_mps);
+star_encoder_get_velocity_mps(&encoder, 10.0F, 500, &current_velocity_mps);
 
 /* WRONG - No unit suffix */
 float distance = 1.5F;     /* What unit? Meters? Millimeters? Feet? */
@@ -5534,21 +5534,26 @@ When converting between units, use descriptive function names:
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Clear unit conversion */
-float rpm_to_mps(float rpm, float wheel_diameter_m)
+static const float s_seconds_per_minute = 60.0F;
+
+float rpm_to_mps(float rpm, float wheel_circumference_m)
 {
-      float wheel_circumference_m = 3.14159F * wheel_diameter_m;
-      float revolutions_per_second = rpm / 60.0F;
+      float revolutions_per_second = rpm / s_seconds_per_minute;
       return revolutions_per_second * wheel_circumference_m;
 }
 
+static const float s_deci_celsius_per_celsius = 10.0F;
+
 float celsius_to_deci_celsius(float temp_celsius)
 {
-      return temp_celsius * 10.0F;
+      return temp_celsius * s_deci_celsius_per_celsius;
 }
+
+static const float s_mv_per_volt = 1000.0F;
 
 float mv_to_volts(uint32_t voltage_mv)
 {
-      return voltage_mv / 1000.0F;
+      return voltage_mv / s_mv_per_volt;
 }
 
 /* WRONG - Ambiguous conversions */
@@ -6207,12 +6212,12 @@ void system_enter_safe_mode(void)
 
 /* Trigger safe mode on critical errors */
 typedef enum : uint16_t {
-  k_battery_critical_mv = 3000, /**< Critical battery threshold (3.0V) */
+  k_battery_critical_mv = 3000, /**< Critical per-cell voltage threshold (3.0V) */
 } battery_limits_t;
 
 static const float s_motor_thermal_shutdown_celsius = 85.0F;
 
-if (battery_voltage_mv < k_battery_critical_mv) {
+if (cell_voltage_mv < k_battery_critical_mv) {
       system_enter_safe_mode();
 }
 

@@ -1082,7 +1082,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * @par Example - Remove All Buses:
  * @code{.c}
  * const char* bus_names[] = {"imu", "rpi5_spi", "temp_sensor"};
- * for (uint8_t i = 0; i < 3; i++) {
+ * for (uint8_t i = 0; i < sizeof(bus_names) / sizeof(bus_names[0]); i++) {
  *     rx_err_t err = rx_bus_manager_remove_bus(&manager, bus_names[i]);
  *     if (err == k_rx_ok) {
  *         rx_log_info("MAIN", "Removed bus: %s", bus_names[i]);
