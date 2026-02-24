@@ -40,6 +40,60 @@ if [[ "$ascii_ok" == "false" ]]; then
 fi
 
 # -----------------------------------------------------------------------------
+# SECRET SCANNING (TruffleHog)
+# -----------------------------------------------------------------------------
+if command -v trufflehog &>/dev/null; then
+    repo_root=$(git rev-parse --show-toplevel)
+    if [[ -z "$repo_root" ]]; then
+        echo "[FAIL] Could not determine repo root; aborting secret scan."
+        exit 1
+    fi
+
+    # Skip on initial commit (unborn HEAD) — nothing to scan yet
+    if ! git rev-parse --verify HEAD &>/dev/null; then
+        echo "SKIP: No HEAD commit yet; skipping secret scan on initial commit."
+    else
+        # Config file lives in the main working tree, not in worktrees
+        main_tree=$(git worktree list --porcelain | head -1 | sed 's/^worktree //')
+        if [[ -z "$main_tree" ]]; then
+            echo "WARN: Could not determine main worktree; exclusion list will be skipped."
+        fi
+        exclude_file="${main_tree:+$main_tree/}.trufflehog-exclude-paths.txt"
+
+        echo "Scanning staged changes for secrets..."
+        trufflehog_args=(git "file://$repo_root"
+            --since-commit HEAD
+            --results=verified
+            --fail
+            --no-update
+            --trust-local-git-config)
+        if [[ -n "$main_tree" && -f "$exclude_file" ]]; then
+            trufflehog_args+=(--exclude-paths "$exclude_file")
+        fi
+        # Fail-fast: secret findings exit immediately (not accumulated in error_found)
+        # because a live credential must be removed before any other checks matter.
+        trufflehog "${trufflehog_args[@]}"
+        th_exit=$?
+        if [[ $th_exit -eq 183 ]]; then
+            echo ""
+            echo "[FAIL] TruffleHog detected secrets in staged changes."
+            echo "   Remove the secret, rotate the credential, then re-commit."
+            echo "   Docs: https://github.com/trufflesecurity/trufflehog"
+            exit 1
+        elif [[ $th_exit -ne 0 ]]; then
+            echo ""
+            echo "[FAIL] TruffleHog scan error (exit $th_exit). Aborting as a precaution."
+            exit 1
+        fi
+    fi
+else
+    echo ""
+    echo "WARNING: trufflehog is not installed -- secret scanning was SKIPPED."
+    echo "   Install: https://github.com/trufflesecurity/trufflehog#installation"
+    echo "   CI will still enforce secret scanning via GitHub Actions."
+fi
+
+# -----------------------------------------------------------------------------
 # GO CHECKS
 # -----------------------------------------------------------------------------
 go_files=$(echo "$staged_files" | grep "\.go$" || true)
