@@ -71,7 +71,7 @@
  * | rx72n_adc_regs.h | S12AD0/1 | 0x00089000 | Current sensing, voltage measurement |
  * | rx72n_sci_regs.h | SCI0-12 | 0x0008A000 | UART debug output (SCI9) |
  * | rx72n_riic_regs.h | RIIC0-2 | 0x00088300 | I2C sensors (IMU) |
- * | rx72n_rspi_regs.h | RSPI0-2 | 0x000D0000 | SPI: RPi5 comm, motor drivers |
+ * | rx72n_rspi_regs.h | RSPI0-2 | 0x000D0000 | SPI: RPi5 comm (RSPI1 not used) |
  * | rx72n_cmt_regs.h | CMT0-3 | 0x00088000 | ThreadX system tick (100 Hz) |
  * | rx72n_icu_regs.h | ICU | 0x00087000 | Interrupt routing and priorities |
  * | rx72n_iwdt_regs.h | IWDT | 0x00088030 | Independent watchdog (safety) |
@@ -292,7 +292,8 @@ extern "C" {
 #include "rx72n_riic_regs.h"
 
 /* =============================================================================
- * Renesas Serial Peripheral Interface (RSPI) - For SPI to RPi5
+ * Renesas Serial Peripheral Interface (RSPI)
+ * For SPI to RPi5 (RSPI1 not used in current design)
  * =============================================================================
  */
 

@@ -19,7 +19,7 @@ from collections import defaultdict
 MODULE_COLORS = {
     "rx_motor": "#AED6F1",       # Light blue
     "rx_pid": "#85C1E9",         # Blue
-    "rx_drv8243": "#7FB3D8",     # Steel blue
+    "rx_drv8263": "#7FB3D8",     # Steel blue
     "rx_encoder": "#A9CCE3",     # Powder blue
     "rx_comm_manager": "#F9E79F", # Light yellow
     "rx_spi_comm": "#F7DC6F",    # Yellow

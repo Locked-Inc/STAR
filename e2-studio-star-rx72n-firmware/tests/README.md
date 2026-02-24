@@ -48,7 +48,6 @@ ctest --output-on-failure
 
 ### Motor Control
 - `test_rx_motor` - Motor control abstraction
-- `test_rx_drv8243_spi` - DRV8243 H-bridge driver
 
 ### Application Tasks
 - `test_motor_control_task` - Motor control task (ThreadX)

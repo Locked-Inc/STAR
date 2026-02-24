@@ -138,7 +138,7 @@ User -> UI (TypeScript)
 - **Main Controller:** Raspberry Pi 5
 - **Motor Controller:** Renesas RX72N (4MB Flash, 512KB SRAM)
 - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
-- **Motor Drivers:** DRV8243S H-bridge with current sensing
+- **Motor Drivers:** DRV8263H H-bridge with current sensing
 - **Lidar:** RPLiDAR C1 (12m range, IP54)
 - **Communication:** 10 Mbps SPI (RPi5 <-> RX72N) with nanopb + CRC-32
 
@@ -305,7 +305,7 @@ This project enforces **MAXIMUM documentation coverage** with zero tolerance for
  * rx_pid_init(&pid, &config);
  *
  * float output;
- * rx_err_t err = rx_pid_compute(&pid, 100.0f, 95.0f, 0.01f, &output);
+ * rx_err_t err = rx_pid_compute(&pid, 100.0F, 95.0F, 0.01F, &output);
  * if (err == k_rx_ok) {
  *     motor_set_pwm(output);
  * }
@@ -504,11 +504,11 @@ enums, variables, typedefs, and macros.
 2. **const variables** - ONLY for floating-point (enum limitation)
    ```c
    // CORRECT: Floating-point must use const (can't use enum)
-   static const float s_max_velocity_mps = 2.5f;
-   static const float s_pid_kp = 1.0f;
+   static const float s_max_velocity_mps = 2.5F;
+   static const float s_pid_kp = 1.0F;
 
    // WRONG: Never use macros for floats
-   #define MAX_VELOCITY_MPS (2.5f)  // [FAIL] Should be const!
+   #define MAX_VELOCITY_MPS (2.5F)  // [FAIL] Should be const!
    ```
 
 3. **Macros** - ONLY for these 3 specific cases:

@@ -544,10 +544,10 @@ USB CDC is a standard USB device class that creates a \textbf{virtual serial por
           from nearby motor drivers,
       switched power supplies,
       and PWM signals.
-    \item \textbf{Motor environment :
-     } The STAR robot runs 4 brushed DC motors with H -
-          bridge drivers(DRV8243S).PWM switching at 20\,
-      kHz generates significant EMI that can couple into SPI traces.
+    \item \textbf{Motor environment:}
+      The STAR robot runs 4 brushed DC motors with $4\times$ \texttt{DRV8263H-Q1}
+      H-bridge drivers. PWM switching at 20\,kHz generates
+      significant EMI that can couple into SPI traces.
 \end{itemize}
 
   \textbf{STAR's SPI protection stack:}
@@ -713,7 +713,7 @@ Transport manager & \texttt{internal / manager / manager.go} & \texttt {
     \item On success : builds \texttt{motor\_command\_t},
         writes to \texttt{shared\_data}(mutex + event flag).
     \item \texttt{motor\_control\_task}(priority 8, 250\, Hz)wakes on event,
-        runs PID, writes PWM to DRV8243S.
+        runs PID, writes PWM to \texttt{DRV8263H-Q1}.
 \end{enumerate}
 
     \vspace { 0.2cm}

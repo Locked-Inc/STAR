@@ -70,7 +70,7 @@
  * | **GPIO** | I/O Ports A-J | ~80 pins | LEDs, buttons, chip selects |
  * | **ADC** | S12ADFa | 2 units x 8 ch | Current sensing, analog inputs |
  * | **I2C** | RIIC | 3 channels | IMU, temperature, pressure sensors |
- * | **SPI** | RSPI | 3 channels | Motor drivers (DRV8243) |
+ * | **SPI** | RSPI | 3 channels | RPi5 communication, sensors |
  * | **UART** | SCI | 13 channels | Debug console, RS-485 |
  * | **1-Wire** | GPIO bit-bang | Unlimited | Temperature sensors (DS18B20) |
  *
@@ -227,19 +227,19 @@ extern "C" {
  * | GPIO | I/O Ports | N/A | 1 | Digital I/O, chip selects |
  * | ADC | S12ADFa | ~1 us/sample | 1 | Analog sensing |
  * | I2C | RIIC | 100-1000 kHz | 2 | Sensors, EEPROMs |
- * | SPI | RSPI | 1-15 MHz | 4 | Motor drivers, fast sensors |
+ * | SPI | RSPI | 1-15 MHz | 4 | RPi5 communication, sensors |
  * | UART | SCI | 9.6-921.6 kbps | 2 | Debug console, RS-485 |
  * | 1-Wire | GPIO | ~15 kbps | 1 | Temperature sensors |
  *
  * @par Usage Example:
  * @code{.c}
  * rx_bus_config_t config = {
- *     .name = "motor_spi",
+ *     .name = "rpi5_spi",
  *     .type = k_bus_type_spi,  // Use SPI protocol
  *     .proto.spi = {
- *         .channel = 0,
- *         .frequency_hz = 1000000,  // 1 MHz
- *         .mode = 0
+ *         .channel = k_rspi_channel_0,
+ *         .frequency_hz = k_rspi_freq_10mhz,
+ *         .mode = k_rspi_mode_0
  *     }
  * };
  * @endcode
@@ -296,7 +296,7 @@ typedef enum : uint8_t {
    * @brief Serial Peripheral Interface (4-wire synchronous)
    * @details
    * High-speed synchronous serial communication. Used for:
-   * - Motor drivers (DRV8243)
+   * - RPi5 command/telemetry link (RSPI0 peripheral mode)
    * - High-speed sensors
    * - Flash memory
    * @par RX72N Peripheral: RSPI (3 channels)
@@ -514,7 +514,7 @@ typedef enum : uint8_t {
  * Initialized --> Initialized : Read/Write operations
  * Initialized --> Deinitialized : rx_bus_manager_remove_bus()
  * Registered --> Deinitialized : rx_bus_manager_remove_bus()
- * Deinitialized --> [*] : Free config
+ * Deinitialized --> [*] : Release config reference (static, no free)
  * @enduml
  *
  * ## Field Constraints
@@ -527,50 +527,50 @@ typedef enum : uint8_t {
  *
  * @par Usage Example - SPI Bus Configuration:
  * @code{.c}
- * // Allocate and configure SPI bus for motor driver
- * rx_bus_config_t* motor_spi = malloc(sizeof(rx_bus_config_t));
- * memset(motor_spi, 0, sizeof(rx_bus_config_t));
+ * // Statically allocate SPI bus config for RPi5 communication (zero dynamic allocation)
+ * static rx_bus_config_t s_rpi5_spi = {
+ *     .name = "rpi5_spi",
+ *     .type = k_bus_type_spi,
+ * };
  *
- * motor_spi->name = "motor_drv0";
- * motor_spi->type = k_bus_type_spi;
- * motor_spi->proto.spi = (rx_spi_bus_config_t){
- *     .channel = 0,
- *     .copi_pin = k_port_pin_p20,  // RSPI0 COPI
- *     .cipo_pin = k_port_pin_p21,  // RSPI0 CIPO
- *     .sck_pin = k_port_pin_p22,   // RSPI0 SCK
- *     .cs_pin = k_port_pin_p23,    // GPIO chip select
- *     .frequency_hz = 1000000,     // 1 MHz
- *     .mode = 0                    // CPOL=0, CPHA=0
+ * s_rpi5_spi.proto.spi = (rx_spi_bus_config_t){
+ *     .channel = k_rspi_channel_0,
+ *     .copi_pin = k_port_pin_p26,  // RSPI0 COPI
+ *     .cipo_pin = k_port_pin_p30,  // RSPI0 CIPO
+ *     .sck_pin = k_port_pin_p27,   // RSPI0 SCK
+ *     .cs_pin = k_port_pin_p54,    // GPIO chip select
+ *     .frequency_hz = k_rspi_freq_10mhz,
+ *     .mode = k_rspi_mode_0        // CPOL=0, CPHA=0
  * };
  *
  * // Register with bus manager
- * rx_err_t err = rx_bus_manager_add_bus(&manager, motor_spi);
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, &s_rpi5_spi);
  * @endcode
  *
  * @par Usage Example - I2C Bus Configuration:
  * @code{.c}
- * // Configure I2C bus for IMU sensor
- * rx_bus_config_t* imu_i2c = malloc(sizeof(rx_bus_config_t));
- * memset(imu_i2c, 0, sizeof(rx_bus_config_t));
- *
- * imu_i2c->name = "imu";
- * imu_i2c->type = k_bus_type_i2c;
- * imu_i2c->proto.i2c = (rx_i2c_bus_config_t){
- *     .channel = 0,
- *     .sda_pin = k_port_pin_p16,
- *     .scl_pin = k_port_pin_p15,
- *     .frequency_hz = 400000,  // 400 kHz fast mode
- *     .device_addr = 0x68      // MPU6050 address
+ * // Statically allocate I2C bus config for IMU sensor (zero dynamic allocation)
+ * static rx_bus_config_t s_imu_i2c = {
+ *     .name = "imu",
+ *     .type = k_bus_type_i2c,
  * };
  *
- * rx_bus_manager_add_bus(&manager, imu_i2c);
+ * s_imu_i2c.proto.i2c = (rx_i2c_bus_config_t){
+ *     .channel = k_riic_channel_0,
+ *     .sda_pin = k_port_pin_p16,
+ *     .scl_pin = k_port_pin_p15,
+ *     .frequency_hz = k_riic_freq_400khz,  // Fast mode
+ *     .device_addr = k_mpu6050_i2c_addr     // MPU6050 7-bit address
+ * };
+ *
+ * rx_bus_manager_add_bus(&manager, &s_imu_i2c);
  * @endcode
  *
  * @invariant name must be unique within bus manager
  * @invariant type must be valid (< k_bus_type_max)
  * @invariant proto union interpretation depends on type field
  *
- * @note Bus manager takes ownership of allocated config memory
+ * @note Bus manager holds a reference to config; caller owns statically-allocated config for its entire lifetime
  * @warning Do not modify config after registration without mutex
  *
  * @see rx_bus_manager_add_bus() Register bus with manager
@@ -586,7 +586,7 @@ typedef struct rx_bus_config {
    * Human-readable identifier for the bus instance.
    * Used by rx_bus_manager_find_bus() and logging.
    * @par Valid Range: Non-NULL, <=31 characters (k_max_bus_name_len)
-   * @par Examples: "motor_drv0", "imu", "temp_sensor", "debug_uart"
+   * @par Examples: "rpi5_spi", "imu", "temp_sensor", "debug_uart"
    * @invariant Must be unique within bus manager
    * @warning Must remain valid for lifetime of bus config
    */
@@ -699,7 +699,7 @@ typedef enum : uint8_t {
    * @details
    * Hard limit to prevent unbounded memory allocation.
    * Exceeding returns k_rx_err_no_mem from rx_bus_manager_add_bus().
-   * @par Derivation: 4 motors x (SPI + GPIO) + 8 sensors + 8 spare = 32
+   * @par Derivation: RPi5 SPI + I2C + 4 motors (GPIO) + sensors + spare = 32
    */
   k_max_buses = 32,
 
@@ -731,7 +731,7 @@ typedef enum : uint8_t {
  *
  *   manager [label="rx_bus_manager_t|{buses: rx_bus_config_t*|mutex: TX_MUTEX|tag: const char*|error_iface: rx_error_interface_t*|pin_iface: rx_pin_interface_t*|riic_initialized[3]|rspi_initialized[3]|adc_unit_initialized[2]|bus_count: uint8_t}"];
  *
- *   bus1 [label="rx_bus_config_t|name=\"motor_spi\"|type=k_bus_type_spi|next"];
+ *   bus1 [label="rx_bus_config_t|name=\"rpi5_spi\"|type=k_bus_type_spi|next"];
  *   bus2 [label="rx_bus_config_t|name=\"imu_i2c\"|type=k_bus_type_i2c|next"];
  *   bus3 [label="rx_bus_config_t|name=\"debug_uart\"|type=k_bus_type_uart|next=NULL"];
  *
@@ -815,11 +815,11 @@ typedef enum : uint8_t {
  * }
  *
  * // Register buses...
- * rx_bus_manager_add_bus(&manager, motor_spi_config);
+ * rx_bus_manager_add_bus(&manager, rpi5_spi_config);
  * rx_bus_manager_add_bus(&manager, imu_i2c_config);
  *
  * // Access buses...
- * rx_bus_manager_with_bus(&manager, "motor_spi", motor_callback, &ctx);
+ * rx_bus_manager_with_bus(&manager, "rpi5_spi", spi_callback, &ctx);
  *
  * // Cleanup
  * rx_bus_manager_deinit(&manager);

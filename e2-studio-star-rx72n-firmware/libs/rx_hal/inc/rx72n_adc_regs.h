@@ -7,7 +7,7 @@
  * @details
  * This header provides comprehensive register definitions for the RX72N's
  * 12-bit Successive Approximation A/D Converter (S12ADFa). The S12AD is
- * essential for motor current sensing in the STAR project's DRV8243 H-bridge
+ * essential for motor current sensing in the STAR project's DRV8263H H-bridge
  * motor control system.
  *
  * @par System Architecture Context:
@@ -16,12 +16,12 @@
  * |                    STAR Motor Control Current Path                   |
  * +----------------------------------------------------------------------+
  * |                                                                      |
- * |   Motor Current --> Shunt Resistor --> DRV8243 IPROPI --> S12AD     |
- * |                         |                  |                |        |
- * |                    10 mOhm shunt         Current amp      12-bit ADC   |
- * |                    (+/-3A range)         (20 uA/A)        (0-3.3V)     |
+ * |   Motor Current --> DRV8263H IPROPI --> Sense Resistor --> S12AD     |
+ * |                         |                    |               |       |
+ * |                    Current mirror       4990 ohm sense   12-bit ADC  |
+ * |                    (1000:1 ratio)       (~0.661A range)  (0-3.3V)    |
  * |                                                                      |
- * |   Conversion: I_motor = (ADC_value x 3.3V / 4096) / (20uA x 10mOhm)   |
+ * |   I_motor = (ADC_value x 3.3V / 4095) x 1000 / 4990                 |
  * |                                                                      |
  * +----------------------------------------------------------------------+
  * @endverbatim
@@ -43,7 +43,7 @@
  *
  * @par Motor Current Sensing Pin Mapping (144-pin LFQFP):
  *
- * | Motor | DRV8243 Pin | ADC Channel | RX72N Pin |
+ * | Motor | DRV8263H Pin | ADC Channel | RX72N Pin |
  * |-------|-------------|-------------|-----------|
  * | M0    | IPROPI      | AN007       | P47       |
  * | M1    | IPROPI      | AN006       | P46       |
@@ -62,7 +62,6 @@
  * - Direct memory-mapped register access
  *
  * @see docs/sections/03_hardware_pinout.tex GPIO pin assignments
- * @see lib/rx_drv8243/inc/rx_drv8243.h Motor driver with current sensing
  * @see lib/rx_hal/src/adc.c ADC implementation
  * @see RX72N Group User's Manual: Hardware, Chapter 56 (12-Bit A/D Converter)
  *
@@ -87,11 +86,9 @@
  *   stdint [label="<stdint.h>"];
  *   stddef [label="<stddef.h>"];
  *   adc_impl [label="adc.c"];
- *   drv8243 [label="rx_drv8243.c"];
  *   adc_regs -> stdint;
  *   adc_regs -> stddef;
  *   adc_impl -> adc_regs;
- *   drv8243 -> adc_regs;
  * }
  * @enddot
  *
@@ -146,7 +143,9 @@ extern "C" {
  * uint16_t raw_value = adc->addr7;
  *
  * // Convert to voltage (3.3V reference)
- * float voltage = (float)raw_value * 3.3f / 4096.0f;
+ * static const float s_vref_volts = 3.3F;
+ * static const float s_adc_full_scale_12bit = 4095.0F;
+ * float voltage_v = (float)raw_value * s_vref_volts / s_adc_full_scale_12bit;
  * @endcode
  *
  * @{
@@ -340,9 +339,15 @@ typedef enum : uint8_t {
  * // 6. Read 12-bit result
  * uint16_t raw_count = adc->addr7 & 0x0FFF;
  *
- * // 7. Convert to current (using DRV8243 current sensing formula)
- * // I = (V / 3.3) * 4096 * (1 / 20uA/A) = ADC_count * 3.3 / 4096 / 0.00002
- * float current_amps = (float)raw_count * 3.3f / 4096.0f / 0.00002f;
+ * // 7. Convert to current (using DRV8263H IPROPI current sensing)
+ * // IPROPI ratio: 1000:1, sense resistor: 4990 ohm
+ * // V_sense = (I_motor / 1000) * 4990, so I_motor = V_sense * 1000 / 4990
+ * static const float s_avcc_volts             = 3.3F;
+ * static const float s_adc_full_scale_divisor = 4095.0F;  // 2^12 - 1 (12-bit full scale)
+ * static const float s_ipropi_ratio           = 1000.0F;  // 1000:1 current mirror
+ * static const float s_ipropi_sense_ohm       = 4990.0F;  // Sense resistor (ohms)
+ * float voltage = (float)raw_count * s_avcc_volts / s_adc_full_scale_divisor;
+ * float current_amps = voltage * s_ipropi_ratio / s_ipropi_sense_ohm;
  * @endcode
  *
  * @par Usage Example - Continuous 4-Channel Scan:
@@ -561,7 +566,7 @@ typedef struct {
    * - Bits [15:12]: Always 0
    *
    * @par Conversion Formula:
-   * @f$ V_{in} = \frac{ADC_{result} \times V_{ref}}{4096} @f$
+   * @f$ V_{in} = \frac{ADC_{result} \times V_{ref}}{4095} @f$
    *
    * where Vref = 3.3V (AVCC0)
    */

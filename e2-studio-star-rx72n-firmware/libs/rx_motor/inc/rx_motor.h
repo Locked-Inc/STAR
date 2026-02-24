@@ -12,7 +12,7 @@
  * and fail-safe emergency stop capability.
  *
  * **Application:** STAR robot platform - 4x 6V brushed DC gearmotors (210 RPM, 341 PPR encoders)
- * **H-Bridge Driver:** DRV8243S dual H-bridge with integrated current sensing
+ * **H-Bridge Driver:** DRV8263H dual H-bridge with integrated current sensing
  * **PWM Peripheral:** RX72N GPTW (General PWM Timer) - 32-bit resolution
  *
  * **Key Features:**
@@ -149,7 +149,7 @@
  * |-----------|---------------|-------|
  * | **MCU** | Renesas RX72N | GPTW peripheral required |
  * | **PWM Timer** | GPTW (General PWM Timer) | 32-bit resolution, 4 channels (GPTW0-3) |
- * | **H-Bridge** | DRV8243S or compatible | Dual H-bridge, 3.5A peak current |
+ * | **H-Bridge** | DRV8263H or compatible | Dual H-bridge, 3.5A continuous, 4.5A peak |
  * | **Motor** | 6V brushed DC gearmotor | 210 RPM no-load, 341 PPR Hall encoder |
  * | **Power Supply** | 6-12V DC | Motor voltage range |
  * | **GPIO Pins** | 2 per motor (GTIOC A/B) | PWM output pins from GPTW |
@@ -158,10 +158,10 @@
  * ### GPTW Channel Allocation (STAR Platform)
  * | Motor | GPTW Channel | Output A Pin | Output B Pin | Notes |
  * |-------|--------------|--------------|--------------|-------|
- * | Motor 0 | GPTW0 | GTIOC0A (P21) | GTIOC0B (P20) | Front-left |
- * | Motor 1 | GPTW1 | GTIOC1A (P23) | GTIOC1B (P22) | Front-right |
- * | Motor 2 | GPTW2 | GTIOC2A (P25) | GTIOC2B (P24) | Rear-left |
- * | Motor 3 | GPTW3 | GTIOC3A (P27) | GTIOC3B (P26) | Rear-right |
+ * | Motor 0 | GPTW0 | GTIOC0A (P23) | GTIOC0B (P17) | Front-left |
+ * | Motor 1 | GPTW1 | GTIOC1A (P22) | GTIOC1B (PC3) | Front-right |
+ * | Motor 2 | GPTW2 | GTIOC2A (PE3) | GTIOC2B (P8.6) | Rear-left |
+ * | Motor 3 | GPTW3 | GTIOC3A (PE7) | GTIOC3B (PC6) | Rear-right |
  *
  * ## Performance Characteristics
  *
@@ -285,7 +285,7 @@ extern "C" {
  * @f]
  *
  * **Typical Values:**
- * - Small FETs (DRV8243S): 500-800 ns turn-off -> use 1000 ns (1 us) dead-time
+ * - Small FETs (DRV8263H): 500-800 ns turn-off -> use 1000 ns (1 us) dead-time
  * - Large FETs: 1-2 us turn-off -> use 2000-3000 ns dead-time
  *
  * **Too Short:** Risk of shoot-through (FET destruction)
@@ -295,8 +295,8 @@ extern "C" {
  * | Field | Type | Valid Range | Units | Validation |
  * |-------|------|-------------|-------|------------|
  * | channel | rx_gptw_channel_t | 0-3 (k_gptw_channel_0 to k_gptw_channel_3) | enum | Must be valid GPTW channel |
- * | output_a | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN1 pin |
- * | output_b | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN2 pin (must differ from output_a) |
+ * | output_a | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN2 (PWM) pin |
+ * | output_b | rx_gptw_output_t | k_gptw_output_a or k_gptw_output_b | enum | H-bridge IN1 (PWM) pin (must differ from output_a) |
  * | pwm_freq_hz | uint32_t | 1000-100000 Hz | Hz | Typical: 20000 (20 kHz) |
  * | dead_time_ns | uint32_t | 0-10000 ns | nanoseconds | Typical: 1000 (1 us), 0 = no dead-time (unsafe) |
  * | invert_pwm | bool | true/false | boolean | Swap active-high/active-low logic |
@@ -309,11 +309,11 @@ extern "C" {
  * // Configure front-left motor (Motor 0) with GPTW0
  * rx_motor_config_t motor0_config = {
  *   .channel = k_gptw_channel_0,     // GPTW0 timer
- *   .output_a = k_gptw_output_a,     // GTIOC0A (P21) -> DRV8243 IN1
- *   .output_b = k_gptw_output_b,     // GTIOC0B (P20) -> DRV8243 IN2
+ *   .output_a = k_gptw_output_a,     // GTIOC0A (P23) -> DRV8263H IN2 (PWM)
+ *   .output_b = k_gptw_output_b,     // GTIOC0B (P17) -> DRV8263H IN1 (PWM)
  *   .pwm_freq_hz = 20000,            // 20 kHz PWM (inaudible)
- *   .dead_time_ns = 1000,            // 1 us dead-time (DRV8243S safe)
- *   .invert_pwm = false              // Active-high logic (DRV8243 default)
+ *   .dead_time_ns = 1000,            // 1 us dead-time (DRV8263H safe)
+ *   .invert_pwm = false              // Active-high logic (DRV8263H default)
  * };
  *
  * rx_motor_handle_t motor0;
@@ -359,15 +359,15 @@ typedef struct {
   rx_gptw_channel_t
     channel; /**< GPTW timer channel selection (0-3). Determines which GPTW peripheral instance to use. Example: k_gptw_channel_0 for Motor 0. */
   rx_gptw_output_t
-    output_a; /**< PWM output A pin (H-bridge IN1). Active for forward rotation. Typically k_gptw_output_a (GTIOCA). Must differ from output_b. */
+    output_a; /**< PWM output A pin (H-bridge IN2). Both IN1 and IN2 are PWM signals; direction is determined by which output is active. Typically k_gptw_output_a (GTIOCA). Must differ from output_b. */
   rx_gptw_output_t
-    output_b; /**< PWM output B pin (H-bridge IN2). Active for reverse rotation. Typically k_gptw_output_b (GTIOCB). Must differ from output_a. */
+    output_b; /**< PWM output B pin (H-bridge IN1). Both IN1 and IN2 are PWM signals; speed is controlled by the active output's duty cycle. Typically k_gptw_output_b (GTIOCB). Must differ from output_a. */
   uint32_t
     pwm_freq_hz; /**< PWM frequency in Hertz. Range: 1,000-100,000 Hz. Recommended: 20,000 Hz (20 kHz) for inaudible operation. Higher = more switching losses. */
   uint32_t
     dead_time_ns; /**< Dead-time in nanoseconds to prevent H-bridge shoot-through. Typical: 1000 ns (1 us). Must exceed FET turn-off time. Zero = no protection (unsafe). */
   bool
-    invert_pwm; /**< Invert PWM polarity. false = active-high (default for DRV8243), true = active-low. Use if H-bridge has inverted logic. */
+    invert_pwm; /**< Invert PWM polarity. false = active-high (default for DRV8263H), true = active-low. Use if H-bridge has inverted logic. */
 } rx_motor_config_t;
 
 /**

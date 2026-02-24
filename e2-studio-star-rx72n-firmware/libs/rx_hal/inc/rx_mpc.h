@@ -588,12 +588,12 @@ typedef enum : uint8_t {
    * (GPTW0-GPTW3) with phase-staggered PWM outputs.
    *
    * @par Typical Pins:
-   * - P2.3, P1.7 (GPTW0 - Motor 0 PH/EN)
-   * - P2.2, PC.3 (GPTW1 - Motor 1 PH/EN)
-   * - PE.3, P8.6 (GPTW2 - Motor 2 PH/EN)
-   * - PE.7, PC.6 (GPTW3 - Motor 3 PH/EN)
+   * - P2.3, P1.7 (GPTW0 - Motor 0 IN2/IN1)
+   * - P2.2, PC.3 (GPTW1 - Motor 1 IN2/IN1)
+   * - PE.3, P8.6 (GPTW2 - Motor 2 IN2/IN1)
+   * - PE.7, PC.6 (GPTW3 - Motor 3 IN2/IN1)
    *
-   * @par Application: Motor control with complementary phase/enable signals
+   * @par Application: Motor control with direction/PWM signals for DRV8263H
    * @par Feature: 90-degree phase staggering reduces peak current draw
    *
    * @since Version 1.1.0
@@ -1271,21 +1271,21 @@ typedef enum : uint8_t {
  *
  * GPTW channels support:
  * - 20 kHz PWM frequency (ultrasonic, inaudible)
- * - 1 us dead-time (prevents H-bridge shoot-through)
+ * - 1 us dead-time (prevents DRV8263H shoot-through)
  * - 90-degree phase staggering (reduces peak current)
- * - Complementary mode (PH + EN pins synchronized)
+ * - IN2/IN1 mode (direction and PWM signals per DRV8263H)
  *
  * @par STAR Project GPTW Pin Allocation
  * | Pin  | GPTW Ch | Signal | Motor | Description          |
  * |------|---------|--------|-------|----------------------|
- * | P2.3 | GPTW0   | GTIOC0A | 0    | Motor 0 Phase/Hold   |
- * | P1.7 | GPTW0   | GTIOC0B | 0    | Motor 0 Enable       |
- * | P2.2 | GPTW1   | GTIOC1A | 1    | Motor 1 Phase/Hold   |
- * | PC.3 | GPTW1   | GTIOC1B | 1    | Motor 1 Enable       |
- * | PE.3 | GPTW2   | GTIOC2A | 2    | Motor 2 Phase/Hold   |
- * | P8.6 | GPTW2   | GTIOC2B | 2    | Motor 2 Enable       |
- * | PE.7 | GPTW3   | GTIOC3A | 3    | Motor 3 Phase/Hold   |
- * | PC.6 | GPTW3   | GTIOC3B | 3    | Motor 3 Enable       |
+ * | P2.3 | GPTW0   | GTIOC0A | 0    | Motor 0 Direction (IN2) |
+ * | P1.7 | GPTW0   | GTIOC0B | 0    | Motor 0 PWM (IN1)      |
+ * | P2.2 | GPTW1   | GTIOC1A | 1    | Motor 1 Direction (IN2) |
+ * | PC.3 | GPTW1   | GTIOC1B | 1    | Motor 1 PWM (IN1)      |
+ * | PE.3 | GPTW2   | GTIOC2A | 2    | Motor 2 Direction (IN2) |
+ * | P8.6 | GPTW2   | GTIOC2B | 2    | Motor 2 PWM (IN1)      |
+ * | PE.7 | GPTW3   | GTIOC3A | 3    | Motor 3 Direction (IN2) |
+ * | PC.6 | GPTW3   | GTIOC3B | 3    | Motor 3 PWM (IN1)      |
  *
  * @param[in] pin GPIO pin identifier for GPTW function
  *                Must be a pin that supports GPTW output (see manual)
@@ -1306,19 +1306,19 @@ typedef enum : uint8_t {
  * @post Pin ready for GPTW complementary PWM output
  *
  * @note Thread Safety: Not thread-safe. Call during initialization only.
- * @note Configure both phase (A) and enable (B) pins for each motor
+ * @note Configure both direction (A/IN2) and PWM (B/IN1) pins for each motor
  * @note GPTW channel configuration required for actual PWM operation
  *
  * @warning Motor safety: Configure pins before enabling GPTW channels
  *
  * @par Example - Configure All Motor PWM Pins
  * @code{.c}
- * // Configure 8 GPTW pins (4 motors x 2 pins = PH + EN)
+ * // Configure 8 GPTW pins (4 motors x 2 pins = IN2 + IN1)
  * const rx_port_pin_t gptw_pins[] = {
- *     k_rx_p2_3, k_rx_p1_7,  // Motor 0 PH/EN
- *     k_rx_p2_2, k_rx_pc_3,  // Motor 1 PH/EN
- *     k_rx_pe_3, k_rx_p8_6,  // Motor 2 PH/EN
- *     k_rx_pe_7, k_rx_pc_6   // Motor 3 PH/EN
+ *     k_rx_p2_3, k_rx_p1_7,  // Motor 0 IN2/IN1
+ *     k_rx_p2_2, k_rx_pc_3,  // Motor 1 IN2/IN1
+ *     k_rx_pe_3, k_rx_p8_6,  // Motor 2 IN2/IN1
+ *     k_rx_pe_7, k_rx_pc_6   // Motor 3 IN2/IN1
  * };
  *
  * for (uint8_t i = 0; i < 8; i++) {

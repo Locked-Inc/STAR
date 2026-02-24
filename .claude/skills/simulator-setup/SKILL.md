@@ -94,7 +94,7 @@ ctest --output-on-failure
 - Clock tree validation (actual 240 MHz operation)
 - PLL lock timing measurements
 - USB enumeration and bulk transfers
-- SPI communication with real devices (DRV8243, sensors)
+- SPI communication with real devices (DRV8263H fault register readback/diagnostics, sensors)
 - UART communication (actual baud rates)
 - Interrupt latency verification
 - DMA transfer validation

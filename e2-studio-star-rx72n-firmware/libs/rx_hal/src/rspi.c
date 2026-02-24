@@ -7,7 +7,7 @@
  * @details
  * Provides complete SPI driver implementation supporting both peripheral mode
  * (RX72N as SPI peripheral with RPi5 as controller) and controller mode (RX72N
- * as SPI controller for motor driver communication). Implements full-duplex
+ * as SPI controller for sensor communication). Implements full-duplex
  * communication with configurable clock frequency, SPI modes 0-3, and automatic
  * chip select management.
  *
@@ -46,8 +46,7 @@
  *     label="SPI Peripherals";
  *     style=filled;
  *     color=lightcoral;
- *     drv8243 [label="DRV8243S\nMotor Drivers"];
- *     other [label="Other SPI\nDevices"];
+ *     sensors [label="Future SPI\nSensors"];
  *   }
  *
  *   rpi5_spi -> peripheral [label="COPI/CIPO\nSCLK/CS"];
@@ -55,8 +54,7 @@
  *   controller -> rspi_hw;
  *   controller -> gpio [label="CS control"];
  *   helpers -> rspi_hw [style=dashed];
- *   rspi_hw -> drv8243 [label="SPI Bus"];
- *   rspi_hw -> other [label="SPI Bus"];
+ *   rspi_hw -> sensors [label="SPI Bus", style=dashed];
  * }
  * @enddot
  *
@@ -74,8 +72,8 @@
  * | Channel | Use Case | Status Tracking |
  * |---------|----------|-----------------|
  * | RSPI0 | RPi5 communication | s_rspi_channel_initialized[0] |
- * | RSPI1 | Motor drivers | s_rspi_controller_initialized[1] |
- * | RSPI2 | Reserved | Available |
+ * | RSPI1 | Not used in current design | s_rspi_controller_initialized[1] |
+ * | RSPI2 | Not used | Available |
  *
  * @par Performance Characteristics
  * | Metric | Value | Condition |
@@ -135,7 +133,6 @@
  *
  * @see rx72n_rspi_regs.h RSPI register definitions
  * @see rx_spi_comm.h Higher-level SPI communication layer
- * @see rx_drv8243.h Motor driver using RSPI controller mode
  * @see docs/sections/03_hardware_pinout.tex SPI pin assignments
  *
  * @author STAR Team
@@ -255,20 +252,90 @@ typedef enum : uint8_t {
   k_rspi_spdcr_byte_mode = 0U, /**< Byte access mode */
 } rspi_spdcr_local_t;
 
-/** @brief SPPCR register values */
-static const uint8_t s_rspi_sppcr_no_loopback = 0U; /**< No loopback mode */
+/**
+ * @enum rspi_register_defaults_t
+ * @brief RSPI register default values (reset/disabled state)
+ *
+ * @details
+ * Values written to RSPI registers during initialization to establish
+ * a known baseline configuration. These match the hardware reset defaults
+ * documented in the RX72N Hardware Manual Section 38.2. Writing these values
+ * before configuring mode-specific settings ensures a deterministic starting
+ * state regardless of prior peripheral activity.
+ *
+ * @invariant All values must match the hardware manual reset state
+ *
+ * @code
+ * // Reset RSPI registers to defaults before reconfiguration
+ * rspi->sppcr = k_rspi_sppcr_no_loopback;
+ * rspi->spcr  = k_rspi_spcr_disabled;
+ * @endcode
+ *
+ * @see rspi_init_peripheral() Uses these during peripheral mode init
+ * @see internal_configure_registers() Uses these during controller mode init
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rspi_sppcr_no_loopback = 0U, /**< SPPCR: no loopback mode (normal operation) */
+  k_rspi_spcr_disabled     = 0U, /**< SPCR: SPI disabled (module in reset state) */
+} rspi_register_defaults_t;
 
-/** @brief SPCR register disabled value */
-static const uint8_t s_rspi_spcr_disabled = 0U; /**< SPI disabled */
+/**
+ * @enum rspi_bit_constants_t
+ * @brief RSPI bit manipulation constants for register field operations
+ *
+ * @details
+ * Provides named constants for single-bit set operations used to construct
+ * register masks via left-shift. Using a named constant instead of a literal
+ * 1 improves readability and grep-ability of register manipulation code.
+ * All register mask construction in this module uses k_rspi_bit_set as the
+ * base value to ensure consistent, self-documenting bit manipulation.
+ *
+ * @invariant k_rspi_bit_set must always equal 1
+ *
+ * @code
+ * // Construct a mask for MSTPCRB module stop bit
+ * uint32_t mask = (k_rspi_bit_set << k_rspi_mstpb_rspi0);
+ * system_regs()->mstpcrb &= ~mask;
+ * @endcode
+ *
+ * @see internal_set_mstpcrb_for_channel() Uses for MSTPCRB mask construction
+ * @see internal_configure_spcmd() Uses for CPOL/CPHA bit setting
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_rspi_bit_set = 1UL, /**< Single bit set value (1) for shift-based register mask construction */
+} rspi_bit_constants_t;
 
-/** @brief Bit manipulation constants */
-static const uint32_t s_rspi_bit_set = 1UL;
-
-/** @brief RSPI transfer limits */
-static const uint16_t s_rspi_transfer_len_max = 65535U;
-
-/** @brief SPCMD register initial value (all mode bits clear) */
-static const uint16_t s_rspi_spcmd_init = 0U;
+/**
+ * @enum rspi_transfer_constants_t
+ * @brief RSPI transfer length and command register constants
+ *
+ * @details
+ * Defines limits and initialization values for the RSPI transfer engine.
+ * The maximum transfer length is constrained by the 16-bit DMA counter.
+ * SPCMD initial value sets a clean baseline before configuring bit fields
+ * for CPOL, CPHA, and data length via bitwise OR operations.
+ *
+ * @invariant k_rspi_transfer_len_max must equal 65535 (uint16_t maximum, 16-bit DMA counter limit)
+ *
+ * @code
+ * // Validate transfer length before starting peripheral transfer
+ * if (length == k_rspi_len_zero || length > k_rspi_transfer_len_max) {
+ *     return k_rx_err_invalid_arg;
+ * }
+ * // Initialize SPCMD before configuring mode-specific bits
+ * uint16_t spcmd = k_rspi_spcmd_init;
+ * @endcode
+ *
+ * @see rspi_peripheral_transfer() Uses k_rspi_transfer_len_max for length validation
+ * @see rspi_init_peripheral() Uses k_rspi_spcmd_init for register setup
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_rspi_transfer_len_max = 65535U, /**< Maximum transfer length (16-bit counter limit) */
+  k_rspi_spcmd_init       = 0U,    /**< SPCMD initial value (all fields at reset state) */
+} rspi_transfer_constants_t;
 
 /* =============================================================================
  * Static Variables
@@ -302,11 +369,32 @@ static rspi_cs_config_t s_rspi_cs_config[k_rspi_max_channels] = {
  */
 
 /**
- * @brief Get RSPI base address from channel number
+ * @brief Get RSPI register base address from channel number
  *
- * @param[in] channel RSPI channel (0-2)
+ * @details
+ * Maps a channel index (0-2) to the corresponding RSPI peripheral register
+ * block via the inline accessor functions rspi0()/rspi1()/rspi2(). Returns
+ * nullptr for out-of-range channel numbers to allow callers to detect invalid
+ * input without risking a wild pointer dereference.
  *
- * @return Pointer to RSPI register base, or nullptr if invalid channel
+ * @param[in] channel RSPI channel number (valid: 0, 1, or 2)
+ *
+ * @return Pointer to RSPI register base for the given channel
+ * @retval non-null Valid register base pointer
+ * @retval nullptr Invalid channel number
+ *
+ * @pre channel must be in range [0, k_rspi_max_channels)
+ * @pre RSPI hardware must be present (RX72N 144-pin package)
+ * @post Returned pointer (if non-null) is aligned and points to valid HW registers
+ * @post No side effects on hardware state
+ *
+ * @note Not thread-safe. Caller must provide synchronization if needed.
+ *
+ * @see rspi0() Channel 0 register accessor
+ * @see rspi1() Channel 1 register accessor
+ * @see rspi2() Channel 2 register accessor
+ *
+ * @since Version 1.0.0
  */
 static volatile rx_rspi_regs_t* internal_get_rspi_base(const uint8_t channel)
 {
@@ -329,25 +417,45 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(const uint8_t channel)
 /**
  * @brief Set MSTPCRB module stop bit for an RSPI channel
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] enable True to enable module, false to stop module
+ * @details
+ * Controls the Module Stop Control Register B (MSTPCRB) bits that gate the
+ * clock to each RSPI channel. Clearing a bit enables the module (starts the
+ * clock); setting it stops the module (reduces power consumption). The bit
+ * positions are defined by k_rspi_mstpb_rspi0/1/2 constants.
+ *
+ * @param[in] channel RSPI channel number (valid: 0, 1, or 2)
+ * @param[in] enable true to enable module clock (clear MSTPB bit),
+ *                   false to stop module clock (set MSTPB bit)
+ *
+ * @pre system_regs() must return a valid pointer
+ * @pre channel must be one of k_rspi_channel_0, k_rspi_channel_1, k_rspi_channel_2
+ * @post MSTPCRB register updated with the appropriate bit set/cleared
+ * @post Module clock enabled or disabled for the specified channel
+ *
+ * @note Not thread-safe. Caller must hold MSTPCR protection if applicable.
+ * @warning Disabling a module while it is actively transferring data will
+ *          cause undefined hardware behavior.
+ *
+ * @see internal_get_rspi_base() Maps channel to register base
+ *
+ * @since Version 1.0.0
  */
 static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool enable)
 {
   uint32_t mask = k_rspi_zero_u32;
 
   RX_ASSERT(system_regs() != nullptr, "system_regs is nullptr");
-  RX_ASSERT(s_rspi_bit_set != k_rspi_zero_u32, "RSPI bit constant is zero");
+  static_assert(k_rspi_bit_set != 0, "RSPI bit constant must be non-zero");
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
               (channel == k_rspi_channel_2),
             "Invalid RSPI channel");
 
   if (channel == k_rspi_channel_0) {
-    mask = (s_rspi_bit_set << k_rspi_mstpb_rspi0);
+    mask = (k_rspi_bit_set << k_rspi_mstpb_rspi0);
   } else if (channel == k_rspi_channel_1) {
-    mask = (s_rspi_bit_set << k_rspi_mstpb_rspi1);
+    mask = (k_rspi_bit_set << k_rspi_mstpb_rspi1);
   } else if (channel == k_rspi_channel_2) {
-    mask = (s_rspi_bit_set << k_rspi_mstpb_rspi2);
+    mask = (k_rspi_bit_set << k_rspi_mstpb_rspi2);
   }
   if (enable) {
     system_regs()->mstpcrb &= ~mask;
@@ -396,7 +504,7 @@ static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool e
  */
 rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config)
 {
-  uint16_t spcmd = s_rspi_spcmd_init;
+  uint16_t spcmd = k_rspi_spcmd_init;
 
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
@@ -419,27 +527,42 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
     return k_rx_err_invalid_arg;
   }
 
-  /* Enable RSPI module (clear module stop bit) */
+  /*
+   * RSPI Peripheral Mode Register Write Sequence
+   * =============================================
+   * The register write order follows the RX72N Hardware Manual Section 38.3.6
+   * (RSPI Initialization Procedure). The sequence is:
+   *
+   * 1. Enable module clock (MSTPCRB) - module must be powered before register access
+   * 2. Disable SPI (SPCR.SPE=0) - registers must not be modified while SPI is active
+   * 3. Configure SPCMD0 - set CPOL, CPHA, and data length while SPI is disabled
+   * 4. Configure SPDCR - set data access width (byte or word) while SPI is disabled
+   * 5. Configure SPPCR - set pin control (no loopback) BEFORE enabling SPI
+   * 6. Enable SPI (SPCR.SPE=1) - must be the LAST register write to avoid
+   *    partial configuration being active during setup
+   */
+
+  /* Step 1: Enable RSPI module clock (clear module stop bit in MSTPCRB) */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
   internal_set_mstpcrb_for_channel(channel, true);
 
   *prcr_reg() = k_rx_prcr_lock;
 
-  /* Disable SPI before configuration */
-  rspi->spcr = s_rspi_spcr_disabled;
+  /* Step 2: Disable SPI before modifying configuration registers */
+  rspi->spcr = k_rspi_spcr_disabled;
 
-  /* Configure SPI mode (CPOL and CPHA) */
+  /* Step 3: Configure SPI mode (CPOL and CPHA) in SPCMD0 */
   if (config->spi_mode & k_rspi_spcmd_cpol_mask) {
-    spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
+    spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
   }
   if (config->spi_mode & k_rspi_spcmd_cpha_mask) {
-    spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
+    spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
   }
 
-  /* Configure data length */
+  /* Step 3b: Configure data length in SPCMD0 and access mode in SPDCR */
   if (config->use_16bit) {
     spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift);          /* 16-bit data */
-    rspi->spdcr = (uint8_t)(s_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
+    rspi->spdcr = (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
   } else {
     spcmd |= (k_rspi_spcmd_8bit << k_rspi_spcmd_spl_shift); /* 8-bit data */
     rspi->spdcr = k_rspi_spdcr_byte_mode;                   /* Byte access mode */
@@ -447,11 +570,13 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
 
   rspi->spcmd0 = spcmd;
 
-  /* Configure peripheral mode */
-  rspi->spcr = k_rspi_spcr_spe; /* Enable SPI in peripheral mode (MSTR=0) */
+  /* Step 5: Configure pin control (no loopback) - MUST be written before SPCR.SPE
+   * per HW manual to avoid glitches on COPI/CIPO lines during enable */
+  rspi->sppcr = k_rspi_sppcr_no_loopback;
 
-  /* Configure pin control (no loopback) */
-  rspi->sppcr = s_rspi_sppcr_no_loopback;
+  /* Step 6: Enable SPI in peripheral mode (MSTR=0) - MUST be the last register
+   * write so all configuration is stable before the peripheral becomes active */
+  rspi->spcr = k_rspi_spcr_spe;
 
   /* Mark channel as initialized */
   s_rspi_channel_initialized[channel] = true;
@@ -462,21 +587,42 @@ rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config
 }
 
 /**
- * @brief Wait for transmit buffer to become empty
+ * @brief Wait for transmit buffer to become empty (SPTEF flag)
  *
- * @param[in] rspi Pointer to RSPI registers
+ * @details
+ * Polls the SPSR.SPTEF (SPI Transmit Buffer Empty Flag) in a busy-wait loop
+ * with a configurable timeout. When SPTEF is set, the transmit buffer is empty
+ * and ready to accept new data via SPDR. The timeout prevents infinite loops
+ * if the SPI peripheral is stuck.
  *
- * @return k_rx_ok if buffer became empty within timeout
- * @return k_rx_err_timeout if timeout expired
+ * @param[in] rspi Pointer to RSPI register block (must be valid and non-null)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Transmit buffer became empty within timeout
+ * @retval k_rx_err_timeout Timeout expired before SPTEF was set
+ *
+ * @pre rspi must be a valid non-null pointer to initialized RSPI registers
+ * @pre RSPI module clock must be enabled (MSTPCRB bit cleared)
+ * @post No hardware state modified (read-only polling of SPSR)
+ * @post Timeout counter decremented to reflect remaining iterations
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ * @warning Busy-wait loop; do not call from time-critical ISR context.
+ *
+ * @see internal_wait_rx_ready() Companion function for receive buffer
+ * @see k_rspi_timeout_us Timeout constant
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_wait_tx_ready(volatile rx_rspi_regs_t* rspi)
 {
   /* Pre-condition 1: RSPI register pointer must be valid */
   RX_ASSERT(rspi != nullptr, "RSPI register pointer is nullptr");
 
-  /* Pre-condition 2: Timeout constant must be non-zero */
+  /* Pre-condition 2: Timeout constant must be non-zero (compile-time check) */
+  static_assert(k_rspi_timeout_us > k_rspi_timeout_zero,
+                "Timeout constant must be non-zero");
   uint32_t timeout = k_rspi_timeout_us;
-  RX_ASSERT(timeout > k_rspi_timeout_zero, "Timeout constant must be non-zero");
 
   while (!(rspi->spsr & k_rspi_spsr_sptef) && timeout > k_rspi_timeout_zero) {
     timeout--;
@@ -490,21 +636,42 @@ static rx_err_t internal_wait_tx_ready(volatile rx_rspi_regs_t* rspi)
 }
 
 /**
- * @brief Wait for receive buffer to become full
+ * @brief Wait for receive buffer to become full (SPRF flag)
  *
- * @param[in] rspi Pointer to RSPI registers
+ * @details
+ * Polls the SPSR.SPRF (SPI Receive Buffer Full Flag) in a busy-wait loop
+ * with a configurable timeout. When SPRF is set, received data is available
+ * in the SPDR register and can be read. The timeout prevents infinite loops
+ * if the SPI peripheral is stuck or no clock is being generated.
  *
- * @return k_rx_ok if buffer became full within timeout
- * @return k_rx_err_timeout if timeout expired
+ * @param[in] rspi Pointer to RSPI register block (must be valid and non-null)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Receive buffer became full within timeout
+ * @retval k_rx_err_timeout Timeout expired before SPRF was set
+ *
+ * @pre rspi must be a valid non-null pointer to initialized RSPI registers
+ * @pre A transfer must be in progress or complete for SPRF to set
+ * @post No hardware state modified (read-only polling of SPSR)
+ * @post Timeout counter decremented to reflect remaining iterations
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ * @warning Busy-wait loop; do not call from time-critical ISR context.
+ *
+ * @see internal_wait_tx_ready() Companion function for transmit buffer
+ * @see k_rspi_timeout_us Timeout constant
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_wait_rx_ready(volatile rx_rspi_regs_t* rspi)
 {
   /* Pre-condition 1: RSPI register pointer must be valid */
   RX_ASSERT(rspi != nullptr, "RSPI register pointer is nullptr");
 
-  /* Pre-condition 2: Timeout constant must be non-zero */
+  /* Pre-condition 2: Timeout constant must be non-zero (compile-time check) */
+  static_assert(k_rspi_timeout_us > k_rspi_timeout_zero,
+                "Timeout constant must be non-zero");
   uint32_t timeout = k_rspi_timeout_us;
-  RX_ASSERT(timeout > k_rspi_timeout_zero, "Timeout constant must be non-zero");
 
   while (!(rspi->spsr & k_rspi_spsr_sprf) && timeout > k_rspi_timeout_zero) {
     timeout--;
@@ -558,7 +725,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is nullptr");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
-  if (length == k_rspi_len_zero || length > s_rspi_transfer_len_max) {
+  if (length == k_rspi_len_zero) {
     rx_log_error(s_tag, "Invalid transfer length");
     return k_rx_err_invalid_arg;
   }
@@ -577,7 +744,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   }
 
   /* NASA Rule 2: Statically bounded loop */
-  for (uint16_t i = 0; i < s_rspi_transfer_len_max; i++) {
+  for (uint16_t i = k_rspi_loop_start; i < k_rspi_transfer_len_max; i++) {
     if (i >= length) {
       break;
     }
@@ -721,16 +888,27 @@ rx_err_t rspi_deinit(const uint8_t channel)
     return k_rx_err_invalid_arg;
   }
 
-  /* Disable SPI */
-  rspi->spcr = s_rspi_spcr_disabled;
+  /*
+   * RSPI Deinitialization Register Write Sequence
+   * ==============================================
+   * The deinit order is the reverse of initialization:
+   * 1. Disable SPI (SPCR.SPE=0) - stop all bus activity before removing clock
+   * 2. Disable module clock (MSTPCRB) - safe to gate clock only after SPI is idle
+   * 3. Clear software state - mark channel uninitialized after hardware is off
+   */
 
-  /* Disable RSPI module (set module stop bit) */
+  /* Step 1: Disable SPI to stop all bus activity */
+  rspi->spcr = k_rspi_spcr_disabled;
+
+  /* Step 2: Disable RSPI module clock (set module stop bit) - must be done
+   * after SPI is disabled to avoid undefined behavior from clock gating
+   * during an active transfer */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
   internal_set_mstpcrb_for_channel(channel, false);
 
   *prcr_reg() = k_rx_prcr_lock;
 
-  /* Mark channel as uninitialized */
+  /* Step 3: Mark channel as uninitialized after hardware is safely off */
   s_rspi_channel_initialized[channel] = false;
 
   rx_log_debug(s_tag, "RSPI deinitialized");
@@ -746,13 +924,27 @@ rx_err_t rspi_deinit(const uint8_t channel)
 /**
  * @brief Cycle-accurate timing delay using inline NOP instructions
  *
+ * @details
  * Produces precise delays using inline assembly NOP operations for SPI
- * timing requirements (CS setup/hold times).
+ * timing requirements (CS setup/hold times). Each NOP cycle is 4.17 ns
+ * at 240 MHz core clock.
  *
- * @param[in] cycles Number of NOP cycles to execute
+ * @param[in] cycles Number of NOP cycles to execute (must be > 0,
+ *                   <= k_rspi_max_delay_cycles)
  *
- * @note Timing is cycle-accurate on RX72N @ 240 MHz (4.17ns per cycle)
+ * @pre cycles must be non-zero
+ * @pre cycles must not exceed k_rspi_max_delay_cycles
+ * @post Minimum delay of (cycles * 4.17 ns) has elapsed
+ * @post No hardware state modified
+ *
+ * @note Timing is cycle-accurate on RX72N @ 240 MHz (4.17 ns per cycle)
  * @note Using inline ASM ensures compiler does not optimize away the loop
+ * @warning Only accurate when compiled with known optimization level (-O2)
+ *
+ * @see internal_controller_assert_cs_with_setup() Uses for CS setup time
+ * @see internal_controller_deassert_cs_with_hold() Uses for CS hold time
+ *
+ * @since Version 1.0.0
  */
 static void internal_timing_delay(const uint16_t cycles)
 {
@@ -776,15 +968,35 @@ static void internal_timing_delay(const uint16_t cycles)
 /**
  * @brief Configure SPCMD register for SPI mode (CPOL/CPHA)
  *
- * Sets CPOL and CPHA bits in SPCMD register based on SPI mode (0-3).
- * Mode determines clock polarity and phase per SPI specification.
+ * @details
+ * Sets CPOL and CPHA bits in an SPCMD register value based on SPI mode (0-3).
+ * The SPI mode encodes clock polarity (CPOL) and clock phase (CPHA) per the
+ * standard SPI specification. Bits are set via bitwise OR so pre-existing
+ * fields in the SPCMD value (such as data length) are preserved.
+ *
+ * | Mode | CPOL | CPHA | Clock Idle | Data Sampled |
+ * |------|------|------|------------|--------------|
+ * | 0    | 0    | 0    | Low        | Rising edge  |
+ * | 1    | 0    | 1    | Low        | Falling edge |
+ * | 2    | 1    | 0    | High       | Falling edge |
+ * | 3    | 1    | 1    | High       | Rising edge  |
  *
  * @param[in,out] spcmd Pointer to SPCMD register value to modify
  * @param[in] spi_mode SPI mode (0-3)
- *   - Mode 0: CPOL=0, CPHA=0
- *   - Mode 1: CPOL=0, CPHA=1
- *   - Mode 2: CPOL=1, CPHA=0
- *   - Mode 3: CPOL=1, CPHA=1
+ *
+ * @return void
+ *
+ * @pre spcmd must be a valid non-null pointer
+ * @pre spi_mode must be in range [0, 3] (only bits 0-1 used)
+ * @post spcmd CPOL/CPHA bits set according to spi_mode
+ * @post Other spcmd bits remain unchanged
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rspi_init_controller() Calls this during controller init
+ * @see rspi_init_peripheral() Performs equivalent inline configuration
+ *
+ * @since Version 1.0.0
  */
 static void internal_configure_spcmd(uint16_t* spcmd, const uint8_t spi_mode)
 {
@@ -795,20 +1007,43 @@ static void internal_configure_spcmd(uint16_t* spcmd, const uint8_t spi_mode)
 
   /* Configure SPI mode (CPOL and CPHA) */
   if (spi_mode & k_rspi_spcmd_cpol_mask) {
-    *spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
+    *spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpol_pos); /* CPOL = 1 */
   }
   if (spi_mode & k_rspi_spcmd_cpha_mask) {
-    *spcmd |= (uint16_t)(s_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
+    *spcmd |= (uint16_t)(k_rspi_bit_set << k_rspi_spcmd_cpha_pos); /* CPHA = 1 */
   }
 }
 
 /**
  * @brief Calculate SPBR value for desired SPI clock frequency
  *
- * @param[in] freq_hz Desired SPI clock frequency in Hz
- * @param[out] spbr Pointer to store calculated SPBR value
+ * @details
+ * Computes the RSPI Bit Rate Register (SPBR) value required to achieve
+ * the desired SPI clock frequency. Uses the formula:
+ *   SPBR = (PCLKB / (2 * freq_hz)) - 1
+ * with BRDV=0 (no additional divisor). The result is validated against
+ * the hardware-supported range [0, 255].
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if frequency out of range
+ * @param[in] freq_hz Desired SPI clock frequency in Hz
+ *                    (valid range: k_rspi_min_freq_hz to k_rspi_max_freq_hz)
+ * @param[out] spbr Pointer to store calculated SPBR value (0-255)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok SPBR calculated and stored successfully
+ * @retval k_rx_err_null_ptr spbr pointer is nullptr
+ * @retval k_rx_err_invalid_arg freq_hz outside supported range or SPBR > 255
+ *
+ * @pre spbr must be a valid non-null pointer
+ * @pre freq_hz must be in range [100000, 10000000] Hz
+ * @post *spbr contains the calculated SPBR value if k_rx_ok returned
+ * @post *spbr is unchanged on error
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rspi_init_controller() Calls this to configure clock frequency
+ * @see k_rspi_pclkb_hz PCLKB clock frequency used in calculation
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
 {
@@ -839,9 +1074,30 @@ static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
 /**
  * @brief Configure GPIO pin for chip select output
  *
+ * @details
+ * Configures a GPIO pin as a digital output for use as an active-low SPI
+ * chip select signal. Extracts port and pin numbers from the type-safe
+ * rx_port_pin_t encoding, sets the pin direction to output via PDR, and
+ * drives the pin high (CS inactive) via PODR.
+ *
  * @param[in] pin_config GPIO pin (rx_port_pin_t encoding port and pin)
  *
- * @return k_rx_ok on success, k_rx_err_invalid_arg if invalid port/pin
+ * @return rx_err_t Error code
+ * @retval k_rx_ok GPIO configured as CS output and driven high (inactive)
+ * @retval k_rx_err_invalid_arg Port base lookup failed or pin out of range
+ *
+ * @pre pin_config must encode a valid port (0-J) and pin (0-7)
+ * @pre Port hardware must be available and not module-stopped
+ * @post GPIO PDR bit set (output direction)
+ * @post GPIO PODR bit set (CS inactive / high)
+ *
+ * @note Not thread-safe. Caller must provide synchronization for port access.
+ *
+ * @see rspi_init_controller() Calls this during controller initialization
+ * @see rx_port_from_pin() Extracts port number from rx_port_pin_t
+ * @see rx_pin_from_pin() Extracts pin number from rx_port_pin_t
+ *
+ * @since Version 1.0.0
  */
 static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
 {
@@ -863,10 +1119,10 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
   }
 
   /* Configure as output */
-  port_regs->pdr |= ((uint32_t)s_rspi_bit_set << pin);
+  port_regs->pdr |= ((uint32_t)k_rspi_bit_set << pin);
 
   /* Set high (CS inactive - active low) */
-  port_regs->podr |= ((uint32_t)s_rspi_bit_set << pin);
+  port_regs->podr |= ((uint32_t)k_rspi_bit_set << pin);
 
   return k_rx_ok;
 }
@@ -874,14 +1130,34 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
 /**
  * @brief Validate controller initialization arguments
  *
- * @param[in] channel RSPI channel number
- * @param[in] config  Controller configuration
+ * @details
+ * Performs comprehensive input validation for rspi_init_controller() before
+ * any hardware modification occurs. Checks null pointer, channel range,
+ * duplicate initialization, and SPI mode range. Centralizes validation
+ * logic to keep the public API function concise.
  *
- * @return k_rx_ok if all validations pass
- * @return k_rx_err_invalid_arg if config is nullptr, channel invalid, or mode invalid
- * @return k_rx_err_invalid_state if channel already initialized
+ * @param[in] channel RSPI channel number (valid: 0 to k_rspi_max_channels - 1)
+ * @param[in] config  Pointer to controller configuration structure
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok All validations passed
+ * @retval k_rx_err_null_ptr config pointer is nullptr
+ * @retval k_rx_err_invalid_arg Channel out of range or SPI mode > 3
+ * @retval k_rx_err_invalid_state Channel already initialized in controller mode
+ *
+ * @pre config may be nullptr (will be detected and rejected)
+ * @pre channel may be out of range (will be detected and rejected)
+ * @post No hardware state modified (validation only)
+ * @post s_rspi_controller_initialized[] not modified
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rspi_init_controller() Calls this as first step of initialization
+ * @see internal_prepare_controller() Called after this validation passes
+ *
+ * @since Version 1.0.0
  */
-static rx_err_t rspi_validate_controller_args(const uint8_t                   channel,
+static rx_err_t internal_validate_controller_args(const uint8_t                   channel,
                                               const rspi_controller_config_t* config)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "Controller config pointer is nullptr");
@@ -910,17 +1186,39 @@ static rx_err_t rspi_validate_controller_args(const uint8_t                   ch
 /**
  * @brief Prepare controller hardware resources
  *
- * Calculates SPBR, validates RSPI base address, and configures CS GPIO.
+ * @details
+ * Calculates the SPBR register value for the requested clock frequency,
+ * validates the RSPI register base address for the given channel, and
+ * configures the CS GPIO pin as an active-low output. Operations are
+ * ordered so that a failure in SPBR calculation avoids unnecessary GPIO
+ * configuration, and RSPI base validation occurs before GPIO setup to
+ * avoid leaving GPIO configured if the channel is invalid.
  *
- * @param[in]  channel  RSPI channel number
- * @param[in]  config   Controller configuration
- * @param[out] out_rspi Pointer to receive RSPI register base
+ * @param[in]  channel  RSPI channel number (0 to k_rspi_max_channels - 1)
+ * @param[in]  config   Pointer to controller configuration (freq_hz, cs pin)
+ * @param[out] out_rspi Pointer to receive RSPI register base address
  * @param[out] out_spbr Pointer to receive calculated SPBR value
  *
- * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if SPBR calculation or GPIO config fails
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Hardware resources prepared successfully
+ * @retval k_rx_err_null_ptr out_spbr is nullptr (via internal_calculate_spbr)
+ * @retval k_rx_err_invalid_arg Frequency out of range, invalid channel, or bad CS pin
+ *
+ * @pre config must be validated by internal_validate_controller_args() first
+ * @pre channel must be in range [0, k_rspi_max_channels)
+ * @post *out_rspi points to valid RSPI register base on success
+ * @post *out_spbr contains calculated SPBR value on success
+ * @post CS GPIO pin configured as output, driven high (inactive) on success
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see internal_validate_controller_args() Must be called before this function
+ * @see internal_configure_registers() Called after this to program hardware
+ * @see internal_calculate_spbr() Called internally for frequency calculation
+ *
+ * @since Version 1.0.0
  */
-static rx_err_t rspi_prepare_controller(const uint8_t                   channel,
+static rx_err_t internal_prepare_controller(const uint8_t                   channel,
                                         const rspi_controller_config_t* config,
                                         volatile rx_rspi_regs_t**       out_rspi,
                                         uint8_t*                        out_spbr)
@@ -948,44 +1246,84 @@ static rx_err_t rspi_prepare_controller(const uint8_t                   channel,
 }
 
 /**
- * @brief Configure RSPI hardware registers
+ * @brief Configure RSPI hardware registers for controller mode
  *
- * Enables module, configures registers, stores CS pin, and marks initialized.
+ * @details
+ * Performs the complete RSPI hardware register configuration sequence for
+ * controller mode. Enables the module clock, disables SPI for safe register
+ * modification, programs bit rate, command, data control and pin control
+ * registers, then enables SPI in controller mode. Also stores the CS pin
+ * configuration and marks the channel as initialized. The register write
+ * order follows the RX72N Hardware Manual Section 38.3.6 initialization
+ * procedure.
  *
- * @param[in] channel RSPI channel number
- * @param[in] rspi    RSPI register base
- * @param[in] spbr    Calculated SPBR value
- * @param[in] spcmd   SPCMD register value
- * @param[in] config  Controller configuration
+ * @param[in] channel RSPI channel number (0 to k_rspi_max_channels - 1)
+ * @param[in] rspi    Pointer to RSPI register base (must be valid, non-null)
+ * @param[in] spbr    Calculated SPBR value for clock frequency (0-255)
+ * @param[in] spcmd   Pre-configured SPCMD register value (CPOL/CPHA/data length)
+ * @param[in] config  Pointer to controller configuration (used for CS pin info)
  *
- * @return k_rx_ok on success
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Registers configured and channel marked as initialized
+ *
+ * @pre rspi must be a valid non-null pointer from internal_get_rspi_base()
+ * @pre spbr must be pre-calculated by internal_calculate_spbr()
+ * @pre spcmd must be pre-configured with CPOL/CPHA and data length bits
+ * @post RSPI module clock enabled, registers configured, SPI enabled
+ * @post s_rspi_cs_config[channel] stores CS port and pin
+ * @post s_rspi_controller_initialized[channel] set to true
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ * @warning PRCR register protection is temporarily unlocked during this call.
+ *
+ * @see internal_prepare_controller() Provides rspi, spbr, and validates channel
+ * @see rspi_init_controller() Public API that orchestrates the full init flow
+ *
+ * @since Version 1.0.0
  */
-static rx_err_t rspi_configure_registers(const uint8_t                   channel,
+static rx_err_t internal_configure_registers(const uint8_t                   channel,
                                          volatile rx_rspi_regs_t*        rspi,
                                          uint8_t                         spbr,
                                          uint16_t                        spcmd,
                                          const rspi_controller_config_t* config)
 {
-  /* Enable RSPI module (clear module stop bit) */
+  /*
+   * RSPI Controller Mode Register Write Sequence
+   * ==============================================
+   * The register write order follows the RX72N Hardware Manual Section 38.3.6
+   * (RSPI Initialization Procedure). The sequence is:
+   *
+   * 1. Enable module clock (MSTPCRB) - module must be powered before register access
+   * 2. Disable SPI (SPCR.SPE=0) - registers must not be modified while SPI is active
+   * 3. Configure SPBR - set bit rate divider while SPI is disabled
+   * 4. Configure SPDCR and SPCMD0 - set data access width and mode while disabled
+   * 5. Configure SPPCR - set pin control (no loopback) BEFORE enabling SPI
+   * 6. Enable SPI (SPCR.SPE=1, MSTR=1) - must be the LAST register write to avoid
+   *    partial configuration or clock glitches on the SPI bus
+   */
+
+  /* Step 1: Enable RSPI module clock (clear module stop bit in MSTPCRB) */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
   internal_set_mstpcrb_for_channel(channel, true);
   *prcr_reg() = k_rx_prcr_lock;
 
-  /* Disable SPI before configuration */
-  rspi->spcr = s_rspi_spcr_disabled;
+  /* Step 2: Disable SPI before modifying configuration registers */
+  rspi->spcr = k_rspi_spcr_disabled;
 
-  /* Configure bit rate */
+  /* Step 3: Configure bit rate divider (freq = PCLKB / (2 * (SPBR + 1))) */
   rspi->spbr = spbr;
 
-  /* Apply SPCMD configuration */
-  rspi->spdcr  = (uint8_t)(s_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
+  /* Step 4: Configure data access width (word mode) and command register */
+  rspi->spdcr  = (uint8_t)(k_rspi_bit_set << k_rspi_spdcr_splw_pos); /* Word access mode */
   rspi->spcmd0 = spcmd;
 
-  /* Configure controller mode with SPI enabled */
-  rspi->spcr = k_rspi_spcr_spe | k_rspi_spcr_mstr;
+  /* Step 5: Configure pin control (no loopback) - MUST be written before SPCR.SPE
+   * per HW manual to avoid glitches on COPI/CIPO lines during enable */
+  rspi->sppcr = k_rspi_sppcr_no_loopback;
 
-  /* Configure pin control (no loopback) */
-  rspi->sppcr = s_rspi_sppcr_no_loopback;
+  /* Step 6: Enable SPI in controller mode (MSTR=1, SPE=1) - MUST be the last register
+   * write so all configuration is stable before the controller drives the bus */
+  rspi->spcr = k_rspi_spcr_spe | k_rspi_spcr_mstr;
 
   /* Store CS pin configuration */
   s_rspi_cs_config[channel].port = rx_port_from_pin(config->cs);
@@ -1045,7 +1383,7 @@ static rx_err_t rspi_configure_registers(const uint8_t                   channel
 rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_config_t* config)
 {
   /* Validate all arguments and preconditions */
-  rx_err_t err = rspi_validate_controller_args(channel, config);
+  rx_err_t err = internal_validate_controller_args(channel, config);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1053,20 +1391,20 @@ rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_confi
   /* Prepare hardware resources (SPBR, RSPI base, CS GPIO) */
   volatile rx_rspi_regs_t* rspi = nullptr;
   uint8_t                  spbr = k_rspi_spbr_init;
-  err = rspi_prepare_controller(channel, config, &rspi, &spbr);
+  err = internal_prepare_controller(channel, config, &rspi, &spbr);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure SPI mode (CPOL and CPHA) */
-  uint16_t spcmd = s_rspi_spcmd_init;
+  uint16_t spcmd = k_rspi_spcmd_init;
   internal_configure_spcmd(&spcmd, config->spi_mode);
 
   /* Configure 16-bit data length */
   spcmd |= (k_rspi_spcmd_16bit << k_rspi_spcmd_spl_shift);
 
   /* Configure and enable RSPI hardware registers */
-  return rspi_configure_registers(channel, rspi, spbr, spcmd, config);
+  return internal_configure_registers(channel, rspi, spbr, spcmd, config);
 }
 
 /**
@@ -1106,13 +1444,14 @@ rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
     return k_rx_err_invalid_arg;
   }
 
+  /* Compute pin mask once (identical for both assert and deassert) */
+  const uint8_t pin_mask = (uint8_t)((uint32_t)k_rspi_bit_set << pin);
+
   if (active) {
     /* CS active (low) */
-    const uint8_t pin_mask = (uint8_t)((uint32_t)s_rspi_bit_set << pin);
     port_regs->podr &= (uint8_t)~pin_mask;
   } else {
     /* CS inactive (high) */
-    const uint8_t pin_mask = (uint8_t)((uint32_t)s_rspi_bit_set << pin);
     port_regs->podr |= pin_mask;
   }
 
@@ -1122,14 +1461,34 @@ rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
 /**
  * @brief Assert CS with setup delay
  *
- * Asserts chip select (active low) and applies CS setup time delay.
+ * @details
+ * Asserts the chip select line (drives low for active-low CS) and then
+ * applies a cycle-accurate setup time delay using NOP instructions. The
+ * setup delay ensures the SPI peripheral has sufficient time to recognize
+ * CS assertion before clock transitions begin. Delay is calibrated for
+ * ~300ns at 240 MHz core clock.
  *
- * @param[in] channel RSPI channel number
+ * @param[in] channel RSPI channel number (0 to k_rspi_max_channels - 1)
  *
- * @return k_rx_ok on success
- * @return Error codes from rspi_controller_set_cs()
+ * @return rx_err_t Error code
+ * @retval k_rx_ok CS asserted and setup delay completed
+ * @retval k_rx_err_invalid_state Channel not initialized
+ * @retval k_rx_err_invalid_arg GPIO port lookup failed
+ *
+ * @pre Channel must be initialized via rspi_init_controller()
+ * @pre s_rspi_controller_initialized[channel] must be true
+ * @post CS GPIO pin driven low (active)
+ * @post Minimum setup delay of ~300ns has elapsed
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see internal_controller_deassert_cs_with_hold() Companion deassert function
+ * @see internal_timing_delay() Provides cycle-accurate delay
+ * @see k_rspi_cs_setup_delay Setup delay iteration count
+ *
+ * @since Version 1.0.0
  */
-static rx_err_t rspi_controller_assert_cs_with_setup(const uint8_t channel)
+static rx_err_t internal_controller_assert_cs_with_setup(const uint8_t channel)
 {
   /* Rule 5: Pre-condition validation */
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
@@ -1158,14 +1517,34 @@ static rx_err_t rspi_controller_assert_cs_with_setup(const uint8_t channel)
 /**
  * @brief Deassert CS with hold delay
  *
- * Applies CS hold time delay and deasserts chip select (inactive high).
+ * @details
+ * Applies a cycle-accurate hold time delay using NOP instructions, then
+ * deasserts the chip select line (drives high for active-low CS). The hold
+ * delay ensures the SPI peripheral has sufficient time to latch the final
+ * data bit before CS is released. Delay is calibrated for ~300ns at 240 MHz
+ * core clock.
  *
- * @param[in] channel RSPI channel number
+ * @param[in] channel RSPI channel number (0 to k_rspi_max_channels - 1)
  *
- * @return k_rx_ok on success
- * @return Error codes from rspi_controller_set_cs()
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Hold delay completed and CS deasserted
+ * @retval k_rx_err_invalid_state Channel not initialized
+ * @retval k_rx_err_invalid_arg GPIO port lookup failed
+ *
+ * @pre Channel must be initialized via rspi_init_controller()
+ * @pre s_rspi_controller_initialized[channel] must be true
+ * @post Minimum hold delay of ~300ns has elapsed
+ * @post CS GPIO pin driven high (inactive)
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see internal_controller_assert_cs_with_setup() Companion assert function
+ * @see internal_timing_delay() Provides cycle-accurate delay
+ * @see k_rspi_cs_hold_delay Hold delay iteration count
+ *
+ * @since Version 1.0.0
  */
-static rx_err_t rspi_controller_deassert_cs_with_hold(const uint8_t channel)
+static rx_err_t internal_controller_deassert_cs_with_hold(const uint8_t channel)
 {
   /* Rule 5: Pre-condition validation */
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
@@ -1189,17 +1568,37 @@ static rx_err_t rspi_controller_deassert_cs_with_hold(const uint8_t channel)
 /**
  * @brief Perform core 16-bit SPI transfer operation
  *
- * Executes TX/RX transfer: waits for TX ready, writes data, waits for RX ready,
- * reads data, and clears status flags.
+ * @details
+ * Executes a single full-duplex 16-bit SPI transfer without chip select
+ * management. Waits for the transmit buffer to become empty, writes 16-bit
+ * data to SPDR, waits for the receive buffer to fill, reads the 16-bit
+ * response from SPDR, and clears SPRF and OVRF status flags. This is the
+ * inner transfer primitive used by rspi_controller_transfer_16bit() after
+ * CS assertion and before CS deassertion.
  *
- * @param[in]  rspi    RSPI register base
- * @param[in]  tx_data 16-bit data to transmit
- * @param[out] rx_data Pointer to receive 16-bit response
+ * @param[in]  rspi    Pointer to RSPI register base (must be valid, non-null)
+ * @param[in]  tx_data 16-bit data word to transmit via SPDR
+ * @param[out] rx_data Pointer to store received 16-bit response from SPDR
  *
- * @return k_rx_ok on success
- * @return k_rx_err_timeout if TX or RX wait times out
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Transfer completed successfully, rx_data contains response
+ * @retval k_rx_err_null_ptr rspi or rx_data pointer is nullptr
+ * @retval k_rx_err_timeout TX buffer did not empty or RX buffer did not fill
+ *
+ * @pre rspi must be a valid non-null pointer to initialized RSPI registers
+ * @pre SPI must be enabled (SPCR.SPE=1) before calling
+ * @post *rx_data contains the 16-bit value received during the transfer
+ * @post SPSR flags SPRF and OVRF are cleared
+ *
+ * @note Not thread-safe. Caller must provide synchronization.
+ *
+ * @see rspi_controller_transfer_16bit() Public API that wraps this with CS handling
+ * @see internal_wait_tx_ready() TX buffer polling with timeout
+ * @see internal_wait_rx_ready() RX buffer polling with timeout
+ *
+ * @since Version 1.0.0
  */
-static rx_err_t rspi_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
+static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
                                                   uint16_t                 tx_data,
                                                   uint16_t*                rx_data)
 {
@@ -1297,13 +1696,13 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
   }
 
   /* Assert CS with setup delay */
-  rx_err_t err = rspi_controller_assert_cs_with_setup(channel);
+  rx_err_t err = internal_controller_assert_cs_with_setup(channel);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Perform 16-bit TX/RX transfer */
-  err = rspi_controller_do_16bit_transfer(rspi, tx_data, rx_data);
+  err = internal_controller_do_16bit_transfer(rspi, tx_data, rx_data);
   if (err != k_rx_ok) {
     /* Deassert CS on error (ignore CS deassert errors) */
     (void)rspi_controller_set_cs(channel, false);
@@ -1311,7 +1710,7 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
   }
 
   /* Deassert CS with hold delay */
-  return rspi_controller_deassert_cs_with_hold(channel);
+  return internal_controller_deassert_cs_with_hold(channel);
 }
 
 /**
@@ -1329,7 +1728,7 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
  *
  * @post If successful:
  *       - CS is deasserted via rspi_controller_set_cs(channel, false)
- *       - RSPI is disabled (rspi->spcr = s_rspi_spcr_disabled)
+ *       - RSPI is disabled (rspi->spcr = k_rspi_spcr_disabled)
  *       - Module clock is stopped via internal_set_mstpcrb_for_channel()
  *       - s_rspi_cs_config[channel] is cleared (port=0, pin=0)
  *       - s_rspi_controller_initialized[channel] = false
@@ -1351,24 +1750,35 @@ rx_err_t rspi_controller_deinit(const uint8_t channel)
     return k_rx_err_invalid_arg;
   }
 
-  /* Ensure CS is deasserted */
+  /*
+   * RSPI Controller Deinitialization Sequence
+   * ==========================================
+   * The deinit order ensures safe shutdown without bus glitches:
+   * 1. Deassert CS (drive high) - release peripheral before disabling SPI
+   * 2. Disable SPI (SPCR.SPE=0) - stop controller clock generation
+   * 3. Disable module clock (MSTPCRB) - gate clock only after SPI is idle
+   * 4. Clear software state - CS config and init flag after hardware is off
+   */
+
+  /* Step 1: Deassert CS to release any connected peripheral before shutdown */
   if (s_rspi_controller_initialized[channel]) {
     (void)rspi_controller_set_cs(channel, false);
   }
 
-  /* Disable SPI */
-  rspi->spcr = s_rspi_spcr_disabled;
+  /* Step 2: Disable SPI to stop controller clock generation */
+  rspi->spcr = k_rspi_spcr_disabled;
 
-  /* Disable RSPI module (set module stop bit) */
+  /* Step 3: Disable RSPI module clock (set module stop bit) - must be done
+   * after SPI is disabled to avoid undefined behavior from clock gating
+   * during an active transfer */
   *prcr_reg() = k_rx_prcr_unlock_prc1_prc3;
   internal_set_mstpcrb_for_channel(channel, false);
   *prcr_reg() = k_rx_prcr_lock;
 
-  /* Clear CS configuration */
+  /* Step 4: Clear software state after hardware is safely off */
   s_rspi_cs_config[channel].port = k_rspi_cs_default_port;
   s_rspi_cs_config[channel].pin  = k_rspi_cs_default_pin;
 
-  /* Mark channel as uninitialized */
   s_rspi_controller_initialized[channel] = false;
 
   rx_log_debug(s_tag, "RSPI controller deinitialized");

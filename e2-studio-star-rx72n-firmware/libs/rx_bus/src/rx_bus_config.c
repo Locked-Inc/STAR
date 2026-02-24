@@ -491,7 +491,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * ## Use Cases
  *
  * ADC buses are used for:
- * - **Motor current sensing**: DRV8243 analog current feedback (12-bit, +/-2% accuracy)
+ * - **Motor current sensing**: DRV8263H analog current feedback (12-bit, +/-2% accuracy)
  * - **Power rail monitoring**: Voltage divider ADC measurement (10-bit sufficient)
  * - **Temperature sensing**: Analog temperature sensors (8-10 bit)
  * - **Position sensing**: Analog potentiometers for position feedback
@@ -510,7 +510,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * | 10-bit | 3.2 mV | ~8 us | Balanced (voltage sensing) |
  * | 12-bit | 0.8 mV | ~16 us | High-precision (current sensing) |
  *
- * **Recommendation**: Use 12-bit for motor current (needs +/-1% accuracy), 10-bit for voltage.
+ * **Recommendation**: Use 12-bit for motor current (+/-2% system accuracy), 10-bit for voltage.
  *
  * @param[out] config Pointer to bus configuration structure to initialize.
  *                    Caller-allocated (stack or static). On success, contains
@@ -576,13 +576,13 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  *
  * @par Example - Motor Current Sensing:
  * @code{.c}
- * // DRV8243 motor 0 current sense (12-bit for +/-1% accuracy)
+ * // DRV8263H motor 0 current sense (12-bit for +/-2% system accuracy)
  * rx_bus_config_t motor0_isense_cfg;
  * rx_err_t err = rx_bus_config_init_adc(
  *     &motor0_isense_cfg,
  *     "motor0_current",
- *     0,    // ADC Unit 0
- *     0,    // Channel AN000 (Port 4, Pin 0)
+ *     k_adc_unit_0,     // ADC Unit 0
+ *     k_motor_0_current_adc_ch,  // Channel AN007
  *     k_adc_resolution_12bit  // 0.8 mV LSB @ 3.3V
  * );
  * if (err != k_rx_ok) {
@@ -601,8 +601,8 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * rx_err_t err = rx_bus_config_init_adc(
  *     &power_rail_cfg,
  *     "power_rail",
- *     1,    // ADC Unit 1
- *     5,    // Channel AN105 (Port D, Pin 5)
+ *     k_adc_unit_1,      // ADC Unit 1
+ *     k_adc_channel_5,   // Channel AN105 (Port D, Pin 5)
  *     k_adc_resolution_10bit  // 3.2 mV LSB
  * );
  * assert(err == k_rx_ok);

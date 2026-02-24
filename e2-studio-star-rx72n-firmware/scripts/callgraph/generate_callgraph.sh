@@ -63,7 +63,7 @@ EXTERNAL_PREFIXES=(
 
 # Subsystem definitions (module groupings)
 declare -A SUBSYSTEMS
-SUBSYSTEMS[motor]="rx_motor rx_pid rx_drv8243 rx_encoder"
+SUBSYSTEMS[motor]="rx_motor rx_pid rx_encoder"
 SUBSYSTEMS[comm]="rx_comm_manager rx_spi_comm rx_usb_comm rx_usb rx_frame rx_frame_ascii"
 SUBSYSTEMS[protocol]="rx_nanopb rx_crc rx_fec rx_harq"
 SUBSYSTEMS[sensors]="rx_ds18b20 rx_hcsr04 rx_obstacle_detect"
@@ -157,7 +157,7 @@ Examples:
   ./generate_callgraph.sh --method=doxygen
 
 Subsystems:
-  motor     rx_motor, rx_pid, rx_drv8243, rx_encoder
+  motor     rx_motor, rx_pid, rx_encoder
   comm      rx_comm_manager, rx_spi_comm, rx_usb_comm, rx_usb, rx_frame, rx_frame_ascii
   protocol  rx_nanopb, rx_crc, rx_fec, rx_harq
   sensors   rx_ds18b20, rx_hcsr04, rx_obstacle_detect
@@ -402,6 +402,8 @@ find_user_sources() {
           find "$mod_dir" -name "*.c" -type f \
             "${exclude_args[@]}" \
             2>/dev/null
+        else
+          print_warning "Subsystem module directory not found: $mod_dir"
         fi
       done | sort
       ;;
@@ -459,8 +461,13 @@ run_cflow() {
     function) sources=$(find_user_sources "function" "$FUNCTION") ;;
   esac
 
+  if [[ -z "$sources" ]]; then
+    print_error "No source files found for scope=$SCOPE (check module directories)"
+    exit 1
+  fi
+
   local source_count
-  source_count=$(echo "$sources" | wc -l)
+  source_count=$(echo "$sources" | grep -c .)
   print_status "Found $source_count source files"
 
   if [[ "$VERBOSE" == "true" ]]; then

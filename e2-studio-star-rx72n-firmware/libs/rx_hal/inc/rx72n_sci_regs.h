@@ -455,9 +455,6 @@ typedef struct {
    * - Bit 4: MFF - Mode fault flag
    * - Bit 2: MSS - Controller/peripheral select (0=controller, 1=peripheral)
    * - Bit 0: SSE - SS pin enable
-   *
-   * @note For DRV8243S SPI Mode 1 (CPOL=0, CPHA=1): Start with CKPOL=0,
-   *       CKPH=0. Verify correct phase on hardware with oscilloscope.
    */
   volatile uint8_t spmr;
 } rx_sci_regs_t;

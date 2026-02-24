@@ -225,8 +225,8 @@
  * | Offset | Size | Field | Description |
  * |--------|------|-------|-------------|
  * | 0x00 | 1 | port0_pdr | PORT0 direction (STAR: unused) |
- * | 0x01 | 1 | port1_pdr | PORT1 direction (STAR: motor control) |
- * | 0x02 | 1 | port2_pdr | PORT2 direction (STAR: encoders) |
+ * | 0x01 | 1 | port1_pdr | PORT1 direction (STAR: GPTW motor PWM on P17) |
+ * | 0x02 | 1 | port2_pdr | PORT2 direction (STAR: GPTW motor PWM P23/P22, IMU I2C P21/P20) |
  * | 0x03 | 1 | port3_pdr | PORT3 direction (STAR: SPI CS) |
  * | 0x04 | 1 | port4_pdr | PORT4 direction (STAR: LEDs) |
  * | 0x05 | 1 | port5_pdr | PORT5 direction (STAR: debug) |
@@ -248,8 +248,13 @@
  */
 typedef struct {
   uint8_t port0_pdr; /**< PORT0 PDR golden value. STAR: unused port */
-  uint8_t port1_pdr; /**< PORT1 PDR golden value. STAR: motor PH/EN pins */
-  uint8_t port2_pdr; /**< PORT2 PDR golden value. STAR: encoder inputs */
+  uint8_t port1_pdr; /**< PORT1 PDR golden value. STAR: GPTW motor PWM (P17) */
+  uint8_t port2_pdr; /**< PORT2 PDR golden value. STAR: GPTW motor PWM outputs on P23
+                          (GTIOC3A) and P22 (GTIOC3B) -- must be configured as outputs
+                          (bits set to 1). IMU I2C on P21 (SCL) and P20 (SDA) -- must
+                          remain as peripheral-driven I/O (direction set by I2C module).
+                          Bits 3-7 are unused and must stay 0 (input) to avoid floating
+                          output contention. Guard restores this register if corrupted */
   uint8_t port3_pdr; /**< PORT3 PDR golden value. STAR: SPI chip selects */
   uint8_t port4_pdr; /**< PORT4 PDR golden value. STAR: status LEDs */
   uint8_t port5_pdr; /**< PORT5 PDR golden value. STAR: debug output */

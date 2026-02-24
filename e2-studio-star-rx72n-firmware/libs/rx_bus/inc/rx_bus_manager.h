@@ -69,7 +69,7 @@
  * | **GPIO** | I/O Ports | N/A | Digital I/O, LEDs, buttons |
  * | **ADC** | S12ADFa | ~1 us/sample | Current sensing, analog inputs |
  * | **I2C** | RIIC | 100-1000 kHz | Sensors, EEPROMs |
- * | **SPI** | RSPI | 1-15 MHz | Motor drivers, fast sensors |
+ * | **SPI** | RSPI | 1-15 MHz | RPi5 communication, sensors |
  * | **UART** | SCI | 9.6-921.6 kbps | Debug console, RS-485 |
  * | **1-Wire** | GPIO bit-bang | ~15 kbps | Temperature sensors |
  *
@@ -293,7 +293,7 @@ extern "C" {
  * @details
  * Performs complete cleanup of bus manager:
  * 1. Removes and deinitializes all registered buses
- * 2. Frees bus configuration memory
+ * 2. Releases references to all bus configurations
  * 3. Deletes ThreadX mutex
  * 4. Resets all tracking state to initial values
  *
@@ -344,9 +344,9 @@ extern "C" {
  * @brief Register a bus configuration with the manager
  *
  * @details
- * Adds a bus to the manager's registry. The manager takes ownership of the
- * bus_config pointer and will free it during rx_bus_manager_remove_bus() or
- * rx_bus_manager_deinit(). The bus hardware is NOT initialized until first
+ * Adds a bus to the manager's registry. The manager stores a reference to the
+ * bus_config pointer; caller retains ownership and must ensure the configuration
+ * remains valid until removal. The bus hardware is NOT initialized until first
  * access (lazy initialization).
  *
  * ## Registration Process
@@ -360,8 +360,8 @@ extern "C" {
  * 7. Release mutex
  *
  * @param[in,out] manager Bus manager instance (must be initialized)
- * @param[in] bus_config Bus configuration to add. Manager takes ownership.
- *                       Must have valid name and type fields.
+ * @param[in] bus_config Bus configuration to add. Caller retains ownership;
+ *                       must remain valid until removal. Must have valid name and type fields.
  *
  * @return rx_err_t Registration status
  *
@@ -377,42 +377,40 @@ extern "C" {
  * @pre bus_config->name is unique non-empty string
  * @pre bus_config->type is valid (< k_bus_type_max)
  *
- * @post bus_config owned by manager (do not free externally)
+ * @post Manager holds reference to bus_config (caller retains ownership)
  * @post bus_count incremented
  * @post Bus accessible via rx_bus_manager_find_bus()
  *
- * @note Manager takes ownership - do not free bus_config after this call
+ * @note Caller retains ownership - ensure bus_config lifetime exceeds registration
  * @note Hardware init deferred until first access (lazy init)
  *
  * @warning Do not modify bus_config after registration
- * @warning Do not free bus_config - manager owns it
+ * @warning Ensure bus_config outlives registration (use static or module-scope allocation)
  *
  * @par Thread Safety:
  * Thread-safe. Acquires mutex internally.
  *
  * @par Example - Register SPI Bus:
  * @code{.c}
- * // Allocate and configure
- * rx_bus_config_t* motor_spi = malloc(sizeof(rx_bus_config_t));
- * memset(motor_spi, 0, sizeof(rx_bus_config_t));
- * motor_spi->name = "motor_drv0";
- * motor_spi->type = k_bus_type_spi;
- * motor_spi->proto.spi = (rx_spi_bus_config_t){
- *     .channel = 0,
- *     .frequency_hz = 1000000,
- *     .mode = 0
+ * // Statically allocate and configure (zero dynamic allocation)
+ * static rx_bus_config_t s_rpi5_spi = {
+ *     .name = "rpi5_spi",
+ *     .type = k_bus_type_spi,
+ *     .proto.spi = {
+ *         .channel       = k_rspi_channel_0,
+ *         .frequency_hz  = k_rspi_freq_10mhz,
+ *         .mode          = k_rspi_mode_0,
+ *     },
  * };
  *
- * // Register (manager takes ownership)
- * rx_err_t err = rx_bus_manager_add_bus(&manager, motor_spi);
+ * // Register (manager references static config - do not modify after registration)
+ * rx_err_t err = rx_bus_manager_add_bus(&manager, &s_rpi5_spi);
  * if (err != k_rx_ok) {
- *     free(motor_spi);  // Only free on registration failure
  *     return err;
  * }
- * // motor_spi now owned by manager - do not free
  * @endcode
  *
- * @see rx_bus_manager_remove_bus() Unregister and free bus
+ * @see rx_bus_manager_remove_bus() Unregister bus
  * @see rx_bus_config_t Bus configuration structure
  *
  * @since Version 1.0.0
@@ -424,8 +422,8 @@ extern "C" {
  * @brief Unregister and cleanup a bus by name
  *
  * @details
- * Removes a bus from the manager's registry, deinitializes the hardware
- * (if initialized), and frees the configuration memory.
+ * Removes a bus from the manager's registry and deinitializes the hardware
+ * (if initialized). The configuration reference is released.
  *
  * ## Removal Process
  *
@@ -434,7 +432,7 @@ extern "C" {
  * 3. Find bus in linked list
  * 4. Deinitialize hardware if initialized
  * 5. Remove from linked list
- * 6. Free configuration memory
+ * 6. Release configuration reference
  * 7. Decrement bus_count
  * 8. Release mutex
  *
@@ -443,7 +441,7 @@ extern "C" {
  *
  * @return rx_err_t Removal status
  *
- * @retval k_rx_ok Bus removed and freed successfully
+ * @retval k_rx_ok Bus removed successfully
  * @retval k_rx_err_null_ptr manager or name is nullptr
  * @retval k_rx_err_not_found No bus with given name found
  * @retval k_rx_err_timeout Mutex timeout acquiring lock
@@ -453,11 +451,11 @@ extern "C" {
  *
  * @post Bus removed from registry
  * @post Hardware deinitialized
- * @post Configuration memory freed
+ * @post Configuration reference removed
  * @post bus_count decremented
  *
  * @note Hardware is properly deinitialized before removal
- * @note Configuration memory is freed by manager
+ * @note Caller may clear config reference after removal
  *
  * @warning Do not hold references to bus_config after this call
  *
@@ -466,9 +464,9 @@ extern "C" {
  *
  * @par Example:
  * @code{.c}
- * rx_err_t err = rx_bus_manager_remove_bus(&manager, "motor_drv0");
+ * rx_err_t err = rx_bus_manager_remove_bus(&manager, "rpi5_spi");
  * if (err == k_rx_err_not_found) {
- *     rx_log_warn("MAIN", "Bus not found: motor_drv0");
+ *     rx_log_warn("MAIN", "Bus not found: rpi5_spi");
  * }
  * @endcode
  *
@@ -668,7 +666,7 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  *
  * rx_err_t set_motor(rx_bus_config_t* bus, void* ctx) {
  *     motor_cmd_t* cmd = (motor_cmd_t*)ctx;
- *     return drv8243_set_pwm(bus, cmd->duty_cycle, cmd->enable);
+ *     return drv8263_set_pwm(bus, cmd->duty_cycle, cmd->enable);
  * }
  *
  * motor_cmd_t cmd = { .duty_cycle = 128, .enable = true };

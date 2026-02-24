@@ -153,8 +153,8 @@ improves comprehension, review,
 \begin{lstlisting}[language = C]
     /* COMPLIANT - Single responsibility, short function */
     esp_err_t
-    star_drv8243_read_current(star_drv8243_handle_t *handle,
-                              float *current_ma) {
+    rx_motor_get_current_ma(rx_motor_handle_t *handle,
+                            float *current_ma) {
   if (handle == NULL || current_ma == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
  }
@@ -165,7 +165,7 @@ improves comprehension, review,
     return ret;
  }
 
-  *current_ma = (float)raw_value * handle->ki_propi / 1000.0f;
+  *current_ma = (float)raw_value * handle->ki_propi / 1000.0F;
   return ESP_OK;
 }
 \end{lstlisting}
@@ -204,7 +204,7 @@ esp_err_t star_pid_compute(star_pid_handle_t* handle, float setpoint,
   if (output == NULL) {
     return ESP_ERR_INVALID_ARG;
  }
-  if (dt <= 0.0f || dt > 1.0f) { /* Sanity check time delta */
+  if (dt <= 0.0F || dt > 1.0F) { /* Sanity check time delta */
     return ESP_ERR_INVALID_ARG;
  }
 
@@ -244,7 +244,7 @@ esp_err_t star_pid_compute(star_pid_handle_t* handle, float setpoint,
   /* Loop variable declared in for statement */
   for (uint8_t i = 0; i < SENSOR_COUNT; i++) {
     /* Temporary variable for single sensor */
-    float temp_c = 0.0f;
+    float temp_c = 0.0F;
     if (read_sensor(i, &temp_c) == ESP_OK) {
       /* Process immediately, temp_c out of scope after block */
       update_telemetry(i, temp_c);
@@ -322,7 +322,7 @@ forbid token pasting, recursive macros,
     /* COMPLIANT - Simple inline functions (better than complex macros) */
     static inline float
     voltage_mv_to_v(uint16_t mv) {
-  return (float)mv / 1000.0f;
+  return (float)mv / 1000.0F;
 }
 
 /* AVOID - Complex token-pasting macros */
