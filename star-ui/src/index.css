@@ -1,5 +1,5 @@
 /* LAYOUT ENGINE: Tiling WM (react-grid-layout) */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
 
 :root {
   --font-sans: "SF Pro Display", -apple-system, BlinkMacSystemFont, "Inter", sans-serif;
@@ -189,7 +189,7 @@ body {
 }
 
 /* Micro-interaction: Animated Aurora */
-@keyframes auroraPulse {
+@keyframes aurora-pulse {
   0% {
     transform: translate(0, 0) scale(1);
   }
@@ -215,14 +215,14 @@ body {
   height: 60%;
   background: radial-gradient(circle, rgba(0, 229, 255, 0.15), transparent 60%);
   filter: blur(80px);
-  animation: auroraPulse 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+  animation: aurora-pulse 20s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
   pointer-events: none;
   z-index: 0;
   opacity: var(--aurora-opacity);
 }
 
 /* Micro-interaction: Data Update Flash */
-@keyframes dataFlash {
+@keyframes data-flash {
   0% {
     color: #00e5ff;
     text-shadow: 0 0 8px rgba(0, 229, 255, 0.5);
@@ -235,7 +235,7 @@ body {
 }
 
 .data-flash {
-  animation: dataFlash 0.3s ease-out;
+  animation: data-flash 0.3s ease-out;
 }
 
 /* Minimal Scrollbars */
@@ -258,7 +258,7 @@ body {
 }
 
 /* Phase 4: Staggered Fade In */
-@keyframes staggerFadeIn {
+@keyframes stagger-fade-in {
   0% {
     opacity: 0;
     filter: blur(12px);
@@ -274,7 +274,7 @@ body {
 
 .stagger-fade-in {
   /* backwards ensures styles apply during the delay phase */
-  animation: staggerFadeIn 0.6s cubic-bezier(0.25, 1, 0.5, 1) backwards;
+  animation: stagger-fade-in 0.6s cubic-bezier(0.25, 1, 0.5, 1) backwards;
 }
 
 /* Phase 4: Global Connection Lost Glow */

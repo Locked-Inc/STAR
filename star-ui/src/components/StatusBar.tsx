@@ -258,6 +258,7 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
                   return (
                     <button
                       key={viewName}
+                      type="button"
                       className="reset-btn"
                       style={{
                         justifyContent: 'flex-start',
@@ -284,6 +285,7 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
                 })}
                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
                 <button
+                  type="button"
                   className="reset-btn"
                   style={{ justifyContent: 'flex-start', padding: '10px 12px', background: 'transparent', border: 'none', borderRadius: '8px', color: 'var(--color-text-dim)' }}
                   onClick={() => {

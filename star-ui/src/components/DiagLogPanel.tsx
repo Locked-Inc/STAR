@@ -16,7 +16,7 @@ export function DiagLogPanel() {
         if (scrollRef.current) {
             scrollRef.current.scrollTop = 0;
         }
-    }, [alerts.length]);
+    }, [alerts[0]?.timestampUs]);
 
     const levelConfig: Record<number, { label: string; color: string }> = {
         [AlertLevel.INFO]: { label: 'INFO', color: COLORS.primary },
@@ -79,7 +79,7 @@ export function DiagLogPanel() {
                                 {cfg.label}
                             </span>
                             <span style={{ color: 'rgba(255,255,255,0.5)', flexShrink: 0 }}>
-                                [{alert.source ?? '—'}]
+                                [{alert.source ?? '--'}]
                             </span>
                             <span style={{ color: 'rgba(255,255,255,0.7)' }}>{alert.message}</span>
                         </div>

@@ -1,24 +1,41 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { COLORS } from '../theme';
 
 /**
- * Nav2 Goal Panel — send navigation goals to the ROS2 Nav2 stack.
- * Displays current goal status and allows setting X/Y/θ targets.
+ * Nav2 Goal Panel - send navigation goals to the ROS2 Nav2 stack.
+ * Displays current goal status and allows setting X/Y/theta targets.
  */
+
+const goalTimeoutMs = 5000;
+
 export function Nav2GoalPanel() {
     const [goalX, setGoalX] = useState('0.0');
     const [goalY, setGoalY] = useState('0.0');
     const [goalTheta, setGoalTheta] = useState('0.0');
     const [status, setStatus] = useState<'idle' | 'navigating' | 'reached' | 'failed'>('idle');
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current !== null) clearTimeout(timerRef.current);
+        };
+    }, []);
 
     const handleSendGoal = () => {
         // TODO: Send nav goal via ROS2 bridge / WebSocket
         setStatus('navigating');
-        // Simulate navigation
-        setTimeout(() => setStatus('reached'), 5000);
+        if (timerRef.current !== null) clearTimeout(timerRef.current);
+        timerRef.current = setTimeout(() => {
+            timerRef.current = null;
+            setStatus('reached');
+        }, goalTimeoutMs);
     };
 
     const handleCancel = () => {
+        if (timerRef.current !== null) {
+            clearTimeout(timerRef.current);
+            timerRef.current = null;
+        }
         setStatus('idle');
     };
 
@@ -30,6 +47,12 @@ export function Nav2GoalPanel() {
     };
 
     const cfg = statusConfig[status];
+
+    const fields = [
+        { id: 'nav2-x', label: 'X (m)', value: goalX, set: setGoalX },
+        { id: 'nav2-y', label: 'Y (m)', value: goalY, set: setGoalY },
+        { id: 'nav2-theta', label: 'theta (rad)', value: goalTheta, set: setGoalTheta },
+    ];
 
     return (
         <>
@@ -64,16 +87,16 @@ export function Nav2GoalPanel() {
 
                 {/* Goal inputs */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '8px' }}>
-                    {[
-                        { label: 'X (m)', value: goalX, set: setGoalX },
-                        { label: 'Y (m)', value: goalY, set: setGoalY },
-                        { label: 'θ (rad)', value: goalTheta, set: setGoalTheta },
-                    ].map(f => (
-                        <div key={f.label}>
-                            <label style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}>
+                    {fields.map(f => (
+                        <div key={f.id}>
+                            <label
+                                htmlFor={f.id}
+                                style={{ fontSize: '9px', color: 'rgba(255,255,255,0.3)', textTransform: 'uppercase', display: 'block', marginBottom: '3px' }}
+                            >
                                 {f.label}
                             </label>
                             <input
+                                id={f.id}
                                 type="number" step="0.1" value={f.value}
                                 onChange={e => f.set(e.target.value)}
                                 disabled={status === 'navigating'}
@@ -92,6 +115,7 @@ export function Nav2GoalPanel() {
                 {/* Action buttons */}
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button
+                        type="button"
                         onClick={handleSendGoal}
                         disabled={status === 'navigating'}
                         style={{
@@ -105,6 +129,7 @@ export function Nav2GoalPanel() {
                         Send Goal
                     </button>
                     <button
+                        type="button"
                         onClick={handleCancel}
                         disabled={status !== 'navigating'}
                         style={{

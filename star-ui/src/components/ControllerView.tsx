@@ -8,6 +8,10 @@ interface ControllerViewProps {
   connectionState: ConnectionState;
 }
 
+const joystickSize = 120;
+const dotSize = 16;
+const joystickRadius = 52;
+
 const DOT_COLORS: Record<ConnectionState, string> = {
   connected: COLORS.connected,
   connecting: COLORS.warning,
@@ -76,7 +80,7 @@ export function ControllerView({ gamepadState, connectionState }: ControllerView
             marginTop: '8px',
           }}
         >
-          <svg style={{ color: '#FF9F0A' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <svg aria-hidden="true" style={{ color: '#FF9F0A' }} width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
             <line x1="6" y1="12" x2="10" y2="12"></line>
             <line x1="8" y1="10" x2="8" y2="14"></line>
             <line x1="15" y1="13.01" x2="15.01" y2="12.99"></line>
@@ -110,8 +114,8 @@ export function ControllerView({ gamepadState, connectionState }: ControllerView
           <div
             style={{
               position: 'relative',
-              width: '120px',
-              height: '120px',
+              width: `${joystickSize}px`,
+              height: `${joystickSize}px`,
               borderRadius: '50%',
               background: 'rgba(255,255,255,0.02)',
               border: '0.5px solid rgba(255,255,255,0.1)',
@@ -129,13 +133,13 @@ export function ControllerView({ gamepadState, connectionState }: ControllerView
             <div
               style={{
                 position: 'absolute',
-                width: '16px',
-                height: '16px',
+                width: `${dotSize}px`,
+                height: `${dotSize}px`,
                 borderRadius: '50%',
                 background: '#0a84ff',
                 boxShadow: '0 0 12px rgba(10, 132, 255, 0.6), inset 0 2px 4px rgba(255,255,255,0.3)',
                 transition: 'transform 0.05s linear',
-                transform: `translate(${joystickX * 52}px, ${joystickY * 52}px)` // 52px is max radius within 60px bound minus half dot size
+                transform: `translate(${joystickX * joystickRadius}px, ${joystickY * joystickRadius}px)`
               }}
             />
           </div>

@@ -2,22 +2,23 @@ import { useDashboardStore } from '../store/dashboardStore';
 import { COLORS } from '../theme';
 
 /**
- * GPS Position Panel — shows lat/lon, altitude, satellite count,
+ * GPS Position Panel - shows lat/lon, altitude, satellite count,
  * fix quality, and accuracy. Reads from telemetry.gps.
  */
+
+const fixLabels: Record<number, { label: string; color: string }> = {
+    0: { label: 'UNKNOWN', color: COLORS.textMuted },
+    1: { label: 'NO FIX', color: COLORS.danger },
+    2: { label: '2D FIX', color: COLORS.warning },
+    3: { label: '3D FIX', color: COLORS.success },
+    4: { label: 'DGPS', color: COLORS.success },
+    5: { label: 'RTK FLOAT', color: COLORS.primary },
+    6: { label: 'RTK FIXED', color: COLORS.primary },
+};
+
 export function GpsPanel() {
     const telemetry = useDashboardStore(s => s.telemetry);
     const gps = telemetry?.gps;
-
-    const fixLabels: Record<number, { label: string; color: string }> = {
-        0: { label: 'UNKNOWN', color: COLORS.textMuted },
-        1: { label: 'NO FIX', color: COLORS.danger },
-        2: { label: '2D FIX', color: COLORS.warning },
-        3: { label: '3D FIX', color: COLORS.success },
-        4: { label: 'DGPS', color: COLORS.success },
-        5: { label: 'RTK FLOAT', color: COLORS.primary },
-        6: { label: 'RTK FIXED', color: COLORS.primary },
-    };
 
     const fix = fixLabels[gps?.fixType ?? 0] ?? fixLabels[0];
 
@@ -51,21 +52,21 @@ export function GpsPanel() {
                     </div>
                     {gps && (
                         <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.4)' }}>
-                            {gps.satellites} sats • ±{gps.accuracyM?.toFixed(1) ?? '—'}m
+                            {gps.satellites} sats | +/-{gps.accuracyM?.toFixed(1) ?? '--'}m
                         </span>
                     )}
                 </div>
 
                 {/* Coordinates */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
-                    <CoordCard label="Latitude" value={gps?.latitudeDeg} suffix="°" precision={6} />
-                    <CoordCard label="Longitude" value={gps?.longitudeDeg} suffix="°" precision={6} />
+                    <CoordCard label="Latitude" value={gps?.latitudeDeg} suffix=" deg" precision={6} />
+                    <CoordCard label="Longitude" value={gps?.longitudeDeg} suffix=" deg" precision={6} />
                     <CoordCard label="Altitude" value={gps?.altitudeM} suffix=" m" precision={1} />
                     <CoordCard label="Accuracy" value={gps?.accuracyM} suffix=" m" precision={1} />
                 </div>
 
-                {/* Mini coordinate display */}
-                {gps && gps.latitudeDeg !== 0 && (
+                {/* Mini coordinate display - only show when fix is 2D or better */}
+                {gps?.fixType != null && gps.fixType >= 2 && (
                     <div style={{
                         background: 'rgba(255,255,255,0.03)', borderRadius: '6px',
                         padding: '10px 14px', fontSize: '11px',
@@ -92,7 +93,7 @@ function CoordCard({ label, value, suffix, precision }: {
                 {label}
             </span>
             <span style={{ fontSize: '15px', fontWeight: 600, color: 'rgba(255,255,255,0.85)', fontVariantNumeric: 'tabular-nums', fontFamily: 'monospace' }}>
-                {value != null ? value.toFixed(precision) + suffix : '—'}
+                {value != null ? value.toFixed(precision) + suffix : '--'}
             </span>
         </div>
     );

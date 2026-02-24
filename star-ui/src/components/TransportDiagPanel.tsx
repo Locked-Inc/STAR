@@ -1,7 +1,7 @@
 import { COLORS } from '../theme';
 
 /**
- * Transport Diagnostics Panel — placeholder for SPI/USB transport health.
+ * Transport Diagnostics Panel - placeholder for SPI/USB transport health.
  * Will display packet loss, latency, error rates from TransportHealthReport proto.
  * Currently shows mock structure since diagnostics aren't yet streamed via WebSocket.
  */
@@ -9,7 +9,7 @@ export function TransportDiagPanel() {
     // TODO: Wire to actual TransportDiagnostics proto when gateway streams it
     const transports = [
         { name: 'SPI', active: true, healthy: true, loss: 0, latency: '0.8ms', sent: 0, errors: 0 },
-        { name: 'USB CDC', active: false, healthy: true, loss: 0, latency: '—', sent: 0, errors: 0 },
+        { name: 'USB CDC', active: false, healthy: true, loss: 0, latency: '--', sent: 0, errors: 0 },
     ];
 
     return (

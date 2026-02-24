@@ -1,6 +1,6 @@
 import { useDashboardStore } from '../store/dashboardStore';
 
-const MAX_VELOCITY = 2.0; // Defines the bounds for the visual progress bar (m/s)
+const maxVelocity = 2.0; // Defines the bounds for the visual progress bar (m/s)
 
 export function MotorPanel() {
   const motors = useDashboardStore((s) => s.motors);
@@ -10,8 +10,8 @@ export function MotorPanel() {
     const value = motors && motors[index] ? motors[index].velocityMps : 0;
 
     // Calculate visual metrics based on a center-origin bar
-    const clamped = Math.max(-MAX_VELOCITY, Math.min(MAX_VELOCITY, value));
-    const percent = (Math.abs(clamped) / MAX_VELOCITY) * 100; // 0 to 100 string
+    const clamped = Math.max(-maxVelocity, Math.min(maxVelocity, value));
+    const percent = (Math.abs(clamped) / maxVelocity) * 100; // 0 to 100 string
     const isForward = clamped >= 0;
 
     return (

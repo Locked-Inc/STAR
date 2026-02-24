@@ -1,11 +1,14 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { COLORS } from '../theme';
 
 /**
- * PID Tuning Panel — UI for reading/writing PID gains for each motor.
+ * PID Tuning Panel - UI for reading/writing PID gains for each motor.
  * Maps to ConfigurationService.GetMotorPidConfig / SetMotorPidConfig.
  * Currently uses local state; will send gRPC when gateway wired.
  */
+
+const savedResetMs = 2000;
+
 export function PidTuningPanel() {
     const [motorIdx, setMotorIdx] = useState(0);
     const motorNames = ['FL', 'FR', 'BL', 'BR'];
@@ -14,12 +17,29 @@ export function PidTuningPanel() {
     const [ki, setKi] = useState('0.1');
     const [kd, setKd] = useState('0.05');
     const [saved, setSaved] = useState(false);
+    const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (timerRef.current !== null) clearTimeout(timerRef.current);
+        };
+    }, []);
 
     const handleSend = () => {
         // TODO: Call ConfigurationService.SetMotorPidConfig via gRPC/WebSocket
+        if (timerRef.current !== null) clearTimeout(timerRef.current);
         setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
+        timerRef.current = setTimeout(() => {
+            timerRef.current = null;
+            setSaved(false);
+        }, savedResetMs);
     };
+
+    const pidParams = [
+        { id: 'pid-kp', label: 'Kp (Proportional)', value: kp, set: setKp },
+        { id: 'pid-ki', label: 'Ki (Integral)', value: ki, set: setKi },
+        { id: 'pid-kd', label: 'Kd (Derivative)', value: kd, set: setKd },
+    ];
 
     return (
         <>
@@ -43,6 +63,7 @@ export function PidTuningPanel() {
                     {motorNames.map((name, idx) => (
                         <button
                             key={name}
+                            type="button"
                             onClick={() => setMotorIdx(idx)}
                             style={{
                                 flex: 1, padding: '6px 0', border: 'none', borderRadius: '6px',
@@ -58,16 +79,16 @@ export function PidTuningPanel() {
                 </div>
 
                 {/* PID Inputs */}
-                {[
-                    { label: 'Kp (Proportional)', value: kp, set: setKp },
-                    { label: 'Ki (Integral)', value: ki, set: setKi },
-                    { label: 'Kd (Derivative)', value: kd, set: setKd },
-                ].map(param => (
-                    <div key={param.label}>
-                        <label style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '4px' }}>
+                {pidParams.map(param => (
+                    <div key={param.id}>
+                        <label
+                            htmlFor={param.id}
+                            style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '4px' }}
+                        >
                             {param.label}
                         </label>
                         <input
+                            id={param.id}
                             type="number"
                             step="0.01"
                             value={param.value}
@@ -84,6 +105,7 @@ export function PidTuningPanel() {
 
                 {/* Apply button */}
                 <button
+                    type="button"
                     onClick={handleSend}
                     style={{
                         padding: '10px', border: 'none', borderRadius: '8px',
@@ -93,7 +115,7 @@ export function PidTuningPanel() {
                         letterSpacing: '0.08em', textTransform: 'uppercase',
                     }}
                 >
-                    {saved ? '✓ Saved' : `Apply to Motor ${motorNames[motorIdx]}`}
+                    {saved ? '[OK] Saved' : `Apply to Motor ${motorNames[motorIdx]}`}
                 </button>
             </div>
         </>

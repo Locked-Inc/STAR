@@ -13,7 +13,7 @@ export function CameraFeed() {
                     padding: '16px 20px 8px 20px',
                     fontSize: '11px',
                     fontWeight: 600,
-                    color: 'rgba(255,255,255,0.5)',
+                    color: 'var(--text-50)',
                     textTransform: 'uppercase' as const,
                     letterSpacing: '0.12em',
                     userSelect: 'none' as const,
@@ -26,7 +26,7 @@ export function CameraFeed() {
                 display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center',
                 position: 'relative',
-                background: 'rgba(255, 255, 255, 0.02)',
+                background: 'var(--panel-bg)',
             }}>
                 <div style={{ textAlign: 'center', color: COLORS.textMuted }}>
                     <svg
@@ -34,7 +34,8 @@ export function CameraFeed() {
                         width="48" height="48" viewBox="0 0 24 24"
                         fill="none" stroke="currentColor" strokeWidth="1.5"
                         strokeLinecap="round" strokeLinejoin="round"
-                        style={{ margin: '0 auto 12px auto', opacity: 0.5 }}
+                        aria-hidden="true"
+                    style={{ margin: '0 auto 12px auto', opacity: 0.5 }}
                     >
                         <path d="M23 7l-7 5 7 5V7z"></path>
                         <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
@@ -46,7 +47,7 @@ export function CameraFeed() {
                         No Camera Stream
                     </h3>
                     <p style={{ margin: 0, fontSize: '12px', opacity: 0.5 }}>
-                        WebRTC / MJPEG • Waiting for connection
+                        WebRTC / MJPEG | Waiting for connection
                     </p>
                 </div>
 
@@ -55,7 +56,7 @@ export function CameraFeed() {
                     position: 'absolute', top: '50%', left: '50%',
                     transform: 'translate(-50%, -50%)',
                     width: '200px', height: '200px',
-                    border: '1px solid rgba(255,255,255,0.04)',
+                    border: '1px solid var(--panel-inset-ring)',
                     borderRadius: '50%', pointerEvents: 'none',
                 }} />
             </div>

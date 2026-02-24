@@ -1,28 +1,49 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { COLORS } from '../theme';
 
 /**
- * Firmware Update Panel — OTA update UI matching FirmwareUpdateService proto.
+ * Firmware Update Panel - OTA update UI matching FirmwareUpdateService proto.
  * Supports: BeginUpdate, WriteChunk, FinalizeUpdate, AbortUpdate, Reboot, Rollback.
- * Currently placeholder — will integrate with gateway when available.
+ * Currently placeholder - will integrate with gateway when available.
  */
+
+const uploadPollMs = 200;
+
 export function FirmwarePanel() {
     const [stage, setStage] = useState<'idle' | 'uploading' | 'finalizing' | 'done'>('idle');
     const [progress, setProgress] = useState(0);
+    const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+    useEffect(() => {
+        return () => {
+            if (intervalRef.current !== null) clearInterval(intervalRef.current);
+        };
+    }, []);
 
     const simulateUpload = () => {
+        if (intervalRef.current !== null) clearInterval(intervalRef.current);
         setStage('uploading');
         setProgress(0);
-        const interval = setInterval(() => {
+        intervalRef.current = setInterval(() => {
             setProgress(p => {
                 if (p >= 100) {
-                    clearInterval(interval);
+                    clearInterval(intervalRef.current!);
+                    intervalRef.current = null;
                     setStage('done');
                     return 100;
                 }
                 return p + 5;
             });
-        }, 200);
+        }, uploadPollMs);
+    };
+
+    const handleReset = () => {
+        if (intervalRef.current !== null) {
+            clearInterval(intervalRef.current);
+            intervalRef.current = null;
+        }
+        setStage('idle');
+        setProgress(0);
     };
 
     return (
@@ -48,7 +69,7 @@ export function FirmwarePanel() {
                     fontSize: '12px', display: 'flex', justifyContent: 'space-between',
                 }}>
                     <span style={{ color: 'rgba(255,255,255,0.4)' }}>Current</span>
-                    <span style={{ color: COLORS.primary, fontFamily: 'monospace', fontWeight: 600 }}>—</span>
+                    <span style={{ color: COLORS.primary, fontFamily: 'monospace', fontWeight: 600 }}>--</span>
                 </div>
 
                 {/* Progress bar */}
@@ -75,6 +96,7 @@ export function FirmwarePanel() {
                 {/* Action buttons */}
                 <div style={{ display: 'flex', gap: '8px' }}>
                     <button
+                        type="button"
                         onClick={simulateUpload}
                         disabled={stage === 'uploading'}
                         style={{
@@ -88,7 +110,8 @@ export function FirmwarePanel() {
                         Upload
                     </button>
                     <button
-                        onClick={() => { setStage('idle'); setProgress(0); }}
+                        type="button"
+                        onClick={handleReset}
                         style={{
                             flex: 1, padding: '8px', border: '0.5px solid rgba(255,255,255,0.15)',
                             borderRadius: '6px', background: 'rgba(255,255,255,0.04)',
@@ -102,7 +125,8 @@ export function FirmwarePanel() {
 
                 {/* Reboot */}
                 <button
-                    onClick={() => setStage('idle')}
+                    type="button"
+                    onClick={handleReset}
                     style={{
                         padding: '8px', border: '0.5px solid rgba(255,160,0,0.3)',
                         borderRadius: '6px', background: 'rgba(255,160,0,0.08)',

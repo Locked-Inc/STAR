@@ -9,8 +9,8 @@ export function ImuPanel() {
     const telemetry = useDashboardStore(s => s.telemetry);
     const imu = telemetry?.imu;
 
-    const fmt = (v: number | undefined) => v != null ? v.toFixed(2) : '—';
-    const deg = (rad: number | undefined) => rad != null ? ((rad * 180) / Math.PI).toFixed(1) + '°' : '—';
+    const fmt = (v: number | undefined) => v != null ? v.toFixed(2) : '--';
+    const deg = (rad: number | undefined) => rad != null ? ((rad * 180) / Math.PI).toFixed(1) + ' deg' : '--';
 
     // Attitude disc parameters
     const pitch = imu?.pitchRad ?? 0;
@@ -37,7 +37,8 @@ export function ImuPanel() {
             <div className="panel-body" style={{ padding: '8px 20px 20px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
                 {/* Attitude ball / horizon indicator */}
                 <div style={{ display: 'flex', justifyContent: 'center' }}>
-                    <svg viewBox="-60 -60 120 120" width="110" height="110">
+                    <svg viewBox="-60 -60 120 120" width="110" height="110" aria-labelledby="imu-attitude-title" role="img">
+                        <title id="imu-attitude-title">Attitude indicator showing pitch and roll</title>
                         {/* Outer ring */}
                         <circle cx="0" cy="0" r="55" fill="none" stroke="rgba(255,255,255,0.15)" strokeWidth="1" />
                         {/* Horizon - tilts with roll, shifts with pitch */}
@@ -76,7 +77,7 @@ export function ImuPanel() {
 
                 {/* Acceleration */}
                 <div>
-                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Acceleration (m/s²)</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.35)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '6px' }}>Acceleration (m/s^2)</div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '4px', fontSize: '13px', fontVariantNumeric: 'tabular-nums' }}>
                         <span style={{ color: 'rgba(255,255,255,0.7)' }}>X: {fmt(imu?.accelXMps2)}</span>
                         <span style={{ color: 'rgba(255,255,255,0.7)' }}>Y: {fmt(imu?.accelYMps2)}</span>

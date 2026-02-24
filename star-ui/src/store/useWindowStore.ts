@@ -26,15 +26,13 @@ export interface ViewDef {
 
 export type ViewName = 'OVERVIEW' | 'TELEOP' | 'NAVIGATION' | 'DEBUG' | 'CONFIG' | 'FULL';
 
-// ────────────────────────────────────
-// View definitions — 6 purpose-specific views
+// --- View definitions - 6 purpose-specific views ---
 // Each shows 6-8 panels that fill viewport (except FULL which scrolls)
-// ────────────────────────────────────
 
 export const VIEWS: Record<ViewName, ViewDef> = {
     OVERVIEW: {
         label: 'Overview',
-        icon: '🏠',
+        icon: 'home',
         desc: 'Key vitals at a glance',
         panels: ['movement', 'camera', 'motors', 'battery', 'health', 'alerts', 'imu', 'odometry'],
         layouts: {
@@ -52,7 +50,7 @@ export const VIEWS: Record<ViewName, ViewDef> = {
     },
     TELEOP: {
         label: 'Teleop',
-        icon: '🎮',
+        icon: 'ctrl',
         desc: 'Manual driving controls',
         panels: ['movement', 'camera', 'motors', 'battery', 'imu', 'alerts'],
         layouts: {
@@ -68,7 +66,7 @@ export const VIEWS: Record<ViewName, ViewDef> = {
     },
     NAVIGATION: {
         label: 'Navigation',
-        icon: '🗺️',
+        icon: 'nav',
         desc: 'Autonomous navigation & mapping',
         panels: ['camera', 'lidar', 'odometry', 'gps', 'nav2', 'imu'],
         layouts: {
@@ -84,7 +82,7 @@ export const VIEWS: Record<ViewName, ViewDef> = {
     },
     DEBUG: {
         label: 'Debug',
-        icon: '🔧',
+        icon: 'dbg',
         desc: 'Transport & system diagnostics',
         panels: ['packet', 'transport', 'diaglog', 'timeseries', 'health', 'alerts'],
         layouts: {
@@ -100,7 +98,7 @@ export const VIEWS: Record<ViewName, ViewDef> = {
     },
     CONFIG: {
         label: 'Config',
-        icon: '⚙️',
+        icon: 'cfg',
         desc: 'PID tuning & firmware',
         panels: ['pid', 'firmware', 'health', 'motors', 'timeseries', 'battery'],
         layouts: {
@@ -116,7 +114,7 @@ export const VIEWS: Record<ViewName, ViewDef> = {
     },
     FULL: {
         label: 'Full',
-        icon: '📊',
+        icon: 'full',
         desc: 'All panels (scrollable)',
         scrollable: true,
         panels: [
@@ -149,9 +147,7 @@ export const VIEWS: Record<ViewName, ViewDef> = {
     },
 };
 
-// ────────────────────────────────────
-// Store
-// ────────────────────────────────────
+// --- Store ---
 
 interface WindowState {
     activeView: ViewName;

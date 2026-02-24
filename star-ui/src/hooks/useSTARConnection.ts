@@ -4,14 +4,14 @@ import type { ControllerState } from '../proto/star/v1/controller';
 import { useDashboardStore } from '../store/dashboardStore';
 import { recordPacket } from '../services/GatewayService';
 
-const MS_TO_US = 1000;
-const BASE_DELAY_MS = 500;
-const MAX_DELAY_MS = 30_000;
-const JITTER_FACTOR = 0.3;
+const msToUs = 1000;
+const baseDelayMs = 500;
+const maxDelayMs = 30_000;
+const jitterFactor = 0.3;
 
 function getReconnectDelay(attempt: number): number {
-  const exp = Math.min(BASE_DELAY_MS * 2 ** attempt, MAX_DELAY_MS);
-  const jitter = exp * JITTER_FACTOR * (Math.random() * 2 - 1);
+  const exp = Math.min(baseDelayMs * 2 ** attempt, maxDelayMs);
+  const jitter = exp * jitterFactor * (Math.random() * 2 - 1);
   return exp + jitter;
 }
 
@@ -107,7 +107,7 @@ export function useSTARConnection(url: string): {
       const env = STAREnvelope.create({
         payload: {
           oneofKind: 'estop',
-          estop: { active: true, reason, timestampUs: String(Date.now() * MS_TO_US) },
+          estop: { active: true, reason, timestampUs: String(Date.now() * msToUs) },
         },
       });
       sendRaw(env);
@@ -123,7 +123,7 @@ export function useSTARConnection(url: string): {
     const env = STAREnvelope.create({
       payload: {
         oneofKind: 'estop',
-        estop: { active: false, reason: 'User released E-Stop', timestampUs: String(Date.now() * MS_TO_US) },
+        estop: { active: false, reason: 'User released E-Stop', timestampUs: String(Date.now() * msToUs) },
       },
     });
     sendRaw(env);

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 export const COLORS = {
-  // Semantic aliases — accent colors stay the same in both themes
+  // Semantic aliases - accent colors stay the same in both themes
   accent: '#0A84FF',
   warning: '#FF9F0A',
   primary: '#0A84FF',
@@ -18,7 +18,7 @@ export const COLORS = {
   estopActive: '#8E0000',
   estopDefault: '#FF453A',
 
-  // Theme-aware — these reference CSS custom properties
+  // Theme-aware - these reference CSS custom properties
   // Use them for inline style strings, not CSSProperties
   textPrimary: 'var(--color-text)',
   textMuted: 'var(--color-text-muted)',

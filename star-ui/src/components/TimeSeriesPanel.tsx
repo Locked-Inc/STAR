@@ -2,9 +2,9 @@ import { useEffect, useRef, useCallback } from 'react';
 import { useDashboardStore } from '../store/dashboardStore';
 import { COLORS } from '../theme';
 
-const MAX_POINTS = 120; // ~2 minutes at 1 Hz
-const GRAPH_W = 280;
-const GRAPH_H = 60;
+const maxPoints = 120; // ~2 minutes at 1 Hz
+const graphW = 280;
+const graphH = 60;
 
 interface Series {
     label: string;
@@ -16,11 +16,11 @@ const SERIES: Series[] = [
     { label: 'FL Motor', color: COLORS.primary, getValue: () => useDashboardStore.getState().motors?.[0]?.velocityMps },
     { label: 'FR Motor', color: COLORS.success, getValue: () => useDashboardStore.getState().motors?.[1]?.velocityMps },
     { label: 'CPU %', color: COLORS.warning, getValue: () => useDashboardStore.getState().telemetry?.cpuUsagePercent },
-    { label: 'Temp °C', color: COLORS.danger, getValue: () => useDashboardStore.getState().telemetry?.temperatureCelsius },
+    { label: 'Temp C', color: COLORS.danger, getValue: () => useDashboardStore.getState().telemetry?.temperatureCelsius },
 ];
 
 /**
- * Time-Series Graphs Panel — buffers last N telemetry values and renders
+ * Time-Series Graphs Panel - buffers last N telemetry values and renders
  * sparkline SVG charts in real-time.
  */
 export function TimeSeriesPanel() {
@@ -41,7 +41,7 @@ export function TimeSeriesPanel() {
             const buf = buffers.current.get(s.label)!;
             if (val != null) {
                 buf.push(val);
-                if (buf.length > MAX_POINTS) buf.shift();
+                if (buf.length > maxPoints) buf.shift();
             }
         }
     }, []);
@@ -58,8 +58,8 @@ export function TimeSeriesPanel() {
             const range = max - min || 1;
 
             const points = buf.map((v, i) => {
-                const x = (i / (MAX_POINTS - 1)) * GRAPH_W;
-                const y = GRAPH_H - ((v - min) / range) * (GRAPH_H - 4) - 2;
+                const x = (i / (maxPoints - 1)) * graphW;
+                const y = graphH - ((v - min) / range) * (graphH - 4) - 2;
                 return `${x},${y}`;
             }).join(' ');
 
@@ -118,7 +118,7 @@ export function TimeSeriesPanel() {
                         </div>
                         <svg
                             ref={el => { canvasRefs.current.set(s.label, el); }}
-                            viewBox={`0 0 ${GRAPH_W} ${GRAPH_H}`}
+                            viewBox={`0 0 ${graphW} ${graphH}`}
                             style={{ flex: 1, height: '40px' }}
                             preserveAspectRatio="none"
                         >
@@ -131,11 +131,11 @@ export function TimeSeriesPanel() {
                                 vectorEffect="non-scaling-stroke"
                             />
                             <text
-                                x={GRAPH_W - 2} y="12"
+                                x={graphW - 2} y="12"
                                 textAnchor="end" fill={s.color}
                                 fontSize="11" fontFamily="monospace" fontWeight="600"
                             >
-                                —
+                                --
                             </text>
                         </svg>
                     </div>

@@ -15,7 +15,7 @@ const SegmentedBatteryIcon = ({ soc, dimmed = false }: { soc: number; dimmed?: b
   const segments = dimmed ? 0 : Math.max(1, Math.ceil(soc / 20)); // 1 to 5 segments, 0 if dimmed
 
   return (
-    <svg width="64" height="32" viewBox="0 0 64 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: dimmed ? 'none' : `drop-shadow(0 0 8px ${color}66)` }}>
+    <svg aria-hidden="true" width="64" height="32" viewBox="0 0 64 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ filter: dimmed ? 'none' : `drop-shadow(0 0 8px ${color}66)` }}>
       {/* Battery Body */}
       <rect x="2" y="2" width="54" height="28" rx="6" stroke="rgba(255,255,255,0.4)" strokeWidth="2" />
       {/* Battery Terminal */}
@@ -80,9 +80,9 @@ export function BatteryPanel() {
             </div>
 
             {/* Data Rows */}
-            <Row icon="⚡" label="Pack Voltage" value={`${packV} V`} />
-            <Row icon="🔋" label="State of Charge" value={`${socPercent}%`} color={getBatteryColor(socPercentRaw || 0)} />
-            <Row icon="🌡️" label="Temperature" value={`${tempC} °C`} />
+            <Row icon="V" label="Pack Voltage" value={`${packV} V`} />
+            <Row icon="SOC" label="State of Charge" value={`${socPercent}%`} color={getBatteryColor(socPercentRaw || 0)} />
+            <Row icon="TEMP" label="Temperature" value={`${tempC} deg C`} />
           </>
         )}
 

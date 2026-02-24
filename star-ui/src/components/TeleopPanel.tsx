@@ -4,8 +4,8 @@ import { useDashboardStore } from '../store/dashboardStore';
 import { ControllerView } from './ControllerView';
 import type { ControllerState } from '../proto/star/v1/controller';
 
-const SEND_RATE_HZ = 50;
-const SEND_INTERVAL_MS = 1000 / SEND_RATE_HZ;
+const sendRateHz = 50;
+const sendIntervalMs = 1000 / sendRateHz;
 
 interface TeleopPanelProps {
   sendControllerState: (state: ControllerState) => void;
@@ -32,7 +32,7 @@ export function TeleopPanel({ sendControllerState }: TeleopPanelProps) {
         timestamp: String(Date.now()),
         debug: false,
       });
-    }, SEND_INTERVAL_MS);
+    }, sendIntervalMs);
 
     return () => clearInterval(interval);
   }, []);

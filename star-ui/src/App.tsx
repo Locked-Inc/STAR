@@ -20,11 +20,10 @@ import { FirmwarePanel } from './components/FirmwarePanel';
 import { Nav2GoalPanel } from './components/Nav2GoalPanel';
 import { DiagLogPanel } from './components/DiagLogPanel';
 import { useWindowStore, VIEWS } from './store/useWindowStore';
-import type { Layouts } from './store/useWindowStore';
+import type { Layout, Layouts } from './store/useWindowStore';
 import { useDashboardStore } from './store/dashboardStore';
+import type { ControllerState } from './proto/star/v1/controller';
 
-// react-grid-layout v2 native API
-// @ts-ignore
 import { ResponsiveGridLayout, useContainerWidth } from 'react-grid-layout';
 import 'react-grid-layout/css/styles.css';
 import 'react-resizable/css/styles.css';
@@ -37,10 +36,8 @@ const TOPBAR_HEIGHT = 80;
 const TOTAL_ROW_UNITS = 18;
 const GRID_GAP = 12; // px gap between panels
 
-// ────────────────────────────────────
-// Panel registry — maps key → component
-// ────────────────────────────────────
-function usePanelRegistry(sendControllerState: (s: any) => void): Record<string, ReactNode> {
+// --- Panel registry - maps key to component ---
+function usePanelRegistry(sendControllerState: (s: ControllerState) => void): Record<string, ReactNode> {
   return {
     movement: <TeleopPanel sendControllerState={sendControllerState} />,
     motors: <MotorPanel />,
@@ -84,7 +81,7 @@ function App() {
   const view = VIEWS[activeView];
   const isScrollable = view.scrollable ?? false;
 
-  // Responsive row height — only for non-scrollable views
+  // Responsive row height - only for non-scrollable views
   useEffect(() => {
     if (!containerRef.current || isScrollable) return;
 
@@ -104,7 +101,7 @@ function App() {
   // For scrollable (FULL) view, use a fixed row height
   const effectiveRowHeight = isScrollable ? 48 : rowHeight;
 
-  // Resolve layouts: user overrides → default from view definition
+  // Resolve layouts: user overrides -> default from view definition
   const activeLayouts: Layouts = viewLayouts[activeView] ?? view.layouts;
 
   // Escape key to exit maximize
@@ -143,18 +140,14 @@ function App() {
             className="layout"
             width={gridWidth}
             layouts={activeLayouts}
-            onLayoutChange={(currentLayout: any, allLayouts: any) => updateLayouts(currentLayout, allLayouts)}
+            onLayoutChange={(currentLayout, allLayouts) => updateLayouts(currentLayout as Layout[], allLayouts as Layouts)}
             breakpoints={{ lg: 1200, md: 996, sm: 768, xs: 480, xxs: 0 }}
             cols={{ lg: 24, md: 18, sm: 12, xs: 8, xxs: 6 }}
             rowHeight={effectiveRowHeight}
-            margin={[GRID_GAP, GRID_GAP]}
-            containerPadding={[GRID_GAP, GRID_GAP]}
-            compactType="vertical"
-            isBounded={!isScrollable}
-            isDraggable={true}
-            isResizable={true}
-            draggableHandle=".panel-header"
-            resizeHandles={['se', 'sw', 'ne', 'nw', 'e', 'w', 's', 'n']}
+            margin={[GRID_GAP, GRID_GAP] as const}
+            containerPadding={[GRID_GAP, GRID_GAP] as const}
+            dragConfig={{ enabled: true, bounded: false, handle: '.panel-header' }}
+            resizeConfig={{ enabled: true, handles: ['se', 'sw', 'ne', 'nw', 'e', 'w', 's', 'n'] as const }}
           >
             {view.panels.map((key, i) => (
               <div
@@ -166,12 +159,13 @@ function App() {
               >
                 {/* Maximize button in header */}
                 <button
+                  type="button"
                   className="panel-maximize-btn"
                   onClick={() => toggleMaximize(key)}
                   title="Maximize panel"
                   aria-label={`Maximize ${key} panel`}
                 >
-                  ⤢
+                  [+]
                 </button>
                 {panelRegistry[key]}
               </div>
@@ -184,15 +178,19 @@ function App() {
       {maximizedPanel && panelRegistry[maximizedPanel] && (
         <div
           className="panel-maximize-overlay"
+          role="button"
+          tabIndex={0}
           onClick={(e) => { if (e.target === e.currentTarget) toggleMaximize(maximizedPanel); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') toggleMaximize(maximizedPanel); }}
         >
           <div className="glass-panel panel-maximize-content">
             <button
+              type="button"
               className="panel-maximize-close"
               onClick={() => toggleMaximize(maximizedPanel)}
               title="Exit fullscreen (Esc)"
             >
-              ✕
+              X
             </button>
             {panelRegistry[maximizedPanel]}
           </div>
