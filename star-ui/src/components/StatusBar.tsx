@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
 import type { ConnectionState } from '../store/dashboardStore';
@@ -47,6 +47,23 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
     useDashboardStore.getState().releaseEStop();
   }
 
+  // ── Theme toggle ──
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    if (typeof window !== 'undefined') {
+      return (localStorage.getItem('star-theme') as 'dark' | 'light') || 'dark';
+    }
+    return 'dark';
+  });
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('star-theme', theme);
+  }, [theme]);
+
+  function toggleTheme(): void {
+    setTheme(prev => prev === 'dark' ? 'light' : 'dark');
+  }
+
   const styles = `
     @keyframes pulse-opacity {
       0% { opacity: 0.4; }
@@ -54,10 +71,10 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
       100% { opacity: 0.4; }
     }
     .status-pill {
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--pill-bg);
       backdrop-filter: blur(24px) saturate(180%);
       -webkit-backdrop-filter: blur(24px) saturate(180%);
-      border: 0.5px solid rgba(255, 255, 255, 0.18);
+      border: 0.5px solid var(--pill-border);
       border-radius: 16px;
       padding: 6px 14px;
       display: flex;
@@ -66,9 +83,10 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.12em;
-      color: rgba(255,255,255,0.8);
+      color: var(--pill-text);
       text-transform: uppercase;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+      box-shadow: var(--pill-shadow);
+      transition: background 0.3s, border-color 0.3s, color 0.3s;
     }
     .stale-badge {
       background: rgba(255,160,0,0.15);
@@ -108,12 +126,12 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
       box-shadow: inset 0 4px 8px rgba(0,0,0,0.6);
     }
     .reset-btn {
-      background: rgba(255, 255, 255, 0.04);
+      background: var(--btn-bg);
       backdrop-filter: blur(24px) saturate(180%);
-      border: 0.5px solid rgba(255, 255, 255, 0.18);
+      border: 0.5px solid var(--btn-border);
       border-radius: 12px;
       padding: 8px;
-      color: rgba(255,255,255,0.7);
+      color: var(--btn-text);
       cursor: pointer;
       display: flex;
       align-items: center;
@@ -121,8 +139,8 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
       transition: all 0.2s;
     }
     .reset-btn:hover {
-      background: rgba(255,255,255,0.1);
-      color: #fff;
+      background: var(--btn-hover-bg);
+      color: var(--btn-hover-text);
       transform: scale(1.05);
     }
     .reset-btn:active {
@@ -222,16 +240,16 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
                 top: '100%',
                 right: 0,
                 marginTop: '12px',
-                background: 'rgba(20, 20, 20, 0.85)',
+                background: 'var(--dropdown-bg)',
                 backdropFilter: 'blur(24px) saturate(180%)',
                 WebkitBackdropFilter: 'blur(24px) saturate(180%)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                border: '1px solid var(--dropdown-border)',
                 borderRadius: '16px',
                 padding: '8px',
                 display: 'flex',
                 flexDirection: 'column',
                 gap: '8px',
-                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+                boxShadow: 'var(--dropdown-shadow)',
                 minWidth: '200px'
               }}>
                 {(Object.keys(VIEWS) as ViewName[]).map(viewName => {
@@ -267,7 +285,7 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
                 <div style={{ height: '1px', background: 'rgba(255,255,255,0.1)', margin: '4px 0' }} />
                 <button
                   className="reset-btn"
-                  style={{ justifyContent: 'flex-start', padding: '10px 12px', background: 'transparent', border: 'none', borderRadius: '8px', color: 'rgba(255,255,255,0.5)' }}
+                  style={{ justifyContent: 'flex-start', padding: '10px 12px', background: 'transparent', border: 'none', borderRadius: '8px', color: 'var(--color-text-dim)' }}
                   onClick={() => {
                     onResetLayout();
                     setPresetOpen(false);
@@ -278,6 +296,18 @@ export function StatusBar({ sendEStop, sendEStopRelease, onResetLayout, activeVi
               </div>
             )}
           </div>
+
+          {/* Theme toggle */}
+          <button
+            type="button"
+            className="reset-btn"
+            onClick={toggleTheme}
+            title={theme === 'dark' ? 'Switch to light theme' : 'Switch to dark theme'}
+            aria-label="Toggle theme"
+            style={{ padding: '8px 12px', fontSize: '16px' }}
+          >
+            {theme === 'dark' ? '☀️' : '🌙'}
+          </button>
 
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {eStopActive && (
