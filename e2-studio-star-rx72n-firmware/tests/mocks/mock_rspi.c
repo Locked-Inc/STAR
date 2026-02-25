@@ -189,7 +189,7 @@ void mock_rspi_set_controller_deinit_return(mock_rspi_t* mock, rx_err_t ret)
   m->next_controller_deinit_return = ret;
 }
 
-void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, uint8_t channel, uint16_t rx_data)
+void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, rspi_channel_t channel, uint16_t rx_data)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -198,7 +198,7 @@ void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, uint8_t channel, uint16
   }
 }
 
-uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, uint8_t channel)
+uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, rspi_channel_t channel)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -208,7 +208,7 @@ uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, uint8_t channel)
   return 0;
 }
 
-void mock_rspi_clear_controller_channel(mock_rspi_t* mock, uint8_t channel)
+void mock_rspi_clear_controller_channel(mock_rspi_t* mock, rspi_channel_t channel)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -223,7 +223,7 @@ void mock_rspi_clear_controller_channel(mock_rspi_t* mock, uint8_t channel)
  */
 
 rx_err_t
-mock_rspi_inject_rx_data(mock_rspi_t* mock, uint8_t channel, const uint8_t* data, uint32_t len)
+mock_rspi_inject_rx_data(mock_rspi_t* mock, rspi_channel_t channel, const uint8_t* data, uint32_t len)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -251,8 +251,8 @@ mock_rspi_inject_rx_data(mock_rspi_t* mock, uint8_t channel, const uint8_t* data
   return k_rx_ok;
 }
 
-rx_err_t mock_rspi_get_tx_data(mock_rspi_t* mock,
-                               uint8_t      channel,
+rx_err_t mock_rspi_get_tx_data(mock_rspi_t*    mock,
+                               rspi_channel_t  channel,
                                uint8_t*     data,
                                uint32_t     max_len,
                                uint32_t*    actual_len)
@@ -276,7 +276,7 @@ rx_err_t mock_rspi_get_tx_data(mock_rspi_t* mock,
   return k_rx_ok;
 }
 
-void mock_rspi_set_data_available(mock_rspi_t* mock, uint8_t channel, bool available)
+void mock_rspi_set_data_available(mock_rspi_t* mock, rspi_channel_t channel, bool available)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -285,7 +285,7 @@ void mock_rspi_set_data_available(mock_rspi_t* mock, uint8_t channel, bool avail
   }
 }
 
-void mock_rspi_set_write_ready(mock_rspi_t* mock, uint8_t channel, bool ready)
+void mock_rspi_set_write_ready(mock_rspi_t* mock, rspi_channel_t channel, bool ready)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -294,7 +294,7 @@ void mock_rspi_set_write_ready(mock_rspi_t* mock, uint8_t channel, bool ready)
   }
 }
 
-void mock_rspi_clear_channel(mock_rspi_t* mock, uint8_t channel)
+void mock_rspi_clear_channel(mock_rspi_t* mock, rspi_channel_t channel)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 

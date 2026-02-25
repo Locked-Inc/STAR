@@ -2028,7 +2028,7 @@ void tx_application_define(void* first_unused_memory)
  *   Main => ThreadX [label="tx_kernel_enter()", textcolor="purple"];
  *   ThreadX => ThreadX [label="Start scheduler\n(NEVER RETURNS)", textcolor="purple"];
  *   ThreadX => AppTask [label="tx_application_define()\ntask creation", textcolor="purple"];
- *   AppTask => AppTask [label="PID control @ 100 Hz\nUSB communication", textcolor="purple"];
+ *   AppTask => AppTask [label="ThreadX scheduler running\n(comm, motor, sensors)", textcolor="purple"];
  * }
  * @endmsc
  *

@@ -492,8 +492,7 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
   /* Execute command */
   command->result = command->execute(bus, command->data);
 
-  /* Post-condition: result was written */
-  assert(command->result == command->result);
+  /* Post-condition: execute function was called (result now set by execute()) */
   /* Post-condition: bus was valid for command execution */
   assert(bus != nullptr);
 

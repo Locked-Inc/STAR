@@ -417,8 +417,6 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  /* Default channel removed: use k_rspi_channel_0 from hardware.h */
-
   /**
    * @brief Default SPI mode (CPOL=0, CPHA=0)
    * @details
