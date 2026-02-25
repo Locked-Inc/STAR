@@ -385,6 +385,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx_err.h"
 #include "rx_frame.h"
 #include "rx_session.h"
@@ -416,16 +417,6 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  /**
-   * @brief Default RSPI channel for SPI communication
-   * @details
-   * RSPI0 (channel 0) is default. RX72N has 3 RSPI channels (0-2).
-   * **Hardware**: RSPI0 on pins PD0-PD3 (CS/CLK/CIPO/COPI)
-   * @par Value: 0 (RSPI0)
-   * @see RX72N_Manual_Chapters/Ch25_SPI.txt Section 25.2 for RSPI channels
-   */
-  k_spi_comm_default_channel = 0,
-
   /**
    * @brief Default SPI mode (CPOL=0, CPHA=0)
    * @details
@@ -634,14 +625,14 @@ typedef struct {
   rx_session_state_t* session;
 
   /**
-   * @brief RSPI channel number (0-2)
+   * @brief RSPI channel (0-2)
    * @details
    * Hardware RSPI peripheral channel.
-   * **Valid values**: 0 (RSPI0), 1 (RSPI1), 2 (RSPI2)
-   * **Default**: 0 (RSPI0 on PD0-PD3)
-   * @see RX72N_Manual_Chapters/Ch25_SPI.txt for RSPI channels
+   * **Valid values**: k_rspi_channel_0, k_rspi_channel_1, k_rspi_channel_2
+   * **Default**: k_rspi_channel_0 (RSPI0 on PD0-PD3)
+   * @see rspi_channel_t for channel enumeration
    */
-  uint8_t channel;
+  rspi_channel_t channel;
 
   /**
    * @brief FEC (Forward Error Correction) enabled flag
@@ -766,7 +757,7 @@ typedef struct {
  *
  * rx_spi_comm_config_t cfg = {
  *   .session = &session,
- *   .channel = k_spi_comm_default_channel,
+ *   .channel = k_rspi_channel_0,
  *   .spi_mode = k_spi_comm_default_mode,
  *   .fec_enabled = false
  * };
@@ -792,10 +783,10 @@ typedef struct {
    * @brief RSPI channel (0-2)
    * @details
    * Hardware peripheral channel. RX72N has 3 RSPI channels.
-   * **Default**: 0 (RSPI0)
-   * **Valid range**: [0, 2]
+   * **Default**: k_rspi_channel_0 (RSPI0)
+   * @see rspi_channel_t for channel enumeration
    */
-  uint8_t channel;
+  rspi_channel_t channel;
 
   /**
    * @brief SPI mode (0-3)

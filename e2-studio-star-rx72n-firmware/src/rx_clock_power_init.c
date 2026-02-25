@@ -719,7 +719,7 @@ static rx_err_t internal_verify_system_state(void)
  * | **Total** | **~10.5 ms** | Yes | **Not on critical boot path** |
  *
  * **Boot time context:** Total boot time (reset -> ThreadX) is ~51 ms, dominated by USB
- * enumeration (~50 ms) which happens later in app_main_task. Clock init is only ~20% of boot.
+ * enumeration (~50 ms) which happens later in comm_task. Clock init is only ~20% of boot.
  *
  * ## Error Scenarios and Recovery
  *

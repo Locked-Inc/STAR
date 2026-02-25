@@ -313,7 +313,7 @@ void mock_rspi_set_controller_deinit_return(mock_rspi_t* mock, rx_err_t ret);
  * @param channel RSPI channel
  * @param rx_data Data to return
  */
-void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, uint8_t channel, uint16_t rx_data);
+void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, rspi_channel_t channel, uint16_t rx_data);
 
 /**
  * @brief Get the last data transmitted by controller transfer
@@ -322,7 +322,7 @@ void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, uint8_t channel, uint16
  * @param channel RSPI channel
  * @return Last transmitted 16-bit data
  */
-uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, uint8_t channel);
+uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, rspi_channel_t channel);
 
 /**
  * @brief Clear controller mode state for a channel
@@ -330,7 +330,7 @@ uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, uint8_t channel);
  * @param mock Mock instance (use NULL for global)
  * @param channel RSPI channel
  */
-void mock_rspi_clear_controller_channel(mock_rspi_t* mock, uint8_t channel);
+void mock_rspi_clear_controller_channel(mock_rspi_t* mock, rspi_channel_t channel);
 
 /* =============================================================================
  * Data Injection/Extraction Functions
@@ -347,7 +347,7 @@ void mock_rspi_clear_controller_channel(mock_rspi_t* mock, uint8_t channel);
  * @return k_rx_ok on success
  */
 rx_err_t
-mock_rspi_inject_rx_data(mock_rspi_t* mock, uint8_t channel, const uint8_t* data, uint32_t len);
+mock_rspi_inject_rx_data(mock_rspi_t* mock, rspi_channel_t channel, const uint8_t* data, uint32_t len);
 
 /**
  * @brief Get data that was transmitted via SPI
@@ -359,8 +359,8 @@ mock_rspi_inject_rx_data(mock_rspi_t* mock, uint8_t channel, const uint8_t* data
  * @param actual_len Actual bytes read
  * @return k_rx_ok on success
  */
-rx_err_t mock_rspi_get_tx_data(mock_rspi_t* mock,
-                               uint8_t      channel,
+rx_err_t mock_rspi_get_tx_data(mock_rspi_t*    mock,
+                               rspi_channel_t  channel,
                                uint8_t*     data,
                                uint32_t     max_len,
                                uint32_t*    actual_len);
@@ -372,7 +372,7 @@ rx_err_t mock_rspi_get_tx_data(mock_rspi_t* mock,
  * @param channel RSPI channel (0-2)
  * @param available True if data is available
  */
-void mock_rspi_set_data_available(mock_rspi_t* mock, uint8_t channel, bool available);
+void mock_rspi_set_data_available(mock_rspi_t* mock, rspi_channel_t channel, bool available);
 
 /**
  * @brief Set write ready status for a channel
@@ -381,7 +381,7 @@ void mock_rspi_set_data_available(mock_rspi_t* mock, uint8_t channel, bool avail
  * @param channel RSPI channel (0-2)
  * @param ready True if write ready
  */
-void mock_rspi_set_write_ready(mock_rspi_t* mock, uint8_t channel, bool ready);
+void mock_rspi_set_write_ready(mock_rspi_t* mock, rspi_channel_t channel, bool ready);
 
 /**
  * @brief Clear a channel's buffers
@@ -389,7 +389,7 @@ void mock_rspi_set_write_ready(mock_rspi_t* mock, uint8_t channel, bool ready);
  * @param mock Mock instance (use NULL for global)
  * @param channel RSPI channel (0-2)
  */
-void mock_rspi_clear_channel(mock_rspi_t* mock, uint8_t channel);
+void mock_rspi_clear_channel(mock_rspi_t* mock, rspi_channel_t channel);
 
 /* =============================================================================
  * Call Tracking Functions

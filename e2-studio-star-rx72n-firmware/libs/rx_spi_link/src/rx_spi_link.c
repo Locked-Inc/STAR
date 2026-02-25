@@ -123,9 +123,9 @@ typedef enum : int8_t {
  * @since Version 1.1.0
  */
 typedef enum : uint8_t {
-  k_bits_per_byte = 8,    /**< Number of bits in a byte */
-  k_msb_shift     = 7,    /**< Shift to extract MSB */
-  k_bit_mask      = 0x01, /**< Mask to extract single bit */
+  k_spi_link_bits_per_byte = 8,    /**< Number of bits in a byte */
+  k_spi_link_msb_shift     = 7,    /**< Shift to extract MSB */
+  k_spi_link_bit_mask      = 0x01, /**< Mask to extract single bit */
 } internal_bit_constants_t;
 
 /* =============================================================================
@@ -149,8 +149,8 @@ typedef enum : uint8_t {
  * @return k_rx_ok on success, k_rx_err_invalid_size if buffer too small
  *
  * @pre data and soft must be non-NULL
- * @pre soft_size >= data_len * k_bits_per_byte
- * @post soft_len == data_len * k_bits_per_byte
+ * @pre soft_size >= data_len * k_spi_link_bits_per_byte
+ * @post soft_len == data_len * k_spi_link_bits_per_byte
  *
  * @since Version 1.1.0
  */
@@ -180,13 +180,13 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
   }
 
   /* Rule 5: Precondition validation - overflow check before multiplication */
-  if (data_len > 0 && data_len > UINT32_MAX / (uint32_t)k_bits_per_byte) {
+  if (data_len > 0 && data_len > UINT32_MAX / (uint32_t)k_spi_link_bits_per_byte) {
     *soft_len = 0;
     return k_rx_err_invalid_size; /* Would overflow */
   }
 
   /* Rule 5: Precondition validation - buffer size check */
-  const uint32_t required = data_len * (uint32_t)k_bits_per_byte;
+  const uint32_t required = data_len * (uint32_t)k_spi_link_bits_per_byte;
   if (required > soft_size) {
     *soft_len = 0;
     return k_rx_err_invalid_size;
@@ -194,10 +194,10 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
 
   for (uint32_t byte_idx = 0; byte_idx < data_len; byte_idx++) {
     const uint8_t b = data[byte_idx];
-    for (uint8_t bit_idx = 0; bit_idx < k_bits_per_byte; bit_idx++) {
-      const uint8_t  bit = (b >> (k_msb_shift - bit_idx)) & k_bit_mask;
-      const uint32_t idx = byte_idx * (uint32_t)k_bits_per_byte + bit_idx;
-      soft[idx]          = (bit == k_bit_mask) ? (rx_soft_bit_t)k_internal_soft_bit_one
+    for (uint8_t bit_idx = 0; bit_idx < k_spi_link_bits_per_byte; bit_idx++) {
+      const uint8_t  bit = (b >> (k_spi_link_msb_shift - bit_idx)) & k_spi_link_bit_mask;
+      const uint32_t idx = byte_idx * (uint32_t)k_spi_link_bits_per_byte + bit_idx;
+      soft[idx]          = (bit == k_spi_link_bit_mask) ? (rx_soft_bit_t)k_internal_soft_bit_one
                                                : (rx_soft_bit_t)k_internal_soft_bit_zero;
     }
   }
@@ -659,14 +659,14 @@ static rx_err_t internal_receive_fec_decode(rx_spi_link_t*                link,
      * IMPORTANT: This formula is correct because rx_fec.c internally accounts
      * for k_fec_tail_bits when encoding. The frame payload contains the full
      * FEC-encoded bitstream (data bits + parity bits + tail bits). The formula:
-     *   expected_decoded_len = (soft_len / k_bits_per_byte) / 2
+     *   expected_decoded_len = (soft_len / k_spi_link_bits_per_byte) / 2
      * works as follows:
      *   1. soft_len is the total encoded bit count (includes tail bits)
-     *   2. Divide by k_bits_per_byte (8) to get encoded byte count
+     *   2. Divide by k_spi_link_bits_per_byte (8) to get encoded byte count
      *   3. Divide by 2 because FEC rate is 1/2 (each input bit -> 2 output bits)
      * The FEC decoder (rx_fec_viterbi_decode) automatically handles tail bit
      * flushing internally, so we don't subtract them here. */
-  const uint32_t expected_decoded_len = (soft_len / (uint32_t)k_bits_per_byte) / 2U;
+  const uint32_t expected_decoded_len = (soft_len / (uint32_t)k_spi_link_bits_per_byte) / 2U;
 
   const rx_harq_decode_params_t params = {
     .soft_bits           = s_soft_bits,

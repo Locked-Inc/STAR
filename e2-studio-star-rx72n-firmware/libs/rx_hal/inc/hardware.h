@@ -1,4 +1,4 @@
-/* lib/rx_hal/inc/hardware.h */
+/* libs/rx_hal/inc/hardware.h */
 
 /**
  * @file hardware.h
@@ -163,14 +163,14 @@
  *     .freq_hz = k_rspi_freq_1mhz,
  *     .cs = k_port_c_pin_4
  *   };
- *   rspi_init_controller(1, &spi_cfg);
+ *   rspi_init_controller(k_rspi_channel_1, &spi_cfg);
  *
  *   // 5. SPI peripheral (for RPi5 communication)
  *   rspi_config_t rpi_cfg = {
  *     .spi_mode = k_rspi_mode_0,
  *     .use_16bit = false
  *   };
- *   rspi_init_peripheral(0, &rpi_cfg);
+ *   rspi_init_peripheral(k_rspi_channel_0, &rpi_cfg);
  *
  *   // 6. ADC (for motor current sensing on AN007/P47)
  *   adc_init(k_adc_unit_0, k_adc_channel_7, k_adc_resolution_12bit);
@@ -240,11 +240,12 @@
  *   +--> Motor control (rx_motor_control.c)
  *   +--> USB communication (rx_usb.c)
  *   +--> Protocol handling (rx_comm_manager.c)
- *   +--> Application tasks (app_main_task.c)
+ *   +--> Application tasks (comm, motor, sensors)
  * ```
  *
  * @author STAR Team
  * @date 2026-01-27
+ * @version 1.0.0
  * @copyright MIT License
  *
  * @see rx_err.h for error code definitions
@@ -388,47 +389,211 @@ extern "C" {
 [[nodiscard]] rx_err_t gpio_set_output(rx_port_pin_t pin);
 
 /**
- * @brief Configure GPIO pin as input
+ * @brief Configure GPIO pin as digital input
  *
- * @param[in] pin GPIO pin (rx_port_pin_t)
+ * @details
+ * Configures the specified GPIO pin as a digital input with high-impedance state.
+ * Performs full hardware initialization including port direction register (PDR),
+ * port mode register (PMR), and input buffer control. Validates pin assignment
+ * and checks for peripheral conflicts.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_gpio_invalid_port if port is invalid,
- *         k_rx_err_gpio_invalid_pin if pin is invalid,
- *         k_rx_err_gpio_conflict if pin already reserved
+ * ## Algorithm
+ * 1. Validate pin parameter (port exists, pin number valid)
+ * 2. Check pin is not already reserved by another peripheral
+ * 3. Unlock port write protection (PWPR register)
+ * 4. Set PMR bit to 0 (GPIO mode, not peripheral function)
+ * 5. Set PDR bit to 0 (input direction)
+ * 6. Enable input buffer (ICR register)
+ * 7. Lock port write protection
+ * 8. Mark pin as reserved in allocation tracker
+ *
+ * @param[in] pin GPIO pin identifier from rx_port_constants.h
+ *                - Type: rx_port_pin_t (C23 typed enum)
+ *                - Format: k_port_X_pin_Y (X = A-N, Y = 0-7)
+ *                - Example: k_port_e_pin_5 (Port E, Pin 5)
+ *                - Range: All valid combinations defined in rx_port_constants.h
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Pin successfully configured as input
+ * @retval k_rx_err_gpio_invalid_port Port letter out of range (not A-N)
+ * @retval k_rx_err_gpio_invalid_pin Pin number out of range (not 0-7)
+ * @retval k_rx_err_gpio_conflict Pin already reserved by UART, SPI, I2C, or other peripheral
+ *
+ * @pre Pin must not be currently in use by another peripheral
+ * @pre Pin must correspond to a valid physical pin on the RX72N package
+ * @post Pin configured as high-impedance input with input buffer enabled
+ * @post Pin marked as reserved in internal allocation tracker
+ *
+ * @note **Thread Safety**: NOT thread-safe. Do not call concurrently from multiple threads.
+ *
+ * @par Example: Button Input
+ * @code{.c}
+ * #include "hardware.h"
+ *
+ * void button_init(void) {
+ *   rx_err_t err = gpio_set_input(k_port_e_pin_5);
+ *   if (err != k_rx_ok) {
+ *     rx_log_error_val("BTN", "Failed to configure button pin", err);
+ *     return;
+ *   }
+ *   rx_log_info("BTN", "Button input configured");
+ * }
+ * @endcode
+ *
+ * @see gpio_set_output() Configure pin as digital output
+ * @see gpio_read() Read pin logic level
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t gpio_set_input(rx_port_pin_t pin);
 
 /**
- * @brief Set GPIO pin high
+ * @brief Set GPIO output pin to logic high (VDD)
  *
- * @param[in] pin GPIO pin (rx_port_pin_t)
+ * @details
+ * Drives the specified GPIO pin to logic high by setting the corresponding bit
+ * in the Port Output Data Register (PODR). The pin must have been previously
+ * configured as output via gpio_set_output(). Writing to an input pin has no
+ * effect on the physical pin state.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_gpio_invalid_port if port is invalid,
- *         k_rx_err_gpio_invalid_pin if pin is invalid
+ * ## Algorithm
+ * 1. Validate pin parameter (port exists, pin number valid)
+ * 2. Extract port letter and pin number from rx_port_pin_t
+ * 3. Set corresponding bit in PODR register (atomic read-modify-write)
+ *
+ * @param[in] pin GPIO pin identifier from rx_port_constants.h
+ *                - Type: rx_port_pin_t (C23 typed enum)
+ *                - Format: k_port_X_pin_Y (X = A-N, Y = 0-7)
+ *                - Must be configured as output via gpio_set_output()
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Pin successfully driven high
+ * @retval k_rx_err_gpio_invalid_port Port letter out of range (not A-N)
+ * @retval k_rx_err_gpio_invalid_pin Pin number out of range (not 0-7)
+ *
+ * @pre Pin must be configured as output via gpio_set_output()
+ * @pre Pin port and number must be within valid hardware range
+ * @post Pin output level is logic high (VDD, typically 3.3V)
+ * @post PODR register bit for the pin is set to 1
+ *
+ * @note **Thread Safety**: NOT thread-safe. Concurrent writes to pins on the same port may
+ *       cause read-modify-write races on the PODR register.
+ *
+ * @par Example: Enable Motor
+ * @code{.c}
+ * // Enable motor driver (active high)
+ * rx_err_t err = gpio_write_high(k_port_c_pin_0);
+ * if (err != k_rx_ok) {
+ *   rx_log_error_val("MOTOR", "Failed to enable motor", err);
+ * }
+ * @endcode
+ *
+ * @see gpio_write_low() Set output pin to logic low
+ * @see gpio_toggle() Toggle output pin state
+ * @see gpio_set_output() Configure pin as output first
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t gpio_write_high(rx_port_pin_t pin);
 
 /**
- * @brief Set GPIO pin low
+ * @brief Set GPIO output pin to logic low (GND)
  *
- * @param[in] pin GPIO pin (rx_port_pin_t)
+ * @details
+ * Drives the specified GPIO pin to logic low by clearing the corresponding bit
+ * in the Port Output Data Register (PODR). The pin must have been previously
+ * configured as output via gpio_set_output(). Writing to an input pin has no
+ * effect on the physical pin state.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_gpio_invalid_port if port is invalid,
- *         k_rx_err_gpio_invalid_pin if pin is invalid
+ * ## Algorithm
+ * 1. Validate pin parameter (port exists, pin number valid)
+ * 2. Extract port letter and pin number from rx_port_pin_t
+ * 3. Clear corresponding bit in PODR register (atomic read-modify-write)
+ *
+ * @param[in] pin GPIO pin identifier from rx_port_constants.h
+ *                - Type: rx_port_pin_t (C23 typed enum)
+ *                - Format: k_port_X_pin_Y (X = A-N, Y = 0-7)
+ *                - Must be configured as output via gpio_set_output()
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Pin successfully driven low
+ * @retval k_rx_err_gpio_invalid_port Port letter out of range (not A-N)
+ * @retval k_rx_err_gpio_invalid_pin Pin number out of range (not 0-7)
+ *
+ * @pre Pin must be configured as output via gpio_set_output()
+ * @pre Pin port and number must be within valid hardware range
+ * @post Pin output level is logic low (GND, 0V)
+ * @post PODR register bit for the pin is cleared to 0
+ *
+ * @note **Thread Safety**: NOT thread-safe. Concurrent writes to pins on the same port may
+ *       cause read-modify-write races on the PODR register.
+ *
+ * @par Example: Disable Motor
+ * @code{.c}
+ * // Disable motor driver (active high enable)
+ * rx_err_t err = gpio_write_low(k_port_c_pin_0);
+ * if (err != k_rx_ok) {
+ *   rx_log_error_val("MOTOR", "Failed to disable motor", err);
+ * }
+ * @endcode
+ *
+ * @see gpio_write_high() Set output pin to logic high
+ * @see gpio_toggle() Toggle output pin state
+ * @see gpio_set_output() Configure pin as output first
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t gpio_write_low(rx_port_pin_t pin);
 
 /**
- * @brief Toggle GPIO pin
+ * @brief Toggle GPIO output pin state (high to low, or low to high)
  *
- * @param[in] pin GPIO pin (rx_port_pin_t)
+ * @details
+ * Inverts the current output level of the specified GPIO pin by XOR-ing the
+ * corresponding bit in the Port Output Data Register (PODR). If the pin is
+ * currently high it becomes low, and vice versa. The pin must have been
+ * previously configured as output via gpio_set_output().
  *
- * @return k_rx_ok on success,
- *         k_rx_err_gpio_invalid_port if port is invalid,
- *         k_rx_err_gpio_invalid_pin if pin is invalid
+ * ## Algorithm
+ * 1. Validate pin parameter (port exists, pin number valid)
+ * 2. Extract port letter and pin number from rx_port_pin_t
+ * 3. XOR corresponding bit in PODR register (read-modify-write)
+ *
+ * @param[in] pin GPIO pin identifier from rx_port_constants.h
+ *                - Type: rx_port_pin_t (C23 typed enum)
+ *                - Format: k_port_X_pin_Y (X = A-N, Y = 0-7)
+ *                - Must be configured as output via gpio_set_output()
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Pin successfully toggled
+ * @retval k_rx_err_gpio_invalid_port Port letter out of range (not A-N)
+ * @retval k_rx_err_gpio_invalid_pin Pin number out of range (not 0-7)
+ *
+ * @pre Pin must be configured as output via gpio_set_output()
+ * @pre Pin port and number must be within valid hardware range
+ * @post Pin output level is inverted from its previous state
+ * @post PODR register bit for the pin is toggled
+ *
+ * @note **Thread Safety**: NOT thread-safe. Concurrent toggles or writes to pins on the same
+ *       port may cause read-modify-write races on the PODR register.
+ *
+ * @par Example: LED Heartbeat
+ * @code{.c}
+ * // Toggle heartbeat LED every 500 ms
+ * void heartbeat_task(void) {
+ *   gpio_set_output(k_port_e_pin_5);
+ *   while (1) {
+ *     gpio_toggle(k_port_e_pin_5);
+ *     tx_thread_sleep(50);  // 500 ms at 100 Hz tick
+ *   }
+ * }
+ * @endcode
+ *
+ * @see gpio_write_high() Set output pin to logic high
+ * @see gpio_write_low() Set output pin to logic low
+ * @see gpio_set_output() Configure pin as output first
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t gpio_toggle(rx_port_pin_t pin);
 
@@ -550,24 +715,139 @@ extern "C" {
 /**
  * @brief Initialize CMT0 for ThreadX system tick (100 Hz)
  *
- * @return k_rx_ok on success, error code on failure
+ * @details
+ * Configures Compare Match Timer channel 0 (CMT0) to generate periodic interrupts
+ * at 100 Hz (10 ms interval) for the ThreadX RTOS system tick. Performs full
+ * hardware initialization including module stop release, clock source selection
+ * (PCLKB/8), compare match constant calculation, and interrupt priority setup.
+ *
+ * ## Algorithm
+ * 1. Release CMT0 from module stop (MSTPCRA.MSTPA15 = 0)
+ * 2. Stop counter (CMSTR0.STR0 = 0)
+ * 3. Configure CMCR: PCLKB/8 clock source, compare match interrupt enable
+ * 4. Calculate CMCOR from PCLKB frequency and desired 100 Hz rate
+ * 5. Clear counter (CMCNT = 0)
+ * 6. Set compare match value (CMCOR)
+ * 7. Configure interrupt priority (IPR = 5)
+ * 8. Start counter (CMSTR0.STR0 = 1)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok CMT0 successfully initialized and running at 100 Hz
+ * @retval k_rx_err_invalid_state CMT0 already initialized
+ *
+ * @pre System clocks must be configured (PCLKB running at expected frequency)
+ * @pre CMT0 must not be already initialized (call timer_stop() first to reinitialize)
+ * @post CMT0 generating 100 Hz interrupts for ThreadX system tick
+ * @post CMT0 interrupt enabled at priority 5
+ *
+ * @note **Thread Safety**: NOT thread-safe. Must be called once during system initialization
+ *       before ThreadX is started.
+ *
+ * @par Example: System Initialization
+ * @code{.c}
+ * void hardware_init(void) {
+ *   rx_err_t err = timer_init();
+ *   if (err != k_rx_ok) {
+ *     rx_log_error_val("TIMER", "CMT0 init failed", err);
+ *     return;
+ *   }
+ *   rx_log_info("TIMER", "System tick running at 100 Hz");
+ * }
+ * @endcode
+ *
+ * @see timer_stop() Stop the CMT0 timer
+ * @see timer_get_count() Read current counter value
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t timer_init(void);
 
 /**
- * @brief Stop CMT0 timer
+ * @brief Stop CMT0 timer and disable compare match interrupts
  *
- * @return k_rx_ok on success
+ * @details
+ * Halts the CMT0 counter by clearing the start bit (CMSTR0.STR0 = 0) and
+ * disables the compare match interrupt. The counter value is preserved and can
+ * be read via timer_get_count(). After stopping, timer_init() may be called
+ * to restart the timer.
+ *
+ * ## Algorithm
+ * 1. Disable compare match interrupt (CMCR.CMIE = 0)
+ * 2. Stop counter (CMSTR0.STR0 = 0)
+ * 3. Mark timer as stopped in internal state
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok CMT0 successfully stopped
+ * @retval k_rx_err_invalid_state CMT0 was not initialized
+ *
+ * @pre CMT0 must have been initialized via timer_init()
+ * @pre Caller must ensure stopping the system tick will not break RTOS scheduling
+ * @post CMT0 counter halted, counter value preserved
+ * @post Compare match interrupts disabled
+ *
+ * @note **Thread Safety**: NOT thread-safe. Stopping the system tick from a ThreadX thread
+ *       may cause scheduling to freeze.
+ * @warning Stopping CMT0 halts the ThreadX system tick. Only stop during shutdown or
+ *          low-power entry.
+ *
+ * @par Example: Entering Low Power Mode
+ * @code{.c}
+ * void enter_low_power(void) {
+ *   rx_err_t err = timer_stop();
+ *   if (err != k_rx_ok) {
+ *     rx_log_error_val("TIMER", "Failed to stop timer", err);
+ *     return;
+ *   }
+ *   // Enter low-power mode
+ * }
+ * @endcode
+ *
+ * @see timer_init() Reinitialize CMT0 after stopping
+ * @see timer_get_count() Read counter value (works while stopped)
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t timer_stop(void);
 
 /**
  * @brief Get current CMT0 counter value
  *
- * @param[out] count Pointer to store counter value
+ * @details
+ * Reads the 16-bit free-running counter register (CMCNT) from CMT0. The counter
+ * increments at PCLKB/8 rate and resets to 0 on compare match with CMCOR. This
+ * can be used for sub-tick timing measurements or to check elapsed time within
+ * a 10 ms system tick period. Works whether the timer is running or stopped.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if count is nullptr
+ * @param[out] count Pointer to store 16-bit counter value
+ *                   - Must point to valid uint16_t variable
+ *                   - Value range: 0 to CMCOR (compare match constant)
+ *                   - Unchanged if function returns error
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Counter value successfully read and stored in *count
+ * @retval k_rx_err_null_ptr count pointer is nullptr
+ *
+ * @pre count pointer must be valid (not nullptr)
+ * @pre CMT0 must have been initialized via timer_init() for meaningful values
+ * @post *count contains current CMCNT register value if function succeeds
+ * @post *count unchanged if function returns error
+ *
+ * @note **Thread Safety**: NOT thread-safe. The 16-bit register read is atomic on RX72N
+ *       but the pointer write is not protected.
+ *
+ * @par Example: Sub-Tick Timing
+ * @code{.c}
+ * uint16_t start, end;
+ * timer_get_count(&start);
+ * // ... perform operation ...
+ * timer_get_count(&end);
+ * uint16_t elapsed_ticks = (end >= start) ? (end - start) : (0xFFFF - start + end);
+ * @endcode
+ *
+ * @see timer_init() Initialize CMT0 timer
+ * @see timer_stop() Stop CMT0 timer
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t timer_get_count(uint16_t* count);
 
@@ -938,29 +1218,130 @@ typedef struct {
 } i2c_device_addr_t;
 
 /**
- * @brief Initialize RIIC channel for I2C communication
+ * @brief Initialize RIIC channel for I2C controller communication
  *
- * @param[in] channel RIIC channel (0-2)
- * @param[in] frequency_hz Clock frequency (100000, 400000, or 1000000)
+ * @details
+ * Configures the specified RIIC peripheral channel for I2C controller mode at the
+ * requested clock frequency. Performs full hardware initialization including module
+ * stop release, pin function selection (SCL/SDA via MPC), internal reset sequence,
+ * bit rate register (BRH/BRL) calculation from PCLKB, and interrupt configuration.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_arg if channel or frequency is invalid
+ * ## Algorithm
+ * 1. Validate channel number (0-2) and frequency
+ * 2. Release RIIC module from module stop (MSTPCRB)
+ * 3. Assert internal reset (ICCR1.IICRST = 1)
+ * 4. Configure SCL/SDA pins via MPC register
+ * 5. Set bit rate registers (BRH/BRL) from PCLKB and frequency_hz
+ * 6. Configure noise filter, timeout detection
+ * 7. Release internal reset (ICCR1.IICRST = 0)
+ * 8. Enable I2C bus (ICCR1.ICE = 1)
+ *
+ * ## Supported Frequencies
+ * | Frequency | Mode | BRL/BRH | Max Bus Length |
+ * |-----------|------|---------|----------------|
+ * | 100000 Hz | Standard | Auto-calculated | 1 m |
+ * | 400000 Hz | Fast | Auto-calculated | 0.3 m |
+ * | 1000000 Hz | Fast-plus | Auto-calculated | 0.1 m |
+ *
+ * @param[in] channel RIIC channel wrapper
+ *                    - channel.value range: 0-2
+ *                    - Use {.value = N} designated initializer
+ * @param[in] frequency_hz I2C clock frequency in Hz
+ *                         - Valid values: 100000, 400000, 1000000
+ *                         - Must match connected device capabilities
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully initialized
+ * @retval k_rx_err_invalid_arg Channel > 2 or unsupported frequency
+ * @retval k_rx_err_invalid_state Channel already initialized
+ *
+ * @pre Channel must not be already initialized (call riic deinit first to reinitialize)
+ * @pre System clocks must be configured (PCLKB running at expected frequency)
+ * @post RIIC channel configured and ready for I2C transactions
+ * @post SCL/SDA pins configured with open-drain output and internal pull-ups
+ *
+ * @note **Thread Safety**: NOT thread-safe. Initialize each channel from a single thread
+ *       during system startup.
+ *
+ * @par Example: Initialize IMU I2C Bus
+ * @code{.c}
+ * riic_channel_t ch = {.value = 0};
+ * rx_err_t err = riic_init(ch, 400000);  // 400 kHz fast mode
+ * if (err != k_rx_ok) {
+ *   rx_log_error_val("I2C", "RIIC0 init failed", err);
+ *   return;
+ * }
+ * rx_log_info("I2C", "RIIC0 initialized at 400 kHz");
+ * @endcode
+ *
+ * @see riic_write() Write data to I2C device
+ * @see riic_read() Read data from I2C device
+ * @see riic_write_read() Combined write-then-read transaction
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t riic_init(riic_channel_t channel, uint32_t frequency_hz);
 
 /**
- * @brief Write data to I2C device
+ * @brief Write data to I2C device on specified RIIC channel
  *
- * @param[in] channel RIIC channel (0-2)
- * @param[in] device_addr 7-bit I2C device address
- * @param[in] data Pointer to data to write
+ * @details
+ * Performs a complete I2C write transaction: generates START condition, transmits
+ * device address with write bit (R/W=0), sends data bytes, and generates STOP
+ * condition. Each byte is acknowledged by the peripheral device. The function
+ * blocks until all bytes are transmitted or an error occurs.
+ *
+ * ## Transaction Sequence
+ * 1. Generate START condition
+ * 2. Send device address byte (7-bit address << 1 | 0)
+ * 3. Wait for ACK from peripheral
+ * 4. Send data bytes one at a time, waiting for ACK after each
+ * 5. Generate STOP condition
+ * 6. Wait for bus idle (BBSY = 0)
+ *
+ * @param[in] channel RIIC channel wrapper
+ *                    - channel.value range: 0-2
+ * @param[in] device_addr 7-bit I2C device address wrapper
+ *                        - device_addr.value range: 0x08-0x77
+ * @param[in] data Pointer to data buffer to write
+ *                 - Must not be nullptr
+ *                 - Must contain at least length bytes
  * @param[in] length Number of bytes to write
+ *                   - Range: 1-65535
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if data is nullptr,
- *         k_rx_err_invalid_state if channel not initialized,
- *         k_rx_err_timeout if bus timeout,
- *         k_rx_err_nack if device NACK received
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok All bytes successfully written and ACKed
+ * @retval k_rx_err_null_ptr data pointer is nullptr
+ * @retval k_rx_err_invalid_state Channel not initialized via riic_init()
+ * @retval k_rx_err_timeout Bus timeout waiting for ACK or bus idle
+ * @retval k_rx_err_nack Device sent NACK (wrong address or device busy)
+ *
+ * @pre Channel must be initialized via riic_init()
+ * @pre data pointer must be valid and contain at least length bytes
+ * @post All data bytes transmitted to the I2C device if successful
+ * @post I2C bus returned to idle state (STOP condition generated)
+ *
+ * @note **Thread Safety**: NOT thread-safe. Do not perform concurrent transactions on the
+ *       same RIIC channel. Different channels may be used from different threads.
+ *
+ * @par Example: Write IMU Configuration Register
+ * @code{.c}
+ * riic_channel_t ch = {.value = 0};
+ * i2c_device_addr_t imu_addr = {.value = 0x68};
+ *
+ * // Write power management register (0x6B) to wake up MPU6050
+ * uint8_t wake_cmd[] = {0x6B, 0x00};
+ * rx_err_t err = riic_write(ch, imu_addr, wake_cmd, 2);
+ * if (err != k_rx_ok) {
+ *   rx_log_error_val("IMU", "Failed to wake IMU", err);
+ * }
+ * @endcode
+ *
+ * @see riic_read() Read data from I2C device
+ * @see riic_write_read() Combined write-then-read (register read pattern)
+ * @see riic_init() Initialize RIIC channel first
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t riic_write(riic_channel_t    channel,
                                   i2c_device_addr_t device_addr,
@@ -968,18 +1349,65 @@ typedef struct {
                                   const uint16_t    length);
 
 /**
- * @brief Read data from I2C device
+ * @brief Read data from I2C device on specified RIIC channel
  *
- * @param[in] channel RIIC channel (0-2)
- * @param[in] device_addr 7-bit I2C device address
+ * @details
+ * Performs a complete I2C read transaction: generates START condition, transmits
+ * device address with read bit (R/W=1), receives data bytes with ACK (NACK on
+ * last byte), and generates STOP condition. The function blocks until all bytes
+ * are received or an error occurs.
+ *
+ * ## Transaction Sequence
+ * 1. Generate START condition
+ * 2. Send device address byte (7-bit address << 1 | 1)
+ * 3. Wait for ACK from peripheral
+ * 4. Receive data bytes, sending ACK after each (NACK after last byte)
+ * 5. Generate STOP condition
+ * 6. Wait for bus idle (BBSY = 0)
+ *
+ * @param[in] channel RIIC channel wrapper
+ *                    - channel.value range: 0-2
+ * @param[in] device_addr 7-bit I2C device address wrapper
+ *                        - device_addr.value range: 0x08-0x77
  * @param[out] data Pointer to buffer for received data
+ *                  - Must not be nullptr
+ *                  - Must have space for at least length bytes
+ *                  - Unchanged if function returns error
  * @param[in] length Number of bytes to read
+ *                   - Range: 1-65535
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if data is nullptr,
- *         k_rx_err_invalid_state if channel not initialized,
- *         k_rx_err_timeout if bus timeout,
- *         k_rx_err_nack if device NACK received
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok All bytes successfully received
+ * @retval k_rx_err_null_ptr data pointer is nullptr
+ * @retval k_rx_err_invalid_state Channel not initialized via riic_init()
+ * @retval k_rx_err_timeout Bus timeout waiting for data or bus idle
+ * @retval k_rx_err_nack Device sent NACK on address (wrong address or device busy)
+ *
+ * @pre Channel must be initialized via riic_init()
+ * @pre data pointer must be valid with space for at least length bytes
+ * @post data buffer contains received bytes if function succeeds
+ * @post I2C bus returned to idle state (STOP condition generated)
+ *
+ * @note **Thread Safety**: NOT thread-safe. Do not perform concurrent transactions on the
+ *       same RIIC channel. Different channels may be used from different threads.
+ *
+ * @par Example: Read IMU Accelerometer Data
+ * @code{.c}
+ * riic_channel_t ch = {.value = 0};
+ * i2c_device_addr_t imu_addr = {.value = 0x68};
+ *
+ * uint8_t accel_data[6];
+ * rx_err_t err = riic_read(ch, imu_addr, accel_data, 6);
+ * if (err != k_rx_ok) {
+ *   rx_log_error_val("IMU", "Failed to read accel data", err);
+ * }
+ * @endcode
+ *
+ * @see riic_write() Write data to I2C device
+ * @see riic_write_read() Combined write-then-read (register read pattern)
+ * @see riic_init() Initialize RIIC channel first
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t riic_read(riic_channel_t    channel,
                                  i2c_device_addr_t device_addr,
@@ -987,22 +1415,75 @@ typedef struct {
                                  const uint16_t    length);
 
 /**
- * @brief Write then read from I2C device (combined transaction)
+ * @brief Write then read from I2C device using repeated START (combined transaction)
  *
- * Common pattern for reading registers: write register address, then read data.
+ * @details
+ * Performs an I2C combined write-then-read transaction using a repeated START
+ * condition. This is the standard pattern for reading device registers: write the
+ * register address, then issue a repeated START and read back the register data
+ * without releasing the bus between operations.
  *
- * @param[in] channel RIIC channel (0-2)
- * @param[in] device_addr 7-bit I2C device address
- * @param[in] write_data Pointer to data to write
+ * ## Transaction Sequence
+ * 1. Generate START condition
+ * 2. Send device address byte (7-bit address << 1 | 0) -- write mode
+ * 3. Wait for ACK from peripheral
+ * 4. Send write_data bytes (typically register address), ACK after each
+ * 5. Generate repeated START condition (no STOP)
+ * 6. Send device address byte (7-bit address << 1 | 1) -- read mode
+ * 7. Wait for ACK from peripheral
+ * 8. Receive read_data bytes, ACK each (NACK on last byte)
+ * 9. Generate STOP condition
+ * 10. Wait for bus idle (BBSY = 0)
+ *
+ * @param[in] channel RIIC channel wrapper
+ *                    - channel.value range: 0-2
+ * @param[in] device_addr 7-bit I2C device address wrapper
+ *                        - device_addr.value range: 0x08-0x77
+ * @param[in] write_data Pointer to data to write (typically register address)
+ *                       - Must not be nullptr
+ *                       - Must contain at least write_length bytes
  * @param[in] write_length Number of bytes to write
+ *                         - Typically 1 (single register address byte)
  * @param[out] read_data Pointer to buffer for received data
+ *                       - Must not be nullptr
+ *                       - Must have space for at least read_length bytes
+ *                       - Unchanged if function returns error
  * @param[in] read_length Number of bytes to read
+ *                        - Range: 1-65535
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if write_data or read_data is nullptr,
- *         k_rx_err_invalid_state if channel not initialized,
- *         k_rx_err_timeout if bus timeout,
- *         k_rx_err_nack if device NACK received
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Write and read completed successfully
+ * @retval k_rx_err_null_ptr write_data or read_data pointer is nullptr
+ * @retval k_rx_err_invalid_state Channel not initialized via riic_init()
+ * @retval k_rx_err_timeout Bus timeout during write or read phase
+ * @retval k_rx_err_nack Device sent NACK (wrong address or device busy)
+ *
+ * @pre Channel must be initialized via riic_init()
+ * @pre write_data and read_data pointers must be valid with sufficient size
+ * @post read_data buffer contains received register data if function succeeds
+ * @post I2C bus returned to idle state (STOP condition generated)
+ *
+ * @note **Thread Safety**: NOT thread-safe. Do not perform concurrent transactions on the
+ *       same RIIC channel. Different channels may be used from different threads.
+ *
+ * @par Example: Read IMU WHO_AM_I Register
+ * @code{.c}
+ * riic_channel_t ch = {.value = 0};
+ * i2c_device_addr_t imu_addr = {.value = 0x68};
+ *
+ * uint8_t reg_addr = 0x75;  // WHO_AM_I register
+ * uint8_t who_am_i;
+ * rx_err_t err = riic_write_read(ch, imu_addr, &reg_addr, 1, &who_am_i, 1);
+ * if (err == k_rx_ok && who_am_i == 0x68) {
+ *   rx_log_info("IMU", "MPU6050 detected");
+ * }
+ * @endcode
+ *
+ * @see riic_write() Write-only transaction
+ * @see riic_read() Read-only transaction
+ * @see riic_init() Initialize RIIC channel first
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t riic_write_read(riic_channel_t    channel,
                                        i2c_device_addr_t device_addr,
@@ -1083,7 +1564,7 @@ typedef struct {
  *   .spi_mode = k_rspi_mode_0,  // CPOL=0, CPHA=0
  *   .use_16bit = false
  * };
- * rspi_init_peripheral(0, &rpi_cfg);
+ * rspi_init_peripheral(k_rspi_channel_0, &rpi_cfg);
  *
  * // External sensor communication (controller mode, Mode 0)
  * rspi_controller_config_t sensor_cfg = {
@@ -1115,72 +1596,299 @@ typedef enum : uint8_t {
 } rspi_mode_t;
 
 /**
- * @brief Initialize RSPI in peripheral mode for RPi5 communication
+ * @enum rspi_channel_t
+ * @brief RSPI channel enumeration with type safety for SPI peripheral selection
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] config SPI configuration
+ * @details
+ * Identifies which of the three RSPI channels (RSPI0, RSPI1, RSPI2) on the RX72N
+ * to use. Using a typed enum instead of plain uint8_t prevents accidental argument
+ * swaps and provides compile-time validation of channel numbers.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_arg if channel or mode is invalid
+ * ## RX72N RSPI Channel Assignments (STAR Project)
+ * | Channel | Role | Connected Device | Pins |
+ * |---------|------|-----------------|------|
+ * | RSPI0 | Peripheral | Raspberry Pi 5 | P30 (CIPO), P31 (COPI), P32 (CLK), P33 (CS) |
+ * | RSPI1 | Controller | Reserved (sensors) | PC5 (CIPO), PC6 (COPI), PC7 (CLK) |
+ * | RSPI2 | Unused | - | - |
+ *
+ * @par Underlying Type: uint8_t (C23 typed enum)
+ * - **Range**: 0-2 (3 channels on RX72N)
+ * - **Size**: 1 byte
+ *
+ * @invariant Values must be in range [0, 2] corresponding to RSPI0, RSPI1, RSPI2
+ *
+ * @code{.c}
+ * // Initialize RSPI channel as peripheral
+ * rspi_config_t cfg = { .spi_mode = k_rspi_mode_0, .use_16bit = false };
+ * rx_err_t err = rspi_init_peripheral(k_rspi_channel_0, &cfg);
+ * @endcode
+ *
+ * @see rspi_init_peripheral() Initialize channel in peripheral mode
+ * @see rspi_init_controller() Initialize channel in controller mode
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rspi_channel_0 = 0, /**< RSPI0 - RPi5 communication (peripheral mode in STAR project) */
+  k_rspi_channel_1 = 1, /**< RSPI1 - External sensor SPI (controller mode, reserved) */
+  k_rspi_channel_2 = 2  /**< RSPI2 - Unused (available for expansion) */
+} rspi_channel_t;
+
+/**
+ * @struct rspi_config_t
+ * @brief RSPI peripheral mode configuration structure
+ *
+ * @details
+ * Configuration parameters for initializing an RSPI channel in peripheral mode.
+ * Used when the RX72N acts as an SPI peripheral device, receiving clock from an external
+ * controller (e.g., Raspberry Pi 5). The struct encapsulates SPI mode and frame size
+ * settings to avoid positional parameter errors.
+ *
+ * @code{.c}
+ * rspi_config_t rpi_cfg = {
+ *   .spi_mode = k_rspi_mode_0,  // CPOL=0, CPHA=0
+ *   .use_16bit = false           // 8-bit frame size
+ * };
+ * @endcode
+ *
+ * @invariant spi_mode must be a valid rspi_mode_t value (0-3, CPOL/CPHA combinations)
+ * @invariant use_16bit is boolean: false for 8-bit frames, true for 16-bit frames
+ *
+ * @see rspi_mode_t SPI mode enumeration (CPOL/CPHA combinations)
+ * @see rspi_init_peripheral() Initialize channel with this configuration
+ * @see rspi_controller_config_t Controller mode configuration (separate struct)
+ *
+ * @since Version 1.0.0
  */
 typedef struct {
   rspi_mode_t spi_mode;  /**< SPI mode (0-3): CPOL and CPHA configuration */
   bool        use_16bit; /**< True for 16-bit frames, false for 8-bit frames */
 } rspi_config_t;
 
-[[nodiscard]] rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config);
+/**
+ * @brief Initialize RSPI channel in peripheral mode for RPi5 communication
+ *
+ * @details
+ * Configures the specified RSPI channel as an SPI peripheral device.
+ * In peripheral mode the RX72N receives the clock signal from an external SPI
+ * controller (Raspberry Pi 5). Performs full hardware initialization including
+ * module stop release, pin function selection (COPI/CIPO/CLK/CS via MPC),
+ * SPI mode register configuration, and frame size setup.
+ *
+ * ## Algorithm
+ * 1. Validate channel (0-2) and config pointer
+ * 2. Release RSPI module from module stop (MSTPCRB)
+ * 3. Disable RSPI (SPCR.SPE = 0)
+ * 4. Configure pin functions via MPC (COPI, CIPO, CLK, CS)
+ * 5. Set SPI mode (CPOL/CPHA in SPCMD0)
+ * 6. Set frame length (8-bit or 16-bit in SPCMD0)
+ * 7. Configure as peripheral (SPCR.MSTR = 0)
+ * 8. Enable RSPI (SPCR.SPE = 1)
+ *
+ * @param[in] channel RSPI channel number (0-2)
+ * @param[in] config Pointer to peripheral mode configuration
+ *                   - Must not be nullptr
+ *                   - config->spi_mode must be valid (0-3)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully initialized in peripheral mode
+ * @retval k_rx_err_invalid_arg Channel > 2 or invalid SPI mode
+ * @retval k_rx_err_null_ptr config pointer is nullptr
+ * @retval k_rx_err_invalid_state Channel already initialized (call rspi_deinit() to reinitialize)
+ *
+ * @pre Channel must not be already initialized (call rspi_deinit() first to reinitialize)
+ * @pre System clocks must be configured (PCLKB running at expected frequency)
+ * @post RSPI channel configured as SPI peripheral, ready for transfers
+ * @post COPI/CIPO/CLK/CS pins configured for SPI peripheral function
+ *
+ * @note **Thread Safety**: NOT thread-safe. Initialize each channel from a single thread
+ *       during system startup.
+ *
+ * @par Example: RPi5 Communication Setup
+ * @code{.c}
+ * rspi_config_t rpi_cfg = {
+ *   .spi_mode = k_rspi_mode_0,
+ *   .use_16bit = false
+ * };
+ * rx_err_t err = rspi_init_peripheral(k_rspi_channel_0, &rpi_cfg);
+ * if (err != k_rx_ok) {
+ *   rx_log_error_val("SPI", "RSPI0 peripheral init failed", err);
+ * }
+ * @endcode
+ *
+ * @see rspi_peripheral_transfer() Full-duplex SPI transfer
+ * @see rspi_deinit() Deinitialize RSPI channel
+ * @see rspi_config_t Configuration structure
+ *
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rspi_init_peripheral(rspi_channel_t channel, const rspi_config_t* config);
 
 /**
  * @brief Full-duplex SPI transfer in peripheral mode
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] tx_data Pointer to transmit data
- * @param[out] rx_data Pointer to receive buffer
- * @param[in] length Number of bytes to transfer
+ * @details
+ * Executes a byte-by-byte full-duplex SPI transfer on the specified RSPI
+ * channel operating in peripheral mode. For each byte, the function waits
+ * for the transmit buffer to empty, writes the TX byte, waits for the
+ * receive buffer to fill, then reads the RX byte. Both TX and RX wait
+ * operations are bounded by a 10 ms timeout to prevent infinite loops.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if tx_data or rx_data is nullptr,
- *         k_rx_err_invalid_state if channel not initialized,
- *         k_rx_err_timeout if transfer timeout
+ * The transfer loop is bounded by k_rspi_transfer_len_max (65535) per
+ * NASA Rule 2 to ensure statically provable loop termination.
+ *
+ * @param[in]  channel RSPI channel number (valid: k_rspi_channel_0,
+ *                     k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in]  tx_data Pointer to transmit data buffer (must not be nullptr)
+ * @param[out] rx_data Pointer to receive data buffer (must not be nullptr,
+ *                     must have capacity for at least length bytes)
+ * @param[in]  length  Number of bytes to transfer (valid: 1 to 65535)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Transfer completed successfully, rx_data filled
+ * @retval k_rx_err_null_ptr tx_data or rx_data pointer is nullptr
+ * @retval k_rx_err_invalid_arg length is zero, or RSPI base address
+ *         lookup failed for the channel
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_peripheral()
+ * @retval k_rx_err_timeout Transmit buffer did not empty or receive buffer
+ *         did not fill within the 10 ms timeout
+ *
+ * @pre channel must be initialized via rspi_init_peripheral()
+ * @pre tx_data and rx_data must be valid non-null pointers
+ * @pre length must be in range [1, 65535]
+ * @post rx_data buffer contains received bytes corresponding to each
+ *       transmitted byte offset on success
+ * @post SPSR status flags (SPRF, OVRF) cleared after each byte transfer
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_init_peripheral() Must be called before this function
+ * @see rspi_peripheral_read_available() Non-blocking receive check
+ * @see rspi_peripheral_write_ready() Non-blocking transmit check
+ * @see rspi_deinit() Deinitialize RSPI channel
+ *
+ * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rspi_peripheral_transfer(uint8_t        channel,
+[[nodiscard]] rx_err_t rspi_peripheral_transfer(rspi_channel_t channel,
                                                 const uint8_t* tx_data,
                                                 uint8_t*       rx_data,
                                                 uint16_t       length);
 
 /**
- * @brief Check if receive data is available
+ * @brief Check if receive data is available in the RSPI receive buffer
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[out] available Pointer to store availability status
+ * @details
+ * Polls the RSPI Status Register (SPSR) SPRF flag to determine whether the
+ * receive buffer contains data ready for reading. This is a non-blocking
+ * status check that returns immediately without waiting for data. Use this
+ * to implement polled receive patterns without incurring the overhead of a
+ * full transfer call.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if available is nullptr,
- *         k_rx_err_invalid_state if channel not initialized
+ * @param[in]  channel   RSPI channel number (valid: k_rspi_channel_0,
+ *                       k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[out] available Pointer to bool set to true if SPRF flag indicates
+ *                       data is available, false otherwise (must not be nullptr)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Status successfully read into *available
+ * @retval k_rx_err_null_ptr available pointer is nullptr
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_peripheral()
+ * @retval k_rx_err_invalid_arg RSPI base address lookup failed for the channel
+ *
+ * @pre channel must be initialized via rspi_init_peripheral()
+ * @pre available must be a valid non-null pointer
+ * @post *available reflects current SPRF flag state on success
+ * @post *available set to false on RSPI base address lookup failure
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_peripheral_transfer() Full-duplex transfer in peripheral mode
+ * @see rspi_peripheral_write_ready() Non-blocking transmit buffer check
+ * @see rspi_init_peripheral() Must be called before this function
+ *
+ * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available);
+[[nodiscard]] rx_err_t rspi_peripheral_read_available(rspi_channel_t channel, bool* available);
 
 /**
- * @brief Check if transmit buffer is ready
+ * @brief Check if the RSPI transmit buffer is ready for new data
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[out] ready Pointer to store ready status
+ * @details
+ * Polls the RSPI Status Register (SPSR) SPTEF flag to determine whether the
+ * transmit buffer is empty and ready to accept new data. This is a non-blocking
+ * status check that returns immediately without waiting for the buffer to drain.
+ * Use this to implement polled transmit patterns or to verify readiness before
+ * writing to the SPI data register.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if ready is nullptr,
- *         k_rx_err_invalid_state if channel not initialized
+ * @param[in]  channel RSPI channel number (valid: k_rspi_channel_0,
+ *                     k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[out] ready   Pointer to bool set to true if SPTEF flag indicates the
+ *                     transmit buffer is empty, false otherwise (must not be nullptr)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Status successfully read into *ready
+ * @retval k_rx_err_null_ptr ready pointer is nullptr
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_peripheral()
+ * @retval k_rx_err_invalid_arg RSPI base address lookup failed for the channel
+ *
+ * @pre channel must be initialized via rspi_init_peripheral()
+ * @pre ready must be a valid non-null pointer
+ * @post *ready reflects current SPTEF flag state on success
+ * @post *ready set to false on RSPI base address lookup failure
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_peripheral_transfer() Full-duplex transfer in peripheral mode
+ * @see rspi_peripheral_read_available() Non-blocking receive buffer check
+ * @see rspi_init_peripheral() Must be called before this function
+ *
+ * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready);
+[[nodiscard]] rx_err_t rspi_peripheral_write_ready(rspi_channel_t channel, bool* ready);
 
 /**
- * @brief Deinitialize RSPI channel
+ * @brief Deinitialize and disable an RSPI peripheral-mode channel
  *
- * @param[in] channel RSPI channel (0-2)
+ * @details
+ * Performs a safe shutdown of the specified RSPI channel previously initialized
+ * in peripheral mode. The deinitialization sequence disables SPI bus activity
+ * (SPCR.SPE = 0), gates the module clock via MSTPCRB to reduce power
+ * consumption, and clears the internal initialization flag. Register
+ * protection (PRCR) is temporarily unlocked for module stop control.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_arg if channel is invalid
+ * This function is safe to call on channels that were never initialized; it
+ * will still disable the hardware and clear the init flag. To reinitialize
+ * a channel after deinit, call rspi_init_peripheral() again.
+ *
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully deinitialized and module stopped
+ * @retval k_rx_err_invalid_arg channel >= 3 or RSPI base address lookup
+ *         failed for the channel
+ *
+ * @pre channel must be in range [0, 2] (k_rspi_channel_0 through k_rspi_channel_2)
+ * @pre No active SPI transfer should be in progress on this channel
+ * @post RSPI peripheral disabled (SPCR.SPE = 0)
+ * @post Module clock gated (MSTPCRB module stop bit set)
+ * @post s_rspi_channel_initialized[channel] set to false
+ *
+ * @note Not thread-safe. Caller must ensure no concurrent transfers or
+ *       accesses to the same channel during deinitialization.
+ *
+ * @see rspi_init_peripheral() Reinitialize channel after deinit
+ * @see rspi_controller_deinit() Deinit for controller-mode channels
+ *
+ * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rspi_deinit(uint8_t channel);
+[[nodiscard]] rx_err_t rspi_deinit(rspi_channel_t channel);
 
 /* =============================================================================
  * RSPI (SPI) Functions - Controller Mode
@@ -1219,62 +1927,191 @@ typedef struct {
 } rspi_controller_config_t;
 
 /**
- * @brief Initialize SPI controller for external device communication
+ * @brief Initialize RSPI channel in controller mode for external device communication
  *
- * Configures the specified RSPI channel as SPI controller
- * for communicating with external SPI devices (sensors, etc.).
+ * @details
+ * Configures the specified RSPI channel as an SPI controller (bus master) for
+ * communicating with external SPI peripheral devices such as sensors. Performs
+ * argument validation, SPBR bit rate calculation, CS GPIO pin configuration,
+ * and full hardware register setup following the RX72N Hardware Manual Section
+ * 38.3.6 initialization sequence. Always configures 16-bit data frames with
+ * word access mode.
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] config Controller configuration (frequency, mode, CS pin)
+ * The initialization is split into three internal phases: argument validation,
+ * hardware resource preparation (SPBR calculation, base address lookup, GPIO
+ * setup), and register configuration (module clock enable, SPI mode, bit rate,
+ * SPI enable). On any failure, no partial hardware state is left behind.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if config is nullptr,
- *         k_rx_err_invalid_arg if channel, mode, or frequency is invalid
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in] config  Pointer to rspi_controller_config_t containing:
+ *                    - spi_mode: SPI mode (0-3) for CPOL/CPHA configuration
+ *                    - freq_hz: SPI clock frequency in Hz (100 kHz to 10 MHz)
+ *                    - cs: GPIO pin for chip select (rx_port_pin_t encoding)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully initialized in controller mode
+ * @retval k_rx_err_null_ptr config pointer is nullptr
+ * @retval k_rx_err_invalid_arg channel >= 3, spi_mode > 3, freq_hz outside
+ *         100 kHz - 10 MHz range, RSPI base address lookup failed, or CS
+ *         GPIO port/pin is invalid
+ * @retval k_rx_err_invalid_state channel already initialized in controller mode
+ *         (call rspi_controller_deinit() first)
+ *
+ * @pre config must be a valid non-null pointer
+ * @pre channel must not already be initialized in controller mode
+ * @pre System clocks must be configured (PCLKB running at 60 MHz)
+ * @post RSPI module clock enabled, registers configured, SPI enabled in
+ *       controller mode (SPCR.MSTR = 1, SPCR.SPE = 1)
+ * @post CS GPIO configured as output, driven high (inactive / deasserted)
+ * @post s_rspi_controller_initialized[channel] set to true
+ *
+ * @note Not thread-safe. Initialize each channel from a single thread during
+ *       system startup.
+ *
+ * @see rspi_controller_transfer_16bit() Perform 16-bit transfers after init
+ * @see rspi_controller_set_cs() Manual chip select control
+ * @see rspi_controller_deinit() Deinitialize controller-mode channel
+ * @see rspi_controller_config_t Configuration structure
+ *
+ * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rspi_init_controller(uint8_t                         channel,
+[[nodiscard]] rx_err_t rspi_init_controller(rspi_channel_t                  channel,
                                             const rspi_controller_config_t* config);
 
 /**
- * @brief Set chip select state for RSPI controller mode
+ * @brief Set chip select line state for an RSPI controller-mode channel
  *
- * Controls the GPIO chip select pin for the specified channel.
- * Chip select is active low.
+ * @details
+ * Controls the GPIO chip select pin associated with the specified RSPI
+ * channel operating in controller mode. The CS signal is active-low: when
+ * active is true, the GPIO pin is driven low (CS asserted, peripheral
+ * selected); when active is false, the pin is driven high (CS deasserted,
+ * peripheral released). The port and pin are read from the internal
+ * s_rspi_cs_config[] array populated during rspi_init_controller().
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] active True to assert CS (low), false to deassert CS (high)
+ * This function provides direct CS control for protocols that require
+ * multi-transfer CS framing. For single 16-bit transfers with automatic
+ * CS handling, use rspi_controller_transfer_16bit() instead.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_state if channel not initialized in controller mode
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in] active  true to assert CS (drive GPIO low),
+ *                    false to deassert CS (drive GPIO high)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok CS line successfully driven to requested state
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         in controller mode via rspi_init_controller()
+ * @retval k_rx_err_invalid_arg GPIO port base address lookup failed for
+ *         the stored CS port configuration
+ *
+ * @pre channel must be initialized via rspi_init_controller()
+ * @pre s_rspi_cs_config[channel] must contain valid port/pin from init
+ * @post GPIO PODR bit for the CS pin reflects the requested state
+ * @post No other GPIO pins on the same port are modified (read-modify-write)
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel or GPIO port from multiple threads.
+ *
+ * @see rspi_init_controller() Configures CS pin during initialization
+ * @see rspi_controller_transfer_16bit() Automatic CS handling for transfers
+ * @see rspi_controller_deinit() Deasserts CS during cleanup
+ *
+ * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rspi_controller_set_cs(uint8_t channel, bool active);
+[[nodiscard]] rx_err_t rspi_controller_set_cs(rspi_channel_t channel, bool active);
 
 /**
- * @brief Perform 16-bit full-duplex SPI transfer in controller mode
+ * @brief Perform a 16-bit full-duplex SPI transfer in controller mode with automatic CS
  *
- * Executes a single 16-bit SPI transfer including CS assertion/deassertion.
- * Suitable for register-based communication with external SPI peripherals.
+ * @details
+ * Executes a single 16-bit SPI transfer with full chip select lifecycle
+ * management. The transfer sequence is:
+ * 1. Assert CS (drive low) with ~300 ns setup delay
+ * 2. Wait for TX buffer empty, write 16-bit tx_data to SPDR
+ * 3. Wait for RX buffer full, read 16-bit response from SPDR
+ * 4. Clear SPSR status flags (SPRF, OVRF)
+ * 5. Apply ~300 ns hold delay, then deassert CS (drive high)
  *
- * @param[in]  channel RSPI channel (0-2)
- * @param[in]  tx_data 16-bit data to transmit
- * @param[out] rx_data Pointer to store 16-bit received data
+ * On transfer error (timeout), CS is forcibly deasserted before returning
+ * to avoid leaving the peripheral in a selected state. The CS setup and
+ * hold delays use cycle-accurate NOP loops calibrated for 240 MHz core clock.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if rx_data is nullptr,
- *         k_rx_err_invalid_state if channel not initialized in controller mode,
- *         k_rx_err_timeout if transfer times out
+ * @param[in]  channel RSPI channel number (valid: k_rspi_channel_0,
+ *                     k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in]  tx_data 16-bit data word to transmit
+ * @param[out] rx_data Pointer to store the received 16-bit response
+ *                     (must not be nullptr)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Transfer completed, *rx_data contains response, CS deasserted
+ * @retval k_rx_err_null_ptr rx_data pointer is nullptr
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_controller()
+ * @retval k_rx_err_invalid_arg RSPI base address lookup failed, or GPIO port
+ *         lookup failed during CS assertion/deassertion
+ * @retval k_rx_err_timeout TX buffer did not empty or RX buffer did not fill
+ *         within the 10 ms timeout (CS is deasserted on this error)
+ *
+ * @pre channel must be initialized via rspi_init_controller()
+ * @pre rx_data must be a valid non-null pointer
+ * @post *rx_data contains received 16-bit value on success
+ * @post CS is deasserted (GPIO driven high) on both success and error
+ * @post SPSR status flags SPRF and OVRF are cleared on success
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_init_controller() Must be called before this function
+ * @see rspi_controller_set_cs() Manual CS control for multi-transfer framing
+ * @see rspi_controller_deinit() Deinitialize controller-mode channel
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
-rspi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint16_t* rx_data);
+rspi_controller_transfer_16bit(rspi_channel_t channel, uint16_t tx_data, uint16_t* rx_data);
 
 /**
- * @brief Deinitialize RSPI controller mode
+ * @brief Deinitialize and disable an RSPI controller-mode channel
  *
- * @param[in] channel RSPI channel (0-2)
+ * @details
+ * Performs a safe shutdown of the specified RSPI channel previously initialized
+ * in controller mode. The deinitialization sequence is ordered to prevent bus
+ * glitches: first deasserts CS to release any connected peripheral, then
+ * disables SPI (SPCR.SPE = 0) to stop clock generation, then gates the
+ * module clock via MSTPCRB for power savings, and finally clears internal
+ * state (CS pin config and initialization flag). Register protection (PRCR)
+ * is temporarily unlocked for module stop control.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_arg if channel is invalid
+ * This function is safe to call on channels that were never initialized in
+ * controller mode; it will still disable the hardware and clear the state.
+ *
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully deinitialized and module stopped
+ * @retval k_rx_err_invalid_arg channel >= 3 or RSPI base address lookup
+ *         failed for the channel
+ *
+ * @pre channel must be in range [0, 2] (k_rspi_channel_0 through k_rspi_channel_2)
+ * @pre No active SPI transfer should be in progress on this channel
+ * @post CS GPIO deasserted (driven high) if channel was initialized
+ * @post RSPI peripheral disabled (SPCR.SPE = 0)
+ * @post Module clock gated (MSTPCRB module stop bit set)
+ * @post s_rspi_cs_config[channel] cleared to defaults (port=0, pin=0)
+ * @post s_rspi_controller_initialized[channel] set to false
+ *
+ * @note Not thread-safe. Caller must ensure no concurrent transfers or
+ *       accesses to the same channel during deinitialization.
+ *
+ * @see rspi_init_controller() Reinitialize channel after deinit
+ * @see rspi_deinit() Deinit for peripheral-mode channels
+ *
+ * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rspi_controller_deinit(uint8_t channel);
+[[nodiscard]] rx_err_t rspi_controller_deinit(rspi_channel_t channel);
 
 /* =============================================================================
  * UART Configuration Types
@@ -1425,7 +2262,7 @@ uart_write_channel(uart_channel_t channel, const uint8_t* data, uint16_t length)
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t
+[[nodiscard]] rx_err_t
 uart_read_channel(uart_channel_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
 
 /**

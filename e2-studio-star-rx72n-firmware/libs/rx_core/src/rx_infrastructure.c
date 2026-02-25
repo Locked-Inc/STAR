@@ -12,7 +12,7 @@
  * @verbatim
  *   +-------------------------------------------------------------+
  *   |                     Application Layer                       |
- *   |  (app_main_task, motor_control, communication, sensors)    |
+ *   |  (motor_control, communication, sensors, telemetry)        |
  *   +-------------------------------------------------------------+
  *                              |
  *                              | rx_infrastructure_get_*()

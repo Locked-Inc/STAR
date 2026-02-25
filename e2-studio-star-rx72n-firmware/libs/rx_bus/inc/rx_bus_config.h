@@ -822,15 +822,7 @@ rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, rx_port_pi
  * RX_RETURN_ON_ERROR(err, "CFG", "UART config failed");
  *
  * rx_bus_manager_add_bus(&bus_manager, &debug_uart_config);
- * rx_bus_uart_init(&bus_manager, "debug_uart");
- *
- * // Print to console
- * rx_bus_uart_puts(&bus_manager, "debug_uart", "System initialized\n");
  * @endcode
- *
- * @see rx_bus_uart_init() Initialize UART hardware
- * @see rx_bus_uart_puts() Write string to UART
- * @see rx_bus_uart_read() Read data from UART
  *
  * @since Version 1.0.0
  *

@@ -230,15 +230,45 @@
 #include "unity.h"
 
 /* =============================================================================
+ * Mock Assertion Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Assert mock RX data injection succeeds
+ * @param[in] channel RSPI channel
+ * @param[in] data    Data to inject
+ * @param[in] len     Data length
+ */
+static void internal_assert_inject_rx(rspi_channel_t  channel,
+                                      const uint8_t*  data,
+                                      uint32_t        len)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, mock_rspi_inject_rx_data(nullptr, channel, data, len));
+}
+
+/**
+ * @brief Assert mock TX data readback succeeds
+ * @param[in]  channel    RSPI channel
+ * @param[out] data       Buffer to receive TX data
+ * @param[in]  max_len    Buffer size
+ * @param[out] actual_len Actual bytes read
+ */
+static void internal_assert_get_tx(rspi_channel_t channel,
+                                   uint8_t*       data,
+                                   uint32_t       max_len,
+                                   uint32_t*      actual_len)
+{
+  TEST_ASSERT_EQUAL(k_rx_ok, mock_rspi_get_tx_data(nullptr, channel, data, max_len, actual_len));
+}
+
+/* =============================================================================
  * Test Constants
  * =============================================================================
  */
 
 /** @brief Test constant values */
 typedef enum : uint16_t {
-  k_test_channel_default = 0,
-  k_test_channel_alt     = 1,
-  k_test_channel_invalid = 5,
   k_test_sequence_a      = 42,
   k_test_sequence_b      = 123,
   k_test_sequence_max    = 0xFFFF,
@@ -312,7 +342,7 @@ static uint16_t helper_get_rx_seq(void)
 /**
  * @brief Initialize RSPI channel via mock so channel is ready
  */
-static void helper_init_rspi_channel(uint8_t channel)
+static void helper_init_rspi_channel(rspi_channel_t channel)
 {
   const rspi_config_t config = {
     .spi_mode  = (rspi_mode_t)k_spi_comm_default_mode,
@@ -431,13 +461,13 @@ void test_spi_comm_init_success_default_config(void)
 {
   rx_err_t err = rx_spi_comm_init(&s_handle,
                                   &(rx_spi_comm_config_t){.session     = &s_session,
-                                                          .channel     = 0,
+                                                          .channel     = k_rspi_channel_0,
                                                           .spi_mode    = 0,
                                                           .fec_enabled = false});
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handle.initialized);
-  TEST_ASSERT_EQUAL_UINT8(k_spi_comm_default_channel, s_handle.channel);
+  TEST_ASSERT_EQUAL_UINT8(k_rspi_channel_0, s_handle.channel);
   TEST_ASSERT_FALSE(s_handle.fec_enabled);
   TEST_ASSERT_EQUAL_UINT16(0, helper_get_tx_seq());
   TEST_ASSERT_EQUAL_UINT16(0, helper_get_rx_seq());
@@ -447,7 +477,7 @@ void test_spi_comm_init_with_custom_channel(void)
 {
   rx_spi_comm_config_t config = {
     .session     = &s_session,
-    .channel     = k_test_channel_alt,
+    .channel     = k_rspi_channel_1,
     .spi_mode    = 0,
     .fec_enabled = false,
   };
@@ -455,14 +485,14 @@ void test_spi_comm_init_with_custom_channel(void)
   rx_err_t err = rx_spi_comm_init(&s_handle, &config);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT8(k_test_channel_alt, s_handle.channel);
+  TEST_ASSERT_EQUAL_UINT8(k_rspi_channel_1, s_handle.channel);
 }
 
 void test_spi_comm_init_with_fec_enabled(void)
 {
   rx_spi_comm_config_t config = {
     .session     = &s_session,
-    .channel     = 0,
+    .channel     = k_rspi_channel_0,
     .spi_mode    = 0,
     .fec_enabled = true,
   };
@@ -485,7 +515,7 @@ void test_spi_comm_deinit_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
 
@@ -531,10 +561,10 @@ void test_spi_comm_send_null_payload_with_len_fails(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, nullptr, 10);
 
@@ -546,10 +576,10 @@ void test_spi_comm_send_payload_too_large_fails(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[k_frame_max_payload + 1];
 
   rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, sizeof(data));
@@ -562,10 +592,10 @@ void test_spi_comm_send_empty_payload_succeeds(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, nullptr, 0);
 
@@ -578,10 +608,10 @@ void test_spi_comm_send_with_payload_succeeds(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "Hello SPI!";
 
   rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 10);
@@ -595,10 +625,10 @@ void test_spi_comm_send_increments_sequence(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "test";
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
@@ -613,10 +643,10 @@ void test_spi_comm_send_sequence_wraps(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   s_session.tx_sequence = k_test_sequence_max;
   uint8_t data[]        = "test";
 
@@ -629,11 +659,11 @@ void test_spi_comm_send_sequence_wraps(void)
 void test_spi_comm_send_with_fec_flag(void)
 {
   rx_spi_comm_config_t config = {.session     = &s_session,
-                                 .channel     = 0,
+                                 .channel     = k_rspi_channel_0,
                                  .spi_mode    = 0,
                                  .fec_enabled = true};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "test";
 
   rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4);
@@ -643,7 +673,7 @@ void test_spi_comm_send_with_fec_flag(void)
   /* Verify FEC flag is set in the transmitted frame */
   uint8_t  tx_data[64];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(nullptr, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+  internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* Frame: [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)]... */
   /* Flags are at offset 7 (0-based) */
@@ -656,10 +686,10 @@ void test_spi_comm_send_transfer_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_set_transfer_return(nullptr, k_rx_err_timeout);
   uint8_t data[] = "test";
 
@@ -673,10 +703,10 @@ void test_spi_comm_send_large_payload(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[k_test_payload_large];
   for (uint32_t i = 0; i < k_test_payload_large; i++) {
@@ -693,12 +723,12 @@ void test_spi_comm_send_missing_host_ack_times_out(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_clear_calls(nullptr);
-  mock_rspi_set_write_ready(nullptr, k_test_channel_default, false);
+  mock_rspi_set_write_ready(nullptr, k_rspi_channel_0, false);
 
   uint8_t data[] = "test";
 
@@ -737,10 +767,10 @@ void test_spi_comm_send_ack_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   rx_err_t err = rx_spi_comm_send_ack(&s_handle, k_test_sequence_a);
 
@@ -749,7 +779,7 @@ void test_spi_comm_send_ack_success(void)
   /* Verify ACK frame was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(nullptr, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+  internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   TEST_ASSERT_EQUAL(k_frame_min_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_ack, tx_data[6]);
@@ -760,10 +790,10 @@ void test_spi_comm_send_ack_transfer_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_set_transfer_return(nullptr, k_rx_err_timeout);
 
   rx_err_t err = rx_spi_comm_send_ack(&s_handle, k_test_sequence_a);
@@ -790,10 +820,10 @@ void test_spi_comm_send_nack_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   rx_err_t err = rx_spi_comm_send_nack(&s_handle, k_test_sequence_b, k_frame_flag_soft_nack);
 
@@ -802,7 +832,7 @@ void test_spi_comm_send_nack_success(void)
   /* Verify NACK frame was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(nullptr, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+  internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   TEST_ASSERT_EQUAL(k_frame_min_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_nack, tx_data[6]);
@@ -814,10 +844,10 @@ void test_spi_comm_send_nack_transfer_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_set_transfer_return(nullptr, k_rx_err_timeout);
 
   rx_err_t err = rx_spi_comm_send_nack(&s_handle, k_test_sequence_a, 0);
@@ -844,7 +874,7 @@ void test_spi_comm_receive_null_frame_fails(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
 
@@ -867,10 +897,10 @@ void test_spi_comm_receive_no_data_timeout(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   rx_frame_t frame;
 
   /* No data injected, should timeout immediately */
@@ -884,10 +914,10 @@ void test_spi_comm_receive_available_check_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_set_available_return(nullptr, k_rx_err_spi_error);
   rx_frame_t frame;
 
@@ -901,10 +931,10 @@ void test_spi_comm_receive_valid_frame_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Create and inject a valid frame (seq=0 matches initial session rx_sequence) */
   uint8_t  payload[] = "TEST";
@@ -912,7 +942,7 @@ void test_spi_comm_receive_valid_frame_success(void)
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, payload, 4, encoded_frame, &encoded_len);
 
-  mock_rspi_inject_rx_data(nullptr, k_test_channel_default, encoded_frame, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -929,17 +959,17 @@ void test_spi_comm_receive_updates_rx_sequence(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Session starts at rx_sequence=0, so receive frame with matching sequence */
   uint8_t  encoded_frame[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, nullptr, 0, encoded_frame, &encoded_len);
 
-  mock_rspi_inject_rx_data(nullptr, k_test_channel_default, encoded_frame, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
 
   rx_frame_t frame;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero));
@@ -953,10 +983,10 @@ void test_spi_comm_receive_invalid_sync_word(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Create a frame with invalid sync word */
   uint8_t bad_frame[k_frame_min_size] = {
@@ -974,7 +1004,7 @@ void test_spi_comm_receive_invalid_sync_word(void)
     0x00, /* CRC (invalid) */
   };
 
-  mock_rspi_inject_rx_data(nullptr, k_test_channel_default, bad_frame, sizeof(bad_frame));
+  internal_assert_inject_rx(k_rspi_channel_0, bad_frame, sizeof(bad_frame));
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -987,16 +1017,16 @@ void test_spi_comm_receive_transfer_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Inject valid frame to pass availability check */
   uint8_t  encoded_frame[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, nullptr, 0, encoded_frame, &encoded_len);
-  mock_rspi_inject_rx_data(nullptr, k_test_channel_default, encoded_frame, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
 
   /* But make transfer fail */
   mock_rspi_set_transfer_return(nullptr, k_rx_err_spi_error);
@@ -1026,7 +1056,7 @@ void test_spi_comm_data_available_null_available_fails(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
 
@@ -1049,10 +1079,10 @@ void test_spi_comm_data_available_empty(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   bool available = true;
 
   rx_err_t err = rx_spi_comm_data_available(&s_handle, &available);
@@ -1066,11 +1096,11 @@ void test_spi_comm_data_available_with_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
-  mock_rspi_set_data_available(nullptr, k_test_channel_default, true);
+  helper_init_rspi_channel(k_rspi_channel_0);
+  mock_rspi_set_data_available(nullptr, k_rspi_channel_0, true);
   bool available = false;
 
   rx_err_t err = rx_spi_comm_data_available(&s_handle, &available);
@@ -1084,10 +1114,10 @@ void test_spi_comm_data_available_hal_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_set_available_return(nullptr, k_rx_err_spi_error);
   bool available;
 
@@ -1111,7 +1141,7 @@ void test_spi_comm_init_null_session_fails(void)
 {
   rx_spi_comm_config_t config = {
     .session     = nullptr,
-    .channel     = 0,
+    .channel     = k_rspi_channel_0,
     .spi_mode    = 0,
     .fec_enabled = false,
   };
@@ -1126,10 +1156,10 @@ void test_spi_comm_rx_sequence_wraparound(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Pre-advance session RX sequence to test wraparound at 0xFFFF -> 0 */
   s_session.rx_sequence = k_test_sequence_max;
@@ -1143,7 +1173,7 @@ void test_spi_comm_rx_sequence_wraparound(void)
                               0,
                               encoded_frame,
                               &encoded_len);
-  mock_rspi_inject_rx_data(nullptr, k_test_channel_default, encoded_frame, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded_frame, encoded_len);
 
   rx_frame_t frame;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero));
@@ -1160,11 +1190,11 @@ void test_spi_comm_rx_sequence_wraparound(void)
 void test_spi_comm_uses_configured_channel(void)
 {
   rx_spi_comm_config_t config = {.session     = &s_session,
-                                 .channel     = k_test_channel_alt,
+                                 .channel     = k_rspi_channel_1,
                                  .spi_mode    = 0,
                                  .fec_enabled = false};
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_alt);
+  helper_init_rspi_channel(k_rspi_channel_1);
   uint8_t data[] = "test";
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
@@ -1174,7 +1204,7 @@ void test_spi_comm_uses_configured_channel(void)
   rx_err_t         err = mock_rspi_get_last_call(nullptr, "rspi_peripheral_transfer", &call);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_EQUAL_UINT8(k_test_channel_alt, call.channel);
+  TEST_ASSERT_EQUAL_UINT8(k_rspi_channel_1, call.channel);
 }
 
 /* =============================================================================
@@ -1195,10 +1225,10 @@ void test_spi_comm_max_payload_fits_in_buffer(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Create maximum size payload */
   uint8_t data[k_frame_max_payload];
@@ -1219,10 +1249,10 @@ void test_spi_comm_transfer_is_called_on_send(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_clear_calls(nullptr);
   uint8_t data[] = "test";
 
@@ -1236,10 +1266,10 @@ void test_spi_comm_available_is_called_on_receive(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   mock_rspi_clear_calls(nullptr);
   rx_frame_t frame;
 
@@ -1253,10 +1283,10 @@ void test_spi_comm_transfer_count(void)
   TEST_ASSERT_EQUAL(k_rx_ok,
                     rx_spi_comm_init(&s_handle,
                                      &(rx_spi_comm_config_t){.session     = &s_session,
-                                                             .channel     = 0,
+                                                             .channel     = k_rspi_channel_0,
                                                              .spi_mode    = 0,
                                                              .fec_enabled = false}));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
   uint8_t data[] = "test";
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4));
@@ -1309,7 +1339,7 @@ void test_spi_comm_set_callbacks_success(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
   uint32_t ctx_val = 42;
@@ -1350,10 +1380,10 @@ void test_spi_comm_send_pong_echoes_payload(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t  payload[] = {0xDE, 0xAD, 0xBE, 0xEF};
   rx_err_t err       = rx_spi_comm_send_pong(&s_handle, payload, k_test_payload_small);
@@ -1363,7 +1393,7 @@ void test_spi_comm_send_pong_echoes_payload(void)
   /* Verify PONG frame was transmitted */
   uint8_t  tx_data[64];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+  internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
   TEST_ASSERT_EQUAL_UINT32(16, tx_len);
@@ -1396,10 +1426,10 @@ void test_spi_comm_send_reset_ack_success(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   rx_err_t err = rx_spi_comm_send_reset_ack(&s_handle);
 
@@ -1408,7 +1438,7 @@ void test_spi_comm_send_reset_ack_success(void)
   /* Verify RESET_ACK frame was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+  internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* RESET_ACK frame: 8 header + 0 payload + 4 CRC = 12 bytes */
   TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, tx_len);
@@ -1424,10 +1454,10 @@ void test_spi_comm_receive_ping_auto_pong(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Create PING frame with 4-byte counter payload */
   uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x01};
@@ -1440,7 +1470,7 @@ void test_spi_comm_receive_ping_auto_pong(void)
                               encoded,
                               &encoded_len);
 
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1451,7 +1481,7 @@ void test_spi_comm_receive_ping_auto_pong(void)
   /* Verify PONG was transmitted (last SPI transfer was the PONG send) */
   uint8_t  tx_data[64];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+  internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
   TEST_ASSERT_EQUAL_UINT32(16, tx_len);
@@ -1465,10 +1495,10 @@ void test_spi_comm_receive_ping_then_command(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Create PING frame */
   uint8_t  ping_payload[] = {0x00, 0x00, 0x00, 0x02};
@@ -1510,7 +1540,7 @@ void test_spi_comm_receive_ping_then_command(void)
   offset += pong_wire_len;
   memcpy(combined + offset, cmd_encoded, cmd_len);
   offset += cmd_len;
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, combined, offset);
+  internal_assert_inject_rx(k_rspi_channel_0, combined, offset);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1531,10 +1561,10 @@ void test_spi_comm_receive_reset_auto_ack(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Set non-zero sequences to verify reset */
   s_session.tx_sequence = 50;
@@ -1545,7 +1575,7 @@ void test_spi_comm_receive_reset_auto_ack(void)
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
 
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1556,7 +1586,7 @@ void test_spi_comm_receive_reset_auto_ack(void)
   /* Verify RESET_ACK was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_test_channel_default, tx_data, sizeof(tx_data), &tx_len);
+  internal_assert_get_tx(k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_reset_ack, tx_data[6]);
@@ -1575,10 +1605,10 @@ void test_spi_comm_receive_ping_callback_invoked(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint32_t ctx_value = 42;
   (void)rx_spi_comm_set_control_callbacks(&s_handle,
@@ -1596,7 +1626,7 @@ void test_spi_comm_receive_ping_callback_invoked(void)
                               k_test_payload_small,
                               encoded,
                               &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1613,10 +1643,10 @@ void test_spi_comm_receive_reset_callback_invoked(void)
 {
   (void)rx_spi_comm_init(&s_handle,
                          &(rx_spi_comm_config_t){.session     = &s_session,
-                                                 .channel     = 0,
+                                                 .channel     = k_rspi_channel_0,
                                                  .spi_mode    = 0,
                                                  .fec_enabled = false});
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   s_session.tx_sequence = 50;
   s_session.rx_sequence = 100;
@@ -1631,7 +1661,7 @@ void test_spi_comm_receive_reset_callback_invoked(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1720,7 +1750,7 @@ void test_retransmit_send_buffers_frame(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1741,7 +1771,7 @@ void test_retransmit_send_not_buffered_when_off(void)
   rx_spi_comm_config_t default_cfg = {.session = &s_session};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1760,7 +1790,7 @@ void test_retransmit_send_only_requires_ack_buffered(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1778,7 +1808,7 @@ void test_retransmit_send_overwrites_on_new_send(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data1[] = "aaaa";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1811,7 +1841,7 @@ void test_retransmit_ack_clears_retry(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1826,7 +1856,7 @@ void test_retransmit_ack_clears_retry(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1842,7 +1872,7 @@ void test_retransmit_ack_wrong_seq_ignored(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1856,7 +1886,7 @@ void test_retransmit_ack_wrong_seq_ignored(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, k_test_sequence_b, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1870,7 +1900,7 @@ void test_retransmit_ack_callback_invoked(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint32_t ctx_value = k_test_sequence_a;
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1890,7 +1920,7 @@ void test_retransmit_ack_callback_invoked(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1907,13 +1937,13 @@ void test_retransmit_ack_not_consumed_when_off(void)
   rx_spi_comm_config_t default_cfg = {.session = &s_session};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* Inject ACK frame */
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1928,7 +1958,7 @@ void test_retransmit_ack_non_pending_ignored(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   /* NO send -> no pending retry */
   TEST_ASSERT_FALSE(s_handle.retry_pending);
@@ -1936,7 +1966,7 @@ void test_retransmit_ack_non_pending_ignored(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1956,7 +1986,7 @@ void test_retransmit_nack_triggers_retry(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -1971,7 +2001,7 @@ void test_retransmit_nack_triggers_retry(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1986,7 +2016,7 @@ void test_retransmit_nack_retransmit_flag_set(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2004,7 +2034,7 @@ void test_retransmit_nack_retransmit_flag_set(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -2020,7 +2050,7 @@ void test_retransmit_nack_callback_invoked(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint32_t ctx_value = 77;
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2040,7 +2070,7 @@ void test_retransmit_nack_callback_invoked(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -2056,12 +2086,12 @@ void test_retransmit_nack_not_consumed_when_off(void)
   rx_spi_comm_config_t default_cfg = {.session = &s_session};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &default_cfg));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_test_channel_default, encoded, encoded_len);
+  internal_assert_inject_rx(k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -2081,7 +2111,7 @@ void test_retransmit_process_triggers_after_timeout(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2113,7 +2143,7 @@ void test_retransmit_process_exponential_backoff(void)
       },
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2154,7 +2184,7 @@ void test_retransmit_process_max_backoff_cap(void)
       },
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2187,7 +2217,7 @@ void test_retransmit_process_no_action_before_timeout(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2229,7 +2259,7 @@ void test_retransmit_retry_limit_returns_error(void)
     .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2258,7 +2288,7 @@ void test_retransmit_retry_limit_clears_pending(void)
     .retransmit_config = {.max_retries = k_test_retransmit_single_retry},
   };
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,
@@ -2317,7 +2347,7 @@ void test_retransmit_set_auto_retransmit_disables_clears_pending(void)
   rx_spi_comm_config_t config = {.session = &s_session, .auto_retransmit = true};
 
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_init(&s_handle, &config));
-  helper_init_rspi_channel(k_test_channel_default);
+  helper_init_rspi_channel(k_rspi_channel_0);
 
   uint8_t data[] = "test";
   TEST_ASSERT_EQUAL(k_rx_ok,

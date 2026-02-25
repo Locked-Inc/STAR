@@ -54,11 +54,11 @@
  * @post TelemetryTask created and running at 20 Hz
  * @post RPi5 receives periodic status updates
  *
- * @note Call this from AppMainTask after communication initialization
+ * @note Call from tx_application_define() in main.c after communication initialization
  * @note Low priority - can be preempted by control tasks
  *
  * @see telemetry_task.c Implementation details
- * @see app_main_task.c Task creation coordinator
+ * @see main.c Task creation in tx_application_define()
  *
  * @since STAR v1.0.0
  */
