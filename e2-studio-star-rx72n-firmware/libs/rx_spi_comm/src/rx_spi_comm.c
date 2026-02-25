@@ -993,7 +993,9 @@ static const rx_spi_comm_handle_t s_zero_handle = {};
  * @retval (decoder errors) rx_frame_decoder_init() failed (rare, internal error)
  *
  * @pre handle must point to valid rx_spi_comm_handle_t storage (4120 bytes)
- * @pre If config != nullptr, config->channel must be 0-2 (RSPI0/1/2)
+ * @pre config != nullptr
+ * @pre config->session != nullptr
+ * @pre config->channel must be a valid rspi_channel_t value (0-2)
  * @post On success, handle->initialized = true
  * @post On success, handle->tx_sequence = 0, handle->rx_sequence = 0
  * @post On success, handle->encoder and handle->decoder initialized
@@ -1008,13 +1010,17 @@ static const rx_spi_comm_handle_t s_zero_handle = {};
  * @par Performance:
  * Execution time: ~50 us @ 240 MHz (memset + encoder/decoder init)
  *
- * @par Example - Default Configuration:
+ * @par Example - Basic Configuration:
  * @code{.c}
  * // Allocate handle (static or on task stack, NOT malloc)
  * static rx_spi_comm_handle_t g_spi_handle;
  *
- * // Initialize with defaults (RSPI0, no FEC)
- * rx_err_t err = rx_spi_comm_init(&g_spi_handle, nullptr);
+ * rx_spi_comm_config_t config = {
+ *   .session = &session,
+ *   .channel = k_rspi_channel_0,
+ *   .fec_enabled = false,
+ * };
+ * rx_err_t err = rx_spi_comm_init(&g_spi_handle, &config);
  * if (err != k_rx_ok) {
  *   rx_log_error("init", "SPI comm init failed");
  *   return;
@@ -1024,7 +1030,7 @@ static const rx_spi_comm_handle_t s_zero_handle = {};
  * rx_spi_comm_send(&g_spi_handle, k_frame_type_data, 0, payload, len);
  * @endcode
  *
- * @par Example - Custom Configuration (FEC Enabled):
+ * @par Example - FEC Enabled:
  * @code{.c}
  * static rx_spi_comm_handle_t g_spi_handle;
  *

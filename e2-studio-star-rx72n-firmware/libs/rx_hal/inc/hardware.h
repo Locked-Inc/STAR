@@ -1618,9 +1618,9 @@ typedef enum : uint8_t {
  * @invariant Values must be in range [0, 2] corresponding to RSPI0, RSPI1, RSPI2
  *
  * @code{.c}
- * // Initialize RSPI2 as peripheral for RPi5 communication
+ * // Initialize RSPI channel as peripheral
  * rspi_config_t cfg = { .spi_mode = k_rspi_mode_0, .use_16bit = false };
- * rx_err_t err = rspi_init_peripheral(k_rspi_channel_2, &cfg);
+ * rx_err_t err = rspi_init_peripheral(k_rspi_channel_0, &cfg);
  * @endcode
  *
  * @see rspi_init_peripheral() Initialize channel in peripheral mode
@@ -1631,7 +1631,7 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_rspi_channel_0 = 0, /**< RSPI0 - RPi5 communication (peripheral mode in STAR project) */
   k_rspi_channel_1 = 1, /**< RSPI1 - External sensor SPI (controller mode, reserved) */
-  k_rspi_channel_2 = 2, /**< RSPI2 - Unused (available for expansion) */
+  k_rspi_channel_2 = 2  /**< RSPI2 - Unused (available for expansion) */
 } rspi_channel_t;
 
 /**
@@ -1727,15 +1727,49 @@ typedef struct {
 /**
  * @brief Full-duplex SPI transfer in peripheral mode
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] tx_data Pointer to transmit data
- * @param[out] rx_data Pointer to receive buffer
- * @param[in] length Number of bytes to transfer
+ * @details
+ * Executes a byte-by-byte full-duplex SPI transfer on the specified RSPI
+ * channel operating in peripheral mode. For each byte, the function waits
+ * for the transmit buffer to empty, writes the TX byte, waits for the
+ * receive buffer to fill, then reads the RX byte. Both TX and RX wait
+ * operations are bounded by a 10 ms timeout to prevent infinite loops.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if tx_data or rx_data is nullptr,
- *         k_rx_err_invalid_state if channel not initialized,
- *         k_rx_err_timeout if transfer timeout
+ * The transfer loop is bounded by k_rspi_transfer_len_max (65535) per
+ * NASA Rule 2 to ensure statically provable loop termination.
+ *
+ * @param[in]  channel RSPI channel number (valid: k_rspi_channel_0,
+ *                     k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in]  tx_data Pointer to transmit data buffer (must not be nullptr)
+ * @param[out] rx_data Pointer to receive data buffer (must not be nullptr,
+ *                     must have capacity for at least length bytes)
+ * @param[in]  length  Number of bytes to transfer (valid: 1 to 65535)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Transfer completed successfully, rx_data filled
+ * @retval k_rx_err_null_ptr tx_data or rx_data pointer is nullptr
+ * @retval k_rx_err_invalid_arg length is zero, or RSPI base address
+ *         lookup failed for the channel
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_peripheral()
+ * @retval k_rx_err_timeout Transmit buffer did not empty or receive buffer
+ *         did not fill within the 10 ms timeout
+ *
+ * @pre channel must be initialized via rspi_init_peripheral()
+ * @pre tx_data and rx_data must be valid non-null pointers
+ * @pre length must be in range [1, 65535]
+ * @post rx_data buffer contains received bytes corresponding to each
+ *       transmitted byte offset on success
+ * @post SPSR status flags (SPRF, OVRF) cleared after each byte transfer
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_init_peripheral() Must be called before this function
+ * @see rspi_peripheral_read_available() Non-blocking receive check
+ * @see rspi_peripheral_write_ready() Non-blocking transmit check
+ * @see rspi_deinit() Deinitialize RSPI channel
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rspi_peripheral_transfer(rspi_channel_t channel,
                                                 const uint8_t* tx_data,
@@ -1743,36 +1777,116 @@ typedef struct {
                                                 uint16_t       length);
 
 /**
- * @brief Check if receive data is available
+ * @brief Check if receive data is available in the RSPI receive buffer
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[out] available Pointer to store availability status
+ * @details
+ * Polls the RSPI Status Register (SPSR) SPRF flag to determine whether the
+ * receive buffer contains data ready for reading. This is a non-blocking
+ * status check that returns immediately without waiting for data. Use this
+ * to implement polled receive patterns without incurring the overhead of a
+ * full transfer call.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if available is nullptr,
- *         k_rx_err_invalid_state if channel not initialized
+ * @param[in]  channel   RSPI channel number (valid: k_rspi_channel_0,
+ *                       k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[out] available Pointer to bool set to true if SPRF flag indicates
+ *                       data is available, false otherwise (must not be nullptr)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Status successfully read into *available
+ * @retval k_rx_err_null_ptr available pointer is nullptr
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_peripheral()
+ * @retval k_rx_err_invalid_arg RSPI base address lookup failed for the channel
+ *
+ * @pre channel must be initialized via rspi_init_peripheral()
+ * @pre available must be a valid non-null pointer
+ * @post *available reflects current SPRF flag state on success
+ * @post *available set to false on RSPI base address lookup failure
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_peripheral_transfer() Full-duplex transfer in peripheral mode
+ * @see rspi_peripheral_write_ready() Non-blocking transmit buffer check
+ * @see rspi_init_peripheral() Must be called before this function
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rspi_peripheral_read_available(rspi_channel_t channel, bool* available);
 
 /**
- * @brief Check if transmit buffer is ready
+ * @brief Check if the RSPI transmit buffer is ready for new data
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[out] ready Pointer to store ready status
+ * @details
+ * Polls the RSPI Status Register (SPSR) SPTEF flag to determine whether the
+ * transmit buffer is empty and ready to accept new data. This is a non-blocking
+ * status check that returns immediately without waiting for the buffer to drain.
+ * Use this to implement polled transmit patterns or to verify readiness before
+ * writing to the SPI data register.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if ready is nullptr,
- *         k_rx_err_invalid_state if channel not initialized
+ * @param[in]  channel RSPI channel number (valid: k_rspi_channel_0,
+ *                     k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[out] ready   Pointer to bool set to true if SPTEF flag indicates the
+ *                     transmit buffer is empty, false otherwise (must not be nullptr)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Status successfully read into *ready
+ * @retval k_rx_err_null_ptr ready pointer is nullptr
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_peripheral()
+ * @retval k_rx_err_invalid_arg RSPI base address lookup failed for the channel
+ *
+ * @pre channel must be initialized via rspi_init_peripheral()
+ * @pre ready must be a valid non-null pointer
+ * @post *ready reflects current SPTEF flag state on success
+ * @post *ready set to false on RSPI base address lookup failure
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_peripheral_transfer() Full-duplex transfer in peripheral mode
+ * @see rspi_peripheral_read_available() Non-blocking receive buffer check
+ * @see rspi_init_peripheral() Must be called before this function
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rspi_peripheral_write_ready(rspi_channel_t channel, bool* ready);
 
 /**
- * @brief Deinitialize RSPI channel
+ * @brief Deinitialize and disable an RSPI peripheral-mode channel
  *
- * @param[in] channel RSPI channel (0-2)
+ * @details
+ * Performs a safe shutdown of the specified RSPI channel previously initialized
+ * in peripheral mode. The deinitialization sequence disables SPI bus activity
+ * (SPCR.SPE = 0), gates the module clock via MSTPCRB to reduce power
+ * consumption, and clears the internal initialization flag. Register
+ * protection (PRCR) is temporarily unlocked for module stop control.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_arg if channel is invalid
+ * This function is safe to call on channels that were never initialized; it
+ * will still disable the hardware and clear the init flag. To reinitialize
+ * a channel after deinit, call rspi_init_peripheral() again.
+ *
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully deinitialized and module stopped
+ * @retval k_rx_err_invalid_arg channel >= 3 or RSPI base address lookup
+ *         failed for the channel
+ *
+ * @pre channel must be in range [0, 2] (k_rspi_channel_0 through k_rspi_channel_2)
+ * @pre No active SPI transfer should be in progress on this channel
+ * @post RSPI peripheral disabled (SPCR.SPE = 0)
+ * @post Module clock gated (MSTPCRB module stop bit set)
+ * @post s_rspi_channel_initialized[channel] set to false
+ *
+ * @note Not thread-safe. Caller must ensure no concurrent transfers or
+ *       accesses to the same channel during deinitialization.
+ *
+ * @see rspi_init_peripheral() Reinitialize channel after deinit
+ * @see rspi_controller_deinit() Deinit for controller-mode channels
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rspi_deinit(rspi_channel_t channel);
 
@@ -1813,60 +1927,189 @@ typedef struct {
 } rspi_controller_config_t;
 
 /**
- * @brief Initialize SPI controller for external device communication
+ * @brief Initialize RSPI channel in controller mode for external device communication
  *
- * Configures the specified RSPI channel as SPI controller
- * for communicating with external SPI devices (sensors, etc.).
+ * @details
+ * Configures the specified RSPI channel as an SPI controller (bus master) for
+ * communicating with external SPI peripheral devices such as sensors. Performs
+ * argument validation, SPBR bit rate calculation, CS GPIO pin configuration,
+ * and full hardware register setup following the RX72N Hardware Manual Section
+ * 38.3.6 initialization sequence. Always configures 16-bit data frames with
+ * word access mode.
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] config Controller configuration (frequency, mode, CS pin)
+ * The initialization is split into three internal phases: argument validation,
+ * hardware resource preparation (SPBR calculation, base address lookup, GPIO
+ * setup), and register configuration (module clock enable, SPI mode, bit rate,
+ * SPI enable). On any failure, no partial hardware state is left behind.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if config is nullptr,
- *         k_rx_err_invalid_arg if channel, mode, or frequency is invalid
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in] config  Pointer to rspi_controller_config_t containing:
+ *                    - spi_mode: SPI mode (0-3) for CPOL/CPHA configuration
+ *                    - freq_hz: SPI clock frequency in Hz (100 kHz to 10 MHz)
+ *                    - cs: GPIO pin for chip select (rx_port_pin_t encoding)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully initialized in controller mode
+ * @retval k_rx_err_null_ptr config pointer is nullptr
+ * @retval k_rx_err_invalid_arg channel >= 3, spi_mode > 3, freq_hz outside
+ *         100 kHz - 10 MHz range, RSPI base address lookup failed, or CS
+ *         GPIO port/pin is invalid
+ * @retval k_rx_err_invalid_state channel already initialized in controller mode
+ *         (call rspi_controller_deinit() first)
+ *
+ * @pre config must be a valid non-null pointer
+ * @pre channel must not already be initialized in controller mode
+ * @pre System clocks must be configured (PCLKB running at 60 MHz)
+ * @post RSPI module clock enabled, registers configured, SPI enabled in
+ *       controller mode (SPCR.MSTR = 1, SPCR.SPE = 1)
+ * @post CS GPIO configured as output, driven high (inactive / deasserted)
+ * @post s_rspi_controller_initialized[channel] set to true
+ *
+ * @note Not thread-safe. Initialize each channel from a single thread during
+ *       system startup.
+ *
+ * @see rspi_controller_transfer_16bit() Perform 16-bit transfers after init
+ * @see rspi_controller_set_cs() Manual chip select control
+ * @see rspi_controller_deinit() Deinitialize controller-mode channel
+ * @see rspi_controller_config_t Configuration structure
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rspi_init_controller(rspi_channel_t                  channel,
                                             const rspi_controller_config_t* config);
 
 /**
- * @brief Set chip select state for RSPI controller mode
+ * @brief Set chip select line state for an RSPI controller-mode channel
  *
- * Controls the GPIO chip select pin for the specified channel.
- * Chip select is active low.
+ * @details
+ * Controls the GPIO chip select pin associated with the specified RSPI
+ * channel operating in controller mode. The CS signal is active-low: when
+ * active is true, the GPIO pin is driven low (CS asserted, peripheral
+ * selected); when active is false, the pin is driven high (CS deasserted,
+ * peripheral released). The port and pin are read from the internal
+ * s_rspi_cs_config[] array populated during rspi_init_controller().
  *
- * @param[in] channel RSPI channel (0-2)
- * @param[in] active True to assert CS (low), false to deassert CS (high)
+ * This function provides direct CS control for protocols that require
+ * multi-transfer CS framing. For single 16-bit transfers with automatic
+ * CS handling, use rspi_controller_transfer_16bit() instead.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_state if channel not initialized in controller mode
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in] active  true to assert CS (drive GPIO low),
+ *                    false to deassert CS (drive GPIO high)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok CS line successfully driven to requested state
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         in controller mode via rspi_init_controller()
+ * @retval k_rx_err_invalid_arg GPIO port base address lookup failed for
+ *         the stored CS port configuration
+ *
+ * @pre channel must be initialized via rspi_init_controller()
+ * @pre s_rspi_cs_config[channel] must contain valid port/pin from init
+ * @post GPIO PODR bit for the CS pin reflects the requested state
+ * @post No other GPIO pins on the same port are modified (read-modify-write)
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel or GPIO port from multiple threads.
+ *
+ * @see rspi_init_controller() Configures CS pin during initialization
+ * @see rspi_controller_transfer_16bit() Automatic CS handling for transfers
+ * @see rspi_controller_deinit() Deasserts CS during cleanup
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rspi_controller_set_cs(rspi_channel_t channel, bool active);
 
 /**
- * @brief Perform 16-bit full-duplex SPI transfer in controller mode
+ * @brief Perform a 16-bit full-duplex SPI transfer in controller mode with automatic CS
  *
- * Executes a single 16-bit SPI transfer including CS assertion/deassertion.
- * Suitable for register-based communication with external SPI peripherals.
+ * @details
+ * Executes a single 16-bit SPI transfer with full chip select lifecycle
+ * management. The transfer sequence is:
+ * 1. Assert CS (drive low) with ~300 ns setup delay
+ * 2. Wait for TX buffer empty, write 16-bit tx_data to SPDR
+ * 3. Wait for RX buffer full, read 16-bit response from SPDR
+ * 4. Clear SPSR status flags (SPRF, OVRF)
+ * 5. Apply ~300 ns hold delay, then deassert CS (drive high)
  *
- * @param[in]  channel RSPI channel (0-2)
- * @param[in]  tx_data 16-bit data to transmit
- * @param[out] rx_data Pointer to store 16-bit received data
+ * On transfer error (timeout), CS is forcibly deasserted before returning
+ * to avoid leaving the peripheral in a selected state. The CS setup and
+ * hold delays use cycle-accurate NOP loops calibrated for 240 MHz core clock.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_null_ptr if rx_data is nullptr,
- *         k_rx_err_invalid_state if channel not initialized in controller mode,
- *         k_rx_err_timeout if transfer times out
+ * @param[in]  channel RSPI channel number (valid: k_rspi_channel_0,
+ *                     k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ * @param[in]  tx_data 16-bit data word to transmit
+ * @param[out] rx_data Pointer to store the received 16-bit response
+ *                     (must not be nullptr)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Transfer completed, *rx_data contains response, CS deasserted
+ * @retval k_rx_err_null_ptr rx_data pointer is nullptr
+ * @retval k_rx_err_invalid_state channel >= 3 or channel not initialized
+ *         via rspi_init_controller()
+ * @retval k_rx_err_invalid_arg RSPI base address lookup failed, or GPIO port
+ *         lookup failed during CS assertion/deassertion
+ * @retval k_rx_err_timeout TX buffer did not empty or RX buffer did not fill
+ *         within the 10 ms timeout (CS is deasserted on this error)
+ *
+ * @pre channel must be initialized via rspi_init_controller()
+ * @pre rx_data must be a valid non-null pointer
+ * @post *rx_data contains received 16-bit value on success
+ * @post CS is deasserted (GPIO driven high) on both success and error
+ * @post SPSR status flags SPRF and OVRF are cleared on success
+ *
+ * @note Not thread-safe. Caller must provide external synchronization when
+ *       accessing the same channel from multiple threads.
+ *
+ * @see rspi_init_controller() Must be called before this function
+ * @see rspi_controller_set_cs() Manual CS control for multi-transfer framing
+ * @see rspi_controller_deinit() Deinitialize controller-mode channel
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rspi_controller_transfer_16bit(rspi_channel_t channel, uint16_t tx_data, uint16_t* rx_data);
 
 /**
- * @brief Deinitialize RSPI controller mode
+ * @brief Deinitialize and disable an RSPI controller-mode channel
  *
- * @param[in] channel RSPI channel (0-2)
+ * @details
+ * Performs a safe shutdown of the specified RSPI channel previously initialized
+ * in controller mode. The deinitialization sequence is ordered to prevent bus
+ * glitches: first deasserts CS to release any connected peripheral, then
+ * disables SPI (SPCR.SPE = 0) to stop clock generation, then gates the
+ * module clock via MSTPCRB for power savings, and finally clears internal
+ * state (CS pin config and initialization flag). Register protection (PRCR)
+ * is temporarily unlocked for module stop control.
  *
- * @return k_rx_ok on success,
- *         k_rx_err_invalid_arg if channel is invalid
+ * This function is safe to call on channels that were never initialized in
+ * controller mode; it will still disable the hardware and clear the state.
+ *
+ * @param[in] channel RSPI channel number (valid: k_rspi_channel_0,
+ *                    k_rspi_channel_1, k_rspi_channel_2; range 0-2)
+ *
+ * @return rx_err_t Error code indicating success or failure
+ * @retval k_rx_ok Channel successfully deinitialized and module stopped
+ * @retval k_rx_err_invalid_arg channel >= 3 or RSPI base address lookup
+ *         failed for the channel
+ *
+ * @pre channel must be in range [0, 2] (k_rspi_channel_0 through k_rspi_channel_2)
+ * @pre No active SPI transfer should be in progress on this channel
+ * @post CS GPIO deasserted (driven high) if channel was initialized
+ * @post RSPI peripheral disabled (SPCR.SPE = 0)
+ * @post Module clock gated (MSTPCRB module stop bit set)
+ * @post s_rspi_cs_config[channel] cleared to defaults (port=0, pin=0)
+ * @post s_rspi_controller_initialized[channel] set to false
+ *
+ * @note Not thread-safe. Caller must ensure no concurrent transfers or
+ *       accesses to the same channel during deinitialization.
+ *
+ * @see rspi_init_controller() Reinitialize channel after deinit
+ * @see rspi_deinit() Deinit for peripheral-mode channels
+ *
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rspi_controller_deinit(rspi_channel_t channel);
 

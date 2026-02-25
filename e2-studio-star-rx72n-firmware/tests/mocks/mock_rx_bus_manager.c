@@ -208,6 +208,9 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
     return k_rx_err_null_ptr;
   }
 
+  /* Pre-condition: manager must be initialized */
+  assert(manager->mutex.tx_mutex_id == k_tx_mutex_magic);
+
   /* Pre-condition: bus name must be valid */
   if (bus_config->name == nullptr || bus_config->name[0] == '\0') {
     return k_rx_err_invalid_arg;
@@ -276,6 +279,9 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
     return k_rx_err_null_ptr;
   }
 
+  /* Pre-condition: manager must be initialized */
+  assert(manager->mutex.tx_mutex_id == k_tx_mutex_magic);
+
   /* Pre-condition: bus_count must be consistent */
   assert(manager->bus_count <= k_max_buses);
 
@@ -341,6 +347,9 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
   if (manager == nullptr || name == nullptr || bus_config == nullptr) {
     return k_rx_err_null_ptr;
   }
+
+  /* Pre-condition: manager must be initialized */
+  assert(manager->mutex.tx_mutex_id == k_tx_mutex_magic);
 
   /* Pre-condition: bus_count must be consistent */
   assert(manager->bus_count <= k_max_buses);

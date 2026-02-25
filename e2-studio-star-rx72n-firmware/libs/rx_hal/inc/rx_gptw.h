@@ -462,7 +462,7 @@ typedef enum : uint8_t {
 } rx_gptw_wave_mode_t;
 
 /**
- * @enum gptw_duty_calc_constants_t
+ * @enum rx_gptw_duty_calc_constants_t
  * @brief Named constants for duty cycle percentage calculations
  *
  * @details
@@ -488,7 +488,7 @@ typedef enum : uint8_t {
   k_gptw_duty_50_pct_num = 50,  /**< Numerator for 50% duty cycle calculation */
   k_gptw_duty_75_pct_num = 75,  /**< Numerator for 75% duty cycle calculation */
   k_gptw_duty_pct_denom  = 100, /**< Denominator for percentage duty calculations */
-} gptw_duty_calc_constants_t;
+} rx_gptw_duty_calc_constants_t;
 
 /**
  * @struct rx_gptw_channel_id_t

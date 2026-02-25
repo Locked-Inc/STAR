@@ -1955,8 +1955,8 @@ void tx_application_define(void* first_unused_memory)
   /* =========================================================================
    * Multi-Task Architecture Initialization
    *
-   * Task creation order: lowest priority first to ensure higher priority
-   * tasks can preempt during initialization if needed.
+   * Task creation order is dependency-aware while the scheduler is not yet
+   * running; no task preemption occurs during this phase.
    *
    * Priority Map (lower = higher priority):
    *   5  = Communication (highest - command latency)
@@ -1981,7 +1981,7 @@ void tx_application_define(void* first_unused_memory)
   /* Step 4: Register all tasks for IWDT heartbeat monitoring */
   internal_register_iwdt_tasks();
 
-  /* Step 5: Create all application tasks (lowest priority first) */
+  /* Step 5: Create all application tasks (dependency-aware order) */
   internal_create_system_tasks();
 
   /* Step 6: Register ThreadX stack overflow handler */

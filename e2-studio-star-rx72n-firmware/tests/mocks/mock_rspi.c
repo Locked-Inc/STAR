@@ -483,31 +483,27 @@ rspi_peripheral_transfer(rspi_channel_t channel, const uint8_t* tx_data, uint8_t
 
   if (ret == k_rx_ok) {
     /* Capture TX data */
-    if (tx_data != nullptr && length > 0) {
-      uint32_t copy_len = (length < k_mock_rspi_buffer_size) ? length : k_mock_rspi_buffer_size;
-      memcpy(ch->tx_data, tx_data, copy_len);
-      ch->tx_len = copy_len;
-    }
+    uint32_t copy_len = (length < k_mock_rspi_buffer_size) ? length : k_mock_rspi_buffer_size;
+    (void)memcpy(ch->tx_data, tx_data, copy_len);
+    ch->tx_len = copy_len;
 
     /* Provide RX data from injected buffer */
-    if (rx_data != nullptr && length > 0) {
-      uint32_t avail    = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
-      uint32_t copy_len = (length < avail) ? length : avail;
+    uint32_t avail    = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
+    uint32_t rx_copy  = (length < avail) ? length : avail;
 
-      if (copy_len > 0) {
-        memcpy(rx_data, &ch->rx_data[ch->rx_pos], copy_len);
-        ch->rx_pos += copy_len;
-      }
+    if (rx_copy > 0) {
+      (void)memcpy(rx_data, &ch->rx_data[ch->rx_pos], rx_copy);
+      ch->rx_pos += rx_copy;
+    }
 
-      /* Zero-fill any remaining bytes if not enough RX data */
-      if (copy_len < length) {
-        memset(rx_data + copy_len, 0, length - copy_len);
-      }
+    /* Zero-fill any remaining bytes if not enough RX data */
+    if (rx_copy < length) {
+      (void)memset(rx_data + rx_copy, 0, length - rx_copy);
+    }
 
-      /* Update data available flag */
-      if (ch->rx_pos >= ch->rx_len) {
-        ch->data_available = false;
-      }
+    /* Update data available flag */
+    if (ch->rx_pos >= ch->rx_len) {
+      ch->data_available = false;
     }
   }
 
@@ -751,9 +747,7 @@ rx_err_t rspi_controller_transfer_16bit(rspi_channel_t channel, uint16_t tx_data
     }
 
     /* Provide RX data */
-    if (rx_data != nullptr) {
-      *rx_data = ctrl->next_rx_data;
-    }
+    *rx_data = ctrl->next_rx_data;
   }
 
   mock_rspi_record_call(mock,
