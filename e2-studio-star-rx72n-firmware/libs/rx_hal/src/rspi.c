@@ -781,8 +781,9 @@ rx_err_t rspi_peripheral_transfer(const rspi_channel_t channel,
  * @param[out] available Pointer to bool flag set to true if data is available, false otherwise
  *
  * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if channel is invalid or base address retrieval fails
- * @return k_rx_err_invalid_state if channel is not initialized
+ * @return k_rx_err_null_ptr if available pointer is nullptr
+ * @return k_rx_err_invalid_state if channel is out of range or not initialized
+ * @return k_rx_err_invalid_arg if RSPI base address retrieval fails
  *
  * @pre Channel must be initialized via rspi_init_peripheral() before calling this function
  * @pre available must be a valid non-nullptr
@@ -820,8 +821,9 @@ rx_err_t rspi_peripheral_read_available(const rspi_channel_t channel, bool* avai
  * @param[out] ready Set to true if ready to transmit, false otherwise
  *
  * @return k_rx_ok on success, error code otherwise
- * @return k_rx_err_invalid_arg if channel is invalid or base address retrieval fails
- * @return k_rx_err_invalid_state if channel is not initialized
+ * @return k_rx_err_null_ptr if ready pointer is nullptr
+ * @return k_rx_err_invalid_state if channel is out of range or not initialized
+ * @return k_rx_err_invalid_arg if RSPI base address retrieval fails
  *
  * @pre Channel must be initialized via rspi_init_peripheral()
  * @pre ready must be a valid non-nullptr

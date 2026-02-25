@@ -43,11 +43,10 @@
  * ============================================================================= */
 
 /**
- * @enum rx_spi_test_channel_t
- * @brief SPI channel index for test configuration
+ * @note SPI channel constants use rspi_channel_t from hardware.h
+ *       (k_rspi_channel_0 in these tests).
  * @since Version 1.1.0
  */
-/* SPI channel constants use rspi_channel_t from hardware.h (k_rspi_channel_0) */
 
 /**
  * @enum rx_spi_test_retries_t

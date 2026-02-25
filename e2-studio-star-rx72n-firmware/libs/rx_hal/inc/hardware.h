@@ -1615,6 +1615,14 @@ typedef enum : uint8_t {
  * - **Range**: 0-2 (3 channels on RX72N)
  * - **Size**: 1 byte
  *
+ * @invariant Values must be in range [0, 2] corresponding to RSPI0, RSPI1, RSPI2
+ *
+ * @code{.c}
+ * // Initialize RSPI2 as peripheral for RPi5 communication
+ * rspi_config_t cfg = { .spi_mode = k_rspi_mode_0, .use_16bit = false };
+ * rx_err_t err = rspi_init_peripheral(k_rspi_channel_2, &cfg);
+ * @endcode
+ *
  * @see rspi_init_peripheral() Initialize channel in peripheral mode
  * @see rspi_init_controller() Initialize channel in controller mode
  *
@@ -1631,7 +1639,7 @@ typedef enum : uint8_t {
  * @brief RSPI peripheral mode configuration structure
  *
  * @details
- * Configuration parameters for initializing an RSPI channel in peripheral (slave) mode.
+ * Configuration parameters for initializing an RSPI channel in peripheral mode.
  * Used when the RX72N acts as an SPI peripheral device, receiving clock from an external
  * controller (e.g., Raspberry Pi 5). The struct encapsulates SPI mode and frame size
  * settings to avoid positional parameter errors.
@@ -1642,6 +1650,9 @@ typedef enum : uint8_t {
  *   .use_16bit = false           // 8-bit frame size
  * };
  * @endcode
+ *
+ * @invariant spi_mode must be a valid rspi_mode_t value (0-3, CPOL/CPHA combinations)
+ * @invariant use_16bit is boolean: false for 8-bit frames, true for 16-bit frames
  *
  * @see rspi_mode_t SPI mode enumeration (CPOL/CPHA combinations)
  * @see rspi_init_peripheral() Initialize channel with this configuration
@@ -1658,7 +1669,7 @@ typedef struct {
  * @brief Initialize RSPI channel in peripheral mode for RPi5 communication
  *
  * @details
- * Configures the specified RSPI channel as an SPI peripheral (slave) device.
+ * Configures the specified RSPI channel as an SPI peripheral device.
  * In peripheral mode the RX72N receives the clock signal from an external SPI
  * controller (Raspberry Pi 5). Performs full hardware initialization including
  * module stop release, pin function selection (COPI/CIPO/CLK/CS via MPC),
@@ -1683,6 +1694,7 @@ typedef struct {
  * @retval k_rx_ok Channel successfully initialized in peripheral mode
  * @retval k_rx_err_invalid_arg Channel > 2 or invalid SPI mode
  * @retval k_rx_err_null_ptr config pointer is nullptr
+ * @retval k_rx_err_invalid_state Channel already initialized (call rspi_deinit() to reinitialize)
  *
  * @pre Channel must not be already initialized (call rspi_deinit() first to reinitialize)
  * @pre System clocks must be configured (PCLKB running at expected frequency)

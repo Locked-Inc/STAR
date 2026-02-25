@@ -968,9 +968,10 @@ static const rx_spi_comm_handle_t s_zero_handle = {};
  * 6. **Reset sequence counters**: Set TX/RX sequence to 0
  * 7. **Mark initialized**: Set handle->initialized = true
  *
- * **Default Configuration** (if config == nullptr):
- * - **Channel**: RSPI0 (k_rspi_channel_0 = 0)
- * - **FEC**: Disabled (fec_enabled = false)
+ * **Configuration** (config must be non-nullptr):
+ * - **Channel**: Must specify RSPI channel (e.g., k_rspi_channel_2 for host)
+ * - **FEC**: fec_enabled flag (true/false)
+ * - Passing config == nullptr returns k_rx_err_invalid_arg
  *
  * **Memory Allocation:**
  * This function does NOT allocate memory (NASA Rule 3 compliance). Caller
@@ -981,10 +982,9 @@ static const rx_spi_comm_handle_t s_zero_handle = {};
  *   - **Allocation**: Caller-allocated (static, stack, or global)
  *   - **Side effects**: Entire structure zeroed and re-initialized
  *
- * @param[in] config Configuration parameters (or nullptr for defaults)
- *   - **Valid range**: nullptr or pointer to rx_spi_comm_config_t
- *   - **nullptr semantics**: Use defaults (RSPI0, no FEC)
- *   - **Fields**: channel (0-2), fec_enabled (true/false)
+ * @param[in] config Configuration parameters (must not be nullptr)
+ *   - **Valid range**: Non-nullptr pointer to rx_spi_comm_config_t
+ *   - **Required fields**: session (non-nullptr), channel (0-2), fec_enabled (true/false)
  *
  * @return rx_err_t Error code indicating initialization result
  * @retval k_rx_ok Initialization successful, handle ready for use

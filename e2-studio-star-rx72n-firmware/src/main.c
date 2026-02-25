@@ -1748,9 +1748,10 @@ static void internal_register_iwdt_tasks(void)
  * @brief Create all seven application tasks and transition to running state
  *
  * @details
- * Creates tasks in lowest-priority-first order so that higher-priority tasks
- * can preempt during initialization if needed. After all tasks are created,
- * the IWDT system state is transitioned to k_system_state_running.
+ * Creates all seven ThreadX tasks in lowest-priority-first order. Tasks do not
+ * begin executing until tx_application_define() returns and the scheduler starts.
+ * After all tasks are created, the IWDT system state transitions to
+ * k_system_state_running.
  *
  * Task creation order (lowest priority first):
  * 1. Telemetry (priority 18)

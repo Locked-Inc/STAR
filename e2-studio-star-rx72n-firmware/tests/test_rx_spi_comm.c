@@ -640,7 +640,7 @@ void test_spi_comm_send_with_fec_flag(void)
   /* Verify FEC flag is set in the transmitted frame */
   uint8_t  tx_data[64];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(nullptr, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
+  (void)mock_rspi_get_tx_data(nullptr, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* Frame: [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)]... */
   /* Flags are at offset 7 (0-based) */
@@ -746,7 +746,7 @@ void test_spi_comm_send_ack_success(void)
   /* Verify ACK frame was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(nullptr, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
+  (void)mock_rspi_get_tx_data(nullptr, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   TEST_ASSERT_EQUAL(k_frame_min_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_ack, tx_data[6]);
@@ -799,7 +799,7 @@ void test_spi_comm_send_nack_success(void)
   /* Verify NACK frame was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(nullptr, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
+  (void)mock_rspi_get_tx_data(nullptr, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   TEST_ASSERT_EQUAL(k_frame_min_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_nack, tx_data[6]);
@@ -909,7 +909,7 @@ void test_spi_comm_receive_valid_frame_success(void)
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, payload, 4, encoded_frame, &encoded_len);
 
-  mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
+  (void)mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -936,7 +936,7 @@ void test_spi_comm_receive_updates_rx_sequence(void)
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, nullptr, 0, encoded_frame, &encoded_len);
 
-  mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
+  (void)mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
 
   rx_frame_t frame;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero));
@@ -971,7 +971,7 @@ void test_spi_comm_receive_invalid_sync_word(void)
     0x00, /* CRC (invalid) */
   };
 
-  mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, bad_frame, sizeof(bad_frame));
+  (void)mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, bad_frame, sizeof(bad_frame));
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -993,7 +993,7 @@ void test_spi_comm_receive_transfer_error_propagates(void)
   uint8_t  encoded_frame[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_command, 0, nullptr, 0, encoded_frame, &encoded_len);
-  mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
+  (void)mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
 
   /* But make transfer fail */
   mock_rspi_set_transfer_return(nullptr, k_rx_err_spi_error);
@@ -1140,7 +1140,7 @@ void test_spi_comm_rx_sequence_wraparound(void)
                               0,
                               encoded_frame,
                               &encoded_len);
-  mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
+  (void)mock_rspi_inject_rx_data(nullptr, k_rspi_channel_0, encoded_frame, encoded_len);
 
   rx_frame_t frame;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero));
@@ -1360,7 +1360,7 @@ void test_spi_comm_send_pong_echoes_payload(void)
   /* Verify PONG frame was transmitted */
   uint8_t  tx_data[64];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
+  (void)mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
   TEST_ASSERT_EQUAL_UINT32(16, tx_len);
@@ -1405,7 +1405,7 @@ void test_spi_comm_send_reset_ack_success(void)
   /* Verify RESET_ACK frame was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
+  (void)mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* RESET_ACK frame: 8 header + 0 payload + 4 CRC = 12 bytes */
   TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, tx_len);
@@ -1437,7 +1437,7 @@ void test_spi_comm_receive_ping_auto_pong(void)
                               encoded,
                               &encoded_len);
 
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1448,7 +1448,7 @@ void test_spi_comm_receive_ping_auto_pong(void)
   /* Verify PONG was transmitted (last SPI transfer was the PONG send) */
   uint8_t  tx_data[64];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
+  (void)mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   /* PONG frame: 8 header + 4 payload + 4 CRC = 16 bytes */
   TEST_ASSERT_EQUAL_UINT32(16, tx_len);
@@ -1507,7 +1507,7 @@ void test_spi_comm_receive_ping_then_command(void)
   offset += pong_wire_len;
   memcpy(combined + offset, cmd_encoded, cmd_len);
   offset += cmd_len;
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, combined, offset);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, combined, offset);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1542,7 +1542,7 @@ void test_spi_comm_receive_reset_auto_ack(void)
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
 
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1553,7 +1553,7 @@ void test_spi_comm_receive_reset_auto_ack(void)
   /* Verify RESET_ACK was transmitted */
   uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
+  (void)mock_rspi_get_tx_data(NULL, k_rspi_channel_0, tx_data, sizeof(tx_data), &tx_len);
 
   TEST_ASSERT_EQUAL_UINT32(k_frame_min_size, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_type_reset_ack, tx_data[6]);
@@ -1593,7 +1593,7 @@ void test_spi_comm_receive_ping_callback_invoked(void)
                               k_test_payload_small,
                               encoded,
                               &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1628,7 +1628,7 @@ void test_spi_comm_receive_reset_callback_invoked(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_reset, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1823,7 +1823,7 @@ void test_retransmit_ack_clears_retry(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1853,7 +1853,7 @@ void test_retransmit_ack_wrong_seq_ignored(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, k_test_sequence_b, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1887,7 +1887,7 @@ void test_retransmit_ack_callback_invoked(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1910,7 +1910,7 @@ void test_retransmit_ack_not_consumed_when_off(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1933,7 +1933,7 @@ void test_retransmit_ack_non_pending_ignored(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_ack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -1968,7 +1968,7 @@ void test_retransmit_nack_triggers_retry(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -2001,7 +2001,7 @@ void test_retransmit_nack_retransmit_flag_set(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -2037,7 +2037,7 @@ void test_retransmit_nack_callback_invoked(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   (void)rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);
@@ -2058,7 +2058,7 @@ void test_retransmit_nack_not_consumed_when_off(void)
   uint8_t  encoded[64];
   uint32_t encoded_len = 0;
   helper_create_encoded_frame(k_frame_type_nack, 0, NULL, 0, encoded, &encoded_len);
-  mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
+  (void)mock_rspi_inject_rx_data(NULL, k_rspi_channel_0, encoded, encoded_len);
 
   rx_frame_t frame;
   rx_err_t   err = rx_spi_comm_receive(&s_handle, &frame, k_test_timeout_zero);

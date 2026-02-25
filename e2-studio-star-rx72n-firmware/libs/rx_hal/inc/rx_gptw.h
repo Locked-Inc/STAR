@@ -476,6 +476,9 @@ typedef enum : uint8_t {
  * uint32_t half = (period * k_gptw_duty_50_pct_num) / k_gptw_duty_pct_denom;
  * @endcode
  *
+ * @invariant All numerator constants must be <= k_gptw_duty_pct_denom (non-negative)
+ * @invariant k_gptw_duty_pct_denom must be non-zero (denominator for percentage calculation)
+ *
  * @see rx_gptw_set_duty_raw() Uses these constants in documentation examples
  * @see rx_gptw_get_period() Provides the period value for the calculation
  *

@@ -99,7 +99,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
   }
 
   /* Clear manager state */
-  memset(manager, 0, sizeof(rx_bus_manager_t));
+  (void)memset(manager, 0, sizeof(rx_bus_manager_t));
 
   /* Store configuration */
   manager->tag         = tag;
@@ -286,6 +286,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
       rx_bus_config_t* to_remove = *pp;
       *pp                        = to_remove->next;
       to_remove->next            = nullptr;
+      assert(manager->bus_count > 0);
       manager->bus_count--;
 
       /* Post-condition: removed node is detached */
@@ -476,6 +477,9 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
   if (manager == nullptr || name == nullptr || command == nullptr) {
     return k_rx_err_null_ptr;
   }
+
+  /* Pre-condition: manager must be initialized */
+  assert(manager->mutex.tx_mutex_id == k_tx_mutex_magic);
 
   /* Pre-condition: command must have an execute function */
   if (command->execute == nullptr) {
