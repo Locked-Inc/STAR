@@ -57,7 +57,7 @@
  * @post Obstacle distances updated in shared memory
  * @post Emergency stop triggered on close obstacles
  *
- * @note Call this from AppMainTask after sensor initialization
+ * @note Call from tx_application_define() in main.c after sensor initialization
  * @note Safety-critical - obstacles closer than 10 cm trigger emergency stop
  *
  * @see obstacle_detect_task.c Implementation details

@@ -47,9 +47,7 @@
  * @brief SPI channel index for test configuration
  * @since Version 1.1.0
  */
-typedef enum : int32_t {
-  k_rx_spi_test_channel = 0, /**< SPI channel 0 (RSPI0) for test fixture */
-} rx_spi_test_channel_t;
+/* SPI channel constants use rspi_channel_t from hardware.h (k_rspi_channel_0) */
 
 /**
  * @enum rx_spi_test_retries_t
@@ -254,7 +252,7 @@ static rx_err_t internal_init_link(bool fec_enabled)
   /* Initialize SPI comm with session */
   const rx_spi_comm_config_t spi_cfg = {
     .session     = &s_session,
-    .channel     = k_rx_spi_test_channel,
+    .channel     = k_rspi_channel_0,
     .fec_enabled = fec_enabled,
   };
   err = rx_spi_comm_init(&s_spi_comm, &spi_cfg);
@@ -376,7 +374,7 @@ void test_init_success_no_fec(void)
 
   const rx_spi_comm_config_t spi_cfg = {
     .session     = &s_session,
-    .channel     = k_rx_spi_test_channel,
+    .channel     = k_rspi_channel_0,
     .fec_enabled = false,
   };
   err = rx_spi_comm_init(&s_spi_comm, &spi_cfg);
@@ -450,7 +448,7 @@ void test_init_custom_retries(void)
 
   const rx_spi_comm_config_t spi_cfg = {
     .session = &s_session,
-    .channel = k_rx_spi_test_channel,
+    .channel = k_rspi_channel_0,
   };
   err = rx_spi_comm_init(&s_spi_comm, &spi_cfg);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -1198,7 +1196,7 @@ void test_max_retries_enforcement(void)
 
   const rx_spi_comm_config_t spi_cfg = {
     .session     = &s_session,
-    .channel     = k_rx_spi_test_channel,
+    .channel     = k_rspi_channel_0,
     .fec_enabled = false,
   };
   err = rx_spi_comm_init(&s_spi_comm, &spi_cfg);

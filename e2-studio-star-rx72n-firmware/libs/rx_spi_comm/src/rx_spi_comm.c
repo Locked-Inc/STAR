@@ -969,7 +969,7 @@ static const rx_spi_comm_handle_t s_zero_handle = {};
  * 7. **Mark initialized**: Set handle->initialized = true
  *
  * **Default Configuration** (if config == nullptr):
- * - **Channel**: RSPI0 (k_spi_comm_default_channel = 0)
+ * - **Channel**: RSPI0 (k_rspi_channel_0 = 0)
  * - **FEC**: Disabled (fec_enabled = false)
  *
  * **Memory Allocation:**

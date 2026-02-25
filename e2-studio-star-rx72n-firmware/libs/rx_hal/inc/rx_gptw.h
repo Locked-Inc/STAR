@@ -462,6 +462,32 @@ typedef enum : uint8_t {
 } rx_gptw_wave_mode_t;
 
 /**
+ * @enum gptw_duty_calc_constants_t
+ * @brief Named constants for duty cycle percentage calculations
+ *
+ * @details
+ * Provides named numerators and a common denominator for computing raw duty
+ * counts as integer fractions of the period.  Using named constants instead of
+ * magic literals satisfies NASA Power of 10 Rule 8 (no magic numbers).
+ *
+ * @par Example:
+ * @code{.c}
+ * // 50% duty: period * 50 / 100
+ * uint32_t half = (period * k_gptw_duty_50_pct_num) / k_gptw_duty_pct_denom;
+ * @endcode
+ *
+ * @see rx_gptw_set_duty_raw() Uses these constants in documentation examples
+ * @see rx_gptw_get_period() Provides the period value for the calculation
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_gptw_duty_50_pct_num = 50,  /**< Numerator for 50% duty cycle calculation */
+  k_gptw_duty_75_pct_num = 75,  /**< Numerator for 75% duty cycle calculation */
+  k_gptw_duty_pct_denom  = 100, /**< Denominator for percentage duty calculations */
+} gptw_duty_calc_constants_t;
+
+/**
  * @struct rx_gptw_channel_id_t
  * @brief Type-safe GPTW channel wrapper (prevents accidental argument swaps)
  *
@@ -521,7 +547,17 @@ typedef struct {
  *
  * @return Wrapped channel ID for type-safe function calls
  *
- * @note Asserts on invalid input - use only with known-valid enum values
+ * @pre value must be a valid rx_gptw_channel_t in range [k_gptw_channel_0, k_gptw_channel_3]
+ * @pre Caller must pass a compile-time known or previously validated channel value
+ * @post Returned wrapper .value field equals the input value
+ * @post Wrapper is immediately usable in any API accepting rx_gptw_channel_id_t
+ *
+ * @note Reentrant and lock-free; contains no shared mutable state
+ *
+ * @see rx_gptw_output_id() Companion wrapper constructor for output parameter
+ * @see rx_gptw_channel_id_t Wrapper type constructed by this function
+ *
+ * @since Version 1.0.0
  */
 static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
 {
@@ -549,7 +585,17 @@ static inline rx_gptw_channel_id_t rx_gptw_channel_id(rx_gptw_channel_t value)
  *
  * @return Wrapped output ID for type-safe function calls
  *
- * @note Asserts on invalid input - use only with known-valid enum values
+ * @pre value must be a valid rx_gptw_output_t (k_gptw_output_a or k_gptw_output_b)
+ * @pre Caller must pass a compile-time known or previously validated output value
+ * @post Returned wrapper .value field equals the input value
+ * @post Wrapper is immediately usable in any API accepting rx_gptw_output_id_t
+ *
+ * @note Reentrant and lock-free; contains no shared mutable state
+ *
+ * @see rx_gptw_channel_id() Companion wrapper constructor for channel parameter
+ * @see rx_gptw_output_id_t Wrapper type constructed by this function
+ *
+ * @since Version 1.0.0
  */
 static inline rx_gptw_output_id_t rx_gptw_output_id(rx_gptw_output_t value)
 {
@@ -1078,6 +1124,20 @@ rx_gptw_set_duty(rx_gptw_channel_id_t channel, rx_gptw_output_id_t output, float
  *
  * @note Thread-safe: single 32-bit register write is inherently atomic on RX72N
  *
+ * @par Performance:
+ * Constant time: single 32-bit register write after validation.
+ *
+ * @par Example:
+ * @code{.c}
+ * // Read current period, compute 75% duty, then set raw count
+ * uint32_t period = 0;
+ * rx_err_t err = rx_gptw_get_period(k_gptw_channel_0, &period);
+ * if (err == k_rx_ok) {
+ *     const uint32_t duty_count = (period * k_gptw_duty_75_pct_num) / k_gptw_duty_pct_denom;
+ *     err = rx_gptw_set_duty_raw(k_gptw_channel_0, k_gptw_output_b, duty_count);
+ * }
+ * @endcode
+ *
  * @see rx_gptw_set_duty() Percentage-based version with float conversion
  * @see rx_gptw_get_period() Query period count for duty calculation
  *
@@ -1159,7 +1219,7 @@ rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty
  * rx_err_t err = rx_gptw_get_period(k_gptw_channel_0, &period);
  * if (err == k_rx_ok) {
  *     // Calculate raw duty count for 50% duty cycle
- *     uint32_t duty_count = period / 2;
+ *     uint32_t duty_count = (period * k_gptw_duty_50_pct_num) / k_gptw_duty_pct_denom;
  * }
  * @endcode
  *

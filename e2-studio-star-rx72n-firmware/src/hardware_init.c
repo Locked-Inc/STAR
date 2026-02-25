@@ -324,10 +324,7 @@ typedef enum : uint16_t {
   k_gptw_deadtime_ns = 1000, /**< 1 us dead-time between complementary outputs */
 } gptw_deadtime_t;
 
-/** @brief RSPI2 channel number for host SPI */
-typedef enum : uint8_t {
-  k_host_spi_channel = 2, /**< RSPI2 = host SPI peripheral */
-} spi_channel_t;
+/* RSPI channel: use k_rspi_channel_2 from hardware.h for host SPI peripheral */
 
 /** @brief I2C channel assignments */
 typedef enum : uint8_t {
@@ -1221,7 +1218,7 @@ static rx_err_t spi_init(void)
 
   rspi_config_t host_config = {.spi_mode = k_rspi_mode_0, .use_16bit = false};
 
-  rx_err_t err = rspi_init_peripheral(k_host_spi_channel, &host_config);
+  rx_err_t err = rspi_init_peripheral(k_rspi_channel_2, &host_config);
   RX_RETURN_ON_ERROR(err, s_tag, "RSPI2 peripheral init failed");
 
   rx_log_info(s_tag, "RSPI2 initialized (host peripheral, mode 0, 8-bit)");

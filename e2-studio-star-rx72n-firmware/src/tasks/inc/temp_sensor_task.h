@@ -57,7 +57,7 @@
  * @post Temperature data updated in shared memory
  * @post Warnings triggered on high temperatures
  *
- * @note Call this from AppMainTask after sensor initialization
+ * @note Call from tx_application_define() in main.c after sensor initialization
  * @note Thermal monitoring prevents motor overheating
  *
  * @see temp_sensor_task.c Implementation details

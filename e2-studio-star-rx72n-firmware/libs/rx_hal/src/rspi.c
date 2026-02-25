@@ -203,12 +203,7 @@ typedef enum : uint8_t {
   k_rspi_spbr_init       = 0, /**< Initial SPBR value */
 } rspi_cs_defaults_t;
 
-/** @brief RSPI channel numbers for switch statements */
-typedef enum : uint8_t {
-  k_rspi_channel_0 = 0, /**< RSPI0 */
-  k_rspi_channel_1 = 1, /**< RSPI1 */
-  k_rspi_channel_2 = 2, /**< RSPI2 */
-} rspi_channel_num_t;
+/* RSPI channel constants (k_rspi_channel_0/1/2) provided by hardware.h via rspi_channel_t */
 
 /** @brief RSPI module stop bit positions in MSTPCRB */
 typedef enum : uint8_t {
@@ -396,7 +391,7 @@ static rspi_cs_config_t s_rspi_cs_config[k_rspi_max_channels] = {
  *
  * @since Version 1.0.0
  */
-static volatile rx_rspi_regs_t* internal_get_rspi_base(const uint8_t channel)
+static volatile rx_rspi_regs_t* internal_get_rspi_base(const rspi_channel_t channel)
 {
   switch (channel) {
     case k_rspi_channel_0: {
@@ -440,7 +435,7 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(const uint8_t channel)
  *
  * @since Version 1.0.0
  */
-static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool enable)
+static void internal_set_mstpcrb_for_channel(const rspi_channel_t channel, const bool enable)
 {
   uint32_t mask = k_rspi_zero_u32;
 
@@ -502,14 +497,14 @@ static void internal_set_mstpcrb_for_channel(const uint8_t channel, const bool e
  *       - s_rspi_channel_initialized[channel] is set to true
  *       - Peripheral is ready to receive transfers from SPI controller
  */
-rx_err_t rspi_init_peripheral(const uint8_t channel, const rspi_config_t* config)
+rx_err_t rspi_init_peripheral(const rspi_channel_t channel, const rspi_config_t* config)
 {
   uint16_t spcmd = k_rspi_spcmd_init;
 
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is nullptr");
 
   /* Validate channel */
-  if (channel >= k_rspi_max_channels) {
+  if ((uint8_t)channel >= k_rspi_max_channels) {
     rx_log_error(s_tag, "Invalid RSPI channel");
     return k_rx_err_invalid_arg;
   }
@@ -717,10 +712,10 @@ static rx_err_t internal_wait_rx_ready(volatile rx_rspi_regs_t* rspi)
  * @post If successful, rx_data buffer is filled with received bytes
  *       corresponding to transmitted data at each byte offset
  */
-rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
-                                  const uint8_t* tx_data,
-                                  uint8_t*       rx_data,
-                                  const uint16_t length)
+rx_err_t rspi_peripheral_transfer(const rspi_channel_t channel,
+                                  const uint8_t*       tx_data,
+                                  uint8_t*             rx_data,
+                                  const uint16_t       length)
 {
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is nullptr");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
@@ -731,7 +726,7 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
   }
 
   /* Validate channel */
-  if (channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
+  if ((uint8_t)channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
     rx_log_error(s_tag, "RSPI channel not initialized");
     return k_rx_err_invalid_state;
   }
@@ -792,12 +787,12 @@ rx_err_t rspi_peripheral_transfer(const uint8_t  channel,
  * @pre Channel must be initialized via rspi_init_peripheral() before calling this function
  * @pre available must be a valid non-nullptr
  */
-rx_err_t rspi_peripheral_read_available(const uint8_t channel, bool* available)
+rx_err_t rspi_peripheral_read_available(const rspi_channel_t channel, bool* available)
 {
   RX_CHECK_NULL_PTR(available, s_tag, "Available pointer is nullptr");
 
   /* Validate channel */
-  if (channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
+  if ((uint8_t)channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
     rx_log_error(s_tag, "RSPI channel not initialized");
     return k_rx_err_invalid_state;
   }
@@ -831,12 +826,12 @@ rx_err_t rspi_peripheral_read_available(const uint8_t channel, bool* available)
  * @pre Channel must be initialized via rspi_init_peripheral()
  * @pre ready must be a valid non-nullptr
  */
-rx_err_t rspi_peripheral_write_ready(const uint8_t channel, bool* ready)
+rx_err_t rspi_peripheral_write_ready(const rspi_channel_t channel, bool* ready)
 {
   RX_CHECK_NULL_PTR(ready, s_tag, "Ready pointer is nullptr");
 
   /* Validate channel */
-  if (channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
+  if ((uint8_t)channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
     rx_log_error(s_tag, "RSPI channel not initialized");
     return k_rx_err_invalid_state;
   }
@@ -874,10 +869,10 @@ rx_err_t rspi_peripheral_write_ready(const uint8_t channel, bool* ready)
  *       - s_rspi_channel_initialized[channel] is set to false
  *       - Channel is no longer available for SPI operations
  */
-rx_err_t rspi_deinit(const uint8_t channel)
+rx_err_t rspi_deinit(const rspi_channel_t channel)
 {
   /* Validate channel */
-  if (channel >= k_rspi_max_channels) {
+  if ((uint8_t)channel >= k_rspi_max_channels) {
     rx_log_error(s_tag, "Invalid RSPI channel");
     return k_rx_err_invalid_arg;
   }
@@ -1157,13 +1152,13 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_validate_controller_args(const uint8_t                   channel,
+static rx_err_t internal_validate_controller_args(const rspi_channel_t            channel,
                                               const rspi_controller_config_t* config)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "Controller config pointer is nullptr");
 
   /* Validate channel */
-  if (channel >= k_rspi_max_channels) {
+  if ((uint8_t)channel >= k_rspi_max_channels) {
     rx_log_error(s_tag, "Invalid RSPI channel");
     return k_rx_err_invalid_arg;
   }
@@ -1218,7 +1213,7 @@ static rx_err_t internal_validate_controller_args(const uint8_t                 
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_prepare_controller(const uint8_t                   channel,
+static rx_err_t internal_prepare_controller(const rspi_channel_t            channel,
                                         const rspi_controller_config_t* config,
                                         volatile rx_rspi_regs_t**       out_rspi,
                                         uint8_t*                        out_spbr)
@@ -1281,7 +1276,7 @@ static rx_err_t internal_prepare_controller(const uint8_t                   chan
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_configure_registers(const uint8_t                   channel,
+static rx_err_t internal_configure_registers(const rspi_channel_t            channel,
                                          volatile rx_rspi_regs_t*        rspi,
                                          uint8_t                         spbr,
                                          uint16_t                        spcmd,
@@ -1353,7 +1348,7 @@ static rx_err_t internal_configure_registers(const uint8_t                   cha
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if:
  *         - config pointer is nullptr
- *         - channel >= k_rspi_max_channels
+ *         - (uint8_t)channel >= k_rspi_max_channels
  *         - config->spi_mode > 3
  *         - config->freq_hz out of range (< 100kHz or > 10MHz)
  *         - RSPI base address lookup fails
@@ -1380,7 +1375,7 @@ static rx_err_t internal_configure_registers(const uint8_t                   cha
  * @note Always configures 16-bit data frames with word access mode
  * @note CS is active-low (asserted=0, deasserted=1)
  */
-rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_config_t* config)
+rx_err_t rspi_init_controller(const rspi_channel_t channel, const rspi_controller_config_t* config)
 {
   /* Validate all arguments and preconditions */
   rx_err_t err = internal_validate_controller_args(channel, config);
@@ -1428,10 +1423,10 @@ rx_err_t rspi_init_controller(const uint8_t channel, const rspi_controller_confi
  *
  * @note Reads s_rspi_cs_config[channel] for port and pin configuration
  */
-rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
+rx_err_t rspi_controller_set_cs(const rspi_channel_t channel, const bool active)
 {
   /* Validate channel */
-  if (channel >= k_rspi_max_channels || !s_rspi_controller_initialized[channel]) {
+  if ((uint8_t)channel >= k_rspi_max_channels || !s_rspi_controller_initialized[channel]) {
     rx_log_error(s_tag, "RSPI controller channel not initialized");
     return k_rx_err_invalid_state;
   }
@@ -1488,7 +1483,7 @@ rx_err_t rspi_controller_set_cs(const uint8_t channel, const bool active)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_controller_assert_cs_with_setup(const uint8_t channel)
+static rx_err_t internal_controller_assert_cs_with_setup(const rspi_channel_t channel)
 {
   /* Rule 5: Pre-condition validation */
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
@@ -1544,7 +1539,7 @@ static rx_err_t internal_controller_assert_cs_with_setup(const uint8_t channel)
  *
  * @since Version 1.0.0
  */
-static rx_err_t internal_controller_deassert_cs_with_hold(const uint8_t channel)
+static rx_err_t internal_controller_deassert_cs_with_hold(const rspi_channel_t channel)
 {
   /* Rule 5: Pre-condition validation */
   RX_ASSERT((channel == k_rspi_channel_0) || (channel == k_rspi_channel_1) ||
@@ -1655,7 +1650,7 @@ static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* r
  *         - rx_data pointer is nullptr
  *         - RSPI base address lookup fails
  * @return k_rx_err_invalid_state if:
- *         - channel >= k_rspi_max_channels
+ *         - (uint8_t)channel >= k_rspi_max_channels
  *         - channel is not initialized via rspi_init_controller()
  * @return k_rx_err_timeout if:
  *         - TX buffer does not become ready within timeout
@@ -1677,14 +1672,14 @@ static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* r
  * @note CS hold delay: k_rspi_cs_hold_delay NOP loops (~300ns)
  * @note Uses inline assembly NOP for precise timing control
  */
-rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
-                                        const uint16_t  tx_data,
-                                        uint16_t* const rx_data)
+rx_err_t rspi_controller_transfer_16bit(const rspi_channel_t channel,
+                                        const uint16_t       tx_data,
+                                        uint16_t* const      rx_data)
 {
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is nullptr");
 
   /* Validate channel */
-  if (channel >= k_rspi_max_channels || !s_rspi_controller_initialized[channel]) {
+  if ((uint8_t)channel >= k_rspi_max_channels || !s_rspi_controller_initialized[channel]) {
     rx_log_error(s_tag, "RSPI controller channel not initialized");
     return k_rx_err_invalid_state;
   }
@@ -1736,10 +1731,10 @@ rx_err_t rspi_controller_transfer_16bit(const uint8_t   channel,
  *
  * @note Thread-safe only if caller ensures no concurrent access to the same channel
  */
-rx_err_t rspi_controller_deinit(const uint8_t channel)
+rx_err_t rspi_controller_deinit(const rspi_channel_t channel)
 {
   /* Validate channel */
-  if (channel >= k_rspi_max_channels) {
+  if ((uint8_t)channel >= k_rspi_max_channels) {
     rx_log_error(s_tag, "Invalid RSPI channel");
     return k_rx_err_invalid_arg;
   }
