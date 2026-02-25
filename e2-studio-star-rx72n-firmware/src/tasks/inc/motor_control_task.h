@@ -94,11 +94,11 @@ typedef enum : uint8_t {
  * @post Motors ready to respond to velocity commands
  *
  * @note NOT thread-safe. Must be called from single-threaded init context
- *       (AppMainTask) after motor hardware initialization
+ *       (tx_application_define() in main.c) after motor hardware initialization
  * @note Highest priority task - runs before all other application tasks
  *
  * @see motor_control_task.c Implementation details
- * @see app_main_task.c Task creation coordinator
+ * @see main.c Task creation in tx_application_define()
  *
  * @since STAR v1.0.0
  */

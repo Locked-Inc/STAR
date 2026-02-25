@@ -189,30 +189,30 @@ void mock_rspi_set_controller_deinit_return(mock_rspi_t* mock, rx_err_t ret)
   m->next_controller_deinit_return = ret;
 }
 
-void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, uint8_t channel, uint16_t rx_data)
+void mock_rspi_set_controller_rx_data(mock_rspi_t* mock, rspi_channel_t channel, uint16_t rx_data)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel < k_mock_rspi_max_channels) {
+  if ((uint8_t)channel < k_mock_rspi_max_channels) {
     m->controller[channel].next_rx_data = rx_data;
   }
 }
 
-uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, uint8_t channel)
+uint16_t mock_rspi_get_controller_last_tx(mock_rspi_t* mock, rspi_channel_t channel)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel < k_mock_rspi_max_channels) {
+  if ((uint8_t)channel < k_mock_rspi_max_channels) {
     return m->controller[channel].last_tx_data;
   }
   return 0;
 }
 
-void mock_rspi_clear_controller_channel(mock_rspi_t* mock, uint8_t channel)
+void mock_rspi_clear_controller_channel(mock_rspi_t* mock, rspi_channel_t channel)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel < k_mock_rspi_max_channels) {
+  if ((uint8_t)channel < k_mock_rspi_max_channels) {
     memset(&m->controller[channel], 0, sizeof(mock_rspi_controller_t));
   }
 }
@@ -223,11 +223,11 @@ void mock_rspi_clear_controller_channel(mock_rspi_t* mock, uint8_t channel)
  */
 
 rx_err_t
-mock_rspi_inject_rx_data(mock_rspi_t* mock, uint8_t channel, const uint8_t* data, uint32_t len)
+mock_rspi_inject_rx_data(mock_rspi_t* mock, rspi_channel_t channel, const uint8_t* data, uint32_t len)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel >= k_mock_rspi_max_channels) {
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -251,15 +251,15 @@ mock_rspi_inject_rx_data(mock_rspi_t* mock, uint8_t channel, const uint8_t* data
   return k_rx_ok;
 }
 
-rx_err_t mock_rspi_get_tx_data(mock_rspi_t* mock,
-                               uint8_t      channel,
+rx_err_t mock_rspi_get_tx_data(mock_rspi_t*    mock,
+                               rspi_channel_t  channel,
                                uint8_t*     data,
                                uint32_t     max_len,
                                uint32_t*    actual_len)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel >= k_mock_rspi_max_channels) {
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
     return k_rx_err_invalid_arg;
   }
 
@@ -276,29 +276,29 @@ rx_err_t mock_rspi_get_tx_data(mock_rspi_t* mock,
   return k_rx_ok;
 }
 
-void mock_rspi_set_data_available(mock_rspi_t* mock, uint8_t channel, bool available)
+void mock_rspi_set_data_available(mock_rspi_t* mock, rspi_channel_t channel, bool available)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel < k_mock_rspi_max_channels) {
+  if ((uint8_t)channel < k_mock_rspi_max_channels) {
     m->channels[channel].data_available = available;
   }
 }
 
-void mock_rspi_set_write_ready(mock_rspi_t* mock, uint8_t channel, bool ready)
+void mock_rspi_set_write_ready(mock_rspi_t* mock, rspi_channel_t channel, bool ready)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel < k_mock_rspi_max_channels) {
+  if ((uint8_t)channel < k_mock_rspi_max_channels) {
     m->channels[channel].write_ready = ready;
   }
 }
 
-void mock_rspi_clear_channel(mock_rspi_t* mock, uint8_t channel)
+void mock_rspi_clear_channel(mock_rspi_t* mock, rspi_channel_t channel)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
-  if (channel < k_mock_rspi_max_channels) {
+  if ((uint8_t)channel < k_mock_rspi_max_channels) {
     mock_rspi_channel_t* ch = &m->channels[channel];
 
     memset(ch->rx_data, 0, sizeof(ch->rx_data));
@@ -400,7 +400,7 @@ void mock_rspi_record_call(mock_rspi_t* mock,
  * =============================================================================
  */
 
-rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
+rx_err_t rspi_init_peripheral(rspi_channel_t channel, const rspi_config_t* config)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
@@ -412,7 +412,7 @@ rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
     return ret;
   }
 
-  if (channel >= k_mock_rspi_max_channels) {
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
     mock_rspi_record_call(mock,
                           "rspi_init_peripheral",
@@ -446,14 +446,27 @@ rx_err_t rspi_init_peripheral(uint8_t channel, const rspi_config_t* config)
 }
 
 rx_err_t
-rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_data, uint16_t length)
+rspi_peripheral_transfer(rspi_channel_t channel, const uint8_t* tx_data, uint8_t* rx_data, uint16_t length)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
   mock->transfer_calls++;
 
-  if (channel >= k_mock_rspi_max_channels) {
+  /* Validate arguments (match production HAL behavior) */
+  if (tx_data == nullptr || rx_data == nullptr) {
+    rx_err_t ret = k_rx_err_null_ptr;
+    mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
+    return ret;
+  }
+
+  if (length == 0) {
     rx_err_t ret = k_rx_err_invalid_arg;
+    mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
+    return ret;
+  }
+
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
+    rx_err_t ret = k_rx_err_invalid_state;
     mock_rspi_record_call(mock, "rspi_peripheral_transfer", channel, length, 0, ret);
     return ret;
   }
@@ -470,31 +483,27 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
 
   if (ret == k_rx_ok) {
     /* Capture TX data */
-    if (tx_data != nullptr && length > 0) {
-      uint32_t copy_len = (length < k_mock_rspi_buffer_size) ? length : k_mock_rspi_buffer_size;
-      memcpy(ch->tx_data, tx_data, copy_len);
-      ch->tx_len = copy_len;
-    }
+    uint32_t copy_len = (length < k_mock_rspi_buffer_size) ? length : k_mock_rspi_buffer_size;
+    (void)memcpy(ch->tx_data, tx_data, copy_len);
+    ch->tx_len = copy_len;
 
     /* Provide RX data from injected buffer */
-    if (rx_data != nullptr && length > 0) {
-      uint32_t avail    = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
-      uint32_t copy_len = (length < avail) ? length : avail;
+    uint32_t avail    = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
+    uint32_t rx_copy  = (length < avail) ? length : avail;
 
-      if (copy_len > 0) {
-        memcpy(rx_data, &ch->rx_data[ch->rx_pos], copy_len);
-        ch->rx_pos += copy_len;
-      }
+    if (rx_copy > 0) {
+      (void)memcpy(rx_data, &ch->rx_data[ch->rx_pos], rx_copy);
+      ch->rx_pos += rx_copy;
+    }
 
-      /* Zero-fill any remaining bytes if not enough RX data */
-      if (copy_len < length) {
-        memset(rx_data + copy_len, 0, length - copy_len);
-      }
+    /* Zero-fill any remaining bytes if not enough RX data */
+    if (rx_copy < length) {
+      (void)memset(rx_data + rx_copy, 0, length - rx_copy);
+    }
 
-      /* Update data available flag */
-      if (ch->rx_pos >= ch->rx_len) {
-        ch->data_available = false;
-      }
+    /* Update data available flag */
+    if (ch->rx_pos >= ch->rx_len) {
+      ch->data_available = false;
     }
   }
 
@@ -506,7 +515,7 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
   return ret;
 }
 
-rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available)
+rx_err_t rspi_peripheral_read_available(rspi_channel_t channel, bool* available)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
@@ -518,8 +527,8 @@ rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available)
     return ret;
   }
 
-  if (channel >= k_mock_rspi_max_channels) {
-    rx_err_t ret = k_rx_err_invalid_arg;
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
+    rx_err_t ret = k_rx_err_invalid_state;
     mock_rspi_record_call(mock, "rspi_peripheral_read_available", channel, 0, 0, ret);
     return ret;
   }
@@ -546,7 +555,7 @@ rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available)
   return ret;
 }
 
-rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready)
+rx_err_t rspi_peripheral_write_ready(rspi_channel_t channel, bool* ready)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
@@ -558,8 +567,8 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready)
     return ret;
   }
 
-  if (channel >= k_mock_rspi_max_channels) {
-    rx_err_t ret = k_rx_err_invalid_arg;
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
+    rx_err_t ret = k_rx_err_invalid_state;
     mock_rspi_record_call(mock, "rspi_peripheral_write_ready", channel, 0, 0, ret);
     return ret;
   }
@@ -586,13 +595,13 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready)
   return ret;
 }
 
-rx_err_t rspi_deinit(uint8_t channel)
+rx_err_t rspi_deinit(rspi_channel_t channel)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
   mock->deinit_calls++;
 
-  if (channel >= k_mock_rspi_max_channels) {
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
     mock_rspi_record_call(mock, "rspi_deinit", channel, 0, 0, ret);
     return ret;
@@ -621,7 +630,7 @@ rx_err_t rspi_deinit(uint8_t channel)
  * =============================================================================
  */
 
-rx_err_t rspi_init_controller(uint8_t channel, const rspi_controller_config_t* config)
+rx_err_t rspi_init_controller(rspi_channel_t channel, const rspi_controller_config_t* config)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
@@ -633,7 +642,7 @@ rx_err_t rspi_init_controller(uint8_t channel, const rspi_controller_config_t* c
     return ret;
   }
 
-  if (channel >= k_mock_rspi_max_channels) {
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
     mock_rspi_record_call(mock, "rspi_init_controller", channel, config->freq_hz, 0, ret);
     return ret;
@@ -664,14 +673,14 @@ rx_err_t rspi_init_controller(uint8_t channel, const rspi_controller_config_t* c
   return ret;
 }
 
-rx_err_t rspi_controller_set_cs(uint8_t channel, bool active)
+rx_err_t rspi_controller_set_cs(rspi_channel_t channel, bool active)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
   mock->controller_cs_calls++;
 
-  if (channel >= k_mock_rspi_max_channels) {
-    rx_err_t ret = k_rx_err_invalid_arg;
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
+    rx_err_t ret = k_rx_err_invalid_state;
     mock_rspi_record_call(mock, "rspi_controller_set_cs", channel, active, 0, ret);
     return ret;
   }
@@ -698,14 +707,21 @@ rx_err_t rspi_controller_set_cs(uint8_t channel, bool active)
   return ret;
 }
 
-rx_err_t rspi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint16_t* rx_data)
+rx_err_t rspi_controller_transfer_16bit(rspi_channel_t channel, uint16_t tx_data, uint16_t* rx_data)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
   mock->controller_transfer_calls++;
 
-  if (channel >= k_mock_rspi_max_channels) {
-    rx_err_t ret = k_rx_err_invalid_arg;
+  /* Validate arguments (match production HAL behavior) */
+  if (rx_data == nullptr) {
+    rx_err_t ret = k_rx_err_null_ptr;
+    mock_rspi_record_call(mock, "rspi_controller_transfer_16bit", channel, tx_data, 0, ret);
+    return ret;
+  }
+
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
+    rx_err_t ret = k_rx_err_invalid_state;
     mock_rspi_record_call(mock, "rspi_controller_transfer_16bit", channel, tx_data, 0, ret);
     return ret;
   }
@@ -731,9 +747,7 @@ rx_err_t rspi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint1
     }
 
     /* Provide RX data */
-    if (rx_data != nullptr) {
-      *rx_data = ctrl->next_rx_data;
-    }
+    *rx_data = ctrl->next_rx_data;
   }
 
   mock_rspi_record_call(mock,
@@ -749,13 +763,13 @@ rx_err_t rspi_controller_transfer_16bit(uint8_t channel, uint16_t tx_data, uint1
   return ret;
 }
 
-rx_err_t rspi_controller_deinit(uint8_t channel)
+rx_err_t rspi_controller_deinit(rspi_channel_t channel)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
   mock->controller_deinit_calls++;
 
-  if (channel >= k_mock_rspi_max_channels) {
+  if ((uint8_t)channel >= k_mock_rspi_max_channels) {
     rx_err_t ret = k_rx_err_invalid_arg;
     mock_rspi_record_call(mock, "rspi_controller_deinit", channel, 0, 0, ret);
     return ret;

@@ -38,7 +38,7 @@ ctest --output-on-failure
 ### Communication
 - `test_rx_comm_manager` - Multi-interface communication manager
 - `test_rx_spi_comm` - SPI communication protocol
-- `test_rx_bus_manager`, `test_rx_bus_uart`, `test_rx_bus_onewire` - Bus abstraction layer
+- `test_rx_bus_manager`, `test_rx_bus_onewire` - Bus abstraction layer
 - `test_rx_nanopb` - Protocol Buffers integration
 
 ### Peripherals & Sensors

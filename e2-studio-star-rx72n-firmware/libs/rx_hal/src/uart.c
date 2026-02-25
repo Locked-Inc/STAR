@@ -147,7 +147,7 @@
  * **This module is used by:**
  * - `rx_log.c` - Logging subsystem output
  * - `main.c` - Debug output during initialization
- * - `app_main_task.c` - Application debug messages
+ * - `comm_task.c` - Communication task debug messages
  *
  * @par NASA Power of 10 Compliance:
  *
@@ -427,10 +427,13 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  *
  * **Algorithm steps:**
  * 1. Guard against baudrate == 0 (return k_brr_max_value as a safe sentinel).
- * 2. Apply the n=0 formula using integer arithmetic (truncating division).
- * 3. Clamp the result to k_brr_max_value (255) if the integer exceeds the
+ * 2. Guard against baudrate > k_uart_baudrate_max (return k_brr_min_value).
+ * 3. Compute divisor_result = PCLKB / (32 * B) using integer arithmetic.
+ * 4. Guard against divisor_result <= 1 to prevent underflow from the -1 offset.
+ * 5. Compute BRR = divisor_result - 1.
+ * 6. Clamp the result to k_brr_max_value (255) if the integer exceeds the
  *    8-bit range (indicates a baud rate too slow for this clock).
- * 4. Return the clamped 8-bit result.
+ * 7. Assert post-condition and return the clamped 8-bit result.
  *
  * **Baud rate error:**
  * Integer truncation introduces a small positive frequency error.  At PCLKB =
@@ -444,6 +447,8 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  *
  * @return uint8_t BRR register value to program into sci->brr
  * @retval 0..254 Computed BRR for the requested baud rate
+ * @retval 0 (k_brr_min_value) Returned when baudrate > k_uart_baudrate_max or
+ *         divisor_result underflows the formula offset
  * @retval 255 (k_brr_max_value) Returned when baudrate == 0 or the computed
  *         value exceeds 255 (baud rate too low for n=0 divisor)
  *
@@ -480,18 +485,34 @@ static bool s_channel_initialized[k_uart_array_size] = {false};
  */
 static uint8_t internal_calculate_brr(const uint32_t baudrate)
 {
+  /* Pre-condition: reject zero baudrate (division by zero) */
   if (baudrate == 0) {
     return k_brr_max_value;
   }
 
-  /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
-  const uint32_t brr_value = (k_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - k_brr_formula_offset;
+  /* Pre-condition: reject baudrate above maximum (would underflow BRR formula) */
+  if (baudrate > k_uart_baudrate_max) {
+    return k_brr_min_value;
+  }
 
+  /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
+  const uint32_t divisor_result = k_pclkb_hz / (k_brr_divisor_n0 * baudrate);
+
+  /* Guard against underflow: if divisor_result is 0, subtraction would wrap */
+  if (divisor_result <= k_brr_formula_offset) {
+    return k_brr_min_value;
+  }
+
+  const uint32_t brr_value = divisor_result - k_brr_formula_offset;
+
+  /* Clamp to maximum BRR register value */
   if (brr_value > k_brr_max_value) {
     return k_brr_max_value;
   }
 
-  return (uint8_t)brr_value;
+  const uint8_t result = (uint8_t)brr_value;
+
+  return result;
 }
 
 /**
@@ -1595,12 +1616,12 @@ rx_err_t uart_getc_channel(const uart_channel_t channel, char* data)
   }
 
   /* Clear any error flags first */
-  if ((sci->ssr & k_sci_ssr_error_mask) != 0) {
+  if ((sci->ssr & k_sci_ssr_error_mask) != k_uart_flag_clear) {
     internal_clear_errors(sci);
   }
 
   /* Check if receive data is available (RDRF flag) */
-  if ((sci->ssr & k_sci_ssr_rdrf_flag) == 0) {
+  if ((sci->ssr & k_sci_ssr_rdrf_flag) == k_uart_flag_clear) {
     return k_rx_err_empty;
   }
 
@@ -1804,7 +1825,7 @@ rx_err_t uart_rx_available(const uart_channel_t channel, bool* available)
   }
 
   /* Check RDRF flag */
-  *available = ((sci->ssr & k_sci_ssr_rdrf_flag) != 0);
+  *available = ((sci->ssr & k_sci_ssr_rdrf_flag) != k_uart_flag_clear);
 
   return k_rx_ok;
 }
@@ -2007,14 +2028,9 @@ void uart_debug_puts(const char* str)
     return;
   }
 
-  /* Bounded loop per NASA Power of 10 Rule 2 */
-  for (uint32_t i = 0; i < k_uart_max_str_len && str[i] != '\0'; ++i) {
-    /* Convert \n to \r\n for terminal compatibility */
-    if (str[i] == '\n') {
-      uart_debug_putc('\r');
-    }
-    uart_debug_putc(str[i]);
-  }
+  /* Delegate to uart_puts_channel which already handles LF->CRLF conversion,
+   * bounded iteration (k_uart_max_str_len), and per-character error checking. */
+  (void)uart_puts_channel((uart_channel_t)k_uart_debug_channel, str);
 }
 
 /**
@@ -2166,10 +2182,12 @@ void uart_debug_puthex(const uint32_t value, uint8_t digits)
     digits = k_uart_hex_min_digits;
   }
 
-  /* Print hex digits from most significant (statically bounded) */
-  for (int32_t i = k_uart_hex_max_digits - 1; i >= 0; i--) {
-    if (i < digits) {
-      uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
+  /* Print hex digits from most significant (statically bounded, unsigned counter) */
+  for (uint8_t i = k_uart_hex_zero_digits; i < k_uart_hex_max_digits; ++i) {
+    const uint8_t digit_idx = (k_uart_hex_max_digits - k_uart_hex_min_digits) - i;
+    if (digit_idx < digits) {
+      const uint8_t nibble =
+        (uint8_t)((value >> (digit_idx * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask);
       uart_debug_putc(s_hex[nibble]);
     }
   }

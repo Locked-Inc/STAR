@@ -30,7 +30,7 @@
  *   ClockInit [label="rx_clock_power_init()\n240 MHz PLL, peripheral clocks"];
  *   HwInit [label="hardware_init()\nMotors, USB, sensors"];
  *   ThreadX [label="tx_kernel_enter()\nStart RTOS scheduler"];
- *   Tasks [label="app_main_task\nPID control @ 100 Hz", shape=ellipse];
+ *   Tasks [label="Application Tasks\n(comm, motor, sensors)", shape=ellipse];
  *
  *   Reset -> Main;
  *   Main -> CheckFlags;
@@ -87,7 +87,7 @@
  *
  * **Thread creation sequence:**
  * ```
- * tx_kernel_enter() -> tx_application_define() -> app_main_task_create() -> Main control loop
+ * tx_kernel_enter() -> tx_application_define() -> task creation -> RTOS scheduler
  * ```
  *
  * ## Memory Map and Stack Setup
@@ -98,9 +98,9 @@
  * | **SRAM** | 0x00000000 - 0x0007FFFF | 512 KB | Heap, stacks, ThreadX kernel objects |
  * | **Peripheral registers** | 0x00080000 - 0x000FFFFF | ~512 KB | I/O registers (UART, SPI, USB, etc.) |
  *
- * **Stack sizes** (defined in linker script and ThreadX config):
+ * **Stack sizes** (statically allocated per task, defined in each task module):
  * - **Main stack**: 4 KB (used only until ThreadX starts)
- * - **App main task stack**: 8 KB (PID control, USB communication)
+ * - **Per-task stacks**: 7 static stacks (comm, watchdog, motor, obstacle, temp, LED, telemetry)
  * - **ThreadX system stack**: 2 KB (kernel overhead)
  *
  * ## Error Handling Strategy
@@ -125,7 +125,7 @@
  * | **Rule 1: Control flow** | [PASS] | No goto, setjmp, or recursion |
  * | **Rule 2: Loop bounds** | [PASS] | while(1) wait loop only (infinite by design) |
  * | **Rule 3: Heap allocation** | [PASS] | Zero dynamic allocation (static stacks only) |
- * | **Rule 4: Function length** | [PASS] | Longest function: main() = 37 lines |
+ * | **Rule 4: Function length** | [PASS] | tx_application_define split into ~60-line helpers |
  * | **Rule 5: Assertions** | [PASS] | 11 RX_ASSERT checks across 7 functions |
  * | **Rule 6: Data scope** | [PASS] | All variables at smallest scope (function-local) |
  * | **Rule 7: Return checks** | [PASS] | All rx_err_t returns checked via RX_ERROR_CHECK |
@@ -149,13 +149,12 @@
  * No synchronization primitives needed.
  *
  * **Post-ThreadX:** After kernel start, main() **never returns**. Application logic runs
- * in `app_main_task` with ThreadX scheduling and synchronization.
+ * in dedicated tasks with ThreadX scheduling and synchronization.
  *
  * ## Related Files
  *
  * - **Clock init:** See [rx_clock_power_init.c](rx_clock_power_init.c) - PLL configuration, 240 MHz setup
  * - **Hardware init:** See [hardware_init.c](hardware_init.c) - Motor drivers, USB CDC, sensors
- * - **Main task:** See [app_main_task.c](app_main_task.c) - PID control loop at 100 Hz
  * - **ThreadX config:** See [rx_threadx_config.h](../lib/rx_core/inc/rx_threadx_config.h) - RTOS tuning
  *
  * @note This file compiles for both RX72N hardware and x86-64 unit tests (mock register access).
@@ -164,15 +163,12 @@
  *
  * @see hardware_init() Application-specific peripheral initialization
  * @see rx_clock_power_init() System clock and power management setup
- * @see app_main_task_create() Create main application thread
- *
  * @since Version 1.0.0
  *
  * @par Revision History:
  * - v1.0.0 (2026-01): Initial implementation with ThreadX RTOS bootstrap
  */
 
-#include "app_main_task.h"
 #include "hardware.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
@@ -1556,6 +1552,291 @@ static const rx_iwdt_config_t s_iwdt_config = {
     [k_system_state_error]        = k_iwdt_timeout_error_ms,        /**< 10s - recovery/diag */
   }};
 
+/* =============================================================================
+ * tx_application_define Helper Functions
+ *
+ * These static helpers decompose the ThreadX application callback into
+ * single-responsibility units that each stay under ~60 lines
+ * (NASA Power of 10 Rule 4).
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize the global bus manager with infrastructure interfaces
+ *
+ * @details
+ * Creates the bus manager singleton that all tasks use to access hardware buses.
+ * The bus manager requires a ThreadX mutex internally, so it must be initialized
+ * inside tx_application_define (after the ThreadX kernel is ready but before
+ * the scheduler starts).
+ *
+ * @pre rx_infrastructure_init() completed successfully in main()
+ * @pre ThreadX kernel initialized (mutex creation available)
+ *
+ * @post g_bus_manager initialized and ready for rx_bus_manager_add_bus() calls
+ * @post Infrastructure error and pin interfaces wired into the bus manager
+ *
+ * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
+ *
+ * @see rx_bus_manager_init() Underlying initialization function
+ * @see internal_register_system_buses() Registers individual buses after this call
+ *
+ * @since Version 1.0.0
+ */
+static void internal_init_bus_manager(void)
+{
+  extern rx_bus_manager_t g_bus_manager;
+
+  rx_error_interface_t* error_iface = rx_infrastructure_get_error_interface();
+  rx_pin_interface_t*   pin_iface   = rx_infrastructure_get_pin_interface();
+
+  rx_err_t err = rx_bus_manager_init(&g_bus_manager, "BUS_MGR", error_iface, pin_iface);
+  RX_ASSERT(err == k_rx_ok, "rx_bus_manager_init must succeed");
+}
+
+/**
+ * @brief Register all hardware buses (1-Wire, GPIO, ADC) with the bus manager
+ *
+ * @details
+ * Initializes static bus configuration structs and registers them with the
+ * global bus manager. Each bus is available to tasks via rx_bus_manager_get_interface().
+ *
+ * Registered buses:
+ * - **onewire0** (P51): DS18B20 temperature sensor, 1-Wire bit-banging
+ * - **gpio** (P00): Generic GPIO for motor driver control signals
+ * - **adc0** (S12AD0, ch0): Motor current sensing, 12-bit resolution
+ *
+ * @pre internal_init_bus_manager() completed successfully
+ * @pre Static bus config structs (s_onewire0_config, s_gpio_config, s_adc0_config) are zeroed (BSS)
+ *
+ * @post All three buses registered and accessible via bus manager
+ * @post Static config structs populated with bus parameters
+ *
+ * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
+ *
+ * @see internal_init_bus_manager() Must be called first
+ * @see rx_bus_config_init_onewire() 1-Wire bus configuration
+ * @see rx_bus_config_init_gpio() GPIO bus configuration
+ * @see rx_bus_config_init_adc() ADC bus configuration
+ *
+ * @since Version 1.0.0
+ */
+static void internal_register_system_buses(void)
+{
+  extern rx_bus_manager_t g_bus_manager;
+
+  /* Register onewire0 - DS18B20 Temperature Sensor */
+  rx_err_t err = rx_bus_config_init_onewire(&s_onewire0_config,
+                                             "onewire0", /* name */
+                                             k_rx_p5_1); /* pin = P51 */
+  RX_ASSERT(err == k_rx_ok, "onewire0 config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_onewire0_config);
+  RX_ASSERT(err == k_rx_ok, "onewire0 registration must succeed");
+
+  /* Register gpio - Generic GPIO Access (initial pin P00) */
+  err = rx_bus_config_init_gpio(&s_gpio_config,
+                                "gpio",     /* name */
+                                k_rx_p0_0); /* pin = P00 (generic bus) */
+  RX_ASSERT(err == k_rx_ok, "gpio config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_gpio_config);
+  RX_ASSERT(err == k_rx_ok, "gpio registration must succeed");
+
+  /* Register adc0 - Motor Current Sensing (ADC Unit 0) */
+  err = rx_bus_config_init_adc(&s_adc0_config,
+                               "adc0",                  /* name */
+                               k_adc_unit_0,            /* unit = ADC0 (S12AD0) */
+                               k_adc_channel_0,         /* channel = 0 (generic bus) */
+                               k_adc_resolution_12bit); /* bits = 12-bit resolution */
+  RX_ASSERT(err == k_rx_ok, "adc0 config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
+  RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
+}
+
+/**
+ * @brief Initialize shared data module and hardware watchdog timer
+ *
+ * @details
+ * Sets up inter-task communication (ThreadX mutexes and event flags via shared_data_init)
+ * and initializes the Independent Watchdog Timer with state-dependent timeouts.
+ *
+ * @pre internal_register_system_buses() completed (buses available for tasks)
+ * @pre ThreadX kernel initialized (mutex/event-flag creation available)
+ *
+ * @post Shared data mutexes and event flags created and ready for task use
+ * @post IWDT hardware configured with s_iwdt_config parameters
+ *
+ * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
+ *
+ * @see shared_data_init() Inter-task communication setup
+ * @see rx_iwdt_init() Hardware watchdog initialization
+ *
+ * @since Version 1.0.0
+ */
+static void internal_init_shared_data_and_watchdog(void)
+{
+  /* Initialize shared data module (mutexes, event flags) */
+  rx_err_t err = shared_data_init();
+  RX_ASSERT(err == k_rx_ok, "shared_data_init must succeed");
+
+  /* Initialize IWDT (hardware watchdog + task monitoring) */
+  err = rx_iwdt_init(&s_iwdt_config);
+  RX_ASSERT(err == k_rx_ok, "rx_iwdt_init must succeed");
+}
+
+/**
+ * @brief Register all seven tasks for IWDT heartbeat monitoring and set initial state
+ *
+ * @details
+ * Registers each application task with the IWDT module so that missed heartbeats
+ * are detected. Timeouts are set to 3x the nominal task period to allow two
+ * missed heartbeats before a timeout is declared.
+ *
+ * Task timeout mapping:
+ * - Telemetry (50ms period) -> 150ms timeout
+ * - LED Status (50ms period) -> 150ms timeout
+ * - Temp Sensor (1000ms period) -> 3000ms timeout
+ * - Obstacle Detect (20ms period) -> 60ms timeout
+ * - Motor Control (10ms period) -> 30ms timeout
+ * - Communication (10ms period) -> 30ms timeout
+ * - Watchdog Monitor (10ms period) -> 30ms timeout
+ *
+ * After all tasks are registered the system state is set to k_system_state_init
+ * so the IWDT uses the 5-second init-phase timeout.
+ *
+ * @pre internal_init_shared_data_and_watchdog() completed (IWDT initialized)
+ * @pre No tasks registered yet (first call after rx_iwdt_init)
+ *
+ * @post All seven tasks registered with per-task heartbeat timeouts
+ * @post IWDT system state set to k_system_state_init (5s timeout)
+ *
+ * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
+ *
+ * @see rx_iwdt_register_task() Registers a single task for monitoring
+ * @see rx_iwdt_set_state() Sets system state for state-dependent timeouts
+ *
+ * @since Version 1.0.0
+ */
+static void internal_register_iwdt_tasks(void)
+{
+  rx_err_t err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);
+  RX_ASSERT(err == k_rx_ok, "Telemetry IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
+  RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("TempSensor", k_iwdt_task_timeout_tempsensor_ms);
+  RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("ObstDetect", k_iwdt_task_timeout_obstdetect_ms);
+  RX_ASSERT(err == k_rx_ok, "ObstDetect IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);
+  RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);
+  RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
+
+  err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
+  RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
+
+  /* Set initial IWDT state (init phase - 5s timeout) */
+  err = rx_iwdt_set_state(k_system_state_init);
+  RX_ASSERT(err == k_rx_ok, "IWDT set init state must succeed");
+}
+
+/**
+ * @brief Create all seven application tasks and transition to running state
+ *
+ * @details
+ * Creates all seven ThreadX tasks in lowest-priority-first order. Tasks do not
+ * begin executing until tx_application_define() returns and the scheduler starts.
+ * After all tasks are created, the IWDT system state transitions to
+ * k_system_state_running.
+ *
+ * Task creation order (lowest priority first):
+ * 1. Telemetry (priority 18)
+ * 2. LED Status (priority 17)
+ * 3. Temperature Sensor (priority 15)
+ * 4. Obstacle Detection (priority 12)
+ * 5. Motor Control (priority 8)
+ * 6. Communication (priority 5)
+ * 7. Watchdog Monitor (priority 6)
+ *
+ * @pre internal_register_iwdt_tasks() completed (all tasks registered for monitoring)
+ * @pre Static task stacks allocated in each task module
+ *
+ * @post All seven ThreadX threads created in READY state
+ * @post IWDT system state set to k_system_state_running (2s timeout)
+ *
+ * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
+ * @note Tasks do not begin executing until tx_application_define() returns.
+ *
+ * @see telemetry_task_create() through watchdog_monitor_task_create()
+ * @see rx_iwdt_set_state() Transitions to running state after task creation
+ *
+ * @since Version 1.0.0
+ */
+static void internal_create_system_tasks(void)
+{
+  /* Telemetry Task - Priority 18 (lowest) */
+  rx_err_t err = telemetry_task_create();
+  RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
+
+  /* LED Status Task - Priority 17 (visual feedback) */
+  err = led_status_task_create();
+  RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
+
+  /* Temperature Sensor Task - Priority 15 */
+  err = temp_sensor_task_create();
+  RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
+
+  /* Obstacle Detection Task - Priority 12 */
+  err = obstacle_detect_task_create();
+  RX_ASSERT(err == k_rx_ok, "obstacle_detect_task_create must succeed");
+
+  /* Motor Control Task - Priority 8 */
+  err = motor_control_task_create();
+  RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
+
+  /* Communication Task - Priority 5 (highest) */
+  err = comm_task_create();
+  RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
+
+  /* Watchdog Monitor Task - Priority 6 */
+  err = watchdog_monitor_task_create();
+  RX_ASSERT(err == k_rx_ok, "watchdog_monitor_task_create must succeed");
+
+  /* Transition to running state (all tasks created) */
+  err = rx_iwdt_set_state(k_system_state_running);
+  RX_ASSERT(err == k_rx_ok, "IWDT set running state must succeed");
+}
+
+/**
+ * @brief Register ThreadX stack overflow detection handler
+ *
+ * @details
+ * Installs the rx_stack_monitor callback that ThreadX invokes when any thread
+ * exceeds its allocated stack. Requires TX_ENABLE_STACK_CHECKING to be defined
+ * in the ThreadX build configuration.
+ *
+ * @pre All application tasks created via internal_create_system_tasks()
+ * @pre ThreadX TX_ENABLE_STACK_CHECKING enabled at build time
+ *
+ * @post Stack overflow handler registered with ThreadX kernel
+ * @post Any future stack overflow triggers rx_stack_monitor callback
+ *
+ * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
+ *
+ * @see rx_stack_monitor_init() Underlying registration function
+ *
+ * @since Version 1.0.0
+ */
+static void internal_init_stack_monitor(void)
+{
+  rx_err_t err = rx_stack_monitor_init();
+  RX_ASSERT(err == k_rx_ok, "rx_stack_monitor_init must succeed");
+}
+
 /**
  * @brief ThreadX application definition callback - Create application threads and kernel objects
  *
@@ -1571,27 +1852,15 @@ static const rx_iwdt_config_t s_iwdt_config = {
  *
  * ## Application Thread Creation
  *
- * This callback creates the **main application task** (`app_main_task`) which runs the
- * motor control PID loop at 100 Hz and handles USB communication.
+ * This callback delegates to six internal helpers that each handle a single
+ * initialization responsibility (NASA Power of 10 Rule 4 compliance):
  *
- * **Thread hierarchy:**
- * @dot
- * digraph threads {
- *   rankdir=TB;
- *   node [shape=box];
- *
- *   ThreadX [label="ThreadX Kernel", shape=ellipse];
- *   AppDef [label="tx_application_define()"];
- *   MainTask [label="app_main_task\n(Priority 5, 8KB stack)"];
- *   PID [label="PID Control Loop\n100 Hz"];
- *   USB [label="USB CDC\nCommunication"];
- *
- *   ThreadX -> AppDef [label="Callback"];
- *   AppDef -> MainTask [label="app_main_task_create()"];
- *   MainTask -> PID;
- *   MainTask -> USB;
- * }
- * @enddot
+ * 1. internal_init_bus_manager() - bus manager singleton
+ * 2. internal_register_system_buses() - 1-Wire, GPIO, ADC bus configs
+ * 3. internal_init_shared_data_and_watchdog() - shared data + IWDT hardware
+ * 4. internal_register_iwdt_tasks() - per-task heartbeat registration
+ * 5. internal_create_system_tasks() - ThreadX thread creation (7 tasks)
+ * 6. internal_init_stack_monitor() - stack overflow detection
  *
  * ## Memory Management
  *
@@ -1605,7 +1874,7 @@ static const rx_iwdt_config_t s_iwdt_config = {
  * |--------|------|---------|
  * | **BSS/Data** | ~10 KB | Global variables, ThreadX kernel data |
  * | **ThreadX heap** | 0 bytes | **Not used** (zero dynamic allocation policy) |
- * | **App main task stack** | 8 KB | Static allocation via tx_byte_pool or array |
+ * | **Task stacks (x7)** | varies | Static arrays in each task module (comm, watchdog, motor, etc.) |
  * | **first_unused_memory** | ~490 KB | Remaining free SRAM (unused) |
  *
  * ## Thread Creation Timing (RX72N @ 240 MHz)
@@ -1613,8 +1882,8 @@ static const rx_iwdt_config_t s_iwdt_config = {
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
  * | tx_application_define() call | ~5 us | ThreadX callback overhead |
- * | app_main_task_create() | ~20 us | TCB init, stack setup |
- * | **Total** | **~25 us** | Fast thread creation |
+ * | Task creation (7 tasks) | ~140 us | TCB init, stack setup per task |
+ * | **Total** | **~145 us** | Fast thread creation |
  *
  * ## Error Handling
  *
@@ -1631,12 +1900,13 @@ static const rx_iwdt_config_t s_iwdt_config = {
  * @return void (No return value - ThreadX callback convention)
  *
  * @pre ThreadX kernel initialized (tx_kernel_enter() called from main())
- * @pre SRAM available for thread stacks (minimum 8 KB for app_main_task)
+ * @pre SRAM available for thread stacks
  * @pre first_unused_memory points to valid SRAM address
  *
- * @post app_main_task created and ready to run (not yet started - scheduler starts after return)
- * @post Thread stack allocated and initialized (SP set to stack top)
- * @post Thread priority configured (priority 5 for main task)
+ * @post All seven application tasks created and ready to run (scheduler starts after return)
+ * @post Thread stacks allocated statically and initialized (SP set to stack top for each task)
+ * @post Thread priorities configured for seven distinct tasks (comm_task holds priority 5)
+ * @post IWDT task monitoring registered for all seven tasks with per-task timeouts
  * @post ThreadX stack overflow handler registered via rx_stack_monitor_init()
  *
  * @note **This function executes BEFORE the ThreadX scheduler starts.** Threads created here
@@ -1665,28 +1935,13 @@ static const rx_iwdt_config_t s_iwdt_config = {
  * }
  * @endcode
  *
- * @par Example Thread Creation:
- * @code
- * void tx_application_define(void* first_unused_memory) {
- *   rx_err_t err;
- *
- *   // Validate parameter (ThreadX should always provide valid pointer)
- *   RX_ASSERT(first_unused_memory != nullptr, "first_unused_memory must be valid");
- *
- *   // Create main application task (8 KB stack, priority 5)
- *   err = app_main_task_create();
- *   RX_ERROR_CHECK(err);
- *
- *   // Assert thread creation succeeded (critical error if not)
- *   RX_ASSERT(err == k_rx_ok, "app_main_task_create must succeed");
- *
- *   // Return to ThreadX - scheduler will start after this function completes
- * }
- * @endcode
- *
- * @see app_main_task_create() Create main application thread (PID control, USB communication)
+ * @see internal_init_bus_manager() Step 1: Bus manager initialization
+ * @see internal_register_system_buses() Step 2: Bus registration
+ * @see internal_init_shared_data_and_watchdog() Step 3: Shared data and IWDT
+ * @see internal_register_iwdt_tasks() Step 4: Task heartbeat registration
+ * @see internal_create_system_tasks() Step 5: ThreadX thread creation
+ * @see internal_init_stack_monitor() Step 6: Stack overflow detection
  * @see tx_kernel_enter() Start ThreadX scheduler (calls this callback internally)
- * @see app_main_task.c Implementation of main control loop (100 Hz PID)
  *
  * @since Version 1.0.0
  *
@@ -1700,11 +1955,12 @@ void tx_application_define(void* first_unused_memory)
   /* =========================================================================
    * Multi-Task Architecture Initialization
    *
-   * Task creation order: lowest priority first to ensure higher priority
-   * tasks can preempt during initialization if needed.
+   * Task creation order is dependency-aware while the scheduler is not yet
+   * running; no task preemption occurs during this phase.
    *
    * Priority Map (lower = higher priority):
    *   5  = Communication (highest - command latency)
+   *   6  = Watchdog Monitor (IWDT feeding + task heartbeat checks)
    *   8  = Motor Control (250 Hz control loop)
    *   12 = Obstacle Detection (safety-critical)
    *   15 = Temperature Sensing (1 Hz)
@@ -1713,129 +1969,23 @@ void tx_application_define(void* first_unused_memory)
    * =========================================================================
    */
 
-  /* Step 1a: Initialize bus manager (requires ThreadX mutex, so must be here) */
-  rx_err_t err;
-  {
-    extern rx_bus_manager_t g_bus_manager;
-    rx_error_interface_t*   error_iface = rx_infrastructure_get_error_interface();
-    rx_pin_interface_t*     pin_iface   = rx_infrastructure_get_pin_interface();
-    err = rx_bus_manager_init(&g_bus_manager, "BUS_MGR", error_iface, pin_iface);
-    RX_ASSERT(err == k_rx_ok, "rx_bus_manager_init must succeed");
-  }
+  /* Step 1: Initialize bus manager (requires ThreadX mutex) */
+  internal_init_bus_manager();
 
-  /* Step 1b: Register buses with manager (before tasks need them) */
-  {
-    extern rx_bus_manager_t g_bus_manager;
+  /* Step 2: Register buses with manager (before tasks need them) */
+  internal_register_system_buses();
 
-    /* Register onewire0 - DS18B20 Temperature Sensor */
-    err = rx_bus_config_init_onewire(&s_onewire0_config,
-                                     "onewire0", /* name */
-                                     k_rx_p5_1); /* pin = P51 */
-    RX_ASSERT(err == k_rx_ok, "onewire0 config init must succeed");
-    err = rx_bus_manager_add_bus(&g_bus_manager, &s_onewire0_config);
-    RX_ASSERT(err == k_rx_ok, "onewire0 registration must succeed");
+  /* Step 3: Initialize shared data and hardware watchdog */
+  internal_init_shared_data_and_watchdog();
 
-    /* Register gpio - Generic GPIO Access (initial pin P00) */
-    err = rx_bus_config_init_gpio(&s_gpio_config,
-                                  "gpio",     /* name */
-                                  k_rx_p0_0); /* pin = P00 (generic bus) */
-    RX_ASSERT(err == k_rx_ok, "gpio config init must succeed");
-    err = rx_bus_manager_add_bus(&g_bus_manager, &s_gpio_config);
-    RX_ASSERT(err == k_rx_ok, "gpio registration must succeed");
+  /* Step 4: Register all tasks for IWDT heartbeat monitoring */
+  internal_register_iwdt_tasks();
 
-    /* Register adc0 - Motor Current Sensing (ADC Unit 0) */
-    err = rx_bus_config_init_adc(&s_adc0_config,
-                                 "adc0",                  /* name */
-                                 k_adc_unit_0,            /* unit = ADC0 (S12AD0) */
-                                 k_adc_channel_0,         /* channel = 0 (generic bus) */
-                                 k_adc_resolution_12bit); /* bits = 12-bit resolution */
-    RX_ASSERT(err == k_rx_ok, "adc0 config init must succeed");
-    err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
-    RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
-  }
+  /* Step 5: Create all application tasks (dependency-aware order) */
+  internal_create_system_tasks();
 
-  /* Step 1c: Initialize shared data module (mutexes, event flags) */
-  err = shared_data_init();
-  RX_ASSERT(err == k_rx_ok, "shared_data_init must succeed");
-
-  /* Step 1d: Initialize IWDT (hardware watchdog + task monitoring) */
-  err = rx_iwdt_init(&s_iwdt_config);
-  RX_ASSERT(err == k_rx_ok, "rx_iwdt_init must succeed");
-
-  /* Step 1e: Register all tasks for heartbeat monitoring
-   *
-   * Task timeout = 3x normal period (allows 2 missed heartbeats):
-   * - Telemetry (50ms period) -> 150ms timeout
-   * - LED Status (50ms period) -> 150ms timeout
-   * - Temp Sensor (1000ms period) -> 3000ms timeout
-   * - Obstacle Detect (20ms period) -> 60ms timeout
-   * - Motor Control (10ms period) -> 30ms timeout
-   * - Communication (10ms period) -> 30ms timeout
-   * - Watchdog Monitor (10ms period) -> 30ms timeout
-   */
-
-  err = rx_iwdt_register_task("Telemetry", k_iwdt_task_timeout_telemetry_ms);
-  RX_ASSERT(err == k_rx_ok, "Telemetry IWDT registration must succeed");
-
-  err = rx_iwdt_register_task("LEDStatus", k_iwdt_task_timeout_ledstatus_ms);
-  RX_ASSERT(err == k_rx_ok, "LEDStatus IWDT registration must succeed");
-
-  err = rx_iwdt_register_task("TempSensor", k_iwdt_task_timeout_tempsensor_ms);
-  RX_ASSERT(err == k_rx_ok, "TempSensor IWDT registration must succeed");
-
-  err = rx_iwdt_register_task("ObstDetect", k_iwdt_task_timeout_obstdetect_ms);
-  RX_ASSERT(err == k_rx_ok, "ObstDetect IWDT registration must succeed");
-
-  err = rx_iwdt_register_task("MotorCtrl", k_iwdt_task_timeout_motorctrl_ms);
-  RX_ASSERT(err == k_rx_ok, "MotorCtrl IWDT registration must succeed");
-
-  err = rx_iwdt_register_task("CommTask", k_iwdt_task_timeout_commtask_ms);
-  RX_ASSERT(err == k_rx_ok, "CommTask IWDT registration must succeed");
-
-  err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
-  RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
-
-  /* Step 1f: Set initial IWDT state (init phase) */
-  err = rx_iwdt_set_state(k_system_state_init);
-  RX_ASSERT(err == k_rx_ok, "IWDT set init state must succeed");
-
-  /* Step 2: Create tasks (lowest priority first) */
-
-  /* Telemetry Task - Priority 18 (lowest) */
-  err = telemetry_task_create();
-  RX_ASSERT(err == k_rx_ok, "telemetry_task_create must succeed");
-
-  /* LED Status Task - Priority 17 (visual feedback) */
-  err = led_status_task_create();
-  RX_ASSERT(err == k_rx_ok, "led_status_task_create must succeed");
-
-  /* Temperature Sensor Task - Priority 15 */
-  err = temp_sensor_task_create();
-  RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
-
-  /* Obstacle Detection Task - Priority 12 */
-  err = obstacle_detect_task_create();
-  RX_ASSERT(err == k_rx_ok, "obstacle_detect_task_create must succeed");
-
-  /* Motor Control Task - Priority 8 */
-  err = motor_control_task_create();
-  RX_ASSERT(err == k_rx_ok, "motor_control_task_create must succeed");
-
-  /* Communication Task - Priority 5 (highest) */
-  err = comm_task_create();
-  RX_ASSERT(err == k_rx_ok, "comm_task_create must succeed");
-
-  /* Watchdog Monitor Task - Priority 6 */
-  err = watchdog_monitor_task_create();
-  RX_ASSERT(err == k_rx_ok, "watchdog_monitor_task_create must succeed");
-
-  /* Step 3: Transition to running state (all tasks created) */
-  err = rx_iwdt_set_state(k_system_state_running);
-  RX_ASSERT(err == k_rx_ok, "IWDT set running state must succeed");
-
-  /* Step 4: Register ThreadX stack overflow handler (TX_ENABLE_STACK_CHECKING) */
-  err = rx_stack_monitor_init();
-  RX_ASSERT(err == k_rx_ok, "rx_stack_monitor_init must succeed");
+  /* Step 6: Register ThreadX stack overflow handler */
+  internal_init_stack_monitor();
 }
 
 /**
@@ -1859,7 +2009,7 @@ void tx_application_define(void* first_unused_memory)
  * 3. **Stage 3: ThreadX Bootstrap** (never returns)
  *    - Call tx_kernel_enter() to start RTOS scheduler
  *    - ThreadX calls tx_application_define() callback
- *    - Application threads created (app_main_task for PID control)
+ *    - Application threads created (comm, motor, sensors, watchdog, telemetry, LED)
  *
  * ## Execution Flow Diagram
  *
@@ -1878,8 +2028,8 @@ void tx_application_define(void* first_unused_memory)
  *   HardwareInit => Main [label="k_rx_ok", textcolor="green"];
  *   Main => ThreadX [label="tx_kernel_enter()", textcolor="purple"];
  *   ThreadX => ThreadX [label="Start scheduler\n(NEVER RETURNS)", textcolor="purple"];
- *   ThreadX => AppTask [label="tx_application_define()\napp_main_task_create()", textcolor="purple"];
- *   AppTask => AppTask [label="PID control @ 100 Hz\nUSB communication", textcolor="purple"];
+ *   ThreadX => AppTask [label="tx_application_define()\ntask creation", textcolor="purple"];
+ *   AppTask => AppTask [label="ThreadX scheduler running\n(comm, motor, sensors)", textcolor="purple"];
  * }
  * @endmsc
  *
@@ -1899,11 +2049,11 @@ void tx_application_define(void* first_unused_memory)
  * | Object | Size | Location | Purpose |
  * |--------|------|----------|---------|
  * | **Main stack** | 4 KB | SRAM | Pre-ThreadX execution |
- * | **App main task stack** | 8 KB | SRAM | PID control, USB comm |
+ * | **Task stacks (x7)** | varies | SRAM | Static arrays per task module |
  * | **ThreadX kernel objects** | ~2 KB | SRAM | TCBs, timers, semaphores |
  * | **USB buffers** | 2 KB | SRAM | CDC ring buffers (TX/RX) |
  *
- * **Total SRAM usage:** ~16 KB / 512 KB (3% utilization)
+ * **Total SRAM usage:** ~30 KB / 512 KB (~6% utilization)
  *
  * ## Error Handling and Recovery
  *
@@ -1950,7 +2100,7 @@ void tx_application_define(void* first_unused_memory)
  *
  * @post System clocks configured (ICLK=240 MHz, PCLKA=120 MHz, PCLKB=60 MHz)
  * @post All hardware peripherals initialized (motors, USB, sensors)
- * @post ThreadX RTOS scheduler running (main thread: app_main_task)
+ * @post ThreadX RTOS scheduler running with all application tasks
  * @post Function never returns (tx_kernel_enter() takes over execution)
  *
  * @note **This function executes in privileged mode with interrupts disabled** until

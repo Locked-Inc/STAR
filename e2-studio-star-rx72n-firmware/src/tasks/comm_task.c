@@ -939,9 +939,9 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     rx_log_error(s_tag, "USB comm init failed");
   }
 
-  /* Initialize SPI communication layer (RSPI2, channel 0) */
+  /* Initialize SPI communication layer (RSPI2 channel 2 - host peripheral) */
   rx_spi_comm_config_t spi_cfg = {.session     = &s_session_state,
-                                  .channel     = k_spi_comm_default_channel,
+                                  .channel     = k_rspi_channel_2,
                                   .spi_mode    = k_spi_comm_default_mode,
                                   .fec_enabled = false};
   bool                 spi_ok  = (rx_spi_comm_init(&s_spi_comm_handle, &spi_cfg) == k_rx_ok);
