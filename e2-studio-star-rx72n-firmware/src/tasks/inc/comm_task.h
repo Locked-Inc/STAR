@@ -61,7 +61,7 @@
  * @note Task blocks on event flag - woken by SPI RX interrupt
  *
  * @see comm_task.c Implementation details
- * @see app_main_task.c Task creation coordinator
+ * @see main.c Task creation in tx_application_define()
  *
  * @since STAR v1.0.0
  */

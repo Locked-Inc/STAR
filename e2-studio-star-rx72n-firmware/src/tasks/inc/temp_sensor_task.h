@@ -61,7 +61,7 @@
  * @note Thermal monitoring prevents motor overheating
  *
  * @see temp_sensor_task.c Implementation details
- * @see app_main_task.c Task creation coordinator
+ * @see main.c Task creation in tx_application_define()
  *
  * @since STAR v1.0.0
  */

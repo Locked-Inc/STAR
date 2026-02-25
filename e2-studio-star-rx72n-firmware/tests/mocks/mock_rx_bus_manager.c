@@ -5,7 +5,7 @@
  * @brief Mock Bus Manager Implementation for Host-Side Testing
  *
  * Provides simplified bus manager functionality for testing bus abstraction
- * layers (rx_bus_uart, rx_bus_i2c, etc.) without full ThreadX integration.
+ * layers (rx_bus_onewire, rx_bus_i2c, etc.) without full ThreadX integration.
  *
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 STAR Project

@@ -147,7 +147,7 @@
  * **This module is used by:**
  * - `rx_log.c` - Logging subsystem output
  * - `main.c` - Debug output during initialization
- * - `app_main_task.c` - Application debug messages
+ * - `comm_task.c` - Communication task debug messages
  *
  * @par NASA Power of 10 Compliance:
  *

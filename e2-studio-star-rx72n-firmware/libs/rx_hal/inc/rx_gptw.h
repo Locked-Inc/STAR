@@ -138,7 +138,7 @@
  * **This module is used by**:
  * - `rx_motor.c` - Motor control driver
  * - `rx_drv8263.c` - H-bridge driver interface
- * - `app_main_task.c` - Motor control initialization
+ * - `motor_control_task.c` - Motor control task
  *
  * @par NASA Power of 10 Compliance:
  *

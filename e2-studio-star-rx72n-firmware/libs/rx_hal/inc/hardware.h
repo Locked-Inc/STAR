@@ -240,7 +240,7 @@
  *   +--> Motor control (rx_motor_control.c)
  *   +--> USB communication (rx_usb.c)
  *   +--> Protocol handling (rx_comm_manager.c)
- *   +--> Application tasks (app_main_task.c)
+ *   +--> Application tasks (comm, motor, sensors)
  * ```
  *
  * @author STAR Team

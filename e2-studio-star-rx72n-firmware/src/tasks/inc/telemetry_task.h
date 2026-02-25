@@ -58,7 +58,7 @@
  * @note Low priority - can be preempted by control tasks
  *
  * @see telemetry_task.c Implementation details
- * @see app_main_task.c Task creation coordinator
+ * @see main.c Task creation in tx_application_define()
  *
  * @since STAR v1.0.0
  */

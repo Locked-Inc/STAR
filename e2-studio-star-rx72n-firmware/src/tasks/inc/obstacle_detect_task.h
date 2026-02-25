@@ -61,7 +61,7 @@
  * @note Safety-critical - obstacles closer than 10 cm trigger emergency stop
  *
  * @see obstacle_detect_task.c Implementation details
- * @see app_main_task.c Task creation coordinator
+ * @see main.c Task creation in tx_application_define()
  *
  * @since STAR v1.0.0
  */

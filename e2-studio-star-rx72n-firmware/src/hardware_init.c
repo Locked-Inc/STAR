@@ -1404,7 +1404,7 @@ static void validate_peripherals(void)
  * | **Total (current)** | **~201 us** | **~48,240** | All peripherals | **No** |
  *
  * **Note:** Not on critical boot path. Total boot time (main to ThreadX) is ~51 ms,
- * dominated by USB enumeration (~50 ms) which happens later in app_main_task.
+ * dominated by USB enumeration (~50 ms) which happens later in comm_task.
  *
  * ## Memory Usage (Static Allocation Only)
  *

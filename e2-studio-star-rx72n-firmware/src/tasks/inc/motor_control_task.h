@@ -98,7 +98,7 @@ typedef enum : uint8_t {
  * @note Highest priority task - runs before all other application tasks
  *
  * @see motor_control_task.c Implementation details
- * @see app_main_task.c Task creation coordinator
+ * @see main.c Task creation in tx_application_define()
  *
  * @since STAR v1.0.0
  */

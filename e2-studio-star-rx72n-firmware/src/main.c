@@ -30,7 +30,7 @@
  *   ClockInit [label="rx_clock_power_init()\n240 MHz PLL, peripheral clocks"];
  *   HwInit [label="hardware_init()\nMotors, USB, sensors"];
  *   ThreadX [label="tx_kernel_enter()\nStart RTOS scheduler"];
- *   Tasks [label="app_main_task\nPID control @ 100 Hz", shape=ellipse];
+ *   Tasks [label="Application Tasks\n(comm, motor, sensors)", shape=ellipse];
  *
  *   Reset -> Main;
  *   Main -> CheckFlags;
@@ -87,7 +87,7 @@
  *
  * **Thread creation sequence:**
  * ```
- * tx_kernel_enter() -> tx_application_define() -> app_main_task_create() -> Main control loop
+ * tx_kernel_enter() -> tx_application_define() -> task creation -> RTOS scheduler
  * ```
  *
  * ## Memory Map and Stack Setup
@@ -149,13 +149,12 @@
  * No synchronization primitives needed.
  *
  * **Post-ThreadX:** After kernel start, main() **never returns**. Application logic runs
- * in `app_main_task` with ThreadX scheduling and synchronization.
+ * in dedicated tasks with ThreadX scheduling and synchronization.
  *
  * ## Related Files
  *
  * - **Clock init:** See [rx_clock_power_init.c](rx_clock_power_init.c) - PLL configuration, 240 MHz setup
  * - **Hardware init:** See [hardware_init.c](hardware_init.c) - Motor drivers, USB CDC, sensors
- * - **Main task:** See [app_main_task.c](app_main_task.c) - PID control loop at 100 Hz
  * - **ThreadX config:** See [rx_threadx_config.h](../lib/rx_core/inc/rx_threadx_config.h) - RTOS tuning
  *
  * @note This file compiles for both RX72N hardware and x86-64 unit tests (mock register access).
@@ -164,15 +163,12 @@
  *
  * @see hardware_init() Application-specific peripheral initialization
  * @see rx_clock_power_init() System clock and power management setup
- * @see app_main_task_create() Create main application thread
- *
  * @since Version 1.0.0
  *
  * @par Revision History:
  * - v1.0.0 (2026-01): Initial implementation with ThreadX RTOS bootstrap
  */
 
-#include "app_main_task.h"
 #include "hardware.h"
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
@@ -1571,27 +1567,8 @@ static const rx_iwdt_config_t s_iwdt_config = {
  *
  * ## Application Thread Creation
  *
- * This callback creates the **main application task** (`app_main_task`) which runs the
- * motor control PID loop at 100 Hz and handles USB communication.
- *
- * **Thread hierarchy:**
- * @dot
- * digraph threads {
- *   rankdir=TB;
- *   node [shape=box];
- *
- *   ThreadX [label="ThreadX Kernel", shape=ellipse];
- *   AppDef [label="tx_application_define()"];
- *   MainTask [label="app_main_task\n(Priority 5, 8KB stack)"];
- *   PID [label="PID Control Loop\n100 Hz"];
- *   USB [label="USB CDC\nCommunication"];
- *
- *   ThreadX -> AppDef [label="Callback"];
- *   AppDef -> MainTask [label="app_main_task_create()"];
- *   MainTask -> PID;
- *   MainTask -> USB;
- * }
- * @enddot
+ * This callback creates all application tasks (comm, watchdog, motor control,
+ * obstacle detection, temperature sensing, LED status, and telemetry).
  *
  * ## Memory Management
  *
@@ -1613,8 +1590,8 @@ static const rx_iwdt_config_t s_iwdt_config = {
  * | Operation | Duration | Notes |
  * |-----------|----------|-------|
  * | tx_application_define() call | ~5 us | ThreadX callback overhead |
- * | app_main_task_create() | ~20 us | TCB init, stack setup |
- * | **Total** | **~25 us** | Fast thread creation |
+ * | Task creation (7 tasks) | ~140 us | TCB init, stack setup per task |
+ * | **Total** | **~145 us** | Fast thread creation |
  *
  * ## Error Handling
  *
@@ -1631,10 +1608,10 @@ static const rx_iwdt_config_t s_iwdt_config = {
  * @return void (No return value - ThreadX callback convention)
  *
  * @pre ThreadX kernel initialized (tx_kernel_enter() called from main())
- * @pre SRAM available for thread stacks (minimum 8 KB for app_main_task)
+ * @pre SRAM available for thread stacks
  * @pre first_unused_memory points to valid SRAM address
  *
- * @post app_main_task created and ready to run (not yet started - scheduler starts after return)
+ * @post All application tasks created and ready to run (scheduler starts after return)
  * @post Thread stack allocated and initialized (SP set to stack top)
  * @post Thread priority configured (priority 5 for main task)
  * @post ThreadX stack overflow handler registered via rx_stack_monitor_init()
@@ -1665,28 +1642,7 @@ static const rx_iwdt_config_t s_iwdt_config = {
  * }
  * @endcode
  *
- * @par Example Thread Creation:
- * @code
- * void tx_application_define(void* first_unused_memory) {
- *   rx_err_t err;
- *
- *   // Validate parameter (ThreadX should always provide valid pointer)
- *   RX_ASSERT(first_unused_memory != nullptr, "first_unused_memory must be valid");
- *
- *   // Create main application task (8 KB stack, priority 5)
- *   err = app_main_task_create();
- *   RX_ERROR_CHECK(err);
- *
- *   // Assert thread creation succeeded (critical error if not)
- *   RX_ASSERT(err == k_rx_ok, "app_main_task_create must succeed");
- *
- *   // Return to ThreadX - scheduler will start after this function completes
- * }
- * @endcode
- *
- * @see app_main_task_create() Create main application thread (PID control, USB communication)
  * @see tx_kernel_enter() Start ThreadX scheduler (calls this callback internally)
- * @see app_main_task.c Implementation of main control loop (100 Hz PID)
  *
  * @since Version 1.0.0
  *
@@ -1859,7 +1815,7 @@ void tx_application_define(void* first_unused_memory)
  * 3. **Stage 3: ThreadX Bootstrap** (never returns)
  *    - Call tx_kernel_enter() to start RTOS scheduler
  *    - ThreadX calls tx_application_define() callback
- *    - Application threads created (app_main_task for PID control)
+ *    - Application threads created (comm, motor, sensors, watchdog, telemetry, LED)
  *
  * ## Execution Flow Diagram
  *
@@ -1878,7 +1834,7 @@ void tx_application_define(void* first_unused_memory)
  *   HardwareInit => Main [label="k_rx_ok", textcolor="green"];
  *   Main => ThreadX [label="tx_kernel_enter()", textcolor="purple"];
  *   ThreadX => ThreadX [label="Start scheduler\n(NEVER RETURNS)", textcolor="purple"];
- *   ThreadX => AppTask [label="tx_application_define()\napp_main_task_create()", textcolor="purple"];
+ *   ThreadX => AppTask [label="tx_application_define()\ntask creation", textcolor="purple"];
  *   AppTask => AppTask [label="PID control @ 100 Hz\nUSB communication", textcolor="purple"];
  * }
  * @endmsc
@@ -1950,7 +1906,7 @@ void tx_application_define(void* first_unused_memory)
  *
  * @post System clocks configured (ICLK=240 MHz, PCLKA=120 MHz, PCLKB=60 MHz)
  * @post All hardware peripherals initialized (motors, USB, sensors)
- * @post ThreadX RTOS scheduler running (main thread: app_main_task)
+ * @post ThreadX RTOS scheduler running with all application tasks
  * @post Function never returns (tx_kernel_enter() takes over execution)
  *
  * @note **This function executes in privileged mode with interrupts disabled** until

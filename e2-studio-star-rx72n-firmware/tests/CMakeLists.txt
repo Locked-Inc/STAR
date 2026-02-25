@@ -394,23 +394,6 @@ apply_test_includes(test_gpio_hal)
 target_link_libraries(test_gpio_hal unity)
 
 # rx_bus sources for bus abstraction tests (using mock bus manager)
-set(RX_BUS_SRC
-    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_manager.c
-    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_config.c
-    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_uart.c
-)
-
-# Test: UART Bus Abstraction Layer
-# Note: Don't include MOCK_LOG_SRC - mock_uart_hw.c provides uart stubs
-add_executable(test_rx_bus_uart
-    test_rx_bus_uart.c
-    ${RX_BUS_SRC}
-    ${MOCK_UART_SRC}
-)
-apply_strict_warnings(test_rx_bus_uart)
-apply_test_includes(test_rx_bus_uart)
-target_link_libraries(test_rx_bus_uart unity)
-
 # Test: Motor Driver (GPTW-based)
 add_executable(test_rx_motor
     test_rx_motor.c
@@ -902,7 +885,6 @@ set(ALL_TEST_TARGETS
     test_rx_obstacle_detect
     test_uart_hal
     test_gpio_hal
-    test_rx_bus_uart
     test_rx_motor
     test_rx_bus_manager
     test_rx_bus_onewire
@@ -949,7 +931,6 @@ add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 add_test(NAME test_rx_obstacle_detect COMMAND test_rx_obstacle_detect)
 add_test(NAME test_uart_hal COMMAND test_uart_hal)
 add_test(NAME test_gpio_hal COMMAND test_gpio_hal)
-add_test(NAME test_rx_bus_uart COMMAND test_rx_bus_uart)
 add_test(NAME test_rx_motor COMMAND test_rx_motor)
 add_test(NAME test_rx_bus_manager COMMAND test_rx_bus_manager)
 add_test(NAME test_rx_bus_onewire COMMAND test_rx_bus_onewire)
