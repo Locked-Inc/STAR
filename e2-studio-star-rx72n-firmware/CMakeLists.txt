@@ -165,10 +165,15 @@ set(NANOPB_SOURCES
 # nanopb wrapper
 file(GLOB_RECURSE LIB_RX_NANOPB_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/src/*.c)
 
-# Generated protobuf files
-file(GLOB PROTOBUF_SOURCES CONFIGURE_DEPENDS
-    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/star/v1/*.c
-    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/google/protobuf/*.c
+# Generated protobuf files - only include messages used by firmware
+set(PROTOBUF_SOURCES
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/star/v1/common.pb.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/star/v1/configuration.pb.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/star/v1/gateway_service.pb.c  # KEEP: provides star_v1_SetPIDGainsRequest_fields (and related nanopb symbol registrations) used by rx_nanopb.c; removing this file breaks the link
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/google/protobuf/duration.pb.c
+    ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen/google/protobuf/timestamp.pb.c
 )
 
 # Combine all sources
