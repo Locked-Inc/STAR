@@ -3,10 +3,9 @@ import { useGamepad } from '../hooks/useGamepad';
 import { useDashboardStore } from '../store/dashboardStore';
 import { ControllerView } from './ControllerView';
 import type { ControllerState } from '../proto/star/v1/controller';
-import { PANEL_CONTAINER_STYLE, PANEL_HEADER_STYLE } from '../theme';
 
-const SEND_RATE_HZ = 50;
-const SEND_INTERVAL_MS = 1000 / SEND_RATE_HZ;
+const sendRateHz = 50;
+const sendIntervalMs = 1000 / sendRateHz;
 
 interface TeleopPanelProps {
   sendControllerState: (state: ControllerState) => void;
@@ -16,12 +15,9 @@ export function TeleopPanel({ sendControllerState }: TeleopPanelProps) {
   const gamepadState = useGamepad();
   const connectionState = useDashboardStore((s) => s.connectionState);
 
-  // Refs kept current via useLayoutEffect so interval closure always reads latest values.
   const sendRef = useRef(sendControllerState);
   const gamepadRef = useRef(gamepadState);
 
-  // Intentionally no deps: runs after every render to keep refs current,
-  // allowing the interval closure to always read the latest callbacks.
   useLayoutEffect(() => {
     sendRef.current = sendControllerState;
     gamepadRef.current = gamepadState;
@@ -36,21 +32,38 @@ export function TeleopPanel({ sendControllerState }: TeleopPanelProps) {
         timestamp: String(Date.now()),
         debug: false,
       });
-    }, SEND_INTERVAL_MS);
+    }, sendIntervalMs);
 
-    // interval is cleared on unmount via clearInterval(interval); refs keep latest values
     return () => clearInterval(interval);
   }, []);
 
   return (
-    <div style={PANEL_CONTAINER_STYLE}>
-      <div style={PANEL_HEADER_STYLE}>
-        Teleop
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* 
+        The drag-handle class here makes the entire header the target 
+        for moving the react-rnd panel. 
+      */}
+      <div
+        className="panel-header"
+        style={{
+          padding: '16px 20px 8px 20px',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: 'rgba(255, 255, 255, 0.5)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          userSelect: 'none',
+        }}
+      >
+        Movement
       </div>
-      <ControllerView
-        gamepadState={gamepadState}
-        connected={connectionState === 'connected'}
-      />
+
+      <div style={{ padding: '0 20px 20px 20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <ControllerView
+          gamepadState={gamepadState}
+          connectionState={connectionState}
+        />
+      </div>
     </div>
   );
 }

@@ -4,20 +4,21 @@ import type { ControllerState } from '../proto/star/v1/controller';
 import { useDashboardStore } from '../store/dashboardStore';
 import { recordPacket } from '../services/GatewayService';
 
-const MS_TO_US = 1000;
-const BASE_DELAY_MS = 500;
-const MAX_DELAY_MS = 30_000;
-const JITTER_FACTOR = 0.3;
+const msToUs = 1000;
+const baseDelayMs = 500;
+const maxDelayMs = 30_000;
+const jitterFactor = 0.3;
 
 function getReconnectDelay(attempt: number): number {
-  const exp = Math.min(BASE_DELAY_MS * 2 ** attempt, MAX_DELAY_MS);
-  const jitter = exp * JITTER_FACTOR * (Math.random() * 2 - 1);
+  const exp = Math.min(baseDelayMs * 2 ** attempt, maxDelayMs);
+  const jitter = exp * jitterFactor * (Math.random() * 2 - 1);
   return exp + jitter;
 }
 
 export function useSTARConnection(url: string): {
   sendControllerState: (state: ControllerState) => void;
   sendEStop: (reason: string) => void;
+  sendEStopRelease: () => Promise<boolean>;
 } {
   const wsRef = useRef<WebSocket | null>(null);
   const attemptRef = useRef(0);
@@ -81,15 +82,28 @@ export function useSTARConnection(url: string): {
     };
   }, [url]);
 
-  function sendRaw(env: STAREnvelope): void {
+  function sendRaw(env: STAREnvelope): boolean {
     const ws = wsRef.current;
-    if (ws?.readyState !== WebSocket.OPEN) return;
+    if (ws?.readyState !== WebSocket.OPEN) return false;
     try {
       const bytes = STAREnvelope.toBinary(env);
       ws.send(bytes);
       recordPacket(env, 'tx', bytes.byteLength);
+      return true;
     } catch (e) {
       console.error('sendRaw: failed to encode/send envelope', env.payload.oneofKind, e);
+      return false;
+    }
+  }
+
+  async function postEStopFallback(action: 'activate' | 'release', reason: string): Promise<boolean> {
+    try {
+      const params = new URLSearchParams({ action, reason });
+      const response = await fetch(`/api/estop?${params.toString()}`, { method: 'POST' });
+      return response.ok;
+    } catch (err: unknown) {
+      console.error('E-stop fallback failed', err);
+      return false;
     }
   }
 
@@ -106,17 +120,31 @@ export function useSTARConnection(url: string): {
       const env = STAREnvelope.create({
         payload: {
           oneofKind: 'estop',
-          estop: { active: true, reason, timestampUs: String(Date.now() * MS_TO_US) },
+          estop: { active: true, reason, timestampUs: String(Date.now() * msToUs) },
         },
       });
       sendRaw(env);
     } else {
       // REST fallback -- WebSocket is not open
-      fetch(`/api/estop?reason=${encodeURIComponent(reason)}`, { method: 'POST' }).catch(
-        (err: unknown) => console.error('E-stop fallback failed', err)
-      );
+      void postEStopFallback('activate', reason);
     }
   }
 
-  return { sendControllerState, sendEStop };
+  async function sendEStopRelease(): Promise<boolean> {
+    const ws = wsRef.current;
+    const env = STAREnvelope.create({
+      payload: {
+        oneofKind: 'estop',
+        estop: { active: false, reason: 'User released E-Stop', timestampUs: String(Date.now() * msToUs) },
+      },
+    });
+
+    if (ws?.readyState === WebSocket.OPEN) {
+      return sendRaw(env);
+    }
+
+    return postEStopFallback('release', 'User released E-Stop');
+  }
+
+  return { sendControllerState, sendEStop, sendEStopRelease };
 }

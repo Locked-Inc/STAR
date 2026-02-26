@@ -3,21 +3,23 @@ import type { CSSProperties } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDashboardStore } from '../store/dashboardStore';
 import type { OdometryData } from '../proto/star/v1/ui';
-import { PANEL_CONTAINER_STYLE, PANEL_HEADER_STYLE } from '../theme';
 
 const TRAIL_MAX = 200;
 const CANVAS_WIDTH = 260;
-const CANVAS_HEIGHT = 200;
+const CANVAS_HEIGHT = 120;
 
-const PIXELS_PER_METER = 40;
-const ROBOT_MARKER_RADIUS_PX = 5;
-const HEADING_ARROW_LENGTH_PX = 15;
-const GRID_CELLS = 5;
+const PIXELS_PER_METER = 20;
+const ROBOT_MARKER_RADIUS_PX = 4;
+const HEADING_ARROW_LENGTH_PX = 12;
+const GRID_CELLS = 6;
 
-const CONTAINER_STYLE: CSSProperties = { ...PANEL_CONTAINER_STYLE };
-const HEADER_STYLE: CSSProperties = { ...PANEL_HEADER_STYLE };
-const CONTENT_STYLE: CSSProperties = { padding: '8px' };
-const CANVAS_STYLE: CSSProperties = { background: '#0f1117', borderRadius: '4px', display: 'block' };
+const CANVAS_STYLE: CSSProperties = {
+  background: 'transparent',
+  borderRadius: '12px',
+  border: '0.5px solid rgba(255, 255, 255, 0.1)',
+  display: 'block',
+  boxShadow: 'inset 0 4px 12px rgba(0,0,0,0.3)',
+};
 
 export function OdometryPanel() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -44,11 +46,22 @@ export function OdometryPanel() {
   }, []);
 
   return (
-    <div style={CONTAINER_STYLE}>
-      <div style={HEADER_STYLE}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        className="panel-header"
+        style={{
+          padding: '16px 24px 12px 24px',
+          fontSize: '11px',
+          fontWeight: 600,
+          color: 'rgba(255, 255, 255, 0.5)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.12em',
+          userSelect: 'none',
+        }}
+      >
         Odometry
       </div>
-      <div style={CONTENT_STYLE}>
+      <div className="panel-body" style={{ padding: '4px 24px 24px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <canvas
           ref={canvasRef}
           width={CANVAS_WIDTH}
@@ -56,11 +69,26 @@ export function OdometryPanel() {
           style={CANVAS_STYLE}
         />
         {odometry && (
-          <div style={{ marginTop: '6px', fontSize: '11px', color: '#9ca3af', fontFamily: 'monospace' }}>
-            x={odometry.xM.toFixed(2)} y={odometry.yM.toFixed(2)}{' '}
-            th={odometry.thetaRad.toFixed(2)} rad
+          <div style={{ display: 'flex', gap: '32px', marginTop: '16px', justifyContent: 'center', width: '100%' }}>
+            <OdomStat label="X" value={odometry.xM} unit="m" />
+            <OdomStat label="Y" value={odometry.yM} unit="m" />
+            <OdomStat label="Heading" value={odometry.thetaRad} unit="rad" />
           </div>
         )}
+      </div>
+    </div>
+  );
+}
+
+function OdomStat({ label, value, unit }: { label: string; value: number; unit: string }) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+      <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{label}</span>
+      <div style={{ display: 'flex', alignItems: 'baseline', gap: '2px' }}>
+        <span className="data-flash" key={value} style={{ fontSize: '16px', fontVariantNumeric: 'tabular-nums', fontWeight: 300, color: '#fff' }}>
+          {value.toFixed(2)}
+        </span>
+        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.4)' }}>{unit}</span>
       </div>
     </div>
   );
@@ -83,8 +111,8 @@ function drawOdometry(
 
   ctx.clearRect(0, 0, w, h);
 
-  // Grid lines
-  ctx.strokeStyle = '#1e2335';
+  // Faint Grid lines matching strict Liquid Glass aesthetics
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.06)';
   ctx.lineWidth = 1;
   for (let i = -GRID_CELLS; i <= GRID_CELLS; i++) {
     const x = cx + i * PIXELS_PER_METER;
@@ -99,30 +127,42 @@ function drawOdometry(
     ctx.stroke();
   }
 
-  // Trail
+  // Fading Trail
   if (trailX.length > 1) {
-    ctx.strokeStyle = 'rgba(59, 130, 246, 0.5)';
-    ctx.lineWidth = 1.5;
-    ctx.beginPath();
-    ctx.moveTo(cx + trailX[0] * PIXELS_PER_METER, cy - trailY[0] * PIXELS_PER_METER);
+    ctx.lineWidth = 2.5;
+    ctx.lineCap = 'round';
+    ctx.lineJoin = 'round';
+
     for (let i = 1; i < trailX.length; i++) {
+      ctx.beginPath();
+      ctx.moveTo(cx + trailX[i - 1] * PIXELS_PER_METER, cy - trailY[i - 1] * PIXELS_PER_METER);
       ctx.lineTo(cx + trailX[i] * PIXELS_PER_METER, cy - trailY[i] * PIXELS_PER_METER);
+
+      // Calculate fade based on position in trail. Newer = brighter.
+      const alpha = Math.max(0.05, 0.8 * (i / trailX.length));
+      ctx.strokeStyle = `rgba(56, 189, 248, ${alpha})`;
+      ctx.stroke();
     }
-    ctx.stroke();
   }
 
-  // Robot position
+  // Robot Position Marker
   const rx = cx + odom.xM * PIXELS_PER_METER;
   const ry = cy - odom.yM * PIXELS_PER_METER;
 
-  ctx.fillStyle = '#3b82f6';
+  ctx.fillStyle = '#38bdf8';
+  ctx.shadowColor = 'rgba(56, 189, 248, 0.6)';
+  ctx.shadowBlur = 8;
   ctx.beginPath();
   ctx.arc(rx, ry, ROBOT_MARKER_RADIUS_PX, 0, Math.PI * 2);
   ctx.fill();
 
-  // Heading arrow
-  ctx.strokeStyle = '#22c55e';
-  ctx.lineWidth = 2;
+  // Reset shadow for arrow
+  ctx.shadowBlur = 0;
+
+  // Heading Arrow
+  ctx.strokeStyle = '#4ade80'; // Neon green
+  ctx.lineCap = 'round';
+  ctx.lineWidth = 2.5;
   ctx.beginPath();
   ctx.moveTo(rx, ry);
   ctx.lineTo(
