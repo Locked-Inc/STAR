@@ -924,7 +924,7 @@ void test_flags_str_null_buffer(void)
  */
 void test_flags_str_zero_length(void)
 {
-  char        buffer[k_test_flags_buffer_size];
+  char buffer[k_test_flags_buffer_size];
 
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_requires_ack, buffer, 0);
   TEST_ASSERT_EQUAL_STRING("", result);
@@ -951,7 +951,7 @@ void test_flags_str_zero_length(void)
  */
 void test_flags_str_none(void)
 {
-  char        buffer[k_test_flags_buffer_size];
+  char buffer[k_test_flags_buffer_size];
 
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_none, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("NONE", result);
@@ -978,7 +978,7 @@ void test_flags_str_none(void)
  */
 void test_flags_str_requires_ack(void)
 {
-  char        buffer[k_test_flags_buffer_size];
+  char buffer[k_test_flags_buffer_size];
 
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_requires_ack, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("ACK", result);
@@ -1005,7 +1005,7 @@ void test_flags_str_requires_ack(void)
  */
 void test_flags_str_retransmit(void)
 {
-  char        buffer[k_test_flags_buffer_size];
+  char buffer[k_test_flags_buffer_size];
 
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_retransmit, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("RETX", result);
@@ -1032,7 +1032,7 @@ void test_flags_str_retransmit(void)
  */
 void test_flags_str_priority(void)
 {
-  char        buffer[k_test_flags_buffer_size];
+  char buffer[k_test_flags_buffer_size];
 
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_priority, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("PRI", result);
@@ -1059,7 +1059,7 @@ void test_flags_str_priority(void)
  */
 void test_flags_str_fec_enabled(void)
 {
-  char        buffer[k_test_flags_buffer_size];
+  char buffer[k_test_flags_buffer_size];
 
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_fec_enabled, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("FEC", result);
@@ -1086,7 +1086,7 @@ void test_flags_str_fec_enabled(void)
  */
 void test_flags_str_soft_nack(void)
 {
-  char        buffer[k_test_flags_buffer_size];
+  char buffer[k_test_flags_buffer_size];
 
   const char* result = rx_frame_ascii_flags_str(k_frame_flag_soft_nack, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("SOFT", result);
@@ -1116,8 +1116,8 @@ void test_flags_str_soft_nack(void)
  */
 void test_flags_str_combined_two(void)
 {
-  char        buffer[k_test_flags_buffer_size];
-  uint8_t     flags  = k_frame_flag_requires_ack | k_frame_flag_priority;
+  char    buffer[k_test_flags_buffer_size];
+  uint8_t flags = k_frame_flag_requires_ack | k_frame_flag_priority;
 
   const char* result = rx_frame_ascii_flags_str(flags, buffer, sizeof(buffer));
   TEST_ASSERT_EQUAL_STRING("ACK|PRI", result);

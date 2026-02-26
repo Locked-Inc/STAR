@@ -320,15 +320,15 @@ rx_err_t watchdog_monitor_task_create(void)
 
   /* Create the thread */
   UINT tx_status = tx_thread_create(&s_watchdog_thread,
-                               (CHAR*)s_task_name,
-                               internal_watchdog_monitor_task_entry,
-                               k_watchdog_task_input,
-                               s_watchdog_stack,
-                               k_watchdog_task_stack_size,
-                               k_watchdog_task_priority,
-                               k_watchdog_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                                    (CHAR*)s_task_name,
+                                    internal_watchdog_monitor_task_entry,
+                                    k_watchdog_task_input,
+                                    s_watchdog_stack,
+                                    k_watchdog_task_stack_size,
+                                    k_watchdog_task_priority,
+                                    k_watchdog_task_priority,
+                                    TX_NO_TIME_SLICE,
+                                    TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);

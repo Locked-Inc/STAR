@@ -220,13 +220,13 @@
  * good test coverage across the valid input range.
  */
 typedef enum : int8_t {
-  k_test_dt_ms          = 10,   /**< Default time step in milliseconds (100Hz) */
-  k_test_output_max     = 100,  /**< Default maximum output (PWM duty cycle) */
-  k_test_output_min     = -100, /**< Default minimum output (negative for enum) */
-  k_test_integral_max   = 50,   /**< Default maximum integral accumulation */
-  k_test_integral_min   = -50,  /**< Default minimum integral (negative for enum) */
-  k_test_num_iterations = 100,  /**< Number of iterations for integration tests */
-  k_test_step_iterations = 10,  /**< Number of iterations for step response tests */
+  k_test_dt_ms           = 10,   /**< Default time step in milliseconds (100Hz) */
+  k_test_output_max      = 100,  /**< Default maximum output (PWM duty cycle) */
+  k_test_output_min      = -100, /**< Default minimum output (negative for enum) */
+  k_test_integral_max    = 50,   /**< Default maximum integral accumulation */
+  k_test_integral_min    = -50,  /**< Default minimum integral (negative for enum) */
+  k_test_num_iterations  = 100,  /**< Number of iterations for integration tests */
+  k_test_step_iterations = 10,   /**< Number of iterations for step response tests */
 } test_constants_t;
 
 /**
@@ -497,8 +497,8 @@ void test_pid_init_invalid_output_limits(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.output_min      = 100.0F;
-  config.output_max      = 100.0F; /* Equal - invalid */
+  config.output_min = 100.0F;
+  config.output_max = 100.0F; /* Equal - invalid */
 
   rx_err_t err = rx_pid_init(&pid, &config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -529,8 +529,8 @@ void test_pid_init_invalid_integral_limits(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.integral_min    = 50.0F;
-  config.integral_max    = 50.0F; /* Equal - invalid */
+  config.integral_min = 50.0F;
+  config.integral_max = 50.0F; /* Equal - invalid */
 
   rx_err_t err = rx_pid_init(&pid, &config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -633,9 +633,9 @@ void test_pid_compute_proportional_only(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 2.0F;
-  config.ki              = 0.0F;
-  config.kd              = 0.0F;
+  config.kp = 2.0F;
+  config.ki = 0.0F;
+  config.kd = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output          = 0.0F;
@@ -667,7 +667,7 @@ void test_pid_compute_proportional_negative_error(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 1.5F;
+  config.kp = 1.5F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output          = 0.0F;
@@ -733,9 +733,9 @@ void test_pid_compute_integral_accumulation(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 0.0F;
-  config.ki              = 1.0F;
-  config.kd              = 0.0F;
+  config.kp = 0.0F;
+  config.ki = 1.0F;
+  config.kd = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -776,11 +776,11 @@ void test_pid_compute_integral_antiwindup_upper(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 0.0F;
-  config.ki              = 1.0F;
-  config.kd              = 0.0F;
-  config.integral_max    = 5.0F;
-  config.integral_min    = -5.0F;
+  config.kp           = 0.0F;
+  config.ki           = 1.0F;
+  config.kd           = 0.0F;
+  config.integral_max = 5.0F;
+  config.integral_min = -5.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -813,11 +813,11 @@ void test_pid_compute_integral_antiwindup_lower(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 0.0F;
-  config.ki              = 1.0F;
-  config.kd              = 0.0F;
-  config.integral_max    = 5.0F;
-  config.integral_min    = -5.0F;
+  config.kp           = 0.0F;
+  config.ki           = 1.0F;
+  config.kd           = 0.0F;
+  config.integral_max = 5.0F;
+  config.integral_min = -5.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -855,11 +855,11 @@ void test_pid_compute_derivative_response(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 0.0F;
-  config.ki              = 0.0F;
-  config.kd              = 0.01F; /* Small Kd to avoid output saturation */
-  config.output_max      = 1000.0F;
-  config.output_min      = -1000.0F;
+  config.kp         = 0.0F;
+  config.ki         = 0.0F;
+  config.kd         = 0.01F; /* Small Kd to avoid output saturation */
+  config.output_max = 1000.0F;
+  config.output_min = -1000.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output = 0.0F;
@@ -896,9 +896,9 @@ void test_pid_compute_derivative_constant_error(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 0.0F;
-  config.ki              = 0.0F;
-  config.kd              = 1.0F;
+  config.kp = 0.0F;
+  config.ki = 0.0F;
+  config.kd = 1.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -936,8 +936,8 @@ void test_pid_compute_output_clamp_upper(void)
   rx_pid_handle_t pid    = {0};
   config.kp              = 10.0F; /* High gain to exceed limits */
 
-  config.output_max      = 50.0F;
-  config.output_min      = -50.0F;
+  config.output_max = 50.0F;
+  config.output_min = -50.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -968,8 +968,8 @@ void test_pid_compute_output_clamp_lower(void)
   rx_pid_handle_t pid    = {0};
   config.kp              = 10.0F; /* High gain to exceed limits */
 
-  config.output_max      = 50.0F;
-  config.output_min      = -50.0F;
+  config.output_max = 50.0F;
+  config.output_min = -50.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -1146,7 +1146,7 @@ void test_pid_reset_clears_state(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.ki              = 1.0F;
+  config.ki = 1.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output = 0.0F;
@@ -1223,7 +1223,7 @@ void test_pid_set_gains_preserves_state(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.ki              = 1.0F;
+  config.ki = 1.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output = 0.0F;
@@ -1420,9 +1420,9 @@ void test_pid_set_integral_limits_clamps_existing(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.ki              = 1.0F;
-  config.integral_max    = 100.0F;
-  config.integral_min    = -100.0F;
+  config.ki           = 1.0F;
+  config.integral_max = 100.0F;
+  config.integral_min = -100.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output = 0.0F;
@@ -1482,9 +1482,9 @@ void test_pid_compute_full_pid(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 1.0F;
-  config.ki              = 0.5F;
-  config.kd              = 0.1F;
+  config.kp = 1.0F;
+  config.ki = 0.5F;
+  config.kd = 0.1F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -1512,11 +1512,11 @@ void test_pid_step_response(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 0.5F;
-  config.ki              = 0.1F;
-  config.kd              = 0.0F;
-  config.output_max      = 10.0F;
-  config.output_min      = -10.0F;
+  config.kp         = 0.5F;
+  config.ki         = 0.1F;
+  config.kd         = 0.0F;
+  config.output_max = 10.0F;
+  config.output_min = -10.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -1550,9 +1550,9 @@ void test_pid_matlab_tuned_parameters(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = s_matlab_kp;
-  config.ki              = s_matlab_ki;
-  config.kd              = 0.0F;
+  config.kp = s_matlab_kp;
+  config.ki = s_matlab_ki;
+  config.kd = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -1583,13 +1583,13 @@ void test_pid_matlab_control_loop(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = s_matlab_kp;
-  config.ki              = s_matlab_ki;
-  config.kd              = 0.0F;
-  config.output_max      = 100.0F;  /* PWM duty cycle max */
-  config.output_min      = -100.0F; /* PWM duty cycle min */
-  config.integral_max    = 50.0F;
-  config.integral_min    = -50.0F;
+  config.kp           = s_matlab_kp;
+  config.ki           = s_matlab_ki;
+  config.kd           = 0.0F;
+  config.output_max   = 100.0F;  /* PWM duty cycle max */
+  config.output_min   = -100.0F; /* PWM duty cycle min */
+  config.integral_max = 50.0F;
+  config.integral_min = -50.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output   = 0.0F;
@@ -1626,9 +1626,9 @@ void test_pid_ramp_tracking(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 1.0F;
-  config.ki              = 2.0F;
-  config.kd              = 0.0F;
+  config.kp = 1.0F;
+  config.ki = 2.0F;
+  config.kd = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output    = 0.0F;
@@ -1661,9 +1661,9 @@ void test_pid_deterministic_behavior(void)
   rx_pid_handle_t pid2   = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 1.5F;
-  config.ki              = 0.5F;
-  config.kd              = 0.1F;
+  config.kp = 1.5F;
+  config.ki = 0.5F;
+  config.kd = 0.1F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid1, &config));
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid2, &config));
 
@@ -1696,9 +1696,9 @@ void test_pid_zero_gains(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 0.0F;
-  config.ki              = 0.0F;
-  config.kd              = 0.0F;
+  config.kp = 0.0F;
+  config.ki = 0.0F;
+  config.kd = 0.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output = 999.0F;
@@ -1736,9 +1736,9 @@ void test_pid_asymmetric_output_limits(void)
   rx_pid_handle_t pid    = {0};
   rx_pid_config_t config = create_default_config();
 
-  config.kp              = 10.0F;
-  config.output_min      = -20.0F;
-  config.output_max      = 80.0F;
+  config.kp         = 10.0F;
+  config.output_min = -20.0F;
+  config.output_max = 80.0F;
   TEST_ASSERT_EQUAL(k_rx_ok, rx_pid_init(&pid, &config));
 
   float output = 0.0F;

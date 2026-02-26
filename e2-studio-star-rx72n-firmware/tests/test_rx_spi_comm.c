@@ -240,9 +240,7 @@
  * @param[in] data    Data to inject
  * @param[in] len     Data length
  */
-static void internal_assert_inject_rx(rspi_channel_t  channel,
-                                      const uint8_t*  data,
-                                      uint32_t        len)
+static void internal_assert_inject_rx(rspi_channel_t channel, const uint8_t* data, uint32_t len)
 {
   TEST_ASSERT_EQUAL(k_rx_ok, mock_rspi_inject_rx_data(nullptr, channel, data, len));
 }
@@ -269,14 +267,14 @@ static void internal_assert_get_tx(rspi_channel_t channel,
 
 /** @brief Test constant values */
 typedef enum : uint16_t {
-  k_test_sequence_a      = 42,
-  k_test_sequence_b      = 123,
-  k_test_sequence_max    = 0xFFFF,
-  k_test_timeout_zero    = 0,
-  k_test_timeout_short   = 100,
-  k_test_payload_small   = 4,
-  k_test_payload_medium  = 64,
-  k_test_payload_large   = 256,
+  k_test_sequence_a     = 42,
+  k_test_sequence_b     = 123,
+  k_test_sequence_max   = 0xFFFF,
+  k_test_timeout_zero   = 0,
+  k_test_timeout_short  = 100,
+  k_test_payload_small  = 4,
+  k_test_payload_medium = 64,
+  k_test_payload_large  = 256,
 } test_constants_t;
 
 /** @brief Retransmit test constant values */

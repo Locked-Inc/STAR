@@ -109,9 +109,9 @@ static const char* const s_tag = "STACK_MON";
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_stack_fill_byte     = 0xEF, /**< Byte value placed in unused stack memory by ThreadX */
-    k_stack_index_base    = 0U,   /**< Index of the first (base) byte in the stack buffer */
-    k_stack_count_initial = 0U,   /**< Initial free-byte counter before scanning begins */
+  k_stack_fill_byte     = 0xEF, /**< Byte value placed in unused stack memory by ThreadX */
+  k_stack_index_base    = 0U,   /**< Index of the first (base) byte in the stack buffer */
+  k_stack_count_initial = 0U,   /**< Initial free-byte counter before scanning begins */
 } stack_fill_constants_t;
 
 /* =============================================================================
@@ -171,27 +171,27 @@ typedef enum : uint8_t {
 static void internal_stack_overflow_handler(TX_THREAD* thread_ptr)
 {
 #ifndef UNIT_TEST
-    /* Precondition: ThreadX guarantees this is only called on stack corruption */
-    uart_debug_puts("\r\n[STACK_MON] FATAL: Stack overflow detected");
+  /* Precondition: ThreadX guarantees this is only called on stack corruption */
+  uart_debug_puts("\r\n[STACK_MON] FATAL: Stack overflow detected");
 
-    if (thread_ptr != TX_NULL) {
-        /* Precondition: thread_ptr non-null; name pointer may still be null */
-        uart_debug_puts(" in thread: ");
-        if (thread_ptr->tx_thread_name != TX_NULL) {
-            uart_debug_puts(thread_ptr->tx_thread_name);
-        } else {
-            uart_debug_puts("<unnamed>");
-        }
+  if (thread_ptr != TX_NULL) {
+    /* Precondition: thread_ptr non-null; name pointer may still be null */
+    uart_debug_puts(" in thread: ");
+    if (thread_ptr->tx_thread_name != TX_NULL) {
+      uart_debug_puts(thread_ptr->tx_thread_name);
     } else {
-        uart_debug_puts(" (thread_ptr is NULL)");
+      uart_debug_puts("<unnamed>");
     }
-    uart_debug_puts("\r\n");
+  } else {
+    uart_debug_puts(" (thread_ptr is NULL)");
+  }
+  uart_debug_puts("\r\n");
 
-    /* Postcondition: halt before stack corruption propagates to other memory */
-    internal_rx_fatal_error(s_tag, "Stack overflow - system halted", k_rx_fail);
+  /* Postcondition: halt before stack corruption propagates to other memory */
+  internal_rx_fatal_error(s_tag, "Stack overflow - system halted", k_rx_fail);
 #else
-    (void)thread_ptr;
-    return;
+  (void)thread_ptr;
+  return;
 #endif
 }
 
@@ -233,22 +233,22 @@ static void internal_stack_overflow_handler(TX_THREAD* thread_ptr)
  */
 rx_err_t rx_stack_monitor_init(void)
 {
-    /* Precondition: must be called before threads start running */
-    /* (Enforced by contract: caller is tx_application_define()) */
+  /* Precondition: must be called before threads start running */
+  /* (Enforced by contract: caller is tx_application_define()) */
 
-    const UINT tx_status = tx_thread_stack_error_notify(internal_stack_overflow_handler);
+  const UINT tx_status = tx_thread_stack_error_notify(internal_stack_overflow_handler);
 
-    /* Precondition: ThreadX must be initialised (non-zero status otherwise) */
-    if (tx_status != TX_SUCCESS) {
-        rx_log_error(s_tag, "tx_thread_stack_error_notify failed - stack checking disabled");
-        return k_rx_err_not_supported;
-    }
+  /* Precondition: ThreadX must be initialised (non-zero status otherwise) */
+  if (tx_status != TX_SUCCESS) {
+    rx_log_error(s_tag, "tx_thread_stack_error_notify failed - stack checking disabled");
+    return k_rx_err_not_supported;
+  }
 
-    /* Postcondition: handler registered; log confirmation */
-    rx_log_info(s_tag, "Stack overflow handler registered (TX_ENABLE_STACK_CHECKING active)");
+  /* Postcondition: handler registered; log confirmation */
+  rx_log_info(s_tag, "Stack overflow handler registered (TX_ENABLE_STACK_CHECKING active)");
 
-    /* Postcondition: return k_rx_ok to caller */
-    return k_rx_ok;
+  /* Postcondition: return k_rx_ok to caller */
+  return k_rx_ok;
 }
 
 /**
@@ -292,48 +292,48 @@ rx_err_t rx_stack_monitor_init(void)
  */
 rx_err_t rx_stack_monitor_get_free_bytes(const TX_THREAD* thread_ptr, uint32_t* free_bytes)
 {
-    /* Precondition: null pointer checks */
-    RX_CHECK_NULL_PTR(thread_ptr, s_tag, "thread_ptr must not be NULL");
-    RX_CHECK_NULL_PTR(free_bytes, s_tag, "free_bytes must not be NULL");
+  /* Precondition: null pointer checks */
+  RX_CHECK_NULL_PTR(thread_ptr, s_tag, "thread_ptr must not be NULL");
+  RX_CHECK_NULL_PTR(free_bytes, s_tag, "free_bytes must not be NULL");
 
-    const uint8_t* const stack_base = (const uint8_t*)thread_ptr->tx_thread_stack_start;
-    /* Intentional narrowing cast: ULONG is 32-bit on RX72N (ILP32 ABI), so
+  const uint8_t* const stack_base = (const uint8_t*)thread_ptr->tx_thread_stack_start;
+  /* Intentional narrowing cast: ULONG is 32-bit on RX72N (ILP32 ABI), so
      * truncation cannot occur on this platform.  Explicitly cast to uint32_t
      * to make the assumption auditable for future portability reviews. */
-    const uint32_t stack_size = (uint32_t)thread_ptr->tx_thread_stack_size;
+  const uint32_t stack_size = (uint32_t)thread_ptr->tx_thread_stack_size;
 
-    /* Precondition: stack base pointer must be valid */
-    RX_CHECK_NULL_PTR(stack_base, s_tag, "thread stack_start must not be NULL");
+  /* Precondition: stack base pointer must be valid */
+  RX_CHECK_NULL_PTR(stack_base, s_tag, "thread stack_start must not be NULL");
 
-    /* Guard: a zero-size stack cannot hold any fill bytes; scanning would be
+  /* Guard: a zero-size stack cannot hold any fill bytes; scanning would be
      * a no-op (or a buffer overread if the loop bound underflows).  Treat a
      * zero-size stack as invalid state rather than a NULL-pointer error so
      * callers can distinguish the two failure modes. */
-    if (stack_size == (uint32_t)k_stack_count_initial) {
-        rx_log_warn(s_tag, "thread tx_thread_stack_size is 0 - cannot scan stack");
-        return k_rx_err_invalid_state;
-    }
+  if (stack_size == (uint32_t)k_stack_count_initial) {
+    rx_log_warn(s_tag, "thread tx_thread_stack_size is 0 - cannot scan stack");
+    return k_rx_err_invalid_state;
+  }
 
-    /* Verify that the fill pattern is present at all (first byte check) */
-    if (stack_base[k_stack_index_base] != k_stack_fill_byte) {
-        rx_log_warn(s_tag, "Stack fill pattern absent - TX_DISABLE_STACK_FILLING may be set");
-        return k_rx_err_invalid_state;
-    }
+  /* Verify that the fill pattern is present at all (first byte check) */
+  if (stack_base[k_stack_index_base] != k_stack_fill_byte) {
+    rx_log_warn(s_tag, "Stack fill pattern absent - TX_DISABLE_STACK_FILLING may be set");
+    return k_rx_err_invalid_state;
+  }
 
-    /* Scan from stack base upward, counting 0xEF bytes.
+  /* Scan from stack base upward, counting 0xEF bytes.
      * Loop bound: stack_size is a compile-time-known constant per thread
      * (satisfies NASA Rule 2 - statically provable upper bound). */
-    uint32_t count = k_stack_count_initial;
-    for (uint32_t i = 0; i < stack_size; i++) {
-        if (stack_base[i] != k_stack_fill_byte) {
-            break;
-        }
-        count++;
+  uint32_t count = k_stack_count_initial;
+  for (uint32_t i = 0; i < stack_size; i++) {
+    if (stack_base[i] != k_stack_fill_byte) {
+      break;
     }
+    count++;
+  }
 
-    /* Postcondition: count is in [0, stack_size] */
-    *free_bytes = count;
+  /* Postcondition: count is in [0, stack_size] */
+  *free_bytes = count;
 
-    /* Postcondition: return success */
-    return k_rx_ok;
+  /* Postcondition: return success */
+  return k_rx_ok;
 }

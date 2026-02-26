@@ -25,12 +25,12 @@
  * @brief Emergency stop reason codes
  */
 typedef enum : uint8_t {
-  k_estop_reason_none          = 0, /**< No e-stop active */
-  k_estop_reason_comm_timeout  = 1, /**< Communication timeout */
-  k_estop_reason_obstacle      = 2, /**< Obstacle too close */
-  k_estop_reason_driver_fault  = 3, /**< Motor driver hardware fault */
-  k_estop_reason_overcurrent   = 4, /**< Motor overcurrent */
-  k_estop_reason_manual        = 5, /**< Manual request */
+  k_estop_reason_none         = 0, /**< No e-stop active */
+  k_estop_reason_comm_timeout = 1, /**< Communication timeout */
+  k_estop_reason_obstacle     = 2, /**< Obstacle too close */
+  k_estop_reason_driver_fault = 3, /**< Motor driver hardware fault */
+  k_estop_reason_overcurrent  = 4, /**< Motor overcurrent */
+  k_estop_reason_manual       = 5, /**< Manual request */
 
 } estop_reason_t;
 
@@ -80,7 +80,6 @@ typedef struct {
   float integral_max;   /**< Maximum integral limit (anti-windup) */
   bool  update_pending; /**< true if gains should be updated */
 } pid_gains_t;
-
 
 /**
  * @brief Temperature sensor state
@@ -168,7 +167,6 @@ typedef enum : uint32_t {
 typedef enum : uint32_t {
   k_shared_comm_timeout_ms = 500, /**< Communication timeout threshold in milliseconds */
 } shared_data_constants_t;
-
 
 /**
  * @brief Main shared data container structure
@@ -409,7 +407,6 @@ bool shared_data_is_estop_active(void);
  * @return estop_reason_t Reason code for current e-stop
  */
 estop_reason_t shared_data_get_estop_reason(void);
-
 
 /**
  * @brief Update temperature sensor state

@@ -1011,9 +1011,9 @@ void test_encode_single_byte(void)
 void test_encode_deterministic(void)
 {
   /* Encoding the same data twice should produce identical output */
-  uint8_t  input[] = {0xDE, 0xAD, 0xBE, 0xEF};
-  uint8_t  output1[16];
-  uint8_t  output2[16];
+  uint8_t input[] = {0xDE, 0xAD, 0xBE, 0xEF};
+  uint8_t output1[16];
+  uint8_t output2[16];
 
   uint32_t len1, len2;
 
@@ -1178,9 +1178,9 @@ void test_soft_to_hard(void)
  */
 void test_decode_null_args(void)
 {
-  rx_soft_bit_t               soft[32];
-  uint8_t                     output[16];
-  uint32_t                    len;
+  rx_soft_bit_t soft[32];
+  uint8_t       output[16];
+  uint32_t      len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
@@ -1230,10 +1230,10 @@ void test_decode_null_args(void)
  */
 void test_decode_uninitialized(void)
 {
-  rx_fec_decoder_t            dec = {0};
-  rx_soft_bit_t               soft[32];
-  uint8_t                     output[16];
-  uint32_t                    len;
+  rx_fec_decoder_t dec = {0};
+  rx_soft_bit_t    soft[32];
+  uint8_t          output[16];
+  uint32_t         len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
@@ -1270,9 +1270,9 @@ void test_decode_uninitialized(void)
  */
 void test_decode_odd_soft_length(void)
 {
-  rx_soft_bit_t               soft[33];
-  uint8_t                     output[16];
-  uint32_t                    len;
+  rx_soft_bit_t soft[33];
+  uint8_t       output[16];
+  uint32_t      len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
@@ -1306,9 +1306,9 @@ void test_decode_odd_soft_length(void)
  */
 void test_decode_zero_length(void)
 {
-  rx_soft_bit_t               soft[32];
-  uint8_t                     output[16];
-  uint32_t                    len;
+  rx_soft_bit_t soft[32];
+  uint8_t       output[16];
+  uint32_t      len;
 
   rx_fec_decode_soft_params_t params = {
     .soft_bits           = soft,
@@ -1375,9 +1375,9 @@ void test_decode_zero_length(void)
  */
 void test_decode_hard_null_args(void)
 {
-  uint8_t                     hard[16] = {0};
-  uint8_t                     output[16];
-  uint32_t                    len;
+  uint8_t  hard[16] = {0};
+  uint8_t  output[16];
+  uint32_t len;
 
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
@@ -1434,10 +1434,10 @@ void test_decode_hard_null_args(void)
  */
 void test_decode_hard_uninitialized(void)
 {
-  rx_fec_decoder_t            dec      = {0};
-  uint8_t                     hard[16] = {0};
-  uint8_t                     output[16];
-  uint32_t                    len;
+  rx_fec_decoder_t dec      = {0};
+  uint8_t          hard[16] = {0};
+  uint8_t          output[16];
+  uint32_t         len;
 
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
@@ -1472,9 +1472,9 @@ void test_decode_hard_uninitialized(void)
  */
 void test_decode_hard_zero_length(void)
 {
-  uint8_t                     hard[16] = {0};
-  uint8_t                     output[16];
-  uint32_t                    len;
+  uint8_t  hard[16] = {0};
+  uint8_t  output[16];
+  uint32_t len;
 
   rx_fec_decode_hard_params_t params = {
     .data                = hard,
@@ -1555,9 +1555,9 @@ void test_decode_hard_zero_length(void)
  */
 void test_roundtrip_single_byte(void)
 {
-  uint8_t  input[] = {0x42};
-  uint8_t  encoded[16];
-  uint8_t  decoded[16];
+  uint8_t input[] = {0x42};
+  uint8_t encoded[16];
+  uint8_t decoded[16];
 
   uint32_t enc_len, dec_len;
 
@@ -1606,9 +1606,9 @@ void test_roundtrip_single_byte(void)
  */
 void test_roundtrip_multi_byte(void)
 {
-  uint8_t  input[] = {0xDE, 0xAD, 0xBE, 0xEF};
-  uint8_t  encoded[32];
-  uint8_t  decoded[16];
+  uint8_t input[] = {0xDE, 0xAD, 0xBE, 0xEF};
+  uint8_t encoded[32];
+  uint8_t decoded[16];
 
   uint32_t enc_len, dec_len;
 
@@ -1655,9 +1655,9 @@ void test_roundtrip_multi_byte(void)
  */
 void test_roundtrip_all_zeros(void)
 {
-  uint8_t  input[8];
-  uint8_t  encoded[32];
-  uint8_t  decoded[16];
+  uint8_t input[8];
+  uint8_t encoded[32];
+  uint8_t decoded[16];
 
   uint32_t enc_len, dec_len;
 
@@ -1706,9 +1706,9 @@ void test_roundtrip_all_zeros(void)
  */
 void test_roundtrip_all_ones(void)
 {
-  uint8_t  input[8];
-  uint8_t  encoded[32];
-  uint8_t  decoded[16];
+  uint8_t input[8];
+  uint8_t encoded[32];
+  uint8_t decoded[16];
 
   uint32_t enc_len, dec_len;
 
@@ -1757,9 +1757,9 @@ void test_roundtrip_all_ones(void)
  */
 void test_roundtrip_alternating_pattern(void)
 {
-  uint8_t  input[] = {0xAA, 0x55, 0xAA, 0x55};
-  uint8_t  encoded[32];
-  uint8_t  decoded[16];
+  uint8_t input[] = {0xAA, 0x55, 0xAA, 0x55};
+  uint8_t encoded[32];
+  uint8_t decoded[16];
 
   uint32_t enc_len, dec_len;
 
@@ -1812,9 +1812,9 @@ void test_roundtrip_alternating_pattern(void)
  */
 void test_roundtrip_larger_payload(void)
 {
-  uint8_t  input[32];
-  uint8_t  encoded[128];
-  uint8_t  decoded[64];
+  uint8_t input[32];
+  uint8_t encoded[128];
+  uint8_t decoded[64];
 
   uint32_t enc_len, dec_len;
 
@@ -1914,9 +1914,9 @@ void test_roundtrip_larger_payload(void)
  */
 void test_single_bit_error_correction(void)
 {
-  uint8_t  input[] = {0x42};
-  uint8_t  encoded[16];
-  uint8_t  decoded[16];
+  uint8_t input[] = {0x42};
+  uint8_t encoded[16];
+  uint8_t decoded[16];
 
   uint32_t enc_len, dec_len;
 
@@ -1976,9 +1976,9 @@ void test_single_bit_error_correction(void)
  */
 void test_multiple_bit_error_correction(void)
 {
-  uint8_t  input[] = {0xAB, 0xCD};
-  uint8_t  encoded[16];
-  uint8_t  decoded[16];
+  uint8_t input[] = {0xAB, 0xCD};
+  uint8_t encoded[16];
+  uint8_t decoded[16];
 
   uint32_t enc_len, dec_len;
 

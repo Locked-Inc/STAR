@@ -172,7 +172,6 @@ void test_telemetry_task_collects_encoder_data(void)
   TEST_ASSERT_EQUAL_FLOAT(1.00f, state_out.current_velocity_mps[1]);
 }
 
-
 /**
  * @brief Test telemetry collects temperature data
  *
@@ -223,9 +222,9 @@ void test_telemetry_task_encodes_protobuf(void)
   rx_err_t              err;
 
   /* Set up telemetry data */
-  telemetry.timestamp_us      = 1000000;
-  telemetry.frame_sequence    = 42;
-  telemetry.emergency_stop    = false;
+  telemetry.timestamp_us   = 1000000;
+  telemetry.frame_sequence = 42;
+  telemetry.emergency_stop = false;
   /* Configure mock to succeed */
   mock_nanopb_set_encode_telemetry_return(k_rx_ok);
   mock_nanopb_set_encode_length(64);
@@ -337,8 +336,8 @@ void test_telemetry_task_handles_send_failure(void)
  */
 void test_telemetry_transport_selects_usb_when_ready(void)
 {
-  rx_comm_manager_t     mgr              = {0};
-  rx_comm_send_params_t params           = {0};
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
   rx_err_t              err;
   bool                  usb_ready        = false;
   bool                  spi_ready        = false;
@@ -391,8 +390,8 @@ void test_telemetry_transport_selects_usb_when_ready(void)
  */
 void test_telemetry_transport_falls_back_to_spi_when_usb_not_ready(void)
 {
-  rx_comm_manager_t     mgr              = {0};
-  rx_comm_send_params_t params           = {0};
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
   rx_err_t              err;
   bool                  usb_ready        = false;
   bool                  spi_ready        = false;
@@ -502,8 +501,8 @@ void test_telemetry_channel_ready_spi_reports_correctly(void)
  */
 void test_telemetry_spi_fallback_send_succeeds(void)
 {
-  rx_comm_manager_t     mgr              = {0};
-  rx_comm_send_params_t params           = {0};
+  rx_comm_manager_t     mgr    = {0};
+  rx_comm_send_params_t params = {0};
   uint8_t               payload[64];
   rx_err_t              err;
   bool                  usb_ready        = false;

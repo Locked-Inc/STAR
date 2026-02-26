@@ -1480,7 +1480,7 @@ static uint16_t s_control_line_state[k_usb_port_count] = {k_usb_control_line_cle
  */
 static void internal_send_descriptor(const uint8_t* desc, uint16_t desc_len, uint16_t requested_len)
 {
-  const uint16_t len    = (desc_len < requested_len) ? desc_len : requested_len;
+  const uint16_t len     = (desc_len < requested_len) ? desc_len : requested_len;
   const uint32_t written = rx_usb_hw_fifo_write(k_usb_pipe_dcp, desc, len);
 
   if (written != len) {
@@ -1626,10 +1626,10 @@ static void internal_handle_set_configuration(const uint16_t usb_value)
 
     /* Pipe 1: Port 0 Bulk IN (EP1) */
     rx_err_t err = rx_usb_hw_configure_pipe(k_usb_port0_pipe_bulk_in,
-                                   k_usb_port0_pipe_bulk_in, /* EP number = pipe number */
-                                   true,
-                                   k_usb_pipecfg_type_bulk,
-                                   k_usb_bulk_packet_size);
+                                            k_usb_port0_pipe_bulk_in, /* EP number = pipe number */
+                                            true,
+                                            k_usb_pipecfg_type_bulk,
+                                            k_usb_bulk_packet_size);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to configure Port 0 Bulk IN pipe");
       usb0()->dcpctr |= k_usb_dcpctr_pid_stall;

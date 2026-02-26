@@ -198,7 +198,6 @@
 #include "hardware.h"
 #include "rx72n_sci_regs.h"
 #include "rx72n_system_regs.h"
-
 #include "rx_check.h"
 #include "rx_err.h"
 #include "rx_gptw.h"
@@ -212,8 +211,6 @@ typedef enum : uint16_t {
   /* Host I2C (RIIC0) */
   k_pin_host_scl0 = k_rx_p1_2, /**< P1.2 - SCL0 (host I2C clock) */
   k_pin_host_sda0 = k_rx_p1_3, /**< P1.3 - SDA0 (host I2C data) */
-
-
 
   /* USB */
   k_pin_usb_vbus = k_rx_p1_6, /**< P1.6 - USB0_VBUS (USB VBUS detect) */
@@ -309,9 +306,9 @@ typedef enum : uint16_t {
  * @since Version 1.1.0
  */
 typedef enum : uint8_t {
-  k_gptw_pin_count    = 8, /**< 4 motors x 2 pins (IN2 + IN1) */
-  k_motor_count       = 4, /**< 4 DRV8263H motor drivers */
-  k_sonar_count       = 4, /**< 4 HC-SR04 ultrasonic sensors */
+  k_gptw_pin_count = 8, /**< 4 motors x 2 pins (IN2 + IN1) */
+  k_motor_count    = 4, /**< 4 DRV8263H motor drivers */
+  k_sonar_count    = 4, /**< 4 HC-SR04 ultrasonic sensors */
 } gpio_pin_counts_t;
 
 /** @brief GPTW PWM frequency constant */
@@ -624,11 +621,11 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for output pin");
   RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
-  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pmr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
   if (initial_high) {
     regs->podr |= (uint8_t)(k_gpio_single_bit_mask << pin);
   } else {
-    regs->podr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin);
+    regs->podr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin);
   }
   regs->pdr |= (uint8_t)(k_gpio_single_bit_mask << pin); /* Output direction */
 }
@@ -674,8 +671,8 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
   volatile rx_port_regs_t* regs = rx_port_get_base(port);
   RX_ASSERT(regs != nullptr, "Invalid GPIO port for input pin");
   RX_ASSERT(pin <= k_gpio_max_pin_number, "GPIO pin number out of range (0-7)");
-  regs->pmr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
-  regs->pdr &= (uint8_t)~(uint16_t)(k_gpio_single_bit_mask << pin); /* Input direction */
+  regs->pmr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin); /* GPIO mode */
+  regs->pdr &= (uint8_t) ~(uint16_t)(k_gpio_single_bit_mask << pin); /* Input direction */
 }
 
 /**
@@ -798,14 +795,14 @@ static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
             "Motor 0 nSLEEP port base invalid");
 
   const rx_port_pin_t drvoff_pins[k_motor_count] = {(rx_port_pin_t)k_pin_motor0_drvoff,
-                                                     (rx_port_pin_t)k_pin_motor1_drvoff,
-                                                     (rx_port_pin_t)k_pin_motor2_drvoff,
-                                                     (rx_port_pin_t)k_pin_motor3_drvoff};
+                                                    (rx_port_pin_t)k_pin_motor1_drvoff,
+                                                    (rx_port_pin_t)k_pin_motor2_drvoff,
+                                                    (rx_port_pin_t)k_pin_motor3_drvoff};
 
   const rx_port_pin_t nsleep_pins[k_motor_count] = {(rx_port_pin_t)k_pin_motor0_nsleep,
-                                                     (rx_port_pin_t)k_pin_motor1_nsleep,
-                                                     (rx_port_pin_t)k_pin_motor2_nsleep,
-                                                     (rx_port_pin_t)k_pin_motor3_nsleep};
+                                                    (rx_port_pin_t)k_pin_motor1_nsleep,
+                                                    (rx_port_pin_t)k_pin_motor2_nsleep,
+                                                    (rx_port_pin_t)k_pin_motor3_nsleep};
 
   /*
    * CRITICAL ORDERING: DRVOFF must be configured HIGH (outputs disabled) BEFORE

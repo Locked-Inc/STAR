@@ -547,11 +547,11 @@ typedef enum : uint8_t {
   k_test_temp_25c_msb         = 0x01, /**< +25.0degC MSB: 0x0190 = 400 decimal */
   k_test_temp_0c_lsb          = 0x00, /**< 0.0degC LSB: 0x0000 = 0 decimal */
   k_test_temp_0c_msb          = 0x00, /**< 0.0degC MSB: 0x0000 = 0 decimal */
-  k_test_temp_minus_55c_lsb   = 0x90, /**< -55.0degC LSB: 0xFC90 = -880 decimal (two's complement) */
-  k_test_temp_minus_55c_msb   = 0xFC, /**< -55.0degC MSB: 0xFC90 = -880 decimal (two's complement) */
-  k_test_temp_125c_lsb        = 0xD0, /**< +125.0degC LSB: 0x07D0 = 2000 decimal */
-  k_test_temp_125c_msb        = 0x07, /**< +125.0degC MSB: 0x07D0 = 2000 decimal */
-  k_test_config_12bit         = 0x7F, /**< 12-bit resolution config: R1=1, R0=1 -> 0b01111111 */
+  k_test_temp_minus_55c_lsb = 0x90, /**< -55.0degC LSB: 0xFC90 = -880 decimal (two's complement) */
+  k_test_temp_minus_55c_msb = 0xFC, /**< -55.0degC MSB: 0xFC90 = -880 decimal (two's complement) */
+  k_test_temp_125c_lsb      = 0xD0, /**< +125.0degC LSB: 0x07D0 = 2000 decimal */
+  k_test_temp_125c_msb      = 0x07, /**< +125.0degC MSB: 0x07D0 = 2000 decimal */
+  k_test_config_12bit       = 0x7F, /**< 12-bit resolution config: R1=1, R0=1 -> 0b01111111 */
 } ds18b20_mock_constants_t;
 
 /**

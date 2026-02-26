@@ -700,15 +700,15 @@ rx_err_t temp_sensor_task_create(void)
 
   /* Create the thread */
   const UINT tx_status = tx_thread_create(&s_temp_thread,
-                               "TempTask",
-                               internal_temp_task_entry,
-                               k_temp_task_input,
-                               s_temp_stack,
-                               k_temp_task_stack_size,
-                               k_temp_task_priority,
-                               k_temp_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                                          "TempTask",
+                                          internal_temp_task_entry,
+                                          k_temp_task_input,
+                                          s_temp_stack,
+                                          k_temp_task_stack_size,
+                                          k_temp_task_priority,
+                                          k_temp_task_priority,
+                                          TX_NO_TIME_SLICE,
+                                          TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
@@ -1176,10 +1176,10 @@ static void internal_temp_task_entry(ULONG input)
 
   /* Configure DS18B20 */
   rx_ds18b20_config_t config = {0};
-  config.bus_manager      = &g_bus_manager;
-  config.bus_name         = s_onewire_bus_name;
-  config.resolution       = k_ds18b20_resolution_12bit;
-  config.use_rom_matching = false; /* Skip ROM - only one sensor */
+  config.bus_manager         = &g_bus_manager;
+  config.bus_name            = s_onewire_bus_name;
+  config.resolution          = k_ds18b20_resolution_12bit;
+  config.use_rom_matching    = false; /* Skip ROM - only one sensor */
 
   /* Initialize DS18B20 (internally sets resolution from config.resolution) */
   const rx_err_t err_init = rx_ds18b20_init(&s_ds18b20, &config);

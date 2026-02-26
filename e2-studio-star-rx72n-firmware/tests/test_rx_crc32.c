@@ -372,8 +372,8 @@ void test_crc32_incremental_matches_single(void)
   /* Incremental CRC (2 + 3 + 3 bytes) */
   uint32_t crc_incr = rx_crc32_ieee(data, 2);
 
-  crc_incr          = rx_crc32_update(crc_incr, data + 2, 3);
-  crc_incr          = rx_crc32_update(crc_incr, data + 5, 3);
+  crc_incr = rx_crc32_update(crc_incr, data + 2, 3);
+  crc_incr = rx_crc32_update(crc_incr, data + 5, 3);
 
   TEST_ASSERT_EQUAL_HEX32(crc_single, crc_incr);
 }

@@ -575,10 +575,10 @@ static void internal_comm_task_entry(ULONG input);
 static void internal_init_transports(rx_comm_manager_config_t* config);
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx);
 static rx_err_t internal_handle_command_frame(const rx_frame_t* frame);
-static bool internal_handle_velocity_command(const rx_frame_t* frame);
-static bool internal_handle_estop_command(const rx_frame_t* frame);
-static bool internal_handle_pid_gains_command(const rx_frame_t* frame);
-static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
+static bool     internal_handle_velocity_command(const rx_frame_t* frame);
+static bool     internal_handle_estop_command(const rx_frame_t* frame);
+static bool     internal_handle_pid_gains_command(const rx_frame_t* frame);
+static bool     internal_handle_retransmit_config_command(const rx_frame_t* frame);
 
 /* =============================================================================
  * Public Functions
@@ -864,15 +864,15 @@ rx_err_t comm_task_create(void)
 
   /* Create the thread */
   const UINT tx_status = tx_thread_create(&s_comm_thread,
-                               "CommTask",
-                               internal_comm_task_entry,
-                               k_comm_task_input,
-                               s_comm_stack,
-                               k_comm_task_stack_size,
-                               k_comm_task_priority,
-                               k_comm_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                                          "CommTask",
+                                          internal_comm_task_entry,
+                                          k_comm_task_input,
+                                          s_comm_stack,
+                                          k_comm_task_stack_size,
+                                          k_comm_task_priority,
+                                          k_comm_task_priority,
+                                          TX_NO_TIME_SLICE,
+                                          TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
@@ -1782,10 +1782,18 @@ static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
 {
   RX_CHECK_NULL_PTR(frame, s_tag, "frame pointer must not be NULL");
 
-  if (internal_handle_velocity_command(frame))           { return k_rx_ok; }
-  if (internal_handle_estop_command(frame))              { return k_rx_ok; }
-  if (internal_handle_pid_gains_command(frame))          { return k_rx_ok; }
-  if (internal_handle_retransmit_config_command(frame))  { return k_rx_ok; }
+  if (internal_handle_velocity_command(frame)) {
+    return k_rx_ok;
+  }
+  if (internal_handle_estop_command(frame)) {
+    return k_rx_ok;
+  }
+  if (internal_handle_pid_gains_command(frame)) {
+    return k_rx_ok;
+  }
+  if (internal_handle_retransmit_config_command(frame)) {
+    return k_rx_ok;
+  }
 
   rx_log_warn(s_tag, "unknown command frame message type");
   return k_rx_err_invalid_arg;
@@ -1836,9 +1844,8 @@ static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
 static bool internal_handle_velocity_command(const rx_frame_t* frame)
 {
   star_v1_SetVelocityRequest velocity_req = {0};
-  const rx_err_t err = rx_nanopb_decode_velocity_request(frame->payload,
-                                                         frame->header.length,
-                                                         &velocity_req);
+  const rx_err_t             err =
+    rx_nanopb_decode_velocity_request(frame->payload, frame->header.length, &velocity_req);
   if (err != k_rx_ok || !velocity_req.has_command) {
     return false;
   }
@@ -1909,9 +1916,8 @@ static bool internal_handle_velocity_command(const rx_frame_t* frame)
 static bool internal_handle_estop_command(const rx_frame_t* frame)
 {
   star_v1_EmergencyStopRequest estop_req = {0};
-  const rx_err_t err = rx_nanopb_decode_estop_request(frame->payload,
-                                                      frame->header.length,
-                                                      &estop_req);
+  const rx_err_t               err =
+    rx_nanopb_decode_estop_request(frame->payload, frame->header.length, &estop_req);
   if (err != k_rx_ok) {
     return false;
   }
@@ -1970,9 +1976,8 @@ static bool internal_handle_estop_command(const rx_frame_t* frame)
 static bool internal_handle_pid_gains_command(const rx_frame_t* frame)
 {
   star_v1_SetPIDGainsRequest pid_req = {0};
-  const rx_err_t err = rx_nanopb_decode_pid_gains_request(frame->payload,
-                                                          frame->header.length,
-                                                          &pid_req);
+  const rx_err_t             err =
+    rx_nanopb_decode_pid_gains_request(frame->payload, frame->header.length, &pid_req);
   if (err != k_rx_ok || !pid_req.has_pid_config) {
     return false;
   }
@@ -1980,7 +1985,7 @@ static bool internal_handle_pid_gains_command(const rx_frame_t* frame)
   rx_log_info(s_tag, "PID gains request received");
 
   /* Convert protobuf PID config to firmware structure */
-  pid_gains_t gains = {0};
+  pid_gains_t gains    = {0};
   gains.kp             = (float)pid_req.pid_config.kp;
   gains.ki             = (float)pid_req.pid_config.ki;
   gains.kd             = (float)pid_req.pid_config.kd;
@@ -2054,8 +2059,8 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame)
 {
   star_v1_SetRetransmitConfigRequest retransmit_req = {0};
   const rx_err_t err = rx_nanopb_decode_retransmit_config_request(frame->payload,
-                                                                   frame->header.length,
-                                                                   &retransmit_req);
+                                                                  frame->header.length,
+                                                                  &retransmit_req);
   if (err != k_rx_ok || !retransmit_req.has_retransmit_config) {
     return false;
   }
@@ -2065,21 +2070,24 @@ static bool internal_handle_retransmit_config_command(const rx_frame_t* frame)
   const uint32_t ack_timeout = retransmit_req.retransmit_config.ack_timeout_ms;
   const uint32_t max_backoff = retransmit_req.retransmit_config.max_backoff_ms;
 
-  if ((max_retries < k_retransmit_max_retries_min) || (max_retries > k_retransmit_max_retries_max) ||
-      (ack_timeout < k_retransmit_ack_timeout_min_ms) || (ack_timeout > k_retransmit_ack_timeout_max_ms) ||
+  if ((max_retries < k_retransmit_max_retries_min) ||
+      (max_retries > k_retransmit_max_retries_max) ||
+      (ack_timeout < k_retransmit_ack_timeout_min_ms) ||
+      (ack_timeout > k_retransmit_ack_timeout_max_ms) ||
       (max_backoff < k_retransmit_backoff_min_ms) || (max_backoff > k_retransmit_backoff_max_ms)) {
     rx_log_error(s_tag, "retransmit config out of range");
     return false;
   }
 
   rx_spi_comm_retransmit_config_t cfg = {0};
-  cfg.max_retries    = (uint8_t)max_retries;
-  cfg.ack_timeout_ms = (uint16_t)ack_timeout;
-  cfg.max_backoff_ms = (uint16_t)max_backoff;
+  cfg.max_retries                     = (uint8_t)max_retries;
+  cfg.ack_timeout_ms                  = (uint16_t)ack_timeout;
+  cfg.max_backoff_ms                  = (uint16_t)max_backoff;
 
-  const rx_err_t set_err = rx_comm_manager_set_auto_retransmit(&g_comm_manager,
-                                                                retransmit_req.retransmit_config.enabled,
-                                                                &cfg);
+  const rx_err_t set_err =
+    rx_comm_manager_set_auto_retransmit(&g_comm_manager,
+                                        retransmit_req.retransmit_config.enabled,
+                                        &cfg);
   if (set_err != k_rx_ok) {
     rx_log_error_val(s_tag, "Failed to set retransmit config", (uint32_t)set_err);
   } else {

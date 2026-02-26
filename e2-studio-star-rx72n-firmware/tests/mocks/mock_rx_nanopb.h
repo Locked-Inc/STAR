@@ -121,7 +121,7 @@ typedef struct {
   bool                has_encoder_back_right; /**< Has BR encoder */
   star_v1_EncoderData encoder_back_right;     /**< BR encoder data */
 
-  double  temperature_celsius; /**< Ambient temperature (degC) */
+  double temperature_celsius; /**< Ambient temperature (degC) */
 } star_v1_TelemetryData;
 
 /**

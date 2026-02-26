@@ -235,10 +235,14 @@ typedef struct TX_SEMAPHORE_STRUCT {
  * @since Version 1.0.0
  */
 typedef struct TX_THREAD_STRUCT {
-  CHAR*  tx_thread_name;        /**< Thread name string (NULL-terminated, max 64 chars; TX_NULL for unnamed threads) */
-  UINT   tx_thread_id;          /**< Thread magic ID (k_tx_thread_magic = 0x54485244 when valid; k_tx_invalid_id = 0 when deleted) */
-  VOID*  tx_thread_stack_start; /**< Lowest stack address (byte-aligned; must be non-NULL when thread is active) */
-  ULONG  tx_thread_stack_size;  /**< Total stack allocation in bytes (must be > 0 when thread is active) */
+  CHAR*
+    tx_thread_name; /**< Thread name string (NULL-terminated, max 64 chars; TX_NULL for unnamed threads) */
+  UINT
+    tx_thread_id; /**< Thread magic ID (k_tx_thread_magic = 0x54485244 when valid; k_tx_invalid_id = 0 when deleted) */
+  VOID*
+    tx_thread_stack_start; /**< Lowest stack address (byte-aligned; must be non-NULL when thread is active) */
+  ULONG
+    tx_thread_stack_size; /**< Total stack allocation in bytes (must be > 0 when thread is active) */
 } TX_THREAD;
 
 /**
@@ -811,7 +815,8 @@ void mock_tx_set_time(ULONG ticks);
  *
  * @since Version 1.0.0
  */
-static inline tx_status tx_thread_stack_error_notify(VOID (*stack_error_handler)(TX_THREAD* thread_ptr))
+static inline tx_status
+tx_thread_stack_error_notify(VOID (*stack_error_handler)(TX_THREAD* thread_ptr))
 {
   (void)stack_error_handler;
   /* Mock: unconditionally report success (TX_ENABLE_STACK_CHECKING active) */

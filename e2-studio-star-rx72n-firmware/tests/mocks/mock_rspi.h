@@ -346,8 +346,10 @@ void mock_rspi_clear_controller_channel(mock_rspi_t* mock, rspi_channel_t channe
  * @param len Data length
  * @return k_rx_ok on success
  */
-rx_err_t
-mock_rspi_inject_rx_data(mock_rspi_t* mock, rspi_channel_t channel, const uint8_t* data, uint32_t len);
+rx_err_t mock_rspi_inject_rx_data(mock_rspi_t*   mock,
+                                  rspi_channel_t channel,
+                                  const uint8_t* data,
+                                  uint32_t       len);
 
 /**
  * @brief Get data that was transmitted via SPI
@@ -359,11 +361,11 @@ mock_rspi_inject_rx_data(mock_rspi_t* mock, rspi_channel_t channel, const uint8_
  * @param actual_len Actual bytes read
  * @return k_rx_ok on success
  */
-rx_err_t mock_rspi_get_tx_data(mock_rspi_t*    mock,
-                               rspi_channel_t  channel,
-                               uint8_t*     data,
-                               uint32_t     max_len,
-                               uint32_t*    actual_len);
+rx_err_t mock_rspi_get_tx_data(mock_rspi_t*   mock,
+                               rspi_channel_t channel,
+                               uint8_t*       data,
+                               uint32_t       max_len,
+                               uint32_t*      actual_len);
 
 /**
  * @brief Set data availability for a channel

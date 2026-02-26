@@ -284,7 +284,7 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  const uint8_t* data;   /**< Pointer to data buffer to transmit; must be non-NULL when length > 0 */
+  const uint8_t* data; /**< Pointer to data buffer to transmit; must be non-NULL when length > 0 */
   uint16_t       length; /**< Number of bytes to write; 0 is allowed (address probe) */
   rx_err_t       result; /**< Operation result: k_rx_ok on success, error code on failure */
 } i2c_write_ctx_t;
@@ -333,7 +333,8 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  uint8_t* data;   /**< Pointer to receive buffer; filled with received bytes on success. Must be non-NULL when length > 0 */
+  uint8_t*
+    data; /**< Pointer to receive buffer; filled with received bytes on success. Must be non-NULL when length > 0 */
   uint16_t length; /**< Number of bytes to read; 0 is allowed (no-op read) */
   rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
 } i2c_read_ctx_t;
@@ -392,11 +393,13 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  const uint8_t* write_data;   /**< Pointer to write buffer (e.g., register address); must be non-NULL when write_length > 0 */
-  uint16_t       write_length; /**< Number of bytes to write in the first phase; 0 allowed */
-  uint8_t*       read_data;    /**< Pointer to receive buffer; filled with response bytes on success; must be non-NULL when read_length > 0 */
-  uint16_t       read_length;  /**< Number of bytes to read in the second phase; 0 allowed */
-  rx_err_t       result;       /**< Operation result: k_rx_ok on success, error code on failure */
+  const uint8_t*
+    write_data; /**< Pointer to write buffer (e.g., register address); must be non-NULL when write_length > 0 */
+  uint16_t write_length; /**< Number of bytes to write in the first phase; 0 allowed */
+  uint8_t*
+    read_data; /**< Pointer to receive buffer; filled with response bytes on success; must be non-NULL when read_length > 0 */
+  uint16_t read_length; /**< Number of bytes to read in the second phase; 0 allowed */
+  rx_err_t result;      /**< Operation result: k_rx_ok on success, error code on failure */
 } i2c_write_read_ctx_t;
 
 /* =============================================================================
@@ -601,7 +604,7 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
   /* Write I2C data */
   const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
   const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
-  rx_err_t                err          = riic_write(riic_channel, device_addr, ctx->data, ctx->length);
+  rx_err_t                err = riic_write(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write failed");
@@ -710,7 +713,7 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
   /* Read I2C data */
   const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
   const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
-  rx_err_t                err          = riic_read(riic_channel, device_addr, ctx->data, ctx->length);
+  rx_err_t                err = riic_read(riic_channel, device_addr, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C read failed");
@@ -815,11 +818,11 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
   const riic_channel_t    riic_channel = {.value = bus_config->proto.i2c.channel};
   const i2c_device_addr_t device_addr  = {.value = bus_config->proto.i2c.device_addr};
   rx_err_t                err          = riic_write_read(riic_channel,
-                        device_addr,
-                        ctx->write_data,
-                        ctx->write_length,
-                        ctx->read_data,
-                        ctx->read_length);
+                                 device_addr,
+                                 ctx->write_data,
+                                 ctx->write_length,
+                                 ctx->read_data,
+                                 ctx->read_length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "I2C write-read failed");
@@ -988,7 +991,7 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
 
   i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error};
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
+  rx_err_t       err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -1223,7 +1226,7 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is nullptr");
 
   i2c_read_ctx_t ctx = {.data = data, .length = length, .result = k_rx_err_hw_error};
-  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_read_callback, &ctx);
+  rx_err_t       err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_read_callback, &ctx);
 
   if (err != k_rx_ok) {
     return err;
@@ -1424,10 +1427,10 @@ rx_err_t rx_bus_i2c_write_read(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(read_data, s_tag, "read_data pointer is nullptr");
 
   i2c_write_read_ctx_t ctx = {.write_data   = write_data,
-                               .write_length = write_length,
-                               .read_data    = read_data,
-                               .read_length  = read_length,
-                               .result       = k_rx_err_hw_error};
+                              .write_length = write_length,
+                              .read_data    = read_data,
+                              .read_length  = read_length,
+                              .result       = k_rx_err_hw_error};
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_read_callback, &ctx);
 
   if (err != k_rx_ok) {

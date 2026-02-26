@@ -917,9 +917,9 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
    * Safe because transfer_len is validated <= k_spi_comm_tx_buffer_size above.
    */
   rx_err_t err = rspi_peripheral_transfer(handle->channel,
-                                 handle->tx_buffer,
-                                 handle->rx_buffer,
-                                 (uint16_t)transfer_len);
+                                          handle->tx_buffer,
+                                          handle->rx_buffer,
+                                          (uint16_t)transfer_len);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI peripheral transfer failed");
@@ -1309,7 +1309,7 @@ static rx_err_t internal_build_frame(const rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_size;
   }
 
-  *frame = (rx_frame_t){0};
+  *frame                 = (rx_frame_t){0};
   frame->header.sequence = sequence;
   frame->header.length   = (uint16_t)payload_len;
   frame->header.type     = (uint8_t)type;
@@ -1779,8 +1779,8 @@ static rx_err_t internal_decode_frame(const rx_spi_comm_handle_t* handle,
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t offset  = k_frame_offset_init;
-  rx_err_t err     = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
+  uint32_t offset = k_frame_offset_init;
+  rx_err_t err    = internal_decode_header(handle->rx_buffer, total_size, frame, &offset);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Frame header decode failed");
     return err;

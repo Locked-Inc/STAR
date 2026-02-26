@@ -319,8 +319,11 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_uart_baudrate_min = 1,                              /**< Minimum valid baud rate (bps); must be > 0 to avoid divide-by-zero in BRR formula */
-  k_uart_baudrate_max = (k_pclkb_hz / k_brr_divisor_n0), /**< Maximum valid baud rate (bps); BRR = 0 at this rate, higher values would underflow */
+  k_uart_baudrate_min =
+    1, /**< Minimum valid baud rate (bps); must be > 0 to avoid divide-by-zero in BRR formula */
+  k_uart_baudrate_max =
+    (k_pclkb_hz /
+     k_brr_divisor_n0), /**< Maximum valid baud rate (bps); BRR = 0 at this rate, higher values would underflow */
 } uart_validation_limits_t;
 
 /** @brief UART timeout constants */

@@ -979,7 +979,7 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
   if (comp != nullptr && comp->retry_count > 0) {
     /* Exponential backoff: delay = initial * 2^(retry_count - 1)
      * Capped at max_backoff_ms */
-    delay_ms              = handler->initial_backoff_ms;
+    delay_ms                 = handler->initial_backoff_ms;
     const uint32_t retry_cap = (handler->max_retries == k_error_handler_no_retry_limit ||
                                 handler->max_retries > k_error_handler_max_retries)
                                  ? k_error_handler_max_retries

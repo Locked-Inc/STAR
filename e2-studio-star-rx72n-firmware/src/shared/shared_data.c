@@ -1979,7 +1979,7 @@ estop_reason_t shared_data_get_estop_reason(void)
     return k_estop_reason_none;
   }
 
-  UINT           tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
+  UINT tx_status = tx_mutex_get(&g_shared_data.estop_mutex, TX_WAIT_FOREVER);
   if (tx_status != TX_SUCCESS) {
     return k_estop_reason_none;
   }
@@ -2693,12 +2693,12 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
     return k_rx_err_not_initialized;
   }
 
-  ULONG actual_flags = (ULONG)k_event_none;
-  const UINT tx_status = tx_event_flags_get(&g_shared_data.event_flags,
-                                          (ULONG)flags,
-                                          TX_OR_CLEAR,
-                                          &actual_flags,
-                                          wait_option);
+  ULONG      actual_flags = (ULONG)k_event_none;
+  const UINT tx_status    = tx_event_flags_get(&g_shared_data.event_flags,
+                                            (ULONG)flags,
+                                            TX_OR_CLEAR,
+                                            &actual_flags,
+                                            wait_option);
   if (tx_status == TX_NO_EVENTS) {
     return k_rx_err_timeout;
   }

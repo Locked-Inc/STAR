@@ -338,9 +338,9 @@ static rx_err_t internal_acquire_state(rx_bus_config_t* bus_config, onewire_runt
   for (uint32_t i = k_onewire_instance_idx_start; i < k_onewire_max_instances; ++i) {
     if (!s_state_pool[i].in_use) {
       s_state_pool[i].in_use = true;
-      s_state_pool[i].state = (onewire_runtime_state_t){0};
-      bus_config->handle = &s_state_pool[i].state;
-      *state             = &s_state_pool[i].state;
+      s_state_pool[i].state  = (onewire_runtime_state_t){0};
+      bus_config->handle     = &s_state_pool[i].state;
+      *state                 = &s_state_pool[i].state;
       return k_rx_ok;
     }
   }
@@ -633,8 +633,8 @@ internal_read_bit(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, b
   }
 
   const uint32_t sample_delay_us = (k_onewire_read_sample_us > k_onewire_read_init_us)
-                               ? (k_onewire_read_sample_us - k_onewire_read_init_us)
-                               : k_onewire_read_sample_us;
+                                     ? (k_onewire_read_sample_us - k_onewire_read_init_us)
+                                     : k_onewire_read_sample_us;
   internal_delay_us(sample_delay_us);
 
   bool line_high = true;
@@ -1065,7 +1065,7 @@ static void internal_release_state(rx_bus_config_t* bus_config)
     if (s_state_pool[i].in_use &&
         &s_state_pool[i].state == (onewire_runtime_state_t*)bus_config->handle) {
       s_state_pool[i].in_use = false;
-      s_state_pool[i].state = (onewire_runtime_state_t){0};
+      s_state_pool[i].state  = (onewire_runtime_state_t){0};
       break;
     }
   }

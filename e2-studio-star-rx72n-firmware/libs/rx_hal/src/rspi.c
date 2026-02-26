@@ -329,7 +329,7 @@ typedef enum : uint32_t {
  */
 typedef enum : uint16_t {
   k_rspi_transfer_len_max = 65535U, /**< Maximum transfer length (16-bit counter limit) */
-  k_rspi_spcmd_init       = 0U,    /**< SPCMD initial value (all fields at reset state) */
+  k_rspi_spcmd_init       = 0U,     /**< SPCMD initial value (all fields at reset state) */
 } rspi_transfer_constants_t;
 
 /* =============================================================================
@@ -615,8 +615,7 @@ static rx_err_t internal_wait_tx_ready(volatile rx_rspi_regs_t* rspi)
   RX_ASSERT(rspi != nullptr, "RSPI register pointer is nullptr");
 
   /* Pre-condition 2: Timeout constant must be non-zero (compile-time check) */
-  static_assert(k_rspi_timeout_us > k_rspi_timeout_zero,
-                "Timeout constant must be non-zero");
+  static_assert(k_rspi_timeout_us > k_rspi_timeout_zero, "Timeout constant must be non-zero");
   uint32_t timeout = k_rspi_timeout_us;
 
   while (!(rspi->spsr & k_rspi_spsr_sptef) && timeout > k_rspi_timeout_zero) {
@@ -664,8 +663,7 @@ static rx_err_t internal_wait_rx_ready(volatile rx_rspi_regs_t* rspi)
   RX_ASSERT(rspi != nullptr, "RSPI register pointer is nullptr");
 
   /* Pre-condition 2: Timeout constant must be non-zero (compile-time check) */
-  static_assert(k_rspi_timeout_us > k_rspi_timeout_zero,
-                "Timeout constant must be non-zero");
+  static_assert(k_rspi_timeout_us > k_rspi_timeout_zero, "Timeout constant must be non-zero");
   uint32_t timeout = k_rspi_timeout_us;
 
   while (!(rspi->spsr & k_rspi_spsr_sprf) && timeout > k_rspi_timeout_zero) {
@@ -1098,8 +1096,8 @@ static rx_err_t internal_calculate_spbr(const uint32_t freq_hz, uint8_t* spbr)
  */
 static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
 {
-  const uint8_t            port      = rx_port_from_pin(pin_config);
-  const uint8_t            pin       = rx_pin_from_pin(pin_config);
+  const uint8_t port = rx_port_from_pin(pin_config);
+  const uint8_t pin  = rx_pin_from_pin(pin_config);
 
   volatile rx_port_regs_t* const port_regs = rx_port_get_base(port);
 
@@ -1155,7 +1153,7 @@ static rx_err_t internal_configure_cs_gpio(const rx_port_pin_t pin_config)
  * @since Version 1.0.0
  */
 static rx_err_t internal_validate_controller_args(const rspi_channel_t            channel,
-                                              const rspi_controller_config_t* config)
+                                                  const rspi_controller_config_t* config)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "Controller config pointer is nullptr");
 
@@ -1216,9 +1214,9 @@ static rx_err_t internal_validate_controller_args(const rspi_channel_t          
  * @since Version 1.0.0
  */
 static rx_err_t internal_prepare_controller(const rspi_channel_t            channel,
-                                        const rspi_controller_config_t* config,
-                                        volatile rx_rspi_regs_t**       out_rspi,
-                                        uint8_t*                        out_spbr)
+                                            const rspi_controller_config_t* config,
+                                            volatile rx_rspi_regs_t**       out_rspi,
+                                            uint8_t*                        out_spbr)
 {
   /* Calculate SPBR for requested frequency */
   rx_err_t err = internal_calculate_spbr(config->freq_hz, out_spbr);
@@ -1279,10 +1277,10 @@ static rx_err_t internal_prepare_controller(const rspi_channel_t            chan
  * @since Version 1.0.0
  */
 static rx_err_t internal_configure_registers(const rspi_channel_t            channel,
-                                         volatile rx_rspi_regs_t*        rspi,
-                                         uint8_t                         spbr,
-                                         uint16_t                        spcmd,
-                                         const rspi_controller_config_t* config)
+                                             volatile rx_rspi_regs_t*        rspi,
+                                             uint8_t                         spbr,
+                                             uint16_t                        spcmd,
+                                             const rspi_controller_config_t* config)
 {
   /*
    * RSPI Controller Mode Register Write Sequence
@@ -1388,7 +1386,7 @@ rx_err_t rspi_init_controller(const rspi_channel_t channel, const rspi_controlle
   /* Prepare hardware resources (SPBR, RSPI base, CS GPIO) */
   volatile rx_rspi_regs_t* rspi = nullptr;
   uint8_t                  spbr = k_rspi_spbr_init;
-  err = internal_prepare_controller(channel, config, &rspi, &spbr);
+  err                           = internal_prepare_controller(channel, config, &rspi, &spbr);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1433,8 +1431,8 @@ rx_err_t rspi_controller_set_cs(const rspi_channel_t channel, const bool active)
     return k_rx_err_invalid_state;
   }
 
-  const uint8_t port                   = s_rspi_cs_config[channel].port;
-  const uint8_t pin                    = s_rspi_cs_config[channel].pin;
+  const uint8_t                  port      = s_rspi_cs_config[channel].port;
+  const uint8_t                  pin       = s_rspi_cs_config[channel].pin;
   volatile rx_port_regs_t* const port_regs = rx_port_get_base(port);
 
   if (port_regs == nullptr) {
@@ -1596,8 +1594,8 @@ static rx_err_t internal_controller_deassert_cs_with_hold(const rspi_channel_t c
  * @since Version 1.0.0
  */
 static rx_err_t internal_controller_do_16bit_transfer(volatile rx_rspi_regs_t* rspi,
-                                                  uint16_t                 tx_data,
-                                                  uint16_t*                rx_data)
+                                                      uint16_t                 tx_data,
+                                                      uint16_t*                rx_data)
 {
   /* Rule 5: Pre-condition validation */
   RX_CHECK_NULL_PTR(rspi, s_tag, "RSPI register pointer is nullptr");

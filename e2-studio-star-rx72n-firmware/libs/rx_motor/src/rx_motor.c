@@ -324,8 +324,10 @@ typedef enum : int16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_motor_in2_high = 100, /**< IN2 forward direction (100% = HIGH). Sets output_a HIGH for forward rotation. H-bridge: high-side A ON, low-side B ON */
-  k_motor_in2_low  = 0,   /**< IN2 reverse direction (0% = LOW). Sets output_a LOW for reverse rotation. H-bridge: high-side B ON, low-side A ON */
+  k_motor_in2_high =
+    100, /**< IN2 forward direction (100% = HIGH). Sets output_a HIGH for forward rotation. H-bridge: high-side A ON, low-side B ON */
+  k_motor_in2_low =
+    0, /**< IN2 reverse direction (0% = LOW). Sets output_a LOW for reverse rotation. H-bridge: high-side B ON, low-side A ON */
 } motor_in2_signal_t;
 
 /**
@@ -696,14 +698,18 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
     return err;
   }
 
-  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.a), (float)k_motor_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(channel),
+                         rx_gptw_output_id(outputs.a),
+                         (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_a initial duty");
     (void)rx_gptw_deinit(channel);
     return err;
   }
 
-  err = rx_gptw_set_duty(rx_gptw_channel_id(channel), rx_gptw_output_id(outputs.b), (float)k_motor_duty_zero);
+  err = rx_gptw_set_duty(rx_gptw_channel_id(channel),
+                         rx_gptw_output_id(outputs.b),
+                         (float)k_motor_duty_zero);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to set output_b initial duty");
     (void)rx_gptw_deinit(channel);
@@ -957,9 +963,8 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
     .invert_polarity      = config->invert_pwm,
   };
 
-  const rx_gptw_output_pair_t outputs = {.a = config->output_a,
-                                         .b = config->output_b};
-  rx_err_t              err    = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
+  const rx_gptw_output_pair_t outputs = {.a = config->output_a, .b = config->output_b};
+  rx_err_t err = internal_init_gptw_outputs(config->channel, outputs, &gptw_config);
   if (err != k_rx_ok) {
     return err;
   }
@@ -1905,8 +1910,8 @@ rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
   /* Immediately set duty to 0%: IN2 = LOW (direction), IN1 = LOW (speed) */
   rx_err_t result = k_rx_ok;
   rx_err_t err    = rx_gptw_set_duty(rx_gptw_channel_id(handle->channel),
-                         rx_gptw_output_id(handle->output_a),
-                         (float)k_motor_in2_low);
+                                  rx_gptw_output_id(handle->output_a),
+                                  (float)k_motor_in2_low);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "E-STOP: Failed to clear output_a duty");
     if (result == k_rx_ok) {

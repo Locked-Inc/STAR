@@ -253,7 +253,6 @@ typedef enum : uint32_t {
  * =============================================================================
  */
 
-
 /**
  * @var s_onewire0_config
  * @brief 1-Wire configuration for DS18B20 temperature sensor
@@ -1627,8 +1626,8 @@ static void internal_register_system_buses(void)
 
   /* Register onewire0 - DS18B20 Temperature Sensor */
   rx_err_t err = rx_bus_config_init_onewire(&s_onewire0_config,
-                                             "onewire0", /* name */
-                                             k_rx_p5_1); /* pin = P51 */
+                                            "onewire0", /* name */
+                                            k_rx_p5_1); /* pin = P51 */
   RX_ASSERT(err == k_rx_ok, "onewire0 config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_onewire0_config);
   RX_ASSERT(err == k_rx_ok, "onewire0 registration must succeed");

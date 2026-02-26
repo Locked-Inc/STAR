@@ -983,9 +983,9 @@ void test_decode_velocity_request_null_msg(void)
  */
 void test_decode_velocity_request_empty_buffer(void)
 {
-  uint8_t                    data[1] = {0};
+  uint8_t data[1] = {0};
 
-  star_v1_SetVelocityRequest msg     = star_v1_SetVelocityRequest_init_zero;
+  star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_velocity_request(data, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1021,9 +1021,9 @@ void test_decode_velocity_request_empty_buffer(void)
 void test_decode_velocity_request_invalid_data(void)
 {
   /* Invalid protobuf data - starts with invalid wire type */
-  uint8_t                    invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-  star_v1_SetVelocityRequest msg            = star_v1_SetVelocityRequest_init_zero;
+  star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_velocity_request(invalid_data, sizeof(invalid_data), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
@@ -1405,9 +1405,9 @@ void test_decode_estop_request_null_msg(void)
  */
 void test_decode_estop_request_empty_buffer(void)
 {
-  uint8_t                      data[1] = {0};
+  uint8_t data[1] = {0};
 
-  star_v1_EmergencyStopRequest msg     = star_v1_EmergencyStopRequest_init_zero;
+  star_v1_EmergencyStopRequest msg = star_v1_EmergencyStopRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_estop_request(data, 0, &msg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -1418,9 +1418,9 @@ void test_decode_estop_request_empty_buffer(void)
  */
 void test_decode_estop_request_invalid_data(void)
 {
-  uint8_t                      invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+  uint8_t invalid_data[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
-  star_v1_EmergencyStopRequest msg            = star_v1_EmergencyStopRequest_init_zero;
+  star_v1_EmergencyStopRequest msg = star_v1_EmergencyStopRequest_init_zero;
 
   rx_err_t err = rx_nanopb_decode_estop_request(invalid_data, sizeof(invalid_data), &msg);
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
@@ -1518,7 +1518,7 @@ void test_decode_pid_gains_request_null_msg(void)
  */
 void test_decode_pid_gains_request_empty_buffer(void)
 {
-  uint8_t                    buffer[64] = {0};
+  uint8_t buffer[64] = {0};
 
   star_v1_SetPIDGainsRequest msg;
   rx_err_t                   err = rx_nanopb_decode_pid_gains_request(buffer, 0, &msg);
@@ -1531,7 +1531,7 @@ void test_decode_pid_gains_request_empty_buffer(void)
  */
 void test_decode_pid_gains_request_invalid_data(void)
 {
-  uint8_t                    buffer[64];
+  uint8_t buffer[64];
 
   star_v1_SetPIDGainsRequest msg;
 
@@ -1547,7 +1547,7 @@ void test_decode_pid_gains_request_invalid_data(void)
  */
 void test_decode_pid_gains_request_not_initialized(void)
 {
-  uint8_t                    buffer[64] = {0};
+  uint8_t buffer[64] = {0};
 
   star_v1_SetPIDGainsRequest msg;
 
@@ -1579,8 +1579,8 @@ void test_decode_pid_gains_request_oversized_buffer(void)
  */
 void test_decode_pid_gains_request_valid(void)
 {
-  uint8_t                    encode_buffer[256];
-  uint32_t                   encode_len;
+  uint8_t  encode_buffer[256];
+  uint32_t encode_len;
 
   star_v1_SetPIDGainsRequest encode_msg = star_v1_SetPIDGainsRequest_init_zero;
 
@@ -1623,8 +1623,8 @@ void test_decode_pid_gains_request_valid(void)
  */
 void test_pid_gains_request_round_trip(void)
 {
-  uint8_t                    buffer[256];
-  uint32_t                   encode_len;
+  uint8_t  buffer[256];
+  uint32_t encode_len;
 
   star_v1_SetPIDGainsRequest original = star_v1_SetPIDGainsRequest_init_zero;
 
@@ -2331,10 +2331,10 @@ void test_encoded_length_increases_with_data(void)
   /* Large message: temperature + GPS + IMU */
   msg_large.temperature_celsius = s_test_temperature_c;
   msg_large.has_gps             = true;
-  msg_large.gps.latitude_deg  = s_test_latitude_deg;
-  msg_large.gps.longitude_deg = s_test_longitude_deg;
-  msg_large.has_imu           = true;
-  msg_large.imu.pitch_rad     = s_test_pitch_rad;
+  msg_large.gps.latitude_deg    = s_test_latitude_deg;
+  msg_large.gps.longitude_deg   = s_test_longitude_deg;
+  msg_large.has_imu             = true;
+  msg_large.imu.pitch_rad       = s_test_pitch_rad;
 
   uint32_t len_small = 0;
   uint32_t len_large = 0;

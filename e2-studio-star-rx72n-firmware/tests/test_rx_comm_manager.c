@@ -425,11 +425,11 @@ void test_send_null_manager(void)
 {
   uint8_t                     payload[k_test_payload_size] = {0};
   const rx_comm_send_params_t params                       = {
-    .channel     = k_comm_channel_usb,
-    .type        = k_frame_type_command,
-    .flags       = k_frame_flag_none,
-    .payload     = payload,
-    .payload_len = sizeof(payload),
+                          .channel     = k_comm_channel_usb,
+                          .type        = k_frame_type_command,
+                          .flags       = k_frame_flag_none,
+                          .payload     = payload,
+                          .payload_len = sizeof(payload),
   };
   rx_err_t err = rx_comm_manager_send(nullptr, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
@@ -444,11 +444,11 @@ void test_send_uninitialized(void)
 {
   uint8_t                     payload[k_test_payload_size] = {0};
   const rx_comm_send_params_t params                       = {
-    .channel     = k_comm_channel_usb,
-    .type        = k_frame_type_command,
-    .flags       = k_frame_flag_none,
-    .payload     = payload,
-    .payload_len = sizeof(payload),
+                          .channel     = k_comm_channel_usb,
+                          .type        = k_frame_type_command,
+                          .flags       = k_frame_flag_none,
+                          .payload     = payload,
+                          .payload_len = sizeof(payload),
   };
   rx_err_t err = rx_comm_manager_send(&s_manager, &params);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);

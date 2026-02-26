@@ -679,9 +679,10 @@ static rx_err_t internal_validate_decode_params(rx_fec_decoder_t*               
     return k_rx_err_invalid_arg;
   }
 
-  const uint32_t num_symbols = (params->expected_output_len > k_fec_zero)
-                  ? (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits)
-                  : k_fec_zero;
+  const uint32_t num_symbols =
+    (params->expected_output_len > k_fec_zero)
+      ? (uint32_t)((params->expected_output_len * k_rx_bits_per_byte) + k_fec_tail_bits)
+      : k_fec_zero;
 
   if (num_symbols < k_fec_tail_bits) {
     return k_rx_err_invalid_size;

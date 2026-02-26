@@ -226,7 +226,7 @@ void test_obstacle_distances_stored_in_shared_data(void)
   obstacle_state_t state_out = {0};
 
   /* Simulate callback storing obstacle state */
-  state_in.distance_cm[k_test_sensor_idx_0]       = 25; /* 25 cm */
+  state_in.distance_cm[k_test_sensor_idx_0] = 25; /* 25 cm */
 
   state_in.obstacle_detected[k_test_sensor_idx_0] = true;
   state_in.distance_cm[k_test_sensor_idx_1]       = 100; /* 100 cm (no obstacle) */
@@ -294,7 +294,7 @@ void test_obstacle_get_stats(void)
 
   /* Get stats */
   const rx_err_t err =
-      rx_obstacle_detect_get_stats(&handle, &total_polls, &obstacle_events, &false_positives);
+    rx_obstacle_detect_get_stats(&handle, &total_polls, &obstacle_events, &false_positives);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(1000, total_polls);
