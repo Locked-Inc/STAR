@@ -967,15 +967,27 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     rx_log_error(s_tag, "SPI comm init failed");
   }
 
-  rx_spi_link_config_t link_cfg = {
-    .spi_handle  = &s_spi_comm_handle,
-    .fec_enabled = k_spi_link_default_fec_enabled,  // true
-    .max_retries = k_spi_link_default_max_retries,  // 3
-  };
+  bool link_ok = false;
 
-  bool link_ok = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
-  if (!link_ok) { rx_log_error(s_tag, "SPI link (HARQ) init failed"); }
-  config->spi_link = link_ok ? &s_spi_link : nullptr;
+  if (spi_ok) {
+    /* Only attempt to configure the HARQ link when the underlying SPI transport
+     * succeeded.  Passing an invalid handle into rx_spi_link_init would trigger
+     * undefined behaviour, so skip the whole block if spi_ok is false. */
+    rx_spi_link_config_t link_cfg = {
+      .spi_handle  = &s_spi_comm_handle,
+      .fec_enabled = k_spi_link_default_fec_enabled,  // true
+      .max_retries = k_spi_link_default_max_retries,  // 3
+    };
+
+    link_ok = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
+    if (!link_ok) {
+      rx_log_error(s_tag, "SPI link (HARQ) init failed");
+    }
+    config->spi_link = link_ok ? &s_spi_link : nullptr;
+  } else {
+    rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
+    config->spi_link = nullptr;
+  }
 
   /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
   config->usb_handle = usb_ok ? &s_usb_comm_handle : nullptr;
