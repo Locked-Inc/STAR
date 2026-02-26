@@ -117,6 +117,24 @@ typedef struct _star_v1_ImuData {
   double gyro_z_rad_per_s;
 } star_v1_ImuData;
 
+/* Obstacle detection data from ultrasonic sensors (RX72N specific).
+ Reports distance and detection state from 4 HC-SR04 sensors. */
+typedef struct _star_v1_ObstacleData {
+  /* Distance from sensor 0 in meters. 0.0 if sensor invalid. */
+  float distance_0_m;
+  /* Distance from sensor 1 in meters. 0.0 if sensor invalid. */
+  float distance_1_m;
+  /* Distance from sensor 2 in meters. 0.0 if sensor invalid. */
+  float distance_2_m;
+  /* Distance from sensor 3 in meters. 0.0 if sensor invalid. */
+  float distance_3_m;
+  /* Any sensor has detected an obstacle within threshold distance. */
+  bool any_obstacle;
+  /* Per-sensor detection bitmask. Bit N set = sensor N detected obstacle.
+ Bit 0: sensor 0, Bit 1: sensor 1, Bit 2: sensor 2, Bit 3: sensor 3. */
+  uint32_t detected_mask;
+} star_v1_ObstacleData;
+
 /* GPS position data. */
 typedef struct _star_v1_GpsData {
   /* WGS84 latitude in degrees.
@@ -181,6 +199,9 @@ typedef struct _star_v1_TelemetryData {
  Increments with each transmitted frame. Used by diagnostics to detect
  missing frames in the telemetry stream. */
   uint32_t frame_sequence;
+  /* Obstacle detection data from ultrasonic sensors (RX72N specific). */
+  bool                 has_obstacle;
+  star_v1_ObstacleData obstacle;
 } star_v1_TelemetryData;
 
 /* Response with telemetry snapshot. */
@@ -276,7 +297,7 @@ extern "C" {
     false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, 0, 0, 0, 0, false,   \
       google_protobuf_Timestamp_init_default, 0, 0, 0, false, star_v1_EncoderData_init_default,    \
       false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false,     \
-      star_v1_EncoderData_init_default, 0                                                          \
+      star_v1_EncoderData_init_default, 0, false, star_v1_ObstacleData_init_default                \
   }
 #define star_v1_ImuData_init_default                                                               \
   {                                                                                                \
@@ -285,6 +306,10 @@ extern "C" {
 #define star_v1_GpsData_init_default                                                               \
   {                                                                                                \
     0, 0, 0, 0, 0, _star_v1_GpsFix_MIN                                                             \
+  }
+#define star_v1_ObstacleData_init_default                                                          \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
   }
 #define star_v1_SystemStatus_init_default                                                          \
   {                                                                                                \
@@ -318,7 +343,7 @@ extern "C" {
     false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, 0, 0, 0, 0, false,         \
       google_protobuf_Timestamp_init_zero, 0, 0, 0, false, star_v1_EncoderData_init_zero, false,   \
       star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false,                  \
-      star_v1_EncoderData_init_zero, 0                                                             \
+      star_v1_EncoderData_init_zero, 0, false, star_v1_ObstacleData_init_zero                      \
   }
 #define star_v1_ImuData_init_zero                                                                  \
   {                                                                                                \
@@ -327,6 +352,10 @@ extern "C" {
 #define star_v1_GpsData_init_zero                                                                  \
   {                                                                                                \
     0, 0, 0, 0, 0, _star_v1_GpsFix_MIN                                                             \
+  }
+#define star_v1_ObstacleData_init_zero                                                             \
+  {                                                                                                \
+    0, 0, 0, 0, 0, 0                                                                               \
   }
 #define star_v1_SystemStatus_init_zero                                                             \
   {                                                                                                \
@@ -369,6 +398,13 @@ extern "C" {
 #define star_v1_TelemetryData_encoder_back_left_tag   17
 #define star_v1_TelemetryData_encoder_back_right_tag  18
 #define star_v1_TelemetryData_frame_sequence_tag      19
+#define star_v1_TelemetryData_obstacle_tag            3
+#define star_v1_ObstacleData_distance_0_m_tag         1
+#define star_v1_ObstacleData_distance_1_m_tag         2
+#define star_v1_ObstacleData_distance_2_m_tag         3
+#define star_v1_ObstacleData_distance_3_m_tag         4
+#define star_v1_ObstacleData_any_obstacle_tag         5
+#define star_v1_ObstacleData_detected_mask_tag        6
 #define star_v1_GetTelemetryResponse_header_tag       1
 #define star_v1_GetTelemetryResponse_telemetry_tag    2
 #define star_v1_SystemStatus_connection_status_tag    1
@@ -432,7 +468,8 @@ extern "C" {
   X(a, STATIC, OPTIONAL, MESSAGE, encoder_front_right, 16)                                         \
   X(a, STATIC, OPTIONAL, MESSAGE, encoder_back_left, 17)                                           \
   X(a, STATIC, OPTIONAL, MESSAGE, encoder_back_right, 18)                                          \
-  X(a, STATIC, SINGULAR, UINT32, frame_sequence, 19)
+  X(a, STATIC, SINGULAR, UINT32, frame_sequence, 19)                                               \
+  X(a, STATIC, OPTIONAL, MESSAGE, obstacle, 3)
 #define star_v1_TelemetryData_CALLBACK                    NULL
 #define star_v1_TelemetryData_DEFAULT                     NULL
 #define star_v1_TelemetryData_imu_MSGTYPE                 star_v1_ImuData
@@ -442,6 +479,17 @@ extern "C" {
 #define star_v1_TelemetryData_encoder_front_right_MSGTYPE star_v1_EncoderData
 #define star_v1_TelemetryData_encoder_back_left_MSGTYPE   star_v1_EncoderData
 #define star_v1_TelemetryData_encoder_back_right_MSGTYPE  star_v1_EncoderData
+#define star_v1_TelemetryData_obstacle_MSGTYPE            star_v1_ObstacleData
+
+#define star_v1_ObstacleData_FIELDLIST(X, a)                                                       \
+  X(a, STATIC, SINGULAR, FLOAT, distance_0_m, 1)                                                   \
+  X(a, STATIC, SINGULAR, FLOAT, distance_1_m, 2)                                                   \
+  X(a, STATIC, SINGULAR, FLOAT, distance_2_m, 3)                                                   \
+  X(a, STATIC, SINGULAR, FLOAT, distance_3_m, 4)                                                   \
+  X(a, STATIC, SINGULAR, BOOL, any_obstacle, 5)                                                    \
+  X(a, STATIC, SINGULAR, UINT32, detected_mask, 6)
+#define star_v1_ObstacleData_CALLBACK NULL
+#define star_v1_ObstacleData_DEFAULT  NULL
 
 #define star_v1_ImuData_FIELDLIST(X, a)                                                            \
   X(a, STATIC, SINGULAR, DOUBLE, pitch_rad, 1)                                                     \
@@ -485,6 +533,7 @@ extern const pb_msgdesc_t star_v1_GetSystemStatusRequest_msg;
 extern const pb_msgdesc_t star_v1_GetSystemStatusResponse_msg;
 extern const pb_msgdesc_t star_v1_TelemetryData_msg;
 extern const pb_msgdesc_t star_v1_ImuData_msg;
+extern const pb_msgdesc_t star_v1_ObstacleData_msg;
 extern const pb_msgdesc_t star_v1_GpsData_msg;
 extern const pb_msgdesc_t star_v1_SystemStatus_msg;
 
@@ -496,6 +545,7 @@ extern const pb_msgdesc_t star_v1_SystemStatus_msg;
 #define star_v1_GetSystemStatusResponse_fields &star_v1_GetSystemStatusResponse_msg
 #define star_v1_TelemetryData_fields           &star_v1_TelemetryData_msg
 #define star_v1_ImuData_fields                 &star_v1_ImuData_msg
+#define star_v1_ObstacleData_fields            &star_v1_ObstacleData_msg
 #define star_v1_GpsData_fields                 &star_v1_GpsData_msg
 #define star_v1_SystemStatus_fields            &star_v1_SystemStatus_msg
 
@@ -504,12 +554,13 @@ extern const pb_msgdesc_t star_v1_SystemStatus_msg;
 #define star_v1_GetSystemStatusRequest_size     149
 #define star_v1_GetSystemStatusResponse_size    425
 #define star_v1_GetTelemetryRequest_size        149
-#define star_v1_GetTelemetryResponse_size       767
+#define star_v1_GetTelemetryResponse_size       802
 #define star_v1_GpsData_size                    49
 #define star_v1_ImuData_size                    81
+#define star_v1_ObstacleData_size               32
 #define star_v1_StreamTelemetryRequest_size     688
 #define star_v1_SystemStatus_size               60
-#define star_v1_TelemetryData_size              401
+#define star_v1_TelemetryData_size              436
 
 #ifdef __cplusplus
 } /* extern "C" */

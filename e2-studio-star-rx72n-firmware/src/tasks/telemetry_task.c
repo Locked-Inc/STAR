@@ -1051,6 +1051,9 @@ static uint32_t s_sequence = 0;
 /** @brief Conversion factor: centi-degrees Celsius per degree Celsius */
 static const float s_cdegc_per_degree = 100.0F;
 
+/** @brief Conversion factor: centimeters per meter */
+static const float s_cm_per_m = 100.0F;
+
 /**
  * @enum telem_motor_idx_t
  * @brief Motor indices for telemetry encoder data
@@ -1083,6 +1086,76 @@ typedef enum : uint8_t {
 typedef enum : uint8_t {
   k_telem_sensor_ambient = 0, /**< DS18B20 ambient temperature sensor index */
 } telem_sensor_idx_t;
+
+/**
+ * @enum telem_obstacle_sensor_idx_t
+ * @brief Obstacle sensor array indices for telemetry population
+ *
+ * @details
+ * Maps each ultrasonic obstacle sensor to its physical position on the
+ * vehicle. The sensors are mounted at the four corners:
+ *   - 0: front-left
+ *   - 1: front-right
+ *   - 2: rear-left
+ *   - 3: rear-right
+ *
+ * These values are used as indices into the `telemetry_t::obstacle`
+ * distance and status arrays when assembling telemetry packets.
+ *
+ * @invariant Values are contiguous integers in the range 0–3, one for
+ * each installed sensor.
+ *
+ * @code
+ * // access front-left distance (already in meters)
+ * float dist_fl = telemetry->obstacle.distance_0_m;
+ *
+ * // build detected_mask for sensors 0 and 2
+ * uint32_t mask = (1U << k_telem_obstacle_shift_0) |
+ *                 (1U << k_telem_obstacle_shift_2);
+ * @endcode
+ *
+ * @see telem_obstacle_mask_shift_t
+ * @see telemetry_t
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_telem_obstacle_sensor_0 = 0, /**< Front-left ultrasonic sensor array index */
+  k_telem_obstacle_sensor_1 = 1, /**< Front-right ultrasonic sensor array index */
+  k_telem_obstacle_sensor_2 = 2, /**< Rear-left ultrasonic sensor array index */
+  k_telem_obstacle_sensor_3 = 3, /**< Rear-right ultrasonic sensor array index */
+} telem_obstacle_sensor_idx_t;
+
+/**
+ * @enum telem_obstacle_mask_shift_t
+ * @brief Bit shifts for constructing obstacle detected_mask field
+ *
+ * @details
+ * Each sensor corresponds to a bit in the `detected_mask` bitfield.  The
+ * shift values match the physical layout used by
+ * `telem_obstacle_sensor_idx_t`
+ * (front-left=0, front-right=1, rear-left=2, rear-right=3).  Masks are
+ * created with `(1U << k_telem_obstacle_shift_*)`.
+ *
+ * @invariant Valid values 0–3, representing the four sensors.
+ *
+ * @code
+ * uint32_t mask = (1U << k_telem_obstacle_shift_0) |
+ *                 (1U << k_telem_obstacle_shift_2); // front-left & rear-left
+ *
+ * if (telemetry->obstacle.detected_mask & (1U << k_telem_obstacle_shift_1)) {
+ *   // front-right detected
+ * }
+ * @endcode
+ *
+ * @see telem_obstacle_sensor_idx_t
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_telem_obstacle_shift_0 = 0, /**< Bit shift for front-left sensor detection flag */
+  k_telem_obstacle_shift_1 = 1, /**< Bit shift for front-right sensor detection flag */
+  k_telem_obstacle_shift_2 = 2, /**< Bit shift for rear-left sensor detection flag */
+  k_telem_obstacle_shift_3 = 3, /**< Bit shift for rear-right sensor detection flag */
+} telem_obstacle_mask_shift_t;
 
 /**
  * @enum telemetry_transport_t
@@ -1155,8 +1228,8 @@ static telemetry_transport_t internal_select_transport(void);
 static rx_err_t              internal_populate_motor_telemetry(star_v1_TelemetryData* telemetry);
 static void                  internal_collect_state(star_v1_TelemetryData* telemetry);
 static rx_err_t              internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
-                                                       uint32_t*                    out_encoded_len);
-static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len);
+                                                        uint32_t*                    out_encoded_len);
+static rx_err_t              internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len);
 
 /* =============================================================================
  * Public Functions
@@ -1283,15 +1356,15 @@ rx_err_t telemetry_task_create(void)
 
   /* Create the thread */
   UINT tx_status = tx_thread_create(&s_telem_thread,
-                                    "TelemTask",
-                                    internal_telem_task_entry,
-                                    k_telem_task_input,
-                                    s_telem_stack,
-                                    k_telem_task_stack_size,
-                                    k_telem_task_priority,
-                                    k_telem_task_priority,
-                                    TX_NO_TIME_SLICE,
-                                    TX_AUTO_START);
+                               "TelemTask",
+                               internal_telem_task_entry,
+                               k_telem_task_input,
+                               s_telem_stack,
+                               k_telem_task_stack_size,
+                               k_telem_task_priority,
+                               k_telem_task_priority,
+                               TX_NO_TIME_SLICE,
+                               TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
@@ -1587,7 +1660,7 @@ static telemetry_transport_t internal_select_transport(void)
 
   /* Query USB channel readiness */
   bool     usb_ready = false;
-  rx_err_t err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
+  rx_err_t err       = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
   if (err != k_rx_ok) {
     /* Treat query failure as channel not ready */
     usb_ready = false;
@@ -1613,7 +1686,7 @@ static telemetry_transport_t internal_select_transport(void)
 
   /* Query SPI channel readiness */
   bool spi_ready = false;
-  err            = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
+  err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
   if (err != k_rx_ok) {
     spi_ready = false;
   }
@@ -1732,7 +1805,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * @brief Collect all robot system state into the telemetry message (Phase 1 + Phase 2)
  *
  * @details
- * Reads motor and temperature state from shared_data and populates
+ * Reads motor, temperature, and obstacle state from shared_data and populates
  * the corresponding fields in `telemetry`. All reads are **non-blocking**
  * and non-fatal: if a data source is unavailable, the corresponding fields
  * are left at zero-init defaults and collection continues for remaining sources.
@@ -1741,6 +1814,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * 1. **Motor state** (via internal_populate_motor_telemetry()):
  *    E-stop flag, fault_flags bitfield, 4 encoder submessages
  * 2. **Temperature state:** temperature_celsius (cdegC->degC)
+ * 3. **Obstacle state:** 4 sensor distances (cm), any_obstacle flag, detected_mask bitmask
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
@@ -1755,6 +1829,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  *
  * @see internal_populate_motor_telemetry() Motor field population helper
  * @see shared_data_get_temp() Temperature state accessor
+ * @see shared_data_get_obstacle() Obstacle state accessor
  * @see internal_build_and_send_telemetry() Caller - sets timestamp before calling
  *
  * @since Version 1.1.0
@@ -1764,10 +1839,12 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * - Precondition 2: timestamp_us set before call (for encoder sub-timestamps)
  * - Postcondition 1: Motor fields populated if shared_data_get_motor_state() == k_rx_ok
  * - Postcondition 2: Temp fields populated if shared_data_get_temp() == k_rx_ok && valid
+ * - Postcondition 3: Obstacle fields populated if shared_data_get_obstacle() == k_rx_ok
  */
 static void internal_collect_state(star_v1_TelemetryData* telemetry)
 {
   temp_sensor_state_t temp_state;
+  obstacle_state_t    obstacle_state;
   rx_err_t            err;
 
   /* Collect motor state (non-fatal: missing data leaves fields at zero-init) */
@@ -1780,6 +1857,26 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
     /* Convert from centi-degrees to degrees */
     telemetry->temperature_celsius =
       (float)temp_state.temperature_cdegc[k_telem_sensor_ambient] / s_cdegc_per_degree;
+  }
+
+  /* Collect obstacle state */
+  err = shared_data_get_obstacle(&obstacle_state);
+  if (err == k_rx_ok) {
+    telemetry->has_obstacle          = true;
+    telemetry->obstacle.distance_0_m =
+      (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_0] / s_cm_per_m;
+    telemetry->obstacle.distance_1_m =
+      (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_1] / s_cm_per_m;
+    telemetry->obstacle.distance_2_m =
+      (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_2] / s_cm_per_m;
+    telemetry->obstacle.distance_3_m =
+      (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_3] / s_cm_per_m;
+    telemetry->obstacle.any_obstacle  = obstacle_state.any_obstacle;
+    telemetry->obstacle.detected_mask =
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_0] << k_telem_obstacle_shift_0) |
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_1] << k_telem_obstacle_shift_1) |
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_2] << k_telem_obstacle_shift_2) |
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_3] << k_telem_obstacle_shift_3);
   }
 }
 
@@ -1820,11 +1917,12 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
  * - Postcondition 2: *out_encoded_len valid only when k_rx_ok returned
  */
 static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
-                                          uint32_t*                    out_encoded_len)
+                                           uint32_t*                    out_encoded_len)
 {
   rx_err_t err;
 
-  err = rx_nanopb_encode_telemetry(telemetry, s_telem_buffer, k_telem_buffer_size, out_encoded_len);
+  err =
+    rx_nanopb_encode_telemetry(telemetry, s_telem_buffer, k_telem_buffer_size, out_encoded_len);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Telemetry encode failed", (uint32_t)err);
   }
