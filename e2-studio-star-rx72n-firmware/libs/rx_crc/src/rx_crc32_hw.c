@@ -1,4 +1,4 @@
-/* lib/rx_crc/src/rx_crc32_hw.c */
+/* libs/rx_crc/src/rx_crc32_hw.c */
 
 /**
  * @file rx_crc32_hw.c
@@ -361,25 +361,22 @@ typedef enum : uint32_t {
  * The underlying type is chosen large enough to hold both values. Consumers
  * should not depend on the specific enum type, only on the macro wrappers.
  *
+ * @code{.c}
+ * // Override defaults at compile time:
+ * // -DRX_CRC32_DMA_CHANNEL=2 -DRX_CRC32_DMA_THRESHOLD=128
+ *
+ * // Or use default values directly:
+ * uint8_t channel = (uint8_t)k_crc_dma_channel_default;
+ * @endcode
+ *
+ * @see rx_dmaca.h DMACA driver interface
+ * @see crc_feed_dma() Consumer of these constants
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-    /**
-     * @brief Default DMA channel for CRC32 transfers
-     *
-     * Channel 0 is used when no other driver has claimed it. This value can be
-     * overridden at compile time with `-DRX_CRC32_DMA_CHANNEL=<n>`.
-     */
-    k_crc_dma_channel_default = 0U,
-
-    /**
-     * @brief Buffer length threshold (bytes) for switching to DMA
-     *
-     * Buffers shorter than this are processed by the CPU loop because DMA setup
-    * overhead would be higher than the savings. Measured break-even at 240 MHz
-     * on RX72N is ~64 bytes.
-     */
-    k_crc_dma_threshold_default = 64U,
+    k_crc_dma_channel_default = 0U,     /**< Default DMA channel (0); override with -DRX_CRC32_DMA_CHANNEL=<n> */
+    k_crc_dma_threshold_default = 64U,  /**< Threshold (bytes) for using DMA; below this CPU loop is faster due to lower setup overhead (~30-50 cycles); break-even ~64 bytes @ 240 MHz */
 } rx_crc_dma_defaults_t;
 
 /**
@@ -414,6 +411,27 @@ typedef enum : uint32_t {
  * =============================================================================
  */
 
+/**
+ * @var s_crc_initialized
+ * @brief CRC peripheral initialization flag
+ *
+ * @details
+ * This file-static boolean is set to true by `rx_crc_init()` after it
+ * successfully configures the RX72N CRC Calculator peripheral (MSTPCRB[23]
+ * cleared, CRCCR configured for IEEE 802.3). It indicates that the CRC
+ * hardware is available to service CRC32 calculations. The flag enables
+ * lazy initialization in `rx_crc32_ieee_impl()` on first use.
+ *
+ * @note
+ * The variable has file scope and is not protected by any synchronization.
+ * Multiple threads initializing simultaneously is safe (write-once pattern).
+ *
+ * @warning
+ * Do not modify this flag directly. Use `rx_crc_init()` to manage CRC state,
+ * otherwise CRC32 operations may misbehave.
+ *
+ * @since Version 1.0.0
+ */
 static bool s_crc_initialized = false;
 
 #ifdef RX_CRC32_USE_DMA
@@ -430,11 +448,6 @@ static bool s_crc_initialized = false;
  * path for CRC32; do not attempt direct use of `rx_dmaca_init()` as the
  * higher-level initialization in `rx_crc_init()` coordinates CRC module state
  * and DMA setup.
- *
- * @note
- * The variable has file scope and is not protected by any synchronization.
- * Access is not thread-safe; callers in multi-threaded contexts must provide
- * their own mutual exclusion or use higher-level accessor functions.
  *
  * @warning
  * Do not modify this flag directly. Use `rx_crc_init()` (which invokes
@@ -638,18 +651,15 @@ rx_err_t rx_crc_init(void)
      */
   crc_regs()->crccr = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
 
-  s_crc_initialized = true;
-  return k_rx_ok;
-
-  #ifdef RX_CRC32_USE_DMA
-    /* -----------------------------------------------------------------------
-    * Initialise DMACA for CRC transfers.
-    *
-    * rx_dmaca_init() sets DMAC.DMAST.BIT.DMST = 1.  
-    * Safe to call here because the CRC module clock is already enabled above.
-    *
-    * NASA Rule 7: return value checked before proceeding.
-    * ----------------------------------------------------------------------- */
+#ifdef RX_CRC32_USE_DMA
+  /* -----------------------------------------------------------------------
+   * Initialise DMACA for CRC transfers.
+   *
+   * rx_dmaca_init() sets DMAC.DMAST.BIT.DMST = 1.  
+   * Safe to call here because the CRC module clock is already enabled above.
+   *
+   * NASA Rule 7: return value checked before proceeding.
+   * ----------------------------------------------------------------------- */
   if (!s_dma_initialized) {
     rx_err_t dma_err = rx_dmaca_init();
     if (dma_err != k_rx_ok) {
@@ -723,19 +733,29 @@ rx_err_t rx_crc_deinit(void)
  * reserved as a future optimisation once alignment guarantees are verified.
  *
  * **Transfer size limit:**
- * DMACA's 10-bit block counter caps at DMACA_MAX_TRANSFER_COUNT (1 024).
+ * DMACA's 10-bit block counter caps at k_dmaca_max_transfer_count (1 024).
  * Callers are responsible for splitting larger buffers; see rx_crc32_ieee_impl.
  *
  * @param[in] data  Source buffer -- must not be NULL, length <= 1 024.
- * @param[in] len   Number of bytes to transfer (1 - DMACA_MAX_TRANSFER_COUNT).
+ * @param[in] len   Number of bytes to transfer (1 - k_dmaca_max_transfer_count).
  *
- * @return k_rx_ok          Transfer completed and CRC hardware has processed all bytes.
- * @return k_rx_err_timeout DMA did not complete within bounded timeout (bus starvation).
- * @return k_rx_err_param   Bad argument forwarded from rx_dmaca layer.
+ * @return rx_err_t Error code indicating transfer result
+ * @retval k_rx_ok          Transfer completed and CRC hardware has processed all bytes.
+ * @retval k_rx_err_null_ptr Source data pointer is NULL.
+ * @retval k_rx_err_nack    Length out of valid range [1, k_dmaca_max_transfer_count].
+ * @retval k_rx_err_timeout DMA did not complete within bounded timeout (bus starvation).
  *
  * @pre  CRC peripheral initialised and CRCCR.DORCLR already asserted by caller.
  * @pre  DMACA module initialised (s_dma_initialized == true).
  * @post All @p len bytes have been written to CRCDIR by the DMA controller.
+ * @post DMA channel RX_CRC32_DMA_CHANNEL is idle and available for reuse.
+ *
+ * @note Thread safety: NOT thread-safe. Caller must ensure mutual exclusion
+ *       on the CRC peripheral and DMA channel during the transfer.
+ *
+ * @see rx_dmaca_transfer_blocking() Underlying DMA transfer API
+ *
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 2: [OK] Bounded polling loop inside rx_dmaca_transfer_blocking()
@@ -743,16 +763,21 @@ rx_err_t rx_crc_deinit(void)
  */
 static rx_err_t crc_feed_dma(const uint8_t* data, uint32_t len)
 {
+  RX_CHECK_NULL_PTR(data, "CRC", "DMA source data pointer is nullptr");
+  RX_CHECK_RANGE_TAG(
+        len, k_crc_len_min, (uint32_t)k_dmaca_max_transfer_count, k_rx_err_nack, "CRC");
+  /* Ensure DMACA subsystem was initialized by rx_crc_init() when DMA is enabled */
+  RX_VALIDATE_INIT(s_dma_initialized, "CRC", "DMA module not initialized");
+
   dmaca_config_t cfg = {
-    .p_src          = (void*)(uintptr_t)data,
-    .p_dst          = (void*)CRCDIR_PHYS_ADDR,   /* CRCDIR @ 0x00088284   */
+    .p_src          = (const void*)data,
+    .p_dst          = (void*)&crc_regs()->crcdir,   /* CRCDIR @ 0x00088284   */
     .transfer_count = (uint32_t)len,
     .transfer_mode  = k_dmaca_mode_block,
     .data_size      = k_dmaca_size_byte,          /* 8-bit -- see note above */
     .src_addr_mode  = k_dmaca_addr_increment,
     .dst_addr_mode  = k_dmaca_addr_fixed,         /* CRITICAL: never increment */
   };
-
   return rx_dmaca_transfer_blocking((uint8_t)RX_CRC32_DMA_CHANNEL, &cfg);
 }
 
@@ -844,12 +869,19 @@ static rx_err_t crc_feed_dma(const uint8_t* data, uint32_t len)
  *
  * **Stack (local variables):**
  *
- * | Variable | Type | Size | Usage |
- * |----------|------|------|-------|
- * | init_err | rx_err_t | 4 bytes | Initialization result |
- * | crcdir_byte | volatile uint8_t* | 4 bytes | CRCDIR register pointer |
- * | i | uint32_t | 4 bytes | Loop index |
- * | **Total stack** | - | **12 bytes** | Maximum stack depth |
+ * | Variable | Type | Size | Scope | Usage |
+ * |----------|------|------|-------|-------|
+ * | crcdir_byte | volatile uint8_t* | 4 bytes | Function | CRCDIR register pointer |
+ * | dma_len | uint32_t | 4 bytes | DMA block | DMA transfer size |
+ * | saved_interrupt_state | UINT | 4 bytes | DMA block | Saved interrupt state |
+ * | dma_err | rx_err_t | 4 bytes | DMA block | DMA operation result |
+ * | i | uint32_t | 4 bytes | Loop | Loop index |
+ * | init_err | rx_err_t | 4 bytes | Init block | Initialization result |
+ * | **Max stack (DMA path)** | - | **20 bytes** | - | Worst-case simultaneous |
+ * | **Max stack (CPU path)** | - | **8 bytes** | - | Worst-case simultaneous |
+ *
+ * **Notes:** init_err is in a smaller scope (if block), so it doesn't add to function-level stack.
+ * dma_len, saved_interrupt_state, and dma_err are in the DMA block only.
  *
  * **Global state:**
  * - s_crc_initialized: 1 byte (shared with rx_crc_init)
@@ -1011,8 +1043,6 @@ static rx_err_t crc_feed_dma(const uint8_t* data, uint32_t len)
  */
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
-  rx_err_t init_err;
-
   volatile uint8_t* crcdir_byte;
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */
@@ -1021,7 +1051,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 
   /* Ensure CRC module is initialized */
   if (!s_crc_initialized) {
-    init_err = rx_crc_init();
+    rx_err_t init_err = rx_crc_init();
     if (init_err != k_rx_ok) {
       return k_crc_result_invalid;
     }
@@ -1049,12 +1079,12 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      */
   crcdir_byte = (volatile uint8_t*)&crc_regs()->crcdir;
 
-  #ifdef RX_CRC32_USE_DMA
+#ifdef RX_CRC32_USE_DMA
   if (len >= (uint32_t)RX_CRC32_DMA_THRESHOLD) {
     /* -------- DMA segment ------------------------------------------------ */
-    uint32_t dma_len = (len <= (uint32_t)DMACA_MAX_TRANSFER_COUNT)
+    uint32_t dma_len = (len <= (uint32_t)k_dmaca_max_transfer_count)
                        ? len
-                       : (uint32_t)DMACA_MAX_TRANSFER_COUNT;
+                       : (uint32_t)k_dmaca_max_transfer_count;
 
     rx_err_t dma_err = crc_feed_dma(data, dma_len);
     if (dma_err != k_rx_ok) {

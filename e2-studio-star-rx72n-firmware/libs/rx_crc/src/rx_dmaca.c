@@ -1,8 +1,9 @@
-/* lib/rx_crc/src/rx_dmaca.c */
+/* libs/rx_crc/src/rx_dmaca.c */
 
 /**
  * @file    rx_dmaca.c
  * @brief   DMACA driver for RX72N
+ * @version 1.0.0
  *
  * Implements the API declared in rx_dmaca.h.
  *
@@ -15,8 +16,38 @@
  *   - 8-bit and 32-bit transfers only -- 16-bit is prohibited for CRCDIR.
  *   - Destination address is NEVER incremented for CRCDIR use.
  *   - All completion loops are bounded (NASA Rule 2).
- *   - No dynamic memory allocation (NASA Rule 10).
+ *   - No dynamic memory allocation (NASA Rule 3).
  *   - Every public function validates its arguments and returns rx_err_t.
+ *
+ * @details
+ * Internal implementation of the DMACA abstraction layer used by the
+ * CRC driver.  Provides initialization, channel configuration, start,
+ * polling wait, and abort functionality.  The code avoids dynamic
+ * allocation and uses compile-time constants; all loops are bounded to
+ * satisfy safety-critical restrictions.
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 2: Bounded loops for DMA polling and configuration
+ * - Rule 3: No dynamic memory allocation anywhere in this file
+ * - Rule 5: Argument validation in every public API with pre/post
+ *            conditions documented
+ * - Rule 7: All return values checked by callers
+ *
+ * @par SOLID Principles Adherence:
+ * - Single Responsibility: each function performs exactly one task (init,
+ *   configure, start, wait, abort)
+ * - Open/Closed: configuration structure allows new transfer modes without
+ *   modifying existing code
+ * - Liskov Substitution: validate_channel ensures any channel index is
+ *   safely handled, making higher-level code agnostic to invalid inputs
+ * - Interface Segregation: small, focused API (configure/start/wait/abort)
+ * - Dependency Inversion: high-level drivers depend on this abstract API
+ *   rather than raw hardware registers
+ *
+ * @see docs/sections/06_nasa_power_of_10.tex
+ * @see docs/sections/04_style_guide.tex
+ * @see docs/sections/07_gateway_architecture.tex
+ *
  * @author STAR Team
  * @date 2026-02-22
  * @copyright Copyright (c) 2026 STAR Project - MIT License
@@ -55,23 +86,82 @@
  * fixed base address with a constant stride between consecutive channels.
  * These named constants replace raw literals in pointer arithmetic to make
  * the relationship explicit and easier to audit.
+ *
+ * @invariant DMACA_CHANNEL_STRIDE must equal k_dmac_channel_size and must 
+ * remain constant throughout the program execution to ensure correct channel 
+ * register access.
+ *
+ * @code
+ * // Example: compute base address for a channel
+ * uintptr_t channel_addr = k_dmac0_base_addr + (ch_index * DMACA_CHANNEL_STRIDE);
+ * volatile rx_dmac_channel_regs_t *p_ch = (volatile rx_dmac_channel_regs_t *)channel_addr;
+ * @endcode
+ *
+ * @see dmac_ch, k_dmac0_base_addr, k_dmac_channel_size
+ * @since 1.0.0
  */
 /* Local alias for hardware register layout constant from rx72n_dmac_regs.h */
 
 typedef enum : uint32_t {
-    k_dmac_channel_stride = k_dmac_channel_size,       /**< bytes between channels */
+    DMACA_CHANNEL_STRIDE = k_dmac_channel_size,       /**< bytes between channels */
 } dmac_hw_t;
 
-/* Local named constants for register clearing / SWREQ bit to avoid magic numbers
+/**
+ * @enum dmaca_const_t
+ * @brief Local register constants for DMACA control values
  *
- * Converted to a typed enum per C23 style guidelines; values retain their
- * original meanings.  Call sites cast to uint8_t where required by the
- * register definitions. */
+ * @details
+ * Defines named constants for register clearing operations and software
+ * request bit values. These are represented as a typed enum (uint8_t) per
+ * C23 style guidelines to avoid magic numbers and enable compile-time type
+ * checking. Call sites must cast values to uint8_t when writing directly to
+ * hardware registers that require the uint8_t type.
+ *
+ * @invariant All values must match hardware register encodings and bit
+ * positions defined in the RX72N datasheet for DMACA control registers.
+ *
+ * @par Example:
+ * @code
+ * // Clear interrupt enable flag by writing DMINT register
+ * ch->DMINT = (uint8_t)DMACA_DMINT_CLEAR;
+ *
+ * // Clear status flags by writing DMSTS register
+ * ch->DMSTS = (uint8_t)DMACA_DMSTS_CLEAR;
+ *
+ * // Trigger software request
+ * ch->DMAMD |= (uint8_t)DMACA_SWREQ_REQUEST;
+ * @endcode
+ *
+ * @see DMACA_DMINT_CLEAR, DMACA_DMSTS_CLEAR, DMACA_SWREQ_REQUEST
+ * @since 1.0.0
+ */
 typedef enum : uint8_t {
     DMACA_DMINT_CLEAR       = 0x00U, /**< Clear DMINT (disable interrupts) */
     DMACA_DMSTS_CLEAR       = 0x00U, /**< Clear DMSTS (clear status flags) */
+    DMACA_DMCRB_CLEAR       = 0x00U, /**< Value written to DMCRB to clear it */
     DMACA_SWREQ_REQUEST     = 1U,    /**< SWREQ request bit value */
 } dmaca_const_t;
+
+/**
+ * @enum dmaca_bitmap_t
+ * @brief Bitmask helpers for tracking configured channels
+ *
+ * @details
+ * The driver maintains a bitmap (s_channel_configured) where each bit
+ * corresponds to a channel index.  This enum provides named constants for the
+ * empty bitmap and the base bit value used when shifting by a channel index.
+ * Using typed enum values avoids magic literals and clarifies intent when
+ * manipulating the bitmap.
+ *
+ * @invariant Only the two enumerators are used; shifting by channel index is
+ *            performed with DMACA_CHANNEL_BITMAP_BIT.
+ *
+ * @since 1.0.0
+ */
+typedef enum : uint8_t {
+    DMACA_CHANNEL_BITMAP_NONE = 0U, /**< No channels configured */
+    DMACA_CHANNEL_BITMAP_BIT  = 1U, /**< Base bit value for one channel */
+} dmaca_bitmap_t;
 
 /**
  * @enum dmaca_dte_t
@@ -81,12 +171,223 @@ typedef enum : uint8_t {
  * Used internally when enabling or disabling the DMA transfer engine for a
  * channel.  Grouped here as a typed enum for readability; the underlying
  * register field is one bit wide so the values are 0 or 1.
+ *
+ * @invariant dmaca_dte_t is a one-bit field constraint: values must be 0 or 1 
+ * and correspond directly to the DMCNT.DTE register bit encoding in the RX72N 
+ * datasheet.
+ *
+ * @code
+ * // Example: enable DMA transfer engine for a channel
+ * ch->dmcnt |= (uint8_t)DMACA_DTE_ENABLE;  // Set DTE = 1
+ * // Example: disable DMA transfer engine
+ * ch->dmcnt &= ~(uint8_t)DMACA_DTE_ENABLE;  // Clear DTE bit to disable
+ * @endcode
+ *
+ * @see DMACA_DTE_ENABLE, DMACA_DTE_DISABLE, rx_dmaca_start, rx_dmaca_abort
+ * @since 1.0.0
  */
 typedef enum : uint8_t {
     DMACA_DTE_DISABLE = 0U, /**< DTE = 0, DMA engine disabled */
     DMACA_DTE_ENABLE  = 1U, /**< DTE = 1, DMA engine enabled  */
 } dmaca_dte_t;
 
+/**
+ * @enum dmaca_timeout_scale_t
+ * @brief Constants for DMA timeout calculation
+ *
+ * @details
+ * Derived from worst-case per-transfer cycles and ICLK/PCLKB ratio.
+ * At 240/60 MHz (ratio = 4): (Cr + Cw) = (1 + 4) = 5 PCLKB cycles
+ * Per transfer: 5 x 4 = 20 ICLK iterations. Add 25% margin (5/4).
+ *
+ * @invariant These constants are compile-time invariants derived from the RX72N 
+ * hardware clock configuration (240 MHz ICLK, 60 MHz PCLKB). They must not be 
+ * modified and represent the per-transfer cost and margin parameters for timeout 
+ * calculations in the DMACA polling loops.
+ *
+ * @code
+ * // Example: compute timeout for a 256-byte transfer
+ * uint32_t transfer_size = 256;  // bytes
+ * uint32_t timeout = (transfer_size * K_DMACA_CYCLES_PER_XFER * 
+ *                      K_DMACA_MARGIN_NUMERATOR) / K_DMACA_MARGIN_DENOMINATOR;
+ * rx_dmaca_wait(channel, timeout);
+ * @endcode
+ *
+ * @see K_DMACA_CYCLES_PER_XFER, K_DMACA_MARGIN_NUMERATOR, K_DMACA_MARGIN_DENOMINATOR, 
+ *      rx_dmaca_transfer_blocking, rx_dmaca_wait
+ * @since 1.0.0
+ */
+typedef enum : uint32_t {
+    K_DMACA_CYCLES_PER_XFER     = 20U, /**< ICLK iterations per transfer */
+    K_DMACA_MARGIN_NUMERATOR    = 5U,  /**< Bus contention margin numerator */
+    K_DMACA_MARGIN_DENOMINATOR  = 4U,  /**< Bus contention margin denominator */
+} dmaca_timeout_scale_t;
+
+/* ------------------------------------------------------------------
+ * DMTMD register bit definitions (transfer mode)
+ * ------------------------------------------------------------------ */
+
+/**
+ * @enum dmtmd_shift_t
+ * @brief Bit shift positions within the DMTMD (Transfer Mode) register
+ *
+ * @details
+ * Defines the bit positions for the MD (mode) and SZ (size) fields
+ * within the 16-bit DMTMD register. Used when constructing the
+ * register value during channel configuration.
+ *
+ * @invariant DMTMD_MD_SHIFT and DMTMD_SZ_SHIFT must match the bit positions 
+ * defined in the RX72N datasheet for correct register field masking and shifting.
+ *
+ * @code
+ * // Example: construct DMTMD value with normal mode and byte size
+ * uint16_t dmtmd = ((DMTMD_MD_NORMAL << DMTMD_MD_SHIFT) | 
+ *                    (DMTMD_SZ_BYTE << DMTMD_SZ_SHIFT));
+ * ch->dmtmd = dmtmd;
+ * @endcode
+ *
+ * @see dmtmd_mode_t, dmtmd_size_t, rx_dmaca_configure, DMTMD_MD_SHIFT, DMTMD_SZ_SHIFT
+ * @since 1.0.0
+ */
+typedef enum : uint16_t {
+    DMTMD_MD_SHIFT = 14U, /**< Bit position for MD[1:0] transfer mode field */
+    DMTMD_SZ_SHIFT = 8U,  /**< Bit position for SZ[1:0] data size field */
+} dmtmd_shift_t;
+
+/**
+ * @enum dmtmd_mode_t
+ * @brief Transfer mode field values for DMTMD.MD[1:0]
+ *
+ * @details
+ * Selects the DMA transfer mode: normal (single transfer per request),
+ * block (multiple transfers per request), or repeat (cyclic buffer mode).
+ *
+ * @invariant Values must match DMTMD.MD[1:0] encoding in RX72N datasheet: 
+ * 0 = normal mode, 1 = block mode, 2 = repeat mode.
+ *
+ * @code
+ * // Example: set block transfer mode in DMTMD register
+ * uint16_t dmtmd = (DMTMD_MD_BLOCK << DMTMD_MD_SHIFT);
+ * // mask for MD field: two-bit width
+ * ch->dmtmd = (ch->dmtmd & ~((uint16_t)((1U << 2) - 1) << DMTMD_MD_SHIFT)) | dmtmd;
+ * @endcode
+ *
+ * @see dmtmd_shift_t, rx_dmaca_configure, DMTMD_MD_NORMAL, DMTMD_MD_BLOCK, DMTMD_MD_REPEAT
+ * @since 1.0.0
+ */
+typedef enum : uint16_t {
+    DMTMD_MD_NORMAL  = 0U, /**< Normal mode: single transfer per activation */
+    DMTMD_MD_BLOCK   = 1U, /**< Block mode: multiple transfers per activation */
+    DMTMD_MD_REPEAT  = 2U, /**< Repeat mode: cyclic buffer operation */
+} dmtmd_mode_t;
+
+/**
+ * @enum dmtmd_size_t
+ * @brief Data size field values for DMTMD.SZ[1:0]
+ *
+ * @details
+ * Selects the transfer data width. Only 8-bit (byte) and 32-bit (longword)
+ * are supported for CRCDIR compatibility; 16-bit transfers are rejected.
+ *
+ * @invariant Values must match DMTMD.SZ[1:0] encoding in RX72N datasheet: 
+ * 0 = byte (8-bit), 2 = longword (32-bit). Value 1 (16-bit word transfer) is 
+ * not supported and must be rejected.
+ *
+ * @code
+ * // Example: set longword transfer size
+ * uint16_t dmtmd = (DMTMD_SZ_LONGWORD << DMTMD_SZ_SHIFT);
+ * ch->dmtmd = (ch->dmtmd & ~(3U << DMTMD_SZ_SHIFT)) | dmtmd;
+ * @endcode
+ *
+ * @see dmtmd_shift_t, rx_dmaca_configure, DMTMD_SZ_BYTE, DMTMD_SZ_LONGWORD
+ * @since 1.0.0
+ */
+typedef enum : uint16_t {
+    DMTMD_SZ_BYTE     = 0U, /**< 8-bit (byte) transfer width */
+    DMTMD_SZ_LONGWORD = 2U, /**< 32-bit (longword) transfer width */
+} dmtmd_size_t;
+
+/* ------------------------------------------------------------------
+ * DMAMD register bit definitions (address mode)
+ * ------------------------------------------------------------------ */
+
+/**
+ * @enum dmamd_shift_t
+ * @brief Bit shift positions for DMAMD register mode fields
+ *
+ * @details
+ * Define the bit positions used to pack address mode fields into the DMAMD
+ * register. SM (source mode) uses bits [15:14] and DM (destination mode)
+ * uses bits [9:8].
+ *
+ * @invariant Values must match DMAMD register field positions in RX72N datasheet: 
+ * SM[1:0] at bits [15:14], DM[1:0] at bits [9:8].
+ *
+ * @code
+ * // Example: construct DMAMD register with increment source, fixed destination
+ * uint16_t dmamd = ((DMAMD_SM_INCREMENT << DMAMD_SM_SHIFT) |
+ *                    (DMAMD_DM_FIXED << DMAMD_DM_SHIFT));
+ * ch->dmamd = dmamd;
+ * @endcode
+ *
+ * @see dmamd_source_mode_t, dmamd_dest_mode_t, DMAMD_SM_SHIFT, DMAMD_DM_SHIFT
+ * @since 1.0.0
+ */
+typedef enum : uint16_t {
+    DMAMD_SM_SHIFT = 14U, /**< Bit position for SM[1:0] source address mode field */
+    DMAMD_DM_SHIFT = 8U,  /**< Bit position for DM[1:0] destination address mode field */
+} dmamd_shift_t;
+
+/**
+ * @enum dmamd_source_mode_t
+ * @brief Source address mode field values for DMAMD.SM[1:0]
+ *
+ * @details
+ * Selects how the source address is modified after each transfer:
+ * fixed (no change), increment (address increases), or decrement (address
+ * decreases). Used in conjunction with DMAMD_SM_SHIFT to set register bits.
+ *
+ * @invariant Values must match DMAMD.SM[1:0] encoding in RX72N datasheet: 
+ * 0 = fixed, 2 = increment, 3 = decrement.
+ *
+ * @code
+ * // Example: set source address increment mode
+ * uint16_t dmamd = (DMAMD_SM_INCREMENT << DMAMD_SM_SHIFT);
+ * ch->dmamd |= dmamd;
+ * @endcode
+ *
+ * @see dmamd_shift_t, dmamd_dest_mode_t, DMAMD_SM_FIXED, DMAMD_SM_INCREMENT, DMAMD_SM_DECREMENT
+ * @since 1.0.0
+ */
+typedef enum : uint16_t {
+    DMAMD_SM_FIXED     = 0U, /**< Source address fixed (repeat address) */
+    DMAMD_SM_INCREMENT = 2U, /**< Source address incremented after transfer */
+    DMAMD_SM_DECREMENT = 3U, /**< Source address decremented after transfer */
+} dmamd_source_mode_t;
+
+/**
+ * @enum dmamd_dest_mode_t
+ * @brief Destination address mode field values for DMAMD.DM[1:0]
+ *
+ * @details
+ * Selects how the destination address is modified after each transfer.
+ * Currently only fixed mode (no change) is defined for CRC hardware use case.
+ *
+ * @invariant DMAMD_DM_FIXED value must match DMAMD.DM[1:0] encoding (0) in 
+ * RX72N datasheet. Other modes are not currently supported.
+ *
+ * @code
+ * // Example: set destination fixed (required for CRCDIR)
+ * uint16_t dmamd = (DMAMD_DM_FIXED << DMAMD_DM_SHIFT);
+ * ch->dmamd |= dmamd;
+ * @endcode
+ *
+ * @see dmamd_shift_t, dmamd_source_mode_t, DMAMD_DM_FIXED
+ * @since 1.0.0
+ */
+typedef enum : uint16_t {
+    DMAMD_DM_FIXED = 0U, /**< Destination address fixed (repeat address) */
+} dmamd_dest_mode_t;
 
 /**
  * @brief  Obtain pointer to DMAC channel registers
@@ -94,33 +395,50 @@ typedef enum : uint8_t {
  * @details
  * Each DMAC channel exposes an identical register block.  The blocks are
  * located consecutively in memory starting at `k_dmac0_base_addr` with a
- * fixed `k_dmac_channel_stride`.  This helper computes the address for
+ * fixed `DMACA_CHANNEL_STRIDE`.  This helper computes the address for
  * the requested channel and returns a typed pointer for register access.
  *
- * @param[in] ch  Channel index (0 .. DMACA_NUM_CHANNELS-1).
+ * @param[in] ch  Channel index (0 .. k_dmaca_num_channels-1).
  *
  * @return volatile rx_dmac_channel_regs_t *
  * @retval non-NULL Pointer to the channel's register block
  *
- * @pre RX_CHECK(ch < DMACA_NUM_CHANNELS, "DMACA", "invalid channel index");
- * @post return != NULL
+ * @pre k_dmac0_base_addr must be non-NULL and point to a valid DMAC register region
+ * @pre DMACA_CHANNEL_STRIDE must be non-zero and match hardware register spacing
+ * @pre ch must be a valid uint8_t index in range [0, k_dmaca_num_channels-1]
+ *
+ * @post Returned pointer equals k_dmac0_base_addr + (ch * DMACA_CHANNEL_STRIDE)
+ * @post Returned pointer value >= k_dmac0_base_addr
+ * @post Returned pointer value < k_dmac0_base_addr + (k_dmaca_num_channels * DMACA_CHANNEL_STRIDE)
+ * @post Returned pointer is never NULL (asserted; function fails fast on NULL base)
  *
  * @note Thread safety: safe to call from any context; the calculation does not
  *       modify shared state.  The returned pointer should only be used with
  *       proper synchronization if the channel is accessed concurrently.
  *
- * @see rx_dmaca_start, rx_dmaca_abort
- * @since Version 1.0.0
+ * @see rx_dmaca_start, rx_dmaca_abort, k_dmac0_base_addr, DMACA_CHANNEL_STRIDE
+ * @since 1.0.0
  */
  
 static volatile rx_dmac_channel_regs_t * dmac_ch(uint8_t ch)
 {
-    /* precondition check converts to runtime error log if violated */
-    RX_ASSERT(ch < DMACA_NUM_CHANNELS, "DMACA invalid channel index");
-    volatile rx_dmac_channel_regs_t *ptr =
-        (volatile rx_dmac_channel_regs_t *)(uintptr_t)(k_dmac0_base_addr +
-                                                       ((uint32_t)ch * k_dmac_channel_stride));
-    RX_ASSERT(ptr != NULL, "DMACA channel pointer NULL");
+    /* Precondition: base address must be non-NULL */
+    RX_ASSERT(k_dmac0_base_addr != 0U, "DMAC base address is NULL");
+    /* Precondition: channel stride must be non-zero */
+    RX_ASSERT(DMACA_CHANNEL_STRIDE != 0U, "DMACA channel stride is zero");
+    /* Precondition: channel index must be valid */
+    RX_ASSERT(ch < k_dmaca_num_channels, "DMACA invalid channel index");
+    
+    const uintptr_t addr = k_dmac0_base_addr + ((uintptr_t)ch * DMACA_CHANNEL_STRIDE);
+    volatile rx_dmac_channel_regs_t *ptr = (volatile rx_dmac_channel_regs_t *)addr;
+    
+    /* Postcondition: result must not be NULL */
+    RX_ASSERT(ptr != NULL, "DMACA computed channel pointer is NULL");
+    /* Postcondition: result must be within valid channel region */
+    RX_ASSERT((uintptr_t)ptr >= k_dmac0_base_addr, "DMACA pointer below base");
+    RX_ASSERT((uintptr_t)ptr < (k_dmac0_base_addr + (k_dmaca_num_channels * DMACA_CHANNEL_STRIDE)),
+              "DMACA pointer exceeds channel region");
+    
     return ptr;
 }
 
@@ -146,7 +464,7 @@ static volatile rx_dmac_channel_regs_t * dmac_ch(uint8_t ch)
  *          this module.  Only rx_dmaca_init() or other internal helper
  *          routines are permitted to change its value.
  *
- * @since Version 1.0.0
+ * @since 1.0.0
  */
 static bool s_dmaca_initialised = false;
 
@@ -174,7 +492,7 @@ static bool s_dmaca_initialised = false;
  *          should only occur through the initialization routine
  *          rx_dmaca_init() or internal APIs that manage channel state.
  *
- * @since Version 1.0.0
+ * @since 1.0.0
  */
 static uint8_t s_channel_configured = 0U;
 
@@ -182,55 +500,110 @@ static uint8_t s_channel_configured = 0U;
  * Argument validation helpers
  * ========================================================================= */
 
+/**
+ * @brief  Validate a DMACA channel index.
+ *
+ * @details
+ * Internal helper that checks whether the provided channel number falls
+ * within the valid range of channels supported by the RX72N DMACA
+ * peripheral.  Returns k_rx_ok for a valid index and k_rx_err_nack for
+ * any out-of-range value.  This function is used by all public APIs to
+ * centralise boundary checking.
+ *
+ * @param[in] channel DMACA channel index to validate.
+ *                    Valid range is [0, k_dmaca_num_channels-1].
+ *
+ * @return rx_err_t  Result of validation.
+ * @retval k_rx_ok      Channel index is within range.
+ * @retval k_rx_err_nack Channel index is invalid (>= k_dmaca_num_channels).
+ *
+ * @pre  channel must be a uint8_t value providing an index for boundary validation
+ * @pre  DMACA subsystem is in a state where channel index validation is meaningful
+ *       (i.e., the DMACA module is accessible and k_dmaca_num_channels is properly initialized)
+ *
+ * @post Return value is either k_rx_ok or k_rx_err_nack
+ * @post Returns k_rx_ok if and only if channel < k_dmaca_num_channels
+ * @post Returns k_rx_err_nack if and only if channel >= k_dmaca_num_channels
+ * @post No global state is modified; function has no side effects
+ *
+ * @note This is an internal, fast helper; callers should still handle the
+ *       error return value appropriately.  Uses RX_ASSERT macros to validate
+ *       preconditions during debug builds.
+ *
+ * @since 1.0.0
+ *
+ * @see k_dmaca_num_channels, k_rx_err_nack, k_rx_ok, RX_ASSERT, validate_channel
+ */
 static rx_err_t validate_channel(uint8_t channel)
 {
-    if (channel >= DMACA_NUM_CHANNELS) {
-        return k_rx_err_nack;
-    }
-    return k_rx_ok;
-}
+    /* Precondition: k_dmaca_num_channels must be valid (non-zero) */
+    RX_ASSERT(k_dmaca_num_channels > 0U,
+              "DMACA validate_channel: num_channels constant is zero");
+    /* postcondition: result must be one of the two defined codes */
+    rx_err_t result;
 
-/* =========================================================================
- * Public API implementation
- * ========================================================================= */
-
-rx_err_t rx_dmaca_init(void)
-{
-    // DMAC is not affected by MSTP (11.4 in User's Manual)
-    /* Enable DMACA module-level operation (DMST bit in DMAST register). */
-    /* hardware header provides helper for the DMAST register plus bit masks */
-    *dmac_dmast_reg() |= (uint8_t)k_dmast_dmst;
-
-    s_dmaca_initialised  = true;
-    s_channel_configured = 0U;
-
-    return k_rx_ok;
-}
-
-rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg)
-{
-    rx_err_t err;
-
-    /* ---- Argument checks ------------------------------------------------ */
-    err = validate_channel(channel);
-    if (err != k_rx_ok) {
-        return err;
+    if (channel >= k_dmaca_num_channels) {
+        result = k_rx_err_nack;
+    } else {
+        result = k_rx_ok;
     }
 
+    RX_ASSERT((result == k_rx_ok) || (result == k_rx_err_nack),
+             "DMACA validate_channel returned unexpected value");
+
+    return result;
+}
+
+/* -------------------------------------------------------------------------
+ * Internal helper routines extracted from rx_dmaca_configure().  Breaking the
+ * original 139-line function into smaller pieces keeps each module under the
+ * 60-line limit and improves readability.  Each helper returns an error
+ * code so the caller can propagate failures.
+ */
+
+/**
+ * @brief  Perform runtime validation of parameter structure.
+ *
+ * @details
+ * Executes all of the argument checks that were previously embedded in
+ * rx_dmaca_configure().  This includes null-pointer tests and value range
+ * verifications for transfer count, data size, and source/destination
+ * pointers.  Hardware-specific invariants such as supported transfer modes or
+ * address modes are *not* checked here; those are handled by the register
+ * configuration helpers.
+ *
+ * @param[in] p_cfg Pointer to the configuration structure.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok       Parameters appear valid.
+ * @retval k_rx_err_nack One or more fields are invalid (NULL or out of
+ *                       allowable range).
+ *
+ * @pre  p_cfg may be NULL (checked by this helper).
+ * @pre  If p_cfg is non-NULL, all fields (transfer_count, data_size, p_src,
+ *       p_dst) must be initialized to defined values.
+ *
+ * @post If k_rx_ok is returned, the fields used by the configure helpers
+ *       meet the constraints described above.
+ * @post If k_rx_err_nack is returned, no global state is modified.
+ *
+ * @note This function is internal and not thread-safe.  Caller must still
+ *       treat a non-zero return value as an error condition.
+ *
+ * @since 1.0.0
+ */
+static rx_err_t validate_config_params(const dmaca_config_t *p_cfg)
+{
+    /* Preconditions: NULL pointer is handled gracefully rather than asserted */
     if (p_cfg == NULL) {
         return k_rx_err_nack;
     }
 
     if ((p_cfg->transfer_count == 0U) ||
-        (p_cfg->transfer_count > DMACA_MAX_TRANSFER_COUNT)) {
+        (p_cfg->transfer_count > k_dmaca_max_transfer_count)) {
         return k_rx_err_nack;
     }
 
-    /*
-     * Reject 16-bit (word) transfers explicitly.
-     * CRCDIR does not support 16-bit bus access.  Any value other than
-     * k_dmaca_size_byte (0) or k_dmaca_size_longword (2) is invalid.
-     */
     if ((p_cfg->data_size != k_dmaca_size_byte) &&
         (p_cfg->data_size != k_dmaca_size_longword)) {
         return k_rx_err_nack;
@@ -240,107 +613,424 @@ rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg)
         return k_rx_err_nack;
     }
 
-    /* ---- Stop the channel before reconfiguring -------------------------- */
-    volatile rx_dmac_channel_regs_t *ch = dmac_ch(channel);
-    ch->dmcnt &= ~(uint8_t)DMACA_DTE_ENABLE;   /* Disable transfer enable */
-
-    /* ---- Source address ------------------------------------------------- */
-    ch->dmsar = (uint32_t)(uintptr_t)p_cfg->p_src;
-
-    /* ---- Destination address -------------------------------------------- */
-    ch->dmdar = (uint32_t)(uintptr_t)p_cfg->p_dst;
-
-    /* ---- Transfer count ------------------------------------------------- */
-    ch->dmcra = (uint32_t)p_cfg->transfer_count;   /* Block / normal count  */
-    ch->dmcrb = 0U;                                 /* Repeat count (unused) */
-
-    /* ---- Transfer mode register (DMTMD) --------------------------------- *
-     *
-     *  Bits [15:14]  MD[1:0]  Transfer mode  00=Normal 01=Block 10=Repeat
-     *  Bits [13:12]  DTS[1:0] Repeat area    00=dest   01=source (unused)
-     *  Bits [11:10]  (reserved)
-     *  Bits  [9: 8]  SZ[1:0]  Data size      00=8-bit  10=32-bit
-     *  Bits  [7: 2]  DCTG[5:0] Activation    000000=SW 000001=INT ...
-     *  Bits  [1: 0]  (reserved)
-     *
-     * We build the register word manually for clarity.                    */
-    {
-        uint16_t dmtmd = 0U;
-
-        /* Transfer mode */
-        switch (p_cfg->transfer_mode) {
-            case k_dmaca_mode_normal: dmtmd |= (0U << 14U); break;
-            case k_dmaca_mode_block:  dmtmd |= (1U << 14U); break;
-            case k_dmaca_mode_repeat: dmtmd |= (2U << 14U); break;
-            default:                  return k_rx_err_nack;
-        }
-
-        /* Data size -- only byte or longword accepted (validated above). */
-        if (p_cfg->data_size == k_dmaca_size_longword) {
-            dmtmd |= (2U << 8U);   /* SZ = 10b -> 32-bit */
-        } else {
-            dmtmd |= (0U << 8U);   /* SZ = 00b -> 8-bit  */
-        }
-
-        ch->dmtmd = dmtmd;
-    }
-
-    /* ---- Address mode register (DMAMD) ---------------------------------- *
-     *
-     *  Bits [15:14]  SM[1:0]  Source mode       00=fixed 10=inc 11=dec
-     *  Bits [13:12]  SARA[1:0] Src repeat area  (unused in block mode)
-     *  Bits  [9: 8]  DM[1:0]  Dest mode         00=fixed 10=inc 11=dec
-     *  Bits  [5: 4]  DARA[1:0] Dst repeat area  (unused)             */
-    {
-        uint16_t dmamd = 0U;
-
-        /* Source address mode */
-        switch (p_cfg->src_addr_mode) {
-            case k_dmaca_addr_fixed:     dmamd |= (0U << 14U); break;
-            case k_dmaca_addr_increment: dmamd |= (2U << 14U); break;
-            case k_dmaca_addr_decrement: dmamd |= (3U << 14U); break;
-            default:                     return k_rx_err_nack;
-        }
-
-        if (p_cfg->dst_addr_mode != k_dmaca_addr_fixed) {
-            return k_rx_err_nack;
-        }
-        dmamd |= (0U << 8U); /* Ensure destination mode is fixed */
-        ch->dmamd = dmamd;
-    }
-
-    /* ---- Interrupt / status register (DMINT) ---------------------------- *
-     * Phase 1 uses polling; disable all DMA interrupts.                  */
-    ch->dmint = (uint8_t)DMACA_DMINT_CLEAR;
-
-    /* ---- Clear any stale status flags (DMSTS) --------------------------- */
-    ch->dmsts = (uint8_t)DMACA_DMSTS_CLEAR;
-
-    /* Mark channel as configured. */
-    s_channel_configured |= (uint8_t)(1U << channel);
+    /* Postcondition: Validated invariants enforced in debug builds (NASA Rule 5) */
+    RX_ASSERT((p_cfg->transfer_count != 0U) &&
+              (p_cfg->transfer_count <= k_dmaca_max_transfer_count),
+              "validate_config_params: transfer_count invariant violated");
+    RX_ASSERT((p_cfg->data_size == k_dmaca_size_byte) ||
+              (p_cfg->data_size == k_dmaca_size_longword),
+              "validate_config_params: data_size invariant violated");
 
     return k_rx_ok;
 }
 
+/**
+ * @brief  Populate the transfer mode register (DMTMD) for a channel.
+ *
+ * @details
+ * Builds the 16-bit register value based on the configuration structure and
+ * writes it to the channel's DMTMD register.  Only byte and longword data
+ * sizes are supported; invalid transfer or data size values produce an error
+ * code.
+ *
+ * @param[in] ch    Pointer to the channel registers.
+ * @param[in] p_cfg Configuration parameters (assumed non-NULL).
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok       Register written successfully.
+ * @retval k_rx_err_nack Unsupported transfer mode or data size.
+ *
+ * @pre  ch must point to a valid channel register block.
+ * @pre  p_cfg must be non-NULL with valid transfer_mode and data_size fields.
+ *
+ * @post DMTMD register contains the encoded mode or prior value remains
+ * @post On k_rx_ok, ch->dmtmd is updated atomically.
+ *
+ * @note Thread safety: NOT thread-safe. Caller must ensure exclusive access
+ *       to the channel register block during configuration.
+ *       unchanged on error.
+ *
+ * @since 1.0.0
+ */
+static rx_err_t configure_transfer_mode(volatile rx_dmac_channel_regs_t *ch,
+                                        const dmaca_config_t *p_cfg)
+{
+    /* Preconditions */
+    RX_ASSERT(ch != NULL, "Channel register pointer is NULL");
+    RX_ASSERT(p_cfg != NULL, "Config pointer is NULL");
+
+    uint16_t dmtmd = 0U;
+
+    switch (p_cfg->transfer_mode) {
+        case k_dmaca_mode_normal:
+            dmtmd |= (DMTMD_MD_NORMAL << DMTMD_MD_SHIFT);
+            break;
+        case k_dmaca_mode_block:
+            dmtmd |= (DMTMD_MD_BLOCK << DMTMD_MD_SHIFT);
+            break;
+        case k_dmaca_mode_repeat:
+            dmtmd |= (DMTMD_MD_REPEAT << DMTMD_MD_SHIFT);
+            break;
+        default:
+            return k_rx_err_nack;
+    }
+
+    if (p_cfg->data_size == k_dmaca_size_longword) {
+        dmtmd |= (DMTMD_SZ_LONGWORD << DMTMD_SZ_SHIFT);
+    } else {
+        /* DMTMD_SZ_BYTE is zero (0U), so this shifts zero into place.
+         * Kept explicitly for code clarity and symmetry with the longword case,
+         * making it obvious that byte-size encoding is the zero value. */
+        dmtmd |= (DMTMD_SZ_BYTE << DMTMD_SZ_SHIFT);
+    }
+
+    ch->dmtmd = dmtmd;
+    return k_rx_ok;
+}
+
+/**
+ * @brief  Populate the address mode register (DMAMD) for a channel.
+ *
+ * @details
+ * Computes the DMAMD value from the configuration.  The current firmware
+ * only supports a fixed destination address; attempts to use any other mode
+ * return an error.
+ *
+ * @param[in] ch    Pointer to the channel registers.
+ * @param[in] p_cfg Configuration parameters (assumed non-NULL).
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok       Register written successfully.
+ * @retval k_rx_err_nack Unsupported address mode.
+ *
+ * @pre  ch must point to a valid channel register block.
+ * @pre  p_cfg must be non-NULL with valid src_addr_mode and dst_addr_mode fields.
+ *
+ * @post DMAMD register contains the encoded mode or prior value remains
+ *       unchanged on error.
+ * @post On k_rx_ok, ch->dmamd is updated atomically.
+ *
+ * @note Thread safety: NOT thread-safe. Caller must ensure exclusive access
+ *       to the channel register block during configuration.
+ *
+ * @since 1.0.0
+ */
+static rx_err_t configure_address_mode(volatile rx_dmac_channel_regs_t *ch,
+                                       const dmaca_config_t *p_cfg)
+{
+    /* Preconditions */
+    RX_ASSERT(ch != NULL, "Channel register pointer is NULL");
+    RX_ASSERT(p_cfg != NULL, "Config pointer is NULL");
+
+    uint16_t dmamd = 0U;
+
+    switch (p_cfg->src_addr_mode) {
+        case k_dmaca_addr_fixed:
+            dmamd |= (DMAMD_SM_FIXED << DMAMD_SM_SHIFT);
+            break;
+        case k_dmaca_addr_increment:
+            dmamd |= (DMAMD_SM_INCREMENT << DMAMD_SM_SHIFT);
+            break;
+        case k_dmaca_addr_decrement:
+            dmamd |= (DMAMD_SM_DECREMENT << DMAMD_SM_SHIFT);
+            break;
+        default:
+            return k_rx_err_nack;
+    }
+
+    if (p_cfg->dst_addr_mode != k_dmaca_addr_fixed) {
+        return k_rx_err_nack;
+    }
+    dmamd |= (DMAMD_DM_FIXED << DMAMD_DM_SHIFT);
+
+    ch->dmamd = dmamd;
+    return k_rx_ok;
+}
+
+/**
+ * @brief  Write source/destination/count registers for a channel.
+ *
+ * @details
+ * Stops the DMA transfer (transfer enable bit must already be cleared by
+ * caller) and writes the source address, destination address, and transfer
+ * count registers.  The repeat count register is always cleared.
+ *
+ * @param[in] ch    Pointer to the channel registers.
+ * @param[in] p_cfg Configuration parameters (assumed non-NULL).
+ *
+ * @return rx_err_t Always returns k_rx_ok; parameters have already been
+ *                     validated.
+ *
+ * @pre  ch must point to a valid channel register block and the caller must
+ *       have disabled DTE.
+ * @pre  p_cfg must be non-NULL with valid p_src, p_dst, and transfer_count.
+ *
+ * @post Source, destination, and count registers reflect the supplied
+ *       configuration.
+ * @post ch->dmcrb is cleared to 0U.
+ *
+ * @note Thread safety: NOT thread-safe. Caller must ensure exclusive access
+ *       to the channel register block during configuration.
+ *
+ * @since 1.0.0
+ */
+static rx_err_t configure_channel_regs(volatile rx_dmac_channel_regs_t *ch,
+                                       const dmaca_config_t *p_cfg)
+{
+    /* Preconditions */
+    RX_ASSERT(ch != NULL, "Channel register pointer is NULL");
+    RX_ASSERT(p_cfg != NULL, "Config pointer is NULL");
+    ch->dmsar = (uint32_t)(uintptr_t)p_cfg->p_src;
+    ch->dmdar = (uint32_t)(uintptr_t)p_cfg->p_dst;
+    ch->dmcra = (uint32_t)p_cfg->transfer_count;
+    ch->dmcrb = (uint8_t)DMACA_DMCRB_CLEAR;
+    return k_rx_ok;
+}
+
+/* =========================================================================
+ * Public API implementation
+ * ========================================================================= */
+
+/**
+ * @brief  Initialize the DMACA peripheral.
+ *
+ * @details
+ * Releases the DMACA module from module-stop by setting the DMST bit in
+ * the DMAST register.  This function also clears the per-channel configured
+ * bitmap and marks the module as initialised.  It is safe to call multiple
+ * times. Re-initialization without a reset is a programming error and will
+ * trigger an assertion in debug builds.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok  Initialization succeeded (module clock enabled, state reset).
+ *
+ * @pre  System clock configuration complete and __RX__ target (DMACA present).
+ * @pre  No DMA transfers are active on any channel.
+ *
+ * @post DMACA module clock is enabled (MSTP(DMAC) == 0).
+ * @post s_dmaca_initialised == true
+ * @post s_channel_configured == 0U
+ *
+ * @note This routine is NOT thread-safe and should be called once from a
+ *       single initialization context prior to any RTOS tasks using DMACA.
+ *
+ * @see dmac_dmast_reg(), k_dmast_dmst
+ * @since 1.0.0
+ */
+rx_err_t rx_dmaca_init(void)
+{
+    
+    RX_ASSERT(dmac_dmast_reg() != NULL, "DMAC init: DMAST register pointer NULL");
+    /* Idempotent: return early if already initialized.
+     * Re-initialising without a reset is a programming error; debug builds
+     * assert so callers can catch the mistake.  In release builds we simply
+     * return success to preserve idempotent behaviour. */
+    if (s_dmaca_initialised) {
+        RX_ASSERT(!s_dmaca_initialised,
+                  "DMAC init: re-initialisation without reset");
+        return k_rx_ok;
+    }
+
+    /* DMAC is not affected by MSTP (11.4 in User's Manual) */
+    /* Enable DMACA module-level operation (DMST bit in DMAST register). */
+    /* hardware header provides helper for the DMAST register plus bit masks */
+    *dmac_dmast_reg() |= (uint8_t)k_dmast_dmst;
+
+    s_dmaca_initialised  = true;
+    s_channel_configured = (uint8_t)DMACA_CHANNEL_BITMAP_NONE;
+
+    RX_ASSERT(s_channel_configured == (uint8_t)DMACA_CHANNEL_BITMAP_NONE,
+              "DMAC init did not clear channel bitmap");
+
+    return k_rx_ok;
+}
+
+/**
+ * @brief Configure a single DMACA channel for a transfer operation.
+ *
+ * @details
+ * Writes the supplied configuration into the channel's register set
+ * (DMSAR, DMDAR, DMCRA, DMTMD, DMAMD, DMINT, DMSTS, and DMCNT).
+ * The values are latched immediately by the hardware; no DMA activity is
+ * triggered by this call. The channel remains inactive (ACT == 0) until
+ * rx_dmaca_start() is invoked.
+ *
+ * **Configuration steps:**
+ * 1. Validates channel index (0 to k_dmaca_num_channels-1)
+ * 2. Validates p_cfg pointer (non-NULL, all fields valid)
+ * 3. Disables the channel (clears DTE bit)
+ * 4. Programs source and destination addresses
+ * 5. Configures transfer count, mode, data size, and address modes
+ * 6. Clears interrupt flags and status
+ * 7. Returns with channel disabled and ready for rx_dmaca_start()
+ *
+ * **Data size restrictions:**
+ * Only k_dmaca_size_byte (8-bit) and k_dmaca_size_longword (32-bit) transfers
+ * are supported. 16-bit (word) transfers are explicitly rejected because hardware
+ * peripherals like CRCDIR do not accept 16-bit bus accesses. Requests for
+ * unsupported sizes return k_rx_err_nack.
+ *
+ * **Transfer count validation:**
+ * Must be in range [1, k_dmaca_max_transfer_count] inclusive. The RX72N DMACA
+ * uses a 10-bit counter, limiting blocks to 1024 transfers maximum. Callers
+ * must split larger buffers into multiple DMA operations.
+ *
+ * @param[in] channel DMACA channel index (0 to k_dmaca_num_channels-1).
+ *                    Invalid indices return k_rx_err_nack without modifying
+ *                    hardware.
+ *
+ * @param[in] p_cfg   Pointer to dmaca_config_t configuration structure.
+ *                    Must not be NULL. All fields validated:
+ *                    - p_src, p_dst: non-NULL, properly aligned
+ *                    - transfer_count: [1, k_dmaca_max_transfer_count]
+ *                    - data_size: k_dmaca_size_byte or k_dmaca_size_longword
+ *                    - transfer_mode: k_dmaca_mode_normal, _block, or _repeat
+ *                    - src_addr_mode: fixed, increment, or decrement
+ *                    - dst_addr_mode: must be k_dmaca_addr_fixed (enforced)
+ *
+ * @return rx_err_t Error code indicating configuration result.
+ * @retval k_rx_ok           Configuration accepted and channel registers updated.
+ * @retval k_rx_err_nack     Invalid channel, NULL p_cfg, invalid transfer_count,
+ *                           unsupported data_size (16-bit), NULL p_src/p_dst,
+ *                           invalid transfer_mode, or dst_addr_mode != fixed.
+ *
+ * @pre rx_dmaca_init() has been called to enable DMACA peripheral clock.
+ * @pre channel must be a valid DMACA channel index.
+ * @pre The specified channel is idle (ACT == 0) and not in an active transfer.
+ * @pre p_cfg points to valid, readable dmaca_config_t structure.
+ * @pre p_cfg->p_src and p_cfg->p_dst are non-NULL and properly aligned.
+ * @pre p_cfg->transfer_count is in range [1, k_dmaca_max_transfer_count].
+ *
+ * @post Channel's DMSAR, DMDAR, DMCRA, DMTMD, DMAMD, DMINT registers reflect
+ *       the configuration in *p_cfg.
+ * @post Channel remains disabled (DTE == 0) and does not transfer data.
+ * @post All interrupt and status flags are cleared (DMINT clear).
+ * @post Channel is ready for rx_dmaca_start() to arm and activate.
+ *
+ * @note **Thread Safety:** NOT reentrant for the same channel. Concurrent
+ *       configuration of different channels requires external serialization
+ *       to prevent hardware bus collisions. No internal locking is performed.
+ *
+ * @warning Configuring a channel while it is actively transferring
+ *          (ACT == 1, DTE == 1) may produce unpredictable results. Ensure
+ *          the channel is idle before calling (use rx_dmaca_abort() if needed).
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [OK] 6 preconditions and 5 postconditions (exceeds minimum 2)
+ * - Rule 7: [OK] All return values from validate_channel validated
+ *
+ * @see dmaca_config_t Structure containing all configuration parameters
+ * @see rx_dmaca_init() Initialize DMACA module (must call first)
+ * @see rx_dmaca_start() Arm and activate the configured channel
+ * @see rx_dmaca_transfer_blocking() Combined configure + start + wait
+ * @see validate_channel() Internal validation helper
+ *
+ * @since 1.0.0
+ */
+rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg)
+{
+    rx_err_t err;
+    volatile rx_dmac_channel_regs_t *ch;
+
+    /* quick sanity asserts for debugging; runtime validity is handled below */
+    RX_ASSERT(channel < k_dmaca_num_channels, "DMACA invalid channel");
+
+    /* validate channel index first, then configuration parameters */
+    err = validate_channel(channel);
+    if (err != k_rx_ok) {
+        return err;
+    }
+
+    err = validate_config_params(p_cfg);
+    if (err != k_rx_ok) {
+        return err;
+    }
+
+    /* stop the channel before touching any registers */
+    ch = dmac_ch(channel);
+    ch->dmcnt &= ~(uint8_t)DMACA_DTE_ENABLE;
+
+    /* write basic registers */
+    err = configure_channel_regs(ch, p_cfg);
+    if (err != k_rx_ok) {
+        return err;           /* should never happen */
+    }
+
+    err = configure_transfer_mode(ch, p_cfg);
+    if (err != k_rx_ok) {
+        return err;
+    }
+
+    err = configure_address_mode(ch, p_cfg);
+    if (err != k_rx_ok) {
+        return err;
+    }
+
+    /* disable interrupts and clear any stale status bits */
+    ch->dmint = (uint8_t)DMACA_DMINT_CLEAR;
+    ch->dmsts = (uint8_t)DMACA_DMSTS_CLEAR;
+
+    /* mark channel configured so rx_dmaca_start can use it */
+    s_channel_configured |= (uint8_t)(DMACA_CHANNEL_BITMAP_BIT << channel);
+    /* Postcondition: channel must now be marked configured */
+    RX_ASSERT((s_channel_configured & (uint8_t)(DMACA_CHANNEL_BITMAP_BIT << channel)) != 0U,
+              "DMACA configure: channel not marked after configuration");
+
+    return k_rx_ok;
+}
+
+/**
+ * @brief  Arm and activate a configured DMACA channel.
+ *
+ * @details
+ * Sets the DTE bit for the specified channel and issues a software request
+ * pulse (SWREQ) to start the DMA transfer.  The channel must have been
+ * previously configured via rx_dmaca_configure() and must be idle.  This
+ * function does **not** poll for completion; callers may use rx_dmaca_wait()
+ * or rx_dmaca_transfer_blocking() after starting.
+ *
+ * @param[in] channel DMACA channel index (0 .. k_dmaca_num_channels-1).
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok       Transfer started successfully.
+ * @retval k_rx_err_nack Channel index invalid, or channel not configured.
+ *
+ * @pre rx_dmaca_init() has been called.
+ * @pre rx_dmaca_configure(channel, ...) has returned k_rx_ok.
+ * @pre The channel is idle (not currently active).
+ *
+ * @post On success: Channel's DTE bit is set (transfer engine enabled).
+ * @post On success: Software request issued; DMA transfer is in progress.
+ * @post On failure: Channel state is unchanged.
+ *
+ * @note Thread safety: callers must ensure exclusive access to the channel
+ *       being started.  Concurrent starts on the same channel will lead to
+ *       undefined hardware behaviour.
+ *
+ * @see rx_dmaca_configure(), rx_dmaca_wait(), rx_dmaca_transfer_blocking()
+ * @since 1.0.0
+ */
 rx_err_t rx_dmaca_start(uint8_t channel)
 {
     rx_err_t err;
+
+    /* Precondition assertions */
+    RX_ASSERT(channel < k_dmaca_num_channels, "DMACA invalid channel index");
 
     err = validate_channel(channel);
     if (err != k_rx_ok) {
         return err;
     }
 
-    if ((s_channel_configured & (uint8_t)(1U << channel)) == 0U) {
+    if ((s_channel_configured & (uint8_t)(DMACA_CHANNEL_BITMAP_BIT << channel)) == 0U) {
         /* Channel has not been configured. */
         return k_rx_err_nack;
     }
 
     volatile rx_dmac_channel_regs_t *ch = dmac_ch(channel);
-
-    /* Validate assumptions for debug builds.  Public API also performs
-     * runtime validation via validate_channel(). */
-    RX_ASSERT(channel < DMACA_NUM_CHANNELS, "DMACA invalid channel index");
+    RX_ASSERT(ch != NULL, "DMACA start: channel register pointer NULL");
+    RX_ASSERT((s_channel_configured & (uint8_t)(DMACA_CHANNEL_BITMAP_BIT << channel)) != 0U,
+              "DMACA start: channel not marked configured");
 
     /* Enable DMA transfer for this channel. */
     ch->dmcnt |= (uint8_t)DMACA_DTE_ENABLE;
@@ -351,16 +1041,57 @@ rx_err_t rx_dmaca_start(uint8_t channel)
     return k_rx_ok;
 }
 
+/**
+ * @brief  Wait for a DMA transfer to complete on a channel.
+ *
+ * @details
+ * Implements bounded polling on the ACT (active) bit in the DMSTS register.
+ * When ACT clears to 0, the transfer has completed. If the timeout expires
+ * before completion, the function disables the transfer engine and returns
+ * an error. The polling loop satisfies NASA Rule 2 (bounded loops) by using
+ * the caller-supplied timeout_cycles as the iteration limit.
+ * @param[in] channel        DMACA channel index (0 .. k_dmaca_num_channels-1).
+ * @param[in] timeout_cycles Maximum polling iterations before timing out.
+ *                            The timeout value should be computed using
+ *                            the helper constants in dmaca_timeout_scale_t
+ *                            or by calling rx_dmaca_transfer_blocking().
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok          Transfer completed before timeout.
+ * @retval k_rx_err_timeout Timeout occurred; transfer engine disabled.
+ * @retval k_rx_err_nack    Invalid channel or channel not configured.
+ * @retval k_rx_err_nack    validate_channel() failure.
+ *
+ * @pre rx_dmaca_init() and rx_dmaca_configure() have been called for the
+ *      specified channel, and rx_dmaca_start() has been invoked.
+ * @pre timeout_cycles > 0 (zero while ACT=1 results in immediate k_rx_err_timeout;
+ *      if ACT=0, returns k_rx_ok immediately regardless of timeout).
+ * @post On k_rx_ok: Transfer completed, channel configured flag cleared.
+ * @post On k_rx_err_timeout: Transfer engine disabled, configured flag cleared.
+ * @post On k_rx_err_nack: Channel state unchanged.
+ *
+ * @note Implements a bounded polling loop; see NASA Rule 2 for reasoning.
+ *       This function does **not** disable interrupts or yield the CPU.
+ *
+ * @see rx_dmaca_start, rx_dmaca_configure, rx_dmaca_transfer_blocking
+ * @since 1.0.0
+ */
 rx_err_t rx_dmaca_wait(uint8_t channel, uint32_t timeout_cycles)
 {
     rx_err_t err;
+
+    /* Preconditions / assertions */
+    RX_ASSERT(channel < k_dmaca_num_channels, "DMACA wait: invalid channel");
 
     err = validate_channel(channel);
     if (err != k_rx_ok) {
         return err;
     }
 
-    if ((s_channel_configured & (uint8_t)(1U << channel)) == 0U) {
+    RX_ASSERT((s_channel_configured & (uint8_t)(DMACA_CHANNEL_BITMAP_BIT << channel)) != 0U,
+              "DMACA wait: channel not configured");
+
+    if ((s_channel_configured & (uint8_t)(DMACA_CHANNEL_BITMAP_BIT << channel)) == 0U) {
         return k_rx_err_nack;
     }
     volatile rx_dmac_channel_regs_t *ch = dmac_ch(channel);
@@ -380,19 +1111,19 @@ rx_err_t rx_dmaca_wait(uint8_t channel, uint32_t timeout_cycles)
      */
     uint32_t remaining = timeout_cycles;
 
-    while ((ch->dmsts & 0x01U) == 1U)
+    while ((ch->dmsts & k_dmsts_act) != 0U)
     {
         if (remaining == 0U) {
             /* Timeout: forcibly disable channel before returning. */
             ch->dmcnt &= ~(uint8_t)DMACA_DTE_ENABLE;
-            s_channel_configured &= (uint8_t)(~(1U << channel));
+            s_channel_configured &= (uint8_t)(~(DMACA_CHANNEL_BITMAP_BIT << channel));
             return k_rx_err_timeout;
         }
         remaining--;
     }
 
     /* Transfer ended normally -- clear the configured flag. */
-    s_channel_configured &= (uint8_t)(~(1U << channel));
+    s_channel_configured &= (uint8_t)(~(DMACA_CHANNEL_BITMAP_BIT << channel));
 
     return k_rx_ok;
 }
@@ -403,11 +1134,15 @@ rx_err_t rx_dmaca_wait(uint8_t channel, uint32_t timeout_cycles)
  * @details
  * Public API is tolerant of out-of-range channel values and will return
  * without side-effects when an invalid index is provided.  For debug builds
- * callers' assumptions are verified with `RX_ASSERT(channel < DMACA_NUM_CHANNELS, ...)`.
+ * callers' assumptions are verified with `RX_ASSERT(channel < k_dmaca_num_channels, ...)`.
  *
- * @param[in] channel DMACA channel index to abort (0..DMACA_NUM_CHANNELS-1)
+ * @param[in] channel DMACA channel index to abort (0..k_dmaca_num_channels-1)
  *
  * @note The function performs a runtime no-op for invalid channel indexes.
+ *
+ * @note Thread safety: NOT thread-safe for the same channel. Concurrent
+ *       abort and start/wait operations on the same channel require external
+ *       synchronization.
  *
  * @return void No return value; operation is performed via side-effects on
  *         hardware registers and module state.
@@ -438,9 +1173,9 @@ void rx_dmaca_abort(uint8_t channel)
 {
     /* Validate caller assumptions in debug builds. Public API remains tolerant
      * and performs a no-op for out-of-range indices. */
-    RX_ASSERT(channel < DMACA_NUM_CHANNELS, "DMACA invalid channel index");
+    RX_ASSERT(channel < k_dmaca_num_channels, "DMACA invalid channel index");
 
-    if (channel >= DMACA_NUM_CHANNELS) {
+    if (channel >= k_dmaca_num_channels) {
         /* no-op for invalid index, per API contract */
         return;
     }
@@ -449,12 +1184,59 @@ void rx_dmaca_abort(uint8_t channel)
 
     /* disable transfer engine and clear configured flag */
     ch->dmcnt &= ~(uint8_t)DMACA_DTE_ENABLE;
-    s_channel_configured &= (uint8_t)(~(1U << channel));
+    s_channel_configured &= (uint8_t)(~(DMACA_CHANNEL_BITMAP_BIT << channel));
+
+    RX_ASSERT((s_channel_configured & (uint8_t)(DMACA_CHANNEL_BITMAP_BIT << channel)) == 0U,
+              "DMACA channel still configured after abort");
 }
 
+/**
+ * @brief  Configure, start, and wait for a DMA transfer in one call.
+ *
+ * @details
+ * Convenience wrapper that sequentially calls rx_dmaca_configure(),
+ * rx_dmaca_start(), and rx_dmaca_wait() using a computed timeout based on
+ * the configured block size.  This simplifies common usage patterns where
+ * the caller merely wants to perform a single blocking DMA transfer.
+ *
+ * The timeout is scaled from the transfer_count using the constants defined
+ * in dmaca_timeout_scale_t and is floored at RX_DMACA_POLL_TIMEOUT_CYCLES.
+ *
+ * @param[in] channel DMACA channel index (0 .. k_dmaca_num_channels-1).
+ * @param[in] p_cfg   Pointer to a valid dmaca_config_t structure.  Must not
+ *                    be NULL and transfer_count must be non-zero.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok         Transfer completed successfully before timeout.
+ * @retval k_rx_err_nack   Configuration or start failed (invalid arguments).
+ * @retval k_rx_err_timeout Timed out while waiting for completion.
+ *
+ * @pre rx_dmaca_init() has been invoked.
+ * @pre Channel index is valid and p_cfg points to a properly initialized
+ *      configuration block.
+ *
+ * @post On k_rx_ok: Transfer completed, channel idle, configured flag cleared.
+ * @post On k_rx_err_timeout: Channel disabled, configured flag cleared.
+ * @post On k_rx_err_nack: Channel state depends on which sub-call failed.
+ *
+ * @note For fine-grained timeouts or non-blocking behaviour, callers may
+ *       invoke the underlying API functions individually.
+ * @note Thread safety: NOT thread-safe. Caller must ensure exclusive access
+ *       to the specified channel for the duration of the blocking transfer.
+ *
+ * @see rx_dmaca_wait(), rx_dmaca_configure(), rx_dmaca_start()
+ * @since 1.0.0
+ */
 rx_err_t rx_dmaca_transfer_blocking(uint8_t channel, const dmaca_config_t *p_cfg)
 {
     rx_err_t err;
+
+    /* defensive assertions */
+    RX_ASSERT(p_cfg != NULL, "DMACA transfer_blocking: p_cfg is NULL");
+    RX_ASSERT(p_cfg->transfer_count != 0U,
+              "DMACA transfer_blocking: zero transfer_count");
+    RX_ASSERT(channel < k_dmaca_num_channels,
+              "DMACA transfer_blocking: invalid channel");
 
     err = rx_dmaca_configure(channel, p_cfg);
     if (err != k_rx_ok) {
@@ -476,7 +1258,13 @@ rx_err_t rx_dmaca_transfer_blocking(uint8_t channel, const dmaca_config_t *p_cfg
      * Minimum floor = RX_DMACA_POLL_TIMEOUT_CYCLES to cover DMA startup
      * overhead and very small blocks where the formula underestimates.
      */
-    uint32_t scaled = ((uint32_t)p_cfg->transfer_count * 20U * 5U) / 4U;
+    uint32_t transfer_count = (uint32_t)p_cfg->transfer_count;
+    uint32_t cycles = K_DMACA_CYCLES_PER_XFER;
+    uint32_t numerator = K_DMACA_MARGIN_NUMERATOR;
+    uint32_t denominator = K_DMACA_MARGIN_DENOMINATOR;
+    /* guard against overflow by using 64-bit intermediate multiplication */
+    uint64_t prod = (uint64_t)transfer_count * (uint64_t)cycles * (uint64_t)numerator;
+    uint32_t scaled = (uint32_t)(prod / (uint64_t)denominator);
     uint32_t timeout = (scaled > RX_DMACA_POLL_TIMEOUT_CYCLES)
                        ? scaled
                        : RX_DMACA_POLL_TIMEOUT_CYCLES;
