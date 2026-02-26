@@ -388,8 +388,6 @@
 
 #include "comm_task.h"
 
-#include <string.h>
-
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
@@ -547,6 +545,26 @@ static rx_usb_comm_handle_t s_usb_comm_handle;
  * @see rx_spi_comm_init() Initialization function
  */
 static rx_spi_comm_handle_t s_spi_comm_handle;
+
+/**
+ * @var s_spi_link
+ * @brief HARQ link-layer instance for SPI transport reliability
+ *
+ * @details
+ * Stores runtime state and configuration for the SPI HARQ link layer
+ * (forward-error correction plus retransmission control). Initialized during
+ * transport setup via rx_spi_link_init() using a configuration structure that
+ * references s_spi_comm_handle and default retry/FEC settings. Used by the
+ * communication manager through config->spi_link when link initialization
+ * succeeds.
+ *
+ * @note File-scoped static owned by comm_task.c. Access is confined to comm_task
+ *       initialization and callback flow in this module.
+ * @warning Not safe for unsynchronized external mutation. Do not access or modify
+ *          internals directly; use rx_spi_link API functions and initialization path.
+ * @since Version 1.1.0
+ */
+static rx_spi_link_t s_spi_link;
 
 /* =============================================================================
  * Forward Declarations
@@ -886,19 +904,22 @@ rx_err_t comm_task_create(void)
  * 2. **Handle USB failure**: Log error if init fails, set handle to nullptr
  * 3. **Initialize SPI transport**: Call rx_spi_comm_init() with shared session state
  * 4. **Handle SPI failure**: Log error if init fails, set handle to nullptr
- * 5. **Wire handles**: Assign valid or nullptr handles to config structure
- * 6. **Validate transports**: Log critical error if both transports failed
- * 7. **Log success**: Log info for each successfully initialized transport
+ * 5. **Initialize HARQ link**: If spi_ok, call rx_spi_link_init(&s_spi_link, &link_cfg);
+ *    config->spi_link = &s_spi_link on k_rx_ok, nullptr otherwise (or when spi_ok is false)
+ * 6. **Wire handles**: Assign valid or nullptr handles to config structure
+ * 7. **Validate transports**: Log critical error if both transports failed
+ * 8. **Log success**: Log info for each successfully initialized transport
  *
  * **Graceful Degradation:**
  * - If one transport fails: Other transport continues (logged warning)
  * - If both transports fail: Config wired with nullptr handles (logged critical error)
+ * - If SPI transport fails: config->spi_link is set to nullptr (HARQ skipped)
  * - Comm manager will return k_rx_err_timeout on poll for nullptr handles
  *
  * @param[out] config Comm manager configuration to populate
  *   - **Valid range**: Non-nullptr to rx_comm_manager_config_t
  *   - **Constraints**: Must be zeroed before calling this function
- *   - **Side effects**: usb_handle and spi_handle fields populated
+ *   - **Side effects**: usb_handle, spi_handle, and spi_link fields populated
  *
  * @return void This function does not return a value
  *
@@ -907,14 +928,15 @@ rx_err_t comm_task_create(void)
  * @pre RSPI2 peripheral must be initialized before calling this function
  * @post config->usb_handle set to &s_usb_comm_handle or nullptr
  * @post config->spi_handle set to &s_spi_comm_handle or nullptr
+ * @post config->spi_link set to &s_spi_link when SPI transport and HARQ init both succeed, else nullptr
  * @post At least one transport handle set on success (best effort)
  * @post All init failures logged via rx_log_error
  *
  * @note This function does NOT initialize RSPI hardware - caller must ensure
  *       RSPI2 peripheral is initialized before calling
  * @note Called once during single-threaded task initialization; not thread-safe
- * @warning Function has no return value - check config->usb_handle and
- *          config->spi_handle for nullptr to detect complete failure
+ * @warning Function has no return value - check config->usb_handle,
+ *          config->spi_handle, and config->spi_link for nullptr to detect degraded modes
  *
  * @par Thread Safety:
  * This function is **not thread-safe**. It must be called only once during
@@ -925,6 +947,7 @@ rx_err_t comm_task_create(void)
  * @since Version 1.0.0
  * @see rx_usb_comm_init() USB transport layer initialization
  * @see rx_spi_comm_init() SPI transport layer initialization
+ * @see rx_spi_link_init() HARQ link layer initialization (called internally when spi_ok)
  */
 static void internal_init_transports(rx_comm_manager_config_t* config)
 {
@@ -949,6 +972,28 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     rx_log_error(s_tag, "SPI comm init failed");
   }
 
+  bool link_ok = false;
+
+  if (spi_ok) {
+    /* Only attempt to configure the HARQ link when the underlying SPI transport
+     * succeeded.  Passing an invalid handle into rx_spi_link_init would trigger
+     * undefined behaviour, so skip the whole block if spi_ok is false. */
+    rx_spi_link_config_t link_cfg = {
+      .spi_handle  = &s_spi_comm_handle,
+      .fec_enabled = k_spi_link_default_fec_enabled,
+      .max_retries = k_spi_link_default_max_retries,
+    };
+
+    link_ok = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
+    if (!link_ok) {
+      rx_log_error(s_tag, "SPI link (HARQ) init failed");
+    }
+    config->spi_link = link_ok ? &s_spi_link : nullptr;
+  } else {
+    rx_log_warn(s_tag, "Skipping SPI HARQ link init because SPI transport failed");
+    config->spi_link = nullptr;
+  }
+
   /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
   config->usb_handle = usb_ok ? &s_usb_comm_handle : nullptr;
   config->spi_handle = spi_ok ? &s_spi_comm_handle : nullptr;
@@ -962,6 +1007,9 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     }
     if (spi_ok) {
       rx_log_info(s_tag, "SPI transport initialized");
+    }
+    if (link_ok) {
+      rx_log_info(s_tag, "SPI HARQ link initialized (FEC with Chase Combining)");
     }
   }
 }

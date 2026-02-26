@@ -3,6 +3,17 @@ CompileFlags:
   Add:
     - -I/opt/gnurx/rx-elf/rx-elf/include
     - -I../src
+  # Strip RX72N-specific gnurx flags that clangd's clang frontend does not
+  # recognize. These are valid for rx-elf-gcc but cause spurious "unknown
+  # argument" errors in the editor. The actual build uses rx-elf-gcc directly.
+  Remove:
+    - -mcpu=*
+    - -misa=*
+    - -mlittle-endian-data
+    - -m64bit-doubles
+    - -mtfu=*
+    - -mtfu-version=*
+    - -mdfpu
 
 Index:
   Background: Build
@@ -10,7 +21,11 @@ Index:
 
 Diagnostics:
   UnusedIncludes: Strict
-  MissingIncludes: Strict
+  # Use Loose instead of Strict: Strict requires the header that *directly*
+  # defines each symbol, which produces false positives for ThreadX types
+  # (ULONG/UINT defined in tx_port.h, accessed via tx_api.h) and nanopb
+  # generated types that come through top-level pb.h aggregates.
+  MissingIncludes: Loose
 
 InlayHints:
   Enabled: Yes
