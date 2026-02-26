@@ -1,0 +1,37 @@
+[project]
+name = "STAR - Simultaneous Tracking and Robotics"
+version = "1.0.0"
+
+[output]
+path = "docs/star_complete.pdf"
+typst_dir = "docs/typst-gen"
+
+[[subsystem]]
+name = "RX72N Firmware"
+language = "c"
+doxyfile = "e2-studio-star-rx72n-firmware/Doxyfile"
+xml_dir = "e2-studio-star-rx72n-firmware/docs/doxygen/xml"
+
+[[subsystem]]
+name = "Gateway Service"
+language = "go"
+go_doc_json = "star-gateway/docs/godoc.json"
+
+[[subsystem]]
+name = "ROS2 Packages"
+language = "cpp"
+doxyfile = "star-ros2/Doxyfile"
+xml_dir = "star-ros2/docs/doxygen/xml"
+
+[[subsystem]]
+name = "Protocol Buffers"
+language = "protobuf"
+source_dir = "star-proto/proto"
+
+[[subsystem]]
+name = "User Interface"
+language = "typescript"
+source_dir = "star-ui/src"
+
+[prose]
+sections_dir = "docs/typst"
