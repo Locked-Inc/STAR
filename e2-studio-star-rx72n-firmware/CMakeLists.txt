@@ -43,21 +43,10 @@ set(CMAKE_ASM_FLAGS_RELEASE "-g0")
 file(GLOB APP_SOURCES_ROOT CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/src/*.c
 )
-
-# When running unit tests we often cross-compile with host toolchain and cannot
-# build assembly boot code. The TESTS_ONLY option allows skipping those sources
-# so the test project can compile cleanly on the host.
-option(TESTS_ONLY "Skip building application boot sources (tests-only build)" OFF)
-
 file(GLOB_RECURSE APP_BOOT_SOURCES CONFIGURE_DEPENDS
     ${CMAKE_SOURCE_DIR}/src/boot/*.c
     ${CMAKE_SOURCE_DIR}/src/boot/*.S
 )
-if(TESTS_ONLY)
-    # drop boot/asm files during test-only builds
-    set(APP_BOOT_SOURCES "")
-endif()
-
 file(GLOB_RECURSE APP_TASKS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/tasks/*.c)
 file(GLOB_RECURSE APP_SHARED_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/shared/*.c)
 file(GLOB_RECURSE APP_RTOS_SOURCES CONFIGURE_DEPENDS ${CMAKE_SOURCE_DIR}/src/rtos_config/*.c)

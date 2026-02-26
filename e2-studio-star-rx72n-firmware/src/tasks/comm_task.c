@@ -916,7 +916,7 @@ rx_err_t comm_task_create(void)
  * @param[out] config Comm manager configuration to populate
  *   - **Valid range**: Non-nullptr to rx_comm_manager_config_t
  *   - **Constraints**: Must be zeroed before calling this function
- *   - **Side effects**: usb_handle and spi_handle fields populated
+ *   - **Side effects**: usb_handle, spi_handle, and spi_link fields populated
  *
  * @return void This function does not return a value
  *
@@ -925,6 +925,7 @@ rx_err_t comm_task_create(void)
  * @pre RSPI2 peripheral must be initialized before calling this function
  * @post config->usb_handle set to &s_usb_comm_handle or nullptr
  * @post config->spi_handle set to &s_spi_comm_handle or nullptr
+ * @post config->spi_link set to &s_spi_link when SPI transport and HARQ init both succeed, else nullptr
  * @post At least one transport handle set on success (best effort)
  * @post All init failures logged via rx_log_error
  *
@@ -975,8 +976,8 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
      * undefined behaviour, so skip the whole block if spi_ok is false. */
     rx_spi_link_config_t link_cfg = {
       .spi_handle  = &s_spi_comm_handle,
-      .fec_enabled = k_spi_link_default_fec_enabled,  // true
-      .max_retries = k_spi_link_default_max_retries,  // 3
+      .fec_enabled = k_spi_link_default_fec_enabled,
+      .max_retries = k_spi_link_default_max_retries,
     };
 
     link_ok = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
@@ -1004,7 +1005,7 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
       rx_log_info(s_tag, "SPI transport initialized");
     }
     if (link_ok) {
-      rx_log_info(s_tag, "SPI HARQ link initialized (FEC + Chase Combining)");
+      rx_log_info(s_tag, "SPI HARQ link initialized (FEC with Chase Combining)");
     }
   }
 }
