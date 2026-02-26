@@ -8,23 +8,40 @@
 
 PB_BIND(star_v1_GetTelemetryRequest, star_v1_GetTelemetryRequest, AUTO)
 
+
 PB_BIND(star_v1_GetTelemetryResponse, star_v1_GetTelemetryResponse, 2)
+
 
 PB_BIND(star_v1_StreamTelemetryRequest, star_v1_StreamTelemetryRequest, 2)
 
+
 PB_BIND(star_v1_GetSystemStatusRequest, star_v1_GetSystemStatusRequest, AUTO)
+
 
 PB_BIND(star_v1_GetSystemStatusResponse, star_v1_GetSystemStatusResponse, 2)
 
+
 PB_BIND(star_v1_TelemetryData, star_v1_TelemetryData, 2)
+
 
 PB_BIND(star_v1_ImuData, star_v1_ImuData, AUTO)
 
+
 PB_BIND(star_v1_ObstacleData, star_v1_ObstacleData, AUTO)
+
 
 PB_BIND(star_v1_GpsData, star_v1_GpsData, AUTO)
 
+
 PB_BIND(star_v1_SystemStatus, star_v1_SystemStatus, AUTO)
+
+
+
+
+
+
+
+
 
 #ifndef PB_CONVERT_DOUBLE_FLOAT
 /* On some platforms (such as AVR), double is really float.
@@ -33,3 +50,4 @@ PB_BIND(star_v1_SystemStatus, star_v1_SystemStatus, AUTO)
  */
 PB_STATIC_ASSERT(sizeof(double) == 8, DOUBLE_MUST_BE_8_BYTES)
 #endif
+

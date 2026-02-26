@@ -1102,7 +1102,7 @@ typedef enum : uint8_t {
  * These values are used as indices into the `telemetry_t::obstacle`
  * distance and status arrays when assembling telemetry packets.
  *
- * @invariant Values are contiguous integers in the range 0–3, one for
+ * @invariant Values are contiguous integers in the range 0-3, one for
  * each installed sensor.
  *
  * @code
@@ -1136,7 +1136,7 @@ typedef enum : uint8_t {
  * (front-left=0, front-right=1, rear-left=2, rear-right=3).  Masks are
  * created with `(1U << k_telem_obstacle_shift_*)`.
  *
- * @invariant Valid values 0–3, representing the four sensors.
+ * @invariant Valid values 0-3, representing the four sensors.
  *
  * @code
  * uint32_t mask = (1U << k_telem_obstacle_shift_0) |
