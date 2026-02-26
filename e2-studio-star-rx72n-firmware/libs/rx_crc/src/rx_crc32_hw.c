@@ -348,26 +348,63 @@ typedef enum : uint32_t {
 #ifdef RX_CRC32_USE_DMA
 
 /**
+ * @enum rx_crc_dma_defaults_t
+ * @brief Default constants for CRC32 DMA configuration
+ *
+ * @details
+ * This typed enum provides the compile-time default values used by the
+ * `RX_CRC32_DMA_CHANNEL` and `RX_CRC32_DMA_THRESHOLD` macros. Using an enum
+ * ensures the constants are named, documented, and type-safe in accordance
+ * with the project's "no magic numbers" policy.
+ *
+ * @note
+ * The underlying type is chosen large enough to hold both values. Consumers
+ * should not depend on the specific enum type, only on the macro wrappers.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+    /**
+     * @brief Default DMA channel for CRC32 transfers
+     *
+     * Channel 0 is used when no other driver has claimed it. This value can be
+     * overridden at compile time with `-DRX_CRC32_DMA_CHANNEL=<n>`.
+     */
+    k_crc_dma_channel_default = 0U,
+
+    /**
+     * @brief Buffer length threshold (bytes) for switching to DMA
+     *
+     * Buffers shorter than this are processed by the CPU loop because DMA setup
+    * overhead would be higher than the savings. Measured break-even at 240 MHz
+     * on RX72N is ~64 bytes.
+     */
+    k_crc_dma_threshold_default = 64U,
+} rx_crc_dma_defaults_t;
+
+/**
  * @brief DMACA channel used for CRC data transfer.
  *
  * Override at compile time with -DRX_CRC32_DMA_CHANNEL=<n> if channel 0
- * is already claimed by another driver.
+ * is already claimed by another driver. Falls back to
+ * `k_crc_dma_channel_default` defined above.
  */
 #ifndef RX_CRC32_DMA_CHANNEL
-#define RX_CRC32_DMA_CHANNEL  (0U)
+#define RX_CRC32_DMA_CHANNEL  (k_crc_dma_channel_default)
 #endif
 
 /**
-* @brief Minimum buffer length (bytes) for which DMA is used.
+ * @brief Minimum buffer length (bytes) for which DMA is used.
  *
  * Below this threshold the CPU loop is faster because DMA setup overhead
- * (configure + SWREQ latency ≈ 30–50 cycles) exceeds the loop savings.
- * Measured break-even on RX72N @ 240 MHz is approximately 64 bytes.
+ * (configure + SWREQ latency ~ 30-50 cycles) exceeds the loop savings.
+ * Measured break-even on RX72N @ 240 MHz is approximately 64 bytes; the
+ * default value is `k_crc_dma_threshold_default`.
  *
  * Override with -DRX_CRC32_DMA_THRESHOLD=<n> after profiling workload.
  */
 #ifndef RX_CRC32_DMA_THRESHOLD
-#define RX_CRC32_DMA_THRESHOLD  (64U)
+#define RX_CRC32_DMA_THRESHOLD  (k_crc_dma_threshold_default)
 #endif
 
 #endif /* RX_CRC32_USE_DMA */
@@ -380,7 +417,32 @@ typedef enum : uint32_t {
 static bool s_crc_initialized = false;
 
 #ifdef RX_CRC32_USE_DMA
-/** True after rx_dmaca_init() has been called successfully. */
+/**
+ * @var s_dma_initialized
+ * @brief DMA subsystem initialization flag for CRC32 module
+ *
+ * @details
+ * This file-static boolean is set to true by `rx_crc_init()` after it
+ * successfully calls `rx_dmaca_init()` when the build is configured with
+ * `RX_CRC32_USE_DMA`.  It indicates that the DMA controller is available to
+ * service CRC32 transfers.  Callers must ensure `rx_crc_init()` (which will
+ * invoke `rx_dmaca_init()` as needed) has been called prior to using the DMA
+ * path for CRC32; do not attempt direct use of `rx_dmaca_init()` as the
+ * higher-level initialization in `rx_crc_init()` coordinates CRC module state
+ * and DMA setup.
+ *
+ * @note
+ * The variable has file scope and is not protected by any synchronization.
+ * Access is not thread-safe; callers in multi-threaded contexts must provide
+ * their own mutual exclusion or use higher-level accessor functions.
+ *
+ * @warning
+ * Do not modify this flag directly. Use `rx_crc_init()` (which invokes
+ * `rx_dmaca_init()` when appropriate) and related APIs to manage DMA state,
+ * otherwise CRC32 DMA operations may misbehave.
+ *
+ * @since Version 1.0.0
+ */
 static bool s_dma_initialized = false;
 #endif
 
@@ -654,8 +716,8 @@ rx_err_t rx_crc_deinit(void)
  * the transfer completes or the bounded timeout expires.
  *
  * **Why 8-bit transfers only:**
- * CRCDIR accepts 8-bit or 32-bit writes only — 16-bit writes are prohibited
- * by hardware (RX72N HW Manual §46.2).  32-bit mode would additionally require
+ * CRCDIR accepts 8-bit or 32-bit writes only -- 16-bit writes are prohibited
+ * by hardware (RX72N HW Manual Sec.46.2).  32-bit mode would additionally require
  * 4-byte-aligned buffers with lengths that are exact multiples of 4; byte mode
  * works for all payloads and preserves byte-order semantics.  32-bit mode is
  * reserved as a future optimisation once alignment guarantees are verified.
@@ -664,8 +726,8 @@ rx_err_t rx_crc_deinit(void)
  * DMACA's 10-bit block counter caps at DMACA_MAX_TRANSFER_COUNT (1 024).
  * Callers are responsible for splitting larger buffers; see rx_crc32_ieee_impl.
  *
- * @param[in] data  Source buffer — must not be NULL, length ≤ 1 024.
- * @param[in] len   Number of bytes to transfer (1 – DMACA_MAX_TRANSFER_COUNT).
+ * @param[in] data  Source buffer -- must not be NULL, length <= 1 024.
+ * @param[in] len   Number of bytes to transfer (1 - DMACA_MAX_TRANSFER_COUNT).
  *
  * @return k_rx_ok          Transfer completed and CRC hardware has processed all bytes.
  * @return k_rx_err_timeout DMA did not complete within bounded timeout (bus starvation).
@@ -686,10 +748,9 @@ static rx_err_t crc_feed_dma(const uint8_t* data, uint32_t len)
     .p_dst          = (void*)CRCDIR_PHYS_ADDR,   /* CRCDIR @ 0x00088284   */
     .transfer_count = (uint32_t)len,
     .transfer_mode  = k_dmaca_mode_block,
-    .data_size      = k_dmaca_size_byte,          /* 8-bit — see note above */
+    .data_size      = k_dmaca_size_byte,          /* 8-bit -- see note above */
     .src_addr_mode  = k_dmaca_addr_increment,
     .dst_addr_mode  = k_dmaca_addr_fixed,         /* CRITICAL: never increment */
-    //.activation     = k_dmaca_act_software,
   };
 
   return rx_dmaca_transfer_blocking((uint8_t)RX_CRC32_DMA_CHANNEL, &cfg);
