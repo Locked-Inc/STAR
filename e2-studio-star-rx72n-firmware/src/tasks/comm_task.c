@@ -904,13 +904,16 @@ rx_err_t comm_task_create(void)
  * 2. **Handle USB failure**: Log error if init fails, set handle to nullptr
  * 3. **Initialize SPI transport**: Call rx_spi_comm_init() with shared session state
  * 4. **Handle SPI failure**: Log error if init fails, set handle to nullptr
- * 5. **Wire handles**: Assign valid or nullptr handles to config structure
- * 6. **Validate transports**: Log critical error if both transports failed
- * 7. **Log success**: Log info for each successfully initialized transport
+ * 5. **Initialize HARQ link**: If spi_ok, call rx_spi_link_init(&s_spi_link, &link_cfg);
+ *    config->spi_link = &s_spi_link on k_rx_ok, nullptr otherwise (or when spi_ok is false)
+ * 6. **Wire handles**: Assign valid or nullptr handles to config structure
+ * 7. **Validate transports**: Log critical error if both transports failed
+ * 8. **Log success**: Log info for each successfully initialized transport
  *
  * **Graceful Degradation:**
  * - If one transport fails: Other transport continues (logged warning)
  * - If both transports fail: Config wired with nullptr handles (logged critical error)
+ * - If SPI transport fails: config->spi_link is set to nullptr (HARQ skipped)
  * - Comm manager will return k_rx_err_timeout on poll for nullptr handles
  *
  * @param[out] config Comm manager configuration to populate
@@ -932,8 +935,8 @@ rx_err_t comm_task_create(void)
  * @note This function does NOT initialize RSPI hardware - caller must ensure
  *       RSPI2 peripheral is initialized before calling
  * @note Called once during single-threaded task initialization; not thread-safe
- * @warning Function has no return value - check config->usb_handle and
- *          config->spi_handle for nullptr to detect complete failure
+ * @warning Function has no return value - check config->usb_handle,
+ *          config->spi_handle, and config->spi_link for nullptr to detect degraded modes
  *
  * @par Thread Safety:
  * This function is **not thread-safe**. It must be called only once during
@@ -944,6 +947,7 @@ rx_err_t comm_task_create(void)
  * @since Version 1.0.0
  * @see rx_usb_comm_init() USB transport layer initialization
  * @see rx_spi_comm_init() SPI transport layer initialization
+ * @see rx_spi_link_init() HARQ link layer initialization (called internally when spi_ok)
  */
 static void internal_init_transports(rx_comm_manager_config_t* config)
 {
