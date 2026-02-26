@@ -364,7 +364,7 @@ rx_err_t rx_ds18b20_init(rx_ds18b20_handle_t* handle, const rx_ds18b20_config_t*
   }
 
   /* Initialize handle */
-  *handle = (rx_ds18b20_handle_t){0};
+  *handle                  = (rx_ds18b20_handle_t){0};
   handle->bus_manager      = config->bus_manager;
   handle->bus_name         = config->bus_name;
   handle->resolution       = config->resolution;
@@ -1108,7 +1108,7 @@ rx_err_t rx_ds18b20_read_power_mode(const rx_ds18b20_handle_t* handle, bool* ext
 
   /* Read power bit (1 = external, 0 = parasitic) */
   bool power_bit = false;
-  err = rx_bus_onewire_read_bit(handle->bus_manager, handle->bus_name, &power_bit);
+  err            = rx_bus_onewire_read_bit(handle->bus_manager, handle->bus_name, &power_bit);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read power bit");
     return err;
@@ -1385,7 +1385,7 @@ static rx_err_t internal_ds18b20_verify_device_presence(rx_ds18b20_handle_t* han
   }
 
   /* Read scratchpad to verify communication */
-  uint8_t  scratchpad[k_ds18b20_scratchpad_bytes];
+  uint8_t scratchpad[k_ds18b20_scratchpad_bytes];
   err = internal_ds18b20_read_scratchpad_raw(handle, scratchpad);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Failed to read scratchpad during init");

@@ -582,8 +582,8 @@ rx_err_t rx_wdt_feed(void)
 
   /* Refresh watchdog - write 0x00 then 0xFF to WDTRR */
   volatile rx_wdt_regs_t* const regs = wdt();
-  regs->wdtrr = k_wdt_refresh_start;
-  regs->wdtrr = k_wdt_refresh_end;
+  regs->wdtrr                        = k_wdt_refresh_start;
+  regs->wdtrr                        = k_wdt_refresh_end;
 
   return k_rx_ok;
 }

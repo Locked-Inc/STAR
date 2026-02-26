@@ -237,8 +237,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_cmt_channel_t channel;  /**< CMT channel identifier (k_cmt_channel_0 ... k_cmt_channel_3) */
-  uint8_t          priority; /**< ICU interrupt priority level (k_ipr_level_min ... k_ipr_level_max) */
+  rx_cmt_channel_t channel; /**< CMT channel identifier (k_cmt_channel_0 ... k_cmt_channel_3) */
+  uint8_t priority; /**< ICU interrupt priority level (k_ipr_level_min ... k_ipr_level_max) */
 } rx_cmt_interrupt_config_t;
 
 /** @brief CMCR register bit positions */
@@ -474,10 +474,10 @@ static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(const rx_cmt_channe
 static rx_err_t
 internal_calculate_cmt_params(const uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
-  static const uint16_t dividers[] = {k_cmt_divider_val_8,
-                                      k_cmt_divider_val_32,
-                                      k_cmt_divider_val_128,
-                                      k_cmt_divider_val_512};
+  static const uint16_t dividers[]    = {k_cmt_divider_val_8,
+                                         k_cmt_divider_val_32,
+                                         k_cmt_divider_val_128,
+                                         k_cmt_divider_val_512};
   const uint32_t        pclkb         = k_pclkb_hz;
   const uint32_t        max_frequency = pclkb / k_cmt_divider_val_8;
 
@@ -1215,7 +1215,7 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
   /* Set corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr0 |= bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
@@ -1224,7 +1224,7 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
       break;
     }
     case k_cmt_channel_1: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr0 |= bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
@@ -1233,7 +1233,7 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
       break;
     }
     case k_cmt_channel_2: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr1 |= bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
@@ -1242,7 +1242,7 @@ rx_err_t rx_cmt_start(const rx_cmt_channel_t channel)
       break;
     }
     case k_cmt_channel_3: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr1 |= bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) == k_cmt_value_zero) {
@@ -1312,7 +1312,7 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
   /* Clear corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr0 &= (uint16_t)~bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
@@ -1321,7 +1321,7 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
       break;
     }
     case k_cmt_channel_1: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr0 &= (uint16_t)~bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr0;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
@@ -1330,7 +1330,7 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
       break;
     }
     case k_cmt_channel_2: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str0);
       cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
@@ -1339,7 +1339,7 @@ rx_err_t rx_cmt_stop(const rx_cmt_channel_t channel)
       break;
     }
     case k_cmt_channel_3: {
-      const uint16_t bit_mask    = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
+      const uint16_t bit_mask = (uint16_t)(k_cmt_bit_mask_lsb << k_cmt_cmstr_str1);
       cmt_ctrl()->cmstr1 &= (uint16_t)~bit_mask;
       const uint16_t cmstr_value = cmt_ctrl()->cmstr1;
       if ((cmstr_value & bit_mask) != k_cmt_value_zero) {
@@ -1489,7 +1489,7 @@ rx_err_t rx_cmt_deinit(const rx_cmt_channel_t channel)
   const uint8_t vector    = k_vect_cmt0_cmi0 + channel;
   const uint8_t ier_index = vector / k_icu_ier_bits_per_reg;
   const uint8_t ier_bit   = vector % k_icu_ier_bits_per_reg;
-  const uint8_t ier_mask = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
+  const uint8_t ier_mask  = (uint8_t)(k_cmt_bit_mask_lsb << ier_bit);
   icu()->ier[ier_index] &= (uint8_t)~ier_mask;
 
   /* Clear callback */

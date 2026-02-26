@@ -69,7 +69,7 @@ static uint32_t s_motor_state_update_count = k_mock_count_reset;
  *
  * @since Version 1.1.0
  */
-static uint32_t s_set_event_count          = k_mock_count_reset;
+static uint32_t s_set_event_count = k_mock_count_reset;
 
 /* =============================================================================
  * Static State
@@ -89,7 +89,7 @@ static bool            s_pid_update_pending = false;
 static temp_sensor_state_t s_temp_state     = {0};
 static obstacle_state_t    s_obstacle_state = {0};
 
-static estop_reason_t       s_last_triggered_reason = k_estop_reason_none;
+static estop_reason_t s_last_triggered_reason = k_estop_reason_none;
 
 /**
  * @var s_last_event_flags
@@ -108,7 +108,7 @@ static estop_reason_t       s_last_triggered_reason = k_estop_reason_none;
  *
  * @since Version 1.1.0
  */
-static shared_event_flags_t s_last_event_flags      = k_event_none;
+static shared_event_flags_t s_last_event_flags = k_event_none;
 
 /* =============================================================================
  * Mock Control Functions

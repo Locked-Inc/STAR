@@ -1026,12 +1026,12 @@ static void internal_detection_task_entry(const ULONG input)
     /* Detection loop */
     while (running) {
       /* Check for stop event (non-blocking) */
-      ULONG      stop_flags   = 0;
-      const UINT status_stop  = tx_event_flags_get(&handle->event_flags,
-                                                   k_event_flag_stop,
-                                                   TX_OR_CLEAR,
-                                                   &stop_flags,
-                                                   TX_NO_WAIT);
+      ULONG      stop_flags  = 0;
+      const UINT status_stop = tx_event_flags_get(&handle->event_flags,
+                                                  k_event_flag_stop,
+                                                  TX_OR_CLEAR,
+                                                  &stop_flags,
+                                                  TX_NO_WAIT);
 
       if (status_stop == TX_SUCCESS || handle->stop_requested) {
         running                = false;
@@ -1129,10 +1129,10 @@ static rx_err_t internal_validate_config(const rx_obstacle_detect_config_t* conf
  */
 static rx_err_t internal_poll_sensors(rx_obstacle_detect_t* handle)
 {
-  float              distance_cm                = 0.0F;
-  rx_err_t           ret                        = k_rx_ok;
-  bool               was_obstacle_active        = false;
-  bool               is_obstacle_active         = false;
+  float    distance_cm         = 0.0F;
+  rx_err_t ret                 = k_rx_ok;
+  bool     was_obstacle_active = false;
+  bool     is_obstacle_active  = false;
 
   static const float s_clear_distance_offset_cm = 1.0F;
 

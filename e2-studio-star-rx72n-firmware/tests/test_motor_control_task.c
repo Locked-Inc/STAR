@@ -275,9 +275,9 @@ void test_motor_task_reads_velocity_commands(void)
   cmd_in.target_velocity_mps[2] = -0.5f; /* Back left (reverse) */
   cmd_in.target_velocity_mps[3] = -0.5f; /* Back right (reverse) */
 
-  cmd_in.sequence               = 42;
-  cmd_in.timestamp_ms           = 1000;
-  cmd_in.valid                  = true;
+  cmd_in.sequence     = 42;
+  cmd_in.timestamp_ms = 1000;
+  cmd_in.valid        = true;
 
   /* Store command via mock */
   mock_shared_data_set_motor_command(&cmd_in);

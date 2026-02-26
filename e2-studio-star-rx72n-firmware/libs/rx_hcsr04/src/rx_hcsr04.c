@@ -1313,8 +1313,8 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  const uint32_t pulse_end   = hcsr04_hal_get_time_us();
-  *duration_us = pulse_end - pulse_start;
+  const uint32_t pulse_end = hcsr04_hal_get_time_us();
+  *duration_us             = pulse_end - pulse_start;
 
   return k_rx_ok;
 }
@@ -1551,10 +1551,10 @@ static void hcsr04_worker_entry(const ULONG input)
     /* Wait for measurement request OR shutdown request */
     ULONG      actual_flags = 0;
     const UINT status       = tx_event_flags_get(&s_measurement_request,
-                                                 k_event_measurement_request | k_event_shutdown_request,
-                                                 TX_OR_CLEAR,
-                                                 &actual_flags,
-                                                 TX_WAIT_FOREVER);
+                                           k_event_measurement_request | k_event_shutdown_request,
+                                           TX_OR_CLEAR,
+                                           &actual_flags,
+                                           TX_WAIT_FOREVER);
 
     if (status != TX_SUCCESS) {
       continue; /* Should not happen with TX_WAIT_FOREVER */
@@ -1866,7 +1866,8 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Configure echo pin based on mode (explicit validation -- no implicit fallback) */
-  uint8_t effective_priority = k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
+  uint8_t effective_priority =
+    k_hcsr04_irq_priority_unset; /* Effective ICU priority (IRQ mode only) */
   if (config->echo_mode == k_hcsr04_echo_irq) {
     /* IRQ mode: delegate to helper to keep this function under 60 lines (NASA Rule 4) */
     err = internal_init_irq_mode(config, &effective_priority);

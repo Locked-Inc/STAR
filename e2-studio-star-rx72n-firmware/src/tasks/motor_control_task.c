@@ -431,10 +431,11 @@ extern rx_bus_manager_t g_bus_manager;
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_motor_task_stack_size  = 2048, /**< Stack size in bytes: sufficient for PID locals and HAL calls */
-  k_motor_task_priority    = 8,    /**< ThreadX priority: 8 (below watchdog=6, comm=5) */
-  k_motor_task_sleep_ticks = 1,    /**< Sleep period: 1 tick = 10ms at 100 Hz system tick rate */
-  k_motor_task_input       = 0,    /**< Thread entry input parameter: unused (ThreadX convention) */
+  k_motor_task_stack_size =
+    2048,                       /**< Stack size in bytes: sufficient for PID locals and HAL calls */
+  k_motor_task_priority    = 8, /**< ThreadX priority: 8 (below watchdog=6, comm=5) */
+  k_motor_task_sleep_ticks = 1, /**< Sleep period: 1 tick = 10ms at 100 Hz system tick rate */
+  k_motor_task_input       = 0, /**< Thread entry input parameter: unused (ThreadX convention) */
 } motor_task_constants_t;
 
 /**
@@ -469,12 +470,15 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_motor_count            = 4,     /**< Number of motors: 4 wheels (front-left, front-right, back-left, back-right) */
-  k_control_period_us      = 10000, /**< Control period: 10000 us = 10ms = 100 Hz control loop rate */
-  k_active_brake_ms        = 50,    /**< Active brake duration: 50ms short-circuit braking before coast */
-  k_active_brake_duty      = 30,    /**< Active brake PWM duty: 30% duty cycle during braking phase */
-  k_pwm_frequency_hz       = 20000, /**< PWM frequency: 20 kHz (above human hearing, reduces audible noise) */
-  k_encoder_counts_per_rev = 1364,  /**< Encoder resolution: 341 PPR x 4 (quadrature) = 1364 counts/rev */
+  k_motor_count =
+    4, /**< Number of motors: 4 wheels (front-left, front-right, back-left, back-right) */
+  k_control_period_us = 10000, /**< Control period: 10000 us = 10ms = 100 Hz control loop rate */
+  k_active_brake_ms   = 50, /**< Active brake duration: 50ms short-circuit braking before coast */
+  k_active_brake_duty = 30, /**< Active brake PWM duty: 30% duty cycle during braking phase */
+  k_pwm_frequency_hz =
+    20000, /**< PWM frequency: 20 kHz (above human hearing, reduces audible noise) */
+  k_encoder_counts_per_rev =
+    1364, /**< Encoder resolution: 341 PPR x 4 (quadrature) = 1364 counts/rev */
 } motor_control_constants_t;
 
 /**
@@ -592,10 +596,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_motor_pwm_freq_hz        = 20000, /**< PWM frequency: 20 kHz (inaudible, low switching loss) */
-  k_motor_dead_time_ns       = 1000,  /**< H-bridge dead-time: 1000 ns = 1 us (prevents shoot-through) */
-  k_motor_current_limit_ma   = 2000,  /**< Software current limit: 2000 mA = 2A per motor channel */
-  k_threadx_tick_interval_ms = 10,    /**< ThreadX tick period: 10 ms at 100 Hz tick rate */
+  k_motor_pwm_freq_hz  = 20000, /**< PWM frequency: 20 kHz (inaudible, low switching loss) */
+  k_motor_dead_time_ns = 1000,  /**< H-bridge dead-time: 1000 ns = 1 us (prevents shoot-through) */
+  k_motor_current_limit_ma   = 2000, /**< Software current limit: 2000 mA = 2A per motor channel */
+  k_threadx_tick_interval_ms = 10,   /**< ThreadX tick period: 10 ms at 100 Hz tick rate */
 } motor_hw_constants_t;
 
 /** @brief Default PID proportional gain (MATLAB-tuned) */
@@ -1039,15 +1043,15 @@ rx_err_t motor_control_task_create(void)
 
   /* Create the thread */
   UINT tx_status = tx_thread_create(&s_motor_thread,
-                               "MotorTask",
-                               internal_motor_task_entry,
-                               k_motor_task_input,
-                               s_motor_stack,
-                               k_motor_task_stack_size,
-                               k_motor_task_priority,
-                               k_motor_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                                    "MotorTask",
+                                    internal_motor_task_entry,
+                                    k_motor_task_input,
+                                    s_motor_stack,
+                                    k_motor_task_stack_size,
+                                    k_motor_task_priority,
+                                    k_motor_task_priority,
+                                    TX_NO_TIME_SLICE,
+                                    TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
@@ -2123,7 +2127,7 @@ static void internal_control_loop_iteration(void)
   for (uint8_t i = 0; i < k_motor_count; i++) {
     /* 1. Read encoder velocity */
     float current_velocity_mps = 0.0f;
-    err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
+    err                        = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
       current_velocity_mps = 0.0f;
     }
@@ -2376,7 +2380,7 @@ static void internal_active_brake_sequence(void)
   for (uint8_t i = 0; i < k_motor_count; i++) {
     /* Read current velocity to determine direction */
     float    current_velocity_mps = 0.0f;
-    rx_err_t err                  = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
+    rx_err_t err = internal_read_encoder_velocity(&current_velocity_mps, s_dt_sec, i);
     if (err != k_rx_ok) {
       current_velocity_mps = 0.0f;
     }

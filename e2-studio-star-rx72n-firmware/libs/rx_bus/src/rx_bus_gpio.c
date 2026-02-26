@@ -637,8 +637,8 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
   }
 
   /* Read current state before toggle for verification */
-  bool           state_before   = false;
-  const rx_err_t pre_read_err   = gpio_read(bus_config->proto.gpio.pin, &state_before);
+  bool           state_before = false;
+  const rx_err_t pre_read_err = gpio_read(bus_config->proto.gpio.pin, &state_before);
   if (pre_read_err != k_rx_ok) {
     rx_log_warn(s_tag, "Pre-toggle read failed (output pin may not support readback)");
     state_before = false; /* Assume low if can't read */
@@ -654,8 +654,8 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
   }
 
   /* Post-condition: Verify pin actually toggled */
-  bool           state_after    = false;
-  const rx_err_t post_read_err  = gpio_read(bus_config->proto.gpio.pin, &state_after);
+  bool           state_after   = false;
+  const rx_err_t post_read_err = gpio_read(bus_config->proto.gpio.pin, &state_after);
   if (post_read_err != k_rx_ok) {
     rx_log_warn(s_tag,
                 "Post-toggle verification read failed (output pin may not support readback)");

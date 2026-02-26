@@ -830,7 +830,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
 
       /* Convert link result to rx_frame_t for internal_handle_frame() */
       static rx_frame_t s_frame1;
-      s_frame1 = (rx_frame_t){0};
+      s_frame1                 = (rx_frame_t){0};
       s_frame1.header.sequence = s_link_result.sequence;
       s_frame1.header.length   = (uint16_t)s_link_result.payload_len;
       s_frame1.header.type     = s_link_result.frame_type;

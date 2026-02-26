@@ -1467,9 +1467,9 @@ rx_err_t riic_init(const riic_channel_t channel, const uint32_t frequency_hz)
   riic->iccr1 = k_riic_timeout_zero;
 
   /* Calculate bit rate */
-  uint8_t  icbrl = 0;
-  uint8_t  icbrh = 0;
-  const rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
+  uint8_t        icbrl = 0;
+  uint8_t        icbrh = 0;
+  const rx_err_t err   = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */

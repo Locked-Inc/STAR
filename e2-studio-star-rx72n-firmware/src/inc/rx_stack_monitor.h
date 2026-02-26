@@ -199,7 +199,7 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_stack_monitor_get_free_bytes(const TX_THREAD* thread_ptr,
-                                                        uint32_t*        free_bytes);
+                                                       uint32_t*        free_bytes);
 
 #ifdef __cplusplus
 }

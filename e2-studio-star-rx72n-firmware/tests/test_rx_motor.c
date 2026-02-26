@@ -173,12 +173,12 @@
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_test_freq_1khz       = 1000,  /**< Low frequency for testing */
-  k_test_freq_20khz      = 20000, /**< Standard motor PWM frequency */
-  k_test_freq_25khz      = 25000, /**< Alternative motor PWM frequency */
-  k_test_freq_50khz      = 50000, /**< High frequency for testing */
-  k_test_freq_below_min  = 500,   /**< Below 1 kHz minimum */
-  k_test_freq_above_max  = 60000, /**< Above 50 kHz maximum */
+  k_test_freq_1khz      = 1000,  /**< Low frequency for testing */
+  k_test_freq_20khz     = 20000, /**< Standard motor PWM frequency */
+  k_test_freq_25khz     = 25000, /**< Alternative motor PWM frequency */
+  k_test_freq_50khz     = 50000, /**< High frequency for testing */
+  k_test_freq_below_min = 500,   /**< Below 1 kHz minimum */
+  k_test_freq_above_max = 60000, /**< Above 50 kHz maximum */
 } test_frequencies_t;
 
 /**
@@ -197,11 +197,11 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_test_deadtime_below_min  = 50,    /**< Below 100 ns minimum */
-  k_test_deadtime_100ns      = 100,   /**< Minimum dead-time (100 ns) */
-  k_test_deadtime_1000ns     = 1000,  /**< 1us dead-time */
-  k_test_deadtime_10us       = 10000, /**< Maximum dead-time (10 us) */
-  k_test_deadtime_above_max  = 15000, /**< Above 10 us maximum */
+  k_test_deadtime_below_min = 50,    /**< Below 100 ns minimum */
+  k_test_deadtime_100ns     = 100,   /**< Minimum dead-time (100 ns) */
+  k_test_deadtime_1000ns    = 1000,  /**< 1us dead-time */
+  k_test_deadtime_10us      = 10000, /**< Maximum dead-time (10 us) */
+  k_test_deadtime_above_max = 15000, /**< Above 10 us maximum */
 } test_deadtimes_t;
 
 /**
@@ -931,7 +931,7 @@ void test_motor_multiple_channels_independent(void)
 
   rx_motor_config_t config0 = s_config;
 
-  config0.channel           = k_gptw_channel_0;
+  config0.channel = k_gptw_channel_0;
 
   rx_motor_config_t config1 = s_config;
   config1.channel           = k_gptw_channel_1;
@@ -962,7 +962,7 @@ void test_motor_multiple_channels_independent(void)
 void test_motor_all_four_channels(void)
 {
   /* Initialize all 4 motors */
-  rx_motor_handle_t motors[k_test_num_motors]  = {0};
+  rx_motor_handle_t motors[k_test_num_motors] = {0};
   rx_motor_config_t configs[k_test_num_motors];
 
   for (uint8_t i = 0; i < k_test_num_motors; i++) {

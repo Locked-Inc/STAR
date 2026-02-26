@@ -169,7 +169,7 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, const uint8_t max
   } else {
     combiner->max_combines = k_harq_default_combines;
   }
-  combiner->initialized  = k_harq_true;
+  combiner->initialized = k_harq_true;
 
   return k_rx_ok;
 }

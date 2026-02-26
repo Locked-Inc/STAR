@@ -1425,15 +1425,15 @@ rx_err_t obstacle_detect_task_create(void)
 
   /* Create the thread */
   UINT tx_status = tx_thread_create(&s_obstacle_thread,
-                               "ObstacleTask",
-                               internal_obstacle_task_entry,
-                               k_obstacle_task_input,
-                               s_obstacle_stack,
-                               k_obstacle_task_stack_size,
-                               k_obstacle_task_priority,
-                               k_obstacle_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                                    "ObstacleTask",
+                                    internal_obstacle_task_entry,
+                                    k_obstacle_task_input,
+                                    s_obstacle_stack,
+                                    k_obstacle_task_stack_size,
+                                    k_obstacle_task_priority,
+                                    k_obstacle_task_priority,
+                                    TX_NO_TIME_SLICE,
+                                    TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
@@ -1813,15 +1813,15 @@ static void internal_obstacle_task_entry(ULONG input)
 
   /* Configure obstacle detection system */
   rx_obstacle_detect_config_t config = {0};
-  config.sensor_count           = k_obstacle_sensor_count;
-  config.sensors                = s_sensor_ptrs;
-  config.motor_count            = motor_count;
-  config.motors                 = motors;
-  config.detection_threshold_cm = (float)k_obstacle_threshold_cm;
-  config.debounce_samples       = k_obstacle_debounce_samples;
-  config.poll_interval_ms       = k_obstacle_poll_interval_ms;
-  config.callback               = internal_obstacle_callback;
-  config.user_data              = nullptr;
+  config.sensor_count                = k_obstacle_sensor_count;
+  config.sensors                     = s_sensor_ptrs;
+  config.motor_count                 = motor_count;
+  config.motors                      = motors;
+  config.detection_threshold_cm      = (float)k_obstacle_threshold_cm;
+  config.debounce_samples            = k_obstacle_debounce_samples;
+  config.poll_interval_ms            = k_obstacle_poll_interval_ms;
+  config.callback                    = internal_obstacle_callback;
+  config.user_data                   = nullptr;
 
   /* Initialize obstacle detection (library creates its own internal task) */
   err = rx_obstacle_detect_init(&s_obstacle_handle, &config);
@@ -1866,7 +1866,7 @@ static void internal_obstacle_task_entry(ULONG input)
       uint32_t total_polls;
       uint32_t obstacle_events;
       uint32_t false_positives;
-      err           = rx_obstacle_detect_get_stats(&s_obstacle_handle,
+      err = rx_obstacle_detect_get_stats(&s_obstacle_handle,
                                          &total_polls,
                                          &obstacle_events,
                                          &false_positives);

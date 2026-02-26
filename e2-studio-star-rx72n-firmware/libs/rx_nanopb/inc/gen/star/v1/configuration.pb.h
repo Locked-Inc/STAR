@@ -4,6 +4,7 @@
 #ifndef PB_STAR_V1_STAR_V1_CONFIGURATION_PB_H_INCLUDED
 #define PB_STAR_V1_STAR_V1_CONFIGURATION_PB_H_INCLUDED
 #include <pb.h>
+
 #include "star/v1/common.pb.h"
 #include "star/v1/motor_control.pb.h"
 
@@ -14,142 +15,142 @@
 /* Enum definitions */
 /* Configuration validation status. */
 typedef enum _star_v1_ConfigValidationStatus {
-    /* Unknown validation status. */
-    star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_UNKNOWN = 0,
-    /* Configuration is valid and can be applied. */
-    star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VALID = 1,
-    /* Configuration has invalid parameters. */
-    star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_INVALID = 2,
-    /* Configuration has warnings but can be applied. */
-    star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_WARNING = 3,
-    /* CRC checksum mismatch. */
-    star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_CRC_MISMATCH = 4,
-    /* Configuration version incompatible. */
-    star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VERSION_MISMATCH = 5
+  /* Unknown validation status. */
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_UNKNOWN = 0,
+  /* Configuration is valid and can be applied. */
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VALID = 1,
+  /* Configuration has invalid parameters. */
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_INVALID = 2,
+  /* Configuration has warnings but can be applied. */
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_WARNING = 3,
+  /* CRC checksum mismatch. */
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_CRC_MISMATCH = 4,
+  /* Configuration version incompatible. */
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VERSION_MISMATCH = 5
 } star_v1_ConfigValidationStatus;
 
 /* Configuration error codes. */
 typedef enum _star_v1_ConfigErrorCode {
-    /* Unknown error. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_UNKNOWN = 0,
-    /* Value is below minimum allowed. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW = 1,
-    /* Value is above maximum allowed. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH = 2,
-    /* Value is NaN or infinity. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_INVALID_NUMBER = 3,
-    /* Required field is missing. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_MISSING_FIELD = 4,
-    /* Array has wrong number of elements. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_WRONG_ARRAY_SIZE = 5,
-    /* CRC checksum failed. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_CRC_FAILED = 6,
-    /* Version is not supported. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_UNSUPPORTED_VERSION = 7,
-    /* NVS storage error. */
-    star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_STORAGE_ERROR = 8
+  /* Unknown error. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_UNKNOWN = 0,
+  /* Value is below minimum allowed. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_LOW = 1,
+  /* Value is above maximum allowed. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_VALUE_TOO_HIGH = 2,
+  /* Value is NaN or infinity. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_INVALID_NUMBER = 3,
+  /* Required field is missing. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_MISSING_FIELD = 4,
+  /* Array has wrong number of elements. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_WRONG_ARRAY_SIZE = 5,
+  /* CRC checksum failed. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_CRC_FAILED = 6,
+  /* Version is not supported. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_UNSUPPORTED_VERSION = 7,
+  /* NVS storage error. */
+  star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_STORAGE_ERROR = 8
 } star_v1_ConfigErrorCode;
 
 /* Struct definitions */
 /* Request for current configuration. */
 typedef struct _star_v1_GetConfigurationRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
 } star_v1_GetConfigurationRequest;
 
 /* Request to reset configuration. */
 typedef struct _star_v1_ResetToDefaultsRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* If true, automatically save defaults to NVS. */
-    bool persist_to_nvs;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* If true, automatically save defaults to NVS. */
+  bool persist_to_nvs;
 } star_v1_ResetToDefaultsRequest;
 
 /* Request to save configuration to NVS. */
 typedef struct _star_v1_SaveConfigurationRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
 } star_v1_SaveConfigurationRequest;
 
 /* Response to save configuration. */
 typedef struct _star_v1_SaveConfigurationResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* True if save was successful. */
-    bool saved;
-    /* Updated CRC-32 checksum after save. */
-    uint32_t config_crc;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* True if save was successful. */
+  bool saved;
+  /* Updated CRC-32 checksum after save. */
+  uint32_t config_crc;
 } star_v1_SaveConfigurationResponse;
 
 /* Request for motor PID configuration. */
 typedef struct _star_v1_GetMotorPidConfigRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Motor index (0-3 for 4-motor system). */
-    int32_t motor_id;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* Motor index (0-3 for 4-motor system). */
+  int32_t motor_id;
 } star_v1_GetMotorPidConfigRequest;
 
 /* Response with motor PID configuration. */
 typedef struct _star_v1_GetMotorPidConfigResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Motor index. */
-    int32_t motor_id;
-    /* PID configuration for this motor. */
-    bool has_pid_config;
-    star_v1_PidConfig pid_config;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* Motor index. */
+  int32_t motor_id;
+  /* PID configuration for this motor. */
+  bool              has_pid_config;
+  star_v1_PidConfig pid_config;
 } star_v1_GetMotorPidConfigResponse;
 
 /* Request to set motor PID configuration. */
 typedef struct _star_v1_SetMotorPidConfigRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Motor index (0-3 for 4-motor system). */
-    int32_t motor_id;
-    /* PID configuration to apply. */
-    bool has_pid_config;
-    star_v1_PidConfig pid_config;
-    /* If true, automatically save to NVS. */
-    bool persist_to_nvs;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* Motor index (0-3 for 4-motor system). */
+  int32_t motor_id;
+  /* PID configuration to apply. */
+  bool              has_pid_config;
+  star_v1_PidConfig pid_config;
+  /* If true, automatically save to NVS. */
+  bool persist_to_nvs;
 } star_v1_SetMotorPidConfigRequest;
 
 /* Retransmit configuration for SPI communication layer. */
 typedef struct _star_v1_RetransmitConfig {
-    /* Enable automatic retransmission. */
-    bool enabled;
-    /* Maximum retransmit attempts before giving up.
+  /* Enable automatic retransmission. */
+  bool enabled;
+  /* Maximum retransmit attempts before giving up.
  Valid range: 1-10. Default: 3. */
-    uint32_t max_retries;
-    /* Initial ACK timeout in milliseconds.
+  uint32_t max_retries;
+  /* Initial ACK timeout in milliseconds.
  Valid range: 10-1000. Default: 50. */
-    uint32_t ack_timeout_ms;
-    /* Maximum backoff cap in milliseconds.
+  uint32_t ack_timeout_ms;
+  /* Maximum backoff cap in milliseconds.
  Valid range: 50-5000. Default: 400. */
-    uint32_t max_backoff_ms;
+  uint32_t max_backoff_ms;
 } star_v1_RetransmitConfig;
 
 /* Request to set retransmit configuration (RPi5 -> RX72N). */
 typedef struct _star_v1_SetRetransmitConfigRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Retransmit configuration to apply. */
-    bool has_retransmit_config;
-    star_v1_RetransmitConfig retransmit_config;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* Retransmit configuration to apply. */
+  bool                     has_retransmit_config;
+  star_v1_RetransmitConfig retransmit_config;
 } star_v1_SetRetransmitConfigRequest;
 
 /* Response to set retransmit configuration. */
 typedef struct _star_v1_SetRetransmitConfigResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
 } star_v1_SetRetransmitConfigResponse;
 
 /* Motor PID configuration for a single motor.
@@ -158,573 +159,740 @@ typedef struct _star_v1_SetRetransmitConfigResponse {
  identifies the motor. This enables server-side validation and
  clearer debugging of serialized messages. */
 typedef struct _star_v1_MotorPidConfiguration {
-    /* Motor index (0-3).
+  /* Motor index (0-3).
  Should match array index in SystemConfiguration.motor_configs. */
-    int32_t motor_id;
-    /* PID gains configuration.
+  int32_t motor_id;
+  /* PID gains configuration.
  Reuses PidConfig from motor_control.proto. */
-    bool has_pid_config;
-    star_v1_PidConfig pid_config;
+  bool              has_pid_config;
+  star_v1_PidConfig pid_config;
 } star_v1_MotorPidConfiguration;
 
 /* Current sensor calibration data.
  Applied to all motor current sense readings. */
 typedef struct _star_v1_CurrentSensorCalibration {
-    /* ADC offset when motor stopped, in milliamps.
+  /* ADC offset when motor stopped, in milliamps.
  One per motor (max 4). */
-    pb_callback_t offset_ma;
-    /* Scaling factor adjustment for each motor.
+  pb_callback_t offset_ma;
+  /* Scaling factor adjustment for each motor.
  Multiplied with raw ADC reading.
  One per motor (max 4). */
-    pb_callback_t scale_factor;
+  pb_callback_t scale_factor;
 } star_v1_CurrentSensorCalibration;
 
 /* Temperature sensor calibration. */
 typedef struct _star_v1_TemperatureCalibration {
-    /* Temperature offset correction in Celsius.
+  /* Temperature offset correction in Celsius.
  Added to raw temperature reading. */
-    double offset_celsius;
+  double offset_celsius;
 } star_v1_TemperatureCalibration;
 
 /* Safety thresholds for motor protection. */
 typedef struct _star_v1_SafetyThresholds {
-    /* Motor overcurrent limit in milliamps.
+  /* Motor overcurrent limit in milliamps.
  Motors disabled if current exceeds this.
  Valid range: 1000-20000 mA. */
-    uint32_t overcurrent_threshold_ma;
-    /* Emergency temperature cutoff in deci-celsius (0.1C units).
+  uint32_t overcurrent_threshold_ma;
+  /* Emergency temperature cutoff in deci-celsius (0.1C units).
  System enters safe mode above this temperature.
  Valid range: 500-1000 (50.0-100.0 C). */
-    int32_t thermal_shutdown_deci_celsius;
-    /* Motor phase imbalance threshold in millivolts.
+  int32_t thermal_shutdown_deci_celsius;
+  /* Motor phase imbalance threshold in millivolts.
  Valid range: 50-500 mV. */
-    uint32_t cell_imbalance_threshold_mv;
+  uint32_t cell_imbalance_threshold_mv;
 } star_v1_SafetyThresholds;
 
 /* Encoder configuration parameters. */
 typedef struct _star_v1_EncoderConfiguration {
-    /* Encoder edges per motor revolution.
+  /* Encoder edges per motor revolution.
  Used for velocity calculation.
  Common values: 500, 1000, 2000, 4000. */
-    uint32_t edges_per_revolution;
-    /* Wheel diameter in meters (for linear velocity). */
-    double wheel_diameter_m;
-    /* Gear ratio (motor revolutions per wheel revolution). */
-    double gear_ratio;
+  uint32_t edges_per_revolution;
+  /* Wheel diameter in meters (for linear velocity). */
+  double wheel_diameter_m;
+  /* Gear ratio (motor revolutions per wheel revolution). */
+  double gear_ratio;
 } star_v1_EncoderConfiguration;
 
 /* Timing configuration for control loops and communication. */
 typedef struct _star_v1_TimingConfiguration {
-    /* Motor control loop period in milliseconds.
+  /* Motor control loop period in milliseconds.
  Lower = faster response, higher CPU usage.
  Valid range: 1-100 ms. Typical: 10 ms (100 Hz). */
-    uint32_t motor_control_period_ms;
-    /* Telemetry reporting period in milliseconds.
+  uint32_t motor_control_period_ms;
+  /* Telemetry reporting period in milliseconds.
  Valid range: 10-1000 ms. Typical: 100 ms (10 Hz). */
-    uint32_t telemetry_period_ms;
-    /* RPi5 communication watchdog timeout in milliseconds.
+  uint32_t telemetry_period_ms;
+  /* RPi5 communication watchdog timeout in milliseconds.
  Motors stopped if no command received within timeout.
  Valid range: 100-5000 ms. Typical: 500 ms. */
-    uint32_t communication_timeout_ms;
+  uint32_t communication_timeout_ms;
 } star_v1_TimingConfiguration;
 
 /* Complete system configuration.
  Maps to star_config_t structure. */
 typedef struct _star_v1_SystemConfiguration {
-    /* Motor PID configuration for all motors (max 4 motors).
+  /* Motor PID configuration for all motors (max 4 motors).
  Array index corresponds to motor ID (0-3). */
-    pb_size_t motor_configs_count;
-    star_v1_MotorPidConfiguration motor_configs[4];
-    /* Current sensor calibration for all motors. */
-    bool has_current_calibration;
-    star_v1_CurrentSensorCalibration current_calibration;
-    /* Temperature sensor calibration. */
-    bool has_temperature_calibration;
-    star_v1_TemperatureCalibration temperature_calibration;
-    /* Safety thresholds. */
-    bool has_safety_thresholds;
-    star_v1_SafetyThresholds safety_thresholds;
-    /* Encoder configuration. */
-    bool has_encoder_config;
-    star_v1_EncoderConfiguration encoder_config;
-    /* Timing parameters. */
-    bool has_timing_config;
-    star_v1_TimingConfiguration timing_config;
-    /* Configuration schema version.
+  pb_size_t                     motor_configs_count;
+  star_v1_MotorPidConfiguration motor_configs[4];
+  /* Current sensor calibration for all motors. */
+  bool                             has_current_calibration;
+  star_v1_CurrentSensorCalibration current_calibration;
+  /* Temperature sensor calibration. */
+  bool                           has_temperature_calibration;
+  star_v1_TemperatureCalibration temperature_calibration;
+  /* Safety thresholds. */
+  bool                     has_safety_thresholds;
+  star_v1_SafetyThresholds safety_thresholds;
+  /* Encoder configuration. */
+  bool                         has_encoder_config;
+  star_v1_EncoderConfiguration encoder_config;
+  /* Timing parameters. */
+  bool                        has_timing_config;
+  star_v1_TimingConfiguration timing_config;
+  /* Configuration schema version.
  Used for migration between firmware versions. */
-    uint32_t config_version;
-    /* CRC-32 checksum for integrity validation.
+  uint32_t config_version;
+  /* CRC-32 checksum for integrity validation.
  Computed over all fields except this one. */
-    uint32_t config_crc;
+  uint32_t config_crc;
 } star_v1_SystemConfiguration;
 
 /* Response with current configuration. */
 typedef struct _star_v1_GetConfigurationResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Current system configuration. */
-    bool has_configuration;
-    star_v1_SystemConfiguration configuration;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* Current system configuration. */
+  bool                        has_configuration;
+  star_v1_SystemConfiguration configuration;
 } star_v1_GetConfigurationResponse;
 
 /* Request to set configuration. */
 typedef struct _star_v1_SetConfigurationRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Configuration to apply. */
-    bool has_configuration;
-    star_v1_SystemConfiguration configuration;
-    /* If true, automatically save to NVS after validation.
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* Configuration to apply. */
+  bool                        has_configuration;
+  star_v1_SystemConfiguration configuration;
+  /* If true, automatically save to NVS after validation.
  If false, configuration is only held in memory. */
-    bool persist_to_nvs;
+  bool persist_to_nvs;
 } star_v1_SetConfigurationRequest;
 
 /* Response to reset configuration. */
 typedef struct _star_v1_ResetToDefaultsResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Default configuration that was applied. */
-    bool has_configuration;
-    star_v1_SystemConfiguration configuration;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* Default configuration that was applied. */
+  bool                        has_configuration;
+  star_v1_SystemConfiguration configuration;
 } star_v1_ResetToDefaultsResponse;
 
 /* Request to validate configuration. */
 typedef struct _star_v1_ValidateConfigurationRequest {
-    /* Standard request header. */
-    bool has_header;
-    star_v1_RequestHeader header;
-    /* Configuration to validate. */
-    bool has_configuration;
-    star_v1_SystemConfiguration configuration;
+  /* Standard request header. */
+  bool                  has_header;
+  star_v1_RequestHeader header;
+  /* Configuration to validate. */
+  bool                        has_configuration;
+  star_v1_SystemConfiguration configuration;
 } star_v1_ValidateConfigurationRequest;
 
 /* Individual configuration validation error. */
 typedef struct _star_v1_ConfigValidationError {
-    /* Field that failed validation (dot notation, e.g., "motor_configs[0].pid_config.kp"). */
-    char field_path[128];
-    /* Error code for programmatic handling. */
-    star_v1_ConfigErrorCode error_code;
-    /* Human-readable error message. */
-    char message[256];
-    /* Actual value that failed validation. */
-    char actual_value[64];
-    /* Expected range or constraint description. */
-    char expected_constraint[128];
+  /* Field that failed validation (dot notation, e.g., "motor_configs[0].pid_config.kp"). */
+  char field_path[128];
+  /* Error code for programmatic handling. */
+  star_v1_ConfigErrorCode error_code;
+  /* Human-readable error message. */
+  char message[256];
+  /* Actual value that failed validation. */
+  char actual_value[64];
+  /* Expected range or constraint description. */
+  char expected_constraint[128];
 } star_v1_ConfigValidationError;
 
 /* Configuration validation result. */
 typedef struct _star_v1_ConfigValidationResult {
-    /* Overall validation status. */
-    star_v1_ConfigValidationStatus status;
-    /* List of validation errors (empty if valid). */
-    pb_size_t errors_count;
-    star_v1_ConfigValidationError errors[8];
+  /* Overall validation status. */
+  star_v1_ConfigValidationStatus status;
+  /* List of validation errors (empty if valid). */
+  pb_size_t                     errors_count;
+  star_v1_ConfigValidationError errors[8];
 } star_v1_ConfigValidationResult;
 
 /* Response to set configuration. */
 typedef struct _star_v1_SetConfigurationResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Validation result. */
-    bool has_validation_result;
-    star_v1_ConfigValidationResult validation_result;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* Validation result. */
+  bool                           has_validation_result;
+  star_v1_ConfigValidationResult validation_result;
 } star_v1_SetConfigurationResponse;
 
 /* Response with validation results. */
 typedef struct _star_v1_ValidateConfigurationResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Detailed validation result. */
-    bool has_validation_result;
-    star_v1_ConfigValidationResult validation_result;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* Detailed validation result. */
+  bool                           has_validation_result;
+  star_v1_ConfigValidationResult validation_result;
 } star_v1_ValidateConfigurationResponse;
 
 /* Response to set motor PID configuration. */
 typedef struct _star_v1_SetMotorPidConfigResponse {
-    /* Standard response header with status. */
-    bool has_header;
-    star_v1_ResponseHeader header;
-    /* Validation result. */
-    bool has_validation_result;
-    star_v1_ConfigValidationResult validation_result;
+  /* Standard response header with status. */
+  bool                   has_header;
+  star_v1_ResponseHeader header;
+  /* Validation result. */
+  bool                           has_validation_result;
+  star_v1_ConfigValidationResult validation_result;
 } star_v1_SetMotorPidConfigResponse;
-
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* Helper constants for enums */
-#define _star_v1_ConfigValidationStatus_MIN star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_UNKNOWN
-#define _star_v1_ConfigValidationStatus_MAX star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VERSION_MISMATCH
-#define _star_v1_ConfigValidationStatus_ARRAYSIZE ((star_v1_ConfigValidationStatus)(star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VERSION_MISMATCH+1))
+#define _star_v1_ConfigValidationStatus_MIN                                                        \
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_UNKNOWN
+#define _star_v1_ConfigValidationStatus_MAX                                                        \
+  star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VERSION_MISMATCH
+#define _star_v1_ConfigValidationStatus_ARRAYSIZE                                                              \
+  ((star_v1_ConfigValidationStatus)(star_v1_ConfigValidationStatus_CONFIG_VALIDATION_STATUS_VERSION_MISMATCH + \
+                                    1))
 
 #define _star_v1_ConfigErrorCode_MIN star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_UNKNOWN
 #define _star_v1_ConfigErrorCode_MAX star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_STORAGE_ERROR
-#define _star_v1_ConfigErrorCode_ARRAYSIZE ((star_v1_ConfigErrorCode)(star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_STORAGE_ERROR+1))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#define _star_v1_ConfigErrorCode_ARRAYSIZE                                                         \
+  ((star_v1_ConfigErrorCode)(star_v1_ConfigErrorCode_CONFIG_ERROR_CODE_STORAGE_ERROR + 1))
 
 #define star_v1_ConfigValidationResult_status_ENUMTYPE star_v1_ConfigValidationStatus
 
 #define star_v1_ConfigValidationError_error_code_ENUMTYPE star_v1_ConfigErrorCode
 
-
 /* Initializer values for message structs */
-#define star_v1_GetConfigurationRequest_init_default {false, star_v1_RequestHeader_init_default}
-#define star_v1_GetConfigurationResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default}
-#define star_v1_SetConfigurationRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default, 0}
-#define star_v1_SetConfigurationResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default}
-#define star_v1_ResetToDefaultsRequest_init_default {false, star_v1_RequestHeader_init_default, 0}
-#define star_v1_ResetToDefaultsResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default}
-#define star_v1_ValidateConfigurationRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default}
-#define star_v1_ValidateConfigurationResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default}
-#define star_v1_SaveConfigurationRequest_init_default {false, star_v1_RequestHeader_init_default}
-#define star_v1_SaveConfigurationResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, 0}
-#define star_v1_GetMotorPidConfigRequest_init_default {false, star_v1_RequestHeader_init_default, 0}
-#define star_v1_GetMotorPidConfigResponse_init_default {false, star_v1_ResponseHeader_init_default, 0, false, star_v1_PidConfig_init_default}
-#define star_v1_SetMotorPidConfigRequest_init_default {false, star_v1_RequestHeader_init_default, 0, false, star_v1_PidConfig_init_default, 0}
-#define star_v1_SetMotorPidConfigResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default}
-#define star_v1_RetransmitConfig_init_default    {0, 0, 0, 0}
-#define star_v1_SetRetransmitConfigRequest_init_default {false, star_v1_RequestHeader_init_default, false, star_v1_RetransmitConfig_init_default}
-#define star_v1_SetRetransmitConfigResponse_init_default {false, star_v1_ResponseHeader_init_default}
-#define star_v1_SystemConfiguration_init_default {0, {star_v1_MotorPidConfiguration_init_default, star_v1_MotorPidConfiguration_init_default, star_v1_MotorPidConfiguration_init_default, star_v1_MotorPidConfiguration_init_default}, false, star_v1_CurrentSensorCalibration_init_default, false, star_v1_TemperatureCalibration_init_default, false, star_v1_SafetyThresholds_init_default, false, star_v1_EncoderConfiguration_init_default, false, star_v1_TimingConfiguration_init_default, 0, 0}
-#define star_v1_MotorPidConfiguration_init_default {0, false, star_v1_PidConfig_init_default}
-#define star_v1_CurrentSensorCalibration_init_default {{{NULL}, NULL}, {{NULL}, NULL}}
-#define star_v1_TemperatureCalibration_init_default {0}
-#define star_v1_SafetyThresholds_init_default    {0, 0, 0}
-#define star_v1_EncoderConfiguration_init_default {0, 0, 0}
-#define star_v1_TimingConfiguration_init_default {0, 0, 0}
-#define star_v1_ConfigValidationResult_init_default {_star_v1_ConfigValidationStatus_MIN, 0, {star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default}}
-#define star_v1_ConfigValidationError_init_default {"", _star_v1_ConfigErrorCode_MIN, "", "", ""}
-#define star_v1_GetConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero}
-#define star_v1_GetConfigurationResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero}
-#define star_v1_SetConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero, 0}
-#define star_v1_SetConfigurationResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero}
-#define star_v1_ResetToDefaultsRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0}
-#define star_v1_ResetToDefaultsResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero}
-#define star_v1_ValidateConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero}
-#define star_v1_ValidateConfigurationResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero}
-#define star_v1_SaveConfigurationRequest_init_zero {false, star_v1_RequestHeader_init_zero}
-#define star_v1_SaveConfigurationResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, 0}
-#define star_v1_GetMotorPidConfigRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0}
-#define star_v1_GetMotorPidConfigResponse_init_zero {false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_PidConfig_init_zero}
-#define star_v1_SetMotorPidConfigRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0, false, star_v1_PidConfig_init_zero, 0}
-#define star_v1_SetMotorPidConfigResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero}
-#define star_v1_RetransmitConfig_init_zero       {0, 0, 0, 0}
-#define star_v1_SetRetransmitConfigRequest_init_zero {false, star_v1_RequestHeader_init_zero, false, star_v1_RetransmitConfig_init_zero}
-#define star_v1_SetRetransmitConfigResponse_init_zero {false, star_v1_ResponseHeader_init_zero}
-#define star_v1_SystemConfiguration_init_zero    {0, {star_v1_MotorPidConfiguration_init_zero, star_v1_MotorPidConfiguration_init_zero, star_v1_MotorPidConfiguration_init_zero, star_v1_MotorPidConfiguration_init_zero}, false, star_v1_CurrentSensorCalibration_init_zero, false, star_v1_TemperatureCalibration_init_zero, false, star_v1_SafetyThresholds_init_zero, false, star_v1_EncoderConfiguration_init_zero, false, star_v1_TimingConfiguration_init_zero, 0, 0}
-#define star_v1_MotorPidConfiguration_init_zero  {0, false, star_v1_PidConfig_init_zero}
-#define star_v1_CurrentSensorCalibration_init_zero {{{NULL}, NULL}, {{NULL}, NULL}}
-#define star_v1_TemperatureCalibration_init_zero {0}
-#define star_v1_SafetyThresholds_init_zero       {0, 0, 0}
-#define star_v1_EncoderConfiguration_init_zero   {0, 0, 0}
-#define star_v1_TimingConfiguration_init_zero    {0, 0, 0}
-#define star_v1_ConfigValidationResult_init_zero {_star_v1_ConfigValidationStatus_MIN, 0, {star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero}}
-#define star_v1_ConfigValidationError_init_zero  {"", _star_v1_ConfigErrorCode_MIN, "", "", ""}
+#define star_v1_GetConfigurationRequest_init_default                                               \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
+#define star_v1_GetConfigurationResponse_init_default                                              \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default    \
+  }
+#define star_v1_SetConfigurationRequest_init_default                                               \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default, 0  \
+  }
+#define star_v1_SetConfigurationResponse_init_default                                              \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default \
+  }
+#define star_v1_ResetToDefaultsRequest_init_default                                                \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
+#define star_v1_ResetToDefaultsResponse_init_default                                               \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_SystemConfiguration_init_default    \
+  }
+#define star_v1_ValidateConfigurationRequest_init_default                                          \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_SystemConfiguration_init_default     \
+  }
+#define star_v1_ValidateConfigurationResponse_init_default                                         \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default \
+  }
+#define star_v1_SaveConfigurationRequest_init_default                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default                                                      \
+  }
+#define star_v1_SaveConfigurationResponse_init_default                                             \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, 0                                               \
+  }
+#define star_v1_GetMotorPidConfigRequest_init_default                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0                                                   \
+  }
+#define star_v1_GetMotorPidConfigResponse_init_default                                             \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, 0, false, star_v1_PidConfig_init_default           \
+  }
+#define star_v1_SetMotorPidConfigRequest_init_default                                              \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, 0, false, star_v1_PidConfig_init_default, 0         \
+  }
+#define star_v1_SetMotorPidConfigResponse_init_default                                             \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default, false, star_v1_ConfigValidationResult_init_default \
+  }
+#define star_v1_RetransmitConfig_init_default                                                      \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_SetRetransmitConfigRequest_init_default                                            \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_default, false, star_v1_RetransmitConfig_init_default        \
+  }
+#define star_v1_SetRetransmitConfigResponse_init_default                                           \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_default                                                     \
+  }
+#define star_v1_SystemConfiguration_init_default                                                   \
+  {                                                                                                \
+    0,                                                                                             \
+      {star_v1_MotorPidConfiguration_init_default,                                                 \
+       star_v1_MotorPidConfiguration_init_default,                                                 \
+       star_v1_MotorPidConfiguration_init_default,                                                 \
+       star_v1_MotorPidConfiguration_init_default},                                                \
+      false, star_v1_CurrentSensorCalibration_init_default, false,                                 \
+      star_v1_TemperatureCalibration_init_default, false, star_v1_SafetyThresholds_init_default,   \
+      false, star_v1_EncoderConfiguration_init_default, false,                                     \
+      star_v1_TimingConfiguration_init_default, 0, 0                                               \
+  }
+#define star_v1_MotorPidConfiguration_init_default                                                 \
+  {                                                                                                \
+    0, false, star_v1_PidConfig_init_default                                                       \
+  }
+#define star_v1_CurrentSensorCalibration_init_default                                              \
+  {                                                                                                \
+    {{NULL}, NULL},                                                                                \
+    {                                                                                              \
+      {NULL}, NULL                                                                                 \
+    }                                                                                              \
+  }
+#define star_v1_TemperatureCalibration_init_default                                                \
+  {                                                                                                \
+    0                                                                                              \
+  }
+#define star_v1_SafetyThresholds_init_default                                                      \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_EncoderConfiguration_init_default                                                  \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_TimingConfiguration_init_default                                                   \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_ConfigValidationResult_init_default                                                \
+  {                                                                                                \
+    _star_v1_ConfigValidationStatus_MIN, 0,                                                        \
+    {                                                                                              \
+      star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default,      \
+        star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default,    \
+        star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default,    \
+        star_v1_ConfigValidationError_init_default, star_v1_ConfigValidationError_init_default     \
+    }                                                                                              \
+  }
+#define star_v1_ConfigValidationError_init_default                                                 \
+  {                                                                                                \
+    "", _star_v1_ConfigErrorCode_MIN, "", "", ""                                                   \
+  }
+#define star_v1_GetConfigurationRequest_init_zero                                                  \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
+#define star_v1_GetConfigurationResponse_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero          \
+  }
+#define star_v1_SetConfigurationRequest_init_zero                                                  \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero, 0        \
+  }
+#define star_v1_SetConfigurationResponse_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero       \
+  }
+#define star_v1_ResetToDefaultsRequest_init_zero                                                   \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
+#define star_v1_ResetToDefaultsResponse_init_zero                                                  \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemConfiguration_init_zero          \
+  }
+#define star_v1_ValidateConfigurationRequest_init_zero                                             \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_SystemConfiguration_init_zero           \
+  }
+#define star_v1_ValidateConfigurationResponse_init_zero                                            \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero       \
+  }
+#define star_v1_SaveConfigurationRequest_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero                                                         \
+  }
+#define star_v1_SaveConfigurationResponse_init_zero                                                \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, 0                                                  \
+  }
+#define star_v1_GetMotorPidConfigRequest_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0                                                      \
+  }
+#define star_v1_GetMotorPidConfigResponse_init_zero                                                \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, 0, false, star_v1_PidConfig_init_zero                 \
+  }
+#define star_v1_SetMotorPidConfigRequest_init_zero                                                 \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, 0, false, star_v1_PidConfig_init_zero, 0               \
+  }
+#define star_v1_SetMotorPidConfigResponse_init_zero                                                \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero, false, star_v1_ConfigValidationResult_init_zero       \
+  }
+#define star_v1_RetransmitConfig_init_zero                                                         \
+  {                                                                                                \
+    0, 0, 0, 0                                                                                     \
+  }
+#define star_v1_SetRetransmitConfigRequest_init_zero                                               \
+  {                                                                                                \
+    false, star_v1_RequestHeader_init_zero, false, star_v1_RetransmitConfig_init_zero              \
+  }
+#define star_v1_SetRetransmitConfigResponse_init_zero                                              \
+  {                                                                                                \
+    false, star_v1_ResponseHeader_init_zero                                                        \
+  }
+#define star_v1_SystemConfiguration_init_zero                                                      \
+  {                                                                                                \
+    0,                                                                                             \
+      {star_v1_MotorPidConfiguration_init_zero,                                                    \
+       star_v1_MotorPidConfiguration_init_zero,                                                    \
+       star_v1_MotorPidConfiguration_init_zero,                                                    \
+       star_v1_MotorPidConfiguration_init_zero},                                                   \
+      false, star_v1_CurrentSensorCalibration_init_zero, false,                                    \
+      star_v1_TemperatureCalibration_init_zero, false, star_v1_SafetyThresholds_init_zero, false,  \
+      star_v1_EncoderConfiguration_init_zero, false, star_v1_TimingConfiguration_init_zero, 0, 0   \
+  }
+#define star_v1_MotorPidConfiguration_init_zero                                                    \
+  {                                                                                                \
+    0, false, star_v1_PidConfig_init_zero                                                          \
+  }
+#define star_v1_CurrentSensorCalibration_init_zero                                                 \
+  {                                                                                                \
+    {{NULL}, NULL},                                                                                \
+    {                                                                                              \
+      {NULL}, NULL                                                                                 \
+    }                                                                                              \
+  }
+#define star_v1_TemperatureCalibration_init_zero                                                   \
+  {                                                                                                \
+    0                                                                                              \
+  }
+#define star_v1_SafetyThresholds_init_zero                                                         \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_EncoderConfiguration_init_zero                                                     \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_TimingConfiguration_init_zero                                                      \
+  {                                                                                                \
+    0, 0, 0                                                                                        \
+  }
+#define star_v1_ConfigValidationResult_init_zero                                                   \
+  {                                                                                                \
+    _star_v1_ConfigValidationStatus_MIN, 0,                                                        \
+    {                                                                                              \
+      star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero,            \
+        star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero,          \
+        star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero,          \
+        star_v1_ConfigValidationError_init_zero, star_v1_ConfigValidationError_init_zero           \
+    }                                                                                              \
+  }
+#define star_v1_ConfigValidationError_init_zero                                                    \
+  {                                                                                                \
+    "", _star_v1_ConfigErrorCode_MIN, "", "", ""                                                   \
+  }
 
 /* Field tags (for use in manual encoding/decoding) */
-#define star_v1_GetConfigurationRequest_header_tag 1
-#define star_v1_ResetToDefaultsRequest_header_tag 1
-#define star_v1_ResetToDefaultsRequest_persist_to_nvs_tag 2
-#define star_v1_SaveConfigurationRequest_header_tag 1
-#define star_v1_SaveConfigurationResponse_header_tag 1
-#define star_v1_SaveConfigurationResponse_saved_tag 2
-#define star_v1_SaveConfigurationResponse_config_crc_tag 3
-#define star_v1_GetMotorPidConfigRequest_header_tag 1
-#define star_v1_GetMotorPidConfigRequest_motor_id_tag 2
-#define star_v1_GetMotorPidConfigResponse_header_tag 1
-#define star_v1_GetMotorPidConfigResponse_motor_id_tag 2
-#define star_v1_GetMotorPidConfigResponse_pid_config_tag 3
-#define star_v1_SetMotorPidConfigRequest_header_tag 1
-#define star_v1_SetMotorPidConfigRequest_motor_id_tag 2
-#define star_v1_SetMotorPidConfigRequest_pid_config_tag 3
-#define star_v1_SetMotorPidConfigRequest_persist_to_nvs_tag 4
-#define star_v1_RetransmitConfig_enabled_tag     1
-#define star_v1_RetransmitConfig_max_retries_tag 2
-#define star_v1_RetransmitConfig_ack_timeout_ms_tag 3
-#define star_v1_RetransmitConfig_max_backoff_ms_tag 4
-#define star_v1_SetRetransmitConfigRequest_header_tag 1
-#define star_v1_SetRetransmitConfigRequest_retransmit_config_tag 2
-#define star_v1_SetRetransmitConfigResponse_header_tag 1
-#define star_v1_MotorPidConfiguration_motor_id_tag 1
-#define star_v1_MotorPidConfiguration_pid_config_tag 2
-#define star_v1_CurrentSensorCalibration_offset_ma_tag 1
-#define star_v1_CurrentSensorCalibration_scale_factor_tag 2
-#define star_v1_TemperatureCalibration_offset_celsius_tag 1
-#define star_v1_SafetyThresholds_overcurrent_threshold_ma_tag 1
-#define star_v1_SafetyThresholds_thermal_shutdown_deci_celsius_tag 2
-#define star_v1_SafetyThresholds_cell_imbalance_threshold_mv_tag 3
-#define star_v1_EncoderConfiguration_edges_per_revolution_tag 1
-#define star_v1_EncoderConfiguration_wheel_diameter_m_tag 2
-#define star_v1_EncoderConfiguration_gear_ratio_tag 3
-#define star_v1_TimingConfiguration_motor_control_period_ms_tag 1
-#define star_v1_TimingConfiguration_telemetry_period_ms_tag 2
-#define star_v1_TimingConfiguration_communication_timeout_ms_tag 3
-#define star_v1_SystemConfiguration_motor_configs_tag 1
-#define star_v1_SystemConfiguration_current_calibration_tag 2
-#define star_v1_SystemConfiguration_temperature_calibration_tag 3
-#define star_v1_SystemConfiguration_safety_thresholds_tag 4
-#define star_v1_SystemConfiguration_encoder_config_tag 5
-#define star_v1_SystemConfiguration_timing_config_tag 6
-#define star_v1_SystemConfiguration_config_version_tag 7
-#define star_v1_SystemConfiguration_config_crc_tag 8
-#define star_v1_GetConfigurationResponse_header_tag 1
-#define star_v1_GetConfigurationResponse_configuration_tag 2
-#define star_v1_SetConfigurationRequest_header_tag 1
-#define star_v1_SetConfigurationRequest_configuration_tag 2
-#define star_v1_SetConfigurationRequest_persist_to_nvs_tag 3
-#define star_v1_ResetToDefaultsResponse_header_tag 1
-#define star_v1_ResetToDefaultsResponse_configuration_tag 2
-#define star_v1_ValidateConfigurationRequest_header_tag 1
-#define star_v1_ValidateConfigurationRequest_configuration_tag 2
-#define star_v1_ConfigValidationError_field_path_tag 1
-#define star_v1_ConfigValidationError_error_code_tag 2
-#define star_v1_ConfigValidationError_message_tag 3
-#define star_v1_ConfigValidationError_actual_value_tag 4
-#define star_v1_ConfigValidationError_expected_constraint_tag 5
-#define star_v1_ConfigValidationResult_status_tag 1
-#define star_v1_ConfigValidationResult_errors_tag 2
-#define star_v1_SetConfigurationResponse_header_tag 1
-#define star_v1_SetConfigurationResponse_validation_result_tag 2
-#define star_v1_ValidateConfigurationResponse_header_tag 1
+#define star_v1_GetConfigurationRequest_header_tag                  1
+#define star_v1_ResetToDefaultsRequest_header_tag                   1
+#define star_v1_ResetToDefaultsRequest_persist_to_nvs_tag           2
+#define star_v1_SaveConfigurationRequest_header_tag                 1
+#define star_v1_SaveConfigurationResponse_header_tag                1
+#define star_v1_SaveConfigurationResponse_saved_tag                 2
+#define star_v1_SaveConfigurationResponse_config_crc_tag            3
+#define star_v1_GetMotorPidConfigRequest_header_tag                 1
+#define star_v1_GetMotorPidConfigRequest_motor_id_tag               2
+#define star_v1_GetMotorPidConfigResponse_header_tag                1
+#define star_v1_GetMotorPidConfigResponse_motor_id_tag              2
+#define star_v1_GetMotorPidConfigResponse_pid_config_tag            3
+#define star_v1_SetMotorPidConfigRequest_header_tag                 1
+#define star_v1_SetMotorPidConfigRequest_motor_id_tag               2
+#define star_v1_SetMotorPidConfigRequest_pid_config_tag             3
+#define star_v1_SetMotorPidConfigRequest_persist_to_nvs_tag         4
+#define star_v1_RetransmitConfig_enabled_tag                        1
+#define star_v1_RetransmitConfig_max_retries_tag                    2
+#define star_v1_RetransmitConfig_ack_timeout_ms_tag                 3
+#define star_v1_RetransmitConfig_max_backoff_ms_tag                 4
+#define star_v1_SetRetransmitConfigRequest_header_tag               1
+#define star_v1_SetRetransmitConfigRequest_retransmit_config_tag    2
+#define star_v1_SetRetransmitConfigResponse_header_tag              1
+#define star_v1_MotorPidConfiguration_motor_id_tag                  1
+#define star_v1_MotorPidConfiguration_pid_config_tag                2
+#define star_v1_CurrentSensorCalibration_offset_ma_tag              1
+#define star_v1_CurrentSensorCalibration_scale_factor_tag           2
+#define star_v1_TemperatureCalibration_offset_celsius_tag           1
+#define star_v1_SafetyThresholds_overcurrent_threshold_ma_tag       1
+#define star_v1_SafetyThresholds_thermal_shutdown_deci_celsius_tag  2
+#define star_v1_SafetyThresholds_cell_imbalance_threshold_mv_tag    3
+#define star_v1_EncoderConfiguration_edges_per_revolution_tag       1
+#define star_v1_EncoderConfiguration_wheel_diameter_m_tag           2
+#define star_v1_EncoderConfiguration_gear_ratio_tag                 3
+#define star_v1_TimingConfiguration_motor_control_period_ms_tag     1
+#define star_v1_TimingConfiguration_telemetry_period_ms_tag         2
+#define star_v1_TimingConfiguration_communication_timeout_ms_tag    3
+#define star_v1_SystemConfiguration_motor_configs_tag               1
+#define star_v1_SystemConfiguration_current_calibration_tag         2
+#define star_v1_SystemConfiguration_temperature_calibration_tag     3
+#define star_v1_SystemConfiguration_safety_thresholds_tag           4
+#define star_v1_SystemConfiguration_encoder_config_tag              5
+#define star_v1_SystemConfiguration_timing_config_tag               6
+#define star_v1_SystemConfiguration_config_version_tag              7
+#define star_v1_SystemConfiguration_config_crc_tag                  8
+#define star_v1_GetConfigurationResponse_header_tag                 1
+#define star_v1_GetConfigurationResponse_configuration_tag          2
+#define star_v1_SetConfigurationRequest_header_tag                  1
+#define star_v1_SetConfigurationRequest_configuration_tag           2
+#define star_v1_SetConfigurationRequest_persist_to_nvs_tag          3
+#define star_v1_ResetToDefaultsResponse_header_tag                  1
+#define star_v1_ResetToDefaultsResponse_configuration_tag           2
+#define star_v1_ValidateConfigurationRequest_header_tag             1
+#define star_v1_ValidateConfigurationRequest_configuration_tag      2
+#define star_v1_ConfigValidationError_field_path_tag                1
+#define star_v1_ConfigValidationError_error_code_tag                2
+#define star_v1_ConfigValidationError_message_tag                   3
+#define star_v1_ConfigValidationError_actual_value_tag              4
+#define star_v1_ConfigValidationError_expected_constraint_tag       5
+#define star_v1_ConfigValidationResult_status_tag                   1
+#define star_v1_ConfigValidationResult_errors_tag                   2
+#define star_v1_SetConfigurationResponse_header_tag                 1
+#define star_v1_SetConfigurationResponse_validation_result_tag      2
+#define star_v1_ValidateConfigurationResponse_header_tag            1
 #define star_v1_ValidateConfigurationResponse_validation_result_tag 2
-#define star_v1_SetMotorPidConfigResponse_header_tag 1
-#define star_v1_SetMotorPidConfigResponse_validation_result_tag 2
+#define star_v1_SetMotorPidConfigResponse_header_tag                1
+#define star_v1_SetMotorPidConfigResponse_validation_result_tag     2
 
 /* Struct field encoding specification for nanopb */
-#define star_v1_GetConfigurationRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
-#define star_v1_GetConfigurationRequest_CALLBACK NULL
-#define star_v1_GetConfigurationRequest_DEFAULT NULL
-#define star_v1_GetConfigurationRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_GetConfigurationRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
+#define star_v1_GetConfigurationRequest_CALLBACK        NULL
+#define star_v1_GetConfigurationRequest_DEFAULT         NULL
+#define star_v1_GetConfigurationRequest_header_MSGTYPE  star_v1_RequestHeader
 
-#define star_v1_GetConfigurationResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  configuration,     2)
-#define star_v1_GetConfigurationResponse_CALLBACK NULL
-#define star_v1_GetConfigurationResponse_DEFAULT NULL
-#define star_v1_GetConfigurationResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_GetConfigurationResponse_FIELDLIST(X, a)                                           \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)
+#define star_v1_GetConfigurationResponse_CALLBACK              NULL
+#define star_v1_GetConfigurationResponse_DEFAULT               NULL
+#define star_v1_GetConfigurationResponse_header_MSGTYPE        star_v1_ResponseHeader
 #define star_v1_GetConfigurationResponse_configuration_MSGTYPE star_v1_SystemConfiguration
 
-#define star_v1_SetConfigurationRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  configuration,     2) \
-X(a, STATIC,   SINGULAR, BOOL,     persist_to_nvs,    3)
-#define star_v1_SetConfigurationRequest_CALLBACK NULL
-#define star_v1_SetConfigurationRequest_DEFAULT NULL
-#define star_v1_SetConfigurationRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_SetConfigurationRequest_FIELDLIST(X, a)                                            \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)                                                \
+  X(a, STATIC, SINGULAR, BOOL, persist_to_nvs, 3)
+#define star_v1_SetConfigurationRequest_CALLBACK              NULL
+#define star_v1_SetConfigurationRequest_DEFAULT               NULL
+#define star_v1_SetConfigurationRequest_header_MSGTYPE        star_v1_RequestHeader
 #define star_v1_SetConfigurationRequest_configuration_MSGTYPE star_v1_SystemConfiguration
 
-#define star_v1_SetConfigurationResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  validation_result,   2)
-#define star_v1_SetConfigurationResponse_CALLBACK NULL
-#define star_v1_SetConfigurationResponse_DEFAULT NULL
-#define star_v1_SetConfigurationResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_SetConfigurationResponse_FIELDLIST(X, a)                                           \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, validation_result, 2)
+#define star_v1_SetConfigurationResponse_CALLBACK                  NULL
+#define star_v1_SetConfigurationResponse_DEFAULT                   NULL
+#define star_v1_SetConfigurationResponse_header_MSGTYPE            star_v1_ResponseHeader
 #define star_v1_SetConfigurationResponse_validation_result_MSGTYPE star_v1_ConfigValidationResult
 
-#define star_v1_ResetToDefaultsRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, BOOL,     persist_to_nvs,    2)
-#define star_v1_ResetToDefaultsRequest_CALLBACK NULL
-#define star_v1_ResetToDefaultsRequest_DEFAULT NULL
+#define star_v1_ResetToDefaultsRequest_FIELDLIST(X, a)                                             \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, SINGULAR, BOOL, persist_to_nvs, 2)
+#define star_v1_ResetToDefaultsRequest_CALLBACK       NULL
+#define star_v1_ResetToDefaultsRequest_DEFAULT        NULL
 #define star_v1_ResetToDefaultsRequest_header_MSGTYPE star_v1_RequestHeader
 
-#define star_v1_ResetToDefaultsResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  configuration,     2)
-#define star_v1_ResetToDefaultsResponse_CALLBACK NULL
-#define star_v1_ResetToDefaultsResponse_DEFAULT NULL
-#define star_v1_ResetToDefaultsResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_ResetToDefaultsResponse_FIELDLIST(X, a)                                            \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)
+#define star_v1_ResetToDefaultsResponse_CALLBACK              NULL
+#define star_v1_ResetToDefaultsResponse_DEFAULT               NULL
+#define star_v1_ResetToDefaultsResponse_header_MSGTYPE        star_v1_ResponseHeader
 #define star_v1_ResetToDefaultsResponse_configuration_MSGTYPE star_v1_SystemConfiguration
 
-#define star_v1_ValidateConfigurationRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  configuration,     2)
-#define star_v1_ValidateConfigurationRequest_CALLBACK NULL
-#define star_v1_ValidateConfigurationRequest_DEFAULT NULL
-#define star_v1_ValidateConfigurationRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_ValidateConfigurationRequest_FIELDLIST(X, a)                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, configuration, 2)
+#define star_v1_ValidateConfigurationRequest_CALLBACK              NULL
+#define star_v1_ValidateConfigurationRequest_DEFAULT               NULL
+#define star_v1_ValidateConfigurationRequest_header_MSGTYPE        star_v1_RequestHeader
 #define star_v1_ValidateConfigurationRequest_configuration_MSGTYPE star_v1_SystemConfiguration
 
-#define star_v1_ValidateConfigurationResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  validation_result,   2)
-#define star_v1_ValidateConfigurationResponse_CALLBACK NULL
-#define star_v1_ValidateConfigurationResponse_DEFAULT NULL
+#define star_v1_ValidateConfigurationResponse_FIELDLIST(X, a)                                      \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, validation_result, 2)
+#define star_v1_ValidateConfigurationResponse_CALLBACK       NULL
+#define star_v1_ValidateConfigurationResponse_DEFAULT        NULL
 #define star_v1_ValidateConfigurationResponse_header_MSGTYPE star_v1_ResponseHeader
-#define star_v1_ValidateConfigurationResponse_validation_result_MSGTYPE star_v1_ConfigValidationResult
+#define star_v1_ValidateConfigurationResponse_validation_result_MSGTYPE                            \
+  star_v1_ConfigValidationResult
 
-#define star_v1_SaveConfigurationRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
-#define star_v1_SaveConfigurationRequest_CALLBACK NULL
-#define star_v1_SaveConfigurationRequest_DEFAULT NULL
-#define star_v1_SaveConfigurationRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_SaveConfigurationRequest_FIELDLIST(X, a) X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
+#define star_v1_SaveConfigurationRequest_CALLBACK        NULL
+#define star_v1_SaveConfigurationRequest_DEFAULT         NULL
+#define star_v1_SaveConfigurationRequest_header_MSGTYPE  star_v1_RequestHeader
 
-#define star_v1_SaveConfigurationResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, BOOL,     saved,             2) \
-X(a, STATIC,   SINGULAR, UINT32,   config_crc,        3)
-#define star_v1_SaveConfigurationResponse_CALLBACK NULL
-#define star_v1_SaveConfigurationResponse_DEFAULT NULL
+#define star_v1_SaveConfigurationResponse_FIELDLIST(X, a)                                          \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, SINGULAR, BOOL, saved, 2)                                                           \
+  X(a, STATIC, SINGULAR, UINT32, config_crc, 3)
+#define star_v1_SaveConfigurationResponse_CALLBACK       NULL
+#define star_v1_SaveConfigurationResponse_DEFAULT        NULL
 #define star_v1_SaveConfigurationResponse_header_MSGTYPE star_v1_ResponseHeader
 
-#define star_v1_GetMotorPidConfigRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, INT32,    motor_id,          2)
-#define star_v1_GetMotorPidConfigRequest_CALLBACK NULL
-#define star_v1_GetMotorPidConfigRequest_DEFAULT NULL
+#define star_v1_GetMotorPidConfigRequest_FIELDLIST(X, a)                                           \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, SINGULAR, INT32, motor_id, 2)
+#define star_v1_GetMotorPidConfigRequest_CALLBACK       NULL
+#define star_v1_GetMotorPidConfigRequest_DEFAULT        NULL
 #define star_v1_GetMotorPidConfigRequest_header_MSGTYPE star_v1_RequestHeader
 
-#define star_v1_GetMotorPidConfigResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, INT32,    motor_id,          2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  pid_config,        3)
-#define star_v1_GetMotorPidConfigResponse_CALLBACK NULL
-#define star_v1_GetMotorPidConfigResponse_DEFAULT NULL
-#define star_v1_GetMotorPidConfigResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_GetMotorPidConfigResponse_FIELDLIST(X, a)                                          \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, SINGULAR, INT32, motor_id, 2)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 3)
+#define star_v1_GetMotorPidConfigResponse_CALLBACK           NULL
+#define star_v1_GetMotorPidConfigResponse_DEFAULT            NULL
+#define star_v1_GetMotorPidConfigResponse_header_MSGTYPE     star_v1_ResponseHeader
 #define star_v1_GetMotorPidConfigResponse_pid_config_MSGTYPE star_v1_PidConfig
 
-#define star_v1_SetMotorPidConfigRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   SINGULAR, INT32,    motor_id,          2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  pid_config,        3) \
-X(a, STATIC,   SINGULAR, BOOL,     persist_to_nvs,    4)
-#define star_v1_SetMotorPidConfigRequest_CALLBACK NULL
-#define star_v1_SetMotorPidConfigRequest_DEFAULT NULL
-#define star_v1_SetMotorPidConfigRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_SetMotorPidConfigRequest_FIELDLIST(X, a)                                           \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, SINGULAR, INT32, motor_id, 2)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 3)                                                   \
+  X(a, STATIC, SINGULAR, BOOL, persist_to_nvs, 4)
+#define star_v1_SetMotorPidConfigRequest_CALLBACK           NULL
+#define star_v1_SetMotorPidConfigRequest_DEFAULT            NULL
+#define star_v1_SetMotorPidConfigRequest_header_MSGTYPE     star_v1_RequestHeader
 #define star_v1_SetMotorPidConfigRequest_pid_config_MSGTYPE star_v1_PidConfig
 
-#define star_v1_SetMotorPidConfigResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  validation_result,   2)
-#define star_v1_SetMotorPidConfigResponse_CALLBACK NULL
-#define star_v1_SetMotorPidConfigResponse_DEFAULT NULL
-#define star_v1_SetMotorPidConfigResponse_header_MSGTYPE star_v1_ResponseHeader
+#define star_v1_SetMotorPidConfigResponse_FIELDLIST(X, a)                                          \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, validation_result, 2)
+#define star_v1_SetMotorPidConfigResponse_CALLBACK                  NULL
+#define star_v1_SetMotorPidConfigResponse_DEFAULT                   NULL
+#define star_v1_SetMotorPidConfigResponse_header_MSGTYPE            star_v1_ResponseHeader
 #define star_v1_SetMotorPidConfigResponse_validation_result_MSGTYPE star_v1_ConfigValidationResult
 
-#define star_v1_RetransmitConfig_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, BOOL,     enabled,           1) \
-X(a, STATIC,   SINGULAR, UINT32,   max_retries,       2) \
-X(a, STATIC,   SINGULAR, UINT32,   ack_timeout_ms,    3) \
-X(a, STATIC,   SINGULAR, UINT32,   max_backoff_ms,    4)
+#define star_v1_RetransmitConfig_FIELDLIST(X, a)                                                   \
+  X(a, STATIC, SINGULAR, BOOL, enabled, 1)                                                         \
+  X(a, STATIC, SINGULAR, UINT32, max_retries, 2)                                                   \
+  X(a, STATIC, SINGULAR, UINT32, ack_timeout_ms, 3)                                                \
+  X(a, STATIC, SINGULAR, UINT32, max_backoff_ms, 4)
 #define star_v1_RetransmitConfig_CALLBACK NULL
-#define star_v1_RetransmitConfig_DEFAULT NULL
+#define star_v1_RetransmitConfig_DEFAULT  NULL
 
-#define star_v1_SetRetransmitConfigRequest_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  retransmit_config,   2)
-#define star_v1_SetRetransmitConfigRequest_CALLBACK NULL
-#define star_v1_SetRetransmitConfigRequest_DEFAULT NULL
-#define star_v1_SetRetransmitConfigRequest_header_MSGTYPE star_v1_RequestHeader
+#define star_v1_SetRetransmitConfigRequest_FIELDLIST(X, a)                                         \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, retransmit_config, 2)
+#define star_v1_SetRetransmitConfigRequest_CALLBACK                  NULL
+#define star_v1_SetRetransmitConfigRequest_DEFAULT                   NULL
+#define star_v1_SetRetransmitConfigRequest_header_MSGTYPE            star_v1_RequestHeader
 #define star_v1_SetRetransmitConfigRequest_retransmit_config_MSGTYPE star_v1_RetransmitConfig
 
-#define star_v1_SetRetransmitConfigResponse_FIELDLIST(X, a) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  header,            1)
-#define star_v1_SetRetransmitConfigResponse_CALLBACK NULL
-#define star_v1_SetRetransmitConfigResponse_DEFAULT NULL
+#define star_v1_SetRetransmitConfigResponse_FIELDLIST(X, a)                                        \
+  X(a, STATIC, OPTIONAL, MESSAGE, header, 1)
+#define star_v1_SetRetransmitConfigResponse_CALLBACK       NULL
+#define star_v1_SetRetransmitConfigResponse_DEFAULT        NULL
 #define star_v1_SetRetransmitConfigResponse_header_MSGTYPE star_v1_ResponseHeader
 
-#define star_v1_SystemConfiguration_FIELDLIST(X, a) \
-X(a, STATIC,   REPEATED, MESSAGE,  motor_configs,     1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  current_calibration,   2) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  temperature_calibration,   3) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  safety_thresholds,   4) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_config,    5) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  timing_config,     6) \
-X(a, STATIC,   SINGULAR, UINT32,   config_version,    7) \
-X(a, STATIC,   SINGULAR, UINT32,   config_crc,        8)
-#define star_v1_SystemConfiguration_CALLBACK NULL
-#define star_v1_SystemConfiguration_DEFAULT NULL
-#define star_v1_SystemConfiguration_motor_configs_MSGTYPE star_v1_MotorPidConfiguration
-#define star_v1_SystemConfiguration_current_calibration_MSGTYPE star_v1_CurrentSensorCalibration
+#define star_v1_SystemConfiguration_FIELDLIST(X, a)                                                \
+  X(a, STATIC, REPEATED, MESSAGE, motor_configs, 1)                                                \
+  X(a, STATIC, OPTIONAL, MESSAGE, current_calibration, 2)                                          \
+  X(a, STATIC, OPTIONAL, MESSAGE, temperature_calibration, 3)                                      \
+  X(a, STATIC, OPTIONAL, MESSAGE, safety_thresholds, 4)                                            \
+  X(a, STATIC, OPTIONAL, MESSAGE, encoder_config, 5)                                               \
+  X(a, STATIC, OPTIONAL, MESSAGE, timing_config, 6)                                                \
+  X(a, STATIC, SINGULAR, UINT32, config_version, 7)                                                \
+  X(a, STATIC, SINGULAR, UINT32, config_crc, 8)
+#define star_v1_SystemConfiguration_CALLBACK                        NULL
+#define star_v1_SystemConfiguration_DEFAULT                         NULL
+#define star_v1_SystemConfiguration_motor_configs_MSGTYPE           star_v1_MotorPidConfiguration
+#define star_v1_SystemConfiguration_current_calibration_MSGTYPE     star_v1_CurrentSensorCalibration
 #define star_v1_SystemConfiguration_temperature_calibration_MSGTYPE star_v1_TemperatureCalibration
-#define star_v1_SystemConfiguration_safety_thresholds_MSGTYPE star_v1_SafetyThresholds
-#define star_v1_SystemConfiguration_encoder_config_MSGTYPE star_v1_EncoderConfiguration
-#define star_v1_SystemConfiguration_timing_config_MSGTYPE star_v1_TimingConfiguration
+#define star_v1_SystemConfiguration_safety_thresholds_MSGTYPE       star_v1_SafetyThresholds
+#define star_v1_SystemConfiguration_encoder_config_MSGTYPE          star_v1_EncoderConfiguration
+#define star_v1_SystemConfiguration_timing_config_MSGTYPE           star_v1_TimingConfiguration
 
-#define star_v1_MotorPidConfiguration_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, INT32,    motor_id,          1) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  pid_config,        2)
-#define star_v1_MotorPidConfiguration_CALLBACK NULL
-#define star_v1_MotorPidConfiguration_DEFAULT NULL
+#define star_v1_MotorPidConfiguration_FIELDLIST(X, a)                                              \
+  X(a, STATIC, SINGULAR, INT32, motor_id, 1)                                                       \
+  X(a, STATIC, OPTIONAL, MESSAGE, pid_config, 2)
+#define star_v1_MotorPidConfiguration_CALLBACK           NULL
+#define star_v1_MotorPidConfiguration_DEFAULT            NULL
 #define star_v1_MotorPidConfiguration_pid_config_MSGTYPE star_v1_PidConfig
 
-#define star_v1_CurrentSensorCalibration_FIELDLIST(X, a) \
-X(a, CALLBACK, REPEATED, DOUBLE,   offset_ma,         1) \
-X(a, CALLBACK, REPEATED, DOUBLE,   scale_factor,      2)
+#define star_v1_CurrentSensorCalibration_FIELDLIST(X, a)                                           \
+  X(a, CALLBACK, REPEATED, DOUBLE, offset_ma, 1)                                                   \
+  X(a, CALLBACK, REPEATED, DOUBLE, scale_factor, 2)
 #define star_v1_CurrentSensorCalibration_CALLBACK pb_default_field_callback
-#define star_v1_CurrentSensorCalibration_DEFAULT NULL
+#define star_v1_CurrentSensorCalibration_DEFAULT  NULL
 
-#define star_v1_TemperatureCalibration_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, DOUBLE,   offset_celsius,    1)
+#define star_v1_TemperatureCalibration_FIELDLIST(X, a)                                             \
+  X(a, STATIC, SINGULAR, DOUBLE, offset_celsius, 1)
 #define star_v1_TemperatureCalibration_CALLBACK NULL
-#define star_v1_TemperatureCalibration_DEFAULT NULL
+#define star_v1_TemperatureCalibration_DEFAULT  NULL
 
-#define star_v1_SafetyThresholds_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   overcurrent_threshold_ma,   1) \
-X(a, STATIC,   SINGULAR, INT32,    thermal_shutdown_deci_celsius,   2) \
-X(a, STATIC,   SINGULAR, UINT32,   cell_imbalance_threshold_mv,   3)
+#define star_v1_SafetyThresholds_FIELDLIST(X, a)                                                   \
+  X(a, STATIC, SINGULAR, UINT32, overcurrent_threshold_ma, 1)                                      \
+  X(a, STATIC, SINGULAR, INT32, thermal_shutdown_deci_celsius, 2)                                  \
+  X(a, STATIC, SINGULAR, UINT32, cell_imbalance_threshold_mv, 3)
 #define star_v1_SafetyThresholds_CALLBACK NULL
-#define star_v1_SafetyThresholds_DEFAULT NULL
+#define star_v1_SafetyThresholds_DEFAULT  NULL
 
-#define star_v1_EncoderConfiguration_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   edges_per_revolution,   1) \
-X(a, STATIC,   SINGULAR, DOUBLE,   wheel_diameter_m,   2) \
-X(a, STATIC,   SINGULAR, DOUBLE,   gear_ratio,        3)
+#define star_v1_EncoderConfiguration_FIELDLIST(X, a)                                               \
+  X(a, STATIC, SINGULAR, UINT32, edges_per_revolution, 1)                                          \
+  X(a, STATIC, SINGULAR, DOUBLE, wheel_diameter_m, 2)                                              \
+  X(a, STATIC, SINGULAR, DOUBLE, gear_ratio, 3)
 #define star_v1_EncoderConfiguration_CALLBACK NULL
-#define star_v1_EncoderConfiguration_DEFAULT NULL
+#define star_v1_EncoderConfiguration_DEFAULT  NULL
 
-#define star_v1_TimingConfiguration_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UINT32,   motor_control_period_ms,   1) \
-X(a, STATIC,   SINGULAR, UINT32,   telemetry_period_ms,   2) \
-X(a, STATIC,   SINGULAR, UINT32,   communication_timeout_ms,   3)
+#define star_v1_TimingConfiguration_FIELDLIST(X, a)                                                \
+  X(a, STATIC, SINGULAR, UINT32, motor_control_period_ms, 1)                                       \
+  X(a, STATIC, SINGULAR, UINT32, telemetry_period_ms, 2)                                           \
+  X(a, STATIC, SINGULAR, UINT32, communication_timeout_ms, 3)
 #define star_v1_TimingConfiguration_CALLBACK NULL
-#define star_v1_TimingConfiguration_DEFAULT NULL
+#define star_v1_TimingConfiguration_DEFAULT  NULL
 
-#define star_v1_ConfigValidationResult_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, UENUM,    status,            1) \
-X(a, STATIC,   REPEATED, MESSAGE,  errors,            2)
-#define star_v1_ConfigValidationResult_CALLBACK NULL
-#define star_v1_ConfigValidationResult_DEFAULT NULL
+#define star_v1_ConfigValidationResult_FIELDLIST(X, a)                                             \
+  X(a, STATIC, SINGULAR, UENUM, status, 1)                                                         \
+  X(a, STATIC, REPEATED, MESSAGE, errors, 2)
+#define star_v1_ConfigValidationResult_CALLBACK       NULL
+#define star_v1_ConfigValidationResult_DEFAULT        NULL
 #define star_v1_ConfigValidationResult_errors_MSGTYPE star_v1_ConfigValidationError
 
-#define star_v1_ConfigValidationError_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, STRING,   field_path,        1) \
-X(a, STATIC,   SINGULAR, UENUM,    error_code,        2) \
-X(a, STATIC,   SINGULAR, STRING,   message,           3) \
-X(a, STATIC,   SINGULAR, STRING,   actual_value,      4) \
-X(a, STATIC,   SINGULAR, STRING,   expected_constraint,   5)
+#define star_v1_ConfigValidationError_FIELDLIST(X, a)                                              \
+  X(a, STATIC, SINGULAR, STRING, field_path, 1)                                                    \
+  X(a, STATIC, SINGULAR, UENUM, error_code, 2)                                                     \
+  X(a, STATIC, SINGULAR, STRING, message, 3)                                                       \
+  X(a, STATIC, SINGULAR, STRING, actual_value, 4)                                                  \
+  X(a, STATIC, SINGULAR, STRING, expected_constraint, 5)
 #define star_v1_ConfigValidationError_CALLBACK NULL
-#define star_v1_ConfigValidationError_DEFAULT NULL
+#define star_v1_ConfigValidationError_DEFAULT  NULL
 
 extern const pb_msgdesc_t star_v1_GetConfigurationRequest_msg;
 extern const pb_msgdesc_t star_v1_GetConfigurationResponse_msg;
@@ -754,32 +922,32 @@ extern const pb_msgdesc_t star_v1_ConfigValidationResult_msg;
 extern const pb_msgdesc_t star_v1_ConfigValidationError_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
-#define star_v1_GetConfigurationRequest_fields &star_v1_GetConfigurationRequest_msg
-#define star_v1_GetConfigurationResponse_fields &star_v1_GetConfigurationResponse_msg
-#define star_v1_SetConfigurationRequest_fields &star_v1_SetConfigurationRequest_msg
-#define star_v1_SetConfigurationResponse_fields &star_v1_SetConfigurationResponse_msg
-#define star_v1_ResetToDefaultsRequest_fields &star_v1_ResetToDefaultsRequest_msg
-#define star_v1_ResetToDefaultsResponse_fields &star_v1_ResetToDefaultsResponse_msg
-#define star_v1_ValidateConfigurationRequest_fields &star_v1_ValidateConfigurationRequest_msg
+#define star_v1_GetConfigurationRequest_fields       &star_v1_GetConfigurationRequest_msg
+#define star_v1_GetConfigurationResponse_fields      &star_v1_GetConfigurationResponse_msg
+#define star_v1_SetConfigurationRequest_fields       &star_v1_SetConfigurationRequest_msg
+#define star_v1_SetConfigurationResponse_fields      &star_v1_SetConfigurationResponse_msg
+#define star_v1_ResetToDefaultsRequest_fields        &star_v1_ResetToDefaultsRequest_msg
+#define star_v1_ResetToDefaultsResponse_fields       &star_v1_ResetToDefaultsResponse_msg
+#define star_v1_ValidateConfigurationRequest_fields  &star_v1_ValidateConfigurationRequest_msg
 #define star_v1_ValidateConfigurationResponse_fields &star_v1_ValidateConfigurationResponse_msg
-#define star_v1_SaveConfigurationRequest_fields &star_v1_SaveConfigurationRequest_msg
-#define star_v1_SaveConfigurationResponse_fields &star_v1_SaveConfigurationResponse_msg
-#define star_v1_GetMotorPidConfigRequest_fields &star_v1_GetMotorPidConfigRequest_msg
-#define star_v1_GetMotorPidConfigResponse_fields &star_v1_GetMotorPidConfigResponse_msg
-#define star_v1_SetMotorPidConfigRequest_fields &star_v1_SetMotorPidConfigRequest_msg
-#define star_v1_SetMotorPidConfigResponse_fields &star_v1_SetMotorPidConfigResponse_msg
-#define star_v1_RetransmitConfig_fields &star_v1_RetransmitConfig_msg
-#define star_v1_SetRetransmitConfigRequest_fields &star_v1_SetRetransmitConfigRequest_msg
-#define star_v1_SetRetransmitConfigResponse_fields &star_v1_SetRetransmitConfigResponse_msg
-#define star_v1_SystemConfiguration_fields &star_v1_SystemConfiguration_msg
-#define star_v1_MotorPidConfiguration_fields &star_v1_MotorPidConfiguration_msg
-#define star_v1_CurrentSensorCalibration_fields &star_v1_CurrentSensorCalibration_msg
-#define star_v1_TemperatureCalibration_fields &star_v1_TemperatureCalibration_msg
-#define star_v1_SafetyThresholds_fields &star_v1_SafetyThresholds_msg
-#define star_v1_EncoderConfiguration_fields &star_v1_EncoderConfiguration_msg
-#define star_v1_TimingConfiguration_fields &star_v1_TimingConfiguration_msg
-#define star_v1_ConfigValidationResult_fields &star_v1_ConfigValidationResult_msg
-#define star_v1_ConfigValidationError_fields &star_v1_ConfigValidationError_msg
+#define star_v1_SaveConfigurationRequest_fields      &star_v1_SaveConfigurationRequest_msg
+#define star_v1_SaveConfigurationResponse_fields     &star_v1_SaveConfigurationResponse_msg
+#define star_v1_GetMotorPidConfigRequest_fields      &star_v1_GetMotorPidConfigRequest_msg
+#define star_v1_GetMotorPidConfigResponse_fields     &star_v1_GetMotorPidConfigResponse_msg
+#define star_v1_SetMotorPidConfigRequest_fields      &star_v1_SetMotorPidConfigRequest_msg
+#define star_v1_SetMotorPidConfigResponse_fields     &star_v1_SetMotorPidConfigResponse_msg
+#define star_v1_RetransmitConfig_fields              &star_v1_RetransmitConfig_msg
+#define star_v1_SetRetransmitConfigRequest_fields    &star_v1_SetRetransmitConfigRequest_msg
+#define star_v1_SetRetransmitConfigResponse_fields   &star_v1_SetRetransmitConfigResponse_msg
+#define star_v1_SystemConfiguration_fields           &star_v1_SystemConfiguration_msg
+#define star_v1_MotorPidConfiguration_fields         &star_v1_MotorPidConfiguration_msg
+#define star_v1_CurrentSensorCalibration_fields      &star_v1_CurrentSensorCalibration_msg
+#define star_v1_TemperatureCalibration_fields        &star_v1_TemperatureCalibration_msg
+#define star_v1_SafetyThresholds_fields              &star_v1_SafetyThresholds_msg
+#define star_v1_EncoderConfiguration_fields          &star_v1_EncoderConfiguration_msg
+#define star_v1_TimingConfiguration_fields           &star_v1_TimingConfiguration_msg
+#define star_v1_ConfigValidationResult_fields        &star_v1_ConfigValidationResult_msg
+#define star_v1_ConfigValidationError_fields         &star_v1_ConfigValidationError_msg
 
 /* Maximum encoded size of messages (where known) */
 /* star_v1_GetConfigurationResponse_size depends on runtime parameters */
@@ -789,26 +957,26 @@ extern const pb_msgdesc_t star_v1_ConfigValidationError_msg;
 /* star_v1_SystemConfiguration_size depends on runtime parameters */
 /* star_v1_CurrentSensorCalibration_size depends on runtime parameters */
 #define STAR_V1_STAR_V1_CONFIGURATION_PB_H_MAX_SIZE star_v1_SetConfigurationResponse_size
-#define star_v1_ConfigValidationError_size       585
-#define star_v1_ConfigValidationResult_size      4706
-#define star_v1_EncoderConfiguration_size        24
-#define star_v1_GetConfigurationRequest_size     149
-#define star_v1_GetMotorPidConfigRequest_size    160
-#define star_v1_GetMotorPidConfigResponse_size   439
-#define star_v1_MotorPidConfiguration_size       76
-#define star_v1_ResetToDefaultsRequest_size      151
-#define star_v1_RetransmitConfig_size            20
-#define star_v1_SafetyThresholds_size            23
-#define star_v1_SaveConfigurationRequest_size    149
-#define star_v1_SaveConfigurationResponse_size   371
-#define star_v1_SetConfigurationResponse_size    5072
-#define star_v1_SetMotorPidConfigRequest_size    227
-#define star_v1_SetMotorPidConfigResponse_size   5072
-#define star_v1_SetRetransmitConfigRequest_size  171
-#define star_v1_SetRetransmitConfigResponse_size 363
-#define star_v1_TemperatureCalibration_size      9
-#define star_v1_TimingConfiguration_size         18
-#define star_v1_ValidateConfigurationResponse_size 5072
+#define star_v1_ConfigValidationError_size          585
+#define star_v1_ConfigValidationResult_size         4706
+#define star_v1_EncoderConfiguration_size           24
+#define star_v1_GetConfigurationRequest_size        149
+#define star_v1_GetMotorPidConfigRequest_size       160
+#define star_v1_GetMotorPidConfigResponse_size      439
+#define star_v1_MotorPidConfiguration_size          76
+#define star_v1_ResetToDefaultsRequest_size         151
+#define star_v1_RetransmitConfig_size               20
+#define star_v1_SafetyThresholds_size               23
+#define star_v1_SaveConfigurationRequest_size       149
+#define star_v1_SaveConfigurationResponse_size      371
+#define star_v1_SetConfigurationResponse_size       5072
+#define star_v1_SetMotorPidConfigRequest_size       227
+#define star_v1_SetMotorPidConfigResponse_size      5072
+#define star_v1_SetRetransmitConfigRequest_size     171
+#define star_v1_SetRetransmitConfigResponse_size    363
+#define star_v1_TemperatureCalibration_size         9
+#define star_v1_TimingConfiguration_size            18
+#define star_v1_ValidateConfigurationResponse_size  5072
 
 #ifdef __cplusplus
 } /* extern "C" */

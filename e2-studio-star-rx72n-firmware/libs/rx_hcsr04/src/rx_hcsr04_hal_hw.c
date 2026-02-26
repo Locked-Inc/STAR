@@ -1291,8 +1291,9 @@ void hcsr04_hal_delay_us(uint32_t us)
 
   uint32_t iteration_count = k_iteration_init;
   while (ticks > 0 && iteration_count < k_max_delay_iterations) {
-    const uint32_t wait_ticks = (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
-    const uint16_t start      = cmt2()->cmcnt;
+    const uint32_t wait_ticks =
+      (ticks > k_timer_counter_max) ? k_timer_counter_max : (uint32_t)ticks;
+    const uint16_t start = cmt2()->cmcnt;
     while ((uint16_t)(cmt2()->cmcnt - start) < wait_ticks) {
       __asm__ volatile("nop");
     }

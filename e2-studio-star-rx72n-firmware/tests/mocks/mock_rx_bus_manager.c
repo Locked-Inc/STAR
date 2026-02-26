@@ -217,7 +217,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
   }
 
   /* Check for duplicate name (bounded traversal -- NASA Rule 2) */
-  rx_bus_config_t* current   = manager->buses;
+  rx_bus_config_t* current    = manager->buses;
   uint8_t          loop_count = 0;
   while (current != nullptr && loop_count < k_max_buses) {
     if (strcmp(current->name, bus_config->name) == 0) {

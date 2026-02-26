@@ -38,7 +38,6 @@ static uint32_t internal_count_component_errors(mock_error_handler_t* handler,
     if (strcmp(handler->errors[i].component, component) == 0) {
       count++;
     }
-
   }
 
   return count;

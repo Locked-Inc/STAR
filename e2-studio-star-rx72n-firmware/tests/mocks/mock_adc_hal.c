@@ -58,9 +58,9 @@ typedef enum : uint8_t {
 
 /** @brief Bit manipulation constants for ADC calculations */
 typedef enum : uint8_t {
-  k_mock_adc_bit_shift_base      = 1, /**< Base value for 2^n calculation */
-  k_mock_adc_max_value_offset    = 1, /**< Offset to get max value from 2^n */
-  k_mock_adc_raw_value_default   = 0, /**< Default raw value returned when no error injected */
+  k_mock_adc_bit_shift_base    = 1, /**< Base value for 2^n calculation */
+  k_mock_adc_max_value_offset  = 1, /**< Offset to get max value from 2^n */
+  k_mock_adc_raw_value_default = 0, /**< Default raw value returned when no error injected */
 } mock_adc_bit_constants_t;
 
 /* =============================================================================
@@ -497,14 +497,15 @@ rx_err_t adc_read_voltage_mv(adc_unit_t       unit,
 
   /* Read raw ADC value */
   uint16_t raw_value = k_mock_adc_raw_value_default;
-  err = adc_read(unit, channel, &raw_value);
+  err                = adc_read(unit, channel, &raw_value);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Calculate voltage */
-  const uint32_t max_value = ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
-  *voltage_mv        = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
+  const uint32_t max_value =
+    ((uint32_t)k_mock_adc_bit_shift_base << bits) - k_mock_adc_max_value_offset;
+  *voltage_mv = ((uint32_t)raw_value * k_mock_adc_vref_mv) / max_value;
 
   return k_rx_ok;
 }

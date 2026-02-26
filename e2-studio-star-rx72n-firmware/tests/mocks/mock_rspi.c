@@ -222,8 +222,10 @@ void mock_rspi_clear_controller_channel(mock_rspi_t* mock, rspi_channel_t channe
  * =============================================================================
  */
 
-rx_err_t
-mock_rspi_inject_rx_data(mock_rspi_t* mock, rspi_channel_t channel, const uint8_t* data, uint32_t len)
+rx_err_t mock_rspi_inject_rx_data(mock_rspi_t*   mock,
+                                  rspi_channel_t channel,
+                                  const uint8_t* data,
+                                  uint32_t       len)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -251,11 +253,11 @@ mock_rspi_inject_rx_data(mock_rspi_t* mock, rspi_channel_t channel, const uint8_
   return k_rx_ok;
 }
 
-rx_err_t mock_rspi_get_tx_data(mock_rspi_t*    mock,
-                               rspi_channel_t  channel,
-                               uint8_t*     data,
-                               uint32_t     max_len,
-                               uint32_t*    actual_len)
+rx_err_t mock_rspi_get_tx_data(mock_rspi_t*   mock,
+                               rspi_channel_t channel,
+                               uint8_t*       data,
+                               uint32_t       max_len,
+                               uint32_t*      actual_len)
 {
   mock_rspi_t* m = internal_get_mock(mock);
 
@@ -445,8 +447,10 @@ rx_err_t rspi_init_peripheral(rspi_channel_t channel, const rspi_config_t* confi
   return ret;
 }
 
-rx_err_t
-rspi_peripheral_transfer(rspi_channel_t channel, const uint8_t* tx_data, uint8_t* rx_data, uint16_t length)
+rx_err_t rspi_peripheral_transfer(rspi_channel_t channel,
+                                  const uint8_t* tx_data,
+                                  uint8_t*       rx_data,
+                                  uint16_t       length)
 {
   mock_rspi_t* mock = &g_mock_rspi;
 
@@ -488,8 +492,8 @@ rspi_peripheral_transfer(rspi_channel_t channel, const uint8_t* tx_data, uint8_t
     ch->tx_len = copy_len;
 
     /* Provide RX data from injected buffer */
-    uint32_t avail    = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
-    uint32_t rx_copy  = (length < avail) ? length : avail;
+    uint32_t avail   = (ch->rx_len > ch->rx_pos) ? (ch->rx_len - ch->rx_pos) : 0;
+    uint32_t rx_copy = (length < avail) ? length : avail;
 
     if (rx_copy > 0) {
       (void)memcpy(rx_data, &ch->rx_data[ch->rx_pos], rx_copy);

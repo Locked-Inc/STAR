@@ -209,15 +209,15 @@ rx_err_t led_status_task_create(void)
 
   /* Create the thread */
   UINT tx_status = tx_thread_create(&s_led_thread,
-                               "LEDTask",
-                               internal_led_task_entry,
-                               k_led_task_input,
-                               s_led_stack,
-                               k_led_task_stack_size,
-                               k_led_task_priority,
-                               k_led_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                                    "LEDTask",
+                                    internal_led_task_entry,
+                                    k_led_task_input,
+                                    s_led_stack,
+                                    k_led_task_stack_size,
+                                    k_led_task_priority,
+                                    k_led_task_priority,
+                                    TX_NO_TIME_SLICE,
+                                    TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
@@ -406,8 +406,9 @@ static void internal_led_task_entry(ULONG input)
     if (s_heartbeat_counter >= k_led_heartbeat_half_period) {
       s_heartbeat_counter = 0;
     }
-    internal_led_set(k_led_idx_heartbeat,
-                     (s_heartbeat_counter < (k_led_heartbeat_half_period / k_led_half_period_divisor)));
+    internal_led_set(
+      k_led_idx_heartbeat,
+      (s_heartbeat_counter < (k_led_heartbeat_half_period / k_led_half_period_divisor)));
 
     /* ---- LED 1: Error indicator (fast blink on fault) ---- */
     {
@@ -426,7 +427,8 @@ static void internal_led_task_entry(ULONG input)
         if (s_error_counter >= k_led_error_half_period) {
           s_error_counter = 0;
         }
-        internal_led_set(k_led_idx_error, (s_error_counter < (k_led_error_half_period / k_led_half_period_divisor)));
+        internal_led_set(k_led_idx_error,
+                         (s_error_counter < (k_led_error_half_period / k_led_half_period_divisor)));
       } else {
         s_error_counter = 0;
         internal_led_set(k_led_idx_error, false);

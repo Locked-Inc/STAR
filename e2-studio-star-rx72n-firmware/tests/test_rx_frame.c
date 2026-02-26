@@ -2294,7 +2294,7 @@ void test_roundtrip_reset(void)
  * @since Version 1.1.0
  */
 typedef enum : uint8_t {
-  k_resync_zero       = 0,    /**< Zero constant for index/discarded initializations and assertions */
+  k_resync_zero       = 0, /**< Zero constant for index/discarded initializations and assertions */
   k_resync_junk_byte  = 0xBB, /**< Byte that is never part of 0xAA or 0x55 */
   k_resync_prefix_len = 1,    /**< Length of single-byte misalignment prefix */
   k_resync_sentinel   = 0xFF, /**< Sentinel value written to discarded before the call;
@@ -2344,10 +2344,10 @@ void test_resync_dropped_byte_recovery(void)
 
   uint32_t discarded = k_resync_sentinel; /* Must be overwritten to 1 on dropped-byte resync path */
   rx_err_t err       = rx_frame_decode_with_resync(&s_decoder,
-                                                   misaligned,
-                                                   wire_len + k_resync_prefix_len,
-                                                   &decoded,
-                                                   &discarded);
+                                             misaligned,
+                                             wire_len + k_resync_prefix_len,
+                                             &decoded,
+                                             &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_resync_prefix_len, discarded);
@@ -2382,10 +2382,10 @@ void test_resync_dropped_byte_recovery(void)
  */
 void test_resync_aligned_frame_zero_discarded(void)
 {
-  rx_frame_t    frame;
-  rx_frame_t    decoded;
-  uint8_t       wire[k_frame_max_size];
-  uint32_t wire_len = k_resync_zero;
+  rx_frame_t frame;
+  rx_frame_t decoded;
+  uint8_t    wire[k_frame_max_size];
+  uint32_t   wire_len = k_resync_zero;
 
   memset(&frame, k_resync_zero, sizeof(frame));
   frame.header.sequence = k_test_seq_42;
@@ -2397,7 +2397,7 @@ void test_resync_aligned_frame_zero_discarded(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_encode(&s_encoder, &frame, wire, &wire_len));
 
   uint32_t discarded = k_resync_sentinel; /* Must be overwritten to 0 on aligned fast-path */
-  rx_err_t err       = rx_frame_decode_with_resync(&s_decoder, wire, wire_len, &decoded, &discarded);
+  rx_err_t err = rx_frame_decode_with_resync(&s_decoder, wire, wire_len, &decoded, &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_resync_zero, discarded);
@@ -2441,7 +2441,7 @@ void test_resync_no_sync_found(void)
   memset(buf, k_resync_junk_byte, sizeof(buf));
 
   uint32_t discarded = k_resync_sentinel; /* Must be overwritten (to 0) on no-sync path */
-  rx_err_t err       = rx_frame_decode_with_resync(&s_decoder, buf, sizeof(buf), &frame, &discarded);
+  rx_err_t err = rx_frame_decode_with_resync(&s_decoder, buf, sizeof(buf), &frame, &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_err_protocol_error, err);
   TEST_ASSERT_EQUAL(k_resync_zero, discarded);
@@ -2476,10 +2476,10 @@ void test_resync_no_sync_found(void)
  */
 void test_resync_crc_mismatch_sets_discarded(void)
 {
-  rx_frame_t frame                                = {k_resync_zero};
-  uint8_t    wire[k_frame_max_size]               = {k_resync_zero};
+  rx_frame_t frame                                              = {k_resync_zero};
+  uint8_t    wire[k_frame_max_size]                             = {k_resync_zero};
   uint8_t    misaligned[k_frame_max_size + k_resync_prefix_len] = {k_resync_zero};
-  uint32_t   wire_len                             = k_resync_zero;
+  uint32_t   wire_len                                           = k_resync_zero;
 
   /* Build and encode a minimal ACK frame */
   TEST_ASSERT_EQUAL(k_rx_ok, rx_frame_create_ack(&frame, k_test_seq_one));
@@ -2494,8 +2494,11 @@ void test_resync_crc_mismatch_sets_discarded(void)
 
   rx_frame_t decoded   = {k_resync_zero};
   uint32_t   discarded = k_resync_sentinel; /* Must be overwritten to sync_offset */
-  rx_err_t   err       = rx_frame_decode_with_resync(
-      &s_decoder, misaligned, wire_len + k_resync_prefix_len, &decoded, &discarded);
+  rx_err_t   err       = rx_frame_decode_with_resync(&s_decoder,
+                                             misaligned,
+                                             wire_len + k_resync_prefix_len,
+                                             &decoded,
+                                             &discarded);
 
   TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
   TEST_ASSERT_EQUAL(k_resync_prefix_len, discarded);
@@ -2531,14 +2534,18 @@ void test_resync_null_args(void)
   rx_frame_t frame                 = {k_resync_zero};
   uint32_t   discarded             = k_resync_zero;
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_frame_decode_with_resync(nullptr, buf, k_frame_min_size, &frame, &discarded));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_frame_decode_with_resync(&s_decoder, nullptr, k_frame_min_size, &frame, &discarded));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_frame_decode_with_resync(&s_decoder, buf, k_frame_min_size, nullptr, &discarded));
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_frame_decode_with_resync(&s_decoder, buf, k_frame_min_size, &frame, nullptr));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_frame_decode_with_resync(nullptr, buf, k_frame_min_size, &frame, &discarded));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_frame_decode_with_resync(&s_decoder, nullptr, k_frame_min_size, &frame, &discarded));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_frame_decode_with_resync(&s_decoder, buf, k_frame_min_size, nullptr, &discarded));
+  TEST_ASSERT_EQUAL(
+    k_rx_err_invalid_arg,
+    rx_frame_decode_with_resync(&s_decoder, buf, k_frame_min_size, &frame, nullptr));
 }
 
 /* =============================================================================

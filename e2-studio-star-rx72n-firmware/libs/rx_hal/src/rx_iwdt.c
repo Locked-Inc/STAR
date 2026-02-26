@@ -1589,8 +1589,8 @@ void rx_hal_iwdt_task_heartbeat(const char* task_name)
  */
 rx_err_t rx_hal_iwdt_check_tasks(void)
 {
-  uint32_t              current_time_ms;
-  rx_err_t              result;
+  uint32_t current_time_ms;
+  rx_err_t result;
 
   const task_monitor_t* task = nullptr;
   uint32_t              elapsed_ms;

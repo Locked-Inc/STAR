@@ -342,7 +342,8 @@ typedef enum : uint16_t {
                              * @details SYNC(2) + Header(6) + Payload(1024) + CRC(4) = 1036 bytes.
                              */
 
-  k_frame_max_scan_bytes = k_frame_max_size, /**< @brief Maximum bytes to scan forward during sync recovery (1036)
+  k_frame_max_scan_bytes =
+    k_frame_max_size, /**< @brief Maximum bytes to scan forward during sync recovery (1036)
                                    * @details
                                    * When the sync word is not found at offset 0, the decoder scans
                                    * forward up to this many bytes looking for the sync pattern. The
@@ -1155,7 +1156,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
                                                    const uint8_t*            data,
                                                    const uint32_t            data_len,
                                                    rx_frame_t*               frame,
-                                                   uint32_t* bytes_discarded_out);
+                                                   uint32_t*                 bytes_discarded_out);
 
 /* =============================================================================
  * Frame Helper Functions
