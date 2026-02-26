@@ -1,41 +1,52 @@
 import type { CSSProperties } from 'react';
 
 export const COLORS = {
-  panelBg: '#1a1d27',
-  border: '#2a2e42',
-  bodyBg: '#0f1117',
-  textMuted: '#9ca3af',
-  textDim: '#6b7280',
-  textPrimary: '#e2e8f0',
-  accent: '#3b82f6',
-  warning: '#f97316',
-  connected: '#22c55e',
-  connecting: '#eab308',
-  reconnecting: '#f97316',
-  disconnected: '#ef4444',
-  estopActive: '#7f1d1d',
-  estopDefault: '#dc2626',
+  // Semantic aliases - accent colors stay the same in both themes
+  accent: '#0A84FF',
+  warning: '#FF9F0A',
+  primary: '#0A84FF',
+  success: '#30D158',
+  danger: '#FF453A',
+
+  // Statuses
+  connected: '#30D158',
+  connecting: '#FF9F0A',
+  reconnecting: '#FF9F0A',
+  disconnected: '#FF453A',
+
+  // E-Stop
+  estopActive: '#8E0000',
+  estopDefault: '#FF453A',
+
+  // Theme-aware - these reference CSS custom properties
+  // Use them for inline style strings, not CSSProperties
+  textPrimary: 'var(--color-text)',
+  textMuted: 'var(--color-text-muted)',
+  textDim: 'var(--color-text-dim)',
+  panelBg: 'var(--panel-bg)',
+  border: 'var(--panel-header-border)',
+  bodyBg: 'var(--color-body-bg)',
 } as const;
 
-const PANEL_BORDER_RADIUS = '6px';
-const PANEL_PADDING_VERTICAL = '6px';
-const PANEL_PADDING_HORIZONTAL = '10px';
-const PANEL_HEADER_FONT_SIZE = '11px';
-const PANEL_HEADER_LETTER_SPACING = '0.05em';
+export const panelBorderRadius = '24px';
+const PANEL_PADDING_VERTICAL = '16px';
+const PANEL_PADDING_HORIZONTAL = '20px';
+const PANEL_HEADER_FONT_SIZE = '12px';
+const PANEL_HEADER_LETTER_SPACING = '0.1em';
 
 export const PANEL_CONTAINER_STYLE: CSSProperties = {
-  background: COLORS.panelBg,
-  border: `1px solid ${COLORS.border}`,
-  borderRadius: PANEL_BORDER_RADIUS,
-  overflow: 'hidden',
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
 };
 
 export const PANEL_HEADER_STYLE: CSSProperties = {
   padding: `${PANEL_PADDING_VERTICAL} ${PANEL_PADDING_HORIZONTAL}`,
-  borderBottom: `1px solid ${COLORS.border}`,
+  borderBottom: '1px solid var(--panel-header-border)',
   fontSize: PANEL_HEADER_FONT_SIZE,
-  fontWeight: 'bold',
-  color: COLORS.textMuted,
+  fontWeight: 600,
+  color: 'var(--color-text-muted)',
   textTransform: 'uppercase',
   letterSpacing: PANEL_HEADER_LETTER_SPACING,
+  background: 'var(--panel-header-bg)',
 };

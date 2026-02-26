@@ -1,157 +1,92 @@
-import { useEffect, useRef } from 'react';
-import uPlot from 'uplot';
-import 'uplot/dist/uPlot.min.css';
+import { memo } from 'react';
 import { useDashboardStore } from '../store/dashboardStore';
-import type { MotorStatus } from '../proto/star/v1/motor_control';
 
-const WINDOW_PTS = 300; // 30 seconds @ 10 Hz
+const maxVelocity = 2.0; // Defines the bounds for the visual progress bar (m/s)
 
-const MOTOR_IDX_FL = 0;
-const MOTOR_IDX_FR = 1;
-const MOTOR_IDX_BL = 2;
-const MOTOR_IDX_BR = 3;
-const EXPECTED_MOTOR_COUNT = 4;
+const motorConfig = [
+  { label: 'FL', idx: 0 },
+  { label: 'FR', idx: 1 },
+  { label: 'BL', idx: 2 },
+  { label: 'BR', idx: 3 },
+];
 
-const DEFAULT_CHART_WIDTH = 400;
-const DEFAULT_CHART_HEIGHT = 180;
-
-// Float64Arrays live OUTSIDE React state -- no GC pressure per tick.
-function createBuffers() {
-  return {
-    timestamps: new Float64Array(WINDOW_PTS),
-    flVelocity: new Float64Array(WINDOW_PTS),
-    frVelocity: new Float64Array(WINDOW_PTS),
-    blVelocity: new Float64Array(WINDOW_PTS),
-    brVelocity: new Float64Array(WINDOW_PTS),
-    // Pre-allocated scratch arrays -- one per series
-    scratchTs: new Float64Array(WINDOW_PTS),
-    scratchFL: new Float64Array(WINDOW_PTS),
-    scratchFR: new Float64Array(WINDOW_PTS),
-    scratchBL: new Float64Array(WINDOW_PTS),
-    scratchBR: new Float64Array(WINDOW_PTS),
-    writeIdx: 0,
-  };
+interface MotorRowProps {
+  label: string;
+  value: number;
 }
 
-// Unwrap a ring buffer into chronological order, no allocation.
-function rolledView(ring: Float64Array, wIdx: number, scratch: Float64Array): Float64Array {
-  const tail = ring.subarray(wIdx);       // older half (wIdx -> end)
-  const head = ring.subarray(0, wIdx);   // newer half (0 -> wIdx)
-  scratch.set(tail, 0);
-  scratch.set(head, tail.length);
-  return scratch;
-}
-
-export function MotorPanel() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const chartRef = useRef<uPlot | null>(null);
-  const buffersRef = useRef<ReturnType<typeof createBuffers> | null>(null);
-  if (!buffersRef.current) buffersRef.current = createBuffers();
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container) return;
-
-    let cancelled = false;
-    const buf = buffersRef.current!;
-
-    const opts: uPlot.Options = {
-      width: container.offsetWidth || DEFAULT_CHART_WIDTH,
-      height: DEFAULT_CHART_HEIGHT,
-      series: [
-        {},
-        { label: 'FL', stroke: '#ef4444' },
-        { label: 'FR', stroke: '#3b82f6' },
-        { label: 'BL', stroke: '#22c55e' },
-        { label: 'BR', stroke: '#f59e0b' },
-      ],
-      axes: [
-        {},
-        { label: 'm/s' },
-      ],
-      scales: {
-        x: { time: true },
-      },
-    };
-
-    const u = new uPlot(
-      opts,
-      [buf.scratchTs, buf.scratchFL, buf.scratchFR, buf.scratchBL, buf.scratchBR],
-      container,
-    );
-    chartRef.current = u;
-
-    const ro = new ResizeObserver(() => {
-      if (chartRef.current && container.offsetWidth > 0) {
-        chartRef.current.setSize({ width: container.offsetWidth, height: DEFAULT_CHART_HEIGHT });
-      }
-    });
-    ro.observe(container);
-
-    // Subscribe to motors via Zustand .subscribe() -- imperative, no React re-render
-    const unsub = useDashboardStore.subscribe(
-      (s) => s.motors,
-      (motors: MotorStatus[] | null) => {
-        if (cancelled) return;
-        if (!motors) return;
-
-        if (motors.length < EXPECTED_MOTOR_COUNT) {
-          console.warn(
-            `MotorPanel: expected ${EXPECTED_MOTOR_COUNT} motors, got ${motors.length}`,
-            motors,
-          );
-        }
-
-        buf.timestamps[buf.writeIdx] = Date.now() / 1000;
-        buf.flVelocity[buf.writeIdx] = motors[MOTOR_IDX_FL]?.velocityMps ?? 0;
-        buf.frVelocity[buf.writeIdx] = motors[MOTOR_IDX_FR]?.velocityMps ?? 0;
-        buf.blVelocity[buf.writeIdx] = motors[MOTOR_IDX_BL]?.velocityMps ?? 0;
-        buf.brVelocity[buf.writeIdx] = motors[MOTOR_IDX_BR]?.velocityMps ?? 0;
-        buf.writeIdx = (buf.writeIdx + 1) % WINDOW_PTS;
-
-        if (chartRef.current) {
-          chartRef.current.setData([
-            rolledView(buf.timestamps, buf.writeIdx, buf.scratchTs),
-            rolledView(buf.flVelocity, buf.writeIdx, buf.scratchFL),
-            rolledView(buf.frVelocity, buf.writeIdx, buf.scratchFR),
-            rolledView(buf.blVelocity, buf.writeIdx, buf.scratchBL),
-            rolledView(buf.brVelocity, buf.writeIdx, buf.scratchBR),
-          ]);
-        }
-      },
-    );
-
-    return () => {
-      cancelled = true;
-      ro.disconnect();
-      unsub();
-      u.destroy();
-    };
-  }, []);
+const MotorRow = memo(function MotorRow({ label, value }: MotorRowProps) {
+  const clamped = Math.max(-maxVelocity, Math.min(maxVelocity, value));
+  const percent = (Math.abs(clamped) / maxVelocity) * 100; // number 0-100
+  const isForward = clamped >= 0;
 
   return (
-    <div
-      style={{
-        background: '#1a1d27',
-        border: '1px solid #2a2e42',
-        borderRadius: '6px',
-        overflow: 'hidden',
-      }}
-    >
+    <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
+      <div style={{ width: '28px', fontSize: '12px', fontWeight: 600, color: 'var(--text-secondary)' }}>{label}</div>
+
+      {/* Progress Bar Track */}
+      <div style={{
+        flex: 1,
+        height: '10px',
+        background: 'var(--track-bg)',
+        borderRadius: '5px',
+        border: '0.5px solid var(--track-border)',
+        boxShadow: 'inset 0 2px 4px var(--track-shadow)',
+        position: 'relative',
+      }}>
+        {/* Fill Bar */}
+        <div style={{
+          position: 'absolute',
+          top: 0, bottom: 0,
+          left: isForward ? '50%' : `${50 - (percent / 2)}%`,
+          width: `${percent / 2}%`,
+          background: isForward ? 'var(--accent-forward)' : 'var(--accent-reverse)',
+          boxShadow: `0 0 12px ${isForward ? 'var(--accent-forward-glow)' : 'var(--accent-reverse-glow)'}`,
+          borderRadius: '5px',
+          transition: 'width 0.1s linear, left 0.1s linear'
+        }} />
+
+        {/* Center line marker */}
+        <div style={{ position: 'absolute', left: '50%', top: '-2px', bottom: '-2px', width: '1px', background: 'var(--divider)', zIndex: 2 }} />
+      </div>
+
+      {/* Value Readout - Enforces minimum 13px tabular nums */}
       <div
+        className="data-flash"
+        key={`val-${label}-${value}`}
+        style={{ width: '48px', textAlign: 'right', fontSize: '13px', fontVariantNumeric: 'tabular-nums', fontWeight: 400, color: 'var(--text-primary)' }}
+      >
+        {value.toFixed(2)}
+      </div>
+    </div>
+  );
+});
+
+export function MotorPanel() {
+  const motors = useDashboardStore((s) => s.motors);
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div
+        className="panel-header"
         style={{
-          padding: '6px 10px',
-          borderBottom: '1px solid #2a2e42',
+          padding: '16px 24px 12px 24px',
           fontSize: '11px',
-          fontWeight: 'bold',
-          color: '#9ca3af',
+          fontWeight: 600,
+          color: 'rgba(255, 255, 255, 0.5)',
           textTransform: 'uppercase',
-          letterSpacing: '0.05em',
+          letterSpacing: '0.12em',
+          userSelect: 'none',
         }}
       >
         Motor Velocities
       </div>
-      <div ref={containerRef} />
+      <div className="panel-body" style={{ padding: '0 24px 20px 24px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        {motorConfig.map((motor) => {
+          const value = motors && motors[motor.idx] ? motors[motor.idx].velocityMps : 0;
+          return <MotorRow key={motor.label} label={motor.label} value={value} />;
+        })}
+      </div>
     </div>
   );
 }
