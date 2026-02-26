@@ -175,16 +175,16 @@ message ImuData {
 // Reports distance and detection state from 4 HC-SR04 sensors.
 message ObstacleData {
   // Distance from sensor 0 in meters. 0.0 if sensor invalid.
-  float distance_0_m = 1;
+  float distance_front_left_m = 1;
 
   // Distance from sensor 1 in meters. 0.0 if sensor invalid.
-  float distance_1_m = 2;
+  float distance_front_right_m = 2;
 
   // Distance from sensor 2 in meters. 0.0 if sensor invalid.
-  float distance_2_m = 3;
+  float distance_back_left_m = 3;
 
   // Distance from sensor 3 in meters. 0.0 if sensor invalid.
-  float distance_3_m = 4;
+  float distance_back_right_m = 4;
 
   // Any sensor has detected an obstacle within threshold distance.
   bool any_obstacle = 5;

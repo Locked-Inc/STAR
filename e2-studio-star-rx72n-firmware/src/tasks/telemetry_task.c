@@ -1107,7 +1107,7 @@ typedef enum : uint8_t {
  *
  * @code
  * // access front-left distance (already in meters)
- * float dist_fl = telemetry->obstacle.distance_0_m;
+ * float dist_fl = telemetry->obstacle.distance_front_left_m;
  *
  * // build detected_mask for sensors 0 and 2
  * uint32_t mask = (1U << k_telem_obstacle_shift_0) |
@@ -1863,13 +1863,13 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
   err = shared_data_get_obstacle(&obstacle_state);
   if (err == k_rx_ok) {
     telemetry->has_obstacle          = true;
-    telemetry->obstacle.distance_0_m =
+    telemetry->obstacle.distance_front_left_m =
       (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_0] / s_cm_per_m;
-    telemetry->obstacle.distance_1_m =
+    telemetry->obstacle.distance_front_right_m =
       (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_1] / s_cm_per_m;
-    telemetry->obstacle.distance_2_m =
+    telemetry->obstacle.distance_back_left_m =
       (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_2] / s_cm_per_m;
-    telemetry->obstacle.distance_3_m =
+    telemetry->obstacle.distance_back_right_m =
       (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_3] / s_cm_per_m;
     telemetry->obstacle.any_obstacle  = obstacle_state.any_obstacle;
     telemetry->obstacle.detected_mask =

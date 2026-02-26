@@ -121,13 +121,13 @@ typedef struct _star_v1_ImuData {
  Reports distance and detection state from 4 HC-SR04 sensors. */
 typedef struct _star_v1_ObstacleData {
   /* Distance from sensor 0 in meters. 0.0 if sensor invalid. */
-  float distance_0_m;
+  float distance_front_left_m;
   /* Distance from sensor 1 in meters. 0.0 if sensor invalid. */
-  float distance_1_m;
+  float distance_front_right_m;
   /* Distance from sensor 2 in meters. 0.0 if sensor invalid. */
-  float distance_2_m;
+  float distance_back_left_m;
   /* Distance from sensor 3 in meters. 0.0 if sensor invalid. */
-  float distance_3_m;
+  float distance_back_right_m;
   /* Any sensor has detected an obstacle within threshold distance. */
   bool any_obstacle;
   /* Per-sensor detection bitmask. Bit N set = sensor N detected obstacle.
@@ -399,10 +399,10 @@ extern "C" {
 #define star_v1_TelemetryData_encoder_back_right_tag  18
 #define star_v1_TelemetryData_frame_sequence_tag      19
 #define star_v1_TelemetryData_obstacle_tag            3
-#define star_v1_ObstacleData_distance_0_m_tag         1
-#define star_v1_ObstacleData_distance_1_m_tag         2
-#define star_v1_ObstacleData_distance_2_m_tag         3
-#define star_v1_ObstacleData_distance_3_m_tag         4
+#define star_v1_ObstacleData_distance_front_left_m_tag         1
+#define star_v1_ObstacleData_distance_front_right_m_tag         2
+#define star_v1_ObstacleData_distance_back_left_m_tag         3
+#define star_v1_ObstacleData_distance_back_right_m_tag         4
 #define star_v1_ObstacleData_any_obstacle_tag         5
 #define star_v1_ObstacleData_detected_mask_tag        6
 #define star_v1_GetTelemetryResponse_header_tag       1
@@ -482,10 +482,10 @@ extern "C" {
 #define star_v1_TelemetryData_obstacle_MSGTYPE            star_v1_ObstacleData
 
 #define star_v1_ObstacleData_FIELDLIST(X, a)                                                       \
-  X(a, STATIC, SINGULAR, FLOAT, distance_0_m, 1)                                                   \
-  X(a, STATIC, SINGULAR, FLOAT, distance_1_m, 2)                                                   \
-  X(a, STATIC, SINGULAR, FLOAT, distance_2_m, 3)                                                   \
-  X(a, STATIC, SINGULAR, FLOAT, distance_3_m, 4)                                                   \
+  X(a, STATIC, SINGULAR, FLOAT, distance_front_left_m, 1)                                                   \
+  X(a, STATIC, SINGULAR, FLOAT, distance_front_right_m, 2)                                                   \
+  X(a, STATIC, SINGULAR, FLOAT, distance_back_left_m, 3)                                                   \
+  X(a, STATIC, SINGULAR, FLOAT, distance_back_right_m, 4)                                                   \
   X(a, STATIC, SINGULAR, BOOL, any_obstacle, 5)                                                    \
   X(a, STATIC, SINGULAR, UINT32, detected_mask, 6)
 #define star_v1_ObstacleData_CALLBACK NULL
