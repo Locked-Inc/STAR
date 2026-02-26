@@ -388,8 +388,6 @@
 
 #include "comm_task.h"
 
-#include <string.h>
-
 #include "rx_check.h"
 #include "rx_comm_manager.h"
 #include "rx_frame.h"
@@ -547,6 +545,26 @@ static rx_usb_comm_handle_t s_usb_comm_handle;
  * @see rx_spi_comm_init() Initialization function
  */
 static rx_spi_comm_handle_t s_spi_comm_handle;
+
+/**
+ * @var s_spi_link
+ * @brief HARQ link-layer instance for SPI transport reliability
+ *
+ * @details
+ * Stores runtime state and configuration for the SPI HARQ link layer
+ * (forward-error correction plus retransmission control). Initialized during
+ * transport setup via rx_spi_link_init() using a configuration structure that
+ * references s_spi_comm_handle and default retry/FEC settings. Used by the
+ * communication manager through config->spi_link when link initialization
+ * succeeds.
+ *
+ * @note File-scoped static owned by comm_task.c. Access is confined to comm_task
+ *       initialization and callback flow in this module.
+ * @warning Not safe for unsynchronized external mutation. Do not access or modify
+ *          internals directly; use rx_spi_link API functions and initialization path.
+ * @since Version 1.1.0
+ */
+static rx_spi_link_t s_spi_link;
 
 /* =============================================================================
  * Forward Declarations
@@ -949,6 +967,16 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     rx_log_error(s_tag, "SPI comm init failed");
   }
 
+  rx_spi_link_config_t link_cfg = {
+    .spi_handle  = &s_spi_comm_handle,
+    .fec_enabled = k_spi_link_default_fec_enabled,  // true
+    .max_retries = k_spi_link_default_max_retries,  // 3
+  };
+
+  bool link_ok = (rx_spi_link_init(&s_spi_link, &link_cfg) == k_rx_ok);
+  if (!link_ok) { rx_log_error(s_tag, "SPI link (HARQ) init failed"); }
+  config->spi_link = link_ok ? &s_spi_link : nullptr;
+
   /* Wire handles - pass nullptr for failed transports (triggers timeout in comm_manager) */
   config->usb_handle = usb_ok ? &s_usb_comm_handle : nullptr;
   config->spi_handle = spi_ok ? &s_spi_comm_handle : nullptr;
@@ -962,6 +990,9 @@ static void internal_init_transports(rx_comm_manager_config_t* config)
     }
     if (spi_ok) {
       rx_log_info(s_tag, "SPI transport initialized");
+    }
+    if (link_ok) {
+      rx_log_info(s_tag, "SPI HARQ link initialized (FEC + Chase Combining)");
     }
   }
 }
