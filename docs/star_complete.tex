@@ -1,0 +1,168 @@
+% =============================================================================
+% STAR Robot Control System - Complete Technical Documentation
+% Combines prose documentation with API references
+%
+% INSTRUCTIONS:
+% 1. Build individual API PDFs first (firmware, ros2, gateway)
+% 2. Compile with: pdflatex star_complete.tex (run twice for TOC)
+% =============================================================================
+
+\documentclass[11pt,letterpaper]{article}
+
+% Load all packages and settings from preamble
+\usepackage{
+  preamble
+}
+
+% Additional package for including external PDFs
+\usepackage{pdfpages}
+
+\begin{document}
+
+% =============================================================================
+% FRONT MATTER
+% =============================================================================
+
+% Title Page
+\begin{titlepage}
+\centering
+\vspace*{2cm}
+
+{\Huge\bfseries STAR Robot Control System\par}
+\vspace{0.5cm}
+{\LARGE Complete Technical Documentation\par}
+\vspace{1cm}
+{\Large System Architecture, Protocols, Style Guides \& API Reference\par}
+
+\vfill
+
+{\large Version 1.0\par}
+{\large February 2026\par}
+
+\vfill
+
+{\normalsize STAR Development Team\\ Locked Inc.\par}
+\end{titlepage}
+
+% Table of Contents
+\tableofcontents
+\newpage
+
+% =============================================================================
+% PART I: SYSTEM ARCHITECTURE & PROTOCOLS
+% =============================================================================
+\part{System Architecture \& Protocols}
+
+% Section 1: Nanopb Protocol Specification (SPI, ARQ, CRC)
+\input{sections/01_nanopb_protocol}
+
+% Section 2: Protocol Buffer Schema Definitions
+\input{sections/02_protobuf_schemas}
+
+% Section 3: Hardware Pin Connections
+\input{sections/03_hardware_pinout}
+
+% Section 12: End-to-End Communication Stack
+\input{sections/12_communication_stack}
+
+% Section 13: Transport Failover and Hot Switching
+\input{sections/13_transport_failover}
+
+% Section 14: Dual-Channel Arbitration
+\input{sections/14_dual_channel_arbitration}
+
+% Section 9: USB CDC Debug Protocol
+\input{sections/09_usb_cdc_protocol}
+
+% =============================================================================
+% PART II: STYLE GUIDES
+% =============================================================================
+\part{Style Guides}
+
+% Section 4: Protocol Buffer Style Guide
+\input{sections/04_style_guide}
+
+% Section 5: C Style Guide
+\input{sections/05_c_style_guide}
+
+% Section 6: NASA Power of 10 Rules
+\input{sections/06_nasa_power_of_10}
+
+% Section 11: ROS2 C++ Style Guide
+\input{sections/11_ros2_cpp_style_guide}
+
+% =============================================================================
+% PART III: GATEWAY & ROS2
+% =============================================================================
+\part{Gateway \& ROS2}
+
+% Section 7: Gateway Architecture
+\input{sections/07_gateway_architecture}
+
+% Section 10: ROS2 Integration Strategy
+\input{sections/10_ros2_integration}
+
+% =============================================================================
+% PART IV: API REFERENCE - RX72N FIRMWARE (C)
+% =============================================================================
+\part{API Reference -- RX72N Firmware (C)}
+
+\newpage
+\section*{RX72N Firmware API Reference}
+\addcontentsline{toc}{section}{RX72N Firmware API Reference}
+
+This section contains the complete auto-generated API reference for the
+STAR RX72N motor controller firmware. Generated from source code comments
+using Doxygen.
+
+\vspace{1em}
+\noindent\textbf{Source:} \texttt{e2-studio-star-rx72n-firmware/src/}\\
+\textbf{Language:} C (GNURX compiler, C23 features)\\
+\textbf{RTOS:} ThreadX\\
+\textbf{Generator:} Doxygen \texttt{1.16.1}
+
+\newpage
+\includepdf[pages=-, pagecommand={\thispagestyle{fancy}}, fitpaper=false, width=\textwidth]{star_firmware_api.pdf}
+
+% =============================================================================
+% PART V: API REFERENCE - GO GATEWAY
+% =============================================================================
+\part{API Reference -- Go Gateway}
+
+\newpage
+\section*{Go Gateway API Reference}
+\addcontentsline{toc}{section}{Go Gateway API Reference}
+
+This section contains the complete auto-generated API reference for the
+STAR Gateway service. Generated from Go source code documentation.
+
+\vspace{1em}
+\noindent\textbf{Source:} \texttt{star-gateway/}\\
+\textbf{Language:} Go 1.25\\
+\textbf{Generator:} go doc + Typst
+
+\newpage
+\includepdf[pages=-, pagecommand={\thispagestyle{fancy}}, fitpaper=false, width=\textwidth]{star_gateway_api.pdf}
+
+% =============================================================================
+% PART VI: API REFERENCE - ROS2 (C++)
+% =============================================================================
+\part{API Reference -- ROS2 (C++)}
+
+\newpage
+\section*{ROS2 API Reference}
+\addcontentsline{toc}{section}{ROS2 API Reference}
+
+This section contains the complete auto-generated API reference for the
+STAR ROS2 packages. Generated from C++ source code comments using Doxygen.
+
+\vspace{1em}
+\noindent\textbf{Source:} \texttt{star-ros2/src/}\\
+\textbf{Language:} C++17\\
+\textbf{Framework:} ROS2 Humble\\
+\textbf{Generator:} Doxygen \texttt{1.16.1}
+
+\newpage
+\includepdf[pages=-, pagecommand={\thispagestyle{fancy}}, fitpaper=false, width=\textwidth]{star_ros2_api.pdf}
+
+\end{document}

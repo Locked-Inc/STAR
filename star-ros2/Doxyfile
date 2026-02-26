@@ -1,0 +1,45 @@
+# Doxyfile for STAR ROS2 Packages
+# Generated for star-docs pipeline
+
+PROJECT_NAME           = "STAR ROS2 Packages"
+PROJECT_BRIEF          = "ROS2 nodes for STAR robot control"
+OUTPUT_DIRECTORY       = docs/doxygen
+
+INPUT                  = src/star_gateway_bridge \
+                         src/star_spi_bridge \
+                         src/star_safety_monitor \
+                         src/star_bringup
+FILE_PATTERNS          = *.cpp *.hpp *.h
+RECURSIVE              = YES
+EXCLUDE_PATTERNS       = */build/* */install/* */log/*
+
+# XML output for star-docs pipeline
+GENERATE_XML           = YES
+XML_OUTPUT             = xml
+GENERATE_HTML          = NO
+GENERATE_LATEX         = YES
+
+# Enable call graphs
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+HAVE_DOT               = YES
+DOT_PATH               =
+DOT_IMAGE_FORMAT       = svg
+
+# Documentation extraction
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = NO
+EXTRACT_STATIC         = YES
+EXTRACT_LOCAL_CLASSES  = YES
+
+# Source browsing
+SOURCE_BROWSER         = YES
+INLINE_SOURCES         = NO
+REFERENCES_RELATION    = YES
+REFERENCED_BY_RELATION = YES
+
+# Warnings
+QUIET                  = YES
+WARNINGS               = YES
+WARN_IF_UNDOCUMENTED   = YES
+WARN_IF_DOC_ERROR      = YES

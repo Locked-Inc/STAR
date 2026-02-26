@@ -253,7 +253,7 @@ LATEX_EMOJI_DIRECTORY   =
 #---------------------------------------------------------------------------
 GENERATE_RTF            = NO
 GENERATE_MAN            = NO
-GENERATE_XML            = NO
+GENERATE_XML            = YES
 GENERATE_DOCBOOK        = NO
 GENERATE_AUTOGEN_DEF    = NO
 GENERATE_PERLMOD        = NO
