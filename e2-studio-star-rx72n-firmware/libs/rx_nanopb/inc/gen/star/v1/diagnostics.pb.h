@@ -4,7 +4,6 @@
 #ifndef PB_STAR_V1_STAR_V1_DIAGNOSTICS_PB_H_INCLUDED
 #define PB_STAR_V1_STAR_V1_DIAGNOSTICS_PB_H_INCLUDED
 #include <pb.h>
-
 #include "google/protobuf/duration.pb.h"
 #include "google/protobuf/timestamp.pb.h"
 
@@ -15,64 +14,65 @@
 /* Enum definitions */
 /* TransportType identifies the physical transport. */
 typedef enum _star_v1_TransportType {
-  /* Unknown or unspecified transport. */
-  star_v1_TransportType_TRANSPORT_TYPE_UNKNOWN = 0,
-  /* USB CDC (ACM) serial transport. */
-  star_v1_TransportType_TRANSPORT_TYPE_USB_CDC = 1,
-  /* SPI full-duplex transport. */
-  star_v1_TransportType_TRANSPORT_TYPE_SPI = 2
+    /* Unknown or unspecified transport. */
+    star_v1_TransportType_TRANSPORT_TYPE_UNKNOWN = 0,
+    /* USB CDC (ACM) serial transport. */
+    star_v1_TransportType_TRANSPORT_TYPE_USB_CDC = 1,
+    /* SPI full-duplex transport. */
+    star_v1_TransportType_TRANSPORT_TYPE_SPI = 2
 } star_v1_TransportType;
 
 /* Struct definitions */
 /* TransportHealthReport contains health metrics for a single transport.
  Sent periodically by the gateway or on-demand for diagnostics. */
 typedef struct _star_v1_TransportHealthReport {
-  /* Transport identifier (e.g., "usb", "spi"). */
-  char transport_name[16];
-  /* Physical transport type. */
-  star_v1_TransportType transport_type;
-  /* Whether this transport is currently the active (selected) transport. */
-  bool is_active;
-  /* Whether this transport is considered healthy. */
-  bool is_healthy;
-  /* Total frames sent since last reset. */
-  uint64_t total_sent;
-  /* Total frames received since last reset. */
-  uint64_t total_received;
-  /* Total errors encountered since last reset. */
-  uint64_t total_errors;
-  /* Current consecutive failure count (resets on success). */
-  uint32_t consecutive_failures;
-  /* Average round-trip latency. */
-  bool                     has_avg_latency;
-  google_protobuf_Duration avg_latency;
-  /* Packet loss rate (0.0 to 1.0) over sliding window. */
-  float packet_loss_rate;
-  /* Timestamp of last successful operation. */
-  bool                      has_last_success;
-  google_protobuf_Timestamp last_success;
-  /* Timestamp of last failure. */
-  bool                      has_last_failure;
-  google_protobuf_Timestamp last_failure;
-  /* Timestamp of last recovery (unhealthy -> healthy transition). */
-  bool                      has_last_recovery;
-  google_protobuf_Timestamp last_recovery;
+    /* Transport identifier (e.g., "usb", "spi"). */
+    char transport_name[16];
+    /* Physical transport type. */
+    star_v1_TransportType transport_type;
+    /* Whether this transport is currently the active (selected) transport. */
+    bool is_active;
+    /* Whether this transport is considered healthy. */
+    bool is_healthy;
+    /* Total frames sent since last reset. */
+    uint64_t total_sent;
+    /* Total frames received since last reset. */
+    uint64_t total_received;
+    /* Total errors encountered since last reset. */
+    uint64_t total_errors;
+    /* Current consecutive failure count (resets on success). */
+    uint32_t consecutive_failures;
+    /* Average round-trip latency. */
+    bool has_avg_latency;
+    google_protobuf_Duration avg_latency;
+    /* Packet loss rate (0.0 to 1.0) over sliding window. */
+    float packet_loss_rate;
+    /* Timestamp of last successful operation. */
+    bool has_last_success;
+    google_protobuf_Timestamp last_success;
+    /* Timestamp of last failure. */
+    bool has_last_failure;
+    google_protobuf_Timestamp last_failure;
+    /* Timestamp of last recovery (unhealthy -> healthy transition). */
+    bool has_last_recovery;
+    google_protobuf_Timestamp last_recovery;
 } star_v1_TransportHealthReport;
 
 /* TransportDiagnostics contains health reports for all transports.
  This is the top-level diagnostics message sent over the wire. */
 typedef struct _star_v1_TransportDiagnostics {
-  /* Health reports for each registered transport. */
-  pb_size_t                     transports_count;
-  star_v1_TransportHealthReport transports[8];
-  /* Name of the currently active transport. */
-  char active_transport[16];
-  /* Total number of transport switches since startup. */
-  uint32_t switch_count;
-  /* Timestamp when diagnostics were collected. */
-  bool                      has_collected_at;
-  google_protobuf_Timestamp collected_at;
+    /* Health reports for each registered transport. */
+    pb_size_t transports_count;
+    star_v1_TransportHealthReport transports[8];
+    /* Name of the currently active transport. */
+    char active_transport[16];
+    /* Total number of transport switches since startup. */
+    uint32_t switch_count;
+    /* Timestamp when diagnostics were collected. */
+    bool has_collected_at;
+    google_protobuf_Timestamp collected_at;
 } star_v1_TransportDiagnostics;
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -81,100 +81,67 @@ extern "C" {
 /* Helper constants for enums */
 #define _star_v1_TransportType_MIN star_v1_TransportType_TRANSPORT_TYPE_UNKNOWN
 #define _star_v1_TransportType_MAX star_v1_TransportType_TRANSPORT_TYPE_SPI
-#define _star_v1_TransportType_ARRAYSIZE                                                           \
-  ((star_v1_TransportType)(star_v1_TransportType_TRANSPORT_TYPE_SPI + 1))
+#define _star_v1_TransportType_ARRAYSIZE ((star_v1_TransportType)(star_v1_TransportType_TRANSPORT_TYPE_SPI+1))
 
 #define star_v1_TransportHealthReport_transport_type_ENUMTYPE star_v1_TransportType
 
+
+
 /* Initializer values for message structs */
-#define star_v1_TransportHealthReport_init_default                                                 \
-  {                                                                                                \
-    "", _star_v1_TransportType_MIN, 0, 0, 0, 0, 0, 0, false,                                       \
-      google_protobuf_Duration_init_default, 0, false, google_protobuf_Timestamp_init_default,     \
-      false, google_protobuf_Timestamp_init_default, false, google_protobuf_Timestamp_init_default \
-  }
-#define star_v1_TransportDiagnostics_init_default                                                  \
-  {                                                                                                \
-    0,                                                                                             \
-      {star_v1_TransportHealthReport_init_default,                                                 \
-       star_v1_TransportHealthReport_init_default,                                                 \
-       star_v1_TransportHealthReport_init_default,                                                 \
-       star_v1_TransportHealthReport_init_default,                                                 \
-       star_v1_TransportHealthReport_init_default,                                                 \
-       star_v1_TransportHealthReport_init_default,                                                 \
-       star_v1_TransportHealthReport_init_default,                                                 \
-       star_v1_TransportHealthReport_init_default},                                                \
-      "", 0, false, google_protobuf_Timestamp_init_default                                         \
-  }
-#define star_v1_TransportHealthReport_init_zero                                                    \
-  {                                                                                                \
-    "", _star_v1_TransportType_MIN, 0, 0, 0, 0, 0, 0, false, google_protobuf_Duration_init_zero,   \
-      0, false, google_protobuf_Timestamp_init_zero, false, google_protobuf_Timestamp_init_zero,   \
-      false, google_protobuf_Timestamp_init_zero                                                   \
-  }
-#define star_v1_TransportDiagnostics_init_zero                                                     \
-  {                                                                                                \
-    0,                                                                                             \
-      {star_v1_TransportHealthReport_init_zero,                                                    \
-       star_v1_TransportHealthReport_init_zero,                                                    \
-       star_v1_TransportHealthReport_init_zero,                                                    \
-       star_v1_TransportHealthReport_init_zero,                                                    \
-       star_v1_TransportHealthReport_init_zero,                                                    \
-       star_v1_TransportHealthReport_init_zero,                                                    \
-       star_v1_TransportHealthReport_init_zero,                                                    \
-       star_v1_TransportHealthReport_init_zero},                                                   \
-      "", 0, false, google_protobuf_Timestamp_init_zero                                            \
-  }
+#define star_v1_TransportHealthReport_init_default {"", _star_v1_TransportType_MIN, 0, 0, 0, 0, 0, 0, false, google_protobuf_Duration_init_default, 0, false, google_protobuf_Timestamp_init_default, false, google_protobuf_Timestamp_init_default, false, google_protobuf_Timestamp_init_default}
+#define star_v1_TransportDiagnostics_init_default {0, {star_v1_TransportHealthReport_init_default, star_v1_TransportHealthReport_init_default, star_v1_TransportHealthReport_init_default, star_v1_TransportHealthReport_init_default, star_v1_TransportHealthReport_init_default, star_v1_TransportHealthReport_init_default, star_v1_TransportHealthReport_init_default, star_v1_TransportHealthReport_init_default}, "", 0, false, google_protobuf_Timestamp_init_default}
+#define star_v1_TransportHealthReport_init_zero  {"", _star_v1_TransportType_MIN, 0, 0, 0, 0, 0, 0, false, google_protobuf_Duration_init_zero, 0, false, google_protobuf_Timestamp_init_zero, false, google_protobuf_Timestamp_init_zero, false, google_protobuf_Timestamp_init_zero}
+#define star_v1_TransportDiagnostics_init_zero   {0, {star_v1_TransportHealthReport_init_zero, star_v1_TransportHealthReport_init_zero, star_v1_TransportHealthReport_init_zero, star_v1_TransportHealthReport_init_zero, star_v1_TransportHealthReport_init_zero, star_v1_TransportHealthReport_init_zero, star_v1_TransportHealthReport_init_zero, star_v1_TransportHealthReport_init_zero}, "", 0, false, google_protobuf_Timestamp_init_zero}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define star_v1_TransportHealthReport_transport_name_tag       1
-#define star_v1_TransportHealthReport_transport_type_tag       2
-#define star_v1_TransportHealthReport_is_active_tag            3
-#define star_v1_TransportHealthReport_is_healthy_tag           4
-#define star_v1_TransportHealthReport_total_sent_tag           10
-#define star_v1_TransportHealthReport_total_received_tag       11
-#define star_v1_TransportHealthReport_total_errors_tag         12
+#define star_v1_TransportHealthReport_transport_name_tag 1
+#define star_v1_TransportHealthReport_transport_type_tag 2
+#define star_v1_TransportHealthReport_is_active_tag 3
+#define star_v1_TransportHealthReport_is_healthy_tag 4
+#define star_v1_TransportHealthReport_total_sent_tag 10
+#define star_v1_TransportHealthReport_total_received_tag 11
+#define star_v1_TransportHealthReport_total_errors_tag 12
 #define star_v1_TransportHealthReport_consecutive_failures_tag 13
-#define star_v1_TransportHealthReport_avg_latency_tag          14
-#define star_v1_TransportHealthReport_packet_loss_rate_tag     15
-#define star_v1_TransportHealthReport_last_success_tag         20
-#define star_v1_TransportHealthReport_last_failure_tag         21
-#define star_v1_TransportHealthReport_last_recovery_tag        22
-#define star_v1_TransportDiagnostics_transports_tag            1
-#define star_v1_TransportDiagnostics_active_transport_tag      2
-#define star_v1_TransportDiagnostics_switch_count_tag          3
-#define star_v1_TransportDiagnostics_collected_at_tag          4
+#define star_v1_TransportHealthReport_avg_latency_tag 14
+#define star_v1_TransportHealthReport_packet_loss_rate_tag 15
+#define star_v1_TransportHealthReport_last_success_tag 20
+#define star_v1_TransportHealthReport_last_failure_tag 21
+#define star_v1_TransportHealthReport_last_recovery_tag 22
+#define star_v1_TransportDiagnostics_transports_tag 1
+#define star_v1_TransportDiagnostics_active_transport_tag 2
+#define star_v1_TransportDiagnostics_switch_count_tag 3
+#define star_v1_TransportDiagnostics_collected_at_tag 4
 
 /* Struct field encoding specification for nanopb */
-#define star_v1_TransportHealthReport_FIELDLIST(X, a)                                              \
-  X(a, STATIC, SINGULAR, STRING, transport_name, 1)                                                \
-  X(a, STATIC, SINGULAR, UENUM, transport_type, 2)                                                 \
-  X(a, STATIC, SINGULAR, BOOL, is_active, 3)                                                       \
-  X(a, STATIC, SINGULAR, BOOL, is_healthy, 4)                                                      \
-  X(a, STATIC, SINGULAR, UINT64, total_sent, 10)                                                   \
-  X(a, STATIC, SINGULAR, UINT64, total_received, 11)                                               \
-  X(a, STATIC, SINGULAR, UINT64, total_errors, 12)                                                 \
-  X(a, STATIC, SINGULAR, UINT32, consecutive_failures, 13)                                         \
-  X(a, STATIC, OPTIONAL, MESSAGE, avg_latency, 14)                                                 \
-  X(a, STATIC, SINGULAR, FLOAT, packet_loss_rate, 15)                                              \
-  X(a, STATIC, OPTIONAL, MESSAGE, last_success, 20)                                                \
-  X(a, STATIC, OPTIONAL, MESSAGE, last_failure, 21)                                                \
-  X(a, STATIC, OPTIONAL, MESSAGE, last_recovery, 22)
-#define star_v1_TransportHealthReport_CALLBACK              NULL
-#define star_v1_TransportHealthReport_DEFAULT               NULL
-#define star_v1_TransportHealthReport_avg_latency_MSGTYPE   google_protobuf_Duration
-#define star_v1_TransportHealthReport_last_success_MSGTYPE  google_protobuf_Timestamp
-#define star_v1_TransportHealthReport_last_failure_MSGTYPE  google_protobuf_Timestamp
+#define star_v1_TransportHealthReport_FIELDLIST(X, a) \
+X(a, STATIC,   SINGULAR, STRING,   transport_name,    1) \
+X(a, STATIC,   SINGULAR, UENUM,    transport_type,    2) \
+X(a, STATIC,   SINGULAR, BOOL,     is_active,         3) \
+X(a, STATIC,   SINGULAR, BOOL,     is_healthy,        4) \
+X(a, STATIC,   SINGULAR, UINT64,   total_sent,       10) \
+X(a, STATIC,   SINGULAR, UINT64,   total_received,   11) \
+X(a, STATIC,   SINGULAR, UINT64,   total_errors,     12) \
+X(a, STATIC,   SINGULAR, UINT32,   consecutive_failures,  13) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  avg_latency,      14) \
+X(a, STATIC,   SINGULAR, FLOAT,    packet_loss_rate,  15) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  last_success,     20) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  last_failure,     21) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  last_recovery,    22)
+#define star_v1_TransportHealthReport_CALLBACK NULL
+#define star_v1_TransportHealthReport_DEFAULT NULL
+#define star_v1_TransportHealthReport_avg_latency_MSGTYPE google_protobuf_Duration
+#define star_v1_TransportHealthReport_last_success_MSGTYPE google_protobuf_Timestamp
+#define star_v1_TransportHealthReport_last_failure_MSGTYPE google_protobuf_Timestamp
 #define star_v1_TransportHealthReport_last_recovery_MSGTYPE google_protobuf_Timestamp
 
-#define star_v1_TransportDiagnostics_FIELDLIST(X, a)                                               \
-  X(a, STATIC, REPEATED, MESSAGE, transports, 1)                                                   \
-  X(a, STATIC, SINGULAR, STRING, active_transport, 2)                                              \
-  X(a, STATIC, SINGULAR, UINT32, switch_count, 3)                                                  \
-  X(a, STATIC, OPTIONAL, MESSAGE, collected_at, 4)
-#define star_v1_TransportDiagnostics_CALLBACK             NULL
-#define star_v1_TransportDiagnostics_DEFAULT              NULL
-#define star_v1_TransportDiagnostics_transports_MSGTYPE   star_v1_TransportHealthReport
+#define star_v1_TransportDiagnostics_FIELDLIST(X, a) \
+X(a, STATIC,   REPEATED, MESSAGE,  transports,        1) \
+X(a, STATIC,   SINGULAR, STRING,   active_transport,   2) \
+X(a, STATIC,   SINGULAR, UINT32,   switch_count,      3) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  collected_at,      4)
+#define star_v1_TransportDiagnostics_CALLBACK NULL
+#define star_v1_TransportDiagnostics_DEFAULT NULL
+#define star_v1_TransportDiagnostics_transports_MSGTYPE star_v1_TransportHealthReport
 #define star_v1_TransportDiagnostics_collected_at_MSGTYPE google_protobuf_Timestamp
 
 extern const pb_msgdesc_t star_v1_TransportHealthReport_msg;
@@ -182,12 +149,12 @@ extern const pb_msgdesc_t star_v1_TransportDiagnostics_msg;
 
 /* Defines for backwards compatibility with code written before nanopb-0.4.0 */
 #define star_v1_TransportHealthReport_fields &star_v1_TransportHealthReport_msg
-#define star_v1_TransportDiagnostics_fields  &star_v1_TransportDiagnostics_msg
+#define star_v1_TransportDiagnostics_fields &star_v1_TransportDiagnostics_msg
 
 /* Maximum encoded size of messages (where known) */
 #define STAR_V1_STAR_V1_DIAGNOSTICS_PB_H_MAX_SIZE star_v1_TransportDiagnostics_size
-#define star_v1_TransportDiagnostics_size         1399
-#define star_v1_TransportHealthReport_size        166
+#define star_v1_TransportDiagnostics_size        1399
+#define star_v1_TransportHealthReport_size       166
 
 #ifdef __cplusplus
 } /* extern "C" */
