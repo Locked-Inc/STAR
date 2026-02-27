@@ -1,3 +1,17 @@
+# STAR RViz profile notes:
+# - Grid Name: "Grid", Reference Frame: <Fixed Frame>
+# - Alpha: 0.3 for low-contrast background context without obscuring scan/map overlays.
+# - Cell Size: 1 and Plane Cell Count: 20 to show a 20 m reference area around robot.
+# - Line Width: 0.03 balances visibility at typical zoom while keeping render cost low.
+# - LaserScan tuning: Size (Pixels)=3 boosts point visibility, Size (m)=0.05 keeps metric
+#   scale legible, Min/Max Intensity (0.15/10) match observed sensor intensity range,
+#   FlatColor + Autocompute bounds keep color stable while preserving contrast.
+# - Global Options: Frame Rate=30 balances smooth SLAM visualization with Pi 5 CPU/GPU budget;
+#   Fixed Frame=map is intentional for map-centric SLAM monitoring.
+# - Current View: Pitch=1.5707963705062866 is pi/2 (90 deg) top-down; Near Clip Distance
+#   and Stereo Eye Separation values are RViz serialization artifacts and should not be
+#   retuned unless camera behavior changes.
+# These values are tuned for operator readability and stable RViz performance on Pi 5.
 Panels:
   - Class: rviz_common/Displays
     Help Height: 78
@@ -26,7 +40,7 @@ Visualization Manager:
       Color: 160; 160; 164
       Enabled: true
       Line Style:
-        Line Width: 0.029999999329447746
+        Line Width: 0.03
         Value: Lines
       Name: Grid
       Normal Cell Count: 0
@@ -58,7 +72,7 @@ Visualization Manager:
       Position Transformer: XYZ
       Selectable: true
       Size (Pixels): 3
-      Size (m): 0.05000000074505806
+      Size (m): 0.05
       Style: Flat Squares
       Topic:
         Depth: 5
@@ -71,7 +85,7 @@ Visualization Manager:
       Value: true
     - Class: rviz_default_plugins/TF
       Enabled: true
-      Frame Timeout: 15
+      Frame Timeout: 2
       Frames:
         All Enabled: true
       Marker Scale: 0.5
@@ -83,7 +97,7 @@ Visualization Manager:
         {}
       Update Interval: 0
       Value: true
-    - Alpha: 0.7
+    - Alpha: 0.7  # Balance map readability with LaserScan overlay visibility.
       Class: rviz_default_plugins/Map
       Color Scheme: map
       Draw Behind: false
@@ -109,7 +123,7 @@ Visualization Manager:
       Name: RobotModel
       Topic:
         Depth: 5
-        Durability Policy: Volatile
+        Durability Policy: Transient Local
         History Policy: Keep Last
         Reliability Policy: Reliable
         Value: /robot_description
@@ -119,7 +133,7 @@ Visualization Manager:
   Enabled: true
   Global Options:
     Background Color: 48; 48; 48
-    Fixed Frame: laser_frame
+    Fixed Frame: map
     Frame Rate: 30
   Name: root
   Tools:
@@ -159,12 +173,12 @@ Visualization Manager:
         Y: 0
         Z: 0
       Focal Shape Fixed Size: true
-      Focal Shape Size: 0.05000000074505806
+      Focal Shape Size: 0.05
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
       Pitch: 1.5707963705062866
-      Target Frame: laser_frame
+      Target Frame: <Fixed Frame>
       Value: Orbit (rviz)
       Yaw: 0
     Saved: ~

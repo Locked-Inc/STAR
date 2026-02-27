@@ -9,7 +9,7 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
@@ -18,6 +18,15 @@ from launch_ros.substitutions import FindPackageShare
 # Slamtec RPLiDAR C1 DTOF protocol requires exactly 460800 baud.
 # This is a hardware-fixed parameter, not user-tunable.
 RPLIDAR_C1_BAUDRATE = 460800
+
+# static_transform_publisher positional order is x y z yaw pitch roll.
+# Use named arguments below to avoid order-related mistakes.
+TRANSFORM_X = '0'
+TRANSFORM_Y = '0'
+TRANSFORM_Z = '0'
+TRANSFORM_ROLL = '0'
+TRANSFORM_PITCH = '0'
+TRANSFORM_YAW = '0'
 
 
 def generate_launch_description():
@@ -67,9 +76,8 @@ def generate_launch_description():
         ),
     )
 
-    # EKF node: consumes /odom/unfiltered + /imu/data, publishes odom→base_link TF
-    # and /odometry/filtered. Must start before SLAM so odom→base_link TF is available.
-    # Disabled in dev mode (use_ekf:=false) — start.sh publishes a static identity TF instead.
+    # EKF node: consumes /odom/unfiltered + /imu/data, publishes odom->base_link TF
+    # and /odometry/filtered. Must start before SLAM so odom->base_link TF is available.
     ekf = Node(
         package='robot_localization',
         executable='ekf_node',
@@ -79,6 +87,30 @@ def generate_launch_description():
         respawn=True,
         respawn_delay=2.0,
         condition=IfCondition(LaunchConfiguration('use_ekf')),
+    )
+
+    # Fallback odom->base_link TF when EKF is disabled.
+    static_odom_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_odom_to_base_link',
+        arguments=[
+            '--x',
+            TRANSFORM_X,
+            '--y',
+            TRANSFORM_Y,
+            '--z',
+            TRANSFORM_Z,
+            '--yaw',
+            TRANSFORM_YAW,
+            '--pitch',
+            TRANSFORM_PITCH,
+            '--roll',
+            TRANSFORM_ROLL,
+            'odom',
+            'base_link',
+        ],
+        condition=UnlessCondition(LaunchConfiguration('use_ekf')),
     )
 
     slam = IncludeLaunchDescription(
@@ -115,6 +147,7 @@ def generate_launch_description():
         use_ekf_arg,
         static_tf,
         ekf,
+        static_odom_tf,
         rplidar,
         slam,
         nav2,

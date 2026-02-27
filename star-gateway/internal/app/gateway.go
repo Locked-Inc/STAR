@@ -10,7 +10,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -62,6 +61,15 @@ const (
 	// written to logs and forwarded to the motor controller. Prevents log
 	// injection and unbounded memory usage from adversarially long query params.
 	maxEstopReasonLen = 256
+
+	// slamResetTimeout bounds SLAM reset request latency from the HTTP handler.
+	slamResetTimeout = 5 * time.Second
+
+	// slamToolboxResetServicePath is the ROS2 service path for slam_toolbox reset.
+	slamToolboxResetServicePath = "/slam_toolbox/reset"
+
+	// slamToolboxResetServiceType is the ROS2 service type for slam_toolbox reset.
+	slamToolboxResetServiceType = "slam_toolbox/srv/Reset"
 )
 
 // Config holds the application configuration.
@@ -648,6 +656,7 @@ func startHTTPServerWithAddr(
 	// No defer internalCancel() here!
 
 	mux := http.NewServeMux()
+	slamSvc := service.NewROS2SLAMService(slamToolboxResetServicePath, slamToolboxResetServiceType)
 
 	// -- WebSocket hub setup -----------------------------------------------
 	adapter := &motorControllerAdapter{svc: services.motorControl}
@@ -769,13 +778,15 @@ func startHTTPServerWithAddr(
 			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
-		resetCtx, resetCancel := context.WithTimeout(r.Context(), 5*time.Second)
+		// Use r.Context() so client disconnect/cancel aborts this non-safety SLAM
+		// reset path. This intentionally differs from /api/estop, which uses
+		// context.Background() per ADR-13 so safety commands cannot be cancelled by
+		// HTTP client lifecycle.
+		resetCtx, resetCancel := context.WithTimeout(r.Context(), slamResetTimeout)
 		defer resetCancel()
-		cmd := exec.CommandContext(resetCtx, "ros2", "service", "call",
-			"/slam_toolbox/reset", "slam_toolbox/srv/Reset", "{}")
-		if err := cmd.Run(); err != nil {
+		if err := slamSvc.Reset(resetCtx); err != nil {
 			logger.Error("SLAM reset failed", slog.Any("error", err))
-			http.Error(w, "reset failed: "+err.Error(), http.StatusInternalServerError)
+			http.Error(w, "reset failed", http.StatusInternalServerError)
 			return
 		}
 		logger.Info("SLAM reset succeeded")

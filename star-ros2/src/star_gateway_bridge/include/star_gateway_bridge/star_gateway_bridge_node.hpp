@@ -1,34 +1,30 @@
 /**
  * @file star_gateway_bridge_node.hpp
- * @brief ROS2 Gateway Bridge Node -- bridges the ROS2 ecosystem with the Go gateway service.
+ * @brief ROS2 Gateway Bridge Node -- bridges the ROS2 ecosystem with the Go
+ * gateway service.
  *
  * @details
  * This node handles bidirectional communication:
- * - ROS2 -> Gateway: Forward telemetry (robot status, odometry, LiDAR) for UI display.
+ * - ROS2 -> Gateway: Forward telemetry (robot status, odometry, LiDAR) for UI
+ * display.
  * - Gateway -> ROS2: Poll teleop commands and PID gain updates from UI.
  *
- * @note Requires an active gRPC connection to the Go gateway on startup. If the connection
- * fails the node continues and retries via the watchdog timer.
+ * @note Requires an active gRPC connection to the Go gateway on startup. If the
+ * connection fails the node continues and retries via the watchdog timer.
  *
  * @since Version 1.0.0
  */
 
-#ifndef STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
-#define STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
+#pragma once
 
-#include <memory>
-#include <mutex>
-#include <optional>
-#include <string>
+#include <rclcpp/rclcpp.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <diagnostic_msgs/msg/key_value.hpp>
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
-#include <grpcpp/grpcpp.h> // NOLINT(build/include_order)
 #include <nav_msgs/msg/odometry.hpp>
-#include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/set_bool.hpp>
@@ -36,15 +32,22 @@
 #include "star/v1/gateway_service.grpc.pb.h"
 #include "star_gateway_bridge/message_converter.hpp"
 
-namespace star
-{
+#include <grpcpp/grpcpp.h>
+
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <string>
+
+namespace star {
 
 /**
  * @brief ROS2 node that bridges the ROS2 ecosystem with the Go gateway service
  * via gRPC.
  *
  * Architecture:
- *   ROS2 Topics/Services <-> StarGatewayBridgeNode <-> gRPC <-> Go Gateway <-> UI
+ *   ROS2 Topics/Services <-> StarGatewayBridgeNode <-> gRPC <-> Go Gateway <->
+ * UI
  *
  * Responsibilities:
  * 1. Subscribe to /robot_status ROS2 topic
@@ -84,7 +87,7 @@ public:
    * @param options ROS2 node options for component configuration
    */
   explicit StarGatewayBridgeNode(
-    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
+      const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.
@@ -136,8 +139,8 @@ private:
    * @param response Service response
    */
   void set_pid_gains_callback(
-    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+      std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // ===========================================================================
   // Timer Callbacks
@@ -196,9 +199,15 @@ private:
 
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;       /**< /odometry/filtered */
-  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr slam_pose_sub_;  /**< /slam_toolbox/pose */
-  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;  /**< /scan */
+  /**< Receives filtered odometry and updates cached_ekf_odometry_ under
+   * odometry_mutex_. */
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
+      slam_pose_sub_; /**< Receives SLAM pose and updates cached_slam_pose_
+                         under odometry_mutex_. */
+  /**< Receives LaserScan telemetry and updates cached_lidar_scan_ under
+   * lidar_mutex_. */
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
 
   // ROS2 Services
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_pid_gains_service_;
@@ -216,11 +225,20 @@ private:
   std::mutex robot_status_mutex_;
   std::optional<std_msgs::msg::String> cached_robot_status_;
 
-  std::mutex odometry_mutex_;                              /**< Guards cached_odometry_. */
-  std::optional<star::v1::OdometryData> cached_odometry_; /**< Latest odometry proto. */
-  std::mutex lidar_mutex_;                                 /**< Guards cached_lidar_scan_. */
-  std::optional<star::v1::LidarScan> cached_lidar_scan_;  /**< Latest lidar scan proto. */
-
+  std::mutex odometry_mutex_; /**< Guards cached_ekf_odometry_,
+                                 cached_slam_pose_, and their timestamps. */
+  std::optional<star::v1::OdometryData>
+      cached_ekf_odometry_; /**< Latest EKF odometry proto (/odometry/filtered).
+                             */
+  std::optional<star::v1::OdometryData>
+      cached_slam_pose_; /**< Latest SLAM pose proto (/slam_toolbox/pose). */
+  int64_t cached_ekf_timestamp_us_{
+      0}; /**< Timestamp of cached_ekf_odometry_ in microseconds. */
+  int64_t cached_slam_timestamp_us_{
+      0}; /**< Timestamp of cached_slam_pose_ in microseconds. */
+  std::mutex lidar_mutex_; /**< Guards cached_lidar_scan_. */
+  std::optional<star::v1::LidarScan>
+      cached_lidar_scan_; /**< Latest lidar scan proto. */
 
   // Parameters (cached for performance)
   std::string gateway_address_;
@@ -234,15 +252,26 @@ private:
   // Connection state
   bool grpc_connected_;
   int reconnect_attempts_;
-  static constexpr int k_max_reconnect_attempts = 10;
-  static constexpr int k_reconnect_backoff_ms_base = 100;
+  static constexpr int MAX_RECONNECT_ATTEMPTS = 10;
+  static constexpr int RECONNECT_BACKOFF_MS_BASE = 100;
+  static constexpr int MAX_BACKOFF_EXPONENT = 5;
+  /**
+   * @brief Sequence gap threshold used to detect UI restart vs dropped frames.
+   *
+   * @details
+   * UI sequence counters restart at 0 after a browser/app restart. A very large
+   * forward jump (>= 10000) is therefore interpreted as a stream restart
+   * instead of packet loss so drop metrics are not inflated by reconnect
+   * events.
+   */
+  static constexpr uint32_t SEQUENCE_RESTART_THRESHOLD = 10000;
 
   // Message converter (stateless utility)
-  MessageConverter converter_;
+  star::star_gateway_bridge::MessageConverter converter_;
 
   // Frame drop detection for teleop commands and telemetry
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr
-    diagnostics_pub_;
+      diagnostics_pub_;
   rclcpp::TimerBase::SharedPtr diagnostics_timer_;
 
   uint32_t last_teleop_sequence_{0};
@@ -265,9 +294,15 @@ private:
    * one for teleop command drops and one for telemetry frame drops. Severity
    * levels are OK / WARN / ERROR / STALE based on the calculated drop rate.
    *
-   * @post A DiagnosticArray is published on /diagnostics.
+   * @pre  diagnostics_pub_ has been initialized by initialize_ros_interfaces().
+   * @pre  diagnostics_timer_ fires at 1 Hz after initialize_ros_interfaces().
+   * @post A DiagnosticArray is published on /diagnostics with two status
+   * entries.
+   * @post total_teleop_frames_ and total_telemetry_frames_ are read but not
+   * modified.
    *
    * @note Called by diagnostics_timer_ at 1 Hz.
+   * @throw None.
    */
   void publish_diagnostics();
 
@@ -277,39 +312,49 @@ private:
    * @details
    * Compares current_sequence against the last observed sequence number.
    * Any positive gap (accounting for uint32 wraparound) increments
-   * teleop_frames_dropped_ and emits a WARN log. Gaps >= 10000 are treated as
+   * teleop_frames_dropped_ and emits a WARN log. Gaps >=
+   * SEQUENCE_RESTART_THRESHOLD are treated as
    * a system restart and logged at WARN without incrementing the drop counter.
    *
    * @param[in] current_sequence Sequence number of the latest teleop frame.
    *
-   * @pre  first_teleop_frame_ is false after the first call.
+   * @pre  first_teleop_frame_ is false after the first call returns.
+   * @pre  teleop_poll_timer_callback() is the sole caller (single-threaded ROS2
+   * timer).
    * @post last_teleop_sequence_ updated to current_sequence.
    * @post total_teleop_frames_ incremented by 1.
-   * @post teleop_frames_dropped_ incremented by the gap size (if gap < 10000).
+   * @post teleop_frames_dropped_ incremented by the gap size
+   *       (if gap < SEQUENCE_RESTART_THRESHOLD).
    *
    * @note Called from teleop_poll_timer_callback() on every fresh command.
+   * @throw None.
    */
   void check_teleop_sequence_continuity(uint32_t current_sequence);
 
   /**
-   * @brief Detect and log gaps in the outgoing telemetry sequence number stream.
+   * @brief Detect and log gaps in the outgoing telemetry sequence number
+   * stream.
    *
    * @details
    * Mirrors check_teleop_sequence_continuity() for the telemetry direction.
-   * Gaps >= 10000 are treated as a system restart and ignored.
+   * Gaps >= SEQUENCE_RESTART_THRESHOLD are treated as a system restart and
+   * ignored.
    *
    * @param[in] current_sequence Sequence number of the latest telemetry frame.
    *
-   * @pre  first_telemetry_frame_ is false after the first call.
+   * @pre  first_telemetry_frame_ is false after the first call returns.
+   * @pre  telemetry_forward_timer_callback() is the sole caller
+   * (single-threaded ROS2 timer).
    * @post last_telemetry_sequence_ updated to current_sequence.
    * @post total_telemetry_frames_ incremented by 1.
-   * @post telemetry_frames_dropped_ incremented by the gap size (if gap < 10000).
+   * @post telemetry_frames_dropped_ incremented by the gap size
+   *       (if gap < SEQUENCE_RESTART_THRESHOLD).
    *
-   * @note Called from telemetry_forward_timer_callback() on each successful gRPC send.
+   * @note Called from telemetry_forward_timer_callback() on each successful
+   * gRPC send.
+   * @throw None.
    */
   void check_telemetry_sequence_continuity(uint32_t current_sequence);
 };
 
 } // namespace star
-
-#endif // STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_

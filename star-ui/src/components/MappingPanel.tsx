@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useDashboardStore } from '../store/dashboardStore';
 import type { LidarScan } from '../proto/star/v1/ui';
@@ -11,14 +11,25 @@ const SCAN_MAX_RANGE_M = 12;
 const SCAN_RING_STEP = 2;
 const SCAN_RING_ALPHA = 0.05;
 const SCAN_INTENSITY_DIV = 255;
+const SCAN_ROBOT_RADIUS_PX = 3;
+const SCAN_COLORS = {
+  ring: `rgba(255,255,255,${SCAN_RING_ALPHA})`,
+  pointRgb: '0,220,80',
+  robot: '#3b82f6',
+} as const;
 
 // ── Map view constants ────────────────────────────────────────────────────
 const MAP_SIZE_PX = 500;
 const MAP_INITIAL_PX_PER_M = 60; // pixels per meter; rescaled when extent grows
+const MAP_DEFAULT_EXTENT_M = 2;
 const MAP_POINT_BUFFER_MAX = 60_000;
 const MAP_ROBOT_RADIUS_PX = 5;
 const MAP_ARROW_LEN_PX = 14;
 const MAP_GRID_SPACING_M = 1.0; // draw grid every 1 m
+const MAP_GRID_COLOR = '#1e2335';
+const MAP_POINT_COLOR = 'rgba(0,220,80,0.8)';
+const MAP_ROBOT_COLOR = SCAN_COLORS.robot;
+const MAP_HEADING_COLOR = '#22c55e';
 
 // ── Styles ────────────────────────────────────────────────────────────────
 const OUTER_STYLE: CSSProperties = {
@@ -52,7 +63,7 @@ const SUB_HEADER: CSSProperties = {
 };
 
 const CANVAS_STYLE: CSSProperties = {
-  background: '#0a0c14',
+  background: COLORS.bodyBg,
   borderRadius: '4px',
   display: 'block',
 };
@@ -81,12 +92,160 @@ const RESET_BTN_STYLE: CSSProperties = {
 // ── Types ─────────────────────────────────────────────────────────────────
 interface WorldPoint { x: number; y: number; }
 
+interface WorldExtent {
+  minX: number;
+  maxX: number;
+  minY: number;
+  maxY: number;
+  initialized: boolean;
+  dirty: boolean;
+}
+
+function createEmptyExtent(): WorldExtent {
+  return {
+    minX: 0,
+    maxX: 0,
+    minY: 0,
+    maxY: 0,
+    initialized: false,
+    dirty: false,
+  };
+}
+
+class PointRingBuffer {
+  private readonly data: WorldPoint[];
+  private readonly capacity: number;
+  private head = 0;
+  private size = 0;
+
+  constructor(capacity: number) {
+    this.capacity = capacity;
+    this.data = new Array<WorldPoint>(capacity);
+  }
+
+  get length(): number {
+    return this.size;
+  }
+
+  push(point: WorldPoint): WorldPoint | undefined {
+    if (this.size < this.capacity) {
+      const idx = (this.head + this.size) % this.capacity;
+      this.data[idx] = point;
+      this.size += 1;
+      return undefined;
+    }
+
+    const overwritten = this.data[this.head];
+    this.data[this.head] = point;
+    this.head = (this.head + 1) % this.capacity;
+    return overwritten;
+  }
+
+  clear(): void {
+    this.head = 0;
+    this.size = 0;
+  }
+
+  forEach(cb: (point: WorldPoint) => void): void {
+    for (let i = 0; i < this.size; i++) {
+      cb(this.data[(this.head + i) % this.capacity]);
+    }
+  }
+}
+
 // ── Component ─────────────────────────────────────────────────────────────
 export function MappingPanel() {
   const scanCanvasRef = useRef<HTMLCanvasElement>(null);
   const mapCanvasRef = useRef<HTMLCanvasElement>(null);
-  const pointBuffer = useRef<WorldPoint[]>([]);
-  const pointCountRef = useRef(0); // tracks length for footer display (no re-render)
+  const pointBuffer = useRef<PointRingBuffer>(new PointRingBuffer(MAP_POINT_BUFFER_MAX));
+  const extentRef = useRef<WorldExtent>(createEmptyExtent());
+  const rafRef = useRef<number | null>(null);
+  const drawPendingRef = useRef(false);
+  const lastPointCountUpdateMsRef = useRef(0);
+  const pointCountRef = useRef(0);
+  const abortRef = useRef<AbortController | null>(null);
+  const [pointCount, setPointCount] = useState(0);
+
+  const includePointInExtent = useCallback((p: WorldPoint) => {
+    const extent = extentRef.current;
+    if (!extent.initialized) {
+      extent.minX = p.x;
+      extent.maxX = p.x;
+      extent.minY = p.y;
+      extent.maxY = p.y;
+      extent.initialized = true;
+      return;
+    }
+    if (p.x < extent.minX) extent.minX = p.x;
+    if (p.x > extent.maxX) extent.maxX = p.x;
+    if (p.y < extent.minY) extent.minY = p.y;
+    if (p.y > extent.maxY) extent.maxY = p.y;
+  }, []);
+
+  const markExtentDirtyIfNeeded = useCallback((removed: WorldPoint | undefined) => {
+    if (!removed) return;
+    const extent = extentRef.current;
+    if (!extent.initialized) return;
+    if (
+      removed.x === extent.minX ||
+      removed.x === extent.maxX ||
+      removed.y === extent.minY ||
+      removed.y === extent.maxY
+    ) {
+      extent.dirty = true;
+    }
+  }, []);
+
+  const recomputeExtentIfDirty = useCallback(() => {
+    const extent = extentRef.current;
+    const buf = pointBuffer.current;
+    if (!extent.dirty) return;
+
+    if (buf.length === 0) {
+      extentRef.current = createEmptyExtent();
+      return;
+    }
+
+    let initialized = false;
+    let minX = 0;
+    let maxX = 0;
+    let minY = 0;
+    let maxY = 0;
+    buf.forEach((p) => {
+      if (!initialized) {
+        minX = p.x;
+        maxX = p.x;
+        minY = p.y;
+        maxY = p.y;
+        initialized = true;
+        return;
+      }
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    });
+
+    extent.minX = minX;
+    extent.maxX = maxX;
+    extent.minY = minY;
+    extent.maxY = maxY;
+    extent.initialized = initialized;
+    extent.dirty = false;
+  }, []);
+
+  const updatePointCountThrottled = useCallback((force = false) => {
+    const nowMs = performance.now();
+    const len = pointBuffer.current.length;
+    if (!force && nowMs - lastPointCountUpdateMsRef.current < 500) {
+      return;
+    }
+    lastPointCountUpdateMsRef.current = nowMs;
+    if (pointCountRef.current !== len) {
+      pointCountRef.current = len;
+      setPointCount(len);
+    }
+  }, []);
 
   // ── Draw the current scan (polar, same as LidarPanel) ──────────────────
   const drawScan = useCallback((scan: LidarScan) => {
@@ -101,7 +260,7 @@ export function MappingPanel() {
     ctx.clearRect(0, 0, SCAN_SIZE_PX, SCAN_SIZE_PX);
 
     // Range rings
-    ctx.strokeStyle = `rgba(255,255,255,${SCAN_RING_ALPHA})`;
+    ctx.strokeStyle = SCAN_COLORS.ring;
     ctx.lineWidth = 1;
     for (let r = SCAN_RING_STEP; r <= SCAN_MAX_RANGE_M; r += SCAN_RING_STEP) {
       ctx.beginPath();
@@ -117,14 +276,14 @@ export function MappingPanel() {
       if (d <= 0 || d > SCAN_MAX_RANGE_M) continue;
       const x = cx + Math.cos(a) * d * SCAN_PX_PER_M;
       const y = cy - Math.sin(a) * d * SCAN_PX_PER_M;
-      ctx.fillStyle = `rgba(0,220,80,${q.toFixed(2)})`;
+      ctx.fillStyle = `rgba(${SCAN_COLORS.pointRgb},${q.toFixed(2)})`;
       ctx.fillRect(x - 1, y - 1, 2, 2);
     }
 
     // Robot center
-    ctx.fillStyle = '#3b82f6';
+    ctx.fillStyle = SCAN_COLORS.robot;
     ctx.beginPath();
-    ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+    ctx.arc(cx, cy, SCAN_ROBOT_RADIUS_PX, 0, Math.PI * 2);
     ctx.fill();
   }, []);
 
@@ -135,26 +294,32 @@ export function MappingPanel() {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    recomputeExtentIfDirty();
+
     const pts = pointBuffer.current;
     const odom = useDashboardStore.getState().odometry;
+    const extent = extentRef.current;
 
     ctx.clearRect(0, 0, MAP_SIZE_PX, MAP_SIZE_PX);
 
     if (pts.length === 0 && !odom) return;
 
-    // Compute world extent to auto-scale
-    let minX = -2, maxX = 2, minY = -2, maxY = 2;
+    // Use incrementally maintained world extent to auto-scale
+    let minX = -MAP_DEFAULT_EXTENT_M;
+    let maxX = MAP_DEFAULT_EXTENT_M;
+    let minY = -MAP_DEFAULT_EXTENT_M;
+    let maxY = MAP_DEFAULT_EXTENT_M;
+    if (extent.initialized) {
+      minX = Math.min(minX, extent.minX);
+      maxX = Math.max(maxX, extent.maxX);
+      minY = Math.min(minY, extent.minY);
+      maxY = Math.max(maxY, extent.maxY);
+    }
     if (odom) {
       minX = Math.min(minX, odom.xM);
       maxX = Math.max(maxX, odom.xM);
       minY = Math.min(minY, odom.yM);
       maxY = Math.max(maxY, odom.yM);
-    }
-    for (const p of pts) {
-      if (p.x < minX) minX = p.x;
-      if (p.x > maxX) maxX = p.x;
-      if (p.y < minY) minY = p.y;
-      if (p.y > maxY) maxY = p.y;
     }
 
     const padding = 1.0; // metres of margin around extent
@@ -171,7 +336,7 @@ export function MappingPanel() {
     const toCanvasY = (wy: number) => MAP_SIZE_PX - (wy - minY + padding) * scale;
 
     // Grid lines every 1 m
-    ctx.strokeStyle = '#1e2335';
+    ctx.strokeStyle = MAP_GRID_COLOR;
     ctx.lineWidth = 1;
     const gridStart = Math.floor(minX - padding);
     const gridEndX = Math.ceil(maxX + padding);
@@ -193,24 +358,24 @@ export function MappingPanel() {
     }
 
     // Accumulated map points
-    ctx.fillStyle = 'rgba(0,220,80,0.8)';
-    for (const p of pts) {
+    ctx.fillStyle = MAP_POINT_COLOR;
+    pts.forEach((p) => {
       const cx = toCanvasX(p.x);
       const cy = toCanvasY(p.y);
       ctx.fillRect(cx - 1, cy - 1, 2, 2);
-    }
+    });
 
     // Robot position
     if (odom) {
       const rx = toCanvasX(odom.xM);
       const ry = toCanvasY(odom.yM);
 
-      ctx.fillStyle = '#3b82f6';
+      ctx.fillStyle = MAP_ROBOT_COLOR;
       ctx.beginPath();
       ctx.arc(rx, ry, MAP_ROBOT_RADIUS_PX, 0, Math.PI * 2);
       ctx.fill();
 
-      ctx.strokeStyle = '#22c55e';
+      ctx.strokeStyle = MAP_HEADING_COLOR;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(rx, ry);
@@ -220,7 +385,19 @@ export function MappingPanel() {
       );
       ctx.stroke();
     }
-  }, []);
+  }, [recomputeExtentIfDirty]);
+
+  const scheduleMapDraw = useCallback(() => {
+    if (drawPendingRef.current) {
+      return;
+    }
+    drawPendingRef.current = true;
+    rafRef.current = requestAnimationFrame(() => {
+      drawPendingRef.current = false;
+      rafRef.current = null;
+      drawMap();
+    });
+  }, [drawMap]);
 
   // ── Accumulate scan points into world frame and redraw ──────────────────
   const accumulateAndDraw = useCallback((scan: LidarScan) => {
@@ -238,26 +415,28 @@ export function MappingPanel() {
       const d = scan.rangeM[i];
       if (d <= 0 || d > SCAN_MAX_RANGE_M || !Number.isFinite(d)) continue;
       const a = scan.angleRad[i];
-      buf.push({
+      const point = {
         x: xM + d * Math.cos(thetaRad + a),
         y: yM + d * Math.sin(thetaRad + a),
-      });
+      };
+      const removed = buf.push(point);
+      markExtentDirtyIfNeeded(removed);
+      includePointInExtent(point);
     }
 
-    // Rolling buffer — drop oldest when over limit
-    if (buf.length > MAP_POINT_BUFFER_MAX) {
-      buf.splice(0, buf.length - MAP_POINT_BUFFER_MAX);
-    }
-    pointCountRef.current = buf.length;
+    updatePointCountThrottled();
 
     drawScan(scan);
-    drawMap();
-  }, [drawScan, drawMap]);
+    scheduleMapDraw();
+  }, [drawScan, includePointInExtent, markExtentDirtyIfNeeded, scheduleMapDraw, updatePointCountThrottled]);
 
   // ── Subscribe (no React re-renders) ────────────────────────────────────
   useEffect(() => {
+    let cancelled = false;
+
     const initial = useDashboardStore.getState().lidarScan;
     if (
+      !cancelled &&
       initial &&
       initial.angleRad.length === initial.rangeM.length &&
       initial.angleRad.length === initial.intensity.length
@@ -269,6 +448,7 @@ export function MappingPanel() {
       (state) => state.lidarScan,
       (scan: LidarScan | null) => {
         if (
+          !cancelled &&
           scan &&
           scan.angleRad.length === scan.rangeM.length &&
           scan.angleRad.length === scan.intensity.length
@@ -277,20 +457,43 @@ export function MappingPanel() {
         }
       },
     );
-    return unsub;
+
+    return () => {
+      cancelled = true;
+      unsub();
+    };
   }, [accumulateAndDraw]);
+
+  useEffect(() => {
+    return () => {
+      abortRef.current?.abort();
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
+  }, []);
 
   // ── Reset ───────────────────────────────────────────────────────────────
   const handleReset = useCallback(async () => {
-    pointBuffer.current = [];
-    pointCountRef.current = 0;
+    pointBuffer.current.clear();
+    extentRef.current = createEmptyExtent();
+    updatePointCountThrottled(true);
     drawMap(); // clears immediately
+
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
     try {
-      await fetch('/api/slam/reset', { method: 'POST' });
-    } catch {
-      // Non-critical — map buffer already cleared client-side
+      await fetch('/api/slam/reset', { method: 'POST', signal: controller.signal });
+    } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
+      // Non-critical - map buffer already cleared client-side.
+      console.error('Failed to reset SLAM buffer', err);
     }
-  }, [drawMap]);
+  }, [drawMap, updatePointCountThrottled]);
 
   return (
     <div style={OUTER_STYLE}>
@@ -303,6 +506,8 @@ export function MappingPanel() {
             width={SCAN_SIZE_PX}
             height={SCAN_SIZE_PX}
             style={CANVAS_STYLE}
+            role="img"
+            aria-label="scan preview canvas"
           />
         </div>
         <div style={SUB_PANEL}>
@@ -312,14 +517,18 @@ export function MappingPanel() {
             width={MAP_SIZE_PX}
             height={MAP_SIZE_PX}
             style={CANVAS_STYLE}
+            role="img"
+            aria-label="accumulated map canvas"
           />
         </div>
       </div>
       <div style={FOOTER_STYLE}>
-        <button style={RESET_BTN_STYLE} onClick={handleReset}>
+        <button type="button" style={RESET_BTN_STYLE} onClick={handleReset}>
           Reset Map
         </button>
-        <span>Buffer max: {MAP_POINT_BUFFER_MAX.toLocaleString()} pts</span>
+        <span>
+          Points: {pointCount.toLocaleString()} / {MAP_POINT_BUFFER_MAX.toLocaleString()} pts
+        </span>
       </div>
     </div>
   );
