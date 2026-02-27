@@ -51,7 +51,7 @@ OPTIMIZE_OUTPUT_JAVA    = NO
 OPTIMIZE_FOR_FORTRAN    = NO
 OPTIMIZE_OUTPUT_VHDL    = NO
 OPTIMIZE_OUTPUT_SLICE   = NO
-EXTENSION_MAPPING       =
+EXTENSION_MAPPING       = S=C s=C asm=C
 MARKDOWN_SUPPORT        = YES
 TOC_INCLUDE_HEADINGS    = 5
 AUTOLINK_SUPPORT        = YES
@@ -132,7 +132,10 @@ INPUT                   = src \
                           libs
 INPUT_ENCODING          = UTF-8
 FILE_PATTERNS           = *.c \
-                          *.h
+                          *.h \
+                          *.S \
+                          *.s \
+                          *.asm
 RECURSIVE               = YES
 EXCLUDE                 =
 EXCLUDE_SYMLINKS        = NO
