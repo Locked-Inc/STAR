@@ -461,6 +461,42 @@ apply_strict_warnings(test_rx_bus_onewire)
 apply_test_includes(test_rx_bus_onewire)
 target_link_libraries(test_rx_bus_onewire unity)
 
+# Test: GPIO Bus Abstraction
+add_executable(test_rx_bus_gpio
+    test_rx_bus_gpio.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_gpio.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_bus_gpio)
+apply_test_includes(test_rx_bus_gpio)
+target_link_libraries(test_rx_bus_gpio unity)
+
+# Test: ADC Bus Abstraction
+add_executable(test_rx_bus_adc
+    test_rx_bus_adc.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_adc.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_bus_adc)
+apply_test_includes(test_rx_bus_adc)
+target_link_libraries(test_rx_bus_adc unity)
+
+# Test: I2C Bus Abstraction
+add_executable(test_rx_bus_i2c
+    test_rx_bus_i2c.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_i2c.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_bus_i2c)
+apply_test_includes(test_rx_bus_i2c)
+target_link_libraries(test_rx_bus_i2c unity)
+
 # Test: SPI Communication Layer
 add_executable(test_rx_spi_comm
     test_rx_spi_comm.c
@@ -888,6 +924,9 @@ set(ALL_TEST_TARGETS
     test_rx_motor
     test_rx_bus_manager
     test_rx_bus_onewire
+    test_rx_bus_gpio
+    test_rx_bus_adc
+    test_rx_bus_i2c
     test_rx_spi_comm
     test_rx_spi_link
     test_rx_pid
@@ -934,6 +973,9 @@ add_test(NAME test_gpio_hal COMMAND test_gpio_hal)
 add_test(NAME test_rx_motor COMMAND test_rx_motor)
 add_test(NAME test_rx_bus_manager COMMAND test_rx_bus_manager)
 add_test(NAME test_rx_bus_onewire COMMAND test_rx_bus_onewire)
+add_test(NAME test_rx_bus_gpio COMMAND test_rx_bus_gpio)
+add_test(NAME test_rx_bus_adc COMMAND test_rx_bus_adc)
+add_test(NAME test_rx_bus_i2c COMMAND test_rx_bus_i2c)
 add_test(NAME test_rx_spi_comm COMMAND test_rx_spi_comm)
 add_test(NAME test_rx_spi_link COMMAND test_rx_spi_link)
 add_test(NAME test_rx_pid COMMAND test_rx_pid)
