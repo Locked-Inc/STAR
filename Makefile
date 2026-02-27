@@ -176,28 +176,54 @@ doxygen:
 # Uses lualatex (no register limit) instead of pdflatex (hits eTex 32768 cap
 # on our large codebase). Doxygen 1.16.1+ is required (installed from GitHub
 # in the Dockerfile -- Ubuntu 24.04 apt ships 1.9.8 which uses broken tabu).
-# Run 'make doxygen-pdf-deps' first if varwidth.sty or luaotfload-main.lua are missing.
+# Run 'make doxygen-pdf-deps' first if any required tools are missing.
+#
+# Note: CALL_GRAPH and CALLER_GRAPH are disabled for the PDF run only.
+# The main Doxyfile keeps them enabled for HTML (SVG hover graphs).
+# In a PDF they add ~3000 call/caller graph images and 20+ min compile time
+# with no clickable benefit. Re-enable by editing the sed line below.
 doxygen-pdf:
 	@if ! kpsewhich varwidth.sty >/dev/null 2>&1 || ! kpsewhich luaotfload-main.lua >/dev/null 2>&1; then \
 	  echo "ERROR: Missing LaTeX packages. Run: make doxygen-pdf-deps"; \
 	  exit 1; \
 	fi
-	@echo "Generating Doxygen HTML + LaTeX..."
+	@if ! command -v epstopdf >/dev/null 2>&1; then \
+	  echo "ERROR: epstopdf not found. Run: make doxygen-pdf-deps"; \
+	  exit 1; \
+	fi
+	@echo "Generating Doxygen LaTeX (call/caller graphs disabled for PDF)..."
 	@mkdir -p $(DOXYGEN_OUT)
-	@cd $(FIRMWARE_DIR) && doxygen Doxyfile
-	@echo "Copying placeholder PDFs for any @msc blocks that failed to render..."
+	@tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.pdf.XXXXXX); \
+	 sed -e 's/^CALL_GRAPH\s*=.*/CALL_GRAPH             = NO/' \
+	     -e 's/^CALLER_GRAPH\s*=.*/CALLER_GRAPH           = NO/' \
+	     -e 's/^GENERATE_HTML\s*=.*/GENERATE_HTML          = NO/' \
+	     $(FIRMWARE_DIR)/Doxyfile > "$$tmp"; \
+	 cd $(FIRMWARE_DIR) && doxygen "$$(basename $$tmp)"; \
+	 rm -f "$$tmp"
+	@echo "Converting mscgen EPS diagrams to PDF..."
+	@for eps in $(LATEX_DIR)/inline_mscgraph_*.eps; do \
+	  [ -f "$$eps" ] || continue; \
+	  pdf="$${eps%.eps}.pdf"; \
+	  [ -f "$$pdf" ] || epstopdf "$$eps" --outfile="$$pdf" 2>/dev/null || true; \
+	done
+	@echo "Copying placeholder PDFs for any @msc blocks that still have no PDF..."
 	@PLACEHOLDER=$$(ls $(LATEX_DIR)/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
-	 if [ -n "$$PLACEHOLDER" ]; then \
-	   for eps in $(LATEX_DIR)/inline_mscgraph_*.eps; do \
-	     pdf="$${eps%.eps}.pdf"; \
-	     [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
-	   done; \
-	   for tex in $(LATEX_DIR)/inline_mscgraph_*.tex; do \
-	     pdf="$${tex%.tex}.pdf"; \
-	     [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
-	   done; \
-	 fi
+	 if [ -z "$$PLACEHOLDER" ]; then \
+	   PLACEHOLDER=$(LATEX_DIR)/inline_mscgraph_placeholder.pdf; \
+	   printf '%%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 200 100]/Parent 2 0 R>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n190\n%%%%EOF' > "$$PLACEHOLDER"; \
+	 fi; \
+	 for eps in $(LATEX_DIR)/inline_mscgraph_*.eps; do \
+	   [ -f "$$eps" ] || continue; \
+	   pdf="$${eps%.eps}.pdf"; \
+	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
+	 done; \
+	 for msc in $(LATEX_DIR)/inline_mscgraph_*.msc; do \
+	   [ -f "$$msc" ] || continue; \
+	   pdf="$${msc%.msc}.pdf"; \
+	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
+	 done
 	@echo "Compiling refman.pdf (latexmk + lualatex)..."
+	@rm -f $(LATEX_DIR)/refman.fdb_latexmk $(LATEX_DIR)/refman.pdf
 	@cd $(LATEX_DIR) && latexmk -lualatex -interaction=nonstopmode -f refman.tex
 	@echo "Done: $(LATEX_DIR)/refman.pdf"
 
@@ -211,21 +237,26 @@ doxygen-clean:
 # Dockerfile's base texlive set (texlive-luatex and texlive-latex-extra are
 # not available as apt packages in this environment).
 #
-# - varwidth: installed via tlmgr user mode from the TeX Live 2023 archive
-# - luaotfload: not relocatable so tlmgr user mode cannot install it;
-#   downloaded directly from CTAN and placed in ~/texmf/tex/luatex/luaotfload/
+# Packages installed via tlmgr user mode (TeX Live 2023 historic archive):
+#   varwidth, lualibs, lua-uni-algos, collection-latexextra, collection-luatex
+# Packages installed manually from CTAN (non-relocatable, cannot use tlmgr):
+#   luaotfload  -> ~/texmf/tex/luatex/luaotfload/
+# Wrapper scripts:
+#   epstopdf    -> /usr/local/bin/epstopdf (delegates to gs)
+# Format rebuild:
+#   fmtutil-user --byfmt lualatex  (fixes expl3 version mismatch after installs)
 doxygen-pdf-deps:
 	@echo "Installing LaTeX deps for doxygen-pdf..."
-	@if ! kpsewhich varwidth.sty >/dev/null 2>&1; then \
-	  echo "  Installing varwidth via tlmgr (user mode)..."; \
-	  tlmgr init-usertree 2>/dev/null || true; \
-	  tlmgr --usermode option repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2023/tlnet-final; \
-	  tlmgr --usermode install varwidth; \
-	else \
-	  echo "  varwidth.sty already present -- skipping"; \
-	fi
+	@echo "  Configuring tlmgr user mode repository (TeX Live 2023 archive)..."
+	@tlmgr init-usertree 2>/dev/null || true
+	@tlmgr --usermode option repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2023/tlnet-final 2>/dev/null || true
+	@echo "  Installing packages via tlmgr..."
+	@tlmgr --usermode install \
+	    varwidth lualibs lua-uni-algos \
+	    collection-latexextra collection-luatex \
+	    2>&1 | grep -E "(install:|running|Error)" || true
 	@if ! kpsewhich luaotfload-main.lua >/dev/null 2>&1; then \
-	  echo "  Downloading luaotfload from CTAN..."; \
+	  echo "  Downloading luaotfload from CTAN (non-relocatable, manual install)..."; \
 	  tmp=$$(mktemp -d); \
 	  curl -sL "https://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip" -o "$$tmp/luaotfload.zip"; \
 	  unzip -q "$$tmp/luaotfload.zip" -d "$$tmp"; \
@@ -238,4 +269,12 @@ doxygen-pdf-deps:
 	else \
 	  echo "  luaotfload-main.lua already present -- skipping"; \
 	fi
+	@if ! command -v epstopdf >/dev/null 2>&1; then \
+	  bash scripts/install-epstopdf-wrapper.sh; \
+	else \
+	  echo "  epstopdf already present -- skipping"; \
+	fi
+	@echo "  Regenerating lualatex format (fixes expl3 version mismatch)..."
+	@fmtutil-user --byfmt lualatex 2>&1 | grep -E "(INFO|Error|error)" | tail -3
 	@echo "Done: LaTeX deps installed. Re-run 'make doxygen-pdf' to generate the PDF."
+
