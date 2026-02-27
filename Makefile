@@ -142,12 +142,12 @@ build-rx72n-release:
 # Auto-format firmware C/H files with clang-format (modifies files in place)
 format-rx72n:
 	@echo "Formatting RX72N firmware C/H files..."
-	@bash scripts/format-rx72n.sh
+	@bash $(FIRMWARE_DIR)/scripts/format_code.sh
 
 # Check firmware formatting without modifying files (for CI/pre-commit)
 check-rx72n:
 	@echo "Checking RX72N firmware formatting..."
-	@bash scripts/format-rx72n.sh --check
+	@bash $(FIRMWARE_DIR)/scripts/format_code.sh --check
 
 # Verify LidarScan nanopb max_count bounds are identical in ui.options and gateway_service.options.
 # Fails with a clear SYNC ERROR message if any value diverges between the two files.
