@@ -1,0 +1,527 @@
+
+(rules PCB STAR_MCU.dsn
+  (snap_angle 
+    fortyfive_degree
+  )
+  (autoroute_settings
+    (fanout off)
+    (autoroute on)
+    (postroute on)
+    (vias on)
+    (via_costs 50)
+    (plane_via_costs 5)
+    (start_ripup_costs 100)
+    (start_pass_no 1)
+    (layer_rule F.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.8)
+      (against_preferred_direction_trace_costs 4.5)
+    )
+    (layer_rule In1.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 3.3)
+    )
+    (layer_rule In2.Cu
+      (active on)
+      (preferred_direction horizontal)
+      (preferred_direction_trace_costs 1.0)
+      (against_preferred_direction_trace_costs 3.7)
+    )
+    (layer_rule B.Cu
+      (active on)
+      (preferred_direction vertical)
+      (preferred_direction_trace_costs 1.8)
+      (against_preferred_direction_trace_costs 4.1)
+    )
+  )
+  (rule
+    (width 200.0)
+    (clearance 200.0)
+    (clearance 100.0 (type smd_to_turn_gap))
+    (clearance 50.0 (type smd))
+    (clearance 200.0 (type "kicad_default"))
+    (clearance 200.0 (type "3V3 Main Rail,Default"))
+    (clearance 200.0 (type "Motor PWM Control,Default"))
+    (clearance 200.0 (type "SMBus BMS,Default"))
+    (clearance 200.0 (type "6V0 Buck,Default"))
+    (clearance 200.0 (type Encoders,Default))
+    (clearance 200.0 (type "System Config,Default"))
+    (clearance 200.0 (type Debug/Programming,Default))
+    (clearance 200.0 (type "Motor VCC,Default"))
+    (clearance 200.0 (type "Motor Driver SPI Config,Default"))
+    (clearance 200.0 (type "Motor Fault Signals,Default"))
+    (clearance 200.0 (type "Host SPI,Default"))
+    (clearance 200.0 (type "IMU Control,Default"))
+    (clearance 200.0 (type LED,Default))
+    (clearance 200.0 (type "LiDAR UART,Default"))
+    (clearance 200.0 (type "Motor Current Sensing,Default"))
+    (clearance 200.0 (type "Motor VEE,Default"))
+    (clearance 200.0 (type "3V3 Buck,Default"))
+    (clearance 200.0 (type "5V0 Buck,Default"))
+    (clearance 200.0 (type "USB SCI Data,Default"))
+    (clearance 200.0 (type "SONAR ECHO,Default"))
+    (clearance 200.0 (type "SONAR TRIG,Default"))
+    (clearance 200.0 (type "Temperature Sensor,Default"))
+    (clearance 200.0 (type Ground,Power/Ground,Default))
+  )
+  (padstack "Via[0-3]_600:300_um"
+    (shape
+      (circle F.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle In1.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle In2.Cu 600.0 0.0 0.0)
+    )
+    (shape
+      (circle B.Cu 600.0 0.0 0.0)
+    )
+    (attach off)
+  )
+  (via 
+    "Via[0-3]_600:300_um" "Via[0-3]_600:300_um" default
+  )
+  (via 
+    "Via[0-3]_600:300_um-kicad_default" "Via[0-3]_600:300_um" "kicad_default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-3V3 Main Rail,Default" "Via[0-3]_600:300_um" "3V3 Main Rail,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Motor PWM Control,Default" "Via[0-3]_600:300_um" "Motor PWM Control,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-SMBus BMS,Default" "Via[0-3]_600:300_um" "SMBus BMS,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-6V0 Buck,Default" "Via[0-3]_600:300_um" "6V0 Buck,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Encoders,Default" "Via[0-3]_600:300_um" Encoders,Default
+  )
+  (via 
+    "Via[0-3]_600:300_um-System Config,Default" "Via[0-3]_600:300_um" "System Config,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Debug/Programming,Default" "Via[0-3]_600:300_um" Debug/Programming,Default
+  )
+  (via 
+    "Via[0-3]_600:300_um-Motor VCC,Default" "Via[0-3]_600:300_um" "Motor VCC,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Motor Driver SPI Config,Default" "Via[0-3]_600:300_um" "Motor Driver SPI Config,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Motor Fault Signals,Default" "Via[0-3]_600:300_um" "Motor Fault Signals,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Host SPI,Default" "Via[0-3]_600:300_um" "Host SPI,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-IMU Control,Default" "Via[0-3]_600:300_um" "IMU Control,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-LED,Default" "Via[0-3]_600:300_um" LED,Default
+  )
+  (via 
+    "Via[0-3]_600:300_um-LiDAR UART,Default" "Via[0-3]_600:300_um" "LiDAR UART,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Motor Current Sensing,Default" "Via[0-3]_600:300_um" "Motor Current Sensing,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Motor VEE,Default" "Via[0-3]_600:300_um" "Motor VEE,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-3V3 Buck,Default" "Via[0-3]_600:300_um" "3V3 Buck,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-5V0 Buck,Default" "Via[0-3]_600:300_um" "5V0 Buck,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-USB SCI Data,Default" "Via[0-3]_600:300_um" "USB SCI Data,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-SONAR ECHO,Default" "Via[0-3]_600:300_um" "SONAR ECHO,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-SONAR TRIG,Default" "Via[0-3]_600:300_um" "SONAR TRIG,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Temperature Sensor,Default" "Via[0-3]_600:300_um" "Temperature Sensor,Default"
+  )
+  (via 
+    "Via[0-3]_600:300_um-Ground,Power/Ground,Default" "Via[0-3]_600:300_um" Ground,Power/Ground,Default
+  )
+  (via_rule
+    default "Via[0-3]_600:300_um"
+  )
+  (via_rule
+    "kicad_default" "Via[0-3]_600:300_um-kicad_default"
+  )
+  (via_rule
+    "3V3 Main Rail,Default" "Via[0-3]_600:300_um-3V3 Main Rail,Default"
+  )
+  (via_rule
+    "Motor PWM Control,Default" "Via[0-3]_600:300_um-Motor PWM Control,Default"
+  )
+  (via_rule
+    "SMBus BMS,Default" "Via[0-3]_600:300_um-SMBus BMS,Default"
+  )
+  (via_rule
+    "6V0 Buck,Default" "Via[0-3]_600:300_um-6V0 Buck,Default"
+  )
+  (via_rule
+    Encoders,Default "Via[0-3]_600:300_um-Encoders,Default"
+  )
+  (via_rule
+    "System Config,Default" "Via[0-3]_600:300_um-System Config,Default"
+  )
+  (via_rule
+    Debug/Programming,Default "Via[0-3]_600:300_um-Debug/Programming,Default"
+  )
+  (via_rule
+    "Motor VCC,Default" "Via[0-3]_600:300_um-Motor VCC,Default"
+  )
+  (via_rule
+    "Motor Driver SPI Config,Default" "Via[0-3]_600:300_um-Motor Driver SPI Config,Default"
+  )
+  (via_rule
+    "Motor Fault Signals,Default" "Via[0-3]_600:300_um-Motor Fault Signals,Default"
+  )
+  (via_rule
+    "Host SPI,Default" "Via[0-3]_600:300_um-Host SPI,Default"
+  )
+  (via_rule
+    "IMU Control,Default" "Via[0-3]_600:300_um-IMU Control,Default"
+  )
+  (via_rule
+    LED,Default "Via[0-3]_600:300_um-LED,Default"
+  )
+  (via_rule
+    "LiDAR UART,Default" "Via[0-3]_600:300_um-LiDAR UART,Default"
+  )
+  (via_rule
+    "Motor Current Sensing,Default" "Via[0-3]_600:300_um-Motor Current Sensing,Default"
+  )
+  (via_rule
+    "Motor VEE,Default" "Via[0-3]_600:300_um-Motor VEE,Default"
+  )
+  (via_rule
+    "3V3 Buck,Default" "Via[0-3]_600:300_um-3V3 Buck,Default"
+  )
+  (via_rule
+    "5V0 Buck,Default" "Via[0-3]_600:300_um-5V0 Buck,Default"
+  )
+  (via_rule
+    "USB SCI Data,Default" "Via[0-3]_600:300_um-USB SCI Data,Default"
+  )
+  (via_rule
+    "SONAR ECHO,Default" "Via[0-3]_600:300_um-SONAR ECHO,Default"
+  )
+  (via_rule
+    "SONAR TRIG,Default" "Via[0-3]_600:300_um-SONAR TRIG,Default"
+  )
+  (via_rule
+    "Temperature Sensor,Default" "Via[0-3]_600:300_um-Temperature Sensor,Default"
+  )
+  (via_rule
+    Ground,Power/Ground,Default "Via[0-3]_600:300_um-Ground,Power/Ground,Default"
+  )
+  (class default
+    (clearance_class default)
+    (via_rule default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "kicad_default"
+    "Net-(J6-VBUS_1)" "/SCI_USBC_5V0" "Net-(D5-K)" "Net-(U4-VCCD)" "Net-(J8-VBUS_1)" "AVSS0-1" "Net-(C27-Pad1)" "Net-(C32-Pad1)"
+    VREFL0 "Net-(C38-Pad1)" "Net-(C39-Pad1)" "Net-(C43-Pad1)" "Net-(D11-Pad2)" "Net-(D12-Pad2)" "Net-(D13-Pad2)" "Net-(D14-Pad2)"
+    "Net-(D15-Pad2)" "Net-(D16-Pad2)" /VCL "Net-(D7-Pad1)" "Net-(D8-Pad1)" "Net-(D9-Pad2)" "Net-(D10-Pad2)" "Net-(D17-Pad2)"
+    "Net-(D18-Pad2)" "unconnected-(J1-Pin_33-Pad33)" "unconnected-(J1-Pin_32-Pad32)" "unconnected-(J1-Pin_28-Pad28)" "unconnected-(J1-Pin_31-Pad31)" "unconnected-(J1-Pin_12-Pad12)" "unconnected-(J1-Pin_36-Pad36)" "unconnected-(J1-Pin_29-Pad29)"
+    "unconnected-(J1-Pin_27-Pad27)" "unconnected-(J1-Pin_38-Pad38)" "unconnected-(J1-Pin_26-Pad26)" "unconnected-(J1-Pin_15-Pad15)" "unconnected-(J1-Pin_35-Pad35)" "unconnected-(J1-Pin_37-Pad37)" "unconnected-(J1-Pin_11-Pad11)" "unconnected-(J1-Pin_22-Pad22)"
+    "unconnected-(J1-Pin_13-Pad13)" "unconnected-(J1-Pin_40-Pad40)" "unconnected-(J3-Pin_9-Pad9)" "unconnected-(J3-Pin_8-Pad8)" "unconnected-(J3-Pin_7-Pad7)" "unconnected-(J3-Pin_6-Pad6)" "unconnected-(J3-Pin_3-Pad3)" "unconnected-(J5-Pad1)"
+    "unconnected-(J6-SBU2-PadB8)" "Net-(J6-CC1)" "Net-(J6-CC2)" "unconnected-(J6-SBU1-PadA8)" "unconnected-(J7-Pad4)" "Net-(J8-CC1)" "unconnected-(J8-SBU2-PadB8)" "unconnected-(J8-SBU1-PadA8)"
+    "Net-(J8-CC2)" "unconnected-(J13-NC-Pad6)" "Net-(J19-Pin_1)" "Net-(U11-XCIN)" "Net-(U11-PE0{slash}D8{slash}D0{slash}MTIOC3D{slash}GTIOC2B{slash}SCK12{slash}SSLB1-B{slash}MMC_D4-B{slash}LCD_DATA16-B{slash}ANEX0)" "Net-(C36-Pad1)" "Net-(U11-PE1{slash}D9{slash}D1{slash}MTIOC4C{slash}MTIOC3B{slash}PO18{slash}GTIOC1B{slash}TXD12{slash}SMOSI12{slash}SSDA12{slash}TXDX12{slash}SIOX12{slash}SSLB2-B{slash}MMC_D5-B{slash}LCD_DATA15-B{slash}ANEX1)" "Net-(U11-PE2{slash}D10{slash}D2{slash}MTIOC4A{slash}PO23{slash}TIC3{slash}GTIOC0B{slash}RXD12{slash}SMISO12{slash}SSCL12{slash}RXDX12{slash}SSLB3-B{slash}MMC_D6-B{slash}LCD_DATA14-B{slash}IRQ7{slash}AN100)"
+    "unconnected-(U11-P81{slash}TRDATA1{slash}EDACK0{slash}MTIOC3D{slash}PO27{slash}GTIOC0B{slash}SMISO10{slash}SSCL10{slash}RXD10{slash}ET0_ETXD0{slash}RMII0_TXD0{slash}QIO3-A{slash}SDHI_CD{slash}MMC_D3-A-Pad64)" /XTAL "unconnected-(U11-PD0{slash}D0{slash}POE4#{slash}GTIOC1B{slash}LCD_EXTCLK-B{slash}IRQ0{slash}AN108-Pad126)" "unconnected-(U11-PA2{slash}A2{slash}MTIOC7A{slash}PO18{slash}GTIOC1A{slash}RXD5{slash}SMISO5{slash}SSCL5{slash}SSLA3-B{slash}LCD_DATA6-B-Pad95)" "unconnected-(U11-P77{slash}TRDATA7{slash}CS7#{slash}PO23{slash}SMOSI11{slash}SSDA11{slash}TXD11{slash}ET0_RX_ER{slash}RMII0_RX_ER{slash}QSPCLK-A{slash}SDHI_CLK-A{slash}MMC_CLK-A-Pad68)" "unconnected-(U11-P93{slash}A19{slash}POE0#{slash}CTS7#{slash}RTS7#{slash}SS7#{slash}ET1_LINKSTA{slash}AN117-Pad127)" "unconnected-(U11-PE5{slash}D13{slash}D5{slash}MTIOC4C{slash}MTIOC2B{slash}GTIOC0A{slash}RSPCKB-B{slash}ET0_RX_CLK{slash}REF50CK0{slash}LCD_DATA11-B{slash}IRQ5{slash}AN103-Pad106)" "unconnected-(U11-XCOUT-Pad18)"
+    "unconnected-(U11-PD5{slash}D5{slash}MTIC5W{slash}MTIOC8C{slash}MTCLKA{slash}POE10#{slash}SSLC1-A{slash}ET1_MDC{slash}PMGI1_MDC{slash}QSPCLK-B{slash}SDHI_CLK-B{slash}MMC_CLK-B{slash}LCD_DATA19-B{slash}IRQ5{slash}AN113-Pad121)" "unconnected-(U11-PE4{slash}D12{slash}D4{slash}MTIOC4D{slash}MTIOC1A{slash}PO28{slash}GTIOC1A{slash}SSLB0-B{slash}ET0_ERXD2{slash}LCD_DATA12-B{slash}AN102-Pad107)" "unconnected-(U11-P75{slash}TRSYNC1{slash}CS5#{slash}PO20{slash}SCK11{slash}RTS11#{slash}ET0_ERXD0{slash}RMII0_RXD0{slash}SDHI_D2-A{slash}MMC_RES#-A-Pad71)" "unconnected-(U11-PD6{slash}D6{slash}MTIC5V{slash}MTIOC8A{slash}POE4#{slash}SSLC2-A{slash}REF50CK1{slash}QMO-B{slash}QIO0-B{slash}SDHI_D0-B{slash}MMC_D0-B{slash}LCD_DATA18-B{slash}IRQ6{slash}AN106-Pad120)" "Net-(U4-GPIO5)" "Net-(U4-RI#)" "Net-(U4-DSR#)" "Net-(U4-DCD#)"
+    "Net-(U4-CTS#)" "Net-(U4-GPIO2)" "Net-(U4-GPIO7)" "Net-(U4-GPIO6)" "Net-(U4-GPIO0)" "Net-(U4-GPIO1)" "Net-(U5-PR1)" "unconnected-(U11-P60{slash}CS0#{slash}RMII1_TXD_EN-Pad117)"
+    "unconnected-(U11-P76{slash}TRDATA6{slash}CS6#{slash}PO22{slash}SMISO11{slash}SSCL11{slash}RXD11{slash}ET0_RX_CLK{slash}REF50CK0{slash}QSSL-A{slash}SDHI_CMD-A{slash}MMC_CMD-A-Pad69)" "unconnected-(U11-P82{slash}TRSYNC{slash}EDREQ1{slash}MTIOC4A{slash}PO28{slash}GTIOC2A{slash}SMOSI10{slash}SSDA10{slash}TXD10{slash}ET0_ETXD1{slash}RMII0_TXD1{slash}MMC_D4-A-Pad63)" "unconnected-(U11-P90{slash}A16{slash}TXD7{slash}SMOSI7{slash}SSDA7{slash}AN114-Pad131)" "unconnected-(U4-NC_1-Pad24)" "unconnected-(U4-GPIO3-Pad14)" "unconnected-(U4-GPIO4-Pad12)" "unconnected-(U4-NC_2-Pad25)" "unconnected-(U4-RTS#-Pad3)"
+    "unconnected-(U4-DNU-Pad26)" "unconnected-(U4-DTR#-Pad2)" "unconnected-(U5-ST-Pad8)" "unconnected-(U11-PD7{slash}D7{slash}MTIC5U{slash}POE0#{slash}SSLC3-A{slash}RMII1_RX_ER{slash}QMI-B{slash}QIO1-B{slash}SDHI_D1-B{slash}MMC_D1-B{slash}LCD_DATA17-B{slash}IRQ7{slash}AN107-Pad119)" "unconnected-(U11-P91{slash}A17{slash}SCK7{slash}AN115-Pad129)" "unconnected-(U11-P92{slash}A18{slash}POE4#{slash}RXD7{slash}SMISO7{slash}SSCL7{slash}RMII1_CRS_DV{slash}AN116-Pad128)" "Net-(C28-Pad1)" "Net-(C30-Pad1)"
+    "unconnected-(U11-P64{slash}WE#{slash}D3{slash}CS4#{slash}RMII1_TXD0-Pad112)" "Net-(C37-Pad1)" "unconnected-(U11-P73{slash}TRDATA4{slash}CS3#{slash}PO16{slash}ET0_WOL-Pad77)" "unconnected-(U11-P63{slash}CAS#{slash}D2{slash}CS3#{slash}RMII1_TXD1-Pad113)" "unconnected-(U11-P83{slash}TRCLK{slash}EDACK1{slash}MTIOC4C{slash}GTIOC0A{slash}SCK10{slash}SS10#{slash}CTS10#{slash}ET0_CRS{slash}RMII0_CRS_DV-Pad58)" "unconnected-(U11-P66{slash}DQM0{slash}CS6#{slash}MTIOC7D{slash}GTIOC2B{slash}CTX2-Pad99)" "unconnected-(U11-P53{slash}BCLK-Pad53)" "unconnected-(U11-P65{slash}CKE{slash}CS5#-Pad100)"
+    "unconnected-(U11-PE6{slash}D14{slash}D6{slash}MTIOC6C{slash}TIC1{slash}GTIOC3B{slash}MOSIB-B{slash}SDHI_CD{slash}MMC_CD-B{slash}LCD_DATA10-B{slash}IRQ6{slash}AN104-Pad102)" "unconnected-(U11-P62{slash}RAS#{slash}D1{slash}CS2#{slash}RMII1_RXD0-Pad114)" /EXTAL "unconnected-(U11-PA4{slash}A4{slash}MTIC5U{slash}MTCLKA{slash}TIOCA1{slash}TMRI0{slash}PO20{slash}TXD5{slash}SMOSI5{slash}SSDA5{slash}SSLA0-B{slash}ET0_MDC{slash}PMGI0_MDC{slash}LCD_DATA4-B{slash}IRQ5-Pad92)" "unconnected-(U11-PA5{slash}A5{slash}MTIOC6B{slash}TIOCB1{slash}PO21{slash}GTIOC0A{slash}RSPCKA-B{slash}ET0_LINKSTA{slash}LCD_DATA3-B-Pad90)" "unconnected-(U11-P42{slash}IRQ10{slash}AN002-Pad138)" "unconnected-(U11-P41{slash}IRQ9{slash}AN001-Pad139)" "unconnected-(U11-P43{slash}IRQ11{slash}AN003-Pad137)"
+    "unconnected-(U11-PA0{slash}BC0#{slash}A0{slash}MTIOC4A{slash}MTIOC6D{slash}TIOCA0{slash}PO16{slash}CACREF{slash}GTIOC0B{slash}SSLA1-B{slash}ET0_TX_EN{slash}RMII0_TXD_EN{slash}LCD_DATA8-B-Pad97)" "unconnected-(U11-P80{slash}TRDATA0{slash}EDREQ0{slash}MTIOC3B{slash}PO26{slash}SCK10{slash}RTS10#{slash}ET0_TX_EN{slash}RMII0_TXD_EN{slash}QIO2-A{slash}SDHI_WP{slash}MMC_D2-A-Pad65)" "unconnected-(U11-P07{slash}IRQ15{slash}ADTRG0#-Pad144)" "unconnected-(U11-P40{slash}IRQ8{slash}AN000-Pad141)" "unconnected-(U11-P70{slash}SDCLK-Pad104)" "unconnected-(U11-P61{slash}SDCS#{slash}D0{slash}CS1#{slash}RMII1_RXD1-Pad115)" "unconnected-(U11-P50{slash}WR0#{slash}WR#{slash}TXD2{slash}SMOSI2{slash}SSDA2{slash}SSLB1-A-Pad56)" "unconnected-(U11-P32{slash}MTIOC0C{slash}TIOCC0{slash}TMO3{slash}PO10{slash}RTCIC2{slash}RTCOUT{slash}POE0#{slash}POE10#{slash}TXD6{slash}SMOSI6{slash}SSDA6{slash}TXD0{slash}SMOSI0{slash}SSDA0{slash}CTX0{slash}USB0_VBUSEN{slash}VSYNC{slash}IRQ2-Pad27)"
+    "unconnected-(U11-P87{slash}MTIOC4C{slash}TIOCA2{slash}GTIOC1B{slash}SMOSI10{slash}SSDA10{slash}TXD10{slash}EPLSOUT1{slash}SDHI_D2-C{slash}PIXD2-Pad39)" "unconnected-(U11-P54{slash}TRDATA2{slash}ALE{slash}D1{slash}EDACK0{slash}MTIOC4B{slash}TMCI1{slash}CTS2#{slash}RTS2#{slash}SS2#{slash}CTX1{slash}ET0_LINKSTA-Pad52)" "unconnected-(U11-P56{slash}CLKOUT25M{slash}EDACK1{slash}MTIOC3C{slash}TIOCA1{slash}SCK7-Pad50)" "unconnected-(U11-P67{slash}DQM1{slash}CS7#{slash}MTIOC7C{slash}GTIOC1B{slash}CRX2{slash}EPLSOUT1{slash}IRQ15-Pad98)" "unconnected-(U11-P52{slash}RD#{slash}RXD2{slash}SMISO2{slash}SSCL2{slash}SSLB3-A-Pad54)" "unconnected-(J1-Pin_2-Pad2)" "unconnected-(J1-Pin_4-Pad4)" "unconnected-(J1-Pin_17-Pad17)"
+    "unconnected-(J1-Pin_1-Pad1)"
+    (clearance_class "kicad_default")
+    (via_rule "kicad_default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "3V3 Main Rail,Default"
+    /AVCC0 "/BUS_3V3"
+    (clearance_class "3V3 Main Rail,Default")
+    (via_rule "3V3 Main Rail,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Motor PWM Control,Default"
+    "/MOTOR2_EN" "/MOTOR1_EN" "/MOTOR0_EN" "/MOTOR0_PH" "/MOTOR1_PH" "/MOTOR3_PH" "/MOTOR2_PH" "/MOTOR3_EN"
+    (clearance_class "Motor PWM Control,Default")
+    (via_rule "Motor PWM Control,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "SMBus BMS,Default"
+    "/BMS_SDA1" "/BMS_SCL1" "/BMS_ALERT"
+    (clearance_class "SMBus BMS,Default")
+    (via_rule "SMBus BMS,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "6V0 Buck,Default"
+    "/P6V0_BUCK"
+    (clearance_class "6V0 Buck,Default")
+    (via_rule "6V0 Buck,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class Encoders,Default
+    "/ENC0_MTCLKA" "/ENC0_MTCLKB" "/ENC1_MTCLKD" "/ENC1_MTCLKC" "/ENC2_TCLKA" "/ENC2_TCLKB" "/ENC3_TCLKD" "/ENC3_TCLKC"
+    (clearance_class Encoders,Default)
+    (via_rule Encoders,Default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "System Config,Default"
+    /RES# /FINED /UB /EMLE /UPSEL
+    (clearance_class "System Config,Default")
+    (via_rule "System Config,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class Debug/Programming,Default
+    "/USB0_USBC_5V0" "/USB0_DP_TO_CON" "/USB0_DN_TO_CON" "/EMU_TDI" "/EMU_TDO" "/EMU_TRST#" "/USB0_DN" "/USB0_DP"
+    "/USB0_VBUS_3V3" "/DEBUG_RXD9" "/EMU_TCK" "/EMU_TMS" "/DEBUG_TXD9"
+    (clearance_class Debug/Programming,Default)
+    (via_rule Debug/Programming,Default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Motor VCC,Default"
+    "/MOTOR0_VCC" "/MOTOR1_VCC" "/MOTOR2_VCC" "/MOTOR3_VCC"
+    (clearance_class "Motor VCC,Default")
+    (via_rule "Motor VCC,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Motor Driver SPI Config,Default"
+    "/DRV_CLK" "/DRV_COPI" "/DRV_CIPO" "/DRV_CS0" "/DRV_CS1" "/DRV_CS2" "/DRV_CS3"
+    (clearance_class "Motor Driver SPI Config,Default")
+    (via_rule "Motor Driver SPI Config,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Motor Fault Signals,Default"
+    "/GPTW_EXT_TRIG0" "/GPTW_EXT_TRIG1" "/GPTW_EXT_TRIG2" "/GPTW_EXT_TRIG3"
+    (clearance_class "Motor Fault Signals,Default")
+    (via_rule "Motor Fault Signals,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Host SPI,Default"
+    "/HOST_SCL0" "/HOST_CIPO" "/HOST_CS0" "/HOST_CLK" "/HOST_IRQ" "/HOST_COPI" "/HOST_SDA0"
+    (clearance_class "Host SPI,Default")
+    (via_rule "Host SPI,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "IMU Control,Default"
+    "/IMU_INT" "/IMU_RST"
+    (clearance_class "IMU Control,Default")
+    (via_rule "IMU Control,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class LED,Default
+    "/LED_0" "/LED_1" "/LED_2" "/LED_3" "/LED_4" "/LED_5"
+    (clearance_class LED,Default)
+    (via_rule LED,Default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "LiDAR UART,Default"
+    "/LiDAR_RX_PI5_TX" "/LiDAR_TX_PI5_RX"
+    (clearance_class "LiDAR UART,Default")
+    (via_rule "LiDAR UART,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Motor Current Sensing,Default"
+    "/MOTOR0_ISENSE" "/MOTOR1_ISENSE" "/MOTOR2_ISENSE" "/MOTOR3_ISENSE"
+    (clearance_class "Motor Current Sensing,Default")
+    (via_rule "Motor Current Sensing,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Motor VEE,Default"
+    "/MOTOR0_VEE" "/MOTOR1_VEE" "/MOTOR2_VEE" "/MOTOR3_VEE"
+    (clearance_class "Motor VEE,Default")
+    (via_rule "Motor VEE,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "3V3 Buck,Default"
+    "/P3V3_BUCK"
+    (clearance_class "3V3 Buck,Default")
+    (via_rule "3V3 Buck,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "5V0 Buck,Default"
+    "/P5V0_BUCK"
+    (clearance_class "5V0 Buck,Default")
+    (via_rule "5V0 Buck,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "USB SCI Data,Default"
+    "/SCI_USBC_USBDP" "/SCI_USBC_USBDN"
+    (clearance_class "USB SCI Data,Default")
+    (via_rule "USB SCI Data,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "SONAR ECHO,Default"
+    "/SONAR_ECHO_0" "/SONAR_ECHO_1" "/SONAR_ECHO_2" "/SONAR_ECHO_3"
+    (clearance_class "SONAR ECHO,Default")
+    (via_rule "SONAR ECHO,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "SONAR TRIG,Default"
+    "/SONAR_TRIG_0" "/SONAR_TRIG_1" "/SONAR_TRIG_2" "/SONAR_TRIG_3"
+    (clearance_class "SONAR TRIG,Default")
+    (via_rule "SONAR TRIG,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class "Temperature Sensor,Default"
+    "/TEMP_1WIRE"
+    (clearance_class "Temperature Sensor,Default")
+    (via_rule "Temperature Sensor,Default")
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+  (class Ground,Power/Ground,Default
+    GND
+    (clearance_class Ground,Power/Ground,Default)
+    (via_rule Ground,Power/Ground,Default)
+    (rule
+      (width 200.0)
+    )
+    (circuit 
+      (use_layer F.Cu In1.Cu In2.Cu B.Cu)
+    )
+  )
+)
