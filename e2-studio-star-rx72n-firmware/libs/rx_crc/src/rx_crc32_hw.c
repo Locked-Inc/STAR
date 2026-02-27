@@ -370,7 +370,7 @@ typedef enum : uint32_t {
  * @endcode
  *
  * @see rx_dmaca.h DMACA driver interface
- * @see crc_feed_dma() Consumer of these constants
+ * @see internal_crc_feed_dma() Consumer of these constants
  *
  * @since Version 1.0.0
  */
@@ -750,9 +750,6 @@ rx_err_t rx_crc_deinit(void)
  * @post All @p len bytes have been written to CRCDIR by the DMA controller.
  * @post DMA channel RX_CRC32_DMA_CHANNEL is idle and available for reuse.
  *
- * @note Thread safety: NOT thread-safe. Caller must ensure mutual exclusion
- *       on the CRC peripheral and DMA channel during the transfer.
- *
  * @see rx_dmaca_transfer_blocking() Underlying DMA transfer API
  *
  * @since Version 1.0.0
@@ -761,7 +758,7 @@ rx_err_t rx_crc_deinit(void)
  * - Rule 2: [OK] Bounded polling loop inside rx_dmaca_transfer_blocking()
  * - Rule 7: [OK] Return value propagated to caller unchanged
  */
-static rx_err_t crc_feed_dma(const uint8_t* data, uint32_t len)
+static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
 {
   RX_CHECK_NULL_PTR(data, "CRC", "DMA source data pointer is nullptr");
   RX_CHECK_RANGE_TAG(
@@ -1086,7 +1083,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
                        ? len
                        : (uint32_t)k_dmaca_max_transfer_count;
 
-    rx_err_t dma_err = crc_feed_dma(data, dma_len);
+    rx_err_t dma_err = internal_crc_feed_dma(data, dma_len);
     if (dma_err != k_rx_ok) {
       return k_crc_result_invalid;
     }

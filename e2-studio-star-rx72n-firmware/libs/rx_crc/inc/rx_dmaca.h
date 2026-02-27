@@ -4,25 +4,47 @@
  * @file    rx_dmaca.h
  * @brief   DMACA driver for RX72N
  *
- * Supports 8-bit and 32-bit block transfers only.
- * 16-bit transfers are explicitly prohibited: CRCDIR does not support them.
+ * @details
+ * Provides DMA transfer abstraction for the RX72N DMACA peripheral supporting
+ * 8-bit and 32-bit block transfers only.  16-bit transfers are explicitly
+ * prohibited because the hardware does not support them.  All operations are
+ * bounded by configurable timeout values to satisfy NASA Power of 10 Rule 2,
+ * and no dynamic memory is allocated (Rule 3 compliance).  Initialization is
+ * idempotent, channel operations require serialized caller access, and all
+ * errors are reported via structured rx_err_t return codes.
  *
- * NASA Power of 10 compliance:
- *   Rule 2  - All DMA completion loops use bounded timeouts (no infinite waits).
- *   Rule 3  - No dynamic memory allocation; all state in caller-supplied structs.
- *   Rule 10 - Compiles cleanly with -Wall -Wextra -Werror.
+ * **Supported Transfer Sizes:**
+ * - 8-bit (byte) transfers: SIZE_8B
+ * - 32-bit (word) transfers: SIZE_32B
+ *
+ * **Prohibited:**
+ * - 16-bit transfers: Hardware does not support; requests are rejected with
+ *   k_rx_err_nack during rx_dmaca_configure()
+ *
+ * **Usage Model:**
+ * Typical sequence: rx_dmaca_init() → rx_dmaca_configure() → rx_dmaca_start()
+ * → rx_dmaca_wait(), or use rx_dmaca_transfer_blocking() for synchronous
+ * transfers. The rx_dmaca_abort() function is always safe (returns void) and
+ * may be called during cleanup without explicit channel validation.
+ *
+ * **Limitations:**
+ * - Maximum transfer_count: 1024 bytes per block
+ * - No interrupt support; polling only via rx_dmaca_wait()
+ * - All channel access must be serialized by the caller
+ * - Timeout values are iterative cycle counts (not wall-clock time)
  *
  * @par NASA Power of 10 Compliance
- * | Rule | Status | Notes |
- * |------|--------|-------|
- * | 1    | [PASS]      | No goto, setjmp/longjmp, or recursion |
- * | 2    | [PASS]      | All loops bounded by timeout_cycles |
- * | 3    | [PASS]      | Static allocation only |
- * | 5    | [PASS]      | Pre/post conditions on all functions |
+ * | Rule | Status | Enforcement |
+ * |------|--------|-----------|
+ * | 1    | [PASS] | No goto, setjmp/longjmp, or recursion |
+ * | 2    | [PASS] | All loops bounded by timeout_cycles parameter |
+ * | 3    | [PASS] | Static allocation only; zero malloc/free |
+ * | 5    | [PASS] | Preconditions and postconditions on all functions |
+ * | 10   | [PASS] | Compiles cleanly with -Wall -Wextra -Werror |
  *
  * @par SOLID Principles
- * - Single Responsibility: DMACA channel management only
- * - Dependency Inversion: Uses rx_err_t abstraction
+ * - **Single Responsibility:** DMACA channel management and transfer control only
+ * - **Dependency Inversion:** Abstracts error codes via rx_err_t enum
  *
  * @see rx_dmaca.tex
  * @author STAR Team
@@ -124,7 +146,7 @@ typedef enum : uintptr_t {
  * @pre DMACA/CRC module clock is enabled (MSTP cleared) so the peripheral
  *      registers are accessible at the mapped address.
  * @pre Caller has ensured there are no concurrent conflicting accesses from
- *      other masters/peripherals (caller must synchronize if necessary).
+ *      other controllers/peripherals (caller must synchronize if necessary).
  * @post The returned pointer is valid for the lifetime of the program while
  *       the MMIO region remains mapped and the hardware address does not
  *       change.  The call itself does not modify any hardware state.
@@ -327,6 +349,11 @@ typedef struct {
  * @note Thread safety: NOT re-entrant.  Call once from a single initialisation
  *       context before any RTOS tasks that use DMACA are started.
  *
+ * @code
+ * rx_err_t err = rx_dmaca_init();
+ * if (err != k_rx_ok) return err;  // Check initialization succeeded
+ * @endcode
+ *
  * @see rx_dmaca_configure, rx_dmaca_abort
  * @since 1.0.0
  */
@@ -373,6 +400,12 @@ rx_err_t rx_dmaca_init(void);
  *       hardware bus collision or concurrent modification of the same channel
  *       may produce undefined behavior.  No internal locking is performed.
  *
+ * @code
+ * dmaca_config_t cfg = {...};  // Initialize configuration
+ * rx_err_t err = rx_dmaca_configure(0, &cfg);
+ * if (err != k_rx_ok) return err;  // Check configuration accepted
+ * @endcode
+ *
  * @see dmaca_config_t, rx_dmaca_start(), rx_dmaca_init()
  * @since 1.0.0
  */
@@ -400,6 +433,11 @@ rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg);
  * @retval k_rx_err_nack  Channel not previously configured or invalid index.
  *
  * @note Thread safety: NOT safe to call concurrently on the same channel.
+ *
+ * @code
+ * rx_err_t err = rx_dmaca_start(0);
+ * if (err != k_rx_ok) return err;  // Check transfer armed successfully
+ * @endcode
  *
  * @see rx_dmaca_configure, rx_dmaca_wait, rx_dmaca_abort
  * @since 1.0.0
@@ -431,7 +469,7 @@ rx_err_t rx_dmaca_start(uint8_t channel);
  *
  * @retval k_rx_ok           Transfer completed normally (ACT == 0 && DTE == 0).
  * @retval k_rx_err_timeout  Timeout expired before transfer completed.
- * @retval k_rx_err_nack    Invalid channel index.
+ * @retval k_rx_err_nack    Invalid channel index or channel not configured.
  *
  * @pre  rx_dmaca_start() has been called successfully for this channel.
  * @pre  timeout_cycles > 0.
@@ -441,6 +479,11 @@ rx_err_t rx_dmaca_start(uint8_t channel);
  *       rx_dmaca_abort() to ensure a clean state.
  *
  * @note Thread safety: NOT safe to call concurrently on the same channel.
+ *
+ * @code
+ * rx_err_t err = rx_dmaca_wait(0, RX_DMACA_POLL_TIMEOUT_CYCLES);
+ * if (err != k_rx_ok) rx_dmaca_abort(0);  // Abort on timeout or error
+ * @endcode
  *
  * @see rx_dmaca_start, rx_dmaca_abort, RX_DMACA_POLL_TIMEOUT_CYCLES
  * @since 1.0.0
@@ -471,6 +514,10 @@ rx_err_t rx_dmaca_wait(uint8_t channel, uint32_t timeout_cycles);
  * @warning Because the signature returns void, callers cannot detect misuse
  *          and should ensure the channel argument is valid if subsequent
  *          logic depends on the abort having taken effect.
+ *
+ * @code
+ * rx_dmaca_abort(0);  // Always safe; no-op if channel invalid or idle
+ * @endcode
  *
  * @see rx_dmaca_configure, rx_dmaca_wait, rx_dmaca_start
  * @since 1.0.0 (void signature and permissive no-op contract introduced)
@@ -509,9 +556,15 @@ void rx_dmaca_abort(uint8_t channel);
  * @post On success: channel idle (ACT == 0 && DTE == 0).
  * @post On error/timeout: channel disabled and configured flag cleared.
  *
- * @note Timeout scaling behaviour ensures a bounded loop, but callers may
- *       still supply a custom timeout_cycles if needed.  Not reentrant for
- *       the same channel; callers must serialize access.
+ * @note Timeout scaling behaviour ensures a bounded loop by deriving timeout
+ *       from p_cfg->transfer_count and capping it with
+ *       RX_DMACA_POLL_TIMEOUT_CYCLES. Not reentrant for
+ *
+ * @code
+ * dmaca_config_t cfg = {...};  // Initialize configuration
+ * rx_err_t err = rx_dmaca_transfer_blocking(0, &cfg);
+ * if (err != k_rx_ok) rx_dmaca_abort(0);  // Cleanup on any error
+ * @endcode
  *
  * @see rx_dmaca_configure, rx_dmaca_start, rx_dmaca_wait, rx_err_t
  * @since 1.0.0
