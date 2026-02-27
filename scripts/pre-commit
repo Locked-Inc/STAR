@@ -129,9 +129,9 @@ if [[ -n "$cpp_files" ]]; then
 
     # Use the official format-ros2.sh script in check mode
     # This uses ament_uncrustify and checks header guards
-    if ! ./scripts/format-ros2.sh --check --verbose; then
+    if ! bash scripts/format-ros2.sh --check --verbose; then
         echo "[FAIL] C++ formatting or header guard check failed."
-        echo "   Run: ./scripts/format-ros2.sh"
+        echo "   Run: bash scripts/format-ros2.sh"
         error_found=1
     fi
 fi
