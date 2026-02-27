@@ -39,6 +39,9 @@
  * - L: Mock GPIO HAL is a drop-in substitute for real HAL
  * - D: Tests depend on rx_bus_gpio interface, not GPIO register details
  *
+ * @see rx_bus_gpio.h
+ * @see rx_bus_manager.h
+ *
  * @author STAR Team
  * @date 2026-02-26
  * @version 1.0.0
