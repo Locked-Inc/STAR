@@ -911,7 +911,7 @@
       "plot": "",
       "pos_files": "",
       "specctra_dsn": "STAR_MCU.dsn",
-      "step": "",
+      "step": "STAR_MCU.step",
       "svg": "",
       "vrml": ""
     },
