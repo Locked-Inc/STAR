@@ -21,7 +21,8 @@
 #include <string>
 #include <vector>
 
-namespace star_spi_bridge {
+namespace star_spi_bridge
+{
 
 /**
  * @brief Frame type identifiers for SPI protocol messages.
@@ -90,8 +91,8 @@ public:
    * @post spi_fd_ is set to -1 (invalid); call initialize() to open and
    *       configure the SPI device before calling transfer().
    */
-  explicit SpiDriver(const std::string &device_path,
-                     uint32_t speed_hz = 10000000);
+  explicit SpiDriver(const std::string & device_path,
+    uint32_t speed_hz = 10000000);
 
   /**
    * @brief Destructor -- calls close_device() if the device is still open.
@@ -144,8 +145,8 @@ public:
    *
    * @note Only supported on Linux; returns false on other platforms.
    */
-  bool transfer(const std::vector<uint8_t> &tx_data,
-                std::vector<uint8_t> &rx_data);
+  bool transfer(const std::vector<uint8_t> & tx_data,
+    std::vector<uint8_t> & rx_data);
 
   /**
    * @brief Encode an application payload into the STAR wire format.
@@ -169,8 +170,8 @@ public:
    * @see decode_frame  Inverse operation.
    */
   static void encode_frame(uint16_t seq, FrameType type, uint8_t flags,
-                           const std::vector<uint8_t> &payload,
-                           std::vector<uint8_t> &out_frame);
+    const std::vector<uint8_t> & payload,
+    std::vector<uint8_t> & out_frame);
 
   /**
    * @brief Decode a STAR wire frame into its constituent fields.
@@ -193,9 +194,9 @@ public:
    *
    * @see encode_frame  Inverse operation.
    */
-  static bool decode_frame(const std::vector<uint8_t> &frame, uint16_t &seq,
-                           FrameType &type, uint8_t &flags,
-                           std::vector<uint8_t> &payload);
+  static bool decode_frame(const std::vector<uint8_t> & frame, uint16_t & seq,
+    FrameType & type, uint8_t & flags,
+    std::vector<uint8_t> & payload);
 
   /**
    * @brief Compute the IEEE 802.3 CRC-32 of the given byte vector.
@@ -208,7 +209,7 @@ public:
    *
    * @note Public for unit-test access.
    */
-  static uint32_t calculate_crc32(const std::vector<uint8_t> &data);
+  static uint32_t calculate_crc32(const std::vector<uint8_t> & data);
 
 private:
   std::string device_path_;
@@ -229,4 +230,4 @@ private:
   static void init_crc32_table();
 };
 
-} // namespace star_spi_bridge
+}  // namespace star_spi_bridge

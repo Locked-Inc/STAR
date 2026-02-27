@@ -13,7 +13,8 @@
 
 using namespace std::chrono_literals;
 
-namespace star::star_gateway_bridge {
+namespace star::star_gateway_bridge
+{
 
 /**
  * @brief Construct and fully initialise the STAR Gateway Bridge ROS2 node.
@@ -50,9 +51,10 @@ namespace star::star_gateway_bridge {
  *
  * @since Version 1.0.0
  */
-StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions &options)
-    : Node("star_gateway_bridge", options), grpc_connected_(false),
-      reconnect_attempts_(0) {
+StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options)
+: Node("star_gateway_bridge", options), grpc_connected_(false),
+  reconnect_attempts_(0)
+{
   RCLCPP_INFO(this->get_logger(), "Initializing STAR Gateway Bridge Node");
 
   // Declare parameters with defaults
@@ -69,35 +71,36 @@ StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions &options)
   telemetry_rate_hz_ = this->get_parameter("telemetry_rate_hz").as_double();
   teleop_rate_hz_ = this->get_parameter("teleop_rate_hz").as_double();
   watchdog_timeout_sec_ =
-      this->get_parameter("watchdog_timeout_sec").as_double();
+    this->get_parameter("watchdog_timeout_sec").as_double();
   teleop_timeout_ms_ = this->get_parameter("teleop_timeout_ms").as_int();
   grpc_deadline_ms_ = this->get_parameter("grpc_deadline_ms").as_int();
   wheel_base_ = this->get_parameter("wheel_base").as_double();
 
   RCLCPP_INFO(
-      this->get_logger(),
-      "Configuration: gateway=%s, telemetry_rate=%.1fHz, teleop_rate=%.1fHz, "
-      "watchdog=%.1fs, teleop_timeout=%dms, grpc_deadline=%dms, "
-      "wheel_base=%.3fm",
-      gateway_address_.c_str(), telemetry_rate_hz_, teleop_rate_hz_,
-      watchdog_timeout_sec_, teleop_timeout_ms_, grpc_deadline_ms_,
-      wheel_base_);
+    this->get_logger(),
+    "Configuration: gateway=%s, telemetry_rate=%.1fHz, teleop_rate=%.1fHz, "
+    "watchdog=%.1fs, teleop_timeout=%dms, grpc_deadline=%dms, "
+    "wheel_base=%.3fm",
+    gateway_address_.c_str(), telemetry_rate_hz_, teleop_rate_hz_,
+    watchdog_timeout_sec_, teleop_timeout_ms_, grpc_deadline_ms_,
+    wheel_base_);
 
   // Initialize gRPC client
   if (!initialize_grpc_client()) {
     RCLCPP_WARN(this->get_logger(),
-                "Failed to connect to Gateway at %s - will retry in background",
-                gateway_address_.c_str());
+      "Failed to connect to Gateway at %s - will retry in background",
+      gateway_address_.c_str());
   }
 
   // Initialize ROS2 interfaces
   initialize_ros_interfaces();
 
   RCLCPP_INFO(this->get_logger(),
-              "STAR Gateway Bridge Node initialized successfully");
+    "STAR Gateway Bridge Node initialized successfully");
 }
 
-StarGatewayBridgeNode::~StarGatewayBridgeNode() {
+StarGatewayBridgeNode::~StarGatewayBridgeNode()
+{
   RCLCPP_INFO(this->get_logger(), "Shutting down STAR Gateway Bridge Node");
 
   // Reset subscriptions before publishers go away
@@ -122,7 +125,8 @@ StarGatewayBridgeNode::~StarGatewayBridgeNode() {
 // Initialization
 // ===========================================================================
 
-bool StarGatewayBridgeNode::initialize_grpc_client() {
+bool StarGatewayBridgeNode::initialize_grpc_client()
+{
   RCLCPP_INFO(this->get_logger(), "Connecting to Gateway gRPC server at %s",
               gateway_address_.c_str());
 
@@ -163,7 +167,8 @@ bool StarGatewayBridgeNode::initialize_grpc_client() {
   return true;
 }
 
-void StarGatewayBridgeNode::initialize_ros_interfaces() {
+void StarGatewayBridgeNode::initialize_ros_interfaces()
+{
   RCLCPP_INFO(this->get_logger(), "Initializing ROS2 interfaces");
 
   // Publishers
@@ -198,7 +203,7 @@ void StarGatewayBridgeNode::initialize_ros_interfaces() {
           std::lock_guard<std::mutex> lock(odometry_mutex_);
           cached_ekf_timestamp_us_ = proto_odom.timestamp_us();
           cached_ekf_odometry_ = proto_odom;
-        } catch (const std::exception &ex) {
+        } catch (const std::exception & ex) {
           RCLCPP_ERROR(this->get_logger(), "Odometry callback failed: %s",
                        ex.what());
         } catch (...) {
@@ -232,7 +237,7 @@ void StarGatewayBridgeNode::initialize_ros_interfaces() {
               std::lock_guard<std::mutex> lock(odometry_mutex_);
               cached_slam_timestamp_us_ = proto_odom.timestamp_us();
               cached_slam_pose_ = proto_odom;
-            } catch (const std::exception &ex) {
+            } catch (const std::exception & ex) {
               RCLCPP_ERROR(this->get_logger(), "SLAM pose callback failed: %s",
                            ex.what());
             } catch (...) {
@@ -264,7 +269,7 @@ void StarGatewayBridgeNode::initialize_ros_interfaces() {
           }
           std::lock_guard<std::mutex> lock(lidar_mutex_);
           cached_lidar_scan_ = proto_scan;
-        } catch (const std::exception &ex) {
+        } catch (const std::exception & ex) {
           RCLCPP_ERROR(this->get_logger(), "LaserScan callback failed: %s",
                        ex.what());
         } catch (...) {
@@ -318,7 +323,8 @@ void StarGatewayBridgeNode::initialize_ros_interfaces() {
 // ===========================================================================
 
 void StarGatewayBridgeNode::robot_status_callback(
-    const std_msgs::msg::String::SharedPtr msg) {
+  const std_msgs::msg::String::SharedPtr msg)
+{
   // Use try_lock to avoid blocking callback (non-blocking pattern)
   if (robot_status_mutex_.try_lock()) {
     cached_robot_status_ = *msg;
@@ -328,8 +334,9 @@ void StarGatewayBridgeNode::robot_status_callback(
 }
 
 void StarGatewayBridgeNode::set_pid_gains_callback(
-    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-    std::shared_ptr<std_srvs::srv::SetBool::Response> response) {
+  const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+  std::shared_ptr<std_srvs::srv::SetBool::Response> response)
+{
   // TODO(star): Phase 4: Implement PID gains service after defining custom
   // service type. For now, placeholder implementation.
   (void)request; // Unused parameter (placeholder service)
@@ -347,7 +354,8 @@ void StarGatewayBridgeNode::set_pid_gains_callback(
 // Timer Callbacks
 // ===========================================================================
 
-void StarGatewayBridgeNode::telemetry_forward_timer_callback() {
+void StarGatewayBridgeNode::telemetry_forward_timer_callback()
+{
   if (!grpc_connected_) {
     RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
                           "Skipping telemetry forward - gRPC not connected");
@@ -437,7 +445,8 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback() {
                         scan_has ? "cached" : "none");
 }
 
-void StarGatewayBridgeNode::teleop_poll_timer_callback() {
+void StarGatewayBridgeNode::teleop_poll_timer_callback()
+{
   if (!grpc_connected_ || !grpc_stub_) {
     // Publish zero velocity when not connected (safety feature)
     auto zero_twist = geometry_msgs::msg::Twist();
@@ -517,7 +526,8 @@ void StarGatewayBridgeNode::teleop_poll_timer_callback() {
   }
 }
 
-void StarGatewayBridgeNode::connection_watchdog_callback() {
+void StarGatewayBridgeNode::connection_watchdog_callback()
+{
   if (!is_grpc_connected()) {
     RCLCPP_WARN_THROTTLE(
         this->get_logger(), *this->get_clock(), 10000,
@@ -567,7 +577,8 @@ void StarGatewayBridgeNode::connection_watchdog_callback() {
  *       MAX_RECONNECT_ATTEMPTS limit to avoid log spam.
  * @since Version 1.0.0
  */
-bool StarGatewayBridgeNode::reconnect_grpc_client() {
+bool StarGatewayBridgeNode::reconnect_grpc_client()
+{
   assert(MAX_RECONNECT_ATTEMPTS > 0);
   assert(RECONNECT_BACKOFF_MS_BASE > 0 && reconnect_attempts_ >= 0);
   if (reconnect_attempts_ >= MAX_RECONNECT_ATTEMPTS) {
@@ -591,7 +602,8 @@ bool StarGatewayBridgeNode::reconnect_grpc_client() {
   return initialize_grpc_client();
 }
 
-bool StarGatewayBridgeNode::is_grpc_connected() const {
+bool StarGatewayBridgeNode::is_grpc_connected() const
+{
   if (!grpc_channel_) {
     return false;
   }
@@ -602,7 +614,8 @@ bool StarGatewayBridgeNode::is_grpc_connected() const {
 }
 
 void StarGatewayBridgeNode::check_teleop_sequence_continuity(
-    uint32_t current_sequence) {
+  uint32_t current_sequence)
+{
   if (first_teleop_frame_) {
     last_teleop_sequence_ = current_sequence;
     first_teleop_frame_ = false;
@@ -638,7 +651,8 @@ void StarGatewayBridgeNode::check_teleop_sequence_continuity(
 }
 
 void StarGatewayBridgeNode::check_telemetry_sequence_continuity(
-    uint32_t current_sequence) {
+  uint32_t current_sequence)
+{
   if (first_telemetry_frame_) {
     last_telemetry_sequence_ = current_sequence;
     first_telemetry_frame_ = false;
@@ -674,7 +688,8 @@ void StarGatewayBridgeNode::check_telemetry_sequence_continuity(
   total_telemetry_frames_++;
 }
 
-void StarGatewayBridgeNode::publish_diagnostics() {
+void StarGatewayBridgeNode::publish_diagnostics()
+{
   auto diag_array = diagnostic_msgs::msg::DiagnosticArray();
   diag_array.header.stamp = this->now();
 
@@ -783,7 +798,7 @@ void StarGatewayBridgeNode::publish_diagnostics() {
   diagnostics_pub_->publish(diag_array);
 }
 
-} // namespace star::star_gateway_bridge
+}  // namespace star::star_gateway_bridge
 
 // Component registration for composable node
 #include "rclcpp_components/register_node_macro.hpp"

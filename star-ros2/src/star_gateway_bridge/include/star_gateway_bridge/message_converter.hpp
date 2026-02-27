@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include <cmath>
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
@@ -28,8 +30,6 @@
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/telemetry.pb.h"
 #include "star/v1/ui.pb.h"
-
-#include <cmath>
 
 namespace star::star_gateway_bridge {
 

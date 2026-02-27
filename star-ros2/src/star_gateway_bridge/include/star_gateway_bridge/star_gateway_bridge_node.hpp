@@ -17,6 +17,11 @@
 
 #pragma once
 
+#include <memory>
+#include <mutex>
+#include <optional>
+#include <string>
+
 #include <rclcpp/rclcpp.hpp>
 
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
@@ -29,15 +34,10 @@
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 
+#include <grpcpp/grpcpp.h>  // NOLINT(build/include_order)
+
 #include "star/v1/gateway_service.grpc.pb.h"
 #include "star_gateway_bridge/message_converter.hpp"
-
-#include <grpcpp/grpcpp.h>
-
-#include <memory>
-#include <mutex>
-#include <optional>
-#include <string>
 
 namespace star::star_gateway_bridge {
 

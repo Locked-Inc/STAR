@@ -13,8 +13,8 @@ import (
 var servicePathRegex = regexp.MustCompile(`^/[a-zA-Z0-9_/]+$`)
 
 // serviceTypeRegex validates that a ROS2 service type matches the
-// package/ServiceName pattern (letters, numbers, and underscores only).
-var serviceTypeRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+/[a-zA-Z0-9_]+$`)
+// package/srv/ServiceName pattern (letters, numbers, and underscores only).
+var serviceTypeRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+/srv/[a-zA-Z0-9_]+$`)
 
 // SLAMService encapsulates SLAM-related operations exposed to HTTP handlers.
 type SLAMService interface {
@@ -48,7 +48,7 @@ func newROS2SLAMService(resetServicePath, resetServiceType string) (SLAMService,
 		return nil, fmt.Errorf("invalid resetServicePath %q: must start with '/' and contain only letters, numbers, underscores, and forward slashes", resetServicePath)
 	}
 	if !serviceTypeRegex.MatchString(resetServiceType) {
-		return nil, fmt.Errorf("invalid resetServiceType %q: must match package/ServiceName pattern with only letters, numbers, and underscores", resetServiceType)
+		return nil, fmt.Errorf("invalid resetServiceType %q: must match package/srv/ServiceName pattern with only letters, numbers, and underscores", resetServiceType)
 	}
 	return &ros2SLAMService{
 		resetServicePath: resetServicePath,

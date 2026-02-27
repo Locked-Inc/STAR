@@ -53,13 +53,19 @@ struct spi_ioc_transfer {
 #endif
 #endif
 
-namespace star_spi_bridge {
+namespace star_spi_bridge
+{
 
-namespace {
+namespace
+{
 /** @brief ROS2 logger for SPI driver diagnostics. */
-auto logger() { return rclcpp::get_logger("star_spi_bridge.spi_driver"); }
+auto logger()
+{
+  return rclcpp::get_logger("star_spi_bridge.spi_driver");
+}
 
-inline void set_spi_xfer_tx_buf(spi_ioc_transfer &xfer, uint64_t value) {
+inline void set_spi_xfer_tx_buf(spi_ioc_transfer & xfer, uint64_t value)
+{
 #ifdef __linux__
   xfer.tx_buf = value;
 #else
@@ -67,7 +73,8 @@ inline void set_spi_xfer_tx_buf(spi_ioc_transfer &xfer, uint64_t value) {
 #endif
 }
 
-inline void set_spi_xfer_rx_buf(spi_ioc_transfer &xfer, uint64_t value) {
+inline void set_spi_xfer_rx_buf(spi_ioc_transfer & xfer, uint64_t value)
+{
 #ifdef __linux__
   xfer.rx_buf = value;
 #else
@@ -75,7 +82,8 @@ inline void set_spi_xfer_rx_buf(spi_ioc_transfer &xfer, uint64_t value) {
 #endif
 }
 
-inline void set_spi_xfer_len(spi_ioc_transfer &xfer, uint32_t value) {
+inline void set_spi_xfer_len(spi_ioc_transfer & xfer, uint32_t value)
+{
 #ifdef __linux__
   xfer.len = value;
 #else
@@ -83,7 +91,8 @@ inline void set_spi_xfer_len(spi_ioc_transfer &xfer, uint32_t value) {
 #endif
 }
 
-inline void set_spi_xfer_speed_hz(spi_ioc_transfer &xfer, uint32_t value) {
+inline void set_spi_xfer_speed_hz(spi_ioc_transfer & xfer, uint32_t value)
+{
 #ifdef __linux__
   xfer.speed_hz = value;
 #else
@@ -91,7 +100,8 @@ inline void set_spi_xfer_speed_hz(spi_ioc_transfer &xfer, uint32_t value) {
 #endif
 }
 
-inline void set_spi_xfer_bits_per_word(spi_ioc_transfer &xfer, uint8_t value) {
+inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
+{
 #ifdef __linux__
   xfer.bits_per_word = value;
 #else
@@ -99,7 +109,8 @@ inline void set_spi_xfer_bits_per_word(spi_ioc_transfer &xfer, uint8_t value) {
 #endif
 }
 
-inline bool is_valid_frame_type(FrameType frame_type) {
+inline bool is_valid_frame_type(FrameType frame_type)
+{
   using U = std::underlying_type_t<FrameType>;
   const auto raw = static_cast<U>(frame_type);
   // Range-check: accept only values within [VelocityCommand, TelemetryData].
@@ -123,7 +134,7 @@ inline bool is_valid_frame_type(FrameType frame_type) {
   }
   }
 }
-} // namespace
+}  // namespace
 
 uint32_t SpiDriver::crc32_table_[256];
 std::once_flag SpiDriver::crc32_table_init_flag_;
@@ -138,8 +149,9 @@ std::once_flag SpiDriver::crc32_table_init_flag_;
  * @post spi_fd_ is -1 until initialize() is called.
  * @post CRC-32 lookup table is initialised (thread-safe, once).
  */
-SpiDriver::SpiDriver(const std::string &device_path, uint32_t speed_hz)
-    : device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1) {
+SpiDriver::SpiDriver(const std::string & device_path, uint32_t speed_hz)
+: device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
+{
   assert(!device_path_.empty());
   assert(speed_hz_ > 0);
   std::call_once(crc32_table_init_flag_, init_crc32_table);
@@ -151,9 +163,13 @@ SpiDriver::SpiDriver(const std::string &device_path, uint32_t speed_hz)
  * @post spi_fd_ is closed and set to -1.
  * @post All instance resources are freed.
  */
-SpiDriver::~SpiDriver() { close_device(); }
+SpiDriver::~SpiDriver()
+{
+  close_device();
+}
 
-bool SpiDriver::initialize() {
+bool SpiDriver::initialize()
+{
 #ifndef __linux__
   RCLCPP_ERROR(logger(), "SPI driver is only supported on Linux platforms");
   return false;
@@ -208,15 +224,17 @@ bool SpiDriver::initialize() {
  *       callers must quiesce I/O before calling close_device().
  * @since Version 1.0.0
  */
-void SpiDriver::close_device() {
+void SpiDriver::close_device()
+{
   if (spi_fd_ >= 0) {
     close(spi_fd_);
     spi_fd_ = -1;
   }
 }
 
-bool SpiDriver::transfer(const std::vector<uint8_t> &tx_data,
-                         std::vector<uint8_t> &rx_data) {
+bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data,
+  std::vector<uint8_t> & rx_data)
+{
 #ifndef __linux__
   RCLCPP_ERROR(logger(), "SPI driver is only supported on Linux platforms");
   return false;
@@ -250,8 +268,9 @@ bool SpiDriver::transfer(const std::vector<uint8_t> &tx_data,
 }
 
 void SpiDriver::encode_frame(uint16_t seq, FrameType type, uint8_t flags,
-                             const std::vector<uint8_t> &payload,
-                             std::vector<uint8_t> &out_frame) {
+  const std::vector<uint8_t> & payload,
+  std::vector<uint8_t> & out_frame)
+{
   if (payload.size() > MAX_PAYLOAD_SIZE) {
     throw std::invalid_argument("payload exceeds maximum size of 1024 bytes");
   }
@@ -306,9 +325,10 @@ void SpiDriver::encode_frame(uint16_t seq, FrameType type, uint8_t flags,
   }
 }
 
-bool SpiDriver::decode_frame(const std::vector<uint8_t> &frame, uint16_t &seq,
-                             FrameType &type, uint8_t &flags,
-                             std::vector<uint8_t> &payload) {
+bool SpiDriver::decode_frame(const std::vector<uint8_t> & frame, uint16_t & seq,
+  FrameType & type, uint8_t & flags,
+  std::vector<uint8_t> & payload)
+{
   if (frame.size() < HEADER_SIZE + CRC_SIZE) {
     return false;
   }
@@ -352,7 +372,8 @@ bool SpiDriver::decode_frame(const std::vector<uint8_t> &frame, uint16_t &seq,
   return true;
 }
 
-void SpiDriver::init_crc32_table() {
+void SpiDriver::init_crc32_table()
+{
   // Generate CRC-32 lookup table using IEEE 802.3 polynomial (reflected form)
   // Polynomial 0xEDB88320 is the bit-reversed form of 0x04C11DB7
   // This produces standard CRC-32 values (e.g., "123456789" -> 0xCBF43926)
@@ -370,7 +391,8 @@ void SpiDriver::init_crc32_table() {
   }
 }
 
-uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t> &data) {
+uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t> & data)
+{
   std::call_once(crc32_table_init_flag_, init_crc32_table);
   uint32_t crc = 0xFFFFFFFF;
   for (uint8_t byte : data) {
@@ -380,4 +402,4 @@ uint32_t SpiDriver::calculate_crc32(const std::vector<uint8_t> &data) {
   return crc ^ 0xFFFFFFFF;
 }
 
-} // namespace star_spi_bridge
+}  // namespace star_spi_bridge
