@@ -1243,8 +1243,8 @@ static telemetry_transport_t internal_select_transport(void);
 static rx_err_t              internal_populate_motor_telemetry(star_v1_TelemetryData* telemetry);
 static void                  internal_collect_state(star_v1_TelemetryData* telemetry);
 static rx_err_t              internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
-                                                        uint32_t*                    out_encoded_len);
-static rx_err_t              internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len);
+                                                       uint32_t*                    out_encoded_len);
+static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len);
 
 /* =============================================================================
  * Public Functions
@@ -1371,15 +1371,15 @@ rx_err_t telemetry_task_create(void)
 
   /* Create the thread */
   UINT tx_status = tx_thread_create(&s_telem_thread,
-                               "TelemTask",
-                               internal_telem_task_entry,
-                               k_telem_task_input,
-                               s_telem_stack,
-                               k_telem_task_stack_size,
-                               k_telem_task_priority,
-                               k_telem_task_priority,
-                               TX_NO_TIME_SLICE,
-                               TX_AUTO_START);
+                                    "TelemTask",
+                                    internal_telem_task_entry,
+                                    k_telem_task_input,
+                                    s_telem_stack,
+                                    k_telem_task_stack_size,
+                                    k_telem_task_priority,
+                                    k_telem_task_priority,
+                                    TX_NO_TIME_SLICE,
+                                    TX_AUTO_START);
 
   if (tx_status != TX_SUCCESS) {
     rx_log_error_val(s_tag, "Thread create failed", (uint32_t)tx_status);
@@ -1675,7 +1675,7 @@ static telemetry_transport_t internal_select_transport(void)
 
   /* Query USB channel readiness */
   bool     usb_ready = false;
-  rx_err_t err       = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
+  rx_err_t err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_usb, &usb_ready);
   if (err != k_rx_ok) {
     /* Treat query failure as channel not ready */
     usb_ready = false;
@@ -1701,7 +1701,7 @@ static telemetry_transport_t internal_select_transport(void)
 
   /* Query SPI channel readiness */
   bool spi_ready = false;
-  err = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
+  err            = rx_comm_manager_channel_ready(&g_comm_manager, k_comm_channel_spi, &spi_ready);
   if (err != k_rx_ok) {
     spi_ready = false;
   }
@@ -1877,7 +1877,7 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
   /* Collect obstacle state */
   err = shared_data_get_obstacle(&obstacle_state);
   if (err == k_rx_ok) {
-    telemetry->has_obstacle          = true;
+    telemetry->has_obstacle = true;
     telemetry->obstacle.distance_front_left_m =
       (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_0] / s_cm_per_m;
     telemetry->obstacle.distance_front_right_m =
@@ -1886,12 +1886,16 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
       (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_2] / s_cm_per_m;
     telemetry->obstacle.distance_back_right_m =
       (float)obstacle_state.distance_cm[k_telem_obstacle_sensor_3] / s_cm_per_m;
-    telemetry->obstacle.any_obstacle  = obstacle_state.any_obstacle;
+    telemetry->obstacle.any_obstacle = obstacle_state.any_obstacle;
     telemetry->obstacle.detected_mask =
-      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_0] << k_telem_obstacle_shift_0) |
-      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_1] << k_telem_obstacle_shift_1) |
-      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_2] << k_telem_obstacle_shift_2) |
-      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_3] << k_telem_obstacle_shift_3);
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_0]
+       << k_telem_obstacle_shift_0) |
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_1]
+       << k_telem_obstacle_shift_1) |
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_2]
+       << k_telem_obstacle_shift_2) |
+      ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_3]
+       << k_telem_obstacle_shift_3);
   }
 }
 
@@ -1932,12 +1936,11 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
  * - Postcondition 2: *out_encoded_len valid only when k_rx_ok returned
  */
 static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
-                                           uint32_t*                    out_encoded_len)
+                                          uint32_t*                    out_encoded_len)
 {
   rx_err_t err;
 
-  err =
-    rx_nanopb_encode_telemetry(telemetry, s_telem_buffer, k_telem_buffer_size, out_encoded_len);
+  err = rx_nanopb_encode_telemetry(telemetry, s_telem_buffer, k_telem_buffer_size, out_encoded_len);
   if (err != k_rx_ok) {
     rx_log_error_val(s_tag, "Telemetry encode failed", (uint32_t)err);
   }
