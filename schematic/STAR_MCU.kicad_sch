@@ -12642,6 +12642,16 @@
 		)
 		(uuid "d35ff008-636a-4f2b-b582-803483673127")
 	)
+	(text "Motor Driver wiring config:\n\n- nSLEEP: 4k7\n- DRVOFF: OPEN\n- nFAULT: 4k7\n- DIAG: 48k\n- SR: 0R\n- IPROPI: 5k1\n- MODE: OPEN\n- ITRIPI: OPEN"
+		(exclude_from_sim no)
+		(at 553.974 308.864 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d403746f-1931-4431-9a27-4298b8bde767")
+	)
 	(text "SR"
 		(exclude_from_sim no)
 		(at 522.224 312.674 0)
@@ -14491,6 +14501,10 @@
 	(no_connect
 		(at 81.28 92.71)
 		(uuid "8f4aacd8-cc34-4f0e-82dc-4a26ea1390fc")
+	)
+	(no_connect
+		(at 525.78 304.8)
+		(uuid "926b90ff-facb-49b8-b362-4f9b2e40e369")
 	)
 	(no_connect
 		(at 93.98 97.79)
@@ -32101,7 +32115,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "0bd5f136-dc5c-4bcf-b283-7175512ab9bf")
 		(property "Reference" "R91"
 			(at 500.38 429.26 90)
@@ -36748,7 +36762,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "148cc0f5-b9bb-4862-be8a-496412308306")
 		(property "Reference" "R64"
 			(at 448.564 360.68 0)
@@ -36899,7 +36913,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "14dd2a96-5904-4383-bbab-a25614948c59")
 		(property "Reference" "R100"
 			(at 500.38 487.68 90)
@@ -43097,8 +43111,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
-			(at 508 480.06 90)
+		(property "Value" "48k"
+			(at 509.016 480.314 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -45591,8 +45605,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
-			(at 508 308.61 90)
+		(property "Value" "48k"
+			(at 509.016 308.864 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -46516,7 +46530,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 472.694 317.246 0)
 			(effects
 				(font
@@ -47875,7 +47889,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 487.934 469.646 0)
 			(effects
 				(font
@@ -48620,7 +48634,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "36b6699e-7005-4f21-9809-60c80569c56a")
 		(property "Reference" "R83"
 			(at 500.38 370.84 90)
@@ -49397,7 +49411,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "3891f8f3-4a46-4a45-8899-e70cfb84ab65")
 		(property "Reference" "R72"
 			(at 448.564 303.53 0)
@@ -52885,7 +52899,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "5k1"
 			(at 501.904 448.056 0)
 			(effects
 				(font
@@ -55198,8 +55212,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
-			(at 508 424.18 90)
+		(property "Value" "48k"
+			(at 509.27 424.434 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -58454,7 +58468,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "4f9cc2de-71f9-439a-97a4-cc19d715f797")
 		(property "Reference" "R85"
 			(at 448.564 419.1 0)
@@ -60359,7 +60373,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 472.694 432.816 0)
 			(effects
 				(font
@@ -60575,7 +60589,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 487.934 298.196 0)
 			(effects
 				(font
@@ -63451,7 +63465,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "5k1"
 			(at 501.904 389.636 0)
 			(effects
 				(font
@@ -64572,7 +64586,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "605a1275-6f84-4af2-b3ef-b872a4052c82")
 		(property "Reference" "R77"
 			(at 500.38 316.23 90)
@@ -73182,7 +73196,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "76242437-36b5-4c71-96f5-b3d763738c5a")
 		(property "Reference" "R93"
 			(at 448.564 474.98 0)
@@ -75100,7 +75114,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 472.694 488.696 0)
 			(effects
 				(font
@@ -83028,7 +83042,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 472.694 374.396 0)
 			(effects
 				(font
@@ -83897,7 +83911,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "9033dfc8-392b-4196-86ae-e0696cc940ac")
 		(property "Reference" "R84"
 			(at 500.38 373.38 90)
@@ -85845,7 +85859,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "969d1097-8974-4e12-93c8-dfb2993fa28b")
 		(property "Reference" "R99"
 			(at 500.38 485.14 90)
@@ -87525,7 +87539,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 487.934 355.346 0)
 			(effects
 				(font
@@ -88359,7 +88373,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "5k1"
 			(at 501.904 503.936 0)
 			(effects
 				(font
@@ -95507,7 +95521,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "bc566224-044a-4017-8816-7b0996c7d0a2")
 		(property "Reference" "R76"
 			(at 500.38 313.69 90)
@@ -97811,7 +97825,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "c154427d-2b94-4334-848c-4e0feda6513b")
 		(property "Reference" "R92"
 			(at 500.38 431.8 90)
@@ -102966,8 +102980,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
-			(at 508 365.76 90)
+		(property "Value" "48k"
+			(at 509.27 366.014 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -103743,7 +103757,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "5k1"
 			(at 501.904 332.486 0)
 			(effects
 				(font
@@ -106529,7 +106543,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "0R"
+		(property "Value" "4k7"
 			(at 487.934 413.766 0)
 			(effects
 				(font
