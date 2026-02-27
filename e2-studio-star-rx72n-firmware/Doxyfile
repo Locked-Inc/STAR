@@ -62,10 +62,10 @@ IDL_PROPERTY_SUPPORT    = YES
 DISTRIBUTE_GROUP_DOC    = NO
 GROUP_NESTED_COMPOUNDS  = NO
 SUBGROUPING             = YES
-INLINE_SIMPLE_STRUCTS   = NO
+INLINE_SIMPLE_STRUCTS   = YES
 TYPEDEF_HIDES_STRUCT    = YES
 LOOKUP_CACHE_SIZE       = 0
-NUM_PROC_THREADS        = 1
+NUM_PROC_THREADS        = 0
 
 #---------------------------------------------------------------------------
 # Build options - what to extract
@@ -128,7 +128,8 @@ WARN_LOGFILE            = docs/doxygen/doxygen_warnings.log
 #---------------------------------------------------------------------------
 # Input files - everything under src/ and libs/ including third-party
 #---------------------------------------------------------------------------
-INPUT                   = src \
+INPUT                   = README.md \
+                          src \
                           libs
 INPUT_ENCODING          = UTF-8
 FILE_PATTERNS           = *.c \
@@ -151,13 +152,13 @@ INPUT_FILTER            =
 FILTER_PATTERNS         =
 FILTER_SOURCE_FILES     = NO
 FILTER_SOURCE_PATTERNS  =
-USE_MDFILE_AS_MAINPAGE  =
+USE_MDFILE_AS_MAINPAGE  = README.md
 
 #---------------------------------------------------------------------------
 # Source browsing
 #---------------------------------------------------------------------------
 SOURCE_BROWSER          = YES
-INLINE_SOURCES          = NO
+INLINE_SOURCES          = YES
 STRIP_CODE_COMMENTS     = NO
 REFERENCED_BY_RELATION  = YES
 REFERENCES_RELATION     = YES
@@ -187,19 +188,19 @@ HTML_FOOTER             =
 HTML_STYLESHEET         =
 HTML_EXTRA_STYLESHEET   =
 HTML_EXTRA_FILES        =
-HTML_COLORSTYLE         = AUTO_LIGHT
+HTML_COLORSTYLE         = AUTO
 HTML_COLORSTYLE_HUE     = 220
 HTML_COLORSTYLE_SAT     = 100
 HTML_COLORSTYLE_GAMMA   = 80
 HTML_DYNAMIC_MENUS      = YES
-HTML_DYNAMIC_SECTIONS   = NO
+HTML_DYNAMIC_SECTIONS   = YES
 HTML_INDEX_NUM_ENTRIES  = 100
 GENERATE_DOCSET         = NO
 GENERATE_HTMLHELP       = NO
 GENERATE_QHP            = NO
 GENERATE_ECLIPSEHELP    = NO
 GENERATE_TREEVIEW       = YES
-FULL_SIDEBAR            = NO
+FULL_SIDEBAR            = YES
 ENUM_VALUES_PER_LINE    = 4
 TREEVIEW_WIDTH          = 250
 EXT_LINKS_IN_WINDOW     = NO
@@ -250,7 +251,7 @@ LATEX_EMOJI_DIRECTORY   =
 #---------------------------------------------------------------------------
 GENERATE_RTF            = NO
 GENERATE_MAN            = NO
-GENERATE_XML            = NO
+GENERATE_XML            = YES
 GENERATE_DOCBOOK        = NO
 GENERATE_AUTOGEN_DEF    = NO
 GENERATE_PERLMOD        = NO
@@ -286,7 +287,7 @@ EXTERNAL_PAGES          = YES
 # Dot (Graphviz) - call graphs and dependency diagrams
 # Requires: graphviz package (sudo apt install graphviz)
 #---------------------------------------------------------------------------
-HIDE_UNDOC_RELATIONS    = YES
+HIDE_UNDOC_RELATIONS    = NO
 HAVE_DOT                = YES
 DOT_NUM_THREADS         = 0
 DOT_COMMON_ATTR         = "fontname=Helvetica,fontsize=10"
@@ -307,7 +308,7 @@ CALL_GRAPH              = YES
 CALLER_GRAPH            = YES
 GRAPHICAL_HIERARCHY     = YES
 DIRECTORY_GRAPH         = YES
-DIR_GRAPH_MAX_DEPTH     = 1
+DIR_GRAPH_MAX_DEPTH     = 5
 DOT_IMAGE_FORMAT        = svg
 INTERACTIVE_SVG         = YES
 DOT_PATH                =
@@ -318,7 +319,7 @@ DIAFILE_DIRS            =
 PLANTUML_JAR_PATH       =
 PLANTUML_CFG_FILE       =
 PLANTUML_INCLUDE_PATH   =
-DOT_GRAPH_MAX_NODES     = 50
+DOT_GRAPH_MAX_NODES     = 250
 MAX_DOT_GRAPH_DEPTH     = 0
 DOT_MULTI_TARGETS       = YES
 GENERATE_LEGEND         = YES
