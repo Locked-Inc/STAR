@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen doxygen-pdf doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen doxygen-pdf doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -26,6 +26,7 @@ help:
 	@echo "  make test-rx72n          - Run RX72N unit tests (regenerates protos first)"
 	@echo "  make doxygen             - Generate Doxygen HTML docs for RX72N firmware"
 	@echo "  make doxygen-pdf         - Generate Doxygen HTML + LaTeX PDF (requires lualatex)"
+	@echo "  make doxygen-pdf-deps    - Install missing LaTeX packages for doxygen-pdf (varwidth, luaotfload)"
 	@echo "  make doxygen-clean       - Remove generated Doxygen output"
 	@echo "  Note: GNURX toolchain required for build targets (rx-elf-gcc)"
 	@echo ""
@@ -175,7 +176,12 @@ doxygen:
 # Uses lualatex (no register limit) instead of pdflatex (hits eTex 32768 cap
 # on our large codebase). Doxygen 1.16.1+ is required (installed from GitHub
 # in the Dockerfile -- Ubuntu 24.04 apt ships 1.9.8 which uses broken tabu).
+# Run 'make doxygen-pdf-deps' first if varwidth.sty or luaotfload-main.lua are missing.
 doxygen-pdf:
+	@if ! kpsewhich varwidth.sty >/dev/null 2>&1 || ! kpsewhich luaotfload-main.lua >/dev/null 2>&1; then \
+	  echo "ERROR: Missing LaTeX packages. Run: make doxygen-pdf-deps"; \
+	  exit 1; \
+	fi
 	@echo "Generating Doxygen HTML + LaTeX..."
 	@mkdir -p $(DOXYGEN_OUT)
 	@cd $(FIRMWARE_DIR) && doxygen Doxyfile
@@ -200,3 +206,36 @@ doxygen-clean:
 	@echo "Removing Doxygen output..."
 	@rm -rf $(DOXYGEN_OUT)
 	@echo "Done."
+
+# Install LaTeX packages required by doxygen-pdf that are not in the
+# Dockerfile's base texlive set (texlive-luatex and texlive-latex-extra are
+# not available as apt packages in this environment).
+#
+# - varwidth: installed via tlmgr user mode from the TeX Live 2023 archive
+# - luaotfload: not relocatable so tlmgr user mode cannot install it;
+#   downloaded directly from CTAN and placed in ~/texmf/tex/luatex/luaotfload/
+doxygen-pdf-deps:
+	@echo "Installing LaTeX deps for doxygen-pdf..."
+	@if ! kpsewhich varwidth.sty >/dev/null 2>&1; then \
+	  echo "  Installing varwidth via tlmgr (user mode)..."; \
+	  tlmgr init-usertree 2>/dev/null || true; \
+	  tlmgr --usermode option repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2023/tlnet-final; \
+	  tlmgr --usermode install varwidth; \
+	else \
+	  echo "  varwidth.sty already present -- skipping"; \
+	fi
+	@if ! kpsewhich luaotfload-main.lua >/dev/null 2>&1; then \
+	  echo "  Downloading luaotfload from CTAN..."; \
+	  tmp=$$(mktemp -d); \
+	  curl -sL "https://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip" -o "$$tmp/luaotfload.zip"; \
+	  unzip -q "$$tmp/luaotfload.zip" -d "$$tmp"; \
+	  mkdir -p ~/texmf/tex/luatex/luaotfload ~/texmf/tex/latex/luaotfload; \
+	  cp "$$tmp/luaotfload/"*.lua ~/texmf/tex/luatex/luaotfload/; \
+	  cp "$$tmp/luaotfload/"*.sty ~/texmf/tex/latex/luaotfload/; \
+	  cp "$$tmp/luaotfload/"*.cnf ~/texmf/tex/luatex/luaotfload/; \
+	  mktexlsr ~/texmf; \
+	  rm -rf "$$tmp"; \
+	else \
+	  echo "  luaotfload-main.lua already present -- skipping"; \
+	fi
+	@echo "Done: LaTeX deps installed. Re-run 'make doxygen-pdf' to generate the PDF."
