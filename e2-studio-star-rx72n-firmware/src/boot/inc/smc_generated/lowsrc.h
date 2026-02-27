@@ -60,7 +60,7 @@
  *
  * @note Ported from Renesas Smart Configurator (SMC) generated code
  * @warning Most functions are NOT thread-safe unless _REENTRANT is defined (CC-RX only)
- * @since Version 1.0.0
+ * @since Version 2.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 1: No goto, setjmp/longjmp, or recursion in function implementations
@@ -77,7 +77,7 @@
  *
  * @author STAR Project (Locked, Inc.)
  * @date 2013 (original), 2026 (STAR modifications)
- * @version 1.0.0
+ * @version 3.01
  * @copyright Copyright (C) 2013 Renesas Electronics Corporation. Modified by Locked, Inc.
  */
 /***********************************************************************************************************************
@@ -135,7 +135,7 @@ Exported global functions (to be accessed by other files)
  * @warning Do not call manually unless you know what you're doing
  *
  * @see close_all() Cleanup counterpart function
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 void init_iolib(void);
 
@@ -160,7 +160,7 @@ void init_iolib(void);
  * @warning Do not access file descriptors after calling this function
  *
  * @see init_iolib() Initialization counterpart function
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 void close_all(void);
 
@@ -193,7 +193,7 @@ void close_all(void);
  * @see close() Close file descriptor
  * @see read() Read from file descriptor
  * @see write() Write to file descriptor
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long open(const char* name, long mode, long flg);
 
@@ -219,7 +219,7 @@ long open(const char* name, long mode, long flg);
  * @warning Do not use file descriptor after closing
  *
  * @see open() Open file descriptor
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long close(long fileno);
 
@@ -253,7 +253,7 @@ long close(long fileno);
  *
  * @see read() Read from file descriptor
  * @see charput() Character-level output
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long write(long fileno, const unsigned char* buf, long count);
 
@@ -287,7 +287,7 @@ long write(long fileno, const unsigned char* buf, long count);
  *
  * @see write() Write to file descriptor
  * @see charget() Character-level input
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long read(long fileno, unsigned char* buf, long count);
 
@@ -316,7 +316,7 @@ long read(long fileno, unsigned char* buf, long count);
  * @note Not thread-safe unless _REENTRANT is defined
  * @warning Always fails - no filesystem support
  *
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long lseek(long fileno, long offset, long base);
 
@@ -340,7 +340,7 @@ long lseek(long fileno, long offset, long base);
  * @note Thread-safe by design
  * @see wait_sem() Semaphore wait
  * @see signal_sem() Semaphore signal
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long* errno_addr(void);
 
@@ -371,7 +371,7 @@ long* errno_addr(void);
  *
  * @see signal_sem() Release semaphore
  * @see errno_addr() Thread-local errno
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long wait_sem(long semnum);
 
@@ -401,7 +401,7 @@ long wait_sem(long semnum);
  *
  * @see wait_sem() Acquire semaphore
  * @see errno_addr() Thread-local errno
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 long signal_sem(long semnum);
 #endif /* _REENTRANT */
@@ -432,7 +432,7 @@ long signal_sem(long semnum);
  *
  * @note Not thread-safe
  * @see _write() Alternative GNUC write implementation
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 int write(int fileno, const char* buf, int count);
 
@@ -459,7 +459,7 @@ int write(int fileno, const char* buf, int count);
  *
  * @note Not thread-safe
  * @see _read() Alternative GNUC read implementation
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 int read(int fileno, char* buf, int count);
 
@@ -485,7 +485,7 @@ int read(int fileno, char* buf, int count);
  *
  * @note Not thread-safe
  * @see write() Standard write implementation
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 int _write(int fileno, const char* buf, int count);
 
@@ -512,7 +512,7 @@ int _write(int fileno, const char* buf, int count);
  *
  * @note Not thread-safe
  * @see read() Standard read implementation
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 int _read(int fileno, char* buf, int count);
 
@@ -531,7 +531,7 @@ int _read(int fileno, char* buf, int count);
  * @post File descriptors remain unchanged
  *
  * @warning Does nothing - stub only
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 void close(void);
 
@@ -550,7 +550,7 @@ void close(void);
  * @post File status remains unchanged
  *
  * @warning Does nothing - stub only
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 void fstat(void);
 
@@ -569,7 +569,7 @@ void fstat(void);
  * @post Terminal detection status remains unchanged
  *
  * @warning Does nothing - stub only
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 void isatty(void);
 
@@ -588,7 +588,7 @@ void isatty(void);
  * @post File position remains unchanged
  *
  * @warning Does nothing - stub only
- * @since Version 1.0.0
+ * @since Version 2.0.0
  */
 void lseek(void);
 #endif /* defined(__GNUC__) */
@@ -617,7 +617,7 @@ void lseek(void);
  *
  * @note Not thread-safe
  * @see __read() IAR read implementation
- * @since Version 1.0.0
+ * @since Version 3.01
  */
 size_t __write(int handle, const unsigned char* buf, size_t bufSize);
 
@@ -643,7 +643,7 @@ size_t __write(int handle, const unsigned char* buf, size_t bufSize);
  *
  * @note Not thread-safe
  * @see __write() IAR write implementation
- * @since Version 1.0.0
+ * @since Version 3.01
  */
 size_t __read(int handle, unsigned char* buf, size_t bufSize);
 #endif /* defined(__ICCRX__) */

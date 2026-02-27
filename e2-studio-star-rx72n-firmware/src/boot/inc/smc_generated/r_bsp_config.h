@@ -46,7 +46,7 @@
  *
  * @author STAR Project (Locked, Inc.)
  * @date 2019 (original), 2026 (STAR modifications)
- * @version 1.0.0
+ * @version 2.0.2
  * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
  *
  * @par NASA Power of 10 Compliance

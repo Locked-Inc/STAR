@@ -88,7 +88,7 @@
  *
  * @author Renesas Electronics Corporation (original), STAR Project/Locked, Inc. (modifications)
  * @date 2019-02-28 (original), 2026-02-13 (STAR modifications)
- * @version 1.0.0
+ * @version 1.05
  * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
  */
 /**********************************************************************************************************************
