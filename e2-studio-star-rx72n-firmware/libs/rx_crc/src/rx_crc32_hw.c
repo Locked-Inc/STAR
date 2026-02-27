@@ -168,25 +168,33 @@
  *
  * ## Thread Safety
  *
- * **This implementation is fully thread-safe and reentrant:**
+ * **This implementation is thread-safe provided callers obey the locking
+ * rules when the DMA path is enabled.**
+ *
  * - **No shared state:** Each call uses local variables only
  * - **Hardware peripheral:** CRC Calculator is stateless (DORCLR resets)
  * - **s_crc_initialized flag:** Read-only after initialization (safe)
- * - **Concurrent access:** Multiple threads can compute CRCs simultaneously
+ * - **Concurrent access (CPU-only):** Multiple threads can compute CRCs
+ *   simultaneously without serialization.
+ * - **Concurrent access (DMA path):** The DMA engine and CRC hardware must
+ *   be accessed exclusively.  A module-level lock (`crc_lock_acquire()`/
+ *   `crc_lock_release()`) is taken around the entire transaction when
+ *   `len >= RX_CRC32_DMA_THRESHOLD`.  This prevents interleaving of DMA
+ *   transfers and remainder byte writes that would otherwise corrupt results.
  *
- * **Why no mutex needed:**
- * 1. CRCCR.DORCLR resets CRC state at start of each calculation
- * 2. Entire computation (write CRCDIR bytes -> read CRCDOR) is atomic per call
- * 3. No persistent state in peripheral between function calls
- * 4. Initialization is idempotent and race-safe
+ * **Why locking is needed for DMA:**
+ * 1. DMA writes to CRCDIR occur asynchronously and can overlap with writes
+ *    from another caller if not serialized.
+ * 2. The lock is acquired immediately after DORCLR and released only after
+ *    the final byte write, covering both the DMA transfer and the CPU loop.
  *
- * **Worst-case race condition:**
- * - Thread A sets DORCLR, writes bytes 0-10
- * - Thread B sets DORCLR (interrupts Thread A)
- * - Thread A's calculation is invalidated
- * - **RESOLUTION:** Each call sets DORCLR first, ensuring clean state
+ * **Worst-case race condition (no lock):**
+ * - Thread A sets DORCLR, starts DMA, is preempted
+ * - Thread B sets DORCLR and writes bytes via DMA/CPU
+ * - Thread A's DMA completes against stale state leading to wrong CRC
  *
- * **Conclusion:** Safe for concurrent use without mutex (verified by testing).
+ * **Conclusion:** Safe for concurrent use when the locking helpers are used
+ * in the DMA path; pure CPU path never requires a mutex.
  *
  * ## Incremental CRC Limitation
  *
@@ -300,9 +308,9 @@
  * @copyright Copyright (c) 2026 STAR Project - MIT License
  */
 
-#include "rx_crc_internal.h"
-
 #ifdef RX_CRC32_USE_HARDWARE
+
+#include "rx_crc_internal.h"
 
 #include <stddef.h>
 
@@ -313,6 +321,7 @@
 
 #ifdef RX_CRC32_USE_DMA
 #include "rx_dmaca.h"
+#include "tx_api.h"    /* tx_interrupt_control(), tx_thread_sleep() */
 #endif
 
 /* =============================================================================
@@ -423,8 +432,8 @@ typedef enum : uint32_t {
  * lazy initialization in `rx_crc32_ieee_impl()` on first use.
  *
  * @note
- * The variable has file scope and is not protected by any synchronization.
- * Multiple threads initializing simultaneously is safe (write-once pattern).
+ * The variable has file scope and is protected by crc_lock_acquire() in
+ * rx_crc_init() to serialize DMA initialization.
  *
  * @warning
  * Do not modify this flag directly. Use `rx_crc_init()` to manage CRC state,
@@ -433,6 +442,64 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 static bool s_crc_initialized = false;
+
+#ifdef RX_CRC32_USE_DMA
+/**
+ * @var s_crc_lock
+ * @brief Simple lock protecting the hardware CRC transaction
+ *
+ * @details
+ * The RX72N CRC peripheral and the DMA engine are global resources; when
+ * the DMA path is taken the transfer occurs asynchronously and is completed
+ * by hardware.  If two callers perform a DMA-based CRC at the same time the
+ * writes to CRCDIR (via DMACA) can interleave, corrupting the CRC state and
+ * yielding incorrect results.  To avoid this we serialize access to the
+ * entire transaction (DORCLR, DMA transfer, and any remaining CPU byte
+ * writes) with a file-scoped lock.  The lock is acquired immediately after
+ * the DORCLR reset and released only after the final byte has been written.
+ *
+ * The implementation is a primitive spinlock that disables interrupts around
+ * the test-and-set operation to guarantee atomicity.  The hold time is short
+ * (a few microseconds) so disabling interrupts is acceptable.  The lock is
+ * never taken from interrupt context; callers running in ISRs must avoid
+ * invoking the hardware path or otherwise ensure mutual exclusion externally.
+ *
+ * @note
+ * - The lock is only used when `RX_CRC32_USE_DMA` is enabled, but it is
+ *   acquired unconditionally after DORCLR so that the behaviour is consistent
+ *   regardless of the buffer size threshold.
+ * - Recursive acquisition is not supported; re-entering the CRC function
+ *   while already holding the lock will deadlock.
+ * - Error paths release the lock prior to returning to prevent deadlock.
+ *
+ * @since Version 1.2.0
+ */
+static volatile bool s_crc_lock = false;
+
+/* Helper helpers for lock acquire/release.  These are defined only when DMA
+ * is enabled because the lock is only needed in that configuration. */
+static void crc_lock_acquire(void)
+{
+  UINT saved = tx_interrupt_control(TX_INT_DISABLE);
+  /* spin until the lock becomes free */
+  while (s_crc_lock) {
+    /* restore interrupts while waiting to avoid long disable periods */
+    tx_interrupt_control(saved);
+    /* brief pause/yield -- using ThreadX sleep(0) to allow other threads */
+    tx_thread_sleep(0);
+    saved = tx_interrupt_control(TX_INT_DISABLE);
+  }
+  s_crc_lock = true;
+  tx_interrupt_control(saved);
+}
+
+static void crc_lock_release(void)
+{
+  UINT saved = tx_interrupt_control(TX_INT_DISABLE);
+  s_crc_lock = false;
+  tx_interrupt_control(saved);
+}
+#endif /* RX_CRC32_USE_DMA */
 
 #ifdef RX_CRC32_USE_DMA
 /**
@@ -450,8 +517,8 @@ static bool s_crc_initialized = false;
  * and DMA setup.
  *
  * @note
- * The variable has file scope and is not protected by any synchronization.
- * Multiple threads initializing simultaneously is safe (write-once pattern).
+ * The variable has file scope and is protected by crc_lock_acquire() in
+ * rx_crc_init() to serialize DMA initialization.
  *
  * @warning
  * Do not modify this flag directly. Use `rx_crc_init()` (which invokes
@@ -665,11 +732,16 @@ rx_err_t rx_crc_init(void)
    * NASA Rule 7: return value checked before proceeding.
    * ----------------------------------------------------------------------- */
   if (!s_dma_initialized) {
-    rx_err_t dma_err = rx_dmaca_init();
-    if (dma_err != k_rx_ok) {
-      return dma_err;
+    crc_lock_acquire();
+    if (!s_dma_initialized) {
+      rx_err_t dma_err = rx_dmaca_init();
+      if (dma_err != k_rx_ok) {
+        crc_lock_release();
+        return dma_err;
+      }
+      s_dma_initialized = true;
     }
-    s_dma_initialized = true;
+    crc_lock_release();
   }
 #endif /* RX_CRC32_USE_DMA */
 
@@ -771,6 +843,12 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
   RX_CHECK_NULL_PTR(data, "CRC", "DMA source data pointer is nullptr");
   RX_CHECK_RANGE_TAG(
         len, k_crc_len_min, (uint32_t)k_dmaca_max_transfer_count, k_rx_err_nack, "CRC");
+  RX_CHECK_RANGE_TAG(
+        (uint32_t)RX_CRC32_DMA_CHANNEL,
+        k_crc_idx_start,
+        (uint32_t)k_dmaca_num_channels - (uint32_t)k_crc_len_min,
+        k_rx_err_nack,
+        "CRC");
   /* Ensure DMACA subsystem was initialized by rx_crc_init() when DMA is enabled */
   RX_VALIDATE_INIT(s_dma_initialized, "CRC", "DMA module not initialized");
 
@@ -891,18 +969,22 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  * | **Max stack (CPU path)** | - | **8 bytes** | - | Worst-case simultaneous |
  *
  * **Notes:** init_err is in a smaller scope (if block), so it doesn't add to function-level stack.
- * dma_len, saved_interrupt_state, and dma_err are in the DMA block only.
+ * dma_len and dma_err are in the DMA block only.
  *
  * **Global state:**
  * - s_crc_initialized: 1 byte (shared with rx_crc_init)
  *
  * ## Thread Safety
  *
- * **Fully thread-safe and reentrant (no mutex needed):**
+ * **Fully thread-safe for CPU-only transfers; DMA transfers are serialized
+ * internally with a module lock.**  See the lengthy discussion earlier in
+ * this file for details.
  * - **CRCCR.DORCLR** resets CRC state at start of each call
  * - **No persistent state** in peripheral between calls
  * - **Local variables only** (no shared data)
- * - **Concurrent access:** Multiple threads can compute CRCs simultaneously
+ * - **Concurrent CPU access:** Multiple threads can compute CRCs simultaneously
+ * - **Concurrent DMA access:** A lock is held around the DMA path to
+ *   guarantee exclusive access; callers need not manage this themselves.
  *
  * **Atomic operation:**
  * ```
@@ -953,7 +1035,10 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  * @post Return value is deterministic (same input -> same output)
  * @post No side effects on input buffer (read-only access)
  *
- * @note **Thread Safety:** Fully reentrant, no mutex required
+ * @note **Thread Safety:** Fully reentrant for CPU-only calls.  DMA-based
+ *   transfers are protected by an internal lock; callers do not need to
+ *   manage synchronization themselves but should be aware that the
+ *   implementation serializes concurrent DMA invocations.
  * @note **Performance:** ~40 MB/s throughput @ 240 MHz
  * @note **Lazy Init:** Auto-initializes peripheral on first call
  * @note **Bit-exact:** Compatible with Go/Python/C++ CRC-32 IEEE implementations
@@ -1076,6 +1161,11 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      */
   crc_regs()->crccr |= k_crc_crccr_dorclr;
 
+#ifdef RX_CRC32_USE_DMA
+  /* serialize access to CRC peripheral across threads when using DMA path */
+  crc_lock_acquire();
+#endif
+
   /*
      * Feed data bytes to the CRC calculator.
      *
@@ -1098,10 +1188,11 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 
     rx_err_t dma_err = internal_crc_feed_dma(data, dma_len);
     if (dma_err != k_rx_ok) {
+      crc_lock_release();
       return k_crc_result_invalid;
     }
 
-    /* -------- Remainder > 1024 bytes via CPU loop ----------------------- */
+    /* -------- Remainder > threshold via CPU loop ------------------------ */
     for (uint32_t i = dma_len; i < k_crc_len_max; i++) {
       if (i >= len) {
         break;
@@ -1125,6 +1216,11 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
     *crcdir_byte = data[i];
   }
 #endif /* RX_CRC32_USE_DMA */
+
+#ifdef RX_CRC32_USE_DMA
+  /* release the peripheral lock acquired above */
+  crc_lock_release();
+#endif
 
   /*
      * Read result and apply IEEE 802.3 finalization.
