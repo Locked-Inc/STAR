@@ -61,15 +61,12 @@ shell: build-image
 
 # Start a persistent background container
 up: build-image
-	@if [ ! "$$(docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
-		if [ "$$(docker ps -aq -f name=$(CONTAINER_NAME))" ]; then \
-			echo "Removing old stopped container..."; \
-			docker rm $(CONTAINER_NAME); \
-		fi; \
+	@if docker ps -q -f name=^$(CONTAINER_NAME)$$ | grep -q .; then \
+		echo "$(CONTAINER_NAME) is already running."; \
+	else \
+		docker rm -f $(CONTAINER_NAME) 2>/dev/null || true; \
 		echo "Starting $(CONTAINER_NAME)..."; \
 		docker run -d -it --name $(CONTAINER_NAME) -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) /bin/bash; \
-	else \
-		echo "$(CONTAINER_NAME) is already running."; \
 	fi
 
 # Connect to the persistent container
@@ -139,21 +136,25 @@ proto-check-nanopb-sync:
 # Doxygen Documentation (RX72N firmware)
 # ------------------------------------------------------------
 
+FIRMWARE_DIR = e2-studio-star-rx72n-firmware
+DOXYGEN_OUT  = $(FIRMWARE_DIR)/docs/doxygen
+LATEX_DIR    = $(DOXYGEN_OUT)/latex
+
 # Generate HTML reference docs only
 doxygen:
 	@echo "Generating Doxygen HTML documentation..."
-	@cd e2-studio-star-rx72n-firmware && doxygen Doxyfile
-	@echo "Done: e2-studio-star-rx72n-firmware/docs/doxygen/html/index.html"
+	@mkdir -p $(DOXYGEN_OUT)
+	@cd $(FIRMWARE_DIR) && doxygen Doxyfile
+	@echo "Done: $(DOXYGEN_OUT)/html/index.html"
 
 # Generate HTML + compile LaTeX to PDF
 # Uses lualatex (no register limit) instead of pdflatex (hits eTex 32768 cap
 # on our large codebase). Doxygen 1.16.1+ is required (installed from GitHub
 # in the Dockerfile -- Ubuntu 24.04 apt ships 1.9.8 which uses broken tabu).
-LATEX_DIR = e2-studio-star-rx72n-firmware/docs/doxygen/latex
-
 doxygen-pdf:
 	@echo "Generating Doxygen HTML + LaTeX..."
-	@cd e2-studio-star-rx72n-firmware && doxygen Doxyfile
+	@mkdir -p $(DOXYGEN_OUT)
+	@cd $(FIRMWARE_DIR) && doxygen Doxyfile
 	@echo "Copying placeholder PDFs for any @msc blocks that failed to render..."
 	@PLACEHOLDER=$$(ls $(LATEX_DIR)/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
 	 if [ -n "$$PLACEHOLDER" ]; then \
@@ -173,5 +174,5 @@ doxygen-pdf:
 # Remove all generated Doxygen output
 doxygen-clean:
 	@echo "Removing Doxygen output..."
-	@rm -rf e2-studio-star-rx72n-firmware/docs/doxygen
+	@rm -rf $(DOXYGEN_OUT)
 	@echo "Done."
