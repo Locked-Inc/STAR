@@ -10,12 +10,16 @@
 
 #include <cmath>
 
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <std_msgs/msg/string.hpp>
 
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/telemetry.pb.h"
+#include "star/v1/ui.pb.h"
 
 namespace star
 {
@@ -75,6 +79,21 @@ public:
   static bool string_to_system_status(
     const std_msgs::msg::String & status_msg,
     star::v1::SystemStatus & system_status);
+
+  /** Convert nav_msgs/Odometry -> star::v1::OdometryData. */
+  static void odometry_to_proto(
+    const nav_msgs::msg::Odometry & ros_odom,
+    star::v1::OdometryData & proto_odom);
+
+  /** Convert geometry_msgs/PoseWithCovarianceStamped (SLAM pose) -> star::v1::OdometryData. */
+  static void slam_pose_to_proto(
+    const geometry_msgs::msg::PoseWithCovarianceStamped & slam_pose,
+    star::v1::OdometryData & proto_odom);
+
+  /** Convert sensor_msgs/LaserScan -> star::v1::LidarScan (<=500 samples). */
+  static void laserscan_to_proto(
+    const sensor_msgs::msg::LaserScan & ros_scan,
+    star::v1::LidarScan & proto_scan);
 
   // ===========================================================================
   // Protobuf -> ROS2 Conversions

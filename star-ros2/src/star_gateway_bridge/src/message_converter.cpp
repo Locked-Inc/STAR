@@ -105,6 +105,96 @@ bool MessageConverter::string_to_system_status(
   return true;
 }
 
+void MessageConverter::odometry_to_proto(
+  const nav_msgs::msg::Odometry & ros_odom,
+  star::v1::OdometryData & proto_odom)
+{
+  proto_odom.set_x_m(ros_odom.pose.pose.position.x);
+  proto_odom.set_y_m(ros_odom.pose.pose.position.y);
+
+  // Extract yaw from quaternion (no tf2 dependency needed for 2D)
+  const auto & q = ros_odom.pose.pose.orientation;
+  const double yaw = std::atan2(
+    2.0 * (q.w * q.z + q.x * q.y),
+    1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+  proto_odom.set_theta_rad(yaw);
+
+  proto_odom.set_linear_velocity_mps(ros_odom.twist.twist.linear.x);
+  proto_odom.set_angular_velocity_rad_per_s(ros_odom.twist.twist.angular.z);
+
+  // Timestamp: ROS stamp -> microseconds
+  const int64_t ts_us =
+    static_cast<int64_t>(ros_odom.header.stamp.sec) * 1'000'000LL +
+    static_cast<int64_t>(ros_odom.header.stamp.nanosec) / 1'000LL;
+  proto_odom.set_timestamp_us(ts_us);
+}
+
+void MessageConverter::slam_pose_to_proto(
+  const geometry_msgs::msg::PoseWithCovarianceStamped & slam_pose,
+  star::v1::OdometryData & proto_odom)
+{
+  proto_odom.set_x_m(slam_pose.pose.pose.position.x);
+  proto_odom.set_y_m(slam_pose.pose.pose.position.y);
+
+  // Extract yaw from quaternion (same inline formula as odometry_to_proto)
+  const auto & q = slam_pose.pose.pose.orientation;
+  const double yaw = std::atan2(
+    2.0 * (q.w * q.z + q.x * q.y),
+    1.0 - 2.0 * (q.y * q.y + q.z * q.z));
+  proto_odom.set_theta_rad(yaw);
+
+  // SLAM pose has no twist; zero these out so UI can detect it
+  proto_odom.set_linear_velocity_mps(0.0);
+  proto_odom.set_angular_velocity_rad_per_s(0.0);
+
+  // Timestamp: ROS stamp -> microseconds
+  const int64_t ts_us =
+    static_cast<int64_t>(slam_pose.header.stamp.sec) * 1'000'000LL +
+    static_cast<int64_t>(slam_pose.header.stamp.nanosec) / 1'000LL;
+  proto_odom.set_timestamp_us(ts_us);
+}
+
+static constexpr int kMaxLidarSamples = 500;
+
+void MessageConverter::laserscan_to_proto(
+  const sensor_msgs::msg::LaserScan & ros_scan,
+  star::v1::LidarScan & proto_scan)
+{
+  proto_scan.Clear();
+
+  const size_t total = ros_scan.ranges.size();
+  if (total == 0) {return;}
+
+  // Compute stride so we emit <= kMaxLidarSamples evenly-spaced points
+  const size_t stride =
+    (total + static_cast<size_t>(kMaxLidarSamples) - 1) /
+    static_cast<size_t>(kMaxLidarSamples);
+
+  for (size_t i = 0; i < total; i += stride) {
+    const float range = ros_scan.ranges[i];
+    // Skip invalid readings (NaN, inf, or out-of-range)
+    if (!std::isfinite(range) || range < ros_scan.range_min ||
+      range > ros_scan.range_max)
+    {
+      proto_scan.add_angle_rad(0.0f);
+      proto_scan.add_range_m(0.0f);   // 0 = invalid per proto convention
+      proto_scan.add_intensity(0.0f);
+    } else {
+      const float angle =
+        ros_scan.angle_min + static_cast<float>(i) * ros_scan.angle_increment;
+      proto_scan.add_angle_rad(angle);
+      proto_scan.add_range_m(range);
+      proto_scan.add_intensity(
+        i < ros_scan.intensities.size() ? ros_scan.intensities[i] : 0.0f);
+    }
+  }
+
+  const int64_t ts_us =
+    static_cast<int64_t>(ros_scan.header.stamp.sec) * 1'000'000LL +
+    static_cast<int64_t>(ros_scan.header.stamp.nanosec) / 1'000LL;
+  proto_scan.set_timestamp_us(ts_us);
+}
+
 // ===========================================================================
 // Protobuf -> ROS2 Conversions
 // ===========================================================================

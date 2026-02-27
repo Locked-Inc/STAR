@@ -67,6 +67,11 @@ StarGatewayBridgeNode::~StarGatewayBridgeNode()
 {
   RCLCPP_INFO(this->get_logger(), "Shutting down STAR Gateway Bridge Node");
 
+  // Reset subscriptions before publishers go away
+  odom_sub_.reset();
+  slam_pose_sub_.reset();
+  scan_sub_.reset();
+
   // Send stop command before shutdown
   auto zero_twist = geometry_msgs::msg::Twist();
   if (teleop_cmd_vel_pub_) {
@@ -139,6 +144,37 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
       "/robot_status", 10,
       std::bind(&StarGatewayBridgeNode::robot_status_callback, this,
                 std::placeholders::_1));
+
+  // Subscribe to odometry (EKF-filtered preferred)
+  odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+      "/odometry/filtered", 10,
+    [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
+      star::v1::OdometryData proto_odom;
+      converter_.odometry_to_proto(*msg, proto_odom);
+      std::lock_guard<std::mutex> lock(odometry_mutex_);
+      cached_odometry_ = proto_odom;
+      });
+
+  // Subscribe to SLAM pose (map frame) -- overrides EKF odom for UI mapping
+  slam_pose_sub_ =
+    this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+      "/slam_toolbox/pose", rclcpp::SensorDataQoS(),
+    [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr msg) {
+      star::v1::OdometryData proto_odom;
+      converter_.slam_pose_to_proto(*msg, proto_odom);
+      std::lock_guard<std::mutex> lock(odometry_mutex_);
+      cached_odometry_ = proto_odom;
+      });
+
+  // Subscribe to LiDAR scan -- SensorDataQoS matches sllidar_node publisher QoS
+  scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+      "/scan", rclcpp::SensorDataQoS(),
+    [this](const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+      star::v1::LidarScan proto_scan;
+      converter_.laserscan_to_proto(*msg, proto_scan);
+      std::lock_guard<std::mutex> lock(lidar_mutex_);
+      cached_lidar_scan_ = proto_scan;
+      });
 
   // Services
   set_pid_gains_service_ = this->create_service<std_srvs::srv::SetBool>(
@@ -233,7 +269,7 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
   }
 
   // Forward telemetry to Gateway via gRPC
-  if (grpc_stub_ && robot_status.has_value()) {
+  if (grpc_stub_) {
     grpc::ClientContext context;
     context.set_deadline(std::chrono::system_clock::now() +
                          std::chrono::milliseconds(grpc_deadline_ms_));
@@ -252,6 +288,22 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
                                          *request.mutable_system_status());
     }
 
+    // Populate odometry if available
+    {
+      std::lock_guard<std::mutex> lock(odometry_mutex_);
+      if (cached_odometry_.has_value()) {
+        *request.mutable_odometry() = *cached_odometry_;
+      }
+    }
+
+    // Populate lidar scan if available
+    {
+      std::lock_guard<std::mutex> lock(lidar_mutex_);
+      if (cached_lidar_scan_.has_value()) {
+        *request.mutable_lidar_scan() = *cached_lidar_scan_;
+      }
+    }
+
     star::v1::ForwardTelemetryResponse response;
     grpc::Status status =
       grpc_stub_->ForwardTelemetry(&context, request, &response);
@@ -268,8 +320,10 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
   }
 
   RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 10000,
-                        "Telemetry forward: robot_status=%s",
-                        robot_status.has_value() ? "cached" : "none");
+                        "Telemetry forward: robot_status=%s, odom=%s, scan=%s",
+                        robot_status.has_value() ? "cached" : "none",
+                        cached_odometry_.has_value() ? "cached" : "none",
+                        cached_lidar_scan_.has_value() ? "cached" : "none");
 }
 
 void StarGatewayBridgeNode::teleop_poll_timer_callback()

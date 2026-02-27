@@ -11,8 +11,9 @@ from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
 from launch.conditions import IfCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import FindPackageShare, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 # Slamtec RPLiDAR C1 DTOF protocol requires exactly 460800 baud.
 # This is a hardware-fixed parameter, not user-tunable.
@@ -24,13 +25,18 @@ def generate_launch_description():
     pkg_slam_toolbox = get_package_share_directory('slam_toolbox')
 
     serial_port_arg = DeclareLaunchArgument(
-        'serial_port', default_value='/dev/ttyUSB0',
-        description='Serial port for RPLiDAR C1'
+        'serial_port', default_value='/dev/rplidar',
+        description='Serial port for RPLiDAR C1 (stable udev symlink)'
     )
 
     use_nav2_arg = DeclareLaunchArgument(
         'use_nav2', default_value='true',
         description='Launch Nav2 navigation stack alongside SLAM'
+    )
+
+    use_ekf_arg = DeclareLaunchArgument(
+        'use_ekf', default_value='true',
+        description='Run EKF odometry fusion (disable in dev mode — use static odom TF instead)'
     )
 
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
@@ -63,6 +69,7 @@ def generate_launch_description():
 
     # EKF node: consumes /odom/unfiltered + /imu/data, publishes odom→base_link TF
     # and /odometry/filtered. Must start before SLAM so odom→base_link TF is available.
+    # Disabled in dev mode (use_ekf:=false) — start.sh publishes a static identity TF instead.
     ekf = Node(
         package='robot_localization',
         executable='ekf_node',
@@ -71,6 +78,7 @@ def generate_launch_description():
         parameters=[os.path.join(pkg_star_bringup, 'config', 'ekf.yaml')],
         respawn=True,
         respawn_delay=2.0,
+        condition=IfCondition(LaunchConfiguration('use_ekf')),
     )
 
     slam = IncludeLaunchDescription(
@@ -104,6 +112,7 @@ def generate_launch_description():
     return LaunchDescription([
         serial_port_arg,
         use_nav2_arg,
+        use_ekf_arg,
         static_tf,
         ekf,
         rplidar,

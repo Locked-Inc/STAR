@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"os/exec"
 	"os/signal"
 	"strings"
 	"syscall"
@@ -759,6 +760,27 @@ func startHTTPServerWithAddr(
 		}
 		logger.Info("REST emergency stop succeeded", slog.String("reason", sanitizedReason))
 		w.WriteHeader(http.StatusNoContent)
+	})
+
+	// SLAM reset endpoint -- calls slam_toolbox Reset service via ros2 CLI.
+	// The gateway process inherits the ROS2 environment, so ros2 is on PATH.
+	mux.HandleFunc("/api/slam/reset", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		resetCtx, resetCancel := context.WithTimeout(r.Context(), 5*time.Second)
+		defer resetCancel()
+		cmd := exec.CommandContext(resetCtx, "ros2", "service", "call",
+			"/slam_toolbox/reset", "slam_toolbox/srv/Reset", "{}")
+		if err := cmd.Run(); err != nil {
+			logger.Error("SLAM reset failed", slog.Any("error", err))
+			http.Error(w, "reset failed: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+		logger.Info("SLAM reset succeeded")
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"status":"reset"}`))
 	})
 
 	// Lightweight liveness endpoint for orchestration and local debugging.

@@ -20,9 +20,12 @@
 #include <diagnostic_msgs/msg/diagnostic_array.hpp>
 #include <diagnostic_msgs/msg/diagnostic_status.hpp>
 #include <diagnostic_msgs/msg/key_value.hpp>
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
 #include <geometry_msgs/msg/twist.hpp>
 #include <grpcpp/grpcpp.h> // NOLINT(build/include_order)
+#include <nav_msgs/msg/odometry.hpp>
 #include <rclcpp/rclcpp.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 
@@ -189,6 +192,9 @@ private:
 
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;       /**< /odometry/filtered */
+  rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr slam_pose_sub_;  /**< /slam_toolbox/pose */
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;  /**< /scan */
 
   // ROS2 Services
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_pid_gains_service_;
@@ -205,6 +211,11 @@ private:
   // Cached telemetry data (protected by mutexes)
   std::mutex robot_status_mutex_;
   std::optional<std_msgs::msg::String> cached_robot_status_;
+
+  std::mutex odometry_mutex_;                              /**< Guards cached_odometry_. */
+  std::optional<star::v1::OdometryData> cached_odometry_; /**< Latest odometry proto. */
+  std::mutex lidar_mutex_;                                 /**< Guards cached_lidar_scan_. */
+  std::optional<star::v1::LidarScan> cached_lidar_scan_;  /**< Latest lidar scan proto. */
 
 
   // Parameters (cached for performance)

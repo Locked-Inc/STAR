@@ -85,6 +85,7 @@ ament_target_dependencies(star_gateway_bridge_component
   rclcpp_components
   diagnostic_msgs
   geometry_msgs
+  nav_msgs
   std_msgs
   sensor_msgs
   std_srvs
