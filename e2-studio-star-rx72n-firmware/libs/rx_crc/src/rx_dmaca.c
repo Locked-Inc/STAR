@@ -420,16 +420,16 @@ typedef enum : uint16_t {
  * @since 1.0.0
  */
  
-static volatile rx_dmac_channel_regs_t * dmac_ch(uint8_t ch)
+static volatile rx_dmac_channel_regs_t * dmac_ch(uint8_t p_ch)
 {
     /* Precondition: base address must be non-NULL */
     RX_ASSERT(k_dmac0_base_addr != 0U, "DMAC base address is NULL");
     /* Precondition: channel stride must be non-zero */
     RX_ASSERT(DMACA_CHANNEL_STRIDE != 0U, "DMACA channel stride is zero");
     /* Precondition: channel index must be valid */
-    RX_ASSERT(ch < k_dmaca_num_channels, "DMACA invalid channel index");
+    RX_ASSERT(p_ch < k_dmaca_num_channels, "DMACA invalid channel index");
     
-    const uintptr_t addr = k_dmac0_base_addr + ((uintptr_t)ch * DMACA_CHANNEL_STRIDE);
+    const uintptr_t addr = k_dmac0_base_addr + ((uintptr_t)p_ch * DMACA_CHANNEL_STRIDE);
     volatile rx_dmac_channel_regs_t *ptr = (volatile rx_dmac_channel_regs_t *)addr;
     
     /* Postcondition: result must not be NULL */
@@ -592,7 +592,7 @@ static rx_err_t validate_channel(uint8_t channel)
  *
  * @since 1.0.0
  */
-static rx_err_t validate_config_params(const dmaca_config_t *p_cfg)
+static rx_err_t internal_validate_config_params(const dmaca_config_t *p_cfg)
 {
     /* Preconditions: NULL pointer is handled gracefully rather than asserted */
     if (p_cfg == NULL) {
@@ -652,11 +652,11 @@ static rx_err_t validate_config_params(const dmaca_config_t *p_cfg)
  *
  * @since 1.0.0
  */
-static rx_err_t configure_transfer_mode(volatile rx_dmac_channel_regs_t *ch,
+static rx_err_t internal_configure_transfer_mode(volatile rx_dmac_channel_regs_t *p_ch,
                                         const dmaca_config_t *p_cfg)
 {
     /* Preconditions */
-    RX_ASSERT(ch != NULL, "Channel register pointer is NULL");
+    RX_ASSERT(p_ch != NULL, "Channel register pointer is NULL");
     RX_ASSERT(p_cfg != NULL, "Config pointer is NULL");
 
     uint16_t dmtmd = 0U;
@@ -684,7 +684,7 @@ static rx_err_t configure_transfer_mode(volatile rx_dmac_channel_regs_t *ch,
         dmtmd |= (DMTMD_SZ_BYTE << DMTMD_SZ_SHIFT);
     }
 
-    ch->dmtmd = dmtmd;
+    p_ch->dmtmd = dmtmd;
     return k_rx_ok;
 }
 
@@ -715,11 +715,11 @@ static rx_err_t configure_transfer_mode(volatile rx_dmac_channel_regs_t *ch,
  *
  * @since 1.0.0
  */
-static rx_err_t configure_address_mode(volatile rx_dmac_channel_regs_t *ch,
+static rx_err_t internal_configure_address_mode(volatile rx_dmac_channel_regs_t *p_ch,
                                        const dmaca_config_t *p_cfg)
 {
     /* Preconditions */
-    RX_ASSERT(ch != NULL, "Channel register pointer is NULL");
+    RX_ASSERT(p_ch != NULL, "Channel register pointer is NULL");
     RX_ASSERT(p_cfg != NULL, "Config pointer is NULL");
 
     uint16_t dmamd = 0U;
@@ -743,7 +743,7 @@ static rx_err_t configure_address_mode(volatile rx_dmac_channel_regs_t *ch,
     }
     dmamd |= (DMAMD_DM_FIXED << DMAMD_DM_SHIFT);
 
-    ch->dmamd = dmamd;
+    p_ch->dmamd = dmamd;
     return k_rx_ok;
 }
 
@@ -775,16 +775,16 @@ static rx_err_t configure_address_mode(volatile rx_dmac_channel_regs_t *ch,
  *
  * @since 1.0.0
  */
-static rx_err_t configure_channel_regs(volatile rx_dmac_channel_regs_t *ch,
+static rx_err_t internal_configure_channel_regs(volatile rx_dmac_channel_regs_t *p_ch,
                                        const dmaca_config_t *p_cfg)
 {
     /* Preconditions */
-    RX_ASSERT(ch != NULL, "Channel register pointer is NULL");
+    RX_ASSERT(p_ch != NULL, "Channel register pointer is NULL");
     RX_ASSERT(p_cfg != NULL, "Config pointer is NULL");
-    ch->dmsar = (uint32_t)(uintptr_t)p_cfg->p_src;
-    ch->dmdar = (uint32_t)(uintptr_t)p_cfg->p_dst;
-    ch->dmcra = (uint32_t)p_cfg->transfer_count;
-    ch->dmcrb = (uint8_t)DMACA_DMCRB_CLEAR;
+    p_ch->dmsar = (uint32_t)(uintptr_t)p_cfg->p_src;
+    p_ch->dmdar = (uint32_t)(uintptr_t)p_cfg->p_dst;
+    p_ch->dmcra = (uint32_t)p_cfg->transfer_count;
+    p_ch->dmcrb = (uint8_t)DMACA_DMCRB_CLEAR;
     return k_rx_ok;
 }
 
@@ -942,7 +942,7 @@ rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg)
         return err;
     }
 
-    err = validate_config_params(p_cfg);
+    err = internal_validate_config_params(p_cfg);
     if (err != k_rx_ok) {
         return err;
     }
@@ -952,17 +952,17 @@ rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg)
     ch->dmcnt &= ~(uint8_t)DMACA_DTE_ENABLE;
 
     /* write basic registers */
-    err = configure_channel_regs(ch, p_cfg);
+    err = internal_configure_channel_regs(ch, p_cfg);
     if (err != k_rx_ok) {
         return err;           /* should never happen */
     }
 
-    err = configure_transfer_mode(ch, p_cfg);
+    err = internal_configure_transfer_mode(ch, p_cfg);
     if (err != k_rx_ok) {
         return err;
     }
 
-    err = configure_address_mode(ch, p_cfg);
+    err = internal_configure_address_mode(ch, p_cfg);
     if (err != k_rx_ok) {
         return err;
     }
@@ -1112,7 +1112,8 @@ rx_err_t rx_dmaca_wait(uint8_t channel, uint32_t timeout_cycles)
      */
     uint32_t remaining = timeout_cycles;
 
-    while ((ch->dmsts & k_dmsts_act) != 0U)
+    while (((ch->dmsts & k_dmsts_act) != 0U) ||
+           ((ch->dmcnt & (uint8_t)DMACA_DTE_ENABLE) != 0U))
     {
         if (remaining == 0U) {
             /* Timeout: forcibly disable channel before returning. */
