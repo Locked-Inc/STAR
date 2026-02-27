@@ -8,7 +8,9 @@
  * Validates the rx_bus_gpio module which wraps the GPIO HAL behind the bus
  * manager abstraction. Tests cover all four public operations (init, write,
  * read, toggle) including success paths, null pointer validation, uninitialized
- * bus rejection, wrong bus type rejection, and HAL error propagation.
+ * bus rejection, and HAL error propagation. Bus type validation is performed
+ * only during initialization (by design - once a bus is initialized, its type
+ * is guaranteed to be correct).
  *
  * All hardware interaction is intercepted by mock_gpio_hal, which records
  * calls and exposes captured state for assertion. The bus manager mock
@@ -17,7 +19,7 @@
  * @par Test Coverage
  * | Group       | Tests | Description                              |
  * |-------------|-------|------------------------------------------|
- * | Init        | 5     | Success (output/input), null manager/name, not found |
+ * | Init        | 6     | Success (output/input), null manager/name, not found, wrong type |
  * | Write       | 5     | High, low, null manager, null name, not initialized |
  * | Read        | 6     | High, low, null manager, null name, null value, not init |
  * | Toggle      | 4     | Success, null manager, null name, not initialized |
@@ -50,6 +52,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
 #include "mock_gpio_hal.h"
 #include "rx_bus_config.h"
@@ -296,6 +299,40 @@ void test_bus_gpio_init_bus_not_found_returns_error(void)
 {
   rx_err_t err = rx_bus_gpio_init(&s_test_manager, "nonexistent_bus", true);
   TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
+  TEST_ASSERT_EQUAL(k_expected_zero_calls, mock_gpio_get_call_count());
+}
+
+/**
+ * @brief rx_bus_gpio_init with wrong bus type returns k_rx_err_invalid_arg
+ *
+ * @details
+ * Registers a UART bus with the manager, then attempts to initialize it
+ * with rx_bus_gpio_init(). The function must detect the type mismatch and
+ * reject the operation before calling the GPIO HAL.
+ *
+ * @pre s_test_manager initialized
+ * @pre A UART bus is registered with name "wrong_type_bus"
+ * @post No GPIO HAL calls recorded
+ * @post Bus manager state unchanged by the rejected operation
+ *
+ * @note Not thread-safe; must be run from the single-threaded Unity test harness
+ *
+ * @since Version 1.0.0
+ */
+void test_bus_gpio_init_rejects_wrong_bus_type(void)
+{
+  /* Create and register a UART bus (wrong type) */
+  rx_bus_config_t wrong_type_config;
+  memset(&wrong_type_config, 0, sizeof(wrong_type_config));
+  wrong_type_config.type = k_bus_type_uart;
+  wrong_type_config.name = "wrong_type_bus";
+
+  rx_err_t err = rx_bus_manager_add_bus(&s_test_manager, &wrong_type_config);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Attempt to init with GPIO function - should reject */
+  err = rx_bus_gpio_init(&s_test_manager, "wrong_type_bus", true);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_EQUAL(k_expected_zero_calls, mock_gpio_get_call_count());
 }
 
@@ -726,6 +763,7 @@ int main(void)
   RUN_TEST(test_bus_gpio_init_null_manager_returns_error);
   RUN_TEST(test_bus_gpio_init_null_name_returns_error);
   RUN_TEST(test_bus_gpio_init_bus_not_found_returns_error);
+  RUN_TEST(test_bus_gpio_init_rejects_wrong_bus_type);
 
   /* Write tests */
   RUN_TEST(test_bus_gpio_write_high_sets_output_high);
