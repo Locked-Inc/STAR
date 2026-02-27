@@ -456,7 +456,7 @@ void test_bus_gpio_read_returns_simulated_high(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   bool value = false;
-  err = rx_bus_gpio_read(&s_test_manager, s_test_bus_name, &value);
+  err        = rx_bus_gpio_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(value);
 }
@@ -484,7 +484,7 @@ void test_bus_gpio_read_returns_simulated_low(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   bool value = true;
-  err = rx_bus_gpio_read(&s_test_manager, s_test_bus_name, &value);
+  err        = rx_bus_gpio_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(value);
 }
@@ -507,8 +507,8 @@ void test_bus_gpio_read_returns_simulated_low(void)
  */
 void test_bus_gpio_read_null_manager_returns_error(void)
 {
-  bool value = false;
-  rx_err_t err = rx_bus_gpio_read(nullptr, s_test_bus_name, &value);
+  bool     value = false;
+  rx_err_t err   = rx_bus_gpio_read(nullptr, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
   TEST_ASSERT_EQUAL(k_expected_zero_calls, mock_gpio_get_call_count());
 }
@@ -577,8 +577,8 @@ void test_bus_gpio_read_null_value_returns_error(void)
  */
 void test_bus_gpio_read_not_initialized_returns_error(void)
 {
-  bool value = false;
-  rx_err_t err = rx_bus_gpio_read(&s_test_manager, s_test_bus_name, &value);
+  bool     value = false;
+  rx_err_t err   = rx_bus_gpio_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL(k_expected_zero_calls, mock_gpio_get_call_count());
 }

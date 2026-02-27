@@ -72,8 +72,8 @@
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_test_adc_unit    = 0, /**< S12AD unit 0 (ADC0) */
-  k_test_adc_channel = 0, /**< Channel AN000 */
+  k_test_adc_unit    = 0,  /**< S12AD unit 0 (ADC0) */
+  k_test_adc_channel = 0,  /**< Channel AN000 */
   k_test_adc_bits    = 12, /**< 12-bit resolution (0-4095) */
 } test_adc_constants_t;
 
@@ -393,7 +393,7 @@ void test_bus_adc_read_returns_configured_value(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   uint16_t value = (uint16_t)k_test_adc_value_zero;
-  err = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
+  err            = rx_bus_adc_read(&s_test_manager, s_test_bus_name, &value);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL((uint16_t)k_test_adc_value_mid, value);
 }
@@ -531,7 +531,7 @@ void test_bus_adc_read_voltage_returns_nonzero_for_full_scale(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
-  err = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
+  err                 = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_GREATER_THAN((int32_t)k_voltage_threshold_mv, (int32_t)voltage_mv);
 }
@@ -601,7 +601,7 @@ void test_bus_adc_read_voltage_null_value_returns_error(void)
 void test_bus_adc_read_voltage_not_initialized_returns_error(void)
 {
   uint32_t voltage_mv = (uint32_t)k_test_voltage_zero;
-  rx_err_t err = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
+  rx_err_t err        = rx_bus_adc_read_voltage_mv(&s_test_manager, s_test_bus_name, &voltage_mv);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
   TEST_ASSERT_EQUAL(k_expected_zero_adc_calls, mock_adc_get_call_count());
 }

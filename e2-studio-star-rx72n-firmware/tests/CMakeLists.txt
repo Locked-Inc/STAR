@@ -472,6 +472,7 @@ add_executable(test_rx_bus_gpio
 apply_strict_warnings(test_rx_bus_gpio)
 apply_test_includes(test_rx_bus_gpio)
 target_link_libraries(test_rx_bus_gpio unity)
+set_target_properties(test_rx_bus_gpio PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
 # Test: ADC Bus Abstraction
 add_executable(test_rx_bus_adc
@@ -484,6 +485,7 @@ add_executable(test_rx_bus_adc
 apply_strict_warnings(test_rx_bus_adc)
 apply_test_includes(test_rx_bus_adc)
 target_link_libraries(test_rx_bus_adc unity)
+set_target_properties(test_rx_bus_adc PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
 # Test: I2C Bus Abstraction
 add_executable(test_rx_bus_i2c
@@ -496,6 +498,7 @@ add_executable(test_rx_bus_i2c
 apply_strict_warnings(test_rx_bus_i2c)
 apply_test_includes(test_rx_bus_i2c)
 target_link_libraries(test_rx_bus_i2c unity)
+set_target_properties(test_rx_bus_i2c PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
 # Test: SPI Communication Layer
 add_executable(test_rx_spi_comm
