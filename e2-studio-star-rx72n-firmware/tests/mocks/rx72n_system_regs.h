@@ -292,7 +292,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  *
  * @version 1.0.0
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 
 #pragma once
@@ -335,7 +335,7 @@ extern "C" {
  * @see lib/rx_hal/inc/rx72n_system_regs.h Real hardware address definitions
  * @see RX72N User's Manual Section 4.3 Memory Map
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_system_base_addr = 0x00080000, /**< System register base address (real RX72N MMIO) */
@@ -373,7 +373,7 @@ typedef enum : uint32_t {
  * @see rstsr2() Mock accessor for RSTSR2
  * @see RX72N User's Manual Section 8.2.8 Reset Status Registers
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_rstsr0_addr = 0x0008C290, /**< Reset Status Register 0 address (real RX72N MMIO) */
@@ -443,7 +443,7 @@ typedef enum : uint32_t {
  * @see rstsr1_bits_t RSTSR1 bit flag definitions
  * @see rstsr01() Mock accessor function
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef struct {
   volatile uint8_t rstsr0; /**< Reset Status Register 0 (power-on, LVD flags) */
@@ -493,7 +493,7 @@ typedef struct {
  * @see rx_rstsr01_regs_t Reset status register structure
  * @see RX72N User's Manual Section 8.2.8.1 RSTSR0
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_rstsr0_porf   = 0x01, /**< Bit 0: Power-On Reset Detect Flag (1=occurred, 0=not occurred) */
@@ -548,7 +548,7 @@ typedef enum : uint8_t {
  * @see rx_rstsr01_regs_t Reset status register structure
  * @see RX72N User's Manual Section 8.2.8.2 RSTSR1
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_rstsr1_cwsf = 0x01, /**< Bit 0: Cold/Warm Start Flag (1=cold, 0=warm) */
@@ -602,7 +602,7 @@ typedef enum : uint8_t {
  * @see rstsr2() Mock accessor for RSTSR2 register
  * @see RX72N User's Manual Section 8.2.8.3 RSTSR2
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_rstsr2_iwdtrf = 0x01, /**< Bit 0: Independent Watchdog Timer Reset Flag (1=occurred) */
@@ -663,7 +663,7 @@ typedef enum : uint8_t {
  * @see rstsr0_bits_t RSTSR0 flag definitions
  * @see rstsr1_bits_t RSTSR1 flag definitions
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 volatile rx_rstsr01_regs_t* rstsr01(void);
 
@@ -717,7 +717,7 @@ volatile rx_rstsr01_regs_t* rstsr01(void);
  * @see rstsr2_bits_t RSTSR2 flag definitions
  * @see rstsr01() Accessor for RSTSR0 and RSTSR1
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 volatile uint8_t* rstsr2(void);
 
@@ -737,7 +737,7 @@ volatile uint8_t* rstsr2(void);
  *
  * @see rx_system_regs_t System register structure typedef
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 #ifndef RX_SYSTEM_REGS_T_DEFINED
 #define RX_SYSTEM_REGS_T_DEFINED
@@ -857,7 +857,7 @@ volatile uint8_t* rstsr2(void);
  * @see rx_module_stop_bits_b_t MSTPCRB bit assignments
  * @see RX72N User's Manual Section 9 System Control
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef struct {
   volatile uint16_t mdmonr;       /**< Mode Monitor Register (boot mode, endianness) */
@@ -973,7 +973,7 @@ typedef struct {
  * @see prcr_reg() Protection register accessor (must unlock before writing mstpcrb)
  * @see RX72N User's Manual Section 9.2.4 MSTPCRB Register
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_mstpb_usb0 = 19, /**< Bit 19: USB0 module stop bit (1=stopped, 0=running) */
@@ -1041,7 +1041,7 @@ typedef enum : uint8_t {
  * @see prcr_reg() Inline accessor function returning pointer to this variable
  * @see RX72N User's Manual Section 9.2.2 PRCR Register
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 extern volatile uint16_t g_mock_prcr;
 
@@ -1162,7 +1162,7 @@ extern volatile uint16_t g_mock_prcr;
  * @see rx_system_regs_t System register structure with protected registers
  * @see RX72N User's Manual Section 9.2.2 PRCR Register
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 #ifndef MOCK_RX_MTU_REGS_H
 static inline volatile uint16_t* prcr_reg(void)

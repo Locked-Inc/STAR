@@ -1201,7 +1201,7 @@ typedef enum : uint8_t {
  *
  * @see internal_select_transport() Returns this type
  * @see internal_build_and_send_telemetry() Consumer of this type
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   /**
@@ -1650,7 +1650,7 @@ static void internal_telem_task_entry(ULONG input)
  * @see rx_comm_manager_channel_ready() Readiness query API
  * @see rx_comm_manager_channel_name() Human-readable channel name for logs
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * - Precondition 1: g_comm_manager initialized (checked via channel_ready return)
@@ -1753,7 +1753,7 @@ static telemetry_transport_t internal_select_transport(void)
  * @see internal_collect_state() Caller - treats non-ok return as non-fatal
  * @see shared_data_get_motor_state() Shared data accessor
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * - Precondition 1: telemetry != NULL
@@ -1847,7 +1847,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * @see shared_data_get_obstacle() Obstacle state accessor
  * @see internal_build_and_send_telemetry() Caller - sets timestamp before calling
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * - Precondition 1: telemetry != NULL
@@ -1927,7 +1927,7 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
  * @see rx_nanopb_encode_telemetry() Underlying nanopb encoder
  * @see internal_build_and_send_telemetry() Orchestrator - calls this after collect_state
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * - Precondition 1: telemetry != NULL
@@ -1980,7 +1980,7 @@ static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry
  * @see rx_comm_manager_send() Underlying send implementation
  * @see internal_select_transport() Channel selection (USB preferred, SPI fallback)
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * - Precondition 1: channel is a valid rx_comm_channel_t value
@@ -2049,7 +2049,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * @see internal_select_transport() Phase 4a - Select active transport channel
  * @see internal_send_via_channel() Phase 4b - Transmit via comm manager
  *
- * @since Version 1.0.0 (refactored in v1.1.0 to delegate to focused helpers)
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 4 Compliance:
  * This function is now a ~30-line orchestrator. Each phase delegated to a focused

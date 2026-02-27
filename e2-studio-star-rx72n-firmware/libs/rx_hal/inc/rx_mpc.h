@@ -575,7 +575,7 @@ typedef enum : uint8_t {
    * @note Active-high: pin reads 1 when 5V present on USB bus
    * @note Requires additional USB PHY and controller configuration
    *
-   * @since Version 1.1.0
+   * @since Version 1.0.0
    */
   k_psel_usb_vbus = 0x11,
 
@@ -596,7 +596,7 @@ typedef enum : uint8_t {
    * @par Application: Motor control with direction/PWM signals for DRV8263H
    * @par Feature: 90-degree phase staggering reduces peak current draw
    *
-   * @since Version 1.1.0
+   * @since Version 1.0.0
    */
   k_psel_gptw = 0x14,
 
@@ -1023,7 +1023,7 @@ typedef enum : uint8_t {
  * @see rx_mpc_set_peripheral() Underlying implementation
  * @see rx_encoder_tpu.h TPU encoder driver using phase counting
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  * @callgraph
  */
 [[nodiscard]] rx_err_t rx_mpc_set_tpu_encoder(rx_port_pin_t pin);
@@ -1338,7 +1338,7 @@ typedef enum : uint8_t {
  * @see RX72N Manual Chapter 23 - Multi-Function Pin Controller
  * @see RX72N Manual Chapter 29 - General PWM Timer
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 1: [OK] No goto, setjmp, recursion (delegates to rx_mpc_set_peripheral)
@@ -1406,7 +1406,7 @@ typedef enum : uint8_t {
  * @see RX72N Manual Chapter 23 - Multi-Function Pin Controller
  * @see RX72N Manual Chapter 31 - USB Controller
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_mpc_set_usb_vbus(rx_port_pin_t pin);
 
@@ -1479,7 +1479,7 @@ typedef enum : uint8_t {
  * @see RX72N Manual Section 20.3 (MPC), PFS register bit definitions
  * @see RX72N Manual Chapter 15 (ICU - Interrupt Controller Unit)
  *
- * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 5: [OK] 3 preconditions, 4 postconditions

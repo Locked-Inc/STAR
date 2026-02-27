@@ -201,8 +201,8 @@
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
  * @since Version 1.0.0
- * @version 1.1.0 - Added Go compatibility tests (2026-01-27)
- * @version 1.0.0 - Initial implementation (2026-01-04)
+ * @version 1.0.0
+ * @version 1.0.0
  *
  * @par Test Execution:
  * @code{.bash}
@@ -2291,7 +2291,7 @@ void test_roundtrip_reset(void)
  * @see rx_frame_decode_with_resync() Function under test
  * @see k_frame_sync_word Sync word value (0x55AA)
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_resync_zero       = 0, /**< Zero constant for index/discarded initializations and assertions */
@@ -2324,7 +2324,7 @@ typedef enum : uint8_t {
  *
  * @see rx_frame_decode_with_resync() Function under test
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_resync_dropped_byte_recovery(void)
 {
@@ -2378,7 +2378,7 @@ void test_resync_dropped_byte_recovery(void)
  * @see rx_frame_decode_with_resync() Function under test
  * @see test_resync_dropped_byte_recovery() Complementary slow-path test
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_resync_aligned_frame_zero_discarded(void)
 {
@@ -2431,7 +2431,7 @@ void test_resync_aligned_frame_zero_discarded(void)
  * @see rx_frame_decode_with_resync() Function under test
  * @see test_resync_dropped_byte_recovery() Complementary recovery-success test
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_resync_no_sync_found(void)
 {
@@ -2472,7 +2472,7 @@ void test_resync_no_sync_found(void)
  * @see rx_frame_decode_with_resync() Function under test
  * @see test_resync_dropped_byte_recovery() Complementary success-path test
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_resync_crc_mismatch_sets_discarded(void)
 {
@@ -2526,7 +2526,7 @@ void test_resync_crc_mismatch_sets_discarded(void)
  * @see rx_frame_decode_with_resync() Function under test
  * @see test_decode_null_args() Equivalent test for rx_frame_decode()
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_resync_null_args(void)
 {

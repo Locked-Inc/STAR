@@ -1010,7 +1010,7 @@ struct rx_time_interface {
  * @see mock_time_get_interface() Produces valid test interface
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test Tested in test_rx_time_interface.c::test_validate_null_interface()
  * @test Tested in test_rx_time_interface.c::test_validate_missing_functions()

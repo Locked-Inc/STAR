@@ -358,7 +358,7 @@ extern void R_BSP_MAIN_FUNCTION(void);
  * @see rx_clock_power_init() Clock configuration (called from main, not here)
  * @see hardware_init() Peripheral initialization (called from main, not here)
  *
- * @since Renesas BSP v3.00 (2019), adapted for STAR 2026
+ * @since Version 1.0.0
  *
  * @par STAR Modification History:
  * - 2026: Removed duplicate clock/hardware init calls

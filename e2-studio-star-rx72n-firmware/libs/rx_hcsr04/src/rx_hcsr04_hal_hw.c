@@ -1445,7 +1445,7 @@ uint32_t hcsr04_hal_get_time_us(void)
  *
  * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking for task context
  *
- * @since Version 1.2.0 (Issue #296 - ISR-mode HC-SR04 measurement)
+ * @since Version 1.0.0
  */
 uint32_t hcsr04_hal_get_time_us_isr(void)
 {

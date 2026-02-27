@@ -333,7 +333,7 @@
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
  * @since Version 1.0.0
- * @version 1.0.0 - Initial implementation (2026-01-26)
+ * @version 1.0.0
  *
  * @par Test Execution:
  * @code{.bash}

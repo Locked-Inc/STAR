@@ -562,7 +562,7 @@ static rx_spi_comm_handle_t s_spi_comm_handle;
  *       initialization and callback flow in this module.
  * @warning Not safe for unsynchronized external mutation. Do not access or modify
  *          internals directly; use rx_spi_link API functions and initialization path.
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_spi_link_t s_spi_link;
 

@@ -205,7 +205,7 @@ Private global variables and functions
  * @see uart_debug_puts() STAR production debug output (non-blocking)
  * @see BSP_CFG_USER_CHARPUT_FUNCTION User override function (r_bsp_config.h)
  *
- * @since Renesas BSP v3.00, STAR 2026
+ * @since Version 1.0.0
  */
 void charput(char output_char)
 {
@@ -255,7 +255,7 @@ void charput(char output_char)
  * @see charput() Character output to Virtual Console
  * @see BSP_CFG_USER_CHARGET_FUNCTION User override function (r_bsp_config.h)
  *
- * @since Renesas BSP v3.00, STAR 2026
+ * @since Version 1.0.0
  */
 char charget(void)
 {

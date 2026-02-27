@@ -412,7 +412,7 @@ typedef enum : uint16_t {
  * @see rx_hcsr04_config_t Configuration structure using this enum
  * @see rx_hcsr04_icu_configure() ICU setup required for IRQ mode
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   /**
@@ -457,7 +457,7 @@ typedef enum : uint8_t {
  * @see rx_hcsr04_config_t Configuration structure using this type
  * @see RX72N Manual Chapter 15 - ICU, Table listing IRQ pin assignments
  *
- * @since Version 1.2.0 (Issue #296 - IRQ mode added)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_hcsr04_irq_none = 0, /**< Sentinel: no IRQ assigned (polling mode); zero so zero-init is safe */
@@ -498,7 +498,7 @@ typedef enum : uint8_t {
  * @endcode
  *
  * @see rx_hcsr04_config_t.irq_priority Configure sensor priority
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_hcsr04_irq_priority_unset = 0, /**< Sentinel: use default priority in rx_hcsr04_init() */
@@ -552,7 +552,7 @@ typedef enum : uint8_t {
  * @note k_hcsr04_sensor_count is used as the exclusive upper-bound for range
  *       validation; it does not represent a valid sensor slot
  *
- * @since Version 1.3.0 (Issue #336 - promoted from internal ISR header)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_hcsr04_sensor_front_left  = 0, /**< Sonar 0 Front-Left  (IRQ11, P03) */
@@ -657,7 +657,7 @@ typedef enum : uint8_t {
  * @see rx_port_constants.h Type-safe GPIO pin definitions
  * @see rx_hcsr04_timing_t Timeout constants
  *
- * @since Version 1.3.0 (Issue #336 - per-sensor index added)
+ * @since Version 1.0.0
  */
 typedef struct {
   rx_port_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO, output) */
@@ -713,7 +713,7 @@ typedef struct {
  * @see rx_hcsr04_deinit() Releases resources and clears initialized flag
  * @see rx_hcsr04_config_t Configuration input to rx_hcsr04_init()
  *
- * @since Version 1.0.0 (IRQ fields added in Version 1.2.0)
+ * @since Version 1.0.0
  */
 typedef struct {
   /* Configuration (set during init) */
@@ -844,7 +844,7 @@ typedef void (*rx_hcsr04_callback_t)(rx_hcsr04_t*              handle,
  * @see rx_hcsr04_config_t.irq_priority Configurable interrupt priority
  * @see rx_hcsr04_irq_priority_t Named priority constants
  *
- * @since Version 1.0.0 (IRQ mode added in Version 1.2.0)
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config);
 

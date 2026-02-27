@@ -326,7 +326,7 @@ typedef enum : uint32_t {
  * @see rspi_spsr_bits_t Status register bit definitions
  *
  * @since Version 1.0.0
- * @version 1.1.0 (2026-01-27: Added SPCMD1-7 and SPDCR2 for complete coverage)
+ * @version 1.0.0
  */
 typedef struct __attribute__((packed)) {
   /**

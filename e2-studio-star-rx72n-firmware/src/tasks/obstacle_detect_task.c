@@ -953,7 +953,7 @@ typedef enum : uint8_t {
  * @see s_sensor_ptrs Pointer array indexed by these values
  * @see internal_init_sensors() Uses these indices to initialize sensors in order
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_sensor_front_left =
@@ -987,7 +987,7 @@ typedef enum : uint8_t {
  *
  * @see motor_control_task_get_motors() Returns this sentinel when motors not ready
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_obstacle_motor_count_none =
@@ -1121,7 +1121,7 @@ static const char* const s_tag = "OBSTACLE";
  * @note Handles uninitialized until internal_init_sensors() completes successfully
  * @warning Do NOT access handles from ISR context -- rx_hcsr04_t is not ISR-safe
  * @warning Do NOT share handles across tasks without external synchronization
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 static rx_hcsr04_t s_sensors[k_obstacle_sensor_count];
 
@@ -1139,7 +1139,7 @@ static rx_hcsr04_t s_sensors[k_obstacle_sensor_count];
  * @warning Do NOT modify pointer targets after rx_obstacle_detect_init() is called;
  *          the library retains these pointers for the duration of the polling task
  * @warning Do NOT use after module teardown; there is no teardown path in this firmware
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 static rx_hcsr04_t* s_sensor_ptrs[k_obstacle_sensor_count] = {
   &s_sensors[k_sensor_front_left],
@@ -1490,7 +1490,7 @@ rx_err_t obstacle_detect_task_create(void)
  * @see rx_hcsr04_init() HC-SR04 driver initialization
  * @see rx_port_constants.h GPIO pin constant definitions
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_init_sensors(void)
 {
@@ -1502,7 +1502,7 @@ static rx_err_t internal_init_sensors(void)
    *          Static function-scope; resides in .rodata (~16 bytes, 4 x uint32_t).
    * @note Static and const -- initialized once at program start, never modified
    * @warning Do not call this function before GPIO ports F, J, 0, 3 are powered and clocked
-   * @since STAR v1.0.0
+   * @since Version 1.0.0
    */
   static const rx_port_pin_t s_trigger_pins[k_obstacle_sensor_count] = {
     k_rx_pf_5, /* k_sensor_front_left:  PF5 TRIG */
@@ -1521,7 +1521,7 @@ static rx_err_t internal_init_sensors(void)
    * @note Static and const -- initialized once at program start, never modified
    * @warning Do NOT reconfigure these pins elsewhere in the firmware while sensors are active;
    *          the pin validator enforces single-owner registration to prevent conflicts
-   * @since STAR v1.0.0
+   * @since Version 1.0.0
    */
   static const rx_port_pin_t s_echo_pins[k_obstacle_sensor_count] = {
     k_rx_p0_3, /* k_sensor_front_left:  P03 ECHO (IRQ11) */
@@ -1538,7 +1538,7 @@ static rx_err_t internal_init_sensors(void)
    *          is self-contained. Static function-scope; resides in .rodata (~128 bytes).
    * @note Static and const -- string literals stored in Flash, pointer array in .rodata
    * @warning Strings are for logging only -- do NOT use as keys or compare by pointer
-   * @since STAR v1.0.0
+   * @since Version 1.0.0
    */
   static const char* const s_sensor_names[k_obstacle_sensor_count] = {
     "Front-left sensor init failed",

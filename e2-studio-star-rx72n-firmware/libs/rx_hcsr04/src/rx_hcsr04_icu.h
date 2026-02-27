@@ -56,8 +56,8 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
- * @version 1.2.0
- * @since Version 1.2.0 (Issue #296)
+ * @version 1.0.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 2: All loops in rx_hcsr04_icu_configure() / rx_hcsr04_icu_disable() have fixed bounds
@@ -161,7 +161,7 @@ extern "C" {
  * @see rx_hcsr04_isr.h ISR handler receiving edge events
  * @see RX72N Manual Chapter 15.2 - External Interrupts (IRQ)
  *
- * @since Version 1.2.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 5: [OK] 3 preconditions, 4 postconditions
@@ -221,7 +221,7 @@ extern "C" {
  * @see rx_hcsr04_icu_configure() Enable IRQ
  * @see rx_mpc_set_gpio() Reconfigure pin back to GPIO mode
  *
- * @since Version 1.2.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 5: [OK] 2 preconditions (IER enabled + no measurement in progress), 4 postconditions

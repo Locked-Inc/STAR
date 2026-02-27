@@ -1124,7 +1124,7 @@ unsigned long R_BSP_RotateRight(unsigned long data, unsigned long num);
  * @param[in] count Number of elements
  * @return long Accumulated product sum
  * @note GNUC implementation using inline assembly
- * @since Version 1.01
+ * @since Version 1.0.0
  */
 long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsigned long count);
 
@@ -1135,7 +1135,7 @@ long R_BSP_MulAndAccOperation_2byte(const short* data1, const short* data2, unsi
  * @param[in] count Number of elements
  * @return short Fixed-point result
  * @note GNUC implementation using inline assembly
- * @since Version 1.01
+ * @since Version 1.0.0
  */
 short R_BSP_MulAndAccOperation_FixedPoint1(const short*  data1,
                                            const short*  data2,
@@ -1148,7 +1148,7 @@ short R_BSP_MulAndAccOperation_FixedPoint1(const short*  data1,
  * @param[in] count Number of elements
  * @return short Fixed-point result
  * @note GNUC implementation using inline assembly
- * @since Version 1.01
+ * @since Version 1.0.0
  */
 short R_BSP_MulAndAccOperation_FixedPoint2(const short*  data1,
                                            const short*  data2,
@@ -1408,7 +1408,7 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_InitTFU(void);
  * @pre TFU initialized (R_BSP_INIT_TFU called if TFU_VERSION == 1)
  * @post sin and cos contain computed values
  * @note Uses TFU hardware for fast computation
- * @since Version 1.10
+ * @since Version 1.0.0
  */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine(float f, float* sin, float* cos);
 
@@ -1422,7 +1422,7 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine(float f, float* sin, float* c
  * @pre TFU initialized (R_BSP_INIT_TFU called if TFU_VERSION == 1)
  * @post atan2 and hypot contain computed values
  * @note Uses TFU hardware for fast computation
- * @since Version 1.10
+ * @since Version 1.0.0
  */
 R_BSP_ATTRIB_INLINE_ASM void
 R_BSP_CalcAtan_SquareRoot(float y, float x, float* atan2, float* hypot);
@@ -1436,7 +1436,7 @@ R_BSP_CalcAtan_SquareRoot(float y, float x, float* atan2, float* hypot);
  * @param[out] cos Pointer to store cosine result
  * @return void
  * @note Only for TFU version 2 (newer MCUs)
- * @since Version 1.14
+ * @since Version 1.0.0
  */
 R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine_Fpn(int32_t f, int32_t* sin, int32_t* cos);
 
@@ -1445,7 +1445,7 @@ R_BSP_ATTRIB_INLINE_ASM void R_BSP_CalcSine_Cosine_Fpn(int32_t f, int32_t* sin, 
  * @param[in] fx Angle in fixed-point format
  * @return int32_t Sine result in fixed-point
  * @note Only for TFU version 2
- * @since Version 1.14
+ * @since Version 1.0.0
  */
 int32_t R_BSP_CalcSine_Fpn(int32_t fx);
 
@@ -1454,7 +1454,7 @@ int32_t R_BSP_CalcSine_Fpn(int32_t fx);
  * @param[in] fx Angle in fixed-point format
  * @return int32_t Cosine result in fixed-point
  * @note Only for TFU version 2
- * @since Version 1.14
+ * @since Version 1.0.0
  */
 int32_t R_BSP_CalcCosine_Fpn(int32_t fx);
 
@@ -1466,7 +1466,7 @@ int32_t R_BSP_CalcCosine_Fpn(int32_t fx);
  * @param[out] hypot Pointer to store hypot result
  * @return void
  * @note Only for TFU version 2
- * @since Version 1.14
+ * @since Version 1.0.0
  */
 R_BSP_ATTRIB_INLINE_ASM void
 R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t* hypot);
@@ -1477,7 +1477,7 @@ R_BSP_CalcAtan_SquareRoot_Fpn(int32_t y, int32_t x, int32_t* atan2, int32_t* hyp
  * @param[in] x X coordinate
  * @return int32_t atan2(y,x) result in fixed-point
  * @note Only for TFU version 2
- * @since Version 1.14
+ * @since Version 1.0.0
  */
 int32_t R_BSP_CalcAtan_Fpn(int32_t y, int32_t x);
 
@@ -1487,7 +1487,7 @@ int32_t R_BSP_CalcAtan_Fpn(int32_t y, int32_t x);
  * @param[in] x Second value
  * @return int32_t sqrt(x^2+y^2) result in fixed-point
  * @note Only for TFU version 2
- * @since Version 1.14
+ * @since Version 1.0.0
  */
 int32_t R_BSP_CalcSquareRoot_Fpn(int32_t y, int32_t x);
 
