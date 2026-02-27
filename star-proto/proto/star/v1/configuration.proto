@@ -335,7 +335,6 @@ message TimingConfiguration {
   // Motors stopped if no command received within timeout.
   // Valid range: 100-5000 ms. Typical: 500 ms.
   uint32 communication_timeout_ms = 3;
-
 }
 
 // Configuration validation result.

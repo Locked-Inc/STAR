@@ -2262,7 +2262,7 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
  *
  * 1. **Validate output:** Check out_state not nullptr
  * 2. **Check initialization:** Return error if not initialized
- * 3. **Acquire obstacle_mutex:** Block until available
+ * 3. **Acquire obstacle_mutex:** Non-blocking try; returns k_rx_err_rtos_mutex if busy
  * 4. **Copy state:** memcpy from g_shared_data to caller's buffer
  * 5. **Release obstacle_mutex:** Allow writer to update
  *
@@ -2283,7 +2283,7 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state)
  *
  * @invariant obstacle_mutex held for <3 us
  *
- * @note Thread Safety: Protected by obstacle_mutex
+ * @note Thread Safety: Protected by obstacle_mutex (non-blocking acquire)
  * @note Performance: ~2.5 us total
  * @note Frequency: Called at 20 Hz by Telemetry Task
  *
@@ -2312,7 +2312,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state)
     return k_rx_err_not_initialized;
   }
 
-  const UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.obstacle_mutex, TX_NO_WAIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
