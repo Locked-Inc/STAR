@@ -131,6 +131,9 @@ message TelemetryData {
   // Increments with each transmitted frame. Used by diagnostics to detect
   // missing frames in the telemetry stream.
   uint32 frame_sequence = 19;
+
+  // Obstacle detection data from ultrasonic sensors (RX72N specific).
+  ObstacleData obstacle = 3;
 }
 
 // IMU sensor data (orientation, velocity, acceleration).
@@ -166,6 +169,29 @@ message ImuData {
 
   // Angular velocity Z (yaw rate) in radians per second.
   double gyro_z_rad_per_s = 9;
+}
+
+// Obstacle detection data from ultrasonic sensors (RX72N specific).
+// Reports distance and detection state from 4 HC-SR04 sensors.
+message ObstacleData {
+  // Distance from sensor 0 in meters. 0.0 if sensor invalid.
+  float distance_front_left_m = 1;
+
+  // Distance from sensor 1 in meters. 0.0 if sensor invalid.
+  float distance_front_right_m = 2;
+
+  // Distance from sensor 2 in meters. 0.0 if sensor invalid.
+  float distance_back_left_m = 3;
+
+  // Distance from sensor 3 in meters. 0.0 if sensor invalid.
+  float distance_back_right_m = 4;
+
+  // Any sensor has detected an obstacle within threshold distance.
+  bool any_obstacle = 5;
+
+  // Per-sensor detection bitmask. Bit N set = sensor N detected obstacle.
+  // Bit 0: sensor 0, Bit 1: sensor 1, Bit 2: sensor 2, Bit 3: sensor 3.
+  uint32 detected_mask = 6;
 }
 
 // GPS position data.
