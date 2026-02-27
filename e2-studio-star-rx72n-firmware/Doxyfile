@@ -234,11 +234,12 @@ COMPACT_LATEX           = NO
 PAPER_TYPE              = a4
 EXTRA_PACKAGES          = amsmath \
                           amssymb \
-                          listings
+                          listings \
+                          star-font-fixes
 LATEX_HEADER            =
 LATEX_FOOTER            =
 LATEX_EXTRA_STYLESHEET  =
-LATEX_EXTRA_FILES       =
+LATEX_EXTRA_FILES       = latex-extras/star-font-fixes.sty
 PDF_HYPERLINKS          = YES
 USE_PDFLATEX            = YES
 LATEX_BATCHMODE         = YES
