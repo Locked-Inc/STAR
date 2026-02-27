@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen doxygen-pdf doxygen-clean
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen doxygen-pdf doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -18,12 +18,16 @@ help:
 	@echo "  make shell        - Start an interactive shell in a new ephemeral container"
 	@echo ""
 	@echo "RX72N Firmware:"
-	@echo "  make proto-gen-firmware - Generate nanopb protos for RX72N firmware"
-	@echo "  make test-rx72n         - Run RX72N unit tests (regenerates protos first)"
-	@echo "  make doxygen            - Generate Doxygen HTML docs for RX72N firmware"
-	@echo "  make doxygen-pdf        - Generate Doxygen HTML + LaTeX PDF (requires lualatex)"
-	@echo "  make doxygen-clean      - Remove generated Doxygen output"
-	@echo "  Note: RX72N firmware is built in e2 studio, not via Makefile"
+	@echo "  make build-rx72n         - Build RX72N firmware (Debug, requires GNURX toolchain)"
+	@echo "  make build-rx72n-release - Build RX72N firmware (Release, requires GNURX toolchain)"
+	@echo "  make format-rx72n        - Auto-format firmware C/H files with clang-format"
+	@echo "  make check-rx72n         - Check firmware formatting (exit 1 if any file differs)"
+	@echo "  make proto-gen-firmware  - Generate nanopb protos for RX72N firmware"
+	@echo "  make test-rx72n          - Run RX72N unit tests (regenerates protos first)"
+	@echo "  make doxygen             - Generate Doxygen HTML docs for RX72N firmware"
+	@echo "  make doxygen-pdf         - Generate Doxygen HTML + LaTeX PDF (requires lualatex)"
+	@echo "  make doxygen-clean       - Remove generated Doxygen output"
+	@echo "  Note: GNURX toolchain required for build targets (rx-elf-gcc)"
 	@echo ""
 	@echo "Protocol Buffers:"
 	@echo "  make proto-gen    - Generate all proto code and setup Go modules (Go, TS, C/nanopb)"
@@ -124,6 +128,26 @@ proto-gen-firmware: proto-gen-go
 test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
 	@cd e2-studio-star-rx72n-firmware/tests && bash run_tests.sh
+
+# Build RX72N firmware binary (Debug) - requires GNURX toolchain (rx-elf-gcc)
+build-rx72n:
+	@echo "Building RX72N firmware (Debug)..."
+	@cd e2-studio-star-rx72n-firmware && bash build.sh debug
+
+# Build RX72N firmware binary (Release) - requires GNURX toolchain (rx-elf-gcc)
+build-rx72n-release:
+	@echo "Building RX72N firmware (Release)..."
+	@cd e2-studio-star-rx72n-firmware && bash build.sh release
+
+# Auto-format firmware C/H files with clang-format (modifies files in place)
+format-rx72n:
+	@echo "Formatting RX72N firmware C/H files..."
+	@bash scripts/format-rx72n.sh
+
+# Check firmware formatting without modifying files (for CI/pre-commit)
+check-rx72n:
+	@echo "Checking RX72N firmware formatting..."
+	@bash scripts/format-rx72n.sh --check
 
 # Verify LidarScan nanopb max_count bounds are identical in ui.options and gateway_service.options.
 # Fails with a clear SYNC ERROR message if any value diverges between the two files.
