@@ -1051,7 +1051,22 @@ static uint32_t s_sequence = 0;
 /** @brief Conversion factor: centi-degrees Celsius per degree Celsius */
 static const float s_cdegc_per_degree = 100.0F;
 
-/** @brief Conversion factor: centimeters per meter */
+/**
+ * @var s_cm_per_m
+ * @brief Centimetres per metre conversion factor (100.0).
+ *
+ * @details
+ * Used to convert obstacle sensor distances from the integer centimetre
+ * values stored in obstacle_state_t::distance_cm[] to floating-point
+ * metre values required by the star_v1_ObstacleData protobuf fields
+ * (distance_front_left_m, distance_front_right_m, etc.).
+ *
+ * Conversion: metres = (float)distance_cm[i] / s_cm_per_m
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
 static const float s_cm_per_m = 100.0F;
 
 /**
@@ -1814,7 +1829,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * 1. **Motor state** (via internal_populate_motor_telemetry()):
  *    E-stop flag, fault_flags bitfield, 4 encoder submessages
  * 2. **Temperature state:** temperature_celsius (cdegC->degC)
- * 3. **Obstacle state:** 4 sensor distances (cm), any_obstacle flag, detected_mask bitmask
+ * 3. **Obstacle state:** 4 sensor distances in metres (m), any_obstacle flag, detected_mask bitmask
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
