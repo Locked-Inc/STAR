@@ -760,6 +760,7 @@ static rx_err_t configure_address_mode(volatile rx_dmac_channel_regs_t *ch,
  *
  * @return rx_err_t Always returns k_rx_ok; parameters have already been
  *                     validated.
+ * @retval k_rx_ok Configuration applied successfully.
  *
  * @pre  ch must point to a valid channel register block and the caller must
  *       have disabled DTE.
@@ -1146,8 +1147,6 @@ rx_err_t rx_dmaca_wait(uint8_t channel, uint32_t timeout_cycles)
  *
  * @return void No return value; operation is performed via side-effects on
  *         hardware registers and module state.
- *
- * @retval none
  *
  * @pre channel is an integer (uint8_t) representing the desired DMACA
  *      channel; if it is outside the valid range the call is a no-op.
