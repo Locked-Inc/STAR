@@ -61,15 +61,15 @@ shell: build-image
 
 # Start a persistent background container
 up: build-image
-	@if [ ! "$$$(docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
-		if [ "$$$(docker ps -aq -f name=$(CONTAINER_NAME))" ]; then \
+	@if [ ! "$$(docker ps -q -f name=$(CONTAINER_NAME))" ]; then \
+		if [ "$$(docker ps -aq -f name=$(CONTAINER_NAME))" ]; then \
 			echo "Removing old stopped container..."; \
 			docker rm $(CONTAINER_NAME); \
 		fi; \
 		echo "Starting $(CONTAINER_NAME)..."; \
 		docker run -d -it --name $(CONTAINER_NAME) -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) /bin/bash; \
-	else 
-		echo "$(CONTAINER_NAME) is already running."; 
+	else \
+		echo "$(CONTAINER_NAME) is already running."; \
 	fi
 
 # Connect to the persistent container

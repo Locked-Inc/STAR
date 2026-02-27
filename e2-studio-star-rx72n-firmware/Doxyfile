@@ -126,7 +126,9 @@ WARN_LINE_FORMAT        = "at line $line of file $file"
 WARN_LOGFILE            = docs/doxygen/doxygen_warnings.log
 
 #---------------------------------------------------------------------------
-# Input files - firmware source only (exclude vendor/generated/test code)
+# Input files - all firmware source (exclude Renesas auto-generated/test code)
+# threadx and rx_nanopb are included; raw nanopb core (libs/rx_nanopb/nanopb/)
+# and Renesas SMC-generated BSP are excluded via EXCLUDE_PATTERNS.
 #---------------------------------------------------------------------------
 INPUT                   = src \
                           libs
@@ -134,15 +136,12 @@ INPUT_ENCODING          = UTF-8
 FILE_PATTERNS           = *.c \
                           *.h
 RECURSIVE               = YES
-EXCLUDE                 = libs/threadx \
-                          libs/rx_nanopb \
-                          src/smc_gen \
+EXCLUDE                 = src/smc_gen \
                           src/boot/smc_generated
 EXCLUDE_SYMLINKS        = NO
 EXCLUDE_PATTERNS        = */smc_gen/* \
                           */smc_generated/* \
                           */smc_gen_bsp/* \
-                          */threadx/* \
                           */nanopb/* \
                           */tests/*
 EXCLUDE_SYMBOLS         =
@@ -266,6 +265,7 @@ MACRO_EXPANSION         = YES
 EXPAND_ONLY_PREDEF      = NO
 SEARCH_INCLUDES         = YES
 INCLUDE_PATH            = src/inc \
+                          src/tasks/inc \
                           src/boot/inc \
                           src/boot/smc_generated \
                           libs/rx_core/inc \
@@ -286,9 +286,14 @@ INCLUDE_PATH            = src/inc \
                           libs/rx_usb/inc \
                           libs/rx_usb_comm/inc \
                           libs/rx_ds18b20/inc \
-                          libs/rx_bq4050/inc \
                           libs/rx_hcsr04/inc \
-                          libs/rx_obstacle_detect/inc
+                          libs/rx_obstacle_detect/inc \
+                          libs/rx_nanopb/inc \
+                          libs/rx_nanopb/inc/gen \
+                          libs/rx_nanopb/nanopb \
+                          libs/threadx/common/inc \
+                          libs/threadx/ports/rxv3/gnu/inc \
+                          libs/threadx/utility/low_power
 INCLUDE_FILE_PATTERNS   =
 PREDEFINED              = __RX__ \
                           __GNURX__ \
