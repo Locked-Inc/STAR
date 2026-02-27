@@ -242,7 +242,7 @@ typedef struct TX_THREAD_STRUCT {
   VOID*
     tx_thread_stack_start; /**< Lowest stack address (byte-aligned; must be non-NULL when thread is active) */
   ULONG
-    tx_thread_stack_size; /**< Total stack allocation in bytes (must be > 0 when thread is active) */
+  tx_thread_stack_size; /**< Total stack allocation in bytes (must be > 0 when thread is active) */
 } TX_THREAD;
 
 /**
