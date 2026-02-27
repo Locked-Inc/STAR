@@ -44,7 +44,7 @@ namespace star_spi_bridge
 
 namespace
 {
-/// @brief ROS2 logger for SPI driver diagnostics.
+/** @brief ROS2 logger for SPI driver diagnostics. */
 auto logger()
 {
   return rclcpp::get_logger("star_spi_bridge.spi_driver");

@@ -58,17 +58,10 @@ enum class FrameType : uint8_t
 class SpiDriver {
 public:
   // -- Frame-structure constants ------------------------------------------
-  /// @brief SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes.
-  static constexpr size_t k_header_size = 8;
-
-  /// @brief CRC-32 trailer length in bytes.
-  static constexpr size_t k_crc_size = 4;
-
-  /// @brief Maximum application payload per frame (bytes).
-  static constexpr size_t k_max_payload_size = 1024;
-
-  /// @brief SYNC word transmitted in every frame header.
-  static constexpr uint16_t k_sync_word = 0x55AA;
+  static constexpr size_t k_header_size = 8;   /**< SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes. */
+  static constexpr size_t k_crc_size = 4;       /**< CRC-32 trailer length in bytes. */
+  static constexpr size_t k_max_payload_size = 1024;  /**< Maximum application payload per frame (bytes). */
+  static constexpr uint16_t k_sync_word = 0x55AA;     /**< SYNC word transmitted in every frame header. */
 
   /**
    * @brief Construct a new SpiDriver.
@@ -83,7 +76,7 @@ public:
     const std::string & device_path,
     uint32_t speed_hz = 10000000);
 
-  /// @brief Destructor -- calls close_device() if the device is still open.
+  /** @brief Destructor -- calls close_device() if the device is still open. */
   virtual ~SpiDriver();
 
   /**

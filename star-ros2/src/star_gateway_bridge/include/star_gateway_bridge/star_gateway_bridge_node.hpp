@@ -1,13 +1,17 @@
-// star_gateway_bridge_node.hpp - ROS2 Gateway Bridge Node
-// Bridges ROS2 ecosystem with Go gateway service via gRPC.
-//
-// This node handles bidirectional communication:
-// - ROS2 -> Gateway: Forward telemetry (robot status) for UI display
-// - Gateway -> ROS2: Poll teleop commands and PID gain updates from UI
-//
-// STAR Project - Texas A&M University
-// Copyright 2026 STAR Project
-// January 2026
+/**
+ * @file star_gateway_bridge_node.hpp
+ * @brief ROS2 Gateway Bridge Node -- bridges the ROS2 ecosystem with the Go gateway service.
+ *
+ * @details
+ * This node handles bidirectional communication:
+ * - ROS2 -> Gateway: Forward telemetry (robot status, odometry, LiDAR) for UI display.
+ * - Gateway -> ROS2: Poll teleop commands and PID gain updates from UI.
+ *
+ * @note Requires an active gRPC connection to the Go gateway on startup. If the connection
+ * fails the node continues and retries via the watchdog timer.
+ *
+ * @since Version 1.0.0
+ */
 
 #ifndef STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
 #define STAR_GATEWAY_BRIDGE__STAR_GATEWAY_BRIDGE_NODE_HPP_
@@ -252,8 +256,57 @@ private:
   bool first_telemetry_frame_{true};
 
   // Methods
+
+  /**
+   * @brief Publish teleop and telemetry frame-drop diagnostics at 1 Hz.
+   *
+   * @details
+   * Builds a DiagnosticArray containing two DiagnosticStatus entries:
+   * one for teleop command drops and one for telemetry frame drops. Severity
+   * levels are OK / WARN / ERROR / STALE based on the calculated drop rate.
+   *
+   * @post A DiagnosticArray is published on /diagnostics.
+   *
+   * @note Called by diagnostics_timer_ at 1 Hz.
+   */
   void publish_diagnostics();
+
+  /**
+   * @brief Detect and log gaps in the teleop command sequence number stream.
+   *
+   * @details
+   * Compares current_sequence against the last observed sequence number.
+   * Any positive gap (accounting for uint32 wraparound) increments
+   * teleop_frames_dropped_ and emits a WARN log. Gaps >= 10000 are treated as
+   * a system restart and logged at WARN without incrementing the drop counter.
+   *
+   * @param[in] current_sequence Sequence number of the latest teleop frame.
+   *
+   * @pre  first_teleop_frame_ is false after the first call.
+   * @post last_teleop_sequence_ updated to current_sequence.
+   * @post total_teleop_frames_ incremented by 1.
+   * @post teleop_frames_dropped_ incremented by the gap size (if gap < 10000).
+   *
+   * @note Called from teleop_poll_timer_callback() on every fresh command.
+   */
   void check_teleop_sequence_continuity(uint32_t current_sequence);
+
+  /**
+   * @brief Detect and log gaps in the outgoing telemetry sequence number stream.
+   *
+   * @details
+   * Mirrors check_teleop_sequence_continuity() for the telemetry direction.
+   * Gaps >= 10000 are treated as a system restart and ignored.
+   *
+   * @param[in] current_sequence Sequence number of the latest telemetry frame.
+   *
+   * @pre  first_telemetry_frame_ is false after the first call.
+   * @post last_telemetry_sequence_ updated to current_sequence.
+   * @post total_telemetry_frames_ incremented by 1.
+   * @post telemetry_frames_dropped_ incremented by the gap size (if gap < 10000).
+   *
+   * @note Called from telemetry_forward_timer_callback() on each successful gRPC send.
+   */
   void check_telemetry_sequence_continuity(uint32_t current_sequence);
 };
 

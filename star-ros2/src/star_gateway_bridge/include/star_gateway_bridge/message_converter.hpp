@@ -1,9 +1,17 @@
-// message_converter.hpp - ROS2 <-> Protobuf Message Converter
-// Bidirectional conversion between ROS2 standard messages and STAR Protocol
-// Buffers.
-//
-// STAR Project - Texas A&M University
-// January 2026
+/**
+ * @file message_converter.hpp
+ * @brief Bidirectional conversion between ROS2 standard messages and STAR Protocol Buffers.
+ *
+ * @details
+ * Provides stateless converter functions for translating between ROS2 message types and the
+ * STAR protobuf schema used by the gateway service. All converters validate inputs for
+ * NaN/infinity and apply safe clamping where applicable.
+ *
+ * @note All conversion functions are stateless and thread-safe when called from different
+ * threads on separate message instances.
+ *
+ * @since Version 1.0.0
+ */
 
 #ifndef STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
 #define STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
@@ -80,17 +88,87 @@ public:
     const std_msgs::msg::String & status_msg,
     star::v1::SystemStatus & system_status);
 
-  /** Convert nav_msgs/Odometry -> star::v1::OdometryData. */
+  /**
+   * @brief Convert nav_msgs/Odometry to star::v1::OdometryData.
+   *
+   * @details
+   * Extracts 2-D pose (x, y, yaw) from the EKF-filtered odometry message and
+   * maps linear/angular velocities directly. Yaw is derived from the quaternion
+   * orientation using the standard atan2 formula for planar rotation.
+   *
+   * Timestamp is converted from ROS (sec + nanosec) to microseconds since epoch.
+   *
+   * @param[in]  ros_odom   Incoming EKF-filtered odometry message.
+   * @param[out] proto_odom Output OdometryData protobuf populated in-place.
+   *
+   * @pre  ros_odom quaternion is a valid unit quaternion.
+   * @post proto_odom fields x_m, y_m, theta_rad, linear_velocity_mps,
+   *       angular_velocity_rad_per_s, and timestamp_us are all set.
+   *
+   * @note Thread-safe; does not access shared state.
+   *
+   * @see slam_pose_to_proto()  Alternative source for map-frame pose.
+   *
+   * @since Version 1.0.0
+   */
   static void odometry_to_proto(
     const nav_msgs::msg::Odometry & ros_odom,
     star::v1::OdometryData & proto_odom);
 
-  /** Convert geometry_msgs/PoseWithCovarianceStamped (SLAM pose) -> star::v1::OdometryData. */
+  /**
+   * @brief Convert geometry_msgs/PoseWithCovarianceStamped (SLAM pose) to star::v1::OdometryData.
+   *
+   * @details
+   * Extracts 2-D pose (x, y, yaw) from the slam_toolbox pose estimate. Because
+   * SLAM pose messages do not carry velocity information, linear_velocity_mps and
+   * angular_velocity_rad_per_s are zeroed so the UI can distinguish SLAM-sourced
+   * data from EKF odometry.
+   *
+   * Timestamp is converted from ROS (sec + nanosec) to microseconds since epoch.
+   *
+   * @param[in]  slam_pose  Incoming SLAM pose estimate (map frame).
+   * @param[out] proto_odom Output OdometryData protobuf populated in-place.
+   *
+   * @pre  slam_pose quaternion is a valid unit quaternion.
+   * @post proto_odom fields x_m, y_m, theta_rad, and timestamp_us are set.
+   * @post proto_odom linear_velocity_mps == 0 and angular_velocity_rad_per_s == 0.
+   *
+   * @note Thread-safe; does not access shared state.
+   * @note When both odometry_to_proto() and slam_pose_to_proto() are active, the
+   *       SLAM pose overrides the EKF odom in the telemetry cache.
+   *
+   * @see odometry_to_proto()  EKF-filtered alternative that includes velocities.
+   *
+   * @since Version 1.0.0
+   */
   static void slam_pose_to_proto(
     const geometry_msgs::msg::PoseWithCovarianceStamped & slam_pose,
     star::v1::OdometryData & proto_odom);
 
-  /** Convert sensor_msgs/LaserScan -> star::v1::LidarScan (<=500 samples). */
+  /**
+   * @brief Convert sensor_msgs/LaserScan to star::v1::LidarScan (max 500 samples).
+   *
+   * @details
+   * Downsamples the raw LaserScan to at most 500 evenly-spaced points using a
+   * stride computed as ceil(total / 500). Invalid readings (NaN, infinity, or
+   * outside [range_min, range_max]) are encoded as angle=0 / range=0 /
+   * intensity=0 per the proto convention so the UI can identify them.
+   *
+   * Timestamp is converted from ROS (sec + nanosec) to microseconds since epoch.
+   *
+   * @param[in]  ros_scan   Incoming LaserScan message from the LiDAR driver.
+   * @param[out] proto_scan Output LidarScan protobuf cleared and populated in-place.
+   *
+   * @pre  ros_scan.ranges is non-empty for any output to be generated.
+   * @post proto_scan contains at most 500 samples.
+   * @post proto_scan.timestamp_us reflects the ROS header stamp.
+   *
+   * @note Thread-safe; does not access shared state.
+   * @note Missing intensity data (intensities.size() < ranges.size()) is filled
+   *       with 0.0 without error.
+   *
+   * @since Version 1.0.0
+   */
   static void laserscan_to_proto(
     const sensor_msgs::msg::LaserScan & ros_scan,
     star::v1::LidarScan & proto_scan);

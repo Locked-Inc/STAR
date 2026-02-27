@@ -154,6 +154,12 @@ void MessageConverter::slam_pose_to_proto(
   proto_odom.set_timestamp_us(ts_us);
 }
 
+/** @brief Maximum number of LiDAR samples forwarded per scan frame.
+ *
+ *  @details Caps the size of LidarScan protobuf messages to bound bandwidth
+ *  and UI rendering cost. The laserscan_to_proto() converter downsamples
+ *  evenly when the raw scan exceeds this limit.
+ */
 static constexpr int kMaxLidarSamples = 500;
 
 void MessageConverter::laserscan_to_proto(
