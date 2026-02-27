@@ -8,24 +8,15 @@
 
 PB_BIND(star_v1_STAREnvelope, star_v1_STAREnvelope, 4)
 
-
 PB_BIND(star_v1_MotorStatusList, star_v1_MotorStatusList, AUTO)
-
 
 PB_BIND(star_v1_OdometryData, star_v1_OdometryData, AUTO)
 
-
 PB_BIND(star_v1_LidarScan, star_v1_LidarScan, 2)
-
 
 PB_BIND(star_v1_Alert, star_v1_Alert, AUTO)
 
-
 PB_BIND(star_v1_EStopCommand, star_v1_EStopCommand, AUTO)
-
-
-
-
 
 #ifndef PB_CONVERT_DOUBLE_FLOAT
 /* On some platforms (such as AVR), double is really float.
@@ -34,4 +25,3 @@ PB_BIND(star_v1_EStopCommand, star_v1_EStopCommand, AUTO)
  */
 PB_STATIC_ASSERT(sizeof(double) == 8, DOUBLE_MUST_BE_8_BYTES)
 #endif
-

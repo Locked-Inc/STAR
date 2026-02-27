@@ -8,10 +8,4 @@
 
 PB_BIND(star_v1_TransportHealthReport, star_v1_TransportHealthReport, AUTO)
 
-
 PB_BIND(star_v1_TransportDiagnostics, star_v1_TransportDiagnostics, 2)
-
-
-
-
-

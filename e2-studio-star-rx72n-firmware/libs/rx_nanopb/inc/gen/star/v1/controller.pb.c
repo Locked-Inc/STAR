@@ -7,6 +7,3 @@
 #endif
 
 PB_BIND(star_v1_ControllerState, star_v1_ControllerState, AUTO)
-
-
-
