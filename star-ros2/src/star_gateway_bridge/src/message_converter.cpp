@@ -94,9 +94,9 @@ bool MessageConverter::twist_to_velocity_command(
 
   // Clamp input velocities to safe ranges
   double linear =
-      clamp(twist.linear.x, -k_max_velocity_mps, k_max_velocity_mps);
+      clamp(twist.linear.x, -MAX_VELOCITY_MPS, MAX_VELOCITY_MPS);
   double angular =
-      clamp(twist.angular.z, -k_max_angular_vel, k_max_angular_vel);
+      clamp(twist.angular.z, -MAX_ANGULAR_VEL, MAX_ANGULAR_VEL);
 
   // Differential drive kinematics: (linear, angular) -> (left, right)
   // left_vel = linear - (angular * wheel_base / 2)
@@ -106,9 +106,9 @@ bool MessageConverter::twist_to_velocity_command(
   double right_velocity = linear + (angular * half_base);
 
   // Clamp wheel velocities to VelocityCommand valid range [-2.0, 2.0] m/s
-  left_velocity = clamp(left_velocity, -k_max_velocity_mps, k_max_velocity_mps);
+  left_velocity = clamp(left_velocity, -MAX_VELOCITY_MPS, MAX_VELOCITY_MPS);
   right_velocity =
-      clamp(right_velocity, -k_max_velocity_mps, k_max_velocity_mps);
+      clamp(right_velocity, -MAX_VELOCITY_MPS, MAX_VELOCITY_MPS);
 
   // Populate protobuf message
   // Note: front_left/back_left = left side, front_right/back_right = right side
@@ -289,15 +289,6 @@ void MessageConverter::slam_pose_to_proto(
   assert(std::isfinite(proto_odom.theta_rad()));
 }
 
-/** @brief Maximum number of LiDAR samples forwarded per scan frame.
- *
- *  @details Caps the size of LidarScan protobuf messages to bound bandwidth
- *  and UI rendering cost. The laserscan_to_proto() converter downsamples
- *  evenly when the raw scan exceeds this limit.
- */
-static constexpr int MAX_LIDAR_SAMPLES = 500;
-static_assert(MAX_LIDAR_SAMPLES > 0,
-              "MAX_LIDAR_SAMPLES must be greater than zero");
 
 /**
  * @brief Convert sensor_msgs/LaserScan to star::v1::LidarScan.
@@ -447,8 +438,29 @@ bool MessageConverter::pid_config_to_gains(
 // Utility Functions
 // ===========================================================================
 
+/**
+ * @brief Convert a rclcpp::Time timestamp to microseconds since epoch.
+ *
+ * @details
+ * Converts the nanosecond representation returned by
+ * rclcpp::Time::nanoseconds() to microseconds by dividing by NS_PER_US
+ * (1000). Precision loss of up to 0.999 us is acceptable for telemetry
+ * timestamping purposes.
+ *
+ * @param[in] time ROS2 timestamp to convert.
+ * @return Microseconds since epoch (int64_t).
+ *
+ * @pre  time is a valid, initialized rclcpp::Time.
+ * @pre  time.nanoseconds() is representable in int64_t.
+ * @post Return value is non-negative for times after the ROS epoch (i.e.
+ *       stamps with sec >= 0).
+ * @post Return value equals time.nanoseconds() / NS_PER_US.
+ *
+ * @note Thread-safe; stateless pure function with no side effects.
+ * @since Version 1.0.0
+ */
 int64_t MessageConverter::ros_time_to_us(const rclcpp::Time &time) {
-  return time.nanoseconds() / 1000;
+  return time.nanoseconds() / NS_PER_US;
 }
 
 } // namespace star::star_gateway_bridge

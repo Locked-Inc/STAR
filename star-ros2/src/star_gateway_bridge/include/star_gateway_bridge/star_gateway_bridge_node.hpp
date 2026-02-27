@@ -39,7 +39,7 @@
 #include <optional>
 #include <string>
 
-namespace star {
+namespace star::star_gateway_bridge {
 
 /**
  * @brief ROS2 node that bridges the ROS2 ecosystem with the Go gateway service
@@ -199,15 +199,15 @@ private:
 
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
-  /**< Receives filtered odometry and updates cached_ekf_odometry_ under
-   * odometry_mutex_. */
-  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr odom_sub_;
+  rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
+      odom_sub_; /**< Receives filtered odometry and updates
+                    cached_ekf_odometry_ under odometry_mutex_. */
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
       slam_pose_sub_; /**< Receives SLAM pose and updates cached_slam_pose_
                          under odometry_mutex_. */
-  /**< Receives LaserScan telemetry and updates cached_lidar_scan_ under
-   * lidar_mutex_. */
-  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr scan_sub_;
+  rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr
+      scan_sub_; /**< Receives LaserScan telemetry and updates
+                    cached_lidar_scan_ under lidar_mutex_. */
 
   // ROS2 Services
   rclcpp::Service<std_srvs::srv::SetBool>::SharedPtr set_pid_gains_service_;
@@ -357,4 +357,4 @@ private:
   void check_telemetry_sequence_continuity(uint32_t current_sequence);
 };
 
-} // namespace star
+} // namespace star::star_gateway_bridge

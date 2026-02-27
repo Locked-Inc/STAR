@@ -85,6 +85,7 @@ public:
    * @param[in] speed_hz     SPI clock frequency in Hz (default 10 MHz).
    *
    * @pre  device_path is a non-empty, null-terminated string.
+   * @pre  speed_hz > 0; the kernel rejects a zero-Hz SPI clock request.
    * @post CRC-32 lookup table is initialised (thread-safe, once).
    */
   explicit SpiDriver(const std::string &device_path,

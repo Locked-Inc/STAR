@@ -31,6 +31,21 @@ const MAP_POINT_COLOR = 'rgba(0,220,80,0.8)';
 const MAP_ROBOT_COLOR = SCAN_COLORS.robot;
 const MAP_HEADING_COLOR = '#22c55e';
 
+// ── Rendering constants ───────────────────────────────────────────────────
+/** Metres of padding added to each side of the world extent when computing
+ *  the canvas scale, so points near the boundary are never clipped. */
+const MAP_PADDING_M = 1.0;
+/** Stroke width (px) of the heading arrow drawn at the robot position. */
+const MAP_HEADING_STROKE_WIDTH_PX = 2;
+/** Half-width/height offset used to centre the square drawn for each point;
+ *  combined with SCAN_POINT_SIZE_PX this makes a 2x2 px square: fillRect(x-1, y-1, 2, 2). */
+const SCAN_POINT_OFFSET_PX = 1;
+/** Full width/height (px) of the square drawn for each scan or map point. */
+const SCAN_POINT_SIZE_PX = 2;
+/** Minimum interval (ms) between point-count React state updates; throttles
+ *  re-renders while the ring buffer grows rapidly. */
+const POINT_COUNT_THROTTLE_MS = 500;
+
 // ── Styles ────────────────────────────────────────────────────────────────
 const OUTER_STYLE: CSSProperties = {
   ...PANEL_CONTAINER_STYLE,
@@ -237,7 +252,7 @@ export function MappingPanel() {
   const updatePointCountThrottled = useCallback((force = false) => {
     const nowMs = performance.now();
     const len = pointBuffer.current.length;
-    if (!force && nowMs - lastPointCountUpdateMsRef.current < 500) {
+    if (!force && nowMs - lastPointCountUpdateMsRef.current < POINT_COUNT_THROTTLE_MS) {
       return;
     }
     lastPointCountUpdateMsRef.current = nowMs;
@@ -277,7 +292,7 @@ export function MappingPanel() {
       const x = cx + Math.cos(a) * d * SCAN_PX_PER_M;
       const y = cy - Math.sin(a) * d * SCAN_PX_PER_M;
       ctx.fillStyle = `rgba(${SCAN_COLORS.pointRgb},${q.toFixed(2)})`;
-      ctx.fillRect(x - 1, y - 1, 2, 2);
+      ctx.fillRect(x - SCAN_POINT_OFFSET_PX, y - SCAN_POINT_OFFSET_PX, SCAN_POINT_SIZE_PX, SCAN_POINT_SIZE_PX);
     }
 
     // Robot center
@@ -322,7 +337,7 @@ export function MappingPanel() {
       maxY = Math.max(maxY, odom.yM);
     }
 
-    const padding = 1.0; // metres of margin around extent
+    const padding = MAP_PADDING_M; // metres of margin around extent
     const worldW = maxX - minX + padding * 2;
     const worldH = maxY - minY + padding * 2;
     const scale = Math.min(
@@ -362,7 +377,7 @@ export function MappingPanel() {
     pts.forEach((p) => {
       const cx = toCanvasX(p.x);
       const cy = toCanvasY(p.y);
-      ctx.fillRect(cx - 1, cy - 1, 2, 2);
+      ctx.fillRect(cx - SCAN_POINT_OFFSET_PX, cy - SCAN_POINT_OFFSET_PX, SCAN_POINT_SIZE_PX, SCAN_POINT_SIZE_PX);
     });
 
     // Robot position
@@ -376,7 +391,7 @@ export function MappingPanel() {
       ctx.fill();
 
       ctx.strokeStyle = MAP_HEADING_COLOR;
-      ctx.lineWidth = 2;
+      ctx.lineWidth = MAP_HEADING_STROKE_WIDTH_PX;
       ctx.beginPath();
       ctx.moveTo(rx, ry);
       ctx.lineTo(

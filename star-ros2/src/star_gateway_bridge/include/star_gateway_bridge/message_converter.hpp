@@ -43,6 +43,24 @@ namespace star::star_gateway_bridge {
 class MessageConverter {
 public:
   // ===========================================================================
+  // Public Constants
+  // ===========================================================================
+
+  /**
+   * @brief Default differential-drive wheel base (m) used when callers do not
+   *        supply an explicit value to the conversion APIs.
+   *
+   * @details
+   * Matches the STAR robot wheel track: 150 mm centre-to-centre between
+   * left and right driven wheels.  Override at the call site when testing
+   * with a different chassis.
+   *
+   * @note Thread-safe; compile-time constant, read-only.
+   * @since Version 1.0.0
+   */
+  static constexpr double DEFAULT_WHEEL_BASE_M = 0.150;
+
+  // ===========================================================================
   // ROS2 -> Protobuf Conversions
   // ===========================================================================
 
@@ -71,7 +89,7 @@ public:
    */
   static bool twist_to_velocity_command(const geometry_msgs::msg::Twist &twist,
                                         ::star::v1::VelocityCommand &command,
-                                        double wheel_base = 0.150,
+                                        double wheel_base = DEFAULT_WHEEL_BASE_M,
                                         uint32_t sequence = 0);
 
   /**
@@ -154,14 +172,15 @@ public:
       ::star::v1::OdometryData &proto_odom);
 
   /**
-   * @brief Convert sensor_msgs/LaserScan to star::v1::LidarScan (max 500
-   * samples).
+   * @brief Convert sensor_msgs/LaserScan to star::v1::LidarScan (max
+   * MAX_LIDAR_SAMPLES samples).
    *
    * @details
-   * Downsamples the raw LaserScan to at most 500 evenly-spaced points using a
-   * stride computed as ceil(total / 500). Invalid readings (NaN, infinity, or
-   * outside [range_min, range_max]) are encoded as angle=0 / range=0 /
-   * intensity=0 per the proto convention so the UI can identify them.
+   * Downsamples the raw LaserScan to at most MAX_LIDAR_SAMPLES evenly-spaced
+   * points using a stride computed as ceil(total / MAX_LIDAR_SAMPLES). Invalid
+   * readings (NaN, infinity, or outside [range_min, range_max]) are encoded as
+   * angle=0 / range=0 / intensity=0 per the proto convention so the UI can
+   * identify them.
    *
    * Timestamp is converted from ROS (sec + nanosec) to microseconds since
    * epoch.
@@ -173,7 +192,7 @@ public:
    * @pre  ros_scan.ranges is non-empty for any output to be generated.
    * @pre  ros_scan.angle_increment is finite and non-zero; range_min <=
    * range_max.
-   * @post proto_scan contains at most 500 samples.
+   * @post proto_scan contains at most MAX_LIDAR_SAMPLES samples.
    * @post proto_scan.timestamp_us reflects the ROS header stamp.
    *
    * @note Thread-safe; does not access shared state.
@@ -214,7 +233,7 @@ public:
   static bool
   velocity_command_to_twist(const ::star::v1::VelocityCommand &command,
                             geometry_msgs::msg::Twist &twist,
-                            double wheel_base = 0.150);
+                            double wheel_base = DEFAULT_WHEEL_BASE_M);
 
   /**
    * @brief Convert Protobuf PidConfig to individual gains (for ROS2 service).
@@ -239,6 +258,8 @@ public:
    * @brief Validate double value for NaN and infinity.
    * @param value Value to validate
    * @return true if value is finite (not NaN, not infinity)
+   * @note Thread-safe; stateless pure function.
+   * @since Version 1.0.0
    */
   static bool is_valid_double(double value) { return std::isfinite(value); }
 
@@ -248,6 +269,8 @@ public:
    * @param min Minimum allowed value
    * @param max Maximum allowed value
    * @return Clamped value
+   * @note Thread-safe; stateless pure function.
+   * @since Version 1.0.0
    */
   static double clamp(double value, double min, double max) {
     return std::max(min, std::min(max, value));
@@ -257,15 +280,24 @@ public:
    * @brief Convert ROS2 timestamp to microseconds since epoch.
    * @param time ROS2 time
    * @return Microseconds since epoch
+   * @note Thread-safe; stateless pure function.
+   * @since Version 1.0.0
    */
   static int64_t ros_time_to_us(const rclcpp::Time &time);
 
 private:
   // Differential drive kinematics constants
-  static constexpr double k_max_velocity_mps =
-      2.0; // VelocityCommand valid range
-  static constexpr double k_max_angular_vel =
-      4.0; // Maximum angular velocity (rad/s)
+  static constexpr double MAX_VELOCITY_MPS =
+      2.0; /**< VelocityCommand valid range (m/s); wheel and output velocities
+              are clamped to [-MAX_VELOCITY_MPS, +MAX_VELOCITY_MPS]. */
+  static constexpr double MAX_ANGULAR_VEL =
+      4.0; /**< Maximum angular velocity (rad/s); angular component of Twist is
+              clamped to [-MAX_ANGULAR_VEL, +MAX_ANGULAR_VEL]. */
+  static constexpr size_t MAX_LIDAR_SAMPLES =
+      500; /**< Maximum number of LiDAR samples forwarded per scan frame;
+              caps LidarScan protobuf size to bound bandwidth and UI rendering
+              cost. laserscan_to_proto() downsamples evenly when the raw scan
+              exceeds this limit. */
 };
 
 } // namespace star::star_gateway_bridge

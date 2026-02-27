@@ -100,12 +100,27 @@ inline void set_spi_xfer_bits_per_word(spi_ioc_transfer &xfer, uint8_t value) {
 }
 
 inline bool is_valid_frame_type(FrameType frame_type) {
-  switch (frame_type) {
-  case FrameType::VelocityCommand:
-  case FrameType::TelemetryData:
-    return true;
-  default:
+  using U = std::underlying_type_t<FrameType>;
+  const auto raw = static_cast<U>(frame_type);
+  // Range-check: accept only values within [VelocityCommand, TelemetryData].
+  // This guards against corrupt wire data or future enum additions that have
+  // not yet been handled in the switch below.
+  constexpr auto k_min = static_cast<U>(FrameType::VelocityCommand); // 0x01
+  constexpr auto k_max = static_cast<U>(FrameType::TelemetryData);   // 0x02
+  if (raw < k_min || raw > k_max) {
     return false;
+  }
+  switch (frame_type) {
+  case FrameType::VelocityCommand: {
+    return true;
+  }
+  case FrameType::TelemetryData: {
+    return true;
+  }
+  default: {
+    // Unreachable: all values in [k_min, k_max] are handled above.
+    return false;
+  }
   }
 }
 } // namespace
@@ -159,6 +174,22 @@ bool SpiDriver::initialize() {
   return true;
 }
 
+/**
+ * @brief Close the SPI device file descriptor.
+ *
+ * @details
+ * Closes spi_fd_ and resets it to -1.  Safe to call multiple times; if
+ * the device is already closed (spi_fd_ < 0) this is a no-op.  Called
+ * automatically by the destructor to guarantee resource release.
+ *
+ * @pre  None; may be called regardless of whether initialize() succeeded.
+ * @post spi_fd_ == -1.
+ * @post The underlying file descriptor (if it was open) is released to the OS.
+ *
+ * @note Thread-safe only when no concurrent transfer() calls are in progress;
+ *       callers must quiesce I/O before calling close_device().
+ * @since Version 1.0.0
+ */
 void SpiDriver::close_device() {
   if (spi_fd_ >= 0) {
     close(spi_fd_);

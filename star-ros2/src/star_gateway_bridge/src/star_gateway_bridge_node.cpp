@@ -13,7 +13,7 @@
 
 using namespace std::chrono_literals;
 
-namespace star {
+namespace star::star_gateway_bridge {
 
 StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions &options)
     : Node("star_gateway_bridge", options), grpc_connected_(false),
@@ -496,6 +496,31 @@ void StarGatewayBridgeNode::connection_watchdog_callback() {
 // gRPC Helpers
 // ===========================================================================
 
+/**
+ * @brief Attempt to reconnect the gRPC client to the Go gateway with
+ *        exponential backoff.
+ *
+ * @details
+ * Called by connection_watchdog_callback() when is_grpc_connected() returns
+ * false.  Increments reconnect_attempts_ on every call; gives up and returns
+ * false once MAX_RECONNECT_ATTEMPTS is reached.  Each attempt sleeps for
+ * RECONNECT_BACKOFF_MS_BASE * 2^min(reconnect_attempts_, MAX_BACKOFF_EXPONENT)
+ * milliseconds before calling initialize_grpc_client().
+ *
+ * @return true   initialize_grpc_client() succeeded and the stub is ready.
+ * @return false  Max reconnection attempts reached; logging throttled to once
+ *                per 30 s.
+ *
+ * @retval true   gRPC channel entered READY state within the deadline.
+ * @retval false  Either MAX_RECONNECT_ATTEMPTS exhausted or
+ *                initialize_grpc_client() reported a timeout.
+ *
+ * @note Blocks the calling thread (watchdog timer callback) via
+ *       std::this_thread::sleep_for for the computed backoff duration.
+ * @note Error logging is throttled to once per 30 s at the
+ *       MAX_RECONNECT_ATTEMPTS limit to avoid log spam.
+ * @since Version 1.0.0
+ */
 bool StarGatewayBridgeNode::reconnect_grpc_client() {
   if (reconnect_attempts_ >= MAX_RECONNECT_ATTEMPTS) {
     RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
@@ -710,8 +735,8 @@ void StarGatewayBridgeNode::publish_diagnostics() {
   diagnostics_pub_->publish(diag_array);
 }
 
-} // namespace star
+} // namespace star::star_gateway_bridge
 
 // Component registration for composable node
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(star::StarGatewayBridgeNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(star::star_gateway_bridge::StarGatewayBridgeNode)

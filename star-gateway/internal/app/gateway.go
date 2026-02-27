@@ -7,6 +7,7 @@ package app
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
@@ -656,7 +657,17 @@ func startHTTPServerWithAddr(
 	// No defer internalCancel() here!
 
 	mux := http.NewServeMux()
-	slamSvc := service.NewROS2SLAMService(slamToolboxResetServicePath, slamToolboxResetServiceType)
+	slamSvc, err := service.NewROS2SLAMService(slamToolboxResetServicePath, slamToolboxResetServiceType)
+	if err != nil {
+		internalCancel()
+		return fmt.Errorf("failed to create SLAM service: %w", err)
+	}
+	if closer, ok := slamSvc.(io.Closer); ok {
+		go func() {
+			<-internalCtx.Done()
+			closer.Close()
+		}()
+	}
 
 	// -- WebSocket hub setup -----------------------------------------------
 	adapter := &motorControllerAdapter{svc: services.motorControl}
@@ -791,6 +802,7 @@ func startHTTPServerWithAddr(
 		}
 		logger.Info("SLAM reset succeeded")
 		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte(`{"status":"reset"}`))
 	})
 

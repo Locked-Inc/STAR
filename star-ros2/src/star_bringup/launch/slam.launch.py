@@ -19,8 +19,13 @@ from launch_ros.substitutions import FindPackageShare
 # This is a hardware-fixed parameter, not user-tunable.
 RPLIDAR_C1_BAUDRATE = 460800
 
-# static_transform_publisher positional order is x y z yaw pitch roll.
-# Use named arguments below to avoid order-related mistakes.
+# static_transform_publisher uses named flags (--x, --y, --z, --roll, --pitch, --yaw)
+# rather than positional parameters, to be self-documenting and immune to argument
+# order changes across ROS2 / tf2_ros releases:
+#   --x   -> TRANSFORM_X    --y     -> TRANSFORM_Y    --z     -> TRANSFORM_Z
+#   --roll -> TRANSFORM_ROLL  --pitch -> TRANSFORM_PITCH  --yaw -> TRANSFORM_YAW
+#   --frame-id     -> parent frame (odom)
+#   --child-frame-id -> child frame (base_link)
 TRANSFORM_X = '0'
 TRANSFORM_Y = '0'
 TRANSFORM_Z = '0'
@@ -107,7 +112,9 @@ def generate_launch_description():
             TRANSFORM_PITCH,
             '--roll',
             TRANSFORM_ROLL,
+            '--frame-id',
             'odom',
+            '--child-frame-id',
             'base_link',
         ],
         condition=UnlessCondition(LaunchConfiguration('use_ekf')),
