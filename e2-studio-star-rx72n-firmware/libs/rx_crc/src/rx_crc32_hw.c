@@ -449,6 +449,10 @@ static bool s_crc_initialized = false;
  * higher-level initialization in `rx_crc_init()` coordinates CRC module state
  * and DMA setup.
  *
+ * @note
+ * The variable has file scope and is not protected by any synchronization.
+ * Multiple threads initializing simultaneously is safe (write-once pattern).
+ *
  * @warning
  * Do not modify this flag directly. Use `rx_crc_init()` (which invokes
  * `rx_dmaca_init()` when appropriate) and related APIs to manage DMA state,
@@ -750,6 +754,10 @@ rx_err_t rx_crc_deinit(void)
  * @post All @p len bytes have been written to CRCDIR by the DMA controller.
  * @post DMA channel RX_CRC32_DMA_CHANNEL is idle and available for reuse.
  *
+ * @note
+ * Not inherently thread-safe. Caller must ensure exclusive access to the
+ * CRC peripheral (CRCCR.DORCLR already set) before invoking this helper.
+ *
  * @see rx_dmaca_transfer_blocking() Underlying DMA transfer API
  *
  * @since Version 1.0.0
@@ -775,7 +783,13 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
     .src_addr_mode  = k_dmaca_addr_increment,
     .dst_addr_mode  = k_dmaca_addr_fixed,         /* CRITICAL: never increment */
   };
-  return rx_dmaca_transfer_blocking((uint8_t)RX_CRC32_DMA_CHANNEL, &cfg);
+  rx_err_t result = rx_dmaca_transfer_blocking((uint8_t)RX_CRC32_DMA_CHANNEL, &cfg);
+  
+  /* Post-condition: Verify transfer result is valid error code (NASA Rule 5) */
+  RX_ASSERT(result == k_rx_ok || result == k_rx_err_timeout || result == k_rx_err_nack,
+            "DMA transfer returned unexpected error code");
+  
+  return result;
 }
 
 #endif /* RX_CRC32_USE_DMA */
@@ -870,7 +884,6 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  * |----------|------|------|-------|-------|
  * | crcdir_byte | volatile uint8_t* | 4 bytes | Function | CRCDIR register pointer |
  * | dma_len | uint32_t | 4 bytes | DMA block | DMA transfer size |
- * | saved_interrupt_state | UINT | 4 bytes | DMA block | Saved interrupt state |
  * | dma_err | rx_err_t | 4 bytes | DMA block | DMA operation result |
  * | i | uint32_t | 4 bytes | Loop | Loop index |
  * | init_err | rx_err_t | 4 bytes | Init block | Initialization result |

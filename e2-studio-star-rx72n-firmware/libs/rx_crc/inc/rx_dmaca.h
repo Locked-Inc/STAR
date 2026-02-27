@@ -14,8 +14,8 @@
  * errors are reported via structured rx_err_t return codes.
  *
  * **Supported Transfer Sizes:**
- * - 8-bit (byte) transfers: SIZE_8B
- * - 32-bit (word) transfers: SIZE_32B
+ * - 8-bit (byte) transfers: k_dmaca_size_byte
+ * - 32-bit (word) transfers: k_dmaca_size_longword
  *
  * **Prohibited:**
  * - 16-bit transfers: Hardware does not support; requests are rejected with
@@ -28,7 +28,7 @@
  * may be called during cleanup without explicit channel validation.
  *
  * **Limitations:**
- * - Maximum transfer_count: 1024 bytes per block
+ * - Maximum transfer_count: 1024 transfer units per block
  * - No interrupt support; polling only via rx_dmaca_wait()
  * - All channel access must be serialized by the caller
  * - Timeout values are iterative cycle counts (not wall-clock time)
@@ -116,6 +116,8 @@ typedef enum : uint32_t {
  * @endcode
  * @note All values are compile-time constants and may be used in static
  *       initializers or case statements.
+ *
+ * @see rx_dmaca_crcdir_reg_ptr, dmaca_config_t
  *
  * @since 1.0.0
  */
@@ -244,7 +246,15 @@ typedef enum : uint8_t {
  * @invariant Value must be one of the three named enumerators.
  *
  * @code
- *   dmaca_config_t cfg = { .transfer_mode = k_dmaca_mode_block, ... };
+ *   dmaca_config_t cfg = {
+ *       .p_src          = (const void *)buffer,
+ *       .p_dst          = (void *)rx_dmaca_crcdir_reg_ptr(),
+ *       .transfer_count = 256U,
+ *       .data_size      = k_dmaca_size_byte,
+ *       .transfer_mode  = k_dmaca_mode_block,
+ *       .src_addr_mode  = k_dmaca_addr_increment,
+ *       .dst_addr_mode  = k_dmaca_addr_fixed,
+ *   };
  * @endcode
  *
  * @see dmaca_config_t
@@ -475,8 +485,8 @@ rx_err_t rx_dmaca_start(uint8_t channel);
  * @pre  timeout_cycles > 0.
  *
  * @post On success: channel idle (ACT == 0 && DTE == 0).
- * @post On timeout: channel state is undefined; caller should invoke
- *       rx_dmaca_abort() to ensure a clean state.
+ * @post On timeout: channel is disabled and configured state is cleared
+ *       before returning k_rx_err_timeout.
  *
  * @note Thread safety: NOT safe to call concurrently on the same channel.
  *
@@ -558,7 +568,8 @@ void rx_dmaca_abort(uint8_t channel);
  *
  * @note Timeout scaling behaviour ensures a bounded loop by deriving timeout
  *       from p_cfg->transfer_count and capping it with
- *       RX_DMACA_POLL_TIMEOUT_CYCLES. Not reentrant for
+ *       RX_DMACA_POLL_TIMEOUT_CYCLES. Not reentrant for the same channel;
+ *       callers must serialize access per channel.
  *
  * @code
  * dmaca_config_t cfg = {...};  // Initialize configuration
