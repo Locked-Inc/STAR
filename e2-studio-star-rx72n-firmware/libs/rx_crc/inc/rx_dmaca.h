@@ -22,8 +22,8 @@
  *   k_rx_err_nack during rx_dmaca_configure()
  *
  * **Usage Model:**
- * Typical sequence: rx_dmaca_init() → rx_dmaca_configure() → rx_dmaca_start()
- * → rx_dmaca_wait(), or use rx_dmaca_transfer_blocking() for synchronous
+ * Typical sequence: rx_dmaca_init() -> rx_dmaca_configure() -> rx_dmaca_start()
+ * -> rx_dmaca_wait(), or use rx_dmaca_transfer_blocking() for synchronous
  * transfers. The rx_dmaca_abort() function is always safe (returns void) and
  * may be called during cleanup without explicit channel validation.
  *
