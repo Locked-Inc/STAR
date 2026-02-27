@@ -262,36 +262,7 @@ ENABLE_PREPROCESSING    = YES
 MACRO_EXPANSION         = YES
 EXPAND_ONLY_PREDEF      = NO
 SEARCH_INCLUDES         = YES
-INCLUDE_PATH            = src/inc \
-                          src/tasks/inc \
-                          src/boot/inc \
-                          src/boot/smc_generated \
-                          libs/rx_core/inc \
-                          libs/rx_hal/inc \
-                          libs/rx_pid/inc \
-                          libs/rx_motor/inc \
-                          libs/rx_encoder/inc \
-                          libs/rx_bus/inc \
-                          libs/rx_crc/inc \
-                          libs/rx_fec/inc \
-                          libs/rx_harq/inc \
-                          libs/rx_frame/inc \
-                          libs/rx_frame_ascii/inc \
-                          libs/rx_comm_manager/inc \
-                          libs/rx_session/inc \
-                          libs/rx_spi_comm/inc \
-                          libs/rx_spi_link/inc \
-                          libs/rx_usb/inc \
-                          libs/rx_usb_comm/inc \
-                          libs/rx_ds18b20/inc \
-                          libs/rx_hcsr04/inc \
-                          libs/rx_obstacle_detect/inc \
-                          libs/rx_nanopb/inc \
-                          libs/rx_nanopb/inc/gen \
-                          libs/rx_nanopb/nanopb \
-                          libs/threadx/common/inc \
-                          libs/threadx/ports/rxv3/gnu/inc \
-                          libs/threadx/utility/low_power
+INCLUDE_PATH            =
 INCLUDE_FILE_PATTERNS   =
 PREDEFINED              = __RX__ \
                           __GNURX__ \
