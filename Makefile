@@ -200,6 +200,9 @@ doxygen-pdf:
 	     $(FIRMWARE_DIR)/Doxyfile > "$$tmp"; \
 	 cd $(FIRMWARE_DIR) && doxygen "$$(basename $$tmp)"; \
 	 rm -f "$$tmp"
+	@echo "Patching doxygen.sty: suppress phv/b/n font substitution warnings..."
+	@printf '\\AtBeginDocument{\\DeclareFontShape{TU}{phv}{b}{n}{<->ssub*phv/bx/n}{}\\DeclareFontShape{TU}{phv}{b}{sl}{<->ssub*phv/bx/sl}{}}\n' \
+	    >> $(LATEX_DIR)/doxygen.sty
 	@echo "Converting mscgen EPS diagrams to PDF..."
 	@for eps in $(LATEX_DIR)/inline_mscgraph_*.eps; do \
 	  [ -f "$$eps" ] || continue; \
