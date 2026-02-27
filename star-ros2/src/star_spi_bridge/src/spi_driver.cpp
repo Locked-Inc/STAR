@@ -128,11 +128,29 @@ inline bool is_valid_frame_type(FrameType frame_type) {
 uint32_t SpiDriver::crc32_table_[256];
 std::once_flag SpiDriver::crc32_table_init_flag_;
 
+/**
+ * @brief Construct a SpiDriver for the given spidev node.
+ * @param[in] device_path  Path to the Linux spidev node (e.g. "/dev/spidev0.0");
+ *                         must be non-empty.
+ * @param[in] speed_hz     SPI clock frequency in Hz; must be > 0.
+ * @pre  device_path is non-empty.
+ * @pre  speed_hz > 0; zero-Hz SPI clock is rejected by the kernel.
+ * @post spi_fd_ is -1 until initialize() is called.
+ * @post CRC-32 lookup table is initialised (thread-safe, once).
+ */
 SpiDriver::SpiDriver(const std::string &device_path, uint32_t speed_hz)
     : device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1) {
+  assert(!device_path_.empty());
+  assert(speed_hz_ > 0);
   std::call_once(crc32_table_init_flag_, init_crc32_table);
 }
 
+/**
+ * @brief Destroy the SpiDriver, releasing the SPI device.
+ * @details Calls close_device() to close spi_fd_ if the device is still open.
+ * @post spi_fd_ is closed and set to -1.
+ * @post All instance resources are freed.
+ */
 SpiDriver::~SpiDriver() { close_device(); }
 
 bool SpiDriver::initialize() {

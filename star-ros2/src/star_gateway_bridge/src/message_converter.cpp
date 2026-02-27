@@ -8,6 +8,7 @@
 
 #include "star_gateway_bridge/message_converter.hpp"
 
+#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cmath>
@@ -21,7 +22,9 @@ constexpr int64_t US_PER_SEC = 1'000'000LL;
 /** @brief Nanoseconds in one microsecond for ROS timestamp conversion. */
 constexpr int64_t NS_PER_US = 1'000LL;
 /** @brief Maximum valid nanoseconds in a ROS2 timestamp. */
-static constexpr uint32_t MAX_NANOSECONDS = 1'000'000'000U;
+constexpr uint32_t MAX_NANOSECONDS = 1'000'000'000U;
+/** @brief Pi constant for portable use in place of M_PI. */
+constexpr double PI = 3.14159265358979323846;
 
 /**
  * @brief Convert ROS builtin time stamp to microseconds since epoch.
@@ -51,10 +54,6 @@ inline int64_t ros_stamp_to_us(const builtin_interfaces::msg::Time &stamp) {
  * @post Function has no side effects.
  */
 inline double quaternion_to_yaw_2d(const geometry_msgs::msg::Quaternion &q) {
-  assert(std::isfinite(q.w));
-  assert(std::isfinite(q.x));
-  assert(std::isfinite(q.y));
-  assert(std::isfinite(q.z));
   if (!std::isfinite(q.w) || !std::isfinite(q.x) || !std::isfinite(q.y) ||
       !std::isfinite(q.z)) {
     return 0.0;
@@ -64,9 +63,7 @@ inline double quaternion_to_yaw_2d(const geometry_msgs::msg::Quaternion &q) {
                                 1.0 - 2.0 * (q.y * q.y + q.z * q.z));
 
   const double safe_yaw = std::isfinite(yaw) ? yaw : 0.0;
-  assert(std::isfinite(safe_yaw));
-  assert(safe_yaw >= -M_PI && safe_yaw <= M_PI);
-  return safe_yaw;
+  return std::clamp(safe_yaw, -PI, PI);
 }
 
 } // namespace
@@ -154,7 +151,8 @@ bool MessageConverter::string_to_system_status(
   // Connection status (default to CONNECTED if we're receiving messages)
   system_status.set_connection_status(::star::v1::CONNECTION_STATUS_CONNECTED);
 
-  // TODO(star): Parse additional fields from JSON when available
+  // JSON parsing of additional fields is not yet implemented; a keyword-based
+  // fallback is used for MVP. Tracked for future improvement.
   // For now, assume all subsystems are connected
   system_status.set_rx72n_connected(true);
   system_status.set_lidar_connected(true);
@@ -315,9 +313,6 @@ void MessageConverter::slam_pose_to_proto(
 bool MessageConverter::laserscan_to_proto(
     const sensor_msgs::msg::LaserScan &ros_scan,
     ::star::v1::LidarScan &proto_scan) {
-  assert(std::isfinite(ros_scan.range_min));
-  assert(std::isfinite(ros_scan.range_max));
-
   proto_scan.Clear();
 
   const size_t total = ros_scan.ranges.size();
@@ -460,6 +455,8 @@ bool MessageConverter::pid_config_to_gains(
  * @since Version 1.0.0
  */
 int64_t MessageConverter::ros_time_to_us(const rclcpp::Time &time) {
+  assert(time.nanoseconds() >= 0);
+  assert(NS_PER_US > 0);
   return time.nanoseconds() / NS_PER_US;
 }
 

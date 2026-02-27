@@ -162,6 +162,8 @@ public:
    * @note Telemetry arbitration between SLAM pose and EKF odometry is handled
    * by StarGatewayBridgeNode using cache timestamps and source priority.
    *
+   * @throw None.
+   *
    * @see odometry_to_proto()  EKF-filtered alternative that includes
    * velocities.
    *

@@ -267,7 +267,7 @@ private:
   static constexpr uint32_t SEQUENCE_RESTART_THRESHOLD = 10000;
 
   // Message converter (stateless utility)
-  star::star_gateway_bridge::MessageConverter converter_;
+  MessageConverter converter_;
 
   // Frame drop detection for teleop commands and telemetry
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr

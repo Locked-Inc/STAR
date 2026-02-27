@@ -157,6 +157,7 @@ class PointRingBuffer {
   }
 
   clear(): void {
+    this.data.fill(undefined as unknown as WorldPoint);
     this.head = 0;
     this.size = 0;
   }
@@ -176,10 +177,12 @@ export function MappingPanel() {
   const extentRef = useRef<WorldExtent>(createEmptyExtent());
   const rafRef = useRef<number | null>(null);
   const drawPendingRef = useRef(false);
+  const mountedRef = useRef(true);
   const lastPointCountUpdateMsRef = useRef(0);
   const pointCountRef = useRef(0);
   const abortRef = useRef<AbortController | null>(null);
   const [pointCount, setPointCount] = useState(0);
+  const [isResetting, setIsResetting] = useState(false);
 
   const includePointInExtent = useCallback((p: WorldPoint) => {
     const extent = extentRef.current;
@@ -288,7 +291,7 @@ export function MappingPanel() {
       const d = scan.rangeM[i];
       const a = scan.angleRad[i];
       const q = Math.max(0, Math.min(1, scan.intensity[i] / SCAN_INTENSITY_DIV));
-      if (d <= 0 || d > SCAN_MAX_RANGE_M) continue;
+      if (d <= 0 || d > SCAN_MAX_RANGE_M || !Number.isFinite(d)) continue;
       const x = cx + Math.cos(a) * d * SCAN_PX_PER_M;
       const y = cy - Math.sin(a) * d * SCAN_PX_PER_M;
       ctx.fillStyle = `rgba(${SCAN_COLORS.pointRgb},${q.toFixed(2)})`;
@@ -408,6 +411,11 @@ export function MappingPanel() {
     }
     drawPendingRef.current = true;
     rafRef.current = requestAnimationFrame(() => {
+      if (!mountedRef.current) {
+        drawPendingRef.current = false;
+        rafRef.current = null;
+        return;
+      }
       drawPendingRef.current = false;
       rafRef.current = null;
       drawMap();
@@ -481,15 +489,47 @@ export function MappingPanel() {
 
   useEffect(() => {
     return () => {
+      mountedRef.current = false;
       abortRef.current?.abort();
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
       }
+      drawPendingRef.current = false;
     };
+  }, []);
+
+  // ── HiDPI canvas setup ─────────────────────────────────────────────────
+  // Set backing store to size * devicePixelRatio and scale the context so
+  // drawing code continues to use logical pixel coordinates unchanged.
+  useEffect(() => {
+    const setupCanvas = (canvas: HTMLCanvasElement | null, sizePx: number) => {
+      if (!canvas) return;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = sizePx * dpr;
+      canvas.height = sizePx * dpr;
+      canvas.style.width = `${sizePx}px`;
+      canvas.style.height = `${sizePx}px`;
+      const ctx = canvas.getContext('2d');
+      if (ctx) ctx.scale(dpr, dpr);
+    };
+
+    const applyToAll = () => {
+      setupCanvas(scanCanvasRef.current, SCAN_SIZE_PX);
+      setupCanvas(mapCanvasRef.current, MAP_SIZE_PX);
+    };
+
+    applyToAll();
+
+    // Re-apply if device pixel ratio changes (e.g. moving between monitors).
+    const mq = window.matchMedia(`(resolution: ${window.devicePixelRatio}dppx)`);
+    mq.addEventListener('change', applyToAll);
+    return () => mq.removeEventListener('change', applyToAll);
   }, []);
 
   // ── Reset ───────────────────────────────────────────────────────────────
   const handleReset = useCallback(async () => {
+    setIsResetting(true);
     pointBuffer.current.clear();
     extentRef.current = createEmptyExtent();
     updatePointCountThrottled(true);
@@ -507,6 +547,8 @@ export function MappingPanel() {
       }
       // Non-critical - map buffer already cleared client-side.
       console.error('Failed to reset SLAM buffer', err);
+    } finally {
+      setIsResetting(false);
     }
   }, [drawMap, updatePointCountThrottled]);
 
@@ -538,8 +580,13 @@ export function MappingPanel() {
         </div>
       </div>
       <div style={FOOTER_STYLE}>
-        <button type="button" style={RESET_BTN_STYLE} onClick={handleReset}>
-          Reset Map
+        <button
+          type="button"
+          style={{ ...RESET_BTN_STYLE, ...(isResetting ? { opacity: 0.6, cursor: 'not-allowed' } : {}) }}
+          onClick={handleReset}
+          disabled={isResetting}
+        >
+          {isResetting ? 'Resetting...' : 'Reset Map'}
         </button>
         <span>
           Points: {pointCount.toLocaleString()} / {MAP_POINT_BUFFER_MAX.toLocaleString()} pts

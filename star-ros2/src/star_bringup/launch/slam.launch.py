@@ -19,11 +19,11 @@ from launch_ros.substitutions import FindPackageShare
 # This is a hardware-fixed parameter, not user-tunable.
 RPLIDAR_C1_BAUDRATE = 460800
 
-# static_transform_publisher uses named flags (--x, --y, --z, --roll, --pitch, --yaw)
+# static_transform_publisher uses named flags (--x, --y, --z, --yaw, --pitch, --roll)
 # rather than positional parameters, to be self-documenting and immune to argument
 # order changes across ROS2 / tf2_ros releases:
 #   --x   -> TRANSFORM_X    --y     -> TRANSFORM_Y    --z     -> TRANSFORM_Z
-#   --roll -> TRANSFORM_ROLL  --pitch -> TRANSFORM_PITCH  --yaw -> TRANSFORM_YAW
+#   --yaw -> TRANSFORM_YAW  --pitch -> TRANSFORM_PITCH  --roll -> TRANSFORM_ROLL
 #   --frame-id     -> parent frame (odom)
 #   --child-frame-id -> child frame (base_link)
 TRANSFORM_X = '0'
@@ -32,6 +32,15 @@ TRANSFORM_Z = '0'
 TRANSFORM_ROLL = '0'
 TRANSFORM_PITCH = '0'
 TRANSFORM_YAW = '0'
+
+# TF frame ID constants shared between the static_transform_publisher arguments
+# and any other nodes that reference these frames, so renaming a frame requires
+# only a single change here.
+FRAME_ODOM = 'odom'
+FRAME_BASE_LINK = 'base_link'
+
+# Default respawn delay (seconds) for nodes configured with respawn=True.
+RESPAWN_DELAY_SEC = 2.0
 
 
 def generate_launch_description():
@@ -50,7 +59,7 @@ def generate_launch_description():
 
     use_ekf_arg = DeclareLaunchArgument(
         'use_ekf', default_value='true',
-        description='Run EKF odometry fusion (disable in dev mode — use static odom TF instead)'
+        description='Run EKF odometry fusion (disable in dev mode - use static odom TF instead)'
     )
 
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
@@ -72,7 +81,7 @@ def generate_launch_description():
             'scan_mode': 'Standard',
         }],
         respawn=True,
-        respawn_delay=2.0,
+        respawn_delay=RESPAWN_DELAY_SEC,
     )
 
     static_tf = IncludeLaunchDescription(
@@ -90,7 +99,7 @@ def generate_launch_description():
         output='screen',
         parameters=[os.path.join(pkg_star_bringup, 'config', 'ekf.yaml')],
         respawn=True,
-        respawn_delay=2.0,
+        respawn_delay=RESPAWN_DELAY_SEC,
         condition=IfCondition(LaunchConfiguration('use_ekf')),
     )
 
@@ -99,6 +108,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name='static_odom_to_base_link',
+        output='screen',
         arguments=[
             '--x',
             TRANSFORM_X,
@@ -113,9 +123,9 @@ def generate_launch_description():
             '--roll',
             TRANSFORM_ROLL,
             '--frame-id',
-            'odom',
+            FRAME_ODOM,
             '--child-frame-id',
-            'base_link',
+            FRAME_BASE_LINK,
         ],
         condition=UnlessCondition(LaunchConfiguration('use_ekf')),
     )

@@ -4,8 +4,17 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"regexp"
 	"strings"
 )
+
+// servicePathRegex validates that a ROS2 service path starts with '/' and
+// contains only letters, numbers, underscores, and forward slashes.
+var servicePathRegex = regexp.MustCompile(`^/[a-zA-Z0-9_/]+$`)
+
+// serviceTypeRegex validates that a ROS2 service type matches the
+// package/ServiceName pattern (letters, numbers, and underscores only).
+var serviceTypeRegex = regexp.MustCompile(`^[a-zA-Z0-9_]+/[a-zA-Z0-9_]+$`)
 
 // SLAMService encapsulates SLAM-related operations exposed to HTTP handlers.
 type SLAMService interface {
@@ -18,6 +27,15 @@ type SLAMService interface {
 // ROS2 distro installation layout).
 const ros2Binary = "ros2"
 
+// ros2ServiceCmd, ros2CallCmd, and ros2EmptyPayload are the literal CLI
+// sub-command arguments passed to ros2Binary when calling a ROS2 service.
+// Defined as constants so they are easy to locate and update.
+const (
+	ros2ServiceCmd   = "service"
+	ros2CallCmd      = "call"
+	ros2EmptyPayload = "{}"
+)
+
 type ros2SLAMService struct {
 	resetServicePath string
 	resetServiceType string
@@ -26,11 +44,11 @@ type ros2SLAMService struct {
 func newROS2SLAMService(resetServicePath, resetServiceType string) (SLAMService, error) {
 	resetServicePath = strings.TrimSpace(resetServicePath)
 	resetServiceType = strings.TrimSpace(resetServiceType)
-	if resetServicePath == "" || !strings.HasPrefix(resetServicePath, "/") {
-		return nil, fmt.Errorf("invalid resetServicePath: must be non-empty and start with '/'")
+	if !servicePathRegex.MatchString(resetServicePath) {
+		return nil, fmt.Errorf("invalid resetServicePath %q: must start with '/' and contain only letters, numbers, underscores, and forward slashes", resetServicePath)
 	}
-	if resetServiceType == "" || !strings.Contains(resetServiceType, "/") {
-		return nil, fmt.Errorf("invalid resetServiceType: must be non-empty and contain '/'")
+	if !serviceTypeRegex.MatchString(resetServiceType) {
+		return nil, fmt.Errorf("invalid resetServiceType %q: must match package/ServiceName pattern with only letters, numbers, and underscores", resetServiceType)
 	}
 	return &ros2SLAMService{
 		resetServicePath: resetServicePath,
@@ -57,16 +75,16 @@ func (s *ros2SLAMService) Reset(ctx context.Context) error {
 	output, err := exec.CommandContext(
 		ctx,
 		ros2Binary,
-		"service",
-		"call",
+		ros2ServiceCmd,
+		ros2CallCmd,
 		s.resetServicePath,
 		s.resetServiceType,
-		"{}",
+		ros2EmptyPayload,
 	).CombinedOutput()
 	if err != nil {
 		trimmedOutput := strings.TrimSpace(string(output))
 		if trimmedOutput != "" {
-			return fmt.Errorf("failed to call ros2 service reset: %w: output=%q", err, trimmedOutput)
+			return fmt.Errorf("failed to call ros2 service reset: %w; output=%q", err, trimmedOutput)
 		}
 		return fmt.Errorf("failed to call ros2 service reset: %w", err)
 	}

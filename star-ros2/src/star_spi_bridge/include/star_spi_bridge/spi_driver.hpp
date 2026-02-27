@@ -87,6 +87,8 @@ public:
    * @pre  device_path is a non-empty, null-terminated string.
    * @pre  speed_hz > 0; the kernel rejects a zero-Hz SPI clock request.
    * @post CRC-32 lookup table is initialised (thread-safe, once).
+   * @post spi_fd_ is set to -1 (invalid); call initialize() to open and
+   *       configure the SPI device before calling transfer().
    */
   explicit SpiDriver(const std::string &device_path,
                      uint32_t speed_hz = 10000000);

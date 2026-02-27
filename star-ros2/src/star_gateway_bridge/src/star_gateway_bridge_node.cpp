@@ -15,6 +15,41 @@ using namespace std::chrono_literals;
 
 namespace star::star_gateway_bridge {
 
+/**
+ * @brief Construct and fully initialise the STAR Gateway Bridge ROS2 node.
+ *
+ * @details
+ * Declares and caches all ROS2 parameters, initialises the gRPC client
+ * channel to the Go gateway service, creates publishers, subscribers, and
+ * timer callbacks, and starts the connection watchdog. All member variables
+ * (grpc_connected_, reconnect_attempts_, sequence counters, etc.) are set
+ * to their safe initial state before any callbacks are registered.
+ *
+ * @param[in] options  ROS2 node options forwarded to rclcpp::Node. May
+ * contain remappings, parameter overrides, or intra-process settings.
+ * Invalid or missing required parameters are logged and default values
+ * are applied; no exception is thrown for parameter validation failures.
+ *
+ * @throw std::runtime_error  Thrown if the gRPC channel cannot be
+ * constructed (e.g. invalid gateway_address format).
+ *
+ * @pre gateway_address node parameter must be a valid host:port string
+ * (non-empty, with a colon-separated port number).
+ * @pre ROS2 node options must be compatible with rclcpp::Node construction
+ * (no conflicting intra-process or remapping settings).
+ * @post grpc_connected_ == false and reconnect_attempts_ == 0 on return.
+ * @post All publishers, subscribers, and timer callbacks are initialised
+ * and the connection watchdog is started before the constructor returns.
+ *
+ * @note Not thread-safe during construction; the node must be fully
+ * constructed in a single thread before being added to an executor.
+ * @note grpc_connected_ is initialised to false and reconnect_attempts_
+ * to 0. The connection watchdog timer will attempt the first connection
+ * on its first callback, so the node may briefly serve subscribers with
+ * no gRPC connection on startup.
+ *
+ * @since Version 1.0.0
+ */
 StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions &options)
     : Node("star_gateway_bridge", options), grpc_connected_(false),
       reconnect_attempts_(0) {
@@ -515,6 +550,17 @@ void StarGatewayBridgeNode::connection_watchdog_callback() {
  * @retval false  Either MAX_RECONNECT_ATTEMPTS exhausted or
  *                initialize_grpc_client() reported a timeout.
  *
+ * @pre Called from connection_watchdog_callback() when is_grpc_connected()
+ * returns false; gRPC stub and channel state must be validable by
+ * initialize_grpc_client().
+ * @pre reconnect_attempts_ and MAX_RECONNECT_ATTEMPTS are accessible and
+ * RECONNECT_BACKOFF_MS_BASE > 0.
+ * @post reconnect_attempts_ is incremented on each invocation.
+ * @post Returns true if initialize_grpc_client() succeeds and the channel
+ * enters READY state within the deadline; returns false if
+ * MAX_RECONNECT_ATTEMPTS is reached or a timeout occurs; error logging is
+ * throttled at the MAX_RECONNECT_ATTEMPTS limit to avoid log spam.
+ *
  * @note Blocks the calling thread (watchdog timer callback) via
  *       std::this_thread::sleep_for for the computed backoff duration.
  * @note Error logging is throttled to once per 30 s at the
@@ -522,6 +568,8 @@ void StarGatewayBridgeNode::connection_watchdog_callback() {
  * @since Version 1.0.0
  */
 bool StarGatewayBridgeNode::reconnect_grpc_client() {
+  assert(MAX_RECONNECT_ATTEMPTS > 0);
+  assert(RECONNECT_BACKOFF_MS_BASE > 0 && reconnect_attempts_ >= 0);
   if (reconnect_attempts_ >= MAX_RECONNECT_ATTEMPTS) {
     RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
                           "Max reconnection attempts (%d) reached - giving up",
