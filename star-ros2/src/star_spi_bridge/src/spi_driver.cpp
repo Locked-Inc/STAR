@@ -40,7 +40,8 @@ constexpr int SPI_IOC_WR_MODE = 0;
 constexpr int SPI_IOC_WR_BITS_PER_WORD = 0;
 constexpr int SPI_IOC_WR_MAX_SPEED_HZ = 0;
 
-struct spi_ioc_transfer {
+struct spi_ioc_transfer
+{
   uint64_t tx_buf_;
   uint64_t rx_buf_;
   uint32_t len_;
@@ -122,16 +123,16 @@ inline bool is_valid_frame_type(FrameType frame_type)
     return false;
   }
   switch (frame_type) {
-  case FrameType::VelocityCommand: {
-    return true;
-  }
-  case FrameType::TelemetryData: {
-    return true;
-  }
-  default: {
+    case FrameType::VelocityCommand: {
+        return true;
+      }
+    case FrameType::TelemetryData: {
+        return true;
+      }
+    default: {
     // Unreachable: all values in [k_min, k_max] are handled above.
-    return false;
-  }
+        return false;
+      }
   }
 }
 }  // namespace
@@ -232,7 +233,8 @@ void SpiDriver::close_device()
   }
 }
 
-bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data,
+bool SpiDriver::transfer(
+  const std::vector<uint8_t> & tx_data,
   std::vector<uint8_t> & rx_data)
 {
 #ifndef __linux__
@@ -267,7 +269,8 @@ bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data,
   return true;
 }
 
-void SpiDriver::encode_frame(uint16_t seq, FrameType type, uint8_t flags,
+void SpiDriver::encode_frame(
+  uint16_t seq, FrameType type, uint8_t flags,
   const std::vector<uint8_t> & payload,
   std::vector<uint8_t> & out_frame)
 {
@@ -320,12 +323,14 @@ void SpiDriver::encode_frame(uint16_t seq, FrameType type, uint8_t flags,
     throw std::logic_error("encoded frame size does not match expected layout");
   }
   if (out_frame[0] != (SYNC_WORD & 0xFF) ||
-      out_frame[1] != ((SYNC_WORD >> 8) & 0xFF)) {
+    out_frame[1] != ((SYNC_WORD >> 8) & 0xFF))
+  {
     throw std::logic_error("encoded frame sync word mismatch");
   }
 }
 
-bool SpiDriver::decode_frame(const std::vector<uint8_t> & frame, uint16_t & seq,
+bool SpiDriver::decode_frame(
+  const std::vector<uint8_t> & frame, uint16_t & seq,
   FrameType & type, uint8_t & flags,
   std::vector<uint8_t> & payload)
 {
@@ -353,10 +358,10 @@ bool SpiDriver::decode_frame(const std::vector<uint8_t> & frame, uint16_t & seq,
   uint32_t calculated_crc = calculate_crc32(data_to_check);
 
   uint32_t received_crc =
-      static_cast<uint32_t>(frame[frame.size() - 4]) |
-      (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
-      (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) |
-      (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
+    static_cast<uint32_t>(frame[frame.size() - 4]) |
+    (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
+    (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) |
+    (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
 
   if (calculated_crc != received_crc) {
     return false;

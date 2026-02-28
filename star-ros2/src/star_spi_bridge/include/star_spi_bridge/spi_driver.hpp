@@ -37,7 +37,8 @@ namespace star_spi_bridge
  *
  * @since Version 1.0.0
  */
-enum class FrameType : uint8_t {
+enum class FrameType : uint8_t
+{
   VelocityCommand = 0x01, /**< Motor velocity setpoint (RPi5 -> RX72N) */
   TelemetryData = 0x02    /**< Sensor telemetry payload  (RX72N -> RPi5) */
 };
@@ -71,12 +72,12 @@ class SpiDriver {
 public:
   // -- Frame-structure constants ------------------------------------------
   static constexpr size_t HEADER_SIZE =
-      8; /**< SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes. */
+    8;   /**< SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes. */
   static constexpr size_t CRC_SIZE = 4; /**< CRC-32 trailer length in bytes. */
   static constexpr size_t MAX_PAYLOAD_SIZE =
-      1024; /**< Maximum application payload per frame (bytes). */
+    1024;   /**< Maximum application payload per frame (bytes). */
   static constexpr uint16_t SYNC_WORD =
-      0x55AA; /**< SYNC word transmitted in every frame header. */
+    0x55AA;   /**< SYNC word transmitted in every frame header. */
 
   /**
    * @brief Construct a new SpiDriver.
@@ -91,7 +92,8 @@ public:
    * @post spi_fd_ is set to -1 (invalid); call initialize() to open and
    *       configure the SPI device before calling transfer().
    */
-  explicit SpiDriver(const std::string & device_path,
+  explicit SpiDriver(
+    const std::string & device_path,
     uint32_t speed_hz = 10000000);
 
   /**
@@ -145,7 +147,8 @@ public:
    *
    * @note Only supported on Linux; returns false on other platforms.
    */
-  bool transfer(const std::vector<uint8_t> & tx_data,
+  bool transfer(
+    const std::vector<uint8_t> & tx_data,
     std::vector<uint8_t> & rx_data);
 
   /**
@@ -169,7 +172,8 @@ public:
    *
    * @see decode_frame  Inverse operation.
    */
-  static void encode_frame(uint16_t seq, FrameType type, uint8_t flags,
+  static void encode_frame(
+    uint16_t seq, FrameType type, uint8_t flags,
     const std::vector<uint8_t> & payload,
     std::vector<uint8_t> & out_frame);
 
@@ -194,7 +198,8 @@ public:
    *
    * @see encode_frame  Inverse operation.
    */
-  static bool decode_frame(const std::vector<uint8_t> & frame, uint16_t & seq,
+  static bool decode_frame(
+    const std::vector<uint8_t> & frame, uint16_t & seq,
     FrameType & type, uint8_t & flags,
     std::vector<uint8_t> & payload);
 

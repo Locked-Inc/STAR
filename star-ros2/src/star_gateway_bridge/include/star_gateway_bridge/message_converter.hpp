@@ -31,7 +31,8 @@
 #include "star/v1/telemetry.pb.h"
 #include "star/v1/ui.pb.h"
 
-namespace star::star_gateway_bridge {
+namespace star::star_gateway_bridge
+{
 
 /**
  * @brief Message converter for ROS2 <-> Protobuf translation.
@@ -87,10 +88,11 @@ public:
    * @param sequence Optional sequence number for command ordering
    * @return true if conversion successful, false if input validation failed
    */
-  static bool twist_to_velocity_command(const geometry_msgs::msg::Twist &twist,
-                                        ::star::v1::VelocityCommand &command,
-                                        double wheel_base = DEFAULT_WHEEL_BASE_M,
-                                        uint32_t sequence = 0);
+  static bool twist_to_velocity_command(
+    const geometry_msgs::msg::Twist & twist,
+    ::star::v1::VelocityCommand & command,
+    double wheel_base = DEFAULT_WHEEL_BASE_M,
+    uint32_t sequence = 0);
 
   /**
    * @brief Convert ROS2 String message to Protobuf SystemStatus.
@@ -102,8 +104,9 @@ public:
    * @param system_status Output SystemStatus protobuf
    * @return true if conversion successful, false if parse failed
    */
-  static bool string_to_system_status(const std_msgs::msg::String &status_msg,
-                                      ::star::v1::SystemStatus &system_status);
+  static bool string_to_system_status(
+    const std_msgs::msg::String & status_msg,
+    ::star::v1::SystemStatus & system_status);
 
   /**
    * @brief Convert nav_msgs/Odometry to star::v1::OdometryData.
@@ -133,8 +136,9 @@ public:
    *
    * @since Version 1.0.0
    */
-  static void odometry_to_proto(const nav_msgs::msg::Odometry &ros_odom,
-                                ::star::v1::OdometryData &proto_odom);
+  static void odometry_to_proto(
+    const nav_msgs::msg::Odometry & ros_odom,
+    ::star::v1::OdometryData & proto_odom);
 
   /**
    * @brief Convert geometry_msgs/PoseWithCovarianceStamped (SLAM pose) to
@@ -170,8 +174,8 @@ public:
    * @since Version 1.0.0
    */
   static void slam_pose_to_proto(
-      const geometry_msgs::msg::PoseWithCovarianceStamped &slam_pose,
-      ::star::v1::OdometryData &proto_odom);
+    const geometry_msgs::msg::PoseWithCovarianceStamped & slam_pose,
+    ::star::v1::OdometryData & proto_odom);
 
   /**
    * @brief Convert sensor_msgs/LaserScan to star::v1::LidarScan (max
@@ -205,8 +209,9 @@ public:
    *
    * @since Version 1.0.0
    */
-  static bool laserscan_to_proto(const sensor_msgs::msg::LaserScan &ros_scan,
-                                 ::star::v1::LidarScan &proto_scan);
+  static bool laserscan_to_proto(
+    const sensor_msgs::msg::LaserScan & ros_scan,
+    ::star::v1::LidarScan & proto_scan);
 
   // ===========================================================================
   // Protobuf -> ROS2 Conversions
@@ -233,9 +238,10 @@ public:
    * @return true if conversion successful, false if input validation failed
    */
   static bool
-  velocity_command_to_twist(const ::star::v1::VelocityCommand &command,
-                            geometry_msgs::msg::Twist &twist,
-                            double wheel_base = DEFAULT_WHEEL_BASE_M);
+  velocity_command_to_twist(
+    const ::star::v1::VelocityCommand & command,
+    geometry_msgs::msg::Twist & twist,
+    double wheel_base = DEFAULT_WHEEL_BASE_M);
 
   /**
    * @brief Convert Protobuf PidConfig to individual gains (for ROS2 service).
@@ -249,8 +255,9 @@ public:
    * @param kd Output derivative gain
    * @return true if conversion successful, false if input validation failed
    */
-  static bool pid_config_to_gains(const ::star::v1::PidConfig &pid_config,
-                                  double &kp, double &ki, double &kd);
+  static bool pid_config_to_gains(
+    const ::star::v1::PidConfig & pid_config,
+    double & kp, double & ki, double & kd);
 
   // ===========================================================================
   // Validation Helpers
@@ -263,7 +270,7 @@ public:
    * @note Thread-safe; stateless pure function.
    * @since Version 1.0.0
    */
-  static bool is_valid_double(double value) { return std::isfinite(value); }
+  static bool is_valid_double(double value) {return std::isfinite(value);}
 
   /**
    * @brief Clamp value to range [min, max].
@@ -274,7 +281,8 @@ public:
    * @note Thread-safe; stateless pure function.
    * @since Version 1.0.0
    */
-  static double clamp(double value, double min, double max) {
+  static double clamp(double value, double min, double max)
+  {
     return std::max(min, std::min(max, value));
   }
 
@@ -285,18 +293,18 @@ public:
    * @note Thread-safe; stateless pure function.
    * @since Version 1.0.0
    */
-  static int64_t ros_time_to_us(const rclcpp::Time &time);
+  static int64_t ros_time_to_us(const rclcpp::Time & time);
 
 private:
   // Differential drive kinematics constants
   static constexpr double MAX_VELOCITY_MPS =
-      2.0; /**< VelocityCommand valid range (m/s); wheel and output velocities
+    2.0;   /**< VelocityCommand valid range (m/s); wheel and output velocities
               are clamped to [-MAX_VELOCITY_MPS, +MAX_VELOCITY_MPS]. */
   static constexpr double MAX_ANGULAR_VEL =
-      4.0; /**< Maximum angular velocity (rad/s); angular component of Twist is
+    4.0;   /**< Maximum angular velocity (rad/s); angular component of Twist is
               clamped to [-MAX_ANGULAR_VEL, +MAX_ANGULAR_VEL]. */
   static constexpr size_t MAX_LIDAR_SAMPLES =
-      500; /**< Maximum number of LiDAR samples forwarded per scan frame;
+    500;   /**< Maximum number of LiDAR samples forwarded per scan frame;
               caps LidarScan protobuf size to bound bandwidth and UI rendering
               cost. laserscan_to_proto() downsamples evenly when the raw scan
               exceeds this limit. */

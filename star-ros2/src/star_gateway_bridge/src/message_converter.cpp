@@ -42,7 +42,7 @@ inline int64_t ros_stamp_to_us(const builtin_interfaces::msg::Time & stamp)
   assert(stamp.sec >= 0);
   assert(stamp.nanosec < MAX_NANOSECONDS);
   const int64_t timestamp_us = static_cast<int64_t>(stamp.sec) * US_PER_SEC +
-                               static_cast<int64_t>(stamp.nanosec) / NS_PER_US;
+    static_cast<int64_t>(stamp.nanosec) / NS_PER_US;
   assert(timestamp_us >= 0);
   return timestamp_us;
 }
@@ -59,7 +59,8 @@ inline int64_t ros_stamp_to_us(const builtin_interfaces::msg::Time & stamp)
 inline double quaternion_to_yaw_2d(const geometry_msgs::msg::Quaternion & q)
 {
   if (!std::isfinite(q.w) || !std::isfinite(q.x) || !std::isfinite(q.y) ||
-    !std::isfinite(q.z)) {
+    !std::isfinite(q.z))
+  {
     return 0.0;
   }
 
@@ -201,23 +202,23 @@ void MessageConverter::odometry_to_proto(
   assert(ros_odom.header.stamp.nanosec < MAX_NANOSECONDS);
 
   // Sanitize position: replace non-finite values with 0.0
-  const double x = std::isfinite(ros_odom.pose.pose.position.x)
-    ? ros_odom.pose.pose.position.x
-    : 0.0;
-  const double y = std::isfinite(ros_odom.pose.pose.position.y)
-    ? ros_odom.pose.pose.position.y
-    : 0.0;
+  const double x = std::isfinite(ros_odom.pose.pose.position.x) ?
+    ros_odom.pose.pose.position.x :
+    0.0;
+  const double y = std::isfinite(ros_odom.pose.pose.position.y) ?
+    ros_odom.pose.pose.position.y :
+    0.0;
 
   // Extract yaw from quaternion.
   const double yaw = quaternion_to_yaw_2d(ros_odom.pose.pose.orientation);
 
   // Sanitize velocities: replace non-finite values with 0.0
-  const double lin = std::isfinite(ros_odom.twist.twist.linear.x)
-    ? ros_odom.twist.twist.linear.x
-    : 0.0;
-  const double ang = std::isfinite(ros_odom.twist.twist.angular.z)
-    ? ros_odom.twist.twist.angular.z
-    : 0.0;
+  const double lin = std::isfinite(ros_odom.twist.twist.linear.x) ?
+    ros_odom.twist.twist.linear.x :
+    0.0;
+  const double ang = std::isfinite(ros_odom.twist.twist.angular.z) ?
+    ros_odom.twist.twist.angular.z :
+    0.0;
 
   proto_odom.set_x_m(x);
   proto_odom.set_y_m(y);
@@ -268,12 +269,12 @@ void MessageConverter::slam_pose_to_proto(
   assert(slam_pose.header.stamp.nanosec < MAX_NANOSECONDS);
 
   // Sanitize position: replace non-finite values with 0.0
-  const double x = std::isfinite(slam_pose.pose.pose.position.x)
-    ? slam_pose.pose.pose.position.x
-    : 0.0;
-  const double y = std::isfinite(slam_pose.pose.pose.position.y)
-    ? slam_pose.pose.pose.position.y
-    : 0.0;
+  const double x = std::isfinite(slam_pose.pose.pose.position.x) ?
+    slam_pose.pose.pose.position.x :
+    0.0;
+  const double y = std::isfinite(slam_pose.pose.pose.position.y) ?
+    slam_pose.pose.pose.position.y :
+    0.0;
 
   // Extract yaw from quaternion.
   const double yaw = quaternion_to_yaw_2d(slam_pose.pose.pose.orientation);
@@ -330,7 +331,8 @@ bool MessageConverter::laserscan_to_proto(
     !std::isfinite(ros_scan.angle_increment) ||
     ros_scan.angle_increment == 0.0f || !std::isfinite(ros_scan.range_min) ||
     !std::isfinite(ros_scan.range_max) ||
-    ros_scan.range_min > ros_scan.range_max) {
+    ros_scan.range_min > ros_scan.range_max)
+  {
     RCLCPP_WARN(rclcpp::get_logger("message_converter"),
       "Invalid LaserScan metadata: angle_min=%f angle_increment=%f "
       "range_min=%f range_max=%f total=%zu",
@@ -349,7 +351,8 @@ bool MessageConverter::laserscan_to_proto(
     const float range = ros_scan.ranges[i];
     // Skip invalid readings (NaN, inf, or out-of-range)
     if (!std::isfinite(range) || range < ros_scan.range_min ||
-      range > ros_scan.range_max) {
+      range > ros_scan.range_max)
+    {
       proto_scan.add_angle_rad(0.0f);
       proto_scan.add_range_m(0.0f);  // 0 = invalid per proto convention
       proto_scan.add_intensity(0.0f);

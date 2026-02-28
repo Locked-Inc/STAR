@@ -39,7 +39,8 @@
 #include "star/v1/gateway_service.grpc.pb.h"
 #include "star_gateway_bridge/message_converter.hpp"
 
-namespace star::star_gateway_bridge {
+namespace star::star_gateway_bridge
+{
 
 /**
  * @brief ROS2 node that bridges the ROS2 ecosystem with the Go gateway service
@@ -87,7 +88,7 @@ public:
    * @param options ROS2 node options for component configuration
    */
   explicit StarGatewayBridgeNode(
-      const rclcpp::NodeOptions &options = rclcpp::NodeOptions());
+    const rclcpp::NodeOptions & options = rclcpp::NodeOptions());
 
   /**
    * @brief Destructor - sends stop command and shuts down gracefully.
@@ -139,8 +140,8 @@ private:
    * @param response Service response
    */
   void set_pid_gains_callback(
-      const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
-      std::shared_ptr<std_srvs::srv::SetBool::Response> response);
+    const std::shared_ptr<std_srvs::srv::SetBool::Request> request,
+    std::shared_ptr<std_srvs::srv::SetBool::Response> response);
 
   // ===========================================================================
   // Timer Callbacks
@@ -200,13 +201,13 @@ private:
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
-      odom_sub_; /**< Receives filtered odometry and updates
+    odom_sub_;   /**< Receives filtered odometry and updates
                     cached_ekf_odometry_ under odometry_mutex_. */
   rclcpp::Subscription<geometry_msgs::msg::PoseWithCovarianceStamped>::SharedPtr
-      slam_pose_sub_; /**< Receives SLAM pose and updates cached_slam_pose_
+    slam_pose_sub_;   /**< Receives SLAM pose and updates cached_slam_pose_
                          under odometry_mutex_. */
   rclcpp::Subscription<sensor_msgs::msg::LaserScan>::SharedPtr
-      scan_sub_; /**< Receives LaserScan telemetry and updates
+    scan_sub_;   /**< Receives LaserScan telemetry and updates
                     cached_lidar_scan_ under lidar_mutex_. */
 
   // ROS2 Services
@@ -228,17 +229,17 @@ private:
   std::mutex odometry_mutex_; /**< Guards cached_ekf_odometry_,
                                  cached_slam_pose_, and their timestamps. */
   std::optional<star::v1::OdometryData>
-      cached_ekf_odometry_; /**< Latest EKF odometry proto (/odometry/filtered).
+  cached_ekf_odometry_;     /**< Latest EKF odometry proto (/odometry/filtered).
                              */
   std::optional<star::v1::OdometryData>
-      cached_slam_pose_; /**< Latest SLAM pose proto (/slam_toolbox/pose). */
+  cached_slam_pose_;     /**< Latest SLAM pose proto (/slam_toolbox/pose). */
   int64_t cached_ekf_timestamp_us_{
-      0}; /**< Timestamp of cached_ekf_odometry_ in microseconds. */
+    0};   /**< Timestamp of cached_ekf_odometry_ in microseconds. */
   int64_t cached_slam_timestamp_us_{
-      0}; /**< Timestamp of cached_slam_pose_ in microseconds. */
+    0};   /**< Timestamp of cached_slam_pose_ in microseconds. */
   std::mutex lidar_mutex_; /**< Guards cached_lidar_scan_. */
   std::optional<star::v1::LidarScan>
-      cached_lidar_scan_; /**< Latest lidar scan proto. */
+  cached_lidar_scan_;     /**< Latest lidar scan proto. */
 
   // Parameters (cached for performance)
   std::string gateway_address_;
@@ -271,7 +272,7 @@ private:
 
   // Frame drop detection for teleop commands and telemetry
   rclcpp::Publisher<diagnostic_msgs::msg::DiagnosticArray>::SharedPtr
-      diagnostics_pub_;
+    diagnostics_pub_;
   rclcpp::TimerBase::SharedPtr diagnostics_timer_;
 
   uint32_t last_teleop_sequence_{0};

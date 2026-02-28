@@ -147,7 +147,7 @@ bool StarGatewayBridgeNode::initialize_grpc_client()
 
   // Wait for channel to be ready (with timeout)
   auto deadline = std::chrono::system_clock::now() +
-                  std::chrono::milliseconds(grpc_deadline_ms_);
+    std::chrono::milliseconds(grpc_deadline_ms_);
 
   if (!grpc_channel_->WaitForConnected(deadline)) {
     RCLCPP_WARN(this->get_logger(), "gRPC channel not ready within %dms",
@@ -173,7 +173,7 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
 
   // Publishers
   teleop_cmd_vel_pub_ =
-      this->create_publisher<geometry_msgs::msg::Twist>("/teleop/cmd_vel", 10);
+    this->create_publisher<geometry_msgs::msg::Twist>("/teleop/cmd_vel", 10);
 
   // Subscribers
   robot_status_sub_ = this->create_subscription<std_msgs::msg::String>(
@@ -196,20 +196,20 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
   // Subscribe to odometry (EKF-filtered preferred)
   odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
       "/odometry/filtered", 10,
-      [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
-        try {
-          star::v1::OdometryData proto_odom;
-          converter_.odometry_to_proto(*msg, proto_odom);
-          std::lock_guard<std::mutex> lock(odometry_mutex_);
-          cached_ekf_timestamp_us_ = proto_odom.timestamp_us();
-          cached_ekf_odometry_ = proto_odom;
-        } catch (const std::exception & ex) {
-          RCLCPP_ERROR(this->get_logger(), "Odometry callback failed: %s",
+    [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
+      try {
+        star::v1::OdometryData proto_odom;
+        converter_.odometry_to_proto(*msg, proto_odom);
+        std::lock_guard<std::mutex> lock(odometry_mutex_);
+        cached_ekf_timestamp_us_ = proto_odom.timestamp_us();
+        cached_ekf_odometry_ = proto_odom;
+      } catch (const std::exception & ex) {
+        RCLCPP_ERROR(this->get_logger(), "Odometry callback failed: %s",
                        ex.what());
-        } catch (...) {
-          RCLCPP_ERROR(this->get_logger(),
+      } catch (...) {
+        RCLCPP_ERROR(this->get_logger(),
                        "Odometry callback failed: unknown exception");
-        }
+      }
       });
 
   /**
@@ -227,23 +227,23 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
   // Subscribe to SLAM pose (map frame) -- selected by telemetry arbitration
   // when newer than EKF (and as tie-breaker).
   slam_pose_sub_ =
-      this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+    this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
           "/slam_toolbox/pose", rclcpp::SensorDataQoS(),
-          [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr
-                     msg) {
-            try {
-              star::v1::OdometryData proto_odom;
-              converter_.slam_pose_to_proto(*msg, proto_odom);
-              std::lock_guard<std::mutex> lock(odometry_mutex_);
-              cached_slam_timestamp_us_ = proto_odom.timestamp_us();
-              cached_slam_pose_ = proto_odom;
-            } catch (const std::exception & ex) {
-              RCLCPP_ERROR(this->get_logger(), "SLAM pose callback failed: %s",
+    [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr
+    msg) {
+      try {
+        star::v1::OdometryData proto_odom;
+        converter_.slam_pose_to_proto(*msg, proto_odom);
+        std::lock_guard<std::mutex> lock(odometry_mutex_);
+        cached_slam_timestamp_us_ = proto_odom.timestamp_us();
+        cached_slam_pose_ = proto_odom;
+      } catch (const std::exception & ex) {
+        RCLCPP_ERROR(this->get_logger(), "SLAM pose callback failed: %s",
                            ex.what());
-            } catch (...) {
-              RCLCPP_ERROR(this->get_logger(),
+      } catch (...) {
+        RCLCPP_ERROR(this->get_logger(),
                            "SLAM pose callback failed: unknown exception");
-            }
+      }
           });
 
   /**
@@ -261,21 +261,21 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
   // Subscribe to LiDAR scan -- SensorDataQoS matches sllidar_node publisher QoS
   scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
       "/scan", rclcpp::SensorDataQoS(),
-      [this](const sensor_msgs::msg::LaserScan::SharedPtr msg) {
-        try {
-          star::v1::LidarScan proto_scan;
-          if (!converter_.laserscan_to_proto(*msg, proto_scan)) {
-            return;
-          }
-          std::lock_guard<std::mutex> lock(lidar_mutex_);
-          cached_lidar_scan_ = proto_scan;
-        } catch (const std::exception & ex) {
-          RCLCPP_ERROR(this->get_logger(), "LaserScan callback failed: %s",
-                       ex.what());
-        } catch (...) {
-          RCLCPP_ERROR(this->get_logger(),
-                       "LaserScan callback failed: unknown exception");
+    [this](const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+      try {
+        star::v1::LidarScan proto_scan;
+        if (!converter_.laserscan_to_proto(*msg, proto_scan)) {
+          return;
         }
+        std::lock_guard<std::mutex> lock(lidar_mutex_);
+        cached_lidar_scan_ = proto_scan;
+      } catch (const std::exception & ex) {
+        RCLCPP_ERROR(this->get_logger(), "LaserScan callback failed: %s",
+                       ex.what());
+      } catch (...) {
+        RCLCPP_ERROR(this->get_logger(),
+                       "LaserScan callback failed: unknown exception");
+      }
       });
 
   // Services
@@ -303,7 +303,7 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
 
   // Create diagnostics publisher
   diagnostics_pub_ =
-      this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
+    this->create_publisher<diagnostic_msgs::msg::DiagnosticArray>(
           "/diagnostics", 10);
 
   // Create diagnostics timer (1 Hz for human readability)
@@ -395,8 +395,9 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
     {
       std::lock_guard<std::mutex> lock(odometry_mutex_);
       if (cached_slam_pose_.has_value() &&
-          (!cached_ekf_odometry_.has_value() ||
-           cached_slam_timestamp_us_ >= cached_ekf_timestamp_us_)) {
+        (!cached_ekf_odometry_.has_value() ||
+        cached_slam_timestamp_us_ >= cached_ekf_timestamp_us_))
+      {
         *request.mutable_odometry() = *cached_slam_pose_;
       } else if (cached_ekf_odometry_.has_value()) {
         *request.mutable_odometry() = *cached_ekf_odometry_;
@@ -413,7 +414,7 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
 
     star::v1::ForwardTelemetryResponse response;
     grpc::Status status =
-        grpc_stub_->ForwardTelemetry(&context, request, &response);
+      grpc_stub_->ForwardTelemetry(&context, request, &response);
 
     if (!status.ok()) {
       RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
@@ -431,7 +432,7 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
   {
     std::lock_guard<std::mutex> lock(odometry_mutex_);
     odom_has =
-        cached_slam_pose_.has_value() || cached_ekf_odometry_.has_value();
+      cached_slam_pose_.has_value() || cached_ekf_odometry_.has_value();
   }
   {
     std::lock_guard<std::mutex> lock(lidar_mutex_);
@@ -471,7 +472,7 @@ void StarGatewayBridgeNode::teleop_poll_timer_callback()
   star::v1::GetTeleopCommandResponse response;
 
   grpc::Status status =
-      grpc_stub_->GetTeleopCommand(&context, request, &response);
+    grpc_stub_->GetTeleopCommand(&context, request, &response);
 
   if (!status.ok()) {
     RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
@@ -495,7 +496,7 @@ void StarGatewayBridgeNode::teleop_poll_timer_callback()
   // Check command staleness (safety feature)
   auto now_us = std::chrono::duration_cast<std::chrono::microseconds>(
                     std::chrono::system_clock::now().time_since_epoch())
-                    .count();
+    .count();
   auto cmd_age_us = now_us - response.command().timestamp_us();
   auto cmd_age_ms = cmd_age_us / 1000;
 
@@ -512,7 +513,8 @@ void StarGatewayBridgeNode::teleop_poll_timer_callback()
   // Convert and publish fresh command
   geometry_msgs::msg::Twist twist;
   if (converter_.velocity_command_to_twist(response.command(), twist,
-                                           wheel_base_)) {
+                                           wheel_base_))
+  {
     // Check sequence continuity for frame drop detection
     uint32_t current_seq = response.command().sequence();
     check_teleop_sequence_continuity(current_seq);
@@ -592,7 +594,7 @@ bool StarGatewayBridgeNode::reconnect_grpc_client()
 
   // Exponential backoff
   int backoff_ms = RECONNECT_BACKOFF_MS_BASE *
-                   (1 << std::min(reconnect_attempts_, MAX_BACKOFF_EXPONENT));
+    (1 << std::min(reconnect_attempts_, MAX_BACKOFF_EXPONENT));
 
   RCLCPP_INFO(this->get_logger(), "Reconnection attempt %d/%d (backoff: %dms)",
               reconnect_attempts_, MAX_RECONNECT_ATTEMPTS, backoff_ms);
@@ -710,11 +712,11 @@ void StarGatewayBridgeNode::publish_diagnostics()
     if (drop_rate < 1.0) {
       status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
       status.message =
-          "Minor teleop drops (" + std::to_string(drop_rate) + "%)";
+        "Minor teleop drops (" + std::to_string(drop_rate) + "%)";
     } else {
       status.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
       status.message =
-          "Critical teleop loss (" + std::to_string(drop_rate) + "%)";
+        "Critical teleop loss (" + std::to_string(drop_rate) + "%)";
     }
   }
 
@@ -730,9 +732,9 @@ void StarGatewayBridgeNode::publish_diagnostics()
   status.values.push_back(kv);
 
   double drop_rate =
-      total_teleop_frames_ > 0
-          ? (teleop_frames_dropped_ * 100.0) / total_teleop_frames_
-          : 0.0;
+    total_teleop_frames_ > 0 ?
+    (teleop_frames_dropped_ * 100.0) / total_teleop_frames_ :
+    0.0;
   kv.key = "drop_rate_percent";
   kv.value = std::to_string(drop_rate);
   status.values.push_back(kv);
@@ -756,16 +758,16 @@ void StarGatewayBridgeNode::publish_diagnostics()
     telemetry_status.message = "No telemetry drops";
   } else {
     double telemetry_drop_rate =
-        (telemetry_frames_dropped_ * 100.0) / total_telemetry_frames_;
+      (telemetry_frames_dropped_ * 100.0) / total_telemetry_frames_;
 
     if (telemetry_drop_rate < 5.0) {
       telemetry_status.level = diagnostic_msgs::msg::DiagnosticStatus::WARN;
       telemetry_status.message = "Minor telemetry drops (" +
-                                 std::to_string(telemetry_drop_rate) + "%)";
+        std::to_string(telemetry_drop_rate) + "%)";
     } else {
       telemetry_status.level = diagnostic_msgs::msg::DiagnosticStatus::ERROR;
       telemetry_status.message = "Critical telemetry loss (" +
-                                 std::to_string(telemetry_drop_rate) + "%)";
+        std::to_string(telemetry_drop_rate) + "%)";
     }
   }
 
@@ -781,9 +783,9 @@ void StarGatewayBridgeNode::publish_diagnostics()
   telemetry_status.values.push_back(telemetry_kv);
 
   double telemetry_drop_rate =
-      total_telemetry_frames_ > 0
-          ? (telemetry_frames_dropped_ * 100.0) / total_telemetry_frames_
-          : 0.0;
+    total_telemetry_frames_ > 0 ?
+    (telemetry_frames_dropped_ * 100.0) / total_telemetry_frames_ :
+    0.0;
   telemetry_kv.key = "drop_rate_percent";
   telemetry_kv.value = std::to_string(telemetry_drop_rate);
   telemetry_status.values.push_back(telemetry_kv);
