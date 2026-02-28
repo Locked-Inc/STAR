@@ -232,11 +232,18 @@ target_compile_options(${PROJECT_NAME}.elf PRIVATE
     $<$<COMPILE_LANGUAGE:ASM>:-DCPPAPP>
 )
 
+# CRC32 hardware DMA acceleration toggle
+option(RX_CRC32_USE_DMA "Enable DMA path for hardware CRC32" ON)
+
 # Target-specific compile definitions (previously global add_compile_definitions)
 target_compile_definitions(${PROJECT_NAME}.elf PRIVATE
     TX_INCLUDE_USER_DEFINE_FILE
     CPPAPP  # Enables C++ support in reset_program.S
 )
+
+if(RX_CRC32_USE_DMA)
+    target_compile_definitions(${PROJECT_NAME}.elf PRIVATE RX_CRC32_USE_DMA)
+endif()
 
 # Target-specific include directories (previously global include_directories)
 target_include_directories(${PROJECT_NAME}.elf PRIVATE
