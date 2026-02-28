@@ -7,11 +7,13 @@ package app
 import (
 	"context"
 	"fmt"
+	"io"
 	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 	"unicode/utf8"
@@ -61,6 +63,20 @@ const (
 	// written to logs and forwarded to the motor controller. Prevents log
 	// injection and unbounded memory usage from adversarially long query params.
 	maxEstopReasonLen = 256
+
+	// slamResetTimeout bounds SLAM reset request latency from the HTTP handler.
+	slamResetTimeout = 5 * time.Second
+
+	// slamResetCooldown is the minimum interval between successive SLAM reset
+	// calls. Requests within this window are rejected with HTTP 429 to protect
+	// slam_toolbox from rapid resets that could corrupt map state.
+	slamResetCooldown = 10 * time.Second
+
+	// slamToolboxResetServicePath is the ROS2 service path for slam_toolbox reset.
+	slamToolboxResetServicePath = "/slam_toolbox/reset"
+
+	// slamToolboxResetServiceType is the ROS2 service type for slam_toolbox reset.
+	slamToolboxResetServiceType = "slam_toolbox/srv/Reset"
 )
 
 // Config holds the application configuration.
@@ -647,6 +663,20 @@ func startHTTPServerWithAddr(
 	// No defer internalCancel() here!
 
 	mux := http.NewServeMux()
+	slamSvc, err := service.NewROS2SLAMService(slamToolboxResetServicePath, slamToolboxResetServiceType)
+	if err != nil {
+		internalCancel()
+		return fmt.Errorf("failed to create SLAM service: %w", err)
+	}
+	if closer, ok := slamSvc.(io.Closer); ok {
+		go func() {
+			<-internalCtx.Done()
+			if closeErr := closer.Close(); closeErr != nil {
+				logger.Error("SLAM service Close() failed during shutdown",
+					slog.Any("error", closeErr))
+			}
+		}()
+	}
 
 	// -- WebSocket hub setup -----------------------------------------------
 	adapter := &motorControllerAdapter{svc: services.motorControl}
@@ -759,6 +789,70 @@ func startHTTPServerWithAddr(
 		}
 		logger.Info("REST emergency stop succeeded", slog.String("reason", sanitizedReason))
 		w.WriteHeader(http.StatusNoContent)
+	})
+
+	// SLAM reset endpoint -- calls slam_toolbox Reset service via ros2 CLI.
+	// The gateway process inherits the ROS2 environment, so ros2 is on PATH.
+	//
+	// Rate-limited to 1 reset per slamResetCooldown to prevent disruption.
+	// All invocations are audit-logged with caller identity and outcome.
+	var (
+		slamResetMu       sync.Mutex
+		lastSlamResetTime time.Time
+	)
+	mux.HandleFunc("/api/slam/reset", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != http.MethodPost {
+			http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+			return
+		}
+		remoteAddr := r.RemoteAddr
+		forwardedFor := r.Header.Get("X-Forwarded-For")
+		now := time.Now()
+
+		// Rate-limit check: enforce cooldown between successive resets.
+		slamResetMu.Lock()
+		sinceLastReset := now.Sub(lastSlamResetTime)
+		allowed := lastSlamResetTime.IsZero() || sinceLastReset >= slamResetCooldown
+		if allowed {
+			lastSlamResetTime = now
+		}
+		slamResetMu.Unlock()
+
+		if !allowed {
+			logger.Warn("SLAM reset denied: rate limit exceeded",
+				slog.String("remote_addr", remoteAddr),
+				slog.String("x_forwarded_for", forwardedFor),
+				slog.Time("timestamp", now),
+				slog.Duration("cooldown_remaining", slamResetCooldown-sinceLastReset),
+				slog.String("outcome", "denied"))
+			http.Error(w, fmt.Sprintf("rate limit exceeded: SLAM reset only allowed once per %s", slamResetCooldown), http.StatusTooManyRequests)
+			return
+		}
+
+		// Use r.Context() so client disconnect/cancel aborts this non-safety SLAM
+		// reset path. This intentionally differs from /api/estop, which uses
+		// context.Background() per ADR-13 so safety commands cannot be cancelled by
+		// HTTP client lifecycle.
+		resetCtx, resetCancel := context.WithTimeout(r.Context(), slamResetTimeout)
+		defer resetCancel()
+		if err := slamSvc.Reset(resetCtx); err != nil {
+			logger.Error("SLAM reset failed",
+				slog.Any("error", err),
+				slog.String("remote_addr", remoteAddr),
+				slog.String("x_forwarded_for", forwardedFor),
+				slog.Time("timestamp", now),
+				slog.String("outcome", "error"))
+			http.Error(w, "reset failed", http.StatusInternalServerError)
+			return
+		}
+		logger.Info("SLAM reset succeeded",
+			slog.String("remote_addr", remoteAddr),
+			slog.String("x_forwarded_for", forwardedFor),
+			slog.Time("timestamp", now),
+			slog.String("outcome", "allowed"))
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = w.Write([]byte(`{"status":"reset"}`))
 	})
 
 	// Lightweight liveness endpoint for orchestration and local debugging.
