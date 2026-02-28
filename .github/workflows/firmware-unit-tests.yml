@@ -20,19 +20,20 @@ jobs:
   unit-test:
     name: Build and Run Unity Tests
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     permissions:
       contents: read
       checks: write      # required by dorny/test-reporter to annotate PR checks
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Install build dependencies
         run: sudo apt-get install -y cmake gcc g++ git ninja-build protobuf-compiler
 
       - name: Cache CMake FetchContent (Unity + nanopb)
-        uses: actions/cache@v4
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
           path: e2-studio-star-rx72n-firmware/tests/build/_deps
           # Hash ALL CMakeLists files -- a new mock or subdirectory CMakeLists invalidates deps
@@ -74,11 +75,12 @@ jobs:
 
       - name: Upload test results artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           # run_id guarantees uniqueness across manual re-runs of the same commit SHA
           name: firmware-unit-test-results-${{ github.run_id }}-${{ github.sha }}
           path: e2-studio-star-rx72n-firmware/tests/build/test-results.xml
+          retention-days: 30
 
       # ==========================================================================
       # Static Analysis (non-blocking -- promote to blocking after baseline clean)
@@ -121,9 +123,10 @@ jobs:
 
       - name: Upload static analysis results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: static-analysis-${{ github.run_id }}-${{ github.sha }}
           path: |
             cppcheck-results.txt
             clang-format-results.txt
+          retention-days: 30

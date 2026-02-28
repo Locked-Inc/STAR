@@ -32,6 +32,7 @@ jobs:
   build:
     name: Cross-Compile with GNURX
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       packages: read     # required to pull ghcr.io image
@@ -41,6 +42,8 @@ jobs:
       # Update to ghcr.io/locked-inc/star/gnurx:14.3.0 when GNURX upgrades.
       # Never pin to :latest -- a silent toolchain bump could change code gen
       # and break builds without any git-visible change on this repo.
+      # TODO: pin to @sha256:<digest> after bootstrapping the image via
+      # workflow_dispatch on firmware-toolchain-image.yml.
       image: ghcr.io/locked-inc/star/gnurx:14.2.0
       credentials:
         username: ${{ github.actor }}
@@ -48,7 +51,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Configure firmware (Release)
         working-directory: e2-studio-star-rx72n-firmware
@@ -71,22 +74,24 @@ jobs:
           TEXT=$(rx-elf-size --format=berkeley star-rx72n-firmware.elf | awk 'NR==2{print $1}')
           DATA=$(rx-elf-size --format=berkeley star-rx72n-firmware.elf | awk 'NR==2{print $2}')
           BSS=$(rx-elf-size  --format=berkeley star-rx72n-firmware.elf | awk 'NR==2{print $3}')
-          # RX72N hardware limits: 4 MB Flash, 512 KB SRAM
+          # RX72N hardware limits
+          FLASH_LIMIT=4194304   # 4 MB Flash
+          SRAM_LIMIT=524288     # 512 KB SRAM
           #   Flash usage = text + data  (data initializers copied from Flash at boot)
           #   SRAM usage  = data + bss   (data initialized + zero-init)
           FLASH_USED=$((TEXT + DATA))
           SRAM_USED=$((DATA + BSS))
-          echo "Flash: ${FLASH_USED} / 4194304 bytes ($((FLASH_USED * 100 / 4194304))%)"
-          echo "SRAM:  ${SRAM_USED}  / 524288  bytes ($((SRAM_USED  * 100 / 524288))%)"
-          if [ "${FLASH_USED}" -gt "4194304" ]; then
+          echo "Flash: ${FLASH_USED} / ${FLASH_LIMIT} bytes ($((FLASH_USED * 100 / FLASH_LIMIT))%)"
+          echo "SRAM:  ${SRAM_USED}  / ${SRAM_LIMIT}  bytes ($((SRAM_USED  * 100 / SRAM_LIMIT))%)"
+          if [ "${FLASH_USED}" -gt "${FLASH_LIMIT}" ]; then
             echo "ERROR: Flash budget exceeded (4 MB limit)" && exit 1
           fi
-          if [ "${SRAM_USED}" -gt "524288" ]; then
+          if [ "${SRAM_USED}" -gt "${SRAM_LIMIT}" ]; then
             echo "ERROR: SRAM budget exceeded (512 KB limit)" && exit 1
           fi
 
       - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           # run_id guarantees uniqueness across manual re-runs of the same SHA
           name: star-firmware-${{ github.run_id }}-${{ github.sha }}
