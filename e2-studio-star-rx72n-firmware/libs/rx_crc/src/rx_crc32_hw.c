@@ -19,7 +19,7 @@
  * - Byte-wise input (8-bit CRCDIR writes)
  * - Automatic bit reflection (LSB-first mode for IEEE 802.3)
  * - Bit-exact compatible with Go's `crc32.ChecksumIEEE()`
- * - Thread-safe (no mutex - stateless operation)
+ * - Thread-safe when transaction locking is enabled
  * - Zero dynamic allocation (safety-critical)
  *
  * ## Hardware CRC Calculator Architecture
@@ -141,7 +141,7 @@
  * | CPU cycles/byte | ~6 cycles | ~30 cycles | **5.0x** |
  * | Code size (ROM) | ~200 bytes | ~1100 bytes | 5.5x smaller |
  * | Data size (RAM) | 1 byte (flag) | 1024 bytes (table) | 1024x smaller |
- * | Thread safety | Stateless (reentrant) | Stateless (reentrant) | Equal |
+ * | Thread safety | Serialized transaction (when lock enabled) | Stateless (reentrant) | Trade-off |
  * | Power consumption | +2 mA (active) | +0 mA | SW advantage |
  *
  * **Performance characteristics:**
@@ -168,33 +168,33 @@
  *
  * ## Thread Safety
  *
- * **This implementation is thread-safe provided callers obey the locking
- * rules when the DMA path is enabled.**
+ * **Thread safety depends on transaction serialization.**
  *
  * - **No shared state:** Each call uses local variables only
  * - **Hardware peripheral:** CRC Calculator is stateless (DORCLR resets)
  * - **s_crc_initialized flag:** Read-only after initialization (safe)
- * - **Concurrent access (CPU-only):** Multiple threads can compute CRCs
- *   simultaneously without serialization.
- * - **Concurrent access (DMA path):** The DMA engine and CRC hardware must
- *   be accessed exclusively.  A module-level lock (`crc_lock_acquire()`/
- *   `crc_lock_release()`) is taken around the entire transaction when
- *   `len >= RX_CRC32_DMA_THRESHOLD`.  This prevents interleaving of DMA
- *   transfers and remainder byte writes that would otherwise corrupt results.
+ * - **Single hardware instance:** CRC state is shared in one peripheral.
+ * - **No caller isolation in hardware:** DORCLR and CRCDIR/CRCDOR are global.
+ * - **When internal lock is enabled:** A module-level lock
+ *   (crc_lock_acquire()/crc_lock_release()) serializes the complete
+ *   transaction from DORCLR through CRCDOR read.
+ * - **When internal lock is not enabled in a build:** callers must provide
+ *   external mutual exclusion around the full transaction.
  *
- * **Why locking is needed for DMA:**
+ * **Why locking is required:**
  * 1. DMA writes to CRCDIR occur asynchronously and can overlap with writes
  *    from another caller if not serialized.
- * 2. The lock is acquired immediately after DORCLR and released only after
- *    the final byte write, covering both the DMA transfer and the CPU loop.
+ * 2. Even CPU-only callers can corrupt each other if one call executes DORCLR
+ *    while another call is mid-transaction.
+ * 3. The lock must be acquired before DORCLR and released after CRCDOR read.
  *
  * **Worst-case race condition (no lock):**
  * - Thread A sets DORCLR, starts DMA, is preempted
  * - Thread B sets DORCLR and writes bytes via DMA/CPU
  * - Thread A's DMA completes against stale state leading to wrong CRC
  *
- * **Conclusion:** Safe for concurrent use when the locking helpers are used
- * in the DMA path; pure CPU path never requires a mutex.
+ * **Conclusion:** Concurrent safety requires a mutex over the entire
+ * DORCLR -> CRCDIR writes -> CRCDOR read transaction.
  *
  * ## Incremental CRC Limitation
  *
@@ -245,7 +245,7 @@
  * | **2. Fixed Loop Bounds** | [PASS] FULL | Loop bounded by k_crc_len_max (65535) |
  * | **3. No Dynamic Memory** | [PASS] FULL | Zero malloc/free, all state is static |
  * | **4. Short Functions** | [PASS] FULL | Longest function: rx_crc32_ieee_impl (54 lines) |
- * | **5. Assertions** | [PASS] FULL | Minimum 2 checks per function (nullptr, range) |
+ * | **5. Assertions** | [PASS] FULL | Minimum 2 checks per function (NULL, range) |
  * | **6. Smallest Scope** | [PASS] FULL | Variables declared at first use |
  * | **7. Check Return Values** | [PASS] FULL | rx_crc_init() return checked |
  * | **8. Limit Preprocessor** | [PASS] FULL | Only conditional compilation, C23 typed enums |
@@ -305,23 +305,22 @@
  *
  * @author STAR Team
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
 #ifdef RX_CRC32_USE_HARDWARE
-
-#include "rx_crc_internal.h"
 
 #include <stddef.h>
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
+#include "rx_crc_internal.h"
 #include "rx_gpio_constants.h"
 #include "rx_register_protection.h"
 
 #ifdef RX_CRC32_USE_DMA
 #include "rx_dmaca.h"
-#include "tx_api.h"    /* tx_interrupt_control(), tx_thread_sleep() */
+#include "tx_api.h" /* tx_interrupt_control(), tx_thread_sleep() */
 #endif
 
 /* =============================================================================
@@ -384,8 +383,10 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-    k_crc_dma_channel_default = 0U,     /**< Default DMA channel (0); override with -DRX_CRC32_DMA_CHANNEL=<n> */
-    k_crc_dma_threshold_default = 64U,  /**< Threshold (bytes) for using DMA; below this CPU loop is faster due to lower setup overhead (~30-50 cycles); break-even ~64 bytes @ 240 MHz */
+  k_crc_dma_channel_default =
+    0U, /**< Default DMA channel (0); override with -DRX_CRC32_DMA_CHANNEL=<n> */
+  k_crc_dma_threshold_default =
+    64U, /**< Threshold (bytes) for using DMA; below this CPU loop is faster due to lower setup overhead (~30-50 cycles); break-even ~64 bytes @ 240 MHz */
 } rx_crc_dma_defaults_t;
 
 /**
@@ -396,7 +397,7 @@ typedef enum : uint32_t {
  * `k_crc_dma_channel_default` defined above.
  */
 #ifndef RX_CRC32_DMA_CHANNEL
-#define RX_CRC32_DMA_CHANNEL  (k_crc_dma_channel_default)
+#define RX_CRC32_DMA_CHANNEL (k_crc_dma_channel_default)
 #endif
 
 /**
@@ -410,7 +411,7 @@ typedef enum : uint32_t {
  * Override with -DRX_CRC32_DMA_THRESHOLD=<n> after profiling workload.
  */
 #ifndef RX_CRC32_DMA_THRESHOLD
-#define RX_CRC32_DMA_THRESHOLD  (k_crc_dma_threshold_default)
+#define RX_CRC32_DMA_THRESHOLD (k_crc_dma_threshold_default)
 #endif
 
 #endif /* RX_CRC32_USE_DMA */
@@ -454,9 +455,9 @@ static bool s_crc_initialized = false;
  * by hardware.  If two callers perform a DMA-based CRC at the same time the
  * writes to CRCDIR (via DMACA) can interleave, corrupting the CRC state and
  * yielding incorrect results.  To avoid this we serialize access to the
- * entire transaction (DORCLR, DMA transfer, and any remaining CPU byte
- * writes) with a file-scoped lock.  The lock is acquired immediately after
- * the DORCLR reset and released only after the final byte has been written.
+ * entire transaction (DORCLR, DMA transfer/CPU writes, and CRCDOR read)
+ * with a file-scoped lock.  The lock is acquired before DORCLR and released
+ * only after the CRC result has been read from CRCDOR.
  *
  * The implementation is a primitive spinlock that disables interrupts around
  * the test-and-set operation to guarantee atomicity.  The hold time is short
@@ -675,7 +676,7 @@ static bool s_dma_initialized = false;
  *   }
  *
  *   // Verify peripheral is responsive
- *   if (crc_regs() == nullptr) {
+ *   if (crc_regs() == NULL) {
  *     rx_log_error("CRC", "Peripheral not responding after init");
  *     return k_rx_err_hardware;
  *   }
@@ -821,8 +822,8 @@ rx_err_t rx_crc_deinit(void)
  * @retval k_rx_err_nack    Length out of valid range [1, k_dmaca_max_transfer_count].
  * @retval k_rx_err_timeout DMA did not complete within bounded timeout (bus starvation).
  *
- * @pre  CRC peripheral initialised and CRCCR.DORCLR already asserted by caller.
- * @pre  DMACA module initialised (s_dma_initialized == true).
+ * @pre  CRC peripheral initialized and CRCCR.DORCLR already asserted by caller.
+ * @pre  DMACA module initialized (s_dma_initialized == true).
  * @post All @p len bytes have been written to CRCDIR by the DMA controller.
  * @post DMA channel RX_CRC32_DMA_CHANNEL is idle and available for reuse.
  *
@@ -840,38 +841,39 @@ rx_err_t rx_crc_deinit(void)
  */
 static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
 {
-  RX_CHECK_NULL_PTR(data, "CRC", "DMA source data pointer is nullptr");
-  RX_CHECK_RANGE_TAG(
-        len, k_crc_len_min, (uint32_t)k_dmaca_max_transfer_count, k_rx_err_nack, "CRC");
-  RX_CHECK_RANGE_TAG(
-        (uint32_t)RX_CRC32_DMA_CHANNEL,
-        k_crc_idx_start,
-        (uint32_t)k_dmaca_num_channels - (uint32_t)k_crc_len_min,
-        k_rx_err_nack,
-        "CRC");
+  RX_CHECK_NULL_PTR(data, "CRC", "DMA source data pointer is NULL");
+  RX_CHECK_RANGE_TAG(len,
+                     k_crc_len_min,
+                     (uint32_t)k_dmaca_max_transfer_count,
+                     k_rx_err_nack,
+                     "CRC");
+  RX_CHECK_RANGE_TAG((uint32_t)RX_CRC32_DMA_CHANNEL,
+                     k_crc_idx_start,
+                     (uint32_t)k_dmaca_num_channels - (uint32_t)k_crc_len_min,
+                     k_rx_err_nack,
+                     "CRC");
   /* Ensure DMACA subsystem was initialized by rx_crc_init() when DMA is enabled */
   RX_VALIDATE_INIT(s_dma_initialized, "CRC", "DMA module not initialized");
 
   dmaca_config_t cfg = {
     .p_src          = (const void*)data,
-    .p_dst          = (void*)&crc_regs()->crcdir,   /* CRCDIR @ 0x00088284   */
+    .p_dst          = (void*)&crc_regs()->crcdir, /* CRCDIR @ 0x00088284   */
     .transfer_count = (uint32_t)len,
     .transfer_mode  = k_dmaca_mode_block,
-    .data_size      = k_dmaca_size_byte,          /* 8-bit -- see note above */
+    .data_size      = k_dmaca_size_byte, /* 8-bit -- see note above */
     .src_addr_mode  = k_dmaca_addr_increment,
-    .dst_addr_mode  = k_dmaca_addr_fixed,         /* CRITICAL: never increment */
+    .dst_addr_mode  = k_dmaca_addr_fixed, /* CRITICAL: never increment */
   };
   rx_err_t result = rx_dmaca_transfer_blocking((uint8_t)RX_CRC32_DMA_CHANNEL, &cfg);
-  
+
   /* Post-condition: Verify transfer result is valid error code (NASA Rule 5) */
   RX_ASSERT(result == k_rx_ok || result == k_rx_err_timeout || result == k_rx_err_nack,
             "DMA transfer returned unexpected error code");
-  
+
   return result;
 }
 
 #endif /* RX_CRC32_USE_DMA */
-
 
 /**
  * @brief Calculate IEEE 802.3 CRC-32 using RX72N hardware peripheral (implementation function)
@@ -934,7 +936,7 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  * | 4096 bytes | 24480 | 102.0 | **40.2** | Sustained peak |
  *
  * **Breakdown (1024-byte buffer):**
- * - Validation: ~10 cycles (nullptr, range checks)
+ * - Validation: ~10 cycles (NULL, range checks)
  * - DORCLR write: ~5 cycles
  * - Loop (1024 bytes x 6 cycles/byte): 6144 cycles
  * - CRCDOR read + XOR: ~10 cycles
@@ -976,21 +978,21 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  *
  * ## Thread Safety
  *
- * **Fully thread-safe for CPU-only transfers; DMA transfers are serialized
- * internally with a module lock.**  See the lengthy discussion earlier in
- * this file for details.
+ * **Concurrent safety requires serializing the full hardware transaction.**
+ * See the thread-safety discussion earlier in this file for details.
  * - **CRCCR.DORCLR** resets CRC state at start of each call
  * - **No persistent state** in peripheral between calls
  * - **Local variables only** (no shared data)
- * - **Concurrent CPU access:** Multiple threads can compute CRCs simultaneously
- * - **Concurrent DMA access:** A lock is held around the DMA path to
- *   guarantee exclusive access; callers need not manage this themselves.
+ * - **Concurrent access requires exclusion:** Only one caller may access
+ *   DORCLR/CRCDIR/CRCDOR at a time unless external synchronization is used.
+ * - **When internal lock is compiled in:** the implementation serializes the
+ *   full transaction for callers.
  *
- * **Atomic operation:**
+ * **Serialized operation:**
  * ```
- * Thread A: DORCLR -> write bytes 0-1023 -> read CRCDOR (complete)
- * Thread B: DORCLR -> write bytes 0-63 -> read CRCDOR (complete)
- * Both get correct results (DORCLR ensures clean state per call)
+ * Thread A: lock -> DORCLR -> write bytes -> read CRCDOR -> unlock
+ * Thread B: waits for lock, then executes complete transaction
+ * Both get correct results because transactions do not interleave
  * ```
  *
  * **No race conditions:**
@@ -1019,11 +1021,11 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  *                 - Valid range: [1, 65535] bytes
  *                 - Constant k_crc_len_min = 1 (minimum)
  *                 - Constant k_crc_len_max = 65535 (maximum)
- *                 - Zero not allowed (use rx_crc32_ieee for nullptr handling)
+ *                 - Zero not allowed (use rx_crc32_ieee for NULL handling)
  *                 - Typical: 16-2048 bytes (SPI/USB packet sizes)
  *
  * @return IEEE 802.3 CRC-32 checksum (32-bit unsigned integer)
- * @retval 0x00000000 Error occurred (nullptr, invalid len, or init failure)
+ * @retval 0x00000000 Error occurred (NULL, invalid len, or init failure)
  * @retval 0x???????? Valid CRC-32 value (any non-zero value possible)
  *
  * @pre data must point to readable memory of at least len bytes
@@ -1035,10 +1037,9 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  * @post Return value is deterministic (same input -> same output)
  * @post No side effects on input buffer (read-only access)
  *
- * @note **Thread Safety:** Fully reentrant for CPU-only calls.  DMA-based
- *   transfers are protected by an internal lock; callers do not need to
- *   manage synchronization themselves but should be aware that the
- *   implementation serializes concurrent DMA invocations.
+ * @note **Thread Safety:** Correctness requires serialization of the full
+ *   DORCLR -> CRCDIR writes -> CRCDOR read transaction. When the internal
+ *   lock is compiled in, this function performs that serialization.
  * @note **Performance:** ~40 MB/s throughput @ 240 MHz
  * @note **Lazy Init:** Auto-initializes peripheral on first call
  * @note **Bit-exact:** Compatible with Go/Python/C++ CRC-32 IEEE implementations
@@ -1051,7 +1052,7 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  *
  * | Parameter | Type | Direction | Range | Units | Constraints |
  * |-----------|------|-----------|-------|-------|-------------|
- * | data | `const uint8_t*` | IN | Non-nullptr | - | Readable buffer |
+ * | data | `const uint8_t*` | IN | Non-NULL | - | Readable buffer |
  * | len | `uint32_t` | IN | [1, 65535] | bytes | k_crc_len_min to k_crc_len_max |
  *
  * @par Return Value Summary:
@@ -1141,7 +1142,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
   volatile uint8_t* crcdir_byte;
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */
-  RX_CHECK_NULL_PTR(data, "CRC", "CRC data pointer is nullptr");
+  RX_CHECK_NULL_PTR(data, "CRC", "CRC data pointer is NULL");
   RX_CHECK_RANGE_TAG(len, k_crc_len_min, k_crc_len_max, k_crc_result_invalid, "CRC");
 
   /* Ensure CRC module is initialized */
@@ -1152,6 +1153,11 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
     }
   }
 
+#ifdef RX_CRC32_USE_DMA
+  /* Serialize entire transaction before touching DORCLR/CRCDIR/CRCDOR. */
+  crc_lock_acquire();
+#endif
+
   /*
      * Clear the CRC data output register to start fresh calculation.
      * Setting DORCLR bit resets the internal CRC state to the initial value.
@@ -1160,11 +1166,6 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * handles this automatically when DORCLR is set.
      */
   crc_regs()->crccr |= k_crc_crccr_dorclr;
-
-#ifdef RX_CRC32_USE_DMA
-  /* serialize access to CRC peripheral across threads when using DMA path */
-  crc_lock_acquire();
-#endif
 
   /*
      * Feed data bytes to the CRC calculator.
@@ -1182,9 +1183,8 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 #ifdef RX_CRC32_USE_DMA
   if (len >= (uint32_t)RX_CRC32_DMA_THRESHOLD) {
     /* -------- DMA segment ------------------------------------------------ */
-    uint32_t dma_len = (len <= (uint32_t)k_dmaca_max_transfer_count)
-                       ? len
-                       : (uint32_t)k_dmaca_max_transfer_count;
+    uint32_t dma_len =
+      (len <= (uint32_t)k_dmaca_max_transfer_count) ? len : (uint32_t)k_dmaca_max_transfer_count;
 
     rx_err_t dma_err = internal_crc_feed_dma(data, dma_len);
     if (dma_err != k_rx_ok) {
@@ -1193,34 +1193,20 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
     }
 
     /* -------- Remainder > threshold via CPU loop ------------------------ */
-    for (uint32_t i = dma_len; i < k_crc_len_max; i++) {
-      if (i >= len) {
-        break;
-      }
+    for (uint32_t i = dma_len; i < len; i++) {
       *crcdir_byte = data[i];
     }
   } else {
     /* -------- CPU loop (short frame or DMA below threshold) -------------- */
-    for (uint32_t i = k_crc_idx_start; i < k_crc_len_max; i++) {
-      if (i >= len) {
-        break;
-      }
+    for (uint32_t i = k_crc_idx_start; i < len; i++) {
       *crcdir_byte = data[i];
     }
   }
 #else
-  for (uint32_t i = k_crc_idx_start; i < k_crc_len_max; i++) {
-    if (i >= len) {
-      break;
-    }
+  for (uint32_t i = k_crc_idx_start; i < len; i++) {
     *crcdir_byte = data[i];
   }
 #endif /* RX_CRC32_USE_DMA */
-
-#ifdef RX_CRC32_USE_DMA
-  /* release the peripheral lock acquired above */
-  crc_lock_release();
-#endif
 
   /*
      * Read result and apply IEEE 802.3 finalization.
@@ -1230,7 +1216,14 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      *
      * Post-condition: Result is valid IEEE 802.3 CRC-32 (NASA Rule 5)
      */
-  return crc_regs()->crcdor ^ (uint32_t)k_crc_ieee_final_xor;
+  uint32_t crc_result = crc_regs()->crcdor ^ (uint32_t)k_crc_ieee_final_xor;
+
+#ifdef RX_CRC32_USE_DMA
+  /* Release lock only after CRCDOR has been read. */
+  crc_lock_release();
+#endif
+
+  return crc_result;
 }
 
 /**
@@ -1272,7 +1265,7 @@ uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
      */
 
   /* Pre-condition: Validate input parameters (NASA Rule 5) */
-  RX_CHECK_NULL_PTR(data, "CRC", "CRC update data pointer is nullptr");
+  RX_CHECK_NULL_PTR(data, "CRC", "CRC update data pointer is NULL");
   RX_CHECK_RANGE_TAG(len, k_crc_len_min, k_crc_len_max, k_crc_result_invalid, "CRC");
 
   /* Delegate to software implementation */

@@ -1,8 +1,8 @@
-/* libs/rx_crc/inc/rx_dmaca.h */
+/* libs/rx_hal/inc/rx_dmaca.h */
 
 /**
- * @file    rx_dmaca.h
- * @brief   DMACA driver for RX72N
+ * @file rx_dmaca.h
+ * @brief DMACA driver for RX72N
  *
  * @details
  * Provides DMA transfer abstraction for the RX72N DMACA peripheral supporting
@@ -50,7 +50,7 @@
  * @author STAR Team
  * @date 2026-02-22
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
 #pragma once
@@ -60,11 +60,13 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-#include "rx_err.h"   /* rx_err_t, k_rx_ok, k_rx_err_timeout, k_rx_err_nack */
+
+#include "rx_err.h"
 
 /* =========================================================================
  * Public constants
- * ========================================================================= */
+ * ========================================================================= 
+ */
 
 /**
  * @enum dmaca_hw_limit_t
@@ -90,87 +92,14 @@ extern "C" {
  * @see rx_dmaca_configure, dmaca_config_t, validate_channel
  * @since 1.0.0
  */
-typedef enum : uint32_t {
-    k_dmaca_max_transfer_count = 1024U, /**< 10-bit DMTC field max (1..1024) */
-    k_dmaca_num_channels       = 8U,    /**< Number of DMACA channels */
+typedef enum : uint16_t {
+  k_dmaca_max_transfer_count = 1024U, /**< 10-bit DMTC field max (1..1024) */
 } dmaca_hw_limit_t;
-
-/**
- * @enum dmaca_phys_addr_t
- * @brief Physical addresses for DMACA-related registers
- *
- * @details
- * The only register accessed directly by the driver outside of the
- * per-channel blocks is CRCDIR.  We provide a constant for its physical
- * address and an inline accessor to obtain a typed pointer.  A named typedef
- * enum satisfies C23's requirement for explicit enum types and provides a
- * convenient grouping location should additional addresses be required in the
- * future.  The underlying type is `uintptr_t` to match the register pointer
- * arithmetic performed by callers.
- *
- *
- * @invariant Address is hardware-defined; value must match RX72N memory map.
- *
- * @code
- *   volatile uint32_t *p_crcdir = (volatile uint32_t *)k_dmaca_crcdir_phys_addr;
- * @endcode
- * @note All values are compile-time constants and may be used in static
- *       initializers or case statements.
- *
- * @see rx_dmaca_crcdir_reg_ptr, dmaca_config_t
- *
- * @since 1.0.0
- */
-typedef enum : uintptr_t {
-    k_dmaca_crcdir_phys_addr = 0x00088284U, /**< CRCDIR register */
-} dmaca_phys_addr_t;
-
-/**
- * @brief Returns a pointer to the DMACA CRCDIR register.
- *
- * @details
- * Returns a typed, volatile pointer to the CRC Data Input Register (CRCDIR)
- * for the DMACA peripheral.  The register resides at the fixed physical
- * address defined by the constant `k_dmaca_crcdir_phys_addr` and therefore a
- * small, inlined accessor is used instead of a macro to provide type-safety
- * and to make the pointer's volatility explicit to callers and static
- * analyzers.  Marking the result `volatile` prevents the compiler from
- * optimizing away memory accesses to this MMIO location.
- *
- * The accessor is inline to avoid function-call overhead in hot paths and
- * to allow the compiler to perform constant propagation of the address.
- *
- * @return volatile uint32_t* Pointer to the 32-bit CRCDIR MMIO register
- *         located at `k_dmaca_crcdir_phys_addr`.  The pointer refers to a
- *         memory-mapped I/O location and must be dereferenced using
- *         volatile semantics.
- *
- * @pre DMACA/CRC module clock is enabled (MSTP cleared) so the peripheral
- *      registers are accessible at the mapped address.
- * @pre Caller has ensured there are no concurrent conflicting accesses from
- *      other controllers/peripherals (caller must synchronize if necessary).
- * @post The returned pointer is valid for the lifetime of the program while
- *       the MMIO region remains mapped and the hardware address does not
- *       change.  The call itself does not modify any hardware state.
- * @post The returned pointer is non-NULL (address is a compile-time constant).
- *
- * @note Thread-safety: The accessor is safe to call from any context but
- *       reads/writes through the returned pointer are subject to hardware
- *       ordering and side-effects.  The caller is responsible for
- *       synchronizing access (for example with a mutex or by disabling
- *       interrupts) when multiple contexts may write to CRCDIR.
- *
- * @see k_dmaca_crcdir_phys_addr
- * @since 1.0.0
- */
-static inline volatile uint32_t *rx_dmaca_crcdir_reg_ptr(void)
-{
-    return (volatile uint32_t *)k_dmaca_crcdir_phys_addr;
-}
 
 /* =========================================================================
  * Types
- * ========================================================================= */
+ * ========================================================================= 
+ */
 
 /**
  * @enum dmaca_data_size_t
@@ -199,8 +128,8 @@ static inline volatile uint32_t *rx_dmaca_crcdir_reg_ptr(void)
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_dmaca_size_byte      = 0U,   /**< 8-bit  -- DMTMD.SZ[1:0] = 00b */
-    k_dmaca_size_longword  = 2U,   /**< 32-bit -- DMTMD.SZ[1:0] = 10b */
+  k_dmaca_size_byte     = 0U, /**< 8-bit  -- DMTMD.SZ[1:0] = 00b */
+  k_dmaca_size_longword = 2U, /**< 32-bit -- DMTMD.SZ[1:0] = 10b */
 } dmaca_data_size_t;
 
 /**
@@ -230,9 +159,9 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-    k_dmaca_addr_fixed     = 0U,   /**< DMAMD.xM[1:0] = 00b  (register, FIFO) */
-    k_dmaca_addr_increment = 2U,   /**< DMAMD.xM[1:0] = 10b  (normal buffer)  */
-    k_dmaca_addr_decrement = 3U,   /**< DMAMD.xM[1:0] = 11b  (reverse buffer) */
+  k_dmaca_addr_fixed     = 0U, /**< DMAMD.xM[1:0] = 00b  (register, FIFO) */
+  k_dmaca_addr_increment = 2U, /**< DMAMD.xM[1:0] = 10b  (normal buffer)  */
+  k_dmaca_addr_decrement = 3U, /**< DMAMD.xM[1:0] = 11b  (reverse buffer) */
 } dmaca_addr_mode_t;
 
 /**
@@ -261,9 +190,9 @@ typedef enum : uint8_t {
  * @since 1.0.0
  */
 typedef enum : uint8_t {
-    k_dmaca_mode_normal = 0U,      /**< Normal  (1 unit per activation) */
-    k_dmaca_mode_block  = 1U,      /**< Block   (full block per activation) -- use for CRC */
-    k_dmaca_mode_repeat = 2U,      /**< Repeat  (auto-reload source/dest) */
+  k_dmaca_mode_normal = 0U, /**< Normal  (1 unit per activation) */
+  k_dmaca_mode_block  = 1U, /**< Block   (full block per activation) -- use for CRC */
+  k_dmaca_mode_repeat = 2U, /**< Repeat  (auto-reload source/dest) */
 } dmaca_transfer_mode_t;
 
 /**
@@ -298,18 +227,19 @@ typedef enum : uint8_t {
  * @since 1.0.0
  */
 typedef struct {
-    const void            *p_src;           /**< Source buffer address (read-only by DMA) */
-    void                  *p_dst;           /**< Destination address (fixed for CRCDIR) */
-    uint32_t               transfer_count;  /**< Number of data units (1-1024) */
-    dmaca_data_size_t      data_size;       /**< k_dmaca_size_byte or k_dmaca_size_longword ONLY */
-    dmaca_transfer_mode_t  transfer_mode;   /**< Use k_dmaca_mode_block for CRC */
-    dmaca_addr_mode_t      src_addr_mode;   /**< Typically k_dmaca_addr_increment */
-    dmaca_addr_mode_t      dst_addr_mode;   /**< k_dmaca_addr_fixed for CRCDIR */
+  const void*           p_src;          /**< Source buffer address (read-only by DMA) */
+  void*                 p_dst;          /**< Destination address (fixed for CRCDIR) */
+  uint32_t              transfer_count; /**< Number of data units (1-1024) */
+  dmaca_data_size_t     data_size;      /**< k_dmaca_size_byte or k_dmaca_size_longword ONLY */
+  dmaca_transfer_mode_t transfer_mode;  /**< Use k_dmaca_mode_block for CRC */
+  dmaca_addr_mode_t     src_addr_mode;  /**< Typically k_dmaca_addr_increment */
+  dmaca_addr_mode_t     dst_addr_mode;  /**< k_dmaca_addr_fixed for CRCDIR */
 } dmaca_config_t;
 
 /* =========================================================================
  * Timeout configuration  (NASA Rule 2 -- bounded loops)
- * ========================================================================= */
+ * ========================================================================= 
+*/
 
 /**
  * @def RX_DMACA_POLL_TIMEOUT_CYCLES
@@ -331,12 +261,13 @@ typedef struct {
  * @since 1.0.0
  */
 #ifndef RX_DMACA_POLL_TIMEOUT_CYCLES
-#  define RX_DMACA_POLL_TIMEOUT_CYCLES  (8192U)
+#define RX_DMACA_POLL_TIMEOUT_CYCLES (8192U)
 #endif
 
 /* =========================================================================
  * API
- * ========================================================================= */
+ * ========================================================================= \
+ */
 
 /**
  * @brief  Enable DMACA module clock and perform one-time hardware init.
@@ -356,7 +287,7 @@ typedef struct {
  *
  * @retval k_rx_ok  Module enabled and all channels reset successfully.
  *
- * @note Thread safety: NOT re-entrant.  Call once from a single initialisation
+ * @note Thread safety: NOT re-entrant.  Call once from a single initialization
  *       context before any RTOS tasks that use DMACA are started.
  *
  * @code
@@ -419,7 +350,7 @@ rx_err_t rx_dmaca_init(void);
  * @see dmaca_config_t, rx_dmaca_start(), rx_dmaca_init()
  * @since 1.0.0
  */
-rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t *p_cfg);
+rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t* p_cfg);
 /**
  * @brief  Arm and activate a previously configured channel.
  *
@@ -580,7 +511,7 @@ void rx_dmaca_abort(uint8_t channel);
  * @see rx_dmaca_configure, rx_dmaca_start, rx_dmaca_wait, rx_err_t
  * @since 1.0.0
  */
-rx_err_t rx_dmaca_transfer_blocking(uint8_t channel, const dmaca_config_t *p_cfg);
+rx_err_t rx_dmaca_transfer_blocking(uint8_t channel, const dmaca_config_t* p_cfg);
 
 #ifdef __cplusplus
 }
