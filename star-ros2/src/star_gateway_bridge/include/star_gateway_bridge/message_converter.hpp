@@ -1,23 +1,37 @@
-// message_converter.hpp - ROS2 <-> Protobuf Message Converter
-// Bidirectional conversion between ROS2 standard messages and STAR Protocol
-// Buffers.
-//
-// STAR Project - Texas A&M University
-// January 2026
+/**
+ * @file message_converter.hpp
+ * @brief Bidirectional conversion between ROS2 standard messages and STAR
+ * Protocol Buffers.
+ *
+ * @details
+ * Provides stateless converter functions for translating between ROS2 message
+ * types and the STAR protobuf schema used by the gateway service. All
+ * converters validate inputs for NaN/infinity and apply safe clamping where
+ * applicable.
+ *
+ * @note All conversion functions are stateless and thread-safe when called from
+ * different threads on separate message instances.
+ *
+ * @since Version 1.0.0
+ */
 
-#ifndef STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
-#define STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
+#pragma once
 
 #include <cmath>
 
-#include <geometry_msgs/msg/twist.hpp>
 #include <rclcpp/rclcpp.hpp>
+
+#include <geometry_msgs/msg/pose_with_covariance_stamped.hpp>
+#include <geometry_msgs/msg/twist.hpp>
+#include <nav_msgs/msg/odometry.hpp>
+#include <sensor_msgs/msg/laser_scan.hpp>
 #include <std_msgs/msg/string.hpp>
 
 #include "star/v1/motor_control.pb.h"
 #include "star/v1/telemetry.pb.h"
+#include "star/v1/ui.pb.h"
 
-namespace star
+namespace star::star_gateway_bridge
 {
 
 /**
@@ -29,6 +43,24 @@ namespace star
  */
 class MessageConverter {
 public:
+  // ===========================================================================
+  // Public Constants
+  // ===========================================================================
+
+  /**
+   * @brief Default differential-drive wheel base (m) used when callers do not
+   *        supply an explicit value to the conversion APIs.
+   *
+   * @details
+   * Matches the STAR robot wheel track: 150 mm centre-to-centre between
+   * left and right driven wheels.  Override at the call site when testing
+   * with a different chassis.
+   *
+   * @note Thread-safe; compile-time constant, read-only.
+   * @since Version 1.0.0
+   */
+  static constexpr double DEFAULT_WHEEL_BASE_M = 0.150;
+
   // ===========================================================================
   // ROS2 -> Protobuf Conversions
   // ===========================================================================
@@ -58,8 +90,8 @@ public:
    */
   static bool twist_to_velocity_command(
     const geometry_msgs::msg::Twist & twist,
-    star::v1::VelocityCommand & command,
-    double wheel_base = 0.150,
+    ::star::v1::VelocityCommand & command,
+    double wheel_base = DEFAULT_WHEEL_BASE_M,
     uint32_t sequence = 0);
 
   /**
@@ -74,7 +106,112 @@ public:
    */
   static bool string_to_system_status(
     const std_msgs::msg::String & status_msg,
-    star::v1::SystemStatus & system_status);
+    ::star::v1::SystemStatus & system_status);
+
+  /**
+   * @brief Convert nav_msgs/Odometry to star::v1::OdometryData.
+   *
+   * @details
+   * Extracts 2-D pose (x, y, yaw) from the EKF-filtered odometry message and
+   * maps linear/angular velocities directly. Yaw is derived from the quaternion
+   * orientation using the standard atan2 formula for planar rotation.
+   *
+   * Timestamp is converted from ROS (sec + nanosec) to microseconds since
+   * epoch.
+   *
+   * @param[in]  ros_odom   Incoming EKF-filtered odometry message.
+   * @param[out] proto_odom Output OdometryData protobuf populated in-place.
+   *
+   * @pre  ros_odom quaternion is a valid unit quaternion (finite components).
+   * @pre  ros_odom.header.stamp is valid (sec >= 0).
+   * @post proto_odom fields x_m, y_m, theta_rad, linear_velocity_mps,
+   *       angular_velocity_rad_per_s, and timestamp_us are all set.
+   * @post Any non-finite position, quaternion, or velocity component is
+   * replaced with 0.0 before writing to proto_odom.
+   *
+   * @note Thread-safe; does not access shared state.
+   * @throw None.
+   *
+   * @see slam_pose_to_proto()  Alternative source for map-frame pose.
+   *
+   * @since Version 1.0.0
+   */
+  static void odometry_to_proto(
+    const nav_msgs::msg::Odometry & ros_odom,
+    ::star::v1::OdometryData & proto_odom);
+
+  /**
+   * @brief Convert geometry_msgs/PoseWithCovarianceStamped (SLAM pose) to
+   * star::v1::OdometryData.
+   *
+   * @details
+   * Extracts 2-D pose (x, y, yaw) from the slam_toolbox pose estimate. Because
+   * SLAM pose messages do not carry velocity information, linear_velocity_mps
+   * and angular_velocity_rad_per_s are zeroed so the UI can distinguish
+   * SLAM-sourced data from EKF odometry.
+   *
+   * Timestamp is converted from ROS (sec + nanosec) to microseconds since
+   * epoch.
+   *
+   * @param[in]  slam_pose  Incoming SLAM pose estimate (map frame).
+   * @param[out] proto_odom Output OdometryData protobuf populated in-place.
+   *
+   * @pre  slam_pose quaternion is a valid unit quaternion.
+   * @pre  slam_pose position and quaternion components are finite values.
+   * @post proto_odom fields x_m, y_m, theta_rad, and timestamp_us are set.
+   * @post proto_odom linear_velocity_mps == 0 and angular_velocity_rad_per_s ==
+   * 0.
+   *
+   * @note Thread-safe; does not access shared state.
+   * @note Telemetry arbitration between SLAM pose and EKF odometry is handled
+   * by StarGatewayBridgeNode using cache timestamps and source priority.
+   *
+   * @throw None.
+   *
+   * @see odometry_to_proto()  EKF-filtered alternative that includes
+   * velocities.
+   *
+   * @since Version 1.0.0
+   */
+  static void slam_pose_to_proto(
+    const geometry_msgs::msg::PoseWithCovarianceStamped & slam_pose,
+    ::star::v1::OdometryData & proto_odom);
+
+  /**
+   * @brief Convert sensor_msgs/LaserScan to star::v1::LidarScan (max
+   * MAX_LIDAR_SAMPLES samples).
+   *
+   * @details
+   * Downsamples the raw LaserScan to at most MAX_LIDAR_SAMPLES evenly-spaced
+   * points using a stride computed as ceil(total / MAX_LIDAR_SAMPLES). Invalid
+   * readings (NaN, infinity, or outside [range_min, range_max]) are encoded as
+   * angle=0 / range=0 / intensity=0 per the proto convention so the UI can
+   * identify them.
+   *
+   * Timestamp is converted from ROS (sec + nanosec) to microseconds since
+   * epoch.
+   *
+   * @param[in]  ros_scan   Incoming LaserScan message from the LiDAR driver.
+   * @param[out] proto_scan Output LidarScan protobuf cleared and populated
+   * in-place.
+   *
+   * @pre  ros_scan.ranges is non-empty for any output to be generated.
+   * @pre  ros_scan.angle_increment is finite and non-zero; range_min <=
+   * range_max.
+   * @post proto_scan contains at most MAX_LIDAR_SAMPLES samples.
+   * @post proto_scan.timestamp_us reflects the ROS header stamp.
+   *
+   * @note Thread-safe; does not access shared state.
+   * @note Missing intensity data (intensities.size() < ranges.size()) is filled
+   *       with 0.0 without error.
+   * @throw None.
+   * @return true if conversion succeeds, false when metadata validation fails.
+   *
+   * @since Version 1.0.0
+   */
+  static bool laserscan_to_proto(
+    const sensor_msgs::msg::LaserScan & ros_scan,
+    ::star::v1::LidarScan & proto_scan);
 
   // ===========================================================================
   // Protobuf -> ROS2 Conversions
@@ -102,9 +239,9 @@ public:
    */
   static bool
   velocity_command_to_twist(
-    const star::v1::VelocityCommand & command,
+    const ::star::v1::VelocityCommand & command,
     geometry_msgs::msg::Twist & twist,
-    double wheel_base = 0.150);
+    double wheel_base = DEFAULT_WHEEL_BASE_M);
 
   /**
    * @brief Convert Protobuf PidConfig to individual gains (for ROS2 service).
@@ -119,7 +256,7 @@ public:
    * @return true if conversion successful, false if input validation failed
    */
   static bool pid_config_to_gains(
-    const star::v1::PidConfig & pid_config,
+    const ::star::v1::PidConfig & pid_config,
     double & kp, double & ki, double & kd);
 
   // ===========================================================================
@@ -130,6 +267,8 @@ public:
    * @brief Validate double value for NaN and infinity.
    * @param value Value to validate
    * @return true if value is finite (not NaN, not infinity)
+   * @note Thread-safe; stateless pure function.
+   * @since Version 1.0.0
    */
   static bool is_valid_double(double value) {return std::isfinite(value);}
 
@@ -139,6 +278,8 @@ public:
    * @param min Minimum allowed value
    * @param max Maximum allowed value
    * @return Clamped value
+   * @note Thread-safe; stateless pure function.
+   * @since Version 1.0.0
    */
   static double clamp(double value, double min, double max)
   {
@@ -149,18 +290,24 @@ public:
    * @brief Convert ROS2 timestamp to microseconds since epoch.
    * @param time ROS2 time
    * @return Microseconds since epoch
+   * @note Thread-safe; stateless pure function.
+   * @since Version 1.0.0
    */
   static int64_t ros_time_to_us(const rclcpp::Time & time);
 
 private:
   // Differential drive kinematics constants
-  static constexpr double k_max_velocity_mps =
-    2.0;   // VelocityCommand valid range
-  static constexpr double k_max_angular_vel =
-    4.0;   // Maximum angular velocity (rad/s)
-
+  static constexpr double MAX_VELOCITY_MPS =
+    2.0;   /**< VelocityCommand valid range (m/s); wheel and output velocities
+              are clamped to [-MAX_VELOCITY_MPS, +MAX_VELOCITY_MPS]. */
+  static constexpr double MAX_ANGULAR_VEL =
+    4.0;   /**< Maximum angular velocity (rad/s); angular component of Twist is
+              clamped to [-MAX_ANGULAR_VEL, +MAX_ANGULAR_VEL]. */
+  static constexpr size_t MAX_LIDAR_SAMPLES =
+    500;   /**< Maximum number of LiDAR samples forwarded per scan frame;
+              caps LidarScan protobuf size to bound bandwidth and UI rendering
+              cost. laserscan_to_proto() downsamples evenly when the raw scan
+              exceeds this limit. */
 };
 
-} // namespace star
-
-#endif // STAR_GATEWAY_BRIDGE__MESSAGE_CONVERTER_HPP_
+} // namespace star::star_gateway_bridge

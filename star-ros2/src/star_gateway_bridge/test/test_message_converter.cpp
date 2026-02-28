@@ -17,7 +17,7 @@ namespace star
 class MessageConverterTest : public ::testing::Test
 {
 protected:
-  MessageConverter converter_;
+  star_gateway_bridge::MessageConverter converter_;
   static constexpr double TOLERANCE = 1e-6;
   static constexpr double WHEEL_BASE_M = 0.150;  // 150mm wheel base
 };
