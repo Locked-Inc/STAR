@@ -1528,8 +1528,8 @@ static void internal_comm_task_entry(ULONG input)
  * @param[in] channel Channel the frame was received on
  *                    - Type: rx_comm_channel_t enum
  *                    - Values: k_comm_channel_usb_cdc, k_comm_channel_spi
- *                    - Purpose: Identify source (USB for debug, SPI for commands)
- *                    - Currently unused (suppressed with (void)channel)
+ *                    - Purpose: Forwarded to internal_handle_command_frame() so that
+ *                      command handlers can route responses back on the correct channel
  *
  * @param[in] frame Received frame structure (already validated by rx_comm_manager)
  *                  - Type: const rx_frame_t*
@@ -1780,6 +1780,10 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * }
  * @enddot
  *
+ * @param[in] channel Channel the command arrived on (rx_comm_channel_t)
+ *                    - Values: k_comm_channel_usb_cdc, k_comm_channel_spi
+ *                    - Passed through to velocity, e-stop, and PID gains handlers
+ *                      so each can send its response on the originating channel
  * @param[in] frame Frame containing the command payload
  *                  - Type: const rx_frame_t*
  *                  - Must NOT be NULL
@@ -1868,6 +1872,14 @@ static void internal_send_command_response(rx_comm_channel_t channel,
                                            const uint8_t*    payload,
                                            const uint32_t    payload_len)
 {
+  if (payload == nullptr) {
+    rx_log_warn(s_tag, "internal_send_command_response: payload is NULL");
+    return;
+  }
+  if (payload_len == 0) {
+    rx_log_warn(s_tag, "internal_send_command_response: payload_len is zero");
+    return;
+  }
   const rx_err_t err = rx_comm_manager_respond(&g_comm_manager, channel, payload, payload_len);
   if (err != k_rx_ok) {
     rx_log_warn_val(s_tag, "Command response send failed", (uint32_t)err);

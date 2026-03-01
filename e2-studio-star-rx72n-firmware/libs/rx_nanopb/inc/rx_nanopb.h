@@ -604,7 +604,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *   - success: true if gains were written to shared_data
  * @param[out] buffer Output buffer for encoded bytes (must not be nullptr)
  * @param[in] buffer_size Size of output buffer in bytes
- *   - Must be >= s_nanopb_buffer_size (1024 bytes)
+ *   - Must be >= s_nanopb_buffer_size (512 bytes)
  * @param[out] len Actual encoded message length in bytes (must not be nullptr)
  *
  * @return rx_err_t Error code indicating result
