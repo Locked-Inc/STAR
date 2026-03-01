@@ -162,7 +162,7 @@
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with K=7, rate 1/2 code
+ * @version 1.0.0
  *
  * @test test_rx_fec.c contains unit tests for encoder and decoder
  */
@@ -826,7 +826,7 @@ typedef struct {
  * @see rx_fec_decode_hard() Decode with hard decision
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_fec.c::test_encode_basic() Tests basic encoding
  * @test test_rx_fec.c::test_encode_tail_bits() Verifies tail bit termination

@@ -1,0 +1,115 @@
+name: RX72N Firmware
+
+on:
+  push:
+    branches:
+      - main
+      - "feature/**"
+    paths:
+      - "e2-studio-star-rx72n-firmware/**"
+      - ".github/workflows/firmware.yml"
+  pull_request:
+    paths:
+      - "e2-studio-star-rx72n-firmware/**"
+      - ".github/workflows/firmware.yml"
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # Format check: all STAR-authored C/H files must pass clang-format
+  # ---------------------------------------------------------------------------
+  format-check:
+    name: Clang-Format Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install clang-format
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends clang-format
+
+      - name: Check firmware formatting
+        run: |
+          bash e2-studio-star-rx72n-firmware/scripts/format_code.sh --check
+
+  # ---------------------------------------------------------------------------
+  # Unit tests: host-compiled via CMake + Unity (no cross-compiler required)
+  # ---------------------------------------------------------------------------
+  test:
+    name: Unit Tests (host)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            cmake \
+            build-essential
+
+      - name: Run unit tests
+        run: |
+          cd e2-studio-star-rx72n-firmware/tests
+          bash run_tests.sh
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: e2-studio-star-rx72n-firmware/tests/build/
+          retention-days: 7
+
+  # ---------------------------------------------------------------------------
+  # Binary build: cross-compile with GNURX toolchain (rx-elf-gcc)
+  # NOTE: This job requires the GNURX toolchain which is not available on
+  # standard GitHub-hosted runners. It is marked continue-on-error until a
+  # self-hosted runner or toolchain download is configured.
+  # To enable: add rx-elf-gcc to PATH on a self-hosted runner,
+  # or install GNURX from https://gcc-renesas.com/rx-download-toolchains/
+  # ---------------------------------------------------------------------------
+  build:
+    name: Cross-Compile (GNURX)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+
+    steps:
+      - name: Checkout repository (with submodules)
+        uses: actions/checkout@v4
+        with:
+          submodules: 'true'
+
+      - name: Check for GNURX toolchain
+        run: |
+          if ! command -v rx-elf-gcc &>/dev/null; then
+            echo "::warning::rx-elf-gcc not found -- skipping binary build."
+            echo "::warning::Configure a self-hosted runner with GNURX to enable this job."
+            exit 0
+          fi
+          echo "GNURX found: $(rx-elf-gcc --version | head -1)"
+
+      - name: Install CMake
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends cmake
+
+      - name: Build firmware (Debug)
+        run: |
+          cd e2-studio-star-rx72n-firmware
+          bash build.sh debug
+
+      - name: Upload firmware artifacts
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: firmware-debug
+          path: |
+            e2-studio-star-rx72n-firmware/build/*.elf
+            e2-studio-star-rx72n-firmware/build/*.mot
+            e2-studio-star-rx72n-firmware/build/*.map
+          retention-days: 30

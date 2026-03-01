@@ -388,7 +388,7 @@ typedef enum : uint8_t {
  * @see rx_register_guard_get_correction_count() Monitor ESD/EMI events
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test Tested in test_rx_register_guard.c::test_init_captures_values()
  *
@@ -579,7 +579,7 @@ typedef enum : uint8_t {
  * @see rx_register_protection.h PRCR unlock/lock mechanism
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test Tested in test_rx_register_guard.c::test_refresh_corrects_corruption()
  * @test Tested in test_rx_register_guard.c::test_refresh_performance()
@@ -710,7 +710,7 @@ void rx_register_guard_refresh(void);
  * @see rx_register_guard_init() Also resets counter to zero
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test Tested in test_rx_register_guard.c::test_correction_count_increment()
  * @test Tested in test_rx_register_guard.c::test_correction_count_before_init()
@@ -816,7 +816,7 @@ uint32_t rx_register_guard_get_correction_count(void);
  * @see rx_register_guard_init() Also resets counter to zero
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test Tested in test_rx_register_guard.c::test_reset_count()
  * @test Tested in test_rx_register_guard.c::test_reset_before_init()
@@ -941,7 +941,7 @@ void rx_register_guard_reset_count(void);
  * @see rx_register_guard_refresh() Checks this flag before operating
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test Tested in test_rx_register_guard.c::test_is_initialized_flag()
  * @test Tested in test_rx_register_guard.c::test_refresh_before_init()

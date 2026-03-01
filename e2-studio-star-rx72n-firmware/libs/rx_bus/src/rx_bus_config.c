@@ -421,7 +421,7 @@ static rx_err_t internal_validate_port_pin(const rx_port_pin_t pin, const char* 
  * @see docs/sections/03_hardware_pinout.tex Complete RX72N GPIO assignments
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_config.c::test_init_gpio_success()
  * @test test_rx_bus_config.c::test_init_gpio_null_params()
@@ -634,7 +634,7 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, rx_p
  * @see docs/sections/03_hardware_pinout.tex Complete ADC pin assignments
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_config.c::test_init_adc_success()
  * @test test_rx_bus_config.c::test_init_adc_null_params()
@@ -890,7 +890,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @see docs/sections/03_hardware_pinout.tex I2C pin assignments and MPC settings
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_config.c::test_init_i2c_success()
  * @test test_rx_bus_config.c::test_init_i2c_null_params()
@@ -1172,7 +1172,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t*    config,
  * @see docs/sections/03_hardware_pinout.tex UART pin assignments and MPC settings
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with 8N1 default format
+ * @version 1.0.0
  *
  * @test test_rx_bus_config.c::test_init_uart_success()
  * @test test_rx_bus_config.c::test_init_uart_null_params()
@@ -1467,7 +1467,7 @@ rx_err_t rx_bus_config_init_uart(rx_bus_config_t*    config,
  * @see docs/sections/03_hardware_pinout.tex 1-Wire pin assignments
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with bit-banging support
+ * @version 1.0.0
  *
  * @test test_rx_bus_config.c::test_init_onewire_success()
  * @test test_rx_bus_config.c::test_init_onewire_null_params()

@@ -128,7 +128,7 @@
  * @see rx_time_constants.h for time conversion constants
  *
  * @version 1.0.0
- * @since 2026-01-07
+ * @since Version 1.0.0
  */
 
 #pragma once

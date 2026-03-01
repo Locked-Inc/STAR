@@ -450,7 +450,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
  * @see TX_MUTEX ThreadX mutex control block
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_manager.c::test_bus_manager_init_success()
  * @test test_rx_bus_manager.c::test_bus_manager_init_null_params()
@@ -645,7 +645,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  * @see tx_mutex_delete() ThreadX mutex deletion API
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_manager.c::test_bus_manager_deinit_success()
  * @test test_rx_bus_manager.c::test_bus_manager_deinit_null_ptr()
@@ -863,7 +863,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * @see k_max_bus_name_len Maximum name length (32)
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_manager.c::test_add_bus_success()
  * @test test_rx_bus_manager.c::test_add_bus_duplicate_name()
@@ -1115,7 +1115,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * @see k_max_bus_name_len Maximum name length (32)
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_manager.c::test_remove_bus_success()
  * @test test_rx_bus_manager.c::test_remove_bus_not_found()

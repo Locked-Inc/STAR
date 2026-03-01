@@ -31,8 +31,8 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
- * @since Version 1.2.0 (Issue #296)
- * @version 1.2.0
+ * @since Version 1.0.0
+ * @version 1.0.0
  */
 
 #include "rx_hcsr04_icu.h"
@@ -78,7 +78,7 @@
  * @see rx_hcsr04_icu_configure() Uses all these constants
  * @see rx_hcsr04_icu_disable() Uses k_vector_base, k_bits_per_ier, k_ir_flag_clear, k_ier_bit_clear
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_irq_min          = 8,  /**< Minimum IRQ number (IRQ8 = P00) */
@@ -155,7 +155,7 @@ static const char* const s_tag = "HCSR04_ICU"; /**< Logging tag (pointer and dat
  * @see rx_mpc_set_irq() Configure pin before calling this
  * @see rx_hcsr04_icu_disable() Reverse this configuration
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
 {
@@ -241,7 +241,7 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * @see rx_hcsr04_icu_configure() Enable IRQ
  * @see rx_mpc_set_gpio() Reconfigure pin back to GPIO mode
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
 {

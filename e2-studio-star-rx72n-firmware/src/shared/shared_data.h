@@ -325,7 +325,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason);
  * @see shared_data_trigger_estop() Task-context version (uses mutex)
  * @see shared_data_is_estop_active() Check if e-stop active
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void shared_data_trigger_estop_isr_safe(estop_reason_t reason);
 
@@ -386,7 +386,7 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason);
  * @see shared_data_trigger_estop() Task-context e-stop trigger
  * @see shared_data_is_estop_active() Check if e-stop active
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t shared_data_commit_isr_estop(void);
 

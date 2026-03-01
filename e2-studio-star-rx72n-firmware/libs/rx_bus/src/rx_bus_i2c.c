@@ -973,7 +973,7 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
  * @see rx_bus_i2c_write_read() Register read after init
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_i2c.c::test_i2c_init_success()
  * @test test_rx_bus_i2c.c::test_i2c_init_null_params()
@@ -1135,7 +1135,7 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
  * @see rx_bus_i2c_write_read() Combined write-read (register access)
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation
+ * @version 1.0.0
  *
  * @test test_rx_bus_i2c.c::test_i2c_write_success()
  * @test test_rx_bus_i2c.c::test_i2c_write_null_params()
@@ -1401,7 +1401,7 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * @see rx_bus_i2c_read() Read-only operation
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with repeated START support
+ * @version 1.0.0
  *
  * @test test_rx_bus_i2c.c::test_i2c_write_read_success()
  * @test test_rx_bus_i2c.c::test_i2c_write_read_multi_byte()

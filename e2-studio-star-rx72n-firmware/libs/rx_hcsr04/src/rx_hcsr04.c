@@ -643,7 +643,7 @@ typedef enum : uint16_t {
  * @see rx_hcsr04_init() Uses these bounds for initial IRQ validation
  * @see internal_init_irq_mode() Performs the actual range check
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_irq_range_min = 8,  /**< Minimum valid IRQ number (IRQ8 = P00) */
@@ -668,7 +668,7 @@ typedef enum : uint8_t {
  *
  * @see internal_init_irq_mode() Uses this to validate echo_pin port
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_irq_p0_port = 0, /**< Port 0 (P00-P07) maps to IRQ8-IRQ15 */
@@ -694,7 +694,7 @@ typedef enum : uint8_t {
  *
  * @see internal_measure_echo_pulse_irq() Uses this in the polling loop
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_irq_yield_ticks = 1, /**< ThreadX ticks to yield per IRQ poll iteration (~10ms at 100Hz) */
@@ -727,7 +727,7 @@ typedef enum : uint8_t {
  * @see internal_measure_echo_pulse_irq() Uses this as the loop bound
  * @see k_irq_yield_ticks Sleep duration per iteration
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_irq_poll_max_iterations = 100, /**< Max iterations (~10ms/iter at 100Hz, ~1s safety bound) */
@@ -1376,7 +1376,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
  * @see tx_thread_sleep() ThreadX yield called each iteration
  * @see k_irq_poll_max_iterations Bounded loop iteration cap
  *
- * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ * @since Version 1.0.0
  */
 static rx_err_t internal_measure_echo_pulse_irq(rx_hcsr04_t* handle, uint32_t* duration_us)
 {
@@ -1777,7 +1777,7 @@ rx_err_t rx_hcsr04_worker_deinit(void)
  *
  * @see rx_hcsr04_init() Sole caller -- handles trigger pin cleanup on error
  *
- * @since Version 1.3.0 (Issue #336 - sensor_index validated and forwarded to ISR)
+ * @since Version 1.0.0
  */
 static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t* out_priority)
 {
@@ -2022,7 +2022,7 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
  * @see rx_hcsr04_measure_blocking() Primary caller
  * @see rx_hcsr04_measure() Primary caller
  *
- * @since Version 1.2.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_trigger_and_measure(rx_hcsr04_t* handle, uint32_t* out_echo_us)
 {

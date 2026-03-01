@@ -44,7 +44,7 @@ static rx_err_t s_init_return = k_rx_ok;
  *
  * @see mock_shared_data_reset() Function that sets all counters to k_mock_count_reset
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_mock_count_reset = 0, /**< Counter reset value (no calls recorded) */
@@ -67,7 +67,7 @@ static uint32_t s_motor_state_update_count = k_mock_count_reset;
  * @note Accessible only through mock query helpers in this translation unit.
  * @warning Do not modify directly; use mock_shared_data_reset() to clear.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static uint32_t s_set_event_count = k_mock_count_reset;
 
@@ -106,7 +106,7 @@ static estop_reason_t s_last_triggered_reason = k_estop_reason_none;
  * @warning Do not modify directly; use shared_data_set_event() to set bits
  *          and mock_shared_data_reset() to clear.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static shared_event_flags_t s_last_event_flags = k_event_none;
 
@@ -226,7 +226,7 @@ estop_reason_t mock_shared_data_get_last_estop_reason(void)
  * @see shared_data_set_event() The function whose calls are counted
  * @see mock_shared_data_reset() Resets the counter to k_mock_count_reset
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 uint32_t mock_shared_data_get_set_event_count(void)
 {
@@ -256,7 +256,7 @@ uint32_t mock_shared_data_get_set_event_count(void)
  * @see shared_data_set_event() The function that accumulates into this value
  * @see mock_shared_data_reset() Clears accumulated flags to k_event_none
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 shared_event_flags_t mock_shared_data_get_last_event_flags(void)
 {
@@ -483,7 +483,7 @@ void shared_data_update_last_comm_tick(void)
  * @see mock_shared_data_get_last_event_flags() Retrieve accumulated flags
  * @see mock_shared_data_reset() Clear accumulated state between tests
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t shared_data_set_event(shared_event_flags_t flags)
 {

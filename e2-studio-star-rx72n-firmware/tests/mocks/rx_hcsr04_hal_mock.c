@@ -1269,7 +1269,7 @@ uint32_t hcsr04_hal_get_time_us(void)
  * @see hcsr04_hal_get_time_us_isr() Real hardware counterpart (reads CMT2 directly)
  * @see mock_set_time_us() Sets the time value returned by this function
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 uint32_t hcsr04_hal_get_time_us_isr(void)
 {

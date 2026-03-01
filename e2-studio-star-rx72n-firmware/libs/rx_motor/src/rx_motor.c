@@ -916,7 +916,7 @@ static rx_err_t internal_init_gptw_outputs(const rx_gptw_channel_t     channel,
  * @see rx_gptw_init_pwm() Underlying GPTW initialization
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with IN2/IN1 mode support
+ * @version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto or recursion, sequential error checking
@@ -1353,7 +1353,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
  * @see internal_clamp_duty() Internal duty cycle clamping function
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with IN2/IN1 mode
+ * @version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto or recursion, sequential if-else logic

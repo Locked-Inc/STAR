@@ -664,7 +664,7 @@ static bool s_motor_created = false;
  * @warning Do NOT use s_motor_created as a proxy for this flag; s_motor_created is set
  *          by motor_control_task_create() immediately after tx_thread_create(), before
  *          the thread has run or initialized any motor hardware
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 static bool s_motor_stack_initialized = false;
 
@@ -690,7 +690,7 @@ static rx_motor_handle_t s_motors[k_motor_count];
  * @invariant Pointers remain valid for program lifetime (static allocation)
  * @note Read-only for external callers -- do NOT modify pointed-to handles
  * @warning Handles are uninitialized until internal_init_motor_stack() completes
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 static rx_motor_handle_t* s_motor_ptrs[k_motor_count] = {
   &s_motors[k_motor_front_left],
@@ -1120,7 +1120,7 @@ rx_err_t motor_control_task_create(void)
  * @see s_motor_ptrs Underlying static array returned on success
  * @see s_motor_stack_initialized Guard flag checked before returning handles
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count)
 {

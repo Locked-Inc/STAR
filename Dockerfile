@@ -60,6 +60,8 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     texlive-latex-recommended \
     texlive-fonts-recommended \
     texlive-pictures \
+    texlive-xetex \
+    fonts-urw-base35 \
     latexmk
 
 # Install GNURX toolchain for RX72N firmware development

@@ -615,7 +615,7 @@ static const uint16_t s_nanopb_buffer_size = 512U;
  *
  * @see rx_spi_comm_set_auto_retransmit() Apply decoded config
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rx_nanopb_decode_retransmit_config_request(const uint8_t*                      buffer,

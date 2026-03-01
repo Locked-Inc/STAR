@@ -218,7 +218,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  *
  * @version 1.0.0
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 
 #pragma once
@@ -256,7 +256,7 @@ extern "C" {
  * @see rx72n_cmt_regs.h Detailed CMT mock documentation
  * @see cmt3() Accessor function for mock CMT3 registers
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef mock_cmt_channel_t rx_cmt_channel_regs_t;
 
@@ -277,7 +277,7 @@ typedef mock_cmt_channel_t rx_cmt_channel_regs_t;
  * @see rx72n_cmt_regs.h Detailed CMT control register documentation
  * @see cmt_ctrl() Accessor function for mock CMT control registers
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef mock_cmt_ctrl_t rx_cmt_control_regs_t;
 
@@ -298,7 +298,7 @@ typedef mock_cmt_ctrl_t rx_cmt_control_regs_t;
  * @see rx_system_regs_t System register structure typedef
  * @see rx72n_system_regs.h System register mock header
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 #ifndef RX_SYSTEM_REGS_T_DEFINED
 #define RX_SYSTEM_REGS_T_DEFINED
@@ -337,7 +337,7 @@ typedef mock_cmt_ctrl_t rx_cmt_control_regs_t;
  * @see system_regs() Accessor function for mock system registers
  * @see prcr_reg() Accessor for protection register (controls write access)
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef mock_system_regs_t rx_system_regs_t;
 #endif
