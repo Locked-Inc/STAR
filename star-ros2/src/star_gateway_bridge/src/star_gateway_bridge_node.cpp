@@ -9,12 +9,23 @@
 
 #include <chrono>
 #include <exception>
+#include <string_view>
 #include <thread>
 
 using namespace std::chrono_literals;
 
 namespace star::star_gateway_bridge
 {
+
+// ---------------------------------------------------------------------------
+// Obstacle publisher constants
+// ---------------------------------------------------------------------------
+static constexpr int OBSTACLE_QOS_DEPTH = 10;
+static constexpr std::string_view TOPIC_OBSTACLE_FRONT_LEFT  = "/star/obstacle/front_left";
+static constexpr std::string_view TOPIC_OBSTACLE_FRONT_RIGHT = "/star/obstacle/front_right";
+static constexpr std::string_view TOPIC_OBSTACLE_BACK_LEFT   = "/star/obstacle/back_left";
+static constexpr std::string_view TOPIC_OBSTACLE_BACK_RIGHT  = "/star/obstacle/back_right";
+static constexpr std::string_view TOPIC_OBSTACLE_DETECTED    = "/star/obstacle_detected";
 
 /**
  * @brief Construct and fully initialise the STAR Gateway Bridge ROS2 node.
@@ -103,6 +114,13 @@ StarGatewayBridgeNode::~StarGatewayBridgeNode()
 {
   RCLCPP_INFO(this->get_logger(), "Shutting down STAR Gateway Bridge Node");
 
+  // Cancel obstacle timer before resetting publishers to prevent
+  // obstacle_poll_timer_callback() from running after publishers are null.
+  if (obstacle_timer_) {
+    obstacle_timer_->cancel();
+    obstacle_timer_.reset();
+  }
+
   // Reset subscriptions and obstacle publishers before core publishers go away
   odom_sub_.reset();
   slam_pose_sub_.reset();
@@ -183,15 +201,15 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
 
   // Obstacle distance publishers (HC-SR04 ultrasonic sensors, one per corner)
   obstacle_fl_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
-      "/star/obstacle/front_left", 10);
+      std::string(TOPIC_OBSTACLE_FRONT_LEFT), OBSTACLE_QOS_DEPTH);
   obstacle_fr_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
-      "/star/obstacle/front_right", 10);
+      std::string(TOPIC_OBSTACLE_FRONT_RIGHT), OBSTACLE_QOS_DEPTH);
   obstacle_bl_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
-      "/star/obstacle/back_left", 10);
+      std::string(TOPIC_OBSTACLE_BACK_LEFT), OBSTACLE_QOS_DEPTH);
   obstacle_br_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
-      "/star/obstacle/back_right", 10);
+      std::string(TOPIC_OBSTACLE_BACK_RIGHT), OBSTACLE_QOS_DEPTH);
   obstacle_detected_pub_ = this->create_publisher<std_msgs::msg::Bool>(
-      "/star/obstacle_detected", 10);
+      std::string(TOPIC_OBSTACLE_DETECTED), OBSTACLE_QOS_DEPTH);
 
   // Subscribers
   robot_status_sub_ = this->create_subscription<std_msgs::msg::String>(
@@ -584,7 +602,10 @@ void StarGatewayBridgeNode::connection_watchdog_callback()
  * @pre telemetry_svc_stub_ must be non-null (set in initialize_grpc_client()).
  * @post Five ROS2 messages are published when an obstacle sub-message is
  *       present in the gateway response.
- * @post grpc_connected_ is set to false on gRPC error.
+ * @post grpc_connected_ is set to false only for transport-level gRPC failures
+ *       (UNAVAILABLE, DEADLINE_EXCEEDED, INTERNAL); application-level errors
+ *       (NOT_FOUND, INVALID_ARGUMENT, etc.) are throttle-logged but do not
+ *       change grpc_connected_ or trigger watchdog reconnection.
  *
  * @note Not thread-safe; called exclusively from the ROS2 timer executor.
  * @note Range messages use HC-SR04 constants (ULTRASOUND, 15-deg FOV,
