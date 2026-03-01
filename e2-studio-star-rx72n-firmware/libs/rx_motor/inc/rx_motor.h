@@ -238,7 +238,7 @@
  * @see matlab/motor_model_1st_order.m for motor dynamics characterization
  *
  * @version 1.0.0
- * @since 2026-01-04
+ * @since Version 1.0.0
  */
 
 #pragma once

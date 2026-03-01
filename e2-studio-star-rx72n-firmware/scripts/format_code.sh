@@ -127,9 +127,13 @@ find_source_files() {
             while IFS= read -r -d '' file; do
                 files+=("$file")
             done < <(find "$dir" -name "$ext" -type f \
-                -not -path "lib/threadx/*" \
-                -not -path "lib/rx_nanopb/nanopb/*" \
-                -not -path "tests/host-build/*" \
+                -not -path "libs/threadx/*" \
+                -not -path "libs/rx_nanopb/nanopb/*" \
+                -not -path "libs/rx_nanopb/inc/gen/*" \
+                -not -path "src/boot/smc_generated/*" \
+                -not -path "src/boot/r_bsp/*" \
+                -not -path "src/boot/inc/smc_generated/*" \
+                -not -path "tests/build/*" \
                 -print0 2>/dev/null)
         done
     done

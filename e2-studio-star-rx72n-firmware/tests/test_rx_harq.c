@@ -301,7 +301,7 @@
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial HARQ tests with Chase Combining validation
+ * @version 1.0.0
  */
 
 #include <stdint.h>

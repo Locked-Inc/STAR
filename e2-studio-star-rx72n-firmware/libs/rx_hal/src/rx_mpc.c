@@ -970,7 +970,7 @@ rx_err_t rx_mpc_set_mtu_encoder(const rx_port_pin_t pin)
  *
  * @see rx_mpc.h Full API documentation
  * @see rx_encoder_tpu.h TPU encoder driver using phase counting
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_tpu_encoder(const rx_port_pin_t pin)
 {
@@ -1205,7 +1205,7 @@ rx_err_t rx_mpc_set_rspi(const rx_port_pin_t pin)
  * @see rx_mpc.h Full API documentation with usage examples
  * @see rx_gptw_init_all_staggered() GPTW channel configuration
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_gptw(const rx_port_pin_t pin)
 {
@@ -1254,7 +1254,7 @@ rx_err_t rx_mpc_set_gptw(const rx_port_pin_t pin)
  * @see rx_mpc.h Full API documentation with usage examples
  * @see rx_usb.h USB controller driver
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
 {
@@ -1316,7 +1316,7 @@ rx_err_t rx_mpc_set_usb_vbus(const rx_port_pin_t pin)
  * @see rx_mpc.h Full API documentation with usage examples
  * @see rx_hcsr04_icu_configure() Configure ICU after calling this function
  *
- * @since Version 1.2.0 (Issue #296 - IRQ-based HC-SR04 measurement)
+ * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_irq(const rx_port_pin_t pin)
 {

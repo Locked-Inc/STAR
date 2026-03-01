@@ -80,7 +80,7 @@
  * @date 2026-02-14
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 
 #include "rx_spi_link.h"
@@ -109,7 +109,7 @@ static const char s_tag[] = "SPI_LINK";
  * decoder. Each bit becomes +127 (confident 1) or -127 (confident 0).
  * Matches Go's bytesToSoftBits() in internal/link/spi.go.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : int8_t {
   k_internal_soft_bit_one  = 127,  /**< Hard bit 1 -> soft confidence +127 */
@@ -120,7 +120,7 @@ typedef enum : int8_t {
  * @enum internal_bit_constants_t
  * @brief Bit manipulation constants for byte-to-soft-bit conversion
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_spi_link_bits_per_byte = 8,    /**< Number of bits in a byte */
@@ -152,7 +152,7 @@ typedef enum : uint8_t {
  * @pre soft_size >= data_len * k_spi_link_bits_per_byte
  * @post soft_len == data_len * k_spi_link_bits_per_byte
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
                                             uint32_t       data_len,
@@ -224,7 +224,7 @@ static rx_err_t internal_bytes_to_soft_bits(const uint8_t* data,
  * @pre expected_seq matches the last sent frame's sequence
  * @post No side effects on timeout
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq)
 {
@@ -273,7 +273,7 @@ static rx_err_t internal_wait_for_ack(rx_spi_link_t* link, uint16_t expected_seq
  * @note Read-only; never modified after static initialization
  * @warning Do not remove - prevents stack overflow in init function
  * @see rx_spi_link_init() Uses this template to zero-initialize the link handle
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static const rx_spi_link_t s_zero_link = {};
 

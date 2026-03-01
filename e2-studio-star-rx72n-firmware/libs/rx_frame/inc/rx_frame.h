@@ -1150,7 +1150,7 @@ static inline uint32_t rx_frame_read_le32(const uint8_t* buf)
  *
  * @see rx_frame_decode() Simple decode without resynchronization
  * @see k_frame_max_scan_bytes Maximum scan window (1036 bytes)
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
                                                    const uint8_t*            data,

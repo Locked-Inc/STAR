@@ -81,7 +81,7 @@
  * @see rx_bus_manager_deinit() Tear down manager
  * @see rx_bus_manager_add_bus() Register buses after init
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
                              const char*           tag,
@@ -145,7 +145,7 @@ rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
  *
  * @see rx_bus_manager_init() Re-initialize after deinit
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
 {
@@ -199,7 +199,7 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
  * @see rx_bus_manager_remove_bus() Remove a bus by name
  * @see rx_bus_manager_find_bus() Look up a bus by name
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config)
 {
@@ -270,7 +270,7 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
  * @see rx_bus_manager_add_bus() Add a bus to the registry
  * @see rx_bus_manager_find_bus() Look up a bus by name
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
 {
@@ -338,7 +338,7 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
  * @see rx_bus_manager_add_bus() Register a bus before lookup
  * @see rx_bus_manager_with_bus() Find and execute callback atomically
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t
 rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_config_t** bus_config)
@@ -406,7 +406,7 @@ rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_conf
  * @see rx_bus_manager_find_bus() Used internally for bus lookup
  * @see rx_bus_manager_execute_command() Alternative command pattern
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
                                  const char*       name,
@@ -476,7 +476,7 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
  * @see rx_bus_manager_with_bus() Alternative callback pattern
  * @see rx_bus_command_t Command structure definition
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
                                         const char*       name,

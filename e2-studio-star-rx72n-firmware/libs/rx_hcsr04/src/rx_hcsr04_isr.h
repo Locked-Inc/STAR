@@ -61,8 +61,8 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
- * @since Version 1.2.0 (Issue #296)
- * @version 1.2.0
+ * @since Version 1.0.0
+ * @version 1.0.0
  *
  * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
  * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
@@ -116,7 +116,7 @@ extern "C" {
  * @warning Do not use for production distance calculations in rx_hcsr04.c; use the
  *          `k_hcsr04_us_per_cm_roundtrip` enum constant from rx_hcsr04.h instead
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 [[maybe_unused]] static const float s_hcsr04_us_per_cm = 58.0F;
 
@@ -162,7 +162,7 @@ extern "C" {
  * @note All fields declared volatile: written in ISR, read in task context
  * @note get_duration() clears complete after successful read
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef struct {
   volatile uint32_t start_us; /**< Rising edge timestamp (microseconds) - written in ISR */
@@ -215,7 +215,7 @@ typedef struct {
  *
  * @see rx_hcsr04_isr_unregister() Cleanup counterpart for deinitialization
  *
- * @since Version 1.2.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_hcsr04_isr_register(uint8_t                  irq_num,
                                               rx_hcsr04_sensor_index_t sensor_index);
@@ -257,7 +257,7 @@ typedef struct {
  * @see rx_hcsr04_isr_register() Register sensor mapping
  * @see rx_hcsr04_deinit() Calls this during IRQ-mode cleanup
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_hcsr04_isr_unregister(uint8_t irq_num);
 
@@ -313,7 +313,7 @@ typedef struct {
  *
  * @see rx_hcsr04_isr_start() Must be called before trigger pulse to arm ISR
  *
- * @since Version 1.2.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_hcsr04_isr_get_duration(uint8_t irq_num, uint32_t* duration_us);
 
@@ -371,7 +371,7 @@ typedef struct {
  *
  * @see rx_hcsr04_isr_disarm() Disarm ISR on trigger failure after successful start
  *
- * @since Version 1.2.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_hcsr04_isr_start(uint8_t irq_num);
 
@@ -416,7 +416,7 @@ typedef struct {
  *
  * @see rx_hcsr04_isr_start() Arm ISR state before trigger pulse
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_hcsr04_isr_disarm(uint8_t irq_num);
 
@@ -446,7 +446,7 @@ typedef struct {
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ8(void);
 
@@ -471,7 +471,7 @@ void INT_IRQ8(void);
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ9(void);
 
@@ -496,7 +496,7 @@ void INT_IRQ9(void);
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ10(void);
 
@@ -521,7 +521,7 @@ void INT_IRQ10(void);
  * @see rx_hcsr04_isr_start() Arms ISR state before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads captured timestamps
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ11(void);
 

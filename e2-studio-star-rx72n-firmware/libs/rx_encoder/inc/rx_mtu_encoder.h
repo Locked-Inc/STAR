@@ -781,7 +781,7 @@ typedef struct {
  * @see docs/sections/03_hardware_pinout.tex MTU pin assignments
  *
  * @since Version 1.0.0
- * @version 1.0.0 - Initial implementation
+ * @version 1.0.0
  * @test test_rx_mtu_encoder.c::test_encoder_init() Unit test coverage
  *
  * @par NASA Power of 10 Compliance:

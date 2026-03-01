@@ -140,7 +140,7 @@
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial implementation with Chase Combining
+ * @version 1.0.0
  *
  * @test test_rx_harq.c Unit tests for HARQ protocol
  */

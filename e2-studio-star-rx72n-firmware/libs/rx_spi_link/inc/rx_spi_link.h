@@ -99,7 +99,7 @@
  * @date 2026-02-14
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 
 #pragma once
@@ -142,7 +142,7 @@ extern "C" {
  *
  * @see star-gateway/internal/link/spi.go Go reference constants (maxRetries=3)
  * @see rx_spi_link_config_t Configuration structure using these defaults
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_spi_link_default_max_retries =
@@ -173,7 +173,7 @@ typedef enum : uint8_t {
  *
  * @see star-gateway/internal/link/spi.go Go ackTimeout constant (10ms)
  * @see rx_fec.h FEC encoding parameters (rate 1/2, tail bits)
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint16_t {
   k_spi_link_ack_timeout_ms =
@@ -198,7 +198,7 @@ typedef enum : uint16_t {
  *
  * @see rx_harq.h HARQ protocol maximum payload size
  * @see rx_fec.h FEC encoding parameters (rate 1/2, tail bits)
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint16_t {
   k_spi_link_max_encoded_payload =
@@ -261,7 +261,7 @@ typedef enum : uint16_t {
  *
  * @see rx_spi_link_get_state() Query current state
  * @see rx_spi_link_reset() Reset to Idle state
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_spi_link_state_idle           = 0, /**< Ready for new send/receive */
@@ -297,7 +297,7 @@ typedef enum : uint8_t {
  *
  * @see rx_spi_link_init() Initialization function consuming this config
  * @see rx_spi_comm_handle_t Underlying SPI transport handle type
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef struct {
   rx_spi_comm_handle_t*
@@ -327,7 +327,7 @@ typedef struct {
  *
  * @see rx_spi_link_receive() Function that populates this result structure
  * @see star-gateway/internal/harq/harq.go Go equivalent (ReceiveResult)
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef struct {
   uint8_t payload
@@ -374,7 +374,7 @@ typedef struct {
  * @see rx_spi_link_init() Initialization function
  * @see rx_spi_link_config_t Configuration structure
  * @see rx_harq_handle_t HARQ handle containing FEC encoder/decoder
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef struct {
   rx_spi_comm_handle_t*
@@ -420,7 +420,7 @@ typedef struct {
  * @note Thread Safety: Not thread-safe. Call from single thread during init.
  *
  * @see rx_spi_link_deinit() Cleanup counterpart
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_link_init(rx_spi_link_t* link, const rx_spi_link_config_t* config);
 
@@ -447,7 +447,7 @@ typedef struct {
  *
  * @see rx_spi_link_init() Initialization counterpart
  * @see rx_harq_deinit() Internal HARQ deinitialization
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_link_deinit(rx_spi_link_t* link);
 
@@ -496,7 +496,7 @@ typedef struct {
  * @note Thread Safety: Not thread-safe. Serialize with external mutex.
  *
  * @see rx_spi_link_receive() Receive path
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_link_send(rx_spi_link_t*  link,
                                         rx_frame_type_t type,
@@ -547,7 +547,7 @@ typedef struct {
  * @note Thread Safety: Not thread-safe. Dedicate one thread to receiving.
  *
  * @see rx_spi_link_send() Send path
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, uint32_t timeout_ms);
@@ -581,7 +581,7 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
  *
  * @see rx_harq_reset() Internal HARQ reset
  * @see rx_spi_link_get_state() Query current state
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_link_reset(rx_spi_link_t* link);
 
@@ -613,7 +613,7 @@ rx_spi_link_receive(rx_spi_link_t* link, rx_spi_link_receive_result_t* result, u
  * @see rx_spi_link_state_t State enumeration with all possible values
  * @see rx_spi_link_reset() Reset link to idle state
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_spi_link_state_t rx_spi_link_get_state(const rx_spi_link_t* link);
 
@@ -645,7 +645,7 @@ rx_spi_link_state_t rx_spi_link_get_state(const rx_spi_link_t* link);
  * @see rx_spi_link_init() Initialization function that sets FEC mode
  * @see k_spi_link_default_fec_enabled Default FEC setting (enabled = 1)
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 bool rx_spi_link_fec_enabled(const rx_spi_link_t* link);
 

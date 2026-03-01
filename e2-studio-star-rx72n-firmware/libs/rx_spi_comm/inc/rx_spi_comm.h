@@ -476,7 +476,7 @@ typedef enum : uint16_t {
  * Maximum number of retransmission attempts before giving up.
  * Applied when auto_retransmit is enabled but max_retries is zero.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_retransmit_default_max_retries = 3, /**< Default max retransmit attempts */
@@ -490,7 +490,7 @@ typedef enum : uint8_t {
  * Timing parameters for ACK timeout and exponential backoff cap.
  * Applied when auto_retransmit is enabled but timing values are zero.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint16_t {
   k_retransmit_default_ack_timeout_ms = 50,  /**< Initial ACK wait in ms */
@@ -512,7 +512,7 @@ typedef enum : uint16_t {
  * | ack_timeout_ms | 10 | 1000 | 50 | 0 = use default |
  * | max_backoff_ms | 50 | 5000 | 400 | 0 = use default |
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  * @see rx_spi_comm_set_auto_retransmit() Runtime configuration
  */
 typedef struct {
@@ -1542,7 +1542,7 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
  *
  * @see rx_spi_comm_set_auto_retransmit() Enable/disable retransmission
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
                                                        uint32_t              current_time_ms);
@@ -1567,7 +1567,7 @@ rx_spi_comm_send_pong(rx_spi_comm_handle_t* handle, const uint8_t* payload, uint
  * @post auto_retransmit flag and config updated
  * @post If disabling, pending retry state cleared
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rx_spi_comm_set_auto_retransmit(rx_spi_comm_handle_t*                  handle,
@@ -1595,7 +1595,7 @@ rx_spi_comm_set_auto_retransmit(rx_spi_comm_handle_t*                  handle,
  *
  * @note Callbacks invoked from within rx_spi_comm_receive() context
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rx_spi_comm_set_retransmit_callbacks(rx_spi_comm_handle_t* handle,

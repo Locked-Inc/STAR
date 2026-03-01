@@ -30,8 +30,8 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
- * @since Version 1.2.0 (Issue #296)
- * @version 1.2.0
+ * @since Version 1.0.0
+ * @version 1.0.0
  *
  * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
  * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
@@ -84,7 +84,7 @@
  * @see internal_irq_handler() Uses k_vector_base, k_irq_min, k_pin_state_mask
  * @see rx_hcsr04_isr_register() Uses k_sensor_map_size as array bound
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_irq_min         = 8,  /**< Minimum IRQ number (IRQ8 = P00) */
@@ -126,7 +126,7 @@ typedef enum : uint8_t {
  * @see hcsr04_hal_get_time_us_isr() Returns values that wrap at this period
  * @see rx_hcsr04_isr_get_duration() Uses this for wrap correction
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_cmt2_wrap_us = 8738, /**< CMT2 16-bit counter wrap period in us (65536 / 7.5 MHz) */
@@ -151,7 +151,7 @@ typedef enum : uint32_t {
  * @warning Never access outside of rx_hcsr04_isr_start(), internal_irq_handler(),
  *          and rx_hcsr04_isr_get_duration(); direct access bypasses state validation
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 static volatile rx_hcsr04_irq_state_t s_irq_state[k_irq_count];
 
@@ -177,7 +177,7 @@ static volatile rx_hcsr04_irq_state_t s_irq_state[k_irq_count];
  * future work will use this mapping to dispatch per-sensor callbacks from
  * internal_irq_handler() when multi-sensor callback support is implemented.
  *
- * @since Version 1.2.0 (Issue #336)
+ * @since Version 1.0.0
  */
 static uint8_t s_sensor_map[k_sensor_map_size] = {
   k_sensor_unused,
@@ -236,7 +236,7 @@ static uint8_t s_sensor_map[k_sensor_map_size] = {
  * @see rx_hcsr04_isr_start() Sets active=true before trigger pulse
  * @see rx_hcsr04_isr_get_duration() Reads complete flag and timestamps
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 static void internal_irq_handler(const uint8_t irq_num)
 {
@@ -301,7 +301,7 @@ static void internal_irq_handler(const uint8_t irq_num)
  *
  * @see rx_hcsr04_isr_start() Arm ISR before sending trigger pulse
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_index_t sensor_index)
 {
@@ -346,7 +346,7 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_in
  * @see rx_hcsr04_isr_register() Register sensor
  * @see rx_hcsr04_deinit() Calls this during cleanup in IRQ mode
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
 {
@@ -391,7 +391,7 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  *
  * @see rx_hcsr04_isr_get_duration() Poll for completion after this call
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
 {
@@ -438,7 +438,7 @@ rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
  *
  * @see rx_hcsr04_isr_start() Arm ISR state before trigger pulse
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
 {
@@ -488,7 +488,7 @@ rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
  *
  * @see rx_hcsr04_isr_start() Call before sending trigger pulse
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const duration_us)
 {
@@ -552,7 +552,7 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
  * @see isr_constants_t Range bounds (k_irq_min, k_irq_max) and state constants
  * @see internal_irq_handler() Common ISR logic receiving these constants
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_irq_num_8  = 8,  /**< IRQ8  - maps to P00 (Sonar 3 Back-Right) */
@@ -583,7 +583,7 @@ typedef enum : uint8_t {
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_8 IRQ number constant passed to the handler
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ8(void)
 {
@@ -612,7 +612,7 @@ void INT_IRQ8(void)
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_9 IRQ number constant passed to the handler
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ9(void)
 {
@@ -641,7 +641,7 @@ void INT_IRQ9(void)
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_10 IRQ number constant passed to the handler
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ10(void)
 {
@@ -670,7 +670,7 @@ void INT_IRQ10(void)
  * @see internal_irq_handler() Core ISR logic
  * @see k_irq_num_11 IRQ number constant passed to the handler
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 void INT_IRQ11(void)
 {
