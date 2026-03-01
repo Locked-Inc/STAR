@@ -571,7 +571,7 @@
  *
  * @author STAR Project Team
  * @date 2026-01-27
- * @version 2.0.0
+ * @version 1.0.0
  *
  * @copyright Copyright (c) 2026 STAR Project. All rights reserved.
  *
@@ -585,9 +585,9 @@
  * - USB CDC 1.2 Specification (CDC1.2.pdf)
  * - RX72N Group User's Manual: Hardware (Chapter 40: USB 2.0 Full-Speed Module)
  *
- * @since Version 1.0.0 (initial CDC-ACM implementation)
- * @since Version 1.5.0 (added 3rd port for logging)
- * @since Version 2.0.0 (comprehensive documentation, pipe rollback, NASA compliance)
+ * @since Version 1.0.0
+ * @since Version 1.0.0
+ * @since Version 1.0.0
  */
 
 #include <string.h>
@@ -1959,7 +1959,7 @@ static void internal_handle_set_control_line_state(const rx_usb_port_id_t port,
  * @see rx_usb_cdc_handle_setup() Called by ISR after initialization
  *
  * @since Version 1.0.0
- * @since Version 1.5.0 (added 3rd port support)
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 2: [OK] Fixed loop bound (k_usb_port_count = 3)
@@ -2223,7 +2223,7 @@ static void internal_handle_class_request(const uint8_t  usb_request,
  * @see usb0_usbi_isr() ISR that calls this function
  *
  * @since Version 1.0.0
- * @since Version 1.5.0 (added 3rd port support)
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] Simple control flow (if/switch, no goto)
@@ -2432,7 +2432,7 @@ void rx_usb_cdc_handle_setup(void)
  * @see usb0_usbi_isr() ISR that calls this function
  *
  * @since Version 1.0.0
- * @since Version 1.5.0 (added Port 2 support)
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] Simple control flow (no recursion, no goto)
@@ -2682,7 +2682,7 @@ void rx_usb_cdc_handle_bulk_out(const rx_usb_port_id_t port)
  * @see usb0_usbi_isr() ISR that calls this function
  *
  * @since Version 1.0.0
- * @since Version 1.5.0 (added Port 2 support)
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] Simple control flow (no recursion, no goto)

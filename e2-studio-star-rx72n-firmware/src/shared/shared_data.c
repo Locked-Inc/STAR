@@ -475,7 +475,7 @@ static const char* const s_tag = "SDATA";
  *          shared_data_commit_isr_estop(). All other access is FORBIDDEN.
  *          Non-ISR/non-task access will cause race conditions and undefined behavior.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static volatile bool s_estop_pending_from_isr = false;
 
@@ -500,7 +500,7 @@ static volatile bool s_estop_pending_from_isr = false;
  *          writer wins (acceptable for safety - any e-stop reason triggers shutdown).
  *          All other access is FORBIDDEN.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
 
@@ -1636,7 +1636,7 @@ rx_err_t shared_data_trigger_estop(estop_reason_t reason)
  * @see shared_data_trigger_estop() Task-context version (uses mutex)
  * @see shared_data_is_estop_active() Check if e-stop active
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
 {
@@ -1718,7 +1718,7 @@ void shared_data_trigger_estop_isr_safe(estop_reason_t reason)
  * @see shared_data_trigger_estop() Task-context e-stop trigger
  * @see shared_data_is_estop_active() Check if e-stop active
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t shared_data_commit_isr_estop(void)
 {

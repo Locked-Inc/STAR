@@ -813,7 +813,7 @@ void hcsr04_hal_delay_us(uint32_t us);
  *
  * @see hcsr04_hal_get_time_us() Thread-safe variant with overflow tracking for task context
  *
- * @since Version 1.2.0 (Issue #296 - ISR-mode HC-SR04 measurement)
+ * @since Version 1.0.0
  */
 [[nodiscard]] uint32_t hcsr04_hal_get_time_us_isr(void);
 

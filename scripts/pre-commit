@@ -129,10 +129,34 @@ if [[ -n "$cpp_files" ]]; then
 
     # Use the official format-ros2.sh script in check mode
     # This uses ament_uncrustify and checks header guards
-    if ! ./scripts/format-ros2.sh --check --verbose; then
+    if ! bash scripts/format-ros2.sh --check --verbose; then
         echo "[FAIL] C++ formatting or header guard check failed."
-        echo "   Run: ./scripts/format-ros2.sh"
+        echo "   Run: bash scripts/format-ros2.sh"
         error_found=1
+    fi
+fi
+
+# -----------------------------------------------------------------------------
+# RX72N FIRMWARE C CHECKS
+# -----------------------------------------------------------------------------
+rx72n_files=$(echo "$staged_files" \
+  | grep -E "^e2-studio-star-rx72n-firmware/.*\.(c|h)$" \
+  | grep -vE "/(libs/threadx|libs/rx_nanopb/nanopb|libs/rx_nanopb/inc/gen|src/boot/smc_generated|src/boot/r_bsp|src/boot/inc/smc_generated)/" \
+  || true)
+
+if [[ -n "$rx72n_files" ]]; then
+    echo "Checking RX72N firmware C/H files..."
+
+    if command -v clang-format &>/dev/null; then
+        if ! bash e2-studio-star-rx72n-firmware/scripts/format_code.sh --check; then
+            echo "[FAIL] RX72N firmware formatting failed."
+            echo "   Run: make format-rx72n"
+            error_found=1
+        fi
+    else
+        echo ""
+        echo "WARNING: clang-format not found -- RX72N formatting check SKIPPED."
+        echo "   Install: sudo apt install clang-format"
     fi
 fi
 

@@ -214,7 +214,7 @@ typedef enum : uint8_t {
  * | 3 | PE1 | 110 |
  *
  * @see motor_pwm_pins Motor PWM pin assignments
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  * @{
  */
 
@@ -600,7 +600,7 @@ typedef enum : uint8_t {
  * | IMU_RST | P83 | 58 | GPIO output (active-low reset) |
  *
  * @see host_i2c_pins Host I2C pin assignments (RIIC0)
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  * @{
  */
 

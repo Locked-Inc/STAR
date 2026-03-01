@@ -265,7 +265,7 @@ uint32_t mock_shared_data_get_trigger_estop_count(void);
  * @see shared_data_set_event() The function whose calls are counted
  * @see mock_shared_data_reset() Resets the counter to zero
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 uint32_t mock_shared_data_get_set_event_count(void);
 
@@ -298,7 +298,7 @@ uint32_t mock_shared_data_get_set_event_count(void);
  * @see shared_data_set_event() The function that accumulates into this value
  * @see mock_shared_data_reset() Clears accumulated flags to k_event_none
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 shared_event_flags_t mock_shared_data_get_last_event_flags(void);
 
@@ -389,7 +389,7 @@ void shared_data_update_last_comm_tick(void);
  * @see mock_shared_data_get_last_event_flags() Retrieve accumulated flags
  * @see mock_shared_data_reset() Clear accumulated state between tests
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t shared_data_set_event(shared_event_flags_t flags);
 

@@ -20,7 +20,7 @@
  *
  * @author STAR Project Team - Texas A&M University
  * @date January 2026
- * @version 1.1.0
+ * @version 1.0.0
  * @copyright MIT License
  *
  * @par License
@@ -30,7 +30,7 @@
  * Validates rx_spi_link API correctness, state machine behavior, HARQ/FEC
  * integration, and error handling paths without requiring hardware.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 
 #include <string.h>
@@ -45,13 +45,13 @@
 /**
  * @note SPI channel constants use rspi_channel_t from hardware.h
  *       (k_rspi_channel_0 in these tests).
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 
 /**
  * @enum rx_spi_test_retries_t
  * @brief Maximum HARQ retry attempts for test configuration
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : int32_t {
   k_rx_spi_test_default_retry = 0, /**< Default retry config (0 = use link layer default) */
@@ -63,7 +63,7 @@ typedef enum : int32_t {
 /**
  * @enum rx_spi_test_timeout_t
  * @brief Timeout values for receive operations in milliseconds
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_rx_spi_test_timeout_short  = 10,  /**< Short 10ms timeout for quick failure tests */
@@ -73,7 +73,7 @@ typedef enum : uint32_t {
 /**
  * @enum rx_spi_test_data_t
  * @brief Test payload byte values for send/receive validation
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_rx_spi_test_data_byte1 = 0x01, /**< Test byte 1 */
@@ -88,7 +88,7 @@ typedef enum : uint8_t {
 /**
  * @enum rx_spi_test_zero_t
  * @brief Zero constant for memset and initialization
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : int32_t {
   k_rx_spi_test_zero = 0, /**< Zero value for initialization and memset */
@@ -97,7 +97,7 @@ typedef enum : int32_t {
 /**
  * @enum rx_spi_test_payload_sizes_t
  * @brief Payload size constants for boundary testing
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_rx_spi_test_min_buf     = 1,  /**< Minimum buffer size (1 byte) for size validation tests */
@@ -120,7 +120,7 @@ typedef enum : uint32_t {
  *
  * @note Memory footprint: ~86 KB dominated by FEC decoder buffers
  * @warning Do not allocate on stack - use static/global only
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_spi_link_t s_link;
 
@@ -132,7 +132,7 @@ static rx_spi_link_t s_link;
  * management. Initialized via internal_init_link() helper.
  *
  * @note Test scope: Parameter validation and integration with s_link
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_spi_comm_handle_t s_spi_comm;
 
@@ -144,7 +144,7 @@ static rx_spi_comm_handle_t s_spi_comm;
  * number conflicts between transports in production code.
  *
  * @note Thread safety: Tests are single-threaded, no synchronization needed
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_session_state_t s_session;
 
@@ -237,7 +237,7 @@ void tearDown(void)
  * @see rx_spi_comm_init() SPI transport initialization
  * @see rx_spi_link_init() HARQ link initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_init_link(bool fec_enabled)
 {
@@ -286,7 +286,7 @@ static rx_err_t internal_init_link(bool fec_enabled)
  * @see test_init_null_config() NULL config validation
  * @see test_init_null_spi_handle() NULL spi_handle validation
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_init_null_link(void)
 {
@@ -309,7 +309,7 @@ void test_init_null_link(void)
  * @see test_init_null_link() NULL link validation
  * @see test_init_null_spi_handle() NULL spi_handle validation
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_init_null_config(void)
 {
@@ -330,7 +330,7 @@ void test_init_null_config(void)
  * @see test_init_null_link() NULL link validation
  * @see test_init_null_config() NULL config validation
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_init_null_spi_handle(void)
 {
@@ -363,7 +363,7 @@ void test_init_null_spi_handle(void)
  * @see test_init_success_with_fec() Init with FEC enabled
  * @see test_init_custom_retries() Init with custom max_retries
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_init_success_no_fec(void)
 {
@@ -410,7 +410,7 @@ void test_init_success_no_fec(void)
  * @see test_init_success_no_fec() Init with FEC disabled
  * @see internal_init_link() Test helper for stack initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_init_success_with_fec(void)
 {
@@ -437,7 +437,7 @@ void test_init_success_with_fec(void)
  * @note Part of lifecycle test suite - validates custom retry configuration
  * @see test_init_success_no_fec() Init with default max_retries
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_init_custom_retries(void)
 {
@@ -480,7 +480,7 @@ void test_init_custom_retries(void)
  * @see test_deinit_uninitialized() Deinit on uninitialized handle
  * @see test_deinit_success() Successful deinit path
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_deinit_null(void)
 {
@@ -501,7 +501,7 @@ void test_deinit_null(void)
  * @see test_deinit_null() Deinit with NULL pointer
  * @see test_deinit_success() Successful deinit path
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_deinit_uninitialized(void)
 {
@@ -526,7 +526,7 @@ void test_deinit_uninitialized(void)
  * @see test_deinit_uninitialized() Deinit on uninitialized handle
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_deinit_success(void)
 {
@@ -557,7 +557,7 @@ void test_deinit_success(void)
  * @see test_get_state_uninitialized() State query on uninitialized handle
  * @see test_get_state_after_init() State query after successful init
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_get_state_null(void)
 {
@@ -578,7 +578,7 @@ void test_get_state_null(void)
  * @see test_get_state_null() State query with NULL pointer
  * @see test_get_state_after_init() State query after successful init
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_get_state_uninitialized(void)
 {
@@ -600,7 +600,7 @@ void test_get_state_uninitialized(void)
  * @see test_get_state_uninitialized() State query on uninitialized handle
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_get_state_after_init(void)
 {
@@ -629,7 +629,7 @@ void test_get_state_after_init(void)
  * @see test_fec_enabled_off() FEC query with FEC disabled
  * @see test_fec_enabled_on() FEC query with FEC enabled
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_fec_enabled_null(void)
 {
@@ -651,7 +651,7 @@ void test_fec_enabled_null(void)
  * @see test_fec_enabled_off() FEC query with FEC disabled
  * @see test_fec_enabled_on() FEC query with FEC enabled
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_fec_enabled_uninitialized(void)
 {
@@ -674,7 +674,7 @@ void test_fec_enabled_uninitialized(void)
  * @see test_fec_enabled_on() FEC query with FEC enabled
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_fec_enabled_off(void)
 {
@@ -700,7 +700,7 @@ void test_fec_enabled_off(void)
  * @see test_fec_enabled_off() FEC query with FEC disabled
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_fec_enabled_on(void)
 {
@@ -728,7 +728,7 @@ void test_fec_enabled_on(void)
  * @see test_reset_uninitialized() Reset on uninitialized handle
  * @see test_reset_success() Successful reset to IDLE state
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_reset_null(void)
 {
@@ -749,7 +749,7 @@ void test_reset_null(void)
  * @see test_reset_null() Reset with NULL pointer
  * @see test_reset_success() Successful reset to IDLE state
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_reset_uninitialized(void)
 {
@@ -776,7 +776,7 @@ void test_reset_uninitialized(void)
  * @see test_reset_uninitialized() Reset on uninitialized handle
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_reset_success(void)
 {
@@ -812,7 +812,7 @@ void test_reset_success(void)
  * @see test_send_null_payload_nonzero_len() Send with NULL payload
  * @see test_send_payload_too_large() Send with oversized payload
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_send_null_link(void)
 {
@@ -837,7 +837,7 @@ void test_send_null_link(void)
  * @see test_send_null_payload_nonzero_len() Send with NULL payload
  * @see test_send_payload_too_large() Send with oversized payload
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_send_uninitialized(void)
 {
@@ -863,7 +863,7 @@ void test_send_uninitialized(void)
  * @see test_send_payload_too_large() Send with oversized payload
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_send_null_payload_nonzero_len(void)
 {
@@ -892,7 +892,7 @@ void test_send_null_payload_nonzero_len(void)
  * @see test_send_null_payload_nonzero_len() Send with NULL payload
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_send_payload_too_large(void)
 {
@@ -924,7 +924,7 @@ void test_send_payload_too_large(void)
  * @see test_receive_null_result() Receive with NULL result pointer
  * @see test_receive_uninitialized() Receive on uninitialized link
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_receive_null_link(void)
 {
@@ -949,7 +949,7 @@ void test_receive_null_link(void)
  * @see test_receive_uninitialized() Receive on uninitialized link
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_receive_null_result(void)
 {
@@ -975,7 +975,7 @@ void test_receive_null_result(void)
  * @see test_receive_null_link() Receive with NULL link pointer
  * @see test_receive_null_result() Receive with NULL result pointer
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_receive_uninitialized(void)
 {
@@ -1015,7 +1015,7 @@ void test_receive_uninitialized(void)
  * @see rx_spi_link_get_state() Query current state
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_state_transitions_send_retries(void)
 {
@@ -1062,7 +1062,7 @@ void test_state_transitions_send_retries(void)
  * @see test_fec_enabled_off() Single FEC disabled test
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_fec_enabled_query(void)
 {
@@ -1108,7 +1108,7 @@ void test_fec_enabled_query(void)
  * @see test_get_state_null() NULL pointer state query test
  * @see test_get_state_uninitialized() Uninitialized handle state query
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_state_query_null_and_error(void)
 {
@@ -1144,7 +1144,7 @@ void test_state_query_null_and_error(void)
  * @see rx_spi_link_receive() Receive operation with frame filtering
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_receive_filters_control_frames(void)
 {
@@ -1184,7 +1184,7 @@ void test_receive_filters_control_frames(void)
  * @see test_init_custom_retries() Initialization with custom max_retries
  * @see test_state_transitions_send_retries() State machine retry behavior
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_max_retries_enforcement(void)
 {
@@ -1246,7 +1246,7 @@ void test_max_retries_enforcement(void)
  * @see test_state_transitions_send_retries() State machine error transitions
  * @see internal_init_link() Test helper for initialization
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 void test_reset_clears_error_state(void)
 {

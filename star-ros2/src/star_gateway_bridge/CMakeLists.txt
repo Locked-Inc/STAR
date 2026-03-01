@@ -85,6 +85,7 @@ ament_target_dependencies(star_gateway_bridge_component
   rclcpp_components
   diagnostic_msgs
   geometry_msgs
+  nav_msgs
   std_msgs
   sensor_msgs
   std_srvs
@@ -98,7 +99,7 @@ target_link_libraries(star_gateway_bridge_component
 
 # Register as rclcpp component
 rclcpp_components_register_nodes(star_gateway_bridge_component
-  "star::StarGatewayBridgeNode")
+  "star::star_gateway_bridge::StarGatewayBridgeNode")
 
 # ============================================
 # Build standalone executable

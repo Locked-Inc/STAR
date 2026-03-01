@@ -9,14 +9,38 @@ import os
 from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
 from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
-from launch.conditions import IfCondition
+from launch.conditions import IfCondition, UnlessCondition
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import FindPackageShare, LaunchConfiguration, PathJoinSubstitution
+from launch.substitutions import LaunchConfiguration, PathJoinSubstitution
 from launch_ros.actions import Node
+from launch_ros.substitutions import FindPackageShare
 
 # Slamtec RPLiDAR C1 DTOF protocol requires exactly 460800 baud.
 # This is a hardware-fixed parameter, not user-tunable.
 RPLIDAR_C1_BAUDRATE = 460800
+
+# static_transform_publisher uses named flags (--x, --y, --z, --yaw, --pitch, --roll)
+# rather than positional parameters, to be self-documenting and immune to argument
+# order changes across ROS2 / tf2_ros releases:
+#   --x   -> TRANSFORM_X    --y     -> TRANSFORM_Y    --z     -> TRANSFORM_Z
+#   --yaw -> TRANSFORM_YAW  --pitch -> TRANSFORM_PITCH  --roll -> TRANSFORM_ROLL
+#   --frame-id     -> parent frame (odom)
+#   --child-frame-id -> child frame (base_link)
+TRANSFORM_X = '0'
+TRANSFORM_Y = '0'
+TRANSFORM_Z = '0'
+TRANSFORM_ROLL = '0'
+TRANSFORM_PITCH = '0'
+TRANSFORM_YAW = '0'
+
+# TF frame ID constants shared between the static_transform_publisher arguments
+# and any other nodes that reference these frames, so renaming a frame requires
+# only a single change here.
+FRAME_ODOM = 'odom'
+FRAME_BASE_LINK = 'base_link'
+
+# Default respawn delay (seconds) for nodes configured with respawn=True.
+RESPAWN_DELAY_SEC = 2.0
 
 
 def generate_launch_description():
@@ -24,13 +48,18 @@ def generate_launch_description():
     pkg_slam_toolbox = get_package_share_directory('slam_toolbox')
 
     serial_port_arg = DeclareLaunchArgument(
-        'serial_port', default_value='/dev/ttyUSB0',
-        description='Serial port for RPLiDAR C1'
+        'serial_port', default_value='/dev/rplidar',
+        description='Serial port for RPLiDAR C1 (stable udev symlink)'
     )
 
     use_nav2_arg = DeclareLaunchArgument(
         'use_nav2', default_value='true',
         description='Launch Nav2 navigation stack alongside SLAM'
+    )
+
+    use_ekf_arg = DeclareLaunchArgument(
+        'use_ekf', default_value='true',
+        description='Run EKF odometry fusion (disable in dev mode - use static odom TF instead)'
     )
 
     # RPLiDAR C1 requires sllidar_ros2 (Slamtec's newer driver with SDK 2.x).
@@ -52,7 +81,7 @@ def generate_launch_description():
             'scan_mode': 'Standard',
         }],
         respawn=True,
-        respawn_delay=2.0,
+        respawn_delay=RESPAWN_DELAY_SEC,
     )
 
     static_tf = IncludeLaunchDescription(
@@ -61,8 +90,8 @@ def generate_launch_description():
         ),
     )
 
-    # EKF node: consumes /odom/unfiltered + /imu/data, publishes odom→base_link TF
-    # and /odometry/filtered. Must start before SLAM so odom→base_link TF is available.
+    # EKF node: consumes /odom/unfiltered + /imu/data, publishes odom->base_link TF
+    # and /odometry/filtered. Must start before SLAM so odom->base_link TF is available.
     ekf = Node(
         package='robot_localization',
         executable='ekf_node',
@@ -70,7 +99,35 @@ def generate_launch_description():
         output='screen',
         parameters=[os.path.join(pkg_star_bringup, 'config', 'ekf.yaml')],
         respawn=True,
-        respawn_delay=2.0,
+        respawn_delay=RESPAWN_DELAY_SEC,
+        condition=IfCondition(LaunchConfiguration('use_ekf')),
+    )
+
+    # Fallback odom->base_link TF when EKF is disabled.
+    static_odom_tf = Node(
+        package='tf2_ros',
+        executable='static_transform_publisher',
+        name='static_odom_to_base_link',
+        output='screen',
+        arguments=[
+            '--x',
+            TRANSFORM_X,
+            '--y',
+            TRANSFORM_Y,
+            '--z',
+            TRANSFORM_Z,
+            '--yaw',
+            TRANSFORM_YAW,
+            '--pitch',
+            TRANSFORM_PITCH,
+            '--roll',
+            TRANSFORM_ROLL,
+            '--frame-id',
+            FRAME_ODOM,
+            '--child-frame-id',
+            FRAME_BASE_LINK,
+        ],
+        condition=UnlessCondition(LaunchConfiguration('use_ekf')),
     )
 
     slam = IncludeLaunchDescription(
@@ -104,8 +161,10 @@ def generate_launch_description():
     return LaunchDescription([
         serial_port_arg,
         use_nav2_arg,
+        use_ekf_arg,
         static_tf,
         ekf,
+        static_odom_tf,
         rplidar,
         slam,
         nav2,

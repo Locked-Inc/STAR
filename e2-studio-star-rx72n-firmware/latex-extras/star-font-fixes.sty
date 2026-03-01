@@ -1,0 +1,16 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{star-font-fixes}
+
+% Suppress spurious LuaLaTeX font substitution warnings.
+%
+% LuaLaTeX uses the TU font encoding (via fontspec) and does not define the
+% phv/b/n (Helvetica bold upright) or phv/b/sl (bold slanted) shapes.  It
+% silently substitutes phv/bx/n and phv/bx/sl, which look identical, but
+% emits one warning per occurrence -- flooding the log.  Declaring the
+% substitution explicitly suppresses the warnings.
+%
+% Must run after fontspec establishes TU encoding, hence \AtBeginDocument.
+\AtBeginDocument{%
+  \DeclareFontShape{TU}{phv}{b}{n}{<->ssub*phv/bx/n}{}%
+  \DeclareFontShape{TU}{phv}{b}{sl}{<->ssub*phv/bx/sl}{}%
+}

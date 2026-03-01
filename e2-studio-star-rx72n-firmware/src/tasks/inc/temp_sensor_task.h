@@ -63,6 +63,6 @@
  * @see temp_sensor_task.c Implementation details
  * @see main.c Task creation in tx_application_define()
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t temp_sensor_task_create(void);

@@ -425,7 +425,7 @@ static const char s_tag[] = "COMM_MGR";
  *
  * @return Current time in milliseconds
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 /** @brief Simulator time stub value (time is unavailable in simulator) */
 typedef enum : uint32_t {
@@ -884,7 +884,7 @@ static rx_err_t internal_poll_spi(rx_comm_manager_t* mgr)
  * @pre mgr must be non-NULL and initialized
  * @post One event processed (sent or dropped on max retries)
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static void internal_process_event_queue(rx_comm_manager_t* mgr)
 {
@@ -971,7 +971,7 @@ static void internal_process_event_queue(rx_comm_manager_t* mgr)
  * @pre mgr must be non-NULL and initialized
  * @post Link status updated for each transport
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static void internal_check_heartbeat(rx_comm_manager_t* mgr)
 {

@@ -118,7 +118,7 @@
  *
  * @author STAR Team
  * @date 2026-01-28
- * @version 1.1.0
+ * @version 1.0.0
  * @copyright MIT License
  */
 

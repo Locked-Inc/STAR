@@ -59,7 +59,7 @@
  *
  * @see motor_control_task_get_motors() Returns k_motor_count_none when not ready
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_motor_count_none =
@@ -100,7 +100,7 @@ typedef enum : uint8_t {
  * @see motor_control_task.c Implementation details
  * @see main.c Task creation in tx_application_define()
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t motor_control_task_create(void);
 
@@ -161,6 +161,6 @@ rx_err_t motor_control_task_create(void);
  * @see rx_motor.h Motor handle operations
  * @see obstacle_detect_task.c Uses these handles for emergency stop
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_motor_handle_t** motor_control_task_get_motors(uint8_t* out_count);

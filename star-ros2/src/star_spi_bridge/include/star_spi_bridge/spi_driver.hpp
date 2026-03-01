@@ -1,7 +1,20 @@
-// Copyright 2026 Locked Inc.
+/**
+ * @file spi_driver.hpp
+ * @brief SPI driver declarations for framed communication with the RX72N
+ * peripheral MCU.
+ *
+ * @details
+ * Declares SpiDriver and FrameType for the STAR binary framing protocol over
+ * Linux spidev. The Raspberry Pi 5 acts as SPI controller at 10 MHz, Mode 0
+ * (CPOL=0, CPHA=0). Frame format: SYNC(2) + SEQ(2) + LEN(2) + TYPE(1) +
+ * FLAGS(1) + PAYLOAD(N) + CRC-32(4), all multi-byte fields little-endian.
+ *
+ * @author Locked Inc.
+ * @copyright Copyright 2026 Locked Inc.
+ * @since Version 1.0.0
+ */
 
-#ifndef STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
-#define STAR_SPI_BRIDGE__SPI_DRIVER_HPP_
+#pragma once
 
 #include <cstdint>
 #include <mutex>
@@ -26,8 +39,8 @@ namespace star_spi_bridge
  */
 enum class FrameType : uint8_t
 {
-  VelocityCommand = 0x01,  /**< Motor velocity setpoint (RPi5 -> RX72N) */
-  TelemetryData = 0x02     /**< Sensor telemetry payload  (RX72N -> RPi5) */
+  VelocityCommand = 0x01, /**< Motor velocity setpoint (RPi5 -> RX72N) */
+  TelemetryData = 0x02    /**< Sensor telemetry payload  (RX72N -> RPi5) */
 };
 
 /**
@@ -58,32 +71,41 @@ enum class FrameType : uint8_t
 class SpiDriver {
 public:
   // -- Frame-structure constants ------------------------------------------
-  /// @brief SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes.
-  static constexpr size_t k_header_size = 8;
-
-  /// @brief CRC-32 trailer length in bytes.
-  static constexpr size_t k_crc_size = 4;
-
-  /// @brief Maximum application payload per frame (bytes).
-  static constexpr size_t k_max_payload_size = 1024;
-
-  /// @brief SYNC word transmitted in every frame header.
-  static constexpr uint16_t k_sync_word = 0x55AA;
+  static constexpr size_t HEADER_SIZE =
+    8;   /**< SYNC + SEQ + LEN + TYPE + FLAGS = 8 bytes. */
+  static constexpr size_t CRC_SIZE = 4; /**< CRC-32 trailer length in bytes. */
+  static constexpr size_t MAX_PAYLOAD_SIZE =
+    1024;   /**< Maximum application payload per frame (bytes). */
+  static constexpr uint16_t SYNC_WORD =
+    0x55AA;   /**< SYNC word transmitted in every frame header. */
 
   /**
    * @brief Construct a new SpiDriver.
    *
-   * @param[in] device_path  Path to the Linux spidev node (e.g. "/dev/spidev0.0").
+   * @param[in] device_path  Path to the Linux spidev node (e.g.
+   * "/dev/spidev0.0").
    * @param[in] speed_hz     SPI clock frequency in Hz (default 10 MHz).
    *
    * @pre  device_path is a non-empty, null-terminated string.
+   * @pre  speed_hz > 0; the kernel rejects a zero-Hz SPI clock request.
    * @post CRC-32 lookup table is initialised (thread-safe, once).
+   * @post spi_fd_ is set to -1 (invalid); call initialize() to open and
+   *       configure the SPI device before calling transfer().
    */
   explicit SpiDriver(
     const std::string & device_path,
     uint32_t speed_hz = 10000000);
 
-  /// @brief Destructor -- calls close_device() if the device is still open.
+  /**
+   * @brief Destructor -- calls close_device() if the device is still open.
+   *
+   * @pre  No other threads are concurrently accessing this SpiDriver instance.
+   * @pre  Ownership has been quiesced before destruction (no concurrent
+   * close_device()/transfer()).
+   * @post close_device() has been called.
+   * @post The SPI device file descriptor is closed (spi_fd_ == -1).
+   * @post All resources owned by this instance are released.
+   */
   virtual ~SpiDriver();
 
   /**
@@ -114,7 +136,8 @@ public:
    * @brief Perform a full-duplex SPI transfer.
    *
    * @param[in]  tx_data  Data to transmit.
-   * @param[out] rx_data  Buffer filled with received data (resized to match tx_data).
+   * @param[out] rx_data  Buffer filled with received data (resized to match
+   * tx_data).
    *
    * @return true  Transfer completed successfully.
    * @return false Device not open or ioctl failed.
@@ -139,13 +162,13 @@ public:
    * @param[in]  seq        Sequence number (0-65535).
    * @param[in]  type       Frame type (see FrameType enum).
    * @param[in]  flags      Control flags byte.
-   * @param[in]  payload    Application data (0-k_max_payload_size bytes).
+   * @param[in]  payload    Application data (0-MAX_PAYLOAD_SIZE bytes).
    * @param[out] out_frame  Encoded wire bytes (header + payload + CRC).
    *
-   * @pre  `payload.size() <= k_max_payload_size`.
-   * @post `out_frame.size() == k_header_size + payload.size() + k_crc_size`.
+   * @pre  `payload.size() <= MAX_PAYLOAD_SIZE`.
+   * @post `out_frame.size() == HEADER_SIZE + payload.size() + CRC_SIZE`.
    *
-   * @throws std::invalid_argument  If `payload.size() > k_max_payload_size`.
+   * @throws std::invalid_argument  If `payload.size() > MAX_PAYLOAD_SIZE`.
    *
    * @see decode_frame  Inverse operation.
    */
@@ -170,7 +193,7 @@ public:
    * @return true   Frame valid (SYNC, length, and CRC all match).
    * @return false  Frame invalid or corrupted.
    *
-   * @pre  `frame.size() >= k_header_size + k_crc_size` (12 bytes minimum).
+   * @pre  `frame.size() >= HEADER_SIZE + CRC_SIZE` (12 bytes minimum).
    * @post On success, all output parameters are populated.
    *
    * @see encode_frame  Inverse operation.
@@ -213,5 +236,3 @@ private:
 };
 
 }  // namespace star_spi_bridge
-
-#endif  // STAR_SPI_BRIDGE__SPI_DRIVER_HPP_

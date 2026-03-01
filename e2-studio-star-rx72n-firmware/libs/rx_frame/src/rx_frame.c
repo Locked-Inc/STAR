@@ -235,7 +235,7 @@ typedef enum : uint8_t {
  * @see rx_frame_decode() Uses k_frame_offset_start for normal aligned decoding
  * @see internal_find_sync_offset() Begins scan at k_frame_scan_start_offset
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_frame_offset_start      = 0, /**< Start offset for frame parsing */
@@ -262,7 +262,7 @@ typedef enum : uint8_t {
  *
  * @see rx_frame_decode_with_resync() Only caller of this constant
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_bytes_discarded_none = 0U, /**< No bytes have been discarded; stream is aligned */
@@ -497,7 +497,7 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
  * @see k_frame_sync_word Sync word value (0x55AA)
  * @see k_frame_max_scan_bytes Maximum scan window (1036 bytes)
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t
 internal_find_sync_offset(const uint8_t* data, const uint32_t data_len, uint32_t* offset_out)
@@ -831,7 +831,7 @@ rx_err_t rx_frame_decode(const rx_frame_decoder_t* dec,
  * @see internal_find_sync_offset() Bounded sync word scanner
  * @see k_frame_max_scan_bytes Scan window upper bound
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_frame_decode_with_resync(const rx_frame_decoder_t* dec,
                                      const uint8_t*            data,

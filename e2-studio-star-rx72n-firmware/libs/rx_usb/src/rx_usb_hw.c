@@ -453,7 +453,7 @@
  *
  * @author STAR Project Team
  * @date 2026-01-27
- * @version 2.0.0
+ * @version 1.0.0
  *
  * @copyright Copyright (c) 2026 STAR Project. All rights reserved.
  *
@@ -467,8 +467,8 @@
  * - USB 2.0 Specification (usb_20.pdf)
  * - RX72N Register Map (rx72n_regs.h)
  *
- * @since Version 1.0.0 (initial HAL implementation)
- * @since Version 2.0.0 (comprehensive documentation, NASA compliance, SOLID principles)
+ * @since Version 1.0.0
+ * @since Version 1.0.0
  */
 
 #include <stddef.h>

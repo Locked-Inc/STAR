@@ -1,4 +1,19 @@
-// Copyright 2026 Locked Inc.
+/**
+ * @file spi_driver.cpp
+ * @brief SPI driver implementation for framed communication with the RX72N
+ * peripheral MCU.
+ *
+ * @details
+ * Implements SpiDriver: Linux spidev ioctl handling, STAR binary frame
+ * encoding/decoding, and IEEE 802.3 CRC-32 computation using a lookup table
+ * initialised once via std::call_once.
+ *
+ * @see star_spi_bridge/spi_driver.hpp
+ *
+ * @author Locked Inc.
+ * @copyright Copyright 2026 Locked Inc.
+ * @since Version 1.0.0
+ */
 
 #include "star_spi_bridge/spi_driver.hpp"
 
@@ -44,7 +59,7 @@ namespace star_spi_bridge
 
 namespace
 {
-/// @brief ROS2 logger for SPI driver diagnostics.
+/** @brief ROS2 logger for SPI driver diagnostics. */
 auto logger()
 {
   return rclcpp::get_logger("star_spi_bridge.spi_driver");
@@ -94,17 +109,61 @@ inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
   xfer.bits_per_word_ = value;
 #endif
 }
+
+inline bool is_valid_frame_type(FrameType frame_type)
+{
+  using U = std::underlying_type_t<FrameType>;
+  const auto raw = static_cast<U>(frame_type);
+  // Range-check: accept only values within [VelocityCommand, TelemetryData].
+  // This guards against corrupt wire data or future enum additions that have
+  // not yet been handled in the switch below.
+  constexpr auto k_min = static_cast<U>(FrameType::VelocityCommand); // 0x01
+  constexpr auto k_max = static_cast<U>(FrameType::TelemetryData);   // 0x02
+  if (raw < k_min || raw > k_max) {
+    return false;
+  }
+  switch (frame_type) {
+    case FrameType::VelocityCommand: {
+        return true;
+      }
+    case FrameType::TelemetryData: {
+        return true;
+      }
+    default: {
+    // Unreachable: all values in [k_min, k_max] are handled above.
+        return false;
+      }
+  }
+}
 }  // namespace
 
 uint32_t SpiDriver::crc32_table_[256];
 std::once_flag SpiDriver::crc32_table_init_flag_;
 
+/**
+ * @brief Construct a SpiDriver for the given spidev node.
+ * @param[in] device_path  Path to the Linux spidev node (e.g. "/dev/spidev0.0");
+ *                         must be non-empty.
+ * @param[in] speed_hz     SPI clock frequency in Hz; must be > 0.
+ * @pre  device_path is non-empty.
+ * @pre  speed_hz > 0; zero-Hz SPI clock is rejected by the kernel.
+ * @post spi_fd_ is -1 until initialize() is called.
+ * @post CRC-32 lookup table is initialised (thread-safe, once).
+ */
 SpiDriver::SpiDriver(const std::string & device_path, uint32_t speed_hz)
 : device_path_(device_path), speed_hz_(speed_hz), spi_fd_(-1)
 {
+  assert(!device_path_.empty());
+  assert(speed_hz_ > 0);
   std::call_once(crc32_table_init_flag_, init_crc32_table);
 }
 
+/**
+ * @brief Destroy the SpiDriver, releasing the SPI device.
+ * @details Calls close_device() to close spi_fd_ if the device is still open.
+ * @post spi_fd_ is closed and set to -1.
+ * @post All instance resources are freed.
+ */
 SpiDriver::~SpiDriver()
 {
   close_device();
@@ -119,8 +178,8 @@ bool SpiDriver::initialize()
   // Open SPI device
   spi_fd_ = open(device_path_.c_str(), O_RDWR);
   if (spi_fd_ < 0) {
-    RCLCPP_ERROR(logger(), "Failed to open SPI device: %s (%s)", device_path_.c_str(),
-      strerror(errno));
+    RCLCPP_ERROR(logger(), "Failed to open SPI device: %s (%s)",
+                 device_path_.c_str(), strerror(errno));
     return false;
   }
 
@@ -150,6 +209,22 @@ bool SpiDriver::initialize()
   return true;
 }
 
+/**
+ * @brief Close the SPI device file descriptor.
+ *
+ * @details
+ * Closes spi_fd_ and resets it to -1.  Safe to call multiple times; if
+ * the device is already closed (spi_fd_ < 0) this is a no-op.  Called
+ * automatically by the destructor to guarantee resource release.
+ *
+ * @pre  None; may be called regardless of whether initialize() succeeded.
+ * @post spi_fd_ == -1.
+ * @post The underlying file descriptor (if it was open) is released to the OS.
+ *
+ * @note Thread-safe only when no concurrent transfer() calls are in progress;
+ *       callers must quiesce I/O before calling close_device().
+ * @since Version 1.0.0
+ */
 void SpiDriver::close_device()
 {
   if (spi_fd_ >= 0) {
@@ -158,7 +233,9 @@ void SpiDriver::close_device()
   }
 }
 
-bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8_t> & rx_data)
+bool SpiDriver::transfer(
+  const std::vector<uint8_t> & tx_data,
+  std::vector<uint8_t> & rx_data)
 {
 #ifndef __linux__
   RCLCPP_ERROR(logger(), "SPI driver is only supported on Linux platforms");
@@ -175,8 +252,10 @@ bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8
   struct spi_ioc_transfer xfer;
   std::memset(&xfer, 0, sizeof(xfer));
 
-  set_spi_xfer_tx_buf(xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tx_data.data())));
-  set_spi_xfer_rx_buf(xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(rx_data.data())));
+  set_spi_xfer_tx_buf(
+      xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(tx_data.data())));
+  set_spi_xfer_rx_buf(
+      xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(rx_data.data())));
   set_spi_xfer_len(xfer, static_cast<uint32_t>(tx_data.size()));
   set_spi_xfer_speed_hz(xfer, speed_hz_);
   set_spi_xfer_bits_per_word(xfer, k_bits_per_word);
@@ -191,35 +270,36 @@ bool SpiDriver::transfer(const std::vector<uint8_t> & tx_data, std::vector<uint8
 }
 
 void SpiDriver::encode_frame(
-  uint16_t seq,
-  FrameType type,
-  uint8_t flags,
+  uint16_t seq, FrameType type, uint8_t flags,
   const std::vector<uint8_t> & payload,
   std::vector<uint8_t> & out_frame)
 {
-  if (payload.size() > k_max_payload_size) {
+  if (payload.size() > MAX_PAYLOAD_SIZE) {
     throw std::invalid_argument("payload exceeds maximum size of 1024 bytes");
+  }
+  if (!is_valid_frame_type(type)) {
+    throw std::invalid_argument("frame type is outside valid enum range");
   }
 
   // [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)][PAYLOAD(N)][CRC(4)]
-  size_t frame_size = k_header_size + payload.size() + k_crc_size;
+  size_t frame_size = HEADER_SIZE + payload.size() + CRC_SIZE;
   out_frame.clear();
   out_frame.reserve(frame_size);
 
   // SYNC: 0x55AA (Little Endian)
   // Note: Header fields (SYNC, SEQ, LEN) use little-endian byte order
   // Wire format: [0xAA, 0x55] for 0x55AA
-  out_frame.push_back(k_sync_word & 0xFF);         // LSB first (0xAA)
-  out_frame.push_back((k_sync_word >> 8) & 0xFF);  // MSB second (0x55)
+  out_frame.push_back(SYNC_WORD & 0xFF);        // LSB first (0xAA)
+  out_frame.push_back((SYNC_WORD >> 8) & 0xFF); // MSB second (0x55)
 
   // SEQ (Little Endian)
-  out_frame.push_back(seq & 0xFF);         // LSB first
-  out_frame.push_back((seq >> 8) & 0xFF);  // MSB second
+  out_frame.push_back(seq & 0xFF);        // LSB first
+  out_frame.push_back((seq >> 8) & 0xFF); // MSB second
 
   // LEN (Little Endian)
   uint16_t len = static_cast<uint16_t>(payload.size());
-  out_frame.push_back(len & 0xFF);         // LSB first
-  out_frame.push_back((len >> 8) & 0xFF);  // MSB second
+  out_frame.push_back(len & 0xFF);        // LSB first
+  out_frame.push_back((len >> 8) & 0xFF); // MSB second
 
   // TYPE
   out_frame.push_back(static_cast<uint8_t>(type));
@@ -238,21 +318,28 @@ void SpiDriver::encode_frame(
   out_frame.push_back((crc >> 8) & 0xFF);
   out_frame.push_back((crc >> 16) & 0xFF);
   out_frame.push_back((crc >> 24) & 0xFF);
+
+  if (out_frame.size() != frame_size) {
+    throw std::logic_error("encoded frame size does not match expected layout");
+  }
+  if (out_frame[0] != (SYNC_WORD & 0xFF) ||
+    out_frame[1] != ((SYNC_WORD >> 8) & 0xFF))
+  {
+    throw std::logic_error("encoded frame sync word mismatch");
+  }
 }
 
 bool SpiDriver::decode_frame(
-  const std::vector<uint8_t> & frame,
-  uint16_t & seq,
-  FrameType & type,
-  uint8_t & flags,
+  const std::vector<uint8_t> & frame, uint16_t & seq,
+  FrameType & type, uint8_t & flags,
   std::vector<uint8_t> & payload)
 {
-  if (frame.size() < k_header_size + k_crc_size) {
+  if (frame.size() < HEADER_SIZE + CRC_SIZE) {
     return false;
   }
 
   // Check SYNC (Little Endian: [0xAA, 0x55] for 0x55AA)
-  if (frame[0] != (k_sync_word & 0xFF) || frame[1] != ((k_sync_word >> 8) & 0xFF)) {
+  if (frame[0] != (SYNC_WORD & 0xFF) || frame[1] != ((SYNC_WORD >> 8) & 0xFF)) {
     return false;
   }
 
@@ -261,16 +348,17 @@ bool SpiDriver::decode_frame(
 
   // Validate Frame Size
   // Header(8) + Payload(len) + CRC(4)
-  if (frame.size() != k_header_size + len + k_crc_size) {
+  if (frame.size() != HEADER_SIZE + len + CRC_SIZE) {
     return false;
   }
 
   // Verify CRC
   // Calculate CRC over Header + Payload (bytes 0 to end-4)
-  std::vector<uint8_t> data_to_check(frame.begin(), frame.end() - k_crc_size);
+  std::vector<uint8_t> data_to_check(frame.begin(), frame.end() - CRC_SIZE);
   uint32_t calculated_crc = calculate_crc32(data_to_check);
 
-  uint32_t received_crc = static_cast<uint32_t>(frame[frame.size() - 4]) |
+  uint32_t received_crc =
+    static_cast<uint32_t>(frame[frame.size() - 4]) |
     (static_cast<uint32_t>(frame[frame.size() - 3]) << 8) |
     (static_cast<uint32_t>(frame[frame.size() - 2]) << 16) |
     (static_cast<uint32_t>(frame[frame.size() - 1]) << 24);
@@ -284,7 +372,7 @@ bool SpiDriver::decode_frame(
   type = static_cast<FrameType>(frame[6]);
   flags = frame[7];
 
-  payload.assign(frame.begin() + k_header_size, frame.end() - k_crc_size);
+  payload.assign(frame.begin() + HEADER_SIZE, frame.end() - CRC_SIZE);
 
   return true;
 }

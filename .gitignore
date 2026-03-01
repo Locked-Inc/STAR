@@ -134,6 +134,7 @@ settings.local.json
 
 # Go
 star-gateway/star-gateway
+star-gateway/bin/
 *.exe
 go.work.sum
 

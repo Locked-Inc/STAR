@@ -160,7 +160,7 @@
  * @see tests/test_rx_pid.c for unit tests and validation
  *
  * @version 1.0.0
- * @since 2026-01-01
+ * @since Version 1.0.0
  */
 
 #include "rx_pid.h"
