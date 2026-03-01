@@ -21,11 +21,11 @@ namespace star::star_gateway_bridge
 // Obstacle publisher constants
 // ---------------------------------------------------------------------------
 static constexpr int OBSTACLE_QOS_DEPTH = 10;
-static constexpr std::string_view TOPIC_OBSTACLE_FRONT_LEFT  = "/star/obstacle/front_left";
+static constexpr std::string_view TOPIC_OBSTACLE_FRONT_LEFT = "/star/obstacle/front_left";
 static constexpr std::string_view TOPIC_OBSTACLE_FRONT_RIGHT = "/star/obstacle/front_right";
-static constexpr std::string_view TOPIC_OBSTACLE_BACK_LEFT   = "/star/obstacle/back_left";
-static constexpr std::string_view TOPIC_OBSTACLE_BACK_RIGHT  = "/star/obstacle/back_right";
-static constexpr std::string_view TOPIC_OBSTACLE_DETECTED    = "/star/obstacle_detected";
+static constexpr std::string_view TOPIC_OBSTACLE_BACK_LEFT = "/star/obstacle/back_left";
+static constexpr std::string_view TOPIC_OBSTACLE_BACK_RIGHT = "/star/obstacle/back_right";
+static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_detected";
 
 /**
  * @brief Construct and fully initialise the STAR Gateway Bridge ROS2 node.
