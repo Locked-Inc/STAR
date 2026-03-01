@@ -598,60 +598,77 @@ void StarGatewayBridgeNode::connection_watchdog_callback()
  */
 void StarGatewayBridgeNode::obstacle_poll_timer_callback()
 {
-  if (!grpc_connected_ || !telemetry_svc_stub_) {
-    return;
+  try {
+    if (!grpc_connected_ || !telemetry_svc_stub_) {
+      return;
+    }
+
+    grpc::ClientContext context;
+    context.set_deadline(std::chrono::system_clock::now() +
+                         std::chrono::milliseconds(grpc_deadline_ms_));
+
+    star::v1::GetTelemetryRequest request;
+    request.mutable_header()->set_request_id(
+        "obstacle_" +
+        std::to_string(
+            std::chrono::system_clock::now().time_since_epoch().count()));
+
+    star::v1::GetTelemetryResponse response;
+    grpc::Status status =
+      telemetry_svc_stub_->GetTelemetry(&context, request, &response);
+
+    if (!status.ok()) {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                           "GetTelemetry (obstacle) gRPC failed: %s",
+                           status.error_message().c_str());
+      // Only mark the connection as lost for transport-level failures.
+      // Application-level errors (NOT_FOUND, INVALID_ARGUMENT, etc.) do not
+      // indicate a connectivity loss and should not trigger reconnection.
+      const grpc::StatusCode code = status.error_code();
+      if (code == grpc::StatusCode::UNAVAILABLE ||
+          code == grpc::StatusCode::DEADLINE_EXCEEDED ||
+          code == grpc::StatusCode::INTERNAL)
+      {
+        grpc_connected_ = false;
+      }
+      return;
+    }
+
+    if (!response.has_telemetry() || !response.telemetry().has_obstacle()) {
+      return;
+    }
+
+    const auto & obs = response.telemetry().obstacle();
+    const rclcpp::Time stamp = this->now();
+
+    sensor_msgs::msg::Range range_msg;
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_front_left_m(), "obstacle_front_left", stamp, range_msg);
+    obstacle_fl_pub_->publish(range_msg);
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_front_right_m(), "obstacle_front_right", stamp, range_msg);
+    obstacle_fr_pub_->publish(range_msg);
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_back_left_m(), "obstacle_back_left", stamp, range_msg);
+    obstacle_bl_pub_->publish(range_msg);
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_back_right_m(), "obstacle_back_right", stamp, range_msg);
+    obstacle_br_pub_->publish(range_msg);
+
+    std_msgs::msg::Bool detected_msg;
+    detected_msg.data = obs.any_obstacle();
+    obstacle_detected_pub_->publish(detected_msg);
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                          "Exception in obstacle_poll_timer_callback: %s", e.what());
+  } catch (...) {
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                          "Unknown exception in obstacle_poll_timer_callback");
   }
-
-  grpc::ClientContext context;
-  context.set_deadline(std::chrono::system_clock::now() +
-                       std::chrono::milliseconds(grpc_deadline_ms_));
-
-  star::v1::GetTelemetryRequest request;
-  request.mutable_header()->set_request_id(
-      "obstacle_" +
-      std::to_string(
-          std::chrono::system_clock::now().time_since_epoch().count()));
-
-  star::v1::GetTelemetryResponse response;
-  grpc::Status status =
-    telemetry_svc_stub_->GetTelemetry(&context, request, &response);
-
-  if (!status.ok()) {
-    RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
-                         "GetTelemetry (obstacle) gRPC failed: %s",
-                         status.error_message().c_str());
-    grpc_connected_ = false;
-    return;
-  }
-
-  if (!response.has_telemetry() || !response.telemetry().has_obstacle()) {
-    return;
-  }
-
-  const auto & obs = response.telemetry().obstacle();
-  const rclcpp::Time stamp = this->now();
-
-  sensor_msgs::msg::Range range_msg;
-
-  converter_.obstacle_distance_to_range(
-      obs.distance_front_left_m(), "obstacle_front_left", stamp, range_msg);
-  obstacle_fl_pub_->publish(range_msg);
-
-  converter_.obstacle_distance_to_range(
-      obs.distance_front_right_m(), "obstacle_front_right", stamp, range_msg);
-  obstacle_fr_pub_->publish(range_msg);
-
-  converter_.obstacle_distance_to_range(
-      obs.distance_back_left_m(), "obstacle_back_left", stamp, range_msg);
-  obstacle_bl_pub_->publish(range_msg);
-
-  converter_.obstacle_distance_to_range(
-      obs.distance_back_right_m(), "obstacle_back_right", stamp, range_msg);
-  obstacle_br_pub_->publish(range_msg);
-
-  std_msgs::msg::Bool detected_msg;
-  detected_msg.data = obs.any_obstacle();
-  obstacle_detected_pub_->publish(detected_msg);
 }
 
 // ===========================================================================

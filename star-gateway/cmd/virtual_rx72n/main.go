@@ -68,6 +68,26 @@ const (
 
 	// EnvSimLatencyMs is the environment variable name for configurable latency.
 	EnvSimLatencyMs = "SIM_LATENCY_MS"
+
+	// DefaultFrontLeftDistanceM is the simulated front-left HC-SR04 distance in metres.
+	// Represents a clear, unobstructed sensor reading within the valid 0.02-4.00 m range.
+	DefaultFrontLeftDistanceM = 0.85
+
+	// DefaultFrontRightDistanceM is the simulated front-right HC-SR04 distance in metres.
+	// Represents a clear, unobstructed sensor reading within the valid 0.02-4.00 m range.
+	DefaultFrontRightDistanceM = 0.92
+
+	// DefaultBackLeftDistanceM is the simulated back-left HC-SR04 distance in metres.
+	// Represents a closer-but-clear rear reading within the valid 0.02-4.00 m range.
+	DefaultBackLeftDistanceM = 0.45
+
+	// DefaultBackRightDistanceM is the simulated back-right HC-SR04 distance in metres.
+	// Represents a closer-but-clear rear reading within the valid 0.02-4.00 m range.
+	DefaultBackRightDistanceM = 0.38
+
+	// ObstacleDetectionThresholdM is the distance threshold in metres below which any_obstacle
+	// is set to true (30 cm, matching the firmware HC-SR04 detection logic).
+	ObstacleDetectionThresholdM = 0.30
 )
 
 // simulatorSession tracks session state for the virtual RX72N simulator.
@@ -293,11 +313,11 @@ func generateTelemetryResponse() *starv1.WireMessage {
 					AccelZMps2: 9.81, // Gravity
 				},
 				Obstacle: &starv1.ObstacleData{
-					DistanceFrontLeftM:  0.85,  // Clear HC-SR04 reading, front-left sensor
-					DistanceFrontRightM: 0.92,  // Clear HC-SR04 reading, front-right sensor
-					DistanceBackLeftM:   0.45,  // Closer but still clear, back-left sensor
-					DistanceBackRightM:  0.38,  // Closer but still clear, back-right sensor
-					AnyObstacle:         false, // No obstacle within 30 cm threshold
+					DistanceFrontLeftM:  DefaultFrontLeftDistanceM,
+					DistanceFrontRightM: DefaultFrontRightDistanceM,
+					DistanceBackLeftM:   DefaultBackLeftDistanceM,
+					DistanceBackRightM:  DefaultBackRightDistanceM,
+					AnyObstacle:         false, // All readings exceed ObstacleDetectionThresholdM
 					DetectedMask:        0,     // No per-sensor detection bits set
 				},
 			},

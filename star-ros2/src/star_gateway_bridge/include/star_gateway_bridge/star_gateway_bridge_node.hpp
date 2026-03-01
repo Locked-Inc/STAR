@@ -198,12 +198,15 @@ private:
    * @post Five ROS2 messages published when telemetry data with an obstacle
    *       sub-message is available: four sensor_msgs/Range and one
    *       std_msgs/Bool.
-   * @post grpc_connected_ is set to false on gRPC error to trigger watchdog
-   *       reconnection.
+   * @post grpc_connected_ is set to false only on transport-level gRPC errors
+   *       (UNAVAILABLE, DEADLINE_EXCEEDED, INTERNAL) to trigger watchdog
+   *       reconnection; application-level errors do not alter the flag.
    *
    * @note Called by obstacle_timer_ at telemetry_rate_hz_ (default 10 Hz).
    * @note Not thread-safe; called exclusively from the ROS2 timer executor
    *       thread.
+   * @note All exceptions are caught internally; the callback never propagates
+   *       exceptions to the ROS2 executor.
    *
    * @since Version 1.0.0
    */
