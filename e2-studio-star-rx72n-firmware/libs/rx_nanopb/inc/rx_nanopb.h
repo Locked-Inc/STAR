@@ -586,6 +586,52 @@ static const uint16_t s_nanopb_buffer_size = 512U;
                                                           star_v1_SetPIDGainsRequest* msg);
 
 /**
+ * @brief Encode SetPIDGainsResponse message to Protocol Buffer bytes
+ *
+ * @details
+ * Serializes a SetPIDGainsResponse message as acknowledgment to a PID gains
+ * update command. Sent back to RPi5 after processing a SetPIDGainsRequest.
+ *
+ * The response indicates whether the gains were successfully written to
+ * shared_data for the Motor Control Task to apply. The optional human-readable
+ * message field is left empty (NULL callback); the success boolean is
+ * sufficient for programmatic use.
+ *
+ * @param[in] msg Message to encode (must not be nullptr)
+ *   - has_header: must be true for header to be encoded
+ *   - header.status: k_star_v1_status_ok or error status
+ *   - header.request_id: echoed from the original request
+ *   - success: true if gains were written to shared_data
+ * @param[out] buffer Output buffer for encoded bytes (must not be nullptr)
+ * @param[in] buffer_size Size of output buffer in bytes
+ *   - Must be >= s_nanopb_buffer_size (1024 bytes)
+ * @param[out] len Actual encoded message length in bytes (must not be nullptr)
+ *
+ * @return rx_err_t Error code indicating result
+ * @retval k_rx_ok Success, buffer contains wire-format response
+ * @retval k_rx_err_invalid_arg nullptr in msg, buffer, or len
+ * @retval k_rx_err_not_initialized Module not initialized via rx_nanopb_init()
+ * @retval k_rx_err_invalid_size buffer_size too small or encoded length overflow
+ *
+ * @pre rx_nanopb_init() must be called before this function
+ * @pre buffer must point to at least buffer_size bytes of writable memory
+ * @post On k_rx_ok: buffer[0..*len-1] contains valid wire-format response
+ * @post On k_rx_ok: *len <= s_nanopb_buffer_size
+ *
+ * @note Not thread-safe; call only from Communication Task context
+ *
+ * @par Performance: ~15 us @ 240 MHz
+ *
+ * @see rx_nanopb_decode_pid_gains_request() Decode the incoming request
+ * @see rx_nanopb_create_response_header() Create header with status and request_id
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
+                                                            uint8_t*                           buffer,
+                                                            uint32_t  buffer_size,
+                                                            uint32_t* len);
+
+/**
  * @brief Decode SetRetransmitConfigRequest from Protocol Buffer bytes
  *
  * @details

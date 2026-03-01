@@ -428,6 +428,22 @@ typedef enum : uint8_t {
 } comm_motor_constants_t;
 
 /**
+ * @enum comm_response_buffer_t
+ * @brief Size constants for the command response encoding buffer
+ *
+ * @details
+ * Defines the static buffer size used to encode protobuf responses before
+ * sending them back to the RPi5 via rx_comm_manager_respond(). Sized to match
+ * the nanopb module's internal buffer (s_nanopb_buffer_size = 512 bytes) so
+ * that all rx_nanopb_encode_*_response() pre-condition checks pass.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_comm_response_buffer_size = 512, /**< Response encode buffer size in bytes */
+} comm_response_buffer_t;
+
+/**
  * @enum retransmit_retries_limits_t
  * @brief Valid range limits for max_retries in SetRetransmitConfigRequest
  *
@@ -566,6 +582,23 @@ static rx_spi_comm_handle_t s_spi_comm_handle;
  */
 static rx_spi_link_t s_spi_link;
 
+/**
+ * @var s_response_buffer
+ * @brief Static buffer for encoding command response messages (NASA Rule 3 - no dynamic allocation)
+ *
+ * @details
+ * Used by internal_handle_velocity_command(), internal_handle_estop_command(), and
+ * internal_handle_pid_gains_command() to encode protobuf response messages before
+ * sending them back to the RPi5. Sized to match s_nanopb_buffer_size in rx_nanopb,
+ * satisfying the buffer_size >= s_nanopb_buffer_size pre-condition of all
+ * rx_nanopb_encode_*_response() functions.
+ *
+ * @note Accessed only from Communication Task context (single thread). No mutex needed.
+ * @warning Do not access from other tasks. All writes are guarded by single-task execution.
+ * @since Version 1.0.0
+ */
+static uint8_t s_response_buffer[k_comm_response_buffer_size];
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
@@ -574,10 +607,15 @@ static rx_spi_link_t s_spi_link;
 static void internal_comm_task_entry(ULONG input);
 static void internal_init_transports(rx_comm_manager_config_t* config);
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx);
-static rx_err_t internal_handle_command_frame(const rx_frame_t* frame);
-static bool     internal_handle_velocity_command(const rx_frame_t* frame);
-static bool     internal_handle_estop_command(const rx_frame_t* frame);
-static bool     internal_handle_pid_gains_command(const rx_frame_t* frame);
+static void internal_send_command_response(rx_comm_channel_t channel,
+                                           const uint8_t*    payload,
+                                           uint32_t          payload_len);
+static rx_err_t internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
+static bool     internal_handle_velocity_command(rx_comm_channel_t channel,
+                                                 const rx_frame_t* frame);
+static bool     internal_handle_estop_command(rx_comm_channel_t channel, const rx_frame_t* frame);
+static bool     internal_handle_pid_gains_command(rx_comm_channel_t channel,
+                                                  const rx_frame_t* frame);
 static bool     internal_handle_retransmit_config_command(const rx_frame_t* frame);
 
 /* =============================================================================
@@ -1660,7 +1698,6 @@ static void internal_comm_task_entry(ULONG input)
  */
 static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t* frame, void* ctx)
 {
-  (void)channel;
   (void)ctx;
 
   if (frame == nullptr) {
@@ -1676,7 +1713,7 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
   /* Dispatch based on frame type */
   switch (frame->header.type) {
     case k_frame_type_command:
-      (void)internal_handle_command_frame(frame);
+      (void)internal_handle_command_frame(channel, frame);
       break;
 
     case k_frame_type_ack:
@@ -1778,17 +1815,17 @@ static void internal_frame_callback(rx_comm_channel_t channel, const rx_frame_t*
  * @callgraph
  * @callergraph
  */
-static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
+static rx_err_t internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
   RX_CHECK_NULL_PTR(frame, s_tag, "frame pointer must not be NULL");
 
-  if (internal_handle_velocity_command(frame)) {
+  if (internal_handle_velocity_command(channel, frame)) {
     return k_rx_ok;
   }
-  if (internal_handle_estop_command(frame)) {
+  if (internal_handle_estop_command(channel, frame)) {
     return k_rx_ok;
   }
-  if (internal_handle_pid_gains_command(frame)) {
+  if (internal_handle_pid_gains_command(channel, frame)) {
     return k_rx_ok;
   }
   if (internal_handle_retransmit_config_command(frame)) {
@@ -1797,6 +1834,44 @@ static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
 
   rx_log_warn(s_tag, "unknown command frame message type");
   return k_rx_err_invalid_arg;
+}
+
+/**
+ * @brief Send an encoded command response back to the host on the originating channel
+ *
+ * @details
+ * Convenience wrapper around rx_comm_manager_respond() for use by command handlers.
+ * Sends a RESPONSE-type frame containing a pre-encoded protobuf payload on the channel
+ * that delivered the original command. Response sending is best-effort: a send failure
+ * is logged as a warning but does NOT affect command processing (the command has already
+ * been applied to shared_data before this function is called).
+ *
+ * @param[in] channel     Channel to send response on (must match incoming command channel)
+ * @param[in] payload     Encoded protobuf bytes to transmit (must not be nullptr)
+ * @param[in] payload_len Number of encoded bytes in payload
+ *
+ * @pre payload must not be nullptr
+ * @pre payload_len must be > 0
+ * @post Response frame queued for transmission on channel (send failure logged, not fatal)
+ *
+ * @note Not thread-safe; called only from Communication Task context
+ * @note Send failure does not affect command processing (best-effort)
+ *
+ * @see rx_comm_manager_respond() Underlying send function
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [PASS] 2 preconditions, 1 postcondition documented
+ * - Rule 7: [PASS] rx_comm_manager_respond() return value checked
+ */
+static void internal_send_command_response(rx_comm_channel_t channel,
+                                           const uint8_t*    payload,
+                                           const uint32_t    payload_len)
+{
+  const rx_err_t err = rx_comm_manager_respond(&g_comm_manager, channel, payload, payload_len);
+  if (err != k_rx_ok) {
+    rx_log_warn_val(s_tag, "Command response send failed", (uint32_t)err);
+  }
 }
 
 /**
@@ -1813,8 +1888,10 @@ static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
  * 2. Verify has_command flag is set (sub-message present)
  * 3. Build motor_command_t: copy 4 velocities, sequence number, timestamp, valid=true
  * 4. Write to shared_data via shared_data_set_motor_command()
- * 5. Log result and return true
+ * 5. Encode SetVelocityResponse and send back on originating channel
+ * 6. Log result and return true
  *
+ * @param[in] channel Channel the command arrived on; response sent on same channel
  * @param[in] frame COMMAND frame to decode
  *                  - Must NOT be nullptr (caller guarantees)
  *                  - frame->payload and frame->header.length are used for decode
@@ -1827,21 +1904,24 @@ static rx_err_t internal_handle_command_frame(const rx_frame_t* frame)
  * @pre shared_data_init() must have been called
  * @post On true: shared_data motor command updated with new velocities
  * @post On true: k_event_new_motor_cmd event set (wakes Motor Control Task)
+ * @post On true: SetVelocityResponse sent back on channel (best-effort)
  *
  * @note Not thread-safe; executes in Communication Task context (Priority 5)
  * @note double -> float velocity conversion: +/-0.0001 m/s precision loss acceptable
+ * @note Response send failure is logged but does not affect command processing
  *
  * @since Version 1.0.0
  * @see rx_nanopb_decode_velocity_request() nanopb decode function
  * @see shared_data_set_motor_command() Thread-safe motor command write
+ * @see rx_nanopb_encode_velocity_response() Encodes the acknowledgment response
  * @see internal_handle_command_frame() Caller (cascade dispatcher)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 4: [PASS] Function body is under 30 lines
- * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ * - Rule 4: [PASS] Function body is under 45 lines
+ * - Rule 5: [PASS] 2 preconditions, 3 postconditions documented
  * - Rule 7: [PASS] All return values checked
  */
-static bool internal_handle_velocity_command(const rx_frame_t* frame)
+static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
   star_v1_SetVelocityRequest velocity_req = {0};
   const rx_err_t             err =
@@ -1870,6 +1950,26 @@ static bool internal_handle_velocity_command(const rx_frame_t* frame)
   } else {
     rx_log_debug(s_tag, "Velocity command received");
   }
+
+  /* Send response back to host (best-effort; command already applied) */
+  {
+    star_v1_SetVelocityResponse response = (star_v1_SetVelocityResponse)star_v1_SetVelocityResponse_init_zero;
+    response.has_header              = true;
+    const star_v1_Status resp_status = (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK
+                                                             : star_v1_Status_STATUS_INTERNAL_ERROR;
+    const char* req_id = velocity_req.has_header ? velocity_req.header.request_id : nullptr;
+    rx_nanopb_create_response_header(&response.header, resp_status, req_id);
+
+    uint32_t       encoded_len = 0;
+    const rx_err_t enc_err     = rx_nanopb_encode_velocity_response(
+      &response, s_response_buffer, (uint32_t)k_comm_response_buffer_size, &encoded_len);
+    if (enc_err == k_rx_ok) {
+      internal_send_command_response(channel, s_response_buffer, encoded_len);
+    } else {
+      rx_log_warn_val(s_tag, "Velocity response encode failed", (uint32_t)enc_err);
+    }
+  }
+
   return true;
 }
 
@@ -1885,8 +1985,10 @@ static bool internal_handle_velocity_command(const rx_frame_t* frame)
  * 1. Attempt nanopb decode via rx_nanopb_decode_estop_request()
  * 2. Log warning ("E-Stop request received")
  * 3. Call shared_data_trigger_estop(k_estop_reason_manual)
- * 4. Log any error and return true
+ * 4. Encode EmergencyStopResponse and send back on originating channel
+ * 5. Log any error and return true
  *
+ * @param[in] channel Channel the command arrived on; response sent on same channel
  * @param[in] frame COMMAND frame to decode
  *                  - Must NOT be nullptr (caller guarantees)
  *                  - frame->payload and frame->header.length are used for decode
@@ -1899,21 +2001,24 @@ static bool internal_handle_velocity_command(const rx_frame_t* frame)
  * @pre shared_data_init() must have been called
  * @post On true: estop_active == true in shared_data
  * @post On true: k_event_estop_triggered event set (wakes Motor Control Task)
+ * @post On true: EmergencyStopResponse sent back on channel (best-effort)
  *
  * @note Not thread-safe; executes in Communication Task context (Priority 5)
+ * @note Response send failure is logged but does not affect e-stop processing
  * @warning E-stop overrides any pending velocity commands; motors disabled immediately
  *
  * @since Version 1.0.0
  * @see rx_nanopb_decode_estop_request() nanopb decode function
  * @see shared_data_trigger_estop() Thread-safe emergency stop trigger
+ * @see rx_nanopb_encode_estop_response() Encodes the acknowledgment response
  * @see internal_handle_command_frame() Caller (cascade dispatcher)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 4: [PASS] Function body is under 20 lines
- * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ * - Rule 4: [PASS] Function body is under 35 lines
+ * - Rule 5: [PASS] 2 preconditions, 3 postconditions documented
  * - Rule 7: [PASS] All return values checked
  */
-static bool internal_handle_estop_command(const rx_frame_t* frame)
+static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
   star_v1_EmergencyStopRequest estop_req = {0};
   const rx_err_t               err =
@@ -1928,6 +2033,28 @@ static bool internal_handle_estop_command(const rx_frame_t* frame)
   if (trigger_err != k_rx_ok) {
     rx_log_error_val(s_tag, "Failed to trigger e-stop", (uint32_t)trigger_err);
   }
+
+  /* Send response back to host (best-effort; e-stop already triggered) */
+  {
+    star_v1_EmergencyStopResponse response =
+      (star_v1_EmergencyStopResponse)star_v1_EmergencyStopResponse_init_zero;
+    response.has_header      = true;
+    response.estop_engaged   = (trigger_err == k_rx_ok);
+    const star_v1_Status resp_status = (trigger_err == k_rx_ok) ? star_v1_Status_STATUS_OK
+                                                                 : star_v1_Status_STATUS_INTERNAL_ERROR;
+    const char* req_id = estop_req.has_header ? estop_req.header.request_id : nullptr;
+    rx_nanopb_create_response_header(&response.header, resp_status, req_id);
+
+    uint32_t       encoded_len = 0;
+    const rx_err_t enc_err     = rx_nanopb_encode_estop_response(
+      &response, s_response_buffer, (uint32_t)k_comm_response_buffer_size, &encoded_len);
+    if (enc_err == k_rx_ok) {
+      internal_send_command_response(channel, s_response_buffer, encoded_len);
+    } else {
+      rx_log_warn_val(s_tag, "E-Stop response encode failed", (uint32_t)enc_err);
+    }
+  }
+
   return true;
 }
 
@@ -1945,8 +2072,10 @@ static bool internal_handle_estop_command(const rx_frame_t* frame)
  * 2. Verify has_pid_config flag is set (sub-message present)
  * 3. Build pid_gains_t: convert kp, ki, kd, limits, set update_pending=true
  * 4. Write to shared_data via shared_data_set_pid_gains()
- * 5. Log result and return true
+ * 5. Encode SetPIDGainsResponse and send back on originating channel
+ * 6. Log result and return true
  *
+ * @param[in] channel Channel the command arrived on; response sent on same channel
  * @param[in] frame COMMAND frame to decode
  *                  - Must NOT be nullptr (caller guarantees)
  *                  - frame->payload and frame->header.length are used for decode
@@ -1959,21 +2088,25 @@ static bool internal_handle_estop_command(const rx_frame_t* frame)
  * @pre shared_data_init() must have been called
  * @post On true: shared_data PID gains updated with new values
  * @post On true: k_event_pid_gains_updated event set (Motor Control Task will apply)
+ * @post On true: SetPIDGainsResponse sent back on channel (best-effort)
  *
  * @note Not thread-safe; executes in Communication Task context (Priority 5)
  * @note double -> float gain conversion: precision loss negligible for PID tuning
+ * @note Response send failure is logged but does not affect command processing
+ * @note The optional message string field in SetPIDGainsResponse is left empty
  *
  * @since Version 1.0.0
  * @see rx_nanopb_decode_pid_gains_request() nanopb decode function
  * @see shared_data_set_pid_gains() Thread-safe PID gains write
+ * @see rx_nanopb_encode_pid_gains_response() Encodes the acknowledgment response
  * @see internal_handle_command_frame() Caller (cascade dispatcher)
  *
  * @par NASA Power of 10 Compliance:
- * - Rule 4: [PASS] Function body is under 30 lines
- * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented
+ * - Rule 4: [PASS] Function body is under 45 lines
+ * - Rule 5: [PASS] 2 preconditions, 3 postconditions documented
  * - Rule 7: [PASS] All return values checked
  */
-static bool internal_handle_pid_gains_command(const rx_frame_t* frame)
+static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const rx_frame_t* frame)
 {
   star_v1_SetPIDGainsRequest pid_req = {0};
   const rx_err_t             err =
@@ -2001,6 +2134,29 @@ static bool internal_handle_pid_gains_command(const rx_frame_t* frame)
   } else {
     rx_log_info(s_tag, "PID gains updated successfully");
   }
+
+  /* Send response back to host (best-effort; gains already written to shared_data) */
+  {
+    star_v1_SetPIDGainsResponse response =
+      (star_v1_SetPIDGainsResponse)star_v1_SetPIDGainsResponse_init_zero;
+    response.has_header            = true;
+    response.success               = (set_err == k_rx_ok);
+    /* response.message left as init_zero: NULL callback skips optional string field */
+    const star_v1_Status resp_status = (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK
+                                                             : star_v1_Status_STATUS_INTERNAL_ERROR;
+    const char* req_id = pid_req.has_header ? pid_req.header.request_id : nullptr;
+    rx_nanopb_create_response_header(&response.header, resp_status, req_id);
+
+    uint32_t       encoded_len = 0;
+    const rx_err_t enc_err     = rx_nanopb_encode_pid_gains_response(
+      &response, s_response_buffer, (uint32_t)k_comm_response_buffer_size, &encoded_len);
+    if (enc_err == k_rx_ok) {
+      internal_send_command_response(channel, s_response_buffer, encoded_len);
+    } else {
+      rx_log_warn_val(s_tag, "PID gains response encode failed", (uint32_t)enc_err);
+    }
+  }
+
   return true;
 }
 
