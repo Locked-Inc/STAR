@@ -292,6 +292,14 @@ func generateTelemetryResponse() *starv1.WireMessage {
 					AccelYMps2: -0.02,
 					AccelZMps2: 9.81, // Gravity
 				},
+				Obstacle: &starv1.ObstacleData{
+					DistanceFrontLeftM:  0.85, // Clear HC-SR04 reading, front-left sensor
+					DistanceFrontRightM: 0.92, // Clear HC-SR04 reading, front-right sensor
+					DistanceBackLeftM:   0.45, // Closer but still clear, back-left sensor
+					DistanceBackRightM:  0.38, // Closer but still clear, back-right sensor
+					AnyObstacle:         false, // No obstacle within 30 cm threshold
+					DetectedMask:        0,     // No per-sensor detection bits set
+				},
 			},
 		},
 	}

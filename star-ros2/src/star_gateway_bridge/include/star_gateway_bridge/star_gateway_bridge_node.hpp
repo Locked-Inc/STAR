@@ -31,12 +31,15 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/range.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
 #include <std_srvs/srv/set_bool.hpp>
 
 #include <grpcpp/grpcpp.h>  // NOLINT(build/include_order)
 
 #include "star/v1/gateway_service.grpc.pb.h"
+#include "star/v1/telemetry.grpc.pb.h"
 #include "star_gateway_bridge/message_converter.hpp"
 
 namespace star::star_gateway_bridge
@@ -171,6 +174,41 @@ private:
    */
   void connection_watchdog_callback();
 
+  /**
+   * @brief Timer callback that polls TelemetryService::GetTelemetry and
+   * publishes ObstacleData fields to ROS2 topics at telemetry_rate_hz_.
+   *
+   * @details
+   * Calls TelemetryService::GetTelemetry on the Go gateway using
+   * telemetry_svc_stub_ to obtain the latest RX72N TelemetryData, which
+   * includes the ObstacleData obstacle sub-message populated by firmware PR
+   * #371. Each sensor distance is converted to a sensor_msgs/Range message via
+   * MessageConverter::obstacle_distance_to_range() and published on the
+   * corresponding /star/obstacle/<side> topic. The any_obstacle boolean is
+   * forwarded on /star/obstacle_detected (std_msgs/Bool).
+   *
+   * The callback is a no-op when grpc_connected_ is false or
+   * telemetry_svc_stub_ is null (e.g. during initial connection or after a
+   * gRPC failure). A WARN log is emitted at most once per 5 seconds on gRPC
+   * errors to avoid log spam.
+   *
+   * @pre grpc_connected_ must be true for any gRPC call to be attempted.
+   * @pre telemetry_svc_stub_ must be non-null (initialised in
+   *      initialize_grpc_client()).
+   * @post Five ROS2 messages published when telemetry data with an obstacle
+   *       sub-message is available: four sensor_msgs/Range and one
+   *       std_msgs/Bool.
+   * @post grpc_connected_ is set to false on gRPC error to trigger watchdog
+   *       reconnection.
+   *
+   * @note Called by obstacle_timer_ at telemetry_rate_hz_ (default 10 Hz).
+   * @note Not thread-safe; called exclusively from the ROS2 timer executor
+   *       thread.
+   *
+   * @since Version 1.0.0
+   */
+  void obstacle_poll_timer_callback();
+
   // ===========================================================================
   // gRPC Helpers
   // ===========================================================================
@@ -198,6 +236,17 @@ private:
   // ROS2 Publishers
   rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr teleop_cmd_vel_pub_;
 
+  /** @brief Publisher for front-left HC-SR04 sensor distance (sensor_msgs/Range). */
+  rclcpp::Publisher<sensor_msgs::msg::Range>::SharedPtr obstacle_fl_pub_;
+  /** @brief Publisher for front-right HC-SR04 sensor distance (sensor_msgs/Range). */
+  rclcpp::Publisher<sensor_msgs::msg::Range>::SharedPtr obstacle_fr_pub_;
+  /** @brief Publisher for back-left HC-SR04 sensor distance (sensor_msgs/Range). */
+  rclcpp::Publisher<sensor_msgs::msg::Range>::SharedPtr obstacle_bl_pub_;
+  /** @brief Publisher for back-right HC-SR04 sensor distance (sensor_msgs/Range). */
+  rclcpp::Publisher<sensor_msgs::msg::Range>::SharedPtr obstacle_br_pub_;
+  /** @brief Publisher for any-obstacle detection flag (std_msgs/Bool). */
+  rclcpp::Publisher<std_msgs::msg::Bool>::SharedPtr obstacle_detected_pub_;
+
   // ROS2 Subscribers
   rclcpp::Subscription<std_msgs::msg::String>::SharedPtr robot_status_sub_;
   rclcpp::Subscription<nav_msgs::msg::Odometry>::SharedPtr
@@ -217,10 +266,25 @@ private:
   rclcpp::TimerBase::SharedPtr telemetry_timer_;
   rclcpp::TimerBase::SharedPtr teleop_timer_;
   rclcpp::TimerBase::SharedPtr watchdog_timer_;
+  /** @brief Timer that polls TelemetryService::GetTelemetry and publishes
+   *         obstacle data at telemetry_rate_hz_ (default 10 Hz). */
+  rclcpp::TimerBase::SharedPtr obstacle_timer_;
 
   // gRPC Client
   std::shared_ptr<grpc::Channel> grpc_channel_;
   std::unique_ptr<star::v1::GatewayService::Stub> grpc_stub_;
+  /**
+   * @brief gRPC stub for TelemetryService (GetTelemetry) on the same channel.
+   *
+   * @details
+   * Created in initialize_grpc_client() using the same grpc_channel_ as
+   * grpc_stub_. Used by obstacle_poll_timer_callback() to retrieve the latest
+   * RX72N TelemetryData (including ObstacleData) from the Go gateway.
+   *
+   * @note Shares grpc_channel_ with grpc_stub_; no separate connection needed.
+   * @since Version 1.0.0
+   */
+  std::unique_ptr<star::v1::TelemetryService::Stub> telemetry_svc_stub_;
 
   // Cached telemetry data (protected by mutexes)
   std::mutex robot_status_mutex_;
