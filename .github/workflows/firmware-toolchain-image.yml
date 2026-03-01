@@ -80,6 +80,9 @@ jobs:
           tags: |
             ghcr.io/locked-inc/star/gnurx:latest
             ghcr.io/locked-inc/star/gnurx:14.2.0
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          # GHA layer cache temporarily disabled to force a clean build while
+          # debugging the "installer runs but binary not found" failure.
+          # Re-enable (remove no-cache, restore cache-from/cache-to) once the
+          # toolchain image builds successfully.
+          no-cache: true
           # NO build-args for installer URL -- COPY handles it via path context
