@@ -276,7 +276,7 @@
  *
  * @author STAR Team
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @since Version 1.0.0
  * @version 1.0.0

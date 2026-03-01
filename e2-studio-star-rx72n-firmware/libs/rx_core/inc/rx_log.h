@@ -234,7 +234,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @see uart.h for UART debug output implementation
  * @see rx_err.h for error code definitions

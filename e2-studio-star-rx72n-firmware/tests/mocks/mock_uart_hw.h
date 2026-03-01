@@ -32,7 +32,7 @@
  * @par NASA Power of 10: [OK] Static FIFO buffers
  * @par SOLID: D - UART bus depends on hardware interface
  *
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #pragma once

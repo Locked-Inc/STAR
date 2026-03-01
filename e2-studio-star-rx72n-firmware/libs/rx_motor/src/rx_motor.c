@@ -212,7 +212,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  * @version 1.0.0
  */
 

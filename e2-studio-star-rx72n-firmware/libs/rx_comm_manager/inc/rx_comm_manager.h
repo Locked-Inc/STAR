@@ -377,7 +377,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @par Changelog:
  * - 1.0.0 (2026-01-26): Initial implementation with USB and SPI channels

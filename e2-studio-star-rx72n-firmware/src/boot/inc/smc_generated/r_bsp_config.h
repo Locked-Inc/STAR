@@ -47,7 +47,7 @@
  * @author STAR Project (Locked, Inc.)
  * @date 2019 (original), 2026 (STAR modifications)
  * @version 2.0.2
- * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @par NASA Power of 10 Compliance
  * - Rule 4: Configuration values kept clear and documented

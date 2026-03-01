@@ -120,7 +120,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @see stdint.h for standard integer types
  * @see rx_gpio_constants.h for GPIO pin constants

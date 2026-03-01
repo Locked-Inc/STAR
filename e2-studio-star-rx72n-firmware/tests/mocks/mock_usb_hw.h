@@ -22,7 +22,7 @@
  * @par SOLID: D - USB CDC depends on hardware interface
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #pragma once

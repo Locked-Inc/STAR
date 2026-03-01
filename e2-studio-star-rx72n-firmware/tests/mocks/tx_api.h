@@ -20,7 +20,7 @@
  * @par SOLID: D - Tasks depend on RTOS interface
  *
  * @date 2026-01-11
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #pragma once

@@ -123,7 +123,7 @@
  * @author STAR Team
  * @date 2026-01-04
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stdint.h>

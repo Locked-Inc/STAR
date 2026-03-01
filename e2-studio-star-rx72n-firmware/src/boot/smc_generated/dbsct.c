@@ -73,8 +73,8 @@
  * @see rx72n.ld GNURX linker script (equivalent for GNURX builds)
  * @see RX72N Manual Chapter 4 - Address Space (memory layout)
  *
- * @copyright Copyright (c) 2013 Renesas Electronics Corporation
- * @copyright Modified 2026 STAR Project - Added comprehensive Doxygen
+ * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @par History
  * - 28.02.2019 v3.00 - Merged all devices, added GNUC/ICCRX support (Renesas)

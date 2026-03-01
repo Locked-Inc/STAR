@@ -97,7 +97,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #pragma once

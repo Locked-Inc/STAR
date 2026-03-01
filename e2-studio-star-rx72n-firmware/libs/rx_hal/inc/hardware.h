@@ -246,7 +246,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @see rx_err.h for error code definitions
  * @see rx_port_constants.h for complete port/pin enumerations

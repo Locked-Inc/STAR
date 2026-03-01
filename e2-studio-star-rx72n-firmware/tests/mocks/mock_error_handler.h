@@ -29,7 +29,7 @@
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
  * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  */
 *Usage Example(Swapping Implementations)
     : *@code * // Production code uses real error handler:

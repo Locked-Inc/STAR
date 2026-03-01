@@ -37,7 +37,7 @@
  * @author STAR Project Team
  * @date February 2026
  * @version 1.0.0
- * @copyright STAR Project - Texas A&M University
+ * @copyright Copyright (c) 2026 STAR Project
  *
  * @see rx_session.h  Public API
  * @see star-gateway/internal/manager/session.go  Go reference implementation
