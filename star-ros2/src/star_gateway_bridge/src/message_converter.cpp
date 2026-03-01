@@ -474,4 +474,71 @@ int64_t MessageConverter::ros_time_to_us(const rclcpp::Time & time)
   return time.nanoseconds() / NS_PER_US;
 }
 
+/**
+ * @brief Convert a single HC-SR04 ultrasonic distance reading to a
+ * sensor_msgs/Range message.
+ *
+ * @details
+ * Populates all fields of the output Range message with HC-SR04 hardware
+ * parameters. A distance of 0.0 m (firmware reports this when the sensor echo
+ * times out) is treated as "no echo" and mapped to max_range so Nav2 costmap
+ * layers interpret it as free space rather than a zero-distance obstacle.
+ * Non-finite or out-of-[min_range, max_range] values are clamped before
+ * writing.
+ *
+ * HC-SR04 hardware parameters applied:
+ * - radiation_type: ULTRASOUND (1)
+ * - field_of_view: 0.2618 rad (~15 degrees full cone angle)
+ * - min_range: 0.02 m (2 cm blind zone)
+ * - max_range: 4.00 m (nominal maximum echo distance)
+ *
+ * @param[in]  distance_m  Distance reading in metres. 0.0 signals a sensor
+ *             timeout and is mapped to max_range.
+ * @param[in]  frame_id    TF2 frame ID for this sensor.
+ * @param[in]  stamp       ROS2 timestamp written into message header.
+ * @param[out] out         Range message populated in-place.
+ *
+ * @pre  frame_id must be a non-empty ASCII string.
+ * @pre  stamp must be a valid rclcpp::Time.
+ * @post out.radiation_type == sensor_msgs::msg::Range::ULTRASOUND.
+ * @post out.range is in [0.02, 4.00] m after clamping.
+ *
+ * @note Thread-safe; stateless pure function with no shared state.
+ * @note HC-SR04 spec: measurement range 2 cm to 400 cm, ~15-degree cone FOV.
+ *
+ * @since Version 1.0.0
+ */
+void MessageConverter::obstacle_distance_to_range(
+  float distance_m, const std::string & frame_id,
+  const rclcpp::Time & stamp, sensor_msgs::msg::Range & out)
+{
+  assert(!frame_id.empty());
+
+  static constexpr float HC_SR04_MIN_RANGE_M = 0.02F;
+  static constexpr float HC_SR04_MAX_RANGE_M = 4.00F;
+  static constexpr float HC_SR04_FOV_RAD = 0.2618F; // ~15 degrees
+
+  out.header.frame_id = frame_id;
+  out.header.stamp = stamp;
+  out.radiation_type = sensor_msgs::msg::Range::ULTRASOUND;
+  out.field_of_view = HC_SR04_FOV_RAD;
+  out.min_range = HC_SR04_MIN_RANGE_M;
+  out.max_range = HC_SR04_MAX_RANGE_M;
+
+  // 0.0 m means the firmware received no echo (sensor timeout): treat as free.
+  if (distance_m == 0.0F) {
+    out.range = HC_SR04_MAX_RANGE_M;
+    return;
+  }
+
+  // Clamp non-finite or out-of-spec values to valid range.
+  if (!std::isfinite(distance_m)) {
+    out.range = HC_SR04_MAX_RANGE_M;
+    return;
+  }
+
+  out.range = std::max(HC_SR04_MIN_RANGE_M,
+                       std::min(HC_SR04_MAX_RANGE_M, distance_m));
+}
+
 }  // namespace star::star_gateway_bridge

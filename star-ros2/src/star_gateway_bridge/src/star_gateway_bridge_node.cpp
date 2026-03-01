@@ -9,12 +9,23 @@
 
 #include <chrono>
 #include <exception>
+#include <string_view>
 #include <thread>
 
 using namespace std::chrono_literals;
 
 namespace star::star_gateway_bridge
 {
+
+// ---------------------------------------------------------------------------
+// Obstacle publisher constants
+// ---------------------------------------------------------------------------
+static constexpr int OBSTACLE_QOS_DEPTH = 10;
+static constexpr std::string_view TOPIC_OBSTACLE_FRONT_LEFT = "/star/obstacle/front_left";
+static constexpr std::string_view TOPIC_OBSTACLE_FRONT_RIGHT = "/star/obstacle/front_right";
+static constexpr std::string_view TOPIC_OBSTACLE_BACK_LEFT = "/star/obstacle/back_left";
+static constexpr std::string_view TOPIC_OBSTACLE_BACK_RIGHT = "/star/obstacle/back_right";
+static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_detected";
 
 /**
  * @brief Construct and fully initialise the STAR Gateway Bridge ROS2 node.
@@ -103,10 +114,22 @@ StarGatewayBridgeNode::~StarGatewayBridgeNode()
 {
   RCLCPP_INFO(this->get_logger(), "Shutting down STAR Gateway Bridge Node");
 
-  // Reset subscriptions before publishers go away
+  // Cancel obstacle timer before resetting publishers to prevent
+  // obstacle_poll_timer_callback() from running after publishers are null.
+  if (obstacle_timer_) {
+    obstacle_timer_->cancel();
+    obstacle_timer_.reset();
+  }
+
+  // Reset subscriptions and obstacle publishers before core publishers go away
   odom_sub_.reset();
   slam_pose_sub_.reset();
   scan_sub_.reset();
+  obstacle_fl_pub_.reset();
+  obstacle_fr_pub_.reset();
+  obstacle_bl_pub_.reset();
+  obstacle_br_pub_.reset();
+  obstacle_detected_pub_.reset();
 
   // Send stop command before shutdown
   auto zero_twist = geometry_msgs::msg::Twist();
@@ -156,8 +179,9 @@ bool StarGatewayBridgeNode::initialize_grpc_client()
     return false;
   }
 
-  // Create gRPC stub
+  // Create gRPC stubs (both services share the same channel)
   grpc_stub_ = star::v1::GatewayService::NewStub(grpc_channel_);
+  telemetry_svc_stub_ = star::v1::TelemetryService::NewStub(grpc_channel_);
 
   RCLCPP_INFO(this->get_logger(),
               "Successfully connected to Gateway gRPC server");
@@ -174,6 +198,18 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
   // Publishers
   teleop_cmd_vel_pub_ =
     this->create_publisher<geometry_msgs::msg::Twist>("/teleop/cmd_vel", 10);
+
+  // Obstacle distance publishers (HC-SR04 ultrasonic sensors, one per corner)
+  obstacle_fl_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
+      std::string(TOPIC_OBSTACLE_FRONT_LEFT), OBSTACLE_QOS_DEPTH);
+  obstacle_fr_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
+      std::string(TOPIC_OBSTACLE_FRONT_RIGHT), OBSTACLE_QOS_DEPTH);
+  obstacle_bl_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
+      std::string(TOPIC_OBSTACLE_BACK_LEFT), OBSTACLE_QOS_DEPTH);
+  obstacle_br_pub_ = this->create_publisher<sensor_msgs::msg::Range>(
+      std::string(TOPIC_OBSTACLE_BACK_RIGHT), OBSTACLE_QOS_DEPTH);
+  obstacle_detected_pub_ = this->create_publisher<std_msgs::msg::Bool>(
+      std::string(TOPIC_OBSTACLE_DETECTED), OBSTACLE_QOS_DEPTH);
 
   // Subscribers
   robot_status_sub_ = this->create_subscription<std_msgs::msg::String>(
@@ -300,6 +336,11 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
   watchdog_timer_ = this->create_wall_timer(
       std::chrono::milliseconds(watchdog_period_ms),
       std::bind(&StarGatewayBridgeNode::connection_watchdog_callback, this));
+
+  // Obstacle polling timer runs at telemetry_rate_hz_ (default 10 Hz).
+  obstacle_timer_ = this->create_wall_timer(
+      std::chrono::milliseconds(telemetry_period_ms),
+      std::bind(&StarGatewayBridgeNode::obstacle_poll_timer_callback, this));
 
   // Create diagnostics publisher
   diagnostics_pub_ =
@@ -536,6 +577,118 @@ void StarGatewayBridgeNode::connection_watchdog_callback()
         "Gateway gRPC connection unhealthy - attempting reconnection");
     grpc_connected_ = false;
     reconnect_grpc_client();
+  }
+}
+
+/**
+ * @brief Poll TelemetryService::GetTelemetry and publish ObstacleData to ROS2.
+ *
+ * @details
+ * Called by obstacle_timer_ at telemetry_rate_hz_ (default 10 Hz). Retrieves
+ * the latest RX72N TelemetryData from the Go gateway via
+ * TelemetryService::GetTelemetry, extracts the ObstacleData sub-message, and
+ * publishes it as five ROS2 messages:
+ *   - /star/obstacle/front_left  (sensor_msgs/Range)
+ *   - /star/obstacle/front_right (sensor_msgs/Range)
+ *   - /star/obstacle/back_left   (sensor_msgs/Range)
+ *   - /star/obstacle/back_right  (sensor_msgs/Range)
+ *   - /star/obstacle_detected    (std_msgs/Bool)
+ *
+ * The callback is a no-op when grpc_connected_ is false or
+ * telemetry_svc_stub_ is null. gRPC errors mark grpc_connected_ as false to
+ * trigger watchdog reconnection and are throttled to one WARN log per 5 s.
+ *
+ * @pre grpc_connected_ must be true for any gRPC call to be attempted.
+ * @pre telemetry_svc_stub_ must be non-null (set in initialize_grpc_client()).
+ * @post Five ROS2 messages are published when an obstacle sub-message is
+ *       present in the gateway response.
+ * @post grpc_connected_ is set to false only for transport-level gRPC failures
+ *       (UNAVAILABLE, DEADLINE_EXCEEDED, INTERNAL); application-level errors
+ *       (NOT_FOUND, INVALID_ARGUMENT, etc.) are throttle-logged but do not
+ *       change grpc_connected_ or trigger watchdog reconnection.
+ *
+ * @note Not thread-safe; called exclusively from the ROS2 timer executor.
+ * @note Range messages use HC-SR04 constants (ULTRASOUND, 15-deg FOV,
+ *       0.02-4.00 m). A firmware-reported distance of 0.0 m (no echo) is
+ *       mapped to max_range by MessageConverter::obstacle_distance_to_range().
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [PASS] 2 preconditions, 2 postconditions documented above.
+ */
+void StarGatewayBridgeNode::obstacle_poll_timer_callback()
+{
+  try {
+    if (!grpc_connected_ || !telemetry_svc_stub_) {
+      return;
+    }
+
+    grpc::ClientContext context;
+    context.set_deadline(std::chrono::system_clock::now() +
+                         std::chrono::milliseconds(grpc_deadline_ms_));
+
+    star::v1::GetTelemetryRequest request;
+    request.mutable_header()->set_request_id(
+        "obstacle_" +
+        std::to_string(
+            std::chrono::system_clock::now().time_since_epoch().count()));
+
+    star::v1::GetTelemetryResponse response;
+    grpc::Status status =
+      telemetry_svc_stub_->GetTelemetry(&context, request, &response);
+
+    if (!status.ok()) {
+      RCLCPP_WARN_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                           "GetTelemetry (obstacle) gRPC failed: %s",
+                           status.error_message().c_str());
+      // Only mark the connection as lost for transport-level failures.
+      // Application-level errors (NOT_FOUND, INVALID_ARGUMENT, etc.) do not
+      // indicate a connectivity loss and should not trigger reconnection.
+      const grpc::StatusCode code = status.error_code();
+      if (code == grpc::StatusCode::UNAVAILABLE ||
+        code == grpc::StatusCode::DEADLINE_EXCEEDED ||
+        code == grpc::StatusCode::INTERNAL)
+      {
+        grpc_connected_ = false;
+      }
+      return;
+    }
+
+    if (!response.has_telemetry() || !response.telemetry().has_obstacle()) {
+      return;
+    }
+
+    const auto & obs = response.telemetry().obstacle();
+    const rclcpp::Time stamp = this->now();
+
+    sensor_msgs::msg::Range range_msg;
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_front_left_m(), "obstacle_front_left", stamp, range_msg);
+    obstacle_fl_pub_->publish(range_msg);
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_front_right_m(), "obstacle_front_right", stamp, range_msg);
+    obstacle_fr_pub_->publish(range_msg);
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_back_left_m(), "obstacle_back_left", stamp, range_msg);
+    obstacle_bl_pub_->publish(range_msg);
+
+    converter_.obstacle_distance_to_range(
+        obs.distance_back_right_m(), "obstacle_back_right", stamp, range_msg);
+    obstacle_br_pub_->publish(range_msg);
+
+    std_msgs::msg::Bool detected_msg;
+    detected_msg.data = obs.any_obstacle();
+    obstacle_detected_pub_->publish(detected_msg);
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                          "Exception in obstacle_poll_timer_callback: %s", e.what());
+  } catch (...) {
+    RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 5000,
+                          "Unknown exception in obstacle_poll_timer_callback");
   }
 }
 

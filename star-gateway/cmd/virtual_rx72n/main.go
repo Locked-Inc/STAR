@@ -68,6 +68,26 @@ const (
 
 	// EnvSimLatencyMs is the environment variable name for configurable latency.
 	EnvSimLatencyMs = "SIM_LATENCY_MS"
+
+	// DefaultFrontLeftDistanceM is the simulated front-left HC-SR04 distance in metres.
+	// Represents a clear, unobstructed sensor reading within the valid 0.02-4.00 m range.
+	DefaultFrontLeftDistanceM = 0.85
+
+	// DefaultFrontRightDistanceM is the simulated front-right HC-SR04 distance in metres.
+	// Represents a clear, unobstructed sensor reading within the valid 0.02-4.00 m range.
+	DefaultFrontRightDistanceM = 0.92
+
+	// DefaultBackLeftDistanceM is the simulated back-left HC-SR04 distance in metres.
+	// Represents a closer-but-clear rear reading within the valid 0.02-4.00 m range.
+	DefaultBackLeftDistanceM = 0.45
+
+	// DefaultBackRightDistanceM is the simulated back-right HC-SR04 distance in metres.
+	// Represents a closer-but-clear rear reading within the valid 0.02-4.00 m range.
+	DefaultBackRightDistanceM = 0.38
+
+	// ObstacleDetectionThresholdM is the distance threshold in metres below which any_obstacle
+	// is set to true (30 cm, matching the firmware HC-SR04 detection logic).
+	ObstacleDetectionThresholdM = 0.30
 )
 
 // simulatorSession tracks session state for the virtual RX72N simulator.
@@ -291,6 +311,14 @@ func generateTelemetryResponse() *starv1.WireMessage {
 					AccelXMps2: 0.05,
 					AccelYMps2: -0.02,
 					AccelZMps2: 9.81, // Gravity
+				},
+				Obstacle: &starv1.ObstacleData{
+					DistanceFrontLeftM:  DefaultFrontLeftDistanceM,
+					DistanceFrontRightM: DefaultFrontRightDistanceM,
+					DistanceBackLeftM:   DefaultBackLeftDistanceM,
+					DistanceBackRightM:  DefaultBackRightDistanceM,
+					AnyObstacle:         false, // All readings exceed ObstacleDetectionThresholdM
+					DetectedMask:        0,     // No per-sensor detection bits set
 				},
 			},
 		},
