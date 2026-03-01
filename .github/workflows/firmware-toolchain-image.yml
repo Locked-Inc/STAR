@@ -32,11 +32,26 @@ jobs:
       - name: Checkout repository (with LFS)
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
-          # lfs: true materializes gcc-14.2.0.202511-GNURX-ELF.run on the runner
-          # filesystem.  Without this, checkout writes a 134-byte LFS pointer
-          # file.  Docker's COPY would then chmod+execute that pointer, producing
-          # a cryptic error with no indication that the binary is missing.
+          # lfs: true runs `git lfs fetch` to populate the local LFS object
+          # store.  We additionally run `git lfs pull` below to force the smudge
+          # filter so the working-tree file is the real binary, not the 134-byte
+          # LFS pointer.  Docker's COPY uses the working-tree file.
           lfs: true
+
+      - name: Verify LFS installer is materialised
+        run: |
+          # `git lfs fetch` (called by lfs:true above) fills the local object
+          # store but may not update the working tree.  `git lfs pull` forces
+          # the smudge filter so the installer is a real binary, not a pointer.
+          git lfs pull --include="gcc-14.2.0.202511-GNURX-ELF.run"
+          INSTALLER_SIZE=$(stat -c '%s' gcc-14.2.0.202511-GNURX-ELF.run)
+          echo "Installer size: ${INSTALLER_SIZE} bytes"
+          if [ "${INSTALLER_SIZE}" -lt 100000000 ]; then
+            echo "ERROR: installer is ${INSTALLER_SIZE} bytes -- LFS pointer file, not binary."
+            echo "Check LFS quota and ensure the file was committed with git lfs."
+            exit 1
+          fi
+          echo "OK: installer binary size verified (${INSTALLER_SIZE} bytes)"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f  # v3

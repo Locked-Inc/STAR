@@ -42,6 +42,15 @@ RUN apt-get update && apt-get install -y \
 # Renesas .run installers are version-specific and wrong flags cause a silent
 # hang waiting for user input with no error output, timing out after 6 hours.
 COPY gcc-14.2.0.202511-GNURX-ELF.run /tmp/gnurx.run
+
+# Fail fast if the LFS pointer was used instead of the real binary.
+# The pointer file is ~134 bytes; the real installer is ~215 MB.
+# A successful install in <5 seconds is a reliable symptom of the wrong file.
+RUN INSTALLER_SIZE=$(stat -c '%s' /tmp/gnurx.run) && \
+    echo "Installer size: ${INSTALLER_SIZE} bytes" && \
+    test "${INSTALLER_SIZE}" -gt 100000000 || \
+    (echo "ERROR: gnurx.run is ${INSTALLER_SIZE} bytes -- looks like an LFS pointer, not the real installer." && exit 1)
+
 RUN chmod +x /tmp/gnurx.run && \
     /tmp/gnurx.run -p /opt/gnurx -y && \
     rm /tmp/gnurx.run
