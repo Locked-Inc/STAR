@@ -1,14 +1,15 @@
 name: RX72N Firmware
 
+# Pull request validation is handled by dedicated modular workflows:
+#   - firmware-unit-tests.yml   (Unity tests, clang-format, cppcheck, coverage)
+#   - firmware-build-verify.yml (cross-compile with GNURX Docker image)
+#   - firmware-toolchain-image.yml (builds ghcr.io/locked-inc/star/gnurx)
+# This workflow only runs on direct push for fast post-merge sanity checks.
 on:
   push:
     branches:
       - main
       - "feature/**"
-    paths:
-      - "e2-studio-star-rx72n-firmware/**"
-      - ".github/workflows/firmware.yml"
-  pull_request:
     paths:
       - "e2-studio-star-rx72n-firmware/**"
       - ".github/workflows/firmware.yml"
@@ -20,10 +21,11 @@ jobs:
   format-check:
     name: Clang-Format Check
     runs-on: ubuntu-latest
+    timeout-minutes: 10
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Install clang-format
         run: |
@@ -40,17 +42,19 @@ jobs:
   test:
     name: Unit Tests (host)
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Install build dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends \
             cmake \
-            build-essential
+            build-essential \
+            protobuf-compiler
 
       - name: Run unit tests
         run: |
@@ -59,55 +63,48 @@ jobs:
 
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
-          name: test-results
+          name: test-results-push-${{ github.sha }}
           path: e2-studio-star-rx72n-firmware/tests/build/
           retention-days: 7
 
   # ---------------------------------------------------------------------------
   # Binary build: cross-compile with GNURX toolchain (rx-elf-gcc)
-  # NOTE: This job requires the GNURX toolchain which is not available on
-  # standard GitHub-hosted runners. It is marked continue-on-error until a
-  # self-hosted runner or toolchain download is configured.
-  # To enable: add rx-elf-gcc to PATH on a self-hosted runner,
-  # or install GNURX from https://gcc-renesas.com/rx-download-toolchains/
+  # Requires ghcr.io/locked-inc/star/gnurx image built by
+  # firmware-toolchain-image.yml.  Marked continue-on-error so a toolchain
+  # image rebuild does not block the push sanity checks.
   # ---------------------------------------------------------------------------
   build:
     name: Cross-Compile (GNURX)
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     continue-on-error: true
+    container:
+      image: ghcr.io/locked-inc/star/gnurx:14.2.0
+      credentials:
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository (with submodules)
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
           submodules: 'true'
 
-      - name: Check for GNURX toolchain
-        run: |
-          if ! command -v rx-elf-gcc &>/dev/null; then
-            echo "::warning::rx-elf-gcc not found -- skipping binary build."
-            echo "::warning::Configure a self-hosted runner with GNURX to enable this job."
-            exit 0
-          fi
-          echo "GNURX found: $(rx-elf-gcc --version | head -1)"
-
-      - name: Install CMake
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends cmake
-
-      - name: Build firmware (Debug)
+      - name: Build firmware (Release)
         run: |
           cd e2-studio-star-rx72n-firmware
-          bash build.sh debug
+          cmake -B build \
+            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_TOOLCHAIN_FILE=cmake/gnurx-toolchain.cmake
+          cmake --build build --parallel $(nproc)
 
       - name: Upload firmware artifacts
         if: success()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
-          name: firmware-debug
+          name: firmware-release-push-${{ github.sha }}
           path: |
             e2-studio-star-rx72n-firmware/build/*.elf
             e2-studio-star-rx72n-firmware/build/*.mot
