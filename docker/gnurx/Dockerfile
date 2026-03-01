@@ -24,12 +24,17 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install cross-compile build dependencies.
 # libncurses5, lib32z1, lib32stdc++6 are required by the Renesas .run installer
 # (self-extracting SFX binary compiled for 32-bit).
+# xz-utils: the Renesas installer uses `tar --xz` (via an external xz binary)
+# to decompress the embedded toolchain payload.  ubuntu:22.04 minimal does NOT
+# include xz-utils, causing tar to silently fail and leave /opt/gnurx empty
+# (the installer does not check tar exit code -- all errors go to /dev/null).
 RUN apt-get update && apt-get install -y \
     cmake \
     make \
     ninja-build \
     python3 \
     git \
+    xz-utils \
     libncurses5 \
     lib32z1 \
     lib32stdc++6 \
@@ -55,19 +60,13 @@ RUN chmod +x /tmp/gnurx.run && \
     /tmp/gnurx.run -p /opt/gnurx -y && \
     rm /tmp/gnurx.run
 
-# Diagnostic: show what the installer placed on disk and confirm architecture.
-# Helps pinpoint "installed successfully" but binary-not-found failures.
-RUN echo "=== Container arch ===" && uname -m && \
-    echo "=== /opt/gnurx top-level ===" && (ls -la /opt/gnurx/ 2>&1 || echo "MISSING /opt/gnurx") && \
-    echo "=== /opt/gnurx/bin (first 10) ===" && (ls -la /opt/gnurx/bin/ 2>&1 | head -10 || echo "MISSING /opt/gnurx/bin") && \
-    echo "=== find rx-elf-gcc anywhere ===" && (find / -maxdepth 6 -name "rx-elf-gcc" 2>/dev/null || echo "NOT FOUND")
-
 # Verify installation before declaring the layer complete.
 # Fails the build immediately if the installer silently produced no toolchain.
 RUN test -f /opt/gnurx/bin/rx-elf-gcc || \
-    (echo "ERROR: rx-elf-gcc not found -- check diagnostic output above" && exit 1)
-RUN /opt/gnurx/bin/rx-elf-gcc --version || \
-    (echo "ERROR: rx-elf-gcc not executable (arch mismatch?)" && uname -m && exit 1)
-RUN echo "GNURX toolchain verification successful"
+    (echo "ERROR: rx-elf-gcc not found. Check that xz-utils is installed (the" && \
+     echo "Renesas installer uses 'tar --xz' which requires the external xz" && \
+     echo "program; ubuntu:22.04 minimal does NOT include it by default)." && \
+     exit 1)
+RUN /opt/gnurx/bin/rx-elf-gcc --version
 
 ENV PATH="/opt/gnurx/bin:${PATH}"
