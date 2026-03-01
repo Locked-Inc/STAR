@@ -503,6 +503,129 @@ TEST_F(MessageConverterTest, TwistToCommandVeryLargeWheelBase)
   EXPECT_FALSE(std::isnan(command.front_right_velocity_mps()));
 }
 
+// =============================================================================
+// obstacle_distance_to_range Tests (HC-SR04 Sensor Converter)
+// =============================================================================
+
+class ObstacleDistanceToRangeTest : public ::testing::Test
+{
+protected:
+  star_gateway_bridge::MessageConverter converter_;
+  static constexpr float FLOAT_TOL = 1e-5F;
+  static constexpr float HC_SR04_MIN = 0.02F;
+  static constexpr float HC_SR04_MAX = 4.00F;
+  static constexpr float HC_SR04_FOV = 0.2618F;
+
+  rclcpp::Time make_stamp() const
+  {
+    return rclcpp::Time(0, 0, RCL_ROS_TIME);
+  }
+};
+
+TEST_F(ObstacleDistanceToRangeTest, NominalReading)
+{
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(1.50F, "obstacle_front_left", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, 1.50F, FLOAT_TOL);
+  EXPECT_EQ(out.radiation_type, sensor_msgs::msg::Range::ULTRASOUND);
+  EXPECT_NEAR(out.field_of_view, HC_SR04_FOV, FLOAT_TOL);
+  EXPECT_NEAR(out.min_range, HC_SR04_MIN, FLOAT_TOL);
+  EXPECT_NEAR(out.max_range, HC_SR04_MAX, FLOAT_TOL);
+  EXPECT_EQ(out.header.frame_id, "obstacle_front_left");
+}
+
+TEST_F(ObstacleDistanceToRangeTest, ZeroMapsToMaxRange)
+{
+  // 0.0 means HC-SR04 echo timeout (no target); map to max_range so Nav2
+  // treats it as free space, not a zero-distance obstacle.
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(0.0F, "obstacle_front_right", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, NaNMapsToMaxRange)
+{
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(
+    std::numeric_limits<float>::quiet_NaN(), "obstacle_back_left", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, PosInfMapsToMaxRange)
+{
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(
+    std::numeric_limits<float>::infinity(), "obstacle_back_right", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, NegInfMapsToMinRange)
+{
+  // Negative infinity is non-finite; clamped to min_range after the
+  // isfinite check falls through to std::max/min clamping.
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(
+    -std::numeric_limits<float>::infinity(), "obstacle_front_left", make_stamp(), out);
+
+  // Non-finite maps to max_range per implementation.
+  EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, BelowMinClampsToMinRange)
+{
+  // Finite negative values clamp to min_range.
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(-0.5F, "obstacle_front_left", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, HC_SR04_MIN, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, AboveMaxClampsToMaxRange)
+{
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(5.00F, "obstacle_front_left", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, AtMinBoundary)
+{
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(HC_SR04_MIN, "obstacle_front_left", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, HC_SR04_MIN, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, AtMaxBoundary)
+{
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(HC_SR04_MAX, "obstacle_front_left", make_stamp(), out);
+
+  EXPECT_NEAR(out.range, HC_SR04_MAX, FLOAT_TOL);
+}
+
+TEST_F(ObstacleDistanceToRangeTest, FrameIdPropagated)
+{
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(1.0F, "obstacle_back_right", make_stamp(), out);
+
+  EXPECT_EQ(out.header.frame_id, "obstacle_back_right");
+}
+
+TEST_F(ObstacleDistanceToRangeTest, StampPropagated)
+{
+  const rclcpp::Time stamp(123456789LL, RCL_ROS_TIME);
+  sensor_msgs::msg::Range out;
+  converter_.obstacle_distance_to_range(1.0F, "obstacle_front_left", stamp, out);
+
+  EXPECT_EQ(out.header.stamp.sec, 0);
+  EXPECT_EQ(out.header.stamp.nanosec, 123456789u);
+}
+
 }  // namespace star
 
 int main(int argc, char **argv)

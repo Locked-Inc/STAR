@@ -25,6 +25,8 @@
 #include <geometry_msgs/msg/twist.hpp>
 #include <nav_msgs/msg/odometry.hpp>
 #include <sensor_msgs/msg/laser_scan.hpp>
+#include <sensor_msgs/msg/range.hpp>
+#include <std_msgs/msg/bool.hpp>
 #include <std_msgs/msg/string.hpp>
 
 #include "star/v1/motor_control.pb.h"
@@ -258,6 +260,47 @@ public:
   static bool pid_config_to_gains(
     const ::star::v1::PidConfig & pid_config,
     double & kp, double & ki, double & kd);
+
+  /**
+   * @brief Convert a single HC-SR04 ultrasonic distance reading to a
+   * sensor_msgs/Range message.
+   *
+   * @details
+   * Populates a sensor_msgs::msg::Range message with HC-SR04 hardware
+   * parameters (ULTRASOUND radiation type, 15-degree FOV, 0.02-4.00 m range)
+   * and writes the supplied distance into the range field. A distance of 0.0
+   * (reported by the firmware when the sensor echo timed out) is treated as
+   * "no echo" and mapped to max_range so Nav2 costmap layers interpret it as
+   * free space rather than a zero-distance obstacle.
+   *
+   * Non-finite or out-of-range distances are clamped to [min_range, max_range]
+   * before writing.
+   *
+   * @param[in]  distance_m  Distance reading from the ObstacleData field, in
+   *             metres. 0.0 indicates a sensor timeout (no echo); all other
+   *             values are clamped to [0.02, 4.00] m.
+   * @param[in]  frame_id    TF2 frame ID for this sensor (e.g.
+   *             "obstacle_front_left"). Must be a non-empty ASCII string.
+   * @param[in]  stamp       ROS2 timestamp to write into the message header.
+   * @param[out] out         Range message populated in-place; all fields are
+   *             overwritten by this function.
+   *
+   * @pre  frame_id must be a non-empty ASCII string.
+   * @pre  stamp must be a valid rclcpp::Time (not Time(0) unless intentional).
+   * @post out.radiation_type == sensor_msgs::msg::Range::ULTRASOUND.
+   * @post out.range is in [0.02, 4.00] m after clamping.
+   *
+   * @note Thread-safe; stateless pure function with no shared state.
+   * @note HC-SR04 spec: measurement range 2 cm to 400 cm, 15-degree cone.
+   *
+   * @see obstacle_poll_timer_callback() in StarGatewayBridgeNode, which calls
+   *      this function four times per polling cycle (once per sensor).
+   *
+   * @since Version 1.0.0
+   */
+  static void obstacle_distance_to_range(
+    float distance_m, const std::string & frame_id,
+    const rclcpp::Time & stamp, sensor_msgs::msg::Range & out);
 
   // ===========================================================================
   // Validation Helpers
