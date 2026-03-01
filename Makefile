@@ -25,8 +25,8 @@ help:
 	@echo "  make proto-gen-firmware  - Generate nanopb protos for RX72N firmware"
 	@echo "  make test-rx72n          - Run RX72N unit tests (regenerates protos first)"
 	@echo "  make doxygen             - Generate Doxygen HTML docs for RX72N firmware"
-	@echo "  make doxygen-pdf         - Generate Doxygen HTML + LaTeX PDF (requires lualatex)"
-	@echo "  make doxygen-pdf-deps    - Install missing LaTeX packages for doxygen-pdf (varwidth, luaotfload)"
+	@echo "  make doxygen-pdf         - Generate Doxygen HTML + LaTeX PDF (requires xelatex)"
+	@echo "  make doxygen-pdf-deps    - Install missing LaTeX packages for doxygen-pdf (varwidth, collection-latexextra)"
 	@echo "  make doxygen-clean       - Remove generated Doxygen output"
 	@echo "  Note: GNURX toolchain required for build targets (rx-elf-gcc)"
 	@echo ""
@@ -173,30 +173,31 @@ doxygen:
 	@echo "Done: $(DOXYGEN_OUT)/html/index.html"
 
 # Generate HTML + compile LaTeX to PDF
-# Uses lualatex (no register limit) instead of pdflatex (hits eTex 32768 cap
-# on our large codebase). Doxygen 1.16.1+ is required (installed from GitHub
-# in the Dockerfile -- Ubuntu 24.04 apt ships 1.9.8 which uses broken tabu).
-# Run 'make doxygen-pdf-deps' first if any required tools are missing.
+# Uses xelatex: no register limits, faster startup than lualatex (no Lua
+# overhead), same fontspec/TU encoding support. Requires texlive-xetex and
+# fonts-urw-base35 (both in Dockerfile). Doxygen 1.16.1+ required (installed
+# from GitHub -- Ubuntu 24.04 apt ships 1.9.8 which uses broken tabu).
+# Run 'make doxygen-pdf-deps' first if any required LaTeX packages are missing.
 #
-# Note: CALL_GRAPH and CALLER_GRAPH are disabled for the PDF run only.
-# The main Doxyfile keeps them enabled for HTML (SVG hover graphs).
-# In a PDF they add ~3000 call/caller graph images and 20+ min compile time
-# with no clickable benefit. Re-enable by editing the sed line below.
+# Performance note: /workspaces is mounted over WSL2's 9p (Plan 9) bridge to
+# the Windows host filesystem. lualatex opens every \includegraphics file on
+# each pass; with 1500+ graph PDFs that is thousands of 9p round-trips and the
+# root cause of 20+ hour builds. Fix: copy the generated latex dir to /tmp
+# (Linux tmpfs, in-memory) before running latexmk, then copy refman.pdf back.
+# /tmp is kernel tmpfs -- no disk or 9p I/O during compilation.
 doxygen-pdf:
-	@if ! kpsewhich varwidth.sty >/dev/null 2>&1 || ! kpsewhich luaotfload-main.lua >/dev/null 2>&1; then \
-	  echo "ERROR: Missing LaTeX packages. Run: make doxygen-pdf-deps"; \
+	@if ! command -v xelatex >/dev/null 2>&1; then \
+	  echo "ERROR: xelatex not found. Rebuild the Docker image (texlive-xetex is in Dockerfile)."; \
 	  exit 1; \
 	fi
 	@if ! command -v epstopdf >/dev/null 2>&1; then \
 	  echo "ERROR: epstopdf not found. Run: make doxygen-pdf-deps"; \
 	  exit 1; \
 	fi
-	@echo "Generating Doxygen LaTeX (call/caller graphs disabled for PDF)..."
+	@echo "Generating Doxygen LaTeX..."
 	@mkdir -p $(DOXYGEN_OUT)
 	@tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.pdf.XXXXXX); \
-	 sed -e 's/^CALL_GRAPH\s*=.*/CALL_GRAPH             = NO/' \
-	     -e 's/^CALLER_GRAPH\s*=.*/CALLER_GRAPH           = NO/' \
-	     -e 's/^GENERATE_HTML\s*=.*/GENERATE_HTML          = NO/' \
+	 sed -e 's/^GENERATE_HTML\s*=.*/GENERATE_HTML          = NO/' \
 	     $(FIRMWARE_DIR)/Doxyfile > "$$tmp"; \
 	 cd $(FIRMWARE_DIR) && doxygen "$$(basename $$tmp)"; \
 	 rm -f "$$tmp"
@@ -222,9 +223,14 @@ doxygen-pdf:
 	   pdf="$${msc%.msc}.pdf"; \
 	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
 	 done
-	@echo "Compiling refman.pdf (latexmk + lualatex)..."
-	@rm -f $(LATEX_DIR)/refman.fdb_latexmk $(LATEX_DIR)/refman.pdf
-	@cd $(LATEX_DIR) && latexmk -lualatex -interaction=nonstopmode -f refman.tex
+	@echo "Copying latex dir to tmpfs (/tmp) to avoid WSL2 9p I/O overhead..."
+	@ramdisk=$$(mktemp -d /tmp/doxygen-pdf-XXXXXX); \
+	 cp -a $(LATEX_DIR)/. "$$ramdisk/"; \
+	 rm -f "$$ramdisk/refman.fdb_latexmk" "$$ramdisk/refman.pdf"; \
+	 echo "  tmpfs build dir: $$ramdisk ($$(du -sh $(LATEX_DIR) 2>/dev/null | cut -f1) copied)"; \
+	 cd "$$ramdisk" && latexmk -xelatex -interaction=nonstopmode -f refman.tex; \
+	 cp "$$ramdisk/refman.pdf" "$(LATEX_DIR)/refman.pdf"; \
+	 rm -rf "$$ramdisk"
 	@echo "Done: $(LATEX_DIR)/refman.pdf"
 
 # Remove all generated Doxygen output
@@ -234,47 +240,35 @@ doxygen-clean:
 	@echo "Done."
 
 # Install LaTeX packages required by doxygen-pdf that are not in the
-# Dockerfile's base texlive set (texlive-luatex and texlive-latex-extra are
-# not available as apt packages in this environment).
+# Dockerfile's base texlive set. xelatex itself and fonts-urw-base35 are
+# installed via the Dockerfile (rebuild the Docker image if missing).
 #
 # Packages installed via tlmgr user mode (TeX Live 2023 historic archive):
-#   varwidth, lualibs, lua-uni-algos, collection-latexextra, collection-luatex
-# Packages installed manually from CTAN (non-relocatable, cannot use tlmgr):
-#   luaotfload  -> ~/texmf/tex/luatex/luaotfload/
+#   varwidth, collection-latexextra
 # Wrapper scripts:
-#   epstopdf    -> /usr/local/bin/epstopdf (delegates to gs)
+#   epstopdf  -> /usr/local/bin/epstopdf (delegates to gs)
 # Format rebuild:
-#   fmtutil-user --byfmt lualatex  (fixes expl3 version mismatch after installs)
+#   fmtutil-user --byfmt xelatex  (fixes expl3 version mismatch after installs)
 doxygen-pdf-deps:
 	@echo "Installing LaTeX deps for doxygen-pdf..."
+	@if ! command -v xelatex >/dev/null 2>&1; then \
+	  echo "ERROR: xelatex not found. Rebuild the Docker image (texlive-xetex is in Dockerfile)."; \
+	  exit 1; \
+	fi
 	@echo "  Configuring tlmgr user mode repository (TeX Live 2023 archive)..."
 	@tlmgr init-usertree 2>/dev/null || true
 	@tlmgr --usermode option repository https://ftp.math.utah.edu/pub/tex/historic/systems/texlive/2023/tlnet-final 2>/dev/null || true
 	@echo "  Installing packages via tlmgr..."
 	@tlmgr --usermode install \
-	    varwidth lualibs lua-uni-algos \
-	    collection-latexextra collection-luatex \
+	    varwidth \
+	    collection-latexextra \
 	    2>&1 | grep -E "(install:|running|Error)" || true
-	@if ! kpsewhich luaotfload-main.lua >/dev/null 2>&1; then \
-	  echo "  Downloading luaotfload from CTAN (non-relocatable, manual install)..."; \
-	  tmp=$$(mktemp -d); \
-	  curl -sL "https://mirrors.ctan.org/macros/luatex/generic/luaotfload.zip" -o "$$tmp/luaotfload.zip"; \
-	  unzip -q "$$tmp/luaotfload.zip" -d "$$tmp"; \
-	  mkdir -p ~/texmf/tex/luatex/luaotfload ~/texmf/tex/latex/luaotfload; \
-	  cp "$$tmp/luaotfload/"*.lua ~/texmf/tex/luatex/luaotfload/; \
-	  cp "$$tmp/luaotfload/"*.sty ~/texmf/tex/latex/luaotfload/; \
-	  cp "$$tmp/luaotfload/"*.cnf ~/texmf/tex/luatex/luaotfload/; \
-	  mktexlsr ~/texmf; \
-	  rm -rf "$$tmp"; \
-	else \
-	  echo "  luaotfload-main.lua already present -- skipping"; \
-	fi
 	@if ! command -v epstopdf >/dev/null 2>&1; then \
 	  bash scripts/install-epstopdf-wrapper.sh; \
 	else \
 	  echo "  epstopdf already present -- skipping"; \
 	fi
-	@echo "  Regenerating lualatex format (fixes expl3 version mismatch)..."
-	@fmtutil-user --byfmt lualatex 2>&1 | grep -E "(INFO|Error|error)" | tail -3
+	@echo "  Regenerating xelatex format (fixes expl3 version mismatch)..."
+	@fmtutil-user --byfmt xelatex 2>&1 | grep -E "(INFO|Error|error)" | tail -3
 	@echo "Done: LaTeX deps installed. Re-run 'make doxygen-pdf' to generate the PDF."
 
