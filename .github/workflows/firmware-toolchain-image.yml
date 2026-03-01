@@ -13,7 +13,7 @@ name: Build GNURX Toolchain Image
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'adding-cicd-tests-for-rx72n']
     paths:
       - 'docker/gnurx/Dockerfile'
       - '.github/workflows/firmware-toolchain-image.yml'
