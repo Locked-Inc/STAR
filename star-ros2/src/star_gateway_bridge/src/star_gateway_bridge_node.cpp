@@ -626,8 +626,8 @@ void StarGatewayBridgeNode::obstacle_poll_timer_callback()
       // indicate a connectivity loss and should not trigger reconnection.
       const grpc::StatusCode code = status.error_code();
       if (code == grpc::StatusCode::UNAVAILABLE ||
-          code == grpc::StatusCode::DEADLINE_EXCEEDED ||
-          code == grpc::StatusCode::INTERNAL)
+        code == grpc::StatusCode::DEADLINE_EXCEEDED ||
+        code == grpc::StatusCode::INTERNAL)
       {
         grpc_connected_ = false;
       }
