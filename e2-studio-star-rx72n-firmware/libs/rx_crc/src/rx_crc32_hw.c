@@ -176,7 +176,7 @@
  * - **Single hardware instance:** CRC state is shared in one peripheral.
  * - **No caller isolation in hardware:** DORCLR and CRCDIR/CRCDOR are global.
  * - **When internal lock is enabled:** A module-level lock
- *   (crc_lock_acquire()/crc_lock_release()) serializes the complete
+ *   (internal_crc_lock_acquire()/internal_crc_lock_release()) serializes the complete
  *   transaction from DORCLR through CRCDOR read.
  * - **When internal lock is not enabled in a build:** callers must provide
  *   external mutual exclusion around the full transaction.
@@ -245,7 +245,7 @@
  * | **2. Fixed Loop Bounds** | [PASS] FULL | Loop bounded by k_crc_len_max (65535) |
  * | **3. No Dynamic Memory** | [PASS] FULL | Zero malloc/free, all state is static |
  * | **4. Short Functions** | [PASS] FULL | Longest function: rx_crc32_ieee_impl (54 lines) |
- * | **5. Assertions** | [PASS] FULL | Minimum 2 checks per function (NULL, range) |
+ * | **5. Assertions** | [PASS] FULL | Minimum 2 checks per function (nullptr, range) |
  * | **6. Smallest Scope** | [PASS] FULL | Variables declared at first use |
  * | **7. Check Return Values** | [PASS] FULL | rx_crc_init() return checked |
  * | **8. Limit Preprocessor** | [PASS] FULL | Only conditional compilation, C23 typed enums |
@@ -305,7 +305,7 @@
  *
  * @author STAR Team
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifdef RX_CRC32_USE_HARDWARE
@@ -320,7 +320,7 @@
 
 #ifdef RX_CRC32_USE_DMA
 #include "rx_dmaca.h"
-#include "tx_api.h" /* tx_interrupt_control(), tx_thread_sleep() */
+#include "tx_api.h"
 #endif
 
 /* =============================================================================
@@ -344,77 +344,11 @@ typedef enum : int32_t {
  * defined in rx_crc_internal.h to ensure consistency across implementations.
  */
 typedef enum : uint32_t {
-  k_crc_result_invalid = 0, /**< Invalid CRC result (error case) */
-  k_crc_bit_set        = 1, /**< Bit set value for register manipulation */
+  k_crc_result_invalid             = 0,     /**< Invalid CRC result (error case) */
+  k_crc_bit_set                    = 1,     /**< Bit set value for register manipulation */
+  k_crc_lock_sleep_ticks           = 0,     /**< Cooperative yield ticks while waiting for lock */
+  k_crc_lock_acquire_max_attempts  = 1024,  /**< Bounded retries for lock acquisition */
 } rx_crc_hw_loop_constants_t;
-
-/* =============================================================================
- * DMA Configuration
- * =============================================================================
- */
-
-#ifdef RX_CRC32_USE_DMA
-
-/**
- * @enum rx_crc_dma_defaults_t
- * @brief Default constants for CRC32 DMA configuration
- *
- * @details
- * This typed enum provides the compile-time default values used by the
- * `RX_CRC32_DMA_CHANNEL` and `RX_CRC32_DMA_THRESHOLD` macros. Using an enum
- * ensures the constants are named, documented, and type-safe in accordance
- * with the project's "no magic numbers" policy.
- *
- * @note
- * The underlying type is chosen large enough to hold both values. Consumers
- * should not depend on the specific enum type, only on the macro wrappers.
- *
- * @code{.c}
- * // Override defaults at compile time:
- * // -DRX_CRC32_DMA_CHANNEL=2 -DRX_CRC32_DMA_THRESHOLD=128
- *
- * // Or use default values directly:
- * uint8_t channel = (uint8_t)k_crc_dma_channel_default;
- * @endcode
- *
- * @see rx_dmaca.h DMACA driver interface
- * @see internal_crc_feed_dma() Consumer of these constants
- *
- * @since Version 1.0.0
- */
-typedef enum : uint32_t {
-  k_crc_dma_channel_default =
-    0U, /**< Default DMA channel (0); override with -DRX_CRC32_DMA_CHANNEL=<n> */
-  k_crc_dma_threshold_default =
-    64U, /**< Threshold (bytes) for using DMA; below this CPU loop is faster due to lower setup overhead (~30-50 cycles); break-even ~64 bytes @ 240 MHz */
-} rx_crc_dma_defaults_t;
-
-/**
- * @brief DMACA channel used for CRC data transfer.
- *
- * Override at compile time with -DRX_CRC32_DMA_CHANNEL=<n> if channel 0
- * is already claimed by another driver. Falls back to
- * `k_crc_dma_channel_default` defined above.
- */
-#ifndef RX_CRC32_DMA_CHANNEL
-#define RX_CRC32_DMA_CHANNEL (k_crc_dma_channel_default)
-#endif
-
-/**
- * @brief Minimum buffer length (bytes) for which DMA is used.
- *
- * Below this threshold the CPU loop is faster because DMA setup overhead
- * (configure + SWREQ latency ~ 30-50 cycles) exceeds the loop savings.
- * Measured break-even on RX72N @ 240 MHz is approximately 64 bytes; the
- * default value is `k_crc_dma_threshold_default`.
- *
- * Override with -DRX_CRC32_DMA_THRESHOLD=<n> after profiling workload.
- */
-#ifndef RX_CRC32_DMA_THRESHOLD
-#define RX_CRC32_DMA_THRESHOLD (k_crc_dma_threshold_default)
-#endif
-
-#endif /* RX_CRC32_USE_DMA */
 
 /* =============================================================================
  * Module State
@@ -433,7 +367,7 @@ typedef enum : uint32_t {
  * lazy initialization in `rx_crc32_ieee_impl()` on first use.
  *
  * @note
- * The variable has file scope and is protected by crc_lock_acquire() in
+ * The variable has file scope and is protected by internal_crc_lock_acquire() in
  * rx_crc_init() to serialize DMA initialization.
  *
  * @warning
@@ -477,28 +411,150 @@ static bool s_crc_initialized = false;
  */
 static volatile bool s_crc_lock = false;
 
-/* Helper helpers for lock acquire/release.  These are defined only when DMA
- * is enabled because the lock is only needed in that configuration. */
-static void crc_lock_acquire(void)
+/**
+ * @brief Acquire exclusive access to the CRC hardware transaction lock
+ *
+ * @details
+ * Implements a bounded-latency spin-wait lock for the file-scoped
+ * `s_crc_lock` flag. Atomicity of the test-and-set sequence is guaranteed by
+ * temporarily disabling interrupts with `tx_interrupt_control(TX_INT_DISABLE)`.
+ *
+ * Lock acquisition sequence:
+ * 1. Save previous interrupt state and disable interrupts.
+ * 2. If lock is held, restore interrupts and yield (`tx_thread_sleep(0)`).
+ * 3. Re-disable interrupts and retry until lock is free.
+ * 4. Set `s_crc_lock = true` while interrupts are disabled.
+ * 5. Restore the previous interrupt state.
+ *
+ * This function serializes the shared CRC peripheral transaction
+ * (DORCLR -> CRCDIR writes -> CRCDOR read) so concurrent callers cannot
+ * interleave hardware state changes.
+ *
+ * @return rx_err_t Error code indicating lock acquisition status
+ * @retval k_rx_ok Lock acquired successfully.
+ * @retval k_rx_err_timeout Lock not acquired within k_crc_lock_acquire_max_attempts retries.
+ * @retval k_rx_err_invalid_state ThreadX sleep/yield failed while waiting for lock.
+ *
+ * @pre `RX_CRC32_USE_DMA` build path is enabled.
+ * @pre Must be called from thread context (not ISR context).
+ * @pre Caller must not already hold `s_crc_lock` (non-recursive lock).
+ *
+ * @post `s_crc_lock == true` when k_rx_ok is returned.
+ * @post Interrupt state is restored to the pre-call value.
+ * @post Caller has exclusive ownership until internal_crc_lock_release().
+ *
+ * @note This is a bounded spin-wait lock with cooperative yield via `tx_thread_sleep(k_crc_lock_sleep_ticks)`.
+ * @note Hold time should be kept short to avoid priority inversion.
+ * @note Use only for the CRC critical section; do not use as a general mutex.
+ *
+ * @warning Recursive acquisition may exhaust retries and return k_rx_err_timeout.
+ * @warning Calling from interrupt context is not supported.
+ * @warning Every successful acquire (k_rx_ok) must be paired with internal_crc_lock_release().
+ *
+ * @par Example:
+ * @code{.c}
+ * rx_err_t lock_err = internal_crc_lock_acquire();
+ * if (lock_err != k_rx_ok) {
+ *   return lock_err;
+ * }
+ * crc_regs()->crccr |= k_crc_crccr_dorclr;
+ * // write CRCDIR bytes and read CRCDOR
+ * internal_crc_lock_release();
+ * @endcode
+ *
+ * @see internal_crc_lock_release() Release ownership of the CRC lock
+ * @see rx_crc32_ieee_impl() Uses this lock around CRC hardware transaction
+ *
+ * @since Version 1.2.0
+ */
+static rx_err_t internal_crc_lock_acquire(void)
 {
   UINT saved = tx_interrupt_control(TX_INT_DISABLE);
-  /* spin until the lock becomes free */
-  while (s_crc_lock) {
+  for (uint32_t attempt = k_crc_idx_start; attempt < k_crc_lock_acquire_max_attempts; attempt++) {
+    if (!s_crc_lock) {
+      s_crc_lock = true;
+      tx_interrupt_control(saved);
+      return k_rx_ok;
+    }
+
     /* restore interrupts while waiting to avoid long disable periods */
     tx_interrupt_control(saved);
-    /* brief pause/yield -- using ThreadX sleep(0) to allow other threads */
-    tx_thread_sleep(0);
+
+    /* brief pause/yield to allow lock owner to run */
+    UINT sleep_status = tx_thread_sleep((ULONG)k_crc_lock_sleep_ticks);
+    if (sleep_status != TX_SUCCESS) {
+      return k_rx_err_invalid_state;
+    }
+
     saved = tx_interrupt_control(TX_INT_DISABLE);
   }
-  s_crc_lock = true;
+
   tx_interrupt_control(saved);
+  return k_rx_err_timeout;
 }
 
-static void crc_lock_release(void)
+/**
+ * @brief Release ownership of the CRC hardware transaction lock
+ *
+ * @details
+ * Clears the file-scoped `s_crc_lock` flag atomically by disabling interrupts
+ * around the store operation, then restores the previous interrupt state.
+ *
+ * This function is the mandatory counterpart to `internal_crc_lock_acquire()`
+ * and must be called after completion of the protected CRC transaction
+ * (DORCLR -> CRCDIR writes -> CRCDOR read).
+ *
+ * Release sequence:
+ * 1. Save previous interrupt state and disable interrupts.
+ * 2. Set `s_crc_lock = false`.
+ * 3. Restore the previous interrupt state.
+ *
+ * @return rx_err_t Error code indicating lock release status
+ * @retval k_rx_ok Lock released successfully.
+ * @retval k_rx_err_invalid_state Caller did not own lock or interrupt-state restore validation failed.
+ *
+ * @pre `RX_CRC32_USE_DMA` build path is enabled.
+ * @pre Caller currently owns `s_crc_lock`.
+ * @pre Must be called from thread context (not ISR context).
+ *
+ * @post `s_crc_lock == false` when k_rx_ok is returned.
+ * @post Interrupt state is restored to the pre-call value.
+ * @post Waiting threads may acquire the lock on subsequent scheduler runs.
+ *
+ * @note This function validates lock ownership before release.
+ * @note Keep critical sections minimal so blocked threads are released quickly.
+ *
+ * @warning Releasing without prior acquisition returns k_rx_err_invalid_state.
+ * @warning Omitting release after acquisition can deadlock other callers.
+ *
+ * @par Example:
+ * @code{.c}
+ * internal_crc_lock_acquire();
+ * // CRC critical section: DORCLR, CRCDIR writes, CRCDOR read
+ * internal_crc_lock_release();
+ * @endcode
+ *
+ * @see internal_crc_lock_acquire() Acquire ownership of the CRC lock
+ * @see rx_crc32_ieee_impl() Locking call site around hardware transaction
+ *
+ * @since Version 1.2.0
+ */
+static rx_err_t internal_crc_lock_release(void)
 {
   UINT saved = tx_interrupt_control(TX_INT_DISABLE);
+
+  if (!s_crc_lock) {
+    UINT restore_state = tx_interrupt_control(saved);
+    return k_rx_err_invalid_state;
+  }
+
   s_crc_lock = false;
-  tx_interrupt_control(saved);
+  UINT restore_state = tx_interrupt_control(saved);
+  if ((restore_state != TX_INT_DISABLE) && (restore_state != TX_INT_ENABLE)) {
+    return k_rx_err_invalid_state;
+  }
+
+  return k_rx_ok;
 }
 #endif /* RX_CRC32_USE_DMA */
 
@@ -676,7 +732,7 @@ static bool s_dma_initialized = false;
  *   }
  *
  *   // Verify peripheral is responsive
- *   if (crc_regs() == NULL) {
+ *   if (crc_regs() == nullptr) {
  *     rx_log_error("CRC", "Peripheral not responding after init");
  *     return k_rx_err_hardware;
  *   }
@@ -731,18 +787,26 @@ rx_err_t rx_crc_init(void)
    * Safe to call here because the CRC module clock is already enabled above.
    *
    * NASA Rule 7: return value checked before proceeding.
-   * ----------------------------------------------------------------------- */
+   * ----------------------------------------------------------------------- 
+   */
   if (!s_dma_initialized) {
-    crc_lock_acquire();
-    if (!s_dma_initialized) {
-      rx_err_t dma_err = rx_dmaca_init();
-      if (dma_err != k_rx_ok) {
-        crc_lock_release();
-        return dma_err;
-      }
-      s_dma_initialized = true;
+    rx_err_t lock_err = internal_crc_lock_acquire();
+    if (lock_err != k_rx_ok) {
+      return lock_err;
     }
-    crc_lock_release();
+    rx_err_t dma_err = rx_dmaca_init();
+    if (dma_err != k_rx_ok) {
+      rx_err_t release_err = internal_crc_lock_release();
+      if (release_err != k_rx_ok) {
+        return release_err;
+      }
+      return dma_err;
+    }
+    s_dma_initialized = true;
+    rx_err_t release_err = internal_crc_lock_release();
+    if (release_err != k_rx_ok) {
+      return release_err;
+    }
   }
 #endif /* RX_CRC32_USE_DMA */
 
@@ -936,7 +1000,7 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
  * | 4096 bytes | 24480 | 102.0 | **40.2** | Sustained peak |
  *
  * **Breakdown (1024-byte buffer):**
- * - Validation: ~10 cycles (NULL, range checks)
+ * - Validation: ~10 cycles (nullptr, range checks)
  * - DORCLR write: ~5 cycles
  * - Loop (1024 bytes x 6 cycles/byte): 6144 cycles
  * - CRCDOR read + XOR: ~10 cycles
@@ -1155,7 +1219,10 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 
 #ifdef RX_CRC32_USE_DMA
   /* Serialize entire transaction before touching DORCLR/CRCDIR/CRCDOR. */
-  crc_lock_acquire();
+  rx_err_t lock_err = internal_crc_lock_acquire();
+  if (lock_err != k_rx_ok) {
+    return k_crc_result_invalid;
+  }
 #endif
 
   /*
@@ -1188,7 +1255,10 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 
     rx_err_t dma_err = internal_crc_feed_dma(data, dma_len);
     if (dma_err != k_rx_ok) {
-      crc_lock_release();
+      rx_err_t release_err = internal_crc_lock_release();
+      if (release_err != k_rx_ok) {
+        return k_crc_result_invalid;
+      }
       return k_crc_result_invalid;
     }
 
@@ -1220,7 +1290,10 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 
 #ifdef RX_CRC32_USE_DMA
   /* Release lock only after CRCDOR has been read. */
-  crc_lock_release();
+  rx_err_t release_err = internal_crc_lock_release();
+  if (release_err != k_rx_ok) {
+    return k_crc_result_invalid;
+  }
 #endif
 
   return crc_result;

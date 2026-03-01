@@ -50,7 +50,7 @@
  *
  * @author STAR Team
  * @date 2026-02-22
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_dmaca.h"
