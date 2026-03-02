@@ -1200,6 +1200,81 @@ rx_err_t rx_nanopb_decode_pid_gains_request(const uint8_t*              buffer,
 }
 
 /**
+ * @brief Encode SetPIDGainsResponse message to Protocol Buffer bytes
+ *
+ * @details
+ * Serializes a SetPIDGainsResponse message as acknowledgment to a PID gains
+ * update command. Sent back to RPi5 after processing a SetPIDGainsRequest.
+ *
+ * The optional pb_callback_t message field is skipped when its encode callback
+ * is NULL (init_zero default). The success boolean and response header status
+ * are sufficient for programmatic acknowledgment.
+ *
+ * @param[in]  msg         Message to encode (must not be nullptr)
+ * @param[out] buffer      Output buffer for wire-format bytes (must not be nullptr)
+ * @param[in]  buffer_size Size of output buffer (must be >= s_nanopb_buffer_size)
+ * @param[out] len         Actual encoded length in bytes (must not be nullptr)
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Encode successful
+ * @retval k_rx_err_invalid_arg nullptr in msg, buffer, or len
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_invalid_size buffer_size too small or encoded length out of bounds
+ *
+ * @pre rx_nanopb_init() must be called before this function
+ * @pre buffer must point to at least buffer_size bytes of writable memory
+ * @post On k_rx_ok: buffer[0..*len-1] contains valid wire-format response
+ * @post On k_rx_ok: *len <= s_nanopb_buffer_size
+ *
+ * @note Not thread-safe; call only from Communication Task context
+ *
+ * @par Performance: ~15 us @ 240 MHz
+ *
+ * @see rx_nanopb_decode_pid_gains_request() Decode the incoming request
+ * @see rx_nanopb_create_response_header() Create header with status and request_id
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Compliance:
+ * - Rule 5: [PASS] 3 preconditions, 2 postconditions documented
+ * - Rule 7: [PASS] pb_encode() return value checked
+ */
+rx_err_t rx_nanopb_encode_pid_gains_response(const star_v1_SetPIDGainsResponse* msg,
+                                              uint8_t*                           buffer,
+                                              const uint32_t                     buffer_size,
+                                              uint32_t*                          len)
+{
+  /* Pre-condition 1: nullptr pointer checks */
+  if (msg == nullptr || buffer == nullptr || len == nullptr) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Pre-condition 2: Module initialized */
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  /* Pre-condition 3: Buffer size validation (NASA Rule 5 - buffer overflow prevention) */
+  if (buffer_size < s_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
+
+  if (!pb_encode(&stream, star_v1_SetPIDGainsResponse_fields, msg)) {
+    return k_rx_err_invalid_size;
+  }
+
+  *len = stream.bytes_written;
+
+  /* Post-condition: Encoded length within bounds */
+  if (*len > s_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Decode SetRetransmitConfigRequest from Protocol Buffer bytes
  * @param[in] buffer Raw protobuf bytes
  * @param[in] len Buffer length
