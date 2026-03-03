@@ -262,6 +262,9 @@ define build_doxy_pdf
 	 echo "  Fixing refman.tex: \\\\+, \\\\_, and replacing helvet with TeX Gyre Heros for xelatex..."; \
 	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char"005F}/' "$$ramdisk/refman.tex"; \
 	 sed -i 's/\\usepackage\[scaled=.90\]{helvet}/\\setsansfont[Scale=.90]{TeX Gyre Heros}/' "$$ramdisk/refman.tex"; \
+	 sed -i 's/\\usepackage{doxygen}/\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}\n\\let\\OrigIncludegraphics\\includegraphics\n\\renewcommand{\\includegraphics}[2][]{\\OrigIncludegraphics[max width=\\linewidth,max totalheight=0.8\\textheight,#1]{#2}}/' "$$ramdisk/refman.tex"; \
+	 echo "  Fixing figure placement: [H] -> [htbp] to prevent figures overflowing page boundaries..."; \
+	 grep -rl 'begin{figure}\[H\]' "$$ramdisk" | xargs -r sed -i 's/\\begin{figure}\[H\]/\\begin{figure}[htbp]/g'; \
 	 cd "$$ramdisk" && xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xdvipdfmx -E -o refman.pdf refman.xdv; \
