@@ -79,14 +79,16 @@ public:
    *
    * @pre  telemetry.obstacle() sub-message is present and populated by the
    *       RX72N firmware.
-   * @pre  Distance values in telemetry are within the valid HC-SR04 sensor
-   *       range (0.02 m - 4.0 m); out-of-range values are clamped or set to
-   *       NaN by callers.
+   * @pre  Distance values in telemetry are expected to be within the valid
+   *       HC-SR04 sensor range (0.02 m - 4.0 m); finite out-of-range values
+   *       are clamped to the nearest boundary by this function, and non-finite
+   *       values are set to NaN.
    *
    * @post Each output Range message has radiation_type, field_of_view,
    *       min_range, and max_range set to HC-SR04 sensor constants.
-   * @post Each output Range message has header.frame_id and range populated
-   *       from telemetry; no exceptions are thrown for valid inputs.
+   * @post Each output Range message has header.frame_id and range set to a
+   *       finite value clamped to [0.02, 4.0] m, or NaN for non-finite inputs;
+   *       no exceptions are thrown for valid inputs.
    *
    * @note Not thread-safe; the SpiMessageConverter instance must not be used
    *       concurrently from multiple threads.

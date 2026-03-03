@@ -148,3 +148,106 @@ TEST_F(SpiDriverTest, EncodeRejectsOversizedPayload)
     SpiDriver::encode_frame(0, FrameType::Command, 0x00, oversized, frame),
     std::invalid_argument);
 }
+
+// ---------------------------------------------------------------------------
+// FrameFlags bitwise operator tests
+// ---------------------------------------------------------------------------
+// All valid flag bits are in [0, 4] (mask 0x1F). Bits 5-7 are reserved and
+// must remain 0.  These tests verify combining, masking, toggling, assignment,
+// and the unary complement semantics guaranteed by operator~.
+// ---------------------------------------------------------------------------
+
+class FrameFlagsTest : public ::testing::Test {};
+
+TEST_F(FrameFlagsTest, OrCombinesFlags)
+{
+  const FrameFlags combined = FrameFlags::RequiresAck | FrameFlags::Priority;
+  const auto raw = static_cast<uint8_t>(combined);
+
+  // RequiresAck=0x01, Priority=0x04 -> 0x05
+  EXPECT_EQ(raw, 0x05u);
+  // Both source bits are present
+  EXPECT_NE(static_cast<uint8_t>(combined & FrameFlags::RequiresAck), 0u);
+  EXPECT_NE(static_cast<uint8_t>(combined & FrameFlags::Priority), 0u);
+}
+
+TEST_F(FrameFlagsTest, AndMasksFlags)
+{
+  const FrameFlags combined = FrameFlags::RequiresAck | FrameFlags::Priority;
+  // Mask off RequiresAck
+  const FrameFlags masked = combined & FrameFlags::RequiresAck;
+  EXPECT_EQ(static_cast<uint8_t>(masked), static_cast<uint8_t>(FrameFlags::RequiresAck));
+  // Priority bit is not present after AND with RequiresAck
+  EXPECT_EQ(static_cast<uint8_t>(masked & FrameFlags::Priority), 0u);
+}
+
+TEST_F(FrameFlagsTest, XorTogglesFlags)
+{
+  // Start with RequiresAck | Priority, toggle RequiresAck off
+  const FrameFlags combined = FrameFlags::RequiresAck | FrameFlags::Priority;
+  const FrameFlags toggled = combined ^ FrameFlags::RequiresAck;
+
+  // RequiresAck should be cleared, Priority remains
+  EXPECT_EQ(static_cast<uint8_t>(toggled), static_cast<uint8_t>(FrameFlags::Priority));
+}
+
+TEST_F(FrameFlagsTest, NotComplementsDefinedBitsOnly)
+{
+  // ~RequiresAck (0x01) should have bits 1-4 set but bit 0 cleared,
+  // and reserved bits 5-7 must always be 0.
+  const FrameFlags result = ~FrameFlags::RequiresAck;
+  const auto raw = static_cast<uint8_t>(result);
+
+  // Bit 0 (RequiresAck) is cleared
+  EXPECT_EQ(raw & 0x01u, 0u);
+  // Bits 1-4 (Retransmit, Priority, FecEnabled, SoftNack) are set
+  EXPECT_EQ(raw & 0x1Eu, 0x1Eu);
+  // Reserved bits 5-7 must be zero
+  EXPECT_EQ(raw & 0xE0u, 0u);
+}
+
+TEST_F(FrameFlagsTest, NotClearsReservedBitsForAllSingleFlags)
+{
+  // Verify reserved bits are always 0 regardless of input
+  constexpr uint8_t kReservedMask = 0xE0u;
+  for (const auto flag : {
+    FrameFlags::None, FrameFlags::RequiresAck, FrameFlags::Retransmit,
+    FrameFlags::Priority, FrameFlags::FecEnabled, FrameFlags::SoftNack})
+  {
+    const auto raw = static_cast<uint8_t>(~flag);
+    EXPECT_EQ(raw & kReservedMask, 0u)
+        << "Reserved bits 5-7 set for ~flag with underlying value "
+        << static_cast<int>(static_cast<uint8_t>(flag));
+  }
+}
+
+TEST_F(FrameFlagsTest, OrAssignmentAccumulatesFlags)
+{
+  FrameFlags flags = FrameFlags::None;
+  flags |= FrameFlags::RequiresAck;
+  flags |= FrameFlags::FecEnabled;
+
+  // RequiresAck=0x01, FecEnabled=0x08 -> 0x09
+  EXPECT_EQ(static_cast<uint8_t>(flags), 0x09u);
+}
+
+TEST_F(FrameFlagsTest, AndAssignmentClearsFlags)
+{
+  FrameFlags flags = FrameFlags::RequiresAck | FrameFlags::Retransmit | FrameFlags::Priority;
+  // Keep only Priority
+  flags &= FrameFlags::Priority;
+  EXPECT_EQ(static_cast<uint8_t>(flags), static_cast<uint8_t>(FrameFlags::Priority));
+}
+
+TEST_F(FrameFlagsTest, XorAssignmentTogglesFlags)
+{
+  FrameFlags flags = FrameFlags::RequiresAck | FrameFlags::Retransmit;
+  // Toggle Retransmit off and SoftNack on
+  flags ^= (FrameFlags::Retransmit | FrameFlags::SoftNack);
+
+  // Retransmit cleared, RequiresAck kept, SoftNack added
+  const auto raw = static_cast<uint8_t>(flags);
+  EXPECT_EQ(raw & static_cast<uint8_t>(FrameFlags::Retransmit), 0u);
+  EXPECT_NE(raw & static_cast<uint8_t>(FrameFlags::RequiresAck), 0u);
+  EXPECT_NE(raw & static_cast<uint8_t>(FrameFlags::SoftNack), 0u);
+}

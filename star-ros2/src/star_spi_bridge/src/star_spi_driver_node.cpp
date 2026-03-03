@@ -17,7 +17,6 @@ using namespace std::chrono_literals;
 namespace star_spi_bridge
 {
 static constexpr int kLogThrottleMs = 1000;
-static constexpr int kMaxRetries = 3;
 
 // IMU sensor noise model (variance = sigma^2, all diagonal).
 // sigma_orientation ~5.7 deg, sigma_angular_vel ~0.032 rad/s, sigma_accel ~0.1 m/s^2
@@ -143,17 +142,25 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
 
   std::vector<uint8_t> zero_payload(
     static_cast<size_t>(zero_req.ByteSizeLong()));
-  zero_req.SerializeToArray(zero_payload.data(),
-                            static_cast<int>(zero_payload.size()));
-
-  const uint8_t zero_flags =
-    static_cast<uint8_t>(FrameFlags::RequiresAck) |
-    static_cast<uint8_t>(FrameFlags::Priority);
-  std::vector<uint8_t> zero_frame;
-  SpiDriver::encode_frame(tx_seq_++, FrameType::Command, zero_flags,
-                          zero_payload, zero_frame);
-  std::vector<uint8_t> dummy_rx;
-  (void)spi_driver_->transfer(zero_frame, dummy_rx);
+  if (!zero_req.SerializeToArray(zero_payload.data(),
+                                 static_cast<int>(zero_payload.size())))
+  {
+    RCLCPP_ERROR(get_logger(),
+                 "Failed to serialize zero-velocity request during deactivation");
+  } else {
+    const uint8_t zero_flags =
+      static_cast<uint8_t>(FrameFlags::RequiresAck) |
+      static_cast<uint8_t>(FrameFlags::Priority);
+    std::vector<uint8_t> zero_frame;
+    SpiDriver::encode_frame(tx_seq_, FrameType::Command, zero_flags,
+                            zero_payload, zero_frame);
+    std::vector<uint8_t> dummy_rx;
+    if (!spi_driver_->transfer(zero_frame, dummy_rx)) {
+      RCLCPP_ERROR(get_logger(), "SPI transfer failed for deactivation stop frame");
+    } else {
+      tx_seq_++;
+    }
+  }
 
   odom_pub_->on_deactivate();
   joint_state_pub_->on_deactivate();
@@ -306,200 +313,219 @@ void StarSpiDriverNode::emergency_stop_callback(
 
 void StarSpiDriverNode::timer_callback()
 {
-  // Check for command velocity timeout (watchdog safety)
-  auto now = get_clock()->now();
-  double time_since_cmd = (now - last_cmd_vel_time_).seconds();
+  try {
+    // Check for command velocity timeout (watchdog safety)
+    auto now = get_clock()->now();
+    double time_since_cmd = (now - last_cmd_vel_time_).seconds();
 
-  geometry_msgs::msg::Twist cmd_vel_to_send;
-  if (time_since_cmd <= (cmd_vel_timeout_ms_ / 1000.0)) {
-    cmd_vel_to_send = current_cmd_vel_;
-  }
-  // else: zero velocity (default-constructed Twist)
+    geometry_msgs::msg::Twist cmd_vel_to_send;
+    if (time_since_cmd <= (cmd_vel_timeout_ms_ / 1000.0)) {
+      cmd_vel_to_send = current_cmd_vel_;
+    }
+    // else: zero velocity (default-constructed Twist)
 
-  // ACK/NACK flow control: retransmit cached frame on timeout/NACK
-  std::vector<uint8_t> tx_frame;
-  if (pending_ack_ && retry_count_ < kMaxRetries && !last_tx_frame_.empty()) {
-    // Retransmit the cached frame
-    tx_frame = last_tx_frame_;
-    retry_count_++;
-    RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
-                         "Retransmitting frame (attempt %d/%d)", retry_count_,
-                         kMaxRetries);
-  } else {
-    if (pending_ack_ && retry_count_ >= kMaxRetries) {
-      RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
-                            "ACK timeout after %d retries; dropping frame",
-                            kMaxRetries);
-      pending_ack_ = false;
+    // ACK/NACK flow control: retransmit cached frame on timeout/NACK
+    std::vector<uint8_t> tx_frame;
+    bool is_retransmit = false;
+    if (pending_ack_ && retry_count_ < K_MAX_RETRIES && !last_tx_frame_.empty()) {
+      // Retransmit the cached frame
+      tx_frame = last_tx_frame_;
+      is_retransmit = true;
+      retry_count_++;
+      RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
+                           "Retransmitting frame (attempt %d/%d)", retry_count_,
+                           K_MAX_RETRIES);
+    } else {
+      if (pending_ack_ && retry_count_ >= K_MAX_RETRIES) {
+        RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
+                              "ACK timeout after %d retries; dropping frame",
+                              K_MAX_RETRIES);
+        pending_ack_ = false;
+        retry_count_ = 0;
+      }
+
+      // Convert Twist to protobuf VelocityCommand wrapped in SetVelocityRequest.
+      // Firmware expects SetVelocityRequest, not bare VelocityCommand.
+      star::v1::VelocityCommand velocity_cmd;
+      if (!converter_->twist_to_velocity_command(cmd_vel_to_send, velocity_cmd)) {
+        RCLCPP_WARN(get_logger(),
+                    "Failed to convert Twist to VelocityCommand (NaN/Inf?)");
+        velocity_cmd.set_front_left_velocity_mps(0.0);
+        velocity_cmd.set_front_right_velocity_mps(0.0);
+        velocity_cmd.set_back_left_velocity_mps(0.0);
+        velocity_cmd.set_back_right_velocity_mps(0.0);
+      }
+
+      star::v1::SetVelocityRequest request;
+      *request.mutable_command() = velocity_cmd;
+
+      std::vector<uint8_t> payload(static_cast<size_t>(request.ByteSizeLong()));
+      if (!request.SerializeToArray(payload.data(),
+                                    static_cast<int>(payload.size())))
+      {
+        RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
+                              "Failed to serialize SetVelocityRequest; skipping cycle");
+        return;
+      }
+
+      const uint8_t flags = static_cast<uint8_t>(FrameFlags::RequiresAck);
+      last_tx_seq_ = tx_seq_;
+      SpiDriver::encode_frame(tx_seq_, FrameType::Command, flags, payload,
+                              tx_frame);
+      last_tx_frame_ = tx_frame;
+      pending_ack_ = true;
       retry_count_ = 0;
     }
 
-    // Convert Twist to protobuf VelocityCommand wrapped in SetVelocityRequest.
-    // Firmware expects SetVelocityRequest, not bare VelocityCommand.
-    star::v1::VelocityCommand velocity_cmd;
-    if (!converter_->twist_to_velocity_command(cmd_vel_to_send, velocity_cmd)) {
-      RCLCPP_WARN(get_logger(),
-                  "Failed to convert Twist to VelocityCommand (NaN/Inf?)");
-      velocity_cmd.set_front_left_velocity_mps(0.0);
-      velocity_cmd.set_front_right_velocity_mps(0.0);
-      velocity_cmd.set_back_left_velocity_mps(0.0);
-      velocity_cmd.set_back_right_velocity_mps(0.0);
+    // Perform full-duplex SPI transfer
+    std::vector<uint8_t> rx_frame;
+    if (!spi_driver_->transfer(tx_frame, rx_frame)) {
+      RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
+                            "SPI Transfer Failed");
+      return;
     }
 
-    star::v1::SetVelocityRequest request;
-    *request.mutable_command() = velocity_cmd;
+    // Increment tx_seq_ only after a successful new-frame transfer (not retransmit)
+    if (!is_retransmit) {
+      tx_seq_++;
+    }
 
-    std::vector<uint8_t> payload(static_cast<size_t>(request.ByteSizeLong()));
-    request.SerializeToArray(payload.data(), static_cast<int>(payload.size()));
+    // Decode received frame
+    uint16_t rx_seq = 0;
+    FrameType rx_type = FrameType::Ping;
+    uint8_t rx_flags = 0;
+    std::vector<uint8_t> rx_payload;
 
-    const uint8_t flags = static_cast<uint8_t>(FrameFlags::RequiresAck);
-    last_tx_seq_ = tx_seq_;
-    SpiDriver::encode_frame(tx_seq_++, FrameType::Command, flags, payload,
-                            tx_frame);
-    last_tx_frame_ = tx_frame;
-    pending_ack_ = true;
-    retry_count_ = 0;
-  }
+    if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags, rx_payload)) {
+      RCLCPP_WARN_THROTTLE(
+          get_logger(), *get_clock(), kLogThrottleMs,
+          "SPI Frame Decode Failed (CRC mismatch or garbage)");
+      return;
+    }
 
-  // Perform full-duplex SPI transfer
-  std::vector<uint8_t> rx_frame;
-  if (!spi_driver_->transfer(tx_frame, rx_frame)) {
-    RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
-                          "SPI Transfer Failed");
-    return;
-  }
-
-  // Decode received frame
-  uint16_t rx_seq = 0;
-  FrameType rx_type = FrameType::Ping;
-  uint8_t rx_flags = 0;
-  std::vector<uint8_t> rx_payload;
-
-  if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags, rx_payload)) {
-    RCLCPP_WARN_THROTTLE(
-        get_logger(), *get_clock(), kLogThrottleMs,
-        "SPI Frame Decode Failed (CRC mismatch or garbage)");
-    return;
-  }
-
-  // Dispatch on received frame type
-  switch (rx_type) {
-    case FrameType::Ack: {
-        if (rx_seq == last_tx_seq_) {
-          pending_ack_ = false;
-          retry_count_ = 0;
-        }
-        break;
-      }
-
-    case FrameType::Nack: {
-        RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
-                             "NACK received for seq=%u", rx_seq);
-        // pending_ack_ stays true; retransmit will happen next tick
-        break;
-      }
-
-    case FrameType::Ping: {
-        RCLCPP_DEBUG(get_logger(), "PING received from RX72N");
-        break;
-      }
-
-    case FrameType::Response: {
-        // Response implies command was received; clear ACK state
-        pending_ack_ = false;
-        retry_count_ = 0;
-
-        star::v1::TelemetryData telemetry;
-        if (!telemetry.ParseFromArray(rx_payload.data(),
-                                      static_cast<int>(rx_payload.size())))
-        {
-          RCLCPP_WARN(get_logger(), "Failed to parse TelemetryData protobuf");
+    // Dispatch on received frame type
+    switch (rx_type) {
+      case FrameType::Ack: {
+          if (rx_seq == last_tx_seq_) {
+            pending_ack_ = false;
+            retry_count_ = 0;
+          }
           break;
         }
 
-        // Check emergency stop flag from motor controller
-        if (telemetry.emergency_stop()) {
-          RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
-                                "RX72N EMERGENCY STOP ACTIVE");
+      case FrameType::Nack: {
+          RCLCPP_WARN_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
+                               "NACK received for seq=%u", rx_seq);
+          // pending_ack_ stays true; retransmit will happen next tick
+          break;
         }
 
-        // Publish Odometry
-        nav_msgs::msg::Odometry odom;
-        odom.header.stamp = now;
-        converter_->telemetry_to_odometry(telemetry, odom);
-        odom_pub_->publish(odom);
-
-        // Publish Joint States
-        sensor_msgs::msg::JointState joint_state;
-        joint_state.header.stamp = now;
-        converter_->telemetry_to_joint_state(telemetry, joint_state);
-        joint_state_pub_->publish(joint_state);
-
-        // Publish IMU data if populated
-        const auto & imu_data = telemetry.imu();
-        constexpr double kImuEpsilon = 1e-6;
-        const bool imu_populated =
-          (std::fabs(imu_data.accel_z_mps2()) > kImuEpsilon ||
-          std::fabs(imu_data.gyro_z_rad_per_s()) > kImuEpsilon);
-        if (imu_populated) {
-          sensor_msgs::msg::Imu imu_msg;
-          imu_msg.header.stamp = now;
-          imu_msg.header.frame_id = "imu_link";
-
-          tf2::Quaternion q;
-          q.setRPY(imu_data.roll_rad(), imu_data.pitch_rad(), imu_data.yaw_rad());
-          imu_msg.orientation.x = q.x();
-          imu_msg.orientation.y = q.y();
-          imu_msg.orientation.z = q.z();
-          imu_msg.orientation.w = q.w();
-          imu_msg.orientation_covariance = {
-            kImuOrientationVar, 0.0, 0.0,
-            0.0, kImuOrientationVar, 0.0,
-            0.0, 0.0, kImuOrientationVar};
-
-          imu_msg.angular_velocity.x = imu_data.gyro_x_rad_per_s();
-          imu_msg.angular_velocity.y = imu_data.gyro_y_rad_per_s();
-          imu_msg.angular_velocity.z = imu_data.gyro_z_rad_per_s();
-          imu_msg.angular_velocity_covariance = {
-            kImuAngularVelocityVar, 0.0, 0.0,
-            0.0, kImuAngularVelocityVar, 0.0,
-            0.0, 0.0, kImuAngularVelocityVar};
-
-          imu_msg.linear_acceleration.x = imu_data.accel_x_mps2();
-          imu_msg.linear_acceleration.y = imu_data.accel_y_mps2();
-          imu_msg.linear_acceleration.z = imu_data.accel_z_mps2();
-          imu_msg.linear_acceleration_covariance = {
-            kImuLinearAccelVar, 0.0, 0.0,
-            0.0, kImuLinearAccelVar, 0.0,
-            0.0, 0.0, kImuLinearAccelVar};
-
-          imu_pub_->publish(imu_msg);
+      case FrameType::Ping: {
+          RCLCPP_DEBUG(get_logger(), "PING received from RX72N");
+          break;
         }
 
-        // Publish obstacle ranges
-        sensor_msgs::msg::Range obs_fl, obs_fr, obs_bl, obs_br;
-        obs_fl.header.stamp = now;
-        obs_fr.header.stamp = now;
-        obs_bl.header.stamp = now;
-        obs_br.header.stamp = now;
-        converter_->telemetry_to_obstacle_ranges(telemetry, obs_fl, obs_fr,
-                                                 obs_bl, obs_br);
-        obstacle_front_left_pub_->publish(obs_fl);
-        obstacle_front_right_pub_->publish(obs_fr);
-        obstacle_back_left_pub_->publish(obs_bl);
-        obstacle_back_right_pub_->publish(obs_br);
+      case FrameType::Response: {
+          // Response implies command was received; clear ACK state
+          pending_ack_ = false;
+          retry_count_ = 0;
 
-        std_msgs::msg::Bool detected_msg;
-        detected_msg.data = telemetry.obstacle().any_obstacle();
-        obstacle_detected_pub_->publish(detected_msg);
-        break;
-      }
+          star::v1::TelemetryData telemetry;
+          if (!telemetry.ParseFromArray(rx_payload.data(),
+                                        static_cast<int>(rx_payload.size())))
+          {
+            RCLCPP_WARN(get_logger(), "Failed to parse TelemetryData protobuf");
+            break;
+          }
 
-    default: {
-        RCLCPP_DEBUG(get_logger(), "Received unhandled frame type: 0x%02X",
-                     static_cast<uint8_t>(rx_type));
-        break;
-      }
+          // Check emergency stop flag from motor controller
+          if (telemetry.emergency_stop()) {
+            RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
+                                  "RX72N EMERGENCY STOP ACTIVE");
+          }
+
+          // Publish Odometry
+          nav_msgs::msg::Odometry odom;
+          odom.header.stamp = now;
+          converter_->telemetry_to_odometry(telemetry, odom);
+          odom_pub_->publish(odom);
+
+          // Publish Joint States
+          sensor_msgs::msg::JointState joint_state;
+          joint_state.header.stamp = now;
+          converter_->telemetry_to_joint_state(telemetry, joint_state);
+          joint_state_pub_->publish(joint_state);
+
+          // Publish IMU data if populated
+          const auto & imu_data = telemetry.imu();
+          constexpr double kImuEpsilon = 1e-6;
+          const bool imu_populated =
+            (std::fabs(imu_data.accel_z_mps2()) > kImuEpsilon ||
+            std::fabs(imu_data.gyro_z_rad_per_s()) > kImuEpsilon);
+          if (imu_populated) {
+            sensor_msgs::msg::Imu imu_msg;
+            imu_msg.header.stamp = now;
+            imu_msg.header.frame_id = "imu_link";
+
+            tf2::Quaternion q;
+            q.setRPY(imu_data.roll_rad(), imu_data.pitch_rad(), imu_data.yaw_rad());
+            imu_msg.orientation.x = q.x();
+            imu_msg.orientation.y = q.y();
+            imu_msg.orientation.z = q.z();
+            imu_msg.orientation.w = q.w();
+            imu_msg.orientation_covariance = {
+              kImuOrientationVar, 0.0, 0.0,
+              0.0, kImuOrientationVar, 0.0,
+              0.0, 0.0, kImuOrientationVar};
+
+            imu_msg.angular_velocity.x = imu_data.gyro_x_rad_per_s();
+            imu_msg.angular_velocity.y = imu_data.gyro_y_rad_per_s();
+            imu_msg.angular_velocity.z = imu_data.gyro_z_rad_per_s();
+            imu_msg.angular_velocity_covariance = {
+              kImuAngularVelocityVar, 0.0, 0.0,
+              0.0, kImuAngularVelocityVar, 0.0,
+              0.0, 0.0, kImuAngularVelocityVar};
+
+            imu_msg.linear_acceleration.x = imu_data.accel_x_mps2();
+            imu_msg.linear_acceleration.y = imu_data.accel_y_mps2();
+            imu_msg.linear_acceleration.z = imu_data.accel_z_mps2();
+            imu_msg.linear_acceleration_covariance = {
+              kImuLinearAccelVar, 0.0, 0.0,
+              0.0, kImuLinearAccelVar, 0.0,
+              0.0, 0.0, kImuLinearAccelVar};
+
+            imu_pub_->publish(imu_msg);
+          }
+
+          // Publish obstacle ranges
+          sensor_msgs::msg::Range obs_fl, obs_fr, obs_bl, obs_br;
+          obs_fl.header.stamp = now;
+          obs_fr.header.stamp = now;
+          obs_bl.header.stamp = now;
+          obs_br.header.stamp = now;
+          converter_->telemetry_to_obstacle_ranges(telemetry, obs_fl, obs_fr,
+                                                   obs_bl, obs_br);
+          obstacle_front_left_pub_->publish(obs_fl);
+          obstacle_front_right_pub_->publish(obs_fr);
+          obstacle_back_left_pub_->publish(obs_bl);
+          obstacle_back_right_pub_->publish(obs_br);
+
+          std_msgs::msg::Bool detected_msg;
+          detected_msg.data = telemetry.obstacle().any_obstacle();
+          obstacle_detected_pub_->publish(detected_msg);
+          break;
+        }
+
+      default: {
+          RCLCPP_DEBUG(get_logger(), "Received unhandled frame type: 0x%02X",
+                       static_cast<uint8_t>(rx_type));
+          break;
+        }
+    }
+  } catch (const std::exception & e) {
+    RCLCPP_ERROR(get_logger(), "Unhandled exception in timer_callback: %s", e.what());
+  } catch (...) {
+    RCLCPP_ERROR(get_logger(), "Unhandled non-standard exception in timer_callback");
   }
 }
 

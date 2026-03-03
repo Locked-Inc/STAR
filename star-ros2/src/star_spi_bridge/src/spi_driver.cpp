@@ -210,7 +210,7 @@ bool SpiDriver::initialize()
   }
 
   // Configure bits per word (8 bits)
-  uint8_t bits = k_bits_per_word;
+  uint8_t bits = BITS_PER_WORD;
   if (ioctl(spi_fd_, SPI_IOC_WR_BITS_PER_WORD, &bits) < 0) {
     RCLCPP_ERROR(logger(), "Failed to set SPI bits per word");
     close_device();
@@ -276,7 +276,7 @@ bool SpiDriver::transfer(
       xfer, static_cast<uint64_t>(reinterpret_cast<uintptr_t>(rx_data.data())));
   set_spi_xfer_len(xfer, static_cast<uint32_t>(tx_data.size()));
   set_spi_xfer_speed_hz(xfer, speed_hz_);
-  set_spi_xfer_bits_per_word(xfer, k_bits_per_word);
+  set_spi_xfer_bits_per_word(xfer, BITS_PER_WORD);
 
   int ret = ioctl(spi_fd_, SPI_IOC_MESSAGE(1), &xfer);
   if (ret < 0) {

@@ -394,8 +394,8 @@ private:
   uint32_t speed_hz_;
   int spi_fd_;
 
-  static const uint32_t k_crc32_polynomial = 0x04C11DB7;
-  static constexpr uint8_t k_bits_per_word = 8;
+  static const uint32_t CRC32_POLYNOMIAL = 0x04C11DB7;
+  static constexpr uint8_t BITS_PER_WORD = 8;
   // [SYNC: 0x55AA (2B, LE) - wire: 0xAA, 0x55]
   // [SEQ: sequence number (2B, LE)]
   // [LEN: payload length (2B, LE)]

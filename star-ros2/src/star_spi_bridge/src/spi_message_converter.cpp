@@ -195,9 +195,9 @@ void SpiMessageConverter::telemetry_to_joint_state(
  * field_of_view, min_range, max_range) and the measured distance.
  * If a distance value is not finite (NaN or Inf), the corresponding msg.range
  * is set to std::numeric_limits<float>::quiet_NaN() so consumers can detect
- * invalid readings.  Out-of-[min, max]-range finite distances are passed
- * through unmodified; the caller or the Range consumer is responsible for
- * interpreting readings outside the sensor's reliable operating range.
+ * invalid readings.  Finite values outside the sensor operating range
+ * [MIN_RANGE_M, MAX_RANGE_M] are clamped to the nearest boundary so that
+ * all published Range messages carry values within the declared min/max.
  *
  * @param[in]  telemetry    Protobuf telemetry payload from the RX72N.  Must
  *                          contain a populated obstacle sub-message.
@@ -209,12 +209,13 @@ void SpiMessageConverter::telemetry_to_joint_state(
  * @pre  telemetry.obstacle() is present (contains at least a default-constructed
  *       ObstacleData sub-message).
  * @pre  Distance values from telemetry are expected to be in [0.02, 4.0] m;
- *       non-finite values are handled gracefully (set to NaN).
+ *       finite values outside this range are clamped to the boundary.
  *
  * @post Each output Range message has radiation_type, field_of_view, min_range,
  *       and max_range set to HC-SR04 sensor constants.
  * @post Each output Range message has header.frame_id populated and msg.range
- *       is either a finite distance or quiet_NaN() if the source was non-finite.
+ *       is either a finite value clamped to [MIN_RANGE_M, MAX_RANGE_M] or
+ *       quiet_NaN() if the source was non-finite.
  *
  * @note Not thread-safe; the SpiMessageConverter instance must not be accessed
  *       concurrently from multiple threads.
@@ -245,11 +246,12 @@ void SpiMessageConverter::telemetry_to_obstacle_ranges(
       msg.max_range = MAX_RANGE_M;
       msg.header.frame_id = frame_id;
       if (std::isfinite(distance_m)) {
-        msg.range = distance_m;
+        // Clamp finite values to the HC-SR04 valid operating range
+        msg.range = std::clamp(distance_m, MIN_RANGE_M, MAX_RANGE_M);
       } else {
         msg.range = std::numeric_limits<float>::quiet_NaN();
       }
-      // Postcondition: range is never Inf; it is either a finite sensor reading or NaN
+      // Postcondition: range is a clamped finite value in [MIN_RANGE_M, MAX_RANGE_M], or NaN
       assert(!std::isinf(msg.range));
     };
 
