@@ -1,9 +1,16 @@
-cmake_minimum_required(VERSION 3.8)
-project(star_spi_bridge)
+cmake_minimum_required(VERSION 3.20)
+project(star_spi_bridge LANGUAGES C CXX)
 
-if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-  add_compile_options(-Wall -Wextra -Wpedantic)
-endif()
+# Language standard enforcement
+set(CMAKE_C_STANDARD 23)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Position-independent code for shared-library compatibility
+set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
 # Find dependencies
 find_package(ament_cmake REQUIRED)
@@ -32,16 +39,11 @@ if(NOT EXISTS "${STAR_PROTO_DIR}")
     "Run 'buf generate' in star-proto/ directory first.")
 endif()
 
-include_directories(${STAR_PROTO_DIR})
-
 # ============================================
 # Collect generated protobuf source files
 # ============================================
 
 file(GLOB PROTO_SRCS "${STAR_PROTO_DIR}/star/v1/*.pb.cc")
-
-# Include directories
-include_directories(include)
 
 # SPI Driver Library
 add_library(spi_driver
@@ -51,7 +53,11 @@ add_library(spi_driver
 )
 target_include_directories(spi_driver PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${STAR_PROTO_DIR}>
   $<INSTALL_INTERFACE:include>
+)
+target_compile_options(spi_driver PRIVATE
+  $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
 )
 target_link_libraries(spi_driver
   ${Protobuf_LIBRARIES}
@@ -72,6 +78,9 @@ target_include_directories(star_spi_bridge_node PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<INSTALL_INTERFACE:include>
 )
+target_compile_options(star_spi_bridge_node PRIVATE
+  $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
+)
 target_link_libraries(star_spi_bridge_node spi_driver)
 ament_target_dependencies(star_spi_bridge_node
   rclcpp
@@ -79,6 +88,7 @@ ament_target_dependencies(star_spi_bridge_node
   geometry_msgs
   nav_msgs
   sensor_msgs
+  std_msgs
 )
 
 # Install rules
@@ -109,9 +119,15 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_spi_driver test/test_spi_driver.cpp)
   target_link_libraries(test_spi_driver spi_driver ${Protobuf_LIBRARIES})
+  target_compile_options(test_spi_driver PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
+  )
 
   ament_add_gtest(test_spi_message_converter test/test_spi_message_converter.cpp)
   target_link_libraries(test_spi_message_converter spi_driver ${Protobuf_LIBRARIES})
+  target_compile_options(test_spi_message_converter PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
+  )
 endif()
 
 ament_package()
