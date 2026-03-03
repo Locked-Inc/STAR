@@ -259,12 +259,29 @@ define build_doxy_pdf
 	 echo "  tmpfs build dir: $$ramdisk ($$(du -sh $$latex_abs 2>/dev/null | cut -f1) copied)"; \
 	 echo "  Deduplicating multiply-defined Doxygen labels..."; \
 	 grep -rl 'label{doc-' "$$ramdisk" | xargs -r sed -i '/\\label{doc-[a-z-]*-members}/d'; \
+	 echo "  Converting EPS graphs to properly-sized PDFs (gs respects BoundingBox)..."; \
+	 for eps in "$$ramdisk"/*.eps; do \
+	   [ -f "$$eps" ] || continue; \
+	   pdf="$${eps%.eps}.pdf"; \
+	   [ -f "$$pdf" ] && continue; \
+	   bb=$$(grep "^%%BoundingBox:" "$$eps" | grep -v atend | head -1); \
+	   [ -z "$$bb" ] && continue; \
+	   llx=$$(echo "$$bb" | awk '{print $$2}'); lly=$$(echo "$$bb" | awk '{print $$3}'); \
+	   urx=$$(echo "$$bb" | awk '{print $$4}'); ury=$$(echo "$$bb" | awk '{print $$5}'); \
+	   w=$$((urx - llx)); h=$$((ury - lly)); \
+	   gs -q -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite \
+	     -dFIXEDMEDIA -dDEVICEWIDTHPOINTS=$$w -dDEVICEHEIGHTPOINTS=$$h \
+	     -sOutputFile=$$pdf \
+	     -c "<</PageOffset [-$$llx -$$lly]>> setpagedevice" \
+	     -f "$$eps" 2>/dev/null || true; \
+	 done; \
 	 echo "  Fixing refman.tex: \\\\+, \\\\_, and replacing helvet with TeX Gyre Heros for xelatex..."; \
-	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char"005F}/' "$$ramdisk/refman.tex"; \
+	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char95}/' "$$ramdisk/refman.tex"; \
 	 sed -i 's/\\usepackage\[scaled=.90\]{helvet}/\\setsansfont[Scale=.90]{TeX Gyre Heros}/' "$$ramdisk/refman.tex"; \
-	 sed -i 's/\\usepackage{doxygen}/\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}\n\\let\\OrigIncludegraphics\\includegraphics\n\\renewcommand{\\includegraphics}[2][]{\\OrigIncludegraphics[max width=\\linewidth,max totalheight=0.8\\textheight,#1]{#2}}/' "$$ramdisk/refman.tex"; \
-	 echo "  Fixing figure placement: [H] -> [htbp] to prevent figures overflowing page boundaries..."; \
-	 grep -rl 'begin{figure}\[H\]' "$$ramdisk" | xargs -r sed -i 's/\\begin{figure}\[H\]/\\begin{figure}[htbp]/g'; \
+	 sed -i 's/\\usepackage{doxygen}/\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}/' "$$ramdisk/refman.tex"; \
+	 echo "  Replacing uncaptioned figure[H] envs with center blocks, removing nopagebreak, capping sizes..."; \
+	 find "$$ramdisk" -name "*.tex" ! -name "refman.tex" ! -name "doxygen.sty" | xargs -r perl -i -0pe 's/\\begin\{figure\}\[H\]\n\\begin\{center\}(.*?)\\end\{center\}\n\\end\{figure\}/\\begin{center}$$1\\end{center}/gs; s/\\nopagebreak//g'; \
+	 find "$$ramdisk" -name "*.tex" | xargs -r sed -i 's/\\includegraphics\[width=/\\includegraphics[max width=\\linewidth,max totalheight=.8\\textheight,width=/g'; \
 	 cd "$$ramdisk" && xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xdvipdfmx -E -o refman.pdf refman.xdv; \
