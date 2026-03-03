@@ -1,0 +1,49 @@
+# check-copyright.yml - Checks copyright headers for STAR project
+#
+# Checks all source files have a standardized copyright header.
+# Covers .c and .h files
+#
+# STAR Project - Texas A&M University
+
+name: Check Copyright Headers
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  check-copyright:
+    name: Check @copyright Headers
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check @copyright Headers
+        run: |
+          echo "Checking @copyright headers..."
+          
+          # Check all updated files.
+          mapfile -t files < <(git ls-files -- \
+          ( -name "*.c" -o -name "*.h" \))
+          
+          failed_files=()
+          for file in "${files[@]}"; do
+            # Check if file has the correct @copyright header
+            if ! grep -q "^\s*\*\s*@copyright Copyright (c) 2026 STAR Project" "$file"; then
+              echo "ERROR: Missing or incorrect copyright header in $file"
+              failed_files+=("$file")
+            fi
+          done
+          
+          if [ ${#failed_files[@]} -gt 0 ]; then
+            echo ""
+            echo "Files with incorrect copyright headers:"
+            printf '%s\n' "${failed_files[@]}"
+            echo "Change copyright line to be Copyright (c) 2026 STAR Project"
+            exit 1
+          fi
+          
+          echo "All files have correct copyright headers."
