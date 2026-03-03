@@ -110,29 +110,47 @@ inline void set_spi_xfer_bits_per_word(spi_ioc_transfer & xfer, uint8_t value)
 #endif
 }
 
-inline bool is_valid_frame_type(FrameType frame_type)
+/**
+ * @brief Check whether a FrameType value is one of the eight valid protocol types.
+ *
+ * @details
+ * Validates the frame type field decoded from an incoming SPI frame against the
+ * eight explicit values defined in the STAR SPI protocol (rx_frame.h on the
+ * RX72N firmware side).  A contiguous range check is intentionally avoided
+ * because valid codes are sparse: 0x00-0x01, 0x10-0x13, 0xFE-0xFF.  Any byte
+ * not in this enumerated set is treated as an unknown or corrupted frame type.
+ *
+ * @param[in] frame_type  FrameType value to validate.  May be any uint8_t
+ *                        bit-pattern cast to FrameType.
+ *
+ * @return true   The value is one of: Ping, Pong, Command, Response, Ack,
+ *                Nack, ResetAck, or Reset.
+ * @return false  The value does not match any known FrameType enumerator.
+ *
+ * @throw None  This function is noexcept and does not throw.
+ *
+ * @see star_spi_bridge::FrameType  Enumeration of all valid frame types.
+ * @see SpiDriver::decode_frame  Primary caller; rejects frames with unknown types.
+ *
+ * @since Version 1.0.0
+ */
+inline bool is_valid_frame_type(FrameType frame_type) noexcept
 {
-  using U = std::underlying_type_t<FrameType>;
-  const auto raw = static_cast<U>(frame_type);
-  // Range-check: accept only values within [VelocityCommand, TelemetryData].
-  // This guards against corrupt wire data or future enum additions that have
-  // not yet been handled in the switch below.
-  constexpr auto k_min = static_cast<U>(FrameType::VelocityCommand); // 0x01
-  constexpr auto k_max = static_cast<U>(FrameType::TelemetryData);   // 0x02
-  if (raw < k_min || raw > k_max) {
-    return false;
-  }
+  // Accept exactly the 8 frame type values defined in rx_frame.h.
+  // A contiguous range check would accept invalid bytes between 0x02 and 0x0F
+  // and between 0x14 and 0xFD, so we enumerate valid values explicitly.
   switch (frame_type) {
-    case FrameType::VelocityCommand: {
-        return true;
-      }
-    case FrameType::TelemetryData: {
-        return true;
-      }
-    default: {
-    // Unreachable: all values in [k_min, k_max] are handled above.
-        return false;
-      }
+    case FrameType::Ping:
+    case FrameType::Pong:
+    case FrameType::Command:
+    case FrameType::Response:
+    case FrameType::Ack:
+    case FrameType::Nack:
+    case FrameType::ResetAck:
+    case FrameType::Reset:
+      return true;
+    default:
+      return false;
   }
 }
 }  // namespace
@@ -370,6 +388,16 @@ bool SpiDriver::decode_frame(
   // Extract fields (Little Endian: LSB first)
   seq = frame[2] | (static_cast<uint16_t>(frame[3]) << 8);
   type = static_cast<FrameType>(frame[6]);
+
+  // Reject frames carrying an unknown or reserved frame type byte
+  if (!is_valid_frame_type(type)) {
+    static rclcpp::Clock throttle_clock{RCL_STEADY_TIME};
+    RCLCPP_WARN_THROTTLE(logger(), throttle_clock, 1000,
+                         "decode_frame: unknown frame type 0x%02X",
+                         static_cast<uint8_t>(type));
+    return false;
+  }
+
   flags = frame[7];
 
   payload.assign(frame.begin() + HEADER_SIZE, frame.end() - CRC_SIZE);
