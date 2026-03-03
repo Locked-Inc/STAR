@@ -178,7 +178,7 @@ DOXY_OUT     := $(FIRMWARE_DIR)/docs/doxygen
 
 # Discover all libraries automatically -- new libs under libs/ are picked up
 # without any Makefile changes.
-LIBS         := $(notdir $(wildcard $(FIRMWARE_DIR)/libs/*))
+LIBS         := $(notdir $(wildcard $(CURDIR)/$(FIRMWARE_DIR)/libs/*))
 PDF_TARGETS  := doxygen-pdf-src $(addprefix doxygen-pdf-, $(LIBS))
 
 # Generate unified HTML reference (all features, all cross-links)
@@ -200,67 +200,37 @@ doxygen-pdfs:
 
 # PDF for firmware src/
 doxygen-pdf-src:
-	$(call build_doxy_pdf,src,STAR RX72N - Firmware Source,src,pdf/src)
+	$(call build_doxy_pdf,src,STAR RX72N - Firmware Source,src)
 
 # PDF per library -- e.g. make doxygen-pdf-rx_pid, make doxygen-pdf-threadx
 # The % matches the lib name; INPUT is set to libs/<name>
 doxygen-pdf-%:
-	$(call build_doxy_pdf,$*,STAR RX72N - $* Library,libs/$*,pdf/$*)
+	$(call build_doxy_pdf,$*,STAR RX72N - $* Library,libs/$*)
 
 # Helper: build one per-module PDF
-# Usage: $(call build_doxy_pdf, name, project_title, input_path, out_subdir)
+# Usage: $(call build_doxy_pdf, name, project_title, input_path)
 #   $(1) = short name     (e.g. rx_pid)
 #   $(2) = project title  (e.g. STAR RX72N - rx_pid Library)
 #   $(3) = INPUT path     relative to FIRMWARE_DIR (e.g. libs/rx_pid)
-#   $(4) = output subdir  under DOXY_OUT            (e.g. pdf/rx_pid)
+# Output PDF: $(DOXY_OUT)/pdf/$(1).pdf  (doxygen runs in /tmp, only PDF written to 9p)
 define build_doxy_pdf
 	@if ! command -v xelatex >/dev/null 2>&1; then \
 	  echo "ERROR: xelatex not found. Rebuild the Docker image (texlive-xetex is in Dockerfile)."; \
 	  exit 1; \
 	fi
-	@if ! command -v epstopdf >/dev/null 2>&1; then \
-	  echo "ERROR: epstopdf not found. Run: make doxygen-pdf-deps"; \
-	  exit 1; \
-	fi
 	@echo "=== Building PDF: $(2) ==="
-	@mkdir -p "$(DOXY_OUT)/$(4)"
-	@tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.$(1).XXXXXX); \
-	 printf '@INCLUDE = Doxyfile.pdf.base\nPROJECT_NAME = "$(2)"\nINPUT = $(3)\nOUTPUT_DIRECTORY = docs/doxygen/$(4)\nWARN_LOGFILE = docs/doxygen/$(4)/warnings.log\n' > "$$tmp"; \
+	@mkdir -p "$(DOXY_OUT)/pdf"
+	@ramdisk=$$(mktemp -d /tmp/doxygen-pdf-$(1)-XXXXXX); \
+	 dest_pdf=$$(readlink -f $(DOXY_OUT)/pdf)/$(1).pdf; \
+	 tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.$(1).XXXXXX); \
+	 printf '@INCLUDE = Doxyfile.pdf.base\nPROJECT_NAME = "$(2)"\nINPUT = $(3)\nOUTPUT_DIRECTORY = %s\nWARN_LOGFILE = %s/warnings.log\n' "$$ramdisk" "$$ramdisk" > "$$tmp"; \
 	 cd $(FIRMWARE_DIR) && doxygen "$$(basename $$tmp)"; \
-	 rm -f "$$tmp"
-	@echo "  Converting mscgen EPS diagrams to PDF..."
-	@for eps in $(DOXY_OUT)/$(4)/latex/inline_mscgraph_*.eps; do \
-	  [ -f "$$eps" ] || continue; \
-	  pdf="$${eps%.eps}.pdf"; \
-	  [ -f "$$pdf" ] || epstopdf "$$eps" --outfile="$$pdf" 2>/dev/null || true; \
-	done
-	@echo "  Creating placeholder PDFs for any @msc blocks still missing a PDF..."
-	@PLACEHOLDER=$$(ls $(DOXY_OUT)/$(4)/latex/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
-	 if [ -z "$$PLACEHOLDER" ]; then \
-	   PLACEHOLDER=$(DOXY_OUT)/$(4)/latex/inline_mscgraph_placeholder.pdf; \
-	   printf '%%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 200 100]/Parent 2 0 R>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n190\n%%%%EOF' > "$$PLACEHOLDER"; \
-	 fi; \
-	 for eps in $(DOXY_OUT)/$(4)/latex/inline_mscgraph_*.eps; do \
-	   [ -f "$$eps" ] || continue; \
-	   pdf="$${eps%.eps}.pdf"; \
-	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
-	 done; \
-	 for msc in $(DOXY_OUT)/$(4)/latex/inline_mscgraph_*.msc; do \
-	   [ -f "$$msc" ] || continue; \
-	   pdf="$${msc%.msc}.pdf"; \
-	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
-	 done
-	@echo "  Copying latex dir to tmpfs (/tmp) to avoid WSL2 9p I/O overhead..."
-	@latex_abs=$$(readlink -f $(DOXY_OUT)/$(4)/latex); \
-	 module_pdf="$${latex_abs%/latex}.pdf"; \
-	 ramdisk=$$(mktemp -d /tmp/doxygen-pdf-$(1)-XXXXXX); \
-	 cp -a "$$latex_abs"/. "$$ramdisk/"; \
-	 rm -f "$$ramdisk/refman.fdb_latexmk" "$$ramdisk/refman.pdf" "$$ramdisk/refman.aux" "$$ramdisk/refman.toc" "$$ramdisk/refman.out"; \
-	 echo "  tmpfs build dir: $$ramdisk ($$(du -sh $$latex_abs 2>/dev/null | cut -f1) copied)"; \
+	 rm -f "$$tmp"; \
+	 echo "  tmpfs build dir: $$ramdisk"; \
 	 echo "  Deduplicating multiply-defined Doxygen labels..."; \
-	 grep -rl 'label{doc-' "$$ramdisk" | xargs -r sed -i '/\\label{doc-[a-z-]*-members}/d'; \
+	 grep -rl 'label{doc-' "$$ramdisk/latex" | xargs -r sed -i '/\\label{doc-[a-z-]*-members}/d'; \
 	 echo "  Converting EPS graphs to properly-sized PDFs (gs respects BoundingBox)..."; \
-	 for eps in "$$ramdisk"/*.eps; do \
+	 for eps in "$$ramdisk/latex"/*.eps; do \
 	   [ -f "$$eps" ] || continue; \
 	   pdf="$${eps%.eps}.pdf"; \
 	   [ -f "$$pdf" ] && continue; \
@@ -275,26 +245,40 @@ define build_doxy_pdf
 	     -c "<</PageOffset [-$$llx -$$lly]>> setpagedevice" \
 	     -f "$$eps" 2>/dev/null || true; \
 	 done; \
+	 echo "  Creating placeholder PDFs for any @msc blocks still missing a PDF..."; \
+	 PLACEHOLDER=$$(ls "$$ramdisk/latex"/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
+	 if [ -z "$$PLACEHOLDER" ]; then \
+	   PLACEHOLDER="$$ramdisk/latex/inline_mscgraph_placeholder.pdf"; \
+	   printf '%%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 200 100]/Parent 2 0 R>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n190\n%%%%EOF' > "$$PLACEHOLDER"; \
+	 fi; \
+	 for eps in "$$ramdisk/latex"/inline_mscgraph_*.eps; do \
+	   [ -f "$$eps" ] || continue; \
+	   pdf="$${eps%.eps}.pdf"; \
+	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
+	 done; \
+	 for msc in "$$ramdisk/latex"/inline_mscgraph_*.msc; do \
+	   [ -f "$$msc" ] || continue; \
+	   pdf="$${msc%.msc}.pdf"; \
+	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
+	 done; \
 	 echo "  Fixing refman.tex: \\\\+, \\\\_, and replacing helvet with TeX Gyre Heros for xelatex..."; \
-	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char95}/' "$$ramdisk/refman.tex"; \
-	 sed -i 's/\\usepackage\[scaled=.90\]{helvet}/\\setsansfont[Scale=.90]{TeX Gyre Heros}/' "$$ramdisk/refman.tex"; \
-	 sed -i 's/\\usepackage{doxygen}/\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}/' "$$ramdisk/refman.tex"; \
+	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char95}/' "$$ramdisk/latex/refman.tex"; \
+	 sed -i 's/\\usepackage\[scaled=.90\]{helvet}/\\setsansfont[Scale=.90]{TeX Gyre Heros}/' "$$ramdisk/latex/refman.tex"; \
+	 sed -i 's/\\usepackage{doxygen}/\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}/' "$$ramdisk/latex/refman.tex"; \
 	 echo "  Replacing uncaptioned figure[H] envs with center blocks, removing nopagebreak, capping sizes..."; \
-	 find "$$ramdisk" -name "*.tex" ! -name "refman.tex" ! -name "doxygen.sty" | xargs -r perl -i -0pe 's/\\begin\{figure\}\[H\]\n\\begin\{center\}(.*?)\\end\{center\}\n\\end\{figure\}/\\begin{center}$$1\\end{center}/gs; s/\\nopagebreak//g'; \
-	 find "$$ramdisk" -name "*.tex" | xargs -r sed -i 's/\\includegraphics\[width=/\\includegraphics[max width=\\linewidth,max totalheight=.8\\textheight,width=/g'; \
-	 cd "$$ramdisk" && xelatex -interaction=nonstopmode -no-pdf refman.tex; \
+	 find "$$ramdisk/latex" -name "*.tex" ! -name "refman.tex" ! -name "doxygen.sty" | xargs -r perl -i -0pe 's/\\begin\{figure\}\[H\]\n\\begin\{center\}(.*?)\\end\{center\}\n\\end\{figure\}/\\begin{center}$$1\\end{center}/gs; s/\\nopagebreak//g'; \
+	 find "$$ramdisk/latex" -name "*.tex" | xargs -r sed -i 's/\\includegraphics\[width=/\\includegraphics[max width=\\linewidth,max totalheight=.8\\textheight,width=/g'; \
+	 cd "$$ramdisk/latex" && xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xdvipdfmx -E -o refman.pdf refman.xdv; \
-	 cp refman.log "$$latex_abs/refman.log"; \
-	 if [ ! -f "$$ramdisk/refman.pdf" ]; then \
-	   echo "ERROR: xdvipdfmx failed to produce refman.pdf -- see $(DOXY_OUT)/$(4)/latex/refman.log"; \
+	 if [ ! -f "$$ramdisk/latex/refman.pdf" ]; then \
+	   echo "ERROR: xdvipdfmx failed to produce refman.pdf -- see $$ramdisk/latex/refman.log"; \
 	   rm -rf "$$ramdisk"; \
 	   exit 1; \
 	 fi; \
-	 cp "$$ramdisk/refman.pdf" "$$latex_abs/refman.pdf" || { echo "ERROR: failed to copy refman.pdf back to $$latex_abs"; rm -rf "$$ramdisk"; exit 1; }; \
-	 cp "$$ramdisk/refman.pdf" "$$module_pdf" || { echo "ERROR: failed to write named PDF to $$module_pdf"; rm -rf "$$ramdisk"; exit 1; }; \
+	 cp "$$ramdisk/latex/refman.pdf" "$$dest_pdf" || { echo "ERROR: failed to write PDF to $$dest_pdf"; rm -rf "$$ramdisk"; exit 1; }; \
 	 rm -rf "$$ramdisk"; \
-	 echo "Done: $$module_pdf"
+	 echo "Done: $$dest_pdf"
 endef
 
 # Remove all generated Doxygen output (HTML + all per-module PDFs)
