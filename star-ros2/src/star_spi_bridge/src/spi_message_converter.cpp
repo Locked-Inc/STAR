@@ -3,6 +3,7 @@
 #include "star_spi_bridge/spi_message_converter.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <cmath>
 #include <limits>
 #include <tf2/LinearMath/Quaternion.h>  // NOLINT(build/include_order)
@@ -183,6 +184,82 @@ void SpiMessageConverter::telemetry_to_joint_state(
     enc_fr.velocity_mps() * inv_radius,
     enc_bl.velocity_mps() * inv_radius,
     enc_br.velocity_mps() * inv_radius};
+}
+
+/**
+ * @brief Convert TelemetryData obstacle fields to four sensor_msgs::msg::Range messages.
+ *
+ * @details
+ * Reads per-sensor distances from telemetry.obstacle() and populates four
+ * Range messages with HC-SR04 ultrasonic sensor metadata (radiation_type,
+ * field_of_view, min_range, max_range) and the measured distance.
+ * If a distance value is not finite (NaN or Inf), the corresponding msg.range
+ * is set to std::numeric_limits<float>::quiet_NaN() so consumers can detect
+ * invalid readings.  Finite values outside the sensor operating range
+ * [MIN_RANGE_M, MAX_RANGE_M] are clamped to the nearest boundary so that
+ * all published Range messages carry values within the declared min/max.
+ *
+ * @param[in]  telemetry    Protobuf telemetry payload from the RX72N.  Must
+ *                          contain a populated obstacle sub-message.
+ * @param[out] front_left   Populated Range message for the front-left sensor.
+ * @param[out] front_right  Populated Range message for the front-right sensor.
+ * @param[out] back_left    Populated Range message for the back-left sensor.
+ * @param[out] back_right   Populated Range message for the back-right sensor.
+ *
+ * @pre  telemetry.obstacle() is present (contains at least a default-constructed
+ *       ObstacleData sub-message).
+ * @pre  Distance values from telemetry are expected to be in [0.02, 4.0] m;
+ *       finite values outside this range are clamped to the boundary.
+ *
+ * @post Each output Range message has radiation_type, field_of_view, min_range,
+ *       and max_range set to HC-SR04 sensor constants.
+ * @post Each output Range message has header.frame_id populated and msg.range
+ *       is either a finite value clamped to [MIN_RANGE_M, MAX_RANGE_M] or
+ *       quiet_NaN() if the source was non-finite.
+ *
+ * @note Not thread-safe; the SpiMessageConverter instance must not be accessed
+ *       concurrently from multiple threads.
+ *
+ * @see SpiMessageConverter::telemetry_to_odometry    Related telemetry conversion.
+ * @see SpiMessageConverter::telemetry_to_joint_state Related telemetry conversion.
+ *
+ * @since Version 1.0.0
+ */
+void SpiMessageConverter::telemetry_to_obstacle_ranges(
+  const star::v1::TelemetryData & telemetry,
+  sensor_msgs::msg::Range & front_left,
+  sensor_msgs::msg::Range & front_right,
+  sensor_msgs::msg::Range & back_left,
+  sensor_msgs::msg::Range & back_right)
+{
+  // HC-SR04 ultrasonic sensor characteristics
+  static constexpr float FIELD_OF_VIEW_RAD = 0.2618F;  // ~15 degrees
+  static constexpr float MIN_RANGE_M = 0.02F;
+  static constexpr float MAX_RANGE_M = 4.0F;
+
+  auto populate = [&](sensor_msgs::msg::Range & msg, const std::string & frame_id,
+    float distance_m) {
+      assert(!frame_id.empty());
+      msg.radiation_type = sensor_msgs::msg::Range::ULTRASOUND;
+      msg.field_of_view = FIELD_OF_VIEW_RAD;
+      msg.min_range = MIN_RANGE_M;
+      msg.max_range = MAX_RANGE_M;
+      msg.header.frame_id = frame_id;
+      if (std::isfinite(distance_m)) {
+        // Clamp finite values to the HC-SR04 valid operating range
+        msg.range = std::clamp(distance_m, MIN_RANGE_M, MAX_RANGE_M);
+      } else {
+        msg.range = std::numeric_limits<float>::quiet_NaN();
+      }
+      // Postcondition: range is a clamped finite value in [MIN_RANGE_M, MAX_RANGE_M], or NaN
+      assert(!std::isinf(msg.range));
+    };
+
+  const auto & obs = telemetry.obstacle();
+  populate(front_left, "obstacle_sensor_front_left", obs.distance_front_left_m());
+  populate(front_right, "obstacle_sensor_front_right", obs.distance_front_right_m());
+  populate(back_left, "obstacle_sensor_back_left", obs.distance_back_left_m());
+  populate(back_right, "obstacle_sensor_back_right", obs.distance_back_right_m());
 }
 
 double SpiMessageConverter::normalize_angle(double angle)
