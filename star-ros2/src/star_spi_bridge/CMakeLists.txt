@@ -57,7 +57,7 @@ target_include_directories(spi_driver PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 target_compile_options(spi_driver PRIVATE
-  $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic>
+  $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
 )
 target_link_libraries(spi_driver
   ${Protobuf_LIBRARIES}
@@ -79,7 +79,7 @@ target_include_directories(star_spi_bridge_node PUBLIC
   $<INSTALL_INTERFACE:include>
 )
 target_compile_options(star_spi_bridge_node PRIVATE
-  $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic>
+  $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
 )
 target_link_libraries(star_spi_bridge_node spi_driver)
 ament_target_dependencies(star_spi_bridge_node
@@ -119,9 +119,15 @@ if(BUILD_TESTING)
 
   ament_add_gtest(test_spi_driver test/test_spi_driver.cpp)
   target_link_libraries(test_spi_driver spi_driver ${Protobuf_LIBRARIES})
+  target_compile_options(test_spi_driver PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
+  )
 
   ament_add_gtest(test_spi_message_converter test/test_spi_message_converter.cpp)
   target_link_libraries(test_spi_message_converter spi_driver ${Protobuf_LIBRARIES})
+  target_compile_options(test_spi_message_converter PRIVATE
+    $<$<OR:$<CXX_COMPILER_ID:GNU>,$<CXX_COMPILER_ID:Clang>>:-Wall -Wextra -Wpedantic -Werror>
+  )
 endif()
 
 ament_package()

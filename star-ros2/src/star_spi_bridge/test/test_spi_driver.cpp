@@ -139,6 +139,34 @@ TEST_F(SpiDriverTest, DecodeRejectsCRCCorruption)
   EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, decoded_payload));
 }
 
+TEST_F(SpiDriverTest, DecodeRejectsUnknownFrameType)
+{
+  // Build a frame with a valid TYPE byte, then replace it with a reserved value
+  // (0x05 is not a valid FrameType) and recompute the CRC so it is valid.
+  // decode_frame must reject the frame because the type is unknown.
+  std::vector<uint8_t> payload = {0x01};
+  std::vector<uint8_t> frame;
+  SpiDriver::encode_frame(1, FrameType::Command, 0x00, payload, frame);
+
+  // Corrupt the TYPE byte (offset 6) to a reserved/invalid value
+  frame[6] = 0x05;
+
+  // Recompute CRC over header + payload (all bytes except the last 4)
+  std::vector<uint8_t> to_crc(frame.begin(), frame.end() - 4);
+  const uint32_t new_crc = SpiDriver::calculate_crc32(to_crc);
+  frame[frame.size() - 4] = static_cast<uint8_t>(new_crc & 0xFFu);
+  frame[frame.size() - 3] = static_cast<uint8_t>((new_crc >> 8u) & 0xFFu);
+  frame[frame.size() - 2] = static_cast<uint8_t>((new_crc >> 16u) & 0xFFu);
+  frame[frame.size() - 1] = static_cast<uint8_t>((new_crc >> 24u) & 0xFFu);
+
+  uint16_t seq = 0;
+  FrameType type = FrameType::Command;
+  uint8_t flags = 0;
+  std::vector<uint8_t> decoded_payload;
+
+  EXPECT_FALSE(SpiDriver::decode_frame(frame, seq, type, flags, decoded_payload));
+}
+
 TEST_F(SpiDriverTest, EncodeRejectsOversizedPayload)
 {
   std::vector<uint8_t> oversized(SpiDriver::MAX_PAYLOAD_SIZE + 1, 0xAA);

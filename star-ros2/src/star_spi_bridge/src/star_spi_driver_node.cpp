@@ -133,6 +133,14 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
   // Stop timer first so no new transfers start
   timer_.reset();
 
+  // Reset ACK/retry state now that the timer is stopped
+  pending_ack_ = false;
+  retry_count_ = 0;
+  last_tx_frame_.clear();
+  last_tx_seq_ = tx_seq_;
+
+  bool success = true;
+
   // Send zero-velocity with Priority flag for safety before deactivation
   star::v1::SetVelocityRequest zero_req;
   zero_req.mutable_command()->set_front_left_velocity_mps(0.0);
@@ -147,6 +155,7 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
   {
     RCLCPP_ERROR(get_logger(),
                  "Failed to serialize zero-velocity request during deactivation");
+    success = false;
   } else {
     const uint8_t zero_flags =
       static_cast<uint8_t>(FrameFlags::RequiresAck) |
@@ -157,6 +166,7 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
     std::vector<uint8_t> dummy_rx;
     if (!spi_driver_->transfer(zero_frame, dummy_rx)) {
       RCLCPP_ERROR(get_logger(), "SPI transfer failed for deactivation stop frame");
+      success = false;
     } else {
       tx_seq_++;
     }
@@ -171,8 +181,9 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
   obstacle_back_right_pub_->on_deactivate();
   obstacle_detected_pub_->on_deactivate();
 
-  return rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::
-         CallbackReturn::SUCCESS;
+  return success ?
+         rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS :
+         rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::FAILURE;
 }
 
 rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn
@@ -304,7 +315,30 @@ void StarSpiDriverNode::emergency_stop_callback(
       return;
     }
 
-    // Only increment sequence after successful encode + transfer
+    // Validate ACK/NACK response before accepting the transfer
+    uint16_t rx_seq = 0;
+    FrameType rx_type = FrameType::Ping;
+    uint8_t rx_flags = 0;
+    std::vector<uint8_t> rx_payload;
+    if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags, rx_payload)) {
+      RCLCPP_ERROR(get_logger(),
+                   "Failed to decode ACK response during emergency stop");
+      return;
+    }
+    if (rx_type == FrameType::Nack) {
+      RCLCPP_ERROR(get_logger(),
+                   "Emergency stop NACK received (seq=%u); command may not have been applied",
+                   rx_seq);
+      return;
+    }
+    if (rx_type != FrameType::Ack || rx_seq != tx_seq_) {
+      RCLCPP_ERROR(get_logger(),
+                   "Unexpected response during emergency stop: type=0x%02X seq=%u (expected Ack seq=%u)",
+                   static_cast<uint8_t>(rx_type), rx_seq, tx_seq_);
+      return;
+    }
+
+    // Only increment sequence after confirmed ACK
     tx_seq_++;
   } catch (const std::exception & e) {
     RCLCPP_ERROR(get_logger(), "Exception in emergency_stop_callback: %s", e.what());

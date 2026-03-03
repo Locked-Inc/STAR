@@ -73,6 +73,9 @@ enum class FrameFlags : uint8_t
   SoftNack = 0x10,    /**< NACK with recoverable soft-error info (bit 4) */
 };
 
+/// @brief Bitmask covering all valid FrameFlags bits (bits 0-4); bits 5-7 are reserved.
+constexpr uint8_t FRAME_FLAGS_MASK = 0x1Fu;
+
 /**
  * @defgroup FrameFlagsOperators FrameFlags Bitwise Operators
  * @brief Bitwise operator overloads for combining FrameFlags values.
@@ -161,7 +164,7 @@ constexpr inline FrameFlags operator^(FrameFlags lhs, FrameFlags rhs)
 constexpr inline FrameFlags operator~(FrameFlags val)
 {
   return static_cast<FrameFlags>(
-    (~static_cast<std::underlying_type_t<FrameFlags>>(val)) & 0x1Fu);
+    (~static_cast<std::underlying_type_t<FrameFlags>>(val)) & FRAME_FLAGS_MASK);
 }
 /**
  * @brief Bitwise OR-assignment for FrameFlags.
