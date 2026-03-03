@@ -225,7 +225,7 @@ define build_doxy_pdf
 	@echo "=== Building PDF: $(2) ==="
 	@mkdir -p "$(DOXY_OUT)/$(4)"
 	@tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.$(1).XXXXXX); \
-	 printf '@INCLUDE = Doxyfile.pdf.base\nPROJECT_NAME = "$(2)"\nINPUT = README.md $(3)\nOUTPUT_DIRECTORY = docs/doxygen/$(4)\nWARN_LOGFILE = docs/doxygen/$(4)/warnings.log\n' > "$$tmp"; \
+	 printf '@INCLUDE = Doxyfile.pdf.base\nPROJECT_NAME = "$(2)"\nINPUT = $(3)\nOUTPUT_DIRECTORY = docs/doxygen/$(4)\nWARN_LOGFILE = docs/doxygen/$(4)/warnings.log\n' > "$$tmp"; \
 	 cd $(FIRMWARE_DIR) && doxygen "$$(basename $$tmp)"; \
 	 rm -f "$$tmp"
 	@echo "  Converting mscgen EPS diagrams to PDF..."
@@ -259,6 +259,9 @@ define build_doxy_pdf
 	 echo "  tmpfs build dir: $$ramdisk ($$(du -sh $$latex_abs 2>/dev/null | cut -f1) copied)"; \
 	 echo "  Deduplicating multiply-defined Doxygen labels..."; \
 	 grep -rl 'label{doc-' "$$ramdisk" | xargs -r sed -i '/\\label{doc-[a-z-]*-members}/d'; \
+	 echo "  Fixing refman.tex: \\\\+, \\\\_, and replacing helvet with TeX Gyre Heros for xelatex..."; \
+	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char"005F}/' "$$ramdisk/refman.tex"; \
+	 sed -i 's/\\usepackage\[scaled=.90\]{helvet}/\\setsansfont[Scale=.90]{TeX Gyre Heros}/' "$$ramdisk/refman.tex"; \
 	 cd "$$ramdisk" && xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xelatex -interaction=nonstopmode -no-pdf refman.tex; \
 	 xdvipdfmx -E -o refman.pdf refman.xdv; \
