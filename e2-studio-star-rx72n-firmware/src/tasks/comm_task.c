@@ -611,12 +611,10 @@ static void internal_send_command_response(rx_comm_channel_t channel,
                                            const uint8_t*    payload,
                                            uint32_t          payload_len);
 static rx_err_t internal_handle_command_frame(rx_comm_channel_t channel, const rx_frame_t* frame);
-static bool     internal_handle_velocity_command(rx_comm_channel_t channel,
-                                                 const rx_frame_t* frame);
-static bool     internal_handle_estop_command(rx_comm_channel_t channel, const rx_frame_t* frame);
-static bool     internal_handle_pid_gains_command(rx_comm_channel_t channel,
-                                                  const rx_frame_t* frame);
-static bool     internal_handle_retransmit_config_command(const rx_frame_t* frame);
+static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx_frame_t* frame);
+static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_frame_t* frame);
+static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const rx_frame_t* frame);
+static bool internal_handle_retransmit_config_command(const rx_frame_t* frame);
 
 /* =============================================================================
  * Public Functions
@@ -1965,16 +1963,20 @@ static bool internal_handle_velocity_command(rx_comm_channel_t channel, const rx
 
   /* Send response back to host (best-effort; command already applied) */
   {
-    star_v1_SetVelocityResponse response = (star_v1_SetVelocityResponse)star_v1_SetVelocityResponse_init_zero;
-    response.has_header              = true;
-    const star_v1_Status resp_status = (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK
-                                                             : star_v1_Status_STATUS_INTERNAL_ERROR;
+    star_v1_SetVelocityResponse response =
+      (star_v1_SetVelocityResponse)star_v1_SetVelocityResponse_init_zero;
+    response.has_header = true;
+    const star_v1_Status resp_status =
+      (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
     const char* req_id = velocity_req.has_header ? velocity_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
-    const rx_err_t enc_err     = rx_nanopb_encode_velocity_response(
-      &response, s_response_buffer, (uint32_t)k_comm_response_buffer_size, &encoded_len);
+    const rx_err_t enc_err =
+      rx_nanopb_encode_velocity_response(&response,
+                                         s_response_buffer,
+                                         (uint32_t)k_comm_response_buffer_size,
+                                         &encoded_len);
     if (enc_err == k_rx_ok) {
       internal_send_command_response(channel, s_response_buffer, encoded_len);
     } else {
@@ -2050,16 +2052,18 @@ static bool internal_handle_estop_command(rx_comm_channel_t channel, const rx_fr
   {
     star_v1_EmergencyStopResponse response =
       (star_v1_EmergencyStopResponse)star_v1_EmergencyStopResponse_init_zero;
-    response.has_header      = true;
-    response.estop_engaged   = (trigger_err == k_rx_ok);
-    const star_v1_Status resp_status = (trigger_err == k_rx_ok) ? star_v1_Status_STATUS_OK
-                                                                 : star_v1_Status_STATUS_INTERNAL_ERROR;
+    response.has_header    = true;
+    response.estop_engaged = (trigger_err == k_rx_ok);
+    const star_v1_Status resp_status =
+      (trigger_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
     const char* req_id = estop_req.has_header ? estop_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
-    const rx_err_t enc_err     = rx_nanopb_encode_estop_response(
-      &response, s_response_buffer, (uint32_t)k_comm_response_buffer_size, &encoded_len);
+    const rx_err_t enc_err     = rx_nanopb_encode_estop_response(&response,
+                                                             s_response_buffer,
+                                                             (uint32_t)k_comm_response_buffer_size,
+                                                             &encoded_len);
     if (enc_err == k_rx_ok) {
       internal_send_command_response(channel, s_response_buffer, encoded_len);
     } else {
@@ -2151,17 +2155,20 @@ static bool internal_handle_pid_gains_command(rx_comm_channel_t channel, const r
   {
     star_v1_SetPIDGainsResponse response =
       (star_v1_SetPIDGainsResponse)star_v1_SetPIDGainsResponse_init_zero;
-    response.has_header            = true;
-    response.success               = (set_err == k_rx_ok);
+    response.has_header = true;
+    response.success    = (set_err == k_rx_ok);
     /* response.message left as init_zero: NULL callback skips optional string field */
-    const star_v1_Status resp_status = (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK
-                                                             : star_v1_Status_STATUS_INTERNAL_ERROR;
+    const star_v1_Status resp_status =
+      (set_err == k_rx_ok) ? star_v1_Status_STATUS_OK : star_v1_Status_STATUS_INTERNAL_ERROR;
     const char* req_id = pid_req.has_header ? pid_req.header.request_id : nullptr;
     rx_nanopb_create_response_header(&response.header, resp_status, req_id);
 
     uint32_t       encoded_len = 0;
-    const rx_err_t enc_err     = rx_nanopb_encode_pid_gains_response(
-      &response, s_response_buffer, (uint32_t)k_comm_response_buffer_size, &encoded_len);
+    const rx_err_t enc_err =
+      rx_nanopb_encode_pid_gains_response(&response,
+                                          s_response_buffer,
+                                          (uint32_t)k_comm_response_buffer_size,
+                                          &encoded_len);
     if (enc_err == k_rx_ok) {
       internal_send_command_response(channel, s_response_buffer, encoded_len);
     } else {

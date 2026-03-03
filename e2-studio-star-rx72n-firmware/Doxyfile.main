@@ -1,12 +1,18 @@
-# Doxyfile for STAR RX72N Firmware
+# Doxyfile.main -- Main HTML configuration for STAR RX72N Firmware
 # Run from: e2-studio-star-rx72n-firmware/
 # Usage:
-#   doxygen Doxyfile          -- generate HTML + LaTeX
-#   make -C docs/doxygen/latex -- compile LaTeX to PDF (refman.pdf)
+#   doxygen Doxyfile.main     -- generate unified HTML (all cross-links, all graphs)
 #
 # Output:
-#   docs/doxygen/html/index.html -- browsable HTML reference
-#   docs/doxygen/latex/refman.pdf -- printable API reference
+#   docs/doxygen/html/index.html          -- browsable HTML reference
+#   docs/doxygen/html/STAR_firmware.tag   -- tag file for external project linking
+#
+# For PDF output (per-module):
+#   make doxygen-pdf-src       -- PDF for src/
+#   make doxygen-pdf-<libname> -- PDF for libs/<libname>
+#   make doxygen-pdfs          -- all PDFs (parallel)
+#
+# See Doxyfile.pdf.base for PDF-mode overrides (@INCLUDE = Doxyfile.main).
 
 #---------------------------------------------------------------------------
 # Project metadata
@@ -223,9 +229,10 @@ EXTERNAL_SEARCH_ID      =
 EXTRA_SEARCH_MAPPINGS   =
 
 #---------------------------------------------------------------------------
-# LaTeX output (produces refman.pdf via: make -C docs/doxygen/latex)
+# LaTeX output -- DISABLED in master (HTML-only run)
+# LaTeX/PDF is handled by Doxyfile.pdf.base + make doxygen-pdf-<module>
 #---------------------------------------------------------------------------
-GENERATE_LATEX          = YES
+GENERATE_LATEX          = NO
 LATEX_OUTPUT            = latex
 LATEX_CMD_NAME          = pdflatex
 MAKEINDEX_CMD_NAME      = makeindex
@@ -252,7 +259,7 @@ LATEX_EMOJI_DIRECTORY   =
 #---------------------------------------------------------------------------
 GENERATE_RTF            = NO
 GENERATE_MAN            = NO
-GENERATE_XML            = YES
+GENERATE_XML            = NO
 GENERATE_DOCBOOK        = NO
 GENERATE_AUTOGEN_DEF    = NO
 GENERATE_PERLMOD        = NO
@@ -279,7 +286,7 @@ SKIP_FUNCTION_MACROS    = YES
 # External references
 #---------------------------------------------------------------------------
 TAGFILES                =
-GENERATE_TAGFILE        =
+GENERATE_TAGFILE        = docs/doxygen/html/STAR_firmware.tag
 ALLEXTERNALS            = NO
 EXTERNAL_GROUPS         = YES
 EXTERNAL_PAGES          = YES
@@ -317,7 +324,7 @@ DOTFILE_DIRS            =
 MSCGEN_TOOL             = mscgen
 MSCFILE_DIRS            =
 DIAFILE_DIRS            =
-PLANTUML_JAR_PATH       =
+PLANTUML_JAR_PATH       = /usr/share/plantuml
 PLANTUML_CFG_FILE       =
 PLANTUML_INCLUDE_PATH   =
 DOT_GRAPH_MAX_NODES     = 250
