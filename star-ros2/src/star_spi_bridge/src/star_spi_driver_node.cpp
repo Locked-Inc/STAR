@@ -294,6 +294,14 @@ void StarSpiDriverNode::emergency_stop_callback(
   }
 
   try {
+    bool retransmit_timer_paused = false;
+    const auto resume_retransmit_timer = [&]() {
+        if (retransmit_timer_paused && timer_) {
+          timer_->reset();
+          retransmit_timer_paused = false;
+        }
+      };
+
     star::v1::EmergencyStopRequest estop;
     estop.set_reason("Manual E-Stop via /emergency_stop topic");
 
@@ -309,9 +317,22 @@ void StarSpiDriverNode::emergency_stop_callback(
     std::vector<uint8_t> tx_frame;
     SpiDriver::encode_frame(tx_seq_, FrameType::Command, flags, payload, tx_frame);
 
+    // Cancel any in-flight retransmit state so we don't resend stale commands.
+    // The retransmit logic is driven by timer_ via timer_callback().
+    if (pending_ack_) {
+      pending_ack_ = false;
+      last_tx_frame_.clear();
+      retry_count_ = 0;
+      if (timer_) {
+        timer_->cancel();
+        retransmit_timer_paused = true;
+      }
+    }
+
     std::vector<uint8_t> rx_frame;
     if (!spi_driver_->transfer(tx_frame, rx_frame)) {
       RCLCPP_ERROR(get_logger(), "SPI transfer failed during emergency stop");
+      resume_retransmit_timer();
       return;
     }
 
@@ -323,25 +344,33 @@ void StarSpiDriverNode::emergency_stop_callback(
     if (!SpiDriver::decode_frame(rx_frame, rx_seq, rx_type, rx_flags, rx_payload)) {
       RCLCPP_ERROR(get_logger(),
                    "Failed to decode ACK response during emergency stop");
+      resume_retransmit_timer();
       return;
     }
     if (rx_type == FrameType::Nack) {
       RCLCPP_ERROR(get_logger(),
                    "Emergency stop NACK received (seq=%u); command may not have been applied",
                    rx_seq);
+      resume_retransmit_timer();
       return;
     }
     if (rx_type != FrameType::Ack || rx_seq != tx_seq_) {
       RCLCPP_ERROR(get_logger(),
                    "Unexpected response during emergency stop: type=0x%02X seq=%u (expected Ack seq=%u)",
                    static_cast<uint8_t>(rx_type), rx_seq, tx_seq_);
+      resume_retransmit_timer();
       return;
     }
 
     // Only increment sequence after confirmed ACK
     tx_seq_++;
+
+    resume_retransmit_timer();
   } catch (const std::exception & e) {
     RCLCPP_ERROR(get_logger(), "Exception in emergency_stop_callback: %s", e.what());
+    if (timer_) {
+      timer_->reset();
+    }
   }
 }
 
