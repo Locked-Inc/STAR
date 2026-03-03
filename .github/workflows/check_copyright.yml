@@ -26,7 +26,7 @@ jobs:
           echo "Checking @copyright headers..."
           
           # Get changed C and H files
-          mapfile -t files < <(git diff --name-only HEAD~1 HEAD -- '*.c' '*.h')
+          mapfile -t files < <(git ls-files -- '*.c' '*.h')
           
           failed_files=()
           for file in "${files[@]}"; do
