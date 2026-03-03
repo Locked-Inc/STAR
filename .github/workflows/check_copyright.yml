@@ -27,7 +27,7 @@ jobs:
           
           # Check all updated files.
           mapfile -t files < <(git ls-files -- \
-          ( -name "*.c" -o -name "*.h" \))
+          '*.c' '*.h')
           
           failed_files=()
           for file in "${files[@]}"; do
