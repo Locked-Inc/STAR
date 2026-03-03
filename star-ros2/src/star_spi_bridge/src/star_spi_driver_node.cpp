@@ -440,7 +440,7 @@ void StarSpiDriverNode::timer_callback()
         constexpr double kImuEpsilon = 1e-6;
         const bool imu_populated =
           (std::fabs(imu_data.accel_z_mps2()) > kImuEpsilon ||
-           std::fabs(imu_data.gyro_z_rad_per_s()) > kImuEpsilon);
+          std::fabs(imu_data.gyro_z_rad_per_s()) > kImuEpsilon);
         if (imu_populated) {
           sensor_msgs::msg::Imu imu_msg;
           imu_msg.header.stamp = now;
