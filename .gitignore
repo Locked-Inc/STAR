@@ -16,7 +16,8 @@ Thumbs.db
 # Eclipse e2 studio
 .metadata/
 .settings/
-e2-studio-*/docs/
+e2-studio-*/docs/doxygen/html/
+e2-studio-*/docs/doxygen/pdf/*/latex/
 **/HardwareDebug/
 **/Debug/
 **/Release/
@@ -143,11 +144,14 @@ coverage.html
 *.coverprofile
 
 # Generated documentation (Doxygen, call graphs, etc.)
-# These should be built locally and never committed
-docs/doxygen/
+# HTML and latex intermediates are regenerable; named PDFs are tracked.
+docs/doxygen/html/
 docs/callgraph/
-**/docs/doxygen/
+**/docs/doxygen/html/
 **/docs/callgraph/
+**/docs/doxygen/latex/
+**/docs/doxygen/xml/
+**/docs/doxygen/pdf/*/latex/
 
 # Yocto build outputs (large, generated)
 star-yocto/

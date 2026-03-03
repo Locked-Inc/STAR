@@ -7,7 +7,7 @@ CONTAINER_NAME := star-dev
 WORK_DIR := /workspaces/STAR
 CURRENT_DIR := $(shell pwd)
 
-.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen doxygen-pdf doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
+.PHONY: help build-image build format shell up exec stop test proto-gen proto-gen-firmware proto-gen-go proto-gen-ros2 test-rx72n proto-check-nanopb-sync doxygen-html doxygen-pdfs doxygen-pdf-src doxygen-pdf-deps doxygen-clean build-rx72n build-rx72n-release format-rx72n check-rx72n
 
 help:
 	@echo "STAR Project Development Helper"
@@ -24,9 +24,12 @@ help:
 	@echo "  make check-rx72n         - Check firmware formatting (exit 1 if any file differs)"
 	@echo "  make proto-gen-firmware  - Generate nanopb protos for RX72N firmware"
 	@echo "  make test-rx72n          - Run RX72N unit tests (regenerates protos first)"
-	@echo "  make doxygen             - Generate Doxygen HTML docs for RX72N firmware"
-	@echo "  make doxygen-pdf         - Generate Doxygen HTML + LaTeX PDF (requires xelatex)"
-	@echo "  make doxygen-pdf-deps    - Install missing LaTeX packages for doxygen-pdf (varwidth, collection-latexextra)"
+	@echo "  make doxygen-html        - Generate unified HTML docs (all features, all cross-links)"
+	@echo "  make doxygen-pdf-src     - Generate PDF for firmware src/"
+	@echo "  make doxygen-pdf-<lib>   - Generate PDF for a specific library (e.g. doxygen-pdf-rx_pid)"
+	@echo "  make doxygen-pdfs        - Generate all per-module PDFs (default 4 parallel jobs)"
+	@echo "                             Override: make doxygen-pdfs DOXY_PDF_JOBS=8"
+	@echo "  make doxygen-pdf-deps    - Install missing LaTeX packages for PDF builds (varwidth, collection-latexextra)"
 	@echo "  make doxygen-clean       - Remove generated Doxygen output"
 	@echo "  Note: GNURX toolchain required for build targets (rx-elf-gcc)"
 	@echo ""
@@ -159,87 +162,132 @@ proto-check-nanopb-sync:
 
 # ------------------------------------------------------------
 # Doxygen Documentation (RX72N firmware)
-# ------------------------------------------------------------
-
-FIRMWARE_DIR = e2-studio-star-rx72n-firmware
-DOXYGEN_OUT  = $(FIRMWARE_DIR)/docs/doxygen
-LATEX_DIR    = $(DOXYGEN_OUT)/latex
-
-# Generate HTML reference docs only
-doxygen:
-	@echo "Generating Doxygen HTML documentation..."
-	@mkdir -p $(DOXYGEN_OUT)
-	@cd $(FIRMWARE_DIR) && doxygen Doxyfile
-	@echo "Done: $(DOXYGEN_OUT)/html/index.html"
-
-# Generate HTML + compile LaTeX to PDF
-# Uses xelatex: no register limits, faster startup than lualatex (no Lua
-# overhead), same fontspec/TU encoding support. Requires texlive-xetex and
-# fonts-urw-base35 (both in Dockerfile). Doxygen 1.16.1+ required (installed
-# from GitHub -- Ubuntu 24.04 apt ships 1.9.8 which uses broken tabu).
-# Run 'make doxygen-pdf-deps' first if any required LaTeX packages are missing.
+# Two-mode build:
+#   HTML  -- one unified run over src/ + libs/ (Doxyfile.main)
+#   PDF   -- one run per module (Doxyfile.pdf.base + per-module INPUT override)
 #
 # Performance note: /workspaces is mounted over WSL2's 9p (Plan 9) bridge to
-# the Windows host filesystem. lualatex opens every \includegraphics file on
-# each pass; with 1500+ graph PDFs that is thousands of 9p round-trips and the
-# root cause of 20+ hour builds. Fix: copy the generated latex dir to /tmp
-# (Linux tmpfs, in-memory) before running latexmk, then copy refman.pdf back.
-# /tmp is kernel tmpfs -- no disk or 9p I/O during compilation.
-doxygen-pdf:
+# the Windows host filesystem. xelatex opens every \includegraphics file on
+# each pass; with many graph PDFs this causes thousands of 9p round-trips.
+# Fix: copy each generated latex/ dir to /tmp (Linux tmpfs) before compiling,
+# then copy refman.pdf back.  /tmp is kernel tmpfs -- no disk or 9p I/O.
+# ------------------------------------------------------------
+
+FIRMWARE_DIR := e2-studio-star-rx72n-firmware
+DOXY_OUT     := $(FIRMWARE_DIR)/docs/doxygen
+
+# Discover all libraries automatically -- new libs under libs/ are picked up
+# without any Makefile changes.
+LIBS         := $(notdir $(wildcard $(CURDIR)/$(FIRMWARE_DIR)/libs/*))
+PDF_TARGETS  := doxygen-pdf-src $(addprefix doxygen-pdf-, $(LIBS))
+
+# Generate unified HTML reference (all features, all cross-links)
+# Uses Doxyfile.main: INPUT = src + libs, GENERATE_HTML = YES, GENERATE_LATEX = NO
+doxygen-html:
+	@echo "Generating Doxygen HTML documentation..."
+	@mkdir -p $(DOXY_OUT)
+	@cd $(FIRMWARE_DIR) && doxygen Doxyfile.main
+	@echo "Done: $(DOXY_OUT)/html/index.html"
+
+# Number of concurrent PDF jobs. Each job copies a latex dir to /tmp then runs xelatex
+# twice + xdvipdfmx. On a 16 GB machine, 4 jobs is safe; raise on higher-memory hosts.
+# Override at runtime: make doxygen-pdfs DOXY_PDF_JOBS=8
+DOXY_PDF_JOBS ?= 4
+
+# Build all per-module PDFs (parallel, capped to avoid OOM from simultaneous xelatex + cp)
+doxygen-pdfs:
+	$(MAKE) -j$(DOXY_PDF_JOBS) $(PDF_TARGETS)
+
+# PDF for firmware src/
+doxygen-pdf-src:
+	$(call build_doxy_pdf,src,STAR RX72N - Firmware Source,src)
+
+# PDF per library -- e.g. make doxygen-pdf-rx_pid, make doxygen-pdf-threadx
+# The % matches the lib name; INPUT is set to libs/<name>
+doxygen-pdf-%:
+	$(call build_doxy_pdf,$*,STAR RX72N - $* Library,libs/$*)
+
+# Helper: build one per-module PDF
+# Usage: $(call build_doxy_pdf, name, project_title, input_path)
+#   $(1) = short name     (e.g. rx_pid)
+#   $(2) = project title  (e.g. STAR RX72N - rx_pid Library)
+#   $(3) = INPUT path     relative to FIRMWARE_DIR (e.g. libs/rx_pid)
+# Output PDF: $(DOXY_OUT)/pdf/$(1).pdf  (doxygen runs in /tmp, only PDF written to 9p)
+define build_doxy_pdf
 	@if ! command -v xelatex >/dev/null 2>&1; then \
 	  echo "ERROR: xelatex not found. Rebuild the Docker image (texlive-xetex is in Dockerfile)."; \
 	  exit 1; \
 	fi
-	@if ! command -v epstopdf >/dev/null 2>&1; then \
-	  echo "ERROR: epstopdf not found. Run: make doxygen-pdf-deps"; \
-	  exit 1; \
-	fi
-	@echo "Generating Doxygen LaTeX..."
-	@mkdir -p $(DOXYGEN_OUT)
-	@tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.pdf.XXXXXX); \
-	 sed -e 's/^GENERATE_HTML\s*=.*/GENERATE_HTML          = NO/' \
-	     $(FIRMWARE_DIR)/Doxyfile > "$$tmp"; \
+	@echo "=== Building PDF: $(2) ==="
+	@mkdir -p "$(DOXY_OUT)/pdf"
+	@ramdisk=$$(mktemp -d /tmp/doxygen-pdf-$(1)-XXXXXX); \
+	 dest_pdf=$$(readlink -f $(DOXY_OUT)/pdf)/$(1).pdf; \
+	 tmp=$$(mktemp $(FIRMWARE_DIR)/Doxyfile.$(1).XXXXXX); \
+	 printf '@INCLUDE = Doxyfile.pdf.base\nPROJECT_NAME = "$(2)"\nINPUT = $(3)\nOUTPUT_DIRECTORY = %s\nWARN_LOGFILE = %s/warnings.log\n' "$$ramdisk" "$$ramdisk" > "$$tmp"; \
 	 cd $(FIRMWARE_DIR) && doxygen "$$(basename $$tmp)"; \
-	 rm -f "$$tmp"
-	@echo "Converting mscgen EPS diagrams to PDF..."
-	@for eps in $(LATEX_DIR)/inline_mscgraph_*.eps; do \
-	  [ -f "$$eps" ] || continue; \
-	  pdf="$${eps%.eps}.pdf"; \
-	  [ -f "$$pdf" ] || epstopdf "$$eps" --outfile="$$pdf" 2>/dev/null || true; \
-	done
-	@echo "Copying placeholder PDFs for any @msc blocks that still have no PDF..."
-	@PLACEHOLDER=$$(ls $(LATEX_DIR)/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
+	 rm -f "$$tmp"; \
+	 echo "  tmpfs build dir: $$ramdisk"; \
+	 echo "  Deduplicating multiply-defined Doxygen labels..."; \
+	 grep -rl 'label{doc-' "$$ramdisk/latex" | xargs -r sed -i '/\\label{doc-[a-z-]*-members}/d'; \
+	 echo "  Converting EPS graphs to properly-sized PDFs (gs respects BoundingBox)..."; \
+	 for eps in "$$ramdisk/latex"/*.eps; do \
+	   [ -f "$$eps" ] || continue; \
+	   pdf="$${eps%.eps}.pdf"; \
+	   [ -f "$$pdf" ] && continue; \
+	   bb=$$(grep "^%%BoundingBox:" "$$eps" | grep -v atend | head -1); \
+	   [ -z "$$bb" ] && continue; \
+	   llx=$$(echo "$$bb" | awk '{print $$2}'); lly=$$(echo "$$bb" | awk '{print $$3}'); \
+	   urx=$$(echo "$$bb" | awk '{print $$4}'); ury=$$(echo "$$bb" | awk '{print $$5}'); \
+	   w=$$((urx - llx)); h=$$((ury - lly)); \
+	   gs -q -dBATCH -dNOPAUSE -dSAFER -sDEVICE=pdfwrite \
+	     -dFIXEDMEDIA -dDEVICEWIDTHPOINTS=$$w -dDEVICEHEIGHTPOINTS=$$h \
+	     -sOutputFile=$$pdf \
+	     -c "<</PageOffset [-$$llx -$$lly]>> setpagedevice" \
+	     -f "$$eps" 2>/dev/null || true; \
+	 done; \
+	 echo "  Creating placeholder PDFs for any @msc blocks still missing a PDF..."; \
+	 PLACEHOLDER=$$(ls "$$ramdisk/latex"/inline_mscgraph_*.pdf 2>/dev/null | head -1); \
 	 if [ -z "$$PLACEHOLDER" ]; then \
-	   PLACEHOLDER=$(LATEX_DIR)/inline_mscgraph_placeholder.pdf; \
+	   PLACEHOLDER="$$ramdisk/latex/inline_mscgraph_placeholder.pdf"; \
 	   printf '%%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj 2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj 3 0 obj<</Type/Page/MediaBox[0 0 200 100]/Parent 2 0 R>>endobj\nxref\n0 4\n0000000000 65535 f \n0000000009 00000 n \n0000000058 00000 n \n0000000115 00000 n \ntrailer<</Size 4/Root 1 0 R>>\nstartxref\n190\n%%%%EOF' > "$$PLACEHOLDER"; \
 	 fi; \
-	 for eps in $(LATEX_DIR)/inline_mscgraph_*.eps; do \
+	 for eps in "$$ramdisk/latex"/inline_mscgraph_*.eps; do \
 	   [ -f "$$eps" ] || continue; \
 	   pdf="$${eps%.eps}.pdf"; \
 	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
 	 done; \
-	 for msc in $(LATEX_DIR)/inline_mscgraph_*.msc; do \
+	 for msc in "$$ramdisk/latex"/inline_mscgraph_*.msc; do \
 	   [ -f "$$msc" ] || continue; \
 	   pdf="$${msc%.msc}.pdf"; \
 	   [ -f "$$pdf" ] || cp "$$PLACEHOLDER" "$$pdf"; \
-	 done
-	@echo "Copying latex dir to tmpfs (/tmp) to avoid WSL2 9p I/O overhead..."
-	@ramdisk=$$(mktemp -d /tmp/doxygen-pdf-XXXXXX); \
-	 cp -a $(LATEX_DIR)/. "$$ramdisk/"; \
-	 rm -f "$$ramdisk/refman.fdb_latexmk" "$$ramdisk/refman.pdf"; \
-	 echo "  tmpfs build dir: $$ramdisk ($$(du -sh $(LATEX_DIR) 2>/dev/null | cut -f1) copied)"; \
-	 cd "$$ramdisk" && latexmk -xelatex -interaction=nonstopmode -f refman.tex; \
-	 cp "$$ramdisk/refman.pdf" "$(LATEX_DIR)/refman.pdf"; \
-	 rm -rf "$$ramdisk"
-	@echo "Done: $(LATEX_DIR)/refman.pdf"
+	 done; \
+	 echo "  Fixing refman.tex: \\\\+, \\\\_, and replacing helvet with TeX Gyre Heros for xelatex..."; \
+	 sed -i 's/\\newcommand{\\+}{.*}/\\renewcommand{\\+}{}\n  \\renewcommand{\\_}{\\char95}/' "$$ramdisk/latex/refman.tex"; \
+	 sed -i 's/\\usepackage\[scaled=.90\]{helvet}/\\setsansfont[Scale=.90]{TeX Gyre Heros}/' "$$ramdisk/latex/refman.tex"; \
+	 sed -i 's/\\usepackage{doxygen}/\\usepackage{doxygen}\n\\usepackage[export]{adjustbox}/' "$$ramdisk/latex/refman.tex"; \
+	 echo "  Replacing uncaptioned figure[H] envs with center blocks, removing nopagebreak, capping sizes..."; \
+	 find "$$ramdisk/latex" -name "*.tex" ! -name "refman.tex" ! -name "doxygen.sty" | xargs -r perl -i -0pe 's/\\begin\{figure\}\[H\]\n\\begin\{center\}(.*?)\\end\{center\}\n\\end\{figure\}/\\begin{center}$$1\\end{center}/gs; s/\\nopagebreak//g'; \
+	 find "$$ramdisk/latex" -name "*.tex" | xargs -r sed -i 's/\\includegraphics\[width=/\\includegraphics[max width=\\linewidth,max totalheight=.8\\textheight,width=/g'; \
+	 cd "$$ramdisk/latex" && xelatex -interaction=nonstopmode -no-pdf refman.tex; \
+	 xelatex -interaction=nonstopmode -no-pdf refman.tex; \
+	 xdvipdfmx -E -o refman.pdf refman.xdv; \
+	 if [ ! -f "$$ramdisk/latex/refman.pdf" ]; then \
+	   echo "ERROR: xdvipdfmx failed to produce refman.pdf -- see $$ramdisk/latex/refman.log"; \
+	   rm -rf "$$ramdisk"; \
+	   exit 1; \
+	 fi; \
+	 cp "$$ramdisk/latex/refman.pdf" "$$dest_pdf" || { echo "ERROR: failed to write PDF to $$dest_pdf"; rm -rf "$$ramdisk"; exit 1; }; \
+	 rm -rf "$$ramdisk"; \
+	 echo "Done: $$dest_pdf"
+endef
 
-# Remove all generated Doxygen output
+# Remove all generated Doxygen output (HTML + all per-module PDFs)
 doxygen-clean:
 	@echo "Removing Doxygen output..."
-	@rm -rf $(DOXYGEN_OUT)
+	@rm -rf $(DOXY_OUT)
 	@echo "Done."
 
-# Install LaTeX packages required by doxygen-pdf that are not in the
+# Install LaTeX packages required by doxygen-pdf-* that are not in the
 # Dockerfile's base texlive set. xelatex itself and fonts-urw-base35 are
 # installed via the Dockerfile (rebuild the Docker image if missing).
 #
@@ -250,7 +298,7 @@ doxygen-clean:
 # Format rebuild:
 #   fmtutil-user --byfmt xelatex  (fixes expl3 version mismatch after installs)
 doxygen-pdf-deps:
-	@echo "Installing LaTeX deps for doxygen-pdf..."
+	@echo "Installing LaTeX deps for doxygen-pdf-*..."
 	@if ! command -v xelatex >/dev/null 2>&1; then \
 	  echo "ERROR: xelatex not found. Rebuild the Docker image (texlive-xetex is in Dockerfile)."; \
 	  exit 1; \
@@ -270,5 +318,5 @@ doxygen-pdf-deps:
 	fi
 	@echo "  Regenerating xelatex format (fixes expl3 version mismatch)..."
 	@fmtutil-user --byfmt xelatex 2>&1 | grep -E "(INFO|Error|error)" | tail -3
-	@echo "Done: LaTeX deps installed. Re-run 'make doxygen-pdf' to generate the PDF."
+	@echo "Done: LaTeX deps installed. Re-run 'make doxygen-pdf-<name>' to generate a PDF."
 

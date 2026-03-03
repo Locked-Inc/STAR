@@ -227,6 +227,32 @@
  * }
  * @endcode
  *
+ * ## Control Loop Sequence
+ *
+ * One 4 ms control cycle showing all participants from the ThreadX timer
+ * callback through the PID algorithm to the motor driver:
+ *
+ * @startuml
+ * participant "ThreadX Timer\n(250 Hz)" as Timer
+ * participant "Motor Task" as Task
+ * participant "rx_pid_compute()" as PID
+ * participant "rx_encoder\n(Hall sensor)" as Enc
+ * participant "rx_motor\n(DRV8263H)" as Motor
+ *
+ * Timer -> Task : tx_thread_sleep expires (4 ms)
+ * Task -> Enc   : rx_encoder_get_rpm()
+ * Enc --> Task  : measured_rpm (float)
+ * Task -> PID   : rx_pid_compute(pid, target, measured, 0.004, &duty)
+ * PID -> PID    : error = target - measured
+ * PID -> PID    : integral += error * dt (clamped)
+ * PID -> PID    : derivative = (error - prev) / dt
+ * PID -> PID    : output = Kp*e + Ki*i + Kd*d (clamped)
+ * PID --> Task  : k_rx_ok, duty [-100, +100] %
+ * Task -> Motor : rx_motor_set_duty_cycle(duty)
+ * Motor --> Task: k_rx_ok
+ * Task -> Timer : tx_thread_sleep(4)
+ * @enduml
+ *
  * ## Dependencies
  * - `rx_err.h` - Error code definitions
  * - `<math.h>` (implicit) - FPU operations (addition, multiplication)
