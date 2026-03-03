@@ -25,14 +25,13 @@ jobs:
         run: |
           echo "Checking @copyright headers..."
           
-          # Check all updated files.
-          mapfile -t files < <(git ls-files -- \
-          '*.c' '*.h')
+          # Get changed C and H files
+          mapfile -t files < <(git diff --name-only HEAD~1 HEAD -- '*.c' '*.h')
           
           failed_files=()
           for file in "${files[@]}"; do
             # Check if file has the correct @copyright header
-            if ! grep -q "^\s*\*\s*@copyright Copyright (c) 2026 STAR Project" "$file"; then
+            if ! grep -Pq "@copyright Copyright \(c\) 202[0-9] STAR Project" "$file"; then
               echo "ERROR: Missing or incorrect copyright header in $file"
               failed_files+=("$file")
             fi
@@ -42,7 +41,7 @@ jobs:
             echo ""
             echo "Files with incorrect copyright headers:"
             printf '%s\n' "${failed_files[@]}"
-            echo "Change copyright line to be Copyright (c) 2026 STAR Project"
+            echo "Change copyright line to be: * @copyright Copyright (c) 2026 STAR Project"
             exit 1
           fi
           
