@@ -3,7 +3,8 @@
 docs/doxygen/html/
 # XML output (GENERATE_XML)
 docs/doxygen/xml/
-# LaTeX intermediates under each per-module PDF dir -- large and regenerable
+# HTML and LaTeX intermediates under each per-module PDF dir -- large and regenerable
+docs/doxygen/pdf/*/html/
 docs/doxygen/pdf/*/latex/
 # Doxygen warning/log files
 docs/doxygen/pdf/*/*.log
