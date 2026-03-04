@@ -199,9 +199,10 @@ typedef enum : int16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_test_temp_raw         = 25,   /**< Temperature raw value (25 degC) */
-  k_test_calib_status_raw = 0xFC, /**< Calib status: SYS=3, GYR=3, ACC=3, MAG=0 */
-  k_test_wrong_chip_id    = 0xFF, /**< Non-BNO055 chip ID value */
+  k_test_temp_raw = 25, /**< Temperature raw value (25 degC); TODO: add temp read test */
+  k_test_calib_status_raw =
+    0xFC, /**< Calib status: SYS=3,GYR=3,ACC=3,MAG=0; TODO: add calib read test */
+  k_test_wrong_chip_id = 0xFF, /**< Non-BNO055 chip ID value */
 } test_bno055_misc_t;
 
 /**
@@ -212,9 +213,9 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_test_single_byte_buf = 1, /**< Single byte read buffer */
-  k_test_euler_buf_size  = 6, /**< Euler angles: 3 x int16 */
-  k_test_quat_buf_size   = 8, /**< Quaternion: 4 x int16 */
-  k_test_lia_buf_size    = 6, /**< Linear accel: 3 x int16 */
+  k_test_euler_buf_size  = 6, /**< Euler angles: 3 x int16; TODO: use in Euler-specific read test */
+  k_test_lia_buf_size    = 6, /**< Linear accel: 3 x int16; TODO: use in LIA-specific read test */
+  /* k_test_quat_buf_size removed: use canonical k_quat_buf_size from test_bno055_quat_buf_idx_t */
 } test_bno055_buf_sizes_t;
 
 /**
@@ -803,6 +804,36 @@ void test_bno055_is_calibrated_reads_status(void)
   TEST_ASSERT_FALSE(out_calibrated);
 }
 
+/**
+ * @brief rx_bno055_is_calibrated returns false for partial calibration (0x3F)
+ *
+ * @details
+ * k_test_calib_partial = 0x3F means SYS=0, GYR=3, ACC=3, MAG=3.
+ * Individual sensor calibration is complete but system calibration is not (SYS=0).
+ * rx_bno055_is_calibrated must return k_rx_ok and out_calibrated == false because
+ * SYS bits [7:6] are not 0x3 (not fully calibrated at system level).
+ *
+ * @pre setUp() has reset s_initialized == false
+ * @post out_calibrated == false (partial status does not mean fully calibrated)
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_is_calibrated_partial(void)
+{
+  internal_setup_initialized_driver();
+
+  uint8_t calib_partial = (uint8_t)k_test_calib_partial;
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch,
+                              &calib_partial,
+                              k_test_single_byte_buf);
+
+  bool     out_calibrated = true; /* pre-set true so we can detect false-positive */
+  rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_FALSE(out_calibrated);
+}
+
 /* =============================================================================
  * Unity Main Entry Point
  * =============================================================================
@@ -852,6 +883,7 @@ int main(void)
   /* Calibration tests - require s_initialized == true */
   RUN_TEST(test_bno055_is_calibrated_null_returns_error);
   RUN_TEST(test_bno055_is_calibrated_reads_status);
+  RUN_TEST(test_bno055_is_calibrated_partial);
 
   return UNITY_END();
 }

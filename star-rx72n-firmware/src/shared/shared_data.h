@@ -229,7 +229,8 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  int32_t temp_centi_degc; /**< Temperature * 100 (e.g. 2523 = 25.23 degC) */
+  int32_t temp_centi_degc; /**< Temperature * 100 (e.g. 2523 = 25.23 degC); int32_t matches the
+                                BMP280 driver arithmetic width; valid range [-4000, 8500] */
   uint32_t
     press_pa_256; /**< Pressure * k_baro_scale_press in Pa (divide by k_baro_scale_press for Pa) */
   uint32_t timestamp_ms; /**< ThreadX tick when data was last updated (ms) */

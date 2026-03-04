@@ -242,6 +242,8 @@ static void internal_imu_task_entry(ULONG input);
  */
 static inline uint32_t internal_ticks_to_ms(void)
 {
+  RX_ASSERT(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
+  RX_ASSERT((uint32_t)k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
   return (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
 }
 

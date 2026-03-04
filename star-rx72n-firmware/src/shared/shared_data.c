@@ -2849,7 +2849,7 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  *
  * ## Algorithm Steps:
  * 1. Null check on out_state parameter
- * 2. Acquire imu_mutex (blocking wait with priority inheritance)
+ * 2. Acquire imu_mutex (non-blocking; returns error if mutex unavailable)
  * 3. memcpy g_shared_data.imu_state into caller's buffer
  * 4. Release imu_mutex
  * 5. Return k_rx_ok
@@ -2860,17 +2860,17 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  * @retval k_rx_ok State retrieved successfully
  * @retval k_rx_err_null_ptr out_state is NULL
  * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ * @retval k_rx_err_rtos_mutex Mutex unavailable; caller may retry next cycle
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre out_state non-NULL
  *
- * @post *out_state contains snapshot of current IMU data
+ * @post *out_state contains snapshot of current IMU data (if k_rx_ok)
  * @post Check out_state->valid before using values
  *
  * @invariant imu_mutex held for <5 us (memcpy of imu_state_t)
  *
- * @note Thread Safety: Protected by imu_mutex (blocking wait)
+ * @note Thread Safety: Protected by imu_mutex (non-blocking acquire, TX_NO_WAIT)
  * @note Performance: mutex held for <5 us during memcpy
  * @note Frequency: called at 20 Hz by telemetry_task
  *
@@ -2898,7 +2898,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
     return k_rx_err_not_initialized;
   }
 
-  const UINT tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_NO_WAIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }
@@ -2998,7 +2998,7 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  *
  * ## Algorithm Steps:
  * 1. Null check on out_state parameter
- * 2. Acquire baro_mutex (blocking wait with priority inheritance)
+ * 2. Acquire baro_mutex (non-blocking; returns error if mutex unavailable)
  * 3. memcpy g_shared_data.baro_state into caller's buffer
  * 4. Release baro_mutex
  * 5. Return k_rx_ok
@@ -3009,17 +3009,17 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  * @retval k_rx_ok State retrieved successfully
  * @retval k_rx_err_null_ptr out_state is NULL
  * @retval k_rx_err_not_initialized Module not initialized
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ * @retval k_rx_err_rtos_mutex Mutex unavailable; caller may retry next cycle
  *
  * @pre Module initialized (shared_data_init() succeeded)
  * @pre out_state non-NULL
  *
- * @post *out_state contains snapshot of current barometric data
+ * @post *out_state contains snapshot of current barometric data (if k_rx_ok)
  * @post Check out_state->valid before using values
  *
  * @invariant baro_mutex held for <5 us (memcpy of baro_state_t)
  *
- * @note Thread Safety: Protected by baro_mutex (blocking wait)
+ * @note Thread Safety: Protected by baro_mutex (non-blocking acquire, TX_NO_WAIT)
  * @note Performance: mutex held for <5 us during memcpy
  * @note Frequency: called at 20 Hz by telemetry_task
  *
@@ -3048,7 +3048,7 @@ rx_err_t shared_data_get_baro(baro_state_t* out_state)
     return k_rx_err_not_initialized;
   }
 
-  const UINT tx_status = tx_mutex_get(&g_shared_data.baro_mutex, TX_WAIT_FOREVER);
+  const UINT tx_status = tx_mutex_get(&g_shared_data.baro_mutex, TX_NO_WAIT);
   if (tx_status != TX_SUCCESS) {
     return k_rx_err_rtos_mutex;
   }

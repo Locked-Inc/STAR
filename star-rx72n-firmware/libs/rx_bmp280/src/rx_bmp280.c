@@ -468,6 +468,73 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
 }
 
 /**
+ * @enum press_comp_constants_t
+ * @brief Bosch BMP280 pressure compensation formula constants (datasheet appendix A)
+ *
+ * @details
+ * Integer shift and scale constants used exclusively by internal_compensate_pressure()
+ * and internal_finalize_pressure_q8(). Placed at module scope so both functions can
+ * reference the same named constants without redundancy.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : int32_t {
+  k_press_t_offset = 128000,  /**< t_fine offset in pressure formula */
+  k_press_p_scale  = 1048576, /**< ADC scaling constant */
+  k_press_shift_31 = 31,      /**< Shift for 31-bit alignment */
+  k_press_shift_47 = 47,      /**< Shift for 47-bit alignment */
+  k_press_shift_8  = 8,       /**< Output shift for Q8 fixed-point Pa*256 */
+  k_press_mul_3125 = 3125,    /**< Bosch formula scaling factor */
+  k_press_shift_35 = 35,      /**< Shift for 35-bit intermediate */
+  k_press_shift_25 = 25,      /**< Shift for 25-bit intermediate */
+  k_press_shift_19 = 19,      /**< Shift for 19-bit intermediate */
+  k_press_shift_13 = 13,      /**< Shift for P9 coefficient shift */
+  k_press_shift_17 = 17,      /**< Shift for P5 coefficient step */
+  k_press_shift_12 = 12,      /**< Right shift for dig_P3 step */
+  k_press_shift_33 = 33,      /**< Divisor shift for var1 */
+  k_press_shift_4  = 4,       /**< Shift for P7 addition */
+} press_comp_constants_t;
+
+/**
+ * @brief Apply final Q8 fixed-point scaling and dig_P7 offset to pressure intermediate
+ *
+ * @details
+ * Implements the last step of the Bosch BMP280 pressure compensation formula
+ * (datasheet Section 4.2.3): right-shifts the accumulated intermediate value to
+ * produce Pa*256 (Q8 fixed-point), then adds the dig_P7 offset term.
+ *
+ * Extracted from internal_compensate_pressure() to keep that function within
+ * the 60-line NASA Power of 10 Rule 4 guideline.
+ *
+ * @param[in] p    Intermediate pressure before final scaling
+ * @param[in] var1 Bosch P9 coefficient adjustment (already computed)
+ * @param[in] var2 Bosch P8 coefficient adjustment (already computed)
+ *
+ * @return uint32_t Compensated pressure in Pa * 256 (Q8 fixed-point)
+ *
+ * @pre s_calib populated by internal_parse_calibration() (dig_P1 != 0)
+ * @post Return value is pressure * 256 in Pascal units (Q8 format)
+ *
+ * @note Accesses s_calib.dig_P7 directly (module-level static)
+ * @see internal_compensate_pressure() Sole caller
+ *
+ * @since Version 1.0.0
+ */
+static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t var2)
+{
+  RX_ASSERT(s_calib.dig_P1 != 0U, "s_calib must be initialized before finalizing pressure");
+  _Static_assert(sizeof(int64_t) == 8U, "int64_t must be 64-bit for overflow-safe pressure math");
+  /* Bosch BMP280 datasheet formula (Section 4.2.3):
+   * Step 1: shift (p + fine adjustments) right by 8 to get Q8 fixed-point Pa*256
+   * Step 2: add dig_P7 offset (left-shifted 4) AFTER the right shift
+   * Note: shifting the dig_P7 term together with the rest would incorrectly
+   *       scale it by an additional factor of 256. */
+  const int64_t p_scaled = (p + var1 + var2) >> k_press_shift_8;
+  const int64_t dig_p7   = ((int64_t)s_calib.dig_P7) << k_press_shift_4;
+  return (uint32_t)(p_scaled + dig_p7);
+}
+
+/**
  * @brief Apply Bosch integer pressure compensation formula
  *
  * @details
@@ -505,23 +572,6 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
   RX_ASSERT(adc_P >= 0, "adc_P must be non-negative (20-bit unsigned ADC value)");
   RX_ASSERT(press_out != NULL, "press_out must not be NULL");
 
-  typedef enum : int32_t {
-    k_press_t_offset = 128000,  /**< t_fine offset in pressure formula */
-    k_press_p_scale  = 1048576, /**< ADC scaling constant */
-    k_press_shift_31 = 31,      /**< Shift for 31-bit alignment */
-    k_press_shift_47 = 47,      /**< Shift for 47-bit alignment */
-    k_press_shift_8  = 8,       /**< Output shift for Q8 fixed-point Pa*256 */
-    k_press_mul_3125 = 3125,    /**< Bosch formula scaling factor */
-    k_press_shift_35 = 35,      /**< Shift for 35-bit intermediate */
-    k_press_shift_25 = 25,      /**< Shift for 25-bit intermediate */
-    k_press_shift_19 = 19,      /**< Shift for 19-bit intermediate */
-    k_press_shift_13 = 13,      /**< Shift for P9 coefficient shift */
-    k_press_shift_17 = 17,      /**< Shift for P5 coefficient step */
-    k_press_shift_12 = 12,      /**< Right shift for dig_P3 step */
-    k_press_shift_33 = 33,      /**< Divisor shift for var1 */
-    k_press_shift_4  = 4,       /**< Shift for P7 addition */
-  } press_comp_constants_t;
-
   /* k_press_base_one must be int64_t (not enum) because the expression
    * (k_press_base_one << k_press_shift_47) requires a 48-bit value.
    * A 32-bit integer cannot hold (1 << 47); int64_t is required to
@@ -551,14 +601,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
          k_press_shift_25;
   var2 = (((int64_t)s_calib.dig_P8) * p) >> k_press_shift_19;
 
-  /* Bosch BMP280 datasheet formula (Section 4.2.3):
-   * Step 1: shift (p + fine adjustments) right by 8 to get Q8 fixed-point Pa*256
-   * Step 2: add dig_P7 offset (left-shifted 4) AFTER the right shift
-   * Note: shifting the dig_P7 term together with the rest would incorrectly
-   *       scale it by an additional factor of 256. */
-  p                        = (p + var1 + var2) >> k_press_shift_8;
-  const int64_t dig_p7_val = ((int64_t)s_calib.dig_P7) << k_press_shift_4;
-  *press_out               = (uint32_t)(p + dig_p7_val);
+  *press_out = internal_finalize_pressure_q8(p, var1, var2);
   return k_rx_ok;
 }
 
@@ -590,6 +633,8 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
 static void internal_parse_calibration(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "calibration buffer must not be NULL");
+  _Static_assert(k_bmp280_calib_p9_lsb + 2U == k_bmp280_calib_byte_count,
+                 "P9 coefficient must occupy the final two bytes of the calibration block");
   s_calib.dig_T1 = internal_parse_u16_le(&buf[k_bmp280_calib_t1_lsb]);
   s_calib.dig_T2 = internal_parse_s16_le(&buf[k_bmp280_calib_t2_lsb]);
   s_calib.dig_T3 = internal_parse_s16_le(&buf[k_bmp280_calib_t3_lsb]);

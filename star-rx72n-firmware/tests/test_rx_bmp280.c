@@ -506,13 +506,16 @@ static void internal_load_read_data(void)
  * 5. Initialize RIIC channel 1 via rx_bus_i2c_init()
  *
  * @pre None - called by Unity before each test
+ * @pre Previous test tearDown() has cleared mock RIIC state (or first test)
  * @post s_test_manager ready with "i2c1_baro" registered and RIIC ch1 initialized
+ * @post mock RIIC channel 1 reports initialized after setUp completes
  *
  * @since Version 1.0.0
  */
 void setUp(void)
 {
   (void)mock_riic_init();
+  TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bmp280_riic_ch));
 
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "BMP280_TEST", nullptr, nullptr);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -541,14 +544,18 @@ void setUp(void)
  * static s_initialized state persists (no deinit API in BMP280 driver).
  *
  * @pre setUp() has been called
+ * @pre s_test_manager was successfully initialized by setUp()
  * @post s_test_manager deinitialized; mock RIIC state cleared
+ * @post mock RIIC channel 1 reports not initialized
  *
  * @since Version 1.0.0
  */
 void tearDown(void)
 {
-  (void)rx_bus_manager_deinit(&s_test_manager);
+  const rx_err_t deinit_err = rx_bus_manager_deinit(&s_test_manager);
+  TEST_ASSERT_EQUAL(k_rx_ok, deinit_err);
   (void)mock_riic_init();
+  TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bmp280_riic_ch));
 }
 
 /* =============================================================================
@@ -755,8 +762,9 @@ void test_bmp280_read_success_forced_mode(void)
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Verify compensation produced physically valid pressure output.
-   * The range [7680000, 28160000] corresponds to [300, 1100] hPa * 256. */
+  /* Verify compensation produced non-zero output (algorithm completed without divide-by-zero). */
+  TEST_ASSERT_GREATER_THAN((uint32_t)k_press_nonzero_min, data.press_pa_256);
+  /* Verify output is within BMP280 physical operating range [300, 1100] hPa * 256. */
   TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_physical_min, data.press_pa_256);
   TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_press_physical_max, data.press_pa_256);
 }
