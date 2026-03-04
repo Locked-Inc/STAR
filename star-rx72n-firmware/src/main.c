@@ -1721,7 +1721,7 @@ static void internal_register_system_buses(void)
   err = rx_bus_config_init_i2c(&s_i2c1_imu_config,
                                "i2c1",                                       /* name: matches rx_bno055.c s_bus_name */
                                k_riic_channel_1,                             /* channel: RIIC1 */
-                               (uint8_t)k_i2c_addr_bno055,                  /* device_addr: BNO055 (COM3/ADR=LOW) */
+                               k_i2c_addr_bno055,                            /* device_addr: BNO055 (COM3/ADR=LOW) */
                                k_rx_p2_0,                                    /* sda_pin: P2.0 = SDA1 */
                                k_rx_p2_1,                                    /* scl_pin: P2.1 = SCL1 */
                                k_i2c_frequency_400khz);                      /* frequency_hz: 400 kHz fast mode */
@@ -1733,7 +1733,7 @@ static void internal_register_system_buses(void)
   err = rx_bus_config_init_i2c(&s_i2c1_baro_config,
                                "i2c1_baro",                                  /* name: matches rx_bmp280.c s_bus_name */
                                k_riic_channel_1,                             /* channel: RIIC1 (same as i2c1) */
-                               (uint8_t)k_i2c_addr_bmp280,                  /* device_addr: BMP280 (SDO=LOW) */
+                               k_i2c_addr_bmp280,                            /* device_addr: BMP280 (SDO=LOW) */
                                k_rx_p2_0,                                    /* sda_pin: P2.0 = SDA1 */
                                k_rx_p2_1,                                    /* scl_pin: P2.1 = SCL1 */
                                k_i2c_frequency_400khz);                      /* frequency_hz: 400 kHz fast mode */

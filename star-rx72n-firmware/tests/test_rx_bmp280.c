@@ -845,13 +845,7 @@ void test_bmp280_compensation_known_values(void)
 void test_bmp280_read_zero_var1_returns_error(void)
 {
   /* Re-init with calibration where dig_P1 == 0 (dig_T1 non-zero) */
-  uint8_t calib[k_test_calib_buf_size];
-  memset(calib, 0, sizeof(calib));
-  calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
-  calib[k_bmp280_calib_t1_msb] = (uint8_t)k_calib_t1_msb;
-  /* dig_P1 bytes 6-7 remain 0x00 - causes var1 == 0 in compensation */
-
-  mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
+  internal_load_invalid_calib_p1_zero();
 
   rx_err_t init_err = rx_bmp280_init(&s_test_manager);
 

@@ -199,11 +199,11 @@ typedef struct {
  * 3. Read 6 bytes from k_bmp280_reg_press_msb (0xF7): pressure MSB/LSB/XLSB + temperature MSB/LSB/XLSB
  * 4. Assemble 20-bit ADC values:
  *    adc_P = (buf[k_bmp280_press_msb_idx] << k_bmp280_shift_msb) |
- *            (buf[k_bmp280_press_lsb_idx] << k_bmp280_shift_lsb) |
- *            (buf[k_bmp280_press_xlsb_idx] >> k_bmp280_shift_xlsb)
+ *            (buf[k_bmp280_press_lsb_idx] << k_bmp280_shift_lsb_left) |
+ *            (buf[k_bmp280_press_xlsb_idx] >> k_bmp280_shift_xlsb_right)
  *    adc_T = (buf[k_bmp280_temp_msb_idx] << k_bmp280_shift_msb) |
- *            (buf[k_bmp280_temp_lsb_idx] << k_bmp280_shift_lsb) |
- *            (buf[k_bmp280_temp_xlsb_idx] >> k_bmp280_shift_xlsb)
+ *            (buf[k_bmp280_temp_lsb_idx] << k_bmp280_shift_lsb_left) |
+ *            (buf[k_bmp280_temp_xlsb_idx] >> k_bmp280_shift_xlsb_right)
  * 5. Apply Bosch integer compensation algorithm (BMP280 datasheet section 4.2.3)
  *
  * @param[out] out Output data structure. Must not be NULL.

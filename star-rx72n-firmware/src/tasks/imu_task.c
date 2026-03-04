@@ -103,20 +103,17 @@ typedef enum : uint16_t {
 
 /**
  * @enum imu_task_cfg_t
- * @brief IMU task input and period configuration constants
+ * @brief IMU task thread entry input constant
  *
  * @details
- * Defines thread entry input and period tick count for the IMU task.
- * The task runs at 20 Hz (50 ms period, 5 ticks at 100 Hz tick rate).
+ * Defines the thread entry ULONG input for the IMU task (currently unused).
  * Priority is defined in imu_task.h as k_imu_task_priority (= 13).
- *
- * @invariant k_imu_task_period_ticks > 0 (loop must have finite period)
+ * Period ticks are defined in imu_task.h as k_imu_task_period_ticks (= 5).
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_imu_task_input        = 0, /**< Thread entry ULONG input (unused) */
-  k_imu_task_period_ticks = 5, /**< 50 ms period: 5 ticks @ 10 ms/tick (100 Hz tick rate) */
+  k_imu_task_input = 0U, /**< Thread entry ULONG input (unused) */
 } imu_task_cfg_t;
 
 /* =============================================================================
@@ -477,7 +474,7 @@ static void internal_imu_task_entry(ULONG input)
   rx_log_info(s_tag, "IMU polling at 20 Hz");
 
   /* Step 3: Periodic poll loop at 20 Hz (50 ms period = 5 ticks @ 100 Hz) */
-  while (true) {
+  while (1) {
     internal_read_and_publish_imu();
     internal_read_and_publish_baro();
 

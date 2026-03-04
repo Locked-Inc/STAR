@@ -48,7 +48,7 @@
  * @warning rx_bno055_init() blocks for ~700 ms during power-on reset sequence.
  *          This task may delay system startup. Other tasks at lower priority
  *          will be blocked until this initialization completes.
- * @invariant The IMU task runs at 20 Hz (50 ms period, k_imu_task_period_ticks = 5 ticks)
+ * @invariant The IMU task runs at 20 Hz (50 ms period = k_imu_task_period_ticks ticks)
  *            once initialization is complete.
  *
  * @author STAR Team
@@ -77,16 +77,23 @@ typedef enum : uint8_t {
 
 /**
  * @enum imu_task_timing_t
- * @brief Period and IWDT timeout constants for the IMU task
+ * @brief Period, tick count, and IWDT timeout constants for the IMU task
  *
  * @details
  * The IMU task polls sensors at 20 Hz (50 ms period, 5 ticks at 100 Hz tick rate).
  * The IWDT heartbeat timeout is 3x the period to allow for sensor I2C latency.
  *
+ * k_imu_task_period_ticks is used directly in tx_thread_sleep() to sleep for
+ * exactly one 50 ms sampling period (5 ticks x 10 ms/tick = 50 ms).
+ *
+ * @invariant k_imu_task_period_ticks > 0 (task loop must have a finite sleep period)
+ * @invariant k_imu_task_iwdt_timeout_ms >= 3 * k_imu_task_period_ms (3x safety margin)
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
   k_imu_task_period_ms       = 50U,  /**< IMU sampling period in milliseconds (20 Hz) */
+  k_imu_task_period_ticks    = 5U,   /**< IMU sampling period in RTOS ticks (5 ticks x 10 ms/tick = 50 ms at 100 Hz) */
   k_imu_task_iwdt_timeout_ms = 150U, /**< IWDT heartbeat timeout in milliseconds (3x period) */
 } imu_task_timing_t;
 

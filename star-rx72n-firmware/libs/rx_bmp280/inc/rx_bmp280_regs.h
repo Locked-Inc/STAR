@@ -119,33 +119,66 @@ typedef enum : uint8_t {
 } bmp280_i2c_addr_t;
 
 /**
- * @enum bmp280_cfg_t
- * @brief BMP280 control and configuration register values
+ * @enum bmp280_ctrl_meas_t
+ * @brief BMP280 ctrl_meas register value (0xF4)
  *
  * @details
- * Pre-computed register values for the required measurement configuration:
+ * Pre-computed register value for the required measurement configuration:
  *
  * **ctrl_meas (0xF4) = 0x55:**
  * - osrs_t[7:5] = 010 = 2x oversampling for temperature
  * - osrs_p[4:2] = 101 = 16x oversampling for pressure
  * - mode[1:0]   = 01  = Forced mode (one measurement, then sleep)
  *
+ * @see bmp280_config_t IIR filter and standby configuration register value
+ * @see bmp280_status_mask_t Status register measuring-bit mask
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_ctrl_meas_val = 0x55, /**< ctrl_meas: osrs_t=2x, osrs_p=16x, forced mode */
+} bmp280_ctrl_meas_t;
+
+/**
+ * @enum bmp280_config_t
+ * @brief BMP280 config register value (0xF5)
+ *
+ * @details
+ * Pre-computed register value for IIR filter and standby configuration:
+ *
  * **config (0xF5) = 0x08:**
  * - t_sb[7:5]   = 000 = 0.5 ms standby time (not used in forced mode)
  * - filter[4:2] = 001 = IIR filter coefficient 2
  * - spi3w_en[0] = 0   = SPI disabled
  *
- * **status (0xF3) measuring bit:**
- * - Bit 3 = 1 while measurement in progress
- * - Bit 3 = 0 when measurement complete (ADC data ready)
+ * @see bmp280_ctrl_meas_t Oversampling and mode configuration register value
+ * @see bmp280_status_mask_t Status register measuring-bit mask
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_ctrl_meas_val      = 0x55, /**< ctrl_meas: osrs_t=2x, osrs_p=16x, forced mode */
-  k_bmp280_config_val         = 0x08, /**< config: filter=2, standby=0.5ms, SPI disabled */
-  k_bmp280_status_meas_mask   = 0x08, /**< Status measuring bit: bit 3 */
-} bmp280_cfg_t;
+  k_bmp280_config_val = 0x08, /**< config: filter=2, standby=0.5ms, SPI disabled */
+} bmp280_config_t;
+
+/**
+ * @enum bmp280_status_mask_t
+ * @brief BMP280 status register measuring-bit mask (0xF3)
+ *
+ * @details
+ * Bitmask for the measuring bit in the BMP280 status register:
+ *
+ * **status (0xF3) measuring bit:**
+ * - Bit 3 = 1 while measurement in progress
+ * - Bit 3 = 0 when measurement complete (ADC data ready)
+ *
+ * @see bmp280_ctrl_meas_t Oversampling and mode configuration register value
+ * @see bmp280_config_t IIR filter and standby configuration register value
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_status_meas_mask = 0x08, /**< Status measuring bit: bit 3 set while measurement in progress */
+} bmp280_status_mask_t;
 
 /**
  * @enum bmp280_calib_reg_count_t
@@ -194,14 +227,18 @@ typedef enum : uint8_t {
  *
  * @details
  * Shift amounts used to assemble 20-bit ADC values from three 8-bit registers:
- * adc_val = ((int32_t)msb << 12) | ((int32_t)lsb << 4) | ((int32_t)xlsb >> 4)
+ * adc_val = ((int32_t)msb << 12) | ((int32_t)lsb << k_bmp280_shift_lsb_left) | ((int32_t)xlsb >> k_bmp280_shift_xlsb_right)
+ *
+ * Note: k_bmp280_shift_lsb_left and k_bmp280_shift_xlsb_right have the same numeric
+ * value (4) but represent different operations: left-shift of the LSB byte and
+ * right-shift of the XLSB byte respectively.
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_shift_msb  = 12, /**< Shift MSB left 12 bits for 20-bit ADC value */
-  k_bmp280_shift_lsb  = 4,  /**< Shift LSB left 4 bits for 20-bit ADC value */
-  k_bmp280_shift_xlsb = 4,  /**< Shift XLSB right 4 bits to get 4 fractional bits */
+  k_bmp280_shift_msb        = 12, /**< Left-shift MSB byte 12 bits for 20-bit ADC assembly (bits[19:12]) */
+  k_bmp280_shift_lsb_left   = 4,  /**< Left-shift LSB byte 4 bits for 20-bit ADC assembly (bits[11:4]) */
+  k_bmp280_shift_xlsb_right = 4,  /**< Right-shift XLSB byte 4 bits to extract lower nibble (bits[3:0]) */
 } bmp280_adc_shift_t;
 
 /**
@@ -298,6 +335,8 @@ typedef enum : uint8_t {
  * @details
  * BMP280 register write sends [register_address, data_byte] as 2 bytes.
  * Size constants for determining transaction lengths.
+ *
+ * @invariant k_bmp280_write_buf_size == k_bmp280_write_idx_val + 1 (buffer exactly fits register + value)
  *
  * @since Version 1.0.0
  */

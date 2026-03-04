@@ -552,7 +552,7 @@ static rx_err_t internal_init_configure(void)
 static rx_err_t internal_init_enter_ndof(void)
 {
   RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for NDOF entry");
-  RX_ASSERT(s_tag != NULL, "s_tag must be non-NULL");
+  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL");
 
   /* Step 7: Enter NDOF fusion mode (full 9-DOF sensor fusion) */
   const rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_ndof);

@@ -43,6 +43,7 @@
  *
  * @author STAR Team
  * @date 2026-03-04
+ * @since Version 1.0.0
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
  */
 
@@ -211,6 +212,8 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf);
 static inline int16_t internal_parse_s16_le(const uint8_t* buf);
 /** @brief Assemble a 20-bit signed ADC value from a 3-byte MSB/LSB/XLSB buffer */
 static inline int32_t internal_assemble_adc20(const uint8_t* buf);
+/** @brief Read ADC registers, assemble values, apply compensation, and validate range */
+static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
 
 /* =============================================================================
  * Internal Helpers
@@ -373,8 +376,8 @@ static inline int32_t internal_assemble_adc20(const uint8_t* buf)
   RX_ASSERT(buf != NULL, "buf must not be NULL");
   /* Assembly: (MSB << 12) | (LSB << 4) | (XLSB >> 4) produces 20-bit value */
   const int32_t result = (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
-                                   ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb) |
-                                   ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb));
+                                   ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb_left) |
+                                   ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb_right));
   RX_ASSERT(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max, "ADC20 result out of 20-bit range");
   return result;
 }
@@ -415,7 +418,7 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
 {
   RX_ASSERT(t_fine_out != NULL, "t_fine_out must be non-NULL");
 
-  typedef enum : int32_t {
+  enum : int32_t {
     k_adc_20bit_max     = 0xFFFFF, /**< Maximum valid 20-bit ADC value */
     k_temp_shift_adc_3  = 3,       /**< adc_T right shift for T1 subtraction step */
     k_temp_shift_t1_1   = 1,       /**< dig_T1 left shift in first var1 step */
@@ -426,9 +429,9 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
     k_temp_fine_scale   = 5,       /**< Scale factor in fine-to-output conversion */
     k_temp_round_add    = 128,     /**< Rounding constant in fine-to-output conversion */
     k_temp_shift_out    = 8,       /**< Right shift to produce 0.01 degC output */
-  } temp_bit_constants_t;
+  };
 
-  RX_ASSERT(adc_T >= 0 && adc_T <= (temp_bit_constants_t)k_adc_20bit_max,
+  RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)k_adc_20bit_max,
             "adc_T must be a 20-bit ADC value");
 
   const int32_t var1 = ((((adc_T >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
@@ -615,14 +618,91 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
 }
 
 /**
+ * @brief Read ADC registers, assemble values, apply Bosch compensation, and validate range
+ *
+ * @details
+ * Performs the ADC read + compensation + range-check portion of the measurement cycle,
+ * after the forced-mode trigger and status poll have completed. Specifically:
+ * 1. Read 6 bytes of ADC data from k_bmp280_reg_press_msb (0xF7)
+ * 2. Assemble 20-bit pressure and temperature ADC values via internal_assemble_adc20()
+ * 3. Apply Bosch integer temperature compensation (internal_compensate_temp())
+ * 4. Apply Bosch integer pressure compensation (internal_compensate_pressure())
+ * 5. Validate temperature in [-40.00, +85.00] degC (centi-degC units)
+ * 6. Validate pressure in [300, 1100] hPa (Pa*256 units)
+ *
+ * @param[out] out Output structure populated with temp_centi_degc and press_pa_256
+ *
+ * @return rx_err_t Operation result
+ * @retval k_rx_ok ADC data read and compensation applied; out populated with valid values
+ * @retval k_rx_err_nack I2C communication failure during ADC register read
+ * @retval k_rx_err_invalid_state var1 == 0 in pressure compensation, or output out of range
+ *
+ * @pre s_manager non-NULL (rx_bmp280_init succeeded)
+ * @pre s_initialized == true
+ * @pre out non-NULL
+ * @pre Forced measurement complete (status poll cleared by caller)
+ * @post out->temp_centi_degc in [-4000, 8500] on k_rx_ok
+ * @post out->press_pa_256 in [7680000, 28160000] on k_rx_ok
+ *
+ * @note Not thread-safe
+ * @see rx_bmp280_read() Caller that triggers measurement and polls status before calling this
+ * @see internal_compensate_temp() Temperature compensation algorithm
+ * @see internal_compensate_pressure() Pressure compensation algorithm
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
+{
+  RX_ASSERT(out != NULL, "out must be non-NULL");
+  RX_ASSERT(s_initialized, "BMP280 must be initialized before ADC read");
+
+  /* Step 1: Read 6 bytes of ADC data: pressure[3] + temperature[3] */
+  uint8_t adc_buf[k_bmp280_adc_buf_size];
+  const rx_err_t err = internal_read_regs((uint8_t)k_bmp280_reg_press_msb, adc_buf, k_bmp280_adc_buf_size);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "ADC data read failed");
+    return err;
+  }
+
+  /* Step 2: Assemble 20-bit raw ADC values */
+  const int32_t adc_P = internal_assemble_adc20(&adc_buf[k_bmp280_press_msb_idx]);
+  const int32_t adc_T = internal_assemble_adc20(&adc_buf[k_bmp280_temp_msb_idx]);
+
+  /* Step 3: Apply Bosch integer temperature compensation */
+  int32_t t_fine       = 0;
+  out->temp_centi_degc = internal_compensate_temp(adc_T, &t_fine);
+
+  /* Step 4: Apply Bosch integer pressure compensation */
+  const rx_err_t press_err = internal_compensate_pressure(adc_P, t_fine, &out->press_pa_256);
+  if (press_err != k_rx_ok) {
+    rx_log_error(s_tag, "Pressure compensation failed (var1==0)");
+    return press_err;
+  }
+
+  /* Step 5: Postcondition range checks (BMP280 datasheet operating limits) */
+  if (out->temp_centi_degc < (int32_t)k_bmp280_temp_min_cdegc_impl ||
+      out->temp_centi_degc > (int32_t)k_bmp280_temp_max_cdegc_impl) {
+    rx_log_error_val(s_tag, "Temperature out of range (centi-degC)", (int32_t)out->temp_centi_degc);
+    return k_rx_err_invalid_state;
+  }
+
+  if (out->press_pa_256 < (uint32_t)k_bmp280_press_min_pa_256 ||
+      out->press_pa_256 > (uint32_t)k_bmp280_press_max_pa_256) {
+    rx_log_error_val(s_tag, "Pressure out of range (Pa*256)", out->press_pa_256);
+    return k_rx_err_invalid_state;
+  }
+
+  return k_rx_ok;
+}
+
+/**
  * @brief Trigger forced measurement and read compensated pressure and temperature
  *
  * @details
  * Executes the complete forced-mode measurement cycle:
- * 1. Trigger forced measurement
- * 2. Poll for completion (bounded loop)
- * 3. Read raw ADC data
- * 4. Apply Bosch integer compensation
+ * 1. Trigger forced measurement (write ctrl_meas)
+ * 2. Poll status register for completion (bounded loop)
+ * 3. Read ADC data, apply compensation, validate range (internal_read_and_compensate_adc)
  *
  * @param[out] out Output structure for measurement results
  *
@@ -632,6 +712,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
  * @retval k_rx_err_not_initialized init not called
  * @retval k_rx_err_timeout Status poll timeout
  * @retval k_rx_err_nack I2C communication failure
+ * @retval k_rx_err_invalid_state Compensation or range check failed
  *
  * @pre rx_bmp280_init() succeeded
  * @pre out non-NULL
@@ -639,6 +720,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
  * @post Sensor in sleep mode (forced measurement complete)
  *
  * @note Not thread-safe
+ * @see internal_read_and_compensate_adc() ADC read, compensation, and range validation
  *
  * @since Version 1.0.0
  */
@@ -682,40 +764,6 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
     return k_rx_err_timeout;
   }
 
-  /* Step 3: Read 6 bytes of ADC data: pressure[3] + temperature[3] */
-  uint8_t adc_buf[k_bmp280_adc_buf_size];
-  err = internal_read_regs((uint8_t)k_bmp280_reg_press_msb, adc_buf, k_bmp280_adc_buf_size);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "ADC data read failed");
-    return err;
-  }
-
-  /* Step 4: Assemble 20-bit raw ADC values */
-  const int32_t adc_P = internal_assemble_adc20(&adc_buf[k_bmp280_press_msb_idx]);
-  const int32_t adc_T = internal_assemble_adc20(&adc_buf[k_bmp280_temp_msb_idx]);
-
-  /* Step 5: Apply Bosch integer compensation */
-  int32_t t_fine       = 0;
-  out->temp_centi_degc = internal_compensate_temp(adc_T, &t_fine);
-
-  const rx_err_t press_err = internal_compensate_pressure(adc_P, t_fine, &out->press_pa_256);
-  if (press_err != k_rx_ok) {
-    rx_log_error(s_tag, "Pressure compensation failed (var1==0)");
-    return press_err;
-  }
-
-  /* Step 6: Postcondition range checks (BMP280 datasheet operating limits) */
-  if (out->temp_centi_degc < (int32_t)k_bmp280_temp_min_cdegc_impl ||
-      out->temp_centi_degc > (int32_t)k_bmp280_temp_max_cdegc_impl) {
-    rx_log_error_val(s_tag, "Temperature out of range (centi-degC)", (int32_t)out->temp_centi_degc);
-    return k_rx_err_invalid_state;
-  }
-
-  if (out->press_pa_256 < (uint32_t)k_bmp280_press_min_pa_256 ||
-      out->press_pa_256 > (uint32_t)k_bmp280_press_max_pa_256) {
-    rx_log_error_val(s_tag, "Pressure out of range (Pa*256)", out->press_pa_256);
-    return k_rx_err_invalid_state;
-  }
-
-  return k_rx_ok;
+  /* Step 3: Read ADC, apply compensation, validate output range */
+  return internal_read_and_compensate_adc(out);
 }
