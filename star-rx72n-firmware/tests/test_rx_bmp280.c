@@ -221,7 +221,7 @@ typedef enum : uint8_t {
  *   adc_T = (k_adc_press_xlsb<<12)|(k_adc_temp_msb<<4)|(k_adc_temp_lsb>>4)
  *         = (0x7F<<12)|(0x00<<4)|(0x00>>4) = 0x7F000 = 520192
  *
- * With T1=27436, T2=24790, T3=50: T = 2400 centi-degC (24.00 degC) - within range
+ * With T1=27488, T2=24790, T3=50: T = 2400 centi-degC (24.00 degC) - within range
  * With P1=65410, P2=0 and adc_P=9: P = ~100192 Pa (1001.9 hPa) - within range
  *
  * See test_bmp280_calib_bytes_t for the derivation of P1=65410 that ensures
@@ -634,7 +634,7 @@ void test_bmp280_init_invalid_calib_returns_error(void)
  * @brief rx_bmp280_init succeeds with valid calibration data
  *
  * @details
- * Pre-loads valid 24-byte calibration (dig_T1 = 27436, dig_P1 = 65410).
+ * Pre-loads valid 24-byte calibration (dig_T1 = 27488, dig_P1 = 65410).
  * After init succeeds, a subsequent rx_bmp280_read() call confirms
  * s_initialized == true.
  *
