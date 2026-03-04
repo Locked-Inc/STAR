@@ -276,6 +276,7 @@ typedef struct {
  * @retval k_rx_err_null_ptr out_calibrated is NULL
  * @retval k_rx_err_not_initialized rx_bno055_init() not called
  * @retval k_rx_err_nack I2C communication failure
+ * @retval k_rx_err_timeout I2C read timeout
  *
  * @pre rx_bno055_init() called successfully
  * @pre out_calibrated points to valid bool storage

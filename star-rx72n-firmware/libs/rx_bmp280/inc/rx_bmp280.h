@@ -75,6 +75,7 @@ extern "C" {
 
 #include <stdint.h>
 
+#include "rx_bmp280_regs.h"
 #include "rx_bus_manager.h"
 #include "rx_err.h"
 
@@ -154,9 +155,9 @@ typedef struct {
  * @brief Initialize BMP280 sensor and read factory calibration coefficients
  *
  * @details
- * Reads the 24-byte calibration block from OTP (0x88-0x9F) and parses
+ * Reads the 24-byte calibration block from OTP (k_bmp280_reg_calib_start (0x88) through 0x9F) and parses
  * the 12 trimming parameters into s_calib (module-static storage).
- * Then writes the IIR filter configuration to register 0xF5.
+ * Then writes the IIR filter configuration to register k_bmp280_reg_config (0xF5).
  *
  * The ctrl_meas register (0xF4) is NOT written during init; it is written
  * at the start of each rx_bmp280_read() call to trigger a forced measurement.
@@ -191,12 +192,12 @@ typedef struct {
  *
  * @details
  * Measurement sequence:
- * 1. Write ctrl_meas = 0x55 to 0xF4 (osrs_t=2x, osrs_p=16x, forced mode)
- * 2. Poll status register 0xF3 until measuring bit (bit 3) clears
+ * 1. Write ctrl_meas = k_bmp280_ctrl_meas_val (0x55) to k_bmp280_reg_ctrl_meas (0xF4) (osrs_t=2x, osrs_p=16x, forced mode)
+ * 2. Poll status register k_bmp280_reg_status (0xF3) until measuring bit (k_bmp280_status_meas_mask, bit 3) clears
  *    - Bounded by k_bmp280_poll_max iterations
- * 3. Read 6 bytes from 0xF7: pressure MSB/LSB/XLSB + temperature MSB/LSB/XLSB
+ * 3. Read 6 bytes from k_bmp280_reg_press_msb (0xF7): pressure MSB/LSB/XLSB + temperature MSB/LSB/XLSB
  * 4. Assemble 20-bit ADC values:
- *    adc_P = (buf[0]<<12) | (buf[1]<<4) | (buf[2]>>4)
+ *    adc_P = (buf[k_bmp280_press_msb_idx]<<k_bmp280_shift_msb) | (buf[1]<<4) | (buf[2]>>4)
  *    adc_T = (buf[3]<<12) | (buf[4]<<4) | (buf[5]>>4)
  * 5. Apply Bosch integer compensation algorithm (BMP280 datasheet section 4.2.3)
  *

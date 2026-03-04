@@ -113,19 +113,46 @@ typedef enum : uint16_t {
  * =============================================================================
  */
 
-/** @brief ThreadX thread control block */
+/**
+ * @brief ThreadX thread control block for the IMU task
+ * @details Holds the OS-level thread state (stack pointer, priority, etc.).
+ *          Allocated statically; never freed (NASA Rule 3).
+ * @invariant Valid after imu_task_create() returns k_rx_ok
+ * @since Version 1.0.0
+ */
 static TX_THREAD s_imu_thread;
 
-/** @brief Static thread stack (zero dynamic allocation, NASA Rule 3) */
+/**
+ * @brief Static thread stack for the IMU task (zero dynamic allocation)
+ * @details Provides the execution stack for internal_imu_task_entry().
+ *          Size = k_imu_task_stack_size (2048 bytes) is sufficient for
+ *          BNO055 init, BMP280 init, and periodic read buffers.
+ * @invariant Length == k_imu_task_stack_size; never modified after creation
+ * @since Version 1.0.0
+ */
 static uint8_t s_imu_stack[k_imu_task_stack_size];
 
-/** @brief Task creation guard: prevents double creation */
+/**
+ * @brief Task creation guard: prevents double creation of the IMU task
+ * @details Set to true by imu_task_create() after ThreadX thread creation
+ *          succeeds. Checked at entry to detect and reject duplicate calls.
+ * @invariant false before first imu_task_create() call; true after success
+ * @since Version 1.0.0
+ */
 static bool s_imu_created = false;
 
-/** @brief Log tag for this module */
+/**
+ * @brief Log tag for this module
+ * @details Constant string used as the tag parameter in all rx_log_* calls.
+ * @invariant Points to static string "IMU"; never NULL, never modified
+ * @since Version 1.0.0
+ */
 static const char* const s_tag = "IMU";
 
-/** @brief External bus manager (initialized in main.c, registered buses include "i2c1") */
+/** @brief External bus manager declared in main.c; registered buses include "i2c1" and "i2c1_baro"
+ *  @note Using inline extern is necessary because main.h does not export g_bus_manager.
+ *        If a main.h public header is added, replace this with #include "main.h".
+ */
 extern rx_bus_manager_t g_bus_manager;
 
 /* =============================================================================
@@ -221,6 +248,7 @@ rx_err_t imu_task_create(void)
  */
 static void internal_send_iwdt_heartbeat(void)
 {
+  RX_ASSERT(s_tag != NULL, "s_tag must be non-NULL for IWDT heartbeat");
   const rx_err_t err = rx_iwdt_task_heartbeat("ImuTask");
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "IWDT heartbeat failed");

@@ -132,6 +132,9 @@ static const char* const s_bus_name = "i2c1";
 
 static rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
 static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
+static rx_err_t internal_read_euler(bno055_data_t* out);
+static rx_err_t internal_read_quat(bno055_data_t* out);
+static rx_err_t internal_read_lia(bno055_data_t* out);
 
 /* =============================================================================
  * Internal Helpers
@@ -164,6 +167,8 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
  */
 static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
 {
+  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL before write");
+  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL before write");
   uint8_t buf[k_bno055_write_buf_size];
   buf[k_bno055_write_idx_reg] = reg;
   buf[k_bno055_write_idx_val] = val;
@@ -201,6 +206,9 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  */
 static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
 {
+  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL before read");
+  RX_ASSERT(buf != NULL, "buf must be non-NULL for read operation");
+  RX_ASSERT(len > 0U, "len must be positive for read operation");
   return rx_bus_i2c_write_read(s_manager,
                                s_bus_name,
                                &reg,
@@ -275,7 +283,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
     rx_log_error(s_tag, "Set CONFIG mode failed");
     return err;
   }
-  (void)tx_thread_sleep(k_bno055_delay_config_ms / k_bno055_ms_per_tick + k_bno055_single_byte); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
+  (void)tx_thread_sleep(k_bno055_delay_config_ms / k_bno055_ms_per_tick + k_bno055_tick_round_up); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
 
   /* Step 3: Set normal power mode */
   err = internal_write_reg((uint8_t)k_bno055_reg_pwr_mode, (uint8_t)k_bno055_pwr_normal);
@@ -317,7 +325,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
     rx_log_error(s_tag, "Set NDOF mode failed");
     return err;
   }
-  (void)tx_thread_sleep(k_bno055_single_byte); /* 1 tick @ 10 ms/tick = 10 ms (rounds up from 7 ms) */
+  (void)tx_thread_sleep((ULONG)k_bno055_delay_ndof_ticks); /* 1 tick @ 10 ms/tick = 10 ms (rounds up from 7 ms) */
 
   /* Step 8: Verify chip ID */
   uint8_t chip_id = 0;
@@ -372,15 +380,30 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
  *
  * @since Version 1.0.0
  */
-rx_err_t rx_bno055_read(bno055_data_t* out)
+/**
+ * @brief Read Euler angle registers from BNO055 and populate heading/roll/pitch
+ *
+ * @details
+ * Burst-reads 6 bytes from register 0x1A (EUL_H_LSB) and assembles
+ * three 16-bit little-endian values into out->heading_deg16, roll_deg16, pitch_deg16.
+ *
+ * @param[out] out Data structure to populate (heading, roll, pitch fields)
+ *
+ * @return rx_err_t I2C transaction result
+ * @retval k_rx_ok Euler angles populated
+ * @retval k_rx_err_nack I2C communication failure
+ * @retval k_rx_err_timeout I2C timeout
+ *
+ * @pre s_initialized == true
+ * @pre out non-NULL
+ * @post out->heading_deg16, roll_deg16, pitch_deg16 updated
+ *
+ * @note Called only from rx_bno055_read()
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_euler(bno055_data_t* out)
 {
-  RX_CHECK_NULL_PTR(out, s_tag, "Output data pointer is NULL");
-
-  if (!s_initialized) {
-    return k_rx_err_not_initialized;
-  }
-
-  /* Read Euler angles: heading(2) + roll(2) + pitch(2) = 6 bytes from 0x1A */
   uint8_t  euler_buf[k_bno055_euler_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_eul_h_lsb,
                                     euler_buf,
@@ -390,19 +413,148 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
     return err;
   }
 
-  /* Read Quaternion: W(2) + X(2) + Y(2) + Z(2) = 8 bytes from 0x20 */
-  uint8_t quat_buf[k_bno055_quat_bytes];
-  err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
+  const uint8_t lsb = (uint8_t)k_bno055_idx_lsb;
+  const uint8_t msb = (uint8_t)k_bno055_idx_msb;
+  const uint8_t sh  = (uint8_t)k_bno055_shift_msb;
+
+  typedef enum : uint8_t {
+    k_eul_h_off = 0, /**< Byte offset of heading LSB in euler_buf */
+    k_eul_r_off = 2, /**< Byte offset of roll LSB in euler_buf */
+    k_eul_p_off = 4, /**< Byte offset of pitch LSB in euler_buf */
+  } euler_offsets_t;
+
+  out->heading_deg16 = (int16_t)((uint16_t)euler_buf[k_eul_h_off + lsb] |
+                                 ((uint16_t)euler_buf[k_eul_h_off + msb] << sh));
+  out->roll_deg16    = (int16_t)((uint16_t)euler_buf[k_eul_r_off + lsb] |
+                                 ((uint16_t)euler_buf[k_eul_r_off + msb] << sh));
+  out->pitch_deg16   = (int16_t)((uint16_t)euler_buf[k_eul_p_off + lsb] |
+                                 ((uint16_t)euler_buf[k_eul_p_off + msb] << sh));
+  return k_rx_ok;
+}
+
+/**
+ * @brief Read quaternion registers from BNO055 and populate quat_w/x/y/z
+ *
+ * @details
+ * Burst-reads 8 bytes from register 0x20 (QUA_W_LSB) and assembles
+ * four 16-bit little-endian values into the quat_w/x/y/z fields.
+ *
+ * @param[out] out Data structure to populate (quaternion fields)
+ *
+ * @return rx_err_t I2C transaction result
+ * @retval k_rx_ok Quaternion fields populated
+ * @retval k_rx_err_nack I2C communication failure
+ * @retval k_rx_err_timeout I2C timeout
+ *
+ * @pre s_initialized == true
+ * @pre out non-NULL
+ * @post out->quat_w/x/y/z updated
+ *
+ * @note Called only from rx_bno055_read()
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_quat(bno055_data_t* out)
+{
+  uint8_t  quat_buf[k_bno055_quat_bytes];
+  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Quaternion read failed");
     return err;
   }
 
-  /* Read Linear acceleration: X(2) + Y(2) + Z(2) = 6 bytes from 0x28 */
-  uint8_t lia_buf[k_bno055_lia_bytes];
-  err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
+  const uint8_t lsb = (uint8_t)k_bno055_idx_lsb;
+  const uint8_t msb = (uint8_t)k_bno055_idx_msb;
+  const uint8_t sh  = (uint8_t)k_bno055_shift_msb;
+
+  typedef enum : uint8_t {
+    k_qua_w_off = 0, /**< Byte offset of quaternion W LSB in quat_buf */
+    k_qua_x_off = 2, /**< Byte offset of quaternion X LSB in quat_buf */
+    k_qua_y_off = 4, /**< Byte offset of quaternion Y LSB in quat_buf */
+    k_qua_z_off = 6, /**< Byte offset of quaternion Z LSB in quat_buf */
+  } quat_offsets_t;
+
+  out->quat_w = (int16_t)((uint16_t)quat_buf[k_qua_w_off + lsb] |
+                           ((uint16_t)quat_buf[k_qua_w_off + msb] << sh));
+  out->quat_x = (int16_t)((uint16_t)quat_buf[k_qua_x_off + lsb] |
+                           ((uint16_t)quat_buf[k_qua_x_off + msb] << sh));
+  out->quat_y = (int16_t)((uint16_t)quat_buf[k_qua_y_off + lsb] |
+                           ((uint16_t)quat_buf[k_qua_y_off + msb] << sh));
+  out->quat_z = (int16_t)((uint16_t)quat_buf[k_qua_z_off + lsb] |
+                           ((uint16_t)quat_buf[k_qua_z_off + msb] << sh));
+  return k_rx_ok;
+}
+
+/**
+ * @brief Read linear acceleration registers from BNO055 and populate lin_acc_x/y/z
+ *
+ * @details
+ * Burst-reads 6 bytes from register 0x28 (LIA_X_LSB) and assembles
+ * three 16-bit little-endian values into the lin_acc_x/y/z fields.
+ *
+ * @param[out] out Data structure to populate (linear acceleration fields)
+ *
+ * @return rx_err_t I2C transaction result
+ * @retval k_rx_ok Linear acceleration fields populated
+ * @retval k_rx_err_nack I2C communication failure
+ * @retval k_rx_err_timeout I2C timeout
+ *
+ * @pre s_initialized == true
+ * @pre out non-NULL
+ * @post out->lin_acc_x/y/z updated
+ *
+ * @note Called only from rx_bno055_read()
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_lia(bno055_data_t* out)
+{
+  uint8_t  lia_buf[k_bno055_lia_bytes];
+  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Linear accel read failed");
+    return err;
+  }
+
+  const uint8_t lsb = (uint8_t)k_bno055_idx_lsb;
+  const uint8_t msb = (uint8_t)k_bno055_idx_msb;
+  const uint8_t sh  = (uint8_t)k_bno055_shift_msb;
+
+  typedef enum : uint8_t {
+    k_lia_x_off = 0, /**< Byte offset of linear accel X LSB in lia_buf */
+    k_lia_y_off = 2, /**< Byte offset of linear accel Y LSB in lia_buf */
+    k_lia_z_off = 4, /**< Byte offset of linear accel Z LSB in lia_buf */
+  } lia_offsets_t;
+
+  out->lin_acc_x = (int16_t)((uint16_t)lia_buf[k_lia_x_off + lsb] |
+                              ((uint16_t)lia_buf[k_lia_x_off + msb] << sh));
+  out->lin_acc_y = (int16_t)((uint16_t)lia_buf[k_lia_y_off + lsb] |
+                              ((uint16_t)lia_buf[k_lia_y_off + msb] << sh));
+  out->lin_acc_z = (int16_t)((uint16_t)lia_buf[k_lia_z_off + lsb] |
+                              ((uint16_t)lia_buf[k_lia_z_off + msb] << sh));
+  return k_rx_ok;
+}
+
+rx_err_t rx_bno055_read(bno055_data_t* out)
+{
+  RX_CHECK_NULL_PTR(out, s_tag, "Output data pointer is NULL");
+
+  if (!s_initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  rx_err_t err = internal_read_euler(out);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_read_quat(out);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_read_lia(out);
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -424,57 +576,6 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
     return err;
   }
 
-  /* Assemble 16-bit values (little-endian: LSB first at even offset) */
-  const uint8_t lsb = (uint8_t)k_bno055_idx_lsb;
-  const uint8_t msb = (uint8_t)k_bno055_idx_msb;
-  const uint8_t sh  = (uint8_t)k_bno055_shift_msb;
-
-  /* Euler angles (stride 2 bytes each: H offset 0, R offset 2, P offset 4) */
-  typedef enum : uint8_t {
-    k_eul_h_off = 0, /**< Byte offset of heading LSB in euler_buf */
-    k_eul_r_off = 2, /**< Byte offset of roll LSB in euler_buf */
-    k_eul_p_off = 4, /**< Byte offset of pitch LSB in euler_buf */
-  } euler_offsets_t;
-
-  out->heading_deg16 = (int16_t)((uint16_t)euler_buf[k_eul_h_off + lsb] |
-                                 ((uint16_t)euler_buf[k_eul_h_off + msb] << sh));
-  out->roll_deg16    = (int16_t)((uint16_t)euler_buf[k_eul_r_off + lsb] |
-                                 ((uint16_t)euler_buf[k_eul_r_off + msb] << sh));
-  out->pitch_deg16   = (int16_t)((uint16_t)euler_buf[k_eul_p_off + lsb] |
-                                 ((uint16_t)euler_buf[k_eul_p_off + msb] << sh));
-
-  /* Quaternion (stride 2 bytes each: W offset 0, X offset 2, Y offset 4, Z offset 6) */
-  typedef enum : uint8_t {
-    k_qua_w_off = 0, /**< Byte offset of quaternion W LSB in quat_buf */
-    k_qua_x_off = 2, /**< Byte offset of quaternion X LSB in quat_buf */
-    k_qua_y_off = 4, /**< Byte offset of quaternion Y LSB in quat_buf */
-    k_qua_z_off = 6, /**< Byte offset of quaternion Z LSB in quat_buf */
-  } quat_offsets_t;
-
-  out->quat_w = (int16_t)((uint16_t)quat_buf[k_qua_w_off + lsb] |
-                           ((uint16_t)quat_buf[k_qua_w_off + msb] << sh));
-  out->quat_x = (int16_t)((uint16_t)quat_buf[k_qua_x_off + lsb] |
-                           ((uint16_t)quat_buf[k_qua_x_off + msb] << sh));
-  out->quat_y = (int16_t)((uint16_t)quat_buf[k_qua_y_off + lsb] |
-                           ((uint16_t)quat_buf[k_qua_y_off + msb] << sh));
-  out->quat_z = (int16_t)((uint16_t)quat_buf[k_qua_z_off + lsb] |
-                           ((uint16_t)quat_buf[k_qua_z_off + msb] << sh));
-
-  /* Linear acceleration (stride 2 bytes each: X offset 0, Y offset 2, Z offset 4) */
-  typedef enum : uint8_t {
-    k_lia_x_off = 0, /**< Byte offset of linear accel X LSB in lia_buf */
-    k_lia_y_off = 2, /**< Byte offset of linear accel Y LSB in lia_buf */
-    k_lia_z_off = 4, /**< Byte offset of linear accel Z LSB in lia_buf */
-  } lia_offsets_t;
-
-  out->lin_acc_x = (int16_t)((uint16_t)lia_buf[k_lia_x_off + lsb] |
-                              ((uint16_t)lia_buf[k_lia_x_off + msb] << sh));
-  out->lin_acc_y = (int16_t)((uint16_t)lia_buf[k_lia_y_off + lsb] |
-                              ((uint16_t)lia_buf[k_lia_y_off + msb] << sh));
-  out->lin_acc_z = (int16_t)((uint16_t)lia_buf[k_lia_z_off + lsb] |
-                              ((uint16_t)lia_buf[k_lia_z_off + msb] << sh));
-
-  /* Temperature and calibration status (raw single bytes) */
   out->temp_degc  = (int8_t)temp_raw;
   out->calib_stat = calib_raw;
 

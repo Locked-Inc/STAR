@@ -45,6 +45,12 @@
  * - **Rule 3**: [PASS] No dynamic allocation; static stack only
  * - **Rule 5**: [PASS] 2+ preconditions in imu_task_create()
  *
+ * @warning rx_bno055_init() blocks for ~700 ms during power-on reset sequence.
+ *          This task may delay system startup. Other tasks at lower priority
+ *          will be blocked until this initialization completes.
+ * @invariant The IMU task runs at 20 Hz (50 ms period, k_imu_task_period_ticks = 5 ticks)
+ *            once initialization is complete.
+ *
  * @author STAR Team
  * @date 2026-03-04
  * @version 1.0.0
@@ -91,6 +97,11 @@
  * @post ImuTask created and scheduled for execution
  * @post Sensor initialization will occur inside task on first run
  * @post imu_state_t and baro_state_t updated at 20 Hz once sensors ready
+ *
+ * @warning Sensor initialization occurs inside the task and will delay the first
+ *          data update by approximately 702 ms total (~700 ms for rx_bno055_init
+ *          plus ~2 ms for rx_bmp280_init). Other tasks are not blocked; the IMU
+ *          task itself is blocked during its own init sequence.
  *
  * @note Call from tx_application_define() in main.c after bus registration
  * @note Task initializes sensors internally; no pre-initialization required

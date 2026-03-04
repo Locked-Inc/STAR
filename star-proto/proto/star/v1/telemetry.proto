@@ -181,10 +181,10 @@ message ImuData {
   // Angular velocity Z (yaw rate) in radians per second.
   double gyro_z_rad_per_s = 9;
 
-  // Compass heading (Euler heading from BNO055 NDOF fusion) in degrees.
-  // Range: 0.0 to 359.9375 degrees. 0 = North, 90 = East.
-  // Derived from heading_deg16 register value / 16.0.
-  double heading_deg = 10;
+  // Compass heading (Euler heading from BNO055 NDOF fusion) in radians.
+  // Range: 0.0 to 2*pi radians (0 to 6.283185). 0 = North, pi/2 = East.
+  // Derived from heading_deg16 register value / 16.0 * (pi / 180.0).
+  double heading_rad = 10;
 
   // Quaternion W component (scalar part). Range: -1.0 to 1.0.
   // Derived from BNO055 QUA_DATA register / 16384.0.
@@ -208,7 +208,7 @@ message ImuData {
 
   // BNO055 on-chip temperature in degrees Celsius.
   // Range: -40 to +85 degC.
-  int32 temp_degc = 16;
+  int32 temperature_celsius = 16;
 }
 
 // Barometric pressure and temperature data from BMP280.

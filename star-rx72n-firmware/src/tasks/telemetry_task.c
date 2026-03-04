@@ -1334,6 +1334,8 @@ static rx_err_t              internal_build_and_send_telemetry(void);
 static telemetry_transport_t internal_select_transport(void);
 static rx_err_t              internal_populate_motor_telemetry(star_v1_TelemetryData* telemetry);
 static void                  internal_collect_state(star_v1_TelemetryData* telemetry);
+static void                  internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry);
+static void                  internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry);
 static rx_err_t              internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
                                                        uint32_t*                    out_encoded_len);
 static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len);
@@ -1983,6 +1985,89 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
 }
 
 /**
+ * @brief Populate ImuData fields in TelemetryData from shared_data IMU state
+ *
+ * @details
+ * Reads IMU state via shared_data_get_imu() and populates all ImuData fields
+ * in the telemetry message. Converts BNO055 fixed-point integers to double
+ * using defined scale constants. Sets has_imu = true only on valid data.
+ *
+ * @param[in,out] telemetry TelemetryData message to populate
+ *
+ * @pre telemetry non-NULL
+ * @post telemetry->has_imu set if shared_data_get_imu returns valid data
+ * @post All imu.* fields populated on success
+ *
+ * @note Not thread-safe; called from single-threaded internal_collect_state()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
+{
+  imu_state_t    imu_state;
+  const rx_err_t err = shared_data_get_imu(&imu_state);
+  if (err == k_rx_ok && imu_state.valid) {
+    telemetry->has_imu = true;
+
+    /* Heading in radians (0.0 to 2*pi) */
+    telemetry->imu.heading_rad = (double)imu_state.heading_deg16 / s_deg16_per_deg * s_rad_per_deg;
+
+    /* Roll and pitch in radians */
+    telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16  / s_deg16_per_deg) * s_rad_per_deg;
+    telemetry->imu.pitch_rad = ((double)imu_state.pitch_deg16 / s_deg16_per_deg) * s_rad_per_deg;
+
+    /* Unit quaternion (each raw value / 16384) */
+    telemetry->imu.quat_w = (double)imu_state.quat_w / s_quat_scale;
+    telemetry->imu.quat_x = (double)imu_state.quat_x / s_quat_scale;
+    telemetry->imu.quat_y = (double)imu_state.quat_y / s_quat_scale;
+    telemetry->imu.quat_z = (double)imu_state.quat_z / s_quat_scale;
+
+    /* Linear acceleration (gravity-compensated, each raw value / 100 m/s^2) */
+    telemetry->imu.accel_x_mps2 = (double)imu_state.lin_acc_x / s_lin_acc_scale;
+    telemetry->imu.accel_y_mps2 = (double)imu_state.lin_acc_y / s_lin_acc_scale;
+    telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / s_lin_acc_scale;
+
+    /* Calibration status and on-chip temperature */
+    telemetry->imu.calib_stat          = (uint32_t)imu_state.calib_stat;
+    telemetry->imu.temperature_celsius = (int32_t)imu_state.temp_degc;
+  }
+}
+
+/**
+ * @brief Populate BaroData fields in TelemetryData from shared_data baro state
+ *
+ * @details
+ * Reads barometric state via shared_data_get_baro() and populates BaroData
+ * fields. Converts BMP280 integer-scaled values to physical SI units.
+ * Sets has_baro = true only on valid data.
+ *
+ * @param[in,out] telemetry TelemetryData message to populate
+ *
+ * @pre telemetry non-NULL
+ * @post telemetry->has_baro set if shared_data_get_baro returns valid data
+ * @post All baro.* fields populated on success
+ *
+ * @note Not thread-safe; called from single-threaded internal_collect_state()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
+{
+  baro_state_t   baro_state;
+  const rx_err_t err = shared_data_get_baro(&baro_state);
+  if (err == k_rx_ok && baro_state.valid) {
+    telemetry->has_baro = true;
+
+    /* Temperature: centi-degrees Celsius -> degrees Celsius */
+    telemetry->baro.temperature_celsius =
+      (double)baro_state.temp_centi_degc / s_baro_temp_scale;
+
+    /* Pressure: Pa * 256 -> Pa */
+    telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / s_baro_press_scale;
+  }
+}
+
+/**
  * @brief Collect all robot system state into the telemetry message (Phase 1 + Phase 2)
  *
  * @details
@@ -1996,8 +2081,8 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  *    E-stop flag, fault_flags bitfield, 4 encoder submessages
  * 2. **Temperature state:** temperature_celsius (cdegC->degC)
  * 3. **Obstacle state:** 4 sensor distances in metres (m), any_obstacle flag, detected_mask bitmask
- * 4. **IMU state** (BNO055 NDOF): heading_deg, roll_deg16, pitch_deg16 (deg), quat w/x/y/z,
- *    accel x/y/z (mps2), gyro x/y/z (rad/s), calib_stat, temp_degc
+ * 4. **IMU state** (BNO055 NDOF): heading_rad, roll_rad, pitch_rad (radians), quat w/x/y/z,
+ *    accel x/y/z (mps2), gyro x/y/z (rad/s), calib_stat, temperature_celsius
  * 5. **Baro state** (BMP280 forced mode): temperature_celsius, pressure_pa
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
@@ -2033,8 +2118,6 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
 {
   temp_sensor_state_t temp_state;
   obstacle_state_t    obstacle_state;
-  imu_state_t         imu_state;
-  baro_state_t        baro_state;
   rx_err_t            err;
 
   /* Collect motor state (non-fatal: missing data leaves fields at zero-init) */
@@ -2074,46 +2157,10 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
   }
 
   /* Collect IMU state (BNO055 NDOF fusion) */
-  err = shared_data_get_imu(&imu_state);
-  if (err == k_rx_ok && imu_state.valid) {
-    telemetry->has_imu = true;
-
-    /* Heading in degrees (0.0 to 359.9375) */
-    telemetry->imu.heading_deg = (double)imu_state.heading_deg16 / s_deg16_per_deg;
-
-    /* Legacy radian fields: convert from BNO055 fixed-point degrees to radians */
-    telemetry->imu.yaw_rad   = telemetry->imu.heading_deg * s_rad_per_deg;
-    telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16  / s_deg16_per_deg) * s_rad_per_deg;
-    telemetry->imu.pitch_rad = ((double)imu_state.pitch_deg16 / s_deg16_per_deg) * s_rad_per_deg;
-
-    /* Unit quaternion (each raw value / 16384) */
-    telemetry->imu.quat_w = (double)imu_state.quat_w / s_quat_scale;
-    telemetry->imu.quat_x = (double)imu_state.quat_x / s_quat_scale;
-    telemetry->imu.quat_y = (double)imu_state.quat_y / s_quat_scale;
-    telemetry->imu.quat_z = (double)imu_state.quat_z / s_quat_scale;
-
-    /* Linear acceleration (gravity-compensated, each raw value / 100 m/s^2) */
-    telemetry->imu.accel_x_mps2 = (double)imu_state.lin_acc_x / s_lin_acc_scale;
-    telemetry->imu.accel_y_mps2 = (double)imu_state.lin_acc_y / s_lin_acc_scale;
-    telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / s_lin_acc_scale;
-
-    /* Calibration status (raw CALIB_STAT byte) and on-chip temperature */
-    telemetry->imu.calib_stat = (uint32_t)imu_state.calib_stat;
-    telemetry->imu.temp_degc  = (int32_t)imu_state.temp_degc;
-  }
+  internal_populate_imu_telemetry(telemetry);
 
   /* Collect barometric state (BMP280 forced mode) */
-  err = shared_data_get_baro(&baro_state);
-  if (err == k_rx_ok && baro_state.valid) {
-    telemetry->has_baro = true;
-
-    /* Temperature: centi-degrees Celsius -> degrees Celsius */
-    telemetry->baro.temperature_celsius =
-      (double)baro_state.temp_centi_degc / s_baro_temp_scale;
-
-    /* Pressure: Pa * 256 -> Pa */
-    telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / s_baro_press_scale;
-  }
+  internal_populate_baro_telemetry(telemetry);
 }
 
 /**

@@ -46,7 +46,7 @@
  * | Output | Scale | Unit |
  * |--------|-------|------|
  * | Euler angles | 1/16 deg/LSB | degrees |
- * | Quaternion | 1/16384 /LSB | unit quaternion |
+ * | Quaternion | 1/16384/LSB | unit quaternion |
  * | Linear accel | 1/100 m/s^2/LSB | m/s^2 |
  * | Gyroscope | 1/16 dps/LSB | deg/s |
  *
@@ -300,11 +300,36 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint16_t {
   k_bno055_delay_por_ms    = 650, /**< Power-on reset / software reset boot time (ms) */
   k_bno055_delay_config_ms = 19,  /**< Fusion -> CONFIG mode transition delay (ms) */
   k_bno055_delay_ndof_ms   = 7,   /**< CONFIG -> NDOF mode transition delay (ms) */
 } bno055_delay_ms_t;
+
+/**
+ * @enum bno055_delay_ticks_t
+ * @brief BNO055 ThreadX tick delay constants for mode transitions
+ *
+ * @details
+ * Pre-computed tick counts for tx_thread_sleep() calls during the BNO055
+ * initialization sequence. All values are rounded up to the next 10 ms tick
+ * boundary to ensure minimum required delays are met.
+ *
+ * | Transition | Min Delay | Ticks Used | Actual Delay |
+ * |------------|-----------|------------|--------------|
+ * | POR/reset  | 650 ms    | 65 ticks   | 650 ms exact |
+ * | -> CONFIG  | 19 ms     | 2 ticks    | 20 ms (round-up) |
+ * | -> NDOF    | 7 ms      | 1 tick     | 10 ms (round-up) |
+ *
+ * @see bno055_delay_ms_t Delay values in milliseconds
+ * @see rx_bno055_init() Uses these for tx_thread_sleep() calls
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_tick_round_up    = 1, /**< Extra tick for rounding fractional delays (19ms -> 20ms) */
+  k_bno055_delay_ndof_ticks = 1, /**< CONFIG->NDOF transition: 7 ms rounds up to 1 tick (10 ms) */
+} bno055_delay_ticks_t;
 
 /**
  * @enum bno055_scale_t
@@ -434,7 +459,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint8_t {
   k_bno055_ms_per_tick = 10, /**< ThreadX tick period: 10 ms at 100 Hz tick rate */
 } bno055_tick_rate_t;
 

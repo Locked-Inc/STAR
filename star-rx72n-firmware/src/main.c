@@ -1704,26 +1704,32 @@ static void internal_register_system_buses(void)
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
   RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
 
+  /* I2C device addresses for IMU sensors on RIIC1 bus */
+  typedef enum : uint8_t {
+    k_i2c_addr_bno055 = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
+    k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
+  } imu_i2c_addr_t;
+
   /* Register i2c1 - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_imu_config,
-                               "i2c1",                   /* name: matches rx_bno055.c s_bus_name */
-                               k_riic_channel_1,          /* channel: RIIC1 */
-                               (uint8_t)0x28U,            /* device_addr: BNO055 (COM3/ADR=LOW) */
-                               k_rx_p2_0,                 /* sda_pin: P2.0 = SDA1 */
-                               k_rx_p2_1,                 /* scl_pin: P2.1 = SCL1 */
-                               k_i2c_frequency_400khz);   /* frequency_hz: 400 kHz fast mode */
+                               "i2c1",                          /* name: matches rx_bno055.c s_bus_name */
+                               k_riic_channel_1,                 /* channel: RIIC1 */
+                               (uint8_t)k_i2c_addr_bno055,       /* device_addr: BNO055 (COM3/ADR=LOW) */
+                               k_rx_p2_0,                        /* sda_pin: P2.0 = SDA1 */
+                               k_rx_p2_1,                        /* scl_pin: P2.1 = SCL1 */
+                               k_i2c_frequency_400khz);          /* frequency_hz: 400 kHz fast mode */
   RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_imu_config);
   RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) registration must succeed");
 
   /* Register i2c1_baro - BMP280 barometric sensor (RIIC1, addr 0x76, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_baro_config,
-                               "i2c1_baro",              /* name: matches rx_bmp280.c s_bus_name */
-                               k_riic_channel_1,          /* channel: RIIC1 (same as i2c1) */
-                               (uint8_t)0x76U,            /* device_addr: BMP280 (SDO=LOW) */
-                               k_rx_p2_0,                 /* sda_pin: P2.0 = SDA1 */
-                               k_rx_p2_1,                 /* scl_pin: P2.1 = SCL1 */
-                               k_i2c_frequency_400khz);   /* frequency_hz: 400 kHz fast mode */
+                               "i2c1_baro",                     /* name: matches rx_bmp280.c s_bus_name */
+                               k_riic_channel_1,                 /* channel: RIIC1 (same as i2c1) */
+                               (uint8_t)k_i2c_addr_bmp280,       /* device_addr: BMP280 (SDO=LOW) */
+                               k_rx_p2_0,                        /* sda_pin: P2.0 = SDA1 */
+                               k_rx_p2_1,                        /* scl_pin: P2.1 = SCL1 */
+                               k_i2c_frequency_400khz);          /* frequency_hz: 400 kHz fast mode */
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_baro_config);
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) registration must succeed");
@@ -1761,7 +1767,7 @@ static void internal_init_shared_data_and_watchdog(void)
 }
 
 /**
- * @brief Register all seven tasks for IWDT heartbeat monitoring and set initial state
+ * @brief Register all eight tasks for IWDT heartbeat monitoring and set initial state
  *
  * @details
  * Registers each application task with the IWDT module so that missed heartbeats
@@ -1783,7 +1789,7 @@ static void internal_init_shared_data_and_watchdog(void)
  * @pre internal_init_shared_data_and_watchdog() completed (IWDT initialized)
  * @pre No tasks registered yet (first call after rx_iwdt_init)
  *
- * @post All seven tasks registered with per-task heartbeat timeouts
+ * @post All eight tasks registered with per-task heartbeat timeouts
  * @post IWDT system state set to k_system_state_init (5s timeout)
  *
  * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
@@ -1825,10 +1831,10 @@ static void internal_register_iwdt_tasks(void)
 }
 
 /**
- * @brief Create all seven application tasks and transition to running state
+ * @brief Create all eight application tasks and transition to running state
  *
  * @details
- * Creates all seven ThreadX tasks in lowest-priority-first order. Tasks do not
+ * Creates all eight ThreadX tasks in lowest-priority-first order. Tasks do not
  * begin executing until tx_application_define() returns and the scheduler starts.
  * After all tasks are created, the IWDT system state transitions to
  * k_system_state_running.
@@ -1837,15 +1843,16 @@ static void internal_register_iwdt_tasks(void)
  * 1. Telemetry (priority 18)
  * 2. LED Status (priority 17)
  * 3. Temperature Sensor (priority 15)
- * 4. Obstacle Detection (priority 12)
- * 5. Motor Control (priority 8)
- * 6. Communication (priority 5)
- * 7. Watchdog Monitor (priority 6)
+ * 4. IMU (priority 13, BNO055 + BMP280)
+ * 5. Obstacle Detection (priority 12)
+ * 6. Motor Control (priority 8)
+ * 7. Communication (priority 5)
+ * 8. Watchdog Monitor (priority 6)
  *
  * @pre internal_register_iwdt_tasks() completed (all tasks registered for monitoring)
  * @pre Static task stacks allocated in each task module
  *
- * @post All seven ThreadX threads created in READY state
+ * @post All eight ThreadX threads created in READY state
  * @post IWDT system state set to k_system_state_running (2s timeout)
  *
  * @note Executes in single-threaded context (scheduler not started). No synchronization needed.
@@ -1987,10 +1994,10 @@ static void internal_init_stack_monitor(void)
  * @pre SRAM available for thread stacks
  * @pre first_unused_memory points to valid SRAM address
  *
- * @post All seven application tasks created and ready to run (scheduler starts after return)
+ * @post All eight application tasks created and ready to run (scheduler starts after return)
  * @post Thread stacks allocated statically and initialized (SP set to stack top for each task)
- * @post Thread priorities configured for seven distinct tasks (comm_task holds priority 5)
- * @post IWDT task monitoring registered for all seven tasks with per-task timeouts
+ * @post Thread priorities configured for eight distinct tasks (comm_task holds priority 5)
+ * @post IWDT task monitoring registered for all eight tasks with per-task timeouts
  * @post ThreadX stack overflow handler registered via rx_stack_monitor_init()
  *
  * @note **This function executes BEFORE the ThreadX scheduler starts.** Threads created here

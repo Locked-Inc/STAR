@@ -282,6 +282,8 @@ target_include_directories(${PROJECT_NAME}.elf PRIVATE
     ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/inc/gen
     ${CMAKE_SOURCE_DIR}/libs/rx_nanopb/nanopb
+    ${CMAKE_SOURCE_DIR}/libs/rx_bmp280/inc
+    ${CMAKE_SOURCE_DIR}/libs/rx_bno055/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_drv8263/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_ds18b20/inc
     ${CMAKE_SOURCE_DIR}/libs/rx_hcsr04/inc

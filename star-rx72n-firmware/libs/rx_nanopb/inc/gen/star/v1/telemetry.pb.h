@@ -132,9 +132,9 @@ typedef struct _star_v1_ImuData {
     double gyro_y_rad_per_s;
     /* Angular velocity Z (yaw rate) in radians per second. */
     double gyro_z_rad_per_s;
-    /* Compass heading (Euler heading from BNO055 NDOF fusion) in degrees.
- Range: 0.0 to 359.9375 degrees. 0 = North, 90 = East. */
-    double heading_deg;
+    /* Compass heading (Euler heading from BNO055 NDOF fusion) in radians.
+ Range: 0.0 to 2*pi radians (0 to 6.283185). 0 = North, pi/2 = East. */
+    double heading_rad;
     /* Quaternion W component (scalar part). Range: -1.0 to 1.0. */
     double quat_w;
     /* Quaternion X component. Range: -1.0 to 1.0. */
@@ -146,7 +146,7 @@ typedef struct _star_v1_ImuData {
     /* BNO055 calibration status byte (raw CALIB_STAT register 0x35). */
     uint32_t calib_stat;
     /* BNO055 on-chip temperature in degrees Celsius. Range: -40 to +85 degC. */
-    int32_t temp_degc;
+    int32_t temperature_celsius;
 } star_v1_ImuData;
 
 /* Barometric pressure and temperature data from BMP280. */
@@ -366,13 +366,13 @@ extern "C" {
 #define star_v1_ImuData_gyro_x_rad_per_s_tag     7
 #define star_v1_ImuData_gyro_y_rad_per_s_tag     8
 #define star_v1_ImuData_gyro_z_rad_per_s_tag     9
-#define star_v1_ImuData_heading_deg_tag          10
+#define star_v1_ImuData_heading_rad_tag          10
 #define star_v1_ImuData_quat_w_tag               11
 #define star_v1_ImuData_quat_x_tag               12
 #define star_v1_ImuData_quat_y_tag               13
 #define star_v1_ImuData_quat_z_tag               14
 #define star_v1_ImuData_calib_stat_tag           15
-#define star_v1_ImuData_temp_degc_tag            16
+#define star_v1_ImuData_temperature_celsius_tag  16
 #define star_v1_BaroData_temperature_celsius_tag 1
 #define star_v1_BaroData_pressure_pa_tag         2
 #define star_v1_ObstacleData_distance_front_left_m_tag 1
@@ -496,13 +496,13 @@ X(a, STATIC,   SINGULAR, DOUBLE,   accel_z_mps2,      6) \
 X(a, STATIC,   SINGULAR, DOUBLE,   gyro_x_rad_per_s,   7) \
 X(a, STATIC,   SINGULAR, DOUBLE,   gyro_y_rad_per_s,   8) \
 X(a, STATIC,   SINGULAR, DOUBLE,   gyro_z_rad_per_s,   9) \
-X(a, STATIC,   SINGULAR, DOUBLE,   heading_deg,      10) \
+X(a, STATIC,   SINGULAR, DOUBLE,   heading_rad,      10) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_w,           11) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_x,           12) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_y,           13) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_z,           14) \
 X(a, STATIC,   SINGULAR, UINT32,   calib_stat,       15) \
-X(a, STATIC,   SINGULAR, INT32,    temp_degc,        16)
+X(a, STATIC,   SINGULAR, INT32,    temperature_celsius, 16)
 #define star_v1_ImuData_CALLBACK NULL
 #define star_v1_ImuData_DEFAULT NULL
 

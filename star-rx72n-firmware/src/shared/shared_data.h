@@ -105,6 +105,41 @@ typedef struct {
 } obstacle_state_t;
 
 /**
+ * @enum imu_scale_t
+ * @brief Scale constants for converting imu_state_t integer fields to physical units
+ *
+ * @details
+ * The BNO055 outputs fixed-point integers. Divide by these constants to get
+ * SI/degree values. Use these named constants instead of raw literals.
+ *
+ * @see imu_state_t Fields that use these scales
+ * @see bno055_scale_t Equivalent constants in the BNO055 driver
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_imu_scale_euler  = 16,    /**< Euler angle divisor: raw / 16 = degrees */
+  k_imu_scale_quat   = 16384, /**< Quaternion divisor: raw / 16384 = unit quaternion */
+  k_imu_scale_acc    = 100,   /**< Linear accel divisor: raw / 100 = m/s^2 */
+} imu_scale_t;
+
+/**
+ * @enum baro_scale_t
+ * @brief Scale constants for converting baro_state_t integer fields to SI units
+ *
+ * @details
+ * The BMP280 driver outputs fixed-point integers. Divide by these constants.
+ *
+ * @see baro_state_t Fields that use these scales
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_baro_scale_temp  = 100, /**< Temperature divisor: temp_centi_degc / 100 = degC */
+  k_baro_scale_press = 256, /**< Pressure divisor: press_pa_256 / 256 = Pa */
+} baro_scale_t;
+
+/**
  * @struct imu_state_t
  * @brief IMU sensor fusion output state (BNO055 NDOF mode)
  *
@@ -114,9 +149,9 @@ typedef struct {
  * data layer. Convert to physical units in application code:
  *
  * @code
- * float heading_deg = (float)imu.heading_deg16 / 16.0F;
- * float quat_w      = (float)imu.quat_w        / 16384.0F;
- * float acc_x_mps2  = (float)imu.lin_acc_x     / 100.0F;
+ * float heading_deg = (float)imu.heading_deg16 / (float)k_imu_scale_euler;
+ * float quat_w      = (float)imu.quat_w        / (float)k_imu_scale_quat;
+ * float acc_x_mps2  = (float)imu.lin_acc_x     / (float)k_imu_scale_acc;
  * @endcode
  *
  * @invariant valid == false until imu_task successfully reads BNO055 at least once
@@ -154,8 +189,8 @@ typedef struct {
  * Integer-scaled to avoid floating-point in the shared data layer. Convert to SI units:
  *
  * @code
- * float temp_celsius   = (float)baro.temp_centi_degc / 100.0F;
- * float pressure_pa    = (float)baro.press_pa_256    / 256.0F;
+ * float temp_celsius   = (float)baro.temp_centi_degc / (float)k_baro_scale_temp;
+ * float pressure_pa    = (float)baro.press_pa_256    / (float)k_baro_scale_press;
  * float pressure_hpa   = pressure_pa / 100.0F;
  * @endcode
  *
@@ -533,6 +568,7 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state);
  * @pre shared_data_init() called successfully
  * @pre state non-NULL with valid IMU data
  * @post g_shared_data.imu_state updated under imu_mutex protection
+ * @post imu_mutex released (regardless of success or failure)
  *
  * @note Not ISR-safe (blocking mutex wait)
  *
@@ -560,6 +596,7 @@ rx_err_t shared_data_update_imu(const imu_state_t* state);
  * @pre shared_data_init() called successfully
  * @pre out_state non-NULL
  * @post *out_state contains latest IMU data (check out_state->valid before use)
+ * @post imu_mutex released after copy completes
  *
  * @note Check out_state->valid before relying on data values
  * @note Not ISR-safe (blocking mutex wait)
@@ -588,6 +625,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state);
  * @pre shared_data_init() called successfully
  * @pre state non-NULL with valid BMP280 data
  * @post g_shared_data.baro_state updated under baro_mutex protection
+ * @post baro_mutex released (regardless of success or failure)
  *
  * @note Not ISR-safe (blocking mutex wait)
  *
@@ -615,6 +653,7 @@ rx_err_t shared_data_update_baro(const baro_state_t* state);
  * @pre shared_data_init() called successfully
  * @pre out_state non-NULL
  * @post *out_state contains latest baro data (check out_state->valid before use)
+ * @post baro_mutex released after copy completes
  *
  * @note Check out_state->valid before relying on data values
  * @note Not ISR-safe (blocking mutex wait)

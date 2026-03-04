@@ -174,7 +174,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint8_t {
   k_bmp280_poll_max = 100, /**< Maximum status poll iterations (~100 ms maximum wait) */
 } bmp280_poll_t;
 
@@ -184,34 +184,56 @@ typedef enum : uint32_t {
  */
 
 /**
- * @enum bmp280_adc_t
- * @brief BMP280 ADC raw value assembly constants
+ * @enum bmp280_adc_shift_t
+ * @brief BMP280 ADC value bit-shift constants
  *
  * @details
- * The BMP280 outputs 20-bit ADC values across three 8-bit registers.
- * Assembly formula (same for pressure and temperature):
- * @code
+ * Shift amounts used to assemble 20-bit ADC values from three 8-bit registers:
  * adc_val = ((int32_t)msb << 12) | ((int32_t)lsb << 4) | ((int32_t)xlsb >> 4)
- * @endcode
- *
- * Buffer offsets assume a 6-byte burst read from 0xF7 (press MSB first):
- * buf[0]=press_msb, buf[1]=press_lsb, buf[2]=press_xlsb,
- * buf[3]=temp_msb, buf[4]=temp_lsb, buf[5]=temp_xlsb
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_shift_msb    = 12, /**< Shift MSB left 12 bits for 20-bit ADC value */
-  k_bmp280_shift_lsb    = 4,  /**< Shift LSB left 4 bits for 20-bit ADC value */
-  k_bmp280_shift_xlsb   = 4,  /**< Shift XLSB right 4 bits to get 4 fractional bits */
-  k_bmp280_adc_buf_size = 6,  /**< Byte count for 6-byte burst read (press + temp) */
+  k_bmp280_shift_msb  = 12, /**< Shift MSB left 12 bits for 20-bit ADC value */
+  k_bmp280_shift_lsb  = 4,  /**< Shift LSB left 4 bits for 20-bit ADC value */
+  k_bmp280_shift_xlsb = 4,  /**< Shift XLSB right 4 bits to get 4 fractional bits */
+} bmp280_adc_shift_t;
+
+/**
+ * @enum bmp280_adc_buf_t
+ * @brief BMP280 ADC read buffer size
+ *
+ * @details
+ * Buffer size for the 6-byte burst read from register 0xF7:
+ * buf[0..2] = pressure MSB/LSB/XLSB, buf[3..5] = temperature MSB/LSB/XLSB
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_adc_buf_size = 6, /**< Byte count for 6-byte burst read (press + temp) */
+} bmp280_adc_buf_t;
+
+/**
+ * @enum bmp280_adc_idx_t
+ * @brief BMP280 ADC buffer byte indices
+ *
+ * @details
+ * Byte indices into the 6-byte ADC read buffer returned from address 0xF7.
+ * Buffer layout: buf[0]=press_msb, buf[1]=press_lsb, buf[2]=press_xlsb,
+ * buf[3]=temp_msb, buf[4]=temp_lsb, buf[5]=temp_xlsb
+ *
+ * @invariant All index values in [0, k_bmp280_adc_buf_size - 1]
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
   k_bmp280_press_msb_idx  = 0, /**< Index of pressure MSB in 6-byte buffer */
   k_bmp280_press_lsb_idx  = 1, /**< Index of pressure LSB in 6-byte buffer */
   k_bmp280_press_xlsb_idx = 2, /**< Index of pressure XLSB in 6-byte buffer */
   k_bmp280_temp_msb_idx   = 3, /**< Index of temperature MSB in 6-byte buffer */
   k_bmp280_temp_lsb_idx   = 4, /**< Index of temperature LSB in 6-byte buffer */
   k_bmp280_temp_xlsb_idx  = 5, /**< Index of temperature XLSB in 6-byte buffer */
-} bmp280_adc_t;
+} bmp280_adc_idx_t;
 
 /**
  * @enum bmp280_calib_idx_t
@@ -249,6 +271,20 @@ typedef enum : uint8_t {
   k_bmp280_calib_p9_lsb = 22, /**< dig_P9 low byte (int16_t) */
   k_bmp280_calib_p9_msb = 23, /**< dig_P9 high byte */
 } bmp280_calib_idx_t;
+
+/**
+ * @enum bmp280_calib_shift_t
+ * @brief Bit shift for little-endian 16-bit calibration coefficient assembly
+ *
+ * @details
+ * Calibration coefficients are stored little-endian (LSB first). The MSB
+ * must be shifted left by 8 bits to form a 16-bit value.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_byte_shift = 8, /**< Shift MSB byte left 8 bits for 16-bit assembly */
+} bmp280_calib_shift_t;
 
 /**
  * @enum bmp280_write_size_t
