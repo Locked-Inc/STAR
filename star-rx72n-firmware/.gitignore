@@ -44,5 +44,3 @@ Makefile
 # Pattern matches exactly 6 trailing chars -- won't catch Doxyfile.main or Doxyfile.pdf.base
 Doxyfile.*.??????
 
-# nanopb vendored source (nested git repo, managed separately)
-libs/rx_nanopb/nanopb/
