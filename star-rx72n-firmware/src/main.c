@@ -259,12 +259,16 @@ typedef enum : uint32_t {
  * - BNO055 COM3/ADR pin LOW: 0x28
  * - BMP280 SDO pin LOW:      0x76
  *
+ * @invariant Values are 7-bit I2C addresses (range 0x00..0x7F) on RIIC1;
+ *            k_i2c_addr_bno055 and k_i2c_addr_bmp280 must be distinct
+ *
  * @see internal_register_system_buses() Uses these addresses with rx_bus_config_init_i2c()
  */
 typedef enum : uint8_t {
   k_i2c_addr_bno055 = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
   k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
 } imu_i2c_addr_t;
+_Static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
 
 /* =============================================================================
  * Static Bus Configurations
@@ -1725,8 +1729,6 @@ static void internal_register_system_buses(void)
   RX_ASSERT(err == k_rx_ok, "adc0 config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
   RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
-
-  _Static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
 
   /* Register i2c1 - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_imu_config,

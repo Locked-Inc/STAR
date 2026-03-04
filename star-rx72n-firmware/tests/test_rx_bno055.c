@@ -291,6 +291,8 @@ static rx_bus_config_t s_i2c_config;
  */
 static void internal_load_valid_chip_id(void)
 {
+  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_test_single_byte_buf);
   uint8_t chip_id_data = (uint8_t)k_bno055_chip_id_expected;
   mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &chip_id_data, k_test_single_byte_buf);
 }
@@ -323,6 +325,8 @@ static void internal_load_valid_chip_id(void)
  */
 static void internal_load_read_data(void)
 {
+  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_read_buf_size);
   uint8_t read_buf[k_read_buf_size];
   memset(read_buf, 0, sizeof(read_buf));
 
@@ -350,6 +354,8 @@ static void internal_load_read_data(void)
  */
 static void internal_load_quat_read_data(void)
 {
+  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_quat_buf_size);
   uint8_t quat_buf[k_quat_buf_size];
   memset(quat_buf, 0, sizeof(quat_buf));
   quat_buf[k_quat_w_lsb_idx] = (uint8_t)k_test_quat_w_lsb;

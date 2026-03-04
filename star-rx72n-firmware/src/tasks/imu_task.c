@@ -505,7 +505,10 @@ static void internal_imu_task_entry(ULONG input)
     /* Sleep only the remaining time in the 50 ms period to maintain cadence */
     const ULONG elapsed = tx_time_get() - start_tick;
     if (elapsed < (ULONG)k_imu_task_period_ticks) {
-      (void)tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
+      const UINT sleep_status = tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
+      if (sleep_status == TX_WAIT_ABORTED) {
+        rx_log_error(s_tag, "IMU task sleep aborted - external abort or priority change");
+      }
     }
   }
 }

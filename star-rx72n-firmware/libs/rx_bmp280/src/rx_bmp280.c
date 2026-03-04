@@ -289,7 +289,7 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  * @retval k_rx_err_nack Device not responding
  *
  * @pre s_manager non-NULL
- * @pre "i2c1" bus initialized
+ * @pre "i2c1_baro" bus initialized in s_manager
  * @pre buf capacity >= len
  * @post buf[0..len-1] contain register data on k_rx_ok
  * @post Bus transaction completes before function returns
@@ -575,14 +575,14 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
  * registers k_bmp280_reg_calib_start..k_bmp280_reg_calib_end (0x88-0x9F) and parses them into s_calib. Then configures
  * the IIR filter by writing to the config register 0xF5.
  *
- * @param[in] manager Initialized bus manager with "i2c1" registered
+ * @param[in] manager Initialized bus manager with "i2c1_baro" registered
  *
  * @return rx_err_t Initialization result
  * @retval k_rx_ok Calibration coefficients loaded, filter configured
  * @retval k_rx_err_null_ptr manager is NULL
  * @retval k_rx_err_nack I2C NACK (device not found)
  *
- * @pre manager non-NULL, "i2c1" registered and initialized
+ * @pre manager non-NULL, "i2c1_baro" registered and initialized
  * @pre BMP280 powered on RIIC1 bus
  * @post s_calib contains valid OTP coefficients
  * @post s_initialized == true on success

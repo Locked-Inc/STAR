@@ -791,7 +791,7 @@ typedef enum : uint16_t {
    * - Fault flags (uint32): 5 bytes (varint encoding)
    * - Encoders (4 x EncoderData): 4 x 40 bytes = 160 bytes
    * - Temperature (double): 9 bytes (fixed64)
-   * - IMU (ImuData - 14 doubles + 2 int32): ~142 bytes
+   * - IMU (ImuData - 12 doubles + 1 uint32): ~125 bytes
    * - Baro (BaroData - 2 doubles): ~20 bytes
    * - Obstacle (ObstacleData): ~28 bytes
    * - Protobuf overhead (tags, lengths): ~60 bytes
