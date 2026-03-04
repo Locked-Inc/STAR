@@ -173,7 +173,7 @@ static const char* const s_tag = "IMU";
  * Centralising the name in one place avoids typos across tx_thread_create()
  * and the IWDT heartbeat call site.
  *
- * @invariant Points to static string literal "ImuTask"; never NULL, never modified
+ * @invariant Content is always "ImuTask"; never NULL, never modified at runtime
  * @note Not thread-safe; used as a read-only constant
  * @warning Do not modify; used as an identifier by the IWDT subsystem
  *
@@ -182,7 +182,7 @@ static const char* const s_tag = "IMU";
  *
  * @since Version 1.0.0
  */
-static const char* const s_task_name = "ImuTask";
+static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX CHAR* parameter */
 
 /** @brief External bus manager declared in main.c; registered buses include "i2c1" and "i2c1_baro"
  *  @note Using inline extern is necessary because main.h does not export g_bus_manager.
@@ -239,7 +239,7 @@ rx_err_t imu_task_create(void)
   }
 
   const UINT tx_status = tx_thread_create(&s_imu_thread,
-                                          (CHAR*)s_task_name, /* ThreadX requires non-const CHAR* for name */
+                                          s_task_name,
                                           internal_imu_task_entry,
                                           (ULONG)k_imu_task_input,
                                           s_imu_stack,
