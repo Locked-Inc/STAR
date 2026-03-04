@@ -1012,6 +1012,7 @@ void rx_bno055_test_reset_state(void)
 {
   s_initialized = false;
   s_manager     = NULL;
+  /* Post-condition verification: confirm assignments took effect (catches optimizer miscompilation) */
   RX_ASSERT(!s_initialized, "s_initialized must be false after reset");
   RX_ASSERT(s_manager == NULL, "s_manager must be NULL after reset");
 }

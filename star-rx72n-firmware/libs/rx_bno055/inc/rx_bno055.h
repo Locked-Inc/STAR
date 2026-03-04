@@ -196,8 +196,8 @@ typedef enum : uint16_t {
  * float acc_x_mps2  = (float)data.lin_acc_x     / (float)k_bno055_scale_acc;
  * @endcode
  *
- * @invariant quat_w^2 + quat_x^2 + quat_y^2 + quat_z^2 == 16384^2 (unit quaternion)
- * @invariant heading_deg16 in [0, 5759] (0 to 359.9375 degrees * 16)
+ * @invariant quat_w^2 + quat_x^2 + quat_y^2 + quat_z^2 == k_bno055_scale_quat^2 (unit quaternion)
+ * @invariant heading_deg16 in [0, 360 * k_bno055_scale_heading - 1] (0 to 359.9375 degrees * 16)
  * @invariant temp_degc in [-40, 85] (operating range of BNO055)
  *
  * @see bno055_scale_t Scale factor constants for unit conversion

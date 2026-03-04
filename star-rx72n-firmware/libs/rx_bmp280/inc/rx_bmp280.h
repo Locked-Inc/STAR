@@ -182,6 +182,10 @@ typedef struct {
  * @note Not thread-safe; call during single-threaded initialization
  * @note Blocks ~2 ms (I2C calibration burst read)
  *
+ * @test tests/test_rx_bmp280.c: test_bmp280_init_success, test_bmp280_init_null_manager_returns_error,
+ *       test_bmp280_init_i2c_error_propagates, test_bmp280_init_invalid_calib_returns_error,
+ *       test_bmp280_init_reinit_succeeds
+ *
  * @see rx_bmp280_read() Triggered forced measurements after init
  *
  * @since Version 1.0.0
@@ -226,6 +230,10 @@ typedef struct {
  * @note Measurement takes ~40 ms with 16x pressure oversampling
  * @warning Returns k_rx_err_timeout if status bit does not clear within
  *          k_bmp280_poll_max polls (indicates hardware fault)
+ *
+ * @test tests/test_rx_bmp280.c: test_bmp280_read_success_forced_mode, test_bmp280_read_status_timeout,
+ *       test_bmp280_read_i2c_error_propagates, test_bmp280_compensation_known_values,
+ *       test_bmp280_read_zero_var1_returns_error
  *
  * @see rx_bmp280_init() Must be called successfully before rx_bmp280_read()
  *

@@ -297,7 +297,9 @@ static void internal_load_valid_chip_id(void)
   TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
   TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_test_single_byte_buf);
   uint8_t chip_id_data = (uint8_t)k_bno055_chip_id_expected;
-  mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &chip_id_data, k_test_single_byte_buf);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch,
+                              &chip_id_data,
+                              k_test_single_byte_buf);
 }
 
 /**
@@ -343,7 +345,7 @@ static void internal_load_read_data(void)
   read_buf[k_read_idx_4] = (uint8_t)k_test_euler_p_lsb;
   read_buf[k_read_idx_5] = (uint8_t)k_test_euler_p_msb;
 
-  mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, read_buf, k_read_buf_size);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, read_buf, k_read_buf_size);
 }
 
 /**
@@ -368,7 +370,7 @@ static void internal_load_quat_read_data(void)
   quat_buf[k_quat_w_lsb_idx] = (uint8_t)k_test_quat_w_lsb;
   quat_buf[k_quat_w_msb_idx] = (uint8_t)k_test_quat_w_msb;
 
-  mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, quat_buf, k_quat_buf_size);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, quat_buf, k_quat_buf_size);
 }
 
 /* =============================================================================
@@ -460,7 +462,9 @@ void tearDown(void)
  * the double-init test).
  *
  * @pre setUp() has been called; s_initialized == false; mock RIIC ready
+ * @pre Mock RIIC RX buffer available for internal_load_valid_chip_id() to populate
  * @post s_initialized == true; driver ready for read/calib operations
+ * @post rx_bno055_init() returned k_rx_ok (asserted via TEST_ASSERT_EQUAL)
  *
  * @since Version 1.0.0
  */
@@ -485,7 +489,9 @@ static void internal_setup_initialized_driver(void)
  * not modify s_initialized so it is safe to run before the success test.
  *
  * @pre s_initialized may be true or false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
  * @post s_initialized unchanged
+ * @post Bus manager state not modified by null pointer guard
  *
  * @since Version 1.0.0
  */
@@ -507,20 +513,22 @@ void test_bno055_init_null_manager_returns_error(void)
  * This test runs before test_bno055_init_success so s_initialized starts false.
  *
  * @pre s_initialized == false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
  * @post s_initialized == false (error path does not set it)
+ * @post NACK injection cleared via mock_riic_simulate_nack(false) after assertion
  *
  * @since Version 1.0.0
  */
 void test_bno055_init_i2c_error_propagates(void)
 {
-  mock_riic_simulate_nack(true);
+  (void)mock_riic_simulate_nack(true);
 
   rx_err_t err = rx_bno055_init(&s_test_manager);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  mock_riic_simulate_nack(false);
+  (void)mock_riic_simulate_nack(false);
 }
 
 /**
@@ -533,14 +541,16 @@ void test_bno055_init_i2c_error_propagates(void)
  * k_rx_err_invalid_state and leave s_initialized false.
  *
  * @pre s_initialized == false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
  * @post s_initialized == false (chip ID mismatch aborts init)
+ * @post Mock RIIC RX buffer consumed by the chip ID read step
  *
  * @since Version 1.0.0
  */
 void test_bno055_init_wrong_chip_id(void)
 {
   uint8_t wrong_id = (uint8_t)k_test_wrong_chip_id;
-  mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &wrong_id, k_test_single_byte_buf);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &wrong_id, k_test_single_byte_buf);
 
   rx_err_t err = rx_bno055_init(&s_test_manager);
 
@@ -557,7 +567,9 @@ void test_bno055_init_wrong_chip_id(void)
  * (before test_bno055_init_success sets it to true).
  *
  * @pre s_initialized == false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
  * @post s_initialized unchanged (still false)
+ * @post Driver returns k_rx_err_not_initialized (asserted via TEST_ASSERT_EQUAL)
  *
  * @since Version 1.0.0
  */
@@ -580,7 +592,9 @@ void test_bno055_read_before_init(void)
  * All subsequent tests that require s_initialized == true depend on this.
  *
  * @pre s_initialized == false
+ * @pre setUp() has registered "i2c1" bus and chip ID mock loaded via internal_load_valid_chip_id()
  * @post s_initialized == true
+ * @post rx_bno055_read() returns k_rx_ok confirming driver is operational
  *
  * @since Version 1.0.0
  */
@@ -607,7 +621,9 @@ void test_bno055_init_success(void)
  * k_rx_err_invalid_state (double-init guard).
  *
  * @pre setUp() has reset s_initialized == false
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before second call
  * @post s_initialized == true (set by first init, unchanged by failed second init)
+ * @post rx_bno055_init() returns k_rx_err_invalid_state (asserted via TEST_ASSERT_EQUAL)
  *
  * @since Version 1.0.0
  */
@@ -636,7 +652,9 @@ void test_bno055_init_double_init_returns_error(void)
  * fires regardless of initialization state.
  *
  * @pre s_initialized may be true or false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
  * @post No side effects
+ * @post rx_bno055_read() returns k_rx_err_null_ptr (asserted via TEST_ASSERT_EQUAL)
  *
  * @since Version 1.0.0
  */
@@ -662,7 +680,9 @@ void test_bno055_read_null_ptr_returns_error(void)
  * pitch_deg16   = (0x20) | (0x00 << 8) = 0x0020 = 32
  *
  * @pre setUp() has reset s_initialized == false
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before read
  * @post out populated with mocked sensor data
+ * @post out.heading_deg16/roll_deg16/pitch_deg16 match internal_load_read_data() values
  *
  * @since Version 1.0.0
  */
@@ -695,7 +715,9 @@ void test_bno055_read_success_euler(void)
  * Only the quat_w field needs to match since the others are tested separately.
  *
  * @pre setUp() has reset s_initialized == false
- * @post out->quat_w == 0x4000
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before read
+ * @post out->quat_w == 0x4000 (identity quaternion W component verified)
+ * @post out->quat_x == 0 (zero X component of identity quaternion verified)
  *
  * @since Version 1.0.0
  */
@@ -724,14 +746,16 @@ void test_bno055_read_success_quaternion(void)
  * (Euler registers) and propagate k_rx_err_nack.
  *
  * @pre setUp() has reset s_initialized == false
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before NACK injection
  * @post No side effects on driver state
+ * @post NACK injection cleared via mock_riic_simulate_nack(false) after assertion
  *
  * @since Version 1.0.0
  */
 void test_bno055_read_i2c_error_propagates(void)
 {
   internal_setup_initialized_driver();
-  mock_riic_simulate_nack(true);
+  (void)mock_riic_simulate_nack(true);
 
   bno055_data_t data;
   rx_err_t      err = rx_bno055_read(&data);
@@ -739,7 +763,7 @@ void test_bno055_read_i2c_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  mock_riic_simulate_nack(false);
+  (void)mock_riic_simulate_nack(false);
 }
 
 /* =============================================================================
@@ -754,7 +778,9 @@ void test_bno055_read_i2c_error_propagates(void)
  * Null pointer guard fires before s_initialized check.
  *
  * @pre s_initialized may be true or false
+ * @pre setUp() has initialized bus manager and mock RIIC HAL
  * @post No side effects
+ * @post rx_bno055_is_calibrated() returns k_rx_err_null_ptr (asserted via TEST_ASSERT_EQUAL)
  *
  * @since Version 1.0.0
  */
@@ -775,7 +801,9 @@ void test_bno055_is_calibrated_null_returns_error(void)
  * 0x00 and verifies out_calibrated = false.
  *
  * @pre setUp() has reset s_initialized == false
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before status reads
  * @post out_calibrated correctly reflects the mocked status byte
+ * @post Both full (0xFF) and zero (0x00) calibration bytes correctly decoded and asserted
  *
  * @since Version 1.0.0
  */
@@ -785,7 +813,7 @@ void test_bno055_is_calibrated_reads_status(void)
 
   /* Load fully calibrated status */
   uint8_t calib_full = (uint8_t)k_test_calib_all_full;
-  mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_full, k_test_single_byte_buf);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_full, k_test_single_byte_buf);
 
   bool     out_calibrated = false;
   rx_err_t err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -795,7 +823,7 @@ void test_bno055_is_calibrated_reads_status(void)
 
   /* Load uncalibrated status */
   uint8_t calib_none = (uint8_t)k_test_calib_none;
-  mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_none, k_test_single_byte_buf);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &calib_none, k_test_single_byte_buf);
 
   out_calibrated = true;
   err            = rx_bno055_is_calibrated(&out_calibrated);
@@ -814,7 +842,9 @@ void test_bno055_is_calibrated_reads_status(void)
  * SYS bits [7:6] are not 0x3 (not fully calibrated at system level).
  *
  * @pre setUp() has reset s_initialized == false
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before status read
  * @post out_calibrated == false (partial status does not mean fully calibrated)
+ * @post rx_bno055_is_calibrated() returns k_rx_ok despite partial calibration
  *
  * @since Version 1.0.0
  */
@@ -855,6 +885,7 @@ void test_bno055_is_calibrated_partial(void)
  * @pre Unity test harness linked and BNO055 driver sources compiled with mock RIIC HAL
  * @pre mock_riic_init() and rx_bno055_test_reset_state() called by setUp() before each test
  * @post Unity reports all test results to stdout
+ * @post Process exits with 0 if all tests pass, non-zero on any test failure
  *
  * @since Version 1.0.0
  */

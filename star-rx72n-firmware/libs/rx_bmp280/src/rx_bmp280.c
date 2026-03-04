@@ -579,7 +579,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
    * C23 typed enums cannot have int64_t as underlying type on RX72N. */
   static const int64_t k_press_base_one = 1;
 
-  int64_t var1 = ((int64_t)t_fine) - (press_comp_constants_t)k_press_t_offset;
+  int64_t var1 = ((int64_t)t_fine) - k_press_t_offset;
   int64_t var2 = var1 * var1 * (int64_t)s_calib.dig_P6;
   var2 += (var1 * (int64_t)s_calib.dig_P5) << k_press_shift_17;
   var2 += ((int64_t)s_calib.dig_P4) << k_press_shift_35;
@@ -865,6 +865,7 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
     uint8_t status_byte = 0;
     err = internal_read_regs((uint8_t)k_bmp280_reg_status, &status_byte, k_bmp280_single_byte);
     if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Status register read failed");
       return err;
     }
 

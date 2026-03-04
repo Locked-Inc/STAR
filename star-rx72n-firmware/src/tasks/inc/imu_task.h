@@ -93,7 +93,7 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
+typedef enum : uint8_t {
   k_imu_task_period_ms = 50U, /**< IMU sampling period in milliseconds (20 Hz) */
   k_imu_task_period_ticks =
     5U, /**< IMU sampling period in RTOS ticks (5 ticks x 10 ms/tick = 50 ms at 100 Hz) */
@@ -112,7 +112,7 @@ typedef enum : uint16_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint16_t {
   k_imu_task_stack_size_bytes = 2048U, /**< Stack size in bytes for IMU task thread */
 } imu_task_stack_t;
 
