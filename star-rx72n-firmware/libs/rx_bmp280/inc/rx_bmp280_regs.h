@@ -78,6 +78,9 @@ extern "C" {
  * @invariant k_bmp280_reg_calib_start contains factory-calibrated coefficients
  * @invariant 0xF7 output is valid only after measurement completes
  *
+ * @pre BMP280 has completed power-on reset (POR) sequence
+ * @pre I2C bus interface is initialized and BMP280 is addressable
+ *
  * @post Registers accessible after BMP280 power-on reset sequence completes
  * @post All addresses remain constant for the lifetime of the device
  *

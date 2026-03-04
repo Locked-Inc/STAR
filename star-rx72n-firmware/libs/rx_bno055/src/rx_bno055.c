@@ -395,7 +395,7 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
 {
   _Static_assert(k_bno055_shift_msb == 8U, "MSB shift must be 8 for little-endian assembly");
   _Static_assert(sizeof(uint16_t) * CHAR_BIT == 16U, "uint16_t must be 16 bits for assembly to be well-defined");
-  return (int16_t)((uint16_t)low | ((uint16_t)high << (uint8_t)k_bno055_shift_msb));
+  return (int16_t)((uint16_t)low | ((uint16_t)high << k_bno055_shift_msb));
 }
 
 /* =============================================================================

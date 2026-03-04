@@ -744,11 +744,22 @@ void test_bno055_is_calibrated_reads_status(void)
  * @retval 0 All tests passed
  * @retval non-zero Number of test failures reported by Unity
  *
+ * @pre Unity test harness linked and BNO055 driver sources compiled with mock RIIC HAL
+ * @pre mock_riic_init() called implicitly by setUp() before each test
+ * @post Unity reports all test results to stdout
+ * @post s_initialized may be true after test_bno055_init_success executes
+ *
  * @since Version 1.0.0
  */
 int main(void)
 {
   UNITY_BEGIN();
+
+  /* IMPORTANT: Test ordering is intentional and required.
+   * The driver's static s_initialized flag persists across tests and there is no
+   * deinit/reset API. Run error-path tests first (null, I2C error, wrong chip ID),
+   * then success test (sets s_initialized=true), then double-init, then read/calib tests.
+   * Do NOT reorder or alphabetize tests without resetting s_initialized between them. */
 
   /* Init tests - ordered: errors first, then success, then double-init */
   RUN_TEST(test_bno055_init_null_manager_returns_error);

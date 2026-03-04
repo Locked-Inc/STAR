@@ -89,6 +89,9 @@ message TelemetryData {
   // GPS data (if available).
   GpsData gps = 2;
 
+  // Obstacle detection data from ultrasonic sensors (RX72N specific).
+  ObstacleData obstacle = 3;
+
   // WiFi signal strength in dBm.
   // Typical range: -100 to -30 dBm.
   int32 wifi_signal_dbm = 4;
@@ -107,6 +110,19 @@ message TelemetryData {
   // Telemetry timestamp.
   google.protobuf.Timestamp timestamp = 8;
 
+  // Emergency stop reason (RX72N specific). Populated when emergency_stop is true.
+  EstopReason estop_reason = 9;
+
+  // Emergency stop state (RX72N specific).
+  bool emergency_stop = 10;
+
+  // Motor fault flags bitfield (RX72N specific).
+  // Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc.
+  uint32 fault_flags = 11;
+
+  // Barometric pressure and temperature from BMP280 (RX72N specific).
+  BaroData baro = 12;
+
   // Timestamp in microseconds since boot (RX72N specific).
   int64 timestamp_us = 14;
 
@@ -120,26 +136,10 @@ message TelemetryData {
   // Back right motor encoder data (reserved for future 4-motor support).
   star.v1.EncoderData encoder_back_right = 18;
 
-  // Emergency stop state (RX72N specific).
-  bool emergency_stop = 10;
-
-  // Motor fault flags bitfield (RX72N specific).
-  // Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc.
-  uint32 fault_flags = 11;
-
-  // Emergency stop reason (RX72N specific). Populated when emergency_stop is true.
-  EstopReason estop_reason = 9;
-
   // Frame sequence number from transport layer for drop detection.
   // Increments with each transmitted frame. Used by diagnostics to detect
   // missing frames in the telemetry stream.
   uint32 frame_sequence = 19;
-
-  // Obstacle detection data from ultrasonic sensors (RX72N specific).
-  ObstacleData obstacle = 3;
-
-  // Barometric pressure and temperature from BMP280 (RX72N specific).
-  BaroData baro = 12;
 }
 
 // IMU sensor data from BNO055 NDOF fusion mode.

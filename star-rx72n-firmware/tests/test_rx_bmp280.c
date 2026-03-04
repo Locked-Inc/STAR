@@ -349,6 +349,7 @@ static rx_bus_config_t s_i2c_config;
  */
 static void internal_load_valid_calib(void)
 {
+  _Static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
   memset(calib, 0, sizeof(calib));
 
@@ -374,6 +375,10 @@ static void internal_load_valid_calib(void)
 
   /* Remaining P3-P9 bytes stay zero (set by memset above) */
 
+  /* Postcondition: verify T1 and P1 set non-zero as required by the driver */
+  TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_t1_lsb] | calib[k_bmp280_calib_t1_msb]);
+  TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_p1_lsb] | calib[k_bmp280_calib_p1_msb]);
+
   mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
 }
 
@@ -391,6 +396,7 @@ static void internal_load_valid_calib(void)
  */
 static void internal_load_invalid_calib_p1_zero(void)
 {
+  _Static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
   memset(calib, 0, sizeof(calib));
 
@@ -398,6 +404,11 @@ static void internal_load_invalid_calib_p1_zero(void)
   calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
   calib[k_bmp280_calib_t1_msb] = (uint8_t)k_calib_t1_msb;
   /* dig_P1 bytes 6-7 remain 0x00 (zero) */
+
+  /* Postcondition: verify T1 non-zero and P1 zero as intended for this invalid case */
+  TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_t1_lsb] | calib[k_bmp280_calib_t1_msb]);
+  TEST_ASSERT_EQUAL(0U, calib[k_bmp280_calib_p1_lsb]);
+  TEST_ASSERT_EQUAL(0U, calib[k_bmp280_calib_p1_msb]);
 
   mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
 }
@@ -443,6 +454,7 @@ static void internal_load_invalid_calib_p1_zero(void)
  */
 static void internal_load_read_data(void)
 {
+  _Static_assert(k_read_seq_buf_size > 0U, "read sequence buffer must be non-empty");
   uint8_t buf[k_read_seq_buf_size];
   buf[k_read_seq_status_idx]        = (uint8_t)k_status_measuring_done;
   buf[k_read_seq_adc_press_msb_idx]  = (uint8_t)k_adc_press_msb;
@@ -451,6 +463,10 @@ static void internal_load_read_data(void)
   buf[k_read_seq_adc_temp_msb_idx]   = (uint8_t)k_adc_temp_msb;
   buf[k_read_seq_adc_temp_lsb_idx]   = (uint8_t)k_adc_temp_lsb;
   buf[k_read_seq_adc_temp_xlsb_idx]  = (uint8_t)k_adc_temp_xlsb;
+
+  /* Postcondition: verify status byte is set to measuring-done (0x00) */
+  TEST_ASSERT_EQUAL((uint8_t)k_status_measuring_done, buf[k_read_seq_status_idx]);
+  TEST_ASSERT_EQUAL((uint8_t)k_read_seq_buf_size, (uint8_t)k_read_seq_buf_size);
 
   mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, buf, k_read_seq_buf_size);
 }
@@ -592,7 +608,7 @@ void test_bmp280_init_invalid_calib_returns_error(void)
  * @brief rx_bmp280_init succeeds with valid calibration data
  *
  * @details
- * Pre-loads valid 24-byte calibration (dig_T1 = 27436, dig_P1 = 36823).
+ * Pre-loads valid 24-byte calibration (dig_T1 = 27436, dig_P1 = 65410).
  * After init succeeds, a subsequent rx_bmp280_read() call confirms
  * s_initialized == true.
  *
@@ -874,6 +890,10 @@ void test_bmp280_read_zero_var1_returns_error(void)
  * @return int Unity test result code
  * @retval 0 All tests passed
  * @retval 1 One or more tests failed
+ *
+ * @warning Tests must execute in the listed order: the static s_initialized flag
+ *          persists across tests and there is no driver deinit/reset API. Reordering
+ *          tests will cause failures.
  *
  * @since Version 1.0.0
  */

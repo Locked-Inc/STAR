@@ -59,6 +59,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "rx_err.h"
 
 /**
@@ -104,6 +106,8 @@ typedef enum : uint16_t {
  * @details
  * 2048 bytes is sufficient for BNO055 init sequence (12 register writes),
  * BMP280 calibration burst read (24-byte buffer), and periodic read buffers.
+ *
+ * @invariant k_imu_task_stack_size_bytes >= 2048U (minimum for BNO055 init, BMP280 calibration, and periodic read buffers)
  *
  * @since Version 1.0.0
  */

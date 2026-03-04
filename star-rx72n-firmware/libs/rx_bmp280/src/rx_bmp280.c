@@ -118,9 +118,9 @@ typedef enum : uint32_t {
  *
  * These base-Pa values are multiplied by 256 for the fixed-point Pa*256 format
  * used by the Bosch integer compensation formula output.
- * See bmp280_output_range_t for the Pa*256 scaled limits.
+ * See bmp280_press_range_t for the Pa*256 scaled limits.
  *
- * @see bmp280_output_range_t Pa*256 scaled limits used in postcondition check
+ * @see bmp280_press_range_t Pa*256 scaled limits used in postcondition check
  *
  * @since Version 1.0.0
  */
@@ -130,27 +130,43 @@ typedef enum : uint32_t {
 } bmp280_press_range_pa_t;
 
 /**
- * @enum bmp280_output_range_t
- * @brief BMP280 output range limits for postcondition validation
+ * @enum bmp280_temp_range_t
+ * @brief BMP280 temperature output range limits for postcondition validation
  *
  * @details
- * Valid output ranges per the BMP280 datasheet operating specifications:
+ * Valid temperature output range per the BMP280 datasheet operating specifications:
  * - Temperature: -40.00 degC to +85.00 degC (in centi-degC units)
- * - Pressure: 300 hPa to 1100 hPa (in Pa*256 fixed-point units)
- *   Derivation: k_bmp280_press_min_pa * 256 = 30000 * 256 = 7680000
- *               k_bmp280_press_max_pa * 256 = 110000 * 256 = 28160000
  *
- * @see bmp280_press_range_pa_t Base Pa constants from which Pa*256 values are derived
+ * @see bmp280_press_range_t Pressure output range limits
  * @see rx_bmp280_read() Applies these range checks after compensation
  *
  * @since Version 1.0.0
  */
 typedef enum : int32_t {
-  k_bmp280_temp_min_cdegc_impl = -4000,    /**< Minimum valid temperature: -40.00 degC in centi-degC */
-  k_bmp280_temp_max_cdegc_impl = 8500,     /**< Maximum valid temperature: +85.00 degC in centi-degC */
-  k_bmp280_press_min_pa_256    = 7680000,  /**< Minimum valid pressure: 300 hPa * 256 (k_bmp280_press_min_pa * 256) */
-  k_bmp280_press_max_pa_256    = 28160000, /**< Maximum valid pressure: 1100 hPa * 256 (k_bmp280_press_max_pa * 256) */
-} bmp280_output_range_t;
+  k_bmp280_temp_min_cdegc_impl = -4000, /**< Minimum valid temperature: -40.00 degC in centi-degC */
+  k_bmp280_temp_max_cdegc_impl = 8500,  /**< Maximum valid temperature: +85.00 degC in centi-degC */
+} bmp280_temp_range_t;
+
+/**
+ * @enum bmp280_press_range_t
+ * @brief BMP280 pressure output range limits for postcondition validation
+ *
+ * @details
+ * Valid pressure output range per the BMP280 datasheet operating specifications:
+ * - Pressure: 300 hPa to 1100 hPa (in Pa*256 fixed-point units)
+ *   Derivation: k_bmp280_press_min_pa * 256 = 30000 * 256 = 7680000
+ *               k_bmp280_press_max_pa * 256 = 110000 * 256 = 28160000
+ *
+ * @see bmp280_temp_range_t Temperature output range limits
+ * @see bmp280_press_range_pa_t Base Pa constants from which Pa*256 values are derived
+ * @see rx_bmp280_read() Applies these range checks after compensation
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_bmp280_press_min_pa_256 = 7680000U,  /**< Minimum valid pressure: 300 hPa * 256 (k_bmp280_press_min_pa * 256) */
+  k_bmp280_press_max_pa_256 = 28160000U, /**< Maximum valid pressure: 1100 hPa * 256 (k_bmp280_press_max_pa * 256) */
+} bmp280_press_range_t;
 
 /* =============================================================================
  * Module-Static State

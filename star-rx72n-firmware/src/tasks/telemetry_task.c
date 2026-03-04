@@ -1989,12 +1989,28 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  *
  * @details
  * Reads IMU state via shared_data_get_imu() and populates all ImuData fields
- * in the telemetry message. Converts BNO055 fixed-point integers to double
- * using defined scale constants. Sets has_imu = true only on valid data.
+ * in the telemetry message. Sets has_imu = true only on valid data.
+ *
+ * Data is read from the shared_data module via shared_data_get_imu(), which
+ * returns a copy of the last imu_state_t written by the IMU task.
+ *
+ * Conversion and scaling steps applied to BNO055 fixed-point register values:
+ * - Euler angles (heading, roll, pitch): raw deg*16 -> radians via
+ *   (raw / s_deg16_per_deg) * s_rad_per_deg
+ * - Quaternion components (w, x, y, z): raw int16 -> unit float via
+ *   raw / s_quat_scale (= 16384.0)
+ * - Linear acceleration (x, y, z): raw int16 -> m/s^2 via
+ *   raw / s_lin_acc_scale (= 100.0, gravity-compensated)
+ * - Calibration status: raw uint8 calib_stat register value (cast to uint32_t)
+ * - On-chip temperature: raw int8 temp_degc value (cast to double)
+ *
+ * Side effects: has_imu set to true when valid data present. Not thread-safe;
+ * relies on caller to call from single-threaded context.
  *
  * @param[in,out] telemetry TelemetryData message to populate
  *
  * @pre telemetry non-NULL
+ * @pre Shared data module initialized via shared_data_init() and IMU task running
  * @post telemetry->has_imu set if shared_data_get_imu returns valid data
  * @post All imu.* fields populated on success
  *
@@ -2047,12 +2063,14 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
  *
  * @details
  * Reads barometric state via shared_data_get_baro() and populates BaroData
- * fields. Converts BMP280 integer-scaled values to physical SI units.
+ * fields. Converts BMP280 integer-scaled values to physical SI units:
+ * temperature from centi-degC to degC, pressure from Pa*256 to Pa.
  * Sets has_baro = true only on valid data.
  *
  * @param[in,out] telemetry TelemetryData message to populate
  *
  * @pre telemetry non-NULL
+ * @pre Shared data module initialized via shared_data_init()
  * @post telemetry->has_baro set if shared_data_get_baro returns valid data
  * @post All baro.* fields populated on success
  *

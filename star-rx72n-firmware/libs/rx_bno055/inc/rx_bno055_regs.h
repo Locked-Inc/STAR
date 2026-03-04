@@ -463,6 +463,9 @@ typedef enum : uint8_t {
   k_bno055_ms_per_tick = 10, /**< ThreadX tick period: 10 ms at 100 Hz tick rate */
 } bno055_tick_rate_t;
 
+/** @brief Validate k_bno055_ms_per_tick matches TX_TIMER_TICKS_PER_SECOND=100 at compile time */
+_Static_assert(k_bno055_ms_per_tick == 10U, "k_bno055_ms_per_tick must match TX_TIMER_TICKS_PER_SECOND=100");
+
 #ifdef __cplusplus
 }
 #endif
