@@ -312,7 +312,7 @@ typedef enum : uint8_t {
  * in hardware_config.h. Any mismatch will cause a build failure, preventing
  * test/production drift.
  *
- * Production source: e2-studio-star-rx72n-firmware/src/inc/hardware_config.h
+ * Production source: star-rx72n-firmware/src/inc/hardware_config.h
  * lines 525-539 (led_ports_t and led_pins_t enums).
  */
 _Static_assert(k_led_0_port == 10, "LED0 port must match production (PORTA=10)");

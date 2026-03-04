@@ -14,7 +14,7 @@ docs/doxygen/pdf/*/*.log
 tests/build/
 tests/Unity/
 
-# e2-studio build artifacts
+# Firmware build artifacts
 HardwareDebug/
 output/
 .metadata/

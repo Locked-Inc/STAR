@@ -89,16 +89,17 @@ extern "C" {
 typedef enum : uint8_t {
   k_bmp280_reg_chip_id     = 0xD0, /**< Chip ID register: contains device ID 0x60 for BMP280 */
   k_bmp280_reg_calib_start = 0x88, /**< Start of 24-byte calibration coefficient block */
-  k_bmp280_reg_calib_end   = 0x9F, /**< Last byte of 24-byte calibration coefficient block (0x88-0x9F) */
-  k_bmp280_reg_status      = 0xF3, /**< Status: bit 3 = measuring, bit 0 = im_update */
-  k_bmp280_reg_ctrl_meas   = 0xF4, /**< Control: osrs_t[7:5] osrs_p[4:2] mode[1:0] */
-  k_bmp280_reg_config      = 0xF5, /**< Config: t_sb[7:5] filter[4:2] spi3w_en[0] */
-  k_bmp280_reg_press_msb   = 0xF7, /**< Pressure MSB: press_raw[19:12] */
-  k_bmp280_reg_press_lsb   = 0xF8, /**< Pressure LSB: press_raw[11:4] */
-  k_bmp280_reg_press_xlsb  = 0xF9, /**< Pressure XLSB: press_raw[3:0] in bits [7:4] */
-  k_bmp280_reg_temp_msb    = 0xFA, /**< Temperature MSB: temp_raw[19:12] */
-  k_bmp280_reg_temp_lsb    = 0xFB, /**< Temperature LSB: temp_raw[11:4] */
-  k_bmp280_reg_temp_xlsb   = 0xFC, /**< Temperature XLSB: temp_raw[3:0] in bits [7:4] */
+  k_bmp280_reg_calib_end =
+    0x9F, /**< Last byte of 24-byte calibration coefficient block (0x88-0x9F) */
+  k_bmp280_reg_status     = 0xF3, /**< Status: bit 3 = measuring, bit 0 = im_update */
+  k_bmp280_reg_ctrl_meas  = 0xF4, /**< Control: osrs_t[7:5] osrs_p[4:2] mode[1:0] */
+  k_bmp280_reg_config     = 0xF5, /**< Config: t_sb[7:5] filter[4:2] spi3w_en[0] */
+  k_bmp280_reg_press_msb  = 0xF7, /**< Pressure MSB: press_raw[19:12] */
+  k_bmp280_reg_press_lsb  = 0xF8, /**< Pressure LSB: press_raw[11:4] */
+  k_bmp280_reg_press_xlsb = 0xF9, /**< Pressure XLSB: press_raw[3:0] in bits [7:4] */
+  k_bmp280_reg_temp_msb   = 0xFA, /**< Temperature MSB: temp_raw[19:12] */
+  k_bmp280_reg_temp_lsb   = 0xFB, /**< Temperature LSB: temp_raw[11:4] */
+  k_bmp280_reg_temp_xlsb  = 0xFC, /**< Temperature XLSB: temp_raw[3:0] in bits [7:4] */
 } bmp280_reg_t;
 
 /* =============================================================================
@@ -197,7 +198,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_status_meas_mask = 0x08, /**< Status measuring bit: bit 3 set while measurement in progress */
+  k_bmp280_status_meas_mask =
+    0x08, /**< Status measuring bit: bit 3 set while measurement in progress */
 } bmp280_status_mask_t;
 
 /**
@@ -220,20 +222,23 @@ typedef enum : uint8_t {
 
 /**
  * @enum bmp280_poll_t
- * @brief BMP280 measurement polling loop bound
+ * @brief BMP280 measurement polling loop bound and sleep constant
  *
  * @details
  * Maximum number of status register polls when waiting for a forced
  * measurement to complete. With 16x oversampling, maximum measurement
- * time is approximately 40 ms. At 1 ms per poll, 100 iterations provides
- * >2x safety margin.
+ * time is approximately 40 ms. Each poll sleeps k_bmp280_poll_sleep_ticks
+ * between reads to yield CPU time. At 1 tick (10 ms) per poll, 100
+ * iterations provides >2x safety margin.
  *
  * @invariant k_bmp280_poll_max > 0 (loop must terminate)
+ * @invariant k_bmp280_poll_sleep_ticks >= 1 (must yield at least one tick)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_poll_max = 100, /**< Maximum status poll iterations (~100 ms maximum wait) */
+  k_bmp280_poll_max         = 100, /**< Maximum status poll iterations */
+  k_bmp280_poll_sleep_ticks = 1,   /**< Ticks to sleep between polls (1 tick = 10 ms at 100 Hz) */
 } bmp280_poll_t;
 
 /* =============================================================================
@@ -256,9 +261,11 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_shift_msb        = 12, /**< Left-shift MSB byte 12 bits for 20-bit ADC assembly (bits[19:12]) */
-  k_bmp280_shift_lsb_left   = 4,  /**< Left-shift LSB byte 4 bits for 20-bit ADC assembly (bits[11:4]) */
-  k_bmp280_shift_xlsb_right = 4,  /**< Right-shift XLSB byte 4 bits to extract lower nibble (bits[3:0]) */
+  k_bmp280_shift_msb = 12, /**< Left-shift MSB byte 12 bits for 20-bit ADC assembly (bits[19:12]) */
+  k_bmp280_shift_lsb_left =
+    4, /**< Left-shift LSB byte 4 bits for 20-bit ADC assembly (bits[11:4]) */
+  k_bmp280_shift_xlsb_right =
+    4, /**< Right-shift XLSB byte 4 bits to extract lower nibble (bits[3:0]) */
 } bmp280_adc_shift_t;
 
 /**

@@ -55,6 +55,7 @@
 #include "rx_bus_i2c.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Module-level Constants
@@ -164,8 +165,10 @@ typedef enum : int32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_bmp280_press_min_pa_256 = 7680000U,  /**< Minimum valid pressure: 300 hPa * 256 (k_bmp280_press_min_pa * 256) */
-  k_bmp280_press_max_pa_256 = 28160000U, /**< Maximum valid pressure: 1100 hPa * 256 (k_bmp280_press_max_pa * 256) */
+  k_bmp280_press_min_pa_256 =
+    7680000U, /**< Minimum valid pressure: 300 hPa * 256 (k_bmp280_press_min_pa * 256) */
+  k_bmp280_press_max_pa_256 =
+    28160000U, /**< Maximum valid pressure: 1100 hPa * 256 (k_bmp280_press_max_pa * 256) */
 } bmp280_press_range_t;
 
 /* =============================================================================
@@ -219,7 +222,7 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
 /** @brief Burst-read consecutive registers from BMP280 via I2C write-read */
 static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
 /** @brief Apply Bosch integer temperature compensation formula (returns centi-degC, sets t_fine) */
-static int32_t  internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out);
+static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out);
 /** @brief Apply Bosch integer pressure compensation formula (returns Pa*256 in press_out) */
 static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint32_t* press_out);
 /** @brief Assemble an unsigned 16-bit little-endian value from two consecutive bytes */
@@ -241,7 +244,7 @@ static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
  *
  * @details
  * Sends a 2-byte I2C write transaction [reg, val] to the BMP280 at
- * device address 0x76 (embedded in the "i2c1" bus configuration).
+ * device address 0x76 (embedded in the "i2c1_baro" bus configuration).
  *
  * @param[in] reg Register address (from bmp280_reg_t)
  * @param[in] val Byte value to write to the register
@@ -251,7 +254,7 @@ static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out);
  * @retval k_rx_err_nack Device did not acknowledge
  *
  * @pre s_manager non-NULL (set by rx_bmp280_init)
- * @pre "i2c1" bus initialized
+ * @pre "i2c1_baro" bus initialized
  * @post Register contains val on k_rx_ok
  * @post Bus transaction completes before function returns
  *
@@ -301,12 +304,7 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
   RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL before read");
   RX_ASSERT(buf != NULL, "buf must be non-NULL for read operation");
   RX_ASSERT(len > 0U, "len must be positive for read operation");
-  return rx_bus_i2c_write_read(s_manager,
-                               s_bus_name,
-                               &reg,
-                               k_bmp280_read_cmd_size,
-                               buf,
-                               len);
+  return rx_bus_i2c_write_read(s_manager, s_bus_name, &reg, k_bmp280_read_cmd_size, buf, len);
 }
 
 /**
@@ -358,7 +356,8 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 static inline int16_t internal_parse_s16_le(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "buf must not be NULL");
-  _Static_assert(sizeof(int16_t) == sizeof(uint16_t), "int16_t and uint16_t must be same size for safe reinterpret cast");
+  _Static_assert(sizeof(int16_t) == sizeof(uint16_t),
+                 "int16_t and uint16_t must be same size for safe reinterpret cast");
   return (int16_t)internal_parse_u16_le(buf);
 }
 
@@ -391,10 +390,12 @@ static inline int32_t internal_assemble_adc20(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "buf must not be NULL");
   /* Assembly: (MSB << 12) | (LSB << 4) | (XLSB >> 4) produces 20-bit value */
-  const int32_t result = (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
-                                   ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb_left) |
-                                   ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb_right));
-  RX_ASSERT(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max, "ADC20 result out of 20-bit range");
+  const int32_t result =
+    (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
+              ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb_left) |
+              ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb_right));
+  RX_ASSERT(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max,
+            "ADC20 result out of 20-bit range");
   return result;
 }
 
@@ -435,28 +436,28 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
   RX_ASSERT(t_fine_out != NULL, "t_fine_out must be non-NULL");
 
   enum : int32_t {
-    k_adc_20bit_max     = 0xFFFFF, /**< Maximum valid 20-bit ADC value */
-    k_temp_shift_adc_3  = 3,       /**< adc_T right shift for T1 subtraction step */
-    k_temp_shift_t1_1   = 1,       /**< dig_T1 left shift in first var1 step */
-    k_temp_shift_11     = 11,      /**< Right shift for var1 final step */
-    k_temp_shift_adc_4  = 4,       /**< adc_T right shift for T1 comparison steps */
-    k_temp_shift_12     = 12,      /**< Right shift for squared difference */
-    k_temp_shift_14     = 14,      /**< Right shift for var2 final step */
-    k_temp_fine_scale   = 5,       /**< Scale factor in fine-to-output conversion */
-    k_temp_round_add    = 128,     /**< Rounding constant in fine-to-output conversion */
-    k_temp_shift_out    = 8,       /**< Right shift to produce 0.01 degC output */
+    k_adc_20bit_max    = 0xFFFFF, /**< Maximum valid 20-bit ADC value */
+    k_temp_shift_adc_3 = 3,       /**< adc_T right shift for T1 subtraction step */
+    k_temp_shift_t1_1  = 1,       /**< dig_T1 left shift in first var1 step */
+    k_temp_shift_11    = 11,      /**< Right shift for var1 final step */
+    k_temp_shift_adc_4 = 4,       /**< adc_T right shift for T1 comparison steps */
+    k_temp_shift_12    = 12,      /**< Right shift for squared difference */
+    k_temp_shift_14    = 14,      /**< Right shift for var2 final step */
+    k_temp_fine_scale  = 5,       /**< Scale factor in fine-to-output conversion */
+    k_temp_round_add   = 128,     /**< Rounding constant in fine-to-output conversion */
+    k_temp_shift_out   = 8,       /**< Right shift to produce 0.01 degC output */
   };
 
-  RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)k_adc_20bit_max,
-            "adc_T must be a 20-bit ADC value");
+  RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)k_adc_20bit_max, "adc_T must be a 20-bit ADC value");
 
-  const int32_t var1 = ((((adc_T >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
-                        ((int32_t)s_calib.dig_T2)) >>
-                       k_temp_shift_11;
+  const int32_t var1 =
+    ((((adc_T >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
+     ((int32_t)s_calib.dig_T2)) >>
+    k_temp_shift_11;
   const int32_t var2 = (((((adc_T >> k_temp_shift_adc_4) - ((int32_t)s_calib.dig_T1)) *
-                           ((adc_T >> k_temp_shift_adc_4) - ((int32_t)s_calib.dig_T1))) >>
-                          k_temp_shift_12) *
-                         ((int32_t)s_calib.dig_T3)) >>
+                          ((adc_T >> k_temp_shift_adc_4) - ((int32_t)s_calib.dig_T1))) >>
+                         k_temp_shift_12) *
+                        ((int32_t)s_calib.dig_T3)) >>
                        k_temp_shift_14;
 
   *t_fine_out = var1 + var2;
@@ -503,20 +504,20 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
   RX_ASSERT(press_out != NULL, "press_out must not be NULL");
 
   typedef enum : int32_t {
-    k_press_t_offset     = 128000,  /**< t_fine offset in pressure formula */
-    k_press_p_scale      = 1048576, /**< ADC scaling constant */
-    k_press_shift_31     = 31,      /**< Shift for 31-bit alignment */
-    k_press_shift_47     = 47,      /**< Shift for 47-bit alignment */
-    k_press_shift_8      = 8,       /**< Output shift for Q8 fixed-point Pa*256 */
-    k_press_mul_3125     = 3125,    /**< Bosch formula scaling factor */
-    k_press_shift_35     = 35,      /**< Shift for 35-bit intermediate */
-    k_press_shift_25     = 25,      /**< Shift for 25-bit intermediate */
-    k_press_shift_19     = 19,      /**< Shift for 19-bit intermediate */
-    k_press_shift_13     = 13,      /**< Shift for P9 coefficient shift */
-    k_press_shift_17     = 17,      /**< Shift for P5 coefficient step */
-    k_press_shift_12     = 12,      /**< Right shift for dig_P3 step */
-    k_press_shift_33     = 33,      /**< Divisor shift for var1 */
-    k_press_shift_4      = 4,       /**< Shift for P7 addition */
+    k_press_t_offset = 128000,  /**< t_fine offset in pressure formula */
+    k_press_p_scale  = 1048576, /**< ADC scaling constant */
+    k_press_shift_31 = 31,      /**< Shift for 31-bit alignment */
+    k_press_shift_47 = 47,      /**< Shift for 47-bit alignment */
+    k_press_shift_8  = 8,       /**< Output shift for Q8 fixed-point Pa*256 */
+    k_press_mul_3125 = 3125,    /**< Bosch formula scaling factor */
+    k_press_shift_35 = 35,      /**< Shift for 35-bit intermediate */
+    k_press_shift_25 = 25,      /**< Shift for 25-bit intermediate */
+    k_press_shift_19 = 19,      /**< Shift for 19-bit intermediate */
+    k_press_shift_13 = 13,      /**< Shift for P9 coefficient shift */
+    k_press_shift_17 = 17,      /**< Shift for P5 coefficient step */
+    k_press_shift_12 = 12,      /**< Right shift for dig_P3 step */
+    k_press_shift_33 = 33,      /**< Divisor shift for var1 */
+    k_press_shift_4  = 4,       /**< Shift for P7 addition */
   } press_comp_constants_t;
 
   /* k_press_base_one must be int64_t (not enum) because the expression
@@ -530,8 +531,10 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
   int64_t var2 = var1 * var1 * (int64_t)s_calib.dig_P6;
   var2 += (var1 * (int64_t)s_calib.dig_P5) << k_press_shift_17;
   var2 += ((int64_t)s_calib.dig_P4) << k_press_shift_35;
-  var1 = ((var1 * var1 * (int64_t)s_calib.dig_P3) >> k_press_shift_8) + ((var1 * (int64_t)s_calib.dig_P2) << k_press_shift_12);
-  var1 = (((k_press_base_one << k_press_shift_47) + var1)) * ((int64_t)s_calib.dig_P1) >> k_press_shift_33;
+  var1 = ((var1 * var1 * (int64_t)s_calib.dig_P3) >> k_press_shift_8) +
+         ((var1 * (int64_t)s_calib.dig_P2) << k_press_shift_12);
+  var1 = (((k_press_base_one << k_press_shift_47) + var1)) * ((int64_t)s_calib.dig_P1) >>
+         k_press_shift_33;
 
   /* Division by zero guard (NASA Power of 10 Rule 7) */
   if (var1 == 0) {
@@ -542,7 +545,8 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
   int64_t p = (int64_t)k_press_p_scale - adc_P;
   p         = (((p << k_press_shift_31) - var2) * k_press_mul_3125) / var1;
 
-  var1 = (((int64_t)s_calib.dig_P9) * (p >> k_press_shift_13) * (p >> k_press_shift_13)) >> k_press_shift_25;
+  var1 = (((int64_t)s_calib.dig_P9) * (p >> k_press_shift_13) * (p >> k_press_shift_13)) >>
+         k_press_shift_25;
   var2 = (((int64_t)s_calib.dig_P8) * p) >> k_press_shift_19;
 
   /* Bosch BMP280 datasheet formula (Section 4.2.3):
@@ -596,7 +600,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
 
   /* Verify chip ID before reading calibration (detects wrong device on bus) */
   uint8_t  chip_id = 0U;
-  rx_err_t err     = internal_read_regs((uint8_t)k_bmp280_reg_chip_id, &chip_id, 1U);
+  rx_err_t err = internal_read_regs((uint8_t)k_bmp280_reg_chip_id, &chip_id, k_bmp280_single_byte);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Chip ID read failed");
     s_manager = NULL;
@@ -610,9 +614,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
 
   /* Read 24-byte factory calibration block from OTP (k_bmp280_reg_calib_start..k_bmp280_reg_calib_end) */
   uint8_t calib_buf[k_bmp280_calib_byte_count];
-  err = internal_read_regs((uint8_t)k_bmp280_reg_calib_start,
-                           calib_buf,
-                           k_bmp280_calib_byte_count);
+  err = internal_read_regs((uint8_t)k_bmp280_reg_calib_start, calib_buf, k_bmp280_calib_byte_count);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Calibration read failed");
     s_manager = NULL;
@@ -694,8 +696,9 @@ static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
   RX_ASSERT(s_initialized, "BMP280 must be initialized before ADC read");
 
   /* Step 1: Read 6 bytes of ADC data: pressure[3] + temperature[3] */
-  uint8_t adc_buf[k_bmp280_adc_buf_size];
-  const rx_err_t err = internal_read_regs((uint8_t)k_bmp280_reg_press_msb, adc_buf, k_bmp280_adc_buf_size);
+  uint8_t        adc_buf[k_bmp280_adc_buf_size];
+  const rx_err_t err =
+    internal_read_regs((uint8_t)k_bmp280_reg_press_msb, adc_buf, k_bmp280_adc_buf_size);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "ADC data read failed");
     return err;
@@ -771,8 +774,8 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   }
 
   /* Step 1: Write ctrl_meas to trigger forced measurement */
-  rx_err_t err = internal_write_reg((uint8_t)k_bmp280_reg_ctrl_meas,
-                                    (uint8_t)k_bmp280_ctrl_meas_val);
+  rx_err_t err =
+    internal_write_reg((uint8_t)k_bmp280_reg_ctrl_meas, (uint8_t)k_bmp280_ctrl_meas_val);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "ctrl_meas write failed");
     return err;
@@ -782,9 +785,7 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   uint32_t poll_count = 0;
   while (poll_count < (uint32_t)k_bmp280_poll_max) {
     uint8_t status_byte = 0;
-    err                 = internal_read_regs((uint8_t)k_bmp280_reg_status,
-                              &status_byte,
-                              k_bmp280_single_byte);
+    err = internal_read_regs((uint8_t)k_bmp280_reg_status, &status_byte, k_bmp280_single_byte);
     if (err != k_rx_ok) {
       return err;
     }
@@ -793,6 +794,7 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
       break; /* Measurement complete */
     }
 
+    (void)tx_thread_sleep(k_bmp280_poll_sleep_ticks); /* Yield CPU while sensor is measuring */
     poll_count++;
   }
 

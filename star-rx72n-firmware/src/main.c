@@ -1567,7 +1567,7 @@ typedef enum : uint32_t {
   k_iwdt_task_timeout_watchdog_ms =
     30, /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_imu_ms =
-    150, /**< IMU Task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3x period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: IMU data stops, system reset after 2s. */
+    900, /**< IMU Task timeout (900ms). BNO055 POR ~700ms + BMP280 init ~2ms + polling margin. Must exceed cold-start duration (~702ms). Heartbeat called every 50ms once loop begins. If exceeded: IMU data stops, system reset after 2s. */
 } iwdt_task_timeout_ms_t;
 
 /**
@@ -1720,12 +1720,12 @@ static void internal_register_system_buses(void)
 
   /* Register i2c1 - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_imu_config,
-                               "i2c1",                                       /* name: matches rx_bno055.c s_bus_name */
-                               k_riic_channel_1,                             /* channel: RIIC1 */
-                               k_i2c_addr_bno055,                            /* device_addr: BNO055 (COM3/ADR=LOW) */
-                               k_rx_p2_0,                                    /* sda_pin: P2.0 = SDA1 */
-                               k_rx_p2_1,                                    /* scl_pin: P2.1 = SCL1 */
-                               k_i2c_frequency_400khz);                      /* frequency_hz: 400 kHz fast mode */
+                               "i2c1",                  /* name: matches rx_bno055.c s_bus_name */
+                               k_riic_channel_1,        /* channel: RIIC1 */
+                               k_i2c_addr_bno055,       /* device_addr: BNO055 (COM3/ADR=LOW) */
+                               k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
+                               k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
+                               k_i2c_frequency_400khz); /* frequency_hz: 400 kHz fast mode */
   RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_imu_config);
   RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) registration must succeed");
@@ -1734,12 +1734,12 @@ static void internal_register_system_buses(void)
 
   /* Register i2c1_baro - BMP280 barometric sensor (RIIC1, addr 0x76, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_baro_config,
-                               "i2c1_baro",                                  /* name: matches rx_bmp280.c s_bus_name */
-                               k_riic_channel_1,                             /* channel: RIIC1 (same as i2c1) */
-                               k_i2c_addr_bmp280,                            /* device_addr: BMP280 (SDO=LOW) */
-                               k_rx_p2_0,                                    /* sda_pin: P2.0 = SDA1 */
-                               k_rx_p2_1,                                    /* scl_pin: P2.1 = SCL1 */
-                               k_i2c_frequency_400khz);                      /* frequency_hz: 400 kHz fast mode */
+                               "i2c1_baro",             /* name: matches rx_bmp280.c s_bus_name */
+                               k_riic_channel_1,        /* channel: RIIC1 (same as i2c1) */
+                               k_i2c_addr_bmp280,       /* device_addr: BMP280 (SDO=LOW) */
+                               k_rx_p2_0,               /* sda_pin: P2.0 = SDA1 */
+                               k_rx_p2_1,               /* scl_pin: P2.1 = SCL1 */
+                               k_i2c_frequency_400khz); /* frequency_hz: 400 kHz fast mode */
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_baro_config);
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) registration must succeed");
@@ -1846,13 +1846,14 @@ static void internal_register_iwdt_tasks(void)
  * @brief Create all eight application tasks and transition to running state
  *
  * @details
- * Creates all eight ThreadX tasks in lowest-priority-first order. Tasks do not
- * begin executing until tx_application_define() returns and the scheduler starts.
- * After all tasks are created, the IWDT system state transitions to
- * k_system_state_running.
+ * Creates all eight ThreadX tasks in dependency-aware order (lowest priority
+ * first, except Watchdog Monitor which follows Communication for logical
+ * grouping). Tasks do not begin executing until tx_application_define()
+ * returns and the scheduler starts. After all tasks are created, the IWDT
+ * system state transitions to k_system_state_running.
  *
- * Task creation order (lowest priority first):
- * 1. Telemetry (priority 18)
+ * Task creation order:
+ * 1. Telemetry (priority 18, lowest)
  * 2. LED Status (priority 17)
  * 3. Temperature Sensor (priority 15)
  * 4. IMU (priority 13, BNO055 + BMP280)

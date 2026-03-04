@@ -178,8 +178,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_calib_t1_lsb = 0x60, /**< dig_T1 LSB = 0x60 (matches k_bmp280_chip_id_expected so chip ID read also passes) */
-  k_calib_t1_msb = 0x6B, /**< dig_T1 MSB = 0x6B -> T1 = 0x6B60 = 27488 (non-zero; chip ID = T1_LSB = 0x60) */
+  k_calib_t1_lsb =
+    0x60, /**< dig_T1 LSB = 0x60 (matches k_bmp280_chip_id_expected so chip ID read also passes) */
+  k_calib_t1_msb =
+    0x6B, /**< dig_T1 MSB = 0x6B -> T1 = 0x6B60 = 27488 (non-zero; chip ID = T1_LSB = 0x60) */
   k_calib_t2_lsb = 0xD6, /**< dig_T2 LSB */
   k_calib_t2_msb = 0x60, /**< dig_T2 MSB -> T2 = 0x60D6 (signed = 24790) */
   k_calib_t3_lsb = 0x32, /**< dig_T3 LSB */
@@ -243,8 +245,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_status_measuring_done  = 0x00, /**< Status: measurement complete (bit 3 = 0) */
-  k_status_measuring_busy  = 0x08, /**< Status: measurement in progress (bit 3 = 1) */
+  k_status_measuring_done = 0x00, /**< Status: measurement complete (bit 3 = 0) */
+  k_status_measuring_busy = 0x08, /**< Status: measurement in progress (bit 3 = 1) */
 } test_bmp280_status_t;
 
 /**
@@ -341,7 +343,7 @@ static rx_bus_config_t s_i2c_config;
  * @brief Pre-load RIIC channel 1 with a valid 24-byte calibration block
  *
  * @details
- * Sets up the mock RX buffer with dig_T1=27436 (non-zero), dig_P1=65410
+ * Sets up the mock RX buffer with dig_T1=27488 (non-zero), dig_P1=65410
  * (non-zero), and remaining coefficients zero (P2=0, P3-P9=0). This
  * satisfies the postcondition check in rx_bmp280_init() (dig_T1 != 0 &&
  * dig_P1 != 0) and is engineered to produce output within the BMP280
@@ -462,7 +464,7 @@ static void internal_load_read_data(void)
 {
   _Static_assert(k_read_seq_buf_size > 0U, "read sequence buffer must be non-empty");
   uint8_t buf[k_read_seq_buf_size];
-  buf[k_read_seq_status_idx]        = (uint8_t)k_status_measuring_done;
+  buf[k_read_seq_status_idx]         = (uint8_t)k_status_measuring_done;
   buf[k_read_seq_adc_press_msb_idx]  = (uint8_t)k_adc_press_msb;
   buf[k_read_seq_adc_press_lsb_idx]  = (uint8_t)k_adc_press_lsb;
   buf[k_read_seq_adc_press_xlsb_idx] = (uint8_t)k_adc_press_xlsb;
@@ -505,12 +507,12 @@ void setUp(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_config_init_i2c(&s_i2c_config,
-                                "i2c1_baro",
-                                (uint8_t)k_test_bmp280_riic_ch,
-                                (uint8_t)k_test_bmp280_i2c_addr,
-                                k_rx_p2_0,
-                                k_rx_p2_1,
-                                (uint32_t)k_test_bmp280_freq_hz);
+                               "i2c1_baro",
+                               (uint8_t)k_test_bmp280_riic_ch,
+                               (uint8_t)k_test_bmp280_i2c_addr,
+                               k_rx_p2_0,
+                               k_rx_p2_1,
+                               (uint32_t)k_test_bmp280_freq_hz);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &s_i2c_config);

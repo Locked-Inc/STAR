@@ -2034,10 +2034,14 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->has_imu = true;
 
     /* Heading in radians (0.0 to 2*pi) */
-    telemetry->imu.heading_rad = ((double)imu_state.heading_deg16 / s_deg16_per_deg) * s_rad_per_deg;
+    telemetry->imu.heading_rad =
+      ((double)imu_state.heading_deg16 / s_deg16_per_deg) * s_rad_per_deg;
+
+    /* Yaw angle in radians (same source as heading; -pi to pi range for ROS2 geometry_msgs) */
+    telemetry->imu.yaw_rad = ((double)imu_state.heading_deg16 / s_deg16_per_deg) * s_rad_per_deg;
 
     /* Roll and pitch in radians */
-    telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16  / s_deg16_per_deg) * s_rad_per_deg;
+    telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16 / s_deg16_per_deg) * s_rad_per_deg;
     telemetry->imu.pitch_rad = ((double)imu_state.pitch_deg16 / s_deg16_per_deg) * s_rad_per_deg;
 
     /* Unit quaternion (each raw value / 16384) */
@@ -2096,8 +2100,7 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->has_baro = true;
 
     /* Temperature: centi-degrees Celsius -> degrees Celsius */
-    telemetry->baro.temperature_celsius =
-      (double)baro_state.temp_centi_degc / s_baro_temp_scale;
+    telemetry->baro.temperature_celsius = (double)baro_state.temp_centi_degc / s_baro_temp_scale;
 
     /* Pressure: Pa * 256 -> Pa */
     telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / s_baro_press_scale;
@@ -2112,9 +2115,10 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
  *
  * @details
  * Reads motor, temperature, and obstacle state from shared_data and populates
- * the corresponding fields in `telemetry`. All reads are **non-blocking**
- * and non-fatal: if a data source is unavailable, the corresponding fields
- * are left at zero-init defaults and collection continues for remaining sources.
+ * the corresponding fields in `telemetry`. All reads are **blocking**
+ * (TX_WAIT_FOREVER) but non-fatal: if a data source is unavailable, the
+ * corresponding fields are left at zero-init defaults and collection continues
+ * for remaining sources.
  *
  * Data collected:
  * 1. **Motor state** (via internal_populate_motor_telemetry()):
@@ -2133,7 +2137,7 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
  * @post Missing data sources leave their fields at zero-init defaults (graceful degradation)
  *
  * @note Always returns; partial population is intentional and acceptable
- * @note Non-blocking: all shared_data accessors use non-blocking mutex try
+ * @note Blocking: all shared_data accessors acquire mutex with TX_WAIT_FOREVER
  * @note Thread-safe: shared_data accessors are mutex-protected
  *
  * @see internal_populate_motor_telemetry() Motor field population helper

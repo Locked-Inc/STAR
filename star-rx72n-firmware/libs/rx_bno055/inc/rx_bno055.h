@@ -172,9 +172,10 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_bno055_scale_heading = 16U,    /**< Degrees-per-unit for heading/roll/pitch (divide by 16 for degrees) */
-  k_bno055_scale_quat    = 16384U, /**< Quaternion unit (2^14; divide by 16384 for normalized float) */
-  k_bno055_scale_acc     = 100U,   /**< m/s^2 per unit for linear acceleration (divide by 100) */
+  k_bno055_scale_heading =
+    16U, /**< Degrees-per-unit for heading/roll/pitch (divide by 16 for degrees) */
+  k_bno055_scale_quat = 16384U, /**< Quaternion unit (2^14; divide by 16384 for normalized float) */
+  k_bno055_scale_acc  = 100U,   /**< m/s^2 per unit for linear acceleration (divide by 100) */
 } bno055_scale_t;
 
 /**
@@ -364,6 +365,26 @@ typedef struct {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_bno055_is_calibrated(bool* out_calibrated);
+
+#ifdef UNIT_TEST
+/**
+ * @brief Reset all driver static state to uninitialized (test-only)
+ *
+ * @details
+ * Clears s_initialized and s_manager so that each unit test starts from a
+ * clean, uninitialized state regardless of execution order. This function is
+ * only compiled when UNIT_TEST is defined (host-side builds). It must NOT be
+ * called from production code.
+ *
+ * @pre None
+ * @post s_initialized == false
+ * @post s_manager == NULL
+ *
+ * @note For unit tests only; not available in firmware builds
+ * @since Version 1.0.0
+ */
+void bno055_test_reset_state(void);
+#endif /* UNIT_TEST */
 
 #ifdef __cplusplus
 }

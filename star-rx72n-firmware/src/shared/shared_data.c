@@ -722,18 +722,24 @@ rx_err_t shared_data_init(void)
   /* Create temp_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create obstacle_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
+    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create estop_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
+    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
+    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
     return k_rx_err_rtos_mutex;
   }
 
