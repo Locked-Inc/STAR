@@ -191,7 +191,11 @@ private:
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr
     obstacle_detected_pub_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Int32>::SharedPtr
-    estop_reason_pub_;
+    estop_reason_pub_;  /**< Publishes E-STOP reason code as Int32 (star_v1_EstopReason values:
+                          0=UNKNOWN, 1=MANUAL, 2=FAULT, 3=COMM_TIMEOUT, 4=OBSTACLE, 5=OVERCURRENT).
+                          Meaningful only when emergency_stop is true; zero otherwise.
+                          Published from the timer callback thread (single executor, no external
+                          synchronization required). */
 
   rclcpp::TimerBase::SharedPtr timer_;
 

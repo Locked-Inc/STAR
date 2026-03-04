@@ -1810,7 +1810,7 @@ static star_v1_EstopReason internal_map_estop_reason(estop_reason_t reason)
  * @pre telemetry must point to a valid star_v1_TelemetryData struct
  * @pre telemetry->timestamp_us must already be set (used for encoder timestamps)
  * @post If k_rx_ok: all motor encoder fields populated, has_encoder_* = true
- * @post If k_rx_ok: estop_reason populated with mapped star_v1_EstopReason value
+ * @post If k_rx_ok: estop_reason set to mapped star_v1_EstopReason when estop_active; UNKNOWN otherwise
  * @post If error: motor fields left at zero-init defaults, caller handles non-fatally
  *
  * @note Non-blocking: shared_data_get_motor_state() uses a non-blocking mutex try
@@ -1840,7 +1840,11 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
 
   /* Emergency stop status and reason */
   telemetry->emergency_stop = motor_state.estop_active;
-  telemetry->estop_reason   = internal_map_estop_reason(motor_state.estop_reason);
+  if (motor_state.estop_active) {
+    telemetry->estop_reason = internal_map_estop_reason(motor_state.estop_reason);
+  } else {
+    telemetry->estop_reason = star_v1_EstopReason_ESTOP_REASON_UNKNOWN;
+  }
 
   /* Pack 4 motor fault bytes into single uint32_t bitfield */
   telemetry->fault_flags =
