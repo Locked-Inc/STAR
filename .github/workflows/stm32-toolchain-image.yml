@@ -22,6 +22,10 @@ on:
     paths:
       - 'docker/stm32/Dockerfile'
       - '.github/workflows/stm32-toolchain-image.yml'
+  pull_request:
+    paths:
+      - 'docker/stm32/Dockerfile'
+      - '.github/workflows/stm32-toolchain-image.yml'
   workflow_dispatch:     # manual trigger for initial image population
 
 jobs:
@@ -41,6 +45,7 @@ jobs:
         uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f  # v3
 
       - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
         uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9  # v3
         with:
           registry: ghcr.io
@@ -55,7 +60,7 @@ jobs:
           # repo root context for the LFS-tracked .run installer).
           context: docker/stm32
           file: docker/stm32/Dockerfile
-          push: true
+          push: ${{ github.event_name != 'pull_request' }}
           # Both tags are pushed:
           #   :latest            -- convenience; stm32-firmware.yml pins to versioned
           #   :10.3-2021.07      -- explicit version matching Ubuntu 22.04 package
