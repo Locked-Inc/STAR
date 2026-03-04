@@ -38,6 +38,7 @@
 #include <sensor_msgs/msg/joint_state.hpp>
 #include <sensor_msgs/msg/range.hpp>
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/int32.hpp>
 
 #include "star_spi_bridge/spi_driver.hpp"
 #include "star_spi_bridge/spi_message_converter.hpp"
@@ -189,6 +190,8 @@ private:
     obstacle_back_right_pub_;
   rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Bool>::SharedPtr
     obstacle_detected_pub_;
+  rclcpp_lifecycle::LifecyclePublisher<std_msgs::msg::Int32>::SharedPtr
+    estop_reason_pub_;  /**< E-STOP reason code (star_v1_EstopReason, Int32). Valid when emergency_stop is true. */
 
   rclcpp::TimerBase::SharedPtr timer_;
 

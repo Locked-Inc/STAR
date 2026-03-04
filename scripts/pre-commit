@@ -167,11 +167,11 @@ proto_files=$(echo "$staged_files" | grep "\.proto$" || true)
 if [[ -n "$proto_files" ]]; then
     echo "Checking Protobuf files..."
 
-    # Check formatting
-    pushd star-proto >/dev/null
+    # Check formatting and linting from star-proto/proto where buf.yaml lives
+    pushd star-proto/proto >/dev/null
     if ! buf format --diff --exit-code; then
         echo "[FAIL] Protobuf formatting failed."
-        echo "   Run: buf format -w"
+        echo "   Run: cd star-proto/proto && buf format -w"
         error_found=1
     fi
 
