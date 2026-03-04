@@ -923,6 +923,48 @@ apply_strict_warnings(test_rx_host_irq)
 apply_test_includes(test_rx_host_irq)
 target_link_libraries(test_rx_host_irq unity)
 
+# Test: BNO055 9-DOF IMU Sensor
+add_executable(test_rx_bno055
+    test_rx_bno055.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/src/rx_bno055.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_i2c.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_bno055)
+# Suppress unused-local-typedefs: rx_bno055.c uses local enum typedefs for
+# named constants (per STAR no-magic-numbers policy); the typedef name itself
+# is never referenced as a type variable, only its enum constants are used.
+target_compile_options(test_rx_bno055 PRIVATE -Wno-unused-local-typedefs)
+apply_test_includes(test_rx_bno055)
+target_include_directories(test_rx_bno055 PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
+)
+target_link_libraries(test_rx_bno055 unity)
+set_target_properties(test_rx_bno055 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
+# Test: BMP280 Barometric Pressure Sensor
+add_executable(test_rx_bmp280
+    test_rx_bmp280.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/src/rx_bmp280.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_i2c.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_bmp280)
+# Suppress unused-local-typedefs: rx_bmp280.c uses local enum typedefs for
+# named constants in the Bosch compensation algorithm (per STAR no-magic-numbers
+# policy); the typedef names are never referenced as type variables.
+target_compile_options(test_rx_bmp280 PRIVATE -Wno-unused-local-typedefs)
+apply_test_includes(test_rx_bmp280)
+target_include_directories(test_rx_bmp280 PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
+)
+target_link_libraries(test_rx_bmp280 unity)
+set_target_properties(test_rx_bmp280 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -973,6 +1015,8 @@ set(ALL_TEST_TARGETS
     test_rx_encoder_tpu
     test_rx_host_irq
     test_rx_stack_monitor
+    test_rx_bno055
+    test_rx_bmp280
     # Multi-task firmware tests
     test_motor_control_task
     test_communication_task
@@ -1023,6 +1067,8 @@ add_test(NAME test_rx_tpu COMMAND test_rx_tpu)
 add_test(NAME test_rx_encoder_tpu COMMAND test_rx_encoder_tpu)
 add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
+add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
+add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
 
 # Multi-task firmware tests
 add_test(NAME test_motor_control_task COMMAND test_motor_control_task)
