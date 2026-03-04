@@ -19,7 +19,7 @@
 #include <stdint.h>
 
 /* Cortex-M7 Coprocessor Access Control Register */
-#define CPACR ((volatile uint32_t *)0xE000ED88U)
+#define CPACR ((volatile uint32_t*)0xE000ED88U)
 
 /* Enable FPU full access (CP10 and CP11) before the C runtime uses it */
 void SystemInit(void)
