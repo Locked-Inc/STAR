@@ -7,6 +7,7 @@
 #include <stdexcept>
 
 #include <std_msgs/msg/bool.hpp>
+#include <std_msgs/msg/int32.hpp>
 #include <tf2/LinearMath/Quaternion.h>  // NOLINT(build/include_order)
 
 #include "star/v1/motor_control.pb.h"
@@ -85,6 +86,8 @@ StarSpiDriverNode::on_configure(const rclcpp_lifecycle::State &)
     create_publisher<sensor_msgs::msg::Range>("star/obstacle/back_right", 10);
   obstacle_detected_pub_ =
     create_publisher<std_msgs::msg::Bool>("star/obstacle_detected", 10);
+  estop_reason_pub_ =
+    create_publisher<std_msgs::msg::Int32>("star/estop_reason", 10);
 
   // Create subscriptions
   cmd_vel_sub_ = create_subscription<geometry_msgs::msg::Twist>(
@@ -116,6 +119,7 @@ StarSpiDriverNode::on_activate(const rclcpp_lifecycle::State &)
   obstacle_back_left_pub_->on_activate();
   obstacle_back_right_pub_->on_activate();
   obstacle_detected_pub_->on_activate();
+  estop_reason_pub_->on_activate();
 
   // Start 100 Hz timer (10ms)
   timer_ = create_wall_timer(
@@ -180,6 +184,7 @@ StarSpiDriverNode::on_deactivate(const rclcpp_lifecycle::State &)
   obstacle_back_left_pub_->on_deactivate();
   obstacle_back_right_pub_->on_deactivate();
   obstacle_detected_pub_->on_deactivate();
+  estop_reason_pub_->on_deactivate();
 
   return success ?
          rclcpp_lifecycle::node_interfaces::LifecycleNodeInterface::CallbackReturn::SUCCESS :
@@ -203,6 +208,7 @@ StarSpiDriverNode::on_cleanup(const rclcpp_lifecycle::State &)
   obstacle_back_left_pub_.reset();
   obstacle_back_right_pub_.reset();
   obstacle_detected_pub_.reset();
+  estop_reason_pub_.reset();
   cmd_vel_sub_.reset();
   emergency_stop_sub_.reset();
 
@@ -503,9 +509,16 @@ void StarSpiDriverNode::timer_callback()
 
           // Check emergency stop flag from motor controller
           if (telemetry.emergency_stop()) {
-            RCLCPP_ERROR_THROTTLE(get_logger(), *get_clock(), kLogThrottleMs,
-                                  "RX72N EMERGENCY STOP ACTIVE");
+            RCLCPP_ERROR_THROTTLE(
+              get_logger(), *get_clock(), kLogThrottleMs,
+              "RX72N EMERGENCY STOP ACTIVE: reason=%s",
+              star::v1::EstopReason_Name(telemetry.estop_reason()).c_str());
           }
+
+          // Publish estop reason (always, so consumers see 0/UNKNOWN when inactive)
+          std_msgs::msg::Int32 estop_reason_msg;
+          estop_reason_msg.data = static_cast<int32_t>(telemetry.estop_reason());
+          estop_reason_pub_->publish(estop_reason_msg);
 
           // Publish Odometry
           nav_msgs::msg::Odometry odom;

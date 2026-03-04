@@ -221,7 +221,7 @@ extern const pb_msgdesc_t star_v1_SetPIDGainsResponse_msg;
 /* Maximum encoded size of messages (where known) */
 /* star_v1_SetPIDGainsResponse_size depends on runtime parameters */
 #define STAR_V1_STAR_V1_GATEWAY_SERVICE_PB_H_MAX_SIZE star_v1_ForwardTelemetryRequest_size
-#define star_v1_ForwardTelemetryRequest_size     8481
+#define star_v1_ForwardTelemetryRequest_size     8483
 #define star_v1_ForwardTelemetryResponse_size    376
 #define star_v1_GetTeleopCommandRequest_size     149
 #define star_v1_GetTeleopCommandResponse_size    431
