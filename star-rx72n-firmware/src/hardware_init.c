@@ -1366,7 +1366,7 @@ static rx_err_t i2c_init(void)
   rx_err_t       err = riic_init(ch0, k_i2c_host_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC0 init failed");
 
-  rx_log_info(s_tag, "RIIC0 @ 400kHz");
+  rx_log_info_val(s_tag, "RIIC0 initialized, freq_hz", (uint32_t)k_i2c_host_freq_hz);
 
   /* RIIC1: IMU I2C at 400 kHz (BNO055 + BMP280) */
   riic_channel_t ch1 = {.value = k_i2c_channel_1};

@@ -2004,6 +2004,8 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  */
 static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
 {
+  RX_ASSERT(telemetry != NULL, "telemetry must not be NULL");
+
   imu_state_t    imu_state;
   const rx_err_t err = shared_data_get_imu(&imu_state);
   if (err == k_rx_ok && imu_state.valid) {
@@ -2029,7 +2031,7 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
 
     /* Calibration status and on-chip temperature */
     telemetry->imu.calib_stat          = (uint32_t)imu_state.calib_stat;
-    telemetry->imu.temperature_celsius = (int32_t)imu_state.temp_degc;
+    telemetry->imu.temperature_celsius = (double)imu_state.temp_degc;
   }
 }
 
@@ -2053,6 +2055,8 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
  */
 static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
 {
+  RX_ASSERT(telemetry != NULL, "telemetry must not be NULL");
+
   baro_state_t   baro_state;
   const rx_err_t err = shared_data_get_baro(&baro_state);
   if (err == k_rx_ok && baro_state.valid) {

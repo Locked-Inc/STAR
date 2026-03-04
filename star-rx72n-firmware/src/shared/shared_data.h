@@ -117,7 +117,7 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint16_t {
   k_imu_scale_euler  = 16,    /**< Euler angle divisor: raw / 16 = degrees */
   k_imu_scale_quat   = 16384, /**< Quaternion divisor: raw / 16384 = unit quaternion */
   k_imu_scale_acc    = 100,   /**< Linear accel divisor: raw / 100 = m/s^2 */
@@ -134,10 +134,33 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uint16_t {
   k_baro_scale_temp  = 100, /**< Temperature divisor: temp_centi_degc / 100 = degC */
   k_baro_scale_press = 256, /**< Pressure divisor: press_pa_256 / 256 = Pa */
 } baro_scale_t;
+
+/**
+ * @enum bmp280_limits_t
+ * @brief BMP280 valid temperature range limits in centi-degrees Celsius
+ *
+ * @details
+ * Temperature operating range of the BMP280 sensor as documented in the
+ * Bosch BMP280 datasheet. Values are in units of 0.01 degC (centi-degrees)
+ * matching the temp_centi_degc field in baro_state_t.
+ *
+ * | Limit | Value | Physical |
+ * |-------|-------|---------|
+ * | k_bmp280_temp_min_cdegc | -4000 | -40.00 degC |
+ * | k_bmp280_temp_max_cdegc | 8500 | +85.00 degC |
+ *
+ * @see baro_state_t Uses these for the temp_centi_degc invariant
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : int16_t {
+  k_bmp280_temp_min_cdegc = -4000, /**< Minimum valid temperature: -40.00 degC */
+  k_bmp280_temp_max_cdegc = 8500,  /**< Maximum valid temperature: +85.00 degC */
+} bmp280_limits_t;
 
 /**
  * @struct imu_state_t
@@ -196,7 +219,7 @@ typedef struct {
  *
  * @invariant valid == false until imu_task successfully reads BMP280 at least once
  * @invariant press_pa_256 > 0 when valid == true (absolute pressure always positive)
- * @invariant temp_centi_degc in [-4000, 8500] when valid == true
+ * @invariant temp_centi_degc in [k_bmp280_temp_min_cdegc, k_bmp280_temp_max_cdegc] when valid == true
  *
  * @see bmp280_data_t BMP280 driver output structure (same scaling)
  * @see shared_data_update_baro() Write accessor

@@ -145,8 +145,8 @@ typedef struct _star_v1_ImuData {
     double quat_z;
     /* BNO055 calibration status byte (raw CALIB_STAT register 0x35). */
     uint32_t calib_stat;
-    /* BNO055 on-chip temperature in degrees Celsius. Range: -40 to +85 degC. */
-    int32_t temperature_celsius;
+    /* BNO055 on-chip temperature in degrees Celsius. Range: -40.0 to +85.0 degC. */
+    double temperature_celsius;
 } star_v1_ImuData;
 
 /* Barometric pressure and temperature data from BMP280. */
@@ -404,7 +404,7 @@ extern "C" {
 #define star_v1_TelemetryData_encoder_back_left_tag 17
 #define star_v1_TelemetryData_encoder_back_right_tag 18
 #define star_v1_TelemetryData_frame_sequence_tag 19
-#define star_v1_TelemetryData_baro_tag           20
+#define star_v1_TelemetryData_baro_tag           12
 #define star_v1_GetTelemetryResponse_header_tag  1
 #define star_v1_GetTelemetryResponse_telemetry_tag 2
 #define star_v1_SystemStatus_connection_status_tag 1
@@ -472,8 +472,8 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_left,  15) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_right,  16) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_left,  17) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_right,  18) \
-X(a, STATIC,   SINGULAR, UINT32,   frame_sequence,   19) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  baro,             20)
+X(a, STATIC,   OPTIONAL, MESSAGE,  baro,             12) \
+X(a, STATIC,   SINGULAR, UINT32,   frame_sequence,   19)
 #define star_v1_TelemetryData_CALLBACK NULL
 #define star_v1_TelemetryData_DEFAULT NULL
 #define star_v1_TelemetryData_imu_MSGTYPE star_v1_ImuData
@@ -502,7 +502,7 @@ X(a, STATIC,   SINGULAR, DOUBLE,   quat_x,           12) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_y,           13) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_z,           14) \
 X(a, STATIC,   SINGULAR, UINT32,   calib_stat,       15) \
-X(a, STATIC,   SINGULAR, INT32,    temperature_celsius, 16)
+X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius, 16)
 #define star_v1_ImuData_CALLBACK NULL
 #define star_v1_ImuData_DEFAULT NULL
 

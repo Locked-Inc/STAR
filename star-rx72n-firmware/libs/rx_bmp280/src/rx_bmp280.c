@@ -75,6 +75,7 @@ static rx_bus_manager_t* s_manager = NULL;
 
 /** @brief Factory calibration coefficients read from BMP280 OTP during init
  *  @note Read-only after rx_bmp280_init(); access outside init is read-only
+ *  @invariant s_initialized == true => s_calib contains valid OTP factory calibration coefficients
  *  @see rx_bmp280_init() Reads 24-byte OTP block into this struct
  *  @see BMP280 datasheet section 4.2.2 for coefficient descriptions
  *  @since Version 1.0.0
@@ -103,7 +104,7 @@ static const char* const s_bus_name = "i2c1_baro";
 static rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
 static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
 static int32_t  internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out);
-static uint32_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine);
+static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint32_t* press_out);
 
 /* =============================================================================
  * Internal Helpers
@@ -216,6 +217,7 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
 static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
 {
   RX_ASSERT(t_fine_out != NULL, "t_fine_out must be non-NULL");
+  RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)0xFFFFF, "adc_T must be a 20-bit ADC value");
 
   typedef enum : int32_t {
     k_temp_shift_adc_3  = 3,   /**< adc_T right shift for T1 subtraction step */
@@ -251,30 +253,34 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
  * verbatim from datasheet v1.19 appendix A. Uses t_fine from temperature
  * compensation and trimming parameters from s_calib.
  *
- * Returns 0 if the internal var1 divisor would be zero (prevents division
- * by zero as required by NASA Power of 10 Rule 7).
+ * Returns k_rx_err_invalid_state if the internal var1 divisor would be zero
+ * (prevents division by zero as required by NASA Power of 10 Rule 7).
  *
  * Output unit: Pa * 256 (fixed-point Q8.0 format). Divide by 256.0 for Pa.
  *
- * @param[in] adc_P  Raw 20-bit pressure ADC value
- * @param[in] t_fine Intermediate temperature from internal_compensate_temp()
+ * @param[in]  adc_P     Raw 20-bit pressure ADC value
+ * @param[in]  t_fine    Intermediate temperature from internal_compensate_temp()
+ * @param[out] press_out Compensated pressure in Pa * 256 on success
  *
- * @return uint32_t Compensated pressure in Pa * 256 (divide by 256 for Pa)
- * @retval 0 Division by zero guard triggered (dig_P1 == 0, hardware fault)
+ * @return rx_err_t Operation result
+ * @retval k_rx_ok Pressure computed, press_out written
+ * @retval k_rx_err_invalid_state var1 == 0 (dig_P1 == 0, hardware fault)
  *
  * @pre adc_P is valid 20-bit ADC output from BMP280
  * @pre t_fine was computed by internal_compensate_temp() for same measurement
- * @post Return value in range [77312*256, 281472*256] for 300-1100 hPa
+ * @pre press_out non-NULL
+ * @post *press_out in range [77312*256, 281472*256] for 300-1100 hPa on success
  *
  * @note Uses 64-bit arithmetic to prevent overflow at intermediate values
  * @see BMP280 datasheet v1.19 appendix A, compensate_P_int64
  *
  * @since Version 1.0.0
  */
-static uint32_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine)
+static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint32_t* press_out)
 {
   RX_ASSERT(s_calib.dig_P1 != 0U, "dig_P1 must be non-zero (factory calibration)");
   RX_ASSERT(adc_P >= 0, "adc_P must be non-negative (20-bit unsigned ADC value)");
+  RX_ASSERT(press_out != NULL, "press_out must not be NULL");
 
   typedef enum : int32_t {
     k_press_t_offset     = 128000,  /**< t_fine offset in pressure formula */
@@ -293,6 +299,11 @@ static uint32_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine)
     k_press_shift_4      = 4,       /**< Shift for P7 addition */
   } press_comp_constants_t;
 
+  /* k_press_base_one must be int64_t (not enum) because the expression
+   * (k_press_base_one << k_press_shift_47) requires a 48-bit value.
+   * A 32-bit integer cannot hold (1 << 47); int64_t is required to
+   * prevent undefined behavior from shifting beyond the type width.
+   * C23 typed enums cannot have int64_t as underlying type on RX72N. */
   static const int64_t k_press_base_one = 1;
 
   int64_t var1 = ((int64_t)t_fine) - k_press_t_offset;
@@ -304,7 +315,8 @@ static uint32_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine)
 
   /* Division by zero guard (NASA Power of 10 Rule 7) */
   if (var1 == 0) {
-    return 0U;
+    rx_log_error(s_tag, "Pressure compensation: var1==0 (dig_P1 fault)");
+    return k_rx_err_invalid_state;
   }
 
   int64_t p = (int64_t)k_press_p_scale - adc_P;
@@ -313,7 +325,8 @@ static uint32_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine)
   var1 = (((int64_t)s_calib.dig_P9) * (p >> k_press_shift_13) * (p >> k_press_shift_13)) >> k_press_shift_25;
   var2 = (((int64_t)s_calib.dig_P8) * p) >> k_press_shift_19;
 
-  return (uint32_t)((p + var1 + var2 + (((int64_t)s_calib.dig_P7) << k_press_shift_4)) >> k_press_shift_8);
+  *press_out = (uint32_t)((p + var1 + var2 + (((int64_t)s_calib.dig_P7) << k_press_shift_4)) >> k_press_shift_8);
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -360,6 +373,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
                                     k_bmp280_calib_byte_count);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Calibration read failed");
+    s_manager = NULL;
     return err;
   }
 
@@ -392,6 +406,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
   /* Postcondition: verify critical calibration coefficients are non-zero */
   if (s_calib.dig_T1 == 0U || s_calib.dig_P1 == 0U) {
     rx_log_error(s_tag, "Invalid calibration: dig_T1 or dig_P1 is zero");
+    s_manager = NULL;
     return k_rx_err_invalid_state;
   }
 
@@ -399,6 +414,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
   err = internal_write_reg((uint8_t)k_bmp280_reg_config, (uint8_t)k_bmp280_config_val);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Config register write failed");
+    s_manager = NULL;
     return err;
   }
 
@@ -493,9 +509,14 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
                         ((int32_t)adc_buf[k_bmp280_temp_xlsb_idx] >> k_bmp280_shift_xlsb);
 
   /* Step 5: Apply Bosch integer compensation */
-  int32_t t_fine          = 0;
-  out->temp_centi_degc    = internal_compensate_temp(adc_T, &t_fine);
-  out->press_pa_256       = internal_compensate_pressure(adc_P, t_fine);
+  int32_t t_fine       = 0;
+  out->temp_centi_degc = internal_compensate_temp(adc_T, &t_fine);
+
+  const rx_err_t press_err = internal_compensate_pressure(adc_P, t_fine, &out->press_pa_256);
+  if (press_err != k_rx_ok) {
+    rx_log_error(s_tag, "Pressure compensation failed (var1==0)");
+    return press_err;
+  }
 
   return k_rx_ok;
 }

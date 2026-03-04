@@ -78,7 +78,7 @@
  *
  * ## Thread Safety Strategy - Mutex Assignment
  *
- * **Four independent mutexes** prevent deadlock through non-overlapping ownership:
+ * **Six independent mutexes** prevent deadlock through non-overlapping ownership:
  *
  * | Mutex | Protected Data | Producer(s) | Consumer(s) | Lock Duration |
  * |-------|----------------|-------------|-------------|---------------|
@@ -86,6 +86,8 @@
  * | **temp_mutex** | temp_sensor_state_t | Temp | Telemetry | ~2 us |
  * | **obstacle_mutex** | obstacle_state_t | Obstacle | Telemetry | ~2 us |
  * | **estop_mutex** | estop_active, estop_reason | Comm, Obstacle | Motor | ~1 us |
+ * | **imu_mutex** | imu_state_t | IMU | Telemetry | ~5 us |
+ * | **baro_mutex** | baro_state_t | IMU | Telemetry | ~5 us |
  *
  * **Mutex Acquisition Order (to prevent deadlock):**
  * 1. Never acquire multiple mutexes in same function call
@@ -579,7 +581,7 @@ shared_data_t g_shared_data = {0};
  * ## Algorithm Steps:
  *
  * 1. **Check re-initialization:** Return error if already initialized
- * 2. **Create 4 mutexes:** motor, temp, obstacle, estop (priority inheritance enabled (TX_INHERIT))
+ * 2. **Create 6 mutexes:** motor, temp, obstacle, estop, imu, baro (priority inheritance enabled (TX_INHERIT))
  * 3. **Create event flags:** Inter-task signaling group (8 flags defined)
  * 4. **Set default PID gains:** Kp=0.286, Ki=8.01, Kd=0.0 (from MATLAB)
  * 5. **Invalidate motor command:** Set valid=false (no command received yet)
@@ -618,7 +620,7 @@ shared_data_t g_shared_data = {0};
  * @pre Called from tx_application_define() context (not from task)
  * @pre No tasks created yet (no concurrent access possible)
  *
- * @post All 5 mutexes created and ready for use
+ * @post All 6 mutexes created and ready for use
  * @post Event flags group created
  * @post PID gains initialized to MATLAB-tuned defaults
  * @post motor_command.valid = false (no command yet)
@@ -630,8 +632,8 @@ shared_data_t g_shared_data = {0};
  * @invariant All mutexes remain valid until system reset
  *
  * @note Thread Safety: Single-threaded context (tx_application_define), no mutex needed
- * @note Performance: ~500 us execution time (5 mutex creates + 1 event flag create)
- * @note Memory: Allocates 192 bytes from ThreadX heap (5x32 + 32 for control blocks)
+ * @note Performance: ~600 us execution time (6 mutex creates + 1 event flag create)
+ * @note Memory: Allocates 224 bytes from ThreadX heap (6x32 + 32 for control blocks)
  *
  * @warning Never call this function from a task context! ThreadX creation functions
  *          must be called from tx_application_define() only.
@@ -2750,6 +2752,8 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
  * @post g_shared_data.imu_state updated under imu_mutex protection
  * @post Telemetry task will see updated data on next read cycle
  *
+ * @invariant imu_mutex held for duration of memcpy (not ISR-safe)
+ *
  * @note Thread Safety: Protected by imu_mutex (blocking wait)
  * @note Not ISR-safe (blocking mutex wait)
  *
@@ -2797,6 +2801,8 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  *
  * @post *out_state contains snapshot of current IMU data
  * @post Check out_state->valid before using values
+ *
+ * @invariant imu_mutex held for <5 us (memcpy of imu_state_t)
  *
  * @note Thread Safety: Protected by imu_mutex (blocking wait)
  * @note Not ISR-safe (blocking mutex wait)
@@ -2851,6 +2857,8 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
  * @post g_shared_data.baro_state updated under baro_mutex protection
  * @post Telemetry task will see updated data on next read cycle
  *
+ * @invariant baro_mutex held for <5 us (memcpy of baro_state_t)
+ *
  * @note Thread Safety: Protected by baro_mutex (blocking wait)
  * @note Not ISR-safe (blocking mutex wait)
  *
@@ -2898,6 +2906,8 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  *
  * @post *out_state contains snapshot of current barometric data
  * @post Check out_state->valid before using values
+ *
+ * @invariant baro_mutex held for <5 us (memcpy of baro_state_t)
  *
  * @note Thread Safety: Protected by baro_mutex (blocking wait)
  * @note Not ISR-safe (blocking mutex wait)

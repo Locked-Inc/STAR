@@ -161,6 +161,8 @@ extern rx_bus_manager_t g_bus_manager;
  */
 
 static void internal_send_iwdt_heartbeat(void);
+static void internal_read_and_publish_imu(void);
+static void internal_read_and_publish_baro(void);
 static void internal_imu_task_entry(ULONG input);
 
 /* =============================================================================
@@ -196,6 +198,7 @@ static void internal_imu_task_entry(ULONG input);
 rx_err_t imu_task_create(void)
 {
   RX_ASSERT(!s_imu_created, "IMU task already created");
+  RX_ASSERT(s_imu_stack != NULL, "IMU stack must not be NULL");
   if (s_imu_created) {
     return k_rx_err_invalid_state;
   }
@@ -249,9 +252,111 @@ rx_err_t imu_task_create(void)
 static void internal_send_iwdt_heartbeat(void)
 {
   RX_ASSERT(s_tag != NULL, "s_tag must be non-NULL for IWDT heartbeat");
+  RX_ASSERT(s_imu_created, "IWDT heartbeat called before task created");
   const rx_err_t err = rx_iwdt_task_heartbeat("ImuTask");
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "IWDT heartbeat failed");
+  }
+}
+
+/**
+ * @brief Read BNO055 and publish imu_state_t to shared data
+ *
+ * @details
+ * Reads all BNO055 fusion outputs (Euler angles, quaternion, linear
+ * acceleration, temperature, calibration status) and writes them to
+ * shared data via shared_data_update_imu(). Sets valid = false on read
+ * failure to signal consumers that data is stale.
+ *
+ * @pre s_imu_created == true (task running)
+ * @post imu_state_t in shared data updated with latest BNO055 data
+ * @post valid = false if BNO055 read fails
+ *
+ * @note Not thread-safe; called only from internal_imu_task_entry()
+ *
+ * @see shared_data_update_imu() Thread-safe write to shared data
+ * @see rx_bno055_read() BNO055 data read
+ *
+ * @since Version 1.0.0
+ */
+static void internal_read_and_publish_imu(void)
+{
+  RX_ASSERT(s_imu_created, "IMU task must be created before reading IMU");
+  RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
+
+  bno055_data_t bno_data = {0};
+  const rx_err_t err     = rx_bno055_read(&bno_data);
+
+  imu_state_t imu  = {0};
+  imu.timestamp_ms = tx_time_get();
+
+  if (err == k_rx_ok) {
+    imu.heading_deg16 = bno_data.heading_deg16;
+    imu.roll_deg16    = bno_data.roll_deg16;
+    imu.pitch_deg16   = bno_data.pitch_deg16;
+    imu.quat_w        = bno_data.quat_w;
+    imu.quat_x        = bno_data.quat_x;
+    imu.quat_y        = bno_data.quat_y;
+    imu.quat_z        = bno_data.quat_z;
+    imu.lin_acc_x     = bno_data.lin_acc_x;
+    imu.lin_acc_y     = bno_data.lin_acc_y;
+    imu.lin_acc_z     = bno_data.lin_acc_z;
+    imu.temp_degc     = bno_data.temp_degc;
+    imu.calib_stat    = bno_data.calib_stat;
+    imu.valid         = true;
+  } else {
+    rx_log_error_val(s_tag, "BNO055 read failed", (uint32_t)err);
+    imu.valid = false;
+  }
+
+  const rx_err_t imu_err = shared_data_update_imu(&imu);
+  if (imu_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "shared_data_update_imu failed", (uint32_t)imu_err);
+  }
+}
+
+/**
+ * @brief Read BMP280 and publish baro_state_t to shared data
+ *
+ * @details
+ * Triggers a forced BMP280 measurement and writes the compensated
+ * temperature and pressure to shared data via shared_data_update_baro().
+ * Sets valid = false on read failure to signal consumers that data is stale.
+ *
+ * @pre s_imu_created == true (task running)
+ * @post baro_state_t in shared data updated with latest BMP280 data
+ * @post valid = false if BMP280 read fails
+ *
+ * @note Not thread-safe; called only from internal_imu_task_entry()
+ *
+ * @see shared_data_update_baro() Thread-safe write to shared data
+ * @see rx_bmp280_read() BMP280 forced measurement
+ *
+ * @since Version 1.0.0
+ */
+static void internal_read_and_publish_baro(void)
+{
+  RX_ASSERT(s_imu_created, "IMU task must be created before reading baro");
+  RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
+
+  bmp280_data_t  bmp_data = {0};
+  const rx_err_t err      = rx_bmp280_read(&bmp_data);
+
+  baro_state_t baro  = {0};
+  baro.timestamp_ms  = tx_time_get();
+
+  if (err == k_rx_ok) {
+    baro.temp_centi_degc = bmp_data.temp_centi_degc;
+    baro.press_pa_256    = bmp_data.press_pa_256;
+    baro.valid           = true;
+  } else {
+    rx_log_error_val(s_tag, "BMP280 read failed", (uint32_t)err);
+    baro.valid = false;
+  }
+
+  const rx_err_t baro_err = shared_data_update_baro(&baro);
+  if (baro_err != k_rx_ok) {
+    rx_log_error_val(s_tag, "shared_data_update_baro failed", (uint32_t)baro_err);
   }
 }
 
@@ -263,8 +368,8 @@ static void internal_send_iwdt_heartbeat(void)
  * 1. Initialize BNO055 via rx_bno055_init() (~700 ms for POR)
  * 2. Initialize BMP280 via rx_bmp280_init() (~2 ms for calib read)
  * 3. Enter 50 ms periodic loop:
- *    a. Read BNO055 -> populate imu_state_t -> shared_data_update_imu()
- *    b. Read BMP280 -> populate baro_state_t -> shared_data_update_baro()
+ *    a. internal_read_and_publish_imu() - BNO055 read -> shared_data_update_imu()
+ *    b. internal_read_and_publish_baro() - BMP280 read -> shared_data_update_baro()
  *    c. Feed IWDT heartbeat
  *    d. Sleep 5 ticks (50 ms)
  *
@@ -275,6 +380,7 @@ static void internal_send_iwdt_heartbeat(void)
  * @param[in] input Unused thread entry parameter (ULONG, always 0)
  *
  * @pre ThreadX scheduler running
+ * @pre s_imu_created == true (imu_task_create() completed)
  * @pre "i2c1" bus registered in g_bus_manager (registered by main.c)
  * @pre RIIC1 initialized at 400 kHz (by hardware_init.c i2c_init)
  * @pre shared_data_init() completed (imu_mutex and baro_mutex available)
@@ -294,18 +400,19 @@ static void internal_send_iwdt_heartbeat(void)
  * @warning Do not call directly; use imu_task_create() to register with ThreadX
  *
  * @see imu_task_create() Creates this task
+ * @see internal_read_and_publish_imu() BNO055 read and publish helper
+ * @see internal_read_and_publish_baro() BMP280 read and publish helper
  * @see rx_bno055_init() BNO055 initialization
  * @see rx_bmp280_init() BMP280 initialization
- * @see rx_bno055_read() BNO055 data read
- * @see rx_bmp280_read() BMP280 data read
- * @see shared_data_update_imu() Thread-safe IMU state write
- * @see shared_data_update_baro() Thread-safe barometric state write
  *
  * @since Version 1.0.0
  */
 static void internal_imu_task_entry(ULONG input)
 {
   (void)input;
+
+  RX_ASSERT(s_imu_created, "IMU task entry called before task created");
+  RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
 
   rx_log_info(s_tag, "IMU task starting - initializing sensors");
 
@@ -329,51 +436,8 @@ static void internal_imu_task_entry(ULONG input)
 
   /* Step 3: Periodic poll loop at 20 Hz (50 ms period = 5 ticks @ 100 Hz) */
   while (true) {
-    /* --- BNO055 read -> imu_state_t -> shared data --- */
-    bno055_data_t bno_data = {0};
-    rx_err_t      err      = rx_bno055_read(&bno_data);
-
-    imu_state_t imu = {0};
-    imu.timestamp_ms = tx_time_get();
-
-    if (err == k_rx_ok) {
-      imu.heading_deg16 = bno_data.heading_deg16;
-      imu.roll_deg16    = bno_data.roll_deg16;
-      imu.pitch_deg16   = bno_data.pitch_deg16;
-      imu.quat_w        = bno_data.quat_w;
-      imu.quat_x        = bno_data.quat_x;
-      imu.quat_y        = bno_data.quat_y;
-      imu.quat_z        = bno_data.quat_z;
-      imu.lin_acc_x     = bno_data.lin_acc_x;
-      imu.lin_acc_y     = bno_data.lin_acc_y;
-      imu.lin_acc_z     = bno_data.lin_acc_z;
-      imu.temp_degc     = bno_data.temp_degc;
-      imu.calib_stat    = bno_data.calib_stat;
-      imu.valid         = true;
-    } else {
-      rx_log_error_val(s_tag, "BNO055 read failed", (uint32_t)err);
-      imu.valid = false;
-    }
-
-    (void)shared_data_update_imu(&imu);
-
-    /* --- BMP280 read -> baro_state_t -> shared data --- */
-    bmp280_data_t bmp_data = {0};
-    err                    = rx_bmp280_read(&bmp_data);
-
-    baro_state_t baro = {0};
-    baro.timestamp_ms = tx_time_get();
-
-    if (err == k_rx_ok) {
-      baro.temp_centi_degc = bmp_data.temp_centi_degc;
-      baro.press_pa_256    = bmp_data.press_pa_256;
-      baro.valid           = true;
-    } else {
-      rx_log_error_val(s_tag, "BMP280 read failed", (uint32_t)err);
-      baro.valid = false;
-    }
-
-    (void)shared_data_update_baro(&baro);
+    internal_read_and_publish_imu();
+    internal_read_and_publish_baro();
 
     /* Feed IWDT heartbeat (must execute within 150 ms timeout) */
     internal_send_iwdt_heartbeat();

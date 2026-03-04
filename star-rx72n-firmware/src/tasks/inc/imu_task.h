@@ -107,6 +107,28 @@
  * @note Task initializes sensors internally; no pre-initialization required
  * @note BNO055 POR delay (~700 ms) occurs inside the task, not in main
  *
+ * @par Example usage from tx_application_define:
+ * @code{.c}
+ * void tx_application_define(void* first_unused_memory)
+ * {
+ *     (void)first_unused_memory;
+ *
+ *     // Initialize shared data (mutexes) before creating tasks
+ *     rx_err_t err = shared_data_init();
+ *     RX_ASSERT(err == k_rx_ok, "shared_data_init must succeed");
+ *
+ *     // Register I2C buses for IMU sensors (must be done before imu_task_create)
+ *     // (bus registration code omitted - see main.c)
+ *
+ *     // Create the IMU task (sensor init happens inside the task)
+ *     err = imu_task_create();
+ *     RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
+ *
+ *     // IMU task will initialize BNO055 + BMP280 on first run (~702 ms)
+ *     // and then publish imu_state_t / baro_state_t at 20 Hz
+ * }
+ * @endcode
+ *
  * @see imu_task.c Full implementation
  * @see rx_bno055_init() BNO055 initialization (called inside task)
  * @see rx_bmp280_init() BMP280 initialization (called inside task)

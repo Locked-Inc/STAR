@@ -327,8 +327,10 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_tick_round_up    = 1, /**< Extra tick for rounding fractional delays (19ms -> 20ms) */
-  k_bno055_delay_ndof_ticks = 1, /**< CONFIG->NDOF transition: 7 ms rounds up to 1 tick (10 ms) */
+  k_bno055_tick_round_up       = 1,  /**< Extra tick for rounding fractional delays (19ms -> 20ms) */
+  k_bno055_delay_ndof_ticks    = 1,  /**< CONFIG->NDOF transition: 7 ms rounds up to 1 tick (10 ms) */
+  k_bno055_delay_por_ticks     = 65, /**< POR/software reset boot: 650 ms / 10 ms per tick = 65 ticks */
+  k_bno055_delay_config_ticks  = 2,  /**< Fusion->CONFIG transition: 19 ms rounds up to 2 ticks (20 ms) */
 } bno055_delay_ticks_t;
 
 /**
@@ -453,6 +455,9 @@ typedef enum : uint8_t {
  * Conversion: ticks = delay_ms / k_bno055_ms_per_tick
  *
  * @invariant k_bno055_ms_per_tick > 0 (must be a valid divisor)
+ *
+ * @warning Assumes TX_TIMER_TICKS_PER_SECOND == 100. Must be updated if
+ *          ThreadX tick rate changes (e.g., to 1000 Hz for 1 ms ticks).
  *
  * @see bno055_delay_ms_t Delay constants in milliseconds
  * @see rx_bno055_init() Uses these tick conversions

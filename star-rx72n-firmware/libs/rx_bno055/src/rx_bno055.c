@@ -265,6 +265,11 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
 
+  if (s_initialized) {
+    rx_log_error(s_tag, "BNO055 already initialized");
+    return k_rx_err_invalid_state;
+  }
+
   s_manager     = manager;
   s_initialized = false;
 
@@ -404,6 +409,9 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
  */
 static rx_err_t internal_read_euler(bno055_data_t* out)
 {
+  RX_ASSERT(out != NULL, "out must not be NULL");
+  RX_ASSERT(k_bno055_euler_bytes >= 6U, "euler buffer must hold 6 bytes");
+
   uint8_t  euler_buf[k_bno055_euler_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_eul_h_lsb,
                                     euler_buf,
@@ -456,6 +464,9 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
  */
 static rx_err_t internal_read_quat(bno055_data_t* out)
 {
+  RX_ASSERT(out != NULL, "out must not be NULL");
+  RX_ASSERT(k_bno055_quat_bytes >= 8U, "quat buffer must hold 8 bytes");
+
   uint8_t  quat_buf[k_bno055_quat_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
   if (err != k_rx_ok) {
@@ -509,6 +520,9 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
  */
 static rx_err_t internal_read_lia(bno055_data_t* out)
 {
+  RX_ASSERT(out != NULL, "out must not be NULL");
+  RX_ASSERT(k_bno055_lia_bytes >= 6U, "lia buffer must hold 6 bytes");
+
   uint8_t  lia_buf[k_bno055_lia_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
   if (err != k_rx_ok) {

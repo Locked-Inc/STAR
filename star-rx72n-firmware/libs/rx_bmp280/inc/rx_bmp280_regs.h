@@ -288,20 +288,36 @@ typedef enum : uint8_t {
 
 /**
  * @enum bmp280_write_size_t
- * @brief I2C write buffer sizes for BMP280
+ * @brief I2C write/read buffer size constants for BMP280
  *
  * @details
  * BMP280 register write sends [register_address, data_byte] as 2 bytes.
+ * Size constants for determining transaction lengths.
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_bmp280_write_buf_size = 2, /**< Size of [reg, val] write buffer */
-  k_bmp280_write_idx_reg  = 0, /**< Index of register address in write buffer */
-  k_bmp280_write_idx_val  = 1, /**< Index of register value in write buffer */
   k_bmp280_read_cmd_size  = 1, /**< Size of register address read command */
   k_bmp280_single_byte    = 1, /**< Size for single byte reads */
 } bmp280_write_size_t;
+
+/**
+ * @enum bmp280_write_idx_t
+ * @brief I2C write buffer index constants for BMP280 register writes
+ *
+ * @details
+ * Index constants for accessing fields within the 2-byte I2C write buffer
+ * [register_address, data_byte] used by internal_write_reg().
+ *
+ * @see bmp280_write_size_t Size constants for the same buffer
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_write_idx_reg = 0, /**< Index of register address in write buffer */
+  k_bmp280_write_idx_val = 1, /**< Index of register value in write buffer */
+} bmp280_write_idx_t;
 
 #ifdef __cplusplus
 }
