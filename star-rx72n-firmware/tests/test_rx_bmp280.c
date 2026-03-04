@@ -731,7 +731,8 @@ void test_bmp280_read_null_ptr_returns_error(void)
 void test_bmp280_read_before_init_returns_error(void)
 {
   bmp280_data_t data;
-  rx_err_t      err = rx_bmp280_read(&data);
+  memset(&data, 0, sizeof(data));
+  rx_err_t err = rx_bmp280_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
   s_before_init_tested = true;
@@ -791,7 +792,8 @@ void test_bmp280_read_status_timeout(void)
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
 
   bmp280_data_t data;
-  rx_err_t      err = rx_bmp280_read(&data);
+  memset(&data, 0, sizeof(data));
+  rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
@@ -815,7 +817,8 @@ void test_bmp280_read_i2c_error_propagates(void)
   (void)mock_riic_simulate_nack(true);
 
   bmp280_data_t data;
-  rx_err_t      err = rx_bmp280_read(&data);
+  memset(&data, 0, sizeof(data));
+  rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);

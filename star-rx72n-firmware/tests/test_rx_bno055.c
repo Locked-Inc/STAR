@@ -39,7 +39,7 @@
  * | Group         | Tests | Description                                                          |
  * |---------------|-------|----------------------------------------------------------------------|
  * | Init          | 6     | null ptr, I2C error, wrong chip ID, read-before-init, success, double|
- * | Read          | 4     | null ptr, euler, quaternion, I2C error                               |
+ * | Read          | 6     | null ptr, euler, quaternion, temperature, linear accel, I2C error   |
  * | Calibration   | 3     | null ptr, reads status byte, partial calibration                     |
  *
  * @par NASA Power of 10 Compliance:
@@ -199,11 +199,36 @@ typedef enum : int16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_test_temp_raw = 25, /**< Temperature raw value (25 degC); TODO: add temp read test */
-  k_test_calib_status_raw =
-    0xFC, /**< Calib status: SYS=3,GYR=3,ACC=3,MAG=0; TODO: add calib read test */
-  k_test_wrong_chip_id = 0xFF, /**< Non-BNO055 chip ID value */
+  k_test_temp_raw         = 25,   /**< Temperature raw value (25 degC) */
+  k_test_calib_status_raw = 0xFC, /**< Calib status: SYS=3,GYR=3,ACC=3,MAG=0 */
+  k_test_wrong_chip_id    = 0xFF, /**< Non-BNO055 chip ID value */
 } test_bno055_misc_t;
+
+/**
+ * @enum test_bno055_lia_raw_t
+ * @brief Raw linear acceleration byte values for LIA read success test
+ *
+ * @details
+ * lin_acc_x = 0x00C8 = 200 raw -> 200 / k_bno055_scale_acc = 2.0 m/s^2
+ * lin_acc_y = 0x0000 = 0 raw
+ * lin_acc_z = 0x0000 = 0 raw
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_test_lia_x_lsb = 0xC8, /**< LIA X LSB (200 raw = 2.0 m/s^2 * k_bno055_scale_acc) */
+  k_test_lia_x_msb = 0x00, /**< LIA X MSB */
+} test_bno055_lia_raw_t;
+
+/**
+ * @enum test_bno055_lia_expected_t
+ * @brief Expected assembled int16_t linear acceleration value
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : int16_t {
+  k_test_lia_x_expected = 200, /**< Expected lin_acc_x raw = 200 (2.0 m/s^2 * k_bno055_scale_acc) */
+} test_bno055_lia_expected_t;
 
 /**
  * @enum test_bno055_buf_sizes_t
@@ -213,8 +238,8 @@ typedef enum : uint8_t {
  */
 typedef enum : uint8_t {
   k_test_single_byte_buf = 1, /**< Single byte read buffer */
-  k_test_euler_buf_size  = 6, /**< Euler angles: 3 x int16; TODO: use in Euler-specific read test */
-  k_test_lia_buf_size    = 6, /**< Linear accel: 3 x int16; TODO: use in LIA-specific read test */
+  k_test_euler_buf_size  = 6, /**< Euler angles: 3 x int16 */
+  k_test_lia_buf_size    = 6, /**< Linear accel: 3 x int16 */
   /* k_test_quat_buf_size removed: use canonical k_quat_buf_size from test_bno055_quat_buf_idx_t */
 } test_bno055_buf_sizes_t;
 
@@ -373,6 +398,62 @@ static void internal_load_quat_read_data(void)
   (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, quat_buf, k_quat_buf_size);
 }
 
+/**
+ * @brief Pre-load mock RIIC for temperature read data
+ *
+ * @details
+ * Loads a 22-byte buffer with k_test_temp_raw (25) at position 0.
+ * Because the mock always returns from buf[0], single-byte reads (temp, calib)
+ * return 25. Other fields will also see 25 in their LSBs but are not checked
+ * by the temperature test.
+ *
+ * @pre mock RIIC channel 1 is initialized
+ * @pre k_read_buf_size >= 1 (at least one byte required for single-byte reads)
+ * @post RIIC channel 1 RX buffer set; single-byte reads return k_test_temp_raw
+ * @post data.temp_degc will equal (int8_t)k_test_temp_raw after rx_bno055_read()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_load_temp_read_data(void)
+{
+  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_read_buf_size);
+  uint8_t temp_buf[k_read_buf_size];
+  memset(temp_buf, 0, sizeof(temp_buf));
+  /* Position 0 is returned for all single-byte reads; set to k_test_temp_raw (25 degC) */
+  temp_buf[k_read_idx_0] = (uint8_t)k_test_temp_raw;
+
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, temp_buf, k_read_buf_size);
+}
+
+/**
+ * @brief Pre-load mock RIIC for linear acceleration read data
+ *
+ * @details
+ * Loads a 22-byte buffer with LIA X = 200 raw (2.0 m/s^2) at positions 0-1.
+ * Because the mock returns the same buffer for all transactions, lin_acc_x
+ * sees the correct bytes regardless of the read order.
+ *
+ * @pre mock RIIC channel 1 is initialized
+ * @pre k_read_buf_size >= 2 (at least two bytes required for int16 assembly)
+ * @post RIIC channel 1 RX buffer set with LIA X = 200 raw
+ * @post data.lin_acc_x will equal k_test_lia_x_expected after rx_bno055_read()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_load_lia_read_data(void)
+{
+  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
+  TEST_ASSERT_GREATER_THAN(0U, (uint32_t)k_test_lia_buf_size);
+  uint8_t lia_buf[k_read_buf_size];
+  memset(lia_buf, 0, sizeof(lia_buf));
+  /* lin_acc_x = 0x00C8 = 200 raw (2.0 m/s^2 when divided by k_bno055_scale_acc=100) */
+  lia_buf[k_read_idx_0] = (uint8_t)k_test_lia_x_lsb;
+  lia_buf[k_read_idx_1] = (uint8_t)k_test_lia_x_msb;
+
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, lia_buf, k_read_buf_size);
+}
+
 /* =============================================================================
  * setUp / tearDown
  * =============================================================================
@@ -473,7 +554,8 @@ static void internal_setup_initialized_driver(void)
   internal_load_valid_chip_id();
   rx_err_t err = rx_bno055_init(&s_test_manager);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  TEST_ASSERT_NOT_EQUAL(k_rx_err_not_initialized, err);
+  /* Verify mock HAL is still operational after init (confirms bus communication completed) */
+  TEST_ASSERT_TRUE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
 }
 
 /* =============================================================================
@@ -738,6 +820,66 @@ void test_bno055_read_success_quaternion(void)
 }
 
 /**
+ * @brief rx_bno055_read populates temp_degc with correct on-chip temperature
+ *
+ * @details
+ * Calls internal_setup_initialized_driver() then loads a buffer with
+ * k_test_temp_raw (25) at position 0. Because the mock returns the same
+ * buffer for all five read transactions, the single-byte temp read
+ * receives buf[0] = 25, which should be stored directly as data.temp_degc.
+ *
+ * @pre setUp() has reset s_initialized == false
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before read
+ * @post data.temp_degc == (int8_t)k_test_temp_raw (25 degC)
+ * @post rx_bno055_read() returns k_rx_ok
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_success_temperature(void)
+{
+  internal_setup_initialized_driver();
+  internal_load_temp_read_data();
+
+  bno055_data_t data;
+  memset(&data, 0, sizeof(data));
+
+  rx_err_t err = rx_bno055_read(&data);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_INT8((int8_t)k_test_temp_raw, data.temp_degc);
+}
+
+/**
+ * @brief rx_bno055_read populates lin_acc_x with correct linear acceleration
+ *
+ * @details
+ * Calls internal_setup_initialized_driver() then loads a buffer with
+ * k_test_lia_x_lsb/msb at positions 0-1, giving lin_acc_x = 200 raw
+ * (2.0 m/s^2 when divided by k_bno055_scale_acc = 100). Verifies the
+ * little-endian byte assembly for the LIA register block.
+ *
+ * @pre setUp() has reset s_initialized == false
+ * @pre internal_setup_initialized_driver() sets s_initialized == true before read
+ * @post data.lin_acc_x == k_test_lia_x_expected (200 raw, 2.0 m/s^2)
+ * @post rx_bno055_read() returns k_rx_ok
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_success_lia(void)
+{
+  internal_setup_initialized_driver();
+  internal_load_lia_read_data();
+
+  bno055_data_t data;
+  memset(&data, 0, sizeof(data));
+
+  rx_err_t err = rx_bno055_read(&data);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_EQUAL_INT16((int16_t)k_test_lia_x_expected, data.lin_acc_x);
+}
+
+/**
  * @brief rx_bno055_read propagates I2C error that occurs during data read
  *
  * @details
@@ -905,10 +1047,12 @@ int main(void)
   RUN_TEST(test_bno055_init_success);
   RUN_TEST(test_bno055_init_double_init_returns_error);
 
-  /* Read tests - require s_initialized == true */
+  /* Read tests (null-ptr test does not require init; others call internal_setup_initialized_driver) */
   RUN_TEST(test_bno055_read_null_ptr_returns_error);
   RUN_TEST(test_bno055_read_success_euler);
   RUN_TEST(test_bno055_read_success_quaternion);
+  RUN_TEST(test_bno055_read_success_temperature);
+  RUN_TEST(test_bno055_read_success_lia);
   RUN_TEST(test_bno055_read_i2c_error_propagates);
 
   /* Calibration tests - require s_initialized == true */

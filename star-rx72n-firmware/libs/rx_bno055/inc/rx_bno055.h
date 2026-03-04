@@ -206,18 +206,24 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  int16_t heading_deg16; /**< Euler heading 0-359.9375 deg (divide by 16 for degrees) */
-  int16_t roll_deg16;    /**< Euler roll -90 to +90 deg (divide by 16 for degrees) */
-  int16_t pitch_deg16;   /**< Euler pitch -180 to +180 deg (divide by 16 for degrees) */
-  int16_t quat_w;        /**< Quaternion W component (divide by 16384 for unit quaternion) */
-  int16_t quat_x;        /**< Quaternion X component (divide by 16384 for unit quaternion) */
-  int16_t quat_y;        /**< Quaternion Y component (divide by 16384 for unit quaternion) */
-  int16_t quat_z;        /**< Quaternion Z component (divide by 16384 for unit quaternion) */
-  int16_t lin_acc_x;     /**< Linear acceleration X in m/s^2 * 100 (divide by 100 for m/s^2) */
-  int16_t lin_acc_y;     /**< Linear acceleration Y in m/s^2 * 100 (divide by 100 for m/s^2) */
-  int16_t lin_acc_z;     /**< Linear acceleration Z in m/s^2 * 100 (divide by 100 for m/s^2) */
-  int8_t  temp_degc;     /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
-  uint8_t calib_stat;    /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
+  int16_t
+    heading_deg16; /**< Euler heading 0-359.9375 deg (divide by k_bno055_scale_heading for degrees) */
+  int16_t
+    roll_deg16; /**< Euler roll -90 to +90 deg (divide by k_bno055_scale_heading for degrees) */
+  int16_t
+    pitch_deg16; /**< Euler pitch -180 to +180 deg (divide by k_bno055_scale_heading for degrees) */
+  int16_t quat_w; /**< Quaternion W component (divide by k_bno055_scale_quat for unit quaternion) */
+  int16_t quat_x; /**< Quaternion X component (divide by k_bno055_scale_quat for unit quaternion) */
+  int16_t quat_y; /**< Quaternion Y component (divide by k_bno055_scale_quat for unit quaternion) */
+  int16_t quat_z; /**< Quaternion Z component (divide by k_bno055_scale_quat for unit quaternion) */
+  int16_t
+    lin_acc_x; /**< Linear accel X in m/s^2 * k_bno055_scale_acc (divide by k_bno055_scale_acc for m/s^2) */
+  int16_t
+    lin_acc_y; /**< Linear accel Y in m/s^2 * k_bno055_scale_acc (divide by k_bno055_scale_acc for m/s^2) */
+  int16_t
+    lin_acc_z; /**< Linear accel Z in m/s^2 * k_bno055_scale_acc (divide by k_bno055_scale_acc for m/s^2) */
+  int8_t  temp_degc;  /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
+  uint8_t calib_stat; /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
 } bno055_data_t;
 
 /* =============================================================================

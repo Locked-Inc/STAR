@@ -85,21 +85,34 @@ _Static_assert(k_bno055_ms_per_tick == (k_bno055_ms_per_second / TX_TIMER_TICKS_
  */
 
 /**
- * @enum bno055_i2c_write_size_t
- * @brief I2C write buffer size constants for register writes
+ * @enum bno055_i2c_size_t
+ * @brief I2C write/read buffer size constants for register access
  *
  * @details
  * The BNO055 register write protocol sends [register_address, data_byte]
- * as a 2-byte I2C write transaction.
+ * as a 2-byte I2C write transaction. Read commands send a 1-byte address.
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_bno055_write_buf_size = 2, /**< Size of [reg, val] write buffer */
-  k_bno055_write_idx_reg  = 0, /**< Index of register address in write buffer */
-  k_bno055_write_idx_val  = 1, /**< Index of register value in write buffer */
   k_bno055_read_cmd_size  = 1, /**< Size of register address read command */
-} bno055_i2c_write_size_t;
+} bno055_i2c_size_t;
+
+/**
+ * @enum bno055_i2c_write_idx_t
+ * @brief Byte indices into the 2-byte I2C write buffer
+ *
+ * @details
+ * The write buffer layout is [register_address, data_byte]. These indices
+ * name each position to prevent magic-number indexing into the buffer.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_write_idx_reg = 0, /**< Index of register address in write buffer */
+  k_bno055_write_idx_val = 1, /**< Index of register value in write buffer */
+} bno055_i2c_write_idx_t;
 
 /**
  * @enum bno055_single_byte_size_t

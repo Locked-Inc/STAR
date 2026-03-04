@@ -235,7 +235,9 @@ static void internal_imu_task_entry(ULONG input);
  * @return uint32_t Current time in milliseconds since boot
  *
  * @pre ThreadX scheduler running (tx_time_get() returns valid tick count)
+ * @pre TX_TIMER_TICKS_PER_SECOND > 0 (ThreadX timer configured, verified by module _Static_assert)
  * @post Return value is monotonically non-decreasing modulo uint32_t overflow
+ * @post Return value in milliseconds: fits uint32_t for ~49 days uptime at 100 Hz tick rate
  *
  * @note Not thread-safe, but tx_time_get() is interrupt-safe on RX72N
  * @since Version 1.0.0
@@ -533,8 +535,7 @@ static void internal_imu_task_entry(ULONG input)
     const ULONG elapsed = tx_time_get() - start_tick;
     if (elapsed >= (ULONG)k_imu_task_period_ticks) {
       rx_log_warn_val(s_tag, "IMU loop overrun: elapsed ticks", (uint32_t)elapsed);
-    }
-    if (elapsed < (ULONG)k_imu_task_period_ticks) {
+    } else {
       const UINT sleep_status = tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
       switch (sleep_status) {
         case TX_SUCCESS:

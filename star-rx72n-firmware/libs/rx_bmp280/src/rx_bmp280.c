@@ -330,6 +330,7 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
 static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "buf must not be NULL");
+  RX_ASSERT(k_bmp280_byte_shift == 8U, "byte shift must be 8 for LE 16-bit assembly");
   _Static_assert(k_bmp280_byte_shift == 8U, "byte shift must be 8 for LE 16-bit assembly");
   return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
                     ((uint16_t)buf[k_bmp280_le16_msb_idx] << k_bmp280_byte_shift));
@@ -358,6 +359,8 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 static inline int16_t internal_parse_s16_le(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "buf must not be NULL");
+  RX_ASSERT(sizeof(int16_t) == sizeof(uint16_t),
+            "int16_t and uint16_t must be same size for safe reinterpret cast");
   _Static_assert(sizeof(int16_t) == sizeof(uint16_t),
                  "int16_t and uint16_t must be same size for safe reinterpret cast");
   return (int16_t)internal_parse_u16_le(buf);
@@ -523,6 +526,7 @@ typedef enum : int32_t {
 static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t var2)
 {
   RX_ASSERT(s_calib.dig_P1 != 0U, "s_calib must be initialized before finalizing pressure");
+  RX_ASSERT(p >= 0, "p must be non-negative before final Q8 scaling");
   _Static_assert(sizeof(int64_t) == 8U, "int64_t must be 64-bit for overflow-safe pressure math");
   /* Bosch BMP280 datasheet formula (Section 4.2.3):
    * Step 1: shift (p + fine adjustments) right by 8 to get Q8 fixed-point Pa*256
@@ -647,6 +651,9 @@ static void internal_parse_calibration(const uint8_t* buf)
   s_calib.dig_P7 = internal_parse_s16_le(&buf[k_bmp280_calib_p7_lsb]);
   s_calib.dig_P8 = internal_parse_s16_le(&buf[k_bmp280_calib_p8_lsb]);
   s_calib.dig_P9 = internal_parse_s16_le(&buf[k_bmp280_calib_p9_lsb]);
+  /* Post-condition: verify calibration data was populated (catches blank OTP early) */
+  RX_ASSERT(s_calib.dig_T1 != 0U,
+            "dig_T1 must be non-zero after calibration parse (OTP data valid)");
 }
 
 /* =============================================================================
