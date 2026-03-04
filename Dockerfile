@@ -108,6 +108,27 @@ RUN set -eux; \
     rm /tmp/doxygen.tar.gz; \
     doxygen --version
 
+# Install ARM bare-metal toolchain for STM32 development
+# - gcc-arm-none-eabi / binutils-arm-none-eabi: Cross-compiler for Cortex-M targets
+# - gdb-multiarch: Multi-architecture debugger (replaces arm-none-eabi-gdb)
+# - ninja-build: Fast build system used by STM32CubeMX-generated CMake projects
+# - openocd: On-chip debugger for flashing and debugging via ST-Link
+# - stlink-tools: ST-specific CLI tools (st-flash, st-info, st-util)
+# - usbutils: lsusb for diagnosing ST-Link passthrough inside container
+# - libusb-1.0-0-dev: USB library required by OpenOCD and stlink-tools
+RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
+    --mount=type=cache,target=/var/lib/apt,sharing=locked \
+    apt-get update && apt-get install -y \
+    gcc-arm-none-eabi \
+    binutils-arm-none-eabi \
+    gdb-multiarch \
+    ninja-build \
+    openocd \
+    stlink-tools \
+    usbutils \
+    libusb-1.0-0-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install nanopb for Protocol Buffer C code generation
 # Required for star-rx72n-firmware embedded target
 RUN rm -f /usr/lib/python*/EXTERNALLY-MANAGED && \

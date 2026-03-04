@@ -36,10 +36,10 @@ set (MFLOAT_ABI_MIX                   "-mfloat-abi=softfp")
 #######################################################################
 
 ###################### VARIABLES ######################################
-set (PROJECT_NAME             "star-stm32f767-firmware ")
+set (PROJECT_NAME             "star-stm32f767-firmware")
 set (PROJECT_TYPE             "exe")
 set (LINKER_SCRIPT            "../STM32F767ZITX_FLASH.ld")
-set (MCPU                     "-mcpu=Cortex-M7")
+set (MCPU                     "-mcpu=cortex-m7")
 set (MFPU                 "-mfpu=fpv5-d16")
 set (MFLOAT_ABI               "")
 set (RUNTIME_LIBRARY          "--specs=nano.specs")
