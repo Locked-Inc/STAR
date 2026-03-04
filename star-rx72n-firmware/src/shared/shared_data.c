@@ -706,6 +706,62 @@ shared_data_t g_shared_data = {0};
  * - Rule 5: [OK] 2 preconditions (ThreadX entered, not initialized), 7 postconditions
  * - Rule 7: [OK] All tx_* return values checked
  */
+
+/**
+ * @enum mutex_init_idx_t
+ * @brief Ordered index of mutexes in the shared_data init sequence
+ *
+ * @details
+ * Used by internal_cleanup_mutexes() to delete mutexes in reverse order
+ * when a later mutex creation fails. Values match the creation order in
+ * shared_data_init() and bound the cleanup loop.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_mutex_idx_motor    = 1U, /**< motor_mutex created first */
+  k_mutex_idx_temp     = 2U, /**< temp_mutex created second */
+  k_mutex_idx_obstacle = 3U, /**< obstacle_mutex created third */
+  k_mutex_idx_estop    = 4U, /**< estop_mutex created fourth */
+  k_mutex_idx_imu      = 5U, /**< imu_mutex created fifth */
+  k_mutex_idx_baro     = 6U, /**< baro_mutex created sixth (all mutexes) */
+} mutex_init_idx_t;
+
+/**
+ * @brief Delete the first @p count successfully created mutexes on init failure
+ *
+ * @details
+ * Called from shared_data_init() failure branches to clean up any mutexes
+ * already created before the failing tx_mutex_create() call. Mutexes are
+ * deleted in creation order (motor first through baro last). Passing
+ * k_mutex_idx_baro deletes all six mutexes.
+ *
+ * @param[in] count Number of mutexes to delete (0..k_mutex_idx_baro)
+ *
+ * @pre count <= k_mutex_idx_baro (bounded by enum max)
+ * @pre All mutexes in positions 0..count-1 were successfully created
+ * @post All mutexes in positions 0..count-1 are deleted
+ * @post g_shared_data in pre-init mutex state for positions 0..count-1
+ *
+ * @note Not thread-safe; called only during single-threaded initialization
+ * @since Version 1.0.0
+ */
+static void internal_cleanup_mutexes(uint8_t count)
+{
+  TX_MUTEX* const mutexes[k_mutex_idx_baro] = {
+    &g_shared_data.motor_mutex,
+    &g_shared_data.temp_mutex,
+    &g_shared_data.obstacle_mutex,
+    &g_shared_data.estop_mutex,
+    &g_shared_data.imu_mutex,
+    &g_shared_data.baro_mutex,
+  };
+  const uint8_t limit = (count < k_mutex_idx_baro) ? count : (uint8_t)k_mutex_idx_baro;
+  for (uint8_t i = 0U; i < limit; i++) {
+    (void)tx_mutex_delete(mutexes[i]);
+  }
+}
+
 rx_err_t shared_data_init(void)
 {
   /* Check if already initialized */
@@ -722,57 +778,42 @@ rx_err_t shared_data_init(void)
   /* Create temp_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
-    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
+    internal_cleanup_mutexes(k_mutex_idx_motor);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create obstacle_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
-    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
-    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
+    internal_cleanup_mutexes(k_mutex_idx_temp);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create estop_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
-    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
-    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
-    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
+    internal_cleanup_mutexes(k_mutex_idx_obstacle);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create imu_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
-    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
-    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
-    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
-    (void)tx_mutex_delete(&g_shared_data.estop_mutex);
+    internal_cleanup_mutexes(k_mutex_idx_estop);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create baro_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
-    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
-    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
-    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
-    (void)tx_mutex_delete(&g_shared_data.estop_mutex);
-    (void)tx_mutex_delete(&g_shared_data.imu_mutex);
+    internal_cleanup_mutexes(k_mutex_idx_imu);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create event_flags group */
   tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
   if (tx_status != TX_SUCCESS) {
-    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
-    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
-    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
-    (void)tx_mutex_delete(&g_shared_data.estop_mutex);
-    (void)tx_mutex_delete(&g_shared_data.imu_mutex);
-    (void)tx_mutex_delete(&g_shared_data.baro_mutex);
+    internal_cleanup_mutexes(k_mutex_idx_baro);
     return k_rx_err_rtos_error;
   }
 

@@ -1102,20 +1102,6 @@ static const double s_deg16_per_deg = 16.0;
 static const double s_quat_scale = 16384.0;
 
 /**
- * @var s_baro_temp_scale
- * @brief BMP280 temperature scale factor: centi-degrees Celsius per degree Celsius (100.0).
- *
- * @details
- * BMP280 driver stores temperature as centi-degrees (e.g. 2523 = 25.23 degC).
- * To convert to double Celsius: celsius = (double)temp_centi_degc / s_baro_temp_scale.
- *
- * @note Read-only; never modified after program start.
- *
- * @since Version 1.0.0
- */
-static const double s_baro_temp_scale = 100.0;
-
-/**
  * @var s_baro_press_scale
  * @brief BMP280 pressure scale factor: fixed-point units per Pascal (256.0).
  *
@@ -2129,7 +2115,8 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->has_baro = true;
 
     /* Temperature: centi-degrees Celsius -> degrees Celsius */
-    telemetry->baro.temperature_celsius = (double)baro_state.temp_centi_degc / s_baro_temp_scale;
+    telemetry->baro.temperature_celsius =
+      (double)baro_state.temp_centi_degc / (double)s_cdegc_per_degree;
 
     /* Pressure: Pa * 256 -> Pa */
     telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / s_baro_press_scale;

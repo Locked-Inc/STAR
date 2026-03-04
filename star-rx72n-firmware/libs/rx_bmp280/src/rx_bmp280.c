@@ -331,7 +331,7 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "buf must not be NULL");
   RX_ASSERT(k_bmp280_byte_shift == 8U, "byte shift must be 8 for LE 16-bit assembly");
-  _Static_assert(k_bmp280_byte_shift == 8U, "byte shift must be 8 for LE 16-bit assembly");
+  static_assert(k_bmp280_byte_shift == 8U, "byte shift must be 8 for LE 16-bit assembly");
   return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
                     ((uint16_t)buf[k_bmp280_le16_msb_idx] << k_bmp280_byte_shift));
 }
@@ -361,8 +361,8 @@ static inline int16_t internal_parse_s16_le(const uint8_t* buf)
   RX_ASSERT(buf != NULL, "buf must not be NULL");
   RX_ASSERT(sizeof(int16_t) == sizeof(uint16_t),
             "int16_t and uint16_t must be same size for safe reinterpret cast");
-  _Static_assert(sizeof(int16_t) == sizeof(uint16_t),
-                 "int16_t and uint16_t must be same size for safe reinterpret cast");
+  static_assert(sizeof(int16_t) == sizeof(uint16_t),
+                "int16_t and uint16_t must be same size for safe reinterpret cast");
   return (int16_t)internal_parse_u16_le(buf);
 }
 
@@ -405,6 +405,29 @@ static inline int32_t internal_assemble_adc20(const uint8_t* buf)
 }
 
 /**
+ * @enum bmp280_temp_comp_t
+ * @brief Integer shift and scale constants for BMP280 temperature compensation formula
+ *
+ * @details
+ * Constants used exclusively by internal_compensate_temp(). Placed at module scope
+ * to avoid -Werror=unused-local-typedefs when the GNURX cross-compiler sees the
+ * typedef name unused inside the function body.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : int32_t {
+  k_temp_shift_adc_3 = 3,   /**< adc_T right shift for T1 subtraction step */
+  k_temp_shift_t1_1  = 1,   /**< dig_T1 left shift in first var1 step */
+  k_temp_shift_11    = 11,  /**< Right shift for var1 final step */
+  k_temp_shift_adc_4 = 4,   /**< adc_T right shift for T1 comparison steps */
+  k_temp_shift_12    = 12,  /**< Right shift for squared difference */
+  k_temp_shift_14    = 14,  /**< Right shift for var2 final step */
+  k_temp_fine_scale  = 5,   /**< Scale factor in fine-to-output conversion */
+  k_temp_round_add   = 128, /**< Rounding constant in fine-to-output conversion */
+  k_temp_shift_out   = 8,   /**< Right shift to produce 0.01 degC output */
+} bmp280_temp_comp_t;
+
+/**
  * @brief Apply Bosch integer temperature compensation formula
  *
  * @details
@@ -439,19 +462,6 @@ static inline int32_t internal_assemble_adc20(const uint8_t* buf)
 static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
 {
   RX_ASSERT(t_fine_out != NULL, "t_fine_out must be non-NULL");
-
-  typedef enum : int32_t {
-    k_temp_shift_adc_3 = 3,   /**< adc_T right shift for T1 subtraction step */
-    k_temp_shift_t1_1  = 1,   /**< dig_T1 left shift in first var1 step */
-    k_temp_shift_11    = 11,  /**< Right shift for var1 final step */
-    k_temp_shift_adc_4 = 4,   /**< adc_T right shift for T1 comparison steps */
-    k_temp_shift_12    = 12,  /**< Right shift for squared difference */
-    k_temp_shift_14    = 14,  /**< Right shift for var2 final step */
-    k_temp_fine_scale  = 5,   /**< Scale factor in fine-to-output conversion */
-    k_temp_round_add   = 128, /**< Rounding constant in fine-to-output conversion */
-    k_temp_shift_out   = 8,   /**< Right shift to produce 0.01 degC output */
-  } bmp280_temp_comp_t;
-
   RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)k_bmp280_adc_20bit_max,
             "adc_T must be a 20-bit ADC value");
 
@@ -527,7 +537,7 @@ static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t v
 {
   RX_ASSERT(s_calib.dig_P1 != 0U, "s_calib must be initialized before finalizing pressure");
   RX_ASSERT(p >= 0, "p must be non-negative before final Q8 scaling");
-  _Static_assert(sizeof(int64_t) == 8U, "int64_t must be 64-bit for overflow-safe pressure math");
+  static_assert(sizeof(int64_t) == 8U, "int64_t must be 64-bit for overflow-safe pressure math");
   /* Bosch BMP280 datasheet formula (Section 4.2.3):
    * Step 1: shift (p + fine adjustments) right by 8 to get Q8 fixed-point Pa*256
    * Step 2: add dig_P7 offset (left-shifted 4) AFTER the right shift
@@ -637,8 +647,8 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
 static void internal_parse_calibration(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "calibration buffer must not be NULL");
-  _Static_assert(k_bmp280_calib_p9_lsb + 2U == k_bmp280_calib_byte_count,
-                 "P9 coefficient must occupy the final two bytes of the calibration block");
+  static_assert(k_bmp280_calib_p9_lsb + 2U == k_bmp280_calib_byte_count,
+                "P9 coefficient must occupy the final two bytes of the calibration block");
   s_calib.dig_T1 = internal_parse_u16_le(&buf[k_bmp280_calib_t1_lsb]);
   s_calib.dig_T2 = internal_parse_s16_le(&buf[k_bmp280_calib_t2_lsb]);
   s_calib.dig_T3 = internal_parse_s16_le(&buf[k_bmp280_calib_t3_lsb]);
@@ -892,3 +902,30 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   /* Step 3: Read ADC, apply compensation, validate output range */
   return internal_read_and_compensate_adc(out);
 }
+
+#ifdef TESTING
+/**
+ * @brief Reset BMP280 driver static state for unit test isolation
+ *
+ * @details
+ * Clears s_initialized to false and zeroes the calibration struct so
+ * each test starts from the same known state regardless of execution
+ * order. Available only in test builds (TESTING defined by CMakeLists.txt
+ * for the test target).
+ *
+ * @pre Called from test setUp() before each test
+ * @post s_initialized == false; s_calib zeroed
+ *
+ * @note Test-only helper; not compiled into production firmware
+ * @see setUp() in test_rx_bmp280.c Calls this function
+ *
+ * @since Version 1.0.0
+ */
+void rx_bmp280_test_reset_state(void)
+{
+  RX_ASSERT(true, "rx_bmp280_test_reset_state: test-only function");
+  s_initialized                   = false;
+  const bmp280_calib_t zero_calib = {0};
+  s_calib                         = zero_calib;
+}
+#endif /* TESTING */

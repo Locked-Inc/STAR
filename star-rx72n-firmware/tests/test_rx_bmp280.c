@@ -24,12 +24,10 @@
  *
  * Unlike BNO055, the BMP280 driver does NOT have a double-init guard: each
  * call to rx_bmp280_init() resets s_initialized = false at the start, then
- * sets it to true only on success. This means:
- * - test_bmp280_read_before_init_returns_error MUST run before any
- *   successful init, because once initialized the static flag stays true
- *   until the next init call resets it.
- * - test_bmp280_init_success sets s_initialized = true (persists to next tests).
- * - Calling init again with valid data reinitializes successfully.
+ * sets it to true only on success. setUp() calls rx_bmp280_test_reset_state()
+ * before each test to clear s_initialized, making every test start from the
+ * same known state regardless of execution order. Tests that require
+ * s_initialized==true call internal_setup_initialized_bmp280() at the start.
  *
  * @par Calibration Data for Tests
  *
@@ -334,16 +332,8 @@ static rx_bus_manager_t s_test_manager;
  */
 static rx_bus_config_t s_i2c_config;
 
-/**
- * @var s_before_init_tested
- * @brief Order-enforcement flag: set by test_bmp280_read_before_init_returns_error
- * @details
- * The before-init test must run before any successful init. This flag is set
- * in test_bmp280_read_before_init_returns_error() and asserted in
- * test_bmp280_init_success() to enforce the required execution order.
- * @since Version 1.0.0
- */
-static bool s_before_init_tested = false;
+/* s_before_init_tested removed: rx_bmp280_test_reset_state() in setUp() makes
+ * ordering enforcement unnecessary - each test starts with s_initialized==false. */
 
 /* =============================================================================
  * Internal: Load mock RIIC RX buffer for calibration and measurement sequences
@@ -368,7 +358,7 @@ static bool s_before_init_tested = false;
  */
 static void internal_load_valid_calib(void)
 {
-  _Static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
+  static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
   memset(calib, 0, sizeof(calib));
 
@@ -415,7 +405,7 @@ static void internal_load_valid_calib(void)
  */
 static void internal_load_invalid_calib_p1_zero(void)
 {
-  _Static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
+  static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
   uint8_t calib[k_test_calib_buf_size];
   memset(calib, 0, sizeof(calib));
 
@@ -473,7 +463,7 @@ static void internal_load_invalid_calib_p1_zero(void)
  */
 static void internal_load_read_data(void)
 {
-  _Static_assert(k_read_seq_buf_size > 0U, "read sequence buffer must be non-empty");
+  static_assert(k_read_seq_buf_size > 0U, "read sequence buffer must be non-empty");
   uint8_t buf[k_read_seq_buf_size];
   buf[k_read_seq_status_idx]         = (uint8_t)k_status_measuring_done;
   buf[k_read_seq_adc_press_msb_idx]  = (uint8_t)k_adc_press_msb;
@@ -496,17 +486,40 @@ static void internal_load_read_data(void)
  */
 
 /**
+ * @brief Initialize the BMP280 driver with valid calibration for tests that require it
+ *
+ * @details
+ * Loads valid calibration data into the mock RIIC buffer and calls
+ * rx_bmp280_init(). Tests that require s_initialized==true call this helper
+ * at the start, making them self-contained and order-independent.
+ *
+ * @pre setUp() called (bus manager ready, s_initialized==false after reset)
+ * @post s_initialized == true; BMP280 driver ready for rx_bmp280_read()
+ *
+ * @since Version 1.0.0
+ */
+static void internal_setup_initialized_bmp280(void)
+{
+  static_assert(k_test_calib_buf_size > 0U, "calibration buffer must be non-empty");
+  internal_load_valid_calib();
+  const rx_err_t err = rx_bmp280_init(&s_test_manager);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+}
+
+/**
  * @brief Initialize test fixtures before each test
  *
  * @details
- * 1. Reset mock RIIC HAL state
- * 2. Initialize bus manager
- * 3. Create I2C bus config (channel 1, addr 0x76, 400 kHz, P2.0/P2.1)
- * 4. Register bus with manager as "i2c1_baro"
- * 5. Initialize RIIC channel 1 via rx_bus_i2c_init()
+ * 1. Reset BMP280 driver state (rx_bmp280_test_reset_state)
+ * 2. Reset mock RIIC HAL state
+ * 3. Initialize bus manager
+ * 4. Create I2C bus config (channel 1, addr 0x76, 400 kHz, P2.0/P2.1)
+ * 5. Register bus with manager as "i2c1_baro"
+ * 6. Initialize RIIC channel 1 via rx_bus_i2c_init()
  *
  * @pre None - called by Unity before each test
  * @pre Previous test tearDown() has cleared mock RIIC state (or first test)
+ * @post s_initialized == false (reset by rx_bmp280_test_reset_state)
  * @post s_test_manager ready with "i2c1_baro" registered and RIIC ch1 initialized
  * @post mock RIIC channel 1 reports initialized after setUp completes
  *
@@ -514,6 +527,10 @@ static void internal_load_read_data(void)
  */
 void setUp(void)
 {
+  /* Reset driver static state so each test starts with s_initialized==false,
+   * making tests order-independent (no persistent state from prior tests). */
+  rx_bmp280_test_reset_state();
+
   (void)mock_riic_init();
   TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bmp280_riic_ch));
 
@@ -648,9 +665,7 @@ void test_bmp280_init_invalid_calib_returns_error(void)
  */
 void test_bmp280_init_success(void)
 {
-  TEST_ASSERT_TRUE_MESSAGE(
-    s_before_init_tested,
-    "test_bmp280_read_before_init_returns_error must run before init_success");
+  /* setUp() called rx_bmp280_test_reset_state() so s_initialized == false here */
   internal_load_valid_calib();
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
@@ -680,10 +695,14 @@ void test_bmp280_init_success(void)
  */
 void test_bmp280_init_reinit_succeeds(void)
 {
-  /* Second init with valid calibration - should succeed (no guard) */
+  /* First init */
   internal_load_valid_calib();
-
   rx_err_t err = rx_bmp280_init(&s_test_manager);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+
+  /* Second init - BMP280 has no double-init guard: should succeed again */
+  internal_load_valid_calib();
+  err = rx_bmp280_init(&s_test_manager);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_err_invalid_state, err);
@@ -730,12 +749,12 @@ void test_bmp280_read_null_ptr_returns_error(void)
  */
 void test_bmp280_read_before_init_returns_error(void)
 {
+  /* setUp() reset s_initialized to false - no ordering dependency needed */
   bmp280_data_t data;
   memset(&data, 0, sizeof(data));
   rx_err_t err = rx_bmp280_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
-  s_before_init_tested = true;
 }
 
 /**
@@ -755,6 +774,7 @@ void test_bmp280_read_before_init_returns_error(void)
  */
 void test_bmp280_read_success_forced_mode(void)
 {
+  internal_setup_initialized_bmp280();
   internal_load_read_data();
 
   bmp280_data_t data;
@@ -788,6 +808,7 @@ void test_bmp280_read_success_forced_mode(void)
  */
 void test_bmp280_read_status_timeout(void)
 {
+  internal_setup_initialized_bmp280();
   uint8_t busy_status = (uint8_t)k_status_measuring_busy;
   (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
 
@@ -814,6 +835,7 @@ void test_bmp280_read_status_timeout(void)
  */
 void test_bmp280_read_i2c_error_propagates(void)
 {
+  internal_setup_initialized_bmp280();
   (void)mock_riic_simulate_nack(true);
 
   bmp280_data_t data;
@@ -852,6 +874,7 @@ void test_bmp280_read_i2c_error_propagates(void)
  */
 void test_bmp280_compensation_known_values(void)
 {
+  internal_setup_initialized_bmp280();
   internal_load_read_data();
 
   bmp280_data_t data;
@@ -913,26 +936,18 @@ void test_bmp280_read_zero_var1_returns_error(void)
  * @brief Test runner entry point
  *
  * @details
- * Runs all BMP280 driver unit tests. The ordering is critical:
- *   1. test_bmp280_read_before_init_returns_error - needs s_initialized==false
- *   2. Error-path init tests (do not change s_initialized to true)
- *   3. test_bmp280_init_success - sets s_initialized = true
- *   4. test_bmp280_init_reinit_succeeds - verifies no double-init guard
- *   5. Read/compensation tests - require s_initialized == true
- *   6. test_bmp280_read_zero_var1_returns_error - re-inits with bad calib
+ * Runs all BMP280 driver unit tests. Tests are order-independent: setUp()
+ * calls rx_bmp280_test_reset_state() before each test to clear s_initialized,
+ * and tests that need s_initialized==true call internal_setup_initialized_bmp280().
  *
  * @return int Unity test result code
  * @retval 0 All tests passed
  * @retval 1 One or more tests failed
  *
  * @pre Unity test framework linked and BMP280 driver sources compiled with mock RIIC HAL
- * @pre s_initialized == false initially; test_bmp280_read_before_init_returns_error must run first
+ * @pre TESTING macro defined (enables rx_bmp280_test_reset_state)
  * @post Unity reports all test results to stdout
  * @post Process exits with 0 if all tests pass, non-zero on any test failure
- *
- * @warning Tests must execute in the listed order: the static s_initialized flag
- *          persists across tests and there is no driver deinit/reset API. Reordering
- *          tests will cause failures.
  *
  * @since Version 1.0.0
  */
@@ -940,23 +955,27 @@ int main(void)
 {
   UNITY_BEGIN();
 
-  /* Read-before-init MUST run first (needs s_initialized == false) */
+  /* setUp() resets driver state before each test - order is not critical */
+
+  /* Null pointer guard tests */
   RUN_TEST(test_bmp280_read_null_ptr_returns_error);
+  RUN_TEST(test_bmp280_init_null_manager_returns_error);
+
+  /* Read-before-init test (setUp resets state so ordering is not required) */
   RUN_TEST(test_bmp280_read_before_init_returns_error);
 
-  /* Init tests - errors before success */
-  RUN_TEST(test_bmp280_init_null_manager_returns_error);
+  /* Init tests */
   RUN_TEST(test_bmp280_init_i2c_error_propagates);
   RUN_TEST(test_bmp280_init_invalid_calib_returns_error);
   RUN_TEST(test_bmp280_init_success);
   RUN_TEST(test_bmp280_init_reinit_succeeds);
 
-  /* Read tests - require s_initialized == true */
+  /* Read tests - each calls internal_setup_initialized_bmp280() internally */
   RUN_TEST(test_bmp280_read_success_forced_mode);
   RUN_TEST(test_bmp280_read_status_timeout);
   RUN_TEST(test_bmp280_read_i2c_error_propagates);
 
-  /* Compensation tests */
+  /* Compensation tests - each calls internal_setup_initialized_bmp280() internally */
   RUN_TEST(test_bmp280_compensation_known_values);
   RUN_TEST(test_bmp280_read_zero_var1_returns_error);
 

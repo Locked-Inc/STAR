@@ -116,6 +116,9 @@ typedef enum : uint8_t {
  * - SDO = LOW (DFRobot module default): 0x76
  * - SDO = HIGH: 0x77
  *
+ * @invariant k_bmp280_i2c_addr is a valid 7-bit I2C address (0x00..0x7F)
+ * @invariant Value is constant and determined solely by the SDO pin strapping
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
@@ -151,6 +154,9 @@ typedef enum : uint8_t {
  * - osrs_p[4:2] = 101 = 16x oversampling for pressure
  * - mode[1:0]   = 01  = Forced mode (one measurement, then sleep)
  *
+ * @invariant k_bmp280_ctrl_meas_val encodes osrs_t=2x, osrs_p=16x, forced mode exactly
+ * @invariant Forced mode bits ([1:0] = 01) ensure sensor returns to sleep after each measurement
+ *
  * @see bmp280_config_t IIR filter and standby configuration register value
  * @see bmp280_status_mask_t Status register measuring-bit mask
  *
@@ -172,6 +178,9 @@ typedef enum : uint8_t {
  * - filter[4:2] = 001 = IIR filter coefficient 2
  * - spi3w_en[0] = 0   = SPI disabled
  *
+ * @invariant k_bmp280_config_val sets filter coefficient 2 to reduce noise on pressure readings
+ * @invariant SPI disabled bit ([0] = 0) ensures I2C mode remains active
+ *
  * @see bmp280_ctrl_meas_t Oversampling and mode configuration register value
  * @see bmp280_status_mask_t Status register measuring-bit mask
  *
@@ -192,6 +201,9 @@ typedef enum : uint8_t {
  * **status (0xF3) measuring bit:**
  * - Bit 3 = 1 while measurement in progress
  * - Bit 3 = 0 when measurement complete (ADC data ready)
+ *
+ * @invariant k_bmp280_status_meas_mask isolates exactly bit 3 of the status register
+ * @invariant Value is read-only; writing this mask to the sensor has no effect
  *
  * @see bmp280_ctrl_meas_t Oversampling and mode configuration register value
  * @see bmp280_config_t IIR filter and standby configuration register value
@@ -229,17 +241,19 @@ typedef enum : uint8_t {
  * Maximum number of status register polls when waiting for a forced
  * measurement to complete. With 16x oversampling, maximum measurement
  * time is approximately 40 ms. Each poll sleeps k_bmp280_poll_sleep_ticks
- * between reads to yield CPU time. At 1 tick (10 ms) per poll, 100
- * iterations provides >2x safety margin.
+ * between reads to yield CPU time. At 1 tick (10 ms) per poll, 10
+ * iterations provides ~100 ms maximum poll time, well under the 900 ms
+ * IMU task IWDT watchdog timeout.
  *
  * @invariant k_bmp280_poll_max > 0 (loop must terminate)
  * @invariant k_bmp280_poll_sleep_ticks >= 1 (must yield at least one tick)
+ * @invariant k_bmp280_poll_max * k_bmp280_poll_sleep_ticks * 10 < 900 (must not exceed IWDT timeout)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_poll_max         = 100, /**< Maximum status poll iterations */
-  k_bmp280_poll_sleep_ticks = 1,   /**< Ticks to sleep between polls (1 tick = 10 ms at 100 Hz) */
+  k_bmp280_poll_max         = 10, /**< Maximum status poll iterations (~100 ms at 100 Hz tick) */
+  k_bmp280_poll_sleep_ticks = 1,  /**< Ticks to sleep between polls (1 tick = 10 ms at 100 Hz) */
 } bmp280_poll_t;
 
 /* =============================================================================

@@ -315,19 +315,19 @@ typedef enum : uint8_t {
  * Production source: star-rx72n-firmware/src/inc/hardware_config.h
  * lines 525-539 (led_ports_t and led_pins_t enums).
  */
-_Static_assert(k_led_0_port == 10, "LED0 port must match production (PORTA=10)");
-_Static_assert(k_led_1_port == 11, "LED1 port must match production (PORTB=11)");
-_Static_assert(k_led_2_port == 7, "LED2 port must match production (PORT7=7)");
-_Static_assert(k_led_3_port == 7, "LED3 port must match production (PORT7=7)");
-_Static_assert(k_led_4_port == 11, "LED4 port must match production (PORTB=11)");
-_Static_assert(k_led_5_port == 11, "LED5 port must match production (PORTB=11)");
+static_assert(k_led_0_port == 10, "LED0 port must match production (PORTA=10)");
+static_assert(k_led_1_port == 11, "LED1 port must match production (PORTB=11)");
+static_assert(k_led_2_port == 7, "LED2 port must match production (PORT7=7)");
+static_assert(k_led_3_port == 7, "LED3 port must match production (PORT7=7)");
+static_assert(k_led_4_port == 11, "LED4 port must match production (PORTB=11)");
+static_assert(k_led_5_port == 11, "LED5 port must match production (PORTB=11)");
 
-_Static_assert(k_led_0_pin == 7, "LED0 pin must match production (PA7)");
-_Static_assert(k_led_1_pin == 0, "LED1 pin must match production (PB0)");
-_Static_assert(k_led_2_pin == 1, "LED2 pin must match production (P71)");
-_Static_assert(k_led_3_pin == 2, "LED3 pin must match production (P72)");
-_Static_assert(k_led_4_pin == 1, "LED4 pin must match production (PB1)");
-_Static_assert(k_led_5_pin == 2, "LED5 pin must match production (PB2)");
+static_assert(k_led_0_pin == 7, "LED0 pin must match production (PA7)");
+static_assert(k_led_1_pin == 0, "LED1 pin must match production (PB0)");
+static_assert(k_led_2_pin == 1, "LED2 pin must match production (P71)");
+static_assert(k_led_3_pin == 2, "LED3 pin must match production (P72)");
+static_assert(k_led_4_pin == 1, "LED4 pin must match production (PB1)");
+static_assert(k_led_5_pin == 2, "LED5 pin must match production (PB2)");
 
 /* =============================================================================
  * Include the source under test AFTER all mocks are defined

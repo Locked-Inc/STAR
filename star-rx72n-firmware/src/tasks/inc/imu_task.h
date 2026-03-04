@@ -142,7 +142,7 @@ typedef enum : uint16_t {
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Task created successfully, will run after scheduler starts
- * @retval k_rx_err_rtos_error ThreadX task creation failed
+ * @retval k_rx_err_rtos_thread_create ThreadX task creation failed
  *
  * @pre ThreadX kernel initialized; task created in tx_application_define and will run after the scheduler starts (tx_kernel_enter)
  * @pre "i2c1" bus registered in bus manager via main.c

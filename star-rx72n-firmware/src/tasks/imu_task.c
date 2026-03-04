@@ -129,6 +129,8 @@ typedef enum : uint8_t {
 typedef enum : uint16_t {
   k_imu_ms_per_second = 1000U, /**< Milliseconds per second (conversion factor for tick->ms) */
 } imu_task_time_t;
+static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
+static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
 
 /* =============================================================================
  * Static State
@@ -235,7 +237,7 @@ static void internal_imu_task_entry(ULONG input);
  * @return uint32_t Current time in milliseconds since boot
  *
  * @pre ThreadX scheduler running (tx_time_get() returns valid tick count)
- * @pre TX_TIMER_TICKS_PER_SECOND > 0 (ThreadX timer configured, verified by module _Static_assert)
+ * @pre TX_TIMER_TICKS_PER_SECOND > 0 (ThreadX timer configured, verified by module static_assert)
  * @post Return value is monotonically non-decreasing modulo uint32_t overflow
  * @post Return value in milliseconds: fits uint32_t for ~49 days uptime at 100 Hz tick rate
  *
@@ -244,8 +246,6 @@ static void internal_imu_task_entry(ULONG input);
  */
 static inline uint32_t internal_ticks_to_ms(void)
 {
-  RX_ASSERT(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
-  RX_ASSERT((uint32_t)k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
   return (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
 }
 
@@ -455,14 +455,16 @@ static void internal_read_and_publish_baro(void)
  * 1. Initialize BNO055 via rx_bno055_init() (~700 ms for POR)
  * 2. Initialize BMP280 via rx_bmp280_init() (~2 ms for calib read)
  * 3. Enter 50 ms periodic loop:
- *    a. internal_read_and_publish_imu() - BNO055 read -> shared_data_update_imu()
- *    b. internal_read_and_publish_baro() - BMP280 read -> shared_data_update_baro()
- *    c. Feed IWDT heartbeat
- *    d. Sleep 5 ticks (50 ms)
+ *    a. Retry init for any sensor that failed startup (until success)
+ *    b. internal_read_and_publish_imu() if bno_ready - BNO055 -> shared_data_update_imu()
+ *    c. internal_read_and_publish_baro() if bmp_ready - BMP280 -> shared_data_update_baro()
+ *    d. Feed IWDT heartbeat
+ *    e. Sleep 5 ticks (50 ms)
  *
  * Both sensors are initialized before the poll loop. If either init fails,
- * the error is logged but the task continues (graceful degradation: the
- * shared state valid flag will remain false until a read succeeds).
+ * the loop retries init each period until both succeed. Reads are only
+ * performed once the corresponding sensor is ready. Shared state valid flags
+ * remain false until sensor init and the first read both succeed.
  *
  * @param[in] input Unused thread entry parameter (ULONG, always 0)
  *
@@ -504,18 +506,22 @@ static void internal_imu_task_entry(ULONG input)
   rx_log_info(s_tag, "IMU task starting - initializing sensors");
 
   /* Step 1: Initialize BNO055 (blocks ~700 ms for POR sequence) */
-  const rx_err_t err_bno = rx_bno055_init(&g_bus_manager);
+  bool           bno_ready = false;
+  const rx_err_t err_bno   = rx_bno055_init(&g_bus_manager);
   if (err_bno != k_rx_ok) {
-    rx_log_error_val(s_tag, "BNO055 init failed - will retry reads", (uint32_t)err_bno);
+    rx_log_error_val(s_tag, "BNO055 init failed - will retry in loop", (uint32_t)err_bno);
   } else {
+    bno_ready = true;
     rx_log_info(s_tag, "BNO055 initialized in NDOF mode");
   }
 
   /* Step 2: Initialize BMP280 (~2 ms for calibration burst read) */
-  const rx_err_t err_bmp = rx_bmp280_init(&g_bus_manager);
+  bool           bmp_ready = false;
+  const rx_err_t err_bmp   = rx_bmp280_init(&g_bus_manager);
   if (err_bmp != k_rx_ok) {
-    rx_log_error_val(s_tag, "BMP280 init failed - will retry reads", (uint32_t)err_bmp);
+    rx_log_error_val(s_tag, "BMP280 init failed - will retry in loop", (uint32_t)err_bmp);
   } else {
+    bmp_ready = true;
     rx_log_info(s_tag, "BMP280 initialized in forced mode");
   }
 
@@ -525,8 +531,28 @@ static void internal_imu_task_entry(ULONG input)
   while (1) {
     const ULONG start_tick = tx_time_get();
 
-    internal_read_and_publish_imu();
-    internal_read_and_publish_baro();
+    /* Retry init for sensors that failed initial startup */
+    if (!bno_ready) {
+      const rx_err_t retry_bno = rx_bno055_init(&g_bus_manager);
+      if (retry_bno == k_rx_ok) {
+        bno_ready = true;
+        rx_log_info(s_tag, "BNO055 initialized on retry");
+      }
+    }
+    if (!bmp_ready) {
+      const rx_err_t retry_bmp = rx_bmp280_init(&g_bus_manager);
+      if (retry_bmp == k_rx_ok) {
+        bmp_ready = true;
+        rx_log_info(s_tag, "BMP280 initialized on retry");
+      }
+    }
+
+    if (bno_ready) {
+      internal_read_and_publish_imu();
+    }
+    if (bmp_ready) {
+      internal_read_and_publish_baro();
+    }
 
     /* Feed IWDT heartbeat (must execute within 150 ms timeout) */
     internal_send_iwdt_heartbeat();

@@ -213,22 +213,31 @@ typedef enum : uint16_t {
  *
  * @details
  * Passed to internal_i2c_init_callback() via rx_bus_manager_with_bus()
- * callback mechanism. Holds the operation result after the callback returns.
- * Allocated on the stack by rx_bus_i2c_init() (no dynamic allocation).
+ * callback mechanism. Holds the operation result and a pointer to the bus
+ * manager so the callback can update the per-channel RIIC initialization
+ * tracking in manager->riic_initialized[]. Allocated on the stack by
+ * rx_bus_i2c_init() (no dynamic allocation).
+ *
+ * The manager pointer enables the callback to check whether the physical
+ * RIIC channel was already initialized by a prior rx_bus_i2c_init() call
+ * (e.g., two logical buses sharing the same physical RIIC channel). If the
+ * channel is already initialized, riic_init() is skipped to prevent I2C
+ * bus glitches from re-initializing the peripheral mid-operation.
  *
  * @par Memory Layout:
- * | Offset | Size | Field  | Type     | Alignment |
- * |--------|------|--------|----------|-----------|
- * | 0      | 4    | result | rx_err_t | 4         |
- * **Total size**: 4 bytes (no padding)
+ * | Offset | Size | Field   | Type                | Alignment |
+ * |--------|------|---------|---------------------|-----------|
+ * | 0      | 4    | result  | rx_err_t            | 4         |
+ * | 4      | 4/8  | manager | rx_bus_manager_t*   | ptr       |
  *
  * @par Lifetime: Stack-allocated in rx_bus_i2c_init(), destroyed on return
  *
  * @invariant result contains a valid rx_err_t value after callback returns
+ * @invariant manager is non-NULL (validated before ctx creation)
  *
  * @par Example:
  * @code
- * i2c_init_ctx_t ctx = { .result = k_rx_err_invalid_state };
+ * i2c_init_ctx_t ctx = { .result = k_rx_err_invalid_state, .manager = manager };
  * rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
  * // ctx.result now contains the operation outcome
  * @endcode
@@ -239,7 +248,8 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  rx_err_t result; /**< Operation result: k_rx_ok on success, error code on failure */
+  rx_err_t          result;  /**< Operation result: k_rx_ok on success, error code on failure */
+  rx_bus_manager_t* manager; /**< Bus manager: used to check/update per-channel RIIC init status */
 } i2c_init_ctx_t;
 
 /**
@@ -412,17 +422,25 @@ typedef struct {
  * @details
  * Initializes the RX72N RIIC peripheral for the I2C bus described by
  * bus_config. Called by the bus manager via rx_bus_manager_with_bus() with
- * the bus mutex held. Validates bus type, configures the RIIC channel at the
- * requested frequency, and marks the bus as initialized on success.
+ * the bus mutex held. Validates bus type, uses a per-channel guard to avoid
+ * double-initializing a shared physical RIIC channel, then calls riic_init()
+ * and marks the bus as initialized on success.
+ *
+ * Multiple logical I2C buses may share one physical RIIC channel (e.g.,
+ * "i2c1" (BNO055) and "i2c1_baro" (BMP280) both use RIIC1). The channel
+ * guard in manager->riic_initialized[] ensures riic_init() is called only
+ * once per physical channel, preventing bus glitches from re-initialization.
  *
  * Algorithm steps:
  * 1. Cast user_ctx to i2c_init_ctx_t*
  * 2. Validate bus type is k_bus_type_i2c
- * 3. Extract RIIC channel from bus_config->proto.i2c.channel
- * 4. Call riic_init() with channel and frequency_hz
- * 5. Warn if device_addr exceeds 7-bit maximum (non-fatal)
- * 6. Set bus_config->initialized = true
- * 7. Store k_rx_ok in ctx->result and return
+ * 3. Extract channel from bus_config->proto.i2c.channel
+ * 4. If manager->riic_initialized[channel] == true: skip riic_init, mark bus ready, return
+ * 5. Call riic_init() with channel and frequency_hz
+ * 6. On success: set manager->riic_initialized[channel] = true
+ * 7. Warn if device_addr exceeds 7-bit maximum (non-fatal)
+ * 8. Set bus_config->initialized = true
+ * 9. Store k_rx_ok in ctx->result and return
  *
  * @param[in,out] bus_config Bus configuration structure
  *   - type must be k_bus_type_i2c
@@ -430,25 +448,25 @@ typedef struct {
  *   - proto.i2c.frequency_hz specifies the clock frequency
  *   - initialized flag set to true on success
  * @param[in,out] user_ctx User context (i2c_init_ctx_t*)
+ *   - input: ctx->manager pointer used to check/update per-channel init status
  *   - output: ctx->result contains the operation result
  *
  * @return rx_err_t Error code indicating result
- * @retval k_rx_ok RIIC peripheral initialized and bus marked ready
+ * @retval k_rx_ok RIIC peripheral initialized (or already was) and bus marked ready
  * @retval k_rx_err_invalid_arg Bus type is not k_bus_type_i2c
  * @retval k_rx_err_hw_error RIIC HAL initialization failed (check pins/clocks)
  *
  * @pre bus_config must be non-NULL (validated by bus manager before dispatch)
- * @pre user_ctx must be non-NULL and point to a valid i2c_init_ctx_t
+ * @pre user_ctx must be non-NULL and point to a valid i2c_init_ctx_t with non-NULL manager
  *
  * @post bus_config->initialized == true on k_rx_ok
  * @post ctx->result contains the operation outcome
+ * @post manager->riic_initialized[channel] == true on k_rx_ok (first or second call)
  *
  * @invariant Bus type remains k_bus_type_i2c throughout the callback
  *
  * @note Not thread-safe; called from bus manager with bus lock held
  * @warning Do not call directly - use rx_bus_i2c_init() instead
- * @attention Repeated calls to riic_init() on an already-initialized channel
- *            may cause glitches on the I2C bus
  *
  * @par Performance:
  * Execution time: ~50 us @ 240 MHz (includes RIIC peripheral setup)
@@ -484,9 +502,37 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
     return k_rx_err_invalid_arg;
   }
 
-  /* Initialize RIIC channel */
-  const riic_channel_t riic_channel = {.value = bus_config->proto.i2c.channel};
-  rx_err_t             err          = riic_init(riic_channel, bus_config->proto.i2c.frequency_hz);
+  /* Defensive null check: manager must be set by rx_bus_i2c_init() */
+  RX_ASSERT(ctx->manager != NULL, "ctx->manager must not be NULL");
+  if (ctx->manager == NULL) {
+    ctx->result = k_rx_err_null_ptr;
+    return k_rx_err_null_ptr;
+  }
+
+  const uint8_t channel = bus_config->proto.i2c.channel;
+
+  /* Validate channel is within the supported RIIC channel range */
+  if (channel >= k_riic_channel_count) {
+    rx_log_error(s_tag, "RIIC channel out of range");
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Channel-level guard: skip riic_init() if this physical RIIC channel was
+   * already initialized by a prior rx_bus_i2c_init() call. Multiple logical
+   * buses may share one physical RIIC channel (e.g., "i2c1" and "i2c1_baro"
+   * both use RIIC1). Re-initializing an active channel causes I2C bus glitches.
+   */
+  if (ctx->manager->riic_initialized[channel]) {
+    rx_log_debug(s_tag, "RIIC channel already initialized - skipping riic_init");
+    bus_config->initialized = true;
+    ctx->result             = k_rx_ok;
+    return k_rx_ok;
+  }
+
+  /* Initialize RIIC channel for the first logical bus on this physical channel */
+  const riic_channel_t riic_channel = {.value = channel};
+  const rx_err_t       err          = riic_init(riic_channel, bus_config->proto.i2c.frequency_hz);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "RIIC HAL initialization failed");
@@ -499,6 +545,9 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
     rx_log_warn(s_tag, "I2C device address exceeds 7-bit maximum");
     /* Continue anyway - HAL should validate, but flag if misconfigured */
   }
+
+  /* Record that this physical RIIC channel is now initialized */
+  ctx->manager->riic_initialized[channel] = true;
 
   /* Mark bus as initialized */
   bus_config->initialized = true;
@@ -989,7 +1038,7 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is nullptr");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is nullptr");
 
-  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error};
+  i2c_init_ctx_t ctx = {.result = k_rx_err_hw_error, .manager = manager};
   rx_err_t       err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_init_callback, &ctx);
 
   if (err != k_rx_ok) {

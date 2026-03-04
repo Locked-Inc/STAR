@@ -594,8 +594,9 @@ rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state);
  *
  * @pre shared_data_init() called successfully
  * @pre state non-NULL with valid IMU data
- * @post g_shared_data.imu_state updated under imu_mutex protection
- * @post imu_mutex released (regardless of success or failure)
+ * @post g_shared_data.imu_state updated under imu_mutex protection (on k_rx_ok)
+ * @post imu_mutex released if it was acquired; not released on k_rx_err_rtos_mutex
+ *       (mutex acquisition never occurred in that case)
  *
  * @note Not ISR-safe (blocking mutex wait)
  *

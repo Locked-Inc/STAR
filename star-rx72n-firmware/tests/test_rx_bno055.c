@@ -67,6 +67,7 @@
  * @date 2026-03-04
  * @version 1.0.0
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @since Version 1.0.0
  */
 
 #include <stdbool.h>

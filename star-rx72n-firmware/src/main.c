@@ -263,14 +263,15 @@ typedef enum : uint32_t {
  *            k_i2c_addr_bno055 and k_i2c_addr_bmp280 must be distinct
  *
  * @see internal_register_system_buses() Uses these addresses with rx_bus_config_init_i2c()
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_i2c_addr_bno055 = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
   k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
 } imu_i2c_addr_t;
-_Static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
-_Static_assert(k_i2c_addr_bno055 != k_i2c_addr_bmp280,
-               "k_i2c_addr_bno055 and k_i2c_addr_bmp280 must be distinct");
+static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
+static_assert(k_i2c_addr_bno055 != k_i2c_addr_bmp280,
+              "k_i2c_addr_bno055 and k_i2c_addr_bmp280 must be distinct");
 
 /* =============================================================================
  * Static Bus Configurations

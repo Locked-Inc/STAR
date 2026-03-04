@@ -382,7 +382,8 @@ typedef struct {
  * only compiled when UNIT_TEST is defined (host-side builds). It must NOT be
  * called from production code.
  *
- * @pre None
+ * @pre Driver may be in any state (initialized or not)
+ * @pre Called only from test setUp() -- never from production firmware
  * @post s_initialized == false
  * @post s_manager == NULL
  *

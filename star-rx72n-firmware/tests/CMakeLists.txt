@@ -941,7 +941,7 @@ apply_test_includes(test_rx_bno055)
 target_include_directories(test_rx_bno055 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
 )
-target_link_libraries(test_rx_bno055 PRIVATE unity)
+target_link_libraries(test_rx_bno055 PRIVATE unity m)
 set_target_properties(test_rx_bno055 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
 # Test: BMP280 Barometric Pressure Sensor
@@ -954,6 +954,8 @@ add_executable(test_rx_bmp280
     ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_bmp280)
+# TESTING: enables rx_bmp280_test_reset_state() for test-order independence
+target_compile_definitions(test_rx_bmp280 PRIVATE TESTING)
 # Suppress unused-local-typedefs: rx_bmp280.c uses local enum typedefs for
 # named constants in the Bosch compensation algorithm (per STAR no-magic-numbers
 # policy); the typedef names are never referenced as type variables.
@@ -962,7 +964,7 @@ apply_test_includes(test_rx_bmp280)
 target_include_directories(test_rx_bmp280 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
 )
-target_link_libraries(test_rx_bmp280 PRIVATE unity)
+target_link_libraries(test_rx_bmp280 PRIVATE unity m)
 set_target_properties(test_rx_bmp280 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
 # =============================================================================

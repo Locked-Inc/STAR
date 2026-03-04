@@ -76,8 +76,8 @@
 
 /* Validate k_bno055_ms_per_tick is consistent with the actual ThreadX tick rate.
  * If TX_TIMER_TICKS_PER_SECOND changes, this assert catches the mismatch at compile time. */
-_Static_assert(k_bno055_ms_per_tick == (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND),
-               "k_bno055_ms_per_tick must equal k_bno055_ms_per_second/TX_TIMER_TICKS_PER_SECOND");
+static_assert(k_bno055_ms_per_tick == (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND),
+              "k_bno055_ms_per_tick must equal k_bno055_ms_per_second/TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
  * Constants
@@ -251,7 +251,7 @@ typedef enum : uint8_t {
  * @details
  * A BNO055 quaternion reading consists of W, X, Y, Z each as a 16-bit
  * little-endian value: 4 components x 2 bytes = 8 bytes total.
- * Used in _Static_assert to verify the buffer constant is large enough.
+ * Used in static_assert to verify the buffer constant is large enough.
  *
  * @since Version 1.0.0
  */
@@ -267,7 +267,7 @@ typedef enum : uint8_t {
  * @details
  * A BNO055 Euler reading consists of heading, roll, pitch each as a 16-bit
  * little-endian value: 3 components x 2 bytes = 6 bytes total.
- * Used in _Static_assert to verify the buffer constant is large enough.
+ * Used in static_assert to verify the buffer constant is large enough.
  *
  * @since Version 1.0.0
  */
@@ -283,7 +283,7 @@ typedef enum : uint8_t {
  * @details
  * A BNO055 linear acceleration reading consists of X, Y, Z each as a 16-bit
  * little-endian value: 3 components x 2 bytes = 6 bytes total.
- * Used in _Static_assert to verify the buffer constant is large enough.
+ * Used in static_assert to verify the buffer constant is large enough.
  *
  * @since Version 1.0.0
  */
@@ -400,16 +400,16 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  * @return int16_t Assembled 16-bit signed integer
  *
  * @pre low and high are valid bytes read from BNO055 registers
- * @pre uint16_t is exactly 16 bits (verified by _Static_assert below)
+ * @pre uint16_t is exactly 16 bits (verified by static_assert below)
  * @post Return value has correct sign via two's complement reinterpretation
- * @post Two _Static_asserts below enforce compile-time invariants on shift and width
+ * @post Two static_asserts below enforce compile-time invariants on shift and width
  *
  * @note Inline function; zero overhead after compiler optimization
  * @see bno055_byte_idx_t LSB/MSB index constants
  *
  * @par NASA Power of 10 Rule 5 Compliance:
  * This single-expression inline helper has no runtime state or I/O side effects.
- * Both preconditions and postconditions are enforced by the two _Static_asserts
+ * Both preconditions and postconditions are enforced by the two static_asserts
  * inside the function body. Runtime assertion overhead on uint8_t parameters
  * is not warranted; callers are responsible for providing valid register bytes.
  *
@@ -417,9 +417,9 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  */
 static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
 {
-  _Static_assert(k_bno055_shift_msb == 8U, "MSB shift must be 8 for little-endian assembly");
-  _Static_assert(sizeof(uint16_t) * CHAR_BIT == 16U,
-                 "uint16_t must be 16 bits for assembly to be well-defined");
+  static_assert(k_bno055_shift_msb == 8U, "MSB shift must be 8 for little-endian assembly");
+  static_assert(sizeof(uint16_t) * CHAR_BIT == 16U,
+                "uint16_t must be 16 bits for assembly to be well-defined");
   return (int16_t)((uint16_t)low | ((uint16_t)high << k_bno055_shift_msb));
 }
 
@@ -692,8 +692,8 @@ static rx_err_t internal_verify_chip_id(void)
  */
 rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
 {
-  _Static_assert(k_bno055_ms_per_tick != 0,
-                 "k_bno055_ms_per_tick must be non-zero to avoid division by zero in tick delays");
+  static_assert(k_bno055_ms_per_tick != 0,
+                "k_bno055_ms_per_tick must be non-zero to avoid division by zero in tick delays");
   RX_ASSERT(manager != NULL, "manager must not be NULL");
   RX_ASSERT(!s_initialized, "BNO055 already initialized");
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
@@ -762,8 +762,8 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
 {
   RX_ASSERT(s_initialized, "driver must be initialized before reading Euler angles");
   RX_ASSERT(out != NULL, "out must not be NULL");
-  _Static_assert((uint8_t)k_bno055_euler_bytes >= (uint8_t)k_bno055_euler_expected_bytes,
-                 "euler buffer must hold 6 bytes");
+  static_assert((uint8_t)k_bno055_euler_bytes >= (uint8_t)k_bno055_euler_expected_bytes,
+                "euler buffer must hold 6 bytes");
 
   uint8_t  euler_buf[k_bno055_euler_bytes];
   rx_err_t err =
@@ -808,8 +808,8 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
 {
   RX_ASSERT(s_initialized, "driver must be initialized before reading quaternion");
   RX_ASSERT(out != NULL, "out must not be NULL");
-  _Static_assert((uint8_t)k_bno055_quat_bytes >= (uint8_t)k_bno055_quat_expected_bytes,
-                 "quat buffer must hold 8 bytes");
+  static_assert((uint8_t)k_bno055_quat_bytes >= (uint8_t)k_bno055_quat_expected_bytes,
+                "quat buffer must hold 8 bytes");
 
   uint8_t  quat_buf[k_bno055_quat_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
@@ -851,8 +851,8 @@ static rx_err_t internal_read_lia(bno055_data_t* out)
 {
   RX_ASSERT(s_initialized, "driver must be initialized before reading linear acceleration");
   RX_ASSERT(out != NULL, "out must not be NULL");
-  _Static_assert((uint8_t)k_bno055_lia_bytes >= (uint8_t)k_bno055_lia_expected_bytes,
-                 "lia buffer must hold 6 bytes");
+  static_assert((uint8_t)k_bno055_lia_bytes >= (uint8_t)k_bno055_lia_expected_bytes,
+                "lia buffer must hold 6 bytes");
 
   uint8_t  lia_buf[k_bno055_lia_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
