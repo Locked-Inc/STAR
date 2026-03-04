@@ -232,6 +232,31 @@ typedef enum : uint32_t {
   k_press_nonzero_min = 1U, /**< Pressure must be > 0 (algorithm completed) */
 } test_bmp280_output_sanity_t;
 
+/**
+ * @enum test_bmp280_read_seq_idx_t
+ * @brief Byte indices into the 7-byte combined status+ADC read buffer
+ *
+ * @details
+ * The status read takes byte[0] (0x00 = done). The ADC read takes
+ * bytes[0..5] (the mock always returns from the start of its buffer).
+ * We need the status byte at index 0 to be 0x00 (measuring done).
+ * For the ADC read the driver reads 6 bytes starting from the current
+ * buffer head, so we store ADC data at indices 1..6 and rely on the
+ * fact that the status read consumes only 1 byte from the same buffer.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_read_seq_buf_size           = 7, /**< 1 status byte + 6 ADC bytes */
+  k_read_seq_status_idx         = 0, /**< Status byte index */
+  k_read_seq_adc_press_msb_idx  = 1, /**< Press MSB offset */
+  k_read_seq_adc_press_lsb_idx  = 2, /**< Press LSB offset */
+  k_read_seq_adc_press_xlsb_idx = 3, /**< Press XLSB offset */
+  k_read_seq_adc_temp_msb_idx   = 4, /**< Temp MSB offset */
+  k_read_seq_adc_temp_lsb_idx   = 5, /**< Temp LSB offset */
+  k_read_seq_adc_temp_xlsb_idx  = 6, /**< Temp XLSB offset */
+} test_bmp280_read_seq_idx_t;
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -365,31 +390,6 @@ static void helper_load_invalid_calib_p1_zero(void)
  *
  * @since Version 1.0.0
  */
-/**
- * @enum test_bmp280_read_seq_idx_t
- * @brief Byte indices into the 7-byte combined status+ADC read buffer
- *
- * @details
- * The status read takes byte[0] (0x00 = done). The ADC read takes
- * bytes[0..5] (the mock always returns from the start of its buffer).
- * We need the status byte at index 0 to be 0x00 (measuring done).
- * For the ADC read the driver reads 6 bytes starting from the current
- * buffer head, so we store ADC data at indices 1..6 and rely on the
- * fact that the status read consumes only 1 byte from the same buffer.
- *
- * @since Version 1.0.0
- */
-typedef enum : uint8_t {
-  k_read_seq_buf_size  = 7, /**< 1 status byte + 6 ADC bytes */
-  k_read_seq_status_idx       = 0, /**< Status byte index */
-  k_read_seq_adc_press_msb_idx = 1, /**< Press MSB offset */
-  k_read_seq_adc_press_lsb_idx = 2, /**< Press LSB offset */
-  k_read_seq_adc_press_xlsb_idx = 3, /**< Press XLSB offset */
-  k_read_seq_adc_temp_msb_idx  = 4, /**< Temp MSB offset */
-  k_read_seq_adc_temp_lsb_idx  = 5, /**< Temp LSB offset */
-  k_read_seq_adc_temp_xlsb_idx = 6, /**< Temp XLSB offset */
-} test_bmp280_read_seq_idx_t;
-
 static void helper_load_read_data(void)
 {
   uint8_t buf[k_read_seq_buf_size];
@@ -767,33 +767,26 @@ void test_bmp280_compensation_known_values(void)
 }
 
 /**
- * @brief rx_bmp280_read returns k_rx_err_invalid_state when var1 == 0 in pressure compensation
+ * @brief internal_compensate_pressure error path: init rejects dig_P1 == 0 preventing var1 == 0
  *
  * @details
  * The pressure compensation formula (internal_compensate_pressure) has a
  * division-by-zero guard: if var1 == 0, it returns k_rx_err_invalid_state.
- * var1 becomes 0 when dig_P1 == 0. However, rx_bmp280_init() already
- * rejects dig_P1 == 0, so this path is only reachable if init somehow
- * passed with a near-zero dig_P1 that produces var1 == 0 in the formula.
+ * var1 is driven to zero when dig_P1 == 0.
  *
- * To test this path without bypassing init validation, we re-initialize
- * with a contrived calibration where dig_P1 has a value that passes init
- * (non-zero) but produces var1 == 0 in the compensation formula with the
- * specific ADC values chosen.
+ * The primary defense is in rx_bmp280_init(): it explicitly checks that
+ * dig_P1 is non-zero after reading calibration data and returns
+ * k_rx_err_invalid_state before completing initialization.
+ * This blocks the var1 == 0 path at the source.
  *
- * Alternative: We set dig_P1 = 1 (passes non-zero check) with ADC values
- * that produce var1 == 0 through the arithmetic. This is difficult to
- * engineer precisely. Instead, we document that dig_P1 = 0 is the primary
- * cause (blocked by init) and we verify that the guard exists by directly
- * validating that init rejects dig_P1 = 0, which indirectly proves the
- * guard is reachable only through hardware corruption after init.
- *
- * This test verifies that a fresh init with dig_P1 == 0 returns
- * k_rx_err_invalid_state (which is the expected behavior for the var1 == 0
- * scenario since the state would only arise from dig_P1 == 0).
+ * This test verifies the init guard: providing dig_P1 == 0 (bytes 6-7 = 0x00)
+ * must cause rx_bmp280_init() to return k_rx_err_invalid_state and leave
+ * s_initialized false, preventing any subsequent read from reaching the
+ * internal_compensate_pressure division-by-zero scenario.
  *
  * @pre s_initialized may be any value
- * @post s_initialized == false (init failed)
+ * @post s_initialized == false (init rejected dig_P1 == 0)
+ * @post No read can succeed until re-init with valid calibration
  *
  * @since Version 1.0.0
  */
@@ -804,13 +797,13 @@ void test_bmp280_read_zero_var1_returns_error(void)
   memset(calib, 0, sizeof(calib));
   calib[k_bmp280_calib_t1_lsb] = (uint8_t)k_calib_t1_lsb;
   calib[k_bmp280_calib_t1_msb] = (uint8_t)k_calib_t1_msb;
-  /* dig_P1 bytes 6-7 remain 0x00 */
+  /* dig_P1 bytes 6-7 remain 0x00 - causes var1 == 0 in compensation */
 
   mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
 
   rx_err_t init_err = rx_bmp280_init(&s_test_manager);
 
-  /* dig_P1 == 0 must be rejected during init (postcondition check) */
+  /* dig_P1 == 0 must be rejected by init to prevent division by zero in compensation */
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, init_err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, init_err);
 }
@@ -832,7 +825,9 @@ void test_bmp280_read_zero_var1_returns_error(void)
  *   5. Read/compensation tests - require s_initialized == true
  *   6. test_bmp280_read_zero_var1_returns_error - re-inits with bad calib
  *
- * @return int 0 if all tests pass
+ * @return int Unity test result code
+ * @retval 0 All tests passed
+ * @retval 1 One or more tests failed
  *
  * @since Version 1.0.0
  */

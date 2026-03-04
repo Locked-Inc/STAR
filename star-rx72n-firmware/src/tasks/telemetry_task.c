@@ -2037,6 +2037,9 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->imu.calib_stat          = (uint32_t)imu_state.calib_stat;
     telemetry->imu.temperature_celsius = (double)imu_state.temp_degc;
   }
+  /* Postcondition: if valid IMU data was available, has_imu must be set */
+  RX_ASSERT(!(err == k_rx_ok && imu_state.valid) || telemetry->has_imu,
+            "has_imu must be true when imu_state.valid is true");
 }
 
 /**
@@ -2054,6 +2057,10 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
  * @post All baro.* fields populated on success
  *
  * @note Not thread-safe; called from single-threaded internal_collect_state()
+ *
+ * @see shared_data_get_baro() Data source accessor
+ * @see baro_state_t Raw barometric state structure
+ * @see internal_collect_state() Caller function
  *
  * @since Version 1.0.0
  */
@@ -2073,6 +2080,9 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
     /* Pressure: Pa * 256 -> Pa */
     telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / s_baro_press_scale;
   }
+  /* Postcondition: if valid baro data was available, has_baro must be set */
+  RX_ASSERT(!(err == k_rx_ok && baro_state.valid) || telemetry->has_baro,
+            "has_baro must be true when baro_state.valid is true");
 }
 
 /**

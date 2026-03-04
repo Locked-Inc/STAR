@@ -143,10 +143,10 @@ typedef struct _star_v1_ImuData {
     double quat_y;
     /* Quaternion Z component. Range: -1.0 to 1.0. */
     double quat_z;
-    /* BNO055 on-chip temperature in degrees Celsius. Range: -40.0 to +85.0 degC. */
-    double temperature_celsius;
     /* BNO055 calibration status byte (raw CALIB_STAT register 0x35). */
     uint32_t calib_stat;
+    /* BNO055 on-chip temperature in degrees Celsius. Range: -40.0 to +85.0 degC. */
+    double temperature_celsius;
 } star_v1_ImuData;
 
 /* Barometric pressure and temperature data from BMP280. */
@@ -371,8 +371,8 @@ extern "C" {
 #define star_v1_ImuData_quat_x_tag               12
 #define star_v1_ImuData_quat_y_tag               13
 #define star_v1_ImuData_quat_z_tag               14
-#define star_v1_ImuData_temperature_celsius_tag  15
-#define star_v1_ImuData_calib_stat_tag           16
+#define star_v1_ImuData_calib_stat_tag           15
+#define star_v1_ImuData_temperature_celsius_tag  16
 #define star_v1_BaroData_temperature_celsius_tag 1
 #define star_v1_BaroData_pressure_pa_tag         2
 #define star_v1_ObstacleData_distance_front_left_m_tag 1
@@ -501,8 +501,8 @@ X(a, STATIC,   SINGULAR, DOUBLE,   quat_w,           11) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_x,           12) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_y,           13) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_z,           14) \
-X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius, 15) \
-X(a, STATIC,   SINGULAR, UINT32,   calib_stat,       16)
+X(a, STATIC,   SINGULAR, UINT32,   calib_stat,       15) \
+X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius, 16)
 #define star_v1_ImuData_CALLBACK NULL
 #define star_v1_ImuData_DEFAULT NULL
 

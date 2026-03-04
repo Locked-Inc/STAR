@@ -78,6 +78,9 @@ extern "C" {
  * @invariant k_bmp280_reg_calib_start contains factory-calibrated coefficients
  * @invariant 0xF7 output is valid only after measurement completes
  *
+ * @post Registers accessible after BMP280 power-on reset sequence completes
+ * @post All addresses remain constant for the lifetime of the device
+ *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {

@@ -327,11 +327,29 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_tick_round_up       = 1,  /**< Extra tick for rounding fractional delays (19ms -> 20ms) */
   k_bno055_delay_ndof_ticks    = 1,  /**< CONFIG->NDOF transition: 7 ms rounds up to 1 tick (10 ms) */
   k_bno055_delay_por_ticks     = 65, /**< POR/software reset boot: 650 ms / 10 ms per tick = 65 ticks */
   k_bno055_delay_config_ticks  = 2,  /**< Fusion->CONFIG transition: 19 ms rounds up to 2 ticks (20 ms) */
 } bno055_delay_ticks_t;
+
+/**
+ * @enum bno055_tick_round_t
+ * @brief Extra tick for rounding fractional delay values
+ *
+ * @details
+ * When a delay in milliseconds does not divide evenly by the tick period
+ * (k_bno055_ms_per_tick = 10 ms), add one extra tick to guarantee the
+ * minimum required delay is met. Used in the CONFIG mode transition
+ * (19 ms rounds up to 20 ms = 2 ticks).
+ *
+ * @see bno055_delay_ticks_t Delay tick constants
+ * @see rx_bno055_init() Uses this in tx_thread_sleep() calls
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_tick_round_up = 1, /**< Extra tick added to round fractional delays up to next tick boundary */
+} bno055_tick_round_t;
 
 /**
  * @enum bno055_scale_t
@@ -417,12 +435,9 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_euler_bytes     = 6, /**< Euler angles: heading(2) + roll(2) + pitch(2) */
-  k_bno055_quat_bytes      = 8, /**< Quaternion: W(2) + X(2) + Y(2) + Z(2) */
-  k_bno055_lia_bytes       = 6, /**< Linear acceleration: X(2) + Y(2) + Z(2) */
-  k_bno055_euler_min_bytes = 6, /**< Minimum bytes required for Euler angle read */
-  k_bno055_quat_min_bytes  = 8, /**< Minimum bytes required for quaternion read */
-  k_bno055_lia_min_bytes   = 6, /**< Minimum bytes required for linear acceleration read */
+  k_bno055_euler_bytes = 6, /**< Euler angles: heading(2) + roll(2) + pitch(2) */
+  k_bno055_quat_bytes  = 8, /**< Quaternion: W(2) + X(2) + Y(2) + Z(2) */
+  k_bno055_lia_bytes   = 6, /**< Linear acceleration: X(2) + Y(2) + Z(2) */
 } bno055_read_size_t;
 
 /**

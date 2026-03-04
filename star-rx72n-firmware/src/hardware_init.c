@@ -1373,7 +1373,7 @@ static rx_err_t i2c_init(void)
   err                = riic_init(ch1, k_i2c_imu_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC1 init failed");
 
-  rx_log_info(s_tag, "RIIC1 @ 400kHz");
+  rx_log_info_val(s_tag, "RIIC1 initialized, freq_hz", (uint32_t)k_i2c_imu_freq_hz);
   return k_rx_ok;
 }
 

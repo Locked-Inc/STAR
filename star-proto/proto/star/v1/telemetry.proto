@@ -199,16 +199,16 @@ message ImuData {
   // Quaternion Z component. Range: -1.0 to 1.0.
   double quat_z = 14;
 
-  // BNO055 on-chip temperature in degrees Celsius.
-  // Range: -40.0 to +85.0 degC.
-  double temperature_celsius = 15;
-
   // BNO055 calibration status byte (raw CALIB_STAT register 0x35).
   // Bits [7:6] = SYS calibration (0=uncal, 3=fully cal).
   // Bits [5:4] = Gyroscope calibration.
   // Bits [3:2] = Accelerometer calibration.
   // Bits [1:0] = Magnetometer calibration.
-  uint32 calib_stat = 16;
+  uint32 calib_stat = 15;
+
+  // BNO055 on-chip temperature in degrees Celsius.
+  // Range: -40.0 to +85.0 degC.
+  double temperature_celsius = 16;
 }
 
 // Barometric pressure and temperature data from BMP280.

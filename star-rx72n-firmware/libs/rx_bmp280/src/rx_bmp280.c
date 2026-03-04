@@ -128,6 +128,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
  * @pre s_manager non-NULL (set by rx_bmp280_init)
  * @pre "i2c1" bus initialized
  * @post Register contains val on k_rx_ok
+ * @post Bus transaction completes before function returns
  *
  * @note Not thread-safe
  * @see rx_bus_i2c_write()
@@ -163,6 +164,7 @@ static rx_err_t internal_write_reg(uint8_t reg, uint8_t val)
  * @pre "i2c1" bus initialized
  * @pre buf capacity >= len
  * @post buf[0..len-1] contain register data on k_rx_ok
+ * @post Bus transaction completes before function returns
  *
  * @note Not thread-safe
  * @see rx_bus_i2c_write_read()
@@ -231,7 +233,8 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
     k_temp_shift_out    = 8,       /**< Right shift to produce 0.01 degC output */
   } temp_bit_constants_t;
 
-  RX_ASSERT(adc_T >= 0 && adc_T <= k_adc_20bit_max, "adc_T must be a 20-bit ADC value");
+  RX_ASSERT(adc_T >= 0 && adc_T <= (temp_bit_constants_t)k_adc_20bit_max,
+            "adc_T must be a 20-bit ADC value");
 
   const int32_t var1 = ((((adc_T >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
                         ((int32_t)s_calib.dig_T2)) >>
@@ -272,6 +275,7 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
  * @pre t_fine was computed by internal_compensate_temp() for same measurement
  * @pre press_out non-NULL
  * @post *press_out in range [77312*256, 281472*256] for 300-1100 hPa on success
+ * @post Returns k_rx_err_invalid_state without modifying *press_out when var1 == 0
  *
  * @note Uses 64-bit arithmetic to prevent overflow at intermediate values
  * @see BMP280 datasheet v1.19 appendix A, compensate_P_int64
@@ -308,7 +312,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
    * C23 typed enums cannot have int64_t as underlying type on RX72N. */
   static const int64_t k_press_base_one = 1;
 
-  int64_t var1 = ((int64_t)t_fine) - k_press_t_offset;
+  int64_t var1 = ((int64_t)t_fine) - (press_comp_constants_t)k_press_t_offset;
   int64_t var2 = var1 * var1 * (int64_t)s_calib.dig_P6;
   var2 += (var1 * (int64_t)s_calib.dig_P5) << k_press_shift_17;
   var2 += ((int64_t)s_calib.dig_P4) << k_press_shift_35;

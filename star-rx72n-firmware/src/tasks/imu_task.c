@@ -81,31 +81,46 @@
  */
 
 /**
- * @enum imu_task_cfg_t
- * @brief IMU task configuration constants
+ * @enum imu_task_stack_cfg_t
+ * @brief IMU task stack size constant
  *
  * @details
- * Defines stack size, priority, and period for the IMU task.
- * The task runs at 20 Hz (50 ms period, 5 ticks at 100 Hz tick rate).
- *
- * **Priority rationale:**
- * - Priority 13 sits between obstacle detect (12) and temp sensor (15)
- * - IMU data needed by telemetry; not as time-critical as obstacle avoidance
+ * Defines the stack size in bytes for the IMU task. Uses uint16_t because
+ * 2048 exceeds the uint8_t maximum of 255.
  *
  * **Stack rationale:**
  * - 2048 bytes: BNO055 init sequence writes ~12 registers (local buffers)
  * - BMP280 init reads 24-byte calib block (local buffer)
  * - State structs imu_state_t (~32 bytes) + baro_state_t (~16 bytes)
  *
- * @invariant k_imu_task_period_ticks > 0 (loop must have finite period)
+ * @invariant k_imu_task_stack_size > 0 (stack must be non-zero)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_imu_task_stack_size    = 2048, /**< Stack size in bytes */
-  k_imu_task_priority      = 13,   /**< ThreadX priority (between obstacle=12 and temp=15) */
-  k_imu_task_input         = 0,    /**< Thread entry ULONG input (unused) */
-  k_imu_task_period_ticks  = 5,    /**< 50 ms period: 5 ticks @ 10 ms/tick (100 Hz tick rate) */
+  k_imu_task_stack_size = 2048, /**< Stack size in bytes (exceeds uint8_t range) */
+} imu_task_stack_cfg_t;
+
+/**
+ * @enum imu_task_cfg_t
+ * @brief IMU task priority, input, and period configuration constants
+ *
+ * @details
+ * Defines thread priority, entry input, and period tick count for the IMU task.
+ * The task runs at 20 Hz (50 ms period, 5 ticks at 100 Hz tick rate).
+ *
+ * **Priority rationale:**
+ * - Priority 13 sits between obstacle detect (12) and temp sensor (15)
+ * - IMU data needed by telemetry; not as time-critical as obstacle avoidance
+ *
+ * @invariant k_imu_task_period_ticks > 0 (loop must have finite period)
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_task_priority     = 13, /**< ThreadX priority (between obstacle=12 and temp=15) */
+  k_imu_task_input        = 0,  /**< Thread entry ULONG input (unused) */
+  k_imu_task_period_ticks = 5,  /**< 50 ms period: 5 ticks @ 10 ms/tick (100 Hz tick rate) */
 } imu_task_cfg_t;
 
 /* =============================================================================
@@ -148,6 +163,26 @@ static bool s_imu_created = false;
  * @since Version 1.0.0
  */
 static const char* const s_tag = "IMU";
+
+/**
+ * @var s_task_name
+ * @brief ThreadX task name for ImuTask
+ *
+ * @details
+ * Task name string passed to tx_thread_create() and rx_iwdt_task_heartbeat().
+ * Centralising the name in one place avoids typos across tx_thread_create()
+ * and the IWDT heartbeat call site.
+ *
+ * @invariant Points to static string literal "ImuTask"; never NULL, never modified
+ * @note Not thread-safe; used as a read-only constant
+ * @warning Do not modify; used as an identifier by the IWDT subsystem
+ *
+ * @see imu_task_create() Passes s_task_name to tx_thread_create()
+ * @see internal_send_iwdt_heartbeat() Passes s_task_name to rx_iwdt_task_heartbeat()
+ *
+ * @since Version 1.0.0
+ */
+static const char* const s_task_name = "ImuTask";
 
 /** @brief External bus manager declared in main.c; registered buses include "i2c1" and "i2c1_baro"
  *  @note Using inline extern is necessary because main.h does not export g_bus_manager.
@@ -204,7 +239,7 @@ rx_err_t imu_task_create(void)
   }
 
   const UINT tx_status = tx_thread_create(&s_imu_thread,
-                                          "ImuTask",
+                                          (CHAR*)s_task_name, /* ThreadX requires non-const CHAR* for name */
                                           internal_imu_task_entry,
                                           (ULONG)k_imu_task_input,
                                           s_imu_stack,
@@ -253,7 +288,7 @@ static void internal_send_iwdt_heartbeat(void)
 {
   RX_ASSERT(s_tag != NULL, "s_tag must be non-NULL for IWDT heartbeat");
   RX_ASSERT(s_imu_created, "IWDT heartbeat called before task created");
-  const rx_err_t err = rx_iwdt_task_heartbeat("ImuTask");
+  const rx_err_t err = rx_iwdt_task_heartbeat(s_task_name);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "IWDT heartbeat failed");
   }

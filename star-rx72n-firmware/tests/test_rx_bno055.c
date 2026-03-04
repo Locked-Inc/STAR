@@ -177,7 +177,23 @@ typedef enum : uint8_t {
 } test_bno055_quat_raw_t;
 
 /**
- * @enum test_bno055_temp_t
+ * @enum test_quat_expected_t
+ * @brief Expected assembled int16_t quaternion values after little-endian assembly
+ *
+ * @details
+ * The identity quaternion has W=1.0 which corresponds to raw value 16384 (0x4000).
+ * All other components are 0. These are the expected data.quat_w and data.quat_x
+ * values after the driver assembles the bytes loaded by internal_load_quat_read_data.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_quat_w_expected   = 0x4000U, /**< Expected quat_w raw = 16384 (W=1.0, identity quaternion) */
+  k_quat_xyz_expected = 0x0000U, /**< Expected quat_x/y/z raw = 0 */
+} test_quat_expected_t;
+
+/**
+ * @enum test_bno055_misc_t
  * @brief Temperature byte used in full read test
  *
  * @since Version 1.0.0
@@ -241,7 +257,7 @@ static rx_bus_config_t s_i2c_config;
  *
  * @since Version 1.0.0
  */
-static void helper_load_valid_chip_id(void)
+static void internal_load_valid_chip_id(void)
 {
   uint8_t chip_id_data = (uint8_t)k_bno055_chip_id_expected;
   mock_riic_set_rx_data((uint8_t)k_test_bno055_riic_ch, &chip_id_data, k_test_single_byte_buf);
@@ -305,7 +321,7 @@ typedef enum : uint8_t {
   k_quat_w_msb_idx  = 1, /**< W MSB position in quat buffer */
 } test_bno055_quat_buf_idx_t;
 
-static void helper_load_read_data(void)
+static void internal_load_read_data(void)
 {
   uint8_t read_buf[k_read_buf_size];
   memset(read_buf, 0, sizeof(read_buf));
@@ -332,7 +348,7 @@ static void helper_load_read_data(void)
  *
  * @since Version 1.0.0
  */
-static void helper_load_quat_read_data(void)
+static void internal_load_quat_read_data(void)
 {
   uint8_t quat_buf[k_quat_buf_size];
   memset(quat_buf, 0, sizeof(quat_buf));
@@ -501,13 +517,13 @@ void test_bno055_init_wrong_chip_id(void)
  */
 void test_bno055_init_success(void)
 {
-  helper_load_valid_chip_id();
+  internal_load_valid_chip_id();
 
   rx_err_t err = rx_bno055_init(&s_test_manager);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* Verify initialized by attempting a read with mock data */
-  helper_load_read_data();
+  internal_load_read_data();
   bno055_data_t data;
   rx_err_t read_err = rx_bno055_read(&data);
   TEST_ASSERT_EQUAL(k_rx_ok, read_err);
@@ -528,7 +544,7 @@ void test_bno055_init_success(void)
 void test_bno055_init_double_init_returns_error(void)
 {
   /* s_initialized is true from test_bno055_init_success */
-  helper_load_valid_chip_id();
+  internal_load_valid_chip_id();
 
   rx_err_t err = rx_bno055_init(&s_test_manager);
 
@@ -568,7 +584,7 @@ void test_bno055_read_null_ptr_returns_error(void)
  * Euler heading, roll, and pitch fields are assembled correctly from the
  * mock data (little-endian 16-bit values).
  *
- * Expected assembly (from helper_load_read_data):
+ * Expected assembly (from internal_load_read_data):
  * heading_deg16 = (0x40) | (0x01 << 8) = 0x0140 = 320
  * roll_deg16    = (0x10) | (0x00 << 8) = 0x0010 = 16
  * pitch_deg16   = (0x20) | (0x00 << 8) = 0x0020 = 32
@@ -580,7 +596,7 @@ void test_bno055_read_null_ptr_returns_error(void)
  */
 void test_bno055_read_success_euler(void)
 {
-  helper_load_read_data();
+  internal_load_read_data();
 
   bno055_data_t data;
   memset(&data, 0, sizeof(data));
@@ -611,7 +627,7 @@ void test_bno055_read_success_euler(void)
  */
 void test_bno055_read_success_quaternion(void)
 {
-  helper_load_quat_read_data();
+  internal_load_quat_read_data();
 
   bno055_data_t data;
   memset(&data, 0, sizeof(data));
@@ -620,8 +636,8 @@ void test_bno055_read_success_quaternion(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* quat_w: loaded buffer[0]=0x00, buffer[1]=0x40 -> 0x4000 = 16384 */
-  TEST_ASSERT_EQUAL_INT16((int16_t)0x4000, data.quat_w);
-  TEST_ASSERT_EQUAL_INT16((int16_t)0x0000, data.quat_x);
+  TEST_ASSERT_EQUAL_INT16((int16_t)k_quat_w_expected, data.quat_w);
+  TEST_ASSERT_EQUAL_INT16((int16_t)k_quat_xyz_expected, data.quat_x);
 }
 
 /**

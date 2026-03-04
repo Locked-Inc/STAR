@@ -156,7 +156,7 @@ typedef struct {
  *
  * @details
  * Reads the 24-byte calibration block from OTP (k_bmp280_reg_calib_start (0x88) through 0x9F) and parses
- * the 12 trimming parameters into s_calib (module-static storage).
+ * the 12 trimming parameters into module-static storage.
  * Then writes the IIR filter configuration to register k_bmp280_reg_config (0xF5).
  *
  * The ctrl_meas register (0xF4) is NOT written during init; it is written
@@ -175,8 +175,8 @@ typedef struct {
  * @pre manager non-NULL, "i2c1_baro" bus registered and initialized
  * @pre BMP280 powered (3.3V) on same I2C bus as BNO055
  *
- * @post s_calib contains valid factory coefficients
- * @post s_initialized == true on success
+ * @post Calibration coefficients loaded into module-static storage
+ * @post Driver initialized successfully (s_initialized == true on success)
  * @post IIR filter configured with coefficient 2
  *
  * @note Not thread-safe; call during single-threaded initialization
