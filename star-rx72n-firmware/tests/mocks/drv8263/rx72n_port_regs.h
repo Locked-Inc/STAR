@@ -261,6 +261,11 @@ extern rx_port_regs_t g_mock_port_regs[k_mock_port_max];
  * @post No side effects on port register contents
  *
  * @note Thread-safe (read-only pointer computation)
+ * @note The (volatile rx_port_regs_t*) cast in each accessor is intentional: it
+ *       adds the volatile qualifier so mock accessors match the real hardware
+ *       accessor signatures (which return pointers to memory-mapped volatile
+ *       registers). g_mock_port_regs is declared non-volatile for convenient
+ *       test writes; the cast is valid because adding volatile is always safe.
  *
  * @see rx_port_regs_t Port register structure
  * @see g_mock_port_regs Global mock register array

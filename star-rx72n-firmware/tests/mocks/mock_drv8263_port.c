@@ -148,7 +148,7 @@ void mock_drv8263_port_reset(void)
   /** @brief Minimum valid array size (at least one port entry) */
   enum : uint8_t { k_mock_port_min_size = 1 };
   assert(sizeof(g_mock_port_regs) >= k_mock_port_min_size * sizeof(rx_port_regs_t));
-  memset(g_mock_port_regs, k_memset_zero, sizeof(g_mock_port_regs));
+  (void)memset(g_mock_port_regs, k_memset_zero, sizeof(g_mock_port_regs));
   assert(g_mock_port_regs[k_mock_port_first_index].podr == k_mock_port_reset_value);
 }
 
@@ -281,13 +281,12 @@ void mock_drv8263_port_set_pin_input(uint8_t port, uint8_t pin, bool high)
   assert(port < k_mock_port_max);
   assert(pin < k_mock_pins_per_port);
   if (port < k_mock_port_max && pin < k_mock_pins_per_port) {
-    if (high) {
-      g_mock_port_regs[port].pidr |= (uint8_t)((uint8_t)k_bit_shift_base << pin);
-    } else {
-      g_mock_port_regs[port].pidr &=
-          (uint8_t) ~((uint8_t)k_bit_shift_base << pin);
-    }
     const uint8_t mask = (uint8_t)((uint8_t)k_bit_shift_base << pin);
+    if (high) {
+      g_mock_port_regs[port].pidr |= mask;
+    } else {
+      g_mock_port_regs[port].pidr &= (uint8_t)~mask;
+    }
     assert(high ? ((g_mock_port_regs[port].pidr & mask) != k_bit_clear)
                 : ((g_mock_port_regs[port].pidr & mask) == k_bit_clear));
   }

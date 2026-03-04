@@ -63,3 +63,4 @@ jobs:
         with:
           name: generated-protos
           path: star-rx72n-firmware/libs/rx_nanopb/inc/gen/
+          retention-days: 7

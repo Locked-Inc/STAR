@@ -291,12 +291,14 @@ static inline void internal_gpio_write(uint8_t port, uint8_t pin, bool high)
  */
 static inline bool internal_gpio_read(uint8_t port, uint8_t pin)
 {
+  assert(internal_validate_gpio(port, pin)); /* Precondition: valid port/pin */
   if (!internal_validate_gpio(port, pin)) {
     rx_log_debug(s_tag, "GPIO read: invalid port/pin");
     return false;
   }
 
   volatile rx_port_regs_t* base = rx_port_get_base(port);
+  assert(base != nullptr); /* Precondition: port must map to a valid register base */
   if (base == nullptr) {
     return false;
   }
@@ -821,7 +823,7 @@ rx_err_t rx_drv8263_run_olp(rx_drv8263_handle_t*     handle,
   internal_delay_us((uint32_t)k_drv8263_olp_settle_us);
 
   /* Step 2: Apply 3 test patterns and read nFAULT for each */
-  bool nfault_readings[k_drv8263_olp_pattern_count] = {0};
+  bool nfault_readings[k_drv8263_olp_pattern_count] = {false, false, false};
   internal_olp_apply_patterns(handle, nfault_readings);
 
   /* Step 3: Return IN1/IN2 to LOW (safe state) */

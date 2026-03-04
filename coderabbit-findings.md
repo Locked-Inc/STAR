@@ -1,5 +1,22 @@
 # CodeRabbit Findings Tracker
 
+## Introduction
+
+This file tracks quality and security findings from iterative CodeRabbit reviews on this
+branch. Each round represents one pass of `coderabbit --prompt-only`.
+
+**Status markers:**
+- `[x]` DONE -- finding fixed in this round or confirmed already correct
+- `[x]` SKIP -- out of scope (submodule state, unrelated workflow, upstream vendor)
+- `[x]` FALSE POSITIVE -- finding is incorrect per STAR coding conventions or project design
+
+**How to read entries:** Each bullet references the file and line range, describes the
+finding, and records the disposition. Items marked FALSE POSITIVE explain why the finding
+does not apply. Rounds are numbered sequentially; Round 1 was the first pass after the
+DRV8263H-Q1 refactor was introduced on this branch.
+
+---
+
 ## Round 1 (all resolved)
 
 ### Submodule Issues (skip - not code fixes)
@@ -452,3 +469,40 @@ categorized as SKIP, or are false positives. No new code changes required.
 
 ### Build & Test Results
 - Build: 100% clean (47/47 tests pass)
+
+## Round 9 (all resolved)
+
+### coderabbit-findings.md
+- [x] R9-1. Lines 1-2: DONE (already resolved in Round 8 commit; Introduction section present)
+
+### rx_drv8263.c
+- [x] R9-2. Lines 292-305: Added assert(internal_validate_gpio(port, pin)) and assert(base != nullptr) to internal_gpio_read() to mirror internal_gpio_write() defense-in-depth
+- [x] R9-3. Lines 802-842: Changed nfault_readings initializer from {0} to {false, false, false} for explicit boolean semantics
+
+### star-ros2/src/sllidar_ros2
+- [x] R9-4. Line 1: SKIP: submodule dirty state is unrelated to DRV8263H refactor
+
+### proto-gen.yml
+- [x] R9-5. Lines 61-65: Added retention-days: 7 to "Upload firmware artifacts" step
+
+### firmware-build-verify.yml
+- [x] R9-6. Lines 66-68: FALSE POSITIVE: unit tests already run in firmware-unit-tests.yml with correct host GCC toolchain; adding ctest to firmware-build-verify.yml (which uses cross-compiler rx-elf-gcc) would not work
+
+### mock_drv8263_port.h
+- [x] R9-7. Lines 58-62: FALSE POSITIVE: STAR convention uses k_ prefix snake_case for enum values (not SCREAMING_SNAKE_CASE); SCREAMING_SNAKE_CASE is for preprocessor macros only per CLAUDE.md
+
+### mock_drv8263_port.c
+- [x] R9-8. Lines 146-153: Cast memset return to (void) to satisfy NASA Rule 7 (check all return values)
+- [x] R9-10. Lines 279-294: Extracted mask const to top of if block; used in both set/clear and postcondition assert
+
+### rx72n_port_regs.h
+- [x] R9-9. Lines 174-177: FALSE POSITIVE: same enum naming convention as R9-7 (k_ prefix is correct)
+- [x] R9-11. Lines 61-69: FALSE POSITIVE: port_pad_size_t uses k_ prefix per STAR enum naming convention
+- [x] R9-12. Lines 272-275: Added @note to Doxygen block explaining volatile cast is intentional for API parity with real hardware register accessors
+
+### rx_drv8263.h
+- [x] R9-13. Lines 468-486: Replaced @var Doxygen tags with simple block comments (/* ... */) for function-local constants
+- [x] R9-14. Lines 468-487: Renamed lc_ prefix variables to plain names (min_nonneg, max_adc_v, ipropi_divisor); lc_ was undocumented convention
+
+### Build & Test Results
+- All fixes applied; running tests to verify
