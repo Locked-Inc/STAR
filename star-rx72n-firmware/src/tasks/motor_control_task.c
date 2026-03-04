@@ -379,10 +379,10 @@
 #include "hardware_config.h"
 #include "rx_bus_manager.h"
 #include "rx_check.h"
+#include "rx_drv8263.h"
 #include "rx_encoder_tpu.h"
 #include "rx_iwdt.h"
 #include "rx_log.h"
-#include "rx_drv8263.h"
 #include "rx_motor.h"
 #include "rx_mtu_encoder.h"
 #include "rx_pid.h"
@@ -721,54 +721,64 @@ static rx_drv8263_handle_t s_drv8263[k_motor_count];
  */
 
 /** @brief DRV8263 DRVOFF GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_drvoff_ports[k_motor_count] = {
-    (uint8_t)k_motor_0_drvoff_port, (uint8_t)k_motor_1_drvoff_port,
-    (uint8_t)k_motor_2_drvoff_port, (uint8_t)k_motor_3_drvoff_port};
+static const uint8_t s_drv8263_drvoff_ports[k_motor_count] = {(uint8_t)k_motor_0_drvoff_port,
+                                                              (uint8_t)k_motor_1_drvoff_port,
+                                                              (uint8_t)k_motor_2_drvoff_port,
+                                                              (uint8_t)k_motor_3_drvoff_port};
 
 /** @brief DRV8263 DRVOFF GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_drvoff_pins[k_motor_count] = {
-    (uint8_t)k_motor_0_drvoff_pin, (uint8_t)k_motor_1_drvoff_pin,
-    (uint8_t)k_motor_2_drvoff_pin, (uint8_t)k_motor_3_drvoff_pin};
+static const uint8_t s_drv8263_drvoff_pins[k_motor_count] = {(uint8_t)k_motor_0_drvoff_pin,
+                                                             (uint8_t)k_motor_1_drvoff_pin,
+                                                             (uint8_t)k_motor_2_drvoff_pin,
+                                                             (uint8_t)k_motor_3_drvoff_pin};
 
 /** @brief DRV8263 nSLEEP GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nsleep_ports[k_motor_count] = {
-    (uint8_t)k_motor_0_nsleep_port, (uint8_t)k_motor_1_nsleep_port,
-    (uint8_t)k_motor_2_nsleep_port, (uint8_t)k_motor_3_nsleep_port};
+static const uint8_t s_drv8263_nsleep_ports[k_motor_count] = {(uint8_t)k_motor_0_nsleep_port,
+                                                              (uint8_t)k_motor_1_nsleep_port,
+                                                              (uint8_t)k_motor_2_nsleep_port,
+                                                              (uint8_t)k_motor_3_nsleep_port};
 
 /** @brief DRV8263 nSLEEP GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nsleep_pins[k_motor_count] = {
-    (uint8_t)k_motor_0_nsleep_pin, (uint8_t)k_motor_1_nsleep_pin,
-    (uint8_t)k_motor_2_nsleep_pin, (uint8_t)k_motor_3_nsleep_pin};
+static const uint8_t s_drv8263_nsleep_pins[k_motor_count] = {(uint8_t)k_motor_0_nsleep_pin,
+                                                             (uint8_t)k_motor_1_nsleep_pin,
+                                                             (uint8_t)k_motor_2_nsleep_pin,
+                                                             (uint8_t)k_motor_3_nsleep_pin};
 
 /** @brief DRV8263 nFAULT GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nfault_ports[k_motor_count] = {
-    (uint8_t)k_motor_0_nfault_port, (uint8_t)k_motor_1_nfault_port,
-    (uint8_t)k_motor_2_nfault_port, (uint8_t)k_motor_3_nfault_port};
+static const uint8_t s_drv8263_nfault_ports[k_motor_count] = {(uint8_t)k_motor_0_nfault_port,
+                                                              (uint8_t)k_motor_1_nfault_port,
+                                                              (uint8_t)k_motor_2_nfault_port,
+                                                              (uint8_t)k_motor_3_nfault_port};
 
 /** @brief DRV8263 nFAULT GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_nfault_pins[k_motor_count] = {
-    (uint8_t)k_motor_0_nfault_pin, (uint8_t)k_motor_1_nfault_pin,
-    (uint8_t)k_motor_2_nfault_pin, (uint8_t)k_motor_3_nfault_pin};
+static const uint8_t s_drv8263_nfault_pins[k_motor_count] = {(uint8_t)k_motor_0_nfault_pin,
+                                                             (uint8_t)k_motor_1_nfault_pin,
+                                                             (uint8_t)k_motor_2_nfault_pin,
+                                                             (uint8_t)k_motor_3_nfault_pin};
 
 /** @brief DRV8263 IN1 GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in1_ports[k_motor_count] = {
-    (uint8_t)k_motor_0_in1_port, (uint8_t)k_motor_1_in1_port,
-    (uint8_t)k_motor_2_in1_port, (uint8_t)k_motor_3_in1_port};
+static const uint8_t s_drv8263_in1_ports[k_motor_count] = {(uint8_t)k_motor_0_in1_port,
+                                                           (uint8_t)k_motor_1_in1_port,
+                                                           (uint8_t)k_motor_2_in1_port,
+                                                           (uint8_t)k_motor_3_in1_port};
 
 /** @brief DRV8263 IN1 GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in1_pins[k_motor_count] = {
-    (uint8_t)k_motor_0_in1_pin, (uint8_t)k_motor_1_in1_pin,
-    (uint8_t)k_motor_2_in1_pin, (uint8_t)k_motor_3_in1_pin};
+static const uint8_t s_drv8263_in1_pins[k_motor_count] = {(uint8_t)k_motor_0_in1_pin,
+                                                          (uint8_t)k_motor_1_in1_pin,
+                                                          (uint8_t)k_motor_2_in1_pin,
+                                                          (uint8_t)k_motor_3_in1_pin};
 
 /** @brief DRV8263 IN2 GPIO port assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in2_ports[k_motor_count] = {
-    (uint8_t)k_motor_0_in2_port, (uint8_t)k_motor_1_in2_port,
-    (uint8_t)k_motor_2_in2_port, (uint8_t)k_motor_3_in2_port};
+static const uint8_t s_drv8263_in2_ports[k_motor_count] = {(uint8_t)k_motor_0_in2_port,
+                                                           (uint8_t)k_motor_1_in2_port,
+                                                           (uint8_t)k_motor_2_in2_port,
+                                                           (uint8_t)k_motor_3_in2_port};
 
 /** @brief DRV8263 IN2 GPIO pin assignments per motor (indexed by motor_index_t) */
-static const uint8_t s_drv8263_in2_pins[k_motor_count] = {
-    (uint8_t)k_motor_0_in2_pin, (uint8_t)k_motor_1_in2_pin,
-    (uint8_t)k_motor_2_in2_pin, (uint8_t)k_motor_3_in2_pin};
+static const uint8_t s_drv8263_in2_pins[k_motor_count] = {(uint8_t)k_motor_0_in2_pin,
+                                                          (uint8_t)k_motor_1_in2_pin,
+                                                          (uint8_t)k_motor_2_in2_pin,
+                                                          (uint8_t)k_motor_3_in2_pin};
 
 /** @} */ /* end drv8263_gpio_arrays */
 
@@ -1901,20 +1911,21 @@ static rx_err_t internal_init_motor_stack(void)
 static rx_err_t internal_init_drv8263_drivers(void)
 {
   _Static_assert(k_motor_count > 0, "Motor count must be positive at compile time");
-  RX_ASSERT(!s_drv8263[k_motor_front_left].initialized, "DRV8263 drivers already initialized (double init)");
+  RX_ASSERT(!s_drv8263[k_motor_front_left].initialized,
+            "DRV8263 drivers already initialized (double init)");
 
   for (uint8_t i = 0; i < k_motor_count; i++) {
     const rx_drv8263_config_t drv_config = {
-      .port_drvoff     = s_drv8263_drvoff_ports[i],
-      .pin_drvoff      = s_drv8263_drvoff_pins[i],
-      .port_nsleep     = s_drv8263_nsleep_ports[i],
-      .pin_nsleep      = s_drv8263_nsleep_pins[i],
-      .port_nfault     = s_drv8263_nfault_ports[i],
-      .pin_nfault      = s_drv8263_nfault_pins[i],
-      .port_in1        = s_drv8263_in1_ports[i],
-      .pin_in1         = s_drv8263_in1_pins[i],
-      .port_in2        = s_drv8263_in2_ports[i],
-      .pin_in2         = s_drv8263_in2_pins[i],
+      .port_drvoff      = s_drv8263_drvoff_ports[i],
+      .pin_drvoff       = s_drv8263_drvoff_pins[i],
+      .port_nsleep      = s_drv8263_nsleep_ports[i],
+      .pin_nsleep       = s_drv8263_nsleep_pins[i],
+      .port_nfault      = s_drv8263_nfault_ports[i],
+      .pin_nfault       = s_drv8263_nfault_pins[i],
+      .port_in1         = s_drv8263_in1_ports[i],
+      .pin_in1          = s_drv8263_in1_pins[i],
+      .port_in2         = s_drv8263_in2_ports[i],
+      .pin_in2          = s_drv8263_in2_pins[i],
       .olp_enable_boot  = true, /**< Trigger Open Load Protection (OLP) load check
                                     during driver init to detect open-load conditions
                                     before outputs are enabled */
@@ -1938,7 +1949,8 @@ static rx_err_t internal_init_drv8263_drivers(void)
   }
 
   /* Postcondition: verify first driver initialized (all 4 succeeded if we reach here) */
-  RX_ASSERT(s_drv8263[k_motor_front_left].initialized, "First DRV8263 driver must be initialized after loop");
+  RX_ASSERT(s_drv8263[k_motor_front_left].initialized,
+            "First DRV8263 driver must be initialized after loop");
 
   return k_rx_ok;
 }

@@ -259,8 +259,7 @@ typedef enum : uint16_t {
  * @details Ensures k_twake_busy_wait_us * k_twake_cpu_mhz does not overflow
  *          the volatile uint32_t counter used in internal_busy_wait_us().
  */
-_Static_assert((uint64_t)k_twake_busy_wait_us * (uint64_t)k_twake_cpu_mhz <=
-                   (uint64_t)UINT32_MAX,
+_Static_assert((uint64_t)k_twake_busy_wait_us*(uint64_t)k_twake_cpu_mhz <= (uint64_t)UINT32_MAX,
                "tWAKE cycle count overflows uint32_t");
 
 /** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */

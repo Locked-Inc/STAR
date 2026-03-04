@@ -26,10 +26,10 @@
 
 #include "mock_drv8263_port.h"
 
-#include "rx72n_port_regs.h"
-
 #include <assert.h>
 #include <string.h>
+
+#include "rx72n_port_regs.h"
 
 /* =============================================================================
  * File-Scope Named Constants
@@ -246,8 +246,7 @@ bool mock_drv8263_port_get_pin_output(uint8_t port, uint8_t pin)
   assert(port < k_mock_port_max);
   assert(pin < k_mock_pins_per_port);
   if (port < k_mock_port_max && pin < k_mock_pins_per_port) {
-    return (g_mock_port_regs[port].podr &
-            (uint8_t)((uint8_t)k_bit_shift_base << pin)) !=
+    return (g_mock_port_regs[port].podr & (uint8_t)((uint8_t)k_bit_shift_base << pin)) !=
            (uint8_t)k_bit_clear;
   }
   return false;

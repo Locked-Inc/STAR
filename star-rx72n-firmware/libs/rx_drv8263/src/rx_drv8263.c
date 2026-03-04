@@ -83,8 +83,8 @@ static const char s_tag[] = "DRV8263";
  */
 typedef enum : uint8_t {
   k_max_port_number = 16, /**< Maximum valid port index (PORT0-PORTJ) */
-  k_max_pin_number = 7,   /**< Maximum valid pin within a port (0-7) */
-  k_bit_shift_one = 1,    /**< Unit bit value for single-bit GPIO mask operations */
+  k_max_pin_number  = 7,  /**< Maximum valid pin within a port (0-7) */
+  k_bit_shift_one   = 1,  /**< Unit bit value for single-bit GPIO mask operations */
 } gpio_limits_t;
 
 /**
@@ -165,7 +165,7 @@ static inline void internal_delay_us(uint32_t us)
   /** @brief Maximum allowed busy-wait delay in microseconds */
   enum : uint32_t { k_max_delay_us = 100 };
 
-  assert(us > 0);              /* Precondition: positive delay */
+  assert(us > 0);               /* Precondition: positive delay */
   assert(us <= k_max_delay_us); /* Precondition: small delay to avoid excessive blocking */
 
   volatile uint32_t cycles = us * (uint32_t)k_drv8263_cpu_mhz;
@@ -395,8 +395,7 @@ static rx_err_t internal_validate_config(const rx_drv8263_config_t* config)
  *
  * @since Version 1.0.0
  */
-static void internal_olp_apply_patterns(const rx_drv8263_handle_t* handle,
-                                        bool nfault_readings[])
+static void internal_olp_apply_patterns(const rx_drv8263_handle_t* handle, bool nfault_readings[])
 {
   assert(handle != nullptr);
   assert(nfault_readings != nullptr);
@@ -571,8 +570,7 @@ static void internal_olp_decode_results(bool                     f0,
  *
  * @since Version 1.0.0
  */
-rx_err_t rx_drv8263_init(rx_drv8263_handle_t*       handle,
-                         const rx_drv8263_config_t* config)
+rx_err_t rx_drv8263_init(rx_drv8263_handle_t* handle, const rx_drv8263_config_t* config)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle is nullptr");
   RX_CHECK_NULL_PTR(config, s_tag, "config is nullptr");
@@ -595,8 +593,7 @@ rx_err_t rx_drv8263_init(rx_drv8263_handle_t*       handle,
     const rx_err_t olp_err = rx_drv8263_run_olp(handle, &result_out1, &result_out2);
     if (olp_err != k_rx_ok) {
       rx_log_warn(s_tag, "Boot OLP diagnostic failed");
-    } else if (result_out1 != k_drv8263_olp_normal ||
-               result_out2 != k_drv8263_olp_normal) {
+    } else if (result_out1 != k_drv8263_olp_normal || result_out2 != k_drv8263_olp_normal) {
       rx_log_warn(s_tag, "Boot OLP detected abnormal load condition");
     }
   }
