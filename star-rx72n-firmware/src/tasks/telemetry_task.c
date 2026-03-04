@@ -2014,6 +2014,8 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * @post telemetry->has_imu set if shared_data_get_imu returns valid data
  * @post All imu.* fields populated on success
  *
+ * @return void
+ *
  * @note Not thread-safe; called from single-threaded internal_collect_state()
  *
  * @see shared_data_get_imu() Data source accessor
@@ -2073,6 +2075,8 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
  * @pre Shared data module initialized via shared_data_init()
  * @post telemetry->has_baro set if shared_data_get_baro returns valid data
  * @post All baro.* fields populated on success
+ *
+ * @return void
  *
  * @note Not thread-safe; called from single-threaded internal_collect_state()
  *

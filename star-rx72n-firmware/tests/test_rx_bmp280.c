@@ -159,10 +159,16 @@ typedef enum : uint8_t {
  * [3], [4], [5] which correspond to buf[3..5] in the 7-byte rx_buffer.
  * With buf[3]=0x7F, buf[4]=0x00, buf[5]=0x00:
  *   adc_T = (0x7F<<12)|(0x00<<4)|(0x00>>4) = 0x7F000 = 520192
- * With T1=27436, T2=24790, T3=50: T = 2400 centi-degC (24.00 degC)
+ * With T1=27488, T2=24790, T3=50: T ~= 2400 centi-degC (24.00 degC)
+ *
+ * Note: k_calib_t1_lsb = 0x60 = k_bmp280_chip_id_expected so that the chip ID
+ * check (reading byte[0] of the mock RX buffer) also passes. The mock always
+ * returns data from rx_buffer[0] for all reads within a function call, so
+ * this value must satisfy both the chip ID check (1 byte = 0x60) and the
+ * calibration read (24 bytes starting at offset 0).
  *
  * Calibration summary:
- *   dig_T1 = 0x6B2C = 27436 (non-zero, passes postcondition)
+ *   dig_T1 = 0x6B60 = 27488 (non-zero, passes postcondition; T1_LSB=0x60=chip_id)
  *   dig_T2 = 0x60D6 = 24790 (signed)
  *   dig_T3 = 0x0032 = 50
  *   dig_P1 = 0xFF82 = 65410 (non-zero; chosen for valid pressure at adc_P~9)
@@ -172,8 +178,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_calib_t1_lsb = 0x2C, /**< dig_T1 LSB = 0x2C */
-  k_calib_t1_msb = 0x6B, /**< dig_T1 MSB = 0x6B -> T1 = 0x6B2C = 27436 */
+  k_calib_t1_lsb = 0x60, /**< dig_T1 LSB = 0x60 (matches k_bmp280_chip_id_expected so chip ID read also passes) */
+  k_calib_t1_msb = 0x6B, /**< dig_T1 MSB = 0x6B -> T1 = 0x6B60 = 27488 (non-zero; chip ID = T1_LSB = 0x60) */
   k_calib_t2_lsb = 0xD6, /**< dig_T2 LSB */
   k_calib_t2_msb = 0x60, /**< dig_T2 MSB -> T2 = 0x60D6 (signed = 24790) */
   k_calib_t3_lsb = 0x32, /**< dig_T3 LSB */
@@ -466,7 +472,7 @@ static void internal_load_read_data(void)
 
   /* Postcondition: verify status byte is set to measuring-done (0x00) */
   TEST_ASSERT_EQUAL((uint8_t)k_status_measuring_done, buf[k_read_seq_status_idx]);
-  TEST_ASSERT_EQUAL((uint8_t)k_read_seq_buf_size, (uint8_t)k_read_seq_buf_size);
+  TEST_ASSERT_EQUAL((uint8_t)k_adc_press_msb, buf[k_read_seq_adc_press_msb_idx]);
 
   mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, buf, k_read_seq_buf_size);
 }

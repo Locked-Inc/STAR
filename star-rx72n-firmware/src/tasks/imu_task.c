@@ -14,9 +14,9 @@
  *
  * # Hardware
  *
- * Both sensors share the RIIC1 I2C bus (bus name "i2c1"):
- * - **BNO055**: I2C addr 0x28, NDOF fusion mode (heading, quaternion, linear accel)
- * - **BMP280**: I2C addr 0x76, forced mode (pressure Pa, temperature cC)
+ * Both sensors use RIIC1 I2C hardware (P2.0=SDA1, P2.1=SCL1):
+ * - **BNO055**: I2C addr 0x28, bus "i2c1", NDOF fusion mode (heading, quaternion, linear accel)
+ * - **BMP280**: I2C addr 0x76, bus "i2c1_baro", forced mode (pressure Pa, temperature cC)
  *
  * # Task Lifecycle
  *
@@ -115,6 +115,20 @@ typedef enum : uint16_t {
 typedef enum : uint8_t {
   k_imu_task_input = 0U, /**< Thread entry ULONG input (unused) */
 } imu_task_cfg_t;
+
+/**
+ * @enum imu_task_time_t
+ * @brief Milliseconds-per-second constant for tick-to-millisecond conversion
+ *
+ * @details
+ * Used to convert ThreadX tick counts from tx_time_get() to milliseconds:
+ * timestamp_ms = ticks * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_imu_ms_per_second = 1000U, /**< Milliseconds per second (conversion factor for tick->ms) */
+} imu_task_time_t;
 
 /* =============================================================================
  * Static State
@@ -327,7 +341,7 @@ static void internal_read_and_publish_imu(void)
   const rx_err_t err     = rx_bno055_read(&bno_data);
 
   imu_state_t imu  = {0};
-  imu.timestamp_ms = tx_time_get();
+  imu.timestamp_ms = (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
 
   if (err == k_rx_ok) {
     imu.heading_deg16 = bno_data.heading_deg16;
@@ -382,7 +396,7 @@ static void internal_read_and_publish_baro(void)
   const rx_err_t err      = rx_bmp280_read(&bmp_data);
 
   baro_state_t baro  = {0};
-  baro.timestamp_ms  = tx_time_get();
+  baro.timestamp_ms  = (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
 
   if (err == k_rx_ok) {
     baro.temp_centi_degc = bmp_data.temp_centi_degc;
@@ -475,13 +489,18 @@ static void internal_imu_task_entry(ULONG input)
 
   /* Step 3: Periodic poll loop at 20 Hz (50 ms period = 5 ticks @ 100 Hz) */
   while (1) {
+    const ULONG start_tick = tx_time_get();
+
     internal_read_and_publish_imu();
     internal_read_and_publish_baro();
 
     /* Feed IWDT heartbeat (must execute within 150 ms timeout) */
     internal_send_iwdt_heartbeat();
 
-    /* Sleep for remainder of 50 ms period */
-    (void)tx_thread_sleep((ULONG)k_imu_task_period_ticks);
+    /* Sleep only the remaining time in the 50 ms period to maintain cadence */
+    const ULONG elapsed = tx_time_get() - start_tick;
+    if (elapsed < (ULONG)k_imu_task_period_ticks) {
+      (void)tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
+    }
   }
 }

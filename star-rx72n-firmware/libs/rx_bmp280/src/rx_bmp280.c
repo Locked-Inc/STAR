@@ -545,7 +545,14 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
   var1 = (((int64_t)s_calib.dig_P9) * (p >> k_press_shift_13) * (p >> k_press_shift_13)) >> k_press_shift_25;
   var2 = (((int64_t)s_calib.dig_P8) * p) >> k_press_shift_19;
 
-  *press_out = (uint32_t)((p + var1 + var2 + (((int64_t)s_calib.dig_P7) << k_press_shift_4)) >> k_press_shift_8);
+  /* Bosch BMP280 datasheet formula (Section 4.2.3):
+   * Step 1: shift (p + fine adjustments) right by 8 to get Q8 fixed-point Pa*256
+   * Step 2: add dig_P7 offset (left-shifted 4) AFTER the right shift
+   * Note: shifting the dig_P7 term together with the rest would incorrectly
+   *       scale it by an additional factor of 256. */
+  p                        = (p + var1 + var2) >> k_press_shift_8;
+  const int64_t dig_p7_val = ((int64_t)s_calib.dig_P7) << k_press_shift_4;
+  *press_out               = (uint32_t)(p + dig_p7_val);
   return k_rx_ok;
 }
 
@@ -587,11 +594,25 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
   s_manager     = manager;
   s_initialized = false;
 
+  /* Verify chip ID before reading calibration (detects wrong device on bus) */
+  uint8_t  chip_id = 0U;
+  rx_err_t err     = internal_read_regs((uint8_t)k_bmp280_reg_chip_id, &chip_id, 1U);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Chip ID read failed");
+    s_manager = NULL;
+    return err;
+  }
+  if (chip_id != (uint8_t)k_bmp280_chip_id_expected) {
+    rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
+    s_manager = NULL;
+    return k_rx_err_invalid_state;
+  }
+
   /* Read 24-byte factory calibration block from OTP (k_bmp280_reg_calib_start..k_bmp280_reg_calib_end) */
-  uint8_t  calib_buf[k_bmp280_calib_byte_count];
-  rx_err_t err = internal_read_regs((uint8_t)k_bmp280_reg_calib_start,
-                                    calib_buf,
-                                    k_bmp280_calib_byte_count);
+  uint8_t calib_buf[k_bmp280_calib_byte_count];
+  err = internal_read_regs((uint8_t)k_bmp280_reg_calib_start,
+                           calib_buf,
+                           k_bmp280_calib_byte_count);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "Calibration read failed");
     s_manager = NULL;

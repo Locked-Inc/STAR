@@ -106,7 +106,9 @@ typedef struct _star_v1_GetSystemStatusRequest {
     star_v1_RequestHeader header;
 } star_v1_GetSystemStatusRequest;
 
-/* IMU sensor data from BNO055 NDOF fusion mode. */
+/* IMU sensor data from BNO055 NDOF fusion mode.
+ Euler angles use MKS units (radians) for ROS2 compatibility.
+ Quaternion components provided for 3D orientation without gimbal lock. */
 typedef struct _star_v1_ImuData {
     /* Pitch angle in radians.
  Range: -pi/2 to pi/2. */
@@ -124,7 +126,8 @@ typedef struct _star_v1_ImuData {
  Gravity-compensated (BNO055 LINEAR_ACCEL register). */
     double accel_y_mps2;
     /* Linear acceleration Z in meters per second squared.
- Gravity-compensated (BNO055 LINEAR_ACCEL register). */
+ Gravity-compensated (BNO055 LINEAR_ACCEL register).
+ At rest, should read approximately 0.0 m/s^2 (gravity removed). */
     double accel_z_mps2;
     /* Angular velocity X (roll rate) in radians per second. */
     double gyro_x_rad_per_s;
@@ -133,9 +136,17 @@ typedef struct _star_v1_ImuData {
     /* Angular velocity Z (yaw rate) in radians per second. */
     double gyro_z_rad_per_s;
     /* Compass heading (Euler heading from BNO055 NDOF fusion) in radians.
- Range: 0.0 to 2*pi radians (0 to 6.283185). 0 = North, pi/2 = East. */
+ Range: 0.0 to 2*pi radians (0 to 6.283185). 0 = North, pi/2 = East.
+ Derived from heading_deg16 register value / 16.0 * (pi / 180.0). */
     double heading_rad;
-    /* Quaternion W component (scalar part). Range: -1.0 to 1.0. */
+    /* Quaternion W component (scalar part). Range: -1.0 to 1.0.
+ Derived from BNO055 QUA_DATA register / 16384.0.
+ Convention: BNO055 outputs Hamilton-convention quaternions (scalar-first
+ internally). Maps to ROS2 geometry_msgs/Quaternion as follows:
+   geometry_msgs::Quaternion.x = quat_x
+   geometry_msgs::Quaternion.y = quat_y
+   geometry_msgs::Quaternion.z = quat_z
+   geometry_msgs::Quaternion.w = quat_w */
     double quat_w;
     /* Quaternion X component. Range: -1.0 to 1.0. */
     double quat_x;
@@ -143,18 +154,27 @@ typedef struct _star_v1_ImuData {
     double quat_y;
     /* Quaternion Z component. Range: -1.0 to 1.0. */
     double quat_z;
-    /* BNO055 calibration status byte (raw CALIB_STAT register 0x35). */
+    /* BNO055 calibration status byte (raw CALIB_STAT register 0x35).
+ Bits [7:6] = SYS calibration (0=uncal, 3=fully cal).
+ Bits [5:4] = Gyroscope calibration.
+ Bits [3:2] = Accelerometer calibration.
+ Bits [1:0] = Magnetometer calibration. */
     uint32_t calib_stat;
-    /* BNO055 on-chip temperature in degrees Celsius. Range: -40.0 to +85.0 degC. */
+    /* BNO055 on-chip temperature in degrees Celsius.
+ Range: -40.0 to +85.0 degC. */
     double temperature_celsius;
 } star_v1_ImuData;
 
-/* Barometric pressure and temperature data from BMP280. */
+/* Barometric pressure and temperature data from BMP280.
+ Provides atmospheric pressure for altitude estimation and ambient temperature. */
 typedef struct _star_v1_BaroData {
-    /* Compensated temperature in degrees Celsius. Range: -40.0 to +85.0 degC. */
+    /* Compensated temperature in degrees Celsius.
+ Range: -40.0 to +85.0 degC.
+ Derived from BMP280 temp_centi_degc / 100.0. */
     double temperature_celsius;
     /* Compensated atmospheric pressure in Pascals.
- Typical range: 30000 to 110000 Pa (300 to 1100 hPa). */
+ Typical range: 30000 to 110000 Pa (300 to 1100 hPa).
+ Derived from BMP280 press_pa_256 / 256.0. */
     double pressure_pa;
 } star_v1_BaroData;
 
@@ -226,6 +246,9 @@ typedef struct _star_v1_TelemetryData {
     /* Motor fault flags bitfield (RX72N specific).
  Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc. */
     uint32_t fault_flags;
+    /* Barometric pressure and temperature from BMP280 (RX72N specific). */
+    bool has_baro;
+    star_v1_BaroData baro;
     /* Timestamp in microseconds since boot (RX72N specific). */
     int64_t timestamp_us;
     /* Encoder data from motors (RX72N specific - fixed size for embedded).
@@ -245,9 +268,6 @@ typedef struct _star_v1_TelemetryData {
  Increments with each transmitted frame. Used by diagnostics to detect
  missing frames in the telemetry stream. */
     uint32_t frame_sequence;
-    /* Barometric pressure and temperature from BMP280 (RX72N specific). */
-    bool has_baro;
-    star_v1_BaroData baro;
 } star_v1_TelemetryData;
 
 /* Response with telemetry snapshot. */
@@ -321,6 +341,7 @@ extern "C" {
 
 
 
+
 #define star_v1_GpsData_fix_type_ENUMTYPE star_v1_GpsFix
 
 #define star_v1_SystemStatus_connection_status_ENUMTYPE star_v1_ConnectionStatus
@@ -333,7 +354,7 @@ extern "C" {
 #define star_v1_StreamTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
 #define star_v1_GetSystemStatusRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetSystemStatusResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemStatus_init_default}
-#define star_v1_TelemetryData_init_default       {false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, false, star_v1_ObstacleData_init_default, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_default, _star_v1_EstopReason_MIN, 0, 0, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0, false, star_v1_BaroData_init_default}
+#define star_v1_TelemetryData_init_default       {false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, false, star_v1_ObstacleData_init_default, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_default, _star_v1_EstopReason_MIN, 0, 0, false, star_v1_BaroData_init_default, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0}
 #define star_v1_ImuData_init_default             {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_BaroData_init_default            {0, 0}
 #define star_v1_ObstacleData_init_default        {0, 0, 0, 0, 0, 0}
@@ -344,7 +365,7 @@ extern "C" {
 #define star_v1_StreamTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
 #define star_v1_GetSystemStatusRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetSystemStatusResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemStatus_init_zero}
-#define star_v1_TelemetryData_init_zero          {false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, false, star_v1_ObstacleData_init_zero, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_zero, _star_v1_EstopReason_MIN, 0, 0, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0, false, star_v1_BaroData_init_zero}
+#define star_v1_TelemetryData_init_zero          {false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, false, star_v1_ObstacleData_init_zero, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_zero, _star_v1_EstopReason_MIN, 0, 0, false, star_v1_BaroData_init_zero, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0}
 #define star_v1_ImuData_init_zero                {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_BaroData_init_zero               {0, 0}
 #define star_v1_ObstacleData_init_zero           {0, 0, 0, 0, 0, 0}
@@ -398,13 +419,13 @@ extern "C" {
 #define star_v1_TelemetryData_estop_reason_tag   9
 #define star_v1_TelemetryData_emergency_stop_tag 10
 #define star_v1_TelemetryData_fault_flags_tag    11
+#define star_v1_TelemetryData_baro_tag           12
 #define star_v1_TelemetryData_timestamp_us_tag   14
 #define star_v1_TelemetryData_encoder_front_left_tag 15
 #define star_v1_TelemetryData_encoder_front_right_tag 16
 #define star_v1_TelemetryData_encoder_back_left_tag 17
 #define star_v1_TelemetryData_encoder_back_right_tag 18
 #define star_v1_TelemetryData_frame_sequence_tag 19
-#define star_v1_TelemetryData_baro_tag           12
 #define star_v1_GetTelemetryResponse_header_tag  1
 #define star_v1_GetTelemetryResponse_telemetry_tag 2
 #define star_v1_SystemStatus_connection_status_tag 1
@@ -467,12 +488,12 @@ X(a, STATIC,   OPTIONAL, MESSAGE,  timestamp,         8) \
 X(a, STATIC,   SINGULAR, UENUM,    estop_reason,      9) \
 X(a, STATIC,   SINGULAR, BOOL,     emergency_stop,   10) \
 X(a, STATIC,   SINGULAR, UINT32,   fault_flags,      11) \
+X(a, STATIC,   OPTIONAL, MESSAGE,  baro,             12) \
 X(a, STATIC,   SINGULAR, INT64,    timestamp_us,     14) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_left,  15) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_front_right,  16) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_left,  17) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  encoder_back_right,  18) \
-X(a, STATIC,   OPTIONAL, MESSAGE,  baro,             12) \
 X(a, STATIC,   SINGULAR, UINT32,   frame_sequence,   19)
 #define star_v1_TelemetryData_CALLBACK NULL
 #define star_v1_TelemetryData_DEFAULT NULL
@@ -480,11 +501,11 @@ X(a, STATIC,   SINGULAR, UINT32,   frame_sequence,   19)
 #define star_v1_TelemetryData_gps_MSGTYPE star_v1_GpsData
 #define star_v1_TelemetryData_obstacle_MSGTYPE star_v1_ObstacleData
 #define star_v1_TelemetryData_timestamp_MSGTYPE google_protobuf_Timestamp
+#define star_v1_TelemetryData_baro_MSGTYPE star_v1_BaroData
 #define star_v1_TelemetryData_encoder_front_left_MSGTYPE star_v1_EncoderData
 #define star_v1_TelemetryData_encoder_front_right_MSGTYPE star_v1_EncoderData
 #define star_v1_TelemetryData_encoder_back_left_MSGTYPE star_v1_EncoderData
 #define star_v1_TelemetryData_encoder_back_right_MSGTYPE star_v1_EncoderData
-#define star_v1_TelemetryData_baro_MSGTYPE star_v1_BaroData
 
 #define star_v1_ImuData_FIELDLIST(X, a) \
 X(a, STATIC,   SINGULAR, DOUBLE,   pitch_rad,         1) \
@@ -502,7 +523,7 @@ X(a, STATIC,   SINGULAR, DOUBLE,   quat_x,           12) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_y,           13) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_z,           14) \
 X(a, STATIC,   SINGULAR, UINT32,   calib_stat,       15) \
-X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius, 16)
+X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius,  16)
 #define star_v1_ImuData_CALLBACK NULL
 #define star_v1_ImuData_DEFAULT NULL
 
@@ -571,17 +592,17 @@ extern const pb_msgdesc_t star_v1_SystemStatus_msg;
 
 /* Maximum encoded size of messages (where known) */
 #define STAR_V1_STAR_V1_TELEMETRY_PB_H_MAX_SIZE  star_v1_GetTelemetryResponse_size
+#define star_v1_BaroData_size                    18
 #define star_v1_GetSystemStatusRequest_size      149
 #define star_v1_GetSystemStatusResponse_size     425
 #define star_v1_GetTelemetryRequest_size         149
-#define star_v1_GetTelemetryResponse_size        1024
+#define star_v1_GetTelemetryResponse_size        881
 #define star_v1_GpsData_size                     49
 #define star_v1_ImuData_size                     142
-#define star_v1_BaroData_size                    20
 #define star_v1_ObstacleData_size                28
 #define star_v1_StreamTelemetryRequest_size      688
 #define star_v1_SystemStatus_size                60
-#define star_v1_TelemetryData_size               560
+#define star_v1_TelemetryData_size               515
 
 #ifdef __cplusplus
 } /* extern "C" */

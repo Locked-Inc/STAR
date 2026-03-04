@@ -74,6 +74,11 @@
 #include "rx_log.h"
 #include "tx_api.h"
 
+/* Validate k_bno055_ms_per_tick is consistent with the actual ThreadX tick rate.
+ * If TX_TIMER_TICKS_PER_SECOND changes, this assert catches the mismatch at compile time. */
+_Static_assert(k_bno055_ms_per_tick == (1000U / TX_TIMER_TICKS_PER_SECOND),
+               "k_bno055_ms_per_tick must equal 1000/TX_TIMER_TICKS_PER_SECOND");
+
 /* =============================================================================
  * Constants
  * =============================================================================

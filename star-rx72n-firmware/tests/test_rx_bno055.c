@@ -36,11 +36,11 @@
  * definitions in this file determines execution order.
  *
  * @par Test Coverage
- * | Group         | Tests | Description                                      |
- * |---------------|-------|--------------------------------------------------|
- * | Init          | 5     | null ptr, success, I2C error, chip ID, double    |
- * | Read          | 5     | null ptr, before-init, euler, quat, I2C error    |
- * | Calibration   | 2     | null ptr, reads status byte                      |
+ * | Group         | Tests | Description                                           |
+ * |---------------|-------|-------------------------------------------------------|
+ * | Init          | 5     | null ptr, success, I2C error, chip ID, double         |
+ * | Read          | 5     | null ptr, before-init, euler, quat, I2C error         |
+ * | Calibration   | 2     | null ptr, reads status byte                           |
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto, setjmp, recursion
@@ -501,6 +501,27 @@ void test_bno055_init_wrong_chip_id(void)
 }
 
 /**
+ * @brief rx_bno055_read before init returns k_rx_err_not_initialized
+ *
+ * @details
+ * Verifies that calling rx_bno055_read() before rx_bno055_init() returns
+ * k_rx_err_not_initialized. This test must run while s_initialized is false
+ * (before test_bno055_init_success sets it to true).
+ *
+ * @pre s_initialized == false
+ * @post s_initialized unchanged (still false)
+ *
+ * @since Version 1.0.0
+ */
+void test_bno055_read_before_init(void)
+{
+  bno055_data_t data;
+  rx_err_t      err = rx_bno055_read(&data);
+  TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+}
+
+/**
  * @brief rx_bno055_init succeeds with valid chip ID and sets s_initialized
  *
  * @details
@@ -757,14 +778,16 @@ int main(void)
 
   /* IMPORTANT: Test ordering is intentional and required.
    * The driver's static s_initialized flag persists across tests and there is no
-   * deinit/reset API. Run error-path tests first (null, I2C error, wrong chip ID),
-   * then success test (sets s_initialized=true), then double-init, then read/calib tests.
+   * deinit/reset API. Run error-path tests first (null, I2C error, wrong chip ID,
+   * read-before-init), then success test (sets s_initialized=true), then double-init,
+   * then read/calib tests.
    * Do NOT reorder or alphabetize tests without resetting s_initialized between them. */
 
   /* Init tests - ordered: errors first, then success, then double-init */
   RUN_TEST(test_bno055_init_null_manager_returns_error);
   RUN_TEST(test_bno055_init_i2c_error_propagates);
   RUN_TEST(test_bno055_init_wrong_chip_id);
+  RUN_TEST(test_bno055_read_before_init);
   RUN_TEST(test_bno055_init_success);
   RUN_TEST(test_bno055_init_double_init_returns_error);
 

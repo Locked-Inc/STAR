@@ -122,6 +122,23 @@ typedef enum : uint8_t {
 } bmp280_i2c_addr_t;
 
 /**
+ * @enum bmp280_chip_id_t
+ * @brief BMP280 expected chip ID value from register 0xD0
+ *
+ * @details
+ * The BMP280 always reads 0x60 from register k_bmp280_reg_chip_id (0xD0).
+ * This constant is used during initialization to verify that the correct
+ * device is present on the I2C bus before reading calibration data.
+ *
+ * @invariant The BMP280 chip ID register always reads 0x60 on authentic devices
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_chip_id_expected = 0x60U, /**< BMP280 chip ID: register 0xD0 must read 0x60 */
+} bmp280_chip_id_t;
+
+/**
  * @enum bmp280_ctrl_meas_t
  * @brief BMP280 ctrl_meas register value (0xF4)
  *

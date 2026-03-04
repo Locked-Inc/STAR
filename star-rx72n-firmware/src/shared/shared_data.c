@@ -740,18 +740,33 @@ rx_err_t shared_data_init(void)
   /* Create imu_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
+    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
+    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
+    (void)tx_mutex_delete(&g_shared_data.estop_mutex);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create baro_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
+    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
+    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
+    (void)tx_mutex_delete(&g_shared_data.estop_mutex);
+    (void)tx_mutex_delete(&g_shared_data.imu_mutex);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create event_flags group */
   tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
   if (tx_status != TX_SUCCESS) {
+    (void)tx_mutex_delete(&g_shared_data.motor_mutex);
+    (void)tx_mutex_delete(&g_shared_data.temp_mutex);
+    (void)tx_mutex_delete(&g_shared_data.obstacle_mutex);
+    (void)tx_mutex_delete(&g_shared_data.estop_mutex);
+    (void)tx_mutex_delete(&g_shared_data.imu_mutex);
+    (void)tx_mutex_delete(&g_shared_data.baro_mutex);
     return k_rx_err_rtos_error;
   }
 

@@ -174,6 +174,7 @@
 #include "hardware_init.h"
 #include "rx72n_system_regs.h"
 #include "rx_bus_config.h"
+#include "rx_bus_i2c.h"
 #include "rx_bus_manager.h"
 #include "rx_bus_types.h"
 #include "rx_check.h"
@@ -1728,6 +1729,8 @@ static void internal_register_system_buses(void)
   RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_imu_config);
   RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) registration must succeed");
+  err = rx_bus_i2c_init(&g_bus_manager, "i2c1");
+  RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) I2C init must succeed");
 
   /* Register i2c1_baro - BMP280 barometric sensor (RIIC1, addr 0x76, SDA=P2.0, SCL=P2.1) */
   err = rx_bus_config_init_i2c(&s_i2c1_baro_config,
@@ -1740,6 +1743,8 @@ static void internal_register_system_buses(void)
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_baro_config);
   RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) registration must succeed");
+  err = rx_bus_i2c_init(&g_bus_manager, "i2c1_baro");
+  RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) I2C init must succeed");
 }
 
 /**
