@@ -720,6 +720,18 @@ rx_err_t shared_data_init(void)
     return k_rx_err_rtos_mutex;
   }
 
+  /* Create imu_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  /* Create baro_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
   /* Create event_flags group */
   tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
   if (tx_status != TX_SUCCESS) {
@@ -2708,6 +2720,208 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
   if (out_actual_flags != nullptr) {
     *out_actual_flags = (uint32_t)actual_flags;
   }
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * IMU State Access
+ * =============================================================================
+ */
+
+/**
+ * @brief Update IMU state from BNO055 driver output (called by IMU Task)
+ *
+ * @details
+ * Acquires imu_mutex, copies the caller's imu_state_t into g_shared_data.imu_state,
+ * and releases the mutex. Called by imu_task at 20 Hz after each successful read.
+ *
+ * @param[in] state Pointer to populated imu_state_t. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre state non-NULL with valid BNO055 data
+ *
+ * @post g_shared_data.imu_state updated under imu_mutex protection
+ * @post Telemetry task will see updated data on next read cycle
+ *
+ * @note Thread Safety: Protected by imu_mutex (blocking wait)
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_get_imu() Consumer accessor (Telemetry Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_imu(const imu_state_t* state)
+{
+  RX_CHECK_NULL_PTR(state, s_tag, "IMU state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(&g_shared_data.imu_state, state, sizeof(imu_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.imu_mutex);
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get IMU state (BNO055 fusion output) (called by Telemetry Task)
+ *
+ * @details
+ * Acquires imu_mutex, copies g_shared_data.imu_state into the caller's buffer,
+ * and releases the mutex. Called at 20 Hz by telemetry_task.
+ *
+ * @param[out] out_state Output buffer for IMU state. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State retrieved successfully
+ * @retval k_rx_err_null_ptr out_state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre out_state non-NULL
+ *
+ * @post *out_state contains snapshot of current IMU data
+ * @post Check out_state->valid before using values
+ *
+ * @note Thread Safety: Protected by imu_mutex (blocking wait)
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_update_imu() Producer accessor (IMU Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_get_imu(imu_state_t* out_state)
+{
+  RX_CHECK_NULL_PTR(out_state, s_tag, "Output IMU state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(out_state, &g_shared_data.imu_state, sizeof(imu_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.imu_mutex);
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Barometric Pressure State Access
+ * =============================================================================
+ */
+
+/**
+ * @brief Update barometric pressure state from BMP280 driver output (called by IMU Task)
+ *
+ * @details
+ * Acquires baro_mutex, copies the caller's baro_state_t into g_shared_data.baro_state,
+ * and releases the mutex. Called by imu_task at 20 Hz after each successful BMP280 read.
+ *
+ * @param[in] state Pointer to populated baro_state_t. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre state non-NULL with valid BMP280 data
+ *
+ * @post g_shared_data.baro_state updated under baro_mutex protection
+ * @post Telemetry task will see updated data on next read cycle
+ *
+ * @note Thread Safety: Protected by baro_mutex (blocking wait)
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_get_baro() Consumer accessor (Telemetry Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_baro(const baro_state_t* state)
+{
+  RX_CHECK_NULL_PTR(state, s_tag, "Baro state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.baro_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(&g_shared_data.baro_state, state, sizeof(baro_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.baro_mutex);
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get barometric pressure state (BMP280 output) (called by Telemetry Task)
+ *
+ * @details
+ * Acquires baro_mutex, copies g_shared_data.baro_state into the caller's buffer,
+ * and releases the mutex. Called at 20 Hz by telemetry_task.
+ *
+ * @param[out] out_state Output buffer for barometric state. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State retrieved successfully
+ * @retval k_rx_err_null_ptr out_state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre out_state non-NULL
+ *
+ * @post *out_state contains snapshot of current barometric data
+ * @post Check out_state->valid before using values
+ *
+ * @note Thread Safety: Protected by baro_mutex (blocking wait)
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_update_baro() Producer accessor (IMU Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_get_baro(baro_state_t* out_state)
+{
+  RX_CHECK_NULL_PTR(out_state, s_tag, "Output baro state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.baro_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(out_state, &g_shared_data.baro_state, sizeof(baro_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.baro_mutex);
 
   return k_rx_ok;
 }

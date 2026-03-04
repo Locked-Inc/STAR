@@ -137,10 +137,15 @@ message TelemetryData {
 
   // Obstacle detection data from ultrasonic sensors (RX72N specific).
   ObstacleData obstacle = 3;
+
+  // Barometric pressure and temperature from BMP280 (RX72N specific).
+  BaroData baro = 20;
 }
 
-// IMU sensor data (orientation, velocity, acceleration).
-// Uses MKS units: radians for angles, m/s^2 for acceleration.
+// IMU sensor data from BNO055 NDOF fusion mode.
+// Euler angles use MKS units (radians) for ROS2 compatibility.
+// Heading (compass bearing) also provided in degrees for UI display.
+// Quaternion components provided for 3D orientation without gimbal lock.
 message ImuData {
   // Pitch angle in radians.
   // Range: -pi/2 to pi/2.
@@ -155,13 +160,16 @@ message ImuData {
   double yaw_rad = 3;
 
   // Linear acceleration X in meters per second squared.
+  // Gravity-compensated (BNO055 LINEAR_ACCEL register).
   double accel_x_mps2 = 4;
 
   // Linear acceleration Y in meters per second squared.
+  // Gravity-compensated (BNO055 LINEAR_ACCEL register).
   double accel_y_mps2 = 5;
 
   // Linear acceleration Z in meters per second squared.
-  // At rest, should read approximately 9.81 m/s^2.
+  // Gravity-compensated (BNO055 LINEAR_ACCEL register).
+  // At rest, should read approximately 0.0 m/s^2 (gravity removed).
   double accel_z_mps2 = 6;
 
   // Angular velocity X (roll rate) in radians per second.
@@ -172,6 +180,49 @@ message ImuData {
 
   // Angular velocity Z (yaw rate) in radians per second.
   double gyro_z_rad_per_s = 9;
+
+  // Compass heading (Euler heading from BNO055 NDOF fusion) in degrees.
+  // Range: 0.0 to 359.9375 degrees. 0 = North, 90 = East.
+  // Derived from heading_deg16 register value / 16.0.
+  double heading_deg = 10;
+
+  // Quaternion W component (scalar part). Range: -1.0 to 1.0.
+  // Derived from BNO055 QUA_DATA register / 16384.0.
+  double quat_w = 11;
+
+  // Quaternion X component. Range: -1.0 to 1.0.
+  double quat_x = 12;
+
+  // Quaternion Y component. Range: -1.0 to 1.0.
+  double quat_y = 13;
+
+  // Quaternion Z component. Range: -1.0 to 1.0.
+  double quat_z = 14;
+
+  // BNO055 calibration status byte (raw CALIB_STAT register 0x35).
+  // Bits [7:6] = SYS calibration (0=uncal, 3=fully cal).
+  // Bits [5:4] = Gyroscope calibration.
+  // Bits [3:2] = Accelerometer calibration.
+  // Bits [1:0] = Magnetometer calibration.
+  uint32 calib_stat = 15;
+
+  // BNO055 on-chip temperature in degrees Celsius.
+  // Range: -40 to +85 degC.
+  int32 temp_degc = 16;
+}
+
+// Barometric pressure and temperature data from BMP280.
+// Provides atmospheric pressure for altitude estimation and ambient temperature.
+message BaroData {
+  // Compensated temperature in degrees Celsius.
+  // Range: -40.0 to +85.0 degC.
+  // Derived from BMP280 temp_centi_degc / 100.0.
+  double temperature_celsius = 1;
+
+  // Compensated atmospheric pressure in Pascals.
+  // Typical range: 30000 to 110000 Pa (300 to 1100 hPa).
+  // Derived from BMP280 press_pa_256 / 256.0.
+  double pressure_pa = 2;
 }
 
 // Obstacle detection data from ultrasonic sensors (RX72N specific).

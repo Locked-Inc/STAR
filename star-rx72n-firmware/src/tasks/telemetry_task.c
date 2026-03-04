@@ -782,7 +782,7 @@ typedef enum : uint16_t {
    * @brief Telemetry protobuf encode buffer size in bytes
    *
    * @details
-   * 512 bytes provides 2x safety margin over typical encoded message size (~250 bytes).
+   * 768 bytes provides safety margin over worst-case encoded message size (~560 bytes).
    *
    * Message size breakdown:
    * - Timestamp (int64): 9 bytes (varint encoding)
@@ -791,15 +791,18 @@ typedef enum : uint16_t {
    * - Fault flags (uint32): 5 bytes (varint encoding)
    * - Encoders (4 x EncoderData): 4 x 40 bytes = 160 bytes
    * - Temperature (double): 9 bytes (fixed64)
-   * - Protobuf overhead (tags, lengths): ~40 bytes
-   * - **Total typical:** ~250 bytes
-   * - **Buffer size:** 512 bytes (2.0x safety margin)
+   * - IMU (ImuData - 14 doubles + 2 int32): ~142 bytes
+   * - Baro (BaroData - 2 doubles): ~20 bytes
+   * - Obstacle (ObstacleData): ~28 bytes
+   * - Protobuf overhead (tags, lengths): ~60 bytes
+   * - **Total worst-case:** ~560 bytes
+   * - **Buffer size:** 768 bytes (1.37x safety margin)
    *
    * @note Buffer is statically allocated (no dynamic allocation, NASA Rule 3)
-   * @warning If message size exceeds 512 bytes, `rx_nanopb_encode_telemetry()`
+   * @warning If message size exceeds 768 bytes, `rx_nanopb_encode_telemetry()`
    *          will return `k_rx_err_buffer_too_small`
    */
-  k_telem_buffer_size = 512,
+  k_telem_buffer_size = 768,
 } telemetry_task_constants_t;
 
 /**
@@ -1065,6 +1068,98 @@ static const float s_cdegc_per_degree = 100.0F;
  * @since Version 1.0.0
  */
 static const float s_cm_per_m = 100.0F;
+
+/**
+ * @var s_deg16_per_deg
+ * @brief BNO055 Euler angle scale factor: fixed-point units per degree (16.0).
+ *
+ * @details
+ * BNO055 stores Euler angles as signed 16-bit integers with 1/16 degree resolution.
+ * To convert to double degrees: degrees = (double)raw_deg16 / s_deg16_per_deg.
+ *
+ * Example: heading_deg16 = 2880 -> 2880 / 16.0 = 180.0 degrees (South).
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_deg16_per_deg = 16.0;
+
+/**
+ * @var s_quat_scale
+ * @brief BNO055 quaternion scale factor: fixed-point units per unit quaternion (16384.0).
+ *
+ * @details
+ * BNO055 stores quaternion components as signed 16-bit integers with 1/16384 resolution.
+ * To convert to double unit-quaternion: component = (double)raw_quat / s_quat_scale.
+ *
+ * Example: quat_w = 16384 -> 16384 / 16384.0 = 1.0 (identity rotation).
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_quat_scale = 16384.0;
+
+/**
+ * @var s_baro_temp_scale
+ * @brief BMP280 temperature scale factor: centi-degrees Celsius per degree Celsius (100.0).
+ *
+ * @details
+ * BMP280 driver stores temperature as centi-degrees (e.g. 2523 = 25.23 degC).
+ * To convert to double Celsius: celsius = (double)temp_centi_degc / s_baro_temp_scale.
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_baro_temp_scale = 100.0;
+
+/**
+ * @var s_baro_press_scale
+ * @brief BMP280 pressure scale factor: fixed-point units per Pascal (256.0).
+ *
+ * @details
+ * BMP280 driver stores pressure as Pa * 256 (e.g. 26624000 = 104000 Pa = 1040 hPa).
+ * To convert to double Pascal: pressure_pa = (double)press_pa_256 / s_baro_press_scale.
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_baro_press_scale = 256.0;
+
+/**
+ * @var s_lin_acc_scale
+ * @brief BNO055 linear acceleration scale factor (100.0 LSB per m/s^2).
+ *
+ * @details
+ * BNO055 stores linear acceleration as integers with 1/100 m/s^2 resolution.
+ * To convert to double m/s^2: accel_mps2 = (double)lin_acc_raw / s_lin_acc_scale.
+ *
+ * Example: lin_acc_x = 981 -> 981 / 100.0 = 9.81 m/s^2.
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_lin_acc_scale = 100.0;
+
+/**
+ * @var s_rad_per_deg
+ * @brief Radians per degree conversion factor (pi / 180.0).
+ *
+ * @details
+ * Used to populate the legacy radian-unit Euler angle fields in ImuData
+ * (pitch_rad, roll_rad, yaw_rad) from the BNO055 fixed-point degree values.
+ *
+ * Conversion: radians = degrees * s_rad_per_deg
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_rad_per_deg = 0.017453292519943295;
 
 /**
  * @enum telem_motor_idx_t
@@ -1901,6 +1996,9 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  *    E-stop flag, fault_flags bitfield, 4 encoder submessages
  * 2. **Temperature state:** temperature_celsius (cdegC->degC)
  * 3. **Obstacle state:** 4 sensor distances in metres (m), any_obstacle flag, detected_mask bitmask
+ * 4. **IMU state** (BNO055 NDOF): heading_deg, roll_deg16, pitch_deg16 (deg), quat w/x/y/z,
+ *    accel x/y/z (mps2), gyro x/y/z (rad/s), calib_stat, temp_degc
+ * 5. **Baro state** (BMP280 forced mode): temperature_celsius, pressure_pa
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
@@ -1916,6 +2014,8 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * @see internal_populate_motor_telemetry() Motor field population helper
  * @see shared_data_get_temp() Temperature state accessor
  * @see shared_data_get_obstacle() Obstacle state accessor
+ * @see shared_data_get_imu() IMU state accessor (BNO055)
+ * @see shared_data_get_baro() Barometric state accessor (BMP280)
  * @see internal_build_and_send_telemetry() Caller - sets timestamp before calling
  *
  * @since Version 1.0.0
@@ -1926,11 +2026,15 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * - Postcondition 1: Motor fields populated if shared_data_get_motor_state() == k_rx_ok
  * - Postcondition 2: Temp fields populated if shared_data_get_temp() == k_rx_ok && valid
  * - Postcondition 3: Obstacle fields populated if shared_data_get_obstacle() == k_rx_ok
+ * - Postcondition 4: IMU fields populated if shared_data_get_imu() == k_rx_ok && valid
+ * - Postcondition 5: Baro fields populated if shared_data_get_baro() == k_rx_ok && valid
  */
 static void internal_collect_state(star_v1_TelemetryData* telemetry)
 {
   temp_sensor_state_t temp_state;
   obstacle_state_t    obstacle_state;
+  imu_state_t         imu_state;
+  baro_state_t        baro_state;
   rx_err_t            err;
 
   /* Collect motor state (non-fatal: missing data leaves fields at zero-init) */
@@ -1967,6 +2071,48 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
        << k_telem_obstacle_shift_2) |
       ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_3]
        << k_telem_obstacle_shift_3);
+  }
+
+  /* Collect IMU state (BNO055 NDOF fusion) */
+  err = shared_data_get_imu(&imu_state);
+  if (err == k_rx_ok && imu_state.valid) {
+    telemetry->has_imu = true;
+
+    /* Heading in degrees (0.0 to 359.9375) */
+    telemetry->imu.heading_deg = (double)imu_state.heading_deg16 / s_deg16_per_deg;
+
+    /* Legacy radian fields: convert from BNO055 fixed-point degrees to radians */
+    telemetry->imu.yaw_rad   = telemetry->imu.heading_deg * s_rad_per_deg;
+    telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16  / s_deg16_per_deg) * s_rad_per_deg;
+    telemetry->imu.pitch_rad = ((double)imu_state.pitch_deg16 / s_deg16_per_deg) * s_rad_per_deg;
+
+    /* Unit quaternion (each raw value / 16384) */
+    telemetry->imu.quat_w = (double)imu_state.quat_w / s_quat_scale;
+    telemetry->imu.quat_x = (double)imu_state.quat_x / s_quat_scale;
+    telemetry->imu.quat_y = (double)imu_state.quat_y / s_quat_scale;
+    telemetry->imu.quat_z = (double)imu_state.quat_z / s_quat_scale;
+
+    /* Linear acceleration (gravity-compensated, each raw value / 100 m/s^2) */
+    telemetry->imu.accel_x_mps2 = (double)imu_state.lin_acc_x / s_lin_acc_scale;
+    telemetry->imu.accel_y_mps2 = (double)imu_state.lin_acc_y / s_lin_acc_scale;
+    telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / s_lin_acc_scale;
+
+    /* Calibration status (raw CALIB_STAT byte) and on-chip temperature */
+    telemetry->imu.calib_stat = (uint32_t)imu_state.calib_stat;
+    telemetry->imu.temp_degc  = (int32_t)imu_state.temp_degc;
+  }
+
+  /* Collect barometric state (BMP280 forced mode) */
+  err = shared_data_get_baro(&baro_state);
+  if (err == k_rx_ok && baro_state.valid) {
+    telemetry->has_baro = true;
+
+    /* Temperature: centi-degrees Celsius -> degrees Celsius */
+    telemetry->baro.temperature_celsius =
+      (double)baro_state.temp_centi_degc / s_baro_temp_scale;
+
+    /* Pressure: Pa * 256 -> Pa */
+    telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / s_baro_press_scale;
   }
 }
 

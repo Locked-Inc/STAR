@@ -105,6 +105,78 @@ typedef struct {
 } obstacle_state_t;
 
 /**
+ * @struct imu_state_t
+ * @brief IMU sensor fusion output state (BNO055 NDOF mode)
+ *
+ * @details
+ * Holds the most recent compensated output from the BNO055 in NDOF fusion mode.
+ * All 16-bit fields use raw integer scaling to avoid floating-point in the shared
+ * data layer. Convert to physical units in application code:
+ *
+ * @code
+ * float heading_deg = (float)imu.heading_deg16 / 16.0F;
+ * float quat_w      = (float)imu.quat_w        / 16384.0F;
+ * float acc_x_mps2  = (float)imu.lin_acc_x     / 100.0F;
+ * @endcode
+ *
+ * @invariant valid == false until imu_task successfully reads BNO055 at least once
+ * @invariant calib_stat byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0], each 0-3
+ *
+ * @see bno055_data_t BNO055 driver output structure (same scaling)
+ * @see shared_data_update_imu() Write accessor
+ * @see shared_data_get_imu() Read accessor
+ *
+ * @since Version 1.0.0
+ */
+typedef struct {
+  int16_t  heading_deg16; /**< Euler heading 0-359.9375 deg (divide by 16 for degrees) */
+  int16_t  roll_deg16;    /**< Euler roll -90 to +90 deg (divide by 16 for degrees) */
+  int16_t  pitch_deg16;   /**< Euler pitch -180 to +180 deg (divide by 16 for degrees) */
+  int16_t  quat_w;        /**< Quaternion W component (divide by 16384 for unit quaternion) */
+  int16_t  quat_x;        /**< Quaternion X component (divide by 16384 for unit quaternion) */
+  int16_t  quat_y;        /**< Quaternion Y component (divide by 16384 for unit quaternion) */
+  int16_t  quat_z;        /**< Quaternion Z component (divide by 16384 for unit quaternion) */
+  int16_t  lin_acc_x;     /**< Linear acceleration X in m/s^2 * 100 (divide by 100 for m/s^2) */
+  int16_t  lin_acc_y;     /**< Linear acceleration Y in m/s^2 * 100 (divide by 100 for m/s^2) */
+  int16_t  lin_acc_z;     /**< Linear acceleration Z in m/s^2 * 100 (divide by 100 for m/s^2) */
+  int8_t   temp_degc;     /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
+  uint8_t  calib_stat;    /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
+  uint32_t timestamp_ms;  /**< ThreadX tick when data was last updated (ms) */
+  bool     valid;         /**< true after first successful read from BNO055 */
+} imu_state_t;
+
+/**
+ * @struct baro_state_t
+ * @brief Barometric pressure and temperature state (BMP280 forced mode)
+ *
+ * @details
+ * Holds the most recent compensated output from the BMP280 barometric pressure sensor.
+ * Integer-scaled to avoid floating-point in the shared data layer. Convert to SI units:
+ *
+ * @code
+ * float temp_celsius   = (float)baro.temp_centi_degc / 100.0F;
+ * float pressure_pa    = (float)baro.press_pa_256    / 256.0F;
+ * float pressure_hpa   = pressure_pa / 100.0F;
+ * @endcode
+ *
+ * @invariant valid == false until imu_task successfully reads BMP280 at least once
+ * @invariant press_pa_256 > 0 when valid == true (absolute pressure always positive)
+ * @invariant temp_centi_degc in [-4000, 8500] when valid == true
+ *
+ * @see bmp280_data_t BMP280 driver output structure (same scaling)
+ * @see shared_data_update_baro() Write accessor
+ * @see shared_data_get_baro() Read accessor
+ *
+ * @since Version 1.0.0
+ */
+typedef struct {
+  int32_t  temp_centi_degc; /**< Temperature * 100 (e.g. 2523 = 25.23 degC) */
+  uint32_t press_pa_256;    /**< Pressure * 256 in Pa (divide by 256.0 for Pa) */
+  uint32_t timestamp_ms;    /**< ThreadX tick when data was last updated (ms) */
+  bool     valid;           /**< true after first successful read from BMP280 */
+} baro_state_t;
+
+/**
  * @enum shared_event_flags_t
  * @brief Event flags for inter-task signaling
  *
@@ -185,6 +257,8 @@ typedef struct {
   TX_MUTEX             temp_mutex;     /**< Mutex for temperature data */
   TX_MUTEX             obstacle_mutex; /**< Mutex for obstacle data */
   TX_MUTEX             estop_mutex;    /**< Mutex for e-stop data */
+  TX_MUTEX             imu_mutex;      /**< Mutex for IMU (BNO055) data */
+  TX_MUTEX             baro_mutex;     /**< Mutex for barometric (BMP280) data */
   TX_EVENT_FLAGS_GROUP event_flags;    /**< Event flags for inter-task signaling */
 
   /* Shared data structures */
@@ -193,6 +267,8 @@ typedef struct {
   pid_gains_t         pid_gains;      /**< PID controller gains */
   temp_sensor_state_t temp_state;     /**< Temperature sensor state */
   obstacle_state_t    obstacle_state; /**< Obstacle detection state */
+  imu_state_t         imu_state;      /**< BNO055 IMU fusion output state */
+  baro_state_t        baro_state;     /**< BMP280 barometric sensor state */
 
   /* E-stop state */
   bool           estop_active; /**< Emergency stop active flag */
@@ -438,6 +514,116 @@ rx_err_t shared_data_update_obstacle(const obstacle_state_t* state);
  * @return rx_err_t Error code
  */
 rx_err_t shared_data_get_obstacle(obstacle_state_t* out_state);
+
+/**
+ * @brief Update IMU state from BNO055 driver output
+ *
+ * @details
+ * Acquires imu_mutex, copies the caller's imu_state_t into g_shared_data.imu_state,
+ * and releases the mutex. Called by imu_task after each successful BNO055 read.
+ *
+ * @param[in] state Pointer to populated imu_state_t. Must not be NULL.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized shared_data_init() not called
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre shared_data_init() called successfully
+ * @pre state non-NULL with valid IMU data
+ * @post g_shared_data.imu_state updated under imu_mutex protection
+ *
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_get_imu() Consumer accessor
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_imu(const imu_state_t* state);
+
+/**
+ * @brief Get IMU state (BNO055 fusion output)
+ *
+ * @details
+ * Acquires imu_mutex, copies g_shared_data.imu_state into the caller's buffer,
+ * and releases the mutex. Called by telemetry_task to populate TelemetryData.
+ *
+ * @param[out] out_state Output buffer for IMU state. Must not be NULL.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok State copied into out_state
+ * @retval k_rx_err_null_ptr out_state is NULL
+ * @retval k_rx_err_not_initialized shared_data_init() not called
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre shared_data_init() called successfully
+ * @pre out_state non-NULL
+ * @post *out_state contains latest IMU data (check out_state->valid before use)
+ *
+ * @note Check out_state->valid before relying on data values
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_update_imu() Producer accessor
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_get_imu(imu_state_t* out_state);
+
+/**
+ * @brief Update barometric pressure state from BMP280 driver output
+ *
+ * @details
+ * Acquires baro_mutex, copies the caller's baro_state_t into g_shared_data.baro_state,
+ * and releases the mutex. Called by imu_task after each successful BMP280 read.
+ *
+ * @param[in] state Pointer to populated baro_state_t. Must not be NULL.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized shared_data_init() not called
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre shared_data_init() called successfully
+ * @pre state non-NULL with valid BMP280 data
+ * @post g_shared_data.baro_state updated under baro_mutex protection
+ *
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_get_baro() Consumer accessor
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_baro(const baro_state_t* state);
+
+/**
+ * @brief Get barometric pressure state (BMP280 output)
+ *
+ * @details
+ * Acquires baro_mutex, copies g_shared_data.baro_state into the caller's buffer,
+ * and releases the mutex. Called by telemetry_task to populate TelemetryData.
+ *
+ * @param[out] out_state Output buffer for barometric state. Must not be NULL.
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok State copied into out_state
+ * @retval k_rx_err_null_ptr out_state is NULL
+ * @retval k_rx_err_not_initialized shared_data_init() not called
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre shared_data_init() called successfully
+ * @pre out_state non-NULL
+ * @post *out_state contains latest baro data (check out_state->valid before use)
+ *
+ * @note Check out_state->valid before relying on data values
+ * @note Not ISR-safe (blocking mutex wait)
+ *
+ * @see shared_data_update_baro() Producer accessor
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_get_baro(baro_state_t* out_state);
 
 /**
  * @brief Check if communication timeout occurred

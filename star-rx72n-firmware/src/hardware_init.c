@@ -380,13 +380,14 @@ typedef enum : uint16_t {
 
 /** @brief I2C channel assignments */
 typedef enum : uint8_t {
-  k_i2c_channel_host = 0, /**< RIIC0 = host I2C (RPi5 comms) */
-  k_i2c_channel_1    = 1, /**< RIIC1 (reserved) */
+  k_i2c_channel_0 = 0, /**< RIIC0 = host I2C (RPi5 comms) */
+  k_i2c_channel_1 = 1, /**< RIIC1 = IMU I2C (BNO055 + BMP280) */
 } i2c_channel_t;
 
 /** @brief I2C bus frequency constants */
 typedef enum : uint32_t {
-  k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host */
+  k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host (RIIC0) */
+  k_i2c_imu_freq_hz  = 400000, /**< 400 kHz fast mode for IMU sensors (RIIC1) */
 } i2c_freq_t;
 
 /** @brief Number of motor current ADC channels */
@@ -1328,24 +1329,31 @@ static rx_err_t spi_init(void)
 }
 
 /**
- * @brief Initialize I2C buses for host communication
+ * @brief Initialize I2C buses for host communication and IMU sensors
  *
  * @details
  * Configures two RIIC channels:
- * - **RIIC0** at 400 kHz (fast mode) for RPi5 host I2C
+ * - **RIIC0** at 400 kHz (fast mode) for RPi5 host I2C (P1.2 SCL0, P1.3 SDA0)
+ * - **RIIC1** at 400 kHz (fast mode) for IMU sensors BNO055 + BMP280 (P2.1 SCL1, P2.0 SDA1)
+ *
+ * GPIO pins for RIIC0 are configured in internal_gpio_init_i2c(); pins for
+ * RIIC1 (IMU) are configured in internal_gpio_init_imu().
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok Both RIIC channels initialized successfully
- * @retval k_rx_err_hw_init_failed RIIC init failed
+ * @retval k_rx_err_hw_init_failed RIIC0 or RIIC1 init failed
  *
- * @pre GPIO pins for RIIC0/RIIC1 configured via gpio_init()
+ * @pre GPIO pins for RIIC0 configured via internal_gpio_init_i2c()
+ * @pre GPIO pins for RIIC1 (IMU) configured via internal_gpio_init_imu()
  * @pre PCLKB clock running at 60 MHz
  *
  * @post RIIC0 ready for host I2C at 400 kHz
+ * @post RIIC1 ready for BNO055 (0x28) and BMP280 (0x76) at 400 kHz
  *
  * @note Not thread-safe. Call during single-threaded initialization only.
  *
  * @see riic_init() HAL function for RIIC channel init
+ * @see internal_gpio_init_imu() Configures P2.0/P2.1 for RIIC1
  *
  * @since Version 1.0.0
  */
@@ -1353,11 +1361,19 @@ static rx_err_t i2c_init(void)
 {
   static const char* s_tag = "I2C";
 
-  riic_channel_t ch0 = {.value = k_i2c_channel_host};
+  /* RIIC0: Host I2C at 400 kHz (RPi5 communication) */
+  riic_channel_t ch0 = {.value = k_i2c_channel_0};
   rx_err_t       err = riic_init(ch0, k_i2c_host_freq_hz);
   RX_RETURN_ON_ERROR(err, s_tag, "RIIC0 init failed");
 
   rx_log_info(s_tag, "RIIC0 @ 400kHz");
+
+  /* RIIC1: IMU I2C at 400 kHz (BNO055 + BMP280) */
+  riic_channel_t ch1 = {.value = k_i2c_channel_1};
+  err                = riic_init(ch1, k_i2c_imu_freq_hz);
+  RX_RETURN_ON_ERROR(err, s_tag, "RIIC1 init failed");
+
+  rx_log_info(s_tag, "RIIC1 @ 400kHz");
   return k_rx_ok;
 }
 

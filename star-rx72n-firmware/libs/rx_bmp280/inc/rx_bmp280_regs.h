@@ -1,0 +1,272 @@
+/* libs/rx_bmp280/inc/rx_bmp280_regs.h */
+
+/**
+ * @file rx_bmp280_regs.h
+ * @brief BMP280 Barometric Pressure and Temperature Sensor Register Map
+ *
+ * @details
+ * # Overview
+ *
+ * Provides all register address definitions and configuration constants for the
+ * Bosch BMP280 digital pressure sensor. All constants are defined as C23 typed
+ * enumerations following STAR project conventions.
+ *
+ * The BMP280 measures atmospheric pressure (300-1100 hPa) and temperature
+ * (-40 to +85 degC) using a combined MEMS capacitive pressure cell and digital
+ * temperature sensor. Compensation coefficients are trimmed at the factory and
+ * stored in on-chip OTP memory (registers 0x88-0x9F).
+ *
+ * # Register Map Summary
+ *
+ * | Address | Content |
+ * |---------|---------|
+ * | 0x88-0x9F | Calibration data (24 bytes) |
+ * | 0xD0 | Chip ID (0x60) |
+ * | 0xF3 | Status register |
+ * | 0xF4 | ctrl_meas (osrs_t, osrs_p, mode) |
+ * | 0xF5 | config (t_sb, filter, spi3w_en) |
+ * | 0xF7-0xF9 | Pressure ADC (20-bit, MSB/LSB/XLSB) |
+ * | 0xFA-0xFC | Temperature ADC (20-bit, MSB/LSB/XLSB) |
+ *
+ * # DFRobot Module Hardware
+ *
+ * - I2C Address: 0x76 (SDO pulled LOW)
+ * - Connected to RIIC1 (SCL1=P2.1, SDA1=P2.0)
+ * - Power: 3.3V
+ *
+ * @see rx_bmp280.h Public driver API
+ * @see rx_bmp280.c Driver implementation
+ * @see BMP280 datasheet v1.19 for complete register descriptions
+ *
+ * @par NASA Power of 10 Compliance:
+ * - **Rule 3:** [PASS] No dynamic allocation (constants only)
+ * - **Rule 8:** [PASS] C23 typed enums for all constants, no macros
+ *
+ * @author STAR Team
+ * @date 2026-03-04
+ * @version 1.0.0
+ * @copyright MIT License
+ */
+
+#pragma once
+
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* =============================================================================
+ * Register Address Map
+ * =============================================================================
+ */
+
+/**
+ * @enum bmp280_reg_t
+ * @brief BMP280 register addresses
+ *
+ * @details
+ * Register addresses for all BMP280 control, configuration, and output
+ * registers. Calibration data (0x88-0x9F) is accessed as a 24-byte burst
+ * read starting at k_bmp280_reg_calib_start.
+ *
+ * ADC output registers (0xF7-0xFC) contain 20-bit raw values:
+ * - Pressure: bits[19:4] in PRESS_MSB[7:0] and PRESS_LSB[7:0] and
+ *   bits[3:0] in PRESS_XLSB[7:4]
+ * - Temperature: same layout at TEMP_MSB/LSB/XLSB
+ *
+ * @invariant k_bmp280_reg_calib_start contains factory-calibrated coefficients
+ * @invariant 0xF7 output is valid only after measurement completes
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_reg_calib_start = 0x88, /**< Start of 24-byte calibration coefficient block */
+  k_bmp280_reg_status      = 0xF3, /**< Status: bit 3 = measuring, bit 0 = im_update */
+  k_bmp280_reg_ctrl_meas   = 0xF4, /**< Control: osrs_t[7:5] osrs_p[4:2] mode[1:0] */
+  k_bmp280_reg_config      = 0xF5, /**< Config: t_sb[7:5] filter[4:2] spi3w_en[0] */
+  k_bmp280_reg_press_msb   = 0xF7, /**< Pressure MSB: press_raw[19:12] */
+  k_bmp280_reg_press_lsb   = 0xF8, /**< Pressure LSB: press_raw[11:4] */
+  k_bmp280_reg_press_xlsb  = 0xF9, /**< Pressure XLSB: press_raw[3:0] in bits [7:4] */
+  k_bmp280_reg_temp_msb    = 0xFA, /**< Temperature MSB: temp_raw[19:12] */
+  k_bmp280_reg_temp_lsb    = 0xFB, /**< Temperature LSB: temp_raw[11:4] */
+  k_bmp280_reg_temp_xlsb   = 0xFC, /**< Temperature XLSB: temp_raw[3:0] in bits [7:4] */
+} bmp280_reg_t;
+
+/* =============================================================================
+ * Configuration Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum bmp280_i2c_addr_t
+ * @brief BMP280 I2C device address
+ *
+ * @details
+ * The I2C address is selected by the SDO pin:
+ * - SDO = LOW (DFRobot module default): 0x76
+ * - SDO = HIGH: 0x77
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_i2c_addr = 0x76, /**< I2C device address (SDO=LOW, DFRobot module) */
+} bmp280_i2c_addr_t;
+
+/**
+ * @enum bmp280_cfg_t
+ * @brief BMP280 control and configuration register values
+ *
+ * @details
+ * Pre-computed register values for the required measurement configuration:
+ *
+ * **ctrl_meas (0xF4) = 0x55:**
+ * - osrs_t[7:5] = 010 = 2x oversampling for temperature
+ * - osrs_p[4:2] = 101 = 16x oversampling for pressure
+ * - mode[1:0]   = 01  = Forced mode (one measurement, then sleep)
+ *
+ * **config (0xF5) = 0x08:**
+ * - t_sb[7:5]   = 000 = 0.5 ms standby time (not used in forced mode)
+ * - filter[4:2] = 001 = IIR filter coefficient 2
+ * - spi3w_en[0] = 0   = SPI disabled
+ *
+ * **status (0xF3) measuring bit:**
+ * - Bit 3 = 1 while measurement in progress
+ * - Bit 3 = 0 when measurement complete (ADC data ready)
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_ctrl_meas_val      = 0x55, /**< ctrl_meas: osrs_t=2x, osrs_p=16x, forced mode */
+  k_bmp280_config_val         = 0x08, /**< config: filter=2, standby=0.5ms, SPI disabled */
+  k_bmp280_status_meas_mask   = 0x08, /**< Status measuring bit: bit 3 */
+} bmp280_cfg_t;
+
+/**
+ * @enum bmp280_calib_reg_count_t
+ * @brief BMP280 calibration data size
+ *
+ * @details
+ * The calibration block at 0x88 contains 24 bytes encoding six temperature
+ * coefficients and nine pressure coefficients:
+ * - T1 (uint16), T2 (int16), T3 (int16) at 0x88-0x8D
+ * - P1 (uint16)..P9 (int16) at 0x8E-0x9F
+ *
+ * @invariant Calibration bytes always valid (factory programmed in OTP)
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_calib_byte_count = 24, /**< Number of calibration coefficient bytes (0x88-0x9F) */
+} bmp280_calib_reg_count_t;
+
+/**
+ * @enum bmp280_poll_t
+ * @brief BMP280 measurement polling loop bound
+ *
+ * @details
+ * Maximum number of status register polls when waiting for a forced
+ * measurement to complete. With 16x oversampling, maximum measurement
+ * time is approximately 40 ms. At 1 ms per poll, 100 iterations provides
+ * >2x safety margin.
+ *
+ * @invariant k_bmp280_poll_max > 0 (loop must terminate)
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_bmp280_poll_max = 100, /**< Maximum status poll iterations (~100 ms maximum wait) */
+} bmp280_poll_t;
+
+/* =============================================================================
+ * ADC Assembly Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum bmp280_adc_t
+ * @brief BMP280 ADC raw value assembly constants
+ *
+ * @details
+ * The BMP280 outputs 20-bit ADC values across three 8-bit registers.
+ * Assembly formula (same for pressure and temperature):
+ * @code
+ * adc_val = ((int32_t)msb << 12) | ((int32_t)lsb << 4) | ((int32_t)xlsb >> 4)
+ * @endcode
+ *
+ * Buffer offsets assume a 6-byte burst read from 0xF7 (press MSB first):
+ * buf[0]=press_msb, buf[1]=press_lsb, buf[2]=press_xlsb,
+ * buf[3]=temp_msb, buf[4]=temp_lsb, buf[5]=temp_xlsb
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_shift_msb    = 12, /**< Shift MSB left 12 bits for 20-bit ADC value */
+  k_bmp280_shift_lsb    = 4,  /**< Shift LSB left 4 bits for 20-bit ADC value */
+  k_bmp280_shift_xlsb   = 4,  /**< Shift XLSB right 4 bits to get 4 fractional bits */
+  k_bmp280_adc_buf_size = 6,  /**< Byte count for 6-byte burst read (press + temp) */
+  k_bmp280_press_msb_idx  = 0, /**< Index of pressure MSB in 6-byte buffer */
+  k_bmp280_press_lsb_idx  = 1, /**< Index of pressure LSB in 6-byte buffer */
+  k_bmp280_press_xlsb_idx = 2, /**< Index of pressure XLSB in 6-byte buffer */
+  k_bmp280_temp_msb_idx   = 3, /**< Index of temperature MSB in 6-byte buffer */
+  k_bmp280_temp_lsb_idx   = 4, /**< Index of temperature LSB in 6-byte buffer */
+  k_bmp280_temp_xlsb_idx  = 5, /**< Index of temperature XLSB in 6-byte buffer */
+} bmp280_adc_t;
+
+/**
+ * @enum bmp280_calib_idx_t
+ * @brief BMP280 calibration byte indices in 24-byte calib buffer
+ *
+ * @details
+ * Maps the 24-byte calibration buffer to the BMP280's trimming parameter
+ * layout. All coefficients are stored little-endian (LSB first).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_calib_t1_lsb = 0,  /**< dig_T1 low byte (uint16_t) */
+  k_bmp280_calib_t1_msb = 1,  /**< dig_T1 high byte */
+  k_bmp280_calib_t2_lsb = 2,  /**< dig_T2 low byte (int16_t) */
+  k_bmp280_calib_t2_msb = 3,  /**< dig_T2 high byte */
+  k_bmp280_calib_t3_lsb = 4,  /**< dig_T3 low byte (int16_t) */
+  k_bmp280_calib_t3_msb = 5,  /**< dig_T3 high byte */
+  k_bmp280_calib_p1_lsb = 6,  /**< dig_P1 low byte (uint16_t) */
+  k_bmp280_calib_p1_msb = 7,  /**< dig_P1 high byte */
+  k_bmp280_calib_p2_lsb = 8,  /**< dig_P2 low byte (int16_t) */
+  k_bmp280_calib_p2_msb = 9,  /**< dig_P2 high byte */
+  k_bmp280_calib_p3_lsb = 10, /**< dig_P3 low byte (int16_t) */
+  k_bmp280_calib_p3_msb = 11, /**< dig_P3 high byte */
+  k_bmp280_calib_p4_lsb = 12, /**< dig_P4 low byte (int16_t) */
+  k_bmp280_calib_p4_msb = 13, /**< dig_P4 high byte */
+  k_bmp280_calib_p5_lsb = 14, /**< dig_P5 low byte (int16_t) */
+  k_bmp280_calib_p5_msb = 15, /**< dig_P5 high byte */
+  k_bmp280_calib_p6_lsb = 16, /**< dig_P6 low byte (int16_t) */
+  k_bmp280_calib_p6_msb = 17, /**< dig_P6 high byte */
+  k_bmp280_calib_p7_lsb = 18, /**< dig_P7 low byte (int16_t) */
+  k_bmp280_calib_p7_msb = 19, /**< dig_P7 high byte */
+  k_bmp280_calib_p8_lsb = 20, /**< dig_P8 low byte (int16_t) */
+  k_bmp280_calib_p8_msb = 21, /**< dig_P8 high byte */
+  k_bmp280_calib_p9_lsb = 22, /**< dig_P9 low byte (int16_t) */
+  k_bmp280_calib_p9_msb = 23, /**< dig_P9 high byte */
+} bmp280_calib_idx_t;
+
+/**
+ * @enum bmp280_write_size_t
+ * @brief I2C write buffer sizes for BMP280
+ *
+ * @details
+ * BMP280 register write sends [register_address, data_byte] as 2 bytes.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_write_buf_size = 2, /**< Size of [reg, val] write buffer */
+  k_bmp280_write_idx_reg  = 0, /**< Index of register address in write buffer */
+  k_bmp280_write_idx_val  = 1, /**< Index of register value in write buffer */
+  k_bmp280_read_cmd_size  = 1, /**< Size of register address read command */
+  k_bmp280_single_byte    = 1, /**< Size for single byte reads */
+} bmp280_write_size_t;
+
+#ifdef __cplusplus
+}
+#endif

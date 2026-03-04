@@ -185,6 +185,7 @@
 
 /* Multi-task architecture includes */
 #include "comm_task.h"
+#include "imu_task.h"
 #include "led_status_task.h"
 #include "motor_control_task.h"
 #include "obstacle_detect_task.h"
@@ -361,6 +362,56 @@ static rx_bus_config_t s_gpio_config;
  * @since Version 1.0.0
  */
 static rx_bus_config_t s_adc0_config;
+
+/**
+ * @var s_i2c1_imu_config
+ * @brief I2C bus configuration for BNO055 IMU sensor on RIIC1
+ *
+ * @details
+ * Configures the RIIC1 I2C bus for the BNO055 9-DOF orientation sensor.
+ *
+ * **Hardware Configuration:**
+ * - Bus type: I2C (RIIC1 peripheral)
+ * - Channel: 1 (RIIC1)
+ * - Device address: 0x28 (BNO055, COM3/ADR=LOW)
+ * - SDA: P2.0 (SDA1)
+ * - SCL: P2.1 (SCL1)
+ * - Frequency: 400 kHz (fast mode)
+ *
+ * @note Bus name "i2c1" matches s_bus_name in rx_bno055.c
+ * @note Static allocation follows NASA Power of 10 Rule 3
+ *
+ * @see rx_bno055.h BNO055 driver that uses this bus
+ *
+ * @since Version 1.0.0
+ */
+static rx_bus_config_t s_i2c1_imu_config;
+
+/**
+ * @var s_i2c1_baro_config
+ * @brief I2C bus configuration for BMP280 barometric sensor on RIIC1
+ *
+ * @details
+ * Configures the RIIC1 I2C bus for the BMP280 barometric pressure sensor.
+ * Shares RIIC1 hardware with the BNO055 but uses a separate bus name and
+ * device address.
+ *
+ * **Hardware Configuration:**
+ * - Bus type: I2C (RIIC1 peripheral)
+ * - Channel: 1 (RIIC1)
+ * - Device address: 0x76 (BMP280, SDO=LOW)
+ * - SDA: P2.0 (SDA1)
+ * - SCL: P2.1 (SCL1)
+ * - Frequency: 400 kHz (fast mode)
+ *
+ * @note Bus name "i2c1_baro" matches s_bus_name in rx_bmp280.c
+ * @note Static allocation follows NASA Power of 10 Rule 3
+ *
+ * @see rx_bmp280.h BMP280 driver that uses this bus
+ *
+ * @since Version 1.0.0
+ */
+static rx_bus_config_t s_i2c1_baro_config;
 
 /* =============================================================================
  * Startup Flag Check Helpers
@@ -1508,6 +1559,8 @@ typedef enum : uint32_t {
     30, /**< Communication task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Heartbeat called every 10ms. Valid range: 20-50ms. If exceeded: SPI comm stops, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_watchdog_ms =
     30, /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
+  k_iwdt_task_timeout_imu_ms =
+    150, /**< IMU Task timeout (150ms). Task period: 50ms @ 20 Hz. Timeout = 3x period. Heartbeat called every 50ms. Valid range: 100-300ms. If exceeded: IMU data stops, system reset after 2s. */
 } iwdt_task_timeout_ms_t;
 
 /**
@@ -1650,6 +1703,30 @@ static void internal_register_system_buses(void)
   RX_ASSERT(err == k_rx_ok, "adc0 config init must succeed");
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
   RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
+
+  /* Register i2c1 - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */
+  err = rx_bus_config_init_i2c(&s_i2c1_imu_config,
+                               "i2c1",                   /* name: matches rx_bno055.c s_bus_name */
+                               k_riic_channel_1,          /* channel: RIIC1 */
+                               (uint8_t)0x28U,            /* device_addr: BNO055 (COM3/ADR=LOW) */
+                               k_rx_p2_0,                 /* sda_pin: P2.0 = SDA1 */
+                               k_rx_p2_1,                 /* scl_pin: P2.1 = SCL1 */
+                               k_i2c_frequency_400khz);   /* frequency_hz: 400 kHz fast mode */
+  RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_imu_config);
+  RX_ASSERT(err == k_rx_ok, "i2c1 (IMU) registration must succeed");
+
+  /* Register i2c1_baro - BMP280 barometric sensor (RIIC1, addr 0x76, SDA=P2.0, SCL=P2.1) */
+  err = rx_bus_config_init_i2c(&s_i2c1_baro_config,
+                               "i2c1_baro",              /* name: matches rx_bmp280.c s_bus_name */
+                               k_riic_channel_1,          /* channel: RIIC1 (same as i2c1) */
+                               (uint8_t)0x76U,            /* device_addr: BMP280 (SDO=LOW) */
+                               k_rx_p2_0,                 /* sda_pin: P2.0 = SDA1 */
+                               k_rx_p2_1,                 /* scl_pin: P2.1 = SCL1 */
+                               k_i2c_frequency_400khz);   /* frequency_hz: 400 kHz fast mode */
+  RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) config init must succeed");
+  err = rx_bus_manager_add_bus(&g_bus_manager, &s_i2c1_baro_config);
+  RX_ASSERT(err == k_rx_ok, "i2c1_baro (BMP280) registration must succeed");
 }
 
 /**
@@ -1739,6 +1816,9 @@ static void internal_register_iwdt_tasks(void)
   err = rx_iwdt_register_task("WatchdogMon", k_iwdt_task_timeout_watchdog_ms);
   RX_ASSERT(err == k_rx_ok, "WatchdogMon IWDT registration must succeed");
 
+  err = rx_iwdt_register_task("ImuTask", k_iwdt_task_timeout_imu_ms);
+  RX_ASSERT(err == k_rx_ok, "ImuTask IWDT registration must succeed");
+
   /* Set initial IWDT state (init phase - 5s timeout) */
   err = rx_iwdt_set_state(k_system_state_init);
   RX_ASSERT(err == k_rx_ok, "IWDT set init state must succeed");
@@ -1789,6 +1869,10 @@ static void internal_create_system_tasks(void)
   /* Temperature Sensor Task - Priority 15 */
   err = temp_sensor_task_create();
   RX_ASSERT(err == k_rx_ok, "temp_sensor_task_create must succeed");
+
+  /* IMU Task - Priority 13 (BNO055 + BMP280 at 20 Hz) */
+  err = imu_task_create();
+  RX_ASSERT(err == k_rx_ok, "imu_task_create must succeed");
 
   /* Obstacle Detection Task - Priority 12 */
   err = obstacle_detect_task_create();

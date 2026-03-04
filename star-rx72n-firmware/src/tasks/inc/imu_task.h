@@ -1,0 +1,107 @@
+/* src/tasks/inc/imu_task.h */
+
+/**
+ * @file imu_task.h
+ * @brief IMU Task - BNO055 + BMP280 Sensor Polling at 20 Hz
+ *
+ * @details
+ * # Overview
+ *
+ * Declares the IMU task responsible for reading the BNO055 9-DOF absolute
+ * orientation sensor and the BMP280 barometric pressure sensor at 20 Hz
+ * (50 ms period) and publishing results to shared_data.
+ *
+ * # Hardware
+ *
+ * Both sensors share the RIIC1 I2C bus (SCL1=P2.1, SDA1=P2.0):
+ * - **BNO055**: 9-DOF IMU @ I2C address 0x28, bus name "i2c1"
+ * - **BMP280**: Barometric pressure @ I2C address 0x76, bus name "i2c1"
+ *
+ * # Task Configuration
+ *
+ * | Parameter | Value |
+ * |-----------|-------|
+ * | Priority | 13 (between obstacle detect and temp sensor) |
+ * | Stack | 2048 bytes |
+ * | Period | 50 ms (20 Hz) |
+ * | IWDT timeout | 150 ms (3x period) |
+ *
+ * # Task Lifecycle
+ *
+ * 1. Initialize BNO055 (rx_bno055_init) - blocks ~700 ms for POR
+ * 2. Initialize BMP280 (rx_bmp280_init) - blocks ~2 ms for calib read
+ * 3. Enter 50 ms periodic polling loop:
+ *    a. Read BNO055 -> populate imu_state_t -> shared_data_update_imu()
+ *    b. Read BMP280 -> populate baro_state_t -> shared_data_update_baro()
+ *    c. Feed IWDT heartbeat
+ *    d. Sleep remainder of 50 ms period
+ *
+ * @see imu_task.c Implementation
+ * @see rx_bno055.h BNO055 driver
+ * @see rx_bmp280.h BMP280 driver
+ * @see shared_data.h IMU and baro state types
+ *
+ * @par NASA Power of 10 Compliance:
+ * - **Rule 3**: [PASS] No dynamic allocation; static stack only
+ * - **Rule 5**: [PASS] 2+ preconditions in imu_task_create()
+ *
+ * @author STAR Team
+ * @date 2026-03-04
+ * @version 1.0.0
+ * @copyright MIT License
+ */
+
+#pragma once
+
+#include "rx_err.h"
+
+/**
+ * @brief Create and start the IMU sensor task
+ *
+ * @details
+ * Creates the ImuTask ThreadX task for BNO055 + BMP280 sensor polling.
+ * This task initializes both sensors during its startup phase (which may
+ * take ~700 ms for BNO055 POR) and then polls at 20 Hz.
+ *
+ * **Task Configuration:**
+ * - Priority: 13 (lower than obstacle detect at 12, higher than temp at 15)
+ * - Stack: 2048 bytes (sufficient for BNO055 + BMP280 init sequences)
+ * - Period: 50 ms (20 Hz IMU and baro updates)
+ * - IWDT timeout: 150 ms (3x period)
+ *
+ * **Sensor Initialization (inside task):**
+ * - rx_bno055_init(): ~700 ms (BNO055 POR + NDOF mode setup)
+ * - rx_bmp280_init(): ~2 ms (calibration burst read)
+ * - Both initialized before entering the periodic poll loop
+ * - Sensor failures logged but do not block task startup
+ *
+ * **Data Flow:**
+ * - BNO055 read -> imu_state_t -> shared_data_update_imu()
+ * - BMP280 read -> baro_state_t -> shared_data_update_baro()
+ *
+ * @return rx_err_t Error code
+ * @retval k_rx_ok Task created successfully, will run after scheduler starts
+ * @retval k_rx_err_rtos_error ThreadX task creation failed
+ *
+ * @pre ThreadX kernel running (tx_application_define context)
+ * @pre "i2c1" bus registered in bus manager via main.c
+ * @pre shared_data_init() called (mutexes created)
+ * @pre hardware_init() completed (RIIC1 initialized at 400 kHz)
+ *
+ * @post ImuTask created and scheduled for execution
+ * @post Sensor initialization will occur inside task on first run
+ * @post imu_state_t and baro_state_t updated at 20 Hz once sensors ready
+ *
+ * @note Call from tx_application_define() in main.c after bus registration
+ * @note Task initializes sensors internally; no pre-initialization required
+ * @note BNO055 POR delay (~700 ms) occurs inside the task, not in main
+ *
+ * @see imu_task.c Full implementation
+ * @see rx_bno055_init() BNO055 initialization (called inside task)
+ * @see rx_bmp280_init() BMP280 initialization (called inside task)
+ * @see shared_data.h imu_state_t and baro_state_t definitions
+ * @see main.c Task creation call site
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t imu_task_create(void);
