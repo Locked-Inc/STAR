@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
-SOURCES_DIR="${REPO_ROOT}/star-stm32f767-firmware/Sources"
+SOURCES_DIR="${REPO_ROOT}/star-stm32-firmware/Sources"
 CLANG_FORMAT_CFG="${REPO_ROOT}/.clang-format"
 
 usage() {
