@@ -10,7 +10,9 @@
     }
   },
   "runArgs": [
-    "--platform=linux/amd64"
+    "--platform=linux/amd64",
+    "--privileged",
+    "--device=/dev/bus/usb"
   ],
   "features": {
     "ghcr.io/devcontainers/features/git-lfs:1": {},
@@ -50,7 +52,11 @@
         "ms-python.vscode-pylance",
         "eamodio.gitlens",
         "mhutchie.git-graph",
-        "redhat.vscode-yaml"
+        "redhat.vscode-yaml",
+        "stmicroelectronics.stm32-vscode-extension",
+        "marus25.cortex-debug",
+        "Anthropic.claude-code",
+        "coderabbit.coderabbit-vscode"
       ],
       "settings": {
         "C_Cpp.intelliSenseEngine": "disabled",
