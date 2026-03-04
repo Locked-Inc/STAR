@@ -102,53 +102,53 @@ extern "C" {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_reg_chip_id        = 0x00, /**< Chip ID register - reads 0xA0 */
-  k_bno055_reg_acc_x_lsb      = 0x08, /**< Raw accel X low byte */
-  k_bno055_reg_acc_x_msb      = 0x09, /**< Raw accel X high byte */
-  k_bno055_reg_acc_y_lsb      = 0x0A, /**< Raw accel Y low byte */
-  k_bno055_reg_acc_y_msb      = 0x0B, /**< Raw accel Y high byte */
-  k_bno055_reg_acc_z_lsb      = 0x0C, /**< Raw accel Z low byte */
-  k_bno055_reg_acc_z_msb      = 0x0D, /**< Raw accel Z high byte */
-  k_bno055_reg_gyr_x_lsb      = 0x14, /**< Raw gyro X low byte */
-  k_bno055_reg_gyr_x_msb      = 0x15, /**< Raw gyro X high byte */
-  k_bno055_reg_gyr_y_lsb      = 0x16, /**< Raw gyro Y low byte */
-  k_bno055_reg_gyr_y_msb      = 0x17, /**< Raw gyro Y high byte */
-  k_bno055_reg_gyr_z_lsb      = 0x18, /**< Raw gyro Z low byte */
-  k_bno055_reg_gyr_z_msb      = 0x19, /**< Raw gyro Z high byte */
-  k_bno055_reg_eul_h_lsb      = 0x1A, /**< Euler heading low byte (0-359.9375 deg) */
-  k_bno055_reg_eul_h_msb      = 0x1B, /**< Euler heading high byte */
-  k_bno055_reg_eul_r_lsb      = 0x1C, /**< Euler roll low byte (-90 to +90 deg) */
-  k_bno055_reg_eul_r_msb      = 0x1D, /**< Euler roll high byte */
-  k_bno055_reg_eul_p_lsb      = 0x1E, /**< Euler pitch low byte (-180 to +180 deg) */
-  k_bno055_reg_eul_p_msb      = 0x1F, /**< Euler pitch high byte */
-  k_bno055_reg_qua_w_lsb      = 0x20, /**< Quaternion W low byte */
-  k_bno055_reg_qua_w_msb      = 0x21, /**< Quaternion W high byte */
-  k_bno055_reg_qua_x_lsb      = 0x22, /**< Quaternion X low byte */
-  k_bno055_reg_qua_x_msb      = 0x23, /**< Quaternion X high byte */
-  k_bno055_reg_qua_y_lsb      = 0x24, /**< Quaternion Y low byte */
-  k_bno055_reg_qua_y_msb      = 0x25, /**< Quaternion Y high byte */
-  k_bno055_reg_qua_z_lsb      = 0x26, /**< Quaternion Z low byte */
-  k_bno055_reg_qua_z_msb      = 0x27, /**< Quaternion Z high byte */
-  k_bno055_reg_lia_x_lsb      = 0x28, /**< Linear accel X low byte (m/s^2, gravity-free) */
-  k_bno055_reg_lia_x_msb      = 0x29, /**< Linear accel X high byte */
-  k_bno055_reg_lia_y_lsb      = 0x2A, /**< Linear accel Y low byte */
-  k_bno055_reg_lia_y_msb      = 0x2B, /**< Linear accel Y high byte */
-  k_bno055_reg_lia_z_lsb      = 0x2C, /**< Linear accel Z low byte */
-  k_bno055_reg_lia_z_msb      = 0x2D, /**< Linear accel Z high byte */
-  k_bno055_reg_grv_x_lsb      = 0x2E, /**< Gravity vector X low byte */
-  k_bno055_reg_grv_x_msb      = 0x2F, /**< Gravity vector X high byte */
-  k_bno055_reg_grv_y_lsb      = 0x30, /**< Gravity vector Y low byte */
-  k_bno055_reg_grv_y_msb      = 0x31, /**< Gravity vector Y high byte */
-  k_bno055_reg_grv_z_lsb      = 0x32, /**< Gravity vector Z low byte */
-  k_bno055_reg_grv_z_msb      = 0x33, /**< Gravity vector Z high byte */
-  k_bno055_reg_temp            = 0x34, /**< Temperature in deg C (1 degC/LSB) */
-  k_bno055_reg_calib_stat      = 0x35, /**< Calibration status: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
-  k_bno055_reg_unit_sel        = 0x3B, /**< Unit selection register */
-  k_bno055_reg_opr_mode        = 0x3D, /**< Operating mode register */
-  k_bno055_reg_pwr_mode        = 0x3E, /**< Power mode register */
-  k_bno055_reg_sys_trigger     = 0x3F, /**< System trigger (reset, self-test) */
-  k_bno055_reg_axis_map_cfg    = 0x41, /**< Axis remapping configuration */
-  k_bno055_reg_axis_map_sgn    = 0x42, /**< Axis remapping sign */
+  k_bno055_reg_chip_id      = 0x00, /**< Chip ID register - reads 0xA0 */
+  k_bno055_reg_acc_x_lsb    = 0x08, /**< Raw accel X low byte */
+  k_bno055_reg_acc_x_msb    = 0x09, /**< Raw accel X high byte */
+  k_bno055_reg_acc_y_lsb    = 0x0A, /**< Raw accel Y low byte */
+  k_bno055_reg_acc_y_msb    = 0x0B, /**< Raw accel Y high byte */
+  k_bno055_reg_acc_z_lsb    = 0x0C, /**< Raw accel Z low byte */
+  k_bno055_reg_acc_z_msb    = 0x0D, /**< Raw accel Z high byte */
+  k_bno055_reg_gyr_x_lsb    = 0x14, /**< Raw gyro X low byte */
+  k_bno055_reg_gyr_x_msb    = 0x15, /**< Raw gyro X high byte */
+  k_bno055_reg_gyr_y_lsb    = 0x16, /**< Raw gyro Y low byte */
+  k_bno055_reg_gyr_y_msb    = 0x17, /**< Raw gyro Y high byte */
+  k_bno055_reg_gyr_z_lsb    = 0x18, /**< Raw gyro Z low byte */
+  k_bno055_reg_gyr_z_msb    = 0x19, /**< Raw gyro Z high byte */
+  k_bno055_reg_eul_h_lsb    = 0x1A, /**< Euler heading low byte (0-359.9375 deg) */
+  k_bno055_reg_eul_h_msb    = 0x1B, /**< Euler heading high byte */
+  k_bno055_reg_eul_r_lsb    = 0x1C, /**< Euler roll low byte (-90 to +90 deg) */
+  k_bno055_reg_eul_r_msb    = 0x1D, /**< Euler roll high byte */
+  k_bno055_reg_eul_p_lsb    = 0x1E, /**< Euler pitch low byte (-180 to +180 deg) */
+  k_bno055_reg_eul_p_msb    = 0x1F, /**< Euler pitch high byte */
+  k_bno055_reg_qua_w_lsb    = 0x20, /**< Quaternion W low byte */
+  k_bno055_reg_qua_w_msb    = 0x21, /**< Quaternion W high byte */
+  k_bno055_reg_qua_x_lsb    = 0x22, /**< Quaternion X low byte */
+  k_bno055_reg_qua_x_msb    = 0x23, /**< Quaternion X high byte */
+  k_bno055_reg_qua_y_lsb    = 0x24, /**< Quaternion Y low byte */
+  k_bno055_reg_qua_y_msb    = 0x25, /**< Quaternion Y high byte */
+  k_bno055_reg_qua_z_lsb    = 0x26, /**< Quaternion Z low byte */
+  k_bno055_reg_qua_z_msb    = 0x27, /**< Quaternion Z high byte */
+  k_bno055_reg_lia_x_lsb    = 0x28, /**< Linear accel X low byte (m/s^2, gravity-free) */
+  k_bno055_reg_lia_x_msb    = 0x29, /**< Linear accel X high byte */
+  k_bno055_reg_lia_y_lsb    = 0x2A, /**< Linear accel Y low byte */
+  k_bno055_reg_lia_y_msb    = 0x2B, /**< Linear accel Y high byte */
+  k_bno055_reg_lia_z_lsb    = 0x2C, /**< Linear accel Z low byte */
+  k_bno055_reg_lia_z_msb    = 0x2D, /**< Linear accel Z high byte */
+  k_bno055_reg_grv_x_lsb    = 0x2E, /**< Gravity vector X low byte */
+  k_bno055_reg_grv_x_msb    = 0x2F, /**< Gravity vector X high byte */
+  k_bno055_reg_grv_y_lsb    = 0x30, /**< Gravity vector Y low byte */
+  k_bno055_reg_grv_y_msb    = 0x31, /**< Gravity vector Y high byte */
+  k_bno055_reg_grv_z_lsb    = 0x32, /**< Gravity vector Z low byte */
+  k_bno055_reg_grv_z_msb    = 0x33, /**< Gravity vector Z high byte */
+  k_bno055_reg_temp         = 0x34, /**< Temperature in deg C (1 degC/LSB) */
+  k_bno055_reg_calib_stat   = 0x35, /**< Calibration status: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
+  k_bno055_reg_unit_sel     = 0x3B, /**< Unit selection register */
+  k_bno055_reg_opr_mode     = 0x3D, /**< Operating mode register */
+  k_bno055_reg_pwr_mode     = 0x3E, /**< Power mode register */
+  k_bno055_reg_sys_trigger  = 0x3F, /**< System trigger (reset, self-test) */
+  k_bno055_reg_axis_map_cfg = 0x41, /**< Axis remapping configuration */
+  k_bno055_reg_axis_map_sgn = 0x42, /**< Axis remapping sign */
 } bno055_reg_t;
 
 /* =============================================================================
@@ -327,9 +327,10 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_delay_ndof_ticks    = 1,  /**< CONFIG->NDOF transition: 7 ms rounds up to 1 tick (10 ms) */
-  k_bno055_delay_por_ticks     = 65, /**< POR/software reset boot: 650 ms / 10 ms per tick = 65 ticks */
-  k_bno055_delay_config_ticks  = 2,  /**< Fusion->CONFIG transition: 19 ms rounds up to 2 ticks (20 ms) */
+  k_bno055_delay_ndof_ticks = 1, /**< CONFIG->NDOF transition: 7 ms rounds up to 1 tick (10 ms) */
+  k_bno055_delay_por_ticks = 65, /**< POR/software reset boot: 650 ms / 10 ms per tick = 65 ticks */
+  k_bno055_delay_config_ticks =
+    2, /**< Fusion->CONFIG transition: 19 ms rounds up to 2 ticks (20 ms) */
 } bno055_delay_ticks_t;
 
 /**
@@ -348,7 +349,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_tick_round_up = 1, /**< Extra tick added to round fractional delays up to next tick boundary */
+  k_bno055_tick_round_up =
+    1, /**< Extra tick added to round fractional delays up to next tick boundary */
 } bno055_tick_round_t;
 
 /**
@@ -375,7 +377,7 @@ typedef enum : uint16_t {
   k_bno055_scale_euler_lsb_per_deg  = 16,    /**< Euler angle: 16 LSB per degree */
   k_bno055_scale_accel_lsb_per_mps2 = 100,   /**< Linear accel: 100 LSB per m/s^2 */
   k_bno055_scale_gyro_lsb_per_dps   = 16,    /**< Gyroscope: 16 LSB per deg/s */
-  k_bno055_scale_quat_lsb            = 16384, /**< Quaternion: 16384 LSB per unit */
+  k_bno055_scale_quat_lsb           = 16384, /**< Quaternion: 16384 LSB per unit */
 } bno055_regs_scale_t;
 
 /* NOTE: Calibration bit-shift and mask constants have been moved to rx_bno055.h

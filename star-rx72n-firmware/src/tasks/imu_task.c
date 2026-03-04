@@ -337,11 +337,12 @@ static void internal_read_and_publish_imu(void)
   RX_ASSERT(s_imu_created, "IMU task must be created before reading IMU");
   RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
 
-  bno055_data_t bno_data = {0};
-  const rx_err_t err     = rx_bno055_read(&bno_data);
+  bno055_data_t  bno_data = {0};
+  const rx_err_t err      = rx_bno055_read(&bno_data);
 
-  imu_state_t imu  = {0};
-  imu.timestamp_ms = (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
+  imu_state_t imu = {0};
+  imu.timestamp_ms =
+    (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
 
   if (err == k_rx_ok) {
     imu.heading_deg16 = bno_data.heading_deg16;
@@ -395,8 +396,9 @@ static void internal_read_and_publish_baro(void)
   bmp280_data_t  bmp_data = {0};
   const rx_err_t err      = rx_bmp280_read(&bmp_data);
 
-  baro_state_t baro  = {0};
-  baro.timestamp_ms  = (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
+  baro_state_t baro = {0};
+  baro.timestamp_ms =
+    (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
 
   if (err == k_rx_ok) {
     baro.temp_centi_degc = bmp_data.temp_centi_degc;

@@ -94,8 +94,9 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_imu_task_period_ms       = 50U,  /**< IMU sampling period in milliseconds (20 Hz) */
-  k_imu_task_period_ticks    = 5U,   /**< IMU sampling period in RTOS ticks (5 ticks x 10 ms/tick = 50 ms at 100 Hz) */
+  k_imu_task_period_ms = 50U, /**< IMU sampling period in milliseconds (20 Hz) */
+  k_imu_task_period_ticks =
+    5U, /**< IMU sampling period in RTOS ticks (5 ticks x 10 ms/tick = 50 ms at 100 Hz) */
   k_imu_task_iwdt_timeout_ms = 150U, /**< IWDT heartbeat timeout in milliseconds (3x period) */
 } imu_task_timing_t;
 

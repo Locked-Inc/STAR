@@ -118,9 +118,9 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef enum : uint16_t {
-  k_imu_scale_euler  = 16,    /**< Euler angle divisor: raw / 16 = degrees */
-  k_imu_scale_quat   = 16384, /**< Quaternion divisor: raw / 16384 = unit quaternion */
-  k_imu_scale_acc    = 100,   /**< Linear accel divisor: raw / 100 = m/s^2 */
+  k_imu_scale_euler = 16,    /**< Euler angle divisor: raw / 16 = degrees */
+  k_imu_scale_quat  = 16384, /**< Quaternion divisor: raw / 16384 = unit quaternion */
+  k_imu_scale_acc   = 100,   /**< Linear accel divisor: raw / 100 = m/s^2 */
 } imu_scale_t;
 
 /**
@@ -187,20 +187,24 @@ typedef enum : int16_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  int16_t  heading_deg16; /**< Euler heading 0-359.9375 deg (scale: k_imu_scale_euler) */
-  int16_t  roll_deg16;    /**< Euler roll -90 to +90 deg (scale: k_imu_scale_euler) */
-  int16_t  pitch_deg16;   /**< Euler pitch -180 to +180 deg (scale: k_imu_scale_euler) */
-  int16_t  quat_w;        /**< Quaternion W component (scale: k_imu_scale_quat) */
-  int16_t  quat_x;        /**< Quaternion X component (scale: k_imu_scale_quat) */
-  int16_t  quat_y;        /**< Quaternion Y component (scale: k_imu_scale_quat) */
-  int16_t  quat_z;        /**< Quaternion Z component (scale: k_imu_scale_quat) */
-  int16_t  lin_acc_x;     /**< Linear acceleration X in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
-  int16_t  lin_acc_y;     /**< Linear acceleration Y in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
-  int16_t  lin_acc_z;     /**< Linear acceleration Z in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
-  uint32_t timestamp_ms;  /**< ThreadX tick when data was last updated (ms); placed before 8-bit fields to avoid padding */
-  int8_t   temp_degc;     /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
-  uint8_t  calib_stat;    /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
-  bool     valid;         /**< true after first successful read from BNO055 */
+  int16_t heading_deg16; /**< Euler heading 0-359.9375 deg (scale: k_imu_scale_euler) */
+  int16_t roll_deg16;    /**< Euler roll -90 to +90 deg (scale: k_imu_scale_euler) */
+  int16_t pitch_deg16;   /**< Euler pitch -180 to +180 deg (scale: k_imu_scale_euler) */
+  int16_t quat_w;        /**< Quaternion W component (scale: k_imu_scale_quat) */
+  int16_t quat_x;        /**< Quaternion X component (scale: k_imu_scale_quat) */
+  int16_t quat_y;        /**< Quaternion Y component (scale: k_imu_scale_quat) */
+  int16_t quat_z;        /**< Quaternion Z component (scale: k_imu_scale_quat) */
+  int16_t
+    lin_acc_x; /**< Linear acceleration X in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
+  int16_t
+    lin_acc_y; /**< Linear acceleration Y in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
+  int16_t
+    lin_acc_z; /**< Linear acceleration Z in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
+  uint32_t
+    timestamp_ms; /**< ThreadX tick when data was last updated (ms); placed before 8-bit fields to avoid padding */
+  int8_t  temp_degc;  /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
+  uint8_t calib_stat; /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
+  bool    valid;      /**< true after first successful read from BNO055 */
 } imu_state_t;
 
 /**
@@ -228,10 +232,11 @@ typedef struct {
  * @since Version 1.0.0
  */
 typedef struct {
-  int32_t  temp_centi_degc; /**< Temperature * 100 (e.g. 2523 = 25.23 degC) */
-  uint32_t press_pa_256;    /**< Pressure * k_baro_scale_press in Pa (divide by k_baro_scale_press for Pa) */
-  uint32_t timestamp_ms;    /**< ThreadX tick when data was last updated (ms) */
-  bool     valid;           /**< true after first successful read from BMP280 */
+  int32_t temp_centi_degc; /**< Temperature * 100 (e.g. 2523 = 25.23 degC) */
+  uint32_t
+    press_pa_256; /**< Pressure * k_baro_scale_press in Pa (divide by k_baro_scale_press for Pa) */
+  uint32_t timestamp_ms; /**< ThreadX tick when data was last updated (ms) */
+  bool     valid;        /**< true after first successful read from BMP280 */
 } baro_state_t;
 
 /**
