@@ -4,11 +4,11 @@ on:
   push:
     branches: [main, 'feature/**']
     paths:
-      - 'e2-studio-star-rx72n-firmware/**'
+      - 'star-rx72n-firmware/**'
       - '.github/workflows/firmware-unit-tests.yml'
   pull_request:
     paths:
-      - 'e2-studio-star-rx72n-firmware/**'
+      - 'star-rx72n-firmware/**'
       - '.github/workflows/firmware-unit-tests.yml'
 
 # Cancel stale runs on fast-push branches -- only the latest commit matters.
@@ -35,13 +35,13 @@ jobs:
       - name: Cache CMake FetchContent (Unity + nanopb)
         uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830  # v4
         with:
-          path: e2-studio-star-rx72n-firmware/tests/build/_deps
+          path: star-rx72n-firmware/tests/build/_deps
           # Hash ALL CMakeLists files -- a new mock or subdirectory CMakeLists invalidates deps
-          key: cmake-deps-${{ hashFiles('e2-studio-star-rx72n-firmware/tests/**/CMakeLists.txt') }}
+          key: cmake-deps-${{ hashFiles('star-rx72n-firmware/tests/**/CMakeLists.txt') }}
           restore-keys: cmake-deps-
 
       - name: Configure tests
-        working-directory: e2-studio-star-rx72n-firmware/tests
+        working-directory: star-rx72n-firmware/tests
         # GITHUB_TOKEN authenticates FetchContent GitHub downloads.
         # Unauthenticated runners share a 60 req/hr rate limit; authenticated is 5,000/hr.
         # Prevents sporadic SSL/429 failures when multiple PRs hit a cache miss simultaneously.
@@ -50,17 +50,17 @@ jobs:
         run: cmake -B build -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_FLAGS="--coverage" -DCMAKE_CXX_FLAGS="--coverage" -DCMAKE_EXE_LINKER_FLAGS="--coverage"
 
       - name: Build tests
-        working-directory: e2-studio-star-rx72n-firmware/tests
+        working-directory: star-rx72n-firmware/tests
         run: cmake --build build -j$(nproc)
 
       - name: Run tests
-        working-directory: e2-studio-star-rx72n-firmware/tests/build
+        working-directory: star-rx72n-firmware/tests/build
         # Run from build/ so --output-junit writes test-results.xml here,
         # exactly where dorny/test-reporter and upload-artifact reference it.
         run: ctest --output-on-failure --output-junit test-results.xml
 
       - name: Generate coverage
-        working-directory: e2-studio-star-rx72n-firmware/tests/build
+        working-directory: star-rx72n-firmware/tests/build
         run: |
           lcov --capture --directory . --output-file coverage.info --ignore-errors mismatch,mismatch
           genhtml coverage.info --output-directory coverage-report --ignore-errors mismatch,mismatch
@@ -71,8 +71,8 @@ jobs:
         with:
           name: coverage-${{ github.run_id }}-${{ github.sha }}
           path: |
-            e2-studio-star-rx72n-firmware/tests/build/coverage.info
-            e2-studio-star-rx72n-firmware/tests/build/coverage-report/
+            star-rx72n-firmware/tests/build/coverage.info
+            star-rx72n-firmware/tests/build/coverage-report/
           retention-days: 30
 
       - name: Publish test results to PR checks tab
@@ -85,7 +85,7 @@ jobs:
         # branches directly; this is acceptable for now.
         with:
           name: Firmware Unit Tests
-          path: e2-studio-star-rx72n-firmware/tests/build/test-results.xml
+          path: star-rx72n-firmware/tests/build/test-results.xml
           reporter: java-junit
           fail-on-error: true
 
@@ -95,7 +95,7 @@ jobs:
         with:
           # run_id guarantees uniqueness across manual re-runs of the same commit SHA
           name: firmware-unit-test-results-${{ github.run_id }}-${{ github.sha }}
-          path: e2-studio-star-rx72n-firmware/tests/build/test-results.xml
+          path: star-rx72n-firmware/tests/build/test-results.xml
           retention-days: 30
 
       # ==========================================================================
@@ -110,12 +110,12 @@ jobs:
             --suppress=missingInclude \
             --suppress=unmatchedSuppression \
             --inline-suppr \
-            --exclude=e2-studio-star-rx72n-firmware/libs/threadx \
-            --exclude=e2-studio-star-rx72n-firmware/libs/rx_nanopb/nanopb \
-            --exclude=e2-studio-star-rx72n-firmware/src/boot/smc_generated \
-            --exclude=e2-studio-star-rx72n-firmware/src/boot/r_bsp \
-            e2-studio-star-rx72n-firmware/libs/ \
-            e2-studio-star-rx72n-firmware/src/ \
+            --exclude=star-rx72n-firmware/libs/threadx \
+            --exclude=star-rx72n-firmware/libs/rx_nanopb/nanopb \
+            --exclude=star-rx72n-firmware/src/boot/smc_generated \
+            --exclude=star-rx72n-firmware/src/boot/r_bsp \
+            star-rx72n-firmware/libs/ \
+            star-rx72n-firmware/src/ \
             2>&1 | tee cppcheck-results.txt; true
           # TODO: remove --error-exitcode=0 and '; true' once baseline is clean
 
@@ -124,7 +124,7 @@ jobs:
           # No version suffix: devcontainer (osrf/ros:jazzy-desktop) and ubuntu-latest
           # both run Ubuntu 24.04 and install clang-format-18 via the unversioned package.
           sudo apt-get install -y clang-format
-          find e2-studio-star-rx72n-firmware \
+          find star-rx72n-firmware \
             \( -name '*.c' -o -name '*.h' \) \
             ! -path '*/build/*' \
             ! -path '*/threadx/*' \

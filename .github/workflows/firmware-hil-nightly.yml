@@ -45,7 +45,7 @@ jobs:
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
 
       - name: Build firmware (Debug for HIL -- includes test instrumentation)
-        working-directory: e2-studio-star-rx72n-firmware
+        working-directory: star-rx72n-firmware
         run: |
           cmake -B build \
             -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-rx72n.cmake \
@@ -57,14 +57,14 @@ jobs:
           # TODO: implement scripts/flash.sh wrapping rfp-cli
           # Example invocation once implemented:
           #   rfp-cli -device rx72n -connect \
-          #     -write e2-studio-star-rx72n-firmware/build/star-rx72n-firmware.mot \
+          #     -write star-rx72n-firmware/build/star-rx72n-firmware.mot \
           #     -verify \
           #     -reset
           echo "Placeholder: scripts/flash.sh not yet implemented"
           exit 1
 
       - name: Run HIL test suite
-        working-directory: e2-studio-star-rx72n-firmware/tests/hil
+        working-directory: star-rx72n-firmware/tests/hil
         run: |
           # TODO: pytest-based serial/UART test harness
           #   pip install -r requirements.txt
@@ -77,5 +77,5 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: hil-results-${{ github.run_id }}-${{ github.sha }}
-          path: e2-studio-star-rx72n-firmware/tests/hil/results/
+          path: star-rx72n-firmware/tests/hil/results/
           retention-days: 30
