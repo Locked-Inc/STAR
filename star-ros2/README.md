@@ -507,7 +507,7 @@ chmod +x .git/hooks/pre-commit
 
 ```bash
 # Skip pre-commit checks for urgent fixes
-SKIP_ROS2_CHECKS=1 git commit -m "hotfix: critical issue"
+git commit --no-verify -m "hotfix: critical issue"
 ```
 
 ---

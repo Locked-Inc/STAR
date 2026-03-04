@@ -52,15 +52,20 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Validate chip unconditionally
+case "${CHIP}" in
+    STM32F767xx|STM32F746xx) ;;
+    *)
+        echo "ERROR: Unknown chip: ${CHIP}. Use STM32F767xx or STM32F746xx" >&2
+        exit 1
+        ;;
+esac
+
 # Derive default ELF path from chip if not provided
 if [[ -z "${ELF_PATH}" ]]; then
     case "${CHIP}" in
         STM32F767xx) ELF_PATH="${FIRMWARE_DIR}/build-f767/firmware.elf" ;;
         STM32F746xx) ELF_PATH="${FIRMWARE_DIR}/build-f746/firmware.elf" ;;
-        *)
-            echo "ERROR: Unknown chip: ${CHIP}. Use STM32F767xx or STM32F746xx" >&2
-            exit 1
-            ;;
     esac
 fi
 

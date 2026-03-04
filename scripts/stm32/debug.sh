@@ -7,7 +7,6 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
 FIRMWARE_DIR="${REPO_ROOT}/star-stm32-firmware"
-DEFAULT_ELF="${FIRMWARE_DIR}/build-f767/firmware.elf"
 GDBINIT_FILE="${FIRMWARE_DIR}/.gdbinit"
 
 usage() {
@@ -22,7 +21,7 @@ usage() {
     echo "  -h, --help       Show this help message"
 }
 
-ELF_PATH="${DEFAULT_ELF}"
+ELF_PATH=""
 PORT=3333
 CHIP="STM32F767xx"
 
@@ -69,8 +68,14 @@ while [[ $# -gt 0 ]]; do
 done
 
 case "${CHIP}" in
-    STM32F767xx) WORKAREASIZE="0x40000" ;;   # F767: 512 KB RAM
-    STM32F746xx) WORKAREASIZE="0x20000" ;;   # F746: 320 KB RAM
+    STM32F767xx)
+        WORKAREASIZE="0x40000"   # 256 KB work area
+        [[ -z "${ELF_PATH}" ]] && ELF_PATH="${FIRMWARE_DIR}/build-f767/firmware.elf"
+        ;;
+    STM32F746xx)
+        WORKAREASIZE="0x20000"   # 128 KB work area
+        [[ -z "${ELF_PATH}" ]] && ELF_PATH="${FIRMWARE_DIR}/build-f746/firmware.elf"
+        ;;
     *)
         echo "ERROR: Unknown chip: ${CHIP}. Use STM32F767xx or STM32F746xx" >&2
         exit 1
@@ -85,6 +90,11 @@ fi
 
 if ! command -v arm-none-eabi-gdb >/dev/null 2>&1; then
     echo "ERROR: arm-none-eabi-gdb is not installed or not in PATH" >&2
+    exit 1
+fi
+
+if ! command -v nc >/dev/null 2>&1; then
+    echo "ERROR: nc (netcat) is not installed or not in PATH" >&2
     exit 1
 fi
 

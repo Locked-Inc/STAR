@@ -10,12 +10,14 @@ on:
       - '.github/workflows/ros2.yml'
       - 'Dockerfile'
       - '.devcontainer/**'
+      - 'scripts/ros2/**'
   pull_request:
     paths:
       - 'star-ros2/**'
       - '.github/workflows/ros2.yml'
       - 'Dockerfile'
       - '.devcontainer/**'
+      - 'scripts/ros2/**'
 
 jobs:
   build-and-test:

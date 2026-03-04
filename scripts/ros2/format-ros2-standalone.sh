@@ -5,7 +5,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Check if Docker is available
 if ! command -v docker &> /dev/null; then
@@ -48,6 +48,6 @@ docker run --rm \
     -v "$PROJECT_ROOT:/workspaces/STAR" \
     -w /workspaces/STAR \
     star-ros2-dev \
-    /bin/bash -c "cd /workspaces/STAR && ./scripts/ros2/format-ros2.sh \"$CHECK_ONLY\""
+    /workspaces/STAR/scripts/ros2/format-ros2.sh ${CHECK_ONLY:+"$CHECK_ONLY"}
 
 echo "✅ Done!"

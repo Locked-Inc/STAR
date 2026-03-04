@@ -93,7 +93,7 @@ jobs:
 
       - name: Build firmware
         working-directory: star-stm32-firmware
-        run: cmake --build ${{ matrix.build_dir }} -j$(nproc)
+        run: cmake --build "${{ matrix.build_dir }}" --parallel "$(nproc)"
 
       - name: Report and enforce binary size budgets
         working-directory: star-stm32-firmware/${{ matrix.build_dir }}
