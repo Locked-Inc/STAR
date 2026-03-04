@@ -75,19 +75,19 @@ pid_discretize          # Generate discrete coefficients for RX72N
 
 ```bash
 # Format all ROS2 C++ files
-./scripts/format-ros2.sh
+./scripts/ros2/format-ros2.sh
 
 # Check formatting (CI mode)
-./scripts/format-ros2.sh --check
+./scripts/ros2/format-ros2.sh --check
 
 # Run automated code review
-./scripts/review-ros2.sh
+./scripts/ros2/review-ros2.sh
 
 # Generate review report to file
-./scripts/review-ros2.sh --report review.txt
+./scripts/ros2/review-ros2.sh --report review.txt
 
 # Install pre-commit hook (recommended)
-cp scripts/pre-commit-ros2 .git/hooks/pre-commit
+cp scripts/git/pre-commit .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 

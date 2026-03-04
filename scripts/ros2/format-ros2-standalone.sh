@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Format ROS2 code using Docker (standalone, doesn't require devcontainer)
-# Usage: ./scripts/format-ros2-standalone.sh [--check]
+# Usage: ./scripts/ros2/format-ros2-standalone.sh [--check]
 
 set -euo pipefail
 
@@ -28,8 +28,8 @@ fi
 docker build -t star-ros2-dev "$PROJECT_ROOT"
 
 # Preflight check
-if [ ! -x "$PROJECT_ROOT/scripts/format-ros2.sh" ]; then
-    echo "❌ scripts/format-ros2.sh not found or not executable"
+if [ ! -x "$PROJECT_ROOT/scripts/ros2/format-ros2.sh" ]; then
+    echo "❌ scripts/ros2/format-ros2.sh not found or not executable"
     exit 1
 fi
 
@@ -48,6 +48,6 @@ docker run --rm \
     -v "$PROJECT_ROOT:/workspaces/STAR" \
     -w /workspaces/STAR \
     star-ros2-dev \
-    /bin/bash -c "cd /workspaces/STAR && ./scripts/format-ros2.sh \"$CHECK_ONLY\""
+    /bin/bash -c "cd /workspaces/STAR && ./scripts/ros2/format-ros2.sh \"$CHECK_ONLY\""
 
 echo "✅ Done!"

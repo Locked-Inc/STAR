@@ -14,7 +14,7 @@ help:
 	@echo "-------------------------------"
 	@echo "Targets:"
 	@echo "  make build        - Build the ROS2 project (runs ./build-ros2.sh in Docker)"
-	@echo "  make format       - Format code (runs ./scripts/format-ros2.sh in Docker)"
+	@echo "  make format       - Format code (runs ./scripts/ros2/format-ros2.sh in Docker)"
 	@echo "  make shell        - Start an interactive shell in a new ephemeral container"
 	@echo ""
 	@echo "RX72N Firmware:"
@@ -55,12 +55,12 @@ build: build-image
 # Run the format script in an ephemeral container
 format: build-image
 	@echo "Formatting ROS2 code..."
-	@docker run --rm -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) ./scripts/format-ros2.sh
+	@docker run --rm -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) ./scripts/ros2/format-ros2.sh
 
 # Check formatting without modifying files (for CI/pre-commit)
 check: build-image
 	@echo "Checking ROS2 code formatting..."
-	@docker run --rm -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) ./scripts/format-ros2.sh --check
+	@docker run --rm -v "$(CURRENT_DIR):$(WORK_DIR)" -w $(WORK_DIR) $(IMAGE_NAME) ./scripts/ros2/format-ros2.sh --check
 
 # Start an ephemeral interactive shell
 shell: build-image
@@ -312,7 +312,7 @@ doxygen-pdf-deps:
 	    collection-latexextra \
 	    2>&1 | grep -E "(install:|running|Error)" || true
 	@if ! command -v epstopdf >/dev/null 2>&1; then \
-	  bash scripts/install-epstopdf-wrapper.sh; \
+	  bash scripts/devtools/install-epstopdf-wrapper.sh; \
 	else \
 	  echo "  epstopdf already present -- skipping"; \
 	fi

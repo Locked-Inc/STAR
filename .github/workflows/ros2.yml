@@ -160,7 +160,7 @@ jobs:
           source /opt/ros/jazzy/setup.bash
           
           # Use the centralized script to check all packages
-          ./scripts/format-ros2.sh --check
+          ./scripts/ros2/format-ros2.sh --check
 
   lint:
     name: Code Quality Checks
@@ -218,7 +218,7 @@ jobs:
 
       - name: Run code review
         run: |
-          ./scripts/review-ros2.sh --report review.txt || true
+          ./scripts/ros2/review-ros2.sh --report review.txt || true
 
       - name: Upload report
         if: always()

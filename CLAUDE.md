@@ -87,19 +87,19 @@ the STAR project.
 
 ### Enforcement
 
-A pre-commit hook at `scripts/pre-commit` rejects any commit containing non-ASCII
+A pre-commit hook at `scripts/git/pre-commit` rejects any commit containing non-ASCII
 characters in source files. CI/CD will also run the check.
 
 To auto-fix non-ASCII in a file:
 
 ```
-python3 scripts/fix-encoding.py path/to/file
+python3 scripts/utils/fix-encoding.py path/to/file
 ```
 
 To check a directory without modifying files:
 
 ```
-python3 scripts/fix-encoding.py --check path/to/dir
+python3 scripts/utils/fix-encoding.py --check path/to/dir
 ```
 
 ## Project Overview

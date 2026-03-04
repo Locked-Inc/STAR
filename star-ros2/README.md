@@ -479,27 +479,27 @@ gh pr create --title "feat(spi): implement SPI device initialization" --body "Cl
 
 ```bash
 # Format all ROS2 C++ files
-./scripts/format-ros2.sh
+./scripts/ros2/format-ros2.sh
 
 # Check formatting without changes (CI mode)
-./scripts/format-ros2.sh --check
+./scripts/ros2/format-ros2.sh --check
 ```
 
 **Run Code Review:**
 
 ```bash
 # Automated checklist validation
-./scripts/review-ros2.sh
+./scripts/ros2/review-ros2.sh
 
 # Generate report to file
-./scripts/review-ros2.sh --report review.txt
+./scripts/ros2/review-ros2.sh --report review.txt
 ```
 
 **Install Pre-commit Hook (Recommended):**
 
 ```bash
 # Run quality checks before every commit
-cp scripts/pre-commit-ros2 .git/hooks/pre-commit
+cp scripts/git/pre-commit .git/hooks/pre-commit
 chmod +x .git/hooks/pre-commit
 ```
 

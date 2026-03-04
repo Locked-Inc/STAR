@@ -1,7 +1,7 @@
 #!/bin/bash
 # ROS2 C++ Code Formatting Script
 # Uses ament_uncrustify (ROS2's official formatter) instead of clang-format
-# Usage: ./scripts/format-ros2.sh [options]
+# Usage: ./scripts/ros2/format-ros2.sh [options]
 
 set -e  # Exit on any error
 set +H  # Disable history expansion (fixes ! in if statements)
@@ -317,7 +317,7 @@ check_header_guards() {
     if [ "$issues_found" = true ]; then
         echo ""
         print_error "Header guard check failed!"
-        echo "Run './scripts/format-ros2.sh' to fix header guards."
+        echo "Run './scripts/ros2/format-ros2.sh' to fix header guards."
         return 1
     else
         print_success "All header guards are correct!"

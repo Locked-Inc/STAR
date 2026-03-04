@@ -20,26 +20,26 @@ This project now uses `ament_uncrustify` exclusively for ROS2 C++ code formattin
 
 ```bash
 # Format all ROS2 packages
-./scripts/format-ros2.sh
+./scripts/ros2/format-ros2.sh
 
 # Check without modifying (CI mode)
-./scripts/format-ros2.sh --check
+./scripts/ros2/format-ros2.sh --check
 
 # Verbose output
-./scripts/format-ros2.sh -v
+./scripts/ros2/format-ros2.sh -v
 
 # Skip header guard checking
-./scripts/format-ros2.sh --skip-guards
+./scripts/ros2/format-ros2.sh --skip-guards
 ```
 
 ### Option 2: From Host Machine (with Docker)
 
 ```bash
 # Uses Docker to run formatting in the devcontainer
-./scripts/format-ros2-docker.sh
+./scripts/ros2/format-ros2-docker.sh
 
 # All the same options work
-./scripts/format-ros2-docker.sh --check
+./scripts/ros2/format-ros2-docker.sh --check
 ```
 
 ### Manual Formatting
@@ -70,7 +70,7 @@ The workspace settings in `.vscode/settings.json` now:
 
 1. **Disable auto-formatting** for C++ files to prevent clang-format conflicts
 2. **Configure header guards** to use the `PACKAGE__FILENAME_HPP_` pattern
-3. Set formatOnSave to false for C++ (manual formatting with `./scripts/format-ros2.sh`)
+3. Set formatOnSave to false for C++ (manual formatting with `./scripts/ros2/format-ros2.sh`)
 
 ## Header Guards
 
@@ -106,7 +106,7 @@ colcon test --packages-select <package>
 
 You need to run the script in an environment with ROS2:
 - Inside the devcontainer (recommended)
-- Use `./scripts/format-ros2-docker.sh` from host
+- Use `./scripts/ros2/format-ros2-docker.sh` from host
 - Install ROS2 locally and source it
 
 ### VS Code still auto-formatting with clang-format
@@ -129,7 +129,7 @@ Make sure you ran the script **inside the devcontainer** or via Docker wrapper, 
 
 1. **Always format before committing:**
    ```bash
-   ./scripts/format-ros2.sh
+    ./scripts/ros2/format-ros2.sh
    git add .
    git commit
    ```
@@ -142,9 +142,9 @@ Make sure you ran the script **inside the devcontainer** or via Docker wrapper, 
 
 ## Files Modified
 
-- `scripts/format-ros2.sh` - Main formatting script (uses uncrustify)
-- `scripts/format-ros2-docker.sh` - Docker wrapper for host usage
-- `scripts/fix-header-guards.sh` - Standalone header guard fixer
-- `scripts/pre-commit` - Pre-commit hook
+- `scripts/ros2/format-ros2.sh` - Main formatting script (uses uncrustify)
+- `scripts/ros2/format-ros2-docker.sh` - Docker wrapper for host usage
+- `scripts/ros2/fix-header-guards.sh` - Standalone header guard fixer
+- `scripts/git/pre-commit` - Pre-commit hook
 - `.vscode/settings.json` - Disables clang-format for C++
 - Removed: `star-ros2/.clang-format` (no longer used)
