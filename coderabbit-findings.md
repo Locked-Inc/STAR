@@ -517,3 +517,11 @@ categorized as SKIP, or are false positives. No new code changes required.
 
 ### rx_drv8263.c
 - [x] R10-3. Line 826: Changed nfault_readings initializer from {false, false, false} to {false} to avoid coupling to k_drv8263_olp_pattern_count count
+
+## Round 11 (all resolved)
+
+### star-ros2/src/sllidar_ros2
+- [x] R11-1. Line 1: SKIP: dirty submodule is unrelated to DRV8263H refactor (recurring)
+
+### rx_drv8263.h
+- [x] R11-2. Lines 468-482: Renamed plain names (min_nonneg/max_adc_v/ipropi_divisor) back to s_ prefix per CLAUDE.md convention ("Static variables: s_ prefix"); rounds 8-11 went back and forth -- s_ is correct per project standards

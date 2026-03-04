@@ -466,20 +466,20 @@ typedef struct {
 static inline float rx_drv8263_adc_to_amps(float adc_voltage_v)
 {
   /* Non-negative lower bound for input voltage and output current assertions */
-  static const float min_nonneg = 0.0F;
+  static const float s_min_nonneg = 0.0F;
 
   /* Upper bound for ADC input voltage (3.3V full-scale for RX72N ADC) */
-  static const float max_adc_v = 3.3F;
+  static const float s_max_adc_v = 3.3F;
 
-  assert(adc_voltage_v >= min_nonneg); /* Precondition: non-negative voltage */
-  assert(adc_voltage_v <= max_adc_v);  /* Precondition: within ADC full-scale */
+  assert(adc_voltage_v >= s_min_nonneg); /* Precondition: non-negative voltage */
+  assert(adc_voltage_v <= s_max_adc_v);  /* Precondition: within ADC full-scale */
 
   /* Combined IPROPI conversion factor: 202e-6 * 5100 = 1.0302 */
-  static const float ipropi_divisor = 1.0302F;
+  static const float s_ipropi_divisor = 1.0302F;
 
-  const float result = adc_voltage_v / ipropi_divisor;
+  const float result = adc_voltage_v / s_ipropi_divisor;
 
-  assert(result >= min_nonneg); /* Postcondition: non-negative current */
+  assert(result >= s_min_nonneg); /* Postcondition: non-negative current */
 
   return result;
 }
