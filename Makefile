@@ -117,9 +117,9 @@ proto-gen-ros2:
 # OdometryData and LidarScan types used in ForwardTelemetryRequest.
 proto-gen-firmware: proto-gen-go
 	@echo "Preparing firmware nanopb headers/sources..."
-	@mkdir -p e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1
+	@mkdir -p star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1
 	@set -e; \
-	dst=e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1; \
+	dst=star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1; \
 	src_gen=star-proto/gen/nanopb/star/v1; \
 	rm -f "$$dst"/*.pb.h "$$dst"/*.pb.c; \
 	for header in "$$src_gen"/*.pb.h; do \
@@ -131,17 +131,17 @@ proto-gen-firmware: proto-gen-go
 # Test RX72N firmware (regenerates protos first)
 test-rx72n: proto-gen-firmware
 	@echo "Running RX72N unit tests..."
-	@cd e2-studio-star-rx72n-firmware/tests && bash run_tests.sh
+	@cd star-rx72n-firmware/tests && bash run_tests.sh
 
 # Build RX72N firmware binary (Debug) - requires GNURX toolchain (rx-elf-gcc)
 build-rx72n:
 	@echo "Building RX72N firmware (Debug)..."
-	@cd e2-studio-star-rx72n-firmware && bash build.sh debug
+	@cd star-rx72n-firmware && bash build.sh debug
 
 # Build RX72N firmware binary (Release) - requires GNURX toolchain (rx-elf-gcc)
 build-rx72n-release:
 	@echo "Building RX72N firmware (Release)..."
-	@cd e2-studio-star-rx72n-firmware && bash build.sh release
+	@cd star-rx72n-firmware && bash build.sh release
 
 # Auto-format firmware C/H files with clang-format (modifies files in place)
 format-rx72n:
@@ -173,7 +173,7 @@ proto-check-nanopb-sync:
 # then copy refman.pdf back.  /tmp is kernel tmpfs -- no disk or 9p I/O.
 # ------------------------------------------------------------
 
-FIRMWARE_DIR := e2-studio-star-rx72n-firmware
+FIRMWARE_DIR := star-rx72n-firmware
 DOXY_OUT     := $(FIRMWARE_DIR)/docs/doxygen
 
 # Discover all libraries automatically -- new libs under libs/ are picked up
