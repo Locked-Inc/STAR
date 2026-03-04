@@ -571,7 +571,8 @@ generate_report() {
 
 # Main
 main() {
-    cd "$(dirname "$0")/.."
+    # Change to project root directory (script lives at scripts/ros2/)
+    cd "$(dirname "$0")/../.."
 
     parse_args "$@"
 

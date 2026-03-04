@@ -383,8 +383,8 @@ fix_header_guards() {
 
 # Main execution
 main() {
-    # Change to project root directory
-    cd "$(dirname "$0")/.."
+    # Change to project root directory (script lives at scripts/ros2/)
+    cd "$(dirname "$0")/../.."
 
     # Parse command line arguments
     parse_args "$@"

@@ -33,7 +33,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-cd "$(dirname "$0")/.."
+# Change to project root directory (script lives at scripts/ros2/)
+cd "$(dirname "$0")/../.."
 
 # Find all .hpp files in ROS2 packages
 files_with_issues=()
