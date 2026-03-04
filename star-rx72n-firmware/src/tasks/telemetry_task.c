@@ -1162,6 +1162,33 @@ static const double s_lin_acc_scale = 100.0;
 static const double s_rad_per_deg = 0.017453292519943295;
 
 /**
+ * @var s_half_turn_deg
+ * @brief Half revolution in degrees (180.0); threshold for yaw normalization.
+ *
+ * @details
+ * BNO055 heading output is in [0, 360) degrees. To produce yaw in (-180, 180]
+ * for ROS2 geometry_msgs compatibility, headings above 180 degrees are shifted
+ * down by one full turn (360 degrees).
+ *
+ * @note Read-only; never modified after program start.
+ * @since Version 1.0.0
+ */
+static const double s_half_turn_deg = 180.0;
+
+/**
+ * @var s_full_turn_deg
+ * @brief Full revolution in degrees (360.0); subtracted to wrap yaw to (-180, 180].
+ *
+ * @details
+ * Used in the yaw normalization: yaw_deg = heading_deg - s_full_turn_deg
+ * when heading_deg > s_half_turn_deg.
+ *
+ * @note Read-only; never modified after program start.
+ * @since Version 1.0.0
+ */
+static const double s_full_turn_deg = 360.0;
+
+/**
  * @enum telem_motor_idx_t
  * @brief Motor indices for telemetry encoder data
  * @since Version 1.0.0
@@ -2033,12 +2060,14 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
   if (err == k_rx_ok && imu_state.valid) {
     telemetry->has_imu = true;
 
-    /* Heading in radians (0.0 to 2*pi) */
-    telemetry->imu.heading_rad =
-      ((double)imu_state.heading_deg16 / s_deg16_per_deg) * s_rad_per_deg;
+    /* Heading in degrees [0, 360) then convert to radians [0, 2*pi) */
+    const double heading_deg   = (double)imu_state.heading_deg16 / s_deg16_per_deg;
+    telemetry->imu.heading_rad = heading_deg * s_rad_per_deg;
 
-    /* Yaw angle in radians (same source as heading; -pi to pi range for ROS2 geometry_msgs) */
-    telemetry->imu.yaw_rad = ((double)imu_state.heading_deg16 / s_deg16_per_deg) * s_rad_per_deg;
+    /* Normalize heading [0, 360) to yaw (-180, 180] for ROS2 geometry_msgs compatibility */
+    const double yaw_deg =
+      (heading_deg > s_half_turn_deg) ? (heading_deg - s_full_turn_deg) : heading_deg;
+    telemetry->imu.yaw_rad = yaw_deg * s_rad_per_deg;
 
     /* Roll and pitch in radians */
     telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16 / s_deg16_per_deg) * s_rad_per_deg;

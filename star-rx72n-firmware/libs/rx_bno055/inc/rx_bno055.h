@@ -383,7 +383,7 @@ typedef struct {
  * @note For unit tests only; not available in firmware builds
  * @since Version 1.0.0
  */
-void bno055_test_reset_state(void);
+void rx_bno055_test_reset_state(void);
 #endif /* UNIT_TEST */
 
 #ifdef __cplusplus

@@ -194,12 +194,9 @@ typedef struct {
   int16_t quat_x;        /**< Quaternion X component (scale: k_imu_scale_quat) */
   int16_t quat_y;        /**< Quaternion Y component (scale: k_imu_scale_quat) */
   int16_t quat_z;        /**< Quaternion Z component (scale: k_imu_scale_quat) */
-  int16_t
-    lin_acc_x; /**< Linear acceleration X in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
-  int16_t
-    lin_acc_y; /**< Linear acceleration Y in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
-  int16_t
-    lin_acc_z; /**< Linear acceleration Z in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
+  int16_t lin_acc_x;     /**< Linear acceleration X, gravity-compensated (scale: k_imu_scale_acc) */
+  int16_t lin_acc_y;     /**< Linear acceleration Y, gravity-compensated (scale: k_imu_scale_acc) */
+  int16_t lin_acc_z;     /**< Linear acceleration Z, gravity-compensated (scale: k_imu_scale_acc) */
   uint32_t
     timestamp_ms; /**< ThreadX tick when data was last updated (ms); placed before 8-bit fields to avoid padding */
   int8_t  temp_degc;  /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */

@@ -99,7 +99,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_comm_manager/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_core/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_crc/inc
-    ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_drv8263/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_ds18b20/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_encoder/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/libs/rx_fec/inc

@@ -123,6 +123,9 @@ message TelemetryData {
   // Barometric pressure and temperature from BMP280 (RX72N specific).
   BaroData baro = 12;
 
+  // Field 13 was reserved during IMU integration (never assigned in production).
+  reserved 13;
+
   // Timestamp in microseconds since boot (RX72N specific).
   int64 timestamp_us = 14;
 

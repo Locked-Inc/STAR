@@ -76,8 +76,8 @@
 
 /* Validate k_bno055_ms_per_tick is consistent with the actual ThreadX tick rate.
  * If TX_TIMER_TICKS_PER_SECOND changes, this assert catches the mismatch at compile time. */
-_Static_assert(k_bno055_ms_per_tick == (1000U / TX_TIMER_TICKS_PER_SECOND),
-               "k_bno055_ms_per_tick must equal 1000/TX_TIMER_TICKS_PER_SECOND");
+_Static_assert(k_bno055_ms_per_tick == (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND),
+               "k_bno055_ms_per_tick must equal k_bno055_ms_per_second/TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
  * Constants
@@ -739,6 +739,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
  */
 static rx_err_t internal_read_euler(bno055_data_t* out)
 {
+  RX_ASSERT(s_initialized, "driver must be initialized before reading Euler angles");
   RX_ASSERT(out != NULL, "out must not be NULL");
   _Static_assert((uint8_t)k_bno055_euler_bytes >= (uint8_t)k_bno055_euler_expected_bytes,
                  "euler buffer must hold 6 bytes");
@@ -784,6 +785,7 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
  */
 static rx_err_t internal_read_quat(bno055_data_t* out)
 {
+  RX_ASSERT(s_initialized, "driver must be initialized before reading quaternion");
   RX_ASSERT(out != NULL, "out must not be NULL");
   _Static_assert((uint8_t)k_bno055_quat_bytes >= (uint8_t)k_bno055_quat_expected_bytes,
                  "quat buffer must hold 8 bytes");
@@ -826,6 +828,7 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
  */
 static rx_err_t internal_read_lia(bno055_data_t* out)
 {
+  RX_ASSERT(s_initialized, "driver must be initialized before reading linear acceleration");
   RX_ASSERT(out != NULL, "out must not be NULL");
   _Static_assert((uint8_t)k_bno055_lia_bytes >= (uint8_t)k_bno055_lia_expected_bytes,
                  "lia buffer must hold 6 bytes");
@@ -997,9 +1000,11 @@ rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
  * @note For unit tests only; not compiled in firmware builds
  * @since Version 1.0.0
  */
-void bno055_test_reset_state(void)
+void rx_bno055_test_reset_state(void)
 {
   s_initialized = false;
   s_manager     = NULL;
+  RX_ASSERT(!s_initialized, "s_initialized must be false after reset");
+  RX_ASSERT(s_manager == NULL, "s_manager must be NULL after reset");
 }
 #endif /* UNIT_TEST */

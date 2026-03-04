@@ -251,6 +251,21 @@ typedef enum : uint32_t {
   k_i2c_frequency_400khz = 400000, /**< Fast mode: 400 kHz */
 } i2c_frequency_t;
 
+/**
+ * @brief I2C device addresses for IMU sensors on RIIC1 bus
+ * @details
+ * Both IMU sensors share the RIIC1 bus (P2.0=SDA1, P2.1=SCL1) but
+ * are distinguished by their 7-bit I2C addresses:
+ * - BNO055 COM3/ADR pin LOW: 0x28
+ * - BMP280 SDO pin LOW:      0x76
+ *
+ * @see internal_register_system_buses() Uses these addresses with rx_bus_config_init_i2c()
+ */
+typedef enum : uint8_t {
+  k_i2c_addr_bno055 = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
+  k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
+} imu_i2c_addr_t;
+
 /* =============================================================================
  * Static Bus Configurations
  * =============================================================================
@@ -1711,11 +1726,6 @@ static void internal_register_system_buses(void)
   err = rx_bus_manager_add_bus(&g_bus_manager, &s_adc0_config);
   RX_ASSERT(err == k_rx_ok, "adc0 registration must succeed");
 
-  /* I2C device addresses for IMU sensors on RIIC1 bus */
-  typedef enum : uint8_t {
-    k_i2c_addr_bno055 = 0x28U, /**< BNO055 I2C address when COM3/ADR pin = LOW */
-    k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
-  } imu_i2c_addr_t;
   _Static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
 
   /* Register i2c1 - BNO055 IMU (RIIC1, addr 0x28, SDA=P2.0, SCL=P2.1) */

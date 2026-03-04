@@ -23,7 +23,7 @@
  * @par Static State Management
  *
  * The driver keeps static variables s_initialized and s_manager. setUp()
- * calls bno055_test_reset_state() before each test so that every test
+ * calls rx_bno055_test_reset_state() before each test so that every test
  * starts from a clean, uninitialized state regardless of execution order.
  *
  * Tests that require s_initialized == true call
@@ -123,7 +123,7 @@ typedef enum : uint32_t {
 typedef enum : uint8_t {
   k_test_calib_all_full = 0xFF, /**< SYS=3, GYR=3, ACC=3, MAG=3 (all calibrated) */
   k_test_calib_none     = 0x00, /**< SYS=0, GYR=0, ACC=0, MAG=0 (uncalibrated) */
-  k_test_calib_partial  = 0x3F, /**< GYR=0, ACC=3, MAG=3, partial */
+  k_test_calib_partial  = 0x3F, /**< SYS=0, GYR=3, ACC=3, MAG=3, system not yet calibrated */
 } test_bno055_calib_t;
 
 /**
@@ -367,7 +367,7 @@ static void internal_load_quat_read_data(void)
  * @brief Initialize test fixtures before each test
  *
  * @details
- * 1. Reset BNO055 driver static state via bno055_test_reset_state()
+ * 1. Reset BNO055 driver static state via rx_bno055_test_reset_state()
  * 2. Reset mock RIIC HAL state (mock_riic_init)
  * 3. Initialize bus manager
  * 4. Create I2C bus config (channel 1, addr 0x28, 400 kHz, P2.0/P2.1)
@@ -385,7 +385,7 @@ static void internal_load_quat_read_data(void)
  */
 void setUp(void)
 {
-  bno055_test_reset_state();
+  rx_bno055_test_reset_state();
   mock_riic_init();
 
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "BNO055_TEST", nullptr, nullptr);
@@ -413,7 +413,7 @@ void setUp(void)
  * @details
  * Deinitializes the bus manager and resets mock RIIC state. Driver static
  * state (s_initialized, s_manager) is reset at the start of the next test
- * via bno055_test_reset_state() in setUp(), not here.
+ * via rx_bno055_test_reset_state() in setUp(), not here.
  *
  * @pre setUp() has been called
  * @post s_test_manager deinitialized; mock RIIC state cleared
@@ -691,8 +691,8 @@ void test_bno055_read_success_quaternion(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* quat_w: loaded buffer[0]=0x00, buffer[1]=0x40 -> 0x4000 = 16384 */
-  TEST_ASSERT_EQUAL_INT16(k_quat_w_expected, data.quat_w);
-  TEST_ASSERT_EQUAL_INT16(k_quat_xyz_expected, data.quat_x);
+  TEST_ASSERT_EQUAL_INT16((int16_t)k_quat_w_expected, data.quat_w);
+  TEST_ASSERT_EQUAL_INT16((int16_t)k_quat_xyz_expected, data.quat_x);
 }
 
 /**
@@ -794,7 +794,7 @@ void test_bno055_is_calibrated_reads_status(void)
  *
  * @details
  * Runs all BNO055 driver unit tests in declaration order. Each test begins
- * with setUp() calling bno055_test_reset_state() so tests are independent
+ * with setUp() calling rx_bno055_test_reset_state() so tests are independent
  * of execution order. Tests that require s_initialized == true call
  * internal_setup_initialized_driver() at the top of the test body.
  *
@@ -803,7 +803,7 @@ void test_bno055_is_calibrated_reads_status(void)
  * @retval non-zero Number of test failures reported by Unity
  *
  * @pre Unity test harness linked and BNO055 driver sources compiled with mock RIIC HAL
- * @pre mock_riic_init() and bno055_test_reset_state() called by setUp() before each test
+ * @pre mock_riic_init() and rx_bno055_test_reset_state() called by setUp() before each test
  * @post Unity reports all test results to stdout
  *
  * @since Version 1.0.0

@@ -292,6 +292,7 @@ rx_err_t imu_task_create(void)
  * (NASA Rule 4).
  *
  * @pre IWDT subsystem initialized via rx_iwdt_init()
+ * @pre s_imu_created == true (task created via imu_task_create())
  * @post Heartbeat recorded; watchdog monitor resets timer for "ImuTask"
  * @post Error logged on failure (watchdog monitor will detect missed heartbeat)
  *
@@ -322,6 +323,7 @@ static void internal_send_iwdt_heartbeat(void)
  * failure to signal consumers that data is stale.
  *
  * @pre s_imu_created == true (task running)
+ * @pre s_tag != NULL (module tag initialized)
  * @post imu_state_t in shared data updated with latest BNO055 data
  * @post valid = false if BNO055 read fails
  *
@@ -378,6 +380,7 @@ static void internal_read_and_publish_imu(void)
  * Sets valid = false on read failure to signal consumers that data is stale.
  *
  * @pre s_imu_created == true (task running)
+ * @pre s_tag != NULL (module tag initialized)
  * @post baro_state_t in shared data updated with latest BMP280 data
  * @post valid = false if BMP280 read fails
  *

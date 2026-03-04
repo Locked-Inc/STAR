@@ -320,6 +320,7 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  *
  * @pre buf non-NULL, capacity >= 2
  * @post Return value == (uint16_t)buf[0] | ((uint16_t)buf[1] << 8)
+ * @post No side effects; buf and global state are not modified
  *
  * @note Inline; zero overhead after optimization
  * @see internal_parse_s16_le() Signed variant
@@ -347,6 +348,7 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
  *
  * @pre buf non-NULL, capacity >= 2
  * @post Return value correctly represents two's complement signed value
+ * @post No side effects; buf and global state are not modified
  *
  * @note Inline; zero overhead after optimization
  * @see internal_parse_u16_le() Unsigned variant
@@ -435,20 +437,20 @@ static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
 {
   RX_ASSERT(t_fine_out != NULL, "t_fine_out must be non-NULL");
 
-  enum : int32_t {
-    k_adc_20bit_max    = 0xFFFFF, /**< Maximum valid 20-bit ADC value */
-    k_temp_shift_adc_3 = 3,       /**< adc_T right shift for T1 subtraction step */
-    k_temp_shift_t1_1  = 1,       /**< dig_T1 left shift in first var1 step */
-    k_temp_shift_11    = 11,      /**< Right shift for var1 final step */
-    k_temp_shift_adc_4 = 4,       /**< adc_T right shift for T1 comparison steps */
-    k_temp_shift_12    = 12,      /**< Right shift for squared difference */
-    k_temp_shift_14    = 14,      /**< Right shift for var2 final step */
-    k_temp_fine_scale  = 5,       /**< Scale factor in fine-to-output conversion */
-    k_temp_round_add   = 128,     /**< Rounding constant in fine-to-output conversion */
-    k_temp_shift_out   = 8,       /**< Right shift to produce 0.01 degC output */
-  };
+  typedef enum : int32_t {
+    k_temp_shift_adc_3 = 3,   /**< adc_T right shift for T1 subtraction step */
+    k_temp_shift_t1_1  = 1,   /**< dig_T1 left shift in first var1 step */
+    k_temp_shift_11    = 11,  /**< Right shift for var1 final step */
+    k_temp_shift_adc_4 = 4,   /**< adc_T right shift for T1 comparison steps */
+    k_temp_shift_12    = 12,  /**< Right shift for squared difference */
+    k_temp_shift_14    = 14,  /**< Right shift for var2 final step */
+    k_temp_fine_scale  = 5,   /**< Scale factor in fine-to-output conversion */
+    k_temp_round_add   = 128, /**< Rounding constant in fine-to-output conversion */
+    k_temp_shift_out   = 8,   /**< Right shift to produce 0.01 degC output */
+  } bmp280_temp_comp_t;
 
-  RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)k_adc_20bit_max, "adc_T must be a 20-bit ADC value");
+  RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)k_bmp280_adc_20bit_max,
+            "adc_T must be a 20-bit ADC value");
 
   const int32_t var1 =
     ((((adc_T >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *

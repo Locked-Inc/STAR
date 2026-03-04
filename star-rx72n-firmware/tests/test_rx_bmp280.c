@@ -334,6 +334,17 @@ static rx_bus_manager_t s_test_manager;
  */
 static rx_bus_config_t s_i2c_config;
 
+/**
+ * @var s_before_init_tested
+ * @brief Order-enforcement flag: set by test_bmp280_read_before_init_returns_error
+ * @details
+ * The before-init test must run before any successful init. This flag is set
+ * in test_bmp280_read_before_init_returns_error() and asserted in
+ * test_bmp280_init_success() to enforce the required execution order.
+ * @since Version 1.0.0
+ */
+static bool s_before_init_tested = false;
+
 /* =============================================================================
  * Internal: Load mock RIIC RX buffer for calibration and measurement sequences
  * =============================================================================
@@ -537,7 +548,7 @@ void setUp(void)
 void tearDown(void)
 {
   (void)rx_bus_manager_deinit(&s_test_manager);
-  mock_riic_init();
+  (void)mock_riic_init();
 }
 
 /* =============================================================================
@@ -630,6 +641,9 @@ void test_bmp280_init_invalid_calib_returns_error(void)
  */
 void test_bmp280_init_success(void)
 {
+  TEST_ASSERT_TRUE_MESSAGE(
+    s_before_init_tested,
+    "test_bmp280_read_before_init_returns_error must run before init_success");
   internal_load_valid_calib();
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
@@ -713,6 +727,7 @@ void test_bmp280_read_before_init_returns_error(void)
   rx_err_t      err = rx_bmp280_read(&data);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
+  s_before_init_tested = true;
 }
 
 /**

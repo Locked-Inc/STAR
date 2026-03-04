@@ -465,6 +465,20 @@ typedef enum : uint8_t {
   k_bno055_ms_per_tick = 10, /**< ThreadX tick period: 10 ms at 100 Hz tick rate */
 } bno055_tick_rate_t;
 
+/**
+ * @enum bno055_time_const_t
+ * @brief Time conversion constants for tick-rate validation
+ *
+ * @details
+ * Named constant for milliseconds per second, used in the compile-time
+ * assertion that verifies k_bno055_ms_per_tick matches TX_TIMER_TICKS_PER_SECOND.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_bno055_ms_per_second = 1000U, /**< Milliseconds per second (for tick-rate conversion) */
+} bno055_time_const_t;
+
 #ifdef __cplusplus
 }
 #endif

@@ -119,7 +119,7 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_i2c_addr = 0x76, /**< I2C device address (SDO=LOW, DFRobot module) */
+  k_bmp280_i2c_addr = 0x76U, /**< I2C device address (SDO=LOW, DFRobot module) */
 } bmp280_i2c_addr_t;
 
 /**
