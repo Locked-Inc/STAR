@@ -78,7 +78,7 @@ colcon test-result --verbose
 ./scripts/review-ros2.sh            # Automated code review
 ```
 
-### Firmware (e2-studio-star-rx72n-firmware/)
+### Firmware (star-rx72n-firmware/)
 
 ```bash
 # Build in Docker
@@ -147,7 +147,7 @@ make clean                 # Clean all build artifacts
 
 ```bash
 # Generate RX72N firmware docs
-cd e2-studio-star-rx72n-firmware
+cd star-rx72n-firmware
 doxygen Doxyfile
 # Output: docs/doxygen/html/index.html
 
@@ -168,7 +168,7 @@ grep -i "warning" doxygen_warnings.log
 
 | Component | Description | Language/Framework |
 |-----------|-------------|--------------------|
-| `e2-studio-star-rx72n-firmware/` | Renesas RX72N motor controller firmware | C + ThreadX RTOS |
+| `star-rx72n-firmware/` | Renesas RX72N motor controller firmware | C + ThreadX RTOS |
 | `star-proto/` | Protocol Buffers schemas with code generation | Proto3 -> Go/TypeScript/nanopb |
 | `star-gateway/` | Gateway service (UI <-> ROS2 bridge) | Go + gRPC |
 | `star-ros2/` | ROS2 integration + SLAM | C++ (ROS2 Jazzy) |
@@ -213,7 +213,7 @@ grep -i "warning" doxygen_warnings.log
 - **Error Handling**: Check ALL return values, propagate errors, never ignore failures
 - **Documentation**: Use Doxygen format with ALL applicable tags for all functions and types
 
-### C Firmware Style (e2-studio-star-rx72n-firmware/)
+### C Firmware Style (star-rx72n-firmware/)
 
 #### Naming Conventions
 
@@ -797,7 +797,7 @@ The Renesas e^2 studio simulator allows testing firmware **logic** without real 
 #### Option 1: e^2 studio (Interactive Debugging)
 
 **Creating Simulator Build Configuration:**
-1. In e^2 studio, right-click project "e2-studio-star-rx72n-firmware" -> Properties
+1. In e^2 studio, right-click project "star-rx72n-firmware" -> Properties
 2. Navigate to: C/C++ Build -> Manage Configurations
 3. Click "New..." button
 4. Name: **"Simulator Debug"**
@@ -826,7 +826,7 @@ The Renesas e^2 studio simulator allows testing firmware **logic** without real 
 #### Option 2: CMake (Automated Testing)
 
 ```bash
-cd e2-studio-star-rx72n-firmware/tests
+cd star-rx72n-firmware/tests
 cmake .. -DCMAKE_BUILD_TYPE=Debug  # RX_SIMULATOR_MODE auto-enabled
 make -j$(nproc)
 ctest --output-on-failure
@@ -882,7 +882,7 @@ ctest --output-on-failure
 
 ```bash
 # Firmware unit tests
-cd e2-studio-star-rx72n-firmware/tests
+cd star-rx72n-firmware/tests
 cmake .. && make && ctest --output-on-failure
 
 # Gateway tests
@@ -956,7 +956,7 @@ Always reference `.tex` files in `docs/sections/` for accurate technical informa
 
 ### Component-Specific Guides
 
-- `e2-studio-star-rx72n-firmware/CLAUDE.md` - Detailed RX72N firmware guide
+- `star-rx72n-firmware/CLAUDE.md` - Detailed RX72N firmware guide
 - `star-gateway/CLAUDE.md` - Gateway service architecture and build guide
 - `CLAUDE.md` (project root) - Comprehensive reference for Claude Code (this file is for GitHub Copilot)
 

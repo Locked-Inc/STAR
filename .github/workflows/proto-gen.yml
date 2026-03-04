@@ -16,12 +16,12 @@ jobs:
       contents: read
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
         with:
           fetch-depth: 0
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
         with:
           python-version: '3.11'
 
@@ -30,7 +30,7 @@ jobs:
           pip install nanopb protobuf grpcio-tools
 
       - name: Setup Buf
-        uses: bufbuild/buf-setup-action@v1
+        uses: bufbuild/buf-setup-action@a47c93e0b1648d5651a065437926377d060baa99  # v1
 
       - name: Generate protocol buffers
         run: make proto-gen
@@ -49,17 +49,18 @@ jobs:
 
       - name: Buf breaking against base branch
         if: github.event_name == 'pull_request'
-        uses: bufbuild/buf-breaking-action@v1
+        uses: bufbuild/buf-breaking-action@c57b3d842a5c3f3b454756ef65305a50a587c5ba  # v1
         with:
           input: 'star-proto/proto'
           against: 'https://github.com/Locked-Inc/STAR.git#branch=${{ github.base_ref }},subdir=star-proto/proto'
 
       - name: Check for uncommitted changes
         run: |
-          git diff --exit-code star-proto/gen/ e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/
+          git diff --exit-code star-proto/gen/nanopb/star/v1/ star-rx72n-firmware/libs/rx_nanopb/inc/gen/star/v1/
 
       - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
         with:
           name: generated-protos
-          path: e2-studio-star-rx72n-firmware/libs/rx_nanopb/inc/gen/
+          path: star-rx72n-firmware/libs/rx_nanopb/inc/gen/
+          retention-days: 7
