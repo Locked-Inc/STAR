@@ -244,7 +244,11 @@ typedef struct _star_v1_TelemetryData {
     /* Emergency stop state (RX72N specific). */
     bool emergency_stop;
     /* Motor fault flags bitfield (RX72N specific).
- Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc. */
+ Bit 0: Motor 0 fault (DRV8263 nFAULT; see encoder[0] for position)
+ Bit 1: Motor 1 fault (DRV8263 nFAULT; see encoder[1] for position)
+ Bit 2: Motor 2 fault (DRV8263 nFAULT; see encoder[2] for position)
+ Bit 3: Motor 3 fault (DRV8263 nFAULT; see encoder[3] for position)
+ Bits 4-31: Reserved, always zero. */
     uint32_t fault_flags;
     /* Barometric pressure and temperature from BMP280 (RX72N specific). */
     bool has_baro;

@@ -14,7 +14,7 @@ docs/doxygen/pdf/*/*.log
 tests/build/
 tests/Unity/
 
-# Firmware build artifacts
+# e2-studio (Renesas Eclipse) IDE artifacts
 HardwareDebug/
 output/
 .metadata/

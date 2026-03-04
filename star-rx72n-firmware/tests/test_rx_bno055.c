@@ -285,7 +285,9 @@ static rx_bus_config_t s_i2c_config;
  * We load 0xA0 once; the chip ID write-read consumes it.
  *
  * @pre mock_riic_init() has been called
+ * @pre k_test_single_byte_buf >= 1 (chip ID requires one byte)
  * @post RIIC channel 1 RX buffer contains 0xA0 (chip ID)
+ * @post Next write-read transaction on channel 1 will return 0xA0
  *
  * @since Version 1.0.0
  */
@@ -319,7 +321,9 @@ static void internal_load_valid_chip_id(void)
  * mock returns data from the same static rx_buffer.
  *
  * @pre mock RIIC channel 1 is initialized
+ * @pre k_read_buf_size >= k_euler_byte_count (6 bytes for Euler heading/roll/pitch)
  * @post RIIC channel 1 RX buffer set for read sequence
+ * @post Mock will return Euler heading=0x0140, roll=0x0010, pitch=0x0020
  *
  * @since Version 1.0.0
  */
@@ -348,7 +352,9 @@ static void internal_load_read_data(void)
  * Loads identity quaternion: W=16384 (0x4000), X=Y=Z=0.
  *
  * @pre mock RIIC channel 1 is initialized
+ * @pre k_quat_buf_size >= 8 (minimum bytes to represent W quaternion component)
  * @post RIIC channel 1 RX buffer set with quaternion data
+ * @post Mock will return identity quaternion W=16384, X=Y=Z=0
  *
  * @since Version 1.0.0
  */
@@ -385,7 +391,9 @@ static void internal_load_quat_read_data(void)
  * driver must call internal_setup_initialized_driver() themselves.
  *
  * @pre None - called by Unity before each test
+ * @pre s_initialized may be any value (reset by rx_bno055_test_reset_state())
  * @post s_initialized == false; s_test_manager ready with "i2c1" registered
+ * @post RIIC channel 1 initialized and ready for mock transactions
  *
  * @since Version 1.0.0
  */
@@ -422,14 +430,18 @@ void setUp(void)
  * via rx_bno055_test_reset_state() in setUp(), not here.
  *
  * @pre setUp() has been called
+ * @pre All test assertions have completed
  * @post s_test_manager deinitialized; mock RIIC state cleared
+ * @post RIIC channel 1 not initialized (mock_riic_init() resets all channels)
  *
  * @since Version 1.0.0
  */
 void tearDown(void)
 {
-  (void)rx_bus_manager_deinit(&s_test_manager);
+  const rx_err_t deinit_err = rx_bus_manager_deinit(&s_test_manager);
+  TEST_ASSERT_EQUAL(k_rx_ok, deinit_err);
   (void)mock_riic_init();
+  TEST_ASSERT_FALSE(mock_riic_is_initialized((uint8_t)k_test_bno055_riic_ch));
 }
 
 /* =============================================================================
@@ -456,6 +468,7 @@ static void internal_setup_initialized_driver(void)
   internal_load_valid_chip_id();
   rx_err_t err = rx_bno055_init(&s_test_manager);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_NOT_EQUAL(k_rx_err_not_initialized, err);
 }
 
 /* =============================================================================

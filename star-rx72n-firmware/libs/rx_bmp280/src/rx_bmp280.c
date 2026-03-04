@@ -563,6 +563,48 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
 }
 
 /* =============================================================================
+ * Calibration Parsing
+ * =============================================================================
+ */
+
+/**
+ * @brief Parse 24-byte OTP calibration block into s_calib coefficients
+ *
+ * @details
+ * Parses the 24-byte factory-calibrated trimming parameters read from OTP
+ * registers k_bmp280_reg_calib_start..k_bmp280_reg_calib_end (0x88-0x9F).
+ * All coefficients are stored little-endian (LSB first) in the OTP block.
+ *
+ * @param[in] buf Pointer to k_bmp280_calib_byte_count bytes of OTP register data
+ *
+ * @pre buf non-NULL
+ * @pre buf contains exactly k_bmp280_calib_byte_count bytes from OTP registers
+ * @post s_calib.dig_T1..T3 and dig_P1..P9 populated from buf
+ * @post Caller must verify dig_T1 and dig_P1 are non-zero before use
+ *
+ * @note dig_T1 and dig_P1 may still be zero if OTP is blank; caller validates
+ * @see rx_bmp280_init() Sole caller; validates non-zero after this returns
+ *
+ * @since Version 1.0.0
+ */
+static void internal_parse_calibration(const uint8_t* buf)
+{
+  RX_ASSERT(buf != NULL, "calibration buffer must not be NULL");
+  s_calib.dig_T1 = internal_parse_u16_le(&buf[k_bmp280_calib_t1_lsb]);
+  s_calib.dig_T2 = internal_parse_s16_le(&buf[k_bmp280_calib_t2_lsb]);
+  s_calib.dig_T3 = internal_parse_s16_le(&buf[k_bmp280_calib_t3_lsb]);
+  s_calib.dig_P1 = internal_parse_u16_le(&buf[k_bmp280_calib_p1_lsb]);
+  s_calib.dig_P2 = internal_parse_s16_le(&buf[k_bmp280_calib_p2_lsb]);
+  s_calib.dig_P3 = internal_parse_s16_le(&buf[k_bmp280_calib_p3_lsb]);
+  s_calib.dig_P4 = internal_parse_s16_le(&buf[k_bmp280_calib_p4_lsb]);
+  s_calib.dig_P5 = internal_parse_s16_le(&buf[k_bmp280_calib_p5_lsb]);
+  s_calib.dig_P6 = internal_parse_s16_le(&buf[k_bmp280_calib_p6_lsb]);
+  s_calib.dig_P7 = internal_parse_s16_le(&buf[k_bmp280_calib_p7_lsb]);
+  s_calib.dig_P8 = internal_parse_s16_le(&buf[k_bmp280_calib_p8_lsb]);
+  s_calib.dig_P9 = internal_parse_s16_le(&buf[k_bmp280_calib_p9_lsb]);
+}
+
+/* =============================================================================
  * Public API Implementation
  * =============================================================================
  */
@@ -624,18 +666,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
   }
 
   /* Parse calibration coefficients (all little-endian: LSB first) */
-  s_calib.dig_T1 = internal_parse_u16_le(&calib_buf[k_bmp280_calib_t1_lsb]);
-  s_calib.dig_T2 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_t2_lsb]);
-  s_calib.dig_T3 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_t3_lsb]);
-  s_calib.dig_P1 = internal_parse_u16_le(&calib_buf[k_bmp280_calib_p1_lsb]);
-  s_calib.dig_P2 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p2_lsb]);
-  s_calib.dig_P3 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p3_lsb]);
-  s_calib.dig_P4 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p4_lsb]);
-  s_calib.dig_P5 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p5_lsb]);
-  s_calib.dig_P6 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p6_lsb]);
-  s_calib.dig_P7 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p7_lsb]);
-  s_calib.dig_P8 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p8_lsb]);
-  s_calib.dig_P9 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p9_lsb]);
+  internal_parse_calibration(calib_buf);
 
   /* Postcondition: verify critical calibration coefficients are non-zero */
   if (s_calib.dig_T1 == 0U || s_calib.dig_P1 == 0U) {

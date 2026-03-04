@@ -387,10 +387,18 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  * @return int16_t Assembled 16-bit signed integer
  *
  * @pre low and high are valid bytes read from BNO055 registers
+ * @pre uint16_t is exactly 16 bits (verified by _Static_assert below)
  * @post Return value has correct sign via two's complement reinterpretation
+ * @post Two _Static_asserts below enforce compile-time invariants on shift and width
  *
  * @note Inline function; zero overhead after compiler optimization
  * @see bno055_byte_idx_t LSB/MSB index constants
+ *
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * This single-expression inline helper has no runtime state or I/O side effects.
+ * Both preconditions and postconditions are enforced by the two _Static_asserts
+ * inside the function body. Runtime assertion overhead on uint8_t parameters
+ * is not warranted; callers are responsible for providing valid register bytes.
  *
  * @since Version 1.0.0
  */

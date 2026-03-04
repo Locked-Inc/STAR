@@ -398,7 +398,7 @@ static void internal_load_valid_calib(void)
   TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_t1_lsb] | calib[k_bmp280_calib_t1_msb]);
   TEST_ASSERT_NOT_EQUAL(0U, calib[k_bmp280_calib_p1_lsb] | calib[k_bmp280_calib_p1_msb]);
 
-  mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
 }
 
 /**
@@ -429,7 +429,7 @@ static void internal_load_invalid_calib_p1_zero(void)
   TEST_ASSERT_EQUAL(0U, calib[k_bmp280_calib_p1_lsb]);
   TEST_ASSERT_EQUAL(0U, calib[k_bmp280_calib_p1_msb]);
 
-  mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, calib, k_test_calib_buf_size);
 }
 
 /**
@@ -487,7 +487,7 @@ static void internal_load_read_data(void)
   TEST_ASSERT_EQUAL((uint8_t)k_status_measuring_done, buf[k_read_seq_status_idx]);
   TEST_ASSERT_EQUAL((uint8_t)k_adc_press_msb, buf[k_read_seq_adc_press_msb_idx]);
 
-  mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, buf, k_read_seq_buf_size);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, buf, k_read_seq_buf_size);
 }
 
 /* =============================================================================
@@ -512,7 +512,7 @@ static void internal_load_read_data(void)
  */
 void setUp(void)
 {
-  mock_riic_init();
+  (void)mock_riic_init();
 
   rx_err_t err = rx_bus_manager_init(&s_test_manager, "BMP280_TEST", nullptr, nullptr);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -589,14 +589,14 @@ void test_bmp280_init_null_manager_returns_error(void)
  */
 void test_bmp280_init_i2c_error_propagates(void)
 {
-  mock_riic_simulate_nack(true);
+  (void)mock_riic_simulate_nack(true);
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  mock_riic_simulate_nack(false);
+  (void)mock_riic_simulate_nack(false);
 }
 
 /**
@@ -780,7 +780,7 @@ void test_bmp280_read_success_forced_mode(void)
 void test_bmp280_read_status_timeout(void)
 {
   uint8_t busy_status = (uint8_t)k_status_measuring_busy;
-  mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
+  (void)mock_riic_set_rx_data((uint8_t)k_test_bmp280_riic_ch, &busy_status, k_test_single_byte);
 
   bmp280_data_t data;
   rx_err_t      err = rx_bmp280_read(&data);
@@ -804,7 +804,7 @@ void test_bmp280_read_status_timeout(void)
  */
 void test_bmp280_read_i2c_error_propagates(void)
 {
-  mock_riic_simulate_nack(true);
+  (void)mock_riic_simulate_nack(true);
 
   bmp280_data_t data;
   rx_err_t      err = rx_bmp280_read(&data);
@@ -812,7 +812,7 @@ void test_bmp280_read_i2c_error_propagates(void)
   TEST_ASSERT_EQUAL(k_rx_err_nack, err);
   TEST_ASSERT_NOT_EQUAL(k_rx_ok, err);
 
-  mock_riic_simulate_nack(false);
+  (void)mock_riic_simulate_nack(false);
 }
 
 /* =============================================================================

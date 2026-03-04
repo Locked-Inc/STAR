@@ -206,7 +206,8 @@ static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX C
  *
  * @since Version 1.0.0
  */
-extern rx_bus_manager_t g_bus_manager;
+extern rx_bus_manager_t
+  g_bus_manager; /* TODO(#373): add main.h public header to replace inline extern */
 
 /* =============================================================================
  * Forward Declarations
@@ -217,6 +218,32 @@ static void internal_send_iwdt_heartbeat(void);
 static void internal_read_and_publish_imu(void);
 static void internal_read_and_publish_baro(void);
 static void internal_imu_task_entry(ULONG input);
+
+/* =============================================================================
+ * Static Inline Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief Convert current ThreadX tick count to milliseconds
+ *
+ * @details
+ * Reads the ThreadX system tick counter and converts to wall-clock milliseconds.
+ * Both imu_state_t.timestamp_ms and baro_state_t.timestamp_ms use this helper
+ * to ensure consistent timestamp computation from a single expression.
+ *
+ * @return uint32_t Current time in milliseconds since boot
+ *
+ * @pre ThreadX scheduler running (tx_time_get() returns valid tick count)
+ * @post Return value is monotonically non-decreasing modulo uint32_t overflow
+ *
+ * @note Not thread-safe, but tx_time_get() is interrupt-safe on RX72N
+ * @since Version 1.0.0
+ */
+static inline uint32_t internal_ticks_to_ms(void)
+{
+  return (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
+}
 
 /* =============================================================================
  * Public Functions
@@ -342,9 +369,8 @@ static void internal_read_and_publish_imu(void)
   bno055_data_t  bno_data = {0};
   const rx_err_t err      = rx_bno055_read(&bno_data);
 
-  imu_state_t imu = {0};
-  imu.timestamp_ms =
-    (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
+  imu_state_t imu  = {0};
+  imu.timestamp_ms = internal_ticks_to_ms();
 
   if (err == k_rx_ok) {
     imu.heading_deg16 = bno_data.heading_deg16;
@@ -400,8 +426,7 @@ static void internal_read_and_publish_baro(void)
   const rx_err_t err      = rx_bmp280_read(&bmp_data);
 
   baro_state_t baro = {0};
-  baro.timestamp_ms =
-    (uint32_t)((uint64_t)tx_time_get() * k_imu_ms_per_second / TX_TIMER_TICKS_PER_SECOND);
+  baro.timestamp_ms = internal_ticks_to_ms();
 
   if (err == k_rx_ok) {
     baro.temp_centi_degc = bmp_data.temp_centi_degc;
@@ -506,8 +531,19 @@ static void internal_imu_task_entry(ULONG input)
     const ULONG elapsed = tx_time_get() - start_tick;
     if (elapsed < (ULONG)k_imu_task_period_ticks) {
       const UINT sleep_status = tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
-      if (sleep_status == TX_WAIT_ABORTED) {
-        rx_log_error(s_tag, "IMU task sleep aborted - external abort or priority change");
+      switch (sleep_status) {
+        case TX_SUCCESS:
+          /* Normal wake after sleep period - no action needed */
+          break;
+        case TX_WAIT_ABORTED:
+          rx_log_error(s_tag, "IMU task sleep aborted - external abort or priority change");
+          break;
+        case TX_CALLER_ERROR:
+          rx_log_error(s_tag, "IMU task sleep caller error - not called from thread context");
+          break;
+        default:
+          rx_log_error_val(s_tag, "IMU task sleep unexpected status", (uint32_t)sleep_status);
+          break;
       }
     }
   }

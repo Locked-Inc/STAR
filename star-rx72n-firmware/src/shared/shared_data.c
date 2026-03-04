@@ -2812,7 +2812,7 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
  * imu.valid         = true;
  * rx_err_t err = shared_data_update_imu(&imu);
  * if (err != k_rx_ok) {
- *     rx_log_error(s_tag, "Failed to update IMU state");
+ *     rx_log_error("imu_task", "Failed to update IMU state");
  * }
  * @endcode
  *
@@ -2961,7 +2961,7 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
  * baro.valid           = true;
  * rx_err_t err = shared_data_update_baro(&baro);
  * if (err != k_rx_ok) {
- *     rx_log_error(s_tag, "Failed to update baro state");
+ *     rx_log_error("imu_task", "Failed to update baro state");
  * }
  * @endcode
  *
