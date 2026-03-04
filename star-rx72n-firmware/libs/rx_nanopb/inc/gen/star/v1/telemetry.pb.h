@@ -159,7 +159,7 @@ typedef struct _star_v1_ImuData {
  Bits [5:4] = Gyroscope calibration.
  Bits [3:2] = Accelerometer calibration.
  Bits [1:0] = Magnetometer calibration. */
-    uint32_t calib_stat;
+    uint32_t calibration_status;
     /* BNO055 on-chip temperature in degrees Celsius.
  Range: -40.0 to +85.0 degC. */
     double temperature_celsius;
@@ -396,7 +396,7 @@ extern "C" {
 #define star_v1_ImuData_quat_x_tag               12
 #define star_v1_ImuData_quat_y_tag               13
 #define star_v1_ImuData_quat_z_tag               14
-#define star_v1_ImuData_calib_stat_tag           15
+#define star_v1_ImuData_calibration_status_tag   15
 #define star_v1_ImuData_temperature_celsius_tag  16
 #define star_v1_BaroData_temperature_celsius_tag 1
 #define star_v1_BaroData_pressure_pa_tag         2
@@ -526,7 +526,7 @@ X(a, STATIC,   SINGULAR, DOUBLE,   quat_w,           11) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_x,           12) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_y,           13) \
 X(a, STATIC,   SINGULAR, DOUBLE,   quat_z,           14) \
-X(a, STATIC,   SINGULAR, UINT32,   calib_stat,       15) \
+X(a, STATIC,   SINGULAR, UINT32,   calibration_status,  15) \
 X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius,  16)
 #define star_v1_ImuData_CALLBACK NULL
 #define star_v1_ImuData_DEFAULT NULL

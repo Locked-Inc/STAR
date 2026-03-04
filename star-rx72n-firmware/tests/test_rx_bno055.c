@@ -36,11 +36,11 @@
  * relies on state left behind by a previous test.
  *
  * @par Test Coverage
- * | Group         | Tests | Description                                           |
- * |---------------|-------|-------------------------------------------------------|
- * | Init          | 5     | null ptr, success, I2C error, chip ID, double         |
- * | Read          | 5     | null ptr, before-init, euler, quat, I2C error         |
- * | Calibration   | 2     | null ptr, reads status byte                           |
+ * | Group         | Tests | Description                                                          |
+ * |---------------|-------|----------------------------------------------------------------------|
+ * | Init          | 6     | null ptr, I2C error, wrong chip ID, read-before-init, success, double|
+ * | Read          | 4     | null ptr, euler, quaternion, I2C error                               |
+ * | Calibration   | 3     | null ptr, reads status byte, partial calibration                     |
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No goto, setjmp, recursion

@@ -269,6 +269,8 @@ typedef enum : uint8_t {
   k_i2c_addr_bmp280 = 0x76U, /**< BMP280 I2C address when SDO pin = LOW */
 } imu_i2c_addr_t;
 _Static_assert(sizeof(imu_i2c_addr_t) == sizeof(uint8_t), "imu_i2c_addr_t must be uint8_t sized");
+_Static_assert(k_i2c_addr_bno055 != k_i2c_addr_bmp280,
+               "k_i2c_addr_bno055 and k_i2c_addr_bmp280 must be distinct");
 
 /* =============================================================================
  * Static Bus Configurations

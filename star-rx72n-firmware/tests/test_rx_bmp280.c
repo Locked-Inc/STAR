@@ -922,6 +922,11 @@ void test_bmp280_read_zero_var1_returns_error(void)
  * @retval 0 All tests passed
  * @retval 1 One or more tests failed
  *
+ * @pre Unity test framework linked and BMP280 driver sources compiled with mock RIIC HAL
+ * @pre s_initialized == false initially; test_bmp280_read_before_init_returns_error must run first
+ * @post Unity reports all test results to stdout
+ * @post Process exits with 0 if all tests pass, non-zero on any test failure
+ *
  * @warning Tests must execute in the listed order: the static s_initialized flag
  *          persists across tests and there is no driver deinit/reset API. Reordering
  *          tests will cause failures.

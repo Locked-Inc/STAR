@@ -167,7 +167,7 @@ typedef enum : uint8_t {
  * @details
  * Pre-computed register value for IIR filter and standby configuration:
  *
- * **config (0xF5) = 0x08:**
+ * **config (0xF5) = 0x04:**
  * - t_sb[7:5]   = 000 = 0.5 ms standby time (not used in forced mode)
  * - filter[4:2] = 001 = IIR filter coefficient 2
  * - spi3w_en[0] = 0   = SPI disabled
@@ -178,7 +178,8 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bmp280_config_val = 0x08, /**< config: filter=2, standby=0.5ms, SPI disabled */
+  k_bmp280_config_val =
+    0x04, /**< config: filter coef=2 (filter[4:2]=001), standby=0.5ms, SPI disabled */
 } bmp280_config_t;
 
 /**

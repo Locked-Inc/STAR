@@ -2028,7 +2028,7 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  *   raw / s_quat_scale (= 16384.0)
  * - Linear acceleration (x, y, z): raw int16 -> m/s^2 via
  *   raw / s_lin_acc_scale (= 100.0, gravity-compensated)
- * - Calibration status: raw uint8 calib_stat register value (cast to uint32_t)
+ * - Calibration status: raw uint8 calib_stat register value (cast to uint32_t for calibration_status field)
  * - On-chip temperature: raw int8 temp_degc value (cast to double)
  *
  * Side effects: has_imu set to true when valid data present. Not thread-safe;
@@ -2085,7 +2085,7 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / s_lin_acc_scale;
 
     /* Calibration status and on-chip temperature */
-    telemetry->imu.calib_stat          = (uint32_t)imu_state.calib_stat;
+    telemetry->imu.calibration_status  = (uint32_t)imu_state.calib_stat;
     telemetry->imu.temperature_celsius = (double)imu_state.temp_degc;
   }
   /* Postcondition: if valid IMU data was available, has_imu must be set */

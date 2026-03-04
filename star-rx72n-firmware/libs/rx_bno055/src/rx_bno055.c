@@ -453,8 +453,8 @@ static rx_err_t internal_init_reset_and_wait(void)
     rx_log_error(s_tag, "Software reset failed");
     return err;
   }
-  (void)tx_thread_sleep(k_bno055_delay_por_ms /
-                        k_bno055_ms_per_tick); /* 65 ticks @ 10 ms/tick = 650 ms */
+  (void)tx_thread_sleep(
+    (ULONG)(k_bno055_delay_por_ms / k_bno055_ms_per_tick)); /* 65 ticks @ 10 ms/tick = 650 ms */
 
   /* Step 2: Enter CONFIG mode (required for configuration register writes) */
   err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_config);
@@ -463,8 +463,8 @@ static rx_err_t internal_init_reset_and_wait(void)
     return err;
   }
   (void)tx_thread_sleep(
-    k_bno055_delay_config_ms / k_bno055_ms_per_tick +
-    k_bno055_tick_round_up); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
+    (ULONG)(k_bno055_delay_config_ms / k_bno055_ms_per_tick +
+            k_bno055_tick_round_up)); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
 
   return k_rx_ok;
 }

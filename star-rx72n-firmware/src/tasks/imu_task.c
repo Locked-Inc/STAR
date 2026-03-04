@@ -531,6 +531,9 @@ static void internal_imu_task_entry(ULONG input)
 
     /* Sleep only the remaining time in the 50 ms period to maintain cadence */
     const ULONG elapsed = tx_time_get() - start_tick;
+    if (elapsed >= (ULONG)k_imu_task_period_ticks) {
+      rx_log_warn_val(s_tag, "IMU loop overrun: elapsed ticks", (uint32_t)elapsed);
+    }
     if (elapsed < (ULONG)k_imu_task_period_ticks) {
       const UINT sleep_status = tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
       switch (sleep_status) {
