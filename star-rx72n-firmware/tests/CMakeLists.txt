@@ -941,7 +941,7 @@ apply_test_includes(test_rx_bno055)
 target_include_directories(test_rx_bno055 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
 )
-target_link_libraries(test_rx_bno055 unity)
+target_link_libraries(test_rx_bno055 PRIVATE unity)
 set_target_properties(test_rx_bno055 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
 # Test: BMP280 Barometric Pressure Sensor
@@ -962,7 +962,7 @@ apply_test_includes(test_rx_bmp280)
 target_include_directories(test_rx_bmp280 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
 )
-target_link_libraries(test_rx_bmp280 unity)
+target_link_libraries(test_rx_bmp280 PRIVATE unity)
 set_target_properties(test_rx_bmp280 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
 
 # =============================================================================

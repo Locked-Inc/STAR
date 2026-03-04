@@ -31,6 +31,7 @@
  *     comm [label="Comm Task\n(Priority 5)", fillcolor=lightblue, style=filled];
  *     motor [label="Motor Task\n(Priority 8)", fillcolor=lightgreen, style=filled];
  *     obstacle [label="Obstacle Task\n(Priority 12)", fillcolor=lightyellow, style=filled];
+ *     imu_task [label="IMU Task\n(Priority 13)", fillcolor=lavender, style=filled];
  *     temp [label="Temp Task\n(Priority 15)", fillcolor=lightpink, style=filled];
  *   }
  *
@@ -44,6 +45,8 @@
  *     pid_gains [label="pid_gains_t\n(motor_mutex)"];
  *     temp_state [label="temp_sensor_state_t\n(temp_mutex)"];
  *     obstacle_state [label="obstacle_state_t\n(obstacle_mutex)"];
+ *     imu_state [label="imu_state_t\n(imu_mutex)"];
+ *     baro_state [label="baro_state_t\n(baro_mutex)"];
  *     estop [label="estop_active\n(estop_mutex)"];
  *     events [label="event_flags\n(ThreadX)"];
  *   }
@@ -64,10 +67,14 @@
  *   motor -> estop [label="read", color=blue];
  *   obstacle -> estop [label="trigger", color=red];
  *   obstacle -> obstacle_state [label="update", color=green];
+ *   imu_task -> imu_state [label="update\n(imu_mutex)", color=green];
+ *   imu_task -> baro_state [label="update\n(baro_mutex)", color=green];
  *   temp -> temp_state [label="update", color=green];
  *   telem -> motor_state [label="get", color=blue];
  *   telem -> temp_state [label="get", color=blue];
  *   telem -> obstacle_state [label="get", color=blue];
+ *   telem -> imu_state [label="get\n(imu_mutex)", color=blue];
+ *   telem -> baro_state [label="get\n(baro_mutex)", color=blue];
  *
  *   motor_cmd -> events [label="new_cmd", style=dashed];
  *   pid_gains -> events [label="gains_updated", style=dashed];

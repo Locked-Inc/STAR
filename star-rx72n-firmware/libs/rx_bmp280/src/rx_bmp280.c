@@ -92,6 +92,43 @@ typedef enum : uint8_t {
 } bmp280_adc20_idx_t;
 
 /**
+ * @enum bmp280_adc20_range_t
+ * @brief Valid range for 20-bit ADC values assembled by internal_assemble_adc20()
+ *
+ * @details
+ * The BMP280 ADC output is a 20-bit non-negative integer.
+ * Maximum value is 2^20 - 1 = 0xFFFFF = 1048575.
+ * Used as a postcondition bound in internal_assemble_adc20().
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_bmp280_adc_20bit_max = 0xFFFFFU, /**< Maximum valid 20-bit ADC value (2^20 - 1 = 1048575) */
+} bmp280_adc20_range_t;
+
+/**
+ * @enum bmp280_press_range_pa_t
+ * @brief BMP280 valid pressure range in base Pascal units
+ *
+ * @details
+ * Valid pressure limits per the BMP280 datasheet operating specifications:
+ * - 300 hPa  = 30000 Pa  (minimum, e.g. high altitude)
+ * - 1100 hPa = 110000 Pa (maximum, e.g. sea level)
+ *
+ * These base-Pa values are multiplied by 256 for the fixed-point Pa*256 format
+ * used by the Bosch integer compensation formula output.
+ * See bmp280_output_range_t for the Pa*256 scaled limits.
+ *
+ * @see bmp280_output_range_t Pa*256 scaled limits used in postcondition check
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_bmp280_press_min_pa = 30000U,  /**< Minimum valid pressure: 300 hPa in Pa */
+  k_bmp280_press_max_pa = 110000U, /**< Maximum valid pressure: 1100 hPa in Pa */
+} bmp280_press_range_pa_t;
+
+/**
  * @enum bmp280_output_range_t
  * @brief BMP280 output range limits for postcondition validation
  *
@@ -99,16 +136,19 @@ typedef enum : uint8_t {
  * Valid output ranges per the BMP280 datasheet operating specifications:
  * - Temperature: -40.00 degC to +85.00 degC (in centi-degC units)
  * - Pressure: 300 hPa to 1100 hPa (in Pa*256 fixed-point units)
+ *   Derivation: k_bmp280_press_min_pa * 256 = 30000 * 256 = 7680000
+ *               k_bmp280_press_max_pa * 256 = 110000 * 256 = 28160000
  *
+ * @see bmp280_press_range_pa_t Base Pa constants from which Pa*256 values are derived
  * @see rx_bmp280_read() Applies these range checks after compensation
  *
  * @since Version 1.0.0
  */
 typedef enum : int32_t {
-  k_bmp280_temp_min_cdegc_impl = -4000,        /**< Minimum valid temperature: -40.00 degC in centi-degC */
-  k_bmp280_temp_max_cdegc_impl = 8500,         /**< Maximum valid temperature: +85.00 degC in centi-degC */
-  k_bmp280_press_min_pa_256    = 30000 * 256,  /**< Minimum valid pressure: 300 hPa * 256 */
-  k_bmp280_press_max_pa_256    = 110000 * 256, /**< Maximum valid pressure: 1100 hPa * 256 */
+  k_bmp280_temp_min_cdegc_impl = -4000,    /**< Minimum valid temperature: -40.00 degC in centi-degC */
+  k_bmp280_temp_max_cdegc_impl = 8500,     /**< Maximum valid temperature: +85.00 degC in centi-degC */
+  k_bmp280_press_min_pa_256    = 7680000,  /**< Minimum valid pressure: 300 hPa * 256 (k_bmp280_press_min_pa * 256) */
+  k_bmp280_press_max_pa_256    = 28160000, /**< Maximum valid pressure: 1100 hPa * 256 (k_bmp280_press_max_pa * 256) */
 } bmp280_output_range_t;
 
 /* =============================================================================
@@ -272,6 +312,7 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
 static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "buf must not be NULL");
+  _Static_assert(k_bmp280_byte_shift == 8U, "byte shift must be 8 for LE 16-bit assembly");
   return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
                     ((uint16_t)buf[k_bmp280_le16_msb_idx] << k_bmp280_byte_shift));
 }
@@ -297,6 +338,8 @@ static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
  */
 static inline int16_t internal_parse_s16_le(const uint8_t* buf)
 {
+  RX_ASSERT(buf != NULL, "buf must not be NULL");
+  _Static_assert(sizeof(int16_t) == sizeof(uint16_t), "int16_t and uint16_t must be same size for safe reinterpret cast");
   return (int16_t)internal_parse_u16_le(buf);
 }
 
@@ -329,9 +372,11 @@ static inline int32_t internal_assemble_adc20(const uint8_t* buf)
 {
   RX_ASSERT(buf != NULL, "buf must not be NULL");
   /* Assembly: (MSB << 12) | (LSB << 4) | (XLSB >> 4) produces 20-bit value */
-  return (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
-                   ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb) |
-                   ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb));
+  const int32_t result = (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
+                                   ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb) |
+                                   ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb));
+  RX_ASSERT(result >= 0 && result <= (int32_t)k_bmp280_adc_20bit_max, "ADC20 result out of 20-bit range");
+  return result;
 }
 
 /**
@@ -518,6 +563,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
 rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
+  RX_ASSERT(s_bus_name != NULL, "Bus name must not be NULL");
 
   s_manager     = manager;
   s_initialized = false;
@@ -599,6 +645,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
 rx_err_t rx_bmp280_read(bmp280_data_t* out)
 {
   RX_CHECK_NULL_PTR(out, s_tag, "Output data pointer is NULL");
+  RX_ASSERT(s_initialized, "BMP280 not initialized");
 
   if (!s_initialized) {
     return k_rx_err_not_initialized;
@@ -660,7 +707,7 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   /* Step 6: Postcondition range checks (BMP280 datasheet operating limits) */
   if (out->temp_centi_degc < (int32_t)k_bmp280_temp_min_cdegc_impl ||
       out->temp_centi_degc > (int32_t)k_bmp280_temp_max_cdegc_impl) {
-    rx_log_error_val(s_tag, "Temperature out of range (centi-degC)", (uint32_t)out->temp_centi_degc);
+    rx_log_error_val(s_tag, "Temperature out of range (centi-degC)", (int32_t)out->temp_centi_degc);
     return k_rx_err_invalid_state;
   }
 

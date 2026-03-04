@@ -103,24 +103,20 @@ typedef enum : uint16_t {
 
 /**
  * @enum imu_task_cfg_t
- * @brief IMU task priority, input, and period configuration constants
+ * @brief IMU task input and period configuration constants
  *
  * @details
- * Defines thread priority, entry input, and period tick count for the IMU task.
+ * Defines thread entry input and period tick count for the IMU task.
  * The task runs at 20 Hz (50 ms period, 5 ticks at 100 Hz tick rate).
- *
- * **Priority rationale:**
- * - Priority 13 sits between obstacle detect (12) and temp sensor (15)
- * - IMU data needed by telemetry; not as time-critical as obstacle avoidance
+ * Priority is defined in imu_task.h as k_imu_task_priority (= 13).
  *
  * @invariant k_imu_task_period_ticks > 0 (loop must have finite period)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_imu_task_priority     = 13, /**< ThreadX priority (between obstacle=12 and temp=15) */
-  k_imu_task_input        = 0,  /**< Thread entry ULONG input (unused) */
-  k_imu_task_period_ticks = 5,  /**< 50 ms period: 5 ticks @ 10 ms/tick (100 Hz tick rate) */
+  k_imu_task_input        = 0, /**< Thread entry ULONG input (unused) */
+  k_imu_task_period_ticks = 5, /**< 50 ms period: 5 ticks @ 10 ms/tick (100 Hz tick rate) */
 } imu_task_cfg_t;
 
 /* =============================================================================
@@ -297,7 +293,7 @@ rx_err_t imu_task_create(void)
  */
 static void internal_send_iwdt_heartbeat(void)
 {
-  RX_ASSERT(s_tag != NULL, "s_tag must be non-NULL for IWDT heartbeat");
+  RX_ASSERT(s_task_name[0] != '\0', "Task name must not be empty");
   RX_ASSERT(s_imu_created, "IWDT heartbeat called before task created");
   const rx_err_t err = rx_iwdt_task_heartbeat(s_task_name);
   if (err != k_rx_ok) {

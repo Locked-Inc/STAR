@@ -144,7 +144,6 @@ message TelemetryData {
 
 // IMU sensor data from BNO055 NDOF fusion mode.
 // Euler angles use MKS units (radians) for ROS2 compatibility.
-// Heading (compass bearing) also provided in degrees for UI display.
 // Quaternion components provided for 3D orientation without gimbal lock.
 message ImuData {
   // Pitch angle in radians.

@@ -226,6 +226,51 @@ typedef enum : uint8_t {
   k_lia_z_msb_off = 5, /**< Byte offset of linear accel Z MSB in lia_buf */
 } lia_offsets_t;
 
+/**
+ * @enum bno055_quat_size_t
+ * @brief Expected byte count for a quaternion burst read
+ *
+ * @details
+ * A BNO055 quaternion reading consists of W, X, Y, Z each as a 16-bit
+ * little-endian value: 4 components x 2 bytes = 8 bytes total.
+ * Used in _Static_assert to verify the buffer constant is large enough.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_quat_expected_bytes = 8U, /**< Minimum bytes needed for quaternion W/X/Y/Z (4 x 2 bytes) */
+} bno055_quat_size_t;
+
+/**
+ * @enum bno055_euler_size_t
+ * @brief Expected byte count for an Euler angle burst read
+ *
+ * @details
+ * A BNO055 Euler reading consists of heading, roll, pitch each as a 16-bit
+ * little-endian value: 3 components x 2 bytes = 6 bytes total.
+ * Used in _Static_assert to verify the buffer constant is large enough.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_euler_expected_bytes = 6U, /**< Minimum bytes needed for Euler heading/roll/pitch (3 x 2 bytes) */
+} bno055_euler_size_t;
+
+/**
+ * @enum bno055_lia_size_t
+ * @brief Expected byte count for a linear acceleration burst read
+ *
+ * @details
+ * A BNO055 linear acceleration reading consists of X, Y, Z each as a 16-bit
+ * little-endian value: 3 components x 2 bytes = 6 bytes total.
+ * Used in _Static_assert to verify the buffer constant is large enough.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_lia_expected_bytes = 6U, /**< Minimum bytes needed for linear accel X/Y/Z (3 x 2 bytes) */
+} bno055_lia_size_t;
+
 /* =============================================================================
  * Forward Declarations
  * =============================================================================
@@ -387,6 +432,7 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
 static rx_err_t internal_init_reset_and_wait(void)
 {
   RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for reset");
+  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for reset sequence");
 
   /* Step 1: Software reset, then wait for POR sequence */
   rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_sys_trigger,
@@ -438,6 +484,7 @@ static rx_err_t internal_init_reset_and_wait(void)
 static rx_err_t internal_init_configure(void)
 {
   RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for configure");
+  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for configure");
 
   /* Step 3: Set normal power mode */
   rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_pwr_mode, (uint8_t)k_bno055_pwr_normal);
@@ -505,6 +552,7 @@ static rx_err_t internal_init_configure(void)
 static rx_err_t internal_init_enter_ndof(void)
 {
   RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for NDOF entry");
+  RX_ASSERT(s_tag != NULL, "s_tag must be non-NULL");
 
   /* Step 7: Enter NDOF fusion mode (full 9-DOF sensor fusion) */
   const rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_ndof);
@@ -545,6 +593,7 @@ static rx_err_t internal_init_enter_ndof(void)
 static rx_err_t internal_verify_chip_id(void)
 {
   RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for chip ID verify");
+  RX_ASSERT(s_bus_name != NULL, "s_bus_name must be non-NULL for chip ID verification");
 
   /* Step 8: Verify chip ID */
   uint8_t  chip_id = 0;
@@ -682,7 +731,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
 static rx_err_t internal_read_euler(bno055_data_t* out)
 {
   RX_ASSERT(out != NULL, "out must not be NULL");
-  _Static_assert(k_bno055_euler_bytes >= 6, "euler buffer must hold 6 bytes");
+  _Static_assert((uint8_t)k_bno055_euler_bytes >= (uint8_t)k_bno055_euler_expected_bytes, "euler buffer must hold 6 bytes");
 
   uint8_t  euler_buf[k_bno055_euler_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_eul_h_lsb,
@@ -727,7 +776,7 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
 static rx_err_t internal_read_quat(bno055_data_t* out)
 {
   RX_ASSERT(out != NULL, "out must not be NULL");
-  _Static_assert(k_bno055_quat_bytes >= 8, "quat buffer must hold 8 bytes");
+  _Static_assert((uint8_t)k_bno055_quat_bytes >= (uint8_t)k_bno055_quat_expected_bytes, "quat buffer must hold 8 bytes");
 
   uint8_t  quat_buf[k_bno055_quat_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
@@ -772,7 +821,7 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
 static rx_err_t internal_read_lia(bno055_data_t* out)
 {
   RX_ASSERT(out != NULL, "out must not be NULL");
-  _Static_assert(k_bno055_lia_bytes >= 6, "lia buffer must hold 6 bytes");
+  _Static_assert((uint8_t)k_bno055_lia_bytes >= (uint8_t)k_bno055_lia_expected_bytes, "lia buffer must hold 6 bytes");
 
   uint8_t  lia_buf[k_bno055_lia_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);

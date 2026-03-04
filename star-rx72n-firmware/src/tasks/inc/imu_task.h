@@ -21,10 +21,10 @@
  *
  * | Parameter | Value |
  * |-----------|-------|
- * | Priority | 13 (between obstacle detect and temp sensor) |
- * | Stack | 2048 bytes |
- * | Period | 50 ms (20 Hz) |
- * | IWDT timeout | 150 ms (3x period) |
+ * | Priority | k_imu_task_priority = 13 (between obstacle detect and temp sensor) |
+ * | Stack | k_imu_task_stack_size_bytes = 2048 bytes |
+ * | Period | k_imu_task_period_ms = 50 ms (20 Hz) |
+ * | IWDT timeout | k_imu_task_iwdt_timeout_ms = 150 ms (3x period) |
  *
  * # Task Lifecycle
  *
@@ -62,6 +62,49 @@
 #include "rx_err.h"
 
 /**
+ * @enum imu_task_priority_t
+ * @brief ThreadX priority level for the IMU task
+ *
+ * @details
+ * Priority 13 sits between obstacle detect (12) and temp sensor (15).
+ * IMU data is needed by telemetry but is not as time-critical as obstacle avoidance.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_imu_task_priority = 13U, /**< ThreadX priority for IMU task (higher number = lower priority) */
+} imu_task_priority_t;
+
+/**
+ * @enum imu_task_timing_t
+ * @brief Period and IWDT timeout constants for the IMU task
+ *
+ * @details
+ * The IMU task polls sensors at 20 Hz (50 ms period, 5 ticks at 100 Hz tick rate).
+ * The IWDT heartbeat timeout is 3x the period to allow for sensor I2C latency.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_imu_task_period_ms       = 50U,  /**< IMU sampling period in milliseconds (20 Hz) */
+  k_imu_task_iwdt_timeout_ms = 150U, /**< IWDT heartbeat timeout in milliseconds (3x period) */
+} imu_task_timing_t;
+
+/**
+ * @enum imu_task_stack_t
+ * @brief Stack size constant for the IMU task thread
+ *
+ * @details
+ * 2048 bytes is sufficient for BNO055 init sequence (12 register writes),
+ * BMP280 calibration burst read (24-byte buffer), and periodic read buffers.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_imu_task_stack_size_bytes = 2048U, /**< Stack size in bytes for IMU task thread */
+} imu_task_stack_t;
+
+/**
  * @brief Create and start the IMU sensor task
  *
  * @details
@@ -70,10 +113,10 @@
  * take ~700 ms for BNO055 POR) and then polls at 20 Hz.
  *
  * **Task Configuration:**
- * - Priority: 13 (lower than obstacle detect at 12, higher than temp at 15)
- * - Stack: 2048 bytes (sufficient for BNO055 + BMP280 init sequences)
- * - Period: 50 ms (20 Hz IMU and baro updates)
- * - IWDT timeout: 150 ms (3x period)
+ * - Priority: k_imu_task_priority = 13 (lower than obstacle detect at 12, higher than temp at 15)
+ * - Stack: k_imu_task_stack_size_bytes = 2048 bytes (sufficient for BNO055 + BMP280 init sequences)
+ * - Period: k_imu_task_period_ms = 50 ms (20 Hz IMU and baro updates)
+ * - IWDT timeout: k_imu_task_iwdt_timeout_ms = 150 ms (3x period)
  *
  * **Sensor Initialization (inside task):**
  * - rx_bno055_init(): ~700 ms (BNO055 POR + NDOF mode setup)

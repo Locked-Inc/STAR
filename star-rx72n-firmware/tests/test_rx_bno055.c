@@ -421,7 +421,7 @@ void setUp(void)
 void tearDown(void)
 {
   (void)rx_bus_manager_deinit(&s_test_manager);
-  mock_riic_init();
+  (void)mock_riic_init();
 }
 
 /* =============================================================================
@@ -740,7 +740,9 @@ void test_bno055_is_calibrated_reads_status(void)
  *   3. Double-init (requires s_initialized == true)
  *   4. Read/calibration tests (require s_initialized == true)
  *
- * @return int 0 if all tests pass
+ * @return int Exit status
+ * @retval 0 All tests passed
+ * @retval non-zero Number of test failures reported by Unity
  *
  * @since Version 1.0.0
  */

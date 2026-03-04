@@ -289,6 +289,22 @@ typedef enum : uint8_t {
   k_read_seq_adc_temp_xlsb_idx  = 6, /**< Temp XLSB offset */
 } test_bmp280_read_seq_idx_t;
 
+/**
+ * @enum test_bmp280_temp_range_t
+ * @brief BMP280 physical temperature operating range in centi-degC
+ *
+ * @details
+ * Used in test_bmp280_compensation_known_values() to verify that the
+ * compensation algorithm produced output within the BMP280 physical
+ * operating range documented in the datasheet.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : int32_t {
+  k_temp_physical_min_cdegc = -4000, /**< BMP280 minimum: -40.00 degC */
+  k_temp_physical_max_cdegc = 8500,  /**< BMP280 maximum: +85.00 degC */
+} test_bmp280_temp_range_t;
+
 /* =============================================================================
  * Test Fixtures
  * =============================================================================
@@ -794,16 +810,6 @@ void test_bmp280_compensation_known_values(void)
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-
-  /**
-   * @enum test_bmp280_temp_range_t
-   * @brief Expected temperature range for this test's calibration + ADC data
-   * @since Version 1.0.0
-   */
-  typedef enum : int32_t {
-    k_temp_physical_min_cdegc = -4000, /**< BMP280 minimum: -40.00 degC */
-    k_temp_physical_max_cdegc = 8500,  /**< BMP280 maximum: +85.00 degC */
-  } test_bmp280_temp_range_t;
 
   /* Verify both outputs are within the BMP280 physical operating range. */
   TEST_ASSERT_GREATER_OR_EQUAL((int32_t)k_temp_physical_min_cdegc, data.temp_centi_degc);

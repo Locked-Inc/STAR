@@ -418,10 +418,25 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_idx_lsb   = 0, /**< LSB at index 0 (low byte, sent first) */
-  k_bno055_idx_msb   = 1, /**< MSB at index 1 (high byte, sent second) */
-  k_bno055_shift_msb = 8, /**< Bit shift to position MSB in 16-bit value */
+  k_bno055_idx_lsb = 0U, /**< Byte index of LSB in a little-endian 2-byte value */
+  k_bno055_idx_msb = 1U, /**< Byte index of MSB in a little-endian 2-byte value */
 } bno055_byte_idx_t;
+
+/**
+ * @enum bno055_shift_t
+ * @brief Bit-shift constant for assembling 16-bit little-endian values
+ *
+ * @details
+ * The MSB of a 16-bit little-endian pair must be shifted left by 8 bits
+ * to place it in the upper byte position when assembling the full value.
+ *
+ * @see bno055_byte_idx_t Byte index constants used with this shift
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_shift_msb = 8U, /**< Bit-shift to place MSB into upper byte position */
+} bno055_shift_t;
 
 /**
  * @enum bno055_tick_rate_t
