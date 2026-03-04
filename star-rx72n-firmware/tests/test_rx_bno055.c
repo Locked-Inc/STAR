@@ -187,9 +187,9 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint16_t {
-  k_quat_w_expected   = 0x4000U, /**< Expected quat_w raw = 16384 (W=1.0, identity quaternion) */
-  k_quat_xyz_expected = 0x0000U, /**< Expected quat_x/y/z raw = 0 */
+typedef enum : int16_t {
+  k_quat_w_expected   = 0x4000, /**< Expected quat_w raw = 16384 (W=1.0, identity quaternion) */
+  k_quat_xyz_expected = 0x0000, /**< Expected quat_x/y/z raw = 0 */
 } test_quat_expected_t;
 
 /**
@@ -216,6 +216,38 @@ typedef enum : uint8_t {
   k_test_quat_buf_size     = 8,  /**< Quaternion: 4 x int16 */
   k_test_lia_buf_size      = 6,  /**< Linear accel: 3 x int16 */
 } test_bno055_buf_sizes_t;
+
+/**
+ * @enum test_bno055_read_buf_idx_t
+ * @brief Byte indices into the 22-byte unified read buffer
+ *
+ * @details
+ * The first 6 bytes cover the Euler data loaded for each successive
+ * write-read transaction. Remaining bytes are zeroed.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_read_buf_size = 22, /**< Max read payload: 6+8+6+1+1 = 22 bytes */
+  k_read_idx_0    = 0,  /**< Euler heading LSB */
+  k_read_idx_1    = 1,  /**< Euler heading MSB */
+  k_read_idx_2    = 2,  /**< Euler roll LSB */
+  k_read_idx_3    = 3,  /**< Euler roll MSB */
+  k_read_idx_4    = 4,  /**< Euler pitch LSB */
+  k_read_idx_5    = 5,  /**< Euler pitch MSB */
+} test_bno055_read_buf_idx_t;
+
+/**
+ * @enum test_bno055_quat_buf_idx_t
+ * @brief Byte indices into the 8-byte quaternion read buffer
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_quat_buf_size   = 8, /**< Quaternion: 4 x int16 */
+  k_quat_w_lsb_idx  = 0, /**< W LSB position in quat buffer */
+  k_quat_w_msb_idx  = 1, /**< W MSB position in quat buffer */
+} test_bno055_quat_buf_idx_t;
 
 /* =============================================================================
  * Test Fixtures
@@ -289,38 +321,6 @@ static void internal_load_valid_chip_id(void)
  *
  * @since Version 1.0.0
  */
-/**
- * @enum test_bno055_read_buf_idx_t
- * @brief Byte indices into the 22-byte unified read buffer
- *
- * @details
- * The first 6 bytes cover the Euler data loaded for each successive
- * write-read transaction. Remaining bytes are zeroed.
- *
- * @since Version 1.0.0
- */
-typedef enum : uint8_t {
-  k_read_buf_size = 22, /**< Max read payload: 6+8+6+1+1 = 22 bytes */
-  k_read_idx_0    = 0,  /**< Euler heading LSB */
-  k_read_idx_1    = 1,  /**< Euler heading MSB */
-  k_read_idx_2    = 2,  /**< Euler roll LSB */
-  k_read_idx_3    = 3,  /**< Euler roll MSB */
-  k_read_idx_4    = 4,  /**< Euler pitch LSB */
-  k_read_idx_5    = 5,  /**< Euler pitch MSB */
-} test_bno055_read_buf_idx_t;
-
-/**
- * @enum test_bno055_quat_buf_idx_t
- * @brief Byte indices into the 8-byte quaternion read buffer
- *
- * @since Version 1.0.0
- */
-typedef enum : uint8_t {
-  k_quat_buf_size   = 8, /**< Quaternion: 4 x int16 */
-  k_quat_w_lsb_idx  = 0, /**< W LSB position in quat buffer */
-  k_quat_w_msb_idx  = 1, /**< W MSB position in quat buffer */
-} test_bno055_quat_buf_idx_t;
-
 static void internal_load_read_data(void)
 {
   uint8_t read_buf[k_read_buf_size];
@@ -636,8 +636,8 @@ void test_bno055_read_success_quaternion(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   /* quat_w: loaded buffer[0]=0x00, buffer[1]=0x40 -> 0x4000 = 16384 */
-  TEST_ASSERT_EQUAL_INT16((int16_t)k_quat_w_expected, data.quat_w);
-  TEST_ASSERT_EQUAL_INT16((int16_t)k_quat_xyz_expected, data.quat_x);
+  TEST_ASSERT_EQUAL_INT16(k_quat_w_expected, data.quat_w);
+  TEST_ASSERT_EQUAL_INT16(k_quat_xyz_expected, data.quat_x);
 }
 
 /**

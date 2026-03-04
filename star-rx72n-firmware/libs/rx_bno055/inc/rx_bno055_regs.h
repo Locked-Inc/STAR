@@ -352,12 +352,13 @@ typedef enum : uint8_t {
 } bno055_tick_round_t;
 
 /**
- * @enum bno055_scale_t
- * @brief BNO055 output data scale factors (divisors for unit conversion)
+ * @enum bno055_regs_scale_t
+ * @brief BNO055 register-level output data scale factors (internal register naming)
  *
  * @details
  * Scale factors to convert raw 16-bit integer output to physical units.
- * Divide the raw register value by the corresponding scale constant:
+ * Divide the raw register value by the corresponding scale constant.
+ * For the public API scale constants used with bno055_data_t, see bno055_scale_t in rx_bno055.h.
  *
  * | Output Register | Scale | Physical Unit |
  * |-----------------|-------|---------------|
@@ -366,13 +367,7 @@ typedef enum : uint8_t {
  * | Linear acceleration | 100 | m/s^2 |
  * | Gyroscope | 16 | deg/s |
  *
- * @code
- * // Convert Euler heading to degrees:
- * float heading_deg = (float)raw_heading / (float)k_bno055_scale_euler_lsb_per_deg;
- *
- * // Convert quaternion W to float:
- * float quat_w = (float)raw_quat_w / (float)k_bno055_scale_quat_lsb;
- * @endcode
+ * @see bno055_scale_t Public API scale constants in rx_bno055.h
  *
  * @since Version 1.0.0
  */
@@ -381,43 +376,10 @@ typedef enum : uint16_t {
   k_bno055_scale_accel_lsb_per_mps2 = 100,   /**< Linear accel: 100 LSB per m/s^2 */
   k_bno055_scale_gyro_lsb_per_dps   = 16,    /**< Gyroscope: 16 LSB per deg/s */
   k_bno055_scale_quat_lsb            = 16384, /**< Quaternion: 16384 LSB per unit */
-} bno055_scale_t;
+} bno055_regs_scale_t;
 
-/**
- * @enum bno055_calib_t
- * @brief BNO055 calibration status field constants
- *
- * @details
- * The CALIB_STAT register (0x35) contains four 2-bit calibration status fields.
- * Each field indicates the calibration quality of a specific sensor subsystem:
- * - 0 = uncalibrated, 3 = fully calibrated
- *
- * CALIB_STAT register layout:
- * @code
- * Bit: 7  6  5  4  3  2  1  0
- *      +--+--+--+--+--+--+--+--+
- *      |SYS   |GYR   |ACC   |MAG  |
- *      +--+--+--+--+--+--+--+--+
- * @endcode
- *
- * @code
- * // Extract system calibration status:
- * uint8_t sys_calib = (calib_stat >> k_bno055_calib_sys_shift) & k_bno055_calib_mask;
- * bool fully_cal = (sys_calib == k_bno055_calib_full);
- * @endcode
- *
- * @see BNO055 datasheet section 3.10 for calibration procedure
- *
- * @since Version 1.0.0
- */
-typedef enum : uint8_t {
-  k_bno055_calib_sys_shift = 6, /**< Bit shift to reach SYS calibration field [7:6] */
-  k_bno055_calib_gyr_shift = 4, /**< Bit shift to reach GYR calibration field [5:4] */
-  k_bno055_calib_acc_shift = 2, /**< Bit shift to reach ACC calibration field [3:2] */
-  k_bno055_calib_mag_shift = 0, /**< Bit shift to reach MAG calibration field [1:0] */
-  k_bno055_calib_mask      = 3, /**< 2-bit mask for extracting each calibration field */
-  k_bno055_calib_full      = 3, /**< Maximum calibration level (fully calibrated) */
-} bno055_calib_t;
+/* NOTE: Calibration bit-shift and mask constants have been moved to rx_bno055.h
+ * as bno055_calib_shift_t and bno055_calib_mask_t (public API types). */
 
 /* =============================================================================
  * Read Buffer Size Constants

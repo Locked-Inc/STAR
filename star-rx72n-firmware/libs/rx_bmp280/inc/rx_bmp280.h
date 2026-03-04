@@ -155,7 +155,7 @@ typedef struct {
  * @brief Initialize BMP280 sensor and read factory calibration coefficients
  *
  * @details
- * Reads the 24-byte calibration block from OTP (k_bmp280_reg_calib_start (0x88) through 0x9F) and parses
+ * Reads the 24-byte calibration block from OTP (k_bmp280_reg_calib_start (0x88) through k_bmp280_reg_calib_end (0x9F)) and parses
  * the 12 trimming parameters into module-static storage.
  * Then writes the IIR filter configuration to register k_bmp280_reg_config (0xF5).
  *

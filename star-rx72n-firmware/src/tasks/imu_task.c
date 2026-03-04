@@ -184,9 +184,20 @@ static const char* const s_tag = "IMU";
  */
 static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX CHAR* parameter */
 
-/** @brief External bus manager declared in main.c; registered buses include "i2c1" and "i2c1_baro"
- *  @note Using inline extern is necessary because main.h does not export g_bus_manager.
- *        If a main.h public header is added, replace this with #include "main.h".
+/**
+ * @var g_bus_manager
+ * @brief External bus manager declared in main.c; registered buses include "i2c1" and "i2c1_baro"
+ *
+ * @details
+ * Declared extern here because main.h does not export g_bus_manager.
+ * If a main.h public header is added, replace this with #include "main.h".
+ * The IMU task uses this to pass the bus manager to rx_bno055_init() and
+ * rx_bmp280_init() during task startup.
+ *
+ * @note Using inline extern is necessary because main.h does not export g_bus_manager.
+ *       If a main.h public header is added, replace this with #include "main.h".
+ *
+ * @since Version 1.0.0
  */
 extern rx_bus_manager_t g_bus_manager;
 

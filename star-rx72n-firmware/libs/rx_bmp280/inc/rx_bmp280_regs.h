@@ -86,6 +86,7 @@ extern "C" {
 typedef enum : uint8_t {
   k_bmp280_reg_chip_id     = 0xD0, /**< Chip ID register: contains device ID 0x60 for BMP280 */
   k_bmp280_reg_calib_start = 0x88, /**< Start of 24-byte calibration coefficient block */
+  k_bmp280_reg_calib_end   = 0x9F, /**< Last byte of 24-byte calibration coefficient block (0x88-0x9F) */
   k_bmp280_reg_status      = 0xF3, /**< Status: bit 3 = measuring, bit 0 = im_update */
   k_bmp280_reg_ctrl_meas   = 0xF4, /**< Control: osrs_t[7:5] osrs_p[4:2] mode[1:0] */
   k_bmp280_reg_config      = 0xF5, /**< Config: t_sb[7:5] filter[4:2] spi3w_en[0] */

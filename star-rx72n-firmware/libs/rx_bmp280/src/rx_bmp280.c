@@ -56,6 +56,62 @@
 #include "rx_log.h"
 
 /* =============================================================================
+ * Module-level Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum bmp280_le16_idx_t
+ * @brief Byte indices for little-endian 16-bit pair (LSB first)
+ *
+ * @details
+ * Index constants for accessing LSB and MSB within a 2-byte little-endian pair.
+ * Used by internal_parse_u16_le() and internal_parse_s16_le().
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_le16_lsb_idx = 0, /**< Index of least-significant byte in a 2-byte LE pair */
+  k_bmp280_le16_msb_idx = 1, /**< Index of most-significant byte in a 2-byte LE pair */
+} bmp280_le16_idx_t;
+
+/**
+ * @enum bmp280_adc20_idx_t
+ * @brief Byte indices for 3-byte 20-bit ADC buffer (MSB first)
+ *
+ * @details
+ * Index constants for accessing MSB, LSB, and XLSB within a 3-byte ADC buffer.
+ * Used by internal_assemble_adc20().
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bmp280_adc20_msb_idx  = 0, /**< Index of MSB byte in 3-byte ADC buffer */
+  k_bmp280_adc20_lsb_idx  = 1, /**< Index of LSB byte in 3-byte ADC buffer */
+  k_bmp280_adc20_xlsb_idx = 2, /**< Index of XLSB byte in 3-byte ADC buffer */
+} bmp280_adc20_idx_t;
+
+/**
+ * @enum bmp280_output_range_t
+ * @brief BMP280 output range limits for postcondition validation
+ *
+ * @details
+ * Valid output ranges per the BMP280 datasheet operating specifications:
+ * - Temperature: -40.00 degC to +85.00 degC (in centi-degC units)
+ * - Pressure: 300 hPa to 1100 hPa (in Pa*256 fixed-point units)
+ *
+ * @see rx_bmp280_read() Applies these range checks after compensation
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : int32_t {
+  k_bmp280_temp_min_cdegc_impl = -4000,        /**< Minimum valid temperature: -40.00 degC in centi-degC */
+  k_bmp280_temp_max_cdegc_impl = 8500,         /**< Maximum valid temperature: +85.00 degC in centi-degC */
+  k_bmp280_press_min_pa_256    = 30000 * 256,  /**< Minimum valid pressure: 300 hPa * 256 */
+  k_bmp280_press_max_pa_256    = 110000 * 256, /**< Maximum valid pressure: 1100 hPa * 256 */
+} bmp280_output_range_t;
+
+/* =============================================================================
  * Module-Static State
  * =============================================================================
  */
@@ -101,10 +157,20 @@ static const char* const s_bus_name = "i2c1_baro";
  * =============================================================================
  */
 
+/** @brief Write a single byte to a BMP280 register via I2C */
 static rx_err_t internal_write_reg(uint8_t reg, uint8_t val);
+/** @brief Burst-read consecutive registers from BMP280 via I2C write-read */
 static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len);
+/** @brief Apply Bosch integer temperature compensation formula (returns centi-degC, sets t_fine) */
 static int32_t  internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out);
+/** @brief Apply Bosch integer pressure compensation formula (returns Pa*256 in press_out) */
 static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint32_t* press_out);
+/** @brief Assemble an unsigned 16-bit little-endian value from two consecutive bytes */
+static inline uint16_t internal_parse_u16_le(const uint8_t* buf);
+/** @brief Assemble a signed 16-bit little-endian value from two consecutive bytes */
+static inline int16_t internal_parse_s16_le(const uint8_t* buf);
+/** @brief Assemble a 20-bit signed ADC value from a 3-byte MSB/LSB/XLSB buffer */
+static inline int32_t internal_assemble_adc20(const uint8_t* buf);
 
 /* =============================================================================
  * Internal Helpers
@@ -182,6 +248,90 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
                                k_bmp280_read_cmd_size,
                                buf,
                                len);
+}
+
+/**
+ * @brief Assemble an unsigned 16-bit little-endian value from two consecutive bytes
+ *
+ * @details
+ * Reads buf[0] (LSB) and buf[1] (MSB) and combines them into a uint16_t value
+ * using little-endian byte order (LSB first), matching BMP280 calibration register layout.
+ *
+ * @param[in] buf Pointer to at least 2 bytes; buf[0] is LSB, buf[1] is MSB
+ *
+ * @return uint16_t Assembled unsigned 16-bit value
+ *
+ * @pre buf non-NULL, capacity >= 2
+ * @post Return value == (uint16_t)buf[0] | ((uint16_t)buf[1] << 8)
+ *
+ * @note Inline; zero overhead after optimization
+ * @see internal_parse_s16_le() Signed variant
+ *
+ * @since Version 1.0.0
+ */
+static inline uint16_t internal_parse_u16_le(const uint8_t* buf)
+{
+  RX_ASSERT(buf != NULL, "buf must not be NULL");
+  return (uint16_t)((uint16_t)buf[k_bmp280_le16_lsb_idx] |
+                    ((uint16_t)buf[k_bmp280_le16_msb_idx] << k_bmp280_byte_shift));
+}
+
+/**
+ * @brief Assemble a signed 16-bit little-endian value from two consecutive bytes
+ *
+ * @details
+ * Reads buf[0] (LSB) and buf[1] (MSB) and reinterprets the assembled uint16_t
+ * as a two's complement int16_t value. Matches BMP280 signed calibration coefficient layout.
+ *
+ * @param[in] buf Pointer to at least 2 bytes; buf[0] is LSB, buf[1] is MSB
+ *
+ * @return int16_t Assembled signed 16-bit value
+ *
+ * @pre buf non-NULL, capacity >= 2
+ * @post Return value correctly represents two's complement signed value
+ *
+ * @note Inline; zero overhead after optimization
+ * @see internal_parse_u16_le() Unsigned variant
+ *
+ * @since Version 1.0.0
+ */
+static inline int16_t internal_parse_s16_le(const uint8_t* buf)
+{
+  return (int16_t)internal_parse_u16_le(buf);
+}
+
+/**
+ * @brief Assemble a 20-bit signed ADC value from a 3-byte MSB/LSB/XLSB buffer
+ *
+ * @details
+ * The BMP280 outputs pressure and temperature as 20-bit raw values stored in
+ * three consecutive bytes with the following layout:
+ * - buf[0] (MSB):  bits[19:12] of the ADC value
+ * - buf[1] (LSB):  bits[11:4] of the ADC value
+ * - buf[2] (XLSB): bits[3:0] of the ADC value in the upper nibble (bits [7:4])
+ *
+ * Assembly formula: (MSB << 12) | (LSB << 4) | (XLSB >> 4)
+ *
+ * @param[in] buf Pointer to 3-byte buffer: buf[0]=MSB, buf[1]=LSB, buf[2]=XLSB
+ *
+ * @return int32_t Assembled 20-bit ADC value (range [0, 0xFFFFF])
+ *
+ * @pre buf non-NULL, capacity >= 3
+ * @post Return value is a valid 20-bit non-negative integer
+ *
+ * @note Inline; zero overhead after optimization
+ * @see internal_compensate_temp() Consumes the assembled temperature ADC value
+ * @see internal_compensate_pressure() Consumes the assembled pressure ADC value
+ *
+ * @since Version 1.0.0
+ */
+static inline int32_t internal_assemble_adc20(const uint8_t* buf)
+{
+  RX_ASSERT(buf != NULL, "buf must not be NULL");
+  /* Assembly: (MSB << 12) | (LSB << 4) | (XLSB >> 4) produces 20-bit value */
+  return (int32_t)(((uint32_t)buf[k_bmp280_adc20_msb_idx] << k_bmp280_shift_msb) |
+                   ((uint32_t)buf[k_bmp280_adc20_lsb_idx] << k_bmp280_shift_lsb) |
+                   ((uint32_t)buf[k_bmp280_adc20_xlsb_idx] >> k_bmp280_shift_xlsb));
 }
 
 /**
@@ -345,7 +495,7 @@ static rx_err_t internal_compensate_pressure(int32_t adc_P, int32_t t_fine, uint
  *
  * @details
  * Reads 24 bytes of factory-calibrated trimming parameters from OTP
- * registers 0x88-0x9F and parses them into s_calib. Then configures
+ * registers k_bmp280_reg_calib_start..k_bmp280_reg_calib_end (0x88-0x9F) and parses them into s_calib. Then configures
  * the IIR filter by writing to the config register 0xF5.
  *
  * @param[in] manager Initialized bus manager with "i2c1" registered
@@ -372,7 +522,7 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
   s_manager     = manager;
   s_initialized = false;
 
-  /* Read 24-byte factory calibration block from OTP (0x88-0x9F) */
+  /* Read 24-byte factory calibration block from OTP (k_bmp280_reg_calib_start..k_bmp280_reg_calib_end) */
   uint8_t  calib_buf[k_bmp280_calib_byte_count];
   rx_err_t err = internal_read_regs((uint8_t)k_bmp280_reg_calib_start,
                                     calib_buf,
@@ -384,30 +534,18 @@ rx_err_t rx_bmp280_init(rx_bus_manager_t* manager)
   }
 
   /* Parse calibration coefficients (all little-endian: LSB first) */
-  s_calib.dig_T1 = (uint16_t)((uint16_t)calib_buf[k_bmp280_calib_t1_lsb] |
-                               ((uint16_t)calib_buf[k_bmp280_calib_t1_msb] << k_bmp280_byte_shift));
-  s_calib.dig_T2 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_t2_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_t2_msb] << k_bmp280_byte_shift));
-  s_calib.dig_T3 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_t3_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_t3_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P1 = (uint16_t)((uint16_t)calib_buf[k_bmp280_calib_p1_lsb] |
-                               ((uint16_t)calib_buf[k_bmp280_calib_p1_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P2 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p2_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p2_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P3 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p3_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p3_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P4 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p4_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p4_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P5 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p5_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p5_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P6 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p6_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p6_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P7 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p7_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p7_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P8 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p8_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p8_msb] << k_bmp280_byte_shift));
-  s_calib.dig_P9 = (int16_t)((uint16_t)calib_buf[k_bmp280_calib_p9_lsb] |
-                              ((uint16_t)calib_buf[k_bmp280_calib_p9_msb] << k_bmp280_byte_shift));
+  s_calib.dig_T1 = internal_parse_u16_le(&calib_buf[k_bmp280_calib_t1_lsb]);
+  s_calib.dig_T2 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_t2_lsb]);
+  s_calib.dig_T3 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_t3_lsb]);
+  s_calib.dig_P1 = internal_parse_u16_le(&calib_buf[k_bmp280_calib_p1_lsb]);
+  s_calib.dig_P2 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p2_lsb]);
+  s_calib.dig_P3 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p3_lsb]);
+  s_calib.dig_P4 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p4_lsb]);
+  s_calib.dig_P5 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p5_lsb]);
+  s_calib.dig_P6 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p6_lsb]);
+  s_calib.dig_P7 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p7_lsb]);
+  s_calib.dig_P8 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p8_lsb]);
+  s_calib.dig_P9 = internal_parse_s16_le(&calib_buf[k_bmp280_calib_p9_lsb]);
 
   /* Postcondition: verify critical calibration coefficients are non-zero */
   if (s_calib.dig_T1 == 0U || s_calib.dig_P1 == 0U) {
@@ -506,13 +644,8 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   }
 
   /* Step 4: Assemble 20-bit raw ADC values */
-  const int32_t adc_P = ((int32_t)adc_buf[k_bmp280_press_msb_idx] << k_bmp280_shift_msb) |
-                        ((int32_t)adc_buf[k_bmp280_press_lsb_idx] << k_bmp280_shift_lsb) |
-                        ((int32_t)adc_buf[k_bmp280_press_xlsb_idx] >> k_bmp280_shift_xlsb);
-
-  const int32_t adc_T = ((int32_t)adc_buf[k_bmp280_temp_msb_idx] << k_bmp280_shift_msb) |
-                        ((int32_t)adc_buf[k_bmp280_temp_lsb_idx] << k_bmp280_shift_lsb) |
-                        ((int32_t)adc_buf[k_bmp280_temp_xlsb_idx] >> k_bmp280_shift_xlsb);
+  const int32_t adc_P = internal_assemble_adc20(&adc_buf[k_bmp280_press_msb_idx]);
+  const int32_t adc_T = internal_assemble_adc20(&adc_buf[k_bmp280_temp_msb_idx]);
 
   /* Step 5: Apply Bosch integer compensation */
   int32_t t_fine       = 0;
@@ -522,6 +655,19 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
   if (press_err != k_rx_ok) {
     rx_log_error(s_tag, "Pressure compensation failed (var1==0)");
     return press_err;
+  }
+
+  /* Step 6: Postcondition range checks (BMP280 datasheet operating limits) */
+  if (out->temp_centi_degc < (int32_t)k_bmp280_temp_min_cdegc_impl ||
+      out->temp_centi_degc > (int32_t)k_bmp280_temp_max_cdegc_impl) {
+    rx_log_error_val(s_tag, "Temperature out of range (centi-degC)", (uint32_t)out->temp_centi_degc);
+    return k_rx_err_invalid_state;
+  }
+
+  if (out->press_pa_256 < (uint32_t)k_bmp280_press_min_pa_256 ||
+      out->press_pa_256 > (uint32_t)k_bmp280_press_max_pa_256) {
+    rx_log_error_val(s_tag, "Pressure out of range (Pa*256)", out->press_pa_256);
+    return k_rx_err_invalid_state;
   }
 
   return k_rx_ok;

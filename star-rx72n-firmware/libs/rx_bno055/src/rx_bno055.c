@@ -65,6 +65,7 @@
 
 #include "rx_bno055.h"
 
+#include <limits.h>
 #include <stddef.h>
 
 #include "rx_bno055_regs.h"
@@ -146,8 +147,84 @@ static rx_bus_manager_t* s_manager = NULL;
  */
 static bool s_initialized = false;
 
-/** @brief I2C bus name for BNO055 (registered in main.c) */
+/**
+ * @var s_bus_name
+ * @brief I2C bus name used by the BNO055 driver to look up the bus manager
+ *
+ * @details
+ * The name must match the bus name registered in main.c via rx_bus_manager_register().
+ * Passed to rx_bus_manager_get_i2c() to obtain the I2C bus handle.
+ *
+ * @note Must match the name registered in main.c (currently "i2c1")
+ * @warning Do not modify; changing the name at runtime will cause bus lookup failures
+ *
+ * @since Version 1.0.0
+ */
 static const char* const s_bus_name = "i2c1";
+
+/* =============================================================================
+ * Module-level Offset Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum euler_offsets_t
+ * @brief Byte offsets in the 6-byte Euler angle burst-read buffer
+ *
+ * @details
+ * The BNO055 Euler output registers (0x1A-0x1F) are read as a 6-byte burst.
+ * Each 16-bit field occupies two consecutive bytes in little-endian order.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_eul_h_lsb_off = 0, /**< Byte offset of heading LSB in euler_buf */
+  k_eul_h_msb_off = 1, /**< Byte offset of heading MSB in euler_buf */
+  k_eul_r_lsb_off = 2, /**< Byte offset of roll LSB in euler_buf */
+  k_eul_r_msb_off = 3, /**< Byte offset of roll MSB in euler_buf */
+  k_eul_p_lsb_off = 4, /**< Byte offset of pitch LSB in euler_buf */
+  k_eul_p_msb_off = 5, /**< Byte offset of pitch MSB in euler_buf */
+} euler_offsets_t;
+
+/**
+ * @enum quat_offsets_t
+ * @brief Byte offsets in the 8-byte quaternion burst-read buffer
+ *
+ * @details
+ * The BNO055 quaternion output registers (0x20-0x27) are read as an 8-byte burst.
+ * Each 16-bit field occupies two consecutive bytes in little-endian order.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_qua_w_lsb_off = 0, /**< Byte offset of quaternion W LSB in quat_buf */
+  k_qua_w_msb_off = 1, /**< Byte offset of quaternion W MSB in quat_buf */
+  k_qua_x_lsb_off = 2, /**< Byte offset of quaternion X LSB in quat_buf */
+  k_qua_x_msb_off = 3, /**< Byte offset of quaternion X MSB in quat_buf */
+  k_qua_y_lsb_off = 4, /**< Byte offset of quaternion Y LSB in quat_buf */
+  k_qua_y_msb_off = 5, /**< Byte offset of quaternion Y MSB in quat_buf */
+  k_qua_z_lsb_off = 6, /**< Byte offset of quaternion Z LSB in quat_buf */
+  k_qua_z_msb_off = 7, /**< Byte offset of quaternion Z MSB in quat_buf */
+} quat_offsets_t;
+
+/**
+ * @enum lia_offsets_t
+ * @brief Byte offsets in the 6-byte linear acceleration burst-read buffer
+ *
+ * @details
+ * The BNO055 linear acceleration registers (0x28-0x2D) are read as a 6-byte burst.
+ * Each 16-bit field occupies two consecutive bytes in little-endian order.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_lia_x_lsb_off = 0, /**< Byte offset of linear accel X LSB in lia_buf */
+  k_lia_x_msb_off = 1, /**< Byte offset of linear accel X MSB in lia_buf */
+  k_lia_y_lsb_off = 2, /**< Byte offset of linear accel Y LSB in lia_buf */
+  k_lia_y_msb_off = 3, /**< Byte offset of linear accel Y MSB in lia_buf */
+  k_lia_z_lsb_off = 4, /**< Byte offset of linear accel Z LSB in lia_buf */
+  k_lia_z_msb_off = 5, /**< Byte offset of linear accel Z MSB in lia_buf */
+} lia_offsets_t;
 
 /* =============================================================================
  * Forward Declarations
@@ -160,6 +237,10 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high);
 static rx_err_t internal_read_euler(bno055_data_t* out);
 static rx_err_t internal_read_quat(bno055_data_t* out);
 static rx_err_t internal_read_lia(bno055_data_t* out);
+static rx_err_t internal_init_reset_and_wait(void);
+static rx_err_t internal_init_configure(void);
+static rx_err_t internal_init_enter_ndof(void);
+static rx_err_t internal_verify_chip_id(void);
 
 /* =============================================================================
  * Internal Helpers
@@ -267,7 +348,218 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  */
 static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
 {
+  _Static_assert(k_bno055_shift_msb == 8U, "MSB shift must be 8 for little-endian assembly");
+  _Static_assert(sizeof(uint16_t) * CHAR_BIT == 16U, "uint16_t must be 16 bits for assembly to be well-defined");
   return (int16_t)((uint16_t)low | ((uint16_t)high << (uint8_t)k_bno055_shift_msb));
+}
+
+/* =============================================================================
+ * Init Helpers
+ * =============================================================================
+ */
+
+/**
+ * @brief BNO055 init steps 1-2: software reset, POR delay, CONFIG mode, config delay
+ *
+ * @details
+ * Writes SYS_TRIGGER reset command and waits 650 ms for POR sequence to
+ * complete. Then enters CONFIG mode and waits 20 ms for the transition.
+ * Must be called first in the init sequence before any register writes.
+ *
+ * @return rx_err_t Operation result
+ * @retval k_rx_ok Reset and CONFIG mode entered successfully
+ * @retval k_rx_err_nack I2C NACK during reset or CONFIG mode write
+ * @retval k_rx_err_timeout I2C timeout
+ *
+ * @pre s_manager non-NULL
+ * @pre "i2c1" bus initialized
+ * @post Sensor in CONFIG mode, ready for configuration register writes
+ * @post ~670 ms elapsed (650 ms POR + 20 ms CONFIG transition)
+ *
+ * @note Not thread-safe; called only from rx_bno055_init()
+ * @note Blocking: 65 ticks @ 10 ms/tick = 650 ms POR, then 2 ticks = 20 ms CONFIG
+ *
+ * @see bno055_delay_ms_t Timing constants
+ * @see bno055_sys_trigger_t Reset command values
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_reset_and_wait(void)
+{
+  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for reset");
+
+  /* Step 1: Software reset, then wait for POR sequence */
+  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_sys_trigger,
+                                    (uint8_t)k_bno055_sys_trigger_rst);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Software reset failed");
+    return err;
+  }
+  (void)tx_thread_sleep(k_bno055_delay_por_ms / k_bno055_ms_per_tick); /* 65 ticks @ 10 ms/tick = 650 ms */
+
+  /* Step 2: Enter CONFIG mode (required for configuration register writes) */
+  err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_config);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Set CONFIG mode failed");
+    return err;
+  }
+  (void)tx_thread_sleep(k_bno055_delay_config_ms / k_bno055_ms_per_tick + k_bno055_tick_round_up); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief BNO055 init steps 3-6: configure power mode, units, axis map, clear trigger
+ *
+ * @details
+ * Writes power mode (Normal), unit selection (degrees/m/s^2/dps/Celsius),
+ * axis remapping (standard orientation), and clears the system trigger register.
+ * All writes are performed in CONFIG mode (entered by internal_init_reset_and_wait).
+ *
+ * @return rx_err_t Operation result
+ * @retval k_rx_ok All configuration writes succeeded
+ * @retval k_rx_err_nack I2C NACK during any configuration write
+ * @retval k_rx_err_timeout I2C timeout
+ *
+ * @pre s_manager non-NULL
+ * @pre BNO055 in CONFIG mode (internal_init_reset_and_wait succeeded)
+ * @post Power mode set to Normal
+ * @post Units set to degrees, m/s^2, dps, Celsius
+ * @post Axis map set to standard orientation
+ * @post System trigger cleared
+ *
+ * @note Not thread-safe; called only from rx_bno055_init()
+ *
+ * @see bno055_pwr_mode_t Power mode constants
+ * @see bno055_axis_map_t Axis map constants
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_configure(void)
+{
+  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for configure");
+
+  /* Step 3: Set normal power mode */
+  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_pwr_mode, (uint8_t)k_bno055_pwr_normal);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Set power mode failed");
+    return err;
+  }
+
+  /* Step 4: Set default measurement units (degrees, m/s^2, dps, Celsius) */
+  err = internal_write_reg((uint8_t)k_bno055_reg_unit_sel, (uint8_t)k_bno055_unit_sel_default);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Set unit sel failed");
+    return err;
+  }
+
+  /* Step 5: Set default axis remapping */
+  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_cfg, (uint8_t)k_bno055_axis_map_default);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Set axis map cfg failed");
+    return err;
+  }
+
+  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_sgn, (uint8_t)k_bno055_axis_map_sign_pos);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Set axis map sign failed");
+    return err;
+  }
+
+  /* Step 6: Clear system trigger register */
+  err = internal_write_reg((uint8_t)k_bno055_reg_sys_trigger, (uint8_t)k_bno055_sys_trigger_clear);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Clear sys trigger failed");
+    return err;
+  }
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief BNO055 init step 7: enter NDOF fusion mode and wait for transition
+ *
+ * @details
+ * Writes OPR_MODE = NDOF (0x0C) to activate full 9-DOF sensor fusion
+ * (accelerometer + gyroscope + magnetometer). Waits 10 ms (1 tick) for
+ * the CONFIG -> NDOF transition to complete per BNO055 datasheet.
+ *
+ * @return rx_err_t Operation result
+ * @retval k_rx_ok NDOF mode entered and transition delay completed
+ * @retval k_rx_err_nack I2C NACK during NDOF mode write
+ * @retval k_rx_err_timeout I2C timeout
+ *
+ * @pre s_manager non-NULL
+ * @pre BNO055 configured (internal_init_configure succeeded)
+ * @post OPR_MODE register set to NDOF (0x0C)
+ * @post ~10 ms elapsed (1 tick) for mode transition to settle
+ *
+ * @note Not thread-safe; called only from rx_bno055_init()
+ * @note Blocking: 1 tick @ 10 ms/tick = 10 ms (rounds up from 7 ms minimum)
+ *
+ * @see bno055_opr_mode_t Operating mode constants
+ * @see bno055_delay_ticks_t Tick delay constants
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_init_enter_ndof(void)
+{
+  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for NDOF entry");
+
+  /* Step 7: Enter NDOF fusion mode (full 9-DOF sensor fusion) */
+  const rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_ndof);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Set NDOF mode failed");
+    return err;
+  }
+  (void)tx_thread_sleep((ULONG)k_bno055_delay_ndof_ticks); /* 1 tick @ 10 ms/tick = 10 ms (rounds up from 7 ms) */
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief BNO055 init step 8: read CHIP_ID register and verify it is 0xA0
+ *
+ * @details
+ * Reads the CHIP_ID register (0x00) and compares against k_bno055_chip_id_expected (0xA0).
+ * A mismatch indicates a wrong device, wiring fault, or I2C address collision.
+ * Returns k_rx_err_invalid_state if the chip ID does not match.
+ *
+ * @return rx_err_t Verification result
+ * @retval k_rx_ok CHIP_ID == 0xA0, sensor identity confirmed
+ * @retval k_rx_err_nack I2C NACK during chip ID read
+ * @retval k_rx_err_invalid_state CHIP_ID != 0xA0 (wrong device)
+ * @retval k_rx_err_timeout I2C timeout
+ *
+ * @pre s_manager non-NULL
+ * @pre BNO055 in NDOF mode (internal_init_enter_ndof succeeded)
+ * @post CHIP_ID register confirmed == 0xA0 on k_rx_ok
+ *
+ * @note Not thread-safe; called only from rx_bno055_init()
+ *
+ * @see bno055_chip_id_t Expected chip ID constant
+ * @see rx_bno055_init() Calls this as the final verification step
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_verify_chip_id(void)
+{
+  RX_ASSERT(s_manager != NULL, "s_manager must be non-NULL for chip ID verify");
+
+  /* Step 8: Verify chip ID */
+  uint8_t  chip_id = 0;
+  rx_err_t err     = internal_read_regs((uint8_t)k_bno055_reg_chip_id, &chip_id, k_bno055_single_byte);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Chip ID read failed");
+    return err;
+  }
+
+  if (chip_id != (uint8_t)k_bno055_chip_id_expected) {
+    rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
+    return k_rx_err_invalid_state;
+  }
+
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -280,8 +572,9 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
  *
  * @details
  * Executes the complete 8-step initialization sequence as described in the
- * BNO055 datasheet section 3.3.1. Each step is validated and errors cause
- * immediate return.
+ * BNO055 datasheet section 3.3.1. Each step is delegated to a helper function.
+ * Any failure sets s_manager = NULL before returning so the module is
+ * re-initializable.
  *
  * Delay rationale:
  * - 650 ms after reset: BNO055 internal boot sequence (ARM Cortex-M0 startup)
@@ -305,12 +598,16 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high)
  * @pre BNO055 powered (3.3V)
  * @post s_initialized == true on success
  * @post Sensor running NDOF fusion
+ * @post s_manager == NULL on any failure path
  *
  * @note Not thread-safe
  * @note Blocks ~700 ms total
  *
+ * @see internal_init_reset_and_wait() Steps 1-2
+ * @see internal_init_configure() Steps 3-6
+ * @see internal_init_enter_ndof() Step 7
+ * @see internal_verify_chip_id() Step 8
  * @see bno055_delay_ms_t Timing constants
- * @see bno055_opr_mode_t Operating mode constants
  *
  * @since Version 1.0.0
  */
@@ -330,86 +627,28 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
   s_manager     = manager;
   s_initialized = false;
 
-  /* Step 1: Software reset, then wait for POR sequence */
-  rx_err_t err = internal_write_reg((uint8_t)k_bno055_reg_sys_trigger,
-                                    (uint8_t)k_bno055_sys_trigger_rst);
+  rx_err_t err = internal_init_reset_and_wait();
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Software reset failed");
-    s_manager = NULL;
-    return err;
-  }
-  (void)tx_thread_sleep(k_bno055_delay_por_ms / k_bno055_ms_per_tick); /* 65 ticks @ 10 ms/tick = 650 ms */
-
-  /* Step 2: Enter CONFIG mode (required for configuration register writes) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_config);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Set CONFIG mode failed");
-    s_manager = NULL;
-    return err;
-  }
-  (void)tx_thread_sleep(k_bno055_delay_config_ms / k_bno055_ms_per_tick + k_bno055_tick_round_up); /* 2 ticks @ 10 ms/tick = 20 ms (round up for 19 ms) */
-
-  /* Step 3: Set normal power mode */
-  err = internal_write_reg((uint8_t)k_bno055_reg_pwr_mode, (uint8_t)k_bno055_pwr_normal);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Set power mode failed");
     s_manager = NULL;
     return err;
   }
 
-  /* Step 4: Set default measurement units (degrees, m/s^2, dps, Celsius) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_unit_sel, (uint8_t)k_bno055_unit_sel_default);
+  err = internal_init_configure();
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Set unit sel failed");
     s_manager = NULL;
     return err;
   }
 
-  /* Step 5: Set default axis remapping */
-  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_cfg, (uint8_t)k_bno055_axis_map_default);
+  err = internal_init_enter_ndof();
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Set axis map cfg failed");
     s_manager = NULL;
     return err;
   }
 
-  err = internal_write_reg((uint8_t)k_bno055_reg_axis_map_sgn, (uint8_t)k_bno055_axis_map_sign_pos);
+  err = internal_verify_chip_id();
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Set axis map sign failed");
     s_manager = NULL;
     return err;
-  }
-
-  /* Step 6: Clear system trigger register */
-  err = internal_write_reg((uint8_t)k_bno055_reg_sys_trigger, (uint8_t)k_bno055_sys_trigger_clear);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Clear sys trigger failed");
-    s_manager = NULL;
-    return err;
-  }
-
-  /* Step 7: Enter NDOF fusion mode (full 9-DOF sensor fusion) */
-  err = internal_write_reg((uint8_t)k_bno055_reg_opr_mode, (uint8_t)k_bno055_opr_ndof);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Set NDOF mode failed");
-    s_manager = NULL;
-    return err;
-  }
-  (void)tx_thread_sleep((ULONG)k_bno055_delay_ndof_ticks); /* 1 tick @ 10 ms/tick = 10 ms (rounds up from 7 ms) */
-
-  /* Step 8: Verify chip ID */
-  uint8_t chip_id = 0;
-  err             = internal_read_regs((uint8_t)k_bno055_reg_chip_id, &chip_id, k_bno055_single_byte);
-  if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Chip ID read failed");
-    s_manager = NULL;
-    return err;
-  }
-
-  if (chip_id != (uint8_t)k_bno055_chip_id_expected) {
-    rx_log_error_val(s_tag, "Unexpected chip ID", (uint32_t)chip_id);
-    s_manager = NULL;
-    return k_rx_err_invalid_state;
   }
 
   s_initialized = true;
@@ -454,21 +693,12 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
     return err;
   }
 
-  typedef enum : uint8_t {
-    k_eul_h_lsb_off = 0, /**< Byte offset of heading LSB in euler_buf */
-    k_eul_h_msb_off = 1, /**< Byte offset of heading MSB in euler_buf */
-    k_eul_r_lsb_off = 2, /**< Byte offset of roll LSB in euler_buf */
-    k_eul_r_msb_off = 3, /**< Byte offset of roll MSB in euler_buf */
-    k_eul_p_lsb_off = 4, /**< Byte offset of pitch LSB in euler_buf */
-    k_eul_p_msb_off = 5, /**< Byte offset of pitch MSB in euler_buf */
-  } euler_offsets_t;
-
-  out->heading_deg16 = internal_assemble_int16_le(euler_buf[(euler_offsets_t)k_eul_h_lsb_off],
-                                                  euler_buf[(euler_offsets_t)k_eul_h_msb_off]);
-  out->roll_deg16    = internal_assemble_int16_le(euler_buf[(euler_offsets_t)k_eul_r_lsb_off],
-                                                  euler_buf[(euler_offsets_t)k_eul_r_msb_off]);
-  out->pitch_deg16   = internal_assemble_int16_le(euler_buf[(euler_offsets_t)k_eul_p_lsb_off],
-                                                  euler_buf[(euler_offsets_t)k_eul_p_msb_off]);
+  out->heading_deg16 = internal_assemble_int16_le(euler_buf[k_eul_h_lsb_off],
+                                                  euler_buf[k_eul_h_msb_off]);
+  out->roll_deg16    = internal_assemble_int16_le(euler_buf[k_eul_r_lsb_off],
+                                                  euler_buf[k_eul_r_msb_off]);
+  out->pitch_deg16   = internal_assemble_int16_le(euler_buf[k_eul_p_lsb_off],
+                                                  euler_buf[k_eul_p_msb_off]);
   return k_rx_ok;
 }
 
@@ -506,25 +736,14 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
     return err;
   }
 
-  typedef enum : uint8_t {
-    k_qua_w_lsb_off = 0, /**< Byte offset of quaternion W LSB in quat_buf */
-    k_qua_w_msb_off = 1, /**< Byte offset of quaternion W MSB in quat_buf */
-    k_qua_x_lsb_off = 2, /**< Byte offset of quaternion X LSB in quat_buf */
-    k_qua_x_msb_off = 3, /**< Byte offset of quaternion X MSB in quat_buf */
-    k_qua_y_lsb_off = 4, /**< Byte offset of quaternion Y LSB in quat_buf */
-    k_qua_y_msb_off = 5, /**< Byte offset of quaternion Y MSB in quat_buf */
-    k_qua_z_lsb_off = 6, /**< Byte offset of quaternion Z LSB in quat_buf */
-    k_qua_z_msb_off = 7, /**< Byte offset of quaternion Z MSB in quat_buf */
-  } quat_offsets_t;
-
-  out->quat_w = internal_assemble_int16_le(quat_buf[(quat_offsets_t)k_qua_w_lsb_off],
-                                           quat_buf[(quat_offsets_t)k_qua_w_msb_off]);
-  out->quat_x = internal_assemble_int16_le(quat_buf[(quat_offsets_t)k_qua_x_lsb_off],
-                                           quat_buf[(quat_offsets_t)k_qua_x_msb_off]);
-  out->quat_y = internal_assemble_int16_le(quat_buf[(quat_offsets_t)k_qua_y_lsb_off],
-                                           quat_buf[(quat_offsets_t)k_qua_y_msb_off]);
-  out->quat_z = internal_assemble_int16_le(quat_buf[(quat_offsets_t)k_qua_z_lsb_off],
-                                           quat_buf[(quat_offsets_t)k_qua_z_msb_off]);
+  out->quat_w = internal_assemble_int16_le(quat_buf[k_qua_w_lsb_off],
+                                           quat_buf[k_qua_w_msb_off]);
+  out->quat_x = internal_assemble_int16_le(quat_buf[k_qua_x_lsb_off],
+                                           quat_buf[k_qua_x_msb_off]);
+  out->quat_y = internal_assemble_int16_le(quat_buf[k_qua_y_lsb_off],
+                                           quat_buf[k_qua_y_msb_off]);
+  out->quat_z = internal_assemble_int16_le(quat_buf[k_qua_z_lsb_off],
+                                           quat_buf[k_qua_z_msb_off]);
   return k_rx_ok;
 }
 
@@ -562,21 +781,12 @@ static rx_err_t internal_read_lia(bno055_data_t* out)
     return err;
   }
 
-  typedef enum : uint8_t {
-    k_lia_x_lsb_off = 0, /**< Byte offset of linear accel X LSB in lia_buf */
-    k_lia_x_msb_off = 1, /**< Byte offset of linear accel X MSB in lia_buf */
-    k_lia_y_lsb_off = 2, /**< Byte offset of linear accel Y LSB in lia_buf */
-    k_lia_y_msb_off = 3, /**< Byte offset of linear accel Y MSB in lia_buf */
-    k_lia_z_lsb_off = 4, /**< Byte offset of linear accel Z LSB in lia_buf */
-    k_lia_z_msb_off = 5, /**< Byte offset of linear accel Z MSB in lia_buf */
-  } lia_offsets_t;
-
-  out->lin_acc_x = internal_assemble_int16_le(lia_buf[(lia_offsets_t)k_lia_x_lsb_off],
-                                              lia_buf[(lia_offsets_t)k_lia_x_msb_off]);
-  out->lin_acc_y = internal_assemble_int16_le(lia_buf[(lia_offsets_t)k_lia_y_lsb_off],
-                                              lia_buf[(lia_offsets_t)k_lia_y_msb_off]);
-  out->lin_acc_z = internal_assemble_int16_le(lia_buf[(lia_offsets_t)k_lia_z_lsb_off],
-                                              lia_buf[(lia_offsets_t)k_lia_z_msb_off]);
+  out->lin_acc_x = internal_assemble_int16_le(lia_buf[k_lia_x_lsb_off],
+                                              lia_buf[k_lia_x_msb_off]);
+  out->lin_acc_y = internal_assemble_int16_le(lia_buf[k_lia_y_lsb_off],
+                                              lia_buf[k_lia_y_msb_off]);
+  out->lin_acc_z = internal_assemble_int16_le(lia_buf[k_lia_z_lsb_off],
+                                              lia_buf[k_lia_z_msb_off]);
   return k_rx_ok;
 }
 
@@ -684,7 +894,8 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
  * @post CALIB_STAT register read (no state modified)
  *
  * @note Not thread-safe
- * @see bno055_calib_t Calibration bit-field constants
+ * @see bno055_calib_shift_t Calibration shift constants
+ * @see bno055_calib_mask_t Calibration mask and full-calibration sentinel
  *
  * @since Version 1.0.0
  */
@@ -706,7 +917,7 @@ rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
     return err;
   }
 
-  const uint8_t mask = (uint8_t)k_bno055_calib_mask;
+  const uint8_t mask = (uint8_t)k_bno055_calib_level_mask;
   const uint8_t full = (uint8_t)k_bno055_calib_full;
 
   const uint8_t sys_cal = (calib_raw >> (uint8_t)k_bno055_calib_sys_shift) & mask;

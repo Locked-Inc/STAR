@@ -188,6 +188,12 @@ message ImuData {
 
   // Quaternion W component (scalar part). Range: -1.0 to 1.0.
   // Derived from BNO055 QUA_DATA register / 16384.0.
+  // Convention: BNO055 outputs Hamilton-convention quaternions (scalar-first
+  // internally). Maps to ROS2 geometry_msgs/Quaternion as follows:
+  //   geometry_msgs::Quaternion.x = quat_x
+  //   geometry_msgs::Quaternion.y = quat_y
+  //   geometry_msgs::Quaternion.z = quat_z
+  //   geometry_msgs::Quaternion.w = quat_w
   double quat_w = 11;
 
   // Quaternion X component. Range: -1.0 to 1.0.

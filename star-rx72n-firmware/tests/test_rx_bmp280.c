@@ -35,7 +35,7 @@
  *
  * The 24-byte calibration block at 0x88 must have non-zero dig_T1 (bytes 0-1)
  * and non-zero dig_P1 (bytes 6-7) to pass the postcondition check. Tests use
- * helper_load_valid_calib() to set up suitable calibration bytes.
+ * internal_load_valid_calib() to set up suitable calibration bytes.
  *
  * @par Test Coverage
  * | Group      | Tests | Description                                      |
@@ -134,10 +134,40 @@ typedef enum : uint8_t {
  * @brief Calibration coefficient byte values for valid calibration
  *
  * @details
- * Provides a recognisable set of calibration bytes where:
+ * Provides a calibration set chosen so that the test ADC values (see
+ * test_bmp280_adc_bytes_t) produce compensated output inside the BMP280
+ * physical operating range. The derivation is as follows:
+ *
+ * The mock RIIC always returns data from rx_buffer[0] for EVERY read
+ * transaction regardless of how many bytes are requested. When
+ * rx_bmp280_read() performs its two write-read operations:
+ *
+ *   1. Status read  (1 byte):  rx_buffer[0] -> must be 0x00 (meas done)
+ *   2. ADC data read (6 bytes): rx_buffer[0..5] (same buffer, same offset)
+ *
+ * Because both reads start at offset 0, the status byte (buf[0]=0x00) is
+ * also reused as the pressure MSB in the ADC data. This constrains
+ * adc_P = (0x00<<12)|(buf[1]<<4)|(buf[2]>>4), giving adc_P in [0, 4095].
+ *
+ * The Bosch compensation formula maps adc_P~9 to ~100 kPa only when P1
+ * is near 65410 and P2 is near 0. Derivation:
+ *   var1 = P1 * 16384   (with P2=P3=...=P6=0 terms)
+ *   p_result = ((1048567 << 31) * 3125) // var1 >> 8
+ * Solving for P1 to give 100000 Pa: P1 ~ 65410
+ *
+ * Temperature: adc_T is assembled from the ADC buffer positions
+ * [3], [4], [5] which correspond to buf[3..5] in the 7-byte rx_buffer.
+ * With buf[3]=0x7F, buf[4]=0x00, buf[5]=0x00:
+ *   adc_T = (0x7F<<12)|(0x00<<4)|(0x00>>4) = 0x7F000 = 520192
+ * With T1=27436, T2=24790, T3=50: T = 2400 centi-degC (24.00 degC)
+ *
+ * Calibration summary:
  *   dig_T1 = 0x6B2C = 27436 (non-zero, passes postcondition)
- *   dig_P1 = 0x8FD7 = 36823 (non-zero, passes postcondition)
- * Other coefficients are minimal non-zero values.
+ *   dig_T2 = 0x60D6 = 24790 (signed)
+ *   dig_T3 = 0x0032 = 50
+ *   dig_P1 = 0xFF82 = 65410 (non-zero; chosen for valid pressure at adc_P~9)
+ *   dig_P2 = 0x0000 = 0     (zero; simplifies compensation to P1-only term)
+ *   dig_P3..P9 = 0x0000     (zero; unused in simplified test)
  *
  * @since Version 1.0.0
  */
@@ -148,10 +178,10 @@ typedef enum : uint8_t {
   k_calib_t2_msb = 0x60, /**< dig_T2 MSB -> T2 = 0x60D6 (signed = 24790) */
   k_calib_t3_lsb = 0x32, /**< dig_T3 LSB */
   k_calib_t3_msb = 0x00, /**< dig_T3 MSB -> T3 = 50 */
-  k_calib_p1_lsb = 0xD7, /**< dig_P1 LSB */
-  k_calib_p1_msb = 0x8F, /**< dig_P1 MSB -> P1 = 0x8FD7 = 36823 */
-  k_calib_p2_lsb = 0xBC, /**< dig_P2 LSB */
-  k_calib_p2_msb = 0xD3, /**< dig_P2 MSB -> P2 = 0xD3BC (signed = -11332) */
+  k_calib_p1_lsb = 0x82, /**< dig_P1 LSB */
+  k_calib_p1_msb = 0xFF, /**< dig_P1 MSB -> P1 = 0xFF82 = 65410 */
+  k_calib_p2_lsb = 0x00, /**< dig_P2 LSB */
+  k_calib_p2_msb = 0x00, /**< dig_P2 MSB -> P2 = 0x0000 = 0 */
   k_calib_other  = 0x00, /**< Zero value used for remaining coefficients */
 } test_bmp280_calib_bytes_t;
 
@@ -160,39 +190,44 @@ typedef enum : uint8_t {
  * @brief Raw ADC data byte values for forced-mode read test
  *
  * @details
- * The mock RIIC always serves reads from the same rx_buffer starting at
- * byte index 0. The BMP280 read() function issues two reads:
- *   1. Status check (1 byte): rx_buffer[0] must have bit3 == 0 (done)
- *   2. ADC data read (6 bytes): rx_buffer[0..5]
+ * The mock RIIC always serves reads from rx_buffer[0] for every transaction.
+ * The 7-byte buffer loaded by internal_load_read_data() is consumed as:
  *
- * Since both reads start at rx_buffer[0], byte[0] serves dual purpose:
- * - As status byte: bit3 must be 0 (k_bmp280_status_meas_mask = 0x08)
- * - As press_msb (ADC buffer index 0)
+ *   rx_buffer index:  [0]     [1]            [2]            [3]            [4]          [5]          [6]
+ *   Buffer field:      status  press_msb_enum press_lsb_enum press_xlsb_enum temp_msb_enum temp_lsb_enum temp_xlsb_enum
+ *   Driver reads:
+ *     Status (1B):     [0] = 0x00 (bit3=0 -> meas done)
+ *     ADC (6B):        [0..5] -> driver maps as [press_msb, press_lsb, press_xlsb, temp_msb, temp_lsb, temp_xlsb]
  *
- * Choosing byte[0] = 0x00 satisfies the status check (0x00 & 0x08 == 0)
- * and gives press_msb = 0x00 for the ADC assembly. The remaining bytes
- * set realistic pressure and temperature ADC contributions.
+ * Because both reads start at offset 0, the driver sees:
+ *   driver_press_msb  = buf[0] = status byte = 0x00
+ *   driver_press_lsb  = buf[1] = k_adc_press_msb (confusing but correct)
+ *   driver_press_xlsb = buf[2] = k_adc_press_lsb
+ *   driver_temp_msb   = buf[3] = k_adc_press_xlsb
+ *   driver_temp_lsb   = buf[4] = k_adc_temp_msb
+ *   driver_temp_xlsb  = buf[5] = k_adc_temp_lsb
  *
- * With press_msb = 0x00:
- *   adc_P = (0x00 << 12) | (0x90 << 4) | (0x00 >> 4) = 0x900 = 2304
+ * Assembly results:
+ *   adc_P = (0x00<<12)|(k_adc_press_msb<<4)|(k_adc_press_lsb>>4)
+ *         = (0x00<<12)|(0x00<<4)|(0x90>>4) = 9
+ *   adc_T = (k_adc_press_xlsb<<12)|(k_adc_temp_msb<<4)|(k_adc_temp_lsb>>4)
+ *         = (0x7F<<12)|(0x00<<4)|(0x00>>4) = 0x7F000 = 520192
  *
- * With temp data:
- *   adc_T = (0x7F << 12) | (0xC0 << 4) | (0x00 >> 4) = 0x7FC00 = 523264
+ * With T1=27436, T2=24790, T3=50: T = 2400 centi-degC (24.00 degC) - within range
+ * With P1=65410, P2=0 and adc_P=9: P = ~100192 Pa (1001.9 hPa) - within range
  *
- * These produce non-trivial compensation output that exercises the full
- * algorithm path. The output ranges are validated as non-zero rather than
- * asserting specific physical values, since the test calibration coefficients
- * are not from a real sensor.
+ * See test_bmp280_calib_bytes_t for the derivation of P1=65410 that ensures
+ * adc_P=9 produces pressure within the BMP280 physical operating range.
  *
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_adc_press_msb  = 0x00, /**< Pressure MSB (= status byte = 0x00 = done) */
-  k_adc_press_lsb  = 0x90, /**< Pressure LSB */
-  k_adc_press_xlsb = 0x00, /**< Pressure XLSB */
-  k_adc_temp_msb   = 0x7F, /**< Temperature MSB */
-  k_adc_temp_lsb   = 0xC0, /**< Temperature LSB */
-  k_adc_temp_xlsb  = 0x00, /**< Temperature XLSB */
+  k_adc_press_msb  = 0x00, /**< press_msb_enum in buffer: maps to driver_press_lsb */
+  k_adc_press_lsb  = 0x90, /**< press_lsb_enum in buffer: maps to driver_press_xlsb */
+  k_adc_press_xlsb = 0x7F, /**< press_xlsb_enum in buffer: maps to driver_temp_msb (0x7F) */
+  k_adc_temp_msb   = 0x00, /**< temp_msb_enum in buffer: maps to driver_temp_lsb */
+  k_adc_temp_lsb   = 0x00, /**< temp_lsb_enum in buffer: maps to driver_temp_xlsb */
+  k_adc_temp_xlsb  = 0x00, /**< temp_xlsb_enum in buffer: not used by driver (buf[6]) */
 } test_bmp280_adc_bytes_t;
 
 /**
@@ -208,28 +243,25 @@ typedef enum : uint8_t {
 
 /**
  * @enum test_bmp280_output_sanity_t
- * @brief Sanity bounds for compensation output with test calibration data
+ * @brief Physical range bounds for compensation output validation
  *
  * @details
- * The test uses a minimal calibration (not a real sensor OTP dump) combined
- * with ADC mock data that starts with byte[0]=0x00 (dual-purpose: status
- * "done" byte and press_msb). With these artificial inputs the compensation
- * algorithm produces output that is mathematically consistent but not
- * necessarily within the physical operating range of a real BMP280.
+ * The test calibration (see test_bmp280_calib_bytes_t) and ADC data (see
+ * test_bmp280_adc_bytes_t) are engineered to produce output within the BMP280
+ * physical operating range, allowing the driver's postcondition range check to
+ * pass. The expected outputs are:
+ *   - Temperature: 2400 centi-degC (24.00 degC), range [-4000, 8500]
+ *   - Pressure: ~25648768 Pa*256 (~100191 Pa = 1001.9 hPa), range [7680000, 28160000]
  *
- * These bounds verify that:
- * - Pressure compensation ran (press_pa_256 > 0)
- * - Temperature compensation produced a non-trivially-zero result
- * - No division-by-zero or other algorithmic failure occurred
- *
- * A zero press_pa_256 would indicate the compensation formula short-circuited
- * (var1 == 0 guard triggered), which would return k_rx_err_invalid_state
- * rather than k_rx_ok. A non-zero value confirms the full algorithm ran.
+ * These bounds verify that the compensation algorithm produced physically
+ * plausible output and that no division-by-zero or algorithmic failure occurred.
  *
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_press_nonzero_min = 1U, /**< Pressure must be > 0 (algorithm completed) */
+  k_press_nonzero_min  = 1U,        /**< Pressure must be > 0 (algorithm completed) */
+  k_press_physical_min = 7680000U,  /**< Minimum valid pressure: 300 hPa * 256 */
+  k_press_physical_max = 28160000U, /**< Maximum valid pressure: 1100 hPa * 256 */
 } test_bmp280_output_sanity_t;
 
 /**
@@ -279,7 +311,7 @@ static rx_bus_manager_t s_test_manager;
 static rx_bus_config_t s_i2c_config;
 
 /* =============================================================================
- * Helper: Load 24-byte valid calibration block into mock RIIC RX buffer
+ * Internal: Load mock RIIC RX buffer for calibration and measurement sequences
  * =============================================================================
  */
 
@@ -287,16 +319,19 @@ static rx_bus_config_t s_i2c_config;
  * @brief Pre-load RIIC channel 1 with a valid 24-byte calibration block
  *
  * @details
- * Sets up the mock RX buffer with dig_T1=27436 (non-zero), dig_P1=36823
- * (non-zero), and mostly-zero remaining coefficients. This satisfies the
- * postcondition check in rx_bmp280_init() (dig_T1 != 0 && dig_P1 != 0).
+ * Sets up the mock RX buffer with dig_T1=27436 (non-zero), dig_P1=65410
+ * (non-zero), and remaining coefficients zero (P2=0, P3-P9=0). This
+ * satisfies the postcondition check in rx_bmp280_init() (dig_T1 != 0 &&
+ * dig_P1 != 0) and is engineered to produce output within the BMP280
+ * physical range when combined with the ADC data from internal_load_read_data().
+ * See test_bmp280_calib_bytes_t for full derivation.
  *
  * @pre mock_riic_init() has been called
  * @post RIIC channel 1 RX buffer contains valid 24-byte calibration
  *
  * @since Version 1.0.0
  */
-static void helper_load_valid_calib(void)
+static void internal_load_valid_calib(void)
 {
   uint8_t calib[k_test_calib_buf_size];
   memset(calib, 0, sizeof(calib));
@@ -338,7 +373,7 @@ static void helper_load_valid_calib(void)
  *
  * @since Version 1.0.0
  */
-static void helper_load_invalid_calib_p1_zero(void)
+static void internal_load_invalid_calib_p1_zero(void)
 {
   uint8_t calib[k_test_calib_buf_size];
   memset(calib, 0, sizeof(calib));
@@ -390,7 +425,7 @@ static void helper_load_invalid_calib_p1_zero(void)
  *
  * @since Version 1.0.0
  */
-static void helper_load_read_data(void)
+static void internal_load_read_data(void)
 {
   uint8_t buf[k_read_seq_buf_size];
   buf[k_read_seq_status_idx]        = (uint8_t)k_status_measuring_done;
@@ -529,7 +564,7 @@ void test_bmp280_init_i2c_error_propagates(void)
  */
 void test_bmp280_init_invalid_calib_returns_error(void)
 {
-  helper_load_invalid_calib_p1_zero();
+  internal_load_invalid_calib_p1_zero();
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
@@ -555,14 +590,14 @@ void test_bmp280_init_invalid_calib_returns_error(void)
  */
 void test_bmp280_init_success(void)
 {
-  helper_load_valid_calib();
+  internal_load_valid_calib();
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify initialized: a read with appropriate mock data must succeed */
-  helper_load_read_data();
+  internal_load_read_data();
   bmp280_data_t data;
   rx_err_t      read_err = rx_bmp280_read(&data);
   TEST_ASSERT_EQUAL(k_rx_ok, read_err);
@@ -585,7 +620,7 @@ void test_bmp280_init_success(void)
 void test_bmp280_init_reinit_succeeds(void)
 {
   /* Second init with valid calibration - should succeed (no guard) */
-  helper_load_valid_calib();
+  internal_load_valid_calib();
 
   rx_err_t err = rx_bmp280_init(&s_test_manager);
 
@@ -641,24 +676,23 @@ void test_bmp280_read_before_init_returns_error(void)
 }
 
 /**
- * @brief rx_bmp280_read in forced mode completes and returns valid data
+ * @brief rx_bmp280_read in forced mode completes and returns physically valid data
  *
  * @details
- * Pre-loads mock RX buffer with:
- * - status = 0x00 (measurement done)
- * - ADC data bytes for pressure and temperature
- *
- * Verifies that read returns k_rx_ok and the output values are within
- * the physical range of the BMP280 sensor.
+ * Pre-loads mock RX buffer with calibration and ADC bytes engineered to produce
+ * output within the BMP280 physical operating range (see test_bmp280_calib_bytes_t
+ * and test_bmp280_adc_bytes_t for derivation). Verifies that:
+ * - read returns k_rx_ok
+ * - pressure is within the physical operating range [300, 1100] hPa
  *
  * @pre s_initialized == true
- * @post out contains valid compensation values within sensor range
+ * @post out contains compensation values within physical sensor range
  *
  * @since Version 1.0.0
  */
 void test_bmp280_read_success_forced_mode(void)
 {
-  helper_load_read_data();
+  internal_load_read_data();
 
   bmp280_data_t data;
   memset(&data, 0, sizeof(data));
@@ -666,11 +700,10 @@ void test_bmp280_read_success_forced_mode(void)
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Verify the compensation algorithm completed: press_pa_256 must be non-zero.
-   * A zero result would indicate the var1==0 guard triggered (which returns
-   * k_rx_err_invalid_state, not k_rx_ok), so reaching here with k_rx_ok
-   * guarantees the full compensation path executed. */
-  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_nonzero_min, data.press_pa_256);
+  /* Verify compensation produced physically valid pressure output.
+   * The range [7680000, 28160000] corresponds to [300, 1100] hPa * 256. */
+  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_physical_min, data.press_pa_256);
+  TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_press_physical_max, data.press_pa_256);
 }
 
 /**
@@ -733,25 +766,27 @@ void test_bmp280_read_i2c_error_propagates(void)
  */
 
 /**
- * @brief Full read with known calibration + ADC produces output in valid range
+ * @brief Full read with known calibration + ADC produces output in physical valid range
  *
  * @details
- * After init with known calibration coefficients, performs a forced-mode read
- * with ADC data that should produce a realistic room-temperature sea-level
- * measurement. Verifies that both pressure and temperature are within the
- * BMP280 operating range.
+ * After init with engineered calibration coefficients, performs a forced-mode
+ * read with ADC data chosen to produce output within the BMP280 physical
+ * operating range. Verifies that both pressure and temperature pass the
+ * driver postcondition range checks (which return k_rx_err_invalid_state on
+ * out-of-range values).
  *
- * Pressure range check: 300-1100 hPa => [7680000, 28160000] in pa*256 units.
- * Temperature range check: -40 to +85 degC => [-4000, 8500] in centi-degC.
+ * Expected compensation results (derived in test_bmp280_calib_bytes_t):
+ *   Temperature: 2400 centi-degC (24.00 degC), range [-4000, 8500]
+ *   Pressure: ~100192 Pa (1001.9 hPa) * 256, range [7680000, 28160000]
  *
  * @pre s_initialized == true (from test_bmp280_init_success / reinit)
- * @post Output values within documented sensor operating range
+ * @post Output values within documented BMP280 physical operating range
  *
  * @since Version 1.0.0
  */
 void test_bmp280_compensation_known_values(void)
 {
-  helper_load_read_data();
+  internal_load_read_data();
 
   bmp280_data_t data;
   memset(&data, 0, sizeof(data));
@@ -759,11 +794,22 @@ void test_bmp280_compensation_known_values(void)
   rx_err_t err = rx_bmp280_read(&data);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  /* Verify full compensation algorithm completed successfully:
-   * press_pa_256 must be non-zero (zero would mean var1==0 returned error).
-   * temp_centi_degc being non-zero confirms temperature compensation ran. */
-  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_nonzero_min, data.press_pa_256);
-  TEST_ASSERT_NOT_EQUAL((int32_t)0, data.temp_centi_degc);
+
+  /**
+   * @enum test_bmp280_temp_range_t
+   * @brief Expected temperature range for this test's calibration + ADC data
+   * @since Version 1.0.0
+   */
+  typedef enum : int32_t {
+    k_temp_physical_min_cdegc = -4000, /**< BMP280 minimum: -40.00 degC */
+    k_temp_physical_max_cdegc = 8500,  /**< BMP280 maximum: +85.00 degC */
+  } test_bmp280_temp_range_t;
+
+  /* Verify both outputs are within the BMP280 physical operating range. */
+  TEST_ASSERT_GREATER_OR_EQUAL((int32_t)k_temp_physical_min_cdegc, data.temp_centi_degc);
+  TEST_ASSERT_LESS_OR_EQUAL((int32_t)k_temp_physical_max_cdegc, data.temp_centi_degc);
+  TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_physical_min, data.press_pa_256);
+  TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_press_physical_max, data.press_pa_256);
 }
 
 /**

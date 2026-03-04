@@ -108,6 +108,76 @@ extern "C" {
  */
 
 /**
+ * @enum bno055_calib_shift_t
+ * @brief BNO055 CALIB_STAT register bit-shift positions for each subsystem
+ *
+ * @details
+ * CALIB_STAT register (0x35) contains four 2-bit calibration level fields.
+ * Right-shift the raw byte by the appropriate constant, then AND with
+ * k_bno055_calib_level_mask to extract a value in [0, 3].
+ *
+ * @code
+ * uint8_t sys_lvl = (calib_stat >> k_bno055_calib_sys_shift) & k_bno055_calib_level_mask;
+ * uint8_t mag_lvl = (calib_stat >> k_bno055_calib_mag_shift) & k_bno055_calib_level_mask;
+ * @endcode
+ *
+ * @see bno055_calib_mask_t Mask and full-calibration sentinel values
+ * @see rx_bno055_is_calibrated() Checks all four fields simultaneously
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_calib_mag_shift = 0U, /**< Bit shift for magnetometer calibration level (bits 1:0) */
+  k_bno055_calib_acc_shift = 2U, /**< Bit shift for accelerometer calibration level (bits 3:2) */
+  k_bno055_calib_gyr_shift = 4U, /**< Bit shift for gyroscope calibration level (bits 5:4) */
+  k_bno055_calib_sys_shift = 6U, /**< Bit shift for system calibration level (bits 7:6) */
+} bno055_calib_shift_t;
+
+/**
+ * @enum bno055_calib_mask_t
+ * @brief BNO055 calibration level mask and fully-calibrated sentinel
+ *
+ * @details
+ * After shifting a CALIB_STAT field into the LSB position, AND with
+ * k_bno055_calib_level_mask to isolate the 2-bit value. Compare against
+ * k_bno055_calib_full (== 3) to check for full calibration.
+ *
+ * @see bno055_calib_shift_t Shift constants for each subsystem
+ * @see rx_bno055_is_calibrated() Uses both mask and full sentinel
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_calib_level_mask = 0x03U, /**< 2-bit mask for a single calibration level (0-3) */
+  k_bno055_calib_full       = 0x03U, /**< Fully calibrated level */
+} bno055_calib_mask_t;
+
+/**
+ * @enum bno055_scale_t
+ * @brief BNO055 output data scale factors (divisors for unit conversion)
+ *
+ * @details
+ * Scale factors to convert raw 16-bit integer fields in bno055_data_t to
+ * physical units. Divide the raw register value by the corresponding constant.
+ *
+ * @code
+ * float heading_deg = (float)data.heading_deg16 / (float)k_bno055_scale_heading;
+ * float quat_w_f    = (float)data.quat_w        / (float)k_bno055_scale_quat;
+ * float acc_x_mps2  = (float)data.lin_acc_x     / (float)k_bno055_scale_acc;
+ * @endcode
+ *
+ * @see bno055_data_t Raw integer fields that use these scales
+ * @see rx_bno055_read() Populates bno055_data_t with raw scaled integers
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint16_t {
+  k_bno055_scale_heading = 16U,    /**< Degrees-per-unit for heading/roll/pitch (divide by 16 for degrees) */
+  k_bno055_scale_quat    = 16384U, /**< Quaternion unit (2^14; divide by 16384 for normalized float) */
+  k_bno055_scale_acc     = 100U,   /**< m/s^2 per unit for linear acceleration (divide by 100) */
+} bno055_scale_t;
+
+/**
  * @struct bno055_data_t
  * @brief BNO055 sensor output data (raw scaled integers)
  *
@@ -118,18 +188,18 @@ extern "C" {
  *
  * **Conversion formulas:**
  * @code
- * float heading_deg = (float)data.heading_deg16 / 16.0F;
- * float roll_deg    = (float)data.roll_deg16    / 16.0F;
- * float pitch_deg   = (float)data.pitch_deg16   / 16.0F;
- * float quat_w      = (float)data.quat_w        / 16384.0F;
- * float acc_x_mps2  = (float)data.lin_acc_x     / 100.0F;
+ * float heading_deg = (float)data.heading_deg16 / (float)k_bno055_scale_heading;
+ * float roll_deg    = (float)data.roll_deg16    / (float)k_bno055_scale_heading;
+ * float pitch_deg   = (float)data.pitch_deg16   / (float)k_bno055_scale_heading;
+ * float quat_w_f    = (float)data.quat_w        / (float)k_bno055_scale_quat;
+ * float acc_x_mps2  = (float)data.lin_acc_x     / (float)k_bno055_scale_acc;
  * @endcode
  *
  * @invariant quat_w^2 + quat_x^2 + quat_y^2 + quat_z^2 == 16384^2 (unit quaternion)
  * @invariant heading_deg16 in [0, 5759] (0 to 359.9375 degrees * 16)
  * @invariant temp_degc in [-40, 85] (operating range of BNO055)
  *
- * @see bno055_scale_t Scale factor constants
+ * @see bno055_scale_t Scale factor constants for unit conversion
  * @see rx_bno055_read() Populates this structure
  *
  * @since Version 1.0.0
@@ -287,7 +357,8 @@ typedef struct {
  * @note Not thread-safe
  * @note Calibration status can be monitored in real-time via bno055_data_t.calib_stat
  *
- * @see bno055_calib_t Calibration bit-field constants
+ * @see bno055_calib_shift_t Bit-shift constants for each calibration subsystem field
+ * @see bno055_calib_mask_t Mask and fully-calibrated sentinel for CALIB_STAT fields
  * @see rx_bno055_read() Reads calib_stat without separate I2C transaction
  *
  * @since Version 1.0.0
