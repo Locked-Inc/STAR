@@ -823,7 +823,7 @@ rx_err_t rx_drv8263_run_olp(rx_drv8263_handle_t*     handle,
   internal_delay_us((uint32_t)k_drv8263_olp_settle_us);
 
   /* Step 2: Apply 3 test patterns and read nFAULT for each */
-  bool nfault_readings[k_drv8263_olp_pattern_count] = {false, false, false};
+  bool nfault_readings[k_drv8263_olp_pattern_count] = {false};
   internal_olp_apply_patterns(handle, nfault_readings);
 
   /* Step 3: Return IN1/IN2 to LOW (safe state) */
