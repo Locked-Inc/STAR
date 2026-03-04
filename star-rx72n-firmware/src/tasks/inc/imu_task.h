@@ -89,7 +89,7 @@
  * @retval k_rx_ok Task created successfully, will run after scheduler starts
  * @retval k_rx_err_rtos_error ThreadX task creation failed
  *
- * @pre ThreadX kernel running (tx_application_define context)
+ * @pre ThreadX kernel initialized; task created in tx_application_define and will run after the scheduler starts (tx_kernel_enter)
  * @pre "i2c1" bus registered in bus manager via main.c
  * @pre shared_data_init() called (mutexes created)
  * @pre hardware_init() completed (RIIC1 initialized at 400 kHz)

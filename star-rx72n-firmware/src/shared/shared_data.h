@@ -187,16 +187,16 @@ typedef enum : int16_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  int16_t  heading_deg16; /**< Euler heading 0-359.9375 deg (divide by 16 for degrees) */
-  int16_t  roll_deg16;    /**< Euler roll -90 to +90 deg (divide by 16 for degrees) */
-  int16_t  pitch_deg16;   /**< Euler pitch -180 to +180 deg (divide by 16 for degrees) */
-  int16_t  quat_w;        /**< Quaternion W component (divide by 16384 for unit quaternion) */
-  int16_t  quat_x;        /**< Quaternion X component (divide by 16384 for unit quaternion) */
-  int16_t  quat_y;        /**< Quaternion Y component (divide by 16384 for unit quaternion) */
-  int16_t  quat_z;        /**< Quaternion Z component (divide by 16384 for unit quaternion) */
-  int16_t  lin_acc_x;     /**< Linear acceleration X in m/s^2 * 100 (divide by 100 for m/s^2) */
-  int16_t  lin_acc_y;     /**< Linear acceleration Y in m/s^2 * 100 (divide by 100 for m/s^2) */
-  int16_t  lin_acc_z;     /**< Linear acceleration Z in m/s^2 * 100 (divide by 100 for m/s^2) */
+  int16_t  heading_deg16; /**< Euler heading 0-359.9375 deg (scale: k_imu_scale_euler) */
+  int16_t  roll_deg16;    /**< Euler roll -90 to +90 deg (scale: k_imu_scale_euler) */
+  int16_t  pitch_deg16;   /**< Euler pitch -180 to +180 deg (scale: k_imu_scale_euler) */
+  int16_t  quat_w;        /**< Quaternion W component (scale: k_imu_scale_quat) */
+  int16_t  quat_x;        /**< Quaternion X component (scale: k_imu_scale_quat) */
+  int16_t  quat_y;        /**< Quaternion Y component (scale: k_imu_scale_quat) */
+  int16_t  quat_z;        /**< Quaternion Z component (scale: k_imu_scale_quat) */
+  int16_t  lin_acc_x;     /**< Linear acceleration X in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
+  int16_t  lin_acc_y;     /**< Linear acceleration Y in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
+  int16_t  lin_acc_z;     /**< Linear acceleration Z in m/s^2 * k_imu_scale_acc (scale: k_imu_scale_acc) */
   int8_t   temp_degc;     /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
   uint8_t  calib_stat;    /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
   uint32_t timestamp_ms;  /**< ThreadX tick when data was last updated (ms) */
@@ -229,7 +229,7 @@ typedef struct {
  */
 typedef struct {
   int32_t  temp_centi_degc; /**< Temperature * 100 (e.g. 2523 = 25.23 degC) */
-  uint32_t press_pa_256;    /**< Pressure * 256 in Pa (divide by 256.0 for Pa) */
+  uint32_t press_pa_256;    /**< Pressure * k_baro_scale_press in Pa (divide by k_baro_scale_press for Pa) */
   uint32_t timestamp_ms;    /**< ThreadX tick when data was last updated (ms) */
   bool     valid;           /**< true after first successful read from BMP280 */
 } baro_state_t;

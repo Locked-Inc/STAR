@@ -263,6 +263,8 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
  */
 rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
 {
+  RX_ASSERT(manager != NULL, "manager must not be NULL");
+  RX_ASSERT(!s_initialized, "BNO055 already initialized");
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
 
   if (s_initialized) {
@@ -352,40 +354,6 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
 }
 
 /**
- * @brief Read current BNO055 fusion output data
- *
- * @details
- * Performs five sequential I2C burst reads to collect all output data.
- * All 16-bit values are assembled in little-endian format as specified
- * in the BNO055 datasheet (LSB register first, MSB register second).
- *
- * Register read sequence:
- * 1. 0x1A: 6 bytes -> Euler heading[2], roll[2], pitch[2]
- * 2. 0x20: 8 bytes -> Quaternion W[2], X[2], Y[2], Z[2]
- * 3. 0x28: 6 bytes -> Linear accel X[2], Y[2], Z[2]
- * 4. 0x34: 1 byte  -> Temperature
- * 5. 0x35: 1 byte  -> Calibration status
- *
- * @param[out] out Output data structure
- *
- * @return rx_err_t Read result
- * @retval k_rx_ok All five reads succeeded
- * @retval k_rx_err_null_ptr out is NULL
- * @retval k_rx_err_not_initialized init not called
- * @retval k_rx_err_nack I2C communication failure
- *
- * @pre rx_bno055_init() succeeded
- * @pre out non-NULL
- * @post All fields in *out populated on k_rx_ok
- * @post out->calib_stat reflects current calibration quality
- *
- * @note Not thread-safe
- *
- * @see bno055_scale_t Conversion factors for physical units
- *
- * @since Version 1.0.0
- */
-/**
  * @brief Read Euler angle registers from BNO055 and populate heading/roll/pitch
  *
  * @details
@@ -410,7 +378,7 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
 static rx_err_t internal_read_euler(bno055_data_t* out)
 {
   RX_ASSERT(out != NULL, "out must not be NULL");
-  RX_ASSERT(k_bno055_euler_bytes >= 6U, "euler buffer must hold 6 bytes");
+  RX_ASSERT(k_bno055_euler_bytes >= k_bno055_euler_min_bytes, "euler buffer must hold 6 bytes");
 
   uint8_t  euler_buf[k_bno055_euler_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_eul_h_lsb,
@@ -465,7 +433,7 @@ static rx_err_t internal_read_euler(bno055_data_t* out)
 static rx_err_t internal_read_quat(bno055_data_t* out)
 {
   RX_ASSERT(out != NULL, "out must not be NULL");
-  RX_ASSERT(k_bno055_quat_bytes >= 8U, "quat buffer must hold 8 bytes");
+  RX_ASSERT(k_bno055_quat_bytes >= k_bno055_quat_min_bytes, "quat buffer must hold 8 bytes");
 
   uint8_t  quat_buf[k_bno055_quat_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_qua_w_lsb, quat_buf, k_bno055_quat_bytes);
@@ -521,7 +489,7 @@ static rx_err_t internal_read_quat(bno055_data_t* out)
 static rx_err_t internal_read_lia(bno055_data_t* out)
 {
   RX_ASSERT(out != NULL, "out must not be NULL");
-  RX_ASSERT(k_bno055_lia_bytes >= 6U, "lia buffer must hold 6 bytes");
+  RX_ASSERT(k_bno055_lia_bytes >= k_bno055_lia_min_bytes, "lia buffer must hold 6 bytes");
 
   uint8_t  lia_buf[k_bno055_lia_bytes];
   rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_lia_x_lsb, lia_buf, k_bno055_lia_bytes);
@@ -549,8 +517,44 @@ static rx_err_t internal_read_lia(bno055_data_t* out)
   return k_rx_ok;
 }
 
+/**
+ * @brief Read current BNO055 fusion output data
+ *
+ * @details
+ * Performs five sequential I2C burst reads to collect all output data.
+ * All 16-bit values are assembled in little-endian format as specified
+ * in the BNO055 datasheet (LSB register first, MSB register second).
+ *
+ * Register read sequence:
+ * 1. 0x1A: 6 bytes -> Euler heading[2], roll[2], pitch[2]
+ * 2. 0x20: 8 bytes -> Quaternion W[2], X[2], Y[2], Z[2]
+ * 3. 0x28: 6 bytes -> Linear accel X[2], Y[2], Z[2]
+ * 4. 0x34: 1 byte  -> Temperature
+ * 5. 0x35: 1 byte  -> Calibration status
+ *
+ * @param[out] out Output data structure
+ *
+ * @return rx_err_t Read result
+ * @retval k_rx_ok All five reads succeeded
+ * @retval k_rx_err_null_ptr out is NULL
+ * @retval k_rx_err_not_initialized init not called
+ * @retval k_rx_err_nack I2C communication failure
+ *
+ * @pre rx_bno055_init() succeeded
+ * @pre out non-NULL
+ * @post All fields in *out populated on k_rx_ok
+ * @post out->calib_stat reflects current calibration quality
+ *
+ * @note Not thread-safe
+ *
+ * @see bno055_scale_t Conversion factors for physical units
+ *
+ * @since Version 1.0.0
+ */
 rx_err_t rx_bno055_read(bno055_data_t* out)
 {
+  RX_ASSERT(out != NULL, "out must not be NULL");
+  RX_ASSERT(s_initialized, "BNO055 not initialized");
   RX_CHECK_NULL_PTR(out, s_tag, "Output data pointer is NULL");
 
   if (!s_initialized) {
@@ -623,6 +627,8 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
  */
 rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
 {
+  RX_ASSERT(out_calibrated != NULL, "out_calibrated must not be NULL");
+  RX_ASSERT(s_initialized, "BNO055 not initialized");
   RX_CHECK_NULL_PTR(out_calibrated, s_tag, "Output calibrated pointer is NULL");
 
   if (!s_initialized) {

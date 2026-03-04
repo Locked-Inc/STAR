@@ -186,6 +186,8 @@
  *   CreateTempMutex [label="Create temp_mutex"];
  *   CreateObstacleMutex [label="Create obstacle_mutex"];
  *   CreateEstopMutex [label="Create estop_mutex"];
+ *   CreateImuMutex [label="Create imu_mutex"];
+ *   CreateBaroMutex [label="Create baro_mutex"];
  *   CreateEventFlags [label="Create event_flags"];
  *   InitDefaults [label="Set default PID gains\nSet motor_cmd invalid\nSet estop inactive"];
  *   SetFlag [label="Set initialized = true"];
@@ -201,8 +203,12 @@
  *   CreateTempMutex -> Error [label="TX_ERROR", color=red];
  *   CreateObstacleMutex -> CreateEstopMutex [label="TX_SUCCESS"];
  *   CreateObstacleMutex -> Error [label="TX_ERROR", color=red];
- *   CreateEstopMutex -> CreateEventFlags [label="TX_SUCCESS"];
+ *   CreateEstopMutex -> CreateImuMutex [label="TX_SUCCESS"];
  *   CreateEstopMutex -> Error [label="TX_ERROR", color=red];
+ *   CreateImuMutex -> CreateBaroMutex [label="TX_SUCCESS"];
+ *   CreateImuMutex -> Error [label="TX_ERROR", color=red];
+ *   CreateBaroMutex -> CreateEventFlags [label="TX_SUCCESS"];
+ *   CreateBaroMutex -> Error [label="TX_ERROR", color=red];
  *   CreateEventFlags -> InitDefaults [label="TX_SUCCESS"];
  *   CreateEventFlags -> Error [label="TX_ERROR", color=red];
  *   InitDefaults -> SetFlag;
@@ -250,7 +256,9 @@
  * - temp_sensor_state_t: 32 bytes (4 sensors)
  * - obstacle_state_t: 32 bytes (4 HC-SR04 sensors)
  * - estop state: 8 bytes (bool + enum + padding)
- * - Mutexes (5x32): 160 bytes (ThreadX control blocks)
+ * - imu_state_t: 28 bytes (10x int16 + int8 + uint8 + uint32 + bool + padding)
+ * - baro_state_t: 16 bytes (int32 + uint32 + uint32 + bool + padding)
+ * - Mutexes (6x32): 192 bytes (ThreadX control blocks)
  * - Event flags: 32 bytes (ThreadX control block)
  *
  * ## Module Dependencies
@@ -2738,6 +2746,13 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
  * Acquires imu_mutex, copies the caller's imu_state_t into g_shared_data.imu_state,
  * and releases the mutex. Called by imu_task at 20 Hz after each successful read.
  *
+ * ## Algorithm Steps:
+ * 1. Null check on state parameter
+ * 2. Acquire imu_mutex (blocking wait with priority inheritance)
+ * 3. memcpy imu_state_t into g_shared_data.imu_state
+ * 4. Release imu_mutex
+ * 5. Return k_rx_ok
+ *
  * @param[in] state Pointer to populated imu_state_t. Must not be NULL.
  *
  * @return rx_err_t Operation status
@@ -2755,7 +2770,23 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
  * @invariant imu_mutex held for duration of memcpy (not ISR-safe)
  *
  * @note Thread Safety: Protected by imu_mutex (blocking wait)
- * @note Not ISR-safe (blocking mutex wait)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by imu_task
+ *
+ * @warning Do not call from ISR context (blocks on imu_mutex)
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In imu_task - after successful BNO055 read
+ * imu_state_t imu = {0};
+ * imu.heading_deg16 = bno055_data.heading_deg16;
+ * imu.timestamp_ms  = (uint32_t)tx_time_get();
+ * imu.valid         = true;
+ * rx_err_t err = shared_data_update_imu(&imu);
+ * if (err != k_rx_ok) {
+ *     rx_log_error(s_tag, "Failed to update IMU state");
+ * }
+ * @endcode
  *
  * @see shared_data_get_imu() Consumer accessor (Telemetry Task)
  *
@@ -2788,6 +2819,13 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  * Acquires imu_mutex, copies g_shared_data.imu_state into the caller's buffer,
  * and releases the mutex. Called at 20 Hz by telemetry_task.
  *
+ * ## Algorithm Steps:
+ * 1. Null check on out_state parameter
+ * 2. Acquire imu_mutex (blocking wait with priority inheritance)
+ * 3. memcpy g_shared_data.imu_state into caller's buffer
+ * 4. Release imu_mutex
+ * 5. Return k_rx_ok
+ *
  * @param[out] out_state Output buffer for IMU state. Must not be NULL.
  *
  * @return rx_err_t Operation status
@@ -2805,7 +2843,20 @@ rx_err_t shared_data_update_imu(const imu_state_t* state)
  * @invariant imu_mutex held for <5 us (memcpy of imu_state_t)
  *
  * @note Thread Safety: Protected by imu_mutex (blocking wait)
- * @note Not ISR-safe (blocking mutex wait)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by telemetry_task
+ *
+ * @warning Not ISR-safe; check out_state->valid before use
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In telemetry_task - read current IMU state
+ * imu_state_t imu = {0};
+ * rx_err_t err = shared_data_get_imu(&imu);
+ * if (err == k_rx_ok && imu.valid) {
+ *     float heading_deg = (float)imu.heading_deg16 / (float)k_imu_scale_euler;
+ * }
+ * @endcode
  *
  * @see shared_data_update_imu() Producer accessor (IMU Task)
  *
@@ -2843,6 +2894,13 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
  * Acquires baro_mutex, copies the caller's baro_state_t into g_shared_data.baro_state,
  * and releases the mutex. Called by imu_task at 20 Hz after each successful BMP280 read.
  *
+ * ## Algorithm Steps:
+ * 1. Null check on state parameter
+ * 2. Acquire baro_mutex (blocking wait with priority inheritance)
+ * 3. memcpy baro_state_t into g_shared_data.baro_state
+ * 4. Release baro_mutex
+ * 5. Return k_rx_ok
+ *
  * @param[in] state Pointer to populated baro_state_t. Must not be NULL.
  *
  * @return rx_err_t Operation status
@@ -2860,7 +2918,24 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state)
  * @invariant baro_mutex held for <5 us (memcpy of baro_state_t)
  *
  * @note Thread Safety: Protected by baro_mutex (blocking wait)
- * @note Not ISR-safe (blocking mutex wait)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by imu_task
+ *
+ * @warning Do not call from ISR context (blocks on baro_mutex)
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In imu_task - after successful BMP280 read
+ * baro_state_t baro = {0};
+ * baro.temp_centi_degc = bmp280_data.temp_centi_degc;
+ * baro.press_pa_256    = bmp280_data.press_pa_256;
+ * baro.timestamp_ms    = (uint32_t)tx_time_get();
+ * baro.valid           = true;
+ * rx_err_t err = shared_data_update_baro(&baro);
+ * if (err != k_rx_ok) {
+ *     rx_log_error(s_tag, "Failed to update baro state");
+ * }
+ * @endcode
  *
  * @see shared_data_get_baro() Consumer accessor (Telemetry Task)
  *
@@ -2893,6 +2968,13 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  * Acquires baro_mutex, copies g_shared_data.baro_state into the caller's buffer,
  * and releases the mutex. Called at 20 Hz by telemetry_task.
  *
+ * ## Algorithm Steps:
+ * 1. Null check on out_state parameter
+ * 2. Acquire baro_mutex (blocking wait with priority inheritance)
+ * 3. memcpy g_shared_data.baro_state into caller's buffer
+ * 4. Release baro_mutex
+ * 5. Return k_rx_ok
+ *
  * @param[out] out_state Output buffer for barometric state. Must not be NULL.
  *
  * @return rx_err_t Operation status
@@ -2910,7 +2992,21 @@ rx_err_t shared_data_update_baro(const baro_state_t* state)
  * @invariant baro_mutex held for <5 us (memcpy of baro_state_t)
  *
  * @note Thread Safety: Protected by baro_mutex (blocking wait)
- * @note Not ISR-safe (blocking mutex wait)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by telemetry_task
+ *
+ * @warning Not ISR-safe; check out_state->valid before use
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In telemetry_task - read current baro state
+ * baro_state_t baro = {0};
+ * rx_err_t err = shared_data_get_baro(&baro);
+ * if (err == k_rx_ok && baro.valid) {
+ *     float temp_c    = (float)baro.temp_centi_degc / (float)k_baro_scale_temp;
+ *     float press_pa  = (float)baro.press_pa_256    / (float)k_baro_scale_press;
+ * }
+ * @endcode
  *
  * @see shared_data_update_baro() Producer accessor (IMU Task)
  *

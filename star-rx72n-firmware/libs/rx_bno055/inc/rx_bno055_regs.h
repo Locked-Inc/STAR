@@ -417,9 +417,12 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_bno055_euler_bytes   = 6, /**< Euler angles: heading(2) + roll(2) + pitch(2) */
-  k_bno055_quat_bytes    = 8, /**< Quaternion: W(2) + X(2) + Y(2) + Z(2) */
-  k_bno055_lia_bytes     = 6, /**< Linear acceleration: X(2) + Y(2) + Z(2) */
+  k_bno055_euler_bytes     = 6, /**< Euler angles: heading(2) + roll(2) + pitch(2) */
+  k_bno055_quat_bytes      = 8, /**< Quaternion: W(2) + X(2) + Y(2) + Z(2) */
+  k_bno055_lia_bytes       = 6, /**< Linear acceleration: X(2) + Y(2) + Z(2) */
+  k_bno055_euler_min_bytes = 6, /**< Minimum bytes required for Euler angle read */
+  k_bno055_quat_min_bytes  = 8, /**< Minimum bytes required for quaternion read */
+  k_bno055_lia_min_bytes   = 6, /**< Minimum bytes required for linear acceleration read */
 } bno055_read_size_t;
 
 /**

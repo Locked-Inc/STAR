@@ -217,19 +217,21 @@ static rx_err_t internal_read_regs(uint8_t reg, uint8_t* buf, uint8_t len)
 static int32_t internal_compensate_temp(int32_t adc_T, int32_t* t_fine_out)
 {
   RX_ASSERT(t_fine_out != NULL, "t_fine_out must be non-NULL");
-  RX_ASSERT(adc_T >= 0 && adc_T <= (int32_t)0xFFFFF, "adc_T must be a 20-bit ADC value");
 
   typedef enum : int32_t {
-    k_temp_shift_adc_3  = 3,   /**< adc_T right shift for T1 subtraction step */
-    k_temp_shift_t1_1   = 1,   /**< dig_T1 left shift in first var1 step */
-    k_temp_shift_11     = 11,  /**< Right shift for var1 final step */
-    k_temp_shift_adc_4  = 4,   /**< adc_T right shift for T1 comparison steps */
-    k_temp_shift_12     = 12,  /**< Right shift for squared difference */
-    k_temp_shift_14     = 14,  /**< Right shift for var2 final step */
-    k_temp_fine_scale   = 5,   /**< Scale factor in fine-to-output conversion */
-    k_temp_round_add    = 128, /**< Rounding constant in fine-to-output conversion */
-    k_temp_shift_out    = 8,   /**< Right shift to produce 0.01 degC output */
+    k_adc_20bit_max     = 0xFFFFF, /**< Maximum valid 20-bit ADC value */
+    k_temp_shift_adc_3  = 3,       /**< adc_T right shift for T1 subtraction step */
+    k_temp_shift_t1_1   = 1,       /**< dig_T1 left shift in first var1 step */
+    k_temp_shift_11     = 11,      /**< Right shift for var1 final step */
+    k_temp_shift_adc_4  = 4,       /**< adc_T right shift for T1 comparison steps */
+    k_temp_shift_12     = 12,      /**< Right shift for squared difference */
+    k_temp_shift_14     = 14,      /**< Right shift for var2 final step */
+    k_temp_fine_scale   = 5,       /**< Scale factor in fine-to-output conversion */
+    k_temp_round_add    = 128,     /**< Rounding constant in fine-to-output conversion */
+    k_temp_shift_out    = 8,       /**< Right shift to produce 0.01 degC output */
   } temp_bit_constants_t;
+
+  RX_ASSERT(adc_T >= 0 && adc_T <= k_adc_20bit_max, "adc_T must be a 20-bit ADC value");
 
   const int32_t var1 = ((((adc_T >> k_temp_shift_adc_3) - ((int32_t)s_calib.dig_T1 << k_temp_shift_t1_1))) *
                         ((int32_t)s_calib.dig_T2)) >>

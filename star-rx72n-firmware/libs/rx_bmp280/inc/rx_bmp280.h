@@ -161,8 +161,9 @@ typedef struct {
  *
  * The ctrl_meas register (0xF4) is NOT written during init; it is written
  * at the start of each rx_bmp280_read() call to trigger a forced measurement.
+ * The bus manager must have "i2c1_baro" registered as the named I2C bus.
  *
- * @param[in] manager Pointer to initialized bus manager with "i2c1" registered.
+ * @param[in] manager Pointer to initialized bus manager with "i2c1_baro" registered.
  *                    Must not be NULL.
  *
  * @return rx_err_t Initialization result
@@ -171,7 +172,7 @@ typedef struct {
  * @retval k_rx_err_nack I2C NACK (device not found, check address/wiring)
  * @retval k_rx_err_timeout I2C timeout
  *
- * @pre manager non-NULL, "i2c1" bus registered and initialized
+ * @pre manager non-NULL, "i2c1_baro" bus registered and initialized
  * @pre BMP280 powered (3.3V) on same I2C bus as BNO055
  *
  * @post s_calib contains valid factory coefficients
@@ -225,6 +226,8 @@ typedef struct {
  * @note Measurement takes ~40 ms with 16x pressure oversampling
  * @warning Returns k_rx_err_timeout if status bit does not clear within
  *          k_bmp280_poll_max polls (indicates hardware fault)
+ *
+ * @see rx_bmp280_init() Must be called successfully before rx_bmp280_read()
  *
  * @since Version 1.0.0
  */

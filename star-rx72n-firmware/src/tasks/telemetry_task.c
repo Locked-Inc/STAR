@@ -2000,6 +2000,10 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  *
  * @note Not thread-safe; called from single-threaded internal_collect_state()
  *
+ * @see shared_data_get_imu() Data source accessor
+ * @see imu_state_t Raw IMU state structure
+ * @see internal_collect_state() Caller function
+ *
  * @since Version 1.0.0
  */
 static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
@@ -2012,7 +2016,7 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->has_imu = true;
 
     /* Heading in radians (0.0 to 2*pi) */
-    telemetry->imu.heading_rad = (double)imu_state.heading_deg16 / s_deg16_per_deg * s_rad_per_deg;
+    telemetry->imu.heading_rad = ((double)imu_state.heading_deg16 / s_deg16_per_deg) * s_rad_per_deg;
 
     /* Roll and pitch in radians */
     telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16  / s_deg16_per_deg) * s_rad_per_deg;
@@ -2086,7 +2090,7 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
  * 2. **Temperature state:** temperature_celsius (cdegC->degC)
  * 3. **Obstacle state:** 4 sensor distances in metres (m), any_obstacle flag, detected_mask bitmask
  * 4. **IMU state** (BNO055 NDOF): heading_rad, roll_rad, pitch_rad (radians), quat w/x/y/z,
- *    accel x/y/z (mps2), gyro x/y/z (rad/s), calib_stat, temperature_celsius
+ *    accel x/y/z (mps2), calib_stat, temperature_celsius
  * 5. **Baro state** (BMP280 forced mode): temperature_celsius, pressure_pa
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
