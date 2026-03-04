@@ -34,12 +34,11 @@
  * @see mock_drv8263_port.h Mock PORT register API
  */
 
-#include "unity.h"
+#include <string.h>
 
 #include "mock_drv8263_port.h"
 #include "rx_drv8263.h"
-
-#include <string.h>
+#include "unity.h"
 
 /* =============================================================================
  * Test Constants
@@ -69,11 +68,11 @@
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_test_port_drvoff = 6,  /**< DRVOFF on port 6 */
-  k_test_port_nsleep = 6,  /**< nSLEEP on port 6 */
-  k_test_port_nfault = 1,  /**< nFAULT on port 1 */
-  k_test_port_in1    = 1,  /**< IN1 on port 1 */
-  k_test_port_in2    = 2,  /**< IN2 on port 2 */
+  k_test_port_drvoff = 6, /**< DRVOFF on port 6 */
+  k_test_port_nsleep = 6, /**< nSLEEP on port 6 */
+  k_test_port_nfault = 1, /**< nFAULT on port 1 */
+  k_test_port_in1    = 1, /**< IN1 on port 1 */
+  k_test_port_in2    = 2, /**< IN2 on port 2 */
 } test_port_t;
 
 /**
@@ -100,11 +99,11 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_test_pin_drvoff = 1,  /**< DRVOFF on pin 1 (P61) */
-  k_test_pin_nsleep = 0,  /**< nSLEEP on pin 0 (P60) */
-  k_test_pin_nfault = 5,  /**< nFAULT on pin 5 (P15) */
-  k_test_pin_in1    = 7,  /**< IN1 on pin 7 (P17) */
-  k_test_pin_in2    = 3,  /**< IN2 on pin 3 (P23) */
+  k_test_pin_drvoff = 1, /**< DRVOFF on pin 1 (P61) */
+  k_test_pin_nsleep = 0, /**< nSLEEP on pin 0 (P60) */
+  k_test_pin_nfault = 5, /**< nFAULT on pin 5 (P15) */
+  k_test_pin_in1    = 7, /**< IN1 on pin 7 (P17) */
+  k_test_pin_in2    = 3, /**< IN2 on pin 3 (P23) */
 } test_pin_t;
 
 /**
@@ -217,16 +216,16 @@ static rx_drv8263_config_t s_config;
 static rx_drv8263_config_t internal_make_valid_config(void)
 {
   rx_drv8263_config_t cfg = {
-    .port_drvoff     = k_test_port_drvoff,
-    .pin_drvoff      = k_test_pin_drvoff,
-    .port_nsleep     = k_test_port_nsleep,
-    .pin_nsleep      = k_test_pin_nsleep,
-    .port_nfault     = k_test_port_nfault,
-    .pin_nfault      = k_test_pin_nfault,
-    .port_in1        = k_test_port_in1,
-    .pin_in1         = k_test_pin_in1,
-    .port_in2        = k_test_port_in2,
-    .pin_in2         = k_test_pin_in2,
+    .port_drvoff      = k_test_port_drvoff,
+    .pin_drvoff       = k_test_pin_drvoff,
+    .port_nsleep      = k_test_port_nsleep,
+    .pin_nsleep       = k_test_pin_nsleep,
+    .port_nfault      = k_test_port_nfault,
+    .pin_nfault       = k_test_pin_nfault,
+    .port_in1         = k_test_port_in1,
+    .pin_in1          = k_test_pin_in1,
+    .port_in2         = k_test_port_in2,
+    .pin_in2          = k_test_pin_in2,
     .olp_enable_boot  = false,
     .olp_enable_fault = false,
   };
@@ -252,7 +251,7 @@ static rx_drv8263_config_t internal_make_valid_config(void)
  */
 static void internal_init_handle(void)
 {
-  s_config = internal_make_valid_config();
+  s_config     = internal_make_valid_config();
   rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_handle.initialized);
@@ -406,7 +405,7 @@ void test_init_null_config(void)
 void test_init_invalid_drvoff_port(void)
 {
   s_config.port_drvoff = k_test_invalid_port; /* Out of range (max is 16) */
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err         = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
   TEST_ASSERT_FALSE(s_handle.initialized);
 }
@@ -432,7 +431,7 @@ void test_init_invalid_drvoff_port(void)
 void test_init_invalid_drvoff_pin(void)
 {
   s_config.pin_drvoff = k_test_invalid_pin; /* Out of range (max is 7) */
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err        = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -457,7 +456,7 @@ void test_init_invalid_drvoff_pin(void)
 void test_init_invalid_nsleep_pin(void)
 {
   s_config.pin_nsleep = k_test_invalid_pin; /* Out of range (max is 7) */
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err        = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -482,7 +481,7 @@ void test_init_invalid_nsleep_pin(void)
 void test_init_invalid_nfault_pin(void)
 {
   s_config.pin_nfault = k_test_invalid_pin;
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err        = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -507,7 +506,7 @@ void test_init_invalid_nfault_pin(void)
 void test_init_invalid_in1_pin(void)
 {
   s_config.pin_in1 = k_test_invalid_pin;
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err     = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -532,7 +531,7 @@ void test_init_invalid_in1_pin(void)
 void test_init_invalid_in2_pin(void)
 {
   s_config.pin_in2 = k_test_invalid_pin;
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err     = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -557,7 +556,7 @@ void test_init_invalid_in2_pin(void)
 void test_init_invalid_nsleep_port(void)
 {
   s_config.port_nsleep = k_test_invalid_port;
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err         = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -582,7 +581,7 @@ void test_init_invalid_nsleep_port(void)
 void test_init_invalid_nfault_port(void)
 {
   s_config.port_nfault = k_test_invalid_port;
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err         = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -607,7 +606,7 @@ void test_init_invalid_nfault_port(void)
 void test_init_invalid_in1_port(void)
 {
   s_config.port_in1 = k_test_invalid_port;
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err      = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -632,7 +631,7 @@ void test_init_invalid_in1_port(void)
 void test_init_invalid_in2_port(void)
 {
   s_config.port_in2 = k_test_invalid_port;
-  rx_err_t err = rx_drv8263_init(&s_handle, &s_config);
+  rx_err_t err      = rx_drv8263_init(&s_handle, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -728,8 +727,7 @@ void test_set_drvoff_active(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify DRVOFF pin is HIGH */
-  bool pin_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff,
-                                                     k_test_pin_drvoff);
+  bool pin_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff, k_test_pin_drvoff);
   TEST_ASSERT_TRUE(pin_state);
 }
 
@@ -743,8 +741,7 @@ void test_set_drvoff_inactive(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify DRVOFF pin is LOW */
-  bool pin_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff,
-                                                     k_test_pin_drvoff);
+  bool pin_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff, k_test_pin_drvoff);
   TEST_ASSERT_FALSE(pin_state);
 }
 
@@ -774,8 +771,7 @@ void test_clear_fault_nsleep_returns_high(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* After fault clear, nSLEEP should be HIGH (awake) */
-  bool nsleep_state = mock_drv8263_port_get_pin_output(k_test_port_nsleep,
-                                                        k_test_pin_nsleep);
+  bool nsleep_state = mock_drv8263_port_get_pin_output(k_test_port_nsleep, k_test_pin_nsleep);
   TEST_ASSERT_TRUE(nsleep_state);
 }
 
@@ -786,9 +782,9 @@ void test_clear_fault_nsleep_returns_high(void)
 /** @brief Verify run_olp rejects null handle */
 void test_olp_null_handle(void)
 {
-  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
-  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
-  rx_err_t err = rx_drv8263_run_olp(NULL, &r1, &r2);
+  rx_drv8263_olp_result_t r1  = k_drv8263_olp_unknown;
+  rx_drv8263_olp_result_t r2  = k_drv8263_olp_unknown;
+  rx_err_t                err = rx_drv8263_run_olp(NULL, &r1, &r2);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -796,8 +792,8 @@ void test_olp_null_handle(void)
 void test_olp_null_result_out1(void)
 {
   internal_init_handle();
-  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
-  rx_err_t err = rx_drv8263_run_olp(&s_handle, NULL, &r2);
+  rx_drv8263_olp_result_t r2  = k_drv8263_olp_unknown;
+  rx_err_t                err = rx_drv8263_run_olp(&s_handle, NULL, &r2);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -805,17 +801,17 @@ void test_olp_null_result_out1(void)
 void test_olp_null_result_out2(void)
 {
   internal_init_handle();
-  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
-  rx_err_t err = rx_drv8263_run_olp(&s_handle, &r1, NULL);
+  rx_drv8263_olp_result_t r1  = k_drv8263_olp_unknown;
+  rx_err_t                err = rx_drv8263_run_olp(&s_handle, &r1, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
 /** @brief Verify run_olp rejects uninitialized handle */
 void test_olp_not_initialized(void)
 {
-  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
-  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
-  rx_err_t err = rx_drv8263_run_olp(&s_handle, &r1, &r2);
+  rx_drv8263_olp_result_t r1  = k_drv8263_olp_unknown;
+  rx_drv8263_olp_result_t r2  = k_drv8263_olp_unknown;
+  rx_err_t                err = rx_drv8263_run_olp(&s_handle, &r1, &r2);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -827,9 +823,9 @@ void test_olp_normal_all_nfault_high(void)
   internal_init_handle();
   mock_drv8263_port_set_pin_input(k_test_port_nfault, k_test_pin_nfault, true);
 
-  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
-  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
-  rx_err_t err = rx_drv8263_run_olp(&s_handle, &r1, &r2);
+  rx_drv8263_olp_result_t r1  = k_drv8263_olp_unknown;
+  rx_drv8263_olp_result_t r2  = k_drv8263_olp_unknown;
+  rx_err_t                err = rx_drv8263_run_olp(&s_handle, &r1, &r2);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_drv8263_olp_normal, r1);
@@ -844,9 +840,9 @@ void test_olp_short_to_vm_all_nfault_low(void)
   internal_init_handle();
   mock_drv8263_port_set_pin_input(k_test_port_nfault, k_test_pin_nfault, false);
 
-  rx_drv8263_olp_result_t r1 = k_drv8263_olp_unknown;
-  rx_drv8263_olp_result_t r2 = k_drv8263_olp_unknown;
-  rx_err_t err = rx_drv8263_run_olp(&s_handle, &r1, &r2);
+  rx_drv8263_olp_result_t r1  = k_drv8263_olp_unknown;
+  rx_drv8263_olp_result_t r2  = k_drv8263_olp_unknown;
+  rx_err_t                err = rx_drv8263_run_olp(&s_handle, &r1, &r2);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(k_drv8263_olp_short_to_vm, r1);
@@ -865,8 +861,7 @@ void test_olp_drvoff_restored_after_diagnostic(void)
   (void)rx_drv8263_run_olp(&s_handle, &r1, &r2);
 
   /* DRVOFF should be LOW after OLP completes */
-  bool drvoff_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff,
-                                                        k_test_pin_drvoff);
+  bool drvoff_state = mock_drv8263_port_get_pin_output(k_test_port_drvoff, k_test_pin_drvoff);
   TEST_ASSERT_FALSE(drvoff_state);
 }
 
@@ -882,10 +877,8 @@ void test_olp_in1_in2_restored_to_low(void)
   (void)rx_drv8263_run_olp(&s_handle, &r1, &r2);
 
   /* IN1 and IN2 should be LOW */
-  bool in1_state = mock_drv8263_port_get_pin_output(k_test_port_in1,
-                                                     k_test_pin_in1);
-  bool in2_state = mock_drv8263_port_get_pin_output(k_test_port_in2,
-                                                     k_test_pin_in2);
+  bool in1_state = mock_drv8263_port_get_pin_output(k_test_port_in1, k_test_pin_in1);
+  bool in2_state = mock_drv8263_port_get_pin_output(k_test_port_in2, k_test_pin_in2);
   TEST_ASSERT_FALSE(in1_state);
   TEST_ASSERT_FALSE(in2_state);
 }

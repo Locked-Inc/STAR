@@ -127,8 +127,7 @@ typedef enum : uint16_t {
     20, /**< nSLEEP LOW pulse duration for latched fault reset (target middle of 5-35 us window) */
   k_drv8263_twake_us =
     1200, /**< Wake-up time after nSLEEP HIGH (nFAULT returns HIGH, ~1.2 ms typ) */
-  k_drv8263_olp_settle_us =
-    50, /**< Settling time between OLP test patterns (conservative) */
+  k_drv8263_olp_settle_us = 50, /**< Settling time between OLP test patterns (conservative) */
 } rx_drv8263_timing_us_t;
 
 /**
@@ -219,11 +218,11 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_drv8263_olp_normal = 0,       /**< No fault detected, load connected normally */
-  k_drv8263_olp_open_load = 1,    /**< Open load detected (motor disconnected) */
+  k_drv8263_olp_normal       = 0, /**< No fault detected, load connected normally */
+  k_drv8263_olp_open_load    = 1, /**< Open load detected (motor disconnected) */
   k_drv8263_olp_short_to_gnd = 2, /**< Short circuit to ground detected */
-  k_drv8263_olp_short_to_vm = 3,  /**< Short circuit to motor supply (VM) detected */
-  k_drv8263_olp_unknown = 4,      /**< Unknown or ambiguous diagnostic result */
+  k_drv8263_olp_short_to_vm  = 3, /**< Short circuit to motor supply (VM) detected */
+  k_drv8263_olp_unknown      = 4, /**< Unknown or ambiguous diagnostic result */
 } rx_drv8263_olp_result_t;
 
 /**
@@ -255,18 +254,18 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef struct {
-  uint8_t port_drvoff; /**< DRVOFF GPIO port number (e.g., 6 for PORT6) */
-  uint8_t pin_drvoff;  /**< DRVOFF GPIO pin number within port (0-7) */
-  uint8_t port_nsleep; /**< nSLEEP GPIO port number */
-  uint8_t pin_nsleep;  /**< nSLEEP GPIO pin number within port (0-7) */
-  uint8_t port_nfault; /**< nFAULT GPIO port number (input, directly read for OLP) */
-  uint8_t pin_nfault;  /**< nFAULT GPIO pin number within port (0-7) */
-  uint8_t port_in1;    /**< IN1 GPIO port number (for OLP pattern output) */
-  uint8_t pin_in1;     /**< IN1 GPIO pin number within port (0-7) */
-  uint8_t port_in2;    /**< IN2 GPIO port number (for OLP pattern output) */
-  uint8_t pin_in2;     /**< IN2 GPIO pin number within port (0-7) */
-  bool olp_enable_boot;  /**< Run OLP diagnostic during rx_drv8263_init() */
-  bool olp_enable_fault; /**< Run OLP diagnostic after clearing latched faults */
+  uint8_t port_drvoff;      /**< DRVOFF GPIO port number (e.g., 6 for PORT6) */
+  uint8_t pin_drvoff;       /**< DRVOFF GPIO pin number within port (0-7) */
+  uint8_t port_nsleep;      /**< nSLEEP GPIO port number */
+  uint8_t pin_nsleep;       /**< nSLEEP GPIO pin number within port (0-7) */
+  uint8_t port_nfault;      /**< nFAULT GPIO port number (input, directly read for OLP) */
+  uint8_t pin_nfault;       /**< nFAULT GPIO pin number within port (0-7) */
+  uint8_t port_in1;         /**< IN1 GPIO port number (for OLP pattern output) */
+  uint8_t pin_in1;          /**< IN1 GPIO pin number within port (0-7) */
+  uint8_t port_in2;         /**< IN2 GPIO port number (for OLP pattern output) */
+  uint8_t pin_in2;          /**< IN2 GPIO pin number within port (0-7) */
+  bool    olp_enable_boot;  /**< Run OLP diagnostic during rx_drv8263_init() */
+  bool    olp_enable_fault; /**< Run OLP diagnostic after clearing latched faults */
 } rx_drv8263_config_t;
 
 /**
@@ -322,7 +321,7 @@ typedef struct {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_drv8263_init(rx_drv8263_handle_t*       handle,
-                                      const rx_drv8263_config_t* config);
+                                       const rx_drv8263_config_t* config);
 
 /**
  * @brief Control DRVOFF output disable signal
@@ -430,7 +429,7 @@ typedef struct {
  *
  * @since Version 1.0.0
  */
-[[nodiscard]] rx_err_t rx_drv8263_run_olp(rx_drv8263_handle_t*    handle,
+[[nodiscard]] rx_err_t rx_drv8263_run_olp(rx_drv8263_handle_t*     handle,
                                           rx_drv8263_olp_result_t* result_out1,
                                           rx_drv8263_olp_result_t* result_out2);
 

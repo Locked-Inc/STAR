@@ -125,7 +125,7 @@ typedef struct __attribute__((packed)) {
   volatile uint8_t dscr;                 /**< Drive Strength Control Register: drive current
                                               selection per pin */
   volatile uint8_t _pad6[k_port_pad_47]; /**< Padding between DSCR and DSCR2 (71 bytes) */
-  volatile uint8_t dscr2;               /**< Drive Strength Control Register 2: extended
+  volatile uint8_t dscr2;                /**< Drive Strength Control Register 2: extended
                                               drive strength configuration */
 } rx_port_regs_t;
 
@@ -144,8 +144,7 @@ typedef enum : uint16_t {
   k_port_regs_expected_size = 297, /**< Total bytes: 7 registers + padding */
 } port_regs_size_t;
 
-_Static_assert(sizeof(rx_port_regs_t) == k_port_regs_expected_size,
-               "rx_port_regs_t size mismatch");
+_Static_assert(sizeof(rx_port_regs_t) == k_port_regs_expected_size, "rx_port_regs_t size mismatch");
 
 /* =============================================================================
  * Mock Constants (needed by rx_port_constants.h consumers but not used here)
@@ -195,25 +194,25 @@ typedef enum : uint8_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_port_idx_0 = 0,  /**< Index for Port 0 */
-  k_port_idx_1 = 1,  /**< Index for Port 1 */
-  k_port_idx_2 = 2,  /**< Index for Port 2 */
-  k_port_idx_3 = 3,  /**< Index for Port 3 */
-  k_port_idx_4 = 4,  /**< Index for Port 4 */
-  k_port_idx_5 = 5,  /**< Index for Port 5 */
-  k_port_idx_6 = 6,  /**< Index for Port 6 */
-  k_port_idx_7 = 7,  /**< Index for Port 7 */
-  k_port_idx_8 = 8,  /**< Index for Port 8 */
-  k_port_idx_9 = 9,  /**< Index for Port 9 */
-  k_port_idx_a = 10,  /**< Index for Port A */
-  k_port_idx_b = 11,  /**< Index for Port B */
-  k_port_idx_c = 12,  /**< Index for Port C */
-  k_port_idx_d = 13,  /**< Index for Port D */
-  k_port_idx_e = 14,  /**< Index for Port E */
-  k_port_idx_f = 15,  /**< Index for Port F */
-  k_port_idx_g = 16,          /**< Index for Port G */
-  k_port_idx_reserved = 17,  /**< Reserved index (unused, gap between G and J) */
-  k_port_idx_j = 18,          /**< Index for Port J (skips reserved=17) */
+  k_port_idx_0        = 0,  /**< Index for Port 0 */
+  k_port_idx_1        = 1,  /**< Index for Port 1 */
+  k_port_idx_2        = 2,  /**< Index for Port 2 */
+  k_port_idx_3        = 3,  /**< Index for Port 3 */
+  k_port_idx_4        = 4,  /**< Index for Port 4 */
+  k_port_idx_5        = 5,  /**< Index for Port 5 */
+  k_port_idx_6        = 6,  /**< Index for Port 6 */
+  k_port_idx_7        = 7,  /**< Index for Port 7 */
+  k_port_idx_8        = 8,  /**< Index for Port 8 */
+  k_port_idx_9        = 9,  /**< Index for Port 9 */
+  k_port_idx_a        = 10, /**< Index for Port A */
+  k_port_idx_b        = 11, /**< Index for Port B */
+  k_port_idx_c        = 12, /**< Index for Port C */
+  k_port_idx_d        = 13, /**< Index for Port D */
+  k_port_idx_e        = 14, /**< Index for Port E */
+  k_port_idx_f        = 15, /**< Index for Port F */
+  k_port_idx_g        = 16, /**< Index for Port G */
+  k_port_idx_reserved = 17, /**< Reserved index (unused, gap between G and J) */
+  k_port_idx_j        = 18, /**< Index for Port J (skips reserved=17) */
 } mock_port_idx_t;
 
 /* =============================================================================

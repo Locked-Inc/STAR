@@ -115,12 +115,24 @@ static inline volatile rx_port_regs_t* rx_port_get_base(uint8_t port)
    *          rx_port_get_base() rather than indexing this table directly.
    */
   static const port_accessor_fn_t s_port_accessors[k_port_table_size] = {
-    [k_rx_port_0] = port0, [k_rx_port_1] = port1, [k_rx_port_2] = port2,
-    [k_rx_port_3] = port3, [k_rx_port_4] = port4, [k_rx_port_5] = port5,
-    [k_rx_port_6] = port6, [k_rx_port_7] = port7, [k_rx_port_8] = port8,
-    [k_rx_port_9] = port9, [k_rx_port_a] = porta, [k_rx_port_b] = portb,
-    [k_rx_port_c] = portc, [k_rx_port_d] = portd, [k_rx_port_e] = porte,
-    [k_rx_port_f] = portf, [k_rx_port_g] = portg, [k_rx_port_j] = portj,
+    [k_rx_port_0] = port0,
+    [k_rx_port_1] = port1,
+    [k_rx_port_2] = port2,
+    [k_rx_port_3] = port3,
+    [k_rx_port_4] = port4,
+    [k_rx_port_5] = port5,
+    [k_rx_port_6] = port6,
+    [k_rx_port_7] = port7,
+    [k_rx_port_8] = port8,
+    [k_rx_port_9] = port9,
+    [k_rx_port_a] = porta,
+    [k_rx_port_b] = portb,
+    [k_rx_port_c] = portc,
+    [k_rx_port_d] = portd,
+    [k_rx_port_e] = porte,
+    [k_rx_port_f] = portf,
+    [k_rx_port_g] = portg,
+    [k_rx_port_j] = portj,
   };
 
   if (port >= k_port_table_size) {
