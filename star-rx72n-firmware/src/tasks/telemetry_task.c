@@ -1719,6 +1719,72 @@ static telemetry_transport_t internal_select_transport(void)
 }
 
 /**
+ * @brief Map firmware estop_reason_t to proto star_v1_EstopReason
+ *
+ * @details
+ * Converts the firmware-internal emergency stop reason code (estop_reason_t)
+ * to the corresponding Protocol Buffer enum value (star_v1_EstopReason) for
+ * transmission to the Raspberry Pi 5. The mapping is:
+ *
+ * | estop_reason_t              | star_v1_EstopReason                        |
+ * |-----------------------------|--------------------------------------------|
+ * | k_estop_reason_none         | ESTOP_REASON_UNKNOWN (no estop active)     |
+ * | k_estop_reason_comm_timeout | ESTOP_REASON_COMM_TIMEOUT                  |
+ * | k_estop_reason_obstacle     | ESTOP_REASON_OBSTACLE                      |
+ * | k_estop_reason_driver_fault | ESTOP_REASON_FAULT                         |
+ * | k_estop_reason_overcurrent  | ESTOP_REASON_OVERCURRENT                   |
+ * | k_estop_reason_manual       | ESTOP_REASON_MANUAL                        |
+ * | (unrecognized)              | ESTOP_REASON_UNKNOWN (safe default)        |
+ *
+ * @param[in] reason Firmware estop reason code from shared_data
+ *
+ * @return star_v1_EstopReason Corresponding proto enum value
+ * @retval star_v1_EstopReason_ESTOP_REASON_UNKNOWN Unknown or no estop active
+ * @retval star_v1_EstopReason_ESTOP_REASON_MANUAL  Manual software command
+ * @retval star_v1_EstopReason_ESTOP_REASON_FAULT   Motor driver hardware fault
+ * @retval star_v1_EstopReason_ESTOP_REASON_COMM_TIMEOUT Communication timeout
+ * @retval star_v1_EstopReason_ESTOP_REASON_OBSTACLE Obstacle too close
+ * @retval star_v1_EstopReason_ESTOP_REASON_OVERCURRENT Motor overcurrent
+ *
+ * @pre reason is a valid estop_reason_t value
+ * @pre star_v1_EstopReason enum is generated from telemetry.proto
+ * @post Returns a valid star_v1_EstopReason; unrecognized input yields UNKNOWN
+ *
+ * @note Thread Safety: Pure function, no shared state accessed
+ * @note Unrecognized values fall through to UNKNOWN (fail-safe default)
+ *
+ * @see internal_populate_motor_telemetry() Caller
+ * @see estop_reason_t Firmware reason codes (shared_data.h)
+ * @see star_v1_EstopReason Proto enum (gen/star/v1/telemetry.pb.h)
+ *
+ * @since Version 1.0.0
+ *
+ * @par NASA Power of 10 Rule 5 Compliance:
+ * - Precondition 1: reason is a valid estop_reason_t value
+ * - Precondition 2: star_v1_EstopReason enum is available via telemetry.pb.h
+ * - Postcondition 1: Return value is always a valid star_v1_EstopReason
+ * - Postcondition 2: Unrecognized input safely maps to ESTOP_REASON_UNKNOWN
+ */
+static star_v1_EstopReason internal_map_estop_reason(estop_reason_t reason)
+{
+  switch (reason) {
+    case k_estop_reason_comm_timeout:
+      return star_v1_EstopReason_ESTOP_REASON_COMM_TIMEOUT;
+    case k_estop_reason_obstacle:
+      return star_v1_EstopReason_ESTOP_REASON_OBSTACLE;
+    case k_estop_reason_driver_fault:
+      return star_v1_EstopReason_ESTOP_REASON_FAULT;
+    case k_estop_reason_overcurrent:
+      return star_v1_EstopReason_ESTOP_REASON_OVERCURRENT;
+    case k_estop_reason_manual:
+      return star_v1_EstopReason_ESTOP_REASON_MANUAL;
+    case k_estop_reason_none:
+    default:
+      return star_v1_EstopReason_ESTOP_REASON_UNKNOWN;
+  }
+}
+
+/**
  * @brief Populate TelemetryData motor fields from shared motor state
  *
  * @details
@@ -1729,6 +1795,7 @@ static telemetry_transport_t internal_select_transport(void)
  *
  * Populated fields:
  * - `emergency_stop` - E-stop active flag
+ * - `estop_reason` - E-stop reason code mapped from estop_reason_t to star_v1_EstopReason
  * - `fault_flags` - 4 motor fault bytes packed into uint32_t bitfield
  * - `has_encoder_*` / `encoder_*` - 4 encoder submessages (motor_id, ticks,
  *   velocity_mps, timestamp_us) for front_left, front_right, back_left, back_right
@@ -1743,6 +1810,7 @@ static telemetry_transport_t internal_select_transport(void)
  * @pre telemetry must point to a valid star_v1_TelemetryData struct
  * @pre telemetry->timestamp_us must already be set (used for encoder timestamps)
  * @post If k_rx_ok: all motor encoder fields populated, has_encoder_* = true
+ * @post If k_rx_ok: estop_reason populated with mapped star_v1_EstopReason value
  * @post If error: motor fields left at zero-init defaults, caller handles non-fatally
  *
  * @note Non-blocking: shared_data_get_motor_state() uses a non-blocking mutex try
@@ -1750,6 +1818,7 @@ static telemetry_transport_t internal_select_transport(void)
  *
  * @see internal_collect_state() Caller - treats non-ok return as non-fatal
  * @see shared_data_get_motor_state() Shared data accessor
+ * @see internal_map_estop_reason() Maps firmware reason to proto enum
  *
  * @since Version 1.0.0
  *
@@ -1769,8 +1838,9 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
     return err;
   }
 
-  /* Emergency stop status */
+  /* Emergency stop status and reason */
   telemetry->emergency_stop = motor_state.estop_active;
+  telemetry->estop_reason   = internal_map_estop_reason(motor_state.estop_reason);
 
   /* Pack 4 motor fault bytes into single uint32_t bitfield */
   telemetry->fault_flags =

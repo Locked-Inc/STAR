@@ -127,6 +127,9 @@ message TelemetryData {
   // Bit 0: Motor 0 fault, Bit 1: Motor 1 fault, etc.
   uint32 fault_flags = 11;
 
+  // Emergency stop reason (RX72N specific). Populated when emergency_stop is true.
+  EstopReason estop_reason = 9;
+
   // Frame sequence number from transport layer for drop detection.
   // Increments with each transmitted frame. Used by diagnostics to detect
   // missing frames in the telemetry stream.
@@ -215,6 +218,28 @@ message GpsData {
 
   // GPS fix type.
   GpsFix fix_type = 6;
+}
+
+// Emergency stop reason enumeration.
+// Identifies the cause of an active emergency stop condition on the RX72N.
+enum EstopReason {
+  // Unknown or no emergency stop active.
+  ESTOP_REASON_UNKNOWN = 0;
+
+  // Manual emergency stop requested via software command.
+  ESTOP_REASON_MANUAL = 1;
+
+  // Motor driver hardware fault detected (nFAULT signal asserted).
+  ESTOP_REASON_FAULT = 2;
+
+  // Communication timeout: no command received within watchdog window.
+  ESTOP_REASON_COMM_TIMEOUT = 3;
+
+  // Obstacle detected too close by ultrasonic sensors.
+  ESTOP_REASON_OBSTACLE = 4;
+
+  // Motor overcurrent condition detected.
+  ESTOP_REASON_OVERCURRENT = 5;
 }
 
 // GPS fix type.

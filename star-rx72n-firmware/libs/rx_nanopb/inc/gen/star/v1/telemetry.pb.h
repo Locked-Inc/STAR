@@ -13,6 +13,23 @@
 #endif
 
 /* Enum definitions */
+/* Emergency stop reason enumeration.
+ Identifies the cause of an active emergency stop condition on the RX72N. */
+typedef enum _star_v1_EstopReason {
+    /* Unknown or no emergency stop active. */
+    star_v1_EstopReason_ESTOP_REASON_UNKNOWN = 0,
+    /* Manual emergency stop requested via software command. */
+    star_v1_EstopReason_ESTOP_REASON_MANUAL = 1,
+    /* Motor driver hardware fault detected (nFAULT signal asserted). */
+    star_v1_EstopReason_ESTOP_REASON_FAULT = 2,
+    /* Communication timeout: no command received within watchdog window. */
+    star_v1_EstopReason_ESTOP_REASON_COMM_TIMEOUT = 3,
+    /* Obstacle detected too close by ultrasonic sensors. */
+    star_v1_EstopReason_ESTOP_REASON_OBSTACLE = 4,
+    /* Motor overcurrent condition detected. */
+    star_v1_EstopReason_ESTOP_REASON_OVERCURRENT = 5
+} star_v1_EstopReason;
+
 /* GPS fix type. */
 typedef enum _star_v1_GpsFix {
     /* Unknown fix type. */
@@ -177,6 +194,8 @@ typedef struct _star_v1_TelemetryData {
     /* Telemetry timestamp. */
     bool has_timestamp;
     google_protobuf_Timestamp timestamp;
+    /* Emergency stop reason (RX72N specific). Populated when emergency_stop is true. */
+    star_v1_EstopReason estop_reason;
     /* Emergency stop state (RX72N specific). */
     bool emergency_stop;
     /* Motor fault flags bitfield (RX72N specific).
@@ -249,6 +268,10 @@ extern "C" {
 #endif
 
 /* Helper constants for enums */
+#define _star_v1_EstopReason_MIN star_v1_EstopReason_ESTOP_REASON_UNKNOWN
+#define _star_v1_EstopReason_MAX star_v1_EstopReason_ESTOP_REASON_OVERCURRENT
+#define _star_v1_EstopReason_ARRAYSIZE ((star_v1_EstopReason)(star_v1_EstopReason_ESTOP_REASON_OVERCURRENT+1))
+
 #define _star_v1_GpsFix_MIN star_v1_GpsFix_GPS_FIX_UNKNOWN
 #define _star_v1_GpsFix_MAX star_v1_GpsFix_GPS_FIX_RTK_FIXED
 #define _star_v1_GpsFix_ARRAYSIZE ((star_v1_GpsFix)(star_v1_GpsFix_GPS_FIX_RTK_FIXED+1))
@@ -266,6 +289,7 @@ extern "C" {
 
 
 
+#define star_v1_TelemetryData_estop_reason_ENUMTYPE star_v1_EstopReason
 
 
 
@@ -281,7 +305,7 @@ extern "C" {
 #define star_v1_StreamTelemetryRequest_init_default {false, star_v1_RequestHeader_init_default, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
 #define star_v1_GetSystemStatusRequest_init_default {false, star_v1_RequestHeader_init_default}
 #define star_v1_GetSystemStatusResponse_init_default {false, star_v1_ResponseHeader_init_default, false, star_v1_SystemStatus_init_default}
-#define star_v1_TelemetryData_init_default       {false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, false, star_v1_ObstacleData_init_default, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_default, 0, 0, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0}
+#define star_v1_TelemetryData_init_default       {false, star_v1_ImuData_init_default, false, star_v1_GpsData_init_default, false, star_v1_ObstacleData_init_default, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_default, _star_v1_EstopReason_MIN, 0, 0, 0, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, false, star_v1_EncoderData_init_default, 0}
 #define star_v1_ImuData_init_default             {0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_ObstacleData_init_default        {0, 0, 0, 0, 0, 0}
 #define star_v1_GpsData_init_default             {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
@@ -291,7 +315,7 @@ extern "C" {
 #define star_v1_StreamTelemetryRequest_init_zero {false, star_v1_RequestHeader_init_zero, 0, 0, {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", ""}}
 #define star_v1_GetSystemStatusRequest_init_zero {false, star_v1_RequestHeader_init_zero}
 #define star_v1_GetSystemStatusResponse_init_zero {false, star_v1_ResponseHeader_init_zero, false, star_v1_SystemStatus_init_zero}
-#define star_v1_TelemetryData_init_zero          {false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, false, star_v1_ObstacleData_init_zero, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_zero, 0, 0, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0}
+#define star_v1_TelemetryData_init_zero          {false, star_v1_ImuData_init_zero, false, star_v1_GpsData_init_zero, false, star_v1_ObstacleData_init_zero, 0, 0, 0, 0, false, google_protobuf_Timestamp_init_zero, _star_v1_EstopReason_MIN, 0, 0, 0, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, false, star_v1_EncoderData_init_zero, 0}
 #define star_v1_ImuData_init_zero                {0, 0, 0, 0, 0, 0, 0, 0, 0}
 #define star_v1_ObstacleData_init_zero           {0, 0, 0, 0, 0, 0}
 #define star_v1_GpsData_init_zero                {0, 0, 0, 0, 0, _star_v1_GpsFix_MIN}
@@ -332,6 +356,7 @@ extern "C" {
 #define star_v1_TelemetryData_temperature_celsius_tag 6
 #define star_v1_TelemetryData_motor_load_percent_tag 7
 #define star_v1_TelemetryData_timestamp_tag      8
+#define star_v1_TelemetryData_estop_reason_tag   9
 #define star_v1_TelemetryData_emergency_stop_tag 10
 #define star_v1_TelemetryData_fault_flags_tag    11
 #define star_v1_TelemetryData_timestamp_us_tag   14
@@ -399,6 +424,7 @@ X(a, STATIC,   SINGULAR, DOUBLE,   cpu_usage_percent,   5) \
 X(a, STATIC,   SINGULAR, DOUBLE,   temperature_celsius,   6) \
 X(a, STATIC,   SINGULAR, DOUBLE,   motor_load_percent,   7) \
 X(a, STATIC,   OPTIONAL, MESSAGE,  timestamp,         8) \
+X(a, STATIC,   SINGULAR, UENUM,    estop_reason,      9) \
 X(a, STATIC,   SINGULAR, BOOL,     emergency_stop,   10) \
 X(a, STATIC,   SINGULAR, UINT32,   fault_flags,      11) \
 X(a, STATIC,   SINGULAR, INT64,    timestamp_us,     14) \
@@ -491,13 +517,13 @@ extern const pb_msgdesc_t star_v1_SystemStatus_msg;
 #define star_v1_GetSystemStatusRequest_size      149
 #define star_v1_GetSystemStatusResponse_size     425
 #define star_v1_GetTelemetryRequest_size         149
-#define star_v1_GetTelemetryResponse_size        797
+#define star_v1_GetTelemetryResponse_size        799
 #define star_v1_GpsData_size                     49
 #define star_v1_ImuData_size                     81
 #define star_v1_ObstacleData_size                28
 #define star_v1_StreamTelemetryRequest_size      688
 #define star_v1_SystemStatus_size                60
-#define star_v1_TelemetryData_size               431
+#define star_v1_TelemetryData_size               433
 
 #ifdef __cplusplus
 } /* extern "C" */
