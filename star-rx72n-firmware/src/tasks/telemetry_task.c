@@ -2155,11 +2155,16 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
  * @brief Collect all robot system state into the telemetry message (Phase 1 + Phase 2)
  *
  * @details
- * Reads motor, temperature, and obstacle state from shared_data and populates
- * the corresponding fields in `telemetry`. All reads are **blocking**
- * (TX_WAIT_FOREVER) but non-fatal: if a data source is unavailable, the
+ * Reads motor, temperature, obstacle, IMU, and baro state from shared_data and
+ * populates the corresponding fields in `telemetry`. Reads have mixed blocking
+ * semantics but are all non-fatal: if a data source is unavailable, the
  * corresponding fields are left at zero-init defaults and collection continues
  * for remaining sources.
+ *
+ * - **Motor, temperature, estop** accessors: blocking (TX_WAIT_FOREVER)
+ * - **Obstacle, IMU, baro** accessors: non-blocking (TX_NO_WAIT); may return
+ *   k_rx_err_rtos_mutex if the mutex is busy, leaving those fields at
+ *   zero-init defaults for this telemetry cycle.
  *
  * Data collected:
  * 1. **Motor state** (via internal_populate_motor_telemetry()):
@@ -2178,7 +2183,8 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
  * @post Missing data sources leave their fields at zero-init defaults (graceful degradation)
  *
  * @note Always returns; partial population is intentional and acceptable
- * @note Blocking: all shared_data accessors acquire mutex with TX_WAIT_FOREVER
+ * @note Mixed blocking: motor/temp/estop accessors use TX_WAIT_FOREVER;
+ *       obstacle/IMU/baro accessors use TX_NO_WAIT (non-blocking)
  * @note Thread-safe: shared_data accessors are mutex-protected
  *
  * @see internal_populate_motor_telemetry() Motor field population helper

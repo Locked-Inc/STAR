@@ -605,15 +605,16 @@ rx_err_t shared_data_update_imu(const imu_state_t* state);
  * @retval k_rx_ok State copied into out_state
  * @retval k_rx_err_null_ptr out_state is NULL
  * @retval k_rx_err_not_initialized shared_data_init() not called
- * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ * @retval k_rx_err_rtos_mutex Mutex busy (TX_NO_WAIT); caller should retry or use zero-init fallback
  *
  * @pre shared_data_init() called successfully
  * @pre out_state non-NULL
  * @post *out_state contains latest IMU data (check out_state->valid before use)
- * @post imu_mutex released after copy completes
+ * @post imu_mutex released if acquired; not acquired (and not released) if k_rx_err_rtos_mutex
  *
  * @note Check out_state->valid before relying on data values
- * @note Not ISR-safe (blocking mutex wait)
+ * @note Non-blocking: uses TX_NO_WAIT mutex acquisition; returns k_rx_err_rtos_mutex if mutex busy
+ * @note Not ISR-safe
  *
  * @see shared_data_update_imu() Producer accessor
  *
@@ -667,10 +668,11 @@ rx_err_t shared_data_update_baro(const baro_state_t* state);
  * @pre shared_data_init() called successfully
  * @pre out_state non-NULL
  * @post *out_state contains latest baro data (check out_state->valid before use)
- * @post baro_mutex released after copy completes
+ * @post baro_mutex released if acquired; not acquired (and not released) if k_rx_err_rtos_mutex
  *
  * @note Check out_state->valid before relying on data values
- * @note Not ISR-safe (blocking mutex wait)
+ * @note Non-blocking: uses TX_NO_WAIT mutex acquisition; returns k_rx_err_rtos_mutex if mutex busy
+ * @note Not ISR-safe
  *
  * @see shared_data_update_baro() Producer accessor
  *

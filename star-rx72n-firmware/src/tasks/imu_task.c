@@ -288,7 +288,6 @@ static inline uint32_t internal_ticks_to_ms(void)
  */
 rx_err_t imu_task_create(void)
 {
-  RX_ASSERT(!s_imu_created, "IMU task already created");
   RX_ASSERT(k_imu_task_stack_size > 0U, "IMU stack size must be non-zero");
   if (s_imu_created) {
     return k_rx_err_invalid_state;

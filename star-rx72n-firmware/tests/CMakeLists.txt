@@ -956,10 +956,6 @@ add_executable(test_rx_bmp280
 apply_strict_warnings(test_rx_bmp280)
 # TESTING: enables rx_bmp280_test_reset_state() for test-order independence
 target_compile_definitions(test_rx_bmp280 PRIVATE TESTING)
-# Suppress unused-local-typedefs: rx_bmp280.c uses local enum typedefs for
-# named constants in the Bosch compensation algorithm (per STAR no-magic-numbers
-# policy); the typedef names are never referenced as type variables.
-target_compile_options(test_rx_bmp280 PRIVATE -Wno-unused-local-typedefs)
 apply_test_includes(test_rx_bmp280)
 target_include_directories(test_rx_bmp280 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc

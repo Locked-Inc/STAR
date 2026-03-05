@@ -121,7 +121,11 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
-rx_port_regs_t g_mock_port_regs[k_mock_port_count];
+/* k_mock_port_max (from rx72n_port_regs.h) == k_mock_port_count (from mock_drv8263_port.h);
+ * using k_mock_port_max here to match the extern declaration in rx72n_port_regs.h. */
+static_assert((uint32_t)k_mock_port_max == (uint32_t)k_mock_port_count,
+              "k_mock_port_max and k_mock_port_count must be equal");
+rx_port_regs_t g_mock_port_regs[k_mock_port_max];
 
 /* =============================================================================
  * Test Helper Functions

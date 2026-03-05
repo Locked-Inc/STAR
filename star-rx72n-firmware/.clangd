@@ -3,9 +3,9 @@ CompileFlags:
   Add:
     - -std=c23
     # gnurx toolchain headers: install from https://gcc-renesas.com/rx-download-toolchains/
-    # Expected install path: /opt/gnurx/rx-elf/rx-elf/include
-    # Adjust this path if gnurx is installed to a different prefix on your system.
-    - -I/opt/gnurx/rx-elf/rx-elf/include
+    # Add your local toolchain include path in ~/.config/clangd/config.yaml, e.g.:
+    #   CompileFlags:
+    #     Add: [-I/opt/gnurx/rx-elf/rx-elf/include]
     - -I../src
   # Strip RX72N-specific gnurx flags that clangd's clang frontend does not
   # recognize. These are valid for rx-elf-gcc but cause spurious "unknown

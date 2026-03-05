@@ -522,8 +522,16 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
    * already initialized by a prior rx_bus_i2c_init() call. Multiple logical
    * buses may share one physical RIIC channel (e.g., "i2c1" and "i2c1_baro"
    * both use RIIC1). Re-initializing an active channel causes I2C bus glitches.
+   * Verify frequency matches to catch misconfigured shared-channel buses.
    */
   if (ctx->manager->riic_initialized[channel]) {
+    const uint32_t active_freq    = ctx->manager->riic_freq_hz[channel];
+    const uint32_t requested_freq = bus_config->proto.i2c.frequency_hz;
+    if (active_freq != requested_freq) {
+      rx_log_error(s_tag, "RIIC channel frequency mismatch - shared buses must use same frequency");
+      ctx->result = k_rx_err_invalid_arg;
+      return k_rx_err_invalid_arg;
+    }
     rx_log_debug(s_tag, "RIIC channel already initialized - skipping riic_init");
     bus_config->initialized = true;
     ctx->result             = k_rx_ok;
@@ -546,8 +554,9 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
     /* Continue anyway - HAL should validate, but flag if misconfigured */
   }
 
-  /* Record that this physical RIIC channel is now initialized */
+  /* Record that this physical RIIC channel is now initialized and store its frequency */
   ctx->manager->riic_initialized[channel] = true;
+  ctx->manager->riic_freq_hz[channel]     = bus_config->proto.i2c.frequency_hz;
 
   /* Mark bus as initialized */
   bus_config->initialized = true;

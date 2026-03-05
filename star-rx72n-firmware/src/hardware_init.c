@@ -436,8 +436,8 @@ typedef enum : uint32_t {
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host (RIIC0) */
-  k_i2c_imu_freq_hz  = 400000, /**< 400 kHz fast mode for IMU sensors (RIIC1) */
+  k_i2c_host_freq_hz = k_i2c_fast_mode_max_hz, /**< 400 kHz fast mode for host (RIIC0) */
+  k_i2c_imu_freq_hz  = k_i2c_fast_mode_max_hz, /**< 400 kHz fast mode for IMU sensors (RIIC1) */
 } i2c_freq_t;
 static_assert((uint32_t)k_i2c_host_freq_hz >= (uint32_t)k_i2c_freq_min_hz,
               "Host I2C frequency must be non-zero");

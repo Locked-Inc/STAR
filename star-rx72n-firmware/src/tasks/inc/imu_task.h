@@ -145,7 +145,8 @@ typedef enum : uint16_t {
  * @retval k_rx_err_rtos_thread_create ThreadX task creation failed
  *
  * @pre ThreadX kernel initialized; task created in tx_application_define and will run after the scheduler starts (tx_kernel_enter)
- * @pre "i2c1" bus registered in bus manager via main.c
+ * @pre "i2c1" bus registered in bus manager via main.c (BNO055 sensor)
+ * @pre "i2c1_baro" bus registered in bus manager via main.c (BMP280 sensor)
  * @pre shared_data_init() called (mutexes created)
  * @pre hardware_init() completed (RIIC1 initialized at 400 kHz)
  *
