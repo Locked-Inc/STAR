@@ -1,6 +1,7 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file test_safety_monitor.cpp
- * @brief Permission is hereby granted, free of charge, to any person obtaining a copy
+ * @brief Unit tests for the SafetyMonitor class.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file star_spi_driver_node.cpp
  * @brief IMU sensor noise model (variance = sigma^2, all diagonal).

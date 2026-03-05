@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file spi_message_converter.cpp
  * @brief Differential drive kinematics

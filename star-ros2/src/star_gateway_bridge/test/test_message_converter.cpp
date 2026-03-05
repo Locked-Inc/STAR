@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file test_message_converter.cpp
  * @brief Licensed under MIT

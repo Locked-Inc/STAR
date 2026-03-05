@@ -1,6 +1,7 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file safety_monitor_node.cpp
- * @brief Permission is hereby granted, free of charge, to any person obtaining a copy
+ * @brief ROS2 node entry point for the safety monitor.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

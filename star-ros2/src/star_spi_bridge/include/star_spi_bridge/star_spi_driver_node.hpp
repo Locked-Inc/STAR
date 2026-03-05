@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file star_spi_driver_node.hpp
  * @brief ROS2 lifecycle node for the STAR SPI bridge to the RX72N peripheral MCU.

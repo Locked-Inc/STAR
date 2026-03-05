@@ -1,6 +1,7 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file safety_monitor.cpp
- * @brief Permission is hereby granted, free of charge, to any person obtaining a copy
+ * @brief Safety monitor implementation for obstacle and system health detection.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

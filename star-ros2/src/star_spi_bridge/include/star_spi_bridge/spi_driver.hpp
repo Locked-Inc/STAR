@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file spi_driver.hpp
  * @brief SPI driver declarations for framed communication with the RX72N

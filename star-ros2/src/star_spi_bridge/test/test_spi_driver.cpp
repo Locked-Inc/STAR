@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file test_spi_driver.cpp
  * @brief Setup code

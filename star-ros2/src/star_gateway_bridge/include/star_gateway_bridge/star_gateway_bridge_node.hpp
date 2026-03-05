@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file star_gateway_bridge_node.hpp
  * @brief ROS2 Gateway Bridge Node -- bridges the ROS2 ecosystem with the Go

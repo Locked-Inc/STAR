@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file main.cpp
  * @brief main.cpp - STAR project source file

@@ -1,3 +1,4 @@
+// Copyright 2026 Locked Inc.
 /**
  * @file message_converter.cpp
  * @brief Bidirectional conversion between ROS2 standard messages and STAR Protocol
