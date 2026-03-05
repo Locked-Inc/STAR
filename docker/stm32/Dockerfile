@@ -23,10 +23,13 @@ ENV DEBIAN_FRONTEND=noninteractive
 # binutils-arm-none-eabi: provides arm-none-eabi-size used for binary size
 #   budget checks in CI.  gcc-arm-none-eabi depends on it so this is redundant
 #   but explicit -- intent is clear and apt deduplicates the install.
+# libnewlib-arm-none-eabi: provides nano.specs (--specs=nano.specs) and
+#   nosys.specs (--specs=nosys.specs) used in the firmware linker flags.
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ca-certificates \
     gcc-arm-none-eabi \
     binutils-arm-none-eabi \
+    libnewlib-arm-none-eabi \
     cmake \
     ninja-build \
     make \
