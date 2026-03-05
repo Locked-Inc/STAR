@@ -247,6 +247,84 @@ typedef enum : uint8_t {
 } test_bmp280_status_t;
 
 /**
+ * @enum test_bmp280_read_call_idx_t
+ * @brief Expected RIIC call-history indices for rx_bmp280_read() after history clear
+ *
+ * @details
+ * rx_bmp280_read() issues three RIIC transactions in order:
+ *   0: write (ctrl_meas = 0xF4, register address byte sent as write data)
+ *   1: write_read (status register 0xF3, 1 byte read)
+ *   2: write_read (ADC data register 0xF7, 6 bytes read)
+ *
+ * These indices allow tests to validate the call sequence via mock_riic_get_call().
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_read_call_ctrl_meas = 0U, /**< Call 0: write ctrl_meas trigger (register 0xF4) */
+  k_read_call_status    = 1U, /**< Call 1: write_read status register (0xF3) */
+  k_read_call_adc_data  = 2U, /**< Call 2: write_read ADC data register (0xF7) */
+  k_read_call_count_min = 3U, /**< Minimum calls expected per rx_bmp280_read() */
+} test_bmp280_read_call_idx_t;
+
+/**
+ * @enum test_bmp280_reg_addr_t
+ * @brief Expected register addresses written during rx_bmp280_read()
+ *
+ * @details
+ * The first byte written in each RIIC write or write_read transaction is the
+ * register address. These constants mirror the values from rx_bmp280_regs.h
+ * and are used to verify that the driver addresses the correct registers.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_reg_addr_ctrl_meas = 0xF4, /**< Control/measurement register */
+  k_reg_addr_status    = 0xF3, /**< Status register */
+  k_reg_addr_adc_data  = 0xF7, /**< ADC output MSB register (burst: 0xF7-0xFC) */
+} test_bmp280_reg_addr_t;
+
+/**
+ * @brief Validate that rx_bmp280_read() addressed the correct registers in order
+ *
+ * @details
+ * Inspects the mock RIIC TX buffer after rx_bmp280_read() to confirm:
+ *   - At least k_read_call_count_min calls were recorded
+ *   - Call 0 (ctrl_meas write): first TX byte == k_reg_addr_ctrl_meas (0xF4)
+ *   - Call 1 (status write_read): first TX byte == k_reg_addr_status (0xF3)
+ *   - Call 2 (ADC write_read): first TX byte == k_reg_addr_adc_data (0xF7)
+ *
+ * @pre mock_riic_clear_history() was called before rx_bmp280_read()
+ * @post Assertions fail if any register address is wrong
+ *
+ * @since Version 1.0.0
+ */
+static void internal_assert_read_register_sequence(void)
+{
+  /* Verify the minimum number of RIIC transactions occurred */
+  TEST_ASSERT_GREATER_OR_EQUAL((uint16_t)k_read_call_count_min, mock_riic_get_call_count());
+
+  /* Retrieve the last TX data (the ADC data write_read is last; its write byte is 0xF7) */
+  uint8_t  tx_byte = 0;
+  uint16_t tx_len  = mock_riic_get_tx_data((uint8_t)k_test_bmp280_riic_ch, &tx_byte, 1U);
+  TEST_ASSERT_EQUAL(1U, tx_len);
+  TEST_ASSERT_EQUAL_HEX8((uint8_t)k_reg_addr_adc_data, tx_byte);
+
+  /* Verify call types: write for ctrl_meas, write_read for status and ADC */
+  const mock_riic_call_t* call_ctrl = mock_riic_get_call((uint16_t)k_read_call_ctrl_meas);
+  TEST_ASSERT_NOT_NULL(call_ctrl);
+  TEST_ASSERT_EQUAL(k_mock_riic_call_write, call_ctrl->type);
+
+  const mock_riic_call_t* call_status = mock_riic_get_call((uint16_t)k_read_call_status);
+  TEST_ASSERT_NOT_NULL(call_status);
+  TEST_ASSERT_EQUAL(k_mock_riic_call_write_read, call_status->type);
+
+  const mock_riic_call_t* call_adc = mock_riic_get_call((uint16_t)k_read_call_adc_data);
+  TEST_ASSERT_NOT_NULL(call_adc);
+  TEST_ASSERT_EQUAL(k_mock_riic_call_write_read, call_adc->type);
+}
+
+/**
  * @enum test_bmp280_output_sanity_t
  * @brief Physical range bounds for compensation output validation
  *
@@ -776,6 +854,9 @@ void test_bmp280_read_success_forced_mode(void)
   internal_setup_initialized_bmp280();
   internal_load_read_data();
 
+  /* Clear call history so only rx_bmp280_read() calls are captured below */
+  mock_riic_clear_history();
+
   bmp280_data_t data;
   memset(&data, 0, sizeof(data));
 
@@ -787,6 +868,8 @@ void test_bmp280_read_success_forced_mode(void)
   /* Verify output is within BMP280 physical operating range [300, 1100] hPa * 256. */
   TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_physical_min, data.press_pa_256);
   TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_press_physical_max, data.press_pa_256);
+  /* Verify correct register address sequence to catch address-ordering bugs */
+  internal_assert_read_register_sequence();
 }
 
 /**
@@ -876,6 +959,9 @@ void test_bmp280_compensation_known_values(void)
   internal_setup_initialized_bmp280();
   internal_load_read_data();
 
+  /* Clear call history so only rx_bmp280_read() calls are captured below */
+  mock_riic_clear_history();
+
   bmp280_data_t data;
   memset(&data, 0, sizeof(data));
 
@@ -888,6 +974,8 @@ void test_bmp280_compensation_known_values(void)
   TEST_ASSERT_LESS_OR_EQUAL((int32_t)k_temp_physical_max_cdegc, data.temp_centi_degc);
   TEST_ASSERT_GREATER_OR_EQUAL((uint32_t)k_press_physical_min, data.press_pa_256);
   TEST_ASSERT_LESS_OR_EQUAL((uint32_t)k_press_physical_max, data.press_pa_256);
+  /* Verify correct register address sequence to catch address-ordering bugs */
+  internal_assert_read_register_sequence();
 }
 
 /**

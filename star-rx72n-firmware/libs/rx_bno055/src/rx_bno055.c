@@ -731,8 +731,6 @@ rx_err_t rx_bno055_init(rx_bus_manager_t* manager)
 {
   static_assert(k_bno055_ms_per_tick != 0,
                 "k_bno055_ms_per_tick must be non-zero to avoid division by zero in tick delays");
-  RX_ASSERT(manager != NULL, "manager must not be NULL");
-  RX_ASSERT(!s_initialized, "BNO055 already initialized");
   RX_CHECK_NULL_PTR(manager, s_tag, "Bus manager is NULL");
 
   if (s_initialized) {
@@ -991,8 +989,6 @@ static rx_err_t internal_read_gyro(bno055_data_t* out)
  */
 rx_err_t rx_bno055_read(bno055_data_t* out)
 {
-  RX_ASSERT(out != NULL, "out must not be NULL");
-  RX_ASSERT(s_initialized, "BNO055 not initialized");
   RX_CHECK_NULL_PTR(out, s_tag, "Output data pointer is NULL");
 
   if (!s_initialized) {
@@ -1069,8 +1065,6 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
  */
 rx_err_t rx_bno055_is_calibrated(bool* out_calibrated)
 {
-  RX_ASSERT(out_calibrated != NULL, "out_calibrated must not be NULL");
-  RX_ASSERT(s_initialized, "BNO055 not initialized");
   RX_CHECK_NULL_PTR(out_calibrated, s_tag, "Output calibrated pointer is NULL");
 
   if (!s_initialized) {

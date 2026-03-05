@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "rx_bmp280.h"
 #include "rx_err.h"
 #include "tx_api.h"
 
@@ -140,29 +141,6 @@ typedef enum : uint16_t {
   k_baro_scale_temp  = 100, /**< Temperature divisor: temp_centi_degc / 100 = degC */
   k_baro_scale_press = 256, /**< Pressure divisor: press_pa_256 / 256 = Pa */
 } baro_scale_t;
-
-/**
- * @enum bmp280_limits_t
- * @brief BMP280 valid temperature range limits in centi-degrees Celsius
- *
- * @details
- * Temperature operating range of the BMP280 sensor as documented in the
- * Bosch BMP280 datasheet. Values are in units of 0.01 degC (centi-degrees)
- * matching the temp_centi_degc field in baro_state_t.
- *
- * | Limit | Value | Physical |
- * |-------|-------|---------|
- * | k_bmp280_temp_min_cdegc | -4000 | -40.00 degC |
- * | k_bmp280_temp_max_cdegc | 8500 | +85.00 degC |
- *
- * @see baro_state_t Uses these for the temp_centi_degc invariant
- *
- * @since Version 1.0.0
- */
-typedef enum : int16_t {
-  k_bmp280_temp_min_cdegc = -4000, /**< Minimum valid temperature: -40.00 degC */
-  k_bmp280_temp_max_cdegc = 8500,  /**< Maximum valid temperature: +85.00 degC */
-} bmp280_limits_t;
 
 /**
  * @struct imu_state_t
@@ -660,8 +638,8 @@ rx_err_t shared_data_get_imu(imu_state_t* out_state);
  *
  * @pre shared_data_init() called successfully
  * @pre state non-NULL with valid BMP280 data
- * @post g_shared_data.baro_state updated under baro_mutex protection
- * @post baro_mutex released (regardless of success or failure)
+ * @post g_shared_data.baro_state updated under baro_mutex protection on success
+ * @post baro_mutex released after successful update; not acquired (and not released) if mutex acquisition fails (k_rx_err_rtos_mutex)
  *
  * @note Not ISR-safe (blocking mutex wait)
  *

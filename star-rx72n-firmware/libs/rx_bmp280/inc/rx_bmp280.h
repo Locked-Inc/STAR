@@ -79,6 +79,35 @@ extern "C" {
 #include "rx_err.h"
 
 /* =============================================================================
+ * Public Constants
+ * =============================================================================
+ */
+
+/**
+ * @enum bmp280_temp_limits_t
+ * @brief BMP280 valid temperature output range limits in centi-degrees Celsius
+ *
+ * @details
+ * Authoritative temperature operating range constants for the BMP280 sensor
+ * as documented in the Bosch BMP280 datasheet. Values are in units of
+ * 0.01 degC (centi-degrees) matching the temp_centi_degc field in bmp280_data_t.
+ *
+ * | Limit | Value | Physical |
+ * |-------|-------|---------|
+ * | k_bmp280_temp_min_cdegc | -4000 | -40.00 degC |
+ * | k_bmp280_temp_max_cdegc |  8500 | +85.00 degC |
+ *
+ * @see bmp280_data_t Uses temp_centi_degc validated against these limits
+ * @see rx_bmp280_read() Applies these range checks after compensation
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : int16_t {
+  k_bmp280_temp_min_cdegc = -4000, /**< Minimum valid temperature: -40.00 degC */
+  k_bmp280_temp_max_cdegc = 8500,  /**< Maximum valid temperature: +85.00 degC */
+} bmp280_temp_limits_t;
+
+/* =============================================================================
  * Data Types
  * =============================================================================
  */

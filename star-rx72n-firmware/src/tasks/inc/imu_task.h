@@ -44,8 +44,8 @@
  * - **Rule 5**: [PASS] 2+ preconditions in imu_task_create()
  *
  * @warning rx_bno055_init() blocks for ~700 ms during power-on reset sequence.
- *          This task may delay system startup. Other tasks at lower priority
- *          will be blocked until this initialization completes.
+ *          The IMU task itself is blocked during this initialization; other tasks
+ *          are not blocked (the scheduler continues to run higher-priority tasks).
  * @invariant The IMU task runs at 20 Hz (50 ms period = k_imu_task_period_ticks ticks)
  *            once initialization is complete.
  *

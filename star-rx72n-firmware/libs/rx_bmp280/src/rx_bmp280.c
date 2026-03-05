@@ -571,7 +571,7 @@ static uint32_t internal_finalize_pressure_q8(int64_t p, int64_t var1, int64_t v
  * @pre adc_P is valid 20-bit ADC output from BMP280
  * @pre t_fine was computed by internal_compensate_temp() for same measurement
  * @pre press_out non-NULL
- * @post *press_out in range [77312*256, 281472*256] for 300-1100 hPa on success
+ * @post *press_out in range [7680000, 28160000] (300*256 hPa to 1100*256 hPa, Pa*256) on success
  * @post Returns k_rx_err_invalid_state without modifying *press_out when var1 == 0
  *
  * @note Uses 64-bit arithmetic to prevent overflow at intermediate values
@@ -859,7 +859,6 @@ static rx_err_t internal_read_and_compensate_adc(bmp280_data_t* out)
 rx_err_t rx_bmp280_read(bmp280_data_t* out)
 {
   RX_CHECK_NULL_PTR(out, s_tag, "Output data pointer is NULL");
-  RX_ASSERT(s_initialized, "BMP280 not initialized");
 
   if (!s_initialized) {
     return k_rx_err_not_initialized;

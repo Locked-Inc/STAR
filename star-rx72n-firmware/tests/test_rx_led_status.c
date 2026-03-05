@@ -315,7 +315,7 @@ typedef enum : uint8_t {
  * consistent naming and avoids magic numbers per STAR coding standards.
  *
  * Production source: star-rx72n-firmware/src/inc/hardware_config.h
- * lines 525-539 (led_ports_t and led_pins_t enums).
+ * lines 1075-1096 (led_ports_t and led_pins_t enums).
  *
  * @since Version 1.0.0
  */
@@ -337,7 +337,7 @@ typedef enum : uint8_t {
  * test/production drift.
  *
  * Production source: star-rx72n-firmware/src/inc/hardware_config.h
- * lines 525-539 (led_ports_t and led_pins_t enums).
+ * lines 1075-1096 (led_ports_t and led_pins_t enums).
  */
 static_assert((uint8_t)k_led_0_port == (uint8_t)k_expected_porta,
               "LED0 port must match production (PORTA=10)");

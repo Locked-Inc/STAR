@@ -130,6 +130,12 @@ typedef enum : uint16_t {
 } imu_task_time_t;
 static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
 static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
+static_assert(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) % 1000U == 0U,
+              "IMU period must map to a whole number of ThreadX ticks");
+static_assert(
+  (uint32_t)k_imu_task_period_ticks ==
+    (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) / 1000U),
+  "k_imu_task_period_ticks must match k_imu_task_period_ms / TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
  * Static State
@@ -553,10 +559,10 @@ static void internal_read_and_publish_baro(void)
  * 1. Initialize BNO055 via rx_bno055_init() (~700 ms for POR)
  * 2. Initialize BMP280 via rx_bmp280_init() (~2 ms for calib read)
  * 3. Enter 50 ms periodic loop:
- *    a. Retry init for any sensor that failed startup (until success)
- *    b. internal_read_and_publish_imu() if bno_ready - BNO055 -> shared_data_update_imu()
- *    c. internal_read_and_publish_baro() if bmp_ready - BMP280 -> shared_data_update_baro()
- *    d. Feed IWDT heartbeat
+ *    a. Feed IWDT heartbeat FIRST (must precede any blocking sensor re-init)
+ *    b. Retry init for any sensor that failed startup (until success)
+ *    c. internal_read_and_publish_imu() if bno_ready - BNO055 -> shared_data_update_imu()
+ *    d. internal_read_and_publish_baro() if bmp_ready - BMP280 -> shared_data_update_baro()
  *    e. Sleep 5 ticks (50 ms)
  *
  * Both sensors are initialized before the poll loop. If either init fails,

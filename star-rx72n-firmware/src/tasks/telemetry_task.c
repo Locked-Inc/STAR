@@ -791,12 +791,12 @@ typedef enum : uint16_t {
    * - Fault flags (uint32): 5 bytes (varint encoding)
    * - Encoders (4 x EncoderData): 4 x 40 bytes = 160 bytes
    * - Temperature (double): 9 bytes (fixed64)
-   * - IMU (ImuData - 12 doubles + 1 uint32): ~125 bytes
+   * - IMU (ImuData - 15 doubles + 1 uint32): ~124 bytes
    * - Baro (BaroData - 2 doubles): ~20 bytes
    * - Obstacle (ObstacleData): ~28 bytes
    * - Protobuf overhead (tags, lengths): ~60 bytes
-   * - **Total worst-case:** ~560 bytes
-   * - **Buffer size:** 768 bytes (1.37x safety margin)
+   * - **Total worst-case:** ~563 bytes
+   * - **Buffer size:** 768 bytes (1.36x safety margin)
    *
    * @note Buffer is statically allocated (no dynamic allocation, NASA Rule 3)
    * @warning If message size exceeds 768 bytes, `rx_nanopb_encode_telemetry()`

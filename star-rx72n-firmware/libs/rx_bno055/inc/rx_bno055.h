@@ -175,6 +175,7 @@ typedef enum : uint16_t {
     16U, /**< Degrees-per-unit for heading/roll/pitch (divide by 16 for degrees) */
   k_bno055_scale_quat = 16384U, /**< Quaternion unit (2^14; divide by 16384 for normalized float) */
   k_bno055_scale_acc  = 100U,   /**< m/s^2 per unit for linear acceleration (divide by 100) */
+  k_bno055_scale_gyro = 16U,    /**< deg/s per unit for gyro fields (divide by 16 for deg/s) */
 } bno055_scale_t;
 
 /**
@@ -221,14 +222,11 @@ typedef struct {
     lin_acc_y; /**< Linear accel Y in m/s^2 * k_bno055_scale_acc (divide by k_bno055_scale_acc for m/s^2) */
   int16_t
     lin_acc_z; /**< Linear accel Z in m/s^2 * k_bno055_scale_acc (divide by k_bno055_scale_acc for m/s^2) */
-  int16_t
-    gyro_x_dps16; /**< Gyroscope X in dps * k_bno055_scale_gyro_lsb_per_dps (divide by 16 for deg/s) */
-  int16_t
-    gyro_y_dps16; /**< Gyroscope Y in dps * k_bno055_scale_gyro_lsb_per_dps (divide by 16 for deg/s) */
-  int16_t
-    gyro_z_dps16; /**< Gyroscope Z in dps * k_bno055_scale_gyro_lsb_per_dps (divide by 16 for deg/s) */
-  int8_t  temp_degc;  /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
-  uint8_t calib_stat; /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
+  int16_t gyro_x_dps16; /**< Gyroscope X in dps * k_bno055_scale_gyro (divide by 16 for deg/s) */
+  int16_t gyro_y_dps16; /**< Gyroscope Y in dps * k_bno055_scale_gyro (divide by 16 for deg/s) */
+  int16_t gyro_z_dps16; /**< Gyroscope Z in dps * k_bno055_scale_gyro (divide by 16 for deg/s) */
+  int8_t  temp_degc;    /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
+  uint8_t calib_stat;   /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
 } bno055_data_t;
 
 /* =============================================================================
@@ -294,12 +292,13 @@ typedef struct {
  * @brief Read current BNO055 fusion output data
  *
  * @details
- * Performs five I2C read transactions to collect all fusion output data:
- * 1. Read 6 bytes from 0x1A: Euler heading(2) + roll(2) + pitch(2)
- * 2. Read 8 bytes from 0x20: Quaternion W(2) + X(2) + Y(2) + Z(2)
- * 3. Read 6 bytes from 0x28: Linear accel X(2) + Y(2) + Z(2)
- * 4. Read 1 byte from 0x34: Temperature
- * 5. Read 1 byte from 0x35: Calibration status
+ * Performs six I2C read transactions to collect all fusion output data:
+ * 1. Read 6 bytes from 0x14: Gyroscope X(2) + Y(2) + Z(2)
+ * 2. Read 6 bytes from 0x1A: Euler heading(2) + roll(2) + pitch(2)
+ * 3. Read 8 bytes from 0x20: Quaternion W(2) + X(2) + Y(2) + Z(2)
+ * 4. Read 6 bytes from 0x28: Linear accel X(2) + Y(2) + Z(2)
+ * 5. Read 1 byte from 0x34: Temperature
+ * 6. Read 1 byte from 0x35: Calibration status
  *
  * All multi-byte values are assembled in little-endian format (LSB | (MSB << 8)).
  *
@@ -316,6 +315,7 @@ typedef struct {
  * @pre rx_bno055_init() called successfully
  * @pre out must point to valid bno055_data_t storage
  *
+ * @post out->gyro_x/y/z_dps16 contains gyroscope angular rate (divide by 16 for deg/s)
  * @post out->heading_deg16 contains Euler heading in 1/16 degree units
  * @post out->quat_w/x/y/z contains unit quaternion (divide by 16384)
  * @post out->lin_acc_x/y/z contains linear acceleration (divide by 100 for m/s^2)
@@ -325,8 +325,8 @@ typedef struct {
  * @note Calibration improves over time as sensor moves; check calib_stat
  *
  * @par Performance:
- * - Execution time: ~2 ms at 400 kHz I2C (5 transactions)
- * - I2C bytes transferred: 22 bytes read
+ * - Execution time: ~2 ms at 400 kHz I2C (6 transactions)
+ * - I2C bytes transferred: 28 bytes read
  *
  * @see rx_bno055_is_calibrated() Check calibration before relying on data
  * @see bno055_scale_t Scale factor constants for unit conversion
