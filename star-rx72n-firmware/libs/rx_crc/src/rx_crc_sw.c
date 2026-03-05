@@ -59,8 +59,9 @@ typedef enum : uint8_t {
  * @brief CRC-16/IBM reflected polynomial (0x8005 reflected = 0xA001)
  */
 typedef enum : uint16_t {
-  k_crc16_ibm_poly = 0xA001U, /**< IBM poly, reflected form */
-  k_crc16_init     = 0x0000U, /**< Initial value */
+  k_crc16_ibm_poly  = 0xA001U, /**< IBM poly, reflected form */
+  k_crc16_init      = 0x0000U, /**< Initial value */
+  k_crc16_final_xor = 0x0000U, /**< Final XOR value (0 = no XOR applied) */
 } rx_crc16_constants_t;
 
 /**

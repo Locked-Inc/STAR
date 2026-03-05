@@ -133,11 +133,17 @@ rx_err_t rx_crc_deinit(void)
  *       CRC implementations use the reflected (LSB-first) form which matches
  *       the hardware behavior for IEEE 802.3, Kermit, and Maxim protocols.
  *
+ * @param[in]  config     CRC configuration (poly, bit_order, backend, dma.timeout_cycles)
+ * @param[in]  data       Input buffer (non-NULL, at least len bytes)
+ * @param[in]  len        Number of bytes to process [1, k_crc_len_max]
+ * @param[out] result_out Computed CRC value; valid only on k_rx_ok return
+ *
  * @return rx_err_t
- * @retval k_rx_ok              CRC computed; *result_out is valid
- * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
- * @retval k_rx_err_invalid_arg len == 0 or len > k_crc_len_max or invalid backend
- * @retval other                Propagated from hardware backend (RX72N only)
+ * @retval k_rx_ok                  CRC computed; *result_out is valid
+ * @retval k_rx_err_null_ptr        config, data, or result_out is NULL
+ * @retval k_rx_err_invalid_arg     len == 0 or len > k_crc_len_max or invalid backend
+ * @retval k_rx_err_not_initialized hw_cpu or hw_dma backend used before rx_crc_init()
+ * @retval other                    Propagated from hardware backend (RX72N only)
  *
  * @pre config, data, result_out must not be NULL
  * @pre len must be in [1, k_crc_len_max]
@@ -167,9 +173,15 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
 
 #ifdef __RX__
     case k_rx_crc_backend_hw_cpu:
+      if (!s_crc_initialized) {
+        return k_rx_err_not_initialized;
+      }
       return internal_crc_hw_cpu_compute(config, data, len, result_out);
 
     case k_rx_crc_backend_hw_dma:
+      if (!s_crc_initialized) {
+        return k_rx_err_not_initialized;
+      }
       return internal_crc_hw_dma_compute(config, data, len, result_out);
 #else
     /* Host build: hardware backends not available - fall back to software */
@@ -194,6 +206,11 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
  * @note The correct seed for the first call is 0U (not 0xFFFFFFFF). Internally,
  *       the function un-finalizes by XOR with 0xFFFFFFFF, so crc=0 produces the
  *       correct CRC-32 initial accumulator state of 0xFFFFFFFF.
+ *
+ * @param[in] crc  Running CRC state; use 0U for the first chunk, or the return
+ *                 value of the previous rx_crc32_update() call for subsequent chunks
+ * @param[in] data Input data pointer; NULL causes pass-through (crc returned unchanged)
+ * @param[in] len  Number of bytes to process; 0 causes pass-through
  *
  * @return uint32_t Updated (finalized) CRC-32 value, or original crc if data
  *         is NULL or len is 0

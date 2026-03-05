@@ -302,17 +302,22 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
  * @brief Mock implementation of rx_dmaca_abort()
  *
  * @details
- * No-op stub. The channel parameter is ignored. Returns k_rx_ok immediately
- * without modifying any state. Provided for link compatibility with code that
- * calls rx_dmaca_abort() in error-recovery paths.
+ * Validates channel range and returns k_rx_ok for valid channels or
+ * k_rx_err_invalid_arg for out-of-range channels. Does not modify any mock
+ * state; provided for link compatibility with code that calls rx_dmaca_abort()
+ * in error-recovery paths.
  *
- * @param[in] channel Channel to abort (ignored by mock)
+ * @param[in] channel Channel to abort (0 to k_dmac_channel_count-1); out-of-range
+ *                    values return k_rx_err_invalid_arg
  *
  * @return rx_err_t
- * @retval k_rx_ok Always
+ * @retval k_rx_ok             channel is in [0, k_dmac_channel_count - 1]
+ * @retval k_rx_err_invalid_arg channel >= k_dmac_channel_count
  *
- * @pre None
- * @post No mock state modified
+ * @pre Called from the test thread only; not thread-safe (no concurrent calls)
+ * @pre channel must be in [0, k_dmac_channel_count - 1] for a successful return
+ * @post Returns k_rx_ok with no state modified when channel is valid
+ * @post Returns k_rx_err_invalid_arg with no state modified when channel is out of range
  *
  * @note Not thread-safe; call only from test thread
  *

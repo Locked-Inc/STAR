@@ -20,14 +20,23 @@
  */
 
 /**
- * @brief CRC-8 Maxim constants
+ * @brief CRC-8/Maxim constants
  */
 typedef enum : uint8_t {
-  k_crc8_maxim_poly = 0x8C, /**< Reversed polynomial 0x31 */
-  k_bits_per_byte   = 8,    /**< Number of bits in a byte */
-  k_crc8_lsb_mask   = 0x01, /**< Mask for LSB */
-  k_shift_one_bit   = 1,    /**< Shift by one bit position */
+  k_crc8_maxim_poly = 0x8CU, /**< Reversed polynomial 0x31 */
+  k_bits_per_byte   = 8U,    /**< Number of bits in a byte */
+  k_crc8_lsb_mask   = 0x01U, /**< Mask for LSB */
+  k_shift_one_bit   = 1U,    /**< Shift by one bit position */
 } crc8_constants_t;
+
+/**
+ * @brief CRC-32/IEEE 802.3 constants
+ */
+typedef enum : uint32_t {
+  k_crc32_poly     = 0xEDB88320U, /**< Reflected CRC-32/IEEE polynomial (0x04C11DB7 reflected) */
+  k_crc32_xor_mask = 0xFFFFFFFFU, /**< Initial and final XOR mask (IEEE 802.3) */
+  k_crc32_lsb_mask = 0x00000001U, /**< Mask for LSB check in bitwise accumulator loop */
+} crc32_constants_t;
 
 /* =============================================================================
  * Mock State
@@ -104,6 +113,36 @@ rx_err_t rx_crc_deinit(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Incremental CRC-32/IEEE 802.3 accumulator (matches rx_crc_sw.c)
+ *
+ * @details
+ * Un-finalizes the running CRC by XOR with k_crc32_xor_mask, processes each
+ * byte with the reflected polynomial k_crc32_poly (0xEDB88320), then
+ * re-finalizes with a second XOR. Passes the input crc through unchanged when
+ * data is NULL or len is 0.
+ *
+ * This implementation is byte-identical to internal_crc32_sw_update() in
+ * rx_crc_sw.c, allowing host-side tests to verify incremental CRC results
+ * without linking the real hardware backend.
+ *
+ * @param[in] crc  Running CRC state; use 0U for the first chunk
+ * @param[in] data Input data pointer; NULL causes pass-through (crc returned unchanged)
+ * @param[in] len  Number of bytes to process; 0 causes pass-through
+ *
+ * @return uint32_t Updated finalized CRC-32 accumulator
+ * @retval crc (unchanged) if data is NULL or len is 0
+ * @retval finalized CRC-32/IEEE value covering all bytes processed so far
+ *
+ * @pre data must point to at least len valid bytes, or be NULL
+ * @pre crc must be 0U for the first call, or the return value of a prior call
+ * @post Returns finalized CRC-32; no internal state retained across calls
+ * @post No side effects; pure computation, no mock state modified
+ *
+ * @note Not thread-safe; call only from the test thread
+ *
+ * @since Version 1.0.0
+ */
 uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
 {
   if (data == nullptr || len == 0U) {
@@ -111,18 +150,18 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
   }
 
   /* Un-finalize previous CRC, process bytes, re-finalize (matches rx_crc_sw.c) */
-  uint32_t work = crc ^ 0xFFFFFFFFU;
+  uint32_t work = crc ^ (uint32_t)k_crc32_xor_mask;
 
   for (uint32_t i = 0U; i < len; i++) {
     work ^= (uint32_t)data[i];
     for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
-      if ((work & k_crc8_lsb_mask) != 0U) {
-        work = (work >> k_shift_one_bit) ^ 0xEDB88320U; /* CRC-32 reflected poly */
+      if ((work & (uint32_t)k_crc32_lsb_mask) != 0U) {
+        work = (work >> k_shift_one_bit) ^ (uint32_t)k_crc32_poly;
       } else {
         work >>= k_shift_one_bit;
       }
     }
   }
 
-  return work ^ 0xFFFFFFFFU;
+  return work ^ (uint32_t)k_crc32_xor_mask;
 }

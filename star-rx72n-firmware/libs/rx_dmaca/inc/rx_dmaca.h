@@ -243,6 +243,9 @@ typedef struct {
  * @post DMAST.DMST = 0 (all channels suspended)
  * @post MSTPCRA bit 28 = 1 (module stopped)
  *
+ * @warning Calling deinit while a DMA transfer is in progress results in undefined
+ *          behavior and potential data corruption at the destination address.
+ *
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_dmaca_deinit(void);

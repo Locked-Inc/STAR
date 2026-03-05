@@ -84,6 +84,18 @@ typedef enum : uint32_t {
   k_crc32_ieee_ff   = 0xFF000000U, /**< CRC-32/ISO-HDLC of {0xFF} */
 } crc_single_byte_vectors_t;
 
+/** @brief Chunk sizes for incremental CRC-32 update test */
+typedef enum : uint32_t {
+  k_chunk_first_len  = 4U, /**< First chunk: bytes 0-3 of "123456789" */
+  k_chunk_second_len = 5U, /**< Second chunk: bytes 4-8 of "123456789" (4+5=9) */
+} crc_chunk_sizes_t;
+
+/** @brief Mock DMAC constants for direct mock interaction tests */
+typedef enum : uint32_t {
+  k_mock_crc_dst_addr   = 0x00088284U, /**< CRCDIR register address (DMA destination) */
+  k_mock_timeout_cycles = 50000U,      /**< Timeout cycles for mock DMA transfer test */
+} crc_mock_constants_t;
+
 /* =============================================================================
  * Unity Fixtures
  * =============================================================================
@@ -687,8 +699,8 @@ void test_crc32_update_chunked_matches_single(void)
   TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(s_test_vec_9, k_test_vec_9_len, &single));
 
   /* Split 9 bytes as 4 + 5 */
-  uint32_t crc = rx_crc32_update(0U, s_test_vec_9, 4U);
-  crc          = rx_crc32_update(crc, s_test_vec_9 + 4U, 5U);
+  uint32_t crc = rx_crc32_update(0U, s_test_vec_9, k_chunk_first_len);
+  crc          = rx_crc32_update(crc, s_test_vec_9 + k_chunk_first_len, k_chunk_second_len);
   TEST_ASSERT_EQUAL_HEX32(single, crc);
 }
 
@@ -772,8 +784,8 @@ void test_mock_dmaca_preset_timeout_result(void)
     .channel        = 0U,
     .src            = s_test_vec_9,
     .len            = k_test_vec_9_len,
-    .dst_addr       = 0x00088284U,
-    .timeout_cycles = 50000U,
+    .dst_addr       = (uintptr_t)k_mock_crc_dst_addr,
+    .timeout_cycles = (uint32_t)k_mock_timeout_cycles,
   };
   rx_err_t result = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, result);

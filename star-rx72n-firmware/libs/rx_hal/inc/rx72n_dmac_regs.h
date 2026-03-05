@@ -384,6 +384,7 @@ typedef enum : uint8_t {
   k_dmint_rptie    = 0x04U, /**< Repeat size end interrupt enable */
   k_dmint_esie     = 0x08U, /**< Transfer escape end interrupt enable */
   k_dmint_dtie     = 0x10U, /**< Transfer end interrupt enable */
+  k_dmint_mask     = 0x1FU, /**< Mask of all interrupt enable bits (bits 4:0) */
 } dmint_bits_t;
 
 /* =============================================================================

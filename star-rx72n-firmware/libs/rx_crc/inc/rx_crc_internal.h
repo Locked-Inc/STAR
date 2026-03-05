@@ -200,7 +200,7 @@ uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t le
  * @retval k_rx_ok              Success
  * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
  * @retval k_rx_err_invalid_arg CRC-32/CRC-32C buffer pointer or length not aligned
- *                              to k_hw_crc32_alignment_bytes (4 bytes)
+ *                              to k_hw_crc32_alignment_bytes
  * @retval k_rx_err_timeout     DMA timed out
  *
  * @pre CRC and DMAC peripherals must be initialized

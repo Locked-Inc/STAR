@@ -64,8 +64,9 @@ typedef enum : uintptr_t {
 
 /** @brief Byte counts for transfer tests */
 typedef enum : uint32_t {
-  k_test_len_aligned   = 8U, /**< 8 bytes - multiple of 4 */
-  k_test_len_unaligned = 7U, /**< 7 bytes - not multiple of 4 */
+  k_test_len_aligned      = 8U,     /**< 8 bytes - multiple of 4 */
+  k_test_len_unaligned    = 7U,     /**< 7 bytes - not multiple of 4 */
+  k_test_len_max_plus_one = 65536U, /**< One beyond the 65535-byte DMA max (invalid) */
 } test_dmaca_len_t;
 
 /* =============================================================================
@@ -243,7 +244,7 @@ void test_transfer_len_too_large(void)
 {
   (void)rx_dmaca_init();
   rx_dmaca_config_t cfg =
-    internal_make_config(65536U, k_test_dst_addr_aligned, k_test_timeout_normal);
+    internal_make_config(k_test_len_max_plus_one, k_test_dst_addr_aligned, k_test_timeout_normal);
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
