@@ -130,11 +130,15 @@ typedef enum : uint16_t {
 } imu_task_time_t;
 static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
 static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
-static_assert(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) % 1000U == 0U,
-              "IMU period must map to a whole number of ThreadX ticks");
+static_assert(
+  ((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
+      (uint32_t)k_imu_ms_per_second ==
+    0U,
+  "IMU period must map to a whole number of ThreadX ticks");
 static_assert(
   (uint32_t)k_imu_task_period_ticks ==
-    (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) / 1000U),
+    (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) /
+     (uint32_t)k_imu_ms_per_second),
   "k_imu_task_period_ticks must match k_imu_task_period_ms / TX_TIMER_TICKS_PER_SECOND");
 
 /* =============================================================================
