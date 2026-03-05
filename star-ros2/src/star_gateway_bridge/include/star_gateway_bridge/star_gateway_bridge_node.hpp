@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file star_gateway_bridge_node.hpp
  * @brief ROS2 Gateway Bridge Node -- bridges the ROS2 ecosystem with the Go
@@ -13,7 +14,9 @@
  * connection fails the node continues and retries via the watchdog timer.
  *
  * @since Version 1.0.0
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

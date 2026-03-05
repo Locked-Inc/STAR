@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_spi_comm/inc/rx_spi_comm.h */
 
 /**
@@ -370,7 +371,7 @@
  * - RX72N_Manual_Chapters/Ch25_SPI.txt - RSPI peripheral specification
  *
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  *
  * @see rx_frame.h Frame protocol layer

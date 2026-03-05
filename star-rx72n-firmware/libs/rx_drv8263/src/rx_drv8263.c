@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_drv8263.c
  * @brief DRV8263H-Q1 Motor Driver Chip-Level Control Implementation
@@ -32,7 +33,7 @@
  *
  * @author STAR Team
  * @date 2026-03-03
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @version 1.0.0
  */
 

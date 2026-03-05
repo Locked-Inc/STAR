@@ -76,7 +76,7 @@
  * @see resetprg.c PowerON_Reset_PC() function (reset vector target)
  * @see default_interrupt_handlers.c Exception handler implementations
  *
- * @copyright Copyright (c) 2019 Renesas Electronics Corporation
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  * @copyright Modified 2026 STAR Project - Adapted to STAR coding standards
  *
  * @par History

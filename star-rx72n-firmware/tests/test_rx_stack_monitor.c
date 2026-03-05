@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file test_rx_stack_monitor.c
  * @brief Unit Tests for ThreadX Stack Overflow Detection and High-Water Mark Monitoring
@@ -57,7 +58,7 @@
  *
  * @since Version 1.0.0
  * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stdint.h>

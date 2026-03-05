@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/inc/rx72n_regs.h */
 
 /**
@@ -242,7 +243,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @see hardware.h for type-safe HAL API (recommended for application code)
  * @see Renesas RX72N Group User's Manual: Hardware (Rev.1.00)

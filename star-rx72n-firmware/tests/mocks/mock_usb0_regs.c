@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file mock_usb0_regs.c
  * @brief Mock USB0/ICU/SYSTEM Register Implementation
@@ -6,7 +7,7 @@
  * USB driver code on the host without actual hardware.
  *
  * @date 2025-12-01
- * @copyright Copyright (c) 2025 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_usb0_regs.h"

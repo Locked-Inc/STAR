@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_motor/src/rx_motor.c */
 
 /**
@@ -210,7 +211,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @version 1.0.0
  */
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_encoder/inc/rx_encoder_tpu.h */
 
 /**
@@ -77,7 +78,7 @@
  *
  * @author STAR Team
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

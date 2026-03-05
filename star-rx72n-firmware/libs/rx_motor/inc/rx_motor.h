@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_motor/inc/rx_motor.h */
 
 /**
@@ -232,7 +233,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @see rx_gptw.h for GPTW peripheral API
  * @see lib/rx_pid/ for PID controller (velocity control)

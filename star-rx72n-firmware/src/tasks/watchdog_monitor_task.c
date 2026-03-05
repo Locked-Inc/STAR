@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* src/tasks/watchdog_monitor_task.c */
 
 /**
@@ -92,7 +93,7 @@
  * @version 1.0.0
  * @author STAR Team
  * @date 2026-02-16
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

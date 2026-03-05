@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/rx72n_system_regs.h */
 
 /**
@@ -289,7 +290,7 @@
  *
  * @author STAR Team
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @version 1.0.0
  * @since Version 1.0.0

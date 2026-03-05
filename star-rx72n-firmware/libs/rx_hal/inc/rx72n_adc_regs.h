@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/inc/rx72n_adc_regs.h */
 
 /**
@@ -100,7 +101,7 @@
  * @author STAR Team
  * @date 2026-01-28
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_rx_ds18b20.c */
 
 /**
@@ -6,7 +7,7 @@
  *
  * @author STAR Team
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_rx_ds18b20.h"

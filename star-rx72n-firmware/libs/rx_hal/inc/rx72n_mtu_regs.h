@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/inc/rx72n_mtu_regs.h */
 
 /**
@@ -133,7 +134,7 @@
  * @author STAR Project Contributors
  * @date 2026-01-01
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @defgroup mtu_regs MTU Register Definitions
  * @{

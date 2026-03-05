@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // main.cpp - STAR Gateway Bridge Standalone Executable
 // Entry point for running star_gateway_bridge node as standalone process.
 //
@@ -19,7 +20,9 @@
  *   ros2 run star_gateway_bridge star_gateway_bridge_main \
  *     --ros-args -p gateway_address:=192.168.1.100:50051 \
  *                -p telemetry_rate_hz:=20.0
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 int main(int argc, char **argv)
 {
   // Initialize ROS2

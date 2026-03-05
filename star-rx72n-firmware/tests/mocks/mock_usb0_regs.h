@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file mock_usb0_regs.h
  * @brief Mock USB0/ICU/SYSTEM Register Structures for Host-Side Testing
@@ -12,7 +13,7 @@
  * - Use helper functions to set up register state for tests
  *
  * @date 2025-12-01
- * @copyright Copyright (c) 2025 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

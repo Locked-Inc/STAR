@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hcsr04/src/rx_hcsr04_hal.h */
 
 /**
@@ -262,7 +263,7 @@
  * @see rx_port_constants.h GPIO pin type definitions
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

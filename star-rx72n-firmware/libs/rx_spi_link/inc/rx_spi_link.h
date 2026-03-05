@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_spi_link.h
  * @brief SPI Link Layer with HARQ
@@ -97,7 +98,7 @@
  *
  * @author STAR Team
  * @date 2026-02-14
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @since Version 1.0.0
  */

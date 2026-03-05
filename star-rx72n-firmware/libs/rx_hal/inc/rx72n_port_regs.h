@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/inc/rx72n_port_regs.h */
 
 /**
@@ -155,7 +156,7 @@
  * @author STAR Project Contributors
  * @date 2026-01-05
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @defgroup port_regs PORT Register Definitions
  * @{

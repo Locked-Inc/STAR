@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/inc/rx72n_lvda_regs.h */
 
 /**
@@ -101,7 +102,7 @@
  *
  * @author STAR Team
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

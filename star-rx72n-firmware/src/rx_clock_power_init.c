@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* src/rx_clock_power_init.c */
 
 /**
@@ -234,7 +235,7 @@
  * - v1.0.0 (2026-01): Initial implementation with 240 MHz PLL and USB clock
  *
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "rx_clock_power_init.h"

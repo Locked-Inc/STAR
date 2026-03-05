@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_gpio_hal.c */
 
 /**
@@ -36,7 +37,7 @@
  * @author STAR Team
  * @date 2026-01-05
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_gpio_hal.h"

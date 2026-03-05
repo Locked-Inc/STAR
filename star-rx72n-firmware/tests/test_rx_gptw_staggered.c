@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/test_rx_gptw_staggered.c */
 
 /**
@@ -275,7 +276,7 @@
  *
  * @author STAR Team
  * @date 2026-01-24
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  *
  * @test test_staggered_init_success

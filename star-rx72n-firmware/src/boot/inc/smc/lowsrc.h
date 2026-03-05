@@ -78,7 +78,7 @@
  * @author STAR Project (Locked, Inc.)
  * @date 2013 (original), 2026 (STAR modifications)
  * @version 3.01
- * @copyright Copyright (C) 2013 Renesas Electronics Corporation. Modified by Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description

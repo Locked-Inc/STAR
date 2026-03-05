@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hcsr04/src/rx_hcsr04_hal_hw.c */
 
 /**
@@ -424,7 +425,7 @@
  * @see rx72n_cmt_regs.h CMT2 register definitions
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stdbool.h>

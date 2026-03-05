@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_clock_power_init.h
  * @brief RX72N System Clock and Power Management Initialization
@@ -7,7 +8,9 @@
  * the RX72N for 240 MHz operation with PLL.
  *
  * @see rx_clock_power_init.c Implementation
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

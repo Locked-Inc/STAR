@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  ******************************************************************************
  * @file           : main.c
@@ -14,7 +15,9 @@
  * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #include <stdint.h>
 

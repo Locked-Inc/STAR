@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/rx_hcsr04_hal_mock.c */
 
 /**
@@ -134,7 +135,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @version 1.0.0
  *
  * @since Version 1.0.0

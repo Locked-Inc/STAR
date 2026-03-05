@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // message_converter.cpp - ROS2 <-> Protobuf Message Converter Implementation
 // Bidirectional conversion between ROS2 standard messages and STAR Protocol
 // Buffers.
@@ -19,7 +20,9 @@ namespace star::star_gateway_bridge
 namespace
 {
 
-/** @brief Microseconds in one second for ROS timestamp conversion. */
+/** @brief Microseconds in one second for ROS timestamp conversion. 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 constexpr int64_t US_PER_SEC = 1'000'000LL;
 /** @brief Nanoseconds in one microsecond for ROS timestamp conversion. */
 constexpr int64_t NS_PER_US = 1'000LL;

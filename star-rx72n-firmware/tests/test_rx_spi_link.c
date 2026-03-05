@@ -21,7 +21,7 @@
  * @author STAR Project Team - Texas A&M University
  * @date January 2026
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @par License
  * SPDX-License-Identifier: MIT

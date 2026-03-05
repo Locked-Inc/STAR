@@ -1,5 +1,7 @@
+// SPDX-License-Identifier: MIT
 // Copyright 2026 Locked Inc.
 
+// @copyright Copyright (c) 2026 Locked Inc.
 #include "star_spi_bridge/spi_driver.hpp"
 
 #include <gtest/gtest.h>  // NOLINT

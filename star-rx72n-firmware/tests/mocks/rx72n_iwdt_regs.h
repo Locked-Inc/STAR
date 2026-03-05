@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/rx72n_iwdt_regs.h */
 
 /**
@@ -11,7 +12,7 @@
  * the real header.
  *
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

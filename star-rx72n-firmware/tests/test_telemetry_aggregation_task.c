@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/test_telemetry_aggregation_task.c */
 
 /**
@@ -16,7 +17,7 @@
  *
  * @author STAR Team
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <string.h>

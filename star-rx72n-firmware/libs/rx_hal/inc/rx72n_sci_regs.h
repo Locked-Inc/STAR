@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/inc/rx72n_sci_regs.h */
 
 /**
@@ -143,7 +144,7 @@
  * @author STAR Project Contributors
  * @date 2026-01-28
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @defgroup sci_regs SCI Register Definitions
  * @{

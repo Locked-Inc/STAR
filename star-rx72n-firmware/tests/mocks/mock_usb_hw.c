@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_usb_hw.c */
 
 /**
@@ -9,7 +10,7 @@
  * that can be linked instead of the real hardware implementations.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_usb_hw.h"

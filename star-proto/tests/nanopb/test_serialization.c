@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file test_serialization.c
  * @brief nanopb C Protobuf Serialization Tests
@@ -7,7 +8,9 @@
  *
  * STAR Project - Texas A&M University
  * December 2025
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #include "unity.h"
 #include <string.h>

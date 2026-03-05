@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_ds18b20/src/rx_ds18b20.c */
 
 /**
@@ -196,7 +197,7 @@
  * @see rx_crc.h
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "rx_ds18b20.h"

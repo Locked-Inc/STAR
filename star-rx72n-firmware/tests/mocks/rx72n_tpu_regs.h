@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/rx72n_tpu_regs.h */
 
 /**
@@ -21,7 +22,7 @@
  *
  * @author STAR Team
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

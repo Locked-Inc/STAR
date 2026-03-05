@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file hardware_init.h
  * @brief Application-Specific Hardware Initialization
@@ -7,7 +8,9 @@
  * application peripherals after system clock setup.
  *
  * @see hardware_init.c Implementation
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_uart_hw.c */
 
 /**
@@ -7,7 +8,7 @@
  * Provides mock UART HAL functions with TX/RX FIFO buffers for testing.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_uart_hw.h"

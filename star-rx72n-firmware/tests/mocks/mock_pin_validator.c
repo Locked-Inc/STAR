@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_pin_validator.c */
 
 /**
@@ -8,7 +9,7 @@
  * Used for testing and validating the DIP pattern.
  *
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_pin_validator.h"

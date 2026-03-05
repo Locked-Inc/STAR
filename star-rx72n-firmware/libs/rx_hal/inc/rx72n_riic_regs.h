@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/inc/rx72n_riic_regs.h */
 
 /**
@@ -168,7 +169,7 @@
  * @see rx72n_mpc_regs.h MPC pin configuration for I2C pins
  *
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

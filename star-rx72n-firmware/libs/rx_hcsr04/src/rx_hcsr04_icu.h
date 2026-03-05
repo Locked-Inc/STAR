@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_hcsr04_icu.h
  * @brief HC-SR04 ICU (Interrupt Controller Unit) Configuration Layer
@@ -55,7 +56,7 @@
  *
  * @author STAR Team
  * @date 2026-02-16
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @version 1.0.0
  * @since Version 1.0.0
  *

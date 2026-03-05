@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file message_converter.hpp
  * @brief Bidirectional conversion between ROS2 standard messages and STAR
@@ -13,7 +14,9 @@
  * different threads on separate message instances.
  *
  * @since Version 1.0.0
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

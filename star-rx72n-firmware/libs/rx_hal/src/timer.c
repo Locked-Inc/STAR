@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hal/src/timer.c */
 
 /**
@@ -183,7 +184,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stdint.h>

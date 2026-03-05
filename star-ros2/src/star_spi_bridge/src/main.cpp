@@ -1,5 +1,7 @@
+// SPDX-License-Identifier: MIT
 // Copyright 2026 Locked Inc.
 
+// @copyright Copyright (c) 2026 Locked Inc.
 #include "star_spi_bridge/star_spi_driver_node.hpp"
 
 #include <rclcpp/rclcpp.hpp>

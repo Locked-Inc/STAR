@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file platform.h
  * @brief Boot platform header providing BSP definitions for boot file compilation
@@ -16,7 +17,7 @@
  * @see r_bsp.h Boot-compatible BSP header
  * @see boot_common.h Common boot definitions
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

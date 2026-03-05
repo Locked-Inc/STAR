@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_encoder/src/rx_mtu_encoder.c */
 
 /**
@@ -358,7 +359,7 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "rx_mtu_encoder.h"

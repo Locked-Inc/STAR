@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/test_rx_spi_comm.c */
 
 /**
@@ -215,7 +216,7 @@
  *
  * @author STAR Team
  * @date 2026-01-30
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @test Tests run via Unity framework with: make test_rx_spi_comm
  */

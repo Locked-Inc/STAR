@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_pin_validator.h */
 
 /**
@@ -25,7 +26,7 @@
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
  * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
  * - Query functions to verify pin operations in tests
  *

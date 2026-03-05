@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_session.h
  *
@@ -60,7 +61,9 @@
  *
  * @par STAR Project - Texas A&M University
  * @par February 2026
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_frame/src/rx_frame.c */
 
 /**
@@ -169,7 +170,7 @@
  *
  * @author STAR Team
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

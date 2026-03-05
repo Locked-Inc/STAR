@@ -73,7 +73,7 @@
  * @see rx72n.ld GNURX linker script (equivalent for GNURX builds)
  * @see RX72N Manual Chapter 4 - Address Space (memory layout)
  *
- * @copyright Copyright (c) 2013 Renesas Electronics Corporation
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  * @copyright Modified 2026 STAR Project - Added comprehensive Doxygen
  *
  * @par History

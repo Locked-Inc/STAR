@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file led_status_task.h
  * @brief LED Status Indicator Task - Visual System Health Feedback
@@ -22,7 +23,7 @@
  * @see shared_data.h Source of system state data
  * @see hardware_config.h LED pin assignments
  *
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

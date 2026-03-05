@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file motor_control_task.h
  * @brief Motor Control Task - 250 Hz PID-Based Velocity Control
@@ -29,7 +30,7 @@
  * @see rx_pid.h PID controller
  * @see rx_motor.h Motor abstraction and DRV8263H driver control
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

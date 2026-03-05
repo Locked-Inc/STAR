@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/test_rx_hcsr04.c */
 
 /**
@@ -344,7 +345,7 @@
  * @endcode
  *
  * @date 2026-01-02
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <string.h>

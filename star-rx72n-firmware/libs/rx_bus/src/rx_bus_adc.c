@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_bus/src/rx_bus_adc.c */
 
 /**
@@ -176,7 +177,7 @@
  * @author STAR Team
  * @date 2026-01-30
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "rx_bus_adc.h"

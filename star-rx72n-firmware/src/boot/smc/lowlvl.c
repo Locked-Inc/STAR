@@ -57,7 +57,7 @@
  * @see uart_debug_puts() STAR custom debug output (production alternative)
  * @see r_bsp_config.h BSP_CFG_IO_LIB_ENABLE, BSP_CFG_USER_CHARPUT_ENABLED
  *
- * @copyright Copyright (c) 2013 Renesas Electronics Corporation
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  * @copyright Modified 2026 STAR Project - Added comprehensive Doxygen
  *
  * @par History

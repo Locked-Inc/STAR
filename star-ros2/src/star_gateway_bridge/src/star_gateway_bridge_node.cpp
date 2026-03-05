@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // star_gateway_bridge_node.cpp - ROS2 Gateway Bridge Node Implementation
 // Bridges ROS2 ecosystem with Go gateway service via gRPC.
 //
@@ -61,7 +62,9 @@ static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_dete
  * no gRPC connection on startup.
  *
  * @since Version 1.0.0
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options)
 : Node("star_gateway_bridge", options), grpc_connected_(false),
   reconnect_attempts_(0)

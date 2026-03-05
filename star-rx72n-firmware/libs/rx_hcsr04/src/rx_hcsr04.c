@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hcsr04/src/rx_hcsr04.c */
 
 /**
@@ -513,7 +514,7 @@
  * @see rx_hcsr04_hal_hw.c RX72N hardware implementation
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "rx_hcsr04.h"

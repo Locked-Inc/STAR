@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 // Copyright 2026 Locked Inc.
 
 #include "star_spi_bridge/spi_message_converter.hpp"
@@ -224,7 +225,9 @@ void SpiMessageConverter::telemetry_to_joint_state(
  * @see SpiMessageConverter::telemetry_to_joint_state Related telemetry conversion.
  *
  * @since Version 1.0.0
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 void SpiMessageConverter::telemetry_to_obstacle_ranges(
   const star::v1::TelemetryData & telemetry,
   sensor_msgs::msg::Range & front_left,

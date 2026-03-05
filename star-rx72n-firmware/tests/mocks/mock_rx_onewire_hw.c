@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_rx_onewire_hw.c */
 
 /**
@@ -8,7 +9,7 @@
  * access functions for host-side OneWire driver testing.
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_rx_onewire_hw.h"

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file test_rx_bus_onewire.c
  * @brief Unit Tests for 1-Wire Bus Protocol Implementation
@@ -294,7 +295,7 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <string.h>

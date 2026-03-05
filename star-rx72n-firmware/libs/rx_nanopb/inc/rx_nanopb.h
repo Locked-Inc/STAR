@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_nanopb/inc/rx_nanopb.h */
 
 /**
@@ -159,7 +160,7 @@
  *
  * @version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

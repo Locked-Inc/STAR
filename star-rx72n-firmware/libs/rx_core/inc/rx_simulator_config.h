@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_simulator_config.h
  * @brief Configuration for e^2 studio simulator support
@@ -68,7 +69,9 @@
  *
  * @see rx_clock_power_init.c Clock initialization with simulator support
  * @see rx_log.h Logging infrastructure with simulator output
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

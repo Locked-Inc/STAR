@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_sci_regs.c */
 
 /**
@@ -8,7 +9,7 @@
  * UART driver code on the host without actual hardware.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_sci_regs.h"

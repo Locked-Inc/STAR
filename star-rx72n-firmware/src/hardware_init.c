@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* src/hardware_init.c */
 
 /**
@@ -190,7 +191,7 @@
  * - v1.0.0 (2026-01): Initial implementation with timers and UART
  *
  * @date 2026-01-14
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "hardware_init.h"

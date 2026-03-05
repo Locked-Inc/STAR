@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_usb/src/rx_usb_internal.h */
 
 /**
@@ -8,7 +9,7 @@
  * shared between rx_usb.c and rx_usb_cdc.c. Not for public use.
  *
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

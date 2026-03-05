@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file r_bsp.h
  * @brief Boot-compatible minimal replacement for full Renesas SMC r_bsp.h
@@ -18,7 +19,7 @@
  * @see boot_common.h Common boot definitions
  * @see r_bsp_config.h BSP configuration macros
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

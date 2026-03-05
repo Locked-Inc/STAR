@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/test_rx_session.c */
 
 /**
@@ -21,7 +22,9 @@
  *
  * @see rx_session.h  Module under test
  * @see star-gateway/internal/manager/session.go  Go reference
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #include <string.h>
 

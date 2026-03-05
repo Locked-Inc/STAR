@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_riic_hal.c */
 
 /**
@@ -7,7 +8,7 @@
  * Provides mock implementations of RIIC HAL functions for unit testing.
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_riic_hal.h"

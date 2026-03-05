@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_rx_mtu_encoder.c */
 
 /**
@@ -10,7 +11,7 @@
  * counter values, register access, and start/stop operations.
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 /* Include mock regs header FIRST to define mock types before real headers */

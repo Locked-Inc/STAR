@@ -30,6 +30,7 @@ SOURCE_EXTENSIONS = {".c", ".h", ".cpp", ".hpp"}
 
 # Path prefixes (relative to repo root) that are third-party -- never checked.
 EXEMPT_PREFIXES = (
+    "schematic/",
     "star-rx72n-firmware/libs/rx_nanopb/nanopb/",
     "star-rx72n-firmware/libs/threadx/",
     "star-ros2/src/sllidar_ros2/",
@@ -55,7 +56,7 @@ RENESAS_COPYRIGHT_RE = re.compile(
     re.MULTILINE,
 )
 SPDX_RE = re.compile(
-    r"SPDX-License-Identifier:\s*MIT\s*$",
+    r"SPDX-License-Identifier:\s*MIT",
     re.MULTILINE,
 )
 

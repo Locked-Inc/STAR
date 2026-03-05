@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file hardware_config.h
  * @brief Hardware Pin Configuration Constants for STAR RX72N Platform (144-pin LFQFP)
@@ -35,7 +36,9 @@
  *
  * @author STAR Development Team
  * @date 2026-02-09
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

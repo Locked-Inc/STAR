@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_rx_bus_manager.c */
 
 /**
@@ -17,7 +18,7 @@
  * @author STAR Team
  * @version 1.0.0
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @par NASA Power of 10 Compliance:
  * | Rule | Status | Implementation |

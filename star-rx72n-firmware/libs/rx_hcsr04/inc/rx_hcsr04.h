@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_hcsr04/inc/rx_hcsr04.h */
 
 /**
@@ -259,7 +260,7 @@
  * @see rx_ds18b20.h Temperature sensor integration
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

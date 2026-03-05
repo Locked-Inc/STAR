@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx72n_ram_regs.h
  * @brief RX72N RAM/Expansion RAM/ECCRAM register definitions
@@ -37,7 +38,7 @@
  * @see RX72N User's Manual Section 9.2.2 (MEMWAIT register)
  *
  * @since Version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

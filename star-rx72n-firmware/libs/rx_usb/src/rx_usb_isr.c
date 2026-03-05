@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_usb/src/rx_usb_isr.c */
 
 /**
@@ -300,7 +301,7 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "rx72n_regs.h"

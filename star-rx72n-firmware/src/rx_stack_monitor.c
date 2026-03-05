@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* src/rx_stack_monitor.c */
 
 /**
@@ -60,7 +61,7 @@
  *
  * @since Version 1.0.0
  * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "rx_stack_monitor.h"

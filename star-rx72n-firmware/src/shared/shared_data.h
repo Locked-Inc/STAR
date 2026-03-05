@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file shared_data.h
  * @brief Thread-Safe Shared Data Infrastructure for Multi-Task Communication
@@ -7,7 +8,9 @@
  * communication in the STAR firmware. All access is mutex-protected.
  *
  * @see shared_data.c Implementation
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #pragma once
 

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_crc/src/rx_crc32_sw.c */
 
 /**
@@ -331,7 +332,7 @@
  *
  * @author STAR Team
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stddef.h> /* For nullptr */

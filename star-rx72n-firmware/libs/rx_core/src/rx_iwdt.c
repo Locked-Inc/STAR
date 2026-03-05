@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_core/src/rx_iwdt.c */
 
 /**
@@ -178,7 +179,7 @@
  * @author STAR Team
  * @date 2026-01-28
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT.
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @since Version 1.0.0
  */

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file spi_message_converter.hpp
  * @brief Message conversion utilities between ROS2 message types and protobuf
@@ -19,7 +20,7 @@
  *
  * @author Locked Inc.
  * @date 2026
- * @copyright Copyright 2026 Locked Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

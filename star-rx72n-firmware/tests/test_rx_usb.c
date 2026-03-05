@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/test_rx_usb.c */
 
 /**
@@ -123,7 +124,7 @@
  * @author STAR Team
  * @date 2026-01-04
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include <stdint.h>

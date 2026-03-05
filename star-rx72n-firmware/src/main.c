@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* src/main.c */
 
 /**
@@ -167,7 +168,9 @@
  *
  * @par Revision History:
  * - v1.0.0 (2026-01): Initial implementation with ThreadX RTOS bootstrap
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #include "hardware.h"
 #include "hardware_init.h"

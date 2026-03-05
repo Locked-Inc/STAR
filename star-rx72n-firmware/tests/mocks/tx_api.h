@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file tx_api.h
  * @brief Mock ThreadX RTOS API for host-side testing without ThreadX
@@ -20,7 +21,7 @@
  * @par SOLID: D - Tasks depend on RTOS interface
  *
  * @date 2026-01-11
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

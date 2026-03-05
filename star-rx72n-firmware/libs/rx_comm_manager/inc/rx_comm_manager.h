@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_comm_manager/inc/rx_comm_manager.h */
 
 /**
@@ -377,7 +378,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @par Changelog:
  * - 1.0.0 (2026-01-26): Initial implementation with USB and SPI channels

@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file test_uart_hal.c
  * @brief Comprehensive Unit Tests for RX72N UART HAL Driver
@@ -350,7 +351,7 @@
  *
  * @author STAR Team
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  *
  * @par Example Test Execution:

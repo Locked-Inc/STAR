@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file star_spi_driver_node.hpp
  * @brief ROS2 lifecycle node for the STAR SPI bridge to the RX72N peripheral MCU.
@@ -18,7 +19,7 @@
  *
  * @author Locked Inc.
  * @date 2026
- * @copyright Copyright 2026 Locked Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 

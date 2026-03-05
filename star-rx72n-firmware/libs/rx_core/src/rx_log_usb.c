@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_log_usb.c
  * @brief USB CDC logging backend implementation with boot buffering and thread safety
@@ -35,7 +36,9 @@
  *
  * @since Version 1.0.0
  * @date 2026-02-05
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+*/
 
 #include "rx_log.h"
 

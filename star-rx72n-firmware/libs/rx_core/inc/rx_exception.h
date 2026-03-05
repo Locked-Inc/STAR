@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_exception.h
  * @brief RX72N CPU Exception Handling
@@ -26,7 +27,7 @@
  * @see rx72n_icu_regs.h For NMI-related ICU registers
  *
  * @since Version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #pragma once

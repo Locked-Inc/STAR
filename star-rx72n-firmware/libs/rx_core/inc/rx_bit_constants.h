@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_core/inc/rx_bit_constants.h */
 
 /**
@@ -120,7 +121,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @see stdint.h for standard integer types
  * @see rx_gpio_constants.h for GPIO pin constants

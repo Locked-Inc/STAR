@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_pid/inc/rx_pid.h */
 
 /**
@@ -290,7 +291,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @see rx_err.h for error code definitions
  * @see matlab/motor_model_1st_order.m for system identification

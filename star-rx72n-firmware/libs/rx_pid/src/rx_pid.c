@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* lib/rx_pid/src/rx_pid.c */
 
 /**
@@ -151,7 +152,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @see rx_pid.h for comprehensive API documentation and usage examples
  * @see matlab/motor_model_1st_order.m for motor system identification

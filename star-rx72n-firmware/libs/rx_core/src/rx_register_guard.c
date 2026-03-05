@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file rx_register_guard.c
  * @brief Register Guard Implementation - ESD/EMI Protection for Critical Registers
@@ -188,7 +189,7 @@
  * @author STAR Team
  * @date 2026-01-28
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT.
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @since Version 1.0.0
  */

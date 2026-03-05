@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/mocks/mock_hcsr04_hw.c */
 
 /**
@@ -10,7 +11,7 @@
  * and error injection for comprehensive unit testing without real hardware.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  */
 
 #include "mock_hcsr04_hw.h"

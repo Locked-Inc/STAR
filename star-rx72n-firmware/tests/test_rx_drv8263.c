@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file test_rx_drv8263.c
  * @brief Unit Tests for DRV8263H-Q1 Motor Driver Chip-Level Control
@@ -18,7 +19,7 @@
  * @author STAR Team
  * @date 2026-03-03
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 3: Zero dynamic allocation in test infrastructure

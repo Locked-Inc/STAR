@@ -49,7 +49,7 @@
  * @see main.c Application entry point (calls rx_clock_power_init, hardware_init)
  * @see _INITSCT() C runtime initialization (copies ROM->RAM, zeros BSS)
  *
- * @copyright Copyright (c) 2014 Renesas Electronics Corporation
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  * @copyright Modified 2026 STAR Project - Adapted to STAR coding standards
  *
  * @par History

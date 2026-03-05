@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /* tests/test_rx_obstacle_detect.c */
 
 /**
@@ -237,7 +238,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @version 1.0.0
  *
  * @since Version 1.0.0

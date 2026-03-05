@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 /**
  * @file spi_driver.hpp
  * @brief SPI driver declarations for framed communication with the RX72N
@@ -10,7 +11,7 @@
  * FLAGS(1) + PAYLOAD(N) + CRC-32(4), all multi-byte fields little-endian.
  *
  * @author Locked Inc.
- * @copyright Copyright 2026 Locked Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
  * @since Version 1.0.0
  */
 
