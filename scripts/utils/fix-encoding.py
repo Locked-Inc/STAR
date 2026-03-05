@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fix non-ASCII characters in STAR source files (one-time + self-service tool).
 
-Usage: python3 scripts/fix-encoding.py [--check] [paths...]
+Usage: python3 scripts/utils/fix-encoding.py [--check] [paths...]
   --check  Detect only; exit 1 if any non-ASCII found (used by pre-commit)
   paths    Files or directories to process (defaults to whole repo)
 """

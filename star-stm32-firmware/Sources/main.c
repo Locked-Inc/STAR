@@ -18,12 +18,20 @@
 
 #include <stdint.h>
 
-#if !defined(__SOFT_FP__) && defined(__ARM_FP)
-  #warning "FPU is not initialized, but the project is compiling for an FPU. Please initialize the FPU before use."
-#endif
+/* Cortex-M7 Coprocessor Access Control Register */
+#define CPACR ((volatile uint32_t*)0xE000ED88U)
+
+/* Enable FPU full access (CP10 and CP11) before the C runtime uses it */
+void SystemInit(void)
+{
+    *CPACR |= ((3UL << 20U) | (3UL << 22U));
+    __asm volatile("dsb");
+    __asm volatile("isb");
+}
 
 int main(void)
 {
     /* Loop forever */
-	for(;;);
+    for (;;)
+        ;
 }

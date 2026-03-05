@@ -73,9 +73,9 @@ colcon test --packages-select star_spi_bridge
 colcon test-result --verbose
 
 # Format and review
-./scripts/format-ros2.sh
-./scripts/format-ros2.sh --check    # CI mode
-./scripts/review-ros2.sh            # Automated code review
+./scripts/ros2/format-ros2.sh
+./scripts/ros2/format-ros2.sh --check    # CI mode
+./scripts/ros2/review-ros2.sh            # Automated code review
 ```
 
 ### Firmware (star-rx72n-firmware/)

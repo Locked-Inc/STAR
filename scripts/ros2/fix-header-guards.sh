@@ -2,7 +2,7 @@
 # ROS2 Header Guard Fixer
 # Converts header guards to ROS2 standard format:
 #   PACKAGE__FILENAME_HPP_
-# Usage: ./scripts/fix-header-guards.sh [--check]
+# Usage: ./scripts/ros2/fix-header-guards.sh [--check]
 
 set -e
 
@@ -33,7 +33,8 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-cd "$(dirname "$0")/.."
+# Change to project root directory (script lives at scripts/ros2/)
+cd "$(dirname "$0")/../.."
 
 # Find all .hpp files in ROS2 packages
 files_with_issues=()
@@ -92,7 +93,7 @@ if [ "$CHECK_ONLY" = true ]; then
     if [ ${#files_with_issues[@]} -gt 0 ]; then
         echo ""
         print_error "Found ${#files_with_issues[@]} file(s) with incorrect header guards!"
-        echo "Run './scripts/fix-header-guards.sh' to fix them."
+        echo "Run './scripts/ros2/fix-header-guards.sh' to fix them."
         exit 1
     else
         print_success "All header guards are correct!"

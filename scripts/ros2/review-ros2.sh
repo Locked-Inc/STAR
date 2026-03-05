@@ -1,6 +1,6 @@
 #!/bin/bash
 # ROS2 C++ Code Review Automation Tool
-# Usage: ./scripts/review-ros2.sh [options]
+# Usage: ./scripts/ros2/review-ros2.sh [options]
 
 set -e
 set +H
@@ -235,12 +235,12 @@ check_formatting() {
 
     # Check 3.1: clang-format check
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
-    if ./scripts/format-ros2.sh --check > /dev/null 2>&1; then
+    if ./scripts/ros2/format-ros2.sh --check > /dev/null 2>&1; then
         PASSED_CHECKS=$((PASSED_CHECKS + 1))
         print_success "$category (clang-format passes)"
     else
         FAILED_CHECKS=$((FAILED_CHECKS + 1))
-        add_issue "  - clang-format check failed (run ./scripts/format-ros2.sh)"
+        add_issue "  - clang-format check failed (run ./scripts/ros2/format-ros2.sh)"
         print_failure "$category (clang-format failed)"
     fi
 
@@ -571,7 +571,8 @@ generate_report() {
 
 # Main
 main() {
-    cd "$(dirname "$0")/.."
+    # Change to project root directory (script lives at scripts/ros2/)
+    cd "$(dirname "$0")/../.."
 
     parse_args "$@"
 

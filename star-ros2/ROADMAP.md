@@ -1017,7 +1017,7 @@ Phase 6: Integration Testing ----------------------------------- [WARN] Ready wh
 - **Hardware Requirements:** Most tasks require Raspberry Pi 5 + RX72N hardware for testing
 - **Development Environment:** Use Docker container (`Dockerfile` in root) or devcontainer
 - **Testing:** All implementations must include unit tests (80% coverage minimum)
-- **Code Quality:** Run `./scripts/format-ros2.sh` before committing ROS2 C++ code
+- **Code Quality:** Run `./scripts/ros2/format-ros2.sh` before committing ROS2 C++ code
 - **Commit Convention:** Use conventional commits (feat/fix/docs/test)
 
 **Questions?** See `CLAUDE.md` for detailed coding standards and architecture guidance.
