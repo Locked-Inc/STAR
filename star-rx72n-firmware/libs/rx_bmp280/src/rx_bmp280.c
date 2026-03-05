@@ -661,9 +661,7 @@ static void internal_parse_calibration(const uint8_t* buf)
   s_calib.dig_P7 = internal_parse_s16_le(&buf[k_bmp280_calib_p7_lsb]);
   s_calib.dig_P8 = internal_parse_s16_le(&buf[k_bmp280_calib_p8_lsb]);
   s_calib.dig_P9 = internal_parse_s16_le(&buf[k_bmp280_calib_p9_lsb]);
-  /* Post-condition: verify calibration data was populated (catches blank OTP early) */
-  RX_ASSERT(s_calib.dig_T1 != 0U,
-            "dig_T1 must be non-zero after calibration parse (OTP data valid)");
+  /* Post-condition: caller (rx_bmp280_init) validates dig_T1 and dig_P1 are non-zero */
 }
 
 /* =============================================================================
@@ -924,6 +922,7 @@ rx_err_t rx_bmp280_read(bmp280_data_t* out)
 void rx_bmp280_test_reset_state(void)
 {
   RX_ASSERT(true, "rx_bmp280_test_reset_state: test-only function");
+  s_manager                       = NULL;
   s_initialized                   = false;
   const bmp280_calib_t zero_calib = {0};
   s_calib                         = zero_calib;

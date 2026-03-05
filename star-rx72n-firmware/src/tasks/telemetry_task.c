@@ -50,7 +50,7 @@
  *     style=filled;
  *     color=lightyellow;
  *
- *     nanopb [label="rx_nanopb\nnanopb encoder\nstatic buffers (512 bytes)",
+ *     nanopb [label="rx_nanopb\nnanopb encoder\nstatic buffers (768 bytes)",
  *             fillcolor=lightyellow, style=filled];
  *     proto [label="star_v1_TelemetryData\nProtocol Buffers schema\n(star.proto.v1.TelemetryData)",
  *            fillcolor=lightcyan, style=filled];
@@ -413,7 +413,7 @@
  * |-----------|--------------|---------|-------------|
  * | `s_telem_thread` | 140 | .bss | TX_THREAD control block |
  * | `s_telem_stack` | 2048 | .bss | Task stack (static allocation) |
- * | `s_telem_buffer` | 512 | .bss | Protobuf encode buffer (static) |
+ * | `s_telem_buffer` | 768 | .bss | Protobuf encode buffer (static) |
  * | `s_telem_created` | 1 | .bss | Creation guard flag |
  * | `s_sequence` | 4 | .bss | Message sequence counter |
  * | `s_tag` | 8 | .rodata | Log tag string ("TELEM" + null) |
@@ -573,7 +573,7 @@
  * |------|------------|----------|
  * | **Rule 1: Simplify Control Flow** | [OK] COMPLIANT | No `goto`, `setjmp`/`longjmp`, or recursion. All control flow uses `if`/`while` only. `internal_telem_task_entry()` uses `while(true)` for infinite loop (RTOS pattern). |
  * | **Rule 2: Fixed Loop Upper-Bounds** | [OK] COMPLIANT | Main loop is `while(true)` (RTOS task pattern with watchdog). No variable-bound loops. Protobuf population iterates exactly 4 times (motors 0-3, compile-time constant). |
- * | **Rule 3: No Dynamic Memory After Init** | [OK] COMPLIANT | ZERO `malloc`/`free`. All buffers statically allocated: `s_telem_stack[2048]`, `s_telem_buffer[512]`. ThreadX stack is static array. Protobuf uses nanopb (no dynamic allocation). |
+ * | **Rule 3: No Dynamic Memory After Init** | [OK] COMPLIANT | ZERO `malloc`/`free`. All buffers statically allocated: `s_telem_stack[2048]`, `s_telem_buffer[768]`. ThreadX stack is static array. Protobuf uses nanopb (no dynamic allocation). |
  * | **Rule 4: Keep Functions Short (~60 lines)** | [OK] COMPLIANT | `telemetry_task_create()`: 31 lines. `internal_telem_task_entry()`: 18 lines. `internal_build_and_send_telemetry()`: 95 lines (complex but single responsibility - data aggregation). |
  * | **Rule 5: Use Assertions/Validation** | [OK] COMPLIANT | **4 validation checks:** (1) `RX_ASSERT(!s_telem_created)` prevents double-create. (2) `tx_thread_create()` return check. (3) `rx_nanopb_encode_telemetry()` return check. (4) `rx_comm_manager_send()` return check. Each `shared_data_get_*()` call validates return. |
  * | **Rule 6: Declare Data at Smallest Scope** | [OK] COMPLIANT | All variables declared at function start. Loop counters would be in `for()` if used (none in this task). File-scope statics use `s_` prefix. |
@@ -932,7 +932,7 @@ static bool s_telem_created = false;
 
 /**
  * @var s_telem_buffer
- * @brief Telemetry protobuf encode buffer (512 bytes, static allocation)
+ * @brief Telemetry protobuf encode buffer (768 bytes, static allocation)
  *
  * @details
  * nanopb encodes Protocol Buffer messages into this buffer before transmission.
@@ -940,10 +940,10 @@ static bool s_telem_created = false;
  * plus protobuf overhead (tags, varint lengths, wire type markers).
  *
  * Buffer usage:
- * - **Typical:** ~250 bytes (all fields populated, 4 motors, temp)
+ * - **Typical:** ~400 bytes (all fields populated, 4 motors, IMU, baro, temp, obstacle)
  * - **Minimum:** ~20 bytes (timestamp + sequence only, all sources failed)
- * - **Maximum:** ~400 bytes (future expansion: IMU, GPS, LIDAR)
- * - **Allocated:** 512 bytes (2x typical, 1.3x max future)
+ * - **Maximum:** ~560 bytes (worst-case all fields, see k_telem_buffer_size)
+ * - **Allocated:** 768 bytes (matches k_telem_buffer_size; 1.37x worst-case safety margin)
  *
  * Data flow:
  * 1. `internal_build_and_send_telemetry()` populates `TelemetryData` struct
@@ -1130,6 +1130,23 @@ static const double s_baro_press_scale = 256.0;
  * @since Version 1.0.0
  */
 static const double s_lin_acc_scale = 100.0;
+
+/**
+ * @var s_gyro_scale
+ * @brief BNO055 gyroscope fixed-point divisor (16 LSB per deg/s).
+ *
+ * @details
+ * The BNO055 gyroscope outputs in dps mode (k_bno055_unit_sel_default).
+ * Physical value in deg/s = raw_int16 / s_gyro_scale.
+ * Combined with s_rad_per_deg to convert to rad/s for the protobuf fields.
+ *
+ * Matches k_imu_scale_gyro (shared_data.h) and k_bno055_scale_gyro_lsb_per_dps (rx_bno055_regs.h).
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_gyro_scale = 16.0;
 
 /**
  * @var s_rad_per_deg
@@ -2069,6 +2086,14 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->imu.accel_x_mps2 = (double)imu_state.lin_acc_x / s_lin_acc_scale;
     telemetry->imu.accel_y_mps2 = (double)imu_state.lin_acc_y / s_lin_acc_scale;
     telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / s_lin_acc_scale;
+
+    /* Gyroscope angular rates (raw dps * 16 -> rad/s) */
+    telemetry->imu.gyro_x_rad_per_s =
+      ((double)imu_state.gyro_x_dps16 / s_gyro_scale) * s_rad_per_deg;
+    telemetry->imu.gyro_y_rad_per_s =
+      ((double)imu_state.gyro_y_dps16 / s_gyro_scale) * s_rad_per_deg;
+    telemetry->imu.gyro_z_rad_per_s =
+      ((double)imu_state.gyro_z_dps16 / s_gyro_scale) * s_rad_per_deg;
 
     /* Calibration status and on-chip temperature */
     telemetry->imu.calibration_status  = (uint32_t)imu_state.calib_stat;

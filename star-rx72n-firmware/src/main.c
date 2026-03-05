@@ -1589,7 +1589,7 @@ typedef enum : uint32_t {
   k_iwdt_task_timeout_watchdog_ms =
     30, /**< Watchdog Monitor task timeout (30ms). Task period: 10ms @ 100 Hz. Timeout = 3x period. Self-monitoring via own heartbeat. Valid range: 20-50ms. If exceeded: watchdog stops feeding IWDT, system reset after 2s. CRITICAL TASK. */
   k_iwdt_task_timeout_imu_ms =
-    900, /**< IMU Task timeout (900ms). BNO055 POR ~700ms + BMP280 init ~2ms + polling margin. Must exceed cold-start duration (~702ms). Heartbeat called every 50ms once loop begins. If exceeded: IMU data stops, system reset after 2s. */
+    900, /**< IMU Task IWDT registration timeout (900ms). Intentionally exceeds k_imu_task_period_margin_ms (150ms): BNO055 POR alone takes ~700ms, so the IWDT window must span the full cold-start duration plus margin. Heartbeat is sent before each retry, so the gap between heartbeats is bounded by one retry attempt. */
 } iwdt_task_timeout_ms_t;
 
 /**

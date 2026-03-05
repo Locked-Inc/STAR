@@ -76,6 +76,9 @@
 
 /* Validate k_bno055_ms_per_tick is consistent with the actual ThreadX tick rate.
  * If TX_TIMER_TICKS_PER_SECOND changes, this assert catches the mismatch at compile time. */
+static_assert(
+  (k_bno055_ms_per_second % TX_TIMER_TICKS_PER_SECOND) == 0U,
+  "TX_TIMER_TICKS_PER_SECOND must evenly divide k_bno055_ms_per_second (no truncation)");
 static_assert(k_bno055_ms_per_tick == (k_bno055_ms_per_second / TX_TIMER_TICKS_PER_SECOND),
               "k_bno055_ms_per_tick must equal k_bno055_ms_per_second/TX_TIMER_TICKS_PER_SECOND");
 
@@ -245,6 +248,40 @@ typedef enum : uint8_t {
 } lia_offsets_t;
 
 /**
+ * @enum gyro_offsets_t
+ * @brief Byte offsets within a gyroscope burst read buffer (6 bytes)
+ *
+ * @details
+ * Maps byte positions to X/Y/Z LSB and MSB within the 6-byte buffer
+ * read from BNO055 registers GYR_DATA_X_LSB (0x14) through GYR_DATA_Z_MSB (0x19).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_gyr_x_lsb_off = 0, /**< Byte offset of gyro X LSB in gyro_buf */
+  k_gyr_x_msb_off = 1, /**< Byte offset of gyro X MSB in gyro_buf */
+  k_gyr_y_lsb_off = 2, /**< Byte offset of gyro Y LSB in gyro_buf */
+  k_gyr_y_msb_off = 3, /**< Byte offset of gyro Y MSB in gyro_buf */
+  k_gyr_z_lsb_off = 4, /**< Byte offset of gyro Z LSB in gyro_buf */
+  k_gyr_z_msb_off = 5, /**< Byte offset of gyro Z MSB in gyro_buf */
+} gyro_offsets_t;
+
+/**
+ * @enum bno055_gyro_size_t
+ * @brief Expected byte count for a gyroscope burst read
+ *
+ * @details
+ * A BNO055 gyroscope reading consists of X, Y, Z each as a 16-bit
+ * little-endian value: 3 components x 2 bytes = 6 bytes total.
+ * Used in static_assert to verify the buffer constant is large enough.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_bno055_gyro_expected_bytes = 6U, /**< Minimum bytes needed for gyroscope X/Y/Z (3 x 2 bytes) */
+} bno055_gyro_size_t;
+
+/**
  * @enum bno055_quat_size_t
  * @brief Expected byte count for a quaternion burst read
  *
@@ -303,6 +340,7 @@ static inline int16_t internal_assemble_int16_le(uint8_t low, uint8_t high);
 static rx_err_t       internal_read_euler(bno055_data_t* out);
 static rx_err_t       internal_read_quat(bno055_data_t* out);
 static rx_err_t       internal_read_lia(bno055_data_t* out);
+static rx_err_t       internal_read_gyro(bno055_data_t* out);
 static rx_err_t       internal_init_reset_and_wait(void);
 static rx_err_t       internal_init_configure(void);
 static rx_err_t       internal_init_enter_ndof(void);
@@ -868,24 +906,75 @@ static rx_err_t internal_read_lia(bno055_data_t* out)
 }
 
 /**
+ * @brief Read BNO055 gyroscope data (raw, 16-bit little-endian)
+ *
+ * @details
+ * Performs a 6-byte I2C burst read from GYR_DATA_X_LSB (0x14) through
+ * GYR_DATA_Z_MSB (0x19) and assembles three signed 16-bit values.
+ * Scale: 1 LSB = 1/16 deg/s (k_bno055_scale_gyro_lsb_per_dps = 16)
+ * when k_bno055_unit_sel_default is configured (dps mode, default).
+ *
+ * @param[out] out Output data structure; gyro_x/y/z_dps16 fields written
+ *
+ * @return rx_err_t Read result
+ * @retval k_rx_ok Six bytes read and assembled successfully
+ * @retval k_rx_err_not_initialized init not called
+ * @retval k_rx_err_nack I2C communication failure
+ *
+ * @pre s_initialized must be true (call rx_bno055_init() first)
+ * @pre out must not be NULL
+ * @post out->gyro_x_dps16, gyro_y_dps16, gyro_z_dps16 populated on k_rx_ok
+ *
+ * @note Not thread-safe; called only from rx_bno055_read()
+ *
+ * @see rx_bno055_read() Caller
+ * @see k_bno055_scale_gyro_lsb_per_dps Scale factor (16 LSB per deg/s)
+ *
+ * @since Version 1.0.0
+ */
+static rx_err_t internal_read_gyro(bno055_data_t* out)
+{
+  RX_ASSERT(s_initialized, "driver must be initialized before reading gyro");
+  RX_ASSERT(out != NULL, "out must not be NULL");
+  static_assert((uint8_t)k_bno055_gyro_bytes >= (uint8_t)k_bno055_gyro_expected_bytes,
+                "gyro buffer must hold 6 bytes");
+
+  uint8_t  gyro_buf[k_bno055_gyro_bytes];
+  rx_err_t err = internal_read_regs((uint8_t)k_bno055_reg_gyr_x_lsb, gyro_buf, k_bno055_gyro_bytes);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Gyro read failed");
+    return err;
+  }
+
+  out->gyro_x_dps16 =
+    internal_assemble_int16_le(gyro_buf[k_gyr_x_lsb_off], gyro_buf[k_gyr_x_msb_off]);
+  out->gyro_y_dps16 =
+    internal_assemble_int16_le(gyro_buf[k_gyr_y_lsb_off], gyro_buf[k_gyr_y_msb_off]);
+  out->gyro_z_dps16 =
+    internal_assemble_int16_le(gyro_buf[k_gyr_z_lsb_off], gyro_buf[k_gyr_z_msb_off]);
+  return k_rx_ok;
+}
+
+/**
  * @brief Read current BNO055 fusion output data
  *
  * @details
- * Performs five sequential I2C burst reads to collect all output data.
+ * Performs six sequential I2C burst reads to collect all output data.
  * All 16-bit values are assembled in little-endian format as specified
  * in the BNO055 datasheet (LSB register first, MSB register second).
  *
  * Register read sequence:
- * 1. 0x1A: 6 bytes -> Euler heading[2], roll[2], pitch[2]
- * 2. 0x20: 8 bytes -> Quaternion W[2], X[2], Y[2], Z[2]
- * 3. 0x28: 6 bytes -> Linear accel X[2], Y[2], Z[2]
- * 4. 0x34: 1 byte  -> Temperature
- * 5. 0x35: 1 byte  -> Calibration status
+ * 1. 0x14: 6 bytes -> Gyroscope X[2], Y[2], Z[2]
+ * 2. 0x1A: 6 bytes -> Euler heading[2], roll[2], pitch[2]
+ * 3. 0x20: 8 bytes -> Quaternion W[2], X[2], Y[2], Z[2]
+ * 4. 0x28: 6 bytes -> Linear accel X[2], Y[2], Z[2]
+ * 5. 0x34: 1 byte  -> Temperature
+ * 6. 0x35: 1 byte  -> Calibration status
  *
  * @param[out] out Output data structure
  *
  * @return rx_err_t Read result
- * @retval k_rx_ok All five reads succeeded
+ * @retval k_rx_ok All six reads succeeded
  * @retval k_rx_err_null_ptr out is NULL
  * @retval k_rx_err_not_initialized init not called
  * @retval k_rx_err_nack I2C communication failure
@@ -911,7 +1000,12 @@ rx_err_t rx_bno055_read(bno055_data_t* out)
     return k_rx_err_not_initialized;
   }
 
-  rx_err_t err = internal_read_euler(out);
+  rx_err_t err = internal_read_gyro(out);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_read_euler(out);
   if (err != k_rx_ok) {
     return err;
   }

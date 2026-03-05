@@ -222,6 +222,12 @@ typedef struct {
     lin_acc_y; /**< Linear accel Y in m/s^2 * k_bno055_scale_acc (divide by k_bno055_scale_acc for m/s^2) */
   int16_t
     lin_acc_z; /**< Linear accel Z in m/s^2 * k_bno055_scale_acc (divide by k_bno055_scale_acc for m/s^2) */
+  int16_t
+    gyro_x_dps16; /**< Gyroscope X in dps * k_bno055_scale_gyro_lsb_per_dps (divide by 16 for deg/s) */
+  int16_t
+    gyro_y_dps16; /**< Gyroscope Y in dps * k_bno055_scale_gyro_lsb_per_dps (divide by 16 for deg/s) */
+  int16_t
+    gyro_z_dps16; /**< Gyroscope Z in dps * k_bno055_scale_gyro_lsb_per_dps (divide by 16 for deg/s) */
   int8_t  temp_degc;  /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */
   uint8_t calib_stat; /**< Raw CALIB_STAT byte: SYS[7:6] GYR[5:4] ACC[3:2] MAG[1:0] */
 } bno055_data_t;

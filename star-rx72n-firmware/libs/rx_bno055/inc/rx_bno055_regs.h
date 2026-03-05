@@ -406,6 +406,7 @@ typedef enum : uint8_t {
   k_bno055_euler_bytes = 6U, /**< Euler angles: heading(2) + roll(2) + pitch(2) */
   k_bno055_quat_bytes  = 8U, /**< Quaternion: W(2) + X(2) + Y(2) + Z(2) */
   k_bno055_lia_bytes   = 6U, /**< Linear acceleration: X(2) + Y(2) + Z(2) */
+  k_bno055_gyro_bytes  = 6U, /**< Gyroscope: X(2) + Y(2) + Z(2) */
 } bno055_read_size_t;
 
 /**

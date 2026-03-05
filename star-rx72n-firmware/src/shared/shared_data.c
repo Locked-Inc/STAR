@@ -712,7 +712,7 @@ shared_data_t g_shared_data = {0};
  * @brief Ordered index of mutexes in the shared_data init sequence
  *
  * @details
- * Used by internal_cleanup_mutexes() to delete mutexes in reverse order
+ * Used by internal_cleanup_mutexes() to delete mutexes in creation order
  * when a later mutex creation fails. Values match the creation order in
  * shared_data_init() and bound the cleanup loop.
  *
@@ -731,9 +731,9 @@ typedef enum : uint8_t {
  * @brief Delete the first @p count successfully created mutexes on init failure
  *
  * @details
- * Called from shared_data_init() failure branches to clean up any mutexes
- * already created before the failing tx_mutex_create() call. Mutexes are
- * deleted in creation order (motor first through baro last). Passing
+ * Called from internal_create_shared_sync_objects() failure branches to clean
+ * up any mutexes already created before the failing tx_mutex_create() call.
+ * Mutexes are deleted in creation order (motor first through baro last). Passing
  * k_mutex_idx_baro deletes all six mutexes.
  *
  * @param[in] count Number of mutexes to delete (0..k_mutex_idx_baro)

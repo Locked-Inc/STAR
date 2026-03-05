@@ -306,6 +306,30 @@ typedef enum : uint8_t {
 } mock_poeg_count_t;
 
 /**
+ * @enum led_expected_hw_constants_t
+ * @brief Expected port and pin numbers for each LED, matching production hardware_config.h
+ *
+ * @details
+ * Named constants for the expected port and pin values used in the compile-time
+ * assertions below. Using typed enums instead of raw integer literals ensures
+ * consistent naming and avoids magic numbers per STAR coding standards.
+ *
+ * Production source: star-rx72n-firmware/src/inc/hardware_config.h
+ * lines 525-539 (led_ports_t and led_pins_t enums).
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_expected_porta = 10U, /**< Port A numeric value (PORTA = 10) */
+  k_expected_portb = 11U, /**< Port B numeric value (PORTB = 11) */
+  k_expected_port7 = 7U,  /**< Port 7 numeric value (PORT7 = 7) */
+  k_expected_pin_0 = 0U,  /**< Pin 0 */
+  k_expected_pin_1 = 1U,  /**< Pin 1 */
+  k_expected_pin_2 = 2U,  /**< Pin 2 */
+  k_expected_pin_7 = 7U,  /**< Pin 7 */
+} led_expected_hw_constants_t;
+
+/**
  * @brief Compile-time assertions to verify test LED constants match production
  * @details
  * These assertions ensure the test enum values match the production definitions
@@ -315,19 +339,31 @@ typedef enum : uint8_t {
  * Production source: star-rx72n-firmware/src/inc/hardware_config.h
  * lines 525-539 (led_ports_t and led_pins_t enums).
  */
-static_assert(k_led_0_port == 10, "LED0 port must match production (PORTA=10)");
-static_assert(k_led_1_port == 11, "LED1 port must match production (PORTB=11)");
-static_assert(k_led_2_port == 7, "LED2 port must match production (PORT7=7)");
-static_assert(k_led_3_port == 7, "LED3 port must match production (PORT7=7)");
-static_assert(k_led_4_port == 11, "LED4 port must match production (PORTB=11)");
-static_assert(k_led_5_port == 11, "LED5 port must match production (PORTB=11)");
+static_assert((uint8_t)k_led_0_port == (uint8_t)k_expected_porta,
+              "LED0 port must match production (PORTA=10)");
+static_assert((uint8_t)k_led_1_port == (uint8_t)k_expected_portb,
+              "LED1 port must match production (PORTB=11)");
+static_assert((uint8_t)k_led_2_port == (uint8_t)k_expected_port7,
+              "LED2 port must match production (PORT7=7)");
+static_assert((uint8_t)k_led_3_port == (uint8_t)k_expected_port7,
+              "LED3 port must match production (PORT7=7)");
+static_assert((uint8_t)k_led_4_port == (uint8_t)k_expected_portb,
+              "LED4 port must match production (PORTB=11)");
+static_assert((uint8_t)k_led_5_port == (uint8_t)k_expected_portb,
+              "LED5 port must match production (PORTB=11)");
 
-static_assert(k_led_0_pin == 7, "LED0 pin must match production (PA7)");
-static_assert(k_led_1_pin == 0, "LED1 pin must match production (PB0)");
-static_assert(k_led_2_pin == 1, "LED2 pin must match production (P71)");
-static_assert(k_led_3_pin == 2, "LED3 pin must match production (P72)");
-static_assert(k_led_4_pin == 1, "LED4 pin must match production (PB1)");
-static_assert(k_led_5_pin == 2, "LED5 pin must match production (PB2)");
+static_assert((uint8_t)k_led_0_pin == (uint8_t)k_expected_pin_7,
+              "LED0 pin must match production (PA7)");
+static_assert((uint8_t)k_led_1_pin == (uint8_t)k_expected_pin_0,
+              "LED1 pin must match production (PB0)");
+static_assert((uint8_t)k_led_2_pin == (uint8_t)k_expected_pin_1,
+              "LED2 pin must match production (P71)");
+static_assert((uint8_t)k_led_3_pin == (uint8_t)k_expected_pin_2,
+              "LED3 pin must match production (P72)");
+static_assert((uint8_t)k_led_4_pin == (uint8_t)k_expected_pin_1,
+              "LED4 pin must match production (PB1)");
+static_assert((uint8_t)k_led_5_pin == (uint8_t)k_expected_pin_2,
+              "LED5 pin must match production (PB2)");
 
 /* =============================================================================
  * Include the source under test AFTER all mocks are defined

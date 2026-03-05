@@ -121,6 +121,8 @@ typedef enum : uint16_t {
   k_imu_scale_euler = 16,    /**< Euler angle divisor: raw / 16 = degrees */
   k_imu_scale_quat  = 16384, /**< Quaternion divisor: raw / 16384 = unit quaternion */
   k_imu_scale_acc   = 100,   /**< Linear accel divisor: raw / 100 = m/s^2 */
+  k_imu_scale_gyro =
+    16, /**< Gyroscope divisor: raw / 16 = deg/s (matches k_bno055_scale_gyro_lsb_per_dps) */
 } imu_scale_t;
 
 /**
@@ -197,6 +199,12 @@ typedef struct {
   int16_t lin_acc_x;     /**< Linear acceleration X, gravity-compensated (scale: k_imu_scale_acc) */
   int16_t lin_acc_y;     /**< Linear acceleration Y, gravity-compensated (scale: k_imu_scale_acc) */
   int16_t lin_acc_z;     /**< Linear acceleration Z, gravity-compensated (scale: k_imu_scale_acc) */
+  int16_t
+    gyro_x_dps16; /**< Gyroscope X angular rate in deg/s (scale: k_imu_scale_gyro; 1 LSB = 1/16 deg/s) */
+  int16_t
+    gyro_y_dps16; /**< Gyroscope Y angular rate in deg/s (scale: k_imu_scale_gyro; 1 LSB = 1/16 deg/s) */
+  int16_t
+    gyro_z_dps16; /**< Gyroscope Z angular rate in deg/s (scale: k_imu_scale_gyro; 1 LSB = 1/16 deg/s) */
   uint32_t
     timestamp_ms; /**< ThreadX tick when data was last updated (ms); placed before 8-bit fields to avoid padding */
   int8_t  temp_degc;  /**< On-chip temperature in degrees Celsius (1 deg C per LSB) */

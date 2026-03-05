@@ -220,7 +220,7 @@ typedef enum : uint8_t {
  * @brief BMP280 calibration data size
  *
  * @details
- * The calibration block at 0x88 contains 24 bytes encoding six temperature
+ * The calibration block at 0x88 contains 24 bytes encoding three temperature
  * coefficients and nine pressure coefficients:
  * - T1 (uint16), T2 (int16), T3 (int16) at 0x88-0x8D
  * - P1 (uint16)..P9 (int16) at 0x8E-0x9F

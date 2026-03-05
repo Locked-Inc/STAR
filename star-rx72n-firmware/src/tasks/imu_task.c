@@ -217,6 +217,8 @@ extern rx_bus_manager_t
  */
 
 static void internal_send_iwdt_heartbeat(void);
+static void internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready);
+static void internal_handle_loop_sleep(ULONG start_tick);
 static void internal_read_and_publish_imu(void);
 static void internal_read_and_publish_baro(void);
 static void internal_imu_task_entry(ULONG input);
@@ -345,11 +347,105 @@ static void internal_send_iwdt_heartbeat(void)
 }
 
 /**
+ * @brief Retry initialization for any sensors that failed initial startup
+ *
+ * @details
+ * Attempts to re-initialize the BNO055 and BMP280 if either failed during
+ * internal_imu_task_entry() startup. Sets the corresponding ready flag on
+ * success and logs the result. Called each loop iteration until both sensors
+ * are ready.
+ *
+ * @param[in,out] bno_ready Set to true when BNO055 init succeeds on retry
+ * @param[in,out] bmp_ready Set to true when BMP280 init succeeds on retry
+ *
+ * @pre bno_ready non-NULL
+ * @pre bmp_ready non-NULL
+ * @post *bno_ready == true if BNO055 initialized successfully (this call or prior)
+ * @post *bmp_ready == true if BMP280 initialized successfully (this call or prior)
+ *
+ * @note Not thread-safe; called only from internal_imu_task_entry()
+ *
+ * @see rx_bno055_init() BNO055 initialization
+ * @see rx_bmp280_init() BMP280 initialization
+ *
+ * @since Version 1.0.0
+ */
+static void internal_retry_sensor_init(bool* bno_ready, bool* bmp_ready)
+{
+  RX_ASSERT(bno_ready != NULL, "bno_ready must not be NULL");
+  RX_ASSERT(bmp_ready != NULL, "bmp_ready must not be NULL");
+
+  if (!*bno_ready) {
+    const rx_err_t retry_bno = rx_bno055_init(&g_bus_manager);
+    if (retry_bno == k_rx_ok) {
+      *bno_ready = true;
+      rx_log_info(s_tag, "BNO055 initialized on retry");
+    }
+  }
+  if (!*bmp_ready) {
+    const rx_err_t retry_bmp = rx_bmp280_init(&g_bus_manager);
+    if (retry_bmp == k_rx_ok) {
+      *bmp_ready = true;
+      rx_log_info(s_tag, "BMP280 initialized on retry");
+    }
+  }
+}
+
+/**
+ * @brief Sleep for the remainder of the 50 ms IMU loop period
+ *
+ * @details
+ * Computes elapsed ticks since @p start_tick and sleeps for the remaining
+ * ticks in the k_imu_task_period_ticks (5-tick, 50 ms) window. Logs a warning
+ * if the loop body has already overrun the period. Handles all tx_thread_sleep()
+ * return values.
+ *
+ * @param[in] start_tick Value of tx_time_get() captured at the beginning of the loop
+ *
+ * @pre start_tick captured at the start of the current loop iteration
+ * @pre s_imu_created == true
+ * @post Thread sleeps for remaining period or logs overrun warning
+ *
+ * @note Not thread-safe; called only from internal_imu_task_entry()
+ *
+ * @see tx_thread_sleep() ThreadX sleep API
+ * @see k_imu_task_period_ticks Loop period in RTOS ticks
+ *
+ * @since Version 1.0.0
+ */
+static void internal_handle_loop_sleep(ULONG start_tick)
+{
+  RX_ASSERT(s_imu_created, "IMU task must be created before sleeping");
+  RX_ASSERT(s_tag != NULL, "s_tag must not be NULL");
+
+  const ULONG elapsed = tx_time_get() - start_tick;
+  if (elapsed >= (ULONG)k_imu_task_period_ticks) {
+    rx_log_warn_val(s_tag, "IMU loop overrun: elapsed ticks", (uint32_t)elapsed);
+  } else {
+    const UINT sleep_status = tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
+    switch (sleep_status) {
+      case TX_SUCCESS:
+        /* Normal wake after sleep period - no action needed */
+        break;
+      case TX_WAIT_ABORTED:
+        rx_log_error(s_tag, "IMU task sleep aborted - external abort or priority change");
+        break;
+      case TX_CALLER_ERROR:
+        rx_log_error(s_tag, "IMU task sleep caller error - not called from thread context");
+        break;
+      default:
+        rx_log_error_val(s_tag, "IMU task sleep unexpected status", (uint32_t)sleep_status);
+        break;
+    }
+  }
+}
+
+/**
  * @brief Read BNO055 and publish imu_state_t to shared data
  *
  * @details
  * Reads all BNO055 fusion outputs (Euler angles, quaternion, linear
- * acceleration, temperature, calibration status) and writes them to
+ * acceleration, gyroscope, temperature, calibration status) and writes them to
  * shared data via shared_data_update_imu(). Sets valid = false on read
  * failure to signal consumers that data is stale.
  *
@@ -387,6 +483,9 @@ static void internal_read_and_publish_imu(void)
     imu.lin_acc_x     = bno_data.lin_acc_x;
     imu.lin_acc_y     = bno_data.lin_acc_y;
     imu.lin_acc_z     = bno_data.lin_acc_z;
+    imu.gyro_x_dps16  = bno_data.gyro_x_dps16;
+    imu.gyro_y_dps16  = bno_data.gyro_y_dps16;
+    imu.gyro_z_dps16  = bno_data.gyro_z_dps16;
     imu.temp_degc     = bno_data.temp_degc;
     imu.calib_stat    = bno_data.calib_stat;
     imu.valid         = true;
@@ -531,21 +630,13 @@ static void internal_imu_task_entry(ULONG input)
   while (1) {
     const ULONG start_tick = tx_time_get();
 
+    /* Feed IWDT heartbeat FIRST -- must execute before any blocking sensor
+     * re-init (BNO055 retry can block ~700 ms; heartbeat must arrive within
+     * the 900 ms IWDT registration window to prevent a system reset). */
+    internal_send_iwdt_heartbeat();
+
     /* Retry init for sensors that failed initial startup */
-    if (!bno_ready) {
-      const rx_err_t retry_bno = rx_bno055_init(&g_bus_manager);
-      if (retry_bno == k_rx_ok) {
-        bno_ready = true;
-        rx_log_info(s_tag, "BNO055 initialized on retry");
-      }
-    }
-    if (!bmp_ready) {
-      const rx_err_t retry_bmp = rx_bmp280_init(&g_bus_manager);
-      if (retry_bmp == k_rx_ok) {
-        bmp_ready = true;
-        rx_log_info(s_tag, "BMP280 initialized on retry");
-      }
-    }
+    internal_retry_sensor_init(&bno_ready, &bmp_ready);
 
     if (bno_ready) {
       internal_read_and_publish_imu();
@@ -554,29 +645,7 @@ static void internal_imu_task_entry(ULONG input)
       internal_read_and_publish_baro();
     }
 
-    /* Feed IWDT heartbeat (must execute within 150 ms timeout) */
-    internal_send_iwdt_heartbeat();
-
     /* Sleep only the remaining time in the 50 ms period to maintain cadence */
-    const ULONG elapsed = tx_time_get() - start_tick;
-    if (elapsed >= (ULONG)k_imu_task_period_ticks) {
-      rx_log_warn_val(s_tag, "IMU loop overrun: elapsed ticks", (uint32_t)elapsed);
-    } else {
-      const UINT sleep_status = tx_thread_sleep((ULONG)k_imu_task_period_ticks - elapsed);
-      switch (sleep_status) {
-        case TX_SUCCESS:
-          /* Normal wake after sleep period - no action needed */
-          break;
-        case TX_WAIT_ABORTED:
-          rx_log_error(s_tag, "IMU task sleep aborted - external abort or priority change");
-          break;
-        case TX_CALLER_ERROR:
-          rx_log_error(s_tag, "IMU task sleep caller error - not called from thread context");
-          break;
-        default:
-          rx_log_error_val(s_tag, "IMU task sleep unexpected status", (uint32_t)sleep_status);
-          break;
-      }
-    }
+    internal_handle_loop_sleep(start_tick);
   }
 }

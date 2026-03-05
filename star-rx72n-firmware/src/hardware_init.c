@@ -400,6 +400,26 @@ typedef enum : uint8_t {
 static_assert(k_i2c_channel_0 != k_i2c_channel_1, "I2C channel assignments must be distinct");
 
 /**
+ * @enum i2c_freq_limits_t
+ * @brief Valid I2C frequency range constants for RIIC channel validation
+ *
+ * @details
+ * Defines the minimum and maximum allowed I2C frequencies for compile-time
+ * assertions. The maximum is the I2C fast mode upper bound (400 kHz). Used
+ * to replace raw numeric literals in static_assert checks.
+ *
+ * @invariant k_i2c_freq_min_hz > 0 (non-zero)
+ * @invariant k_i2c_fast_mode_max_hz == 400000 (I2C fast mode specification)
+ *
+ * @see i2c_freq_t Channel frequency assignments validated against these limits
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_i2c_freq_min_hz      = 1U,      /**< Minimum valid I2C frequency (must be > 0) */
+  k_i2c_fast_mode_max_hz = 400000U, /**< I2C fast mode maximum frequency (400 kHz) */
+} i2c_freq_limits_t;
+
+/**
  * @enum i2c_freq_t
  * @brief I2C bus frequency constants for each RIIC channel
  *
@@ -408,18 +428,19 @@ static_assert(k_i2c_channel_0 != k_i2c_channel_1, "I2C channel assignments must 
  * The BNO055 and BMP280 sensors both support up to 400 kHz.
  * The RPi5 host interface also uses 400 kHz for maximum throughput.
  *
- * @invariant All frequency values > 0 and <= 400000 (I2C fast mode maximum)
+ * @invariant All frequency values >= k_i2c_freq_min_hz and <= k_i2c_fast_mode_max_hz
  * @invariant Values are stable hardware constants; never modified at runtime
  *
  * @see i2c_channel_t Channel assignments these frequencies apply to
+ * @see i2c_freq_limits_t Valid frequency range
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host (RIIC0) */
   k_i2c_imu_freq_hz  = 400000, /**< 400 kHz fast mode for IMU sensors (RIIC1) */
 } i2c_freq_t;
-static_assert(k_i2c_host_freq_hz > 0U, "Host I2C frequency must be non-zero");
-static_assert(k_i2c_imu_freq_hz > 0U, "IMU I2C frequency must be non-zero");
+static_assert(k_i2c_host_freq_hz >= k_i2c_freq_min_hz, "Host I2C frequency must be non-zero");
+static_assert(k_i2c_imu_freq_hz >= k_i2c_freq_min_hz, "IMU I2C frequency must be non-zero");
 
 /** @brief Number of motor current ADC channels */
 typedef enum : uint8_t {
@@ -1393,9 +1414,9 @@ static rx_err_t i2c_init(void)
   static const char* s_tag = "I2C";
 
   /* Precondition: channel and frequency values must be within valid range (NASA Rule 5) */
-  static_assert(k_i2c_host_freq_hz <= 400000U,
+  static_assert(k_i2c_host_freq_hz <= k_i2c_fast_mode_max_hz,
                 "Host I2C frequency must not exceed 400 kHz fast mode");
-  static_assert(k_i2c_imu_freq_hz <= 400000U,
+  static_assert(k_i2c_imu_freq_hz <= k_i2c_fast_mode_max_hz,
                 "IMU I2C frequency must not exceed 400 kHz fast mode");
 
   /* RIIC0: Host I2C at 400 kHz (RPi5 communication) */

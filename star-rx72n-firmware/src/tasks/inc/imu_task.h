@@ -15,7 +15,7 @@
  *
  * Both sensors share the RIIC1 I2C bus (SCL1=P2.1, SDA1=P2.0):
  * - **BNO055**: 9-DOF IMU @ I2C address 0x28, bus name "i2c1"
- * - **BMP280**: Barometric pressure @ I2C address 0x76, bus name "i2c1"
+ * - **BMP280**: Barometric pressure @ I2C address 0x76, bus name "i2c1_baro"
  *
  * # Task Configuration
  *
@@ -24,7 +24,7 @@
  * | Priority | k_imu_task_priority = 13 (between obstacle detect and temp sensor) |
  * | Stack | k_imu_task_stack_size_bytes = 2048 bytes |
  * | Period | k_imu_task_period_ms = 50 ms (20 Hz) |
- * | IWDT timeout | k_imu_task_iwdt_timeout_ms = 150 ms (3x period) |
+ * | Period margin | k_imu_task_period_margin_ms = 150 ms (3x period) |
  *
  * # Task Lifecycle
  *
@@ -89,7 +89,7 @@ typedef enum : uint8_t {
  * exactly one 50 ms sampling period (5 ticks x 10 ms/tick = 50 ms).
  *
  * @invariant k_imu_task_period_ticks > 0 (task loop must have a finite sleep period)
- * @invariant k_imu_task_iwdt_timeout_ms >= 3 * k_imu_task_period_ms (3x safety margin)
+ * @invariant k_imu_task_period_margin_ms >= 3 * k_imu_task_period_ms (3x safety margin)
  *
  * @since Version 1.0.0
  */
@@ -97,7 +97,8 @@ typedef enum : uint8_t {
   k_imu_task_period_ms = 50U, /**< IMU sampling period in milliseconds (20 Hz) */
   k_imu_task_period_ticks =
     5U, /**< IMU sampling period in RTOS ticks (5 ticks x 10 ms/tick = 50 ms at 100 Hz) */
-  k_imu_task_iwdt_timeout_ms = 150U, /**< IWDT heartbeat timeout in milliseconds (3x period) */
+  k_imu_task_period_margin_ms =
+    150U, /**< Task period safety margin (3x 50ms period = 150ms); NOT the IWDT registration timeout (see k_iwdt_task_timeout_imu_ms in main.c) */
 } imu_task_timing_t;
 
 /**
@@ -128,7 +129,7 @@ typedef enum : uint16_t {
  * - Priority: k_imu_task_priority = 13 (lower than obstacle detect at 12, higher than temp at 15)
  * - Stack: k_imu_task_stack_size_bytes = 2048 bytes (sufficient for BNO055 + BMP280 init sequences)
  * - Period: k_imu_task_period_ms = 50 ms (20 Hz IMU and baro updates)
- * - IWDT timeout: k_imu_task_iwdt_timeout_ms = 150 ms (3x period)
+ * - Period margin: k_imu_task_period_margin_ms = 150 ms (3x period; NOT the IWDT registration timeout)
  *
  * **Sensor Initialization (inside task):**
  * - rx_bno055_init(): ~700 ms (BNO055 POR + NDOF mode setup)
