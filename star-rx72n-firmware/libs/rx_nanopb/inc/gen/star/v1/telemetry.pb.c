@@ -27,6 +27,9 @@ PB_BIND(star_v1_TelemetryData, star_v1_TelemetryData, 2)
 PB_BIND(star_v1_ImuData, star_v1_ImuData, AUTO)
 
 
+PB_BIND(star_v1_BaroData, star_v1_BaroData, AUTO)
+
+
 PB_BIND(star_v1_ObstacleData, star_v1_ObstacleData, AUTO)
 
 

@@ -923,6 +923,42 @@ apply_strict_warnings(test_rx_host_irq)
 apply_test_includes(test_rx_host_irq)
 target_link_libraries(test_rx_host_irq unity)
 
+# Test: BNO055 9-DOF IMU Sensor
+add_executable(test_rx_bno055
+    test_rx_bno055.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/src/rx_bno055.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_i2c.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_bno055)
+apply_test_includes(test_rx_bno055)
+target_include_directories(test_rx_bno055 PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc
+)
+target_link_libraries(test_rx_bno055 PRIVATE unity m)
+set_target_properties(test_rx_bno055 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
+# Test: BMP280 Barometric Pressure Sensor
+add_executable(test_rx_bmp280
+    test_rx_bmp280.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/src/rx_bmp280.c
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bus/src/rx_bus_i2c.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_HAL_SRC}
+    ${MOCK_LOG_SRC}
+)
+apply_strict_warnings(test_rx_bmp280)
+# TESTING: enables rx_bmp280_test_reset_state() for test-order independence
+target_compile_definitions(test_rx_bmp280 PRIVATE TESTING)
+apply_test_includes(test_rx_bmp280)
+target_include_directories(test_rx_bmp280 PRIVATE
+    ${CMAKE_SOURCE_DIR}/../libs/rx_bmp280/inc
+)
+target_link_libraries(test_rx_bmp280 PRIVATE unity m)
+set_target_properties(test_rx_bmp280 PROPERTIES C_STANDARD 23 C_STANDARD_REQUIRED ON)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -973,6 +1009,8 @@ set(ALL_TEST_TARGETS
     test_rx_encoder_tpu
     test_rx_host_irq
     test_rx_stack_monitor
+    test_rx_bno055
+    test_rx_bmp280
     # Multi-task firmware tests
     test_motor_control_task
     test_communication_task
@@ -1023,6 +1061,8 @@ add_test(NAME test_rx_tpu COMMAND test_rx_tpu)
 add_test(NAME test_rx_encoder_tpu COMMAND test_rx_encoder_tpu)
 add_test(NAME test_rx_host_irq COMMAND test_rx_host_irq)
 add_test(NAME test_rx_stack_monitor COMMAND test_rx_stack_monitor)
+add_test(NAME test_rx_bno055 COMMAND test_rx_bno055)
+add_test(NAME test_rx_bmp280 COMMAND test_rx_bmp280)
 
 # Multi-task firmware tests
 add_test(NAME test_motor_control_task COMMAND test_motor_control_task)

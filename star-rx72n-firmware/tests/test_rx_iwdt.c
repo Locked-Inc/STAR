@@ -239,7 +239,7 @@
  *
  * ```bash
  * # Build and run all tests
- * cd e2-studio-star-rx72n-firmware/tests
+ * cd star-rx72n-firmware/tests
  * make test_rx_iwdt
  * ./build/test_rx_iwdt
  *
@@ -1393,7 +1393,7 @@ static void test_check_tasks_no_registered(void)
  * @par Running Tests:
  * @code{.bash}
  * # Build and run all IWDT tests
- * cd e2-studio-star-rx72n-firmware/tests
+ * cd star-rx72n-firmware/tests
  * make test_rx_iwdt
  * ./build/test_rx_iwdt
  *

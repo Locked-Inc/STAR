@@ -181,7 +181,7 @@ Mocks provide host-compatible implementations of hardware-dependent code:
 
 ## Development Workflow
 
-1. **Edit firmware code** in e2-studio project (`libs/`, `src/`)
+1. **Edit firmware code** in `star-rx72n-firmware/` (`libs/`, `src/`)
 2. **Run tests** from terminal to verify changes:
    ```bash
    cd tests/build

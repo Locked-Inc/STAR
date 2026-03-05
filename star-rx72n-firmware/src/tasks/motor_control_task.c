@@ -1909,7 +1909,7 @@ static rx_err_t internal_init_motor_stack(void)
  */
 static rx_err_t internal_init_drv8263_drivers(void)
 {
-  _Static_assert(k_motor_count > 0, "Motor count must be positive at compile time");
+  static_assert(k_motor_count > 0, "Motor count must be positive at compile time");
   RX_ASSERT(!s_drv8263[k_motor_front_left].initialized,
             "DRV8263 drivers already initialized (double init)");
 

@@ -728,7 +728,7 @@ typedef enum : uint8_t {
  *   rankdir=TB;
  *   node [shape=record];
  *
- *   manager [label="rx_bus_manager_t|{buses: rx_bus_config_t*|mutex: TX_MUTEX|tag: const char*|error_iface: rx_error_interface_t*|pin_iface: rx_pin_interface_t*|riic_initialized[3]|rspi_initialized[3]|adc_unit_initialized[2]|bus_count: uint8_t}"];
+ *   manager [label="rx_bus_manager_t|{buses: rx_bus_config_t*|mutex: TX_MUTEX|tag: const char*|error_iface: rx_error_interface_t*|pin_iface: rx_pin_interface_t*|riic_initialized[3]|riic_freq_hz[3]|rspi_initialized[3]|adc_unit_initialized[2]|bus_count: uint8_t}"];
  *
  *   bus1 [label="rx_bus_config_t|name=\"rpi5_spi\"|type=k_bus_type_spi|next"];
  *   bus2 [label="rx_bus_config_t|name=\"imu_i2c\"|type=k_bus_type_i2c|next"];
@@ -750,10 +750,11 @@ typedef enum : uint8_t {
  * | ~88 | 4 | error_iface | DIP error handler |
  * | ~92 | 4 | pin_iface | DIP pin validator |
  * | ~96 | 3 | riic_initialized | RIIC tracking |
- * | ~99 | 3 | rspi_initialized | RSPI tracking |
- * | ~102 | 2 | adc_unit_initialized | ADC tracking |
- * | ~104 | 1 | bus_count | Registration count |
- * | **Total** | **~128** | - | Platform-dependent |
+ * | ~99 | 12 | riic_freq_hz | RIIC per-channel freq |
+ * | ~111 | 3 | rspi_initialized | RSPI tracking |
+ * | ~114 | 2 | adc_unit_initialized | ADC tracking |
+ * | ~116 | 1 | bus_count | Registration count |
+ * | **Total** | **~140** | - | Platform-dependent |
  *
  * ## Thread Safety Model
  *
@@ -787,6 +788,7 @@ typedef enum : uint8_t {
  * | Array | Size | Purpose |
  * |-------|------|---------|
  * | riic_initialized | 3 | RIIC channels 0-2 |
+ * | riic_freq_hz | 3 | Frequency per RIIC channel |
  * | rspi_initialized | 3 | RSPI channels 0-2 |
  * | adc_unit_initialized | 2 | ADC units 0-1 |
  *
@@ -905,6 +907,17 @@ typedef struct {
    * @par Value: true = initialized, false = not initialized
    */
   bool riic_initialized[k_riic_channel_count];
+
+  /**
+   * @brief RIIC channel configured frequency in Hz
+   * @details
+   * Stores the frequency_hz used when each RIIC channel was first initialized.
+   * Used by subsequent rx_bus_i2c_init() calls on the same physical channel to
+   * verify that shared buses request the same frequency as the already-active channel.
+   * @par Index: Channel number (0, 1, 2)
+   * @par Value: frequency_hz from the first successful riic_init() call; 0 if not initialized
+   */
+  uint32_t riic_freq_hz[k_riic_channel_count];
 
   /**
    * @brief RSPI channel initialization status

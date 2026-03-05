@@ -258,8 +258,8 @@ typedef enum : uint16_t {
  * @details Ensures k_twake_busy_wait_us * k_twake_cpu_mhz does not overflow
  *          the volatile uint32_t counter used in internal_busy_wait_us().
  */
-_Static_assert((uint64_t)k_twake_busy_wait_us*(uint64_t)k_twake_cpu_mhz <= (uint64_t)UINT32_MAX,
-               "tWAKE cycle count overflows uint32_t");
+static_assert((uint64_t)k_twake_busy_wait_us * (uint64_t)k_twake_cpu_mhz <= (uint64_t)UINT32_MAX,
+              "tWAKE cycle count overflows uint32_t");
 
 /** @brief Port pin identifiers for MPC configuration (rx_port_pin_t values) */
 typedef enum : uint16_t {
@@ -378,16 +378,71 @@ typedef enum : uint16_t {
 
 /* RSPI channel: use k_rspi_channel_2 from hardware.h for host SPI peripheral */
 
-/** @brief I2C channel assignments */
+/**
+ * @enum i2c_channel_t
+ * @brief I2C channel assignments for RX72N RIIC peripherals
+ *
+ * @details
+ * Maps logical I2C bus roles to physical RIIC channel numbers.
+ * RIIC0 is the host-side channel used for RPi5 communication.
+ * RIIC1 is the IMU channel shared by BNO055 and BMP280.
+ *
+ * @invariant k_i2c_channel_0 != k_i2c_channel_1 (distinct physical channels)
+ * @invariant Values map 1:1 to RIIC peripheral indices in the RX72N register map
+ *
+ * @see i2c_freq_t Corresponding frequency constants per channel
+ * @since Version 1.0.0
+ */
 typedef enum : uint8_t {
-  k_i2c_channel_host = 0, /**< RIIC0 = host I2C (RPi5 comms) */
-  k_i2c_channel_1    = 1, /**< RIIC1 (reserved) */
+  k_i2c_channel_0 = 0, /**< RIIC0 = host I2C (RPi5 comms) */
+  k_i2c_channel_1 = 1, /**< RIIC1 = IMU I2C (BNO055 + BMP280) */
 } i2c_channel_t;
+static_assert(k_i2c_channel_0 != k_i2c_channel_1, "I2C channel assignments must be distinct");
 
-/** @brief I2C bus frequency constants */
+/**
+ * @enum i2c_freq_limits_t
+ * @brief Valid I2C frequency range constants for RIIC channel validation
+ *
+ * @details
+ * Defines the minimum and maximum allowed I2C frequencies for compile-time
+ * assertions. The maximum is the I2C fast mode upper bound (400 kHz). Used
+ * to replace raw numeric literals in static_assert checks.
+ *
+ * @invariant k_i2c_freq_min_hz > 0 (non-zero)
+ * @invariant k_i2c_fast_mode_max_hz == 400000 (I2C fast mode specification)
+ *
+ * @see i2c_freq_t Channel frequency assignments validated against these limits
+ * @since Version 1.0.0
+ */
 typedef enum : uint32_t {
-  k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host */
+  k_i2c_freq_min_hz      = 1U,      /**< Minimum valid I2C frequency (must be > 0) */
+  k_i2c_fast_mode_max_hz = 400000U, /**< I2C fast mode maximum frequency (400 kHz) */
+} i2c_freq_limits_t;
+
+/**
+ * @enum i2c_freq_t
+ * @brief I2C bus frequency constants for each RIIC channel
+ *
+ * @details
+ * Both host and IMU channels operate at 400 kHz (I2C fast mode).
+ * The BNO055 and BMP280 sensors both support up to 400 kHz.
+ * The RPi5 host interface also uses 400 kHz for maximum throughput.
+ *
+ * @invariant All frequency values >= k_i2c_freq_min_hz and <= k_i2c_fast_mode_max_hz
+ * @invariant Values are stable hardware constants; never modified at runtime
+ *
+ * @see i2c_channel_t Channel assignments these frequencies apply to
+ * @see i2c_freq_limits_t Valid frequency range
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_i2c_host_freq_hz = k_i2c_fast_mode_max_hz, /**< 400 kHz fast mode for host (RIIC0) */
+  k_i2c_imu_freq_hz  = k_i2c_fast_mode_max_hz, /**< 400 kHz fast mode for IMU sensors (RIIC1) */
 } i2c_freq_t;
+static_assert((uint32_t)k_i2c_host_freq_hz >= (uint32_t)k_i2c_freq_min_hz,
+              "Host I2C frequency must be non-zero");
+static_assert((uint32_t)k_i2c_imu_freq_hz >= (uint32_t)k_i2c_freq_min_hz,
+              "IMU I2C frequency must be non-zero");
 
 /** @brief Number of motor current ADC channels */
 typedef enum : uint8_t {
@@ -1328,24 +1383,30 @@ static rx_err_t spi_init(void)
 }
 
 /**
- * @brief Initialize I2C buses for host communication
+ * @brief Initialize I2C buses for host communication and IMU sensors
  *
  * @details
  * Configures two RIIC channels:
- * - **RIIC0** at 400 kHz (fast mode) for RPi5 host I2C
+ * - **RIIC0** at 400 kHz (fast mode) for RPi5 host I2C (P1.2 SCL0, P1.3 SDA0)
+ * - **RIIC1** at 400 kHz (fast mode) for IMU sensors BNO055 + BMP280 (P2.1 SCL1, P2.0 SDA1)
+ *
+ * GPIO pins for RIIC0 are configured in internal_gpio_init_i2c(); pins for
+ * RIIC1 (IMU) are configured in internal_gpio_init_imu().
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Both RIIC channels initialized successfully
- * @retval k_rx_err_hw_init_failed RIIC init failed
+ * @retval k_rx_ok Static assertions passed; RIIC init deferred to bus manager
  *
- * @pre GPIO pins for RIIC0/RIIC1 configured via gpio_init()
+ * @pre GPIO pins for RIIC0 configured via internal_gpio_init_i2c()
+ * @pre GPIO pins for RIIC1 (IMU) configured via internal_gpio_init_imu()
  * @pre PCLKB clock running at 60 MHz
  *
- * @post RIIC0 ready for host I2C at 400 kHz
+ * @post Static frequency assertions verified at compile time
+ * @post RIIC initialization deferred to rx_bus_i2c_init() in bus manager
  *
  * @note Not thread-safe. Call during single-threaded initialization only.
  *
- * @see riic_init() HAL function for RIIC channel init
+ * @see rx_bus_i2c_init() Performs RIIC channel init on first bus registration
+ * @see internal_gpio_init_imu() Configures P2.0/P2.1 for RIIC1
  *
  * @since Version 1.0.0
  */
@@ -1353,11 +1414,17 @@ static rx_err_t i2c_init(void)
 {
   static const char* s_tag = "I2C";
 
-  riic_channel_t ch0 = {.value = k_i2c_channel_host};
-  rx_err_t       err = riic_init(ch0, k_i2c_host_freq_hz);
-  RX_RETURN_ON_ERROR(err, s_tag, "RIIC0 init failed");
+  /* Precondition: channel and frequency values must be within valid range (NASA Rule 5) */
+  static_assert((uint32_t)k_i2c_host_freq_hz <= (uint32_t)k_i2c_fast_mode_max_hz,
+                "Host I2C frequency must not exceed 400 kHz fast mode");
+  static_assert((uint32_t)k_i2c_imu_freq_hz <= (uint32_t)k_i2c_fast_mode_max_hz,
+                "IMU I2C frequency must not exceed 400 kHz fast mode");
 
-  rx_log_info(s_tag, "RIIC0 @ 400kHz");
+  /* RIIC initialization is deferred to the bus manager. Each call to
+   * rx_bus_i2c_init() (via rx_bus_manager_register() in main.c) will call
+   * riic_init() for its channel on first use and skip re-initialization for
+   * shared-channel buses (e.g., "i2c1" and "i2c1_baro" both on RIIC1). */
+  rx_log_info(s_tag, "RIIC initialization deferred to bus manager (rx_bus_i2c_init)");
   return k_rx_ok;
 }
 

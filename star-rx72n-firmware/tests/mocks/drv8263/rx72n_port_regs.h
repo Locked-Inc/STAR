@@ -145,7 +145,7 @@ typedef enum : uint16_t {
   k_port_regs_expected_size = 297, /**< Total bytes: 7 registers + padding */
 } port_regs_size_t;
 
-_Static_assert(sizeof(rx_port_regs_t) == k_port_regs_expected_size, "rx_port_regs_t size mismatch");
+static_assert(sizeof(rx_port_regs_t) == k_port_regs_expected_size, "rx_port_regs_t size mismatch");
 
 /* =============================================================================
  * Mock Constants (needed by rx_port_constants.h consumers but not used here)
