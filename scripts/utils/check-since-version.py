@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """check-since-version.py - Enforce @since version ceiling for STAR firmware.
 
-Every @since tag in C/C++ source files under star-rx72n-firmware/ must reference
-a version that does not exceed the version declared in star-rx72n-firmware/VERSION.
+Every @since tag added by Locked Inc. in star-rx72n-firmware/ C/H files must
+reference a version that does not exceed the version declared in
+star-rx72n-firmware/VERSION.
+
+For Renesas-derived files, only the file-level Doxygen block (the /** block
+containing @file, which is Locked Inc.'s addition at the top of the file) is
+checked -- Renesas's own function-level @since tags use Renesas versioning and
+are not our responsibility.
 
 Usage:
     python3 scripts/utils/check-since-version.py              # scan all git-tracked files
@@ -36,18 +42,44 @@ def parse_version(v: str) -> tuple[int, int, int]:
     return (int(parts[0]), int(parts[1]), int(parts[2]))
 
 
+def extract_locked_text(text: str) -> str:
+    """Return only the portion of the file whose @since tags belong to Locked Inc.
+
+    For Renesas-derived files the file-level /** ... */ block (identified by
+    @file) is Locked Inc.'s addition; everything after its closing */ uses
+    Renesas versioning and is excluded from the check.
+
+    For non-Renesas files the entire file text is returned.
+    """
+    if not RENESAS_MARKER_RE.search(text):
+        return text
+
+    # Find the file-level Doxygen block (contains @file)
+    pos = 0
+    while True:
+        start = text.find("/**", pos)
+        if start == -1:
+            return ""   # no file-level block found; nothing to check
+        end = text.find("*/", start + 3)
+        if end == -1:
+            return ""
+        block = text[start : end + 2]
+        if "@file" in block:
+            return block
+        pos = end + 2
+
+
 def check_file(path: Path, max_version: tuple[int, int, int]) -> list[str]:
     try:
         text = path.read_text(encoding="utf-8", errors="replace")
     except OSError as exc:
         return [f"Cannot read file: {exc}"]
 
-    # Skip Renesas-derived files -- their @since tags are Renesas versioning
-    if RENESAS_MARKER_RE.search(text):
-        return []
+    # For Renesas files, check only the Locked Inc. file-level Doxygen block.
+    region = extract_locked_text(text)
 
     errors = []
-    for m in SINCE_RE.finditer(text):
+    for m in SINCE_RE.finditer(region):
         ver_str = m.group(1)
         try:
             ver = parse_version(ver_str)

@@ -60,7 +60,7 @@
  *
  * @note Ported from Renesas Smart Configurator (SMC) generated code
  * @warning Most functions are NOT thread-safe unless _REENTRANT is defined (CC-RX only)
- * @since Version 2.0.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 1: No goto, setjmp/longjmp, or recursion in function implementations
