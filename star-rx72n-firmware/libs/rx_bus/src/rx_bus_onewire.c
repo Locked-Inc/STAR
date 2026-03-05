@@ -901,7 +901,7 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   uint32_t crc_out = 0U;
   RX_RETURN_ON_ERROR(rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out),
-                     "ONEWIRE",
+                     s_tag,
                      "ROM CRC compute failed");
   if ((uint8_t)crc_out != rom[k_onewire_rom_crc_idx]) {
     return k_rx_err_crc_mismatch;

@@ -98,7 +98,7 @@ typedef enum : uint8_t {
  * @note Not thread-safe; only mutated during single-threaded init/deinit.
  * @since Version 1.0.0
  */
-static bool s_dmaca_owned;
+static bool s_dmaca_owned = false;
 
 /**
  * @var s_dma_fallback_count
@@ -114,7 +114,7 @@ static bool s_dmaca_owned;
  * @warning Do not modify directly; read via debug/telemetry only.
  * @since Version 1.0.0
  */
-static uint32_t s_dma_fallback_count;
+static uint32_t s_dma_fallback_count = 0U;
 
 /* =============================================================================
  * Private Helpers

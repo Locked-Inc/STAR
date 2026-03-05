@@ -203,8 +203,13 @@ uint32_t internal_crc32_sw_update(uint32_t crc, const uint8_t* data, uint32_t le
  *                              to k_hw_crc32_alignment_bytes
  * @retval k_rx_err_timeout     DMA timed out
  *
- * @pre CRC and DMAC peripherals must be initialized
- * @post *result_out contains the computed CRC (on k_rx_ok)
+ * @pre CRC and DMAC peripherals must be initialized (internal_crc_hw_init() called)
+ * @pre For CRC-32/CRC-32C: data pointer and len must each be aligned to
+ *      k_hw_crc32_alignment_bytes (4 bytes); unaligned inputs return
+ *      k_rx_err_invalid_arg before touching the peripheral
+ * @post *result_out contains the final CRC with XOR applied on k_rx_ok;
+ *       result_out is not written on any error return
+ * @post DMA channel is idle on return (transfer complete, or aborted on timeout)
  *
  * @since Version 1.0.0
  */

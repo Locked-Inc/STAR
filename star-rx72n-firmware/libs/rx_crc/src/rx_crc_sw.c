@@ -264,7 +264,7 @@ static uint32_t internal_crc32c_compute(const uint8_t* data, uint32_t len)
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
- * @post Returns 16-bit CRC; no final XOR applied
+ * @post Returns 16-bit CRC with k_crc16_final_xor applied (currently 0x0000, i.e., no-op)
  * @post No side effects; pure computation
  *
  * @since Version 1.0.0

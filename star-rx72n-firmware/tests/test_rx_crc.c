@@ -71,11 +71,17 @@ typedef enum : uint32_t {
   k_crc32c_9       = 0xE3069283U, /**< CRC-32/ISCSI of "123456789" */
 } crc_test_vectors_t;
 
+/** @brief Boundary byte values used in single-byte test vectors */
+typedef enum : uint8_t {
+  k_byte_min = 0x00U, /**< Minimum byte value (all zeros) */
+  k_byte_max = 0xFFU, /**< Maximum byte value (all ones) */
+} crc_boundary_bytes_t;
+
 /** @brief Single zero byte */
-static const uint8_t s_single_zero[] = {0x00};
+static const uint8_t s_single_zero[] = {k_byte_min};
 
 /** @brief Single byte 0xFF */
-static const uint8_t s_single_ff[] = {0xFF};
+static const uint8_t s_single_ff[] = {k_byte_max};
 
 typedef enum : uint32_t {
   k_single_zero_len = 1U, /**< Length of single-byte buffers */
