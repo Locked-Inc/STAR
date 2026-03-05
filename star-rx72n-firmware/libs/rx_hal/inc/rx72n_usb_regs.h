@@ -197,8 +197,32 @@ typedef struct {
   volatile uint16_t physlew;
 } rx_usb_regs_t;
 
+/**
+ * @enum rx_usb_addresses_t
+ * @brief USB0 peripheral base address (verified against RX72N Hardware Manual Ch40)
+ *
+ * @details
+ * Memory-mapped base address for the USB 2.0 Full-Speed Host/Function Module
+ * (USB0). Cast to a volatile pointer via usb0() to access the register map.
+ *
+ * The underlying type is uintptr_t to correctly express that this value is a
+ * memory address, not a plain integer. On RX72N (32-bit) uintptr_t == uint32_t,
+ * so there is no runtime difference.
+ *
+ * @par Memory Layout
+ * @verbatim
+ *   Address      | Peripheral
+ *   -------------+----------------------------------------
+ *   0x000A0000   | USB0 register block (see rx_usb_regs_t)
+ * @endverbatim
+ *
+ * @see rx_usb_regs_t  Register map structure accessed via this address
+ * @see usb0()         Inline accessor that casts this address to a pointer
+ *
+ * @since Version 1.0.0
+ */
 typedef enum : uintptr_t {
-  k_usb0_base_addr = 0x000A0000,
+  k_usb0_base_addr = 0x000A0000, /**< USB0 register block base address (Ch40 manual) */
 } rx_usb_addresses_t;
 
 static inline volatile rx_usb_regs_t* usb0(void)
