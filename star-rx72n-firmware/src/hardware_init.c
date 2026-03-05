@@ -439,8 +439,10 @@ typedef enum : uint32_t {
   k_i2c_host_freq_hz = 400000, /**< 400 kHz fast mode for host (RIIC0) */
   k_i2c_imu_freq_hz  = 400000, /**< 400 kHz fast mode for IMU sensors (RIIC1) */
 } i2c_freq_t;
-static_assert(k_i2c_host_freq_hz >= k_i2c_freq_min_hz, "Host I2C frequency must be non-zero");
-static_assert(k_i2c_imu_freq_hz >= k_i2c_freq_min_hz, "IMU I2C frequency must be non-zero");
+static_assert((uint32_t)k_i2c_host_freq_hz >= (uint32_t)k_i2c_freq_min_hz,
+              "Host I2C frequency must be non-zero");
+static_assert((uint32_t)k_i2c_imu_freq_hz >= (uint32_t)k_i2c_freq_min_hz,
+              "IMU I2C frequency must be non-zero");
 
 /** @brief Number of motor current ADC channels */
 typedef enum : uint8_t {
@@ -1414,9 +1416,9 @@ static rx_err_t i2c_init(void)
   static const char* s_tag = "I2C";
 
   /* Precondition: channel and frequency values must be within valid range (NASA Rule 5) */
-  static_assert(k_i2c_host_freq_hz <= k_i2c_fast_mode_max_hz,
+  static_assert((uint32_t)k_i2c_host_freq_hz <= (uint32_t)k_i2c_fast_mode_max_hz,
                 "Host I2C frequency must not exceed 400 kHz fast mode");
-  static_assert(k_i2c_imu_freq_hz <= k_i2c_fast_mode_max_hz,
+  static_assert((uint32_t)k_i2c_imu_freq_hz <= (uint32_t)k_i2c_fast_mode_max_hz,
                 "IMU I2C frequency must not exceed 400 kHz fast mode");
 
   /* RIIC0: Host I2C at 400 kHz (RPi5 communication) */
