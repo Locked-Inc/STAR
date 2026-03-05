@@ -197,7 +197,7 @@ typedef struct {
   volatile uint16_t physlew;
 } rx_usb_regs_t;
 
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_usb0_base_addr = 0x000A0000,
 } rx_usb_addresses_t;
 

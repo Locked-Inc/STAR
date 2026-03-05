@@ -118,7 +118,7 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_rom_cache_base_addr = 0x00081000, /**< ROM cache register base */
   k_romce_addr          = 0x00081000, /**< ROM Cache Enable Register */
   k_romciv_addr         = 0x00081004, /**< ROM Cache Invalidate Register */
@@ -187,7 +187,7 @@ static inline volatile uint16_t* romciv_reg(void)
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_fwepror_addr = 0x0008C296, /**< Flash P/E Protect Register */
 } rx_fwepror_addresses_t;
 

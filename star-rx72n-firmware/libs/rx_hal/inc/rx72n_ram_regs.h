@@ -61,7 +61,7 @@ extern "C" {
  * Defines the address ranges for all RAM regions on the RX72N.
  * These are from Manual Ch60, Table 60.1.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief RAM start address (512 KB, Memory Bus 1) */
   k_rx_ram_base_addr = 0x00000000,
   /** @brief RAM end address (inclusive) */
@@ -95,7 +95,7 @@ typedef enum : uint32_t {
  * @details
  * Defines register base addresses for RAM control, verified against Ch60.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief RAM control registers base address */
   k_rx_ram_reg_base_addr = 0x00081200,
   /** @brief Expansion RAM control registers base address */

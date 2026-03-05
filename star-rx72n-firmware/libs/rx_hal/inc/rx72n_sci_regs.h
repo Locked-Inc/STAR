@@ -191,7 +191,7 @@ extern "C" {
  *
  * @see RX72N Hardware Manual Section 41.2 (Register Addresses)
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief SCI0 base address - standard region (SCIj module) */
   k_sci0_base_addr = 0x0008A000,
 

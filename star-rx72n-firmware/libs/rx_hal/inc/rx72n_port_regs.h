@@ -208,7 +208,7 @@ extern "C" {
  * @see rx_port_offsets_t for port offset values
  * @see RX72N Hardware Manual Section 21.2 (Register Descriptions)
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief PDR (Port Direction Register) base address
    * @details All PDRn registers at 0x0008C000 + port_offset.

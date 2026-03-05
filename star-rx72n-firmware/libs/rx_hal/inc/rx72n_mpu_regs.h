@@ -91,7 +91,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 17.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief MPU region registers base address */
   k_mpu_region_base_addr = 0x00086400U,
 
@@ -490,7 +490,7 @@ typedef enum : uint16_t {
  * @note Manual ref: Ch17 section 17.2.11
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief Execute permission in hit region (bit 1) */
   k_mhiti_uhaci_x = 0x00000002U,
 
@@ -560,7 +560,7 @@ typedef enum : uint32_t {
  * @note Manual ref: Ch17 section 17.2.12
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief Execute permission in hit region (bit 1) */
   k_mhitd_uhacd_x = 0x00000002U,
 

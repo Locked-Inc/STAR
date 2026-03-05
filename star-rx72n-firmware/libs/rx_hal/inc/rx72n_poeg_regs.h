@@ -146,7 +146,7 @@ extern "C" {
  * @see poegga() Accessor function for Group A
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief POEG Group A base address (0x0009E000)
    * @details Verified against RX72N Hardware Manual Ch27.2.1

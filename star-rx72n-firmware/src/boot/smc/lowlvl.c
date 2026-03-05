@@ -95,7 +95,7 @@ Includes   <System Includes> , "Project Includes"
  *
  * @see st_dbg_t Debug port register structure
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_e1_dbg_port_addr = 0x00084080, /**< E1 debug port base address */
 } e1_debug_port_addr_t;
 
