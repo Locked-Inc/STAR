@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/mocks/mock_rx_hcsr04_irq.c */
 /**
  * @file mock_rx_hcsr04_irq.c
  * @brief Mock implementations for HC-SR04 IRQ mode functions (for unit testing)
@@ -23,6 +23,7 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  * @version 1.0.0
  *

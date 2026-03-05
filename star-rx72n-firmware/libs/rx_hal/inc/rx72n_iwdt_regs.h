@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_hal/inc/rx72n_iwdt_regs.h */
+/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_iwdt_regs.h */
 
 /**
  * @file rx72n_iwdt_regs.h
@@ -121,6 +120,7 @@
  * @author STAR Team
  * @date 2026-01-28
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

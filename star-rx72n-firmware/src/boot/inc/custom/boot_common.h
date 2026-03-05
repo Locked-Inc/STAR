@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/boot/inc/custom/boot_common.h */
 /**
  * @file boot_common.h
  * @brief Boot support header providing common definitions for SMC-generated boot files
@@ -10,6 +10,7 @@
  * @see platform.h Boot platform header that includes this file
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

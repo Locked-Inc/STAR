@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_pid.c */
+/* star-rx72n-firmware/tests/test_rx_pid.c */
 
 /**
  * @file test_rx_pid.c
@@ -190,6 +189,7 @@
  * @author STAR Team
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: [OK] No recursion, all control flow explicit

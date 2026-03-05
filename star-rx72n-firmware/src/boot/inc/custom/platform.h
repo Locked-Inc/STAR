@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/boot/inc/custom/platform.h */
 /**
  * @file platform.h
  * @brief Boot platform header providing BSP definitions for boot file compilation
@@ -18,6 +18,7 @@
  * @see boot_common.h Common boot definitions
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

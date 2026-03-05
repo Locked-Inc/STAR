@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_error_handler.c */
+/* star-rx72n-firmware/tests/mocks/mock_error_handler.c */
 
 /**
  * @file mock_error_handler.c
@@ -10,6 +9,7 @@
  *
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_error_handler.h"

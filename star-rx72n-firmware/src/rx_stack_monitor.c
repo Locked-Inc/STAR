@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/rx_stack_monitor.c */
+/* star-rx72n-firmware/src/rx_stack_monitor.c */
 
 /**
  * @file rx_stack_monitor.c
@@ -62,6 +61,7 @@
  * @since Version 1.0.0
  * @author STAR Team
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_stack_monitor.h"

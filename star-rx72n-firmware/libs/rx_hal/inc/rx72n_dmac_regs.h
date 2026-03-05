@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_dmac_regs.h */
 /**
  * @file rx72n_dmac_regs.h
  * @brief RX72N DMA Controller (DMAC) Register Definitions
@@ -62,6 +62,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

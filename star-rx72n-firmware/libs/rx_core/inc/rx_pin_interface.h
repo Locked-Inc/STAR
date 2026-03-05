@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_core/inc/rx_pin_interface.h */
+/* star-rx72n-firmware/libs/rx_core/inc/rx_pin_interface.h */
 
 /**
  * @file rx_pin_interface.h
@@ -297,6 +296,7 @@
  * @since Version 1.0.0
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

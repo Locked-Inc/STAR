@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_spi_comm/src/rx_spi_comm.c */
+/* star-rx72n-firmware/libs/rx_spi_comm/src/rx_spi_comm.c */
 
 /**
  * @file rx_spi_comm.c
@@ -296,6 +295,7 @@
  * @since Version 1.0.0
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_spi_comm.h"

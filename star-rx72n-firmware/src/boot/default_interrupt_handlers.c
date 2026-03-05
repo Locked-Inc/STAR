@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/boot/default_interrupt_handlers.c */
 /**
  * @file default_interrupt_handlers.c
  * @brief Default exception and interrupt handlers for RX72N boot sequence
@@ -14,6 +14,7 @@
  * @see r_bsp.h Declarations of these handlers (weak symbols)
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

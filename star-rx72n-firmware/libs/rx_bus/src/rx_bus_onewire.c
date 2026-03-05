@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_bus/src/rx_bus_onewire.c */
+/* star-rx72n-firmware/libs/rx_bus/src/rx_bus_onewire.c */
 
 /**
  * @file rx_bus_onewire.c
@@ -75,6 +74,7 @@
  * @author STAR Team
  * @date 2026-01-03
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_bus_onewire.h"

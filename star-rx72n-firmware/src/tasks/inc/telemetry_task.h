@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/tasks/inc/telemetry_task.h */
 /**
  * @file telemetry_task.h
  * @brief Telemetry Aggregation Task - System Status Collection and Reporting
@@ -24,6 +24,7 @@
  * @see shared_data.h Source of telemetry data
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

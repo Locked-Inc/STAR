@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_hal/src/rx_mpc.c */
+/* star-rx72n-firmware/libs/rx_hal/src/rx_mpc.c */
 
 /**
  * @file rx_mpc.c
@@ -162,6 +161,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

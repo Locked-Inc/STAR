@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_hardware_init.c */
+/* star-rx72n-firmware/tests/mocks/mock_hardware_init.c */
 
 /**
  * @file mock_hardware_init.c
@@ -12,6 +11,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_hardware_init.h"

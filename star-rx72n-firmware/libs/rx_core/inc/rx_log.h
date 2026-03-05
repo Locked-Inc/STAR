@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_core/inc/rx_log.h */
+/* star-rx72n-firmware/libs/rx_core/inc/rx_log.h */
 
 /**
  * @file rx_log.h
@@ -236,6 +235,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see uart.h for UART debug output implementation
  * @see rx_err.h for error code definitions

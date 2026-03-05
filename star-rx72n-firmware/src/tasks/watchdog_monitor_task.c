@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/tasks/watchdog_monitor_task.c */
+/* star-rx72n-firmware/src/tasks/watchdog_monitor_task.c */
 
 /**
  * @file watchdog_monitor_task.c
@@ -94,6 +93,7 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

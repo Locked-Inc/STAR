@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-stm32-firmware/Sources/main.c */
 /**
  ******************************************************************************
  * @file           : main.c
@@ -17,6 +17,7 @@
  ******************************************************************************
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #include <stdint.h>

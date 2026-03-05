@@ -1,8 +1,11 @@
-// SPDX-License-Identifier: MIT
-// Copyright (c) 2026 STAR Project
-// Licensed under MIT
+/* star-ros2/src/star_gateway_bridge/test/test_message_converter.cpp */
+/**
+ * @file test_message_converter.cpp
+ * @brief Licensed under MIT
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
-// @copyright Copyright (c) 2026 Locked Inc.
 #include "star_gateway_bridge/message_converter.hpp"
 
 #include <cmath>  // NOLINT(build/include_order)

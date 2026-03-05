@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_hal/src/riic.c */
+/* star-rx72n-firmware/libs/rx_hal/src/riic.c */
 
 /**
  * @file riic.c
@@ -206,6 +205,7 @@
  *
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

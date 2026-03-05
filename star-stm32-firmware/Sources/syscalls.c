@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-stm32-firmware/Sources/syscalls.c */
 /**
  ******************************************************************************
  * @file      syscalls.c
@@ -21,6 +21,7 @@
  ******************************************************************************
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 /* Includes */

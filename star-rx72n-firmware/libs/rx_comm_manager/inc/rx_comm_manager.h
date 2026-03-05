@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_comm_manager/inc/rx_comm_manager.h */
+/* star-rx72n-firmware/libs/rx_comm_manager/inc/rx_comm_manager.h */
 
 /**
  * @file rx_comm_manager.h
@@ -379,6 +378,7 @@
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par Changelog:
  * - 1.0.0 (2026-01-26): Initial implementation with USB and SPI channels

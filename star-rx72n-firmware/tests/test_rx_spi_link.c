@@ -1,4 +1,4 @@
-/* tests/test_rx_spi_link.c */
+/* star-rx72n-firmware/tests/test_rx_spi_link.c */
 
 /**
  * @file test_rx_spi_link.c

@@ -1,7 +1,11 @@
-// SPDX-License-Identifier: MIT
-// Copyright 2026 Locked Inc.
+/* star-ros2/src/star_spi_bridge/test/test_spi_message_converter.cpp */
+/**
+ * @file test_spi_message_converter.cpp
+ * @brief v_right = 0 + 2 * (0.15/2) = 0.15
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
-// @copyright Copyright (c) 2026 Locked Inc.
 #include <cmath>
 
 #include <gtest/gtest.h>  // NOLINT

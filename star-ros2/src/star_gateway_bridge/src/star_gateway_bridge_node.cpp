@@ -1,10 +1,14 @@
-// SPDX-License-Identifier: MIT
+/* star-ros2/src/star_gateway_bridge/src/star_gateway_bridge_node.cpp */
+/**
+ * @file star_gateway_bridge_node.cpp
+ * @brief Bridges ROS2 ecosystem with Go gateway service via gRPC.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 // star_gateway_bridge_node.cpp - ROS2 Gateway Bridge Node Implementation
 // Bridges ROS2 ecosystem with Go gateway service via gRPC.
 //
 // STAR Project - Texas A&M University
-// Copyright 2026 STAR Project
-// January 2026
 
 #include "star_gateway_bridge/star_gateway_bridge_node.hpp"
 
@@ -64,6 +68,7 @@ static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_dete
  * @since Version 1.0.0
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options)
 : Node("star_gateway_bridge", options), grpc_connected_(false),

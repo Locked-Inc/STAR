@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/tasks/inc/temp_sensor_task.h */
 /**
  * @file temp_sensor_task.h
  * @brief Temperature Sensor Task - DS18B20 Digital Thermometer Monitoring
@@ -26,6 +26,7 @@
  * @see shared_data.h Temperature data
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

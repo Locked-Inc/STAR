@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_communication_task.c */
+/* star-rx72n-firmware/tests/test_communication_task.c */
 
 /**
  * @file test_communication_task.c
@@ -18,6 +17,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

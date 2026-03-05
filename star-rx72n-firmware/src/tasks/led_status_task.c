@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/tasks/led_status_task.c */
+/* star-rx72n-firmware/src/tasks/led_status_task.c */
 
 /**
  * @file led_status_task.c
@@ -33,6 +32,7 @@
  * @author STAR Team
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_core/inc/rx_time_constants.h */
+/* star-rx72n-firmware/libs/rx_core/inc/rx_time_constants.h */
 
 /**
  * @file rx_time_constants.h
@@ -108,6 +107,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

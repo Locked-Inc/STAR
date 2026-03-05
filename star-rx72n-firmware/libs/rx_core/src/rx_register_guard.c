@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/libs/rx_core/src/rx_register_guard.c */
 /**
  * @file rx_register_guard.c
  * @brief Register Guard Implementation - ESD/EMI Protection for Critical Registers
@@ -190,6 +190,7 @@
  * @date 2026-01-28
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  */

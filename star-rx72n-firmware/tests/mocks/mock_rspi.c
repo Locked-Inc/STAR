@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_rspi.c */
+/* star-rx72n-firmware/tests/mocks/mock_rspi.c */
 
 /**
  * @file mock_rspi.c
@@ -11,6 +10,7 @@
  *
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rspi.h"

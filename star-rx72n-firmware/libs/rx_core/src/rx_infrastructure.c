@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* star-rx72n-firmware/libs/rx_core/src/rx_infrastructure.c */
 /**
  * @file rx_infrastructure.c
  * @brief Global Infrastructure Initialization Implementation
@@ -134,6 +134,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

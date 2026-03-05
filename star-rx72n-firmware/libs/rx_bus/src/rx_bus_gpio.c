@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_bus/src/rx_bus_gpio.c */
+/* star-rx72n-firmware/libs/rx_bus/src/rx_bus_gpio.c */
 
 /**
  * @file rx_bus_gpio.c
@@ -155,6 +154,7 @@
  * @date 2026-01-30
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_bus_gpio.h"

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_rx_clock_power_init.h */
+/* star-rx72n-firmware/tests/mocks/mock_rx_clock_power_init.h */
 
 /**
  * @file mock_rx_clock_power_init.h
@@ -22,6 +21,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

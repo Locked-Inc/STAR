@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_session.c */
+/* star-rx72n-firmware/tests/test_rx_session.c */
 
 /**
  * @file test_rx_session.c
@@ -24,6 +23,7 @@
  * @see star-gateway/internal/manager/session.go  Go reference
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #include <string.h>

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_encoder_tpu.c */
+/* star-rx72n-firmware/tests/test_rx_encoder_tpu.c */
 
 /**
  * @file test_rx_encoder_tpu.c
@@ -20,6 +19,7 @@
  * @author STAR Team
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

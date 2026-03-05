@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_shared_data.h */
+/* star-rx72n-firmware/tests/mocks/mock_shared_data.h */
 
 /**
  * @file mock_shared_data.h
@@ -23,6 +22,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

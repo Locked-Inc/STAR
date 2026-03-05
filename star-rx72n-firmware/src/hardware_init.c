@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/hardware_init.c */
+/* star-rx72n-firmware/src/hardware_init.c */
 
 /**
  * @file hardware_init.c
@@ -192,6 +191,7 @@
  *
  * @date 2026-01-14
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "hardware_init.h"

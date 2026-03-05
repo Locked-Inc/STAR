@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_pin_validator.h */
+/* star-rx72n-firmware/tests/mocks/mock_pin_validator.h */
 
 /**
  * @file mock_pin_validator.h
@@ -27,6 +26,7 @@
  *
  * @author STAR Team
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
  * - Query functions to verify pin operations in tests
  *

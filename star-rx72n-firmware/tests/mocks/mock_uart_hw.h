@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_uart_hw.h */
+/* star-rx72n-firmware/tests/mocks/mock_uart_hw.h */
 
 /**
  * @file mock_uart_hw.h
@@ -34,6 +33,7 @@
  * @par SOLID: D - UART bus depends on hardware interface
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

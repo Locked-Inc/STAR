@@ -1,7 +1,11 @@
-// SPDX-License-Identifier: MIT
-// Copyright 2026 Locked Inc.
+/* star-ros2/src/star_spi_bridge/src/main.cpp */
+/**
+ * @file main.cpp
+ * @brief main.cpp - STAR project source file
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
-// @copyright Copyright (c) 2026 Locked Inc.
 #include "star_spi_bridge/star_spi_driver_node.hpp"
 
 #include <rclcpp/rclcpp.hpp>

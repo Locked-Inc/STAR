@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/rx72n_system_regs.h */
+/* star-rx72n-firmware/tests/mocks/rx72n_system_regs.h */
 
 /**
  * @file rx72n_system_regs.h
@@ -291,6 +290,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @version 1.0.0
  * @since Version 1.0.0

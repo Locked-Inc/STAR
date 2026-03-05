@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/tasks/inc/obstacle_detect_task.h */
 /**
  * @file obstacle_detect_task.h
  * @brief Obstacle Detection Task - HC-SR04 Ultrasonic Sensor Monitoring
@@ -26,6 +26,7 @@
  * @see shared_data.h Obstacle distance data
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/test_rx_iwdt.c */
 /**
  * @file test_rx_iwdt.c
  * @brief Comprehensive Unit Tests for Independent Watchdog Timer (IWDT) Driver
@@ -265,6 +265,7 @@
  * @author STAR Team
  * @date 2026-01-08
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

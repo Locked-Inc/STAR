@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_gptw_staggered.c */
+/* star-rx72n-firmware/tests/test_rx_gptw_staggered.c */
 
 /**
  * @file test_rx_gptw_staggered.c
@@ -277,6 +276,7 @@
  * @author STAR Team
  * @date 2026-01-24
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  *
  * @test test_staggered_init_success

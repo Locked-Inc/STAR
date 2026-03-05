@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_rx_mtu_encoder.c */
+/* star-rx72n-firmware/tests/mocks/mock_rx_mtu_encoder.c */
 
 /**
  * @file mock_rx_mtu_encoder.c
@@ -12,6 +11,7 @@
  *
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 /* Include mock regs header FIRST to define mock types before real headers */

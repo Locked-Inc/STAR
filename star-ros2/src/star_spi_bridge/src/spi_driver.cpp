@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-ros2/src/star_spi_bridge/src/spi_driver.cpp */
 /**
  * @file spi_driver.cpp
  * @brief SPI driver implementation for framed communication with the RX72N
@@ -13,6 +13,7 @@
  *
  * @author Locked Inc.
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

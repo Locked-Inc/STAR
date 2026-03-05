@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/libs/rx_session/inc/rx_session.h */
 /**
  * @file rx_session.h
  *
@@ -63,6 +63,7 @@
  * @par February 2026
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #pragma once

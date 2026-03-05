@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_crc/src/rx_crc32_sw.c */
+/* star-rx72n-firmware/libs/rx_crc/src/rx_crc32_sw.c */
 
 /**
  * @file rx_crc32_sw.c
@@ -333,6 +332,7 @@
  * @author STAR Team
  * @date 2026-01-28
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stddef.h> /* For nullptr */

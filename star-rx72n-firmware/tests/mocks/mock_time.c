@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/mocks/mock_time.c */
 /**
  * @file mock_time.c
  * @brief Mock Time Implementation for Testing
@@ -8,6 +8,7 @@
  *
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_time.h"

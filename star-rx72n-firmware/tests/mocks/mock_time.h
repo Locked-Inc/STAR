@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_time.h */
+/* star-rx72n-firmware/tests/mocks/mock_time.h */
 
 /**
  * @file mock_time.h
@@ -40,6 +39,7 @@
  *
  * @author STAR Team
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

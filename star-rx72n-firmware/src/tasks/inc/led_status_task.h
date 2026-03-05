@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/tasks/inc/led_status_task.h */
 /**
  * @file led_status_task.h
  * @brief LED Status Indicator Task - Visual System Health Feedback
@@ -24,6 +24,7 @@
  * @see hardware_config.h LED pin assignments
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

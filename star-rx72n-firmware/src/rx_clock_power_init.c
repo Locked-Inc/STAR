@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/rx_clock_power_init.c */
+/* star-rx72n-firmware/src/rx_clock_power_init.c */
 
 /**
  * @file rx_clock_power_init.c
@@ -236,6 +235,7 @@
  *
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_clock_power_init.h"

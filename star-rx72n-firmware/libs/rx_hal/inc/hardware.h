@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* libs/rx_hal/inc/hardware.h */
+/* star-rx72n-firmware/libs/rx_hal/inc/hardware.h */
 
 /**
  * @file hardware.h
@@ -248,6 +247,7 @@
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_err.h for error code definitions
  * @see rx_port_constants.h for complete port/pin enumerations

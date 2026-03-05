@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_core/inc/rx_check.h */
+/* star-rx72n-firmware/libs/rx_core/inc/rx_check.h */
 
 /**
  * @file rx_check.h
@@ -200,6 +199,7 @@
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

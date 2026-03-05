@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_adc_hal.c */
+/* star-rx72n-firmware/tests/mocks/mock_adc_hal.c */
 
 /**
  * @file mock_adc_hal.c
@@ -28,6 +27,7 @@
  * @version 1.0.0
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

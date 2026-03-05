@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/test_rx_ds18b20.c */
 /**
  * @file test_rx_ds18b20.c
  * @brief Unit Tests for DS18B20 1-Wire Temperature Sensor Driver
@@ -413,6 +413,7 @@
  * @date 2026-01-05
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

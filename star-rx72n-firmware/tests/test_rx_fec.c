@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_fec.c */
+/* star-rx72n-firmware/tests/test_rx_fec.c */
 
 /**
  * @file test_rx_fec.c
@@ -278,6 +277,7 @@
  * @author STAR Team
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  * @version 1.0.0

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/tasks/inc/motor_control_task.h */
 /**
  * @file motor_control_task.h
  * @brief Motor Control Task - 250 Hz PID-Based Velocity Control
@@ -31,6 +31,7 @@
  * @see rx_motor.h Motor abstraction and DRV8263H driver control
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

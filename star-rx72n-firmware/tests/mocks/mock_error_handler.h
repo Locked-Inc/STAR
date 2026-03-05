@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_error_handler.h */
+/* star-rx72n-firmware/tests/mocks/mock_error_handler.h */
 
 /**
  * @file mock_error_handler.h
@@ -31,6 +30,7 @@
  *
  * @author STAR Team
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 *Usage Example(Swapping Implementations)
     : *@code * // Production code uses real error handler:

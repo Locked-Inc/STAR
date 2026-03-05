@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/rx72n_iwdt_regs.h */
+/* star-rx72n-firmware/tests/mocks/rx72n_iwdt_regs.h */
 
 /**
  * @file rx72n_iwdt_regs.h
@@ -13,6 +12,7 @@
  *
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_nanopb/src/rx_nanopb.c */
+/* star-rx72n-firmware/libs/rx_nanopb/src/rx_nanopb.c */
 
 /**
  * @file rx_nanopb.c
@@ -156,6 +155,7 @@
  * @date 2026-01-27
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_nanopb.h"

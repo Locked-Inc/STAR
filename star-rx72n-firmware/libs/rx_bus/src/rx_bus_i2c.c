@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_bus/src/rx_bus_i2c.c */
+/* star-rx72n-firmware/libs/rx_bus/src/rx_bus_i2c.c */
 
 /**
  * @file rx_bus_i2c.c
@@ -173,6 +172,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

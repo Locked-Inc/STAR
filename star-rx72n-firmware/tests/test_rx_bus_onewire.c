@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/test_rx_bus_onewire.c */
 /**
  * @file test_rx_bus_onewire.c
  * @brief Unit Tests for 1-Wire Bus Protocol Implementation
@@ -296,6 +296,7 @@
  * @since Version 1.0.0
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

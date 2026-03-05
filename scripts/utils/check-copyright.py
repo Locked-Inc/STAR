@@ -32,6 +32,7 @@ SOURCE_EXTENSIONS = {".c", ".h", ".cpp", ".hpp"}
 EXEMPT_PREFIXES = (
     "schematic/",
     "star-rx72n-firmware/libs/rx_nanopb/nanopb/",
+    "star-rx72n-firmware/libs/rx_nanopb/inc/gen/",
     "star-rx72n-firmware/libs/threadx/",
     "star-ros2/src/sllidar_ros2/",
     "star-ros2/install/",

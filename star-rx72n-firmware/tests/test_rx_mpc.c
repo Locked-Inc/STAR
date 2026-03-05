@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* star-rx72n-firmware/tests/test_rx_mpc.c */
 /**
  * @file test_rx_mpc.c
  * @brief Unit Tests for RX72N MPC (Multi-Function Pin Controller) Register Definitions
@@ -83,6 +83,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

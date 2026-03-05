@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/shared/shared_data.h */
 /**
  * @file shared_data.h
  * @brief Thread-Safe Shared Data Infrastructure for Multi-Task Communication
@@ -10,6 +10,7 @@
  * @see shared_data.c Implementation
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #pragma once

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_hal/inc/rx_port_utils.h */
+/* star-rx72n-firmware/libs/rx_hal/inc/rx_port_utils.h */
 
 /**
  * @file rx_port_utils.h
@@ -123,6 +122,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

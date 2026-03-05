@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_motor/inc/rx_motor.h */
+/* star-rx72n-firmware/libs/rx_motor/inc/rx_motor.h */
 
 /**
  * @file rx_motor.h
@@ -234,6 +233,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_gptw.h for GPTW peripheral API
  * @see lib/rx_pid/ for PID controller (velocity control)

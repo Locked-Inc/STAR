@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_usb_comm.c */
+/* star-rx72n-firmware/tests/test_rx_usb_comm.c */
 
 /**
  * @file test_rx_usb_comm.c
@@ -166,6 +165,7 @@
  * @author STAR Team
  * @date 2026-01-30
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @test Tests run via Unity framework with: make test_rx_usb_comm
  */

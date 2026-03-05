@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_ram_regs.h */
 /**
  * @file rx72n_ram_regs.h
  * @brief RX72N RAM/Expansion RAM/ECCRAM register definitions
@@ -39,6 +39,7 @@
  *
  * @since Version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

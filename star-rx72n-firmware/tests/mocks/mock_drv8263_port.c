@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/mocks/mock_drv8263_port.c */
 /**
  * @file mock_drv8263_port.c
  * @brief Mock PORT register implementation for DRV8263 unit testing
@@ -12,6 +12,7 @@
  * @date 2026-03-03
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 3: Static allocation for g_mock_port_regs (no dynamic memory)

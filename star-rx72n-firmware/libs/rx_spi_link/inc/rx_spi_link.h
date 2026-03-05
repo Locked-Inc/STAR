@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/libs/rx_spi_link/inc/rx_spi_link.h */
 /**
  * @file rx_spi_link.h
  * @brief SPI Link Layer with HARQ
@@ -99,6 +99,7 @@
  * @author STAR Team
  * @date 2026-02-14
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  */

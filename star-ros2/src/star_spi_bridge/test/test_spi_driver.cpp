@@ -1,7 +1,11 @@
-// SPDX-License-Identifier: MIT
-// Copyright 2026 Locked Inc.
+/* star-ros2/src/star_spi_bridge/test/test_spi_driver.cpp */
+/**
+ * @file test_spi_driver.cpp
+ * @brief Setup code
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
-// @copyright Copyright (c) 2026 Locked Inc.
 #include "star_spi_bridge/spi_driver.hpp"
 
 #include <gtest/gtest.h>  // NOLINT

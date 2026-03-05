@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_frame/src/rx_frame.c */
+/* star-rx72n-firmware/libs/rx_frame/src/rx_frame.c */
 
 /**
  * @file rx_frame.c
@@ -171,6 +170,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

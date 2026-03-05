@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-proto/tests/nanopb/test_serialization.c */
 /**
  * @file test_serialization.c
  * @brief nanopb C Protobuf Serialization Tests
@@ -10,6 +10,7 @@
  * December 2025
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #include "unity.h"

@@ -1,4 +1,4 @@
-/* SPDX-License-Identifier: MIT */
+/* star-rx72n-firmware/libs/rx_hal/inc/rx72n_poe3_regs.h */
 /**
  * @file rx72n_poe3_regs.h
  * @brief RX72N Port Output Enable 3 (POE3) Register Definitions
@@ -68,6 +68,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

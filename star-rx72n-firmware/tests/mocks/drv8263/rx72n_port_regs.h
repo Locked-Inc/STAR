@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/mocks/drv8263/rx72n_port_regs.h */
 /**
  * @file rx72n_port_regs.h
  * @brief Mock PORT register definitions for DRV8263 unit testing
@@ -19,6 +19,7 @@
  * @date 2026-03-03
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see mock_drv8263_port.h Test helper API for manipulating mock ports
  *

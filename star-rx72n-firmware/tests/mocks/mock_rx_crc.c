@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_rx_crc.c */
+/* star-rx72n-firmware/tests/mocks/mock_rx_crc.c */
 
 /**
  * @file mock_rx_crc.c
@@ -7,6 +6,7 @@
  *
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rx_crc.h"

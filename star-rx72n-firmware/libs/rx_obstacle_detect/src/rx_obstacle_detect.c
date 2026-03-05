@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_obstacle_detect/src/rx_obstacle_detect.c */
+/* star-rx72n-firmware/libs/rx_obstacle_detect/src/rx_obstacle_detect.c */
 
 /**
  * @file rx_obstacle_detect.c
@@ -151,6 +150,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  *
  * @since Version 1.0.0

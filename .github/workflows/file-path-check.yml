@@ -1,0 +1,28 @@
+# file-path-check.yml - First-line path comment enforcement for STAR project
+#
+# Rejects any commit where a C/C++ source file's first line is not a block
+# comment containing the file's exact git-relative path:
+#
+#     /* star-rx72n-firmware/libs/rx_hal/inc/rx72n_cmt_regs.h */
+#
+# Copyright (c) 2026 Locked Inc.
+# SPDX-License-Identifier: MIT
+
+name: File Path Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  file-path-check:
+    name: First-line path comment enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check first-line path comments
+        run: python3 scripts/utils/check-file-path.py

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_hcsr04.c */
+/* star-rx72n-firmware/tests/test_rx_hcsr04.c */
 
 /**
  * @file test_rx_hcsr04.c
@@ -346,6 +345,7 @@
  *
  * @date 2026-01-02
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

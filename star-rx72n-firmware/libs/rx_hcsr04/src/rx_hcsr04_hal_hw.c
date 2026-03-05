@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_hcsr04/src/rx_hcsr04_hal_hw.c */
+/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_hal_hw.c */
 
 /**
  * @file rx_hcsr04_hal_hw.c
@@ -426,6 +425,7 @@
  *
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdbool.h>

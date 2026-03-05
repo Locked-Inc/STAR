@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_rx_poeg.c */
+/* star-rx72n-firmware/tests/test_rx_poeg.c */
 
 /**
  * @file test_rx_poeg.c
@@ -12,6 +11,7 @@
  * @author STAR Team
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdbool.h>

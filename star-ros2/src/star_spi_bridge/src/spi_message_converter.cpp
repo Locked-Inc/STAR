@@ -1,5 +1,10 @@
-// SPDX-License-Identifier: MIT
-// Copyright 2026 Locked Inc.
+/* star-ros2/src/star_spi_bridge/src/spi_message_converter.cpp */
+/**
+ * @file spi_message_converter.cpp
+ * @brief Differential drive kinematics
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_spi_bridge/spi_message_converter.hpp"
 
@@ -227,6 +232,7 @@ void SpiMessageConverter::telemetry_to_joint_state(
  * @since Version 1.0.0
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 void SpiMessageConverter::telemetry_to_obstacle_ranges(
   const star::v1::TelemetryData & telemetry,

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/drv8263/rx_port_utils.h */
+/* star-rx72n-firmware/tests/mocks/drv8263/rx_port_utils.h */
 
 /**
  * @file rx_port_utils.h
@@ -14,6 +13,7 @@
  * @date 2026-03-03
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 1: No goto or recursion in table-driven lookup

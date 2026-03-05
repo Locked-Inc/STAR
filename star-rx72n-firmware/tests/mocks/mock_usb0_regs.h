@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/mocks/mock_usb0_regs.h */
 /**
  * @file mock_usb0_regs.h
  * @brief Mock USB0/ICU/SYSTEM Register Structures for Host-Side Testing
@@ -14,6 +14,7 @@
  *
  * @date 2025-12-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

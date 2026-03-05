@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/tests/mocks/tx_api.h */
 /**
  * @file tx_api.h
  * @brief Mock ThreadX RTOS API for host-side testing without ThreadX
@@ -22,6 +22,7 @@
  *
  * @date 2026-01-11
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

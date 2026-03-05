@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_hal/src/timer.c */
+/* star-rx72n-firmware/libs/rx_hal/src/timer.c */
 
 /**
  * @file timer.c
@@ -185,6 +184,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdint.h>

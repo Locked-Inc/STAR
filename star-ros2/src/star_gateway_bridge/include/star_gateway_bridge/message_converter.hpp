@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-ros2/src/star_gateway_bridge/include/star_gateway_bridge/message_converter.hpp */
 /**
  * @file message_converter.hpp
  * @brief Bidirectional conversion between ROS2 standard messages and STAR
@@ -16,6 +16,7 @@
  * @since Version 1.0.0
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #pragma once

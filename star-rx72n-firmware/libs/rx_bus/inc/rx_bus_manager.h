@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_bus/inc/rx_bus_manager.h */
+/* star-rx72n-firmware/libs/rx_bus/inc/rx_bus_manager.h */
 
 /**
  * @file rx_bus_manager.h
@@ -182,6 +181,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

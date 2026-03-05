@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/src/tasks/inc/comm_task.h */
 /**
  * @file comm_task.h
  * @brief Communication Task - SPI Protocol Handler for Raspberry Pi 5
@@ -26,6 +26,7 @@
  * @see rx_frame.h Frame protocol with CRC
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

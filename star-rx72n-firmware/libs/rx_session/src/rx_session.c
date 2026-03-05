@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/libs/rx_session/src/rx_session.c */
 /**
  * @file rx_session.c
  *
@@ -39,6 +39,7 @@
  * @date February 2026
  * @version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_session.h  Public API
  * @see star-gateway/internal/manager/session.go  Go reference implementation

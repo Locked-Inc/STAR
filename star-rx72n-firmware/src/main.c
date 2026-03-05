@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/main.c */
+/* star-rx72n-firmware/src/main.c */
 
 /**
  * @file main.c
@@ -170,6 +169,7 @@
  * - v1.0.0 (2026-01): Initial implementation with ThreadX RTOS bootstrap
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #include "hardware.h"

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_hcsr04_hw.h */
+/* star-rx72n-firmware/tests/mocks/mock_hcsr04_hw.h */
 
 /**
  * @file mock_hcsr04_hw.h
@@ -51,6 +50,7 @@
  * @author STAR Team
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

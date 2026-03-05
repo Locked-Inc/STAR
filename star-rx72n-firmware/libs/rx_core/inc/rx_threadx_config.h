@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_core/inc/rx_threadx_config.h */
+/* star-rx72n-firmware/libs/rx_core/inc/rx_threadx_config.h */
 
 /**
  * @file rx_threadx_config.h
@@ -209,6 +208,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

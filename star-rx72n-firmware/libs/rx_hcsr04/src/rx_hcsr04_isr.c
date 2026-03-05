@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_isr.c */
 /**
  * @file rx_hcsr04_isr.c
  * @brief HC-SR04 ISR (Interrupt Service Routine) Handler Implementation
@@ -31,6 +31,7 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  * @version 1.0.0
  *

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_encoder/src/rx_mtu_encoder.c */
+/* star-rx72n-firmware/libs/rx_encoder/src/rx_mtu_encoder.c */
 
 /**
  * @file rx_mtu_encoder.c
@@ -360,6 +359,7 @@
  * @since Version 1.0.0
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_mtu_encoder.h"

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_ds18b20/src/rx_ds18b20.c */
+/* star-rx72n-firmware/libs/rx_ds18b20/src/rx_ds18b20.c */
 
 /**
  * @file rx_ds18b20.c
@@ -198,6 +197,7 @@
  *
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_ds18b20.h"

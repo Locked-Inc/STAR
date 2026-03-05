@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/mocks/mock_sci_regs.c */
+/* star-rx72n-firmware/tests/mocks/mock_sci_regs.c */
 
 /**
  * @file mock_sci_regs.c
@@ -10,6 +9,7 @@
  *
  * @date 2026-01-04
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_sci_regs.h"

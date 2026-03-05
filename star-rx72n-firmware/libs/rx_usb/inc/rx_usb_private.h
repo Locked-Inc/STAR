@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_usb/inc/rx_usb_private.h */
+/* star-rx72n-firmware/libs/rx_usb/inc/rx_usb_private.h */
 
 /**
  * @file rx_usb_private.h
@@ -112,6 +111,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  *
  * @internal

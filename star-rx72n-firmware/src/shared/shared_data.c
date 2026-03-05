@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/shared/shared_data.c */
+/* star-rx72n-firmware/src/shared/shared_data.c */
 
 /**
  * @file shared_data.c
@@ -348,6 +347,7 @@
  * @author STAR Team
  * @date 2026-01-29
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "shared_data.h"

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_usb/src/rx_usb_cdc.c */
+/* star-rx72n-firmware/libs/rx_usb/src/rx_usb_cdc.c */
 
 /**
  * @file rx_usb_cdc.c
@@ -575,6 +574,7 @@
  * @version 1.0.0
  *
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_usb.h Public USB API (application interface)
  * @see rx_usb.c USB core (ring buffers, state machine)

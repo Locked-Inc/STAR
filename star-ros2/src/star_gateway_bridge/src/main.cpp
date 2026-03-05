@@ -1,4 +1,10 @@
-// SPDX-License-Identifier: MIT
+/* star-ros2/src/star_gateway_bridge/src/main.cpp */
+/**
+ * @file main.cpp
+ * @brief Entry point for running star_gateway_bridge node as standalone process.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 // main.cpp - STAR Gateway Bridge Standalone Executable
 // Entry point for running star_gateway_bridge node as standalone process.
 //
@@ -22,6 +28,7 @@
  *                -p telemetry_rate_hz:=20.0
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 int main(int argc, char **argv)
 {

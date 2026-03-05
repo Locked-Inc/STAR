@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-rx72n-firmware/libs/rx_core/src/rx_exception.c */
 /**
  * @file rx_exception.c
  * @brief RX72N CPU Exception Handling Implementation
@@ -19,6 +19,7 @@
  *
  * @since Version 1.0.0
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_exception.h"

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_hal/inc/rx_host_irq.h */
+/* star-rx72n-firmware/libs/rx_hal/inc/rx_host_irq.h */
 
 /**
  * @file rx_host_irq.h
@@ -50,6 +49,7 @@
  * @author STAR Team
  * @date 2026-02-10
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+/* star-ros2/src/star_gateway_bridge/include/star_gateway_bridge/star_gateway_bridge_node.hpp */
 /**
  * @file star_gateway_bridge_node.hpp
  * @brief ROS2 Gateway Bridge Node -- bridges the ROS2 ecosystem with the Go
@@ -16,6 +16,7 @@
  * @since Version 1.0.0
  
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
 */
 
 #pragma once

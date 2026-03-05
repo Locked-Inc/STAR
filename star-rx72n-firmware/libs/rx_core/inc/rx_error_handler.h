@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* lib/rx_core/inc/rx_error_handler.h */
+/* star-rx72n-firmware/libs/rx_core/inc/rx_error_handler.h */
 
 /**
  * @file rx_error_handler.h
@@ -231,6 +230,7 @@
  * @author STAR Team
  * @date 2026-01-27
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* tests/test_gpio_hal.c */
+/* star-rx72n-firmware/tests/test_gpio_hal.c */
 
 /**
  * @file test_gpio_hal.c
@@ -219,6 +218,7 @@
  * @author STAR Team
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  *
  * @par Build Configuration:

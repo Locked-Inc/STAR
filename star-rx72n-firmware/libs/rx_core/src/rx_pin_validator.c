@@ -1,5 +1,4 @@
-// SPDX-License-Identifier: MIT
-/* src/core/rx_pin_validator.c */
+/* star-rx72n-firmware/libs/rx_core/src/rx_pin_validator.c */
 
 /**
  * @file rx_pin_validator.c
@@ -152,6 +151,7 @@
  * @author STAR Team
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 
