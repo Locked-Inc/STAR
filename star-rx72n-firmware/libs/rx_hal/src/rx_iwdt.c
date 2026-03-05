@@ -391,7 +391,7 @@ static const uint32_t s_iwdt_timeout_table_size =
  *
  * @since Version 1.0.0
  */
-static const char* const s_tag = "iwdt";
+static const char* const s_tag = "IWDT";
 
 /**
  * @var s_iwdt_initialized
