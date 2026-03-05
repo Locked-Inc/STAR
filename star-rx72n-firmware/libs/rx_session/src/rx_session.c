@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_session/src/rx_session.c */
+
 /**
  * @file rx_session.c
  *

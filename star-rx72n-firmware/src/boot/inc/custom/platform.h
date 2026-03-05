@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/src/boot/inc/custom/platform.h */
+
 /**
  * @file platform.h
  * @brief Boot platform header providing BSP definitions for boot file compilation

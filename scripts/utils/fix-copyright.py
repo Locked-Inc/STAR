@@ -132,7 +132,7 @@ def fix_or_insert_copyright(text: str, expected: str) -> str:
 
 
 def fix_path_comment(text: str, rel: str) -> str:
-    """Ensure line 1 is exactly '/* rel */'."""
+    """Ensure line 1 is exactly '/* rel */' followed by a blank line."""
     desired = f"/* {rel} */\n"
 
     # Strip existing line-1 path comment or // comment block preamble
@@ -152,11 +152,12 @@ def fix_path_comment(text: str, rel: str) -> str:
     # (avoid ripping out real // file headers for non-Doxygen files)
     first = lines[0] if lines else ""
     if PATH_COMMENT_RE.match(first) or (STANDALONE_SPDX_RE.match(first) and "SPDX" in first):
-        text = desired + "".join(lines[1:])
+        rest = "".join(lines[1:])
     else:
-        text = desired + text
+        rest = text
 
-    return text
+    # Ensure exactly one blank line between the path comment and the body
+    return desired + "\n" + rest.lstrip("\n")
 
 
 def build_minimal_doxygen(rel: str, filename: str, existing_lines: list[str]) -> str:
@@ -246,7 +247,7 @@ def fix_file(path: Path, rel: str, dry_run: bool) -> bool:
             lines = text.splitlines(keepends=True)
             if lines and (PATH_COMMENT_RE.match(lines[0]) or "SPDX" in lines[0]):
                 text = "".join(lines[1:])
-            text = f"/* {rel} */\n" + doxy + text
+            text = f"/* {rel} */\n\n" + doxy + text
         else:
             text = fix_path_comment(text, rel)
             text = fix_or_insert_copyright(text, expected)

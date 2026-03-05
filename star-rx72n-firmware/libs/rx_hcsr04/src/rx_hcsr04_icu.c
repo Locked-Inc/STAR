@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_hcsr04/src/rx_hcsr04_icu.c */
+
 /**
  * @file rx_hcsr04_icu.c
  * @brief HC-SR04 ICU (Interrupt Controller Unit) Configuration Implementation

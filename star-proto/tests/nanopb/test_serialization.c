@@ -1,4 +1,5 @@
 /* star-proto/tests/nanopb/test_serialization.c */
+
 /**
  * @file test_serialization.c
  * @brief nanopb C Protobuf Serialization Tests

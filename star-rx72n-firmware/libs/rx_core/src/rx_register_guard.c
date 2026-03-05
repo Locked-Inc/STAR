@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_core/src/rx_register_guard.c */
+
 /**
  * @file rx_register_guard.c
  * @brief Register Guard Implementation - ESD/EMI Protection for Critical Registers

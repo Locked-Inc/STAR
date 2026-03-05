@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/mocks/mock_drv8263_port.c */
+
 /**
  * @file mock_drv8263_port.c
  * @brief Mock PORT register implementation for DRV8263 unit testing

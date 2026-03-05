@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/mocks/mock_usb0_regs.h */
+
 /**
  * @file mock_usb0_regs.h
  * @brief Mock USB0/ICU/SYSTEM Register Structures for Host-Side Testing

@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_hal/inc/rx72n_poe3_regs.h */
+
 /**
  * @file rx72n_poe3_regs.h
  * @brief RX72N Port Output Enable 3 (POE3) Register Definitions

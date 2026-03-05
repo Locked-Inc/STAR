@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_hal/inc/rx72n_rtc_regs.h */
+
 /**
  * @file rx72n_rtc_regs.h
  * @brief RX72N Real-Time Clock (RTC) Register Definitions

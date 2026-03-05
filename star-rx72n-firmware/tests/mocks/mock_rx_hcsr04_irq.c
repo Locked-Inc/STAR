@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/mocks/mock_rx_hcsr04_irq.c */
+
 /**
  * @file mock_rx_hcsr04_irq.c
  * @brief Mock implementations for HC-SR04 IRQ mode functions (for unit testing)

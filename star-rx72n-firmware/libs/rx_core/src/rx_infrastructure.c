@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_core/src/rx_infrastructure.c */
+
 /**
  * @file rx_infrastructure.c
  * @brief Global Infrastructure Initialization Implementation

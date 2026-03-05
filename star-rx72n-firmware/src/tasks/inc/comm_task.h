@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/src/tasks/inc/comm_task.h */
+
 /**
  * @file comm_task.h
  * @brief Communication Task - SPI Protocol Handler for Raspberry Pi 5

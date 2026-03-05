@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/src/inc/hardware_config.h */
+
 /**
  * @file hardware_config.h
  * @brief Hardware Pin Configuration Constants for STAR RX72N Platform (144-pin LFQFP)

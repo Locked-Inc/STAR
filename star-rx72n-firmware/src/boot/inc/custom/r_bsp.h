@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/src/boot/inc/custom/r_bsp.h */
+
 /**
  * @file r_bsp.h
  * @brief Boot-compatible minimal replacement for full Renesas SMC r_bsp.h

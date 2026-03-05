@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_hal/inc/rx72n_dtc_regs.h */
+
 /**
  * @file rx72n_dtc_regs.h
  * @brief RX72N Data Transfer Controller (DTCb) Register Definitions

@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/test_rx_gpio.c */
+
 /**
  * @file test_rx_gpio.c
  * @brief Unit Tests for RX72N GPIO (PORT) Register Definitions

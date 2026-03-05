@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_core/src/rx_time_threadx.c */
+
 /**
  * @file rx_time_threadx.c
  * @brief ThreadX Time Implementation for RX72N

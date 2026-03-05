@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_hal/inc/rx72n_mpu_regs.h */
+
 /**
  * @file rx72n_mpu_regs.h
  * @brief RX72N Memory Protection Unit (MPU) Register Definitions

@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/test_rx_mpc.c */
+
 /**
  * @file test_rx_mpc.c
  * @brief Unit Tests for RX72N MPC (Multi-Function Pin Controller) Register Definitions

@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/test_rx_ds18b20.c */
+
 /**
  * @file test_rx_ds18b20.c
  * @brief Unit Tests for DS18B20 1-Wire Temperature Sensor Driver

@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_hal/inc/rx72n_elc_regs.h */
+
 /**
  * @file rx72n_elc_regs.h
  * @brief RX72N Event Link Controller (ELC) Register Definitions

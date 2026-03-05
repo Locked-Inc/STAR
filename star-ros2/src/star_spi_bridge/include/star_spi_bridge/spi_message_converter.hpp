@@ -1,4 +1,5 @@
 /* star-ros2/src/star_spi_bridge/include/star_spi_bridge/spi_message_converter.hpp */
+
 /**
  * @file spi_message_converter.hpp
  * @brief Message conversion utilities between ROS2 message types and protobuf

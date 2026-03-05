@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_core/src/rx_log_usb.c */
+
 /**
  * @file rx_log_usb.c
  * @brief USB CDC logging backend implementation with boot buffering and thread safety

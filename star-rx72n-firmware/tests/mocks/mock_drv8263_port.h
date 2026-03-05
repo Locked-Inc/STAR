@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/mocks/mock_drv8263_port.h */
+
 /**
  * @file mock_drv8263_port.h
  * @brief Test helper API for DRV8263 mock port registers

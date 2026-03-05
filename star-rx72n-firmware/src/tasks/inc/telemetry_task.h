@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/src/tasks/inc/telemetry_task.h */
+
 /**
  * @file telemetry_task.h
  * @brief Telemetry Aggregation Task - System Status Collection and Reporting

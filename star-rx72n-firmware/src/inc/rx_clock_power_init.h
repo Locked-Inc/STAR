@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/src/inc/rx_clock_power_init.h */
+
 /**
  * @file rx_clock_power_init.h
  * @brief RX72N System Clock and Power Management Initialization

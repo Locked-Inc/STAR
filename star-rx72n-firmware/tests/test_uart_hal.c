@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/tests/test_uart_hal.c */
+
 /**
  * @file test_uart_hal.c
  * @brief Comprehensive Unit Tests for RX72N UART HAL Driver

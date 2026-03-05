@@ -1,4 +1,5 @@
 /* star-ros2/src/star_spi_bridge/include/star_spi_bridge/spi_driver.hpp */
+
 /**
  * @file spi_driver.hpp
  * @brief SPI driver declarations for framed communication with the RX72N

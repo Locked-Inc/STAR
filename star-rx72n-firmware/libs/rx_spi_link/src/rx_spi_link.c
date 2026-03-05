@@ -1,4 +1,5 @@
 /* star-rx72n-firmware/libs/rx_spi_link/src/rx_spi_link.c */
+
 /**
  * @file rx_spi_link.c
  * @brief SPI Link Layer with HARQ Implementation
