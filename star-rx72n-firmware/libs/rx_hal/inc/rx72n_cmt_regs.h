@@ -182,7 +182,7 @@ extern "C" {
  *
  * @note CMSTR registers are at base, channel registers follow at +2 offset.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_cmt_ctrl_base_addr = 0x00088000, /**< CMT control register base (CMSTR0/1) */
   k_cmt0_base_addr     = 0x00088002, /**< CMT0 registers (CMCR, CMCNT, CMCOR) */
   k_cmt1_base_addr     = 0x00088008, /**< CMT1 registers (CMCR, CMCNT, CMCOR) */

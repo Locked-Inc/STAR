@@ -81,7 +81,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 21.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief ELC module base address */
   k_elc_base_addr = 0x0008B100U,
 

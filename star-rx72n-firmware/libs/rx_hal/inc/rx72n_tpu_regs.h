@@ -192,7 +192,7 @@ extern "C" {
  * @see tpu1() Accessor for TPU1 channel (rear-left encoder)
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief TPU control block base address (0x00088100)
    * @details Contains TSTR, TSYR at +0x00/+0x01 and NFCR[0-5] at +0x08

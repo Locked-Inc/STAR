@@ -208,7 +208,7 @@ extern "C" {
  * @see rx_port_offsets_t for port offset values
  * @see RX72N Hardware Manual Section 21.2 (Register Descriptions)
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief PDR (Port Direction Register) base address
    * @details All PDRn registers at 0x0008C000 + port_offset.
@@ -301,11 +301,11 @@ typedef enum : uint32_t {
  *
  * @par Usage Example
  * @code
- * // Calculate PORTB PDR address
- * uint32_t portb_pdr_addr = k_port_pdr_base + k_port_offset_b;  // 0x0008C00B
+ * // Calculate PORTB PDR address (uintptr_t preserves full pointer width on all hosts)
+ * uintptr_t portb_pdr_addr = k_port_pdr_base + k_port_offset_b;  // 0x0008C00B
  *
  * // Calculate PORTD PODR address
- * uint32_t portd_podr_addr = k_port_podr_base + k_port_offset_d;  // 0x0008C02D
+ * uintptr_t portd_podr_addr = k_port_podr_base + k_port_offset_d;  // 0x0008C02D
  * @endcode
  *
  * @see rx_port_reg_bases_t for register base addresses
