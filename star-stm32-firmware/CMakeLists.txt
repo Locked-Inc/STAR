@@ -64,3 +64,36 @@ target_compile_definitions(firmware PRIVATE
 add_custom_command(TARGET firmware POST_BUILD
     COMMAND ${CMAKE_SIZE} $<TARGET_FILE:firmware>
 )
+
+###################### TESTS ######################################
+# Tests validate the cross-compiled ELF using host ARM binutils.
+# Run AFTER building: ctest --test-dir <build_dir>
+enable_testing()
+
+# Sanity: ELF header is readable and is an ARM binary.
+add_test(
+    NAME firmware_elf_valid
+    COMMAND arm-none-eabi-readelf -h firmware.elf
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+# Sanity: text section exists and is non-empty.
+add_test(
+    NAME firmware_text_nonzero
+    COMMAND sh -c "arm-none-eabi-size --format=berkeley firmware.elf | awk 'NR==2 { exit ($1 > 0) ? 0 : 1 }'"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+# Sanity: Reset_Handler symbol is present (startup code linked in).
+add_test(
+    NAME firmware_has_reset_handler
+    COMMAND sh -c "arm-none-eabi-nm firmware.elf | grep -q Reset_Handler"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
+
+# Sanity: main symbol is present.
+add_test(
+    NAME firmware_has_main
+    COMMAND sh -c "arm-none-eabi-nm firmware.elf | grep -q ' T main'"
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+)
