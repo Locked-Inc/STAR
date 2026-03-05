@@ -258,7 +258,7 @@ static inline volatile uint8_t* fwepror_reg(void)
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_faci_base_addr = 0x007FE000, /**< FACI register base (conceptual) */
   k_fastat_addr    = 0x007FE010, /**< Flash Access Status Register */
   k_faeint_addr    = 0x007FE014, /**< Flash Access Error Interrupt Enable */
@@ -285,7 +285,7 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_eepfclk_addr = 0x007FC040, /**< Data Flash Access Frequency Setting */
 } rx_eepfclk_addresses_t;
 
@@ -830,7 +830,7 @@ static inline volatile uint16_t* fsuacr_reg(void)
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_uidr0_addr = 0xFE7F7D90, /**< Unique ID Register 0 (bits 31-0) */
   k_uidr1_addr = 0xFE7F7D94, /**< Unique ID Register 1 (bits 63-32) */
   k_uidr2_addr = 0xFE7F7D98, /**< Unique ID Register 2 (bits 95-64) */
@@ -889,7 +889,7 @@ static inline volatile const uint32_t* uidr3_reg(void)
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /* Code Flash (4 MB for RX72N) */
   k_code_flash_start = 0xFFC00000, /**< Code flash start (4 MB device) */
   k_code_flash_end   = 0xFFFFFFFF, /**< Code flash end */
