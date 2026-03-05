@@ -85,10 +85,13 @@ void mock_rx_dmaca_reset(void)
  *
  * @param[in] result rx_err_t value to return from rx_dmaca_transfer_poll()
  *
- * @pre None
- * @post Subsequent rx_dmaca_transfer_poll() calls return result
+ * @pre Called from the test thread; no concurrent calls to any mock function
+ * @pre Mock state initialized (mock_rx_dmaca_reset() called at test start)
+ * @post s_transfer_result is set to result
+ * @post All subsequent rx_dmaca_transfer_poll() calls return result until changed
  *
  * @note Not thread-safe; call only from test thread
+ * @note No allocation or blocking occurs
  *
  * @since Version 1.0.0
  */
@@ -107,8 +110,10 @@ void mock_rx_dmaca_set_transfer_result(rx_err_t result)
  *
  * @return uint32_t Number of rx_dmaca_init() calls
  *
- * @pre mock_rx_dmaca_reset() should have been called at test start
- * @post Return value is in [0, UINT32_MAX]
+ * @pre mock_rx_dmaca_reset() called at test start to clear s_init_count
+ * @pre Counting rx_dmaca_init() invocations; no concurrent mock modification
+ * @post Returned value equals s_init_count at time of call
+ * @post No mock state modified (pure read, no side effects)
  *
  * @note Not thread-safe; call only from test thread
  *
@@ -128,8 +133,10 @@ uint32_t mock_rx_dmaca_get_init_count(void)
  *
  * @return uint32_t Number of rx_dmaca_deinit() calls
  *
- * @pre mock_rx_dmaca_reset() should have been called at test start
- * @post Return value is in [0, UINT32_MAX]
+ * @pre mock_rx_dmaca_reset() called at test start to clear s_deinit_count
+ * @pre No concurrent threads modifying mock state (serialize access)
+ * @post Returned value is a snapshot of s_deinit_count at time of call
+ * @post No mock state modified (pure read, no side effects)
  *
  * @note Not thread-safe; call only from test thread
  *
@@ -150,8 +157,10 @@ uint32_t mock_rx_dmaca_get_deinit_count(void)
  *
  * @return uint32_t Number of rx_dmaca_transfer_poll() calls
  *
- * @pre mock_rx_dmaca_reset() should have been called at test start
- * @post Return value is in [0, UINT32_MAX]
+ * @pre mock_rx_dmaca_reset() called at test start to clear s_transfer_count
+ * @pre Mock state fully initialized; no concurrent modification of s_transfer_count
+ * @post Returned value equals s_transfer_count at time of call
+ * @post No side effects on DMA state; call count remains unchanged by this call
  *
  * @note Not thread-safe; call only from test thread
  *
@@ -176,8 +185,10 @@ uint32_t mock_rx_dmaca_get_transfer_call_count(void)
  *
  * @return const rx_dmaca_config_t* Pointer to last config copy, or NULL
  *
- * @pre None
+ * @pre Called from test thread; no concurrent modification of s_last_config
+ * @pre mock_rx_dmaca_reset() called at test start to initialize s_transfer_called
  * @post Returned pointer (if non-NULL) is valid until next mock_rx_dmaca_reset()
+ * @post No mock state modified (pure read, no side effects)
  *
  * @note Not thread-safe; call only from test thread
  *
@@ -207,10 +218,12 @@ const rx_dmaca_config_t* mock_rx_dmaca_get_last_config(void)
  * @return rx_err_t
  * @retval k_rx_ok Always
  *
- * @pre None
- * @post s_init_count incremented by 1
+ * @pre Called from test thread with test harness initialized
+ * @pre s_init_count accessible and valid (reset via mock_rx_dmaca_reset() between tests)
+ * @post s_init_count incremented by exactly 1
+ * @post No hardware registers modified; callers responsible for resetting between tests
  *
- * @note Not thread-safe; call only from test thread
+ * @note Not thread-safe; not reentrant
  *
  * @since Version 1.0.0
  */
@@ -230,8 +243,10 @@ rx_err_t rx_dmaca_init(void)
  * @return rx_err_t
  * @retval k_rx_ok Always
  *
- * @pre None
- * @post s_deinit_count incremented by 1
+ * @pre Called from test thread with test harness initialized
+ * @pre s_deinit_count valid (>= 0); reset via mock_rx_dmaca_reset() between tests
+ * @post s_deinit_count incremented by exactly 1
+ * @post No hardware registers modified; only s_deinit_count changed
  *
  * @note Not thread-safe; call only from test thread
  *
@@ -258,7 +273,10 @@ rx_err_t rx_dmaca_deinit(void)
  * @retval k_rx_ok Default (after mock_rx_dmaca_reset())
  * @retval other   Whatever was set by mock_rx_dmaca_set_transfer_result()
  *
- * @pre None
+ * @pre Mock initialized via mock_rx_dmaca_reset(); s_transfer_count and s_last_config valid
+ * @pre Called only from the test thread; not thread-safe (no concurrent calls)
+ * @pre mock_rx_dmaca_set_transfer_result() may be called beforehand to preset return value
+ * @pre If config is non-NULL, it must point to valid memory for the lifetime of this call
  * @post s_transfer_count incremented by 1
  * @post s_transfer_called = true
  * @post s_last_config updated if config != NULL

@@ -80,6 +80,27 @@ typedef enum : uint8_t {
 } rx_crc_hw_alignment_t;
 
 /* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+/**
+ * @var s_dma_fallback_count
+ * @brief Count of DMA transfer failures that triggered CPU fallback
+ *
+ * @details
+ * Incremented each time rx_dmaca_transfer_poll() returns an error and the
+ * hw_dma backend falls back to the CPU loop. Non-zero values indicate DMA
+ * reliability issues (timeout, misconfiguration) that are otherwise silent.
+ *
+ * @note Not thread-safe: rx_dmaca_transfer_poll() is itself single-channel
+ *       and not thread-safe, so concurrent access cannot occur in practice.
+ * @warning Do not modify directly; read via debug/telemetry only.
+ * @since Version 1.0.0
+ */
+static uint32_t s_dma_fallback_count;
+
+/* =============================================================================
  * Private Helpers
  * =============================================================================
  */
@@ -244,7 +265,8 @@ rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
 
   rx_err_t err = rx_dmaca_transfer_poll(&dma_cfg);
   if (err != k_rx_ok) {
-    /* DMA failure: fall back to CPU loop (no silent data corruption) */
+    /* DMA failure: record for observability, then fall back to CPU loop */
+    s_dma_fallback_count++;
     return internal_crc_hw_cpu_compute(config, data, len, result_out);
   }
 
