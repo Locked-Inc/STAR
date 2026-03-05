@@ -289,8 +289,6 @@ void StarSpiDriverNode::cmd_vel_callback(
  *
  * @since Version 1.0.0
 
- * @copyright Copyright (c) 2026 Locked Inc.
- * SPDX-License-Identifier: MIT
 */
 void StarSpiDriverNode::emergency_stop_callback(
   const std_msgs::msg::Bool::SharedPtr msg)

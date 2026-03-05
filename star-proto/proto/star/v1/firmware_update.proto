@@ -5,6 +5,8 @@
 // - Proto3 only, 100 char line limit, 4 space indent
 // - All fields documented
 //
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 
 syntax = "proto3";
 

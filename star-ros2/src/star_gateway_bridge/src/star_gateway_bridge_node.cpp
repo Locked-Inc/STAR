@@ -62,8 +62,6 @@ static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_dete
  *
  * @since Version 1.0.0
 
- * @copyright Copyright (c) 2026 Locked Inc.
- * SPDX-License-Identifier: MIT
 */
 StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options)
 : Node("star_gateway_bridge", options), grpc_connected_(false),

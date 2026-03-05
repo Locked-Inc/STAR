@@ -6,6 +6,8 @@
 // - MKS units (meters, radians, Celsius)
 // - All fields documented with units
 //
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 
 syntax = "proto3";
 

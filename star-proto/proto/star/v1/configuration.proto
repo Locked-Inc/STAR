@@ -6,6 +6,8 @@
 // - MKS units with suffixes (_ma, _celsius, _mv, _ms)
 // - All fields documented with units and valid ranges
 //
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 
 syntax = "proto3";
 

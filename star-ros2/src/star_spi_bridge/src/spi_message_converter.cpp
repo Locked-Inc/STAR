@@ -230,8 +230,6 @@ void SpiMessageConverter::telemetry_to_joint_state(
  *
  * @since Version 1.0.0
 
- * @copyright Copyright (c) 2026 Locked Inc.
- * SPDX-License-Identifier: MIT
 */
 void SpiMessageConverter::telemetry_to_obstacle_ranges(
   const star::v1::TelemetryData & telemetry,
