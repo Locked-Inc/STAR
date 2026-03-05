@@ -24,6 +24,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 #   budget checks in CI.  gcc-arm-none-eabi depends on it so this is redundant
 #   but explicit -- intent is clear and apt deduplicates the install.
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    ca-certificates \
     gcc-arm-none-eabi \
     binutils-arm-none-eabi \
     cmake \

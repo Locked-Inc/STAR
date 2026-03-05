@@ -2,7 +2,7 @@
 
 Use this checklist when reviewing ROS2 C++ code in the STAR project.
 
-**Automation:** ~65% of these checks are automated via `./scripts/review-ros2.sh`.
+**Automation:** ~65% of these checks are automated via `./scripts/ros2/review-ros2.sh`.
 - ? = Fully automated (checked by script)
 - ? = Manual review required
 

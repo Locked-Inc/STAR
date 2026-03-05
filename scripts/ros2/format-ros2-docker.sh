@@ -5,7 +5,7 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 # Check if we're already in a container
 if [ -f "/.dockerenv" ] || grep -q docker /proc/1/cgroup 2>/dev/null; then
@@ -16,7 +16,7 @@ fi
 # Check if devcontainer CLI is available
 if command -v devcontainer &> /dev/null; then
     echo "Running format-ros2.sh in devcontainer..."
-    devcontainer exec --workspace-folder "$PROJECT_ROOT" /bin/bash -c "cd /workspaces/STAR && ./scripts/format-ros2.sh $*"
+    devcontainer exec --workspace-folder "$PROJECT_ROOT" /workspaces/STAR/scripts/ros2/format-ros2.sh "$@"
 # Check if docker is available
 elif command -v docker &> /dev/null; then
     echo "Running format-ros2.sh in Docker container..."
@@ -41,13 +41,13 @@ elif command -v docker &> /dev/null; then
     fi
 
     echo "Found devcontainer: $CONTAINER_ID"
-    docker exec -it "$CONTAINER_ID" /workspaces/STAR/scripts/format-ros2.sh "$@"
+    docker exec -it "$CONTAINER_ID" /workspaces/STAR/scripts/ros2/format-ros2.sh "$@"
 else
     echo "Error: Neither devcontainer nor docker found."
     echo ""
     echo "To format ROS2 code, you need to either:"
     echo "1. Run this inside the devcontainer"
     echo "2. Have Docker installed to use the devcontainer"
-    echo "3. Install ROS2 and run: ./scripts/format-ros2.sh"
+    echo "3. Install ROS2 and run: ./scripts/ros2/format-ros2.sh"
     exit 1
 fi

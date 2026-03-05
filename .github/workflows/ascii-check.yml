@@ -45,7 +45,7 @@ jobs:
           if [[ $failed -ne 0 ]]; then
             echo ""
             echo "STAR policy: all source files must be pure 7-bit ASCII."
-            echo "Fix with: python3 scripts/fix-encoding.py <file>"
+            echo "Fix with: python3 scripts/utils/fix-encoding.py <file>"
             echo "See CLAUDE.md 'Character Encoding Policy' for the replacement table."
             exit 1
           fi

@@ -34,7 +34,7 @@ done < <(git diff --cached --name-only --diff-filter=ACM)
 if [[ "$ascii_ok" == "false" ]]; then
     echo ""
     echo "STAR policy: All source files must use ASCII-only characters."
-    echo "Run: python3 scripts/fix-encoding.py <file> to auto-fix."
+    echo "Run: python3 scripts/utils/fix-encoding.py <file> to auto-fix."
     echo "See CLAUDE.md 'Character Encoding Policy' for replacement table."
     exit 1
 fi
@@ -129,9 +129,9 @@ if [[ -n "$cpp_files" ]]; then
 
     # Use the official format-ros2.sh script in check mode
     # This uses ament_uncrustify and checks header guards
-    if ! bash scripts/format-ros2.sh --check --verbose; then
+    if ! bash scripts/ros2/format-ros2.sh --check --verbose; then
         echo "[FAIL] C++ formatting or header guard check failed."
-        echo "   Run: bash scripts/format-ros2.sh"
+        echo "   Run: bash scripts/ros2/format-ros2.sh"
         error_found=1
     fi
 fi

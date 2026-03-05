@@ -46,7 +46,10 @@
     "../../../CLAUDE.md#doxygen-documentation-requirements",
     "../../../CLAUDE.md#terminology-standard"
   ],
-  "cmake.sourceDirectory": "/workspaces/STAR/star-rx72n-firmware",
+  "cmake.sourceDirectory": [
+    "${workspaceFolder}/star-rx72n-firmware",
+    "${workspaceFolder}/star-stm32f767-firmware"
+  ],
   "protobuf.lint.ignore": ["star-rx72n-firmware/**"],
   "protobuf.options.ignore": ["star-rx72n-firmware/**"],
   "files.associations": {
