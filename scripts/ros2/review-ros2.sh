@@ -235,15 +235,19 @@ check_formatting() {
 
     print_status "Checking $category..."
 
-    # Check 3.1: clang-format check
-    TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
-    if ./scripts/ros2/format-ros2.sh --check > /dev/null 2>&1; then
-        PASSED_CHECKS=$((PASSED_CHECKS + 1))
-        print_success "$category (clang-format passes)"
+    # Check 3.1: clang-format check (requires ament_uncrustify from ROS2 environment)
+    if ! command -v ament_uncrustify &> /dev/null; then
+        print_warning "$category (skipped: ament_uncrustify not available)"
     else
-        FAILED_CHECKS=$((FAILED_CHECKS + 1))
-        add_issue "  - clang-format check failed (run ./scripts/ros2/format-ros2.sh)"
-        print_failure "$category (clang-format failed)"
+        TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
+        if ./scripts/ros2/format-ros2.sh --check > /dev/null 2>&1; then
+            PASSED_CHECKS=$((PASSED_CHECKS + 1))
+            print_success "$category (clang-format passes)"
+        else
+            FAILED_CHECKS=$((FAILED_CHECKS + 1))
+            add_issue "  - clang-format check failed (run ./scripts/ros2/format-ros2.sh)"
+            print_failure "$category (clang-format failed)"
+        fi
     fi
 
     # Line length, indentation, braces - covered by clang-format
