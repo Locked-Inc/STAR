@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file star_gateway_bridge_node.cpp
  * @brief Bridges ROS2 ecosystem with Go gateway service via gRPC.

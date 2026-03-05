@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file spi_message_converter.hpp
  * @brief Message conversion utilities between ROS2 message types and protobuf

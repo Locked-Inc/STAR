@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file main.cpp
  * @brief Entry point for running the star_spi_bridge node as a standalone process.

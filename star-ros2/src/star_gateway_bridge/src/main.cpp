@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file main.cpp
  * @brief Entry point for running star_gateway_bridge node as standalone process.

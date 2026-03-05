@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file test_message_converter.cpp
  * @brief Unit tests for the MessageConverter functions between ROS2 and STAR protobuf messages.

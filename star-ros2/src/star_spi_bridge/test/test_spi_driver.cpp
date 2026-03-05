@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file test_spi_driver.cpp
  * @brief Unit tests for SpiDriver frame encoding, decoding, and CRC-32 verification.

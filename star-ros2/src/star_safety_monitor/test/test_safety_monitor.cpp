@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file test_safety_monitor.cpp
  * @brief Unit tests for the SafetyMonitor class.

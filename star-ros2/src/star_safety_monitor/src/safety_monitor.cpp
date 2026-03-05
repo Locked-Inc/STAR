@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file safety_monitor.cpp
  * @brief Safety monitor implementation for obstacle and system health detection.

@@ -1,4 +1,3 @@
-// Copyright 2026 Locked Inc.
 /**
  * @file spi_message_converter.cpp
  * @brief Message conversion implementation between ROS2 message types and STAR protobuf for the SPI bridge.
