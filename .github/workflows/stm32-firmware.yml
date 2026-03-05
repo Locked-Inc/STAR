@@ -69,7 +69,7 @@ jobs:
 
       - name: Install quality-gate tooling
         run: |
-          apt-get install -y --no-install-recommends clang-format
+          apt-get install -y --no-install-recommends clang-format libnewlib-arm-none-eabi
 
       - name: Configure firmware (${{ matrix.chip }}, Release)
         working-directory: star-stm32-firmware
