@@ -254,7 +254,7 @@
  * **All function returns validated:**
  * ```c
  * err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
- * RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to set trigger low");
+ * RX_RETURN_ON_ERROR(err, s_tag,"Failed to set trigger low");
  *
  * status = tx_mutex_get(&s_pending_mutex, TX_WAIT_FOREVER);
  * if (status != TX_SUCCESS) {
@@ -732,6 +732,9 @@ typedef enum : uint32_t {
   k_irq_poll_max_iterations = 100, /**< Max iterations (~10ms/iter at 100Hz, ~1s safety bound) */
 } rx_hcsr04_irq_poll_limits_t;
 
+/** @brief Log tag for this module */
+static const char* const s_tag = "HCSR04";
+
 /**
  * @brief Speed of sound base constant (m/s at 0degC)
  */
@@ -1075,15 +1078,15 @@ static rx_err_t internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 
   /* Ensure trigger is low initially */
   rx_err_t err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
-  RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to set trigger low");
+  RX_RETURN_ON_ERROR(err, s_tag, "Failed to set trigger low");
   hcsr04_hal_delay_us(k_hcsr04_trigger_settle_us);
 
   /* Send 10us HIGH pulse */
   err = hcsr04_hal_gpio_write_high(handle->trigger_pin);
-  RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to set trigger high");
+  RX_RETURN_ON_ERROR(err, s_tag, "Failed to set trigger high");
   hcsr04_hal_delay_us(k_hcsr04_trigger_pulse_us);
   err = hcsr04_hal_gpio_write_low(handle->trigger_pin);
-  RX_RETURN_ON_ERROR(err, "HCSR04", "Failed to clear trigger low");
+  RX_RETURN_ON_ERROR(err, s_tag, "Failed to clear trigger low");
 
   return k_rx_ok;
 }
@@ -1801,7 +1804,7 @@ static rx_err_t internal_init_irq_mode(const rx_hcsr04_config_t* config, uint8_t
   const uint8_t pin_num      = rx_pin_from_pin(config->echo_pin);
   const uint8_t expected_pin = (uint8_t)config->echo_irq - (uint8_t)k_irq_range_min;
   if (pin_port != (uint8_t)k_irq_p0_port || pin_num != expected_pin) {
-    rx_log_error("HCSR04", "echo_pin/echo_irq mismatch (P0x must match IRQ8+x)");
+    rx_log_error(s_tag, "echo_pin/echo_irq mismatch (P0x must match IRQ8+x)");
     return k_rx_err_invalid_arg;
   }
 

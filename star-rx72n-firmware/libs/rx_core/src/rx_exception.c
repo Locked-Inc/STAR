@@ -66,13 +66,13 @@ static const char* const s_exception_names[k_rx_exception_type_count] = {"Undefi
  * Static storage for exception occurrence counts and last frame.
  * @warning Direct modification discouraged - use handler functions
  */
-static rx_exception_stats_t s_exception_stats;
+static rx_exception_stats_t s_exception_stats = {0};
 
 /**
  * @brief Initialization flag
  * @details Tracks whether rx_exception_init() has been called
  */
-static uint8_t s_initialized;
+static uint8_t s_initialized = 0U;
 
 /* ============================================================================
  * Internal Helper Functions

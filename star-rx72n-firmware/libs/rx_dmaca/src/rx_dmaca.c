@@ -56,6 +56,9 @@ typedef enum : uint32_t {
  * =============================================================================
  */
 
+/** @brief Log tag for this module */
+static const char* const s_tag = "DMAC";
+
 /** @brief Module initialization flag */
 static bool s_dmaca_initialized = false;
 
@@ -156,7 +159,7 @@ rx_err_t rx_dmaca_init(void)
 rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
 {
   /* Pre-conditions: validate all inputs (NASA Rule 5) */
-  RX_CHECK_NULL_PTR(config, "DMAC", "config pointer is NULL");
+  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
   if (!s_dmaca_initialized) {
     return k_rx_err_not_initialized;
@@ -174,7 +177,7 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  RX_CHECK_NULL_PTR(config->src, "DMAC", "src pointer is NULL");
+  RX_CHECK_NULL_PTR(config->src, s_tag, "src pointer is NULL");
 
   /* Configure channel registers */
   internal_configure_channel(config);
@@ -199,7 +202,7 @@ rx_err_t rx_dmaca_abort(uint8_t channel)
 {
   /* Pre-conditions: validate inputs (NASA Rule 5) */
   if (!s_dmaca_initialized) {
-    rx_log_error("DMAC", "DMAC not initialized");
+    rx_log_error(s_tag, "DMAC not initialized");
     return k_rx_err_not_initialized;
   }
 
@@ -218,7 +221,7 @@ rx_err_t rx_dmaca_deinit(void)
 {
   /* Pre-condition: must be initialized (NASA Rule 5) */
   if (!s_dmaca_initialized) {
-    rx_log_error("DMAC", "DMAC not initialized");
+    rx_log_error(s_tag, "DMAC not initialized");
     return k_rx_err_not_initialized;
   }
 
