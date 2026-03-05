@@ -290,7 +290,7 @@
  *
  * This test file is executed as part of the CMake test suite:
  * ```bash
- * cd e2-studio-star-rx72n-firmware
+ * cd star-rx72n-firmware
  * cmake --build build --target test
  * ```
  *

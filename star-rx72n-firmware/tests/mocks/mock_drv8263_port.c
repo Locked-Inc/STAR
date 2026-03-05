@@ -104,7 +104,7 @@ typedef enum : uint8_t {
  * @brief Global RAM array of mock port register structs
  *
  * @details
- * Provides k_mock_port_max entries of rx_port_regs_t, backing all mock port
+ * Provides k_mock_port_count entries of rx_port_regs_t, backing all mock port
  * accessor functions (port0() through portj()). Zeroed by
  * mock_drv8263_port_reset() before each test.
  *
@@ -121,6 +121,10 @@ typedef enum : uint8_t {
  *
  * @since Version 1.0.0
  */
+/* k_mock_port_max (from rx72n_port_regs.h) == k_mock_port_count (from mock_drv8263_port.h);
+ * using k_mock_port_max here to match the extern declaration in rx72n_port_regs.h. */
+static_assert((uint32_t)k_mock_port_max == (uint32_t)k_mock_port_count,
+              "k_mock_port_max and k_mock_port_count must be equal");
 rx_port_regs_t g_mock_port_regs[k_mock_port_max];
 
 /* =============================================================================
@@ -137,7 +141,7 @@ rx_port_regs_t g_mock_port_regs[k_mock_port_max];
  * @pre g_mock_port_regs array is statically allocated and always valid
  * @pre No concurrent access to g_mock_port_regs during reset
  *
- * @post All k_mock_port_max port register structs contain zero
+ * @post All k_mock_port_count port register structs contain zero
  * @post All PDR, PODR, PIDR, PMR, PCR, DSCR, DSCR2 fields are zero
  *
  * @note Not thread-safe; call only from single-threaded test setup
@@ -160,11 +164,11 @@ void mock_drv8263_port_reset(void)
  * Writes a full byte to the PIDR field of the specified mock port. Used to
  * simulate hardware input pin states. Asserts that port is in bounds.
  *
- * @param[in] port Port index, must be less than k_mock_port_max
+ * @param[in] port Port index, must be less than k_mock_port_count
  * @param[in] value Byte value for PIDR; each bit represents one pin
  *                  (k_mock_pins_per_port bits total)
  *
- * @pre port must be less than k_mock_port_max
+ * @pre port must be less than k_mock_port_count
  * @pre g_mock_port_regs must be initialized via mock_drv8263_port_reset()
  *
  * @post g_mock_port_regs[port].pidr == value
@@ -176,8 +180,8 @@ void mock_drv8263_port_reset(void)
  */
 void mock_drv8263_port_set_pidr(uint8_t port, uint8_t value)
 {
-  assert(port < k_mock_port_max);
-  if (port < k_mock_port_max) {
+  assert(port < k_mock_port_count);
+  if (port < k_mock_port_count) {
     g_mock_port_regs[port].pidr = value;
     assert(g_mock_port_regs[port].pidr == value);
   }
@@ -191,13 +195,13 @@ void mock_drv8263_port_set_pidr(uint8_t port, uint8_t value)
  * device-under-test wrote expected values to output pins. Asserts that port
  * is in bounds.
  *
- * @param[in] port Port index, must be less than k_mock_port_max
+ * @param[in] port Port index, must be less than k_mock_port_count
  *
  * @return Current PODR byte value for the requested port
  * @retval 0x00-0xFF Valid PODR value when port is in range
- * @retval 0 If port >= k_mock_port_max (after assertion failure in debug)
+ * @retval 0 If port >= k_mock_port_count (after assertion failure in debug)
  *
- * @pre port must be less than k_mock_port_max
+ * @pre port must be less than k_mock_port_count
  * @pre g_mock_port_regs must be initialized via mock_drv8263_port_reset()
  *
  * @post No side effects on any port registers
@@ -209,9 +213,9 @@ void mock_drv8263_port_set_pidr(uint8_t port, uint8_t value)
  */
 uint8_t mock_drv8263_port_get_podr(uint8_t port)
 {
-  assert(port < k_mock_port_max);
-  assert(sizeof(g_mock_port_regs) == k_mock_port_max * sizeof(rx_port_regs_t));
-  if (port < k_mock_port_max) {
+  assert(port < k_mock_port_count);
+  assert(sizeof(g_mock_port_regs) == k_mock_port_count * sizeof(rx_port_regs_t));
+  if (port < k_mock_port_count) {
     return g_mock_port_regs[port].podr;
   }
   return k_mock_port_default_podr;
@@ -225,14 +229,14 @@ uint8_t mock_drv8263_port_get_podr(uint8_t port)
  * Extracts the bit at position 'pin' and returns whether it is set. Asserts
  * that both port and pin are in bounds.
  *
- * @param[in] port Port index, must be less than k_mock_port_max
+ * @param[in] port Port index, must be less than k_mock_port_count
  * @param[in] pin  Pin number, must be less than k_mock_pins_per_port
  *
  * @return true if pin output is HIGH, false otherwise
  * @retval true  PODR bit at position 'pin' is set
  * @retval false PODR bit is clear, or indices out of range
  *
- * @pre port must be less than k_mock_port_max
+ * @pre port must be less than k_mock_port_count
  * @pre pin must be less than k_mock_pins_per_port
  *
  * @post No side effects on any port registers
@@ -244,9 +248,9 @@ uint8_t mock_drv8263_port_get_podr(uint8_t port)
  */
 bool mock_drv8263_port_get_pin_output(uint8_t port, uint8_t pin)
 {
-  assert(port < k_mock_port_max);
+  assert(port < k_mock_port_count);
   assert(pin < k_mock_pins_per_port);
-  if (port < k_mock_port_max && pin < k_mock_pins_per_port) {
+  if (port < k_mock_port_count && pin < k_mock_pins_per_port) {
     return (g_mock_port_regs[port].podr & (uint8_t)((uint8_t)k_bit_shift_base << pin)) !=
            (uint8_t)k_bit_clear;
   }
@@ -262,11 +266,11 @@ bool mock_drv8263_port_get_pin_output(uint8_t port, uint8_t pin)
  * false, it is cleared via AND with inverted mask. Asserts that both port
  * and pin are in bounds.
  *
- * @param[in] port Port index, must be less than k_mock_port_max
+ * @param[in] port Port index, must be less than k_mock_port_count
  * @param[in] pin  Pin number, must be less than k_mock_pins_per_port
  * @param[in] high true to set pin HIGH (bit = 1), false to set LOW (bit = 0)
  *
- * @pre port must be less than k_mock_port_max
+ * @pre port must be less than k_mock_port_count
  * @pre pin must be less than k_mock_pins_per_port
  *
  * @post PIDR bit at position 'pin' matches 'high' parameter
@@ -278,9 +282,9 @@ bool mock_drv8263_port_get_pin_output(uint8_t port, uint8_t pin)
  */
 void mock_drv8263_port_set_pin_input(uint8_t port, uint8_t pin, bool high)
 {
-  assert(port < k_mock_port_max);
+  assert(port < k_mock_port_count);
   assert(pin < k_mock_pins_per_port);
-  if (port < k_mock_port_max && pin < k_mock_pins_per_port) {
+  if (port < k_mock_port_count && pin < k_mock_pins_per_port) {
     const uint8_t mask = (uint8_t)((uint8_t)k_bit_shift_base << pin);
     if (high) {
       g_mock_port_regs[port].pidr |= mask;

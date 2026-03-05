@@ -13,15 +13,15 @@ Thumbs.db
 *.ipr
 *.iws
 
-# Eclipse e2 studio
+# Firmware build artifacts
 .metadata/
 .settings/
-e2-studio-*/docs/doxygen/html/
-e2-studio-*/docs/doxygen/pdf/*/latex/
+star-rx72n-firmware/docs/doxygen/html/
+star-rx72n-firmware/docs/doxygen/pdf/*/latex/
 **/HardwareDebug/
 **/Debug/
 **/Release/
-!e2-studio-*/TestDebug/
+!star-rx72n-firmware/TestDebug/
 
 # Gradle
 .gradle/
@@ -73,7 +73,7 @@ Testing/
 
 .clangd
 # Exception: Allow LSP configuration for shared development environment
-!e2-studio-star-rx72n-firmware/.clangd
+!star-rx72n-firmware/.clangd
 !star-ros2/.clangd
 
 backup_*

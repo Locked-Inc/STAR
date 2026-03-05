@@ -256,7 +256,7 @@
  * @par Test Execution
  * Run all tests:
  * @code{.sh}
- * cd e2-studio-star-rx72n-firmware
+ * cd star-rx72n-firmware
  * cmake --build build --target test_rx_fec
  * ./build/tests/test_rx_fec
  * @endcode

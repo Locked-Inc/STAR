@@ -1,5 +1,5 @@
 # Doxyfile.main -- Main HTML configuration for STAR RX72N Firmware
-# Run from: e2-studio-star-rx72n-firmware/
+# Run from: star-rx72n-firmware/
 # Usage:
 #   doxygen Doxyfile.main     -- generate unified HTML (all cross-links, all graphs)
 #

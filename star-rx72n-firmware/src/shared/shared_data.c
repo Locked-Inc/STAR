@@ -31,6 +31,7 @@
  *     comm [label="Comm Task\n(Priority 5)", fillcolor=lightblue, style=filled];
  *     motor [label="Motor Task\n(Priority 8)", fillcolor=lightgreen, style=filled];
  *     obstacle [label="Obstacle Task\n(Priority 12)", fillcolor=lightyellow, style=filled];
+ *     imu_task [label="IMU Task\n(Priority 13)", fillcolor=lavender, style=filled];
  *     temp [label="Temp Task\n(Priority 15)", fillcolor=lightpink, style=filled];
  *   }
  *
@@ -44,6 +45,8 @@
  *     pid_gains [label="pid_gains_t\n(motor_mutex)"];
  *     temp_state [label="temp_sensor_state_t\n(temp_mutex)"];
  *     obstacle_state [label="obstacle_state_t\n(obstacle_mutex)"];
+ *     imu_state [label="imu_state_t\n(imu_mutex)"];
+ *     baro_state [label="baro_state_t\n(baro_mutex)"];
  *     estop [label="estop_active\n(estop_mutex)"];
  *     events [label="event_flags\n(ThreadX)"];
  *   }
@@ -64,10 +67,14 @@
  *   motor -> estop [label="read", color=blue];
  *   obstacle -> estop [label="trigger", color=red];
  *   obstacle -> obstacle_state [label="update", color=green];
+ *   imu_task -> imu_state [label="update\n(imu_mutex)", color=green];
+ *   imu_task -> baro_state [label="update\n(baro_mutex)", color=green];
  *   temp -> temp_state [label="update", color=green];
  *   telem -> motor_state [label="get", color=blue];
  *   telem -> temp_state [label="get", color=blue];
  *   telem -> obstacle_state [label="get", color=blue];
+ *   telem -> imu_state [label="get\n(imu_mutex)", color=blue];
+ *   telem -> baro_state [label="get\n(baro_mutex)", color=blue];
  *
  *   motor_cmd -> events [label="new_cmd", style=dashed];
  *   pid_gains -> events [label="gains_updated", style=dashed];
@@ -78,7 +85,7 @@
  *
  * ## Thread Safety Strategy - Mutex Assignment
  *
- * **Four independent mutexes** prevent deadlock through non-overlapping ownership:
+ * **Six independent mutexes** prevent deadlock through non-overlapping ownership:
  *
  * | Mutex | Protected Data | Producer(s) | Consumer(s) | Lock Duration |
  * |-------|----------------|-------------|-------------|---------------|
@@ -86,6 +93,8 @@
  * | **temp_mutex** | temp_sensor_state_t | Temp | Telemetry | ~2 us |
  * | **obstacle_mutex** | obstacle_state_t | Obstacle | Telemetry | ~2 us |
  * | **estop_mutex** | estop_active, estop_reason | Comm, Obstacle | Motor | ~1 us |
+ * | **imu_mutex** | imu_state_t | IMU | Telemetry | ~5 us |
+ * | **baro_mutex** | baro_state_t | IMU | Telemetry | ~5 us |
  *
  * **Mutex Acquisition Order (to prevent deadlock):**
  * 1. Never acquire multiple mutexes in same function call
@@ -184,6 +193,8 @@
  *   CreateTempMutex [label="Create temp_mutex"];
  *   CreateObstacleMutex [label="Create obstacle_mutex"];
  *   CreateEstopMutex [label="Create estop_mutex"];
+ *   CreateImuMutex [label="Create imu_mutex"];
+ *   CreateBaroMutex [label="Create baro_mutex"];
  *   CreateEventFlags [label="Create event_flags"];
  *   InitDefaults [label="Set default PID gains\nSet motor_cmd invalid\nSet estop inactive"];
  *   SetFlag [label="Set initialized = true"];
@@ -199,8 +210,12 @@
  *   CreateTempMutex -> Error [label="TX_ERROR", color=red];
  *   CreateObstacleMutex -> CreateEstopMutex [label="TX_SUCCESS"];
  *   CreateObstacleMutex -> Error [label="TX_ERROR", color=red];
- *   CreateEstopMutex -> CreateEventFlags [label="TX_SUCCESS"];
+ *   CreateEstopMutex -> CreateImuMutex [label="TX_SUCCESS"];
  *   CreateEstopMutex -> Error [label="TX_ERROR", color=red];
+ *   CreateImuMutex -> CreateBaroMutex [label="TX_SUCCESS"];
+ *   CreateImuMutex -> Error [label="TX_ERROR", color=red];
+ *   CreateBaroMutex -> CreateEventFlags [label="TX_SUCCESS"];
+ *   CreateBaroMutex -> Error [label="TX_ERROR", color=red];
  *   CreateEventFlags -> InitDefaults [label="TX_SUCCESS"];
  *   CreateEventFlags -> Error [label="TX_ERROR", color=red];
  *   InitDefaults -> SetFlag;
@@ -248,7 +263,9 @@
  * - temp_sensor_state_t: 32 bytes (4 sensors)
  * - obstacle_state_t: 32 bytes (4 HC-SR04 sensors)
  * - estop state: 8 bytes (bool + enum + padding)
- * - Mutexes (5x32): 160 bytes (ThreadX control blocks)
+ * - imu_state_t: 28 bytes (10x int16 + int8 + uint8 + uint32 + bool + padding)
+ * - baro_state_t: 16 bytes (int32 + uint32 + uint32 + bool + padding)
+ * - Mutexes (6x32): 192 bytes (ThreadX control blocks)
  * - Event flags: 32 bytes (ThreadX control block)
  *
  * ## Module Dependencies
@@ -514,7 +531,7 @@ static volatile estop_reason_t s_pending_estop_reason = k_estop_reason_none;
  *
  * @details
  * Centralized bus manager for all off-chip peripherals:
- * - **I2C:** MPU-6050 IMU
+ * - **I2C:** BNO055 9-DOF IMU + BMP280 barometric sensor
  * - **SPI:** RPi5 command/telemetry link (RSPI0)
  * - **1-Wire:** DS18B20 temperature sensors (4x)
  *
@@ -579,7 +596,7 @@ shared_data_t g_shared_data = {0};
  * ## Algorithm Steps:
  *
  * 1. **Check re-initialization:** Return error if already initialized
- * 2. **Create 4 mutexes:** motor, temp, obstacle, estop (priority inheritance enabled (TX_INHERIT))
+ * 2. **Create 6 mutexes:** motor, temp, obstacle, estop, imu, baro (priority inheritance enabled (TX_INHERIT))
  * 3. **Create event flags:** Inter-task signaling group (8 flags defined)
  * 4. **Set default PID gains:** Kp=0.286, Ki=8.01, Kd=0.0 (from MATLAB)
  * 5. **Invalidate motor command:** Set valid=false (no command received yet)
@@ -618,7 +635,7 @@ shared_data_t g_shared_data = {0};
  * @pre Called from tx_application_define() context (not from task)
  * @pre No tasks created yet (no concurrent access possible)
  *
- * @post All 5 mutexes created and ready for use
+ * @post All 6 mutexes created and ready for use
  * @post Event flags group created
  * @post PID gains initialized to MATLAB-tuned defaults
  * @post motor_command.valid = false (no command yet)
@@ -630,8 +647,8 @@ shared_data_t g_shared_data = {0};
  * @invariant All mutexes remain valid until system reset
  *
  * @note Thread Safety: Single-threaded context (tx_application_define), no mutex needed
- * @note Performance: ~500 us execution time (5 mutex creates + 1 event flag create)
- * @note Memory: Allocates 192 bytes from ThreadX heap (5x32 + 32 for control blocks)
+ * @note Performance: ~600 us execution time (6 mutex creates + 1 event flag create)
+ * @note Memory: Allocates 224 bytes from ThreadX heap (6x32 + 32 for control blocks)
  *
  * @warning Never call this function from a task context! ThreadX creation functions
  *          must be called from tx_application_define() only.
@@ -689,6 +706,62 @@ shared_data_t g_shared_data = {0};
  * - Rule 5: [OK] 2 preconditions (ThreadX entered, not initialized), 7 postconditions
  * - Rule 7: [OK] All tx_* return values checked
  */
+
+/**
+ * @enum mutex_init_idx_t
+ * @brief Ordered index of mutexes in the shared_data init sequence
+ *
+ * @details
+ * Used by internal_cleanup_mutexes() to delete mutexes in reverse creation order
+ * when a later mutex creation fails. Values match the creation order in
+ * shared_data_init() and bound the cleanup loop.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_mutex_idx_motor    = 1U, /**< motor_mutex created first */
+  k_mutex_idx_temp     = 2U, /**< temp_mutex created second */
+  k_mutex_idx_obstacle = 3U, /**< obstacle_mutex created third */
+  k_mutex_idx_estop    = 4U, /**< estop_mutex created fourth */
+  k_mutex_idx_imu      = 5U, /**< imu_mutex created fifth */
+  k_mutex_idx_baro     = 6U, /**< baro_mutex created sixth (all mutexes) */
+} mutex_init_idx_t;
+
+/**
+ * @brief Delete the first @p count successfully created mutexes on init failure
+ *
+ * @details
+ * Called from internal_create_shared_sync_objects() failure branches to clean
+ * up any mutexes already created before the failing tx_mutex_create() call.
+ * Mutexes are deleted in reverse creation order (baro first through motor last). Passing
+ * k_mutex_idx_baro deletes all six mutexes.
+ *
+ * @param[in] count Number of mutexes to delete (0..k_mutex_idx_baro)
+ *
+ * @pre count <= k_mutex_idx_baro (bounded by enum max)
+ * @pre All mutexes in positions 0..count-1 were successfully created
+ * @post All mutexes in positions 0..count-1 are deleted (in reverse creation order)
+ * @post g_shared_data in pre-init mutex state for positions 0..count-1
+ *
+ * @note Not thread-safe; called only during single-threaded initialization
+ * @since Version 1.0.0
+ */
+static void internal_cleanup_mutexes(uint8_t count)
+{
+  TX_MUTEX* const mutexes[k_mutex_idx_baro] = {
+    &g_shared_data.motor_mutex,
+    &g_shared_data.temp_mutex,
+    &g_shared_data.obstacle_mutex,
+    &g_shared_data.estop_mutex,
+    &g_shared_data.imu_mutex,
+    &g_shared_data.baro_mutex,
+  };
+  const uint8_t limit = (count < k_mutex_idx_baro) ? count : (uint8_t)k_mutex_idx_baro;
+  for (uint8_t i = limit; i > 0U; i--) {
+    (void)tx_mutex_delete(mutexes[i - 1U]);
+  }
+}
+
 rx_err_t shared_data_init(void)
 {
   /* Check if already initialized */
@@ -705,24 +778,42 @@ rx_err_t shared_data_init(void)
   /* Create temp_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.temp_mutex, "TempMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_motor);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create obstacle_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.obstacle_mutex, "ObstacleMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_temp);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create estop_mutex with priority inheritance */
   tx_status = tx_mutex_create(&g_shared_data.estop_mutex, "EstopMutex", k_mutex_inherit);
   if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_obstacle);
+    return k_rx_err_rtos_mutex;
+  }
+
+  /* Create imu_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.imu_mutex, "ImuMutex", k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_estop);
+    return k_rx_err_rtos_mutex;
+  }
+
+  /* Create baro_mutex with priority inheritance */
+  tx_status = tx_mutex_create(&g_shared_data.baro_mutex, "BaroMutex", k_mutex_inherit);
+  if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_imu);
     return k_rx_err_rtos_mutex;
   }
 
   /* Create event_flags group */
   tx_status = tx_event_flags_create(&g_shared_data.event_flags, "SharedEvents");
   if (tx_status != TX_SUCCESS) {
+    internal_cleanup_mutexes(k_mutex_idx_baro);
     return k_rx_err_rtos_error;
   }
 
@@ -2708,6 +2799,304 @@ shared_data_wait_event(shared_event_flags_t flags, uint32_t wait_option, uint32_
   if (out_actual_flags != nullptr) {
     *out_actual_flags = (uint32_t)actual_flags;
   }
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * IMU State Access
+ * =============================================================================
+ */
+
+/**
+ * @brief Update IMU state from BNO055 driver output (called by IMU Task)
+ *
+ * @details
+ * Acquires imu_mutex, copies the caller's imu_state_t into g_shared_data.imu_state,
+ * and releases the mutex. Called by imu_task at 20 Hz after each successful read.
+ *
+ * ## Algorithm Steps:
+ * 1. Null check on state parameter
+ * 2. Acquire imu_mutex (blocking wait with priority inheritance)
+ * 3. memcpy imu_state_t into g_shared_data.imu_state
+ * 4. Release imu_mutex
+ * 5. Return k_rx_ok
+ *
+ * @param[in] state Pointer to populated imu_state_t. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre state non-NULL with valid BNO055 data
+ *
+ * @post g_shared_data.imu_state updated under imu_mutex protection
+ * @post Telemetry task will see updated data on next read cycle
+ *
+ * @invariant imu_mutex held for duration of memcpy (not ISR-safe)
+ *
+ * @note Thread Safety: Protected by imu_mutex (blocking wait)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by imu_task
+ *
+ * @warning Do not call from ISR context (blocks on imu_mutex)
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In imu_task - after successful BNO055 read
+ * imu_state_t imu = {0};
+ * imu.heading_deg16 = bno055_data.heading_deg16;
+ * imu.timestamp_ms  = (uint32_t)tx_time_get();
+ * imu.valid         = true;
+ * rx_err_t err = shared_data_update_imu(&imu);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("imu_task", "Failed to update IMU state");
+ * }
+ * @endcode
+ *
+ * @see shared_data_get_imu() Consumer accessor (Telemetry Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_imu(const imu_state_t* state)
+{
+  RX_CHECK_NULL_PTR(state, s_tag, "IMU state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(&g_shared_data.imu_state, state, sizeof(imu_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.imu_mutex);
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get IMU state (BNO055 fusion output) (called by Telemetry Task)
+ *
+ * @details
+ * Acquires imu_mutex, copies g_shared_data.imu_state into the caller's buffer,
+ * and releases the mutex. Called at 20 Hz by telemetry_task.
+ *
+ * ## Algorithm Steps:
+ * 1. Null check on out_state parameter
+ * 2. Acquire imu_mutex (non-blocking; returns error if mutex unavailable)
+ * 3. memcpy g_shared_data.imu_state into caller's buffer
+ * 4. Release imu_mutex
+ * 5. Return k_rx_ok
+ *
+ * @param[out] out_state Output buffer for IMU state. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State retrieved successfully
+ * @retval k_rx_err_null_ptr out_state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex unavailable; caller may retry next cycle
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre out_state non-NULL
+ *
+ * @post *out_state contains snapshot of current IMU data (if k_rx_ok)
+ * @post Check out_state->valid before using values
+ *
+ * @invariant imu_mutex held for <5 us (memcpy of imu_state_t)
+ *
+ * @note Thread Safety: Protected by imu_mutex (non-blocking acquire, TX_NO_WAIT)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by telemetry_task
+ *
+ * @warning Not ISR-safe; check out_state->valid before use
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In telemetry_task - read current IMU state
+ * imu_state_t imu = {0};
+ * rx_err_t err = shared_data_get_imu(&imu);
+ * if (err == k_rx_ok && imu.valid) {
+ *     float heading_deg = (float)imu.heading_deg16 / (float)k_imu_scale_euler;
+ * }
+ * @endcode
+ *
+ * @see shared_data_update_imu() Producer accessor (IMU Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_get_imu(imu_state_t* out_state)
+{
+  RX_CHECK_NULL_PTR(out_state, s_tag, "Output IMU state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.imu_mutex, TX_NO_WAIT);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(out_state, &g_shared_data.imu_state, sizeof(imu_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.imu_mutex);
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Barometric Pressure State Access
+ * =============================================================================
+ */
+
+/**
+ * @brief Update barometric pressure state from BMP280 driver output (called by IMU Task)
+ *
+ * @details
+ * Acquires baro_mutex, copies the caller's baro_state_t into g_shared_data.baro_state,
+ * and releases the mutex. Called by imu_task at 20 Hz after each successful BMP280 read.
+ *
+ * ## Algorithm Steps:
+ * 1. Null check on state parameter
+ * 2. Acquire baro_mutex (blocking wait with priority inheritance)
+ * 3. memcpy baro_state_t into g_shared_data.baro_state
+ * 4. Release baro_mutex
+ * 5. Return k_rx_ok
+ *
+ * @param[in] state Pointer to populated baro_state_t. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State stored successfully
+ * @retval k_rx_err_null_ptr state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex acquisition failed
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre state non-NULL with valid BMP280 data
+ *
+ * @post g_shared_data.baro_state updated under baro_mutex protection
+ * @post Telemetry task will see updated data on next read cycle
+ *
+ * @invariant baro_mutex held for <5 us (memcpy of baro_state_t)
+ *
+ * @note Thread Safety: Protected by baro_mutex (blocking wait)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by imu_task
+ *
+ * @warning Do not call from ISR context (blocks on baro_mutex)
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In imu_task - after successful BMP280 read
+ * baro_state_t baro = {0};
+ * baro.temp_centi_degc = bmp280_data.temp_centi_degc;
+ * baro.press_pa_256    = bmp280_data.press_pa_256;
+ * baro.timestamp_ms    = (uint32_t)tx_time_get();
+ * baro.valid           = true;
+ * rx_err_t err = shared_data_update_baro(&baro);
+ * if (err != k_rx_ok) {
+ *     rx_log_error("imu_task", "Failed to update baro state");
+ * }
+ * @endcode
+ *
+ * @see shared_data_get_baro() Consumer accessor (Telemetry Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_update_baro(const baro_state_t* state)
+{
+  RX_CHECK_NULL_PTR(state, s_tag, "Baro state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.baro_mutex, TX_WAIT_FOREVER);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(&g_shared_data.baro_state, state, sizeof(baro_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.baro_mutex);
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get barometric pressure state (BMP280 output) (called by Telemetry Task)
+ *
+ * @details
+ * Acquires baro_mutex, copies g_shared_data.baro_state into the caller's buffer,
+ * and releases the mutex. Called at 20 Hz by telemetry_task.
+ *
+ * ## Algorithm Steps:
+ * 1. Null check on out_state parameter
+ * 2. Acquire baro_mutex (non-blocking; returns error if mutex unavailable)
+ * 3. memcpy g_shared_data.baro_state into caller's buffer
+ * 4. Release baro_mutex
+ * 5. Return k_rx_ok
+ *
+ * @param[out] out_state Output buffer for barometric state. Must not be NULL.
+ *
+ * @return rx_err_t Operation status
+ * @retval k_rx_ok State retrieved successfully
+ * @retval k_rx_err_null_ptr out_state is NULL
+ * @retval k_rx_err_not_initialized Module not initialized
+ * @retval k_rx_err_rtos_mutex Mutex unavailable; caller may retry next cycle
+ *
+ * @pre Module initialized (shared_data_init() succeeded)
+ * @pre out_state non-NULL
+ *
+ * @post *out_state contains snapshot of current barometric data (if k_rx_ok)
+ * @post Check out_state->valid before using values
+ *
+ * @invariant baro_mutex held for <5 us (memcpy of baro_state_t)
+ *
+ * @note Thread Safety: Protected by baro_mutex (non-blocking acquire, TX_NO_WAIT)
+ * @note Performance: mutex held for <5 us during memcpy
+ * @note Frequency: called at 20 Hz by telemetry_task
+ *
+ * @warning Not ISR-safe; check out_state->valid before use
+ *
+ * @par Example Usage:
+ * @code{.c}
+ * // In telemetry_task - read current baro state
+ * baro_state_t baro = {0};
+ * rx_err_t err = shared_data_get_baro(&baro);
+ * if (err == k_rx_ok && baro.valid) {
+ *     float temp_c    = (float)baro.temp_centi_degc / (float)k_baro_scale_temp;
+ *     float press_pa  = (float)baro.press_pa_256    / (float)k_baro_scale_press;
+ * }
+ * @endcode
+ *
+ * @see shared_data_update_baro() Producer accessor (IMU Task)
+ *
+ * @since Version 1.0.0
+ */
+rx_err_t shared_data_get_baro(baro_state_t* out_state)
+{
+  RX_CHECK_NULL_PTR(out_state, s_tag, "Output baro state pointer is nullptr");
+
+  if (!g_shared_data.initialized) {
+    return k_rx_err_not_initialized;
+  }
+
+  const UINT tx_status = tx_mutex_get(&g_shared_data.baro_mutex, TX_NO_WAIT);
+  if (tx_status != TX_SUCCESS) {
+    return k_rx_err_rtos_mutex;
+  }
+
+  (void)memcpy(out_state, &g_shared_data.baro_state, sizeof(baro_state_t));
+
+  (void)tx_mutex_put(&g_shared_data.baro_mutex);
 
   return k_rx_ok;
 }

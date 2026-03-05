@@ -25,7 +25,7 @@ The Renesas e^2 studio simulator allows testing firmware **logic** without real 
 ### Option 1: e^2 studio (Interactive Debugging)
 
 **Creating Simulator Build Configuration**:
-1. In e^2 studio, right-click project "e2-studio-star-rx72n-firmware" -> Properties
+1. In e^2 studio, right-click project "star-rx72n-firmware" -> Properties
 2. Navigate to: C/C++ Build -> Manage Configurations
 3. Click "New..." button
 4. Name: **"Simulator Debug"**
@@ -54,7 +54,7 @@ The Renesas e^2 studio simulator allows testing firmware **logic** without real 
 ### Option 2: CMake (Automated Testing)
 
 ```bash
-cd e2-studio-star-rx72n-firmware/tests
+cd star-rx72n-firmware/tests
 cmake .. -DCMAKE_BUILD_TYPE=Debug  # RX_SIMULATOR_MODE auto-enabled
 make -j$(nproc)
 ctest --output-on-failure

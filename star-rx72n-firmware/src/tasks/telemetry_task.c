@@ -50,7 +50,7 @@
  *     style=filled;
  *     color=lightyellow;
  *
- *     nanopb [label="rx_nanopb\nnanopb encoder\nstatic buffers (512 bytes)",
+ *     nanopb [label="rx_nanopb\nnanopb encoder\nstatic buffers (768 bytes)",
  *             fillcolor=lightyellow, style=filled];
  *     proto [label="star_v1_TelemetryData\nProtocol Buffers schema\n(star.proto.v1.TelemetryData)",
  *            fillcolor=lightcyan, style=filled];
@@ -413,7 +413,7 @@
  * |-----------|--------------|---------|-------------|
  * | `s_telem_thread` | 140 | .bss | TX_THREAD control block |
  * | `s_telem_stack` | 2048 | .bss | Task stack (static allocation) |
- * | `s_telem_buffer` | 512 | .bss | Protobuf encode buffer (static) |
+ * | `s_telem_buffer` | 768 | .bss | Protobuf encode buffer (static) |
  * | `s_telem_created` | 1 | .bss | Creation guard flag |
  * | `s_sequence` | 4 | .bss | Message sequence counter |
  * | `s_tag` | 8 | .rodata | Log tag string ("TELEM" + null) |
@@ -573,7 +573,7 @@
  * |------|------------|----------|
  * | **Rule 1: Simplify Control Flow** | [OK] COMPLIANT | No `goto`, `setjmp`/`longjmp`, or recursion. All control flow uses `if`/`while` only. `internal_telem_task_entry()` uses `while(true)` for infinite loop (RTOS pattern). |
  * | **Rule 2: Fixed Loop Upper-Bounds** | [OK] COMPLIANT | Main loop is `while(true)` (RTOS task pattern with watchdog). No variable-bound loops. Protobuf population iterates exactly 4 times (motors 0-3, compile-time constant). |
- * | **Rule 3: No Dynamic Memory After Init** | [OK] COMPLIANT | ZERO `malloc`/`free`. All buffers statically allocated: `s_telem_stack[2048]`, `s_telem_buffer[512]`. ThreadX stack is static array. Protobuf uses nanopb (no dynamic allocation). |
+ * | **Rule 3: No Dynamic Memory After Init** | [OK] COMPLIANT | ZERO `malloc`/`free`. All buffers statically allocated: `s_telem_stack[2048]`, `s_telem_buffer[768]`. ThreadX stack is static array. Protobuf uses nanopb (no dynamic allocation). |
  * | **Rule 4: Keep Functions Short (~60 lines)** | [OK] COMPLIANT | `telemetry_task_create()`: 31 lines. `internal_telem_task_entry()`: 18 lines. `internal_build_and_send_telemetry()`: 95 lines (complex but single responsibility - data aggregation). |
  * | **Rule 5: Use Assertions/Validation** | [OK] COMPLIANT | **4 validation checks:** (1) `RX_ASSERT(!s_telem_created)` prevents double-create. (2) `tx_thread_create()` return check. (3) `rx_nanopb_encode_telemetry()` return check. (4) `rx_comm_manager_send()` return check. Each `shared_data_get_*()` call validates return. |
  * | **Rule 6: Declare Data at Smallest Scope** | [OK] COMPLIANT | All variables declared at function start. Loop counters would be in `for()` if used (none in this task). File-scope statics use `s_` prefix. |
@@ -782,7 +782,7 @@ typedef enum : uint16_t {
    * @brief Telemetry protobuf encode buffer size in bytes
    *
    * @details
-   * 512 bytes provides 2x safety margin over typical encoded message size (~250 bytes).
+   * 768 bytes provides safety margin over worst-case encoded message size (~560 bytes).
    *
    * Message size breakdown:
    * - Timestamp (int64): 9 bytes (varint encoding)
@@ -791,15 +791,18 @@ typedef enum : uint16_t {
    * - Fault flags (uint32): 5 bytes (varint encoding)
    * - Encoders (4 x EncoderData): 4 x 40 bytes = 160 bytes
    * - Temperature (double): 9 bytes (fixed64)
-   * - Protobuf overhead (tags, lengths): ~40 bytes
-   * - **Total typical:** ~250 bytes
-   * - **Buffer size:** 512 bytes (2.0x safety margin)
+   * - IMU (ImuData - 15 doubles + 1 uint32): ~124 bytes
+   * - Baro (BaroData - 2 doubles): ~20 bytes
+   * - Obstacle (ObstacleData): ~28 bytes
+   * - Protobuf overhead (tags, lengths): ~60 bytes
+   * - **Total worst-case:** ~563 bytes
+   * - **Buffer size:** 768 bytes (1.36x safety margin)
    *
    * @note Buffer is statically allocated (no dynamic allocation, NASA Rule 3)
-   * @warning If message size exceeds 512 bytes, `rx_nanopb_encode_telemetry()`
+   * @warning If message size exceeds 768 bytes, `rx_nanopb_encode_telemetry()`
    *          will return `k_rx_err_buffer_too_small`
    */
-  k_telem_buffer_size = 512,
+  k_telem_buffer_size = 768,
 } telemetry_task_constants_t;
 
 /**
@@ -929,7 +932,7 @@ static bool s_telem_created = false;
 
 /**
  * @var s_telem_buffer
- * @brief Telemetry protobuf encode buffer (512 bytes, static allocation)
+ * @brief Telemetry protobuf encode buffer (768 bytes, static allocation)
  *
  * @details
  * nanopb encodes Protocol Buffer messages into this buffer before transmission.
@@ -937,10 +940,10 @@ static bool s_telem_created = false;
  * plus protobuf overhead (tags, varint lengths, wire type markers).
  *
  * Buffer usage:
- * - **Typical:** ~250 bytes (all fields populated, 4 motors, temp)
+ * - **Typical:** ~400 bytes (all fields populated, 4 motors, IMU, baro, temp, obstacle)
  * - **Minimum:** ~20 bytes (timestamp + sequence only, all sources failed)
- * - **Maximum:** ~400 bytes (future expansion: IMU, GPS, LIDAR)
- * - **Allocated:** 512 bytes (2x typical, 1.3x max future)
+ * - **Maximum:** ~560 bytes (worst-case all fields, see k_telem_buffer_size)
+ * - **Allocated:** 768 bytes (matches k_telem_buffer_size; 1.37x worst-case safety margin)
  *
  * Data flow:
  * 1. `internal_build_and_send_telemetry()` populates `TelemetryData` struct
@@ -1065,6 +1068,49 @@ static const float s_cdegc_per_degree = 100.0F;
  * @since Version 1.0.0
  */
 static const float s_cm_per_m = 100.0F;
+
+/**
+ * @var s_rad_per_deg
+ * @brief Radians per degree conversion factor (pi / 180.0).
+ *
+ * @details
+ * Used to populate the legacy radian-unit Euler angle fields in ImuData
+ * (pitch_rad, roll_rad, yaw_rad) from the BNO055 fixed-point degree values.
+ *
+ * Conversion: radians = degrees * s_rad_per_deg
+ *
+ * @note Read-only; never modified after program start.
+ *
+ * @since Version 1.0.0
+ */
+static const double s_rad_per_deg = 0.017453292519943295;
+
+/**
+ * @var s_half_turn_deg
+ * @brief Half revolution in degrees (180.0); threshold for yaw normalization.
+ *
+ * @details
+ * BNO055 heading output is in [0, 360) degrees. To produce yaw in (-180, 180]
+ * for ROS2 geometry_msgs compatibility, headings above 180 degrees are shifted
+ * down by one full turn (360 degrees).
+ *
+ * @note Read-only; never modified after program start.
+ * @since Version 1.0.0
+ */
+static const double s_half_turn_deg = 180.0;
+
+/**
+ * @var s_full_turn_deg
+ * @brief Full revolution in degrees (360.0); subtracted to wrap yaw to (-180, 180].
+ *
+ * @details
+ * Used in the yaw normalization: yaw_deg = heading_deg - s_full_turn_deg
+ * when heading_deg > s_half_turn_deg.
+ *
+ * @note Read-only; never modified after program start.
+ * @since Version 1.0.0
+ */
+static const double s_full_turn_deg = 360.0;
 
 /**
  * @enum telem_motor_idx_t
@@ -1239,6 +1285,8 @@ static rx_err_t              internal_build_and_send_telemetry(void);
 static telemetry_transport_t internal_select_transport(void);
 static rx_err_t              internal_populate_motor_telemetry(star_v1_TelemetryData* telemetry);
 static void                  internal_collect_state(star_v1_TelemetryData* telemetry);
+static void                  internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry);
+static void                  internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry);
 static rx_err_t              internal_encode_telemetry(const star_v1_TelemetryData* telemetry,
                                                        uint32_t*                    out_encoded_len);
 static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t encoded_len);
@@ -1888,19 +1936,167 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
 }
 
 /**
+ * @brief Populate ImuData fields in TelemetryData from shared_data IMU state
+ *
+ * @details
+ * Reads IMU state via shared_data_get_imu() and populates all ImuData fields
+ * in the telemetry message. Sets has_imu = true only on valid data.
+ *
+ * Data is read from the shared_data module via shared_data_get_imu(), which
+ * returns a copy of the last imu_state_t written by the IMU task.
+ *
+ * Conversion and scaling steps applied to BNO055 fixed-point register values:
+ * - Euler angles (heading, roll, pitch): raw deg*16 -> radians via
+ *   (raw / (double)k_imu_scale_euler) * s_rad_per_deg
+ * - Quaternion components (w, x, y, z): raw int16 -> unit float via
+ *   raw / (double)k_imu_scale_quat (= 16384.0)
+ * - Linear acceleration (x, y, z): raw int16 -> m/s^2 via
+ *   raw / (double)k_imu_scale_acc (= 100.0, gravity-compensated)
+ * - Calibration status: raw uint8 calib_stat register value (cast to uint32_t for calibration_status field)
+ * - On-chip temperature: raw int8 temp_degc value (cast to double)
+ *
+ * Side effects: has_imu set to true when valid data present. Not thread-safe;
+ * relies on caller to call from single-threaded context.
+ *
+ * @param[in,out] telemetry TelemetryData message to populate
+ *
+ * @pre telemetry non-NULL
+ * @pre Shared data module initialized via shared_data_init() and IMU task running
+ * @post telemetry->has_imu set if shared_data_get_imu returns valid data
+ * @post All imu.* fields populated on success
+ *
+ * @return void
+ *
+ * @note Not thread-safe; called from single-threaded internal_collect_state()
+ *
+ * @see shared_data_get_imu() Data source accessor
+ * @see imu_state_t Raw IMU state structure
+ * @see internal_collect_state() Caller function
+ *
+ * @since Version 1.0.0
+ */
+static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
+{
+  RX_ASSERT(telemetry != NULL, "telemetry must not be NULL");
+
+  imu_state_t    imu_state;
+  const rx_err_t err = shared_data_get_imu(&imu_state);
+  if (err == k_rx_ok && imu_state.valid) {
+    telemetry->has_imu = true;
+
+    /* Heading in degrees [0, 360) then convert to radians [0, 2*pi) */
+    const double heading_deg   = (double)imu_state.heading_deg16 / (double)k_imu_scale_euler;
+    telemetry->imu.heading_rad = heading_deg * s_rad_per_deg;
+
+    /* Normalize heading [0, 360) to yaw (-180, 180] for ROS2 geometry_msgs compatibility */
+    const double yaw_deg =
+      (heading_deg > s_half_turn_deg) ? (heading_deg - s_full_turn_deg) : heading_deg;
+    telemetry->imu.yaw_rad = yaw_deg * s_rad_per_deg;
+
+    /* Roll and pitch in radians */
+    telemetry->imu.roll_rad =
+      ((double)imu_state.roll_deg16 / (double)k_imu_scale_euler) * s_rad_per_deg;
+    telemetry->imu.pitch_rad =
+      ((double)imu_state.pitch_deg16 / (double)k_imu_scale_euler) * s_rad_per_deg;
+
+    /* Unit quaternion (each raw value / 16384) */
+    telemetry->imu.quat_w = (double)imu_state.quat_w / (double)k_imu_scale_quat;
+    telemetry->imu.quat_x = (double)imu_state.quat_x / (double)k_imu_scale_quat;
+    telemetry->imu.quat_y = (double)imu_state.quat_y / (double)k_imu_scale_quat;
+    telemetry->imu.quat_z = (double)imu_state.quat_z / (double)k_imu_scale_quat;
+
+    /* Linear acceleration (gravity-compensated, each raw value / 100 m/s^2) */
+    telemetry->imu.accel_x_mps2 = (double)imu_state.lin_acc_x / (double)k_imu_scale_acc;
+    telemetry->imu.accel_y_mps2 = (double)imu_state.lin_acc_y / (double)k_imu_scale_acc;
+    telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / (double)k_imu_scale_acc;
+
+    /* Gyroscope angular rates (raw dps * 16 -> rad/s) */
+    telemetry->imu.gyro_x_rad_per_s =
+      ((double)imu_state.gyro_x_dps16 / (double)k_imu_scale_gyro) * s_rad_per_deg;
+    telemetry->imu.gyro_y_rad_per_s =
+      ((double)imu_state.gyro_y_dps16 / (double)k_imu_scale_gyro) * s_rad_per_deg;
+    telemetry->imu.gyro_z_rad_per_s =
+      ((double)imu_state.gyro_z_dps16 / (double)k_imu_scale_gyro) * s_rad_per_deg;
+
+    /* Calibration status and on-chip temperature */
+    telemetry->imu.calibration_status  = (uint32_t)imu_state.calib_stat;
+    telemetry->imu.temperature_celsius = (double)imu_state.temp_degc;
+  }
+  /* Postcondition: if valid IMU data was available, has_imu must be set */
+  RX_ASSERT(!(err == k_rx_ok && imu_state.valid) || telemetry->has_imu,
+            "has_imu must be true when imu_state.valid is true");
+}
+
+/**
+ * @brief Populate BaroData fields in TelemetryData from shared_data baro state
+ *
+ * @details
+ * Reads barometric state via shared_data_get_baro() and populates BaroData
+ * fields. Converts BMP280 integer-scaled values to physical SI units:
+ * temperature from centi-degC to degC, pressure from Pa*256 to Pa.
+ * Sets has_baro = true only on valid data.
+ *
+ * @param[in,out] telemetry TelemetryData message to populate
+ *
+ * @pre telemetry non-NULL
+ * @pre Shared data module initialized via shared_data_init()
+ * @post telemetry->has_baro set if shared_data_get_baro returns valid data
+ * @post All baro.* fields populated on success
+ *
+ * @return void
+ *
+ * @note Not thread-safe; called from single-threaded internal_collect_state()
+ *
+ * @see shared_data_get_baro() Data source accessor
+ * @see baro_state_t Raw barometric state structure
+ * @see internal_collect_state() Caller function
+ *
+ * @since Version 1.0.0
+ */
+static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
+{
+  RX_ASSERT(telemetry != NULL, "telemetry must not be NULL");
+
+  baro_state_t   baro_state;
+  const rx_err_t err = shared_data_get_baro(&baro_state);
+  if (err == k_rx_ok && baro_state.valid) {
+    telemetry->has_baro = true;
+
+    /* Temperature: centi-degrees Celsius -> degrees Celsius */
+    telemetry->baro.temperature_celsius =
+      (double)baro_state.temp_centi_degc / (double)s_cdegc_per_degree;
+
+    /* Pressure: Pa * 256 -> Pa */
+    telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / (double)k_baro_scale_press;
+  }
+  /* Postcondition: if valid baro data was available, has_baro must be set */
+  RX_ASSERT(!(err == k_rx_ok && baro_state.valid) || telemetry->has_baro,
+            "has_baro must be true when baro_state.valid is true");
+}
+
+/**
  * @brief Collect all robot system state into the telemetry message (Phase 1 + Phase 2)
  *
  * @details
- * Reads motor, temperature, and obstacle state from shared_data and populates
- * the corresponding fields in `telemetry`. All reads are **non-blocking**
- * and non-fatal: if a data source is unavailable, the corresponding fields
- * are left at zero-init defaults and collection continues for remaining sources.
+ * Reads motor, temperature, obstacle, IMU, and baro state from shared_data and
+ * populates the corresponding fields in `telemetry`. Reads have mixed blocking
+ * semantics but are all non-fatal: if a data source is unavailable, the
+ * corresponding fields are left at zero-init defaults and collection continues
+ * for remaining sources.
+ *
+ * - **Motor, temperature, estop** accessors: blocking (TX_WAIT_FOREVER)
+ * - **Obstacle, IMU, baro** accessors: non-blocking (TX_NO_WAIT); may return
+ *   k_rx_err_rtos_mutex if the mutex is busy, leaving those fields at
+ *   zero-init defaults for this telemetry cycle.
  *
  * Data collected:
  * 1. **Motor state** (via internal_populate_motor_telemetry()):
  *    E-stop flag, fault_flags bitfield, 4 encoder submessages
  * 2. **Temperature state:** temperature_celsius (cdegC->degC)
  * 3. **Obstacle state:** 4 sensor distances in metres (m), any_obstacle flag, detected_mask bitmask
+ * 4. **IMU state** (BNO055 NDOF): heading_rad, roll_rad, pitch_rad (radians), quat w/x/y/z,
+ *    accel x/y/z (mps2), calib_stat, temperature_celsius
+ * 5. **Baro state** (BMP280 forced mode): temperature_celsius, pressure_pa
  *
  * @param[in,out] telemetry TelemetryData struct to populate (must not be NULL)
  *
@@ -1910,12 +2106,15 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * @post Missing data sources leave their fields at zero-init defaults (graceful degradation)
  *
  * @note Always returns; partial population is intentional and acceptable
- * @note Non-blocking: all shared_data accessors use non-blocking mutex try
+ * @note Mixed blocking: motor/temp/estop accessors use TX_WAIT_FOREVER;
+ *       obstacle/IMU/baro accessors use TX_NO_WAIT (non-blocking)
  * @note Thread-safe: shared_data accessors are mutex-protected
  *
  * @see internal_populate_motor_telemetry() Motor field population helper
  * @see shared_data_get_temp() Temperature state accessor
  * @see shared_data_get_obstacle() Obstacle state accessor
+ * @see shared_data_get_imu() IMU state accessor (BNO055)
+ * @see shared_data_get_baro() Barometric state accessor (BMP280)
  * @see internal_build_and_send_telemetry() Caller - sets timestamp before calling
  *
  * @since Version 1.0.0
@@ -1926,6 +2125,8 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  * - Postcondition 1: Motor fields populated if shared_data_get_motor_state() == k_rx_ok
  * - Postcondition 2: Temp fields populated if shared_data_get_temp() == k_rx_ok && valid
  * - Postcondition 3: Obstacle fields populated if shared_data_get_obstacle() == k_rx_ok
+ * - Postcondition 4: IMU fields populated if shared_data_get_imu() == k_rx_ok && valid
+ * - Postcondition 5: Baro fields populated if shared_data_get_baro() == k_rx_ok && valid
  */
 static void internal_collect_state(star_v1_TelemetryData* telemetry)
 {
@@ -1968,6 +2169,12 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
       ((uint32_t)obstacle_state.obstacle_detected[k_telem_obstacle_sensor_3]
        << k_telem_obstacle_shift_3);
   }
+
+  /* Collect IMU state (BNO055 NDOF fusion) */
+  internal_populate_imu_telemetry(telemetry);
+
+  /* Collect barometric state (BMP280 forced mode) */
+  internal_populate_baro_telemetry(telemetry);
 }
 
 /**

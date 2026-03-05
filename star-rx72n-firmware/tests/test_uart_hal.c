@@ -357,7 +357,7 @@
  * @par Example Test Execution:
  * @code{.sh}
  * # Build and run tests
- * cd e2-studio-star-rx72n-firmware/tests
+ * cd star-rx72n-firmware/tests
  * mkdir -p build && cd build
  * cmake ..
  * make test_uart_hal
