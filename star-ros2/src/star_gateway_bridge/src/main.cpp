@@ -26,7 +26,7 @@ int main(int argc, char **argv)
   rclcpp::init(argc, argv);
 
   // Create and spin node
-  auto node = std::make_shared<star::StarGatewayBridgeNode>();
+  auto node = std::make_shared<star::star_gateway_bridge::StarGatewayBridgeNode>();
 
   RCLCPP_INFO(node->get_logger(), "STAR Gateway Bridge node running");
   RCLCPP_INFO(node->get_logger(), "Press Ctrl+C to exit");

@@ -51,7 +51,7 @@ OPTIMIZE_OUTPUT_JAVA    = NO
 OPTIMIZE_FOR_FORTRAN    = NO
 OPTIMIZE_OUTPUT_VHDL    = NO
 OPTIMIZE_OUTPUT_SLICE   = NO
-EXTENSION_MAPPING       =
+EXTENSION_MAPPING       = S=C s=C asm=C ld=C inc=C
 MARKDOWN_SUPPORT        = YES
 TOC_INCLUDE_HEADINGS    = 5
 AUTOLINK_SUPPORT        = YES
@@ -62,10 +62,10 @@ IDL_PROPERTY_SUPPORT    = YES
 DISTRIBUTE_GROUP_DOC    = NO
 GROUP_NESTED_COMPOUNDS  = NO
 SUBGROUPING             = YES
-INLINE_SIMPLE_STRUCTS   = NO
+INLINE_SIMPLE_STRUCTS   = YES
 TYPEDEF_HIDES_STRUCT    = YES
 LOOKUP_CACHE_SIZE       = 0
-NUM_PROC_THREADS        = 1
+NUM_PROC_THREADS        = 0
 
 #---------------------------------------------------------------------------
 # Build options - what to extract
@@ -126,25 +126,23 @@ WARN_LINE_FORMAT        = "at line $line of file $file"
 WARN_LOGFILE            = docs/doxygen/doxygen_warnings.log
 
 #---------------------------------------------------------------------------
-# Input files - firmware source only (exclude vendor/generated/test code)
+# Input files - everything under src/ and libs/ including third-party
 #---------------------------------------------------------------------------
-INPUT                   = src \
+INPUT                   = README.md \
+                          src \
                           libs
 INPUT_ENCODING          = UTF-8
 FILE_PATTERNS           = *.c \
-                          *.h
+                          *.h \
+                          *.S \
+                          *.s \
+                          *.asm \
+                          *.ld \
+                          *.inc
 RECURSIVE               = YES
-EXCLUDE                 = libs/threadx \
-                          libs/rx_nanopb \
-                          src/smc_gen \
-                          src/boot/smc_generated
+EXCLUDE                 =
 EXCLUDE_SYMLINKS        = NO
-EXCLUDE_PATTERNS        = */smc_gen/* \
-                          */smc_generated/* \
-                          */smc_gen_bsp/* \
-                          */threadx/* \
-                          */nanopb/* \
-                          */tests/*
+EXCLUDE_PATTERNS        =
 EXCLUDE_SYMBOLS         =
 EXAMPLE_PATH            =
 EXAMPLE_PATTERNS        = *
@@ -154,13 +152,13 @@ INPUT_FILTER            =
 FILTER_PATTERNS         =
 FILTER_SOURCE_FILES     = NO
 FILTER_SOURCE_PATTERNS  =
-USE_MDFILE_AS_MAINPAGE  =
+USE_MDFILE_AS_MAINPAGE  = README.md
 
 #---------------------------------------------------------------------------
 # Source browsing
 #---------------------------------------------------------------------------
 SOURCE_BROWSER          = YES
-INLINE_SOURCES          = NO
+INLINE_SOURCES          = YES
 STRIP_CODE_COMMENTS     = NO
 REFERENCED_BY_RELATION  = YES
 REFERENCES_RELATION     = YES
@@ -195,14 +193,14 @@ HTML_COLORSTYLE_HUE     = 220
 HTML_COLORSTYLE_SAT     = 100
 HTML_COLORSTYLE_GAMMA   = 80
 HTML_DYNAMIC_MENUS      = YES
-HTML_DYNAMIC_SECTIONS   = NO
+HTML_DYNAMIC_SECTIONS   = YES
 HTML_INDEX_NUM_ENTRIES  = 100
 GENERATE_DOCSET         = NO
 GENERATE_HTMLHELP       = NO
 GENERATE_QHP            = NO
 GENERATE_ECLIPSEHELP    = NO
 GENERATE_TREEVIEW       = YES
-FULL_SIDEBAR            = NO
+FULL_SIDEBAR            = YES
 ENUM_VALUES_PER_LINE    = 4
 TREEVIEW_WIDTH          = 250
 EXT_LINKS_IN_WINDOW     = NO
@@ -236,11 +234,12 @@ COMPACT_LATEX           = NO
 PAPER_TYPE              = a4
 EXTRA_PACKAGES          = amsmath \
                           amssymb \
-                          listings
+                          listings \
+                          star-font-fixes
 LATEX_HEADER            =
 LATEX_FOOTER            =
 LATEX_EXTRA_STYLESHEET  =
-LATEX_EXTRA_FILES       =
+LATEX_EXTRA_FILES       = latex-extras/star-font-fixes.sty
 PDF_HYPERLINKS          = YES
 USE_PDFLATEX            = YES
 LATEX_BATCHMODE         = YES
@@ -253,7 +252,7 @@ LATEX_EMOJI_DIRECTORY   =
 #---------------------------------------------------------------------------
 GENERATE_RTF            = NO
 GENERATE_MAN            = NO
-GENERATE_XML            = NO
+GENERATE_XML            = YES
 GENERATE_DOCBOOK        = NO
 GENERATE_AUTOGEN_DEF    = NO
 GENERATE_PERLMOD        = NO
@@ -265,30 +264,7 @@ ENABLE_PREPROCESSING    = YES
 MACRO_EXPANSION         = YES
 EXPAND_ONLY_PREDEF      = NO
 SEARCH_INCLUDES         = YES
-INCLUDE_PATH            = src/inc \
-                          src/boot/inc \
-                          src/boot/smc_generated \
-                          libs/rx_core/inc \
-                          libs/rx_hal/inc \
-                          libs/rx_pid/inc \
-                          libs/rx_motor/inc \
-                          libs/rx_encoder/inc \
-                          libs/rx_bus/inc \
-                          libs/rx_crc/inc \
-                          libs/rx_fec/inc \
-                          libs/rx_harq/inc \
-                          libs/rx_frame/inc \
-                          libs/rx_frame_ascii/inc \
-                          libs/rx_comm_manager/inc \
-                          libs/rx_session/inc \
-                          libs/rx_spi_comm/inc \
-                          libs/rx_spi_link/inc \
-                          libs/rx_usb/inc \
-                          libs/rx_usb_comm/inc \
-                          libs/rx_ds18b20/inc \
-                          libs/rx_bq4050/inc \
-                          libs/rx_hcsr04/inc \
-                          libs/rx_obstacle_detect/inc
+INCLUDE_PATH            =
 INCLUDE_FILE_PATTERNS   =
 PREDEFINED              = __RX__ \
                           __GNURX__ \
@@ -312,7 +288,7 @@ EXTERNAL_PAGES          = YES
 # Dot (Graphviz) - call graphs and dependency diagrams
 # Requires: graphviz package (sudo apt install graphviz)
 #---------------------------------------------------------------------------
-HIDE_UNDOC_RELATIONS    = YES
+HIDE_UNDOC_RELATIONS    = NO
 HAVE_DOT                = YES
 DOT_NUM_THREADS         = 0
 DOT_COMMON_ATTR         = "fontname=Helvetica,fontsize=10"
@@ -333,7 +309,7 @@ CALL_GRAPH              = YES
 CALLER_GRAPH            = YES
 GRAPHICAL_HIERARCHY     = YES
 DIRECTORY_GRAPH         = YES
-DIR_GRAPH_MAX_DEPTH     = 1
+DIR_GRAPH_MAX_DEPTH     = 5
 DOT_IMAGE_FORMAT        = svg
 INTERACTIVE_SVG         = YES
 DOT_PATH                =
@@ -344,7 +320,7 @@ DIAFILE_DIRS            =
 PLANTUML_JAR_PATH       =
 PLANTUML_CFG_FILE       =
 PLANTUML_INCLUDE_PATH   =
-DOT_GRAPH_MAX_NODES     = 50
+DOT_GRAPH_MAX_NODES     = 250
 MAX_DOT_GRAPH_DEPTH     = 0
 DOT_MULTI_TARGETS       = YES
 GENERATE_LEGEND         = YES

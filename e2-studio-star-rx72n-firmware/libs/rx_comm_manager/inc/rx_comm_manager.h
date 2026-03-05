@@ -376,7 +376,7 @@
  *
  * @author STAR Team
  * @date 2026-01-27
- * @version 1.1.0
+ * @version 1.0.0
  * @copyright MIT License
  *
  * @par Changelog:
@@ -467,7 +467,7 @@ typedef enum : uint16_t {
  *   Firmware primarily receives PINGs from the gateway.
  * - **Check interval (50ms)**: How often to evaluate heartbeat status.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint32_t {
   k_heartbeat_implicit_timeout_ms = 200,  /**< Declare link dead if no frame for 200ms */
@@ -483,7 +483,7 @@ typedef enum : uint32_t {
  * Events (commands) sent via SPI use retry with exponential backoff.
  * USB sends are fire-and-forget (no retries).
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint16_t {
   k_event_max_retries        = 3,   /**< Maximum SPI retry attempts */
@@ -704,7 +704,7 @@ typedef void (*rx_comm_frame_callback_t)(rx_comm_channel_t channel,
  * Reported per-transport link health. Determined by the dual-detection
  * heartbeat model (implicit 200ms timeout + explicit 1s PING).
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_link_status_unknown = 0, /**< No frames received yet */
@@ -722,7 +722,7 @@ typedef enum : uint8_t {
  * retry logic. SPI entries retry with exponential backoff; USB entries
  * are fire-and-forget.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef struct {
   rx_comm_channel_t channel;                      /**< Target transport */
@@ -744,7 +744,7 @@ typedef struct {
  * Used by the poll loop to evaluate link health per the dual-detection
  * heartbeat model.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef struct {
   uint32_t              last_rx_ms; /**< Timestamp (ms) of last valid frame */
@@ -759,7 +759,7 @@ typedef struct {
  * @param[in] new_status New link status
  * @param[in] ctx        User context pointer
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef void (*rx_comm_link_status_callback_t)(rx_comm_channel_t     channel,
                                                rx_comm_link_status_t new_status,
@@ -865,7 +865,7 @@ typedef struct {
    *
    * @see rx_spi_link.h SPI link layer API
    * @see rx_spi_link_init() Must be called before passing spi_link to manager
-   * @since Version 1.1.0
+   * @since Version 1.0.0
    */
   rx_spi_link_t* spi_link;
 
@@ -1023,7 +1023,7 @@ typedef struct {
    *
    * @see rx_spi_link.h SPI link layer API
    * @see rx_comm_manager_config_t::spi_link Configuration parameter
-   * @since Version 1.1.0
+   * @since Version 1.0.0
    */
   rx_spi_link_t* spi_link;
 
@@ -1248,7 +1248,7 @@ typedef struct {
  * @note This is a thin wrapper over rx_comm_manager_send() for semantic clarity
  *
  * @see rx_comm_manager_event_send() For reliable command delivery
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_stream_send(rx_comm_manager_t*           mgr,
                                                    const rx_comm_send_params_t* params);
@@ -1283,7 +1283,7 @@ typedef struct {
  * @warning Queue depth is k_comm_event_queue_depth (8). If full, returns error.
  *
  * @see rx_comm_manager_stream_send() For fire-and-forget telemetry
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_event_send(rx_comm_manager_t*           mgr,
                                                   const rx_comm_send_params_t* params);
@@ -1308,7 +1308,7 @@ typedef struct {
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if mgr or status is nullptr
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_link_status(const rx_comm_manager_t* mgr,
                                                    rx_comm_channel_t        channel,
@@ -1361,7 +1361,7 @@ const char* rx_comm_manager_channel_name(rx_comm_channel_t channel);
  * @retval k_rx_err_invalid_state mgr not initialized
  * @retval k_rx_err_retry_limit Max retries exceeded
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_comm_manager_process_retransmits(rx_comm_manager_t* mgr,
                                                            uint32_t           current_time_ms);
@@ -1378,7 +1378,7 @@ const char* rx_comm_manager_channel_name(rx_comm_channel_t channel);
  *
  * @return rx_err_t Error code from rx_spi_comm_set_auto_retransmit()
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t
 rx_comm_manager_set_auto_retransmit(rx_comm_manager_t*                     mgr,

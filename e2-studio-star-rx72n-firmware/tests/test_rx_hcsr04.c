@@ -2082,7 +2082,7 @@ void test_hcsr04_measure_full_result_with_temp_compensation(void)
  * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_front_left == 0
  * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
  *
- * @since Version 1.3.0 (Issue #336)
+ * @since Version 1.0.0
  */
 void test_hcsr04_irq_init_sensor_front_left(void)
 {
@@ -2122,7 +2122,7 @@ void test_hcsr04_irq_init_sensor_front_left(void)
  * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_front_right == 1
  * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
  *
- * @since Version 1.3.0 (Issue #336)
+ * @since Version 1.0.0
  */
 void test_hcsr04_irq_init_sensor_front_right(void)
 {
@@ -2162,7 +2162,7 @@ void test_hcsr04_irq_init_sensor_front_right(void)
  * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_back_left == 2
  * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
  *
- * @since Version 1.3.0 (Issue #336)
+ * @since Version 1.0.0
  */
 void test_hcsr04_irq_init_sensor_back_left(void)
 {
@@ -2201,7 +2201,7 @@ void test_hcsr04_irq_init_sensor_back_left(void)
  * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_back_right == 3
  * @see internal_init_irq_mode() Validates sensor_index and calls mock isr_register
  *
- * @since Version 1.3.0 (Issue #336)
+ * @since Version 1.0.0
  */
 void test_hcsr04_irq_init_sensor_back_right(void)
 {
@@ -2243,7 +2243,7 @@ void test_hcsr04_irq_init_sensor_back_right(void)
  * @see rx_hcsr04_sensor_index_t k_hcsr04_sensor_count == 4 is the exclusive upper bound
  * @see internal_init_irq_mode() Validates sensor_index < k_hcsr04_sensor_count
  *
- * @since Version 1.3.0 (Issue #336)
+ * @since Version 1.0.0
  */
 void test_hcsr04_irq_init_invalid_sensor_index_fails(void)
 {

@@ -1830,7 +1830,7 @@ typedef enum : uint8_t {
  * @post Control-frame side effects applied (PONG sent, session reset, etc.)
  *
  * @note Called only from rx_spi_comm_receive(); not part of the public API.
- * @since Version 1.2.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_dispatch_control_frame(rx_spi_comm_handle_t*   handle,
                                                 rx_frame_t*             frame,
@@ -2384,7 +2384,7 @@ rx_err_t rx_spi_comm_send_reset_ack(rx_spi_comm_handle_t* handle)
  * @pre handle->retry_buffer contains valid encoded frame
  * @post retry_count incremented on success, retry_pending cleared on limit
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle)
 {
@@ -2441,7 +2441,7 @@ static rx_err_t internal_retransmit_frame(rx_spi_comm_handle_t* handle)
  *
  * @note Safe to call when auto_retransmit is disabled (no-op)
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
                                          const uint32_t        current_time_ms)
@@ -2498,7 +2498,7 @@ rx_err_t rx_spi_comm_process_retransmits(rx_spi_comm_handle_t* handle,
  * @pre handle must be non-NULL and initialized
  * @post auto_retransmit flag and config updated
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_set_auto_retransmit(rx_spi_comm_handle_t*                  handle,
                                          const bool                             enabled,
@@ -2551,7 +2551,7 @@ rx_err_t rx_spi_comm_set_auto_retransmit(rx_spi_comm_handle_t*                  
  * @retval k_rx_ok Callbacks registered
  * @retval k_rx_err_invalid_arg handle is nullptr
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 rx_err_t rx_spi_comm_set_retransmit_callbacks(rx_spi_comm_handle_t* handle,
                                               void (*on_ack_cb)(uint16_t sequence, void* ctx),

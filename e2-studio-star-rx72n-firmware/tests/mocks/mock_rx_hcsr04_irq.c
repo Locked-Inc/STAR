@@ -22,8 +22,8 @@
  * @author STAR Team
  * @date 2026-02-16
  * @copyright Copyright (c) 2026 STAR Project. MIT License.
- * @since Version 1.2.0 (Issue #296)
- * @version 1.2.0
+ * @since Version 1.0.0
+ * @version 1.0.0
  *
  * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
  * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
@@ -79,7 +79,7 @@
  * @see rx_hcsr04_icu_configure() Real ICU implementation with matching constraints
  * @see rx_hcsr04_isr_register() Real ISR implementation with matching constraints
  *
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_mock_irq_min      = 8,  /**< Minimum valid IRQ number (IRQ8 = P00) */
@@ -121,7 +121,7 @@ typedef enum : uint8_t {
  * @endcode
  *
  * @see rx_mpc_set_gpio() Real implementation in rx_mpc.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
 {
@@ -156,7 +156,7 @@ rx_err_t rx_mpc_set_gpio(const rx_port_pin_t pin)
  * @endcode
  *
  * @see rx_mpc_set_irq() Real implementation in rx_mpc.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_mpc_set_irq(const rx_port_pin_t pin)
 {
@@ -202,7 +202,7 @@ rx_err_t rx_mpc_set_irq(const rx_port_pin_t pin)
  * @endcode
  *
  * @see rx_hcsr04_icu_configure() Real implementation in rx_hcsr04_icu.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
 {
@@ -243,7 +243,7 @@ rx_err_t rx_hcsr04_icu_configure(const uint8_t irq_num, const uint8_t priority)
  * @endcode
  *
  * @see rx_hcsr04_icu_disable() Real implementation in rx_hcsr04_icu.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
 {
@@ -290,7 +290,7 @@ rx_err_t rx_hcsr04_icu_disable(const uint8_t irq_num)
  * @endcode
  *
  * @see rx_hcsr04_isr_register() Real implementation in rx_hcsr04_isr.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_index_t sensor_index)
 {
@@ -332,7 +332,7 @@ rx_err_t rx_hcsr04_isr_register(const uint8_t irq_num, const rx_hcsr04_sensor_in
  * @endcode
  *
  * @see rx_hcsr04_isr_unregister() Real implementation in rx_hcsr04_isr.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
 {
@@ -371,7 +371,7 @@ rx_err_t rx_hcsr04_isr_unregister(const uint8_t irq_num)
  * @endcode
  *
  * @see rx_hcsr04_isr_start() Real implementation in rx_hcsr04_isr.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
 {
@@ -416,7 +416,7 @@ rx_err_t rx_hcsr04_isr_start(const uint8_t irq_num)
  * @endcode
  *
  * @see rx_hcsr04_isr_get_duration() Real implementation in rx_hcsr04_isr.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const duration_us)
 {
@@ -458,7 +458,7 @@ rx_err_t rx_hcsr04_isr_get_duration(const uint8_t irq_num, uint32_t* const durat
  * @endcode
  *
  * @see rx_hcsr04_isr_disarm() Real implementation in rx_hcsr04_isr.h
- * @since Version 1.2.0 (Issue #296)
+ * @since Version 1.0.0
  */
 rx_err_t rx_hcsr04_isr_disarm(const uint8_t irq_num)
 {

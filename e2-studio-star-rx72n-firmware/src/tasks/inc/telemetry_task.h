@@ -60,6 +60,6 @@
  * @see telemetry_task.c Implementation details
  * @see main.c Task creation in tx_application_define()
  *
- * @since STAR v1.0.0
+ * @since Version 1.0.0
  */
 rx_err_t telemetry_task_create(void);

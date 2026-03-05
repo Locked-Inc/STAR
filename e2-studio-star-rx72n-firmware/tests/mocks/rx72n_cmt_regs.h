@@ -147,7 +147,7 @@
  * @copyright Copyright (c) 2026 STAR Project
  *
  * @version 1.0.0
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 
 #pragma once
@@ -218,7 +218,7 @@ extern "C" {
  * @see cmt3() Accessor function returning pointer to mock CMT3 registers
  * @see lib/rx_hal/inc/rx72n_cmt_regs.h Real hardware register definition
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef mock_cmt_channel_t rx_cmt_channel_regs_t;
 
@@ -302,7 +302,7 @@ typedef mock_cmt_channel_t rx_cmt_channel_regs_t;
  * @see cmt_ctrl() Accessor function returning pointer to mock CMT control registers
  * @see lib/rx_hal/inc/rx72n_cmt_regs.h Real hardware register definition
  *
- * @since 1.0.0
+ * @since Version 1.0.0
  */
 typedef mock_cmt_ctrl_t rx_cmt_control_regs_t;
 

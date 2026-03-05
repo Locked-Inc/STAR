@@ -303,7 +303,7 @@ typedef enum : uint16_t {
  *
  * @see internal_gpio_init_gptw_pwm() Uses k_gptw_pin_count
  * @see internal_gpio_init_motor_driver_ctrl() Uses k_motor_count
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_gptw_pin_count = 8, /**< 4 motors x 2 pins (IN2 + IN1) */
@@ -365,7 +365,7 @@ typedef enum : uint8_t {
  * }
  * @endcode
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 typedef enum : uint8_t {
   k_gpio_single_bit_mask = 1U, /**< Single-bit mask shifted by pin number for register RMW */
@@ -612,7 +612,7 @@ static rx_err_t internal_gpio_init_gptw_pwm(void)
  * @see internal_gpio_init_motor_driver_ctrl() Primary caller for DRVOFF/nSLEEP
  * @see internal_gpio_init_sonar_triggers() Primary caller for sonar trigger pins
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial_high)
 {
@@ -662,7 +662,7 @@ static inline void internal_gpio_set_output(rx_port_pin_t port_pin, bool initial
  * @see internal_gpio_init_imu() Primary caller for IMU interrupt pin
  * @see internal_gpio_init_sonar_echoes() Primary caller for sonar echo pins
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
 {
@@ -705,7 +705,7 @@ static inline void internal_gpio_set_input(rx_port_pin_t port_pin)
  * @see internal_gpio_set_output() Used for IMU reset pin
  * @see rx_mpc_set_riic() MPC configuration for I2C pins
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_imu(void)
 {
@@ -782,7 +782,7 @@ static rx_err_t internal_gpio_init_imu(void)
  * @see rx_mpc_set_gpio() MPC configuration for GPIO mode
  * @see internal_gpio_init_gptw_pwm() Configures PWM pins for DRV8263H IN1/IN2
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t internal_gpio_init_motor_driver_ctrl(void)
 {
@@ -1166,7 +1166,7 @@ static rx_err_t gpio_init(void)
  *
  * @see rx_gptw_init_all_staggered() HAL function for staggered PWM init
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t gptw_pwm_init(void)
 {
@@ -1207,7 +1207,7 @@ static rx_err_t gptw_pwm_init(void)
  *
  * @see rspi_init_peripheral() HAL function for RSPI peripheral mode
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t spi_init(void)
 {
@@ -1242,7 +1242,7 @@ static rx_err_t spi_init(void)
  *
  * @see riic_init() HAL function for RIIC channel init
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t i2c_init(void)
 {
@@ -1284,7 +1284,7 @@ static rx_err_t i2c_init(void)
  *
  * @see adc_init() HAL function for ADC channel init
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static rx_err_t adc_init_channels(void)
 {
@@ -1321,7 +1321,7 @@ static rx_err_t adc_init_channels(void)
  * @note Not thread-safe. Call during single-threaded initialization only.
  * @note Non-fatal: failures are logged as warnings, boot continues.
  *
- * @since Version 1.1.0
+ * @since Version 1.0.0
  */
 static void validate_peripherals(void)
 {

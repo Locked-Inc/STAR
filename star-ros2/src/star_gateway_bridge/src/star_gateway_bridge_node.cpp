@@ -8,13 +8,49 @@
 #include "star_gateway_bridge/star_gateway_bridge_node.hpp"
 
 #include <chrono>
+#include <exception>
 #include <thread>
 
 using namespace std::chrono_literals;
 
-namespace star
+namespace star::star_gateway_bridge
 {
 
+/**
+ * @brief Construct and fully initialise the STAR Gateway Bridge ROS2 node.
+ *
+ * @details
+ * Declares and caches all ROS2 parameters, initialises the gRPC client
+ * channel to the Go gateway service, creates publishers, subscribers, and
+ * timer callbacks, and starts the connection watchdog. All member variables
+ * (grpc_connected_, reconnect_attempts_, sequence counters, etc.) are set
+ * to their safe initial state before any callbacks are registered.
+ *
+ * @param[in] options  ROS2 node options forwarded to rclcpp::Node. May
+ * contain remappings, parameter overrides, or intra-process settings.
+ * Invalid or missing required parameters are logged and default values
+ * are applied; no exception is thrown for parameter validation failures.
+ *
+ * @throw std::runtime_error  Thrown if the gRPC channel cannot be
+ * constructed (e.g. invalid gateway_address format).
+ *
+ * @pre gateway_address node parameter must be a valid host:port string
+ * (non-empty, with a colon-separated port number).
+ * @pre ROS2 node options must be compatible with rclcpp::Node construction
+ * (no conflicting intra-process or remapping settings).
+ * @post grpc_connected_ == false and reconnect_attempts_ == 0 on return.
+ * @post All publishers, subscribers, and timer callbacks are initialised
+ * and the connection watchdog is started before the constructor returns.
+ *
+ * @note Not thread-safe during construction; the node must be fully
+ * constructed in a single thread before being added to an executor.
+ * @note grpc_connected_ is initialised to false and reconnect_attempts_
+ * to 0. The connection watchdog timer will attempt the first connection
+ * on its first callback, so the node may briefly serve subscribers with
+ * no gRPC connection on startup.
+ *
+ * @since Version 1.0.0
+ */
 StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options)
 : Node("star_gateway_bridge", options), grpc_connected_(false),
   reconnect_attempts_(0)
@@ -41,31 +77,36 @@ StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options
   wheel_base_ = this->get_parameter("wheel_base").as_double();
 
   RCLCPP_INFO(
-      this->get_logger(),
-      "Configuration: gateway=%s, telemetry_rate=%.1fHz, teleop_rate=%.1fHz, "
-      "watchdog=%.1fs, teleop_timeout=%dms, grpc_deadline=%dms, "
-      "wheel_base=%.3fm",
-      gateway_address_.c_str(), telemetry_rate_hz_, teleop_rate_hz_,
-      watchdog_timeout_sec_, teleop_timeout_ms_, grpc_deadline_ms_,
-      wheel_base_);
+    this->get_logger(),
+    "Configuration: gateway=%s, telemetry_rate=%.1fHz, teleop_rate=%.1fHz, "
+    "watchdog=%.1fs, teleop_timeout=%dms, grpc_deadline=%dms, "
+    "wheel_base=%.3fm",
+    gateway_address_.c_str(), telemetry_rate_hz_, teleop_rate_hz_,
+    watchdog_timeout_sec_, teleop_timeout_ms_, grpc_deadline_ms_,
+    wheel_base_);
 
   // Initialize gRPC client
   if (!initialize_grpc_client()) {
     RCLCPP_WARN(this->get_logger(),
-                "Failed to connect to Gateway at %s - will retry in background",
-                gateway_address_.c_str());
+      "Failed to connect to Gateway at %s - will retry in background",
+      gateway_address_.c_str());
   }
 
   // Initialize ROS2 interfaces
   initialize_ros_interfaces();
 
   RCLCPP_INFO(this->get_logger(),
-              "STAR Gateway Bridge Node initialized successfully");
+    "STAR Gateway Bridge Node initialized successfully");
 }
 
 StarGatewayBridgeNode::~StarGatewayBridgeNode()
 {
   RCLCPP_INFO(this->get_logger(), "Shutting down STAR Gateway Bridge Node");
+
+  // Reset subscriptions before publishers go away
+  odom_sub_.reset();
+  slam_pose_sub_.reset();
+  scan_sub_.reset();
 
   // Send stop command before shutdown
   auto zero_twist = geometry_msgs::msg::Twist();
@@ -139,6 +180,103 @@ void StarGatewayBridgeNode::initialize_ros_interfaces()
       "/robot_status", 10,
       std::bind(&StarGatewayBridgeNode::robot_status_callback, this,
                 std::placeholders::_1));
+
+  /**
+   * @brief Subscribe to /odometry/filtered and cache EKF odometry as protobuf.
+   *
+   * @details
+   * Uses fixed depth QoS (10) appropriate for filtered odometry streams and
+   * converts each incoming message via converter_.odometry_to_proto(). Shared
+   * cache updates are synchronized with odometry_mutex_.
+   *
+   * Topic: /odometry/filtered (nav_msgs/msg/Odometry)
+   * Thread safety: writes cached_ekf_odometry_ and cached_ekf_timestamp_us_
+   * under odometry_mutex_.
+   */
+  // Subscribe to odometry (EKF-filtered preferred)
+  odom_sub_ = this->create_subscription<nav_msgs::msg::Odometry>(
+      "/odometry/filtered", 10,
+    [this](const nav_msgs::msg::Odometry::SharedPtr msg) {
+      try {
+        star::v1::OdometryData proto_odom;
+        converter_.odometry_to_proto(*msg, proto_odom);
+        std::lock_guard<std::mutex> lock(odometry_mutex_);
+        cached_ekf_timestamp_us_ = proto_odom.timestamp_us();
+        cached_ekf_odometry_ = proto_odom;
+      } catch (const std::exception & ex) {
+        RCLCPP_ERROR(this->get_logger(), "Odometry callback failed: %s",
+                       ex.what());
+      } catch (...) {
+        RCLCPP_ERROR(this->get_logger(),
+                       "Odometry callback failed: unknown exception");
+      }
+      });
+
+  /**
+   * @brief Subscribe to /slam_toolbox/pose and cache SLAM pose as protobuf.
+   *
+   * @details
+   * Uses SensorDataQoS() to match high-rate sensor pipelines and avoid stale
+   * data under load. Converts each pose via converter_.slam_pose_to_proto().
+   * Shared odometry cache updates are synchronized with odometry_mutex_.
+   *
+   * Topic: /slam_toolbox/pose (geometry_msgs/msg/PoseWithCovarianceStamped)
+   * Thread safety: writes cached_slam_pose_ and cached_slam_timestamp_us_
+   * under odometry_mutex_.
+   */
+  // Subscribe to SLAM pose (map frame) -- selected by telemetry arbitration
+  // when newer than EKF (and as tie-breaker).
+  slam_pose_sub_ =
+    this->create_subscription<geometry_msgs::msg::PoseWithCovarianceStamped>(
+          "/slam_toolbox/pose", rclcpp::SensorDataQoS(),
+    [this](const geometry_msgs::msg::PoseWithCovarianceStamped::SharedPtr
+    msg) {
+      try {
+        star::v1::OdometryData proto_odom;
+        converter_.slam_pose_to_proto(*msg, proto_odom);
+        std::lock_guard<std::mutex> lock(odometry_mutex_);
+        cached_slam_timestamp_us_ = proto_odom.timestamp_us();
+        cached_slam_pose_ = proto_odom;
+      } catch (const std::exception & ex) {
+        RCLCPP_ERROR(this->get_logger(), "SLAM pose callback failed: %s",
+                           ex.what());
+      } catch (...) {
+        RCLCPP_ERROR(this->get_logger(),
+                           "SLAM pose callback failed: unknown exception");
+      }
+          });
+
+  /**
+   * @brief Subscribe to /scan and cache converted LiDAR scan protobuf.
+   *
+   * @details
+   * Uses SensorDataQoS() to match LiDAR publisher behavior and prioritize
+   * low-latency delivery. Converts each message via
+   * converter_.laserscan_to_proto(); invalid metadata is rejected by the
+   * converter and not cached.
+   *
+   * Topic: /scan (sensor_msgs/msg/LaserScan)
+   * Thread safety: writes cached_lidar_scan_ under lidar_mutex_.
+   */
+  // Subscribe to LiDAR scan -- SensorDataQoS matches sllidar_node publisher QoS
+  scan_sub_ = this->create_subscription<sensor_msgs::msg::LaserScan>(
+      "/scan", rclcpp::SensorDataQoS(),
+    [this](const sensor_msgs::msg::LaserScan::SharedPtr msg) {
+      try {
+        star::v1::LidarScan proto_scan;
+        if (!converter_.laserscan_to_proto(*msg, proto_scan)) {
+          return;
+        }
+        std::lock_guard<std::mutex> lock(lidar_mutex_);
+        cached_lidar_scan_ = proto_scan;
+      } catch (const std::exception & ex) {
+        RCLCPP_ERROR(this->get_logger(), "LaserScan callback failed: %s",
+                       ex.what());
+      } catch (...) {
+        RCLCPP_ERROR(this->get_logger(),
+                       "LaserScan callback failed: unknown exception");
+      }
+      });
 
   // Services
   set_pid_gains_service_ = this->create_service<std_srvs::srv::SetBool>(
@@ -233,7 +371,7 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
   }
 
   // Forward telemetry to Gateway via gRPC
-  if (grpc_stub_ && robot_status.has_value()) {
+  if (grpc_stub_) {
     grpc::ClientContext context;
     context.set_deadline(std::chrono::system_clock::now() +
                          std::chrono::milliseconds(grpc_deadline_ms_));
@@ -252,6 +390,28 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
                                          *request.mutable_system_status());
     }
 
+    // Populate odometry using explicit SLAM/EKF arbitration.
+    // Priority: newer timestamp wins; SLAM wins ties for map-frame stability.
+    {
+      std::lock_guard<std::mutex> lock(odometry_mutex_);
+      if (cached_slam_pose_.has_value() &&
+        (!cached_ekf_odometry_.has_value() ||
+        cached_slam_timestamp_us_ >= cached_ekf_timestamp_us_))
+      {
+        *request.mutable_odometry() = *cached_slam_pose_;
+      } else if (cached_ekf_odometry_.has_value()) {
+        *request.mutable_odometry() = *cached_ekf_odometry_;
+      }
+    }
+
+    // Populate lidar scan if available
+    {
+      std::lock_guard<std::mutex> lock(lidar_mutex_);
+      if (cached_lidar_scan_.has_value()) {
+        *request.mutable_lidar_scan() = *cached_lidar_scan_;
+      }
+    }
+
     star::v1::ForwardTelemetryResponse response;
     grpc::Status status =
       grpc_stub_->ForwardTelemetry(&context, request, &response);
@@ -267,9 +427,23 @@ void StarGatewayBridgeNode::telemetry_forward_timer_callback()
     }
   }
 
+  bool odom_has = false;
+  bool scan_has = false;
+  {
+    std::lock_guard<std::mutex> lock(odometry_mutex_);
+    odom_has =
+      cached_slam_pose_.has_value() || cached_ekf_odometry_.has_value();
+  }
+  {
+    std::lock_guard<std::mutex> lock(lidar_mutex_);
+    scan_has = cached_lidar_scan_.has_value();
+  }
+
   RCLCPP_DEBUG_THROTTLE(this->get_logger(), *this->get_clock(), 10000,
-                        "Telemetry forward: robot_status=%s",
-                        robot_status.has_value() ? "cached" : "none");
+                        "Telemetry forward: robot_status=%s, odom=%s, scan=%s",
+                        robot_status.has_value() ? "cached" : "none",
+                        odom_has ? "cached" : "none",
+                        scan_has ? "cached" : "none");
 }
 
 void StarGatewayBridgeNode::teleop_poll_timer_callback()
@@ -369,23 +543,61 @@ void StarGatewayBridgeNode::connection_watchdog_callback()
 // gRPC Helpers
 // ===========================================================================
 
+/**
+ * @brief Attempt to reconnect the gRPC client to the Go gateway with
+ *        exponential backoff.
+ *
+ * @details
+ * Called by connection_watchdog_callback() when is_grpc_connected() returns
+ * false.  Increments reconnect_attempts_ on every call; gives up and returns
+ * false once MAX_RECONNECT_ATTEMPTS is reached.  Each attempt sleeps for
+ * RECONNECT_BACKOFF_MS_BASE * 2^min(reconnect_attempts_, MAX_BACKOFF_EXPONENT)
+ * milliseconds before calling initialize_grpc_client().
+ *
+ * @return true   initialize_grpc_client() succeeded and the stub is ready.
+ * @return false  Max reconnection attempts reached; logging throttled to once
+ *                per 30 s.
+ *
+ * @retval true   gRPC channel entered READY state within the deadline.
+ * @retval false  Either MAX_RECONNECT_ATTEMPTS exhausted or
+ *                initialize_grpc_client() reported a timeout.
+ *
+ * @pre Called from connection_watchdog_callback() when is_grpc_connected()
+ * returns false; gRPC stub and channel state must be validable by
+ * initialize_grpc_client().
+ * @pre reconnect_attempts_ and MAX_RECONNECT_ATTEMPTS are accessible and
+ * RECONNECT_BACKOFF_MS_BASE > 0.
+ * @post reconnect_attempts_ is incremented on each invocation.
+ * @post Returns true if initialize_grpc_client() succeeds and the channel
+ * enters READY state within the deadline; returns false if
+ * MAX_RECONNECT_ATTEMPTS is reached or a timeout occurs; error logging is
+ * throttled at the MAX_RECONNECT_ATTEMPTS limit to avoid log spam.
+ *
+ * @note Blocks the calling thread (watchdog timer callback) via
+ *       std::this_thread::sleep_for for the computed backoff duration.
+ * @note Error logging is throttled to once per 30 s at the
+ *       MAX_RECONNECT_ATTEMPTS limit to avoid log spam.
+ * @since Version 1.0.0
+ */
 bool StarGatewayBridgeNode::reconnect_grpc_client()
 {
-  if (reconnect_attempts_ >= k_max_reconnect_attempts) {
+  assert(MAX_RECONNECT_ATTEMPTS > 0);
+  assert(RECONNECT_BACKOFF_MS_BASE > 0 && reconnect_attempts_ >= 0);
+  if (reconnect_attempts_ >= MAX_RECONNECT_ATTEMPTS) {
     RCLCPP_ERROR_THROTTLE(this->get_logger(), *this->get_clock(), 30000,
                           "Max reconnection attempts (%d) reached - giving up",
-                          k_max_reconnect_attempts);
+                          MAX_RECONNECT_ATTEMPTS);
     return false;
   }
 
   reconnect_attempts_++;
 
   // Exponential backoff
-  int backoff_ms =
-    k_reconnect_backoff_ms_base * (1 << std::min(reconnect_attempts_, 5));
+  int backoff_ms = RECONNECT_BACKOFF_MS_BASE *
+    (1 << std::min(reconnect_attempts_, MAX_BACKOFF_EXPONENT));
 
   RCLCPP_INFO(this->get_logger(), "Reconnection attempt %d/%d (backoff: %dms)",
-              reconnect_attempts_, k_max_reconnect_attempts, backoff_ms);
+              reconnect_attempts_, MAX_RECONNECT_ATTEMPTS, backoff_ms);
 
   std::this_thread::sleep_for(std::chrono::milliseconds(backoff_ms));
 
@@ -419,7 +631,7 @@ void StarGatewayBridgeNode::check_teleop_sequence_continuity(
       uint32_t gap = current_sequence - expected_seq;
 
       // Sanity check: ignore huge gaps (likely system reset or wraparound)
-      if (gap < 10000) {
+      if (gap < SEQUENCE_RESTART_THRESHOLD) {
         teleop_frames_dropped_ += gap;
         RCLCPP_WARN(this->get_logger(),
                     "Teleop frame drop: expected seq %u, got %u (gap=%u, "
@@ -457,7 +669,7 @@ void StarGatewayBridgeNode::check_telemetry_sequence_continuity(
       uint32_t gap = current_sequence - expected_seq;
 
       // Sanity check: ignore huge gaps (likely system reset or wraparound)
-      if (gap < 10000) {
+      if (gap < SEQUENCE_RESTART_THRESHOLD) {
         telemetry_frames_dropped_ += gap;
         RCLCPP_WARN(this->get_logger(),
                     "Telemetry frame drop: expected seq %u, got %u (gap=%u, "
@@ -588,8 +800,8 @@ void StarGatewayBridgeNode::publish_diagnostics()
   diagnostics_pub_->publish(diag_array);
 }
 
-} // namespace star
+}  // namespace star::star_gateway_bridge
 
 // Component registration for composable node
 #include "rclcpp_components/register_node_macro.hpp"
-RCLCPP_COMPONENTS_REGISTER_NODE(star::StarGatewayBridgeNode)
+RCLCPP_COMPONENTS_REGISTER_NODE(star::star_gateway_bridge::StarGatewayBridgeNode)

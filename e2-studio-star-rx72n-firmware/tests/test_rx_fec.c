@@ -279,7 +279,7 @@
  * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
  *
  * @since Version 1.0.0
- * @version 1.0.0 Initial comprehensive test suite
+ * @version 1.0.0
  *
  * @see rx_fec.h FEC encoder/decoder API
  * @see test_rx_harq.c HARQ Chase Combining tests (uses rx_fec internally)

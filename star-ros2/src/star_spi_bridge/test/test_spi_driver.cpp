@@ -105,7 +105,7 @@ TEST_F(SpiDriverTest, DecodeRejectsCRCCorruption)
 
 TEST_F(SpiDriverTest, EncodeRejectsOversizedPayload)
 {
-  std::vector<uint8_t> oversized(SpiDriver::k_max_payload_size + 1, 0xAA);
+  std::vector<uint8_t> oversized(SpiDriver::MAX_PAYLOAD_SIZE + 1, 0xAA);
   std::vector<uint8_t> frame;
 
   EXPECT_THROW(
