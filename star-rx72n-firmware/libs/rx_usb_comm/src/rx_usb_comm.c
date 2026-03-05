@@ -191,8 +191,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  *
  * @return rx_err_t Error code
  * @retval k_rx_ok CRC valid, frame integrity confirmed
- * @retval k_rx_err_invalid_arg nullptr data or offset too small
- * @retval k_rx_err_invalid_arg offset == 0; propagated from rx_crc32_ieee() (zero-length input)
+ * @retval k_rx_err_invalid_arg nullptr data, or offset below minimum valid CRC position
+ *                              (offset < k_frame_min_size - k_frame_crc_size), including offset == 0
  * @retval k_rx_err_crc_mismatch Calculated CRC doesn't match stored CRC
  *
  * @pre data != nullptr

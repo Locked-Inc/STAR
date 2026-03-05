@@ -273,8 +273,8 @@
  * // Compute CRC-32 over multiple buffers without concatenation
  * uint32_t compute_multi_buffer_crc(void)
  * {
- *   // Initialize CRC
- *   uint32_t crc = 0xFFFFFFFF;  // CRC-32/IEEE initial value
+ *   // Initialize CRC: use 0U as seed -- rx_crc32_update internally un-finalizes/re-finalizes
+ *   uint32_t crc = 0U;
  *
  *   // Process buffer 1
  *   uint8_t buf1[64] = { ... };
@@ -288,10 +288,7 @@
  *   uint8_t buf3[32] = { ... };
  *   crc = rx_crc32_update(crc, buf3, sizeof(buf3));
  *
- *   // Finalize CRC
- *   crc ^= 0xFFFFFFFF;
- *
- *   return crc;  // Final CRC-32 value
+ *   return crc;  // Finalized CRC-32/IEEE value (rx_crc32_update handles finalization)
  * }
  *
  * // Equivalent to single-shot computation:

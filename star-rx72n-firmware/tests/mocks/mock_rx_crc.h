@@ -57,6 +57,15 @@ extern "C" {
  * @post Subsequent rx_crc_compute() calls return this value when override active
  *
  * @note No allocation or blocking; safe to call from setUp()
+ *
+ * @code
+ * // Inject a bad CRC to test corruption-detection logic in the caller:
+ * mock_crc8_set_return_value(0xAAU);   // stage the injected value first
+ * mock_crc8_set_override(true);        // then activate the override
+ * rx_err_t ret = rx_crc_compute(&cfg, data, len, &result);
+ * // result == 0xAA regardless of the actual byte content of data
+ * @endcode
+ *
  * @since Version 1.0.0
  */
 void mock_crc8_set_return_value(uint8_t crc);
@@ -79,6 +88,15 @@ void mock_crc8_set_return_value(uint8_t crc);
  * @post All subsequent rx_crc_compute() calls respect the new setting
  *
  * @note Reset by calling mock_crc8_set_override(false) in tearDown()
+ *
+ * @code
+ * // Test that the caller detects a bad CRC and returns an error:
+ * mock_crc8_set_return_value(0x00U);   // inject a wrong checksum
+ * mock_crc8_set_override(true);        // activate override
+ * TEST_ASSERT_EQUAL(k_rx_err_crc, driver_read(&handle, buf, len));
+ * mock_crc8_set_override(false);       // restore real CRC in tearDown()
+ * @endcode
+ *
  * @since Version 1.0.0
  */
 void mock_crc8_set_override(bool enable);

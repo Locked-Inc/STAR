@@ -287,7 +287,7 @@ static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
     }
   }
 
-  return crc;
+  return (uint16_t)(crc ^ (uint16_t)k_crc16_final_xor);
 }
 
 /**

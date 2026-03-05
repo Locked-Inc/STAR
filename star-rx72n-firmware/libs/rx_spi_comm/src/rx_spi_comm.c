@@ -521,8 +521,8 @@ static rx_err_t internal_decode_header(const uint8_t* data,
  *
  * @return rx_err_t Error code indicating CRC validation result
  * @retval k_rx_ok CRC valid (received == calculated), frame intact
- * @retval k_rx_err_invalid_arg data pointer is nullptr
- * @retval k_rx_err_invalid_arg offset == 0; propagated from rx_crc32_ieee() (zero-length input)
+ * @retval k_rx_err_invalid_arg data pointer is nullptr, or offset is zero (propagated from
+ *                              rx_crc32_ieee for a zero-length input)
  * @retval k_rx_err_crc_mismatch CRC invalid (corruption detected)
  *
  * @pre data must point to valid buffer containing offset + 4 bytes

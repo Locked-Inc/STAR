@@ -20,13 +20,19 @@
  */
 
 /**
+ * @brief Bit-manipulation constants shared by all CRC algorithms
+ */
+typedef enum : uint8_t {
+  k_bits_per_byte = 8U, /**< Number of bits in a byte (inner loop bound) */
+  k_shift_one_bit = 1U, /**< Right-shift by one bit position per iteration */
+} crc_common_constants_t;
+
+/**
  * @brief CRC-8/Maxim constants
  */
 typedef enum : uint8_t {
   k_crc8_maxim_poly = 0x8CU, /**< Reversed polynomial 0x31 */
-  k_bits_per_byte   = 8U,    /**< Number of bits in a byte */
   k_crc8_lsb_mask   = 0x01U, /**< Mask for LSB */
-  k_shift_one_bit   = 1U,    /**< Shift by one bit position */
 } crc8_constants_t;
 
 /**

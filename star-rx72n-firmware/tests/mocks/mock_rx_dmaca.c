@@ -55,7 +55,8 @@ static bool s_transfer_called;
  * preset transfer result to k_rx_ok. Call this in test setUp() to ensure
  * each test starts from a clean state.
  *
- * @pre None
+ * @pre Test harness is initialized; Unity setUp() has been entered
+ * @pre No concurrent calls to any mock function (not thread-safe)
  * @post s_init_count = 0
  * @post s_deinit_count = 0
  * @post s_transfer_count = 0
