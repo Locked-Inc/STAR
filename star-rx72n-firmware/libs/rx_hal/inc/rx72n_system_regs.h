@@ -146,7 +146,7 @@ extern "C" {
  * @see prcr_reg() PRCR register accessor
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief System register base address (0x00080000)
    * @details Start of main 66-byte system register block (0x00-0x41)
@@ -932,7 +932,7 @@ typedef enum : uint8_t {
  * - RSTSR2 is at a separate address 0x000800C0
  * Verified against RX72N Group User's Manual Hardware (R01UH0824EJ0120 Rev.1.20)
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_rstsr0_addr = 0x0008C290, /**< Reset Status Register 0 address (page 286) */
   k_rstsr1_addr = 0x0008C291, /**< Reset Status Register 1 address (page 288) */
   k_rstsr2_addr = 0x000800C0, /**< Reset Status Register 2 address (page 289) */
@@ -999,7 +999,7 @@ typedef enum : uint8_t {
  * Writing 0xA501 to this register triggers an immediate software reset.
  * Reference: RX72N manual Ch06 section 6.2.4, page 290.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_swrr_addr = 0x000800C2, /**< Software Reset Register address (16-bit) */
 } rx_swrr_addresses_t;
 
@@ -1050,7 +1050,7 @@ static inline volatile uint16_t* swrr_reg(void)
  * MANDATORY: Must be set to 1 when ICLK > 120 MHz.
  * Reference: RX72N manual Ch09 section 9.2.2, page 341, line 962.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_memwait_addr = 0x0008101C, /**< Memory Wait Cycle Setting Register */
 } rx_memwait_addresses_t;
 
@@ -1087,7 +1087,7 @@ static inline volatile uint8_t* memwait_reg(void)
  * Must be configured for USB functionality.
  * Reference: RX72N manual Ch09, PPLL frequency synthesizer section.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_ppllcr_addr  = 0x00080048, /**< PPLL Control Register @ 0x00080048 */
   k_ppllcr2_addr = 0x0008004A, /**< PPLL Control Register 2 @ 0x0008004A */
 } rx_ppll_addresses_t;

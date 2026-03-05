@@ -337,7 +337,7 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_system_base_addr = 0x00080000, /**< System register base address (real RX72N MMIO) */
   k_prcr_addr        = 0x000803FE, /**< PRCR (Protection Register) address (real RX72N MMIO) */
 } rx_system_addresses_t;
@@ -375,7 +375,7 @@ typedef enum : uint32_t {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_rstsr0_addr = 0x0008C290, /**< Reset Status Register 0 address (real RX72N MMIO) */
   k_rstsr1_addr = 0x0008C291, /**< Reset Status Register 1 address (real RX72N MMIO) */
   k_rstsr2_addr = 0x000800C0, /**< Reset Status Register 2 address (real RX72N MMIO) */

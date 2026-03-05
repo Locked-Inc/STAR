@@ -332,7 +332,7 @@ typedef struct {
  */
 
 /** @brief GPTW hardware addresses (verified against RX72N Hardware Manual) */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_gptw_channel_offset   = 0x100,      /**< Channel spacing between GPTW registers */
   k_gptw0_base_addr       = 0x000C2000, /**< GPTW channel 0 base address */
   k_gptw1_base_addr       = 0x000C2100, /**< GPTW channel 1 base address */

@@ -159,7 +159,7 @@ extern "C" {
  * @see iwdt() Accessor function
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief IWDT register base address (0x00088030)
    * @details Verified against RX72N Hardware Manual Ch35

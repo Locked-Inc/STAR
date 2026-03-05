@@ -23,7 +23,7 @@
 # - star-rx72n-firmware/CLAUDE.md - Firmware development guide
 
 # Tone instructions (general guidance, max 250 chars)
-tone_instructions: "Assertive reviews enforcing: C23 (typed enums, #pragma once), NASA Power of 10, comprehensive Doxygen, inclusive terminology (Controller/Peripheral), zero magic numbers, SOLID, no backward compatibility."
+tone_instructions: "Assertive reviews enforcing: C23 (typed enums, #pragma once, uintptr_t for addresses), NASA Power of 10, comprehensive Doxygen, inclusive terminology (Controller/Peripheral), zero magic numbers, SOLID, no backward compatibility."
 
 reviews:
   profile: assertive
@@ -166,6 +166,17 @@ reviews:
         - Include guards: MANDATORY use of #pragma once (C23 standard, NOT traditional guards)
         - Doxygen: /** for multi-line blocks, /**< for inline comments
         - Line limit: 100 characters maximum
+
+        Hardware Address Enums (CRITICAL - REJECT violations):
+        - MANDATORY: All enums whose values are hardware memory-mapped addresses MUST use `uintptr_t`
+          as the underlying type: `typedef enum : uintptr_t { k_foo_base = 0x00088000, } foo_addr_t;`
+        - FORBIDDEN: `typedef enum : uint32_t { k_foo_base = 0x00088000, }` for address enums.
+          On the 64-bit x86_64 unit-test host uintptr_t is 8 bytes; uint32_t silently truncates
+          pointer casts and produces wrong addresses in tests.
+        - ALLOWED: uint32_t for large non-address constants (bit masks, large timeouts, CRC values)
+        - REQUIRED: Inline accessor functions cast the enum to a pointer directly:
+          `static inline Foo_Type* foo(void) { return (Foo_Type*)k_foo_base; }`
+        - Doxygen @code examples that show address arithmetic MUST use uintptr_t, never uint32_t
 
         Backward Compatibility (CRITICAL - REJECT violations):
         - ZERO backward compatibility requirements (in-house only, no releases)
@@ -310,6 +321,17 @@ reviews:
         - REQUIRED: Update all call sites directly when refactoring APIs
         - REQUIRED: Delete old code immediately - no gradual transitions
         - REQUIRED: Ensure main branch remains in working state after changes
+
+        Hardware Address Enums (CRITICAL - REJECT violations):
+        - MANDATORY: All enums whose values are hardware memory-mapped addresses MUST use `uintptr_t`
+          as the underlying type: `typedef enum : uintptr_t { k_foo_base = 0x00088000, } foo_addr_t;`
+        - FORBIDDEN: `typedef enum : uint32_t { k_foo_base = 0x00088000, }` for address enums.
+          On the 64-bit x86_64 unit-test host uintptr_t is 8 bytes; uint32_t silently truncates
+          pointer casts and produces wrong addresses in tests.
+        - ALLOWED: uint32_t for large non-address constants (bit masks, large timeouts, CRC values)
+        - REQUIRED: Inline accessor functions cast the enum to a pointer directly:
+          `static inline Foo_Type* foo(void) { return (Foo_Type*)k_foo_base; }`
+        - Doxygen @code examples that show address arithmetic MUST use uintptr_t, never uint32_t
 
         Magic Numbers (ZERO TOLERANCE):
         - ALL numeric literals must be named enums or const

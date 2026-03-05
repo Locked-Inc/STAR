@@ -497,8 +497,13 @@ enums, variables, typedefs, and macros.
    - Choose the smallest type that fits all values:
      - `uint8_t` - Values 0-255 (most common: states, indices, small constants)
      - `uint16_t` - Values 256-65535 (timeouts in ms, medium constants)
-     - `uint32_t` - Values > 65535 (addresses, large constants, bit masks)
+     - `uint32_t` - Values > 65535 (large constants, bit masks -- NOT addresses)
+     - `uintptr_t` - Hardware register base addresses (MANDATORY for all address enums)
      - `int8_t`, `int16_t`, `int32_t` - For signed values
+   - Use `uintptr_t` for any enum whose values are hardware memory-mapped addresses.
+     On the 32-bit RX72N target `uintptr_t` == `uint32_t`, but on the 64-bit x86_64
+     unit-test host `uintptr_t` == `uint64_t`. Using `uint32_t` for addresses silently
+     truncates on the test host and produces wrong pointer casts.
    - This ensures predictable size, ABI stability, and debugger compatibility
 
 2. **const variables** - ONLY for floating-point (enum limitation)
@@ -546,7 +551,7 @@ enums, variables, typedefs, and macros.
 4. **Hardware Register Access** - Use inline accessor functions:
    ```c
    // [PASS] CORRECT: Inline accessor with typed enum address
-   typedef enum : uint32_t {
+   typedef enum : uintptr_t {
        k_cmt0_base_addr  = 0x00088000,
        k_port0_base_addr = 0x000C0000,
    } hw_addresses_t;

@@ -84,7 +84,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 20.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief DTC base address */
   k_dtc_base_addr = 0x00082400U,
 

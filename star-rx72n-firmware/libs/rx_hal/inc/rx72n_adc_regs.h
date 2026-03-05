@@ -185,7 +185,7 @@ extern "C" {
  * @see s12ad0() Accessor function for Unit 0
  * @see s12ad1() Accessor function for Unit 1
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief S12AD Unit 0 base address
    * @details

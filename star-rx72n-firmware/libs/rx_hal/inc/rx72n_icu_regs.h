@@ -178,7 +178,7 @@ extern "C" {
  *
  * @invariant Base address is fixed and cannot be relocated
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_icu_base_addr = 0x00087000, /**< ICU register base address (fixed) */
 } rx_icu_addresses_t;
 

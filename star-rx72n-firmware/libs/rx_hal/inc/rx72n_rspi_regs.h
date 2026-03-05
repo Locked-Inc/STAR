@@ -172,7 +172,7 @@ extern "C" {
  * @see rspi0(), rspi1(), rspi2() Preferred accessor functions
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief RSPI0 register base address (0x000D0100)
    * @details
