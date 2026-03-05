@@ -14,7 +14,7 @@
  * connection fails the node continues and retries via the watchdog timer.
  *
  * @since Version 1.0.0
- 
+
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
 */

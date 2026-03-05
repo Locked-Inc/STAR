@@ -230,7 +230,7 @@ void SpiMessageConverter::telemetry_to_joint_state(
  * @see SpiMessageConverter::telemetry_to_joint_state Related telemetry conversion.
  *
  * @since Version 1.0.0
- 
+
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
 */

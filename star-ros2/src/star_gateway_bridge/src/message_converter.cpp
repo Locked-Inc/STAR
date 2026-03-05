@@ -24,7 +24,7 @@ namespace star::star_gateway_bridge
 namespace
 {
 
-/** @brief Microseconds in one second for ROS timestamp conversion. 
+/** @brief Microseconds in one second for ROS timestamp conversion.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
 */

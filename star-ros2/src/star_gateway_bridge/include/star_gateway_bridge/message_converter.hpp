@@ -14,7 +14,7 @@
  * different threads on separate message instances.
  *
  * @since Version 1.0.0
- 
+
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
 */

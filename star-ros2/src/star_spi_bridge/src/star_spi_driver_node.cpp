@@ -289,7 +289,7 @@ void StarSpiDriverNode::cmd_vel_callback(
  * @see StarSpiDriverNode::tx_seq_      Sequence counter incremented on success.
  *
  * @since Version 1.0.0
- 
+
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
 */

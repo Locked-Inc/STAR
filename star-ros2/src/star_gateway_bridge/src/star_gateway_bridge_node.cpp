@@ -66,7 +66,7 @@ static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_dete
  * no gRPC connection on startup.
  *
  * @since Version 1.0.0
- 
+
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
 */
