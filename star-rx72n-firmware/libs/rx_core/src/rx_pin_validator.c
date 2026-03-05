@@ -162,6 +162,20 @@
 #include "rx_log.h"
 
 /* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+/**
+ * @var s_tag
+ * @brief Log tag for pin validator module
+ * @details Identifies log messages from this module
+ * @note Read-only after initialization
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "PIN_VALIDATOR";
+
+/* =============================================================================
  * Internal Helper Functions
  * =============================================================================
  */
@@ -502,7 +516,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
     /* Release mutex before returning error */
     (void)tx_mutex_put(&validator->mutex);
 
-    rx_log_warn("PIN_VALIDATOR", "Pin already reserved");
+    rx_log_warn(s_tag, "Pin already reserved");
     return k_rx_err_gpio_conflict;
   }
 
@@ -514,7 +528,7 @@ impl_reserve_pin(void* ctx, const uint8_t port, const uint8_t pin, const char* f
   /* Release mutex */
   (void)tx_mutex_put(&validator->mutex);
 
-  rx_log_debug("PIN_VALIDATOR", "Pin reserved");
+  rx_log_debug(s_tag, "Pin reserved");
 
   return k_rx_ok;
 }
@@ -615,7 +629,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
     /* Release mutex before returning error */
     (void)tx_mutex_put(&validator->mutex);
 
-    rx_log_warn("PIN_VALIDATOR", "Pin was not reserved");
+    rx_log_warn(s_tag, "Pin was not reserved");
     return k_rx_err_invalid_state;
   }
 
@@ -626,7 +640,7 @@ static rx_err_t impl_release_pin(void* ctx, const uint8_t port, const uint8_t pi
   /* Release mutex */
   (void)tx_mutex_put(&validator->mutex);
 
-  rx_log_debug("PIN_VALIDATOR", "Pin released");
+  rx_log_debug(s_tag, "Pin released");
 
   return k_rx_ok;
 }
@@ -926,7 +940,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   /* Release mutex */
   (void)tx_mutex_put(&validator->mutex);
 
-  rx_log_debug("PIN_VALIDATOR", "All reservations cleared");
+  rx_log_debug(s_tag, "All reservations cleared");
 
   return k_rx_ok;
 }
@@ -1040,20 +1054,20 @@ static const pin_validator_t s_zero_validator = {};
  */
 rx_err_t pin_validator_init(pin_validator_t* validator)
 {
-  RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
+  RX_CHECK_NULL_PTR(validator, s_tag, "Validator pointer is nullptr");
 
   *validator = s_zero_validator;
 
   /* Create mutex */
   const UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
-    rx_log_error("PIN_VALIDATOR", "Failed to create mutex");
+    rx_log_error(s_tag, "Failed to create mutex");
     return k_rx_err_rtos_mutex;
   }
 
   validator->initialized = true;
 
-  rx_log_info("PIN_VALIDATOR", "Pin validator initialized");
+  rx_log_info(s_tag, "Pin validator initialized");
 
   return k_rx_ok;
 }
@@ -1160,11 +1174,11 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
  */
 rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator)
 {
-  RX_CHECK_NULL_PTR(iface, "PIN_VALIDATOR", "Interface pointer is nullptr");
-  RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
+  RX_CHECK_NULL_PTR(iface, s_tag, "Interface pointer is nullptr");
+  RX_CHECK_NULL_PTR(validator, s_tag, "Validator pointer is nullptr");
 
   if (!validator->initialized) {
-    rx_log_error("PIN_VALIDATOR", "Validator not initialized");
+    rx_log_error(s_tag, "Validator not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -1266,7 +1280,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator)
 {
-  RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is nullptr");
+  RX_CHECK_NULL_PTR(validator, s_tag, "Validator pointer is nullptr");
 
   if (!validator->initialized) {
     return k_rx_ok; /* Already deinitialized */
@@ -1275,13 +1289,13 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
   /* Delete mutex */
   const UINT status = tx_mutex_delete(&validator->mutex);
   if (status != TX_SUCCESS) {
-    rx_log_warn("PIN_VALIDATOR", "Failed to delete mutex during deinit");
+    rx_log_warn(s_tag, "Failed to delete mutex during deinit");
   }
 
   /* Clear state */
   validator->initialized = false;
 
-  rx_log_info("PIN_VALIDATOR", "Pin validator deinitialized");
+  rx_log_info(s_tag, "Pin validator deinitialized");
 
   return k_rx_ok;
 }

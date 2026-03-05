@@ -180,6 +180,20 @@
 #include "rx_crc.h"
 
 /* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+/**
+ * @var s_tag
+ * @brief Log tag for frame module
+ * @details Identifies log messages from this module
+ * @note Read-only after initialization
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "FRAME";
+
+/* =============================================================================
  * Byte Serialization Constants
  *
  * Named constants for byte manipulation in serialization functions.
@@ -285,7 +299,7 @@ typedef enum : uint32_t {
  */
 static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const uint32_t val)
 {
-  RX_CHECK_NULL_PTR(buf, "FRAME", "LE32 write buffer is nullptr");
+  RX_CHECK_NULL_PTR(buf, s_tag, "LE32 write buffer is nullptr");
   if (buf_len < k_frame_crc_size) {
     return k_rx_err_invalid_size;
   }
@@ -310,8 +324,8 @@ static rx_err_t internal_write_le32(uint8_t* buf, const uint32_t buf_len, const 
  */
 static rx_err_t internal_read_le32(const uint8_t* buf, const uint32_t buf_len, uint32_t* out_val)
 {
-  RX_CHECK_NULL_PTR(buf, "FRAME", "LE32 read buffer is nullptr");
-  RX_CHECK_NULL_PTR(out_val, "FRAME", "LE32 output pointer is nullptr");
+  RX_CHECK_NULL_PTR(buf, s_tag, "LE32 read buffer is nullptr");
+  RX_CHECK_NULL_PTR(out_val, s_tag, "LE32 output pointer is nullptr");
   if (buf_len < k_frame_crc_size) {
     return k_rx_err_invalid_size;
   }

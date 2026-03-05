@@ -114,6 +114,20 @@
 #include "tx_api.h"
 
 /* =============================================================================
+ * Module State
+ * =============================================================================
+ */
+
+/**
+ * @var s_tag
+ * @brief Log tag for time threadx module
+ * @details Identifies log messages from this module
+ * @note Read-only after initialization
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "TIME";
+
+/* =============================================================================
  * Module Constants
  * =============================================================================
  */
@@ -483,7 +497,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
  */
 rx_err_t rx_time_threadx_get_interface(rx_time_interface_t* iface)
 {
-  RX_CHECK_NULL_PTR(iface, "TIME", "Interface pointer is nullptr");
+  RX_CHECK_NULL_PTR(iface, s_tag, "Interface pointer is nullptr");
 
   iface->ctx        = NULL; /* No context needed for ThreadX */
   iface->sleep_ms   = impl_sleep_ms;

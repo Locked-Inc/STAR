@@ -999,6 +999,15 @@ static TX_MUTEX s_time_mutex;
 static bool s_time_mutex_initialized = false;
 
 /**
+ * @var s_tag
+ * @brief Log tag for HCSR04 HAL hardware module
+ * @details Identifies log messages from this module
+ * @note Read-only after initialization
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "HCSR04";
+
+/**
  * @brief Initialize ThreadX mutex for overflow counter protection (idempotent)
  *
  * @details
@@ -1401,7 +1410,7 @@ uint32_t hcsr04_hal_get_time_us(void)
 
   const UINT put_status = tx_mutex_put(&s_time_mutex);
   if (put_status != TX_SUCCESS) {
-    rx_log_error_val("HCSR04", "Failed to release time mutex", (uint32_t)put_status);
+    rx_log_error_val(s_tag, "Failed to release time mutex", (uint32_t)put_status);
   }
 
   return result;

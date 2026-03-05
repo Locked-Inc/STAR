@@ -116,6 +116,15 @@ static bool s_dmaca_owned = false;
  */
 static uint32_t s_dma_fallback_count = 0U;
 
+/**
+ * @var s_tag
+ * @brief Log tag for CRC hardware module
+ * @details Identifies log messages from this module
+ * @note Read-only after initialization
+ * @since Version 1.0.0
+ */
+static const char* const s_tag = "CRC";
+
 /* =============================================================================
  * Private Helpers
  * =============================================================================
@@ -191,8 +200,8 @@ static void internal_configure_crccr(const rx_crc_config_t* config)
  */
 rx_err_t internal_crc_hw_init(void)
 {
-  RX_CHECK_NULL_PTR(system_regs(), "CRC", "System registers not accessible");
-  RX_CHECK_NULL_PTR(crc_regs(), "CRC", "CRC registers not accessible");
+  RX_CHECK_NULL_PTR(system_regs(), s_tag, "System registers not accessible");
+  RX_CHECK_NULL_PTR(crc_regs(), s_tag, "CRC registers not accessible");
 
   /* Unlock protection and enable CRC module clock (clear MSTPCRB bit 23) */
   *prcr_reg() = k_rx_prcr_unlock_prc1;
@@ -234,7 +243,7 @@ rx_err_t internal_crc_hw_init(void)
  */
 rx_err_t internal_crc_hw_deinit(void)
 {
-  RX_CHECK_NULL_PTR(system_regs(), "CRC", "System registers not accessible");
+  RX_CHECK_NULL_PTR(system_regs(), s_tag, "System registers not accessible");
 
   /* Deinitialize DMA driver only if this module initialized it */
   if (s_dmaca_owned) {
