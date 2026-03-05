@@ -17,7 +17,6 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "rx_bmp280.h"
 #include "rx_err.h"
 #include "tx_api.h"
 

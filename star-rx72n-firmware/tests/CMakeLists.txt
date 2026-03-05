@@ -933,10 +933,6 @@ add_executable(test_rx_bno055
     ${MOCK_LOG_SRC}
 )
 apply_strict_warnings(test_rx_bno055)
-# Suppress unused-local-typedefs: rx_bno055.c uses local enum typedefs for
-# named constants (per STAR no-magic-numbers policy); the typedef name itself
-# is never referenced as a type variable, only its enum constants are used.
-target_compile_options(test_rx_bno055 PRIVATE -Wno-unused-local-typedefs)
 apply_test_includes(test_rx_bno055)
 target_include_directories(test_rx_bno055 PRIVATE
     ${CMAKE_SOURCE_DIR}/../libs/rx_bno055/inc

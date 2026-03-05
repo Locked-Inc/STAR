@@ -528,7 +528,8 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
     const uint32_t active_freq    = ctx->manager->riic_freq_hz[channel];
     const uint32_t requested_freq = bus_config->proto.i2c.frequency_hz;
     if (active_freq != requested_freq) {
-      rx_log_error(s_tag, "RIIC channel frequency mismatch - shared buses must use same frequency");
+      rx_log_error_val(s_tag, "RIIC channel frequency mismatch: active_freq_hz", active_freq);
+      rx_log_error_val(s_tag, "RIIC channel frequency mismatch: requested_freq_hz", requested_freq);
       ctx->result = k_rx_err_invalid_arg;
       return k_rx_err_invalid_arg;
     }

@@ -1394,19 +1394,18 @@ static rx_err_t spi_init(void)
  * RIIC1 (IMU) are configured in internal_gpio_init_imu().
  *
  * @return rx_err_t Error code
- * @retval k_rx_ok Both RIIC channels initialized successfully
- * @retval k_rx_err_hw_init_failed RIIC0 or RIIC1 init failed
+ * @retval k_rx_ok Static assertions passed; RIIC init deferred to bus manager
  *
  * @pre GPIO pins for RIIC0 configured via internal_gpio_init_i2c()
  * @pre GPIO pins for RIIC1 (IMU) configured via internal_gpio_init_imu()
  * @pre PCLKB clock running at 60 MHz
  *
- * @post RIIC0 ready for host I2C at 400 kHz
- * @post RIIC1 ready for BNO055 (0x28) and BMP280 (0x76) at 400 kHz
+ * @post Static frequency assertions verified at compile time
+ * @post RIIC initialization deferred to rx_bus_i2c_init() in bus manager
  *
  * @note Not thread-safe. Call during single-threaded initialization only.
  *
- * @see riic_init() HAL function for RIIC channel init
+ * @see rx_bus_i2c_init() Performs RIIC channel init on first bus registration
  * @see internal_gpio_init_imu() Configures P2.0/P2.1 for RIIC1
  *
  * @since Version 1.0.0
@@ -1421,19 +1420,11 @@ static rx_err_t i2c_init(void)
   static_assert((uint32_t)k_i2c_imu_freq_hz <= (uint32_t)k_i2c_fast_mode_max_hz,
                 "IMU I2C frequency must not exceed 400 kHz fast mode");
 
-  /* RIIC0: Host I2C at 400 kHz (RPi5 communication) */
-  riic_channel_t ch0 = {.value = k_i2c_channel_0};
-  rx_err_t       err = riic_init(ch0, k_i2c_host_freq_hz);
-  RX_RETURN_ON_ERROR(err, s_tag, "RIIC0 init failed");
-
-  rx_log_info_val(s_tag, "RIIC0 initialized, freq_hz", (uint32_t)k_i2c_host_freq_hz);
-
-  /* RIIC1: IMU I2C at 400 kHz (BNO055 + BMP280) */
-  riic_channel_t ch1 = {.value = k_i2c_channel_1};
-  err                = riic_init(ch1, k_i2c_imu_freq_hz);
-  RX_RETURN_ON_ERROR(err, s_tag, "RIIC1 init failed");
-
-  rx_log_info_val(s_tag, "RIIC1 initialized, freq_hz", (uint32_t)k_i2c_imu_freq_hz);
+  /* RIIC initialization is deferred to the bus manager. Each call to
+   * rx_bus_i2c_init() (via rx_bus_manager_register() in main.c) will call
+   * riic_init() for its channel on first use and skip re-initialization for
+   * shared-channel buses (e.g., "i2c1" and "i2c1_baro" both on RIIC1). */
+  rx_log_info(s_tag, "RIIC initialization deferred to bus manager (rx_bus_i2c_init)");
   return k_rx_ok;
 }
 

@@ -1070,85 +1070,6 @@ static const float s_cdegc_per_degree = 100.0F;
 static const float s_cm_per_m = 100.0F;
 
 /**
- * @var s_deg16_per_deg
- * @brief BNO055 Euler angle scale factor: fixed-point units per degree (16.0).
- *
- * @details
- * BNO055 stores Euler angles as signed 16-bit integers with 1/16 degree resolution.
- * To convert to double degrees: degrees = (double)raw_deg16 / s_deg16_per_deg.
- *
- * Example: heading_deg16 = 2880 -> 2880 / 16.0 = 180.0 degrees (South).
- *
- * @note Read-only; never modified after program start.
- *
- * @since Version 1.0.0
- */
-static const double s_deg16_per_deg = 16.0;
-
-/**
- * @var s_quat_scale
- * @brief BNO055 quaternion scale factor: fixed-point units per unit quaternion (16384.0).
- *
- * @details
- * BNO055 stores quaternion components as signed 16-bit integers with 1/16384 resolution.
- * To convert to double unit-quaternion: component = (double)raw_quat / s_quat_scale.
- *
- * Example: quat_w = 16384 -> 16384 / 16384.0 = 1.0 (identity rotation).
- *
- * @note Read-only; never modified after program start.
- *
- * @since Version 1.0.0
- */
-static const double s_quat_scale = 16384.0;
-
-/**
- * @var s_baro_press_scale
- * @brief BMP280 pressure scale factor: fixed-point units per Pascal (256.0).
- *
- * @details
- * BMP280 driver stores pressure as Pa * 256 (e.g. 26624000 = 104000 Pa = 1040 hPa).
- * To convert to double Pascal: pressure_pa = (double)press_pa_256 / s_baro_press_scale.
- *
- * @note Read-only; never modified after program start.
- *
- * @since Version 1.0.0
- */
-static const double s_baro_press_scale = 256.0;
-
-/**
- * @var s_lin_acc_scale
- * @brief BNO055 linear acceleration scale factor (100.0 LSB per m/s^2).
- *
- * @details
- * BNO055 stores linear acceleration as integers with 1/100 m/s^2 resolution.
- * To convert to double m/s^2: accel_mps2 = (double)lin_acc_raw / s_lin_acc_scale.
- *
- * Example: lin_acc_x = 981 -> 981 / 100.0 = 9.81 m/s^2.
- *
- * @note Read-only; never modified after program start.
- *
- * @since Version 1.0.0
- */
-static const double s_lin_acc_scale = 100.0;
-
-/**
- * @var s_gyro_scale
- * @brief BNO055 gyroscope fixed-point divisor (16 LSB per deg/s).
- *
- * @details
- * The BNO055 gyroscope outputs in dps mode (k_bno055_unit_sel_default).
- * Physical value in deg/s = raw_int16 / s_gyro_scale.
- * Combined with s_rad_per_deg to convert to rad/s for the protobuf fields.
- *
- * Matches k_imu_scale_gyro (shared_data.h) and k_bno055_scale_gyro_lsb_per_dps (rx_bno055_regs.h).
- *
- * @note Read-only; never modified after program start.
- *
- * @since Version 1.0.0
- */
-static const double s_gyro_scale = 16.0;
-
-/**
  * @var s_rad_per_deg
  * @brief Radians per degree conversion factor (pi / 180.0).
  *
@@ -2026,11 +1947,11 @@ static rx_err_t internal_populate_motor_telemetry(star_v1_TelemetryData* telemet
  *
  * Conversion and scaling steps applied to BNO055 fixed-point register values:
  * - Euler angles (heading, roll, pitch): raw deg*16 -> radians via
- *   (raw / s_deg16_per_deg) * s_rad_per_deg
+ *   (raw / (double)k_imu_scale_euler) * s_rad_per_deg
  * - Quaternion components (w, x, y, z): raw int16 -> unit float via
- *   raw / s_quat_scale (= 16384.0)
+ *   raw / (double)k_imu_scale_quat (= 16384.0)
  * - Linear acceleration (x, y, z): raw int16 -> m/s^2 via
- *   raw / s_lin_acc_scale (= 100.0, gravity-compensated)
+ *   raw / (double)k_imu_scale_acc (= 100.0, gravity-compensated)
  * - Calibration status: raw uint8 calib_stat register value (cast to uint32_t for calibration_status field)
  * - On-chip temperature: raw int8 temp_degc value (cast to double)
  *
@@ -2064,7 +1985,7 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->has_imu = true;
 
     /* Heading in degrees [0, 360) then convert to radians [0, 2*pi) */
-    const double heading_deg   = (double)imu_state.heading_deg16 / s_deg16_per_deg;
+    const double heading_deg   = (double)imu_state.heading_deg16 / (double)k_imu_scale_euler;
     telemetry->imu.heading_rad = heading_deg * s_rad_per_deg;
 
     /* Normalize heading [0, 360) to yaw (-180, 180] for ROS2 geometry_msgs compatibility */
@@ -2073,27 +1994,29 @@ static void internal_populate_imu_telemetry(star_v1_TelemetryData* telemetry)
     telemetry->imu.yaw_rad = yaw_deg * s_rad_per_deg;
 
     /* Roll and pitch in radians */
-    telemetry->imu.roll_rad  = ((double)imu_state.roll_deg16 / s_deg16_per_deg) * s_rad_per_deg;
-    telemetry->imu.pitch_rad = ((double)imu_state.pitch_deg16 / s_deg16_per_deg) * s_rad_per_deg;
+    telemetry->imu.roll_rad =
+      ((double)imu_state.roll_deg16 / (double)k_imu_scale_euler) * s_rad_per_deg;
+    telemetry->imu.pitch_rad =
+      ((double)imu_state.pitch_deg16 / (double)k_imu_scale_euler) * s_rad_per_deg;
 
     /* Unit quaternion (each raw value / 16384) */
-    telemetry->imu.quat_w = (double)imu_state.quat_w / s_quat_scale;
-    telemetry->imu.quat_x = (double)imu_state.quat_x / s_quat_scale;
-    telemetry->imu.quat_y = (double)imu_state.quat_y / s_quat_scale;
-    telemetry->imu.quat_z = (double)imu_state.quat_z / s_quat_scale;
+    telemetry->imu.quat_w = (double)imu_state.quat_w / (double)k_imu_scale_quat;
+    telemetry->imu.quat_x = (double)imu_state.quat_x / (double)k_imu_scale_quat;
+    telemetry->imu.quat_y = (double)imu_state.quat_y / (double)k_imu_scale_quat;
+    telemetry->imu.quat_z = (double)imu_state.quat_z / (double)k_imu_scale_quat;
 
     /* Linear acceleration (gravity-compensated, each raw value / 100 m/s^2) */
-    telemetry->imu.accel_x_mps2 = (double)imu_state.lin_acc_x / s_lin_acc_scale;
-    telemetry->imu.accel_y_mps2 = (double)imu_state.lin_acc_y / s_lin_acc_scale;
-    telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / s_lin_acc_scale;
+    telemetry->imu.accel_x_mps2 = (double)imu_state.lin_acc_x / (double)k_imu_scale_acc;
+    telemetry->imu.accel_y_mps2 = (double)imu_state.lin_acc_y / (double)k_imu_scale_acc;
+    telemetry->imu.accel_z_mps2 = (double)imu_state.lin_acc_z / (double)k_imu_scale_acc;
 
     /* Gyroscope angular rates (raw dps * 16 -> rad/s) */
     telemetry->imu.gyro_x_rad_per_s =
-      ((double)imu_state.gyro_x_dps16 / s_gyro_scale) * s_rad_per_deg;
+      ((double)imu_state.gyro_x_dps16 / (double)k_imu_scale_gyro) * s_rad_per_deg;
     telemetry->imu.gyro_y_rad_per_s =
-      ((double)imu_state.gyro_y_dps16 / s_gyro_scale) * s_rad_per_deg;
+      ((double)imu_state.gyro_y_dps16 / (double)k_imu_scale_gyro) * s_rad_per_deg;
     telemetry->imu.gyro_z_rad_per_s =
-      ((double)imu_state.gyro_z_dps16 / s_gyro_scale) * s_rad_per_deg;
+      ((double)imu_state.gyro_z_dps16 / (double)k_imu_scale_gyro) * s_rad_per_deg;
 
     /* Calibration status and on-chip temperature */
     telemetry->imu.calibration_status  = (uint32_t)imu_state.calib_stat;
@@ -2144,7 +2067,7 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
       (double)baro_state.temp_centi_degc / (double)s_cdegc_per_degree;
 
     /* Pressure: Pa * 256 -> Pa */
-    telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / s_baro_press_scale;
+    telemetry->baro.pressure_pa = (double)baro_state.press_pa_256 / (double)k_baro_scale_press;
   }
   /* Postcondition: if valid baro data was available, has_baro must be set */
   RX_ASSERT(!(err == k_rx_ok && baro_state.valid) || telemetry->has_baro,

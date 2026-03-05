@@ -130,11 +130,10 @@ typedef enum : uint16_t {
 } imu_task_time_t;
 static_assert(TX_TIMER_TICKS_PER_SECOND != 0U, "TX_TIMER_TICKS_PER_SECOND must be non-zero");
 static_assert(k_imu_ms_per_second > 0U, "k_imu_ms_per_second must be positive");
-static_assert(
-  ((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
-      (uint32_t)k_imu_ms_per_second ==
-    0U,
-  "IMU period must map to a whole number of ThreadX ticks");
+static_assert(((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) %
+                  (uint32_t)k_imu_ms_per_second ==
+                0U,
+              "IMU period must map to a whole number of ThreadX ticks");
 static_assert(
   (uint32_t)k_imu_task_period_ticks ==
     (((uint32_t)k_imu_task_period_ms * (uint32_t)TX_TIMER_TICKS_PER_SECOND) /
@@ -204,7 +203,7 @@ static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX C
 
 /**
  * @var g_bus_manager
- * @brief External bus manager declared in main.c; registered buses include "i2c1" and "i2c1_baro"
+ * @brief External bus manager defined in shared_data.c; registered buses include "i2c1" and "i2c1_baro"
  *
  * @details
  * Declared extern here because main.h does not export g_bus_manager.
@@ -212,8 +211,8 @@ static char s_task_name[] = "ImuTask"; /* char[] (not const) satisfies ThreadX C
  * The IMU task uses this to pass the bus manager to rx_bno055_init() and
  * rx_bmp280_init() during task startup.
  *
- * @note Using inline extern is necessary because main.h does not export g_bus_manager.
- *       If a main.h public header is added, replace this with #include "main.h".
+ * @note Using inline extern is necessary because shared_data.h does not export g_bus_manager.
+ *       If a shared_data.h public accessor is added, replace this with the accessor.
  *
  * @since Version 1.0.0
  */
