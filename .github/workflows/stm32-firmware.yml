@@ -86,14 +86,14 @@ jobs:
           find Sources -type f \( -name '*.c' -o -name '*.h' \) -print0 \
             | xargs -0 -r clang-format --dry-run --Werror
 
+      - name: Build firmware
+        working-directory: star-stm32-firmware
+        run: cmake --build "${{ matrix.build_dir }}" --parallel "$(nproc)"
+
       - name: Run tests
         working-directory: star-stm32-firmware
         run: |
           ctest --test-dir ${{ matrix.build_dir }} --output-on-failure --no-tests=error
-
-      - name: Build firmware
-        working-directory: star-stm32-firmware
-        run: cmake --build "${{ matrix.build_dir }}" --parallel "$(nproc)"
 
       - name: Report and enforce binary size budgets
         working-directory: star-stm32-firmware/${{ matrix.build_dir }}
