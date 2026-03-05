@@ -899,8 +899,9 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   memcpy(state->last_rom, rom, k_onewire_rom_bytes);
 
-  const uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_crc_idx);
-  if (crc != rom[k_onewire_rom_crc_idx]) {
+  uint32_t crc_out = 0U;
+  (void)rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out);
+  if ((uint8_t)crc_out != rom[k_onewire_rom_crc_idx]) {
     return k_rx_err_crc_mismatch;
   }
 
@@ -1562,9 +1563,9 @@ static rx_err_t internal_onewire_match_rom_callback(rx_bus_config_t* bus_config,
  */
 static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
-  onewire_read_rom_ctx_t* ctx  = (onewire_read_rom_ctx_t*)user_ctx;
-  uint8_t                 byte = 0;
-  uint8_t                 crc  = 0;
+  onewire_read_rom_ctx_t* ctx     = (onewire_read_rom_ctx_t*)user_ctx;
+  uint8_t                 byte    = 0;
+  uint32_t                crc_out = 0U;
 
   if (bus_config->type != k_bus_type_onewire || !bus_config->initialized) {
     ctx->result = k_rx_err_invalid_state;
@@ -1610,8 +1611,9 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
     ctx->rom[i] = byte;
   }
 
-  crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx);
-  if (crc != ctx->rom[k_onewire_rom_crc_idx]) {
+  crc_out = 0U;
+  (void)rx_crc8_maxim(ctx->rom, k_onewire_rom_crc_idx, &crc_out);
+  if ((uint8_t)crc_out != ctx->rom[k_onewire_rom_crc_idx]) {
     ctx->result = k_rx_err_crc_mismatch;
     return ctx->result;
   }

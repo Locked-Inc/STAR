@@ -1591,7 +1591,7 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
 {
   bool     presence   = false;
   rx_err_t err        = k_rx_ok;
-  uint8_t  crc_calc   = 0;
+  uint32_t crc_calc   = 0U;
   uint8_t  crc_device = 0;
 
   RX_CHECK_NULL_PTR(handle, s_tag, "handle is nullptr");
@@ -1629,10 +1629,11 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
   }
 
   /* Validate CRC */
-  crc_calc   = rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes);
+  crc_calc = 0U;
+  (void)rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes, &crc_calc);
   crc_device = scratchpad[k_ds18b20_scratch_crc];
 
-  if (crc_calc != crc_device) {
+  if ((uint8_t)crc_calc != crc_device) {
     rx_log_error(s_tag, "Scratchpad CRC mismatch");
     return k_rx_err_crc_mismatch;
   }

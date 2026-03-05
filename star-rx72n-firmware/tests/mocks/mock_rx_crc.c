@@ -12,6 +12,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 
+#include "rx_crc.h"
+
 /* =============================================================================
  * Constants
  * =============================================================================
@@ -32,8 +34,8 @@ typedef enum : uint8_t {
  * =============================================================================
  */
 
-static bool    s_override_enabled = false;
-static uint8_t s_mock_crc_value   = 0;
+static bool     s_override_enabled = false;
+static uint32_t s_mock_crc_value   = 0U;
 
 /* =============================================================================
  * Mock Control Functions
@@ -42,7 +44,7 @@ static uint8_t s_mock_crc_value   = 0;
 
 void mock_crc8_set_return_value(uint8_t crc)
 {
-  s_mock_crc_value = crc;
+  s_mock_crc_value = (uint32_t)crc;
 }
 
 void mock_crc8_set_override(bool enable)
@@ -55,23 +57,32 @@ void mock_crc8_set_override(bool enable)
  * =============================================================================
  */
 
-uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t length)
+rx_err_t rx_crc_compute(const rx_crc_config_t* config,
+                        const uint8_t*         data,
+                        uint32_t               len,
+                        uint32_t*              result_out)
 {
+  if (config == nullptr || data == nullptr || result_out == nullptr) {
+    return k_rx_err_null_ptr;
+  }
+
+  if (len == 0U) {
+    return k_rx_err_invalid_arg;
+  }
+
   if (s_override_enabled) {
-    return s_mock_crc_value;
+    *result_out = s_mock_crc_value;
+    return k_rx_ok;
   }
 
-  if (data == nullptr || length == 0) {
-    return 0;
-  }
-
+  /* Real CRC-8/Maxim computation (only polynomial used in this mock context) */
   uint8_t crc = 0;
 
-  for (uint32_t i = 0; i < length; ++i) {
+  for (uint32_t i = 0U; i < len; ++i) {
     crc ^= data[i];
 
     for (uint8_t j = 0; j < k_bits_per_byte; ++j) {
-      if ((crc & k_crc8_lsb_mask) != 0) {
+      if ((crc & k_crc8_lsb_mask) != 0U) {
         crc = (uint8_t)((crc >> k_shift_one_bit) ^ k_crc8_maxim_poly);
       } else {
         crc >>= k_shift_one_bit;
@@ -79,5 +90,24 @@ uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t length)
     }
   }
 
-  return crc;
+  *result_out = (uint32_t)crc;
+  return k_rx_ok;
+}
+
+rx_err_t rx_crc_init(void)
+{
+  return k_rx_ok;
+}
+
+rx_err_t rx_crc_deinit(void)
+{
+  return k_rx_ok;
+}
+
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
+{
+  (void)crc;
+  (void)data;
+  (void)len;
+  return 0U;
 }

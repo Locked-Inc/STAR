@@ -226,6 +226,7 @@
 
 /* Include mock hardware stubs */
 #include "mock_rx_onewire_hw.h"
+#include "rx72n_dmac_regs.h"
 #include "rx72n_system_regs.h"
 #include "rx72n_tpu_regs.h"
 

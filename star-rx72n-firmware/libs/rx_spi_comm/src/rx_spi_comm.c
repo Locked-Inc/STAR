@@ -569,7 +569,11 @@ static rx_err_t internal_verify_crc(const uint8_t* data, uint32_t offset, uint32
   }
 
   const uint32_t received_crc   = rx_frame_read_le32(&data[offset]);
-  const uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+  uint32_t       calculated_crc = 0U;
+  rx_err_t       crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
+  if (crc_err != k_rx_ok) {
+    return crc_err;
+  }
 
   if (received_crc != calculated_crc) {
     return k_rx_err_crc_mismatch;

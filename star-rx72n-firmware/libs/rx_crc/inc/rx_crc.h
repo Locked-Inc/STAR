@@ -196,7 +196,8 @@
  *
  *   // Compute CRC-32 over header + payload
  *   uint32_t crc_offset = 10 + len;
- *   uint32_t crc = rx_crc32_ieee(frame, crc_offset);
+ *   uint32_t crc = 0U;
+ *   (void)rx_crc32_ieee(frame, crc_offset, &crc);
  *
  *   // Append CRC (little-endian)
  *   frame[crc_offset + 0] = (crc >> 0) & 0xFF;
@@ -219,7 +220,8 @@
  *                           (frame[crc_offset + 3] << 24);
  *
  *   // Compute CRC over header + payload (exclude CRC itself)
- *   uint32_t calculated_crc = rx_crc32_ieee(frame, crc_offset);
+ *   uint32_t calculated_crc = 0U;
+ *   (void)rx_crc32_ieee(frame, crc_offset, &calculated_crc);
  *
  *   // Validate
  *   if (received_crc != calculated_crc) {
@@ -247,12 +249,13 @@
  *   //          Family (DS18B20)     CRC
  *
  *   // Compute CRC over first 7 bytes
- *   uint8_t calculated_crc = rx_crc8_maxim(rom, 7);
+ *   uint32_t crc_out = 0U;
+ *   (void)rx_crc8_maxim(rom, 7, &crc_out);
  *   uint8_t received_crc = rom[7];
  *
- *   if (calculated_crc != received_crc) {
+ *   if ((uint8_t)crc_out != received_crc) {
  *     rx_log_error("OneWire", "ROM CRC mismatch: rx=0x%02X calc=0x%02X",
- *                  received_crc, calculated_crc);
+ *                  received_crc, (uint8_t)crc_out);
  *     return false;
  *   }
  *
@@ -296,7 +299,8 @@
  * // memcpy(&all_data[0], buf1, 64);
  * // memcpy(&all_data[64], buf2, 128);
  * // memcpy(&all_data[192], buf3, 32);
- * // uint32_t crc = rx_crc32_ieee(all_data, 224);
+ * // uint32_t crc = 0U;
+ * // (void)rx_crc32_ieee(all_data, 224, &crc);
  * @endcode
  *
  * ## NASA Power of 10 Compliance
@@ -354,6 +358,88 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* =============================================================================
+ * CRC Polynomial, Bit Order, Backend, and Config Types
+ * =============================================================================
+ */
+
+/**
+ * @enum rx_crc_poly_t
+ * @brief CRC polynomial selection for rx_crc_compute()
+ *
+ * @details
+ * Selects the CRC generator polynomial. Values match the RX72N CRC peripheral
+ * GPS field (bits [2:0] of CRCCR) for CRC-16 through CRC-32C. CRC-8 is always
+ * computed in software because the hardware GPS=0x00 uses poly 0x07 (SMBus),
+ * not the Dallas/Maxim poly 0x31 required for OneWire devices.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rx_crc_poly_crc8      = 0x00U, /**< CRC-8/Maxim (poly 0x31 reflected) - SW only */
+  k_rx_crc_poly_crc16     = 0x01U, /**< CRC-16/IBM (poly 0x8005 reflected) */
+  k_rx_crc_poly_crc_ccitt = 0x02U, /**< CRC-CCITT/Kermit (poly 0x1021 reflected) */
+  k_rx_crc_poly_crc32     = 0x03U, /**< CRC-32/IEEE 802.3 (poly 0x04C11DB7 reflected) */
+  k_rx_crc_poly_crc32c    = 0x04U, /**< CRC-32C/Castagnoli (poly 0x1EDC6F41 reflected) */
+} rx_crc_poly_t;
+
+/**
+ * @enum rx_crc_bit_order_t
+ * @brief CRC bit order (reflection mode)
+ *
+ * @details
+ * LSB-first (reflected) is the standard for IEEE 802.3, Dallas/Maxim, and
+ * Kermit CRC variants. MSB-first is provided for completeness.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rx_crc_bit_order_lsb_first = 0U, /**< LSB-first (reflected) - standard */
+  k_rx_crc_bit_order_msb_first = 1U, /**< MSB-first (non-reflected) */
+} rx_crc_bit_order_t;
+
+/**
+ * @enum rx_crc_backend_t
+ * @brief CRC computation backend selection
+ *
+ * @details
+ * Selects the hardware or software backend at runtime. On host builds
+ * (non-RX72N), hw_cpu and hw_dma both fall back to software automatically.
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint8_t {
+  k_rx_crc_backend_software = 0U, /**< Pure software (portable, all platforms) */
+  k_rx_crc_backend_hw_cpu   = 1U, /**< HW CRC peripheral, CPU byte loop (RX72N) */
+  k_rx_crc_backend_hw_dma   = 2U, /**< HW CRC peripheral, DMA-driven (RX72N) */
+} rx_crc_backend_t;
+
+/**
+ * @struct rx_crc_dma_config_t
+ * @brief DMA-specific configuration for rx_crc_compute()
+ *
+ * @since Version 1.0.0
+ */
+typedef struct {
+  uint32_t timeout_cycles; /**< DMA polling timeout (0 = use k_dma_crc_timeout_cycles) */
+} rx_crc_dma_config_t;
+
+/**
+ * @struct rx_crc_config_t
+ * @brief Complete CRC computation configuration
+ *
+ * @details
+ * Pass to rx_crc_compute() to select polynomial, bit order, and backend.
+ *
+ * @since Version 1.0.0
+ */
+typedef struct {
+  rx_crc_poly_t       poly;      /**< CRC polynomial selection */
+  rx_crc_bit_order_t  bit_order; /**< Bit order (LSB-first or MSB-first) */
+  rx_crc_backend_t    backend;   /**< Computation backend */
+  rx_crc_dma_config_t dma;       /**< DMA config (used when backend == hw_dma) */
+} rx_crc_config_t;
 
 /**
  * @brief Initialize CRC backend (hardware peripheral if available)
@@ -419,7 +505,8 @@ extern "C" {
  *   }
  *
  *   // Now CRC functions can use hardware acceleration
- *   uint32_t crc = rx_crc32_ieee(data, len);  // Fast path
+ *   uint32_t crc = 0U;
+ *   (void)rx_crc32_ieee(data, len, &crc);  // Fast path
  * }
  * @endcode
  *
@@ -533,7 +620,8 @@ extern "C" {
  *   rx_crc_deinit();
  *
  *   // CRC still works (software fallback)
- *   uint32_t crc = rx_crc32_ieee(data, len);  // Slower, but functional
+ *   uint32_t crc = 0U;
+ *   (void)rx_crc32_ieee(data, len, &crc);  // Slower, but functional
  *
  *   // Enter low-power sleep
  *   rx_power_enter_sleep();
@@ -545,7 +633,8 @@ extern "C" {
  *   rx_crc_init();
  *
  *   // CRC now fast again (hardware)
- *   uint32_t crc = rx_crc32_ieee(data, len);  // Fast path
+ *   uint32_t crc = 0U;
+ *   (void)rx_crc32_ieee(data, len, &crc);  // Fast path
  * }
  * @endcode
  *
@@ -556,6 +645,39 @@ extern "C" {
  * @since Version 1.0.0
  */
 [[nodiscard]] rx_err_t rx_crc_deinit(void);
+
+/**
+ * @brief Compute CRC checksum over a buffer using the specified configuration
+ *
+ * @details
+ * Unified CRC computation function supporting all five polynomials and three
+ * backends (software, hw_cpu, hw_dma). On host builds, hw_cpu and hw_dma
+ * fall back to software automatically. CRC-8/Maxim always uses software
+ * because the hardware peripheral uses poly 0x07, not the required 0x31.
+ *
+ * @param[in]  config     CRC configuration (polynomial, bit order, backend)
+ * @param[in]  data       Input data buffer
+ * @param[in]  len        Number of bytes (1 - 65535)
+ * @param[out] result_out Computed CRC value
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok               Success
+ * @retval k_rx_err_null_ptr     config, data, or result_out is NULL
+ * @retval k_rx_err_invalid_arg  len == 0 or len > k_crc_len_max
+ * @retval k_rx_err_timeout      DMA transfer timed out (hw_dma only)
+ *
+ * @pre config must point to a valid rx_crc_config_t
+ * @pre data must point to at least len readable bytes
+ * @post On success, *result_out contains the CRC value
+ * @post On error, *result_out is unchanged
+ *
+ * @note Not thread-safe if hardware backend shares the CRC peripheral
+ * @since Version 1.0.0
+ */
+[[nodiscard]] rx_err_t rx_crc_compute(const rx_crc_config_t* config,
+                                      const uint8_t*         data,
+                                      uint32_t               len,
+                                      uint32_t*              result_out);
 
 /**
  * @brief Compute CRC-32/IEEE 802.3 checksum over buffer
@@ -596,25 +718,19 @@ extern "C" {
  * 3. **Apply final XOR** (0xFFFFFFFF)
  * 4. **Return** final CRC value
  *
- * @param[in] data Input buffer to checksum
- *   - **Valid range**: NULL or pointer to buffer of size len
- *   - **NULL handling**: If NULL, len must be 0 (returns 0xFFFFFFFF XOR 0xFFFFFFFF = 0)
- *   - **Alignment**: No alignment requirement (byte-addressable)
+ * @param[in]  data Input buffer to checksum (non-NULL, len >= 1)
+ * @param[in]  len  Number of bytes to include in CRC (1 - k_crc_len_max)
+ * @param[out] out  Computed CRC-32 value; valid when return is k_rx_ok
  *
- * @param[in] len Number of bytes to include in CRC
- *   - **Valid range**: 0 - 4294967295 (0 - 2^32-1)
- *   - **Typical**: 10-275 bytes (frame sizes)
- *   - **Zero handling**: len=0 returns init value XOR final XOR = 0
+ * @return rx_err_t Error code
+ * @retval k_rx_ok              Success, *out contains the CRC value
+ * @retval k_rx_err_null_ptr    data or out is NULL
+ * @retval k_rx_err_invalid_arg len == 0 or len > k_crc_len_max
  *
- * @return uint32_t Computed CRC-32 checksum
- *   - **Range**: 0x00000000 - 0xFFFFFFFF (all 32-bit values possible)
- *   - **Deterministic**: Same input always produces same output
- *   - **Zero for zero**: Empty buffer (len=0) returns 0
- *
- * @pre If data != nullptr, data must point to valid buffer of size len
- * @pre len must accurately reflect data buffer size (no bounds checking)
- * @post Return value is valid IEEE 802.3 CRC-32
- * @post No side effects, pure function (thread-safe)
+ * @pre data must point to at least len readable bytes
+ * @pre len must be in [1, k_crc_len_max]
+ * @post On k_rx_ok, *out contains the IEEE 802.3 CRC-32
+ * @post On error, *out is unchanged
  *
  * @note This function is thread-safe (stateless, read-only tables)
  * @note For incremental CRC over multiple buffers, use rx_crc32_update()
@@ -629,7 +745,8 @@ extern "C" {
  * @par Example - Basic Usage:
  * @code{.c}
  * uint8_t data[] = "Hello World";
- * uint32_t crc = rx_crc32_ieee(data, sizeof(data) - 1);  // Exclude null terminator
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee(data, sizeof(data) - 1, &crc);  // Exclude null terminator
  * printf("CRC-32: 0x%08X\n", crc);
  * // Output: CRC-32: 0x4A17B156
  * @endcode
@@ -639,7 +756,8 @@ extern "C" {
  * // Transmit side: Append CRC to frame
  * uint8_t tx_frame[279];
  * // ... populate header and payload ...
- * uint32_t crc = rx_crc32_ieee(tx_frame, 275);  // CRC over first 275 bytes
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee(tx_frame, 275, &crc);  // CRC over first 275 bytes
  *
  * // Append CRC (little-endian)
  * tx_frame[275] = (crc >> 0) & 0xFF;
@@ -656,7 +774,8 @@ extern "C" {
  *                         (rx_frame[277] << 16) |
  *                         (rx_frame[278] << 24);
  *
- * uint32_t calculated_crc = rx_crc32_ieee(rx_frame, 275);
+ * uint32_t calculated_crc = 0U;
+ * (void)rx_crc32_ieee(rx_frame, 275, &calculated_crc);
  *
  * if (received_crc == calculated_crc) {
  *   // Frame valid, process data
@@ -669,8 +788,9 @@ extern "C" {
  *
  * @par Example - Zero-Length Buffer:
  * @code{.c}
- * uint32_t crc = rx_crc32_ieee(nullptr, 0);
- * // Returns: 0x00000000 (init 0xFFFFFFFF XOR final 0xFFFFFFFF)
+ * uint32_t crc = 0U;
+ * rx_err_t err = rx_crc32_ieee(nullptr, 0, &crc);
+ * // Returns: k_rx_err_null_ptr (nullptr is invalid)
  * @endcode
  *
  * @par Example - Performance Comparison:
@@ -682,7 +802,8 @@ extern "C" {
  *
  * // Without hardware CRC initialization
  * uint32_t start = rx_time_get_us();
- * uint32_t crc_sw = rx_crc32_ieee(data, sizeof(data));  // Software
+ * uint32_t crc_sw = 0U;
+ * (void)rx_crc32_ieee(data, sizeof(data), &crc_sw);  // Software
  * uint32_t elapsed_sw = rx_time_get_us() - start;
  * rx_log_info("CRC", "Software: %u us", elapsed_sw);
  * // Output: Software: 1320 us
@@ -690,7 +811,8 @@ extern "C" {
  * // With hardware CRC initialization
  * rx_crc_init();
  * start = rx_time_get_us();
- * uint32_t crc_hw = rx_crc32_ieee(data, sizeof(data));  // Hardware
+ * uint32_t crc_hw = 0U;
+ * (void)rx_crc32_ieee(data, sizeof(data), &crc_hw);  // Hardware
  * uint32_t elapsed_hw = rx_time_get_us() - start;
  * rx_log_info("CRC", "Hardware: %u us (%.1fx faster)",
  *             elapsed_hw, (float)elapsed_sw / elapsed_hw);
@@ -707,7 +829,16 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
+static inline rx_err_t rx_crc32_ieee(const uint8_t* data, uint32_t len, uint32_t* out)
+{
+  static const rx_crc_config_t s_cfg = {
+    .poly      = k_rx_crc_poly_crc32,
+    .bit_order = k_rx_crc_bit_order_lsb_first,
+    .backend   = k_rx_crc_backend_software,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  return rx_crc_compute(&s_cfg, data, len, out);
+}
 
 /**
  * @brief Update CRC-32 with additional data (incremental computation)
@@ -741,14 +872,16 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * Computing CRC over concatenated data produces identical result:
  * ```
  * // Method 1: Incremental
- * uint32_t crc = rx_crc32_ieee(buf1, len1);
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee(buf1, len1, &crc);
  * crc = rx_crc32_update(crc, buf2, len2);
  *
  * // Method 2: Concatenated (equivalent)
  * uint8_t combined[len1 + len2];
  * memcpy(&combined[0], buf1, len1);
  * memcpy(&combined[len1], buf2, len2);
- * uint32_t crc = rx_crc32_ieee(combined, len1 + len2);
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee(combined, len1 + len2, &crc);
  *
  * // Both methods produce identical CRC
  * ```
@@ -796,7 +929,8 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * uint8_t payload[64] = { ... };
  *
  * // Start with header
- * uint32_t crc = rx_crc32_ieee(header, sizeof(header));
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee(header, sizeof(header), &crc);
  *
  * // Update with payload
  * crc = rx_crc32_update(crc, payload, sizeof(payload));
@@ -808,8 +942,7 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * @par Example - Streaming Data:
  * @code{.c}
  * // Compute CRC as data arrives in chunks
- * uint32_t crc = rx_crc32_ieee(nullptr, 0);  // Start with init value (returns 0)
- * crc ^= 0xFFFFFFFF;  // Convert to "in-progress" CRC
+ * uint32_t crc = 0xFFFFFFFF;  // CRC-32 init value (before final XOR)
  *
  * // Process chunk 1
  * uint8_t chunk1[32];
@@ -848,7 +981,8 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * // ... populate header and payload ...
  *
  * // Compute CRC over header + payload
- * uint32_t crc = rx_crc32_ieee((uint8_t*)&header, sizeof(header));
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee((uint8_t*)&header, sizeof(header), &crc);
  * crc = rx_crc32_update(crc, payload, header.len);
  *
  * // Append CRC to frame
@@ -869,7 +1003,8 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * uint8_t buf3[32];   // 32 bytes
  *
  * // Method 1: Incremental (no extra memory)
- * uint32_t crc = rx_crc32_ieee(buf1, sizeof(buf1));
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee(buf1, sizeof(buf1), &crc);
  * crc = rx_crc32_update(crc, buf2, sizeof(buf2));
  * crc = rx_crc32_update(crc, buf3, sizeof(buf3));
  *
@@ -878,19 +1013,21 @@ uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
  * // memcpy(&combined[0], buf1, 64);
  * // memcpy(&combined[64], buf2, 128);
  * // memcpy(&combined[192], buf3, 32);
- * // uint32_t crc = rx_crc32_ieee(combined, 224);
+ * // uint32_t crc = 0U;
+ * // (void)rx_crc32_ieee(combined, 224, &crc);
  *
  * // Both methods produce identical CRC, but Method 1 saves 224 bytes
  * @endcode
  *
  * @par Example - WRONG Usage (Common Mistake):
  * @code{.c}
- * // [FAIL] WRONG: Don't start incremental CRC with rx_crc32_ieee(nullptr, 0)
- * uint32_t crc = rx_crc32_ieee(nullptr, 0);  // Returns 0 (init XOR final)
+ * // [FAIL] WRONG: Don't use 0 as starting CRC for incremental mode
+ * uint32_t crc = 0U;  // Wrong init value for incremental CRC
  * crc = rx_crc32_update(crc, buf1, len1);  // [FAIL] Incorrect CRC!
  *
  * // [PASS] CORRECT: Start with rx_crc32_ieee() on first buffer
- * uint32_t crc = rx_crc32_ieee(buf1, len1);
+ * uint32_t crc = 0U;
+ * (void)rx_crc32_ieee(buf1, len1, &crc);
  * crc = rx_crc32_update(crc, buf2, len2);  // [PASS] Correct
  *
  * // OR: Manually initialize if you need empty start
@@ -960,26 +1097,19 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * - Detects all burst errors <= 8 bits
  * - Detects 99.6% of all other errors (256 possible values)
  *
- * @param[in] data Input buffer to checksum
- *   - **Valid range**: NULL or pointer to buffer of size len
- *   - **NULL handling**: If NULL, len must be 0 (returns 0x00)
- *   - **Alignment**: No alignment requirement (byte-addressable)
- *   - **Typical size**: 7-8 bytes (OneWire ROM code)
+ * @param[in]  data Input buffer to checksum (non-NULL, len >= 1)
+ * @param[in]  len  Number of bytes to include in CRC (1 - k_crc_len_max)
+ * @param[out] out  Computed CRC-8 value (8 significant bits); valid on k_rx_ok
  *
- * @param[in] len Number of bytes to include in CRC
- *   - **Valid range**: 0 - 4294967295 (0 - 2^32-1)
- *   - **Typical**: 7 bytes (ROM code without CRC) or 8 bytes (ROM with CRC)
- *   - **Zero handling**: len=0 returns 0x00
+ * @return rx_err_t Error code
+ * @retval k_rx_ok              Success, *out contains the CRC-8 value
+ * @retval k_rx_err_null_ptr    data or out is NULL
+ * @retval k_rx_err_invalid_arg len == 0 or len > k_crc_len_max
  *
- * @return uint8_t Computed CRC-8 checksum
- *   - **Range**: 0x00 - 0xFF (all 8-bit values possible)
- *   - **Deterministic**: Same input always produces same output
- *   - **Zero for zero**: Empty buffer (len=0) returns 0x00
- *
- * @pre If data != nullptr, data must point to valid buffer of size len
- * @pre len must accurately reflect data buffer size (no bounds checking)
- * @post Return value is valid CRC-8/Maxim checksum
- * @post No side effects, pure function (thread-safe)
+ * @pre data must point to at least len readable bytes
+ * @pre len must be in [1, k_crc_len_max]
+ * @post On k_rx_ok, *out contains the CRC-8/Maxim value (0x00-0xFF)
+ * @post On error, *out is unchanged
  *
  * @note This function is thread-safe (stateless, read-only tables)
  * @note Software implementation only (no hardware acceleration on RX72N)
@@ -999,8 +1129,10 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * //                 Family (DS18B20)                          CRC
  *
  * // Compute CRC over first 7 bytes
- * uint8_t calculated_crc = rx_crc8_maxim(rom, 7);
- * uint8_t received_crc = rom[7];
+ * uint32_t crc_out = 0U;
+ * (void)rx_crc8_maxim(rom, 7, &crc_out);
+ * uint8_t calculated_crc = (uint8_t)crc_out;
+ * uint8_t received_crc   = rom[7];
  *
  * if (calculated_crc == received_crc) {
  *   printf("ROM valid: Family=0x%02X CRC=0x%02X\n", rom[0], rom[7]);
@@ -1018,8 +1150,10 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * rx_onewire_read_scratchpad(scratchpad, sizeof(scratchpad));
  *
  * // Compute CRC over first 8 bytes
- * uint8_t calculated_crc = rx_crc8_maxim(scratchpad, 8);
- * uint8_t received_crc = scratchpad[8];
+ * uint32_t crc_out = 0U;
+ * (void)rx_crc8_maxim(scratchpad, 8, &crc_out);
+ * uint8_t calculated_crc = (uint8_t)crc_out;
+ * uint8_t received_crc   = scratchpad[8];
  *
  * if (calculated_crc == received_crc) {
  *   // Extract temperature (bytes 0-1, little-endian)
@@ -1041,7 +1175,9 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  *   buffer[1] = param;
  *
  *   // Compute CRC over command + parameter
- *   buffer[2] = rx_crc8_maxim(buffer, 2);
+ *   uint32_t crc_out = 0U;
+ *   (void)rx_crc8_maxim(buffer, 2, &crc_out);
+ *   buffer[2] = (uint8_t)crc_out;
  *
  *   // Transmit with CRC
  *   rx_onewire_write(buffer, sizeof(buffer));
@@ -1062,8 +1198,9 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * for (uint8_t i = 0; i < 4; i++) {
  *   if (rx_onewire_search(&devices[i].rom[0])) {
  *     // Validate ROM CRC
- *     uint8_t calc_crc = rx_crc8_maxim(devices[i].rom, 7);
- *     devices[i].valid = (calc_crc == devices[i].rom[7]);
+ *     uint32_t crc_out = 0U;
+ *     (void)rx_crc8_maxim(devices[i].rom, 7, &crc_out);
+ *     devices[i].valid = ((uint8_t)crc_out == devices[i].rom[7]);
  *
  *     if (devices[i].valid) {
  *       rx_log_info("OneWire", "Device %u: Family=0x%02X Serial=%02X%02X%02X%02X%02X%02X",
@@ -1077,10 +1214,12 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * }
  * @endcode
  *
- * @par Example - Zero-Length Buffer:
+ * @par Example - Error Handling:
  * @code{.c}
- * uint8_t crc = rx_crc8_maxim(nullptr, 0);
- * // Returns: 0x00 (init value with no processing)
+ * uint32_t crc_out = 0U;
+ * rx_err_t err = rx_crc8_maxim(nullptr, 0, &crc_out);
+ * // Returns: k_rx_err_null_ptr (data is NULL)
+ * (void)err;
  * @endcode
  *
  * @par Example - Manual CRC Verification (Algorithm Understanding):
@@ -1089,12 +1228,14 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * uint8_t data[] = { 0x28, 0xFF, 0x64, 0x1F, 0x21, 0x16, 0x04 };
  *
  * // Method 1: Use library function
- * uint8_t crc_lib = rx_crc8_maxim(data, sizeof(data));
+ * uint32_t crc_lib_out = 0U;
+ * (void)rx_crc8_maxim(data, sizeof(data), &crc_lib_out);
+ * uint8_t crc_lib = (uint8_t)crc_lib_out;
  * printf("Library CRC: 0x%02X\n", crc_lib);
  * // Output: Library CRC: 0xB3
  *
  * // Method 2: Manual computation (for understanding)
- * extern const uint8_t crc8_maxim_table[256];  // From rx_crc8.c
+ * extern const uint8_t crc8_maxim_table[256];  // From rx_crc_sw.c
  * uint8_t crc_manual = 0x00;  // Initial value
  * for (uint8_t i = 0; i < sizeof(data); i++) {
  *   crc_manual = crc8_maxim_table[crc_manual ^ data[i]];
@@ -1112,7 +1253,16 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  *
  * @since Version 1.0.0
  */
-uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t len);
+static inline rx_err_t rx_crc8_maxim(const uint8_t* data, uint32_t len, uint32_t* out)
+{
+  static const rx_crc_config_t s_cfg = {
+    .poly      = k_rx_crc_poly_crc8,
+    .bit_order = k_rx_crc_bit_order_lsb_first,
+    .backend   = k_rx_crc_backend_software,
+    .dma       = {.timeout_cycles = 0U},
+  };
+  return rx_crc_compute(&s_cfg, data, len, out);
+}
 
 #ifdef __cplusplus
 }

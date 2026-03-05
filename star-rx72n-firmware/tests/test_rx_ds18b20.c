@@ -1281,7 +1281,9 @@ static void internal_create_valid_scratchpad(uint8_t    scratchpad[k_ds18b20_scr
   scratchpad[k_ds18b20_scratch_reserved1] = k_ds18b20_reserved1_default;
   scratchpad[k_ds18b20_scratch_reserved2] = k_ds18b20_reserved2_default;
   scratchpad[k_ds18b20_scratch_reserved3] = k_ds18b20_reserved3_default;
-  scratchpad[k_ds18b20_scratch_crc]       = rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes);
+  uint32_t s_crc_out                      = 0U;
+  (void)rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes, &s_crc_out);
+  scratchpad[k_ds18b20_scratch_crc] = (uint8_t)s_crc_out;
 }
 
 /**
@@ -1356,8 +1358,9 @@ static void internal_reset_mock_state(void)
   s_mock_state.rom[k_rom_idx_serial_3] = k_mock_serial_byte_3;
   s_mock_state.rom[k_rom_idx_serial_4] = k_mock_serial_byte_4;
   s_mock_state.rom[k_rom_idx_serial_5] = k_mock_serial_byte_5;
-  s_mock_state.rom[k_onewire_rom_crc_index] =
-    rx_crc8_maxim(s_mock_state.rom, k_onewire_rom_crc_index);
+  uint32_t rom_crc_out                 = 0U;
+  (void)rx_crc8_maxim(s_mock_state.rom, k_onewire_rom_crc_index, &rom_crc_out);
+  s_mock_state.rom[k_onewire_rom_crc_index] = (uint8_t)rom_crc_out;
 }
 
 /**

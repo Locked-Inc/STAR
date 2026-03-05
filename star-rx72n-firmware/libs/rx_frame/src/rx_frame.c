@@ -422,7 +422,11 @@ internal_verify_crc(const uint8_t* data, uint32_t data_len, uint32_t offset, uin
   if (err != k_rx_ok) {
     return err;
   }
-  uint32_t calculated_crc = rx_crc32_ieee(data, offset);
+  uint32_t calculated_crc = 0U;
+  rx_err_t crc_err        = rx_crc32_ieee(data, offset, &calculated_crc);
+  if (crc_err != k_rx_ok) {
+    return crc_err;
+  }
 
   if (received_crc != calculated_crc) {
     return k_rx_err_crc_mismatch;
@@ -631,10 +635,14 @@ rx_err_t rx_frame_encode(const rx_frame_encoder_t* enc,
   }
 
   /* Calculate CRC-32 over SYNC + Header + Payload (IEEE 802.3 polynomial) */
-  uint32_t crc = rx_crc32_ieee(output, offset);
+  uint32_t crc = 0U;
+  rx_err_t err = rx_crc32_ieee(output, offset, &crc);
+  if (err != k_rx_ok) {
+    return err;
+  }
 
   /* Write CRC-32 (little-endian to match IEEE 802.3 LSB-first order) */
-  rx_err_t err = internal_write_le32(&output[offset], frame_size - offset, crc);
+  err = internal_write_le32(&output[offset], frame_size - offset, crc);
   if (err != k_rx_ok) {
     return err;
   }

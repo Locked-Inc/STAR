@@ -41,20 +41,7 @@ extern "C" {
 #endif
 
 /**
- * @brief CRC-8 Maxim polynomial implementation
- *
- * Used by Dallas/Maxim 1-Wire devices for ROM code and data validation.
- * Polynomial: x^8 + x^5 + x^4 + 1 (0x31, reversed 0x8C)
- *
- * @param[in] data Pointer to data buffer
- * @param[in] length Number of bytes to process
- *
- * @return Computed CRC-8 value
- */
-uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t length);
-
-/**
- * @brief Set fixed CRC-8 value to return (for testing)
+ * @brief Set fixed CRC value to return when override is active
  *
  * @param[in] crc Fixed CRC value to return
  */
@@ -62,6 +49,9 @@ void mock_crc8_set_return_value(uint8_t crc);
 
 /**
  * @brief Enable/disable CRC calculation override
+ *
+ * When enabled, rx_crc_compute() returns the value set by
+ * mock_crc8_set_return_value() instead of computing a real CRC.
  *
  * @param[in] enable True to use mock value, false for real calculation
  */
