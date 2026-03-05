@@ -94,7 +94,7 @@ check_naming_conventions() {
 
     # Find all C++ files
     local cpp_files
-    cpp_files=$(find "$TARGET_PATH" -name "*.cpp" -o -name "*.hpp" 2>/dev/null || true)
+    cpp_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o \( -name "*.cpp" -o -name "*.hpp" \) -print 2>/dev/null || true)
 
     if [ -z "$cpp_files" ]; then
         print_warning "$category: No C++ files found (manual review needed)"
@@ -177,7 +177,7 @@ check_file_organization() {
     # Check 2.1: Headers use .hpp extension
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
     local dot_h_files
-    dot_h_files=$(find "$TARGET_PATH" -name "*.h" 2>/dev/null || true)
+    dot_h_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o -name "*.h" -print 2>/dev/null || true)
     if [ -z "$dot_h_files" ]; then
         PASSED_CHECKS=$((PASSED_CHECKS + 1))
         category_passed=$((category_passed + 1))
@@ -190,7 +190,7 @@ check_file_organization() {
     # Check 2.2: Include guards follow pattern
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
     local hpp_files
-    hpp_files=$(find "$TARGET_PATH" -name "*.hpp" 2>/dev/null || true)
+    hpp_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o -name "*.hpp" -print 2>/dev/null || true)
     local bad_guards=0
     if [ -n "$hpp_files" ]; then
         while IFS= read -r file; do
@@ -204,7 +204,9 @@ check_file_organization() {
               | tr '[:lower:]' '[:upper:]' \
               | tr '-' '_')
             
-            if ! grep -q "#ifndef $expected_guard" "$file" 2>/dev/null; then
+            if grep -q "#pragma once" "$file" 2>/dev/null; then
+                : # pragma once is the STAR-mandated header guard style (CLAUDE.md)
+            elif ! grep -q "#ifndef $expected_guard" "$file" 2>/dev/null; then
                 bad_guards=$((bad_guards + 1))
                 add_issue "  - Incorrect include guard: $file (expected: $expected_guard)"
             fi
@@ -233,15 +235,19 @@ check_formatting() {
 
     print_status "Checking $category..."
 
-    # Check 3.1: clang-format check
-    TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
-    if ./scripts/ros2/format-ros2.sh --check > /dev/null 2>&1; then
-        PASSED_CHECKS=$((PASSED_CHECKS + 1))
-        print_success "$category (clang-format passes)"
+    # Check 3.1: clang-format check (requires ament_uncrustify from ROS2 environment)
+    if ! command -v ament_uncrustify &> /dev/null; then
+        print_warning "$category (skipped: ament_uncrustify not available)"
     else
-        FAILED_CHECKS=$((FAILED_CHECKS + 1))
-        add_issue "  - clang-format check failed (run ./scripts/ros2/format-ros2.sh)"
-        print_failure "$category (clang-format failed)"
+        TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
+        if ./scripts/ros2/format-ros2.sh --check > /dev/null 2>&1; then
+            PASSED_CHECKS=$((PASSED_CHECKS + 1))
+            print_success "$category (clang-format passes)"
+        else
+            FAILED_CHECKS=$((FAILED_CHECKS + 1))
+            add_issue "  - clang-format check failed (run ./scripts/ros2/format-ros2.sh)"
+            print_failure "$category (clang-format failed)"
+        fi
     fi
 
     # Line length, indentation, braces - covered by clang-format
@@ -255,7 +261,7 @@ check_ros2_patterns() {
     print_status "Checking $category..."
 
     local cpp_files
-    cpp_files=$(find "$TARGET_PATH" -name "*.cpp" -o -name "*.hpp" 2>/dev/null || true)
+    cpp_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o \( -name "*.cpp" -o -name "*.hpp" \) -print 2>/dev/null || true)
 
     if [ -z "$cpp_files" ]; then
         print_warning "$category: No C++ files found (manual review needed)"
@@ -304,7 +310,7 @@ check_error_handling() {
     print_status "Checking $category..."
 
     local cpp_files
-    cpp_files=$(find "$TARGET_PATH" -name "*.cpp" 2>/dev/null || true)
+    cpp_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o -name "*.cpp" -print 2>/dev/null || true)
 
     if [ -z "$cpp_files" ]; then
         print_warning "$category: No C++ files found (manual review needed)"
@@ -354,7 +360,7 @@ check_documentation() {
     print_status "Checking $category..."
 
     local hpp_files
-    hpp_files=$(find "$TARGET_PATH" -name "*.hpp" 2>/dev/null || true)
+    hpp_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o -name "*.hpp" -print 2>/dev/null || true)
 
     if [ -z "$hpp_files" ]; then
         print_warning "$category: No header files found (manual review needed)"
@@ -402,7 +408,7 @@ check_safety_practices() {
     print_status "Checking $category..."
 
     local cpp_files
-    cpp_files=$(find "$TARGET_PATH" -name "*.cpp" 2>/dev/null || true)
+    cpp_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o -name "*.cpp" -print 2>/dev/null || true)
 
     if [ -z "$cpp_files" ]; then
         print_warning "$category: No C++ files found (manual review needed)"
@@ -438,7 +444,7 @@ check_testing() {
     # Check 8.1: Test files exist
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
     local test_files
-    test_files=$(find "$TARGET_PATH" -name "*_test.cpp" -o -name "test_*.cpp" 2>/dev/null || true)
+    test_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o \( -name "*_test.cpp" -o -name "test_*.cpp" \) -print 2>/dev/null || true)
     if [ -n "$test_files" ]; then
         PASSED_CHECKS=$((PASSED_CHECKS + 1))
         category_passed=$((category_passed + 1))
@@ -460,7 +466,7 @@ check_star_specific() {
     print_status "Checking $category..."
 
     local cpp_files
-    cpp_files=$(find "$TARGET_PATH" -name "*.cpp" -o -name "*.hpp" 2>/dev/null || true)
+    cpp_files=$(find "$TARGET_PATH" -path "*/sllidar_ros2/*" -prune -o \( -name "*.cpp" -o -name "*.hpp" \) -print 2>/dev/null || true)
 
     if [ -z "$cpp_files" ]; then
         print_warning "$category: No C++ files found (manual review needed)"
@@ -471,7 +477,7 @@ check_star_specific() {
     # Check 9.1: No malloc/new in critical paths (check for new keyword)
     TOTAL_CHECKS=$((TOTAL_CHECKS + 1))
     local dynamic_alloc
-    dynamic_alloc=$(echo "$cpp_files" | xargs grep -Hn "new " 2>/dev/null | grep -v "//" || true)
+    dynamic_alloc=$(echo "$cpp_files" | xargs grep -Hn "new " 2>/dev/null | grep -v "//" | grep -vE "^[^:]+:[0-9]+: *\*" || true)
     if [ -z "$dynamic_alloc" ]; then
         PASSED_CHECKS=$((PASSED_CHECKS + 1))
         category_passed=$((category_passed + 1))

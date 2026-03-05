@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_check.h */
-
 /**
  * @file mock_rx_check.h
  * @brief Mock error checking macros for host-side unit testing
@@ -21,9 +19,10 @@
  * @par NASA Power of 10: [OK] Inline functions only
  * @par SOLID: S - Single responsibility (error checking only)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/uart.c */
-
 /**
  * @file uart.c
  * @brief Multi-Channel UART Driver for RX72N SCI Peripherals
@@ -196,9 +194,10 @@
  * @see rx_mpc.h Pin mux configuration API
  * @see rx_log.h Higher-level logging that uses this driver
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

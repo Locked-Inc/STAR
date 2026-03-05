@@ -1,5 +1,3 @@
-/* lib/rx_usb/inc/rx_usb_private.h */
-
 /**
  * @file rx_usb_private.h
  * @brief Private types and declarations for USB driver internal testing
@@ -108,9 +106,10 @@
  * @see rx_usb.c Implementation with internal definitions
  * @see test_rx_usb.c Unit tests that use this header
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  *
  * @internal

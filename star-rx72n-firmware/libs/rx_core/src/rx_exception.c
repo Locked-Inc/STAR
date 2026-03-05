@@ -17,7 +17,8 @@
  * RX72N Group User's Manual: Hardware, Rev.1.20, Chapter 14
  *
  * @since Version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_exception.h"

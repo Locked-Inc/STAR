@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_regs.h */
-
 /**
  * @file rx72n_regs.h
  * @brief RX72N Hardware Register Definitions - Main Aggregator Header
@@ -240,9 +238,10 @@
  *   +--> hardware.h (HAL API implementation)
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see hardware.h for type-safe HAL API (recommended for application code)
  * @see Renesas RX72N Group User's Manual: Hardware (Rev.1.00)

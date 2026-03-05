@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_clock_power_init.h */
-
 /**
  * @file mock_rx_clock_power_init.h
  * @brief Mock clock and power initialization for system boot testing
@@ -18,9 +16,10 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: S - Single responsibility
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 /**
  * @file rx72n_rtc_regs.h
  * @brief RX72N Real-Time Clock (RTC) Register Definitions
@@ -63,9 +62,10 @@
  * @see rx72n_system_regs.h SOSCCR register for sub-clock oscillator control
  * @see rx_clock_power_init.c Clock initialization implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

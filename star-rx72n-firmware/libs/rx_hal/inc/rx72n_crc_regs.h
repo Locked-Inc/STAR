@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_crc_regs.h */
-
 /**
  * @file rx72n_crc_regs.h
  * @brief RX72N CRC Calculator Register Definitions
@@ -108,9 +106,10 @@
  * @see rx72n_regs.h Main register include file
  * @see docs/sections/01_nanopb_protocol.tex Protocol specification
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

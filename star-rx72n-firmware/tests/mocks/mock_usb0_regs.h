@@ -12,7 +12,8 @@
  * - Use helper functions to set up register state for tests
  *
  * @date 2025-12-01
- * @copyright Copyright (c) 2025 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

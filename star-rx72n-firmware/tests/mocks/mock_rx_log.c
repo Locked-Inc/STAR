@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_log.c */
-
 /**
  * @file mock_rx_log.c
  * @brief Mock RX Log and UART Implementation for Unit Testing
@@ -8,7 +6,8 @@
  * for host-side testing.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdint.h>

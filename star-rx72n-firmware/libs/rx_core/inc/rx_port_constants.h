@@ -1,5 +1,3 @@
-/* lib/rx_core/inc/rx_port_constants.h */
-
 /**
  * @file rx_port_constants.h
  * @brief Centralized RX72N Port Number Definitions
@@ -164,9 +162,10 @@
  * @see rx_check.h Validation macros used in assertions
  * @see docs/sections/03_hardware_pinout.tex Complete pin assignment table
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

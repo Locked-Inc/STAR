@@ -1,5 +1,3 @@
-/* tests/test_rx_encoder_tpu.c */
-
 /**
  * @file test_rx_encoder_tpu.c
  * @brief Unit Tests for TPU Quadrature Encoder Driver
@@ -16,9 +14,10 @@
  * - Count reset and set
  * - Error handling (null pointers, invalid channels, uninit)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

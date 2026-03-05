@@ -1,5 +1,3 @@
-/* tests/mocks/mock_uart_hw.h */
-
 /**
  * @file mock_uart_hw.h
  * @brief Mock UART hardware layer for serial communication testing
@@ -32,7 +30,8 @@
  * @par NASA Power of 10: [OK] Static FIFO buffers
  * @par SOLID: D - UART bus depends on hardware interface
  *
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

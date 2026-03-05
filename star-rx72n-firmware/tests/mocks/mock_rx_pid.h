@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_pid.h */
-
 /**
  * @file mock_rx_pid.h
  * @brief Mock PID controller for motor control algorithm testing
@@ -22,9 +20,10 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Motor control depends on PID interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

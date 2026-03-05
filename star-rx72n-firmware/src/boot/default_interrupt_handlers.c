@@ -12,7 +12,8 @@
  * @see vecttbl.c Vector table referencing these handlers
  * @see r_bsp.h Declarations of these handlers (weak symbols)
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,5 +1,3 @@
-/* lib/rx_crc/inc/rx_crc_internal.h */
-
 /**
  * @file rx_crc_internal.h
  * @brief Internal CRC-32 Abstraction Layer - Hardware/Software Implementation Selection
@@ -154,9 +152,10 @@
  * @see rx_crc32_sw.c Software CRC implementation (portable)
  * @see rx_crc32.c CRC dispatcher (calls internal API)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

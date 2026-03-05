@@ -1,5 +1,3 @@
-/* lib/rx_hcsr04/src/rx_hcsr04_hal_hw.c */
-
 /**
  * @file rx_hcsr04_hal_hw.c
  * @brief HC-SR04 Hardware Abstraction Layer Implementation for Renesas RX72N
@@ -424,7 +422,8 @@
  * @see rx72n_cmt_regs.h CMT2 register definitions
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdbool.h>

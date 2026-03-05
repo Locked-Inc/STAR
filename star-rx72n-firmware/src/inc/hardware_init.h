@@ -7,7 +7,10 @@
  * application peripherals after system clock setup.
  *
  * @see hardware_init.c Implementation
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+*/
 
 #pragma once
 

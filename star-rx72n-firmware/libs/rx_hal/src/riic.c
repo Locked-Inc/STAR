@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/riic.c */
-
 /**
  * @file riic.c
  * @brief RIIC (I2C) Driver Implementation for RX72N
@@ -204,7 +202,8 @@
  * RX72N Group User's Manual: Hardware, Chapter 42 (I2C-bus Interface)
  *
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

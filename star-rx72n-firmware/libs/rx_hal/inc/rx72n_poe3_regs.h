@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 /**
  * @file rx72n_poe3_regs.h
  * @brief RX72N Port Output Enable 3 (POE3) Register Definitions
@@ -65,9 +64,10 @@
  * - Chapter 25: Port Output Enable 3 (POE3a), pages 1199-1240
  * - Section 25.2: Register Descriptions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

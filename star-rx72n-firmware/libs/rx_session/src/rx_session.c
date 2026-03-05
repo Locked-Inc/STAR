@@ -34,10 +34,11 @@
  * - S: Single responsibility (sequence tracking only)
  * - D: Depends on rx_err_t abstraction, not concrete transport details
  *
- * @author STAR Project Team
+ * @author Locked, Inc. Team
  * @date February 2026
  * @version 1.0.0
- * @copyright STAR Project - Texas A&M University
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_session.h  Public API
  * @see star-gateway/internal/manager/session.go  Go reference implementation

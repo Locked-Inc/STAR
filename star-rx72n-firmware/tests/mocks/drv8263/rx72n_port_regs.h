@@ -14,10 +14,11 @@
  * Port accessor functions (port0() through portj()) return pointers into a
  * global RAM array instead of hardware memory-mapped addresses.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @version 1.0.0
- * @copyright STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see mock_drv8263_port.h Test helper API for manipulating mock ports
  *

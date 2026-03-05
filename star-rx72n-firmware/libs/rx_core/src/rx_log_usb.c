@@ -35,7 +35,10 @@
  *
  * @since Version 1.0.0
  * @date 2026-02-05
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+*/
 
 #include "rx_log.h"
 

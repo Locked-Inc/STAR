@@ -1,5 +1,3 @@
-/* src/rx_stack_monitor.c */
-
 /**
  * @file rx_stack_monitor.c
  * @brief ThreadX Stack Overflow Detection and High-Water Mark Monitoring
@@ -59,8 +57,9 @@
  * - RTOS: Azure RTOS ThreadX 6.x; TX_ENABLE_STACK_CHECKING must be defined in tx_user.h
  *
  * @since Version 1.0.0
- * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @author Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_stack_monitor.h"

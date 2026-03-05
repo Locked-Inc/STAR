@@ -1,5 +1,3 @@
-/* lib/rx_usb/src/rx_usb_internal.h */
-
 /**
  * @file rx_usb_internal.h
  * @brief Internal shared definitions for USB CDC driver implementation
@@ -8,7 +6,8 @@
  * shared between rx_usb.c and rx_usb_cdc.c. Not for public use.
  *
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

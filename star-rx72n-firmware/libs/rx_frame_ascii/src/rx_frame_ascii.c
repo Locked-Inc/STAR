@@ -1,5 +1,3 @@
-/* lib/rx_frame_ascii/src/rx_frame_ascii.c */
-
 /**
  * @file rx_frame_ascii.c
  * @brief Frame ASCII Formatter Implementation
@@ -85,9 +83,10 @@
  *
  * @see rx_frame_ascii.h Public API documentation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-26
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

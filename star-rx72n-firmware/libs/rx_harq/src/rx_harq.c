@@ -1,5 +1,3 @@
-/* lib/rx_harq/src/rx_harq.c */
-
 /**
  * @file rx_harq.c
  * @brief Hybrid Automatic Repeat Request (HARQ) Protocol Implementation
@@ -92,9 +90,10 @@
  * - **Rule 4**: [OK] Functions <= 60 lines
  * - **Rule 5**: [OK] Extensive validation checks
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  * @version 1.0.0

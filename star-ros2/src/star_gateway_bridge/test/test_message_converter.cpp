@@ -1,5 +1,9 @@
-// Copyright (c) 2026 STAR Project
-// Licensed under MIT
+/**
+ * @file test_message_converter.cpp
+ * @brief Unit tests for the MessageConverter functions between ROS2 and STAR protobuf messages.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_gateway_bridge/message_converter.hpp"
 

@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/rx_gptw.c */
-
 /**
  * @file rx_gptw.c
  * @brief GPTW PWM Driver Implementation for Motor Control
@@ -104,9 +102,10 @@
  * @see RX72N Hardware Manual Chapter 26 - General PWM Timer (GPTW)
  * @see docs/sections/03_hardware_pinout.tex Pin assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

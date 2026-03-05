@@ -1,12 +1,11 @@
-/* tests/mocks/mock_rx_ds18b20.c */
-
 /**
  * @file mock_rx_ds18b20.c
  * @brief Mock DS18B20 Temperature Sensor Implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rx_ds18b20.h"

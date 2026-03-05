@@ -1,5 +1,3 @@
-/* lib/rx_encoder/inc/rx_encoder_tpu.h */
-
 /**
  * @file rx_encoder_tpu.h
  * @brief TPU Quadrature Encoder Driver for RX72N (Hardware Phase Counting Mode)
@@ -75,9 +73,10 @@
  * @see rx_tpu.h TPU HAL driver
  * @see rx72n_tpu_regs.h TPU register definitions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

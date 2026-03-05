@@ -2,11 +2,12 @@
  * @file test_serialization.c
  * @brief nanopb C Protobuf Serialization Tests
  *
+ * @details
  * Verifies that generated nanopb code serializes/deserializes correctly.
  * Following Boston Dynamics style guide conventions.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "unity.h"

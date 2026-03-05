@@ -1,5 +1,3 @@
-/* lib/rx_bus/inc/rx_bus_onewire.h */
-
 /**
  * @file rx_bus_onewire.h
  * @brief OneWire (1-Wire) Bus Abstraction for RX72N
@@ -169,9 +167,10 @@
  * @see rx_crc8.h CRC-8 for ROM validation
  * @see docs/sections/03_hardware_pinout.tex Pin assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-02
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

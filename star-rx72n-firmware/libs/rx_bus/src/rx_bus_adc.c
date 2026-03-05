@@ -1,5 +1,3 @@
-/* lib/rx_bus/src/rx_bus_adc.c */
-
 /**
  * @file rx_bus_adc.c
  * @brief ADC (Analog-to-Digital Converter) Bus Abstraction Implementation for RX72N
@@ -173,10 +171,11 @@
  * @see rx_bus_manager.h Bus manager core implementation
  * @see rx_adc.h Low-level S12ADFa register access
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-30
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_bus_adc.h"

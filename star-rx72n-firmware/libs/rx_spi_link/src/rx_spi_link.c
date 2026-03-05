@@ -76,9 +76,10 @@
  * @see rx_spi_link.h  Public API
  * @see star-gateway/internal/link/spi.go  Go reference implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-14
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  */

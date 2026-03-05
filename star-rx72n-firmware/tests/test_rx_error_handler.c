@@ -1,5 +1,3 @@
-/* tests/test_rx_error_handler.c */
-
 /**
  * @file test_rx_error_handler.c
  * @brief Comprehensive unit tests for error handler with DIP interface and exponential backoff
@@ -121,9 +119,10 @@
  * - **Interface Segregation:** Minimal interface (4 functions: report, clear, backoff, check)
  * - **Dependency Inversion:** HIGH-LEVEL <- interface -> LOW-LEVEL (this is the point!)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  * @since Version 1.0.0
  */

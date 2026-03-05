@@ -54,9 +54,10 @@
  * @see rx_motor.h Motor PWM control (complementary to this module)
  * @see hardware_config.h Pin assignments for DRVOFF, nSLEEP, nFAULT
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  */
 

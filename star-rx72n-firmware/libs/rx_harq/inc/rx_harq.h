@@ -1,5 +1,3 @@
-/* lib/rx_harq/inc/rx_harq.h */
-
 /**
  * @file rx_harq.h
  * @brief Hybrid Automatic Repeat Request (HARQ) Protocol for RX72N
@@ -135,9 +133,10 @@
  * @see docs/sections/01_nanopb_protocol.tex Protocol specification
  * @see "Hybrid ARQ Schemes" by S. Lin & D. Costello
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  * @version 1.0.0

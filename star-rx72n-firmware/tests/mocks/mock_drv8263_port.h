@@ -7,10 +7,11 @@
  * the rx_drv8263 module. Allows tests to set simulated input pin values
  * (PIDR) and read output pin values (PODR).
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @version 1.0.0
- * @copyright STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 3: No dynamic allocation; g_mock_port_regs is statically allocated

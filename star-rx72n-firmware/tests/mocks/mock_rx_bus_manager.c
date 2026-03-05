@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_bus_manager.c */
-
 /**
  * @file mock_rx_bus_manager.c
  * @brief Mock Bus Manager Implementation for Host-Side Testing
@@ -14,10 +12,11 @@
  * NASA Power of 10 Rule 2 (fixed loop upper-bounds). Each public function
  * validates at least 2 preconditions per NASA Rule 5.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @version 1.0.0
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par NASA Power of 10 Compliance:
  * | Rule | Status | Implementation |

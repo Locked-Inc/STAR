@@ -24,7 +24,8 @@
  * @see rx_ds18b20.h DS18B20 driver
  * @see shared_data.h Temperature data
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

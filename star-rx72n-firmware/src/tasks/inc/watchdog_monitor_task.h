@@ -1,5 +1,3 @@
-/* src/tasks/inc/watchdog_monitor_task.h */
-
 /**
  * @file watchdog_monitor_task.h
  * @brief Watchdog Monitor Task - IWDT supervision and system health monitoring
@@ -104,9 +102,10 @@
  * @see main.c System initialization and task creation
  *
  * @version 1.0.0
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

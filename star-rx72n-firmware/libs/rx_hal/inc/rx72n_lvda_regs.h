@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_lvda_regs.h */
-
 /**
  * @file rx72n_lvda_regs.h
  * @brief RX72N Voltage Detection Circuit (LVDA) Register Definitions
@@ -99,9 +97,10 @@
  *
  * @see rx72n_regs.h Main register include file
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

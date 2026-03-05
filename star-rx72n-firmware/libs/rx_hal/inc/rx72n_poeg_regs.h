@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_poeg_regs.h */
-
 /**
  * @file rx72n_poeg_regs.h
  * @brief RX72N GPTW Port Output Enable (POEG) Register Definitions
@@ -105,9 +103,10 @@
  * @see rx72n_gptw_regs.h General PWM Timer registers
  * @see rx72n_regs.h Main register include file
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

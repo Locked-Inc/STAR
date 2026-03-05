@@ -1,5 +1,3 @@
-/* tests/mocks/rx72n_regs.h */
-
 /**
  * @file rx72n_regs.h
  * @brief Unified Mock RX72N Hardware Register Definitions for Host-Side Unit Testing
@@ -213,9 +211,10 @@
  * - **Interface Segregation (I)**: [OK] Minimal interface (type aliases only, no functions)
  * - **Dependency Inversion (D)**: [OK] Production code depends on abstract register types, not concrete implementations
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @version 1.0.0
  * @since Version 1.0.0

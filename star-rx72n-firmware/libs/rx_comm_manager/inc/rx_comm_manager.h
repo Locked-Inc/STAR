@@ -1,5 +1,3 @@
-/* lib/rx_comm_manager/inc/rx_comm_manager.h */
-
 /**
  * @file rx_comm_manager.h
  * @brief Unified Multi-Channel Communication Manager for USB CDC and SPI Protocols
@@ -374,10 +372,11 @@
  * @attention Callback is invoked from poll() context - keep processing minimal or defer to task queue
  * @attention Decoded ASCII output adds ~80 us latency per frame - disable for high-frequency applications
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par Changelog:
  * - 1.0.0 (2026-01-26): Initial implementation with USB and SPI channels

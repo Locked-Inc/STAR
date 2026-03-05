@@ -1,5 +1,3 @@
-/* lib/rx_crc/src/rx_crc8.c */
-
 /**
  * @file rx_crc8.c
  * @brief Dallas/Maxim CRC-8 Implementation for OneWire Device Validation
@@ -142,9 +140,10 @@
  * @see rx_crc32.c CRC-32 implementation for frame protocols
  * @see rx_hcsr04.h OneWire interface for DS18B20
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -15,10 +15,11 @@
  * - ADC-to-amps conversion accuracy
  * - OLP boot/fault enable configuration
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-03-03
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @par NASA Power of 10 Compliance:
  * - Rule 3: Zero dynamic allocation in test infrastructure

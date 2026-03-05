@@ -1,5 +1,3 @@
-/* lib/rx_crc/src/rx_crc32_sw.c */
-
 /**
  * @file rx_crc32_sw.c
  * @brief Software CRC-32 Implementation - 256-Entry Lookup Table
@@ -329,9 +327,10 @@
  * - `crc32.ChecksumIEEE()` - bit-exact compatible
  * - `crc32.MakeTable(crc32.IEEE)` - generates same table
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stddef.h> /* For nullptr */

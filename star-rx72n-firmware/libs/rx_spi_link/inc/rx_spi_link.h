@@ -95,9 +95,10 @@
  * @see rx_fec.h                            FEC encoder/decoder
  * @see rx_spi_comm.h                       Raw SPI transport with framing
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-14
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  */

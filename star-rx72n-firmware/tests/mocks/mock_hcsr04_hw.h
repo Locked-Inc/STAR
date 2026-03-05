@@ -1,5 +1,3 @@
-/* tests/mocks/mock_hcsr04_hw.h */
-
 /**
  * @file mock_hcsr04_hw.h
  * @brief Mock HC-SR04 ultrasonic sensor hardware for distance measurement testing
@@ -47,9 +45,10 @@
  * @par NASA Power of 10: [OK] Static allocation, timeout bounds
  * @par SOLID: D - Dependency Inversion
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,5 +1,3 @@
-/* lib/rx_hcsr04/src/rx_hcsr04.c */
-
 /**
  * @file rx_hcsr04.c
  * @brief HC-SR04 Ultrasonic Distance Sensor Driver Implementation
@@ -513,7 +511,8 @@
  * @see rx_hcsr04_hal_hw.c RX72N hardware implementation
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_hcsr04.h"

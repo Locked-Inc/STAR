@@ -8,7 +8,8 @@
  *
  * @see platform.h Boot platform header that includes this file
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,9 +1,9 @@
-// star_gateway_bridge_node.cpp - ROS2 Gateway Bridge Node Implementation
-// Bridges ROS2 ecosystem with Go gateway service via gRPC.
-//
-// STAR Project - Texas A&M University
-// Copyright 2026 STAR Project
-// January 2026
+/**
+ * @file star_gateway_bridge_node.cpp
+ * @brief Bridges ROS2 ecosystem with Go gateway service via gRPC.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_gateway_bridge/star_gateway_bridge_node.hpp"
 
@@ -61,7 +61,8 @@ static constexpr std::string_view TOPIC_OBSTACLE_DETECTED = "/star/obstacle_dete
  * no gRPC connection on startup.
  *
  * @since Version 1.0.0
- */
+
+*/
 StarGatewayBridgeNode::StarGatewayBridgeNode(const rclcpp::NodeOptions & options)
 : Node("star_gateway_bridge", options), grpc_connected_(false),
   reconnect_attempts_(0)

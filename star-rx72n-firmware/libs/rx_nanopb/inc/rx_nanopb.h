@@ -1,5 +1,3 @@
-/* lib/rx_nanopb/inc/rx_nanopb.h */
-
 /**
  * @file rx_nanopb.h
  * @brief nanopb Integration Wrapper for RX72N
@@ -159,7 +157,8 @@
  *
  * @version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

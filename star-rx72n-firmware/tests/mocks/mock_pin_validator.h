@@ -1,5 +1,3 @@
-/* tests/mocks/mock_pin_validator.h */
-
 /**
  * @file mock_pin_validator.h
  * @brief Mock pin validator for testing pin allocation and conflict detection
@@ -24,8 +22,9 @@
  * @par NASA Power of 10: [OK] Static allocation (256 pin limit)
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
- * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @author Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
  * - Query functions to verify pin operations in tests
  *

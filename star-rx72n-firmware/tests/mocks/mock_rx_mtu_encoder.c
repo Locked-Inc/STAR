@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_mtu_encoder.c */
-
 /**
  * @file mock_rx_mtu_encoder.c
  * @brief Mock MTU Encoder Hardware Implementation for Unit Testing
@@ -10,7 +8,8 @@
  * counter values, register access, and start/stop operations.
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 /* Include mock regs header FIRST to define mock types before real headers */

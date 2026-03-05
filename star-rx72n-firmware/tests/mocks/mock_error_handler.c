@@ -1,5 +1,3 @@
-/* tests/mocks/mock_error_handler.c */
-
 /**
  * @file mock_error_handler.c
  * @brief Mock Error Handler Implementation
@@ -8,7 +6,8 @@
  * Used for testing and validating the DIP pattern.
  *
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_error_handler.h"

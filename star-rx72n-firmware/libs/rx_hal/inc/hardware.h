@@ -1,5 +1,3 @@
-/* libs/rx_hal/inc/hardware.h */
-
 /**
  * @file hardware.h
  * @brief Hardware Abstraction Layer (HAL) - Unified Interface for RX72N Peripherals
@@ -243,10 +241,11 @@
  *   +--> Application tasks (comm, motor, sensors)
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_err.h for error code definitions
  * @see rx_port_constants.h for complete port/pin enumerations

@@ -1,5 +1,3 @@
-/* tests/mocks/mock_hardware_init.c */
-
 /**
  * @file mock_hardware_init.c
  * @brief Mock Hardware Initialization Implementation
@@ -8,9 +6,10 @@
  * Implements mock hardware_init() for unit testing.
  * Tracks calls and allows configurable return values.
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_hardware_init.h"

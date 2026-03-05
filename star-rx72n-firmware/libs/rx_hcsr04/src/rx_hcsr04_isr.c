@@ -27,9 +27,10 @@
  *                          driver logic in rx_hcsr04.c
  * - Dependency Inversion: Uses hcsr04_hal_get_time_us_isr() abstraction (mutex-free, ISR-safe)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  * @version 1.0.0
  *

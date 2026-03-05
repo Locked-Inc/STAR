@@ -1,5 +1,3 @@
-/* tests/mocks/mock_sci_regs.c */
-
 /**
  * @file mock_sci_regs.c
  * @brief Mock SCI Register Implementation
@@ -8,7 +6,8 @@
  * UART driver code on the host without actual hardware.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_sci_regs.h"

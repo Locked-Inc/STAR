@@ -1,5 +1,3 @@
-/* lib/rx_usb/src/rx_usb_hw.c */
-
 /**
  * @file rx_usb_hw.c
  * @brief USB0 Hardware Abstraction Layer (HAL) for RX72N Full-Speed Module
@@ -451,11 +449,12 @@
  * 4. **USB On-The-Go (OTG):** Support host mode (RX72N has OTG capability)
  * 5. **USB 3.0 support:** SuperSpeed for future RX MCUs with SS PHY
  *
- * @author STAR Project Team
+ * @author Locked, Inc. Team
  * @date 2026-01-27
  * @version 1.0.0
  *
- * @copyright Copyright (c) 2026 STAR Project. All rights reserved.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_usb.h Public USB API (application interface)
  * @see rx_usb.c USB core (ring buffers, state machine)

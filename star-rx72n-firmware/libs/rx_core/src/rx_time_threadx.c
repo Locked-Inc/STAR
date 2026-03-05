@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 /**
  * @file rx_time_threadx.c
  * @brief ThreadX Time Implementation for RX72N
@@ -100,9 +99,10 @@
  * @see rx_time_constants.h Time conversion constants
  * @see mock_time.c Unit test mock implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

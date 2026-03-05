@@ -75,10 +75,10 @@
  * - Open/Closed: Extensible via new BSP_CFG_RTOS_USED values
  * - Dependency Inversion: Abstracts RTOS kernel behind compile-time selection
  *
- * @author STAR Project (Locked, Inc.)
+ * @author Locked, Inc.
  * @date 2019 (original), 2026 (STAR modifications)
  * @version 1.11
- * @copyright Copyright (C) 2019 Renesas Electronics Corporation. Modified by Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  */
 /**********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description

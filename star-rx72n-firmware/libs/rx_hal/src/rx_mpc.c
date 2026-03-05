@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/rx_mpc.c */
-
 /**
  * @file rx_mpc.c
  * @brief Multi-Function Pin Controller (MPC) Driver Implementation
@@ -158,9 +156,10 @@
  * @see rx72n_mpc_regs.h Hardware register definitions
  * @see docs/sections/03_hardware_pinout.tex Pin assignment documentation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,5 +1,3 @@
-/* lib/rx_core/inc/rx_gpio_constants.h */
-
 /**
  * @file rx_gpio_constants.h
  * @brief GPIO and System Constants for RX72N Microcontroller
@@ -109,9 +107,10 @@
  * @see rx_error_handler.h for error retry mechanism using default values
  * @see docs/sections/03_hardware_pinout.tex for complete pin assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

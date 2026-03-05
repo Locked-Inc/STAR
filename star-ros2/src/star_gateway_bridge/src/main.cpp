@@ -1,8 +1,9 @@
-// main.cpp - STAR Gateway Bridge Standalone Executable
-// Entry point for running star_gateway_bridge node as standalone process.
-//
-// STAR Project - Texas A&M University
-// January 2026
+/**
+ * @file main.cpp
+ * @brief Entry point for running star_gateway_bridge node as standalone process.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include <memory>
 
@@ -19,7 +20,8 @@
  *   ros2 run star_gateway_bridge star_gateway_bridge_main \
  *     --ros-args -p gateway_address:=192.168.1.100:50051 \
  *                -p telemetry_rate_hz:=20.0
- */
+
+*/
 int main(int argc, char **argv)
 {
   // Initialize ROS2

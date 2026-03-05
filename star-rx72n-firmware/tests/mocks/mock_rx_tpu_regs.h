@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_tpu_regs.h */
-
 /**
  * @file mock_rx_tpu_regs.h
  * @brief TPU Mock Header for Unit Tests
@@ -15,9 +13,10 @@
  * @see rx72n_tpu_regs.h Shadow TPU register header (mocks/)
  * @see rx_tpu.h TPU HAL driver API
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,5 +1,3 @@
-/* tests/mocks/mock_gpio_hal.c */
-
 /**
  * @file mock_gpio_hal.c
  * @brief Mock GPIO HAL function implementations for unit testing
@@ -33,10 +31,11 @@
  * @see tests/test_gpio_hal.c Unit tests using this mock
  * @see gpio_hal.c Real GPIO HAL implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_gpio_hal.h"

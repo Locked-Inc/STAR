@@ -56,8 +56,9 @@
  * - Runs on host (x86-64/aarch64) under CTest; no RX72N hardware required
  *
  * @since Version 1.0.0
- * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @author Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdint.h>

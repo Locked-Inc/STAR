@@ -6,7 +6,8 @@
  * USB driver code on the host without actual hardware.
  *
  * @date 2025-12-01
- * @copyright Copyright (c) 2025 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_usb0_regs.h"

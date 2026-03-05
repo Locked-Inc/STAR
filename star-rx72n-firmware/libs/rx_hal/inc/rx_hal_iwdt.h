@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx_hal_iwdt.h */
-
 /**
  * @file rx_hal_iwdt.h
  * @brief Independent Watchdog Timer (IWDT) HAL Driver for RX72N
@@ -142,9 +140,10 @@
  * @see rx72n_iwdt_regs.h Register definitions
  * @see RX72N Hardware Manual Section 25 - Independent Watchdog Timer
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

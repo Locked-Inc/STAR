@@ -1,5 +1,3 @@
-/* src/shared/shared_data.c */
-
 /**
  * @file shared_data.c
  * @brief Thread-Safe Shared Data Infrastructure for Multi-Task Motor Control Architecture
@@ -344,9 +342,10 @@
  * @par Revision History:
  * - v1.0.0 (2026-01-29): Initial implementation with mutex-protected accessors
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "shared_data.h"

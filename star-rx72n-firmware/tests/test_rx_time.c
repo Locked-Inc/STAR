@@ -1,5 +1,3 @@
-/* tests/test_rx_time.c */
-
 /**
  * @file test_rx_time.c
  * @brief Comprehensive unit tests for time interface with mock implementation and DIP
@@ -160,9 +158,10 @@
  * - **Interface Segregation:** Minimal interface (3 functions: get, sleep, elapsed)
  * - **Dependency Inversion:** HIGH-LEVEL <- interface -> LOW-LEVEL (testability!)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  * @since Version 1.0.0
  */

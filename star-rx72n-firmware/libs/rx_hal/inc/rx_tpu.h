@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx_tpu.h */
-
 /**
  * @file rx_tpu.h
  * @brief TPU HAL Driver for RX72N 16-Bit Timer Pulse Unit (Phase Counting)
@@ -71,9 +69,10 @@
  * @see rx_mtu.h MTU HAL (front wheel encoders)
  * @see rx_mtu_encoder.h MTU encoder interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

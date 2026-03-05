@@ -1,5 +1,3 @@
-/* tests/mocks/mock_uart_hw.c */
-
 /**
  * @file mock_uart_hw.c
  * @brief Mock UART HAL Function Implementation
@@ -7,7 +5,8 @@
  * Provides mock UART HAL functions with TX/RX FIFO buffers for testing.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_uart_hw.h"

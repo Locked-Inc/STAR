@@ -1,5 +1,3 @@
-/* tests/test_rx_session.c */
-
 /**
  * @file test_rx_session.c
  * @brief Unit Tests for Shared Session State Module
@@ -21,7 +19,10 @@
  *
  * @see rx_session.h  Module under test
  * @see star-gateway/internal/manager/session.go  Go reference
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+*/
 
 #include <string.h>
 

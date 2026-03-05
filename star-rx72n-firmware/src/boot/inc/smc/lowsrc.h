@@ -60,7 +60,7 @@
  *
  * @note Ported from Renesas Smart Configurator (SMC) generated code
  * @warning Most functions are NOT thread-safe unless _REENTRANT is defined (CC-RX only)
- * @since Version 2.0.0
+ * @since Version 1.0.0
  *
  * @par NASA Power of 10 Compliance
  * - Rule 1: No goto, setjmp/longjmp, or recursion in function implementations
@@ -75,10 +75,10 @@
  * - Interface Segregation: Compiler-specific sections provide minimal required surface
  * - Dependency Inversion: Higher-level stdio depends on this abstraction layer
  *
- * @author STAR Project (Locked, Inc.)
+ * @author Locked, Inc.
  * @date 2013 (original), 2026 (STAR modifications)
  * @version 3.01
- * @copyright Copyright (C) 2013 Renesas Electronics Corporation. Modified by Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  */
 /***********************************************************************************************************************
 * History : DD.MM.YYYY Version  Description

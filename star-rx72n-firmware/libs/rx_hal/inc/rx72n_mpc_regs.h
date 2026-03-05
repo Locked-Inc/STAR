@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_mpc_regs.h */
-
 /**
  * @file rx72n_mpc_regs.h
  * @brief RX72N Multi-Function Pin Controller (MPC) Register Definitions
@@ -130,7 +128,8 @@
  * @see rx_mpc.h Higher-level MPC driver with PSEL constants
  *
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

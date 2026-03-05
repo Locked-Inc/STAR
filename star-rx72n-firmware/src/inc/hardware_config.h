@@ -33,9 +33,12 @@
  * @see 144_PIN_MIGRATION_PLAN.md Migration planning details
  * @see RX72N_ROADMAP.md Peripheral implementation status
  *
- * @author STAR Development Team
+ * @author Locked, Inc.
  * @date 2026-02-09
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+*/
 
 #pragma once
 

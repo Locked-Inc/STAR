@@ -1,5 +1,3 @@
-/* tests/mocks/mock_error_handler.h */
-
 /**
  * @file mock_error_handler.h
  * @brief Mock error handler for testing error reporting and recovery logic
@@ -28,8 +26,9 @@
  * @par NASA Power of 10: [OK] Static allocation (circular buffer), bounded capacity
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
- * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @author Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 *Usage Example(Swapping Implementations)
     : *@code * // Production code uses real error handler:

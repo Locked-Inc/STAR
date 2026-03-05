@@ -1,5 +1,3 @@
-/* tests/mocks/mock_riic_hal.h */
-
 /**
  * @file mock_riic_hal.h
  * @brief Mock RIIC (I2C) HAL implementation for unit testing without hardware
@@ -153,10 +151,11 @@
  * - I: Interface Segregation - Minimal focused interface
  * - D: Dependency Inversion - Tests depend on RIIC interface, not implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

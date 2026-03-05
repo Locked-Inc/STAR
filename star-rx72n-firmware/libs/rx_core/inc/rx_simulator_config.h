@@ -68,7 +68,10 @@
  *
  * @see rx_clock_power_init.c Clock initialization with simulator support
  * @see rx_log.h Logging infrastructure with simulator output
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+*/
 
 #pragma once
 

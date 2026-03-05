@@ -1,5 +1,3 @@
-/* tests/test_rx_frame_ascii.c */
-
 /**
  * @file test_rx_frame_ascii.c
  * @brief Unit Tests for ASCII Frame Formatter
@@ -328,9 +326,10 @@
  * @see test_rx_usb_comm.c USB communication tests (uses ASCII formatter)
  * @see docs/sections/01_nanopb_protocol.tex Protocol specification
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-26
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  * @version 1.0.0

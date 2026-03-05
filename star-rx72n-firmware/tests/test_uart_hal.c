@@ -348,9 +348,10 @@
  * - Mock UART: [mock_uart_hw.h](mocks/mock_uart_hw.h)
  * - RX72N Manual: Chapter 34 - Serial Communication Interface (SCI)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  *
  * @par Example Test Execution:

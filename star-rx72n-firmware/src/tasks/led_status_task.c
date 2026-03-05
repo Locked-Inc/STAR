@@ -1,5 +1,3 @@
-/* src/tasks/led_status_task.c */
-
 /**
  * @file led_status_task.c
  * @brief LED Status Indicator Task Implementation
@@ -29,9 +27,10 @@
  * | Update Rate      | 20 Hz    |
  * | CPU Utilization  | < 0.01%  |
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

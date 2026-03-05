@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_motor.h */
-
 /**
  * @file mock_rx_motor.h
  * @brief Mock motor control driver for high-level testing without hardware
@@ -43,9 +41,10 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - High-level modules depend on motor interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-06
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

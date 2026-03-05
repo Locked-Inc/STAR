@@ -1,5 +1,3 @@
-/* tests/mocks/mock_hal_regs.c */
-
 /**
  * @file mock_hal_regs.c
  * @brief Mock HAL register implementations for unit testing
@@ -13,9 +11,10 @@
  * @see mock_hal_regs.h Header with complete documentation
  * @see tests/test_gpio_hal.c, tests/test_adc_hal.c Users of this mock
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_hal_regs.h"

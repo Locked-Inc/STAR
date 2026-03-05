@@ -1,11 +1,10 @@
-/* tests/mocks/mock_rx_crc.c */
-
 /**
  * @file mock_rx_crc.c
  * @brief Mock CRC Implementation for Host-Side Testing
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rx_crc.h"

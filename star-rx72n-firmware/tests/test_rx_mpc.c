@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 /**
  * @file test_rx_mpc.c
  * @brief Unit Tests for RX72N MPC (Multi-Function Pin Controller) Register Definitions
@@ -80,9 +79,10 @@
  * @see rx72n_port_regs.h Related GPIO port registers
  * @see Ch23_MPC.txt Manual chapter extract
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

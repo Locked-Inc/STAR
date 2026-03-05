@@ -1,5 +1,3 @@
-/* lib/rx_encoder/src/rx_mtu_encoder.c */
-
 /**
  * @file rx_mtu_encoder.c
  * @brief RX72N MTU Quadrature Encoder Driver Implementation (Phase Counting Mode)
@@ -358,7 +356,8 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_mtu_encoder.h"

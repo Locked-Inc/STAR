@@ -6,7 +6,8 @@
  * Allows tests to control time progression without real delays.
  *
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_time.h"

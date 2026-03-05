@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_gptw.c */
-
 /**
  * @file mock_rx_gptw.c
  * @brief Mock GPTW Driver Implementation for Unit Testing
@@ -8,7 +6,8 @@
  * Records all operations for verification without actual hardware.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rx_gptw.h"

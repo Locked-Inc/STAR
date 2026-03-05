@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx_poeg.h */
-
 /**
  * @file rx_poeg.h
  * @brief POEG Motor Fault Protection Driver API
@@ -39,9 +37,10 @@
  * @see rx72n_gptw_regs.h GPTW register definitions (GTINTAD)
  * @see shared_data.h Fault flag storage
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 
