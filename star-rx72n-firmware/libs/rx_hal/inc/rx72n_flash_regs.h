@@ -885,33 +885,112 @@ static inline volatile const uint32_t* uidr3_reg(void)
 
 /**
  * @enum rx_flash_memory_addresses_t
- * @brief Flash memory region base addresses
+ * @brief Flash memory region base and end addresses for the RX72N
+ *
+ * @details
+ * Defines the inclusive address range of each flash region on the RX72N
+ * (4 MB code flash, 32 KB data flash). Addresses are physical bus addresses
+ * as documented in the RX72N Hardware Manual, Section 5 (Memory Map).
+ *
+ * Code flash occupies the top of the 32-bit address space (0xFFC00000 -
+ * 0xFFFFFFFF). Data flash is a separate EEPROM-emulation region beginning at
+ * 0x00100000. Neither region overlaps RAM or peripheral space.
+ *
+ * Use these constants as bounds for range checks before issuing erase or
+ * program commands via the Flash Control Unit (FCU). Never use raw literals
+ * for flash address comparisons; always reference these enum values so that
+ * any future memory-map revision is caught at a single point.
+ *
+ * @note All addresses must be naturally aligned to the program unit defined
+ *       in rx_flash_memory_layout_t (128 bytes for code flash, 4 bytes for
+ *       data flash). Unaligned addresses are rejected by the FCU hardware.
+ * @note Code flash erase granularity differs by block index: blocks 0-7 are
+ *       8 KB each, blocks 8 and above are 32 KB each (see rx_flash_memory_layout_t).
+ *
+ * @invariant k_code_flash_start < k_code_flash_end
+ * @invariant k_data_flash_start < k_data_flash_end
+ * @invariant Code flash and data flash address ranges do not overlap
+ *
+ * @par Usage Example:
+ * @code
+ * bool is_code_flash(uintptr_t addr) {
+ *     return addr >= (uintptr_t)k_code_flash_start &&
+ *            addr <= (uintptr_t)k_code_flash_end;
+ * }
+ * @endcode
+ *
+ * @see rx_flash_memory_layout_t   Block sizes and program units for each region
+ * @see fentryr_reg()              FCU entry register that enables erase/program mode
+ * @see fsaddr_reg()               FCU start-address register (set before erase/program)
+ * @see feaddr_reg()               FCU end-address register (set before block erase)
+ * @see rx_flash.h                 Higher-level flash API (when implemented)
  *
  * @since Version 1.0.0
  */
 typedef enum : uintptr_t {
-  k_code_flash_start = 0xFFC00000, /**< Code flash start (4 MB device) */
-  k_code_flash_end   = 0xFFFFFFFF, /**< Code flash end */
-  k_data_flash_start = 0x00100000, /**< Data flash start */
-  k_data_flash_end   = 0x00107FFF, /**< Data flash end */
+  k_code_flash_start = 0xFFC00000, /**< Code flash start address (bottom of 4 MB region) */
+  k_code_flash_end   = 0xFFFFFFFF, /**< Code flash end address (top of 32-bit space) */
+  k_data_flash_start = 0x00100000, /**< Data flash start address (EEPROM-emulation region) */
+  k_data_flash_end   = 0x00107FFF, /**< Data flash end address (32 KB above start) */
 } rx_flash_memory_addresses_t;
 
 /**
  * @enum rx_flash_memory_layout_t
- * @brief Flash memory sizes, block sizes, and program units
+ * @brief Flash memory region sizes, erase block granularities, and program units
+ *
+ * @details
+ * Captures the capacity and write/erase geometry of the RX72N flash subsystem
+ * as documented in the RX72N Hardware Manual, Sections 7 and 59.
+ *
+ * Code flash (4 MB) has a split-block architecture:
+ * - Blocks 0-7: 8 KB each (small blocks at the top of the address space,
+ *   typically used for bootloader or parameter storage)
+ * - Blocks 8 and above: 32 KB each (large blocks for application code)
+ *
+ * Data flash (32 KB) is organised in uniform 64-byte erase blocks and is
+ * intended for EEPROM-emulation of configuration data and run-time state.
+ *
+ * Program (write) operations must be issued in multiples of the program unit:
+ * - Code flash: 128-byte aligned writes
+ * - Data flash: 4-byte aligned writes
+ *
+ * Use these constants when computing erase/program address ranges, validating
+ * buffer sizes, or determining which block type covers a given address before
+ * issuing FCU commands.
+ *
+ * @note All values are byte counts or byte sizes, not word or block counts.
+ * @note The program unit constraints are enforced in hardware; the FCU will
+ *       set FSTATR.PRGERR if an unaligned or undersized write is attempted.
+ *
+ * @invariant k_code_flash_size == (k_code_flash_block_8k * 8) + (k_code_flash_block_32k * 120)
+ * @invariant k_data_flash_size == k_data_flash_block_64 * 512
+ *
+ * @par Usage Example:
+ * @code
+ * bool is_aligned_code_flash_write(uintptr_t addr, uint32_t len) {
+ *     return (addr % k_code_flash_program_unit == 0) &&
+ *            (len  % k_code_flash_program_unit == 0);
+ * }
+ * @endcode
+ *
+ * @see rx_flash_memory_addresses_t  Physical start/end addresses for each region
+ * @see fstatr_reg()                 FCU status register (check PRGERR after program)
+ * @see fsaddr_reg()                 FCU start-address register (set before erase/program)
+ * @see feaddr_reg()                 FCU end-address register (set before block erase)
+ * @see rx_flash.h                   Higher-level flash API (when implemented)
  *
  * @since Version 1.0.0
  */
 typedef enum : uint32_t {
-  k_code_flash_size = 0x00400000, /**< Code flash size (4 MB) */
-  k_data_flash_size = 0x00008000, /**< Data flash size (32 KB) */
+  k_code_flash_size = 0x00400000, /**< Total code flash size in bytes (4 MB) */
+  k_data_flash_size = 0x00008000, /**< Total data flash size in bytes (32 KB) */
 
-  k_code_flash_block_8k  = 0x00002000, /**< 8 KB block (blocks 0-7) */
-  k_code_flash_block_32k = 0x00008000, /**< 32 KB block (blocks 8+) */
-  k_data_flash_block_64  = 0x00000040, /**< 64 byte block (data flash) */
+  k_code_flash_block_8k  = 0x00002000, /**< Erase block size for blocks 0-7 (8 KB each) */
+  k_code_flash_block_32k = 0x00008000, /**< Erase block size for blocks 8+ (32 KB each) */
+  k_data_flash_block_64  = 0x00000040, /**< Erase block size for data flash (64 bytes each) */
 
-  k_code_flash_program_unit = 128U, /**< Code flash program unit (bytes) */
-  k_data_flash_program_unit = 4U,   /**< Data flash program unit (bytes) */
+  k_code_flash_program_unit = 128U, /**< Minimum program unit for code flash (bytes, must be aligned) */
+  k_data_flash_program_unit = 4U,   /**< Minimum program unit for data flash (bytes, must be aligned) */
 } rx_flash_memory_layout_t;
 
 /* =============================================================================
