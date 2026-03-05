@@ -60,7 +60,6 @@ extern "C" {
 #endif
 
 #include <stdint.h>
-
 #include "rx_err.h"
 
 /* =========================================================================
@@ -94,6 +93,7 @@ extern "C" {
  */
 typedef enum : uint16_t {
   k_dmaca_max_transfer_count = 1024U, /**< 10-bit DMTC field max (1..1024) */
+  k_dmaca_num_channels       = 8U,    /**< Number of DMACA channels (0..7) */
 } dmaca_hw_limit_t;
 
 /* =========================================================================
@@ -242,10 +242,14 @@ typedef struct {
 */
 
 /**
- * @def RX_DMACA_POLL_TIMEOUT_CYCLES
- * @brief Worst-case execution time budget for DMA completion polling.
+ * @enum dmaca_timeout_config_t
+ * @brief Worst-case execution time budget for DMA completion polling
  *
  * @details
+ * Provides the default timeout constant for bounded polling loops in
+ * rx_dmaca_wait() and rx_dmaca_transfer_blocking(). The value is derived
+ * from worst-case hardware timing analysis for a 256-byte block transfer.
+ *
  * Derivation (8-bit, 256-byte block):
  *   Per-transfer cost = (Cr + Cw) = (1 + 4) = 5 PCLKB cycles
  *   At 240 MHz ICLK / 60 MHz PCLKB: 5 x 4 = 20 ICLK cycles per byte
@@ -253,16 +257,21 @@ typedef struct {
  *   Bus contention margin (EXDMAC priority preemption): +25 % -> ~6,400
  *   Round up to nearest power of two with margin: 8,192
  *
- * Override with -DRX_DMACA_POLL_TIMEOUT_CYCLES=<n> in your build if you
- * have longer blocks or tighter real-time budgets.
- * @note This macro can be overridden at compile time using
- *       -DRX_DMACA_POLL_TIMEOUT_CYCLES=<value> for custom timing requirements.
+ * @invariant Value must provide sufficient margin for worst-case DMA
+ *            transfer completion including bus contention delays.
  *
+ * @code
+ * // Example: use default timeout for blocking transfer
+ * uint32_t timeout = k_dmaca_poll_timeout_cycles;
+ * rx_err_t err = rx_dmaca_wait(channel, timeout);
+ * @endcode
+ *
+ * @see rx_dmaca_wait, rx_dmaca_transfer_blocking
  * @since 1.0.0
  */
-#ifndef RX_DMACA_POLL_TIMEOUT_CYCLES
-#define RX_DMACA_POLL_TIMEOUT_CYCLES (8192U)
-#endif
+typedef enum : uint16_t {
+  k_dmaca_poll_timeout_cycles = 8192U, /**< Default timeout (CPU cycles) for DMA polling loops */
+} dmaca_timeout_config_t;
 
 /* =========================================================================
  * API

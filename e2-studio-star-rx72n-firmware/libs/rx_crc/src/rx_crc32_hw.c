@@ -346,9 +346,16 @@ typedef enum : int32_t {
 typedef enum : uint32_t {
   k_crc_result_invalid             = 0,     /**< Invalid CRC result (error case) */
   k_crc_bit_set                    = 1,     /**< Bit set value for register manipulation */
-  k_crc_lock_sleep_ticks           = 0,     /**< Cooperative yield ticks while waiting for lock */
+  k_crc_lock_sleep_ticks           = 1U,    /**< Sleep 1 tick while waiting for lock (tx_thread_sleep(0) returns TX_CALLER_ERROR) */
   k_crc_lock_acquire_max_attempts  = 1024,  /**< Bounded retries for lock acquisition */
 } rx_crc_hw_loop_constants_t;
+
+typedef enum : uint8_t { 
+  k_crc_dma_channel = 0U; 
+} crc_dma_channel_t;
+typedef enum : uint32_t { 
+  k_crc_dma_threshold = 32U; 
+} crc_dma_threshold_t;
 
 /* =============================================================================
  * Module State
@@ -399,6 +406,14 @@ static bool s_crc_initialized = false;
  * never taken from interrupt context; callers running in ISRs must avoid
  * invoking the hardware path or otherwise ensure mutual exclusion externally.
  *
+ * @warning
+ * This implementation uses `tx_interrupt_control(TX_INT_DISABLE)` which disables
+ * **ALL interrupts** including motor control ISRs, encoder ISRs, and SPI ISRs during
+ * the brief lock check/set operation. A proper ThreadX `tx_mutex_t` would be more
+ * appropriate for this use case as it provides priority inheritance and avoids
+ * interrupt latency. This primitive spinlock was chosen for simplicity but should
+ * be refactored to use `tx_mutex_t` in the future.
+ *
  * @note
  * - The lock is only used when `RX_CRC32_USE_DMA` is enabled, but it is
  *   acquired unconditionally after DORCLR so that the behaviour is consistent
@@ -443,7 +458,7 @@ static volatile bool s_crc_lock = false;
  * @post Interrupt state is restored to the pre-call value.
  * @post Caller has exclusive ownership until internal_crc_lock_release().
  *
- * @note This is a bounded spin-wait lock with cooperative yield via `tx_thread_sleep(k_crc_lock_sleep_ticks)`.
+ * @note This is a bounded spin-wait lock with 1-tick sleep between retries via `tx_thread_sleep(1)`.
  * @note Hold time should be kept short to avoid priority inversion.
  * @note Use only for the CRC critical section; do not use as a general mutex.
  *
@@ -544,7 +559,7 @@ static rx_err_t internal_crc_lock_release(void)
   UINT saved = tx_interrupt_control(TX_INT_DISABLE);
 
   if (!s_crc_lock) {
-    UINT restore_state = tx_interrupt_control(saved);
+    (void)tx_interrupt_control(saved);
     return k_rx_err_invalid_state;
   }
 
@@ -862,7 +877,7 @@ rx_err_t rx_crc_deinit(void)
  * @brief Feed a buffer into CRCDIR via a DMACA block transfer.
  *
  * @details
- * Configures DMACA channel RX_CRC32_DMA_CHANNEL for an 8-bit block transfer
+ * Configures DMACA channel k_crc_dma_channel for an 8-bit block transfer
  * from @p data to CRCDIR (fixed destination, 0x00088284), then blocks until
  * the transfer completes or the bounded timeout expires.
  *
@@ -889,7 +904,7 @@ rx_err_t rx_crc_deinit(void)
  * @pre  CRC peripheral initialized and CRCCR.DORCLR already asserted by caller.
  * @pre  DMACA module initialized (s_dma_initialized == true).
  * @post All @p len bytes have been written to CRCDIR by the DMA controller.
- * @post DMA channel RX_CRC32_DMA_CHANNEL is idle and available for reuse.
+ * @post DMA channel k_crc_dma_channel is idle and available for reuse.
  *
  * @note
  * Not inherently thread-safe. Caller must ensure exclusive access to the
@@ -911,7 +926,7 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
                      (uint32_t)k_dmaca_max_transfer_count,
                      k_rx_err_nack,
                      "CRC");
-  RX_CHECK_RANGE_TAG((uint32_t)RX_CRC32_DMA_CHANNEL,
+  RX_CHECK_RANGE_TAG((uint32_t)k_crc_dma_channel,
                      k_crc_idx_start,
                      (uint32_t)k_dmaca_num_channels - (uint32_t)k_crc_len_min,
                      k_rx_err_nack,
@@ -928,7 +943,7 @@ static rx_err_t internal_crc_feed_dma(const uint8_t* data, uint32_t len)
     .src_addr_mode  = k_dmaca_addr_increment,
     .dst_addr_mode  = k_dmaca_addr_fixed, /* CRITICAL: never increment */
   };
-  rx_err_t result = rx_dmaca_transfer_blocking((uint8_t)RX_CRC32_DMA_CHANNEL, &cfg);
+  rx_err_t result = rx_dmaca_transfer_blocking((uint8_t)k_crc_dma_channel, &cfg);
 
   /* Post-condition: Verify transfer result is valid error code (NASA Rule 5) */
   RX_ASSERT(result == k_rx_ok || result == k_rx_err_timeout || result == k_rx_err_nack,
@@ -1248,7 +1263,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
   crcdir_byte = (volatile uint8_t*)&crc_regs()->crcdir;
 
 #ifdef RX_CRC32_USE_DMA
-  if (len >= (uint32_t)RX_CRC32_DMA_THRESHOLD) {
+  if (len >= (uint32_t)k_crc_dma_threshold) {
     /* -------- DMA segment ------------------------------------------------ */
     uint32_t dma_len =
       (len <= (uint32_t)k_dmaca_max_transfer_count) ? len : (uint32_t)k_dmaca_max_transfer_count;

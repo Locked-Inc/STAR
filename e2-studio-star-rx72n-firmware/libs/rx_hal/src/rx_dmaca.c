@@ -1,4 +1,4 @@
-/* libs/rx_crc/src/rx_dmaca.c */
+/* libs/rx_hal/src/rx_dmaca.c */
 
 /**
  * @file rx_dmaca.c
@@ -55,14 +55,14 @@
 
 #include "rx_dmaca.h"
 
-#include <stddef.h> /* NULL */
+#include <stddef.h>
 
-#include "rx_check.h" /* runtime validation macros */
+#include "rx_check.h"
 #include "rx_err.h"
-#include "tx_api.h" /* tx_thread_identify(), tx_thread_sleep() */
+#include "tx_api.h"
 
 /* hardware register definitions for DMAC (RX72N) */
-#include "rx72n_dmac_regs.h" /* exposes rx_dmac_channel_regs_t, dmac_dmast_reg(), k_dmast_dmst */
+#include "rx72n_dmac_regs.h"
 
 /* =========================================================================
  * Internal helpers -- register access
@@ -225,21 +225,19 @@ typedef enum : uint8_t {
  * within the 16-bit DMTMD register. Used when constructing the
  * register value during channel configuration.
  *
- * @invariant DMTMD_MD_SHIFT and DMTMD_SZ_SHIFT must match the bit positions 
- * defined in the RX72N datasheet for correct register field masking and shifting.
+ * @invariant k_dmtmd_sz_shift must match the bit position defined in the 
+ * RX72N datasheet for correct register field masking and shifting.
  *
  * @code
- * // Example: construct DMTMD value with normal mode and byte size
- * uint16_t dmtmd = ((DMTMD_MD_NORMAL << DMTMD_MD_SHIFT) | 
- *                    (DMTMD_SZ_BYTE << DMTMD_SZ_SHIFT));
+ * // Example: construct DMTMD value with byte size field
+ * uint16_t dmtmd = (k_dmtmd_sz_byte << k_dmtmd_sz_shift);
  * ch->dmtmd = dmtmd;
  * @endcode
  *
- * @see dmtmd_mode_t, dmtmd_size_t, rx_dmaca_configure, DMTMD_MD_SHIFT, DMTMD_SZ_SHIFT
+ * @see dmtmd_mode_t, dmtmd_size_t, rx_dmaca_configure, k_dmtmd_sz_shift
  * @since 1.0.0
  */
 typedef enum : uint8_t {
-  k_dmtmd_md_shift = 14U, /**< Bit position for MD[1:0] transfer mode field */
   k_dmtmd_sz_shift = 8U,  /**< Bit position for SZ[1:0] data size field */
 } dmtmd_shift_t;
 
@@ -257,8 +255,8 @@ typedef enum : uint8_t {
  *
  * @code
  * // Example: set longword transfer size
- * uint16_t dmtmd = (DMTMD_SZ_LONGWORD << DMTMD_SZ_SHIFT);
- * ch->dmtmd = (ch->dmtmd & ~(3U << DMTMD_SZ_SHIFT)) | dmtmd;
+ * uint16_t dmtmd = (k_dmtmd_sz_longword << k_dmtmd_sz_shift);
+ * ch->dmtmd = (ch->dmtmd & ~(3U << k_dmtmd_sz_shift)) | dmtmd;
  * @endcode
  *
  * @see dmtmd_shift_t, rx_dmaca_configure, k_dmtmd_sz_byte, k_dmtmd_sz_longword
@@ -269,37 +267,6 @@ typedef enum : uint8_t {
   k_dmtmd_sz_longword = 2U, /**< 32-bit (longword) transfer width */
 } dmtmd_size_t;
 
-/* ------------------------------------------------------------------
- * DMAMD register bit definitions (address mode)
- * ------------------------------------------------------------------ 
- */
-
-/**
- * @enum dmamd_shift_t
- * @brief Bit shift positions for DMAMD register mode fields
- *
- * @details
- * Define the bit positions used to pack address mode fields into the DMAMD
- * register. SM (source mode) uses bits [15:14] and DM (destination mode)
- * uses bits [9:8].
- *
- * @invariant Values must match DMAMD register field positions in RX72N datasheet: 
- * SM[1:0] at bits [15:14], DM[1:0] at bits [9:8].
- *
- * @code
- * // Example: construct DMAMD register with increment source, fixed destination
- * uint16_t dmamd = ((DMAMD_SM_INCREMENT << DMAMD_SM_SHIFT) |
- *                    (DMAMD_DM_FIXED << DMAMD_DM_SHIFT));
- * ch->dmamd = dmamd;
- * @endcode
- *
- * @see dmamd_source_mode_t, dmamd_dest_mode_t, DMAMD_SM_SHIFT, DMAMD_DM_SHIFT
- * @since 1.0.0
- */
-typedef enum : uint8_t {
-  k_dmamd_sm_shift = 14U, /**< Bit position for SM[1:0] source address mode field */
-  k_dmamd_dm_shift = 8U,  /**< Bit position for DM[1:0] destination address mode field */
-} dmamd_shift_t;
 
 /* =========================================================================
  * Module-level state
@@ -372,19 +339,19 @@ static uint8_t s_channel_configured = 0U;
  * centralise boundary checking.
  *
  * @param[in] channel DMACA channel index to validate.
- *                    Valid range is [0, k_dmac_channel_count-1].
+ *                    Valid range is [0, k_dmaca_num_channels-1].
  *
  * @return rx_err_t  Result of validation.
  * @retval k_rx_ok      Channel index is within range.
- * @retval k_rx_err_nack Channel index is invalid (>= k_dmac_channel_count).
+ * @retval k_rx_err_nack Channel index is invalid (>= k_dmaca_num_channels).
  *
  * @pre  channel must be a uint8_t value providing an index for boundary validation
  * @pre  DMACA subsystem is in a state where channel index validation is meaningful
- *       (i.e., the DMACA module is accessible and k_dmac_channel_count is properly initialized)
+ *       (i.e., the DMACA module is accessible and k_dmaca_num_channels is properly initialized)
  *
  * @post Return value is either k_rx_ok or k_rx_err_nack
- * @post Returns k_rx_ok if and only if channel < k_dmac_channel_count
- * @post Returns k_rx_err_nack if and only if channel >= k_dmac_channel_count
+ * @post Returns k_rx_ok if and only if channel < k_dmaca_num_channels
+ * @post Returns k_rx_err_nack if and only if channel >= k_dmaca_num_channels
  * @post No global state is modified; function has no side effects
  *
  * @note This is an internal, fast helper; callers should still handle the
@@ -393,16 +360,16 @@ static uint8_t s_channel_configured = 0U;
  *
  * @since 1.0.0
  *
- * @see k_dmac_channel_count, k_rx_err_nack, k_rx_ok, RX_ASSERT, internal_validate_channel
+ * @see k_dmaca_num_channels, k_rx_err_nack, k_rx_ok, RX_ASSERT, internal_validate_channel
  */
 static rx_err_t internal_validate_channel(uint8_t channel)
 {
-  /* Precondition: k_dmac_channel_count must be valid (non-zero) */
-  RX_ASSERT(k_dmac_channel_count > 0U, "DMACA validate_channel: num_channels constant is zero");
+  /* Precondition: k_dmaca_num_channels must be valid (non-zero) */
+  RX_ASSERT(k_dmaca_num_channels > 0U, "DMACA validate_channel: num_channels constant is zero");
   /* postcondition: result must be one of the two defined codes */
   rx_err_t result;
 
-  if (channel >= k_dmac_channel_count) {
+  if (channel >= k_dmaca_num_channels) {
     result = k_rx_err_nack;
   } else {
     result = k_rx_ok;
@@ -519,13 +486,13 @@ static rx_err_t internal_configure_transfer_mode(volatile rx_dmac_channel_regs_t
 
   switch (p_cfg->transfer_mode) {
     case k_dmaca_mode_normal:
-      dmtmd |= (k_dmtmd_md_normal << k_dmtmd_md_shift);
+      dmtmd |= k_dmtmd_md_normal;
       break;
     case k_dmaca_mode_block:
-      dmtmd |= (k_dmtmd_md_block << k_dmtmd_md_shift);
+      dmtmd |= k_dmtmd_md_block;
       break;
     case k_dmaca_mode_repeat:
-      dmtmd |= (k_dmtmd_md_repeat << k_dmtmd_md_shift);
+      dmtmd |= k_dmtmd_md_repeat;
       break;
     default:
       return k_rx_err_nack;
@@ -533,11 +500,8 @@ static rx_err_t internal_configure_transfer_mode(volatile rx_dmac_channel_regs_t
 
   if (p_cfg->data_size == k_dmaca_size_longword) {
     dmtmd |= (k_dmtmd_sz_longword << k_dmtmd_sz_shift);
-  } else {
-    /* DMTMD_SZ_BYTE is zero (0U), so this shifts zero into place.
-         * Kept explicitly for code clarity and symmetry with the longword case,
-         * making it obvious that byte-size encoding is the zero value. */
-    dmtmd |= (k_dmtmd_sz_byte << k_dmtmd_sz_shift);
+  } else if (p_cfg->data_size != k_dmaca_size_byte) {
+    return k_rx_err_nack;
   }
 
   p_ch->dmtmd = dmtmd;
@@ -582,13 +546,13 @@ static rx_err_t internal_configure_address_mode(volatile rx_dmac_channel_regs_t*
 
   switch (p_cfg->src_addr_mode) {
     case k_dmaca_addr_fixed:
-      dmamd |= (k_dmamd_sm_fixed << k_dmamd_sm_shift);
+      dmamd |= k_dmamd_sm_fixed;
       break;
     case k_dmaca_addr_increment:
-      dmamd |= (k_dmamd_sm_increment << k_dmamd_sm_shift);
+      dmamd |= k_dmamd_sm_increment;
       break;
     case k_dmaca_addr_decrement:
-      dmamd |= (k_dmamd_sm_decrement << k_dmamd_sm_shift);
+      dmamd |= k_dmamd_sm_decrement;
       break;
     default:
       return k_rx_err_nack;
@@ -597,7 +561,6 @@ static rx_err_t internal_configure_address_mode(volatile rx_dmac_channel_regs_t*
   if (p_cfg->dst_addr_mode != k_dmaca_addr_fixed) {
     return k_rx_err_nack;
   }
-  dmamd |= (k_dmamd_dm_fixed << k_dmamd_dm_shift);
 
   p_ch->dmamd = dmamd;
   return k_rx_ok;
@@ -655,15 +618,20 @@ static rx_err_t internal_configure_channel_regs(volatile rx_dmac_channel_regs_t*
  * @details
  * Releases the DMACA module from module-stop by setting the DMST bit in
  * the DMAST register.  This function also clears the per-channel configured
- * bitmap and marks the module as initialized.  It is safe to call multiple
- * times. Re-initialization without a reset is a programming error and will
- * trigger an assertion in debug builds.
+ * bitmap and marks the module as initialized.
+ *
+ * Re-initialization without a reset is a programming error. In debug builds,
+ * an assertion will fire. In release builds, the function returns
+ * k_rx_err_invalid_state to signal the error condition.
  *
  * @return rx_err_t
  * @retval k_rx_ok  Initialization succeeded (module clock enabled, state reset).
+ * @retval k_rx_err_invalid_state Already initialized (re-initialization attempted
+ *                                without calling reset first).
  *
  * @pre  System clock configuration complete and __RX__ target (DMACA present).
  * @pre  No DMA transfers are active on any channel.
+ * @pre  Module must not already be initialized (s_dmaca_initialized == false).
  *
  * @post DMACA module clock is enabled (MSTP(DMAC) == 0).
  * @post s_dmaca_initialized == true
@@ -671,6 +639,9 @@ static rx_err_t internal_configure_channel_regs(volatile rx_dmac_channel_regs_t*
  *
  * @note This routine is NOT thread-safe and should be called once from a
  *       single initialization context prior to any RTOS tasks using DMACA.
+ * @warning Calling this function more than once without an intervening reset
+ *          is a programming error that will assert in debug builds and return
+ *          an error in release builds.
  *
  * @see dmac_dmast_reg(), k_dmast_dmst
  * @since 1.0.0
@@ -679,13 +650,12 @@ rx_err_t rx_dmaca_init(void)
 {
 
   RX_ASSERT(dmac_dmast_reg() != NULL, "DMAC init: DMAST register pointer NULL");
-  /* Idempotent: return early if already initialized.
-     * Re-initializing without a reset is a programming error; debug builds
-     * assert so callers can catch the mistake.  In release builds we simply
-     * return success to preserve idempotent behaviour. */
+  /* Re-initializing without a reset is a programming error.
+     * Debug builds assert so callers can catch the mistake.
+     * Release builds return an error to signal invalid state. */
   if (s_dmaca_initialized) {
-    RX_ASSERT(!s_dmaca_initialized, "DMAC init: re-initialization without reset");
-    return k_rx_ok;
+    RX_ASSERT(false, "DMAC init: re-initialization without reset");
+    return k_rx_err_invalid_state;
   }
 
   /* DMAC is not affected by MSTP (11.4 in User's Manual) */
@@ -694,7 +664,7 @@ rx_err_t rx_dmaca_init(void)
   *dmac_dmast_reg() |= (uint8_t)k_dmast_dmst;
 
   /* Force all channels into a known idle state by clearing DMCNT.DTE. */
-  for (uint8_t channel = 0U; channel < k_dmac_channel_count; ++channel) {
+  for (uint8_t channel = 0U; channel < k_dmaca_num_channels; ++channel) {
     volatile rx_dmac_channel_regs_t* p_ch = dmac_channel(channel);
     RX_ASSERT(p_ch != NULL, "DMAC init: channel register pointer NULL");
     p_ch->dmcnt &= ~(uint8_t)k_dmaca_dte_enable;
@@ -798,7 +768,7 @@ rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t* p_cfg)
   volatile rx_dmac_channel_regs_t* ch;
 
   /* quick sanity asserts for debugging; runtime validity is handled below */
-  RX_ASSERT(channel < k_dmac_channel_count, "DMACA invalid channel");
+  RX_ASSERT(channel < k_dmaca_num_channels, "DMACA invalid channel");
 
   /* validate channel index first, then configuration parameters */
   err = internal_validate_channel(channel);
@@ -813,6 +783,7 @@ rx_err_t rx_dmaca_configure(uint8_t channel, const dmaca_config_t* p_cfg)
 
   /* stop the channel before touching any registers */
   ch = dmac_channel(channel);
+  RX_ASSERT(ch != NULL, "DMACA configure: channel register pointer NULL");
   ch->dmcnt &= ~(uint8_t)k_dmaca_dte_enable;
 
   /* write basic registers */
@@ -881,7 +852,7 @@ rx_err_t rx_dmaca_start(uint8_t channel)
   rx_err_t err;
 
   /* Precondition assertions */
-  RX_ASSERT(channel < k_dmac_channel_count, "DMACA invalid channel index");
+  RX_ASSERT(channel < k_dmaca_num_channels, "DMACA invalid channel index");
 
   err = internal_validate_channel(channel);
   if (err != k_rx_ok) {
@@ -925,8 +896,7 @@ rx_err_t rx_dmaca_start(uint8_t channel)
  * @return rx_err_t
  * @retval k_rx_ok          Transfer completed before timeout.
  * @retval k_rx_err_timeout Timeout occurred; transfer engine disabled.
- * @retval k_rx_err_nack    Invalid channel or channel not configured.
- * @retval k_rx_err_nack    validate_channel() failure.
+ * @retval k_rx_err_nack    Invalid channel index or channel not configured.
  *
  * @pre rx_dmaca_init() and rx_dmaca_configure() have been called for the
  *      specified channel, and rx_dmaca_start() has been invoked.
@@ -949,7 +919,7 @@ rx_err_t rx_dmaca_wait(uint8_t channel, uint32_t timeout_cycles)
   bool     transfer_complete = false;
 
   /* Preconditions / assertions */
-  RX_ASSERT(channel < k_dmac_channel_count, "DMACA wait: invalid channel");
+  RX_ASSERT(channel < k_dmaca_num_channels, "DMACA wait: invalid channel");
 
   err = internal_validate_channel(channel);
   if (err != k_rx_ok) {
@@ -1047,9 +1017,9 @@ void rx_dmaca_abort(uint8_t channel)
 {
   /* Validate caller assumptions in debug builds. Public API remains tolerant
      * and performs a no-op for out-of-range indices. */
-  RX_ASSERT(channel < k_dmac_channel_count, "DMACA invalid channel index");
+  RX_ASSERT(channel < k_dmaca_num_channels, "DMACA invalid channel index");
 
-  if (channel >= k_dmac_channel_count) {
+  if (channel >= k_dmaca_num_channels) {
     /* no-op for invalid index, per API contract */
     return;
   }
@@ -1074,7 +1044,7 @@ void rx_dmaca_abort(uint8_t channel)
  * the caller merely wants to perform a single blocking DMA transfer.
  *
  * The timeout is scaled from the transfer_count using the constants defined
- * in dmaca_timeout_scale_t and is floored at RX_DMACA_POLL_TIMEOUT_CYCLES.
+ * in dmaca_timeout_scale_t and is floored at k_dmaca_poll_timeout_cycles.
  *
  * @param[in] channel DMACA channel index (0 .. k_dmaca_num_channels-1).
  * @param[in] p_cfg   Pointer to a valid dmaca_config_t structure.  Must not
@@ -1109,7 +1079,7 @@ rx_err_t rx_dmaca_transfer_blocking(uint8_t channel, const dmaca_config_t* p_cfg
   /* defensive assertions */
   RX_ASSERT(p_cfg != NULL, "DMACA transfer_blocking: p_cfg is NULL");
   RX_ASSERT(p_cfg->transfer_count != 0U, "DMACA transfer_blocking: zero transfer_count");
-  RX_ASSERT(channel < k_dmac_channel_count, "DMACA transfer_blocking: invalid channel");
+  RX_ASSERT(channel < k_dmaca_num_channels, "DMACA transfer_blocking: invalid channel");
 
   err = rx_dmaca_configure(channel, p_cfg);
   if (err != k_rx_ok) {
@@ -1128,7 +1098,7 @@ rx_err_t rx_dmaca_transfer_blocking(uint8_t channel, const dmaca_config_t* p_cfg
      * At 240/60 MHz (ICLK/PCLKB ratio = 4): 5 x 4 = 20 ICLK iterations
      * Add 25 % bus contention margin for EXDMAC priority preemption.
      *
-     * Minimum floor = RX_DMACA_POLL_TIMEOUT_CYCLES to cover DMA startup
+     * Minimum floor = k_dmaca_poll_timeout_cycles to cover DMA startup
      * overhead and very small blocks where the formula underestimates.
      */
   uint32_t transfer_count = (uint32_t)p_cfg->transfer_count;
@@ -1139,7 +1109,7 @@ rx_err_t rx_dmaca_transfer_blocking(uint8_t channel, const dmaca_config_t* p_cfg
   uint64_t prod   = (uint64_t)transfer_count * (uint64_t)cycles * (uint64_t)numerator;
   uint32_t scaled = (uint32_t)(prod / (uint64_t)denominator);
   uint32_t timeout =
-    (scaled > RX_DMACA_POLL_TIMEOUT_CYCLES) ? scaled : RX_DMACA_POLL_TIMEOUT_CYCLES;
+    (scaled > k_dmaca_poll_timeout_cycles) ? scaled : k_dmaca_poll_timeout_cycles;
 
   return rx_dmaca_wait(channel, timeout);
 }
