@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/rx_mtu.c */
-
 /**
  * @file rx_mtu.c
  * @brief MTU PWM Driver Implementation for RX72N
@@ -98,9 +96,10 @@
  * @see rx72n_mtu_regs.h Register structure definitions
  * @see RX72N Hardware Manual Chapter 24 - Multi-Function Timer Unit
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

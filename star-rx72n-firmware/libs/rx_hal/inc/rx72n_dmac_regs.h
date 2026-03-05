@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 /**
  * @file rx72n_dmac_regs.h
  * @brief RX72N DMA Controller (DMAC) Register Definitions
@@ -59,9 +58,10 @@
  * - Chapter 18: DMA Controller (DMACAa), pages 677-746
  * - Section 18.2: Register Descriptions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

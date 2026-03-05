@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_cmt_regs.h */
-
 /**
  * @file rx72n_cmt_regs.h
  * @brief RX72N Compare Match Timer (CMT) Register Definitions
@@ -136,7 +134,8 @@
  * @see rx72n_icu_regs.h ICU interrupt configuration for CMI interrupts
  *
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 /**
  * @file rx72n_mpu_regs.h
  * @brief RX72N Memory Protection Unit (MPU) Register Definitions
@@ -60,9 +59,10 @@
  * - Chapter 17: Memory-Protection Unit (MPU), pages 657-676
  * - Section 17.2: Register Descriptions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

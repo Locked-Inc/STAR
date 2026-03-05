@@ -1,4 +1,9 @@
-// Copyright 2026 Locked Inc.
+/**
+ * @file test_spi_driver.cpp
+ * @brief Unit tests for SpiDriver frame encoding, decoding, and CRC-32 verification.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_spi_bridge/spi_driver.hpp"
 

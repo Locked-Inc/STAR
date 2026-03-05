@@ -22,7 +22,8 @@
  * @see shared_data.h Source of system state data
  * @see hardware_config.h LED pin assignments
  *
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

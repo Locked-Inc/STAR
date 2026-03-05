@@ -1,4 +1,9 @@
-// Copyright 2026 Locked Inc.
+/**
+ * @file main.cpp
+ * @brief Entry point for running the star_spi_bridge node as a standalone process.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_spi_bridge/star_spi_driver_node.hpp"
 

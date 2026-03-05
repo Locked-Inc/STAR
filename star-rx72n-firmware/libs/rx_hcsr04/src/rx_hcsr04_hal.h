@@ -1,5 +1,3 @@
-/* lib/rx_hcsr04/src/rx_hcsr04_hal.h */
-
 /**
  * @file rx_hcsr04_hal.h
  * @brief HC-SR04 Hardware Abstraction Layer (HAL) Interface
@@ -262,7 +260,8 @@
  * @see rx_port_constants.h GPIO pin type definitions
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -59,8 +59,8 @@
  * @see r_bsp_config.h BSP_CFG_IO_LIB_ENABLE controls stdio support
  * @see uart_debug_puts() STAR custom UART output (preferred over printf)
  *
- * @copyright Copyright (c) 2013 Renesas Electronics Corporation
- * @copyright Modified 2026 STAR Project - Added comprehensive Doxygen
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
+ * @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
  *
  * @par History
  * - 28.02.2019 v3.00 - Merged all devices, added GNUC/ICCRX (Renesas)

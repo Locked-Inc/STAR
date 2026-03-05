@@ -408,10 +408,11 @@
  * - 1-Wire Protocol Specification: Book of iButton Standards (Maxim Integrated)
  * - CRC-8 Algorithm: Polynomial 0x31 (x^8 + x^5 + x^4 + 1)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

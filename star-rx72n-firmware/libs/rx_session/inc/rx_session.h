@@ -58,9 +58,12 @@
  *
  * @since Version 1.0.0
  *
- * @par STAR Project - Texas A&M University
+ * @par Locked, Inc.
  * @par February 2026
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+*/
 
 #pragma once
 

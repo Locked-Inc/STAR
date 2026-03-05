@@ -1,4 +1,9 @@
-// Copyright 2026 Locked Inc.
+/**
+ * @file spi_message_converter.cpp
+ * @brief Message conversion implementation between ROS2 message types and STAR protobuf for the SPI bridge.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_spi_bridge/spi_message_converter.hpp"
 
@@ -224,7 +229,8 @@ void SpiMessageConverter::telemetry_to_joint_state(
  * @see SpiMessageConverter::telemetry_to_joint_state Related telemetry conversion.
  *
  * @since Version 1.0.0
- */
+
+*/
 void SpiMessageConverter::telemetry_to_obstacle_ranges(
   const star::v1::TelemetryData & telemetry,
   sensor_msgs::msg::Range & front_left,

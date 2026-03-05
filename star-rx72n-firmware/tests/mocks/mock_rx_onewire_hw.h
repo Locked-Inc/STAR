@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_onewire_hw.h */
-
 /**
  * @file mock_rx_onewire_hw.h
  * @brief Mock 1-Wire hardware layer for DS18B20 temperature sensor testing
@@ -45,9 +43,10 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

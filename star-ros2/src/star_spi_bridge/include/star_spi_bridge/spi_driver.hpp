@@ -10,7 +10,8 @@
  * FLAGS(1) + PAYLOAD(N) + CRC-32(4), all multi-byte fields little-endian.
  *
  * @author Locked Inc.
- * @copyright Copyright 2026 Locked Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 
@@ -73,7 +74,7 @@ enum class FrameFlags : uint8_t
   SoftNack = 0x10,    /**< NACK with recoverable soft-error info (bit 4) */
 };
 
-/// @brief Bitmask covering all valid FrameFlags bits (bits 0-4); bits 5-7 are reserved.
+/** @brief Bitmask covering all valid FrameFlags bits (bits 0-4); bits 5-7 are reserved. */
 constexpr uint8_t FRAME_FLAGS_MASK = 0x1Fu;
 
 /**

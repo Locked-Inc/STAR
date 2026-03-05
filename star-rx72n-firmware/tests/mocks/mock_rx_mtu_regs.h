@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_mtu_regs.h */
-
 /**
  * @file mock_rx_mtu_regs.h
  * @brief Mock MTU register structures for timer/encoder unit testing
@@ -46,9 +44,10 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

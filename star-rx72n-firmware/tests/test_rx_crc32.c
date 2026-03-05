@@ -1,5 +1,3 @@
-/* tests/test_rx_crc32.c */
-
 /**
  * @file test_rx_crc32.c
  * @brief Comprehensive unit tests for IEEE 802.3 CRC-32 implementation with hardware/software validation
@@ -104,9 +102,10 @@
  * - **Interface Segregation:** Tests only public API functions (minimal interface)
  * - **Dependency Inversion:** Tests depend on rx_crc.h interface, not implementation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  * @since Version 1.0.0
  */

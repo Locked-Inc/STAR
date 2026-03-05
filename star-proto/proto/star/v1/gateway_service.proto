@@ -9,8 +9,8 @@
 // - MKS units (meters per second, radians)
 // - All fields documented with units and valid ranges
 //
-// STAR Project - Texas A&M University
-// January 2026
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 
 syntax = "proto3";
 

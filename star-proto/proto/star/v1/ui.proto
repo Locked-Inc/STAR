@@ -6,8 +6,8 @@
 // - MKS units (meters, radians)
 // - All fields documented with units
 //
-// STAR Project - Texas A&M University
-// February 2026
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 
 syntax = "proto3";
 

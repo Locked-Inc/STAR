@@ -1,5 +1,3 @@
-/* lib/rx_bus/inc/rx_bus_command.h */
-
 /**
  * @file rx_bus_command.h
  * @brief Command Pattern interface for polymorphic bus operations
@@ -233,9 +231,10 @@
  * @see rx_bus_i2c.h I2C-specific command implementations
  * @see rx_bus_gpio.h GPIO-specific command implementations
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

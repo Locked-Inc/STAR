@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_gptw.h */
-
 /**
  * @file mock_rx_gptw.h
  * @brief Mock GPTW (General PWM Timer) driver for PWM unit testing
@@ -44,9 +42,10 @@
  * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Dependency Inversion (motor control depends on GPTW interface)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

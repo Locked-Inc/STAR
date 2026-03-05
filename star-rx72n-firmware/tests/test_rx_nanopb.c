@@ -1,5 +1,3 @@
-/* tests/test_rx_nanopb.c */
-
 /**
  * @file test_rx_nanopb.c
  * @brief Comprehensive Unit Tests for nanopb Protocol Buffer Integration Layer
@@ -254,7 +252,8 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <math.h>

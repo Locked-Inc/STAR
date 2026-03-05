@@ -1,5 +1,3 @@
-/* lib/rx_bus/inc/rx_bus_adc.h */
-
 /**
  * @file rx_bus_adc.h
  * @brief ADC (Analog-to-Digital Converter) Bus Abstraction for RX72N
@@ -324,7 +322,8 @@
  *
  * @version 1.0.0
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

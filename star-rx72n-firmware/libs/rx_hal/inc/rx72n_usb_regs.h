@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_usb_regs.h */
-
 /**
  * @file rx72n_usb_regs.h
  * @brief RX72N USB 2.0 Full-Speed Host/Function Module Register Definitions
@@ -20,7 +18,8 @@
  *   NOT 32-bit. Added padding to maintain correct struct offsets.
  *
  * @date 2026-02-03
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

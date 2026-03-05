@@ -1,5 +1,3 @@
-/* tests/mocks/mock_time.h */
-
 /**
  * @file mock_time.h
  * @brief Mock time interface for deterministic timing tests without delays
@@ -37,8 +35,9 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion, L - Liskov Substitution
  *
- * @author STAR Team
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @author Locked, Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

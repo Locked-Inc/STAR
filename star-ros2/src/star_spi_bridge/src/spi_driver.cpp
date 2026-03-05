@@ -11,7 +11,8 @@
  * @see star_spi_bridge/spi_driver.hpp
  *
  * @author Locked Inc.
- * @copyright Copyright 2026 Locked Inc.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

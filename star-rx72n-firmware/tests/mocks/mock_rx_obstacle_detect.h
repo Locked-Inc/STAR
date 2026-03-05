@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_obstacle_detect.h */
-
 /**
  * @file mock_rx_obstacle_detect.h
  * @brief Mock obstacle detection module for autonomous navigation testing
@@ -23,9 +21,10 @@
  * @par NASA Power of 10: [OK] Static allocation, bounded loops
  * @par SOLID: D - Navigation depends on obstacle detection interface
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

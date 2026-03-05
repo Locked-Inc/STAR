@@ -1,5 +1,3 @@
-/* lib/rx_crc/inc/rx_crc.h */
-
 /**
  * @file rx_crc.h
  * @brief Cyclic Redundancy Check (CRC) API for Data Integrity Validation
@@ -343,7 +341,8 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

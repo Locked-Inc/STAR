@@ -58,9 +58,10 @@
  * @see rx_hcsr04.c Main driver using this ISR layer
  * @see RX72N Manual Chapter 15 - ICU (Interrupt Controller Unit)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  * @version 1.0.0
  *

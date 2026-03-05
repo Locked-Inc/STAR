@@ -1,5 +1,3 @@
-/* lib/rx_bus/inc/rx_bus_config.h */
-
 /**
  * @file rx_bus_config.h
  * @brief Bus configuration creation helpers for RX72N peripheral abstraction
@@ -150,9 +148,10 @@
  * @see rx_bus_manager.h for registering configurations with the bus manager
  * @see rx_err.h for error code definitions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

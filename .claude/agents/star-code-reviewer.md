@@ -80,7 +80,7 @@ Apply each rule rigorously with severity classification:
 - Naming: `snake_case` functions/variables, `SCREAMING_SNAKE` macros, `snake_case_t` types, `k_` prefix for enum values
 - Unit suffixes: `_m`, `_mps`, `_rad`, `_celsius`, `_ms`, `_us`, `_ma`, `_mv`
 - Inclusive terminology: Controller/Peripheral (NOT master/slave), COPI/CIPO (NOT MOSI/MISO)
-- File documentation: Path comment first line, Doxygen `@file`, `@brief`, `@date`, `@copyright`
+- File documentation: Doxygen block starts on line 1 (`@file`, `@brief`, `@copyright`)
 
 ### Step 5: Test Coverage Analysis
 

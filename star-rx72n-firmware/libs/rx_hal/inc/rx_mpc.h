@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx_mpc.h */
-
 /**
  * @file rx_mpc.h
  * @brief Multi-Function Pin Controller (MPC) Driver API for RX72N
@@ -222,9 +220,10 @@
  * @see rx_port_constants.h Pin enumeration definitions
  * @see docs/sections/03_hardware_pinout.tex Complete STAR pinout documentation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

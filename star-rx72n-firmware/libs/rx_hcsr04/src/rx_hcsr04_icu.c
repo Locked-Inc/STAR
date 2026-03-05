@@ -28,9 +28,10 @@
  * - Single Responsibility: Only ICU enable/disable; pin config in rx_mpc, ISR in rx_hcsr04_isr
  * - Dependency Inversion: Uses rx_irq_filter.h abstraction for digital filter configuration
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  * @version 1.0.0
  */

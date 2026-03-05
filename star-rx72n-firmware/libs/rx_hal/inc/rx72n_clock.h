@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_clock.h */
-
 /**
  * @file rx72n_clock.h
  * @brief RX72N Clock Frequency Definitions and Configuration
@@ -209,10 +207,11 @@
  * @see [rx_clock_power_init.c](../../src/rx_clock_power_init.c) Clock initialization code
  * @see [hardware_init.c](../../src/hardware_init.c) Calls clock initialization
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  */

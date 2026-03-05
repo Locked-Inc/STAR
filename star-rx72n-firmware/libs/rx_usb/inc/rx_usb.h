@@ -1,5 +1,3 @@
-/* lib/rx_usb/inc/rx_usb.h */
-
 /**
  * @file rx_usb.h
  * @brief Multi-Port USB CDC-ACM Composite Device Driver API for RX72N
@@ -366,7 +364,8 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

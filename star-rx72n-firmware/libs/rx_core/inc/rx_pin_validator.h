@@ -1,5 +1,3 @@
-/* lib/rx_core/inc/rx_pin_validator.h */
-
 /**
  * @file rx_pin_validator.h
  * @brief Concrete Pin Validator Implementation - Dependency Inversion Pattern
@@ -247,7 +245,8 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

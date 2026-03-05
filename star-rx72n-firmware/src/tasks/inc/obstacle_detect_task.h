@@ -24,7 +24,8 @@
  * @see rx_hcsr04.h HC-SR04 driver
  * @see shared_data.h Obstacle distance data
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

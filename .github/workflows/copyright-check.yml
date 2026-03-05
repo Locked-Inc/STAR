@@ -1,0 +1,30 @@
+# copyright-check.yml - Copyright header enforcement for STAR project
+#
+# Rejects any commit that introduces a missing or malformed copyright header
+# in C/C++ source files. Enforces:
+#   - SPDX-License-Identifier: MIT  (Locked Inc. owned files)
+#   - @copyright Copyright (c) 2026 Locked Inc.  (Locked Inc. owned files)
+#   - @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics
+#     Corporation source.  (Renesas-derived files)
+#
+# Copyright (c) 2026 Locked Inc.
+# SPDX-License-Identifier: MIT
+
+name: Copyright Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  copyright-check:
+    name: Copyright header enforcement
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check copyright headers
+        run: python3 scripts/utils/check-copyright.py

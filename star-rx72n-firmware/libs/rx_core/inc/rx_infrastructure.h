@@ -1,5 +1,3 @@
-/* lib/rx_core/inc/rx_infrastructure.h */
-
 /**
  * @file rx_infrastructure.h
  * @brief Global Infrastructure Initialization and Service Locator
@@ -250,7 +248,8 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

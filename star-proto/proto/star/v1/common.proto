@@ -8,8 +8,8 @@
 // - Enum zero value ends with _UNKNOWN
 // - All fields documented with units
 //
-// STAR Project - Texas A&M University
-// December 2025
+// Copyright (c) 2026 Locked Inc.
+// SPDX-License-Identifier: MIT
 
 syntax = "proto3";
 

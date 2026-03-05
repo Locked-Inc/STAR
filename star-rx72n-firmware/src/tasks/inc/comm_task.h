@@ -24,7 +24,8 @@
  * @see rx_nanopb.h Protocol Buffers encoder/decoder
  * @see rx_frame.h Frame protocol with CRC
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,5 +1,3 @@
-/* lib/rx_pid/src/rx_pid.c */
-
 /**
  * @file rx_pid.c
  * @brief PID Controller Implementation for Closed-Loop Motor Control
@@ -149,9 +147,10 @@
  *   +--> Unit tests: tests/test_rx_pid.c
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_pid.h for comprehensive API documentation and usage examples
  * @see matlab/motor_model_1st_order.m for motor system identification

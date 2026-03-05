@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_onewire_hw.c */
-
 /**
  * @file mock_rx_onewire_hw.c
  * @brief Mock Hardware Implementation for OneWire Testing
@@ -8,7 +6,8 @@
  * access functions for host-side OneWire driver testing.
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rx_onewire_hw.h"

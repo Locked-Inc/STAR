@@ -1,5 +1,3 @@
-/* tests/mocks/mock_hardware_init.h */
-
 /**
  * @file mock_hardware_init.h
  * @brief Mock hardware initialization for system startup testing
@@ -20,9 +18,10 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: S - Single responsibility (init only)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-29
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

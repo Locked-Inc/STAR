@@ -1,5 +1,3 @@
-/* lib/rx_bus/inc/rx_bus_manager.h */
-
 /**
  * @file rx_bus_manager.h
  * @brief Unified Bus Manager API for RX72N Multi-Protocol Communication
@@ -178,9 +176,10 @@
  * @see rx_error_interface.h Error handler abstraction (DIP)
  * @see rx_pin_interface.h Pin validator abstraction (DIP)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,4 +1,9 @@
-// Copyright 2026 Locked Inc.
+/**
+ * @file star_spi_driver_node.cpp
+ * @brief ROS2 lifecycle node implementation for the STAR SPI bridge to the RX72N peripheral MCU.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_spi_bridge/star_spi_driver_node.hpp"
 
@@ -283,7 +288,8 @@ void StarSpiDriverNode::cmd_vel_callback(
  * @see StarSpiDriverNode::tx_seq_      Sequence counter incremented on success.
  *
  * @since Version 1.0.0
- */
+
+*/
 void StarSpiDriverNode::emergency_stop_callback(
   const std_msgs::msg::Bool::SharedPtr msg)
 {

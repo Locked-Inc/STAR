@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/adc.c */
-
 /**
  * @file adc.c
  * @brief ADC Driver for RX72N S12ADFa - 12-bit Analog-to-Digital Conversion
@@ -146,9 +144,10 @@
  * @see hardware.h ADC unit and channel types
  * @see rx_register_protection.h Module stop register access
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

@@ -1,5 +1,3 @@
-/* lib/rx_motor/inc/rx_motor.h */
-
 /**
  * @file rx_motor.h
  * @brief Brushed DC Motor Control API using RX72N GPTW PWM with H-Bridge Driver Support
@@ -230,9 +228,10 @@
  *   +--> Application-level robot control
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see rx_gptw.h for GPTW peripheral API
  * @see lib/rx_pid/ for PID controller (velocity control)

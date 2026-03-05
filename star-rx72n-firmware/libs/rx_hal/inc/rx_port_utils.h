@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx_port_utils.h */
-
 /**
  * @file rx_port_utils.h
  * @brief PORT utility functions for RX72N GPIO register access
@@ -119,9 +117,10 @@
  * @see rx72n_port_regs.h PORT register structure and memory map
  * @see rx_port_constants.h Port number constant definitions
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

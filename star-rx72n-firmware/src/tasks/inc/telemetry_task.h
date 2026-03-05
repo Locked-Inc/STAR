@@ -22,7 +22,8 @@
  * @see rx_nanopb.h Protocol Buffers encoder
  * @see shared_data.h Source of telemetry data
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

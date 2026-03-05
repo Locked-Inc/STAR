@@ -1,5 +1,3 @@
-/* tests/mocks/mock_riic_hal.c */
-
 /**
  * @file mock_riic_hal.c
  * @brief Mock RIIC (I2C) HAL Function Implementation
@@ -7,7 +5,8 @@
  * Provides mock implementations of RIIC HAL functions for unit testing.
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_riic_hal.h"

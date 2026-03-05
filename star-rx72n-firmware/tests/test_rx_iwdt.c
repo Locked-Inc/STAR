@@ -261,9 +261,10 @@
  * @see DOXYGEN_ROADMAP.md Project documentation tracking
  * @see docs/sections/06_nasa_power_of_10.tex Safety-critical coding standards
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-08
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

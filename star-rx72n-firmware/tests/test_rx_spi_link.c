@@ -1,5 +1,3 @@
-/* tests/test_rx_spi_link.c */
-
 /**
  * @file test_rx_spi_link.c
  * @brief Unit Tests for SPI Link Layer (HARQ)
@@ -18,10 +16,10 @@
  * 5. **Edge Cases**: NULL pointers, uninitialized handles, buffer limits
  * 6. **Behavioral**: State transitions, retry enforcement, error recovery
  *
- * @author STAR Project Team - Texas A&M University
+ * @author Locked, Inc.
  * @date January 2026
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
  *
  * @par License
  * SPDX-License-Identifier: MIT

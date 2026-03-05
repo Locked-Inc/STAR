@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/gpio.c */
-
 /**
  * @file gpio.c
  * @brief GPIO Driver for RX72N - General Purpose Input/Output Control
@@ -150,9 +148,10 @@
  * @see rx72n_regs.h Register definitions
  * @see rx_pin_validator.h Pin conflict detection
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

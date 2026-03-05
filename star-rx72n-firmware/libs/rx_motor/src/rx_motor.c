@@ -1,5 +1,3 @@
-/* lib/rx_motor/src/rx_motor.c */
-
 /**
  * @file rx_motor.c
  * @brief Brushed DC Motor Control Implementation for RX72N GPTW PWM with DRV8263H H-Bridge
@@ -208,9 +206,10 @@
  * @see rx_pid.h PID controller for closed-loop velocity control
  * @see rx_encoder.h Quadrature encoder reading for velocity feedback
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  */
 

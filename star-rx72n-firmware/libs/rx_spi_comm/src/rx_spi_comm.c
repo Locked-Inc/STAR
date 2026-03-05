@@ -1,5 +1,3 @@
-/* lib/rx_spi_comm/src/rx_spi_comm.c */
-
 /**
  * @file rx_spi_comm.c
  * @brief High-Level SPI Frame Protocol Communication Layer Implementation
@@ -294,7 +292,8 @@
  *
  * @since Version 1.0.0
  * @date 2026-01-01
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_spi_comm.h"

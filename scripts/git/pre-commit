@@ -40,6 +40,20 @@ if [[ "$ascii_ok" == "false" ]]; then
 fi
 
 # -----------------------------------------------------------------------------
+# COPYRIGHT HEADER CHECK
+# -----------------------------------------------------------------------------
+copyright_files=$(echo "$staged_files" | grep -E "\.(c|h|cpp|hpp)$" || true)
+
+if [[ -n "$copyright_files" ]]; then
+    if ! python3 scripts/utils/check-copyright.py $copyright_files; then
+        echo ""
+        echo "Fix copyright headers then re-stage the file(s)."
+        echo "See CLAUDE.md 'Doxygen Documentation Requirements' for the required header format."
+        exit 1
+    fi
+fi
+
+# -----------------------------------------------------------------------------
 # SECRET SCANNING (TruffleHog)
 # -----------------------------------------------------------------------------
 if command -v trufflehog &>/dev/null; then

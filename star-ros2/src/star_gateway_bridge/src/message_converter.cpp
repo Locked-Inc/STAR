@@ -1,10 +1,9 @@
-// message_converter.cpp - ROS2 <-> Protobuf Message Converter Implementation
-// Bidirectional conversion between ROS2 standard messages and STAR Protocol
-// Buffers.
-//
-// STAR Project - Texas A&M University
-// Copyright 2026 STAR Project
-// January 2026
+/**
+ * @file message_converter.cpp
+ * @brief Bidirectional conversion between ROS2 standard messages and STAR Protocol Buffers.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include "star_gateway_bridge/message_converter.hpp"
 

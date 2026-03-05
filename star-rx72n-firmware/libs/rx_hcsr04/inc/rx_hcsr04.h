@@ -1,5 +1,3 @@
-/* lib/rx_hcsr04/inc/rx_hcsr04.h */
-
 /**
  * @file rx_hcsr04.h
  * @brief HC-SR04 Ultrasonic Distance Sensor Driver for RX72N
@@ -259,7 +257,8 @@
  * @see rx_ds18b20.h Temperature sensor integration
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

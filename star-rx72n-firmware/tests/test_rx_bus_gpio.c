@@ -1,5 +1,3 @@
-/* tests/test_rx_bus_gpio.c */
-
 /**
  * @file test_rx_bus_gpio.c
  * @brief Unit Tests for GPIO Bus Abstraction Layer
@@ -44,10 +42,11 @@
  * @see rx_bus_gpio.h
  * @see rx_bus_manager.h
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-26
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdbool.h>

@@ -37,7 +37,8 @@
  * @see RX72N User's Manual Section 9.2.2 (MEMWAIT register)
  *
  * @since Version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,11 +1,10 @@
-/* tests/mocks/mock_rx_motor.c */
-
 /**
  * @file mock_rx_motor.c
  * @brief Mock Motor Control Implementation
  *
  * @date 2026-01-06
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rx_motor.h"

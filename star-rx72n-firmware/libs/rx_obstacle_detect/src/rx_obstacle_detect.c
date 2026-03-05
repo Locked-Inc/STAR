@@ -1,5 +1,3 @@
-/* lib/rx_obstacle_detect/src/rx_obstacle_detect.c */
-
 /**
  * @file rx_obstacle_detect.c
  * @brief Safety-Critical Obstacle Detection Implementation with ThreadX Task
@@ -147,9 +145,10 @@
  * @see rx_hcsr04.c HC-SR04 sensor driver
  * @see rx_motor.c Motor control with emergency stop
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  *
  * @since Version 1.0.0

@@ -16,7 +16,8 @@
  * @see r_bsp.h Boot-compatible BSP header
  * @see boot_common.h Common boot definitions
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

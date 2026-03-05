@@ -1,5 +1,3 @@
-/* lib/rx_usb/inc/rx_usb_endpoints.h */
-
 /**
  * @file rx_usb_endpoints.h
  * @brief USB CDC Endpoint Address Definitions for RX72N Composite Device
@@ -145,9 +143,10 @@
  * - USB CDC Specification 1.2 (Communications Device Class)
  * - RX72N User's Manual: Hardware, Chapter 40 (USB 2.0)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  *
  * @internal

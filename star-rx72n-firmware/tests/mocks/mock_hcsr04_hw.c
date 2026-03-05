@@ -1,5 +1,3 @@
-/* tests/mocks/mock_hcsr04_hw.c */
-
 /**
  * @file mock_hcsr04_hw.c
  * @brief Mock HC-SR04 Hardware Layer Implementation
@@ -10,7 +8,8 @@
  * and error injection for comprehensive unit testing without real hardware.
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_hcsr04_hw.h"

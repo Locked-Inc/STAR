@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/rx_poeg.c */
-
 /**
  * @file rx_poeg.c
  * @brief POEG Motor Fault Protection Driver Implementation
@@ -22,9 +20,10 @@
  * - Noise filter enabled with PCLKB/8 sampling (~400ns at 60MHz)
  * - GTINTAD links each GPTW channel to its corresponding POEG group
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

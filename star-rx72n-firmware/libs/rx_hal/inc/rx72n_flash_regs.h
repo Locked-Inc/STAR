@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_flash_regs.h */
-
 /**
  * @file rx72n_flash_regs.h
  * @brief RX72N Flash Memory Register Definitions
@@ -78,9 +76,10 @@
  * @see rx_flash.h Higher-level flash API (when implemented)
  * @see rx72n_regs.h Main register include file
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 
@@ -989,8 +988,10 @@ typedef enum : uint32_t {
   k_code_flash_block_32k = 0x00008000, /**< Erase block size for blocks 8+ (32 KB each) */
   k_data_flash_block_64  = 0x00000040, /**< Erase block size for data flash (64 bytes each) */
 
-  k_code_flash_program_unit = 128U, /**< Minimum program unit for code flash (bytes, must be aligned) */
-  k_data_flash_program_unit = 4U,   /**< Minimum program unit for data flash (bytes, must be aligned) */
+  k_code_flash_program_unit =
+    128U, /**< Minimum program unit for code flash (bytes, must be aligned) */
+  k_data_flash_program_unit =
+    4U, /**< Minimum program unit for data flash (bytes, must be aligned) */
 } rx_flash_memory_layout_t;
 
 /* =============================================================================

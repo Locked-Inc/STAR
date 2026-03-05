@@ -1,5 +1,3 @@
-/* tests/mocks/mock_sci_regs.h */
-
 /**
  * @file mock_sci_regs.h
  * @brief Mock SCI (UART/Serial) register structures for unit testing
@@ -50,9 +48,10 @@
  * @par NASA Power of 10: [OK] Static allocation
  * @par SOLID: D - Dependency Inversion
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,5 +1,3 @@
-/* tests/test_rx_hcsr04.c */
-
 /**
  * @file test_rx_hcsr04.c
  * @brief Unit Tests for HC-SR04 Ultrasonic Distance Sensor Driver
@@ -344,7 +342,8 @@
  * @endcode
  *
  * @date 2026-01-02
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <string.h>

@@ -1,5 +1,3 @@
-/* src/hardware_init.c */
-
 /**
  * @file hardware_init.c
  * @brief Application-Specific Hardware Initialization - Motor Control, Sensors, Communication
@@ -190,7 +188,8 @@
  * - v1.0.0 (2026-01): Initial implementation with timers and UART
  *
  * @date 2026-01-14
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "hardware_init.h"

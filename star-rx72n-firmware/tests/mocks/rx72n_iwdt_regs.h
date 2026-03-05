@@ -1,5 +1,3 @@
-/* tests/mocks/rx72n_iwdt_regs.h */
-
 /**
  * @file rx72n_iwdt_regs.h
  * @brief Mock IWDT Register Definitions for Unit Testing
@@ -11,7 +9,8 @@
  * the real header.
  *
  * @date 2026-02-10
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

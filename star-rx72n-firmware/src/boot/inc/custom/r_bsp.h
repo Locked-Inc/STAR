@@ -18,7 +18,8 @@
  * @see boot_common.h Common boot definitions
  * @see r_bsp_config.h BSP configuration macros
  *
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

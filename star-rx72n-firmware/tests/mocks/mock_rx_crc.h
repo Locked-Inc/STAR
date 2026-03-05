@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rx_crc.h */
-
 /**
  * @file mock_rx_crc.h
  * @brief Mock CRC calculation functions for protocol testing
@@ -27,9 +25,10 @@
  * @par NASA Power of 10: [OK] Bounded loops (CRC table lookup)
  * @par SOLID: S - Single responsibility (CRC only)
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

@@ -1,4 +1,9 @@
-// Copyright 2026 Locked Inc.
+/**
+ * @file test_spi_message_converter.cpp
+ * @brief Unit tests for SpiMessageConverter ROS2-to-protobuf and protobuf-to-ROS2 conversions.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+ */
 
 #include <cmath>
 

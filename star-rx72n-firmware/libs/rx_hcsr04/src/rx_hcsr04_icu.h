@@ -53,9 +53,10 @@
  * @see docs/sections/06_nasa_power_of_10.tex NASA Power of 10 rules applied in this module
  * @see docs/sections/01_nanopb_protocol.tex System architecture and design document
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-02-16
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @version 1.0.0
  * @since Version 1.0.0
  *

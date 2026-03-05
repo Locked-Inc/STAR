@@ -1,5 +1,3 @@
-/* lib/rx_hal/src/timer.c */
-
 /**
  * @file timer.c
  * @brief ThreadX system tick timer implementation using RX72N CMT0
@@ -181,9 +179,10 @@
  * @see RX72N User's Manual Chapter 23: Compare Match Timer (CMT)
  * @see tx_initialize_low_level.c ThreadX port configuration
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdint.h>

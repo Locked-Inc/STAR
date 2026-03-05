@@ -15,7 +15,9 @@
 * http://www.renesas.com/disclaimer
 *
 * Copyright (C) 2019 Renesas Electronics Corporation. All rights reserved.
-***********************************************************************************************************************/
+**********************************************************************************************************************
+* @copyright Copyright (c) 2026 Locked Inc. Based on Renesas Electronics Corporation source.
+*/
 /***********************************************************************************************************************
 * MODIFICATION NOTICE
 * This file has been modified by the STAR project for use in the STAR robotics platform.

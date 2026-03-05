@@ -1,5 +1,3 @@
-/* tests/mocks/mock_usb_hw.h */
-
 /**
  * @file mock_usb_hw.h
  * @brief Mock USB CDC hardware layer for serial communication testing
@@ -22,7 +20,8 @@
  * @par SOLID: D - USB CDC depends on hardware interface
  *
  * @date 2026-01-04
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

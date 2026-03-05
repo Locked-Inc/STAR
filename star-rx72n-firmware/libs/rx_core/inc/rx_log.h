@@ -1,5 +1,3 @@
-/* lib/rx_core/inc/rx_log.h */
-
 /**
  * @file rx_log.h
  * @brief Type-Safe Logging System for RX72N Firmware with Zero-Overhead Compile-Time Filtering
@@ -232,9 +230,10 @@
  *   +--> rx_usb.h (optional, if USB_LOG_MIRROR=1)
  * ```
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @see uart.h for UART debug output implementation
  * @see rx_err.h for error code definitions

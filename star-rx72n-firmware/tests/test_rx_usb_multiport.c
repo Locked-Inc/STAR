@@ -1,5 +1,3 @@
-/* tests/test_rx_usb_multiport.c */
-
 /**
  * @file test_rx_usb_multiport.c
  * @brief Unit Tests for Multi-Port USB CDC Composite Device with 3-Port Architecture
@@ -156,9 +154,10 @@
  * @see RX72N User's Manual section 32 - USB0 module specification
  * @see USB CDC-ACM specification 1.2 - Serial emulation protocol
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-30
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @test Tests run via Unity framework with: make test_rx_usb_multiport
  */

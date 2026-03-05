@@ -1,5 +1,3 @@
-/* lib/rx_bus/src/rx_bus_i2c.c */
-
 /**
  * @file rx_bus_i2c.c
  * @brief I2C Bus Abstraction Implementation - Callback-Based Thread-Safe Operations
@@ -169,9 +167,10 @@
  * @see hardware.h RIIC HAL driver interface
  * @see docs/sections/03_hardware_pinout.tex I2C pin assignments
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

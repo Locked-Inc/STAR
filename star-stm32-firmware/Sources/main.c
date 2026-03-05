@@ -14,7 +14,10 @@
  * If no LICENSE file comes with this software, it is provided AS-IS.
  *
  ******************************************************************************
- */
+ 
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
+*/
 
 #include <stdint.h>
 

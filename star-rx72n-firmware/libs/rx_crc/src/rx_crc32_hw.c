@@ -1,5 +1,3 @@
-/* lib/rx_crc/src/rx_crc32_hw.c */
-
 /**
  * @file rx_crc32_hw.c
  * @brief RX72N Hardware CRC Calculator - IEEE 802.3 CRC-32 Acceleration
@@ -295,9 +293,10 @@
  * - https://renesas.github.io/fsp/group___c_r_c.html
  * - CS+ Code Generator API: CRC Calculator documentation
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
- * @copyright Copyright (c) 2026 STAR Project - MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_crc_internal.h"

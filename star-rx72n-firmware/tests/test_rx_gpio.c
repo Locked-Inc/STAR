@@ -1,4 +1,3 @@
-/* SPDX-License-Identifier: MIT */
 /**
  * @file test_rx_gpio.c
  * @brief Unit Tests for RX72N GPIO (PORT) Register Definitions
@@ -60,9 +59,10 @@
  * @see rx72n_port_regs.h GPIO register definitions
  * @see Ch22_IO_Ports.txt Manual chapter extract
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

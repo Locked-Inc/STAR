@@ -1,5 +1,3 @@
-/* tests/mocks/rx72n_cmt_regs.h */
-
 /**
  * @file rx72n_cmt_regs.h
  * @brief Mock CMT (Compare Match Timer) Register Definitions for Host-Side Unit Testing
@@ -142,9 +140,10 @@
  * - **Interface Segregation (I)**: [OK] Minimal interface (2 type aliases only)
  * - **Dependency Inversion (D)**: [OK] High-level code depends on abstract types, not concrete mock/real implementations
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @version 1.0.0
  * @since Version 1.0.0

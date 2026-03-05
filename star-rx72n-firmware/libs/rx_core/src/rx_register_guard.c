@@ -185,10 +185,11 @@
  * @see RX72N User's Manual Chapter 13: I/O Ports
  * @see RX72N User's Manual Chapter 9: Module Stop Function
  *
- * @author STAR Team
+ * @author Locked, Inc.
  * @date 2026-01-28
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. Licensed under MIT.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @since Version 1.0.0
  */

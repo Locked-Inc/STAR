@@ -1,5 +1,3 @@
-/* tests/mocks/mock_rspi.c */
-
 /**
  * @file mock_rspi.c
  * @brief Mock RSPI Hardware Layer Implementation for Host-Side Testing
@@ -9,7 +7,8 @@
  * for testing the SPI communication layer.
  *
  * @date 2026-01-05
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "mock_rspi.h"

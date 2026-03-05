@@ -1,5 +1,3 @@
-/* lib/rx_hal/inc/rx72n_port_regs.h */
-
 /**
  * @file rx72n_port_regs.h
  * @brief RX72N PORT (GPIO) register definitions for digital pin control
@@ -152,10 +150,11 @@
  * @see RX72N Hardware Manual Chapter 21 for complete I/O Ports specification
  * @see DOXYGEN_ROADMAP.md for documentation standards
  *
- * @author STAR Project Contributors
+ * @author Locked, Inc. Contributors
  * @date 2026-01-05
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  *
  * @defgroup port_regs PORT Register Definitions
  * @{

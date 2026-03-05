@@ -1,5 +1,3 @@
-/* lib/rx_comm_manager/src/rx_comm_manager.c */
-
 /**
  * @file rx_comm_manager.c
  * @brief Unified Multi-Channel Communication Manager Implementation
@@ -380,7 +378,8 @@
  * - rx_usb - USB hardware abstraction
  *
  * @date 2026-01-27
- * @copyright Copyright (c) 2026 STAR Project
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  *
  * @see rx_comm_manager.h Full API documentation
