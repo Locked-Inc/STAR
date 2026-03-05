@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 /**
  * @file spi_message_converter.cpp
- * @brief Differential drive kinematics
+ * @brief Message conversion implementation between ROS2 message types and STAR protobuf for the SPI bridge.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 /**
  * @file test_message_converter.cpp
- * @brief Licensed under MIT
+ * @brief Unit tests for the MessageConverter functions between ROS2 and STAR protobuf messages.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

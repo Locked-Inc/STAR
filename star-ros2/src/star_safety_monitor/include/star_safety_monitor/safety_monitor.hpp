@@ -1,5 +1,4 @@
 // Copyright 2026 Locked Inc.
-// SPDX-License-Identifier: MIT
 /**
  * @file safety_monitor.hpp
  * @brief SafetyMonitor class for obstacle and system health monitoring.

@@ -1,7 +1,7 @@
 // Copyright 2026 Locked Inc.
 /**
  * @file message_converter.cpp
- * @brief Bidirectional conversion between ROS2 standard messages and STAR Protocol
+ * @brief Bidirectional conversion between ROS2 standard messages and STAR Protocol Buffers.
  * @copyright Copyright (c) 2026 Locked Inc.
  * SPDX-License-Identifier: MIT
  */

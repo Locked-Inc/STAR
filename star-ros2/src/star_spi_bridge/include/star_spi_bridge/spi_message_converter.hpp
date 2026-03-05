@@ -25,8 +25,6 @@
  * @since Version 1.0.0
  */
 
-// Copyright 2026 Locked Inc.
-
 #pragma once
 
 #include <geometry_msgs/msg/twist.hpp>
