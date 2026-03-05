@@ -1,5 +1,3 @@
-/* libs/rx_bno055/inc/rx_bno055.h */
-
 /**
  * @file rx_bno055.h
  * @brief BNO055 9-DOF Absolute Orientation Sensor Driver API
@@ -87,7 +85,8 @@
  * @author STAR Team
  * @date 2026-03-04
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

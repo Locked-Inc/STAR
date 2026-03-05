@@ -1,5 +1,3 @@
-/* src/tasks/inc/imu_task.h */
-
 /**
  * @file imu_task.h
  * @brief IMU Task - BNO055 + BMP280 Sensor Polling at 20 Hz
@@ -54,7 +52,8 @@
  * @author STAR Team
  * @date 2026-03-04
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once

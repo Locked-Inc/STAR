@@ -1,5 +1,3 @@
-/* tests/test_rx_bmp280.c */
-
 /**
  * @file test_rx_bmp280.c
  * @brief Unit Tests for BMP280 Barometric Pressure Sensor Driver
@@ -68,7 +66,8 @@
  * @author STAR Team
  * @date 2026-03-04
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include <stdbool.h>

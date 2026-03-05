@@ -1,5 +1,3 @@
-/* libs/rx_bmp280/src/rx_bmp280.c */
-
 /**
  * @file rx_bmp280.c
  * @brief BMP280 Digital Barometric Pressure and Temperature Sensor Driver Implementation
@@ -44,7 +42,8 @@
  * @author STAR Team
  * @date 2026-03-04
  * @since Version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #include "rx_bmp280.h"

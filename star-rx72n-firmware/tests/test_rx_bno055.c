@@ -1,5 +1,3 @@
-/* tests/test_rx_bno055.c */
-
 /**
  * @file test_rx_bno055.c
  * @brief Unit Tests for BNO055 9-DOF Absolute Orientation Sensor Driver
@@ -66,7 +64,8 @@
  * @author STAR Team
  * @date 2026-03-04
  * @version 1.0.0
- * @copyright Copyright (c) 2026 STAR Project. MIT License.
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  * @since Version 1.0.0
  */
 

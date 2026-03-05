@@ -1,5 +1,3 @@
-/* libs/rx_bmp280/inc/rx_bmp280_regs.h */
-
 /**
  * @file rx_bmp280_regs.h
  * @brief BMP280 Barometric Pressure and Temperature Sensor Register Map
@@ -45,7 +43,8 @@
  * @author STAR Team
  * @date 2026-03-04
  * @version 1.0.0
- * @copyright MIT License
+ * @copyright Copyright (c) 2026 Locked Inc.
+ * SPDX-License-Identifier: MIT
  */
 
 #pragma once
