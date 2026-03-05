@@ -73,7 +73,6 @@ include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/src/shared
     ${CMAKE_CURRENT_SOURCE_DIR}/src/boot/inc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/boot/inc/custom
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/boot/inc/smc
     ${CMAKE_CURRENT_SOURCE_DIR}/src/tasks/inc
 
     # SMC Generated code

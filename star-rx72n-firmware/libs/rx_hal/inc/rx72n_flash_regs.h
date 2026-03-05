@@ -885,30 +885,34 @@ static inline volatile const uint32_t* uidr3_reg(void)
 
 /**
  * @enum rx_flash_memory_addresses_t
- * @brief Flash memory region addresses
+ * @brief Flash memory region base addresses
  *
  * @since Version 1.0.0
  */
 typedef enum : uintptr_t {
-  /* Code Flash (4 MB for RX72N) */
   k_code_flash_start = 0xFFC00000, /**< Code flash start (4 MB device) */
   k_code_flash_end   = 0xFFFFFFFF, /**< Code flash end */
-  k_code_flash_size  = 0x00400000, /**< Code flash size (4 MB) */
-
-  /* Data Flash (32 KB) */
   k_data_flash_start = 0x00100000, /**< Data flash start */
   k_data_flash_end   = 0x00107FFF, /**< Data flash end */
-  k_data_flash_size  = 0x00008000, /**< Data flash size (32 KB) */
+} rx_flash_memory_addresses_t;
 
-  /* Block sizes */
+/**
+ * @enum rx_flash_memory_layout_t
+ * @brief Flash memory sizes, block sizes, and program units
+ *
+ * @since Version 1.0.0
+ */
+typedef enum : uint32_t {
+  k_code_flash_size = 0x00400000, /**< Code flash size (4 MB) */
+  k_data_flash_size = 0x00008000, /**< Data flash size (32 KB) */
+
   k_code_flash_block_8k  = 0x00002000, /**< 8 KB block (blocks 0-7) */
   k_code_flash_block_32k = 0x00008000, /**< 32 KB block (blocks 8+) */
   k_data_flash_block_64  = 0x00000040, /**< 64 byte block (data flash) */
 
-  /* Program units */
-  k_code_flash_program_unit = 128, /**< Code flash program unit (bytes) */
-  k_data_flash_program_unit = 4,   /**< Data flash program unit (bytes) */
-} rx_flash_memory_addresses_t;
+  k_code_flash_program_unit = 128U, /**< Code flash program unit (bytes) */
+  k_data_flash_program_unit = 4U,   /**< Data flash program unit (bytes) */
+} rx_flash_memory_layout_t;
 
 /* =============================================================================
  * Static Assertions - Verify Register Addresses at Compile Time
