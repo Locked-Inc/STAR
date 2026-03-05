@@ -7,7 +7,7 @@
  * internal_crc_hw_cpu_compute(), and internal_crc_hw_dma_compute() for the
  * RX72N CRC Calculator peripheral (base 0x00088280, MSTPCRB bit 23).
  *
- * ## GPS Mapping (CRCCR bits [2:0])
+ * ## GPS (General Purpose Subsystem) Mapping (CRCCR bits [2:0])
  *
  * | rx_crc_poly_t              | GPS  | Notes                           |
  * |----------------------------|------|---------------------------------|
@@ -72,6 +72,13 @@ typedef enum : uint8_t {
   k_hw_bit_one       = 1U,          /**< Single bit value for shift operations */
 } rx_crc_hw_mstpcrb_t;
 
+/**
+ * @brief Alignment requirement for CRC-32 and CRC-32C DMA transfers
+ */
+typedef enum : uint8_t {
+  k_hw_crc32_alignment_bytes = 4U, /**< CRC-32/CRC-32C require 4-byte aligned buffer and length */
+} rx_crc_hw_alignment_t;
+
 /* =============================================================================
  * Private Helpers
  * =============================================================================
@@ -133,12 +140,22 @@ rx_err_t internal_crc_hw_init(void)
   system_regs()->mstpcrb &= ~((uint32_t)k_hw_bit_one << k_hw_mstpb_crc_bit);
   *prcr_reg() = k_rx_prcr_lock;
 
+  /* Initialize DMA driver; treat k_rx_err_invalid_state as OK (already initialized),
+   * propagate any unexpected error so callers know DMA is unavailable */
+  rx_err_t dma_ret = rx_dmaca_init();
+  if (dma_ret != k_rx_ok && dma_ret != k_rx_err_invalid_state) {
+    return dma_ret;
+  }
+
   return k_rx_ok;
 }
 
 rx_err_t internal_crc_hw_deinit(void)
 {
   RX_CHECK_NULL_PTR(system_regs(), "CRC", "System registers not accessible");
+
+  /* Deinitialize DMA driver */
+  (void)rx_dmaca_deinit();
 
   /* Re-enable module stop (set MSTPCRB bit 23) */
   *prcr_reg() = k_rx_prcr_unlock_prc1;
@@ -202,6 +219,14 @@ rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
     return internal_crc_hw_cpu_compute(config, data, len, result_out);
   }
 
+  /* CRC-32 and CRC-32C require 4-byte aligned buffer and length multiple of 4 */
+  if (config->poly == k_rx_crc_poly_crc32 || config->poly == k_rx_crc_poly_crc32c) {
+    if ((len % (uint32_t)k_hw_crc32_alignment_bytes) != 0U ||
+        ((uintptr_t)data % (uintptr_t)k_hw_crc32_alignment_bytes) != 0U) {
+      return k_rx_err_invalid_arg;
+    }
+  }
+
   internal_configure_crccr(config);
 
   /* Use config timeout if non-zero, otherwise use library default */
@@ -219,7 +244,8 @@ rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
 
   rx_err_t err = rx_dmaca_transfer_poll(&dma_cfg);
   if (err != k_rx_ok) {
-    return err;
+    /* DMA failure: fall back to CPU loop (no silent data corruption) */
+    return internal_crc_hw_cpu_compute(config, data, len, result_out);
   }
 
   *result_out = crc_regs()->crcdor ^ internal_final_xor(config->poly);

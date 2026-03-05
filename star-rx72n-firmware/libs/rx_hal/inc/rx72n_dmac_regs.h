@@ -378,11 +378,12 @@ typedef enum : uint16_t {
  * @since Version 1.0.0
  */
 typedef enum : uint8_t {
-  k_dmint_darie = 0x01U, /**< Dest addr extended repeat overflow int enable */
-  k_dmint_sarie = 0x02U, /**< Source addr extended repeat overflow int enable */
-  k_dmint_rptie = 0x04U, /**< Repeat size end interrupt enable */
-  k_dmint_esie  = 0x08U, /**< Transfer escape end interrupt enable */
-  k_dmint_dtie  = 0x10U, /**< Transfer end interrupt enable */
+  k_dmint_disabled = 0x00U, /**< All interrupts disabled (polling mode) */
+  k_dmint_darie    = 0x01U, /**< Dest addr extended repeat overflow int enable */
+  k_dmint_sarie    = 0x02U, /**< Source addr extended repeat overflow int enable */
+  k_dmint_rptie    = 0x04U, /**< Repeat size end interrupt enable */
+  k_dmint_esie     = 0x08U, /**< Transfer escape end interrupt enable */
+  k_dmint_dtie     = 0x10U, /**< Transfer end interrupt enable */
 } dmint_bits_t;
 
 /* =============================================================================

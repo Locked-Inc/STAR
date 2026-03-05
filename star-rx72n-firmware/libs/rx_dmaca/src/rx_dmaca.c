@@ -49,8 +49,6 @@ typedef enum : uint32_t {
   /** @brief Maximum DMA transfer length (DMCRA is 16-bit) */
   k_dmaca_len_max = 65535U,
 
-  /** @brief Alignment requirement for 32-bit DMA transfers */
-  k_dmaca_align_32bit = 4U,
 } rx_dmaca_internal_constants_t;
 
 /* =============================================================================
@@ -70,15 +68,15 @@ static bool s_dmaca_initialized = false;
  * @brief Configure DMAC channel registers for a transfer
  *
  * @details
- * Sets DMSAR, DMDAR, DMCRA, DMTMD, and DMAMD for one polling transfer.
- * Uses 32-bit transfer size when len is aligned to 4 bytes and dst_addr
- * is 4-byte aligned; falls back to 8-bit otherwise.
+ * Sets DMSAR, DMDAR, DMCRA, DMTMD, DMAMD, and DMINT for one polling transfer.
+ * Transfer size is always 8-bit (DMTMD.SZ=00b) for CRCDIR compatibility.
  *
  * @param[in] config Validated transfer configuration
  *
  * @pre config is not NULL and all fields are valid
  * @pre rx_dmaca_init() has been called
  * @post Channel registers configured for transfer
+ * @post DMINT = 0 (no interrupts in polling mode)
  *
  * @note Not thread-safe on the same channel
  * @since Version 1.0.0
@@ -87,18 +85,14 @@ static void internal_configure_channel(const rx_dmaca_config_t* config)
 {
   volatile rx_dmac_channel_regs_t* ch = dmac_channel(config->channel);
 
-  bool use_32bit =
-    ((config->len % k_dmaca_align_32bit == 0U) && (config->dst_addr % k_dmaca_align_32bit == 0U));
-
-  uint32_t count = use_32bit ? (config->len / k_dmaca_align_32bit) : config->len;
-  uint16_t sz    = use_32bit ? (uint16_t)k_dmtmd_sz_32bit : (uint16_t)k_dmtmd_sz_8bit;
-
   /* Source: increment after each read; Destination: fixed (CRCDIR) */
   ch->dmsar = (uint32_t)(uintptr_t)config->src;
-  ch->dmdar = (uint32_t)(config->dst_addr & 0xFFFFFFFFU);
-  ch->dmcra = count; /* Normal mode: lower 16 bits = transfer count */
-  ch->dmtmd = (uint16_t)((uint16_t)k_dmtmd_md_normal | (uint16_t)k_dmtmd_dctg_software | sz);
+  ch->dmdar = (uint32_t)config->dst_addr;
+  ch->dmcra = config->len; /* Normal mode: lower 16 bits = transfer count */
+  ch->dmtmd = (uint16_t)((uint16_t)k_dmtmd_md_normal | (uint16_t)k_dmtmd_dctg_software |
+                         (uint16_t)k_dmtmd_sz_8bit);
   ch->dmamd = (uint16_t)((uint16_t)k_dmamd_sm_increment | (uint16_t)k_dmamd_dm_fixed);
+  ch->dmint = (uint8_t)k_dmint_disabled; /* No interrupts in polling mode */
 }
 
 /**
@@ -107,14 +101,14 @@ static void internal_configure_channel(const rx_dmaca_config_t* config)
  * @details
  * Loops up to timeout_cycles times checking if the DMA ACT flag
  * (transfer in progress) is clear. Returns k_rx_ok on success,
- * k_rx_err_hw_timeout if the loop exhausts without ACT clearing.
+ * k_rx_err_timeout if the loop exhausts without ACT clearing.
  *
  * @param[in] channel Channel number (0-7, pre-validated)
  * @param[in] timeout_cycles Maximum iterations (> 0, pre-validated)
  *
  * @return rx_err_t
  * @retval k_rx_ok ACT cleared (transfer complete)
- * @retval k_rx_err_hw_timeout ACT still set after timeout_cycles iterations
+ * @retval k_rx_err_timeout ACT still set after timeout_cycles iterations
  *
  * @pre channel < k_dmac_channel_count
  * @pre timeout_cycles > 0
@@ -131,7 +125,7 @@ static rx_err_t internal_poll_act(uint8_t channel, uint32_t timeout_cycles)
       return k_rx_ok;
     }
   }
-  return k_rx_err_hw_timeout;
+  return k_rx_err_timeout;
 }
 
 /* =============================================================================

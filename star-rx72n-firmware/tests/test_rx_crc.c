@@ -414,7 +414,7 @@ void test_crc_hw_dma_crc8_maxim(void)
   compute_ok(k_rx_crc_poly_crc8, k_rx_crc_backend_hw_dma, k_test_vec_9, k_test_vec_9_len, &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc8_maxim_9, result);
   /* Host build: DMA not used - transfer_poll not called */
-  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_count());
+  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
 
 /**
@@ -425,7 +425,7 @@ void test_crc_hw_dma_crc16_ibm(void)
   uint32_t result = 0U;
   compute_ok(k_rx_crc_poly_crc16, k_rx_crc_backend_hw_dma, k_test_vec_9, k_test_vec_9_len, &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc16_ibm_9, result);
-  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_count());
+  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
 
 /**
@@ -440,7 +440,7 @@ void test_crc_hw_dma_crc_ccitt(void)
              k_test_vec_9_len,
              &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc_ccitt_9, result);
-  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_count());
+  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
 
 /**
@@ -451,7 +451,7 @@ void test_crc_hw_dma_crc32_ieee(void)
   uint32_t result = 0U;
   compute_ok(k_rx_crc_poly_crc32, k_rx_crc_backend_hw_dma, k_test_vec_9, k_test_vec_9_len, &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32_ieee_9, result);
-  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_count());
+  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
 
 /**
@@ -466,7 +466,7 @@ void test_crc_hw_dma_crc32c(void)
              k_test_vec_9_len,
              &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32c_9, result);
-  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_count());
+  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
 
 /* =============================================================================
@@ -731,7 +731,7 @@ void test_mock_dmaca_reset_clears_state(void)
 {
   /* Simulate a previous transfer call tracking by resetting */
   mock_rx_dmaca_reset();
-  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_count());
+  TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
   TEST_ASSERT_NULL(mock_rx_dmaca_get_last_config());
 }
 
@@ -753,7 +753,7 @@ void test_mock_dmaca_preset_timeout_result(void)
   };
   rx_err_t result = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, result);
-  TEST_ASSERT_EQUAL(1U, mock_rx_dmaca_get_transfer_count());
+  TEST_ASSERT_EQUAL(1U, mock_rx_dmaca_get_transfer_call_count());
 }
 
 /* =============================================================================

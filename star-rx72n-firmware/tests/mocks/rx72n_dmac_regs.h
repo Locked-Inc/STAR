@@ -106,6 +106,12 @@ typedef enum : uint8_t {
   k_dmreq_clrs  = 0x10U, /**< Auto-clear SWREQ after start */
 } dmreq_bits_t;
 
+/** @brief DMINT register bit definitions */
+typedef enum : uint8_t {
+  k_dmint_disabled = 0x00U, /**< All interrupts disabled */
+  k_dmint_dtie     = 0x10U, /**< Transfer end interrupt enable */
+} dmint_bits_t;
+
 /** @brief DMSTS register bit definitions */
 typedef enum : uint8_t {
   k_dmsts_act = 0x80U, /**< DMA active flag (1 = transfer in progress) */

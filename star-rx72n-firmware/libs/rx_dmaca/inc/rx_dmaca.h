@@ -179,9 +179,9 @@ typedef struct {
  * polls DMSTS.ACT until transfer completes or timeout expires. Clears
  * DTE on completion or error.
  *
- * Transfer size (DMTMD.SZ) is determined by config->len alignment:
- * - If len is a multiple of 4 and dst_addr is 4-byte aligned: 32-bit
- * - Otherwise: 8-bit
+ * Transfer size (DMTMD.SZ) is always 8-bit (k_dmtmd_sz_8bit) for CRCDIR
+ * compatibility. The CRCA peripheral processes 8-bit bytes regardless of
+ * the 32-bit CRC polynomial selected.
  *
  * @param[in] config Transfer configuration (channel, src, len, dst, timeout)
  *
@@ -190,7 +190,7 @@ typedef struct {
  * @retval k_rx_err_null_ptr config is NULL
  * @retval k_rx_err_invalid_arg channel >= 8, len == 0, len > 65535, timeout == 0
  * @retval k_rx_err_not_initialized rx_dmaca_init() not called
- * @retval k_rx_err_hw_timeout Transfer did not complete within timeout_cycles
+ * @retval k_rx_err_timeout Transfer did not complete within timeout_cycles
  *
  * @pre rx_dmaca_init() must have been called
  * @pre config->src must point to valid readable memory of config->len bytes
@@ -216,7 +216,7 @@ typedef struct {
  * @retval k_rx_ok Channel stopped
  * @retval k_rx_err_invalid_arg channel >= 8
  * @retval k_rx_err_not_initialized rx_dmaca_init() not called
- * @retval k_rx_err_hw_timeout ACT bit did not clear within timeout
+ * @retval k_rx_err_timeout ACT bit did not clear within timeout
  *
  * @pre rx_dmaca_init() must have been called
  * @post DMCNT.DTE = 0 for the specified channel

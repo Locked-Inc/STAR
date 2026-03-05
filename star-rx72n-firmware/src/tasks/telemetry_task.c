@@ -121,7 +121,7 @@
  *
  * partition "Infinite Telemetry Loop (20 Hz)" {
  *   repeat
- *     partition "Data Collection Phase (Phase 1)" {
+ *     partition "Data Collection Phase" {
  *       :Lock motor state mutex;
  *       :Read encoder counts (4 motors);
  *       :Read velocities (4 motors, m/s);
@@ -140,7 +140,7 @@
  *       end note
  *     }
  *
- *     partition "Protobuf Population Phase (Phase 2)" {
+ *     partition "Protobuf Population Phase" {
  *       :Initialize TelemetryData message;
  *       :Set timestamp_us (from tx_time_get);
  *       :Set frame_sequence (auto-increment);
@@ -160,7 +160,7 @@
  *       endif
  *     }
  *
- *     partition "Nanopb Encoding Phase (Phase 3)" {
+ *     partition "Nanopb Encoding Phase" {
  *       :Call rx_nanopb_encode_telemetry();
  *       if (Encoding successful?) then (yes)
  *         :Encoded protobuf in s_telem_buffer;
@@ -171,7 +171,7 @@
  *       endif
  *     }
  *
- *     partition "Transmission Phase (Phase 4)" {
+ *     partition "Transmission Phase" {
  *       :Prepare rx_comm_send_params_t;
  *       :Set channel = k_comm_channel_usb;
  *       :Set type = k_frame_type_response;
@@ -489,7 +489,7 @@
  *   ThreadX => TelemetryTask [label="Wake from sleep\n(tx_thread_sleep(5) expired)"];
  *   TelemetryTask box TelemetryTask [label="Start telemetry cycle\nGet ThreadX timestamp"];
  *
- *   --- [label="Phase 1: Data Collection (Read from Shared Data)"];
+ *   --- [label="Data Collection (Read from Shared Data)"];
  *   TelemetryTask => SharedData [label="shared_data_get_motor_state(&motor_state)"];
  *   SharedData box SharedData [label="Lock motor mutex"];
  *   MotorTask => SharedData [label="(concurrent) Write latest encoder data"];
@@ -504,17 +504,17 @@
  *   SharedData box SharedData [label="Unlock temp mutex"];
  *   SharedData >> TelemetryTask [label="k_rx_ok, temp_state"];
  *
- *   --- [label="Phase 2: Protobuf Population (Build TelemetryData Message)"];
+ *   --- [label="Protobuf Population (Build TelemetryData Message)"];
  *   TelemetryTask box TelemetryTask [label="Initialize TelemetryData protobuf\nSet timestamp_us = tx_time_get() * 10000\nSet frame_sequence = s_sequence++"];
  *   TelemetryTask box TelemetryTask [label="Populate motor fields:\n- emergency_stop\n- fault_flags (4 bytes -> uint32)\n- encoder_front_left (ticks, velocity_mps)\n- encoder_front_right\n- encoder_back_left\n- encoder_back_right"];
  *   TelemetryTask box TelemetryTask [label="Convert temp units:\n- temperature_celsius = temperature_cdegc / 100.0"];
  *
- *   --- [label="Phase 3: Nanopb Encoding"];
+ *   --- [label="Nanopb Encoding"];
  *   TelemetryTask => Nanopb [label="rx_nanopb_encode_telemetry(&telemetry,\n                            s_telem_buffer,\n                            k_telem_buffer_size,\n                            &encoded_len)"];
  *   Nanopb box Nanopb [label="Encode TelemetryData to binary protobuf\n(zero-copy, static buffer)\nCRC-32 added by comm manager"];
  *   Nanopb >> TelemetryTask [label="k_rx_ok, encoded_len=~250 bytes"];
  *
- *   --- [label="Phase 4: Transmission via Communication Manager"];
+ *   --- [label="Transmission via Communication Manager"];
  *   TelemetryTask box TelemetryTask [label="Prepare send parameters:\n- channel = k_comm_channel_usb\n- type = k_frame_type_response\n- payload = s_telem_buffer\n- payload_len = encoded_len"];
  *   TelemetryTask => CommManager [label="rx_comm_manager_send(&g_comm_manager, &params)"];
  *   CommManager box CommManager [label="Wrap protobuf in frame:\n[SYNC][LEN][TYPE][PAYLOAD][CRC32]"];
@@ -2075,7 +2075,7 @@ static void internal_populate_baro_telemetry(star_v1_TelemetryData* telemetry)
 }
 
 /**
- * @brief Collect all robot system state into the telemetry message (Phase 1 + Phase 2)
+ * @brief Collect all robot system state into the telemetry message
  *
  * @details
  * Reads motor, temperature, obstacle, IMU, and baro state from shared_data and
@@ -2178,7 +2178,7 @@ static void internal_collect_state(star_v1_TelemetryData* telemetry)
 }
 
 /**
- * @brief Encode TelemetryData protobuf message into the static transmit buffer (Phase 3)
+ * @brief Encode TelemetryData protobuf message into the static transmit buffer
  *
  * @details
  * Encodes the populated `star_v1_TelemetryData` struct into binary protobuf format
@@ -2226,7 +2226,7 @@ static rx_err_t internal_encode_telemetry(const star_v1_TelemetryData* telemetry
 }
 
 /**
- * @brief Send the encoded telemetry buffer via the specified comm manager channel (Phase 4)
+ * @brief Send the encoded telemetry buffer via the specified comm manager channel
  *
  * @details
  * Builds `rx_comm_send_params_t` with `k_frame_type_response` (RX72N -> host data),
@@ -2286,17 +2286,17 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * Orchestrates the complete telemetry aggregation pipeline across 4 focused helpers:
  *
  * 1. **Timestamp + sequence** - Set timestamp_us and increment s_sequence
- * 2. **internal_collect_state()** - Phase 1+2: populate motor and temperature fields
- * 3. **internal_encode_telemetry()** - Phase 3: nanopb encode to s_telem_buffer
- * 4. **internal_select_transport()** - Phase 4a: USB preferred, SPI fallback
- * 5. **internal_send_via_channel()** - Phase 4b: transmit via comm manager
+ * 2. **internal_collect_state()** - populate motor and temperature fields
+ * 3. **internal_encode_telemetry()** - nanopb encode to s_telem_buffer
+ * 4. **internal_select_transport()** - USB preferred, SPI fallback
+ * 5. **internal_send_via_channel()** - transmit via comm manager
  *
  * Encoding failure is fatal for this cycle (message not sent, retry next cycle).
  * Send failure is non-critical (message lost, host detects via sequence gap).
  * No-transport drops the encoded message silently (both channels unavailable).
  *
  * @return rx_err_t Operation status
- * @retval k_rx_ok Telemetry sent successfully (all phases completed)
+ * @retval k_rx_ok Telemetry sent successfully
  * @retval k_rx_err_encoding_failed nanopb encoding failed (buffer too small, invalid message)
  * @retval k_rx_err_invalid_state No transport available (both channels unavailable)
  * @retval k_rx_err_usb_tx_fail USB CDC transmission failed (host disconnected)
@@ -2313,7 +2313,7 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * @post s_telem_buffer overwritten with latest encoded protobuf
  *
  * @note Called every 50ms by internal_telem_task_entry() (20 Hz)
- * @note Execution time: ~120 us (all phases combined)
+ * @note Execution time: ~120 us
  * @note Data collection is non-blocking (graceful degradation if mutex locked)
  * @note Transport channel selected dynamically each cycle (USB preferred)
  *
@@ -2321,16 +2321,16 @@ static rx_err_t internal_send_via_channel(rx_comm_channel_t channel, uint32_t en
  * @warning If transmission fails, message is lost (host detects via sequence gap)
  * @attention Partial messages are acceptable (Protocol Buffers optional fields)
  *
- * @see internal_collect_state() Phase 1+2 - Collect and populate all robot state
- * @see internal_populate_motor_telemetry() Phase 2 - Motor encoder field population
- * @see internal_encode_telemetry() Phase 3 - nanopb protobuf encoding
- * @see internal_select_transport() Phase 4a - Select active transport channel
- * @see internal_send_via_channel() Phase 4b - Transmit via comm manager
+ * @see internal_collect_state() Collect and populate all robot state
+ * @see internal_populate_motor_telemetry() Motor encoder field population
+ * @see internal_encode_telemetry() nanopb protobuf encoding
+ * @see internal_select_transport() Select active transport channel
+ * @see internal_send_via_channel() Transmit via comm manager
  *
  * @since Version 1.0.0
  *
  * @par NASA Power of 10 Rule 4 Compliance:
- * This function is now a ~30-line orchestrator. Each phase delegated to a focused
+ * This function is now a ~30-line orchestrator. Each step delegated to a focused
  * helper function of <=60 lines, all individually verifiable.
  *
  * @par NASA Power of 10 Rule 5 Compliance:
@@ -2351,22 +2351,22 @@ static rx_err_t internal_build_and_send_telemetry(void)
   telemetry.timestamp_us   = (int64_t)tx_time_get() * (int64_t)k_telem_us_per_tick;
   telemetry.frame_sequence = s_sequence++;
 
-  /* Phase 1+2: Collect all robot state and populate telemetry fields */
+  /* Collect all robot state and populate telemetry fields */
   internal_collect_state(&telemetry);
 
-  /* Phase 3: Encode to protobuf binary format */
+  /* Encode to protobuf binary format */
   err = internal_encode_telemetry(&telemetry, &encoded_len);
   if (err != k_rx_ok) {
     return err;
   }
 
-  /* Phase 4a: Select transport (USB preferred, SPI fallback) */
+  /* Select transport (USB preferred, SPI fallback) */
   transport = internal_select_transport();
   if (transport == k_telemetry_transport_none) {
     return k_rx_err_invalid_state;
   }
 
-  /* Phase 4b: Map transport to channel and send */
+  /* Map transport to channel and send */
   channel = (transport == k_telemetry_transport_usb) ? k_comm_channel_usb : k_comm_channel_spi;
   err     = internal_send_via_channel(channel, encoded_len);
   if (err != k_rx_ok) {

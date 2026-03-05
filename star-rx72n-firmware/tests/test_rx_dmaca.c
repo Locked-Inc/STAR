@@ -12,7 +12,7 @@
  * - NULL-pointer and out-of-range argument validation
  * - Uninitialized-state guard on all non-init functions
  * - Register configuration verification (DMSAR, DMDAR, DMCRA, DMTMD, DMAMD)
- * - 8-bit vs 32-bit transfer-size selection logic
+ * - Always-8-bit transfer size (DMTMD.SZ=00b)
  * - DTE clear on both success and timeout
  * - Timeout path (ACT bit held set in mock DMSTS)
  * - Abort with immediate success and with timeout
@@ -62,10 +62,10 @@ typedef enum : uint32_t {
   k_test_timeout_normal     = 50000U,      /**< Normal timeout for success tests */
 } test_dmaca_constants_t;
 
-/** @brief Byte count that is a multiple of 4 (triggers 32-bit DMA mode) */
+/** @brief Byte counts for transfer tests */
 typedef enum : uint32_t {
-  k_test_len_aligned   = 8U, /**< 8 bytes - multiple of 4, uses 32-bit mode */
-  k_test_len_unaligned = 7U, /**< 7 bytes - not multiple of 4, uses 8-bit mode */
+  k_test_len_aligned   = 8U, /**< 8 bytes - multiple of 4 */
+  k_test_len_unaligned = 7U, /**< 7 bytes - not multiple of 4 */
 } test_dmaca_len_t;
 
 /* =============================================================================
@@ -84,7 +84,7 @@ static uint8_t s_src_buf[16];
  * @param[in] timeout Timeout cycles
  * @return           Populated config
  */
-static rx_dmaca_config_t make_config(uint32_t len, uintptr_t dst, uint32_t timeout)
+static rx_dmaca_config_t make_config(uint32_t len, uint32_t dst, uint32_t timeout)
 {
   rx_dmaca_config_t cfg;
   cfg.channel        = 0;
@@ -277,10 +277,11 @@ void test_transfer_null_src(void)
  */
 
 /**
- * @brief 8-byte aligned transfer configures DMSAR, DMDAR, DMCRA in 32-bit mode
+ * @brief Aligned transfer uses 8-bit mode (spec: always 8-bit for CRCDIR)
  *
- * @details When len % 4 == 0 and dst_addr % 4 == 0, the driver selects 32-bit
- * DMA mode: count = len/4, DMTMD.SZ = k_dmtmd_sz_32bit.
+ * @details Even when len is a multiple of 4 and dst_addr is 4-byte aligned,
+ * the driver always uses 8-bit transfer size (DMTMD.SZ=00b). The count
+ * equals len, not len/4. DMINT is cleared to disable interrupts.
  */
 void test_transfer_32bit_mode_register_values(void)
 {
@@ -298,17 +299,20 @@ void test_transfer_32bit_mode_register_values(void)
   /* Destination address */
   TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_dst_addr_aligned, g_mock_dmac_ch[0].dmdar);
 
-  /* Count: len/4 = 8/4 = 2 */
-  TEST_ASSERT_EQUAL_UINT32(2U, g_mock_dmac_ch[0].dmcra);
+  /* Count: always len (8-bit mode, not len/4) */
+  TEST_ASSERT_EQUAL_UINT32((uint32_t)k_test_len_aligned, g_mock_dmac_ch[0].dmcra);
 
-  /* DMTMD: 32-bit mode, software trigger, normal mode */
+  /* DMTMD: always 8-bit mode, software trigger, normal mode */
   uint16_t expected_dmtmd =
-    (uint16_t)k_dmtmd_sz_32bit | (uint16_t)k_dmtmd_md_normal | (uint16_t)k_dmtmd_dctg_software;
+    (uint16_t)k_dmtmd_sz_8bit | (uint16_t)k_dmtmd_md_normal | (uint16_t)k_dmtmd_dctg_software;
   TEST_ASSERT_EQUAL_UINT16(expected_dmtmd, g_mock_dmac_ch[0].dmtmd);
 
   /* DMAMD: source increment, destination fixed */
   uint16_t expected_dmamd = (uint16_t)k_dmamd_sm_increment | (uint16_t)k_dmamd_dm_fixed;
   TEST_ASSERT_EQUAL_UINT16(expected_dmamd, g_mock_dmac_ch[0].dmamd);
+
+  /* DMINT: cleared (no interrupts in polling mode) */
+  TEST_ASSERT_EQUAL_UINT8(0U, g_mock_dmac_ch[0].dmint);
 
   /* DTE cleared as post-condition */
   TEST_ASSERT_EQUAL_UINT8(0U, g_mock_dmac_ch[0].dmcnt);
@@ -369,7 +373,7 @@ void test_transfer_ok_clears_dte(void)
 }
 
 /**
- * @brief Timeout: ACT bit held set, transfer_poll returns k_rx_err_hw_timeout
+ * @brief Timeout: ACT bit held set, transfer_poll returns k_rx_err_timeout
  */
 void test_transfer_timeout(void)
 {
@@ -380,7 +384,7 @@ void test_transfer_timeout(void)
   rx_dmaca_config_t cfg =
     make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_short);
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
-  TEST_ASSERT_EQUAL(k_rx_err_hw_timeout, err);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
 /**
@@ -435,7 +439,7 @@ void test_abort_ok(void)
 }
 
 /**
- * @brief rx_dmaca_abort() with ACT permanently set returns k_rx_err_hw_timeout
+ * @brief rx_dmaca_abort() with ACT permanently set returns k_rx_err_timeout
  */
 void test_abort_timeout(void)
 {
@@ -444,7 +448,7 @@ void test_abort_timeout(void)
   g_mock_dmac_ch[0].dmsts = (uint8_t)k_dmsts_act;
 
   rx_err_t err = rx_dmaca_abort(0U);
-  TEST_ASSERT_EQUAL(k_rx_err_hw_timeout, err);
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
 /* =============================================================================

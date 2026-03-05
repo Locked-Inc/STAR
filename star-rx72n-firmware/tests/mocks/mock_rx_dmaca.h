@@ -84,7 +84,7 @@ uint32_t mock_rx_dmaca_get_deinit_count(void);
  * @return Call count
  * @since Version 1.0.0
  */
-uint32_t mock_rx_dmaca_get_transfer_count(void);
+uint32_t mock_rx_dmaca_get_transfer_call_count(void);
 
 /**
  * @brief Get the last config passed to rx_dmaca_transfer_poll()

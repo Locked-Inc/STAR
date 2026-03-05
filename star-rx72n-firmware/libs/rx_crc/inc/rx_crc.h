@@ -834,7 +834,7 @@ static inline rx_err_t rx_crc32_ieee(const uint8_t* data, uint32_t len, uint32_t
   static const rx_crc_config_t s_cfg = {
     .poly      = k_rx_crc_poly_crc32,
     .bit_order = k_rx_crc_bit_order_lsb_first,
-    .backend   = k_rx_crc_backend_software,
+    .backend   = k_rx_crc_backend_hw_cpu,
     .dma       = {.timeout_cycles = 0U},
   };
   return rx_crc_compute(&s_cfg, data, len, out);
