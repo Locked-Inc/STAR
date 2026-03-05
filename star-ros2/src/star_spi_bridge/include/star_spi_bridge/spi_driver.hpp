@@ -75,7 +75,8 @@ enum class FrameFlags : uint8_t
   SoftNack = 0x10,    /**< NACK with recoverable soft-error info (bit 4) */
 };
 
-constexpr uint8_t FRAME_FLAGS_MASK = 0x1Fu; /**< Bitmask covering all valid FrameFlags bits (bits 0-4); bits 5-7 are reserved. */
+/** @brief Bitmask covering all valid FrameFlags bits (bits 0-4); bits 5-7 are reserved. */
+constexpr uint8_t FRAME_FLAGS_MASK = 0x1Fu;
 
 /**
  * @defgroup FrameFlagsOperators FrameFlags Bitwise Operators
