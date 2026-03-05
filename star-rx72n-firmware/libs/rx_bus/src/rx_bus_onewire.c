@@ -900,7 +900,9 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
   memcpy(state->last_rom, rom, k_onewire_rom_bytes);
 
   uint32_t crc_out = 0U;
-  (void)rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out);
+  RX_RETURN_ON_ERROR(rx_crc8_maxim(rom, k_onewire_rom_crc_idx, &crc_out),
+                     "ONEWIRE",
+                     "ROM CRC compute failed");
   if ((uint8_t)crc_out != rom[k_onewire_rom_crc_idx]) {
     return k_rx_err_crc_mismatch;
   }

@@ -106,8 +106,23 @@ rx_err_t rx_crc_deinit(void)
 
 uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
 {
-  (void)crc;
-  (void)data;
-  (void)len;
-  return 0U;
+  if (data == nullptr || len == 0U) {
+    return crc;
+  }
+
+  /* Un-finalize previous CRC, process bytes, re-finalize (matches rx_crc_sw.c) */
+  uint32_t work = crc ^ 0xFFFFFFFFU;
+
+  for (uint32_t i = 0U; i < len; i++) {
+    work ^= (uint32_t)data[i];
+    for (uint8_t b = 0U; b < k_bits_per_byte; b++) {
+      if ((work & k_crc8_lsb_mask) != 0U) {
+        work = (work >> k_shift_one_bit) ^ 0xEDB88320U; /* CRC-32 reflected poly */
+      } else {
+        work >>= k_shift_one_bit;
+      }
+    }
+  }
+
+  return work ^ 0xFFFFFFFFU;
 }

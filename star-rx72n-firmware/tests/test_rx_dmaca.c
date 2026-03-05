@@ -55,7 +55,7 @@ uint8_t g_mock_dmast;
 /**
  * @brief Test-local constants
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_test_dst_addr_aligned   = 0x00088284U, /**< CRCDIR address (4-byte aligned) */
   k_test_dst_addr_unaligned = 0x00088285U, /**< Unaligned destination */
   k_test_timeout_short      = 1U,          /**< 1-cycle timeout for timeout tests */
@@ -84,7 +84,7 @@ static uint8_t s_src_buf[16];
  * @param[in] timeout Timeout cycles
  * @return           Populated config
  */
-static rx_dmaca_config_t make_config(uint32_t len, uint32_t dst, uint32_t timeout)
+static rx_dmaca_config_t internal_make_config(uint32_t len, uintptr_t dst, uint32_t timeout)
 {
   rx_dmaca_config_t cfg;
   cfg.channel        = 0;
@@ -207,7 +207,7 @@ void test_transfer_null_config(void)
 void test_transfer_not_initialized(void)
 {
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_not_initialized, err);
 }
@@ -219,8 +219,8 @@ void test_transfer_channel_out_of_range(void)
 {
   (void)rx_dmaca_init();
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
-  cfg.channel  = 8U;
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
+  cfg.channel  = (uint8_t)k_dmac_channel_count;
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -231,7 +231,7 @@ void test_transfer_channel_out_of_range(void)
 void test_transfer_zero_len(void)
 {
   (void)rx_dmaca_init();
-  rx_dmaca_config_t cfg = make_config(0U, k_test_dst_addr_aligned, k_test_timeout_normal);
+  rx_dmaca_config_t cfg = internal_make_config(0U, k_test_dst_addr_aligned, k_test_timeout_normal);
   rx_err_t          err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -242,8 +242,9 @@ void test_transfer_zero_len(void)
 void test_transfer_len_too_large(void)
 {
   (void)rx_dmaca_init();
-  rx_dmaca_config_t cfg = make_config(65536U, k_test_dst_addr_aligned, k_test_timeout_normal);
-  rx_err_t          err = rx_dmaca_transfer_poll(&cfg);
+  rx_dmaca_config_t cfg =
+    internal_make_config(65536U, k_test_dst_addr_aligned, k_test_timeout_normal);
+  rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -253,7 +254,7 @@ void test_transfer_len_too_large(void)
 void test_transfer_zero_timeout(void)
 {
   (void)rx_dmaca_init();
-  rx_dmaca_config_t cfg = make_config(k_test_len_aligned, k_test_dst_addr_aligned, 0U);
+  rx_dmaca_config_t cfg = internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, 0U);
   rx_err_t          err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
@@ -265,7 +266,7 @@ void test_transfer_null_src(void)
 {
   (void)rx_dmaca_init();
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
   cfg.src      = nullptr;
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
@@ -288,7 +289,7 @@ void test_transfer_32bit_mode_register_values(void)
   (void)rx_dmaca_init();
   /* Leave g_mock_dmac_ch[0].dmsts = 0 so poll succeeds immediately */
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -328,7 +329,7 @@ void test_transfer_8bit_mode_unaligned_len(void)
 {
   (void)rx_dmaca_init();
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_unaligned, k_test_dst_addr_aligned, k_test_timeout_normal);
+    internal_make_config(k_test_len_unaligned, k_test_dst_addr_aligned, k_test_timeout_normal);
   (void)rx_dmaca_transfer_poll(&cfg);
 
   /* Count: 7 (8-bit mode, count = len) */
@@ -347,7 +348,7 @@ void test_transfer_8bit_mode_unaligned_dst(void)
   (void)rx_dmaca_init();
   /* len=8 is aligned, but dst is unaligned -> 8-bit mode */
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_unaligned, k_test_timeout_normal);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_unaligned, k_test_timeout_normal);
   (void)rx_dmaca_transfer_poll(&cfg);
 
   /* Count: 8 (8-bit mode, count = len) */
@@ -365,7 +366,7 @@ void test_transfer_ok_clears_dte(void)
   (void)rx_dmaca_init();
   /* dmsts = 0: ACT not set, poll succeeds on first iteration */
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_normal);
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -382,7 +383,7 @@ void test_transfer_timeout(void)
   g_mock_dmac_ch[0].dmsts = (uint8_t)k_dmsts_act;
 
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_short);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_short);
   rx_err_t err = rx_dmaca_transfer_poll(&cfg);
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
@@ -396,7 +397,7 @@ void test_transfer_timeout_still_clears_dte(void)
   g_mock_dmac_ch[0].dmsts = (uint8_t)k_dmsts_act;
 
   rx_dmaca_config_t cfg =
-    make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_short);
+    internal_make_config(k_test_len_aligned, k_test_dst_addr_aligned, k_test_timeout_short);
   (void)rx_dmaca_transfer_poll(&cfg);
 
   TEST_ASSERT_EQUAL_UINT8(0U, g_mock_dmac_ch[0].dmcnt);
@@ -422,7 +423,7 @@ void test_abort_not_initialized(void)
 void test_abort_channel_out_of_range(void)
 {
   (void)rx_dmaca_init();
-  rx_err_t err = rx_dmaca_abort(8U);
+  rx_err_t err = rx_dmaca_abort((uint8_t)k_dmac_channel_count);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 

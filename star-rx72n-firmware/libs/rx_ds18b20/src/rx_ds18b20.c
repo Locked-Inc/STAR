@@ -1630,7 +1630,9 @@ static rx_err_t internal_ds18b20_read_scratchpad_raw(const rx_ds18b20_handle_t* 
 
   /* Validate CRC */
   crc_calc = 0U;
-  (void)rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes, &crc_calc);
+  RX_RETURN_ON_ERROR(rx_crc8_maxim(scratchpad, k_ds18b20_crc_bytes, &crc_calc),
+                     s_tag,
+                     "Scratchpad CRC compute failed");
   crc_device = scratchpad[k_ds18b20_scratch_crc];
 
   if ((uint8_t)crc_calc != crc_device) {

@@ -50,7 +50,7 @@
  */
 
 /** @brief Canonical test string "123456789" (9 bytes) */
-static const uint8_t k_test_vec_9[] = {
+static const uint8_t s_test_vec_9[] = {
   0x31,
   0x32,
   0x33,
@@ -72,10 +72,10 @@ typedef enum : uint32_t {
 } crc_test_vectors_t;
 
 /** @brief Single zero byte */
-static const uint8_t k_single_zero[] = {0x00};
+static const uint8_t s_single_zero[] = {0x00};
 
 /** @brief Single byte 0xFF */
-static const uint8_t k_single_ff[] = {0xFF};
+static const uint8_t s_single_ff[] = {0xFF};
 
 typedef enum : uint32_t {
   k_single_zero_len = 1U, /**< Length of single-byte buffers */
@@ -115,11 +115,11 @@ void tearDown(void)
  * @param[in]  len       Input length
  * @param[out] result    CRC output
  */
-static void compute_ok(rx_crc_poly_t    poly,
-                       rx_crc_backend_t backend,
-                       const uint8_t*   data,
-                       uint32_t         len,
-                       uint32_t*        result)
+static void internal_compute_ok(rx_crc_poly_t    poly,
+                                rx_crc_backend_t backend,
+                                const uint8_t*   data,
+                                uint32_t         len,
+                                uint32_t*        result)
 {
   const rx_crc_config_t cfg = {
     .poly      = poly,
@@ -195,7 +195,7 @@ void test_crc_reinit_after_deinit(void)
 void test_crc_compute_null_config(void)
 {
   uint32_t result = 0U;
-  rx_err_t err    = rx_crc_compute(nullptr, k_test_vec_9, k_test_vec_9_len, &result);
+  rx_err_t err    = rx_crc_compute(nullptr, s_test_vec_9, k_test_vec_9_len, &result);
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr, err);
 }
 
@@ -226,7 +226,7 @@ void test_crc_compute_null_result(void)
     .dma       = {.timeout_cycles = 0U},
   };
   TEST_ASSERT_EQUAL(k_rx_err_null_ptr,
-                    rx_crc_compute(&cfg, k_test_vec_9, k_test_vec_9_len, nullptr));
+                    rx_crc_compute(&cfg, s_test_vec_9, k_test_vec_9_len, nullptr));
 }
 
 /**
@@ -241,7 +241,7 @@ void test_crc_compute_zero_len(void)
     .dma       = {.timeout_cycles = 0U},
   };
   uint32_t result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, k_test_vec_9, 0U, &result));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc_compute(&cfg, s_test_vec_9, 0U, &result));
 }
 
 /**
@@ -257,7 +257,7 @@ void test_crc_compute_len_too_large(void)
   };
   uint32_t result = 0U;
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                    rx_crc_compute(&cfg, k_test_vec_9, (uint32_t)k_crc_len_max + 1U, &result));
+                    rx_crc_compute(&cfg, s_test_vec_9, (uint32_t)k_crc_len_max + 1U, &result));
 }
 
 /* =============================================================================
@@ -271,11 +271,11 @@ void test_crc_compute_len_too_large(void)
 void test_crc_sw_crc8_maxim(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc8,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc8,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc8_maxim_9, result);
 }
 
@@ -285,11 +285,11 @@ void test_crc_sw_crc8_maxim(void)
 void test_crc_sw_crc16_ibm(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc16,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc16,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc16_ibm_9, result);
 }
 
@@ -299,11 +299,11 @@ void test_crc_sw_crc16_ibm(void)
 void test_crc_sw_crc_ccitt(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc_ccitt,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc_ccitt,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc_ccitt_9, result);
 }
 
@@ -313,11 +313,11 @@ void test_crc_sw_crc_ccitt(void)
 void test_crc_sw_crc32_ieee(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32_ieee_9, result);
 }
 
@@ -327,11 +327,11 @@ void test_crc_sw_crc32_ieee(void)
 void test_crc_sw_crc32c(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32c,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc32c,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32c_9, result);
 }
 
@@ -347,7 +347,11 @@ void test_crc_sw_crc32c(void)
 void test_crc_hw_cpu_crc8_maxim(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc8, k_rx_crc_backend_hw_cpu, k_test_vec_9, k_test_vec_9_len, &result);
+  internal_compute_ok(k_rx_crc_poly_crc8,
+                      k_rx_crc_backend_hw_cpu,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc8_maxim_9, result);
 }
 
@@ -357,7 +361,11 @@ void test_crc_hw_cpu_crc8_maxim(void)
 void test_crc_hw_cpu_crc16_ibm(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc16, k_rx_crc_backend_hw_cpu, k_test_vec_9, k_test_vec_9_len, &result);
+  internal_compute_ok(k_rx_crc_poly_crc16,
+                      k_rx_crc_backend_hw_cpu,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc16_ibm_9, result);
 }
 
@@ -367,11 +375,11 @@ void test_crc_hw_cpu_crc16_ibm(void)
 void test_crc_hw_cpu_crc_ccitt(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc_ccitt,
-             k_rx_crc_backend_hw_cpu,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc_ccitt,
+                      k_rx_crc_backend_hw_cpu,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc_ccitt_9, result);
 }
 
@@ -381,7 +389,11 @@ void test_crc_hw_cpu_crc_ccitt(void)
 void test_crc_hw_cpu_crc32_ieee(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32, k_rx_crc_backend_hw_cpu, k_test_vec_9, k_test_vec_9_len, &result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_hw_cpu,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32_ieee_9, result);
 }
 
@@ -391,11 +403,11 @@ void test_crc_hw_cpu_crc32_ieee(void)
 void test_crc_hw_cpu_crc32c(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32c,
-             k_rx_crc_backend_hw_cpu,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc32c,
+                      k_rx_crc_backend_hw_cpu,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32c_9, result);
 }
 
@@ -411,7 +423,11 @@ void test_crc_hw_cpu_crc32c(void)
 void test_crc_hw_dma_crc8_maxim(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc8, k_rx_crc_backend_hw_dma, k_test_vec_9, k_test_vec_9_len, &result);
+  internal_compute_ok(k_rx_crc_poly_crc8,
+                      k_rx_crc_backend_hw_dma,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc8_maxim_9, result);
   /* Host build: DMA not used - transfer_poll not called */
   TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
@@ -423,7 +439,11 @@ void test_crc_hw_dma_crc8_maxim(void)
 void test_crc_hw_dma_crc16_ibm(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc16, k_rx_crc_backend_hw_dma, k_test_vec_9, k_test_vec_9_len, &result);
+  internal_compute_ok(k_rx_crc_poly_crc16,
+                      k_rx_crc_backend_hw_dma,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc16_ibm_9, result);
   TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
@@ -434,11 +454,11 @@ void test_crc_hw_dma_crc16_ibm(void)
 void test_crc_hw_dma_crc_ccitt(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc_ccitt,
-             k_rx_crc_backend_hw_dma,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc_ccitt,
+                      k_rx_crc_backend_hw_dma,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc_ccitt_9, result);
   TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
@@ -449,7 +469,11 @@ void test_crc_hw_dma_crc_ccitt(void)
 void test_crc_hw_dma_crc32_ieee(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32, k_rx_crc_backend_hw_dma, k_test_vec_9, k_test_vec_9_len, &result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_hw_dma,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32_ieee_9, result);
   TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
@@ -460,11 +484,11 @@ void test_crc_hw_dma_crc32_ieee(void)
 void test_crc_hw_dma_crc32c(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32c,
-             k_rx_crc_backend_hw_dma,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc32c,
+                      k_rx_crc_backend_hw_dma,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32c_9, result);
   TEST_ASSERT_EQUAL(0U, mock_rx_dmaca_get_transfer_call_count());
 }
@@ -484,21 +508,21 @@ void test_crc32_all_backends_match(void)
   uint32_t cpu_result = 0U;
   uint32_t dma_result = 0U;
 
-  compute_ok(k_rx_crc_poly_crc32,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &sw_result);
-  compute_ok(k_rx_crc_poly_crc32,
-             k_rx_crc_backend_hw_cpu,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &cpu_result);
-  compute_ok(k_rx_crc_poly_crc32,
-             k_rx_crc_backend_hw_dma,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &dma_result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &sw_result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_hw_cpu,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &cpu_result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_hw_dma,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &dma_result);
 
   TEST_ASSERT_EQUAL_HEX32(sw_result, cpu_result);
   TEST_ASSERT_EQUAL_HEX32(sw_result, dma_result);
@@ -513,21 +537,21 @@ void test_crc32c_all_backends_match(void)
   uint32_t cpu_result = 0U;
   uint32_t dma_result = 0U;
 
-  compute_ok(k_rx_crc_poly_crc32c,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &sw_result);
-  compute_ok(k_rx_crc_poly_crc32c,
-             k_rx_crc_backend_hw_cpu,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &cpu_result);
-  compute_ok(k_rx_crc_poly_crc32c,
-             k_rx_crc_backend_hw_dma,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &dma_result);
+  internal_compute_ok(k_rx_crc_poly_crc32c,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &sw_result);
+  internal_compute_ok(k_rx_crc_poly_crc32c,
+                      k_rx_crc_backend_hw_cpu,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &cpu_result);
+  internal_compute_ok(k_rx_crc_poly_crc32c,
+                      k_rx_crc_backend_hw_dma,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &dma_result);
 
   TEST_ASSERT_EQUAL_HEX32(sw_result, cpu_result);
   TEST_ASSERT_EQUAL_HEX32(sw_result, dma_result);
@@ -544,14 +568,14 @@ void test_crc32c_all_backends_match(void)
 void test_crc32_ieee_wrapper_matches_compute(void)
 {
   uint32_t compute_result = 0U;
-  compute_ok(k_rx_crc_poly_crc32,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &compute_result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &compute_result);
 
   uint32_t wrapper_result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(k_test_vec_9, k_test_vec_9_len, &wrapper_result));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(s_test_vec_9, k_test_vec_9_len, &wrapper_result));
   TEST_ASSERT_EQUAL_HEX32(compute_result, wrapper_result);
 }
 
@@ -562,7 +586,7 @@ void test_crc32_ieee_wrapper_canonical(void)
 {
   uint32_t crc = 0U;
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(k_test_vec_9, k_test_vec_9_len, &crc));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(s_test_vec_9, k_test_vec_9_len, &crc));
   TEST_ASSERT_EQUAL_HEX32(k_crc32_ieee_9, crc);
 }
 
@@ -583,7 +607,7 @@ void test_crc32_ieee_wrapper_zero_len(void)
 {
   uint32_t crc = 0U;
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc32_ieee(k_test_vec_9, 0U, &crc));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc32_ieee(s_test_vec_9, 0U, &crc));
 }
 
 /**
@@ -592,14 +616,14 @@ void test_crc32_ieee_wrapper_zero_len(void)
 void test_crc8_maxim_wrapper_matches_compute(void)
 {
   uint32_t compute_result = 0U;
-  compute_ok(k_rx_crc_poly_crc8,
-             k_rx_crc_backend_software,
-             k_test_vec_9,
-             k_test_vec_9_len,
-             &compute_result);
+  internal_compute_ok(k_rx_crc_poly_crc8,
+                      k_rx_crc_backend_software,
+                      s_test_vec_9,
+                      k_test_vec_9_len,
+                      &compute_result);
 
   uint32_t wrapper_result = 0U;
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc8_maxim(k_test_vec_9, k_test_vec_9_len, &wrapper_result));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc8_maxim(s_test_vec_9, k_test_vec_9_len, &wrapper_result));
   TEST_ASSERT_EQUAL_HEX32((uint8_t)compute_result, (uint8_t)wrapper_result);
 }
 
@@ -610,7 +634,7 @@ void test_crc8_maxim_wrapper_canonical(void)
 {
   uint32_t crc = 0U;
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc8_maxim(k_test_vec_9, k_test_vec_9_len, &crc));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc8_maxim(s_test_vec_9, k_test_vec_9_len, &crc));
   TEST_ASSERT_EQUAL_HEX32(k_crc8_maxim_9, (uint8_t)crc);
 }
 
@@ -631,7 +655,7 @@ void test_crc8_maxim_wrapper_zero_len(void)
 {
   uint32_t crc = 0U;
 
-  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc8_maxim(k_test_vec_9, 0U, &crc));
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, rx_crc8_maxim(s_test_vec_9, 0U, &crc));
 }
 
 /* =============================================================================
@@ -646,10 +670,10 @@ void test_crc32_update_single_pass(void)
 {
   uint32_t expected = 0U;
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(k_test_vec_9, k_test_vec_9_len, &expected));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(s_test_vec_9, k_test_vec_9_len, &expected));
 
   /* Use update to compute same result: start from 0 seed */
-  uint32_t crc = rx_crc32_update(0U, k_test_vec_9, k_test_vec_9_len);
+  uint32_t crc = rx_crc32_update(0U, s_test_vec_9, k_test_vec_9_len);
   TEST_ASSERT_EQUAL_HEX32(expected, crc);
 }
 
@@ -660,11 +684,11 @@ void test_crc32_update_chunked_matches_single(void)
 {
   uint32_t single = 0U;
 
-  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(k_test_vec_9, k_test_vec_9_len, &single));
+  TEST_ASSERT_EQUAL(k_rx_ok, rx_crc32_ieee(s_test_vec_9, k_test_vec_9_len, &single));
 
   /* Split 9 bytes as 4 + 5 */
-  uint32_t crc = rx_crc32_update(0U, k_test_vec_9, 4U);
-  crc          = rx_crc32_update(crc, k_test_vec_9 + 4U, 5U);
+  uint32_t crc = rx_crc32_update(0U, s_test_vec_9, 4U);
+  crc          = rx_crc32_update(crc, s_test_vec_9 + 4U, 5U);
   TEST_ASSERT_EQUAL_HEX32(single, crc);
 }
 
@@ -683,7 +707,7 @@ void test_crc32_update_null_returns_original(void)
 void test_crc32_update_zero_len_returns_original(void)
 {
   uint32_t crc = 0xDEADBEEFU;
-  TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, k_test_vec_9, 0U));
+  TEST_ASSERT_EQUAL_HEX32(crc, rx_crc32_update(crc, s_test_vec_9, 0U));
 }
 
 /* =============================================================================
@@ -697,11 +721,11 @@ void test_crc32_update_zero_len_returns_original(void)
 void test_crc32_ieee_single_zero(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32,
-             k_rx_crc_backend_software,
-             k_single_zero,
-             k_single_zero_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_software,
+                      s_single_zero,
+                      k_single_zero_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32_ieee_zero, result);
 }
 
@@ -711,11 +735,11 @@ void test_crc32_ieee_single_zero(void)
 void test_crc32_ieee_single_ff(void)
 {
   uint32_t result = 0U;
-  compute_ok(k_rx_crc_poly_crc32,
-             k_rx_crc_backend_software,
-             k_single_ff,
-             k_single_zero_len,
-             &result);
+  internal_compute_ok(k_rx_crc_poly_crc32,
+                      k_rx_crc_backend_software,
+                      s_single_ff,
+                      k_single_zero_len,
+                      &result);
   TEST_ASSERT_EQUAL_HEX32(k_crc32_ieee_ff, result);
 }
 
@@ -746,7 +770,7 @@ void test_mock_dmaca_preset_timeout_result(void)
   /* Call the mock directly to verify preset behavior */
   const rx_dmaca_config_t cfg = {
     .channel        = 0U,
-    .src            = k_test_vec_9,
+    .src            = s_test_vec_9,
     .len            = k_test_vec_9_len,
     .dst_addr       = 0x00088284U,
     .timeout_cycles = 50000U,

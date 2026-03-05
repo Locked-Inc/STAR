@@ -152,8 +152,8 @@ typedef struct {
  * setting DMAST.DMST = 1 to allow channel operation.
  *
  * Re-initialization returns k_rx_err_invalid_state (not k_rx_ok) to alert
- * callers of unexpected double-init. Callers that expect idempotent init
- * should check s_dmaca_initialized before calling.
+ * callers of unexpected double-init. Callers that need idempotent behavior
+ * should check the return value and treat k_rx_err_invalid_state as acceptable.
  *
  * @return rx_err_t
  * @retval k_rx_ok Peripheral initialized and ready
@@ -219,6 +219,7 @@ typedef struct {
  * @retval k_rx_err_timeout ACT bit did not clear within timeout
  *
  * @pre rx_dmaca_init() must have been called
+ * @pre channel must be in [0, 7]
  * @post DMCNT.DTE = 0 for the specified channel
  * @post DMSTS.ACT = 0 (transfer stopped)
  *
@@ -238,6 +239,7 @@ typedef struct {
  * @retval k_rx_err_not_initialized Not initialized
  *
  * @pre rx_dmaca_init() must have been called
+ * @pre No transfers are in progress on any channel
  * @post DMAST.DMST = 0 (all channels suspended)
  * @post MSTPCRA bit 28 = 1 (module stopped)
  *

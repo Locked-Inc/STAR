@@ -38,6 +38,27 @@ static bool s_crc_initialized = false;
  * =============================================================================
  */
 
+/**
+ * @brief Initialize the CRC module
+ *
+ * @details
+ * Sets the initialized flag and, on RX72N hardware, enables the CRC peripheral
+ * clock and DMAC via internal_crc_hw_init(). On host builds, the hardware path
+ * is skipped and the module enters the ready state immediately.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              Module initialized successfully
+ * @retval k_rx_err_invalid_state Already initialized (call rx_crc_deinit() first)
+ * @retval other                Propagated from internal_crc_hw_init() on hardware
+ *
+ * @pre Not already initialized
+ * @pre System clock (PCLKA) must be running on RX72N
+ * @post s_crc_initialized = true
+ * @post CRC hardware peripheral enabled (RX72N only)
+ *
+ * @note Not thread-safe; call during single-threaded system init
+ * @since Version 1.0.0
+ */
 rx_err_t rx_crc_init(void)
 {
   if (s_crc_initialized) {
@@ -55,6 +76,27 @@ rx_err_t rx_crc_init(void)
   return k_rx_ok;
 }
 
+/**
+ * @brief Deinitialize the CRC module
+ *
+ * @details
+ * Clears the initialized flag and, on RX72N hardware, disables the CRC
+ * peripheral clock and releases DMAC ownership via internal_crc_hw_deinit().
+ * On host builds, the hardware path is skipped.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              Module deinitialized successfully
+ * @retval k_rx_err_invalid_state Not initialized (call rx_crc_init() first)
+ * @retval other                Propagated from internal_crc_hw_deinit() on hardware
+ *
+ * @pre Module must be initialized via rx_crc_init()
+ * @pre No concurrent CRC computations in progress
+ * @post s_crc_initialized = false
+ * @post CRC hardware peripheral disabled (RX72N only)
+ *
+ * @note Not thread-safe; call during single-threaded system teardown
+ * @since Version 1.0.0
+ */
 rx_err_t rx_crc_deinit(void)
 {
   if (!s_crc_initialized) {
@@ -77,6 +119,34 @@ rx_err_t rx_crc_deinit(void)
  * =============================================================================
  */
 
+/**
+ * @brief Dispatch CRC computation to the configured backend
+ *
+ * @details
+ * Validates inputs then routes to one of three backends:
+ * - software: always available; uses bitwise algorithm; ignores config->bit_order
+ *   (always uses the standard reflected form for each polynomial)
+ * - hw_cpu: RX72N CRC peripheral driven byte-by-byte; falls back to software on host
+ * - hw_dma: RX72N CRC peripheral via DMAC; falls back to software on host
+ *
+ * @note The software backend silently ignores config->bit_order. All software
+ *       CRC implementations use the reflected (LSB-first) form which matches
+ *       the hardware behavior for IEEE 802.3, Kermit, and Maxim protocols.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              CRC computed; *result_out is valid
+ * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
+ * @retval k_rx_err_invalid_arg len == 0 or len > k_crc_len_max or invalid backend
+ * @retval other                Propagated from hardware backend (RX72N only)
+ *
+ * @pre config, data, result_out must not be NULL
+ * @pre len must be in [1, k_crc_len_max]
+ * @post *result_out contains the computed CRC on k_rx_ok
+ * @post No state is modified (pure computation)
+ *
+ * @note Thread-safe for software backend; not thread-safe for hw_cpu/hw_dma
+ * @since Version 1.0.0
+ */
 rx_err_t rx_crc_compute(const rx_crc_config_t* config,
                         const uint8_t*         data,
                         uint32_t               len,
@@ -115,7 +185,26 @@ rx_err_t rx_crc_compute(const rx_crc_config_t* config,
 }
 
 /**
- * @brief Incremental CRC-32/IEEE update (software only - HW cannot seed CRC state)
+ * @brief Incremental CRC-32/IEEE update (software only -- hardware cannot seed CRC state)
+ *
+ * @details
+ * Delegates to internal_crc32_sw_update() after null/zero-length guard checks.
+ * Passes NULL or zero-length data through unchanged (returns crc unmodified).
+ *
+ * @note The correct seed for the first call is 0U (not 0xFFFFFFFF). Internally,
+ *       the function un-finalizes by XOR with 0xFFFFFFFF, so crc=0 produces the
+ *       correct CRC-32 initial accumulator state of 0xFFFFFFFF.
+ *
+ * @return uint32_t Updated (finalized) CRC-32 value, or original crc if data
+ *         is NULL or len is 0
+ *
+ * @pre data must point to len valid bytes, or be NULL (pass-through)
+ * @pre len must be > 0 for any update to occur
+ * @post Returns finalized CRC-32 value covering all bytes processed so far
+ * @post No state is modified (pure computation)
+ *
+ * @note Always uses software CRC; hardware cannot resume a partially computed CRC
+ * @since Version 1.0.0
  */
 uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
 {

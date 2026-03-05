@@ -31,6 +31,7 @@
 
 #ifdef __RX__
 
+#include <stdbool.h>
 #include <stddef.h>
 
 #include "rx72n_regs.h"
@@ -83,6 +84,21 @@ typedef enum : uint8_t {
  * Module State
  * =============================================================================
  */
+
+/**
+ * @var s_dmaca_owned
+ * @brief True when this module called rx_dmaca_init() successfully
+ *
+ * @details
+ * Set to true when rx_dmaca_init() returns k_rx_ok in internal_crc_hw_init().
+ * Remains false when rx_dmaca_init() returns k_rx_err_invalid_state (DMAC was
+ * already initialized by a third party). internal_crc_hw_deinit() calls
+ * rx_dmaca_deinit() only when this flag is true, preventing double-deinit.
+ *
+ * @note Not thread-safe; only mutated during single-threaded init/deinit.
+ * @since Version 1.0.0
+ */
+static bool s_dmaca_owned;
 
 /**
  * @var s_dma_fallback_count
@@ -151,6 +167,28 @@ static void internal_configure_crccr(const rx_crc_config_t* config)
  * =============================================================================
  */
 
+/**
+ * @brief Enable CRC peripheral clock and initialize DMAC for hw_dma backend
+ *
+ * @details
+ * Unlocks PRCR, clears MSTPCRB bit 23 to enable the CRC peripheral clock,
+ * then re-locks PRCR. Calls rx_dmaca_init() to prepare the DMA channel;
+ * if DMAC was already initialized (k_rx_err_invalid_state), the CRC module
+ * records that it does not own DMAC and will not deinit it on teardown.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok          CRC peripheral enabled and DMAC ready
+ * @retval k_rx_err_null_ptr System or CRC registers not accessible
+ * @retval other            Unexpected rx_dmaca_init() error; CRC init aborted
+ *
+ * @pre System registers (SYSTEM) must be accessible
+ * @pre CRC registers must be accessible
+ * @post MSTPCRB bit 23 cleared (CRC clock enabled)
+ * @post s_dmaca_owned set to true only if rx_dmaca_init() returned k_rx_ok
+ *
+ * @note Not thread-safe; call during single-threaded system init
+ * @since Version 1.0.0
+ */
 rx_err_t internal_crc_hw_init(void)
 {
   RX_CHECK_NULL_PTR(system_regs(), "CRC", "System registers not accessible");
@@ -162,21 +200,47 @@ rx_err_t internal_crc_hw_init(void)
   *prcr_reg() = k_rx_prcr_lock;
 
   /* Initialize DMA driver; treat k_rx_err_invalid_state as OK (already initialized),
-   * propagate any unexpected error so callers know DMA is unavailable */
+   * propagate any unexpected error so callers know DMA is unavailable.
+   * Track ownership: only deinit DMAC on teardown if we initialized it here. */
   rx_err_t dma_ret = rx_dmaca_init();
-  if (dma_ret != k_rx_ok && dma_ret != k_rx_err_invalid_state) {
+  if (dma_ret == k_rx_ok) {
+    s_dmaca_owned = true;
+  } else if (dma_ret != k_rx_err_invalid_state) {
     return dma_ret;
   }
 
   return k_rx_ok;
 }
 
+/**
+ * @brief Disable CRC peripheral clock and release DMAC if owned
+ *
+ * @details
+ * Calls rx_dmaca_deinit() only if s_dmaca_owned is true (this module called
+ * rx_dmaca_init() successfully). Then unlocks PRCR, sets MSTPCRB bit 23 to
+ * stop the CRC peripheral clock, and re-locks PRCR.
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok          Peripheral deinitialized successfully
+ * @retval k_rx_err_null_ptr System registers not accessible
+ *
+ * @pre System registers (SYSTEM) must be accessible
+ * @pre internal_crc_hw_init() must have been called successfully
+ * @post MSTPCRB bit 23 set (CRC clock disabled)
+ * @post s_dmaca_owned cleared to false
+ *
+ * @note Not thread-safe; call during single-threaded system teardown
+ * @since Version 1.0.0
+ */
 rx_err_t internal_crc_hw_deinit(void)
 {
   RX_CHECK_NULL_PTR(system_regs(), "CRC", "System registers not accessible");
 
-  /* Deinitialize DMA driver */
-  (void)rx_dmaca_deinit();
+  /* Deinitialize DMA driver only if this module initialized it */
+  if (s_dmaca_owned) {
+    (void)rx_dmaca_deinit();
+    s_dmaca_owned = false;
+  }
 
   /* Re-enable module stop (set MSTPCRB bit 23) */
   *prcr_reg() = k_rx_prcr_unlock_prc1;
@@ -191,6 +255,32 @@ rx_err_t internal_crc_hw_deinit(void)
  * =============================================================================
  */
 
+/**
+ * @brief Compute CRC using RX72N CRC peripheral, CPU-driven byte loop
+ *
+ * @details
+ * Configures CRCCR with GPS (polynomial) and LMS (bit order) bits, sets DORCLR
+ * to reset the accumulator, then feeds data byte-by-byte to CRCDIR.
+ * CRC-8/Maxim (GPS=0x00) maps to the wrong hardware polynomial (0x07 vs 0x31),
+ * so it falls back to internal_crc_sw_compute() automatically.
+ *
+ * @param[in]  config     CRC configuration; poly and bit_order fields are used
+ * @param[in]  data       Input buffer (non-NULL, len >= 1)
+ * @param[in]  len        Number of bytes to process
+ * @param[out] result_out Computed CRC result
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok         CRC computed; *result_out is valid
+ * @retval k_rx_err_null_ptr config, data, or result_out is NULL
+ *
+ * @pre CRC peripheral clock must be enabled (internal_crc_hw_init() called)
+ * @pre data must point to valid readable memory of len bytes
+ * @post *result_out contains the final CRC with XOR applied
+ * @post CRCDOR accumulator is in indeterminate state after read
+ *
+ * @note CRC-8/Maxim always uses software fallback (hardware poly mismatch)
+ * @since Version 1.0.0
+ */
 rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
                                      const uint8_t*         data,
                                      uint32_t               len,
@@ -226,6 +316,37 @@ rx_err_t internal_crc_hw_cpu_compute(const rx_crc_config_t* config,
  * =============================================================================
  */
 
+/**
+ * @brief Compute CRC using RX72N CRC peripheral, DMA-driven transfer
+ *
+ * @details
+ * Configures CRCCR then uses rx_dmaca_transfer_poll() to move src to CRCDIR
+ * without CPU intervention. Falls back to internal_crc_hw_cpu_compute() for:
+ * - CRC-8/Maxim (hardware polynomial mismatch)
+ * - len < k_crc_dma_threshold (DMA overhead not justified)
+ * - DMA transfer failure (s_dma_fallback_count incremented for observability)
+ *
+ * CRC-32/CRC-32C require 4-byte aligned buffer and length; returns
+ * k_rx_err_invalid_arg if the alignment check fails.
+ *
+ * @param[in]  config     CRC configuration; dma.timeout_cycles used if > 0
+ * @param[in]  data       Input buffer (non-NULL, len >= 1)
+ * @param[in]  len        Number of bytes to process
+ * @param[out] result_out Computed CRC result
+ *
+ * @return rx_err_t
+ * @retval k_rx_ok              CRC computed via DMA or CPU fallback
+ * @retval k_rx_err_null_ptr    config, data, or result_out is NULL
+ * @retval k_rx_err_invalid_arg CRC-32/CRC-32C buffer or length not aligned to 4 bytes
+ *
+ * @pre CRC and DMAC peripherals must be initialized (internal_crc_hw_init() called)
+ * @pre data must point to valid readable memory of len bytes
+ * @post *result_out contains the final CRC with XOR applied (on k_rx_ok)
+ * @post s_dma_fallback_count incremented if DMA transfer failed and CPU fallback used
+ *
+ * @note DMA fallback is transparent to callers; result is identical to CPU path
+ * @since Version 1.0.0
+ */
 rx_err_t internal_crc_hw_dma_compute(const rx_crc_config_t* config,
                                      const uint8_t*         data,
                                      uint32_t               len,

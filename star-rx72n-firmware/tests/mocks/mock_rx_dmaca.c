@@ -17,6 +17,8 @@
 #include <stddef.h>
 #include <string.h>
 
+#include "rx72n_dmac_regs.h"
+
 /* =============================================================================
  * Mock State
  * =============================================================================
@@ -267,7 +269,7 @@ rx_err_t rx_dmaca_deinit(void)
  * mock_rx_dmaca_set_transfer_result(). Does not perform any actual DMA
  * transfer or access hardware registers.
  *
- * @param[in] config Transfer configuration (may be NULL; NULL is recorded but not dereferenced)
+ * @param[in] config Transfer configuration; must not be NULL (mirrors real API null check)
  *
  * @return rx_err_t
  * @retval k_rx_ok Default (after mock_rx_dmaca_reset())
@@ -287,11 +289,12 @@ rx_err_t rx_dmaca_deinit(void)
  */
 rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
 {
+  if (config == nullptr) {
+    return k_rx_err_null_ptr;
+  }
   s_transfer_count++;
   s_transfer_called = true;
-  if (config != nullptr) {
-    s_last_config = *config;
-  }
+  s_last_config     = *config;
   return s_transfer_result;
 }
 
@@ -317,6 +320,8 @@ rx_err_t rx_dmaca_transfer_poll(const rx_dmaca_config_t* config)
  */
 rx_err_t rx_dmaca_abort(uint8_t channel)
 {
-  (void)channel;
+  if (channel >= (uint8_t)k_dmac_channel_count) {
+    return k_rx_err_invalid_arg;
+  }
   return k_rx_ok;
 }

@@ -942,7 +942,7 @@ static inline rx_err_t rx_crc32_ieee(const uint8_t* data, uint32_t len, uint32_t
  * @par Example - Streaming Data:
  * @code{.c}
  * // Compute CRC as data arrives in chunks
- * uint32_t crc = 0xFFFFFFFF;  // CRC-32 init value (before final XOR)
+ * uint32_t crc = 0U;  // Correct seed: rx_crc32_update() un-finalizes 0 to 0xFFFFFFFF internally
  *
  * // Process chunk 1
  * uint8_t chunk1[32];
@@ -1021,20 +1021,22 @@ static inline rx_err_t rx_crc32_ieee(const uint8_t* data, uint32_t len, uint32_t
  *
  * @par Example - WRONG Usage (Common Mistake):
  * @code{.c}
- * // [FAIL] WRONG: Don't use 0 as starting CRC for incremental mode
- * uint32_t crc = 0U;  // Wrong init value for incremental CRC
+ * // [FAIL] WRONG: Don't use 0xFFFFFFFF as seed for rx_crc32_update()
+ * // rx_crc32_update() un-finalizes by XOR with 0xFFFFFFFF internally.
+ * // Seeding with 0xFFFFFFFF produces work=0x00000000 (wrong initial state).
+ * uint32_t crc = 0xFFFFFFFF;  // Wrong: un-finalizes to 0, not 0xFFFFFFFF
  * crc = rx_crc32_update(crc, buf1, len1);  // [FAIL] Incorrect CRC!
  *
- * // [PASS] CORRECT: Start with rx_crc32_ieee() on first buffer
+ * // [PASS] CORRECT: Use 0U as seed for first rx_crc32_update() call
+ * // rx_crc32_update(0, ...) un-finalizes to 0xFFFFFFFF (correct initial state).
+ * uint32_t crc = 0U;
+ * crc = rx_crc32_update(crc, buf1, len1);  // [PASS] Correct
+ * crc = rx_crc32_update(crc, buf2, len2);  // [PASS] Continues correctly
+ *
+ * // OR: Start with rx_crc32_ieee() on first buffer (also correct)
  * uint32_t crc = 0U;
  * (void)rx_crc32_ieee(buf1, len1, &crc);
  * crc = rx_crc32_update(crc, buf2, len2);  // [PASS] Correct
- *
- * // OR: Manually initialize if you need empty start
- * uint32_t crc = 0xFFFFFFFF;  // CRC-32 init value (before final XOR)
- * crc = rx_crc32_update(crc, buf1, len1);
- * crc = rx_crc32_update(crc, buf2, len2);
- * crc ^= 0xFFFFFFFF;  // Apply final XOR
  * @endcode
  *
  * @see rx_crc32_ieee() Single-shot CRC-32 computation
@@ -1234,11 +1236,17 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  * printf("Library CRC: 0x%02X\n", crc_lib);
  * // Output: Library CRC: 0xB3
  *
- * // Method 2: Manual computation (for understanding)
- * extern const uint8_t crc8_maxim_table[256];  // From rx_crc_sw.c
- * uint8_t crc_manual = 0x00;  // Initial value
+ * // Method 2: Manual bitwise computation (for algorithm understanding)
+ * uint8_t crc_manual = 0x00;  // CRC-8/Maxim initial value
  * for (uint8_t i = 0; i < sizeof(data); i++) {
- *   crc_manual = crc8_maxim_table[crc_manual ^ data[i]];
+ *   crc_manual ^= data[i];
+ *   for (uint8_t bit = 0; bit < 8; bit++) {
+ *     if (crc_manual & 0x01) {
+ *       crc_manual = (uint8_t)((crc_manual >> 1) ^ 0x8C);  // reflected poly 0x31
+ *     } else {
+ *       crc_manual >>= 1;
+ *     }
+ *   }
  * }
  * printf("Manual CRC: 0x%02X\n", crc_manual);
  * // Output: Manual CRC: 0xB3

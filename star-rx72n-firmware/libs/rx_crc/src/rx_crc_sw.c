@@ -181,12 +181,23 @@ static const uint32_t s_crc32c_table[k_crc32_table_size] = {
 /**
  * @brief Compute CRC-32/IEEE 802.3 using table lookup
  *
- * @param[in] data Input buffer
- * @param[in] len  Number of bytes
- * @return CRC-32 value
+ * @details
+ * Initializes accumulator to 0xFFFFFFFF (k_crc32_init_value), processes each
+ * byte via s_crc32_table lookup, then XORs final result with 0xFFFFFFFF
+ * (k_crc32_final_xor). Implements CRC-32/ISO-HDLC (reflected poly 0xEDB88320).
+ *
+ * @param[in] data Input buffer (must not be NULL; caller enforces)
+ * @param[in] len  Number of bytes [1, k_crc_len_max]
+ *
+ * @return uint32_t Finalized CRC-32/IEEE value
+ * @retval 0x00000000..0xFFFFFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
+ * @post Returns finalized CRC with XOR applied; accumulator state not retained
+ * @post No side effects; pure computation
+ *
+ * @since Version 1.0.0
  */
 static uint32_t internal_crc32_compute(const uint8_t* data, uint32_t len)
 {
@@ -205,12 +216,22 @@ static uint32_t internal_crc32_compute(const uint8_t* data, uint32_t len)
 /**
  * @brief Compute CRC-32C (Castagnoli) using table lookup
  *
- * @param[in] data Input buffer
- * @param[in] len  Number of bytes
- * @return CRC-32C value
+ * @details
+ * Same structure as internal_crc32_compute() but uses s_crc32c_table
+ * (reflected poly 0x82F63B78, iSCSI / Castagnoli polynomial).
+ *
+ * @param[in] data Input buffer (must not be NULL; caller enforces)
+ * @param[in] len  Number of bytes [1, k_crc_len_max]
+ *
+ * @return uint32_t Finalized CRC-32C value
+ * @retval 0x00000000..0xFFFFFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
+ * @post Returns finalized CRC-32C with XOR applied; accumulator not retained
+ * @post No side effects; pure computation
+ *
+ * @since Version 1.0.0
  */
 static uint32_t internal_crc32c_compute(const uint8_t* data, uint32_t len)
 {
@@ -229,12 +250,23 @@ static uint32_t internal_crc32c_compute(const uint8_t* data, uint32_t len)
 /**
  * @brief Compute CRC-16/IBM (ARC) bitwise
  *
- * @param[in] data Input buffer
- * @param[in] len  Number of bytes
- * @return CRC-16 value
+ * @details
+ * Initializes accumulator to 0 (k_crc16_init), processes each byte with
+ * reflected polynomial 0x8005 (k_crc16_ibm_poly = 0xA001 reflected).
+ * No final XOR (k_crc16_final_xor = 0). Implements CRC-16/ARC.
+ *
+ * @param[in] data Input buffer (must not be NULL; caller enforces)
+ * @param[in] len  Number of bytes [1, k_crc_len_max]
+ *
+ * @return uint16_t CRC-16/IBM value
+ * @retval 0x0000..0xFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
+ * @post Returns 16-bit CRC; no final XOR applied
+ * @post No side effects; pure computation
+ *
+ * @since Version 1.0.0
  */
 static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
 {
@@ -260,12 +292,23 @@ static uint16_t internal_crc16_ibm_compute(const uint8_t* data, uint32_t len)
 /**
  * @brief Compute CRC-CCITT/Kermit (reflected 0x1021) bitwise
  *
- * @param[in] data Input buffer
- * @param[in] len  Number of bytes
- * @return CRC-CCITT value
+ * @details
+ * Initializes accumulator to 0 (k_crc_ccitt_init), processes each byte
+ * with reflected polynomial 0x1021 (k_crc_ccitt_poly = 0x8408 reflected).
+ * No final XOR. Implements CRC-16/KERMIT.
+ *
+ * @param[in] data Input buffer (must not be NULL; caller enforces)
+ * @param[in] len  Number of bytes [1, k_crc_len_max]
+ *
+ * @return uint16_t CRC-CCITT/Kermit value
+ * @retval 0x0000..0xFFFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
+ * @post Returns 16-bit CRC; no final XOR applied
+ * @post No side effects; pure computation
+ *
+ * @since Version 1.0.0
  */
 static uint16_t internal_crc_ccitt_compute(const uint8_t* data, uint32_t len)
 {
@@ -291,12 +334,23 @@ static uint16_t internal_crc_ccitt_compute(const uint8_t* data, uint32_t len)
 /**
  * @brief Compute CRC-8/Maxim (Dallas) bitwise
  *
- * @param[in] data Input buffer
- * @param[in] len  Number of bytes
- * @return CRC-8 value
+ * @details
+ * Initializes accumulator to 0 (k_crc8_init), processes each byte with
+ * reflected polynomial 0x31 (k_crc8_maxim_poly = 0x8C reflected).
+ * No final XOR. Implements CRC-8/MAXIM-DOW (used by 1-Wire devices).
+ *
+ * @param[in] data Input buffer (must not be NULL; caller enforces)
+ * @param[in] len  Number of bytes [1, k_crc_len_max]
+ *
+ * @return uint8_t CRC-8/Maxim value
+ * @retval 0x00..0xFF CRC result; value depends on input data
  *
  * @pre data != NULL
  * @pre 0 < len <= k_crc_len_max
+ * @post Returns 8-bit CRC; no final XOR applied
+ * @post No side effects; pure computation
+ *
+ * @since Version 1.0.0
  */
 static uint8_t internal_crc8_maxim_compute(const uint8_t* data, uint32_t len)
 {
