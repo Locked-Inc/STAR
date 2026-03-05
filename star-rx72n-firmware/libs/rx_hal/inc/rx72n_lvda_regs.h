@@ -142,7 +142,7 @@ extern "C" {
  * @note Manual: Ch8.2 - Register Descriptions
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /* First register block (0x000800E0-0x000800E3) */
   k_lvd1cr1_addr = 0x000800E0, /**< Voltage Monitor 1 Control Register 1 */
   k_lvd1sr_addr  = 0x000800E1, /**< Voltage Monitor 1 Status Register */

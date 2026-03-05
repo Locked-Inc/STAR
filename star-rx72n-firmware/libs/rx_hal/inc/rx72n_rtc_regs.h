@@ -93,7 +93,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 33.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief RTC register base address (0x0008C400)
    * @details Manual ref: Ch33 section 33.2.1 (R64CNT at 0x0008C400)

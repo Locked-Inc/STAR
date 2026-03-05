@@ -90,7 +90,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 18.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief DMAC module base address (channel 0) */
   k_dmac_base_addr = 0x00082000U,
 

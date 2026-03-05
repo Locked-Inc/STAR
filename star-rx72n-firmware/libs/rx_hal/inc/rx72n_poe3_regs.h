@@ -96,7 +96,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 25.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief POE3 module base address */
   k_poe3_base_addr = 0x0008C4C0U,
 

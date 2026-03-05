@@ -147,7 +147,7 @@ extern "C" {
  * @see crc_regs() Accessor function
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief CRC register base address (0x00088280)
    * @details Verified against RX72N Hardware Manual Ch46

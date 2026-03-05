@@ -210,7 +210,7 @@ extern "C" {
  *
  * @note Channel spacing is 0x20 (32 bytes) between adjacent channels.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_riic0_base_addr = 0x00088300, /**< RIIC0 register base address */
   k_riic1_base_addr = 0x00088320, /**< RIIC1 register base address */
   k_riic2_base_addr = 0x00088340, /**< RIIC2 register base address */

@@ -161,7 +161,7 @@ extern "C" {
  * The MPC module is located at a single base address. All registers are
  * accessed relative to this base.
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   k_mpc_base_addr = 0x0008C100, /**< MPC register base address */
 } rx_mpc_addresses_t;
 

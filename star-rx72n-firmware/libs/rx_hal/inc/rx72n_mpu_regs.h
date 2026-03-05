@@ -91,7 +91,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 17.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief MPU region registers base address */
   k_mpu_region_base_addr = 0x00086400U,
 

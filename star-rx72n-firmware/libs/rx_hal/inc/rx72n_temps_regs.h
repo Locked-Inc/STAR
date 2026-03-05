@@ -86,7 +86,7 @@ extern "C" {
  * @note Addresses verified 2026-01-29 against manual section 58.2
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /**
    * @brief Temperature Sensor Control Register (TSCR) address
    * @details

@@ -89,7 +89,7 @@ extern "C" {
  *
  * @since Version 1.0.0
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /* Operating Power Control Registers @ 0x000800Ax */
   k_opccr_addr   = 0x000800A0U, /**< Operating Power Control Register */
   k_rstckcr_addr = 0x000800A1U, /**< Sleep Mode Return Clock Switch Register */

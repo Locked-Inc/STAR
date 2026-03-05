@@ -197,7 +197,7 @@ extern "C" {
  * @see RX72N Hardware Manual Chapter 4 (Address Map)
  * @see RX72N Hardware Manual Section 24.2 (MTU Register Descriptions)
  */
-typedef enum : uint32_t {
+typedef enum : uintptr_t {
   /** @brief MTU0 base address (0x000C1300) - general purpose 16-bit timer */
   k_mtu0_base_addr = 0x000C1300,
 
